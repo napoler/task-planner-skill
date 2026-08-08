@@ -16,7 +16,19 @@ LLM 会遗忘。经过约 50 次工具调用后，原始目标会漂移，指令
 - **子代理是真执行，非叙述** —— 子代理报告"完成"后，Skill 通过 Read 验证文件确实变更后才接受
 - **多任务并行** —— 启动 N 个子代理，每个拥有自己的计划子目录，通过共享 `plans/INDEX.md` 协调
 
-这是对原有"文件驱动计划"模式的升级，带来三个核心改进：多任务并行支持、范围守护强制、以及硬验证门控。
+## 从"Plan with Files"升级
+
+本 Skill 是 ["Plan with Files"](https://github.com/plan-with-files) 模式的直接演进版本。它保留了核心洞察——**磁盘上的 Markdown 文件是代理的工作记忆**——同时新增三项核心改进：多任务并行支持、范围守护强制、以及硬验证门控。
+
+| | Plan with Files | task-planner（本 Skill） |
+|---|---|---|
+| 计划持久化 | ✅ Markdown 文件 | ✅ + VC 表 + 范围表 |
+| 阶段追踪 | 基础 | `pending → in_progress → complete` 带门控 |
+| 多任务并行 | ❌ 仅单任务 | ✅ N 个子代理，`plans/INDEX.md` 协调者 |
+| 范围守护 | 手动 | PreToolUse Hook 阻止计划外写入 |
+| 子代理验证 | 信任"完成" | Read 实际文件后才接受 |
+| 跨会话恢复 | 手动恢复 | `session-catchup.py` 自动检测 |
+| 配置阈值 | 硬编码 | `config.json`（max_vc、retry_count 等） |
 
 ---
 

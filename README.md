@@ -16,7 +16,19 @@ LLMs forget. After ~50 tool calls the original goal drifts, instructions compete
 - **Subagents are real, not narrated** — when a subagent reports "done", the skill verifies the file actually changed before accepting it
 - **Multiple tasks run in parallel** — spawn N subagents, each with their own plan subdirectory, coordinated via a shared `plans/INDEX.md`
 
-This is an upgrade of the original "Plan with Files" pattern with three concrete improvements: parallel-task support, scope-guard enforcement, and a hard verification gate.
+## Upgrade from "Plan with Files"
+
+This skill is the direct evolution of the ["Plan with Files"](https://github.com/plan-with-files) pattern. It preserves the core insight — **markdown files on disk are the agent's working memory** — while adding three concrete improvements: parallel-task support, scope-guard enforcement, and a hard verification gate.
+
+| | Plan with Files | task-planner (this skill) |
+|---|---|---|
+| Plan persistence | ✅ Markdown files | ✅ + VC table + scope table |
+| Phase tracking | Basic | `pending → in_progress → complete` with gate |
+| Parallel tasks | ❌ Single task only | ✅ N subagents, `plans/INDEX.md` coordinator |
+| Scope enforcement | Manual | PreToolUse hook blocks out-of-scope writes |
+| Subagent verification | Trust "done" | Read actual file before accepting |
+| Cross-session recovery | Manual resume | `session-catchup.py` auto-detects |
+| Config thresholds | Hardcoded | `config.json` (max_vc, retry_count, …) |
 
 ---
 
