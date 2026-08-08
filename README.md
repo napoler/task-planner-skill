@@ -196,6 +196,12 @@ Spawn one subagent per directory with the Skill tool; each runs its own phases; 
 
 ---
 
+## 中文文档
+
+[中文版 README](README_zh.md) · [中文版安装指南](INSTALL_zh.md) · [中文版贡献指南](CONTRIBUTING_zh.md)
+
+---
+
 ## Documentation Map
 
 | Doc | When to read |

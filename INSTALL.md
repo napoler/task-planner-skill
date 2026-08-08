@@ -23,7 +23,7 @@ rm -rf "$TMP"
 echo "Installed. Restart Claude Code, then ask it to 'plan a multi-step task'."
 ```
 
-> 或直接使用本地路径（已有 clone 时）：
+> To use a local clone (after you've already cloned the repo):
 >
 > ```bash
 > bash /path/to/task-planner-skill/scripts/install.sh
@@ -303,6 +303,12 @@ If any step fails, see Troubleshooting above.
 ```
 
 Total: ~50 KB. Nothing else is written outside this directory.
+
+---
+
+## 中文版本
+
+[中文安装指南](INSTALL_zh.md) · [中文版 README](README_zh.md)
 
 ---
 
