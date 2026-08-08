@@ -1,0 +1,20 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Plan workspaces (generated per-project, gitignored by default)
+plans/
+
+# Tool caches
+.omc/
+.serena/
