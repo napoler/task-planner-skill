@@ -59,7 +59,7 @@ fi
 echo ""
 
 # Initialize each template file (only if it doesn't exist)
-for file in task_plan.md verification.md findings.md progress.md notepad-learnings.md; do
+for file in task_plan.md findings.md progress.md notepad-learnings.md; do
     if [ -f "$file" ]; then
         echo "$file already exists, skipping"
     else
