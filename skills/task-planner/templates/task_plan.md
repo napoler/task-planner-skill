@@ -189,3 +189,12 @@ Phase 1
 - Update phase status as you progress: pending → in_progress → complete
 - Re-read this plan before major decisions (attention manipulation)
 - Log ALL errors - they help avoid repetition
+
+## 🚨 Drift Log（漂移检测记录）
+<!-- 
+  WHEN: 每次调用 Skill("task-drift-guard") 后追加一行记录
+  FORMAT: | timestamp | 结果 | VC条目 | 结论 |
+-->
+| 时间 | 检测结果 | 涉及VC | 结论 |
+|------|---------|--------|------|
+|      |             |        |      |

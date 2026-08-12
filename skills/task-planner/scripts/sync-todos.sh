@@ -131,16 +131,7 @@ rollup_task() {
     local task_id
     task_id="$(dirname "$task_plan" | xargs basename)"
     local mtime
-    if command -v stat >/dev/null 2>&1; then
-        # GNU stat (-c) on Linux / BSD stat (-f) on macOS
-        if stat --version 2>/dev/null | grep -q GNU; then
-            mtime="$(stat -c '%y' "$task_plan" 2>/dev/null | cut -d' ' -f1)"
-        else
-            mtime="$(stat -f '%Sm' -t '%Y-%m-%d' "$task_plan" 2>/dev/null)"
-        fi
-    else
-        mtime="?"
-    fi
+    mtime="$(stat -c %y "$task_plan" 2>/dev/null | cut -d' ' -f1)"
     mtime="${mtime:-?}"
 
     awk -v tid="$task_id" -v mt="$mtime" '

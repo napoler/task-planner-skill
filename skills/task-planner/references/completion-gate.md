@@ -1,6 +1,6 @@
 # Completion Gate & Parallel Task Synchronization
 
-> 详见 SKILL.md 的 "## 2.4 Completion Gate Protocol" 和 "## 2.5 Parallel Task Synchronization"。
+> 详见 SKILL.md 的 "## Completion Gate"。
 > 本节为高级用法，日常规划只需关注 Critical Rules 即可。
 
 ## 2.4 Completion Gate Protocol (CRITICAL)

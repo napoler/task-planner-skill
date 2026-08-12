@@ -31,3 +31,14 @@
 
 ### 10 Scope 变更必重规划
 详见 `reference.md § 重规划触发`。
+
+### 11 漂移检测（周期性）
+每个 phase 标记 complete 后、连续 ≥3 次工具调用后、切模块前，调用：
+```
+Skill("task-drift-guard")
+```
+- ✅ ALIGNED → 继续执行
+- ⚠️ DRIFT → 记录到 progress.md，继续但警觉
+- 🔴 BLOCKED → STOP，报告用户，等决策
+
+`task-drift-guard` 是只读检测层，不做任何文件写入；发现偏差后输出结构化报告并等待用户决策。

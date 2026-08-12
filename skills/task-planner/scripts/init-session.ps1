@@ -3,7 +3,7 @@
 #
 # Template priority (per-file):
 #   1. {project}\.claude\plan-templates\{filename}  (project-level, optional)
-#   2. $HOME\.claude\skills\task-planner\templates\{filename} (built-in fallback)
+#   2. $HOME\.claude\skills\plan\templates\{filename} (built-in fallback)
 #
 # Path resolution: look for .claude/plan-templates/ by traversing upward from CWD
 
@@ -31,7 +31,7 @@ function Copy-Template {
     param([string]$Filename)
 
     $projectTemplates = Find-ProjectTemplates
-    $builtinPath = Join-Path $HOME ".claude\skills\task-planner\templates\$Filename"
+    $builtinPath = Join-Path $HOME ".claude\skills\plan\templates\$Filename"
 
     if ($projectTemplates) {
         $projectPath = Join-Path $projectTemplates $Filename
@@ -65,7 +65,7 @@ if ($projectTemplates) {
 Write-Host ""
 
 # Initialize each template file (only if it doesn't exist)
-foreach ($file in @("task_plan.md", "verification.md", "findings.md", "progress.md", "notepad-learnings.md")) {
+foreach ($file in @("task_plan.md", "findings.md", "progress.md", "notepad-learnings.md")) {
     if (Test-Path $file) {
         Write-Host "$file already exists, skipping"
     } else {

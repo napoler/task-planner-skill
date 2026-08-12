@@ -76,15 +76,15 @@ skills/task-planner/
 ## 常用命令
 
 ```bash
-# 语法检查所有脚本
-bash -n skills/task-planner/scripts/*.sh
+# 语法检查所有脚本（含新增 check-drift.sh）
+bash -n skills/task-planner/scripts/*.sh && bash -n skills/task-planner/scripts/check-drift.sh
 python3 -m py_compile skills/task-planner/scripts/session-catchup.py
 
 # 验证 config.json schema
 python3 -c "import jsonschema, json; jsonschema.validate({}, json.load(open('skills/task-planner/config.json')))"
 
 # 测试 init-session（dry-run，不修改实际文件）
-cd /tmp && mkdir -p test-plan && cd test-plan && bash <repo>/skills/task-planner/scripts/init-session.sh test-project && cat task_plan.md | head -30 && cd -
+cd /tmp && mkdir -p test-plan && cd $_ && bash <repo>/skills/task-planner/scripts/init-session.sh test-project && cat task_plan.md | head -30 && cd -
 
 # 测试 check-scope
 cd /tmp/test-plan && bash <repo>/skills/task-planner/scripts/check-scope.sh Write "task_plan.md" "task_plan.md"; echo "exit: $?"
