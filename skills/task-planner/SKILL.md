@@ -48,12 +48,14 @@ hooks:
   - **门控**：等待用户显式 `"yes"` — 无授权禁止执行
 
 - [ ] **Phase 执行循环**（每个 Phase 独立闭环）
-  - 标记 Phase `in_progress` → 执行 → 标记 `complete`
-  - 每步完成后运行 `sync-todos.sh --index`
+  - 编辑 `task_plan.md`：Phase 状态 `in_progress` → 执行 → `complete`
+  - 每步完成后运行 `bash scripts/sync-todos.sh --index`
   - 每 Phase 完成后 → **[DRIFT CHECK]** 调用 `Skill("task-drift-guard")`
     - ✅ ALIGNED → 继续下一 Phase
     - ⚠️ DRIFT → 记录 progress.md，警觉继续
     - 🔴 BLOCKED → **STOP**，报告用户，等决策
+  - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时
+  - `task-drift-guard` 为只读检测层，发现 BLOCKED 时必须等用户明确决策后再继续
 
 - [ ] **终验交付**
   - Read `verification.md`
@@ -72,37 +74,6 @@ hooks:
 | C5 | subagent 返回后已 Read 实际产出文件 | ☐ |
 | C6 | 全部 VC 逐条复验，有可查证据 | ☐ |
 | C7 | 交付结论为 COMPLETE/PARTIAL/BLOCKED 之一 | ☐ |
-
-## Workflow
-
-```
-FIRST: python3 <skill>/scripts/session-catchup.py "$(pwd)"   # 中断恢复
-STEP1: mkdir -p plans/task-XXX/ && cd $_ && bash <skill>/scripts/init-session.sh
-STEP2: 展示 task_plan.md 计划 → 等 "yes" → 执行
-STEP3: 每 phase 完 Edit task_plan.md (in_progress→complete) + bash <skill>/scripts/sync-todos.sh --index
-STEP3.5: [DRIFT CHECK] 每完成一个 phase 后调用 Skill("task-drift-guard") → 有漂移则 STOP + 报告 + 等决策
-STEP4: 全部 complete → Read verification.md → 逐条复验 VC → 交付 COMPLETE/PARTIAL/BLOCKED
-```
-
-**[DRIFT CHECK] 防漂移检测时机（强制）：**
-- 每个 phase 标记 `complete` 之后立即调用
-- 连续 ≥3 次工具调用后调用
-- 切换到下一个文件/模块前调用
-- 用户发出新指令时调用
-
-```bash
-# 调用漂移检测技能（只读，不修改任何文件）
-Skill("task-drift-guard")
-```
-
-**漂移判定 → 动作：**
-| 检测结果 | 动作 |
-|---------|------|
-| ✅ ALIGNED | 继续执行 |
-| ⚠️ DRIFT | 记录到 progress.md，继续但警觉 |
-| 🔴 BLOCKED | STOP → 报告用户 → 等决策 |
-
-检测不阻断流程（必须产出结构化报告），但发现 BLOCKED 时必须等用户明确决策后再继续。
 
 ## Critical Rules
 
