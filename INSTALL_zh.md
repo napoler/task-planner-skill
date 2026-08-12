@@ -312,6 +312,41 @@ ls task_plan.md   # 应存在
 
 ---
 
+## 激活方式
+
+重启 Claude Code 后，Skill 会自动发现。可以通过三种方式激活：
+
+### 斜杠命令（推荐）
+
+```
+/task-planner         # 创建或恢复任务计划
+/task-drift-guard     # 对当前计划运行漂移检测
+/todo                 # 通过 todo-skill 创建持久化待办
+```
+
+### 自然语言触发
+
+| 触发词 | 效果 |
+|--------|------|
+| `"帮我规划一个多步骤任务"` / `"plan a multi-step task"` | 加载 task-planner skill |
+| `"检查漂移"` / `"check drift"` | 运行 task-drift-guard |
+| `"拆解这个任务"` / `"break this down"` | 创建待办列表并执行 |
+
+### 通过 Skill 工具调用
+
+```python
+Skill(skill="task-planner")
+```
+
+### 快速冒烟测试
+
+```bash
+# 重启后，在 Claude Code 聊天框中粘贴：
+"帮我规划一个任务：创建一个带添加、列表、删除功能的 TODO 应用。"
+```
+
+你应该看到 Claude 自动在 `plans/task-XXX/task_plan.md` 中创建包含 Phases 和 VC 表的计划。
+
 ## 下一步
 
 - 详见 [`README_zh.md`](README_zh.md) 功能概览和快速心智模型

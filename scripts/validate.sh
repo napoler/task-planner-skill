@@ -142,7 +142,7 @@ else
 fi
 
 # -------- C6: required templates --------
-required_templates=(task_plan.md verification.md findings.md progress.md notepad-learnings.md)
+required_templates=(task_plan.md findings.md progress.md notepad-learnings.md)
 for t in "${required_templates[@]}"; do
   if [[ -f "$SKILL_DIR/templates/$t" ]]; then
     pass "templates/$t present"

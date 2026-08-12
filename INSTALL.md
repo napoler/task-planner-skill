@@ -312,6 +312,41 @@ Total: ~50 KB. Nothing else is written outside this directory.
 
 ---
 
+## Activation
+
+After restarting Claude Code, the skill is auto-discovered. You can activate it in three ways:
+
+### Via slash commands (recommended)
+
+```
+/task-planner         # Create or resume a task plan
+/task-drift-guard     # Run drift detection against current plan
+/todo                 # Create persistent todos via todo-skill
+```
+
+### Via natural language
+
+| Trigger phrase | What happens |
+|----------------|-------------|
+| `"plan a multi-step task"` / `"帮我规划任务"` | Loads task-planner skill |
+| `"check drift"` / `"检查漂移"` | Runs task-drift-guard |
+| `"break this down"` / `"拆解这个任务"` | Creates todo list and executes |
+
+### Via the Skill tool
+
+```python
+Skill(skill="task-planner")
+```
+
+### Quick smoke test
+
+```bash
+# After restart, paste this in your Claude Code chat:
+"Plan a task to create a TODO app with add, list, and delete functionality."
+```
+
+You should see Claude create `plans/task-XXX/task_plan.md` with Phases and VC table automatically.
+
 ## Next Steps
 
 - See [`README.md`](README.md) for a feature overview and quick mental model.
