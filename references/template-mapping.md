@@ -14,7 +14,7 @@ skill 复杂度评分 ≥9 分（复杂级）
 └─ 发布/集成类 → publish-type.md
 ```
 
-**文件路径**（相对 `~/.claude/skills/task-planner/`）：
+**文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
 - `templates/variant/research-type.md`
 - `templates/variant/writing-type.md`
 - `templates/variant/diagnostic-type.md`
@@ -31,12 +31,12 @@ skill 复杂度评分 ≥9 分（复杂级）
 - VC 绑定 `_channel_attempts[]` 字段
 - 增加"证据来源"列
 
-**模板路径**：`~/.claude/skills/task-planner/templates/variant/research-type.md`
+**模板路径**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/research-type.md`
 
 **使用方式**：
 ```bash
 # 项目级覆盖
-cp ~/.claude/skills/task-planner/templates/variant/research-type.md \
+cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/research-type.md \
    .claude/plan-templates/task_plan.md
 ```
 
@@ -52,13 +52,13 @@ cp ~/.claude/skills/task-planner/templates/variant/research-type.md \
 - 增加"封面保护"验证点
 - 强制 SEO 字段检查
 
-**模板路径**：`~/.claude/skills/task-planner/templates/variant/writing-type.md`
+**模板路径**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/writing-type.md`
 
 **使用方式**：
 ```bash
 # 文章管线项目级覆盖
 mkdir -p /mnt/data/dev/article-generation/.claude/plan-templates/
-cp ~/.claude/skills/task-planner/templates/variant/writing-type.md \
+cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/writing-type.md \
    /mnt/data/dev/article-generation/.claude/plan-templates/task_plan.md
 ```
 
@@ -74,13 +74,13 @@ cp ~/.claude/skills/task-planner/templates/variant/writing-type.md \
 - 增加"evidence 完整性"检查点
 - 禁止凭印象诊断
 
-**模板路径**：`~/.claude/skills/task-planner/templates/variant/diagnostic-type.md`
+**模板路径**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-type.md`
 
 **使用方式**：
 ```bash
 # skill-fix 项目级覆盖
 mkdir -p ~/.claude/skills/skill-fix/.claude/plan-templates/
-cp ~/.claude/skills/task-planner/templates/variant/diagnostic-type.md \
+cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-type.md \
    ~/.claude/skills/skill-fix/.claude/plan-templates/task_plan.md
 ```
 
@@ -96,7 +96,7 @@ cp ~/.claude/skills/task-planner/templates/variant/diagnostic-type.md \
 - 强制幂等性检查
 - 失败回滚策略
 
-**模板路径**：`~/.claude/skills/task-planner/templates/variant/publish-type.md`
+**模板路径**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/publish-type.md`
 
 ---
 
@@ -146,6 +146,6 @@ ls *.md | sort
 # 应包含: findings.md, notepad-learnings.md, progress.md, task_plan.md, verification.md
 
 # 运行完成检测
-bash ~/.claude/skills/task-planner/scripts/check-complete.sh
+bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-complete.sh
 # 应返回 exit 0
 ```
