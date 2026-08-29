@@ -125,25 +125,68 @@ STUB_SKILL_EOF
       cat > "$out_path" <<STUB_SKILL_EOF
 ---
 name: task-planner
-description: 任务规划与进度追踪（${tool_name} 适配薄壳）
-model: opus
-allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet"
+agent: executor
+description: Use when planning, decomposing, or organizing multi-step projects or research tasks expected to require more than 5 tool calls. Also use when resuming work after /clear.
+allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet"
 user-invocable: true
+hooks:
+- type: command
+  name: SessionStart
+  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/task-plan-init.cjs"
+  statusMessage: "Checking task plan status..."
+- type: command
+  name: PreToolUse
+  matcher: "Write|Edit"
+  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-scope.sh"
+  block_on_nonzero: true
+- type: command
+  name: PostToolUse
+  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-doc-sync.sh"
+  statusMessage: "[task-planner] 计划/Todo 同步检查..."
+- type: command
+  name: UserPromptSubmit
+  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh"
+  statusMessage: "[task-planner] 新指令计划影响提示..."
+- type: command
+  name: Stop
+  command: "SD=\\"\${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts\\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\"\$SD\\"/check-complete.ps1 2>/dev/null || sh \\"\$SD\\"/check-complete.sh"
+model: opus
 ---
 
 # task-planner — ${tool_name} 适配薄壳
 
 > Canonical source: \`\${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}\`。
-> 本薄壳只持有 hook 入口（按 ${hook_style} 规范）。
+> 本薄壳通过 SKILL.md frontmatter hooks 块声明 ${tool_name} 平台特定的 hook 配置。
 
-## 平台说明
+## 内容引用
 
-${tool_name} 的 hook 配置请参考平台官方文档，将以下命令注册到对应 hook 点：
-- SessionStart:    bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/task-plan-init.cjs
-- PreToolUse:      bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-scope.sh
-- PostToolUse:     bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-doc-sync.sh
-- UserPromptSubmit: bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh
-- Stop:            bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-complete.sh
+| 资源 | 路径 |
+|------|------|
+| 核心规则 | \`\${TASK_PLANNER_ROOT}/references/critical-rules.md\` |
+| Todo 同步 | \`\${TASK_PLANNER_ROOT}/references/todo-sync.md\` |
+| 工作树隔离 | \`\${TASK_PLANNER_ROOT}/references/worktree-isolation.md\` |
+| 模板 | \`\${TASK_PLANNER_ROOT}/templates/\` |
+
+> 完整流程见 canonical 的 \`README.md\` + \`WORKFLOW.md\` + \`examples.md\`。
+
+## 平台兼容性
+
+若 ${tool_name} 不识别 SKILL.md frontmatter 的 \`hooks:\` 字段（与 zcode/opencode 不同的 hook 注册机制），需手动配置：
+
+\`\`\`json
+// ${tool_name} 配置示例（路径因平台而异）
+{
+  "hooks": {
+    "SessionStart":    "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/task-plan-init.cjs",
+    "PreToolUse":      "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-scope.sh",
+    "PostToolUse":     "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-doc-sync.sh",
+    "UserPromptSubmit": "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh",
+    "Stop":            "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-complete.sh"
+  }
+}
+\`\`\`
+
+> 请参考 ${tool_name} 官方文档适配实际配置语法。
 STUB_SKILL_EOF
       ;;
 
