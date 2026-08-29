@@ -14,7 +14,7 @@
 #   7. Verifies installation
 #
 # Environment:
-#   TASK_PLANNER_ROOT   override canonical location (default: $HOME/dev/task-planner)
+#   TASK_PLANNER_ROOT   override canonical location (default: $SCRIPT_DIR (dir containing install.sh))
 #   INSTALL_LOG         log file path (default: $TASK_PLANNER_ROOT/install.log)
 
 set -uo pipefail

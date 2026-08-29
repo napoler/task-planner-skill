@@ -8,7 +8,7 @@
 
 | 维度 | 旧模式 | 新模式 |
 |------|------|------|
-| 源 | `~/.claude/skills/task-planner/` + `~/.zcode/skills/task-planner/` 双份独立 | `~/dev/task-planner/` 单一 canonical + 各 stub 薄壳 |
+| 源 | `~/.claude/skills/task-planner/` + `~/.zcode/skills/task-planner/` 双份独立 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 单一 canonical + 各 stub 薄壳 |
 | 内容 | 每工具全量副本（40+ 文件 / 工具） | stub 仅 41 文件（含 rsync 的 content） |
 | 同步 | 手动 `cp -r` / `rsync` | `git pull` in canonical |
 | 路径 | 硬编码 `~/.claude` / `~/.zcode` | env-var `${TASK_PLANNER_ROOT:-...}` |
@@ -30,8 +30,8 @@ bash install.sh
 ```
 
 `install.sh` 内部自动：
-1. 创建 canonical `~/dev/task-planner/`（从现有 `~/.zcode/skills/task-planner/` rsync 内容）
-2. 备份现有 stub 到 `~/dev/task-planner/.backup/<ts>/`
+1. 创建 canonical `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/`（从现有 `~/.zcode/skills/task-planner/` rsync 内容）
+2. 备份现有 stub 到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<ts>/`
 3. 重写 stub 路径
 4. 安装薄壳 stub
 5. 迁移 external references
@@ -51,8 +51,8 @@ bash tests/smoke.sh
 ### 2.1 准备 canonical 仓
 
 ```bash
-mkdir -p ~/dev/task-planner
-cd ~/dev/task-planner
+mkdir -p ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
+cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
 git init
 
 # 从 zcode 端拉取最新内容（因为 zcode 端通常比 Claude 端更新）
@@ -68,7 +68,7 @@ git commit -m "feat: initial canonical source from zcode"
 ```bash
 # 编辑 canonical SKILL.md，删除 hooks: 字段
 # （钩子属于平台特定层，不应在 canonical 仓内）
-vi ~/dev/task-planner/SKILL.md
+vi ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/SKILL.md
 ```
 
 ### 2.3 写 Claude stub
@@ -82,7 +82,7 @@ rm -rf ~/.claude/skills/task-planner/*
 mkdir -p ~/.claude/skills/task-planner/scripts
 
 # rsync 内容
-rsync -av --exclude='SKILL.md' --exclude='.git' ~/dev/task-planner/ ~/.claude/skills/task-planner/
+rsync -av --exclude='SKILL.md' --exclude='.git' ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/ ~/.claude/skills/task-planner/
 
 # 改写路径
 sed -i \
@@ -163,14 +163,14 @@ canonical 仓可保留作为下一步升级的 source of truth。
 
 迁移完成后逐项检查：
 
-- [ ] `~/dev/task-planner/` 是 git 仓库（`git log` 有 commits）
+- [ ] `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 git 仓库（`git log` 有 commits）
 - [ ] `~/.claude/skills/task-planner/SKILL.md` 是薄壳（< 15KB）
 - [ ] `~/.claude/skills/task-planner/scripts/` 0 硬编码路径
 - [ ] `~/.claude/settings.local.json` 包含 5 个 hook 注册
 - [ ] 启动新 Claude Code 会话，SessionStart 输出 `[task-plan]` 提示
 - [ ] `/goal` 命令可正常创建 plans/{id}/task_plan.md
-- [ ] `bash ~/dev/task-planner/tests/smoke.sh` 16/16 通过
-- [ ] `bash ~/dev/task-planner/lib/verify.sh` ≥ 7 pass / 0 fail
+- [ ] `bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/tests/smoke.sh` 16/16 通过
+- [ ] `bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/lib/verify.sh` ≥ 7 pass / 0 fail
 
 ---
 

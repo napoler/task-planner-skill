@@ -2,7 +2,7 @@
 
 > **单命令安装**（推荐）：从任意位置运行 `bash <(curl -sSL https://raw.githubusercontent.com/napoler/task-planner-skill/main/install.sh)`，自动检测并安装所有已部署的 agent 工具。
 >
-> **本地安装**（开发）：`cd ~/dev/task-planner && bash install.sh`
+> **本地安装**（开发）：`cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && bash install.sh`
 
 ---
 
@@ -27,9 +27,9 @@ bash install.sh
 
 **自动行为**：
 1. ✅ Pre-flight：检查 `git`、`bash`、`jq`、`node` 可用性
-2. ✅ Clone canonical：若 `~/dev/task-planner` 不存在，git init；存在则 `git pull`
+2. ✅ Clone canonical：若 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}` 不存在，git init；存在则 `git pull`
 3. ✅ Detect tools：扫描 `~/.claude/`、`~/.zcode/`、`~/.opencode/`、`~/.cursor/`、`~/.continue/` 是否存在
-4. ✅ Backup：现有 stub 备份到 `~/dev/task-planner/.backup/<timestamp>/`
+4. ✅ Backup：现有 stub 备份到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<timestamp>/`
 5. ✅ Install stub：每个检测到的工具创建薄壳 stub（SKILL.md + scripts + references + templates）
 6. ✅ Migrate refs：`~/.claude/CLAUDE.md`、`commands/*.md`、`prompts/*.md` 中的硬编码路径替换为 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}` 形式
 7. ✅ Verify：7 项自检（canonical git 状态、stub 文件完整性、零硬编码路径、SKILL.md 大小、check-complete.sh/check-doc-sync.sh 可执行、external refs 已迁移）
@@ -113,7 +113,7 @@ bash uninstall.sh --dry-run
 ## 4. 升级（更新 canonical）
 
 ```bash
-cd ~/dev/task-planner
+cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
 git pull
 ```
 
@@ -160,7 +160,7 @@ bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
 
 `install.sh` 本身可被升级覆盖。直接重新运行：
 ```bash
-cd ~/dev/task-planner
+cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
 git pull
 bash install.sh --no-backup
 ```
@@ -184,7 +184,7 @@ bash install.sh
 
 # Step 2: 查看检测结果
 ls -la ~/.claude/skills/task-planner/
-cat ~/dev/task-planner/install.log | tail -20
+cat ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/install.log | tail -20
 
 # Step 3: Claude Code hook 注册
 bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts

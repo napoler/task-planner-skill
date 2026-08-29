@@ -8,7 +8,7 @@
 
 ### 1.1 单一事实源（Single Source of Truth）
 
-canonical 仓 `~/dev/task-planner/` 是 task-planner 全部内容实现的唯一来源：
+canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源：
 - `SKILL.md`（剥除 hooks）
 - `references/`（8 篇规则文档）
 - `templates/`（5 个主模板 + 4 个变体）
@@ -33,7 +33,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 ## 2. 目录结构
 
 ```
-~/dev/task-planner/                          ← canonical source (git 仓库)
+${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段为空）
 ├── config.json
 ├── README.md
@@ -163,7 +163,7 @@ canonical 提供 `lib/detect-tools.sh` 用于检测和 `lib/install-stub.sh` 内
 ### 5.1 更新 canonical
 
 ```bash
-cd ~/dev/task-planner
+cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
 git pull
 ```
 

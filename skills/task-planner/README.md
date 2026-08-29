@@ -28,7 +28,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ canonical source: ~/dev/task-planner/                    │
+│ canonical source: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                    │
 │   (独立 git 仓库, 41 文件, 4 commits)                    │
 │   - SKILL.md (剥除 hooks)                                │
 │   - references/  (8 篇规则)                              │
@@ -52,14 +52,14 @@
 - **scripts/** rsync 副本 + 路径改写为 `${TASK_PLANNER_ROOT:-...}`
 - **references/ + templates/** 直接 rsync（与 canonical 一致）
 
-升级流程：`cd ~/dev/task-planner && git pull` → 所有 stub 自动生效。
+升级流程：`cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && git pull` → 所有 stub 自动生效。
 
 ---
 
 ## 文件结构（canonical 仓）
 
 ```
-~/dev/task-planner/                          ← canonical source (git 仓库)
+${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
 ├── config.json                              ← 阈值配置（13 键）
 ├── README.md / WORKFLOW.md / examples.md / reference.md
@@ -119,7 +119,7 @@ bash <(curl -sSL https://raw.githubusercontent.com/napoler/task-planner-skill/ma
 ### 本地开发
 
 ```bash
-cd ~/dev/task-planner
+cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
 bash install.sh
 ```
 
@@ -140,7 +140,7 @@ bash install.sh --no-verify                      # 跳过自检
 ## 升级
 
 ```bash
-cd ~/dev/task-planner
+cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
 git pull
 ```
 
@@ -155,10 +155,10 @@ git pull
 
 ```bash
 # 单元测试
-bash ~/dev/task-planner/tests/smoke.sh
+bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/tests/smoke.sh
 
 # 安装验证
-bash ~/dev/task-planner/lib/verify.sh
+bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/lib/verify.sh
 ```
 
 期望输出：
@@ -172,7 +172,7 @@ bash ~/dev/task-planner/lib/verify.sh
 1. **hooks 必须在 stub 内声明**：canonical SKILL.md 已剥除 hooks 字段。每工具的 stub SKILL.md 才声明平台特定的 hook 格式。
 2. **路径契约统一**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}` 形式，一级 env-var，二级 fallback。
 3. **内容零重复**：references/templates 全部从 canonical rsync；scripts rsync + sed 路径改写。
-4. **备份默认开启**：现有 stub 自动备份到 `~/dev/task-planner/.backup/<ts>/`。
+4. **备份默认开启**：现有 stub 自动备份到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<ts>/`。
 5. **stub 薄壳**：SKILL.md 必须 < 15KB（canonical 全文 20KB；stub 仅声明 hook + 引用表）。
 
 ---
@@ -184,7 +184,7 @@ bash ~/dev/task-planner/lib/verify.sh
 | hook 不触发 | settings.local.json 未注册 | `bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts` |
 | `TASK_PLANNER_ROOT` 未设 | shell 环境未 export | `.bashrc` 加 `export TASK_PLANNER_ROOT=$HOME/dev/task-planner` |
 | 旧 stub 与新 stub 冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
-| 升级后行为异常 | stub 仍指向旧版 | `cd ~/dev/task-planner && git pull` 后重启 agent |
+| 升级后行为异常 | stub 仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && git pull` 后重启 agent |
 | check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` line 30 的 `for _c in` 列表 |
 
 详见 [INSTALL.md §5 故障排查](INSTALL.md)。
