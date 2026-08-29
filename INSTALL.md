@@ -1,6 +1,6 @@
 # task-planner 多工具安装指南
 
-> **单命令安装**（推荐）：从任意位置运行 `bash <(curl -sSL https://raw.githubusercontent.com/your-org/task-planner/main/install.sh)`，自动检测并安装所有已部署的 agent 工具。
+> **单命令安装**（推荐）：从任意位置运行 `bash <(curl -sSL https://raw.githubusercontent.com/napoler/task-planner-skill/main/install.sh)`，自动检测并安装所有已部署的 agent 工具。
 >
 > **本地安装**（开发）：`cd ~/dev/task-planner && bash install.sh`
 
