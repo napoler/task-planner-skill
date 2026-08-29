@@ -117,6 +117,27 @@ verify_installation() {
     fail "external references still hardcoded: $unmigrated"
   fi
 
+  # 8. Hooks actually registered per platform
+  # Claude Code: must have hooks block in settings.local.json
+  local claude_settings="$HOME/.claude/settings.local.json"
+  if [ -d "${TOOL_STUB_ROOT[claude-code]:-}" ] && [ -f "$claude_settings" ]; then
+    if grep -q 'task-plan-init\.cjs' "$claude_settings" 2>/dev/null; then
+      pass "Claude Code: hooks registered in $claude_settings"
+    else
+      fail "Claude Code: settings.local.json missing task-planner hooks (run register-hooks-cj.ts)"
+    fi
+  fi
+  # ZCode/OpenCode/Cursor: SKILL.md frontmatter must contain hooks: block
+  for tool in zcode opencode cursor continue; do
+    local stub="${TOOL_STUB_ROOT[$tool]:-}"
+    [ -n "$stub" ] && [ -d "$stub" ] && [ -f "$stub/SKILL.md" ] || continue
+    if grep -q '^hooks:' "$stub/SKILL.md" 2>/dev/null; then
+      pass "$tool: hooks declared in SKILL.md frontmatter"
+    else
+      fail "$tool: SKILL.md missing hooks: block (run install.sh to regenerate)"
+    fi
+  done
+
   # Summary
   echo ""
   echo "[verify] summary: $PASS pass / $FAIL fail"

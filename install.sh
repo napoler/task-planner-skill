@@ -147,6 +147,34 @@ if [ "$DRY_RUN" -eq 0 ]; then
   migrate_external_references
 fi
 
+# ─── Phase 5.5: Register hooks per tool ──────────────────────────────────
+# Claude Code requires explicit settings.json patch; other platforms read
+# hooks from SKILL.md frontmatter (auto-registered). This phase ensures
+# Claude Code is always re-registered after stub install/update.
+log "Phase 5.5: register hooks for tools that need explicit config"
+for tool in "${TOOLS_DETECTED[@]}"; do
+  case "$tool" in
+    claude-code)
+      log "  Claude Code: patching ~/.claude/settings.local.json via register-hooks-cj.ts"
+      dry "bun run $HOME/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
+      if [ "$DRY_RUN" -eq 0 ]; then
+        if command -v bun >/dev/null 2>&1; then
+          (cd "$HOME/.claude/skills/task-planner/scripts" && bun run register-hooks-cj.ts) 2>&1 | head -10
+        else
+          log "  WARNING: bun not found, skipping Claude Code hook registration"
+          log "           install bun: curl -fsSL https://bun.sh/install | bash"
+          log "           then: bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
+        fi
+      fi
+      ;;
+    zcode|opencode|cursor|continue)
+      # Hooks are declared in SKILL.md frontmatter (installed in Phase 4)
+      # and registered automatically by the platform runtime. No further action.
+      log "  $tool: hooks registered via SKILL.md frontmatter (auto by platform)"
+      ;;
+  esac
+done
+
 # ─── Phase 6: Verify ────────────────────────────────────────────────────
 if [ "$SKIP_VERIFY" -eq 0 ]; then
   log "Phase 6: verify installation"
@@ -166,6 +194,5 @@ fi
 
 log "install complete. canonical: $TASK_PLANNER_ROOT"
 log "next steps:"
-log "  1. cd $TASK_PLANNER_ROOT"
-log "  2. (Claude Code only) bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
-log "  3. restart your agent tool to load hooks"
+log "  1. Restart your agent tool(s) to load hooks"
+log "  2. For Claude Code: hooks are auto-registered; restart Claude Code to apply"
