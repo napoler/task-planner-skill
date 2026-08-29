@@ -52,13 +52,17 @@ verify_installation() {
   fi
 
   # 3. Stub scripts: no hardcoded zcode/claude paths
+  # Note: check-doc-sync.sh intentionally keeps zcode/claude fallback chain
+  # in its `for _c in` block (line 30-36) for standalone-script use. Whitelist it.
   for tool in "${TOOLS_DETECTED[@]}"; do
     local stub="${TOOL_STUB_ROOT[$tool]}"
     if [ -d "$stub/scripts" ]; then
+      # Find files with hardcoded paths, excluding the whitelisted fallback chain in check-doc-sync.sh
       local hardcoded
-      hardcoded=$(grep -rlnE '\$HOME/\.zcode/skills/task-planner|\$HOME/\.claude/skills/task-planner' "$stub/scripts/" 2>/dev/null)
+      hardcoded=$(grep -rlnE '\$HOME/\.zcode/skills/task-planner|\$HOME/\.claude/skills/task-planner' "$stub/scripts/" 2>/dev/null \
+        | grep -v 'check-doc-sync\.sh$' || true)
       if [ -z "$hardcoded" ]; then
-        pass "$tool scripts: no hardcoded paths"
+        pass "$tool scripts: no hardcoded paths (check-doc-sync.sh fallback chain whitelisted)"
       else
         fail "$tool scripts: hardcoded paths in $(echo "$hardcoded" | wc -l) files"
       fi
