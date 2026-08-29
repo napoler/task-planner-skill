@@ -26,7 +26,9 @@ generate_stub_skill_md() {
   case "$hook_style" in
     claude-settings)
       # Claude Code uses settings.json hooks
-      cat > "$out_path" <<'STUB_SKILL_EOF'
+      # Use install-stub.sh's own TASK_PLANNER_ROOT as the env-var default
+      local FALLBACK="${TASK_PLANNER_ROOT}"
+      cat > "$out_path" <<STUB_SKILL_EOF
 ---
 name: task-planner
 description: 任务规划与进度追踪 | 计划文档 ↔ 原生 Todo 双向同步 | 漂移检测 | 冲突分析
@@ -37,27 +39,27 @@ user-invocable: true
 
 # task-planner — Claude Code 适配薄壳
 
-> Canonical source: `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}`.
+> Canonical source: \`\${TASK_PLANNER_ROOT:-${FALLBACK}}\`。
 > 本薄壳只声明 Claude Code 平台特定的 hook 配置 + 路径解析契约。
 
 ## Hooks（Claude Code settings.json 风格）
 
-复制到 `~/.claude/settings.local.json` 的 `hooks` 字段，或运行：
-```bash
-bun run $HOME/.claude/skills/task-planner/scripts/register-hooks-cj.ts
-```
+复制到 \`~/.claude/settings.local.json\` 的 \`hooks\` 字段，或运行：
+\`\`\`bash
+bun run \$TASK_PLANNER_ROOT/scripts/register-hooks-cj.ts
+\`\`\`
 
-```json
+\`\`\`json
 {
   "hooks": {
-    "SessionStart":     [{ "command": "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/task-plan-init.cjs" }],
-    "PreToolUse":       [{ "matcher": "Write|Edit", "command": "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-scope.sh \"${CLAUDE_TOOL_NAME:-Write}\" \"${FILE_PATH:-}\"" }],
-    "PostToolUse":      [{ "matcher": "Write|Edit", "command": "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-doc-sync.sh" }],
-    "UserPromptSubmit": [{ "command": "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh" }],
-    "Stop":             [{ "command": "SD=\"${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"$SD/check-complete.ps1\" 2>/dev/null || sh \"$SD/check-complete.sh\"" }]
+    "SessionStart":     [{ "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/task-plan-init.cjs" }],
+    "PreToolUse":       [{ "matcher": "Write|Edit", "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-scope.sh \"\${CLAUDE_TOOL_NAME:-Write}\" \"\${FILE_PATH:-}\"" }],
+    "PostToolUse":      [{ "matcher": "Write|Edit", "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh" }],
+    "UserPromptSubmit": [{ "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh" }],
+    "Stop":             [{ "command": "SD=\"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"\$SD/check-complete.ps1\" 2>/dev/null || sh \"\$SD/check-complete.sh\"" }]
   }
 }
-```
+\`\`\`
 
 ## 内容引用
 
@@ -73,55 +75,7 @@ STUB_SKILL_EOF
       ;;
 
     zcode-frontmatter)
-      cat > "$out_path" <<'STUB_SKILL_EOF'
----
-name: task-planner
-agent: executor
-description: Use when planning, decomposing, or organizing multi-step projects or research tasks expected to require more than 5 tool calls. Also use when resuming work after /clear.
-allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet"
-user-invocable: true
-hooks:
-- type: command
-  name: SessionStart
-  command: "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/task-plan-init.cjs"
-  statusMessage: "Checking task plan status..."
-- type: command
-  name: PreToolUse
-  matcher: "Write|Edit"
-  command: "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-scope.sh"
-  block_on_nonzero: true
-- type: command
-  name: PostToolUse
-  command: "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-doc-sync.sh"
-  statusMessage: "[task-planner] 计划/Todo 同步检查..."
-- type: command
-  name: UserPromptSubmit
-  command: "bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh"
-  statusMessage: "[task-planner] 新指令计划影响提示..."
-- type: command
-  name: Stop
-  command: "SD=\"${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"$SD/check-complete.ps1\" 2>/dev/null || sh \"$SD/check-complete.sh\""
-model: opus
----
-
-# task-planner — ZCode 适配薄壳
-
-> Canonical source: `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}`.
-> 本薄壳只声明 ZCode 平台特定的 hook 配置（通过 SKILL.md frontmatter）。
-
-## 内容引用
-
-| 资源 | 路径 |
-|------|------|
-| 核心规则 | `${TASK_PLANNER_ROOT}/references/critical-rules.md` |
-| Todo 同步 | `${TASK_PLANNER_ROOT}/references/todo-sync.md` |
-| 工作树隔离 | `${TASK_PLANNER_ROOT}/references/worktree-isolation.md` |
-| 模板 | `${TASK_PLANNER_ROOT}/templates/` |
-STUB_SKILL_EOF
-      ;;
-
-    opencode-frontmatter|cursor-frontmatter|continue-frontmatter)
-      # Generic frontmatter-stub for platforms with similar hook-via-SKILL mechanism
+      local FALLBACK="${TASK_PLANNER_ROOT}"
       cat > "$out_path" <<STUB_SKILL_EOF
 ---
 name: task-planner
@@ -132,30 +86,80 @@ user-invocable: true
 hooks:
 - type: command
   name: SessionStart
-  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/task-plan-init.cjs"
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/task-plan-init.cjs"
   statusMessage: "Checking task plan status..."
 - type: command
   name: PreToolUse
   matcher: "Write|Edit"
-  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-scope.sh"
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-scope.sh"
   block_on_nonzero: true
 - type: command
   name: PostToolUse
-  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-doc-sync.sh"
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh"
   statusMessage: "[task-planner] 计划/Todo 同步检查..."
 - type: command
   name: UserPromptSubmit
-  command: "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh"
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh"
   statusMessage: "[task-planner] 新指令计划影响提示..."
 - type: command
   name: Stop
-  command: "SD=\\"\${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts\\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\"\$SD\\"/check-complete.ps1 2>/dev/null || sh \\"\$SD\\"/check-complete.sh"
+  command: "SD=\"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"\$SD/check-complete.ps1\" 2>/dev/null || sh \"\$SD/check-complete.sh\""
+model: opus
+---
+
+# task-planner — ZCode 适配薄壳
+
+> Canonical source: \`\${TASK_PLANNER_ROOT:-${FALLBACK}}\`。
+> 本薄壳只声明 ZCode 平台特定的 hook 配置（通过 SKILL.md frontmatter）。
+
+## 内容引用
+
+| 资源 | 路径 |
+|------|------|
+| 核心规则 | \`\${TASK_PLANNER_ROOT}/references/critical-rules.md\` |
+| Todo 同步 | \`\${TASK_PLANNER_ROOT}/references/todo-sync.md\` |
+| 工作树隔离 | \`\${TASK_PLANNER_ROOT}/references/worktree-isolation.md\` |
+| 模板 | \`\${TASK_PLANNER_ROOT}/templates/\` |
+STUB_SKILL_EOF
+      ;;
+
+    opencode-frontmatter|cursor-frontmatter|continue-frontmatter)
+      # Generic frontmatter-stub for platforms with similar hook-via-SKILL mechanism
+      local FALLBACK="${TASK_PLANNER_ROOT}"
+      cat > "$out_path" <<STUB_SKILL_EOF
+---
+name: task-planner
+agent: executor
+description: Use when planning, decomposing, or organizing multi-step projects or research tasks expected to require more than 5 tool calls. Also use when resuming work after /clear.
+allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet"
+user-invocable: true
+hooks:
+- type: command
+  name: SessionStart
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/task-plan-init.cjs"
+  statusMessage: "Checking task plan status..."
+- type: command
+  name: PreToolUse
+  matcher: "Write|Edit"
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-scope.sh"
+  block_on_nonzero: true
+- type: command
+  name: PostToolUse
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh"
+  statusMessage: "[task-planner] 计划/Todo 同步检查..."
+- type: command
+  name: UserPromptSubmit
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh"
+  statusMessage: "[task-planner] 新指令计划影响提示..."
+- type: command
+  name: Stop
+  command: "SD=\\"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts\\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\"\$SD\\"/check-complete.ps1 2>/dev/null || sh \\"\$SD\\"/check-complete.sh"
 model: opus
 ---
 
 # task-planner — ${tool_name} 适配薄壳
 
-> Canonical source: \`\${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}\`。
+> Canonical source: \`\${TASK_PLANNER_ROOT:-${FALLBACK}}\`。
 > 本薄壳通过 SKILL.md frontmatter hooks 块声明 ${tool_name} 平台特定的 hook 配置。
 
 ## 内容引用
@@ -177,11 +181,11 @@ model: opus
 // ${tool_name} 配置示例（路径因平台而异）
 {
   "hooks": {
-    "SessionStart":    "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/task-plan-init.cjs",
-    "PreToolUse":      "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-scope.sh",
-    "PostToolUse":     "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-doc-sync.sh",
-    "UserPromptSubmit": "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/zcode-userpromptsubmit.sh",
-    "Stop":            "bash \${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}/scripts/check-complete.sh"
+    "SessionStart":    "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/task-plan-init.cjs",
+    "PreToolUse":      "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-scope.sh",
+    "PostToolUse":     "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh",
+    "UserPromptSubmit": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh",
+    "Stop":            "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-complete.sh"
   }
 }
 \`\`\`
@@ -207,10 +211,10 @@ rewrite_paths_in_scripts() {
       # Only rewrite if the file still has hardcoded zcode path (idempotency)
       if grep -q '\$HOME/\.zcode/skills/task-planner\|/home/.*/\.zcode/skills/task-planner' "$file" 2>/dev/null; then
         sed -i \
-          -e 's|"\${OPENCODE_SKILL_ROOT:-\$HOME/\.zcode/skills/task-planner}"|"\${TASK_PLANNER_ROOT:-\$HOME/dev/task-planner}"|g' \
-          -e 's|node /home/.*/\.zcode/skills/task-planner/scripts/|node "${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/|g' \
-          -e 's|bash "/home/.*/\.zcode/skills/task-planner/scripts/|bash "${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/|g' \
-          -e 's|bash ~/\.zcode/skills/task-planner/scripts/|bash "${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/|g' \
+          -e 's|"\${OPENCODE_SKILL_ROOT:-\$HOME/\.zcode/skills/task-planner}"|"\${TASK_PLANNER_ROOT:-${FALLBACK}}"|g' \
+          -e 's|node /home/.*/\.zcode/skills/task-planner/scripts/|node "${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g' \
+          -e 's|bash "/home/.*/\.zcode/skills/task-planner/scripts/|bash "${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g' \
+          -e 's|bash ~/\.zcode/skills/task-planner/scripts/|bash "${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g' \
           "$file"
       fi
     done
