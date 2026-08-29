@@ -1,8 +1,20 @@
 # task-planner — 任务规划与漂移检测技能
 
+## 安装
+
+多工具架构，单命令安装：
+
+```bash
+bash install.sh
+```
+
+详见 [INSTALL.md](INSTALL.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md) · [MIGRATION.md](MIGRATION.md)。
+
 ## 概述
 
 结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测。
+
+canonical 源在 `~/dev/task-planner/`，per-tool stub 通过 `${TASK_PLANNER_ROOT:-...}` 解析。
 
 ## 文件结构
 
