@@ -21,7 +21,7 @@ set -uo pipefail
 
 # ─── Defaults ────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TASK_PLANNER_ROOT="${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}"
+TASK_PLANNER_ROOT="${TASK_PLANNER_ROOT:-$SCRIPT_DIR}"
 TOOLS_FILTER=""
 SKIP_BACKUP=0
 SKIP_VERIFY=0
