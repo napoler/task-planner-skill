@@ -1,0 +1,17 @@
+# Runtime / build artifacts
+node_modules/
+*.log
+*.pyc
+__pycache__/
+.DS_Store
+*.swp
+*.tmp
+*.tmp.*
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Local overrides
+.claude.local/
+.local-config/
