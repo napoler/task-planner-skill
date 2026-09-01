@@ -69,3 +69,17 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 17.6 **复杂任务优先 subagent**:opus 上下文长读文件(>500 行)必派 subagent(沿用 Rule 13)
 17.7 **代码 review 必含 `required`**:`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")`
 17.8 **每次 opus 调用记 `cost_log.md`**:子代理/Skill 调用记录到 `templates/cost_log.md` 便于复盘;`plan-writer` 产出契约加 `cost_estimate` 字段
+
+### 18 批量处理质量门控（P0）— 禁止以牺牲质量为代价换批量
+批量操作(脚本/并发/多文件处理)**禁止以牺牲内容质量或准确性为代价**。批量脚本撰写之前必须先做质量影响评估(前置 3 问);明显降低质量 → 必须停下慎重决策,禁止静默执行。详见 `references/batch-quality-gate.md`。
+
+18.1 **门控 flag 禁止一刀切跳过**:批量禁止用单一布尔 flag(如 `--skip-quality-gate`)绕过全部门控;允许分项跳过 + 理由必填;跳过 ≥总数 10% → AskUserQuestion 重审
+18.2 **批次前后双采样**:批量 ≥10 单元,运行前随机抽 2 单元完整跑(ground truth),运行后抽 10% verify;任一抽检失败 → 整批熔断,禁止部分回滚
+18.3 **失败隔离硬约束**:单单元失败不阻塞其他单元,但累计 failure_rate;>5% → STOP 报告等决策;>20% → 自动熔断 + 回滚
+18.4 **跨单元一致性闸门**:批量 ≥5 单元且生成型操作(写作/翻译/格式化),必跑一致性检查(标题去重/模板克隆检测/数值 sanity);命中 → STOP 报告重复模式
+18.5 **并发覆写隔离**:批量写共享状态文件必须按单元分文件或加文件锁,禁止多并发 worker 直写同一 JSON
+18.6 **批次元数据必填**:task_plan.md 必含「📦 Batch Report」区块八字段(total/success/failed/failure_rate/sampled_pass/sampled_fail/pre_check/rollback_point);缺项 = Phase 未完成
+18.7 **fan-out 必含聚合 Phase**:`chain_mode: fan-out` 时必须含 Aggregator Phase(收集子任务结果 + 18.2 抽检 + 写 Batch Report);无 → plan-writer 产出校验失败
+18.8 **批量质量回看强制**:完成后 failure_rate >10% → 触发 `Skill("meta-corrector")` 复盘 → 经验写入 memory(§八闭环)
+
+**前置 3 问(批量动工前强制)**:Q1 是否依赖每单元独立判断(是 → 禁纯脚本批量,改子代理逐单元);Q2 有无客观验收手段(无 → 先建验收再批量);Q3 最坏情况能否回滚(不能 → 缩批试点)。判定结果写入 Batch Report `pre_check` 字段。
