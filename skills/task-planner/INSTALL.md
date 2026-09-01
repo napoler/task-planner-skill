@@ -128,6 +128,36 @@ git pull
 
 ---
 
+## 4.5 伴随文件一键安装（companion/ — v2.2.1）
+
+`companion/` 目录存放 task-planner 运行依赖、但位于 skill 目录之外的文件:
+
+| companion 路径 | 安装目标 | 用途 |
+|----------------|---------|------|
+| `companion/agents/plan-writer.md` | `~/.zcode/agents/` | 计划撰写子代理(sonnet-1,Rule 13-16) |
+| `companion/agents/article-batch-publisher.md` | `~/.zcode/agents/` | 批量发布(Rule 18.1-18.6 分项门控) |
+| `companion/agents/article-field-fixer.md` | `~/.zcode/agents/` | 批量字段修复(verify 抽检,Rule 18.2/18.4) |
+| `companion/skills/task-drift-guard/` | `~/.zcode/skills/` | 漂移检测 skill(含批量 failure_rate 判定) |
+
+**一键安装**(install.sh Phase 5.6 自动执行,也可单独跑):
+
+```bash
+bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/lib/install-companion.sh
+# 可选: --dry-run(预览) / --force(不备份覆盖) / --target <tool-root>(指定工具根)
+```
+
+**修改后反向同步**(在 ~/.zcode 改了伴随文件后,拉回 companion/ 以便新机器装到最新版):
+
+```bash
+bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/sync-companion.sh
+# 可选: --dry-run(只看差异) / --diff(输出完整 diff)
+# 同步后记得: git add companion/ && git commit && git push
+```
+
+**幂等保证**:内容一致自动跳过;内容不同默认先备份到 `companion/.backup-<时间戳>/` 再覆盖。
+
+---
+
 ## 5. 故障排查
 
 ### 5.1 `check-doc-sync.sh` 报 `SKILL_ROOT undefined`
