@@ -45,9 +45,30 @@ copy_template() {
 }
 
 PROJECT_NAME="${1:-project}"
+TEMPLATE_TYPE="${2:-}"   # optional: research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration
 DATE=$(date +%Y-%m-%d)
 
 echo "Initializing planning files for: $PROJECT_NAME"
+
+# Template type routing (Rule 16, v2.2.1): variant task_plan selected by template_type
+# Usage: ./init-session.sh [project-name] [template-type]
+VALID_TYPES="research diagnostic writing publish code-edit refactor bugfix migration test-writing deployment performance-tuning schema-migration"
+TASK_PLAN_SRC="task_plan.md"
+if [ -n "$TEMPLATE_TYPE" ]; then
+    if echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE "; then
+        VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
+        VARIANT_ABS_BUILTIN="${BUILTIN_TEMPLATES}/${VARIANT_REL}"
+        if [ -f "$VARIANT_ABS_BUILTIN" ]; then
+            TASK_PLAN_SRC="$VARIANT_REL"
+            echo "Template routing: task_plan.md <- $VARIANT_REL (template_type: $TEMPLATE_TYPE)"
+        else
+            echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
+        fi
+    else
+        echo "WARNING: unknown template_type '$TEMPLATE_TYPE' — valid: $VALID_TYPES"
+        echo "Falling back to generic task_plan.md"
+    fi
+fi
 
 # Check for project-level templates
 if project_templates=$(find_project_templates); then
@@ -59,7 +80,7 @@ fi
 echo ""
 
 # Initialize each template file (only if it doesn't exist)
-for file in task_plan.md findings.md progress.md notepad-learnings.md verification.md; do
+for file in findings.md progress.md notepad-learnings.md verification.md; do
     if [ -f "$file" ]; then
         echo "$file already exists, skipping"
     else
@@ -68,6 +89,23 @@ for file in task_plan.md findings.md progress.md notepad-learnings.md verificati
         fi
     fi
 done
+
+# task_plan.md handled separately (may come from variant/)
+if [ -f "task_plan.md" ]; then
+    echo "task_plan.md already exists, skipping"
+else
+    if [ "$TASK_PLAN_SRC" != "task_plan.md" ]; then
+        # variant source: copy directly to task_plan.md (project-level override first)
+        if project_templates=$(find_project_templates) && [ -f "$project_templates/$TASK_PLAN_SRC" ]; then
+            cp "$project_templates/$TASK_PLAN_SRC" "task_plan.md"
+        else
+            cp "${BUILTIN_TEMPLATES}/${TASK_PLAN_SRC}" "task_plan.md"
+        fi
+        echo "    Created task_plan.md (variant: $TEMPLATE_TYPE)"
+    elif copy_template "task_plan.md"; then
+        echo "    Created task_plan.md"
+    fi
+fi
 
 echo ""
 echo "Planning files initialized!"
