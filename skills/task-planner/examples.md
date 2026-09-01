@@ -328,3 +328,87 @@ When a project has multiple independent sub-features, spawn parallel agents — 
 ```
 
 Parallel tasks share the same INDEX.md — the coordinator runs `sync-todos.sh --index` after every phase completion to keep track.
+
+---
+
+## Example 6: Migration Task（v2 variant — `migration-type`）
+
+**User Request**: "把 content-extractor 从 Python 迁移到 Bun + TS"
+
+### template_type 选择
+- 关键词命中「迁移 / Python / TS」 → `migration-type.md`
+- plan-writer 自动用 migration 模板填充
+
+### 关键 Phase
+```markdown
+### Phase 1: 旧实现基线锁定
+- [ ] git tag migration-baseline-<commit>
+- [ ] 旧代码归档到 archive/legacy-<date>/
+### Phase 2: 新实现开发(Bun + TS)
+- [ ] 派 executor 跨文件协调
+### Phase 3: 双跑回归对照
+- [ ] 跑 tmp/dual-run.sh,输出 tmp/dual-run-diff.txt
+### Phase 4: 切流/路由切换
+- [ ] 旧入口加 deprecation warning
+### Phase 5: 文档更新 + 旧入口归档
+```
+
+完整模板：`templates/variant/migration-type.md`。
+
+---
+
+## Example 7: Test Writing Task（v2 variant — `test-writing-type`）
+
+**User Request**: "为 src/auth/*.ts 写单元测试,覆盖率达到 80%"
+
+### 关键 Phase
+- Phase 1: 测试目标分析（识别核心函数/分支）
+- Phase 2: 用例设计（等价类 + 边界值）
+- Phase 3: 用例实现（派 code-assistant）
+- Phase 4: 覆盖率验证（`bun test --coverage`）
+- Phase 5: CI 集成
+
+**VC 重点**：VC-2 覆盖率 ≥80% 强制门控。
+
+---
+
+## Example 8: Deployment Task（v2 variant — `deployment-type`）
+
+**User Request**: "把 staging 部署到生产,蓝绿发布"
+
+### 关键 Phase
+- Phase 1: 环境清单 + staging 准备
+- Phase 2: 配置变更（infra as code）
+- Phase 3: staging 验证（**VC-1 门控**）
+- Phase 4: 生产部署（蓝绿/灰度，**VC-3 回滚预案必填**）
+- Phase 5: 部署后监控
+
+---
+
+## Example 9: Performance Tuning Task（v2 variant — `performance-tuning-type`）
+
+**User Request**: "优化 API /search 的 P95 延迟"
+
+### 关键 Phase
+- Phase 1: 瓶颈定位（profile + 数据库慢查询分析）
+- Phase 2: 基线 benchmark（`tmp/perf-before.json`）
+- Phase 3: 优化实施（索引/缓存/算法/并发）
+- Phase 4: 验证 benchmark + 测试
+- Phase 5: 复现性归档
+
+**VC 重点**：VC-2 P95 降幅 ≥30%。
+
+---
+
+## Example 10: Schema Migration Task（v2 variant — `schema-migration-type`）
+
+**User Request**: "为 users 表加 last_login_at 字段,支持回滚"
+
+### 关键 Phase
+- Phase 1: schema 变更设计（可逆 up/down）
+- Phase 2: 编写 up/down 脚本
+- Phase 3: staging 演练（**VC-1/VC-2 门控**）
+- Phase 4: 生产执行（pt-online-schema-change）
+- Phase 5: 回滚预案确认
+
+**VC 重点**：VC-1 migration 可逆（up + down 双向脚本）。

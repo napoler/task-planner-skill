@@ -19,6 +19,8 @@ task-planner 提供 **双层优先级** 的模板机制：
 
 ## 二、内置模板清单
 
+### 2.1 主模板（5 个 — 必选）
+
 | 文件名 | 用途 | 被解析脚本 |
 |--------|------|-----------|
 | `task_plan.md` | 主计划：Goal/VC/Phase/范围限制/Drift Log | check-complete.sh, sync-todos.sh, check-scope.sh |
@@ -26,6 +28,33 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `verification.md` | VC 明细 + Phase Gates + Goal Gate + 5Q Reboot | completion-gate.md |
 | `progress.md` | 会话日志：动作/测试/错误记录 | session-catchup.ts |
 | `notepad-learnings.md` | 经验记录：New Requests/What Worked/Files Modified | 会话结束归档 |
+
+### 2.2 Variant 模板（13 个 — 任务开启期选其一）
+
+| 文件名 | 适用场景 | 关键 VC 字段 |
+|--------|---------|--------------|
+| `variant/research-type.md` | 关键词调研/SERP/竞品 | _channel_attempts[] / 数据源 ≥2 |
+| `variant/diagnostic-type.md` | skill 审计/bug 排查 | S59 Read 门 / S64 路径验证 |
+| `variant/writing-type.md` | 长文/文章/文档 | SEO 字段 / 配图 ≥3 |
+| `variant/publish-type.md` | API 发布/跨平台 | API 200 / 幂等性 |
+| `variant/code-edit-type.md` | 单/多文件代码编辑 | diff / lint / 测试 |
+| `variant/refactor-type.md` | 代码重构/瘦身 | 行为不变 / 复杂度下降 |
+| `variant/bugfix-type.md` | bug 修复/根因定位 | 复现 / 根因证据 / 回归 |
+| `variant/migration-type.md` (v2) | 跨语言/框架迁移 | 基线归档 / 双跑对照 |
+| `variant/test-writing-type.md` (v2) | 单元/集成/E2E 测试 | 用例数 / 覆盖率 / 边界 |
+| `variant/deployment-type.md` (v2) | 部署/CI-CD/Docker | staging 验证 / 回滚预案 |
+| `variant/performance-tuning-type.md` (v2) | 性能瓶颈定位 | 基线 benchmark / P95 降幅 |
+| `variant/schema-migration-type.md` (v2) | DB schema 变更 | 可逆 up/down / 数据零丢失 |
+
+**决策树**详见 `references/template-mapping.md`;`plan-writer` agent 按关键词自动匹配。
+
+**总文件数**:5 主 + 13 variant = **18 个模板**（v2.1 更新）。
+
+### 2.3 辅助模板（v2.1 新增）
+
+| 文件名 | 用途 |
+|--------|------|
+| `cost_log.md` | opus 调用成本日志（Rule 17 配套） |
 
 ---
 
