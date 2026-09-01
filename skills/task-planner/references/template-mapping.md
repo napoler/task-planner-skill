@@ -7,18 +7,38 @@
 ## 一、模板选择决策树
 
 ```
-skill 复杂度评分 ≥9 分（复杂级）
-├─ 调研/搜索类 → research-type.md
-├─ 写作/内容类 → writing-type.md
-├─ 诊断/修复类 → diagnostic-type.md
-└─ 发布/集成类 → publish-type.md
+任务描述是什么?
+├─ 关键词/SERP/数据调研 → research-type.md
+├─ skill 审计/bug 排查 → diagnostic-type.md
+├─ 文章/长文撰写 → writing-type.md
+├─ API 发布/分发（数据推送）→ publish-type.md
+├─ 代码改/写/删（明确单次编辑）→ code-edit-type.md
+├─ 重构（行为不变）/ 瘦身 → refactor-type.md
+├─ 修 bug（用户描述了具体症状）→ bugfix-type.md
+├─ 跨语言/框架迁移 / CLI 重写 → migration-type.md
+├─ 单元/集成/E2E 测试编写 / 覆盖率提升 → test-writing-type.md
+├─ 部署 / CI-CD / Docker / k8s / nginx / 基础设施 → deployment-type.md
+├─ 性能瓶颈定位 / 优化 / 压测 / benchmark → performance-tuning-type.md
+├─ DB schema 变更 / migration / 索引 / 数据回填 → schema-migration-type.md
+└─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
 **文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
+- `templates/task_plan.md`(默认通用)
 - `templates/variant/research-type.md`
-- `templates/variant/writing-type.md`
 - `templates/variant/diagnostic-type.md`
+- `templates/variant/writing-type.md`
 - `templates/variant/publish-type.md`
+- `templates/variant/code-edit-type.md`
+- `templates/variant/refactor-type.md`
+- `templates/variant/bugfix-type.md`
+- `templates/variant/migration-type.md`(v2)
+- `templates/variant/test-writing-type.md`(v2)
+- `templates/variant/deployment-type.md`(v2)
+- `templates/variant/performance-tuning-type.md`(v2)
+- `templates/variant/schema-migration-type.md`(v2)
+
+**选择策略**:按场景词命中优先(见决策树),复杂度评分仅作辅助;若 plan 涉及多类场景(罕见),可同时引用多个模板的 VC 字段。
 
 ---
 
@@ -102,14 +122,33 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 
 ## 六、模板路径速查表
 
-| 场景 | 模板路径 | 复杂度阈值 |
-|------|---------|-----------|
-| 通用标准 | `templates/task_plan.md` | 5-8 分 |
-| 调研类 | `templates/variant/research-type.md` | ≥9 分 |
-| 写作类 | `templates/variant/writing-type.md` | ≥9 分 |
-| 诊断类 | `templates/variant/diagnostic-type.md` | ≥9 分 |
-| 发布类 | `templates/variant/publish-type.md` | ≥9 分 |
+| 场景 | 模板路径 | 关键差异 |
+|------|---------|----------|
+| 通用标准 | `templates/task_plan.md` | 5 条通用 VC |
+| 调研类 | `templates/variant/research-type.md` | _channel_attempts[] / 数据源 ≥2 |
+| 诊断类 | `templates/variant/diagnostic-type.md` | S59 Read 门 / S64 路径验证 |
+| 写作类 | `templates/variant/writing-type.md` | SEO 字段 / 配图 ≥3 / 无 Amazon |
+| 发布类 | `templates/variant/publish-type.md` | API 200 / 幂等性 / 回滚策略 |
+| 代码编辑 | `templates/variant/code-edit-type.md` | diff / lint / 测试 / 风格 |
+| 重构 | `templates/variant/refactor-type.md` | 行为不变 / 复杂度下降 |
+| bug 修复 | `templates/variant/bugfix-type.md` | 复现 / 根因证据 / 回归测试 |
+| 迁移(v2) | `templates/variant/migration-type.md` | 基线归档 / 双跑对照 / 旧入口下线 |
+| 测试编写(v2) | `templates/variant/test-writing-type.md` | 用例数 / 覆盖率 / 独立性 / 边界 |
+| 部署(v2) | `templates/variant/deployment-type.md` | staging 验证 / 健康检查 / 回滚预案 |
+| 性能调优(v2) | `templates/variant/performance-tuning-type.md` | 基线 benchmark / P95 降幅 / 资源 |
+| schema 迁移(v2) | `templates/variant/schema-migration-type.md` | 可逆 up/down / 数据零丢失 / 在线切换 |
 | 已有 .execution-plan.json | 允许替代 | — |
+
+### 模板互斥关系(避免误选)
+
+| 易混对 | 边界 |
+|--------|------|
+| publish vs deployment | publish=**数据**推送到 API;deployment=**代码/服务/基础设施**部署 |
+| migration vs code-edit | migration=**多步骤**流程(基线锁定→双跑→切流);code-edit=**单次编辑** |
+| refactor vs performance-tuning | refactor=**行为不变**前提;performance-tuning=允许**功能+性能**共同变化 |
+| test-writing vs code-edit | test-writing 缺**覆盖率门槛/独立性/边界 case**;code-edit 通用编辑 |
+| schema-migration vs bugfix | schema-migration=**可逆 up/down** + **在线切换**;bugfix 假设修复即正确 |
+| bugfix vs diagnostic | bugfix=**根因已知**进入修复;diagnostic=**根因排查**阶段 |
 
 ---
 

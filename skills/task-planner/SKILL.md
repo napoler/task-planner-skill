@@ -487,9 +487,14 @@ Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级�
 | `templates/variant/diagnostic-type.md` | skill 审计 / bug 排查 / 路径验证 | S59 Read 门 / S64 路径验证 / 证据 sha256 | debugger / codebase-analyzer |
 | `templates/variant/writing-type.md` | 长文 / 文章 / 文档撰写 | SEO/可读性/事实核查 | article-writer / content-creator |
 | `templates/variant/publish-type.md` | API 发布 / 跨平台分发 | post_id / schema 验证 / 幂等 | article-batch-publisher |
-| **`templates/variant/code-edit-type.md`**（本版新增） | 单文件/多文件代码编辑 | diff 验证 / lint / 测试 / 风格保持 | code-assistant / executor |
-| **`templates/variant/refactor-type.md`**（本版新增） | 代码重构 / 瘦身 / 性能 | 行为不变证明 / 测试通过 / 复杂度下降 | code-simplifier |
-| **`templates/variant/bugfix-type.md`**（本版新增） | bug 修复 / 根因定位 | 复现 / 根因证据 / 修复后回归 | debugger + systematic-debugging |
+| `templates/variant/code-edit-type.md` | 单文件/多文件代码编辑 | diff 验证 / lint / 测试 / 风格保持 | code-assistant / executor |
+| `templates/variant/refactor-type.md` | 代码重构 / 瘦身（行为不变） | 行为不变证明 / 测试通过 / 复杂度下降 | code-simplifier |
+| `templates/variant/bugfix-type.md` | bug 修复 / 根因定位 | 复现 / 根因证据 / 修复后回归 | debugger + systematic-debugging |
+| **`templates/variant/migration-type.md`**（v2 新增） | 跨语言/框架迁移 / CLI 重写 | 基线归档 / 双跑对照 / 旧入口下线 / 文档更新 | executor + code-assistant + cli-tool-builder |
+| **`templates/variant/test-writing-type.md`**（v2 新增） | 单元/集成/E2E 测试编写 | 用例数 ≥N / 覆盖率 ≥X% / 独立性 / 边界 case | test-engineer |
+| **`templates/variant/deployment-type.md`**（v2 新增） | 部署 / CI-CD / Docker / k8s / nginx | staging 验证 / 健康检查 / 回滚预案 / 配置审计 | executor + general-purpose |
+| **`templates/variant/performance-tuning-type.md`**（v2 新增） | 性能瓶颈定位 / 优化 | 基线 benchmark / P95 降幅 / 无回归 / 资源未恶化 | performance-optimizer + database-optimizer |
+| **`templates/variant/schema-migration-type.md`**（v2 新增） | DB schema 变更 / migration | 可逆 up/down / staging 演练 / 数据零丢失 / 在线切换 | database-optimizer |
 
 ### 选择决策树（任务开启期执行）
 
@@ -498,12 +503,28 @@ Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级�
 ├─ 关键词/SERP/数据调研 → research-type
 ├─ skill 审计/bug 排查 → diagnostic-type
 ├─ 文章/长文撰写 → writing-type
-├─ API 发布/分发 → publish-type
+├─ API 发布/分发（数据推送）→ publish-type
 ├─ 代码改/写/删（明确单次编辑）→ code-edit-type
-├─ 重构/性能/瘦身 → refactor-type
+├─ 重构（行为不变）/ 瘦身 → refactor-type
 ├─ 修 bug（用户描述了具体症状）→ bugfix-type
+├─ 跨语言/框架迁移 / CLI 重写 → migration-type
+├─ 单元/集成/E2E 测试编写 / 覆盖率提升 → test-writing-type
+├─ 部署 / CI-CD / Docker / k8s / nginx / 基础设施 → deployment-type
+├─ 性能瓶颈定位 / 优化 / 压测 / benchmark → performance-tuning-type
+├─ DB schema 变更 / migration / 索引 / 数据回填 → schema-migration-type
 └─ 不匹配上述任何一类 → task_plan.md（通用）
 ```
+
+### 模板互斥关系(避免误选)
+
+| 易混对 | 边界 |
+|--------|------|
+| publish vs deployment | publish=**数据**推送到 API;deployment=**代码/服务/基础设施**部署 |
+| migration vs code-edit | migration=**多步骤**流程(基线锁定→双跑→切流);code-edit=**单次编辑** |
+| refactor vs performance-tuning | refactor=**行为不变**前提;performance-tuning=允许**功能+性能**共同变化 |
+| test-writing vs code-edit | test-writing 缺**覆盖率门槛/独立性/边界 case**;code-edit 通用编辑 |
+| schema-migration vs bugfix | schema-migration=**可逆 up/down** + **在线切换**;bugfix 假设修复即正确 |
+| bugfix vs diagnostic | bugfix=**根因已知**进入修复;diagnostic=**根因排查**阶段 |
 
 ### 强制约束（P0）
 
