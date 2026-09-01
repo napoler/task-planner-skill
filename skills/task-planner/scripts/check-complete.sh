@@ -21,8 +21,9 @@ with open(plan_file, "r", encoding="utf-8") as f:
 content = "".join(lines)
 
 # Detect chain_mode
+# 2026-09-01 fix: value may contain hyphen (fan-out), original \w+ never matched it
 chain_mode = "single"
-for m in re.finditer(r'\|\s*\*\*chain_mode\*\*\s*\|\s*\x60?(\w+)\x60?\s*\|', content):
+for m in re.finditer(r'\|\s*\*\*chain_mode\*\*\s*\|\s*\x60?([\w-]+)\x60?\s*\|', content):
     if m.group(1) in ("linked", "fan-out"):
         chain_mode = m.group(1)
         break
@@ -114,6 +115,28 @@ for seg in segments:
 if not logical_blocks and block_config_segs:
     logical_blocks = [{"segs": sorted(block_config_segs), "is_config_only": True}]
 
+# Batch Report completeness check (Rule 18.6, v2.2.1)
+# Trigger: chain_mode=fan-out OR plan contains a "Batch Report" section (batch task).
+# Required 8 fields must be non-empty; empty value => treated as incomplete.
+BATCH_FIELDS = ["total", "success", "failed", "failure_rate",
+                "sampled_pass", "sampled_fail", "pre_check", "rollback_point"]
+batch_required = chain_mode == "fan-out" or "Batch Report" in content
+batch_missing = []
+if batch_required:
+    bm = re.search(r'^##\s+.*Batch Report.*$', content, re.MULTILINE)
+    if not bm:
+        batch_missing = ["<entire Batch Report section>"]
+    else:
+        seg_text = content[bm.start():]
+        nxt = re.search(r'^##\s+', seg_text[10:], re.MULTILINE)
+        if nxt:
+            seg_text = seg_text[:10 + nxt.start()]
+        for fld in BATCH_FIELDS:
+            fm = re.search(r'\|\s*`?' + re.escape(fld) + r'`?\s*\|\s*([^|\n]*)\s*\|', seg_text)
+            val = (fm.group(1).strip() if fm else "")
+            if not val:
+                batch_missing.append(fld)
+
 # Display
 for seg in segments:
     if seg["idx"] in block_config_segs:
@@ -144,6 +167,12 @@ if chain_mode in ("linked", "fan-out"):
 if total == 0 and not block_statuses:
     print("[plan] No phases found in task_plan.md.")
     sys.exit(0)
+
+# Batch Report gate (Rule 18.6): incomplete fields block completion reporting
+if batch_missing:
+    print(f"[plan] Batch Report incomplete (Rule 18.6) — missing: {', '.join(batch_missing)}")
+    print("[plan] Batch tasks must fill all 8 fields before completion (templates/batch_report.md).")
+    sys.exit(1)
 
 if complete == total and total > 0:
     if chain_mode in ("linked", "fan-out"):
