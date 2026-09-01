@@ -103,6 +103,7 @@
 | What's the goal? | [goal statement] |
 | What have I learned? | See findings.md |
 | What have I done? | See above |
+| What am I about to do? | See Next Step in task_plan.md |
 
 ---
 <!-- 

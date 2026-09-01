@@ -91,6 +91,15 @@ FORMAT: VC-N 是客观判定标准（可测试/可追溯/不依赖主观判断�
 -->
 Phase 1
 
+## Next Step
+<!-- 
+  WHAT: 单一下一步动作(一句话,可执行)。
+  WHY: 恢复会话/上下文压缩后无需推断"接下来干嘛";5Q 第 6 问的答案源;smart 注入块每轮携带本字段。
+  WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
+  EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
+-->
+[一句话下一步动作]
+
 ## Phases
 <!-- 
   WHAT: Break your task into 3-7 logical phases. Each phase should be completable.

@@ -136,6 +136,17 @@ model: opus
 | 截图 / 网页等多模态信息 | `## Visual/Browser Findings`（转文字） | **立即**（多模态不持久） |
 | 用户需求拆解 | `## Requirements` | Phase 1 期间 |
 
+### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token 判定）
+
+| 场景 | 动作 | 理由 |
+|------|------|------|
+| 刚写完一个文件 | **不要再 Read** | 内容还在上下文里,重读纯浪费 |
+| 看过图片/PDF/网页 | 立即写 findings.md | 多模态内容不持久,转文字落盘 |
+| 浏览器/搜索返回数据 | 写 findings.md | 截图/结果不持久 |
+| 开始新 Phase | 读 plan + findings | 上下文可能已陈旧,重新定位 |
+| 发生错误 | 读相关文件 | 需要当前真实状态才能修 |
+| 中断/压缩后恢复 | 读全部三文件 | 重建状态(Rule 19.3 顺序) |
+
 - [ ] **Chain 区块交接（仅 linked/fan-out 模式）**
   - 当前 Block 所有 Phase complete 后：
     1. 更新 Handoff 追踪表对应行（状态=complete + 完成时间）
@@ -265,7 +276,7 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-19）：
+详见 `references/critical-rules.md`（Rules 1-20）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -274,6 +285,7 @@ Block 1 (选题) complete
 - **Rule 17（P0）成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
 - **Rule 18（P0）批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md、progress 回填是 Phase complete 的前置门控、恢复会话先读三文件（详见上方 §产出落盘映射）
+- **Rule 20（P0）计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
 
 ## Completion Gate
 
