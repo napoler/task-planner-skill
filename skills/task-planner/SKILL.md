@@ -247,7 +247,12 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离）。
+详见 `references/critical-rules.md`（Rules 1-16）：
+- Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
+- **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
+- **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
+- **Rule 15（P0）高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
+- **Rule 16（P0）任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见下方 §任务模板库）
 
 ## Completion Gate
 
@@ -301,3 +306,209 @@ Block 1 (选题) complete
 | `examples.md` | 实际示例 |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S4/映射/hook 响应） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
+
+---
+
+## 🎯 子代理路由与模型分级（强制 — P0）
+
+**目的**：主进程 = 调度器,所有实际工作派子代理。避免上下文过长质量降低,避免主进程被代码细节/搜索结果/调试日志污染丢失全局视野。
+
+**强制约束**（P0）：执行任何任务时,**先按本表选择 subagent,再开始工作**。违反 = 反模式。
+
+### 路由表（按任务类型）
+
+| 任务类型 | 推荐 subagent | model 档位 | 主进程直接做? |
+|---------|--------------|-----------|--------------|
+| **计划撰写** | `plan-writer` | **sonnet-1** | ❌ |
+| **代码编辑（单文件 ≤300 行,≤3 文件）** | `code-assistant` | **haiku-1** | ❌ |
+| **代码编辑（>3 文件 或 >300 行）** | `executor` | **sonnet-1** | ❌ |
+| **代码编辑（重构/瘦身）** | `code-simplifier` | 继承主会话 | ❌ |
+| **构建/编译错** | `build-error-resolver` | **sonnet-1** | ❌ |
+| **修 bug / 根因分析** | `debugger` + `Skill("systematic-debugging")` | **sonnet-1** | ❌ |
+| **跑测试/构建** | `code-runner-agent` | mini | ❌ |
+| **代码库深度分析/体检** | `codebase-analyzer` | **sonnet-1** | ❌ |
+| **关键词搜索/抓静态页** | `web-search-agent` | mini | ❌ |
+| **github 调研（issue/PR/release/源码）** | `web-search-agent` + `gh CLI` | mini | ❌ |
+| **跨文件搜索定位** | `explore` | mini | ❌ |
+| **文档/规范搜索** | `doc-search-agent` | mini | ❌ |
+| **综合调研（API + 选型 + 风险）** | `research-assistant` | **sonnet-1** | ❌ |
+| **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ |
+| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ |
+| **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ |
+| **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ |
+| **纯配置/计划文件（.md/.json/.yaml plan 模板）** | （主进程） | 主会话 | ✅ 允许 |
+| **Todo 同步/AGENTS.md 文档编辑** | （主进程） | 主会话 | ✅ 允许 |
+
+### 模型档位依据
+
+复用 `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` 既有约定：
+- **mini**：机械 IO（CLI 执行、搜索、抓取、簿记）
+- **haiku-1**：机械/轻量（验证、格式化、批量 I/O、单文件 ≤3 文件小改）
+- **sonnet-1**：判断型（编辑、调试、重构、综合调研、复杂分析）
+- **opus**：复杂判断（架构、跨会话编排、spec/plan 起草）
+- **继承主会话**：无 model 字段的规划/编排型 agent
+
+### 反模式（主进程禁止）
+
+- ❌ 主进程 `Edit`/`Write` 业务代码（`.ts/.tsx/.js/.jsx/.py/.go/.rs/.java/.c/.cpp/.h/.hpp`）
+- ❌ 主进程 `Read` >500 行业务文件后直接改
+- ❌ 主进程跑 `npm test` / `cargo build` / `pytest` / `bun test`
+- ❌ 全仓 `grep` + `sed` 批量替换
+- ❌ 主进程直接接收 `Skill("research-assistant")` 长文（必须 spawn 子代理消化）
+- ❌ 主进程直接接收 `Skill("code-review")` / `Skill("systematic-debugging")` 长输出
+- ❌ 主进程直接接收 `Agent(subagent_type=codebase-analyzer)` 的体检报告全文
+
+---
+
+## 💻 代码编辑强制隔离（P0）
+
+**目的**：业务代码的准确性依赖专业 agent 的"读 → 改 → 验证"流水线,主进程直接 Edit 极易因上下文过长而写错或漏改。
+
+### 强制规则
+
+| 变更规模 | 必须派 | 理由 |
+|---------|-------|------|
+| 单文件 ≤300 行,≤3 文件 | `code-assistant`（haiku-1） | 机械单文件编辑,已降档验证 |
+| >3 文件 或 >300 行 | `executor`（sonnet-1） | 跨文件判断需 sonnet |
+| 重构 / 性能 / 瘦身 | `code-simplifier` | 专业语义保留 + 复杂度度量 |
+| 构建/编译错 | `build-error-resolver`（sonnet-1） | surgical fix,不扩改 |
+| 修 bug（需根因定位） | `debugger` + `Skill("systematic-debugging")` | 系统性根因分析 |
+| 跨模块实现 | `executor`（sonnet-1） | 跨模块依赖协调 |
+
+### 主进程可以 Edit 的例外
+
+仅以下两类**非业务代码**可主进程直接 Edit：
+- **纯配置/计划文件**：`*.md`（计划/文档）、`*.json`（配置）、`*.yaml`/`*.yml`（模板）
+- **Todo 同步**：原生 Todo（TodoWrite / TaskCreate）的 status 更新
+
+### 验证流程
+
+每个代码修改完成,必须：
+1. `Agent(subagent_type: code-runner-agent)` 跑编译/lint/测试
+2. 测试失败 → `Agent(subagent_type: build-error-resolver)` 修复
+3. 通过 → `Skill("code-review")` 上下文隔离审查（Code Review Gate）
+4. APPROVED → commit;CHANGES_REQUESTED → 回到子代理修复
+
+---
+
+## 🔍 调研类操作（WebSearch + github 双路 — 强制）
+
+**目的**：调研结果易挤压主上下文,且代码准确性需依赖上游 release/issue/源码,不允许仅靠训练知识。
+
+### 路径 1：WebSearch（首选,英文/技术）
+
+| 阶段 | 工具 | 适用 |
+|------|------|------|
+| 1 | `WebSearch` | 关键词/英文/技术（ZCode 实测可用） |
+| 2 | `WebFetch` | 已知 URL 的纯静态页 |
+| 3 | `web_reader` MCP / `defuddle` | 需 JS 渲染的页面 |
+| 4 | `splash` / Browser Use | 动态页面/需登录态 |
+| 5 | `Skill("research-assistant")` → bing-intl → searxng | 中文/多源交叉 |
+
+### 路径 2：github 调研（代码准确性必备）
+
+```bash
+# Issue/PR 调研
+gh issue list --repo <owner>/<repo> --search "<kw>" --state all --limit 30
+gh pr list --repo <owner>/<repo> --search "<kw>" --state all
+gh release list --repo <owner>/<repo> --limit 10
+
+# 源码调研
+gh api repos/<owner>/<repo>/contents/<path>          # 文件列表
+gh api repos/<owner>/<repo>/contents/<path> --jq '.content' | base64 -d  # 文件内容
+
+# WebSearch 补充
+WebSearch "<library> github issues <symptom>"
+```
+
+### 强制引用格式
+
+写到 `task_plan.md` 的「Decisions Made」表"参考依据"列：
+
+- 上游库：`https://github.com/<owner>/<repo>/blob/<sha>/<path>#L<line>`（必须含 Commit SHA 或 Release tag）
+- Issue/PR：`https://github.com/<owner>/<repo>/issues/<n>` 或 `.../pull/<n>`
+- 官方文档：`URL + 文档版本号`
+
+### 禁止
+
+- ❌ 只靠训练知识写代码而不查上游 release notes
+- ❌ 引用"npm 包官网首页"作为唯一依据（应到源码/issue/release）
+- ❌ github 调研用 WebFetch 抓 HTML（应直接 `gh api` 拿 JSON）
+- ❌ 调研结果直接 dump 进主上下文（必须派子代理消化）
+
+---
+
+## 🔁 高频漂移纠正（每 2-3 轮 todo — P0）
+
+**问题**：任务执行中上下文变长,主进程视野变窄,容易偏离原计划（改错文件/跳过 VC/做计划外的事）。Phase 级漂移检测太粗,问题累积到 Phase 完成才暴露已晚。
+
+### 强制密度（P0）
+
+执行过程中,以下任一条件命中立即调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）：
+
+| 触发时机 | 说明 |
+|---------|------|
+| **每完成 2-3 个原生 todo 条目后** | 最高频,2-3 步内发现问题 |
+| **切换模块/文件前** | 确认未越界 |
+| **连续 ≥3 次工具调用后** | 防止连续跑偏 |
+| **Phase 标记 complete 后** | Phase 级门控（已存在 Rule 11） |
+| **用户发出新指令时** | A/B/C 判定后做漂移检查 |
+
+### 纠正条目入 Todo（自动）
+
+| task-drift-guard 输出 | 动作 |
+|---------------------|------|
+| ✅ ALIGNED | 不入 todo,继续 |
+| ⚠️ DRIFT | **自动追加 todo 条目**：`[drift-fix] {问题描述}`（activeForm: 纠正漂移）,用户决策后执行 |
+| 🔴 BLOCKED | **立即 STOP**；**不自动入 todo**（避免静默改向）,必须报告用户等决策 |
+
+### 为什么高频
+
+- Phase 级漂移检测：粗粒度,问题累积数小时才暴露
+- todo 级纠正：细粒度,2-3 步内发现,代价小
+- `task-drift-guard` 是 haiku 档,token 便宜,可高频跑
+
+### 与现有 Rule 11 关系
+
+Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级降到 todo 级,两者并存（Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控）。
+
+---
+
+## 📚 任务模板库（任务开启期必选 — P0）
+
+**原则**：每种任务类型有专属模板,任务开启期（创建 task_plan.md 前）必须先选定,确保 VC/Phase/Scope 表与任务类型匹配,避免通用模板应付所有任务导致 VC 漏项。
+
+### 模板清单
+
+| 模板文件 | 适用场景 | 关键 VC 字段 | 推荐 subagent |
+|---------|---------|--------------|---------------|
+| `templates/task_plan.md`（默认） | 通用规划（无专属匹配时） | 5 条通用 VC | plan-writer |
+| `templates/variant/research-type.md` | 关键词调研 / SERP / 竞品 | _channel_attempts[] / 数据源 ≥2 / 覆盖率 ≥80% | research-assistant |
+| `templates/variant/diagnostic-type.md` | skill 审计 / bug 排查 / 路径验证 | S59 Read 门 / S64 路径验证 / 证据 sha256 | debugger / codebase-analyzer |
+| `templates/variant/writing-type.md` | 长文 / 文章 / 文档撰写 | SEO/可读性/事实核查 | article-writer / content-creator |
+| `templates/variant/publish-type.md` | API 发布 / 跨平台分发 | post_id / schema 验证 / 幂等 | article-batch-publisher |
+| **`templates/variant/code-edit-type.md`**（本版新增） | 单文件/多文件代码编辑 | diff 验证 / lint / 测试 / 风格保持 | code-assistant / executor |
+| **`templates/variant/refactor-type.md`**（本版新增） | 代码重构 / 瘦身 / 性能 | 行为不变证明 / 测试通过 / 复杂度下降 | code-simplifier |
+| **`templates/variant/bugfix-type.md`**（本版新增） | bug 修复 / 根因定位 | 复现 / 根因证据 / 修复后回归 | debugger + systematic-debugging |
+
+### 选择决策树（任务开启期执行）
+
+```
+任务描述是什么?
+├─ 关键词/SERP/数据调研 → research-type
+├─ skill 审计/bug 排查 → diagnostic-type
+├─ 文章/长文撰写 → writing-type
+├─ API 发布/分发 → publish-type
+├─ 代码改/写/删（明确单次编辑）→ code-edit-type
+├─ 重构/性能/瘦身 → refactor-type
+├─ 修 bug（用户描述了具体症状）→ bugfix-type
+└─ 不匹配上述任何一类 → task_plan.md（通用）
+```
+
+### 强制约束（P0）
+
+- 任务开启期必须先选模板 → 写进 task_plan.md frontmatter 的 `template_type` 字段
+- `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件
+- **禁止**用通用 `task_plan.md` 套用所有任务（常见反模式：VC 字段与任务类型不匹配）
+- 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `templates/template-guide.md` §一）
+- `plan-writer` agent 接收 `template_type` 参数,自动选模板填充
