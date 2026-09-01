@@ -247,13 +247,14 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-17）：
+详见 `references/critical-rules.md`（Rules 1-18）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
 - **Rule 15（P0）高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
 - **Rule 16（P0）任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见下方 §任务模板库）
 - **Rule 17（P0）成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
+- **Rule 18（P0）批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 
 ## Completion Gate
 
@@ -300,12 +301,14 @@ Block 1 (选题) complete
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 决策矩阵 + 3-Strike + 5Q + Scope Guard + Handoff + 重规划触发 |
-| `references/critical-rules.md` | Critical Rules 1-11（含 Rule 11 漂移检测） |
+| `references/critical-rules.md` | Critical Rules 1-18（含 Rule 13-18 P0 条款） |
 | `references/completion-gate.md` | 子代理验证 + 并行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
-| `references/billing.md` | 计费模式（单次触发） |
+| `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
+| `references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
+| `references/batch-quality-gate.md` | 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report） |
 | `examples.md` | 实际示例 |
-| `references/todo-sync.md` | 原生 Todo 同步契约（S1-S4/映射/hook 响应） |
+| `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
 
 ---
