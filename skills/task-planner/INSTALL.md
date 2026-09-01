@@ -174,6 +174,46 @@ ls -la ~/.claude/skills/task-planner/
 
 若文件被锁，先 `chmod -R u+w` 再重跑。
 
+### 5.5 `task-drift-guard` 未触发（v2.1+）
+
+检查 skill 链注册与 hooks:
+```bash
+# 1. 确认 hooks 已注册(应见 SessionStart/PreToolUse/PostToolUse/UserPromptSubmit 4 类)
+grep -E "task-drift|drift-guard" ~/.zcode/cli/config.json
+
+# 2. 确认 drift-guard skill 文件存在
+ls ~/.zcode/skills/task-drift-guard/SKILL.md
+
+# 3. 手动跑一次验证(SKILL.md 描述)
+# 主进程:Skill("task-drift-guard")
+```
+
+### 5.6 `plan-writer` agent 缺失
+
+新装的 ZCode 环境可能没装 plan-writer agent:
+```bash
+# 1. 检查
+ls ~/.zcode/agents/plan-writer.md
+
+# 2. 若缺失,从 source repo 拷贝:
+cp /path/to/task-planner-skill/scripts/plan-writer.md ~/.zcode/agents/plan-writer.md
+
+# 3. frontmatter `model` 应为 `custom:9e221f47-...:sonnet-1`(或继承主会话);改完需重启会话生效
+```
+
+### 5.7 模板完整性验证(v2.1+)
+
+13 个 variant 模板文件必须齐全:
+```bash
+ls ~/.zcode/skills/task-planner/templates/variant/*.md | wc -l
+# 应 = 13
+
+# 缺哪个补哪个:
+for f in research diagnostic writing publish code-edit refactor bugfix migration test-writing deployment performance-tuning schema-migration; do
+  [ -f ~/.zcode/skills/task-planner/templates/variant/$f-type.md ] || echo "MISSING: $f"
+done
+```
+
 ---
 
 ## 6. 完整工作流示例

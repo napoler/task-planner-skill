@@ -24,23 +24,41 @@
 | 纯文档/调研/计划类（只写 plans/、.md） | direct | 不影响运行行为;用户要求时仍可隔离 |
 | 信号⑤ 命中（基础设施有未提交改动） | worktree + 强烈建议 | 或先请用户处理未提交变更 |
 
-## 3. 生命周期（最小命令集）
+## 3. 路径规范（消除散落 — 2026-08-29 立）
+
+**强制**：所有 worktree 必须落在该仓专属的集中目录内,子目录 = `<task-id>`:
+
+```
+<repo-parent>/<repo>-worktrees/<task-id>/
+```
+
+例如 `~/.zcode` 仓 → `/home/terry/.zcode-worktrees/<task-id>/`。
+
+**为什么**:旧约定 `../<repo>-wt-<task-id>` 把每个 worktree 散落在仓库旁,父目录被一堆 `-wt-xxx` 子目录污染,无法统一扫描/清理;集中目录把同一仓的所有 worktree 收拢到一处,`git worktree list` + `ls <repo>-worktrees/` 即可全量盘点,清理时按子目录逐个处理,不再遗漏。
+
+**约束**:
+- 必须用**绝对路径**(相对路径会因当前 cwd 解析错位置,落进主仓内部 — 已在 2026-08-29 验证过一次)
+- 仓外、隐藏目录(以 `.` 起头,沿用现有约定)
+- 子目录名 = task-id,不要再带 `wt-` 前缀(父目录已限定仓库语义)
+- 分支名仍为 `wt/<task-id>`(与路径解耦)
+
+## 4. 生命周期（最小命令集）
 
 ```bash
-# ① 创建(分支名 wt/<task-id>;worktree 放仓库旁,勿嵌套在仓内)
-git worktree add ../<repo>-wt-<task-id> -b wt/<task-id>
+# ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>)
+git worktree add /home/terry/<repo>-worktrees/<task-id> -b wt/<task-id> main
 
 # ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
 #    子代理派发时在 prompt 中写明 worktree 绝对路径
 
 # ③ worktree 内提交(禁止把未提交变更带回合并)
-git -C ../<repo>-wt-<task-id> add -A && git -C ../<repo>-wt-<task-id> commit -m "..."
+git -C /home/terry/<repo>-worktrees/<task-id> add -A && git -C /home/terry/<repo>-worktrees/<task-id> commit -m "..."
 
 # ④ worktree 内全 VC 复验通过后,回主仓合并
 git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"
 
 # ⑤ 清理
-git worktree remove ../<repo>-wt-<task-id> && git branch -d wt/<task-id>
+git worktree remove /home/terry/<repo>-worktrees/<task-id> && git branch -d wt/<task-id>
 
 # ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>)
 ```

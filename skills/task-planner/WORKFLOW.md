@@ -16,7 +16,7 @@
 
 ## 2. Tool Inventory
 
-### `scripts/` (12 files)
+### `scripts/` (16 files)
 - `init-session.ps1`
 - `check-doc-sync.sh`
 - `check-complete.ps1`
