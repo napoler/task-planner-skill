@@ -52,6 +52,28 @@ fi
 BACKUP_DIR="$COMPAANION_DIR/.backup-$(date +%Y%m%d-%H%M%S)"
 installed=0; skipped=0; updated=0
 
+# ─── 平台 model 行适配(v2.2.2)─────────────────────────────────────────
+# ZCode agent model 格式: custom:<provider-uuid>:<slug>(slug: sonnet-1/haiku-1/mini/opus-1/%2F 转义)
+# Claude agent model 格式: 纯档位名(sonnet/haiku/opus/"mini"/"<自定义串>")
+# companion/ 内文件统一存 ZCode 格式(修改源);安装到 Claude 平台时按此映射转换。
+adapt_model_line() {
+  # $1 = 目标文件(已 cp);仅当目标是 Claude 平台且文件含 ZCode 格式 model 行时改写
+  local dst="$1"
+  [[ "$TARGET_ROOT" == *.claude ]] || return 0
+  grep -q '^model:.*custom:[0-9a-fA-F-]*:' "$dst" || return 0
+  local slug pure
+  slug="$(grep '^model:' "$dst" | head -1 | sed 's/^model:[[:space:]]*//; s/^"\(.*\)"$/\1/; s|^custom:[0-9a-fA-F-]*:||')"
+  case "$slug" in
+    sonnet-1) pure="sonnet" ;;
+    haiku-1)  pure="haiku" ;;
+    opus-1)   pure="opus" ;;
+    mini)     pure="\"mini\"" ;;
+    *)        pure="\"${slug//%2F//}\"" ;;  # 自定义模型:反转义 + 引号(Claude 侧惯例)
+  esac
+  sed -i "s|^model:.*|model: $pure|" "$dst"
+  echo "  adapt: model → $pure (Claude 平台格式)"
+}
+
 # sync_one <src> <dst>
 sync_one() {
   local src="$1" dst="$2"
@@ -63,11 +85,21 @@ sync_one() {
     echo "[companion] mkdir -p $dst_dir"
     [ "$DRY_RUN" -eq 0 ] && mkdir -p "$dst_dir"
   fi
-  if [ -f "$dst" ] && cmp -s "$src" "$dst"; then
+  # 幂等比较需考虑平台适配:对 agents 文件先把 src 转成目标平台格式再比
+  local cmp_src="$src" tmp_adapt=""
+  if [[ "$dst" == */agents/*.md ]] && [[ "$TARGET_ROOT" == *.claude ]] && grep -q '^model:.*custom:[0-9a-fA-F-]*:' "$src"; then
+    tmp_adapt="$(mktemp)"
+    cp "$src" "$tmp_adapt"
+    TARGET_ROOT="$TARGET_ROOT" adapt_model_line_quiet "$tmp_adapt"
+    cmp_src="$tmp_adapt"
+  fi
+  if [ -f "$dst" ] && cmp -s "$cmp_src" "$dst"; then
     echo "  = $(basename "$dst") (identical, skip)"
     skipped=$((skipped+1))
+    [ -n "$tmp_adapt" ] && rm -f "$tmp_adapt"
     return
   fi
+  [ -n "$tmp_adapt" ] && rm -f "$tmp_adapt"
   local action="install"
   if [ -f "$dst" ]; then
     action="update"
@@ -80,8 +112,26 @@ sync_one() {
   echo "  $action: ${dst#$TARGET_ROOT/}"
   if [ "$DRY_RUN" -eq 0 ]; then
     cp "$src" "$dst"
+    case "$dst" in
+      */agents/*.md) adapt_model_line "$dst" ;;
+    esac
   fi
   if [ "$action" = "install" ]; then installed=$((installed+1)); else updated=$((updated+1)); fi
+}
+
+# 静默版(幂等比较用,不打印 adapt 行)
+adapt_model_line_quiet() {
+  local dst="$1"
+  local slug pure
+  slug="$(grep '^model:' "$dst" | head -1 | sed 's/^model:[[:space:]]*//; s/^"\(.*\)"$/\1/; s|^custom:[0-9a-fA-F-]*:||')"
+  case "$slug" in
+    sonnet-1) pure="sonnet" ;;
+    haiku-1)  pure="haiku" ;;
+    opus-1)   pure="opus" ;;
+    mini)     pure="\"mini\"" ;;
+    *)        pure="\"${slug//%2F//}\"" ;;
+  esac
+  sed -i "s|^model:.*|model: $pure|" "$dst"
 }
 
 echo "[companion] target root: $TARGET_ROOT"
