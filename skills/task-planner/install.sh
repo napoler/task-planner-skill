@@ -175,6 +175,18 @@ for tool in "${TOOLS_DETECTED[@]}"; do
   esac
 done
 
+# ─── Phase 5.6: Install companion files (agents + external skills) ──────
+# companion/ 存放 task-planner 依赖的外部文件:plan-writer/article-batch-publisher/
+# article-field-fixer agents + task-drift-guard skill。一键安装保证新机器
+# 装完 task-planner 即拥有全部依赖;日常修改用 scripts/sync-companion.sh 拉回仓。
+log "Phase 5.6: install companion files"
+if [ -d "$TASK_PLANNER_ROOT/companion" ]; then
+  DRY_RUN_ARG=""; [ "$DRY_RUN" -eq 1 ] && DRY_RUN_ARG="--dry-run"
+  bash "$TASK_PLANNER_ROOT/lib/install-companion.sh" $DRY_RUN_ARG 2>&1 | sed 's/^/  /'
+else
+  log "  no companion/ dir — skipping"
+fi
+
 # ─── Phase 6: Verify ────────────────────────────────────────────────────
 if [ "$SKIP_VERIFY" -eq 0 ]; then
   log "Phase 6: verify installation"
