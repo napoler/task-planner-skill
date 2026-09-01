@@ -83,3 +83,11 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 18.8 **批量质量回看强制**:完成后 failure_rate >10% → 触发 `Skill("meta-corrector")` 复盘 → 经验写入 memory(§八闭环)
 
 **前置 3 问(批量动工前强制)**:Q1 是否依赖每单元独立判断(是 → 禁纯脚本批量,改子代理逐单元);Q2 有无客观验收手段(无 → 先建验收再批量);Q3 最坏情况能否回滚(不能 → 缩批试点)。判定结果写入 Batch Report `pre_check` 字段。
+
+### 19 3-File 落盘强制（P0）— Context Window 是 RAM,Filesystem 是 Disk
+三文件(task_plan.md / findings.md / progress.md)是 planning-with-files 原版核心理念的落地:**重要内容必须落盘,禁止只留会话记忆**(context reset 后会话记忆全丢)。执行循环内嵌写入点见 SKILL.md §Phase 执行循环第 3 步 + §产出落盘映射。
+
+19.1 **子代理结论必落盘**:每次子代理(Explore/research/debugger/codebase-analyzer 等)或调研类 Skill 返回后,**紧邻一次 Edit findings.md** 写入结论摘要 + 证据路径;禁止让结论只留在主上下文(子代理省了读取,产出堆回会话记忆 = Context Stuffing 回潮)
+19.2 **progress 回填门控**:Phase 标记 complete 前,progress.md 对应 Phase 段必须已回填(Actions taken / Files created-modified / Test Results);未回填 → 禁止标记 complete
+19.3 **恢复会话先读三文件**:session-catchup / 5Q Reboot 恢复顺序 = task_plan.md(在哪/去哪/目标)→ progress.md(做过什么/错误)→ findings.md(已知什么/决策/资源);三文件缺失任一 = 计划未正确初始化
+19.4 **错误即时双写**:错误发生 → progress.md Error Log **立即**一条(不等 Phase 结束);同条摘要进 task_plan.md Errors 表(Rule 6 细化)

@@ -25,12 +25,14 @@
   WHAT: Key discoveries from web searches, documentation reading, or exploration.
   WHY: Multimodal content (images, browser results) doesn't persist. Write it down immediately.
   WHEN: After EVERY 2 view/browser/search operations, update this section (2-Action Rule).
+  ⚠️ Rule 19.1: 子代理(Explore/web-search/doc-search/research-assistant 等)返回的结论写这里 —
+     返回后紧邻一次 Edit,含结论摘要 + 证据路径(URL/file:line);禁止只留会话记忆。
   EXAMPLE:
     - Python's argparse module supports subcommands for clean CLI design
     - JSON module handles file persistence easily
     - Standard pattern: python script.py <command> [args]
 -->
-<!-- Key discoveries during exploration -->
+<!-- Key discoveries during exploration; subagent returns land here (Rule 19.1) -->
 -
 
 ## Technical Decisions
