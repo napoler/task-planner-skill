@@ -132,6 +132,23 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 - `tests/` 排除意味着 smoke.sh 不分发。客户端测试通过 CI 在 canonical 仓跑
 - `companion/skills/plan-resume/` 支持 3 种格式(task-planner / openspec / spec-kit)扫描,但 spec-kit 本机未见过真样例(基于官方模板约定),文档标记为[实验性]
 
+### 2.7 plan-resume 与 task-planner 集成契约
+
+`plan-resume` 不是 task-planner 的子集,而是**外围监控 skill**,通过被动扫描让 task-planner 会话知晓工作区其他中断任务。
+
+**集成节点**:
+1. `references/critical-rules.md` Rule 24 — Phase complete 后被动调 `Skill("plan-resume")`
+2. `SKILL.md` frontmatter `references` 表 + §Execution 流程图 DRIFT CHECK 节点 + Chain handoff step 5 + 合规清单 C13
+3. `templates/progress.md` 加「plan-resume 报告检查点」表
+
+**边界**:(详见 `companion/skills/plan-resume/SKILL.md` §6 与其他 skill 的关系)
+- task-planner **只读**其他 plan 的 `task_plan.md`,不修改它
+- plan-resume **不替用户续推**,只产报告
+- 用户须明确说"续推 task-X"才会调 task-planner 创建新 plan
+- 失败时 plan-resume 报错不阻塞当前 Phase 推进(软约束 P1)
+
+**向后兼容**:Rule 24 是新增,P1 级。task-planner v2.3 已有任务不受影响;plan-resume 未安装时 Rule 24 跳过(见 `SKILL.md` §6 失败兜底)。
+
 
 ---
 

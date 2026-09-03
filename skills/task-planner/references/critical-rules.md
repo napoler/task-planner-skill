@@ -135,3 +135,14 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 23.6 **fan-out 必须含 Aggregator Phase**(check-complete.sh 硬校验,否则 exit 1)
 23.7 **注册表心跳**:sync-todos.sh --index 每 10 次工具调用自动刷新一次,保持 INDEX.md 活跃 plan 最新
 23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集
+
+### 24 plan-resume 周期性被动扫描(P1)
+每个 Phase complete 后,在调 task-drift-guard 之前/之后,主进程**被动**调一次 `Skill("plan-resume")` 扫描工作区其他未完成计划,产出报告(不替用户续推)。本规则保证:用户开启一个 task-planner session 时,如果工作区有其他被中断的计划,主进程会主动浮出来供用户决策。
+
+24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 调 task-drift-guard 的时机);**不是**每个 todo 完成时(避免噪音)
+24.2 **扫描源**:用户当前工作目录 `$(pwd)`,scope = 仓库根(扫描 `plans/*/task_plan.md` + `.zcode/plans/plan-sess_*.md` + `openspec/changes/*/tasks.md` + `specs/*/tasks.md` 共 3 种格式)
+24.3 **跳过自身**:当前 plan 的 `task_plan.md` 不进报告(避免重复);当前 plan 的 `phase_status_map` 已在 `[Unreleased]` 段跟踪
+24.4 **报告输出**:`<cwd>/.zcode/plans/plan-resume-report.md`(幂等覆盖);主上下文打印摘要(≤5 行):`扫到 N 个中断任务 → M 个推荐 resume / K 个推荐 archive / X 个推荐 drop`
+24.5 **行为约束(宪法 §四 P0)**:**plan-resume 只产出报告,不替用户 resume/archive/drop**;用户必须明确说"续推 task-X"才会动 plan-X;被动调度的目的是让用户知道有什么,而非自动执行
+24.6 **失败兜底**:plan-resume 调用失败(脚本缺失/语法错/skill 未安装)→ 主上下文记一行 `[plan-resume] 调用失败: <reason>`,不阻塞当前 Phase 推进
+24.7 **不调用的例外**:用户已在 prompt 里明确说"不要 plan-resume" → 跳过;或本次任务 ≤3 个 phase(噪音大于价值) → 跳过
