@@ -14,6 +14,7 @@ references:
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
 - references/billing.md: 计费模式（单次触发）
 - task-drift-guard: 周期性漂移检测（Phase 完成后/连续3次工具调用后/切模块前调用）
+- plan-resume: 周期性被动扫描（Phase complete 后调，扫描工作区其他被中断任务，产出报告供用户决策。详见 Rule 24）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
 # See: ~/.claude/skills/task-planner/SKILL.md (Claude Code) / ~/.zcode/skills/task-planner/SKILL.md (ZCode)
 model: opus
@@ -121,6 +122,7 @@ model: opus
     - ⚠️ DRIFT → 记录 progress.md，警觉继续
     - 🔴 BLOCKED → **STOP**，报告用户，等决策
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
+  - **PLAN-RESUME 被动扫描（Rule 24）**：Phase complete 后，**在 DRIFT CHECK 之前**被动调 `Skill("plan-resume")` 扫工作区其他中断任务。产出报告写到 `<cwd>/.zcode/plans/plan-resume-report.md`，主上下文打印摘要（≤5 行）。**仅报告，不替用户续推**——用户须明确说"续推 task-X"才会动 plan-X。若用户已在 prompt 说"不要 plan-resume"或任务 ≤3 个 phase → 跳过
   - `task-drift-guard` 为只读检测层，发现 BLOCKED 时必须等用户明确决策后再继续
 
 ### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
@@ -153,6 +155,7 @@ model: opus
     2. 验证交接产物存在：`Read` 检查目标文件
     3. 更新下游 Block `depends_on` 状态为 `in_progress`
     4. 调用 `Skill("task-drift-guard")`
+    5. 调用 `Skill("plan-resume")` 被动扫描（Rule 24）
   - **handoff 合约**（每次交接前必须满足）：
     ```
     [BLOCK-N COMPLETE] 产物: {path} 大小:{size} 内容确认:{Read 结果摘要}
@@ -200,6 +203,7 @@ model: opus
 | C10 | 计划创建后已按 S1 建立原生 Todo 映射（TodoWrite 或 Task） | ☐ |
 | C11 | 每个 Phase 状态变更后已同步 Todo（S2）；`[plan-sync]` 提醒均已响应（S3） | ☐ |
 | C12 | 用户新指令已做 A/B/C 影响判定；B/C 类已完成计划 + Todo 同步更新（S5） | ☐ |
+| C13 | Phase complete 后已被动调 `Skill("plan-resume")` 扫描中断任务(若用户未说"不要 plan-resume") | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 

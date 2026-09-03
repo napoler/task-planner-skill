@@ -113,3 +113,13 @@
   - Include timestamps for errors to track when issues occurred
 -->
 *Update after completing each phase or encountering errors*
+
+---
+<!-- 
+  📋 plan-resume 报告检查点
+  Phase complete 后,plan-resume 报告路径(<cwd>/.zcode/plans/plan-resume-report.md)
+  应已被更新。若未更新,记录 [plan-resume 跳过原因]。
+-->
+| plan-resume 报告路径 | 上次更新 |
+|---------------------|---------|
+| `~/.zcode/plans/plan-resume-report.md` |  |

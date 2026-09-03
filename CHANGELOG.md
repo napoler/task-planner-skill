@@ -18,6 +18,7 @@
 - **`extract-meta.sh` 三后端**:新增 `format=openspec` / `format=spec-kit` 分派,openspec 后端读 `.openspec.yaml` goal + tasks.md 完成度,spec-kit 后端读 spec.md 的 `**Status**` 字段与 tasks.md 完成度;原 `format=task-planner` 后端完全保留。
 - **SKILL.md 报告模板**:在推荐清单表格里新增 `Format` 列 + 混合格式展示示例;报告元信息加 `格式覆盖` 行;§1 计划位置补 openspec / spec-kit 两条;§1.1 用户参数映射加 `--include-archived`;§2.1 提取字段表扩展为 7 字段 + 格式判定表。
 - **`tests/smoke.sh` 5 项新测试**: openspec format / task_id;spec-kit format / 完成度 / spec.md Status 字段;加上 `--help` 检查。
+- **task-planner 与 plan-resume 集成**: `references/critical-rules.md` 新增 Rule 24 — Phase complete 后**被动**调 `Skill("plan-resume")` 扫描工作区其他中断任务(不替用户续推,只产报告)。`SKILL.md` frontmatter 加 plan-resume 引用,Phase 执行循环 step 5(DRIFT CHECK 后)加 plan-resume 调用节点,Chain handoff 加 step 5。合规检查清单加 C13。`templates/progress.md` 加 plan-resume 报告检查点表。
 
 ### 修复
 
