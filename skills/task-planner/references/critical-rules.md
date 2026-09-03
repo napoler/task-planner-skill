@@ -122,3 +122,16 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 22.6 **Phase 内 Subtasks 二级拆分**:Phase 含 ≥3 子任务 → 必须写「Subtasks」子表(ID/目标/输入/验收/状态);单子任务 ≥3 文件或 ≥300 行 → 拆为 Phase
 22.7 **连续失败 STOP**:子代理连续失败 ≥2 次 → STOP 报告用户,不进入 Chain block 交接,不继续派发;升级处理后再继续
 
+21.5 **拆分自检(动工前)**:展示计划 / plan-writer 产出时自检——任一 Phase 无法用一句话说清验收标准,即视为粒度过大,回炉重拆后再交用户确认
+
+### 23 并行任务检测与冲突规避(P0)
+并发执行多 plan 时,同文件/同 worktree/同名 task-id 会产生难以追踪的冲突。必须通过自动检测 + 规避建议提前暴露风险(Rule 23 落地到 hooks + 注册表)。
+
+23.1 **检测时机**:plan 创建时(run check-conflicts.sh --runtime)+ 每次 PreToolUse 写入时
+23.2 **四级冲突**:A 同文件(scope_files 交集非空,硬)/ B 同 worktree 路径(硬)/ C 同 task-id/plans 目录重名(硬)/ D 环境信号(软,复用现有五信号)
+23.3 **规避建议**:A/B/C 级 → 串行或新建 worktree/改名;D 级 → 处理信号后继续
+23.4 **session_id 必须写进 frontmatter**(注册表追踪,Rule 23.5 前提)
+23.5 **scope_files 必须从「执行范围限制」解析**(交集检测基础,Rule 23.2 前提)
+23.6 **fan-out 必须含 Aggregator Phase**(check-complete.sh 硬校验,否则 exit 1)
+23.7 **注册表心跳**:sync-todos.sh --index 每 10 次工具调用自动刷新一次,保持 INDEX.md 活跃 plan 最新
+23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集

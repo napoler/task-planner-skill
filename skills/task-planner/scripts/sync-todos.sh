@@ -86,6 +86,18 @@ parse_task_plan() {
     ' "$task_plan"
 }
 
+# ─── Extract frontmatter metadata ──────────────────────────────────────────
+# Returns: session_id|worktree_path|scope_files_path
+extract_plan_meta() {
+    local plan="$1"
+    local sid wt scopes=""
+    sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
+    wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
+    # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
+    scopes="$(awk '/^## .*执行范围限制/,/^## /' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
+    echo "${sid:-none}|${wt}|${scopes}"
+}
+
 # ─── Forward sync report ───────────────────────────────────────────────────
 forward_sync() {
     local plans_dir="$1"
@@ -157,6 +169,18 @@ rollup_task() {
     ' "$task_plan"
 }
 
+# ─── Extract frontmatter metadata ──────────────────────────────────────────
+# Returns: session_id|worktree_path|scope_files_path
+extract_plan_meta() {
+    local plan="$1"
+    local sid wt scopes=""
+    sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
+    wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
+    # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
+    scopes="$(awk '/^## .*执行范围限制/,/^## /' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
+    echo "${sid:-none}|${wt}|${scopes}"
+}
+
 # ─── Write plans/INDEX.md (persistent cross-task registry) ──────────────────
 # Answers "which tasks need processing after interruption?" by rolling up every
 # task-{id}/ state into ONE file at the plans/ parent level. Read INDEX.md first on resume.
@@ -187,7 +211,9 @@ write_index() {
             status="pending"; icon="⚠ 未开始"; ttodo=$((ttodo+1))
             todo_arr+=("- **${task_id}** — pending, 未开始 (0/${total})")
         fi
-        rows_arr+=("| ${task_id} | ${status} | ${comp}/${total} | ${goal} | ${mtime} | ${icon} |")
+        meta="$(extract_plan_meta "$task_plan")"
+        IFS='|' read -r meta_sid meta_wt meta_scopes <<< "$meta"
+        rows_arr+=("| ${task_id} | ${status} | ${comp}/${total} | ${goal} | ${meta_sid} | ${meta_wt} | ${meta_scopes} | ${mtime} | ${icon} |")
     done < <(find "$plans_dir" -maxdepth 2 -name "task_plan.md" -type f 2>/dev/null | sort)
 
     local now
@@ -204,7 +230,7 @@ write_index() {
         if [[ ${#rows_arr[@]} -eq 0 ]]; then
             echo "_No tasks found under ${plans_dir}_"
         else
-            echo "| Task ID | Status | Phase 进度 | Goal | 最后更新 | 待办 |"
+            echo "| Task ID | Status | Phase 进度 | Goal | session_id | worktree | scope_files | 最后更新 | 待办 |"
             echo "|---------|--------|-----------|------|---------|------|"
             printf '%s\n' "${rows_arr[@]}"
             echo ""
