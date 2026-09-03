@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "description": "task-planner skill thresholds — all mutable numbers live here",
+  "description": "task-planner skill thresholds \u2014 all mutable numbers live here",
   "type": "object",
   "properties": {
     "max_vc": {
@@ -40,8 +40,13 @@
     },
     "template_priority": {
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["project-level", "built-in"],
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "project-level",
+        "built-in"
+      ],
       "description": "Template search order: project-level first, then built-in fallback"
     },
     "escalation_threshold": {
@@ -73,8 +78,82 @@
       "default": 10,
       "minimum": 1,
       "description": "UserPromptSubmit [plan-note] throttle: inject on 1st prompt of a session, then every Nth prompt"
+    },
+    "subagent": {
+      "type": "object",
+      "description": "Subagent dispatch scaling thresholds \u2014 all mutable numbers live here (all mutable numbers live here principle)",
+      "properties": {
+        "max_per_phase": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1,
+          "description": "Max subagent dispatches per Phase; >max \u2192 refactor into more Phases or AskUser"
+        },
+        "retry_limit": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1,
+          "description": "Max retries for a single subagent task before escalating to AskUser (Rule 21.4)"
+        },
+        "max_files_per_dispatch": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "description": "Max files a single subagent dispatch can touch (Rule 21.1)"
+        },
+        "max_lines_per_dispatch": {
+          "type": "integer",
+          "default": 300,
+          "minimum": 1,
+          "description": "Max lines a single subagent dispatch can touch (Rule 21.1)"
+        },
+        "timeout_by_type": {
+          "type": "object",
+          "description": "Timeout in minutes by subagent type; dispatch must enforce this limit (Rule 21)",
+          "properties": {
+            "explore": {
+              "type": "integer",
+              "default": 30
+            },
+            "editor": {
+              "type": "integer",
+              "default": 60
+            },
+            "debugger": {
+              "type": "integer",
+              "default": 60
+            },
+            "executor": {
+              "type": "integer",
+              "default": 120
+            }
+          },
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "default": {
+        "max_per_phase": 5,
+        "retry_limit": 2,
+        "max_files_per_dispatch": 3,
+        "max_lines_per_dispatch": 300,
+        "timeout_by_type": {
+          "explore": 30,
+          "editor": 60,
+          "debugger": 60,
+          "executor": 120
+        }
+      }
     }
   },
-  "required": ["max_vc", "min_verification_per_phase", "retry_count", "max_tool_calls_before_refresh", "max_view_browser_before_save"],
+  "required": [
+    "subagent",
+    "min_verification_per_phase",
+    "max_vc",
+    "max_tool_calls_before_refresh",
+    "max_view_browser_before_save",
+    "retry_count"
+  ],
   "additionalProperties": false
 }

@@ -111,3 +111,14 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 21.3 **执行一律低档模型**:已拆出的子任务一律派子代理执行(机械型 haiku-1 / 判断型 sonnet-1,复用 agent-model-tiering 既有约定);大模型(opus 主会话)只做拆分、派发、验收,禁止亲自逐个执行已拆出的小任务(联动 Rule 13/14/17)
 21.4 **逐个执行 + 即时验收**:子任务按依赖串行派发,完成一个验收一个(Read 复核产出 / 命令输出确认),通过才派下一个;同一子任务失败 ≥2 次 → 禁止同法重试(联动 Rule 7 三击协议),回计划阶段把该子任务拆得更细或升级 Complex Problem Solver
 21.5 **拆分自检(动工前)**:展示计划 / plan-writer 产出时自检——任一 Phase 无法用一句话说清验收标准,即视为粒度过大,回炉重拆后再交用户确认
+### 22 子代理规模限制与交接文件(P0)
+子代理任务过长 = 上下文过长 = 执行失败风险上升;规模必须限制 + 交接文件必须自包含。详见 SKILL.md §「子代理路由与模型分级」+ §「超时与失败兜底」。
+
+22.1 **单次派发规模上限**:单 Phase 内 `Agent()` 派发次数 ≤`config.json#subagent.max_per_phase`(默认 5);超出 → 回炉拆 Phase 或 AskUser;单任务触及文件 >`max_files_per_dispatch`(默认 3)或行数 >`max_lines_per_dispatch`(默认 300)→ 拆子任务或升 subagent
+22.2 **超时档位**:按 subagent_type 映射超时:explore/只读 ≤30min / editor 编辑/重构 ≤60min / debugger 调试 ≤60min / executor 批量执行 ≤120min(见 `config.json#subagent.timeout_by_type`);超时 → 立即报告用户,禁止静默重试
+22.3 **失败兜底**(优先级顺序):超时/失败 → ① 改派(换更合适的 subagent 类型)→ ② 降档(升一档 model,如 haiku→sonnet)→ ③ 主进程接管(单文件 ≤300 行主进程 Edit)→ ④ AskUserQuestion;达 `config.json#subagent.retry_limit`(默认 2)→ 必须 AskUser,禁继续同法重试
+22.4 **派发 prompt 必须自包含**(Rule 21.2 强化):Agent() 派发时 prompt 含七字段 —— 目标(1 句)/输入(绝对路径 + findings.md 摘要 ≤10 行)/验收标准(2-5 条可观察证据)/Scope 禁改清单/工作路径(worktree 绝对路径)/时长预算/返回格式(结论摘要 ≤3 行 + 证据 file:line + 置信度);缺任一字段 → 禁止派发
+22.5 **交接登记**:每次 Agent() 派发前填 Subagent Handoff 登记表(时间/subagent_type/type/目标/状态(queued/pending/running/done/timeout/failed)/结论/证据/verify_done☐);子代理返回 30s 内主进程必须 Read 实际产出,未 Read → findings.md 记"未验证"
+22.6 **Phase 内 Subtasks 二级拆分**:Phase 含 ≥3 子任务 → 必须写「Subtasks」子表(ID/目标/输入/验收/状态);单子任务 ≥3 文件或 ≥300 行 → 拆为 Phase
+22.7 **连续失败 STOP**:子代理连续失败 ≥2 次 → STOP 报告用户,不进入 Chain block 交接,不继续派发;升级处理后再继续
+

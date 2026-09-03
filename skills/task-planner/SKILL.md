@@ -352,27 +352,27 @@ Block 1 (选题) complete
 
 ### 路由表（按任务类型）
 
-| 任务类型 | 推荐 subagent | model 档位 | 主进程直接做? |
-|---------|--------------|-----------|--------------|
-| **计划撰写** | `plan-writer` | **sonnet-1** | ❌ |
-| **代码编辑（单文件 ≤300 行,≤3 文件）** | `code-assistant` | **haiku-1** | ❌ |
-| **代码编辑（>3 文件 或 >300 行）** | `executor` | **sonnet-1** | ❌ |
-| **代码编辑（重构/瘦身）** | `code-simplifier` | 继承主会话 | ❌ |
-| **构建/编译错** | `build-error-resolver` | **sonnet-1** | ❌ |
-| **修 bug / 根因分析** | `debugger` + `Skill("systematic-debugging")` | **sonnet-1** | ❌ |
-| **跑测试/构建** | `code-runner-agent` | mini | ❌ |
-| **代码库深度分析/体检** | `codebase-analyzer` | **sonnet-1** | ❌ |
-| **关键词搜索/抓静态页** | `web-search-agent` | mini | ❌ |
-| **github 调研（issue/PR/release/源码）** | `web-search-agent` + `gh CLI` | mini | ❌ |
-| **跨文件搜索定位** | `explore` | mini | ❌ |
-| **文档/规范搜索** | `doc-search-agent` | mini | ❌ |
-| **综合调研（API + 选型 + 风险）** | `research-assistant` | **sonnet-1** | ❌ |
-| **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ |
-| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ |
-| **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ |
-| **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ |
-| **纯配置/计划文件（.md/.json/.yaml plan 模板）** | （主进程） | 主会话 | ✅ 允许 |
-| **Todo 同步/AGENTS.md 文档编辑** | （主进程） | 主会话 | ✅ 允许 |
+| 任务类型 | 推荐 subagent | model 档位 | 主进程直接做? | 规模上限 | 超限动作 |
+| --- | --- | --- | --- | --- | --- |
+| **计划撰写** | `plan-writer` | **sonnet-1** | ❌ | ≤1 plan, ≤500行 | askUser 重拆 |
+| **代码编辑（单文件 ≤300 行,≤3 文件）** | `code-assistant` | **haiku-1** | ❌ | ≤3 文件, ≤300行 | 升级 executor |
+| **代码编辑（>3 文件 或 >300 行）** | `executor` | **sonnet-1** | ❌ | ≤3 文件, ≤300行 | 升级 executor |
+| **代码编辑（重构/瘦身）** | `code-simplifier` | 继承主会话 | ❌ | ≤1 模块, ≤500行 | 升级 executor |
+| **构建/编译错** | `build-error-resolver` | **sonnet-1** | ❌ | ≤1 构建错误 | 升级 debugger |
+| **修 bug / 根因分析** | `debugger` + `Skill("systematic-debugging")` | **sonnet-1** | ❌ | ≤1 bug, ≤3 文件 | 升级 ComplexProblemSolver |
+| **跑测试/构建** | `code-runner-agent` | mini | ❌ | ≤1 测试套件 | 拆多个命令 |
+| **代码库深度分析/体检** | `codebase-analyzer` | **sonnet-1** | ❌ | ≤1 子系统, ≤5 文件 | 拆 Phase |
+| **关键词搜索/抓静态页** | `web-search-agent` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
+| **github 调研（issue/PR/release/源码）** | `web-search-agent` + `gh CLI` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
+| **跨文件搜索定位** | `explore` | mini | ❌ | ≤1 子系统 | 拆多 explore |
+| **文档/规范搜索** | `doc-search-agent` | mini | ❌ | ≤1 规范文件 | 拆 doc-search-agent |
+| **综合调研（API + 选型 + 风险）** | `research-assistant` | **sonnet-1** | ❌ | ≤1 选型, ≤3 API | 升级 codebase-analyzer |
+| **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ | ≤1 模块, ≤3 文件 | 拆多 executor |
+| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 ComplexProblemSolver |
+| **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ | ≤1 PR, ≤3 文件 | 拆评论任务 |
+| **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ | 高频(≤3次/phase) | 无需(已节流) |
+| **纯配置/计划文件（.md/.json/.yaml plan 模板）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
+| **Todo 同步/AGENTS.md 文档编辑** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 
 ### 模型档位依据
 
@@ -394,6 +394,36 @@ Block 1 (选题) complete
 - ❌ 主进程直接接收 `Agent(subagent_type=codebase-analyzer)` 的体检报告全文
 
 ---
+
+---
+
+## ⏱️ 超时与失败兜底(P0)— Rule 22 落地
+
+派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等。
+
+**四档兜底(优先级顺序,Rule 22.3)**:
+
+| 序 | 兜底动作 | 何时用 | 执行者 |
+|---|---------|-------|-------|
+| 1 | **改派** | 失败原因是 subagent 类型不匹配(如 explore 接到写代码任务) | 主进程 |
+| 2 | **降档** | subagent 类型对但能力不够(haiku 失败→升 sonnet;短上下文失败→升 opus) | 主进程 |
+| 3 | **主进程接管** | 单文件 ≤300 行、目标明确、可独立验收 | 主进程 Edit/Read |
+| 4 | **AskUserQuestion** | 改派/降档/接管都失败,或问题需用户决策 | AskUserQuestion 工具 |
+
+**触发条件**(任一):
+- 子代理返回 `status: failed` 或 `partial` 但关键产出缺失
+- 派发超 `config.json#subagent.timeout_by_type[type]`(explore 30min / editor 60min / debugger 60min / executor 120min)
+- 子代理返回 `permission_denied` / `context_exceeded` 等不可重试错误
+- 同一子任务**连续失败 ≥2 次**(Rule 22.7)→ **强制 STOP** 报告用户,不进入 Chain block 交接
+
+**登记**(Rule 22.5):
+派发前在 task_plan.md `## 🔗 Subagent Handoff 登记表` 填一行(时间/subagent_type/目标/状态);子代理返回 30s 内主进程必须 Read 实际产出,勾 `verify_done`;未 Read → findings.md 记"未验证"。
+
+**反模式(禁止)**:
+- ❌ 失败后静默重试同法(违反 Rule 7 三击协议 + Rule 22.3)
+- ❌ 改派/降档时无登记(违反 Rule 22.5 流程追溯)
+- ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
+- ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)
 
 ## 💻 代码编辑强制隔离（P0）
 
