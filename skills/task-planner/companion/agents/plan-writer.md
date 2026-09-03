@@ -91,6 +91,7 @@ cost_estimate:
 1. **user_goal**:用户原始任务描述(原文或等价改写)
 2. **constraints**(可选):用户给出的硬约束(文件/时间/技术栈)
 3. **template_type**(可选):见上表,缺省按关键词匹配
+5. **subagent_dispatch_hint**(可选):若任务需派子代理,引用 `templates/subagent_dispatch.md` 七字段模板(Rule 22.4 强制)
 4. **cwd**(可选):当前工作目录,默认 `/home/terry/.zcode`
 5. **existing_plan_dir**(可选):已有 `plans/{task-id}/` 时,在此基础上更新
 
@@ -242,3 +243,7 @@ result = await Agent(
 | `executor` | executor 执行 Phase(Edit 代码、跑测试、调子代理);plan-writer 只写文档 |
 | `codebase-analyzer` | codebase-analyzer 读源码产出体检报告;plan-writer 接收 user goal,不做源码分析 |
 | `task-orchestrator` | task-orchestrator 协调多 agent 流水线;plan-writer 是流水线中的"计划节点" |
+
+
+- **禁止** 产出粒度过大的 Phase(单 Phase >3 文件或 >300 行;违反 Rule 21.1)
+- **禁止** 跳过 Subagent Handoff 登记表(违反 Rule 22.5)
