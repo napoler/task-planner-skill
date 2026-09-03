@@ -259,3 +259,37 @@ https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Ma
 
 **用本 skill：** 多步骤任务（3+ 步）/ 调研 / 建项目 / 跨多次工具调用 / 需组织管理
 **跳过：** 简单提问 / 单文件编辑 / 快速查找
+
+---
+
+## Chain Handoff Contract(链式交接合约,Rule 22 配套)
+
+**核心原则**:Block 间交接通过 plan_dir/.handoff 目录 + `passes_to` / `depends_on` 字段;每个 Block 完成后,主进程必须 Read 实际产出 + 写交接 handoff,下游 Block 才能开始。
+
+**交接合约(每次交接前必须满足)**:
+
+```
+1. 当前 block 所有 Phase = complete
+2. 交接产物文件存在且 size > 0
+3. 交接产物通过 verification_cmd 验证(exit 0)
+4. Handoff 追踪表已更新(状态 + 完成时间)
+5. 下游 block 的 status 已设为 in_progress
+6. Subagent Handoff 登记表已填(若该 Block 派发了子代理)
+```
+
+**字段定义**:
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `passes_to` | ✅ | 下一个 block 依赖的文件路径 |
+| `depends_on` | ✅ | 上一个 block 的产物路径 |
+| `handoff_status` | ✅ | `pending` / `in_progress` / `complete` / `blocked` |
+| `verification_cmd` | ✅ | 验证交接产物合法性的命令 |
+
+**重规划触发条件**(任一):
+- 上游 block verification_cmd 失败
+- 下游 block depends_on 路径不存在
+- 链式交接产物 schema 不匹配
+- Subagent Handoff 登记表出现连续失败(≥2 次)
+
+**修正时间**:2026-09 修复悬空引用(SKILL.md:328 原指向 `reference.md § Handoff` 但该节不存在,本节补全)。

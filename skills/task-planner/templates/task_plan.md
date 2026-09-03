@@ -124,6 +124,15 @@ Phase 1
 -->
 
 ### Phase 2: Planning & Structure
+<!--
+  Phase 含 ≥3 子任务 → 在下方展开 Subtasks 子表(Rule 22.6 二级拆分):
+  | ID | 目标(≤1 句) | 输入(路径) | 验收标准(可观察) | 状态 |
+  |----|------------|-----------|----------------|------|
+  | S1 | | | | pending |
+  | S2 | | | | pending |
+  | S3 | | | | pending |
+  单子任务触及 >3 文件或 >300 行 → 升级为独立 Phase(Rule 21.1/22.1)
+-->
 <!-- 
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
@@ -270,6 +279,20 @@ Phase 1
 | `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
 | `pre_check` | （Q1:否/Q2:有/Q3:能） |
 | `rollback_point` | （为空 → 禁止批量） |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+<!--
+  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出,勾 verify_done
+  WHY: 子代理规模限制 + 交接文件保障(Rule 22);未登记 = 视为未派发
+  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked
+  派发 prompt 七字段模板: templates/subagent_dispatch.md
+-->
+
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | verify_done |
+|---|------|--------------|----------------|------|--------------|---------------|-------------|
+| 1 | | | | queued | | | ☐ |
+| 2 | | | | | | | ☐ |
+| 3 | | | | | | | ☐ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
