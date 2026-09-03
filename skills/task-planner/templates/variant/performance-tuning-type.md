@@ -52,12 +52,14 @@ Phase 1
 - [ ] 输出热点清单到 `tmp/hot-spots.md`(函数 + 调用次数 + 耗时占比)
 - [ ] 若涉及 SQL → 派 `database-optimizer` 慢查询分析
 - **Status:** pending
+- **Executor:** debugger（sonnet-1）
 
 ### Phase 2: 基线 benchmark
 - [ ] 写基准脚本 `bench/perf-baseline.bench.ts`(或 ab/wrk/k6)
 - [ ] 跑基线,记录 P50/P95/P99/QPS → `tmp/perf-before.json`
 - [ ] 记录资源基线(CPU/内存)→ `tmp/resource-before.txt`
 - **Status:** pending
+- **Executor:** performance-optimizer
 
 ### Phase 3: 优化实施
 - [ ] 按热点清单逐项优化(索引 / 缓存 / 算法 / 并发 / bundle)
@@ -65,6 +67,7 @@ Phase 1
 - [ ] 派 `code-assistant` 单文件改 / `executor` 跨文件
 - [ ] 记录每步决策到 Decisions Made
 - **Status:** pending
+- **Executor:** performance-optimizer
 
 ### Phase 4: 验证 benchmark + 测试
 - [ ] 派 `code-runner-agent` 跑同一 benchmark → `tmp/perf-after.json`
@@ -72,12 +75,14 @@ Phase 1
 - [ ] 跑 `bun test` 确认无功能回归(VC-3)
 - [ ] 跑 `top`/`ps` 记录资源 → `tmp/resource-after.txt`
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 5: 复现性归档 + 文档
 - [ ] commit 引用 + benchmark 脚本入库
 - [ ] docs/perf-notes.md 更新(优化了什么 + 为什么)
 - [ ] `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** performance-optimizer
 
 ## 🔀 隔离决策
 

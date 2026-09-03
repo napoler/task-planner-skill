@@ -51,30 +51,35 @@ Phase 1
 - [ ] 跑基线测试 `bun test`,记录通过数 N
 - [ ] 锁定重构范围(具体函数/类/模块)
 - **Status:** pending
+- **Executor:** code-simplifier
 
 ### Phase 2: 重构方案设计
 - [ ] 设计具体重构手法(extract function/inline/rename/合并类/拆分模块)
 - [ ] 评估每步对 API 的影响
 - [ ] 写 Decisions Made 表
 - **Status:** pending
+- **Executor:** 主进程（例外理由:计划编排属主进程白名单）
 
 ### Phase 3: 实施重构
 - [ ] 派 `Agent(subagent_type: code-simplifier)` 或 `executor` 执行
 - [ ] 每步保持测试绿(测试失败立即回滚该步)
 - [ ] 记录每步 diff 到 progress.md
 - **Status:** pending
+- **Executor:** code-simplifier
 
 ### Phase 4: 验证行为不变 + 复杂度下降
 - [ ] 派 `Agent(subagent_type: code-runner-agent)` 跑 `bun test`
 - [ ] 派 `Agent(subagent_type: codebase-analyzer)` 重测复杂度
 - [ ] 对比基线:测试通过数 ≥ N + 复杂度下降 ≥ 10%
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 5: Code Review Gate + 提交
 - [ ] 调用 `Skill("code-review")` 审查(重点:行为是否真不变 + API 兼容性)
 - [ ] APPROVED → commit;CHANGES_REQUESTED → 回到 Phase 3
 - [ ] `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
 ## 🔀 隔离决策
 

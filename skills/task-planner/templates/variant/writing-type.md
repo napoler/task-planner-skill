@@ -31,12 +31,14 @@
 - [ ] Phase 1-SEO: SEO tag generation
 - [ ] Phase 1.5: synthesis prep
 - **Status:** pending
+- **Executor:** article-writer
 
 ### Phase 2: 合成阶段 (Phase 2→2.7)
 - [ ] Phase 2: raw research → structured
 - [ ] Phase 2.5: compression
 - [ ] Phase 2.7: writing_context.md 生成
 - **Status:** pending
+- **Executor:** article-writer
 
 ### Phase 3: 写作阶段 (Phase 3.1→4)
 - [ ] Phase 3.1: title draft
@@ -45,11 +47,13 @@
 - [ ] Phase 3.5: quality-reviewer 审查
 - [ ] Phase 4: schema 验证
 - **Status:** pending
+- **Executor:** article-writer
 
 ### Phase 4: 发布阶段 (Phase 5→6)
 - [ ] Phase 5: Django API publish
 - [ ] Phase 6: post-publish verify
 - **Status:** pending
+- **Executor:** article-writer
 
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |

@@ -51,30 +51,35 @@ Phase 1
 - [ ] 输出"测试目标清单"到 findings.md(每条含:函数名 + 入参类型 + 期望行为)
 - [ ] 圈定覆盖率目标(行/分支)
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 2: 用例设计(等价类 + 边界值)
 - [ ] 派 `Agent(subagent_type: test-engineer)` 设计用例矩阵
 - [ ] 每函数至少 3 类用例:正常值 + 边界值 + 异常值
 - [ ] 输出到 `tmp/test-cases.md`
 - **Status:** pending
+- **Executor:** 主进程（例外理由:计划编排属主进程白名单）
 
 ### Phase 3: 用例实现
 - [ ] 派 `Agent(subagent_type: code-assistant)` 写测试代码
 - [ ] 单一职责:每个 test() 只测一个行为
 - [ ] 命名规范:`describe('X') + it('when Y should Z')`
 - **Status:** pending
+- **Executor:** test-engineer（sonnet-1）
 
 ### Phase 4: 覆盖率验证
 - [ ] 派 `code-runner-agent` 跑 `bun test --coverage`
 - [ ] 覆盖率不达标 → 回到 Phase 3 补测试
 - [ ] 输出 `coverage/coverage-summary.json` 留证
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 5: CI 集成
 - [ ] CI 配置更新(`bun test` 加入 CI 流程)
 - [ ] 随机顺序跑(`bun test --random-order`)确认无依赖
 - [ ] `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** test-engineer（sonnet-1）
 
 ## 🔀 隔离决策
 

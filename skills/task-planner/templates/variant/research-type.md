@@ -32,6 +32,7 @@
 - [ ] 记录 `_channel_attempts[]` 到 findings.md
 - [ ] 确认数据源列表
 - **Status:** pending
+- **Executor:** research-assistant（sonnet-1）
 
 ### Phase 2: 数据收集
 - [ ] 执行策略 1：{strategy-1}
@@ -39,23 +40,27 @@
 - [ ] 执行策略 3：{strategy-3}
 - [ ] 验证数据来源完整性
 - **Status:** pending
+- **Executor:** research-assistant（sonnet-1）
 
 ### Phase 3: 数据清洗与验证
 - [ ] 去重检查
 - [ ] 冲突检测
 - [ ] 覆盖率计算
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 4: 结果整合
 - [ ] 合并调研结果
 - [ ] 生成 summary.md
 - [ ] 标注关键发现
 - **Status:** pending
+- **Executor:** research-assistant（sonnet-1）
 
 ### Phase 5: 交付验证
 - [ ] 逐条复验 VC
 - [ ] 输出调研报告
 - **Status:** pending
+- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |

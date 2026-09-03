@@ -27,12 +27,14 @@
 - [ ] Read 目标 skill 全部相关文件（SKILL.md + references/*.md + config/*.json）
 - [ ] **门控**：未 Read 全部文件 → 禁止进入诊断
 - **Status:** pending
+- **Executor:** debugger（sonnet-1）
 
 ### Phase 1.5: 引用路径存在性验证（Standard 64）
 - [ ] 运行 `python3 tools/path_existence_validator.py <skill-dir> --scope all`
 - [ ] 记录 P0 缺失和 P1 歧义
 - [ ] **门控**：有 P0 缺失 → 阶段 2 必须包含修复计划
 - **Status:** pending
+- **Executor:** debugger（sonnet-1）
 
 ### Phase 2: 诊断报告
 - [ ] R1-R8 调研 → C1-C5 证据完整性
@@ -41,6 +43,7 @@
 - [ ] 根因分析 → 产出诊断报告
 - [ ] **门控**：诊断报告无 evidence → 回退重跑
 - **Status:** pending
+- **Executor:** debugger（sonnet-1）
 
 ### Phase 3: 修复实施
 - [ ] 按优先级修复（P0 → P1 → P2）
@@ -49,6 +52,7 @@
 - [ ] Standard 54 Loop 决策
 - [ ] Standard 57 模板适配
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ### Phase 4: 验证 + 总结
 - [ ] 逐条复验 56 标准
@@ -56,6 +60,7 @@
 - [ ] Wait 完成强制核查（W1-W5）
 - [ ] 交付结论：COMPLETE/PARTIAL/BLOCKED
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |

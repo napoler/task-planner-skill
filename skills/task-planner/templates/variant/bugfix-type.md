@@ -51,6 +51,7 @@ Phase 1
 - [ ] 写最小复现脚本(`tmp/repro.ts`),记录报错信息
 - [ ] 输出复现步骤到 findings.md
 - **Status:** pending
+- **Executor:** debugger（sonnet-1）
 
 ### Phase 2: 根因定位
 - [ ] 调用 `Skill("systematic-debugging")` 5 步根因分析
@@ -58,18 +59,21 @@ Phase 1
 - [ ] 根因含证据链:日志/堆栈/最小复现/调用链
 - [ ] 写 findings.md「根因」节
 - **Status:** pending
+- **Executor:** debugger（sonnet-1）
 
 ### Phase 3: 修复方案设计
 - [ ] 设计修复方案(至少 2 个备选 + 推荐)
 - [ ] 评估副作用:是否影响其他模块
 - [ ] 用户确认 → 进入实施
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ### Phase 4: 实施修复
 - [ ] 派 `Agent(subagent_type: code-assistant)` 实施修复
 - [ ] 同步新增回归测试(覆盖此 bug)
 - [ ] 记录修复前后 diff 到 progress.md
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ### Phase 5: 验证 + Code Review + 提交
 - [ ] 跑最小复现脚本 → 无报错
@@ -78,6 +82,7 @@ Phase 1
 - [ ] APPROVED → commit;CHANGES_REQUESTED → 回到 Phase 4
 - [ ] `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
 ## 🔀 隔离决策
 

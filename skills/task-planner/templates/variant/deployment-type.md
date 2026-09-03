@@ -52,24 +52,28 @@ Phase 1
 - [ ] staging 环境预演脚本就绪
 - [ ] 输出环境清单到 `tmp/env-inventory.md`
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 2: 配置变更(infra as code)
 - [ ] 派 `code-assistant` 或 `executor` 改 Dockerfile / k8s yaml / nginx conf
 - [ ] 配置文件全部 git 落盘(禁止 SSH 直改)
 - [ ] 镜像/包版本号清晰可追溯(git tag 或 registry tag)
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 3: staging 验证
 - [ ] 部署到 staging
 - [ ] 派 `code-runner-agent` 跑冒烟测试 + 健康检查
 - [ ] staging 通过 → 进入生产;否则修复配置直到通过
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 4: 生产部署(蓝绿/灰度)
 - [ ] 备份当前生产版本(镜像 tag / 配置快照)
 - [ ] 灰度发布(按比例切流 1% → 10% → 100%)
 - [ ] 写 rollback.sh 脚本(回退到上一版本)
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 5: 部署后监控 + 收尾
 - [ ] 监控告警阈值检查(错误率/延迟/资源)
@@ -77,6 +81,7 @@ Phase 1
 - [ ] RUNBOOK.md 更新(部署步骤/回滚步骤/常见问题)
 - [ ] `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ## 🔀 隔离决策
 
