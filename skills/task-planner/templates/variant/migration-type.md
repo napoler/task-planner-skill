@@ -52,6 +52,7 @@ Phase 1
 - [ ] 旧代码归档到 `archive/legacy-<date>/`
 - [ ] 记录基线行为快照(测试输出/接口签名)到 `tmp/baseline-snapshot.json`
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 2: 新实现开发
 - [ ] 派 `Agent(subagent_type: code-assistant)` 单文件改写
@@ -59,24 +60,28 @@ Phase 1
 - [ ] 每步保持基线行为不漂移(对照 snapshot)
 - [ ] 记录新实现决策到 Decisions Made
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 3: 双跑回归对照
 - [ ] 写双跑脚本 `tmp/dual-run.sh` 并行执行新旧实现
 - [ ] 派 `code-runner-agent` 输出 `tmp/dual-run-diff.txt`
 - [ ] diff ≤5% → 进入切流;否则修复新实现直到等价
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 4: 切流/路由切换
 - [ ] 新实现主路径生效(默认调用新入口)
 - [ ] 旧入口加 deprecation warning(过渡期)
 - [ ] 派 `Skill("cli-tool-builder")` 检查 CLI 入口(若 CLI 迁移)
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ### Phase 5: 文档更新 + 旧入口归档
 - [ ] 更新 README.md / INSTALL.md / MIGRATION.md
 - [ ] 记录迁移决策到 Decisions Made + commit 引用
 - [ ] 跑 `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** executor（sonnet-1）
 
 ## 🔀 隔离决策
 

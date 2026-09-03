@@ -66,6 +66,11 @@ Status: `pending` Last verified: —
 
 ---
 
+## 委派统计复验（Rule 25.4）
+- [ ] 委派率已统计:子代理执行 Phase __ / 总数 __
+- [ ] 主进程直做 Phase 均在计划 Executor 字段登记例外理由
+- [ ] 委派率 <50% 且无登记理由 → outcome 已降级 PARTIAL
+
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```

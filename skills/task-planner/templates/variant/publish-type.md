@@ -40,6 +40,7 @@
 - [ ] 权限/token 有效性验证
 - [ ] 回滚脚本就绪确认
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 2: 执行发布
 - [ ] 执行幂等性预检
@@ -49,18 +50,21 @@
 - [ ] 批量生成型内容:跑跨单元一致性检查(标题去重/克隆检测,Rule 18.4)
 - [ ] 记录每批次响应
 - **Status:** pending
+- **Executor:** article-batch-publisher（sonnet-1）
 
 ### Phase 3: 发布后验证
 - [ ] GET 资源验证
 - [ ] 数据完整性检查
 - [ ] 监控指标确认
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 4: 清理与交付
 - [ ] 清理临时文件
 - [ ] 生成发布报告
 - [ ] 更新发布日志
 - **Status:** pending
+- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
 ## 🚨 回滚策略
 **触发条件**：≥1 VC 失败 / 批量 failure_rate >20%（Rule 18.3 自动熔断）

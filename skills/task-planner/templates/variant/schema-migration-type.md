@@ -53,18 +53,21 @@ Phase 1
 - [ ] 评估锁等待风险:大表 → 强制在线 DDL
 - [ ] 输出 `tmp/migration-design.md`(变更清单 + 可逆性 + 风险)
 - **Status:** pending
+- **Executor:** 主进程（例外理由:计划编排属主进程白名单）
 
 ### Phase 2: 编写 up/down 脚本
 - [ ] 派 `code-assistant` 写 up + down SQL 脚本
 - [ ] 包含数据回填逻辑(若新增非空字段)
 - [ ] 加 IF NOT EXISTS / IF EXISTS 兼容已部分应用情况
 - **Status:** pending
+- **Executor:** database-optimizer
 
 ### Phase 3: staging 演练
 - [ ] 备份 staging 库
 - [ ] 跑 up + 验证 + 跑 down + 验证 schema 一致(VC-1)
 - [ ] 跑数据回填脚本 → 校验行数/字段
 - **Status:** pending
+- **Executor:** database-optimizer
 
 ### Phase 4: 生产执行
 - [ ] 备份生产库(mysqldump / pg_dump + 校验)
@@ -72,6 +75,7 @@ Phase 1
 - [ ] 大表用在线工具:`pt-online-schema-change` / `gh-ost`
 - [ ] 监控 `pg_stat_activity` / `SHOW PROCESSLIST`
 - **Status:** pending
+- **Executor:** database-optimizer
 
 ### Phase 5: 回滚预案确认 + 文档
 - [ ] down 脚本演练记录入档
@@ -79,6 +83,7 @@ Phase 1
 - [ ] RUNBOOK.md 更新(紧急回滚 SOP)
 - [ ] `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** database-optimizer
 
 ## 🔀 隔离决策
 

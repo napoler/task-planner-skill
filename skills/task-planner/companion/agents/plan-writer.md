@@ -91,6 +91,7 @@ cost_estimate:
 1. **user_goal**:用户原始任务描述(原文或等价改写)
 2. **constraints**(可选):用户给出的硬约束(文件/时间/技术栈)
 3. **template_type**(可选):见上表,缺省按关键词匹配
+5. **subagent_dispatch_hint**(可选):若任务需派子代理,引用 `templates/subagent_dispatch.md` 七字段模板(Rule 22.4 强制)
 4. **cwd**(可选):当前工作目录,默认 `/home/terry/.zcode`
 5. **existing_plan_dir**(可选):已有 `plans/{task-id}/` 时,在此基础上更新
 
@@ -103,7 +104,7 @@ cost_estimate:
 | **Goal** | 一句话描述目标终态 |
 | **VC 表** | 5 条可验证条目(每条含判定标准 + 验证方式 + 证据路径) |
 | **Scope 表** | 允许/禁止文件清单(只列具体路径) |
-| **Phases** | 3-7 个 Phase,每 Phase 含 2-4 个 checkbox + `**Status:** pending/in_progress/complete` |
+| **Phases** | 3-7 个 Phase,每 Phase 含 2-4 个 checkbox + `**Status:** pending/in_progress/complete` + `**Executor:** 执行体声明(Rule 25.1)` |
 | **隔离决策** | conflict_scan / isolation / worktree_path / branch / merge_back 五字段 |
 | **Todo 同步表** | 每个 Phase 一行,含 Todo 已建/最近同步时间/备注 |
 | **Key Questions** | 1-5 个待回答的关键问题 |
@@ -149,6 +150,7 @@ cost_estimate:
 - [ ] checkbox
 - [ ] checkbox
 - **Status:** pending
+- **Executor:** {subagent_type(model) | 主进程（例外理由:…）}
 ### Phase 2: ...
 ... (3-7 phases)
 
@@ -176,6 +178,7 @@ cost_estimate:
 - ❌ 不省略 VC 表或 Scope 表 — 这是 task-planner 的强制结构
 - ❌ 不把 Goal 写超过 1 句 — Goal 是导航星,长描述 = 后期漂移的源头
 - ❌ 不把 Phase 写到 7 个以上 — 拆分过细 = 执行阻力大
+- ❌ 不省略任何 Phase 的 `**Executor:**` 字段(Rule 25.1) — Executor=主进程时必须写明例外理由;无字段 = 计划无效
 - ❌ 不引用模型降到 haiku 的风险(违反 agent-model-tiering 约定)
 
 ## 输出模板
@@ -204,7 +207,7 @@ cost_estimate:
 产出后**必须**:
 1. `Read` 刚写入的 task_plan.md,确认结构完整
 2. 运行 `bash ~/.zcode/skills/task-planner/scripts/check-complete.sh` —— 应返回 exit 0
-3. 列出每个 Phase 的 Status 字段,确认 3-7 个 + 全部 `pending`(除 Phase 1 标记 `in_progress`)
+3. 列出每个 Phase 的 Status 字段,确认 3-7 个 + 全部 `pending`(除 Phase 1 标记 `in_progress`);同时确认每 Phase 均有 `**Executor:**` 字段,Executor=主进程者均带例外理由(Rule 25.1)
 4. 确认 VC 表 5 条均非空 + 证据路径具体(非占位符)
 
 **验证失败 = 重新撰写**,禁止标记 COMPLETE。
@@ -214,6 +217,7 @@ cost_estimate:
 必须报告:
 - 哪些必填字段未填(Goal/VC/Scope/Phases/隔离决策/Todo 同步)
 - 哪些 Phase 缺 Status 字段
+- 哪些 Phase 缺 Executor 字段,或 Executor=主进程但未写例外理由
 - 哪些 VC 条目证据路径为占位符
 - 与 `check-complete.sh` 的预期差异
 
@@ -242,3 +246,7 @@ result = await Agent(
 | `executor` | executor 执行 Phase(Edit 代码、跑测试、调子代理);plan-writer 只写文档 |
 | `codebase-analyzer` | codebase-analyzer 读源码产出体检报告;plan-writer 接收 user goal,不做源码分析 |
 | `task-orchestrator` | task-orchestrator 协调多 agent 流水线;plan-writer 是流水线中的"计划节点" |
+
+
+- **禁止** 产出粒度过大的 Phase(单 Phase >3 文件或 >300 行;违反 Rule 21.1)
+- **禁止** 跳过 Subagent Handoff 登记表(违反 Rule 22.5)

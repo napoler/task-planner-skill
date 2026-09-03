@@ -108,6 +108,7 @@ Phase 1
   WHAT: Break your task into 3-7 logical phases. Each phase should be completable.
   WHY: Breaking work into phases prevents overwhelm and makes progress visible.
   WHEN: Update status after completing each phase: pending → in_progress → complete
+  Executor 字段(Rule 25.1):每个 Phase 必须声明执行体;主进程直做必须写例外理由;选型按 SKILL.md §子代理路由与模型分级路由表
 -->
 
 ### Phase 1: Requirements & Discovery
@@ -119,6 +120,7 @@ Phase 1
 - [ ] Identify constraints and requirements
 - [ ] Document findings in findings.md
 - **Status:** in_progress
+- **Executor:** explore（mini）
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
@@ -144,6 +146,7 @@ Phase 1
 - [ ] Create project structure if needed
 - [ ] Document decisions with rationale
 - **Status:** pending
+- **Executor:** 主进程（例外理由:计划编排属主进程白名单）
 
 ### Phase 3: Implementation
 <!-- 
@@ -154,6 +157,7 @@ Phase 1
 - [ ] Write code to files before executing
 - [ ] Test incrementally
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ### Phase 4: Testing & Verification
 <!-- 
@@ -164,6 +168,7 @@ Phase 1
 - [ ] Document test results in progress.md
 - [ ] Fix any issues found
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 5: Delivery
 <!-- 
@@ -174,6 +179,7 @@ Phase 1
 - [ ] Ensure deliverables are complete
 - [ ] Deliver to user
 - **Status:** pending
+- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -282,6 +288,18 @@ Phase 1
 | `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
 | `pre_check` | （Q1:否/Q2:有/Q3:能） |
 | `rollback_point` | （为空 → 禁止批量） |
+
+## 📊 委派统计（Rule 25.4 — 终验前必填）
+<!-- 
+  WHAT: 本计划子代理 vs 主进程的执行分布统计。
+  WHY: 子代理占比需要可见反馈闭环;委派率 <50% 且主进程直做无登记理由 → outcome 最高 PARTIAL。
+  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
+-->
+| 字段 | 值 |
+|------|-----|
+| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
+| 主进程直做 Phase 清单 | （含例外理由） |
+| 委派率 | （<50% 且无登记理由 → 最高 PARTIAL） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--

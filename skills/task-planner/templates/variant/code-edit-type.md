@@ -48,30 +48,35 @@ Phase 1
 - [ ] Read 上下游调用方(避免改坏调用链)
 - [ ] 输出修改前代码片段到 progress.md
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ### Phase 2: 实施修改
 - [ ] 派 `Agent(subagent_type: code-assistant)`(≤3 文件)或 `executor` (>3 文件)执行修改
 - [ ] 一次性提交,避免多次小改
 - [ ] 记录修改前后关键 diff 到 progress.md
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ### Phase 3: 验证编译与测试
 - [ ] 派 `Agent(subagent_type: code-runner-agent)` 跑 `bun run lint` / `bun test`
 - [ ] 失败 → 派 `Agent(subagent_type: build-error-resolver)` 修复
 - [ ] 测试输出回写到 progress.md
 - **Status:** pending
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 4: 触发 Code Review Gate
 - [ ] 收集本次修改文件清单(`git diff --name-only`)
 - [ ] 调用 `Skill("code-review")` 上下文隔离审查
 - [ ] APPROVED → 进入 Phase 5;CHANGES_REQUESTED → 回到 Phase 2 修复
 - **Status:** pending
+- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
 ### Phase 5: 提交 + 收尾
 - [ ] `git add` + `git commit` 修改文件(commit message 含 plan 引用)
 - [ ] 更新 task_plan.md 全部 Phase → complete
 - [ ] 运行 `Skill("task-drift-guard")` 终验
 - **Status:** pending
+- **Executor:** code-assistant（haiku-1）
 
 ## 🔀 隔离决策
 
