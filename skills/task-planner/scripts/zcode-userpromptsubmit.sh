@@ -91,6 +91,18 @@ if [ "$n" -eq 1 ] || [ $(( n % interval )) -eq 0 ]; then
   note="[plan-note] 新指令到达 — 先做影响判定: A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘。"
 fi
 
+# ─── 并发冲突检测(Rule 23)────────────────────────────────────────────────
+conflict_msg=""
+SKILL_ROOT_FOR_CONFLICT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$SKILL_ROOT_FOR_CONFLICT/check-conflicts.sh" --runtime "$CWD" 2>/dev/null | grep -E '🔴|⚠️' | head -5 | while IFS= read -r line; do
+  echo "$line"
+done > /tmp/task-planner-conflict-$$ 2>/dev/null
+if [ -s /tmp/task-planner-conflict-$$ ]; then
+  conflict_msg="$(cat /tmp/task-planner-conflict-$$)"
+fi
+rm -f /tmp/task-planner-conflict-$$
+[ -n "$conflict_msg" ] && conflict_msg="\n${conflict_msg}"
+
 # ─── 组装输出(JSON,additionalContext)─────────────────────────────────────
 out=""
 if [ -n "$inject" ]; then
@@ -102,6 +114,8 @@ fi
 [ -n "$note" ] && out="${out}${out:+
 }$note"
 
+[ -n "$conflict_msg" ] && out="${conflict_msg}
+${out}"
 [ -z "$out" ] && exit 0
 printf '{"additionalContext": %s}\n' "$(printf '%s' "$out" | jq -Rs .)"
 exit 0

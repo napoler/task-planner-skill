@@ -22,6 +22,9 @@
 | 字段 | 值 |
 |------|-----|
 | `code_review` | `n/a` / `required` |
+| `session_id` | `<uuid>` | 启动时生成,注册表追踪 |
+| `worktree_path` | `<path>` | §十一 隔离决策已有字段 |
+| `scope_files` | `[paths]` | 从「执行范围限制」解析,并发检测基础 |
 
 ## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
 

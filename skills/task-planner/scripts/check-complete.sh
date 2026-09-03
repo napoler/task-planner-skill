@@ -169,9 +169,20 @@ if total == 0 and not block_statuses:
     sys.exit(0)
 
 # Batch Report gate (Rule 18.6): incomplete fields block completion reporting
+
+    # Rule 23.6: fan-out 必须含 Aggregator Phase
+    aggregator_missing = []
+    if chain_mode == "fan-out":
+        if not re.search(r'Phase\s+\d+:.*[Aa]ggregator', content) and not re.search(r'Phase\s+\d+:.*聚合', content):
+            aggregator_missing = ["Aggregator Phase (Rule 23.6)"]
+
 if batch_missing:
     print(f"[plan] Batch Report incomplete (Rule 18.6) — missing: {', '.join(batch_missing)}")
     print("[plan] Batch tasks must fill all 8 fields before completion (templates/batch_report.md).")
+    sys.exit(1)
+if aggregator_missing:
+    print(f"[plan] fan-out plan missing Aggregator Phase (Rule 23.6) — {', '.join(aggregator_missing)}")
+    print("[plan] fan-out plans must have a Phase dedicated to collecting and verifying subtask results.")
     sys.exit(1)
 
 if complete == total and total > 0:
