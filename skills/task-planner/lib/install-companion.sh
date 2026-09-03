@@ -152,10 +152,16 @@ if [ -d "$COMPAANION_DIR/skills" ]; then
   for skill_dir in "$COMPAANION_DIR"/skills/*/; do
     [ -d "$skill_dir" ] || continue
     skill_name="$(basename "$skill_dir")"
-    for f in "$skill_dir"*; do
+    # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
+    # 排除 .git / tests/ 等非同步内容
+    while IFS= read -r -d '' f; do
       [ -e "$f" ] || continue
-      sync_one "$f" "$TARGET_ROOT/skills/$skill_name/$(basename "$f")"
-    done
+      rel="${f#$skill_dir}"          # scripts/scan-plans.sh
+      sync_one "$f" "$TARGET_ROOT/skills/$skill_name/$rel"
+    done < <(find "$skill_dir" -mindepth 1 -maxdepth 2 -type f -not -path '*/.git/*' \
+                                -not -path '*/tests/*' \
+                                -not -name '*.pyc' -not -name '*.md.bak' \
+                                -print0)
   done
 fi
 
