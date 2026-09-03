@@ -41,6 +41,15 @@ ls -la plans/task-*/task_plan.md 2>/dev/null                     # 命名任务
 ls -la .zcode/plans/plan-sess_*.md 2>/dev/null                   # session-scoped
 ls -la skills/*/plans/task-*/task_plan.md 2>/dev/null            # skill 内计划
 
+# openspec 计划位置(本机已验证: /home/terry/openspec/)
+ls -la openspec/changes/*/tasks.md 2>/dev/null                   # openspec active change
+ls -la openspec/changes/archive/*/tasks.md 2>/dev/null           # openspec archived(默认跳过)
+
+# spec-kit 计划位置(实验性:本机未见过真样例,基于官方模板约定)
+ls -la specs/*/tasks.md 2>/dev/null                              # spec-kit feature tasks
+ls -la specs/*/spec.md 2>/dev/null                               # spec-kit feature spec
+ls -la .specify/specs/*/tasks.md 2>/dev/null                     # spec-kit 旧约定
+
 # worktree 残留(过期判定维度②依赖)
 git worktree list
 ```
@@ -56,22 +65,25 @@ skill 接收用户在 prompt 中以自然语言声明的过滤/阈值条件,主�
 | "用 30 天阈值" / "30 天以上的才算过期" | `scan-plans.sh --time-threshold 2592000` (30 × 86400) |
 | "只看 ts-migration 或 fix 任务" | `scan-plans.sh --only 'ts-migration\|fix'` |
 | "只扫 plans/ 子目录" | `scan-plans.sh <root>/plans` |
-| "用默认" / 无声明 | `scan-plans.sh $(pwd)` (默认 7 天阈值) |
+| "包含已归档的 openspec" | `scan-plans.sh --include-archived` |
+| "用默认" / 无声明 | `scan-plans.sh $(pwd)` (默认 7 天阈值,openspec 默认跳过 archive) |
 
 > **报告里必含「实际生效阈值」段**(见 §5.1),避免用户事后忘记自己声明过什么。
 
 ### 2. 提取每份计划的元数据
 
-每个 task_plan.md 用 `Read` 提取以下五字段(grep 模式,见 `scripts/extract-meta.sh`):
+每个计划文件用 `Read` 提取以下字段(自动按格式分派后端,见 §2.1):
 
 | 字段 | 来源 | 用途 |
 |------|------|------|
-| `task_id` | 目录名 / `plan-sess_*` 文件名 | 报告主键 |
-| `goal` | `## Goal` 段首句(到第一个 `.` / 换行) | 过期判定③(目标对比) |
-| `current_phase` | `## Current Phase` 段内容 | 是否已完成 |
-| `next_step` | `## Next Step` 段首句 | 续推动作提示 |
-| `phase_status_map` | `### Phase N: ...` 下 `- **Status:** <s>` 列表 | 进度摘要 |
-| `last_update` | `git log -1 --format=%ct plans/<id>/task_plan.md` 或 `stat -c %Y` | 过期判定①(时间) |
+| `task_id` | 目录名 / 文件名 | 报告主键 |
+| `goal` | task-planner: `## Goal` 段首句;openspec: `.openspec.yaml` `goal` 字段(无则读 proposal.md `## Why` 段);spec-kit: spec.md `# Feature Specification:` 行 | 过期判定③ |
+| `current_phase` | task-planner: `## Current Phase` 段;openspec: tasks.md `## N.` 分组;spec-kit: spec.md `**Status**` 字段或 tasks.md `## Phase N:` | 进度摘要 |
+| `phase_status_map` | task-planner: `- **Status:** <s>` 列表 | 进度摘要(task-planner 专用) |
+| `last_update` | 文件 mtime(`stat -c %Y`) | 过期判定① |
+| `format` | task-planner / openspec / spec-kit | 报告分类列 |
+| `task_completion_pct` | openspec + spec-kit: `- [x]` 计数 / `- [ ] + [x]` 总数 | 进度可视化 |
+| `is_archived` | openspec archive/ 路径命中 → 1 | 报告默认 drop 标记 |
 
 **主进程自己不要逐文件 Read 大段**(>500 行派 `Explore`;实际计划文件多在 5-12KB,可主进程 Read 头 100 行)。
 
@@ -149,28 +161,33 @@ git log --since="<last_update>" --oneline | grep -iE "<goal_keywords>"
 |--------|--------|--------|-------------|--------------|-----------|------|
 | 12 | 8 | 4 | 1 | 2 | 1 | 0 |
 
+> 格式覆盖: task-planner / openspec / spec-kit(实验性)
+
 ## 候选清单(按推荐动作排序)
 
 ### ✅ 推荐 resume — 1 项
-| Task ID | Goal(摘要) | Current Phase | Last Update | 备注 |
-|---------|------------|---------------|-------------|------|
-| `task-cext-ts-migration` | content-extractor Python→TS 迁移 | Phase 3 in_progress | 5 天前 | [fresh] |
+| Task ID | Format | Goal(摘要) | Current Phase | Last Update | 完成度 | 备注 |
+|---------|--------|------------|---------------|-------------|--------|------|
+| `task-cext-ts-migration` | task-planner | content-extractor Python→TS 迁移 | Phase 3 in_progress | 5 天前 | n/a | [fresh] |
+| `feature-101` | spec-kit | My Feature 101 | Draft | 7 天前 | 33% | [stale-warn] |
 
 ### ⚠️ 推荐用户判断 — 1 项
-| Task ID | Goal | Current Phase | Last Update | 维度 |
-|---------|------|---------------|-------------|------|
-| `task-X` | ... | ... | 12 天前 | ① [stale] |
+| Task ID | Format | Goal | Current Phase | Last Update | 维度 |
+|---------|--------|------|---------------|-------------|------|
+| `task-X` | task-planner | ... | ... | 12 天前 | ① [stale] |
+| `proposal-y` | openspec | ... | 12/24 tasks | 18 天前 | ①③ |
 
 ### 🚫 推荐 archive — 2 项
-| Task ID | Goal | 触发维度 | 证据 |
-|---------|------|----------|------|
-| `task-Y` | ... | ①② | worktree 已删;scope 50% 不存在 |
-| `task-Z` | ... | ① | 18 天未动 |
+| Task ID | Format | Goal | 触发维度 | 证据 |
+|---------|--------|------|----------|------|
+| `task-Y` | task-planner | ... | ①② | worktree 已删;scope 50% 不存在 |
+| `archived-change` | openspec | ... | ①[archived] | 目录在 openspec/changes/archive/ |
 
 ### ❌ 推荐 drop — 1 项
-| Task ID | Goal | 触发维度 | 证据 |
-|---------|------|----------|------|
-| `task-W` | ... | ②③ | commits 已包含目标 |
+| Task ID | Format | Goal | 触发维度 | 证据 |
+|---------|--------|------|----------|------|
+| `task-W` | task-planner | ... | ②③ | commits 已包含目标 |
+| `proposal-Z` | openspec | ... | ③ | archived 且目标与近期 commits 重合 |
 
 ## 损坏项 — 0 项
 (无)
