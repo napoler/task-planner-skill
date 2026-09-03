@@ -103,6 +103,34 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 └── (其他结构同 Claude stub)
 ```
 
+### 2.5 Companion Skills 清单
+
+`companion/skills/` 存放 task-planner 运行时依赖、但位于 task-planner 目录之外(即安装在 `<tool-root>/skills/<name>/` 而非 `<tool-root>/skills/task-planner/`)的同伴 skill。`install.sh` Phase 5.6 + `lib/install-companion.sh` 自动发现并分发到目标工具根。
+
+| Skill | 描述 | 文件 |
+|-------|------|------|
+| `task-drift-guard` | 执行中漂移检测(每 phase 完成后调) | 顶层 3 文件:SKILL.md / EXAMPLES.md / README.md |
+| `plan-resume` | 中断/过期计划扫描与续推决策 | SKILL.md / README.md + `scripts/` 子目录(2 脚本)+ `tests/` 子目录(1 smoke) |
+
+### 2.6 Companion 同步器设计决策
+
+**问题**：早期 `lib/install-companion.sh` 与 `scripts/sync-companion.sh` 用 bash glob `for f in "$skill_dir"*` 扫 companion skill 目录，**只匹配顶层文件**(匹配到 `scripts/` 目录但不会递归)，导致带子目录(`scripts/*.sh`)的 companion skill 在分发时被静默丢弃。
+
+**决策**(2026-09-04)：改用 `find -maxdepth 2 -type f -print0` 配合 `-d ''` while read：
+
+- `-maxdepth 2` 覆盖"扁平 3 文件"(depth=1)与"含 1 层子目录"(depth=2)
+- `-type f` 排除目录、socket、pipe
+- `-not -path '*/tests/*'` 显式排除 tests/ 子目录(避免 smoke.sh 被分发到客户端)
+- `-not -path '*/.git/*'` 排除 git 元数据
+- `-print0` + `IFS= read -r -d ''` 处理文件名含空格/特殊字符
+- `${f#$skill_dir}` 取相对路径保留子目录结构(如 `scripts/scan-plans.sh`)
+
+**向后兼容**：`task-drift-guard` 只有顶层3 文件，新 find 输出仍是 3 行，分发行为不变。
+
+**已知限制**：
+- 不递归到 depth=3 及以上。若未来 companion skill 需要更深嵌套，需调整 maxdepth
+- `tests/` 排除意味着 smoke.sh 不分发。客户端测试通过 CI 在 canonical 仓跑
+
 ---
 
 ## 3. 路径解析契约
