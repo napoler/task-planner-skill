@@ -1,6 +1,5 @@
 ---
 name: todo-skill
-model: "xfyun/astron-code-latest"
 description: 将用户大目标拆解为结构化步骤，通过混合模式（Agent 拆解 + 原生 Task 执行 + 持久化同步）逐项推进完成。
 allowed-tools:
   - Bash
@@ -15,6 +14,7 @@ allowed-tools:
   - TaskUpdate
   - TaskList
   - TaskGet
+model: haiku
 ---
 
 # Todo Skill
@@ -37,7 +37,7 @@ allowed-tools:
 
 | 工具 | 用途 |
 |------|------|
-| `python3 tools/todo_manager.py <cmd> [args]` | 持久化任务管理 |
+| `tools/cli_todo-manager.ts <cmd> [args]` | 持久化任务管理（node 原生 TS，无需编译） |
 | `session-kv set/get/del` | 存储/读取/删除计划 |
 | `Agent(description=..., prompt=..., subagent_type="general-purpose")` | 任务拆解 |
 | `TaskCreate(subject=..., description=...)` | 创建原生 Todo |
@@ -48,7 +48,7 @@ allowed-tools:
 ### Step 1: 创建计划骨架
 
 ```bash
-python3 tools/todo_manager.py plan --goal "<用户目标>" --max_steps 10
+tools/cli_todo-manager.ts plan --goal "<用户目标>" --max_steps 10
 ```
 
 记录返回的 JSON，确认 `steps` 数组为空（后续由 Agent 填充）。
@@ -95,7 +95,7 @@ TaskCreate(subject="[todo-skill] 步骤N: <title>", description="<description>")
 1. `TaskUpdate(taskId=<id>, status="in_progress")`
 2. 根据 `description` 执行对应操作
 3. `TaskUpdate(taskId=<id>, status="completed")`
-4. 同步到持久化管理器：`python3 tools/todo_manager.py update --index N --status completed`
+4. 同步到持久化管理器：`tools/cli_todo-manager.ts update --index N --status completed`
 
 如果某步骤执行失败：
 - 保持 Todo 状态为 `in_progress`
