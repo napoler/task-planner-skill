@@ -91,6 +91,9 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 19.2 **progress 回填门控**:Phase 标记 complete 前,progress.md 对应 Phase 段必须已回填(Actions taken / Files created-modified / Test Results);未回填 → 禁止标记 complete
 19.3 **恢复会话先读三文件**:session-catchup / 5Q Reboot 恢复顺序 = task_plan.md(在哪/去哪/目标)→ progress.md(做过什么/错误)→ findings.md(已知什么/决策/资源);三文件缺失任一 = 计划未正确初始化
 19.4 **错误即时双写**:错误发生 → progress.md Error Log **立即**一条(不等 Phase 结束);同条摘要进 task_plan.md Errors 表(Rule 6 细化)
+19.5 **三文件终验门（check-complete.sh 硬校验）**:终验运行 `bash scripts/check-complete.sh <plan>/task_plan.md` 时,脚本对 plan 目录下 findings.md/progress.md 做 3-File Gate:① 文件缺失 → exit 1;② 文件存在但为模板 stub(扣除对应内置模板行集合后实质内容 <3 行) → exit 1 并提示回填;③ task_plan.md >500 行 → WARNING 提示按 19.6 瘦身(不阻断)。全部 Phase complete 而 findings/progress 为 stub = 19.2 回填门控违规,按 Rule 26.3 处罚映射处置;门未过禁止声称 COMPLETE。
+19.6 **task_plan.md 瘦身(防单文件膨胀)**:task_plan.md 是控制面板,只放 目标/Phase 状态/VC/范围/Decisions Made 一行摘要/Errors 一行摘要;调研结论、根因分析、选型论证、外部引用、长文本一律落 findings.md,task_plan.md 只留一行指针(结论一句话 + `→ findings.md §段名`);Decisions Made 表每行理由 ≤1 句,论证过程落 findings.md;文件 >500 行必须迁移非状态内容(联动 Rule 20.2:外部内容严禁进 task_plan.md)。
+19.7 **及时性提醒链路([plan-compass] hook 响应)**:2-Action Rule(Rule 3)为主控,hook 为兜底:PostToolUse 检测 findings.md/progress.md 陈旧(阈值 config.json#findings_stale_minutes 默认 20 / #progress_stale_minutes 默认 25)→ 注入 `[plan-compass]` 提醒 → 收到后**立即回填对应文件再继续**(findings 陈旧 → 补写近 2 次查看类操作的发现;progress 陈旧 → 补记关键动作/测试/错误);响应协议与 [plan-sync](todo-sync.md §4)同构,每次最多响应一条,回填后自然进入冷却。
 
 ### 20 计划注入与防篡改（P0）— turn-start 复诵 + SHA-256 锁定 + 数据边界
 ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计划复诵块"(smart 注入:Goal/Next Step/Current Phase/in_progress Phase 全文/Decisions 末3行 + progress 尾5行,`===BEGIN-PLAN-DATA===`/`===END-PLAN-DATA===` 包裹)。turn-start 注入是防漂移最有效手段;per-tool-call 复诵省略(证据:v3 autonomous 结论——强模型每 call 注入收益低)。

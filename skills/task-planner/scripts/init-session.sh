@@ -1,4 +1,5 @@
 #!/bin/bash
+# [2026-09-04] 新增 5 文件存在性复核（Rule 19.5 配套），缺失/空文件 exit 1
 # Initialize planning files for a new session
 # Usage: ./init-session.sh [project-name]
 #
@@ -108,4 +109,18 @@ else
 fi
 
 echo ""
+# [2026-09-04 Rule 19.5 配套] 5 文件存在性复核：缺失或空 → exit 1
+missing_files=()
+for f in task_plan.md findings.md progress.md notepad-learnings.md verification.md; do
+    if [ ! -s "$f" ]; then
+        missing_files+=("$f")
+    fi
+done
+if [ ${#missing_files[@]} -gt 0 ]; then
+    for f in "${missing_files[@]}"; do
+        echo "[init] ERROR: $f missing or empty — planning files incomplete"
+    done
+    exit 1
+fi
+echo "[init] 5/5 planning files verified"
 echo "Planning files initialized!"

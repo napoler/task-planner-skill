@@ -1,7 +1,7 @@
 #!/bin/bash
 # Check if all phases in task_plan.md are complete
 # Supports single-block and multi-block chain tasks (chain_mode: linked / fan-out)
-# Always exits 0 — uses stdout for status reporting
+# Exits 1 when gates fail (Batch Report Rule 18.6 / Aggregator Rule 23.6 / 3-File Gate Rule 19.5)
 # Used by Stop hook to report task completion status
 
 PLAN_FILE="${1:-task_plan.md}"
@@ -11,10 +11,15 @@ if [ ! -f "$PLAN_FILE" ]; then
     exit 0
 fi
 
-python3 - "$PLAN_FILE" << 'PYEOF'
+# [2026-09-04 Rule 19.5/19.6] Pass SKILL_ROOT so python can load templates/findings.md
+# and templates/progress.md for stub detection in 3-File Gate.
+SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+python3 - "$PLAN_FILE" "$SKILL_ROOT" << 'PYEOF'
 import sys, re
 
 plan_file = sys.argv[1]
+skill_root = sys.argv[2]
 with open(plan_file, "r", encoding="utf-8") as f:
     lines = f.readlines()
 
@@ -175,6 +180,48 @@ aggregator_missing = []
 if chain_mode == "fan-out":
     if not re.search(r'Phase\s+\d+:.*[Aa]ggregator', content) and not re.search(r'Phase\s+\d+:.*聚合', content):
         aggregator_missing = ["Aggregator Phase (Rule 23.6)"]
+
+# [2026-09-04 Rule 19.5] 3-File Gate — findings.md / progress.md 必须存在且非模板 stub
+# 仅在 plan 目录有 Phase 内容（total>0 或 block_statuses 非空）时生效。
+# 模板路径来自 argv[2]（SKILL_ROOT），缺失则跳过 stub 判定只检查文件存在。
+import os
+plan_dir = os.path.dirname(os.path.abspath(plan_file))
+three_file_gate_active = (total > 0) or bool(block_statuses)
+if three_file_gate_active:
+    for name in ("findings.md", "progress.md"):
+        target = os.path.join(plan_dir, name)
+        if not os.path.isfile(target):
+            print(f"[plan] 3-File Gate failed (Rule 19.5) — {name} missing in {plan_dir}")
+            print(f"[plan] Fix: create {name} via init-session.sh or copy from templates/{name}.")
+            sys.exit(1)
+        # Stub 判定：相对模板文件统计「实质行数」（strip 后非空、不在模板行集合、不以 <!-- 开头）
+        tpl_path = os.path.join(skill_root, "templates", name)
+        if os.path.isfile(tpl_path):
+            try:
+                with open(tpl_path, "r", encoding="utf-8") as tf:
+                    tpl_lines = {ln.strip() for ln in tf.readlines() if ln.strip()}
+            except Exception:
+                tpl_lines = set()
+            with open(target, "r", encoding="utf-8") as pf:
+                plan_lines_raw = pf.readlines()
+            substantive = 0
+            for ln in plan_lines_raw:
+                s = ln.strip()
+                if not s:
+                    continue
+                if s.startswith("<!--"):
+                    continue
+                if s in tpl_lines:
+                    continue
+                substantive += 1
+            if substantive < 3:
+                print(f"[plan] 3-File Gate failed (Rule 19.5) — {name} is still a template stub (substantive lines < 3), backfill required")
+                print(f"[plan] Fix: Edit {name} with concrete findings/progress; templates/{name} is the reference skeleton.")
+                sys.exit(1)
+
+# [2026-09-04 Rule 19.6] task_plan.md 膨胀 WARNING（不阻断，提醒迁移细节到 findings.md）
+if len(lines) > 500:
+    print(f"[plan] WARNING: task_plan.md has {len(lines)} lines (>500, Rule 19.6) — offload research/decision details to findings.md")
 
 if batch_missing:
     print(f"[plan] Batch Report incomplete (Rule 18.6) — missing: {', '.join(batch_missing)}")

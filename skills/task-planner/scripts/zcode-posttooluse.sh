@@ -40,41 +40,85 @@ SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
 todo_n="$(jq -r '.properties.todo_sync_interval_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 plan_min="$(jq -r '.properties.plan_update_interval_minutes.default // 15' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 cooldown="$(jq -r '.properties.stale_remind_cooldown_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+# [2026-09-04 Rule 19.7] 新增 findings/progress 陈旧阈值；解析失败兜底默认。
+findings_n="$(jq -r '.properties.findings_stale_minutes.default // 20' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+progress_n="$(jq -r '.properties.progress_stale_minutes.default // 25' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 case "$todo_n" in ''|*[!0-9]*) todo_n=10 ;; esac
 case "$plan_min" in ''|*[!0-9]*) plan_min=15 ;; esac
 case "$cooldown" in ''|*[!0-9]*) cooldown=10 ;; esac
+case "$findings_n" in ''|*[!0-9]*) findings_n=20 ;; esac
+case "$progress_n" in ''|*[!0-9]*) progress_n=25 ;; esac
 
-# ─── 会话级计数 + 冷却（状态格式: <count> <epoch> <cooldown_left>）───────────
+# ─── 会话级计数 + 冷却 ───
+# [2026-09-04 Rule 19.7] 状态格式扩展为 5 字段: <count> <epoch> <cd_plan> <cd_findings> <cd_progress>
+# 旧 3 字段文件第 4/5 字段缺失兜底 0（向后兼容）。
 state="/tmp/task-planner-hook-${SID}.state"
 count="$(cut -d' ' -f1 "$state" 2>/dev/null || true)"
 cd_left="$(cut -d' ' -f3 "$state" 2>/dev/null || true)"
+cd_findings="$(cut -d' ' -f4 "$state" 2>/dev/null || true)"
+cd_progress="$(cut -d' ' -f5 "$state" 2>/dev/null || true)"
 case "$count" in ''|*[!0-9]*) count=0 ;; esac
 case "$cd_left" in ''|*[!0-9]*) cd_left=0 ;; esac
+case "$cd_findings" in ''|*[!0-9]*) cd_findings=0 ;; esac
+case "$cd_progress" in ''|*[!0-9]*) cd_progress=0 ;; esac
 count=$(( count + 1 ))
 [ "$cd_left" -gt 0 ] && cd_left=$(( cd_left - 1 ))
+[ "$cd_findings" -gt 0 ] && cd_findings=$(( cd_findings - 1 ))
+[ "$cd_progress" -gt 0 ] && cd_progress=$(( cd_progress - 1 ))
 
 emit() {
   printf '{"additionalContext": %s}\n' "$(printf '%s' "$1" | jq -Rs .)"
 }
 
 # ─── 优先级 1：计划文档陈旧且不在冷却期 → 强制回写，随后进入冷却 ─────────────
+# [2026-09-04 Rule 19.6/19.7] 提醒文案改为三文件分流版本，治理"一切塞 task_plan"。
 age_min=$(( age / 60 ))
 if [ "$age" -ge "$(( plan_min * 60 ))" ] && [ "$cd_left" -eq 0 ]; then
-  echo "0 $(date +%s) $cooldown" > "$state"
+  echo "0 $(date +%s) $cooldown $cd_findings $cd_progress" > "$state"
   emit "[plan-sync] ⏰ 计划文档已 ${age_min} 分钟未更新（阈值 ${plan_min} 分钟）: ${plan}
-强制动作（references/todo-sync.md §4 响应协议，三步立即执行）:
-1. Edit task_plan.md 回写进度（当前 Phase checkbox/Status/Errors 表）
-2. TodoWrite / TaskUpdate 同步原生 Todo 状态
-3. bash ${SKILL_ROOT}/scripts/sync-todos.sh --index 刷新 INDEX.md"
+回写分流（Rule 19.6/19.7，三文件各归其位）:
+1. Edit task_plan.md 只回写状态与指针（Phase checkbox/Status/Errors 一行摘要）
+2. 调研与结论 → findings.md；动作与测试 → progress.md（细节禁止塞进 task_plan.md）
+3. TodoWrite / TaskUpdate 同步原生 Todo + bash ${SKILL_ROOT}/scripts/sync-todos.sh --index"
   exit 0
 fi
 
-# ─── 优先级 2：调用次数达阈值 → 轻量 Todo 同步提醒 ───────────────────────────
+# [2026-09-04 Rule 19.7] findings.md / progress.md 路径 = 活跃 plan 同目录同名文件
+plan_dir="$(dirname "$plan")"
+findings_file="${plan_dir}/findings.md"
+progress_file="${plan_dir}/progress.md"
+
+# ─── 优先级 2：findings.md 陈旧且不在冷却期 → 提醒回写调研结论，随后进入冷却 ──
+f_mt="$(stat -c %Y "$findings_file" 2>/dev/null || true)"
+if [ -n "$f_mt" ]; then
+  f_age_min=$(( (now - f_mt) / 60 ))
+  if [ "$(( now - f_mt ))" -ge "$(( findings_n * 60 ))" ] && [ "$cd_findings" -eq 0 ]; then
+    echo "0 $(date +%s) $cd_left $cooldown $cd_progress" > "$state"
+    emit "[plan-compass] 🧭 findings.md 已 ${f_age_min} 分钟未更新（阈值 ${findings_n}）: ${findings_file}
+2-Action Rule（Rule 3/19.7）：把最近 2 次查看/搜索/子代理返回的结论摘要+证据路径 Edit 进 findings.md 对应段落，再继续。"
+    exit 0
+  fi
+fi
+
+# ─── 优先级 3：progress.md 陈旧且不在冷却期 → 提醒留痕动作，随后进入冷却 ──────
+p_mt="$(stat -c %Y "$progress_file" 2>/dev/null || true)"
+if [ -n "$p_mt" ]; then
+  p_age_min=$(( (now - p_mt) / 60 ))
+  if [ "$(( now - p_mt ))" -ge "$(( progress_n * 60 ))" ] && [ "$cd_progress" -eq 0 ]; then
+    echo "0 $(date +%s) $cd_left $cd_findings $cooldown" > "$state"
+    emit "[plan-compass] 🧭 progress.md 已 ${p_age_min} 分钟未更新（阈值 ${progress_n}）: ${progress_file}
+动作留痕（Rule 19.2/19.7）：把关键动作/文件变更/测试结果/错误 Edit 进 progress.md 当前 Phase 段，再继续。"
+    exit 0
+  fi
+fi
+
+# ─── 优先级 4：调用次数达阈值 → 轻量 Todo 同步提醒 ───────────────────────────
 if [ "$count" -ge "$todo_n" ]; then
-  echo "0 $(date +%s) $cd_left" > "$state"
+  echo "0 $(date +%s) $cd_left $cd_findings $cd_progress" > "$state"
   emit "[plan-sync] 🔄 已 ${count} 次工具调用未同步：核对 ${plan} 的 Phase 状态，并用 TodoWrite/TaskUpdate 同步原生 Todo（S2/S3）。"
   exit 0
 fi
 
-echo "$count $(date +%s) $cd_left" > "$state"
+# 未命中任何提醒 → 5 字段原样写回 state
+echo "$count $(date +%s) $cd_left $cd_findings $cd_progress" > "$state"
 exit 0
