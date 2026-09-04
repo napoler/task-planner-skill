@@ -72,14 +72,38 @@ STARTED_RAW="$(printf '%s' "$STARTED_LINE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2
 
 ANCHORED=0
 ANCHOR_EPOCH=0
+ANCHOR_UTC=""
 if [ -n "$STARTED_RAW" ]; then
     ANCHOR_EPOCH="$(date -d "$STARTED_RAW" +%s 2>/dev/null || echo 0)"
+    # 注意: 不能 date -u -d "<本地时间>" —— -u 会把输入当作 UTC 解析。
+    # 正确做法: epoch(按本地解析) 中转,再格式化为 UTC ISO(与 ledger ts 同域比较)。
+    ANCHOR_UTC="$(date -u -d "@${ANCHOR_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || true)"
     [ "$ANCHOR_EPOCH" -gt 0 ] && ANCHORED=1
 fi
+
+# 主信号: ledger 语义证据(上游 planning-with-files 完成门 G5 原理——
+# "mtime moves on any file touch and is thus unreliable",touch 伪造/无关写误报均不可判)。
+# 计划目录内任意 ledger-*.jsonl 含 ts >= 锚点(UTC 字典序=时间序)的行 = 本 Phase 有真实工作流。
+# 无 ledger 的存量计划自然退回 mtime fallback;伪造 ledger = Rule 26 无豁免违规,不靠脚本防。
+ledger_activity() {
+    [ -n "$ANCHOR_UTC" ] || return 1
+    ls "${PLAN_DIR}"/ledger-*.jsonl >/dev/null 2>&1 || return 1
+    awk -v a="${ANCHOR_UTC}" '
+        { if (match($0, /"ts":"[^"]*"/)) {
+            ts = substr($0, RSTART+6, RLENGTH-7)
+            if (ts >= a) { found = 1; exit }
+        } }
+        END { exit !found }
+    ' "${PLAN_DIR}"/ledger-*.jsonl
+}
 
 VIOLATIONS=()
 check_file() {
     local file="$1" label="$2" stale_min="$3"
+    # 主信号: ledger 语义证据 → 本 Phase 有真实工作,放行(降低 mtime 误报)
+    if ledger_activity; then
+        return 0
+    fi
     local mtime
     mtime="$(stat -c %Y "$file")"
     local ok=0
@@ -90,7 +114,7 @@ check_file() {
     fi
     if [ "$ok" -ne 1 ]; then
         if [ "$ANCHORED" -eq 1 ]; then
-            VIOLATIONS+=("$label 自 Phase $CURRENT_PHASE 开始($STARTED_RAW)从未更新")
+            VIOLATIONS+=("$label 自 Phase $CURRENT_PHASE 开始($STARTED_RAW)从未更新(无 ledger 工作记录,mtime 亦无增量)")
         else
             VIOLATIONS+=("$label 已 $(( (NOW - mtime) / 60 )) 分钟未更新(阈值 ${stale_min})")
         fi
@@ -108,5 +132,5 @@ if [ "${#VIOLATIONS[@]}" -gt 0 ]; then
     exit 1
 fi
 
-echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( [ "$ANCHORED" -eq 1 ] && echo "（锚点 $STARTED_RAW）" || echo "（stale 阈值模式）" )"
+echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定$( [ "$ANCHORED" -eq 1 ] && echo ":锚点 $STARTED_RAW" || echo ":stale 阈值模式" )）" )"
 exit 0

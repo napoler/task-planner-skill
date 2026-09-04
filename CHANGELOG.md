@@ -9,6 +9,12 @@
 
 ### 新增
 
+- **复用上游 planning-with-files v3 实现（ledger 工作账本/plan-doctor/gate 信号升级,Rule 19.2/19.8）** — 按用户指令复用 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) 已验证实现,替换自研弱信号:
+  - `scripts/ledger-append.sh`(新,移植) — 追加式 JSONL 工作账本:`{"tick","ts","agent","phase","event","summary","files"}`,事件枚举 progress/phase_complete/error/gate_block/attest/note;保留上游已验证的 tick 全局单调/flock 并发/UTF-8 截断修复;plan-dir 改显式传参适配本仓惯例。ledger = 机器层工作信号,md 三文件 = 人读层(上游架构 C3)。
+  - `scripts/check-3file-gate.sh` **信号升级** — 主信号从 mtime 改为 ledger 语义证据(锚点后 ledger-*.jsonl 有新增行 = 真实工作流);mtime 降为无 ledger 存量计划的 fallback。依据上游 G5 设计注记:"mtime moves on any file touch and is thus unreliable"。
+  - `scripts/plan-doctor.sh`(新,移植适配) — 六段一键自检:canonicalizer/计划解析/hook 面 4 事件位+注入实跑/attestation/安装面漂移核对/延迟;恒 exit 0,诊断"静默失效"。
+  - 契约同步:SKILL.md 执行循环 3c/3-File 门控加 ledger 调用点与信号优先级;critical-rules.md 19.2 重写信号优先级+新增 19.8 工作账本条款。
+  - **宿主能力边界落盘**:ZCode hooks 仅 4 事件无 Stop,上游五守卫完成门(gate-stop.sh)Tier1 硬阻断在本宿主不可用,不移植;执行中强制 = posttooluse 提醒/升级链 + 契约自跑门控(plan-doctor 第 6 段注明)。
 - **三文件执行中硬门控（Rule 19.2 强化）** — 治理「启动填一次后 findings/progress 停更、绕过模板末尾追加」的执行缺口(上条 Rule 19.5-19.7 只在终验查非 stub,启动填一次即永久通过):
   - `scripts/check-3file-gate.sh`(新) — Phase complete 翻转前硬校验:① progress.md 对应 Phase 段已回填 ② findings.md 本 Phase 期间有增量。mtime 判定,锚点 = progress.md Phase 段 Started 时间戳,缺失退化用 stale 阈值;exit 1 禁止翻转。设计取向「宁可误报逼一次回填,不可漏报」。
   - `zcode-posttooluse.sh` `[plan-compass]` **升级机制(Rule 19.7)** — 同一文件连续 `config.json#compass_escalate_after`(默认 2)次提醒仍无回填(mtime 早于上次提醒)→ 升级警告(违反 Rule 19.7,按 Rule 26.3 处置:登记 Error Log,终验 outcome 最高 PARTIAL);state 扩展 9 字段向后兼容。
