@@ -1,0 +1,3 @@
+# 运行时备份产物(backup.sh/安装器备份位)不入库
+.backup/
+__pycache__/

@@ -20,6 +20,8 @@
 
 ### 变更
 
+- **`lib/verify.sh` 适配软链部署模型（项目体检产出）** — 部署位为指向 canonical 的软链时,"薄壳体积 <15KB / 脚本无硬编码路径"检查不再适用(全量内容与回退默认值均为预期状态),改为校验软链指向 canonical 且经链可读;ZCode hooks 校验从 SKILL.md frontmatter 改为实际注册机制 `~/.zcode/cli/config.json`;opencode/cursor 薄壳保持 frontmatter 检查。修复后实跑 18 pass / 0 fail(此前 5 fail)。
+- **清理被 git 运踪的运行时备份产物** — 移除仓根 `.backup/`(2026-08-29 旧薄壳备份,内容保留于 git 历史),新增 `.gitignore`(`.backup/`、`__pycache__/`)防止运行时产物再次入库;`.backup/` 仍是 `lib/backup.sh` 的设计备份位,仅不再追踪。
 - **布局统一:外围 skill 全部迁移至仓库顶层 `skills/`** — `companion/skills/{task-drift-guard,plan-resume}` → 顶层(与 task-planner 同级),companion/ 仅留 agents/;`install-companion.sh`/`sync-companion.sh` 安装与回同步源改为顶层 skills/(自动发现含 SKILL.md 的目录,排除 task-planner 本体;新增仓根 CHANGELOG.md 校验,防止从已部署副本运行时误将部署目录当源);`todo-skill` 纳入分发范围;task-drift-guard 顶层陈旧副本以 companion 版归一(含批量漂移判定 + model 行,与线上部署逐字节一致)。`~/.agents/skills/plan-resume` 软链重指顶层新路径。
 - **`plan-resume` v0.3 多格式扫描**: `scan-plans.sh` 新增 openspec(`openspec/changes/*/tasks.md`)与 spec-kit(`specs/*/tasks.md` + `specs/*/spec.md`)两个扫描位置(共 3 种存储格式:task-planner / openspec / spec-kit)。openspec 默认跳过 `archive/`(加 `--include-archived` 可开启)。
 - **`extract-meta.sh` 三后端**:新增 `format=openspec` / `format=spec-kit` 分派,openspec 后端读 `.openspec.yaml` goal + tasks.md 完成度,spec-kit 后端读 spec.md 的 `**Status**` 字段与 tasks.md 完成度;原 `format=task-planner` 后端完全保留。
