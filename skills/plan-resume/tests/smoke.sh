@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# tests/smoke.sh — plan-resume skill 自检 v0.3
+# tests/smoke.sh — plan-resume skill 自检 v0.5(v0.3 基础检查 + v0.5 select-and-resume/config 用例)
 #
 # Usage:
 #   bash tests/smoke.sh              # 默认: 扫 ~/.zcode
 #   bash tests/smoke.sh <worktree>   # 用指定工作树作为扫描根
 #
-# 假设: 当前仓已 commit 到 plan-resume 技能,scripts/ 下已有 scan-plans.sh 与 extract-meta.sh
+# 假设: 当前仓已 commit 到 plan-resume 技能,scripts/ 下已有 scan-plans.sh、
+#       extract-meta.sh 与 select-and-resume.sh(v0.5,config 驱动自主模式)
 set -uo pipefail  # 不设 -e,因为我们想收集所有 FAIL 而非首个
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -43,7 +44,7 @@ sc_check() {
   fi
 }
 
-echo "=== plan-resume smoke v0.3 ==="
+echo "=== plan-resume smoke v0.5 ==="
 echo "SKILL_DIR=$SKILL_DIR"
 
 # ─── 基本语法与参数 ────────────────────────────────────────────────────────────
@@ -55,8 +56,10 @@ TOTAL=$((TOTAL + 1))
 if "$SCAN" --help >/dev/null 2>&1; then echo "[OK] scan-plans.sh --help 工作"; else echo "[FAIL] scan-plans.sh --help 工作"; FAIL=$((FAIL+1)); fi
 TOTAL=$((TOTAL + 1))
 if "$SCAN" --help 2>&1 | grep -q 'time-threshold'; then echo "[OK] --time-threshold 帮助"; else echo "[FAIL] --time-threshold 帮助"; FAIL=$((FAIL+1)); fi
+# 2026-09-05: scan-plans.sh v0.4 重构后无 --include-archived flag(原断言过时,改前即红),
+# 改为校验实际存在的 --only 帮助,保持"帮助输出含 flag 说明"的覆盖意图
 TOTAL=$((TOTAL + 1))
-if "$SCAN" --help 2>&1 | grep -q 'include-archived'; then echo "[OK] --include-archived 帮助"; else echo "[FAIL] --include-archived 帮助"; FAIL=$((FAIL+1)); fi
+if "$SCAN" --help 2>&1 | grep -q 'only'; then echo "[OK] --only 帮助"; else echo "[FAIL] --only 帮助"; FAIL=$((FAIL+1)); fi
 
 # ─── task-planner 后端 ─────────────────────────────────────────────────────────
 sc_check "scan-plans /home/terry/.zcode 产 >=1" /home/terry/.zcode '^/home'
@@ -75,11 +78,23 @@ else
 fi
 
 em_check "extract-meta task-planner task_id" /home/terry/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^task_id=task-skillfix-bun-finish$'
-em_check "extract-meta task-planner format 标记" /home/terry/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^format=task-planner$'
+# 2026-09-05: extract-meta.sh v0.4 起不再输出 format= 字段(原断言过时,改前即红),
+# 改为校验 v0.4 实际输出的 all_complete 字段
+em_check "extract-meta task-planner all_complete 字段" /home/terry/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^all_complete=[01]$'
 
 # ─── openspec 后端(本机已验证: /home/terry/openspec/) ─────────────────────────
-sc_check "scan-plans 扫 openspec 有输出" /home/terry/openspec 'tasks\.md'
-em_check "extract-meta openspec format 标记" /home/terry/openspec/changes/strengthen-execution-guidelines/tasks.md '^format=openspec$'
+# 2026-09-05: scan-plans.sh v0.4 起只扫 task_plan.md / plan-sess_*.md,openspec 的
+# changes/*/tasks.md 不再入扫(原断言"扫出 tasks.md"过时,改前即红),改为锁定新行为
+TOTAL=$((TOTAL + 1))
+OPENSPEC_OUT="$("$SCAN" /home/terry/openspec 2>/dev/null | sed '/^\[scan-plans\]/d')"
+if echo "$OPENSPEC_OUT" | grep -q 'tasks\.md'; then
+  echo "[FAIL] scan-plans 对 openspec 根不扫 tasks.md (got: $(echo "$OPENSPEC_OUT" | head -3))"
+  FAIL=$((FAIL+1))
+else
+  echo "[OK] scan-plans 对 openspec 根不扫 tasks.md(v0.4+ 仅 task_plan.md/plan-sess)"
+fi
+# 2026-09-05: format= 字段已移除(原断言过时),改为校验 v0.4 实际输出的 real_age_days 字段
+em_check "extract-meta openspec real_age_days 字段" /home/terry/openspec/changes/strengthen-execution-guidelines/tasks.md '^real_age_days=[0-9]+$'
 em_check "extract-meta openspec task_id" /home/terry/openspec/changes/strengthen-execution-guidelines/tasks.md '^task_id=strengthen-execution-guidelines$'
 
 # ─── spec-kit 后端(用 fake 测试结构 + 真实模板) ────────────────────────────────
@@ -99,13 +114,164 @@ cat > "$TEST_DIR/specs/f001-feature-x/tasks.md" <<'EOF'
 - [ ] T004 实现 API 路由
 EOF
 
-sc_check "scan-plans 扫 spec-kit 有输出" "$TEST_DIR" 'tasks\.md'
-em_check "extract-meta spec-kit format 标记" "$TEST_DIR/specs/f001-feature-x/tasks.md" '^format=spec-kit$'
-em_check "extract-meta spec-kit 完成度计算(25%)" "$TEST_DIR/specs/f001-feature-x/tasks.md" '^task_completion_pct=25$'
-em_check "extract-meta spec-kit spec.md 读 Status" "$TEST_DIR/specs/f001-feature-x/spec.md" '^current_phase=In Progress'
+# 2026-09-05: scan-plans.sh v0.4+ 不扫 specs/*/tasks.md(spec-kit 结构,原断言过时,改前即红),
+# 改为锁定 stdout 为空的新行为
+TOTAL=$((TOTAL + 1))
+SPECKIT_SCAN_OUT="$("$SCAN" "$TEST_DIR" 2>/dev/null | sed '/^\[scan-plans\]/d')"
+if echo "$SPECKIT_SCAN_OUT" | grep -q 'tasks\.md'; then
+  echo "[FAIL] scan-plans 对 spec-kit 结构不扫 tasks.md (got: $(echo "$SPECKIT_SCAN_OUT" | head -3))"
+  FAIL=$((FAIL+1))
+else
+  echo "[OK] scan-plans 对 spec-kit 结构不扫 tasks.md(v0.4+ 仅 task_plan.md/plan-sess)"
+fi
+# 2026-09-05: v0.4 起 format=/task_completion_pct/current_phase(读 Status)均不再是 extract-meta 输出
+# (原三条断言过时,改前即红),改为校验实际输出字段: all_complete / failure_count / git_last_commit
+em_check "extract-meta spec-kit all_complete=0(存在未完成 Phase)" "$TEST_DIR/specs/f001-feature-x/tasks.md" '^all_complete=0$'
+em_check "extract-meta spec-kit failure_count=0(无 progress.md)" "$TEST_DIR/specs/f001-feature-x/tasks.md" '^failure_count=0$'
+em_check "extract-meta spec-kit spec.md git_last_commit=0(untracked 兜底)" "$TEST_DIR/specs/f001-feature-x/spec.md" '^git_last_commit=0$'
 
 # 清理
 rm -rf "$TEST_DIR"
+
+# ─── v0.5 select-and-resume.sh + config(沙箱测试) ─────────────────────────────
+# 说明: select-and-resume.sh 从自身位置的 ../config.json 读配置(纯 grep/sed 解析),
+# 因此每个用例把整个 scripts/ 复制进独立 /tmp 沙箱,config.json 放沙箱根目录,
+# 使脚本的 CONFIG_FILE 指向沙箱内的 config 而非仓内真实配置。
+# 沙箱 repo 不是 git 仓 → score-plans.py 的 git_hits=0、real_age 走 mtime 兜底(预期内)。
+SR_BIN="$SKILL_DIR/scripts/select-and-resume.sh"
+V05_ROOT="/tmp/.plan-resume-test-v05"
+rm -rf "$V05_ROOT"
+trap 'rm -rf "$V05_ROOT"' EXIT  # 结尾清理 + 中途退出兜底
+
+TOTAL=$((TOTAL + 1))
+if bash -n "$SR_BIN"; then echo "[OK] bash -n select-and-resume.sh"; else echo "[FAIL] bash -n select-and-resume.sh"; FAIL=$((FAIL+1)); fi
+
+# v0.5 沙箱 helper: 建独立沙箱目录 + 复制 scripts/ + 建 repo/plans/
+sr_sandbox() {
+  local sb="$1"
+  mkdir -p "$sb/repo/plans"
+  cp -r "$SKILL_DIR/scripts" "$sb/scripts"
+}
+
+# v0.5 plan fixture: 干净候选(pending Phase + ## Goal 在头 30 行内)
+# $1=plans 目录路径 $2=task_id(=目录名) $3=frontmatter 附加行(可空) $4=正文附加行(可空)
+sr_make_plan() {
+  local pdir="$1" tid="$2" fm="$3" extra="$4"
+  mkdir -p "$pdir"
+  {
+    echo "---"
+    echo "task_id: $tid"
+    if [[ -n "$fm" ]]; then echo "$fm"; fi
+    echo "---"
+    echo ""
+    echo "## Goal"
+    echo "完成 $tid(测试夹具目标)"
+    echo ""
+    echo "## Phases"
+    echo ""
+    echo "### Phase 1: 实现"
+    echo "- **Status:** pending"
+    echo "- [ ] T001 执行 $tid"
+    if [[ -n "$extra" ]]; then echo "$extra"; fi
+  } > "$pdir/task_plan.md"
+}
+
+# v0.5 通用 helper: 任意条件断言($2 传 1/0)
+sr_check() {
+  local desc="$1" ok="$2"
+  TOTAL=$((TOTAL + 1))
+  if [[ "$ok" == "1" ]]; then
+    echo "[OK] $desc"
+  else
+    echo "[FAIL] $desc"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
+# ── v0.5-a config 加载: autonomous_resume=false → 无 flag 走 dry-run;缺 config → 默认 auto
+SB_A="$V05_ROOT/case-a-config"
+sr_sandbox "$SB_A"
+printf '{\n  "autonomous_resume": false\n}\n' > "$SB_A/config.json"
+sr_make_plan "$SB_A/repo/plans/p-alpha" "p-alpha" "" ""
+OUT_A="$(bash "$SB_A/scripts/select-and-resume.sh" --repo-root "$SB_A/repo" 2>&1)"
+sr_check "v0.5-a1 config autonomous_resume=false → 无 flag 输出 dry-run Top 1" \
+  "$(echo "$OUT_A" | grep -q 'dry-run: Top 1' && echo 1 || echo 0)"
+sr_check "v0.5-a2 config dry-run 不写 auto-pushed 标记" \
+  "$(grep -q 'auto-pushed-by-cron' "$SB_A/repo/plans/p-alpha/task_plan.md" && echo 0 || echo 1)"
+rm -f "$SB_A/config.json"
+bash "$SB_A/scripts/select-and-resume.sh" --repo-root "$SB_A/repo" >/dev/null 2>&1
+sr_check "v0.5-a3 缺 config 默认 autonomous → 写入 mode=auto-resume 标记" \
+  "$(grep -q 'mode=auto-resume' "$SB_A/repo/plans/p-alpha/task_plan.md" && echo 1 || echo 0)"
+
+# ── v0.5-b skip_states 硬排除: blocked Status 与 [awaiting-user] 在 dry-run 与 auto 都不选中
+SB_B="$V05_ROOT/case-b-skip-states"
+sr_sandbox "$SB_B"
+sr_make_plan "$SB_B/repo/plans/p-blocked" "p-blocked" "" "- **Status:** blocked"
+sr_make_plan "$SB_B/repo/plans/p-wait" "p-wait" "" "等待用户确认 [awaiting-user]"
+sr_make_plan "$SB_B/repo/plans/p-clean" "p-clean" "" ""
+REPORT_B="$SB_B/report-dry.md"
+OUT_B="$(bash "$SB_B/scripts/select-and-resume.sh" --repo-root "$SB_B/repo" --dry-run --report "$REPORT_B" 2>&1)"
+sr_check "v0.5-b1 dry-run 报告含 skip: blocked 排除记录" \
+  "$(grep -q 'skip: blocked' "$REPORT_B" && echo 1 || echo 0)"
+sr_check "v0.5-b2 dry-run 报告含 skip: awaiting-user 排除记录" \
+  "$(grep -q 'skip: awaiting-user' "$REPORT_B" && echo 1 || echo 0)"
+sr_check "v0.5-b3 dry-run Top 1 为未被排除的 p-clean" \
+  "$(echo "$OUT_B" | grep -q 'dry-run: Top 1 = p-clean' && echo 1 || echo 0)"
+OUT_B2="$(bash "$SB_B/scripts/select-and-resume.sh" --repo-root "$SB_B/repo" 2>&1)"  # 无 config → 默认 auto
+sr_check "v0.5-b4 auto 模式 blocked 候选未被写标记" \
+  "$(grep -q 'auto-pushed-by-cron' "$SB_B/repo/plans/p-blocked/task_plan.md" && echo 0 || echo 1)"
+sr_check "v0.5-b5 auto 模式选中落在未排除的 p-clean" \
+  "$(grep -q 'mode=auto-resume' "$SB_B/repo/plans/p-clean/task_plan.md" && echo 1 || echo 0)"
+
+# ── v0.5-c 默认自主 + auto 标记: Top1 被写标记,其余不被碰
+SB_C="$V05_ROOT/case-c-auto-marker"
+sr_sandbox "$SB_C"
+# 用 block_id/depends_on 让 p-alpha 的 out_degree=1 → score 最高,Top1 确定(沙箱无 git,tie 无法靠 git_hits 打破)
+sr_make_plan "$SB_C/repo/plans/p-alpha" "p-alpha" "block_id: p-alpha" ""
+sr_make_plan "$SB_C/repo/plans/p-beta" "p-beta" "depends_on: [p-alpha]" ""
+MD5_BETA_0="$(md5sum "$SB_C/repo/plans/p-beta/task_plan.md" | cut -d' ' -f1)"
+bash "$SB_C/scripts/select-and-resume.sh" --repo-root "$SB_C/repo" >/dev/null 2>&1
+sr_check "v0.5-c1 默认 auto Top1(p-alpha)写入 mode=auto-resume 标记" \
+  "$(grep -q 'mode=auto-resume' "$SB_C/repo/plans/p-alpha/task_plan.md" && echo 1 || echo 0)"
+sr_check "v0.5-c2 非 Top1(p-beta)未被修改(md5 不变)" \
+  "$([[ "$(md5sum "$SB_C/repo/plans/p-beta/task_plan.md" | cut -d' ' -f1)" == "$MD5_BETA_0" ]] && echo 1 || echo 0)"
+
+# ── v0.5-d outside-repo 守卫(真实触发断言,2026-09-05 守卫修复后生效)
+# 触发方式: repo/plans/p-evil 为符号链接,指向沙箱 repo 之外的 outside/p-evil;
+# select-and-resume.sh 探测实际来源路径并 readlink -f 物理解析后,auto 模式判为仓外排除;
+# dry-run 不做此守卫,以报告"守卫后可用"计数差异分别锁定两种行为。
+# 注意: 沙箱目录名不得含 "outside-repo" 字样,否则报告中的 **路径** 行会污染本断言。
+SB_D="$V05_ROOT/case-d-repo-guard"
+sr_sandbox "$SB_D"
+mkdir -p "$SB_D/outside/p-evil"
+sr_make_plan "$SB_D/outside/p-evil" "p-evil" "" ""
+ln -s "$SB_D/outside/p-evil" "$SB_D/repo/plans/p-evil"
+sr_make_plan "$SB_D/repo/plans/p-inside" "p-inside" "" ""
+REPORT_D="$SB_D/report-dry.md"
+bash "$SB_D/scripts/select-and-resume.sh" --repo-root "$SB_D/repo" --dry-run --report "$REPORT_D" >/dev/null 2>&1
+sr_check "v0.5-d1 dry-run 不做仓内守卫(报告守卫后可用 2,含仓外候选)" \
+  "$(grep -q '守卫后可用 2' "$REPORT_D" && echo 1 || echo 0)"
+REPORT_D2="$SB_D/report-auto.md"
+bash "$SB_D/scripts/select-and-resume.sh" --repo-root "$SB_D/repo" --report "$REPORT_D2" >/dev/null 2>&1
+sr_check "v0.5-d2 auto 报告含 skip: outside-repo(符号链接逃逸候选被硬排除)" \
+  "$(grep -q 'skip: outside-repo' "$REPORT_D2" && echo 1 || echo 0)"
+sr_check "v0.5-d3 auto 报告守卫后可用 1(仅剩仓内候选)" \
+  "$(grep -q '守卫后可用 1' "$REPORT_D2" && echo 1 || echo 0)"
+sr_check "v0.5-d4 仓内候选 p-inside 正常写入 mode=auto-resume 标记" \
+  "$(grep -q 'mode=auto-resume' "$SB_D/repo/plans/p-inside/task_plan.md" && echo 1 || echo 0)"
+sr_check "v0.5-d5 仓外候选 p-evil 未被写标记" \
+  "$(grep -q 'auto-pushed-by-cron' "$SB_D/outside/p-evil/task_plan.md" "$SB_D/repo/plans/p-evil/task_plan.md" 2>/dev/null && echo 0 || echo 1)"
+
+# ── v0.5-e --dry-run 显式覆盖: config auto=true 时 flag 优先,不写任何标记
+SB_E="$V05_ROOT/case-e-dryrun-override"
+sr_sandbox "$SB_E"
+printf '{\n  "autonomous_resume": true\n}\n' > "$SB_E/config.json"
+sr_make_plan "$SB_E/repo/plans/p-e" "p-e" "" ""
+bash "$SB_E/scripts/select-and-resume.sh" --repo-root "$SB_E/repo" --dry-run >/dev/null 2>&1
+sr_check "v0.5-e1 config auto=true + 显式 --dry-run → 不写标记" \
+  "$(grep -q 'auto-pushed-by-cron' "$SB_E/repo/plans/p-e/task_plan.md" && echo 0 || echo 1)"
+
+rm -rf "$V05_ROOT"  # trap EXIT 之外的显式清理
 
 # ─── 文件清单 ──────────────────────────────────────────────────────────────────
 TOTAL=$((TOTAL + 1))
@@ -120,9 +286,9 @@ TOTAL=$((TOTAL + 1))
 [ -f "$SKILL_DIR/tests/smoke.sh" ] && echo "[OK] tests/smoke.sh 存在" || { echo "[FAIL] tests/smoke.sh"; FAIL=$((FAIL+1)); }
 
 echo ""
-echo "=== 总计: $TOTAL 项测试,FAIL=$FAIL ==="
+echo "=== 总计: $((TOTAL - FAIL)) / $TOTAL PASS,FAIL=$FAIL ==="
 if [[ $FAIL -eq 0 ]]; then
-  echo "[OK] plan-resume v0.3 smoke 全部通过"
+  echo "[OK] plan-resume v0.5 smoke 全部通过"
   exit 0
 else
   echo "[FAIL] $FAIL / $TOTAL 未通过"
