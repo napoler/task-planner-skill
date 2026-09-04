@@ -1,0 +1,9 @@
+{
+  "_comment": "plan-resume v0.5 (2026-09-05) 自主推进配置 — 语义见 SKILL.md §7.2;缺文件/缺键时脚本用此处默认值兜底",
+  "autonomous_resume": true,
+  "max_auto_plans_per_trigger": 1,
+  "cross_project_auto_resume": false,
+  "skip_states": ["blocked", "awaiting-user", "hold"],
+  "fresh_threshold_days": 7,
+  "max_failure_count": 3
+}

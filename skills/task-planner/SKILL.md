@@ -14,7 +14,7 @@ references:
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
 - references/billing.md: 计费模式（单次触发）
 - task-drift-guard: 周期性漂移检测（Phase 完成后/连续3次工具调用后/切模块前调用）
-- plan-resume: 周期性被动扫描（Phase complete 后调，扫描工作区其他被中断任务，产出报告供用户决策。详见 Rule 24）
+- plan-resume: 被动扫描与自主续推（执行中扫描只报告；恢复触发点自主选 1 个中断任务续推，config `autonomous_resume` 控制。详见 Rule 24）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
 # See: ~/.claude/skills/task-planner/SKILL.md (Claude Code) / ~/.zcode/skills/task-planner/SKILL.md (ZCode)
 model: opus
@@ -123,7 +123,7 @@ model: opus
     - ⚠️ DRIFT → 记录 progress.md，警觉继续
     - 🔴 BLOCKED → **STOP**，报告用户，等决策
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
-  - **PLAN-RESUME 被动扫描（Rule 24）**：Phase complete 后，**在 DRIFT CHECK 之前**被动调 `Skill("plan-resume")` 扫工作区其他中断任务。产出报告写到 `<cwd>/.zcode/plans/plan-resume-report.md`，主上下文打印摘要（≤5 行）。**仅报告，不替用户续推**——用户须明确说"续推 task-X"才会动 plan-X。若用户已在 prompt 说"不要 plan-resume"或任务 ≤3 个 phase → 跳过
+  - **PLAN-RESUME 被动扫描（Rule 24）**：Phase complete 后，**在 DRIFT CHECK 之前**被动调 `Skill("plan-resume")` 扫工作区其他中断任务。产出报告写到 `<cwd>/.zcode/plans/plan-resume-report.md`，主上下文打印摘要（≤5 行）。**当前计划执行中 → 仅报告不续推**（防打断）；恢复触发点（会话启动无活跃计划 / 用户恢复类指令 / 本计划交付终态后）→ 按计划自动打分选 Top 1 **自主续推**（config `autonomous_resume`，守卫：单次 1 个 / skip_states 排除 / 跨仓只报告 / 用户说"不要自动续推"即降级，详见 plan-resume §7）。若用户已在 prompt 说"不要 plan-resume"或任务 ≤3 个 phase → 跳过
   - `task-drift-guard` 为只读检测层，发现 BLOCKED 时必须等用户明确决策后再继续
 
 ### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
@@ -207,7 +207,7 @@ model: opus
 | C10 | 计划创建后已按 S1 建立原生 Todo 映射（TodoWrite 或 Task） | ☐ |
 | C11 | 每个 Phase 状态变更后已同步 Todo（S2）；`[plan-sync]` 提醒均已响应（S3） | ☐ |
 | C12 | 用户新指令已做 A/B/C 影响判定；B/C 类已完成计划 + Todo 同步更新（S5） | ☐ |
-| C13 | Phase complete 后已被动调 `Skill("plan-resume")` 扫描中断任务(若用户未说"不要 plan-resume") | ☐ |
+| C13 | Phase complete 后已被动调 `Skill("plan-resume")` 扫描中断任务(若用户未说"不要 plan-resume")；执行中扫描只报告,恢复触发点按 Rule 24.5 自主续推(或已按"不要自动续推"降级) | ☐ |
 | C14 | 本 Phase 执行体与计划 Executor 字段一致；主进程直做已在计划登记例外理由（Rule 25） | ☐ |
 | C15 | 本 Phase 无未处置质量违规：V-N 全勾且 Evidence 非空、Handoff verify_done 已勾、无 Rule 26 触发项（或已豁免登记）（Rule 26） | ☐ |
 | C16 | 三文件罗盘可验证：Phase complete 前 `check-3file-gate.sh` exit 0（findings 本 Phase 有增量 + progress Phase 段已回填，Rule 19.2）；Handoff 表各行「findings 落点」已填且 verify_done 已勾（Rule 22.5）；终验前两文件非 stub（Rule 19.5） | ☐ |
@@ -300,7 +300,7 @@ Block 1 (选题) complete
 - **Rule 21（P0）子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/七字段 prompt/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23（P0）并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
-- **Rule 24（P1）plan-resume 周期性被动扫描**：Phase complete 后扫中断任务，只报告不续推（详见 `references/critical-rules.md` Rule 24）
+- **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记例外理由，终验统计委派率（详见 `references/critical-rules.md` Rule 25）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 

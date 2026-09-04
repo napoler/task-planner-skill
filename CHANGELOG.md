@@ -27,6 +27,12 @@
   - `SKILL.md` 新增合规项 C16 + 终验 3-File Gate 步骤 + 3d hook 响应分流;`references/critical-rules.md` 新增 19.5/19.6/19.7 条款。
 - **模板标准章节「📚 必要知识储备」（20/20 模板全覆盖）** — 任务知识库对齐:计划创建时列出本任务依赖的规范/官方文档/内部知识库/文献/图书,Phase 1 开工前逐项确认「必读」项可获取,缺失 → STOP 禁止凭记忆硬写。task_plan 系(主模板+12 variant)为五类知识源表+类型示例行+Phase 1 确认 checkbox;7 个非 task_plan 模板(4 核心+3 辅助)按用途轻量适配(对齐记录/使用记录/符合性核验/知识依据/计费知识依据/储备备注/知识上下文包)。章节统一标题 `## 📚 必要知识储备` 可 grep 验收。配套:SKILL.md Rule 16 强制约束、critical-rules.md Rule 16、template-guide.md §2.4、template-mapping.md §七 同步更新;修正 template-guide 模板计数漂移(实测 5 核心+3 辅助+12 variant=20)。
 - **`companion/skills/plan-resume/`** — 中断/过期计划扫描技能。与 task-planner 协同:扫描 `plans/*/task_plan.md` 等 3 处存储位置,通过「时间衰减 / 代码环境失效 / 目标已被取代」三维判定过期项,产出报告让用户决策(不替用户 resume/archive/drop)。参考 `companion/skills/plan-resume/SKILL.md`。
+- **`plan-resume` v0.4 智能推进(补记,2026-09-04 随 `dcfa55b` 收编但当时未记本档)** — `scripts/score-plans.py` 综合加权打分(out_degree 50% + git_keyword_hits 30% + 失败反比 20%)与 `scripts/select-and-resume.sh` 智能推进编排(SKILL.md §7 smart-resume);当时为 cron 显式 `--auto-push` opt-in,默认 dry-run。
+- **`plan-resume` v0.5 任务恢复自主化(2026-09-05)** — 用户指令"模型自主根据分析选择需要推进的任务进行完成,而不是等待用户抉择"落地:
+  - **双模式契约**:恢复触发点(会话启动无活跃计划 / 用户恢复类指令 / 当前计划交付终态后)默认**自主打分选 Top 1 并续推至交付或用户决策点**;当前计划执行中的被动扫描保持只报告(防打断)。
+  - **`config.json`(新增)**:`autonomous_resume`(默认 true)总开关 + 守卫阈值(`max_auto_plans_per_trigger=1` / `skip_states=[blocked,awaiting-user,hold]` / `cross_project_auto_resume=false` 恒禁 / `fresh_threshold_days=7` / `max_failure_count=3`)。
+  - **`select-and-resume.sh`**:config 纯 grep/sed 加载(缺文件/缺键默认值兜底)、模式解析(flag > config)、`skip_states` 硬排除、auto 模式仓内范围守卫(outside-repo 排除)、标记 payload `mode=auto-resume`(token `[auto-pushed-by-cron]` 沿用防旧过滤失效);`--dry-run`/`--auto-push` 显式覆盖保留。
+  - **SKILL.md §7 重写**(7.1 触发与授权 / 7.2 配置 / 7.3 打分 / 7.4 过滤 / 7.5 推进纪律 / 7.6 报告 / 7.7 兼容性 / 7.8 风险 / 7.9 决策记录):守卫底线(跨仓只报告、BLOCKED/[awaiting-user]/[hold] 跳过、单次 1 个、用户"不要自动续推"会话级逃生)成文;续推=按该计划自身契约接着干,不得改 Goal/VC/范围。
 - **`scripts/sync-companion.sh` + `lib/install-companion.sh` 同步器改用 `find -maxdepth 2`** — 修复 companion skills 只扫顶层文件的限制,支持子目录(`scripts/`)。向后兼容 `companion/skills/task-drift-guard/`(只含顶层 3 文件)。详见 `skills/task-planner/docs/ARCHITECTURE.md` §4.5.2。
 
 ### 变更
@@ -39,10 +45,12 @@
 - **SKILL.md 报告模板**:在推荐清单表格里新增 `Format` 列 + 混合格式展示示例;报告元信息加 `格式覆盖` 行;§1 计划位置补 openspec / spec-kit 两条;§1.1 用户参数映射加 `--include-archived`;§2.1 提取字段表扩展为 7 字段 + 格式判定表。
 - **`tests/smoke.sh` 5 项新测试**: openspec format / task_id;spec-kit format / 完成度 / spec.md Status 字段;加上 `--help` 检查。
 - **task-planner 与 plan-resume 集成**: `references/critical-rules.md` 新增 Rule 24 — Phase complete 后**被动**调 `Skill("plan-resume")` 扫描工作区其他中断任务(不替用户续推,只产报告)。`SKILL.md` frontmatter 加 plan-resume 引用,Phase 执行循环 step 5(DRIFT CHECK 后)加 plan-resume 调用节点,Chain handoff 加 step 5。合规检查清单加 C13。`templates/progress.md` 加 plan-resume 报告检查点表。
+- **task-planner 侧契约同步 plan-resume v0.5**: `references/critical-rules.md` Rule 24 全节重写为"被动扫描与自主续推"(执行中只报告 / 恢复触发点自主 Top 1 / 守卫五条 / 24.7 增"不要自动续推"降级例外);清除 24.3 编辑事故句(CHANGELOG 术语"phase_status_map 已在 [Unreleased] 段跟踪"混入规则正文);SKILL.md frontmatter references 行、Phase 执行循环被动扫描段、C13 合规项、Rule 索引四处同步,扫描时机表述统一为"DRIFT CHECK 之前"(原 SKILL.md/Rule 24/CHANGELOG 三处不一)。
+- **`tests/smoke.sh` 翻修并补 v0.5 覆盖**: 新增 v0.5 用例(config 加载与缺省兜底 / skip_states 硬排除 / 默认自主选 Top1 写 `mode=auto-resume` 标记 / outside-repo 守卫 / `--dry-run` 显式覆盖);另修正 8 条自 v0.4 起即失败的陈旧断言(`extract-meta.sh` 已移除 `format=`/`task_completion_pct` 输出、`scan-plans.sh` 不再扫 openspec/spec-kit 的 tasks.md、`--help` 无 `--include-archived`,均以 git archive 对照 HEAD 证实改前即红),逐条替换为等数量当前真实行为断言,用例数不减。
 
 ### 修复
 
-(无)
+- **`plan-resume/select-and-resume.sh` python 内联段转义 SyntaxError**:打分调用内联 python 的 f-string 中 `d[\"k\"]` 反斜杠转义在 python3.12 下直接 SyntaxError,且被 `2>/dev/null` 掩盖、pipefail 放大为 EXIT=1 报告截断;改为先赋局部变量再进 f-string(v0.5 改造中发现,顺带修复)。
 
 ### 删除
 

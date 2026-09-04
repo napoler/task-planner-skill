@@ -140,16 +140,16 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 23.7 **注册表心跳**:sync-todos.sh --index 每 10 次工具调用自动刷新一次,保持 INDEX.md 活跃 plan 最新
 23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集
 
-### 24 plan-resume 周期性被动扫描(P1)
-每个 Phase complete 后,在调 task-drift-guard 之前/之后,主进程**被动**调一次 `Skill("plan-resume")` 扫描工作区其他未完成计划,产出报告(不替用户续推)。本规则保证:用户开启一个 task-planner session 时,如果工作区有其他被中断的计划,主进程会主动浮出来供用户决策。
+### 24 plan-resume 被动扫描与自主续推(P1,v0.5 契约)
+每个 Phase complete 后,在调 task-drift-guard **之前**,主进程**被动**调一次 `Skill("plan-resume")` 扫描工作区其他未完成计划。v0.5 起行为分模式:**当前计划执行中 → 只报告**(防打断进行中工作);**恢复触发点(会话启动无活跃计划 / 用户恢复类指令 / 当前计划交付终态后)→ 自主选 1 个续推**(config `autonomous_resume: true`,详见 plan-resume SKILL.md §7)。本规则保证:恢复场景不再"报告完等用户点名",同时执行中的扫描不抢当前工作。
 
-24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 调 task-drift-guard 的时机);**不是**每个 todo 完成时(避免噪音)
-24.2 **扫描源**:用户当前工作目录 `$(pwd)`,scope = 仓库根(扫描 `plans/*/task_plan.md` + `.zcode/plans/plan-sess_*.md` + `openspec/changes/*/tasks.md` + `specs/*/tasks.md` 共 3 种格式)
-24.3 **跳过自身**:当前 plan 的 `task_plan.md` 不进报告(避免重复);当前 plan 的 `phase_status_map` 已在 `[Unreleased]` 段跟踪
-24.4 **报告输出**:`<cwd>/.zcode/plans/plan-resume-report.md`(幂等覆盖);主上下文打印摘要(≤5 行):`扫到 N 个中断任务 → M 个推荐 resume / K 个推荐 archive / X 个推荐 drop`
-24.5 **行为约束(宪法 §四 P0)**:**plan-resume 只产出报告,不替用户 resume/archive/drop**;用户必须明确说"续推 task-X"才会动 plan-X;被动调度的目的是让用户知道有什么,而非自动执行
+24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 调 task-drift-guard 的时机);**不是**每个 todo 完成时(避免噪音)。执行中扫描恒为只报告模式
+24.2 **扫描源**:用户当前工作目录 `$(pwd)`,scope = 仓库根(扫描 `plans/*/task_plan.md` + `.zcode/plans/plan-sess_*.md` + `openspec/changes/*/tasks.md` + `specs/*/tasks.md` 共 3 种格式);自主续推仅考虑仓内计划,跨仓候选只报告(宪法 §五 跨项目隔离 P0)
+24.3 **跳过自身**:当前 plan 的 `task_plan.md` 不进报告(避免重复/自触发);当前 plan 自身状态由三文件罗盘(task_plan/findings/progress)跟踪,不依赖本扫描
+24.4 **报告输出**:`<cwd>/.zcode/plans/plan-resume-report.md`(幂等覆盖);主上下文打印摘要(≤5 行):`扫到 N 个中断任务 → M 个推荐 resume / K 个推荐 archive / X 个推荐 drop`;自主续推时必须先打印「选中 task-X + score + 理由」再动手(透明性对冲自主风险)
+24.5 **行为契约(v0.5,取代旧"只报告不续推")**:执行中被动扫描**只产出报告,不替用户 resume/archive/drop**;恢复触发点按 plan-resume §7 **自主续推 Top 1**——守卫:单次 1 个计划 / `skip_states` 硬排除 blocked|[awaiting-user]|[hold] / 熔断标记尊重 / 跨仓只报告 / 用户本轮说"不要自动续推"即降级只报告;续推 = 按该计划自身契约接着干(Read 三文件 → 下一 pending Phase),不得改其 Goal/VC/范围
 24.6 **失败兜底**:plan-resume 调用失败(脚本缺失/语法错/skill 未安装)→ 主上下文记一行 `[plan-resume] 调用失败: <reason>`,不阻塞当前 Phase 推进
-24.7 **不调用的例外**:用户已在 prompt 里明确说"不要 plan-resume" → 跳过;或本次任务 ≤3 个 phase(噪音大于价值) → 跳过
+24.7 **不调用/降级例外**:用户已在 prompt 里明确说"不要 plan-resume" → 跳过;说"不要自动续推" → 本轮降级只报告;或本次任务 ≤3 个 phase(噪音大于价值) → 跳过
 
 ### 25 子代理委派门控（P0）— 计划期声明执行体,执行期强制检查,终验期统计委派率
 Rule 13/14 定义"什么活必须派子代理",本规则把委派做成**流程门控**:不经委派决策点,工作不得开始。目标:主进程 = 调度器,实际工作由子代理承载,提高 haiku-1/sonnet-1 子代理 token 占比。
