@@ -181,6 +181,7 @@ model: opus
   - Read `verification.md`
   - 逐条复验 VC（每条带证据路径）
   - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 <50% 且主进程直做无登记理由 → outcome 最高 PARTIAL
+  - **质量门控统计（Rule 26）**：按 verification.md「质量门控统计」段核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；存在未处置违规 → 按 Rule 26.3 降级 outcome；Q3 → outcome 判 BLOCKED 并 STOP
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
   - **隔离任务合并回**（isolation=worktree 时，按 references/worktree-isolation.md 合约）：worktree 内全 VC 复验且无未提交变更 → 主仓 `git merge wt/<task-id>` → `git worktree remove` + `git branch -d` → 主仓 Read 关键文件复验
   - 交付结论：`COMPLETE` / `PARTIAL` / `BLOCKED`
@@ -207,6 +208,7 @@ model: opus
 | C12 | 用户新指令已做 A/B/C 影响判定；B/C 类已完成计划 + Todo 同步更新（S5） | ☐ |
 | C13 | Phase complete 后已被动调 `Skill("plan-resume")` 扫描中断任务(若用户未说"不要 plan-resume") | ☐ |
 | C14 | 本 Phase 执行体与计划 Executor 字段一致；主进程直做已在计划登记例外理由（Rule 25） | ☐ |
+| C15 | 本 Phase 无未处置质量违规：V-N 全勾且 Evidence 非空、Handoff verify_done 已勾、无 Rule 26 触发项（或已豁免登记）（Rule 26） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -298,6 +300,7 @@ Block 1 (选题) complete
 - **Rule 23（P0）并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 周期性被动扫描**：Phase complete 后扫中断任务，只报告不续推（详见 `references/critical-rules.md` Rule 24）
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记例外理由，终验统计委派率（详见 `references/critical-rules.md` Rule 25）
+- **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 
 ## Completion Gate
 
