@@ -56,7 +56,7 @@ Skill("task-drift-guard")
 每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。详见 SKILL.md §「高频漂移纠正」。
 
 ### 16 任务开启期选模板（P0）
-禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/general 共 13 类）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 SKILL.md §「任务模板库」+ `references/template-mapping.md`。
+禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration 共 12 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 SKILL.md §「任务模板库」+ `references/template-mapping.md`。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 20 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
 
 ### 17 成本控制（P0）— 降低 Opus 使用频率
 opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `references/cost-control.md`。

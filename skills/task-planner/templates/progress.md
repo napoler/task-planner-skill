@@ -55,6 +55,12 @@
 - Files created/modified:
   -
 
+## 📚 必要知识储备使用记录
+<!-- WHEN: 某个 Phase 引用了知识储备中的知识源时登记 -->
+| Phase | 引用知识源 | 用途(决策/实现/验证) |
+|-------|-----------|---------------------|
+|       |           |                     |
+
 ## Test Results
 <!-- 
   WHAT: Table of tests you ran, what you expected, what actually happened.
