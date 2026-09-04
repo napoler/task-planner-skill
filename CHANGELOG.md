@@ -9,6 +9,12 @@
 
 ### 新增
 
+- **多计划 `.active_plan` 指针机制（移植上游 resolve-plan-dir/set-active-plan,task-active-plan）** — 消除 hook 按 mtime 猜活跃计划的歧义(多计划并行时可能注入非预期计划):
+  - `scripts/resolve-plan-dir.sh`(新,移植裁剪) — 解析链:指针→mtime 最新→legacy 根;slug 校验防路径穿越;恒 exit 0。
+  - `scripts/set-active-plan.sh`(新) — `<task-id>` 设置 / `--show` 查看 / `--clear` 清除回退。
+  - `init-session.sh` — 创建计划后自动写指针(最新创建=默认活跃;失败仅警告)。
+  - `zcode-userpromptsubmit.sh`/`zcode-posttooluse.sh` — 计划探测改指针优先,resolver 缺失兜底旧逻辑。
+  - `plan-doctor.sh` — 第 2 段显示解析来源(指针/mtime)与切换指引。
 - **复用上游 planning-with-files v3 实现（ledger 工作账本/plan-doctor/gate 信号升级,Rule 19.2/19.8）** — 按用户指令复用 [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) 已验证实现,替换自研弱信号:
   - `scripts/ledger-append.sh`(新,移植) — 追加式 JSONL 工作账本:`{"tick","ts","agent","phase","event","summary","files"}`,事件枚举 progress/phase_complete/error/gate_block/attest/note;保留上游已验证的 tick 全局单调/flock 并发/UTF-8 截断修复;plan-dir 改显式传参适配本仓惯例。ledger = 机器层工作信号,md 三文件 = 人读层(上游架构 C3)。
   - `scripts/check-3file-gate.sh` **信号升级** — 主信号从 mtime 改为 ledger 语义证据(锚点后 ledger-*.jsonl 有新增行 = 真实工作流);mtime 降为无 ledger 存量计划的 fallback。依据上游 G5 设计注记:"mtime moves on any file touch and is thus unreliable"。

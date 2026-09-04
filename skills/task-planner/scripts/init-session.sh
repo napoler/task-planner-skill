@@ -123,4 +123,12 @@ if [ ${#missing_files[@]} -gt 0 ]; then
     exit 1
 fi
 echo "[init] 5/5 planning files verified"
+# [2026-09-05 task-active-plan] 自动写活跃计划指针(最新创建的计划=默认活跃);
+# 失败仅警告不阻断(指针缺失时 resolve-plan-dir.sh 回退 mtime 最新)
+PLAN_ROOT="$(cd .. && pwd)"
+if printf '%s\n' "$(basename "$PWD")" > "${PLAN_ROOT}/.active_plan" 2>/dev/null; then
+    echo "[init] active_plan 指针已指向: $(basename "$PWD")"
+else
+    echo "[init] WARN: 指针写入失败(hook 将回退 mtime 最新解析)"
+fi
 echo "Planning files initialized!"
