@@ -103,18 +103,19 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 └── (其他结构同 Claude stub)
 ```
 
-### 2.5 Companion Skills 清单
+### 2.5 外围 Skills 清单(2026-09-04 起源 = 仓库顶层 skills/)
 
-`companion/skills/` 存放 task-planner 运行时依赖、但位于 task-planner 目录之外(即安装在 `<tool-root>/skills/<name>/` 而非 `<tool-root>/skills/task-planner/`)的同伴 skill。`install.sh` Phase 5.6 + `lib/install-companion.sh` 自动发现并分发到目标工具根。
+外围 skill = task-planner 运行时依赖、但安装在 `<tool-root>/skills/<name>/`(而非 `<tool-root>/skills/task-planner/` 内)的同伴 skill。**2026-09-04 布局统一**:原先嵌在 `companion/skills/` 的目录已全部迁移到仓库顶层 `skills/`(与 task-planner 同级),companion/ 仅保留 agents/;`install.sh` Phase 5.6 + `lib/install-companion.sh` 自动发现顶层 skills/(排除 task-planner 本体,仅分发含 SKILL.md 的目录),`scripts/sync-companion.sh` 按同一布局回同步。
 
 | Skill | 描述 | 文件 |
 |-------|------|------|
 | `task-drift-guard` | 执行中漂移检测(每 phase 完成后调) | 顶层 3 文件:SKILL.md / EXAMPLES.md / README.md |
-| `plan-resume` | 中断/过期计划扫描与续推决策(支持 task-planner / openspec / spec-kit 三格式) | SKILL.md / README.md + `scripts/`(2 脚本)+ `tests/`(1 smoke) |
+| `plan-resume` | 中断/过期计划扫描与续推决策(支持 task-planner / openspec / spec-kit 三格式) | SKILL.md / README.md + `scripts/`(4 脚本)+ `tests/`(1 smoke) |
+| `todo-skill` | 跨会话 todo/计划状态持久化 | SKILL.md + `scripts/` |
 
 ### 2.6 Companion 同步器设计决策
 
-**问题**：早期 `lib/install-companion.sh` 与 `scripts/sync-companion.sh` 用 bash glob `for f in "$skill_dir"*` 扫 companion skill 目录，**只匹配顶层文件**(匹配到 `scripts/` 目录但不会递归)，导致带子目录(`scripts/*.sh`)的 companion skill 在分发时被静默丢弃。
+**问题**：早期 `lib/install-companion.sh` 与 `scripts/sync-companion.sh` 用 bash glob `for f in "$skill_dir"*` 扫外围 skill 目录，**只匹配顶层文件**(匹配到 `scripts/` 目录但不会递归)，导致带子目录(`scripts/*.sh`)的外围 skill 在分发时被静默丢弃。
 
 **决策**(2026-09-04)：改用 `find -maxdepth 2 -type f -print0` 配合 `-d ''` while read：
 
@@ -128,9 +129,9 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 **向后兼容**：`task-drift-guard` 只有顶层3 文件，新 find 输出仍是 3 行，分发行为不变。
 
 **已知限制**：
-- 不递归到 depth=3 及以上。若未来 companion skill 需要更深嵌套,需调整 maxdepth
+- 不递归到 depth=3 及以上。若未来外围 skill 需要更深嵌套,需调整 maxdepth
 - `tests/` 排除意味着 smoke.sh 不分发。客户端测试通过 CI 在 canonical 仓跑
-- `companion/skills/plan-resume/` 支持 3 种格式(task-planner / openspec / spec-kit)扫描,但 spec-kit 本机未见过真样例(基于官方模板约定),文档标记为[实验性]
+- `skills/plan-resume/` 支持 3 种格式(task-planner / openspec / spec-kit)扫描,但 spec-kit 本机未见过真样例(基于官方模板约定),文档标记为[实验性]
 
 ### 2.7 plan-resume 与 task-planner 集成契约
 
@@ -141,7 +142,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 2. `SKILL.md` frontmatter `references` 表 + §Execution 流程图 DRIFT CHECK 节点 + Chain handoff step 5 + 合规清单 C13
 3. `templates/progress.md` 加「plan-resume 报告检查点」表
 
-**边界**:(详见 `companion/skills/plan-resume/SKILL.md` §6 与其他 skill 的关系)
+**边界**:(详见 `skills/plan-resume/SKILL.md` §6 与其他 skill 的关系)
 - task-planner **只读**其他 plan 的 `task_plan.md`,不修改它
 - plan-resume **不替用户续推**,只产报告
 - 用户须明确说"续推 task-X"才会调 task-planner 创建新 plan

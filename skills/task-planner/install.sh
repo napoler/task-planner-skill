@@ -175,10 +175,11 @@ for tool in "${TOOLS_DETECTED[@]}"; do
   esac
 done
 
-# ─── Phase 5.6: Install companion files (agents + external skills) ──────
-# companion/ 存放 task-planner 依赖的外部文件:plan-writer/article-batch-publisher/
-# article-field-fixer agents + task-drift-guard skill。一键安装保证新机器
-# 装完 task-planner 即拥有全部依赖;日常修改用 scripts/sync-companion.sh 拉回仓。
+# ─── Phase 5.6: Install companion files (agents + top-level peripheral skills) ──────
+# companion/agents/ 存放随行 agents(plan-writer/article-batch-publisher/article-field-fixer);
+# 外围 skill(task-drift-guard/plan-resume/todo-skill)位于仓库顶层 skills/,由
+# install-companion.sh 统一分发。一键安装保证新机器装完 task-planner 即拥有全部依赖;
+# 日常修改用 scripts/sync-companion.sh 拉回仓。
 log "Phase 5.6: install companion files"
 if [ -d "$TASK_PLANNER_ROOT/companion" ]; then
   DRY_RUN_ARG=""; [ "$DRY_RUN" -eq 1 ] && DRY_RUN_ARG="--dry-run"

@@ -130,14 +130,16 @@ git pull
 
 ## 4.5 伴随文件一键安装（companion/ — v2.2.1）
 
-`companion/` 目录存放 task-planner 运行依赖、但位于 skill 目录之外的文件:
+`companion/agents/` 存放随行 agents;外围 skill 位于仓库顶层 `skills/`(2026-09-04 自 `companion/skills/` 迁移,与 task-planner 同级),由同一脚本统一分发:
 
-| companion 路径 | 安装目标 | 用途 |
+| 源路径 | 安装目标 | 用途 |
 |----------------|---------|------|
 | `companion/agents/plan-writer.md` | `~/.zcode/agents/` | 计划撰写子代理(sonnet-1,Rule 13-16) |
 | `companion/agents/article-batch-publisher.md` | `~/.zcode/agents/` | 批量发布(Rule 18.1-18.6 分项门控) |
 | `companion/agents/article-field-fixer.md` | `~/.zcode/agents/` | 批量字段修复(verify 抽检,Rule 18.2/18.4) |
-| `companion/skills/task-drift-guard/` | `~/.zcode/skills/` | 漂移检测 skill(含批量 failure_rate 判定) |
+| `skills/task-drift-guard/` | `~/.zcode/skills/` | 漂移检测 skill(含批量 failure_rate 判定) |
+| `skills/plan-resume/` | `~/.zcode/skills/` | 中断/过期计划扫描与续推决策 skill |
+| `skills/todo-skill/` | `~/.zcode/skills/` | 跨会话 todo 持久化 skill |
 
 **一键安装**(install.sh Phase 5.6 自动执行,也可单独跑):
 

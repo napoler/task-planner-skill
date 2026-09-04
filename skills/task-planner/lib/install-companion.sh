@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# install-companion.sh — 一键安装 task-planner 伴随文件(agents + 外部 skill)
+# install-companion.sh — 一键安装 task-planner 伴随文件(agents + 顶层外围 skill)
 #
-# companion/ 目录存放 task-planner 运行所依赖、但位于 task-planner 目录之外的文件:
+# 安装源(2026-09-04 布局统一:外围 skill 全部在仓库顶层 skills/,companion/ 仅存 agents):
 #   companion/agents/*.md                    → ~/.zcode/agents/  (或 ~/.claude/agents/)
-#   companion/skills/task-drift-guard/*      → ~/.zcode/skills/task-drift-guard/
+#   <repo>/skills/{task-drift-guard,plan-resume,todo-skill}/* → ~/.zcode/skills/<name>/
 #
 # Usage:
 #   bash lib/install-companion.sh [--dry-run] [--force] [--target <tool-root>]
@@ -18,6 +18,10 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
 COMPAANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion"
+# 外围 skill 安装源 = 仓库顶层 skills/(2026-09-04 自 companion/skills/ 迁移,排除 task-planner 本体)
+# SKILL_ROOT = <repo>/skills/task-planner → 上两级才是仓根
+REPO_ROOT="$(dirname "$(dirname "$SKILL_ROOT")")"
+REPO_SKILLS="$REPO_ROOT/skills"
 DRY_RUN=0
 FORCE=0
 TARGET_ROOT=""
@@ -34,6 +38,13 @@ done
 
 if [ ! -d "$COMPAANION_DIR" ]; then
   echo "[companion] ERROR: companion dir not found: $COMPAANION_DIR" >&2
+  exit 1
+fi
+
+# 顶层 skills/ 源合理性校验:防止从已部署副本(如 ~/.zcode/skills/task-planner)运行时
+# 把部署目录误当安装源。canonical 仓根必含 CHANGELOG.md + skills/task-planner。
+if [ ! -f "$REPO_ROOT/CHANGELOG.md" ] || [ ! -d "$REPO_SKILLS/task-planner" ]; then
+  echo "[companion] ERROR: $REPO_SKILLS 不是 canonical 仓顶层 skills/(请在仓内运行,或设 TASK_PLANNER_ROOT 指向仓内 skills/task-planner)" >&2
   exit 1
 fi
 
@@ -146,12 +157,14 @@ if [ -d "$COMPAANION_DIR/agents" ]; then
   done
 fi
 
-# 2. skills/<name>/ → <root>/skills/<name>/
-if [ -d "$COMPAANION_DIR/skills" ]; then
+# 2. 顶层外围 skills/<name>/ → <root>/skills/<name>/(排除 task-planner 本体,只分发含 SKILL.md 的目录)
+if [ -d "$REPO_SKILLS" ]; then
   echo "[companion] skills:"
-  for skill_dir in "$COMPAANION_DIR"/skills/*/; do
+  for skill_dir in "$REPO_SKILLS"/*/; do
     [ -d "$skill_dir" ] || continue
     skill_name="$(basename "$skill_dir")"
+    [ "$skill_name" = "task-planner" ] && continue
+    [ -f "$skill_dir/SKILL.md" ] || { echo "  skip: $skill_name (no SKILL.md)"; continue; }
     # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
     # 排除 .git / tests/ 等非同步内容
     while IFS= read -r -d '' f; do
