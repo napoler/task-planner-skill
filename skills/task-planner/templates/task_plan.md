@@ -323,17 +323,17 @@ Phase 1
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
-  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出,勾 verify_done
-  WHY: 子代理规模限制 + 交接文件保障(Rule 22);未登记 = 视为未派发
+  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才勾 verify_done
+  WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
   状态枚举: queued/pending/running/done/partial/timeout/failed/blocked
   派发 prompt 七字段模板: templates/subagent_dispatch.md
 -->
 
-| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | verify_done |
-|---|------|--------------|----------------|------|--------------|---------------|-------------|
-| 1 | | | | queued | | | ☐ |
-| 2 | | | | | | | ☐ |
-| 3 | | | | | | | ☐ |
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | verify_done |
+|---|------|--------------|----------------|------|--------------|---------------|--------------|-------------|
+| 1 | | | | queued | | | | ☐ |
+| 2 | | | | | | | | ☐ |
+| 3 | | | | | | | | ☐ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
