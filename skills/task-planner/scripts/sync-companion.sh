@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# sync-companion.sh — 反向同步:把 ~/.zcode(或 ~/.claude)中的伴随文件修改拉回 companion/
+# sync-companion.sh — 反向同步:把 ~/.zcode(或 ~/.claude)中的伴随文件修改拉回 canonical
 #
-# 用途:在 ~/.zcode/agents/plan-writer.md 等文件上做了修改后,运行本脚本把最新版
-# 同步回 canonical 仓的 companion/ 目录,commit 后新机器即可一键安装到最新版。
+# 用途:在 ~/.zcode/agents/plan-writer.md 或顶层外围 skill(如 ~/.zcode/skills/plan-resume/)
+# 等文件上做了修改后,运行本脚本把最新版同步回 canonical 仓(companion/agents/ 与顶层 skills/<name>/),commit 后新机器即可一键安装到最新版。
 #
 # Usage:
 #   bash scripts/sync-companion.sh [--dry-run] [--diff]
@@ -14,6 +14,10 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
 COMPAANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion"
+# 外围 skill 回同步目标 = 仓库顶层 skills/(2026-09-04 自 companion/skills/ 迁移,排除 task-planner 本体)
+# SKILL_ROOT = <repo>/skills/task-planner → 上两级才是仓根
+REPO_ROOT="$(dirname "$(dirname "$SKILL_ROOT")")"
+REPO_SKILLS="$REPO_ROOT/skills"
 DRY_RUN=0
 SHOW_DIFF=0
 
@@ -36,6 +40,8 @@ fi
 TARGET_ROOT="${TARGET_ROOT:-$HOME/.zcode}"
 
 [ -d "$COMPAANION_DIR" ] || { echo "[sync] ERROR: companion dir missing: $COMPAANION_DIR" >&2; exit 1; }
+# 顶层 skills/ 合理性校验:防止从已部署副本运行时把部署目录误当回同步目标(canonical 仓根必含 CHANGELOG.md)
+[ -f "$REPO_ROOT/CHANGELOG.md" ] && [ -d "$REPO_SKILLS/task-planner" ] || { echo "[sync] ERROR: $REPO_SKILLS 不是 canonical 仓顶层 skills/" >&2; exit 1; }
 
 echo "[sync] source root: $TARGET_ROOT"
 echo "[sync] companion:   $COMPAANION_DIR"
@@ -113,9 +119,11 @@ for f in "$COMPAANION_DIR"/agents/*.md; do
   pull_one "$f" "$TARGET_ROOT/agents/$(basename "$f")"
 done
 
-for skill_dir in "$COMPAANION_DIR"/skills/*/; do
+for skill_dir in "$REPO_SKILLS"/*/; do
   [ -d "$skill_dir" ] || continue
   skill_name="$(basename "$skill_dir")"
+  [ "$skill_name" = "task-planner" ] && continue
+  [ -f "$skill_dir/SKILL.md" ] || continue
   # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
   # 排除 .git / .DS_Store / tests/ 等非同步内容
   while IFS= read -r -d '' f; do

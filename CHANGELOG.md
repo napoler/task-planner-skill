@@ -20,6 +20,7 @@
 
 ### 变更
 
+- **布局统一:外围 skill 全部迁移至仓库顶层 `skills/`** — `companion/skills/{task-drift-guard,plan-resume}` → 顶层(与 task-planner 同级),companion/ 仅留 agents/;`install-companion.sh`/`sync-companion.sh` 安装与回同步源改为顶层 skills/(自动发现含 SKILL.md 的目录,排除 task-planner 本体;新增仓根 CHANGELOG.md 校验,防止从已部署副本运行时误将部署目录当源);`todo-skill` 纳入分发范围;task-drift-guard 顶层陈旧副本以 companion 版归一(含批量漂移判定 + model 行,与线上部署逐字节一致)。`~/.agents/skills/plan-resume` 软链重指顶层新路径。
 - **`plan-resume` v0.3 多格式扫描**: `scan-plans.sh` 新增 openspec(`openspec/changes/*/tasks.md`)与 spec-kit(`specs/*/tasks.md` + `specs/*/spec.md`)两个扫描位置(共 3 种存储格式:task-planner / openspec / spec-kit)。openspec 默认跳过 `archive/`(加 `--include-archived` 可开启)。
 - **`extract-meta.sh` 三后端**:新增 `format=openspec` / `format=spec-kit` 分派,openspec 后端读 `.openspec.yaml` goal + tasks.md 完成度,spec-kit 后端读 spec.md 的 `**Status**` 字段与 tasks.md 完成度;原 `format=task-planner` 后端完全保留。
 - **SKILL.md 报告模板**:在推荐清单表格里新增 `Format` 列 + 混合格式展示示例;报告元信息加 `格式覆盖` 行;§1 计划位置补 openspec / spec-kit 两条;§1.1 用户参数映射加 `--include-archived`;§2.1 提取字段表扩展为 7 字段 + 格式判定表。
