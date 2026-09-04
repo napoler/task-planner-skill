@@ -34,17 +34,26 @@ esac
 
 # --- [2] 计划解析 ------------------------------------------------------------
 PLAN=""
-if [ -d "${ROOT}/plans" ]; then
-    PLAN="$(ls -t "${ROOT}"/plans/*/task_plan.md 2>/dev/null | head -1 || true)"
+RESOLVER="${SCRIPT_DIR}/resolve-plan-dir.sh"
+if [ -f "${RESOLVER}" ]; then
+    # [2026-09-05 task-active-plan] 指针优先,与 hook 同一解析逻辑
+    PLAN="$(bash "${RESOLVER}" "${ROOT}" 2>/dev/null || true)"
+else
+    if [ -d "${ROOT}/plans" ]; then
+        PLAN="$(ls -t "${ROOT}"/plans/*/task_plan.md 2>/dev/null | head -1 || true)"
+    fi
 fi
 if [ -n "${PLAN}" ]; then
     AGE=$(( $(date +%s) - $(stat -c %Y "${PLAN}" 2>/dev/null || echo 0) ))
+    ACTIVE_FILE="${ROOT}/plans/.active_plan"
+    SRC="mtime 最新"
+    [ -f "${ACTIVE_FILE}" ] && SRC="指针 $(tr -d ' \r\n\t' < "${ACTIVE_FILE}" 2>/dev/null)"
     if [ "${AGE}" -gt 86400 ]; then
-        info "计划解析: ${PLAN}(>24h 未更新,hook 视为历史任务静默)"
+        info "计划解析: ${PLAN}(>24h 未更新,hook 视为历史任务静默;来源: ${SRC})"
     else
-        ok "计划解析: ${PLAN}(mtime 最新者胜出)"
+        ok "计划解析: ${PLAN}(来源: ${SRC})"
     fi
-    info "多计划提示: 本仓无 .active_plan 指针,hook 以 mtime 最新为准 — 并行多活跃计划时可能注入非预期计划(上游 resolve-plan-dir/set-active-plan 机制可作后续移植参考)"
+    info "切换活跃计划: bash scripts/set-active-plan.sh <task-id>;查看: --show;清除回退 mtime: --clear"
 else
     info "plans/ 下无 task_plan.md(运行 init-session.sh 创建)"
 fi

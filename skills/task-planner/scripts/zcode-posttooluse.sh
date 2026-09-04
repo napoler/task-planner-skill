@@ -25,6 +25,9 @@ plan=""
 if [ -d "$CWD/plans" ]; then
   plan="$(ls -t "$CWD"/plans/*/task_plan.md 2>/dev/null | head -1)"
 fi
+# [2026-09-05 task-active-plan] 指针优先(resolve-plan-dir.sh:.active_plan→mtime→legacy)
+RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
+[ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" 2>/dev/null || true)"
 [ -z "$plan" ] && exit 0
 
 now="$(date +%s)"

@@ -17,8 +17,12 @@ CWD="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)"
 CWD="${CWD:-$PWD}"
 
 # ─── 探测活跃计划(无则零开销静默退出)───────────────────────────────────────
+# [2026-09-05 task-active-plan] 指针优先(resolve-plan-dir.sh:.active_plan→mtime→legacy),
+# resolver 缺失时兜底旧 ls -t 逻辑(部署位同步前的过渡)
 plan=""
-if [ -d "$CWD/plans" ]; then
+RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
+[ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" 2>/dev/null || true)"
+if [ -z "$plan" ] && [ ! -f "$RESOLVER" ] && [ -d "$CWD/plans" ]; then
   plan="$(ls -t "$CWD"/plans/*/task_plan.md 2>/dev/null | head -1)"
 fi
 [ -z "$plan" ] && [ -f "$CWD/task_plan.md" ] && plan="$CWD/task_plan.md"
