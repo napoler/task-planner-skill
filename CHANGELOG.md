@@ -9,6 +9,11 @@
 
 ### 新增
 
+- **三文件执行中硬门控（Rule 19.2 强化）** — 治理「启动填一次后 findings/progress 停更、绕过模板末尾追加」的执行缺口(上条 Rule 19.5-19.7 只在终验查非 stub,启动填一次即永久通过):
+  - `scripts/check-3file-gate.sh`(新) — Phase complete 翻转前硬校验:① progress.md 对应 Phase 段已回填 ② findings.md 本 Phase 期间有增量。mtime 判定,锚点 = progress.md Phase 段 Started 时间戳,缺失退化用 stale 阈值;exit 1 禁止翻转。设计取向「宁可误报逼一次回填,不可漏报」。
+  - `zcode-posttooluse.sh` `[plan-compass]` **升级机制(Rule 19.7)** — 同一文件连续 `config.json#compass_escalate_after`(默认 2)次提醒仍无回填(mtime 早于上次提醒)→ 升级警告(违反 Rule 19.7,按 Rule 26.3 处置:登记 Error Log,终验 outcome 最高 PARTIAL);state 扩展 9 字段向后兼容。
+  - **子代理回填流程绑定(Rule 19.1/22.5)** — Handoff 登记表新增「findings 落点」列;verify_done = Read 实际产出 ✓ + findings.md 回填 ✓ 双条件,SKILL.md 执行循环 3a/Rule 19 摘要/C16(收紧为可验证条款)/critical-rules.md 19.1/19.2/19.7/22.5 同步;`templates/task_plan.md` Handoff 表加列。
+  - **模板低摩擦瘦身** — `templates/findings.md` 107→43 行、`templates/progress.md` 132→61 行:注释压缩、EXAMPLE 删除、Test Results 并入 Phase 段(与 19.2 三件套对齐)、Started 字段标注为门控锚点;段落锚名不变(产出落盘映射表按锚名路由)。已知局限:历史计划(旧模板生成)若重跑终验,旧注释续行会被误算实质行(方向=变松,历史计划已终结影响≈0)。
 - **三文件罗盘强制（Rule 19.5/19.6/19.7）** — 补齐 findings.md/progress.md「存在但无人管」的执行缺口:
   - `scripts/check-complete.sh` 新增 **3-File Gate（Rule 19.5）**:plan 目录缺 findings.md/progress.md → exit 1;存在但为模板 stub(扣除模板行集合后实质行 <3) → exit 1;task_plan.md >500 行 → Rule 19.6 瘦身 WARNING(不阻断)。头注释同步修正(原 "Always exits 0" 与实际不符)。
   - `scripts/zcode-posttooluse.sh` 新增 **`[plan-compass]` 及时性提醒(Rule 19.7)**:findings.md/progress.md 陈旧(阈值 `config.json#findings_stale_minutes` 默认 20 / `#progress_stale_minutes` 默认 25)→ 提醒回填,独立冷却;state 扩展 5 字段向后兼容;原 plan 陈旧提醒文案改为三文件分流(状态→task_plan / 结论→findings / 动作→progress),治理"一切塞 task_plan"。

@@ -79,6 +79,12 @@
       "minimum": 1,
       "description": "Max allowed age of findings.md before PostToolUse hook emits a [plan-compass] backfill reminder (Rule 19.7)"
     },
+    "compass_escalate_after": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "description": "Emit escalated [plan-compass] warning after this many consecutive stale reminders with no file update (Rule 19.7 escalation)"
+    },
     "progress_stale_minutes": {
       "type": "integer",
       "default": 25,

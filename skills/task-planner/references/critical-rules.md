@@ -87,13 +87,13 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 ### 19 3-File 落盘强制（P0）— Context Window 是 RAM,Filesystem 是 Disk
 三文件(task_plan.md / findings.md / progress.md)是 planning-with-files 原版核心理念的落地:**重要内容必须落盘,禁止只留会话记忆**(context reset 后会话记忆全丢)。执行循环内嵌写入点见 SKILL.md §Phase 执行循环第 3 步 + §产出落盘映射。
 
-19.1 **子代理结论必落盘**:每次子代理(Explore/research/debugger/codebase-analyzer 等)或调研类 Skill 返回后,**紧邻一次 Edit findings.md** 写入结论摘要 + 证据路径;禁止让结论只留在主上下文(子代理省了读取,产出堆回会话记忆 = Context Stuffing 回潮)
-19.2 **progress 回填门控**:Phase 标记 complete 前,progress.md 对应 Phase 段必须已回填(Actions taken / Files created-modified / Test Results);未回填 → 禁止标记 complete
+19.1 **子代理结论必落盘**:每次子代理(Explore/research/debugger/codebase-analyzer 等)或调研类 Skill 返回后,**紧邻一次 Edit findings.md** 写入结论摘要 + 证据路径;禁止让结论只留在主上下文(子代理省了读取,产出堆回会话记忆 = Context Stuffing 回潮)。**流程绑定(22.5 联动)**:该次回填完成前不得勾选 Handoff 登记表 verify_done——verify_done = Read 实际产出 ✓ + findings.md 回填 ✓ 双条件,回填段落锚点记入登记表「findings 落点」列
+19.2 **3-File 回填门控（执行中硬门控）**:Phase 标记 complete 前必须满足双条件——① progress.md 对应 Phase 段已回填(Actions taken / Files created-modified / Test Results);② findings.md 在本 Phase 期间有实质增量。翻转前运行 `bash scripts/check-3file-gate.sh <plan-dir>` 硬校验:mtime 判定(findings/progress 更新时间必须晚于该 Phase 的 Started 锚点,记录于 progress.md Phase 段;锚点缺失退化用 findings_stale_minutes/progress_stale_minutes 阈值)任一不满足 → exit 1 → 禁止标记 complete,先回填再重跑。只填 progress 不写 findings(或反之)= 门控不通过;绕过门控翻转 complete = 19.2 违规,按 Rule 26.3 处置
 19.3 **恢复会话先读三文件**:session-catchup / 5Q Reboot 恢复顺序 = task_plan.md(在哪/去哪/目标)→ progress.md(做过什么/错误)→ findings.md(已知什么/决策/资源);三文件缺失任一 = 计划未正确初始化
 19.4 **错误即时双写**:错误发生 → progress.md Error Log **立即**一条(不等 Phase 结束);同条摘要进 task_plan.md Errors 表(Rule 6 细化)
 19.5 **三文件终验门（check-complete.sh 硬校验）**:终验运行 `bash scripts/check-complete.sh <plan>/task_plan.md` 时,脚本对 plan 目录下 findings.md/progress.md 做 3-File Gate:① 文件缺失 → exit 1;② 文件存在但为模板 stub(扣除对应内置模板行集合后实质内容 <3 行) → exit 1 并提示回填;③ task_plan.md >500 行 → WARNING 提示按 19.6 瘦身(不阻断)。全部 Phase complete 而 findings/progress 为 stub = 19.2 回填门控违规,按 Rule 26.3 处罚映射处置;门未过禁止声称 COMPLETE。
 19.6 **task_plan.md 瘦身(防单文件膨胀)**:task_plan.md 是控制面板,只放 目标/Phase 状态/VC/范围/Decisions Made 一行摘要/Errors 一行摘要;调研结论、根因分析、选型论证、外部引用、长文本一律落 findings.md,task_plan.md 只留一行指针(结论一句话 + `→ findings.md §段名`);Decisions Made 表每行理由 ≤1 句,论证过程落 findings.md;文件 >500 行必须迁移非状态内容(联动 Rule 20.2:外部内容严禁进 task_plan.md)。
-19.7 **及时性提醒链路([plan-compass] hook 响应)**:2-Action Rule(Rule 3)为主控,hook 为兜底:PostToolUse 检测 findings.md/progress.md 陈旧(阈值 config.json#findings_stale_minutes 默认 20 / #progress_stale_minutes 默认 25)→ 注入 `[plan-compass]` 提醒 → 收到后**立即回填对应文件再继续**(findings 陈旧 → 补写近 2 次查看类操作的发现;progress 陈旧 → 补记关键动作/测试/错误);响应协议与 [plan-sync](todo-sync.md §4)同构,每次最多响应一条,回填后自然进入冷却。
+19.7 **及时性提醒链路([plan-compass] hook 响应)**:2-Action Rule(Rule 3)为主控,hook 为兜底:PostToolUse 检测 findings.md/progress.md 陈旧(阈值 config.json#findings_stale_minutes 默认 20 / #progress_stale_minutes 默认 25)→ 注入 `[plan-compass]` 提醒 → 收到后**立即回填对应文件再继续**(findings 陈旧 → 补写近 2 次查看类操作的发现;progress 陈旧 → 补记关键动作/测试/错误);响应协议与 [plan-sync](todo-sync.md §4)同构,每次最多响应一条,回填后自然进入冷却。**升级机制**:同一文件连续 compass_escalate_after(默认 2)次提醒仍无回填(文件 mtime 早于上次提醒时间戳)→ hook 输出升级警告(🚨 违反 Rule 19.7),按 Rule 26.3 处置:违规登记 progress.md Error Log,终验 outcome 最高 PARTIAL
 
 ### 20 计划注入与防篡改（P0）— turn-start 复诵 + SHA-256 锁定 + 数据边界
 ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计划复诵块"(smart 注入:Goal/Next Step/Current Phase/in_progress Phase 全文/Decisions 末3行 + progress 尾5行,`===BEGIN-PLAN-DATA===`/`===END-PLAN-DATA===` 包裹)。turn-start 注入是防漂移最有效手段;per-tool-call 复诵省略(证据:v3 autonomous 结论——强模型每 call 注入收益低)。
@@ -121,7 +121,7 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 22.2 **超时档位**:按 subagent_type 映射超时:explore/只读 ≤30min / editor 编辑/重构 ≤60min / debugger 调试 ≤60min / executor 批量执行 ≤120min(见 `config.json#subagent.timeout_by_type`);超时 → 立即报告用户,禁止静默重试
 22.3 **失败兜底**(优先级顺序):超时/失败 → ① 改派(换更合适的 subagent 类型)→ ② 降档(升一档 model,如 haiku→sonnet)→ ③ 主进程接管(单文件 ≤300 行主进程 Edit)→ ④ AskUserQuestion;达 `config.json#subagent.retry_limit`(默认 2)→ 必须 AskUser,禁继续同法重试
 22.4 **派发 prompt 必须自包含**(Rule 21.2 强化):Agent() 派发时 prompt 含七字段 —— 目标(1 句)/输入(绝对路径 + findings.md 摘要 ≤10 行)/验收标准(2-5 条可观察证据)/Scope 禁改清单/工作路径(worktree 绝对路径)/时长预算/返回格式(结论摘要 ≤3 行 + 证据 file:line + 置信度);缺任一字段 → 禁止派发
-22.5 **交接登记**:每次 Agent() 派发前填 Subagent Handoff 登记表(时间/subagent_type/type/目标/状态(queued/pending/running/done/timeout/failed)/结论/证据/verify_done☐);子代理返回 30s 内主进程必须 Read 实际产出,未 Read → findings.md 记"未验证"
+22.5 **交接登记**:每次 Agent() 派发前填 Subagent Handoff 登记表(时间/subagent_type/type/目标/状态(queued/pending/running/done/timeout/failed)/结论/证据/findings 落点/verify_done☐);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 Edit findings.md 回填结论**(段落锚点写入「findings 落点」列),两动作完成才可勾 verify_done;未 Read → findings.md 记"未验证"
 22.6 **Phase 内 Subtasks 二级拆分**:Phase 含 ≥3 子任务 → 必须写「Subtasks」子表(ID/目标/输入/验收/状态);单子任务 ≥3 文件或 ≥300 行 → 拆为 Phase
 22.7 **连续失败 STOP**:子代理连续失败 ≥2 次 → STOP 报告用户,不进入 Chain block 交接,不继续派发;升级处理后再继续
 
