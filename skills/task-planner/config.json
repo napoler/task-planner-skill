@@ -73,6 +73,18 @@
       "minimum": 1,
       "description": "After a stale-plan reminder, suppress further stale reminders for this many tool calls (anti-nag cooldown)"
     },
+    "findings_stale_minutes": {
+      "type": "integer",
+      "default": 20,
+      "minimum": 1,
+      "description": "Max allowed age of findings.md before PostToolUse hook emits a [plan-compass] backfill reminder (Rule 19.7)"
+    },
+    "progress_stale_minutes": {
+      "type": "integer",
+      "default": 25,
+      "minimum": 1,
+      "description": "Max allowed age of progress.md before PostToolUse hook emits a [plan-compass] action-log reminder (Rule 19.7)"
+    },
     "prompt_note_interval": {
       "type": "integer",
       "default": 10,
