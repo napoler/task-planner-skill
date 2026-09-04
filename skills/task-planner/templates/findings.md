@@ -20,6 +20,15 @@
 <!-- Captured from user request -->
 -
 
+## 📚 必要知识储备对齐记录（Knowledge Base Alignment）
+<!--
+  WHAT: 对齐任务知识库 — 记录计划「必要知识储备」中各知识源的实际消费情况。
+  WHEN: 消费一个知识源后立即登记;结论落点到对应段落。
+-->
+| 知识源 | 定位(路径/URL) | 是否已消费 | 结论落点(本文件段落) |
+|--------|---------------|-----------|---------------------|
+|       |               |           |                     |
+
 ## Research Findings
 <!-- 
   WHAT: Key discoveries from web searches, documentation reading, or exploration.

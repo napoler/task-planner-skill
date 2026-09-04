@@ -612,5 +612,6 @@ Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级�
 - 任务开启期必须先选模板 → 写进 task_plan.md frontmatter 的 `template_type` 字段
 - `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件
 - **禁止**用通用 `task_plan.md` 套用所有任务（常见反模式：VC 字段与任务类型不匹配）
+- **所有模板统一含 `## 📚 必要知识储备` 章节**（任务知识库对齐）：计划创建时填写本任务依赖的规范/官方文档/内部知识库/文献/图书，Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写
 - 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `templates/template-guide.md` §一）
 - `plan-writer` agent 接收 `template_type` 参数,自动选模板填充

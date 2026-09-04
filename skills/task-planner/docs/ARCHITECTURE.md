@@ -11,7 +11,7 @@
 canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源：
 - `SKILL.md`（剥除 hooks）
 - `references/`（8 篇规则文档）
-- `templates/`（5 个主模板 + 4 个变体）
+- `templates/`（5 个核心模板 + 3 个辅助模板 + 12 个变体，统一含「📚 必要知识储备」章节）
 - `scripts/`（16 个工具脚本）
 - `config.json`（阈值配置）
 

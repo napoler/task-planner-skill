@@ -168,6 +168,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 - VC 条目内容与验证方式
 - 范围限制表内容
 - Key Questions / Decisions / Notes 等结构区
+- 「📚 必要知识储备」章节内容（全部模板标配,任务知识库对齐;按任务填充知识源,结构可按需增删行）
 
 ---
 
@@ -187,4 +188,8 @@ ls *.md | sort
 # 运行完成检测
 bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-complete.sh
 # 应返回 exit 0
+
+# 检查「执行范围限制」区块可被脚本提取(scope 护栏;check-conflicts.sh / check-drift.sh 依赖)
+awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ && NF>2' task_plan.md | grep -c '^|'
+# 应 ≥ 范围表数据行数;若为 0 说明区块结构被破坏(如标题插入区块中间)
 ```

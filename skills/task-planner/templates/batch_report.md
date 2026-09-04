@@ -3,6 +3,12 @@
 <!-- 字段校验:failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败 -->
 <!-- 详见:references/batch-quality-gate.md §三/§四 -->
 
+## 📚 必要知识储备依据（规范对齐）
+<!-- WHEN: 批量操作前登记本批遵循的规范/文档;与 Rule 18 前置 3 问配套 -->
+| 规范/文档 | 定位(路径/URL/版本) | 遵循要点 |
+|----------|--------------------|---------|
+|          |                    |         |
+
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6 必填）
 
 <!-- 批量任务(chain_mode: fan-out / 批量 ≥5 单元)时此区块必填;纯单次任务可删除整个区块 -->
