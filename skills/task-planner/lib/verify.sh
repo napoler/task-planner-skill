@@ -6,12 +6,14 @@
 #
 # Checks:
 #   1. Canonical source exists and has git history
-#   2. Each detected tool has a stub
-#   3. Stub scripts have no hardcoded zcode/claude paths
-#   4. Stub SKILL.md is thin shell (not full content)
+#   2. Each detected tool has a stub (软链模型:校验软链指向 canonical)
+#   3. Stub scripts have no hardcoded zcode/claude paths (软链模型跳过)
+#   4. Stub SKILL.md is thin shell (软链模型改为校验经软链可读 canonical 全量版)
 #   5. check-complete.sh runs OK (no plan = exit 0/2 acceptable)
 #   6. check-doc-sync.sh runs OK
 #   7. External references use ${TASK_PLANNER_ROOT} form
+#   8. Hooks registered per platform (claude=settings.local.json, zcode=cli/config.json,
+#      opencode/cursor=SKILL.md frontmatter)
 #
 # Returns exit 0 if all pass; non-zero with summary if any fail.
 
@@ -30,6 +32,16 @@ verify_installation() {
   # shellcheck disable=SC1091
   source "${TASK_PLANNER_ROOT}/lib/detect-tools.sh"
 
+  # 软链模型判定(2026-09-04):部署位若为指向 canonical 的软链,则"薄壳体积/硬编码路径"
+  # 检查不适用(全量内容与合法回退默认值都是预期状态),改为校验软链目标正确。
+  local canonical_real
+  canonical_real="$(readlink -f "$TASK_PLANNER_ROOT")"
+  stub_is_symlink_mode() {
+    local stub="$1"
+    [ -L "$stub" ] || return 1
+    [ "$(readlink -f "$stub")" = "$canonical_real" ]
+  }
+
   # 1. Canonical source
   if [ -d "$TASK_PLANNER_ROOT/.git" ] && [ -f "$TASK_PLANNER_ROOT/SKILL.md" ]; then
     pass "canonical source exists at $TASK_PLANNER_ROOT"
@@ -43,7 +55,9 @@ verify_installation() {
   else
     for tool in "${TOOLS_DETECTED[@]}"; do
       local stub="${TOOL_STUB_ROOT[$tool]}"
-      if [ -d "$stub" ] && [ -f "$stub/SKILL.md" ]; then
+      if stub_is_symlink_mode "$stub"; then
+        pass "$tool deploy = symlink → canonical (软链模型)"
+      elif [ -d "$stub" ] && [ -f "$stub/SKILL.md" ]; then
         pass "$tool stub exists at $stub"
       else
         fail "$tool stub missing or incomplete: $stub"
@@ -51,11 +65,14 @@ verify_installation() {
     done
   fi
 
-  # 3. Stub scripts: no hardcoded zcode/claude paths
+  # 3. Stub scripts: no hardcoded zcode/claude paths (仅薄壳实体模型;软链模型跳过)
   # Note: check-doc-sync.sh intentionally keeps zcode/claude fallback chain
   # in its `for _c in` block (line 30-36) for standalone-script use. Whitelist it.
   for tool in "${TOOLS_DETECTED[@]}"; do
     local stub="${TOOL_STUB_ROOT[$tool]}"
+    if stub_is_symlink_mode "$stub"; then
+      continue  # 软链模型的脚本即 canonical 脚本,回退默认值合法,见文件头注释
+    fi
     if [ -d "$stub/scripts" ]; then
       # Find files with hardcoded paths, excluding the whitelisted fallback chain in check-doc-sync.sh
       local hardcoded
@@ -69,9 +86,19 @@ verify_installation() {
     fi
   done
 
-  # 4. Stub SKILL.md is thin (should be < 15KB, not full canonical 20KB)
+  # 4. Stub SKILL.md is thin (should be < 15KB) — 仅薄壳实体模型;软链模型应为大体积全量版
   for tool in "${TOOLS_DETECTED[@]}"; do
     local stub="${TOOL_STUB_ROOT[$tool]}"
+    if stub_is_symlink_mode "$stub"; then
+      local fsize
+      fsize=$(wc -c < "$stub/SKILL.md" 2>/dev/null || echo 0)
+      if [ "$fsize" -gt 0 ]; then
+        pass "$tool SKILL.md = canonical full via symlink ($fsize bytes)"
+      else
+        fail "$tool SKILL.md unreadable through symlink: $stub"
+      fi
+      continue
+    fi
     if [ -f "$stub/SKILL.md" ]; then
       local size
       size=$(wc -c < "$stub/SKILL.md")
@@ -127,8 +154,18 @@ verify_installation() {
       fail "Claude Code: settings.local.json missing task-planner hooks (run register-hooks-cj.ts)"
     fi
   fi
-  # ZCode/OpenCode/Cursor: SKILL.md frontmatter must contain hooks: block
-  for tool in zcode opencode cursor continue; do
+  # ZCode: hooks 注册机制 = ~/.zcode/cli/config.json 的 hooks.events(2026-09-04 实证,
+  # SKILL.md frontmatter 从未承载 zcode hooks——canonical frontmatter 亦无 hooks: 块)
+  local zcode_cfg="$HOME/.zcode/cli/config.json"
+  if [ -n "${TOOL_STUB_ROOT[zcode]:-}" ] && [ -f "$zcode_cfg" ]; then
+    if grep -q 'task-planner' "$zcode_cfg" 2>/dev/null; then
+      pass "ZCode: hooks registered in $zcode_cfg"
+    else
+      fail "ZCode: $zcode_cfg missing task-planner hooks"
+    fi
+  fi
+  # OpenCode/Cursor/Continue(薄壳实体模型): SKILL.md frontmatter must contain hooks: block
+  for tool in opencode cursor continue; do
     local stub="${TOOL_STUB_ROOT[$tool]:-}"
     [ -n "$stub" ] && [ -d "$stub" ] && [ -f "$stub/SKILL.md" ] || continue
     if grep -q '^hooks:' "$stub/SKILL.md" 2>/dev/null; then
