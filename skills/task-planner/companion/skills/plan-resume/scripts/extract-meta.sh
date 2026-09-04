@@ -1,264 +1,198 @@
 #!/usr/bin/env bash
-# extract-meta.sh — 从计划文件提取元数据,支持三种格式后端
+# extract-meta.sh — 从单个 task_plan.md 提取元数据
 #
-# Usage: extract-meta.sh [--json] <plan-file>
+# Usage: extract-meta.sh <plan-file>
 #
-# 格式自动检测(按优先级):
-#   1. 路径含 openspec/changes/ → openspec 后端
-#   2. 路径含 specs/*/ 且同一目录有 spec.md/tasks.md → spec-kit 后端
-#   3. 其他 → task-planner 后端(默认)
+# Output: key=value 格式(默认) 或 --json 输出 JSON
 #
-# 输出字段:
+# 字段:
 #   task_id         目录名或文件名
 #   m_time          文件修改时间(秒)
 #   goal            Goal 段首非空非注释行,截断到 200 字符
-#   current_phase   当前 phase/分组摘要,截断 5 行
+#   current_phase   Current Phase 段,截断 5 行
 #   next_step       Next Step 段首非空非注释行,截断 200 字符
-#   phase_status    所有 Status: 行的值,以 | 分隔(task-planner 专用)
-#   all_complete    0/1(task-planner 专用)
-#   format          task-planner / openspec / spec-kit
-#   task_completion_pct  完成度百分比(仅 openspec / spec-kit 填)
-#   is_archived     0/1(openspec 归档标记)
+#   phase_status    所有 Status: 行的值,以 | 分隔
+#   all_complete    0/1
 #   missing         1 当文件不存在
+#   -- v0.4 新增字段(2026-09-04 smart-resume 升级) --
+#   depends_on      plan 中所有 depends_on 引用,以 | 分隔
+#   block_id        plan 的 block_id(自身标识)
+#   vc_count        Verification Contract 表项数
+#   p0_markers      含 P0/P1 优先级的行数(粗判重要度)
+#   failure_count   progress.md Error Log 段条目数(0 表示从未失败)
+#   git_last_commit 该 plan 文件 git 最后提交时间(秒),0 表示 untracked
+#   real_age_days   基于 git_last_commit 的真实 age(天),untracked 用 mtime
 set -euo pipefail
 
-FILE=""
+FILE="${1:?usage: extract-meta.sh [--json] <plan-file>}"
 JSON=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --json) JSON=1; shift ;;
-    -*)
-      echo "[extract-meta] 未知参数: $1" >&2; exit 1 ;;
-    *)
-      FILE="${FILE:-$1}"; shift ;;
-  esac
-done
+if [[ "$FILE" == "--json" ]]; then
+  JSON=1
+  FILE="${2:?usage: extract-meta.sh --json <plan-file>}"
+fi
 
-[[ -z "$FILE" ]] && { echo "usage: extract-meta.sh [--json] <plan-file>" >&2; exit 2; }
-
-# ─── Helpers ──────────────────────────────────────────────────────────────────
-
-# 格式判别
-detect_format() {
-  local f="$1"
-  local BASE GRPARENT DIR_PATH
-  BASE="$(basename "$f")"
-  DIR_PATH="$(dirname "$f")"
-  GRPARENT="$(basename "$(dirname "$DIR_PATH")")"  # 上两级: <repo>/specs/<feature>/tasks.md → specs
-
-  if echo "$f" | grep -q 'openspec/changes/'; then
-    echo "openspec"
-  elif [[ "$GRPARENT" == "specs" && ( "$BASE" == "tasks.md" || "$BASE" == "spec.md" ) ]]; then
-    # spec-kit: <repo>/specs/<feature>/{tasks.md, spec.md}
-    echo "spec-kit"
-  else
-    echo "task-planner"
-  fi
-}
-
-# ─── 公共字段提取 ─────────────────────────────────────────────────────────────
-
-extract_common() {
-  local FILE="$1" FORMAT="$2"
-  local DIR_NAME TASK_ID M_TIME GOAL CUR_PHASE NEXT_STEP
-
-  if [[ ! -f "$FILE" ]]; then
-    DIR_NAME="$(basename "$(dirname "$FILE")")"
-    if [[ "$DIR_NAME" == ".zcode" || "$DIR_NAME" == "plans" || "$DIR_NAME" == "." ]]; then
-      TASK_ID="$(basename "$FILE" .md)"
-    else
-      TASK_ID="$DIR_NAME"
-    fi
-    if [[ $JSON -eq 1 ]]; then
-      printf '{"task_id":"%s","missing":true,"format":"%s"}\n' "$TASK_ID" "$FORMAT"
-    else
-      echo "task_id=$TASK_ID"
-      echo "format=$FORMAT"
-      echo "missing=1"
-    fi
-    return
-  fi
-
-  DIR_NAME="$(basename "$(dirname "$FILE")")"
-  if [[ "$DIR_NAME" == ".zcode" || "$DIR_NAME" == "plans" || "$DIR_NAME" == "." ]]; then
-    TASK_ID="$(basename "$FILE" .md)"
-  else
-    TASK_ID="$DIR_NAME"
-  fi
-
-  M_TIME="$(stat -c %Y "$FILE" 2>/dev/null || echo 0)"
-
-  # Goal: 按格式不同
-  case "$FORMAT" in
-    task-planner)
-      GOAL=""
-      while IFS= read -r line; do
-        case "$line" in
-          "## Goal"|"# Goal") ;;
-          "## "*) break ;;
-          "<!--"*|"<!--"*) break ;;
-          ""|"  "*) continue ;;
-          *)
-            GOAL="$(echo "$line" | sed 's/^[[:space:]]*//' | head -c 200)"
-            break ;;
-        esac
-      done < <(awk '/^## Goal/{flag=1;next} /^##/{flag=0} flag' "$FILE")
-      ;;
-    openspec)
-      # 优先读 .openspec.yaml 的 goal;缺失则读 proposal.md 的 ## Why 段
-      local DIR_PATH
-      DIR_PATH="$(dirname "$FILE")"
-      if [[ -f "$DIR_PATH/.openspec.yaml" ]]; then
-        GOAL="$(grep -E '^goal:' "$DIR_PATH/.openspec.yaml" 2>/dev/null | head -1 | sed 's/^goal:[[:space:]]*//' || true)"
-      fi
-      # fallback: 从 proposal.md 的 ## Why 段取首非空行
-      if [[ -z "$GOAL" && -f "$DIR_PATH/proposal.md" ]]; then
-        GOAL="$(awk '/^## Why/{flag=1;next} /^##/{flag=0} flag && NF && !/<!--/{print; exit}' \
-          "$DIR_PATH/proposal.md" | sed 's/^[[:space:]]*//' | head -c 200 || true)"
-      fi
-      [[ -z "$GOAL" ]] && GOAL="[no goal field detected]"
-      ;;
-    spec-kit)
-      # spec.md 的 # Feature Specification: [NAME] 行
-      # 或当前文件(tasks.md)的第一行 # 标题
-      local SPEC_FILE="${FILE%tasks.md}spec.md"
-      if [[ "$FILE" == */spec.md ]]; then
-        SPEC_FILE="$FILE"
-      fi
-      GOAL=""
-      if [[ -f "$SPEC_FILE" ]]; then
-        GOAL="$(grep -E '^# Feature Specification:' "$SPEC_FILE" 2>/dev/null | head -1 \
-          | sed 's/^# Feature Specification:[[:space:]]*//' || true)"
-      fi
-      [[ -z "$GOAL" ]] && GOAL="$(head -1 "$FILE" | sed 's/^#//;s/^[[:space:]]*//' | head -c 200 || true)"
-      ;;
-  esac
-
-  # Current Phase: 按格式
-  case "$FORMAT" in
-    task-planner)
-      CUR_PHASE="$(awk '/^## Current Phase/{flag=1;next} /^## /{flag=0} flag' "$FILE" \
-        | grep -v '^<!--' | grep -v '^-->$' \
-        | sed '/^$/d' \
-        | head -5 \
-        | tr '\n' '|')"
-      ;;
-    openspec)
-      # 从 tasks.md 提取 ## N. 分组标题,截 3 组
-      CUR_PHASE="$(grep -E '^## [0-9]+\.' "$FILE" 2>/dev/null | head -3 | tr '\n' '|')"
-      [[ -z "$CUR_PHASE" ]] && CUR_PHASE="[no phase headers]"
-      ;;
-    spec-kit)
-      # spec.md 的 **Status**: 字段或 tasks.md 的 ## Phase N: 分组
-      local SPEC_FILE="${FILE%tasks.md}spec.md"
-      CUR_PHASE=""
-      if [[ "$FILE" != */spec.md && -f "$SPEC_FILE" ]]; then
-        CUR_PHASE="$(grep -E '\*\*Status\*\*:' "$SPEC_FILE" 2>/dev/null | head -1 | sed 's/.*Status\*\*:[[:space:]]*//' || true)"
-      fi
-      if [[ -z "$CUR_PHASE" ]]; then
-        # 从当前 spec.md 文件本身读 Status 字段(spec.md 作为入口)
-        if echo "$FILE" | grep -q 'spec\.md$'; then
-          CUR_PHASE="$(grep -E '\*\*Status\*\*:' "$FILE" 2>/dev/null | head -1 | sed 's/.*Status\*\*:[[:space:]]*//' || true)"
-        fi
-      fi
-      if [[ -z "$CUR_PHASE" ]]; then
-        CUR_PHASE="$(grep -E '^## Phase [0-9]+:' "$FILE" 2>/dev/null | head -3 | tr '\n' '|' || true)"
-      fi
-      [[ -z "$CUR_PHASE" ]] && CUR_PHASE="[no status field detected]"
-      ;;
-  esac
-
-  # Next Step: task-planner 专用,其他留空
-  NEXT_STEP=""
-  if [[ "$FORMAT" == "task-planner" ]]; then
-    while IFS= read -r line; do
-      case "$line" in
-        "## Next Step"|"# Next Step") ;;
-        "## "*) break ;;
-        "<!--"*|"<!--"*) break ;;
-        ""|"  "*) continue ;;
-        *)
-          NEXT_STEP="$(echo "$line" | sed 's/^[[:space:]]*//' | head -c 200)"
-          break ;;
-      esac
-    done < <(awk '/^## Next Step/{flag=1;next} /^## /{flag=0} flag' "$FILE")
-  fi
-
-  # is_archived(openspec 专用)
-  local IS_ARCHIVED=0
-  if [[ "$FORMAT" == "openspec" ]] && echo "$FILE" | grep -q '/archive/'; then
-    IS_ARCHIVED=1
-  fi
-
-  # phase_status / all_complete(task-planner 专用)
-  local PHASE_STATUS=""
-  local ALL_COMPLETE=0
-  if [[ "$FORMAT" == "task-planner" ]]; then
-    PHASE_STATUS="$(grep -E '^- \*\*Status:\*\*' "$FILE" \
-      | sed 's/.*Status:\*\*[[:space:]]*//' \
-      | tr '\n' '|')"
-    if [[ -n "$PHASE_STATUS" ]] && ! echo "$PHASE_STATUS" | grep -qE 'pending|in_progress'; then
-      ALL_COMPLETE=1
-    fi
-  fi
-
-  # task_completion_pct(openspec + spec-kit 专用)
-  local COMPLETION_PCT=""
-  case "$FORMAT" in
-    openspec)
-      local TOTAL DONE
-      TOTAL="$(grep -cE '^\s*[-*]\s+\[[ x]\]' "$FILE" 2>/dev/null || true)"
-      DONE="$(grep -ciE '^\s*[-*]\s+\[x\]' "$FILE" 2>/dev/null || true)"
-      TOTAL="${TOTAL:-0}"; TOTAL="${TOTAL//[[:space:]]/}"
-      DONE="${DONE:-0}"; DONE="${DONE//[[:space:]]/}"
-      if [[ "$TOTAL" =~ ^[0-9]+$ ]] && [[ $TOTAL -gt 0 ]]; then
-        COMPLETION_PCT="$(( DONE * 100 / TOTAL ))"
-      fi
-      ;;
-    spec-kit)
-      local TOTAL_DONE TOTAL_ALL
-      TOTAL_DONE="$(grep -ciE '^\s*[-*]\s+\[x\]' "$FILE" 2>/dev/null || true)"
-      TOTAL_ALL="$(grep -cE '^\s*[-*]\s+\[[ x]\]' "$FILE" 2>/dev/null || true)"
-      TOTAL_DONE="${TOTAL_DONE:-0}"; TOTAL_DONE="${TOTAL_DONE//[[:space:]]/}"
-      TOTAL_ALL="${TOTAL_ALL:-0}"; TOTAL_ALL="${TOTAL_ALL//[[:space:]]/}"
-      if [[ "$TOTAL_ALL" =~ ^[0-9]+$ ]] && [[ $TOTAL_ALL -gt 0 ]]; then
-        COMPLETION_PCT="$(( TOTAL_DONE * 100 / TOTAL_ALL ))"
-      fi
-      ;;
-  esac
-
-  # 输出
+if [[ ! -f "$FILE" ]]; then
   if [[ $JSON -eq 1 ]]; then
-    printf '{"task_id":"%s","m_time":%s,"goal":"%s","current_phase":"%s","next_step":"%s","phase_status":"%s","all_complete":%s,"format":"%s"' \
-      "$TASK_ID" "$M_TIME" \
-      "$(echo "$GOAL" | sed 's/"/\\"/g')" \
-      "$(echo "$CUR_PHASE" | sed 's/"/\\"/g')" \
-      "$(echo "$NEXT_STEP" | sed 's/"/\\"/g')" \
-      "$(echo "$PHASE_STATUS" | sed 's/"/\\"/g')" \
-      "$ALL_COMPLETE" "$FORMAT"
-    # 可选字段
-    if [[ -n "$COMPLETION_PCT" ]]; then
-      printf ',"task_completion_pct":%s' "$COMPLETION_PCT"
-    fi
-    if [[ $IS_ARCHIVED -eq 1 ]]; then
-      printf ',"is_archived":1'
-    fi
-    printf '}\n'
+    printf '{"task_id":"%s","missing":true}\n' "$(basename "$(dirname "$FILE")")"
   else
-    echo "task_id=$TASK_ID"
-    echo "m_time=$M_TIME"
-    echo "goal=$GOAL"
-    echo "current_phase=$CUR_PHASE"
-    echo "next_step=$NEXT_STEP"
-    echo "phase_status=$PHASE_STATUS"
-    echo "all_complete=$ALL_COMPLETE"
-    echo "format=$FORMAT"
-    [[ -n "$COMPLETION_PCT" ]] && echo "task_completion_pct=$COMPLETION_PCT"
-    [[ $IS_ARCHIVED -eq 1 ]] && echo "is_archived=1"
+    echo "task_id=$(basename "$(dirname "$FILE")")"
+    echo "missing=1"
   fi
-}
+  exit 0
+fi
 
-# ─── Main ─────────────────────────────────────────────────────────────────────
+DIR_NAME="$(basename "$(dirname "$FILE")")"
+if [[ "$DIR_NAME" == ".zcode" || "$DIR_NAME" == "plans" || "$DIR_NAME" == "." ]]; then
+  TASK_ID="$(basename "$FILE" .md)"
+else
+  TASK_ID="$DIR_NAME"
+fi
 
-FORMAT="$(detect_format "$FILE")"
-extract_common "$FILE" "$FORMAT"
+M_TIME="$(stat -c %Y "$FILE" 2>/dev/null || echo 0)"
+
+# Goal: 在 ## Goal 段后,直到下一个 ## 或 EOF,取第一个非空非注释非空行
+GOAL=""
+while IFS= read -r line; do
+  case "$line" in
+    "## Goal"|"# Goal") ;; # 忽略标记
+    "## "*) break ;;
+    "<!--"*|"<!--"*) break ;;
+    ""|"  "*) continue ;;
+    *)
+      GOAL="$(echo "$line" | sed 's/^[[:space:]]*//' | head -c 200)"
+      break
+      ;;
+  esac
+done < <(awk '/^## Goal/{flag=1;next} /^##/{flag=0} flag' "$FILE")
+
+# Current Phase: 整段,截 5 行
+# 注: 用 || true 防止空 CUR_PHASE 触发 set -e (有些 plan 没有该段)
+CUR_PHASE="$(awk '/^## Current Phase/{flag=1;next} /^## /{flag=0} flag' "$FILE" 2>/dev/null \
+  | grep -v '^<!--' 2>/dev/null | grep -v '^-->$' 2>/dev/null \
+  | sed '/^$/d' 2>/dev/null \
+  | head -5 2>/dev/null \
+  | tr '\n' '|' 2>/dev/null)" || CUR_PHASE=""
+
+# Next Step: 在 ## Next Step 段后,取第一个非空非注释行
+NEXT_STEP=""
+while IFS= read -r line; do
+  case "$line" in
+    "## Next Step"|"# Next Step") ;;
+    "## "*) break ;;
+    "<!--"*|"<!--"*) break ;;
+    ""|"  "*) continue ;;
+    *)
+      NEXT_STEP="$(echo "$line" | sed 's/^[[:space:]]*//' | head -c 200)"
+      break
+      ;;
+  esac
+done < <(awk '/^## Next Step/{flag=1;next} /^## /{flag=0} flag' "$FILE")
+
+# Phase Status: 所有 Status: 行(用 || true 防止空 pipeline 触发 set -e)
+PHASE_STATUS="$(grep -E '^- \*\*Status:\*\*' "$FILE" 2>/dev/null \
+  | sed 's/.*Status:\*\*[[:space:]]*//' 2>/dev/null \
+  | tr '\n' '|')" || PHASE_STATUS=""
+
+# 是否所有 phase 都是 complete
+ALL_COMPLETE=0
+if [[ -n "$PHASE_STATUS" ]] && ! echo "$PHASE_STATUS" | grep -qE 'pending|in_progress'; then
+  ALL_COMPLETE=1
+fi
+
+# ---- v0.4 新增字段 ----
+
+# depends_on: plan frontmatter 或正文里的 depends_on 引用
+# 支持两种格式:
+#   YAML frontmatter:  depends_on: [task-a, task-b]
+#   Markdown 表格行:    | depends_on | ... |
+DEPENDS_ON=""
+# 1. frontmatter(简单 grep,因为 plan frontmatter 短)
+FM_BLOCK="$(awk '/^---$/{n++; if(n==2) exit; next} n==1' "$FILE" 2>/dev/null || true)"
+if [[ -n "$FM_BLOCK" ]]; then
+  DEPENDS_ON="$(echo "$FM_BLOCK" | grep -E '^\s*depends_on:' 2>/dev/null | sed 's/.*depends_on:[[:space:]]*//' 2>/dev/null | tr -d '[]"' 2>/dev/null | tr ',' '\n' 2>/dev/null | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' 2>/dev/null | grep -v '^$' 2>/dev/null | tr '\n' '|' 2>/dev/null)" || DEPENDS_ON=""
+fi
+# 2. markdown 表格(粗)
+if [[ -z "$DEPENDS_ON" ]]; then
+  DEPENDS_ON="$(grep -E 'depends_on|^\|.*task-' "$FILE" 2>/dev/null | head -3 | sed 's/^|//' | tr '|' '\n' | grep -oE 'task-[a-zA-Z0-9_-]+' | sort -u | tr '\n' '|')" || DEPENDS_ON=""
+fi
+DEPENDS_ON="${DEPENDS_ON%|}"
+
+# block_id: plan 自身 block_id(从 frontmatter)
+BLOCK_ID=""
+if [[ -n "$FM_BLOCK" ]]; then
+  BLOCK_ID="$(echo "$FM_BLOCK" | grep -E '^\s*block_id:' 2>/dev/null | sed 's/.*block_id:[[:space:]]*//' 2>/dev/null | head -1 | tr -d '"' 2>/dev/null)" || BLOCK_ID=""
+fi
+
+# vc_count: Verification Contract 表行数
+VC_COUNT="$(grep -cE '^\| VC-[0-9]+' "$FILE" 2>/dev/null)" || VC_COUNT=0
+# 兼容旧格式 | VC-1 | ... |
+if [[ "${VC_COUNT:-0}" -eq 0 ]]; then
+  VC_COUNT="$(grep -cE '^\|.*[Vv][Cc]-' "$FILE" 2>/dev/null)" || VC_COUNT=0
+fi
+
+# p0_markers: 含 P0/P1 优先级的行数(粗判重要度,排除 P0 铁律引用)
+P0_MARKERS="$(grep -cE '\bP[01]\b' "$FILE" 2>/dev/null)" || P0_MARKERS=0
+
+# failure_count: progress.md Error Log 段条目数(0 表示从未失败)
+FAILURE_COUNT=0
+PROGRESS_FILE="$(dirname "$FILE")/progress.md"
+if [[ -f "$PROGRESS_FILE" ]]; then
+  FAILURE_COUNT="$(awk '/^## Error Log/{flag=1;next} /^## /{flag=0} flag' "$PROGRESS_FILE" 2>/dev/null | grep -cE '^\|' 2>/dev/null)" || FAILURE_COUNT=0
+  if [[ "${FAILURE_COUNT:-0}" -eq 0 ]]; then
+    FAILURE_COUNT="$(grep -cE 'circuit-break|CIRCUIT-BREAK|\[FAIL\]' "$PROGRESS_FILE" 2>/dev/null)" || FAILURE_COUNT=0
+  fi
+fi
+
+# git_last_commit: 该 plan 文件 git 最后提交时间(秒)
+GIT_LAST_COMMIT=0
+if command -v git >/dev/null 2>&1; then
+  SEARCH_DIR="$(dirname "$FILE")"
+  while [[ "$SEARCH_DIR" != "/" ]]; do
+    if [[ -d "$SEARCH_DIR/.git" ]] || git -C "$SEARCH_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+      REL_PATH="${FILE#$SEARCH_DIR/}"
+      GIT_LAST_COMMIT="$(git -C "$SEARCH_DIR" log -1 --format=%ct -- "$REL_PATH" 2>/dev/null)" || GIT_LAST_COMMIT=0
+      break
+    fi
+    SEARCH_DIR="$(dirname "$SEARCH_DIR")"
+  done
+fi
+
+# real_age_days: 基于 git_last_commit 的真实 age(天),untracked 用 mtime
+NOW="$(date +%s)"
+if [[ "$GIT_LAST_COMMIT" -gt 0 ]]; then
+  REAL_AGE_DAYS="$(( (NOW - GIT_LAST_COMMIT) / 86400 ))"
+else
+  REAL_AGE_DAYS="$(( (NOW - M_TIME) / 86400 ))"
+fi
+
+if [[ $JSON -eq 1 ]]; then
+  printf '{"task_id":"%s","m_time":%s,"goal":"%s","current_phase":"%s","next_step":"%s","phase_status":"%s","all_complete":%s,"depends_on":"%s","block_id":"%s","vc_count":%s,"p0_markers":%s,"failure_count":%s,"git_last_commit":%s,"real_age_days":%s}\n' \
+    "$TASK_ID" "$M_TIME" \
+    "$(echo "$GOAL" | sed 's/"/\\"/g')" \
+    "$(echo "$CUR_PHASE" | sed 's/"/\\"/g')" \
+    "$(echo "$NEXT_STEP" | sed 's/"/\\"/g')" \
+    "$(echo "$PHASE_STATUS" | sed 's/"/\\"/g')" \
+    "$ALL_COMPLETE" \
+    "$DEPENDS_ON" \
+    "$BLOCK_ID" \
+    "$VC_COUNT" \
+    "$P0_MARKERS" \
+    "$FAILURE_COUNT" \
+    "$GIT_LAST_COMMIT" \
+    "$REAL_AGE_DAYS"
+else
+  echo "task_id=$TASK_ID"
+  echo "m_time=$M_TIME"
+  echo "goal=$GOAL"
+  echo "current_phase=$CUR_PHASE"
+  echo "next_step=$NEXT_STEP"
+  echo "phase_status=$PHASE_STATUS"
+  echo "all_complete=$ALL_COMPLETE"
+  echo "depends_on=$DEPENDS_ON"
+  echo "block_id=$BLOCK_ID"
+  echo "vc_count=$VC_COUNT"
+  echo "p0_markers=$P0_MARKERS"
+  echo "failure_count=$FAILURE_COUNT"
+  echo "git_last_commit=$GIT_LAST_COMMIT"
+  echo "real_age_days=$REAL_AGE_DAYS"
+fi
