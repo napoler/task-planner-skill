@@ -170,11 +170,11 @@ if total == 0 and not block_statuses:
 
 # Batch Report gate (Rule 18.6): incomplete fields block completion reporting
 
-    # Rule 23.6: fan-out 必须含 Aggregator Phase
-    aggregator_missing = []
-    if chain_mode == "fan-out":
-        if not re.search(r'Phase\s+\d+:.*[Aa]ggregator', content) and not re.search(r'Phase\s+\d+:.*聚合', content):
-            aggregator_missing = ["Aggregator Phase (Rule 23.6)"]
+# Rule 23.6: fan-out 必须含 Aggregator Phase
+aggregator_missing = []
+if chain_mode == "fan-out":
+    if not re.search(r'Phase\s+\d+:.*[Aa]ggregator', content) and not re.search(r'Phase\s+\d+:.*聚合', content):
+        aggregator_missing = ["Aggregator Phase (Rule 23.6)"]
 
 if batch_missing:
     print(f"[plan] Batch Report incomplete (Rule 18.6) — missing: {', '.join(batch_missing)}")

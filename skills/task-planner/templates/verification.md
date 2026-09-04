@@ -71,6 +71,12 @@ Status: `pending` Last verified: —
 - [ ] 主进程直做 Phase 均在计划 Executor 字段登记例外理由
 - [ ] 委派率 <50% 且无登记理由 → outcome 已降级 PARTIAL
 
+## 质量门控统计（Rule 26）
+- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
+- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
+- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
+- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
+
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```
