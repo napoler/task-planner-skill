@@ -51,8 +51,10 @@ git worktree add /home/terry/<repo>-worktrees/<task-id> -b wt/<task-id> main
 # ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
 #    子代理派发时在 prompt 中写明 worktree 绝对路径
 
-# ③ worktree 内提交(禁止把未提交变更带回合并)
-git -C /home/terry/<repo>-worktrees/<task-id> add -A && git -C /home/terry/<repo>-worktrees/<task-id> commit -m "..."
+# ③ worktree 内提交 — 每 Phase 完成即提交(Rule 27),禁止攒批到最后;禁止把未提交变更带回合并
+#    只 add 本 Phase 产物文件(禁用 add -A 盲扫,防卷入 plans/ 与并行任务产物)
+git -C /home/terry/<repo>-worktrees/<task-id> add <本 Phase 产物文件...>
+git -C /home/terry/<repo>-worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
 
 # ④ worktree 内全 VC 复验通过后,回主仓合并
 git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"

@@ -190,3 +190,14 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 26.5 **与相关 Rule 关系**:18 管批量门控本体、19.2 管回填存在性、22.5 管 Handoff Read、25 管委派率——各自管检测,26 统一管「违规 → 惩罚」映射,并补齐非批量场景的验证压缩门控;检测点不重复,惩罚不双计(同一行为由其属主条款处置一次)。
 
 26.6 **失败联动**:违规即以 `[quality-violation]` 标签写 progress.md Error Log + task_plan.md Errors 表(复用 Rule 6/19.4 通道);终验 outcome 判定前,质量门控统计段存在未处置违规 → 禁止 COMPLETE;C15 未勾 → 禁止进入终验交付。
+
+### 27 工作产物及时提交（P0）— Phase 级 commit 门控,防修改被丢弃
+
+Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操作(`git clean -fd`/`git checkout -- .`/`git reset --hard`)、worktree 清理任一发生即被抹除。3-File Gate 管"回填存在性",worktree 合并回合约 §4 #2 只在合并前查一次"干净"——均不保证"及时入库"。本规则把提交做成 Phase complete 的前置门控:产物随时落 git 管理,任何时刻的最坏丢失上限 = 单个 Phase 的增量。
+
+27.1 **提交时机(Phase 级强制)**:实现类 Phase(产物含代码/配置/脚本/技能文档等仓内文件)在执行循环步骤 4.5 完成提交,才可翻转 complete——worktree 隔离场景提交在 worktree 内分支(逐 Phase 提交,合并回合约"worktree 内 status 干净"由此自然满足);direct 场景提交在主仓当前分支。**禁止跨 Phase 攒批、禁止留到终验才提交**。纯调研/纯 plans/ 写入(无仓内产物)的 Phase 豁免本条,progress.md 记一行"无仓内产物"。
+27.2 **提交范围(禁盲扫)**:只 `git add` 本 Phase 实际产出文件(以 scope_files 与 progress.md「Files created-modified」清单为准);**禁止 `git add -A` / `git add .`**——防把 plans/(按仓约定不入库)、.env、临时文件、其他并行任务产物卷入提交。message 格式:`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。
+27.3 **提交校验**:提交后 `git status --porcelain -- <scope 文件>` 必须为空;非空 = 有遗漏,补提交或说明原因。**非 git 目录** → progress.md 记一行 `[git-commit] 跳过:非 git 仓库`,不阻塞(提交能力缺失不是造假理由,如实登记)。
+27.4 **豁免**:仅两种——① 计划内声明 `git_commit: deferred`(Executor 字段或 frontmatter,含理由);② 用户显式说"先不提交"。豁免登记进 verification.md「质量门控统计」段;无登记而未提交即翻转 complete = 27 违规,按 Rule 26.3 处置(回炉补提交)。
+27.5 **终验联动**:终验交付前核验任务 scope 无未提交变更(`git status --porcelain -- <scope>`);遗留 → 补提交(注明"终验补提交")再交付。worktree 场景由合并回合约兜底,本条把"干净"要求从合并前一次性检查前移为逐 Phase 检查。
+27.6 **恢复补提交**:会话中断/压缩后恢复(session-catchup / plan-resume / 5Q)时,若 `git status` 显示 scope 内存在未提交变更而 progress.md 已记录对应动作 → 先补提交(注明"跨会话补提交")再继续,防带病推进。
