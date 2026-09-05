@@ -219,7 +219,28 @@ fi
 # 5. 检查是否已被 [auto-pushed-by-cron] 标记(防重入)
 if grep -qa 'auto-pushed-by-cron' "$PLAN_PATH" 2>/dev/null; then
   echo "[select-and-resume] 跳过: $TASK_ID 已有 [auto-pushed-by-cron] 标记(防重入)" >&2
-  exit 0
+  # v0.5.1 改进: 不 exit, 继续试下一个候选
+  _skip_report=""
+  while IFS= read -r _cand; do
+    [[ -z "$_cand" ]] && continue
+    _tid="$(echo "$_cand" | python3 -c 'import sys,json; print(json.loads(sys.stdin.read())["task_id"])' 2>/dev/null)" || _tid=""
+    [[ -z "$_tid" ]] && continue
+    _p="$REPO_ROOT/plans/$_tid/task_plan.md"
+    [[ ! -f "$_p" ]] && continue
+    if ! grep -qa 'auto-pushed-by-cron\|circuit-break-by-cron' "$_p" 2>/dev/null; then
+      SCORE_NEXT="$(echo "$_cand" | python3 -c 'import sys,json;print(json.loads(sys.stdin.read())["score"])' 2>/dev/null)"
+      echo "[select-and-resume] 改选: $TASK_ID(跳过) → $_tid (score=$SCORE_NEXT)" >&2
+      TASK_ID="$_tid"
+      PLAN_PATH="$_p"
+      SCORE_VAL="$SCORE_NEXT"
+      break
+    fi
+  done < <(tail -n +2 "$FILTERED_OUT" 2>/dev/null)
+  # 若仍无可用候选,退出
+  if grep -qa 'auto-pushed-by-cron\|circuit-break-by-cron' "$PLAN_PATH" 2>/dev/null; then
+    echo "[select-and-resume] 所有候选均被标记(skip_states + auto-pushed + circuit-break),本轮无可用 plan" >&2
+    exit 0
+  fi
 fi
 
 # 6. 检查 circuit-break 标记
