@@ -223,16 +223,6 @@ https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Ma
 
 ---
 
-## § 决策矩阵：何时读/写文件
-
-| 场景 | 动作 | 原因 |
-|------|------|------|
-| 刚写完一个文件 | 不读 | 内容还在上下文中 |
-| 看过图片/PDF | 立即写 findings.md | 多模态 → 文本否则丢失 |
-| 启动新 phase | 读 plan + findings | 上下文若已陈旧则重新定位 |
-| 发生错误 | 读相关文件 | 需要当前状态来修复 |
-| 中断后恢复 | 读全部规划文件 | 恢复状态 |
-
 ## § 三击错误协议
 
 ```

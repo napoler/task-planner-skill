@@ -5,7 +5,7 @@ description: Use when planning, decomposing, or organizing multi-step projects o
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet"
 user-invocable: true
 references:
-- reference.md: Manus context engineering 原则 + 决策矩阵 + 3-Strike + 5Q + Scope Guard + Handoff + 重规划触发
+- reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff 合约 + Chain 重规划触发
 - references/critical-rules.md: Critical Rules 1-12 核心执行约束（含 Rule 11 漂移检测、Rule 12 冲突隔离）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复/并行任务）
 - references/completion-gate.md: 子代理验证 + 并行同步
@@ -324,31 +324,13 @@ Block 1 (选题) complete
 
 ## Chain Handoff Contract（链式交接合约）
 
-当 `chain_mode: linked` 或 `fan-out` 时，block 间的交接必须满足以下合约：
-
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| `passes_to` | ✅ | 下一个 block 依赖的文件路径 |
-| `depends_on` | ✅ | 上一个 block 的产物路径 |
-| `handoff_status` | ✅ | `pending` / `in_progress` / `complete` / `blocked` |
-| `verification_cmd` | ✅ | 验证交接产物合法性的命令 |
-
-**交接前必须满足**：
-```
-1. 当前 block 所有 Phase = complete
-2. 交接产物文件存在且大小 > 0
-3. 交接产物通过 verification_cmd 验证
-4. Handoff 追踪表已更新
-5. 下游 block 的 status 已设为 in_progress
-```
-
-`next_skill: general-purpose`。详见 `reference.md § Handoff`。
+`chain_mode: linked` / `fan-out` 的 block 交接合约（字段表 + 交接前 6 条件 + 重规划触发条件）**唯一权威源**：`reference.md § Chain Handoff Contract`。执行循环内的交接操作步骤见上方「Chain 区块交接」；`next_skill: general-purpose`。
 
 ## References
 
 | 文档 | 用途 |
 |------|------|
-| `reference.md` | Manus 原则 + 决策矩阵 + 3-Strike + 5Q + Scope Guard + Handoff + 重规划触发 |
+| `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff 合约 + Chain 重规划触发 |
 | `references/critical-rules.md` | Critical Rules 1-26（含 Rule 13-18/21-23/25/26 P0 条款） |
 | `references/completion-gate.md` | 子代理验证 + 并行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
