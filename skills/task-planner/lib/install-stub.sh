@@ -70,7 +70,7 @@ bun run \$TASK_PLANNER_ROOT/scripts/register-hooks-cj.ts
 | 工作树隔离 | `${TASK_PLANNER_ROOT}/references/worktree-isolation.md` |
 | 模板 | `${TASK_PLANNER_ROOT}/templates/` |
 
-完整流程见 canonical 的 `README.md` + `WORKFLOW.md` + `examples.md`。
+完整流程见 canonical 的 `README.md` + `examples.md`。
 STUB_SKILL_EOF
       ;;
 
@@ -171,7 +171,7 @@ model: opus
 | 工作树隔离 | \`\${TASK_PLANNER_ROOT}/references/worktree-isolation.md\` |
 | 模板 | \`\${TASK_PLANNER_ROOT}/templates/\` |
 
-> 完整流程见 canonical 的 \`README.md\` + \`WORKFLOW.md\` + \`examples.md\`。
+> 完整流程见 canonical 的 \`README.md\` + \`examples.md\`。
 
 ## 平台兼容性
 

@@ -62,7 +62,7 @@
 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
 ├── config.json                              ← 阈值配置（13 键）
-├── README.md / WORKFLOW.md / examples.md / reference.md
+├── README.md / examples.md / reference.md
 ├── references/                              ← 8 篇规则文档
 │   ├── critical-rules.md                    # Rules 1-12（含 Rule 12 冲突隔离）
 │   ├── todo-sync.md                         # S1-S5 同步契约

@@ -37,7 +37,6 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段为空）
 ├── config.json
 ├── README.md
-├── WORKFLOW.md
 ├── examples.md
 ├── reference.md
 ├── references/                              ← 规则文档
