@@ -91,7 +91,7 @@ cost_estimate:
 1. **user_goal**:用户原始任务描述(原文或等价改写)
 2. **constraints**(可选):用户给出的硬约束(文件/时间/技术栈)
 3. **template_type**(可选):见上表,缺省按关键词匹配
-5. **subagent_dispatch_hint**(可选):若任务需派子代理,引用 `templates/subagent_dispatch.md` 七字段模板(Rule 22.4 强制)
+5. **subagent_dispatch_hint**(可选):若任务需派子代理,引用 `templates/subagent_dispatch.md` 八字段模板(Rule 22.4 强制)
 4. **cwd**(可选):当前工作目录,默认 `/home/terry/.zcode`
 5. **existing_plan_dir**(可选):已有 `plans/{task-id}/` 时,在此基础上更新
 

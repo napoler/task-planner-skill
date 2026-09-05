@@ -121,10 +121,16 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 22.1 **单次派发规模上限**:单 Phase 内 `Agent()` 派发次数 ≤`config.json#subagent.max_per_phase`(默认 5);超出 → 回炉拆 Phase 或 AskUser;单任务触及文件 >`max_files_per_dispatch`(默认 3)或行数 >`max_lines_per_dispatch`(默认 300)→ 拆子任务或升 subagent
 22.2 **超时档位**:按 subagent_type 映射超时:explore/只读 ≤30min / editor 编辑/重构 ≤60min / debugger 调试 ≤60min / executor 批量执行 ≤120min(见 `config.json#subagent.timeout_by_type`);超时 → 立即报告用户,禁止静默重试
 22.3 **失败兜底**(优先级顺序):超时/失败 → ① 改派(换更合适的 subagent 类型)→ ② 降档(升一档 model,如 haiku→sonnet)→ ③ 主进程接管(单文件 ≤300 行主进程 Edit)→ ④ AskUserQuestion;达 `config.json#subagent.retry_limit`(默认 2)→ 必须 AskUser,禁继续同法重试
-22.4 **派发 prompt 必须自包含**(Rule 21.2 强化):Agent() 派发时 prompt 含七字段 —— 目标(1 句)/输入(绝对路径 + findings.md 摘要 ≤10 行)/验收标准(2-5 条可观察证据)/Scope 禁改清单/工作路径(worktree 绝对路径)/时长预算/返回格式(结论摘要 ≤3 行 + 证据 file:line + 置信度);缺任一字段 → 禁止派发
-22.5 **交接登记**:每次 Agent() 派发前填 Subagent Handoff 登记表(时间/subagent_type/type/目标/状态(queued/pending/running/done/timeout/failed)/结论/证据/findings 落点/verify_done☐);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 Edit findings.md 回填结论**(段落锚点写入「findings 落点」列),两动作完成才可勾 verify_done;未 Read → findings.md 记"未验证"
+22.4 **派发 prompt 必须自包含**(Rule 21.2 强化):Agent() 派发时 prompt 含八字段 —— 目标(1 句)/输入(绝对路径 + findings.md 摘要 ≤10 行)/验收标准(2-5 条可观察证据)/Scope 禁改清单/工作路径(worktree 绝对路径)/时长预算/返回格式(结论摘要 ≤3 行 + 证据 file:line + 置信度)/checkpoint 落盘路径(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,见 22.8);缺任一字段 → 禁止派发
+22.5 **交接登记**:每次 Agent() 派发前填 Subagent Handoff 登记表(时间/subagent_type/type/目标/状态(queued/pending/running/done/timeout/failed)/结论/证据/findings 落点/verify_done☐);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 Edit findings.md 回填结论**(段落锚点写入「findings 落点」列),两动作完成才可勾 verify_done;未 Read → findings.md 记"未验证";Handoff 登记表含「checkpoint 路径」列(22.8.1),failed/timeout 行必须回填该列供断点重试定位
 22.6 **Phase 内 Subtasks 二级拆分**:Phase 含 ≥3 子任务 → 必须写「Subtasks」子表(ID/目标/输入/验收/状态);单子任务 ≥3 文件或 ≥300 行 → 拆为 Phase
 22.7 **连续失败 STOP**:子代理连续失败 ≥2 次 → STOP 报告用户,不进入 Chain block 交接,不继续派发;升级处理后再继续
+22.8 **检查点落盘与断点重试协议(P0)**:子代理上下文易失(中途被杀 = 产出全丢),中间产出必须执行中落盘到检查点文件,失败后基于落盘数据断点重试,禁止无谓从零重做
+22.8.1 **检查点路径**:每次派发在 prompt 中指定 `<plan-dir>/subagent-state/{seq}-{agent_type}.md`(每子代理一文件,seq 为 Handoff 表行号);路径同步登记到 Handoff 登记表「checkpoint 路径」列(见 22.5)
+22.8.2 **执行中落盘时机**(子代理侧纪律,写入派发 prompt):T1 每完成一个文件的 Edit/Write → 追加里程碑行;T2 每次搜索/调研得出结论 → 追加;T3 中间判断/决策(根因定位、方案取舍)→ 追加;T4 遇错无法继续 → 写「错误与受阻」段(现象 + 已尝试方案)并置 status: failed;T5 任务结束 → 写「最终结论」段(格式同 22.4 返回格式)并置 status: done——**T5 必做,防返回消息本身丢失**
+22.8.3 **检查点文件格式**:纯 markdown 分段(头部 status 行 / 已完成里程碑 append-only 带时间戳 / 进行中 / 产出文件清单 / 错误与受阻 / 最终结论),人读为主,无 frontmatter
+22.8.4 **断点重试**:子代理 failed/timeout/返回异常时,主进程兜底动作(22.3)执行前必须**先 Read 检查点文件**——有实质进度(≥1 条里程碑或已有产出文件)→ 重试 prompt 注入 resume_from 段(已完成清单[禁止重做] + 已有产出文件[直接复用/续写] + 剩余任务);无进度 → 按 22.3 正常兜底;resume_from 注入不重置 22.3 的 retry_limit 计数
+22.8.5 **返回缺失兜底**:主进程 30s Read 产出复核(22.5)时,若返回消息缺失但检查点 status: done,以检查点「最终结论」段为准完成回填
 
 21.5 **拆分自检(动工前)**:展示计划 / plan-writer 产出时自检——任一 Phase 无法用一句话说清验收标准,即视为粒度过大,回炉重拆后再交用户确认
 
@@ -155,7 +161,7 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 Rule 13/14 定义"什么活必须派子代理",本规则把委派做成**流程门控**:不经委派决策点,工作不得开始。目标:主进程 = 调度器,实际工作由子代理承载,提高 haiku-1/sonnet-1 子代理 token 占比。
 
 25.1 **计划期 — Executor 字段强制**:task_plan.md 每个 Phase 必须含 `**Executor:** subagent_type(model)` 行(默认按 SKILL.md 路由表选型);Executor=主进程必须写例外理由(如"纯 git 编排"/"计划文档白名单");无字段 = 计划无效,plan-writer 产出校验失败
-25.2 **执行期 — 委派检查点**:Phase 执行循环步骤 2.5(SKILL.md):开始实际工作前先查 Executor → 非主进程立即按 Rule 22.4 七字段模板派发 + Handoff 登记表登记;禁止"先自己干,干不动再派"
+25.2 **执行期 — 委派检查点**:Phase 执行循环步骤 2.5(SKILL.md):开始实际工作前先查 Executor → 非主进程立即按 Rule 22.4 八字段模板派发 + Handoff 登记表登记;禁止"先自己干,干不动再派"
 25.3 **例外理由登记**:主进程直做的 Phase,例外理由必须写在计划 Executor 字段内(计划确认时用户可见);执行期新增例外 → 先回填计划再继续
 25.4 **终验期 — 委派率统计**:交付前统计「子代理执行 Phase 数 / 总 Phase 数」+ 主进程直做清单(含理由)写入 verification.md「委派统计」段;委派率 <50% 且主进程直做无登记理由 → outcome 最高 PARTIAL
 25.5 **与 Rule 13/14/21 关系**:13/14 管"哪些活必须派",21 管"拆到多小",25 管"流程上必须过委派决策点"——三者叠加,25 是执行入口的最后防线
