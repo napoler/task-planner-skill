@@ -319,22 +319,52 @@ mode_stats() {
                     delegated=$(( delegated + 1 ))
                     # Handoff 交叉校验(若 Executor 包含子代理类型,该类型应出现在 Handoff 表)
                     local type_hint="$exec_norm"
-                    type_hint="${type_hint#*:}"     # 去 "code-assistant（haiku-1）" 的中文括号
+                    type_hint="${type_hint#*:}"     # 去 "code-assistant: ..." 的冒号前缀(若有)
                     type_hint="${type_hint%%（*}"
                     type_hint="${type_hint%%(*}"
                     type_hint="$(printf '%s' "$type_hint" | tr -d ' \t')"
                     if [ -n "$type_hint" ] && [ "$type_hint" != "主进程" ]; then
-                        # 检查 Handoff 表是否含该 subagent_type
+                        # [2026-09-07 task-v055-fix] 复合Executor按+拆分逐个校验
+                        # 例:"architect + critic（方案挑刺）" → 按 + 拆成 [architect, critic（方案挑刺）]
+                        # 每个 token trim 空白后再去括号/空白,然后逐个 grep Handoff 表;任一缺失才计 unverified
+                        # 用 NUL 分隔 + read -d '' 处理 "a+b" 这种无空白的复合 Executor
+                        # (tr '+' '\n' 末尾无换行时 read 会把整段当一行,故改 NUL)
                         local handoff_found=0
-                        if grep -qE "\|[[:space:]]*${type_hint}[[:space:]]*\|" "$plan_file" 2>/dev/null; then
+                        local missing_tokens=""
+                        local _tok
+                        local _tok_norm
+                        local _first=1
+                        while IFS= read -r -d '' _tok; do
+                            # trim 空白 + 去括号/空白(沿用上面同套清理)
+                            _tok_norm="$(printf '%s' "$_tok" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+                            _tok_norm="${_tok_norm%%（*}"
+                            _tok_norm="${_tok_norm%%(*}"
+                            _tok_norm="$(printf '%s' "$_tok_norm" | tr -d ' \t')"
+                            if [ -z "$_tok_norm" ]; then
+                                continue
+                            fi
+                            if grep -qE "\|[[:space:]]*${_tok_norm}[[:space:]]*\|" "$plan_file" 2>/dev/null; then
+                                # 该 token 在 Handoff 表
+                                :
+                            else
+                                if [ "$_first" -eq 1 ]; then
+                                    missing_tokens="$_tok_norm"
+                                    _first=0
+                                else
+                                    missing_tokens="${missing_tokens},${_tok_norm}"
+                                fi
+                            fi
+                        done < <(printf '%s\0' "$type_hint" | tr '+' '\0')
+                        if [ -z "$missing_tokens" ]; then
                             handoff_found=1
                         fi
                         if [ "$handoff_found" -eq 0 ]; then
                             delegated=$(( delegated - 1 ))
                             local vo
-                            vo="$(printf '{"type":"unverified_delegation","phase":"%s","executor":"%s","reason":"Executor 为子代理类型但 Handoff 表无对应行"}' \
+                            vo="$(printf '{"type":"unverified_delegation","phase":"%s","executor":"%s","reason":"Executor 含未登记子代理类型:%s"}' \
                                 "$(printf '%s' "$current_phase_name" | sed 's/"/\\"/g')" \
-                                "$(printf '%s' "$exec_norm" | sed 's/"/\\"/g')")"
+                                "$(printf '%s' "$exec_norm" | sed 's/"/\\"/g')" \
+                                "$missing_tokens")"
                             if [ "$violations_json" = "[]" ]; then
                                 violations_json="$vo"
                             else
@@ -395,16 +425,42 @@ mode_stats() {
                     type_hint="${type_hint%%(*}"
                     type_hint="$(printf '%s' "$type_hint" | tr -d ' \t')"
                     if [ -n "$type_hint" ] && [ "$type_hint" != "主进程" ]; then
+                        # [2026-09-07 task-v055-fix] 复合Executor按+拆分逐个校验
+                        # 用 NUL 分隔 + read -d '' 处理 "a+b" 这种无空白的复合 Executor
                         local handoff_found=0
-                        if grep -qE "\|[[:space:]]*${type_hint}[[:space:]]*\|" "$plan_file" 2>/dev/null; then
+                        local missing_tokens=""
+                        local _tok
+                        local _tok_norm
+                        local _first=1
+                        while IFS= read -r -d '' _tok; do
+                            _tok_norm="$(printf '%s' "$_tok" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+                            _tok_norm="${_tok_norm%%（*}"
+                            _tok_norm="${_tok_norm%%(*}"
+                            _tok_norm="$(printf '%s' "$_tok_norm" | tr -d ' \t')"
+                            if [ -z "$_tok_norm" ]; then
+                                continue
+                            fi
+                            if grep -qE "\|[[:space:]]*${_tok_norm}[[:space:]]*\|" "$plan_file" 2>/dev/null; then
+                                :
+                            else
+                                if [ "$_first" -eq 1 ]; then
+                                    missing_tokens="$_tok_norm"
+                                    _first=0
+                                else
+                                    missing_tokens="${missing_tokens},${_tok_norm}"
+                                fi
+                            fi
+                        done < <(printf '%s\0' "$type_hint" | tr '+' '\0')
+                        if [ -z "$missing_tokens" ]; then
                             handoff_found=1
                         fi
                         if [ "$handoff_found" -eq 0 ]; then
                             delegated=$(( delegated - 1 ))
                             local vo
-                            vo="$(printf '{"type":"unverified_delegation","phase":"%s","executor":"%s","reason":"Executor 为子代理类型但 Handoff 表无对应行"}' \
+                            vo="$(printf '{"type":"unverified_delegation","phase":"%s","executor":"%s","reason":"Executor 含未登记子代理类型:%s"}' \
                                 "$(printf '%s' "$current_phase_name" | sed 's/"/\\"/g')" \
-                                "$(printf '%s' "$current_executor" | sed 's/"/\\"/g')")"
+                                "$(printf '%s' "$current_executor" | sed 's/"/\\"/g')" \
+                                "$missing_tokens")"
                             if [ "$violations_json" = "[]" ]; then
                                 violations_json="$vo"
                             else
