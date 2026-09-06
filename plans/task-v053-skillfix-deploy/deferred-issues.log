@@ -6,5 +6,5 @@
 | 1 | skill-fix 自身工具 path_existence_validator.ts 对 frontmatter references 列表项解析误报（3 个真实存在文件报 MISSING） | 审计检查点 01 §C.1 #11 | skill-fix 技能维护任务 |
 | 2 | 同仓 plan-resume / todo-skill / task-drift-guard 三个技能未做深度审计（仅 ls 级确认存在） | 审计检查点 01 §C.2 | 后续 skill-fix 轮次 |
 | 3 | template-mapping.md §八示范正确 awk 写法但历史上被实现反向违反——实现已修,文档无需动;如后续新增 awk 提取点,以 template-mapping.md §八 + check-conflicts.sh:108 状态机式为准 | 审计检查点 01 §C.1 #12 | 无需行动（备忘） |
-| 4 | task-active-plan 任务 in_progress Phase 0/5（INDEX 待处理区挂账,2026-09-05 起） | plans/INDEX.md 待处理区 | 独立任务决策（续推/关闭） |
+| 4 | ~~task-active-plan 任务 in_progress Phase 0/5（INDEX 待处理区挂账,2026-09-05 起）~~ **已清账 2026-09-07**：核实实为已完成任务（outcome COMPLETE,merge ad7900d,产物/hook 逻辑均在）,仅 Phase 复选框簿记未翻转;已对账翻转+重锁哈希+INDEX 刷新,待处理区清零 | plans/task-active-plan/task_plan.md | 已解决（v053 会话簿记对账） |
 | 5 | origin/main 分支陈旧（master 领先且含 3 个 main 独有旧同步提交）——本轮按仓库惯例推 master,main 未动 | git log master..origin/main | 用户决策（是否删除/对齐 main） |

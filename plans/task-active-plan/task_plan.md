@@ -37,41 +37,41 @@
 | 本仓现状 | init-session.sh 尾部(指针写入点) | init-session.sh 末尾 | 必读 | ✅ |
 
 ## Current Phase
-complete（outcome: COMPLETE,merge ad7900d）
+complete（outcome: COMPLETE,merge ad7900d;2026-09-07 簿记对账:Phase 状态翻转与 outcome 对齐,产物与合并已核实）
 
 ## Next Step
-Phase 1:读 sessionstart 探测方式+上游 resolve-plan-dir.sh,定稿后建 worktree
+无——任务完成;簿记对账 2026-09-07（v053 会话,用户选项 2）
 
 ## Phases
 
 ### Phase 1: 侦察补全与方案定稿
-- [ ] 读 zcode-sessionstart.sh 计划解析方式
-- [ ] 读上游 resolve-plan-dir.sh 源码对齐解析语义
-- [ ] 方案定稿写入 findings.md
-- **Status:** in_progress
+- [x] 读 zcode-sessionstart.sh 计划解析方式
+- [x] 读上游 resolve-plan-dir.sh 源码对齐解析语义
+- [x] 方案定稿写入 findings.md
+- **Status:** complete
 - **Executor:** 主进程（例外理由:zread MCP 仅主进程可用+定向 Read）
 
 ### Phase 2: worktree 创建
-- [ ] git worktree add .../task-planner-skill-worktrees/active-plan -b wt/active-plan master
-- **Status:** pending
+- [x] git worktree add .../task-planner-skill-worktrees/active-plan -b wt/active-plan master
+- **Status:** complete
 - **Executor:** 主进程（git 簿记白名单）
 
 ### Phase 3: 实施
-- [ ] 3a 新建 resolve-plan-dir.sh(解析链:指针→mtime→legacy)
-- [ ] 3b 新建 set-active-plan.sh + init-session.sh 尾部自动写指针
-- [ ] 3c 两 hook 探测段改指针优先(保留 legacy 兜底)
-- [ ] 3d plan-doctor 第 2 段指针状态 + CHANGELOG + SKILL.md 一句
-- **Status:** pending
+- [x] 3a 新建 resolve-plan-dir.sh(解析链:指针→mtime→legacy)
+- [x] 3b 新建 set-active-plan.sh + init-session.sh 尾部自动写指针
+- [x] 3c 两 hook 探测段改指针优先(保留 legacy 兜底)
+- [x] 3d plan-doctor 第 2 段指针状态 + CHANGELOG + SKILL.md 一句
+- **Status:** complete
 - **Executor:** 主进程(移植适配裁剪,例外同 pwf-reuse D4 登记)
 
 ### Phase 4: 验证
-- [ ] resolve 四用例;set-active-plan+init 自动写;双 hook 指针对照;doctor 输出;smoke 全绿
-- **Status:** pending
+- [x] resolve 四用例;set-active-plan+init 自动写;双 hook 指针对照;doctor 输出;smoke 全绿
+- **Status:** complete
 - **Executor:** 主进程(一次性验证命令)
 
 ### Phase 5: 终验+合并回+部署同步
-- [ ] VC 复验→commit→merge→清理→rsync 双位→记忆更新
-- **Status:** pending
+- [x] VC 复验→commit→merge→清理→rsync 双位→记忆更新
+- **Status:** complete（部署拓扑其后已升级为实体副本 9 位,v053 会话 2026-09-07 diff -r 全 IDENTICAL 复验）
 - **Executor:** 主进程(主仓操作白名单)
 
 ## 🔀 隔离决策
