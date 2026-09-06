@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-27（1-12 核心执行约束 + 13-27 P0/P1 扩展门控，含 Rule 27 git 提交强制）
+- references/critical-rules.md: Critical Rules 全集 1-27（1-12 核心执行约束 + 13-27 高级门控，含 Rule 27 git 提交强制）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复/并行任务）
 - references/completion-gate.md: 子代理验证 + 并行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -47,24 +47,11 @@ model: opus
 
 ### 🚀 复杂功能开发 → 移交 `/comet` 工作流
 
-**何时移交**：当任务满足以下**任意 3 项**时，停止在 task-planner 内执行，建议用户改用 `/comet`：
+**何时移交**（满足以下**任意 3 项**即停止在 task-planner 内执行，建议用户改用 `/comet`）：Phase 数 ≥ 5 / 跨多个文件/模块 / 需架构设计或技术选型 / 涉及新功能（feature）而非 bug 修复/小改动 / 需 proposal/design/tasks 三件套归档 / 期望跨会话断点续做。
 
-- Phase 数 ≥ 5
-- 跨多个文件/模块
-- 需架构设计或技术选型
-- 涉及新功能（feature）而非 bug 修复/小改动
-- 需 proposal/design/tasks 三件套归档
-- 期望跨会话断点续做
+**移交流程**：总结当前 plan 已有内容（Goal + VC + Phase 列表）→ 提示用户"此任务复杂度匹配 `/comet`，建议移交" → 用户确认 → 引导 `Skill("comet")` 启动 open 阶段 → comet 接管后续阶段（design→build→verify→archive）。
 
-**移交流程**：
-1. 总结当前 plan 已有内容（Goal + VC + Phase 列表）
-2. 提示用户："此任务复杂度匹配 `/comet`，建议移交"
-3. 用户确认 → 引导 `Skill("comet")` 启动 open 阶段
-4. comet 接管后续阶段（design→build→verify→archive）
-
-**与 task-planner 区别**：
-- task-planner：单会话内多 phase 规划 + 执行（轻量、即时）
-- comet：跨会话 5 阶段托管（proposal→design→build→verify→archive）+ guard 门控（重量、可恢复）
+**与 task-planner 区别**：task-planner = 单会话内多 phase 规划 + 执行（轻量、即时）；comet = 跨会话 5 阶段托管（proposal→design→build→verify→archive）+ guard 门控（重量、可恢复）。
 
 > 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
 
@@ -124,14 +111,11 @@ model: opus
 
 ### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token 判定）
 
-| 场景 | 动作 | 理由 |
-|------|------|------|
-| 刚写完一个文件 | **不要再 Read** | 内容还在上下文里,重读纯浪费 |
-| 看过图片/PDF/网页 | 立即写 findings.md | 多模态内容不持久,转文字落盘 |
-| 浏览器/搜索返回数据 | 写 findings.md | 截图/结果不持久 |
-| 开始新 Phase | 读 plan + findings | 上下文可能已陈旧,重新定位 |
-| 发生错误 | 读相关文件 | 需要当前真实状态才能修 |
-| 中断/压缩后恢复 | 读全部三文件 | 重建状态(Rule 19.3 顺序) |
+- 刚写完一个文件 → **不要再 Read**（内容还在上下文里）
+- 看过图片/PDF/网页/浏览器/搜索返回 → 立即写 findings.md（多模态内容不持久,转文字落盘）
+- 开始新 Phase → 读 plan + findings（上下文可能已陈旧,重新定位）
+- 发生错误 → 读相关文件（需要当前真实状态才能修）
+- 中断/压缩后恢复 → 读全部三文件（Rule 19.3 顺序重建状态）
 
 - [ ] **Chain 区块交接（仅 linked/fan-out 模式）**
   - 当前 Block 所有 Phase complete 后：
@@ -209,7 +193,7 @@ model: opus
 |----|------|----------|
 | A 无影响 | 闲聊/追问/与当前计划无关 | 正常执行，不改计划 |
 | B 扩展 | 新需求/加范围/改交付物 | **先重规划再执行**：`Edit task_plan.md`（新增/修改 Phase、VC、执行范围表，注明来源指令与时间）→ 紧邻同步原生 Todo（S5：新增/调整对应条目）→ 向用户复述计划变更 → 再执行 |
-| C 矛盾 | 与已确认计划/VC/用户先前决策冲突 | 停止当前写入：更新计划中被推翻部分（标注 superseded + 新内容）→ 同步 Todo（改/删对应条目）→ 展示新旧对比获确认后执行；与用户此前 P0 决策冲突时必须 STOP 等决策 |
+| C 矛盾 | 与已确认计划/VC/用户先前决策冲突 | 停止当前写入：更新计划中被推翻部分（标注 superseded + 新内容）→ 同步 Todo（改/删对应条目）→ 展示新旧对比获确认后执行；与用户此前关键决策冲突时必须 STOP 等决策 |
 
 **稳定性铁律**：禁止"口头接受新指令、计划文档与 Todo 不动"——计划外执行是后期执行不稳定与漂移的首要来源。
 - 每次 B/C 类变更 → `Decisions Made` 表记一行（指令→变更）+ progress.md 记录
@@ -284,7 +268,7 @@ Block 1 (选题) complete
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
 - **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/八字段 prompt/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
-- **Rule 23（P0）并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
+- **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
@@ -294,19 +278,14 @@ Block 1 (选题) complete
 
 详见 `references/completion-gate.md`。subagent 返回 "done" 后必须 Read 实际文件验证变更，才能标记 complete。
 
-## Scope Guard
+## Scope Guard / Goal Gate
 
-`check-scope.sh Write "<file>" task_plan.md` → exit 0=in scope / 1=out / 2=no plan。不在 scope → 停，获授权扩 scope。
-
-## Goal Gate
-
-每个 `task_plan.md` 必须含 **Verification Contract**（VC 表）。详见 `references/goal-gate.md`。
+- **Scope Guard**：`check-scope.sh Write "<file>" task_plan.md` → exit 0=in scope / 1=out / 2=no plan。不在 scope → 停，获授权扩 scope。
+- **Goal Gate**：每个 `task_plan.md` 必须含 **Verification Contract**（VC 表）。详见 `references/goal-gate.md`。
 
 ## I/O 契约
 
-**输入**：任务描述 / CWD / 已有 plan（恢复时用）
-**输出**：规划 → plan+确认；执行 → checkbox+错误；完成 → 全部 [x]+验证。`config.json#escalation_threshold` 次失败 → AskUserQuestion。
-**示例**：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh`
+输入 = 任务描述 / CWD / 已有 plan（恢复时用）；输出 = 规划→plan+确认 / 执行→checkbox+错误 / 完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败 → AskUserQuestion。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh`。
 
 ## Chain Handoff Contract（链式交接合约）
 
@@ -317,7 +296,7 @@ Block 1 (选题) complete
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-27（含 Rule 13-18/21-23/25-27 P0 条款） |
+| `references/critical-rules.md` | Critical Rules 1-27（含 Rule 13-18/21-23/25-27 关键条款） |
 | `references/completion-gate.md` | 子代理验证 + 并行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -383,9 +362,7 @@ Block 1 (选题) complete
 
 ---
 
----
-
-## ⏱️ 超时与失败兜底(P0)— Rule 22 落地
+## ⏱️ 超时与失败兜底 — Rule 22 落地
 
 派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等。
 
@@ -415,37 +392,18 @@ Block 1 (选题) complete
 - ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
 - ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)
 
-## 💻 代码编辑强制隔离（P0）
+## 💻 代码编辑强制隔离
 
-**目的**：业务代码的准确性依赖专业 agent 的"读 → 改 → 验证"流水线,主进程直接 Edit 极易因上下文过长而写错或漏改。
+代码编辑派发规则与白名单的**权威源** = 上方 §子代理路由表「代码编辑」三行（343-345）+ ✅ 行白名单；本节只补路由表未覆盖的「修改后验证流程」与 Rule 14 的执行要点指针。
 
-### 强制规则
+### 修改后验证流程（每个代码修改完成）
 
-| 变更规模 | 必须派 | 理由 |
-|---------|-------|------|
-| 单文件 ≤300 行,≤3 文件 | `code-assistant`（haiku-1） | 机械单文件编辑,已降档验证 |
-| >3 文件 或 >300 行 | `executor`（sonnet-1） | 跨文件判断需 sonnet |
-| 重构 / 性能 / 瘦身 | `code-simplifier` | 专业语义保留 + 复杂度度量 |
-| 构建/编译错 | `build-error-resolver`（sonnet-1） | surgical fix,不扩改 |
-| 修 bug（需根因定位） | `debugger` + `Skill("systematic-debugging")` | 系统性根因分析 |
-| 跨模块实现 | `executor`（sonnet-1） | 跨模块依赖协调 |
-
-### 主进程可以 Edit 的例外
-
-仅以下三类**非业务代码**可主进程直接 Edit（白名单与 §子代理路由表 ✅ 行一致，超出即派子代理）：
-- **计划系统文件**：`plans/**`（task_plan/findings/progress/verification/notepad/INDEX/ledger）、`.claude/plan-templates/`
-- **Todo 同步**：原生 Todo（TodoWrite / TaskCreate）的 status 更新
-- **单文件 ≤3 行 trivial 修改**（非保护区文件；超 3 行即派子代理）
-
-其余 `*.md`（文档）、`*.json`（配置）、`*.yaml`/`*.yml`（模板）默认派子代理；主进程直做须按 Rule 25.3 登记白名单内例外理由。
-
-### 验证流程
-
-每个代码修改完成,必须：
 1. `Agent(subagent_type: code-runner-agent)` 跑编译/lint/测试
 2. 测试失败 → `Agent(subagent_type: build-error-resolver)` 修复
 3. 通过 → `Skill("code-review")` 上下文隔离审查（Code Review Gate）
-4. APPROVED → commit;CHANGES_REQUESTED → 回到子代理修复
+4. APPROVED → commit；CHANGES_REQUESTED → 回到子代理修复
+
+**禁止重复**：路由表已说"单文件 ≤300 行派 `code-assistant`"，本节不再列同表，避免双权威源漂移。
 
 ---
 
@@ -455,13 +413,7 @@ Block 1 (选题) complete
 
 ### 路径 1：WebSearch（首选,英文/技术）
 
-| 阶段 | 工具 | 适用 |
-|------|------|------|
-| 1 | `WebSearch` | 关键词/英文/技术（ZCode 实测可用） |
-| 2 | `WebFetch` | 已知 URL 的纯静态页 |
-| 3 | `web_reader` MCP / `defuddle` | 需 JS 渲染的页面 |
-| 4 | `splash` / Browser Use | 动态页面/需登录态 |
-| 5 | `Skill("research-assistant")` → bing-intl → searxng | 中文/多源交叉 |
+阶段与工具：**①WebSearch**（关键词/英文/技术，ZCode 实测可用）→ **②WebFetch**（已知 URL 纯静态页）→ **③web_reader MCP / defuddle**（需 JS 渲染）→ **④splash / Browser Use**（动态页/登录态）→ **⑤Skill("research-assistant") → bing-intl → searxng**（中文/多源交叉）。
 
 ### 路径 2：github 调研（代码准确性必备）
 
@@ -492,15 +444,16 @@ WebSearch "<library> github issues <symptom>"
 - ❌ 只靠训练知识写代码而不查上游 release notes
 - ❌ 引用"npm 包官网首页"作为唯一依据（应到源码/issue/release）
 - ❌ github 调研用 WebFetch 抓 HTML（应直接 `gh api` 拿 JSON）
-- ❌ 调研结果直接 dump 进主上下文（必须派子代理消化）
+
+（其他调研类反模式见上方 §反模式 379-381 行）
 
 ---
 
-## 🔁 高频漂移纠正（每 2-3 轮 todo — P0）
+## 🔁 高频漂移纠正（每 2-3 轮 todo）
 
 **问题**：任务执行中上下文变长,主进程视野变窄,容易偏离原计划（改错文件/跳过 VC/做计划外的事）。Phase 级漂移检测太粗,问题累积到 Phase 完成才暴露已晚。
 
-### 强制密度（P0）
+### 强制密度
 
 执行过程中,以下任一条件命中立即调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）：
 
@@ -520,29 +473,25 @@ WebSearch "<library> github issues <symptom>"
 | ⚠️ DRIFT | **自动追加 todo 条目**：`[drift-fix] {问题描述}`（activeForm: 纠正漂移）,用户决策后执行 |
 | 🔴 BLOCKED | **立即 STOP**；**不自动入 todo**（避免静默改向）,必须报告用户等决策 |
 
-### 为什么高频
+### 为什么高频 / 与 Rule 11 关系
 
-- Phase 级漂移检测：粗粒度,问题累积数小时才暴露
-- todo 级纠正：细粒度,2-3 步内发现,代价小
+- Phase 级漂移检测（Rule 11）：粗粒度,问题累积数小时才暴露
+- todo 级纠正（Rule 15）：细粒度,2-3 步内发现,代价小
 - `task-drift-guard` 是 haiku 档,token 便宜,可高频跑
-
-### 与现有 Rule 11 关系
-
-Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级降到 todo 级,两者并存（Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控）。
+- 两者并存：Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控
 
 ---
 
-## 📚 任务模板库（任务开启期必选 — P0）
+## 📚 任务模板库（任务开启期必选）
 
 > **权威源声明**：模板分流决策树、模板清单与互斥关系的**单一权威源** = `references/template-mapping.md` §一（决策树）/ §六（模板清单）/ §七（互斥关系）。执行时按需 Read；本节仅保留流程约束与模板集成侧独有的强制要求。
 
 **原则**：每种任务类型有专属模板,任务开启期（创建 task_plan.md 前）必须先选定,确保 VC/Phase/Scope 表与任务类型匹配,避免通用模板应付所有任务导致 VC 漏项。
 
-### 强制约束（P0,模板集成侧独有 — 模板分流细节以 template-mapping.md 为准）
+### 强制约束（模板集成侧独有 — 模板分流细节以 template-mapping.md 为准）
 
 - 任务开启期必须先选模板 → 写进 task_plan.md frontmatter 的 `template_type` 字段
 - `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件
 - **禁止**用通用 `task_plan.md` 套用所有任务（常见反模式：VC 字段与任务类型不匹配）
 - **所有模板统一含 `## 📚 必要知识储备` 章节**（任务知识库对齐）：计划创建时填写本任务依赖的规范/官方文档/内部知识库/文献/图书，Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写
-- 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `references/template-guide.md` §一）
-- `plan-writer` agent 接收 `template_type` 参数,自动选模板填充
+- 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `references/template-guide.md` §一）；`plan-writer` agent 接收 `template_type` 参数,自动选模板填充
