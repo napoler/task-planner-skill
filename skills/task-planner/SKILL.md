@@ -5,13 +5,15 @@ description: Use when planning, decomposing, or organizing multi-step projects o
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet"
 user-invocable: true
 references:
-- reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff 合约 + Chain 重规划触发
+- reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
 - references/critical-rules.md: Critical Rules 全集 1-27（1-12 核心执行约束 + 13-27 P0/P1 扩展门控，含 Rule 27 git 提交强制）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复/并行任务）
 - references/completion-gate.md: 子代理验证 + 并行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
 - references/todo-sync.md: 原生 Todo 同步契约（S1-S5 强制同步时机 + 映射规则 + hook 提醒响应协议）
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
+- references/cost-control.md: 成本控制策略详解（Rule 17 详解）
+- references/batch-quality-gate.md: 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report）
 - references/billing.md: 计费模式（单次触发）
 - task-drift-guard: 周期性漂移检测（Phase 完成后/连续3次工具调用后/切模块前调用）
 - plan-resume: 被动扫描与自主续推（执行中扫描只报告；恢复触发点自主选 1 个中断任务续推，config `autonomous_resume` 控制。详见 Rule 24）
@@ -170,7 +172,7 @@ model: opus
 - [ ] **Code Review Gate**（仅 `code_review: required` 的任务）
   - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`
   - 触发时机：全部 Phase `complete` 之后、终验交付之前
-  - 审查范围：本次任务 Write/Edit 修改过的文件，过滤为代码文件（`.py/.ts/.tsx/.js/.jsx/.go/.rs/.java/.c/.cpp/.h/.hpp`），排除 `.md/.json/.yaml/.yml/.txt/.sh/.toml/.cfg`
+  - 审查范围：本次任务 Write/Edit 修改过的文件，过滤为代码文件（`.py/.sh/.ts/.tsx/.js/.jsx/.go/.rs/.java/.c/.cpp/.h/.hpp`），排除 `.md/.json/.yaml/.yml/.txt/.toml/.cfg`
   - 执行步骤：
     1. 收集改动文件清单（从 progress.md / git diff 提取）
     2. 过滤非代码文件 → 待审查列表
@@ -297,7 +299,7 @@ Block 1 (选题) complete
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
 - **Rule 15（P0）高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
-- **Rule 16（P0）任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见下方 §任务模板库）
+- **Rule 16（P0）任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `references/template-mapping.md`，模板分流单一权威源）
 - **Rule 17（P0）成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
 - **Rule 18（P0）批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
@@ -336,7 +338,7 @@ Block 1 (选题) complete
 
 | 文档 | 用途 |
 |------|------|
-| `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff 合约 + Chain 重规划触发 |
+| `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
 | `references/critical-rules.md` | Critical Rules 1-27（含 Rule 13-18/21-23/25-27 P0 条款） |
 | `references/completion-gate.md` | 子代理验证 + 并行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
@@ -554,57 +556,11 @@ Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级�
 
 ## 📚 任务模板库（任务开启期必选 — P0）
 
+> **权威源声明**：模板分流决策树、模板清单与互斥关系的**单一权威源** = `references/template-mapping.md` §一（决策树）/ §六（模板清单）/ §七（互斥关系）。执行时按需 Read；本节仅保留流程约束与模板集成侧独有的强制要求。
+
 **原则**：每种任务类型有专属模板,任务开启期（创建 task_plan.md 前）必须先选定,确保 VC/Phase/Scope 表与任务类型匹配,避免通用模板应付所有任务导致 VC 漏项。
 
-### 模板清单
-
-| 模板文件 | 适用场景 | 关键 VC 字段 | 推荐 subagent |
-|---------|---------|--------------|---------------|
-| `templates/task_plan.md`（默认） | 通用规划（无专属匹配时） | 5 条通用 VC | plan-writer |
-| `templates/variant/research-type.md` | 关键词调研 / SERP / 竞品 | _channel_attempts[] / 数据源 ≥2 / 覆盖率 ≥80% | research-assistant |
-| `templates/variant/diagnostic-type.md` | skill 审计 / bug 排查 / 路径验证 | S59 Read 门 / S64 路径验证 / 证据 sha256 | debugger / codebase-analyzer |
-| `templates/variant/writing-type.md` | 长文 / 文章 / 文档撰写 | SEO/可读性/事实核查 | article-writer / content-creator |
-| `templates/variant/publish-type.md` | API 发布 / 跨平台分发 | post_id / schema 验证 / 幂等 | article-batch-publisher |
-| `templates/variant/code-edit-type.md` | 单文件/多文件代码编辑 | diff 验证 / lint / 测试 / 风格保持 | code-assistant / executor |
-| `templates/variant/refactor-type.md` | 代码重构 / 瘦身（行为不变） | 行为不变证明 / 测试通过 / 复杂度下降 | code-simplifier |
-| `templates/variant/bugfix-type.md` | bug 修复 / 根因定位 | 复现 / 根因证据 / 修复后回归 | debugger + systematic-debugging |
-| **`templates/variant/migration-type.md`**（v2 新增） | 跨语言/框架迁移 / CLI 重写 | 基线归档 / 双跑对照 / 旧入口下线 / 文档更新 | executor + code-assistant + cli-tool-builder |
-| **`templates/variant/test-writing-type.md`**（v2 新增） | 单元/集成/E2E 测试编写 | 用例数 ≥N / 覆盖率 ≥X% / 独立性 / 边界 case | test-engineer |
-| **`templates/variant/deployment-type.md`**（v2 新增） | 部署 / CI-CD / Docker / k8s / nginx | staging 验证 / 健康检查 / 回滚预案 / 配置审计 | executor + general-purpose |
-| **`templates/variant/performance-tuning-type.md`**（v2 新增） | 性能瓶颈定位 / 优化 | 基线 benchmark / P95 降幅 / 无回归 / 资源未恶化 | performance-optimizer + database-optimizer |
-| **`templates/variant/schema-migration-type.md`**（v2 新增） | DB schema 变更 / migration | 可逆 up/down / staging 演练 / 数据零丢失 / 在线切换 | database-optimizer |
-
-### 选择决策树（任务开启期执行）
-
-```
-任务描述是什么?
-├─ 关键词/SERP/数据调研 → research-type
-├─ skill 审计/bug 排查 → diagnostic-type
-├─ 文章/长文撰写 → writing-type
-├─ API 发布/分发（数据推送）→ publish-type
-├─ 代码改/写/删（明确单次编辑）→ code-edit-type
-├─ 重构（行为不变）/ 瘦身 → refactor-type
-├─ 修 bug（用户描述了具体症状）→ bugfix-type
-├─ 跨语言/框架迁移 / CLI 重写 → migration-type
-├─ 单元/集成/E2E 测试编写 / 覆盖率提升 → test-writing-type
-├─ 部署 / CI-CD / Docker / k8s / nginx / 基础设施 → deployment-type
-├─ 性能瓶颈定位 / 优化 / 压测 / benchmark → performance-tuning-type
-├─ DB schema 变更 / migration / 索引 / 数据回填 → schema-migration-type
-└─ 不匹配上述任何一类 → task_plan.md（通用）
-```
-
-### 模板互斥关系(避免误选)
-
-| 易混对 | 边界 |
-|--------|------|
-| publish vs deployment | publish=**数据**推送到 API;deployment=**代码/服务/基础设施**部署 |
-| migration vs code-edit | migration=**多步骤**流程(基线锁定→双跑→切流);code-edit=**单次编辑** |
-| refactor vs performance-tuning | refactor=**行为不变**前提;performance-tuning=允许**功能+性能**共同变化 |
-| test-writing vs code-edit | test-writing 缺**覆盖率门槛/独立性/边界 case**;code-edit 通用编辑 |
-| schema-migration vs bugfix | schema-migration=**可逆 up/down** + **在线切换**;bugfix 假设修复即正确 |
-| bugfix vs diagnostic | bugfix=**根因已知**进入修复;diagnostic=**根因排查**阶段 |
-
-### 强制约束（P0）
+### 强制约束（P0,模板集成侧独有 — 模板分流细节以 template-mapping.md 为准）
 
 - 任务开启期必须先选模板 → 写进 task_plan.md frontmatter 的 `template_type` 字段
 - `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件

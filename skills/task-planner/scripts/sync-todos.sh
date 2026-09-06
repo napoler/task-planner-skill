@@ -94,7 +94,7 @@ extract_plan_meta() {
     sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
     wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
     # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
-    scopes="$(awk '/^## .*执行范围限制/,/^## /' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
+    scopes="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
     echo "${sid:-none}|${wt}|${scopes}"
 }
 
@@ -177,7 +177,7 @@ extract_plan_meta() {
     sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
     wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
     # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
-    scopes="$(awk '/^## .*执行范围限制/,/^## /' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
+    scopes="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
     echo "${sid:-none}|${wt}|${scopes}"
 }
 

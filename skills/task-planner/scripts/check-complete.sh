@@ -11,6 +11,91 @@ if [ ! -f "$PLAN_FILE" ]; then
     exit 0
 fi
 
+# [2026-09-06 task-v053 Rule 27.3 porcelain 预检]
+# 从 task_plan.md「执行范围限制」表格动态识别"允许的文件"列,
+# 提取候选路径 → git status --porcelain -- <候选...> 检查未提交变更。
+# 无 plan / 非 git 仓 / 候选列表为空 → 跳过,不改变退出码。
+check_scope_porcelain() {
+    local plan="$1"
+    local plan_dir
+    plan_dir="$(cd "$(dirname "$plan")" && pwd)"
+    local repo_root
+    if ! repo_root="$(git -C "$plan_dir" rev-parse --show-toplevel 2>/dev/null)"; then
+        echo "[plan] Rule 27.3: 非 git 仓库,跳过 porcelain 预检"
+        return 0
+    fi
+
+    # 状态机式 awk 抽取「执行范围限制」节,再分离表头找"允许的文件"列号
+    local section_file
+    section_file="$(mktemp)"
+    awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" > "$section_file" 2>/dev/null
+    # 找表头行 + 列号
+    local header_line allow_col
+    header_line="$(grep -m1 -E '^\|[[:space:]]*类别' "$section_file" 2>/dev/null || grep -m1 -E '^\|[[:space:]]*类型' "$section_file" 2>/dev/null)"
+    if [ -z "$header_line" ]; then
+        rm -f "$section_file"
+        echo "[plan] Rule 27.3: 范围限制节缺少表头行,跳过"
+        return 0
+    fi
+    allow_col="$(printf '%s' "$header_line" | awk -F'|' '
+        {
+            for (i=2; i<NF; i++) {
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i)
+                if ($i ~ /允许的文件|允许文件|Allowed/) { print i; exit }
+            }
+        }')"
+    if [ -z "$allow_col" ]; then
+        rm -f "$section_file"
+        echo "[plan] Rule 27.3: 未识别到「允许的文件」列,跳过"
+        return 0
+    fi
+
+    # 提取候选:取第 allow_col 列 → 剥 markdown 修饰 → 切词 → 过滤路径 token
+    local candidates
+    candidates="$(awk -F'|' -v c="$allow_col" '
+        NR > 1 && /^\|/ && !/^[[:space:]]*\|?[[:space:]]*-[[:space:]]*\|/ {
+            v=$c
+            gsub(/`/, "", v)
+            gsub(/\*\*/, "", v)
+            gsub(/[（(][^）)]*[)）]/, "", v)
+            # 2026-09-06 task-v053: 切词集补 、(U+3001) — 真实计划 scope 表用顿号分隔,漏切会把两路径粘成单 token(git pathspec 无匹配 → 假 clean)
+            n=split(v, arr, /[[:space:]]+|[,，;；、]/)
+            for (i=1; i<=n; i++) {
+                tok=arr[i]
+                # 2026-09-06 task-v053: 排除仓外路径(~前缀/绝对路径) — git pathspec 遇仓外路径整体 fatal,porcelain 恒空 → 假 clean(实测 skills/... 与 /home/... 混合即触发)
+                # 2026-09-06 task-v053: 路径判定放宽为"含 / 或 ." — 裸文件名(tracked.md 类,无斜杠)此前被丢弃 → 脏文件漏检(实测)
+                if ((tok ~ /[\/.]/) && tok !~ /^[~\/]/) print tok
+            }
+        }' "$section_file" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | awk 'NF>0' | sort -u)"
+
+    rm -f "$section_file"
+
+    if [ -z "$candidates" ]; then
+        echo "[plan] Rule 27.3: 范围限制列表为空,跳过 porcelain 预检"
+        return 0
+    fi
+
+    # git status --porcelain 仅对候选路径(逐行展开为 args)
+    local porcelain
+    # shellcheck disable=SC2086
+    porcelain="$(git -C "$repo_root" status --porcelain -- $candidates 2>/dev/null)"
+    if [ -n "$porcelain" ]; then
+        echo "[plan] Rule 27.3 violation: scope 内存在未提交变更"
+        printf '%s\n' "$porcelain" | sed 's/^/[plan]   /'
+        return 1
+    fi
+    echo "[plan] Rule 27.3: porcelain clean ($(printf '%s\n' "$candidates" | wc -l) scope path(s) verified)"
+    return 0
+}
+
+# 仅当 plan 文件存在时跑预检(无 plan 场景由上方 early-exit 处理,此处不影响)
+check_scope_porcelain "$PLAN_FILE" || {
+    rc=$?
+    if [ "$rc" -eq 1 ]; then
+        exit 1
+    fi
+}
+
 # [2026-09-04 Rule 19.5/19.6] Pass SKILL_ROOT so python can load templates/findings.md
 # and templates/progress.md for stub detection in 3-File Gate.
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
