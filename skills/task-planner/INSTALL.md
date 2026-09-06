@@ -128,7 +128,7 @@ git pull
 
 ---
 
-## 4.5 伴随文件一键安装（companion/ — v2.2.1）
+## 4.5 伴随文件一键安装（companion/ — 伴生 agents（plan-writer 等））
 
 `companion/agents/` 存放随行 agents;外围 skill 位于仓库顶层 `skills/`(2026-09-04 自 `companion/skills/` 迁移,与 task-planner 同级),由同一脚本统一分发:
 
@@ -228,17 +228,17 @@ ls ~/.zcode/skills/task-drift-guard/SKILL.md
 ls ~/.zcode/agents/plan-writer.md
 
 # 2. 若缺失,从 source repo 拷贝:
-cp /path/to/task-planner-skill/scripts/plan-writer.md ~/.zcode/agents/plan-writer.md
+cp /path/to/task-planner-skill/companion/agents/plan-writer.md ~/.zcode/agents/plan-writer.md
 
 # 3. frontmatter `model` 应为 `custom:9e221f47-...:sonnet-1`(或继承主会话);改完需重启会话生效
 ```
 
 ### 5.7 模板完整性验证(v2.1+)
 
-13 个 variant 模板文件必须齐全:
+12 个 variant 模板文件必须齐全:
 ```bash
 ls ~/.zcode/skills/task-planner/templates/variant/*.md | wc -l
-# 应 = 13
+# 应 = 12
 
 # 缺哪个补哪个:
 for f in research diagnostic writing publish code-edit refactor bugfix migration test-writing deployment performance-tuning schema-migration; do

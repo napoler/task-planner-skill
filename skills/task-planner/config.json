@@ -74,6 +74,11 @@
       "minimum": 1,
       "description": "Max allowed age of task_plan.md before PostToolUse hook forces a plan-doc write-back reminder; also check-doc-sync.sh default"
     },
+    "autonomous_resume": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable autonomous continuation at plan-resume trigger points (Rule 24.5). When true, plan-resume auto-pushes the next pending Phase without waiting for explicit user confirmation."
+    },
     "stale_remind_cooldown_calls": {
       "type": "integer",
       "default": 10,

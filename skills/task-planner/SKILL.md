@@ -15,6 +15,8 @@ references:
 - references/cost-control.md: 成本控制策略详解（Rule 17 详解）
 - references/batch-quality-gate.md: 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report）
 - references/billing.md: 计费模式（单次触发）
+- references/template-guide.md: 模板定制指南（模板优先级/项目级 .claude/plan-templates 覆盖/路径规范）
+- references/template-mapping.md: 模板分流单一权威源（Rule 16 配套：决策树/模板清单/互斥关系）
 - task-drift-guard: 周期性漂移检测（Phase 完成后/连续3次工具调用后/切模块前调用）
 - plan-resume: 被动扫描与自主续推（执行中扫描只报告；恢复触发点自主选 1 个中断任务续推，config `autonomous_resume` 控制。详见 Rule 24）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
@@ -89,6 +91,8 @@ model: opus
 **与 task-planner 区别**：
 - task-planner：单会话内多 phase 规划 + 执行（轻量、即时）
 - comet：跨会话 5 阶段托管（proposal→design→build→verify→archive）+ guard 门控（重量、可恢复）
+
+> 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
 
 ## 执行流程图
 
@@ -294,7 +298,7 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-26）：
+详见 `references/critical-rules.md`（Rules 1-27）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -566,5 +570,5 @@ Rule 11 仅在 Phase 完成时跑漂移检测；Rule 15 把密度从 Phase 级�
 - `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件
 - **禁止**用通用 `task_plan.md` 套用所有任务（常见反模式：VC 字段与任务类型不匹配）
 - **所有模板统一含 `## 📚 必要知识储备` 章节**（任务知识库对齐）：计划创建时填写本任务依赖的规范/官方文档/内部知识库/文献/图书，Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写
-- 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `templates/template-guide.md` §一）
+- 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `references/template-guide.md` §一）
 - `plan-writer` agent 接收 `template_type` 参数,自动选模板填充

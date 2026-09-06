@@ -123,7 +123,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 - `-not -path '*/tests/*'` 显式排除 tests/ 子目录(避免 smoke.sh 被分发到客户端)
 - `-not -path '*/.git/*'` 排除 git 元数据
 - `-print0` + `IFS= read -r -d ''` 处理文件名含空格/特殊字符
-- `${f#$skill_dir}` 取相对路径保留子目录结构(如 `scripts/scan-plans.sh`)
+- `${f#$skill_dir}` 取相对路径保留子目录结构(如 `scripts/scan-plans.sh`)(示例,非实存脚本)
 
 **向后兼容**：`task-drift-guard` 只有顶层3 文件，新 find 输出仍是 3 行，分发行为不变。
 
@@ -147,7 +147,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 - 用户须明确说"续推 task-X"才会调 task-planner 创建新 plan
 - 失败时 plan-resume 报错不阻塞当前 Phase 推进(软约束 P1)
 
-**向后兼容**:Rule 24 是新增,P1 级。task-planner v2.3 已有任务不受影响;plan-resume 未安装时 Rule 24 跳过(见 `SKILL.md` §6 失败兜底)。
+**向后兼容**:Rule 24 是新增,P1 级。task-planner 现版本已有任务不受影响;plan-resume 未安装时 Rule 24 跳过(见 `SKILL.md` §6 失败兜底)。
 
 
 ---
