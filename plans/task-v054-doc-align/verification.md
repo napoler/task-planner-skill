@@ -27,8 +27,8 @@
   Evidence: task-planner×3 重部署（rm+cp -rL）后 diff -rq = 空 ×3；其余 6 位（todo-skill×2/task-drift-guard×2/plan-resume×2）diff -rq = 空 ×6 → PASS
 - [x] VC-10: smoke + verify 体检
   Evidence: tests/smoke.sh = 17 pass / 0 fail；lib/verify.sh（TASK_PLANNER_ROOT 已设）= 20 pass / 0 fail → PASS
-- [ ] VC-11: master 已推送 origin/master
-  Evidence: Phase 6 执行，实时证据回填 progress.md Phase 6 段（git rev-parse origin/master == master）→ 待回填
+- [x] VC-11: master 已推送 origin/master
+  Evidence: push 输出 `e17df76..a2b2932 master -> master`；`git rev-parse master origin/master` 双双 = a2b29328f33b…；`rev-list --count origin/master..master` = 0 → PASS
 
 ---
 
@@ -73,9 +73,9 @@
 ```
 ## Goal Verification — 文档对齐 + 遗漏补全 + 簿记对齐 + 重部署
 - [x] VC-1 ~ VC-10: 见上，全部 PASS（证据可查）
-- [ ] VC-11: push origin/master → Phase 6 执行后回填
+- [x] VC-11: push origin/master → a2b2932（ahead=0）
 
- outcome: COMPLETE（以 VC-11 push 成功为最终生效条件；若 push 网络失败 → PARTIAL 并记 deferred）
+ outcome: COMPLETE（VC-1~11 全 PASS；2026-09-07 02:55 push a2b2932 生效）
 ```
 
 ---

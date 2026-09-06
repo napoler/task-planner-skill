@@ -98,8 +98,10 @@
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  | check-complete.sh | v054 task_plan | exit 0 | （见下方命令输出回填） | ✅ |
-  | push origin/master | master | ahead=0 | （见下方命令输出回填） | ✅ |
+  | push origin/master | master | ahead=0 | e17df76..a2b2932；rev-parse master==origin/master==a2b2932；ahead=0 | ✅ |
+  | INDEX 刷新 | sync-todos --index | v054→complete | in_progress=1（v055）/complete=21 | ✅ |
+  | 3-File Gate | check-3file-gate.sh（绝对路径） | exit 0 | exit=0 | ✅ |
+  | check-complete.sh | 脚本经 .active_plan 定位 | 定位 v054 | 指针被并行会话持有指向 v055 → 脚本报 "no active planning session"（exit=0 但不构成本计划验证）；以 3file-gate exit=0 + INDEX complete=21 + 六 Phase 状态逐一手工核对替代 | ⚠️ 已说明 |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途 |
