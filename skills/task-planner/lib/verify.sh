@@ -2,18 +2,28 @@
 # lib/verify.sh — Verify multi-tool task-planner installation
 #
 # Usage:
+#   TASK_PLANNER_ROOT=<canonical skill dir> bash verify.sh [(--help|-h)]
+#
+# Or source + call explicitly (smoke.sh path):
+#   source verify.sh
 #   verify_installation
 #
+# 三态部署模型(2026-09-06 task-v053):
+#   - 软链(symlink):stub 指向 canonical → 软链目标 + canonical 全量版校验
+#   - 薄壳(thin shell):stub 是独立小体积副本(<15KB) → 硬编码路径 / 体积校验
+#   - 全量实体副本(full copy):stub 是 canonical 全量副本(>=15KB)→
+#     SKILL.md 一致性(cmp) + deploy drift 检测;check 3/4/8 走 N/A 分支
+#
 # Checks:
-#   1. Canonical source exists and has git history
-#   2. Each detected tool has a stub (软链模型:校验软链指向 canonical)
-#   3. Stub scripts have no hardcoded zcode/claude paths (软链模型跳过)
-#   4. Stub SKILL.md is thin shell (软链模型改为校验经软链可读 canonical 全量版)
+#   1. Canonical source exists (SKILL.md 必存;若 .git 同存则附 git root 说明)
+#   2. Each detected tool has stub (软链/薄壳/全量实体副本 三态判定)
+#   3. Stub scripts have no hardcoded zcode/claude paths (软链/全量副本跳过)
+#   4. Stub SKILL.md 体积或一致性(软链=全量;薄壳=<15KB;全量副本=cmp 一致)
 #   5. check-complete.sh runs OK (no plan = exit 0/2 acceptable)
 #   6. check-doc-sync.sh runs OK
 #   7. External references use ${TASK_PLANNER_ROOT} form
 #   8. Hooks registered per platform (claude=settings.local.json, zcode=cli/config.json,
-#      opencode/cursor=SKILL.md frontmatter)
+#      opencode/cursor=SKILL.md frontmatter;全量副本模式下 frontmatter hooks: 块 N/A)
 #
 # Returns exit 0 if all pass; non-zero with summary if any fail.
 
@@ -42,14 +52,25 @@ verify_installation() {
     [ "$(readlink -f "$stub")" = "$canonical_real" ]
   }
 
-  # 1. Canonical source
-  if [ -d "$TASK_PLANNER_ROOT/.git" ] && [ -f "$TASK_PLANNER_ROOT/SKILL.md" ]; then
-    pass "canonical source exists at $TASK_PLANNER_ROOT"
+  # 第三态:全量实体副本(2026-09-06 task-v053):stub 是独立但体积等同 canonical 的实体副本
+  stub_is_full_copy() {
+    local stub="$1"
+    [ -d "$stub" ] && [ -f "$stub/SKILL.md" ] || return 1
+    [ "$(wc -c < "$stub/SKILL.md")" -ge 15360 ]
+  }
+
+  # 1. Canonical source — SKILL.md 必存;若 .git 同存则附 git root 说明
+  if [ -f "$TASK_PLANNER_ROOT/SKILL.md" ]; then
+    if [ -d "$TASK_PLANNER_ROOT/.git" ]; then
+      pass "canonical source exists at $TASK_PLANNER_ROOT (git repo)"
+    else
+      pass "canonical source exists at $TASK_PLANNER_ROOT (no .git, e.g. exported snapshot — OK)"
+    fi
   else
-    fail "canonical source missing or not a git repo: $TASK_PLANNER_ROOT"
+    fail "canonical source missing SKILL.md: $TASK_PLANNER_ROOT"
   fi
 
-  # 2. Each detected tool has stub
+  # 2. Each detected tool has stub (三态判定)
   if [ ${#TOOLS_DETECTED[@]} -eq 0 ]; then
     fail "no agent tools detected (checked: claude-code, zcode, opencode, cursor, continue)"
   else
@@ -57,6 +78,12 @@ verify_installation() {
       local stub="${TOOL_STUB_ROOT[$tool]}"
       if stub_is_symlink_mode "$stub"; then
         pass "$tool deploy = symlink → canonical (软链模型)"
+      elif stub_is_full_copy "$stub"; then
+        if cmp -s "$stub/SKILL.md" "$TASK_PLANNER_ROOT/SKILL.md"; then
+          pass "$tool deploy = physical full copy, deploy matches canonical (全量副本模型)"
+        else
+          fail "$tool deploy drift: full-copy SKILL.md differs from canonical ($stub)"
+        fi
       elif [ -d "$stub" ] && [ -f "$stub/SKILL.md" ]; then
         pass "$tool stub exists at $stub"
       else
@@ -65,13 +92,17 @@ verify_installation() {
     done
   fi
 
-  # 3. Stub scripts: no hardcoded zcode/claude paths (仅薄壳实体模型;软链模型跳过)
+  # 3. Stub scripts: no hardcoded zcode/claude paths (仅薄壳实体模型;软链/全量副本跳过)
   # Note: check-doc-sync.sh intentionally keeps zcode/claude fallback chain
   # in its `for _c in` block (line 30-36) for standalone-script use. Whitelist it.
   for tool in "${TOOLS_DETECTED[@]}"; do
     local stub="${TOOL_STUB_ROOT[$tool]}"
     if stub_is_symlink_mode "$stub"; then
       continue  # 软链模型的脚本即 canonical 脚本,回退默认值合法,见文件头注释
+    fi
+    if stub_is_full_copy "$stub"; then
+      pass "$tool scripts: canonical scripts/full copy — hardcoded-path scan N/A"
+      continue  # 全量副本 = canonical 实体副本,无独立硬编码检查必要
     fi
     if [ -d "$stub/scripts" ]; then
       # Find files with hardcoded paths, excluding the whitelisted fallback chain in check-doc-sync.sh
@@ -86,7 +117,7 @@ verify_installation() {
     fi
   done
 
-  # 4. Stub SKILL.md is thin (should be < 15KB) — 仅薄壳实体模型;软链模型应为大体积全量版
+  # 4. Stub SKILL.md size / consistency — 三态:软链(>=15KB 经软链可读);薄壳(<15KB);全量副本(>=15KB,与 canonical 一致)
   for tool in "${TOOLS_DETECTED[@]}"; do
     local stub="${TOOL_STUB_ROOT[$tool]}"
     if stub_is_symlink_mode "$stub"; then
@@ -97,6 +128,13 @@ verify_installation() {
       else
         fail "$tool SKILL.md unreadable through symlink: $stub"
       fi
+      continue
+    fi
+    if stub_is_full_copy "$stub"; then
+      # check 2 已报 cmp 一致;此处复述 size 以便一眼看出三态
+      local fsize
+      fsize=$(wc -c < "$stub/SKILL.md")
+      pass "$tool SKILL.md = canonical full copy ($fsize bytes, full-copy deploy)"
       continue
     fi
     if [ -f "$stub/SKILL.md" ]; then
@@ -165,9 +203,14 @@ verify_installation() {
     fi
   fi
   # OpenCode/Cursor/Continue(薄壳实体模型): SKILL.md frontmatter must contain hooks: block
+  # 全量实体副本:canonical frontmatter 无 hooks: 块(hooks 按平台配置注册,SKILL.md 内是注释说明)
   for tool in opencode cursor continue; do
     local stub="${TOOL_STUB_ROOT[$tool]:-}"
     [ -n "$stub" ] && [ -d "$stub" ] && [ -f "$stub/SKILL.md" ] || continue
+    if stub_is_full_copy "$stub"; then
+      pass "$tool: hooks registered at platform level (frontmatter block N/A for full copy)"
+      continue
+    fi
     if grep -q '^hooks:' "$stub/SKILL.md" 2>/dev/null; then
       pass "$tool: hooks declared in SKILL.md frontmatter"
     else
@@ -187,3 +230,16 @@ verify_installation() {
   fi
   return 0
 }
+
+# 2026-09-06 task-v053: main 入口 — 原脚本只定义函数从未调用,直接运行静默 exit 0,所有检查形同虚设
+verify_usage() {
+  echo "Usage: TASK_PLANNER_ROOT=<canonical skill dir> bash verify.sh"
+  echo "  校验 canonical 存在性与各平台部署位健康度(三态:软链/薄壳/全量实体副本)"
+}
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    verify_usage; exit 0
+  fi
+  verify_installation
+  exit $?
+fi

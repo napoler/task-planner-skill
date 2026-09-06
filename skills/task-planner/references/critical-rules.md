@@ -30,7 +30,7 @@
 出错 → 记 progress.md + 告诉用户 + `config.json#escalation_threshold` 次失败则 AskUserQuestion。
 
 ### 10 Scope 变更必重规划
-详见 `reference.md § 重规划触发`。
+详见 `reference.md § Chain Handoff Contract · 重规划触发条件`。
 
 ### 11 漂移检测（周期性）
 每个 phase 标记 complete 后、连续 ≥3 次工具调用后、切模块前，调用：
@@ -50,13 +50,13 @@ Skill("task-drift-guard")
 调研/搜索/大文件读取/跨文件 Read 必须派子代理。完整路由表见 SKILL.md §「子代理路由与模型分级」。主进程禁止直接 Read >500 行文件后改动、跑测试、接收 `Skill("research-assistant")` 长文。模型档位复用 `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` 既有约定。
 
 ### 14 代码编辑必须派子代理（P0）
-主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
+主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.sh/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
 
 ### 15 高频漂移纠正强制（P0）
 每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。详见 SKILL.md §「高频漂移纠正」。
 
 ### 16 任务开启期选模板（P0）
-禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration 共 12 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 SKILL.md §「任务模板库」+ `references/template-mapping.md`。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 20 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
+禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration 共 12 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 20 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
 
 ### 17 成本控制（P0）— 降低 Opus 使用频率
 opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `references/cost-control.md`。
@@ -132,8 +132,6 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 22.8.4 **断点重试**:子代理 failed/timeout/返回异常时,主进程兜底动作(22.3)执行前必须**先 Read 检查点文件**——有实质进度(≥1 条里程碑或已有产出文件)→ 重试 prompt 注入 resume_from 段(已完成清单[禁止重做] + 已有产出文件[直接复用/续写] + 剩余任务);无进度 → 按 22.3 正常兜底;resume_from 注入不重置 22.3 的 retry_limit 计数
 22.8.5 **返回缺失兜底**:主进程 30s Read 产出复核(22.5)时,若返回消息缺失但检查点 status: done,以检查点「最终结论」段为准完成回填
 
-21.5 **拆分自检(动工前)**:展示计划 / plan-writer 产出时自检——任一 Phase 无法用一句话说清验收标准,即视为粒度过大,回炉重拆后再交用户确认
-
 ### 23 并行任务检测与冲突规避(P0)
 并发执行多 plan 时,同文件/同 worktree/同名 task-id 会产生难以追踪的冲突。必须通过自动检测 + 规避建议提前暴露风险(Rule 23 落地到 hooks + 注册表)。
 
@@ -203,7 +201,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 
 27.1 **提交时机(Phase 级强制)**:实现类 Phase(产物含代码/配置/脚本/技能文档等仓内文件)在执行循环步骤 4.5 完成提交,才可翻转 complete——worktree 隔离场景提交在 worktree 内分支(逐 Phase 提交,合并回合约"worktree 内 status 干净"由此自然满足);direct 场景提交在主仓当前分支。**禁止跨 Phase 攒批、禁止留到终验才提交**。纯调研/纯 plans/ 写入(无仓内产物)的 Phase 豁免本条,progress.md 记一行"无仓内产物"。
 27.2 **提交范围(禁盲扫)**:只 `git add` 本 Phase 实际产出文件(以 scope_files 与 progress.md「Files created-modified」清单为准);**禁止 `git add -A` / `git add .`**——防把 plans/(按仓约定不入库)、.env、临时文件、其他并行任务产物卷入提交。message 格式:`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。
-27.3 **提交校验**:提交后 `git status --porcelain -- <scope 文件>` 必须为空;非空 = 有遗漏,补提交或说明原因。**非 git 目录** → progress.md 记一行 `[git-commit] 跳过:非 git 仓库`,不阻塞(提交能力缺失不是造假理由,如实登记)。
+27.3 **提交校验**:提交后 `git status --porcelain -- <scope 文件>` 必须为空;非空 = 有遗漏,补提交或说明原因。脚本兜底：`check-complete.sh` 已内置 scope porcelain 预检（scope 解析不出→warn 跳过;解析出且存在未提交变更→exit 1）。**非 git 目录** → progress.md 记一行 `[git-commit] 跳过:非 git 仓库`,不阻塞(提交能力缺失不是造假理由,如实登记)。
 27.4 **豁免**:仅两种——① 计划内声明 `git_commit: deferred`(Executor 字段或 frontmatter,含理由);② 用户显式说"先不提交"。豁免登记进 verification.md「质量门控统计」段;无登记而未提交即翻转 complete = 27 违规,按 Rule 26.3 处置(回炉补提交)。
 27.5 **终验联动**:终验交付前核验任务 scope 无未提交变更(`git status --porcelain -- <scope>`);遗留 → 补提交(注明"终验补提交")再交付。worktree 场景由合并回合约兜底,本条把"干净"要求从合并前一次性检查前移为逐 Phase 检查。
 27.6 **恢复补提交**:会话中断/压缩后恢复(session-catchup / plan-resume / 5Q)时,若 `git status` 显示 scope 内存在未提交变更而 progress.md 已记录对应动作 → 先补提交(注明"跨会话补提交")再继续,防带病推进。

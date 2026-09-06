@@ -29,12 +29,12 @@ if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
   
   if [ -n "$plan" ]; then
     plan_dir="$(dirname "$plan")"
-    current_scope="$(awk '/^## .*执行范围限制/,/^## /' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\\.[a-zA-Z]/) printf "%s\n", $i}' | tr -d ' ')"
+    current_scope="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\\.[a-zA-Z]/) printf "%s\n", $i}' | tr -d ' ')"
     # 检查写入文件是否在其他 plan 的 scope 中
     for other_plan in $(ls -t "$CWD/plans"/*/task_plan.md 2>/dev/null); do
       [ "$other_plan" = "$plan" ] && continue
       other_dir="$(dirname "$other_plan")"
-      other_scope="$(awk '/^## .*执行范围限制/,/^## /' "$other_plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\\.[a-zA-Z]/) printf "%s\n", $i}' | tr -d ' ')"
+      other_scope="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$other_plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\\.[a-zA-Z]/) printf "%s\n", $i}' | tr -d ' ')"
       # 简单字符串匹配(file 在 other_scope 中)
       if echo "$other_scope" | grep -qF "$(basename "$file")"; then
         other_taskid="$(basename "$other_dir")"
