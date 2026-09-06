@@ -6,6 +6,7 @@
 #   T07 enforce exit2 / T08 warn 注入 / T09 .allow-direct 放行+ledger
 #   T10 过期 allow-direct 拦截 / T11 单会话二次 bypass 拒绝
 #   T12 stats 占位检测 / T13 Handoff 交叉校验 / T14 jq 失败 fail-open
+#   T15 复合 Executor 全在 Handoff(不误报)/ T16 复合 Executor 部分缺失(unverified+reason)
 # 全部 PASS 才算任务完成。失败 → 整体 exit 1。
 #
 # 用法: bash selftest-delegation.sh  (默认打印 PASS/FAIL 表 + 退出码)
@@ -230,6 +231,87 @@ rc=$?
 export PATH="$SAVE_PATH"
 rm -rf "$SHIM"
 assert_exit "T14 jq 失败 fail-open" "0" "$rc"
+
+# ── T15 复合 Executor 全在 Handoff(不误报) ───────────────────────────────────
+# [2026-09-07 task-v055-fix] 验证 stats 解析按 + 拆分后,「architect + critic」两类型
+# 都登记在 Handoff 表时,不应误报 unverified_delegation
+TMP_T15="$(mktemp -d)/plans/task-t15-composite-ok"
+mkdir -p "$TMP_T15"
+cat > "$TMP_T15/task_plan.md" <<'EOF'
+# Task Plan: T15 composite ok
+
+## Phases
+
+### Phase 1: 复合 Executor 全在 Handoff
+- [ ] 子代理做
+- **Status:** pending
+- **Executor:** architect + critic（方案挑刺）
+
+## 🔗 Subagent Handoff 登记表
+
+| # | 时间 | subagent_type | 任务目标 | 状态 | 结论 | 证据 | 落点 | checkpoint | verify_done |
+|---|------|--------------|----------|------|------|------|------|------------|-------------|
+| 1 | 2026-09-07 | architect | 方案 | done | ok | x | x | x | x |
+| 2 | 2026-09-07 | critic | 挑刺 | done | ok | x | x | x | x |
+EOF
+out="$(bash "$CHECK" stats "$TMP_T15" 2>/dev/null)"
+# 复合 Executor 全登记 → 不应出现 unverified_delegation
+if printf '%s' "$out" | grep -q 'unverified_delegation'; then
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T15 复合Executor全在Handoff但仍误报unverified")
+else
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T15 复合Executor全在Handoff不误报")
+fi
+# 但仍应是合法的 delegated(不被减回) — phases_delegated >= 1
+if printf '%s' "$out" | grep -q '"phases_delegated":[[:space:]]*[1-9]'; then
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T15b 复合Executor仍计delegated")
+else
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T15b 复合Executor未计delegated")
+fi
+rm -rf "$(dirname "$TMP_T15")"
+
+# ── T16 复合 Executor 部分缺失(unverified+reason) ───────────────────────────
+# [2026-09-07 task-v055-fix] 验证「architect + nonexistent」中 nonexistent 未登记
+# → 应触发 unverified_delegation 且 reason 字段包含 nonexistent
+TMP_T16="$(mktemp -d)/plans/task-t16-composite-miss"
+mkdir -p "$TMP_T16"
+cat > "$TMP_T16/task_plan.md" <<'EOF'
+# Task Plan: T16 composite miss
+
+## Phases
+
+### Phase 1: 复合 Executor 部分缺失
+- [ ] 子代理做
+- **Status:** pending
+- **Executor:** architect + nonexistent
+
+## 🔗 Subagent Handoff 登记表
+
+| # | 时间 | subagent_type | 任务目标 | 状态 | 结论 | 证据 | 落点 | checkpoint | verify_done |
+|---|------|--------------|----------|------|------|------|------|------------|-------------|
+| 1 | 2026-09-07 | architect | 方案 | done | ok | x | x | x | x |
+EOF
+out="$(bash "$CHECK" stats "$TMP_T16" 2>/dev/null)"
+# 应触发 unverified_delegation
+if printf '%s' "$out" | grep -q 'unverified_delegation'; then
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T16 复合Executor部分缺失触发unverified")
+else
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T16 复合Executor部分缺失未触发unverified")
+fi
+# reason 字段应包含 "nonexistent"(缺失 token 名)
+if printf '%s' "$out" | grep -q 'nonexistent'; then
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T16b reason字段含缺失token")
+else
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T16b reason字段未含缺失token")
+fi
+rm -rf "$(dirname "$TMP_T16")"
 
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 echo ""
