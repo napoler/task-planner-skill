@@ -1,9 +1,9 @@
 {
-  "_comment": "plan-resume v0.5 (2026-09-05) 自主推进配置 — 语义见 SKILL.md §7.2;缺文件/缺键时脚本用此处默认值兜底",
+  "_comment": "plan-resume v0.6 (2026-09-06) 决策自主化配置 — 语义见 SKILL.md §7.2+§7.10;缺文件/缺键时脚本用此处默认值兜底;skip_states 已收窄(awaiting-user 移出,决策点按 §7.10 自主裁决)",
   "autonomous_resume": true,
   "max_auto_plans_per_trigger": 1,
   "cross_project_auto_resume": false,
-  "skip_states": ["blocked", "awaiting-user", "hold"],
+  "skip_states": ["blocked", "hold", "user-vetoed"],
   "fresh_threshold_days": 7,
   "max_failure_count": 3
 }

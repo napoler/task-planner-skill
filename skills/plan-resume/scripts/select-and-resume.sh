@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# select-and-resume.sh — plan-resume v0.5 自主推进编排(v0.4 智能推进编排升级)
+# select-and-resume.sh — plan-resume v0.6 自主推进编排(v0.5 决策自主化升级)
 #
-# v0.5: config 驱动默认自主(--dry-run/--auto-push 显式覆盖);新增 skip_states 硬排除与仓内范围守卫
+# v0.5: config 驱动默认自主(--dry-run/--auto-push 显式覆盖);新增 skip_states 硬排除与仓内范围守卫;v0.6: skip_states 收窄为 blocked/hold/user-vetoed(awaiting-user 决策点按 SKILL.md §7.10 自主裁决,不再排除)
 #
 # Usage: select-and-resume.sh [--repo-root PATH] [--auto-push | --dry-run]
 #                              [--max-resume N] [--time-threshold SECONDS]
@@ -15,7 +15,7 @@
 #   (标记 token 沿用 v0.4,兼容旧过滤逻辑;payload mode 由 smart-resume 改为 auto-resume)
 #
 # v0.5 守卫(Top 1 选择前逐候选执行):
-#   - skip_states(config,默认 blocked/awaiting-user/hold)任一命中 → 硬排除,报告记 "skip: <state>"
+#   - skip_states(config,v0.6 默认 blocked/hold/user-vetoed)任一命中 → 硬排除,报告记 "skip: <state>"
 #     blocked → 匹配 "- **Status:** blocked"(大小写不敏感);其余 → 匹配 "[<state>]" 字面
 #   - auto 模式下候选计划实际来源路径不在 --repo-root 之下 → 排除,报告记 "skip: outside-repo"
 #     (来源按 plans/<tid>/task_plan.md → .zcode/plans/<tid>*.md → skills/*/plans/<tid>/task_plan.md 顺序
@@ -38,7 +38,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 缺文件/缺键时使用下方默认值兜底,不报错(SKILL.md §7.2)
 CFG_AUTONOMOUS=1                              # autonomous_resume,默认 true
 CFG_MAX_AUTO_PLANS=1                          # max_auto_plans_per_trigger,默认 1(仅取值记录,选 Top1 逻辑不变)
-CFG_SKIP_STATES="blocked awaiting-user hold"  # skip_states,默认词表(空格分隔)
+CFG_SKIP_STATES="blocked hold user-vetoed"   # skip_states,默认词表(空格分隔;v0.6 awaiting-user 移出→§7.10)
 CONFIG_FILE="$SCRIPT_DIR/../config.json"
 if [[ -f "$CONFIG_FILE" ]]; then
   # bool: autonomous_resume
@@ -148,7 +148,7 @@ while IFS= read -r cand; do
       *) SKIP_REPORT+="skip: outside-repo — $tid"$'\n'; continue ;;
     esac
   fi
-  # skip_states 硬排除: blocked → "- **Status:** blocked"(大小写不敏感);其余 → "[<state>]" 字面
+  # skip_states 硬排除(v0.6 词表 blocked/hold/user-vetoed): blocked → "- **Status:** blocked"(大小写不敏感);其余 → "[<state>]" 字面
   hit=""
   for st in $CFG_SKIP_STATES; do
     if [[ "$st" == "blocked" ]]; then
@@ -161,6 +161,13 @@ while IFS= read -r cand; do
   done
   if [[ -n "$hit" ]]; then
     SKIP_REPORT+="skip: $hit — $tid"$'\n'
+    continue
+  fi
+  # v0.6 scaffold-garbage 硬排除: 未填充模板占位符(L2 复发面封堵 2026-09-06)
+  # 仅查 Goal 段(## Goal 后 3 行)防正文引用模板字面误伤;dry-run/auto 一致生效
+  goal_txt="$(sed -n '/^## Goal/{n;p;n;p;n;p;}' "$cpath" 2>/dev/null | head -3 || true)"  # || true: cpath 缺失时 sed 退 2,set -euo pipefail 会杀脚本(实仓伪候选 tid=plans 复现,2026-09-06)
+  if echo "$goal_txt" | grep -qF -e '[一句话' -e '$SITE' -e '$ID' -e '$RUNTS'; then
+    SKIP_REPORT+="skip: scaffold-garbage — $tid"$'\n'
     continue
   fi
   echo "$cand" >> "$FILTERED_OUT"

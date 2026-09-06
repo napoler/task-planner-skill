@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tests/smoke.sh — plan-resume skill 自检 v0.5(v0.3 基础检查 + v0.5 select-and-resume/config 用例)
+# tests/smoke.sh — plan-resume skill 自检 v0.6(v0.3 基础检查 + v0.5 select-and-resume/config 用例 + v0.6 决策自主化用例)
 #
 # Usage:
 #   bash tests/smoke.sh              # 默认: 扫 ~/.zcode
@@ -44,7 +44,7 @@ sc_check() {
   fi
 }
 
-echo "=== plan-resume smoke v0.5 ==="
+echo "=== plan-resume smoke v0.6 ==="
 echo "SKILL_DIR=$SKILL_DIR"
 
 # ─── 基本语法与参数 ────────────────────────────────────────────────────────────
@@ -203,25 +203,45 @@ bash "$SB_A/scripts/select-and-resume.sh" --repo-root "$SB_A/repo" >/dev/null 2>
 sr_check "v0.5-a3 缺 config 默认 autonomous → 写入 mode=auto-resume 标记" \
   "$(grep -q 'mode=auto-resume' "$SB_A/repo/plans/p-alpha/task_plan.md" && echo 1 || echo 0)"
 
-# ── v0.5-b skip_states 硬排除: blocked Status 与 [awaiting-user] 在 dry-run 与 auto 都不选中
+# ── v0.6-b skip_states 硬排除(收窄): blocked/[hold] 仍排除;[awaiting-user] 改为可选中(v0.6 核心行为)
 SB_B="$V05_ROOT/case-b-skip-states"
 sr_sandbox "$SB_B"
 sr_make_plan "$SB_B/repo/plans/p-blocked" "p-blocked" "" "- **Status:** blocked"
 sr_make_plan "$SB_B/repo/plans/p-wait" "p-wait" "" "等待用户确认 [awaiting-user]"
+sr_make_plan "$SB_B/repo/plans/p-hold" "p-hold" "" "用户说等等 [hold]"
 sr_make_plan "$SB_B/repo/plans/p-clean" "p-clean" "" ""
 REPORT_B="$SB_B/report-dry.md"
 OUT_B="$(bash "$SB_B/scripts/select-and-resume.sh" --repo-root "$SB_B/repo" --dry-run --report "$REPORT_B" 2>&1)"
-sr_check "v0.5-b1 dry-run 报告含 skip: blocked 排除记录" \
+sr_check "v0.6-b1 dry-run 报告含 skip: blocked 排除记录" \
   "$(grep -q 'skip: blocked' "$REPORT_B" && echo 1 || echo 0)"
-sr_check "v0.5-b2 dry-run 报告含 skip: awaiting-user 排除记录" \
-  "$(grep -q 'skip: awaiting-user' "$REPORT_B" && echo 1 || echo 0)"
-sr_check "v0.5-b3 dry-run Top 1 为未被排除的 p-clean" \
+sr_check "v0.6-b2 dry-run 报告含 skip: hold 排除记录" \
+  "$(grep -q 'skip: hold' "$REPORT_B" && echo 1 || echo 0)"
+sr_check "v0.6-b3 dry-run Top 1 为未被排除的 p-clean" \
   "$(echo "$OUT_B" | grep -q 'dry-run: Top 1 = p-clean' && echo 1 || echo 0)"
 OUT_B2="$(bash "$SB_B/scripts/select-and-resume.sh" --repo-root "$SB_B/repo" 2>&1)"  # 无 config → 默认 auto
-sr_check "v0.5-b4 auto 模式 blocked 候选未被写标记" \
+sr_check "v0.6-b4 auto 模式 blocked 候选未被写标记" \
   "$(grep -q 'auto-pushed-by-cron' "$SB_B/repo/plans/p-blocked/task_plan.md" && echo 0 || echo 1)"
-sr_check "v0.5-b5 auto 模式选中落在未排除的 p-clean" \
+sr_check "v0.6-b5 auto 模式选中落在未排除的 p-clean" \
   "$(grep -q 'mode=auto-resume' "$SB_B/repo/plans/p-clean/task_plan.md" && echo 1 || echo 0)"
+
+# v0.6-b6/b7 核心新增: [awaiting-user] 候选不再被排除——移除 p-clean 后 p-wait 应成为 Top 1
+rm -rf "$SB_B/repo/plans/p-clean"
+REPORT_B3="$SB_B/report-dry3.md"
+OUT_B3="$(bash "$SB_B/scripts/select-and-resume.sh" --repo-root "$SB_B/repo" --dry-run --report "$REPORT_B3" 2>&1)"
+sr_check "v0.6-b6 [awaiting-user] 候选可被选中(dry-run Top 1 = p-wait)" \
+  "$(echo "$OUT_B3" | grep -q 'dry-run: Top 1 = p-wait' && echo 1 || echo 0)"
+sr_check "v0.6-b7 报告不再出现 skip: awaiting-user(v0.6 移出排除表)" \
+  "$(grep -q 'skip: awaiting-user' "$REPORT_B3" && echo 0 || echo 1)"
+
+# v0.6-b8/b9 脚手架垃圾硬排除: Goal 段含未展开占位符的计划不进候选
+sr_make_plan "$SB_B/repo/plans/p-garbage" "p-garbage" "" ""
+sed -i 's/完成 p-garbage(测试夹具目标)/[一句话：为 $SITE 创作 $ID 文章]/' "$SB_B/repo/plans/p-garbage/task_plan.md"
+REPORT_B4="$SB_B/report-dry4.md"
+OUT_B4="$(bash "$SB_B/scripts/select-and-resume.sh" --repo-root "$SB_B/repo" --dry-run --report "$REPORT_B4" 2>&1)"
+sr_check "v0.6-b8 Goal 占位符候选被排除(报告含 skip: scaffold-garbage)" \
+  "$(grep -q 'skip: scaffold-garbage' "$REPORT_B4" && echo 1 || echo 0)"
+sr_check "v0.6-b9 排除后 Top 1 仍为 p-wait(候选池零污染)" \
+  "$(echo "$OUT_B4" | grep -q 'dry-run: Top 1 = p-wait' && echo 1 || echo 0)"
 
 # ── v0.5-c 默认自主 + auto 标记: Top1 被写标记,其余不被碰
 SB_C="$V05_ROOT/case-c-auto-marker"
@@ -288,7 +308,7 @@ TOTAL=$((TOTAL + 1))
 echo ""
 echo "=== 总计: $((TOTAL - FAIL)) / $TOTAL PASS,FAIL=$FAIL ==="
 if [[ $FAIL -eq 0 ]]; then
-  echo "[OK] plan-resume v0.5 smoke 全部通过"
+  echo "[OK] plan-resume smoke v0.6 全部通过"
   exit 0
 else
   echo "[FAIL] $FAIL / $TOTAL 未通过"

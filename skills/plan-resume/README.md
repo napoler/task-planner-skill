@@ -6,7 +6,7 @@
 
 工作区里堆积的 `plans/<id>/task_plan.md` / `.zcode/plans/plan-sess_*.md` / `skills/*/plans/task-*/task_plan.md`,哪些该续推、哪些该放弃、哪些其实已被顺便完成 — 本 skill 用「时间衰减 / 代码环境失效 / 目标已被取代」三维判定 + 加权打分决策。
 
-**v0.5 (2026-09-05) 双模式契约**:恢复触发点(会话启动无活跃计划 / 用户说"继续上次任务"类 / 当前计划交付终态后)默认**自主推进**——打分选 Top 1 并立即续推至完成或用户决策点,不再等用户点名(`config.json#autonomous_resume`,说"不要自动续推"可会话级关闭);当前计划执行中的被动扫描(task-planner Rule 24)保持**只报告**。守卫:跨仓候选只报告、blocked/[awaiting-user]/[hold] 硬排除、单次最多 1 个、circuit-break 熔断。
+**v0.6 (2026-09-06) 决策自主化契约**:恢复触发点(会话启动无活跃计划 / 用户说"继续上次任务"类 / 当前计划交付终态后)默认**自主推进**——打分选 Top 1 并立即续推**至交付**;途中执行级决策点(HANDOFF"待你决策"/二选一/[awaiting-user])按 SKILL.md §7.10 四项测试(可逆性/范围/宪法P0/先例)自主裁决并记录,**不停车等用户**(`config.json#autonomous_resume`,说"不要自动续推"可会话级关闭);当前计划执行中的被动扫描(task-planner Rule 24)保持**只报告**。守卫:跨仓候选只报告、blocked/[hold]/[user-vetoed] 硬排除(awaiting-user 已移出——它是裁决对象非死端)、单次最多 1 个、circuit-break 熔断。
 
 ## 文件清单
 
