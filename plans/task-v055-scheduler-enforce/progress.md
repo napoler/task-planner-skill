@@ -110,3 +110,4 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+- **05:1x 发布收尾**：v055 簿记入库（d0e96c9）→ push origin master（176ff0f..d0e96c9，7 commits）→ 9 位部署点全量复验 diff=0（task-planner×3 已是 fa893eb 源码；companion×6 与仓库一致无需重部署）
