@@ -166,7 +166,7 @@ Phase 1
 - [ ] Create project structure if needed
 - [ ] Document decisions with rationale
 - **Status:** pending
-- **Executor:** 主进程（例外理由:计划编排属主进程白名单）
+- **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation
 <!-- 
@@ -199,7 +199,7 @@ Phase 1
 - [ ] Ensure deliverables are complete
 - [ ] Deliver to user
 - **Status:** pending
-- **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
+- **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -312,14 +312,14 @@ Phase 1
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
   WHAT: 本计划子代理 vs 主进程的执行分布统计。
-  WHY: 子代理占比需要可见反馈闭环;委派率 <50% 且主进程直做无登记理由 → outcome 最高 PARTIAL。
+  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
   WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
 -->
 | 字段 | 值 |
 |------|-----|
 | 子代理执行 Phase 数 / 总 Phase 数 |  /  |
 | 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （<50% 且无登记理由 → 最高 PARTIAL） |
+| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
