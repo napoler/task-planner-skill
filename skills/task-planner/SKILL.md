@@ -26,48 +26,22 @@ model: opus
 
 **Goal**：产出结构化 `task_plan.md`（含 Phases/VC/V-N），按 phase 推进，全 phase complete 后逐条复验 VC，交付 COMPLETE/PARTIAL/BLOCKED。
 
-**主进程定位（P0）**：主进程 = **调度管理器（scheduler/orchestrator）**——只做规划、拆分、派发、验收、簿记；任务执行一律下沉子代理（Rule 13/14/21/25）。主进程亲为仅限下方路由表 ✅ 行白名单，且须按 Rule 25.3 登记白名单内例外理由；白名单外亲为 = 反模式。**降低主进程亲自执行是本技能的第一设计目标，新场景默认派子代理。**
+## 主进程=调度管理器（最关键定位，三条铁律）
+
+> **核心定位**：主进程 = **调度管理器（scheduler/orchestrator）**——只做规划、拆分、派发、验收、簿记；任务执行一律下沉子代理。**降低主进程亲自执行是本技能的第一设计目标，新场景默认派子代理。**
+
+**三条铁律（执行期硬约束 — task-v055 已机制化）**：
+1. **白名单外 Write/Edit 被 PreToolUse hook `check-delegation.sh` 拦截**（enforce 档 = `exit 2`；warn 档 = 注入警告并计数）
+2. **任务执行一律 `Agent()` 派发**（Executor≠主进程时立即按 Rule 22.4 八字段模板派发 + Handoff 登记）
+3. **bypass 仅来自显式 `allow-direct.sh on --confirm-user-requested`**（30 分钟窗口 + ledger 记录 + 终验展示）
+
+**六项白名单（精简版，权威源 `references/critical-rules.md` Rule 25.3）**：① 纯 git/worktree 编排 ② 计划系统文件维护（三件套/INDEX/ledger/attest/plan 模板） ③ 机械验证命令（只读，输出可控） ④ 用户显式要求主进程亲为 ⑤ Rule 22.3 兜底接管（单文件 ≤300 行） ⑥ 单文件 ≤3 行 trivial 修改（非保护区）。
 
 **[CONTEXT]** 上游：用户任务描述 / CWD / 已有 plan 目录。下游：`plans/{task-id}/task_plan.md` + findings.md/progress.md/verification.md。
 
 **工具**：`Read`/`Write`/`Edit`（计划文件）、`Bash`（脚本）、`Glob`/`Grep`（搜索）、`Agent()`（子代理）、`Skill()`（外部 skill）、`TodoWrite`/`TaskCreate/Update/List`（原生 Todo 同步，契约见 references/todo-sync.md）。
 
 **Code Review 工具**：当 `task_plan.md` 声明 `code_review: required` 时，启用 `Skill("code-review")` 上下文隔离审查（在终验交付前触发）。详见 [Code Review Gate](#code-review-gate代码审查门控)。
-
-### 💡 专业代码编辑最佳实践（强制 — 与下方「代码编辑强制隔离」「子代理路由与模型分级」P0 条款一体生效）
-
-**原则**：主进程**不直接** `Edit`/`Write` 业务代码——优先委托子代理解决，主进程仅维护计划和调度。**目的不是"省事"，而是用最少上下文隔离执行，避免主进程被代码细节污染后丢失全局视野。**
-
-**代码编辑场景 → 推荐工具**：
-
-| 场景 | 推荐 | 类型 | 触发条件 |
-|------|------|------|----------|
-| 单文件代码创建/编辑/重构 | `Agent(subagent_type: code-assistant)` | agent | ≤3 文件、≤300 行变更 |
-| 已写代码的简化优化 | `Agent(subagent_type: code-simplifier)` | agent | 代码块完成后主动调用 |
-| 修复 bug / 根因分析 | `Skill("systematic-debugging")` + `Agent(subagent_type: debugger)` | skill + agent | 报错/测试失败 |
-| 代码质量审查 | `Skill("code-review")` | skill | Phase 完成 / Code Review Gate 触发 |
-| AI 生成文风净化（注释/字符串） | `Skill("humanizer")` | skill | 文档/字符串含 AI 味 |
-| 调研/搜索资料 | `Skill("research-assistant")` | skill | 需要查资料、找方案、搜报错 |
-| 代码+文档简化清理 | `Agent(subagent_type: code-simplifier)` 或 `Agent(subagent_type: claude md)` | agent | 结构优化/清理 |
-| 复杂功能开发（多 phase / 跨文件 / 需架构设计） | `Skill("comet")` | skill | phase ≥5、跨多模块、有设计决策待论证 |
-
-**核心价值**：
-- **上下文隔离**：子代理独立 context 执行，主进程保持全局视野——这是**首要原因**，不是副作用
-- **模型匹配**：各 agent 按任务类型用最优 model tier（编辑 sonnet，审查 opus，简单任务 haiku）
-- **质量提升**：专业流程（systematic-debugging 的 5 步、code-simplifier 的语义保留）显著优于主进程手动修
-
-**例外（白名单，Rule 14 对齐）**：主进程可直接 `Edit` 的仅限——① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）；② 原生 Todo 同步；③ 单文件 ≤3 行 trivial 修改（非保护区）。其余 `.md`/`.json`/`.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。
-
-**Skill 与 Agent 区分**：Skill 是预设流程/规则（如 systematic-debugging 的 5 步、code-review 的 10 维审查），Agent 是执行体（如 code-assistant 做实际编辑、code-simplifier 做代码瘦身）。Skill 定义"怎么审/怎么修"，Agent 定义"谁来干"。
-
-**何时坚决用子代理**（避免上下文污染的典型场景）：
-- 调研/搜索：避免搜索结果挤占主进程 context → `Skill("research-assistant")` / `Agent(subagent_type: web-search-agent)` / `explore`
-- 大段代码改写：避免主进程 context 被代码细节淹没 → `Agent(subagent_type: code-assistant)`
-- 多文件重构：避免每个文件 diff 都进入主进程 → `Agent(subagent_type: executor)`
-- 重读/验证大文件：避免 Read 大文件占用主进程 token → `Agent(subagent_type: explore)`
-- 跑测试/构建：避免 stdout/stderr 噪声 → `Agent(subagent_type: code-runner-agent)`
-
-**反模式**：主进程直接 `Read` 大文件 + `Edit` 多文件 + `Bash` 跑测试 = 上下文三连击，快速耗尽 token 且丢失全局视野。
 
 ### 🚀 复杂功能开发 → 移交 `/comet` 工作流
 
@@ -104,7 +78,7 @@ model: opus
   - **冲突分析（隔离决策）**：运行 `bash scripts/check-conflicts.sh` → 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块（实现类任务默认首选 worktree，用户可否决）
   - **S1 同步（原生 Todo 建立映射）**：运行 `bash scripts/sync-todos.sh --json` → 用 `TodoWrite`（跨会话/多任务用 `TaskCreate`）为每个 Phase 建一条 todo（subject=`{task-id}/Phase N: title`，当前 Phase=in_progress，其余 pending）；**禁止只建计划不建 Todo**
   - **清除哨兵**：计划创建完成后立即运行 `node ~/.zcode/skills/task-planner/scripts/plan-created.cjs`
-  - **门控**：哨兵存在期间，PreToolUse hook 自动拦截所有非 plans/ 路径的 Write/Edit 操作（exit 1 阻断）
+  - **门控**：哨兵存在期间，PreToolUse hook 自动拦截所有非 plans/ 路径的 Write/Edit 操作（exit 2 阻断；ZCode 约定 PreToolUse exit 2 = block）
 
 - [ ] **计划确认**
   - 展示 `task_plan.md`（含 Phase 列表 + Verification Contract 表）给用户
@@ -113,7 +87,7 @@ model: opus
 - [ ] **Phase 执行循环**（每个 Phase 独立闭环，6 步顺序执行）
   1. **开启 Phase**：`Edit task_plan.md` 当前 Phase 状态 → `in_progress`（Current Phase 同步更新）
   2. **同步 Todo（S2）**：`TodoWrite`/`TaskUpdate` 该 Phase 对应 todo → `in_progress`；步骤 1/2 必须紧邻执行，禁止只做其一
-  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按八字段模板（Rule 22.4）`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"
+  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按八字段模板（Rule 22.4）`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"。**hook 已机制化**：主进程白名单外 Write/Edit 被 check-delegation.sh 拦截（enforce=exit 2；warn 档注入警告并计数）
   3. **执行 Phase 工作**（内嵌 3-File 落盘强制点，Rule 19）：
      - **3a. 子代理产出回填（19.1）**：每次子代理（Explore / research / debugger / codebase-analyzer 等）或调研类 Skill 返回后，**紧邻一次 `Edit findings.md`** 写入结论摘要 + 证据路径（映射见下方「产出落盘映射」）——禁止让结论只留在会话记忆（context reset 即丢失）；回填完成才可勾 Handoff 登记表 `verify_done`（Read 产出 + findings 回填双条件，见 22.5）
      - **3b. 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 操作后写 findings.md；多模态内容（截图/网页）必须立即转文字落盘
@@ -298,13 +272,13 @@ Block 1 (选题) complete
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
-- **Rule 15（P0）高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
-- **Rule 16（P0）任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `references/template-mapping.md`，模板分流单一权威源）
-- **Rule 17（P0）成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
-- **Rule 18（P0）批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
+- **Rule 15 高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
+- **Rule 16 任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `references/template-mapping.md`，模板分流单一权威源）
+- **Rule 17 成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
+- **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
-- **Rule 20（P0）计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
-- **Rule 21（P0）子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行（详见 `references/critical-rules.md` Rule 21）
+- **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
+- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/八字段 prompt/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23（P0）并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）

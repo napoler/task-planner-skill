@@ -99,6 +99,17 @@ check_scope_porcelain "$PLAN_FILE" || {
 # [2026-09-04 Rule 19.5/19.6] Pass SKILL_ROOT so python can load templates/findings.md
 # and templates/progress.md for stub detection in 3-File Gate.
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PLAN_DIR_GUESS="$(cd "$(dirname "$PLAN_FILE")" && pwd)"
+
+# [2026-09-07 task-v055 task-v055/Phase 3] 终验委派率接线(Rule 25.4)
+# 行为:全 Phase complete 判定通过前,调 check-delegation.sh stats 输出 JSON。
+# - verdict==violation  或  全 complete 且 delegation_rate < floor  或  main_direct 含 violations
+#   → 摘要输出到 stderr + exit 1(禁止 COMPLETE 交付)
+# - stats 命令自身失败(jq/解析/脚本异常)= fail-open:stderr 一行警告,不阻断(与 A 批约定一致)
+# - 顺带输出 warn 档触发计数(/tmp/task-planner-warn-<sid>.count 若存在,提醒终验关注 M-1)
+# 实现位置:放在 python 内联末尾之后(已通过 3-File Gate/Porcelain 等前置门),
+# 所有判定放行后才查委派率 — 这是「最后一道闸」。
+DELEGATION_RATE_FLOOR="$(jq -r '.properties.delegation_rate_floor.default // 0.7' "$SKILL_ROOT/config.json" 2>/dev/null || echo 0.7)"
 
 python3 - "$PLAN_FILE" "$SKILL_ROOT" << 'PYEOF'
 import sys, re
@@ -328,12 +339,16 @@ if complete == total and total > 0:
         if all_blocks_done and all_config_done:
             cfg_part = f" across {len(logical_blocks)} block(s)" if chain_mode != "single" else ""
             print(f"[plan] ALL PHASES COMPLETE{cfg_part} ({complete}/{total})")
+            # [2026-09-07 task-v055] 透传 plan_dir 给 shell 层做委派率终验
+            print(f"[plan-deferred-delegation-check] plan_dir={plan_dir}")
             sys.exit(0)
         else:
             print("[plan] Some blocks not yet complete.")
             sys.exit(1)
     else:
         print(f"[plan] ALL PHASES COMPLETE ({complete}/{total})")
+        # [2026-09-07 task-v055] 透传 plan_dir 给 shell 层做委派率终验
+        print(f"[plan-deferred-delegation-check] plan_dir={plan_dir}")
         sys.exit(0)
 else:
     print(f"[plan] Task in progress ({complete}/{total} phases complete)")
@@ -346,4 +361,81 @@ else:
     print("[plan] WARNING: Not all phases complete — session should not end yet.")
     sys.exit(1)
 PYEOF
-exit $?
+python_rc=$?
+
+# [2026-09-07 task-v055] 终验委派率接线 — shell 层 last gate
+# 仅当 python 返回 0(全 Phase complete 判定通过)时执行;否则放过(python 自己已 exit 1)
+if [ "$python_rc" -eq 0 ]; then
+    # 委托率统计(fail-open:脚本异常不阻断,但 stderr 记警告)
+    stats_output=""
+    if [ -x "$SKILL_ROOT/scripts/check-delegation.sh" ]; then
+        stats_output="$(bash "$SKILL_ROOT/scripts/check-delegation.sh" stats "$PLAN_DIR_GUESS" 2>/dev/null)" || stats_rc=$?
+        # stats_rc 非 0 = violation(stats 自身 exit 1)or 错误(exit 1/2);继续解析
+    else
+        printf '[check-complete] check-delegation.sh not found or not executable — fail-open\n' >&2
+    fi
+
+    if [ -n "$stats_output" ]; then
+        # 解析 JSON(jq 不可用时改用 grep fallback;stats_output 总是单行 JSON)
+        delegation_rate=""
+        main_direct_count=0
+        violations_count=0
+        verdict=""
+        if command -v jq >/dev/null 2>&1; then
+            delegation_rate="$(printf '%s' "$stats_output" | jq -r '.delegation_rate // empty' 2>/dev/null || true)"
+            main_direct_count="$(printf '%s' "$stats_output" | jq -r '.main_direct | length' 2>/dev/null || echo 0)"
+            violations_count="$(printf '%s' "$stats_output" | jq -r '.violations | length' 2>/dev/null || echo 0)"
+            verdict="$(printf '%s' "$stats_output" | jq -r '.verdict // empty' 2>/dev/null || true)"
+        else
+            # 无 jq 兜底:正则提取
+            delegation_rate="$(printf '%s' "$stats_output" | grep -oE '"delegation_rate":[^,}]+' | head -1 | cut -d: -f2 || true)"
+            violations_count="$(printf '%s' "$stats_output" | grep -oE '"violations":\[[^]]*\]' | head -1 | grep -oE '\{"type"' | wc -l || echo 0)"
+            main_direct_count="$(printf '%s' "$stats_output" | grep -oE '"main_direct":\[[^]]*\]' | head -1 | grep -oE '\{"phase"' | wc -l || echo 0)"
+            if [ "$violations_count" -gt 0 ]; then verdict="violation"; else verdict="ok"; fi
+        fi
+
+        # 1) verdict==violation → exit 1(主进程直做理由含白名单外/委派率违规)
+        # 2) 全 complete 且 delegation_rate < floor → exit 1(规则底线)
+        # 3) violations 非空 → exit 1(同上,verdict 已聚合)
+        # floor 比较:rate 是浮点字符串,用 awk
+        rate_ok=1
+        if [ -n "$delegation_rate" ]; then
+            if ! awk -v r="$delegation_rate" -v f="$DELEGATION_RATE_FLOOR" 'BEGIN{exit !(r+0 < f+0)}'; then
+                rate_ok=0
+            fi
+        fi
+
+        # 摘要输出(stderr 给主进程可视化;stdout 保留 [plan] 标记给 hook 解析)
+        printf '[plan-delegation] phases=%s delegated=%s main_direct=%s violations=%s rate=%s floor=%s verdict=%s\n' \
+            "$(printf '%s' "$stats_output" | grep -oE '"phases_total":[0-9]+' | head -1 | cut -d: -f2)" \
+            "$(printf '%s' "$stats_output" | grep -oE '"phases_delegated":[0-9]+' | head -1 | cut -d: -f2)" \
+            "$main_direct_count" \
+            "$violations_count" \
+            "$delegation_rate" \
+            "$DELEGATION_RATE_FLOOR" \
+            "$verdict" >&2
+
+        if [ "$verdict" = "violation" ] || [ "$rate_ok" -eq 0 ]; then
+            printf '[plan] DELEGATION GATE FAILED (Rule 25.4 / task-v055) — verdict=%s rate=%s floor=%s\n' "$verdict" "$delegation_rate" "$DELEGATION_RATE_FLOOR" >&2
+            printf '%s\n' "$stats_output" >&2
+            exit 1
+        fi
+        printf '[plan] DELEGATION GATE PASSED (rate=%s >= floor=%s, violations=%s)\n' "$delegation_rate" "$DELEGATION_RATE_FLOOR" "$violations_count" >&2
+    else
+        printf '[plan] DELEGATION GATE SKIPPED — check-delegation.sh stats produced no output (fail-open, see warning above)\n' >&2
+    fi
+
+    # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
+    warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
+    if [ -n "$warn_count_files" ]; then
+        printf '[plan] warn-mode triggers (delegation_enforce=warn 时本会话累计,提醒终验关注 M-1):\n' >&2
+        for f in $warn_count_files; do
+            n="$(cat "$f" 2>/dev/null || echo 0)"
+            sid="${f##*/task-planner-warn-}"
+            sid="${sid%.count}"
+            printf '  - sid=%s count=%s\n' "$sid" "$n" >&2
+        done
+    fi
+fi
+
+exit $python_rc
