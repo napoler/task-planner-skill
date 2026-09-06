@@ -40,6 +40,15 @@
       "maximum": 1,
       "description": "Minimum ratio of subagent-executed Phases at final verification; below floor or non-whitelisted main-process reasons caps outcome at PARTIAL (Rule 25.4)"
     },
+    "delegation_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn"
+      ],
+      "default": "enforce",
+      "description": "执行期委派门控档位：enforce=exit2 阻断主进程白名单外 Write/Edit；warn=仅注入警告并计数"
+    },
     "plan_dir_pattern": {
       "type": "string",
       "default": "plans/{task-id}/",

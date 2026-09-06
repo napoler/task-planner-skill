@@ -3,6 +3,8 @@
 # 职责:
 #   1. 哨兵期:检查 Write/Edit 是否在 plans/ 外(原有功能)
 #   2. 运行时并发检测(Rule 23):写入文件是否命中其他 in_progress plan 的 scope
+#   3. [2026-09-07 task-v055] 委派门控(Rule 25 执行期):Write/Edit/ApplyPatch 主进程白名单外文件
+#      → check-delegation.sh pretool 判定(enforce=exit2 阻断 / warn=注入警告)
 # 约束:fail-open —— 任何异常 exit 0 不阻塞指令
 input="$(cat)"
 tool="$(printf '%s' "$input" | jq -r '.tool_name // .toolName // empty' 2>/dev/null)"
@@ -16,6 +18,39 @@ if [ "$rc" -eq 1 ]; then
   echo 'task-planner: 检测到 .plan-required 哨兵——本会话尚无有效计划，禁止写入 plans/ 之外路径。请先调用 Skill(skill="task-planner") 创建计划。' >&2
   exit 2
 fi
+
+# [2026-09-07 task-v055] 委派门控(Rule 25 执行期拦截)
+# 仅 Write/Edit/ApplyPatch 触发;其他工具直接 return 0
+# Edit 的 new_string 行数:从 stdin JSON 截前 4KB(M-4)后 wc -l;字段缺失传 "-"
+case "$tool" in
+  Write|Edit|ApplyPatch)
+    sid="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    sid="${sid:-default}"
+    lines_arg="-"
+    if [ "$tool" = "Edit" ]; then
+      # 截前 4KB 后 wc -l(防 mega-string 撑爆)
+      ns="$(printf '%s' "$input" | jq -r '.tool_input.new_string // empty' 2>/dev/null | head -c 4096)"
+      if [ -n "$ns" ]; then
+        lines_arg="$(printf '%s\n' "$ns" | wc -l | tr -d ' ')"
+      fi
+    fi
+    bash "$SKILL_ROOT/check-delegation.sh" pretool "$file" "$sid" "$lines_arg"
+    rc=$?
+    if [ "$rc" -eq 2 ]; then
+      # enforce 模式阻断:printf JSON 到 stdout 后 exit 2
+      # 文案三选一路径(由 check-delegation 通过 sid 比较后判定);此处通用提示
+      msg="[delegation-block] 🚫 主进程直做拦截 — file=${file}
+按 SKILL.md 路由表派子代理执行(Write/Edit/ApplyPatch 业务代码默认派 code-assistant/executor);
+若属误拦,确认文件路径是否应纳入 plans/ 白名单;
+若用户明文要求主进程亲为,执行:
+  bash ${SKILL_ROOT}/scripts/allow-direct.sh on --confirm-user-requested
+(30 分钟窗口;会被 ledger 记录并在终验展示;同会话仅一次)"
+      printf '{"additionalContext": %s}\n' "$(printf '%s' "$msg" | jq -Rs . 2>/dev/null || printf '"block"')"
+      exit 2
+    fi
+    # rc=0 时 check-delegation 自身可能已输出 warn JSON(注入);不重复
+    ;;
+esac
 
 # Rule 23: 运行时并发冲突检测(仅 Write/Edit)
 if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
