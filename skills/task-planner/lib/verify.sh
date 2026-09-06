@@ -24,6 +24,8 @@
 #   7. External references use ${TASK_PLANNER_ROOT} form
 #   8. Hooks registered per platform (claude=settings.local.json, zcode=cli/config.json,
 #      opencode/cursor=SKILL.md frontmatter;全量副本模式下 frontmatter hooks: 块 N/A)
+#   9. task-v055 委派门控三件套可执行(check-delegation.sh + allow-direct.sh +
+#      selftest-delegation.sh;2026-09-07)
 #
 # Returns exit 0 if all pass; non-zero with summary if any fail.
 
@@ -215,6 +217,16 @@ verify_installation() {
       pass "$tool: hooks declared in SKILL.md frontmatter"
     else
       fail "$tool: SKILL.md missing hooks: block (run install.sh to regenerate)"
+    fi
+  done
+
+  # 9. task-v055 委派门控脚本存在性(2026-09-07):PreToolUse hook 拦截 + 用户 bypass
+  # + 自测 是执行期机制化三件套,任一缺失 = 白名单/拦截/自测三能力之一失效
+  for _script in check-delegation.sh allow-direct.sh selftest-delegation.sh; do
+    if [ -x "$TASK_PLANNER_ROOT/scripts/$_script" ]; then
+      pass "$_script exists and is executable"
+    else
+      fail "$_script missing or not executable at $TASK_PLANNER_ROOT/scripts/"
     fi
   done
 

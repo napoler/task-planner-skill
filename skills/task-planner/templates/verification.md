@@ -73,7 +73,19 @@ Status: `pending` Last verified: —
 |           |                      |                     |
 
 ## 委派统计复验（Rule 25.4）
-- [ ] 委派率已统计:子代理执行 Phase __ / 总数 __
+
+**机器统计为事实源，人工仅复核**：运行 `bash <skill>/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
+
+```bash
+# 证据（粘贴以下 JSON 原文）
+bash <skill>/scripts/check-delegation.sh stats <plan-dir>
+```
+
+JSON 输出：
+```json
+{粘贴 stats 命令原文输出}
+```
+
 - [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
 - [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 已降级 PARTIAL
 
