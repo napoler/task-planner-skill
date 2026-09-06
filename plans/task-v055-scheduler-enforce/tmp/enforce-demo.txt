@@ -1,0 +1,138 @@
+
+========================================
+selftest-delegation results
+========================================
+PASS  T01 无计划放行  (exit=0)
+PASS  T02 子代理 sid 放行  (exit=0)
+PASS  T03 plans 白名单放行  (exit=0)
+PASS  T04 SKILL_ROOT 放行  (exit=0)
+PASS  T05 trivial 3 行放行  (exit=0)
+PASS  T06 4 行拦截  (exit=2)
+PASS  T07 enforce exit2  (exit=2)
+PASS  T08 warn 不阻断  (exit=0)
+PASS  T08 warn 注入  (grep hit)
+PASS  T09 .allow-direct 放行  (exit=0)
+PASS  T09b ledger 写入 bypass
+PASS  T10 过期 allow-direct 拦截  (exit=2)
+PASS  T11a 首次 on 成功  (exit=0)
+PASS  T11b 二次 on 拒绝  (exit=3)
+PASS  T12 stats 占位/理由检测  (grep hit)
+PASS  T12 stats 退出码非 0(violation)  (exit=1)
+PASS  T13 Handoff 交叉校验  (grep hit)
+PASS  T14 jq 失败 fail-open  (exit=0)
+----------------------------------------
+Total: 18    PASS=18  FAIL=0
+========================================
+
+=== B' 收尾批次(task-v055,2026-09-07) ===
+3 文件收敛:
+- skills/task-planner/SKILL.md: 548 行 → 497 行（-51，-9.3%）；P0 标记 20 → 10（-50%）
+  削减手段:① 折叠 "💻 代码编辑强制隔离" 至路由表指针（-25）② Read/Write 决策矩阵 6 行表 → 5 行清单（-2）③ "何时移交 comet" 段压缩（-8）④ "I/O 契约" 3 行 → 1 行（-2）⑤ "Scope Guard / Goal Gate" 合并（-3）⑥ "WebSearch 路径 1" 5 行表 → 单行（-4）⑦ "漂移纠正为什么高频 / 与 Rule 11 关系" 合并（-4）⑧ "调研禁止" 末项指针化（-1）⑨ 多余空行/孤 `---` 清掉（-2）⑩ 模板库末两行合并（-1）
+  保留:头部铁律 + 7 条 Rule P0（13/14/19/22/25/26/27）+ 路由表主标题+约束（10 处 P0 全为机制级）
+- skills/task-planner/lib/verify.sh: 新增 9 号检查（task-v055 委派门控三件套可执行性），文件头 Checks 列表同步更新
+- skills/task-planner/templates/verification.md: 委派统计段 L75-78 改为机器驱动(stats 命令 + JSON 粘贴) + 人工复核双栏
+
+自测数字:
+- wc -l skills/task-planner/SKILL.md: 497（要求 ≤500 ✓）
+- grep -c 'P0' skills/task-planner/SKILL.md: 10（要求 ≤10 ✓）
+- TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh: 20 pass / 3 fail（3 fail 为旧 check 2 部署漂移，非本次回归；3 新 ✓ 全部生效）
+- bash skills/task-planner/scripts/selftest-delegation.sh: 18/18 PASS（A 批未破坏 ✓）
+
+Rule 编号引用完整性:抽查 L37/40/81/82/84/86/89/96/96/96/112/118/126/150/151/152/155 与改前一致，未断链。
+
+=== fix-composite 批次(task-v055-fix,2026-09-07) — commit 956c269 ===
+缺陷定位: skills/task-planner/scripts/check-delegation.sh stats 解析段 Handoff 交叉校验
+          两处 (line 329 + line 399, ### Phase 头 flush + ## 顶层章节 flush)
+          原版 type_hint 整体 grep,复合 Executor「architect + critic（方案挑刺）」
+          字符串「architect+critic」无法匹配 Handoff 表 → 误报 unverified_delegation
+
+修法:
+- type_hint 按 NUL 分隔拆 token (printf '%s\0' + tr '+' \0 + read -d '')
+- 每个 token 独立 grep Handoff 表;全部找到 → 计 delegated;任一缺失 → unverified_delegation
+- reason 字段改为 "Executor 含未登记子代理类型:<missing_tokens>"(逗号分隔)
+- 顺手修 line 322 注释(原"去中文括号"与代码"去冒号前缀"不符 → 改"去冒号前缀")
+- 两处校验点都改 + 加 [2026-09-07 task-v055-fix] 注释标记
+
+selftest 增量:
+- T15 复合 Executor「architect + critic」全登记 → 不应误报 unverified + 仍计 delegated (2 断言)
+- T16 复合 Executor「architect + nonexistent」部分缺失 → 应 unverified + reason 含 nonexistent (2 断言)
+- 新增 4 行,合计 22 PASS / 0 FAIL
+
+bash skills/task-planner/scripts/selftest-delegation.sh 输出(commit 956c269):
+========================================
+selftest-delegation results
+========================================
+PASS  T01 无计划放行  (exit=0)
+PASS  T02 子代理 sid 放行  (exit=0)
+PASS  T03 plans 白名单放行  (exit=0)
+PASS  T04 SKILL_ROOT 放行  (exit=0)
+PASS  T05 trivial 3 行放行  (exit=0)
+PASS  T06 4 行拦截  (exit=2)
+PASS  T07 enforce exit2  (exit=2)
+PASS  T08 warn 不阻断  (exit=0)
+PASS  T08 warn 注入  (grep hit)
+PASS  T09 .allow-direct 放行  (exit=0)
+PASS  T09b ledger 写入 bypass
+PASS  T10 过期 allow-direct 拦截  (exit=2)
+PASS  T11a 首次 on 成功  (exit=0)
+PASS  T11b 二次 on 拒绝  (exit=3)
+PASS  T12 stats 占位/理由检测  (grep hit)
+PASS  T12 stats 退出码非 0(violation)  (exit=1)
+PASS  T13 Handoff 交叉校验  (grep hit)
+PASS  T14 jq 失败 fail-open  (exit=0)
+PASS  T15 复合Executor全在Handoff不误报
+PASS  T15b 复合Executor仍计delegated
+PASS  T16 复合Executor部分缺失触发unverified
+PASS  T16b reason字段含缺失token
+----------------------------------------
+Total: 22    PASS=22  FAIL=0
+========================================
+exit_code=0
+
+=== fix-review 批次(task-v055, 2026-09-07) — CodeReview批修 B-1+M1-M6+m4m5 (9项) ===
+commit: 7ab28e2 (worktree wt/task-v055-fix-review, base 1d73577)
+
+--- 自测 22+13=35 断言全 PASS (新增 T17-T22 六组 M-4/B-1/M-1/M-2/M-5 断言) ---
+
+========================================
+selftest-delegation results
+========================================
+PASS  T01 无计划放行  (exit=0)
+PASS  T02 子代理 sid 放行  (exit=0)
+PASS  T03 plans 白名单放行  (exit=0)
+PASS  T04 SKILL_ROOT 放行  (exit=0)
+PASS  T05 trivial 3 行放行  (exit=0)
+PASS  T06 4 行拦截  (exit=2)
+PASS  T07 enforce exit2  (exit=2)
+PASS  T08 warn 不阻断  (exit=0)
+PASS  T08 warn 注入  (grep hit)
+PASS  T09 .allow-direct 放行  (exit=0)
+PASS  T09b ledger 写入 bypass
+PASS  T10 过期 allow-direct 拦截  (exit=2)
+PASS  T11a 首次 on 成功  (exit=0)
+PASS  T11b 二次 on 拒绝  (exit=3)
+PASS  T12 stats 占位/理由检测  (grep hit)
+PASS  T12 stats 退出码非 0(violation)  (exit=1)
+PASS  T13 Handoff 交叉校验  (grep hit)
+PASS  T14 jq 失败 fail-open  (exit=0)
+PASS  T15 复合Executor全在Handoff不误报
+PASS  T15b 复合Executor仍计delegated
+PASS  T16 复合Executor部分缺失触发unverified
+PASS  T16b reason字段含缺失token
+PASS  T17 白名单④标记理由不触发violation
+PASS  T17b 白名单标记main_direct全部self_declared=0
+PASS  T18 无理由触发missing_reason violation
+PASS  T18b verdict=violation exit=1  (exit=1)
+PASS  T19 owner 多行注入 sid 放行(子代理语义)  (exit=0)
+PASS  T19b owner 首行主进程+白名单外=exit2  (exit=2)
+PASS  T20 owner 缺失 exit 0  (exit=0)
+PASS  T20b owner 缺失输出观察模式  (grep hit)
+PASS  T21 plans/ 内 .ts 不放行  (exit=2)
+PASS  T21b plans/ 内 .md 放行  (exit=0)
+PASS  T22a 同 sid 首次 on 成功  (exit=0)
+PASS  T22b 同 sid 二次 on 拒绝  (exit=3)
+PASS  T22c 不同 sid on 放行  (exit=0)
+----------------------------------------
+Total: 35    PASS=35  FAIL=0
+========================================
+exit_code=0

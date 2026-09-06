@@ -1,0 +1,15 @@
+# task-v055 deferred issues（追修清单 — 不阻塞交付）
+
+| # | 来源 | 问题 | 影响 | 建议优先级 |
+|---|------|------|------|-----------|
+| n-1 | CodeReview NIT | /tmp/task-planner-warn-<sid>.count 可预测文件名 + 跨 sid 计数报告（check-complete.sh:429-437） | 低（本地单用户环境） | P3 |
+| n-2 | CodeReview NIT | stats error JSON 在 check-complete 中被解析为 pass | 终验误放行理论场景 | P2 |
+| n-3 | CodeReview NIT | SKILL.md:46 锚点 #code-review-gate 非真实标题（历史问题） | 文档跳转失效 | P3 |
+| m-1 | CodeReview MINOR | ledger bypass trigger 字段不记录 file_path、allow_direct_on 缺 sid | 审计粒度不足 | P2 |
+| m-2 | CodeReview MINOR | Edit trivial 判定仅看 new_string 前 4KB 换行数（巨型单行/删多换少可绕过） | 拦截旁路 | P2 |
+| Q-3 | architect | pretool 的 cwd 解析用 $PWD 而非 stdin .cwd（与既有 zcode-pretooluse 行为一致） | 多 cwd 会话边界 | P3 |
+| - | executor-A | stats Executor 类型提取假设 type（model）格式，非常规格式弱匹配 | 统计粒度 | P3 |
+| - | v055 观察 | 复合 Executor（子代理+主进程）整体计为 main_direct（保守判定），主执行体归类待细化 | 统计口径偏保守 | P3 |
+| - | critic M-1 | warn→enforce 切换的 owner/deadline 机制未建（当前默认 enforce 已上线，此条降级为 enforce 逃生观察） | 运营项 | P3 |
+| - | critic | claude 位 hook 注册（register-hooks-cj.ts）属授权项未做 | claude 位无执行期拦截（预期管理已写入 SKILL.md） | 需用户授权 |
+| - | v055 收尾 | memory 更新（部署基线+调度机制记忆）被并行会话哨兵拦截（.plan-required 03:24/04:27 用户会话写入，属预期门控行为）——待哨兵清除后下会话补写 | 部署基线事实暂以 git log fa893eb + deploy-diff.txt 为准 | P2 |

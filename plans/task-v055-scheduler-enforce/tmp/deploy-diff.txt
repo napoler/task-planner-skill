@@ -1,0 +1,204 @@
+# task-v055 部署矩阵 — 三位 task-planner 重部署复验
+
+- 源仓库: /mnt/data/dev/task-planner-skill/skills/task-planner
+- 源 HEAD: 847f500
+- 备份目录: /tmp/deploy-backup-task-v055/
+  - 6f715fa0.tar.gz = ~/.zcode/skills/task-planner (183150 B)
+  - e865adec.tar.gz = ~/.claude/skills/task-planner (183118 B)
+  - 462828ba.tar.gz = ~/.config/opencode/skills/task-planner (183118 B)
+- 执行方式: rm -rf <deploy> && cp -rL <source> <deploy>, 随后 chmod +x scripts/*.sh
+
+================================================================
+矩阵
+================================================================
+
+| 部署位 | diff -r 摘要                  | verify.sh        | selftest-delegation |
+|--------|------------------------------|------------------|---------------------|
+| ~/.zcode/skills/task-planner        | 完全一致（无任何差异）  | 23 pass / 0 fail | 18 PASS / 0 FAIL    |
+| ~/.claude/skills/task-planner       | 完全一致（无任何差异）  | 23 pass / 0 fail | 18 PASS / 0 FAIL    |
+| ~/.config/opencode/skills/task-planner | 完全一致（无任何差异）  | 23 pass / 0 fail | 18 PASS / 0 FAIL    |
+
+================================================================
+明细 1: diff -r 与源仓库对比
+================================================================
+
+--- ~/.zcode/skills/task-planner ---
+(diff -r 输出为空)
+  说明: 全新 rm+cp 后无 plans/ 等会话产物残留
+
+--- ~/.claude/skills/task-planner ---
+(diff -r 输出为空)
+  说明: 同上
+
+--- ~/.config/opencode/skills/task-planner ---
+(diff -r 输出为空)
+  说明: 同上
+
+（部署位 diff 完全等于源 = 三位与源 100% 一致，无源码差异）
+
+================================================================
+明细 2: lib/verify.sh 体检
+================================================================
+
+--- ~/.zcode/skills/task-planner ---
+[verify] ✓ canonical source exists at /home/terry/.zcode/skills/task-planner (git repo)
+[verify] ✓ claude-code deploy = physical full copy, deploy matches canonical (全量副本模型)
+[verify] ✓ zcode deploy = physical full copy, deploy matches canonical (全量副本模型)
+[verify] ✓ opencode deploy = physical full copy, deploy matches canonical (全量副本模型)
+[verify] ✓ cursor stub exists at /home/terry/.cursor/skills/task-planner
+[verify] ✓ claude-code scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ zcode scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ opencode scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ cursor scripts: no hardcoded paths (check-doc-sync.sh fallback chain whitelisted)
+[verify] ✓ claude-code SKILL.md = canonical full copy (43253 bytes, full-copy deploy)
+[verify] ✓ zcode SKILL.md = canonical full copy (43253 bytes, full-copy deploy)
+[verify] ✓ opencode SKILL.md = canonical full copy (43253 bytes, full-copy deploy)
+[verify] ✓ cursor SKILL.md is thin shell (3097 bytes)
+[verify] ✓ check-complete.sh runs OK
+[verify] ✓ check-doc-sync.sh runs OK (exit=2)
+[verify] ✓ external references migrated to env-var form
+[verify] ✓ Claude Code: hooks registered in /home/terry/.claude/settings.local.json
+[verify] ✓ ZCode: hooks registered in /home/terry/.zcode/cli/config.json
+[verify] ✓ opencode: hooks registered at platform level (frontmatter block N/A for full copy)
+[verify] ✓ cursor: hooks declared in SKILL.md frontmatter
+[verify] ✓ check-delegation.sh exists and is executable
+[verify] ✓ allow-direct.sh exists and is executable
+[verify] ✓ selftest-delegation.sh exists and is executable
+summary: 23 pass / 0 fail
+
+--- ~/.claude/skills/task-planner ---
+(同上 23 项全绿)
+summary: 23 pass / 0 fail
+
+--- ~/.config/opencode/skills/task-planner ---
+(同上 23 项全绿)
+summary: 23 pass / 0 fail
+
+================================================================
+明细 3: selftest-delegation.sh 抽查
+================================================================
+
+--- ~/.zcode/skills/task-planner ---
+PASS T01 无计划放行 (exit=0)
+PASS T02 子代理 sid 放行 (exit=0)
+PASS T03 plans 白名单放行 (exit=0)
+PASS T04 SKILL_ROOT 放行 (exit=0)
+PASS T05 trivial 3 行放行 (exit=0)
+PASS T06 4 行拦截 (exit=2)
+PASS T07 enforce exit2 (exit=2)
+PASS T08 warn 不阻断 (exit=0)
+PASS T08 warn 注入 (grep hit)
+PASS T09 .allow-direct 放行 (exit=0)
+PASS T09b ledger 写入 bypass
+PASS T10 过期 allow-direct 拦截 (exit=2)
+PASS T11a 首次 on 成功 (exit=0)
+PASS T11b 二次 on 拒绝 (exit=3)
+PASS T12 stats 占位/理由检测 (grep hit)
+PASS T12 stats 退出码非 0(violation) (exit=1)
+PASS T13 Handoff 交叉校验 (grep hit)
+PASS T14 jq 失败 fail-open (exit=0)
+Total: 18    PASS=18  FAIL=0
+
+--- ~/.claude/skills/task-planner ---
+(同上 18 PASS / 0 FAIL)
+
+--- ~/.config/opencode/skills/task-planner ---
+(同上 18 PASS / 0 FAIL)
+
+================================================================
+结论
+================================================================
+
+部署成功 — 三位 task-planner 部署位（zcode / claude / opencode）已重部署到 HEAD 847f500 的源码副本，diff -r 完全一致、verify 23/23 全绿、selftest 18/18 全绿；备份保存在 /tmp/deploy-backup-task-v055/ 共 3 个 tar.gz。
+
+
+================================================================
+fix-composite 重部署 (HEAD 1d73577)
+================================================================
+
+来源: 1d73577 merge: task-v055-fix-composite — stats复合Executor按+拆分校验(修unverified误报)
+     956c269 fix(task-planner): task-v055 — stats复合Executor按+拆分校验(修unverified误报)+自测+2断言
+部署方式: rm -rf + cp -rL (无备份，基线备份已在 /tmp/deploy-backup-task-v055/)
+
+------------------------------------------------------------
+[步骤1] 重部署 3 位
+------------------------------------------------------------
+目标位 (绝对路径):
+  - /home/terry/.zcode/skills/task-planner
+  - /home/terry/.claude/skills/task-planner
+  - /home/terry/.config/opencode/skills/task-planner
+每步: rm -rf <位> && cp -rL /mnt/data/dev/task-planner-skill/skills/task-planner <位> && chmod +x <位>/scripts/*.sh
+每位 scripts 数: 28
+示例权限: 775 /home/terry/.zcode/skills/task-planner/scripts/allow-direct.sh
+post-deploy entries per 位: 16
+
+------------------------------------------------------------
+[步骤2] diff -r 复验 (每位 vs source)
+------------------------------------------------------------
+OK diff=0  /home/terry/.zcode/skills/task-planner
+OK diff=0  /home/terry/.claude/skills/task-planner
+OK diff=0  /home/terry/.config/opencode/skills/task-planner
+
+------------------------------------------------------------
+[步骤3] verify.sh 体检 (TASK_PLANNER_ROOT=<位>)
+------------------------------------------------------------
+=== /home/terry/.zcode/skills/task-planner ===
+[verify] ✓ check-delegation.sh exists and is executable
+[verify] ✓ allow-direct.sh exists and is executable
+[verify] ✓ selftest-delegation.sh exists and is executable
+[verify] summary: 23 pass / 0 fail (exit=0)
+
+=== /home/terry/.claude/skills/task-planner ===
+[verify] summary: 23 pass / 0 fail (exit=0)
+
+=== /home/terry/.config/opencode/skills/task-planner ===
+[verify] summary: 23 pass / 0 fail (exit=0)
+
+------------------------------------------------------------
+[步骤4] selftest-delegation.sh (用 ~/.zcode 位)
+------------------------------------------------------------
+PASS  T01 无计划放行  (exit=0)
+PASS  T02 子代理 sid 放行  (exit=0)
+PASS  T03 plans 白名单放行  (exit=0)
+PASS  T04 SKILL_ROOT 放行  (exit=0)
+PASS  T05 trivial 3 行放行  (exit=0)
+PASS  T06 4 行拦截  (exit=2)
+PASS  T07 enforce exit2  (exit=2)
+PASS  T08 warn 不阻断  (exit=0)
+PASS  T08 warn 注入  (grep hit)
+PASS  T09 .allow-direct 放行  (exit=0)
+PASS  T09b ledger 写入 bypass
+PASS  T10 过期 allow-direct 拦截  (exit=2)
+PASS  T11a 首次 on 成功  (exit=0)
+PASS  T11b 二次 on 拒绝  (exit=3)
+PASS  T12 stats 占位/理由检测  (grep hit)
+PASS  T12 stats 退出码非 0(violation)  (exit=1)
+PASS  T13 Handoff 交叉校验  (grep hit)
+PASS  T14 jq 失败 fail-open  (exit=0)
+PASS  T15 复合Executor全在Handoff不误报        [fix-composite 新增]
+PASS  T15b 复合Executor仍计delegated           [fix-composite 新增]
+PASS  T16 复合Executor部分缺失触发unverified   [fix-composite 新增]
+PASS  T16b reason字段含缺失token              [fix-composite 新增]
+Total: 22    PASS=22  FAIL=0  (exit=0)
+
+------------------------------------------------------------
+[步骤5] check-delegation.sh stats 真实终验
+------------------------------------------------------------
+命令: bash /home/terry/.zcode/skills/task-planner/scripts/check-delegation.sh stats /mnt/data/dev/task-planner-skill/plans/task-v055-scheduler-enforce
+exit=1
+
+JSON 原文:
+{"phases_total":4,"phases_delegated":2,"main_direct_count":2,"delegation_rate":0.500,"main_direct":[{"phase":"1 现状诊断与根因定位","executor":"explore + codebase-analyzer（并行派发；explore Provider 拒绝×1 → 主进程补做 diff 验收，白名单④）","reason":"并行派发；explore Provider 拒绝×1 → 主进程补做 diff 验收，白名单④","needs_git_evidence":0,"self_declared":1},{"phase":"4 合并回主仓 + 9 位重部署 + 终验","executor":"executor（部署执行）+ 主进程（merge/验收/簿记，白名单④）","reason":"部署执行）+ 主进程（merge/验收/簿记，白名单④","needs_git_evidence":0,"self_declared":1}],"violations":[{"type":"self_declared_reason","phase":"1 现状诊断与根因定位","reason":"并行派发；explore Provider 拒绝×1 → 主进程补做 diff 验收，白名单④"},{"type":"self_declared_reason","phase":"4 合并回主仓 + 9 位重部署 + 终验","reason":"部署执行）+ 主进程（merge/验收/簿记，白名单④"}],"verdict":"violation"}
+
+观察:
+  - 关键修复目标已达成: violations 类型 = self_declared_reason (×2)
+    → Phase 2/3 复合 Executor (architect/critic/executor) 不再触发 unverified_delegation 误报
+    (修复前会因按 + 拆分后无法在 Handoff 单行匹配而报 unverified)
+  - delegation_rate 0.500 (2/4) — 修复未影响 delegation 判定 (Phase 2/3 仍计 delegated)
+  - 剩余 violation: self_declared_reason × 2 (Phase 1 + Phase 4 主进程介入)
+    → 属白名单④类已知模式 (主进程补做 diff/merge 验收)，非 fix-composite 目标范围
+
+------------------------------------------------------------
+[结论]
+------------------------------------------------------------
+重部署成功 — 三位 task-planner 部署位已重部署到 HEAD 1d73577，diff=0 / verify 23-0 / selftest 22-22 全绿；真实 stats 终验确认 unverified_delegation 误报已消除 (violations 仅为 self_declared_reason 2 条，属白名单已知模式)。
