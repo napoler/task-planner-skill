@@ -86,6 +86,14 @@ case "$interval" in ''|*[!0-9]*|0) interval=10 ;; esac
 UPS_SID="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
 UPS_SID="${UPS_SID:-default}"
 ups_state="/tmp/task-planner-ups-${UPS_SID}.state"
+
+# [2026-09-07 task-v055] 委派门控 — 写 .session-owner
+# UserPromptSubmit 是主进程会话事件:此时传入的 session_id 即为主会话 id
+# (子代理若有 UserPromptSubmit 会沿用主 sid 或另发,sid 解析与 PreToolUse 对齐)
+# 写入 <plan-dir>/.session-owner 单行纯文本;解析失败/无活跃计划静默,不阻断用户输入
+if [ -n "$plan_dir" ] && [ -n "$UPS_SID" ] && [ "$UPS_SID" != "default" ]; then
+  printf '%s' "$UPS_SID" > "$plan_dir/.session-owner" 2>/dev/null || true
+fi
 n="$(cat "$ups_state" 2>/dev/null || true)"
 case "$n" in ''|*[!0-9]*) n=0 ;; esac
 n=$(( n + 1 ))
