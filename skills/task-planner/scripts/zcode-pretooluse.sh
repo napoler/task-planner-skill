@@ -37,15 +37,16 @@ case "$tool" in
     bash "$SKILL_ROOT/check-delegation.sh" pretool "$file" "$sid" "$lines_arg"
     rc=$?
     if [ "$rc" -eq 2 ]; then
-      # enforce 模式阻断:printf JSON 到 stdout 后 exit 2
-      # 文案三选一路径(由 check-delegation 通过 sid 比较后判定);此处通用提示
+      # [2026-09-07 task-v055-fix-review] M-3/M-4:
+      #  - 阻断反馈走 stderr + exit 2(Claude hook 规范;与 check-scope 路径一致)
+      #  - 文案不打印可执行 bypass 命令原文(防模型自助绕过;指向技能目录下脚本名让用户在终端确认后运行)
       msg="[delegation-block] 🚫 主进程直做拦截 — file=${file}
 按 SKILL.md 路由表派子代理执行(Write/Edit/ApplyPatch 业务代码默认派 code-assistant/executor);
-若属误拦,确认文件路径是否应纳入 plans/ 白名单;
-若用户明文要求主进程亲为,执行:
-  bash ${SKILL_ROOT}/scripts/allow-direct.sh on --confirm-user-requested
-(30 分钟窗口;会被 ledger 记录并在终验展示;同会话仅一次)"
-      printf '{"additionalContext": %s}\n' "$(printf '%s' "$msg" | jq -Rs . 2>/dev/null || printf '"block"')"
+若属误拦,确认文件路径是否应纳入 plans/ 白名单(.md/.json,见 check-delegation.sh);
+若用户明文要求主进程亲为,请**用户**在主对话确认后运行技能目录下 allow-direct.sh(路径见 scripts/):
+  提示语:on 子命令需要 --confirm-user-requested 参数;同时会校验当前 sid 是否已 bypass 过(同 sid 仅一次;若需同 plan-dir 二次 bypass,加 --force)
+(30 分钟窗口;会被 ledger 记录并在终验展示)"
+      printf '%s\n' "$msg" >&2
       exit 2
     fi
     # rc=0 时 check-delegation 自身可能已输出 warn JSON(注入);不重复

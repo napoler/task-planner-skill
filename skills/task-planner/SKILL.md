@@ -35,7 +35,7 @@ model: opus
 **三条铁律（执行期硬约束 — task-v055 已机制化）**：
 1. **白名单外 Write/Edit 被 PreToolUse hook `check-delegation.sh` 拦截**（enforce 档 = `exit 2`；warn 档 = 注入警告并计数）
 2. **任务执行一律 `Agent()` 派发**（Executor≠主进程时立即按 Rule 22.4 八字段模板派发 + Handoff 登记）
-3. **bypass 仅来自显式 `allow-direct.sh on --confirm-user-requested`**（30 分钟窗口 + ledger 记录 + 终验展示）
+3. **bypass 仅来自显式 `allow-direct.sh on --confirm-user-requested`**（30 分钟窗口 + ledger 记录 + 终验展示；同 sid 仅一次 `/tmp/task-planner-bypass-<sid>`；同 plan-dir 二次 bypass 需 `--force`）
 
 **六项白名单（精简版，权威源 `references/critical-rules.md` Rule 25.3）**：① 纯 git/worktree 编排 ② 计划系统文件维护（三件套/INDEX/ledger/attest/plan 模板） ③ 机械验证命令（只读，输出可控） ④ 用户显式要求主进程亲为 ⑤ Rule 22.3 兜底接管（单文件 ≤300 行） ⑥ 单文件 ≤3 行 trivial 修改（非保护区）。
 
@@ -147,7 +147,7 @@ model: opus
 - [ ] **终验交付**
   - Read `verification.md`
   - 逐条复验 VC（每条带证据路径）
-  - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 < `config.json#delegation_rate_floor`（默认 0.7）或主进程直做清单含白名单外理由（白名单见 Rule 25.3）→ outcome 最高 PARTIAL
+  - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 < `config.json#delegation_rate_floor`（默认 0.7）或主进程直做清单含白名单外理由（白名单见 Rule 25.3）或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,模型需按 violation 清单回炉补 plan 或转 PARTIAL 重跑
   - **3-File Gate（Rule 19.5）**：确认 findings.md/progress.md 存在且非模板 stub——check-complete.sh 已内置校验，缺失/stub → exit 1 → STOP 回填，禁止交付
   - **质量门控统计（Rule 26）**：按 verification.md「质量门控统计」段核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；存在未处置违规 → 按 Rule 26.3 降级 outcome；Q3 → outcome 判 BLOCKED 并 STOP
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
@@ -394,7 +394,7 @@ Block 1 (选题) complete
 
 ## 💻 代码编辑强制隔离
 
-代码编辑派发规则与白名单的**权威源** = 上方 §子代理路由表「代码编辑」三行（343-345）+ ✅ 行白名单；本节只补路由表未覆盖的「修改后验证流程」与 Rule 14 的执行要点指针。
+代码编辑派发规则与白名单的**权威源** = 上方 §子代理路由表「代码编辑」三行（322-324）+ ✅ 行白名单；本节只补路由表未覆盖的「修改后验证流程」与 Rule 14 的执行要点指针。
 
 ### 修改后验证流程（每个代码修改完成）
 
@@ -445,7 +445,7 @@ WebSearch "<library> github issues <symptom>"
 - ❌ 引用"npm 包官网首页"作为唯一依据（应到源码/issue/release）
 - ❌ github 调研用 WebFetch 抓 HTML（应直接 `gh api` 拿 JSON）
 
-（其他调研类反模式见上方 §反模式 379-381 行）
+（其他调研类反模式见上方 §反模式 353-361 行）
 
 ---
 
