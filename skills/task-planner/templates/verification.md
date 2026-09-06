@@ -87,7 +87,7 @@ JSON 输出：
 ```
 
 - [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 已降级 PARTIAL
+- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
 
 ## 质量门控统计（Rule 26）
 - [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项

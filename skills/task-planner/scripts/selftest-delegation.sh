@@ -186,16 +186,21 @@ rm -f "$TEST_PLAN_DIR/.allow-direct"
 
 # ── T11 单会话二次 bypass 拒绝(allow-direct.sh on) ───────────────────────────
 cd "$TEST_PLAN_DIR" || exit 99
+# [2026-09-07 task-v055-fix-review] M-4:allow-direct 走 sid 维度闸门(/tmp/task-planner-bypass-<sid>),
+# 用专属 sid 保证测试隔离;结束后清理
+T11_SID="test-sid-t11"
+rm -f "/tmp/task-planner-bypass-${T11_SID}"
 # 清空所有 bypass 状态
 rm -f "$TEST_PLAN_DIR/.allow-direct" "$TEST_PLAN_DIR/.allow-direct.bypass-count" "$TEST_PLAN_DIR/ledger-delegation.jsonl"
 # 第一次 on 应成功
-out1="$(bash "$ALLOW" on --confirm-user-requested 2>&1)"
+out1="$(ZCODE_SID="$T11_SID" bash "$ALLOW" on --confirm-user-requested 2>&1)"
 rc1=$?
-# 第二次 on 应拒绝(同会话)
-out2="$(bash "$ALLOW" on --confirm-user-requested 2>&1)"
+# 第二次 on 应拒绝(同 sid)
+out2="$(ZCODE_SID="$T11_SID" bash "$ALLOW" on --confirm-user-requested 2>&1)"
 rc2=$?
 assert_exit "T11a 首次 on 成功" "0" "$rc1"
 assert_exit "T11b 二次 on 拒绝" "3" "$rc2"
+rm -f "/tmp/task-planner-bypass-${T11_SID}"
 rm -f "$TEST_PLAN_DIR/.allow-direct" "$TEST_PLAN_DIR/.allow-direct.bypass-count" "$TEST_PLAN_DIR/ledger-delegation.jsonl"
 
 # ── T12 stats 占位检测 ───────────────────────────────────────────────────────
@@ -312,6 +317,187 @@ else
     RESULTS+=("FAIL  T16b reason字段未含缺失token")
 fi
 rm -rf "$(dirname "$TMP_T16")"
+
+# ── T17 白名单规范措辞(白名单④：xxx)不触发 self_declared ─────────────────────
+# [2026-09-07 task-v055-fix-review] B-1 验证:按 Rule 25.3 白名单编号格式填写的
+# 「主进程（白名单④：xxx）」理由不应触发 self_declared_reason violation
+# (旧 regex 会误报;新逻辑仅当 reason 含 ①-⑥/白名单[1-6] 时才认已登记)
+TMP_T17="$(mktemp -d)/plans/task-t17-whitelist-ok"
+mkdir -p "$TMP_T17"
+cat > "$TMP_T17/task_plan.md" <<'EOF'
+# Task Plan: T17 whitelist marker ok
+
+## Phases
+
+### Phase 1: 用户显式白名单④
+- [ ] 主进程直做
+- **Status:** pending
+- **Executor:** 主进程（白名单④：用户明文要求主进程亲为）
+
+### Phase 2: 纯 git 编排白名单①(数字格式)
+- [ ] 主进程直做
+- **Status:** pending
+- **Executor:** 主进程（① 纯 git/worktree 编排）
+
+## 🔗 Subagent Handoff 登记表
+
+| # | 时间 | subagent_type | 任务目标 | 状态 | 结论 | 证据 | 落点 | checkpoint | verify_done |
+|---|------|--------------|----------|------|------|------|------|------------|-------------|
+EOF
+out="$(bash "$CHECK" stats "$TMP_T17" 2>/dev/null)"
+# 应 verdict=ok(无 violations),且 main_direct 两项 self_declared=0
+if printf '%s' "$out" | grep -q '"verdict":"violation"'; then
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T17 白名单④标记理由仍被误报violation")
+else
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T17 白名单④标记理由不触发violation")
+fi
+# 两项主进程直做应 self_declared=0
+sd0_count="$(printf '%s' "$out" | grep -oE '"self_declared":0' | wc -l | tr -d ' ')"
+if [ "$sd0_count" -ge 2 ]; then
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T17b 白名单标记main_direct全部self_declared=0")
+else
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T17b 白名单标记main_direct应self_declared=0 (got=$sd0_count)")
+fi
+rm -rf "$(dirname "$TMP_T17")"
+
+# ── T18 无括注理由触发 missing_reason ─────────────────────────────────────────
+# [2026-09-07 task-v055-fix-review] M-1 验证:Executor=主进程 但无括注理由
+# → 应触发 missing_reason violation(而非静默放行)
+TMP_T18="$(mktemp -d)/plans/task-t18-missing-reason"
+mkdir -p "$TMP_T18"
+cat > "$TMP_T18/task_plan.md" <<'EOF'
+# Task Plan: T18 missing reason
+
+## Phases
+
+### Phase 1: 主进程直做无理由
+- [ ] 主进程直做
+- **Status:** pending
+- **Executor:** 主进程
+
+## 🔗 Subagent Handoff 登记表
+
+| # | 时间 | subagent_type | 任务目标 | 状态 | 结论 | 证据 | 落点 | checkpoint | verify_done |
+|---|------|--------------|----------|------|------|------|------|------------|-------------|
+EOF
+out="$(bash "$CHECK" stats "$TMP_T18" 2>/dev/null)"
+rc=$?
+if printf '%s' "$out" | grep -q '"type":"missing_reason"'; then
+    PASS=$(( PASS + 1 ))
+    RESULTS+=("PASS  T18 无理由触发missing_reason violation")
+else
+    FAIL=$(( FAIL + 1 ))
+    RESULTS+=("FAIL  T18 无理由未触发missing_reason violation")
+fi
+# 应 verdict=violation + exit 1
+assert_exit "T18b verdict=violation exit=1" "1" "$rc"
+rm -rf "$(dirname "$TMP_T18")"
+
+# ── T19 owner 多行取首行(注入 sid 不放行) ─────────────────────────────────────
+# [2026-09-07 task-v055-fix-review] M-2 验证:.session-owner 含多行/前导垃圾字符
+# → read_session_owner 规范化后只取首行;注入 sid 应被识别为子代理 → 放行
+TMP_T19="$(mktemp -d)/plans/task-t19-multiline-owner"
+mkdir -p "$TMP_T19"
+cat > "$TMP_T19/task_plan.md" <<'EOF'
+# Task Plan: T19
+
+## Phases
+EOF
+# 隔离解析:.active_plan 指向本测试目录
+printf '%s' "task-t19-multiline-owner" > "$(dirname "$TMP_T19")/.active_plan"
+# 写多行 owner:第一行 = 主进程 sid,第二行 = 注入 sid
+printf 'main-sid\nattacker-sid\n' > "$TMP_T19/.session-owner"
+# 用 attacker-sid 调用 → 严格比较后不等 → 应被判定为子代理 → 放行
+cd "$TMP_T19" || exit 99
+out="$(bash "$CHECK" pretool "/tmp/foo.ts" "attacker-sid" 10 2>/dev/null)"
+rc=$?
+assert_exit "T19 owner 多行注入 sid 放行(子代理语义)" "0" "$rc"
+# 用 main-sid 调用 → 严格比较相等 → 主进程 → 走到白名单链后因非白名单被 enforce exit 2
+out="$(bash "$CHECK" pretool "/tmp/foo.ts" "main-sid" 10 2>/dev/null)"
+rc=$?
+assert_exit "T19b owner 首行主进程+白名单外=exit2" "2" "$rc"
+rm -rf "$(dirname "$TMP_T19")"
+rm -f "$(dirname "$(dirname "$TMP_T19")")/.active_plan"
+
+# ── T20 owner 缺失输出观察模式提示且 exit 0 ───────────────────────────────────
+# [2026-09-07 task-v055-fix-review] M-2 验证:.session-owner 缺失 → 降级观察模式
+# → stdout 输出 additionalContext 提示 + exit 0(不阻断首执行轮)
+TMP_T20="$(mktemp -d)/plans/task-t20-no-owner"
+mkdir -p "$TMP_T20"
+cat > "$TMP_T20/task_plan.md" <<'EOF'
+# Task Plan: T20
+
+## Phases
+EOF
+# 隔离解析 + 确保 .session-owner 不存在
+printf '%s' "task-t20-no-owner" > "$(dirname "$TMP_T20")/.active_plan"
+rm -f "$TMP_T20/.session-owner"
+cd "$TMP_T20" || exit 99
+out="$(bash "$CHECK" pretool "/tmp/foo.ts" "any-sid" 2>/dev/null)"
+rc=$?
+assert_exit "T20 owner 缺失 exit 0" "0" "$rc"
+assert_grep "T20b owner 缺失输出观察模式" 'delegation-observe|additionalContext' "$out"
+rm -rf "$(dirname "$TMP_T20")"
+rm -f "$(dirname "$(dirname "$TMP_T20")")/.active_plan"
+
+# ── T21 plans 白名单 .ts 不放行 ────────────────────────────────────────────────
+# [2026-09-07 task-v055-fix-review] M-5 验证:业务项目 plans/<...>/foo.ts 不应被放行
+# → 仅 .md/.json 放行;其他扩展名继续走拦截链
+TMP_T21="$(mktemp -d)/plans/task-t21-not-allowed-ext"
+mkdir -p "$TMP_T21" "$TMP_T21/src"
+cat > "$TMP_T21/task_plan.md" <<'EOF'
+# Task Plan: T21
+
+## Phases
+EOF
+# 隔离解析 + owner=main-sid 才能继续走到白名单链
+printf '%s' "task-t21-not-allowed-ext" > "$(dirname "$TMP_T21")/.active_plan"
+printf '%s' "main-sid" > "$TMP_T21/.session-owner"
+# 用大 lines_arg (>3) 排除 trivial 放行
+cd "$TMP_T21" || exit 99
+out="$(bash "$CHECK" pretool "$TMP_T21/src/foo.ts" "main-sid" 10 2>/dev/null)"
+rc=$?
+assert_exit "T21 plans/ 内 .ts 不放行" "2" "$rc"
+# 同一目录下 .md 应放行
+out="$(bash "$CHECK" pretool "$TMP_T21/notes.md" "main-sid" 10 2>/dev/null)"
+rc=$?
+assert_exit "T21b plans/ 内 .md 放行" "0" "$rc"
+rm -rf "$(dirname "$TMP_T21")"
+rm -f "$(dirname "$(dirname "$TMP_T21")")/.active_plan"
+
+# ── T22 bypass 第二次(同 sid)拒绝 ──────────────────────────────────────────────
+# [2026-09-07 task-v055-fix-review] M-4 验证:sid 维度闸门 /tmp/task-planner-bypass-<sid>
+# 存在时,二次 on 拒绝;不同 sid 可分别放行(各 sid 维度独立)
+TMP_T22="$(mktemp -d)/plans/task-t22-sid-bypass"
+mkdir -p "$TMP_T22"
+cat > "$TMP_T22/task_plan.md" <<'EOF'
+# Task Plan: T22
+EOF
+printf '%s' "task-t22-sid-bypass" > "$(dirname "$TMP_T22")/.active_plan"
+# 清干净所有 bypass 状态
+rm -f "$TMP_T22/.allow-direct" "$TMP_T22/.allow-direct.bypass-count" "$TMP_T22/ledger-delegation.jsonl"
+rm -f /tmp/task-planner-bypass-test-sid-a /tmp/task-planner-bypass-test-sid-b
+cd "$TMP_T22" || exit 99
+# 第一次 on 应成功
+out1="$(ZCODE_SID=test-sid-a bash "$ALLOW" on --confirm-user-requested 2>&1)"
+rc1=$?
+# 第二次同 sid 应被 sid 闸门拒绝
+out2="$(ZCODE_SID=test-sid-a bash "$ALLOW" on --confirm-user-requested 2>&1)"
+rc2=$?
+assert_exit "T22a 同 sid 首次 on 成功" "0" "$rc1"
+assert_exit "T22b 同 sid 二次 on 拒绝" "3" "$rc2"
+# 不同 sid 应放行(sid 维度独立)
+out3="$(ZCODE_SID=test-sid-b bash "$ALLOW" on --confirm-user-requested 2>&1)"
+rc3=$?
+assert_exit "T22c 不同 sid on 放行" "0" "$rc3"
+# 清理
+rm -f /tmp/task-planner-bypass-test-sid-a /tmp/task-planner-bypass-test-sid-b
+rm -rf "$(dirname "$TMP_T22")"
+rm -f "$(dirname "$(dirname "$TMP_T22")")/.active_plan"
 
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 echo ""
