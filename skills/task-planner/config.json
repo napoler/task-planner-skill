@@ -33,6 +33,13 @@
       "minimum": 1,
       "description": "view/browser/search ops before writing findings.md (Rule 3)"
     },
+    "delegation_rate_floor": {
+      "type": "number",
+      "default": 0.7,
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Minimum ratio of subagent-executed Phases at final verification; below floor or non-whitelisted main-process reasons caps outcome at PARTIAL (Rule 25.4)"
+    },
     "plan_dir_pattern": {
       "type": "string",
       "default": "plans/{task-id}/",

@@ -24,13 +24,15 @@ model: opus
 
 **Goal**：产出结构化 `task_plan.md`（含 Phases/VC/V-N），按 phase 推进，全 phase complete 后逐条复验 VC，交付 COMPLETE/PARTIAL/BLOCKED。
 
+**主进程定位（P0）**：主进程 = **调度管理器（scheduler/orchestrator）**——只做规划、拆分、派发、验收、簿记；任务执行一律下沉子代理（Rule 13/14/21/25）。主进程亲为仅限下方路由表 ✅ 行白名单，且须按 Rule 25.3 登记白名单内例外理由；白名单外亲为 = 反模式。**降低主进程亲自执行是本技能的第一设计目标，新场景默认派子代理。**
+
 **[CONTEXT]** 上游：用户任务描述 / CWD / 已有 plan 目录。下游：`plans/{task-id}/task_plan.md` + findings.md/progress.md/verification.md。
 
 **工具**：`Read`/`Write`/`Edit`（计划文件）、`Bash`（脚本）、`Glob`/`Grep`（搜索）、`Agent()`（子代理）、`Skill()`（外部 skill）、`TodoWrite`/`TaskCreate/Update/List`（原生 Todo 同步，契约见 references/todo-sync.md）。
 
 **Code Review 工具**：当 `task_plan.md` 声明 `code_review: required` 时，启用 `Skill("code-review")` 上下文隔离审查（在终验交付前触发）。详见 [Code Review Gate](#code-review-gate代码审查门控)。
 
-### 💡 专业代码编辑最佳实践（鼓励使用，非强制）
+### 💡 专业代码编辑最佳实践（强制 — 与下方「代码编辑强制隔离」「子代理路由与模型分级」P0 条款一体生效）
 
 **原则**：主进程**不直接** `Edit`/`Write` 业务代码——优先委托子代理解决，主进程仅维护计划和调度。**目的不是"省事"，而是用最少上下文隔离执行，避免主进程被代码细节污染后丢失全局视野。**
 
@@ -52,7 +54,7 @@ model: opus
 - **模型匹配**：各 agent 按任务类型用最优 model tier（编辑 sonnet，审查 opus，简单任务 haiku）
 - **质量提升**：专业流程（systematic-debugging 的 5 步、code-simplifier 的语义保留）显著优于主进程手动修
 
-**例外**：纯配置/计划文件（`.md`/`.json`/`.yaml` plan 模板）仍由主进程 `Edit`——这些不是"业务代码"。
+**例外（白名单，Rule 14 对齐）**：主进程可直接 `Edit` 的仅限——① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）；② 原生 Todo 同步；③ 单文件 ≤3 行 trivial 修改（非保护区）。其余 `.md`/`.json`/`.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。
 
 **Skill 与 Agent 区分**：Skill 是预设流程/规则（如 systematic-debugging 的 5 步、code-review 的 10 维审查），Agent 是执行体（如 code-assistant 做实际编辑、code-simplifier 做代码瘦身）。Skill 定义"怎么审/怎么修"，Agent 定义"谁来干"。
 
@@ -181,7 +183,7 @@ model: opus
 - [ ] **终验交付**
   - Read `verification.md`
   - 逐条复验 VC（每条带证据路径）
-  - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 <50% 且主进程直做无登记理由 → outcome 最高 PARTIAL
+  - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 < `config.json#delegation_rate_floor`（默认 0.7）或主进程直做清单含白名单外理由（白名单见 Rule 25.3）→ outcome 最高 PARTIAL
   - **3-File Gate（Rule 19.5）**：确认 findings.md/progress.md 存在且非模板 stub——check-complete.sh 已内置校验，缺失/stub → exit 1 → STOP 回填，禁止交付
   - **质量门控统计（Rule 26）**：按 verification.md「质量门控统计」段核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；存在未处置违规 → 按 Rule 26.3 降级 outcome；Q3 → outcome 判 BLOCKED 并 STOP
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
@@ -304,7 +306,7 @@ Block 1 (选题) complete
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/八字段 prompt/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23（P0）并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
-- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记例外理由，终验统计委派率（详见 `references/critical-rules.md` Rule 25）
+- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 - **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）
 
@@ -374,8 +376,9 @@ Block 1 (选题) complete
 | **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 ComplexProblemSolver |
 | **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ | ≤1 PR, ≤3 文件 | 拆评论任务 |
 | **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ | 高频(≤3次/phase) | 无需(已节流) |
-| **纯配置/计划文件（.md/.json/.yaml plan 模板）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
-| **Todo 同步/AGENTS.md 文档编辑** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
+| **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
+| **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
+| **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
 
 ### 模型档位依据
 
@@ -389,6 +392,7 @@ Block 1 (选题) complete
 ### 反模式（主进程禁止）
 
 - ❌ 主进程 `Edit`/`Write` 业务代码（`.ts/.tsx/.js/.jsx/.py/.go/.rs/.java/.c/.cpp/.h/.hpp`）
+- ❌ 主进程 `Edit`/`Write` 白名单外文档/配置/技能文件（`.md`/`.json`/`.yaml`——例外仅计划系统文件/原生 Todo/≤3 行 trivial，见 Rule 14）
 - ❌ 主进程 `Read` >500 行业务文件后直接改
 - ❌ 主进程跑 `npm test` / `cargo build` / `pytest` / `bun test`
 - ❌ 全仓 `grep` + `sed` 批量替换
@@ -413,7 +417,7 @@ Block 1 (选题) complete
 |---|---------|-------|-------|
 | 1 | **改派** | 失败原因是 subagent 类型不匹配(如 explore 接到写代码任务) | 主进程 |
 | 2 | **降档** | subagent 类型对但能力不够(haiku 失败→升 sonnet;短上下文失败→升 opus) | 主进程 |
-| 3 | **主进程接管** | 单文件 ≤300 行、目标明确、可独立验收 | 主进程 Edit/Read |
+| 3 | **主进程接管** | 单文件 ≤300 行、目标明确、可独立验收；接管后须按 Rule 25.3 登记例外理由（白名单⑤） | 主进程 Edit/Read |
 | 4 | **AskUserQuestion** | 改派/降档/接管都失败,或问题需用户决策 | AskUserQuestion 工具 |
 
 **触发条件**(任一):
@@ -448,9 +452,12 @@ Block 1 (选题) complete
 
 ### 主进程可以 Edit 的例外
 
-仅以下两类**非业务代码**可主进程直接 Edit：
-- **纯配置/计划文件**：`*.md`（计划/文档）、`*.json`（配置）、`*.yaml`/`*.yml`（模板）
+仅以下三类**非业务代码**可主进程直接 Edit（白名单与 §子代理路由表 ✅ 行一致，超出即派子代理）：
+- **计划系统文件**：`plans/**`（task_plan/findings/progress/verification/notepad/INDEX/ledger）、`.claude/plan-templates/`
 - **Todo 同步**：原生 Todo（TodoWrite / TaskCreate）的 status 更新
+- **单文件 ≤3 行 trivial 修改**（非保护区文件；超 3 行即派子代理）
+
+其余 `*.md`（文档）、`*.json`（配置）、`*.yaml`/`*.yml`（模板）默认派子代理；主进程直做须按 Rule 25.3 登记白名单内例外理由。
 
 ### 验证流程
 

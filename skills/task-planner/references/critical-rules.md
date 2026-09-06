@@ -50,7 +50,7 @@ Skill("task-drift-guard")
 调研/搜索/大文件读取/跨文件 Read 必须派子代理。完整路由表见 SKILL.md §「子代理路由与模型分级」。主进程禁止直接 Read >500 行文件后改动、跑测试、接收 `Skill("research-assistant")` 长文。模型档位复用 `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` 既有约定。
 
 ### 14 代码编辑必须派子代理（P0）
-主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit 纯配置/计划文件（`.md/.json/.yaml` plan 模板）+ Todo 同步 + AGENTS.md 文档。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
+主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
 
 ### 15 高频漂移纠正强制（P0）
 每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。详见 SKILL.md §「高频漂移纠正」。
@@ -160,10 +160,10 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 ### 25 子代理委派门控（P0）— 计划期声明执行体,执行期强制检查,终验期统计委派率
 Rule 13/14 定义"什么活必须派子代理",本规则把委派做成**流程门控**:不经委派决策点,工作不得开始。目标:主进程 = 调度器,实际工作由子代理承载,提高 haiku-1/sonnet-1 子代理 token 占比。
 
-25.1 **计划期 — Executor 字段强制**:task_plan.md 每个 Phase 必须含 `**Executor:** subagent_type(model)` 行(默认按 SKILL.md 路由表选型);Executor=主进程必须写例外理由(如"纯 git 编排"/"计划文档白名单");无字段 = 计划无效,plan-writer 产出校验失败
+25.1 **计划期 — Executor 字段强制**:task_plan.md 每个 Phase 必须含 `**Executor:** subagent_type(model)` 行(默认按 SKILL.md 路由表选型);Executor=主进程必须写例外理由(白名单见 25.3,如"① 纯 git/worktree 编排"/"② 计划系统文件维护");无字段 = 计划无效,plan-writer 产出校验失败
 25.2 **执行期 — 委派检查点**:Phase 执行循环步骤 2.5(SKILL.md):开始实际工作前先查 Executor → 非主进程立即按 Rule 22.4 八字段模板派发 + Handoff 登记表登记;禁止"先自己干,干不动再派"
-25.3 **例外理由登记**:主进程直做的 Phase,例外理由必须写在计划 Executor 字段内(计划确认时用户可见);执行期新增例外 → 先回填计划再继续
-25.4 **终验期 — 委派率统计**:交付前统计「子代理执行 Phase 数 / 总 Phase 数」+ 主进程直做清单(含理由)写入 verification.md「委派统计」段;委派率 <50% 且主进程直做无登记理由 → outcome 最高 PARTIAL
+25.3 **例外理由登记（白名单制）**:主进程直做的 Phase,例外理由必须写在计划 Executor 字段内(计划确认时用户可见);**有效理由仅限六项白名单**——① 纯 git/worktree 编排 ② 计划系统文件维护(三件套/INDEX/ledger/attest/plan 模板) ③ 机械验证命令(只读,输出可控) ④ 用户显式要求主进程亲为 ⑤ Rule 22.3 兜底接管(单文件 ≤300 行) ⑥ 单文件 ≤3 行 trivial 修改(非保护区);白名单外理由(如"效率高""顺手")视为未登记,按 25.4/26 Q5 处置;执行期新增例外 → 先回填计划再继续
+25.4 **终验期 — 委派率统计**:交付前统计「子代理执行 Phase 数 / 总 Phase 数」+ 主进程直做清单(含理由)写入 verification.md「委派统计」段;委派率 < `config.json#delegation_rate_floor`(默认 0.7)或主进程直做清单含白名单外理由 → outcome 最高 PARTIAL;全部直做理由均在白名单内 → 不降级(编排/簿记型任务属正常形态)
 25.5 **与 Rule 13/14/21 关系**:13/14 管"哪些活必须派",21 管"拆到多小",25 管"流程上必须过委派决策点"——三者叠加,25 是执行入口的最后防线
 25.6 **失败联动**:委派检查点发现无法派发(Agent 工具不可用/连续失败)→ 按 Rule 22.3 兜底顺序处理并在 progress.md 记录,禁止静默转主进程亲为
 
@@ -176,7 +176,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 - **Q2 压缩验证步骤(非批量)**:progress.md 该 Phase 段「Test Results」字段缺失/为空/仅写"跳过",且无 26.4 豁免登记
 - **Q3 证据不实(伪造/篡改)**:抽查 ≥3 条 Evidence(VC 总数 <3 时全查),任一条路径 Read 失败、或重跑命令输出与声称结论矛盾、或引用内容在指定 file:line 处不存在
 - **Q4 未 Read 子代理产出**:Handoff 登记表该 Phase 行 `verify_done` 未勾或 progress.md 无 Read 复核记录,而该 Phase 已标记 complete
-- **Q5 委派率 <50% 且无登记理由**:判定与处置引用 Rule 25.4,此处不重复定义
+- **Q5 委派率 < `config.json#delegation_rate_floor`(默认 0.7)或直做含白名单外理由**:判定与处置引用 Rule 25.4,此处不重复定义
 - **Q6 批量违规未处置**:Batch Report 八字段缺项(Rule 18.6)或 failure_rate >5% 未执行 STOP(Rule 18.3)
 
 26.2 **判定时机(双检查点)**:① 执行期——Phase 标记 complete 前核查 Q1/Q2/Q4(单 Phase 粒度);② 终验期——Goal Gate 判定 outcome 前核查 Q3(抽查)+ Q5/Q6(汇总),结果写入 verification.md「质量门控统计」段。
