@@ -1,0 +1,9 @@
+# Deferred Issues（范围锁定 — 不在 task-v052 内修复）
+
+| # | 发现 | 位置 | 理由 |
+|---|------|------|------|
+| D1 | SKILL.md L293「Rules 1-26」与 critical-rules.md 实含 Rule 27 计数漂移;README.md L67 仍写「Rules 1-12」 | skills/task-planner/{SKILL.md,README.md} | 文档计数问题,与委派定位无关 |
+| D2 | 21.5 段重复（L117 与 L135） | references/critical-rules.md | 已在 memory task-planner-known-defects-20260905 登记,待用户授权批次处理 |
+| D3 | frontmatter references 缺 2 条 / Rule 10 悬空指针 / 模板决策树双源分化 / Rule 14 缺 .sh 校验 | 同 memory 清单 | 同上,待授权 |
+| D4 | path_existence_validator 相对引用按 cwd 解析致误报（本任务 3 条 P0 均假阳性） | skill-fix 工具 | 工具属 skill-fix 技能,跨技能改动需单独授权 |
+| D5 | 9 个部署位重部署 | ~/.zcode 等部署位 | 用户未授权部署;交付报告给建议命令 |

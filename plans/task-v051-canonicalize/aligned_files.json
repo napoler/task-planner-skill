@@ -1,0 +1,153 @@
+{
+  "scan_target": "/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md",
+  "scan_type": "file",
+  "scope": "/home/terry/.zcode/skills",
+  "matches": [
+    {
+      "file": "/home/terry/.zcode/skills/memory-corrector/references/worktree-contract.md",
+      "line": 19,
+      "context": "- `skills/task-planner/companion/critical-rules.md` Rule 12"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/lib/install-stub.sh",
+      "line": 68,
+      "context": "| 核心规则 | `${TASK_PLANNER_ROOT}/references/critical-rules.md` |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/lib/install-stub.sh",
+      "line": 119,
+      "context": "| 核心规则 | \\`\\${TASK_PLANNER_ROOT}/references/critical-rules.md\\` |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/lib/install-stub.sh",
+      "line": 169,
+      "context": "| 核心规则 | \\`\\${TASK_PLANNER_ROOT}/references/critical-rules.md\\` |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/install.log",
+      "line": 131,
+      "context": "/mnt/data/dev/task-planner-skill/skills/task-planner/lib/install-stub.sh: line 31: /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md: Permission denied"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/install.log",
+      "line": 200,
+      "context": "/mnt/data/dev/task-planner-skill/skills/task-planner/lib/install-stub.sh: line 31: /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md: Permission denied"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/install.log",
+      "line": 268,
+      "context": "/mnt/data/dev/task-planner-skill/skills/task-planner/lib/install-stub.sh: line 31: /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md: Permission denied"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 9,
+      "context": "- references/critical-rules.md: Critical Rules 全集 1-27（1-12 核心执行约束 + 13-27 P0/P1 扩展门控，含 Rule 27 git 提交强制）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 120,
+      "context": "4.5 **提交工作产物（Rule 27 — git 管理强制）**：实现类 Phase 在标记 complete 前，必须把本 Phase 产物 commit 到当前工作分支（worktree 隔离场景提交在 worktree 内分支；direct 场景提交在主仓当前分支）——**禁止跨 Phase 攒批、禁止留到终验才提交**，丢弃上限收敛为单 Phase 增量。范围 = 本 Phase 实际产出文件（以 scope_files / progress.md「Files created-modified」清单为准），**禁止 `git add -A` / `git add .` 盲扫**（防卷入 plans/、.env、临时文件与并行任务产物；plans/ 按仓约定不入库）。message：`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。提交后 `git status --porcelain -- <scope 文件>` 必须为空；非 git 目录 → progress.md 记一行 `[git-commit] 跳过:非 git 仓库` 不阻塞；豁免（计划声明 `git_commit: deferred` 或用户显式\"先不提交\"）须已写入计划并登记 verification.md。详见 `references/critical-rules.md` Rule 27"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 293,
+      "context": "详见 `references/critical-rules.md`（Rules 1-26）："
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 302,
+      "context": "- **Rule 20（P0）计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 303,
+      "context": "- **Rule 21（P0）子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行（详见 `references/critical-rules.md` Rule 21）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 304,
+      "context": "- **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/八字段 prompt/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 305,
+      "context": "- **Rule 23（P0）并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 306,
+      "context": "- **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 307,
+      "context": "- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记例外理由，终验统计委派率（详见 `references/critical-rules.md` Rule 25）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 308,
+      "context": "- **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 309,
+      "context": "- **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/SKILL.md",
+      "line": 338,
+      "context": "| `references/critical-rules.md` | Critical Rules 1-27（含 Rule 13-18/21-23/25-27 P0 条款） |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/docs/ARCHITECTURE.md",
+      "line": 43,
+      "context": "│   ├── critical-rules.md"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/docs/ARCHITECTURE.md",
+      "line": 140,
+      "context": "1. `references/critical-rules.md` Rule 24 — Phase complete 后被动调 `Skill(\"plan-resume\")`"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/templates/cost_log.md",
+      "line": 7,
+      "context": "> 详见 `references/cost-control.md` §四 + critical-rules.md Rule 17.5。"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/templates/cost_log.md",
+      "line": 69,
+      "context": "| `references/critical-rules.md` | Rule 17 八条款（核心载体） |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/references/completion-gate.md",
+      "line": 3,
+      "context": "> 与 critical-rules.md Rule 5/6 互补。核心：subagent \"done\" ≠ 完成，必须 Read 验证。"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/references/cost-control.md",
+      "line": 25,
+      "context": "## 二、Rule 17 八条款（与 critical-rules.md Rule 17 同步）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/references/cost-control.md",
+      "line": 168,
+      "context": "| `references/critical-rules.md` | Rule 17 八条款（核心载体） |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/references/batch-quality-gate.md",
+      "line": 25,
+      "context": "## 二、Rule 18 八条款（与 critical-rules.md Rule 18 同步）"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/references/batch-quality-gate.md",
+      "line": 129,
+      "context": "| `references/critical-rules.md` | Rule 18 八条款（核心载体，Rules 1-18） |"
+    },
+    {
+      "file": "/home/terry/.zcode/skills/task-planner/README.md",
+      "line": 67,
+      "context": "│   ├── critical-rules.md                    # Rules 1-12（含 Rule 12 冲突隔离）"
+    }
+  ],
+  "total": 29
+}

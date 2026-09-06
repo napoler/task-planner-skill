@@ -1,0 +1,2 @@
+{"tick":1,"ts":"2026-09-05T10:29:25Z","agent":"main","phase":"","event":"attest","summary":"计划锁定;worktree@8732dd9;漂移文件稳定","files":[]}
+{"tick":2,"ts":"2026-09-05T10:46:51Z","agent":"main","phase":"3","event":"phase_complete","summary":"v0.5.1 收编+部署完成(48340c0),9/9 IDENTICAL,outcome COMPLETE","files":[]}
