@@ -126,7 +126,7 @@ done
 
 | 文档 | 用途 |
 |------|------|
-| `references/critical-rules.md` | Rule 18 八条款（核心载体，Rules 1-18） |
+| `references/critical-rules.md` | Rule 18 八条款（核心载体，隶属 Rules 1-27） |
 | `templates/batch_report.md` | Batch Report 区块模板（双仓） |
 | `templates/variant/publish-type.md` | 批量发布模板（含批量专属 VC） |
 | `references/cost-control.md` | Rule 17 成本控制（对仗规则） |

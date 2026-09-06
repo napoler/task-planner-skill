@@ -61,10 +61,10 @@
 ```
 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
-├── config.json                              ← 阈值配置（13 键）
+├── config.json                              ← 阈值配置（18 键）
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 8 篇规则文档
-│   ├── critical-rules.md                    # Rules 1-12（含 Rule 12 冲突隔离）
+│   ├── critical-rules.md                    # Rules 1-27（1-12 核心执行约束 + 13-27 P0/P1 扩展门控）
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── template-mapping.md                  # variant 选择决策树
@@ -90,6 +90,10 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── sync-todos.sh                        # Phase ↔ Todo 同步
 │   ├── task-plan-init.cjs                   # SessionStart 哨兵
 │   ├── zcode-{sessionstart,pretooluse,posttooluse,userpromptsubmit}.sh  # ZCode 适配器
+│   ├── plan-doctor.sh                       # 计划机制一键自检（移植自 planning-with-files v3）
+│   ├── resolve-plan-dir.sh                  # 解析当前活跃计划 task_plan.md 路径（保留解析链+slug 校验）
+│   ├── set-active-plan.sh                   # 设置/查看活跃计划指针 plans/.active_plan
+│   ├── zcode-sessionstart.sh                # ZCode SessionStart 适配器（写 .plan-required 哨兵 + additionalContext 注入）
 ├── lib/                                     ← Installer 库（v2 新增）
 │   ├── detect-tools.sh                      # 探测已部署工具
 │   ├── backup.sh                            # 备份现有 stub
@@ -104,7 +108,37 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── uninstall.sh                             ← 卸载（v2 新增）
 ├── INSTALL.md / MIGRATION.md                ← 用户文档
 ├── .gitignore                               # 排除 .backup/
+├── companion/                               — 伴生 agents（plan-writer / article-batch-publisher / article-field-fixer，跨平台部署用）
 ```
+
+---
+
+## config.json 键说明（18 键）
+
+`config.json` 为 JSON Schema，**全部阈值集中管理**。常用键语义：
+
+| 键 | 默认值 | 用途 | 关联 |
+|----|--------|------|------|
+| `max_vc` | 5 | 每个 plan 最低 VC 条目数 | Std 44 |
+| `min_verification_per_phase` | 2 | 每个 Phase 最低 V-N 校验数 | Std 45 |
+| `retry_count` | 3 | 同 V-N 连续 FAIL 最大重试次数 | Std 42 |
+| `max_tool_calls_before_refresh` | 5 | 重读 task_plan.md 的工具调用阈值 | Std 10 |
+| `max_view_browser_before_save` | 2 | view/browser/search 次数后写 findings.md | Rule 3 |
+| `delegation_rate_floor` | 0.7 | 子代理执行 Phase 占比下限；低于此或主进程直做理由不在白名单 → outcome 最高 PARTIAL | Rule 25.4 |
+| `escalation_threshold` | 3 | 连续失败触发 AskUserQuestion 的次数 | Rule 9 |
+| `todo_sync_interval_calls` | 10 | PostToolUse 提醒原生 Todo 同步的工具调用间隔 | references/todo-sync.md |
+| `plan_update_interval_minutes` | 15 | task_plan.md 最长存活时间；超时强制回写提醒 | check-doc-sync.sh 默认 |
+| `stale_remind_cooldown_calls` | 10 | `[plan-compass]` 陈旧提醒触发后的冷却调用数（防未修复时重复轰炸） | zcode-posttooluse.sh |
+| `prompt_note_interval` | 10 | `[plan-note]` 新指令判定提示的注入间隔（第 1 条 + 每 N 条一次） | zcode-userpromptsubmit.sh |
+| `plan_dir_pattern` | `plans/{task-id}/` | 计划目录命名模式（任务隔离目录模板） | references/critical-rules.md |
+| `autonomous_resume` | true | plan-resume 恢复触发点自主续推开关；true 时自动推下一个 pending Phase，省去显式确认 | Rule 24.5 |
+| `findings_stale_minutes` | 20 | findings.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
+| `compass_escalate_after` | 2 | 连续陈旧提醒未响应次数；达到后升级 `[plan-compass]` 警告 | Rule 19.7 |
+| `progress_stale_minutes` | 25 | progress.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
+| `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | references/template-mapping.md |
+| `subagent` | (见 config) | 子代理超时档位（explore/editor/debugger/executor） | Rule 22.3 |
+
+> config.json **无 `version` 字段**——版本信息以 `git log` + `版本历史`段为准。
 
 ---
 
