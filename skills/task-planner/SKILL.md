@@ -392,6 +392,8 @@ Block 1 (选题) complete
 - ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
 - ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)
 
+**Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。
+
 ## 💻 代码编辑强制隔离
 
 代码编辑派发规则与白名单的**权威源** = 上方 §子代理路由表「代码编辑」三行（322-324）+ ✅ 行白名单；本节只补路由表未覆盖的「修改后验证流程」与 Rule 14 的执行要点指针。

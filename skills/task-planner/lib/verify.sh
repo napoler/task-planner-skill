@@ -26,6 +26,8 @@
 #      opencode/cursor=SKILL.md frontmatter;全量副本模式下 frontmatter hooks: 块 N/A)
 #   9. task-v055 委派门控三件套可执行(check-delegation.sh + allow-direct.sh +
 #      selftest-delegation.sh;2026-09-07)
+#   10. task-v055-fallback provider 探测脚本可执行 + config.provider_fallback 键
+#      (subagent-fallback.sh;2026-09-08)
 #
 # Returns exit 0 if all pass; non-zero with summary if any fail.
 
@@ -229,6 +231,18 @@ verify_installation() {
       fail "$_script missing or not executable at $TASK_PLANNER_ROOT/scripts/"
     fi
   done
+
+  # 10. task-v055-fallback provider 探测脚本(2026-09-08):网络/400 类失败后主动 Scaling 改派
+  if [ -x "$TASK_PLANNER_ROOT/scripts/subagent-fallback.sh" ]; then
+    pass "subagent-fallback.sh exists and is executable"
+  else
+    fail "subagent-fallback.sh missing or not executable at $TASK_PLANNER_ROOT/scripts/"
+  fi
+  if jq -e '.properties.provider_fallback // empty' "$TASK_PLANNER_ROOT/config.json" >/dev/null 2>&1; then
+    pass "config.json provider_fallback key present"
+  else
+    fail "config.json missing .properties.provider_fallback (Rule 22.3.1)"
+  fi
 
   # Summary
   echo ""

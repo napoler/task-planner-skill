@@ -49,6 +49,39 @@
       "default": "enforce",
       "description": "执行期委派门控档位：enforce=exit2 阻断主进程白名单外 Write/Edit；warn=仅注入警告并计数"
     },
+    "provider_fallback": {
+      "type": "object",
+      "description": "Provider 类失败后主动 Scaling 改派（task-v055-fallback，Rule 22.3.1）：探测备用通道 + 生成变体 agent + 零消耗改派决策",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "总开关；false 时 subagent-fallback.sh next 恒 escalation"
+        },
+        "variant_types": {
+          "type": "string",
+          "default": "executor,explore,code-assistant,general-purpose",
+          "description": "生成 -fb 变体的高频 subagent_type 列表（逗号分隔）"
+        },
+        "fallback_slugs": {
+          "type": "string",
+          "default": "agnes-2.5-flash",
+          "description": "fallback 模型 slug 有序表（裸 slug，跨机器可携带；probe/bind 按本机 ~/.zcode/v2/config.json provider 表解析实际 uuid）"
+        },
+        "probe_timeout_ms": {
+          "type": "integer",
+          "default": 20000,
+          "minimum": 2000,
+          "description": "单通道 1-token 探测 curl -m 秒数（ms）；默认 20000 覆盖冷启动首连（实测 agnes 通道冷启动 >10s）"
+        }
+      },
+      "default": {
+        "enabled": true,
+        "variant_types": "executor,explore,code-assistant,general-purpose",
+        "fallback_slugs": "agnes-2.5-flash",
+        "probe_timeout_ms": 20000
+      }
+    },
     "plan_dir_pattern": {
       "type": "string",
       "default": "plans/{task-id}/",
