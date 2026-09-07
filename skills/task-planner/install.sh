@@ -188,6 +188,22 @@ else
   log "  no companion/ dir — skipping"
 fi
 
+# ─── Phase 5.7: provider fallback bind (best-effort, task-v055-fallback) ──
+# 预探测本机可用 fallback 通道(agnes 等)并生成 <type>-fb 变体 agent;
+# 任何失败只告警不阻塞安装(变体 agent 仅在新会话对 Agent 工具可见)
+log "Phase 5.7: provider fallback bind (best-effort)"
+if [ -f "$TASK_PLANNER_ROOT/scripts/subagent-fallback.sh" ]; then
+  _FB_HOME="${ZCODE_HOME:-$HOME/.zcode}"
+  if [ -d "$_FB_HOME/agents" ] && [ -f "$_FB_HOME/v2/config.json" ]; then
+    bash "$TASK_PLANNER_ROOT/scripts/subagent-fallback.sh" probe --out "$_FB_HOME/agents/.last-probe.json" || true
+    bash "$TASK_PLANNER_ROOT/scripts/subagent-fallback.sh" bind --zcode-home "$_FB_HOME" || log "  [warn] fallback bind 失败(非阻塞,不影响安装)"
+  else
+    log "  no $_FB_HOME/agents 或 v2/config.json — 跳过 fallback bind"
+  fi
+else
+  log "  no subagent-fallback.sh — 跳过 Phase 5.7"
+fi
+
 # ─── Phase 6: Verify ────────────────────────────────────────────────────
 if [ "$SKIP_VERIFY" -eq 0 ]; then
   log "Phase 6: verify installation"
