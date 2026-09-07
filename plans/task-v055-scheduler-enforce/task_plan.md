@@ -6,6 +6,8 @@
 ## Goal
 诊断并修复 task-planner 技能「主进程=调度管理器、任务执行下沉子代理」定位在实测中未落地的问题：定位当前是**指令性文本约束**（靠模型自觉遵守），需升级为**机制性强制**（hook 拦截/门控脚本），使主进程亲为白名单外操作时被硬性阻断，真正达到主进程调度、子代理执行。
 
+**[09-08 B 类扩展]** 用户新增实测反馈：「执行子代理任务时，子代理往往没有正确返回——派发后长时间不返回，且子代理内部并未正确执行」。诊断范围扩展至**子代理派发-返回链路**（Agent 工具调用契约、sid 探测、模型路由 Provider 拒绝、同步阻塞语义、v055 新门控是否误伤子代理写入）。原机制层四 Phase 已完成并部署，本扩展 = Phase 5（新增）。
+
 ## 🔍 Code Review 配置
 | 字段 | 值 |
 |------|-----|
@@ -45,7 +47,7 @@
 | 项目内部文档 | hooks 配置现状 | `~/.zcode/cli/config.json`（hooks.events）+ `skills/task-planner/hooks/` | 必读 | ☐ |
 
 ## Current Phase
-Phase 1
+Phase 5
 
 ## Phases
 
@@ -80,6 +82,25 @@ Phase 1
 - **Status:** complete（2026-09-07 05:0x）
 - **Executor:** executor（部署执行 ×3 轮）+ 主进程（merge/验收/簿记，白名单④）
 
+### Phase 5: 子代理派发-返回链路深度诊断（09-08 扩展）
+- [x] 实收证据：各 plan 目录 subagent-state 与 verification 派发统计（Provider 拒绝/API 超时/丢失/未产出模式）
+- [x] 契约比对：harness Agent 工具真实行为（同步阻塞？run_in_background？子代理 sid 特征？Provider/模型路由层失败形态）
+- [x] 关键验证：v055 新门控（check-delegation pretool）对子代理写 subagent-state/ 检查点文件是否被放行/误拦（sid 探测 + 白名单 walk-up 实际行为）
+- [x] 根因结论落 findings.md（新增「子代理返回失败」证据链），修复方向（机制层 or 派发协议层）
+- [x] 修复方向裁决 + 机制化实施（用户 09-08 原话裁决=失败后主动 Scaling 指定模型改派；commit 382be79：subagent-fallback.sh probe/bind/next + config provider_fallback + Rule 22.3.1 + verify#10 + install 5.7）
+- [x] 关键实证：ZCode Agent 工具**不热加载**新建 agent 定义（R12 双负结论：ccr 宕时变体 not found + ccr 宕时健康 provider 变体仍 not found）→ 架构定案 = 部署落盘预置 + 新会话生效；当前会话内兑现 = 主进程接管/新开会话
+- [x] 真实实测：probe（agnes 通道 1-token OK，冷启动 >10s 故默认 timeout 提至 20s）+ bind（生成 4 个 -fb 变体=executor/explore/code-assistant/general-purpose，模型 custom:9a69b164…:agnes-2.5-flash，meta 登记）；自测 21/21；verify 25pass×3；3 位重部署 diff=0（cd0acdb）
+- [x] 簿记 + push（见 progress 发布段）
+- **Status:** complete（2026-09-08）
+- **Executor:** 主进程直做（白名单⑤ Rule 22.3 兜底接管：本批派发 executor/general-purpose 双双 Provider rejected——ccr 三档全宕，本批正是根因 1 现场演示；按 22.3 ③ 主进程接管（≤300 行/文件级编辑），派发记录见 Handoff 表 11/12 行）
+
+## 09-08 B 类扩展 Decisions
+| Decision | Rationale |
+|----------|-----------|
+| 失败改派 = 主动 Scaling（指定模型/换 provider 重派），非盲重试 | 用户 09-08 明示；73% 失败率下同类型盲试必崩（R10） |
+| 动态 agent 文件方案需先实证可行性 | ZCode Agent 类型列表疑为会话启动时注入；热加载不确定 → 先 1 次最小派发实证再定架构 |
+- **Executor:** 主进程编排 + Explore/general-purpose（证据收集）/ Debugger（契约排查）
+
 ## 🔀 隔离决策
 
 | 字段 | 值 |
@@ -110,6 +131,8 @@ Phase 1
 | 09-07 | executor-B | 终验统计+文案收敛 | STOP（外部干预：用户合并 A 批并清理 worktree，宪法 §四漂移 STOP 正确） | subagent-state/06-executor-b.md | — | n/a |
 | 09-07 | executor-B' | 剩余 3 文件收尾（SKILL 收敛/verify/verification） | complete | subagent-state/07-executor-b2.md | findings R5 | ✓ |
 | 09-07 | executor | 3 位重部署+diff 复验+verify 体检 | complete（3/3 零差异，23 pass/0 fail，selftest 18/18） | tmp/deploy-diff.txt | progress Phase 4 段 | ✓ |
+| 09-08 | executor | v055-fallback 实施批次（5 文件+自测） | failed→③主进程接管（Provider rejected，ccr sonnet-1 宕；白名单⑤登记） | subagent-state/11-executor-fb.md（未产出，0 进度） | findings R13 | ✓（接管产出 382be79 已验收） |
+| 09-08 | general-purpose | 同上（改派重试，零消耗不计 retry_limit 前的 1 次改派） | failed（Provider rejected；同法重试禁用 → 22.3 ③） | 同上（合并登记） | findings R13 | ✓ |
 
 ## Key Questions
 
@@ -123,6 +146,7 @@ Phase 1
 | Decision | Rationale |
 |----------|-----------|
 | 修复方向=机制级强制优先 | 用户实测证明纯文本约束不生效（task-v052 已写定位文本仍失败）；指令性→机制性 |
+| 失败后改派=主动 Scaling（用户 09-08 裁决） | 用户原话「失败以后主动使用 Scaling，主动指定模型运行子代理」；73% 失败率下同档盲试必崩（R10）；实现 = fallback 链（档位/provider 有序表）+ 脚本化改派决策 + agent 定义按档位预置 |
 
 ## Errors Encountered
 

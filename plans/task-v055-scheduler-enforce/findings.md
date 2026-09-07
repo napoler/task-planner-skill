@@ -121,11 +121,91 @@
 - **机制实弹证据**：部署后本会话出现 [delegation-observe] 提示——hook 已在真实会话拦截链上工作
 - 追修遗留（记 deferred-issues）：n-1 /tmp 可预测文件名、n-2 stats error JSON 误判 pass、n-3 SKILL.md:46 锚点、m-1 ledger 字段、m-2 trivial 4KB 绕过
 
+### R10 子代理失败量化统计（09-08 当日日志 `~/.zcode/cli/log/zcode-2026-09-08.jsonl`，主进程直接取证）
+- **派发 37 次（subagent.spawned）→ 27 次 turn.failed = 73% 失败率**（系统性，非个别）
+- **失败 agentType 分布**：general-purpose 19 / article-research-phase 9 / article-research-heavy 6 / Explore 6 / Simple Agent 5
+- **失败全部落在网络/provider 层**（model.network.failed statusMessage 直方图）：
+  | 形态 | 次数 | 说明 |
+  |------|------|------|
+  | ECONNREFUSED 192.168.123.36:3456 | 46 | 路由 provider 服务不可达 |
+  | other side closed | 35 | 连接被对端断开 |
+  | Provider rejected（400 invalid_request, retryable=false） | 27 | 请求被 provider 拒绝（haiku-1/sonnet-1） |
+  | Network connection failed | 15 | 网络层失败 |
+  | Model request was cancelled | 3 | 取消 |
+  | Headers Timeout Error | 1 | 请求头超时 |
+- **关键判定**：失败样本 turnNumber=0 / turnPhase=processing_input = **子代理还没执行任何工具，第一次模型请求就被 provider 拒绝** → 直接解释用户「子代理中并没有正确的执行」
+- **harness 契约确认**：`model.retry.delay.resolved` 对 400 → canRetry=false；rollout 里 attempt 恒=1 → **provider 非可重试错误时 harness 不做自动重试**，主进程只拿到一段错误文本
+
+### R8 子代理返回链路实测证据（09-08 Phase 5 扩展，主进程直接取证）
+1. **Provider 拒绝形态实测**：`~/.zcode/cli/rollout/model-io-sess_subagent_agent_62a13a53-*.jsonl`——子代理会话 haiku-1 档（role=subagent）单条 model_io 记录：attempt=1，durationMs=278428（≈4.6 分钟），`error.name=TerminalStreamChunkError`，message="Provider rejected the model request."，startedAt 2026-09-07T20:26:39Z。**即：子代理派发后主进程同步等待 ~4.6 分钟才拿到一个"被拒绝"错误**——与用户体感「一直没有正确返回」完全吻合
+2. **父会话侧**：同一时间窗父 rollout（model-io-sess_f9030ba5…jsonl）25 行中 19-23 行引用该子代理会话 id；父会话模型档位=fast（providerId 与主进程相同），子代理被路由到 haiku-1
+3. **形态归类（待补全统计）**：Provider 拒绝（v055 1 次 + Code Assistant 1 次）/ API Headers Timeout（v053 code-assistant ×2，换 general-purpose 后成功）/ 外部干预漂移（executor-B 被用户并行合并打断）/ 交叠事故（v053 并行代理误 checkout 毁另一批产出）
+4. **harness 契约结论（关键）**：Agent 工具是**同步阻塞**调用——主进程发起后挂起等待子代理整个会话跑完或出错才返回；子代理内部无超时机制（Rule 22.2 的 30/60/120min 档位无任何执行方，属纸面规则）；子代理失败时返回=错误文本，**无自动重试**（rollout 里 attempt 恒=1）
+
+### R9 v055 新门控与子代理链路交互验证（Phase 5 关键验证项）
+- check-delegation pretool 子代理放行靠「stdin session_id ≠ .session-owner」判据（check-delegation.sh:234-254）
+- **风险点待实测**：子代理写 `subagent-state/*.md` 检查点文件时，若 hook 对子代理工具调用注入的 session_id 为空 → sid=default → 跳过节 ② → 走白名单链 → plans/**/*.md 命中白名单放行 ✓（不拦截，无误伤）
+- 若子代理 session_id 非空且 ≠ owner → 直接 exit 0 放行 ✓
+- **但反向问题**：sid 探测失效（子代理 sid 为空且无活跃计划解析）→ resolve_plan_dir_any 失败 → exit 0 放行（fail-open，无害）
+- 结论：v055 门控对子代理返回链路**无拦截性误伤**；子代理"不返回"的根因在 provider 层（haiku-1 被拒）+ 同步阻塞语义 + 无自动重试，与门控无关
+
+### R11 provider 通道实测矩阵（09-08 05:1x，1-token curl 探测）
+| 通道 | 状态 | 结论 |
+|------|------|------|
+| ccr `192.168.123.36:3456`（haiku-1/sonnet-1/mini/opus-1/fast/deepseek-v4-pro） | curl 5s 超时；全天 46×ECONNREFUSED/35×other-closed/27×400（R10） | 主通道间歇性宕；所有 companion/用户 agent 绑定于此 |
+| builtin:zai / zai-coding-plan / bigmodel（GLM-5.3） | 500 包 404 NOT_FOUND | 模型未开通，不可用 |
+| go `cfe63a01`（opencode.ai zen） | Missing API key | 不可用 |
+| **agnes-ai.cn `9a69b164`（agnes-2.5-flash）** | ✅ 1-token 调用成功（stop_reason=max_tokens） | **唯一可用 fallback 通道** |
+
+### R12 Agent 类型热加载实证（09-08，负结论）
+- 会话中现写 `~/.zcode/agents/v055-dyn-test.md` → `Agent(subagent_type="v055-dyn-test")` → 返回 `Agent type 'v055-dyn-test' not found`（可用列表=会话启动时快照，含全部 75 个已部署 agent）
+- **结论：Agent 可用类型列表在会话启动时固化，运行中新建的 agent 定义不被识别** → fallback 变体 agent 必须「部署落盘 + 新会话生效」；当前会话内的兜底仍是主进程接管/AskUser（协议须如实写此边界）
+- 清理：v055-dyn-test.md 已删除（实验产物，不落保护区）
+
+### 方案 v055-fallback（最小闭环，09-08 设计）
+1. **config.json** 新增 `subagent.provider_fallback`：`enabled` / `variant_types`（高频类型：executor/explore/code-assistant/general-purpose）/ `fallback_slugs`（裸 slug 有序表，跨机可携带：["agnes-2.5-flash"]）/ `probe_timeout_ms`
+2. **scripts/subagent-fallback.sh**（新，3 模式）：
+   - `probe`：读 `~/.zcode/v2/config.json` provider 表 → 对每个候选 (uuid, slug) 1-token 探测 → 写 `<plan-dir>/.provider-health.json`（ts + ok + latency + err）
+   - `bind`：按 fallback_slugs 解析本机可用 provider uuid（含该模型 + probe ok）→ 从原 agent 文件复制生成 `~/.zcode/agents/<type>-fb.md`（frontmatter name/description 加「fallback 变体」标记，model 行 = `custom:<uuid>:<slug>`，body/tools 继承原 agent）；幂等（内容 hash 比对）+ 清理陈旧变体；输出报告 JSON
+   - `next <type> [err_kind]`：读 health + 配置 → 输出 `{"dispatch_as":"<type>-fb","model":"custom:<uuid>:<slug>","reason":"..."}` 或 `{"dispatch_as":null,"escalation":"main_takeover_or_askuser"}`；err_kind=provider → **零消耗改派**（不计入 retry_limit）
+3. **Rule 22.3 升级**（critical-rules.md + SKILL.md 各 2 行）：provider 类失败（网络/400/超时）→ 先 `subagent-fallback.sh next <type> provider` 主动指定变体改派（零消耗）→ 无可用变体 → 主进程接管（≤300 行）/ AskUser；派发前可 `probe` 预检（快速失败优于 4.6 分钟静默）
+4. **install.sh** 尾部挂 `bind`（best-effort，失败告警不阻塞部署）；**verify.sh** +1 检查（脚本可执行 + config 键存在）；**selftest-fallback.sh** 6 断言
+5. 边界（如实登记）：变体 agent 新会话才可用；`bind` 生成物落 `~/.zcode/agents/`（§六 保护区，本方案 = 用户 09-08 裁决即授权，生成清单登记 verification）
+6. 不做（YAGNI）：单 agent 级 model override 配置、后台自动 probe 守护、跨机器 provider 自动发现（fallback_slugs 手工维护）
+
+### R13 v055-fallback 实施结果（commit 382be79 → 合并 cd0acdb，09-08 发布）
+- 7 文件 +494 行：subagent-fallback.sh（probe/bind/next 三模式，316 行）/ config.json provider_fallback 4 键 / Rule 22.3.1（critical-rules + SKILL.md 指针段）/ verify#10 / install Phase 5.7 / selftest-fallback.sh（21 断言）
+- 实施插曲（根因 1 现场）：批次派发 executor 遭 Provider rejected → 改派 general-purpose 再遭 Provider rejected（ccr 三档 haiku/sonnet/mini 实测全宕）→ 按 22.3 ③ 主进程接管（白名单⑤，Handoff 表 11/12 行已登记）；这正是本批要修的链路
+- 自测中修复 2 个脚本 bug：① entries 拼接产生非法 JSON（`jq -s '.[0]'` 方案 → 改 `jq -cs` 单次合成）② bind 生成变体时 model 行被 awk 丢弃而非替换（改为 `-v ml` 原地替换 + 缺键追加）
+- 冷启动实测：agnes 通道 1-token 探测 10s 超时失败、25s 通过（0.67s 返回）→ 默认 probe_timeout_ms 10000→20000
+- 真实 bind：4 个 -fb 变体生成（executor/explore/code-assistant/general-purpose → custom:9a69b164…:agnes-2.5-flash），meta `.task-planner-fallback-meta.json` 登记
+- 验证：selftest 21/21；verify 25 pass/0 fail ×3 位；3 位 rm+cp -rL 重部署 diff=0×3；worktree 清理（外层仓 remove + branch -d）
+- **当前 ccr 通道实测（09-08 06:4x）：haiku-1/sonnet-1/fast 全宕（curl 6s 超时）；变体 -fb（agnes 通道）下新会话可用 = 改派立即兑现**
+
 ## Resources（补充2）
 - subagent-state/02-codebase-analyzer.md — 机制层完整分析（258 行）
 - skills/task-planner/scripts/zcode-pretooluse.sh — 执行期拦截的改造落点
 - skills/task-planner/scripts/check-complete.sh — 终验委派率统计的改造落点
 - skills/task-planner/config.json:36-41 — delegation_rate_floor 接线落点
+
+## 根因结论 2：子代理「不返回/未正确执行」（09-08 Phase 5 扩展）
+
+**用户实测「子代理派发后一直不返回、内部没有正确执行」的根因 = provider/网络层系统性失败 + harness 同步阻塞语义 + 技能层零兜底机制，三者叠加，而非派发方式错误：**
+
+| 排名 | 根因 | 证据 | 说明 |
+|------|------|------|------|
+| 1 | **路由 provider 服务（192.168.123.36:3456）本身高失败率** | R10：09-08 当天 subagent 网络失败 127 条（ECONNREFUSED 46 / other side closed 35 / 400 rejected 27）；haiku-1 档实测 4.6 分钟后 400 拒 | 子代理全部走 `custom:<uuid>:haiku-1/sonnet-1` 路由；路由器不可达或被拒 = 子代理**第一次模型请求就死**（turnPhase=processing_input），根本没执行任何工具 |
+| 2 | **harness Agent 工具同步阻塞 + 非可重试错误零自动重试** | rollout attempt 恒=1；retryable=false 时 canRetry=false；主进程等待 ~4.6 分钟才拿到错误文本 | 用户体感「一直没有返回」= 同步等待期间的静默 + 失败后主进程拿到的是笼统错误而非定位信息 |
+| 3 | **技能层（task-planner 协议）对 provider 层失败零机制化兜底** | critical-rules Rule 22.2/22.3/22.7 全是文本约束（同 Phase 1 根因 1 模式）；scripts/ 无 provider 健康探测；失败后靠主进程模型自觉走 22.3 改派，实测 73% 失败率下靠自觉必然崩 | 与 Phase 1 根因同构：「规则写了但没机制」；且当前 v055 门控只管主进程亲为，不管子代理失败恢复 |
+
+**排除项（用户假设的反证）**：
+- ❌ 「调用子代理的方式不对」不成立——派发协议（八字段 prompt + checkpoint 落盘）执行正确的批次（03/04/05/07/08/09/10 号检查点）全部正常返回并产出 4~27KB 检查点；失败批次全部死在 turnPhase=processing_input（第一次模型请求），与 prompt 写法无关
+- ❌ v055 委派门控（check-delegation pretool sid 放行）不是致因——子代理写 subagent-state/*.md 走 plans/ .md 白名单放行，无拦截路径（R9 验证）
+
+**修复方向（待用户裁决，见 Phase 5 后续）**：
+- A. provider 健康探测前置（派发前 1 次低成本 ping 路由端点，不可用即快速失败+报告，避免 4.6 分钟静默）
+- B. 失败即改派机制化（provider 类失败不消耗 retry_limit、自动升档/换 provider、连续 N 次失败熔断 STOP——做成脚本门控而非文本 Rule 22.3）
+- C. 路由器侧（192.168.123.36:3456）稳定性 = 环境依赖，非本技能可修，只能探测+降级
 
 ## Visual/Browser Findings
 <!-- 截图/PDF/网页等多模态信息必须立即转文字落盘(多模态不持久) -->

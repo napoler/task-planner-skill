@@ -84,6 +84,32 @@
   | stats 终态 | 本计划 | verdict ok | violations=[] exit 0 | PASS |
   | hook 实弹 | 本会话写操作 | 观察模式提示可见 | [delegation-observe] 出现 | PASS |
 
+### Phase 5: 子代理派发-返回链路深度诊断 + provider fallback 机制化（09-08）
+- **Status:** in_progress
+- **Started:** 2026-09-08
+- Actions taken:
+  - 取证（rollout/日志）→ 根因 2 落 findings R8/R10（73% 失败率，全死在 provider 层第一次模型请求）
+  - 用户裁决（09-08 原话）：「失败以后，主动使用 Scaling，主动指定模型，运行子代理」→ 方案 v055-fallback 定稿（findings R11/R12）
+  - **ccr 三档全宕实测（06:4x）**：haiku-1/sonnet-1/fast curl 6s 超时全 FAIL；agnes 通道 1-token OK → 本批改派只能走 non-ccr
+  - provider 通道实测矩阵（R11）：GLM-5.3 各计划 500-404 未开通；go 缺 key；**agnes-ai.cn（agnes-2.5-flash）= 唯一可用 fallback 通道**
+  - Agent 热加载实证（R12，双负结论）：ccr 宕时新建变体 agent 定义 → `Agent type not found`；同宕机窗口内指向健康 provider 的变体 → 仍 not found → 类型列表随**会话启动**固化，与 provider 健康无关
+  - 实施（白名单⑤接管）：worktree task-v055-fallback → commit 382be79（subagent-fallback.sh probe/bind/next 316 行 + config provider_fallback 4 键 + Rule 22.3.1 + verify#10 + install 5.7 + selftest-fallback.sh 21 断言）；主进程修复 2 个脚本 bug（entries 非法 JSON / bind model 行被丢弃）
+  - 真实实测：probe 冷启动 10s 超时失败 → 默认 timeout 提 20s；bind 生成 4 个 -fb 变体（custom:9a69b164…:agnes-2.5-flash）
+  - 本批派发记录：executor（sonnet-1）Provider rejected → 改派 general-purpose（sonnet-1）Provider rejected → 22.3 ③ 主进程接管（白名单⑤；恰好是本批要修的链路现场）
+- Files created/modified: skills 7 文件（382be79）；plans 三件套 + tmp/subagent-fallback-draft.md + subagent-state/（11/12 行）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | selftest-fallback | 21 断言 fixture（双 provider + 2 源 agent） | 全 PASS | 21/21 | PASS |
+  | verify 回归 | 3 位部署后 TASK_PLANNER_ROOT=各部署位 | 全绿 | 25 pass/0 fail ×3 | PASS |
+  | 3 位重部署 | rm+cp -rL × zcode/claude/opencode | diff=0 | diff=0 ×3 | PASS |
+  | 真实 bind | ~/.zcode/agents + 真实 v2 config | 4 变体 + meta 登记 | created=4，-fb frontmatter model=agnes-2.5-flash | PASS |
+  | 热加载（负向） | 会话中现建 agent 定义 + Agent 调用 | （假设）识别 | not found ×2（含健康 provider 变体） | PASS（边界坐实） |
+  | [git-commit] | 实施批次 | 逐批提交 | 382be79 | 完成 |
+
+## 发布（09-08）
+- **06:5x 发布收尾**：merge cd0acdb → 3 位重部署 diff=0 + verify 25pass×3 → worktree remove + branch -d（外层仓）→ **push origin master 382be79..cd0acdb（进行中）**
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

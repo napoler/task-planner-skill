@@ -1,0 +1,11 @@
+{"ts":"2026-09-07T22:04:16Z","event":"allow_direct_on","sid":"default","expires_at":1788820456,"user_requested":true}
+{"ts":"2026-09-07T22:05:33Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1723}
+{"ts":"2026-09-07T22:07:24Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1612}
+{"ts":"2026-09-07T22:07:38Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1598}
+{"ts":"2026-09-07T22:09:38Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1478}
+{"ts":"2026-09-07T22:10:31Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1425}
+{"ts":"2026-09-07T22:11:21Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1375}
+{"ts":"2026-09-07T22:13:18Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1258}
+{"ts":"2026-09-07T22:15:13Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":1143}
+{"ts":"2026-09-07T22:19:48Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":868}
+{"ts":"2026-09-07T22:27:20Z","event":"bypass","sid":"sessf9030ba5432945e2bb6db69d1d168673","trigger":"pretool","remain_sec":416}
