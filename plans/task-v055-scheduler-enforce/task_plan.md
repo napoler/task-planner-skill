@@ -90,7 +90,8 @@ Phase 5
 - [x] 修复方向裁决 + 机制化实施（用户 09-08 原话裁决=失败后主动 Scaling 指定模型改派；commit 382be79：subagent-fallback.sh probe/bind/next + config provider_fallback + Rule 22.3.1 + verify#10 + install 5.7）
 - [x] 关键实证：ZCode Agent 工具**不热加载**新建 agent 定义（R12 双负结论：ccr 宕时变体 not found + ccr 宕时健康 provider 变体仍 not found）→ 架构定案 = 部署落盘预置 + 新会话生效；当前会话内兑现 = 主进程接管/新开会话
 - [x] 真实实测：probe（agnes 通道 1-token OK，冷启动 >10s 故默认 timeout 提至 20s）+ bind（生成 4 个 -fb 变体=executor/explore/code-assistant/general-purpose，模型 custom:9a69b164…:agnes-2.5-flash，meta 登记）；自测 21/21；verify 25pass×3；3 位重部署 diff=0（cd0acdb）
-- [x] 簿记 + push（见 progress 发布段）
+- [x] 簿记 + push（382be79/cd0acdb/363a29e 已 push origin master）
+- [x] 收尾：attest 重锁 + INDEX 刷新 + verification 委派统计追加
 - **Status:** complete（2026-09-08）
 - **Executor:** 主进程直做（白名单⑤ Rule 22.3 兜底接管：本批派发 executor/general-purpose 双双 Provider rejected——ccr 三档全宕，本批正是根因 1 现场演示；按 22.3 ③ 主进程接管（≤300 行/文件级编辑），派发记录见 Handoff 表 11/12 行）
 
