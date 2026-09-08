@@ -21,11 +21,22 @@ from pathlib import Path
 def extract_meta(plan_path: Path, repo_root: Path) -> dict:
     """从 task_plan.md 提取元数据(纯 Python 解析,避开 shell 复杂性)"""
     text = plan_path.read_text(encoding='utf-8', errors='replace')
+
+    # 特殊处理 .zcode/plans/plan-sess_*.md 文件：
+    # parent.name = 'plans' 无意义，需从文件名提取 task_id
+    if plan_path.parent.name == 'plans' and plan_path.name.startswith('plan-sess_'):
+        # 提取 UUID 部分作为 task_id
+        # plan-sess_<uuid>.md → task_id = 'plan-sess-<uuid>'
+        uuid_part = plan_path.name.replace('plan-sess_', '').replace('.md', '')
+        task_id = f'plan-sess-{uuid_part}'
+    else:
+        task_id = plan_path.parent.name
+
     if not text:
-        return {'task_id': plan_path.parent.name, 'missing': True}
+        return {'task_id': task_id, 'missing': True}
 
     result = {
-        'task_id': plan_path.parent.name,
+        'task_id': task_id,
         'path': str(plan_path),
         'goal': '',
         'current_phase': '',
@@ -125,11 +136,7 @@ def scan_plans(repo_root: Path) -> list[Path]:
                 tp = d / 'task_plan.md'
                 if tp.exists():
                     plans.append(tp)
-    # 2. .zcode/plans/plan-sess_*.md
-    zcode_plans = repo_root / '.zcode' / 'plans'
-    if zcode_plans.exists():
-        for f in zcode_plans.glob('plan-sess_*.md'):
-            plans.append(f)
+    # 注意：.zcode/plans/plan-sess_*.md 是会话计划，不是正式 task_plan，已排除
     return plans
 
 
