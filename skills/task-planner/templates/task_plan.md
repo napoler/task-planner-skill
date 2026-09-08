@@ -127,7 +127,7 @@ Phase 1
   WHAT: Break your task into 3-7 logical phases. Each phase should be completable.
   WHY: Breaking work into phases prevents overwhelm and makes progress visible.
   WHEN: Update status after completing each phase: pending → in_progress → complete
-  Executor 字段(Rule 25.1):每个 Phase 必须声明执行体;主进程直做必须写例外理由;选型按 SKILL.md §子代理路由与模型分级路由表
+  Executor 字段(Rule 25.1):每个 Phase 必须声明执行体;主进程直做必须写例外理由;选型按 SKILL.md §子代理路由与模型分级路由表;Executor≠主进程的 Phase 必附 S-unit 派发单元表(Rule 22.6,示范见 Phase 3)
 -->
 
 ### Phase 1: Requirements & Discovery
@@ -149,15 +149,6 @@ Phase 1
 -->
 
 ### Phase 2: Planning & Structure
-<!--
-  Phase 含 ≥3 子任务 → 在下方展开 Subtasks 子表(Rule 22.6 二级拆分):
-  | ID | 目标(≤1 句) | 输入(路径) | 验收标准(可观察) | 状态 |
-  |----|------------|-----------|----------------|------|
-  | S1 | | | | pending |
-  | S2 | | | | pending |
-  | S3 | | | | pending |
-  单子任务触及 >3 文件或 >300 行 → 升级为独立 Phase(Rule 21.1/22.1)
--->
 <!-- 
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
@@ -178,6 +169,12 @@ Phase 1
 - [ ] Test incrementally
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
+
+<!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发) -->
+| ID | 目标(≤1 句) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
+|----|------------|------------------------|-------------|---------|------|
+| S1 | | | | ≤15min | pending |
+| S2 | | | | ≤15min | pending |
 
 ### Phase 4: Testing & Verification
 <!-- 
