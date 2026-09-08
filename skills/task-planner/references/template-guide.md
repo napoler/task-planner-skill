@@ -54,7 +54,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 |--------|------|
 | `cost_log.md` | opus 调用成本日志（Rule 17 配套） |
 | `batch_report.md` | 批量处理质量门控八字段报告（Rule 18.6 配套） |
-| `subagent_dispatch.md` | 子代理派发 prompt 八字段模板（Rule 22.4 配套） |
+| `subagent_dispatch.md` | 子代理派发 prompt 九字段模板(含计划三文件必传 + 8 字段严格返回)(Rule 22.4 配套) |
 
 **总文件数**:5 核心 + 3 辅助 + 12 variant = **20 个模板**（v2.3 核对 `ls` 实测;旧文 13 variant/18 总数为漂移,已修正）。
 

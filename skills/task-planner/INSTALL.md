@@ -176,6 +176,10 @@ export TASK_PLANNER_ROOT="$HOME/dev/task-planner"
 export TASK_PLANNER_ROOT="$HOME/dev/task-planner"
 ```
 
+### 5.1a ZCode PreToolUse matcher 须含 Agent（派发契约守卫，Rule 22.4c）
+
+`~/.zcode/cli/config.json` → `hooks.events.PreToolUse[].matcher` 必须为 `"Write|Edit|Agent"`（旧值 `"Write|Edit"` 不会检查 Agent() 派发）。命令仍为 `bash ~/.zcode/skills/task-planner/scripts/zcode-pretooluse.sh`；Agent 分支调用 `scripts/check-dispatch.sh` 检查 prompt 含计划三文件绝对路径 + 8 字段返回 key + `subagent-state/` 检查点路径，档位见 `config.json#dispatch_contract_enforce`（enforce/warn/off）。自测：`bash scripts/selftest-dispatch.sh`（11 用例）。Claude Code 侧对应工具名为 `Task`，如需同等守卫在 `register-hooks-cj.ts` 的 PreToolUse matcher 加 `Task`（后续任务，本期未改）。
+
 ### 5.2 Claude Code hook 不触发
 
 检查 `~/.claude/settings.local.json` 是否已注册 hooks：

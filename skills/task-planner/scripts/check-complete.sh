@@ -400,7 +400,8 @@ if [ "$python_rc" -eq 0 ]; then
         # floor 比较:rate 是浮点字符串,用 awk
         rate_ok=1
         if [ -n "$delegation_rate" ]; then
-            if ! awk -v r="$delegation_rate" -v f="$DELEGATION_RATE_FLOOR" 'BEGIN{exit !(r+0 < f+0)}'; then
+            # [2026-09-09 task-v057] 修复比较反转:原 exit !(r<f) 与外层 if ! 双重取反,导致 rate>=floor 判 FAIL、rate<floor 放行(4420c08 引入);现 awk 在 r<f 时 exit 1 → rate_ok=0
+            if ! awk -v r="$delegation_rate" -v f="$DELEGATION_RATE_FLOOR" 'BEGIN{exit (r+0 < f+0)}'; then
                 rate_ok=0
             fi
         fi

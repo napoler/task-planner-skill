@@ -49,6 +49,16 @@
       "default": "enforce",
       "description": "执行期委派门控档位：enforce=exit2 阻断主进程白名单外 Write/Edit；warn=仅注入警告并计数"
     },
+    "dispatch_contract_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "Agent() 派发契约守卫档位（Rule 22.4c，scripts/check-dispatch.sh）：enforce=prompt 缺当前计划三文件绝对路径/返回字段名(status:/acceptance:/checkpoint:)/subagent-state 检查点路径时 exit 2 阻断并列出缺项；warn=放行+告警计数；off=跳过。无活跃计划或解析异常一律放行（fail-open）"
+    },
     "provider_fallback": {
       "type": "object",
       "description": "Provider 类失败后主动 Scaling 改派（task-v055-fallback，Rule 22.3.1）：探测备用通道 + 生成变体 agent + 零消耗改派决策",

@@ -499,6 +499,20 @@ rm -f /tmp/task-planner-bypass-test-sid-a /tmp/task-planner-bypass-test-sid-b
 rm -rf "$(dirname "$TMP_T22")"
 rm -f "$(dirname "$(dirname "$TMP_T22")")/.active_plan"
 
+# ── T_MEM 记忆目录白名单放行 ────────────────────────────────────────────────
+# [2026-09-09 task-v057] $HOME/.zcode/cli/memories/ 白名单:主进程直做记忆写入放行
+MEM_TARGET="$HOME/.zcode/cli/memories/projects/x/memory/y.md"
+out="$(bash "$CHECK" pretool "$MEM_TARGET" "main-sid" 10 2>/dev/null)"
+rc=$?
+assert_exit "T_MEM 记忆目录白名单放行" "0" "$rc"
+
+# ── T_RATE_OK / T_RATE_LOW check-complete 比较方向防回归 ───────────────────
+# [2026-09-09 task-v057] 原 exit !(r<f) 双重取反 bug 防再次反转
+{ awk -v r=0.714 -v f=0.7 'BEGIN{exit (r+0 < f+0)}' && [ "$(grep -c "exit (r+0 < f+0)" "$SCRIPT_DIR/check-complete.sh")" = "1" ]; }
+assert_exit "T_RATE_OK rate>=floor exit0 且比较式 1 处" "0" "$?"
+awk -v r=0.5 -v f=0.7 'BEGIN{exit (r+0 < f+0)}'
+assert_exit "T_RATE_LOW rate<floor exit1" "1" "$?"
+
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 echo ""
 echo "========================================"

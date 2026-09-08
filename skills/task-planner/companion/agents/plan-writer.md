@@ -91,7 +91,7 @@ cost_estimate:
 1. **user_goal**:用户原始任务描述(原文或等价改写)
 2. **constraints**(可选):用户给出的硬约束(文件/时间/技术栈)
 3. **template_type**(可选):见上表,缺省按关键词匹配
-5. **subagent_dispatch_hint**(可选):若任务需派子代理,引用 `templates/subagent_dispatch.md` 八字段模板(Rule 22.4 强制)
+5. **subagent_dispatch_hint**(可选):若任务需派子代理,引用 `templates/subagent_dispatch.md` 九字段模板(Rule 22.4 强制)
 4. **cwd**(可选):当前工作目录,默认 `/home/terry/.zcode`
 5. **existing_plan_dir**(可选):已有 `plans/{task-id}/` 时,在此基础上更新
 
@@ -183,6 +183,7 @@ cost_estimate:
 - ❌ 不把 Goal 写超过 1 句 — Goal 是导航星,长描述 = 后期漂移的源头
 - ❌ 不把 Phase 写到 7 个以上 — 拆分过细 = 执行阻力大
 - ❌ 派发型 Phase 不附 S-unit 表,或 S-unit 超步级上限(>2 文件/>100 行/>15min)却不再拆 — Phase 数 ≤7 的收敛在 Phase 层,细化在 Phase 内 S-unit 层,两者不矛盾
+- ❌ 测试/脚本类 S-unit 单步塞入 >6 个用例或含"写→跑→改"多轮迭代 — 按 ≤6 用例/步再拆,并在派发 prompt 写明"单用例调试 ≤2 轮,超则记 blockers 交主进程"(实证:11 用例单步耗 18min/1.24M token,超 step_max_minutes)
 - ❌ S-unit「输入」列只写路径不写摘要(材料包缺失 → 执行期子代理被迫自行探索,违背"计划做细、执行照单")
 - ❌ 不省略任何 Phase 的 `**Executor:**` 字段(Rule 25.1) — Executor=主进程时必须写明例外理由;无字段 = 计划无效
 - ❌ 不引用模型降到 haiku 的风险(违反 agent-model-tiering 约定)
