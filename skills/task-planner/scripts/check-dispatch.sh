@@ -20,15 +20,17 @@ SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_JSON="$SKILL_ROOT/../config.json"
 
 # 缺项扫描: $1=prompt 文件 $2=计划目录 → stdout 每行一个缺项名(固定顺序 P1..P3,R1..R3,C1)
+# [p7fix] 计划目录归一化: 去尾斜杠 + 三文件匹配同时接受符号链接解析后的真实路径(pd_real)
 scan_missing() {
-    local f="$1" pd="$2" item
-    for item in \
-        "$pd/task_plan.md" "$pd/findings.md" "$pd/progress.md" \
-        "status:" "acceptance:" "checkpoint:" "subagent-state/"
-    do
-        if ! grep -qF -- "$item" "$f" 2>/dev/null; then
-            case "$item" in */task_plan.md) printf 'task_plan.md\n' ;; */findings.md) printf 'findings.md\n' ;; */progress.md) printf 'progress.md\n' ;; *) printf '%s\n' "$item" ;; esac
-        fi
+    local f="$1" pd="$2" pd_real item alt
+    pd="${pd%/}"; pd_real="$(cd "$pd" 2>/dev/null && pwd -P)"; pd_real="${pd_real:-$pd}"
+    for item in "$pd/task_plan.md" "$pd/findings.md" "$pd/progress.md" "status:" "acceptance:" "checkpoint:" "subagent-state/"; do
+        case "$item" in
+        */task_plan.md|*/findings.md|*/progress.md)
+            alt="${pd_real}/${item#"$pd"/}"; { grep -qF -- "$item" "$f" 2>/dev/null || grep -qF -- "$alt" "$f" 2>/dev/null; } || case "$item" in */task_plan.md) printf 'task_plan.md\n' ;; */findings.md) printf 'findings.md\n' ;; */progress.md) printf 'progress.md\n' ;; esac ;;
+        *)
+            grep -qF -- "$item" "$f" 2>/dev/null || printf '%s\n' "$item" ;;
+        esac
     done
 }
 
@@ -85,8 +87,10 @@ cmd_pretool() {
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
         echo "[dispatch-warn] ⚠ 派发契约缺项: $names"
+        wf="${TMPDIR:-/tmp}/task-planner-dispatch-warn-${sid}"
+        [ -f "$wf" ] && [ -n "$(find "$wf" -mmin +1440 2>/dev/null)" ] && rm -f "$wf"   # [p7fix] 24h TTL: 过期计数先清
         printf '%s [dispatch-warn] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$names" \
-            >> "/tmp/task-planner-dispatch-warn-${sid}" 2>/dev/null || true
+            >> "$wf" 2>/dev/null || true
         exit 0
     fi
     echo "[dispatch-block] 🚫 派发契约缺项(Rule 22.4a/b/22.8.1): $names — prompt 须含计划三文件绝对路径 + 8 字段返回模板 + subagent-state 检查点路径(templates/subagent_dispatch.md §2/§7/§8)" >&2

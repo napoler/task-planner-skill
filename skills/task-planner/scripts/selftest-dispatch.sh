@@ -2,6 +2,7 @@
 # selftest-dispatch.sh — task-v057 S3: check-dispatch.sh + zcode-pretooluse Agent 分支自测
 # [2026-09-09] T01 合规放行 / T02-T04 三缺项(enforce exit2+stderr 含缺项) / T05 warn 放行+stdout [dispatch-warn]
 #   / T06 off 静默 / T07 无计划 fail-open / T08 check 缺 2 项 exit1+恰 2 行 / T09-T11 hook Agent 分支集成
+#   / [p7fix] T12 PLAN_DIR 尾斜杠归一化(TASK_PLANNER_PLAN_DIR="$PLAN/" + 合规 prompt) → exit 0
 # hermetic: 临时工作区, 不触真实 plans/。全 PASS exit 0; 任一 FAIL exit 1。
 set -u
 
@@ -9,8 +10,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DISPATCH="$SCRIPT_DIR/check-dispatch.sh"
 HOOK="$SCRIPT_DIR/zcode-pretooluse.sh"
 
+SID="selftest-$$"   # [p7fix] 唯一 sid: 所有 pretool 用例统一用之, trap 清 warn 计数文件防残留
+rm -f "${TMPDIR:-/tmp}/task-planner-dispatch-warn-selftest-"*   # [p7fix] 清历史残留(含崩溃未走 trap 的旧 PID 文件)
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+trap 'rm -rf "$TMP"; rm -f "${TMPDIR:-/tmp}/task-planner-dispatch-warn-${SID}"' EXIT
 PLAN="$TMP/plans/task-t"
 mkdir -p "$PLAN" "$TMP/nowhere"
 
@@ -70,25 +73,25 @@ assert() {
 }
 
 # T01 合规 prompt, enforce → pretool 放行
-mk_prompt "$TMP/p01.md"; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p01.md" t; assert 01 "$RC" 0 - out
+mk_prompt "$TMP/p01.md"; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p01.md" "$SID"; assert 01 "$RC" 0 - out
 
 # T02 缺 findings.md 路径, enforce → exit 2 且 stderr 含缺项名
-mk_prompt "$TMP/p02.md" "$PLAN/findings.md"; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p02.md" t; assert 02 "$RC" 2 'findings.md' err
+mk_prompt "$TMP/p02.md" "$PLAN/findings.md"; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p02.md" "$SID"; assert 02 "$RC" 2 'findings.md' err
 
 # T03 缺 acceptance:, enforce → exit 2 且 stderr 含缺项名
-mk_prompt "$TMP/p03.md" 'acceptance:'; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p03.md" t; assert 03 "$RC" 2 'acceptance:' err
+mk_prompt "$TMP/p03.md" 'acceptance:'; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p03.md" "$SID"; assert 03 "$RC" 2 'acceptance:' err
 
 # T04 缺 subagent-state/, enforce → exit 2 且 stderr 含缺项名
-mk_prompt "$TMP/p04.md" 'subagent-state/'; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p04.md" t; assert 04 "$RC" 2 'subagent-state/' err
+mk_prompt "$TMP/p04.md" 'subagent-state/'; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p04.md" "$SID"; assert 04 "$RC" 2 'subagent-state/' err
 
 # T05 同 T02 缺项, warn → 放行且 stdout 含 [dispatch-warn]
-mk_prompt "$TMP/p05.md" "$PLAN/findings.md"; run_case warn "$TMP" bash "$DISPATCH" pretool "$TMP/p05.md" t; assert 05 "$RC" 0 '[dispatch-warn]' out
+mk_prompt "$TMP/p05.md" "$PLAN/findings.md"; run_case warn "$TMP" bash "$DISPATCH" pretool "$TMP/p05.md" "$SID"; assert 05 "$RC" 0 '[dispatch-warn]' out
 
 # T06 off 档缺项 → 静默放行
-mk_prompt "$TMP/p06.md" "$PLAN/findings.md" 'acceptance:'; run_case off "$TMP" bash "$DISPATCH" pretool "$TMP/p06.md" t; assert 06 "$RC" 0 - lines
+mk_prompt "$TMP/p06.md" "$PLAN/findings.md" 'acceptance:'; run_case off "$TMP" bash "$DISPATCH" pretool "$TMP/p06.md" "$SID"; assert 06 "$RC" 0 - lines
 
 # T07 unset PLAN_DIR + 无计划 cwd → fail-open 放行
-mk_prompt "$TMP/p07.md"; run_case unset "$TMP/nowhere" bash "$DISPATCH" pretool "$TMP/p07.md" t; assert 07 "$RC" 0 - out
+mk_prompt "$TMP/p07.md"; run_case unset "$TMP/nowhere" bash "$DISPATCH" pretool "$TMP/p07.md" "$SID"; assert 07 "$RC" 0 - out
 
 # T08 check 模式恰缺 2 项(progress.md 路径 + checkpoint: 标记)→ exit 1 且 stdout 恰 2 行
 mk_prompt "$TMP/p08.md" "$PLAN/progress.md" 'checkpoint:'
@@ -116,6 +119,12 @@ assert 10 "$RC" 0 - out
 # T11 hook 非 Agent 工具(Read) → 不受影响放行
 printf '{"tool_name":"Read","tool_input":{"file_path":"/x"}}' | bash "$HOOK" >"$TMP/out" 2>"$TMP/err"
 RC=$?; COUT="$(cat "$TMP/out")"; assert 11 "$RC" 0 - out
+
+# T12 [p7fix] PLAN_DIR 尾斜杠: TASK_PLANNER_PLAN_DIR="$PLAN/" + 合规 prompt(路径不带尾斜杠) → exit 0
+mk_prompt "$TMP/p12.md"
+( export TASK_PLANNER_PLAN_DIR="$PLAN/"; export TASK_PLANNER_DISPATCH_ENFORCE=enforce
+  cd "$TMP"; bash "$DISPATCH" pretool "$TMP/p12.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
+RC=$?; COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 12 "$RC" 0 - out
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
