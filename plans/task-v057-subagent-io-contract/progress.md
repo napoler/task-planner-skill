@@ -131,6 +131,7 @@
   - [main] （已授权）`~/.zcode/cli/config.json` L38 matcher `"Write|Edit"`→`"Write|Edit|Agent"`（sed 精确子串，jq 合法，备份 /tmp/zcode-cli-config-backup-20260909-063756.json）
   - [main] 实测：本会话派缺契约 Simple Agent **未被拦**（hook 注册会话启动固化，新会话生效——同 v055 agent 定义结论）；等效实测用本会话 sid + 仓根 cwd 喂已部署 hook：缺契约 rc=2 列 7 缺项 / 合规 rc=0 / Read rc=0
   - [main] [plan-resume] 各 Phase complete 后复用 INDEX 信号（in_progress=1 即本计划，pending=0）判无中断任务，未重写报告（Rule 24.7 噪音大于价值）；终验 check-delegation stats 0.714 ok；check-complete.sh 真实 exit 0（D5 修复生产验证）
+  - [main] **发布（用户 09-09 指令）**：`git fetch` → origin/master 落后 14、无远端新提交；9 位拓扑复验 8 位 diff=0，`~/.agents/skills/plan-resume` 差 2（`scripts/score-plans.py` 部署副本 270 行 > 仓库 263 行，09-07 直接改于部署位：plan-sess_ task_id 提取 + 排除会话计划扫描，4 hunk，py_compile OK；另 `__pycache__` 运行垃圾）→ 收编回仓库 8fd3a17 → rm+cp -rL 重部署 plan-resume 2 位（~/.claude、~/.agents）→ **9 位差异总计 0**、verify 25/0 → push origin master
 - Files created/modified:
   - 主仓 14 文件（merge 83282d2）；部署位 ×3 + ~/.zcode/agents/plan-writer.md + ~/.claude/agents/plan-writer.md；~/.zcode/cli/config.json（1 行）
   - plans/task-v057-subagent-io-contract/verification.md；subagent-state/15-code-reviewer-p7.md / 16-executor-p7fix.md

@@ -172,7 +172,8 @@ Phase 7（complete — 已交付，见 verification.md）
 - [x] 3 位部署 diff=0 + verify 25/0 ×3 + agent 副本 ×2 + 部署位 selftest-dispatch 12/12
 - [x] （已授权）config.json L38 matcher → `Write|Edit|Agent`（备份 /tmp/zcode-cli-config-backup-20260909-063756.json）；本会话固化未即时拦，等效实测 rc=2/0/0
 - [x] 终验 VC 逐条 + 委派统计 + check-complete（见 verification.md）
-- **Status:** complete（2026-09-09）
+- [x] **发布（09-09 用户指令 B 类扩展）**：9 位部署拓扑全量复验 → 收编 `~/.agents/skills/plan-resume/scripts/score-plans.py` 部署位修复回 canonical（8fd3a17）→ 重部署 plan-resume 2 位 → 9 位 diff=0 → `git push origin master`（见 progress）
+- **Status:** complete（2026-09-09；发布已完成）
 - **Executor:** 主进程（例外理由:① 纯 git/worktree 编排 + ② 计划系统 + ④ 用户显式授权的 config 一行——Rule 25.3 白名单）
 
 ## 🔗 Subagent Handoff 登记表
@@ -212,6 +213,7 @@ Phase 7（complete — 已交付，见 verification.md）
 | 09-09 | task_plan.md 对子代理只读；findings/progress 仅追加专属小节 | 状态字段单写者防 attest/Current Phase 混乱；并行子代理各写各锚点冲突概率低 |
 | 09-09 | 返回格式 = 8 固定 key: value 行 + 已填示例 | 用户指出"≤3 行"宽泛不可解析；固定 key 便于主进程 grep 与 hook/脚本解析 |
 | 09-09 | hook matcher 与 D5 缺陷修复列为"需授权"而非默认执行 | §六/§十一：基础设施配置与 scope 外保护区脚本须用户显式授权 |
+| 09-09 | 发布：plan-resume 部署位 score-plans.py 比仓库新（09-07 直接改在 ~/.agents 副本）→ **收编回 canonical 再统一部署**，不用仓库旧版覆盖 | §五 覆盖前看目标；canonical 唯一 truth source；部署版是超集且 py_compile 通过；单文件同步已运行内容，无行为变更风险，直接在主仓提交（§十一 11.5 精神：不改变任何运行副本行为） |
 
 ## Errors Encountered
 
