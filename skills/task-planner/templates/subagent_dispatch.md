@@ -1,5 +1,5 @@
 <!-- subagent_dispatch.md — Agent() 派发 prompt 模板(Rule 22.4)
-使用方式:在主进程脚本中读本模板,填八字段,作为 Agent() 的 prompt 参数传入
+使用方式:在主进程脚本中读本模板,填九字段,作为 Agent() 的 prompt 参数传入
 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
 
 # Subagent Dispatch Prompt
@@ -16,6 +16,7 @@
   {findings_excerpt}
   ```
 - 上下文依赖:{context_dependencies}
+- 材料包来源:取自 task_plan.md 该 Phase S-unit 表「输入」列(计划期预写);此处只填路径 + ≤10 行摘要,总量受第 9 节预算约束
 
 ## 📚 必要知识储备上下文包（随 prompt 注入 — prompt 自包含要求）
 <!-- WHAT: 派发子代理时必须注入的知识源;全文摘录或路径引用,保证子代理无会话记忆也能对齐知识库 -->
@@ -66,6 +67,11 @@
   - T4 遇错无法继续 → 写「错误与受阻」段(现象 + 已尝试方案),置 status: failed
   - T5 任务结束 → 写「最终结论」段(同第 7 节返回格式),置 status: done(必做,防返回消息丢失)
 - 检查点文件格式:头部 status 行 + 已完成里程碑(append-only 带时间戳) + 进行中 + 产出文件清单 + 错误与受阻 + 最终结论;纯 markdown,无 frontmatter
+
+## 9. 上下文预算(强制 — Rule 22.4 第 ⑨ 字段,小模型短上下文友好)
+- 本 prompt 总长 ≤ `config.json#subagent.prompt_max_chars`(默认 3000 字符);超出 = 材料没在计划期拆好,回 S-unit 表把输入拆成"路径 + ≤10 行摘要"再派
+- 只注入本 S-unit 所需材料:路径 + 摘要;**禁止**贴 task_plan.md / findings.md 全文或大段源码
+- 子代理侧:只 Read 本节列出的路径/区段,不做计划外探索;疑问按第 4 节 Scope 处理,不扩读
 
 ## 附:resume_from 注入模板(主进程专用 — Rule 22.8.4)
 <!-- 子代理 failed/timeout 后,主进程 Read 检查点文件,有实质进度时把下段填好复制进重试 prompt -->

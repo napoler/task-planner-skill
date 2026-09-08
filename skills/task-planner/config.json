@@ -179,6 +179,30 @@
           "minimum": 1,
           "description": "Max lines a single subagent dispatch can touch (Rule 21.1)"
         },
+        "step_max_files": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1,
+          "description": "Max files a single S-unit dispatch can touch — one tier tighter than max_files_per_dispatch (Rule 21.1b)"
+        },
+        "step_max_lines": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "description": "Max lines a single S-unit dispatch can touch (Rule 21.1b)"
+        },
+        "step_max_minutes": {
+          "type": "integer",
+          "default": 15,
+          "minimum": 1,
+          "description": "Max estimated duration (minutes) of a single S-unit; exceeding → split further, NOT upgrade model (Rule 21.1b / 22.3 ②)"
+        },
+        "prompt_max_chars": {
+          "type": "integer",
+          "default": 3000,
+          "minimum": 500,
+          "description": "Max chars of one dispatch prompt — small-model short-context budget; inject only path + ≤10-line summary per S-unit (Rule 22.4 field ⑨)"
+        },
         "timeout_by_type": {
           "type": "object",
           "description": "Timeout in minutes by subagent type; dispatch must enforce this limit (Rule 21)",
@@ -210,6 +234,10 @@
         "retry_limit": 2,
         "max_files_per_dispatch": 3,
         "max_lines_per_dispatch": 300,
+        "step_max_files": 2,
+        "step_max_lines": 100,
+        "step_max_minutes": 15,
+        "prompt_max_chars": 3000,
         "timeout_by_type": {
           "explore": 30,
           "editor": 60,

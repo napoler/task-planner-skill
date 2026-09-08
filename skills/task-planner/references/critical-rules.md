@@ -111,20 +111,21 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 单个任务过大 = 单次上下文内问题复杂度非线性上升,执行质量与成本双输。**计划阶段**(主进程 opus / plan-writer)负责把任务拆到低档模型可独立完成并验收的粒度;**执行阶段**逐个派低档模型子代理执行——拆分用强模型保证"拆得对",执行用弱模型保证"花得少",低成本下提高整体解决质量。
 
 21.1 **单 Phase 粒度上限**:一个 Phase/子任务 = 一次可独立验收的最小交付单元(默认 ≤3 文件且 ≤300 行,或单一可验证产出);超出必须继续拆,直到满足。与 plan-writer「≤7 Phase」约束构成双边界——防单任务过大,也防拆分过细(过细 = 执行阻力大)
+21.1b **步级(S-unit)派发粒度上限 — 小模型短上下文友好**:Phase 内每次 `Agent()` 派发对应一个 S-unit(22.6 表一行);单步 ≤`config.json#subagent.step_max_files`(默认 2)文件、≤`step_max_lines`(默认 100)行、预估 ≤`step_max_minutes`(默认 15)分钟——比 21.1 的 Phase 级上限收紧一档。依据:小模型在短上下文与长上下文下执行质量差异巨大,15 分钟内可完成的单步其上下文增长有限;超限 = 计划无效,回炉再拆而**不是**换更大模型
 21.2 **拆分产物必须自包含**:每个子任务写明 目标 / 输入(文件路径、上下文摘要)/ 验收标准(可观察证据),使低档模型无需追问即可执行(prompt 自包含);子任务间依赖必须显式声明输入来源,禁止隐式依赖
 21.3 **执行一律低档模型**:已拆出的子任务一律派子代理执行(机械型 haiku-1 / 判断型 sonnet-1,复用 agent-model-tiering 既有约定);大模型(opus 主会话)只做拆分、派发、验收,禁止亲自逐个执行已拆出的小任务(联动 Rule 13/14/17)
-21.4 **逐个执行 + 即时验收**:子任务按依赖串行派发,完成一个验收一个(Read 复核产出 / 命令输出确认),通过才派下一个;同一子任务失败 ≥2 次 → 禁止同法重试(联动 Rule 7 三击协议),回计划阶段把该子任务拆得更细或升级 Complex Problem Solver
+21.4 **逐个执行 + 即时验收 + 首败即评估拆细**:子任务按依赖串行派发,完成一个验收一个(Read 复核产出 / 命令输出确认),通过才派下一个;子任务**首次**失败/超时 → 立即对照 21.1b 评估:触及步级上限或预估超时 → 拆细重派(22.3 ②,不改模型档位);未触及且疑似能力不足 → 22.3 ③ 降档;同一子任务失败 ≥2 次 → 禁止同法重试(联动 Rule 7 三击协议),回计划阶段重拆或升级 Complex Problem Solver
 21.5 **拆分自检(动工前)**:展示计划 / plan-writer 产出时自检——任一 Phase 无法用一句话说清验收标准,即视为粒度过大,回炉重拆后再交用户确认
 ### 22 子代理规模限制与交接文件(P0)
 子代理任务过长 = 上下文过长 = 执行失败风险上升;规模必须限制 + 交接文件必须自包含。详见 SKILL.md §「子代理路由与模型分级」+ §「超时与失败兜底」。
 
 22.1 **单次派发规模上限**:单 Phase 内 `Agent()` 派发次数 ≤`config.json#subagent.max_per_phase`(默认 5);超出 → 回炉拆 Phase 或 AskUser;单任务触及文件 >`max_files_per_dispatch`(默认 3)或行数 >`max_lines_per_dispatch`(默认 300)→ 拆子任务或升 subagent
 22.2 **超时档位**:按 subagent_type 映射超时:explore/只读 ≤30min / editor 编辑/重构 ≤60min / debugger 调试 ≤60min / executor 批量执行 ≤120min(见 `config.json#subagent.timeout_by_type`);超时 → 立即报告用户,禁止静默重试
-22.3 **失败兜底**(优先级顺序):超时/失败 → ① 改派(换更合适的 subagent 类型)→ ② 降档(升一档 model,如 haiku→sonnet)→ ③ 主进程接管(单文件 ≤300 行主进程 Edit)→ ④ AskUserQuestion;达 `config.json#subagent.retry_limit`(默认 2)→ 必须 AskUser,禁继续同法重试
-22.3.1 **provider 失败主动 Scaling(task-v055-fallback,用户裁决 09-08)**:provider/网络类失败(ECONNREFUSED / other side closed / 400 rejected / Headers Timeout,即日志 `model.network.failed`)→ **先 ①-fb**:派发前可选 `bash <skill>/scripts/subagent-fallback.sh probe --plan-dir <plan-dir>` 预检(快速失败优于 ~5 分钟静默挂起);失败后 `next <type> provider` 取健康 fallback 通道决策,`bind` 生成 `<type>-fb` 变体 agent(指定 fallback 模型,幂等,登记 `~/.zcode/agents/.task-planner-fallback-meta.json`),**零消耗改派,不计 retry_limit**;无健康通道/无 health → 走 22.3 ③/④(主进程接管/AskUser)。**边界(如实)**:变体 agent 定义随会话启动固化——bind 后当前会话 `Agent(subagent_type="<type>-fb")` 不可见,新会话起可用;当前会话内兑现 = 新开会话派发或主进程接管;连续 2 个通道全灭 → 22.7 STOP
-22.4 **派发 prompt 必须自包含**(Rule 21.2 强化):Agent() 派发时 prompt 含八字段 —— 目标(1 句)/输入(绝对路径 + findings.md 摘要 ≤10 行)/验收标准(2-5 条可观察证据)/Scope 禁改清单/工作路径(worktree 绝对路径)/时长预算/返回格式(结论摘要 ≤3 行 + 证据 file:line + 置信度)/checkpoint 落盘路径(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,见 22.8);缺任一字段 → 禁止派发
+22.3 **失败兜底**(优先级顺序 — 拆细先于升档):超时/失败 → ① 改派(换更合适的 subagent 类型)→ ② **拆细**(子任务触及 21.1b 步级上限或预估超 `step_max_minutes` → 回计划层拆成更小 S-unit 重派,**不改模型档位**;每子任务拆细限 1 次防无限拆分,拆细后仍失败 → ③)→ ③ 降档(升一档 model,如 haiku→sonnet)→ ④ 主进程接管(单文件 ≤300 行主进程 Edit)→ ⑤ AskUserQuestion;达 `config.json#subagent.retry_limit`(默认 2)→ 必须 AskUser,禁继续同法重试。理念:子代理失败的第一假设是"任务太大/上下文太长"而非"模型不够强"——升档治标且贵,拆细治本且保持小模型低成本执行
+22.3.1 **provider 失败主动 Scaling(task-v055-fallback,用户裁决 09-08)**:provider/网络类失败(ECONNREFUSED / other side closed / 400 rejected / Headers Timeout,即日志 `model.network.failed`)→ **先 ①-fb**:派发前可选 `bash <skill>/scripts/subagent-fallback.sh probe --plan-dir <plan-dir>` 预检(快速失败优于 ~5 分钟静默挂起);失败后 `next <type> provider` 取健康 fallback 通道决策,`bind` 生成 `<type>-fb` 变体 agent(指定 fallback 模型,幂等,登记 `~/.zcode/agents/.task-planner-fallback-meta.json`),**零消耗改派,不计 retry_limit**;无健康通道/无 health → 走 22.3 ④/⑤(主进程接管/AskUser)。**边界(如实)**:变体 agent 定义随会话启动固化——bind 后当前会话 `Agent(subagent_type="<type>-fb")` 不可见,新会话起可用;当前会话内兑现 = 新开会话派发或主进程接管;连续 2 个通道全灭 → 22.7 STOP
+22.4 **派发 prompt 必须自包含且短**(Rule 21.2 强化):Agent() 派发时 prompt 含九字段 —— 目标(1 句)/输入(绝对路径 + findings.md 摘要 ≤10 行,取自 S-unit 表计划期预写的材料包)/验收标准(2-5 条可观察证据)/Scope 禁改清单/工作路径(worktree 绝对路径)/时长预算/返回格式(结论摘要 ≤3 行 + 证据 file:line + 置信度)/checkpoint 落盘路径(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,见 22.8)/**上下文预算**(prompt 总长 ≤`config.json#subagent.prompt_max_chars`,默认 3000 字符;只注入本步所需材料,**禁止**把 task_plan/findings 全文或大段源码贴进 prompt——小模型短上下文执行是质量前提,材料应在计划期拆成"路径 + 摘要"而非执行期整包投喂);缺任一字段 → 禁止派发
 22.5 **交接登记**:每次 Agent() 派发前填 Subagent Handoff 登记表(时间/subagent_type/type/目标/状态(queued/pending/running/done/timeout/failed)/结论/证据/findings 落点/verify_done☐);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 Edit findings.md 回填结论**(段落锚点写入「findings 落点」列),两动作完成才可勾 verify_done;未 Read → findings.md 记"未验证";Handoff 登记表含「checkpoint 路径」列(22.8.1),failed/timeout 行必须回填该列供断点重试定位
-22.6 **Phase 内 Subtasks 二级拆分**:Phase 含 ≥3 子任务 → 必须写「Subtasks」子表(ID/目标/输入/验收/状态);单子任务 ≥3 文件或 ≥300 行 → 拆为 Phase
+22.6 **Phase 内 S-unit 派发单元表(计划期必填 — Subtasks 转正)**:凡 Executor ≠ 主进程的 Phase,**计划期必须**展开 S-unit 表,每行 = 一次 `Agent()` 派发:`| ID | 目标(≤1 句) | 输入(路径 + ≤10 行摘要,计划期预写材料包) | 验收(可观察) | 预估时长 | 状态 |`;单步上限按 21.1b(≤step_max_files 文件 / ≤step_max_lines 行 / ≤step_max_minutes 分钟),超限回炉再拆;派发型 Phase 产出 >1 文件或预估 >30 分钟 → 必拆步;无 S-unit 表的派发型 Phase = 计划无效(联动 25.1);单子任务 ≥3 文件或 ≥300 行 → 升级为独立 Phase(21.1)
 22.7 **连续失败 STOP**:子代理连续失败 ≥2 次 → STOP 报告用户,不进入 Chain block 交接,不继续派发;升级处理后再继续
 22.8 **检查点落盘与断点重试协议(P0)**:子代理上下文易失(中途被杀 = 产出全丢),中间产出必须执行中落盘到检查点文件,失败后基于落盘数据断点重试,禁止无谓从零重做
 22.8.1 **检查点路径**:每次派发在 prompt 中指定 `<plan-dir>/subagent-state/{seq}-{agent_type}.md`(每子代理一文件,seq 为 Handoff 表行号);路径同步登记到 Handoff 登记表「checkpoint 路径」列(见 22.5)
@@ -159,8 +160,8 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 ### 25 子代理委派门控（P0）— 计划期声明执行体,执行期强制检查,终验期统计委派率
 Rule 13/14 定义"什么活必须派子代理",本规则把委派做成**流程门控**:不经委派决策点,工作不得开始。目标:主进程 = 调度器,实际工作由子代理承载,提高 haiku-1/sonnet-1 子代理 token 占比。
 
-25.1 **计划期 — Executor 字段强制**:task_plan.md 每个 Phase 必须含 `**Executor:** subagent_type(model)` 行(默认按 SKILL.md 路由表选型);Executor=主进程必须写例外理由(白名单见 25.3,如"① 纯 git/worktree 编排"/"② 计划系统文件维护");无字段 = 计划无效,plan-writer 产出校验失败
-25.2 **执行期 — 委派检查点**:Phase 执行循环步骤 2.5(SKILL.md):开始实际工作前先查 Executor → 非主进程立即按 Rule 22.4 八字段模板派发 + Handoff 登记表登记;禁止"先自己干,干不动再派"
+25.1 **计划期 — Executor 字段强制 + S-unit 表强制**:task_plan.md 每个 Phase 必须含 `**Executor:** subagent_type(model)` 行(默认按 SKILL.md 路由表选型);Executor=主进程必须写例外理由(白名单见 25.3,如"① 纯 git/worktree 编排"/"② 计划系统文件维护");Executor≠主进程的 Phase 还必须含 22.6 S-unit 派发单元表(计划期拆步,每行一次派发);无 Executor 字段或派发型 Phase 缺 S-unit 表 = 计划无效,plan-writer 产出校验失败
+25.2 **执行期 — 委派检查点**:Phase 执行循环步骤 2.5(SKILL.md):开始实际工作前先查 Executor → 非主进程立即按 Rule 22.4 九字段模板**逐 S-unit** 派发(每次派发对应 22.6 表一行;有依赖或同文件的 S-unit 串行——验收一个再派下一个;互不依赖(不同文件、无输入引用)的 S-unit 可同一消息并行派发,但每个仍须独立 Read 复核 + 独立 Handoff 行)+ Handoff 登记表登记;派发型 Phase 无 S-unit 表 → 计划无效,先回炉补表并重跑 attest 再动;禁止"先自己干,干不动再派",禁止把多个 S-unit 合并成一次大派发
 25.3 **例外理由登记（白名单制）**:主进程直做的 Phase,例外理由必须写在计划 Executor 字段内(计划确认时用户可见);**有效理由仅限六项白名单**——① 纯 git/worktree 编排 ② 计划系统文件维护(三件套/INDEX/ledger/attest/plan 模板) ③ 机械验证命令(只读,输出可控) ④ 用户显式要求主进程亲为 ⑤ Rule 22.3 兜底接管(单文件 ≤300 行) ⑥ 单文件 ≤3 行 trivial 修改(非保护区);白名单外理由(如"效率高""顺手")视为未登记,按 25.4/26 Q5 处置;执行期新增例外 → 先回填计划再继续
 25.4 **终验期 — 委派率统计**:交付前统计「子代理执行 Phase 数 / 总 Phase 数」+ 主进程直做清单(含理由)写入 verification.md「委派统计」段;委派率 < `config.json#delegation_rate_floor`(默认 0.7)或主进程直做清单含白名单外理由 → outcome 最高 PARTIAL;全部直做理由均在白名单内 → 不降级(编排/簿记型任务属正常形态)
 25.5 **与 Rule 13/14/21 关系**:13/14 管"哪些活必须派",21 管"拆到多小",25 管"流程上必须过委派决策点"——三者叠加,25 是执行入口的最后防线
