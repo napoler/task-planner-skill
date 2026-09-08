@@ -51,6 +51,19 @@ case "$tool" in
     fi
     # rc=0 时 check-delegation 自身可能已输出 warn JSON(注入);不重复
     ;;
+  Agent)
+    # [2026-09-09 task-v057] 派发契约守卫(Rule 22.4c):检查 Agent() prompt 含计划三文件绝对路径 + 8 字段返回 key + 检查点路径
+    # fail-open:mktemp/jq 失败一律 exit 0;阻断反馈由 check-dispatch.sh 走 stderr,此处只透传 exit 2
+    sid="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    sid="${sid:-default}"
+    pf="$(mktemp "${TMPDIR:-/tmp}/task-planner-dispatch-XXXXXX" 2>/dev/null)" || exit 0
+    printf '%s' "$input" | jq -r '.tool_input.prompt // empty' > "$pf" 2>/dev/null || { rm -f "$pf"; exit 0; }
+    bash "$SKILL_ROOT/check-dispatch.sh" pretool "$pf" "$sid"
+    rc=$?
+    rm -f "$pf"
+    [ "$rc" -eq 2 ] && exit 2
+    exit 0
+    ;;
 esac
 
 # Rule 23: 运行时并发冲突检测(仅 Write/Edit)

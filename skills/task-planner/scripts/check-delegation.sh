@@ -164,9 +164,11 @@ is_whitelisted_path() {
         d="$(dirname "$d")"
     done
     # 2. .claude/plan-templates/ 与 .zcode/plans/ 与 SKILL_ROOT 自身(全部放行)
+    # [2026-09-09 task-v057] 记忆目录白名单:记忆写入是系统指令要求主进程直做
     case "$fp" in
         */.claude/plan-templates/*) return 0 ;;
         */.zcode/plans/*) return 0 ;;
+        "$HOME/.zcode/cli/memories/"*) return 0 ;;
         "$SKILL_ROOT"/*|"$SKILL_ROOT") return 0 ;;
     esac
     return 1
