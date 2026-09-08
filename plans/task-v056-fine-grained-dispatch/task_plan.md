@@ -179,6 +179,7 @@ Phase 7（complete — 已交付 COMPLETE）
 | 09-09 | executor | P5-S2 SKILL.md 四→五档兜底 + 八→九字段 + 2.5/21/22 摘要联动（≤500 行） | done | 500 行/P0 10；五档表@375-380 拆细=2；八字段仅 Batch@266 | worktree SKILL.md:37,81,269,270,372,376-380,392 | findings R4 | subagent-state/09-executor-p5s2.md | ☑ |
 | 09-09 | executor | P5-S3 critical-rules.md 25.2 并行例外句 | done | 164 行内替换；209 行不变 | worktree critical-rules.md:164 | findings R4 | subagent-state/10-executor-p5s3.md | ☑ |
 | 09-09 | code-runner-agent | P6 worktree 内全量验证（verify.sh/selftest×2/jq/init-session 模板流通） | done | selftest 35/35+21/21；jq 四键；模板流通 5/5；verify 22/3（3=部署前 drift 预期） | subagent-state/11-code-runner-p6.md | findings R5 | subagent-state/11-code-runner-p6.md | ☑ |
+| 09-09 | executor | 交付后记忆落盘（2 新记忆 + MEMORY.md 索引；主进程 Write 被 check-delegation 误拦记忆目录） | done | 2 文件 + 索引 +2 行；目录 10→12 | ~/.zcode/cli/memories/…/memory/ | findings R7 末段 | subagent-state/12-executor-memory.md | ☑ |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 

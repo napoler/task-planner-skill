@@ -1,0 +1,4 @@
+- T2 write task-planner-check-complete-gate-inverted.md: done (file created)
+- T3 write split-before-upgrade-small-steps.md: done
+- T4/T5 MEMORY.md title replaced + 2 lines appended
+- T5 final: status=success; acceptance 1) head -1='---' x2 & name count=1 x2 OK; 2) MEMORY.md grep new files=2 OK; 3) new title=1, old title=0 OK; 4) MEMORY.md lines 11->13 OK; 5) dir files 10->12 OK
