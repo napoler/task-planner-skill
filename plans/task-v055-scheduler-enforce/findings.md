@@ -182,6 +182,21 @@
 - 验证：selftest 21/21；verify 25 pass/0 fail ×3 位；3 位 rm+cp -rL 重部署 diff=0×3；worktree 清理（外层仓 remove + branch -d）
 - **当前 ccr 通道实测（09-08 06:4x）：haiku-1/sonnet-1/fast 全宕（curl 6s 超时）；变体 -fb（agnes 通道）下新会话可用 = 改派立即兑现**
 
+### R14 haiku「归零」真实根因（09-08 15:5x，用户反馈「fast 一直成功为什么 haiku 不行」后的变量分离实验）
+**路由器不是挂，是 max_output_tokens 阈值导致全目标 provider 失败——fast(64k) 与 haiku-1(128k) 的差异 = limit.output 配置差异，与技能改动零相关。**
+1. 路由可达性：TCP ✅；`POST /v1/messages` 直接打路由器：fast/haiku-1/sonnet-1 均秒级 OK（此前「全宕」判断 = 探测脚本 URL 拼接 bug（`/v1` 后缀重复拼接出 `/v1/v1/messages` 404 + 30s 超时的误判，已废弃该结论）
+2. 变量分离矩阵（同刻同 key 对照）：
+   | 请求 | 结果 |
+   |------|------|
+   | haiku-1 max_tokens=1 / 64000（stream 与否） | OK（0-1s） |
+   | haiku-1 max_tokens=128000 stream | **94s → "All target providers failed."（target: anthropic_messages）** |
+   | fast max_tokens=64000 stream | OK（1s） |
+   | fast max_tokens=128000 stream | 120s 超时 |
+3. ZCode 侧取值链：`v2/config.json` 各档 `limit.output` = sonnet/haiku/opus/mini/deepseek = **128000**，fast = **64000**；rollout 实测主会话 fast 请求 `maxOutputTokens=64000`（成功）
+4. **结论：所有 limit.output=128000 的档（haiku-1/sonnet-1/mini/opus-1）发出的请求在路由器上游 anthropic target 处失败（400/全目标拒），limit.output=64000 的 fast 不受影响** → 路由器上游 anthropic 后端对 max_output_tokens=128000 拒绝/不支持，ZCode 按档位配置如实发送，行为正确
+5. 修复落点 = `~/.zcode/v2/config.json` 把 haiku-1/sonnet-1/mini/opus-1 的 `limit.output` 降到 ≤64000（或路由器侧修复 anthropic target 对 128k output 的支持）；**技能层无需改动**——我今日 4 个 commit（382be79 等）只动 task-planner 技能文件 + 新建 *-fb 变体，原始 agent model 行/mtime 未动（explore/code-assistant 仍 08-27 23:39），与本次故障零交集
+6. 与 R13 fallback 机制的关系：fallback 的 agnes 通道仍可作路由器彻底失效时的兜底；本次场景（部分档 400）应优先调 limit.output 而不是换模型
+
 ## Resources（补充2）
 - subagent-state/02-codebase-analyzer.md — 机制层完整分析（258 行）
 - skills/task-planner/scripts/zcode-pretooluse.sh — 执行期拦截的改造落点
