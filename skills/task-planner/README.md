@@ -16,7 +16,7 @@
 结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测。
 
 **核心特性**：
-- **5 个生命周期 hook**：SessionStart（哨兵）/ PreToolUse（范围阻断）/ PostToolUse（计划陈旧检测）/ UserPromptSubmit（新指令影响判定）/ Stop（完成检测）
+- **5 个生命周期 hook**：SessionStart（哨兵）/ PreToolUse（范围阻断 + 委派门控 + Agent 派发契约守卫，matcher 须含 Agent）/ PostToolUse（计划陈旧检测）/ UserPromptSubmit（新指令影响判定）/ Stop（完成检测）
 - **原生 Todo 双向同步**：S1-S5 强制同步时机（计划文档 ↔ TodoWrite/Task 系统）
 - **漂移检测**：每 phase 完成后自动调用 `task-drift-guard`
 - **工作树隔离**：实现类任务默认首选 worktree（防改坏运行中基础设施）
