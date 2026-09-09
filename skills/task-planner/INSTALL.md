@@ -178,7 +178,8 @@ export TASK_PLANNER_ROOT="$HOME/dev/task-planner"
 
 ### 5.1a ZCode PreToolUse matcher 须含 Agent（派发契约守卫，Rule 22.4c）
 
-`~/.zcode/cli/config.json` → `hooks.events.PreToolUse[].matcher` 必须为 `"Write|Edit|Agent"`（旧值 `"Write|Edit"` 不会检查 Agent() 派发）。命令仍为 `bash ~/.zcode/skills/task-planner/scripts/zcode-pretooluse.sh`；Agent 分支调用 `scripts/check-dispatch.sh` 检查 prompt 含计划三文件绝对路径 + 8 字段返回 key + `subagent-state/` 检查点路径，档位见 `config.json#dispatch_contract_enforce`（enforce/warn/off）。自测：`bash scripts/selftest-dispatch.sh`（11 用例）。Claude Code 侧对应工具名为 `Task`，如需同等守卫在 `register-hooks-cj.ts` 的 PreToolUse matcher 加 `Task`（后续任务，本期未改）。
+`~/.zcode/cli/config.json` → `hooks.events.PreToolUse[].matcher` 必须为 `"Write|Edit|Agent"`（旧值 `"Write|Edit"` 不会检查 Agent() 派发）。命令仍为 `bash ~/.zcode/skills/task-planner/scripts/zcode-pretooluse.sh`；Agent 分支调用 `scripts/check-dispatch.sh` 检查 prompt 含计划三文件绝对路径 + 8 字段返回 key + `subagent-state/` 检查点路径，档位见 `config.json#dispatch_contract_enforce`（enforce/warn/off）。自测：`bash scripts/selftest-dispatch.sh`（12 用例）。Claude Code 侧对应工具名为 `Task`，如需同等守卫在 `register-hooks-cj.ts` 的 PreToolUse matcher 加 `Task`（后续任务，本期未改）。
+**计划批准门控（task-v058，Rule 22.6/25.1）**：`attest-plan.sh` 锁定前自动跑 `scripts/check-plan-dispatch.sh` 校验派发型 Phase 已带执行体的 S-unit 表（缺失拒绝锁定，`--skip-dispatch-check` 逃生）；`check-complete.sh` 终验同校验。自测：`bash scripts/selftest-plan-dispatch.sh`（6 用例）。
 
 ### 5.2 Claude Code hook 不触发
 

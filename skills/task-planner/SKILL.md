@@ -73,7 +73,7 @@ model: opus
 
 - [ ] **计划确认**
   - 展示 `task_plan.md`（含 Phase 列表 + Verification Contract 表）给用户
-  - **门控**：等待用户显式 `"yes"` — 无授权禁止执行
+  - **门控**：等待用户显式 `"yes"` — 无授权禁止执行；确认后立即 `bash scripts/attest-plan.sh` 锁定，其内置 `check-plan-dispatch.sh` 校验派发型 Phase 是否已规划子代理（S-unit 执行体列，Rule 22.6/25.1；缺失拒绝锁定，`--skip-dispatch-check` 逃生）
 
 - [ ] **Phase 执行循环**（每个 Phase 独立闭环，6 步顺序执行）
   1. **开启 Phase**：`Edit task_plan.md` 当前 Phase 状态 → `in_progress`（Current Phase 同步更新）
@@ -270,7 +270,7 @@ Block 1 (选题) complete
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
-- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）
+- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 - **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）
 

@@ -37,7 +37,7 @@ cost_estimate:
 ## 掌握的技能
 
 - 模板选择:根据 `template_type` 参数从 `templates/variant/` 选择对应模板填充
-- 任务分解:将 user goal 拆为 3-7 个可执行 Phase;派发型 Phase(Executor≠主进程)再拆 S-unit 派发单元(每步 ≤2 文件/≤100 行/预估 ≤15min),计划期预写每步材料包(路径 + ≤10 行摘要)与可观察验收——计划多花一倍时间拆细,执行省三倍返工(Rule 21.1b/22.6)
+- 任务分解:将 user goal 拆为 3-7 个可执行 Phase;派发型 Phase(Executor≠主进程)再拆 S-unit 派发单元(每步 ≤2 文件/≤100 行/预估 ≤15min),计划期预写每步材料包(路径 + ≤10 行摘要)与可观察验收,每步「执行体」列必填(默认"继承"= Phase Executor,混用模型逐行写 subagent_type(model))——计划多花一倍时间拆细,执行省三倍返工(Rule 21.1b/22.6)
 - VC 设计:为每个 Phase 配 5 条可验证的 Verification Contract 条目
 - Scope 限定:列出允许/禁止的文件,避免执行期越界
 - 隔离决策:根据任务类型(worktree / direct)填写冲突分析区块
@@ -104,7 +104,7 @@ cost_estimate:
 | **Goal** | 一句话描述目标终态 |
 | **VC 表** | 5 条可验证条目(每条含判定标准 + 验证方式 + 证据路径) |
 | **Scope 表** | 允许/禁止文件清单(只列具体路径) |
-| **Phases** | 3-7 个 Phase,每 Phase 含 2-4 个 checkbox + `**Status:** pending/in_progress/complete` + `**Executor:** 执行体声明(Rule 25.1)`;Executor≠主进程的 Phase 必附 S-unit 表(列:ID/目标/输入(路径+≤10 行摘要)/验收/预估时长/状态) |
+| **Phases** | 3-7 个 Phase,每 Phase 含 2-4 个 checkbox + `**Status:** pending/in_progress/complete` + `**Executor:** 执行体声明(Rule 25.1)`;Executor≠主进程的 Phase 必附 S-unit 表(列:ID/目标/**执行体**/输入(路径+≤10 行摘要)/验收/预估时长/状态;执行体默认"继承",check-plan-dispatch.sh 批准时校验) |
 | **隔离决策** | conflict_scan / isolation / worktree_path / branch / merge_back 五字段 |
 | **Todo 同步表** | 每个 Phase 一行,含 Todo 已建/最近同步时间/备注 |
 | **Key Questions** | 1-5 个待回答的关键问题 |
@@ -152,9 +152,9 @@ cost_estimate:
 - **Status:** pending
 - **Executor:** {subagent_type(model) | 主进程（例外理由:…）}
 <!-- 派发型 Phase 必填 S-unit 表(Rule 22.6;单步 ≤2 文件/≤100 行/≤15min,超限再拆) -->
-| ID | 目标(≤1 句) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
-|----|------------|------------------------|-------------|---------|------|
-| S1 | {step goal} | {path + summary} | {observable check} | ≤15min | pending |
+| ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
+|----|------------|--------|------------------------|-------------|---------|------|
+| S1 | {step goal} | {继承 或 subagent_type(model)} | {path + summary} | {observable check} | ≤15min | pending |
 ### Phase 2: ...
 ... (3-7 phases)
 
@@ -205,7 +205,7 @@ cost_estimate:
 每次产出必须包含:
 - **位置**: `plans/{task-id}/task_plan.md` 完整路径
 - **Phase 数**: N(具体数字)
-- **S-unit 数**: N(派发型 Phase 合计;每个派发型 Phase ≥1 行)
+- **S-unit 数**: N(派发型 Phase 合计;每个派发型 Phase ≥1 行);每行「执行体」列非空
 - **VC 条目**: 5 条(每条 1 行摘要)
 - **范围限制文件**: 列出所有明确允许的文件路径
 - **必填字段检查**:Goal / VC / Scope / Phases / 隔离决策 / Todo 同步 六项 ✅
