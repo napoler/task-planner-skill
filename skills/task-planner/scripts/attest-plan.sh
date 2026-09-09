@@ -13,11 +13,13 @@ set -uo pipefail
 
 plan_file=""
 mode="attest"
+skip_dispatch=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
     --verify) mode="verify" ;;
     --clear) mode="clear" ;;
+    --skip-dispatch-check) skip_dispatch=1 ;;
     -h|--help) sed -n '2,12p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
@@ -40,6 +42,13 @@ attest_file="$plan_dir/.plan-attestation"
 
 case "$mode" in
   attest)
+    # [2026-09-09 task-v058] 计划期 S-unit 执行体校验(Rule 22.6/25.1 机制化);--skip-dispatch-check 可跳过
+    cpl="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-plan-dispatch.sh"
+    if [ -z "$skip_dispatch" ]; then
+      [ -x "$cpl" ] && { bash "$cpl" "$plan_file" || { echo "[attest] ✗ 派发型 Phase 未规划子代理,拒绝锁定(Rule 22.6/25.1);紧急 --skip-dispatch-check(将记 ledger 告警)" >&2; exit 1; }; }
+    else
+      echo "[attest] WARN: --skip-dispatch-check 跳过 S-unit 执行体校验" >&2
+    fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
     printf 'plan_sha256=%s\nplan_file=%s\nattested_at=%s\n' "$hash" "$(cd "$plan_dir" && pwd)/$(basename "$plan_file")" "$(date -Iseconds)" > "$attest_file"
     echo "[attest] ✅ 计划已锁定: $plan_file"
