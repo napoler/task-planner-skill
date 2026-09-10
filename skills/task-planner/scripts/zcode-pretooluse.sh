@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # [2026-08-27] zcode-pretooluse.sh — ZCode PreToolUse 适配器(task-planner)
+# [2026-09-10 task-planrequired-race] 哨兵检查透传会话 sid: TASK_PLANNER_SID 传给 check-scope.sh(哨兵会话私有化, 见 check-scope.sh 头部说明)
 # 职责:
 #   1. 哨兵期:检查 Write/Edit 是否在 plans/ 外(原有功能)
 #   2. 运行时并发检测(Rule 23):写入文件是否命中其他 in_progress plan 的 scope
@@ -12,7 +13,9 @@ file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.fileP
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # 原有哨兵检查
-bash "$SKILL_ROOT/check-scope.sh" "$tool" "$file"
+# [2026-09-10 task-planrequired-race] 透传会话 sid（哨兵会话私有化，见 check-scope.sh）
+sid_scope="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
+TASK_PLANNER_SID="$sid_scope" bash "$SKILL_ROOT/check-scope.sh" "$tool" "$file"
 rc=$?
 if [ "$rc" -eq 1 ]; then
   echo 'task-planner: 检测到 .plan-required 哨兵——本会话尚无有效计划，禁止写入 plans/ 之外路径。请先调用 Skill(skill="task-planner") 创建计划。' >&2
@@ -54,6 +57,9 @@ case "$tool" in
   Agent)
     # [2026-09-09 task-v057] 派发契约守卫(Rule 22.4c):检查 Agent() prompt 含计划三文件绝对路径 + 8 字段返回 key + 检查点路径
     # fail-open:mktemp/jq 失败一律 exit 0;阻断反馈由 check-dispatch.sh 走 stderr,此处只透传 exit 2
+    # [2026-09-10 task-planrequired-race] B5 根因注记：Agent 工具 hook 输入的 session_id 实测解析
+    # 常落不到主会话 side 指针（子代理 sid/命名空间分裂），回退全局指针被并发会话翻转 → 误拦合规
+    # 派发（当日实锤 4 次）。守卫侧修复见 check-dispatch.sh（prompt 自声明计划目录优先 + warn 降级）。
     sid="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
     sid="${sid:-default}"
     pf="$(mktemp "${TMPDIR:-/tmp}/task-planner-dispatch-XXXXXX" 2>/dev/null)" || exit 0

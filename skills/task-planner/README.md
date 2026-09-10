@@ -84,16 +84,19 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── check-drift.sh                       # 漂移检测
 │   ├── check-scope.sh                       # PreToolUse 范围阻断
 │   ├── init-session.sh / .ps1               # 计划初始化
-│   ├── plan-created.cjs                     # 哨兵清除
+│   ├── plan-created.cjs                     # 哨兵清除（本会话 side + legacy 双清除，含计划存在性验证）
 │   ├── session-catchup.ts                   # 中断恢复
 │   ├── sync-ide-folders.ts                  # IDE 折叠区同步
 │   ├── sync-todos.sh                        # Phase ↔ Todo 同步
-│   ├── task-plan-init.cjs                   # SessionStart 哨兵
+│   ├── task-plan-init.cjs                   # SessionStart 会话私有哨兵（plans/.plan_required_side/<sidkey>.plan_required）
 │   ├── zcode-{sessionstart,pretooluse,posttooluse,userpromptsubmit}.sh  # ZCode 适配器
 │   ├── plan-doctor.sh                       # 计划机制一键自检（移植自 planning-with-files v3）
 │   ├── resolve-plan-dir.sh                  # 解析活跃计划 task_plan.md 路径（可选第 2 参 sid：.active_plan_side/<sid>.active_plan 会话层指针 TTL 24h → 全局 legacy .active_plan → mtime 最新；slug 校验）
 │   ├── set-active-plan.sh                   # 会话私有指针 .active_plan_side/<sid>.active_plan + 全局 legacy .active_plan (set/gc/--show)
-│   ├── zcode-sessionstart.sh                # ZCode SessionStart 适配器（写 .plan-required 哨兵 + additionalContext 注入）
+│   ├── zcode-sessionstart.sh                # ZCode SessionStart 适配器（写会话私有 side 哨兵 + additionalContext 注入；sid 缺失不写哨兵 fail-open）
+│
+│   # [2026-09-10 task-planrequired-race] 哨兵会话私有化：位置 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core，剥 sess 前缀）；清除=plan-created.cjs（存在性验证）/ D10 check-time 自动仲裁 / resume 判定（启动即有有效计划则哨兵不启用）；gc 扩展清扫 side 哨兵（24h TTL）；legacy `<root>/.plan-required` 不再写入、仅作兼容读取
+│   # [2026-09-10 task-path-identity] 派发契约路径已身份判定化（stat inode / realpath -m），单拼写即可，混拼写兼容
 ├── lib/                                     ← Installer 库（v2 新增）
 │   ├── detect-tools.sh                      # 探测已部署工具
 │   ├── backup.sh                            # 备份现有 stub

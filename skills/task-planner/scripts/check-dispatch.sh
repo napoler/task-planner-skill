@@ -13,6 +13,24 @@
 #
 # fail-open (exit 0 + stderr 记录): 无活跃计划 / 计划目录不存在 / prompt 文件不可读 / jq 缺失
 # 退出码: 0=放行|无缺项|fail-open; 1=check 有缺项; 2=enforce 阻断
+#
+# [2026-09-10 task-planrequired-race] 修改说明(仅 cmd_pretool 的计划目录解析与违规处置语义;
+# 其余函数/subcommand 字节不变):
+#   原行为 = pd 仅按「env TASK_PLANNER_PLAN_DIR → resolve-plan-dir.sh 链」解析,缺项一律 exit 2;
+#   全局指针 .active_plan 被并发会话/cron 频繁翻转指向他会话计划目录时,任何合规 prompt
+#   (含本会话计划路径) 都被误判"缺项"而 exit 2 阻断派发(当日实锤 4 次,见 findings.md B5/B5a)。
+#   现改三级解析: ① TASK_PLANNER_PLAN_DIR env 显式 → enforce(显式指定维持强校验);
+#   ② prompt 自声明(三文件路径同目录三件齐 且 task_plan.md 真实存在,兼容 /home 与 /mnt/data
+#   双视图拼写) → enforce; ③ resolve 链(sid 指针/global/mtime)兜底未命中 → 降级 warn:
+#   打印一行 [dispatch-guard] ⚠ 到 stderr 后 exit 0(fail-open,根治 B5 跨会话误拦)。
+#   TASK_PLANNER_DISPATCH_ENFORCE=off 全程放行 与 =warn 既有分支语义保持不变;成功路径(无缺项)保持静默 exit 0。
+#
+# [2026-09-10 task-path-identity] 身份判定改造记录(仅 scan_missing 三文件分支;档位分档不变):
+#   现象 = 混拼写 prompt(task_plan 行 /home、findings 行 /mnt/data、progress 行 /home)在 enforce 档
+#   被 grep -qF 字面匹配误判缺项 exit 2(bind mount 双视图: 同仓同文件两种拼写);
+#   根因 = 旧 alt 拼写 $pd_real 依赖 pwd -P/realpath,而 realpath 不折叠 bind mount,alt 形同虚设;
+#   修法 = 双轨文件身份判定: 两侧文件都存在 → stat -c %d:%i(device:inode)比对,拼写免疫;
+#   任一不存在(拟创建计划)→ realpath -m 两侧规范串相等即命中;alt 拼写与 pd_real 变量一并废除。
 set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,14 +38,50 @@ SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_JSON="$SKILL_ROOT/../config.json"
 
 # 缺项扫描: $1=prompt 文件 $2=计划目录 → stdout 每行一个缺项名(固定顺序 P1..P3,R1..R3,C1)
-# [p7fix] 计划目录归一化: 去尾斜杠 + 三文件匹配同时接受符号链接解析后的真实路径(pd_real)
+# [2026-09-10 task-path-identity] 原行为=grep -qF 字面匹配+无效 alt 拼写（realpath 不折叠 bind mount），混拼写 prompt 被误判缺项；改为文件身份判定：存在文件→stat -c %d:%i inode 比对（bind mount 免疫），不存在→realpath -m 规范串比对；废除 alt 拼写
 scan_missing() {
-    local f="$1" pd="$2" pd_real item alt
-    pd="${pd%/}"; pd_real="$(cd "$pd" 2>/dev/null && pwd -P)"; pd_real="${pd_real:-$pd}"
+    local f="$1" pd="$2" item c hit id_cand id_ref dc dr
+    pd="${pd%/}"
+    # [2026-09-10 task-path-identity] 文件身份判定: 预抽取 prompt 中所有以三文件名结尾的候选路径
+    local cands
+    cands="$(grep -oE '[^[:space:][:cntrl:]]*/(task_plan|findings|progress)\.md' "$f" 2>/dev/null | sort -u || true)"
     for item in "$pd/task_plan.md" "$pd/findings.md" "$pd/progress.md" "status:" "acceptance:" "checkpoint:" "subagent-state/"; do
         case "$item" in
         */task_plan.md|*/findings.md|*/progress.md)
-            alt="${pd_real}/${item#"$pd"/}"; { grep -qF -- "$item" "$f" 2>/dev/null || grep -qF -- "$alt" "$f" 2>/dev/null; } || case "$item" in */task_plan.md) printf 'task_plan.md\n' ;; */findings.md) printf 'findings.md\n' ;; */progress.md) printf 'progress.md\n' ;; esac ;;
+            hit=0
+            for c in $cands; do
+                case "$c" in
+                *"/${item##*/}") ;;      # 文件名须与 item 一致(task_plan.md 等), 避免跨名误判
+                *) continue ;;
+                esac
+                if [ -e "$c" ] && [ -e "$item" ]; then
+                    # a. 两侧都存在 → device:inode 相同即同一文件(bind mount 双拼写免疫)
+                    id_cand="$(stat -c %d:%i -- "$c" 2>/dev/null)" || continue
+                    id_ref="$(stat -c %d:%i -- "$item" 2>/dev/null)" || continue
+                else
+                    # b. 任一不存在(拟创建计划) → 目录身份优先: 两侧目录都在则 dirname 的
+                    #    device:inode 比对(拼写免疫——全路径 realpath -m 不折叠 bind mount,
+                    #    Phase 5 VC-3 实测跨视图拟创建仍误拦); 目录也不在才退 realpath -m 全路径
+                    dc="$(dirname -- "$c" 2>/dev/null)" || continue
+                    dr="$(dirname -- "$item" 2>/dev/null)" || continue
+                    if [ -d "$dc" ] && [ -d "$dr" ]; then
+                        id_cand="$(stat -c %d:%i -- "$dc" 2>/dev/null)" || continue
+                        id_ref="$(stat -c %d:%i -- "$dr" 2>/dev/null)" || continue
+                    else
+                        id_cand="$(realpath -m -- "$c" 2>/dev/null)" || continue
+                        id_ref="$(realpath -m -- "$item" 2>/dev/null)" || continue
+                    fi
+                fi
+                [ -n "$id_cand" ] && [ "$id_cand" = "$id_ref" ] && { hit=1; break; }
+            done
+            if [ "$hit" -ne 1 ]; then
+                case "${item##*/}" in
+                task_plan.md) printf 'task_plan.md\n' ;;
+                findings.md) printf 'findings.md\n' ;;
+                progress.md) printf 'progress.md\n' ;;
+                esac
+            fi
+            ;;
         *)
             grep -qF -- "$item" "$f" 2>/dev/null || printf '%s\n' "$item" ;;
         esac
@@ -83,8 +137,48 @@ cmd_pretool() {
         echo "[dispatch-guard] jq 缺失, 派发契约守卫 fail-open" >&2; exit 0
     fi
     [ "$mode" = "off" ] && exit 0
-    pd="$(resolve_plan_dir)"
-    [ -n "$pd" ] && [ -d "$pd" ] || exit 0   # 无活跃计划/目录不存在 → fail-open
+    # [2026-09-10 task-planrequired-race] 三级计划目录解析,决定 pd 与处置档位(见头部修改说明):
+    # ① TASK_PLANNER_PLAN_DIR env 显式 → enforce; ② prompt 自声明(声明含 task_plan.md 路径的目录
+    # 且该目录 task_plan.md 真实存在,取首个命中拼写,兼容 /home 与 /mnt/data 双视图) → enforce;
+    # ③ 均未锚定 → resolve 链(带 sid)兜底,一律降级 warn 放行(根治 B5 跨会话误拦)
+    local pd_mode decl_taskdirs d
+    # 自声明目录组 = prompt 中所有 task_plan.md 声明路径的 dirname(去重)
+    decl_taskdirs="$(grep -oE '[^ [:cntrl:]]*/task_plan\.md' "$pf" 2>/dev/null | xargs -n1 dirname 2>/dev/null | sort -u || true)"
+    if [ -n "${TASK_PLANNER_PLAN_DIR:-}" ]; then
+        pd="${TASK_PLANNER_PLAN_DIR}"; pd_mode="enforce"
+    else
+        pd=""
+        # 自声明锚定: 取 prompt 中 task_plan.md 声明路径的目录组(去重); 该目录下
+        # task_plan.md 真实存在([ -f ])即锚定——双视图拼写下取首个可命中者;
+        # 三件齐(组内同时含三文件名)是本条件最强形态, 缺 findings/progress 声明
+        # 仍按缺项在 enforce 档被 scan 捕获(不得因此逃逸到 warn 档)
+        for d in $decl_taskdirs; do
+            if [ -f "$d/task_plan.md" ]; then
+                pd="$d"; break
+            fi
+        done
+        if [ -n "$pd" ]; then
+            pd_mode="enforce"
+        else
+            pd="$(resolve_plan_dir)"
+            pd_mode="warn"
+        fi
+    fi
+    if [ "$pd_mode" = "warn" ]; then
+        # [task-planrequired-race] B5 根治: env 显式与 prompt 自声明均未锚定本会话计划目录,
+        # side/resolve 只是兜底(全局指针可能被并发会话翻转指向他会话) → 降级 warn 放行,不再 exit 2 误拦
+        if [ -n "$pd" ] && [ -d "$pd" ]; then
+            missing="$(scan_missing "$pf" "$pd")"
+            [ -n "$missing" ] || exit 0   # 兜底命中且无缺项 → 维持原有静默放行
+            names="$(join_missing "$missing")"
+        else
+            names="unknown"
+        fi
+        echo "[dispatch-guard] ⚠ 计划目录解析未命中本会话(side/自声明)，降级 warn 放行(pd=${pd:-空}) 缺项=${names}" >&2
+        exit 0
+    fi
+    # enforce 档(env 显式 / prompt 自声明锚定成功): 沿用原有缺项扫描与分档处置
+    [ -n "$pd" ] && [ -d "$pd" ] || exit 0   # 目录不存在 → fail-open(原语义)
     missing="$(scan_missing "$pf" "$pd")"
     [ -n "$missing" ] || exit 0
     names="$(join_missing "$missing")"
