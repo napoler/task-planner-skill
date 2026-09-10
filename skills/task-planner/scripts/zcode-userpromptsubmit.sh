@@ -19,9 +19,13 @@ CWD="${CWD:-$PWD}"
 # ─── 探测活跃计划(无则零开销静默退出)───────────────────────────────────────
 # [2026-09-05 task-active-plan] 指针优先(resolve-plan-dir.sh:.active_plan→mtime→legacy),
 # resolver 缺失时兜底旧 ls -t 逻辑(部署位同步前的过渡)
+# 会话 sid 提前解析(2026-09-10 active-plan-race): resolver 带第二参 sid → 会话私有
+# 指针 .active_plan_side/<sid>.active_plan 优先,并行会话不再互顶全局 legacy 指针
+UPS_SID="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
+UPS_SID="${UPS_SID:-default}"
 plan=""
 RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
-[ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" 2>/dev/null || true)"
+[ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" "$UPS_SID" 2>/dev/null || true)"
 if [ -z "$plan" ] && [ ! -f "$RESOLVER" ] && [ -d "$CWD/plans" ]; then
   plan="$(ls -t "$CWD"/plans/*/task_plan.md 2>/dev/null | head -1)"
 fi
@@ -83,16 +87,28 @@ rm -f "$tmpf"
 # ─── 会话级节流(仅 [plan-note];smart 注入每轮进行)──────────────────────────
 interval="$(jq -r '.properties.prompt_note_interval.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 case "$interval" in ''|*[!0-9]*|0) interval=10 ;; esac
-UPS_SID="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
-UPS_SID="${UPS_SID:-default}"
 ups_state="/tmp/task-planner-ups-${UPS_SID}.state"
 
 # [2026-09-07 task-v055] 委派门控 — 写 .session-owner
-# UserPromptSubmit 是主进程会话事件:此时传入的 session_id 即为主会话 id
+# UserPromptSubmit 是主会话事件:此时传入的 session_id 即为主会话 id
 # (子代理若有 UserPromptSubmit 会沿用主 sid 或另发,sid 解析与 PreToolUse 对齐)
 # 写入 <plan-dir>/.session-owner 单行纯文本;解析失败/无活跃计划静默,不阻断用户输入
-if [ -n "$plan_dir" ] && [ -n "$UPS_SID" ] && [ "$UPS_SID" != "default" ]; then
+# [2026-09-10 active-plan-race] claim 协议: 先读既有 owner —— owner 属**其他**会话时,
+# 既不覆写 .session-owner 也不认领 side 指针(防他会话 mtime 兜底解析到本会话计划后越权认领);
+# owner 空或 == 本 sid 才写 owner + 原子写 .active_plan_side/<sid>.active_plan
+owner="$(tr -cd 'a-zA-Z0-9' < "$plan_dir/.session-owner" 2>/dev/null | head -c 40)"
+if [ -n "$UPS_SID" ] && [ "$UPS_SID" != "default" ] && { [ -z "$owner" ] || [ "$owner" = "$UPS_SID" ]; }; then
   printf '%s' "$UPS_SID" > "$plan_dir/.session-owner" 2>/dev/null || true
+  pid="$(basename "$plan_dir")"
+  case "$pid" in
+    *[!A-Za-z0-9._-]*|'') : ;;
+    *)
+      side_dir="$plan_dir/../.active_plan_side"
+      mkdir -p "$side_dir" 2>/dev/null || true
+      side_tmp="$(mktemp "$side_dir/.tmp.XXXXXX" 2>/dev/null)" || side_tmp=""
+      [ -n "$side_tmp" ] && printf '%s\n' "$pid" > "$side_tmp" 2>/dev/null && mv -f "$side_tmp" "$side_dir/${UPS_SID}.active_plan" 2>/dev/null || true
+      ;;
+  esac
 fi
 n="$(cat "$ups_state" 2>/dev/null || true)"
 case "$n" in ''|*[!0-9]*) n=0 ;; esac

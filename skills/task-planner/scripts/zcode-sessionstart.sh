@@ -20,6 +20,10 @@ ${pending}
   fi
 fi
 
+# [2026-09-10 active-plan-race] 顺带清扫过期会话指针(.active_plan_side/ mtime>24h,会话残留)
+# fail-open: 失败静默,不阻塞会话启动
+bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/set-active-plan.sh" gc 2>/dev/null || true
+
 if [ "$rc" -eq 0 ] && [ -n "$out" ]; then
   printf '{"additionalContext": %s}\n' "$(printf '%s' "$out" | jq -Rs .)"
 fi
