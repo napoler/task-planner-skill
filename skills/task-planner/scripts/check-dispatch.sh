@@ -53,12 +53,15 @@ get_mode() {
 }
 
 # 计划目录解析: 环境变量 TASK_PLANNER_PLAN_DIR 优先,否则 resolve-plan-dir.sh 输出(= task_plan.md 路径)取 dirname
+# [2026-09-10 active-plan-race] resolver 二参带会话 sid(zcode-pretooluse.sh Agent 分支 export TASK_PLANNER_SID
+# 传入;未设则回 env CLAUDE_CODE_SESSION_ID/resolver 内置 default) → .active_plan_side/<sid>.active_plan
+# 会话私有指针优先,并行会话的派发守卫各查各的计划,不再被互顶的全局 legacy 指针误拦
 resolve_plan_dir() {
     local pd="${TASK_PLANNER_PLAN_DIR:-}" pfile
     if [ -n "$pd" ]; then
         printf '%s' "$pd"; return 0
     fi
-    pfile="$(bash "$SKILL_ROOT/resolve-plan-dir.sh" "$PWD" 2>/dev/null || true)"
+    pfile="$(bash "$SKILL_ROOT/resolve-plan-dir.sh" "$PWD" "${TASK_PLANNER_SID:-}" 2>/dev/null || true)"
     if [ -n "$pfile" ] && [ -f "$pfile" ]; then
         printf '%s' "$(dirname "$pfile")"
     fi

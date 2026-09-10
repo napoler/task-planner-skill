@@ -27,7 +27,9 @@ if [ -d "$CWD/plans" ]; then
 fi
 # [2026-09-05 task-active-plan] 指针优先(resolve-plan-dir.sh:.active_plan→mtime→legacy)
 RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
-[ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" 2>/dev/null || true)"
+# [2026-09-10 active-plan-race] 带会话 sid 二参 → .active_plan_side/<sid>.active_plan 优先,
+# 并行会话各自解析本会话的计划,不再被全局 legacy 指针互顶
+[ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" "$SID" 2>/dev/null || true)"
 [ -z "$plan" ] && exit 0
 
 now="$(date +%s)"

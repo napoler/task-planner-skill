@@ -131,10 +131,28 @@ fi
 echo "[init] 5/5 planning files verified"
 # [2026-09-05 task-active-plan] 自动写活跃计划指针(最新创建的计划=默认活跃);
 # 失败仅警告不阻断(指针缺失时 resolve-plan-dir.sh 回退 mtime 最新)
+# 2026-09-10 active-plan-race: 原行为=无条件覆写全局 plans/.active_plan(后写者赢,多并行会话互顶,
+#   09-09 实锤 7 次 check-dispatch 误拦)。改为:env CLAUDE_CODE_SESSION_ID 有值(ZCode 会话)→
+#   原子写会话私有 side 指针 .active_plan_side/<sidkey>.active_plan,不碰全局 legacy;
+#   无值(cron/纯脚本单会话场景)→保持原行为写全局 legacy(7am cron 兼容)。
 PLAN_ROOT="$(cd .. && pwd)"
-if printf '%s\n' "$(basename "$PWD")" > "${PLAN_ROOT}/.active_plan" 2>/dev/null; then
-    echo "[init] active_plan 指针已指向: $(basename "$PWD")"
+SIDSRC="${CLAUDE_CODE_SESSION_ID:-}"
+if [ -n "$SIDSRC" ]; then
+    SIDKEY="$(printf '%s' "$SIDSRC" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    SIDE_DIR="${PLAN_ROOT}/.active_plan_side"
+    if [ -n "$SIDKEY" ] && mkdir -p "$SIDE_DIR" 2>/dev/null; then
+        side_tmp="$(mktemp "${SIDE_DIR}/.tmp.XXXXXX" 2>/dev/null)" || side_tmp=""
+        if [ -n "$side_tmp" ]; then
+            printf '%s\n' "$(basename "$PWD")" > "$side_tmp" 2>/dev/null \
+                && mv -f "$side_tmp" "${SIDE_DIR}/${SIDKEY}.active_plan" 2>/dev/null \
+                && echo "[init] active_plan side 指针已指向: $(basename "$PWD")(sid=${SIDKEY})"
+        fi
+    fi
 else
-    echo "[init] WARN: 指针写入失败(hook 将回退 mtime 最新解析)"
+    if printf '%s\n' "$(basename "$PWD")" > "${PLAN_ROOT}/.active_plan" 2>/dev/null; then
+        echo "[init] active_plan 指针已指向: $(basename "$PWD")"
+    else
+        echo "[init] WARN: 指针写入失败(hook 将回退 mtime 最新解析)"
+    fi
 fi
 echo "Planning files initialized!"

@@ -136,6 +136,7 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 22.8.3 **检查点文件格式**:纯 markdown 分段(头部 status 行 / 已完成里程碑 append-only 带时间戳 / 进行中 / 产出文件清单 / 错误与受阻 / 最终结论),人读为主,无 frontmatter
 22.8.4 **断点重试**:子代理 failed/timeout/返回异常时,主进程兜底动作(22.3)执行前必须**先 Read 检查点文件**——有实质进度(≥1 条里程碑或已有产出文件)→ 重试 prompt 注入 resume_from 段(已完成清单[禁止重做] + 已有产出文件[直接复用/续写] + 剩余任务);无进度 → 按 22.3 正常兜底;resume_from 注入不重置 22.3 的 retry_limit 计数
 22.8.5 **返回缺失兜底**:主进程 30s Read 产出复核(22.5)时,若返回消息缺失但检查点 status: done,以检查点「最终结论」段为准完成回填
+22.9 **活跃计划解析会话隔离(active-plan-race,2026-09-10)**:hook 解析"当前活跃计划"经 `resolve-plan-dir.sh [root] [sid]` 双参——第 2 可选参 sid 缺省取 `CLAUDE_CODE_SESSION_ID`(规范化=剥非字母数字取前 40,与 hook 状态文件命名一致);解析链 = ① 会话层 `plans/.active_plan_side/<sid>.active_plan`(mtime TTL 24h 过期跳过)→ ② 全局 legacy `plans/.active_plan`(兜底,cron/纯脚本单会话场景)→ ③ mtime 最新 → ④ 项目根 legacy;会话层优先,消除并行会话后写者赢互顶全局指针致 check-dispatch 误拦(09-09 实锤 7 次)。写入侧:UserPromptSubmit hook 按 sid 自动认领本会话 side 指针(mktemp+mv 原子写;`.session-owner` 属主校验防他会话越权认领);`set-active-plan.sh` 提供 set <task-id> [--sid s] / --show / --clear / gc(清扫 >24h 残留,SessionStart 顺带执行)
 
 ### 23 并行任务检测与冲突规避(P0)
 并发执行多 plan 时,同文件/同 worktree/同名 task-id 会产生难以追踪的冲突。必须通过自动检测 + 规避建议提前暴露风险(Rule 23 落地到 hooks + 注册表)。
@@ -167,6 +168,7 @@ Rule 13/14 定义"什么活必须派子代理",本规则把委派做成**流程�
 25.2 **执行期 — 委派检查点**:Phase 执行循环步骤 2.5(SKILL.md):开始实际工作前先查 Executor → 非主进程立即按 Rule 22.4 九字段模板**逐 S-unit** 派发(每次派发对应 22.6 表一行;有依赖或同文件的 S-unit 串行——验收一个再派下一个;互不依赖(不同文件、无输入引用)的 S-unit 可同一消息并行派发,但每个仍须独立 Read 复核 + 独立 Handoff 行)+ Handoff 登记表登记;派发型 Phase 无 S-unit 表 → 计划无效,先回炉补表并重跑 attest 再动;禁止"先自己干,干不动再派",禁止把多个 S-unit 合并成一次大派发
 25.3 **例外理由登记（白名单制）**:主进程直做的 Phase,例外理由必须写在计划 Executor 字段内(计划确认时用户可见);**有效理由仅限六项白名单**——① 纯 git/worktree 编排 ② 计划系统文件维护(三件套/INDEX/ledger/attest/plan 模板) ③ 机械验证命令(只读,输出可控) ④ 用户显式要求主进程亲为 ⑤ Rule 22.3 兜底接管(单文件 ≤300 行) ⑥ 单文件 ≤3 行 trivial 修改(非保护区);白名单外理由(如"效率高""顺手")视为未登记,按 25.4/26 Q5 处置;执行期新增例外 → 先回填计划再继续
 25.4 **终验期 — 委派率统计**:交付前统计「子代理执行 Phase 数 / 总 Phase 数」+ 主进程直做清单(含理由)写入 verification.md「委派统计」段;委派率 < `config.json#delegation_rate_floor`(默认 0.7)或主进程直做清单含白名单外理由 → outcome 最高 PARTIAL;全部直做理由均在白名单内 → 不降级(编排/簿记型任务属正常形态)
+25.4a **白名单豁免的机械执行(check-complete.sh 终验,2026-09-10)**:rate<floor 时,主进程直做清单全空或每条理由均命中 25.3 六项白名单关键词(①git/worktree 编排 ②计划系统文件 ③机械验证 ④用户显式 ⑤兜底接管 ⑥trivial)→ 输出 `DELEGATION RATE WHITELIST-EXEMPT` 标记并放行(不降级);任一理由未命中白名单 → 保持 FAILED;jq 缺失 → fail-closed 不豁免(维持旧行为)
 25.5 **与 Rule 13/14/21 关系**:13/14 管"哪些活必须派",21 管"拆到多小",25 管"流程上必须过委派决策点"——三者叠加,25 是执行入口的最后防线
 25.6 **失败联动**:委派检查点发现无法派发(Agent 工具不可用/连续失败)→ 按 Rule 22.3 兜底顺序处理并在 progress.md 记录,禁止静默转主进程亲为
 

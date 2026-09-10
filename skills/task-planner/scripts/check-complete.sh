@@ -404,6 +404,21 @@ if [ "$python_rc" -eq 0 ]; then
             if ! awk -v r="$delegation_rate" -v f="$DELEGATION_RATE_FLOOR" 'BEGIN{exit (r+0 < f+0)}'; then
                 rate_ok=0
             fi
+            # [2026-09-09 D6 / Rule 25.4] rate<floor 时白名单豁免:main_direct 全空或每条 reason 均命中
+            # 白名单关键词(①git 编排/②计划系统文件/③机械验证/④用户显式/⑤兜底接管/⑥trivial)→ 放行。
+            # 依据 critical-rules 25.4:「全部直做理由均在白名单内 → 不降级(编排/簿记型任务属正常形态)」。
+            # 防过度放行:任一 reason 未命中白名单 → 保持 rate_ok=0 (FAILED 不变);jq 缺失 → fail-closed 不放行。
+            whitelist_exempt=0
+            if [ "$rate_ok" -eq 0 ]; then
+                if [ "$main_direct_count" -eq 0 ]; then
+                    whitelist_exempt=1
+                elif command -v jq >/dev/null 2>&1; then
+                    wl_match="$(printf '%s' "$stats_output" | jq -r '.main_direct[]? | .reason // empty' 2>/dev/null \
+                        | grep -cE '白名单[①②③④⑤⑥]|git 编排|worktree|计划系统文件|三件套|机械验证|用户显式|兜底接管|trivial' || true)"
+                    [ "${wl_match:-0}" -ge "$main_direct_count" ] && whitelist_exempt=1
+                fi
+                [ "$whitelist_exempt" -eq 1 ] && { rate_ok=1; printf '[plan] DELEGATION RATE WHITELIST-EXEMPT (rate=%s < floor=%s, main_direct=%s 条理由全白名单内, Rule 25.4 不降级)\n' "$delegation_rate" "$DELEGATION_RATE_FLOOR" "$main_direct_count" >&2; }
+            fi
         fi
 
         # 摘要输出(stderr 给主进程可视化;stdout 保留 [plan] 标记给 hook 解析)

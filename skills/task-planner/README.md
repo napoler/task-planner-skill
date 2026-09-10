@@ -91,8 +91,8 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── task-plan-init.cjs                   # SessionStart 哨兵
 │   ├── zcode-{sessionstart,pretooluse,posttooluse,userpromptsubmit}.sh  # ZCode 适配器
 │   ├── plan-doctor.sh                       # 计划机制一键自检（移植自 planning-with-files v3）
-│   ├── resolve-plan-dir.sh                  # 解析当前活跃计划 task_plan.md 路径（保留解析链+slug 校验）
-│   ├── set-active-plan.sh                   # 设置/查看活跃计划指针 plans/.active_plan
+│   ├── resolve-plan-dir.sh                  # 解析活跃计划 task_plan.md 路径（可选第 2 参 sid：.active_plan_side/<sid>.active_plan 会话层指针 TTL 24h → 全局 legacy .active_plan → mtime 最新；slug 校验）
+│   ├── set-active-plan.sh                   # 会话私有指针 .active_plan_side/<sid>.active_plan + 全局 legacy .active_plan (set/gc/--show)
 │   ├── zcode-sessionstart.sh                # ZCode SessionStart 适配器（写 .plan-required 哨兵 + additionalContext 注入）
 ├── lib/                                     ← Installer 库（v2 新增）
 │   ├── detect-tools.sh                      # 探测已部署工具

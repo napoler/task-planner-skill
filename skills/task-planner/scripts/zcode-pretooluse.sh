@@ -58,7 +58,9 @@ case "$tool" in
     sid="${sid:-default}"
     pf="$(mktemp "${TMPDIR:-/tmp}/task-planner-dispatch-XXXXXX" 2>/dev/null)" || exit 0
     printf '%s' "$input" | jq -r '.tool_input.prompt // empty' > "$pf" 2>/dev/null || { rm -f "$pf"; exit 0; }
-    bash "$SKILL_ROOT/check-dispatch.sh" pretool "$pf" "$sid"
+    # [2026-09-10 active-plan-race] 传会话 sid 给 check-dispatch → 其 resolve 走 .active_plan_side/<sid>.active_plan,
+    # 并行会话的派发守卫各查各的计划,不再被互顶的全局指针误拦
+    TASK_PLANNER_SID="$sid" bash "$SKILL_ROOT/check-dispatch.sh" pretool "$pf" "$sid"
     rc=$?
     rm -f "$pf"
     [ "$rc" -eq 2 ] && exit 2
