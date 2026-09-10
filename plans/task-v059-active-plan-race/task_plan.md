@@ -60,10 +60,10 @@
 各 Phase Executor 已写入 Phases 段；主进程直做项均写例外理由；Executor≠主进程的 Phase 附 S-unit 表（Rule 22.6）。
 
 ## Current Phase
-Phase 4
+Phase 6
 
 ## Next Step
-Phase 5: 主进程 commit 收编+文档+测试改动 → git merge --no-ff wt/task-v059-active-plan-race 入 master → 清理 worktree
+INDEX 刷新 + 簿记收尾 commit
 
 ## 排查记录（2026-09-10 会话内发生，非收编内容）
 - 现象：会话早期 3 次 Agent() 派发被 [dispatch-block] 误拦（旧版 hook 链路：主仓旧 resolver + 主仓 .active_plan 指向 v058，prompt 指向 worktree 计划目录 → 三文件缺项）。根因=本任务要收编的 active-plan-race 缺陷实锤（全局指针+无 sid 解析）
@@ -79,7 +79,7 @@ Phase 5: 主进程 commit 收编+文档+测试改动 → git merge --no-ff wt/ta
   | P1-S1 | 10 文件全量拷入 worktree | 继承 | 材料包：`/home/terry/.zcode/skills/task-planner/{README.md, scripts/9 个 sh}` 逐文件 cp -f 至 worktree 对应路径；本计划文件 | `diff -rq -x .git` zcopy↔worktree 0 differ | 5min | complete |
   | P1-S2 | 三件套登记 + git status 范围确认 | 继承 | 材料包：worktree `plans/task-v059-active-plan-race/{findings,progress}.md` 回填 Phase 1；`git status --short` | 仅 skills/task-planner 10 文件 + 计划三文件 modified，无越界 | 5min | complete
 - 验收: VC-1 ✓ (diff -rq EXIT=0)
-- 状态: complete（2026-09-10，diff -rq -x .git 0 differ，证据见 findings.md Phase 1 段）
+- **Status:** complete（2026-09-10，diff -rq -x .git 0 differ，证据见 findings.md Phase 1 段）
 
 ### Phase 2: 回归与新增测试
 - Executor: executor — 机械跑 4 既有 selftest + 构造白名单豁免行为用例（VC-7），步骤明确可照单执行
@@ -89,7 +89,7 @@ Phase 5: 主进程 commit 收编+文档+测试改动 → git merge --no-ff wt/ta
   | P2-S1 | 4 既有 selftest 全过（dispatch/delegation/plan-dispatch/fallback，在 worktree 跑） | 继承 | 材料包：worktree 路径 + 各 selftest 脚本名；checkpoint 路径 `plans/task-v059-active-plan-race/subagent-state/02-executor.md` | 4×exit 0 + pass/fail 计数（fail=0） | 10min | complete |
   | P2-S2 | VC-7 白名单豁免行为验证（白名单内理由放行 / 非白名单保持 FAILED / jq 缺失 fail-closed 三用例，构造假 ledger 跑 check-complete 25.4 段） | 继承 | 材料包：同 02-executor.md + check-complete.sh 白名单段逻辑（reason 关键词 grep 白名单[①②③④⑤⑥] 等） | 三用例行为与 25.4 语义一致，输出含 EXEMPT 或 FAILED 对应标记 | 10min | complete |
 - 验收: VC-2 VC-3 VC-7
-- 状态: complete（2026-09-10，4 selftest 全 exit 0 共 77 用例 fail=0；VC-7 三用例 3/3 一致，判定命令与证据见 findings.md Phase 2 段 + 02-executor.md）
+- **Status:** complete（2026-09-10，4 selftest 全 exit 0 共 77 用例 fail=0；VC-7 三用例 3/3 一致，判定命令与证据见 findings.md Phase 2 段 + 02-executor.md）
 
 ### Phase 3: 文档净零联动
 - Executor: Code Assistant — 小范围文档编辑（README/INSTALL/SKILL/references 补 active-plan-race 与 25.4 白名单说明，各 ≤15 行净零原则），≤3 文件硬限制内
@@ -99,7 +99,7 @@ Phase 5: 主进程 commit 收编+文档+测试改动 → git merge --no-ff wt/ta
   | P3-S1 | README set-active-plan.sh 行描述对齐 zcopy 版（zcopy README 已含该改动，拷入后核对） + INSTALL/SKILL/references 补 active-plan-race 机制说明（.active_plan_side 会话层+legacy 兜底+gc） | 继承 | 材料包：zcopy 6685a93 提交说明 + worktree 当前文档现状 diff；checkpoint `plans/task-v059-active-plan-race/subagent-state/03-code-assistant.md` | grep `.active_plan_side` 在 README/SKILL/references 命中≥1；无悬空指针 | 15min | complete |
   | P3-S2 | check-complete 25.4 白名单豁免在 critical-rules.md / SKILL.md 摘要有对应（净零，改摘要不扩篇幅） | 继承 | 材料包：同 03-code-assistant.md + check-complete.sh 白名单块注释（2026-09-09 D6 / Rule 25.4 依据 critical-rules 25.4） | grep `WHITELIST-EXEMPT\|白名单豁免` 在 references/critical-rules.md 或 SKILL.md 命中 | 10min | complete
 - 验收: VC-4 ✓ (grep 全过)
-- 状态: complete（2026-09-10，README:94/SKILL:64,150/critical-rules:139+171/INSTALL:183 净零 +7/-3，证据见 findings.md Phase 3 段 + 03-code-assistant.md）
+- **Status:** complete（2026-09-10，README:94/SKILL:64,150/critical-rules:139+171/INSTALL:183 净零 +7/-3，证据见 findings.md Phase 3 段 + 03-code-assistant.md）
 
 ### Phase 4: 测试补件（active-plan-race 自测收编/适配）
 - Executor: Test Engineer — zcopy 提交声称 4 selftest 97/97；核实其自测脚本是否已随 10 文件带过来（若未带则按 worktree 现有 selftest 范式补 hermetic 用例），步骤明确
@@ -108,14 +108,15 @@ Phase 5: 主进程 commit 收编+文档+测试改动 → git merge --no-ff wt/ta
   |----|------------|--------|------|------|----------|------|
   | P4-S1 | 核实 zcopy 自测（4 selftest 97/97 指哪些脚本）在 worktree 可复跑；缺的自测（如 resolve-plan-dir side 指针 TTL/gc）补 hermetic 用例 | 继承 | 材料包：zcopy git log 6685a93 自测段 + worktree scripts/selftest-*.sh 现状；checkpoint `plans/task-v059-active-plan-race/subagent-state/04-test-engineer.md` | worktree selftest 全集跑通，含 side 指针新行为覆盖 | 15min | complete
 - 验收: VC-2 VC-3
-- 状态: complete（2026-09-10，新增 selftest-active-plan.sh 13/13 全过 + 既有 4 selftest 复跑全过，130 用例 fail=0，判定命令与证据见 findings.md Phase 4 段 + 04-test-engineer.md）
+- **Status:** complete（2026-09-10，新增 selftest-active-plan.sh 13/13 全过 + 既有 4 selftest 复跑全过，130 用例 fail=0，判定命令与证据见 findings.md Phase 4 段 + 04-test-engineer.md）
 
 ### Phase 5: worktree 合并回 master
 - Executor: 主进程直做 — 例外理由：git 合并仪式（merge --no-ff + 清理），单命令序列
 - 前置: Phase 1-4 全 complete + worktree `git status` 干净（先 commit 收编 + 文档 + 测试改动）
 - 步骤: commit → `git merge --no-ff wt/task-v059-active-plan-race`（master）→ Read 关键文件 + git log 复验 → `git worktree remove` + `git branch -d`
 - 验收: VC-6
-- 状态: pending
+- **Status:** complete（2026-09-10，commit 47a4db5 + merge 94db184；worktree remove + branch -d 已执行；master 内 9/10 文件 cmp zcopy OK，README DIFF=文档净零联动的预期增量）
+merge_back=merged(94db184)
 
 ### Phase 6: 部署重部署 3 位 + 9 位对账
 - Executor: 主进程直做 — 例外理由：部署 SOP 为固定命令序列（memory 明文：rm+cp -rL + diff -rq），trivial 可逆
@@ -126,7 +127,7 @@ Phase 5: 主进程 commit 收编+文档+测试改动 → git merge --no-ff wt/ta
   4. `TASK_PLANNER_ROOT=<位> bash <位>/lib/verify.sh` 3 位全过（VC 附加证据）
   5. plans/INDEX.md 翻 complete + 本任务三文件收尾
 - 验收: VC-5 VC-6
-- 状态: pending
+- **Status:** complete（2026-09-10，3 位重部署 diff=0×3 + verify 25/0×3；6 位 companion diff=0×6；plan-writer agent 2 位 OK；INDEX 翻 complete，outcome COMPLETE）
 
 ## 风险与回滚
 - 风险 1: 10 文件 cp 覆盖后仓库侧其他脚本调用 set-active-plan.sh 旧签名（位置参数）→ 白名单：zcopy 已做 set/global 位置参数兼容，P2 selftest 覆盖；回滚 = revert 本任务 commit
