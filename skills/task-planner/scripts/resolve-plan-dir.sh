@@ -20,6 +20,10 @@
 #
 # 用法: PLAN_FILE="$(bash resolve-plan-dir.sh [project-root] [sid])"   # 默认 $PWD
 # 恒 exit 0,不干扰 hook 调用方。
+#
+# [2026-09-10 task-planrequired-race D11] 兼容说明:side 指针文件名推导处的 sid 规范化同步剥 sess
+#   前缀,与 task-plan-init.cjs / check-scope.sh / set-active-plan.sh 四处 canon 对齐(D8);
+#   其余解析链(side→global→mtime→legacy)字节不变。
 
 set -u
 
@@ -30,8 +34,13 @@ SIDE_DIR="${PLAN_ROOT}/.active_plan_side"
 SIDE_TTL=86400   # 会话指针 24h 过期(会话重启/机器重启后旧 sid 文件不应再生效)
 
 # sidkey 规范化: 剥非字母数字 + 前 40 位(与 /tmp/task-planner-hook-<sid>.state 命名惯例一致)
+# [2026-09-10 task-planrequired-race D11] 再剥可选 sess 前缀(D8 canon 四处对齐);
+# 兼容:此前 Bash 侧(env 裸 uuid)写的 side 指针 hook 侧查不到,统一 canon 后跨源可命中
 norm_sid() {
     local s="$(printf '%s' "$1" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    case "$s" in
+        sess*) s="${s#sess}" ;;
+    esac
     [ -n "$s" ] && printf '%s' "$s" || printf 'default'
 }
 SID="$(norm_sid "$SID")"

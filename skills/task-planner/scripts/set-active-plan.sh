@@ -13,6 +13,10 @@
 #   set-active-plan.sh gc [project-root]                         # 清扫 .active_plan_side/ 中 mtime>24h 的残留
 #   sid 缺省 = env CLAUDE_CODE_SESSION_ID → default(规范化=剥非字母数字取前 40,与 hook 状态文件命名一致)
 #
+# [2026-09-10 task-planrequired-race] norm_sid 追加剥 sess 前缀(与 task-plan-init.cjs / check-scope.sh /
+#   resolve-plan-dir.sh 四处 canon 对齐,D8:uuid core,消灭 hook 侧 sess 前缀 vs env 裸 uuid 双命名空间分裂);
+#   gc 同语义扩展清扫 plans/.plan_required_side/ 中 mtime>24h 的 *.plan_required(side 哨兵,TTL 对齐 resolve 侧)。
+#
 # 指针生效后 hook(zcode-userpromptsubmit/zcode-posttooluse)经 resolve-plan-dir.sh 解析
 # (会话 side 优先 → 全局 legacy → mtime 最新),多计划并行时消除注入歧义。
 
@@ -24,7 +28,12 @@ usage() {
 }
 
 norm_sid() {
+    # [2026-09-10 task-planrequired-race] canon 四处对齐(D8):剥非字母数字取前 40,再剥 sess 前缀;
+    # 与 task-plan-init.cjs normSidkey / check-scope.sh sidkey 段 / resolve-plan-dir.sh norm_sid 一致
     local s="$(printf '%s' "$1" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    case "$s" in
+        sess*) s="${s#sess}" ;;
+    esac
     [ -n "$s" ] && printf '%s' "$s" || printf 'default'
 }
 
@@ -121,7 +130,16 @@ case "$ACTION" in
                 rm -f "$f" 2>/dev/null && n=$((n+1))
             done < <(find "$SIDE_DIR" -name '*.active_plan' -type f -mmin +1440 2>/dev/null)
         fi
+        # [2026-09-10 task-planrequired-race] 同语义清扫 side 哨兵目录(D1/TTL 对齐)
+        REQ_SIDE_DIR="${PLAN_ROOT}/.plan_required_side"
+        m=0
+        if [ -d "$REQ_SIDE_DIR" ]; then
+            while IFS= read -r f; do
+                rm -f "$f" 2>/dev/null && m=$((m+1))
+            done < <(find "$REQ_SIDE_DIR" -name '*.plan_required' -type f -mmin +1440 2>/dev/null)
+        fi
         echo "[active-plan] gc 清除过期 side 指针: ${n} 个"
+        echo "[active-plan] gc 清除过期 side 哨兵(.plan_required_side): ${m} 个"
         exit 0
         ;;
     set)
