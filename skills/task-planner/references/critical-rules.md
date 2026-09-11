@@ -212,3 +212,11 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 27.4 **豁免**:仅两种——① 计划内声明 `git_commit: deferred`(Executor 字段或 frontmatter,含理由);② 用户显式说"先不提交"。豁免登记进 verification.md「质量门控统计」段;无登记而未提交即翻转 complete = 27 违规,按 Rule 26.3 处置(回炉补提交)。
 27.5 **终验联动**:终验交付前核验任务 scope 无未提交变更(`git status --porcelain -- <scope>`);遗留 → 补提交(注明"终验补提交")再交付。worktree 场景由合并回合约兜底,本条把"干净"要求从合并前一次性检查前移为逐 Phase 检查。
 27.6 **恢复补提交**:会话中断/压缩后恢复(session-catchup / plan-resume / 5Q)时,若 `git status` 显示 scope 内存在未提交变更而 progress.md 已记录对应动作 → 先补提交(注明"跨会话补提交")再继续,防带病推进。
+
+### 28 交互模式与询问门控(P0 — task-v062,目标:减少返工)
+
+28.1 **模式定义与解析优先级**:两种模式——`ask`(默认:关键决策点给选项供用户选)与 `silent`(静默:不询问、自主决策、登记清单)。解析优先级:env `TASK_PLANNER_INTERACTION_MODE` > 当前计划配置表 `interaction_mode` 行 > `config.json#interaction_mode` > 默认 `ask`;非法值视同缺失,降级到下一级;用户会话中口头切换("接下来静默执行"/"问我")优先于一切既设值,切换后须 S5 回写计划配置表。
+28.2 **ask 模式询问点(D1-D6)**:D1 计划批准——展示计划后等待显式 yes(既有门控,保持);D2 方案分叉——实现存在 ≥2 条合理路径且影响交付物形态/范围/兼容性 → AskUserQuestion;D3 兜底前移——22.3 链走到 ③ 降档前(② 拆细已失败)即询问"继续拆细/换方向/降档";D4 范围外需求——执行中发现需触碰 scope 外文件/引入新依赖/改 schema → 询问;D5 歧义指令——用户指令存在 ≥2 种合理解读且影响交付 → 询问;D6 既有硬停点——22.7 连续失败 STOP/Rule 11 drift BLOCKED/Rule 26 Q3/§五 破坏性操作确认,**两模式一致,不可静默豁免**。
+28.3 **询问规范**:每次 AskUserQuestion 带 2-4 个选项,首选标 (Recommended) 置顶并写明理由与权衡(对齐用户宪法 §四 选项呈现规范);能选项化必须选项化,禁止开放提问代替选择题;用户答案回填 Decisions Made 表(问题+选择+时间),防止口头决策不留痕。
+28.4 **silent 模式语义**:除 D6 外不调用 AskUserQuestion;每个被跳过的询问点按"推荐项"自主决策,并登记「静默决策清单」——Decisions Made 表加 `silent:` 前缀行(决策+假设+复核入口);交付报告必须附清单供用户复核;用户保留随时打断与切换权。Why:方向性错误在分叉点被拦截(ask)或被显式登记供复核(silent),两端都压缩"执行到底才发现错"的返工面。
+28.5 **机制**:scripts/resolve-interaction-mode.sh 统一解析口径(env > plan 配置表 > config > 默认 ask),供主进程/自测/hook 后续扩展使用;scripts/selftest-interaction.sh 守护解析优先级与 fail-safe(缺 config/非法值 → ask)。
