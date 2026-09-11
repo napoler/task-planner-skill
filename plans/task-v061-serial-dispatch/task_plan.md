@@ -23,6 +23,7 @@
 | VC-4 | 无回归：5 套 selftest 全量 fail=0（≥v060 基线 90 用例 + TS-01..06 新增）+ verify.sh 无新增 fail | `bash scripts/selftest-*.sh` 各 EXIT=0 fail=0 | 输出记 progress.md |
 | VC-5 | 合并回 master + 重部署对账：task-planner 3 位 diff -rq 零差异 + verify.sh 全 pass；companion 6 位 + plan-writer agent 2 位无新差异 | `diff -rq` ×3 + `TASK_PLANNER_ROOT=<位> bash <位>/lib/verify.sh` ×3 + companion 只读 diff | verification.md 终验段 |
 | VC-6 | 全程隔离与簿记：全程串行派发（Handoff 表可证）、wt/task-v061-serial-dispatch 合并后清理、INDEX/attest/ledger 更新、Rule 27 逐 Phase 提交 | `git worktree list` + `git branch --list 'wt/*'` + Handoff 表 + INDEX 行 | git 输出 + plans/INDEX.md |
+| VC-7 | 联动周全（Phase 9，用户 09-12 指令）：全技能目录宽口径"并行"扫描仅剩合规语境（Rule 23 跨任务冲突/Rule 27.2 提交隔离/worktree 并行开发/migration 双跑/会话层并行安全/新守卫自身注释）；SKILL.md 目录与 References 表对 completion-gate 的描述与其实际内容（串行同步）一致；examples.md 无并行派发示范 | 宽口径 grep 逐条分类表 + SKILL.md:10/11/303 修后 grep | findings.md「联动周全审计」段 + verification.md 补充 |
 
 **终验规则**：
 - 全部 VC 通过 → outcome: **COMPLETE**
@@ -65,10 +66,10 @@
 - [x] 核心问题的解决方法是清晰的、可执行的？（6 处文本反转 + 1 守卫 + selftest，v056-v060 同构维护流程已验证）
 
 ## Current Phase
-全部 Phase complete（终态）
+全部 Phase complete（终态，含 Phase 9 联动补漏）
 
 ## Next Step
-无——8/8 complete，VC-1..6 终验全 PASS，outcome COMPLETE；hook 新守卫新会话生效，是否 push origin 由用户决定。
+无——9/9 complete，VC-1..7 终验全 PASS；hook 新守卫新会话生效，是否 push origin 由用户决定。
 
 ## Phases
 
@@ -152,6 +153,17 @@
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
+### Phase 9: 联动周全性补漏（用户 09-12 指令 — B 类扩展）
+- [x] 新建 worktree `task-v061-linkage-fix`（基线 master），SKILL.md 3 处失效联动修复：:10 目录描述去"并行任务"（examples.md 实无此内容）、:11 与 :303 References 表"并行同步"→"串行同步"（completion-gate.md 已改串行而描述未联动）——commit f97bade
+- [x] 宽口径"并行"全量扫描逐条分类（18 命中：失效联动 3 修复 + 合规保留 15），合并回 bc4107e + 重部署 3 位 IDENTICAL + verify 25/0×3 + 联动探针（并行同步=0/串行同步=2）+ 部署位 selftest 18/18
+- **Status:** complete
+- **Executor:** code-assistant（haiku-1）
+
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|
+| S1 | SKILL.md :10/:11/:303 联动修复（1 文件 3 行） | 继承 | worktree 内 SKILL.md + findings.md「联动周全审计」段分类表 | grep "并行同步\|错误恢复/并行任务" 0 命中；diff 仅 3 行 | ≤10min | done |
+| S2 | 合并回 + 重部署 3 位 + verify ×3 | executor | 主进程 merge 后：canonical → 3 部署位（SOP 同 Phase 7） | 3×diff IDENTICAL + 3×verify 25/0 | ≤15min | done |
+
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 
 | 字段 | 值 |
@@ -176,6 +188,7 @@
 | Phase 6 | ☑ | 2026-09-12 | S2 翻转同步 |
 | Phase 7 | ☑ | 2026-09-12 | S2 翻转同步 |
 | Phase 8 | ☑ | 2026-09-12 | S4 终态同步 |
+| Phase 9 | ☑ | 2026-09-12 | S5 新增（用户 B 类指令），已建映射 |
 
 ## Key Questions
 1. 串行铁律的唯一例外如何界定？→ 用户在当前任务中显式说"可以并行"，登记 Decisions Made 后方可（本计划 Decisions 表已定）。
@@ -189,6 +202,7 @@
 | 守卫用 inflight 锁机制化（PreToolUse 写锁判并行、PostToolUse 清锁） | 现行 check-dispatch.sh 只查契约字段不查时序；锁方案复用现有 Agent 分支与 subagent-state/ 目录约定，无需新增 hook 事件 |
 | 本计划自身全程串行执行（含只读调研） | 铁律首次践行：一次派发一个、验收通过再派下一个，Handoff 表留痕可证 |
 | code_review: required | 新增 shell 逻辑（守卫+清锁+selftest），质量优先原则 |
+| 新增 Phase 9 联动周全性补漏（B 类扩展，用户 09-12 指令） | VC-1 特征串清单漏了"并行同步"致 SKILL.md:11/:303 及 :10 目录描述漏网——正中用户"改后联动文件失效"批评；宽口径全量扫描 + 逐条分类 + 补漏修复 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -209,9 +223,9 @@
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 | 6 / 8 |
+| 子代理执行 Phase 数 / 总 Phase 数 | 7 / 9 |
 | 主进程直做 Phase 清单 | Phase 1（例外理由:① git/worktree 编排 + ③ 机械验证命令——白名单）;Phase 8（例外理由:② 计划系统文件维护——白名单） |
-| 委派率 | 0.75（check-delegation.sh stats 机器口径 verdict=ok violations=0，≥floor 0.7 不降级） |
+| 委派率 | 0.778（check-delegation.sh stats 机器口径 verdict=ok violations=0，≥floor 0.7 不降级） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 
@@ -228,6 +242,8 @@
 | 9 | 2026-09-12 05:54 | code-reviewer(sonnet) | Code Review Gate：3 个 .sh 改动 | done | APPROVED+HIGH;P1×1/P2×2/P3×2;10 组定向实验无回归 | findings.md「Code Review Gate 回填」(05:58) | findings.md Code Review Gate 回填 | plans/task-v061-serial-dispatch/subagent-state/(无 checkpoint,结论已入 findings) | ☑ |
 | 10 | 2026-09-12 05:59 | code-assistant | 修复轮:P1 selftest warn 硬覆盖+P2 锁写静默化 | done | 5/5 PASS;外层 off 18/18 实证;主进程复验+commit 4da4c0e | selftest-dispatch.sh:53-57/check-dispatch.sh:244 | findings.md Code Review Gate 回填(处置段) | plans/task-v061-serial-dispatch/subagent-state/07-code-assistant.md | ☑ |
 | 11 | 2026-09-12 06:03 | executor | 重部署 task-planner 3 位 + companion/agent 8 位对账（sonnet-1 档,Phase 7 S3/S4 继承执行体） | done | 3 位 diff IDENTICAL+verify 25/0×3+部署位 selftest 18/18;companion 6 位无差异;agent 2 位符合预期;主进程 3 项抽查一致 | subagent-state/08-executor.md + progress Phase7 段 | progress.md Phase7 段 | plans/task-v061-serial-dispatch/subagent-state/08-executor.md | ☑ |
+| 12 | 2026-09-12 06:26 | code-assistant | Phase 9 联动修复:SKILL.md :10/:11/:303 | done | 3 行精确修复,3/3 PASS,HIGH;主进程 diff+grep 复核 | SKILL.md:10/11/303(commit f97bade) | findings.md「联动周全审计」 | plans/task-v061-serial-dispatch/subagent-state/09-code-assistant.md | ☑ |
+| 13 | 2026-09-12 06:28 | executor | Phase 9 重部署 3 位对账 | done | diff IDENTICAL×3+verify 25/0×3+探针并行0/串行2+selftest 18/18;主进程抽查 claude 位一致 | subagent-state/10-executor.md + progress Phase9 段 | progress.md Phase9 段 | plans/task-v061-serial-dispatch/subagent-state/10-executor.md | ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

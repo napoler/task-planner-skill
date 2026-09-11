@@ -79,6 +79,30 @@
 - TS-06 清锁路径调用后锁不存在
 - 验收：既有 T01-T12 全过 + TS-01..06 全过，5 套件全量 fail=0
 
+## 联动周全审计（Phase 9 材料包源 — 用户 09-12 指令触发，06:2x）
+
+**根因**：VC-1 特征串清单不含"并行同步"，且联动面只核了 4 个文档——SKILL.md:11/:303 References 表与 :10 目录描述漏网。教训：联动检查必须宽口径（扫所有"并行"字样逐条分类），不能依赖预设关键词清单。
+
+**分类表（宽口径 `grep -rn "并行" skills/task-planner/` 全量 18 命中）**：
+
+| 位置 | 现文要点 | 判定 |
+|------|---------|------|
+| SKILL.md:10 | examples.md 描述"（…错误恢复/并行任务）" | **失效联动·修**（examples.md 实无并行任务内容，双重失效） |
+| SKILL.md:11 | "references/completion-gate.md: 子代理验证 + 并行同步" | **失效联动·修**（该文件已改串行同步，描述未联动） |
+| SKILL.md:303 | References 表同句"并行同步" | **失效联动·修**（同上） |
+| check-dispatch.sh:217/240 | 守卫自身注释/阻断文案"判并行派发尝试/禁止并行派发" | 合规保留（新守卫语义） |
+| completion-gate.md:26 | "互不依赖"不构成并行理由 | 合规保留（新串行条款自身） |
+| SKILL.md:92 / critical-rules.md:210 | Rule 27"并行任务产物"（提交隔离语境） | 合规保留 |
+| SKILL.md:274 / critical-rules.md:141 | Rule 23 并行任务检测（跨任务冲突规避） | 合规保留 |
+| check-conflicts.sh:56 / worktree-isolation.md:3/12/55 | worktree"并行工作/并行开发"隔离语境 | 合规保留 |
+| set-active-plan.sh:4/21 | 多会话并行安全（active-plan-race） | 合规保留 |
+| todo-sync.md:12 | 多任务并行时用 Task 系统（会话层工具选择） | 合规保留 |
+| templates/variant/migration-type.md:22/82 | 迁移双跑（新旧版本并行跑回归） | 合规保留（与子代理派发无关） |
+| README.md / companion/ | 0 命中 | 无联动 |
+| examples.md | 0 命中（无并行派发示范） | 无联动 |
+
+**修法**：SKILL.md:10 去"/并行任务"；:11 与 :303 "并行同步"→"串行同步"。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

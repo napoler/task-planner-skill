@@ -153,6 +153,27 @@
   | check-complete.sh | 主仓 plan | exit 0 | 见下方终验命令输出 | PASS |
   | 委派统计 | check-delegation stats | ≥0.7 且 ok | 0.75/ok | PASS |
 
+### Phase 9: 联动周全性补漏（用户 09-12 指令 — B 类扩展）
+- **Status:** in_progress
+- **Started:** 2026-09-12 06:25
+- Actions taken:
+  - 宽口径全量扫描（grep -rn "并行" 全技能目录 18 命中逐条分类）：失效联动 3 处（SKILL.md :10/:11/:303），合规保留 15 处（分类表见 findings.md）
+  - 计划 B 类扩展：新增 Phase 9 + VC-7，重跑 attest（SHA 828a4a57…），worktree task-v061-linkage-fix 已建（基线 6da9d00）
+  - 串行派发 #12：code-assistant 修 SKILL.md 3 行，8 字段返回 done/3PASS/HIGH；主进程 Read diff 复核 + grep 复验（并行同步=0）
+  - 主进程合并回：merge --no-ff → **bc4107e**，worktree/分支清理
+  - 串行派发 #13：executor 重部署 3 位 → diff IDENTICAL×3 + verify 25/0×3 + 联动探针（并行同步=0/串行同步=2）+ 部署位 selftest 18/18
+  - 主进程抽查：claude 位串行同步=2 ✓；委派统计复跑 rate=0.833 verdict=ok
+- Files created/modified:
+  - 主仓 master：f97bade（修复）+ bc4107e（合并）；3 部署位重部署
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 联动修复 grep | SKILL.md 并行同步/串行同步 | 0 / 2 | 0 / 2 | PASS |
+  | diff 范围 | worktree diff --stat | 仅 SKILL.md 3 行 | +3/-3 | PASS |
+  | 重部署 diff -rq | 3 部署位 | 零输出 | IDENTICAL×3 | PASS |
+  | verify.sh ×3 | 中性 CWD | 25/0 | 25/0×3 | PASS |
+  | 部署位 selftest | zcode 位 dispatch | 18/18 | 18/18 | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

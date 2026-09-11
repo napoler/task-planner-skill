@@ -18,19 +18,21 @@
   Evidence: subagent-state/06b-code-runner.md + progress.md Phase 6 表 + 修复轮复验（4da4c0e）
 - [x] VC-5: 合并回 + 重部署对账 — merge af04679（7 文件 +146/-20）；task-planner 3 位（zcode/claude/opencode）`rm+cp -rL` 重部署后 diff -rq 全 IDENTICAL + verify.sh **25 pass/0 fail ×3**（中性 CWD /tmp）；companion 6 位无新差异；plan-writer agent 2 位符合预期（claude 位仅 model 行）；主进程 3 项抽查一致
   Evidence: subagent-state/08-executor.md + 主仓合并探针（serial_slot_check=3、TS-0=21 处、串行同步协议=1）
-- [x] VC-6: 全程隔离与簿记 — 全程串行派发（Handoff 表 11 行可证：一次仅一个活跃子代理，逐行 verify_done）；wt/task-v061-serial-dispatch 已 remove、分支已删（`git worktree list` 仅主仓）；Rule 27 逐 Phase 提交（c862215/8a84af8/2935327/ee078cd/ee15fc4/49898d6/4da4c0e，scope porcelain 逐次为空）；INDEX/attest/ledger（tick 1-9）齐备
+- [x] VC-6: 全程隔离与簿记 — 全程串行派发（Handoff 表 13 行可证：一次仅一个活跃子代理，逐行 verify_done）；wt/task-v061-serial-dispatch 与 wt/task-v061-linkage-fix 均已 remove、分支已删；Rule 27 逐 Phase 提交（c862215/8a84af8/2935327/ee078cd/ee15fc4/49898d6/4da4c0e/f97bade）；INDEX/attest/ledger（tick 1-10）齐备
   Evidence: git worktree list 输出 + git log --oneline + Handoff 表
+- [x] VC-7（Phase 9，用户 09-12 联动周全指令）: 宽口径"并行"全量扫描 18 命中逐条分类（失效联动 3 处修复 + 合规保留 15 处）；SKILL.md :10/:11/:303 已修（f97bade/bc4107e）；重部署 3 位 IDENTICAL + verify 25/0×3 + 联动探针（并行同步=0/串行同步=2）+ 部署位 selftest 18/18
+  Evidence: findings.md「联动周全审计」分类表 + progress.md Phase 9 表 + 主进程抽查 claude 位
 
 ---
 
 ## 委派统计复验（Rule 25.4 — 机器口径）
 
 ```json
-{"phases_total":8,"phases_delegated":6,"main_direct_count":2,"delegation_rate":0.75,"verdict":"ok","violations":[]}
+{"phases_total":9,"phases_delegated":7,"main_direct_count":2,"delegation_rate":0.778,"verdict":"ok","violations":[]}
 ```
 
 - [x] 主进程直做 Phase 均登记白名单例外理由：Phase 1（① git/worktree 编排 + ③ 机械验证）、Phase 8（② 计划系统文件维护）——Rule 25.3 六项白名单内
-- [x] 委派率 0.75 ≥ delegation_rate_floor 0.7，verdict=ok，violations=0 → 不降级
+- [x] 委派率 0.778 ≥ delegation_rate_floor 0.7，verdict=ok，violations=0 → 不降级
 - 簿记教训：Handoff 表 subagent_type 列须为**裸类型名**（`| executor |`），带 `(model)` 后缀会被 check-delegation.sh 判 unverified_delegation（本轮实测并已规整）
 
 ## 质量门控统计（Rule 26）
@@ -51,13 +53,14 @@
 ## Goal Gate 终验
 
 ```
-## Goal Verification — 串行派发铁律落地（文本+机制+selftest+部署对账）
+## Goal Verification — 串行派发铁律落地（文本+机制+selftest+部署对账+联动周全）
 - [x] VC-1 条款净零（grep 0 命中） → PASS
 - [x] VC-2 铁律成文（9 处就位） → PASS
 - [x] VC-3 机制守卫（4+2 场景实测） → PASS
 - [x] VC-4 无回归（96 用例 fail=0） → PASS
 - [x] VC-5 合并+重部署对账（af04679, 25/0×3） → PASS
 - [x] VC-6 隔离与簿记（全程串行可证） → PASS
+- [x] VC-7 联动周全补漏（宽口径 18 命中分类，3 处修复，bc4107e） → PASS
 
  outcome: COMPLETE
 ```
