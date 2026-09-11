@@ -169,7 +169,8 @@ cmd_pretool() {
         # side/resolve 只是兜底(全局指针可能被并发会话翻转指向他会话) → 降级 warn 放行,不再 exit 2 误拦
         if [ -n "$pd" ] && [ -d "$pd" ]; then
             missing="$(scan_missing "$pf" "$pd")"
-            [ -n "$missing" ] || exit 0   # 兜底命中且无缺项 → 维持原有静默放行
+            # [task-v061-serial-dispatch] 契约校验通过(兜底命中且无缺项), 即将放行前执行串行槽检查
+            [ -n "$missing" ] || { serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
             names="$(join_missing "$missing")"
         else
             names="unknown"
@@ -180,7 +181,8 @@ cmd_pretool() {
     # enforce 档(env 显式 / prompt 自声明锚定成功): 沿用原有缺项扫描与分档处置
     [ -n "$pd" ] && [ -d "$pd" ] || exit 0   # 目录不存在 → fail-open(原语义)
     missing="$(scan_missing "$pf" "$pd")"
-    [ -n "$missing" ] || exit 0
+    # [task-v061-serial-dispatch] 契约校验通过(无缺项), 即将放行前执行串行槽检查; 缺项 exit 2 路径不写锁不检查
+    [ -n "$missing" ] || { serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
         echo "[dispatch-warn] ⚠ 派发契约缺项: $names"
@@ -209,6 +211,38 @@ cmd_check() {
         exit 1
     fi
     exit 0
+}
+
+# [task-v061-serial-dispatch] 串行槽守卫(Rule 21.4): inflight 锁 <plan-dir>/subagent-state/.dispatch-inflight
+# (unix 时间戳)。age<120s → 判并行派发尝试, 按 get_mode 分档处置; 无锁/陈旧(≥120s,崩溃残留) → 写新锁放行;
+# 锁不可写/plan-dir 解析失败 → fail-open 静默放行(与既有 fail-open 原则一致)。
+# 边界(如实): run_in_background 的 Agent 调用 PostToolUse 立即返回即清锁, 后台并发不由本守卫捕获,
+# 由 Rule 21.4 文本条款(后台派发视为持续占用串行槽)覆盖。
+serial_slot_check() {
+    local pd="${1:-}" mode="${2:-}" sid="${3:-unknown}" lf now ts age
+    case "$mode" in enforce|warn) ;; *) return 0 ;; esac        # off/nojq → 跳过
+    [ -n "$pd" ] && [ -d "$pd" ] || return 0                     # plan-dir 未解析 → fail-open
+    lf="$pd/subagent-state/.dispatch-inflight"
+    mkdir -p -- "${lf%/*}" 2>/dev/null || return 0               # mkdir 失败 → fail-open
+    now="$(date +%s)" || return 0
+    if [ -f "$lf" ]; then
+        ts="$(head -n1 -- "$lf" 2>/dev/null)"
+        case "$ts" in ''|*[!0-9]*) ts="" ;; esac
+        if [ -n "$ts" ]; then
+            age=$(( now - ts ))
+            [ "$age" -lt 0 ] && age=0
+            if [ "$age" -lt 120 ]; then                           # 槽占用
+                if [ "$mode" = "warn" ]; then
+                    echo "[dispatch-warn] ⚠ Rule 21.4 串行派发铁律: 串行槽被占用(锁 age=${age}s<120s), 本派发按 warn 档放行 — 应等上一个子代理验收通过" >&2
+                    return 0
+                fi
+                echo "[dispatch-block] 🚫 Rule 21.4 串行派发铁律: 串行槽被占用(锁 age=${age}s<120s), 禁止并行派发 — 须等上一子代理三证据验收通过(清锁)后再派下一个" >&2
+                exit 2
+            fi
+        fi
+    fi
+    printf '%s' "$now" > "$lf" 2>/dev/null || return 0            # 槽空闲 → 写新锁放行
+    return 0
 }
 
 case "${1:-}" in
