@@ -7,8 +7,8 @@ user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
 - references/critical-rules.md: Critical Rules 全集 1-27（1-12 核心执行约束 + 13-27 高级门控，含 Rule 27 git 提交强制）
-- examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复/并行任务）
-- references/completion-gate.md: 子代理验证 + 并行同步
+- examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
+- references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
 - references/todo-sync.md: 原生 Todo 同步契约（S1-S5 强制同步时机 + 映射规则 + hook 提醒响应协议）
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
@@ -300,7 +300,7 @@ Block 1 (选题) complete
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
 | `references/critical-rules.md` | Critical Rules 1-27（含 Rule 13-18/21-23/25-27 关键条款） |
-| `references/completion-gate.md` | 子代理验证 + 并行同步 |
+| `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
 | `references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
