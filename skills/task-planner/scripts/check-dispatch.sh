@@ -218,6 +218,7 @@ cmd_check() {
 # 锁不可写/plan-dir 解析失败 → fail-open 静默放行(与既有 fail-open 原则一致)。
 # 边界(如实): run_in_background 的 Agent 调用 PostToolUse 立即返回即清锁, 后台并发不由本守卫捕获,
 # 由 Rule 21.4 文本条款(后台派发视为持续占用串行槽)覆盖。
+# 边界(多会话): 全局指针被翻转向他任务且他会话 Agent 返回时,可能误删本任务锁(120s TTL 自愈,仅短暂旁路串行约束)
 serial_slot_check() {
     local pd="${1:-}" mode="${2:-}" sid="${3:-unknown}" lf now ts age
     case "$mode" in enforce|warn) ;; *) return 0 ;; esac        # off/nojq → 跳过
@@ -241,7 +242,7 @@ serial_slot_check() {
             fi
         fi
     fi
-    printf '%s' "$now" > "$lf" 2>/dev/null || return 0            # 槽空闲 → 写新锁放行
+    { printf '%s' "$now" > "$lf"; } 2>/dev/null || return 0     # [2026-09-12 task-v061 p2fix] 槽空闲 → 写新锁放行; 重定向包进父级 { } 2>/dev/null: 重定向建立失败(如 Permission denied)由父 shell 报出, 原写法仅吞 printf 自身 stderr 而泄漏重定向错误, 破坏 fail-open 静默
     return 0
 }
 

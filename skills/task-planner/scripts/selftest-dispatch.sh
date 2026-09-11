@@ -42,16 +42,18 @@ EOF
 }
 
 # run_case <mode|unset> <cwd> <cmd...> → 存 RC/COUT/CERR
-# 档位: enforce 硬覆盖(契约缺项断言必须 enforce, 不被外层档位扰动);
-#   warn/off/unset 沿用外层值, 外层未设时用用例 mode(保 hermetic; 外层=off 时 T05 反验 FAIL)
+# 档位: enforce/warn 硬覆盖(契约缺项断言与反验放行必须用用例档, 不被外层档位扰动——外层 off 继承会致 T05 假红);
+#   off/unset 等其余档位沿用外层值, 外层未设时用用例 mode(保 hermetic)
 run_case() {
   local mode="$1" cwd="$2"; shift 2
   if [ "$mode" = "unset" ]; then
     ( unset TASK_PLANNER_PLAN_DIR TASK_PLANNER_DISPATCH_ENFORCE; cd "$cwd"; "$@" >"$TMP/out" 2>"$TMP/err" )
   else
     ( export TASK_PLANNER_PLAN_DIR="$PLAN"
-      [ "$mode" = "enforce" ] && export TASK_PLANNER_DISPATCH_ENFORCE=enforce
-      export TASK_PLANNER_DISPATCH_ENFORCE="${TASK_PLANNER_DISPATCH_ENFORCE:-$mode}"
+      case "$mode" in
+        enforce|warn) export TASK_PLANNER_DISPATCH_ENFORCE="$mode" ;;   # [2026-09-12 task-v061 p1fix] 契约缺项断言(enforce)/反验放行(warn T05) 硬覆盖: 外层 ENFORCE=off 继承会致 T05 假红
+        *) export TASK_PLANNER_DISPATCH_ENFORCE="${TASK_PLANNER_DISPATCH_ENFORCE:-$mode}" ;;   # 其余档位(off/unset 等)维持现状: 继承外层, 外层未设取用例 mode(保 T06 语义)
+      esac
       cd "$cwd"; "$@" >"$TMP/out" 2>"$TMP/err" )
   fi
   RC=$?; COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"
