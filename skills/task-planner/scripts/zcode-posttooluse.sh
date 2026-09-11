@@ -20,6 +20,17 @@ CWD="${CWD:-$PWD}"
 SID="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
 SID="${SID:-default}"
 
+# ─── [task-v061-serial-dispatch] 串行槽清锁(Rule 21.4 配对): Agent 返回即释放串行槽 ─────
+# 触发: 工具=Agent; 动作: 复用 resolve-plan-dir.sh 解析链 → rm <plan-dir>/subagent-state/.dispatch-inflight
+# fail-open: 解析失败/文件不存在 → 静默跳过(无 stdout 输出), 不阻塞后续逻辑
+tool="$(printf '%s' "$input" | jq -r '.tool_name // .toolName // empty' 2>/dev/null)"
+if [ "$tool" = "Agent" ]; then
+  RESOLVER_C="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
+  if [ -f "$RESOLVER_C" ]; then
+    pc="$(bash "$RESOLVER_C" "$CWD" "$SID" 2>/dev/null || true)"
+    [ -n "$pc" ] && rm -f "$(dirname "$pc")/subagent-state/.dispatch-inflight" 2>/dev/null || true
+  fi
+fi
 # ─── 探测活跃计划（无则零开销静默退出）───────────────────────────────────────
 plan=""
 if [ -d "$CWD/plans" ]; then

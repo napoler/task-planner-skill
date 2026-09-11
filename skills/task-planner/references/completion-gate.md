@@ -16,16 +16,16 @@ Claims of "done" without evidence = FAILED。必须有：
 - 验证输出（命令结果/文件内容）
 - Before/after 对比（适用时）
 
-## 并行任务同步
+## 多任务同步（串行）
 
 ```
-Wave 1 (并行) → [全部验证 complete] → Wave 2 (串行)
+S-unit 1 → [验证 complete] → S-unit 2 → [验证 complete] → …（Rule 21.4 串行派发铁律）
 ```
 
 - 启动前存 session_id
-- 等 ALL notification 到达
+- 一次只派一个：上一 S-unit 验证 complete 才派下一个，"互不依赖"不构成并行理由（Rule 21.4）
 - 每条结果单独验证
-- 任一失败 → 不进入 Wave 2
+- 任一失败 → 停止派发，按 Rule 22.3 兜底（拆细先于升档）
 
 ## 失败处理
 

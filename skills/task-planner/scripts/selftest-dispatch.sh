@@ -42,16 +42,18 @@ EOF
 }
 
 # run_case <mode|unset> <cwd> <cmd...> → 存 RC/COUT/CERR
-# 档位: enforce 硬覆盖(契约缺项断言必须 enforce, 不被外层档位扰动);
-#   warn/off/unset 沿用外层值, 外层未设时用用例 mode(保 hermetic; 外层=off 时 T05 反验 FAIL)
+# 档位: enforce/warn 硬覆盖(契约缺项断言与反验放行必须用用例档, 不被外层档位扰动——外层 off 继承会致 T05 假红);
+#   off/unset 等其余档位沿用外层值, 外层未设时用用例 mode(保 hermetic)
 run_case() {
   local mode="$1" cwd="$2"; shift 2
   if [ "$mode" = "unset" ]; then
     ( unset TASK_PLANNER_PLAN_DIR TASK_PLANNER_DISPATCH_ENFORCE; cd "$cwd"; "$@" >"$TMP/out" 2>"$TMP/err" )
   else
     ( export TASK_PLANNER_PLAN_DIR="$PLAN"
-      [ "$mode" = "enforce" ] && export TASK_PLANNER_DISPATCH_ENFORCE=enforce
-      export TASK_PLANNER_DISPATCH_ENFORCE="${TASK_PLANNER_DISPATCH_ENFORCE:-$mode}"
+      case "$mode" in
+        enforce|warn) export TASK_PLANNER_DISPATCH_ENFORCE="$mode" ;;   # [2026-09-12 task-v061 p1fix] 契约缺项断言(enforce)/反验放行(warn T05) 硬覆盖: 外层 ENFORCE=off 继承会致 T05 假红
+        *) export TASK_PLANNER_DISPATCH_ENFORCE="${TASK_PLANNER_DISPATCH_ENFORCE:-$mode}" ;;   # 其余档位(off/unset 等)维持现状: 继承外层, 外层未设取用例 mode(保 T06 语义)
+      esac
       cd "$cwd"; "$@" >"$TMP/out" 2>"$TMP/err" )
   fi
   RC=$?; COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"
@@ -85,6 +87,9 @@ mk_prompt "$TMP/p03.md" 'acceptance:'; run_case enforce "$TMP" bash "$DISPATCH" 
 mk_prompt "$TMP/p04.md" 'subagent-state/'; run_case enforce "$TMP" bash "$DISPATCH" pretool "$TMP/p04.md" "$SID"; assert 04 "$RC" 2 'subagent-state/' err
 
 # T05 同 T02 缺项, warn → 放行且 stdout 含 [dispatch-warn]
+# [2026-09-12 task-v061] T05 前清锁: T01(enforce 放行路径)写下的新鲜锁残留, 会使 T05 的 warn 处置语义被串行槽守卫扰动;
+# 串行锁场景全部归 TS-01..06 夹具(独立 plan-dir)专项覆盖, T 序列保持契约校验既有语义
+rm -f "$PLAN/subagent-state/.dispatch-inflight"
 mk_prompt "$TMP/p05.md" "$PLAN/findings.md"; run_case warn "$TMP" bash "$DISPATCH" pretool "$TMP/p05.md" "$SID"; assert 05 "$RC" 0 '[dispatch-warn]' out
 
 # T06 off 档缺项 → 静默放行
@@ -117,6 +122,9 @@ run_case enforce "$TMP/nowhere" sh -c 'printf %s "$INPUT10" | bash "$0"' "$HOOK"
 assert 10 "$RC" 0 - out
 
 # T11 hook 非 Agent 工具(Read) → 不受影响放行
+# [2026-09-12 task-v061] 清锁防互扰: T05 后残留的新鲜锁会撞 T10/T12 的 enforce 调用(串行槽守卫正确阻断 → 既有用例裸跑变红),
+# 清 PLAN 夹具锁; TS-01..06 锁场景走独立 tscl 夹具, 互不干扰
+rm -f "$PLAN/subagent-state/.dispatch-inflight"
 printf '{"tool_name":"Read","tool_input":{"file_path":"/x"}}' | bash "$HOOK" >"$TMP/out" 2>"$TMP/err"
 RC=$?; COUT="$(cat "$TMP/out")"; assert 11 "$RC" 0 - out
 
@@ -125,6 +133,78 @@ mk_prompt "$TMP/p12.md"
 ( export TASK_PLANNER_PLAN_DIR="$PLAN/"; export TASK_PLANNER_DISPATCH_ENFORCE=enforce
   cd "$TMP"; bash "$DISPATCH" pretool "$TMP/p12.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
 RC=$?; COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 12 "$RC" 0 - out
+
+# TS-01..06 [task-v061] 串行槽守卫 serial_slot_check(经真实入口 pretool 触发):
+# 独立夹具 plan-dir(禁触真实 plans/): 三文件 + 合规 prompt + subagent-state/; 用例间清锁防互扰
+TSCL="$TMP/tscl"; TSCLP="$TSCL/plans/task-ts"; mkdir -p "$TSCLP/subagent-state"
+printf 'ts task plan\n' > "$TSCLP/task_plan.md"
+printf 'ts findings\n' > "$TSCLP/findings.md"
+printf 'ts progress\n' > "$TSCLP/progress.md"
+tscl_prompt() {   # 7 必检项齐备的合规 prompt(全部指向夹具目录)
+  cat <<EOF > "$1"
+- task_plan: $TSCLP/task_plan.md
+- findings: $TSCLP/findings.md
+- progress: $TSCLP/progress.md
+status:
+acceptance:
+checkpoint: $TSCLP/subagent-state/ts01.md
+EOF
+}
+LOCK="$TSCLP/subagent-state/.dispatch-inflight"
+
+# TS-01 无锁 + enforce → 放行且锁已写入(内容为 unix 时间戳数字)
+rm -f "$LOCK"; tscl_prompt "$TSCL/p1.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=enforce \
+  bash "$DISPATCH" pretool "$TSCL/p1.md" "$SID"
+[ "$RC" = 0 ] && [ -f "$LOCK" ] && head -n1 "$LOCK" | grep -qE '^[0-9]+$' \
+  && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-01 PASS (rc=%s, 锁写入=%s)\n' "$RC" "$(head -n1 "$LOCK" 2>/dev/null)"; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-01 FAIL (rc=%s exp=0, 锁=%s)\n' "$RC" "$(ls "$TSCLP/subagent-state/" 2>/dev/null | tr '\n' ' ')"; }
+
+# TS-02 新鲜锁(<120s) + enforce → exit 2 且 stderr 含「串行」
+printf '%s' "$(date +%s)" > "$LOCK"; tscl_prompt "$TSCL/p2.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=enforce \
+  bash "$DISPATCH" pretool "$TSCL/p2.md" "$SID"
+[ "$RC" = 2 ] && printf '%s' "$CERR" | grep -qF '串行' && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-02 PASS (rc=2, stderr 含 串行)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-02 FAIL (rc=%s exp=2, stderr=%s)\n' "$RC" "$(printf '%s' "$CERR" | head -n1)"; }
+
+# TS-03 新鲜锁 + warn → 放行且 stderr 警告含「串行」
+printf '%s' "$(date +%s)" > "$LOCK"; tscl_prompt "$TSCL/p3.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=warn \
+  bash "$DISPATCH" pretool "$TSCL/p3.md" "$SID"
+[ "$RC" = 0 ] && printf '%s' "$CERR" | grep -qF '串行' && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-03 PASS (rc=0, stderr 含 串行警告)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-03 FAIL (rc=%s exp=0, stderr=%s)\n' "$RC" "$(printf '%s' "$CERR" | head -n1)"; }
+
+# TS-04 陈旧锁(时间戳-200s ≥120s, 崩溃残留) + enforce → 放行且锁刷新为近新值
+printf '%s' "$(( $(date +%s) - 200 ))" > "$LOCK"; tscl_prompt "$TSCL/p4.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=enforce \
+  bash "$DISPATCH" pretool "$TSCL/p4.md" "$SID"
+TSNEW="$(head -n1 "$LOCK" 2>/dev/null)"
+[ "$RC" = 0 ] && [ -n "$TSNEW" ] && [ "$TSNEW" -gt "$(( $(date +%s) - 120 ))" ] \
+  && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-04 PASS (rc=%s, 锁刷新=%s)\n' "$RC" "$TSNEW"; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-04 FAIL (rc=%s exp=0, 锁=%s)\n' "$RC" "${TSNEW:-缺}"; }
+
+# TS-05 新鲜锁 + off 档 → 静默放行且锁未被改写
+printf '1234567890' > "$LOCK"; tscl_prompt "$TSCL/p5.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=off \
+  bash "$DISPATCH" pretool "$TSCL/p5.md" "$SID"
+[ "$RC" = 0 ] && [ "$(head -n1 "$LOCK" 2>/dev/null)" = '1234567890' ] && [ ! -s "$TMP/out" ] \
+  && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-05 PASS (rc=%s, 锁未改写)\n' "$RC"; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-05 FAIL (rc=%s exp=0, 锁=%s)\n' "$RC" "$(head -n1 "$LOCK" 2>/dev/null)"; }
+
+# TS-06 清锁路径: 模拟 PostToolUse 清锁动作(rm)后, 再 enforce 调用 → 放行且无锁阻断
+rm -f "$LOCK"; tscl_prompt "$TSCL/p6.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=enforce \
+  bash "$DISPATCH" pretool "$TSCL/p6.md" "$SID"
+rm -f "$LOCK"   # PostToolUse 清锁: 子代理验收通过后串行槽释放
+[ "$RC" = 0 ] && [ ! -f "$LOCK" ] \
+  && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-06 PASS (rc=%s, 锁已清除)\n' "$RC"; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-06 FAIL (rc=%s, 锁=%s)\n' "$RC" "$([ -f "$LOCK" ] && echo 残留 || echo 无)"; }
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
