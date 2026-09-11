@@ -30,7 +30,7 @@ skills/task-planner/
 │   └── notepad-learnings.md
 └── references/
     ├── critical-rules.md ← Rules 1-10 核心执行约束
-    ├── completion-gate.md← 子代理验证 + 并行同步协议
+    ├── completion-gate.md← 子代理验证 + 串行同步协议
     ├── goal-gate.md      ← VC 规则 + COMPLETE/PARTIAL/BLOCKED 退出标准
     └── billing.md        ← 计费模式说明
 ```
