@@ -49,6 +49,15 @@
       "default": "enforce",
       "description": "执行期委派门控档位：enforce=exit2 阻断主进程白名单外 Write/Edit；warn=仅注入警告并计数"
     },
+    "interaction_mode": {
+      "type": "string",
+      "enum": [
+        "ask",
+        "silent"
+      ],
+      "default": "ask",
+      "description": "交互模式（Rule 28）：ask=关键决策点(D1-D6)给选项供用户选择；silent=静默自主决策并登记静默决策清单(Decisions Made 表 silent: 前缀行)供交付复核。解析优先级: env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > 本键 > 默认 ask；D6 硬停点(连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认)两模式一致不可豁免"
+    },
     "dispatch_contract_enforce": {
       "type": "string",
       "enum": [
