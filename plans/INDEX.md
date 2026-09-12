@@ -68,6 +68,7 @@ _无待处理任务_
 - task-v059-active-plan-race ✓ (6/6) — 2026-09-10
 - task-v060-drift-collect ✓ (5/5) — 2026-09-11
 - task-v061-serial-dispatch ✓ (9/9) — 2026-09-12
+- task-v062-interaction-modes ✓ (9/9, merge b0da240, deploy 3+2, Code Review APPROVED) — 2026-09-12
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 28
+- in_progress: 0 | pending: 0 | complete: 29
