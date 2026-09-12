@@ -346,7 +346,9 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
     # [2026-09-12 R3 P3] HOME 未设置且 env 未覆盖 → 显式 REJECTED + DRIFT=1(exit 6), 不静默继续。
     # SLOTS 三路均必赋值(防 set -u 下未初始化变量; 原 R3 缺陷: HOME 空分支漏赋 SLOTS,
-    # read <<< "" 产出单空元素循环被跳过 → exit 0 假绿, 已实证修复)
+    # read <<< "" 产出单空元素循环被跳过 → exit 0 假绿, 已实证修复)。DRIFT 必须先于分支初始化
+    # (原 477 行循环前无条件 DRIFT=0 会把此处置的 DRIFT=1 重置 → 假绿回归, 已实证修复)
+    DRIFT=0
     if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
         SLOTS="$TASK_PLANNER_DEPLOY_SLOTS"
     elif [ -n "${HOME:-}" ]; then
@@ -474,9 +476,9 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         # home guard 为空(HOME 未设)时白名单无基准 — slot 非 $HOME 内部则无家可避, 直接放行(无 $HOME 检查可做)
         return 0
     }
-    DRIFT=0
     # [2026-09-12 R3] 部署循环恒执行(不再条件包裹): HOME 未设且 env 未覆盖时 SLOTS="" → 循环零次,
-    # DRIFT=1 已在上方置位 → 仍走 exit 6(条件包裹会吞掉 HOME 空的 DRIFT 标志, 已实证修复 rc=0 假绿回归)
+    # DRIFT=1 已在上方(SLOTS 分支, 先于循环初始化)置位 → 仍走 exit 6
+    # (DRIFT=0 初始化已移至 SLOTS 分支之前; 条件包裹会吞掉 HOME 空的 DRIFT 标志, 均已实证修复 rc=0 假绿回归)
     IFS=':' read -r -a slots <<< "$SLOTS"
     for slot in "${slots[@]}"; do
         [ -n "$slot" ] || continue
