@@ -344,12 +344,15 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     # [2026-09-12 R2 P0] SKILL_ROOT 推导消除 /scripts/.. 字面量: cd+pwd -P 输出规范化绝对路径
     # (dirname 比 ${BASH_SOURCE%/*} 语义更明确, 与脚本目录推导口径一致)
     SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-    # [2026-09-12 R3 P3] HOME 未设置且 env 未覆盖 → 显式 REJECTED + DRIFT=1(exit 6), 不静默继续
+    # [2026-09-12 R3 P3] HOME 未设置且 env 未覆盖 → 显式 REJECTED + DRIFT=1(exit 6), 不静默继续。
+    # SLOTS 三路均必赋值(防 set -u 下未初始化变量; 原 R3 缺陷: HOME 空分支漏赋 SLOTS,
+    # read <<< "" 产出单空元素循环被跳过 → exit 0 假绿, 已实证修复)
     if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
         SLOTS="$TASK_PLANNER_DEPLOY_SLOTS"
     elif [ -n "${HOME:-}" ]; then
         SLOTS="$HOME/.zcode/skills/task-planner:$HOME/.claude/skills/task-planner:$HOME/.config/opencode/skills/task-planner"
     else
+        SLOTS=""
         echo "[DEPLOY] REJECTED: (HOME 未设置 — 默认部署位不可解析)"
         DRIFT=1
     fi
