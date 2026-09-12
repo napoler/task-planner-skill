@@ -9,10 +9,12 @@
 #   TI-06 临时config层生效 (无env+空plan参数无行+config default=silent) → silent
 #   TI-07 fail-safe 兜底 (无env+无参数+无config) → ask, exit=0
 #   TI-08 传文件路径直接 (非目录, 等价TI-04) → silent
+#   TI-09 值列带注解写法 `silent`（用户…）→ 取首 token silent
+#   TI-10 config.json 顶层 {"interaction_mode":"silent"} (非 .properties 嵌套) → silent
 # hermetic: mktemp 夹具 + trap 清理, 不触真实 plans/ 与真实 config.json;
 # 各 config 层用例独立 <root> 目录 (resolve 读 <script_dir>/../config.json,
 # 故 config.json 必须放 <root>/config.json 且 resolve copy 到 <root>/scripts/)。
-# 全 PASS exit 0; 任一 FAIL exit 1。
+# 10 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
 
 set -u
 
@@ -20,7 +22,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RESOLVE="$SCRIPT_DIR/resolve-interaction-mode.sh"
 
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+trap 'rm -rf "$TMP"' EXIT INT TERM
 
 PASS=0; FAIL=0
 
@@ -72,6 +74,11 @@ PLANEMPTY="$TMP/plans/task-t6"
 mkdir -p "$PLANEMPTY"
 printf '无配置表的计划\n' > "$PLANEMPTY/task_plan.md"
 
+# 值列带注解夹具 (TI-09): 真实写法 `| `interaction_mode` | `silent`（用户直接下令可静默执行） |`
+PLAN9="$TMP/plans/task-t9"
+mkdir -p "$PLAN9"
+printf '| `interaction_mode` | `silent`（用户直接下令可静默执行） |\n' > "$PLAN9/task_plan.md"
+
 # --- config 层独立根目录 (resolve 读 <script_dir>/../config.json) ---
 # case05: config default=ask
 C05="$TMP/case05"; mkdir -p "$C05/scripts"; cp "$RESOLVE" "$C05/scripts/"
@@ -81,6 +88,9 @@ C06="$TMP/case06"; mkdir -p "$C06/scripts"; cp "$RESOLVE" "$C06/scripts/"
 printf '{"properties":{"interaction_mode":{"default":"silent"}}}' > "$C06/config.json"
 # case07: 无 config.json
 C07="$TMP/case07"; mkdir -p "$C07/scripts"; cp "$RESOLVE" "$C07/scripts/"
+# case10: config.json 顶层 .interaction_mode = silent (非 .properties 嵌套)
+C10="$TMP/case10"; mkdir -p "$C10/scripts"; cp "$RESOLVE" "$C10/scripts/"
+printf '{"interaction_mode":"silent"}' > "$C10/config.json"
 
 # TI-01: 默认链 (无env+无参数+无config) → ④ 兜底 ask
 run_case 01 clear "$C07/scripts/resolve-interaction-mode.sh"
@@ -113,6 +123,14 @@ assert_mode 07 ask
 # TI-08: 传文件路径直接 (非目录, 等价TI-04) → silent
 run_case 08 clear "$RESOLVE" "$PLAN/task_plan.md"
 assert_mode 08 silent
+
+# TI-09: 值列带注解写法 `silent`（用户…）→ 首 token silent
+run_case 09 clear "$RESOLVE" "$PLAN9"
+assert_mode 09 silent
+
+# TI-10: config.json 顶层 interaction_mode=silent (非 .properties 嵌套, 空 plan 无行 → ③ 层) → silent
+run_case 10 clear "$C10/scripts/resolve-interaction-mode.sh" "$PLANEMPTY"
+assert_mode 10 silent
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

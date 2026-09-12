@@ -7,7 +7,7 @@
 #   ③ config.json: 脚本所在目录的 ../config.json (skill 级 config),
 #      先查 .properties.interaction_mode.default, 再查顶层 .interaction_mode (未来实例化键)
 #   ④ 兜底默认 ask
-# fail-open 语义: 任何异常(jq 缺失/文件不可读/解析失败) 一律静默降级, 最终输出 ask;
+# fail-safe 语义: 任何异常(jq 缺失/文件不可读/解析失败) 一律降级, 最终兜底 ask;
 # 退出码恒 0; stdout 仅一行 ask|silent。
 # D6 硬停点(连续失败 STOP / drift BLOCKED / Q3 / 破坏性操作确认) 两模式一致不可豁免,
 # 本脚本不改变该约束, 仅输出模式值供调用方(主进程/selftest/hook)分流。
@@ -58,15 +58,16 @@ if [ $# -ge 1 ]; then
   fi
 fi
 if [ -n "$plan_cfg_row" ] && [ -r "$plan_cfg_row" ]; then
-  # 配置表行形如: | `interaction_mode` | silent | ... |
-  # 取行内第二个管道后的值列, trim 反引号/空白
-  row_val=$(grep -E '^\|\s*`?interaction_mode`?' "$plan_cfg_row" 2>/dev/null | head -n1 | \
-    awk -F'|' '{print $3}' 2>/dev/null)
-  row_val="${row_val//\`/}"
-  row_val="${row_val#"${row_val%%[![:space:]]*}"}"
-  row_val="${row_val%"${row_val##*[![:space:]]}"}"
+  # 配置表行形如: | `interaction_mode` | silent（注解） | ... |
+  # grep 目标行用可移植 [[:space:]] (GNU grep \s 全仓唯一扩展);
+  # awk 取值列后 sed 提取首 token (支持值列带注解的真实写法, 取 `silent` → silent)
+  row_val=$(grep -E '^[[:space:]]*\|[[:space:]]*`?interaction_mode`?' "$plan_cfg_row" 2>/dev/null | head -n1 | \
+    awk -F'|' '{print $3}' 2>/dev/null | \
+    sed -E 's/^[[:space:]]*`?([A-Za-z_]+)`?.*$/\1/')
   if [ -n "$row_val" ] && is_valid_mode "$row_val"; then
     emit "$row_val"
+  elif [ -n "$row_val" ]; then
+    printf 'RESOLVE: %s 的 interaction_mode 值 "%s" 非法,降级下一级\n' "$p" "$row_val" >&2
   fi
   # 缺行/非法值 → 降级 ③
 fi

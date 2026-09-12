@@ -116,7 +116,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 
 ---
 
-## config.json 键说明（19 键）
+## config.json 键说明（常用键 19 项）
 
 `config.json` 为 JSON Schema，**全部阈值集中管理**。常用键语义：
 
