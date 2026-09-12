@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 10 用例(SM-01..10): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
+# 12 用例(SM-01..11 + 框架断言行): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
 #   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
 #   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
 #   slot 含空格 → REJECTED exit6 /
 #   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
-#   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(若注入 SELFTEST_SM10_WT) md5 前后一致(零改动)。
+#   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(SELFTEST_SM10_WT 注入) md5 前后一致(零改动)。
+#   [2026-09-12 R2] SM-10 真实 worktree 注入改套件内部推导: 若 /mnt/data/dev/task-planner-skill-worktrees/
+#   task-v064-smart-merge-back 存在则自动注入 SELFTEST_SM10_WT; 未注入(env 与默认路径均无) → 记 FAIL(不静默降级)。
+#   SM-11(2026-09-12 R2 新增, 首次让 exit 8 有覆盖): 夹具主仓人为构造 MERGE_HEAD
+#   (git update-ref --no-deref MERGE_HEAD HEAD) → 期望 exit 8 且含 MERGE_IN_PROGRESS。
 # hermetic: 每用例独立 tmp 仓(bare origin + clone master + worktree add), trap EXIT 全量清理; 禁止触碰真实 worktree/部署位。
 # trap 实现: 各用例 T* 与 SM-06 涉及 chmod 只读态的目录($T6/x)先 chmod -R u+w 再删(见 trap 体与 :清理段)。
 # 2026-09-12 S2 修复轮: 头注释 7→9 用例; Total 改真实断言行计数(PASS=实际累计, 非 7 用例派生);
 #   死变量 MERGE_HEAD_PRE 删除, 改 SM-03 断言主仓无 MERGE_HEAD 残留(防 mid-merge 自锁); SM-06 DRIFT 构造改 ENOTDIR(root 亦稳)。
 # 2026-09-12 洞①②修复轮: 新增 SM-10(祖先方向守卫实证), 断言行 10 → Total: 10 PASS=10 FAIL=0;
 #   SM-10 由 env SELFTEST_SM10_WT 注入真实 worktree 绝对路径(主进程派发时自带), 未注入则 SM-10 记 FAIL(不静默降级)。
+# 2026-09-12 R2 复审修复轮: 记账修复 — report 真实累计 PASS(断言 PASS+FAIL=TOTAL_CASES, 不一致打印
+#   FRAMEWORK_BROKEN 并 exit 97); SM-03 MERGE_HEAD 残留断言改绝对路径形式; 新增 SM-11(exit 8 正向覆盖);
+#   SM-10 头注释与实现一致(未注入 env 时记 FAIL, 不静默降级)+ 默认路径自动注入; 断言行 10 → Total: 12。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,7 +30,7 @@ GLUE="2>/dev/null"
 
 PASS=0; FAIL=0
 
-# 用例夹具清单(SM-01..10 对应 T1..T10), 统一 trap EXIT 清理; SM-06 只读态目录先恢复可写
+# 用例夹具清单(SM-01..11 对应 T1..T11), 统一 trap EXIT 清理; SM-06 只读态目录先恢复可写
 CLEANUP_DIRS=()
 cleanup_all() {
   local d
@@ -124,19 +131,22 @@ SMOK=0
 report SM-02 "$SMOK" "rc=$R1(期望0) MERGED=$(printf '%s' "$R2" | grep -qF '[V6] MERGED' && echo 在 || echo 缺)"
 
 # ---------- SM-03 已合并: 先主仓 merge --no-ff wt/task-test 再跑 → exit 0 含 ALREADY_MERGED, master 无新 commit;
-#           且主仓无 MERGE_HEAD 残留(防 V1 MERGE_IN_PROGRESS exit 8 自锁死变量 MERGE_HEAD_PRE 已删除改此断言) ----------
+#           且主仓无 MERGE_HEAD 残留(防 V1 MERGE_IN_PROGRESS exit 8 自锁; [R2] 绝对路径形式断言) ----------
 T3="$(mktemp -d)"; record_dir "$T3"
 mk_fixture "$T3" "$T3/main" "$T3/task-test" "$T3/origin.git"
 branch_commit "$T3/task-test"
 git -C "$T3/main" merge -q --no-ff wt/task-test
 C3_BEFORE="$(git -C "$T3/main" rev-parse HEAD)"
+# [2026-09-12 R2] MERGE_HEAD 残留断言改绝对路径(与脚本 P1-2 实现同口径): --git-dir 相对则先拼主仓绝对前缀
+C3_GITDIR="$(git -C "$T3/main" rev-parse --git-dir 2>/dev/null)"
+case "$C3_GITDIR" in /*) C3_MH="$C3_GITDIR/MERGE_HEAD" ;; *) C3_MH="$T3/main/$C3_GITDIR/MERGE_HEAD" ;; esac
 ERRF="$T3/err"
 run "$TARGET" "$T3/task-test"
 SMOK=0
 [ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF 'ALREADY_MERGED' && \
   [ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && \
-  [ ! -f "$(git -C "$T3/main" rev-parse --git-path MERGE_HEAD 2>/dev/null)" ] && SMOK=1
-report SM-03 "$SMOK" "rc=$R1(期望0) ALREADY=$(printf '%s' "$R2" | grep -qF 'ALREADY_MERGED' && echo 在 || echo 缺) master无新commit=$([ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && echo 是 || echo 否) 无MERGE_HEAD残留=$([ ! -f "$(git -C "$T3/main" rev-parse --git-path MERGE_HEAD 2>/dev/null)" ] && echo 是 || echo 否)"
+  [ ! -f "$C3_MH" ] && SMOK=1
+report SM-03 "$SMOK" "rc=$R1(期望0) ALREADY=$(printf '%s' "$R2" | grep -qF 'ALREADY_MERGED' && echo 在 || echo 缺) master无新commit=$([ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && echo 是 || echo 否) 无MERGE_HEAD残留(绝对路径 $C3_MH)=$([ ! -f "$C3_MH" ] && echo 是 || echo 否)"
 
 # ---------- SM-04 master 前进(主仓在分支分叉后直接 commit) → exit 5 含 MASTER_AHEAD; 同夹具 --force → exit 0 MERGED ----------
 # 设计: 分支与 master 改不同文件(分支改 new.txt, master 改 base.txt) → 文本合并无冲突 → --force exit 0
@@ -237,19 +247,21 @@ SMOK=0
 [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && SMOK=1
 report SM-09 "$SMOK" "rc=$R1(期望6) REJECTED含空格=$(printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && echo 在 || echo 缺)"
 
-# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮): slot = <真实 worktree 的父目录> →
+# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮 / R2 头注释与实现对齐): slot = <真实 worktree 的父目录> →
 #           脚本 GUARDS 含 WT_PATH(= 真实 worktree) → slot 是 guard 的祖先 → 祖先守卫 REJECTED(exit 6, 行含"的祖先"),
-#           且 slot 目录与 worktree 内文件 md5 前后一致(零改动 — 被守卫拦截, 不会执行 rm -rf) ----------
+#           且 slot 目录与真实仓文件 md5 前后一致(零改动 — 被守卫拦截, 不会执行 rm -rf) ----------
 # 语义: slot 若包含任一受保护路径, rm -rf slot 必然摧毁它 → 必须拒绝(19:2x 事故实锤场景)。
-# 实现: mk_fixture 夹具(T10) + worktree 目录重命名为 SM10_WT 的同名影子不可行(真实目录占用),
-#   改为等价构造: 夹具 main 内 worktree add 到 $T10/ancestor/task-test(分支 wt/task-test, 目录 basename
-#   = task-id=task-test → V1 双校验通过), GUARDS.WT_PATH=$T10/ancestor/task-test,
-#   slot=$T10/ancestor(含 guard task-test 于其内部) → 祖先守卫必中 REJECTED(exit 6, 行含"的祖先")。
-#   env SELFTEST_SM10_WT(真实 worktree 绝对路径, 主进程注入) 仅作旁证采样: 真实仓的目录清单与
-#   目标脚本文件 md5 前后须一致(本测试对真实仓零写入)。真实语义验收由主进程验收第 3 条承担。
-#   只读断言: 守卫在 validate_slot 阶段拦截, 脚本不会对该 slot 执行 cp/rm/mv, 夹具与真实目录零改动。
+# [R2 一致化] 真实 worktree 来源: ① 外层 env SELFTEST_SM10_WT(主进程注入, 优先);
+#   ② 套件内部推导 — 若 /mnt/data/dev/task-planner-skill-worktrees/task-v064-smart-merge-back
+#   存在则自动注入; ①②均无 → 记 FAIL(不静默降级, 与头注释一致)。
 T10="$(mktemp -d)"; record_dir "$T10"
-SM10_WT="${SELFTEST_SM10_WT:-}"
+SELFTEST_SM10_WT="${SELFTEST_SM10_WT:-}"
+if [ -z "$SELFTEST_SM10_WT" ] && [ -d /mnt/data/dev/task-planner-skill-worktrees/task-v064-smart-merge-back ]; then
+  SELFTEST_SM10_WT=/mnt/data/dev/task-planner-skill-worktrees/task-v064-smart-merge-back
+fi
+SM10_WT="$SELFTEST_SM10_WT"
+SM10_INJECTED=0
+[ -n "$SM10_WT" ] && [ -d "$SM10_WT" ] && SM10_INJECTED=1
 mk_fixture "$T10" "$T10/main" "$T10/task-test" "$T10/origin.git"
 # git 2.43 无 worktree remove -q(rc 129 静默失败 → 分支残留 → 后续 add 失败), 用 2>/dev/null 兜底
 git -C "$T10/main" worktree remove "$T10/task-test" 2>/dev/null || true
@@ -276,20 +288,40 @@ $(ls -1 "$SM10_WT" | md5sum)
 $(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh" 2>/dev/null)"
 fi
 SMOK=0
-[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T10/ancestor" && \
+# [R2] 未注入真实 worktree(套内推导也未命中) → 记 FAIL(不静默降级, 与头注释一致)
+[ "$SM10_INJECTED" = 1 ] && [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T10/ancestor" && \
   printf '%s' "$R2" | grep -qF "的祖先" && \
   [ "$SM10_BEFORE" = "$SM10_AFTER" ] && SMOK=1
-report SM-10 "$SMOK" "rc=$R1(期望6) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$T10/ancestor(guard=$T10/ancestor/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
+report SM-10 "$SMOK" "rc=$R1(期望6) 真实wt注入=$([ "$SM10_INJECTED" = 1 ] && echo 是 || echo 否) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$T10/ancestor(guard=$T10/ancestor/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
+
+# ---------- SM-11 (2026-09-12 R2 新增, 首次让 exit 8 有覆盖) 主仓 MERGE_HEAD 残留 → exit 8 含 MERGE_IN_PROGRESS ----------
+# 夹具主仓人为构造 mid-merge 态: git update-ref --no-deref MERGE_HEAD HEAD(update-ref 无 -q, 失败回退 touch .git/MERGE_HEAD)
+T11="$(mktemp -d)"; record_dir "$T11"
+mk_fixture "$T11" "$T11/main" "$T11/task-test" "$T11/origin.git"
+branch_commit "$T11/task-test"
+if ! git -C "$T11/main" update-ref --no-deref MERGE_HEAD HEAD 2>/dev/null; then
+  echo "$(git -C "$T11/main" rev-parse HEAD)" > "$T11/main/.git/MERGE_HEAD"
+fi
+ERRF="$T11/err"
+run "$TARGET" "$T11/task-test"
+SMOK=0
+[ "$R1" = 8 ] && printf '%s' "$R2" | grep -qF 'MERGE_IN_PROGRESS' && SMOK=1
+report SM-11 "$SMOK" "rc=$R1(期望8) MERGE_IN_PROGRESS=$(printf '%s' "$R2" | grep -qF 'MERGE_IN_PROGRESS' && echo 在 || echo 缺)"
 
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# 统计口径: 10 断言行(SM-01..09 各 1 行 + SM-10 1 行), PASS/FAIL 为 report() 实际累计的断言行数, 连跑两遍结果一致(trap 幂等)。
-#   注: SM-04a/b 为同一用例 2 子断言输出(断言行按 report 调用计, 恒 10 行: SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-10);
-#   全绿 → Total: 10 PASS=10 FAIL=0(与任务验收标准一致)。
-TOTAL_CASES=10
+# [2026-09-12 R2 记账修复] 统计口径: 12 断言行(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-11),
+#   PASS/FAIL 为 report() 真实累计值; 断言 PASS+FAIL 与声明用例数 TOTAL_CASES 不一致 →
+#   打印 FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败)。连跑两遍结果一致(trap 幂等)。
+TOTAL_CASES=12
+PASS_TOTAL=$((PASS + FAIL))
+if [ "$PASS_TOTAL" -ne "$TOTAL_CASES" ]; then
+  printf 'FRAMEWORK_BROKEN: 断言行 %d 与声明用例数 %d 不一致(PASS=%d FAIL=%d)\n' "$PASS_TOTAL" "$TOTAL_CASES" "$PASS" "$FAIL" >&2
+  exit 97
+fi
 FAIL_CASES=$FAIL
 [ "$FAIL_CASES" -gt "$TOTAL_CASES" ] && FAIL_CASES=$TOTAL_CASES
 PASS_CASES=$(( TOTAL_CASES - FAIL_CASES ))
-printf 'Total: %d PASS=%d FAIL=%d\n' "$TOTAL_CASES" "$PASS_CASES" "$FAIL"
+printf 'Total: %d PASS=%d FAIL=%d\n' "$TOTAL_CASES" "$PASS" "$FAIL"
 exit $((FAIL > 0))

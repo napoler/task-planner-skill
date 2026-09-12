@@ -13,6 +13,9 @@
 #   <worktree-path>  必填; worktree 绝对路径
 #   --base <branch>  目标分支, 默认 master
 #   --deploy         合并后对部署位执行既有 SOP(rm+cp -rL+diff -rq); 逐位 [DEPLOY] 判定, 任一 DRIFT exit 6
+#                    守卫语义分级(2026-09-12 R2): $HOME = 仅 exact + 祖先方向(slot 包含 $HOME → REJECTED;
+#                    slot 位于 $HOME 内部豁免 — 三默认部署位都在 $HOME 下);
+#                    SKILL_ROOT/WT_PATH/MAIN_REPO = exact + 内部 + 祖先全向
 #   --force          V5 MASTER_AHEAD 时强制继续(默认中止; merge 冲突仍 exit 7 STOP)
 #
 # 接口规格(照 findings「smart-merge-back.sh 设计」):
@@ -32,13 +35,25 @@
 #   [CLEANUP] git worktree remove <path> && git branch -d <branch>   (只提示不执行 — 清理时机留主进程)
 #   --deploy: 逐位 [DEPLOY] REJECTED|IDENTICAL|DRIFT: <位>; 任一 REJECTED/DRIFT → exit 6 DEPLOY_DRIFT
 #   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 3 真实位。
-#   slot 安全: IFS=':' 解析 + validate_slot 守卫(拒空/非绝对/含空白或 glob(*?[)/规范化后为
-#     / $HOME $SKILL_ROOT $WT_PATH $MAIN_REPO 或其内部/.git 末组件 → REJECTED exit 6);
+#   slot 安全: IFS=':' 解析 + validate_slot 守卫(拒空/非绝对/含空白或 glob/规范化后为
+#     / 或 .git 末组件 → REJECTED exit 6);
 #     2026-09-12 洞①②修复轮: 新增祖先方向守卫 — 任一 guard 位于 slot 内部(slot 是 guard 的祖先)
 #     即 REJECTED(slot 若包含任一受保护路径, rm -rf slot 必然摧毁它); GUARDS 移除失效的 "/" 条目
 #     (洞①: gn="/" 时前缀模式退化为 "//"/* 双斜杠永不命中, "/" 守卫形同虚设; 根场景已由
 #     norm="/" 显式拒绝 + $HOME 等祖先/内部双向守卫覆盖);
 #     替换原子: cp -rL 至同目录 .tmp-new.$$ → rm -rf slot → mv tmp→slot; cp 失败原 slot 保留。
+#   2026-09-12 R2 复审修复轮: ① 守卫比较前统一规范化(norm_path: realpath -m 优先, 失败回退纯串
+#     归并 //→/、剥 .、.. 弹出) — //tmp/x、/tmp/./x、/tmp/y/../x 与 /tmp/x 同判;
+#     ② 守卫语义分级(GUARDS 带 :type 后缀): $HOME:home = 仅 exact+祖先方向(豁免 slot 位于
+#     $HOME 内部 — 三默认部署位都在 $HOME 内, 全向则生产路径永不成功);
+#     SKILL_ROOT/WT_PATH/MAIN_REPO:full = exact+inside+ancestor 全向;
+#     ③ 原子替换改改名换位(slot→.bak.$$ → tmp→slot → rm .bak), 任一 mv 失败恢复原位,
+#     slot 永不在盘中缺席; cp 前 rm -rf tmpdir 防 PID 复用残留嵌套;
+#     ④ 本批次 tmpdir 数组累积 trap 逐个清理(不再用前缀 glob 误删他进程);
+#     ⑤ V3 rename 记录(R/C 双 NUL 记录)解析时额外消费下一条旧路径, 新路径计入重叠集;
+#     ⑥ worktree list --porcelain awk 改 branch 行累积至下一块/END 输出, 保证 path|branch 配对
+#     (兜底判据③ bare-origin+base-branch 形态真正可达);
+#     ⑦ MERGE_HEAD 检测改绝对路径(--path-format=absolute; 不支持时回退 --git-dir 相对则 cd 主仓解析)。
 #
 # 通用: set -u; 无 jq 依赖; 头注释块标注任务与用途; 退出码表如下。
 #
@@ -145,9 +160,13 @@ WTLIST_P="$(git -C "$WT_PATH" worktree list --porcelain 2>/dev/null)" || {
 }
 WT_PATH="$(cd "$WT_PATH" && pwd)"   # 规范化, 与 porcelain 输出(绝对路径)前缀比较口径一致
 # 块清单: 每行 "块路径|branch(无 branch 行则为空)"
+# [2026-09-12 R2 P2] branch 行累积到下一 worktree 行/END 才输出(保证 path|branch 配对;
+#  原实现在 worktree 行即时输出时 branch 尚未累积 → 配对错位, 兜底判据③(主仓带 base branch
+#  的 bare-origin 形态)真正不可达)
 _P="$(printf '%s\n' "$WTLIST_P" | awk '
-    /^worktree /{ wt=$2; br=""; if (wt != "") print wt "|" br; wt="" }
-    /^branch refs\/heads\//{ br=$0; sub(/^branch /, "", br) }')"
+    /^worktree /{ if (wt != "") print wt "|" br; wt=$2; br="" }
+    /^branch refs\/heads\//{ br=$0; sub(/^branch /, "", br) }
+    END{ if (wt != "") print wt "|" br }')"
 # bash 循环按优先序取主仓: ① 关联主仓元数据(该仓 .git/worktrees/<wt_hash> 存在, git worktree add 必生)
 #   ② 无 branch 的块(detached 主仓) ③ branch=refs/heads/<base> 的块(bare origin + 主仓跟踪 base 典型形态)
 MAIN_REPO=""
@@ -193,13 +212,20 @@ fi
 
 echo "[V1] OK: worktree $WT_PATH 在册, branch=$BRANCH, main=$MAIN_REPO, base=$BASE"
 
-# 主仓 mid-merge 检测(.git/MERGE_HEAD 残留 → V6 重跑会 self-lock: "fatal: You have not concluded your merge")
-# [2026-09-12 S2 P2 新增; 独立退出码 8, 附恢复指引]
-if [ -f "$(git -C "$MAIN_REPO" rev-parse --git-path MERGE_HEAD 2>/dev/null)" ]; then
-    echo "[V1] MERGE_IN_PROGRESS: 主仓 $MAIN_REPO 有未完成合并(存在 MERGE_HEAD)"
-    echo "[V1] 恢复: git -C $MAIN_REPO merge --abort" >&2
-    exit 8
-fi
+    # [2026-09-12 R2 P1-2] MERGE_HEAD 检测改绝对路径: 首选 --path-format=absolute(部分 git 版本
+    # 不支持); 回退: rev-parse --git-dir, 相对路径时先 cd 主仓解析为绝对
+    mh_abs="$(git -C "$MAIN_REPO" rev-parse --path-format=absolute --git-path MERGE_HEAD 2>/dev/null)"
+    if [ -z "$mh_abs" ]; then
+        gh_dir="$(git -C "$MAIN_REPO" rev-parse --git-dir 2>/dev/null)" || gh_dir=""
+        if [ -n "$gh_dir" ]; then
+            case "$gh_dir" in /*) mh_abs="$gh_dir/MERGE_HEAD" ;; *) mh_abs="$MAIN_REPO/$gh_dir/MERGE_HEAD" ;; esac
+        fi
+    fi
+    [ -n "$mh_abs" ] && [ -f "$mh_abs" ] && {
+        echo "[V1] MERGE_IN_PROGRESS: 主仓 $MAIN_REPO 有未完成合并(存在 MERGE_HEAD)"
+        echo "[V1] 恢复: git -C $MAIN_REPO merge --abort" >&2
+        exit 8
+    }
 
 # ---------- V2 worktree 干净 ----------
 DIRTY="$(git -C "$WT_PATH" status --porcelain 2>/dev/null)"
@@ -215,8 +241,16 @@ echo "[V2] OK: worktree 干净"
 # 主仓未提交文件(改动+暂存+untracked; -uall 展开未跟踪目录不坍缩), 相对主仓路径
 # [2026-09-12 S2 P2: 原 `awk '{print $NF}'` 对"未跟踪目录坍缩行(?? dir/)与含空格路径"双漏;
 #  改 -z NUL 安全解析: read -d '' 逐条, 剥前 3 字符状态码取路径]
+# [2026-09-12 R2 P2: V3 rename 记录: R/C 为两条 NUL 记录(新路径+旧路径), 状态首字符 R/C 时
+#  额外消费下一条为旧路径; 重叠集取新路径(rename 会改写的目标)]
 MAIN_DIRTY="$(git -C "$MAIN_REPO" status --porcelain -z -uall 2>/dev/null |
-    while IFS= read -r -d '' entry; do printf '%s\n' "${entry#???}"; done)"
+    while IFS= read -r -d '' entry; do
+        st="${entry:0:3}"
+        printf '%s\n' "${entry:3}"
+        case "$st" in
+        R??|C??) IFS= read -r -d '' _old || true ;;  # 第二条 NUL 记录 = 旧路径, 额外消费
+        esac
+    done)"
 # 分支相对 merge-base 的变更文件, 相对主仓路径
 MB="$(git -C "$MAIN_REPO" merge-base "$BASE" "$BRANCH" 2>/dev/null)"
 if [ -z "$MB" ]; then
@@ -237,10 +271,9 @@ if [ -n "$OVERLAP" ]; then
 fi
 echo "[V3] OK: 主仓无 scope 重叠(merge-base $MB)"
 
-# ---------- V4 已合并检测 ----------
-CLEANUP_LINE=""
-DO_MERGED=0
-ALREADY=0
+    # ---------- V4 已合并检测 ----------
+    CLEANUP_LINE=""
+    ALREADY=0
 if git -C "$MAIN_REPO" merge-base --is-ancestor "$BRANCH" "$BASE" 2>/dev/null; then
     echo "[V4] ALREADY_MERGED: $BRANCH 已在 $BASE(merge-base $MB) — 跳过合并(另一窗口可能已合并)"
     ALREADY=1
@@ -270,7 +303,6 @@ else
     fi
     MERGE_COMMIT="$(git -C "$MAIN_REPO" rev-parse --verify HEAD 2>/dev/null)"
     echo "[V6] MERGED: $MERGE_COMMIT"
-    DO_MERGED=1
     CLEANUP_LINE="git worktree remove $WT_PATH && git branch -d $BRANCH"
 fi
 
@@ -283,47 +315,81 @@ fi
 # [2026-09-12 S2 P0+P1 重写: 原实现"rm 先于 cp 验证 + 空格分词"可摧毁受保护路径(worktree/主仓/HOME)
 #  且 exit 0 假绿。现: slot IFS 安全解析 + validate_slot 前缀守卫 + cp→rm→mv 原子替换(tmp 建同目录保 mv 原子)。]
 if [ "$DO_DEPLOY" -eq 1 ]; then
-    SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
+    # [2026-09-12 R2 P0] SKILL_ROOT 推导消除 /scripts/.. 字面量: cd+pwd -P 输出规范化绝对路径
+    # (dirname 比 ${BASH_SOURCE%/*} 语义更明确, 与脚本目录推导口径一致)
+    SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
     SLOTS="${TASK_PLANNER_DEPLOY_SLOTS:-$HOME/.zcode/skills/task-planner:$HOME/.claude/skills/task-planner:$HOME/.config/opencode/skills/task-planner}"
-    # 受保护路径集合: 任一 slot 规范化后等于其本身/位于其内部(内部方向) 或其为 guard 祖先
-    # (祖先方向: guard 位于 slot 内部, rm -rf slot 会摧毁 guard) 即拒绝(纯字符串前缀比较, 不依赖 git)。
-    # GUARDS 不含 "/": 洞①(gn="/" 时前缀模式退化为 "//"/* 永不命中) 使其形同虚设, 已移除;
-    # 根场景由 norm="/" 显式拒绝 + $HOME 等守卫的祖先/内部双向检查覆盖。
-    GUARDS="$HOME|$SKILL_ROOT|$WT_PATH|$MAIN_REPO"
-    # trap 清理本批次原子替换的残留 tmp: 各 slot 成功时已 mv 归位, 失败路径 cp/mv 前缀匹配可覆盖;
-    # 残留清理对象统一为 .tmp-new.$$ 后缀(与 tmpdir 构造一致, 防跨进程误删他进程 .tmp-deploy.*)
-    trap 'rm -rf "${SKILL_ROOT}"/.tmp-new.$$* 2>/dev/null || true' EXIT
+    # 受保护路径集合(带类型, |:type 后缀): home=仅 exact+祖先方向(豁免 slot 位于 $HOME 内部 —
+    # 三默认部署位都在 $HOME 内, 全向则生产路径永不成功); full=exact+inside+ancestor 全向。
+    # [2026-09-12 R2 P1-1 分级] ${HOME:-} 防 env -u HOME 下 set -u 中止; 空 guard 在比较前已过滤。
+    GUARDS="${HOME:-}:home|$SKILL_ROOT:full|$WT_PATH:full|$MAIN_REPO:full"
+    # [2026-09-12 R2 P3] 本批次 tmpdir 数组累积, trap 逐个清理(原前缀 glob 匹配他进程 .tmp-deploy.*)
+    BATCH_TMPDIRS=()
+    trap 'local _t; for _t in ${BATCH_TMPDIRS[@]+"${BATCH_TMPDIRS[@]}"}; do [ -n "$_t" ] && rm -rf "$_t" 2>/dev/null; done; true' EXIT
+
+    # [2026-09-12 R2 P0] 统一规范化: realpath -m 优先(不要求路径存在); 失败回退纯串归并
+    # (循环 //→/、逐段剥 .、.. 弹出上一段, /.. → /)
+    norm_path() {
+        local p
+        p="$(realpath -m -- "$1" 2>/dev/null)" && { printf '%s\n' "$p"; return 0; }
+        p="${1#./}"
+        local -a seg=()
+        local s
+        local IFS='/'
+        local raw="$p"
+        read -r -a seg <<< "$raw"
+        local out=()
+        for s in "${seg[@]}"; do
+            if [ -z "$s" ] || [ "$s" = "." ]; then continue; fi
+            if [ "$s" = ".." ]; then
+                [ ${#out[@]} -gt 0 ] && unset 'out[${#out[@]}-1]'; continue
+            fi
+            out+=("$s")
+        done
+        if [ ${#out[@]} -eq 0 ]; then printf '/\n'; else
+            printf '/%s\n' "$(IFS='/'; echo "${out[*]}")"
+        fi
+    }
+
+    # [2026-09-12 R2 P0] 守卫一次性规范化(循环外算好 norm 后数组): GUARDS 每项 "path:type" → "normpath:type"
+    IFS='|' read -r -a guard_raw <<< "$GUARDS"
+    guard_norm=()
+    guard_type=()
+    for g in "${guard_raw[@]}"; do
+        [ -n "$g" ] || continue
+        case "$g" in *:*) guard_norm+=("$(norm_path "${g%:*}")"); guard_type+=("${g##*:}") ;;
+                 *) guard_norm+=("$(norm_path "$g")"); guard_type+=("full") ;;
+        esac
+    done
+
+    # [2026-09-12 R2 P1-2] MERGE_HEAD 检测改绝对路径(--path-format=absolute; 不支持时回退 --git-dir 相对则先 cd 主仓解析)
 
     validate_slot() {   # <slot> → 合法 return 0; 任一命中打印 REJECTED 并 return 1
         local slot="$1"
         [ -n "$slot" ] || { echo "[DEPLOY] REJECTED: $slot (空串 — 危险路径)"; return 1; }
         case "$slot" in /*) ;; *) echo "[DEPLOY] REJECTED: $slot (非绝对路径 — 危险路径)"; return 1 ;; esac
         case "$slot" in *" "*|*$'\t'*|*$'\n'*|*'*'*|*'?'*|*'['*) echo "[DEPLOY] REJECTED: $slot (含空白/glob 字符 — 危险路径)"; return 1 ;; esac
-        case "$slot" in .git|*/.git) echo "[DEPLOY] REJECTED: $slot (末尾组件 .git — 危险路径)"; return 1 ;; esac
-        # 规范化(纯字符串, 不动磁盘): 去 leading ./ 与 trailing / 族; slot=/ 保留为 "/" 供下条 REJECTED
-        local norm="${slot#./}"
-        while [ "${norm%/}" != "$norm" ] && [ "$norm" != "/" ] && [ -n "$norm" ]; do norm="${norm%/}"; done
+        # [2026-09-12 R2 P0] 规范化先于守卫比较: //tmp/x、/tmp/./x、/tmp/y/../x 三种拼写与 /tmp/x 同判
+        local norm="$(norm_path "$slot")"
         [ -z "$norm" ] && { echo "[DEPLOY] REJECTED: $slot (规范化后为空 — 危险路径)"; return 1; }
         [ "$norm" = "/" ] && { echo "[DEPLOY] REJECTED: / (规范化后为根 — 危险路径)"; return 1; }
-        local g guard_list
-        IFS='|' read -r -a guard_list <<< "$GUARDS"
-        # 规范化守卫(与 GUARDS 同格式: 去 leading ./ 与 trailing / 族), 防 "$HOME/" 与 "$HOME" 双形态误报
-        for g in "${guard_list[@]}"; do
-            [ -n "$g" ] || continue
-            local gn="${g#./}"
-            while [ "${gn%/}" != "$gn" ] && [ "$gn" != "/" ] && [ -n "$gn" ]; do gn="${gn%/}"; done
-            [ "$norm" = "$gn" ] && { echo "[DEPLOY] REJECTED: $slot (= 受保护路径 $g)"; return 1; }
-            # 内部方向: slot 位于 guard 内部(补尾 / 防根路径误匹配)
-            case "$norm/" in "$gn"/*) echo "[DEPLOY] REJECTED: $slot (属受保护路径 $g 内部 — 危险路径)"; return 1 ;; esac
-            # 祖先方向(2026-09-12 洞②修复): guard 位于 slot 内部 → slot 是 guard 的祖先,
-            # rm -rf slot 必然摧毁该受保护路径 → 拒绝(2026-09-12 19:2x 事故实锤场景)
-            case "$gn/" in "$norm"/*) echo "[DEPLOY] REJECTED: $slot (是受保护路径 $g 的祖先 — 危险路径)"; return 1 ;; esac
+        # .git 末组件按规范化后判定
+        case "$norm" in .git|*/.git) echo "[DEPLOY] REJECTED: $slot (末组件 .git — 危险路径)"; return 1 ;; esac
+        # [2026-09-12 R2 P1-1] 守卫比较按类型分支: home=exact+ancestor; full=exact+inside+ancestor
+        local i
+        for i in $(seq 0 $((${#guard_norm[@]}-1))); do
+            local gn="${guard_norm[$i]}" gt="${guard_type[$i]}"
+            [ -n "$gn" ] || continue
+            [ "$norm" = "$gn" ] && { echo "[DEPLOY] REJECTED: $slot (= 受保护路径 ${guard_raw[$i]%:*})"; return 1; }
+            # 内部方向: slot 位于 guard 内部(全向 guard 才拒; home 豁免 — 默认三部署位在 $HOME 内)
+            if [ "$gt" = "full" ]; then
+                case "$norm/" in "$gn"/*) echo "[DEPLOY] REJECTED: $slot (属受保护路径 ${guard_raw[$i]%:*} 内部 — 危险路径)"; return 1 ;; esac
+            fi
+            # 祖先方向(home/full 均拒): guard 位于 slot 内部 → rm -rf slot 必然摧毁 guard
+            case "$gn/" in "$norm"/*) echo "[DEPLOY] REJECTED: $slot (是受保护路径 ${guard_raw[$i]%:*} 的祖先 — 危险路径)"; return 1 ;; esac
         done
         return 0
     }
-    # trap 清理本批次残留 tmp: 各 slot 成功时已 mv 归位, 失败路径(cp/mv)的 tmp 在 .tmp-new.$$ 族;
-    # tmpdir 构造含前导点(隐藏文件), glob 需 . 前缀显式匹配
-    trap 'rm -rf "${SKILL_ROOT}"/.tmp-new.$$* 2>/dev/null || true' EXIT
     DRIFT=0
     IFS=':' read -r -a slots <<< "$SLOTS"
     for slot in "${slots[@]}"; do
@@ -334,20 +400,34 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         fi
         slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
         tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
-        # 原子替换: cp 先验证, 成功后 rm 旧 + mv; cp 失败 → 原 slot 原样保留
+        # 原子替换: cp 先验证, 成功后改名换位(slot→.bak.$$, tmp→slot, rm .bak) —
+        # [2026-09-12 R2 P3] mv 失败时 slot 原样保留(.bak 恢复原位); slot 永不在盘中缺席
+        # cp 前 rm -rf tmpdir([2026-09-12 R2 P3] 防 PID 复用残留嵌套)
+        rm -rf "$tmpdir" 2>/dev/null || true
         if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
             rm -rf "$tmpdir" 2>/dev/null || true
             echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
             DRIFT=1
             continue
         fi
-        rm -rf "$slotdir" 2>/dev/null || true
-        if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
+        BATCH_TMPDIRS+=("$tmpdir")
+        # [2026-09-12 R2 P3] cp 前已 rm -rf tmpdir, 防 PID 复用残留嵌套
+        slotbak="$slotdir.bak.$$"
+        if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
             rm -rf "$tmpdir" 2>/dev/null || true
-            echo "[DEPLOY] DRIFT: $slotdir (mv 失败 — 原 slot 保留未动)"
+            echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
             DRIFT=1
             continue
         fi
+        if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
+            mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位, slot 永不缺席
+            rm -rf "$slotbak" 2>/dev/null
+            echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
+            DRIFT=1
+            continue
+        fi
+        rm -rf "$slotbak" 2>/dev/null
+        BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
         if diff -rq "$SKILL_ROOT" "$slotdir" >/dev/null 2>&1; then
             echo "[DEPLOY] IDENTICAL: $slotdir"
         else
