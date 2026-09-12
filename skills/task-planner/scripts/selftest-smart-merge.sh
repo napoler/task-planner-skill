@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 12 用例(SM-01..11 + 框架断言行): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
+# 14 用例(SM-01..11 断言 12 行 + SM-12/SM-13 回归 2 行, 共 14 断言行): 脏 worktree exit3 / 干净合并 exit0+merge commit /
 #   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
 #   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
 #   slot 含空格 → REJECTED exit6 /
@@ -9,9 +9,14 @@
 #   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
 #   rev-parse --show-toplevel(套件位于被测 skill 内, toplevel 即所在 worktree; 主仓非 worktree 时
 #   返回主仓根 → 由 SELFTEST_SM10_WT env 覆盖或 SKIP); 推导失败且 env 未注入 → SM-10 记 SKIP
-#   (不计 FAIL 不计 PASS, 输出 SKIP 行; Total 口径 = PASS+FAIL, SKIP 单列不计入)。
+#   (SKIP 单列, 不计入断言行总数; 口径: 断言行总数 = PASS+FAIL, 见下方统计段)
 #   SM-11(2026-09-12 R2 新增, 首次让 exit 8 有覆盖): 夹具主仓人为构造 MERGE_HEAD
 #   (git update-ref --no-deref MERGE_HEAD HEAD) → 期望 exit 8 且含 MERGE_IN_PROGRESS。
+#   SM-12/SM-13(2026-09-12 复审 4 轮 P2 回归用例, 全 /tmp 夹具, 禁止真实路径):
+#   SM-12: env HOME=$T12/home + TASK_PLANNER_DEPLOY_SLOTS=$T12/home/.zcode → 期望 rc=6 且
+#   $T12/home/.zcode 目录清单 md5 前后一致($HOME 内部白名单外 REJECTED 回归);
+#   SM-13: 夹具主仓 = 部署根内(部署根 = $T13/main/deployroot/task-planner, 预置 SKILL 根内容,
+#   slot 同路径) → 期望 rc=6(MAIN_REPO full 守卫命中)且主仓 .git 目录存活 + marker 文件 md5 不变。
 # hermetic: 每用例独立 tmp 仓(bare origin + clone master + worktree add), trap EXIT 全量清理; 禁止触碰真实 worktree/部署位。
 # trap 实现: 各用例 T* 与 SM-06 涉及 chmod 只读态的目录($T6/x)先 chmod -R u+w 再删(见 trap 体与 :清理段)。
 # 2026-09-12 S2 修复轮: 头注释 7→9 用例; Total 改真实断言行计数(PASS=实际累计, 非 7 用例派生);
@@ -25,6 +30,10 @@
 #   dirname $0/../.. rev-parse --show-toplevel); 推导失败且 SELFTEST_SM10_WT 未注入 → SM-10 记 SKIP
 #   (不计 PASS/FAIL, 输出 SKIP 行; Total 口径 = PASS+FAIL 断言行数, SKIP 单列);
 #   ② SM-08 详情改 grep -oF 'REJECTED' | wc -l 真实计数(原恒 1 失实)。
+# 2026-09-12 复审 4 轮修复轮: ① P2 新增 SM-12(env HOME 夹具 + $HOME 内部白名单外 slot=$HOME/.zcode
+#   → REJECTED exit 6 + 目录清单 md5 前后一致)/SM-13(部署根内主仓场景 slot=$T13/main/deployroot/task-planner
+#   → REJECTED exit 6 + 主仓 .git 存活 + marker md5 不变); ② SKIP 口径统一(断言行总数 = PASS+FAIL,
+#   SKIP 单列不计入 Total), TOTAL_CASES 12→14; ③ 两用例全 /tmp 夹具, 禁止真实路径。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -325,20 +334,62 @@ SMOK=0
 [ "$R1" = 8 ] && printf '%s' "$R2" | grep -qF 'MERGE_IN_PROGRESS' && SMOK=1
 report SM-11 "$SMOK" "rc=$R1(期望8) MERGE_IN_PROGRESS=$(printf '%s' "$R2" | grep -qF 'MERGE_IN_PROGRESS' && echo 在 || echo 缺)"
 
+# ---------- SM-12 (复审 4 轮 P2 回归) env HOME=$T12/home + slot=$T12/home/.zcode →
+#           白名单外($HOME 内部, 非默认部署根) → REJECTED exit 6; $T12/home/.zcode 目录清单 md5 前后一致
+#           (证明 REJECTED 路径零写入; 与 SM-08 full 守卫不同, 本用例专测 home 白名单口径) ----------
+T12="$(mktemp -d)"; record_dir "$T12"
+mk_fixture "$T12" "$T12/main" "$T12/task-test" "$T12/origin.git"
+branch_commit "$T12/task-test"
+mkdir -p "$T12/home/.zcode/skills"
+echo "home-marker" > "$T12/home/.zcode/AGENTS.md"
+SM12_BEFORE="$( (cd "$T12/home/.zcode" && ls -1 | md5sum) )"
+ERRF="$T12/err"
+run env HOME="$T12/home" TASK_PLANNER_DEPLOY_SLOTS="$T12/home/.zcode" bash "$TARGET" "$T12/task-test" --deploy
+SM12_AFTER="$( (cd "$T12/home/.zcode" && ls -1 | md5sum) )"
+SMOK=0
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && \
+  [ -n "$SM12_BEFORE" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && SMOK=1
+report SM-12 "$SMOK" "rc=$R1(期望6) HOME内部白名单外REJECTED=$(printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && echo 在 || echo 缺) zcode清单md5不变=$([ "$SM12_BEFORE" = "$SM12_AFTER" ] && echo 是 || echo 否)"
+
+# ---------- SM-13 (复审 4 轮 P2 回归) 夹具主仓位于"部署根内"(主仓自身就是某部署根,
+#           slot=主仓同路径的部署位) → MAIN_REPO:full 守卫命中 → REJECTED exit 6;
+#           断言: 主仓 .git 目录存活 + marker 文件 md5 前后不变(证明 REJECTED 零写入) ----------
+T13="$(mktemp -d)"; record_dir "$T13"
+mk_fixture "$T13" "$T13/main" "$T13/task-test" "$T13/origin.git"
+branch_commit "$T13/task-test"
+# 主仓 = 部署根内形态: 预置"部署根"目录 $T13/main/deployroot/task-planner(SKILL 根内容), slot 指同路径
+# 注: slot 路径落在主仓工作树内且 = 受保护 MAIN_REPO 的祖先/内部组合 — 任一 full 向命中即 REJECTED
+mkdir -p "$T13/main/deployroot/task-planner"
+cp -rL "$SCRIPT_DIR/.." "$T13/main/deployroot/task-planner" 2>/dev/null
+echo "git-marker" > "$T13/main/.git-marker.txt"
+# marker 基线: 主仓 .git 目录存在 + marker 文件 md5
+SM13_GIT_OK=1; [ -d "$T13/main/.git" ] || SM13_GIT_OK=0
+SM13_MARKER_MD5="$(md5sum < "$T13/main/.git-marker.txt")"
+ERRF="$T13/err"
+run env TASK_PLANNER_DEPLOY_SLOTS="$T13/main/deployroot/task-planner" bash "$TARGET" "$T13/task-test" --deploy
+SM13_GIT_AFTER=1; [ -d "$T13/main/.git" ] || SM13_GIT_AFTER=0
+SM13_MARKER_MD5_AFTER="$(md5sum < "$T13/main/.git-marker.txt" 2>/dev/null)"
+SMOK=0
+# 部署根内主仓场景: slot 落在 MAIN_REPO 内部 → full 守卫 REJECTED + exit 6, 主仓 .git/marker 零改动
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED" && \
+  [ "$SM13_GIT_OK" = 1 ] && [ "$SM13_GIT_AFTER" = 1 ] && \
+  [ "$SM13_MARKER_MD5" = "$SM13_MARKER_MD5_AFTER" ] && SMOK=1
+report SM-13 "$SMOK" "rc=$R1(期望6) 部署根内主仓REJECTED=$(printf '%s' "$R2" | grep -qF "REJECTED" && echo 在 || echo 缺) .git存活=$([ "$SM13_GIT_AFTER" = 1 ] && echo 是 || echo 否) marker-md5不变=$([ "$SM13_MARKER_MD5" = "$SM13_MARKER_MD5_AFTER" ] && echo 是 || echo 否)"
+
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# [2026-09-12 R2 记账修复 / R3 SKIP 口径] 统计口径: 12 断言行(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-11),
-#   PASS/FAIL 为 report() 真实累计值; SM-10 未注入真实 wt 时记 SKIP(不计入 PASS/FAIL 也不计入
-#   TOTAL_CASES 断言行数 — 此时 11 断言行 + 1 SKIP 行, 框架自检用断言行总数 = PASS+FAIL+SKIP);
-#   断言行数与声明不一致 → 打印 FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败)。
+# [2026-09-12 R2 记账修复 / R3 SKIP 口径] 统计口径: 14 断言行(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-13),
+#   PASS/FAIL 为 report() 真实累计值; 口径: 断言行总数 = PASS+FAIL(SKIP 单列, 不计入断言行总数/Total)。
+#   SM-10 未注入真实 wt → 记 SKIP 行(不占断言行; 14 断言行全在时 PASS+FAIL=14, SKIP=1 单列);
+#   断言行总数与声明不一致 → 打印 FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败)。
 #   连跑两遍结果一致(trap 幂等)。
-TOTAL_CASES=12
+TOTAL_CASES=14
 SKIPPED=0
 [ "$SM10_INJECTED" = 0 ] && SKIPPED=1
-PASS_TOTAL=$((PASS + FAIL + SKIPPED))
+PASS_TOTAL=$((PASS + FAIL))
 if [ "$PASS_TOTAL" -ne "$TOTAL_CASES" ]; then
-  printf 'FRAMEWORK_BROKEN: 断言行 %d 与声明用例数 %d 不一致(PASS=%d FAIL=%d SKIP=%d)\n' "$PASS_TOTAL" "$TOTAL_CASES" "$PASS" "$FAIL" "$SKIPPED" >&2
+  printf 'FRAMEWORK_BROKEN: 断言行 %d 与声明用例数 %d 不一致(PASS=%d FAIL=%d SKIP=%d 单列)\n' "$PASS_TOTAL" "$TOTAL_CASES" "$PASS" "$FAIL" "$SKIPPED" >&2
   exit 97
 fi
 FAIL_CASES=$FAIL
