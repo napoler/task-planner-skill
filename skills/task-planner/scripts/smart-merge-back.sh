@@ -49,14 +49,14 @@
 #     norm="/" 显式拒绝 + $HOME 等祖先/内部双向守卫覆盖);
 #     替换原子(改名换位): cp -rL 至同目录 .tmp-new.$$ → mv slot→.bak.$$ → mv tmp→slot → rm .bak;
 #     常规退出/TERM/INT 由 EXIT trap 兜底恢复(.bak 尚在且 slot 缺席时 mv 回原位); SIGKILL 不可捕获,
-#     残留 slot.bak.$$ 需人工 mv 回原位。
+#     残留 slot.bak.$$ 需人工 mv 回原位; slot 常规失败路径均恢复原位(SIGKILL 不可捕获, 见 R3 ②)
 #   2026-09-12 R2 复审修复轮: ① 守卫比较前统一规范化(norm_path: realpath -m 优先, 失败回退纯串
 #     归并 //→/、剥 .、.. 弹出) — //tmp/x、/tmp/./x、/tmp/y/../x 与 /tmp/x 同判;
 #     ② 守卫语义分级(GUARDS 带 :type 后缀): $HOME:home 豁免 slot 位于
 #     $HOME 内部(三默认部署位都在 $HOME 内, 全向则生产路径永不成功);
 #     SKILL_ROOT/WT_PATH/MAIN_REPO:full = exact+inside+ancestor 全向;
 #     ③ 原子替换改改名换位(slot→.bak.$$ → tmp→slot → rm .bak), 任一 mv 失败恢复原位,
-#     slot 永不在盘中缺席; cp 前 rm -rf tmpdir 防 PID 复用残留嵌套;
+#     slot 常规失败路径均恢复原位(SIGKILL 不可捕获, 残留 .bak 需人工 mv 回); cp 前 rm -rf tmpdir 防 PID 复用残留嵌套;
 #     ④ 本批次 tmpdir 数组累积 trap 逐个清理(不再用前缀 glob 误删他进程);
 #     ⑤ V3 rename 记录(R/C 双 NUL 记录)解析时额外消费下一条旧路径, 新路径计入重叠集;
 #     ⑥ worktree list --porcelain awk 改 branch 行累积至下一块/END 输出, 保证 path|branch 配对

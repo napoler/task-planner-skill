@@ -9,7 +9,7 @@
 #   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
 #   rev-parse --show-toplevel(套件位于被测 skill 内, toplevel 即所在 worktree; 主仓非 worktree 时
 #   返回主仓根 → 由 SELFTEST_SM10_WT env 覆盖或 SKIP); 推导失败且 env 未注入 → SM-10 记 SKIP
-#   (SKIP 单列, 不计入断言行总数; 口径: 断言行总数 = PASS+FAIL, 见下方统计段)
+#   (R3 后统一为动态口径: TOTAL_CASES = 13 + (SM-10 注入 ? 1 : 0), 见下方统计段)
 #   SM-11(2026-09-12 R2 新增, 首次让 exit 8 有覆盖): 夹具主仓人为构造 MERGE_HEAD
 #   (git update-ref --no-deref MERGE_HEAD HEAD) → 期望 exit 8 且含 MERGE_IN_PROGRESS。
 #   SM-12/SM-13(2026-09-12 复审 4 轮 P2 回归用例, 全 /tmp 夹具, 禁止真实路径):
@@ -79,7 +79,9 @@ mk_fixture() {
   # bare 仓默认 HEAD 指向 master, push 时若 origin 已有 master ref 会输出 "a branch named 'master' already exists"
   # 噪音; stderr 静默不影响 ref 更新
   git -C "$main" push -q origin master 2>/dev/null
-  git -C "$main" worktree add -q "$wt" -b wt/task-test master 2>/dev/null
+  # [2026-09-12 复审 5 轮 P2] 显式覆盖 hooksPath(与 init/clone 口径一致; 防外层 hooks 探测
+# 沿父目录链误命中 — 主仓在 HOME 深层嵌套形态下无 -c 时曾致 worktree add 失败, 实证)
+git -c core.hooksPath=/dev/null -C "$main" worktree add -q "$wt" -b wt/task-test master 2>/dev/null
 }
 
 # 分支侧提交: 在 wt/task-test 内改 tracked 文件 + commit
@@ -347,46 +349,58 @@ ERRF="$T12/err"
 run env HOME="$T12/home" TASK_PLANNER_DEPLOY_SLOTS="$T12/home/.zcode" bash "$TARGET" "$T12/task-test" --deploy
 SM12_AFTER="$( (cd "$T12/home/.zcode" && ls -1 | md5sum) )"
 SMOK=0
+# [复审 5 轮 P3] 删 `-n "$SM12_BEFORE"` 死断言(md5sum 永不输出空串, 恒真),
+# 改 $T12/home/.zcode 存活断言(REJECTED 路径零写入的目录级实证)
 [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && \
-  [ -n "$SM12_BEFORE" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && SMOK=1
-report SM-12 "$SMOK" "rc=$R1(期望6) HOME内部白名单外REJECTED=$(printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && echo 在 || echo 缺) zcode清单md5不变=$([ "$SM12_BEFORE" = "$SM12_AFTER" ] && echo 是 || echo 否)"
+  [ -d "$T12/home/.zcode" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && SMOK=1
+report SM-12 "$SMOK" "rc=$R1(期望6) HOME内部白名单外REJECTED=$(printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && echo 在 || echo 缺) 白名单拒绝原因=$(printf '%s' "$R2" | grep -qF "不在默认部署根白名单内" && echo 在 || echo 缺) zcode存活+清单md5不变=$([ -d "$T12/home/.zcode" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && echo 是 || echo 否)"
 
-# ---------- SM-13 (复审 4 轮 P2 回归) 夹具主仓位于"部署根内"(主仓自身就是某部署根,
-#           slot=主仓同路径的部署位) → MAIN_REPO:full 守卫命中 → REJECTED exit 6;
-#           断言: 主仓 .git 目录存活 + marker 文件 md5 前后不变(证明 REJECTED 零写入) ----------
+# ---------- SM-13 (复审 5 轮 P2 改写真 P0 形态: $HOME 白名单分支的 break 2 回归) env HOME=$T13/home,
+#           夹具主仓置于 $T13/home/.zcode/skills/task-planner(= 默认部署根白名单根, 主仓在部署根内),
+#           slot 指同路径 → home guard(:home 白名单口径) 命中 exact 分支 → "= 受保护路径" REJECTED exit 6;
+#           断言: 主仓 .git 存活 + 主仓根文件清单 md5 前后不变 + stdout 含 "= 受保护路径"(弱断言 grep "REJECTED" 已弃)。
+#           该形态下若白名单 for 循环内 break 2 回归(误放行), slot 会 cp+rm 主仓 → 主仓毁 → 本用例立即 FAIL ----------
 T13="$(mktemp -d)"; record_dir "$T13"
-mk_fixture "$T13" "$T13/main" "$T13/task-test" "$T13/origin.git"
+T13_HOME="$T13/home"
+T13_MAIN="$T13_HOME/.zcode/skills/task-planner"   # 主仓 = 默认部署根白名单根之同路径(主仓在部署根内)
+# [2026-09-12 复审 5 轮 P2] main 必须空或不存(git clone 要求), 只建 main 父链, 不预建 origin;
+# origin.git 亦不得放 main 内 — 主仓根清单基线含 origin.git, REJECTED 零写入断言会因 origin 在
+# main 内自比而恒真失实, 故放 $T13_HOME/.zcode/ 下(main 外, 不污染根清单, 实证)
+rm -rf "$T13" 2>/dev/null; mkdir -p "$T13_HOME/.zcode/skills"
+record_dir "$T13"
+mk_fixture "$T13" "$T13_MAIN" "$T13/task-test" "$T13_HOME/.zcode/origin.git"
 branch_commit "$T13/task-test"
-# 主仓 = 部署根内形态: 预置"部署根"目录 $T13/main/deployroot/task-planner(SKILL 根内容), slot 指同路径
-# 注: slot 路径落在主仓工作树内且 = 受保护 MAIN_REPO 的祖先/内部组合 — 任一 full 向命中即 REJECTED
-mkdir -p "$T13/main/deployroot/task-planner"
-cp -rL "$SCRIPT_DIR/.." "$T13/main/deployroot/task-planner" 2>/dev/null
-echo "git-marker" > "$T13/main/.git-marker.txt"
-# marker 基线: 主仓 .git 目录存在 + marker 文件 md5
-SM13_GIT_OK=1; [ -d "$T13/main/.git" ] || SM13_GIT_OK=0
-SM13_MARKER_MD5="$(md5sum < "$T13/main/.git-marker.txt")"
+# 主仓根文件清单基线(REJECTED 零写入实证): 排除 .git(merge ref 推进为正常 merge 副作用) 与
+# branch_commit 新增的 new.txt(其被 merge 带入主仓为正常 merge 结果, 非 REJECTED 路径写入);
+# 若白名单 break 2 回归误放行 cp+rm 主仓, 主仓会被替换为 skill 根内容, 根清单必变 → 立即 FAIL(实证)
+SM13_GIT_OK=1; [ -d "$T13_MAIN/.git" ] || SM13_GIT_OK=0
+SM13_ROOT_MD5="$( (cd "$T13_MAIN" && ls -1 | grep -v -e '^\.git$' -e '^new\.txt$' | md5sum) )"
 ERRF="$T13/err"
-run env TASK_PLANNER_DEPLOY_SLOTS="$T13/main/deployroot/task-planner" bash "$TARGET" "$T13/task-test" --deploy
-SM13_GIT_AFTER=1; [ -d "$T13/main/.git" ] || SM13_GIT_AFTER=0
-SM13_MARKER_MD5_AFTER="$(md5sum < "$T13/main/.git-marker.txt" 2>/dev/null)"
+# slot = 主仓同路径(显式注入同路径, 不依赖默认部署位); --force 跳过 MASTER_AHEAD(主仓已被 merge 推进)
+# env HOME 前缀注入: GUARDS 的 $HOME:home 守卫 + DEFAULT_DEPLOY_ROOTS 白名单均以进程 env HOME 为基准
+run env HOME="$T13_HOME" TASK_PLANNER_DEPLOY_SLOTS="$T13_MAIN" bash "$TARGET" "$T13/task-test" --deploy --force
+SM13_GIT_AFTER=1; [ -d "$T13_MAIN/.git" ] || SM13_GIT_AFTER=0
+SM13_ROOT_MD5_AFTER="$( (cd "$T13_MAIN" && ls -1 | grep -v -e '^\.git$' -e '^new\.txt$' | md5sum) 2>/dev/null)"
 SMOK=0
-# 部署根内主仓场景: slot 落在 MAIN_REPO 内部 → full 守卫 REJECTED + exit 6, 主仓 .git/marker 零改动
-[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED" && \
+# 真 P0 形态: home guard exact 命中("= 受保护路径") + exit 6 + 主仓 .git 存活 + 根清单 md5 不变
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "= 受保护路径" && \
   [ "$SM13_GIT_OK" = 1 ] && [ "$SM13_GIT_AFTER" = 1 ] && \
-  [ "$SM13_MARKER_MD5" = "$SM13_MARKER_MD5_AFTER" ] && SMOK=1
-report SM-13 "$SMOK" "rc=$R1(期望6) 部署根内主仓REJECTED=$(printf '%s' "$R2" | grep -qF "REJECTED" && echo 在 || echo 缺) .git存活=$([ "$SM13_GIT_AFTER" = 1 ] && echo 是 || echo 否) marker-md5不变=$([ "$SM13_MARKER_MD5" = "$SM13_MARKER_MD5_AFTER" ] && echo 是 || echo 否)"
+  [ "$SM13_ROOT_MD5" = "$SM13_ROOT_MD5_AFTER" ] && SMOK=1
+report SM-13 "$SMOK" "rc=$R1(期望6) 部署根内主仓exact-REJECTED(= 受保护路径)=$(printf '%s' "$R2" | grep -qF "= 受保护路径" && echo 在 || echo 缺) .git存活=$([ "$SM13_GIT_AFTER" = 1 ] && echo 是 || echo 否) 主仓根清单md5不变=$([ "$SM13_ROOT_MD5" = "$SM13_ROOT_MD5_AFTER" ] && echo 是 || echo 否)"
 
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# [2026-09-12 R2 记账修复 / R3 SKIP 口径] 统计口径: 14 断言行(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-13),
-#   PASS/FAIL 为 report() 真实累计值; 口径: 断言行总数 = PASS+FAIL(SKIP 单列, 不计入断言行总数/Total)。
-#   SM-10 未注入真实 wt → 记 SKIP 行(不占断言行; 14 断言行全在时 PASS+FAIL=14, SKIP=1 单列);
-#   断言行总数与声明不一致 → 打印 FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败)。
+# [2026-09-12 R2 记账修复 / R3 SKIP 口径 / 复审 5 轮 P1 动态口径] 统计口径:
+#   必跑断言行 13 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-13),
+#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 13 + (SM10_INJECTED ? 1 : 0) 动态计算:
+#   SKIP(SM-10 未注入) → 13; 注入 → 14。
+#   PASS/FAIL 为 report() 真实累计值; 框架断言 PASS+FAIL == TOTAL_CASES(动态), 不一致打印
+#   FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败); SKIP 单列, 不计入断言行总数。
 #   连跑两遍结果一致(trap 幂等)。
-TOTAL_CASES=14
-SKIPPED=0
-[ "$SM10_INJECTED" = 0 ] && SKIPPED=1
+TOTAL_BASE=13
+TOTAL_CASES=$(( TOTAL_BASE + ( SM10_INJECTED ? 1 : 0 ) ))
+SKIPPED=$(( SM10_INJECTED ? 0 : 1 ))
 PASS_TOTAL=$((PASS + FAIL))
 if [ "$PASS_TOTAL" -ne "$TOTAL_CASES" ]; then
   printf 'FRAMEWORK_BROKEN: 断言行 %d 与声明用例数 %d 不一致(PASS=%d FAIL=%d SKIP=%d 单列)\n' "$PASS_TOTAL" "$TOTAL_CASES" "$PASS" "$FAIL" "$SKIPPED" >&2
