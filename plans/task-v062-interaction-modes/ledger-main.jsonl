@@ -1,3 +1,4 @@
 {"tick":1,"ts":"2026-09-11T22:24:53Z","agent":"main","phase":"1","event":"phase_complete","summary":"Phase1: worktree+基线核对(联动清单一致)","files":[]}
 {"tick":2,"ts":"2026-09-11T22:30:24Z","agent":"main","phase":"3","event":"phase_complete","summary":"Phase2+3 complete: Rule 28 成文+SKILL 4处联动;期间实证串行守卫拦截并修复 sid 失配清锁链路(全局指针已纠正)","files":[]}
 {"tick":3,"ts":"2026-09-12T09:18:14Z","agent":"main","phase":"5","event":"progress","summary":"17:35 簿记补记 Phase 3/4 完成事实(063f988/b82f2be), Phase 5 selftest 阻塞 2/4 FAIL 已记 Error Log","files":[]}
+{"tick":4,"ts":"2026-09-12T10:21:14Z","agent":"main","phase":"","event":"note","summary":"Handoff 补登#2-7+Phase7 Executor 事实修正,委派率 0.44/exempt → 0.778/ok","files":[]}

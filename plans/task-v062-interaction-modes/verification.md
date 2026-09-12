@@ -143,6 +143,8 @@ outcome: COMPLETE
 - [x] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
 - [x] 委派率 0.44 < 0.7 floor，但 5 项直做理由全命中白名单 ①②③ → WHITELIST-EXEMPT 放行（Rule 25.4a，jq 缺失 fail-closed 不适用因本机 jq 在位）
 
+> **修正记录（2026-09-12 18:2x，另一恢复窗口补登 Handoff 后）**：上表 0.44/WHITELIST-EXEMPT 系 Handoff 表仅 1 行（中断导致续跑派发未实时登记）所致的低估。补登 Handoff #2-#7（对应 checkpoint 05-10，含 Phase 7 实际执行体 executor+code-reviewer 修正）后机器口径复算：**rate=0.778, verdict=ok, violations=0**——7/9 Phase 为真实子代理执行，Phase 1/9 主进程白名单②。原 0.44 记录保留作审计留痕；两数字差异根因 = Handoff 登记滞后（Rule 22.5 执行偏差，Error Log 已登记），非执行方式变更。
+
 ## 质量门控统计（Rule 26）
 - [x] Q1-Q6 逐项核查完成：触发 2 项（Q5 委派率 < floor + 白名单全命中；Q6 簿记漏回滚 Phase 3/4 已 17:35 补记），豁免 0 项，未处置 0 项
 - [x] Evidence 抽查 ≥3 条：critical-rules.md:216 Rule 28 标题可 Read / resolve-interaction-mode.sh 对真实计划输出 silent 可复现 / 3 部署位 diff -rq IDENTICAL 可复现（抽查记录 progress.md Phase 7/8 段）

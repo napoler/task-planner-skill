@@ -130,12 +130,13 @@ Phase 5 selftest-interaction.sh 修复（当前 2/4 FAIL：TI-05 空输出 rc=1�
 - [x] 6 套 selftest 全量 fail=0 + verify.sh（主进程复跑：dispatch 18 + active-plan 13 + delegation 38 + plan-dispatch 6 + fallback 21 + interaction 10 = **106 用例 fail=0** + verify 25/0）
 - [x] Code Review Gate：续跑执行修复轮（commit `16f051b`：resolve token 提取+stderr 诊断 / selftest +2 用例 / SKILL:384 注记 / README 键标题），合并消息记录 APPROVED 复验；主进程复验修复后实质状态（套件全绿+部署位 10/10）
 - **Status:** complete
-- **Executor:** code-runner-agent（mini）
+- **Executor:** executor + code-reviewer
+- **执行体修正记录**: 原计划 code-runner-agent(mini) 执行 S1;续跑实际改派 executor 全量自测（checkpoint 06）+ code-reviewer Gate（07-09），以 Handoff #3-#6 为准（2026-09-12 18:1x）
 - **偏差登记**: Gate 执行过程主进程未实时见证（续跑期间），以修复后第一手复验替代采信——记入 verification.md 质量门控段
 
 | ID | 目标(≤1 句) | 执行体 | 输入 | 验收 | 预估 | 状态 |
 |----|------------|--------|------|------|------|------|
-| S1 | 全量自测 | code-runner-agent(mini) | worktree 内 6 套件清单 | 各 EXIT=0 fail=0 | ≤15min | done |
+| S1 | 全量自测 | executor(实际改派,原计划 code-runner-agent) | worktree 内 6 套件清单 | 各 EXIT=0 fail=0 | ≤15min | done |
 | S2 | Code Review Gate | code-reviewer(sonnet) | 改动 .sh diff | APPROVED（P1/P2 → 串行修复轮） | ≤15min | done |
 
 ### Phase 8: 合并回 master + 重部署对账
@@ -203,15 +204,21 @@ Phase 5 selftest-interaction.sh 修复（当前 2/4 FAIL：TI-05 空输出 rc=1�
 ## 📊 委派统计（Rule 25.4）
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 9 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （≥0.7 且 verdict=ok 不降级） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 7 / 9（Phase 2/3/4/5/6/7/8 子代理执行；Phase 1 编排 + Phase 9 簿记主进程白名单②） |
+| 主进程直做 Phase 清单 | Phase 1（例外理由:① git/worktree 编排 + ③ 机械验证命令——白名单）;Phase 9（例外理由:② 计划系统文件维护——白名单） |
+| 委派率 | 0.778（Handoff 7 行补登后机器口径,见 verification.md 修正记录;verdict 以 check-delegation.sh stats 为准） |
 
 ## 🔗 Subagent Handoff 登记表
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | verify_done |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|-------------|
 | 1 | 2026-09-12 06:25 | code-assistant | critical-rules 新增 Rule 28（28.1-28.5） | done | 逐字落地+8/-0,4/4 PASS,HIGH;主进程 Read 复核 | critical-rules.md:216-221 | findings「Rule 28 设计」 | plans/task-v062-interaction-modes/subagent-state/02-code-assistant.md | ☑ |
+| 2 | 2026-09-12 17:38 | code-assistant | selftest-interaction 重写修复（补 TI-01..04+fixture 隔离） | done | 118 行,8/8 PASS×2;主进程复验 10/10（含 P1 轮） | commit f7e2a14 | progress.md Phase 5 段 | plans/task-v062-interaction-modes/subagent-state/05-code-assistant.md | ☑ |
+| 3 | 2026-09-12 17:4x | executor | Phase 7 S1 全量自测（6 套件+verify） | done | 全绿基线;主进程复跑 106 用例 fail=0 | progress.md Phase 6-8 段 | progress.md Phase 6-8 段 | plans/task-v062-interaction-modes/subagent-state/06-executor.md | ☑ |
+| 4 | 2026-09-12 17:4x | code-reviewer | Phase 7 S2 Code Review Gate（scope 8 文件） | done | CHANGES_REQUESTED（P1 等）→ 触发修复轮 | commit 16f051b 前置 | verification.md 质量门控段 | plans/task-v062-interaction-modes/subagent-state/07-code-reviewer.md | ☑ |
+| 5 | 2026-09-12 17:5x | code-assistant | Code Review P1 修复轮（resolve token+stderr/selftest +2/SKILL:384/README 键标题） | done | 修复落地 commit 16f051b | commit 16f051b | verification.md 质量门控段 | plans/task-v062-interaction-modes/subagent-state/08-code-assistant-p1.md | ☑ |
+| 6 | 2026-09-12 18:0x | code-reviewer | Gate 复验（修复后 APPROVED） | done | APPROVED 复验通过 | merge b0da240 消息 | verification.md 质量门控段 | plans/task-v062-interaction-modes/subagent-state/09-code-reviewer-recheck.md | ☑ |
+| 7 | 2026-09-12 18:0x | executor | Phase 8 S2/S3 重部署 3 位+agent 2 位对齐 | done | 3 位 IDENTICAL+verify 25/0×3+agent zcode 一致/claude 仅 model 行 | 部署位 diff 实测 | progress.md Phase 6-8 段 | plans/task-v062-interaction-modes/subagent-state/10-executor-deploy.md | ☑ |
 
 ## 🔗 Chain 区块配置
 | 字段 | 值 |
