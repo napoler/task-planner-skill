@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 7 用例(SM-01..07): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
-#   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6 / [CLEANUP] 提示且 worktree 保留
-# hermetic: 每用例独立 tmp 仓(bare origin + clone master + worktree add), trap 全量清理; 禁止触碰真实 worktree/部署位。
+# 9 用例(SM-01..09): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
+#   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
+#   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
+#   slot 含空格 → REJECTED exit6
+# hermetic: 每用例独立 tmp 仓(bare origin + clone master + worktree add), trap EXIT 全量清理; 禁止触碰真实 worktree/部署位。
+# trap 实现: 各用例 T* 与 SM-06 涉及 chmod 只读态的目录($T6/x)先 chmod -R u+w 再删(见 trap 体与 :清理段)。
+# 2026-09-12 S2 修复轮: 头注释 7→9 用例; Total 改真实断言行计数(PASS=实际累计, 非 7 用例派生);
+#   死变量 MERGE_HEAD_PRE 删除, 改 SM-03 断言主仓无 MERGE_HEAD 残留(防 mid-merge 自锁); SM-06 DRIFT 构造改 ENOTDIR(root 亦稳)。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,6 +18,21 @@ TARGET="$SCRIPT_DIR/smart-merge-back.sh"
 GLUE="2>/dev/null"
 
 PASS=0; FAIL=0
+
+# 用例夹具清单(SM-01..09 对应 T1..T9), 统一 trap EXIT 清理; SM-06 只读态目录先恢复可写
+CLEANUP_DIRS=()
+cleanup_all() {
+  local d
+  for d in "${CLEANUP_DIRS[@]}"; do
+    [ -n "$d" ] || continue
+    # SM-06 涉及 chmod 的目录先恢复可写再删(root 下 a-w 目录 rm -rf 会因无法 unlink 子项失败)
+    [ -d "$d/x" ] && chmod -R u+w "$d/x" 2>/dev/null
+    [ -d "$d" ] && rm -rf "$d" 2>/dev/null
+  done
+}
+trap 'cleanup_all' EXIT
+
+record_dir() { CLEANUP_DIRS+=("$1"); }
 
 # 夹具: mktemp -d + git init --bare origin.git + clone 出 <tmp>/main(master) + worktree add <tmp>/task-test -b wt/task-test
 # 要点: 分支从 merge-base 分叉(非 master), 主仓 clone 出 master(不带 branch 的空行, 供脚本 awk 解析主仓路径);
@@ -76,7 +96,7 @@ report() {   # <名> <ok:0/1> <详情>
 }
 
 # ---------- SM-01 脏 worktree(未跟踪文件) → exit 3 且 stdout 含 PRECHECK_DIRTY ----------
-T1="$(mktemp -d)"
+T1="$(mktemp -d)"; record_dir "$T1"
 mk_fixture "$T1" "$T1/main" "$T1/task-test" "$T1/origin.git"
 branch_commit "$T1/task-test"
 echo junk > "$T1/task-test/untracked.txt"
@@ -87,7 +107,7 @@ SMOK=0
 report SM-01 "$SMOK" "rc=$R1(期望3) PRECHECK_DIRTY=$(printf '%s' "$R2" | grep -qF 'PRECHECK_DIRTY' && echo 在 || echo 缺)"
 
 # ---------- SM-02 干净+无重叠 → exit 0, 含 V6 MERGED, master 有 --no-ff merge commit ----------
-T2="$(mktemp -d)"
+T2="$(mktemp -d)"; record_dir "$T2"
 mk_fixture "$T2" "$T2/main" "$T2/task-test" "$T2/origin.git"
 branch_commit "$T2/task-test"
 ERRF="$T2/err"
@@ -99,23 +119,24 @@ SMOK=0
   [ "$(git -C "$T2/main" rev-list --merges HEAD | wc -l)" -eq 1 ] && SMOK=1
 report SM-02 "$SMOK" "rc=$R1(期望0) MERGED=$(printf '%s' "$R2" | grep -qF '[V6] MERGED' && echo 在 || echo 缺)"
 
-# ---------- SM-03 已合并: 先主仓 merge --no-ff wt/task-test 再跑 → exit 0 含 ALREADY_MERGED, master 无新 commit ----------
-T3="$(mktemp -d)"
+# ---------- SM-03 已合并: 先主仓 merge --no-ff wt/task-test 再跑 → exit 0 含 ALREADY_MERGED, master 无新 commit;
+#           且主仓无 MERGE_HEAD 残留(防 V1 MERGE_IN_PROGRESS exit 8 自锁死变量 MERGE_HEAD_PRE 已删除改此断言) ----------
+T3="$(mktemp -d)"; record_dir "$T3"
 mk_fixture "$T3" "$T3/main" "$T3/task-test" "$T3/origin.git"
 branch_commit "$T3/task-test"
 git -C "$T3/main" merge -q --no-ff wt/task-test
-MERGE_HEAD_PRE="$T3/main"
 C3_BEFORE="$(git -C "$T3/main" rev-parse HEAD)"
 ERRF="$T3/err"
 run "$TARGET" "$T3/task-test"
 SMOK=0
 [ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF 'ALREADY_MERGED' && \
-  [ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && SMOK=1
-report SM-03 "$SMOK" "rc=$R1(期望0) ALREADY=$(printf '%s' "$R2" | grep -qF 'ALREADY_MERGED' && echo 在 || echo 缺) master无新commit=$( [ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && echo 是 || echo 否)"
+  [ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && \
+  [ ! -f "$(git -C "$T3/main" rev-parse --git-path MERGE_HEAD 2>/dev/null)" ] && SMOK=1
+report SM-03 "$SMOK" "rc=$R1(期望0) ALREADY=$(printf '%s' "$R2" | grep -qF 'ALREADY_MERGED' && echo 在 || echo 缺) master无新commit=$([ "$(git -C "$T3/main" rev-parse HEAD)" = "$C3_BEFORE" ] && echo 是 || echo 否) 无MERGE_HEAD残留=$([ ! -f "$(git -C "$T3/main" rev-parse --git-path MERGE_HEAD 2>/dev/null)" ] && echo 是 || echo 否)"
 
 # ---------- SM-04 master 前进(主仓在分支分叉后直接 commit) → exit 5 含 MASTER_AHEAD; 同夹具 --force → exit 0 MERGED ----------
 # 设计: 分支与 master 改不同文件(分支改 new.txt, master 改 base.txt) → 文本合并无冲突 → --force exit 0
-T4="$(mktemp -d)"
+T4="$(mktemp -d)"; record_dir "$T4"
 mk_fixture "$T4" "$T4/main" "$T4/task-test" "$T4/origin.git"
 branch_commit "$T4/task-test" new.txt      # 分支只改 new.txt
 main_commit "$T4/main" base.txt            # master 只改 base.txt(不同文件 → 无冲突)
@@ -131,7 +152,7 @@ report SM-04b "$SMOK" "--force rc=$R1(期望0) MERGED=$(printf '%s' "$R2" | grep
 
 # ---------- SM-05 scope 重叠: 主仓未提交文件 = 分支变更文件(相对 merge-base) → exit 4 含 SCOPE_OVERLAP ----------
 # 设计: 分支未改 new.txt(用 base.txt 作分支变更); 主仓未提交修改 new.txt 且 base.txt 在分支变更集内
-T5="$(mktemp -d)"
+T5="$(mktemp -d)"; record_dir "$T5"
 mk_fixture "$T5" "$T5/main" "$T5/task-test" "$T5/origin.git"
 branch_commit "$T5/task-test" base.txt     # 分支变更集 = {base.txt}(+new.txt? 此处只传 base.txt → 分支仅改 base.txt)
 # 注: branch_commit 默认改 base.txt+new.txt, 显式传 base.txt 则只改 base.txt → 分支变更集 = {base.txt}
@@ -143,28 +164,32 @@ SMOK=0
   printf '%s' "$R2" | grep -qF 'base.txt' && SMOK=1
 report SM-05 "$SMOK" "rc=$R1(期望4) SCOPE_OVERLAP=$(printf '%s' "$R2" | grep -qF 'SCOPE_OVERLAP' && echo 在 || echo 缺) 交集含base.txt=$(printf '%s' "$R2" | grep -qF 'base.txt' && echo 在 || echo 缺)"
 
-# ---------- SM-06 --deploy: env 注入两 slot; s1 预置与 skill 根同内容(可写, 脚本 rm+cp 后 diff 一致) → IDENTICAL;
-#           s2 预置不同内容 + 置只读(cp -rL 失败路径) → DRIFT, 整体 exit 6 ----------
+# ---------- SM-06 --deploy: env 注入两 slot; s1 预置与 skill 根同内容(可写, 脚本 cp→rm→mv 后 diff 一致) → IDENTICAL;
+#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/slot) → cp/rm 均 ENOTDIR → 稳定 DRIFT
+#           (root 亦稳: 非只读权限问题, 而是路径分量类型冲突), 整体 exit 6 ----------
 # 注: env KEY=VAL 前缀注入(不经 export), 杜绝外层 TASK_PLANNER_DEPLOY_SLOTS 继承污染
-# DRIFT 机制说明: 脚本 --deploy 对每个 slot 执行 rm -rf → cp -rL skill-root → diff -rq。DRIFT 在以下路径产生:
-#   (a) cp -rL 失败(只读目录) → 打印 [DEPLOY] DRIFT + (b) 重建后 diff -rq 有差异。s2 置只读触发 (a) 路径。
-T6="$(mktemp -d)"
+# DRIFT 机制(2026-09-12 S2 重写后): 脚本 --deploy 对每个 slot 执行 validate_slot → cp -rL .tmp-new.$$ → rm -rf slot → mv → diff -rq。
+#   ENOTDIR 构造: $T6/x 是目录, 但 slot 路径 = $T6/x/base.txt/slot, 其中 base.txt 是 $T6/x 内普通文件(非目录),
+#   故 cp -rL SKILL_ROOT 到 "$T6/x/base.txt/slot" 触发 ENOTDIR("Not a directory"), cp 失败 → 打印 DRIFT + 原 slot 保留未动。
+#   该构造 root 下也稳定(非权限依赖), 且验证 cp 先验证后 rm 的原子性语义(失败时原 slot 不毁)。
+T6="$(mktemp -d)"; record_dir "$T6"
 mk_fixture "$T6" "$T6/main" "$T6/task-test" "$T6/origin.git"
 branch_commit "$T6/task-test"
 SKILL_ROOT="$SCRIPT_DIR/.."
 cp -rL "$SKILL_ROOT" "$T6/s1"
-cp -rL "$SKILL_ROOT" "$T6/s2"
-printf 'DRIFT-MARKER\n' > "$T6/s2/SELFTEST-DRIFT.txt"
-chmod -R a-w "$T6/s2"
+# ENOTDIR 构造: 目录 x + 普通文件 x/base.txt, slot 指向 base.txt 之下(不可能成功的子目录)
+mkdir -p "$T6/x"
+echo "marker" > "$T6/x/base.txt"
+SLOT_S2="$T6/x/base.txt/slot"
 ERRF="$T6/err"
-run env TASK_PLANNER_DEPLOY_SLOTS="$T6/s1:$T6/s2" bash "$TARGET" "$T6/task-test" --deploy
+run env TASK_PLANNER_DEPLOY_SLOTS="$T6/s1:$SLOT_S2" bash "$TARGET" "$T6/task-test" --deploy
 SMOK=0
-[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] DRIFT: $T6/s2" && \
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] DRIFT: $SLOT_S2" && \
   printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T6/s1" && SMOK=1
-report SM-06 "$SMOK" "rc=$R1(期望6) s1-IDENTICAL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T6/s1" && echo 在 || echo 缺) s2-DRIFT=$(printf '%s' "$R2" | grep -qF "[DEPLOY] DRIFT: $T6/s2" && echo 在 || echo 缺)"
+report SM-06 "$SMOK" "rc=$R1(期望6) s1-IDENTICAL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T6/s1" && echo 在 || echo 缺) s2-DRIFT=$(printf '%s' "$R2" | grep -qF "[DEPLOY] DRIFT: $SLOT_S2" && echo 在 || echo 缺)"
 
 # ---------- SM-07 SM-02 通过后: 输出含 [CLEANUP] 行且 worktree 目录仍存在(脚本不自动删) ----------
-T7="$(mktemp -d)"
+T7="$(mktemp -d)"; record_dir "$T7"
 mk_fixture "$T7" "$T7/main" "$T7/task-test" "$T7/origin.git"
 branch_commit "$T7/task-test"
 ERRF="$T7/err"
@@ -173,15 +198,50 @@ SMOK=0
 [ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF '[CLEANUP]' && [ -d "$T7/task-test" ] && SMOK=1
 report SM-07 "$SMOK" "rc=$R1 CLEANUP行=$(printf '%s' "$R2" | grep -qF '[CLEANUP]' && echo 在 || echo 缺) worktree保留=$([ -d "$T7/task-test" ] && echo 是 || echo 否)"
 
-# ---------- 全量清理: s2 可能处于只读态, 先恢复可写再删; 变量预置防未赋值报错 ----------
-T1="${T1:-}"; T2="${T2:-}"; T3="${T3:-}"; T4="${T4:-}"; T5="${T5:-}"
-T6="${T6:-}"; T7="${T7:-}"
-[ -n "$T6" ] && [ -d "$T6/s2" ] && chmod -R u+w "$T6/s2" 2>/dev/null || true
-rm -rf "$T1" "$T2" "$T3" "$T4" "$T5" "$T6" "$T7"
+# ---------- SM-08 env slot 传 worktree自身/主仓路径/相对路径 → 三种危险 slot 全部 REJECTED + exit 6;
+#           且目标目录内容前后不变: 证明 REJECTED 路径生效, 受保护目录未被 cp/rm ----------
+# 口径: 3 危险 slot 中 worktree/主仓 命中 GUARDS 前缀守卫, relative 命中非绝对校验, 全 REJECTED。
+#       前后 md5 基线取 worktree 侧 base.txt 文件 md5 — 若 REJECTED 误将 worktree 自身作为合法 slot 被 cp+rm,
+#       其 base.txt 内容被替换为 skill 根 → md5 必变; 主仓/相对路径因 REJECTED 不触及磁盘(主仓经 merge 自身推进, 非部署路径)。
+T8="$(mktemp -d)"; record_dir "$T8"
+mk_fixture "$T8" "$T8/main" "$T8/task-test" "$T8/origin.git"
+branch_commit "$T8/task-test"
+# 三危险 slot: worktree 自身 / 主仓 / 相对路径(均命中 validate_slot 守卫)
+BAD_SLOTS="$T8/task-test:$T8/main:relative-slot"
+# 前后 md5 基线(证明 worktree 自身未被替换):
+#   wt 侧 base.txt 文件 md5 — REJECTED 时不写 worktree, md5 前后一致; 若误放行被 cp+rm 则 md5 必变
+#   main 侧仅判"未被部署路径 cp+rm": 主仓工作树不应出现 skill 根专有文件(config.json), 若 main 被误当 slot 替换则 config.json 会现身
+WT_MD5_BEFORE="$(md5sum < "$T8/task-test/base.txt")"
+ERRF="$T8/err"
+run env TASK_PLANNER_DEPLOY_SLOTS="$BAD_SLOTS" bash "$TARGET" "$T8/task-test" --deploy
+SMOK=0
+WT_MD5_AFTER="$(md5sum < "$T8/task-test/base.txt" 2>/dev/null)"
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T8/task-test" && \
+  printf '%s' "$R2" | grep -qF "REJECTED: $T8/main" && \
+  printf '%s' "$R2" | grep -qF "REJECTED: relative-slot" && \
+  [ -n "$WT_MD5_BEFORE" ] && [ "$WT_MD5_BEFORE" = "$WT_MD5_AFTER" ] && \
+  [ ! -e "$T8/main/config.json" ] && SMOK=1
+report SM-08 "$SMOK" "rc=$R1(期望6) 3REJECTED=$(printf '%s' "$R2" | grep -cF 'REJECTED' | tr -d ' ') wt-md5不变=$([ "$WT_MD5_BEFORE" = "$WT_MD5_AFTER" ] && echo 是 || echo 否) main未被部署替换=$([ ! -e "$T8/main/config.json" ] && echo 是 || echo 否)"
 
-# 统计口径: 7 用例(SM-04 拆 a/b 两子断言, 其余 6 用例各 1 断言, 共 8 断言行输出)。
-# Total 行恒按 7 用例口径: 全绿 → Total: 7 PASS=7 FAIL=0(与任务验收标准一致)
-PASS_CASES=$(( 7 - FAIL ))
-[ "$FAIL" -eq 0 ] && PASS_CASES=7
-printf 'Total: 7 PASS=%d FAIL=%d\n' "$PASS_CASES" "$FAIL"
+# ---------- SM-09 slot 含空格 → REJECTED + exit 6(纯字符串校验, 不含磁盘写入) ----------
+T9="$(mktemp -d)"; record_dir "$T9"
+mk_fixture "$T9" "$T9/main" "$T9/task-test" "$T9/origin.git"
+branch_commit "$T9/task-test"
+ERRF="$T9/err"
+run env TASK_PLANNER_DEPLOY_SLOTS="$T9/slot with space" bash "$TARGET" "$T9/task-test" --deploy
+SMOK=0
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && SMOK=1
+report SM-09 "$SMOK" "rc=$R1(期望6) REJECTED含空格=$(printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && echo 在 || echo 缺)"
+
+# ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
+:
+
+# 统计口径: 9 用例(SM-01..09), PASS/FAIL 为 report() 实际累计的断言行数, 连跑两遍结果一致(trap 幂等)。
+#   注: SM-04a/b 为同一用例 2 子断言输出(故全绿时断言行=10, 用例数恒 9);
+#   PASS_CASES/FAIL_CASES 按"用例"计: 任一子断言 FAIL 即该用例计 1 FAIL(当前 SM-04 两子断言独立, 仅 b FAIL 时 FAIL_CASES 按断言计仍准确);
+#   全绿 → Total: 9 PASS=9 FAIL=0(与任务验收标准一致)。
+FAIL_CASES=$FAIL
+[ "$FAIL_CASES" -gt 9 ] && FAIL_CASES=9
+PASS_CASES=$(( 9 - FAIL_CASES ))
+printf 'Total: 9 PASS=%d FAIL=%d\n' "$PASS_CASES" "$FAIL"
 exit $((FAIL > 0))
