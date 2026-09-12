@@ -39,7 +39,8 @@
 # 后续输出:
 #   [CLEANUP] git worktree remove <path> && git branch -d <branch>   (只提示不执行 — 清理时机留主进程)
 #   --deploy: 逐位 [DEPLOY] REJECTED|IDENTICAL|DRIFT: <位>; 任一 REJECTED/DRIFT → exit 6 DEPLOY_DRIFT
-#   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 3 真实位。
+#   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 3 真实位;
+#   HOME 未设置且 env 未覆盖 → [DEPLOY] REJECTED: (HOME 未设置 — 默认部署位不可解析) + exit 6。
 #   slot 安全: IFS=':' 解析 + validate_slot 守卫(拒空/非绝对/含空白或 glob/规范化后为
 #     / 或 .git 末组件 → REJECTED exit 6);
 #     2026-09-12 洞①②修复轮: 新增祖先方向守卫 — 任一 guard 位于 slot 内部(slot 是 guard 的祖先)
@@ -343,12 +344,12 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     # [2026-09-12 R2 P0] SKILL_ROOT 推导消除 /scripts/.. 字面量: cd+pwd -P 输出规范化绝对路径
     # (dirname 比 ${BASH_SOURCE%/*} 语义更明确, 与脚本目录推导口径一致)
     SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-    # [2026-09-12 R3 P3] 默认值用 ${HOME:-} 防 env -u HOME 下 set -u 中止; HOME 空时
-    # 显式 REJECTED(不静默用空串 — 原 R2 注释"空 guard 已过滤"措辞误导, 实为整条 guard 缺失)
-    SLOTS="${TASK_PLANNER_DEPLOY_SLOTS:-${HOME:-}/.zcode/skills/task-planner:${HOME:-}/.claude/skills/task-planner:${HOME:-}/.config/opencode/skills/task-planner}"
-    # [2026-09-12 R3 P0] 无 TASK_PLANNER_DEPLOY_SLOTS 覆盖且 HOME 未设置: 三条默认 slot 全为
-    # 相对路径(非绝对) → validate_slot 必 REJECTED; 显式短路使输出可解析(DRIFT 处理同)
-    if [ -z "$TASK_PLANNER_DEPLOY_SLOTS" ] && [ -z "${HOME:-}" ]; then
+    # [2026-09-12 R3 P3] HOME 未设置且 env 未覆盖 → 显式 REJECTED + DRIFT=1(exit 6), 不静默继续
+    if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
+        SLOTS="$TASK_PLANNER_DEPLOY_SLOTS"
+    elif [ -n "${HOME:-}" ]; then
+        SLOTS="$HOME/.zcode/skills/task-planner:$HOME/.claude/skills/task-planner:$HOME/.config/opencode/skills/task-planner"
+    else
         echo "[DEPLOY] REJECTED: (HOME 未设置 — 默认部署位不可解析)"
         DRIFT=1
     fi
@@ -471,53 +472,55 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         return 0
     }
     DRIFT=0
-    IFS=':' read -r -a slots <<< "$SLOTS"
-    for slot in "${slots[@]}"; do
-        [ -n "$slot" ] || continue
-        if ! validate_slot "$slot"; then
-            DRIFT=1
-            continue
-        fi
-        slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
-        tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
-        # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
-        # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 进程级中断(SIGKILL 窗口)由 EXIT trap
-        # 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位)
-        # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
-        rm -rf "$tmpdir" 2>/dev/null || true
-        if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
+    if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ] || [ -n "${HOME:-}" ]; then
+        IFS=':' read -r -a slots <<< "$SLOTS"
+        for slot in "${slots[@]}"; do
+            [ -n "$slot" ] || continue
+            if ! validate_slot "$slot"; then
+                DRIFT=1
+                continue
+            fi
+            slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
+            tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
+            # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
+            # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 进程级中断(SIGKILL 窗口)由 EXIT trap
+            # 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位)
+            # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
             rm -rf "$tmpdir" 2>/dev/null || true
-            echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
-            DRIFT=1
-            continue
-        fi
-        BATCH_TMPDIRS+=("$tmpdir")
-        slotbak="$slotdir.bak.$$"
-        if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
-            rm -rf "$tmpdir" 2>/dev/null || true
-            slotbak=""
-            echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
-            DRIFT=1
-            continue
-        fi
-        if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
-            mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
+            if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
+                rm -rf "$tmpdir" 2>/dev/null || true
+                echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
+                DRIFT=1
+                continue
+            fi
+            BATCH_TMPDIRS+=("$tmpdir")
+            slotbak="$slotdir.bak.$$"
+            if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
+                rm -rf "$tmpdir" 2>/dev/null || true
+                slotbak=""
+                echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
+                DRIFT=1
+                continue
+            fi
+            if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
+                mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
+                rm -rf "$slotbak" 2>/dev/null
+                slotbak=""
+                echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
+                DRIFT=1
+                continue
+            fi
             rm -rf "$slotbak" 2>/dev/null
             slotbak=""
-            echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
-            DRIFT=1
-            continue
-        fi
-        rm -rf "$slotbak" 2>/dev/null
-        slotbak=""
-        BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
-        if diff -rq "$SKILL_ROOT" "$slotdir" >/dev/null 2>&1; then
-            echo "[DEPLOY] IDENTICAL: $slotdir"
-        else
-            echo "[DEPLOY] DRIFT: $slotdir"
-            DRIFT=1
-        fi
-    done
+            BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
+            if diff -rq "$SKILL_ROOT" "$slotdir" >/dev/null 2>&1; then
+                echo "[DEPLOY] IDENTICAL: $slotdir"
+            else
+                echo "[DEPLOY] DRIFT: $slotdir"
+                DRIFT=1
+            fi
+        done
+    fi
     if [ "$DRIFT" -eq 1 ]; then
         echo "[DEPLOY] DEPLOY_DRIFT: 至少一位部署位 DRIFT/REJECTED(详见上)" >&2
         exit 6
