@@ -116,7 +116,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 
 ---
 
-## config.json 键说明（18 键）
+## config.json 键说明（19 键）
 
 `config.json` 为 JSON Schema，**全部阈值集中管理**。常用键语义：
 
@@ -140,6 +140,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 | `progress_stale_minutes` | 25 | progress.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
 | `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | references/template-mapping.md |
 | `subagent` | (见 config) | 子代理超时档位（explore/editor/debugger/executor） | Rule 22.3 |
+| `interaction_mode` | `ask` | 交互双模式（Rule 28）：ask=关键决策点询问用户；silent=自主决策+静默决策清单登记；解析优先级 env > 计划配置表 > 本键 > 默认 ask | Rule 28.1 |
 
 > config.json **无 `version` 字段**——版本信息以 `git log` + `版本历史`段为准。
 

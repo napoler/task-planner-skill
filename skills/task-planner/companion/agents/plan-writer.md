@@ -127,6 +127,7 @@ cost_estimate:
 | 字段 | 值 |
 |------|-----|
 | `code_review` | `n/a` 或 `required` |
+| `interaction_mode` | `ask` 或 `silent` 或省略（缺省回落 config.json#interaction_mode，Rule 28） |
 
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 | 证据路径 |

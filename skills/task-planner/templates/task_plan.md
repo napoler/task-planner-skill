@@ -25,6 +25,7 @@
 | `session_id` | `<uuid>` | 启动时生成,注册表追踪 |
 | `worktree_path` | `<path>` | §十一 隔离决策已有字段 |
 | `scope_files` | `[paths]` | 从「执行范围限制」解析,并发检测基础 |
+| `interaction_mode` | `ask` / `silent`（可省略，缺省回落 config.json#interaction_mode） | Rule 28 交互模式：ask=关键决策点给选项；silent=静默+静默决策清单登记 |
 
 ## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
 
