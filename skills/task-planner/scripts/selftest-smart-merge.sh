@@ -6,8 +6,10 @@
 #   slot 含空格 → REJECTED exit6 /
 #   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
 #   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(SELFTEST_SM10_WT 注入) md5 前后一致(零改动)。
-#   [2026-09-12 R2] SM-10 真实 worktree 注入改套件内部推导: 若 /mnt/data/dev/task-planner-skill-worktrees/
-#   task-v064-smart-merge-back 存在则自动注入 SELFTEST_SM10_WT; 未注入(env 与默认路径均无) → 记 FAIL(不静默降级)。
+#   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
+#   rev-parse --show-toplevel(套件位于被测 skill 内, toplevel 即所在 worktree; 主仓非 worktree 时
+#   返回主仓根 → 由 SELFTEST_SM10_WT env 覆盖或 SKIP); 推导失败且 env 未注入 → SM-10 记 SKIP
+#   (不计 FAIL 不计 PASS, 输出 SKIP 行; Total 口径 = PASS+FAIL, SKIP 单列不计入)。
 #   SM-11(2026-09-12 R2 新增, 首次让 exit 8 有覆盖): 夹具主仓人为构造 MERGE_HEAD
 #   (git update-ref --no-deref MERGE_HEAD HEAD) → 期望 exit 8 且含 MERGE_IN_PROGRESS。
 # hermetic: 每用例独立 tmp 仓(bare origin + clone master + worktree add), trap EXIT 全量清理; 禁止触碰真实 worktree/部署位。
@@ -18,7 +20,11 @@
 #   SM-10 由 env SELFTEST_SM10_WT 注入真实 worktree 绝对路径(主进程派发时自带), 未注入则 SM-10 记 FAIL(不静默降级)。
 # 2026-09-12 R2 复审修复轮: 记账修复 — report 真实累计 PASS(断言 PASS+FAIL=TOTAL_CASES, 不一致打印
 #   FRAMEWORK_BROKEN 并 exit 97); SM-03 MERGE_HEAD 残留断言改绝对路径形式; 新增 SM-11(exit 8 正向覆盖);
-#   SM-10 头注释与实现一致(未注入 env 时记 FAIL, 不静默降级)+ 默认路径自动注入; 断言行 10 → Total: 12。
+#   SM-10 头注释与实现一致 + 默认路径自动注入; 断言行 10 → Total: 12。
+# 2026-09-12 R3 复审修复轮: ① SM-10 真实 worktree 改套件内相对推导(去硬编码任务路径,
+#   dirname $0/../.. rev-parse --show-toplevel); 推导失败且 SELFTEST_SM10_WT 未注入 → SM-10 记 SKIP
+#   (不计 PASS/FAIL, 输出 SKIP 行; Total 口径 = PASS+FAIL 断言行数, SKIP 单列);
+#   ② SM-08 详情改 grep -oF 'REJECTED' | wc -l 真实计数(原恒 1 失实)。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -235,7 +241,8 @@ WT_MD5_AFTER="$(md5sum < "$T8/task-test/base.txt" 2>/dev/null)"
   printf '%s' "$R2" | grep -qF "REJECTED: relative-slot" && \
   [ -n "$WT_MD5_BEFORE" ] && [ "$WT_MD5_BEFORE" = "$WT_MD5_AFTER" ] && \
   [ ! -e "$T8/main/config.json" ] && SMOK=1
-report SM-08 "$SMOK" "rc=$R1(期望6) 3REJECTED=$(printf '%s' "$R2" | grep -cF 'REJECTED' | tr -d ' ') wt-md5不变=$([ "$WT_MD5_BEFORE" = "$WT_MD5_AFTER" ] && echo 是 || echo 否) main未被部署替换=$([ ! -e "$T8/main/config.json" ] && echo 是 || echo 否)"
+# [2026-09-12 R3 P3] 详情改真实 REJECTED 行数(grep -oF | wc -l), 不再恒 1
+report SM-08 "$SMOK" "rc=$R1(期望6) REJECTED行数=$(printf '%s' "$R2" | grep -oF 'REJECTED' | wc -l | tr -d ' ')(期望≥3) wt-md5不变=$([ "$WT_MD5_BEFORE" = "$WT_MD5_AFTER" ] && echo 是 || echo 否) main未被部署替换=$([ ! -e "$T8/main/config.json" ] && echo 是 || echo 否)"
 
 # ---------- SM-09 slot 含空格 → REJECTED + exit 6(纯字符串校验, 不含磁盘写入) ----------
 T9="$(mktemp -d)"; record_dir "$T9"
@@ -247,17 +254,19 @@ SMOK=0
 [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && SMOK=1
 report SM-09 "$SMOK" "rc=$R1(期望6) REJECTED含空格=$(printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && echo 在 || echo 缺)"
 
-# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮 / R2 头注释与实现对齐): slot = <真实 worktree 的父目录> →
+# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮 / R3 相对推导): slot = <真实 worktree 的父目录> →
 #           脚本 GUARDS 含 WT_PATH(= 真实 worktree) → slot 是 guard 的祖先 → 祖先守卫 REJECTED(exit 6, 行含"的祖先"),
 #           且 slot 目录与真实仓文件 md5 前后一致(零改动 — 被守卫拦截, 不会执行 rm -rf) ----------
 # 语义: slot 若包含任一受保护路径, rm -rf slot 必然摧毁它 → 必须拒绝(19:2x 事故实锤场景)。
-# [R2 一致化] 真实 worktree 来源: ① 外层 env SELFTEST_SM10_WT(主进程注入, 优先);
-#   ② 套件内部推导 — 若 /mnt/data/dev/task-planner-skill-worktrees/task-v064-smart-merge-back
-#   存在则自动注入; ①②均无 → 记 FAIL(不静默降级, 与头注释一致)。
+# [R3 一致化] 真实 worktree 来源: ① 外层 env SELFTEST_SM10_WT(主进程注入, 优先);
+#   ② 套件内相对推导 — git -C "$(dirname "$0")/../.." rev-parse --show-toplevel
+#   (套件位于被测 skill 内, toplevel 即所在 worktree); ①②均无 → 记 SKIP(不计 FAIL/PASS,
+#   不静默降级 — 与头注释一致, SKIP 行输出且 Total 口径 = PASS+FAIL)。
 T10="$(mktemp -d)"; record_dir "$T10"
 SELFTEST_SM10_WT="${SELFTEST_SM10_WT:-}"
-if [ -z "$SELFTEST_SM10_WT" ] && [ -d /mnt/data/dev/task-planner-skill-worktrees/task-v064-smart-merge-back ]; then
-  SELFTEST_SM10_WT=/mnt/data/dev/task-planner-skill-worktrees/task-v064-smart-merge-back
+if [ -z "$SELFTEST_SM10_WT" ]; then
+  # [2026-09-12 R3] 相对推导替代硬编码任务 worktree 路径(原 /mnt/data/... 仅本任务成立)
+  SELFTEST_SM10_WT="$(git -C "$(dirname "${BASH_SOURCE[0]}")/../.." rev-parse --show-toplevel 2>/dev/null)" || SELFTEST_SM10_WT=""
 fi
 SM10_WT="$SELFTEST_SM10_WT"
 SM10_INJECTED=0
@@ -277,22 +286,30 @@ ERRF="$T10/err"
 SM10_BEFORE="$(ls -1 "$T10/ancestor" | md5sum)"
 if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
   SM10_BEFORE="$SM10_BEFORE
-$(ls -1 "$SM10_WT" | md5sum)
+$(ls -1 "$SM10_WT" | md5sum)"
+  [ -f "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh" ] && \
+    SM10_BEFORE="$SM10_BEFORE
 $(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh")"
 fi
 run env TASK_PLANNER_DEPLOY_SLOTS="$T10/ancestor" bash "$TARGET" "$T10/ancestor/task-test" --deploy
 SM10_AFTER="$(ls -1 "$T10/ancestor" | md5sum)"
 if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
   SM10_AFTER="$SM10_AFTER
-$(ls -1 "$SM10_WT" | md5sum)
+$(ls -1 "$SM10_WT" | md5sum)"
+  [ -f "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh" ] && \
+    SM10_AFTER="$SM10_AFTER
 $(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh" 2>/dev/null)"
 fi
 SMOK=0
-# [R2] 未注入真实 worktree(套内推导也未命中) → 记 FAIL(不静默降级, 与头注释一致)
-[ "$SM10_INJECTED" = 1 ] && [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T10/ancestor" && \
-  printf '%s' "$R2" | grep -qF "的祖先" && \
-  [ "$SM10_BEFORE" = "$SM10_AFTER" ] && SMOK=1
-report SM-10 "$SMOK" "rc=$R1(期望6) 真实wt注入=$([ "$SM10_INJECTED" = 1 ] && echo 是 || echo 否) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$T10/ancestor(guard=$T10/ancestor/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
+# [R3] 未注入真实 worktree(env 与套内相对推导均未命中) → 记 SKIP(不计 PASS/FAIL, 不静默降级)
+if [ "$SM10_INJECTED" = 0 ]; then
+  printf 'SM-10 SKIP 真实wt未注入(env SELFTEST_SM10_WT 与套内相对推导均失败 — 不计 PASS/FAIL)\n'
+else
+  [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T10/ancestor" && \
+    printf '%s' "$R2" | grep -qF "的祖先" && \
+    [ "$SM10_BEFORE" = "$SM10_AFTER" ] && SMOK=1
+  report SM-10 "$SMOK" "rc=$R1(期望6) 真实wt注入=$([ "$SM10_INJECTED" = 1 ] && echo 是 || echo 否) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$T10/ancestor(guard=$T10/ancestor/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
+fi
 
 # ---------- SM-11 (2026-09-12 R2 新增, 首次让 exit 8 有覆盖) 主仓 MERGE_HEAD 残留 → exit 8 含 MERGE_IN_PROGRESS ----------
 # 夹具主仓人为构造 mid-merge 态: git update-ref --no-deref MERGE_HEAD HEAD(update-ref 无 -q, 失败回退 touch .git/MERGE_HEAD)
@@ -311,17 +328,25 @@ report SM-11 "$SMOK" "rc=$R1(期望8) MERGE_IN_PROGRESS=$(printf '%s' "$R2" | gr
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# [2026-09-12 R2 记账修复] 统计口径: 12 断言行(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-11),
-#   PASS/FAIL 为 report() 真实累计值; 断言 PASS+FAIL 与声明用例数 TOTAL_CASES 不一致 →
-#   打印 FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败)。连跑两遍结果一致(trap 幂等)。
+# [2026-09-12 R2 记账修复 / R3 SKIP 口径] 统计口径: 12 断言行(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-11),
+#   PASS/FAIL 为 report() 真实累计值; SM-10 未注入真实 wt 时记 SKIP(不计入 PASS/FAIL 也不计入
+#   TOTAL_CASES 断言行数 — 此时 11 断言行 + 1 SKIP 行, 框架自检用断言行总数 = PASS+FAIL+SKIP);
+#   断言行数与声明不一致 → 打印 FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败)。
+#   连跑两遍结果一致(trap 幂等)。
 TOTAL_CASES=12
-PASS_TOTAL=$((PASS + FAIL))
+SKIPPED=0
+[ "$SM10_INJECTED" = 0 ] && SKIPPED=1
+PASS_TOTAL=$((PASS + FAIL + SKIPPED))
 if [ "$PASS_TOTAL" -ne "$TOTAL_CASES" ]; then
-  printf 'FRAMEWORK_BROKEN: 断言行 %d 与声明用例数 %d 不一致(PASS=%d FAIL=%d)\n' "$PASS_TOTAL" "$TOTAL_CASES" "$PASS" "$FAIL" >&2
+  printf 'FRAMEWORK_BROKEN: 断言行 %d 与声明用例数 %d 不一致(PASS=%d FAIL=%d SKIP=%d)\n' "$PASS_TOTAL" "$TOTAL_CASES" "$PASS" "$FAIL" "$SKIPPED" >&2
   exit 97
 fi
 FAIL_CASES=$FAIL
 [ "$FAIL_CASES" -gt "$TOTAL_CASES" ] && FAIL_CASES=$TOTAL_CASES
 PASS_CASES=$(( TOTAL_CASES - FAIL_CASES ))
-printf 'Total: %d PASS=%d FAIL=%d\n' "$TOTAL_CASES" "$PASS" "$FAIL"
+if [ "$SKIPPED" = 1 ]; then
+  printf 'Total: %d PASS=%d FAIL=%d SKIP=%d\n' "$TOTAL_CASES" "$PASS" "$FAIL" "$SKIPPED"
+else
+  printf 'Total: %d PASS=%d FAIL=%d\n' "$TOTAL_CASES" "$PASS" "$FAIL"
+fi
 exit $((FAIL > 0))
