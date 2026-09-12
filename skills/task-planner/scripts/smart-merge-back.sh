@@ -34,6 +34,10 @@
 #   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 3 真实位。
 #   slot 安全: IFS=':' 解析 + validate_slot 守卫(拒空/非绝对/含空白或 glob(*?[)/规范化后为
 #     / $HOME $SKILL_ROOT $WT_PATH $MAIN_REPO 或其内部/.git 末组件 → REJECTED exit 6);
+#     2026-09-12 洞①②修复轮: 新增祖先方向守卫 — 任一 guard 位于 slot 内部(slot 是 guard 的祖先)
+#     即 REJECTED(slot 若包含任一受保护路径, rm -rf slot 必然摧毁它); GUARDS 移除失效的 "/" 条目
+#     (洞①: gn="/" 时前缀模式退化为 "//"/* 双斜杠永不命中, "/" 守卫形同虚设; 根场景已由
+#     norm="/" 显式拒绝 + $HOME 等祖先/内部双向守卫覆盖);
 #     替换原子: cp -rL 至同目录 .tmp-new.$$ → rm -rf slot → mv tmp→slot; cp 失败原 slot 保留。
 #
 # 通用: set -u; 无 jq 依赖; 头注释块标注任务与用途; 退出码表如下。
@@ -281,8 +285,11 @@ fi
 if [ "$DO_DEPLOY" -eq 1 ]; then
     SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
     SLOTS="${TASK_PLANNER_DEPLOY_SLOTS:-$HOME/.zcode/skills/task-planner:$HOME/.claude/skills/task-planner:$HOME/.config/opencode/skills/task-planner}"
-    # 受保护路径集合: 任一 slot 规范化后等于或位于其内部(纯字符串前缀比较, 不依赖 git)即拒绝
-    GUARDS="$HOME|$SKILL_ROOT|$WT_PATH|$MAIN_REPO|/"
+    # 受保护路径集合: 任一 slot 规范化后等于其本身/位于其内部(内部方向) 或其为 guard 祖先
+    # (祖先方向: guard 位于 slot 内部, rm -rf slot 会摧毁 guard) 即拒绝(纯字符串前缀比较, 不依赖 git)。
+    # GUARDS 不含 "/": 洞①(gn="/" 时前缀模式退化为 "//"/* 永不命中) 使其形同虚设, 已移除;
+    # 根场景由 norm="/" 显式拒绝 + $HOME 等守卫的祖先/内部双向检查覆盖。
+    GUARDS="$HOME|$SKILL_ROOT|$WT_PATH|$MAIN_REPO"
     # trap 清理本批次原子替换的残留 tmp: 各 slot 成功时已 mv 归位, 失败路径 cp/mv 前缀匹配可覆盖;
     # 残留清理对象统一为 .tmp-new.$$ 后缀(与 tmpdir 构造一致, 防跨进程误删他进程 .tmp-deploy.*)
     trap 'rm -rf "${SKILL_ROOT}"/.tmp-new.$$* 2>/dev/null || true' EXIT
@@ -306,8 +313,11 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
             local gn="${g#./}"
             while [ "${gn%/}" != "$gn" ] && [ "$gn" != "/" ] && [ -n "$gn" ]; do gn="${gn%/}"; done
             [ "$norm" = "$gn" ] && { echo "[DEPLOY] REJECTED: $slot (= 受保护路径 $g)"; return 1; }
-            # 前缀比较: 补尾 / 防根路径误匹配("/"+"/" → "//" 不会命中 "$g"/* 除非 g="" 已过滤)
+            # 内部方向: slot 位于 guard 内部(补尾 / 防根路径误匹配)
             case "$norm/" in "$gn"/*) echo "[DEPLOY] REJECTED: $slot (属受保护路径 $g 内部 — 危险路径)"; return 1 ;; esac
+            # 祖先方向(2026-09-12 洞②修复): guard 位于 slot 内部 → slot 是 guard 的祖先,
+            # rm -rf slot 必然摧毁该受保护路径 → 拒绝(2026-09-12 19:2x 事故实锤场景)
+            case "$gn/" in "$norm"/*) echo "[DEPLOY] REJECTED: $slot (是受保护路径 $g 的祖先 — 危险路径)"; return 1 ;; esac
         done
         return 0
     }

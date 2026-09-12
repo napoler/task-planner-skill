@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 9 用例(SM-01..09): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
+# 10 用例(SM-01..10): 脏 worktree exit3 / 干净合并 exit0+merge commit / 已合并 exit0 ALREADY_MERGED /
 #   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
 #   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
-#   slot 含空格 → REJECTED exit6
+#   slot 含空格 → REJECTED exit6 /
+#   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
+#   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(若注入 SELFTEST_SM10_WT) md5 前后一致(零改动)。
 # hermetic: 每用例独立 tmp 仓(bare origin + clone master + worktree add), trap EXIT 全量清理; 禁止触碰真实 worktree/部署位。
 # trap 实现: 各用例 T* 与 SM-06 涉及 chmod 只读态的目录($T6/x)先 chmod -R u+w 再删(见 trap 体与 :清理段)。
 # 2026-09-12 S2 修复轮: 头注释 7→9 用例; Total 改真实断言行计数(PASS=实际累计, 非 7 用例派生);
 #   死变量 MERGE_HEAD_PRE 删除, 改 SM-03 断言主仓无 MERGE_HEAD 残留(防 mid-merge 自锁); SM-06 DRIFT 构造改 ENOTDIR(root 亦稳)。
+# 2026-09-12 洞①②修复轮: 新增 SM-10(祖先方向守卫实证), 断言行 10 → Total: 10 PASS=10 FAIL=0;
+#   SM-10 由 env SELFTEST_SM10_WT 注入真实 worktree 绝对路径(主进程派发时自带), 未注入则 SM-10 记 FAIL(不静默降级)。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,7 +23,7 @@ GLUE="2>/dev/null"
 
 PASS=0; FAIL=0
 
-# 用例夹具清单(SM-01..09 对应 T1..T9), 统一 trap EXIT 清理; SM-06 只读态目录先恢复可写
+# 用例夹具清单(SM-01..10 对应 T1..T10), 统一 trap EXIT 清理; SM-06 只读态目录先恢复可写
 CLEANUP_DIRS=()
 cleanup_all() {
   local d
@@ -233,15 +237,59 @@ SMOK=0
 [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && SMOK=1
 report SM-09 "$SMOK" "rc=$R1(期望6) REJECTED含空格=$(printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && echo 在 || echo 缺)"
 
+# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮): slot = <真实 worktree 的父目录> →
+#           脚本 GUARDS 含 WT_PATH(= 真实 worktree) → slot 是 guard 的祖先 → 祖先守卫 REJECTED(exit 6, 行含"的祖先"),
+#           且 slot 目录与 worktree 内文件 md5 前后一致(零改动 — 被守卫拦截, 不会执行 rm -rf) ----------
+# 语义: slot 若包含任一受保护路径, rm -rf slot 必然摧毁它 → 必须拒绝(19:2x 事故实锤场景)。
+# 实现: mk_fixture 夹具(T10) + worktree 目录重命名为 SM10_WT 的同名影子不可行(真实目录占用),
+#   改为等价构造: 夹具 main 内 worktree add 到 $T10/ancestor/task-test(分支 wt/task-test, 目录 basename
+#   = task-id=task-test → V1 双校验通过), GUARDS.WT_PATH=$T10/ancestor/task-test,
+#   slot=$T10/ancestor(含 guard task-test 于其内部) → 祖先守卫必中 REJECTED(exit 6, 行含"的祖先")。
+#   env SELFTEST_SM10_WT(真实 worktree 绝对路径, 主进程注入) 仅作旁证采样: 真实仓的目录清单与
+#   目标脚本文件 md5 前后须一致(本测试对真实仓零写入)。真实语义验收由主进程验收第 3 条承担。
+#   只读断言: 守卫在 validate_slot 阶段拦截, 脚本不会对该 slot 执行 cp/rm/mv, 夹具与真实目录零改动。
+T10="$(mktemp -d)"; record_dir "$T10"
+SM10_WT="${SELFTEST_SM10_WT:-}"
+mk_fixture "$T10" "$T10/main" "$T10/task-test" "$T10/origin.git"
+# git 2.43 无 worktree remove -q(rc 129 静默失败 → 分支残留 → 后续 add 失败), 用 2>/dev/null 兜底
+git -C "$T10/main" worktree remove "$T10/task-test" 2>/dev/null || true
+git -C "$T10/main" branch -D wt/task-test 2>/dev/null || true
+mkdir -p "$T10/ancestor"
+# 全局 core.hooksPath 指向真实工作区 scripts(夹具内已配 /dev/null, 但 worktree add 新建目录需显式覆盖, 同 mk_fixture 注释)
+# V1 双校验要求 目录 basename = task-id(=task-test), 故 shadow worktree 目录名须为 task-test;
+# slot=其父目录 $T10/ancestor(含 guard $T10/ancestor/task-test) → 祖先守卫必中
+git -C "$T10/main" -c core.hooksPath=/dev/null worktree add -q "$T10/ancestor/task-test" -b wt/task-test master 2>/dev/null
+branch_commit "$T10/ancestor/task-test"
+ERRF="$T10/err"
+# 前后 md5 基线: 夹具 slot 目录清单 + 真实仓目录清单(若注入) + 真实仓目标脚本 md5(若注入), 前后须一致
+SM10_BEFORE="$(ls -1 "$T10/ancestor" | md5sum)"
+if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
+  SM10_BEFORE="$SM10_BEFORE
+$(ls -1 "$SM10_WT" | md5sum)
+$(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh")"
+fi
+run env TASK_PLANNER_DEPLOY_SLOTS="$T10/ancestor" bash "$TARGET" "$T10/ancestor/task-test" --deploy
+SM10_AFTER="$(ls -1 "$T10/ancestor" | md5sum)"
+if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
+  SM10_AFTER="$SM10_AFTER
+$(ls -1 "$SM10_WT" | md5sum)
+$(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh" 2>/dev/null)"
+fi
+SMOK=0
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T10/ancestor" && \
+  printf '%s' "$R2" | grep -qF "的祖先" && \
+  [ "$SM10_BEFORE" = "$SM10_AFTER" ] && SMOK=1
+report SM-10 "$SMOK" "rc=$R1(期望6) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$T10/ancestor(guard=$T10/ancestor/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
+
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# 统计口径: 9 用例(SM-01..09), PASS/FAIL 为 report() 实际累计的断言行数, 连跑两遍结果一致(trap 幂等)。
-#   注: SM-04a/b 为同一用例 2 子断言输出(故全绿时断言行=10, 用例数恒 9);
-#   PASS_CASES/FAIL_CASES 按"用例"计: 任一子断言 FAIL 即该用例计 1 FAIL(当前 SM-04 两子断言独立, 仅 b FAIL 时 FAIL_CASES 按断言计仍准确);
-#   全绿 → Total: 9 PASS=9 FAIL=0(与任务验收标准一致)。
+# 统计口径: 10 断言行(SM-01..09 各 1 行 + SM-10 1 行), PASS/FAIL 为 report() 实际累计的断言行数, 连跑两遍结果一致(trap 幂等)。
+#   注: SM-04a/b 为同一用例 2 子断言输出(断言行按 report 调用计, 恒 10 行: SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-10);
+#   全绿 → Total: 10 PASS=10 FAIL=0(与任务验收标准一致)。
+TOTAL_CASES=10
 FAIL_CASES=$FAIL
-[ "$FAIL_CASES" -gt 9 ] && FAIL_CASES=9
-PASS_CASES=$(( 9 - FAIL_CASES ))
-printf 'Total: 9 PASS=%d FAIL=%d\n' "$PASS_CASES" "$FAIL"
+[ "$FAIL_CASES" -gt "$TOTAL_CASES" ] && FAIL_CASES=$TOTAL_CASES
+PASS_CASES=$(( TOTAL_CASES - FAIL_CASES ))
+printf 'Total: %d PASS=%d FAIL=%d\n' "$TOTAL_CASES" "$PASS_CASES" "$FAIL"
 exit $((FAIL > 0))
