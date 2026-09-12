@@ -69,6 +69,8 @@ git worktree remove /home/terry/<repo>-worktrees/<task-id> && git branch -d wt/<
 
 ## 4. 合并回合约（全部满足才可合并）
 
+> **机制化入口（task-v064）**：`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]` 自动执行本合约第 2/3 条预检 + 已合并检测（ALREADY_MERGED——另一会话已合并时跳过转簿记补全）+ --no-ff 合并；V1-V6 判定与退出码 2-7 见脚本头注释。下方人工流程保留为逃生路径（脚本退出码非 0 时按失败处理人工介入）。
+
 ```
 1. worktree 内全部 Phase = complete,VC 逐条复验通过
 2. worktree 内无未提交变更(git status 干净)
