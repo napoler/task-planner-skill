@@ -69,6 +69,7 @@ _无待处理任务_
 - task-v060-drift-collect ✓ (5/5) — 2026-09-11
 - task-v061-serial-dispatch ✓ (9/9) — 2026-09-12
 - task-v062-interaction-modes ✓ (9/9, merge b0da240, deploy 3+2, Code Review APPROVED) — 2026-09-12
+- task-v063-methodology-intro ✓ (9/9, merge 9f89908, deploy 3+2, CR APPROVED, 遗留 4) — 2026-09-12
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 29
+- in_progress: 0 | pending: 0 | complete: 30
