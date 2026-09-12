@@ -475,55 +475,55 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         return 0
     }
     DRIFT=0
-    if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ] || [ -n "${HOME:-}" ]; then
-        IFS=':' read -r -a slots <<< "$SLOTS"
-        for slot in "${slots[@]}"; do
-            [ -n "$slot" ] || continue
-            if ! validate_slot "$slot"; then
-                DRIFT=1
-                continue
-            fi
-            slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
-            tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
-            # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
-            # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 进程级中断(SIGKILL 窗口)由 EXIT trap
-            # 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位)
-            # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
+    # [2026-09-12 R3] 部署循环恒执行(不再条件包裹): HOME 未设且 env 未覆盖时 SLOTS="" → 循环零次,
+    # DRIFT=1 已在上方置位 → 仍走 exit 6(条件包裹会吞掉 HOME 空的 DRIFT 标志, 已实证修复 rc=0 假绿回归)
+    IFS=':' read -r -a slots <<< "$SLOTS"
+    for slot in "${slots[@]}"; do
+        [ -n "$slot" ] || continue
+        if ! validate_slot "$slot"; then
+            DRIFT=1
+            continue
+        fi
+        slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
+        tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
+        # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
+        # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 进程级中断(SIGKILL 窗口)由 EXIT trap
+        # 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位)
+        # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
+        rm -rf "$tmpdir" 2>/dev/null || true
+        if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
             rm -rf "$tmpdir" 2>/dev/null || true
-            if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
-                rm -rf "$tmpdir" 2>/dev/null || true
-                echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
-                DRIFT=1
-                continue
-            fi
-            BATCH_TMPDIRS+=("$tmpdir")
-            slotbak="$slotdir.bak.$$"
-            if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
-                rm -rf "$tmpdir" 2>/dev/null || true
-                slotbak=""
-                echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
-                DRIFT=1
-                continue
-            fi
-            if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
-                mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
-                rm -rf "$slotbak" 2>/dev/null
-                slotbak=""
-                echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
-                DRIFT=1
-                continue
-            fi
+            echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
+            DRIFT=1
+            continue
+        fi
+        BATCH_TMPDIRS+=("$tmpdir")
+        slotbak="$slotdir.bak.$$"
+        if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
+            rm -rf "$tmpdir" 2>/dev/null || true
+            slotbak=""
+            echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
+            DRIFT=1
+            continue
+        fi
+        if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
+            mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
             rm -rf "$slotbak" 2>/dev/null
             slotbak=""
-            BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
-            if diff -rq "$SKILL_ROOT" "$slotdir" >/dev/null 2>&1; then
-                echo "[DEPLOY] IDENTICAL: $slotdir"
-            else
-                echo "[DEPLOY] DRIFT: $slotdir"
-                DRIFT=1
-            fi
-        done
-    fi
+            echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
+            DRIFT=1
+            continue
+        fi
+        rm -rf "$slotbak" 2>/dev/null
+        slotbak=""
+        BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
+        if diff -rq "$SKILL_ROOT" "$slotdir" >/dev/null 2>&1; then
+            echo "[DEPLOY] IDENTICAL: $slotdir"
+        else
+            echo "[DEPLOY] DRIFT: $slotdir"
+            DRIFT=1
+        fi
+    done
     if [ "$DRIFT" -eq 1 ]; then
         echo "[DEPLOY] DEPLOY_DRIFT: 至少一位部署位 DRIFT/REJECTED(详见上)" >&2
         exit 6
