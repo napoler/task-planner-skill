@@ -155,7 +155,7 @@ model: opus
   - **3-File Gate（Rule 19.5）**：确认 findings.md/progress.md 存在且非模板 stub——check-complete.sh 已内置校验，缺失/stub → exit 1 → STOP 回填，禁止交付
   - **质量门控统计（Rule 26）**：按 verification.md「质量门控统计」段核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；存在未处置违规 → 按 Rule 26.3 降级 outcome；Q3 → outcome 判 BLOCKED 并 STOP
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
-  - **隔离任务合并回**（isolation=worktree 时，按 references/worktree-isolation.md 合约）：worktree 内全 VC 复验且无未提交变更 → 主仓 `git merge wt/<task-id>` → `git worktree remove` + `git branch -d` → 主仓 Read 关键文件复验
+  - **隔离任务合并回**（isolation=worktree 时，按 references/worktree-isolation.md 合约）：worktree 内全 VC 复验且无未提交变更 → **`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`**（智能门：预检+已合并检测+--no-ff 合并+可选部署对账；ALREADY_MERGED=另一会话已合并→跳过合并补簿记）→ 按 [CLEANUP] 提示行 `git worktree remove` + `git branch -d` → 主仓 Read 关键文件复验
   - **git 提交核验（Rule 27 终验联动）**：确认任务 scope 文件无未提交变更（`git status --porcelain -- <scope>` 为空，或各 Phase 已按 27.1 逐 Phase 提交）；遗留未提交 → 先补提交（注明"终验补提交"）再交付，防修改被丢弃
   - 交付结论：`COMPLETE` / `PARTIAL` / `BLOCKED`
   - **退出前**：运行 `bash scripts/check-complete.sh` 验证所有 Phase 已 complete
@@ -213,7 +213,7 @@ model: opus
 2. 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块，随计划一并展示给用户（默认建议 worktree，用户可否决）
 3. 隔离开发期间 **CWD 不迁移**，所有文件操作用 worktree 绝对路径；计划文档留在主仓 plans/（会话级状态不进 worktree）
 
-**完成后主动合并回**（合约见 `references/worktree-isolation.md`）：worktree 内全 VC 复验 → 主仓 `git merge wt/<task-id>` → `git worktree remove` + 删分支 → 主仓 Read 关键文件复验合并结果。复杂场景可配合 `Skill("using-git-worktrees")`。
+**完成后主动合并回**（合约见 `references/worktree-isolation.md`）：worktree 内全 VC 复验 → **`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`**（智能门：预检+已合并检测+合并+可选部署对账）→ 按 [CLEANUP] 提示行清理 worktree/分支 → 主仓 Read 关键文件复验合并结果。复杂场景可配合 `Skill("using-git-worktrees")`。
 
 ## Chain 模式详解
 

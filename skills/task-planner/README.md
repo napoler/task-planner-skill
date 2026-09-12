@@ -33,7 +33,7 @@
 │   - SKILL.md (剥除 hooks)                                │
 │   - references/  (8 篇规则)                              │
 │   - templates/   (5 核心 + 3 辅助 + 12 variant)          │
-│   - scripts/     (16 个工具脚本)                         │
+│   - scripts/     (17 个工具脚本)                         │
 │   - lib/         (5 个 installer 脚本)                   │
 │   - tests/       (smoke.sh 16/16 pass)                   │
 │   - install.sh / uninstall.sh                            │
@@ -77,7 +77,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │       ├── writing-type.md                  # 写作任务
 │       ├── diagnostic-type.md               # 诊断/修复
 │       └── publish-type.md                  # 发布/集成
-├── scripts/                                 ← 16 个工具脚本
+├── scripts/                                 ← 17 个工具脚本
 │   ├── check-complete.sh / .ps1             # Stop hook 完成检测
 │   ├── check-conflicts.sh                   # git 冲突分析
 │   ├── check-doc-sync.sh                    # 计划陈旧度检测
