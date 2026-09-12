@@ -48,14 +48,15 @@
 #     (洞①: gn="/" 时前缀模式退化为 "//"/* 双斜杠永不命中, "/" 守卫形同虚设; 根场景已由
 #     norm="/" 显式拒绝 + $HOME 等祖先/内部双向守卫覆盖);
 #     替换原子(改名换位): cp -rL 至同目录 .tmp-new.$$ → mv slot→.bak.$$ → mv tmp→slot → rm .bak;
-#     常规失败路径可恢复; 进程级中断(SIGKILL 窗口)由 EXIT trap 兜底恢复(.bak 尚在且 slot 缺席时 mv 回原位)。
+#     常规退出/TERM/INT 由 EXIT trap 兜底恢复(.bak 尚在且 slot 缺席时 mv 回原位); SIGKILL 不可捕获,
+#     残留 slot.bak.$$ 需人工 mv 回原位; slot 常规失败路径均恢复原位(SIGKILL 不可捕获, 见 R3 ②)
 #   2026-09-12 R2 复审修复轮: ① 守卫比较前统一规范化(norm_path: realpath -m 优先, 失败回退纯串
 #     归并 //→/、剥 .、.. 弹出) — //tmp/x、/tmp/./x、/tmp/y/../x 与 /tmp/x 同判;
 #     ② 守卫语义分级(GUARDS 带 :type 后缀): $HOME:home 豁免 slot 位于
 #     $HOME 内部(三默认部署位都在 $HOME 内, 全向则生产路径永不成功);
 #     SKILL_ROOT/WT_PATH/MAIN_REPO:full = exact+inside+ancestor 全向;
 #     ③ 原子替换改改名换位(slot→.bak.$$ → tmp→slot → rm .bak), 任一 mv 失败恢复原位,
-#     slot 永不在盘中缺席; cp 前 rm -rf tmpdir 防 PID 复用残留嵌套;
+#     slot 常规失败路径均恢复原位(SIGKILL 不可捕获, 残留 .bak 需人工 mv 回); cp 前 rm -rf tmpdir 防 PID 复用残留嵌套;
 #     ④ 本批次 tmpdir 数组累积 trap 逐个清理(不再用前缀 glob 误删他进程);
 #     ⑤ V3 rename 记录(R/C 双 NUL 记录)解析时额外消费下一条旧路径, 新路径计入重叠集;
 #     ⑥ worktree list --porcelain awk 改 branch 行累积至下一块/END 输出, 保证 path|branch 配对
@@ -66,9 +67,9 @@
 #     新语义: home 类型 slot 仅当 norm_path(slot) 位于 DEFAULT_DEPLOY_ROOTS 三默认部署根之一
 #     (之内或等于)才放行, 其余 $HOME 子路径按 inside 规则 REJECTED; 显式逃生口 --allow-home-slot
 #     (默认关, 风险自担);
-#     ② EXIT trap 体封成 cleanup_tmpdirs() 函数(顶层 local 报错), stderr 零输出; 同 trap 兜底恢复
-#     slot(.bak 尚在且 slot 缺席 → mv 回原位), "slot 永不在盘中缺席"降级为"常规失败路径可恢复;
-#     进程级中断由 EXIT trap 兜底恢复";
+#     ② EXIT trap 体封成 cleanup_tmpdirs() 函数(顶层 local 报错), stderr 零输出; 正常退出/TERM/INT 由
+#     EXIT trap 兜底恢复 slot(.bak 尚在且 slot 缺席 → mv 回原位); SIGKILL 不可捕获, 残留
+#     slot.bak.$$ 需人工 mv 回原位;
 #     ③ V3 两侧口径统一: MAIN_DIRTY 与 BRANCH_FILES 同加 -c core.quotePath=false + BRANCH_FILES
 #     改 --name-only -z NUL 解析 — 非 ASCII 路径重叠可检出;
 #     ④ P3: SLOTS 默认值 ${HOME:-} 口径 + HOME 空显式 REJECTED; 孤立注释删除/顶层缩进归零;
@@ -98,9 +99,10 @@ set -u
 # ---------- 参数解析 ----------
 usage() {
     cat <<'EOF'
-Usage: smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force]
+Usage: smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force] [--allow-home-slot]
 退出码: 0 成功 | 2 PRECHECK_INVALID/ARG_INVALID | 3 PRECHECK_DIRTY | 4 SCOPE_OVERLAP
         5 MASTER_AHEAD | 6 DEPLOY_DRIFT | 7 MERGE_CONFLICT | 8 MERGE_IN_PROGRESS
+--allow-home-slot  $HOME 内部任意 slot 放行(默认关, 风险自担)
 EOF
 }
 
@@ -369,8 +371,8 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     # [2026-09-12 R2 P3] 本批次 tmpdir 数组累积, trap 逐个清理(原前缀 glob 匹配他进程 .tmp-deploy.*)
     BATCH_TMPDIRS=()
     # [2026-09-12 R3 P2] trap 体封成 cleanup_tmpdirs() 函数(原顶层 local 报错), stderr 零输出;
-    # [2026-09-12 R3 P3] 兜底恢复: 进程级中断(SIGKILL 窗口内 mv 已换位但 .bak 残留)后, slot 缺席而
-    # .bak 尚存 → 恢复原位(常规失败路径各 mv 处已自行恢复, 此处覆盖中途被杀场景)
+    # [2026-09-12 R3 P3] 正常退出/TERM/INT 由 EXIT trap 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位);
+    # SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回原位
     slotbak=""
     slotdir=""
     cleanup_tmpdirs() {
@@ -460,7 +462,7 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
                     "$gn"/*)
                         for r in ${default_roots_norm[@]+"${default_roots_norm[@]}"}; do
                             [ -n "$r" ] || continue
-                            case "$norm/" in "$r"/*|"$r") break 2 ;; esac
+                            case "$norm/" in "$r"/*|"$r") continue 2 ;; esac
                         done
                         echo "[DEPLOY] REJECTED: $slot (属 \$HOME 内部且不在默认部署根白名单内 — 危险路径; --allow-home-slot 可显式放行, 风险自担)"
                         return 1 ;;
@@ -489,8 +491,8 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
         tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
         # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
-        # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 进程级中断(SIGKILL 窗口)由 EXIT trap
-        # 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位)
+        # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 正常退出/TERM/INT 由 EXIT trap 兜底
+        # 恢复(.bak 尚在且 slot 缺席 → mv 回原位); SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回
         # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
         rm -rf "$tmpdir" 2>/dev/null || true
         if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
