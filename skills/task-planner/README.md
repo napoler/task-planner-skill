@@ -116,7 +116,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 
 ---
 
-## config.json 键说明（常用键 19 项）
+## config.json 键说明（常用键 21 项）
 
 `config.json` 为 JSON Schema，**全部阈值集中管理**。常用键语义：
 
@@ -141,6 +141,8 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 | `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | references/template-mapping.md |
 | `subagent` | (见 config) | 子代理超时档位（explore/editor/debugger/executor） | Rule 22.3 |
 | `interaction_mode` | `ask` | 交互双模式（Rule 28）：ask=关键决策点询问用户；silent=自主决策+静默决策清单登记；解析优先级 env > 计划配置表 > 本键 > 默认 ask | Rule 28.1 |
+| `fmea_enforce` | `warn` | v063 规划期 FMEA 预演档位（enforce/warn/off），RPN>100 Phase 须登记兜底动作（methodology.md R2） | v063 |
+| `content_quality_enforce` | `warn` | v063 内容质量门控档位（enforce/warn/off），内容型任务过去 AI 化清单+五维评分卡（methodology.md Q3/Q4） | v063 |
 
 > config.json **无 `version` 字段**——版本信息以 `git log` + `版本历史`段为准。
 

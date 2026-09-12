@@ -68,6 +68,26 @@
       "default": "enforce",
       "description": "Agent() 派发契约守卫档位（Rule 22.4c，scripts/check-dispatch.sh）：enforce=prompt 缺当前计划三文件绝对路径/返回字段名(status:/acceptance:/checkpoint:)/subagent-state 检查点路径时 exit 2 阻断并列出缺项；warn=放行+告警计数；off=跳过。无活跃计划或解析异常一律放行（fail-open）"
     },
+    "content_quality_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v063 内容质量门控档位：enforce=内容型任务(writing/research/publish)终验前强制过 AI 化 10 条清单+五维评分卡≥4.0(references/methodology.md Q3/Q4)，不达标阻断交付；warn=注入警告并计数登记；off=不启用。默认 warn（观察期）"
+    },
+    "fmea_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v063 规划期 FMEA 预演档位：enforce=RPN>100 的 Phase 无预设兜底登记=计划无效(attest 机械校验，后续轮)；warn=注入警告；off=不启用。默认 warn（观察期）"
+    },
     "provider_fallback": {
       "type": "object",
       "description": "Provider 类失败后主动 Scaling 改派（task-v055-fallback，Rule 22.3.1）：探测备用通道 + 生成变体 agent + 零消耗改派决策",
