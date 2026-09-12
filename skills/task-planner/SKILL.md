@@ -79,6 +79,8 @@ model: opus
   - **门控**：等待用户显式 `"yes"` — 无授权禁止执行；确认后立即 `bash scripts/attest-plan.sh` 锁定，其内置 `check-plan-dispatch.sh` 校验派发型 Phase 是否已规划子代理（S-unit 执行体列，Rule 22.6/25.1；缺失拒绝锁定，`--skip-dispatch-check` 逃生）
   - **交互模式（Rule 28）**：ask 模式保持本门控；silent 模式本门控自动通过——计划照常 `bash scripts/attest-plan.sh` 锁定后直接执行，无需等待确认；计划全文落盘可查，交付报告须附「静默决策清单」（Decisions Made 表 `silent:` 前缀行）供用户复核；模式解析优先级 env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > config.json > 默认 ask，用户会话中口头切换优先于一切
 
+- [ ] **Poka-Yoke 前置条件检查（v063 方法论引入，指针 references/methodology.md §R1/R2）**：Phase 执行前核对本 Phase 前置条件（依赖文件存在/上 Phase 产物非空/必要配置在位）+ 高风险 Phase（FMEA RPN>100，见 task_plan.md「📊 FMEA 预演」段）是否已登记预设兜底动作；不满足 → 先修前置再继续；开关键 config.json#fmea_enforce（默认 warn）
+
 - [ ] **Phase 执行循环**（每个 Phase 独立闭环，6 步顺序执行）
   1. **开启 Phase**：`Edit task_plan.md` 当前 Phase 状态 → `in_progress`（Current Phase 同步更新）
   2. **同步 Todo（S2）**：`TodoWrite`/`TaskUpdate` 该 Phase 对应 todo → `in_progress`；步骤 1/2 必须紧邻执行，禁止只做其一
@@ -154,6 +156,7 @@ model: opus
   - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 < `config.json#delegation_rate_floor`（默认 0.7）或主进程直做清单含白名单外理由（白名单见 Rule 25.3）或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,模型需按 violation 清单回炉补 plan 或转 PARTIAL 重跑；**白名单豁免**：rate<floor 但全部直做理由均命中 Rule 25.3 六项白名单 → 不降级（WHITELIST-EXEMPT 放行；jq 缺失 fail-closed，见 Rule 25.4）
   - **3-File Gate（Rule 19.5）**：确认 findings.md/progress.md 存在且非模板 stub——check-complete.sh 已内置校验，缺失/stub → exit 1 → STOP 回填，禁止交付
   - **质量门控统计（Rule 26）**：按 verification.md「质量门控统计」段核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；存在未处置违规 → 按 Rule 26.3 降级 outcome；Q3 → outcome 判 BLOCKED 并 STOP
+  - **内容质量门控（v063，template_type=writing/research/publish 任务）**：终验前按 references/methodology.md §内容质量 Q3（去 AI 化 10 条清单）+ Q4（五维评分卡：准确性 25/相关 20/可读 20/原创 20/SEO 15，加权 ≥4.0 放行）核查；不达标 → 回炉精修（Rule 26 惩罚映射）；开关键 config.json#content_quality_enforce（默认 warn）
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
   - **隔离任务合并回**（isolation=worktree 时，按 references/worktree-isolation.md 合约）：worktree 内全 VC 复验且无未提交变更 → 主仓 `git merge wt/<task-id>` → `git worktree remove` + `git branch -d` → 主仓 Read 关键文件复验
   - **git 提交核验（Rule 27 终验联动）**：确认任务 scope 文件无未提交变更（`git status --porcelain -- <scope>` 为空，或各 Phase 已按 27.1 逐 Phase 提交）；遗留未提交 → 先补提交（注明"终验补提交"）再交付，防修改被丢弃
@@ -277,6 +280,7 @@ Block 1 (选题) complete
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 - **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）
+- **Methodology 指针（v063）可靠性 4 条/内容质量 5 条方法论，门控+指针范式，不改 Rule 1-28 既有语义（详见 references/methodology.md，开关键 fmea_enforce/content_quality_enforce 默认 warn）**
 - **Rule 28（P0）交互模式与询问门控**：ask（默认：D1-D6 关键决策点给选项供用户选）| silent（静默：自主决策+登记静默决策清单）；解析优先级 env > 计划配置表 > config.json > 默认 ask；D6 硬停点（连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认）两模式一致不可豁免（详见 references/critical-rules.md Rule 28）
 
 ## Completion Gate

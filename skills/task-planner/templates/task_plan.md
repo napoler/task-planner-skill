@@ -216,6 +216,21 @@ Phase 1
 
 > 契约详见 `~/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
+## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 references/methodology.md §R2）
+
+<!--
+  WHAT: 对每个 Phase 枚举失败模式，打 S(严重度)/O(频度)/D(探测难度) 各 1-10 分，RPN=S×O×D。
+  WHY: RPN>100 的高风险 Phase 必须预先登记兜底动作（对齐 Rule 22.3 五档兜底链），避免执行期临时决策。
+  WHEN: 计划创建时填写（高 RPN 项）；纯文档/调研类小任务可写 n/a。
+  开关键: config.json#fmea_enforce（默认 warn；enforce 档下 RPN>100 无兜底登记 = 计划无效）。
+-->
+
+| Phase | 失败模式 | S(1-10) | O(1-10) | D(1-10) | RPN=S×O×D | 预设兜底动作（RPN>100 必填，对齐 22.3 ①-⑤） |
+|-------|---------|---------|---------|---------|-----------|---------------------------------------------|
+| Phase 1 | （示例）依赖配置缺失 |  |  |  |  |  |
+
+**填写规则**：RPN>100 的 Phase → 兜底动作列必填（写清走 22.3 哪一档：改派/拆细/降档/主进程接管/AskUserQuestion）；RPN≤100 可留空。本表是规划期预演，执行期实际失败仍走 Rule 22.3 完整兜底链，两者不互相替代。
+
 ## 🔁 原生 Todo 同步（S1–S5 强制）
 <!-- 
   WHAT: 计划文档 ↔ 原生 Todo（TodoWrite / Task 系统）的同步状态追踪。
