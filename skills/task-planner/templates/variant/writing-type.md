@@ -60,7 +60,7 @@
 - [ ] Phase 3.1: title draft
 - [ ] Phase 3.2: body writing（fork article-phase-3-2-writer，deepseek-v4-pro 强制）
 - [ ] Phase 3.3: assemble_article.py
-- [ ] Phase 3.5: quality-reviewer 审查
+- [ ] Phase 3.5: quality-reviewer 审查（含去 AI 化 10 条清单 + 五维评分卡 ≥4.0 门控，指针 references/methodology.md §内容质量 Q3/Q4；开关键 content_quality_enforce）
 - [ ] Phase 4: schema 验证
 - **Status:** pending
 - **Executor:** article-writer
