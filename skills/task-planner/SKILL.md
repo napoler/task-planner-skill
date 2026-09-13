@@ -406,6 +406,9 @@ Block 1 (选题) complete
 
 **Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。provider 全灭且任务超 ④ 接管上限(单文件 ≤300 行)时禁直接 STOP:先回计划层拆细到每片 ≤300 行单文件再逐片 ④ 接管(22.3.2)。
 
+### 🛡️ 环境级中断自愈(task-v068)
+hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:①memory 写入哨兵误拦(check-scope 白名单豁免)②无 sid 时 plan-created 兜底清除无认领/过期哨兵 ③本会话(.session-owner 认领者)编辑 task_plan.md 后 PostToolUse 自动重锁 attestation(他会话编辑仍 TAMPERED)④delegation-observe 注入会话级节流 ⑤env sid 兜底链(stdin 缺失时 CLAUDE_CODE_SESSION_ID 承接)。开关键 `config.json#hook_self_heal_enforce`(默认 warn,off 档后续轮接读取,enforce 预留);护栏=sid 匹配,外部篡改仍拒绝。E4 慢注入(Rule 23 O(N))未修,登记 deferred。
+
 ## 💻 代码编辑强制隔离
 
 代码编辑派发规则与白名单的**权威源** = 上方 §子代理路由表「代码编辑」三行（322-324）+ ✅ 行白名单；本节只补路由表未覆盖的「修改后验证流程」与 Rule 14 的执行要点指针。

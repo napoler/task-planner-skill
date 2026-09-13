@@ -43,6 +43,32 @@ RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
 [ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" "$SID" 2>/dev/null || true)"
 [ -z "$plan" ] && exit 0
 
+# ─── [task-v068 E2] TAMPERED 自愈: 本会话 Edit/Write 活跃计划 task_plan.md → 后台自动重锁 ───
+# 触发(全部满足,廉价前置短路,未命中零子进程): tool ∈ {Write,Edit,MultiEdit}
+#  且 .tool_input.file_path 归一后 == 本会话活跃计划 plan(上述探测结果)
+#  且 <plan-dir>/.session-owner == 本会话 SID(归一口径与 L20 一致)——owner 缺失/他会话维持 TAMPERED
+# 动作: 后台 attest-plan.sh <plan> --skip-dispatch-check(静默,失败不阻塞;重锁成功无输出)
+#       attested_by_sid 注入: 非 default sid 时以 ZCODE_SESSION_ID 导出,attest 记录真实归属
+fp="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .toolInput.file_path // empty' 2>/dev/null)"
+plan_dir="$(dirname "$plan")"
+case "$tool" in Write|Edit|MultiEdit)
+  owner=""
+  [ -n "$fp" ] || fp=""
+  case "$fp" in */*) ;; *) [ -n "$fp" ] && [ -f "$CWD/$fp" ] && fp="$CWD/$fp" ;; esac
+  if [ -n "$fp" ] && [ "$(cd "$(dirname "$fp")" 2>/dev/null && pwd)/$(basename "$fp")" = "$(cd "$(dirname "$plan")" && pwd)/$(basename "$plan")" ]; then
+    # owner 缺失/他会话 → 不重锁(维持 TAMPERED);[ -f ] 短路保证缺失时不产生重定向报错
+    if [ -f "$plan_dir/.session-owner" ]; then
+      owner="$(tr -cd 'a-zA-Z0-9' < "$plan_dir/.session-owner" 2>/dev/null | head -c 40)"
+    fi
+    if [ -n "$owner" ] && [ "$owner" = "$SID" ] && [ "$SID" != "default" ]; then
+      ATTEST="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/attest-plan.sh"
+      # [2026-09-13 task-v068 E2] owner 已验 == 本 SID,导环境使 attest 记录 attested_by_sid=SID
+      [ -f "$ATTEST" ] && { env ZCODE_SESSION_ID="$SID" bash "$ATTEST" "$plan" --skip-dispatch-check >/dev/null 2>/dev/null || echo "[attest] auto-relock failed: $plan" >&2; } &
+    fi
+  fi
+  ;;
+esac
+
 now="$(date +%s)"
 mt="$(stat -c %Y "$plan" 2>/dev/null || echo "$now")"
 age=$(( now - mt ))

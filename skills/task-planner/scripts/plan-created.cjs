@@ -173,11 +173,49 @@ if (sidkey) {
     console.log('[task-plan] ✓ 会话哨兵已清除: ' + sideSentinel + '（sidkey=' + sidkey + '）');
   }
 } else {
-  console.log('[task-plan] ⚠ 未提取到 session_id，跳过会话 side 哨兵清除（fail-open）');
+  // [task-v068 E1'/KQ1] 无 sid 兜底清除：枚举 .plan_required_side 下全部 <sidkey>.plan_required，
+  // 仅当 .active_plan_side/<sidkey>.active_plan 不存在（无认领）或 mtime>24h（过期）才删；
+  // 活跃指针存在且 <24h 的哨兵保留并打印原因（原零日志缺陷修复）。
+  const SIDE_SIDE = path.join(PLANS_DIR, '.plan_required_side');
+  const SIDE_PTR = path.join(PLANS_DIR, '.active_plan_side');
+  const nowMs = Date.now();
+  let removed = 0;
+  if (fs.existsSync(SIDE_SIDE)) {
+    let entries = [];
+    try { entries = fs.readdirSync(SIDE_SIDE); } catch (e) { entries = []; }
+    const kept = [];
+    for (const f of entries) {
+      if (!f.endsWith('.plan_required')) continue;
+      const sk = f.slice(0, -'.plan_required'.length);
+      const ptr = path.join(SIDE_PTR, sk + '.active_plan');
+      let ptrStale = false;
+      if (fs.existsSync(ptr)) {
+        let mtMs = 0;
+        try { mtMs = fs.statSync(ptr).mtimeMs; } catch (e) {}
+        ptrStale = (nowMs - mtMs) > 24 * 3600 * 1000;
+      }
+      const sp = path.join(SIDE_SIDE, f);
+      if (fs.existsSync(ptr) && !ptrStale) {
+        kept.push(f + '（活跃指针存在且 <24h，保留）');
+        continue;
+      }
+      fs.unlinkSync(sp);
+      removed++;
+      console.log('[task-plan] ✓ 兜底清除无 sid 会话哨兵: ' + sp + '（' + (fs.existsSync(ptr) ? '指针 mtime>24h 过期' : '无活跃指针认领') + '）');
+    }
+    if (kept.length) {
+      for (const k of kept) console.log('[task-plan] ⚠ 保留侧哨兵 ' + k);
+    }
+  }
+  if (removed === 0) {
+    console.log('[task-plan] ✓ 无残留哨兵需兜底清除（未提取到 session_id，fail-open 兜底已执行）');
+  }
 }
 
 // D10 说明：拦截侧（check-scope）为 check-time 仲裁——若存在晚于哨兵 created 的项目内
 // task_plan.md 会自动放行；本脚本是显式即时清除 + 存在性校验（模型侧主动调用）。
+// [task-v068 E1'] 文案诚实化：上方「✓ 有效计划确认」仅指计划解析成功，不代表哨兵一定被清
+// （无 sid 兜底或 legacy 仲裁可能保留），清除结果以本段各行为准。
 console.log('[task-plan] ✓ 有效计划确认（' + planSource + '）: ' + planPath);
 console.log('[task-plan] 可正常执行写入操作。');
 process.exit(0);
