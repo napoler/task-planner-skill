@@ -10,3 +10,4 @@ D-8 check-rescue-chain.sh human 输出走 stdout 而其他门控走 stderr（风
 D-9 check-complete.sh VC-GATE 段 130 行内联致脚本近 700 行（可维护性观察，Code Reviewer）— 后续拆分轮
 D-10 critical-rules.md 22.3.2 行内追加致单行 ~900 字符 — 后续排版轮
 D-11 shellcheck 未安装未跑（Code Reviewer 备注）— 环境补齐后可跑
+- D-12 会话哨兵 hook 误拦 memory 写入(会话已有有效计划 v065 且 attest;旧版 hook 链路启动固化,新会话生效;memory 更新内容已备 plans/task-v065/memory-update-pending.md) — 新会话补写 memory
