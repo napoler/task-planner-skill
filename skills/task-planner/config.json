@@ -240,6 +240,32 @@
       "minimum": 1,
       "description": "UserPromptSubmit [plan-note] throttle: inject on 1st prompt of a session, then every Nth prompt"
     },
+    "context_hygiene_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v069 上下文与工作文件主动维护档位（Rule 29）：enforce=Phase complete 后/会话恢复时强制运行 check-context-hygiene.sh + plan-hygiene.sh，退场/归档建议 exit 1 即阻断进入下一 Phase；warn=注入 [context-hygiene] 提醒并计数，主进程可自主决定是否执行；off=不启用。默认 warn（观察期）"
+    },
+    "plan_archive_age_days": {
+      "type": "integer",
+      "default": 7,
+      "minimum": 1,
+      "description": "plan-hygiene.sh 归档年龄阈值（天）：completed 任务目录 mtime 超过 N 天 → 建议迁入 plans/archive/；仅 mv 文件移动，无数据丢失；脚本默认 --dry-run 展示清单，--execute 需手动确认（Rule 29.4）"
+    },
+    "plan_hygiene_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v069 工作文件整理档位（Rule 29.4）：enforce=plan-hygiene.sh --execute 前强制 --dry-run 展示清单并记录到 progress.md；warn=仅提醒；off=不启用。与 context_hygiene_enforce 独立控制，可单独开关"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds \u2014 all mutable numbers live here (all mutable numbers live here principle)",
