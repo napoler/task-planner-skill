@@ -54,7 +54,27 @@ plan_dir="$(dirname "$plan")"
 case "$tool" in Write|Edit|MultiEdit)
   owner=""
   [ -n "$fp" ] || fp=""
-  case "$fp" in */*) ;; *) [ -n "$fp" ] && [ -f "$CWD/$fp" ] && fp="$CWD/$fp" ;; esac
+  case "$fp" in
+    /*) ;;   # 绝对路径: 不动
+    */*)
+      # [2026-09-14 task-v068 fix-B P0-1] 相对含 slash (Write/Edit 常态): CWD 直拼归一化;
+      # 存在才采用(零子进程短路), 不存在保持原值 → 下方路径比对不命中, 静默跳过
+      [ -n "$CWD" ] && [ -f "$CWD/$fp" ] && fp="$CWD/$fp"
+      ;;
+    *)
+      # [2026-09-13 task-v068 E2-fix] 纯文件名: 先 CWD 直拼(常态), 再 <plans>/*/<fp>(plan 三件套常态);
+      # 候选在 CWD 侧真实存在才采用
+      found=""
+      if [ -n "$CWD" ] && [ -f "$CWD/$fp" ]; then
+        found="$CWD/$fp"
+      else
+        for cand in "$CWD"/plans/*/"$fp"; do
+          [ -f "$cand" ] && { found="$cand"; break; }
+        done
+      fi
+      [ -n "$found" ] && fp="$found"
+      ;;
+  esac
   if [ -n "$fp" ] && [ "$(cd "$(dirname "$fp")" 2>/dev/null && pwd)/$(basename "$fp")" = "$(cd "$(dirname "$plan")" && pwd)/$(basename "$plan")" ]; then
     # owner 缺失/他会话 → 不重锁(维持 TAMPERED);[ -f ] 短路保证缺失时不产生重定向报错
     if [ -f "$plan_dir/.session-owner" ]; then
@@ -62,8 +82,10 @@ case "$tool" in Write|Edit|MultiEdit)
     fi
     if [ -n "$owner" ] && [ "$owner" = "$SID" ] && [ "$SID" != "default" ]; then
       ATTEST="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/attest-plan.sh"
-      # [2026-09-13 task-v068 E2] owner 已验 == 本 SID,导环境使 attest 记录 attested_by_sid=SID
-      [ -f "$ATTEST" ] && { env ZCODE_SESSION_ID="$SID" bash "$ATTEST" "$plan" --skip-dispatch-check >/dev/null 2>/dev/null || echo "[attest] auto-relock failed: $plan" >&2; } &
+      # [2026-09-13 task-v068 fix-B P1-2] 同步执行(attest 仅一次 sha256+写文件,极快),
+      # 消除孤儿后台进程与 stderr fd 丢失; 外层已有 ZCODE_SESSION_ID 时尊重外层值
+      # (更权威, 防静默覆盖污染 attested_by_sid 审计), 否则回落到本会话 SID
+      [ -f "$ATTEST" ] && { env ZCODE_SESSION_ID="${ZCODE_SESSION_ID:-$SID}" bash "$ATTEST" "$plan" --skip-dispatch-check >/dev/null 2>/dev/null || echo "[attest] auto-relock failed: $plan" >&2; }
     fi
   fi
   ;;

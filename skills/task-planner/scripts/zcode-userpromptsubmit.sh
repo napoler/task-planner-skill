@@ -24,12 +24,16 @@ CWD="${CWD:-$PWD}"
 # [2026-09-13 task-v068 E3] UPS_SID 补 env 兜底链: stdin .session_id → CLAUDE_CODE_SESSION_ID →
 #   ZCODE_SESSION_ID → default (写法对齐 resolve-plan-dir.sh:31 / attest-plan.sh:34;
 #   修根因: stdin 无 .session_id 时 sid 源断裂, owner 恒不写, delegation-observe 反复注入)
-# [2026-09-13 task-v068 E3] tr 规范统一为 'a-zA-Z0-9_-' (与 check-delegation.sh 对侧一致, 消休眠地雷)
+# [2026-09-13 task-v068 E3] tr 规范统一为 'a-zA-Z0-9' (CR 修复: 回退与全仓剥除 canon 一致——
+#   zcode-pretooluse.sh:17/30、zcode-posttooluse.sh:20、check-scope.sh:85、resolve-plan-dir.sh:40;
+#   含 '-' 的真实 sid 下 owner 写/读/比较三方同 canon, 委派门控失配消除; env 兜底链 E3 本体保留)
 UPS_SID="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null)"
 [ -z "$UPS_SID" ] && UPS_SID="${CLAUDE_CODE_SESSION_ID:-}"
 [ -z "$UPS_SID" ] && UPS_SID="${ZCODE_SESSION_ID:-}"
 [ -z "$UPS_SID" ] && UPS_SID="default"
-UPS_SID="$(printf '%s' "$UPS_SID" | tr -cd 'a-zA-Z0-9_-' | head -c 40)"
+UPS_SID="$(printf '%s' "$UPS_SID" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+# [2026-09-13 task-v068 CR P2-3] 全非法字符剥空时防裸空串(如 sid 纯 '-' 输入): 补 default 兜底
+[ -z "$UPS_SID" ] && UPS_SID="default"
 plan=""
 RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
 [ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" "$UPS_SID" 2>/dev/null || true)"
@@ -103,7 +107,7 @@ ups_state="/tmp/task-planner-ups-${UPS_SID}.state"
 # [2026-09-10 active-plan-race] claim 协议: 先读既有 owner —— owner 属**其他**会话时,
 # 既不覆写 .session-owner 也不认领 side 指针(防他会话 mtime 兜底解析到本会话计划后越权认领);
 # owner 空或 == 本 sid 才写 owner + 原子写 .active_plan_side/<sid>.active_plan
-owner="$(tr -cd 'a-zA-Z0-9_-' < "$plan_dir/.session-owner" 2>/dev/null | head -c 40)"
+owner="$(tr -cd 'a-zA-Z0-9' < "$plan_dir/.session-owner" 2>/dev/null | head -c 40)"
 if [ -n "$UPS_SID" ] && [ "$UPS_SID" != "default" ] && { [ -z "$owner" ] || [ "$owner" = "$UPS_SID" ]; }; then
   printf '%s' "$UPS_SID" > "$plan_dir/.session-owner" 2>/dev/null || true
   pid="$(basename "$plan_dir")"

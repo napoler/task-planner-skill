@@ -79,6 +79,96 @@ t "T9b 无拼写变体 hook-self-heal (全 0)" bash -c "[ \"\$(grep -rc 'hook-se
 t "T10a knowledge-brief.md 五段 grep -c '^## §' = 5" bash -c "[ \"\$(grep -c '^## §' '$BRIEF')\" -eq 5 ]"
 t "T10b init-session.sh '6/6' ≥1" bash -c "[ \"\$(grep -c '6/6' '$INIT')\" -ge 1 ]"
 
+# T11: [2026-09-14 task-v068 Fix-C P2-2] 行为级断言 — 现有 T1-T10 全是 grep 字符串存在性,
+#      P0 类行为 bug 在其面前全绿。此处真实执行 hook 子进程(bash 子进程,非 grep 源码)。
+# T11=B1 (P0-1 回归: 相对含 slash 路径自动重锁 + 归属护栏):
+#   临时目录 fixture: $T/plans/task-x/task_plan.md + .session-owner="sessabc123"(canon 剥除形态,
+#   与 stdin sid "sess-abc123" 剥除后一致)。基线 attest(env 剥离 ZCODE_SESSION_ID → attested_by_sid 空)。
+#   相对 file_path "plans/task-x/task_plan.md" 经 posttooluse P0-1 fix-B L62 CWD 直拼归一 → 重锁命中:
+#   改 task_plan.md 内容后, .plan-attestation 更新为新 sha 且 attested_by_sid=sessabc123。
+#   负例: 先改内容再把 .session-owner 换成 othersid999(剥除后仍非本 sid) → 重跑同 stdin,
+#   归属护栏双条件: plan_sha256 仍为旧值(哈希不更新) 且 attested_by_sid 保持基线空串
+#   (posttooluse 重锁未命中 → attest 未被调用, 不产生新归属写入, 不被洗白)。
+#   每断言先跑一次真实 hook 再判定, 单条内 FAIL 可定位(正/负例分离计入 Total)。
+b1_pos() {
+    local T P
+    T="$(mktemp -d)" || { echo "[B1] fixture mktemp failed"; return 1; }
+    P="$T/plans/task-x"
+    mkdir -p "$P"
+    echo "goal" > "$P/task_plan.md"
+    printf 'sessabc123' > "$P/.session-owner"
+    rm -f "/tmp/task-planner-hook-sessabc123.state"
+    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check >/dev/null 2>&1
+    local h1
+    h1="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
+    # 正例: 改内容 + 相对含 slash file_path 触发 posttooluse 自动重锁
+    echo "goal v2" >> "$P/task_plan.md"
+    printf '{"session_id":"sess-abc123","cwd":"%s","tool_name":"Edit","tool_input":{"file_path":"plans/task-x/task_plan.md"}}' "$T" \
+        | env -u ZCODE_SESSION_ID bash "$POSTTOOL" >/dev/null 2>&1
+    local h2
+    h2="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
+    local bysid
+    bysid="$(grep '^attested_by_sid=' "$P/.plan-attestation" | cut -d= -f2)"
+    local stored
+    stored="$(grep '^plan_sha256=' "$P/.plan-attestation" | cut -d= -f2)"
+    rm -rf "$T" "/tmp/task-planner-hook-sessabc123.state"
+    [ "$h1" != "$h2" ] && [ "$bysid" = "sessabc123" ] && [ "$stored" = "$h2" ]
+}
+t "T11a B1 正例: 相对含 slash 路径 Edit → 自动重锁(attested_by_sid=sessabc123 且 plan_sha256=新文件哈希)" \
+    b1_pos
+b1_neg() {
+    local T P
+    T="$(mktemp -d)" || { echo "[B1-neg] fixture mktemp failed"; return 1; }
+    P="$T/plans/task-x"
+    mkdir -p "$P"
+    echo "goal" > "$P/task_plan.md"
+    printf 'sessabc123' > "$P/.session-owner"
+    rm -f "/tmp/task-planner-hook-sessabc123.state"
+    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check >/dev/null 2>&1
+    local h1
+    h1="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
+    # 负例: 先改内容, 再把 owner 换成他会话 → 同 stdin 重跑, 重锁必须不命中(归属护栏, P0-1 防洗白):
+    #   plan_sha256 仍为旧值(不更新) 且 attested_by_sid 被 attest 重置为空串(非 sessabc123, 不被洗白)
+    echo "goal v2" >> "$P/task_plan.md"
+    printf 'othersid999' > "$P/.session-owner"
+    printf '{"session_id":"sess-abc123","cwd":"%s","tool_name":"Edit","tool_input":{"file_path":"plans/task-x/task_plan.md"}}' "$T" \
+        | env -u ZCODE_SESSION_ID bash "$POSTTOOL" >/dev/null 2>&1
+    local stored bysid
+    stored="$(grep '^plan_sha256=' "$P/.plan-attestation" | cut -d= -f2)"
+    bysid="$(grep '^attested_by_sid=' "$P/.plan-attestation" | cut -d= -f2)"
+    rm -rf "$T" "/tmp/task-planner-hook-sessabc123.state"
+    [ "$stored" = "$h1" ] && [ "$bysid" = "" ]
+}
+t "T11b B1 负例: 改内容后 owner=othersid999 → 重锁不命中(plan_sha256 仍为旧值 且 attested_by_sid 重置为空, 不被洗白)" \
+    b1_neg
+
+# T12: [2026-09-14 task-v068 Fix-C P2-2] B2 (P0-2 回归: 跨脚本 canon 一致性) —
+#   三侧 sid 规范化必须逐字节一致(pretooluse L17 / UPS L34 / 复刻管道), 否则 sid 含连字符等
+#   真实值时 owner 写/读/比较三方失配。行为式断言: 同一 sid 样本过三条管道, 输出两两相等;
+#   任一侧不一致 FAIL, 诊断时输出三侧实际值(本断言自带 echo, 不复用 t() 的静默输出)。
+b2_canon() {
+    local SID="sess-abc123"
+    # 三侧 sid 规范化管道, 逐字节一致性断言:
+    #   A: 复刻 zcode-pretooluse.sh L17 同款管道 (jq -r '.session_id // empty' | tr -cd 'a-zA-Z0-9' | head -c 40)
+    #   B: 复刻 zcode-userpromptsubmit.sh L34 同款管道 (stdin sid 直入 tr -cd 'a-zA-Z0-9' | head -c 40)
+    #   C: 全链路 (JSON stdin → jq 提取 → 剥除), 等价 pretooluse L17 完整输入路径
+    local A B C
+    A="$(printf '{"session_id":"%s"}' "$SID" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    B="$(printf '%s' "$SID" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    C="$(printf '{"session_id":"%s"}' "$SID" | bash -c "jq -r '.session_id // empty' | tr -cd 'a-zA-Z0-9' | head -c 40" 2>/dev/null)"
+    if [ -n "$A" ] && [ "$A" = "$B" ] && [ "$A" = "$C" ]; then
+        return 0
+    fi
+    echo "[B2-diag] pretooluse L17=$A UPS L34=$B jq-full-chain=$C"
+    return 1
+}
+if b2_canon >/dev/null 2>&1; then
+    PASS=$((PASS+1)); echo "[PASS] T12 B2 三侧 canon 一致 (pretooluse L17 / UPS L34 / jq 全链路, sid=sess-abc123)"
+else
+    FAIL=$((FAIL+1)); echo "[FAIL] T12 B2 三侧 canon 一致 (sid=sess-abc123)"
+    b2_canon   # 诊断: 输出两侧实际值
+fi
+
 # ── 汇总 ──
 TOTAL=$((PASS + FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"

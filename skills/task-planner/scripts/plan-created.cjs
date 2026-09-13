@@ -189,19 +189,22 @@ if (sidkey) {
       const sk = f.slice(0, -'.plan_required'.length);
       const ptr = path.join(SIDE_PTR, sk + '.active_plan');
       let ptrStale = false;
-      if (fs.existsSync(ptr)) {
+      // [task-v068 fix-B P2-1] 循环内 existsSync(ptr) 原本三次调用, 缓存一次:
+      // unlink 后 existsSync 恒 false 导致误打「无活跃指针认领」, 现按 unlink 前快照输出真实原因
+      const ptrExists = fs.existsSync(ptr);
+      if (ptrExists) {
         let mtMs = 0;
         try { mtMs = fs.statSync(ptr).mtimeMs; } catch (e) {}
         ptrStale = (nowMs - mtMs) > 24 * 3600 * 1000;
       }
       const sp = path.join(SIDE_SIDE, f);
-      if (fs.existsSync(ptr) && !ptrStale) {
+      if (ptrExists && !ptrStale) {
         kept.push(f + '（活跃指针存在且 <24h，保留）');
         continue;
       }
       fs.unlinkSync(sp);
       removed++;
-      console.log('[task-plan] ✓ 兜底清除无 sid 会话哨兵: ' + sp + '（' + (fs.existsSync(ptr) ? '指针 mtime>24h 过期' : '无活跃指针认领') + '）');
+      console.log('[task-plan] ✓ 兜底清除无 sid 会话哨兵: ' + sp + '（' + (ptrExists ? '指针 mtime>24h 过期' : '无活跃指针认领') + '）');
     }
     if (kept.length) {
       for (const k of kept) console.log('[task-plan] ⚠ 保留侧哨兵 ' + k);

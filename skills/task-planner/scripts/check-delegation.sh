@@ -93,7 +93,7 @@ read_session_owner() {
         return 1
     fi
     local raw
-    raw="$(head -n 1 "$owner_file" 2>/dev/null | tr -cd 'a-zA-Z0-9_-' | head -c 40)"
+    raw="$(head -n 1 "$owner_file" 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
     case "$raw" in
         "")
             printf 'EMPTY_OWNER'
@@ -252,7 +252,7 @@ mode_pretool() {
     #   c) 对比 = 规范化后严格相等
     if [ -n "$sid" ] && [ "$sid" != "default" ]; then
         local sid_norm
-        sid_norm="$(printf '%s' "$sid" | tr -cd 'a-zA-Z0-9_-' | head -c 40)"
+        sid_norm="$(printf '%s' "$sid" | tr -cd 'a-zA-Z0-9' | head -c 40)"
         local owner
         owner="$(read_session_owner "$plan_dir")"
         if [ "$owner" = "NO_OWNER" ] || [ "$owner" = "EMPTY_OWNER" ]; then
