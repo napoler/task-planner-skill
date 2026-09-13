@@ -9,7 +9,7 @@
 task-planner 提供 **双层优先级** 的模板机制：
 
 ```
-优先级 1（最高）: {project}/.claude/plan-templates/{filename}
+优先级 1（最高）: {project}/.claude/plan-templates/{filename}（Claude Code）/ {project}/.zcode/plan-templates/{filename}（ZCode）
 优先级 2（兜底）: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/{filename}
 ```
 

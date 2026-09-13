@@ -63,7 +63,7 @@ model: opus
   - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 legacy `plans/.active_plan`（兜底），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
   - **模板优先级**（由 init-session.sh 自动处理，无需手动干预）：
     - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
-    - 兜底：`~/.zcode/skills/task-planner/templates/{filename}`（内置 5 模板）
+    - 兜底：`{platform-home}/skills/task-planner/templates/{filename}`（`~/.zcode` 或 `~/.claude`，内置 5 模板）
     - 定制入口：在项目中创建 `.claude/plan-templates/` 目录，替换任意子文件即可覆盖内置模板
   - **验证**：确认创建了 5 个文件（task_plan.md / findings.md / progress.md / notepad-learnings.md / verification.md）
   - **冲突分析（隔离决策）**：运行 `bash scripts/check-conflicts.sh` → 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块（实现类任务默认首选 worktree，用户可否决）

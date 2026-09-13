@@ -39,6 +39,7 @@
 **约束**:
 - 必须用**绝对路径**(相对路径会因当前 cwd 解析错位置,落进主仓内部 — 已在 2026-08-29 验证过一次)
 - 仓外、隐藏目录(以 `.` 起头,沿用现有约定)
+- 路径模板中的 `${REPO_PARENT}` = 仓库父目录(即该仓所在目录,如某用户的 home 目录;按部署环境代入实际值),下文命令示例统一以 `${REPO_PARENT}` 书写
 - 子目录名 = task-id,不要再带 `wt-` 前缀(父目录已限定仓库语义)
 - 分支名仍为 `wt/<task-id>`(与路径解耦)
 
@@ -46,21 +47,21 @@
 
 ```bash
 # ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>)
-git worktree add /home/terry/<repo>-worktrees/<task-id> -b wt/<task-id> main
+git worktree add ${REPO_PARENT}/<repo>-worktrees/<task-id> -b wt/<task-id> main
 
 # ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
 #    子代理派发时在 prompt 中写明 worktree 绝对路径
 
 # ③ worktree 内提交 — 每 Phase 完成即提交(Rule 27),禁止攒批到最后;禁止把未提交变更带回合并
 #    只 add 本 Phase 产物文件(禁用 add -A 盲扫,防卷入 plans/ 与并行任务产物)
-git -C /home/terry/<repo>-worktrees/<task-id> add <本 Phase 产物文件...>
-git -C /home/terry/<repo>-worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
+git -C ${REPO_PARENT}/<repo>-worktrees/<task-id> add <本 Phase 产物文件...>
+git -C ${REPO_PARENT}/<repo>-worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
 
 # ④ worktree 内全 VC 复验通过后,回主仓合并
 git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"
 
 # ⑤ 清理
-git worktree remove /home/terry/<repo>-worktrees/<task-id> && git branch -d wt/<task-id>
+git worktree remove ${REPO_PARENT}/<repo>-worktrees/<task-id> && git branch -d wt/<task-id>
 
 # ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>)
 ```

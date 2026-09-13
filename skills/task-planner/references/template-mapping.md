@@ -99,9 +99,9 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/writing-type.m
 **使用方式**：
 ```bash
 # skill-fix 项目级覆盖
-mkdir -p ~/.claude/skills/skill-fix/.claude/plan-templates/
+mkdir -p ~/.zcode/skills/skill-fix/.zcode/plan-templates/
 cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-type.md \
-   ~/.claude/skills/skill-fix/.claude/plan-templates/task_plan.md  # （示例路径，仅作格式示意）
+   ~/.zcode/skills/skill-fix/.zcode/plan-templates/task_plan.md  # （示例路径，仅作格式示意；Claude Code 侧对应 `.claude/plan-templates/`）
 ```
 
 ---
