@@ -44,6 +44,11 @@ try {
 }
 if (!sid) sid = process.env.TASK_PLANNER_SID || process.env.CLAUDE_CODE_SESSION_ID || '';
 
+// task-v065/V-7 [2026-09-13] side 指针 sid 来源扩展: 手工/子代理场景 CLAUDE_CODE_SESSION_ID
+// 可能缺失, 补 ZCODE_SESSION_ID → CLAUDE_SESSION_ID → 会话 UUID(取法对齐 attest-plan.sh V-8);
+// sidkey 取法不变(仍 normSidkey canon, 与 resolve-plan-dir.sh / task-plan-init.cjs 一致)
+if (!sid) sid = process.env.ZCODE_SESSION_ID || process.env.CLAUDE_SESSION_ID || '';
+
 // [2026-09-10 task-planrequired-race] canon 与 task-plan-init.cjs 完全一致（findings D8）：
 // 剥非字母数字取前 40，再剥 sess 前缀 = uuid core。
 function normSidkey(s) {
@@ -56,29 +61,84 @@ const sidkey = normSidkey(sid);
 const projectRoot = findProjectRoot(process.cwd());
 const PLANS_DIR = path.join(projectRoot, 'plans');
 
-// 验证：plans/ 下任一 task_plan.md 存在即视为有效计划（跳过 archive 前缀目录；B3 根除，
-// 不再与哨兵 mtime 比较）
+// 验证：限定「当前会话活跃计划」，口径对齐 resolve-plan-dir.sh 解析链
+// (task-v065/V-7 [2026-09-13]：原逻辑=「readdirSync 首个含 task_plan.md 的目录即有效」，
+//  32 个历史计划下永不 exit 1——实证误认 task-3file-enforce；
+//  现按 ① env TASK_PLANNER_PLAN_DIR ② plans/.active_plan_side/<sidkey>.active_plan(会话指针,
+//  sidkey 取法与上方 normSidkey 一致;TTL 24h) ③ legacy plans/.active_plan 指针
+//  ④ mtime 最新(跳过 archive 前缀/隐藏/非 slug 目录) 逐层解析，
+//  仅当解析出的活跃计划含 task_plan.md 才 planFound=true)
+function isValidSlug(name) {
+  return /^[A-Za-z0-9_.-]+$/.test(name);
+}
 let planFound = false;
 let planPath = '';
+let planSource = '';
 if (fs.existsSync(PLANS_DIR)) {
-  try {
-    for (const entry of fs.readdirSync(PLANS_DIR)) {
-      if (entry.startsWith('archive')) continue;
-      const candidate = path.join(PLANS_DIR, entry, 'task_plan.md');
-      if (fs.existsSync(candidate)) {
+  // ① env 显式指定优先
+  const envDir = process.env.TASK_PLANNER_PLAN_DIR;
+  if (envDir && fs.existsSync(path.join(envDir, 'task_plan.md'))) {
+    planFound = true;
+    planPath = path.join(envDir, 'task_plan.md');
+    planSource = 'env TASK_PLANNER_PLAN_DIR';
+  } else {
+    // ②③ 会话指针 → legacy 指针（TTL 24h 与 resolve-plan-dir.sh 对齐）
+    const pointerCandidates = [];
+    const sideDir = path.join(PLANS_DIR, '.active_plan_side');
+    // sidkey 有值 → 只查本会话 side 文件(与 resolve-plan-dir.sh 口径一致: 查 <sidkey>.active_plan 单文件);
+    // sidkey 为空(未取到任何会话 id) → 枚举目录下全部 *.active_plan(手工/子代理场景, 取 TTL 内任一指向有效计划的)
+    if (sidkey) {
+      pointerCandidates.push({ file: path.join(sideDir, sidkey + '.active_plan'), label: '会话指针 .active_plan_side' });
+    } else if (fs.existsSync(sideDir)) {
+      try {
+        for (const f of fs.readdirSync(sideDir)) {
+          if (!f.endsWith('.active_plan')) continue;
+          pointerCandidates.push({ file: path.join(sideDir, f), label: '会话指针 .active_plan_side(枚举)' });
+        }
+      } catch (e) { /* side 目录不可读视为无效 */ }
+    }
+    pointerCandidates.push({ file: path.join(PLANS_DIR, '.active_plan'), label: 'legacy 指针 .active_plan' });
+    const nowMs = Date.now();
+    for (const pc of pointerCandidates) {
+      if (!fs.existsSync(pc.file)) continue;
+      let mtMs = 0;
+      try { mtMs = fs.statSync(pc.file).mtimeMs; } catch (e) {}
+      if (nowMs - mtMs > 24 * 3600 * 1000) continue; // 会话已结束, 指针不再生效
+      let pid = fs.readFileSync(pc.file, 'utf8').replace(/[ \r\n\t]/g, '');
+      if (!isValidSlug(pid)) continue; // 拒路径穿越/腐烂指针
+      const cand = path.join(PLANS_DIR, pid, 'task_plan.md');
+      if (fs.existsSync(cand)) {
         planFound = true;
-        planPath = candidate;
+        planPath = cand;
+        planSource = pc.label + ' → ' + pid;
         break;
       }
     }
-  } catch (e) {
-    // plans/ 不可读视为无效
+    // ④ mtime 最新（口径对齐 resolve-plan-dir.sh：跳过 archive 前缀/隐藏/非 slug 目录）
+    if (!planFound) {
+      let latest = '';
+      let latestMt = 0;
+      for (const entry of fs.readdirSync(PLANS_DIR)) {
+        if (entry.startsWith('archive') || entry.startsWith('.')) continue;
+        if (!isValidSlug(entry)) continue;
+        const cand = path.join(PLANS_DIR, entry, 'task_plan.md');
+        if (!fs.existsSync(cand)) continue;
+        const mt = fs.statSync(cand).mtimeMs;
+        if (mt > latestMt) { latestMt = mt; latest = cand; }
+      }
+      if (latest) {
+        planFound = true;
+        planPath = latest;
+        planSource = 'mtime 最新';
+      }
+    }
   }
 }
 
-// 一个都没有 → 保留原警告文案风格 + exit 1（拒绝无计划清除的保护语义）
+// 活跃计划未解析到 → 保留原警告文案风格 + exit 1（拒绝无计划清除的保护语义）
 if (!planFound) {
-  console.log('[task-plan] ⚠ 未找到有效的新计划，无法清除哨兵。');
+  console.log('[task-plan] ⚠ 未找到当前会话的有效活跃计划，无法清除哨兵。');
+  console.log('[task-plan] 解析链: env TASK_PLANNER_PLAN_DIR → .active_plan_side/<sid>.active_plan → .active_plan → mtime 最新（均未含 task_plan.md）');
   console.log('[task-plan] 请创建计划: mkdir -p plans/task-{id}/ && cd $_ && bash ~/.zcode/skills/task-planner/scripts/init-session.sh');
   process.exit(1);
 }
@@ -118,6 +178,6 @@ if (sidkey) {
 
 // D10 说明：拦截侧（check-scope）为 check-time 仲裁——若存在晚于哨兵 created 的项目内
 // task_plan.md 会自动放行；本脚本是显式即时清除 + 存在性校验（模型侧主动调用）。
-console.log('[task-plan] ✓ 有效计划确认: ' + planPath);
+console.log('[task-plan] ✓ 有效计划确认（' + planSource + '）: ' + planPath);
 console.log('[task-plan] 可正常执行写入操作。');
 process.exit(0);
