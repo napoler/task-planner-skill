@@ -88,6 +88,16 @@
       "default": "warn",
       "description": "v063 规划期 FMEA 预演档位：enforce=RPN>100 的 Phase 无预设兜底登记=计划无效(attest 机械校验，后续轮)；warn=注入警告；off=不启用。默认 warn（观察期）"
     },
+    "rescue_chain_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "失败挽救链路门控档位（task-v065 F-1，scripts/check-rescue-chain.sh）：Handoff 登记表 failed/timeout 行必须有 rescue 档位留痕 + checkpoint 路径且 subagent-state 检查点文件存在；enforce=违规阻断终验 / warn=仅警告 / off=关闭。默认 warn（观察期）"
+    },
     "provider_fallback": {
       "type": "object",
       "description": "Provider 类失败后主动 Scaling 改派（task-v055-fallback，Rule 22.3.1）：探测备用通道 + 生成变体 agent + 零消耗改派决策",

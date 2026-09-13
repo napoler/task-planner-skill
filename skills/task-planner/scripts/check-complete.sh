@@ -445,6 +445,20 @@ if [ "$python_rc" -eq 0 ]; then
     cpl="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
     if [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
 
+    # [2026-09-13 task-v065 S-1 F-1] 失败挽救链路终验门控(挽救而非摆烂);缺失 → fail-open
+    # 档位由 check-rescue-chain.sh 自解析(config.json rescue_chain_enforce, 默认 warn):
+    #   enforce 档存在违规 → 该脚本 exit 1 → 本门阻断 complete;warn/off 档恒 exit 0(仅提示)。
+    # exit 2(参数错误)不阻断(避免门控自身配置问题锁死终验)。
+    crc="$SKILL_ROOT/scripts/check-rescue-chain.sh"
+    if [ -f "$crc" ]; then
+        bash "$crc" "$PLAN_DIR_GUESS"
+        crc_rc=$?
+        if [ "$crc_rc" -eq 1 ]; then
+            echo "[plan] RESCUE-CHAIN GATE FAILED (task-v065 F-1: failed/timeout 行缺 rescue 留痕/checkpoint)" >&2
+            exit 1
+        fi
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then
