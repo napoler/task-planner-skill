@@ -65,7 +65,10 @@ case "$mode" in
       echo "[attest] WARN: --skip-dispatch-check 跳过 S-unit 执行体校验" >&2
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
-    printf 'plan_sha256=%s\nplan_file=%s\nattested_at=%s\n' "$hash" "$(cd "$plan_dir" && pwd)/$(basename "$plan_file")" "$(date -Iseconds)" > "$attest_file"
+    # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,
+    # 无 sid 时空串;向后兼容: verify 仅读 plan_sha256, 旧 attestation 无此字段不影响校验)
+    attest_sid="${ZCODE_SESSION_ID:-${CLAUDE_SESSION_ID:-}}"
+    printf 'plan_sha256=%s\nplan_file=%s\nattested_at=%s\nattested_by_sid=%s\n' "$hash" "$(cd "$plan_dir" && pwd)/$(basename "$plan_file")" "$(date -Iseconds)" "$attest_sid" > "$attest_file"
     echo "[attest] ✅ 计划已锁定: $plan_file"
     echo "[attest]   SHA-256: $hash"
     echo "[attest]   存储于: $attest_file(计划重规划并重新获批后重跑本命令更新锁定)"

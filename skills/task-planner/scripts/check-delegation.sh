@@ -93,7 +93,7 @@ read_session_owner() {
         return 1
     fi
     local raw
-    raw="$(head -n 1 "$owner_file" 2>/dev/null | tr -cd 'a-zA-Z0-9_-' | head -c 40)"
+    raw="$(head -n 1 "$owner_file" 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
     case "$raw" in
         "")
             printf 'EMPTY_OWNER'
@@ -252,13 +252,19 @@ mode_pretool() {
     #   c) 对比 = 规范化后严格相等
     if [ -n "$sid" ] && [ "$sid" != "default" ]; then
         local sid_norm
-        sid_norm="$(printf '%s' "$sid" | tr -cd 'a-zA-Z0-9_-' | head -c 40)"
+        sid_norm="$(printf '%s' "$sid" | tr -cd 'a-zA-Z0-9' | head -c 40)"
         local owner
         owner="$(read_session_owner "$plan_dir")"
         if [ "$owner" = "NO_OWNER" ] || [ "$owner" = "EMPTY_OWNER" ]; then
             # 降级观察模式:首次交互未写 owner,本轮不放行也不拦截,保留可见痕迹
+            # [2026-09-13 task-v068 E3/E4] 会话级节流: observe 注入每会话仅首次, 之后静默
+            #   (owner 由 zcode-userpromptsubmit.sh 写入后 observe 分支自然不再触发)
             printf '[check-delegation] .session-owner 缺失/为空(plan=%s) → 观察模式放行\n' "$plan_dir" >&2
-            emit_owner_observation "$plan_dir" "$sid_norm"
+            observe_flag="/tmp/task-planner-observe-${sid_norm}.flag"
+            if [ ! -f "$observe_flag" ]; then
+                emit_owner_observation "$plan_dir" "$sid_norm"
+                touch "$observe_flag" 2>/dev/null || true
+            fi
             exit 0
         fi
         if [ "$owner" != "$sid_norm" ]; then

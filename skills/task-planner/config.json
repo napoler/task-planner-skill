@@ -108,6 +108,16 @@
       "default": "warn",
       "description": "任务知识简略要点(knowledge-brief)严格度（task-v067）：off=跳过 brief 产出与引用检查；warn=提醒性（plan-writer 产出职责+材料包引用 brief 锚点为提醒,不阻断）；enforce=计划交付时 brief 缺失或五段空壳(§2/§3 无真实条目)禁止交付、派发材料包未引用 brief 锚点告警阻断；三档均流程层执行无 hook 校验,enforce 档语义预留；细则见 templates/knowledge-brief.md 与 companion/agents/plan-writer.md knowledge_brief 契约行"
     },
+    "hook_self_heal_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "环境级中断自愈严格度（task-v068）：off=停用全部自愈分支（plan-created 哨兵兜底清除/PostToolUse 自动重锁/check-delegation observe 节流,退回旧行为）；warn=自愈生效且每次自愈留 stderr 痕迹；enforce=预留（语义=自愈失败升级为阻断）；sid 护栏恒在（非本会话编辑不触发自动重锁,仍报 TAMPERED）。当前 hook 脚本尚未读取该键,warn 为默认行为；off 档接读取与 enforce 档升级语义留后续轮"
+    },
     "vc_gate_enforce": {
       "type": "string",
       "enum": [

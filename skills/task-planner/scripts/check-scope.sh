@@ -61,6 +61,11 @@ while [ "$_check_dir" != "/" ] && [ -n "$_check_dir" ]; do
 done
 
 # ─── ③ 特殊豁免：init-session.sh 等计划初始化文件（原豁免表保留）────────────
+# [task-v068 E1] 前缀豁免：memory 写入（$HOME/.zcode/cli/memories/）放行，修哨兵误拦 memory 系统
+case "$abs_path" in
+  "$HOME/.zcode/cli/memories/"*)
+    exit 0 ;;
+esac
 _base="$(basename "$abs_path")"
 case "$_base" in
   task_plan.md|findings.md|progress.md|notepad-learnings.md|verification.md|knowledge-brief.md)
