@@ -338,15 +338,16 @@ Phase 1
 <!--
   WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才勾 verify_done;failed/timeout 行必须回填 checkpoint 路径列(Rule 22.8.4)
   WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
-  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked
+  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
+  列说明: rescue 列 = 换档挽救记录(档位/结果/时间,failed|timeout 行必填,Rule 22.7);retry_count = 22.3 retry_limit 计数(初值 0,每次重试 +1)
   派发 prompt 八字段模板: templates/subagent_dispatch.md
 -->
 
-| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | verify_done |
-|---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|-------------|
-| 1 | | | | queued | | | | | ☐ |
-| 2 | | | | | | | | | ☐ |
-| 3 | | | | | | | | | ☐ |
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | rescue(档位/结果/时间) | retry_count | verify_done |
+|---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|-------------|-------------|
+| 1 | | | | queued | | | | | | 0 | ☐ |
+| 2 | | | | | | | | | | 0 | ☐ |
+| 3 | | | | | | | | | | 0 | ☐ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
