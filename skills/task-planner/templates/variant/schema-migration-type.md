@@ -97,7 +97,7 @@ Phase 1
 - [ ] down 脚本演练记录入档
 - [ ] docs/schema-changelog.md 更新
 - [ ] RUNBOOK.md 更新(紧急回滚 SOP)
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
 - **Status:** pending
 - **Executor:** database-optimizer
 

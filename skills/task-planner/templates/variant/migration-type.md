@@ -1,7 +1,7 @@
 <!-- template_type: migration -->
 <!-- 适用场景: Python→TS/Bun 迁移、框架升级、CLI 重写、单语言→多语言、Shebang 切换、API 协议迁移 -->
 <!-- 触发关键词: 迁移/升级/重写/切换/转换/兼容 -->
-<!-- 推荐 subagent: executor (sonnet-1,跨步骤协调) + code-assistant + Skill("cli-tool-builder") -->
+<!-- 推荐 subagent: executor (sonnet-1,跨步骤协调) + code-assistant -->
 
 # Task Plan: [迁移任务名称]
 
@@ -88,7 +88,7 @@ Phase 1
 ### Phase 4: 切流/路由切换
 - [ ] 新实现主路径生效(默认调用新入口)
 - [ ] 旧入口加 deprecation warning(过渡期)
-- [ ] 派 `Skill("cli-tool-builder")` 检查 CLI 入口(若 CLI 迁移)
+- [ ] 派 `**主进程** `Skill("cli-tool-builder")`（子代理无 Skill() 工具）` 检查 CLI 入口(若 CLI 迁移)
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 

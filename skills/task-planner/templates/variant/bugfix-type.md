@@ -70,7 +70,7 @@ Phase 1
 - **Executor:** debugger（sonnet-1）
 
 ### Phase 2: 根因定位
-- [ ] 调用 `Skill("systematic-debugging")` 5 步根因分析
+- [ ] 调用 `**主进程** `Skill("systematic-debugging")`（子代理无 Skill() 工具）` 5 步根因分析
 - [ ] 派 `Agent(subagent_type: debugger)` 协助深挖
 - [ ] 根因含证据链:日志/堆栈/最小复现/调用链
 - [ ] 写 findings.md「根因」节

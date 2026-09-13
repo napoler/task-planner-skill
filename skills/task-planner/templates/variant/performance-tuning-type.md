@@ -96,7 +96,7 @@ Phase 1
 ### Phase 5: 复现性归档 + 文档
 - [ ] commit 引用 + benchmark 脚本入库
 - [ ] docs/perf-notes.md 更新(优化了什么 + 为什么)
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
 - **Status:** pending
 - **Executor:** performance-optimizer
 

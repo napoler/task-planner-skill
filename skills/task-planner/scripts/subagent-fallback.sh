@@ -37,7 +37,7 @@ ZCODE_HOME="${ZCODE_HOME:-$HOME/.zcode}"
 CFG_ENABLED=true
 CFG_VARIANT_TYPES="executor,explore,code-assistant,general-purpose"
 CFG_FALLBACK_SLUGS="agnes-2.5-flash"
-CFG_PROBE_TIMEOUT_MS=10000
+CFG_PROBE_TIMEOUT_MS=20000
 
 load_config() {
     # config.json#properties.provider_fallback.* 缺失 → 保持内置默认

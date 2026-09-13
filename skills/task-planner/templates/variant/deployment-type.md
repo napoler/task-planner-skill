@@ -95,7 +95,7 @@ Phase 1
 - [ ] 监控告警阈值检查(错误率/延迟/资源)
 - [ ] CI/CD 流水线更新(GitHub Actions / GitLab CI)
 - [ ] RUNBOOK.md 更新(部署步骤/回滚步骤/常见问题)
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 

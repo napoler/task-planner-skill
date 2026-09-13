@@ -100,10 +100,10 @@ vi /path/to/project/.claude/plan-templates/task_plan.md
 ```bash
 # 项目级放变体文件
 cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md \
-   .claude/plan-templates/task_plan-research.md
+   .claude/plan-templates/task_plan.md
 
 # skill 内 cp 后改名使用
-cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan-research.md \
+cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md \
    plans/{task-id}/task_plan.md
 ```
 

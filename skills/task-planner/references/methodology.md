@@ -1,7 +1,7 @@
 # Methodology 指针文档（v063 新增机制层）
 
 > **定位**：本文档是 task-planner 技能的**新增机制层**（v063），把 9 条可操作方法论落为「规划期可预演、门控点可检查、降质可降级」的显式条款。**不改动 Rule 1-28 任何既有语义**——方法论只补位、不替代；凡本文与 critical-rules.md 冲突，以 critical-rules.md 为准。
-> **指针入口**：SKILL.md:81（Poka-Yoke 前置门）/ SKILL.md:156 后（内容质量门控）/ task_plan.md「📊 FMEA 预演（规划期）」/ templates/variant/writing-type.md Phase 3.5。
+> **指针入口**：SKILL.md:82（Poka-Yoke 前置门）/ SKILL.md:159 后（内容质量门控）/ task_plan.md「📊 FMEA 预演（规划期）」/ templates/variant/writing-type.md Phase 3.5。
 > **开关键**：`config.json#fmea_enforce`（规划期可靠性门控）/ `config.json#content_quality_enforce`（内容质量门控），三态 `enforce|warn|off`，默认 `warn`。
 
 ## 定位声明

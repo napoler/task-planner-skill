@@ -93,7 +93,7 @@ Phase 1
 ### Phase 5: CI 集成
 - [ ] CI 配置更新(`bun test` 加入 CI 流程)
 - [ ] 随机顺序跑(`bun test --random-order`)确认无依赖
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
 - **Status:** pending
 - **Executor:** test-engineer（sonnet-1）
 
