@@ -77,3 +77,4 @@ _无待处理任务_
 
 ## 汇总
 - in_progress: 0 | pending: 0 | complete: 31
+- task-v065-subagent-failure-rescue ✓ (6/6) — 2026-09-13

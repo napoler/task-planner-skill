@@ -1,0 +1,12 @@
+# task-v065 范围外发现（诊断报告 §5，2026-09-13）
+D-1 skill-fix path_existence_validator.ts 校验盲区:scanReferences/scanScripts 只收 SKILL.md content,不遍历 references/*.md(V-17 因此漏报) — 归属 skill-fix 维护轮
+D-2 同工具双根探测命中时输出常量标签 actual_path(".zcode/skills/...")非真实路径,报告易误读 — 归属 skill-fix(输出语义澄清)
+D-3 path_existence_validator.ts 自身硬编码 .zcode 平台串 — 审计方自指缺口,skill-fix 低优先
+D-4 v062 遗留②③(env 层非法值静默降级无诊断/2 条 P3)+v063 遗留②(methodology 出处泛化)仍可见 — 归属后续 skill-fix 轮
+D-5 plans/ 下 30+ 历史计划目录无归档策略(仅 archive* 前缀约定),是 V-7 类"取任意计划"缺陷放大因素 — task-planner 归档策略轮
+D-6 V-11① companion/agents 3 个 .md frontmatter model 硬编码本机 provider UUID(custom:9e221f47-...):结构性占位化会破坏本机运行时,本次不做;建议后续做"安装期注入"机制 — 归属安装器改进轮
+D-7 INDEX.md 缺 v060-v064 五行登记（历史任务交付时未写 INDEX）— 后续簿记轮补
+D-8 check-rescue-chain.sh human 输出走 stdout 而其他门控走 stderr（风格不一致，exit 契约无影响，Code Reviewer Nit）— 后续微调
+D-9 check-complete.sh VC-GATE 段 130 行内联致脚本近 700 行（可维护性观察，Code Reviewer）— 后续拆分轮
+D-10 critical-rules.md 22.3.2 行内追加致单行 ~900 字符 — 后续排版轮
+D-11 shellcheck 未安装未跑（Code Reviewer 备注）— 环境补齐后可跑
