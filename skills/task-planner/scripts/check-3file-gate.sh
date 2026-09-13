@@ -39,7 +39,8 @@ PROGRESS="$PLAN_DIR/progress.md"
 for f in "$PLAN_FILE" "$FINDINGS" "$PROGRESS"; do
     if [ ! -f "$f" ]; then
         echo "[3file-gate] FAIL (Rule 19.2) — missing $f"
-        echo "[3file-gate] Fix: run init-session.sh to initialize the 5 planning files."
+        # [2026-09-13 task-v067] 5→6（init-session 现建 6 文件，含 knowledge-brief.md）
+        echo "[3file-gate] Fix: run init-session.sh to initialize the 6 planning files."
         exit 1
     fi
 done

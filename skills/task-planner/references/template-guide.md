@@ -67,6 +67,11 @@ task-planner 提供 **双层优先级** 的模板机制：
 - **辅助模板**：轻量适配版——findings=对齐记录、progress=使用记录、verification=符合性核验、batch_report=知识依据、cost_log=计费知识依据、notepad-learnings=储备备注、subagent_dispatch=知识上下文包（随 prompt 注入子代理）
 - **契约安全**：该章节属可定制结构区（见 §四）。内容不含 `### Phase N:`、`- **Status:**`、行首 `---`，标题避开 `Batch Report` 字样（防误触 Rule 18.6 正则）；插入位置必须在「⚠️ 执行范围限制」区块**完整结束之后**——该区块被 check-conflicts.sh / check-drift.sh 以状态机方式提取（`/^## ⚠️ 执行范围限制/{f=1;next} /^## /{f=0}`），任何 `##` 级标题插入区块中间都会截断 scope 提取
 
+### 2.5 knowledge-brief.md（第 6 计划文件 — task-v067 新增）
+
+- 定位：五段结构（任务速览/已验证事实/关键文件锚点表/易错点清单/S-unit 材料包索引）；计划期由 plan-writer 产出，执行期各 S-unit 完成后回填 §2/§3
+- 差异：本模板不含 2.4 所述「📚 必要知识储备」章节（头部注释已声明），故 :65 的 grep 锚计数 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 维持 20 不变；由 init-session.sh 建档并计入白名单（模板白名单 5→6，见 template-mapping.md §七）
+
 ---
 
 ## 三、引用方式（推荐）

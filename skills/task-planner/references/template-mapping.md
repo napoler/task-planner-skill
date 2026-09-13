@@ -160,7 +160,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 |---------|---------|
 | `### Phase N: {标题}` | check-complete.sh:14 / sync-todos.sh:54-56 |
 | `- **Status:** complete\|in_progress\|pending` | check-complete.sh:17-19 / sync-todos.sh:63-66 |
-| 5 个文件名白名单 | init-session.sh:62 / check-scope.sh:59 |
+| 6 个文件名白名单（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief） | init-session.sh:122 / check-scope.sh:66（knowledge-brief 为 task-v067 第 6 文件，init-session.sh 建档） |
 | fallback `[complete]` inline | check-complete.sh:23-25 |
 
 **可自由定制区域**：
