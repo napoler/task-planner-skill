@@ -117,7 +117,7 @@ cmd_on() {
     # [2026-09-13 task-v065/T-5 V-14] 与 ledger-append.sh:132 同构 flock:持锁追加,
     # 防与 check-delegation/ledger-append 并发追加交错;无 flock/lockfile 不可写时 fail-open 原语句
     local ledger_file="$plan_dir/ledger-delegation.jsonl"
-    local lock_file="$plan_dir/ledger-delegation.jsonl.lock"
+    local lock_file="$plan_dir/.ledger_lock"
     if command -v flock >/dev/null 2>&1; then
         ( flock -w 5 9 || exit 0
           printf '{"ts":"%s","event":"allow_direct_on","sid":"%s",%s"expires_at":%s,"user_requested":true}\n' \

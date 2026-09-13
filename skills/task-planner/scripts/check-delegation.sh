@@ -196,7 +196,7 @@ check_allow_direct() {
         # 防 check-delegation/allow-direct/ledger-append 三路径并发追加 ledger-delegation.jsonl 交错;
         # PreToolUse 高频路径——flock -w 5 仅竞争时等待,正常立即返回;lockfile 创建失败(无 flock/不可写)走 else fail-open 原语句
         local ledger_file="$plan_dir/$LEDGER_FILE"
-        local lock_file="$plan_dir/${LEDGER_FILE}.lock"
+        local lock_file="$plan_dir/.ledger_lock"
         if command -v flock >/dev/null 2>&1; then
             ( flock -w 5 9 || exit 0
               printf '{"ts":"%s","event":"bypass","sid":"%s","trigger":"%s","remain_sec":%d}\n' \

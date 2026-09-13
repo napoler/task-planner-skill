@@ -74,7 +74,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 ### 方式 A：项目级覆盖（推荐，全项目生效）
 
 ```bash
-# 创建项目级模板目录
+# 创建项目级模板目录（ZCode 用 .zcode/plan-templates/，Claude Code 用 .claude/plan-templates/，以下以 .claude 为例）
 mkdir -p /path/to/project/.claude/plan-templates/
 
 # 复制并修改需要的模板
@@ -82,6 +82,7 @@ cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/te
 
 # 编辑内容，适配本项目的 phase 结构
 vi /path/to/project/.claude/plan-templates/task_plan.md
+# ZCode 平台对应：将上述路径中 .claude/ 替换为 .zcode/
 ```
 
 **优势**：无需修改 skill 文件，所有后续任务自动使用新模板。
@@ -98,7 +99,7 @@ vi /path/to/project/.claude/plan-templates/task_plan.md
 ### 方式 C：场景化变体（深度定制）
 
 ```bash
-# 项目级放变体文件
+# 项目级放变体文件（ZCode 平台目录为 .zcode/plan-templates/，Claude Code 为 .claude/plan-templates/，以下以 .claude 为例）
 cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md \
    .claude/plan-templates/task_plan.md
 

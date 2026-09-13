@@ -71,10 +71,11 @@ t "T01a probe(no-network) health.json 存在" test -f "$FAKE/health.json"
 t "T01b entries=2" bash -c "[ \"\$(jq '.entries | length' '$FAKE/health.json')\" = 2 ]"
 t "T01c 全 skipped" jq -e '[.entries[].status] | all(. == "skipped")' "$FAKE/health.json"
 
-# T02: next 无 health → dispatch_as=null + no_health_file
+# T02: next 无 health → dispatch_as=null + no_health_file(22.3.2 对齐:split_then_takeover_or_askuser)
 out2="$(ZCODE_HOME="$FAKE" bash "$TARGET" next executor provider --out "$FAKE/no-such-health.json")"
 t "T02a dispatch_as=null" bash -c "echo '$out2' | jq -e '.dispatch_as == null' >/dev/null"
 t "T02b 含 no_health_file" bash -c "echo '$out2' | grep -q no_health_file"
+t "T02c escalation=split_then_takeover_or_askuser" bash -c "echo '$out2' | grep -q split_then_takeover_or_askuser"
 
 # T03: 手写健康 health(1 条 ok) → next 返回 executor-fb + custom:pk-agg:agnes-2.5-flash
 cat > "$FAKE/health-ok.json" <<'EOF'

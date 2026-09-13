@@ -261,7 +261,7 @@ cmd_next() {
             local hp="${HEALTH_OUT:-${PLAN_DIR:+$PLAN_DIR/.provider-health.json}}"
             [ -n "$hp" ] || hp="$ZCODE_HOME/agents/.last-probe.json"
             if [ ! -f "$hp" ]; then
-                printf '{"dispatch_as":null,"reason":"no_health_file","hint":"先运行: bash <skill>/scripts/subagent-fallback.sh probe --plan-dir <plan-dir> 再 bind","escalation":"main_takeover_or_askuser"}\n'
+                printf '{"dispatch_as":null,"reason":"no_health_file","escalation":"split_then_takeover_or_askuser","hint":"无健康探测记录 → Rule 22.3 ④ 主进程接管 / ⑤ AskUser（任务>300行/多文件时先回计划层拆细到单文件≤300行再逐片 ④ 接管——22.3.2；也可先 probe 探测后重试 next）"}\n'
                 return 0
             fi
             local best
