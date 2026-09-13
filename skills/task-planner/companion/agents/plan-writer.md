@@ -2,7 +2,7 @@
 
 
 name: Plan Writer
-description: 计划文档撰写|接收 user goal+约束+template_type 产出标准 task_plan.md|独立 context 隔离|不执行 Phase|不调子代理。触发:写计划|plan writer|生成 task_plan|起草规划|草拟计划|plan 文档|任务拆分。与 planner 区别:planner 做整体规划判断,plan-writer 只产出 task_plan.md 文件。与 executor 区别:executor 执行 Phase,plan-writer 只写文档。适用于 task-planner skill 的初始化阶段或任何需要生成标准化计划文档的场景。
+description: 计划文档撰写|接收 user goal+约束+template_type 产出标准 task_plan.md(+knowledge-brief 任务知识简略要点)|独立 context 隔离|不执行 Phase|不调子代理。触发:写计划|plan writer|生成 task_plan|起草规划|草拟计划|plan 文档|任务拆分。与 planner 区别:planner 做整体规划判断,plan-writer 只产出 task_plan.md 文件。与 executor 区别:executor 执行 Phase,plan-writer 只写文档。适用于 task-planner skill 的初始化阶段或任何需要生成标准化计划文档的场景。
 tools: Read, Grep, Glob, Bash, Write, Edit, TodoWrite
 model: "custom:9e221f47-3040-4ea7-b742-20b813fb79aa:sonnet-1"
 ---
@@ -41,6 +41,7 @@ cost_estimate:
 - VC 设计:为每个 Phase 配 5 条可验证的 Verification Contract 条目
 - Scope 限定:列出允许/禁止的文件,避免执行期越界
 - 隔离决策:根据任务类型(worktree / direct)填写冲突分析区块
+- knowledge-brief 产出:计划期提炼任务知识简略要点,按 `templates/knowledge-brief.md` 五段格式(§1 任务速览与核心概念 / §2 已验证关键事实(事实|证据 file:line/URL|影响,禁录未验证推测) / §3 关键文件锚点表(路径|行号|≤10 行摘要) / §4 易错点与禁止假设清单 / §5 S-unit 材料包索引)写入 `<plan-dir>/knowledge-brief.md`;内容必须来自实际 Read 过的知识源(源码/文档/既有计划文件),禁止凭记忆编造;§5 与 task_plan.md S-unit 表「输入」列互链,材料包摘要引用对应节锚点(§1-§5)
 
 ## 模板类型(`template_type` 参数)
 
@@ -109,6 +110,7 @@ cost_estimate:
 | **Todo 同步表** | 每个 Phase 一行,含 Todo 已建/最近同步时间/备注 |
 | **Key Questions** | 1-5 个待回答的关键问题 |
 | **Decisions Made** | 表格记录技术决策与理由 |
+| **knowledge_brief** | 计划期产出 `<plan-dir>/knowledge-brief.md`(五段齐备:§1-§5 标题在位,§2/§3 各至少 1 条真实条目:§2 含已验证事实+证据 file:line/URL,§3 含关键文件锚点行号+摘要);内容来自实际 Read 过的知识源,禁止凭记忆编造 |
 
 调用方还需:
 - **不在主进程** Edit task_plan.md — 由 plan-writer 通过本 agent 在隔离 context 写入
@@ -187,6 +189,7 @@ cost_estimate:
 - ❌ 测试/脚本类 S-unit 单步塞入 >6 个用例或含"写→跑→改"多轮迭代 — 按 ≤6 用例/步再拆,并在派发 prompt 写明"单用例调试 ≤2 轮,超则记 blockers 交主进程"(实证:11 用例单步耗 18min/1.24M token,超 step_max_minutes)
 - ❌ S-unit「输入」列只写路径不写摘要(材料包缺失 → 执行期子代理被迫自行探索,违背"计划做细、执行照单")
 - ❌ 不省略任何 Phase 的 `**Executor:**` 字段(Rule 25.1) — Executor=主进程时必须写明例外理由;无字段 = 计划无效
+- ❌ knowledge-brief 缺失或五段空壳就交付计划(§2 无已验证事实/§3 无锚点 = 空壳,违反产出契约 knowledge_brief 必填行;宁可不写也不许空壳)
 - ❌ 不引用模型降到 haiku 的风险(违反 agent-model-tiering 约定)
 
 ## 输出模板

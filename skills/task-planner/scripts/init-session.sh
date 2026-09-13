@@ -1,5 +1,6 @@
 #!/bin/bash
 # [2026-09-04] 新增 5 文件存在性复核（Rule 19.5 配套），缺失/空文件 exit 1
+# [2026-09-13 task-v067] 第 6 文件 knowledge-brief.md 纳入建立/复核（5 文件→6 文件）
 # Initialize planning files for a new session
 # Usage: ./init-session.sh [project-name]
 #
@@ -87,7 +88,7 @@ fi
 echo ""
 
 # Initialize each template file (only if it doesn't exist)
-for file in findings.md progress.md notepad-learnings.md verification.md; do
+for file in findings.md progress.md notepad-learnings.md verification.md knowledge-brief.md; do
     if [ -f "$file" ]; then
         echo "$file already exists, skipping"
     else
@@ -115,9 +116,10 @@ else
 fi
 
 echo ""
-# [2026-09-04 Rule 19.5 配套] 5 文件存在性复核：缺失或空 → exit 1
+# [2026-09-04 Rule 19.5 配套] 文件存在性复核：缺失或空 → exit 1
+# [2026-09-13 task-v067] 5 文件→6 文件（+knowledge-brief.md）
 missing_files=()
-for f in task_plan.md findings.md progress.md notepad-learnings.md verification.md; do
+for f in task_plan.md findings.md progress.md notepad-learnings.md verification.md knowledge-brief.md; do
     if [ ! -s "$f" ]; then
         missing_files+=("$f")
     fi
@@ -128,7 +130,7 @@ if [ ${#missing_files[@]} -gt 0 ]; then
     done
     exit 1
 fi
-echo "[init] 5/5 planning files verified"
+echo "[init] 6/6 planning files verified"
 # [2026-09-05 task-active-plan] 自动写活跃计划指针(最新创建的计划=默认活跃);
 # 失败仅警告不阻断(指针缺失时 resolve-plan-dir.sh 回退 mtime 最新)
 # 2026-09-10 active-plan-race: 原行为=无条件覆写全局 plans/.active_plan(后写者赢,多并行会话互顶,

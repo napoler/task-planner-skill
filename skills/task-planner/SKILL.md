@@ -313,6 +313,7 @@ Block 1 (选题) complete
 | `examples.md` | 实际示例 |
 | `references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
+| `templates/knowledge-brief.md` | 任务知识简略要点模板（init-session 第 6 文件；五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
 | 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） |
 
@@ -506,5 +507,7 @@ WebSearch "<library> github issues <symptom>"
 - 任务开启期必须先选模板 → 写进 task_plan.md frontmatter 的 `template_type` 字段
 - `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件
 - **禁止**用通用 `task_plan.md` 套用所有任务（常见反模式：VC 字段与任务类型不匹配）
-- **所有模板统一含 `## 📚 必要知识储备` 章节**（任务知识库对齐）：计划创建时填写本任务依赖的规范/官方文档/内部知识库/文献/图书，Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写
+- **所有模板统一含 `## 📚 必要知识储备` 章节**（任务知识库对齐）：计划创建时**采集**本任务依赖的规范/官方文档/内部知识库/文献/图书，Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写
+  - 计划创建时同步**提炼**产物 `knowledge-brief`（任务知识简略要点，五段：速览/已验证事实/文件锚点/易错点/S-unit 材料包索引）：由 `plan-writer` 写入 `<plan-dir>/knowledge-brief.md`（`init-session` 第 6 文件）
+  - 执行期派发材料包引用 brief 节锚点（Rule 21.2/22.4：brief 存在时材料包摘要引用 §1-§5 对应节锚点）；开关键 `config.json#knowledge_brief_enforce`（默认 warn，三档流程层执行无 hook 校验，细则见 templates/knowledge-brief.md 与 companion/agents/plan-writer.md knowledge_brief 契约行）
 - 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `references/template-guide.md` §一）；`plan-writer` agent 接收 `template_type` 参数,自动选模板填充

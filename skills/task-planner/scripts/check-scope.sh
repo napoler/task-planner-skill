@@ -63,7 +63,7 @@ done
 # ─── ③ 特殊豁免：init-session.sh 等计划初始化文件（原豁免表保留）────────────
 _base="$(basename "$abs_path")"
 case "$_base" in
-  task_plan.md|findings.md|progress.md|notepad-learnings.md|verification.md)
+  task_plan.md|findings.md|progress.md|notepad-learnings.md|verification.md|knowledge-brief.md)
     exit 0 ;;
   init-session.sh|init-session.ps1|session-catchup.py|session-catchup.ts)
     exit 0 ;;
