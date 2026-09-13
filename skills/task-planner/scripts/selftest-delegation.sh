@@ -437,6 +437,8 @@ EOF
 printf '%s' "task-t20-no-owner" > "$(dirname "$TMP_T20")/.active_plan"
 rm -f "$TMP_T20/.session-owner"
 cd "$TMP_T20" || exit 99
+# [2026-09-13 task-v068 Fix-D] observe 节流 flag 自洁,防脏环境偶发 FAIL
+rm -f "/tmp/task-planner-observe-anysid.flag"
 out="$(bash "$CHECK" pretool "/tmp/foo.ts" "any-sid" 2>/dev/null)"
 rc=$?
 assert_exit "T20 owner 缺失 exit 0" "0" "$rc"
