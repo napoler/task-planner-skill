@@ -71,10 +71,11 @@ t "T01a probe(no-network) health.json 存在" test -f "$FAKE/health.json"
 t "T01b entries=2" bash -c "[ \"\$(jq '.entries | length' '$FAKE/health.json')\" = 2 ]"
 t "T01c 全 skipped" jq -e '[.entries[].status] | all(. == "skipped")' "$FAKE/health.json"
 
-# T02: next 无 health → dispatch_as=null + no_health_file
+# T02: next 无 health → dispatch_as=null + no_health_file(22.3.2 对齐:split_then_takeover_or_askuser)
 out2="$(ZCODE_HOME="$FAKE" bash "$TARGET" next executor provider --out "$FAKE/no-such-health.json")"
 t "T02a dispatch_as=null" bash -c "echo '$out2' | jq -e '.dispatch_as == null' >/dev/null"
 t "T02b 含 no_health_file" bash -c "echo '$out2' | grep -q no_health_file"
+t "T02c escalation=split_then_takeover_or_askuser" bash -c "echo '$out2' | grep -q split_then_takeover_or_askuser"
 
 # T03: 手写健康 health(1 条 ok) → next 返回 executor-fb + custom:pk-agg:agnes-2.5-flash
 cat > "$FAKE/health-ok.json" <<'EOF'
@@ -113,6 +114,26 @@ t "T07c meta hash 不变" test "$h1" = "$h2"
 
 # T08: config.json provider_fallback 键
 t "T08 config.json provider_fallback.enabled=true" jq -e '.properties.provider_fallback.default.enabled == true' "$CONFIG_JSON"
+
+# T09: [task-v065 F-6] err_kind=timeout → 独立分支 timeout_split_first + 拆细指引（不再并入 provider 通道探测）
+out9="$(ZCODE_HOME="$FAKE" bash "$TARGET" next executor timeout --out "$FAKE/health-ok.json")"
+t "T09a 含 timeout_split_first" bash -c "echo '$out9' | grep -q timeout_split_first"
+t "T09b 拆细指引(对照 21.1b + ② 拆细)" bash -c "echo '$out9' | grep -q '拆细' && echo '$out9' | grep -q '21.1b'"
+
+# T10: [task-v065 F-6] 非 provider 分支 → hint 完整五档 + tier_order 数组 5 项含 split
+out10="$(ZCODE_HOME="$FAKE" bash "$TARGET" next executor logic --out "$FAKE/health-ok.json")"
+t "T10a hint 含五档全序(①改派→②拆细→③降档→④主进程接管→⑤AskUser)" bash -c "echo '$out10' | grep -q '①改派(换类型) → ②拆细 → ③降档 → ④主进程接管 → ⑤AskUser'"
+t "T10b tier_order 数组 5 项" bash -c "echo '$out10' | jq -e '.tier_order | length == 5' >/dev/null"
+t "T10c tier_order 含 split" bash -c "echo '$out10' | jq -e '.tier_order | index(\"split\") != null' >/dev/null"
+
+# T11: [task-v065 F-7] provider 全灭(no_healthy_channel) → escalation=split_then_takeover_or_askuser + hint 含 22.3.2
+cat > "$FAKE/health-all-err.json" <<'EOF'
+{"ts":"2026-09-13T00:00:00Z","entries":[{"provider":"pk-agg","provider_name":"agg-test","model":"agnes-2.5-flash","status":"err","error":"reject: 500"},{"provider":"pk-other","provider_name":"other-test","model":"agnes-2.5-flash","status":"err","error":"curl_rc=7"}]}
+EOF
+out11="$(ZCODE_HOME="$FAKE" bash "$TARGET" next executor provider --out "$FAKE/health-all-err.json")"
+t "T11a escalation=split_then_takeover_or_askuser" bash -c "echo '$out11' | jq -e '.escalation == \"split_then_takeover_or_askuser\"' >/dev/null"
+t "T11b no_healthy_channel 保留" bash -c "echo '$out11' | grep -q no_healthy_channel"
+t "T11c hint 含 22.3.2 拆细再接管" bash -c "echo '$out11' | grep -q '22.3.2' && echo '$out11' | grep -q '④ 主进程接管 / ⑤ AskUser'"
 
 # ── 汇总 ──
 TOTAL=$((PASS + FAIL))

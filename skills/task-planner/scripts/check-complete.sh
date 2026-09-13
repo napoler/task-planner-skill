@@ -98,8 +98,10 @@ check_scope_porcelain "$PLAN_FILE" || {
 
 # [2026-09-04 Rule 19.5/19.6] Pass SKILL_ROOT so python can load templates/findings.md
 # and templates/progress.md for stub detection in 3-File Gate.
-SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLAN_DIR_GUESS="$(cd "$(dirname "$PLAN_FILE")" && pwd)"
+    SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    PLAN_DIR_GUESS="$(cd "$(dirname "$PLAN_FILE")" && pwd)"
+    # [2026-09-13 task-v065 T-3 V-9] VC-GATE 档位解析共用 config 路径
+    CONFIG_JSON="$SKILL_ROOT/config.json"
 
 # [2026-09-07 task-v055 task-v055/Phase 3] 终验委派率接线(Rule 25.4)
 # 行为:全 Phase complete 判定通过前,调 check-delegation.sh stats 输出 JSON。
@@ -444,6 +446,134 @@ if [ "$python_rc" -eq 0 ]; then
     # [2026-09-09 task-v058] 计划期 S-unit 执行体终验门控(Rule 22.6/25.1);check-plan-dispatch.sh 缺失 → fail-open
     cpl="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
     if [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
+
+    # [2026-09-13 task-v065 S-1 F-1] 失败挽救链路终验门控(挽救而非摆烂);缺失 → fail-open
+    # 档位由 check-rescue-chain.sh 自解析(config.json rescue_chain_enforce, 默认 warn):
+    #   enforce 档存在违规 → 该脚本 exit 1 → 本门阻断 complete;warn/off 档恒 exit 0(仅提示)。
+    # exit 2(参数错误)不阻断(避免门控自身配置问题锁死终验)。
+    crc="$SKILL_ROOT/scripts/check-rescue-chain.sh"
+    if [ -f "$crc" ]; then
+        bash "$crc" "$PLAN_DIR_GUESS"
+        crc_rc=$?
+        if [ "$crc_rc" -eq 1 ]; then
+            echo "[plan] RESCUE-CHAIN GATE FAILED (task-v065 F-1: failed/timeout 行缺 rescue 留痕/checkpoint)" >&2
+            exit 1
+        fi
+    fi
+
+    # [2026-09-13 task-v065 T-3 V-9] 终验 VC/V-N 门控（goal-gate.md 规 1/2）:
+    # VC 表 ≥5 条 且 每个 Phase 段 V-N 映射 ≥2 条（映射目标须为已定义 VC 编号）。
+    # 缺映射行即告警（v065 计划自身 8VC/0V-N 即实例——计划可以有 0 条 V-N 也过终验的漏洞）。
+    # 档位: env TASK_PLANNER_VC_GATE_ENFORCE > config.json vc_gate_enforce > fail-open warn
+    # warn=仅 stderr 警告 / enforce=exit 1 阻断 complete / off=跳过；脚本自身异常 → fail-open warn
+    resolve_vc_gate_tier() {
+        local m="${TASK_PLANNER_VC_GATE_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if ! command -v jq >/dev/null 2>&1 || [ ! -f "$CONFIG_JSON" ]; then
+            printf 'warn'
+            return 0
+        fi
+        m="$(jq -r '.properties.vc_gate_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+    }
+
+    VC_GATE_TIER="$(resolve_vc_gate_tier)"
+    if [ "$VC_GATE_TIER" != "off" ]; then
+        vc_gate_section="$(mktemp)" || vc_gate_section="$(pwd)/.vc-gate-section.$$"
+        # Phase 段 = `### Phase` 标题到下一 Phase/二级标题/--- 段边界（与 python 段切同口径）
+        awk '/^###[[:space:]]+Phase[[:space:]]/{f=1;next}
+             /^###|^##[[:space:]]|^---[[:space:]]*$/{f=0} f' "$PLAN_FILE" > "$vc_gate_section" 2>/dev/null
+
+        # V-N 条目行 = verification 风格 `- [ ] V-P.N:`（占位/勾选/已完成均计；段边界外映射不计）
+        vcgate_grep_map() {
+            grep -cE '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+\s*[:：]' "$1" 2>/dev/null || true
+        }
+        # 模板占位识别（对齐 3-File Gate stub 判定口径）：V-N 行 strip 后 ∈ 模板行集合 → 非实质
+        VN_TPL_LINES="$(sed 's/[[:space:]]*$//' "$SKILL_ROOT/templates/verification.md" 2>/dev/null | grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+|^$' | sed 's/^[[:space:]]*//' | sort -u)"
+
+        vcgate_count_substantive() {   # <段文件> <P号> — 该 Phase 实质 V-N 映射数（剔除模板占位残留）
+            local pf="$1" p="$2" n=0
+            while IFS= read -r ln; do
+                [ -n "$ln" ] || continue
+                if [ "$VN_TPL_LINES" != "" ] && printf '%s\n' "$VN_TPL_LINES" | grep -qxF -- "$ln"; then
+                    continue
+                fi
+                n=$((n + 1))
+            done < <(grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p"'\.[0-9]+\s*[:：]' "$pf" 2>/dev/null | sed 's/^[[:space:]]*//')
+            printf '%s' "$n"
+        }
+
+        vc_gate_fail=0
+        # 1) VC 总数（v065 计划实测格式: `| VC-1 |...` 数据行；锚定首列为 VC-N，避免误匹配其他表格行）
+        vc_count="$(grep -cE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null || true)"
+        vc_count="${vc_count:-0}"
+        # 2) 已定义 VC 编号集合（映射目标校验用）
+        vc_defs="$(grep -oE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null | grep -oE 'VC-[0-9]+' | sort -u || true)"
+        # 3) 逐 Phase 段查 V-N 映射（按段内 ### Phase 标题序编号 P1..Pn；
+        #    segf = 「第 P 个 Phase 标题」到「第 P+1 个 Phase 标题」之间，段尾由 grep -m 行差截取）
+        p_no=0
+        vc_bad_phases=""
+        phase_titles="$(grep -nE '^###[[:space:]]+Phase' "$PLAN_FILE" 2>/dev/null | cut -d: -f1 || true)"
+        if [ -n "$phase_titles" ]; then
+            mapfile -t phase_lines_arr <<< "$phase_titles"
+            while IFS= read -r start_ln; do
+                p_no=$((p_no + 1))
+                if [ "$p_no" -lt "${#phase_lines_arr[@]}" ]; then end_ln="${phase_lines_arr[$p_no]}"; else end_ln=""; fi
+                segf="$(mktemp)" || continue
+                if [ -n "$end_ln" ]; then
+                    sed -n "${start_ln},$((end_ln - 1))p" "$PLAN_FILE" > "$segf" 2>/dev/null
+                else
+                    sed -n "${start_ln},\$p" "$PLAN_FILE" > "$segf" 2>/dev/null
+                fi
+                vn_total="$(vcgate_grep_map "$segf")"
+                vn_sub="$(vcgate_count_substantive "$segf" "$p_no")"
+                rm -f "$segf"
+                if [ "$vn_sub" -ge 2 ]; then
+                    # 实质映射 ≥2 → 映射目标须全部 ∈ 已定义 VC（goal-gate「映射到 VC 编号」）
+                    target_bad=0
+                    if [ "$vn_total" -gt "$vn_sub" ]; then target_bad=1; fi
+                    if [ -n "$vc_defs" ]; then
+                        if grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p_no"'\.[0-9]+\s*[:：]' "$vc_gate_section" 2>/dev/null \
+                            | sed -E 's/^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+\s*[:：][[:space:]]*//' \
+                            | grep -oE 'VC-[0-9]+' | sort -u | grep -vxF -f <(printf '%s\n' "$vc_defs") | grep -q .; then
+                            target_bad=1
+                        fi
+                    fi
+                    if [ "$target_bad" -eq 1 ]; then
+                        vc_bad_phases="${vc_bad_phases} Phase${p_no}(V-N 映射目标缺失/未定义 VC 或模板占位残留); "
+                    fi
+                    continue
+                fi
+                vc_bad_phases="${vc_bad_phases} Phase${p_no}(V-N 映射 ${vn_sub:-0} < 2); "
+            done <<< "$phase_titles"
+        fi
+        rm -f "$vc_gate_section"
+
+        # 判定: VC ≥5 且 所有 Phase 映射合规
+        if [ "$vc_count" -lt 5 ] || [ -n "$vc_bad_phases" ]; then
+            vc_gate_fail=1
+        fi
+
+        if [ "$vc_gate_fail" -eq 1 ]; then
+            vc_count_part="VC 表=${vc_count}"
+            [ "$vc_count" -lt 5 ] && vc_count_part="${vc_count_part} (需≥5)"
+            phase_part=""
+            [ -n "$vc_bad_phases" ] && phase_part="; Phase V-N 映射缺口: ${vc_bad_phases%; }"
+            case "$VC_GATE_TIER" in
+                enforce)
+                    printf '[plan] VC-GATE FAILED (task-v065 V-9: %s%s) — 补 VC 条目 / 每个 Phase ≥2 条 V-N 映射(映射到已定义 VC 编号)后重跑\n' \
+                        "$vc_count_part" "$phase_part" >&2
+                    exit 1
+                    ;;
+                *)
+                    printf '[plan] VC-GATE WARNING (task-v065 V-9, warn 档不阻断: TASK_PLANNER_VC_GATE_ENFORCE=enforce 或 config.json vc_gate_enforce=enforce 可升级阻断) — %s%s\n' \
+                        "$vc_count_part" "$phase_part" >&2
+                    ;;
+            esac
+        else
+            printf '[plan] VC-GATE PASSED (VC 表=%s, %s 个 Phase 各 ≥2 条 V-N 映射)\n' "$vc_count" "$p_no" >&2
+        fi
+    fi
 
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"

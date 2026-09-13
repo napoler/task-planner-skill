@@ -5,7 +5,11 @@
 #   - 派发型 = Phase 首个 **Executor:** 行不含「主进程」（无 Executor 行按派发型从严）
 #   - 派发型 Phase 缺 S-unit 表 / 表无执行体列 / 数据行 0 / 某 S 行执行体列空 → 违规
 #   - 主进程 Phase 不要求表
-#   - legacy 兼容：全文无「执行体」字样 = 旧模板计划 → 跳过门控 exit 0
+#   - legacy 兼容：全文无 `- **Executor:**` 行 = 旧模板计划 → 跳过门控 exit 0
+#     [2026-09-13 task-v065 S-1 F-2] 判定键由字面量「执行体」修正为 `^- \*\*Executor:\*\*`：
+#     旧键只出现在 S-unit 表头 → 现代计划（有 `- **Executor:**` 行、无 S-unit 表）被判 legacy
+#     放行，恰好漏掉本门控唯一该拦的违规形态（已实测 rc=0）。canonical 计划格式见
+#     templates/task_plan.md:144 与仓内全部 30 个真实计划（0 个裸 `**Executor:**` 行）。
 #   - 供 attest-plan.sh（锁定）与 check-complete.sh（终验）调用
 #
 # Usage: bash check-plan-dispatch.sh <task_plan.md>
@@ -27,8 +31,11 @@ if [ -z "$PLAN_FILE" ] || [ ! -f "$PLAN_FILE" ] || [ ! -r "$PLAN_FILE" ]; then
 fi
 
 # ── legacy 判定（全文级）────────────────────────────────────────────────────
-if ! grep -q "执行体" "$PLAN_FILE" 2>/dev/null; then
-    echo "[plan-dispatch] legacy plan(无执行体列),跳过门控"
+# [2026-09-13 task-v065 S-1 F-2] 判定键修正(原为字面量「执行体」，见文件头注释)：
+#   有 `- **Executor:**` 行 = 现代计划 → 继续机械门控(缺 S-unit 表即违规)；
+#   无该行 = 旧模板计划 → legacy 放行。
+if ! grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
+    echo "[plan-dispatch] legacy plan(无 \`- **Executor:**\` 行),跳过门控"
     exit 0
 fi
 

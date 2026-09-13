@@ -2,11 +2,11 @@
 name: task-planner
 agent: executor
 description: Use when planning, decomposing, or organizing multi-step projects or research tasks expected to require more than 5 tool calls. Also use when resuming work after /clear.
-allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet"
+allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion, WebSearch, WebFetch"
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-27（1-12 核心执行约束 + 13-27 高级门控，含 Rule 27 git 提交强制）
+- references/critical-rules.md: Critical Rules 全集 1-28（1-12 核心执行约束 + 13-28 高级门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -17,8 +17,6 @@ references:
 - references/billing.md: 计费模式（单次触发）
 - references/template-guide.md: 模板定制指南（模板优先级/项目级 .claude/plan-templates 覆盖/路径规范）
 - references/template-mapping.md: 模板分流单一权威源（Rule 16 配套：决策树/模板清单/互斥关系）
-- task-drift-guard: 周期性漂移检测（Phase 完成后/连续3次工具调用后/切模块前调用）
-- plan-resume: 被动扫描与自主续推（执行中扫描只报告；恢复触发点自主选 1 个中断任务续推，config `autonomous_resume` 控制。详见 Rule 24）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
 # See: ~/.claude/skills/task-planner/SKILL.md (Claude Code) / ~/.zcode/skills/task-planner/SKILL.md (ZCode)
 model: opus
@@ -65,8 +63,8 @@ model: opus
   - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 legacy `plans/.active_plan`（兜底），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
   - **模板优先级**（由 init-session.sh 自动处理，无需手动干预）：
     - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
-    - 兜底：`~/.zcode/skills/task-planner/templates/{filename}`（内置 5 模板）
-    - 定制入口：在项目中创建 `.claude/plan-templates/` 目录，替换任意子文件即可覆盖内置模板
+    - 兜底：`{platform-home}/skills/task-planner/templates/{filename}`（`~/.zcode` 或 `~/.claude`，内置 5 模板）
+    - 定制入口：在项目中创建 `.claude/plan-templates/`（Claude Code）或 `.zcode/plan-templates/`（ZCode）目录，替换任意子文件即可覆盖内置模板
   - **验证**：确认创建了 5 个文件（task_plan.md / findings.md / progress.md / notepad-learnings.md / verification.md）
   - **冲突分析（隔离决策）**：运行 `bash scripts/check-conflicts.sh` → 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块（实现类任务默认首选 worktree，用户可否决）
   - **S1 同步（原生 Todo 建立映射）**：运行 `bash scripts/sync-todos.sh --json` → 用 `TodoWrite`（跨会话/多任务用 `TaskCreate`）为每个 Phase 建一条 todo（subject=`{task-id}/Phase N: title`，当前 Phase=in_progress，其余 pending）；**禁止只建计划不建 Todo**
@@ -263,7 +261,7 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-27）：
+详见 `references/critical-rules.md`（Rules 1-28）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -305,7 +303,7 @@ Block 1 (选题) complete
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-27（含 Rule 13-18/21-23/25-27 关键条款） |
+| `references/critical-rules.md` | Critical Rules 1-28（含 Rule 13-18/21-23/25-28 关键条款） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -314,6 +312,7 @@ Block 1 (选题) complete
 | `examples.md` | 实际示例 |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
+| 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） |
 
 ---
 
@@ -385,13 +384,13 @@ Block 1 (选题) complete
 | 2 | **拆细** | 子任务触及 21.1b 步级上限(>2 文件/>100 行/预估 >15min)或超时——第一假设是任务太大而非模型弱;回计划层拆成更小 S-unit 重派,不改模型档位;每子任务限 1 次 | 主进程 |
 | 3 | **降档** | 类型对、已拆细仍失败(能力不足)→ 升一档 model(haiku→sonnet→opus) | 主进程 |
 | 4 | **主进程接管** | 单文件 ≤300 行、目标明确、可独立验收；接管后须按 Rule 25.3 登记例外理由（白名单⑤） | 主进程 Edit/Read |
-| 5 | **AskUserQuestion** | 改派/拆细/降档/接管都失败,或问题需用户决策；交互模式见 Rule 28（ask=选项化询问并回填 Decisions；silent=按推荐项自主处置并登记 silent 决策行，D6 硬停点除外） | AskUserQuestion 工具 |
+| 5 | **AskUserQuestion** | 改派/拆细/降档/接管都失败,或问题需用户决策；交互模式见 Rule 28（ask=选项化询问并回填 Decisions；silent=按推荐项自主处置并登记 silent 决策行；D6 触发时按 28.4.1 降级交付(推荐项=拆细后主进程接管 ≤300 行子集,剩余登记未完成清单)，禁静默空等） | AskUserQuestion 工具 |
 
 **触发条件**(任一):
 - 子代理返回 `status: failed` 或 `partial` 但关键产出缺失
 - 派发超 `config.json#subagent.timeout_by_type[type]`(explore 30min / editor 60min / debugger 60min / executor 120min)
 - 子代理返回 `permission_denied` / `context_exceeded` 等不可重试错误
-- 同一子任务**连续失败 ≥2 次**(Rule 22.7)→ **强制 STOP** 报告用户,不进入 Chain block 交接
+- 同一子任务**连续失败 ≥2 次**(Rule 22.7)→ **强制换档**重试(穷尽 ①-④ 前禁止 STOP);穷尽后仍失败 → **强制 STOP** 报告用户,不进入 Chain block 交接
 
 **登记**(Rule 22.5):
 派发前在 task_plan.md `## 🔗 Subagent Handoff 登记表` 填一行(时间/subagent_type/目标/状态);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 `Edit findings.md` 回填结论**（「findings 落点」列记段落锚点），两动作完成才勾 `verify_done`;未 Read → findings.md 记"未验证"。Handoff 登记表含 checkpoint 路径列,failed/timeout 行必填。
@@ -402,7 +401,7 @@ Block 1 (选题) complete
 - ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
 - ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)
 
-**Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。
+**Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。provider 全灭且任务超 ④ 接管上限(单文件 ≤300 行)时禁直接 STOP:先回计划层拆细到每片 ≤300 行单文件再逐片 ④ 接管(22.3.2)。
 
 ## 💻 代码编辑强制隔离
 

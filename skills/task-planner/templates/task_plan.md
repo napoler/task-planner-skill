@@ -30,9 +30,14 @@
 ## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
 
 <!--
-WHY: 任务执行完毕 ≠ 目标完成。此表确保每一步有可验证证据。
-RULE: 每个 phase 完成后对照 VC 编号复验；phase 全部 complete ≠ 通过终验。
-FORMAT: VC-N 是客观判定标准（可测试/可追溯/不依赖主观判断）。
+  WHAT: 任务执行完毕 ≠ 目标完成。此表确保每一步有可验证证据。
+  RULE: 每个 phase 完成后对照 VC 编号复验；phase 全部 complete ≠ 通过终验。
+  FORMAT: VC-N 是客观判定标准（可测试/可追溯/不依赖主观判断）。
+  V-N: goal-gate.md 规定「≥5 条 VC + 每 phase ≥2 条 V-N（映射到 VC 编号）」；
+       在每个 Phase 段（`### Phase N` 的 - **Status:** 行前）补 `- **V-N:**` 占位行，
+       填写本 Phase 验收映射的 VC 编号（≥2 条，如 `VC-1, VC-2`；对应逐条验收记录在
+       templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。
+       check-complete.sh 终验 VC-GATE 段机械校验（config.json vc_gate_enforce，默认 warn）。
 -->
 
 | # | 判定标准 | 验证方式 | 证据路径/命令 |
@@ -140,6 +145,7 @@ Phase 1
 - [ ] Identify constraints and requirements
 - [ ] Document findings in findings.md
 - [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** in_progress
 - **Executor:** explore（mini）
 <!-- 
@@ -157,6 +163,7 @@ Phase 1
 - [ ] Define technical approach
 - [ ] Create project structure if needed
 - [ ] Document decisions with rationale
+- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
@@ -168,6 +175,7 @@ Phase 1
 - [ ] Execute the plan step by step
 - [ ] Write code to files before executing
 - [ ] Test incrementally
+- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
 
@@ -185,6 +193,7 @@ Phase 1
 - [ ] Verify all requirements met
 - [ ] Document test results in progress.md
 - [ ] Fix any issues found
+- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-runner-agent（mini）
 
@@ -196,6 +205,7 @@ Phase 1
 - [ ] Review all output files
 - [ ] Ensure deliverables are complete
 - [ ] Deliver to user
+- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
@@ -338,15 +348,16 @@ Phase 1
 <!--
   WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才勾 verify_done;failed/timeout 行必须回填 checkpoint 路径列(Rule 22.8.4)
   WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
-  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked
+  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
+  列说明: rescue 列 = 换档挽救记录(档位/结果/时间,failed|timeout 行必填,Rule 22.7);retry_count = 22.3 retry_limit 计数(初值 0,每次重试 +1)
   派发 prompt 八字段模板: templates/subagent_dispatch.md
 -->
 
-| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | verify_done |
-|---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|-------------|
-| 1 | | | | queued | | | | | ☐ |
-| 2 | | | | | | | | | ☐ |
-| 3 | | | | | | | | | ☐ |
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | rescue(档位/结果/时间) | retry_count | verify_done |
+|---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|-------------|-------------|
+| 1 | | | | queued | | | | | | 0 | ☐ |
+| 2 | | | | | | | | | | 0 | ☐ |
+| 3 | | | | | | | | | | 0 | ☐ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

@@ -10,6 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RES="$SCRIPT_DIR/resolve-plan-dir.sh"
 SET="$SCRIPT_DIR/set-active-plan.sh"
 INIT="$SCRIPT_DIR/init-session.sh"
+SYNC="$SCRIPT_DIR/sync-todos.sh"
+ATTEST="$SCRIPT_DIR/attest-plan.sh"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -111,6 +113,37 @@ RC=$?
 # T09 (加分) fail-open: 不存在的 root 恒 exit 0 空输出
 call bash "$RES" "$TMP/no-such-root-$$" ""
 [ "$RC" = 0 ] && [ -z "$COUT" ] && pass 09 || fail 09 "rc=$RC out=$COUT"
+
+# T10 [task-v065/V-5] 从 plan 子目录执行 sync-todos.sh --json 经向上解析收录自身
+# (SKILL.md 标准流程 cd 进 plan 目录执行, 修复前报 no_plans_dir; 夹具 aa/bb 均含 Phase 块)
+# 注意: ① 夹具 aa/bb 计划以 >> 追加 Goal + Phase 块(mk_root 生成的裸 '# plan aa' 无 Phase, 需补全)
+#       ② 仅断言「向上解析命中 plans/ 且收录执行目录所属计划 aa」——bb 是 fixture 邻居,
+#          sync-todos find 递归收录全 plans/ 为既有设计行为, 非 V-5 修复目标
+R10="$(mk_root t10)"
+printf '## Goal\nfixture\n\n### Phase 1: 诊断前置\n- [x] step\n- **Status:** complete（2026-09-13）\n' >> "$R10/plans/aa/task_plan.md"
+printf '## Goal\nfixture\n\n### Phase 2: 实施\n- [ ] step\n- **Status:** pending\n' >> "$R10/plans/bb/task_plan.md"
+RC=0; COUT="$( cd "$R10/plans/aa" && bash "$SYNC" --json 2>/dev/null )"; RC=$?
+[ "$RC" = 0 ] && printf '%s' "$COUT" | grep -q '"task_id":"aa"' && \
+  printf '%s' "$COUT" | grep -q 'aa/Phase 1: 诊断前置' && \
+  printf '%s' "$COUT" | grep -q '"status":"complete"' && \
+  ! printf '%s' "$COUT" | grep -q 'no_plans_dir' && pass 10 || fail 10 "rc=$RC out=$COUT"
+
+# T11 [task-v065/V-8] attest-plan.sh 在 side 指针存在时锁定指针计划
+# (side 指向 bb、legacy 指向 aa、且 touch aa 使 mtime 最新——attest 未接 resolver 前会锁错为 aa)
+# 注意: ① 先建 aa/bb 计划文件再写指针(set-active-plan 的 require_plan 门控)
+#       ② 显式注入 CLAUDE_CODE_SESSION_ID=s11(= side 文件名,与 T05b 口径一致)——
+#          sid 缺失时 resolver 走 default side/legacy/mtime 链, T02 场景合法回落 legacy;
+#          本用例断言的是「带会话 sid 时 side 指针锁死目标, 不被 mtime 最新计划顶掉」
+R11="$(mk_root t11)"
+bash "$SET" aa "$R11" > /dev/null 2>&1
+bash "$SET" set bb --sid s11 "$R11" > /dev/null 2>&1
+touch "$R11/plans/aa/task_plan.md"
+( cd "$R11" && env CLAUDE_CODE_SESSION_ID=s11 bash "$ATTEST" --skip-dispatch-check > /dev/null 2>&1 )
+RC=$?
+[ "$RC" = 0 ] && [ -f "$R11/plans/bb/.plan-attestation" ] && \
+  grep -q '^plan_file=.*bb/task_plan.md$' "$R11/plans/bb/.plan-attestation" && \
+  [ ! -f "$R11/plans/aa/.plan-attestation" ] && pass 11 || \
+  fail 11 "rc=$RC att_bb=$([ -f "$R11/plans/bb/.plan-attestation" ] && echo yes || echo no) att_aa=$([ -f "$R11/plans/aa/.plan-attestation" ] && echo yes || echo no)"
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

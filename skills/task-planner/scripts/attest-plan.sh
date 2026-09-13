@@ -26,11 +26,26 @@ for arg in "$@"; do
 done
 
 # ─── 探测活跃计划(未显式给路径时)────────────────────────────────────────
+# task-v065/V-8 [2026-09-13] 优先走会话隔离解析链 resolve-plan-dir.sh [root] [sid]
+# (Rule 22.9: side 会话指针 → legacy 全局指针 → mtime → legacy 根单文件, 口径与
+#  zcode-userpromptsubmit hook 一致); resolver 缺失/无输出时回落原 ls -t 并 stderr 说明
 if [ -z "$plan_file" ]; then
-  if [ -d "plans" ]; then
-    plan_file="$(ls -t plans/*/task_plan.md 2>/dev/null | head -1)"
+  resolver="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
+  up_sid="${ZCODE_SESSION_ID:-${CLAUDE_SESSION_ID:-}}"
+  if [ -f "$resolver" ]; then
+    plan_file="$(bash "$resolver" "$(pwd)" "${up_sid}" 2>/dev/null | head -n 1)"
+    if [ -z "$plan_file" ]; then
+      echo "[attest] WARN: resolve-plan-dir.sh 无解析结果, 回落 ls -t mtime 探测" >&2
+    fi
+  else
+    echo "[attest] WARN: resolve-plan-dir.sh 缺失, 回落 ls -t mtime 探测" >&2
   fi
-  [ -z "$plan_file" ] && [ -f "task_plan.md" ] && plan_file="task_plan.md"
+  if [ -z "$plan_file" ]; then
+    if [ -d "plans" ]; then
+      plan_file="$(ls -t plans/*/task_plan.md 2>/dev/null | head -1)"
+    fi
+    [ -z "$plan_file" ] && [ -f "task_plan.md" ] && plan_file="task_plan.md"
+  fi
 fi
 if [ -z "$plan_file" ] || [ ! -f "$plan_file" ]; then
   echo "[attest] ERROR: no task_plan.md found (pass path or run from project root)" >&2

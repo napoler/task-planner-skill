@@ -90,7 +90,7 @@ Phase 1
 ### Phase 5: 提交 + 收尾
 - [ ] `git add` + `git commit` 修改文件(commit message 含 plan 引用)
 - [ ] 更新 task_plan.md 全部 Phase → complete
-- [ ] 运行 `Skill("task-drift-guard")` 终验
+- [ ] 运行 `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
 

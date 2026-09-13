@@ -1,5 +1,13 @@
 #!/usr/bin/env bun
 /**
+ * @configurable
+ * CONFIG 区（可变参数与默认值，迁移时只改此处或对应 env）:
+ * - 会话扫描根: ~/.claude/projects/<project-path 斜杠→连字符>（homedir 拼接）— Claude Code 会话目录（env: 无；flag: [project-path]，缺省 process.cwd()）
+ * - OPENCODE_DATA_DIR: 无默认 — 存在即探测为 opencode IDE（当前分支仅提示不支持，不扫描）（env: OPENCODE_DATA_DIR）
+ * - PLANNING_FILES / SKIP_PREFIXES: 静态常量（task_plan.md/progress.md/findings.md 等）— 无可变默认，迁移时需改此常量（env: 无）
+ * 并行安全: 纯只读扫描（readdir/readFile），无写路径
+ */
+/**
  * session-catchup.ts — 跨会话规划文件更新检测
  *
  * 用法: bun session-catchup.ts [project-path]

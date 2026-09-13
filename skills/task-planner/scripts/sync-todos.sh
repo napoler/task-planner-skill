@@ -35,7 +35,24 @@ while [[ $# -gt 0 ]]; do
     esac
     shift
 done
-PLANS_DIR="${PLANS_DIR:-$(pwd)/plans}"
+# task-v065/V-5 [2026-09-13] 未显式指定时, 从 CWD 向上逐级查找名为 plans 的祖先目录
+# (最多 6 级); 找不到回落 $(pwd)/plans 并 stderr 提示(口径参考 resolve-plan-dir.sh / plan-created.cjs)
+resolve_plans_dir() {
+    local d="$(pwd)"
+    local i
+    for i in 0 1 2 3 4 5; do
+        if [[ -d "$d/plans" ]]; then
+            printf '%s' "$d/plans"
+            return 0
+        fi
+        [[ "$i" -eq 5 ]] && break
+        [[ -L "$d" ]] && break
+        d="$(dirname "$d")"
+    done
+    echo "[sync-todos] WARN: 未找到 plans 祖先目录,请显式传 PLANS_DIR 或在项目根执行" >&2
+    printf '%s' "$(pwd)/plans"
+}
+PLANS_DIR="${PLANS_DIR:-$(resolve_plans_dir)}"
 
 # ─── Phase parser ───────────────────────────────────────────────────────────
 # Parses task_plan.md for Phase blocks.
@@ -67,6 +84,14 @@ parse_task_plan() {
         gsub(/^\*\*|\*\*$/, "", status)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", status)
 
+        # task-v065/V-4 [2026-09-13] 归一化: 去括号注释(如 in_progress(2026-09-13, ...)),
+        # 前缀匹配 pending|in_progress|complete, 均不命中 → pending
+        sub(/[（(].*$/, "", status)
+        gsub(/[[:space:]]+$/, "", status)
+        if (status ~ /^in_progress/) status = "in_progress"
+        else if (status ~ /^complete/) status = "complete"
+        else if (status !~ /^pending/) status = "pending"
+
         # Skip pending (no Todo needed for phases not started)
         if (status == "pending") {
             phase_num = 0
@@ -74,7 +99,11 @@ parse_task_plan() {
         }
 
         # Build subject (max 60 chars for Claude Code limit)
-        subject = tid "/Phase " phase_num
+        # task-v065/V-4 [2026-09-13] subject 补 phase title(原为死变量): 截断 40 字符加 …
+        # (与 todo-sync.md 契约 subject 格式 "{task-id}/Phase N: title" 一致)
+        t = phase_title
+        if (length(t) > 40) t = substr(t, 1, 39) "…"
+        subject = tid "/Phase " phase_num ": " t
         if (length(subject) > 60) {
             subject = substr(subject, 1, 57) "..."
         }
@@ -86,19 +115,7 @@ parse_task_plan() {
     ' "$task_plan"
 }
 
-# ─── Extract frontmatter metadata ──────────────────────────────────────────
-# Returns: session_id|worktree_path|scope_files_path
-extract_plan_meta() {
-    local plan="$1"
-    local sid wt scopes=""
-    sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
-    wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
-    # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
-    scopes="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
-    echo "${sid:-none}|${wt}|${scopes}"
-}
-
-# ─── Forward sync report ───────────────────────────────────────────────────
+# task-v065/V-6 [2026-09-13] 删除此处与下方 extract_plan_meta 的字节级重复定义(diff 逐字相同), 仅保留下方一份
 forward_sync() {
     local plans_dir="$1"
 

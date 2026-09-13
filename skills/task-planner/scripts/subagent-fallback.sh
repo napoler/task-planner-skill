@@ -37,7 +37,7 @@ ZCODE_HOME="${ZCODE_HOME:-$HOME/.zcode}"
 CFG_ENABLED=true
 CFG_VARIANT_TYPES="executor,explore,code-assistant,general-purpose"
 CFG_FALLBACK_SLUGS="agnes-2.5-flash"
-CFG_PROBE_TIMEOUT_MS=10000
+CFG_PROBE_TIMEOUT_MS=20000
 
 load_config() {
     # config.json#properties.provider_fallback.* 缺失 → 保持内置默认
@@ -257,17 +257,18 @@ cmd_next() {
         return 0
     fi
     case "$err_kind" in
-        provider|network|timeout|400|unknown|"")
+        provider|network|400|unknown|"")
             local hp="${HEALTH_OUT:-${PLAN_DIR:+$PLAN_DIR/.provider-health.json}}"
             [ -n "$hp" ] || hp="$ZCODE_HOME/agents/.last-probe.json"
             if [ ! -f "$hp" ]; then
-                printf '{"dispatch_as":null,"reason":"no_health_file","hint":"先运行: bash <skill>/scripts/subagent-fallback.sh probe --plan-dir <plan-dir> 再 bind","escalation":"main_takeover_or_askuser"}\n'
+                printf '{"dispatch_as":null,"reason":"no_health_file","escalation":"split_then_takeover_or_askuser","hint":"无健康探测记录 → Rule 22.3 ④ 主进程接管 / ⑤ AskUser（任务>300行/多文件时先回计划层拆细到单文件≤300行再逐片 ④ 接管——22.3.2；也可先 probe 探测后重试 next）"}\n'
                 return 0
             fi
             local best
             best="$(jq -c '[.entries[] | select(.status=="ok")] | .[0] // empty' "$hp" 2>/dev/null)"
             if [ -z "$best" ]; then
-                printf '{"dispatch_as":null,"reason":"no_healthy_channel","escalation":"main_takeover_or_askuser","hint":"主通道与 fallback 通道均不可用 → Rule 22.3 ③ 主进程接管 / ④ AskUser"}\n'
+                # [task-v065 F-7] provider 全灭:任务可能超 ④ 接管上限(单文件 ≤300 行)→ 先拆细再接管
+                printf '{"dispatch_as":null,"reason":"no_healthy_channel","escalation":"split_then_takeover_or_askuser","hint":"主通道与 fallback 通道均不可用 → Rule 22.3 ④ 主进程接管 / ⑤ AskUser（任务>300行/多文件时先回计划层拆细到单文件≤300行再逐片 ④ 接管——22.3.2）"}\n'
                 return 0
             fi
             jq -n \
@@ -276,8 +277,13 @@ cmd_next() {
                 '{dispatch_as:$t, model:$m, reason:"provider_failure_scaling", zero_cost:true,
                   note:"零消耗改派,不计 subagent.retry_limit;变体新会话可见;Handoff 状态列记 failed→scaling-redispatch"}'
             ;;
+        timeout)
+            # [task-v065 F-6] 首败超时第一假设是任务过大:先评估 ② 拆细重派,判定非任务过大才转 provider 通道改派
+            printf '{"dispatch_as":null,"reason":"timeout_split_first","decision":"timeout_split_first","hint":"首败超时第一假设是任务过大:先按 Rule 21.4 对照 21.1b 评估 ② 拆细重派(不改模型档位);判定非任务过大才转 provider 通道改派(bash <skill>/scripts/subagent-fallback.sh next <type> provider)","tier_order":["dispatch_swap","split","model_downgrade","main_takeover","ask_user"]}\n'
+            return 0
+            ;;
         *)
-            printf '{"dispatch_as":null,"reason":"non_provider_error","hint":"非 provider 类失败按 Rule 22.3 原顺序: ①换类型 → ②降档 → ③主进程接管 → ④AskUser（消耗 retry_limit）"}\n'
+            printf '{"dispatch_as":null,"reason":"non_provider_error","hint":"非 provider 类失败按 Rule 22.3 原顺序: ①改派(换类型) → ②拆细 → ③降档 → ④主进程接管 → ⑤AskUser（消耗 retry_limit）","tier_order":["dispatch_swap","split","model_downgrade","main_takeover","ask_user"]}\n'
             return 0
             ;;
     esac

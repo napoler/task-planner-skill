@@ -192,8 +192,20 @@ check_allow_direct() {
         local ts; ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo 1970-01-01T00:00:00Z)"
         local sid_esc; sid_esc="$(printf '%s' "$sid" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\001-\037' ' ')"
         local file_esc; file_esc="$(printf '%s' "${3:-pretool}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\001-\037' ' ')"
-        printf '{"ts":"%s","event":"bypass","sid":"%s","trigger":"%s","remain_sec":%d}\n' \
-            "$ts" "$sid_esc" "$file_esc" "$remain" >> "$plan_dir/$LEDGER_FILE"
+        # [2026-09-13 task-v065/T-5 V-14] 与 ledger-append.sh:132 同构 flock:持锁期间计算+追加,
+        # 防 check-delegation/allow-direct/ledger-append 三路径并发追加 ledger-delegation.jsonl 交错;
+        # PreToolUse 高频路径——flock -w 5 仅竞争时等待,正常立即返回;lockfile 创建失败(无 flock/不可写)走 else fail-open 原语句
+        local ledger_file="$plan_dir/$LEDGER_FILE"
+        local lock_file="$plan_dir/.ledger_lock"
+        if command -v flock >/dev/null 2>&1; then
+            ( flock -w 5 9 || exit 0
+              printf '{"ts":"%s","event":"bypass","sid":"%s","trigger":"%s","remain_sec":%d}\n' \
+                  "$ts" "$sid_esc" "$file_esc" "$remain" >> "$ledger_file"
+            ) 9>"$lock_file" 2>/dev/null || true
+        else
+            printf '{"ts":"%s","event":"bypass","sid":"%s","trigger":"%s","remain_sec":%d}\n' \
+                "$ts" "$sid_esc" "$file_esc" "$remain" >> "$ledger_file"
+        fi
         return 0
     fi
     return 1

@@ -1,5 +1,13 @@
 #!/usr/bin/env npx ts-node
 /**
+ * @configurable
+ * CONFIG 区（可变参数与默认值，迁移时只改此处或对应 env）:
+ * - CANONICAL: "skills/task-planner"（path.resolve 相对 cwd）— 规范源目录（env: 无）
+ * - IDE_MANIFESTS 映射表: .cursor/.gemini/.codex/.openclaw/.kilocode/.adal/.pi/.continue/.codebuddy/.factory/.agent/.opencode/.kiro → 各 IDE 目录下 planning-with-files 布局（含 refStyle/templateDirs/includeScripts 差异）（env: 无，增删 IDE 需改此表）
+ * - TEMPLATES/REFERENCES/SCRIPTS 同步清单: 静态常量（env: 无）
+ * 并行安全: 逐文件整写（copyFileSync 直接覆盖目标，非追加式）
+ */
+/**
  * ================================================================================
  * META_NAME: sync-ide-folders
  * META_VERSION: 1.0.0

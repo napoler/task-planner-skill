@@ -18,7 +18,7 @@
 | 每个 `### Phase N: <title>` | 一条 todo | subject 格式：`{task-id}/Phase N: title`（与 `sync-todos.sh` 输出一致） |
 | `**Status:** pending` | `pending` | 未开始的 Phase 不强制预建，按需 |
 | `**Status:** in_progress` | `in_progress` | 同时只允许一条 in_progress |
-| `**Status:** complete` | `completed` | 必须带证据（文件/命令输出），见 completion-gate |
+| `**Status:** complete` | `completed` | 必须带证据（文件/命令输出），见 completion-gate；注：脚本 JSON 输出（`sync-todos.sh --json` / `check-complete.sh`）归一为 `complete`，`completed` 为原生 Todo 状态词汇 |
 | Goal / VC 表 | 不建 todo | VC 复验走终验流程，不是待办项 |
 
 ## 3. 强制同步时机（S1–S5，全部强制）
