@@ -402,7 +402,7 @@ Block 1 (选题) complete
 - ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
 - ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)
 
-**Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。
+**Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。provider 全灭且任务超 ④ 接管上限(单文件 ≤300 行)时禁直接 STOP:先回计划层拆细到每片 ≤300 行单文件再逐片 ④ 接管(22.3.2)。
 
 ## 💻 代码编辑强制隔离
 
