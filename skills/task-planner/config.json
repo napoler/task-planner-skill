@@ -88,6 +88,16 @@
       "default": "warn",
       "description": "v063 规划期 FMEA 预演档位：enforce=RPN>100 的 Phase 无预设兜底登记=计划无效(attest 机械校验，后续轮)；warn=注入警告；off=不启用。默认 warn（观察期）"
     },
+    "vc_gate_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "终验 VC/V-N 门控档位（goal-gate.md 规 1/2，task-v065 T-3 V-9，check-complete.sh VC-GATE 段）：校验 task_plan.md VC 表 ≥ max_vc(默认 5) 条且每个 Phase 段 V-N 映射 ≥ min_verification_per_phase(默认 2) 条（映射目标须为已定义 VC 编号，映射仅记在 V-P.N 段内）；warn=缺失仅 stderr 警告不阻断 / enforce=缺失阻断 complete(exit 1) / off=关闭。档位解析优先级: env TASK_PLANNER_VC_GATE_ENFORCE > 本键 > 解析失败 fail-open warn（默认观察期）"
+    },
     "rescue_chain_enforce": {
       "type": "string",
       "enum": [
