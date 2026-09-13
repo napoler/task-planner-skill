@@ -69,7 +69,9 @@ ARCHIVE_COUNT=0
 echo "${PFX} === plan-hygiene(${MODE}, age=${AGE}d) ==="
 
 # --- [1] 任务目录归档清单 ----------------------------------------------------
-mkdir -p "${PLANS_DIR}/archive" 2>/dev/null # execute 需要;dry-run 下仅保证目录在
+if [ "${MODE}" = "execute" ]; then
+    mkdir -p "${PLANS_DIR}/archive" 2>/dev/null
+fi # 仅 execute 创建;dry-run 保持只读
 for dir in "${PLANS_DIR}"/*/; do
     [ -d "$dir" ] || continue
     name="$(basename "$dir")"
@@ -123,14 +125,11 @@ for side in .plan_required_side .active_plan_side; do
 done
 
 # --- [3] worktree 遗留(仅仓根存在 .git 时;只提示不删) -----------------------
-# [perf 2026-09-14] 仓根查找限 6 级向上(与 resolve-plans-dir 口径一致):
-# 主仓 plans/ 在 /mnt/data/... 下,.git 距离 6 级以内;再上走 / 会挂 NFS/overlayfs,
-# 逐层 test -e .git 在 fuse 慢盘上会卡死(实测 3m45s 无果)。限 6 级后 fail-open 跳过。
+# [perf 2026-09-14] 仓根查找限 4 级向上: 主仓 plans/ 距 .git 仅 2 级;外部仓最多 4 级。
+# 再上走 / 在 fuse/NFS 慢盘上会挂死(实测 3m45s 无果,2m+ 后被 kill)。限 4 级后 fail-open 跳过,
+# worktree 提示行只针对本机仓根可达的 plans-dir。
 repo_root="$(cd "$PLANS_DIR" 2>/dev/null && pwd)"
 depth=0
-# [perf 2026-09-14] 仓根查找限 4 级向上: 主仓 plans/ 在 /mnt/data/dev/task-planner-skill/plans
-# 距 .git 仅 2 级; 外部仓 plans/ 最多 4 级。再上走 / 在 fuse/NFS 慢盘上会挂死(实测 3m45s 无果,
-# 2m+ 后被 kill)。限 4 级后 fail-open 跳过,worktree 提示行只针对本机仓根可达的 plans-dir。
 while [ -n "$repo_root" ] && [ "$repo_root" != "/" ] && [ $depth -lt 4 ] && [ ! -e "${repo_root}/.git" ]; do
     repo_root="$(dirname "$repo_root")"
     depth=$((depth + 1))

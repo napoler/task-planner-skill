@@ -226,7 +226,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 
 ### 29 上下文与工作文件主动维护(P0 — task-v069,目标:上下文质量不拖垮运行)
 
-"缺→补"链路(19.2 3-File Gate / [plan-compass] 提醒 / [plan-sync] 回写)保证三文件持续入库,但"多→删"链路长期空白:上下文只进不出导致膨胀、findings 沦为垃圾桶、plans/ 下 completed 任务目录持续堆积、INDEX 统计漂移、worktree 遗留无人清扫。本 Rule 补齐主动维护侧——被验证无关紧要的信息及时退场,未被验证的信息禁止退场。
+"缺→补"链路(19.2 3-File Gate / [plan-compass] 提醒 / [plan-sync] 回写)保证三文件持续入库,但"多→标记/退场"链路长期空白（退场≠删除，指压缩/归档/折叠，原文保留留痕）:上下文只进不出导致膨胀、findings 沦为垃圾桶、plans/ 下 completed 任务目录持续堆积、INDEX 统计漂移、worktree 遗留无人清扫。本 Rule 补齐主动维护侧——被验证无关紧要的信息及时退场,未被验证的信息禁止退场。
 
 29.1 **触发时机**:① Phase complete 后(DRIFT CHECK 之前,与 plan-resume 被动扫描同层);② 会话恢复时(session-catchup / 5Q 之后);③ 用户显式指令("整理上下文"/"清理工作文件")。频率节流:同一计划内 ① 每 2 个 Phase complete 触发一次,避免每个 Phase 都全量扫描。开关键 `config.json#context_hygiene_enforce`(默认 warn,off 档不触发)。
 29.2 **退场 SOP(上下文主动优化——识别并移除已验证无关紧要的信息)**:先跑机械检查 `bash scripts/check-context-hygiene.sh <plan-dir>`(exit 0=clean / 1=有退场建议 / 2=严重),退场动作三类——a) **superseded 标记**:findings.md 中已被新结论推翻的旧条目,在原条目前加 `~~删除线~~` + `(superseded by <锚点>, <日期>)` 前缀,**不直接删除**(留痕可追溯);b) **压缩**:连续 ≥5 条同主题 findings 折叠为 1 条带证据指针的摘要,原文移入 findings.md 尾部 `## 压缩归档` 段;c) **progress.md 折叠**:已完成 Phase 的 Action 细节(>10 行)折叠为 3 行摘要(做了什么/产物路径/结果),细节留在 ledger 与 git 历史。原则:**被验证无关紧要的信息及时退场,未被验证的禁止退场**——拿不准 → 保留并标注"待复核"。
