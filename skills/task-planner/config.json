@@ -88,6 +88,16 @@
       "default": "warn",
       "description": "v063 规划期 FMEA 预演档位：enforce=RPN>100 的 Phase 无预设兜底登记=计划无效(attest 机械校验，后续轮)；warn=注入警告；off=不启用。默认 warn（观察期）"
     },
+    "skill_collab_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "协同技能接管评估严格度（task-v066，Rule 22.3.3，references/skill-collaboration.md）：off=跳过移交评估与 22.3.3；warn=提醒性评估（命中触发矩阵提示移交、22.3.3 评估记录不强制）；enforce=计划期命中触发矩阵须登记不移交理由方可继续、22.3.3 未评估禁止 ⑤AskUser/STOP；三档均流程层执行无 hook 校验，enforce 档语义预留。细则见 references/skill-collaboration.md"
+    },
     "vc_gate_enforce": {
       "type": "string",
       "enum": [

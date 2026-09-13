@@ -43,13 +43,14 @@ model: opus
 
 **Code Review 工具**：当 `task_plan.md` 声明 `code_review: required` 时，启用 `Skill("code-review")` 上下文隔离审查（在终验交付前触发）。详见 [Code Review Gate](#code-review-gate代码审查门控)。
 
-### 🚀 复杂功能开发 → 移交 `/comet` 工作流
+### 🤝 专业技能协同路由（comet / OpenSpec / superpowers — 权威源 references/skill-collaboration.md）
 
-**何时移交**（满足以下**任意 3 项**即停止在 task-planner 内执行，建议用户改用 `/comet`）：Phase 数 ≥ 5 / 跨多个文件/模块 / 需架构设计或技术选型 / 涉及新功能（feature）而非 bug 修复/小改动 / 需 proposal/design/tasks 三件套归档 / 期望跨会话断点续做。
-
-**移交流程**：总结当前 plan 已有内容（Goal + VC + Phase 列表）→ 提示用户"此任务复杂度匹配 `/comet`，建议移交" → 用户确认 → 引导 `Skill("comet")` 启动 open 阶段 → comet 接管后续阶段（design→build→verify→archive）。
-
-**与 task-planner 区别**：task-planner = 单会话内多 phase 规划 + 执行（轻量、即时）；comet = 跨会话 5 阶段托管（proposal→design→build→verify→archive）+ guard 门控（重量、可恢复）。
+**触发矩阵**（计划期 T0 评估；判定顺序敏感先命中先用：comet → OpenSpec → superpowers；多族命中=叠加协同）：
+- **移交 comet**（满足以下**任意 3 项**即停止在 task-planner 内执行，建议用户改用 `/comet`）：Phase 数 ≥ 5 / 跨多个文件/模块 / 需架构设计或技术选型 / 涉及新功能（feature）而非 bug 修复/小改动 / 需 proposal/design/tasks 三件套归档 / 期望跨会话断点续做。移交流程：总结当前 plan 已有内容（Goal + VC + Phase 列表）→ 提示用户"此任务复杂度匹配 `/comet`，建议移交" → 用户确认 → 引导 `Skill("comet")` 启动 open 阶段 → comet 接管后续阶段（design→build→verify→archive）。区别：task-planner=单会话轻量即时；comet=跨会话 5 阶段重量托管可恢复。
+- **移交 OpenSpec**：需求模糊需 spec 化（proposal/design/specs/tasks 有留存价值）/ 项目已有 `openspec/` 且变更触及 spec / 用户要求提案评审流 → `Skill("openspec-propose")` 等 change 工作流（单会话中成本）。
+- **嵌入 superpowers**（主进程保持统筹，Phase 内调用成员技能作 SOP，无需确认）：bug→systematic-debugging / 需求不清→brainstorming / 实现前→test-driven-development / 按既有计划执行→executing-plans / 合并前→requesting-code-review。
+- **CLI 探针前置**：`command -v comet` / `command -v openspec`，缺失则该族不可接管（禁假设已装）；开关键 `config.json#skill_collab_enforce`（默认 warn）。
+- 触发矩阵全文 / 移交 vs 嵌入合约 / 22.3.3 卡壳接管评估 / 反模式 → `references/skill-collaboration.md`。
 
 > 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
 
@@ -310,6 +311,7 @@ Block 1 (选题) complete
 | `references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
 | `references/batch-quality-gate.md` | 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report） |
 | `examples.md` | 实际示例 |
+| `references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
 | 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） |
