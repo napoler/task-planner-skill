@@ -114,8 +114,19 @@ cmd_on() {
     local ts; ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo 1970-01-01T00:00:00Z)"
     local force_tag=""
     [ "$force" -eq 1 ] && force_tag='"force":true,'
-    printf '{"ts":"%s","event":"allow_direct_on","sid":"%s",%s"expires_at":%s,"user_requested":true}\n' \
-        "$ts" "$sid" "$force_tag" "$stamp" >> "$plan_dir/ledger-delegation.jsonl"
+    # [2026-09-13 task-v065/T-5 V-14] 与 ledger-append.sh:132 同构 flock:持锁追加,
+    # 防与 check-delegation/ledger-append 并发追加交错;无 flock/lockfile 不可写时 fail-open 原语句
+    local ledger_file="$plan_dir/ledger-delegation.jsonl"
+    local lock_file="$plan_dir/ledger-delegation.jsonl.lock"
+    if command -v flock >/dev/null 2>&1; then
+        ( flock -w 5 9 || exit 0
+          printf '{"ts":"%s","event":"allow_direct_on","sid":"%s",%s"expires_at":%s,"user_requested":true}\n' \
+              "$ts" "$sid" "$force_tag" "$stamp" >> "$ledger_file"
+        ) 9>"$lock_file" 2>/dev/null || true
+    else
+        printf '{"ts":"%s","event":"allow_direct_on","sid":"%s",%s"expires_at":%s,"user_requested":true}\n' \
+            "$ts" "$sid" "$force_tag" "$stamp" >> "$ledger_file"
+    fi
 
     printf '{"status":"on","sid":"%s","expires_at":%s,"expires_in_sec":1800,"plan_dir":"%s","force":%s,"hint":"30 分钟内主进程白名单外 Write/Edit 放行,会被 ledger 记录并在终验展示;同 sid 已用,新会话前请清理 /tmp/task-planner-bypass-*"}\n' \
     "$sid" "$stamp" "$plan_dir" "$force"

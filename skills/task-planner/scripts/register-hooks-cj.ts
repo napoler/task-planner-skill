@@ -1,5 +1,12 @@
 #!/usr/bin/env bun
 /**
+ * @configurable
+ * CONFIG 区（可变参数与默认值，迁移时只改此处或对应 env）:
+ * - settingsPath: ~/.claude/settings.local.json（homedir 拼接）— hook 注册目标 settings 文件（env: 无，flag: --settings）
+ * - TASK_PLANNER_ROOT / canonicalPath: $HOME/dev/task-planner — 规范源根路径，buildHooks 指向该路径下脚本（env: TASK_PLANNER_ROOT，flag: --canonical）
+ * 并行安全: 单 settings 文件一次性整写（tmp+rename 原子回写），非追加式
+ */
+/**
  * register-hooks-cj.ts — Patch ~/.claude/settings.local.json to add task-planner hooks.
  *
  * Reads current settings.local.json (or creates empty object), ensures `hooks` block
