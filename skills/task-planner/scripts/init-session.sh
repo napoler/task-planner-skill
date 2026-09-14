@@ -52,15 +52,24 @@ copy_template() {
     fi
 }
 
+# [2026-09-15 task-v074 P4-S1] 1) TEMPLATE_TYPE 位置参数为空时兜底 env TASK_TEMPLATE_TYPE
+#    (消 SKILL.md:524 "自动路由"语义漂移——SKILL 描述与实现一致化)
+#    2) VALID_TYPES 改为从 $BUILTIN_TEMPLATES/variant/*-type.md 动态派生 + general 兜底
+#    (Rule 34.1 单一事实源=模板目录, 与 check-template-type.sh 同源原则; 原行为保留:
+#     未知/缺失类型 WARNING 回退 generic task_plan.md)
 PROJECT_NAME="${1:-project}"
-TEMPLATE_TYPE="${2:-}"   # optional: research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration
+TEMPLATE_TYPE="${2:-${TASK_TEMPLATE_TYPE:-}}"   # positional first, env fallback
 DATE=$(date +%Y-%m-%d)
 
 echo "Initializing planning files for: $PROJECT_NAME"
 
-# Template type routing (Rule 16, v2.2.1): variant task_plan selected by template_type
-# Usage: ./init-session.sh [project-name] [template-type]
-VALID_TYPES="research diagnostic writing publish code-edit refactor bugfix migration test-writing deployment performance-tuning schema-migration"
+# Template type routing (Rule 16, v2.2.1 + Rule 34.1 动态派生): variant task_plan selected by template_type
+# Usage: ./init-session.sh [project-name] [template-type] | TASK_TEMPLATE_TYPE=<type> ./init-session.sh [project-name]
+# [2026-09-15 task-v074 P4-S1] 白名单动态派生: general + ls $BUILTIN_TEMPLATES/variant/*-type.md 去后缀
+#    (与 check-template-type.sh 同源自模板目录, 消除硬编码 12 类清单副本)
+VARIANTS_DIR="${BUILTIN_TEMPLATES}/variant"
+VALID_TYPES="general $(ls "$VARIANTS_DIR"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
+VALID_TYPES="$(printf '%s' "$VALID_TYPES" | tr -s ' ')"
 TASK_PLAN_SRC="task_plan.md"
 if [ -n "$TEMPLATE_TYPE" ]; then
     if echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE "; then
