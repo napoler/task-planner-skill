@@ -23,10 +23,12 @@
 | task-v068-execution-stability | complete | 5/5 | 让 task-planner 技能族的 hook 链路具备「环境级中断自愈」能力:本会话产生的 5  | none |  | `skills/task-planner/scripts/zcode-pretooluse.sh`、`zcode-posttooluse.sh`、`zcode-userpromptsubmit.sh`、`check-scope.sh`、`plan-created.cjs`、`attest-plan.sh`、`check-delegation.sh`(Phase 2 修订补入:S3b observe 节流+tr 规范对齐),其他 scripts/*.sh/*.cjs(含 register-hooks-cj.ts、resolve-plan-dir.sh、set-active-plan.sh、resolve-interaction-mode.sh),`skills/task-planner/scripts/selftest-execution-stability.sh`(新增),其他 selftest-*.sh(只读运行,不修改),`skills/task-planner/config.json`,`~/.zcode/cli/config.json`(hooks 注册表,不碰)、其他配置,`skills/task-planner/SKILL.md`(中断自愈条款+净增 ≤10 行约束) | 2026-09-14 | ✓ |
 | task-v069-context-hygiene | complete | 5/5 | <!--  | none |  | skills/task-planner/references/critical-rules.md（Rule 29 追加）, skills/task-planner/SKILL.md（Rule 29 章节）,其他 .ts 文件,skills/task-planner/scripts/selftest-context-hygiene.sh（新建）, skills/task-planner/scripts/check-context-hygiene.sh（新建）, skills/task-planner/scripts/plan-hygiene.sh（新建）,skills/task-planner/config.json（新增 3 键） | 2026-09-14 | ✓ |
 | task-v070-exec-approach-echo | complete | 5/5 | <!--  | none |  | ~/.zcode/skills/task-planner/references/critical-rules.md,其他 references/*.md,~/.zcode/skills/task-planner/SKILL.md,其他 .md,~/.zcode/skills/task-planner/scripts/selftest-interaction.sh,其他 scripts/*.sh,~/.zcode/skills/task-planner/config.json,~/.claude/skills/task-planner/**, ~/.config/opencode/skills/task-planner/**（定向 cp 同步） | 2026-09-14 | ✓ |
+| task-v072-error-loop | complete | 5/5 | Rule 31 错误学习闭环：用户指出错误→31.2 4维归因+5Whys 禁止盲目修改，31.3 定向修，31.4 沉淀 notepad 两段，31.5 消费侧+Learning Gate（check-complete.sh 终验静态校验），31.6 机制；SKILL 5 处联动+C19；config error_loop_enforce（34 键）；selftest-error-loop 16 断言 | none |  | skills/task-planner/{references/critical-rules.md, SKILL.md, config.json, templates/{progress.md,task_plan.md,notepad-learnings.md}, scripts/{check-complete.sh,selftest-error-loop.sh,selftest-skill-collab.sh,selftest-execution-stability.sh}}, .zcode/ledger/task-planner-maintenance/ | 2026-09-14 | ✓ |
 
-| task-v071-shared-tracker | in_progress | 0/4 | 让 task-planner 设计期主动识别「共享内容维护」场景，接入 progress-tracker 技能（.zcode/ledger/ 多平台跟随）作为项目级认领追踪权威源：Rule 30 | none |  | skills/task-planner/{references/critical-rules.md, SKILL.md, config.json, references/skill-collaboration.md, templates/shared-tracker.md, scripts/selftest-shared-tracker.sh}, .zcode/ledger/task-planner-maintenance/ | 2026-09-14 | ☐ |
+| task-v071-shared-tracker | complete | 4/4 | 让 task-planner 设计期主动识别「共享内容维护」场景，接入 progress-tracker 技能（.zcode/ledger/ 多平台跟随）作为项目级认领追踪权威源：Rule 30 | none |  | skills/task-planner/{references/critical-rules.md, SKILL.md, config.json, references/skill-collaboration.md, templates/shared-tracker.md, scripts/selftest-shared-tracker.sh}, .zcode/ledger/task-planner-maintenance/ | 2026-09-14 | ✓ |
 ## 待处理（需关注）
-- task-v071-shared-tracker ☐ (0/4) — 2026-09-14
+- task-v071-shared-tracker ✓ (4/4) — 2026-09-14 (done 09-14 22:40)
+- task-v072-error-loop ✓ (5/5) — 2026-09-14
 
 ## 已完成
 - task-v055-scheduler-enforce ✓ (5/5) — 2026-09-08
@@ -47,4 +49,4 @@
 - task-v070-exec-approach-echo ✓ (5/5) — 2026-09-14
 
 ## 汇总
-- in_progress: 1 | pending: 0 | complete: 16
+- in_progress: 0 | pending: 0 | complete: 18
