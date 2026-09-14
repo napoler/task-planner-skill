@@ -679,6 +679,46 @@ END {print n+0}'
         fi
     fi
 
+    # [2026-09-15 task-v074 Rule 33] 终验 Reflect Gate — 解决→反思→验证迭代循环:
+    # 计划声明 reflect_verify: required 时,progress.md 须含 ≥2 行 `- [reflect] ` 前缀行
+    # (33.3 落盘格式:反思+验证各至少 1)。未声明 → SKIPPED 不算失败;无 progress.md → SKIPPED。
+    # 档位: env TASK_PLANNER_REFLECT_VERIFY_ENFORCE > config.json reflect_verify_enforce > warn;
+    # enforce=缺失时 exit 1 / warn=仅 stderr 告警 / off=跳过(与 LEARNING-GATE 同解析范式)
+    resolve_reflect_verify_tier() {
+        local m="${TASK_PLANNER_REFLECT_VERIFY_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
+            m="$(jq -r '.properties.reflect_verify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+    }
+    REFLECT_VERIFY_TIER="$(resolve_reflect_verify_tier)"
+    if [ "$REFLECT_VERIFY_TIER" != "off" ]; then
+        if ! grep -q 'reflect_verify: required' "$PLAN_FILE" 2>/dev/null; then
+            printf '[plan] REFLECT-GATE SKIPPED (task_plan.md 未声明 reflect_verify: required)\n' >&2
+        else
+            progress_file="$(dirname "$PLAN_FILE")/progress.md"
+            if [ ! -f "$progress_file" ]; then
+                printf '[plan] REFLECT-GATE SKIPPED (无 progress.md,无法校验 [reflect] 行)\n' >&2
+            else
+                reflect_lines="$(grep -c '^- \[reflect\] ' "$progress_file" 2>/dev/null)" || reflect_lines=0
+                if [ "${reflect_lines:-0}" -ge 2 ]; then
+                    printf '[plan] REFLECT-GATE PASSED (Rule 33: 反思-验证记录在案)\n' >&2
+                else
+                    case "$REFLECT_VERIFY_TIER" in
+                        enforce)
+                            printf '%s\n' "[plan] REFLECT-GATE FAILED (task-v074 Rule 33: 计划声明 reflect_verify: required 但 progress.md [reflect] 行=${reflect_lines:-0} <2 — 按 33.2 反思四问 + 33.3 独立验证补写 [reflect] 两行后重跑)" >&2
+                            exit 1
+                            ;;
+                        *)
+                            printf '%s\n' "[plan] REFLECT-GATE WARNING (task-v074 Rule 33, warn 档不阻断: TASK_PLANNER_REFLECT_VERIFY_ENFORCE=enforce 或 config.json reflect_verify_enforce=enforce 可升级) — 计划声明 reflect_verify: required 但 progress.md [reflect] 行=${reflect_lines:-0} <2" >&2
+                            ;;
+                    esac
+                fi
+            fi
+        fi
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then
