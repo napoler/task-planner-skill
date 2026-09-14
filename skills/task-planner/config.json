@@ -302,6 +302,12 @@
       "default": "warn",
       "description": "Rule 33 解决→反思→验证迭代循环(reflect-verify loop)三档: enforce=REFLECT-GATE 校验失败阻断交付; warn=注入警告不阻断; off=关闭。触发条件/反思四问/[reflect] 行格式见 references/critical-rules.md Rule 33。"
     },
+    "template_gate_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 34 模板选取门控三档: enforce=attest 锁定前 template_type 缺失/非法拒绝锁定; warn=告警放行; off=门控关闭。白名单源=templates/variant/ 动态派生+general, 见 references/critical-rules.md Rule 34。"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",

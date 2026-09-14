@@ -8,19 +8,22 @@
 #   attest-plan.sh --show   [plan_file]     # 显示已存 attestation
 #   attest-plan.sh --verify [plan_file]     # 校验: exit 0=匹配 1=不匹配 2=未锁定
 #   attest-plan.sh --clear  [plan_file]     # 清除锁定(计划重规划并重新获批后使用)
+#   attest-plan.sh --skip-template-check [plan_file]  # 跳过模板门控(Rule 34.1, 须在交付报告披露)
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
 set -uo pipefail
 
 plan_file=""
 mode="attest"
 skip_dispatch=""
+skip_template=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
     --verify) mode="verify" ;;
     --clear) mode="clear" ;;
     --skip-dispatch-check) skip_dispatch=1 ;;
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    --skip-template-check) skip_template=1 ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
 done
@@ -63,6 +66,41 @@ case "$mode" in
       [ -x "$cpl" ] && { bash "$cpl" "$plan_file" || { echo "[attest] ✗ 派发型 Phase 未规划子代理,拒绝锁定(Rule 22.6/25.1);紧急 --skip-dispatch-check(将记 ledger 告警)" >&2; exit 1; }; }
     else
       echo "[attest] WARN: --skip-dispatch-check 跳过 S-unit 执行体校验" >&2
+    fi
+    # [2026-09-15 task-v074 Rule 34.1] 模板选取门控: 锁定前校验 template_type ∈ 白名单
+    # 档位解析(对齐 P2 REFLECT-GATE resolve 范式):
+    #   env TASK_PLANNER_TEMPLATE_GATE_ENFORCE > config.json template_gate_enforce.default > warn(jq 不可用回退 warn)
+    # off=整体跳过; enforce=缺失/非法拒绝锁定; warn=告警放行; --skip-template-check 逃生(须交付报告披露)
+    if [ -z "$skip_template" ]; then
+      tcfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
+      resolve_template_tier() {
+        local m="${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$tcfg" ]; then
+          m="$(jq -r '.properties.template_gate_enforce.default // "warn"' "$tcfg" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+      }
+      TTIER="$(resolve_template_tier)"
+      if [ "$TTIER" != "off" ]; then
+        ctt="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-template-type.sh"
+        [ -x "$ctt" ] && { bash "$ctt" "$plan_file"; t_rc=$?; } || t_rc=0
+        if [ "$t_rc" -eq 0 ]; then
+          echo "[attest] [template-gate] OK (Rule 34.1)"
+        else
+          case "$TTIER" in
+            enforce)
+              echo "[attest] ✗ 模板门控失败,拒绝锁定(Rule 34.1/34.6, template_gate_enforce=enforce); 修正 template_type 或紧急 --skip-template-check(须记交付报告)" >&2
+              exit 1
+              ;;
+            *)
+              echo "[attest] [template-gate] WARNING (warn 档不阻断: TASK_PLANNER_TEMPLATE_GATE_ENFORCE=enforce 或 config.json template_gate_enforce=enforce 可升级; 紧急 --skip-template-check)" >&2
+              ;;
+          esac
+        fi
+      fi
+    else
+      echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
     # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,
