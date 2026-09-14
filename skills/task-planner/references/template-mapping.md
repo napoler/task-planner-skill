@@ -139,6 +139,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 部署(v2) | `templates/variant/deployment-type.md` | staging 验证 / 健康检查 / 回滚预案 |
 | 性能调优(v2) | `templates/variant/performance-tuning-type.md` | 基线 benchmark / P95 降幅 / 资源 |
 | schema 迁移(v2) | `templates/variant/schema-migration-type.md` | 可逆 up/down / 数据零丢失 / 在线切换 |
+| 规则增强(v2,沉淀) | `templates/variant/rule-enhancement-type.md` | 新增 Rule 条款 / config 三档键 / selftest 守护 / SKILL 联动 / 锚定级联防呆 |
 | 已有 .execution-plan.json | 允许替代 | — |
 
 ### 模板互斥关系(避免误选)
