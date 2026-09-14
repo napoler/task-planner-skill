@@ -77,8 +77,8 @@ t "T8b SKILL.md 含 command -v comet" grep -q 'command -v comet' "$SKILL"
 t "T9a skill_collab_enforce 出现在 ≥2 文件" bash -c "[ \"\$(grep -rl 'skill_collab_enforce' '$CONFIG' '$ROOT/references/' '$SKILL' | wc -l)\" -ge 2 ]"
 t "T9b 无连字符变体 skill-collab-enforce" bash -c "! grep -rq 'skill-collab-enforce' '$CONFIG' '$ROOT/references/' '$SKILL'"
 
-# T10: SKILL.md 行数 ≤530（task-v072 Rule 31 摘要行+C19+错误指出特判 联动后 SKILL.md 526 行,上限同步 523→530）
-t "T10 SKILL.md 行数 ≤530" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 530 ]"
+# T10: SKILL.md 行数 ≤538（task-v073 Rule 32 摘要行+C20+否决登记指针 联动后 SKILL.md 529 行,上限同步 530→538）
+t "T10 SKILL.md 行数 ≤538" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 538 ]"
 
 # ── 汇总 ──
 TOTAL=$((PASS + FAIL))

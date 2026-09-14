@@ -286,6 +286,16 @@
       "default": "warn",
       "description": "v072 错误学习闭环档位（Rule 31）：enforce=31.2 根因分析缺失直接阻断交付（预留，终验 Learning Gate 已静态校验 Error Log Root Cause 非空）；warn=漏 31.2 分析在 progress.md 记 [error-loop] 行 + 终验 Learning Gate 告警（默认，流程层执行）；off=不触发。开关键挂 check-complete.sh 终验 Learning Gate + selftest-error-loop.sh 静态守护"
     },
+    "veto_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v073 用户否决与禁令追踪档位（Rule 32）：enforce=提方案前未过 32.2 禁令检查直接阻断交付（预留硬校验）；warn=漏 32.1 登记/32.2 未查在 progress.md 记 [veto] 提醒行 + 终验告警（默认，流程层执行）；off=不触发。禁令源=当前+历史 notepad「被否决方案」段+用户 memory；解禁仅限 veto-lift 或可引用新证据；selftest-veto.sh 静态守护"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",
