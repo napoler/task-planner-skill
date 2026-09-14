@@ -266,6 +266,16 @@
       "default": "warn",
       "description": "v069 工作文件整理档位（Rule 29.4）：enforce=plan-hygiene.sh --execute 前强制 --dry-run 展示清单并记录到 progress.md；warn=仅提醒；off=不启用。与 context_hygiene_enforce 独立控制，可单独开关"
     },
+    "shared_tracker_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v071 共享内容认领追踪档位（Rule 30）：enforce=设计期未做 30.1 识别/未登记认领账本 → 计划无效（待后续轮接硬校验）；warn=设计期检查点注入提醒+漏登记在 progress.md 记一行（默认，流程层执行）；off=不触发。账本权威源=progress-tracker 技能（.zcode/ledger/ 或 .claude/ledger/ 多平台跟随）；selftest-shared-tracker.sh 静态守护 30.x 条款"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",

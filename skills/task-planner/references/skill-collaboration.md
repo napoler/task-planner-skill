@@ -57,6 +57,7 @@
 | comet | 现有任意 3 项（Phase≥5 / 跨模块 / 需架构选型 / 新功能 feature / 需 proposal-design-tasks 三件套归档 / 期望跨会话断点续做） | 重（跨会话托管） | `command -v comet` + `.comet.yaml` 激活状态 |
 | OpenSpec | 需求模糊需 spec 化（proposal/design/specs/tasks 产物有留存价值）/ 项目已有 `openspec/` 目录且变更触及 spec / 用户要求提案评审流 | 中（单会话多步 CLI） | `command -v openspec` + `openspec/` 目录 |
 | superpowers（嵌入为主） | bug 排查→systematic-debugging；实现前需 TDD→test-driven-development；需求不清→brainstorming；按既有书面计划执行→executing-plans / subagent-driven-development；合并前→requesting-code-review + finishing-a-development-branch | 轻（单 Skill 调用） | 无（纯 .md 技能） |
+| progress-tracker（嵌入，Rule 30 专属触发，task-v071） | 共享内容认领追踪命中 30.1 识别条件（可枚举共享资源且只认领一部分 / 同类任务 ≥3 次）→ 设计期 D1 前调用创建/复用项目级账本（.zcode/ledger/ 或 .claude/ledger/ 多平台跟随）+ 认领登记 30.3 + 防冲突 30.4 | 轻（Skill 调用 + JSONL 追加） | 无（纯 .md 技能；探针=`~/.zcode/skills/progress-tracker/SKILL.md` 存在，缺失 → 提醒用户先建该技能，本项降级 warn 不阻塞） |
 
 - **移交（handoff）**：主进程让出统筹权，按「移交评估流程」（总结已有 plan 内容 → 提示用户 → 用户确认 → 引导启动目标技能 → 主进程簿记 handoff）；silent 模式按 Rule 28 推荐项自主处置并登记 `silent:` 决策行（推荐项 = 命中 comet 3 项即移交，否则留在 task-planner）
 - **嵌入（embed）**：主进程保持统筹，Phase 内调用成员技能作为执行 SOP（计子代理路由表的 Skill() 列），无需用户确认

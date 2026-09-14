@@ -235,3 +235,13 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 29.4 **工作文件整理 SOP(主动整理工作文件)**:`bash scripts/plan-hygiene.sh <plans-dir> [--dry-run|--execute] [--age N]` 扫描 plans/ 下任务目录——completed 且 mtime 超 `config.json#plan_archive_age_days`(默认 7 天)→ 建议 `mv` 入 `plans/archive/`(plan-created.cjs 已有 archive 前缀跳过约定,消费侧安全);隐藏指针文件(.plan_required_side/.active_plan_side 中 >24h 残留)→ 提示跑 `set-active-plan.sh gc`;worktree 遗留(check-conflicts.sh 信号②③)→ 提示 `git worktree prune` + 删遗留 wt/* 分支。**默认 --dry-run 只展示清单;--execute 前必须先把 dry-run 清单记入 progress.md**(开关键 `config.json#plan_hygiene_enforce`,enforce 档跳过登记即 exit 1)。归档后必须重跑 `sync-todos.sh --index` 修正 INDEX 统计(全量重写特性,防回归)。
 29.5 **配置键语义**:`context_hygiene_enforce`(enforce/warn/off,默认 warn)= 29.1-29.3 上下文侧档位;`plan_hygiene_enforce`(enforce/warn/off,默认 warn)= 29.4 工作文件侧档位;`plan_archive_age_days`(整数,默认 7,最小 1)= 归档年龄阈值。三键独立、可单独开关;本条为流程层 SOP(hook 未接读取),主进程按档位自律执行,warn 档建议不执行时在 progress.md 登记一行"已跳过"。
 29.6 **反模式**:❌ 把 findings 当垃圾桶只进不出(上下文膨胀 → 主进程视野收窄 → 漂移);❌ 删除未验证无关紧要的信息(拿不准必须保留+标"待复核",退场只针对"已验证无关紧要");❌ 归档后不重跑 `--index`(INDEX 统计回归 = 下次 plan-resume 扫描误判);❌ --execute 跳过 dry-run 清单登记(无留痕归档 = 不可追溯);❌ 每 Phase complete 都全量跑两个检查器(无节流,浪费)。
+
+### 30 共享内容认领追踪（P0 — task-v071，目标：跨任务复用进度，杜绝重复混乱）
+
+「缺→补」（Rule 19）与「多→退场」（Rule 29）之外，补齐「共→认领」链路：涉及可枚举共享资源（页面/内容/功能/部署位/文章）且本次只认领一部分的任务，须在项目级共享追踪账本上登记认领，后续同类任务先查账本复用而非重建。
+
+30.1 **识别条件（设计期，计划创建后 D1 前）**：目标资源可枚举（维护 N 个页面/内容/功能/部署位/文章）且本次任务只认领其中一部分 → 命中共享追踪场景；同类任务已发生 ≥3 次（可查 plans/INDEX 或账本）亦命中。命中 → 执行 30.2；未命中（一次性/资源不可枚举）→ 记录 Decisions Made 一行 `共享追踪不适用,<理由>`,跳过本 Rule。
+30.2 **创建/复用（权威源 = progress-tracker 账本，不另造文件）**：账本位置 = 项目根平台配置目录（跟随既有 `.zcode/` 或 `.claude/`，皆无默认 `.zcode/`）下 `ledger/<topic>/<topic>.jsonl`（topic=kebab-case，如 site-maintenance）。**存在** → 先 Read 该主题账本（先查后写，grep 本次认领 target 最近记录），只追加/更新本次认领行，禁止覆盖历史；**不存在** → 按 `Skill("progress-tracker")` Step 1-4 创建（INDEX.md + 主题目录 + JSONL 首条）。账本被项目 gitignore 忽略 → 记「账本未入库」一行提醒，不阻塞。
+30.3 **认领登记**：本次认领的每个 target 追加一条 `status=in_progress` 条目（`note` 字段写认领 task-id），并创建收尾 Todo（progress-tracker 闭环保障）；该 target 完成并验证后 → 追加 `status=done` + 实际 `effect`，完成 Todo。禁止认领后静默悬挂（悬挂条目 = 后期误判"未完成"重复做的根因）。
+30.4 **防冲突**：发现 target 已被其他 task 认领且 `status=in_progress`（note 含他 task-id 且 ts 更新）→ 不静默重复认领，按 Rule 28 D4 询问（选项：等待/改认领其他/确认接管并登记）；ts 最早 + task-id 为归属依据。
+30.5 **机制**：开关键 `config.json#shared_tracker_enforce`（默认 warn：设计期检查点注入提醒；off 不触发；enforce 预留）；`scripts/selftest-shared-tracker.sh` 静态守护（30.x 条款存在性 + 语义锚点 + config 键 + 模板 + progress-tracker 技能探针）；模板 `templates/shared-tracker.md` 供 task_plan 认领追踪区块引用。协同契约详见 `references/skill-collaboration.md` progress-tracker 行。
