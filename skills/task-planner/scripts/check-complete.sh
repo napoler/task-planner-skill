@@ -1,7 +1,7 @@
 #!/bin/bash
 # Check if all phases in task_plan.md are complete
 # Supports single-block and multi-block chain tasks (chain_mode: linked / fan-out)
-# Exits 1 when gates fail (Batch Report Rule 18.6 / Aggregator Rule 23.6 / 3-File Gate Rule 19.5)
+# Exits 1 when gates fail (Batch Report Rule 18.6 / Aggregator Rule 23.6 / 3-File Gate Rule 19.5 / Learning Gate Rule 31.5)
 # Used by Stop hook to report task completion status
 
 PLAN_FILE="${1:-task_plan.md}"
@@ -572,6 +572,110 @@ if [ "$python_rc" -eq 0 ]; then
             esac
         else
             printf '[plan] VC-GATE PASSED (VC 表=%s, %s 个 Phase 各 ≥2 条 V-N 映射)\n' "$vc_count" "$p_no" >&2
+        fi
+    fi
+
+
+    # [2026-09-14 task-v072 Rule 31] 终验 Learning Gate — 错误学习闭环:
+    # progress.md 若含数据行(非模板占位)的「Root Cause」/「Prevention」列,则各行 Root Cause 非空
+    # (<待沉淀> 占位/空 均 FAIL)。列识别:表头含 "Root Cause" 列;无表头/无该列/无 Error Log → PASS 静默(存量计划兼容)。
+    # 状态机式 awk(非区间 /start/,/end/ 区间式,gawk 5.2 下起始行同配终止模式恒为空的已知陷阱,
+    # 与本脚本 27.3 porcelain 预检段同一范式)。
+    # 档位: env TASK_PLANNER_ERROR_LOOP_ENFORCE > config.json error_loop_enforce > warn;
+    # enforce=FAIL 时 exit 1 / warn=仅 stderr 告警计数 / off=跳过
+    resolve_error_loop_tier() {
+        local m="${TASK_PLANNER_ERROR_LOOP_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
+            m="$(jq -r '.properties.error_loop_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+    }
+    ERROR_LOOP_TIER="$(resolve_error_loop_tier)"
+    if [ "$ERROR_LOOP_TIER" != "off" ]; then
+        progress_file="$(dirname "$PLAN_FILE")/progress.md"
+        if [ -f "$progress_file" ]; then
+            learning_gate_rc=0
+            learning_gate_report=""
+            # 表头列号识别(状态机找 "## Error Log" 节后首个表头行的 Root Cause 列号)。
+            # [task-v072 fix] 双层引号转义易错(内层单引号被吃/反斜杠层级混乱,实测恒 PASS),
+            # 改 awk 程序先存 shell 变量再展开:awk 程序单引号内 $0 等无展开风险,
+            # 正则 | 在 awk 正则里需 \| 匹配字面竖线。
+            lg_rc_awk='
+/^## Error Log/ {in_sec=1; next}
+in_sec && /^## / {in_sec=0}
+in_sec {
+    if (cols == 0 && $0 ~ /^\|/) {
+        n = split($0, a, "|")
+        for (i = 1; i <= n; i++) {
+            v = a[i]
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+            if (v ~ /Root[[:space:]]+Cause/) { cols = i }
+        }
+        if (cols > 0) { print cols; exit }
+    }
+}'
+            # [task-v072] 双文件参数(awk 脚本文件 + 数据文件):把程序存独立临时文件,
+            # 走 awk -f 语义(不经 shell 引号展开,免内联 $() 程序被静默截断的已知陷阱)
+            _lg_rc_awk_file="$(mktemp "${TMPDIR:-/tmp}/lg-rc.XXXXXX" 2>/dev/null)" || _lg_rc_awk_file="$(pwd)/.lg-rc.$$"
+            printf '%s\n' "$lg_rc_awk" > "$_lg_rc_awk_file" 2>/dev/null
+            rc_col="$(awk -f "$_lg_rc_awk_file" "$progress_file" 2>/dev/null)" || rc_col=""
+            rm -f "$_lg_rc_awk_file" 2>/dev/null
+            if [ -n "$rc_col" ]; then
+                # 数据行校验:非表头/非分隔行,Root Cause 列 strip 后非空且 != <待沉淀>
+                lg_bad_awk='
+/^## Error Log/ {in_sec=1; next}
+in_sec && /^## / {in_sec=0}
+in_sec {
+    if ($0 !~ /^\|/) next
+    v = $0
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+    if (v ~ /Root[[:space:]]+Cause/ || v ~ /^-/) next
+    n = split($0, a, "|")
+    if (c < 2 || c > n - 1) next
+    cell = a[c + 1]
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", cell)
+    if (cell == "" || cell == "<待沉淀>" || cell == "待沉淀") print NR
+}'
+                # 同上:程序存临时文件走 awk -f,免内联被截断
+                _lg_bad_awk_file="$(mktemp "${TMPDIR:-/tmp}/lg-bad.XXXXXX" 2>/dev/null)" || _lg_bad_awk_file="$(pwd)/.lg-bad.$$"
+                printf '%s\n' "$lg_bad_awk" > "$_lg_bad_awk_file" 2>/dev/null
+                bad_lines="$(awk -v c="$rc_col" -f "$_lg_bad_awk_file" "$progress_file" 2>/dev/null)" || bad_lines=""
+                lg_tpl_awk='
+/^## Error Log/ {in_sec=1; next}
+in_sec && /^## / {in_sec=0}
+in_sec && $0 ~ /^\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*1[[:space:]]*\|/ {n++}
+END {print n+0}'
+                _lg_tpl_awk_file="$(mktemp "${TMPDIR:-/tmp}/lg-tpl.XXXXXX" 2>/dev/null)" || _lg_tpl_awk_file="$(pwd)/.lg-tpl.$$"
+                printf '%s\n' "$lg_tpl_awk" > "$_lg_tpl_awk_file" 2>/dev/null
+                template_rows="$(awk -f "$_lg_tpl_awk_file" "$progress_file" 2>/dev/null)" || template_rows=0
+                rm -f "$_lg_bad_awk_file" "$_lg_tpl_awk_file" 2>/dev/null
+                if [ -n "$bad_lines" ]; then
+                    learning_gate_rc=1
+                    learning_gate_report="$(printf '%s\n' "$bad_lines" | tr '\n' ' ')"
+                elif [ -z "$bad_lines" ] && [ "${template_rows:-0}" -eq 0 ]; then
+                    learning_gate_rc=2   # 列存在但无任何数据行 = 无 Error 记录 → PASS 静默
+                fi
+            fi
+            case "$learning_gate_rc" in
+                0)
+                    printf '%s\n' '[plan] LEARNING-GATE PASSED (Rule 31.5: Error Log Root Cause 全部非占位)' >&2
+                    ;;
+                1)
+                    case "$ERROR_LOOP_TIER" in
+                        enforce)
+                            printf '%s\n' "[plan] LEARNING-GATE FAILED (task-v072 Rule 31.5: 行 ${learning_gate_report} Root Cause/Prevention 缺失或 <待沉淀> 占位 — 按 31.2 四问归因回填 progress.md Error Log 后重跑)" >&2
+                            exit 1
+                            ;;
+                        *)
+                            printf '%s\n' "[plan] LEARNING-GATE WARNING (task-v072 Rule 31.5, warn 档不阻断: TASK_PLANNER_ERROR_LOOP_ENFORCE=enforce 或 config.json error_loop_enforce=enforce 可升级) — 行 ${learning_gate_report} Root Cause/Prevention 缺失或 <待沉淀> 占位" >&2
+                            ;;
+                    esac
+                    ;;
+                *)
+                    : # rc=2 无数据行 / 无表头 = 存量兼容,PASS 静默
+                    ;;
+            esac
         fi
     fi
 

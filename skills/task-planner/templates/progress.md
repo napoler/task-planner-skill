@@ -39,9 +39,11 @@
 |       |           |                     |
 
 ## Error Log
-| Timestamp | Error | Attempt | Resolution |
-|-----------|-------|---------|------------|
-|           |       | 1       |            |
+<!-- [task-v072 Rule 31] 加 Root Cause / Prevention 两列（错误学习闭环：先析后修 + 防复现沉淀）
+     Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
+| Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
+|-----------|-------|---------|------------|------------|------------|
+|           |       | 1       |            |            | <待沉淀>    |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->

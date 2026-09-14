@@ -128,7 +128,7 @@
 - [x] selftest 套件全量跑（基线 113/0 不回退；新增挽救链路用例如需补测则补）
 - [x] 逐条复验 56 标准 + VC-5/VC-6 grep 证据
 - [x] 测试副本清理（S66）
-- **Status:** pending
+- **Status:** complete（2026-09-14 簿记补正:本 Phase 实际已于 v065 交付时完成,状态行滞留 pending 致 INDEX 4/6 误挂账,现翻正）
 - **V-N:** VC-6, VC-7（复验/selftest 全绿）
 - **Executor:** code-runner-agent（mini）+ 主进程复核
 
@@ -140,7 +140,7 @@
 - [x] worktree 全 VC 复验且 git 干净 → smart-merge-back.sh [--deploy]
 - [x] worktree/分支清理 + 主仓 Read 关键文件复验
 - [x] 9 位部署 diff=0 对账 + Standard 58 中文总结 + W1-W5 核查 → 交付结论
-- **Status:** pending
+- **Status:** complete（2026-09-14 簿记补正:同上,merge edb8f0b 已在册,outcome COMPLETE）
 - **V-N:** VC-7, VC-8（回归不破/合并部署）
 - **Executor:** 主进程（git/worktree 编排，白名单①）
 

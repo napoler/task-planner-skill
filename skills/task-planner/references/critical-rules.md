@@ -24,7 +24,7 @@
 `action_failed: next_action != same_action`。详见 `reference.md § 三击协议`。
 
 ### 8 新请求强制重新规划（三分类判定）
-新请求 = 重规划触发器：停 → 记 `notepad-learnings.md` → A/B/C 影响判定（A 无影响照常执行 / B 扩展 / C 矛盾，详见 SKILL.md § 用户新指令处理）→ **凡影响计划（B/C）：先更新 task_plan.md 对应 Phase/VC/范围，并紧邻同步原生 Todo（todo-sync.md S5），再执行** → 确认 → 继续。禁止口头接受新指令而计划与 Todo 不动。
+新请求 = 重规划触发器：停 → 记 `notepad-learnings.md` → A/B/C 影响判定（A 无影响照常执行 / B 扩展 / C 矛盾，详见 SKILL.md § 用户新指令处理）→ **凡影响计划（B/C）：先更新 task_plan.md 对应 Phase/VC/范围，并紧邻同步原生 Todo（todo-sync.md S5），再执行** → 确认 → 继续。禁止口头接受新指令而计划与 Todo 不动。**用户指出错误（A/B/C 判定命中「已产出/结论有误」）时先走 Rule 31 根因分析闭环（31.2 分析 → 31.3 定向修 → 31.4 沉淀），禁止跳过归因直接改**。
 
 ### 9 错误提前暴露
 出错 → 记 progress.md + 告诉用户 + `config.json#escalation_threshold` 次失败则 AskUserQuestion。
@@ -245,3 +245,14 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 30.3 **认领登记**：本次认领的每个 target 追加一条 `status=in_progress` 条目（`note` 字段写认领 task-id），并创建收尾 Todo（progress-tracker 闭环保障）；该 target 完成并验证后 → 追加 `status=done` + 实际 `effect`，完成 Todo。禁止认领后静默悬挂（悬挂条目 = 后期误判"未完成"重复做的根因）。
 30.4 **防冲突**：发现 target 已被其他 task 认领且 `status=in_progress`（note 含他 task-id 且 ts 更新）→ 不静默重复认领，按 Rule 28 D4 询问（选项：等待/改认领其他/确认接管并登记）；ts 最早 + task-id 为归属依据。
 30.5 **机制**：开关键 `config.json#shared_tracker_enforce`（默认 warn：设计期检查点注入提醒；off 不触发；enforce 预留）；`scripts/selftest-shared-tracker.sh` 静态守护（30.x 条款存在性 + 语义锚点 + config 键 + 模板 + progress-tracker 技能探针）；模板 `templates/shared-tracker.md` 供 task_plan 认领追踪区块引用。协同契约详见 `references/skill-collaboration.md` progress-tracker 行。
+
+### 31 错误学习闭环（P0 — task-v072，目标：用户指出错误 → 根因分析 → 计划/规则优化 → 防复现，禁盲目修改）
+
+Rule 6/19.4 管错误「记账」、Rule 7 管「不重复同法」、Rule 8 管 B/C 类「重规划」，但链路只到「改文档」为止——用户指出错误后 agent 常直接改症状处（盲目修改），不回答「为什么会错」，防线不沉淀（写了 notepad 没人读），后期同错复发。本 Rule 补齐「错→析→修→防」完整闭环。
+
+31.1 **触发条件（用户指令判为"错误指出"，任一命中即 STOP 当前写入，先走 31.2 再动手）**：① 用户指出 agent 已产出/执行结果有误；② 用户对同一问题重复反馈 ≥2 次（宪法 §四 漂移信号：第 2 次 = 当前方向 100% 错误）；③ 用户执行中打断并补充新数据/约束推翻既有结论；④ `check-drift.sh` 输出含「同一错误同 Phase ≥3 次」ERROR-LOOP 信号。判定存疑（A 类追问 vs 错误指出）→ 按 Rule 28 D5 询问，禁误判为 A 类放过。
+31.2 **结构化根因分析（先析后修，禁止跳过直接改）**：动手前完成 4 维归因表并写入 progress.md Error Log 对应行（Root Cause 列；完整 4 维表落 findings.md `## Issues Encountered`，19.6 瘦身指针制）——**现象**（用户原话 + 触发位置）/**直接原因**（哪个动作/假设导致）/**根因**（5 Whys 逐层追问 ≤5 层，methodology R4；禁止停在"再重试一次"）/**类别**（信息缺失 / 假设未验 / 规则缺位 / 数据源过时 / 执行偏差）。**分析未完成（4 维缺项）禁止执行 31.3 修复动作**——本条 = Rule 7 三击第 3 击「考虑更新计划」的强制化（"考虑"升格为"必须"）。
+31.3 **修正路由（按类别定向修，禁盲目改症状处）**：假设未验/执行偏差 → 修 task_plan.md 对应 Phase/VC + findings.md 修正结论（B/C 类走 Rule 8 S5 同步）；规则缺位/检查清单缺口 → 更新计划内防线（新增 V-N / C-check / 检查项）；技能规则本体（critical-rules.md）缺口 → 登记 Decisions Made + 提案写 notepad「Notes for Next Time」（宪法 §六 保护区，本体修改走后续任务）；信息缺失 → 立即补齐调研（修 bug 前先 Read 真实数据样本，宪法 §九）；数据源过时 → 修正数据源 + 旧值标 superseded（29.2a 语义）。
+31.4 **沉淀（强制，与 31.3 同一动作内完成）**：notepad-learnings.md 两段各写一行——`What Didn't Work`（错误描述 + 类别标签）/ `Notes for Next Time`（触发条件 + 防线一句话）；progress.md Error Log 行 `Prevention` 列由 `<待沉淀>` 占位翻成实际措施（措施 + 落点指针）。
+31.5 **消费侧（防"写了没人读"）**：① 下一 Phase 开工前 Read notepad「Notes for Next Time」未消费项，命中同类场景 → 按注记执行并在 progress.md 记一行 `[learn-apply]`；② 新任务 init-session 后 Read 上一 completed 任务 notepad 同段作风险预演输入（指针引用，无脚本，流程层）；③ 终验 Learning Gate（check-complete.sh 静态校验）：Error Log 各行 Root Cause 列非空（`<待沉淀>` 占位不算）→ 缺失 = exit 1 计入，回填后再交付。
+31.6 **机制**：开关键 `config.json#error_loop_enforce`（默认 warn：漏 31.2 分析在 progress.md 记一行 `[error-loop] 已跳过根因分析:<指令时间>`；off 不触发；enforce 预留硬校验）；同法反复失败（31.2 完成后同类错误第 2 次）→ 升级 `Skill("meta-corrector")` 结构化复盘（Rule 18.8 批量侧泛化到单点错误侧）；`scripts/selftest-error-loop.sh` 静态守护（31.x 条款 + 模板列 + config 键 + SKILL 联动 + C19 + Learning Gate 锚点）；模板 `templates/progress.md` Error Log 加列（Root Cause / Prevention）+ `templates/notepad-learnings.md` 消费侧契约注释。

@@ -1,0 +1,3 @@
+{"ts":"2026-09-14T08:15:33Z","event":"allow_direct_on","sid":"v071-1789373733","expires_at":1789375533,"user_requested":true}
+{"ts":"2026-09-14T08:49:44Z","event":"allow_direct_on","sid":"v071p2-1789375783","expires_at":1789377584,"user_requested":true}
+{"ts":"2026-09-14T09:26:22Z","event":"allow_direct_on","sid":"v071p2b-1789377982","force":true,"expires_at":1789379782,"user_requested":true}

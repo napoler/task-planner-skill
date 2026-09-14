@@ -1,0 +1,16 @@
+# Checkpoint 00 — plan-writer (task-v068)
+- 时间: 2026-09-14
+- status: done
+- 产出: /mnt/data/dev/task-planner-skill/plans/task-v068-execution-stability/task_plan.md（覆盖 stub,Batch Report 与 Chain 区块已删除,委派统计/Drift Log/Todo 同步表保留）
+- 必填字段自检:
+  - Goal(1 句): OK
+  - VC 表: 7 条(VC-1..VC-7,含证据路径)
+  - Scope 表: 源码 6 脚本/测试 1 新增/配置 1/文档 1 + plans/ 簿记
+  - Phases: 5 个,全部含 Status + Executor(Phase 2/5 主进程带例外理由②①③)
+  - S-unit 表: Phase 1 S1、Phase 3 S1-S4、Phase 4 S5,共 6 行,执行体列全非空(默认"继承"/explore/executor)
+  - 隔离决策 5 字段: OK(worktree risk 判定)
+  - FMEA: 5 行,3 行 RPN>100 均带兜底(216/168/144)
+  - 委派统计/Drift Log/Todo 同步表: 保留
+  - Handoff: 00(plan-writer,queued)+01(explore,queued)保留
+- Key Questions: KQ1-KQ4 按指定内容填入
+- 偏差记录: 无(E1-E5 原样保留为设计输入表)

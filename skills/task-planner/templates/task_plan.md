@@ -289,9 +289,9 @@ Phase 1
     | FileNotFoundError | 1 | Check if file exists, create empty list if not |
     | JSONDecodeError | 2 | Handle empty file case explicitly |
 -->
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-|       | 1       |            |
+| Error | Attempt | Resolution | Prevention（Rule 31 指针） |
+|-------|---------|------------|---------------------------|
+|       | 1       |            | → progress.md Error Log   |
 
 ## Notes
 <!-- 

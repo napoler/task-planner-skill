@@ -276,6 +276,16 @@
       "default": "warn",
       "description": "v071 共享内容认领追踪档位（Rule 30）：enforce=设计期未做 30.1 识别/未登记认领账本 → 计划无效（待后续轮接硬校验）；warn=设计期检查点注入提醒+漏登记在 progress.md 记一行（默认，流程层执行）；off=不触发。账本权威源=progress-tracker 技能（.zcode/ledger/ 或 .claude/ledger/ 多平台跟随）；selftest-shared-tracker.sh 静态守护 30.x 条款"
     },
+    "error_loop_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v072 错误学习闭环档位（Rule 31）：enforce=31.2 根因分析缺失直接阻断交付（预留，终验 Learning Gate 已静态校验 Error Log Root Cause 非空）；warn=漏 31.2 分析在 progress.md 记 [error-loop] 行 + 终验 Learning Gate 告警（默认，流程层执行）；off=不触发。开关键挂 check-complete.sh 终验 Learning Gate + selftest-error-loop.sh 静态守护"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",
