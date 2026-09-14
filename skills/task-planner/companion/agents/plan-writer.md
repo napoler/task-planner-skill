@@ -60,6 +60,9 @@ cost_estimate:
 | `deployment` | `templates/variant/deployment-type.md` | 部署/CI-CD/Docker/k8s |
 | `performance-tuning` | `templates/variant/performance-tuning-type.md` | 性能瓶颈定位/优化/benchmark |
 | `schema-migration` | `templates/variant/schema-migration-type.md` | DB schema 变更/migration/索引 |
+| `rule-enhancement` | `templates/variant/rule-enhancement-type.md` | 技能规则增强/新增 Rule/门控/守护/selftest |
+
+> **门控契约（Rule 34.1 — task-v074）**：template_type 必填且 attest 锁定前会被 `check-template-type.sh` 机器校验（白名单=variant/ 动态派生+general）；缺失/非法在 attest enforce 档拒绝锁定（warn 档告警放行，`--skip-template-check` 逃生须披露）。
 
 **默认行为**:若调用方未传 `template_type`,根据 user goal 关键词匹配(顺序敏感,先命中先用):
 - 含「迁移/升级/重写/切换/转换/兼容」→ `migration`

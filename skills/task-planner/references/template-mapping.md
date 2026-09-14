@@ -23,6 +23,8 @@
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
+> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 12 类且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
+
 **文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
 - `templates/task_plan.md`(默认通用)
 - `templates/variant/research-type.md`
@@ -137,6 +139,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 部署(v2) | `templates/variant/deployment-type.md` | staging 验证 / 健康检查 / 回滚预案 |
 | 性能调优(v2) | `templates/variant/performance-tuning-type.md` | 基线 benchmark / P95 降幅 / 资源 |
 | schema 迁移(v2) | `templates/variant/schema-migration-type.md` | 可逆 up/down / 数据零丢失 / 在线切换 |
+| 规则增强(v2,沉淀) | `templates/variant/rule-enhancement-type.md` | 新增 Rule 条款 / config 三档键 / selftest 守护 / SKILL 联动 / 锚定级联防呆 |
 | 已有 .execution-plan.json | 允许替代 | — |
 
 ### 模板互斥关系(避免误选)
