@@ -24,11 +24,13 @@
 | task-v069-context-hygiene | complete | 5/5 | <!--  | none |  | skills/task-planner/references/critical-rules.md（Rule 29 追加）, skills/task-planner/SKILL.md（Rule 29 章节）,其他 .ts 文件,skills/task-planner/scripts/selftest-context-hygiene.sh（新建）, skills/task-planner/scripts/check-context-hygiene.sh（新建）, skills/task-planner/scripts/plan-hygiene.sh（新建）,skills/task-planner/config.json（新增 3 键） | 2026-09-14 | ✓ |
 | task-v070-exec-approach-echo | complete | 5/5 | <!--  | none |  | ~/.zcode/skills/task-planner/references/critical-rules.md,其他 references/*.md,~/.zcode/skills/task-planner/SKILL.md,其他 .md,~/.zcode/skills/task-planner/scripts/selftest-interaction.sh,其他 scripts/*.sh,~/.zcode/skills/task-planner/config.json,~/.claude/skills/task-planner/**, ~/.config/opencode/skills/task-planner/**（定向 cp 同步） | 2026-09-14 | ✓ |
 | task-v072-error-loop | complete | 5/5 | Rule 31 错误学习闭环：用户指出错误→31.2 4维归因+5Whys 禁止盲目修改，31.3 定向修，31.4 沉淀 notepad 两段，31.5 消费侧+Learning Gate（check-complete.sh 终验静态校验），31.6 机制；SKILL 5 处联动+C19；config error_loop_enforce（34 键）；selftest-error-loop 16 断言 | none |  | skills/task-planner/{references/critical-rules.md, SKILL.md, config.json, templates/{progress.md,task_plan.md,notepad-learnings.md}, scripts/{check-complete.sh,selftest-error-loop.sh,selftest-skill-collab.sh,selftest-execution-stability.sh}}, .zcode/ledger/task-planner-maintenance/ | 2026-09-14 | ✓ |
+| task-v073-veto-tracker | complete | 4/4 | Rule 32 用户否决与禁令追踪（防倒退门控）：32.1 veto 双写登记/32.2 提方案前必查禁令源命中禁入候选/32.3 D2 选项排除/32.4 解禁仅限 veto-lift 或新证据标注否决出处/32.5 veto_enforce；notepad 被否决方案段+SKILL 6 处联动+C20+selftest-veto 13 断言 | none |  | skills/task-planner/{references/critical-rules.md, SKILL.md, config.json, templates/notepad-learnings.md, scripts/{selftest-veto.sh,selftest-error-loop.sh,selftest-skill-collab.sh,selftest-execution-stability.sh}}, plans/task-v073-veto-tracker/ | 2026-09-14 | ✓ |
 
 | task-v071-shared-tracker | complete | 4/4 | 让 task-planner 设计期主动识别「共享内容维护」场景，接入 progress-tracker 技能（.zcode/ledger/ 多平台跟随）作为项目级认领追踪权威源：Rule 30 | none |  | skills/task-planner/{references/critical-rules.md, SKILL.md, config.json, references/skill-collaboration.md, templates/shared-tracker.md, scripts/selftest-shared-tracker.sh}, .zcode/ledger/task-planner-maintenance/ | 2026-09-14 | ✓ |
 ## 待处理（需关注）
 - task-v071-shared-tracker ✓ (4/4) — 2026-09-14 (done 09-14 22:40)
-- task-v072-error-loop ✓ (5/5) — 2026-09-14
+- task-v072-error-loop ✓ (5/5) — 2026-09-14 (done 09-14 22:40)
+- task-v073-veto-tracker ✓ (4/4) — 2026-09-14
 
 ## 已完成
 - task-v055-scheduler-enforce ✓ (5/5) — 2026-09-08
@@ -49,4 +51,4 @@
 - task-v070-exec-approach-echo ✓ (5/5) — 2026-09-14
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 18
+- in_progress: 0 | pending: 0 | complete: 19
