@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-32（1-12 核心执行约束 + 13-28 高级门控 + 29-32 维护/追踪/学习/防倒退门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪）
+- references/critical-rules.md: Critical Rules 全集 1-34（1-12 核心执行约束 + 13-28 高级门控 + 29-34 维护/追踪/学习/防倒退/反思/模板生命周期门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -192,6 +192,8 @@ model: opus
 | C18 | ask 模式计划批准前已按 28.2.1 口头复述大体执行思路（≤5 行，内容可对照计划）且已登记 Decisions Made（silent 模式不适用） | ☐ |
 | C19 | 用户指出错误场景（31.1 触发①②③任一）已按 Rule 31 走 31.2 根因分析：progress.md Error Log 对应行 Root Cause/Prevention 列非空（`<待沉淀>` 占位不算）且 notepad 沉淀两段已写；未命中错误指出 → 本项 N/A 记一行 | ☐ |
 | C20 | 本任务全部方案候选/建议/D2 选项已过 32.2 禁令检查（禁令源=当前+历史 notepad「被否决方案」段+memory）；命中项已剔除或按 32.4 标注否决出处+新证据交用户裁决；无禁令命中 → 本项 PASS 记一行 | ☐ |
+| C21 | 每个问题解决动作后已按 Rule 33 落 [reflect] 反思+验证两行（progress.md 可查）；计划声明 reflect_verify: required 时 REFLECT-GATE 必过（check-complete.sh） | ☐ |
+| C22 | attest 前 template_type 已过 check-template-type.sh 门控（逃生须披露）；命中 34.3 沉淀触发时已按 34.4 沉淀或登记不沉淀理由 | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -210,6 +212,8 @@ model: opus
 **稳定性铁律**：禁止"口头接受新指令、计划文档与 Todo 不动"——计划外执行是后期执行不稳定与漂移的首要来源。
 **错误指出特判（Rule 31 — task-v072）**：用户指出的若是「已产出/结论/执行有误」、或对同一问题重复反馈 ≥2 次、或执行中打断补充新数据推翻既有结论 → 先 STOP 当前写入，按 31.2 完成 4 维归因表（现象/直接原因/根因 5 Whys/类别）并落 progress.md Error Log（Root Cause 列）+ findings.md Issues 段，再按 31.3 修正路由定向修、31.4 同步沉淀 notepad 两段；**禁止跳过归因直接改症状处**。完整条款见 `references/critical-rules.md` Rule 31。
 **用户否决登记（Rule 32 — task-v073）**：用户说「不允许 X / 禁止 X / X 是错的 / 不要再做 X」或否决某方案 → 当次动作内按 32.1 双写登记（Decisions Made `veto:` 行 + notepad「🚫 被否决方案」段）；此后任何方案候选/D2 选项/重规划建议提出前按 32.2 先查禁令源，命中的方案禁止进入候选与推荐；解禁仅按 32.4 两条路（用户显式 veto-lift / 可引用新证据+标注否决出处交裁决），**禁止静默改回**。完整条款见 `references/critical-rules.md` Rule 32。
+**解决后反思-验证循环（Rule 33 — task-v074）**：每个问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后、标记完成前，走「反思四问（33.2）→独立验证（33.3）」微循环，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；≤3 轮（33.4），超限按 Rule 22.3 升级。完整条款见 `references/critical-rules.md` Rule 33。
+**模板选取门控与沉淀（Rule 34 — task-v074）**：attest 锁定前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；终验时命中 34.3 沉淀触发（同类第 2 次/类型空缺可泛化/用户点名）→ 按 34.4 提炼新 variant 模板入库+三点同步，防滥用见 34.5。完整条款见 `references/critical-rules.md` Rule 34。
 - 每次 B/C 类变更 → `Decisions Made` 表记一行（指令→变更）+ progress.md 记录
 - B/C 类处理完必须再跑 `Skill("task-drift-guard")`
 - 配套提醒：UserPromptSubmit hook 在指令到达时注入 `[plan-note]` 判定提示（有活跃计划时）
@@ -270,7 +274,7 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-32）：
+详见 `references/critical-rules.md`（Rules 1-34）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -293,6 +297,8 @@ Block 1 (选题) complete
 - **Rule 30（P0）共享内容认领追踪**：识别条件(30.1)/创建复用(30.2)/认领登记(30.3)/防冲突(30.4)/机制(30.5)——"共→认领"链路，可枚举共享资源（页面/内容/功能/部署位）的部分认领任务须登记项目级共享追踪账本（progress-tracker `.zcode/ledger/` 多平台跟随），后续任务先查后做，杜绝重复混乱；开关键 `config.json#shared_tracker_enforce`（默认 warn，详见 references/critical-rules.md Rule 30 与 references/skill-collaboration.md progress-tracker 协同行）
 - **Rule 31（P0）错误学习闭环**：触发(31.1)/根因分析(31.2)/修正路由(31.3)/沉淀(31.4)/消费侧(31.5)/机制(31.6)——“错→析→修→防”链路，用户指出错误/重复反馈/打断补充数据时先 4 维归因（现象/直接原因/根因 5 Whys ≤5 层/类别）并落 progress.md Error Log（Root Cause 列）+ findings.md Issues 段，禁止盲目改症状处；防复现措施沉淀 notepad-learnings 并被下一 Phase/新任务消费（31.5 消费侧）；终验 Learning Gate（check-complete.sh 校验 Error Log Root Cause 非空）；开关键 `config.json#error_loop_enforce`（默认 warn，详见 references/critical-rules.md Rule 31）
 - **Rule 32（P0）用户否决与禁令追踪**：登记(32.1)/计划期必查(32.2)/执行期消费(32.3)/解禁条件(32.4)/机制(32.5)——"否决→登记→提方案前必查→无证据禁重提"链路：用户裁决「不允许/禁止/X 是错的」即时落盘 notepad「🚫 被否决方案」段+Decisions Made（veto: 行）；提出任何方案候选/D2 选项/B 类重规划建议前必查禁令源（当前+历史 notepad+memory），命中的方案禁止进入候选、禁止推荐、禁止作为默认项；解禁仅限用户显式撤销（veto-lift）或可引用新证据且标注否决出处交用户裁决——**禁止静默改回（倒退式改法=循环开发）**；开关键 `config.json#veto_enforce`（默认 warn，详见 references/critical-rules.md Rule 32）
+- **Rule 33（P0）解决→反思→验证迭代循环**：触发(33.1)/反思四问(33.2)/独立验证(33.3)/迭代边界≤3 轮(33.4)/沉淀联动(33.5)/机制(33.6)——问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后标记完成前，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；REFLECT-GATE（check-complete.sh，声明 reflect_verify: required 时校验，默认 warn）；开关键 `config.json#reflect_verify_enforce`（详见 references/critical-rules.md Rule 33）
+- **Rule 34（P0）模板生命周期门控与沉淀**：选取门控(34.1)/三点同步(34.2)/沉淀触发(34.3)/沉淀流程(34.4)/防滥用(34.5)/机制(34.6)——attest 前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；命中沉淀触发→提炼新 variant 模板+三点同步；开关键 `config.json#template_gate_enforce`（默认 warn，详见 references/critical-rules.md Rule 34）
 
 ## Completion Gate
 
@@ -316,7 +322,7 @@ Block 1 (选题) complete
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-32（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控） |
+| `references/critical-rules.md` | Critical Rules 1-34（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |

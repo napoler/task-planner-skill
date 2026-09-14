@@ -14,7 +14,10 @@
 #   TL-11 init-session.sh 含 TASK_TEMPLATE_TYPE env 兜底 + variant 目录 ls 动态派生（P4-S1 产出）
 #   TL-12 行为: check-template-type.sh 对 template_type=bugfix 计划 exit 0
 #   TL-13 行为: check-template-type.sh 对 template_type=nonexistent 计划 exit 1（测试产物 /tmp 清理）
-# 13 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
+#   TL-14 SKILL.md 检查清单含 C22 行（Rule 34 attest 门控+沉淀）
+#   TL-15 SKILL.md 含「模板选取门控与沉淀」联动段
+#   TL-16 references/template-mapping.md 含 Rule 34 门控提示
+# 16 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
 
 set -u
 
@@ -25,6 +28,8 @@ CONFIG="$SKILL_ROOT/config.json"
 CTT="$SKILL_ROOT/scripts/check-template-type.sh"
 ATTEST="$SKILL_ROOT/scripts/attest-plan.sh"
 INIT="$SKILL_ROOT/scripts/init-session.sh"
+SKILL="$SKILL_ROOT/SKILL.md"
+TMAP="$SKILL_ROOT/references/template-mapping.md"
 
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'TL-%s PASS %s\n' "$1" "$2"; }
@@ -65,6 +70,12 @@ printf '%s\n' "---" "template_type: nonexistent" "---" > "$T/plan-bad.md"
 if bash "$CTT" "$T/plan-bugfix.md" >/dev/null 2>&1; then ok 12 "行为: bugfix 计划 exit 0"; else bad 12 "行为: bugfix 计划未 exit 0"; fi
 if bash "$CTT" "$T/plan-bad.md" >/dev/null 2>&1; then bad 13 "行为: nonexistent 计划应 exit 1 却 exit 0"; else ok 13 "行为: nonexistent 计划 exit 1"; fi
 rm -rf "$T"
+# TL-14
+if grep -q '^| C22 ' "$SKILL"; then ok 14 "SKILL.md 检查清单 C22 行"; else bad 14 "SKILL.md 缺 C22 行"; fi
+# TL-15
+if grep -q '模板选取门控与沉淀' "$SKILL"; then ok 15 "SKILL.md「模板选取门控与沉淀」段"; else bad 15 "SKILL.md 缺「模板选取门控与沉淀」段"; fi
+# TL-16
+if grep -q 'check-template-type' "$TMAP" && grep -q 'Rule 34' "$TMAP"; then ok 16 "template-mapping.md Rule 34 门控提示"; else bad 16 "template-mapping.md 缺 Rule 34 门控提示"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
