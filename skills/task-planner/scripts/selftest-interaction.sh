@@ -11,6 +11,8 @@
 #   TI-08 传文件路径直接 (非目录, 等价TI-04) → silent
 #   TI-09 值列带注解写法 `silent`（用户…）→ 取首 token silent
 #   TI-10 config.json 顶层 {"interaction_mode":"silent"} (非 .properties 嵌套) → silent
+#   TI-11 (task-v070) 静态守护: critical-rules.md 含 28.2.1「思路复述」条款
+#          (ask 模式 D1 批准前置,防未来误删)
 # hermetic: mktemp 夹具 + trap 清理, 不触真实 plans/ 与真实 config.json;
 # 各 config 层用例独立 <root> 目录 (resolve 读 <script_dir>/../config.json,
 # 故 config.json 必须放 <root>/config.json 且 resolve copy 到 <root>/scripts/)。
@@ -131,6 +133,15 @@ assert_mode 09 silent
 # TI-10: config.json 顶层 interaction_mode=silent (非 .properties 嵌套, 空 plan 无行 → ③ 层) → silent
 run_case 10 clear "$C10/scripts/resolve-interaction-mode.sh" "$PLANEMPTY"
 assert_mode 10 silent
+
+# TI-11 (task-v070): 28.2.1 静态守护 — critical-rules.md 含 28.2.1 条款且带「思路复述」语义
+# (复述是 LLM 行为,无脚本可测行为面;守护=条款存在性 + 关键语义锚点, 防未来误删/改写丢失语义)
+CRIT_RULES="$(cd "$SCRIPT_DIR/.." && pwd)/references/critical-rules.md"
+if grep -q "28\.2\.1" "$CRIT_RULES" && grep -q "思路复述" "$CRIT_RULES" && grep -q "28\.2\.1" "$SCRIPT_DIR/../SKILL.md"; then
+  PASS=$((PASS+1)); printf 'TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)\n'
+else
+  FAIL=$((FAIL+1)); printf 'TI-11 FAIL 28.2.1 static guard (critical-rules.md/SKILL.md 缺 28.2.1 或 思路复述 锚点)\n'
+fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
