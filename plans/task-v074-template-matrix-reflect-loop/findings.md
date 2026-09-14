@@ -78,3 +78,10 @@
 - **SKILL.md 535 行（净 +6，纪律 ≤10 达标）**：索引 :277 与 References :325=Rules 1-34、C21/C22 :195-196、特判段 :215-216、摘要行 :299-300
 - **T2b 已修复**：上限 540（label task-v074 扩充），knowledge-brief selftest 16/0
 - **⚠️ 计数口径更正（Error Log#2）**：历史"全量 selftest 235/0"为子代理汇总算术错误；真实口径=逐脚本 Total 行求和。基线@7ef6214=17 脚本 265P/1F（T2b）；**当前=19 脚本 294P/0F**。子代理自报总数一律不采信，主进程亲跑求和入账
+
+### G. 交付终态（2026-09-15）
+- **COMPLETE**：merge 8c8c24a（master），簿记 ed1305e；3 实体位 IDENTICAL；Code Review Gate APPROVED；check-complete exit 0（含 REFLECT-GATE PASSED——本任务 dogfood 自家新门控闭环）
+- 全量 selftest：19 脚本 **294 PASS/0 FAIL**（主进程逐 Total 行求和口径）
+- 部署即时生效验证：~/.zcode 位 REFLECT-GATE 命中 5 处、rule-enhancement-type.md 在位
+- 遗留（待用户授权，非本任务 scope）：INDEX v072/v073 误挂账 2 行、v072 worktree+分支清理、config.json :394-419 重复键脏点
+- 会话侧修复记录：哨兵 sid 错位（init 注册 133bb≠会话 sess038d）→ 手工补 sess 前缀指针后 Write 解禁
