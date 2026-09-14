@@ -1,6 +1,6 @@
 ---
 name: progress-tracker
-description: 项目级任务进度追踪账本。维护当前项目 .zcode/ledger/ 下按主题组织的结构化进度记录，跨会话累积，防止重复更新，支持进度回查与效果评估。当用户提到"进度追踪"、"追踪文件"、"长期维护任务"、"任务进度记录"、"进度账本"、"ledger"、"记录这次更新做了什么"、"查看上次更新到哪了"、"避免重复更新"、"追踪维护效果"时触发。适用于网站长期维护、开发功能路线图、内容批量更新等跨会话项目任务。
+description: 项目级任务进度追踪账本。维护当前项目平台配置目录（.zcode/ 或 .claude/，跟随既有；皆无默认 .zcode/）下 ledger/ 中按主题组织的结构化进度记录，跨会话累积，防止重复更新，支持进度回查与效果评估。当用户提到"进度追踪"、"追踪文件"、"长期维护任务"、"任务进度记录"、"进度账本"、"ledger"、"记录这次更新做了什么"、"查看上次更新到哪了"、"避免重复更新"、"追踪维护效果"时触发。适用于网站长期维护、开发功能路线图、内容批量更新等跨会话项目任务。
 model: haiku
 ---
 
@@ -18,10 +18,12 @@ model: haiku
 
 ## 定位与存储路径
 
-**项目级优先**：数据写入**当前项目根目录**（CWD 或其 git 根）的 `.zcode/ledger/`。
+**项目级优先**：数据写入**当前项目根目录**（CWD 或其 git 根）的 `ledger/` 目录（位于平台配置目录内，多平台通用命名）。
+
+**平台配置目录选取规则（2026-09-14 多平台通用化）**：项目根已存在 `.zcode/` 或 `.claude/` 任一目录时，账本 ledger/ 跟随**已存在的那个**（`.zcode/ledger/` 或 `.claude/ledger/`）——跟随既有平台目录，禁止另造第二套；两者皆无时默认 `.zcode/ledger/`（ZCode 平台）；平台配置目录若被项目 gitignore 忽略 → 账本随仓库可移植性受损，记项目 progress/notes 一行「账本未入库」提醒，不阻塞写入。
 
 ```
-<project-root>/.zcode/ledger/
+<project-root>/<平台配置目录>/ledger/
 ├── INDEX.md              # 所有主题的简要索引
 ├── site-maintenance/     # 主题目录，kebab-case 命名
 │   └── site-maintenance.jsonl
@@ -33,12 +35,12 @@ model: haiku
 
 - 项目根目录 = 执行时 CWD，或 `git rev-parse --show-toplevel` 解析出的 git 根
 - 无 git 仓库时 = 当前 CWD
-- `.zcode/ledger/` 随项目仓库提交，团队/其他机器可复用
+- 账本随项目仓库提交（平台配置目录在仓库内时），团队/其他机器可复用；被 gitignore → 记「账本未入库」提醒
 - 不存在时自动 `mkdir -p`
 
 **用户级回退**（仅当用户显式指定 `~/.zcode/ledger/` 或无明确项目上下文时）：
 
-数据写入 `~/.zcode/ledger/`，目录结构与项目级相同。
+数据写入 `~/.zcode/ledger/`，目录结构与项目级相同（用户级固定 `.zcode`，不做平台适配）。
 
 ## 目录布局
 
@@ -66,12 +68,19 @@ model: haiku
 
 ## 执行流程
 
-### Step 0：解析项目根目录
+### Step 0：解析项目根目录 + 平台配置目录
 
 ```bash
 # 有 git 仓库时
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-LEDGER_DIR="$PROJECT_ROOT/.zcode/ledger"
+# 平台配置目录选取（多平台通用）：已存在 .zcode/ 跟随 .zcode；否则已存在 .claude/ 跟随 .claude；皆无默认 .zcode/
+if [ -d "$PROJECT_ROOT/.zcode" ]; then
+  LEDGER_DIR="$PROJECT_ROOT/.zcode/ledger"
+elif [ -d "$PROJECT_ROOT/.claude" ]; then
+  LEDGER_DIR="$PROJECT_ROOT/.claude/ledger"
+else
+  LEDGER_DIR="$PROJECT_ROOT/.zcode/ledger"
+fi
 mkdir -p "$LEDGER_DIR/<topic>"
 ```
 
