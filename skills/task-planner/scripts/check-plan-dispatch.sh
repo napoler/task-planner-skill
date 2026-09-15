@@ -21,6 +21,23 @@
 # 环境：无特殊 env 依赖；纯 bash while-read 状态机（禁用 awk 区间模式——gawk 区间 bug 已知）
 # [2026-09-09 task-v058 P3-S1] 新建（D2 规格）；Phase 头只认 `### Phase` markdown 标题，
 # 避免误配「## Current Phase」节内的裸 `Phase N` 行
+# [2026-09-16 task-v075 P2-S1] S-unit 数值门控（Rule 21.1b 机制化，仅派发型 Phase 生效，
+# 判定口径对应计划 KQ1，KQ1 裁定随本节注释定死）：
+#   列序参照（与任务书/KQ1 口径一致）：`| S<n> | 目标 | 执行体 | 输入 | 验收 | 预估时长 | 状态 |`
+#   awk -F'|' 下 $5=输入列、$7=预估时长列。
+#   ① 时长：$7 须匹配 ^[0-9]+min$ 且数值 ≤ step_max_minutes（jq 读 config.json
+#      .properties.subagent.step_max_minutes.default，键参照 attest-plan.sh:80-97
+#      tcfg 范式；jq 缺失或键缺失 → 回退默认 15 并打印一行 SKIPPED 说明）
+#   ② 输入：$5 中路径样 token 计数 ≤ step_max_files（同上回退默认 2）。
+#      KQ1 裁定口径（定死）：token = 以 .sh/.md/.json/.ts/.js/.py/.cjs 结尾的
+#      非空白 token，grep -oE '[^ ]+\.(sh|md|json|ts|js|py|cjs)'（后缀锚定 token
+#      尾部，避免任务书原式 `(^|[[:space:]])` 前缀形态在 grep -o 下误带前导
+#      空白/分号被当独立 token 的计数漂移）；计数 > step_max_files → 违规。
+#   ③ 时长列为空或不可解析（不匹配 NNmin）→ 逐行打印 `[plan-dispatch] SKIPPED
+#      Phase N S<n> 时长不可解析`（v074 P10 fail-open 显式化先例，attest-plan.sh:92-97），
+#      不阻断；时长校验本身跳过，但输入列校验仍执行。
+#   ④ 违规 ≥1 → 沿用既有 add_violation 风格逐行打印后 exit 1；0 违规 → 既有行为
+#      与退出码零变化。
 
 set -u
 
@@ -35,8 +52,28 @@ fi
 #   有 `- **Executor:**` 行 = 现代计划 → 继续机械门控(缺 S-unit 表即违规)；
 #   无该行 = 旧模板计划 → legacy 放行。
 if ! grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
-    echo "[plan-dispatch] legacy plan(无 \`- **Executor:**\` 行),跳过门控"
+    echo "[plan-dispatch] legacy plan(无 \`- \*\*Executor:\*\*\` 行),跳过门控"
     exit 0
+fi
+
+# ── S-unit 数值门控阈值（task-v075 P2-S1，仅派发型 Phase 数据行生效）────────
+# [2026-09-16] jq 读 config.json（键参照 attest-plan.sh:80-97 tcfg 范式）；
+# jq 缺失/键缺失 → 回退默认值（step_max_minutes=15 / step_max_files=2）
+# 并打印一行 SKIPPED 说明（fail-open 显式化，同 attest-plan.sh:92-97 先例）
+STEP_MAX_MIN=15
+STEP_MAX_FILES=2
+cfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
+if command -v jq >/dev/null 2>&1 && [ -f "$cfg" ]; then
+    STEP_MAX_MIN="$(jq -r '.properties.subagent.step_max_minutes.default // "15"' "$cfg" 2>/dev/null)" || STEP_MAX_MIN=""
+    STEP_MAX_FILES="$(jq -r '.properties.subagent.step_max_files.default // "2"' "$cfg" 2>/dev/null)" || STEP_MAX_FILES=""
+fi
+if ! [[ "$STEP_MAX_MIN" =~ ^[0-9]+$ ]]; then
+    STEP_MAX_MIN=15
+    echo "[plan-dispatch] SKIPPED step_max_minutes 未解析(jq 缺失或键缺),回退默认 15"
+fi
+if ! [[ "$STEP_MAX_FILES" =~ ^[0-9]+$ ]]; then
+    STEP_MAX_FILES=2
+    echo "[plan-dispatch] SKIPPED step_max_files 未解析(jq 缺失或键缺),回退默认 2"
 fi
 
 violation_list=""
@@ -120,6 +157,29 @@ while IFS= read -r line; do
         col4="$(trim "$col4")"
         if [ -z "$col4" ] || [ "$col4" = "-" ]; then
             add_violation "$phase_no" "行 S${s_id} 执行体为空"
+        fi
+        # ⑤-b S-unit 数值门控（task-v075 P2-S1，KQ1 口径见文件头注释）：
+        # 逐行校验 预估时长列($7) 与 输入列($5)
+        col5="$(printf '%s' "$line" | awk -F'|' '{print $5}')"
+        col7="$(printf '%s' "$line" | awk -F'|' '{print $7}')"
+        col5="$(trim "$col5")"
+        col7="$(trim "$col7")"
+        # 时长校验：须匹配 ^[0-9]+min$ 且数值 ≤ step_max_minutes；
+        # 空/不可解析 → SKIPPED 显式化（不阻断，v074 P10 先例）
+        if [[ "$col7" =~ ^([0-9]+)min$ ]]; then
+            dur="${BASH_REMATCH[1]}"
+            if [ "$dur" -gt "$STEP_MAX_MIN" ]; then
+                add_violation "$phase_no" "行 S${s_id} 预估时长 ${dur}min > step_max_minutes(${STEP_MAX_MIN})"
+            fi
+        else
+            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 时长不可解析"
+        fi
+        # 输入校验：路径样 token 计数 > step_max_files → 违规（KQ1 定死口径）。
+        # [2026-09-16] 计数用 `grep -oE | wc -l` 而非 `grep -c`：`grep -c` 与
+        # -o 同用时忽略 -o（按"命中行数"计 = 恒 1，实测），须逐 token 计数
+        pcount="$(printf '%s\n' "$col5" | grep -oE '[^ ]+\.(sh|md|json|ts|js|py|cjs)' | wc -l)"
+        if [ "$pcount" -gt "$STEP_MAX_FILES" ]; then
+            add_violation "$phase_no" "行 S${s_id} 输入列 ${pcount} 个文件路径 > step_max_files(${STEP_MAX_FILES})"
         fi
     fi
 done < "$PLAN_FILE"
