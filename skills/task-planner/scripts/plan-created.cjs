@@ -56,10 +56,45 @@ function normSidkey(s) {
   if (k.startsWith('sess')) k = k.slice(4);
   return k;
 }
-const sidkey = normSidkey(sid);
+// [2026-09-16 task-v074 P10 sid 哨兵探测 fallback] 在 PLANS_DIR 算出后调用。
+const SIDKEY0 = normSidkey(sid);
+// 探测延迟到 projectRoot/PLANS_DIR 确定后执行（见下方 sentinelFallbackSidkey 调用）
 
 const projectRoot = findProjectRoot(process.cwd());
 const PLANS_DIR = path.join(projectRoot, 'plans');
+
+// [2026-09-16 task-v074 P10 sid 哨兵探测 fallback] 动机：env CLAUDE_CODE_SESSION_ID 与 hook
+// stdin .session_id 是两套命名空间（SessionStart 哨兵用 hook sid 写，plan-created 用 env sid 清 →
+// 指针/哨兵错位，findings P1-2 实锤 env 133bb… vs hook sess038d…）。当既有 sidkey 无对应哨兵文件时，
+// 探测 <root>/plans/.plan_required_side/ 下 mtime 最新的 *.plan_required，取其文件名 stem 为
+// sidkey（SessionStart 在会话启动时刚写入 = 本会话真实 sid 的落地物）。
+// 多会话并发局限：最新 mtime 的启动会话优先，属已知取舍。
+// 语义红线：env sid 有对应哨兵时行为完全不变（仅探测不到才 fallback）。
+function sentinelFallbackSidkey(primaryKey) {
+  if (primaryKey && fs.existsSync(path.join(PLANS_DIR, '.plan_required_side', primaryKey + '.plan_required'))) {
+    return primaryKey; // env sid 命中哨兵 → 维持现状
+  }
+  const dir = path.join(PLANS_DIR, '.plan_required_side');
+  if (!fs.existsSync(dir)) return primaryKey; // 目录无哨兵 → 维持现状
+  let latest = '';
+  let latestMt = 0;
+  let entries = [];
+  try { entries = fs.readdirSync(dir); } catch (e) { entries = []; }
+  for (const f of entries) {
+    if (!f.endsWith('.plan_required')) continue;
+    let mtMs = 0;
+    try { mtMs = fs.statSync(path.join(dir, f)).mtimeMs; } catch (e) {}
+    if (mtMs > latestMt) { latestMt = mtMs; latest = f; }
+  }
+  if (!latest) return primaryKey;
+  const altKey = normSidkey(latest.slice(0, -'.plan_required'.length));
+  if (altKey && altKey !== primaryKey) {
+    console.log('[task-plan] INFO: env sidkey(' + (primaryKey || '(空)') + ') 无对应哨兵,fallback 最新哨兵 sidkey(' + altKey + ')');
+    return altKey;
+  }
+  return primaryKey;
+}
+const sidkey = sentinelFallbackSidkey(SIDKEY0);
 
 // 验证：限定「当前会话活跃计划」，口径对齐 resolve-plan-dir.sh 解析链
 // (task-v065/V-7 [2026-09-13]：原逻辑=「readdirSync 首个含 task_plan.md 的目录即有效」，

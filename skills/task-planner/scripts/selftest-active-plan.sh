@@ -143,7 +143,64 @@ RC=$?
 [ "$RC" = 0 ] && [ -f "$R11/plans/bb/.plan-attestation" ] && \
   grep -q '^plan_file=.*bb/task_plan.md$' "$R11/plans/bb/.plan-attestation" && \
   [ ! -f "$R11/plans/aa/.plan-attestation" ] && pass 11 || \
-  fail 11 "rc=$RC att_bb=$([ -f "$R11/plans/bb/.plan-attestation" ] && echo yes || echo no) att_aa=$([ -f "$R11/plans/aa/.plan-attestation" ] && echo yes || echo no)"
+  fail 11 "rc=$RC att_bb=$([ -f "$R11/plans/bb/.plan-attestation" ] && echo yes || echo no) att_aa=$([ -f "$R11/plans/aa/.plan-attestation" ] && echo no)"
+
+# T12 [2026-09-16 task-v074 P10] sid 哨兵探测 fallback 行为级断言（env sid 与哨兵命名空间错位修复）
+# T12a init-session: env sid(133bb…) 无对应哨兵 + 目录内存在 mtime 最新哨兵(sess038d…)
+#   → side 指针文件名应为哨兵 stem 而非 env sid（对齐 SessionStart hook 命名空间）
+ROOT12A="$(mk_root t12a)"
+mkdir -p "$ROOT12A/plans/.plan_required_side" "$ROOT12A/plans/tt"
+printf 'plan-required\ncreated_epoch: 1789475721144\n' > "$ROOT12A/plans/.plan_required_side/sess038ddeadbeef.plan_required"
+( cd "$ROOT12A/plans/tt" && env CLAUDE_CODE_SESSION_ID=133bbenvdead1 bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12A/plans/.active_plan_side/sess038ddeadbeef.active_plan" ] && \
+   [ "$(cat "$ROOT12A/plans/.active_plan_side/sess038ddeadbeef.active_plan")" = "tt" ] && \
+   [ ! -e "$ROOT12A/plans/.active_plan_side/133bbenvdead1.active_plan" ]; then
+    PASS=$((PASS+1)); echo "T12a PASS 12a"
+else
+    FAIL=$((FAIL+1)); echo "T12a FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12b init-session 回归: env sid 有对应哨兵 → 指针名=env sid（语义红线：行为不变）
+ROOT12B="$(mk_root t12b)"
+mkdir -p "$ROOT12B/plans/.plan_required_side" "$ROOT12B/plans/tt"
+printf 'plan-required\n' > "$ROOT12B/plans/.plan_required_side/aa11bb22cc33dd44ee55.plan_required"
+( cd "$ROOT12B/plans/tt" && env CLAUDE_CODE_SESSION_ID=aa11bb22cc33dd44ee55 bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12B/plans/.active_plan_side/aa11bb22cc33dd44ee55.active_plan" ] && \
+   [ "$(cat "$ROOT12B/plans/.active_plan_side/aa11bb22cc33dd44ee55.active_plan")" = "tt" ]; then
+    PASS=$((PASS+1)); echo "T12b PASS 12b"
+else
+    FAIL=$((FAIL+1)); echo "T12b FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12c init-session 回归: 无哨兵目录 + 无 env sid → 维持 legacy 全局指针（零破坏回归）
+ROOT12C="$(mk_root t12c)"
+mkdir -p "$ROOT12C/plans/tt"
+( cd "$ROOT12C/plans/tt" && env -u CLAUDE_CODE_SESSION_ID bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12C/plans/.active_plan" ] && [ "$(cat "$ROOT12C/plans/.active_plan")" = "tt" ] && \
+   [ ! -d "$ROOT12C/plans/.active_plan_side" ]; then
+    PASS=$((PASS+1)); echo "T12c PASS 12c"
+else
+    FAIL=$((FAIL+1)); echo "T12c FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12d plan-created.cjs: 哨兵(sess stem) + side 指针(sess stem) + 计划目录 + 无关 env sid
+#   → 哨兵被清（双侧清除经 fallback sidkey 命中）；无 sid 兜底行为不回归
+PCRE=$(command -v node >/dev/null 2>&1 && echo yes || echo no)
+if [ "$PCRE" = "yes" ]; then
+  ROOT12D="$(mk_root t12d)"
+  mkdir -p "$ROOT12D/plans/.plan_required_side" "$ROOT12D/plans/zz"
+  printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12D/plans/.plan_required_side/ffff0011aaaa2233.plan_required"
+  mkdir -p "$ROOT12D/plans/.active_plan_side"
+  printf 'zz\n' > "$ROOT12D/plans/.active_plan_side/ffff0011aaaa2233.active_plan"
+  OUT12D="$( cd "$ROOT12D/plans/zz" && env -u TASK_PLANNER_SID CLAUDE_CODE_SESSION_ID=deadbeef44 node "$SCRIPT_DIR/plan-created.cjs" </dev/null 2>&1 )"
+  RC=$?
+  if [ "$RC" = 0 ] && [ ! -f "$ROOT12D/plans/.plan_required_side/ffff0011aaaa2233.plan_required" ] && \
+     printf '%s' "$OUT12D" | grep -q '会话哨兵已清除'; then
+      PASS=$((PASS+1)); echo "T12d PASS 12d"
+  else
+      FAIL=$((FAIL+1)); echo "T12d FAIL rc=$RC out=$OUT12D"
+  fi
+fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

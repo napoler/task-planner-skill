@@ -85,7 +85,7 @@ Claude 将：
 
 ### 4. 让 AI 自动安装
 
-让 LLM 阅读 `INSTALL.md`，其中包含一段可直接执行的安装代码块——详见 **LLM 自动安装**章节。
+让 LLM 阅读 `INSTALL_zh.md`，其中包含一段可直接执行的安装代码块——详见 **LLM 自动安装**章节。
 
 ---
 
@@ -93,28 +93,25 @@ Claude 将：
 
 ```
 task-planner-skill/
-├── README.md                      ← 你在这里
-├── README_zh.md                   ← 中文版本
-├── INSTALL.md                     ← 安装说明（LLM 自动安装 + 手动安装）
-├── INSTALL_zh.md                  ← 中文安装说明
+├── README_zh.md                   ← 你在这里（中文主文档）
+├── INSTALL_zh.md                  ← 中文安装说明（LLM 自动安装 + 手动安装）
 ├── CHANGELOG.md                   ← 版本历史
 ├── CONTRIBUTING.md                ← 开发流程与 PR 规范
+├── CONTRIBUTING_zh.md             ← 中文贡献指南
 ├── LICENSE                        ← MIT
 ├── CLAUDE.md                      ← Claude Code 仓库指南
-│
-├── scripts/                       ← 安装/验证工具
-│   ├── install.sh                 ← 一键安装
-│   ├── uninstall.sh               ← 安全卸载
-│   └── validate.sh                ← 安装后完整性检查
 │
 ├── examples/
 │   └── full-workflow.md           ← 端到端演示
 │
-└── skills/task-planner/           ← Skill 包本体（镜像到 ~/.claude/skills/）
+└── skills/task-planner/           ← Skill 包本体（镜像到 ~/.zcode/skills/）
     ├── SKILL.md                   ← 入口：frontmatter + 工作流
     ├── config.json                ← 所有阈值配置
     ├── reference.md               ← Manus 原则 + 决策矩阵
     ├── examples.md                ← 实战示例
+    ├── INSTALL.md                 ← 安装说明（LLM 自动安装 + 手动安装）
+    ├── install.sh                 ← 一键安装（同目录 uninstall.sh 安全卸载）
+    ├── companion/agents/          ← 3 个伴生 agent（plan-writer 等）
     ├── scripts/
     │   ├── init-session.sh        ← 初始化计划文件
     │   ├── check-scope.sh         ← PreToolUse Hook：范围守护
@@ -126,6 +123,8 @@ task-planner-skill/
     │   └── sync-ide-folders.ts    ← IDE 工作区同步
     ├── templates/
     │   ├── task_plan.md           ← 阶段 + VC 模板
+    │   ├── knowledge-brief.md     ← 必要知识储备（6 文件之一）
+    │   ├── variant/               ← 13 个 template_type 变体（*-*-type.md）
     │   ├── verification.md        ← VC + 阶段门控模板
     │   ├── findings.md            ← 发现与决策记录
     │   ├── progress.md            ← 会话进度日志
@@ -212,7 +211,7 @@ plans/
 
 ## 英文文档
 
-[English README](README.md) · [English Install Guide](INSTALL.md) · [English Contributing Guide](CONTRIBUTING.md)
+暂无独立英文 README / 安装文档。英文贡献流程见 `CONTRIBUTING.md`；安装与说明以 `INSTALL_zh.md` / 本文件为主（内含英文术语）。
 
 ---
 
@@ -220,7 +219,7 @@ plans/
 
 | 文档 | 阅读时机 |
 |------|----------|
-| `INSTALL.md` / `INSTALL_zh.md` | 安装 Skill —— LLM 自动安装块 + 手动安装（Linux/macOS/WSL/Windows） |
+| `INSTALL_zh.md` | 安装 Skill —— LLM 自动安装块 + 手动安装（Linux/macOS/WSL/Windows） |
 | `examples/full-workflow.md` | 端到端演示：从用户请求到 COMPLETE |
 | `skills/task-planner/examples.md` | Skill 包内实战示例 |
 | `skills/task-planner/reference.md` | Manus Context Engineering 原则 + 决策矩阵 |

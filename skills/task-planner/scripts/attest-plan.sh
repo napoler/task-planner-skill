@@ -63,7 +63,12 @@ case "$mode" in
     # [2026-09-09 task-v058] 计划期 S-unit 执行体校验(Rule 22.6/25.1 机制化);--skip-dispatch-check 可跳过
     cpl="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-plan-dispatch.sh"
     if [ -z "$skip_dispatch" ]; then
-      [ -x "$cpl" ] && { bash "$cpl" "$plan_file" || { echo "[attest] ✗ 派发型 Phase 未规划子代理,拒绝锁定(Rule 22.6/25.1);紧急 --skip-dispatch-check(将记 ledger 告警)" >&2; exit 1; }; }
+      if [ -x "$cpl" ]; then
+        bash "$cpl" "$plan_file" || { echo "[attest] ✗ 派发型 Phase 未规划子代理,拒绝锁定(Rule 22.6/25.1);紧急 --skip-dispatch-check(将记 ledger 告警)" >&2; exit 1; }
+      else
+        # [2026-09-16 task-v074 P10] fail-open 显式化(CR P2a 收口):脚本缺失/不可执行时不再静默跳过
+        echo "[plan-dispatch] SKIPPED (check-plan-dispatch.sh 不可执行)" >&2
+      fi
     else
       echo "[attest] WARN: --skip-dispatch-check 跳过 S-unit 执行体校验" >&2
     fi
@@ -84,7 +89,13 @@ case "$mode" in
       TTIER="$(resolve_template_tier)"
       if [ "$TTIER" != "off" ]; then
         ctt="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-template-type.sh"
-        [ -x "$ctt" ] && { bash "$ctt" "$plan_file"; t_rc=$?; } || t_rc=0
+        if [ -x "$ctt" ]; then
+          bash "$ctt" "$plan_file"; t_rc=$?
+        else
+          # [2026-09-16 task-v074 P10] fail-open 显式化(CR P2a 收口):脚本缺失/不可执行时不再静默跳过
+          echo "[template-gate] SKIPPED (check-template-type.sh 不可执行)" >&2
+          t_rc=0
+        fi
         if [ "$t_rc" -eq 0 ]; then
           echo "[attest] [template-gate] OK (Rule 34.1)"
         else

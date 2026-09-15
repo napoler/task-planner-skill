@@ -14,6 +14,13 @@
 - **init-session.sh 模板路由增强（task-v074）** — 支持 `TASK_TEMPLATE_TYPE` 环境变量（兜第 2 位置参数）；VALID_TYPES 白名单改为 variant/ 目录动态派生（新增变体免改脚本）。
 - **check-complete.sh REFLECT-GATE / VC-GATE 紧凑格式兼容（task-v074 P8）** — VC-GATE 计数器并集 `- **V-N:** VC-x` 紧凑映射行（v065 起现行计划格式，原计数恒 0 致门控形同虚设）；映射目标 ∈ 已定义 VC 校验保留。
 - **check-scope.sh D10'' attestation 仲裁（task-v074 P8）** — 本会话 side 指针指向的计划存在有效 `.plan-attestation`（SHA-256 匹配）时放行哨兵，修复恢复会话因 SessionStart 重写哨兵 epoch 被误拦（fail-closed：无指针新会话/篡改 attestation 仍拦截）。
+- **sid 兜底链统一：哨兵探测 fallback（task-v074 P10）** — 根因：env `CLAUDE_CODE_SESSION_ID` 与 hook stdin `.session_id` 是两套命名空间（SessionStart 哨兵用 hook sid 写、init/plan-created 用 env sid 清 → P1-2 指针/哨兵错位实锤）。
+  - `scripts/init-session.sh`：env sid 无对应 side 哨兵时，取 `plans/.plan_required_side/` 下 mtime 最新哨兵文件名 stem 为 sidkey（SessionStart 刚写入=本会话真实 sid 的落地物），据此写 side 指针；env sid 有对应哨兵时行为完全不变（语义红线）。多会话并发局限：最新 mtime 启动会话优先，已知取舍。
+  - `scripts/init-session.sh` PLAN_ROOT 解析修正：原 `cd .. && pwd` 假设 CWD=`plans/<task-id>/`（`<root>` 级指针），与 canonical 侧 `<root>/plans/.active_plan{,_side}`（task-plan-init.cjs :76 / resolve-plan-dir.sh :33 / set-active-plan）错位——指针写进 resolve 侧查不到的位置。现 CWD=`plans/` → 指针/哨兵落 `<root>/plans/`；CWD=`plans/<task-id>/`（既有标准运行方式）行为不变；非标准目录维持旧 `cd ..`（零破坏降级）。副作用登记：`plans/<task-id>` 运行时 legacy/side 指针落点从 `<root>/.active_plan{,_side}` 迁移至 `<root>/plans/.active_plan{,_side}`（与 set-active-plan / resolve-plan-dir / attest 口径对齐）。
+  - `scripts/plan-created.cjs` 同侧 fallback：sidkey（env 链）无对应 side 哨兵时取 `plans/.plan_required_side/` 下 mtime 最新哨兵 stem，双清除逻辑不变、仅命中口径对齐；无 sid 兜底行为不回归。
+  - `scripts/selftest-active-plan.sh` 新增 T12a-d 行为级断言（init 哨兵 stem 指针 / env sid 命中不变 / 无 sid legacy 回归 / plan-created 哨兵被清）。
+- **fail-open 显式化（task-v074 P10，CR P2a 收口）** — `scripts/attest-plan.sh` 两处「脚本不存在/不可执行 → 静默跳过」分支各加一行 stderr（行为零变化，仍放行）：`[template-gate] SKIPPED (check-template-type.sh 不可执行)` 与 `[plan-dispatch] SKIPPED (check-plan-dispatch.sh 不可执行)`，消除静默放行不可见。
+- **文档悬空清理（task-v074 P10）** — `README_zh.md` :88 安装指引改指 `INSTALL_zh.md`；目录树补 `companion/agents/`（3 agent）/`templates/knowledge-brief.md`/`templates/variant/`（13 变体一行概括）；「英文文档」段如实改为无独立英文文档、指向 `CONTRIBUTING.md` 及 INSTALL_zh/README_zh 内英文术语；本文件历史条目 `docs/ARCHITECTURE.md §4.5.2` 章节号修正为 §2.6（文件实际存在）。
 
 ### 变更
 
@@ -50,7 +57,7 @@
   - **`config.json`(新增)**:`autonomous_resume`(默认 true)总开关 + 守卫阈值(`max_auto_plans_per_trigger=1` / `skip_states=[blocked,awaiting-user,hold]` / `cross_project_auto_resume=false` 恒禁 / `fresh_threshold_days=7` / `max_failure_count=3`)。
   - **`select-and-resume.sh`**:config 纯 grep/sed 加载(缺文件/缺键默认值兜底)、模式解析(flag > config)、`skip_states` 硬排除、auto 模式仓内范围守卫(outside-repo 排除)、标记 payload `mode=auto-resume`(token `[auto-pushed-by-cron]` 沿用防旧过滤失效);`--dry-run`/`--auto-push` 显式覆盖保留。
   - **SKILL.md §7 重写**(7.1 触发与授权 / 7.2 配置 / 7.3 打分 / 7.4 过滤 / 7.5 推进纪律 / 7.6 报告 / 7.7 兼容性 / 7.8 风险 / 7.9 决策记录):守卫底线(跨仓只报告、BLOCKED/[awaiting-user]/[hold] 跳过、单次 1 个、用户"不要自动续推"会话级逃生)成文;续推=按该计划自身契约接着干,不得改 Goal/VC/范围。
-- **`scripts/sync-companion.sh` + `lib/install-companion.sh` 同步器改用 `find -maxdepth 2`** — 修复 companion skills 只扫顶层文件的限制,支持子目录(`scripts/`)。向后兼容 `companion/skills/task-drift-guard/`(只含顶层 3 文件)。详见 `skills/task-planner/docs/ARCHITECTURE.md` §4.5.2。
+- **`scripts/sync-companion.sh` + `lib/install-companion.sh` 同步器改用 `find -maxdepth 2`** — 修复 companion skills 只扫顶层文件的限制,支持子目录(`scripts/`)。向后兼容 `companion/skills/task-drift-guard/`(只含顶层 3 文件)。详见 `skills/task-planner/docs/ARCHITECTURE.md` §2.6（Companion 同步器设计决策；2026-09-16 task-v074 P10 修正原悬空章节号 §4.5.2）。
 
 ### 变更
 
