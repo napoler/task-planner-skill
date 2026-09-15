@@ -34,7 +34,7 @@
 | 配置 | `config.json`（properties 追加新键） | 动既有键；顺手修既有脏点（最小 diff） |
 | 脚本 | 消费侧脚本 + 新建 selftest | 其他脚本 |
 | SKILL | `SKILL.md`（**净增 ≤10 行**：行位替换优先） | 大段新增 |
-| 文档 | template-mapping.md / plan-writer.md（如涉三点同步） | 其他文档 |
+| 文档 | template-mapping.md / plan-writer.md（如涉四点同步） | 其他文档 |
 
 **强制约束**:
 - 新规则编号接续当前最大 Rule；合规清单接续最大 C 编号
@@ -57,7 +57,7 @@
 - **Executor:** executor（sonnet-1）
 
 ### Phase 4: SKILL 联动 + 文档同步 + 全量回归
-- SKILL 净增纪律内联动 + 三点同步 + 全量回归（主进程复跑定数）
+- SKILL 净增纪律内联动 + 四点同步 + 全量回归（主进程复跑定数）
 - **Executor:** executor（sonnet-1）
 
 ### Phase 5: 合并回 + 部署 + 簿记

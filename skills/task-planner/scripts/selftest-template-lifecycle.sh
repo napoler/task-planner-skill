@@ -3,7 +3,7 @@
 # 守护（门控+指针范式, 34.3/34.4 沉淀执行为 LLM 行为面无脚本可测, 仅防条款误删+2 条行为级）:
 #   TL-01 critical-rules.md 含 Rule 34 头（### 34 模板生命周期）
 #   TL-02 含 34.1 选取门控（check-template-type.sh + 白名单动态派生 + general）
-#   TL-03 含 34.2 三点同步（template-mapping/plan-writer/SKILL 三落点）
+#   TL-03 含 34.2 四点同步（template-mapping/plan-writer/SKILL/template-guide 四落点）
 #   TL-04 含 34.3 沉淀触发三条件（INDEX+ledger / 类型空缺 / 用户点名）
 #   TL-05 含 34.4 沉淀流程（≤100 行新模板 + Decisions Made 登记）
 #   TL-06 含 34.5 防滥用（查重 + 禁重复沉淀）
@@ -17,7 +17,8 @@
 #   TL-14 SKILL.md 检查清单含 C22 行（Rule 34 attest 门控+沉淀）
 #   TL-15 SKILL.md 含「模板选取门控与沉淀」联动段
 #   TL-16 references/template-mapping.md 含 Rule 34 门控提示
-# 16 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
+#   TL-17 [task-v074 P9] references/template-guide.md 含 rule-enhancement 且计数含「13 个」（四点同步第 4 落点防腐化）
+# 17 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
 
 set -u
 
@@ -40,7 +41,7 @@ if grep -q '^### 34 模板生命周期' "$CRIT"; then ok 01 "Rule 34 头"; else 
 # TL-02
 if grep '^34\.1 ' "$CRIT" | grep -q 'check-template-type' && grep '^34\.1 ' "$CRIT" | grep -q 'general'; then ok 02 "34.1 选取门控"; else bad 02 "34.1 门控缺失"; fi
 # TL-03
-if grep '^34\.2 ' "$CRIT" | grep -q '三点同步' && grep '^34\.2 ' "$CRIT" | grep -q 'template-mapping' && grep '^34\.2 ' "$CRIT" | grep -q 'plan-writer'; then ok 03 "34.2 三点同步"; else bad 03 "34.2 同步纪律缺失"; fi
+if grep '^34\.2 ' "$CRIT" | grep -q '四点同步' && grep '^34\.2 ' "$CRIT" | grep -q 'template-mapping' && grep '^34\.2 ' "$CRIT" | grep -q 'plan-writer' && grep '^34\.2 ' "$CRIT" | grep -q 'template-guide'; then ok 03 "34.2 四点同步"; else bad 03 "34.2 同步纪律缺失"; fi
 # TL-04
 r343="$(grep '^34\.3 ' "$CRIT")"
 if printf '%s' "$r343" | grep -q 'INDEX.md' && printf '%s' "$r343" | grep -q 'ledger' && printf '%s' "$r343" | grep -q '点名'; then ok 04 "34.3 沉淀触发三条件"; else bad 04 "34.3 触发条件缺失"; fi
@@ -76,6 +77,9 @@ if grep -q '^| C22 ' "$SKILL"; then ok 14 "SKILL.md 检查清单 C22 行"; else 
 if grep -q '模板选取门控与沉淀' "$SKILL"; then ok 15 "SKILL.md「模板选取门控与沉淀」段"; else bad 15 "SKILL.md 缺「模板选取门控与沉淀」段"; fi
 # TL-16
 if grep -q 'check-template-type' "$TMAP" && grep -q 'Rule 34' "$TMAP"; then ok 16 "template-mapping.md Rule 34 门控提示"; else bad 16 "template-mapping.md 缺 Rule 34 门控提示"; fi
+# TL-17
+TGUIDE="$SKILL_ROOT/references/template-guide.md"
+if grep -q 'rule-enhancement' "$TGUIDE" && grep -q '13 个' "$TGUIDE"; then ok 17 "template-guide.md 含 rule-enhancement 且计数 13 个"; else bad 17 "template-guide.md 缺 rule-enhancement/计数 13 个（四点同步第 4 落点腐化）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
