@@ -206,5 +206,74 @@ rm -f "$LOCK"   # PostToolUse 清锁: 子代理验收通过后串行槽释放
 [ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-06 PASS (rc=%s, 锁已清除)\n' "$RC"; } \
   || { FAIL=$((FAIL+1)); printf 'TS-06 FAIL (rc=%s, 锁=%s)\n' "$RC" "$([ -f "$LOCK" ] && echo 残留 || echo 无)"; }
 
+# FG-01..04 [task-v075 P3-S2] 三项增量检测 fine_grain_checks(经真实入口 pretool 触发):
+# 独立夹具 fgc(禁触真实 plans/); 超长按 config prompt_max_chars=3000 构造 3100+ 字符
+FGC="$TMP/fgc"; FGC_PLAN="$FGC/plans/task-fg"; mkdir -p "$FGC_PLAN/subagent-state"
+printf 'fg task plan\n' > "$FGC_PLAN/task_plan.md"
+printf 'fg findings\n' > "$FGC_PLAN/findings.md"
+printf 'fg progress\n' > "$FGC_PLAN/progress.md"
+# 基线对照: 改前同夹具跑 pretool 的 stdout 为空(合规 prompt 成功路径静默 exit 0, S0 基线范式)
+FGC_WF="${TMPDIR:-/tmp}/task-planner-dispatch-warn-${SID}"
+FGC_LOCK="$FGC_PLAN/subagent-state/.dispatch-inflight"
+
+# FG-01 合规短 prompt(无 S<n> 字面/无 brief) + 无 knowledge-brief.md → 零细粒度输出(与基线一致)
+# 清锁+清 wf 防 T05/TS 残留扰动(同 T05/TS-06 清锁范式; wf 为自测 sid 专属文件, trap 兜底清理)
+fgc_pre() { rm -f "$FGC_LOCK" "$FGC_WF"; }
+fgc_prompt() {
+  cat <<EOF > "$1"
+- task_plan: $FGC_PLAN/task_plan.md
+- findings: $FGC_PLAN/findings.md
+- progress: $FGC_PLAN/progress.md
+status:
+acceptance:
+checkpoint: $FGC_PLAN/subagent-state/fg.md
+EOF
+}
+fgc_prompt "$FGC/p1.md"
+fgc_pre
+( export TASK_PLANNER_PLAN_DIR="$FGC_PLAN" TASK_PLANNER_DISPATCH_ENFORCE=warn
+  cd "$TMP"; bash "$DISPATCH" pretool "$FGC/p1.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
+RC=$?; COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"
+[ "$RC" = 0 ] && [ -z "$COUT" ] && [ -z "$CERR" ] && [ ! -f "$FGC_WF" ] \
+  && { FGOK=1; } || { FGOK=0; }
+[ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-01 PASS (rc=0, 零细粒度输出, 基线一致)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'FG-01 FAIL (rc=%s out=[%s] err=[%s] wf=%s)\n' "$RC" "$COUT" "$CERR" "$([ -f "$FGC_WF" ] && echo 存在 || echo 无)"; }
+
+# FG-02 超长 prompt(3100+ 字符) + warn 档 → stderr 出「prompt 长度」告警 且 exit 0 + 计数落盘
+fgc_prompt "$FGC/p2.md"
+head -c 3100 /dev/zero | tr '\0' 'x' >> "$FGC/p2.md"
+fgc_pre
+( export TASK_PLANNER_PLAN_DIR="$FGC_PLAN" TASK_PLANNER_DISPATCH_ENFORCE=warn
+  cd "$TMP"; bash "$DISPATCH" pretool "$FGC/p2.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
+RC=$?; CERR="$(cat "$TMP/err")"
+[ "$RC" = 0 ] && printf '%s' "$CERR" | grep -qF 'prompt 长度' && grep -qF '细粒度检测' "$FGC_WF" 2>/dev/null \
+  && { FGOK=1; } || { FGOK=0; }
+[ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-02 PASS (rc=0, warn 告警+计数落盘)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'FG-02 FAIL (rc=%s err=[%s] wf=%s)\n' "$RC" "$(printf '%s' "$CERR" | grep -F 'prompt 长度' | head -n1)" "$(grep -h '细粒度' "$FGC_WF" 2>/dev/null | head -n1)"; }
+
+# FG-03 双 S-unit ID prompt(S1+S2 字面) + warn 档 → stderr 出「S-unit ID」打包告警 且 exit 0
+fgc_prompt "$FGC/p3.md"
+printf '执行顺序: S1 先, S2 后\n' >> "$FGC/p3.md"
+fgc_pre
+( export TASK_PLANNER_PLAN_DIR="$FGC_PLAN" TASK_PLANNER_DISPATCH_ENFORCE=warn
+  cd "$TMP"; bash "$DISPATCH" pretool "$FGC/p3.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
+RC=$?; CERR="$(cat "$TMP/err")"
+[ "$RC" = 0 ] && printf '%s' "$CERR" | grep -qF 'S-unit ID' \
+  && { FGOK=1; } || { FGOK=0; }
+[ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-03 PASS (rc=0, 双 S-unit 打包检出)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'FG-03 FAIL (rc=%s err=[%s])\n' "$RC" "$(printf '%s' "$CERR" | grep -F 'S-unit ID' | head -n1)"; }
+
+# FG-04 knowledge-brief.md 存在且 prompt 未引用(brief/§ 均不含) + warn 档 → 出 brief 提示
+printf 'kb §1\n' > "$FGC_PLAN/knowledge-brief.md"
+fgc_prompt "$FGC/p4.md"
+fgc_pre
+( export TASK_PLANNER_PLAN_DIR="$FGC_PLAN" TASK_PLANNER_DISPATCH_ENFORCE=warn
+  cd "$TMP"; bash "$DISPATCH" pretool "$FGC/p4.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
+RC=$?; CERR="$(cat "$TMP/err")"
+[ "$RC" = 0 ] && printf '%s' "$CERR" | grep -qF 'knowledge-brief' \
+  && { FGOK=1; } || { FGOK=0; }
+[ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-04 PASS (rc=0, brief 引用提示)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'FG-04 FAIL (rc=%s err=[%s])\n' "$RC" "$(printf '%s' "$CERR" | grep -F 'knowledge-brief' | head -n1)"; }
+
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

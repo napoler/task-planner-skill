@@ -115,6 +115,9 @@ task-planner-skill/
     ├── scripts/
     │   ├── init-session.sh        ← 初始化计划文件
     │   ├── check-scope.sh         ← PreToolUse Hook：范围守护
+    │   ├── check-plan-dispatch.sh ← attest 门控：S-unit 数值校验（时长 NNmin≤step_max_minutes/输入≤step_max_files）
+    │   ├── check-dispatch.sh      ← 派发门控：九字段契约 + 三项细粒度检查（长度/打包/brief 引用，挂 dispatch_contract_enforce 档位）
+    │   ├── attest-plan.sh         ← 计划锁定（模板门控 + 派发门控 + FMEA 门控三档）
     │   ├── sync-todos.sh          ← 阶段状态 ↔ TodoWrite 同步
     │   ├── check-complete.sh      ← Stop Hook：汇总阶段完成情况
     │   ├── check-complete.ps1     ← Windows 镜像
@@ -243,11 +246,12 @@ plans/
   "max_view_browser_before_save": 2,    // 每 2 次浏览操作后写 findings.md
   "escalation_threshold": 3,            // 连续失败次数 → AskUserQuestion
   "plan_dir_pattern": "plans/{task-id}/",
-  "template_priority": ["project-level", "built-in"]
+  "template_priority": ["project-level", "built-in"],
+  "fmea_enforce": "warn"                    // FMEA 门控档位（task-v075 起已兑现：attest FMEA 门控段 + check-complete 终验双点消费，warn/enforce/off 三档分化；逃生 --skip-fmea-check 须披露）
 }
 ```
 
-`$schema` 强制 `additionalProperties: false` —— 拼写错误会立刻报错。
+`$schema` 强制 `additionalProperties: false` —— 拼写错误会立刻报错。task-v075 起运行时消费的键：`fmea_enforce`（已兑现——attest FMEA 门控段 + check-complete 终验双点，warn/enforce/off 三档分化）与 `dispatch_contract_enforce`（三项细粒度检查：prompt 长度 / 多 S-unit 打包 / brief 引用提示；本仓默认值实测为 enforce，即部署后为硬阻断）；`step_max_*` / `prompt_max_chars` 四键由 check-plan-dispatch / check-dispatch 首次消费（见 CHANGELOG）。
 
 ---
 

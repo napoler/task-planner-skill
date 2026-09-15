@@ -452,6 +452,58 @@ if [ "$python_rc" -eq 0 ]; then
     cpl="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
     if [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
 
+    # [2026-09-16 task-v075 P4 B1] FMEA 门控终验点(fmea_enforce 双点消费之二,与 attest-plan.sh 同逻辑):
+    # 档位解析范式同本文件既有 resolve_*_tier 段: env TASK_PLANNER_FMEA_ENFORCE > config.json fmea_enforce.default > warn
+    # off=完全跳过无输出; warn=违规打 [fmea-gate] ⚠ 后继续; enforce=打 [fmea-gate] ✗ 后终验 FAIL(exit 1)
+    # 判定口径与 attest-plan.sh check-fmea-gate 一致(KQ2): 含「FMEA 预演」段 + RPN 表数据行(第 6 数据列纯数字)≥1
+    #   + RPN>100 行第 7 数据列(预设兜底动作)trim 后非空; legacy(无 Executor 行)fail-open 跳过
+    resolve_fmea_tier() {
+        local m="${TASK_PLANNER_FMEA_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
+            m="$(jq -r '.properties.fmea_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+    }
+    FMEA_TIER="$(resolve_fmea_tier)"
+    if [ "$FMEA_TIER" != "off" ] && grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
+        # FMEA 判定(与 attest-plan.sh check-fmea-gate 同口径; 独立实现避免 source 依赖):
+        fmea_datanum=0
+        fmea_bad=""
+        while IFS= read -r fmline; do
+            [ -n "$fmline" ] || continue
+            fmrpn="$(printf '%s\n' "$fmline" | awk -F'|' '{v=$7; gsub(/^[ \t]+|[ \t]+$/, "", v); print v}')"
+            case "$fmrpn" in (*[!0-9]*|'') continue ;; esac
+            fmea_datanum=$((fmea_datanum + 1))
+            if [ "$fmrpn" -gt 100 ]; then
+                fmfb="$(printf '%s\n' "$fmline" | awk -F'|' '{v=$8; gsub(/^[ \t]+|[ \t]+$/, "", v); print v}')"
+                [ -z "$fmfb" ] && fmea_bad="${fmea_bad}RPN=${fmrpn}(兜底动作列空) "
+            fi
+        done < <(grep '^|' "$PLAN_FILE" 2>/dev/null)
+        if ! grep -q 'FMEA 预演' "$PLAN_FILE" 2>/dev/null; then
+            fmea_fail="无「📊 FMEA 预演」段标题"
+        elif [ "$fmea_datanum" -lt 1 ]; then
+            fmea_fail="RPN 表数据行=0(须 ≥1)"
+        elif [ -n "$fmea_bad" ]; then
+            fmea_fail="RPN>100 行缺预设兜底: ${fmea_bad% }"
+        else
+            fmea_fail=""
+        fi
+        if [ -n "$fmea_fail" ]; then
+            case "$FMEA_TIER" in
+                enforce)
+                    echo "[fmea-gate] ✗ FMEA 门控失败: $fmea_fail (fmea_enforce=enforce, 补 FMEA 段数据行/兜底后重跑)" >&2
+                    exit 1
+                    ;;
+                *)
+                    echo "[fmea-gate] ⚠ FMEA 门控警告: $fmea_fail (warn 档不阻断: TASK_PLANNER_FMEA_ENFORCE=enforce 或 config.json fmea_enforce=enforce 可升级)" >&2
+                    ;;
+            esac
+        else
+            echo "[fmea-gate] OK (fmea_enforce=$FMEA_TIER)" >&2
+        fi
+    fi
+
     # [2026-09-13 task-v065 S-1 F-1] 失败挽救链路终验门控(挽救而非摆烂);缺失 → fail-open
     # 档位由 check-rescue-chain.sh 自解析(config.json rescue_chain_enforce, 默认 warn):
     #   enforce 档存在违规 → 该脚本 exit 1 → 本门阻断 complete;warn/off 档恒 exit 0(仅提示)。

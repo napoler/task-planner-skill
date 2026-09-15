@@ -31,6 +31,26 @@
 #   根因 = 旧 alt 拼写 $pd_real 依赖 pwd -P/realpath,而 realpath 不折叠 bind mount,alt 形同虚设;
 #   修法 = 双轨文件身份判定: 两侧文件都存在 → stat -c %d:%i(device:inode)比对,拼写免疫;
 #   任一不存在(拟创建计划)→ realpath -m 两侧规范串相等即命中;alt 拼写与 pd_real 变量一并废除。
+#
+# [2026-09-16 task-v075 P3-S1] 三项增量检测（Rule 22.4 KQ3，全部挂在既有 get_mode() 档位:
+# enforce=exit 2 阻断 / warn=stderr 告警 + 计数落盘(复用本文件 :189-192 的
+# task-planner-dispatch-warn-<sid> 计数文件范式) / off=跳过; 只增不改既有分支,
+# scan_missing 七项判定/三级计划目录解析/serial_slot_check/成功路径静默 exit 0 语义不变）:
+#   ① prompt 长度: `wc -m < prompt` > prompt_max_chars（jq 读 config.json
+#      .properties.subagent.prompt_max_chars.default; jq 缺失/键缺失 → 回退默认 3000
+#      + 一行 SKIPPED 说明, 复用 check-plan-dispatch.sh:63-77 的 P2 范式）。超限 →
+#      `[dispatch-guard] ⚠ prompt 长度 N > 3000`
+#   ② 多 S-unit 打包: `grep -oE 'S[0-9]+' prompt | sort -u | wc -l` ≥2 → 告警
+#      `[dispatch-guard] ⚠ 单 prompt 检出 N 个 S-unit ID（Rule 25.2 逐 S-unit 派发）`。
+#      口径（定死）: 全 prompt 内 distinct `S<n>` 字面集合计数（行首/非行首一律计,
+#      非自由文本豁免——与 P2 KQ1 同源 token 计数范式）; warn 档默认仅作观察期数据,
+#      误伤代价=计数警告, 观察数据回填后再定行首限定收紧（task_plan FMEA P3 行兜底）。
+#   ③ knowledge-brief 引用提示: 仅当计划目录已解析（pd 非空）且 <pd>/knowledge-brief.md
+#      存在、且 prompt 既不含 `brief` 也不含 `§` → 告警提示引用 brief 节锚点
+#      （Rule 21.2/22.4）; 无 brief / 已引用 → 静默, 不产生输出。
+#   ①② 与 ③ 均在缺项扫描之后追加; 缺项存在时（既有处置: warn=告警放行 / enforce=exit 2）
+#   仍先执行既有缺项路径（行为不变）, 仅当缺项扫描通过（即将串行槽检查放行）时执行三项,
+#   三项目前全部通过 → 保持既有静默 exit 0 语义（成功路径零输出）。
 set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -169,8 +189,8 @@ cmd_pretool() {
         # side/resolve 只是兜底(全局指针可能被并发会话翻转指向他会话) → 降级 warn 放行,不再 exit 2 误拦
         if [ -n "$pd" ] && [ -d "$pd" ]; then
             missing="$(scan_missing "$pf" "$pd")"
-            # [task-v061-serial-dispatch] 契约校验通过(兜底命中且无缺项), 即将放行前执行串行槽检查
-            [ -n "$missing" ] || { serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
+            # [task-v075 P3-S1] 兜底命中且无缺项 → 三项增量检测(warn 档计数观察)+ 串行槽检查
+            [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
             names="$(join_missing "$missing")"
         else
             names="unknown"
@@ -180,9 +200,10 @@ cmd_pretool() {
     fi
     # enforce 档(env 显式 / prompt 自声明锚定成功): 沿用原有缺项扫描与分档处置
     [ -n "$pd" ] && [ -d "$pd" ] || exit 0   # 目录不存在 → fail-open(原语义)
+    # [task-v075 P3-S1] 既有缺项扫描之后的三项增量(长度/打包/brief 引用), 挂既有档位处置
     missing="$(scan_missing "$pf" "$pd")"
     # [task-v061-serial-dispatch] 契约校验通过(无缺项), 即将放行前执行串行槽检查; 缺项 exit 2 路径不写锁不检查
-    [ -n "$missing" ] || { serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
+    [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
         echo "[dispatch-warn] ⚠ 派发契约缺项: $names"
@@ -211,6 +232,58 @@ cmd_check() {
         exit 1
     fi
     exit 0
+}
+
+# [task-v075 P3-S1] 三项增量检测（Rule 22.4 KQ3; 口径与档位语义见文件头注释 2026-09-16 段）
+# $1=prompt 文件 $2=计划目录(可空=未解析) $3=档位(enforce|warn; off 不会到达此函数) $4=sid
+# 全部通过 → 静默返回 0（成功路径零输出不变）; 命中任一项 → 按档位处置:
+#   warn=每项 stderr 一行告警 + 全部命中项合并写一行计数到既有 warn 计数文件
+#   enforce=全部命中项合并 stderr 一行阻断, exit 2
+# 三项均对既有七项缺项判定/三级目录解析零影响: 本函数在缺项扫描通过后独立调用。
+fine_grain_checks() {
+    local pf="$1" pd="$2" mode="$3" sid="${4:-unknown}"
+    local pmax pchar sids n hits wf h
+    # ① prompt 长度: wc -m vs prompt_max_chars(jq 读 config .properties.subagent.prompt_max_chars.default;
+    #    与 ② 同源: jq 缺失/键缺失/非数字 → 回退 3000 + 一行 SKIPPED 说明(P2 check-plan-dispatch 范式)
+    pmax="$(jq -r '.properties.subagent.prompt_max_chars.default // "3000"' "$CONFIG_JSON" 2>/dev/null)" || pmax=""
+    if ! [[ "$pmax" =~ ^[0-9]+$ ]]; then
+        pmax=3000
+        echo "[dispatch-guard] SKIPPED prompt_max_chars 未解析(jq 缺失或键缺),回退默认 3000" >&2
+    fi
+    pchar="$(wc -m < "$pf" 2>/dev/null || echo 0)"
+    pchar="${pchar//[!0-9]/}"
+    [ -n "$pchar" ] || pchar=0
+    hits=""
+    if [ "$pchar" -gt "$pmax" ]; then
+        echo "[dispatch-guard] ⚠ prompt 长度 $pchar > $pmax" >&2
+        hits="prompt 长度超限($pchar>$pmax)"
+    fi
+    # ② 多 S-unit 打包: 全 prompt distinct S<n> 字面集合计数(P2 KQ1 同源 grep -o|wc -l 范式);
+    #    ≥2 → 告警(warn 档观察期数据用, 口径见头注释)
+    sids="$(grep -oE 'S[0-9]+' "$pf" 2>/dev/null | sort -u)"
+    n="$(printf '%s' "$sids" | grep -c . || true)"
+    if [ "$n" -ge 2 ]; then
+        echo "[dispatch-guard] ⚠ 单 prompt 检出 $n 个 S-unit ID（Rule 25.2 逐 S-unit 派发）" >&2
+        [ -n "$hits" ] && hits="$hits; "
+        hits="${hits}多 S-unit 打包($n 个 ID)"
+    fi
+    # ③ knowledge-brief 引用提示: 仅 pd 非空且 brief 存在、且 prompt 既无 `brief` 也无 `§` 时告警
+    if [ -n "$pd" ] && [ -f "$pd/knowledge-brief.md" ] && ! grep -qE 'brief|§' "$pf" 2>/dev/null; then
+        echo "[dispatch-guard] ⚠ 计划含 knowledge-brief.md 但 prompt 未引用节锚点(brief/§), 建议按 Rule 21.2/22.4 引用 brief 相关节" >&2
+        [ -n "$hits" ] && hits="$hits; "
+        hits="${hits}knowledge-brief 未引用"
+    fi
+    [ -z "$hits" ] && return 0
+    if [ "$mode" = "warn" ]; then
+        wf="${TMPDIR:-/tmp}/task-planner-dispatch-warn-${sid}"
+        [ -f "$wf" ] && [ -n "$(find "$wf" -mmin +1440 2>/dev/null)" ] && rm -f "$wf"   # 24h TTL, 同既有范式
+        h="${hits//,/; }"
+        printf '%s [dispatch-warn] 细粒度检测: %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$h" \
+            >> "$wf" 2>/dev/null || true
+        return 0
+    fi
+    echo "[dispatch-block] 🚫 细粒度检测未通过(Rule 22.4 KQ3): $hits" >&2
+    exit 2
 }
 
 # [task-v061-serial-dispatch] 串行槽守卫(Rule 21.4): inflight 锁 <plan-dir>/subagent-state/.dispatch-inflight

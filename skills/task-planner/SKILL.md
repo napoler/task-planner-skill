@@ -284,14 +284,14 @@ Block 1 (选题) complete
 - **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
-- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发严格串行——一次一个、验收通过再派下一个（21.4 串行派发铁律）（详见 `references/critical-rules.md` Rule 21）
+- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发严格串行——一次一个、验收通过再派下一个（21.4 串行派发铁律）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh）（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
-- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**
+- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**（fmea_enforce 消费机器校验已生效：attest+check-complete）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 - **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）
-- **Methodology 指针（v063）可靠性 4 条/内容质量 5 条方法论，门控+指针范式，不改 Rule 1-28 既有语义（详见 references/methodology.md，开关键 fmea_enforce/content_quality_enforce 默认 warn）**
+- **Methodology 指针（v063）可靠性 4 条/内容质量 5 条方法论，门控+指针范式，不改 Rule 1-28 既有语义（详见 references/methodology.md，开关键 fmea_enforce/content_quality_enforce 默认 warn）**（机器校验已生效：attest-plan.sh FMEA 门控段 + check-complete.sh 终验双点，三档 warn/enforce/off）
 - **Rule 28（P0）交互模式与询问门控**：ask（默认：D1-D6 关键决策点给选项供用户选，D1 批准前按 28.2.1 口头复述大体执行思路供用户不读计划文档预知流程）| silent（静默：自主决策+登记静默决策清单）；解析优先级 env > 计划配置表 > config.json > 默认 ask；D6 硬停点（连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认）两模式一致不可豁免（详见 references/critical-rules.md Rule 28）
 - **Rule 29（P0）上下文与工作文件主动维护**：触发时机(29.1)/退场 SOP(29.2)/压缩 SOP(29.3)/工作文件整理 SOP(29.4)/配置键语义(29.5)/反模式(29.6)——主动维护"多→删"链路，与 Rule 19"缺→补"链路对称（详见 references/critical-rules.md Rule 29）
 - **Rule 30（P0）共享内容认领追踪**：识别条件(30.1)/创建复用(30.2)/认领登记(30.3)/防冲突(30.4)/机制(30.5)——"共→认领"链路，可枚举共享资源（页面/内容/功能/部署位）的部分认领任务须登记项目级共享追踪账本（progress-tracker `.zcode/ledger/` 多平台跟随），后续任务先查后做，杜绝重复混乱；开关键 `config.json#shared_tracker_enforce`（默认 warn，详见 references/critical-rules.md Rule 30 与 references/skill-collaboration.md progress-tracker 协同行）
@@ -394,7 +394,7 @@ Block 1 (选题) complete
 
 ## ⏱️ 超时与失败兜底 — Rule 22 落地
 
-派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等。
+派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等（22.4 上下文预算=prompt 长度/打包检测已机器化：check-dispatch.sh 校验 prompt 字符数 vs prompt_max_chars 与多 S-unit 打包，挂 dispatch_contract_enforce 档位）。
 
 **步骤 0 — 先查检查点(Rule 22.8.4)**:任何兜底动作执行前,主进程必须先 Read 该子代理的检查点文件(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,路径见 Handoff 登记表「checkpoint 路径」列)——有实质进度 → 重试 prompt 注入 resume_from 段从断点续做(模板见 `templates/subagent_dispatch.md` 附录);无进度 → 按下表兜底。
 

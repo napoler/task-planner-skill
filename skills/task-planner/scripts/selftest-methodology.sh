@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # selftest-methodology.sh — task-v063 Phase6/S1: methodology 门控面 hermetic 守护套件
+# (task-v075 P4 B1 扩至 M-08..M-11: fmea_enforce 三档分化端到端守护, 见 :11-14 与 M-08..M-11 段)
 # 守护 v063 引入的 FMEA/内容质量门控嵌入点 (config 两键 + methodology.md + 模板/指针):
 #   M-01 config.json 两键存在 (fmea_enforce + content_quality_enforce 均在 .properties)
 #   M-02 两键默认值=warn 且 enum 含 enforce/warn/off (default=warn, enum 长度=3)
@@ -8,9 +9,13 @@
 #   M-05 writing-type.md 质量门控指针在位 ("五维评分卡"=1)
 #   M-06 SKILL.md 3 处指针在位 (grep -c "methodology" ≥3)
 #   M-07 README 键说明 21 项在位 ("21 项"=1 + 两键名 grep ≥2)
+#   M-08..M-11 (task-v075 P4 B1): fmea_enforce 三档分化在 attest-plan.sh 端到端可观测
+#     (无 FMEA 段 warn 档锁定成功+stderr 有 ⚠ / enforce 档 exit 1 / 高 RPN 无兜底 enforce
+#      exit 1 / off 档静默无 fmea-gate 输出; 均经 --skip-dispatch-check --skip-template-check
+#      隔离既有两道门控; 高 RPN 有兜底行放行由 M-10 对照断言覆盖)
 # hermetic: mktemp 夹具 = 真实 worktree 文件最小镜像 (<root>/skills/task-planner/… cp 而来),
 # 用例只对 fixture 跑, 不污染真实仓且防 CWD 依赖; trap 清理; 对真实文件只读。
-# 7 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致 (fixture 每次重建)。
+# 11 用例 (M-01..M-11) 全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致 (fixture 每次重建)。
 
 set -u
 
@@ -42,6 +47,8 @@ cp "$REAL_ROOT/README.md"                "$FIX/README.md"
 cp "$REAL_ROOT/references/methodology.md" "$FIX/references/methodology.md"
 cp "$REAL_ROOT/templates/task_plan.md"   "$FIX/templates/task_plan.md"
 cp "$REAL_ROOT/templates/variant/writing-type.md" "$FIX/templates/variant/writing-type.md"
+# task-v075 P4 B1: M-08..M-11 端到端跑真实 attest-plan.sh (fixture 镜像内), 需镜像 scripts/
+cp -r "$REAL_ROOT/scripts" "$FIX/scripts"
 CFG="$FIX/config.json"
 
 # M-01: config.json 两键存在
@@ -91,6 +98,79 @@ N_F="$(grep -c "fmea_enforce\|content_quality_enforce" "$FIX/README.md" 2>/dev/n
 [ "${N_E:-0}" -eq 1 ] && [ "${N_F:-0}" -ge 2 ]
 M07_RC=$?
 assert 07 "README 21 项说明 (实测 ${N_E:-0}/${N_F:-0})" "$M07_RC"
+
+# ── task-v075 P4 B1: fmea_enforce 三档分化端到端守护 (M-08..M-11) ─────────────────
+# 夹具计划 = 含 Executor 行 (现代计划, 非 legacy fail-open) 的最小 task_plan.md;
+# --skip-dispatch-check --skip-template-check 隔离既有两道门控, 只留 FMEA 段;
+# 档位一律经 env TASK_PLANNER_FMEA_ENFORCE 注入 (高于 config 键, hermetic 不受真实
+# config 默认值影响); CWD 锁定 $TMP 使 attest 活跃计划探测链 (resolve-plan-dir.sh)
+# 解析不到真实仓 plans/, 零主仓写入; attest 落盘 .plan-attestation 只在 $TMP 内。
+cd "$TMP"
+PLAN_T="$TMP/plan-fmea.md"
+cat > "$PLAN_T" <<'EOF'
+# Task Plan
+### Phase 1: X
+- **Executor:** executor（sonnet-1）
+- **Status:** pending
+EOF
+ATT="$TMP/.plan-attestation"
+ATTARGS=(--skip-dispatch-check --skip-template-check "$PLAN_T")
+M08_RC=1
+out_w="$(TASK_PLANNER_FMEA_ENFORCE=warn bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_w=$?
+if [ "$rc_w" -eq 0 ] && [ -f "$ATT" ] && printf '%s' "$out_w" | grep -q 'fmea-gate.*⚠'; then
+  M08_RC=0
+fi
+assert 08 "无 FMEA 段计划: warn 档锁定成功且 stderr 有 ⚠ (实测 rc=$rc_w attested=$([ -f "$ATT" ] && echo y || echo n))" "$M08_RC"
+
+# M-08: 无 FMEA 段夹具 attest 实测 (warn/enforce/off 三档分化, M-10/M-11 复用同夹具)
+# M-09: 同夹具 enforce 档 → 拒绝锁定 exit 1
+rm -f "$ATT"
+M09_RC=1
+out_e1="$(TASK_PLANNER_FMEA_ENFORCE=enforce bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_e1=$?
+if [ "$rc_e1" -eq 1 ] && [ ! -f "$ATT" ] && printf '%s' "$out_e1" | grep -q 'fmea-gate.*✗'; then
+  M09_RC=0
+fi
+assert 09 "无 FMEA 段计划: enforce 档 (env TASK_PLANNER_FMEA_ENFORCE=enforce) attest exit 1" "$M09_RC"
+
+# M-10: 高 RPN(>100) 行: 无兜底 enforce 档 exit 1; 补兜底后同档位通过
+cat > "$PLAN_T" <<'EOF'
+# Task Plan
+### Phase 1: X
+- **Executor:** executor（sonnet-1）
+- **Status:** pending
+
+## 📊 FMEA 预演
+| Phase | 失败模式 | S | O | D | RPN | 预设兜底动作（RPN>100 必填） |
+|-------|---------|---|---|---|-----|------------------------------|
+| P1 | 依赖缺失 | 7 | 4 | 5 | 140 |  |
+EOF
+rm -f "$ATT"
+M10_RC=1
+out_e2="$(TASK_PLANNER_FMEA_ENFORCE=enforce bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_e2=$?
+if [ "$rc_e2" -eq 1 ] && [ ! -f "$ATT" ] && printf '%s' "$out_e2" | grep -q 'RPN>100 行缺预设兜底'; then
+  M10_RC=0
+fi
+# 补兜底: 把数据行末尾空列替换为登记动作 (sed 单行替换, 免重写整段 heredoc)
+sed -i 's/| 140 |  |/| 140 | 按 22.3② 拆细重派 |/' "$PLAN_T"
+rm -f "$ATT"
+out_e3="$(TASK_PLANNER_FMEA_ENFORCE=enforce bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_e3=$?
+[ "$M10_RC" -eq 0 ] && [ "$rc_e3" -eq 0 ] && [ -f "$ATT" ] || M10_RC=1
+assert 10 "高 RPN(>100) 无兜底行 enforce 档 exit 1; 有兜底行通过 (实测 rc=$rc_e2/$rc_e3)" "$M10_RC"
+
+# M-11: off 档完全静默 (无任何 fmea-gate 输出, 锁定成功) — 复用无 FMEA 段夹具
+rm -f "$ATT"
+cat > "$PLAN_T" <<'EOF'
+# Task Plan
+### Phase 1: X
+- **Executor:** executor（sonnet-1）
+- **Status:** pending
+EOF
+out_o="$(TASK_PLANNER_FMEA_ENFORCE=off bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_o=$?
+M11_RC=1
+if [ "$rc_o" -eq 0 ] && [ -f "$ATT" ] && ! printf '%s' "$out_o" | grep -q 'fmea-gate'; then
+  M11_RC=0
+fi
+assert 11 "off 档: 无 FMEA 段计划静默锁定成功 (实测 rc=$rc_o)" "$M11_RC"
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

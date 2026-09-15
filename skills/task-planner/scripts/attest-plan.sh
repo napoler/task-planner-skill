@@ -9,6 +9,7 @@
 #   attest-plan.sh --verify [plan_file]     # 校验: exit 0=匹配 1=不匹配 2=未锁定
 #   attest-plan.sh --clear  [plan_file]     # 清除锁定(计划重规划并重新获批后使用)
 #   attest-plan.sh --skip-template-check [plan_file]  # 跳过模板门控(Rule 34.1, 须在交付报告披露)
+#   attest-plan.sh --skip-fmea-check [plan_file]      # 跳过 FMEA 门控(v075 P4, 与 --skip-dispatch-check 同构, 须在交付报告披露)
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
 set -uo pipefail
 
@@ -16,6 +17,7 @@ plan_file=""
 mode="attest"
 skip_dispatch=""
 skip_template=""
+skip_fmea=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
@@ -23,6 +25,7 @@ for arg in "$@"; do
     --clear) mode="clear" ;;
     --skip-dispatch-check) skip_dispatch=1 ;;
     --skip-template-check) skip_template=1 ;;
+    --skip-fmea-check) skip_fmea=1 ;;
     -h|--help) sed -n '2,13p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
@@ -112,6 +115,73 @@ case "$mode" in
       fi
     else
       echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
+    fi
+    # [2026-09-16 task-v075 P4 B1] FMEA 门控(v063 fmea_enforce 首次消费; 与 check-complete.sh 终验双点):
+    # 档位解析(挂载范式照抄上方 resolve_template_tier 段 :77-100):
+    #   env TASK_PLANNER_FMEA_ENFORCE > config.json fmea_enforce.default > warn(jq 缺失回退 warn+一行说明)
+    # off=完全跳过无输出; warn=失败打 [fmea-gate] ⚠ 后继续锁定; enforce=打 [fmea-gate] ✗ 后 exit 1
+    # 校验对象=被 attest 的 task_plan.md:
+    #   ① 含「📊 FMEA」段标题(固定锚 grep「FMEA 预演」)且 RPN 表数据行 ≥1
+    #      (数据行=以 | 开头且第 6 数据列可解析为纯数字; 表头行第 6 列=RPN 表头文本、
+    #       分隔行=短横线均不可解析, 天然排除; awk -F'|' 下 $7=第 6 数据列)
+    #   ② RPN 数值 >100 的数据行, 其第 7 数据列(预设兜底动作)trim 后非空(KQ2 定死口径)
+    # legacy 计划(无 `- **Executor:**` 行)对齐 check-plan-dispatch.sh:37-40 fail-open 先例 → 跳过
+    # check-fmea-gate <plan>: 0=通过/不适用; 1=违规(stdout 列明违规行); 2=无 FMEA 段或数据行=0
+    check-fmea-gate() {
+      local pf="$1"
+      grep -q 'FMEA 预演' "$pf" 2>/dev/null || { echo "无「📊 FMEA 预演」段标题"; exit 2; }
+      local datanum=0
+      local badlines=""
+      local ln rpn fb
+      while IFS= read -r ln; do
+        [ -n "$ln" ] || continue
+        rpn="$(printf '%s\n' "$ln" | awk -F'|' '{v=$7; gsub(/^[ \t]+|[ \t]+$/, "", v); print v}')"
+        case "$rpn" in (*[!0-9]*|'') continue ;; esac
+        datanum=$((datanum + 1))
+        if [ "$rpn" -gt 100 ]; then
+          fb="$(printf '%s\n' "$ln" | awk -F'|' '{v=$8; gsub(/^[ \t]+|[ \t]+$/, "", v); print v}')"
+          [ -z "$fb" ] && badlines="${badlines}RPN=${rpn}(兜底动作列空) "
+        fi
+      done < <(grep '^|' "$pf" 2>/dev/null)
+      [ "$datanum" -ge 1 ] || { echo "RPN 表数据行=0(须 ≥1)"; exit 2; }
+      [ -n "$badlines" ] && { echo "RPN>100 行缺预设兜底: ${badlines% }"; exit 1; }
+      return 0
+    }
+    if [ -n "$skip_fmea" ]; then
+      echo "[fmea-gate] SKIPPED (--skip-fmea-check 逃生, fmea_enforce 门控被跳过, 须在交付报告披露)"
+    else
+      fcfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
+      resolve_fmea_tier() {
+        local m="${TASK_PLANNER_FMEA_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$fcfg" ]; then
+          m="$(jq -r '.properties.fmea_enforce.default // "warn"' "$fcfg" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+      }
+      FTIER="$(resolve_fmea_tier)"
+      if [ "$FTIER" != "off" ]; then
+        if ! grep -qE '^- \*\*Executor:\*\*' "$plan_file" 2>/dev/null; then
+          # [2026-09-16 task-v075 P4] legacy fail-open(对齐 check-plan-dispatch.sh:37-40 先例)
+          : # legacy 计划无 FMEA 段 = 旧模板, 跳过门控
+        else
+          fmea_msgs="$(check-fmea-gate "$plan_file" 2>/dev/null)"; fmea_rc=$?
+          case "$fmea_rc" in
+            0)
+              echo "[fmea-gate] OK (fmea_enforce=$FTIER)"
+              ;;
+            *)
+              if [ "$FTIER" = "enforce" ]; then
+                echo "[fmea-gate] ✗ $fmea_msgs" >&2
+                echo "[fmea-gate] ✗ FMEA 门控失败,拒绝锁定(fmea_enforce=enforce; 补 FMEA 数据行/兜底或紧急 --skip-fmea-check)" >&2
+                exit 1
+              else
+                echo "[fmea-gate] ⚠ $fmea_msgs (warn 档不阻断: TASK_PLANNER_FMEA_ENFORCE=enforce 或 config.json fmea_enforce=enforce 可升级; 紧急 --skip-fmea-check)" >&2
+              fi
+              ;;
+          esac
+        fi
+      fi
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
     # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,
