@@ -239,3 +239,16 @@
 - 行为级：真实计划 check-complete 无「V-N 映射」警告；check-scope 7 case 沙箱（executor）+ 主进程 bash -n/语法
 ### [reflect] 反思: ①fail-closed 论证充分（新会话无 side 指针不经过新分支，case3/5b 反例实证）②并发 selftest 碰撞教训已记（回归前置条件=无并发）③34.2 三点同步清单本身缺 template-guide——deferred 登记 ④INSTALL 计数类断言改为"以实际 ls 为准"防再腐化
 ### [reflect] 验证: 主进程亲跑全量 296/0+部署 diff=0+companion 对账 IDENTICAL+残留断言 grep 扫描空
+
+## Phase 9: 收尾两项（2026-09-16）
+
+### Actions taken
+1. 派 executor 落地两项：34.2 四点同步（7 文件 12 点）+ Batch Report 零单元逃生（python 段级判定+2 处文档）
+2. 主进程验收：四点/残留 grep、SKILL 535 行、TL 17/0、bash -n、真实计划端到端
+3. 全量回归 297/0 → commit+merge 599b675 → --deploy IDENTICAL×3 → worktree 清理 → push
+
+### Test Results
+- selftest-template-lifecycle 17/0（含新 TL-17）；全量 19 脚本 297 PASS/0 FAIL（主进程逐 Total 求和）
+- 批量门控三 case：零单元声明逃生命中/无声明仍拦/8 字段照旧过
+### [reflect] 反思: ①四点同步落点选择=把实际腐化点纳入清单而非事后人肉记忆，机制优于提醒 ②零单元逃生用段级双关键词保守判定，防 LLM 同义文案绕过是有意设计 ③Plan TAMPERED 事件根因=Bash 改计划绕过 Edit 工具自动重锁——已在轮首重新 attest，后续计划编辑一律走 Edit 工具
+### [reflect] 验证: 主进程 grep 残留扫描+wc -l+selftest 17/0+全量 297/0+部署 diff=0 逐项实证

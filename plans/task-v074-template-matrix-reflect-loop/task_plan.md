@@ -153,6 +153,14 @@ P6：主进程执行合并回（smart-merge-back --deploy 3 实体位）+ worktr
 - **Status:** complete
 - **Executor:** 主进程（诊断定向核查+白名单①编排+部署）+ executor（worktree 内修复派发）+ Explore（联动扫描，已完成）
 
+### Phase 9: 收尾两项（用户「继续」指令 2026-09-16 — 上轮交付报告的下一步建议 2）
+- [x] 34.2 同步清单补全：template-guide.md 纳为第 4 落点，三点→四点同步（critical-rules ×2/SKILL ×2/rule-enhancement 模板 ×2/selftest TL-03 改造+TL-17 新增，残留 grep 零命中）
+- [x] Batch Report 零单元逃生：check-complete.sh 段级「不适用（无批量生成单元）」声明跳过 8 字段（三 case 实测：逃生命中/无声明仍拦/8 字段照旧过；batch_report+batch-quality-gate 文档同步）
+- [x] 验证+交付：全量 19 脚本 **297 PASS/0 FAIL** + merge 599b675 + 部署 3 位 IDENTICAL + worktree 清理 + 推送
+- **V-N:** VC-4, VC-5
+- **Status:** complete
+- **Executor:** executor（worktree 修复）+ 主进程（白名单①编排/部署/簿记）
+
 ## 🔀 隔离决策（冲突分析）
 | 字段 | 值 |
 |------|-----|

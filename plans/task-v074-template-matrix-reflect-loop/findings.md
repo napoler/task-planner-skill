@@ -113,3 +113,9 @@
 - **commit**：10ba3d1（worktree）→ merge **0f85da8**（master）；3 实体位 IDENTICAL；companion 双位对账 IDENTICAL（claude 位 model→sonnet 适配）
 - **全量回归**：19 脚本 **296 PASS/0 FAIL**（主进程逐 Total 求和；294+2 新断言；曾现 1 FAIL 系与滞留后台 agent 并发跑测试的 /tmp 夹具碰撞，agent 终止后复跑干净——教训：全量回归须确认无并发 selftest）
 - **接管登记**：executor 首次返回截断（SendMessage 续推后仍静默，26 分钟无写入）→ 按 Rule 22.3④ 主进程接管 S2 收尾验收+S3 文档修复（10 文件 +169/-47）
+
+### L. P9 收尾结果（2026-09-16，用户「继续」）
+- **34.2 四点同步落地**：template-guide.md 纳为第 4 落点（critical-rules :286/:288、SKILL :216/:301 行内替换 535 行不变、rule-enhancement 模板 :37/:60、selftest TL-03 改四关键词+新增 TL-17）；残留 grep 零命中
+- **Batch Report 零单元逃生**：check-complete.sh 批量门控支持段内「不适用（无批量生成单元）」声明跳过 8 字段（段级双关键词判定，段缺失仍 fail-closed；batch_report.md 头注+batch-quality-gate 18.6 行文档同步）
+- **全量回归**：19 脚本 **297 PASS/0 FAIL**（+TL-17）；commit b8(见 log)→merge **599b675**；3 位 IDENTICAL；worktree 已清理
+- 附：P8 滞留后台 agent 迟到完成报告与已交付状态一致（S1/S2/S3 自验全过，无冲突）
