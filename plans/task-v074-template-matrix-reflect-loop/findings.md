@@ -85,3 +85,10 @@
 - 部署即时生效验证：~/.zcode 位 REFLECT-GATE 命中 5 处、rule-enhancement-type.md 在位
 - 遗留（待用户授权，非本任务 scope）：INDEX v072/v073 误挂账 2 行、v072 worktree+分支清理、config.json :394-419 重复键脏点
 - 会话侧修复记录：哨兵 sid 错位（init 注册 133bb≠会话 sess038d）→ 手工补 sess 前缀指针后 Write 解禁
+
+### H. P7 遗留处置结果（2026-09-15，用户授权）
+- **INDEX v072/v073 误挂账已修**：两行 pending→complete（补账标注）+ 两计划 Status 字面量 9 处 pending→complete（sed，commit a06fe1b）；根因=交付 chore 未翻自己行（复发第 2 次，v065 先例同型）
+- **v072 遗留 worktree/分支已清理**：先验证 `git merge-base --is-ancestor 901b68b master`=真（内容已并入）+ worktree 无未提交变更 → `git worktree remove` + `git branch -D`（§11.3 第 5 条完成）
+- **config.json 脏点已根除**：3 键（context_hygiene_enforce/plan_archive_age_days/plan_hygiene_enforce）二次定义删除，37 键唯一，jq 校验 PASS；3 实体位定向 cp 同步后 `diff -rq` 全部 diff=0
+- **全量回归**：P7 改动后主进程重跑 19 脚本 **294 PASS/0 FAIL**（去重不影响断言——重复键本就 JSON 后者胜且值相同）
+- **已推送**：origin/master 7ef6214→8fe649f（含 v074 全部 6 笔 feat + P7 fix + 簿记）

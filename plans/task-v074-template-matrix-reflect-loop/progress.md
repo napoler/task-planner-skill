@@ -193,3 +193,18 @@
 
 ### [reflect] 反思: ①假设"合并部署后运行位即时生效"已验证=是（部署位 grep 抽查 REFLECT-GATE/rule-enhancement 均命中） ②证据链=是（V1-V6 输出+IDENTICAL×3+APPROVED 在案） ③副作用=worktree 目录名初建偏离 §11.2（沿 v072 旧例）被 V1 拦截即改——已记 Decisions ④更简解=下轮起 worktree 目录直接用完整 task-id（沉淀模板已写入该防呆）
 ### [reflect] 验证: 主仓 git log 复验 6 笔并入 + 部署位 grep 抽查 + git worktree list 确认 v074 已清 + Code Reviewer 独立审查 APPROVED
+
+## Phase 7: 用户授权遗留处置（2026-09-15，B 类扩范围——用户新指令 1/2/4/部署/推送）
+
+### Actions taken
+1. INDEX v072/v073 两行翻 complete + 两计划 9 处 Status 翻转（sed 逐处核验）
+2. v072 清理前置验证（merge-base 祖先检查 + 工作区干净）→ worktree remove + branch -D
+3. config.json 重复键根除（python 精准删 3 键二次块 + 缩进修复，jq 校验，37 键唯一）
+4. 全量 selftest 回归（主进程逐 Total 求和）294/0
+5. 定向 cp config.json → 3 实体位，diff -rq 对账 diff=0
+6. push origin master（7ef6214→8fe649f，含全部 v074+P7 提交）
+
+### Test Results
+- selftest 294/0（config 去重后）；部署对账 3 位 diff=0；`git status` 干净（plans/ 簿记除外）
+### [reflect] 反思: ①假设"v072 内容已并入"验证=是（merge-base 祖先实测） ②config 去重安全性=值相同重复键，删除后 37 键唯一+jq+294/0 回归三重证据 ③副作用=定向 cp 仅动 config.json 单文件，符合 sync-companion 定向原则 ④部署即时性已复验
+### [reflect] 验证: 主进程逐 Total 行求和 294/0 + diff -rq 3 位空 + git log/push 输出在案
