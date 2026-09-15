@@ -92,3 +92,24 @@
 - **config.json 脏点已根除**：3 键（context_hygiene_enforce/plan_archive_age_days/plan_hygiene_enforce）二次定义删除，37 键唯一，jq 校验 PASS；3 实体位定向 cp 同步后 `diff -rq` 全部 diff=0
 - **全量回归**：P7 改动后主进程重跑 19 脚本 **294 PASS/0 FAIL**（去重不影响断言——重复键本就 JSON 后者胜且值相同）
 - **已推送**：origin/master 7ef6214→8fe649f（含 v074 全部 6 笔 feat + P7 fix + 簿记）
+
+### I. P8 skill-fix 诊断报告（2026-09-15，全部第一手证据）
+
+**P1-1 部署缺口**：companion/agents/plan-writer.md（v074 +2 行 rule-enhancement 契约）未同步两 agents 部署位（~/.zcode/agents、~/.claude/agents diff 实测 differ）；现行正向 SOP=lib/install-companion.sh（全量有 plan-resume 副作用，v056 实证）或定向 cp。
+**P1-2 哨兵误拦根因定位**：拦截消息文本来自 zcode-pretooluse.sh:21（check-scope rc=1 的统一文案）；check-scope D10' 仲裁要求「本会话解析链命中的计划 mtime > 哨兵 created_epoch」。本会话 SessionStart 在轮次重入时重写哨兵（新 epoch），resume 判定说"哨兵不启用"但 check-scope 不认 side 指针+attestation，只认 mtime → 计划 mtime 早于新哨兵 epoch 即误拦。修法=check-scope 增加活跃计划仲裁：本会话 side 指针存在且目标计划 attestation SHA 匹配 → 放行（不弱化新会话防护：无 side 指针的新会话不走此分支）。
+**P1-3 VC-GATE 形同虚设**：解析器只认 verification 风格 `- [x] V-P.N:` 行（check-complete.sh:489），而 v065 以来全部计划用 `- **V-N:** VC-x` 紧凑格式 → 恒计 0，warn 恒触发（本次 "映射 0 < 2"）。门控对现行计划格式零效力=真实缺陷。修法=计数器兼容 `**V-N:**` 行（含 VC-\d+ token 即计，映射目标校验复用 vc_defs 逻辑）。
+**P1-4 LEARNING-GATE 行 46**：= progress.md 顶部模板桩占位行（`<待沉淀>`），解析器按设计报未回填；真实 P1 节的 Error Log（第二 `## Error Log` 节）反而不在扫描范围。修法=桩行如实回填（最小），解析器多节扫描 deferred。
+**P1-5 文档脱节（Explore 全仓扫描）**：critical-rules.md:59,283,289 与 template-mapping.md:26 仍是"12 类/12 变体"（实际 13，含新沉淀 rule-enhancement；template-mapping :142 已登记与 :26 自相矛盾）；template-guide.md:32/36-47/59/65 缺 rule-enhancement 行且计数 12/20 过时；CHANGELOG [Unreleased] 缺 v074 条目（v071-073 均有，违仓惯例）；CLAUDE.md:32 与 README_zh.md:134,227 "Rules 1-10" 过时（实 1-34）；CLAUDE.md:70 新增模板指引漂移（init 白名单已动态派生免改脚本）；INSTALL_zh.md:277-303 安装清单大面漂移（缺 15+ 新脚本/13 变体/knowledge-brief）。
+**P2 不修登记**：CR P2a attest fail-open（与 check-plan-dispatch 先例同构，约定内）；CR P2b 提取列序依赖（安全侧失败）；Batch Report 零单元必须填 8 字段（规则语义层，另行轮次）；sid 命名空间双源（env 133bb vs hook stdin sess038d）结构性统一（P1-2 修复已消其用户可见影响）；英文 README/INSTALL 悬空链接与 docs/ 指针（P3）。
+
+### J. P8 补充证据（2026-09-15）
+- check-scope.sh D10'' 仲裁已落 worktree（:125-150）：side 指针两形态+task_plan.md+`.plan-attestation` 内 `plan_sha256=` 与 sha256sum 比对，fail-closed；/tmp 沙箱 7 case（含篡改反例/新会话反例/sess 前缀/大写 hash）全 PASS（checkpoint 07-exec-p8.md）
+- attestation 文件格式实读：attest-plan.sh:109 写 `plan_sha256=<hash>`（非 "SHA-256:" 前缀——修正了诊断阶段的假设）
+- LEARNING-GATE 消音验证：progress.md 桩行回填后 `check-complete.sh | grep LEARNING-GATE` 无命中
+- 34.2 三点同步清单遗漏 template-guide.md（本次脱节根因之一）——登记为 Rule 34.2 后续轮改进项（deferred）
+
+### K. P8 修复结果与部署终态（2026-09-16）
+- **全部落地**：check-scope D10'' attestation 仲裁（side 指针+SHA 匹配放行，fail-closed 7 case 验证）+ VC-GATE 紧凑格式兼容（T08/T09 补断言，真实计划零警告）+ 文档 13 处（变体 12→13/Rules 1-10→1-34/INSTALL 清单重生成）+ CHANGELOG v074 条目 + progress 桩行回填
+- **commit**：10ba3d1（worktree）→ merge **0f85da8**（master）；3 实体位 IDENTICAL；companion 双位对账 IDENTICAL（claude 位 model→sonnet 适配）
+- **全量回归**：19 脚本 **296 PASS/0 FAIL**（主进程逐 Total 求和；294+2 新断言；曾现 1 FAIL 系与滞留后台 agent 并发跑测试的 /tmp 夹具碰撞，agent 终止后复跑干净——教训：全量回归须确认无并发 selftest）
+- **接管登记**：executor 首次返回截断（SendMessage 续推后仍静默，26 分钟无写入）→ 按 Rule 22.3④ 主进程接管 S2 收尾验收+S3 文档修复（10 文件 +169/-47）

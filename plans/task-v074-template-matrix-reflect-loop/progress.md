@@ -43,7 +43,8 @@
      Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 09-15 | （模板桩——实际条目见下方各 Phase 段 Error Log；本行回填以消 Learning Gate 占位报警） | 1 | 已由 P1/P5 段 Error Log#1/#2 接管 | 模板桩非实质条目 | 各 Phase 段落回填制 |
+
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
@@ -208,3 +209,33 @@
 - selftest 294/0（config 去重后）；部署对账 3 位 diff=0；`git status` 干净（plans/ 簿记除外）
 ### [reflect] 反思: ①假设"v072 内容已并入"验证=是（merge-base 祖先实测） ②config 去重安全性=值相同重复键，删除后 37 键唯一+jq+294/0 回归三重证据 ③副作用=定向 cp 仅动 config.json 单文件，符合 sync-companion 定向原则 ④部署即时性已复验
 ### [reflect] 验证: 主进程逐 Total 行求和 294/0 + diff -rq 3 位空 + git log/push 输出在案
+
+## Phase 8: skill-fix 可用性审计与错误修正（2026-09-15）
+
+### Actions taken（阶段 1-3）
+1. 诊断（findings §I）：哨兵误拦根因=SessionStart 轮次重入重写哨兵 epoch+check-scope D10' 只认 mtime；VC-GATE 对 `**V-N:**` 格式恒计 0；plan-writer 两个 agents 部署位未同步；文档脱节 13 处；progress 模板桩未回填
+2. 主进程修复 progress.md 模板桩行（P1-5）→ LEARNING-GATE 占位报警消音（grep 无命中实证）
+3. 建 worktree task-v074-p8fix（wt/task-v074-p8fix @45c3c44），派 executor：S1 check-scope D10'' attestation 仲裁已落地（/tmp 沙箱 7 case 全 PASS 含 fail-closed 反例）；S2 VC-GATE 兼容进行中；S3 文档 13 处未开始——executor 返回截断后经 SendMessage 续推（后台）
+4. 部署位验证：plan-writer.md 两 agents 位 diff differ 实测（P1-1 缺口证据）
+
+### Test Results（阶段性）
+- check-scope D10''：case1 放行/case2 篡改拦/case3 新会话拦/case4 现状回归/case5 大小写——全 PASS（executor 自测，主进程待复验）
+- LEARNING-GATE：主进程复验无 WARNING
+
+### [reflect] 反思: ①诊断全部第一手取证（受控复现+源码阅读+diff 实测），无凭印象项 ②哨兵问题选择 check-scope 侧最小修而非 hook 命名空间大改（scope lock） ③executor 截断按 22.8 先读检查点再续推，未从零重做 ④文档 13 处脱节=v074 沉淀时三点同步漏了 template-guide（34.2 清单本身没含它）——登记为 34.2 待改进项
+### [reflect] 验证: executor 检查点 07-exec-p8.md 已 Read；worktree git status 与改动面核对（2 文件 M）；S1 沙箱 7 case 记录在案
+
+## Phase 8（续）：修复落地与部署（2026-09-16）
+
+### Actions taken
+1. executor S1+S2 产出验收（check-scope D10''/VC-GATE 并集计数/selftest T08-T09）；其两次异常收尾（截断+续推静默）→ Rule 22.3④ 主进程接管 S3
+2. S3 文档 13 处主进程修复：critical-rules ×4/template-mapping ×1/template-guide ×6/CLAUDE ×2/README_zh ×2/CHANGELOG v074 条目/INSTALL 清单重生成（55 scripts/13 variant/12 references/1.3MB 实测）
+3. 全量回归 296/0（含并发碰撞排查与复跑定数）→ commit 10ba3d1 → merge 0f85da8 → --deploy IDENTICAL×3
+4. companion agents 定向部署：plan-writer.md → ~/.zcode/agents（字节同）+ ~/.claude/agents（model→sonnet 适配）双位 IDENTICAL
+5. worktree p8fix 清理（remove+branch -d）
+
+### Test Results
+- selftest-vc-gate 11/0（T08/T09 新断言）；全量 19 脚本 296/0；知识储备计数验收 21
+- 行为级：真实计划 check-complete 无「V-N 映射」警告；check-scope 7 case 沙箱（executor）+ 主进程 bash -n/语法
+### [reflect] 反思: ①fail-closed 论证充分（新会话无 side 指针不经过新分支，case3/5b 反例实证）②并发 selftest 碰撞教训已记（回归前置条件=无并发）③34.2 三点同步清单本身缺 template-guide——deferred 登记 ④INSTALL 计数类断言改为"以实际 ls 为准"防再腐化
+### [reflect] 验证: 主进程亲跑全量 296/0+部署 diff=0+companion 对账 IDENTICAL+残留断言 grep 扫描空
