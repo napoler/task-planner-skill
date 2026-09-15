@@ -26,6 +26,8 @@
 #      opencode/cursor=SKILL.md frontmatter;全量副本模式下 frontmatter hooks: 块 N/A)
 #   9. task-v055 委派门控三件套可执行(check-delegation.sh + allow-direct.sh +
 #      selftest-delegation.sh;2026-09-07)
+#      + task-v075 P5 (v063 遗留①): selftest-methodology.sh(v063 引入,methodology
+#      门控面守护脚本)并入同一存在性检查循环
 #   10. task-v055-fallback provider 探测脚本可执行 + config.provider_fallback 键
 #      (subagent-fallback.sh;2026-09-08)
 #
@@ -224,7 +226,9 @@ verify_installation() {
 
   # 9. task-v055 委派门控脚本存在性(2026-09-07):PreToolUse hook 拦截 + 用户 bypass
   # + 自测 是执行期机制化三件套,任一缺失 = 白名单/拦截/自测三能力之一失效
-  for _script in check-delegation.sh allow-direct.sh selftest-delegation.sh; do
+  # task-v075 P5 (v063 遗留①): 追加 selftest-methodology.sh(v063 引入的 methodology
+  # 门控面守护脚本)——同目录存在性+可执行性检查,语义不变
+  for _script in check-delegation.sh allow-direct.sh selftest-delegation.sh selftest-methodology.sh; do
     if [ -x "$TASK_PLANNER_ROOT/scripts/$_script" ]; then
       pass "$_script exists and is executable"
     else
