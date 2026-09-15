@@ -147,10 +147,10 @@ P6：主进程执行合并回（smart-merge-back --deploy 3 实体位）+ worktr
 ### Phase 8: skill-fix 可用性审计与错误修正（B 类扩展 — 用户指令 2026-09-15「/skill-fix 优化修正 当前修改后技能的可用性以及错误进行修正」）
 - [x] 阶段 1 诊断（findings §I：P1×5=部署缺口/哨兵误拦根因/VC-GATE 零计数/文档脱节 13 处/模板桩行；P2 不修登记×5 含理由）
 - [x] 阶段 2 诊断报告+修复计划已呈现（silent 授权沿用本计划既有登记；Standard 54 决策=不引入 Loop）
-- [ ] 阶段 3 修复实施：worktree task-v074-p8fix（check-scope D10 attestation 仲裁/VC-GATE **V-N:** 兼容/文档 13 处/CHANGELOG 条目）
-- [ ] 阶段 4 验证（全量 selftest 逐 Total 求和 0 FAIL+#2/#3 行为级实测）+ companion 定向 cp + 部署 3 位 diff=0 + 推送
-- **V-N:** VC-4, VC-5（P8 验收：诊断 P1 全部修复或登记）
-- **Status:** in_progress
+- [x] 阶段 3 修复实施：worktree task-v074-p8fix（check-scope D10'' attestation 仲裁/VC-GATE **V-N:** 兼容/文档 13 处/CHANGELOG 条目；commit 10ba3d1）
+- [x] 阶段 4 验证（全量 296/0 逐 Total 求和+行为级实测）+ companion 定向 cp 双位 IDENTICAL + 部署 3 位 diff=0 + merge 0f85da8 + push 4504c4b
+- **V-N:** VC-4, VC-5（P8 验收：诊断 P1 全部修复或登记——5 项 P1 全修复，5 项 P2 deferred 登记）
+- **Status:** complete
 - **Executor:** 主进程（诊断定向核查+白名单①编排+部署）+ executor（worktree 内修复派发）+ Explore（联动扫描，已完成）
 
 ## 🔀 隔离决策（冲突分析）
