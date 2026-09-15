@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # selftest-methodology.sh — task-v063 Phase6/S1: methodology 门控面 hermetic 守护套件
+# (task-v075 P4 B1 扩至 M-08..M-11: fmea_enforce 三档分化端到端守护, 见 :11-14 与 M-08..M-11 段)
 # 守护 v063 引入的 FMEA/内容质量门控嵌入点 (config 两键 + methodology.md + 模板/指针):
 #   M-01 config.json 两键存在 (fmea_enforce + content_quality_enforce 均在 .properties)
 #   M-02 两键默认值=warn 且 enum 含 enforce/warn/off (default=warn, enum 长度=3)
@@ -14,7 +15,7 @@
 #      隔离既有两道门控; 高 RPN 有兜底行放行由 M-10 对照断言覆盖)
 # hermetic: mktemp 夹具 = 真实 worktree 文件最小镜像 (<root>/skills/task-planner/… cp 而来),
 # 用例只对 fixture 跑, 不污染真实仓且防 CWD 依赖; trap 清理; 对真实文件只读。
-# 全部用例 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致 (fixture 每次重建)。
+# 11 用例 (M-01..M-11) 全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致 (fixture 每次重建)。
 
 set -u
 
