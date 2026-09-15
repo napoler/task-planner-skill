@@ -252,3 +252,16 @@
 - 批量门控三 case：零单元声明逃生命中/无声明仍拦/8 字段照旧过
 ### [reflect] 反思: ①四点同步落点选择=把实际腐化点纳入清单而非事后人肉记忆，机制优于提醒 ②零单元逃生用段级双关键词保守判定，防 LLM 同义文案绕过是有意设计 ③Plan TAMPERED 事件根因=Bash 改计划绕过 Edit 工具自动重锁——已在轮首重新 attest，后续计划编辑一律走 Edit 工具
 ### [reflect] 验证: 主进程 grep 残留扫描+wc -l+selftest 17/0+全量 297/0+部署 diff=0 逐项实证
+
+## Phase 10: deferred 深度清理（2026-09-16）
+
+### Actions taken
+1. B legacy 全局指针清理（set-active-plan.sh --clear，陈旧 task-v063 摘除）
+2. 派 executor 落地 A/C/D：sid 哨兵探测 fallback（init-session+plan-created，T12a-d 4 断言）+ PLAN_ROOT 解析修正 + fail-open SKIPPED 显式化 + README/CHANGELOG 悬空清理
+3. 主进程验收：bash -n、T12a-d、全量 301/0 逐 Total 求和 → commit+merge 42b9eda → --deploy IDENTICAL×3 → worktree 清理 → push
+
+### Test Results
+- selftest-active-plan 19/0（T12a 哨兵 stem 对齐/T12b env 命中不变红线/T12c 无 sid 零破坏/T12d 哨兵清除）
+- 全量 19 脚本 301 PASS/0 FAIL
+### [reflect] 反思: ①sid 根因这次是结构性收口而非绕过——探测哨兵=hook 侧真实 sid 的唯一落地物，数据源选对了 ②executor 自报 293 第三次算术误差，"自报总数不采信"已三次验证为系统性规律 ③风险登记：init 指针落点迁移影响 7am cron 无 sid 场景，部署后观察一次 cron
+### [reflect] 验证: 主进程 bash -n+T12 断言复跑+301/0 逐 Total 求和+部署 diff=0

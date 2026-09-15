@@ -119,3 +119,9 @@
 - **Batch Report 零单元逃生**：check-complete.sh 批量门控支持段内「不适用（无批量生成单元）」声明跳过 8 字段（段级双关键词判定，段缺失仍 fail-closed；batch_report.md 头注+batch-quality-gate 18.6 行文档同步）
 - **全量回归**：19 脚本 **297 PASS/0 FAIL**（+TL-17）；commit b8(见 log)→merge **599b675**；3 位 IDENTICAL；worktree 已清理
 - 附：P8 滞留后台 agent 迟到完成报告与已交付状态一致（S1/S2/S3 自验全过，无冲突）
+
+### M. P10 结果（2026-09-16，用户「继续」· 二）
+- **sid 哨兵探测 fallback 落地**（根因收口）：env sid 无对应哨兵时取最新哨兵 sidkey（SessionStart 刚写=hook 真实 sid），init-session 指针注册与 plan-created 哨兵清除对齐 hook 命名空间；连带修正 init-session PLAN_ROOT 解析错位（`cd ..` 写到 <root>/.active_plan 而非 plans/ 下——P1-2 根因之一）；既有 env 命中路径零变化（T12b 红线验证）；多会话并发取舍已注释登记
+- **fail-open 显式化**：attest 内两处 `[ -x ]` 静默分支（plan-dispatch/template-gate）各输出 SKIPPED 行，chmod -x 实测可达、行为零变化（CR P2a 收口）
+- **文档清理**：README_zh 悬空链接清零+目录树补全（删仓顶不存在的 scripts/validate.sh 行）、CHANGELOG §4.5.2→§2.6 实存章节+[Unreleased] P10 条目
+- **全量回归**：19 脚本 **301 PASS/0 FAIL**（297+4 新 T12 断言；executor 自报 293 再证算术误差教训）；commit 42b9ed0 前身 → merge **42b9eda**；3 位 IDENTICAL

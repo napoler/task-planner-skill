@@ -161,6 +161,16 @@ P6：主进程执行合并回（smart-merge-back --deploy 3 实体位）+ worktr
 - **Status:** complete
 - **Executor:** executor（worktree 修复）+ 主进程（白名单①编排/部署/簿记）
 
+### Phase 10: deferred 深度清理（用户「继续」指令 2026-09-16 · 二）
+- [x] A. sid 兜底链统一：哨兵探测 fallback 落地（init-session+plan-created，T12a-d 4 断言；连带修正 PLAN_ROOT 解析错位；env 命中路径零变化）
+- [x] B. legacy 全局指针清理（--clear 完成，陈旧 task-v063 摘除）
+- [x] C. fail-open 显式化：attest 内两处 SKIPPED 行（chmod -x 实测可达，行为零变化）
+- [x] D. 文档悬空清理：README_zh 链接清零+目录树补全；CHANGELOG §2.6 修正+P10 条目
+- [x] E. 验证（全量 **301 PASS/0 FAIL** 逐 Total 求和）+ merge 42b9eda + 部署 3 位 IDENTICAL + 推送 + 簿记
+- **V-N:** VC-3, VC-4, VC-5
+- **Status:** complete
+- **Executor:** executor（worktree 修复 A/C/D）+ 主进程（白名单①② B/部署/簿记）
+
 ## 🔀 隔离决策（冲突分析）
 | 字段 | 值 |
 |------|-----|
