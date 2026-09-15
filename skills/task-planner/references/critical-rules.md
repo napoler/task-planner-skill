@@ -283,8 +283,8 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 模板矩阵已有 13 变体但选取纯靠自觉（Rule 16 无机器校验），代表性任务的做法沉淀无入库通道。本条把「选取→校验→沉淀→复用」闭环机制化。
 
 34.1 **选取门控**：task_plan.md 的 template_type 必填且 ∈ 白名单（白名单源=`templates/variant/*-type.md` 动态派生 + `general` 恒合法，禁第三处硬编码副本）；`scripts/check-template-type.sh <task_plan.md>` 在 attest-plan.sh 锁定前校验，缺失/非法按 34.6 档位处置（enforce=拒绝锁定，warn=告警放行）；`--skip-template-check` 逃生（对齐 --skip-dispatch-check 先例，逃生须在交付报告披露）。
-34.2 **同步纪律**：新增/沉淀模板类型时三点同步——template-mapping.md 决策树与清单、companion/agents/plan-writer.md 映射表、SKILL.md 模板节；init-session.sh 白名单已动态派生免同步；`scripts/selftest-template-lifecycle.sh` 守护一致性（Phase 4 建）。
+34.2 **同步纪律**：新增/沉淀模板类型时四点同步——template-mapping.md 决策树与清单、companion/agents/plan-writer.md 映射表、SKILL.md 模板节、template-guide.md 变体表与计数；init-session.sh 白名单已动态派生免同步；`scripts/selftest-template-lifecycle.sh` 守护一致性（Phase 4 建）。
 34.3 **沉淀触发（终验时判定，任一命中即启动沉淀评估）**：①同类任务第 2 次出现（plans/INDEX.md 与 ledger 可查）；②任务类型不在既有类型覆盖内且做法可泛化；③用户点名「这类任务以后还有」。
-34.4 **沉淀流程**：从已完成任务提炼 → 新建 `templates/variant/<new-type>-type.md`（须含 Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备最小结构，≤100 行）→ 完成 34.2 三点登记 → selftest 断言通过 → 沉淀动作登记计划 Decisions Made 表。
+34.4 **沉淀流程**：从已完成任务提炼 → 新建 `templates/variant/<new-type>-type.md`（须含 Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备最小结构，≤100 行）→ 完成 34.2 四点登记 → selftest 断言通过 → 沉淀动作登记计划 Decisions Made 表。
 34.5 **防滥用**：已有类型禁重复沉淀（先 ls variant/ 目录查重）；一次性任务、泛化性不足的禁沉淀；沉淀模板质量对齐既有 13 变体（含 frontmatter 字段说明与类型适用边界）。
 34.6 **机制**：开关键 `config.json#template_gate_enforce`（默认 warn：选取门控失败在 attest 输出告警不阻断；enforce=拒绝锁定；off=门控关闭）；档位解析 env `TASK_PLANNER_TEMPLATE_GATE_ENFORCE` > config > warn；`scripts/check-template-type.sh` + `scripts/selftest-template-lifecycle.sh` 静态守护。

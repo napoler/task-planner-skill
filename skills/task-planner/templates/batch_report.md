@@ -1,5 +1,6 @@
 <!-- batch_report.md — 批次报告区块模板（v2.2 Rule 18.6 配套） -->
 <!-- 使用方式:批量任务(chain_mode: fan-out 或 批量操作 ≥5 单元)时,复制本区块到 task_plan.md 末尾并填写八字段 -->
+<!-- 零单元任务可整段声明一行：`不适用（无批量生成单元）`，跳过 8 字段校验（check-complete.sh Rule 18.6 逃生，2026-09-16） -->
 <!-- 字段校验:failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败 -->
 <!-- 详见:references/batch-quality-gate.md §三/§四 -->
 

@@ -234,11 +234,16 @@ if batch_required:
         nxt = re.search(r'^##\s+', seg_text[10:], re.MULTILINE)
         if nxt:
             seg_text = seg_text[:10 + nxt.start()]
-        for fld in BATCH_FIELDS:
-            fm = re.search(r'\|\s*`?' + re.escape(fld) + r'`?\s*\|\s*([^|\n]*)\s*\|', seg_text)
-            val = (fm.group(1).strip() if fm else "")
-            if not val:
-                batch_missing.append(fld)
+        # [2026-09-16 task-v074 P9 Rule 18.6 零单元逃生] 段内整段声明「不适用（无批量生成单元）」
+        # → 合法零单元声明, 跳过 8 字段校验; 否则维持既有 8 字段校验（fail-closed）
+        if "不适用" in seg_text and "无批量" in seg_text:
+            pass  # batch_missing stays []
+        else:
+            for fld in BATCH_FIELDS:
+                fm = re.search(r'\|\s*`?' + re.escape(fld) + r'`?\s*\|\s*([^|\n]*)\s*\|', seg_text)
+                val = (fm.group(1).strip() if fm else "")
+                if not val:
+                    batch_missing.append(fld)
 
 # Display
 for seg in segments:
