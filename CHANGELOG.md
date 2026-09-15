@@ -9,6 +9,17 @@
 
 ### 新增
 
+- **Rule 33 解决→反思→验证迭代循环（task-v074）** — 问题解决动作后强制「反思四问→独立验证」微循环：progress.md `- [reflect] 反思:/验证:` 两行落盘、≤3 轮迭代边界、notepad 沉淀联动；`config.json#reflect_verify_enforce`（默认 warn）+ `check-complete.sh` REFLECT-GATE（声明 `reflect_verify: required` 的计划终验校验反思行）+ `selftest-reflect-verify.sh`（12 断言）。
+- **Rule 34 模板生命周期：选取门控 + 沉淀入库（task-v074）** — `scripts/check-template-type.sh`（新）在 attest 锁定前校验 template_type ∈ 白名单（白名单自 `templates/variant/` 目录动态派生+general，消双权威源），enforce 档拒绝锁定、`--skip-template-check` 逃生；沉淀触发三条件/防滥用（34.3-34.5）；`config.json#template_gate_enforce` + `selftest-template-lifecycle.sh`（16 断言）。首批沉淀 `templates/variant/rule-enhancement-type.md`（技能规则增强类，源自 v071-v074 同类轮次）。
+- **init-session.sh 模板路由增强（task-v074）** — 支持 `TASK_TEMPLATE_TYPE` 环境变量（兜第 2 位置参数）；VALID_TYPES 白名单改为 variant/ 目录动态派生（新增变体免改脚本）。
+- **check-complete.sh REFLECT-GATE / VC-GATE 紧凑格式兼容（task-v074 P8）** — VC-GATE 计数器并集 `- **V-N:** VC-x` 紧凑映射行（v065 起现行计划格式，原计数恒 0 致门控形同虚设）；映射目标 ∈ 已定义 VC 校验保留。
+- **check-scope.sh D10'' attestation 仲裁（task-v074 P8）** — 本会话 side 指针指向的计划存在有效 `.plan-attestation`（SHA-256 匹配）时放行哨兵，修复恢复会话因 SessionStart 重写哨兵 epoch 被误拦（fail-closed：无指针新会话/篡改 attestation 仍拦截）。
+
+### 变更
+
+- SKILL.md 联动扩至 Rules 1-34：合规清单新增 C21（Rule 33 反思验证）/C22（Rule 34 模板门控与沉淀）；config.json 37 键（新增 2 三档键，并根除 3 键历史重复定义）；SKILL.md 535 行。
+- 文档对齐：template-guide/template-mapping/critical-rules 变体计数 12→13（rule-enhancement 登记）；README_zh/CLAUDE 的 "Rules 1-10" → 1-34；本清单补 v071-v073 缺漏条目同批补记（见下）。
+
 - **多计划 `.active_plan` 指针机制（移植上游 resolve-plan-dir/set-active-plan,task-active-plan）** — 消除 hook 按 mtime 猜活跃计划的歧义(多计划并行时可能注入非预期计划):
   - `scripts/resolve-plan-dir.sh`(新,移植裁剪) — 解析链:指针→mtime 最新→legacy 根;slug 校验防路径穿越;恒 exit 0。
   - `scripts/set-active-plan.sh`(新) — `<task-id>` 设置 / `--show` 查看 / `--clear` 清除回退。

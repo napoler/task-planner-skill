@@ -122,6 +122,33 @@ if [ -n "$_side_sentinel" ] && [ -f "$_side_sentinel" ]; then
     fi
   fi
 
+  # D10''（[2026-09-15 task-v074 P8] attestation 仲裁，fail-closed）：
+  # 动机：会话轮次重入时 SessionStart 会重写本会话哨兵（新 created_epoch），
+  # D10' mtime 判定（计划 mtime > 哨兵 epoch）对恢复会话中已 attested 的计划误拦。
+  # 新会话无 side 指针，不经过本分支——既有拦截语义不弱化；三条件任一缺失仍走拦截。
+  #   ① 本会话 side 指针存在（.active_plan_side/$_sidkey.active_plan 或 sess$_sidkey.active_plan）
+  #   ② 指针内容非空（= 计划目录名）且 $ROOT/plans/<目录名>/task_plan.md 存在
+  #   ③ 同目录 .plan-attestation 的 plan_sha256 与 task_plan.md 实时 sha256sum 一致（大小写不敏感）
+  _d10pp_plan_dir=""
+  for _ap in "$ROOT/plans/.active_plan_side/$_sidkey.active_plan" "$ROOT/plans/.active_plan_side/sess$_sidkey.active_plan"; do
+    if [ -f "$_ap" ]; then
+      _ap_dir="$(tr -d '[:space:]' < "$_ap" 2>/dev/null || true)"
+      if [ -n "$_ap_dir" ] && [ -f "$ROOT/plans/$_ap_dir/task_plan.md" ]; then
+        _d10pp_plan_dir="$_ap_dir"
+        break
+      fi
+    fi
+  done
+  if [ -n "$_d10pp_plan_dir" ] && [ -f "$ROOT/plans/$_d10pp_plan_dir/.plan-attestation" ]; then
+    _ap_hash="$(sed -n 's/^plan_sha256=//p' "$ROOT/plans/$_d10pp_plan_dir/.plan-attestation" 2>/dev/null | head -1 | tr 'A-F' 'a-f')"
+    _cur_hash="$(sha256sum "$ROOT/plans/$_d10pp_plan_dir/task_plan.md" 2>/dev/null | awk '{print $1}' | tr 'A-F' 'a-f')"
+    if [ -n "$_ap_hash" ] && [ "$_ap_hash" = "$_cur_hash" ]; then
+      # 三条件全满足：本会话 side 指针指向的 attested 计划未被篡改 → 放行（D10'' 仲裁）
+      echo "[PLAN-GUARD] ✅ D10'' attestation 仲裁放行: $ROOT/plans/$_d10pp_plan_dir/.plan-attestation (plan_sha256 一致)"
+      exit 0
+    fi
+  fi
+
   # 未满足 → 拦截
   echo "[PLAN-GUARD] 🚫 本会话计划哨兵未满足 (.plan_required_side active: $(basename "$_side_sentinel"))."
   echo "  Tool: $TOOL"

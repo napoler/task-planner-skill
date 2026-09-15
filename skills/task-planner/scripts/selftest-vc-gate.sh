@@ -14,6 +14,8 @@
 #   T05 V-N 映射目标引用未定义 VC-9 → 缺口(目标缺失/未定义)
 #   T06 模板 verification.md 占位 V-N 行残留 → 不计实质 → 违规
 #   T07 无 V-N 缺口夹具默认档位(config.json 无覆盖, 本仓默认=warn) → 仅警告不阻断
+#   T08 [task-v074 P8] 紧凑格式 `- **V-N:** VC-1, VC-2`(v065 起现行计划格式, 每段 1 行即达标) → enforce 档 exit 0 + VC-GATE PASSED
+#   T09 [task-v074 P8] 紧凑格式引用未定义 VC-99 → 缺口(映射目标缺失/未定义 VC) enforce 档 exit 1
 # 全 PASS exit 0；任一 FAIL exit 1。
 set -u
 
@@ -118,6 +120,7 @@ run enforce "$TMP/vc3"; RC=$?
 assert 02b "$RC" 1 - 'VC-GATE FAILED'
 
 # T03 无 V-N, warn 档 → exit 0 + WARNING + Phase 缺口
+# （novn 段无紧凑 **V-N:** 行 → 阈值保持 2，D11 不得放松既有语义）
 run warn "$TMP/novn"; RC=$?
 assert 03 "$RC" 0 - 'Phase1(V-N 映射 0 < 2)'
 
@@ -146,6 +149,41 @@ assert 06 "$RC" 1 - 'Phase1(V-N 映射 1 < 2)'
 # T07 默认档位（不带 env, 走 config.json 默认 warn）: 违规夹具 novn → 仅警告不阻断
 run "" "$TMP/novn"; RC=$?
 assert 07 "$RC" 0 - 'VC-GATE WARNING'
+
+# T08 [task-v074 P8] 紧凑格式 `- **V-N:** VC-x, VC-y`：每 Phase 段 1 行整行映射即达标
+# （v065 起全部计划为紧凑格式；P1-3 诊断：原计数器只认 verification 风格 → 恒 0）
+for d in compact compact99; do mkdir -p "$TMP/$d/subagent-state"; done
+mk_compact() {   # <dir> <P1映射> <P2映射> — 构造含 Handoff 登记的完整 compact 计划
+  local dir="$1"
+  { printf '# task_plan\n\n## ✅ Verification Contract\n'
+    vc_table 5
+    printf '\n## Phases\n\n### Phase 1: Alpha\n- **Status:** complete\n- **Executor:** explore（mini）\n%s\n' "$SU"
+    printf -- '- **V-N:** %s\n' "$2"
+    printf '\n### Phase 2: Beta\n- **Status:** complete\n- **Executor:** code-assistant（haiku-1）\n%s\n' "$SU"
+    printf -- '- **V-N:** %s\n' "$3"
+    printf '%s\n' '## 🔗 Subagent Handoff 登记表' \
+      '| # | 时间 | subagent_type | 任务目标 | 状态 | 结论摘要 | 证据 | checkpoint 路径 | rescue |' \
+      '|---|------|--------------|---------|------|---------|------|----------------|--------|' \
+      '| 1 | 2026-09-15 | explore | 勘察 | done | ok | ok.md:1 | 01-explore.md | - |' \
+      '| 2 | 2026-09-15 | code-assistant | 实现 | done | ok | ok.md:2 | 02-code-assistant.md | - |'
+  } > "$dir/task_plan.md"
+  mkdir -p "$dir/subagent-state"
+  printf 'x\ny\nz\nw\n' > "$dir/findings.md"
+  printf 'a\nb\nc\nd\n' > "$dir/progress.md"
+  : > "$dir/subagent-state/01-explore.md"
+  : > "$dir/subagent-state/02-code-assistant.md"
+}
+mk_compact "$TMP/compact" 'VC-1, VC-2' 'VC-3, VC-4'
+# T09 夹具：紧凑行引用未定义 VC-99（VC-1 已定义，VC-99 缺失 → 映射目标不合规）
+mk_compact "$TMP/compact99" 'VC-99, VC-1' 'VC-3, VC-4'
+
+# T08 紧凑合规, enforce 档 → exit 0 + PASSED（既有「V-N 映射 0 < 2」警告不得再出现）
+run enforce "$TMP/compact"; RC=$?
+assert 08 "$RC" 0 'ALL PHASES COMPLETE' 'VC-GATE PASSED'
+
+# T09 紧凑引用未定义 VC-99, enforce 档 → exit 1 + 映射目标缺失/未定义
+run enforce "$TMP/compact99"; RC=$?
+assert 09 "$RC" 1 - 'V-N 映射目标缺失/未定义 VC'
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

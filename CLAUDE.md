@@ -29,7 +29,7 @@ skills/task-planner/
 │   ├── progress.md       ← 会话进度日志
 │   └── notepad-learnings.md
 └── references/
-    ├── critical-rules.md ← Rules 1-10 核心执行约束
+    ├── critical-rules.md ← Rules 1-34 核心执行约束
     ├── completion-gate.md← 子代理验证 + 串行同步协议
     ├── goal-gate.md      ← VC 规则 + COMPLETE/PARTIAL/BLOCKED 退出标准
     └── billing.md        ← 计费模式说明
@@ -67,7 +67,7 @@ skills/task-planner/
 
 ### 添加新模板
 
-在 `templates/` 下新建 `.md` 文件，同时在 `init-session.sh` 的循环里加入新文件名（第 62 行 `for file in ...`）。
+新增变体模板：在 `templates/variant/` 下新建 `<type>-type.md`，并按 critical-rules.md Rule 34.2 完成三点登记（template-mapping 清单 / plan-writer 映射表 / 本文件模板节）——init-session.sh 白名单自 variant/ 目录动态派生，无需改脚本。
 
 ### 新增脚本参数
 
