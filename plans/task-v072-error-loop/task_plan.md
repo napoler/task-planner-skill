@@ -28,7 +28,7 @@
 ## Phases
 
 ### Phase 1: 规则层 — critical-rules.md Rule 31 + Rule 8 联动
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** executor(code-assistant 档位)
 - **Scope:** F1
 - **Steps:**
@@ -53,7 +53,7 @@
 - **VC-2:** Rule 8 文本含 Rule 31 引用（联动）
 
 ### Phase 2: 模板层 + SKILL.md 联动
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** executor(code-assistant 档位)
 - **Scope:** F2-F5
 - **Steps:** ① progress.md Error Log 加列 ② task_plan.md Errors 加列 ③ notepad 段注释 ④ SKILL.md 五处（frontmatter/摘要行/References 表/C19/新指令处理指针）⑤ C19 文案：用户指出错误（B/C 类命中"错误指出"）已按 Rule 31 走 31.2 根因分析且 Error Log 行 Root Cause 非空
@@ -61,7 +61,7 @@
 - **VC-4:** SKILL.md 含 "Rule 31" 摘要行 + C19 行 + frontmatter `1-31`
 
 ### Phase 3: config + check-complete.sh Learning Gate
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** executor(code-assistant 档位)
 - **Scope:** F6-F7
 - **Steps:** ① config.json properties + default 双处 `error_loop_enforce`（jq 校验 JSON 合法 + additionalProperties:false 下键已声明）② check-complete.sh 加 Learning Gate 段（静态：解析 progress.md Error Log 表数据行，Root Cause 列空或 `<待沉淀>` → 打印 Learning Gate FAIL + 计入 exit 1；注意 awk 区间提取用状态机式（gawk 5.2 陷阱，见 memory task-planner-awk-scope-extraction-bug））③ 无 Error 行/无表 → PASS 静默
@@ -69,7 +69,7 @@
 - **VC-6:** 构造含未沉淀 Error 行的假 progress.md → check-complete.sh 报 Learning Gate FAIL；沉淀完整 → 不报（端到端 2 用例）
 
 ### Phase 4: selftest-error-loop.sh + 全量回归
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** executor(code-runner 档位 / 主进程机械命令)
 - **Scope:** F8
 - **Steps:** ① 新 selftest ~12 断言（对照 selftest-shared-tracker.sh 范式：条款存在性 + 语义锚点 + config 键 + SKILL 联动 + C19 + 模板列 + check-complete Learning Gate 代码锚点）② 全量 selftest 回归（19+ 脚本跑一遍，历史 227 断言基线 + 新增）
@@ -77,7 +77,7 @@
 - **VC-8:** 全量 selftest 无新增 fail（旧断言不回归）
 
 ### Phase 5: 变更联动审计 + 交付簿记
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** 主进程（白名单②计划系统文件维护 + ③机械验证）
 - **Scope:** 仓内引用扫描 + plans 三文件 + ledger
 - **Steps:** ① 宽口径 grep `Critical Rules 1-` / `Rules 1-` / `Rule 30`（确认无应联动未联动处；Rule 30 行不动）② skill-collaboration.md 是否需加 meta-corrector 协同行（31.x 引用 meta-corrector？——设计裁定：31.2 主进程分析为主，meta-corrector 作为"同法反复失败"可选升级项在 31.6 提及即可，矩阵不加行，避免双权威源）③ 交付簿记：INDEX v072 + .zcode/ledger 账本 done 条目

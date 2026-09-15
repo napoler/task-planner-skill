@@ -8,27 +8,27 @@
 
 ## Phases
 ### Phase 1: 规则层 — critical-rules.md Rule 32（32.1-32.5）+ 31.5 消费侧联动
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** 主进程（白名单②计划系统文件维护；纯 .md 条款）
 - **VC-1:** `^32\.[1-5]` 五子条在位；32.2 含"提出方案前必查"锚点；32.4 含两条解禁条件
 - **VC-2:** 31.5 消费侧含「被否决方案」段阅读联动
 
 ### Phase 2: 模板 + SKILL.md 联动
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** 主进程（同上）
 - notepad-learnings.md 加「🚫 被否决方案（User Rejected — Rule 32）」段；SKILL.md：frontmatter 1-32 / 摘要行 Rule 32 / References 表 / C20 / 错误指出特判段补"用户说'不允许/禁止 X'"登记句
 - **VC-3:** SKILL.md 5 处联动 grep 通过；C20 在位
 - **VC-4:** notepad 模板段在位
 
 ### Phase 3: config + selftest-veto.sh + 行数上限同步
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** 主进程（③机械验证）
 - config.json `veto_enforce`（默认 warn）；scripts/selftest-veto.sh ~14 断言；selftest-skill-collab T10 / execution-stability T8b 行数上限 530→538
 - **VC-5:** jq 合法 + 键默认 warn
 - **VC-6:** selftest-veto 全绿 + 全量回归 0 FAIL
 
 ### Phase 4: 部署 + 簿记
-- **Status:** pending
+- **Status:** complete (09-15 补账, 实际 09-14 交付 714c93b/0119614)
 - **Executor:** 主进程（①编排+②簿记）
 - 3 实体位 rm+cp -rL + diff -r=0；INDEX v073 + ledger done 条目；push
 - **VC-7:** 3 位 diff=0；canonical push 成功
