@@ -146,10 +146,50 @@ echo "[init] 6/6 planning files verified"
 #   09-09 实锤 7 次 check-dispatch 误拦)。改为:env CLAUDE_CODE_SESSION_ID 有值(ZCode 会话)→
 #   原子写会话私有 side 指针 .active_plan_side/<sidkey>.active_plan,不碰全局 legacy;
 #   无值(cron/纯脚本单会话场景)→保持原行为写全局 legacy(7am cron 兼容)。
-PLAN_ROOT="$(cd .. && pwd)"
+# [2026-09-16 task-v074 P10] PLAN_ROOT 解析修正：原 `cd .. && pwd` 假设 CWD=plans/<task-id>/
+# （即 <root>/plans/<task-id>），哨兵/指针写到 <root>/.active_plan_side；但 canonical 侧
+# 目录（task-plan-init.cjs :76 / resolve-plan-dir.sh :33 / set-active-plan.sh / check-scope.sh
+# 及主仓真实布局）均在 <root>/plans/ 下。原错位下新写的指针 resolve 侧查不到 →
+# P1-2 指针/哨兵错位根因之一。修正：CWD=plans/ → root=CWD；CWD=plans/<task-id>/（既有标准
+# 运行方式）→ root=..（行为不变）；其他（非标准目录）→ 维持旧 cd ..（降级，无破坏）。
+# 副作用登记：CWD=plans/<task-id> 运行时 legacy 全局指针与 side 指针落点从 <root>/.active_plan
+# 迁移到 <root>/plans/.active_plan{,_side}，与 set-active-plan/resolve/attest 的现有口径对齐。
+if [ "$(basename "$(pwd)")" = "plans" ]; then
+    PLAN_ROOT="$(pwd)"
+elif [ "$(basename "$(dirname "$(pwd)")")" = "plans" ]; then
+    PLAN_ROOT="$(cd .. && pwd)"
+else
+    PLAN_ROOT="$(cd .. && pwd)"  # 非标准目录：维持旧行为（CWD 守卫已限制风险面）
+fi
 SIDSRC="${CLAUDE_CODE_SESSION_ID:-}"
 if [ -n "$SIDSRC" ]; then
     SIDKEY="$(printf '%s' "$SIDSRC" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    # [2026-09-16 task-v074 P10 sid 哨兵探测 fallback] env CLAUDE_CODE_SESSION_ID 与
+    # hook stdin .session_id 是两个命名空间(SessionStart 哨兵用 hook sid 写,init 用 env sid
+    # 清/登记 → 指针/哨兵错位,见 findings P1-2)。当 env sid 无对应哨兵时,探测
+    # .plan_required_side/ 下 mtime 最新的哨兵 stem 作为本会话真实 sidkey
+    # (SessionStart 在会话启动时刚写入=本会话落地物)。多会话并发局限:最新 mtime 的
+    # 启动会话优先,属已知取舍。无哨兵 → 维持现状 fallback(env sid 或无 sid)。
+    if [ -n "$SIDKEY" ] && [ ! -f "${PLAN_ROOT}/.plan_required_side/${SIDKEY}.plan_required" ]; then
+        _sent_dir="${PLAN_ROOT}/.plan_required_side"
+        if [ -d "$_sent_dir" ]; then
+            _latest_sent=""
+            _latest_mt=0
+            for _sf in "$_sent_dir"/*.plan_required; do
+                [ -e "$_sf" ] || continue
+                _mt=$(stat -c %Y "$_sf" 2>/dev/null || echo 0)
+                if [ "$_mt" -gt "$_latest_mt" ]; then _latest_mt=$_mt; _latest_sent="$_sf"; fi
+            done
+            if [ -n "$_latest_sent" ]; then
+                _sent_sid="$(basename "$_latest_sent" .plan_required)"
+                _sent_sid="$(printf '%s' "$_sent_sid" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+                if [ -n "$_sent_sid" ] && [ "$_sent_sid" != "$SIDKEY" ]; then
+                    echo "[init] INFO: env sid(${SIDKEY}) 无对应哨兵,fallback 最新哨兵 sid(${_sent_sid})"
+                    SIDKEY="$_sent_sid"
+                fi
+            fi
+        fi
+    fi
     SIDE_DIR="${PLAN_ROOT}/.active_plan_side"
     if [ -n "$SIDKEY" ] && mkdir -p "$SIDE_DIR" 2>/dev/null; then
         side_tmp="$(mktemp "${SIDE_DIR}/.tmp.XXXXXX" 2>/dev/null)" || side_tmp=""
