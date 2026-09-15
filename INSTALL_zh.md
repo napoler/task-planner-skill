@@ -265,6 +265,8 @@ bash scripts/validate.sh ~/.claude/skills/task-planner
 # 4. 端到端：启动一个测试计划
 mkdir -p /tmp/planner-smoke && cd /tmp/planner-smoke
 bash ~/.claude/skills/task-planner/scripts/init-session.sh smoke-test
+# 或用环境变量指定模板类型（task-v074 起）:
+TASK_TEMPLATE_TYPE=bugfix bash ~/.claude/skills/task-planner/scripts/init-session.sh smoke-test
 ls task_plan.md   # 应存在
 ```
 
@@ -277,32 +279,34 @@ ls task_plan.md   # 应存在
 ```
 ~/.claude/skills/task-planner/
 ├── SKILL.md                       (入口文件)
-├── config.json                    (阈值配置)
-├── reference.md                   (Manus 原则)
+├── config.json                    (JSON-Schema 阈值配置, 37 键)
+├── reference.md                   (Manus 原则 + Chain Handoff Contract)
 ├── examples.md                    (实战示例)
-├── scripts/
-│   ├── init-session.sh            (bash + .ps1 镜像)
-│   ├── init-session.ps1
-│   ├── check-scope.sh
-│   ├── sync-todos.sh
-│   ├── check-complete.sh
-│   ├── check-complete.ps1
-│   ├── session-catchup.py
-│   └── sync-ide-folders.ts
-├── templates/
-│   ├── task_plan.md
-│   ├── verification.md
-│   ├── findings.md
-│   ├── progress.md
-│   └── notepad-learnings.md
-└── references/
-    ├── critical-rules.md
-    ├── completion-gate.md
-    ├── goal-gate.md
-    └── billing.md
+├── scripts/                       (55 个: init-session / check-scope / check-complete /
+│   │                               attest-plan / check-template-type / check-dispatch /
+│   │                               check-delegation / check-rescue-chain / check-3file-gate /
+│   │                               check-context-hygiene / plan-hygiene / smart-merge-back /
+│   │                               subagent-fallback / ledger-append / plan-doctor /
+│   │                               resolve-plan-dir / sync-todos / sync-companion /
+│   │                               selftest-*.sh ×19 等, 含 .ps1/.py/.ts 镜像)
+├── templates/                     (核心 6: task_plan / verification / findings / progress /
+│   │                               notepad-learnings / knowledge-brief;
+│   │                               辅助 4: subagent_dispatch / shared-tracker /
+│   │                               batch_report / cost_log;
+│   │                               variant/ 13 变体: research / diagnostic / writing /
+│   │                               publish / code-edit / refactor / bugfix / migration /
+│   │                               test-writing / deployment / performance-tuning /
+│   │                               schema-migration / rule-enhancement)
+├── references/                    (12 个: critical-rules / completion-gate / goal-gate /
+│   │                               billing / template-guide / template-mapping /
+│   │                               methodology / skill-collaboration / todo-sync /
+│   │                               worktree-isolation / batch-quality-gate / cost-control)
+└── companion/agents/              (plan-writer.md 等配套 agent, 部署到 ~/.zcode/agents/ 等)
 ```
 
-总大小约 50 KB，安装过程不会在 Skill 目录外写入任何内容。
+> 实际清单以 `ls -R skills/task-planner/` 为准（2026-09-16 核对）；companion agent 变更后需重跑 `lib/install-companion.sh` 或定向 cp 到各平台 agents/ 目录。
+
+总大小约 1.3 MB，安装过程不会在 Skill 目录外写入任何内容。
 
 ---
 

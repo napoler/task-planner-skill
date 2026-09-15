@@ -485,21 +485,52 @@ if [ "$python_rc" -eq 0 ]; then
              /^###|^##[[:space:]]|^---[[:space:]]*$/{f=0} f' "$PLAN_FILE" > "$vc_gate_section" 2>/dev/null
 
         # V-N 条目行 = verification 风格 `- [ ] V-P.N:`（占位/勾选/已完成均计；段边界外映射不计）
+        # [2026-09-15 task-v074 P8 D11] 并集第二模式：v065 起现行计划用紧凑格式 `- **V-N:** VC-1, VC-2`
+        #   （整行映射、无描述列）——原模式恒计 0 → VC-GATE 形同虚设（P1-3 诊断）；
+        #   紧凑格式要求该 Phase 段内 ≥1 条即计（行去重）。两模式并集，不放松既有校验。
+        # [task-v074 P8 D11] 紧凑格式语义：v065 起现行计划每 Phase 段仅 1 条 `- **V-N:** VC-x, VC-y`
+        #   映射行（整行映射，非逐 P-N 条目；该段无逐 P-N 行）→ 1 条即实质达标；
+        #   逐 P-N 格式（- [x] V-P.N:）保持 ≥2 语义（vn_total>vn_sub 判 target_bad 仅对其生效）。
+        #   既有 `- [x] V-P.N:` 格式校验与映射目标 ∈ vc_defs 校验全部保留，不放松。
         vcgate_grep_map() {
-            grep -cE '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+\s*[:：]' "$1" 2>/dev/null || true
+            { grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+\s*[:：]' "$1" 2>/dev/null \
+              || true; \
+              grep -E '^[[:space:]]*-[[:space:]]*\*\*V-N:[[:space:]]*\*\*.*VC-[0-9]+' "$1" 2>/dev/null \
+              || true; } | grep -cE '^[[:space:]]*-[[:space:]]*(\[[ xX]\]| \*\*V-N:)' || true
         }
         # 模板占位识别（对齐 3-File Gate stub 判定口径）：V-N 行 strip 后 ∈ 模板行集合 → 非实质
         VN_TPL_LINES="$(sed 's/[[:space:]]*$//' "$SKILL_ROOT/templates/verification.md" 2>/dev/null | grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+|^$' | sed 's/^[[:space:]]*//' | sort -u)"
 
-        vcgate_count_substantive() {   # <段文件> <P号> — 该 Phase 实质 V-N 映射数（剔除模板占位残留）
-            local pf="$1" p="$2" n=0
+        vcgate_count_substantive() {   # <段文件> <P号> <vc_defs> — 该 Phase 实质 V-N 映射数（剔除模板占位残留）
+            local pf="$1" p="$2" vcd="$3" n=0
+            local compact_seen=0 compact_def
+            # [task-v074 P8 D11] 紧凑模式 `- **V-N:**` 整段仅 1 行（去重计数）；
+            # 该行引用的全部 VC token 须 ∈ 已定义 VC，任一缺失 → 整段判 0（保持 fail-closed 语义）
+            compact_def="$(grep -E '^[[:space:]]*-[[:space:]]*\*\*V-N:[[:space:]]*\*\*.*VC-[0-9]+' "$pf" 2>/dev/null \
+                | grep -oE 'VC-[0-9]+' | sort -u || true)"
             while IFS= read -r ln; do
                 [ -n "$ln" ] || continue
+                case "$ln" in
+                    '- **V-N:'*)
+                        [ "$compact_seen" = 0 ] || continue
+                        compact_seen=1
+                        if [ -n "$vcd" ]; then
+                            if [ -n "$compact_def" ] && printf '%s\n' "$compact_def" | grep -qxF -f <(printf '%s\n' "$vcd") 2>/dev/null; then
+                                n=$((n + 1))
+                            fi
+                        else
+                            n=$((n + 1))
+                        fi
+                        continue ;;
+                esac
                 if [ "$VN_TPL_LINES" != "" ] && printf '%s\n' "$VN_TPL_LINES" | grep -qxF -- "$ln"; then
                     continue
                 fi
                 n=$((n + 1))
-            done < <(grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p"'\.[0-9]+\s*[:：]' "$pf" 2>/dev/null | sed 's/^[[:space:]]*//')
+            done < <({ grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p"'\.[0-9]+\s*[:：]' "$pf" 2>/dev/null \
+                         || true; \
+                         grep -E '^[[:space:]]*-[[:space:]]*\*\*V-N:[[:space:]]*\*\*.*VC-[0-9]+' "$pf" 2>/dev/null \
+                         || true; } | sed 's/^[[:space:]]*//')
             printf '%s' "$n"
         }
 
@@ -526,16 +557,26 @@ if [ "$python_rc" -eq 0 ]; then
                     sed -n "${start_ln},\$p" "$PLAN_FILE" > "$segf" 2>/dev/null
                 fi
                 vn_total="$(vcgate_grep_map "$segf")"
-                vn_sub="$(vcgate_count_substantive "$segf" "$p_no")"
+                vn_sub="$(vcgate_count_substantive "$segf" "$p_no" "$vc_defs")"
+                # [task-v074 P8 D11] 紧凑段（无逐 P-N 行，段内存在 - **V-N:** 映射行）→ 1 条即达标；
+                # 逐 P-N 段保持 ≥2 语义不变（segf 在 rm 前探测）
+                _p_no_grep="$(grep -cE '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p_no"'\.[0-9]+\s*[:：]' "$PLAN_FILE" 2>/dev/null || true)"
+                _compact_grep="$(grep -cE '^[[:space:]]*-[[:space:]]*\*\*V-N:' "$segf" 2>/dev/null || true)"
+                _vn_thresh=2
+                if [ "${_p_no_grep:-0}" = "0" ] && [ "${_compact_grep:-0}" -gt 0 ]; then _vn_thresh=1; fi
                 rm -f "$segf"
-                if [ "$vn_sub" -ge 2 ]; then
-                    # 实质映射 ≥2 → 映射目标须全部 ∈ 已定义 VC（goal-gate「映射到 VC 编号」）
+                if [ "$vn_sub" -ge "$_vn_thresh" ]; then
+                    # 实质映射达标 → 映射目标须全部 ∈ 已定义 VC（goal-gate「映射到 VC 编号」）
                     target_bad=0
                     if [ "$vn_total" -gt "$vn_sub" ]; then target_bad=1; fi
                     if [ -n "$vc_defs" ]; then
-                        if grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p_no"'\.[0-9]+\s*[:：]' "$vc_gate_section" 2>/dev/null \
-                            | sed -E 's/^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+\s*[:：][[:space:]]*//' \
-                            | grep -oE 'VC-[0-9]+' | sort -u | grep -vxF -f <(printf '%s\n' "$vc_defs") | grep -q .; then
+                        # [task-v074 P8 D11] 映射目标提取并集：逐 P-N 行（原有）+ 紧凑 `- **V-N:**` 行（新增）
+                        if { grep -E '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p_no"'\.[0-9]+\s*[:：]' "$vc_gate_section" 2>/dev/null \
+                              | sed -E 's/^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-[0-9]+\.[0-9]+\s*[:：][[:space:]]*//' \
+                              | grep -oE 'VC-[0-9]+' 2>/dev/null || true; \
+                              grep -E '^[[:space:]]*-[[:space:]]*\*\*V-N:[[:space:]]*\*\*.*VC-[0-9]+' "$vc_gate_section" 2>/dev/null \
+                              | grep -oE 'VC-[0-9]+' || true; } \
+                            | sort -u | grep -vxF -f <(printf '%s\n' "$vc_defs") 2>/dev/null | grep -q .; then
                             target_bad=1
                         fi
                     fi
@@ -544,7 +585,7 @@ if [ "$python_rc" -eq 0 ]; then
                     fi
                     continue
                 fi
-                vc_bad_phases="${vc_bad_phases} Phase${p_no}(V-N 映射 ${vn_sub:-0} < 2); "
+                vc_bad_phases="${vc_bad_phases} Phase${p_no}(V-N 映射 ${vn_sub:-0} < ${_vn_thresh}); "
             done <<< "$phase_titles"
         fi
         rm -f "$vc_gate_section"

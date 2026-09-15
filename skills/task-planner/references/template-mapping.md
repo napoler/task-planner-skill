@@ -23,7 +23,7 @@
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
-> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 12 类且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
+> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 13 类且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
 
 **文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
 - `templates/task_plan.md`(默认通用)

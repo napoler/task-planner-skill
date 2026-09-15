@@ -56,7 +56,7 @@ Skill("task-drift-guard")
 每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。详见 SKILL.md §「高频漂移纠正」。
 
 ### 16 任务开启期选模板（P0）
-禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration 共 12 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 20 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
+禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement 共 13 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 21 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
 
 ### 17 成本控制（P0）— 降低 Opus 使用频率
 opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `references/cost-control.md`。
@@ -280,11 +280,11 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 
 ### 34 模板生命周期：选取门控 + 沉淀入库（task-v074，目标：模板矩阵选取有机器门控、代表性任务可沉淀新类型模板复用）
 
-模板矩阵已有 12 变体但选取纯靠自觉（Rule 16 无机器校验），代表性任务的做法沉淀无入库通道。本条把「选取→校验→沉淀→复用」闭环机制化。
+模板矩阵已有 13 变体但选取纯靠自觉（Rule 16 无机器校验），代表性任务的做法沉淀无入库通道。本条把「选取→校验→沉淀→复用」闭环机制化。
 
 34.1 **选取门控**：task_plan.md 的 template_type 必填且 ∈ 白名单（白名单源=`templates/variant/*-type.md` 动态派生 + `general` 恒合法，禁第三处硬编码副本）；`scripts/check-template-type.sh <task_plan.md>` 在 attest-plan.sh 锁定前校验，缺失/非法按 34.6 档位处置（enforce=拒绝锁定，warn=告警放行）；`--skip-template-check` 逃生（对齐 --skip-dispatch-check 先例，逃生须在交付报告披露）。
 34.2 **同步纪律**：新增/沉淀模板类型时三点同步——template-mapping.md 决策树与清单、companion/agents/plan-writer.md 映射表、SKILL.md 模板节；init-session.sh 白名单已动态派生免同步；`scripts/selftest-template-lifecycle.sh` 守护一致性（Phase 4 建）。
 34.3 **沉淀触发（终验时判定，任一命中即启动沉淀评估）**：①同类任务第 2 次出现（plans/INDEX.md 与 ledger 可查）；②任务类型不在既有类型覆盖内且做法可泛化；③用户点名「这类任务以后还有」。
 34.4 **沉淀流程**：从已完成任务提炼 → 新建 `templates/variant/<new-type>-type.md`（须含 Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备最小结构，≤100 行）→ 完成 34.2 三点登记 → selftest 断言通过 → 沉淀动作登记计划 Decisions Made 表。
-34.5 **防滥用**：已有类型禁重复沉淀（先 ls variant/ 目录查重）；一次性任务、泛化性不足的禁沉淀；沉淀模板质量对齐既有 12 变体（含 frontmatter 字段说明与类型适用边界）。
+34.5 **防滥用**：已有类型禁重复沉淀（先 ls variant/ 目录查重）；一次性任务、泛化性不足的禁沉淀；沉淀模板质量对齐既有 13 变体（含 frontmatter 字段说明与类型适用边界）。
 34.6 **机制**：开关键 `config.json#template_gate_enforce`（默认 warn：选取门控失败在 attest 输出告警不阻断；enforce=拒绝锁定；off=门控关闭）；档位解析 env `TASK_PLANNER_TEMPLATE_GATE_ENFORCE` > config > warn；`scripts/check-template-type.sh` + `scripts/selftest-template-lifecycle.sh` 静态守护。
