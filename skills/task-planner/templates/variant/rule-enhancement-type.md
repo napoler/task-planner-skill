@@ -51,6 +51,11 @@
 ### Phase 2: 条款 + config 键 + 消费侧门控
 - S1 条款全文 / S2 config 键 + 门控脚本集成
 - **Executor:** executor（sonnet-1），严格串行派发
+<!-- 派发型 Phase 必附 S-unit 7 列表（示例行，实例化时替换为目标/输入/验收；attest 机器校验时长 NNmin 列与输入路径 ≤2 列） -->
+| ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
+|----|------------|--------|-------------|---------|------|
+| S1 | 写入新条款全文至 SKILL.md 指定插入点 | 继承 | plans/<task>/findings.md（条款草案 + 插入点锚） | 条款落盘且行数纪律复核通过 | 10min | pending |
+| S2 | 集成 config 键 + 消费侧门控脚本 | 继承 | skills/task-planner/config.json（三档键段落） | 门控脚本单测通过且 selftest 全量无回归 | 12min | pending |
 
 ### Phase 3: selftest 守护 + 锚点修复
 - 新建 selftest（对齐 selftest-veto.sh 范式）/ 既有锚断言宽容化 / init 或集成收尾

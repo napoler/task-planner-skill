@@ -179,7 +179,11 @@ Phase 1
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
 
-<!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发) -->
+<!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
+  机器契约(check-plan-dispatch.sh attest 校验):
+  ① 预估时长列一律写 NNmin 格式且数值 ≤15min,逐行数值校验——超限拒绝、不可解析记 SKIPPED 并显式报错
+  ② 输入列文件路径 token 计数 ≤2,超限拒绝
+-->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|
 | S1 | | 继承 | | | ≤15min | pending |
