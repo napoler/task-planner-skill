@@ -1,3 +1,5 @@
 {"ts":"2026-09-16T10:14:50Z","event":"allow_direct_on","sid":"default","force":true,"expires_at":1789555490,"user_requested":true}
 {"ts":"2026-09-16T10:18:08Z","event":"bypass","sid":"sessf5c6e2aca17e4c20817873adfc404bb8","trigger":"pretool","remain_sec":1602}
 {"ts":"2026-09-16T10:22:44Z","event":"bypass","sid":"sessf5c6e2aca17e4c20817873adfc404bb8","trigger":"pretool","remain_sec":1326}
+{"ts":"2026-09-16T11:55:48Z","event":"allow_direct_on","sid":"default","force":true,"expires_at":1789561548,"user_requested":true}
+{"ts":"2026-09-16T11:56:03Z","event":"bypass","sid":"sessf5c6e2aca17e4c20817873adfc404bb8","trigger":"pretool","remain_sec":1785}
