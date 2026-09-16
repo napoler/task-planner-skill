@@ -169,13 +169,13 @@ COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 07 "$RC" 1 '✗' -
 bash "$CHECK" "$P8" > "$TMP/out" 2> "$TMP/err"; RC=$?
 COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 08 "$RC" 0 'legacy' -
 
-# T09 [task-v075] 时长 16min > step_max_minutes(15) → exit 1 且含 预估时长
+# T09 [task-v075 P11] 时长 16min > step_max_minutes(15) → 提示不阻断: exit 0 且含「提示不阻断」
 bash "$CHECK" "$P9" > "$TMP/out" 2> "$TMP/err"; RC=$?
-COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 09 "$RC" 1 '预估时长' -
+COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 09 "$RC" 0 '提示不阻断' -
 
-# T10 [task-v075] 输入列 3 路径 > step_max_files(2) → exit 1 且含 文件路径
+# T10 [task-v075 P11] 输入列 3 路径 > step_max_files(2) → 提示不阻断: exit 0 且含「建议拆分」
 bash "$CHECK" "$P10" > "$TMP/out" 2> "$TMP/err"; RC=$?
-COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 10 "$RC" 1 '文件路径' -
+COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 10 "$RC" 0 '建议拆分' -
 
 # T11 [task-v075] 空时长行 → SKIPPED 显式化放行 exit 0 且 stdout 含 SKIPPED
 bash "$CHECK" "$P11" > "$TMP/out" 2> "$TMP/err"; RC=$?

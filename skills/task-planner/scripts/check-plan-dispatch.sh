@@ -158,28 +158,28 @@ while IFS= read -r line; do
         if [ -z "$col4" ] || [ "$col4" = "-" ]; then
             add_violation "$phase_no" "行 S${s_id} 执行体为空"
         fi
-        # ⑤-b S-unit 数值门控（task-v075 P2-S1，KQ1 口径见文件头注释）：
-        # 逐行校验 预估时长列($7) 与 输入列($5)
+        # ⑤-b S-unit 数值门控（task-v075 P2-S1，KQ1 口径见文件头注释；
+        # [2026-09-16 P11 用户裁决「模型判断任务复杂度,复杂就拆分」放宽]
+        # 现象=数值硬拒锁过严 / 原行为=超限 add_violation 拒锁 /
+        # 新行为=超限打 SKIPPED 提示放行,复杂度由模型判断,门控只提醒；
+        # 执行体为空仍为违规(S-unit 规划完整性=Rule 22.6 义务,不变)）：
         col5="$(printf '%s' "$line" | awk -F'|' '{print $5}')"
         col7="$(printf '%s' "$line" | awk -F'|' '{print $7}')"
         col5="$(trim "$col5")"
         col7="$(trim "$col7")"
-        # 时长校验：须匹配 ^[0-9]+min$ 且数值 ≤ step_max_minutes；
-        # 空/不可解析 → SKIPPED 显式化（不阻断，v074 P10 先例）
+        # 时长：NNmin 且超 step_max_minutes → 提示拆分（不阻断）；不可解析 → SKIPPED 行
         if [[ "$col7" =~ ^([0-9]+)min$ ]]; then
             dur="${BASH_REMATCH[1]}"
             if [ "$dur" -gt "$STEP_MAX_MIN" ]; then
-                add_violation "$phase_no" "行 S${s_id} 预估时长 ${dur}min > step_max_minutes(${STEP_MAX_MIN})"
+                echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 时长 ${dur}min > step_max_minutes(${STEP_MAX_MIN}) — 建议拆细(提示不阻断,复杂度由模型判断)"
             fi
         else
             echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 时长不可解析"
         fi
-        # 输入校验：路径样 token 计数 > step_max_files → 违规（KQ1 定死口径）。
-        # [2026-09-16] 计数用 `grep -oE | wc -l` 而非 `grep -c`：`grep -c` 与
-        # -o 同用时忽略 -o（按"命中行数"计 = 恒 1，实测），须逐 token 计数
+        # 输入：路径 token 计数超 step_max_files → 提示拆分（不阻断）
         pcount="$(printf '%s\n' "$col5" | grep -oE '[^ ]+\.(sh|md|json|ts|js|py|cjs)' | wc -l)"
         if [ "$pcount" -gt "$STEP_MAX_FILES" ]; then
-            add_violation "$phase_no" "行 S${s_id} 输入列 ${pcount} 个文件路径 > step_max_files(${STEP_MAX_FILES})"
+            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 输入 ${pcount} 个文件路径 > step_max_files(${STEP_MAX_FILES}) — 建议拆分(提示不阻断,复杂度由模型判断)"
         fi
     fi
 done < "$PLAN_FILE"

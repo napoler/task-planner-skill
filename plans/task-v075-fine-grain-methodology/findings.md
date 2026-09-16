@@ -46,6 +46,7 @@
 | P2 落地裁定（KQ1 定死）：路径 token=后缀锚定 `[^ ]+\.(sh\|md\|json\|ts\|js\|py\|cjs)`；计数用 `grep -oE\|wc -l`（grep -c 与 -o 同用按行计恒 1） | grep -o 下前缀形态 `(^|[[:space:]])` 会把前导空白/分号并进 token 致计数漂移；口径已写入 check-plan-dispatch.sh 头注释——P3 的 S-unit ID 打包检测若做 token 计数应复用同范式 |
 | P3 实测：config.json `dispatch_contract_enforce.default`=enforce（非 plan 决策行原表述 warn）；三项增量部署后即硬阻断 | jq 直读实证；warn 档行为另测无回归；部署后派发实践须 ≤3000 字符+逐 S-unit（正是用户诉求的强制力）；多 S-unit 计数会把说明性文本中的 S1/S2 也计入（FMEA P3 行预设，warn 观察数据 P9 审） |
 | P4 落地：fmea 档位链 env TASK_PLANNER_FMEA_ENFORCE > config fmea_enforce > warn；数据行识别=行首 `\|` 且第 6 数据列纯数字（7 列契约依赖，加列会误判——risk 已登记）；check-complete 终验点无逃生口（设计：终验不可跳过，临时降级用 env=warn） | 三档×双点矩阵实测全过；legacy 计划（无 Executor 行）fail-open 对齐 :37-40 先例 |
+| P11 用户裁决（09-17）：数值门控硬拒锁→提示不阻断 | 根因=「小任务更好执行与验证」的目标由执行模型自己判断复杂度实现，attest 硬拒锁过严（用户 40min/4 路径场景即被拒）；执行体空/S-unit 表缺失仍拒（Rule 22.6 完整性义务保留）；提示行 SKIPPED 措辞=fail-open 显式化先例延续 |
 | P5 落地：verify.sh §9 循环=唯一 selftest 遍历处（语义名义 delegation 三件套，实为全量落点）——追加 selftest-methodology.sh 后全量 26 pass/0 fail；methodology.md 两处不可核出处已泛化+文末登记（不瞎编） | 主进程 verify.sh 复跑实证；M-03 关键词断言不受影响（11/0） |
 | P6/P7 落地：模板/条款同步全部行内扩写（SKILL 535 行不变，T2b ≤540 未触）；SKILL 标注 V5 字面（「机器校验已生效」）首版 3 处缺关键词，SendMessage 补丁修复=3 处齐 | 锚定级联 grep "Rules 1-" scripts/ 仅 3 个宽容锚（RV-10/EL-11/VT-10），行内标注零连锁 |
 | P8 落地：CHANGELOG [Unreleased] 5 条（P2-P7 逐一对应 commit c506349/6c51c24/fdff22b/685b206/5d215b6+9f75354，selftest 总数留待 P9 实跑回填）；README 3 处增补（脚本树职责句×3+fmea_enforce 键「已兑现」+$schema 段运行时消费键清单） | 主进程 grep 计数 CHANGELOG=5/README=2；新增行无悬空链接；数字全取自主进程复跑记录非子代理自报 |

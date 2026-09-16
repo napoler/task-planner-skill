@@ -10,3 +10,4 @@
 {"tick":10,"ts":"2026-09-15T21:49:38Z","agent":"main","phase":"8","event":"phase_complete","summary":"P8 交付文档 5 条目+3 处增补","files":[]}
 {"tick":11,"ts":"2026-09-15T22:03:30Z","agent":"main","phase":"9","event":"phase_complete","summary":"P9 定数 313/0+verify 23/3(全 drift)+Review APPROVED","files":[]}
 {"tick":12,"ts":"2026-09-15T22:06:32Z","agent":"main","phase":"10","event":"phase_complete","summary":"P10 合并 d975ee0+部署 IDENTICAL×3+push+终验 COMPLETE","files":[]}
+{"tick":13,"ts":"2026-09-16T10:28:58Z","agent":"main","phase":"10","event":"progress","summary":"P11 主进程直改(bypass --force 用户裁决豁免): 数值门控硬拒锁→SKIPPED 提示不阻断+T09/T10 期望翻转, 12/0+22/0+11/0, attest 超限场景 exit 0 双提示行","files":[]}

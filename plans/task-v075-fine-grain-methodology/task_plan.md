@@ -249,6 +249,7 @@
 | A2 三项增量挂 dispatch_contract_enforce 分档、默认 warn | 派发期硬阻断有打断在途任务风险（check-dispatch :167-179 三级解析 fail-open 先例）；warn 计数留观察数据，档位已存在可随时升 enforce |
 | B1 FMEA 消费=attest+check-complete 双点、按 fmea_enforce warn/enforce/off 分化 | 兑现 config.json:81-90 键描述「预留（后续轮）」语义；warn 默认不破坏存量计划；off 完全跳过 |
 | C20 禁令检查 | 已查 memory + notepad-learnings.md 被否决方案段 = 无 veto 记录、无命中（2026-09-16） |
+| P11 用户裁决（2026-09-17）：「模型判断任务复杂度，复杂就拆分」 | S-unit 数值门控从 P2 的「超限=拒锁」放宽为「超限=SKIPPED 提示不阻断」（check-plan-dispatch.sh :161-184 两 add_violation→提示行；selftest T09/T10 期望翻转 exit 0）——门控只做提醒，拆分判断交给执行模型；主进程 allow-direct --force 直改（2 文件 11 行级，用户裁决跳过 worktree），3 部署位重部署 IDENTICAL×3 |
 | silent 模式（interaction_mode: silent） | 用户指令为端到端交付（含部署+push）+ 自治执行环境 + v074 D1/D2 silent 先例；交付报告附静默决策清单；硬停点（连续失败 STOP / 漂移 BLOCKED / 证据不实 / 破坏性操作）两模式一致不可豁免 |
 | 本计划自身小步快跑合规示范 | P2-P8 每 Phase ≤2 文件、S-unit 表 7 列齐、时长 NNmin ≤15、输入 ≤2 文件——将被 P2 落地门控与 P4 FMEA 门控校验（FMEA RPN>100 行已带兜底登记） |
 

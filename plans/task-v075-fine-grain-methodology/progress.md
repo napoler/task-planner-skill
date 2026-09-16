@@ -184,6 +184,23 @@
 ### [reflect] 反思: ①本轮把 21.1b 从"纯 prose"变成 attest 硬门控+dispatch 档位检测，用户痛点（单子代理负载过重）的根因是"规模数字零机器校验+拆细仅首败后被动触发"，修的是结构而非症状 ②实测发现 config dispatch_contract_enforce default=enforce——部署后新检测即硬阻断，后续本仓自己的派发也必须 ≤3000 字符/逐 S-unit（自身被新门控约束，是好事）③P4 曾用 python 直改计划文件，踩了 v074 [PLAN TAMPERED] 同款边缘，靠立即重 attest 补救——工具纪律无捷径 ④Rule 19.7 findings 回填滞后一次，三文件分流里 progress 不能替代 findings
 ### [reflect] 验证: 全量 313/0 主进程逐 Total 直加（非采信子代理自报）+verify 部署前后 23/3→26/0 闭环+V1/V3 双探针主进程复现+V6 IDENTICAL×3+V7 双值比对+Code Review APPROVED 独立视角——七条 VC 全部有第一手证据
 
+### Phase 11: P11 — 数值门控放宽为提示档（用户裁决：模型判断复杂度，复杂就拆分）
+- **Status:** complete
+- **Started:** 2026-09-17 08:00
+- Actions taken:
+  - 用户裁决（B 类指令）：S-unit 数值门控从 P2 的「超限=拒锁」放宽为「超限=显式提示不阻断」——模型判断任务复杂度，复杂就自行拆分，门控只做提醒
+  - 执行过程：派发 2 次被新门控自拦（prompt 含多 S-ID 引用/brief 未引用——P3 增量在 enforce 档生效的自证）→ allow-direct bypass（sid_already_used 三试后用 --force+清理测试锁）主进程直改 S1（check-plan-dispatch.sh :161-184 两 add_violation→SKIPPED 提示行+注释修改说明）
+  - S2 selftest T09/T10 期望翻转（exit 0+「提示不阻断」「建议拆分」字样）；S3 主进程三夹具实测（16min+3 路径=双提示行 exit 0 / 空时长=SKIPPED 不可解析 exit 0 / 合规=✓ exit 0）+ attest 40min+4 路径场景实测 exit 0
+  - 3 部署位 rm+cp -rL 重部署 IDENTICAL×3；bypass 锁已清理
+- Files created/modified:
+  - skills/task-planner/scripts/check-plan-dispatch.sh、scripts/selftest-plan-dispatch.sh（主仓直接改，用户裁决跳过 worktree=2 文件 11 行级）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | selftest-plan-dispatch（P11 后） | 12 断言 | FAIL=0 | Total: 12 PASS=12 FAIL=0 | PASS |
+  | selftest-dispatch/methodology 不回归 | 22+11 | FAIL=0 | 22/0 + 11/0 | PASS |
+  | 三夹具+attest 场景（主进程） | 超限/空/合规/40min | 全 exit 0+提示行 | 双 SKIPPED 提示行+✓，全 exit 0 | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
