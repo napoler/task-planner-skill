@@ -308,6 +308,12 @@
       "default": "warn",
       "description": "Rule 34 模板选取门控三档: enforce=attest 锁定前 template_type 缺失/非法拒绝锁定; warn=告警放行; off=门控关闭。白名单源=templates/variant/ 动态派生+general, 见 references/critical-rules.md Rule 34。"
     },
+    "skill_modify_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 36 技能修改保守化三档: enforce=未授权技能文件写入硬阻断(pretooluse exit 2); warn=注入提醒放行(观察期, 默认); off=不触发。消费侧=check-skill-modify.sh(pretooluse 接线)+check-complete SKILL-MODIFY GATE+selftest-skill-modify.sh 守护。"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",

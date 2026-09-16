@@ -817,6 +817,41 @@ END {print n+0}'
         fi
     fi
 
+    # [2026-09-17 task-v079] SKILL-MODIFY GATE (Rule 36.6/36.7②): 删除性行为清单登记校验
+    # 涉及技能文件修改的计划(task_plan.md 执行范围限制段含 skills/task-planner/),
+    # progress.md 须登记「删除性行为清单」或显式声明无功能性删除,否则按档位处理。
+    resolve_skill_modify_tier() {
+        local m="${TASK_PLANNER_SKILL_MODIFY_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
+            m="$(jq -r '.properties.skill_modify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
+    }
+    SKILL_MODIFY_TIER="$(resolve_skill_modify_tier)"
+    if [ "$SKILL_MODIFY_TIER" != "off" ] && grep -q 'skills/task-planner/' "$PLAN_FILE" 2>/dev/null; then
+        sm_progress="$(dirname "$PLAN_FILE")/progress.md"
+        if [ ! -f "$sm_progress" ]; then
+            printf '[plan] SKILL-MODIFY GATE SKIPPED (无 progress.md,无法校验删除性行为清单)\n' >&2
+        elif grep -E '删除性行为清单' "$sm_progress" 2>/dev/null \
+            || grep -F '[skill-modify] 无功能性删除' "$sm_progress" 2>/dev/null \
+            || grep -F '[skill-modify] 删除清单:' "$sm_progress" 2>/dev/null; then
+            printf '[plan] SKILL-MODIFY GATE PASSED (Rule 36.6: 删除性行为清单/无删除声明已登记)\n' >&2
+        else
+            case "$SKILL_MODIFY_TIER" in
+                enforce)
+                    printf '%s\n' "[plan] SKILL-MODIFY GATE FAILED (task-v079 Rule 36.6: 涉及技能文件修改的任务须登记删除性行为清单或声明无功能性删除——对照 36.3 基线逐项确认后回填 progress.md 重跑)" >&2
+                    exit 1
+                    ;;
+                *)
+                    printf '%s\n' "[plan] SKILL-MODIFY GATE WARNING (task-v079 Rule 36.6, warn 档不阻断: TASK_PLANNER_SKILL_MODIFY_ENFORCE=enforce 可升级) — 未登记删除性行为清单/无删除声明" >&2
+                    ;;
+            esac
+        fi
+    else
+        printf '[plan] SKILL-MODIFY GATE SKIPPED (计划未声明涉及技能文件修改)\n' >&2
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then
