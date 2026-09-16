@@ -4,7 +4,8 @@
 # (check-scope memories 豁免 / plan-created 兜底清除 / PostToolUse 自动重锁 / attest-plan
 #  attested_by_sid / UPS env sid 兜底 / check-delegation observe 节流 / config 键 / SKILL.md 条款
 # / 跨文件键名一致 / v067 回归哨兵) 一致性。
-# 10 组用例 T1-T10, 全 PASS exit 0, 任一 FAIL exit 1。纯 grep/python3 机械断言, 无 fixture。
+# 12 组用例 T1-T13 (T13 为 task-v078 S5 行为用例, 含 T11 同款 fixture 手法 + 因果对照),
+# 全 PASS exit 0, 任一 FAIL exit 1。T1-T10 纯 grep/python3 机械断言, 无 fixture; T11/T13 行为级。
 # 结构/style 照抄 scripts/selftest-knowledge-brief.sh (set -u / t() 计数器 / [PASS]/[FAIL] / Total / exit)。
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -141,6 +142,64 @@ b1_neg() {
 }
 t "T11b B1 负例: 改内容后 owner=othersid999 → 重锁不命中(plan_sha256 仍为旧值 且 attested_by_sid 重置为空, 不被洗白)" \
     b1_neg
+
+# T13: [2026-09-17 task-v078-guard-fp-fixes S5] 行为级断言 — 已交付计划提醒豁免
+#      (zcode-posttooluse.sh L105 verification.md outcome 兜底分支, VC-4):
+#      本仓约定 outcome 落盘在 verification.md 而非 task_plan.md, 既有 outcome 检查(L100)
+#      永不命中 → 已交付计划的 compass/plan-sync 陈旧提醒误报(v076/v077 连续误报)。
+#      fixture: 临时计划目录 $T/plans/task-y, task_plan.md 陈旧 mtime(无 outcome 字样,
+#      满足 L100 不命中 → 无 verification.md 时陈旧提醒必然触发), 干净 sid "sfx12345"
+#      (canon sess 前缀剥除后=sfx12345, 不复用 T11 的 sessabc123 state 文件)。
+#      执行手法照 T11a/b: stdin JSON(绝对 file_path → L62 case /* 不动, 与 T11 的相对
+#      file_path 无关联) + env -u ZCODE_SESSION_ID。
+#      T13a 正例(豁免生效): verification.md 内容=前导空格+"outcome: COMPLETE"(模拟真实
+#        落盘格式, 验证 L105 grep -qiE 容前导空格) → 执行输出不含 plan-compass/plan-sync 提醒
+#      T13b 因果对照: 同 fixture 删掉 verification.md 再执行 → 输出含 plan-sync 陈旧提醒
+#        (证明 T13a 的豁免由兜底分支因果生效, 非环境巧合; T11a/b 既有用例无
+#        verification.md, 行为路径不变, 回归保护)
+st13_fixture() { # st13_fixture <tmpdir>: 写陈旧 task_plan.md + 前导空格 outcome 的 verification.md
+    local T="$1" P
+    P="$T/plans/task-y"
+    mkdir -p "$P"
+    echo "goal" > "$P/task_plan.md"
+    printf ' outcome: COMPLETE\n' > "$P/verification.md"
+    touch -d "2 hours ago" "$P/task_plan.md" "$P/verification.md"
+}
+st13_exec() { # st13_exec <tmpdir>: 照 T11a/b 手法执行 POSTTOOL hook, 输出到 stdout
+    local T="$1" out
+    out="$(printf '{"session_id":"sess-sfx12345","cwd":"%s","tool_name":"Bash","tool_input":{"file_path":"plans/task-y/task_plan.md"}}' "$T" \
+        | env -u ZCODE_SESSION_ID bash "$POSTTOOL" 2>/dev/null)"
+    printf '%s' "$out"
+}
+st13_pos() {
+    local T
+    T="$(mktemp -d)" || { echo "[T13a] fixture mktemp failed"; return 1; }
+    st13_fixture "$T"
+    local out
+    out="$(st13_exec "$T")"
+    rm -rf "$T" "/tmp/task-planner-hook-sfx12345.state"
+    # 豁免生效: 兜底分支 L105 命中 → exit 0, 无任何 plan 提醒输出
+    [ -z "$out" ]
+}
+t "T13a S5 正例: 陈旧计划+verification.md(前导空格 outcome: COMPLETE) → POSTTOOL 输出无 plan-compass/plan-sync 提醒(兜底豁免生效)" \
+    st13_pos
+st13_neg() {
+    local T
+    T="$(mktemp -d)" || { echo "[T13b] fixture mktemp failed"; return 1; }
+    st13_fixture "$T"
+    rm -f "$T/plans/task-y/verification.md"   # 因果对照: 删掉兜底锚, 既有 L100 outcome 检查回退到不命中
+    local out
+    out="$(st13_exec "$T")"
+    rm -rf "$T" "/tmp/task-planner-hook-sfx12345.state"
+    # 无 verification.md → 陈旧提醒必然触发(plan-sync; 无 findings/progress 文件故仅 plan-sync 命中)
+    case "$out" in
+        *plan-compass*|*plan-sync*) return 0 ;;
+        *) echo "[T13b-diag] 无 verification.md 时未触发陈旧提醒, 实际输出='$out'"; return 1 ;;
+    esac
+}
+t "T13b S5 因果对照: 同 fixture 删 verification.md → 输出含 plan-compass/plan-sync 陈旧提醒(豁免由兜底分支因果生效, 非环境巧合)" \
+    st13_neg
+rm -f "/tmp/task-planner-hook-sfx12345.state"   # 清理 T13 两个用例的 state 文件
 
 # T12: [2026-09-14 task-v068 Fix-C P2-2] B2 (P0-2 回归: 跨脚本 canon 一致性) —
 #   三侧 sid 规范化必须逐字节一致(pretooluse L17 / UPS L34 / 复刻管道), 否则 sid 含连字符等
