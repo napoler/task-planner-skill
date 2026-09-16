@@ -13,8 +13,15 @@
 #   CD-15 check-dispatch.sh 仍含 "⚠ prompt 长度"（防误删破坏 selftest-dispatch FG 断言）
 #   CD-16 templates/subagent_dispatch.md 含 "超限补救(Rule 35.3)"
 #   CD-17 templates/notepad-learnings.md 含 "🚫 被否决方案"（veto 段名存在，联动 Rule 35.5 消费侧）
+#   CD-18 README.md 含 "Rules 1-35"（S5 滞后的版本号修复在位，防回退 1-27）
+#   CD-19 batch-quality-gate.md 含 "隶属 Rules 1-35"（S5 同批修复锚）
+#   CD-20 plan-writer.md 含 "纯数字"（s_unit_id 契约行在位）
+#   CD-21 templates/task_plan.md 含 "ID 列一律纯数字"（④ S-unit 注释行在位）
+#   CD-22 templates/subagent_dispatch.md 含 "机械求和"（统计类禁自报汇总行在位）
+#   CD-23 smart-merge-back.sh 含 "DEPLOY_SRC"（部署源换源在位）且含 "禁回退 SKILL_ROOT"（fail-closed 在位）
 # 维护注记: S-unit ID 契约=纯数字（check-plan-dispatch.sh 数据行正则 ^\|\s*S[0-9]+\s*\| 不认字母后缀，task-v076 attest 拒锁教训）
-# 17 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
+# 2026-09-17 task-v077 扩展: CD-18..CD-23 锁定 S3/S5/S6/S7 四项修复的守护锚（V074 deferred-fixes）
+# 23 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
 
 set -u
 
@@ -24,6 +31,11 @@ RULES="$SCRIPT_DIR/../references/critical-rules.md"
 DISPATCH="$SCRIPT_DIR/check-dispatch.sh"
 TMPL="$SCRIPT_DIR/../templates/subagent_dispatch.md"
 NOTEPAD_TPL="$SCRIPT_DIR/../templates/notepad-learnings.md"
+SMART="$SCRIPT_DIR/smart-merge-back.sh"
+README_SKILL="$SCRIPT_DIR/../README.md"
+BGATE="$SCRIPT_DIR/../references/batch-quality-gate.md"
+PLANWRITER="$SCRIPT_DIR/../companion/agents/plan-writer.md"
+TPL_PLAN="$SCRIPT_DIR/../templates/task_plan.md"
 
 total=0; ok=0; bad=0
 check() { total=$((total+1)); if eval "$1" 2>/dev/null; then ok=$((ok+1)); printf 'CD-%02d PASS %s\n' "$total" "$2"; else bad=$((bad+1)); printf 'CD-%02d FAIL %s\n' "$total" "$2"; fi; }
@@ -59,6 +71,18 @@ check "grep -q '⚠ prompt 长度' \"\$DISPATCH\"" "check-dispatch.sh 仍含 '�
 check "grep -qF '超限补救(Rule 35.3)' \"\$TMPL\"" "subagent_dispatch.md 含 '超限补救(Rule 35.3)'"
 # CD-17 notepad veto 段名
 check "grep -qF '🚫 被否决方案' \"\$NOTEPAD_TPL\"" "notepad-learnings.md 含 '🚫 被否决方案' 段"
+# CD-18 README 版本号修复锚
+check "grep -qF 'Rules 1-35' \"\$README_SKILL\"" "README.md 含 'Rules 1-35'"
+# CD-19 batch-gate 版本号修复锚
+check "grep -qF '隶属 Rules 1-35' \"\$BGATE\"" "batch-quality-gate.md 含 '隶属 Rules 1-35'"
+# CD-20 plan-writer S-unit 契约行
+check "grep -q '纯数字' \"\$PLANWRITER\"" "plan-writer.md 含 '纯数字'（s_unit_id 契约行）"
+# CD-21 task_plan 模板 ④ 注释行
+check "grep -qF 'ID 列一律纯数字' \"\$TPL_PLAN\"" "task_plan.md 含 'ID 列一律纯数字'（④ 注释行）"
+# CD-22 dispatch 模板禁自报汇总行
+check "grep -qF '机械求和' \"\$TMPL\"" "subagent_dispatch.md 含 '机械求和'（禁自报汇总行）"
+# CD-23 smart-merge-back 部署源换源 + fail-closed
+check "grep -qF 'DEPLOY_SRC' \"\$SMART\" && grep -qF '禁回退 SKILL_ROOT' \"\$SMART\"" "smart-merge-back.sh 含 'DEPLOY_SRC' 且含 '禁回退 SKILL_ROOT'（fail-closed）"
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$total" "$ok" "$bad"
 exit $((bad > 0))
