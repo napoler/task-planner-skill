@@ -2,3 +2,4 @@
 .backup/
 __pycache__/
 plans/.active_plan_side/
+plans/.plan_required_side/
