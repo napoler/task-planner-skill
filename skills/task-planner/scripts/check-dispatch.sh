@@ -261,12 +261,19 @@ fine_grain_checks() {
     fi
     # ② 多 S-unit 打包: 全 prompt distinct S<n> 字面集合计数(P2 KQ1 同源 grep -o|wc -l 范式);
     #    ≥2 → 告警(warn 档观察期数据用, 口径见头注释)
+    # [2026-09-17 task-v078] 双条件豁免: 单条件 subagent-state 会被合规派发的检查点路径命中(废掉打包门), 禁用
+    if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
+        echo "[dispatch-guard] SKIPPED 打包检测: prompt 引用落盘任务书(Rule 35.3 范式), 打包判定以任务书内容为准" >&2
+        # 豁免: 打包计数跳过, ② 不再累计 hits; ③ 照常
+        n=0
+    else
     sids="$(grep -oE 'S[0-9]+' "$pf" 2>/dev/null | sort -u)"
     n="$(printf '%s' "$sids" | grep -c . || true)"
     if [ "$n" -ge 2 ]; then
         echo "[dispatch-guard] ⚠ 单 prompt 检出 $n 个 S-unit ID（Rule 25.2 逐 S-unit 派发）" >&2
         [ -n "$hits" ] && hits="$hits; "
         hits="${hits}多 S-unit 打包($n 个 ID)"
+    fi
     fi
     # ③ knowledge-brief 引用提示: 仅 pd 非空且 brief 存在、且 prompt 既无 `brief` 也无 `§` 时告警
     if [ -n "$pd" ] && [ -f "$pd/knowledge-brief.md" ] && ! grep -qE 'brief|§' "$pf" 2>/dev/null; then

@@ -206,7 +206,8 @@ rm -f "$LOCK"   # PostToolUse 清锁: 子代理验收通过后串行槽释放
 [ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-06 PASS (rc=%s, 锁已清除)\n' "$RC"; } \
   || { FAIL=$((FAIL+1)); printf 'TS-06 FAIL (rc=%s, 锁=%s)\n' "$RC" "$([ -f "$LOCK" ] && echo 残留 || echo 无)"; }
 
-# FG-01..04 [task-v075 P3-S2] 三项增量检测 fine_grain_checks(经真实入口 pretool 触发):
+# FG-01..05 [task-v075 P3-S2] 三项增量检测 fine_grain_checks(经真实入口 pretool 触发);
+# [task-v078] FG-05=打包检测双条件豁免(任务书+subagent-state/), FG-03 反向回归保留
 # 独立夹具 fgc(禁触真实 plans/); 超长按 config prompt_max_chars=3000 构造 3100+ 字符
 FGC="$TMP/fgc"; FGC_PLAN="$FGC/plans/task-fg"; mkdir -p "$FGC_PLAN/subagent-state"
 printf 'fg task plan\n' > "$FGC_PLAN/task_plan.md"
@@ -274,6 +275,19 @@ RC=$?; CERR="$(cat "$TMP/err")"
   && { FGOK=1; } || { FGOK=0; }
 [ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-04 PASS (rc=0, brief 引用提示)\n'; } \
   || { FAIL=$((FAIL+1)); printf 'FG-04 FAIL (rc=%s err=[%s])\n' "$RC" "$(printf '%s' "$CERR" | grep -F 'knowledge-brief' | head -n1)"; }
+
+# FG-05 [task-v078] 双条件豁免正例: prompt 含「任务书」+ subagent-state/ + 多示例 S ID
+#   → 打包检测跳过(SKIPPED 提示)且不被判打包; 对照 FG-03(无豁免词多 S-unit)仍检出(回归保护)
+fgc_prompt "$FGC/p5.md"
+printf '完整任务书: %s/subagent-state/p2-s4-dispatch.md\n执行顺序示例: S1 先, S2 后, S3 收尾\n' "$FGC_PLAN" >> "$FGC/p5.md"
+fgc_pre
+( export TASK_PLANNER_PLAN_DIR="$FGC_PLAN" TASK_PLANNER_DISPATCH_ENFORCE=warn
+  cd "$TMP"; bash "$DISPATCH" pretool "$FGC/p5.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
+RC=$?; CERR="$(cat "$TMP/err")"
+printf '%s' "$CERR" | grep -qF 'SKIPPED 打包检测' && ! printf '%s' "$CERR" | grep -qF 'S-unit ID' \
+  && { FGOK=1; } || { FGOK=0; }
+[ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-05 PASS (双条件豁免: SKIPPED 提示, 未判打包)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'FG-05 FAIL (rc=%s err=[%s])\n' "$RC" "$(printf '%s' "$CERR" | head -n2 | tr '\n' ' | ')"; }
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

@@ -100,6 +100,9 @@ age=$(( now - mt ))
 if grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "$plan" 2>/dev/null; then
   exit 0
 fi
+# [2026-09-17 task-v078] 兜底: 本仓约定 outcome 落盘在 verification.md(task_plan.md 不含) —
+# 已交付计划(verification.md 含 outcome: COMPLETE|BLOCKED)同样豁免陈旧提醒(误报修复)
+[ -f "${plan_dir}/verification.md" ] && grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "${plan_dir}/verification.md" 2>/dev/null && exit 0
 
 # ─── 读阈值（config.json；解析失败兜底默认值，保证 fail-open）────────────────
 SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
