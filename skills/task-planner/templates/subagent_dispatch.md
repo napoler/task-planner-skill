@@ -52,6 +52,7 @@
 ```
 status: done | partial | failed | timeout
 acceptance: <n>/<total> pass — [1:PASS 2:PASS 3:FAIL(<≤20 字原因>) ...]
+   统计/测试类任务: acceptance 只准贴逐项原文行(如各脚本 rc= 与 Total: 行逐条列出), 禁止自报汇总数字——汇总由主进程逐行机械求和(子代理算术错已 5 次实证)
 files: <绝对路径>(+N/-M); ... | none
 evidence: <file:line 或 命令→关键输出行>; ...
 checkpoint: <绝对路径> (status: done|failed)
