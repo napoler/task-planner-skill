@@ -68,12 +68,12 @@ created: 2026-09-17
 | S4 | check-dispatch.sh L264 计数前新增双条件豁免（SKIPPED 文案照 VC-2 原文，warn/enforce 两档均走豁免不累计 hits）；selftest-dispatch.sh 新增 FG-05 并保持 FG-03 | 继承 | 01-explore.md §②（L264 `grep -oE 'S[0-9]+'` 全位置计数；FG-03 L254-264 唯一多 S-unit 用例；L68/290/300 单条件陷阱） | VC-2+VC-3 逐条 PASS（双条件 prompt 两档均 SKIPPED 不阻断；FG-03/FG-05 均 PASS） | 15min | pending |
 
 ### Phase 3: 守护扩展
-- [ ] S5 selftest-execution-stability.sh 新增行为用例（VC-4；写法样板 T11a/b L106-135，fixture 参照 mk_fixture 既有手法，断言=POSTTOOL 执行后输出不含「plan-compass」与「plan-sync」陈旧提醒）
-- **Status:** pending
+- [x] S5 selftest-execution-stability.sh 新增 T13a/T13b 行为用例（VC-4；含 T13 非密闭修正，主进程连续两遍 19/0 密闭验证）
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|------------------------|-------------|---------|------|
-| S5 | 新增 verification.md 兜底行为用例（含 T11a/b 回归保护） | 继承 | 01-explore.md §①（selftest-execution-stability.sh :16 POSTTOOL 定义、:106-107/:133-135 T11a/b；fixture 无 outcome/verification.md） | VC-4 逐条 PASS：新用例 PASS + T11a/b 行为不变 + 脚本全量 0 FAIL；前置先跑 T11a/b 基线 | 12min | pending |
+| S5 | 新增 verification.md 兜底行为用例（含 T11a/b 回归保护） | 继承 |01-explore.md §①（selftest-execution-stability.sh :16 POSTTOOL 定义、:106-107/:133-135 T11a/b；fixture 无 outcome/verification.md） | VC-4 逐条 PASS：新用例 PASS + T11a/b 行为不变 + 脚本全量 0 FAIL；前置先跑 T11a/b 基线 | 12min | done |
 
 ### Phase 4: 全量回归+文档同步
 - [x] S6 全量 20 脚本回归逐 Total 求和（主进程 awk=340 PASS/0 FAIL，证据 p4-regression.md）
