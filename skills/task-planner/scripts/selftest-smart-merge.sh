@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 14 用例(SM-01..11 断言 12 行 + SM-12/SM-13 回归 2 行, 共 14 断言行): 脏 worktree exit3 / 干净合并 exit0+merge commit /
+# 14 用例(SM-01..11 断言 12 行 + SM-12/SM-13/SM-14 回归 3 行, 共 15 断言行; 另 SM-10 注入时 +1 → Total 动态): 脏 worktree exit3 / 干净合并 exit0+merge commit /
 #   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
 #   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
 #   slot 含空格 → REJECTED exit6 /
+#   SM-14(2026-09-17 S4 task-v077 新增, 陈旧副本回归钉子): 脚本副本置于陈旧部署位 A(预置 stale-content)
+#   运行 --deploy, slot 指 B → 断言 B 终态 SKILL_MARKER==主仓 canonical-v077(非 stale-content) 且输出含
+#   [DEPLOY] IDENTICAL → exit 0; 防 v076 假 IDENTICAL 复发(以 SKILL_ROOT 为源时 cp 陈旧副本自 diff 恒真)。
 #   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
 #   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(SELFTEST_SM10_WT 注入) md5 前后一致(零改动)。
 #   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
@@ -34,6 +37,10 @@
 #   → REJECTED exit 6 + 目录清单 md5 前后一致)/SM-13(部署根内主仓场景 slot=$T13/main/deployroot/task-planner
 #   → REJECTED exit 6 + 主仓 .git 存活 + marker md5 不变); ② SKIP 口径统一(断言行总数 = PASS+FAIL,
 #   SKIP 单列不计入 Total), TOTAL_CASES 12→14; ③ 两用例全 /tmp 夹具, 禁止真实路径。
+# 2026-09-17 S4 task-v077 修复轮: ① mk_fixture 主仓 fixture 预置 skills/task-planner(SKILL_MARKER=v077-canonical),
+#   匹配 DEPLOY_SRC 换源后的主仓 canonical 基准(防 deploy 位全 skip 假绿);
+#   ② SM-06 预置源 $SCRIPT_DIR/.. → $T6/main/skills/task-planner(fixture 主仓 canonical, 与脚本对账基准同物);
+#   ③ 新增 SM-14(陈旧副本回归钉子); TOTAL_BASE 13→14(Total 注入 SM-10 时 =15)。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -82,6 +89,11 @@ mk_fixture() {
   # [2026-09-12 复审 5 轮 P2] 显式覆盖 hooksPath(与 init/clone 口径一致; 防外层 hooks 探测
 # 沿父目录链误命中 — 主仓在 HOME 深层嵌套形态下无 -c 时曾致 worktree add 失败, 实证)
 git -c core.hooksPath=/dev/null -C "$main" worktree add -q "$wt" -b wt/task-test master 2>/dev/null
+  # [2026-09-17 S4 task-v077] 主仓 fixture 预置 canonical 部署源 $main/skills/task-planner(内容标记 v077-canonical):
+  # 换源后 DEPLOY_SRC=$MAIN_REPO/skills/task-planner 须存在(缺失则 deploy 位全部 skip → 假绿回归);
+  # 该标记亦供 SM-06 预置 s1 与 SM-14 终态对账。
+  mkdir -p "$main/skills/task-planner"
+  echo "v077-canonical" > "$main/skills/task-planner/SKILL_MARKER"
 }
 
 # 分支侧提交: 在 wt/task-test 内改 tracked 文件 + commit
@@ -195,19 +207,21 @@ SMOK=0
   printf '%s' "$R2" | grep -qF 'base.txt' && SMOK=1
 report SM-05 "$SMOK" "rc=$R1(期望4) SCOPE_OVERLAP=$(printf '%s' "$R2" | grep -qF 'SCOPE_OVERLAP' && echo 在 || echo 缺) 交集含base.txt=$(printf '%s' "$R2" | grep -qF 'base.txt' && echo 在 || echo 缺)"
 
-# ---------- SM-06 --deploy: env 注入两 slot; s1 预置与 skill 根同内容(可写, 脚本 cp→rm→mv 后 diff 一致) → IDENTICAL;
-#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/slot) → cp/rm 均 ENOTDIR → 稳定 DRIFT
-#           (root 亦稳: 非只读权限问题, 而是路径分量类型冲突), 整体 exit 6 ----------
+# ---------- SM-06 --deploy: env 注入两 slot; s1 预置与主仓 fixture 的 skills/task-planner 同内容
+#           (可写, 脚本 cp→rm→mv 后 diff 一致 → IDENTICAL; 对账基准=主仓 skills/task-planner, task-v077)
+#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/slot) → cp/rm 均 ENOTDIR
+#           → 稳定 DRIFT (root 亦稳: 非只读权限问题, 而是路径分量类型冲突), 整体 exit 6 ----------
 # 注: env KEY=VAL 前缀注入(不经 export), 杜绝外层 TASK_PLANNER_DEPLOY_SLOTS 继承污染
 # DRIFT 机制(2026-09-12 S2 重写后): 脚本 --deploy 对每个 slot 执行 validate_slot → cp -rL .tmp-new.$$ → rm -rf slot → mv → diff -rq。
 #   ENOTDIR 构造: $T6/x 是目录, 但 slot 路径 = $T6/x/base.txt/slot, 其中 base.txt 是 $T6/x 内普通文件(非目录),
-#   故 cp -rL SKILL_ROOT 到 "$T6/x/base.txt/slot" 触发 ENOTDIR("Not a directory"), cp 失败 → 打印 DRIFT + 原 slot 保留未动。
+#   故 cp -rL DEPLOY_SRC 到 "$T6/x/base.txt/slot" 触发 ENOTDIR("Not a directory"), cp 失败 → 打印 DRIFT + 原 slot 保留未动。
 #   该构造 root 下也稳定(非权限依赖), 且验证 cp 先验证后 rm 的原子性语义(失败时原 slot 不毁)。
 T6="$(mktemp -d)"; record_dir "$T6"
 mk_fixture "$T6" "$T6/main" "$T6/task-test" "$T6/origin.git"
 branch_commit "$T6/task-test"
-SKILL_ROOT="$SCRIPT_DIR/.."
-cp -rL "$SKILL_ROOT" "$T6/s1"
+# [2026-09-17 S4 task-v077] 预置语义同步: 预置源 = 主仓 fixture 的 skills/task-planner(= 脚本 DEPLOY_SRC),
+# 原 $SCRIPT_DIR/.. 是 selftest 侧独立定义的 fixture 预置源, 与脚本对账基准无关, 已废止
+cp -rL "$T6/main/skills/task-planner" "$T6/s1"
 # ENOTDIR 构造: 目录 x + 普通文件 x/base.txt, slot 指向 base.txt 之下(不可能成功的子目录)
 mkdir -p "$T6/x"
 echo "marker" > "$T6/x/base.txt"
@@ -388,17 +402,46 @@ SMOK=0
   [ "$SM13_ROOT_MD5" = "$SM13_ROOT_MD5_AFTER" ] && SMOK=1
 report SM-13 "$SMOK" "rc=$R1(期望6) 部署根内主仓exact-REJECTED(= 受保护路径)=$(printf '%s' "$R2" | grep -qF "= 受保护路径" && echo 在 || echo 缺) .git存活=$([ "$SM13_GIT_AFTER" = 1 ] && echo 是 || echo 否) 主仓根清单md5不变=$([ "$SM13_ROOT_MD5" = "$SM13_ROOT_MD5_AFTER" ] && echo 是 || echo 否)"
 
+# ---------- SM-14 (2026-09-17 S4 task-v077 新增, 陈旧副本回归钉子) 脚本副本置于陈旧部署位运行:
+#           ① mk_fixture 造假主仓(含 skills/task-planner 标记 canonical-v077)
+#           ② 造假部署位 A=$T14/stale-copy(skills/task-planner 内为 stale-content)并把 TARGET 副本
+#              复制进 A 对应相对路径 → A 副本 SKILL_ROOT 指向陈旧 A
+#           ③ bash "$A/skills/task-planner/scripts/smart-merge-back.sh" --deploy, slot 指 B=$T14/slotB
+#           ④ 断言 B 终态 SKILL_MARKER == canonical-v077(非 stale-content) 且输出含 IDENTICAL → exit 0
+#           防 v076 假 IDENTICAL 复发: 以 SKILL_ROOT(脚本运行处)为源时会 cp 陈旧副本→自 diff 恒真,
+#           终态 B 必为 stale-content → 本用例立即 FAIL(回归钉子) ----------
+T14="$(mktemp -d)"; record_dir "$T14"
+mk_fixture "$T14" "$T14/main" "$T14/task-test" "$T14/origin.git"
+branch_commit "$T14/task-test"
+# ① 主仓 fixture 已含 skills/task-planner(标记 v077-canonical, 见 mk_fixture); 改写为本用例专属标记 canonical-v077
+echo "canonical-v077" > "$T14/main/skills/task-planner/SKILL_MARKER"
+# ② 造假陈旧部署位 A: 预置 stale-content + 复制 TARGET 副本进 A 对应相对路径(scripts/..)
+mkdir -p "$T14/stale-copy/skills/task-planner/scripts"
+echo "stale-content" > "$T14/stale-copy/skills/task-planner/SKILL_MARKER"
+cp "$TARGET" "$T14/stale-copy/skills/task-planner/scripts/smart-merge-back.sh"
+# ③ ④ 运行: A 副本自推导 SKILL_ROOT=$T14/stale-copy; slot 指 B; 断言 B 终态 == 主仓 canonical-v077
+mkdir -p "$T14/slotB"
+echo "stale-content" > "$T14/slotB/SKILL_MARKER"
+ERRF="$T14/err"
+run env TASK_PLANNER_DEPLOY_SLOTS="$T14/slotB" bash "$T14/stale-copy/skills/task-planner/scripts/smart-merge-back.sh" "$T14/task-test" --deploy
+SMOK=0
+[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T14/slotB" && \
+  [ -f "$T14/slotB/SKILL_MARKER" ] && \
+  [ "$(cat "$T14/slotB/SKILL_MARKER")" = "canonical-v077" ] && \
+  [ "$(cat "$T14/slotB/SKILL_MARKER")" != "stale-content" ] && SMOK=1
+report SM-14 "$SMOK" "rc=$R1(期望0) IDENTICAL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T14/slotB" && echo 在 || echo 缺) slotB-SKILL_MARKER=$(cat "$T14/slotB/SKILL_MARKER" 2>/dev/null)(期望canonical-v077非stale-content)"
+
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
 # [2026-09-12 R2 记账修复 / R3 SKIP 口径 / 复审 5 轮 P1 动态口径] 统计口径:
-#   必跑断言行 13 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-13),
-#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 13 + (SM10_INJECTED ? 1 : 0) 动态计算:
-#   SKIP(SM-10 未注入) → 13; 注入 → 14。
+#   必跑断言行 14 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-14),
+#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 14 + (SM10_INJECTED ? 1 : 0) 动态计算:
+#   SKIP(SM-10 未注入) → 14; 注入 → 15。
 #   PASS/FAIL 为 report() 真实累计值; 框架断言 PASS+FAIL == TOTAL_CASES(动态), 不一致打印
 #   FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败); SKIP 单列, 不计入断言行总数。
 #   连跑两遍结果一致(trap 幂等)。
-TOTAL_BASE=13
+TOTAL_BASE=14
 TOTAL_CASES=$(( TOTAL_BASE + ( SM10_INJECTED ? 1 : 0 ) ))
 SKIPPED=$(( SM10_INJECTED ? 0 : 1 ))
 PASS_TOTAL=$((PASS + FAIL))

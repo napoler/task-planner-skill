@@ -12,8 +12,10 @@
 # 参数:
 #   <worktree-path>  必填; worktree 绝对路径
 #   --base <branch>  目标分支, 默认 master
-#   --deploy         合并后对部署位执行既有 SOP(改名换位: slot→.bak.$$ → tmp→slot → rm .bak; diff -rq 对账);
-#                    逐位 [DEPLOY] 判定, 任一 DRIFT exit 6
+#   --deploy         合并后对部署位执行既有 SOP(改名换位: slot→.bak.$$ → tmp→slot → rm .bak; diff -rq 对账;
+#                    源=主仓 skills/task-planner — 2026-09-17 task-v077 修复假 IDENTICAL: 部署源/对账基准不再用
+#                    SKILL_ROOT(脚本运行处), 从部署位运行亦以主仓 canonical 内容为源);
+#                    逐位 [DEPLOY] 判定, 任一 DRIFT exit 6(部署源缺失亦 DRIFT fail-closed)
 #                    守卫语义(2026-09-12 R3): $HOME 内部 slot = 白名单口径 — 仅当位于任一默认部署根
 #                    ($HOME/.zcode/skills/task-planner、$HOME/.claude/skills/task-planner、
 #                    $HOME/.config/opencode/skills/task-planner)之内(或等于)才放行; 其余 $HOME 子路径
@@ -39,6 +41,7 @@
 # 后续输出:
 #   [CLEANUP] git worktree remove <path> && git branch -d <branch>   (只提示不执行 — 清理时机留主进程)
 #   --deploy: 逐位 [DEPLOY] REJECTED|IDENTICAL|DRIFT: <位>; 任一 REJECTED/DRIFT → exit 6 DEPLOY_DRIFT
+#     (2026-09-17 task-v077: IDENTICAL 判定基准 = 主仓 skills/task-planner(DEPLOY_SRC); 部署源缺失亦 DRIFT exit 6)
 #   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 3 真实位;
 #   HOME 未设置且 env 未覆盖 → [DEPLOY] REJECTED: (HOME 未设置 — 默认部署位不可解析) + exit 6。
 #   slot 安全: IFS=':' 解析 + validate_slot 守卫(拒空/非绝对/含空白或 glob/规范化后为
@@ -78,12 +81,12 @@
 # 通用: set -u; 无 jq 依赖; 头注释块标注任务与用途; 退出码表如下。
 #
 # 退出码:
-#   0 = 成功(MERGED 或 ALREADY_MERGED, 且 --deploy 全位 IDENTICAL)
+#   0 = 成功(MERGED 或 ALREADY_MERGED, 且 --deploy 全位 IDENTICAL; 对账基准=主仓 skills/task-planner — task-v077)
 #   2 = PRECHECK_INVALID      (worktree 目录不存在 / 分支名不合规 / 不在 worktree list 在册)
 #   3 = PRECHECK_DIRTY        (worktree 有未提交变更, 列出文件)
 #   4 = SCOPE_OVERLAP         (主仓未提交文件 ∩ 分支变更文件非空, 列出交集)
 #   5 = MASTER_AHEAD          (base 前进于 merge-base, 建议先 merge base 入分支再重跑; --force 才继续)
-#   6 = DEPLOY_DRIFT          (--deploy 任一位 DRIFT: diff -rq 有差异 / cp 失败 / slot 校验 REJECTED(危险路径))
+#   6 = DEPLOY_DRIFT          (--deploy 任一位 DRIFT: diff -rq 有差异(基准=主仓 skills/task-planner) / cp 失败 / 部署源缺失 / slot 校验 REJECTED(危险路径))
 #   7 = MERGE_CONFLICT        (merge 冲突, STOP 语义 — 不自动解决, 报告用户; 主仓残留 mid-merge, 恢复: git -C <主仓> merge --abort)
 #   8 = MERGE_IN_PROGRESS     (V1 检测主仓存在未完成合并 MERGE_HEAD — 恢复: git -C <主仓> merge --abort 后重跑)
 #   2 = ARG_INVALID           (参数错误: 未知选项/缺参/多余位置参数 — 与文档对齐, 原 exit 1 矛盾已修)
@@ -342,15 +345,30 @@ fi
 # ---------- --deploy 逐位重部署对账 ----------
 # [2026-09-12 S2 P0+P1 重写: 原实现"rm 先于 cp 验证 + 空格分词"可摧毁受保护路径(worktree/主仓/HOME)
 #  且 exit 0 假绿。现: slot IFS 安全解析 + validate_slot 前缀守卫 + cp→rm→mv 原子替换(tmp 建同目录保 mv 原子)。]
+# [2026-09-17 task-v077: 部署源/对账基准由 SKILL_ROOT(脚本运行处)改为主仓 $MAIN_REPO/skills/task-planner
+#  (DEPLOY_SRC) — 修复从部署位运行时的假 IDENTICAL(自 copy 自 diff 恒真); 源缺失 fail-closed DRIFT exit 6。]
 if [ "$DO_DEPLOY" -eq 1 ]; then
     # [2026-09-12 R2 P0] SKILL_ROOT 推导消除 /scripts/.. 字面量: cd+pwd -P 输出规范化绝对路径
     # (dirname 比 ${BASH_SOURCE%/*} 语义更明确, 与脚本目录推导口径一致)
     SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+    # [2026-09-17 task-v077] DEPLOY_SRC 推导: 部署源 = 主仓 canonical 内容 $MAIN_REPO/skills/task-planner。
+    # 修复 v076 实证的假 IDENTICAL: 原实现以 SKILL_ROOT(脚本运行处)为 cp 源与 diff 基准 — 从部署位运行时
+    # 以陈旧副本自 copy 再自 diff, 恒真假绿。SKILL_ROOT 仅保留于守卫(GUARDS 行)与自位 REJECTED 提示。
+    DEPLOY_SRC="$MAIN_REPO/skills/task-planner"
+    # [2026-09-17 task-v077] fail-closed: 主仓无 skills/task-planner(非标准仓布局) → 显式 DRIFT exit 6,
+    # 禁静默回退 SKILL_ROOT(回退 = 假 IDENTICAL 根因复发)。DRIFT 置位延迟至下方 DRIFT 初始化之后
+    # (防 R3 P3 类缺陷: 初始化置 0 吞掉标志 → 假绿回归)。
     # [2026-09-12 R3 P3] HOME 未设置且 env 未覆盖 → 显式 REJECTED + DRIFT=1(exit 6), 不静默继续。
     # SLOTS 三路均必赋值(防 set -u 下未初始化变量; 原 R3 缺陷: HOME 空分支漏赋 SLOTS,
     # read <<< "" 产出单空元素循环被跳过 → exit 0 假绿, 已实证修复)。DRIFT 必须先于分支初始化
     # (原 477 行循环前无条件 DRIFT=0 会把此处置的 DRIFT=1 重置 → 假绿回归, 已实证修复)
+    # [2026-09-17 task-v077] DRIFT 初始化上移: 源缺失判定已置 DRIFT=1, 此处置 0 会吞掉标志(假绿回归,
+    # 与 R3 P3 同类缺陷; 现源缺失→保持 DRIFT=1, HOME 未设分支仍自行置位)
     DRIFT=0
+    [ -d "$DEPLOY_SRC" ] || {
+        echo "[DEPLOY] DRIFT: (部署源不存在: $DEPLOY_SRC — 主仓布局缺失, 禁回退 SKILL_ROOT)"
+        DRIFT=1
+    }
     if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
         SLOTS="$TASK_PLANNER_DEPLOY_SLOTS"
     elif [ -n "${HOME:-}" ]; then
@@ -454,7 +472,12 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         for i in $(seq 0 $((${#guard_norm[@]}-1))); do
             local gn="${guard_norm[$i]}" gt="${guard_type[$i]}"
             [ -n "$gn" ] || continue
-            [ "$norm" = "$gn" ] && { echo "[DEPLOY] REJECTED: $slot (= 受保护路径 ${guard_raw[$i]%:*})"; return 1; }
+            [ "$norm" = "$gn" ] && {
+                _msg="[DEPLOY] REJECTED: $slot (= 受保护路径 ${guard_raw[$i]%:*})"
+                case "${guard_raw[$i]%:*}" in
+                "$SKILL_ROOT") _msg="$_msg(= 运行位自保护; 请改用主仓副本运行或手动 rm+cp 部署该位 — 部署源=主仓 skills/task-planner)" ;;
+                esac
+                echo "$_msg"; return 1; }
             if [ "$gt" = "home" ]; then
                 # inside: slot 位于 $HOME 内部
                 if ! [ "$ALLOW_HOME_SLOT" -eq 1 ]; then
@@ -488,6 +511,13 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
             DRIFT=1
             continue
         fi
+        # [2026-09-17 task-v077] fail-closed: 源缺失时整位跳过(不 cp/diff/mv, slot 原样保留)。
+        # 检查置于 validate_slot 之后 — REJECTED 危险 slot 仍走既有拒绝路径(诊断语义不变);
+        # 此处不再置 DRIFT(上方 DRIFT 初始化已置 1 → exit 6), 防重复标志语义漂移。
+        if [ ! -d "$DEPLOY_SRC" ]; then
+            echo "[DEPLOY] DRIFT: $slot (部署源缺失, 跳过部署)"
+            continue
+        fi
         slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
         tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
         # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
@@ -495,7 +525,7 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         # 恢复(.bak 尚在且 slot 缺席 → mv 回原位); SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回
         # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
         rm -rf "$tmpdir" 2>/dev/null || true
-        if ! cp -rL "$SKILL_ROOT" "$tmpdir" 2>/dev/null; then
+        if ! cp -rL "$DEPLOY_SRC" "$tmpdir" 2>/dev/null; then
             rm -rf "$tmpdir" 2>/dev/null || true
             echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
             DRIFT=1
@@ -521,8 +551,9 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         rm -rf "$slotbak" 2>/dev/null
         slotbak=""
         BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
-        if diff -rq "$SKILL_ROOT" "$slotdir" >/dev/null 2>&1; then
-            echo "[DEPLOY] IDENTICAL: $slotdir"
+        # [2026-09-17 task-v077] 对账基准 = DEPLOY_SRC(主仓 skills/task-planner), 非脚本运行处
+        if diff -rq "$DEPLOY_SRC" "$slotdir" >/dev/null 2>&1; then
+            echo "[DEPLOY] IDENTICAL: $slotdir (基准=主仓 skills/task-planner)"
         else
             echo "[DEPLOY] DRIFT: $slotdir"
             DRIFT=1
@@ -532,8 +563,8 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         echo "[DEPLOY] DEPLOY_DRIFT: 至少一位部署位 DRIFT/REJECTED(详见上)" >&2
         exit 6
     fi
-    echo "[DEPLOY] OK: 全部部署位 IDENTICAL"
+    echo "[DEPLOY] OK: 全部部署位 IDENTICAL(基准=主仓 skills/task-planner)"
 fi
 
-# 成功: MERGED 或 ALREADY_MERGED, 且 --deploy 全 IDENTICAL
+# 成功: MERGED 或 ALREADY_MERGED, 且 --deploy 全位 IDENTICAL(对账基准=主仓 skills/task-planner, task-v077)
 exit 0

@@ -114,6 +114,7 @@ cost_estimate:
 | **Key Questions** | 1-5 个待回答的关键问题 |
 | **Decisions Made** | 表格记录技术决策与理由 |
 | **knowledge_brief** | 计划期产出 `<plan-dir>/knowledge-brief.md`(五段齐备:§1-§5 标题在位,§2/§3 各至少 1 条真实条目:§2 含已验证事实+证据 file:line/URL,§3 含关键文件锚点行号+摘要);内容来自实际 Read 过的知识源,禁止凭记忆编造 |
+| **s_unit_id** | S-unit 表 ID 列一律纯数字（S1、S2…全局或每 Phase 内唯一均可，禁字母后缀如 S2a——check-plan-dispatch.sh 数据行正则 S[0-9]+ 边界不认字母后缀，attest 会以「缺 S-unit 表或数据行」拒锁；task-v076 实证教训） |
 
 调用方还需:
 - **不在主进程** Edit task_plan.md — 由 plan-writer 通过本 agent 在隔离 context 写入
