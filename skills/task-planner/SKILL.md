@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-34（1-12 核心执行约束 + 13-28 高级门控 + 29-34 维护/追踪/学习/防倒退/反思/模板生命周期门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控）
+- references/critical-rules.md: Critical Rules 全集 1-35（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -194,6 +194,7 @@ model: opus
 | C20 | 本任务全部方案候选/建议/D2 选项已过 32.2 禁令检查（禁令源=当前+历史 notepad「被否决方案」段+memory）；命中项已剔除或按 32.4 标注否决出处+新证据交用户裁决；无禁令命中 → 本项 PASS 记一行 | ☐ |
 | C21 | 每个问题解决动作后已按 Rule 33 落 [reflect] 反思+验证两行（progress.md 可查）；计划声明 reflect_verify: required 时 REFLECT-GATE 必过（check-complete.sh） | ☐ |
 | C22 | attest 前 template_type 已过 check-template-type.sh 门控（逃生须披露）；命中 34.3 沉淀触发时已按 34.4 沉淀或登记不沉淀理由 | ☐ |
+| C23 | 准备以否定结论（无法查看/不存在/不支持）结束任务或上报 prompt 过大失败前：能力否定已过 Rule 35.2 三关（完整接口面/CRUD 推断/替代路径）并附证据，或已按 35.3 落盘引用补救（内容写文件+prompt 只放路径与 Read 指令）；违规按 Rule 26 回炉 | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -274,7 +275,7 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-34）：
+详见 `references/critical-rules.md`（Rules 1-35）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -299,6 +300,7 @@ Block 1 (选题) complete
 - **Rule 32（P0）用户否决与禁令追踪**：登记(32.1)/计划期必查(32.2)/执行期消费(32.3)/解禁条件(32.4)/机制(32.5)——"否决→登记→提方案前必查→无证据禁重提"链路：用户裁决「不允许/禁止/X 是错的」即时落盘 notepad「🚫 被否决方案」段+Decisions Made（veto: 行）；提出任何方案候选/D2 选项/B 类重规划建议前必查禁令源（当前+历史 notepad+memory），命中的方案禁止进入候选、禁止推荐、禁止作为默认项；解禁仅限用户显式撤销（veto-lift）或可引用新证据且标注否决出处交用户裁决——**禁止静默改回（倒退式改法=循环开发）**；开关键 `config.json#veto_enforce`（默认 warn，详见 references/critical-rules.md Rule 32）
 - **Rule 33（P0）解决→反思→验证迭代循环**：触发(33.1)/反思四问(33.2)/独立验证(33.3)/迭代边界≤3 轮(33.4)/沉淀联动(33.5)/机制(33.6)——问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后标记完成前，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；REFLECT-GATE（check-complete.sh，声明 reflect_verify: required 时校验，默认 warn）；开关键 `config.json#reflect_verify_enforce`（详见 references/critical-rules.md Rule 33）
 - **Rule 34（P0）模板生命周期门控与沉淀**：选取门控(34.1)/四点同步(34.2)/沉淀触发(34.3)/沉淀流程(34.4)/防滥用(34.5)/机制(34.6)——attest 前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；命中沉淀触发→提炼新 variant 模板+四点同步；开关键 `config.json#template_gate_enforce`（默认 warn，详见 references/critical-rules.md Rule 34）
+- **Rule 35（P0）执行结论纪律**：能力否定三关查证（35.2 通读完整接口面/CRUD 一致性推断/替代路径）+ 大输入落盘引用补救（35.3 prompt 超限→内容写文件+Read 指令）——「没找到」禁写成「不存在」收场、prompt 过大禁失败收场；check-dispatch 超限提示+selftest-conclusion-discipline 守护，无新 config 键（详见 references/critical-rules.md Rule 35）
 
 ## Completion Gate
 
@@ -322,7 +324,7 @@ Block 1 (选题) complete
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-34（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控） |
+| `references/critical-rules.md` | Critical Rules 1-35（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -407,6 +409,7 @@ Block 1 (选题) complete
 | 3 | **降档** | 类型对、已拆细仍失败(能力不足)→ 升一档 model(haiku→sonnet→opus) | 主进程 |
 | 4 | **主进程接管** | 单文件 ≤300 行、目标明确、可独立验收；接管后须按 Rule 25.3 登记例外理由（白名单⑤） | 主进程 Edit/Read |
 | 5 | **AskUserQuestion** | 改派/拆细/降档/接管都失败,或问题需用户决策；交互模式见 Rule 28（ask=选项化询问并回填 Decisions；silent=按推荐项自主处置并登记 silent 决策行；D6 触发时按 28.4.1 降级交付(推荐项=拆细后主进程接管 ≤300 行子集,剩余登记未完成清单)，禁静默空等） | AskUserQuestion 工具 |
+> 「prompt 过大/context_exceeded」类失败 → 先走 Rule 35.3 大输入落盘引用（内容写文件+prompt 只放绝对路径与 Read 指令）再考虑 ②拆细，禁止直接失败收场（Rule 35.5 消费侧）。
 
 **触发条件**(任一):
 - 子代理返回 `status: failed` 或 `partial` 但关键产出缺失

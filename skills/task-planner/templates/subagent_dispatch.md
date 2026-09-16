@@ -90,6 +90,7 @@ confidence: HIGH
 
 ## 9. 上下文预算(强制 — Rule 22.4 第 ⑨ 字段,小模型短上下文友好)
 - 本 prompt 总长 ≤ `config.json#subagent.prompt_max_chars`(默认 3000 字符);超出 = 材料没在计划期拆好,回 S-unit 表把输入拆成"路径 + ≤10 行摘要"再派
+- 超限补救(Rule 35.3):拆细后仍超 → 把大内容写入 <plan-dir>/subagent-state/{seq}-prompt.md 或材料包文件,prompt 只放「绝对路径+第一步 Read 该文件」指令,禁止失败收场/静默截断
 - 只注入本 S-unit 所需材料:路径 + 摘要;**禁止**贴 task_plan.md / findings.md 全文或大段源码
 - 子代理侧:只 Read 本节列出的路径/区段,不做计划外探索;疑问按第 4 节 Scope 处理,不扩读
 

@@ -10,7 +10,7 @@
 #   RV-07 含 33.6 机制条款（语义锚点: reflect_verify_enforce + REFLECT-GATE + selftest-reflect-verify）
 #   RV-08 config.json reflect_verify_enforce 键（默认 warn, enum 三档 enforce/warn/off）
 #   RV-09 check-complete.sh 含 REFLECT-GATE 锚点（REFLECT-GATE / TASK_PLANNER_REFLECT_VERIFY_ENFORCE / - [reflect] 行计数 / SKIPPED 分支）
-#   RV-10 SKILL.md 含 'Rules 1-34' 索引行（Rule 33/34 联动）
+#   RV-10 SKILL.md 含 'Rules 1-35' 索引行（Rule 33/34/35 联动）
 #   RV-11 SKILL.md 检查清单含 C21 行（Rule 33 [reflect] 反思+验证两行）
 #   RV-12 SKILL.md 含「解决后反思-验证循环」联动段
 # 12 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
@@ -57,7 +57,7 @@ else
   bad 09 "check-complete.sh 缺 REFLECT-GATE 锚点"
 fi
 # RV-10
-if grep -q 'Rules 1-34' "$SKILL"; then ok 10 "SKILL.md 'Rules 1-34' 索引行"; else bad 10 "SKILL.md 缺 'Rules 1-34'"; fi
+if grep -q 'Rules 1-35' "$SKILL"; then ok 10 "SKILL.md 'Rules 1-35' 索引行"; else bad 10 "SKILL.md 缺 'Rules 1-35'"; fi
 # RV-11
 if grep -q '^| C21 ' "$SKILL"; then ok 11 "SKILL.md 检查清单 C21 行"; else bad 11 "SKILL.md 缺 C21 行"; fi
 # RV-12

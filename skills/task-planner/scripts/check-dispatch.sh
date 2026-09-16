@@ -256,6 +256,7 @@ fine_grain_checks() {
     hits=""
     if [ "$pchar" -gt "$pmax" ]; then
         echo "[dispatch-guard] ⚠ prompt 长度 $pchar > $pmax" >&2
+        echo "[dispatch-guard] ⚠ 补救(Rule 35.3): 大内容落盘 <plan-dir>/subagent-state/{seq}-prompt.md,prompt 只放路径+Read 指令,禁止失败收场" >&2
         hits="prompt 长度超限($pchar>$pmax)"
     fi
     # ② 多 S-unit 打包: 全 prompt distinct S<n> 字面集合计数(P2 KQ1 同源 grep -o|wc -l 范式);
