@@ -6,21 +6,22 @@
 #   CD-08 22.4 行含 "Rule 35.3 大输入落盘引用" 补救句
 #   CD-09 SKILL.md 含 "Rule 35（P0）执行结论纪律" 列表行
 #   CD-10 SKILL.md 含 "| C23 |" 检查项行
-#   CD-11 SKILL.md 含 "1-35" 且计数 ≥3（L9 全集/L278 References/L327 表三处）
+#   CD-11 SKILL.md 含 "1-3[56]" 宽容锚且计数 ≥3（L9 全集/L278 References/L327 表三处；[2026-09-17 task-v079] 严格 '1-35'→宽容 1-3[56]，兼容 SKILL 1-35 现值与 P4 后 1-36）
 #   CD-12 SKILL.md 不再含 "1-34"（防版本字样回退，计数必须=0）
 #   CD-13 SKILL.md 五档兜底引用注含 "Rule 35.3 大输入落盘引用"
 #   CD-14 check-dispatch.sh 含 "补救(Rule 35.3)" 落盘指引
 #   CD-15 check-dispatch.sh 仍含 "⚠ prompt 长度"（防误删破坏 selftest-dispatch FG 断言）
 #   CD-16 templates/subagent_dispatch.md 含 "超限补救(Rule 35.3)"
 #   CD-17 templates/notepad-learnings.md 含 "🚫 被否决方案"（veto 段名存在，联动 Rule 35.5 消费侧）
-#   CD-18 README.md 含 "Rules 1-35"（S5 滞后的版本号修复在位，防回退 1-27）
-#   CD-19 batch-quality-gate.md 含 "隶属 Rules 1-35"（S5 同批修复锚）
+#   CD-18 README.md 含 "Rules 1-3[56]" 宽容锚（S5 滞后的版本号修复在位，防回退 1-27；[2026-09-17 task-v079] 级联）
+#   CD-19 batch-quality-gate.md 含 "隶属 Rules 1-3[56]" 宽容锚（S5 同批修复锚；[2026-09-17 task-v079] 级联）
 #   CD-20 plan-writer.md 含 "纯数字"（s_unit_id 契约行在位）
 #   CD-21 templates/task_plan.md 含 "ID 列一律纯数字"（④ S-unit 注释行在位）
 #   CD-22 templates/subagent_dispatch.md 含 "机械求和"（统计类禁自报汇总行在位）
 #   CD-23 smart-merge-back.sh 含 "DEPLOY_SRC"（部署源换源在位）且含 "禁回退 SKILL_ROOT"（fail-closed 在位）
 # 维护注记: S-unit ID 契约=纯数字（check-plan-dispatch.sh 数据行正则 ^\|\s*S[0-9]+\s*\| 不认字母后缀，task-v076 attest 拒锁教训）
 # 2026-09-17 task-v077 扩展: CD-18..CD-23 锁定 S3/S5/S6/S7 四项修复的守护锚（V074 deferred-fixes）
+# 2026-09-17 task-v079 S8a: CD-11/CD-18/CD-19 严格 '1-35' 锚改宽容 '1-3[56]'（SKILL 1-35→1-36 两阶段过渡自洽；CD-12 '1-34' 反回退锚保留）
 # 23 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
 
 set -u
@@ -55,9 +56,9 @@ check "grep -qF 'Rule 35.3 大输入落盘引用' \"\$RULES\" && grep '^22\.4' \
 check "grep -qF 'Rule 35（P0）执行结论纪律' \"\$SKILL\"" "SKILL.md 含 'Rule 35（P0）执行结论纪律' 列表行"
 # CD-10 C23 检查项
 check "grep -qF '| C23 |' \"\$SKILL\"" "SKILL.md 含 '| C23 |' 检查项行"
-# CD-11 1-35 计数 ≥3
-n35=$(grep -c '1-35' "$SKILL" || true); n35=$((n35+0))
-check "test ${n35} -ge 3" "SKILL.md '1-35' 计数 ≥3（当前=${n35}）"
+# CD-11 1-3[56] 宽容锚计数 ≥3（兼容 1-35/1-36 过渡，task-v079）
+n35=$(grep -cE '1-3[56]' "$SKILL" || true); n35=$((n35+0))
+check "test ${n35} -ge 3" "SKILL.md '1-3[56]' 计数 ≥3（兼容 1-35/1-36 过渡，当前=${n35}）"
 # CD-12 1-34 零命中（防回退）
 n34=$(grep -c '1-34' "$SKILL" || true); n34=$((n34+0))
 check "test ${n34} -eq 0" "SKILL.md 不含 '1-34'（防回退，当前=${n34}）"
@@ -72,9 +73,9 @@ check "grep -qF '超限补救(Rule 35.3)' \"\$TMPL\"" "subagent_dispatch.md 含 
 # CD-17 notepad veto 段名
 check "grep -qF '🚫 被否决方案' \"\$NOTEPAD_TPL\"" "notepad-learnings.md 含 '🚫 被否决方案' 段"
 # CD-18 README 版本号修复锚
-check "grep -qF 'Rules 1-35' \"\$README_SKILL\"" "README.md 含 'Rules 1-35'"
+check "grep -qE 'Rules 1-3[56]' \"\$README_SKILL\"" "README.md 含 'Rules 1-3[56]' 宽容锚（兼容 1-35/1-36 过渡）"
 # CD-19 batch-gate 版本号修复锚
-check "grep -qF '隶属 Rules 1-35' \"\$BGATE\"" "batch-quality-gate.md 含 '隶属 Rules 1-35'"
+check "grep -qE '隶属 Rules 1-3[56]' \"\$BGATE\"" "batch-quality-gate.md 含 '隶属 Rules 1-3[56]' 宽容锚（兼容 1-35/1-36 过渡）"
 # CD-20 plan-writer S-unit 契约行
 check "grep -q '纯数字' \"\$PLANWRITER\"" "plan-writer.md 含 '纯数字'（s_unit_id 契约行）"
 # CD-21 task_plan 模板 ④ 注释行
