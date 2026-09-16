@@ -52,7 +52,12 @@ case "$tool" in
       printf '%s\n' "$msg" >&2
       exit 2
     fi
-    # rc=0 时 check-delegation 自身可能已输出 warn JSON(注入);不重复
+    # [2026-09-17 task-v079] Rule 36 技能修改保守化门(36.7①): 技能文件写入授权检查(主进程+子代理一致生效,
+    # 补 check-delegation 对子代理 sid≠owner exit 0 放行的空档); rc=2 透传阻断(镜像上方既有惯例)
+    bash "$SKILL_ROOT/check-skill-modify.sh" pretool "$file" "$sid"
+    rc=$?
+    [ "$rc" -eq 2 ] && exit 2
+    # rc=0 时 check-skill-modify 自身可能已输出 warn JSON(注入);不重复
     ;;
   Agent)
     # [2026-09-09 task-v057] 派发契约守卫(Rule 22.4c):检查 Agent() prompt 含计划三文件绝对路径 + 8 字段返回 key + 检查点路径
