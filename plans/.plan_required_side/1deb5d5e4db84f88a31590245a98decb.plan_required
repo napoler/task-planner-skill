@@ -1,11 +1,4 @@
 plan-required
-created: 2026-09-14T14:21:35.079Z
-created_epoch: 1789395695079
+created: 2026-09-15T12:35:21.144Z
+created_epoch: 1789475721144
 cwd: /mnt/data/dev/task-planner-skill
-resolved_by: plan-d10-arb (plans/task-v072-error-loop/task_plan.md 22:26 > sentinel 22:21, 手动登记放行)
-# rule31 dogfood (31.2 根因分析已入仓, progress Error Log 根因列登记同内容):
-#   现象: check-complete.sh Learning Gate 初版恒 PASS 静默 (warn 档下 placeholder 行未触发告警)
-#   直接原因: awk 程序内联进 $(...) 时引号/反斜杠层级混乱, 程序被 shell 层静默截断
-#   根因(5Whys 3 层): 多层引号转义 (\$ 在双引号内吃成 $, \\| 吃成 \| 即行首字面) 无实测验证环节
-#   类别: 假设未验 (双层引号转义假设未经 shell 层实测)
-#   Prevention: 已落地 "awk 程序存 mktemp 文件走 awk -f <prog> <data> 双文件参数" 范式, selftest-error-loop EL-16 锚点守护
