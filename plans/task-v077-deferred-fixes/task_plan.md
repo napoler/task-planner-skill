@@ -124,7 +124,7 @@ P1：主进程建 worktree（自 master@5ad18f6 新建分支 wt/task-v077-deferr
 - [x] S10 CHANGELOG.md [Unreleased] 新增一条（主仓，task-v077 条目）
 - **V-N:** VC-5, VC-4
 - **Status:** complete
-- **Executor:** code-runner-agent（S9 回归跑测）+ 主进程（例外理由:③ 机械求和定数 + ② CHANGELOG 簿记白名单）
+- **Executor:** code-runner-agent（S9 回归跑测）+ 主进程（例外理由:白名单③ 机械求和定数 + 白名单② CHANGELOG 簿记）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|
