@@ -32,3 +32,27 @@
   "status": "done",
   "effect": "合并 8fed498 已 push；master 全量 377/0；3 实体位 diff -r IDENTICAL 亲验；BP-10 路径教训与接管预登记模式沉淀"
 }
+{
+  "ts": "2026-09-17T20:42:51Z",
+  "topic": "task-planner-maintenance",
+  "target": "skills/task-planner: references/methodology.md + SKILL.md + companion/agents/plan-writer.md + scripts/selftest-methodology.sh",
+  "action": "task-v084 思维方法论（methodology §思维方法论 T1-T5：问题先行/解构四问/金字塔/逐步推导/消费点，2026-09-18 用户思维纪律落地）",
+  "changed": [],
+  "status": "in_progress",
+  "effect": ""
+}
+{
+  "ts": "2026-09-17T22:42:27Z",
+  "topic": "task-planner-maintenance",
+  "target": "skills/task-planner: references/methodology.md + SKILL.md + companion/agents/plan-writer.md + scripts/selftest-methodology.sh",
+  "action": "task-v084 思维方法论交付（T1-T5+SKILL 三处+契约行+M-12..16，CR 三轮 APPROVED）",
+  "changed": [
+    "skills/task-planner/references/methodology.md",
+    "skills/task-planner/SKILL.md",
+    "skills/task-planner/companion/agents/plan-writer.md",
+    "skills/task-planner/scripts/selftest-methodology.sh",
+    "CHANGELOG.md"
+  ],
+  "status": "done",
+  "effect": "合并 871e71a 已 push；master 全量 382/0；三位 IDENTICAL 亲验；教训=Handoff 派发前登记/Executor 干净 token/标题锚断言"
+}
