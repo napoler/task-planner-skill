@@ -131,6 +131,10 @@
 - **Status:** complete
 - **Executor:** code-runner-agent（mini）——实际派发成功（mini 档存活），本次未触发接管
 
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
+|----|------------|------------------------|-------------|---------|------|
+| S6 | worktree 全量 selftest 回归 | 继承 | subagent-state/4-code-runner-agent.md（23 脚本 rc+Total 原始行清单） | 全部 rc=0，主进程逐 Total 亲算 0 FAIL | 15min | done |
+
 ### Phase 5: 合并部署+簿记收尾（Delivery）
 - [x] smart-merge-back 合并（首跑 V5 MASTER_AHEAD 正确中止[v082 已并入 master]→worktree merge master 解 CHANGELOG 冲突重跑全量 377/0→再合并 8fed498）
 - [x] 3 实体位部署（--deploy 基准=主仓副本）+ diff -r 三位 IDENTICAL 主进程亲验
