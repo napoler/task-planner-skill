@@ -80,6 +80,16 @@ t "T9b 无连字符变体 skill-collab-enforce" bash -c "! grep -rq 'skill-colla
 # T10: SKILL.md 行数 ≤548（task-v073 Rule 32 摘要行+C20+否决登记指针 联动后 SKILL.md 529 行,上限同步 530→538; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧))
 t "T10 SKILL.md 行数 ≤548" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 548 ]"
 
+# T11: [2026-09-17 task-v080] 网络调研/网页访问路由显式化(SKILL.md 调研链 L458 注记+平台适配声明+路由表行)
+t "T11a SKILL.md 调研链含 browser-use 插件路由(≥3 行)" bash -c "[ \"\$(grep -c 'browser-use' '$SKILL')\" -ge 3 ]"
+t "T11b SKILL.md 调研链 research-assistant 主通道定位" grep -q '网络调研主通道' "$SKILL"
+t "T11c SKILL.md 平台适配声明(禁假设不存在 MCP,恰 1 行)" bash -c "[ \"\$(grep -c 'playwright' '$SKILL')\" -eq 1 ]"
+t "T11d SKILL.md 路由表网页访问行" grep -q '网页访问（JS 渲染/登录态/交互页）' "$SKILL"
+
+# T12: [2026-09-17 task-v080] collaboration.md §二矩阵 research-assistant/browser-use 行
+t "T12a collab 矩阵 research-assistant 行" grep -q 'research-assistant（嵌入，网络调研触发' "$COLLAB"
+t "T12b collab 矩阵 browser-use 行" grep -q 'browser-use（嵌入，网页访问触发' "$COLLAB"
+
 # ── 汇总 ──
 TOTAL=$((PASS + FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
