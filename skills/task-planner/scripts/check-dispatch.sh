@@ -305,7 +305,8 @@ fine_grain_checks() {
     #    > step_max_steps(默认 4) → 拆分信号, 计入 hits 走既有档位管线(enforce=exit 2)。
     #    计数对象=prompt 本体; ② 的任务书双条件豁免命中时, 追加对 prompt 引用的落盘任务书
     #    (subagent-state 路径,≤3 个,存在可读)计数取最大 — 防 13 步躲进任务书绕门(v078 同源)。
-    #    jq 缺失/键缺失 → 回退默认 4 + 一行 SKIPPED(①②③ 同范式,禁静默)。
+    #    jq 不可用/配置文件缺失 → 回退默认 4 + 一行 SKIPPED(禁静默失败);键缺失时 jq `//` 兜底
+    #    静默回 4(①②③ 家族同口径,SKIPPED 行不触发)。
     smax="$(jq -r '.properties.subagent.properties.step_max_steps.default // "4"' "$CONFIG_JSON" 2>/dev/null)" || smax=""
     if ! [[ "$smax" =~ ^[0-9]+$ ]]; then
         smax=4
