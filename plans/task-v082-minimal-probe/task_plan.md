@@ -84,7 +84,7 @@
 
 ### Phase 3: 守护与文档 — **Status: complete**（2026-09-18 01:2x，commit b9ba09a，CD 24/0+CD-25 撞号避让，证据=progress.md P3 段）
 - **Status:** complete
-- **Executor:** code-assistant(haiku-1)；启动失败 → Rule 22.3④ 主进程接管（同上预登记）
+- **Executor:** code-assistant(haiku-1)；启动失败 → Rule 22.3④ 主进程接管（白名单⑤，单文件 ≤300 行，预登记 Decisions ④/FMEA R-2）
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|-------------|---------|------|------|
