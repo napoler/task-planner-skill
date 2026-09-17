@@ -1,0 +1,422 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "task-planner skill thresholds — all mutable numbers live here",
+  "type": "object",
+  "properties": {
+    "max_vc": {
+      "type": "integer",
+      "default": 5,
+      "minimum": 1,
+      "description": "Minimum Verification Contract items per plan (Std 44)"
+    },
+    "min_verification_per_phase": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "description": "Minimum V-N checks bound to each phase (Std 45)"
+    },
+    "retry_count": {
+      "type": "integer",
+      "default": 3,
+      "minimum": 1,
+      "description": "Max retries on same V-N FAIL before escalating to user (Std 42)"
+    },
+    "max_tool_calls_before_refresh": {
+      "type": "integer",
+      "default": 5,
+      "minimum": 1,
+      "description": "Tool calls threshold before re-reading task_plan.md (Std 10)"
+    },
+    "max_view_browser_before_save": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "description": "view/browser/search ops before writing findings.md (Rule 3)"
+    },
+    "delegation_rate_floor": {
+      "type": "number",
+      "default": 0.7,
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Minimum ratio of subagent-executed Phases at final verification; below floor or non-whitelisted main-process reasons caps outcome at PARTIAL (Rule 25.4)"
+    },
+    "delegation_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn"
+      ],
+      "default": "enforce",
+      "description": "执行期委派门控档位：enforce=exit2 阻断主进程白名单外 Write/Edit；warn=仅注入警告并计数"
+    },
+    "interaction_mode": {
+      "type": "string",
+      "enum": [
+        "ask",
+        "silent"
+      ],
+      "default": "ask",
+      "description": "交互模式（Rule 28）：ask=关键决策点(D1-D6)给选项供用户选择，且 D1 批准前按 28.2.1 口头复述大体执行思路（≤5 行）；silent=静默自主决策并登记静默决策清单(Decisions Made 表 silent: 前缀行)供交付复核。解析优先级: env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > 本键 > 默认 ask；D6 硬停点(连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认)两模式一致不可豁免"
+    },
+    "dispatch_contract_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "Agent() 派发契约守卫档位（Rule 22.4c，scripts/check-dispatch.sh）：enforce=prompt 缺当前计划三文件绝对路径/返回字段名(status:/acceptance:/checkpoint:)/subagent-state 检查点路径时 exit 2 阻断并列出缺项；warn=放行+告警计数；off=跳过。无活跃计划或解析异常一律放行（fail-open）"
+    },
+    "content_quality_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v063 内容质量门控档位：enforce=内容型任务(writing/research/publish)终验前强制过 AI 化 10 条清单+五维评分卡≥4.0(references/methodology.md Q3/Q4)，不达标阻断交付；warn=注入警告并计数登记；off=不启用。默认 warn（观察期）"
+    },
+    "fmea_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v063 规划期 FMEA 预演档位：enforce=RPN>100 的 Phase 无预设兜底登记=计划无效(attest 机械校验，后续轮)；warn=注入警告；off=不启用。默认 warn（观察期）"
+    },
+    "skill_collab_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "协同技能接管评估严格度（task-v066，Rule 22.3.3，references/skill-collaboration.md）：off=跳过移交评估与 22.3.3；warn=提醒性评估（命中触发矩阵提示移交、22.3.3 评估记录不强制）；enforce=计划期命中触发矩阵须登记不移交理由方可继续、22.3.3 未评估禁止 ⑤AskUser/STOP；三档均流程层执行无 hook 校验，enforce 档语义预留。细则见 references/skill-collaboration.md"
+    },
+    "knowledge_brief_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "任务知识简略要点(knowledge-brief)严格度（task-v067）：off=跳过 brief 产出与引用检查；warn=提醒性（plan-writer 产出职责+材料包引用 brief 锚点为提醒,不阻断）；enforce=计划交付时 brief 缺失或五段空壳(§2/§3 无真实条目)禁止交付、派发材料包未引用 brief 锚点告警阻断；三档均流程层执行无 hook 校验,enforce 档语义预留；细则见 templates/knowledge-brief.md 与 companion/agents/plan-writer.md knowledge_brief 契约行"
+    },
+    "hook_self_heal_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "环境级中断自愈严格度（task-v068）：off=停用全部自愈分支（plan-created 哨兵兜底清除/PostToolUse 自动重锁/check-delegation observe 节流,退回旧行为）；warn=自愈生效且每次自愈留 stderr 痕迹；enforce=预留（语义=自愈失败升级为阻断）；sid 护栏恒在（非本会话编辑不触发自动重锁,仍报 TAMPERED）。当前 hook 脚本尚未读取该键,warn 为默认行为；off 档接读取与 enforce 档升级语义留后续轮"
+    },
+    "vc_gate_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "终验 VC/V-N 门控档位（goal-gate.md 规 1/2，task-v065 T-3 V-9，check-complete.sh VC-GATE 段）：校验 task_plan.md VC 表 ≥ max_vc(默认 5) 条且每个 Phase 段 V-N 映射 ≥ min_verification_per_phase(默认 2) 条（映射目标须为已定义 VC 编号，映射仅记在 V-P.N 段内）；warn=缺失仅 stderr 警告不阻断 / enforce=缺失阻断 complete(exit 1) / off=关闭。档位解析优先级: env TASK_PLANNER_VC_GATE_ENFORCE > 本键 > 解析失败 fail-open warn（默认观察期）"
+    },
+    "rescue_chain_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "失败挽救链路门控档位（task-v065 F-1，scripts/check-rescue-chain.sh）：Handoff 登记表 failed/timeout 行必须有 rescue 档位留痕 + checkpoint 路径且 subagent-state 检查点文件存在；enforce=违规阻断终验 / warn=仅警告 / off=关闭。默认 warn（观察期）"
+    },
+    "provider_fallback": {
+      "type": "object",
+      "description": "Provider 类失败后主动 Scaling 改派（task-v055-fallback，Rule 22.3.1）：探测备用通道 + 生成变体 agent + 零消耗改派决策",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "总开关；false 时 subagent-fallback.sh next 恒 escalation"
+        },
+        "variant_types": {
+          "type": "string",
+          "default": "executor,explore,code-assistant,general-purpose",
+          "description": "生成 -fb 变体的高频 subagent_type 列表（逗号分隔）"
+        },
+        "fallback_slugs": {
+          "type": "string",
+          "default": "agnes-2.5-flash",
+          "description": "fallback 模型 slug 有序表（裸 slug，跨机器可携带；probe/bind 按本机 ~/.zcode/v2/config.json provider 表解析实际 uuid）"
+        },
+        "probe_timeout_ms": {
+          "type": "integer",
+          "default": 20000,
+          "minimum": 2000,
+          "description": "单通道 1-token 探测 curl -m 秒数（ms）；默认 20000 覆盖冷启动首连（实测 agnes 通道冷启动 >10s）"
+        }
+      },
+      "default": {
+        "enabled": true,
+        "variant_types": "executor,explore,code-assistant,general-purpose",
+        "fallback_slugs": "agnes-2.5-flash",
+        "probe_timeout_ms": 20000
+      }
+    },
+    "plan_dir_pattern": {
+      "type": "string",
+      "default": "plans/{task-id}/",
+      "description": "Task isolation directory pattern"
+    },
+    "template_priority": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "project-level",
+        "built-in"
+      ],
+      "description": "Template search order: project-level first, then built-in fallback"
+    },
+    "escalation_threshold": {
+      "type": "integer",
+      "default": 3,
+      "minimum": 1,
+      "description": "Consecutive failures before AskUserQuestion escalation (Rule 9)"
+    },
+    "todo_sync_interval_calls": {
+      "type": "integer",
+      "default": 10,
+      "minimum": 1,
+      "description": "Tool calls threshold before PostToolUse hook emits a native-Todo sync reminder (see references/todo-sync.md)"
+    },
+    "plan_update_interval_minutes": {
+      "type": "integer",
+      "default": 15,
+      "minimum": 1,
+      "description": "Max allowed age of task_plan.md before PostToolUse hook forces a plan-doc write-back reminder; also check-doc-sync.sh default"
+    },
+    "autonomous_resume": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable autonomous continuation at plan-resume trigger points (Rule 24.5). When true, plan-resume auto-pushes the next pending Phase without waiting for explicit user confirmation."
+    },
+    "stale_remind_cooldown_calls": {
+      "type": "integer",
+      "default": 10,
+      "minimum": 1,
+      "description": "After a stale-plan reminder, suppress further stale reminders for this many tool calls (anti-nag cooldown)"
+    },
+    "findings_stale_minutes": {
+      "type": "integer",
+      "default": 20,
+      "minimum": 1,
+      "description": "Max allowed age of findings.md before PostToolUse hook emits a [plan-compass] backfill reminder (Rule 19.7)"
+    },
+    "compass_escalate_after": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "description": "Emit escalated [plan-compass] warning after this many consecutive stale reminders with no file update (Rule 19.7 escalation)"
+    },
+    "progress_stale_minutes": {
+      "type": "integer",
+      "default": 25,
+      "minimum": 1,
+      "description": "Max allowed age of progress.md before PostToolUse hook emits a [plan-compass] action-log reminder (Rule 19.7)"
+    },
+    "prompt_note_interval": {
+      "type": "integer",
+      "default": 10,
+      "minimum": 1,
+      "description": "UserPromptSubmit [plan-note] throttle: inject on 1st prompt of a session, then every Nth prompt"
+    },
+    "context_hygiene_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v069 上下文与工作文件主动维护档位（Rule 29）：enforce=Phase complete 后/会话恢复时强制运行 check-context-hygiene.sh + plan-hygiene.sh，退场/归档建议 exit 1 即阻断进入下一 Phase；warn=注入 [context-hygiene] 提醒并计数，主进程可自主决定是否执行；off=不启用。默认 warn（观察期）"
+    },
+    "plan_archive_age_days": {
+      "type": "integer",
+      "default": 7,
+      "minimum": 1,
+      "description": "plan-hygiene.sh 归档年龄阈值（天）：completed 任务目录 mtime 超过 N 天 → 建议迁入 plans/archive/；仅 mv 文件移动，无数据丢失；脚本默认 --dry-run 展示清单，--execute 需手动确认（Rule 29.4）"
+    },
+    "plan_hygiene_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v069 工作文件整理档位（Rule 29.4）：enforce=plan-hygiene.sh --execute 前强制 --dry-run 展示清单并记录到 progress.md；warn=仅提醒；off=不启用。与 context_hygiene_enforce 独立控制，可单独开关"
+    },
+    "shared_tracker_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v071 共享内容认领追踪档位（Rule 30）：enforce=设计期未做 30.1 识别/未登记认领账本 → 计划无效（待后续轮接硬校验）；warn=设计期检查点注入提醒+漏登记在 progress.md 记一行（默认，流程层执行）；off=不触发。账本权威源=progress-tracker 技能（.zcode/ledger/ 或 .claude/ledger/ 多平台跟随）；selftest-shared-tracker.sh 静态守护 30.x 条款"
+    },
+    "error_loop_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v072 错误学习闭环档位（Rule 31）：enforce=31.2 根因分析缺失直接阻断交付（预留，终验 Learning Gate 已静态校验 Error Log Root Cause 非空）；warn=漏 31.2 分析在 progress.md 记 [error-loop] 行 + 终验 Learning Gate 告警（默认，流程层执行）；off=不触发。开关键挂 check-complete.sh 终验 Learning Gate + selftest-error-loop.sh 静态守护"
+    },
+    "veto_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "v073 用户否决与禁令追踪档位（Rule 32）：enforce=提方案前未过 32.2 禁令检查直接阻断交付（预留硬校验）；warn=漏 32.1 登记/32.2 未查在 progress.md 记 [veto] 提醒行 + 终验告警（默认，流程层执行）；off=不触发。禁令源=当前+历史 notepad「被否决方案」段+用户 memory；解禁仅限 veto-lift 或可引用新证据；selftest-veto.sh 静态守护"
+    },
+    "reflect_verify_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 33 解决→反思→验证迭代循环(reflect-verify loop)三档: enforce=REFLECT-GATE 校验失败阻断交付; warn=注入警告不阻断; off=关闭。触发条件/反思四问/[reflect] 行格式见 references/critical-rules.md Rule 33。"
+    },
+    "template_gate_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 34 模板选取门控三档: enforce=attest 锁定前 template_type 缺失/非法拒绝锁定; warn=告警放行; off=门控关闭。白名单源=templates/variant/ 动态派生+general, 见 references/critical-rules.md Rule 34。"
+    },
+    "skill_modify_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 36 技能修改保守化三档: enforce=未授权技能文件写入硬阻断(pretooluse exit 2); warn=注入提醒放行(观察期, 默认); off=不触发。消费侧=check-skill-modify.sh(pretooluse 接线)+check-complete SKILL-MODIFY GATE+selftest-skill-modify.sh 守护。"
+    },
+    "subagent": {
+      "type": "object",
+      "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",
+      "properties": {
+        "max_per_phase": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1,
+          "description": "Max subagent dispatches per Phase; >max → refactor into more Phases or AskUser"
+        },
+        "retry_limit": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1,
+          "description": "Max retries for a single subagent task before escalating to AskUser (Rule 21.4)"
+        },
+        "max_files_per_dispatch": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "description": "Max files a single subagent dispatch can touch (Rule 21.1)"
+        },
+        "max_lines_per_dispatch": {
+          "type": "integer",
+          "default": 300,
+          "minimum": 1,
+          "description": "Max lines a single subagent dispatch can touch (Rule 21.1)"
+        },
+        "step_max_files": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1,
+          "description": "Max files a single S-unit dispatch can touch — one tier tighter than max_files_per_dispatch (Rule 21.1b)"
+        },
+        "step_max_lines": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "description": "Max lines a single S-unit dispatch can touch (Rule 21.1b)"
+        },
+        "step_max_minutes": {
+          "type": "integer",
+          "default": 15,
+          "minimum": 1,
+          "description": "Max estimated duration (minutes) of a single S-unit; exceeding → split further, NOT upgrade model (Rule 21.1b / 22.3 ②)"
+        },
+        "prompt_max_chars": {
+          "type": "integer",
+          "default": 3000,
+          "minimum": 500,
+          "description": "Max chars of one dispatch prompt — small-model short-context budget; inject only path + ≤10-line summary per S-unit (Rule 22.4 field ⑨)"
+        },
+        "timeout_by_type": {
+          "type": "object",
+          "description": "Timeout in minutes by subagent type; dispatch must enforce this limit (Rule 21)",
+          "properties": {
+            "explore": {
+              "type": "integer",
+              "default": 30
+            },
+            "editor": {
+              "type": "integer",
+              "default": 60
+            },
+            "debugger": {
+              "type": "integer",
+              "default": 60
+            },
+            "executor": {
+              "type": "integer",
+              "default": 120
+            }
+          },
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "default": {
+        "max_per_phase": 5,
+        "retry_limit": 2,
+        "max_files_per_dispatch": 3,
+        "max_lines_per_dispatch": 300,
+        "step_max_files": 2,
+        "step_max_lines": 100,
+        "step_max_minutes": 15,
+        "prompt_max_chars": 3000,
+        "timeout_by_type": {
+          "explore": 30,
+          "editor": 60,
+          "debugger": 60,
+          "executor": 120
+        }
+      }
+    }
+  },
+  "required": [
+    "subagent",
+    "min_verification_per_phase",
+    "max_vc",
+    "max_tool_calls_before_refresh",
+    "max_view_browser_before_save",
+    "retry_count"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,2 @@
+[dispatch-guard] ⚠ 单次派发步骤枚举 13 步 > step_max_steps(4)(Rule 21.1b) — 回计划层拆成多个 S-unit 再派
+[dispatch-block] 🚫 细粒度检测未通过(Rule 22.4 KQ3): 步骤枚举超限(13>4)
