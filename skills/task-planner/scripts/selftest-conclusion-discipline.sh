@@ -2,7 +2,7 @@
 # selftest-conclusion-discipline.sh — task-v076: Rule 35 执行结论纪律静态守护
 # 守护（门控+指针范式，三关查证/落盘补救为 LLM 行为面无脚本可测，仅防条款与锚点误删回退）:
 #   CD-01 critical-rules.md 含 "### 35 执行结论纪律" 条款标题
-#   CD-02~07 六子条 35.1-35.6 各 grep 存在
+#   CD-02~07 六子条 35.1-35.7 各 grep 存在（[2026-09-18 task-v082] 35.6=最小探针原则，原 35.6 机制重编号 35.7，CD-07 改双锚）
 #   CD-08 22.4 行含 "Rule 35.3 大输入落盘引用" 补救句
 #   CD-09 SKILL.md 含 "Rule 35（P0）执行结论纪律" 列表行
 #   CD-10 SKILL.md 含 "| C23 |" 检查项行
@@ -19,6 +19,7 @@
 #   CD-21 templates/task_plan.md 含 "ID 列一律纯数字"（④ S-unit 注释行在位）
 #   CD-22 templates/subagent_dispatch.md 含 "机械求和"（统计类禁自报汇总行在位）
 #   CD-23 smart-merge-back.sh 含 "DEPLOY_SRC"（部署源换源在位）且含 "禁回退 SKILL_ROOT"（fail-closed 在位）
+#   CD-25 critical-rules.md+SKILL.md 均含 "最小探针"（task-v082 联动锚；编号避让既有标签 CD-24）
 # 维护注记: S-unit ID 契约=纯数字（check-plan-dispatch.sh 数据行正则 ^\|\s*S[0-9]+\s*\| 不认字母后缀，task-v076 attest 拒锁教训）
 # 2026-09-17 task-v077 扩展: CD-18..CD-23 锁定 S3/S5/S6/S7 四项修复的守护锚（V074 deferred-fixes）
 # 2026-09-17 task-v079 S8a: CD-11/CD-18/CD-19 严格 '1-35' 锚改宽容 '1-3[56]'（SKILL 1-35→1-36 两阶段过渡自洽；CD-12 '1-34' 反回退锚保留）
@@ -49,7 +50,9 @@ check "grep -q '^35\.2 ' \"\$RULES\"" "35.2 能力否定三关条款存在"
 check "grep -q '^35\.3 ' \"\$RULES\"" "35.3 大输入落盘引用条款存在"
 check "grep -q '^35\.4 ' \"\$RULES\"" "35.4 结论上报措辞条款存在"
 check "grep -q '^35\.5 ' \"\$RULES\"" "35.5 消费侧条款存在"
-check "grep -q '^35\.6 ' \"\$RULES\"" "35.6 机制条款存在"
+check "grep -q '^35\.6 \*\*最小探针原则' \"\$RULES\" && grep -q '^35\.7 \*\*机制\*\*' \"\$RULES\"" "35.6 最小探针原则+35.7 机制条款存在（task-v082 重编号后双锚）"
+# CD-25 最小探针条款关键词（task-v082 联动锚；编号避让既有标签 CD-24=smart-merge-back）
+check "grep -qF '最小探针' \"\$RULES\" && grep -qF '最小探针' \"\$SKILL\"" "CD-25 critical-rules.md+SKILL.md 均含 '最小探针'（35.6 条款与 SKILL 联动在位）"
 # CD-08 22.4 补救句
 check "grep -qF 'Rule 35.3 大输入落盘引用' \"\$RULES\" && grep '^22\.4' \"\$RULES\" | grep -qF 'Rule 35.3 大输入落盘引用'" "22.4 行含 'Rule 35.3 大输入落盘引用'"
 # CD-09 SKILL 列表行
