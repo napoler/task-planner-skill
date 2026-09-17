@@ -259,7 +259,7 @@ count_step_markers() {
 # 全部通过 → 静默返回 0（成功路径零输出不变）; 命中任一项 → 按档位处置:
 #   warn=每项 stderr 一行告警 + 全部命中项合并写一行计数到既有 warn 计数文件
 #   enforce=全部命中项合并 stderr 一行阻断, exit 2
-# 三项均对既有七项缺项判定/三级目录解析零影响: 本函数在缺项扫描通过后独立调用。
+# 四项均对既有七项缺项判定/三级目录解析零影响: 本函数在缺项扫描通过后独立调用。
 fine_grain_checks() {
     local pf="$1" pd="$2" mode="$3" sid="${4:-unknown}"
     local pmax pchar sids n hits wf h smax step_n tb tn
