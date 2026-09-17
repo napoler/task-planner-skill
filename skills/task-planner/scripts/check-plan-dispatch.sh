@@ -38,6 +38,10 @@
 #      不阻断；时长校验本身跳过，但输入列校验仍执行。
 #   ④ 违规 ≥1 → 沿用既有 add_violation 风格逐行打印后 exit 1；0 违规 → 既有行为
 #      与退出码零变化。
+#   ⑤ 步骤枚举（task-v081 第三维,advisory）: $3 目标列 distinct 步骤枚举序号
+#      （StepN/步骤N/第N步/①-⑮,按序号值去重,口径=count_step_markers,见函数注释）
+#      > step_max_steps（jq 读 .properties.subagent.properties.step_max_steps.default,
+#      缺失 → 回退默认 4 并打印一行 SKIPPED）→ 打 SKIPPED 提示拆分（不阻断）。
 
 set -u
 
@@ -62,10 +66,13 @@ fi
 # 并打印一行 SKIPPED 说明（fail-open 显式化，同 attest-plan.sh:92-97 先例）
 STEP_MAX_MIN=15
 STEP_MAX_FILES=2
+STEP_MAX_STEPS=4
 cfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
 if command -v jq >/dev/null 2>&1 && [ -f "$cfg" ]; then
     STEP_MAX_MIN="$(jq -r '.properties.subagent.step_max_minutes.default // "15"' "$cfg" 2>/dev/null)" || STEP_MAX_MIN=""
     STEP_MAX_FILES="$(jq -r '.properties.subagent.step_max_files.default // "2"' "$cfg" 2>/dev/null)" || STEP_MAX_FILES=""
+    # [task-v081] 双层 properties 为 config 实际结构（.properties.subagent.properties.<key>.default）
+    STEP_MAX_STEPS="$(jq -r '.properties.subagent.properties.step_max_steps.default // "4"' "$cfg" 2>/dev/null)" || STEP_MAX_STEPS=""
 fi
 if ! [[ "$STEP_MAX_MIN" =~ ^[0-9]+$ ]]; then
     STEP_MAX_MIN=15
@@ -75,6 +82,24 @@ if ! [[ "$STEP_MAX_FILES" =~ ^[0-9]+$ ]]; then
     STEP_MAX_FILES=2
     echo "[plan-dispatch] SKIPPED step_max_files 未解析(jq 缺失或键缺),回退默认 2"
 fi
+if ! [[ "$STEP_MAX_STEPS" =~ ^[0-9]+$ ]]; then
+    STEP_MAX_STEPS=4
+    echo "[plan-dispatch] SKIPPED step_max_steps 未解析(jq 缺失或键缺),回退默认 4"
+fi
+
+# count_step_markers <file> — [task-v081] distinct 步骤枚举序号计数（⑤-b 第三 advisory 维消费）
+# 口径与 check-dispatch.sh count_step_markers 同款（StepN/步骤N/第N步/①-⑮,按序号值去重;
+# 行首 markdown 编号列表与汉字数字不入口径防误伤,详见彼处注释）。两脚本独立运行不互 source,
+# 口径漂移由 selftest-fine-grain-steps.sh 双侧用例钉住。
+count_step_markers() {
+    local f="$1"
+    {
+        grep -oiE 'step ?[0-9]{1,3}' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        grep -oE '步骤 ?[0-9]{1,3}' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        grep -oE '第[0-9]{1,3}步' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        grep -oE '①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩|⑪|⑫|⑬|⑭|⑮' "$f" 2>/dev/null | awk '{if($0=="①")print 1;else if($0=="②")print 2;else if($0=="③")print 3;else if($0=="④")print 4;else if($0=="⑤")print 5;else if($0=="⑥")print 6;else if($0=="⑦")print 7;else if($0=="⑧")print 8;else if($0=="⑨")print 9;else if($0=="⑩")print 10;else if($0=="⑪")print 11;else if($0=="⑫")print 12;else if($0=="⑬")print 13;else if($0=="⑭")print 14;else if($0=="⑮")print 15}'
+    } | sort -n -u | grep -c . || true
+}
 
 violation_list=""
 dispatch_count=0   # 见过的派发型 Phase 数（全合规时用于 ✓ 汇总）
@@ -180,6 +205,13 @@ while IFS= read -r line; do
         pcount="$(printf '%s\n' "$col5" | grep -oE '[^ ]+\.(sh|md|json|ts|js|py|cjs)' | wc -l)"
         if [ "$pcount" -gt "$STEP_MAX_FILES" ]; then
             echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 输入 ${pcount} 个文件路径 > step_max_files(${STEP_MAX_FILES}) — 建议拆分(提示不阻断,复杂度由模型判断)"
+        fi
+        # 步骤枚举（task-v081 第三维,advisory）: 目标($3) distinct 步骤枚举序号 > step_max_steps
+        # → 提示拆分（不阻断,与前两维同范式）; 计数口径=上方 count_step_markers
+        col3="$(printf '%s' "$line" | awk -F'|' '{print $3}')"
+        ssteps="$(printf '%s\n' "$(trim "$col3")" | count_step_markers /dev/stdin)"
+        if [ "$ssteps" -gt "$STEP_MAX_STEPS" ]; then
+            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 步骤枚举 ${ssteps} > step_max_steps(${STEP_MAX_STEPS}) — 建议拆分(提示不阻断,复杂度由模型判断)"
         fi
     fi
 done < "$PLAN_FILE"
