@@ -102,7 +102,7 @@
 - [x] 删除基线核对：git diff 分支点证实零语义删除（S1=3增0删；S2 删除行仅 3 处机械联动）
 - **V-N:** VC-1, VC-2
 - **Status:** complete
-- **Executor:** code-assistant（haiku-1）——**⚠️ 22.3④ 接管已生效（2026-09-18 03:2x）**：code-assistant 连续 2 次派发 Provider server error（mini 探针 PASS=环境分档存活，haiku-1 档不可用，v081 同族症状）；主进程逐文件接管（每文件 ≤300 行，Rule 25.3⑤，WHITELIST-EXEMPT 口径）
+- **Executor:** code-assistant（haiku-1）——**⚠️ 22.3④ 兜底接管已生效（2026-09-18 03:2x）**：code-assistant 连续 2 次派发 Provider server error（mini 探针 PASS=环境分档存活，haiku-1 档不可用，v081 同族症状）；主进程逐文件接管（每文件 ≤300 行，Rule 25.3 白名单⑤ 兜底接管，WHITELIST-EXEMPT 口径）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|
