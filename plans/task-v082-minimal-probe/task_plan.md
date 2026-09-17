@@ -96,7 +96,7 @@
 - worktree 全量 selftest（逐 Total 求和）→ Code Review Gate（对照 diff 逐文件复审）→ fix（如有）已提交
 - **Executor:** code-runner-agent(mini)（selftest 求和）+ code-reviewer/critic（CR）；失败降级主进程白名单③机械验证 + 主进程对照 diff 复审（预登记，v081 先例）
 
-### Phase 5: 合并回 + 部署 + 终验 + 簿记 — **Status:** complete（2026-09-18 01:4x，merge e120331，三位 IDENTICAL 亲验×2，最终 HEAD(8fed498 含 v083) 全量 23 脚本 377/0）
+### Phase 5: 合并回 + 部署 + 终验 + 簿记 — **Status: complete**（2026-09-18 01:4x，merge e120331，三位 IDENTICAL 亲验×2，最终 HEAD(8fed498 含 v083) 全量 23 脚本 377/0）
 - **Status:** complete
 - smart-merge-back --deploy（主仓副本执行，V1-V6 全过，MERGED=e120331）→ 三部署位主进程 diff -r 亲验 IDENTICAL → master(e120331) 全量 367/0 精确口径 → push 时发现并行 v083 会话已 merge master（db7e97a 含本任务）并 push（HEAD=8fed498）→ e120331 祖先验证+改动在位抽查+三位复验 IDENTICAL → 最终 HEAD 全量 23 脚本 **377/0** → worktree+分支已清理 → check-complete 终验
 - **Executor:** 主进程（白名单①②③）
