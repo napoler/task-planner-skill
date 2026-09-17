@@ -48,9 +48,14 @@
 #   ③ knowledge-brief 引用提示: 仅当计划目录已解析（pd 非空）且 <pd>/knowledge-brief.md
 #      存在、且 prompt 既不含 `brief` 也不含 `§` → 告警提示引用 brief 节锚点
 #      （Rule 21.2/22.4）; 无 brief / 已引用 → 静默, 不产生输出。
-#   ①② 与 ③ 均在缺项扫描之后追加; 缺项存在时（既有处置: warn=告警放行 / enforce=exit 2）
-#   仍先执行既有缺项路径（行为不变）, 仅当缺项扫描通过（即将串行槽检查放行）时执行三项,
-#   三项目前全部通过 → 保持既有静默 exit 0 语义（成功路径零输出）。
+#   ④ 步骤枚举计数: [task-v081] count_step_markers(prompt) 的 distinct 步骤序号 >
+#      step_max_steps（jq 读 .properties.subagent.properties.step_max_steps.default;
+#      缺失 → 回退默认 4 + SKIPPED 一行, ①②③ 同范式）→ 告警+计入 hits, 按档位处置
+#      （任务书豁免场景对任务书文件同步计数取最大, 防 13 步躲进落盘任务书绕门）。
+#      口径与边界见 count_step_markers 函数注释。
+#   ①②③④ 均在缺项扫描之后追加; 缺项存在时（既有处置: warn=告警放行 / enforce=exit 2）
+#   仍先执行既有缺项路径（行为不变）, 仅当缺项扫描通过（即将串行槽检查放行）时执行四项,
+#   四项目前全部通过 → 保持既有静默 exit 0 语义（成功路径零输出）。
 set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -234,15 +239,30 @@ cmd_check() {
     exit 0
 }
 
-# [task-v075 P3-S1] 三项增量检测（Rule 22.4 KQ3; 口径与档位语义见文件头注释 2026-09-16 段）
+# count_step_markers <file> — [task-v081] distinct 步骤枚举序号计数（fine_grain_checks ④ 消费）
+# 口径（定死）: `StepN`/`step N`（大小写不敏感,允许空格）/ `步骤N`（允许空格）/ `第N步`（仅数字）
+#   / 圆圈序号 ①-⑮。序号值归一去重（Step3/③/第3步 同序号计 1）。
+# 边界（如实）: 行首 markdown 编号列表（`1. `/`1) `）与验收清单难区分,不入口径防误伤;
+#   汉字数字（第十一步）不入口径; 口径外写法=计数偏低（fail-open 方向）,显式 StepN 类为拦截主口径。
+count_step_markers() {
+    local f="$1"
+    {
+        grep -oiE 'step ?[0-9]{1,3}' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        grep -oE '步骤 ?[0-9]{1,3}' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        grep -oE '第[0-9]{1,3}步' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        grep -oE '①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩|⑪|⑫|⑬|⑭|⑮' "$f" 2>/dev/null | awk '{if($0=="①")print 1;else if($0=="②")print 2;else if($0=="③")print 3;else if($0=="④")print 4;else if($0=="⑤")print 5;else if($0=="⑥")print 6;else if($0=="⑦")print 7;else if($0=="⑧")print 8;else if($0=="⑨")print 9;else if($0=="⑩")print 10;else if($0=="⑪")print 11;else if($0=="⑫")print 12;else if($0=="⑬")print 13;else if($0=="⑭")print 14;else if($0=="⑮")print 15}'
+    } | sort -n -u | grep -c . || true
+}
+
+# [task-v075 P3-S1 + task-v081] 四项增量检测（Rule 22.4 KQ3; 口径与档位语义见文件头注释 2026-09-16 段）
 # $1=prompt 文件 $2=计划目录(可空=未解析) $3=档位(enforce|warn; off 不会到达此函数) $4=sid
 # 全部通过 → 静默返回 0（成功路径零输出不变）; 命中任一项 → 按档位处置:
 #   warn=每项 stderr 一行告警 + 全部命中项合并写一行计数到既有 warn 计数文件
 #   enforce=全部命中项合并 stderr 一行阻断, exit 2
-# 三项均对既有七项缺项判定/三级目录解析零影响: 本函数在缺项扫描通过后独立调用。
+# 四项均对既有七项缺项判定/三级目录解析零影响: 本函数在缺项扫描通过后独立调用。
 fine_grain_checks() {
     local pf="$1" pd="$2" mode="$3" sid="${4:-unknown}"
-    local pmax pchar sids n hits wf h
+    local pmax pchar sids n hits wf h smax step_n tb tn
     # ① prompt 长度: wc -m vs prompt_max_chars(jq 读 config .properties.subagent.prompt_max_chars.default;
     #    与 ② 同源: jq 缺失/键缺失/非数字 → 回退 3000 + 一行 SKIPPED 说明(P2 check-plan-dispatch 范式)
     pmax="$(jq -r '.properties.subagent.prompt_max_chars.default // "3000"' "$CONFIG_JSON" 2>/dev/null)" || pmax=""
@@ -280,6 +300,31 @@ fine_grain_checks() {
         echo "[dispatch-guard] ⚠ 计划含 knowledge-brief.md 但 prompt 未引用节锚点(brief/§), 建议按 Rule 21.2/22.4 引用 brief 相关节" >&2
         [ -n "$hits" ] && hits="$hits; "
         hits="${hits}knowledge-brief 未引用"
+    fi
+    # ④ 步骤枚举计数(task-v081, Rule 21.1b 小步快跑): 单次派发 distinct 步骤枚举序号
+    #    > step_max_steps(默认 4) → 拆分信号, 计入 hits 走既有档位管线(enforce=exit 2)。
+    #    计数对象=prompt 本体; ② 的任务书双条件豁免命中时, 追加对 prompt 引用的落盘任务书
+    #    (subagent-state 路径,≤3 个,存在可读)计数取最大 — 防 13 步躲进任务书绕门(v078 同源)。
+    #    jq 不可用/配置文件缺失 → 回退默认 4 + 一行 SKIPPED(禁静默失败);键缺失时 jq `//` 兜底
+    #    静默回 4(①②③ 家族同口径,SKIPPED 行不触发)。
+    smax="$(jq -r '.properties.subagent.properties.step_max_steps.default // "4"' "$CONFIG_JSON" 2>/dev/null)" || smax=""
+    if ! [[ "$smax" =~ ^[0-9]+$ ]]; then
+        smax=4
+        echo "[dispatch-guard] SKIPPED step_max_steps 未解析(jq 缺失或键缺),回退默认 4" >&2
+    fi
+    step_n="$(count_step_markers "$pf")"
+    if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
+        tb="$(grep -oE '[^[:space:]"]*subagent-state/[^[:space:]"]*' "$pf" 2>/dev/null | sed -E 's/[),。，；;]+$//' | head -3 || true)"
+        for tb in $tb; do
+            [ -f "$tb" ] || continue
+            tn="$(count_step_markers "$tb")"
+            [ "$tn" -gt "$step_n" ] && step_n="$tn"
+        done
+    fi
+    if [ "$step_n" -gt "$smax" ]; then
+        echo "[dispatch-guard] ⚠ 单次派发步骤枚举 ${step_n} 步 > step_max_steps(${smax})(Rule 21.1b) — 回计划层拆成多个 S-unit 再派" >&2
+        [ -n "$hits" ] && hits="$hits; "
+        hits="${hits}步骤枚举超限(${step_n}>${smax})"
     fi
     [ -z "$hits" ] && return 0
     if [ "$mode" = "warn" ]; then

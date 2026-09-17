@@ -360,6 +360,12 @@
           "minimum": 1,
           "description": "Max estimated duration (minutes) of a single S-unit; exceeding → split further, NOT upgrade model (Rule 21.1b / 22.3 ②)"
         },
+        "step_max_steps": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 1,
+          "description": "Max distinct step-enumeration markers (StepN/步骤N/第N步/circled numbers/leading list numbers, dedup by ordinal) in one dispatch prompt; exceeding = split signal, enforced by check-dispatch.sh fine_grain_checks check-4 (task-v081, Rule 21.1b)"
+        },
         "prompt_max_chars": {
           "type": "integer",
           "default": 3000,
@@ -400,6 +406,7 @@
         "step_max_files": 2,
         "step_max_lines": 100,
         "step_max_minutes": 15,
+        "step_max_steps": 4,
         "prompt_max_chars": 3000,
         "timeout_by_type": {
           "explore": 30,
