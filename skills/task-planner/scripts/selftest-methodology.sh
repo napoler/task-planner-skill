@@ -4,7 +4,7 @@
 # 守护 v063 引入的 FMEA/内容质量门控嵌入点 (config 两键 + methodology.md + 模板/指针):
 #   M-01 config.json 两键存在 (fmea_enforce + content_quality_enforce 均在 .properties)
 #   M-02 两键默认值=warn 且 enum 含 enforce/warn/off (default=warn, enum 长度=3)
-#   M-03 methodology.md 存在且含 9 条方法名关键词 (Poka-Yoke/FMEA/… ≥9)
+#   M-03 methodology.md 存在且含 R/Q 九条方法名关键词 (Poka-Yoke/FMEA/… ≥9; T1-T5 由 M-12 另计)
 #   M-04 模板 FMEA 段在位 (task_plan.md "FMEA 预演"=1 + RPN 表 7 列 "RPN=S×O×D" ≥1)
 #   M-05 writing-type.md 质量门控指针在位 ("五维评分卡"=1)
 #   M-06 SKILL.md 3 处指针在位 (grep -c "methodology" ≥3)
@@ -180,11 +180,15 @@ assert 11 "off 档: 无 FMEA 段计划静默锁定成功 (实测 rc=$rc_o)" "$M1
 
 # ── task-v084: 思维方法论 T1-T5 守护 (M-12..M-16) ─────────────────
 
-# M-12: methodology.md 含 T1-T5 方法名关键词
-TCNT="$(grep -c "问题先行\|问题解构四问\|金字塔原理\|逐步推导剖析\|消费点" "$FIX/references/methodology.md" 2>/dev/null)"
-[ "${TCNT:-0}" -ge 5 ]
+# M-12: methodology.md 含 T1-T5 方法名关键词（逐条锚定——任一 T 条款被删即红，防聚合口径穿透）
+T_RED=0
+for kw in 问题先行 问题解构四问 金字塔原理 逐步推导剖析 消费点; do
+  c="$(grep -c "$kw" "$FIX/references/methodology.md" 2>/dev/null)"
+  [ "${c:-0}" -lt 1 ] && T_RED=1 && break
+done
+[ "$T_RED" -eq 0 ]
 M12_RC=$?
-assert 12 "methodology.md T1-T5 方法名关键词 ≥5 (实测 ${TCNT:-0})" "$M12_RC"
+assert 12 "methodology.md T1-T5 方法名关键词逐条≥1（问题先行/解构四问/金字塔/推导/消费点）" "$M12_RC"
 
 # M-13: §思维方法论章标题 + 同法不同时交叉引用钉
 N_T="$(grep -c "^## §思维方法论" "$FIX/references/methodology.md" 2>/dev/null)"
