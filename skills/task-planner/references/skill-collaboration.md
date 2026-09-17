@@ -58,6 +58,8 @@
 | OpenSpec | 需求模糊需 spec 化（proposal/design/specs/tasks 产物有留存价值）/ 项目已有 `openspec/` 目录且变更触及 spec / 用户要求提案评审流 | 中（单会话多步 CLI） | `command -v openspec` + `openspec/` 目录 |
 | superpowers（嵌入为主） | bug 排查→systematic-debugging；实现前需 TDD→test-driven-development；需求不清→brainstorming；按既有书面计划执行→executing-plans / subagent-driven-development；合并前→requesting-code-review + finishing-a-development-branch | 轻（单 Skill 调用） | 无（纯 .md 技能） |
 | progress-tracker（嵌入，Rule 30 专属触发，task-v071） | 共享内容认领追踪命中 30.1 识别条件（可枚举共享资源且只认领一部分 / 同类任务 ≥3 次）→ 设计期 D1 前调用创建/复用项目级账本（.zcode/ledger/ 或 .claude/ledger/ 多平台跟随）+ 认领登记 30.3 + 防冲突 30.4 | 轻（Skill 调用 + JSONL 追加） | 无（纯 .md 技能；探针=`~/.zcode/skills/progress-tracker/SKILL.md` 存在，缺失 → 提醒用户先建该技能，本项降级 warn 不阻塞） |
+| research-assistant（嵌入，网络调研触发，task-v080） | 综合网络调研/选型/多源交叉验证 → 子代理内 `Skill("research-assistant")`（bing-intl-splash → bing-intl-search → searxng-search 链）；关键词快查走 WebSearch；主进程禁止直接接收长文（Rule 13） | 中（多源搜索+子代理消化） | 无（纯 .md 技能；探针=`~/.zcode/skills/research-assistant/SKILL.md` 存在，缺失 → 降级 WebSearch+WebFetch 链并提醒，不阻塞） |
+| browser-use（嵌入，网页访问触发，task-v080） | 需 JS 渲染/登录态/交互的网页访问 → browser-use:control-browser（浏览器控制经 mcp__node_repl__js）；静态页走 WebFetch/web_reader 降级链；单次调用默认 60s、上限 120s | 中（浏览器会话） | 探针=browser-use 插件已启用（可用技能列表含 browser-use:control-browser），缺失 → 降级 web_reader/splash 链并提醒，不阻塞 |
 
 - **移交（handoff）**：主进程让出统筹权，按「移交评估流程」（总结已有 plan 内容 → 提示用户 → 用户确认 → 引导启动目标技能 → 主进程簿记 handoff）；silent 模式按 Rule 28 推荐项自主处置并登记 `silent:` 决策行（推荐项 = 命中 comet 3 项即移交，否则留在 task-planner）
 - **嵌入（embed）**：主进程保持统筹，Phase 内调用成员技能作为执行 SOP（计子代理路由表的 Skill() 列），无需用户确认

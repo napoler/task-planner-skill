@@ -363,6 +363,7 @@ Block 1 (选题) complete
 | **代码库深度分析/体检** | `codebase-analyzer` | **sonnet-1** | ❌ | ≤1 子系统, ≤5 文件 | 拆 Phase |
 | **关键词搜索/抓静态页** | `web-search-agent` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
 | **github 调研（issue/PR/release/源码）** | `web-search-agent` + `gh CLI` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
+| **网页访问（JS 渲染/登录态/交互页）** | Browser Automation（browser-use:control-browser / mcp__node_repl__js） | mini | ❌ | ≤1 批 URL, 单次 ≤120s | 超时降级 web_reader/splash 链 |
 | **跨文件搜索定位** | `explore` | mini | ❌ | ≤1 子系统 | 拆多 explore |
 | **文档/规范搜索** | `doc-search-agent` | mini | ❌ | ≤1 规范文件 | 拆 doc-search-agent |
 | **综合调研（API + 选型 + 风险）** | `research-assistant` | **sonnet-1** | ❌ | ≤1 选型, ≤3 API | 升级 codebase-analyzer |
@@ -455,7 +456,8 @@ hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:
 
 ### 路径 1：WebSearch（首选,英文/技术）
 
-阶段与工具：**①WebSearch**（关键词/英文/技术，ZCode 实测可用）→ **②WebFetch**（已知 URL 纯静态页）→ **③web_reader MCP / defuddle**（需 JS 渲染）→ **④splash / Browser Use**（动态页/登录态）→ **⑤Skill("research-assistant") → bing-intl → searxng**（中文/多源交叉）。
+阶段与工具：**①WebSearch**（关键词/英文/技术，ZCode 实测可用）→ **②WebFetch**（已知 URL 纯静态页）→ **③web_reader MCP / defuddle**（需 JS 渲染）→ **④splash / Browser Use**（browser-use 插件 control-browser / mcp__node_repl__js；动态页/登录态/交互页）→ **⑤Skill("research-assistant") → bing-intl → searxng**（网络调研主通道；中文/多源交叉验证）。
+**平台适配优先（ZCode 环境事实）**：网络调研优先 research-assistant 技能（子代理内调用）、网页访问优先 Browser Use（browser-use:control-browser / mcp__node_repl__js）等本平台实存工具；禁止假设 playwright/context7 等不存在的 MCP 工具。
 
 ### 路径 2：github 调研（代码准确性必备）
 
