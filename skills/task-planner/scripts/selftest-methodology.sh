@@ -15,7 +15,10 @@
 #      隔离既有两道门控; 高 RPN 有兜底行放行由 M-10 对照断言覆盖)
 # hermetic: mktemp 夹具 = 真实 worktree 文件最小镜像 (<root>/skills/task-planner/… cp 而来),
 # 用例只对 fixture 跑, 不污染真实仓且防 CWD 依赖; trap 清理; 对真实文件只读。
-# 11 用例 (M-01..M-11) 全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致 (fixture 每次重建)。
+#   M-12..M-16 (task-v084): 思维方法论 T1-T5 守护 (五方法名关键词≥5 / §思维方法论章标题=1
+#     +同法不同时交叉引用钉 / 14 条联动在位+9 条清零双向钉 / SKILL 解构 bullet+Poka-Yoke 指针 /
+#     plan-writer 四问契约行; fixture 增镜像 companion/agents/plan-writer.md)
+# 16 用例 (M-01..M-16) 全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致 (fixture 每次重建)。
 
 set -u
 
@@ -47,6 +50,9 @@ cp "$REAL_ROOT/README.md"                "$FIX/README.md"
 cp "$REAL_ROOT/references/methodology.md" "$FIX/references/methodology.md"
 cp "$REAL_ROOT/templates/task_plan.md"   "$FIX/templates/task_plan.md"
 cp "$REAL_ROOT/templates/variant/writing-type.md" "$FIX/templates/variant/writing-type.md"
+# task-v084: M-16 需镜像 plan-writer 契约行
+mkdir -p "$FIX/companion/agents"
+cp "$REAL_ROOT/companion/agents/plan-writer.md" "$FIX/companion/agents/plan-writer.md"
 # task-v075 P4 B1: M-08..M-11 端到端跑真实 attest-plan.sh (fixture 镜像内), 需镜像 scripts/
 cp -r "$REAL_ROOT/scripts" "$FIX/scripts"
 CFG="$FIX/config.json"
@@ -171,6 +177,41 @@ if [ "$rc_o" -eq 0 ] && [ -f "$ATT" ] && ! printf '%s' "$out_o" | grep -q 'fmea-
   M11_RC=0
 fi
 assert 11 "off 档: 无 FMEA 段计划静默锁定成功 (实测 rc=$rc_o)" "$M11_RC"
+
+# ── task-v084: 思维方法论 T1-T5 守护 (M-12..M-16) ─────────────────
+
+# M-12: methodology.md 含 T1-T5 方法名关键词
+TCNT="$(grep -c "问题先行\|问题解构四问\|金字塔原理\|逐步推导剖析\|消费点" "$FIX/references/methodology.md" 2>/dev/null)"
+[ "${TCNT:-0}" -ge 5 ]
+M12_RC=$?
+assert 12 "methodology.md T1-T5 方法名关键词 ≥5 (实测 ${TCNT:-0})" "$M12_RC"
+
+# M-13: §思维方法论章标题 + 同法不同时交叉引用钉
+N_T="$(grep -c "^## §思维方法论" "$FIX/references/methodology.md" 2>/dev/null)"
+N_X="$(grep -c "同法不同时" "$FIX/references/methodology.md" 2>/dev/null)"
+[ "${N_T:-0}" -eq 1 ] && [ "${N_X:-0}" -ge 1 ]
+M13_RC=$?
+assert 13 "§思维方法论章标题=1 且 同法不同时≥1 (实测 ${N_T:-0}/${N_X:-0})" "$M13_RC"
+
+# M-14: 14 条联动在位 + 9 条清零 (双向钉)
+N_14="$(grep -c "14 条" "$FIX/references/methodology.md" 2>/dev/null)"
+N_9="$(grep -c "9 条" "$FIX/references/methodology.md" 2>/dev/null)"
+[ "${N_14:-0}" -ge 1 ] && [ "${N_9:-0}" -eq 0 ]
+M14_RC=$?
+assert 14 "机械联动 14 条≥1 且 9 条=0 (实测 ${N_14:-0}/${N_9:-0})" "$M14_RC"
+
+# M-15: SKILL.md 思维方法论指针 (解构 bullet + Poka-Yoke 行内)
+N_B="$(grep -c "思维方法论问题解构" "$FIX/SKILL.md" 2>/dev/null)"
+N_P="$(grep -c "§R1/R2/§思维方法论" "$FIX/SKILL.md" 2>/dev/null)"
+[ "${N_B:-0}" -ge 1 ] && [ "${N_P:-0}" -ge 1 ]
+M15_RC=$?
+assert 15 "SKILL.md 解构 bullet≥1 且 Poka-Yoke 指针≥1 (实测 ${N_B:-0}/${N_P:-0})" "$M15_RC"
+
+# M-16: plan-writer 产出契约表四问契约行
+N_W="$(grep -c "问题解构四问" "$FIX/companion/agents/plan-writer.md" 2>/dev/null)"
+[ "${N_W:-0}" -ge 1 ]
+M16_RC=$?
+assert 16 "plan-writer 问题解构四问契约行 (实测 ${N_W:-0})" "$M16_RC"
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

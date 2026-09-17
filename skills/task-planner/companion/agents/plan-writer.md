@@ -114,6 +114,7 @@ cost_estimate:
 | **Key Questions** | 1-5 个待回答的关键问题 |
 | **Decisions Made** | 表格记录技术决策与理由 |
 | **knowledge_brief** | 计划期产出 `<plan-dir>/knowledge-brief.md`(五段齐备:§1-§5 标题在位,§2/§3 各至少 1 条真实条目:§2 含已验证事实+证据 file:line/URL,§3 含关键文件锚点行号+摘要);内容来自实际 Read 过的知识源,禁止凭记忆编造 |
+| **问题解构四问** | 计划创建时按 `references/methodology.md` §思维方法论 T2 完成四级解构：问题是什么/本质是什么（5 Whys ≥5 层，同法不同时见 Rule 31.2）/解决方案是什么（候选+取舍理由）/执行方案是什么（步骤化+门控点），答案落 task_plan.md「核心问题定义」段与 knowledge-brief.md §1；禁缺答定稿（task-v084） |
 | **s_unit_id** | S-unit 表 ID 列一律纯数字（S1、S2…全局或每 Phase 内唯一均可，禁字母后缀如 S2a——check-plan-dispatch.sh 数据行正则 S[0-9]+ 边界不认字母后缀，attest 会以「缺 S-unit 表或数据行」拒锁；task-v076 实证教训） |
 
 调用方还需:
