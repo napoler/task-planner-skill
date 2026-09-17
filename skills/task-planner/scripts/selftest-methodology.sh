@@ -73,7 +73,7 @@ if [ "$(jq -r '.properties.fmea_enforce.default' "$CFG")" = "warn" ] \
 fi
 assert 02 "两键 default=warn 且 enum 长度=3" "$M02_RC"
 
-# M-03: methodology.md 含 9 条方法名关键词
+# M-03: methodology.md 含 R/Q 九条方法名关键词（T1-T5 由 M-12 另计）
 KCNT="$(grep -c "Poka-Yoke\|FMEA\|checkpoint\|三级引用\|交叉验证\|去 AI 化\|五维评分卡\|8 字段\|chunk" "$FIX/references/methodology.md" 2>/dev/null)"
 [ "${KCNT:-0}" -ge 9 ]
 M03_RC=$?
@@ -180,15 +180,15 @@ assert 11 "off 档: 无 FMEA 段计划静默锁定成功 (实测 rc=$rc_o)" "$M1
 
 # ── task-v084: 思维方法论 T1-T5 守护 (M-12..M-16) ─────────────────
 
-# M-12: methodology.md 含 T1-T5 方法名关键词（逐条锚定——任一 T 条款被删即红，防聚合口径穿透）
+# M-12: methodology.md 含 T1-T5 五个条目标题锚（标题锚只在对应节存在——任一节被删即红，审查轮 2 处方）
 T_RED=0
-for kw in 问题先行 问题解构四问 金字塔原理 逐步推导剖析 消费点; do
+for kw in "^### T1 问题先行" "^### T2 问题解构四问" "^### T3 金字塔原理" "^### T4 逐步推导剖析" "^### T5 消费点与联动"; do
   c="$(grep -c "$kw" "$FIX/references/methodology.md" 2>/dev/null)"
   [ "${c:-0}" -lt 1 ] && T_RED=1 && break
 done
 [ "$T_RED" -eq 0 ]
 M12_RC=$?
-assert 12 "methodology.md T1-T5 方法名关键词逐条≥1（问题先行/解构四问/金字塔/推导/消费点）" "$M12_RC"
+assert 12 "methodology.md T1-T5 条目标题锚逐条≥1（任一节删除即红）" "$M12_RC"
 
 # M-13: §思维方法论章标题 + 同法不同时交叉引用钉
 N_T="$(grep -c "^## §思维方法论" "$FIX/references/methodology.md" 2>/dev/null)"
