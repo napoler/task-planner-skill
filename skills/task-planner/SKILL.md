@@ -287,7 +287,7 @@ Block 1 (选题) complete
 - **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
-- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发严格串行——一次一个、验收通过再派下一个（21.4 串行派发铁律）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh）（详见 `references/critical-rules.md` Rule 21）
+- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发严格串行——一次一个、验收通过再派下一个（21.4 串行派发铁律）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
@@ -400,7 +400,7 @@ Block 1 (选题) complete
 
 ## ⏱️ 超时与失败兜底 — Rule 22 落地
 
-派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等（22.4 上下文预算=prompt 长度/打包检测已机器化：check-dispatch.sh 校验 prompt 字符数 vs prompt_max_chars 与多 S-unit 打包，挂 dispatch_contract_enforce 档位）。
+派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等（22.4 上下文预算=prompt 长度/打包检测/步骤枚举计数已机器化：check-dispatch.sh 校验 prompt 字符数 vs prompt_max_chars、多 S-unit 打包与步骤枚举数 vs step_max_steps(task-v081)，挂 dispatch_contract_enforce 档位）。
 
 **步骤 0 — 先查检查点(Rule 22.8.4)**:任何兜底动作执行前,主进程必须先 Read 该子代理的检查点文件(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,路径见 Handoff 登记表「checkpoint 路径」列)——有实质进度 → 重试 prompt 注入 resume_from 段从断点续做(模板见 `templates/subagent_dispatch.md` 附录);无进度 → 按下表兜底。
 

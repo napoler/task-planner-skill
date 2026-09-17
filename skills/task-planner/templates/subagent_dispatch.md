@@ -60,6 +60,7 @@ findings_written: <findings.md 小节锚点 #### [sub:{seq}-{type}]> | none
 blockers: none | <一句话>
 confidence: HIGH | MED | LOW
 ```
+> 步骤枚举约束(task-v081):prompt 内显式步骤枚举(StepN/步骤N/第N步/①-⑮,按序号去重)≤ config `step_max_steps`(默认 4);超限=回炉拆 S-unit 再派,check-dispatch.sh fine_grain_checks ④ enforce 档硬拦(任务书豁免场景对任务书文件同步计数)。
 已填示例(照此逐字段,不加标题/前言/总结):
 ```
 status: done
