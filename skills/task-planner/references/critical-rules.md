@@ -313,3 +313,15 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 36.5 **保守化修改纪律**：默认纯增量追加；既有条款语义变更须同时 ① 计划「执行范围限制」表逐行登记 ② progress.md 记录旧语义→新语义对照；禁止以「重构/顺手整理/清理」名义触碰未授权区域。
 36.6 **修改后回归验证**：对照 36.3 基线——删除清单每项要么已获用户确认、要么实际零删除；selftest 全量 0 FAIL；SKILL/锚点 grep 复核。
 36.7 **机制**：config 键 `skill_modify_enforce`（enum [enforce,warn,off]，默认 warn，description 注明 Rule 36）。消费侧三件：① 新建 `scripts/check-skill-modify.sh` 挂入 zcode-pretooluse.sh 的 Write/Edit 分支——目标路径（realpath 归一化，兼容 worktree 与部署位）命中技能文件模式 且 当前活跃计划「执行范围限制」表未列该文件 → warn 注入提醒（enforce 档 exit 2 阻断）；对主进程与子代理一致生效（补 check-delegation 子代理 exit 0 的空档）；② check-complete.sh 追加 SKILL-MODIFY GATE（终验校验删除性行为清单已登记且逐项有确认记录，resolve tier 范式）；③ 新建 `scripts/selftest-skill-modify.sh` 静态守护（selftest-veto.sh 范式：36.x 条款锚 + config 键 json 校验 + SKILL 联动 + C24 + pretooluse 接线锚 + GATE 锚）。
+
+### 37 任务类型机制画像（mechanism profile — 按 template_type 裁剪机制适用性）
+
+机制配置（Code Review Gate、执行体路由、修改后验证等）长期按「代码任务默认」写死在 SKILL 路由表与计划模板中，内容类任务（writing/research/publish）被迫套用不相关的代码组机制，计划内容失真、门控空转。本条建立机制画像：按 template_type 裁剪**类型组机制**的适用性，通用守卫不变。
+
+37.1 **画像表权威源**：机制适用性的单一权威源 = `references/template-mapping.md` §九「机制适用性矩阵」（14 行：13 variant + general × 列=类型/默认适用机制/不适用机制/执行体路由组）。本条只放判定规则与指针，**禁止在 critical-rules.md 复制矩阵内容**（防双源漂移）；新增任务类型时只改矩阵，本条不改。
+37.2 **判定时点**：计划创建期按 template-mapping.md §一决策树选定 template_type 后，**立即**按 §九 对应行套用机制画像：计划内容（Code Review 配置节取值、各 Phase Executor 字段建议）须与画像一致；通用兜底模板（general）的 Code Review 配置默认按画像自动判定，不再留空要求人工补。
+37.3 **三类机制组**（示例性分组，矩阵为准）：① **代码组**（code-edit/refactor/bugfix/migration/schema-migration/test-writing/deployment/performance-tuning/rule-enhancement/diagnostic）= Code Review Gate + code-assistant/debugger/code-reviewer 路由 + 修改后验证流程；② **内容组**（writing/research/publish）= content_quality 门控 + article-writer 等内容类执行体路由，**不适用 Code Review Gate 与 code-assistant/debugger/code-reviewer 路由**；③ **通用组**（general 及全类型兜底）= 画像未覆盖的机制按通用守卫执行。
+37.4 **消费侧**：① Phase 执行循环步骤 2.5 委派检查点**先查画像再定执行体**——Executor 字段须与画像路由组一致，例外须在计划登记理由；② Code Review Gate 仅当 template_type ∈ 代码组 **或** 计划显式 `code_review: required` 时触发；③ 内容组任务终验走 content_quality 门控（既有 v063 条款），不走 Code Review Gate。
+37.5 **机制**：开关键 `config.json#mechanism_profile_enforce`（默认 warn，三档语义同 template_gate_enforce：档位解析 env > config > warn）；终验画像抽查由 check-complete.sh 末段消费（计划 template_type 对应行 vs Code Review 配置/Executor 字段一致性抽查）；守护 `scripts/selftest-mechanism-profile.sh`（静态断言：37.x 条款锚 + 矩阵 §九 存在 + config 键 + C 清单联动）。
+
+**边界明示（FMEA R1 兜底）**：画像仅裁剪类型组机制——3-File 落盘（Rule 19）、委派率门控（Rule 25）、漂移检测（Rule 15）、错误学习闭环（Rule 31）等通用守卫对全部任务类型不变；「不适用」仅指 37.3 所列代码组机制在内容组中不触发，不构成对通用守卫的豁免。
