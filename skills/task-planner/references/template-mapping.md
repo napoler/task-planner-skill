@@ -25,6 +25,8 @@
 
 > **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 13 类且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
 
+> 选定 template_type 后，立即按 §九「机制适用性矩阵」套用该类型的机制画像（Rule 37）：Code Review Gate、执行体路由等按矩阵行取捨。
+
 **文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
 - `templates/task_plan.md`(默认通用)
 - `templates/variant/research-type.md`
@@ -196,3 +198,32 @@ bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-complete.sh
 awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ && NF>2' task_plan.md | grep -c '^|'
 # 应 ≥ 范围表数据行数;若为 0 说明区块结构被破坏(如标题插入区块中间)
 ```
+
+---
+
+## 九、机制适用性矩阵（Rule 37 权威源 — 按 template_type 裁剪机制）
+
+本矩阵是 `critical-rules.md` Rule 37 引用的机制画像表单一权威源。表中「不适用」仅指该类型组的机制不触发；3-File 限制、委派率、漂移检测等通用守卫对所有类型不变。内容组「不适用」项集中出现于 writing / research / publish 三行（Code Review Gate 与代码类执行体路由不触发）。
+
+| 类型 | 组别 | 默认适用机制 | 不适用机制 | 执行体路由组 |
+|------|------|-------------|-----------|-------------|
+| bugfix | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/debugger/code-reviewer |
+| code-edit | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant(haiku-1)/executor |
+| deployment | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | executor/code-assistant |
+| diagnostic | 代码组 | Code Review Gate（修复类）+修改后验证 | content_quality 门控 | code-assistant/debugger |
+| migration | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | executor/code-assistant |
+| performance-tuning | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | executor/code-reviewer |
+| publish | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | code-runner-agent/article-batch-publish |
+| refactor | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-simplifier/executor |
+| research | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | research-assistant/web-search-agent |
+| rule-enhancement | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/executor |
+| schema-migration | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/database-optimizer |
+| test-writing | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/test-engineer |
+| writing | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | article-writer/article-writing-phase-agent |
+| general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
+
+新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。
+> 内容组「不适用」项（3 行，Code Review Gate 与代码类执行体路由不触发）：
+> - writing（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
+> - research（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
+> - publish（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
