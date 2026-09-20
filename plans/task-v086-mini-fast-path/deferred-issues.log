@@ -1,0 +1,9 @@
+# task-v086 deferred issues（交付前登记，Rule 31.4 / v077 清账范式）
+## D1 项目自造模板不入 34.1 白名单（enforce 档拒锁）
+- 现象: 项目 .claude/plan-templates/ 自造模板（如 my-custom）经 S6 机制加载后, check-template-type 判「不在白名单内」, template_gate_enforce=enforce 档 attest 拒锁
+- 定性: 既有 34.1 白名单=动态派生（内置 variant/*-type.md + general）的设计边界, 非 S7 引入；warn 默认档仅提示不阻断, 功能可用
+- 修复方向: 白名单并入项目 plan-templates 目录发现（与 S6 --list 同源）, 属新机制, 留独立任务
+- 记录: 2026-09-21 task-v086 P4 CR 二轮确认, 主进程登记
+## D2 簿记表述更正（CR 二轮次要观察, 非阻塞）
+- task_plan.md 内 P4 描述写「init 插入改行首直书」, 实际 S7 落地方案=check-template-type 补第三形态（gate 侧）, init 插入保持注释形态
+- 已在 Phase 4 状态更新时同步措辞（本计划文件为执行期活文档）
