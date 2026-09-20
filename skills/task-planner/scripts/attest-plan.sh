@@ -170,6 +170,22 @@ case "$mode" in
             0)
               echo "[fmea-gate] OK (fmea_enforce=$FTIER)"
               ;;
+            2)
+              # [2026-09-20 task-v086 P2-S3 Rule 38.4①] mini 档 FMEA 豁免: RC=2=无「FMEA 预演」段或
+              # RPN 表数据行=0 → mini 计划直接视为通过(打 SKIP 行); 非 mini 走下方 *) 原逻辑零改动;
+              # RC=1(有 FMEA 段但违规, mini 填了就得合规)不豁免仍走 *)
+              if grep -qm1 'plan_tier: mini' "$plan_file" 2>/dev/null; then
+                echo "[fmea-gate] MINI-TIER SKIP (plan_tier: mini 豁免, Rule 38.4①)"
+              else
+                if [ "$FTIER" = "enforce" ]; then
+                  echo "[fmea-gate] ✗ $fmea_msgs" >&2
+                  echo "[fmea-gate] ✗ FMEA 门控失败,拒绝锁定(fmea_enforce=enforce; 补 FMEA 数据行/兜底或紧急 --skip-fmea-check)" >&2
+                  exit 1
+                else
+                  echo "[fmea-gate] ⚠ $fmea_msgs (warn 档不阻断: TASK_PLANNER_FMEA_ENFORCE=enforce 或 config.json fmea_enforce=enforce 可升级; 紧急 --skip-fmea-check)" >&2
+                fi
+              fi
+              ;;
             *)
               if [ "$FTIER" = "enforce" ]; then
                 echo "[fmea-gate] ✗ $fmea_msgs" >&2

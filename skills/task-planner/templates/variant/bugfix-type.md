@@ -5,6 +5,7 @@
 
 # Task Plan: [bug 修复任务名称]
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话:修复什么 bug(具体症状),达成什么效果(回归测试通过)]
 

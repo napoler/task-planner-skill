@@ -6,6 +6,7 @@
 
 # Task Plan: [规则增强任务名称]
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话: 落地 Rule NN <规则名>（NN.1-NN.M 条款 + config 三档键 + 消费侧门控 + selftest 守护 + SKILL 联动），全量 selftest 0 FAIL 后合并回 master 并部署 3 实体位]
 

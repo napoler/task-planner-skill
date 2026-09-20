@@ -57,7 +57,7 @@ else
   bad 09 "check-complete.sh 缺 REFLECT-GATE 锚点"
 fi
 # RV-10
-if grep -qE 'Rules 1-3[5-7]' "$SKILL"; then ok 10 "SKILL.md 'Rules 1-3[5-7]' 宽容锚索引行（兼容 1-35/1-36/1-37 过渡）"; else bad 10 "SKILL.md 缺 'Rules 1-3[5-7]' 宽容锚"; fi
+if grep -qE 'Rules 1-3[5-8]' "$SKILL"; then ok 10 "SKILL.md 'Rules 1-3[5-8]' 宽容锚索引行（兼容 1-35/1-36/1-37/1-38 过渡）"; else bad 10 "SKILL.md 缺 'Rules 1-3[5-8]' 宽容锚"; fi
 # RV-11
 if grep -q '^| C21 ' "$SKILL"; then ok 11 "SKILL.md 检查清单 C21 行"; else bad 11 "SKILL.md 缺 C21 行"; fi
 # RV-12

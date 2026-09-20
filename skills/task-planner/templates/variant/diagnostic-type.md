@@ -1,6 +1,7 @@
 # Task Plan: [诊断任务名称]
 <!-- 诊断型模板 — 适用于 skill 审计/bug 排查/代码审查 -->
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话描述诊断目标]
 

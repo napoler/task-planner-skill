@@ -5,6 +5,7 @@
 
 # Task Plan: [schema 迁移任务名称]
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话:对哪个表/字段做何种 schema 变更(加列/加索引/分表/分库),达成什么目标]
 

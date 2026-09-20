@@ -2,7 +2,9 @@
 # [2026-09-04] 新增 5 文件存在性复核（Rule 19.5 配套），缺失/空文件 exit 1
 # [2026-09-13 task-v067] 第 6 文件 knowledge-brief.md 纳入建立/复核（5 文件→6 文件）
 # Initialize planning files for a new session
-# Usage: ./init-session.sh [project-name]
+# Usage: ./init-session.sh [project-name] [template-type] [plan-tier]  (tier: mini, env TASK_PLAN_TIER 亦可, task-v086 Rule 38.2)
+#        bash init-session.sh --list [--project]  列出可用模板(内置 14 variant+项目目录 *-type.md+当前默认项), 不创建文件
+#        默认模板: 项目 plan-templates/default 文件(内容=模板名) > env TASK_TEMPLATE_DEFAULT > 缺省 general (task-v086 S6)
 #
 # Template priority (per-file):
 #   1. {project}/.claude/plan-templates/{filename}   (project-level, optional)
@@ -11,6 +13,39 @@
 # Path resolution: look for .claude/plan-templates/ by traversing upward from CWD
 
 set -e
+
+# [2026-09-21 task-v086 S6] --list 子命令: 输出当前可用模板清单(内置 variant+项目目录 *-type.md+当前默认项),
+# 不创建任何文件, 无需 plans/<task-id> CWD 守卫, 直接 exit 0
+LIST_TEMPLATES=0
+for a in "$@"; do [ "$a" = "--list" ] && LIST_TEMPLATES=1; done
+if [ "$LIST_TEMPLATES" = 1 ]; then
+    _sdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    _bvd="$_sdir/../templates/variant"
+    _list_pdir=""
+    _d="$(pwd)"
+    while [ "$_d" != "/" ]; do
+        if [ -d "$_d/.claude/plan-templates" ]; then _list_pdir="$_d/.claude/plan-templates"; break; fi
+        _d="$(dirname "$_d")"
+    done
+    _def=""
+    if [ -n "$_list_pdir" ] && [ -f "$_list_pdir/default" ]; then
+        _def="$(head -n1 "$_list_pdir/default" 2>/dev/null | tr -d '[:space:]')"
+    fi
+    [ -z "$_def" ] && _def="${TASK_TEMPLATE_DEFAULT:-}"
+    echo "Available templates (task-v086 S6 --list):"
+    for f in "$_bvd"/*-type.md; do
+        [ -e "$f" ] || continue
+        echo "  $(basename "$f" | sed 's/-type\.md$//') (built-in)"
+    done
+    if [ -n "$_list_pdir" ]; then
+        for f in "$_list_pdir"/*-type.md; do
+            [ -e "$f" ] || continue
+            echo "  $(basename "$f" | sed 's/-type\.md$//') (project)"
+        done
+    fi
+    [ -n "$_def" ] && echo "[default] $_def" || echo "[default] general"
+    exit 0
+fi
 
 # 2026-09-06 task-v053: CWD 守卫 — 原 PLAN_ROOT="$(cd .. && pwd)" 无校验,在非 plans/<task-id>/ 目录运行会把模板写进任意目录并向 ${PLAN_ROOT}/.active_plan(可能为根目录)写指针(实测 /tmp 运行 PLAN_ROOT 解析为 /)
 if [ "$(basename "$(dirname "$(pwd)")")" != "plans" ]; then
@@ -59,6 +94,11 @@ copy_template() {
 #     未知/缺失类型 WARNING 回退 generic task_plan.md)
 PROJECT_NAME="${1:-project}"
 TEMPLATE_TYPE="${2:-${TASK_TEMPLATE_TYPE:-}}"   # positional first, env fallback
+# [2026-09-20 task-v086 P2-S2 Rule 38.2] 第 3 位置参或 env TASK_PLAN_TIER=mini（tier 路由，
+#   与 template_type 正交；缺省=现状行为逐字节不变，38.4 非 mini 零影响铁律）
+PLAN_TIER="${3:-${TASK_PLAN_TIER:-}}"
+# [2026-09-21 task-v086 S6] 复制源命中项目级自造模板=1 (frontmatter 插入判定用)
+PROJECT_TPL_USED=0
 DATE=$(date +%Y-%m-%d)
 
 echo "Initializing planning files for: $PROJECT_NAME"
@@ -70,6 +110,31 @@ echo "Initializing planning files for: $PROJECT_NAME"
 VARIANTS_DIR="${BUILTIN_TEMPLATES}/variant"
 VALID_TYPES="general $(ls "$VARIANTS_DIR"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
 VALID_TYPES="$(printf '%s' "$VALID_TYPES" | tr -s ' ')"
+# [2026-09-21 task-v086 S6] 项目 plan-templates 目录内的 *-type.md(去后缀)并入合法类型集合;
+# 无项目目录 → 集合与改前逐字节一致(非默认路径零影响)
+PDIR_RESOLVED="$(find_project_templates || true)"
+if [ -n "$PDIR_RESOLVED" ]; then
+    _pextra="$(ls "$PDIR_RESOLVED"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
+    [ -n "$_pextra" ] && VALID_TYPES="$(printf '%s %s' "$VALID_TYPES" "$_pextra" | tr -s ' ')"
+fi
+# [2026-09-21 task-v086 S6] 默认模板(每次只加载 1 个的选择入口):
+# 项目级 plan-templates/default 文件(内容=模板名) > env TASK_TEMPLATE_DEFAULT > 缺省=现状 general 行为逐字节不变
+if [ -z "$TEMPLATE_TYPE" ]; then
+    _default_src=""
+    _default_type=""
+    if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/default" ]; then
+        _default_type="$(head -n1 "$PDIR_RESOLVED/default" 2>/dev/null | tr -d '[:space:]')"
+        [ -n "$_default_type" ] && _default_src="project default 文件(.claude/plan-templates/default)"
+    fi
+    if [ -z "$_default_type" ] && [ -n "${TASK_TEMPLATE_DEFAULT:-}" ]; then
+        _default_type="$TASK_TEMPLATE_DEFAULT"
+        _default_src="env TASK_TEMPLATE_DEFAULT"
+    fi
+    if [ -n "$_default_type" ]; then
+        TEMPLATE_TYPE="$_default_type"
+        echo "Template routing: 未显式给 template_type, 采用默认模板 $TEMPLATE_TYPE (${_default_src}, task-v086 S6)"
+    fi
+fi
 TASK_PLAN_SRC="task_plan.md"
 if [ -n "$TEMPLATE_TYPE" ]; then
     if echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE "; then
@@ -79,11 +144,29 @@ if [ -n "$TEMPLATE_TYPE" ]; then
             TASK_PLAN_SRC="$VARIANT_REL"
             echo "Template routing: task_plan.md <- $VARIANT_REL (template_type: $TEMPLATE_TYPE)"
         else
-            echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
+            # [2026-09-21 task-v086 S6] 内置未命中 → 查项目 plan-templates 目录(项目模板发现:
+            # 项目 *-type.md 已并入 VALID_TYPES 前置段); 命中 → 复制源=项目文件
+            if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+                TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (project-level, task-v086 S6)"
+            else
+                echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
+            fi
         fi
     else
         echo "WARNING: unknown template_type '$TEMPLATE_TYPE' — valid: $VALID_TYPES"
         echo "Falling back to generic task_plan.md"
+    fi
+fi
+
+# [2026-09-20 task-v086 P2-S2 Rule 38.2] tier 分流: mini 档 → mini-lite 模板
+# 正交语义: 已命中 variant template_type(定制中档)时 tier=mini 不生效, 仅提示
+if [ "$PLAN_TIER" = "mini" ]; then
+    if [ -n "$TEMPLATE_TYPE" ] && [ "$TASK_PLAN_SRC" != "task_plan.md" ]; then
+        echo "[init] tier=mini 忽略：template_type=$TEMPLATE_TYPE 定制优先（variant 即中档定制，mini 不适用，Rule 38.2）"
+    else
+        TASK_PLAN_SRC="variant/mini-lite-type.md"
+        echo "Template routing: task_plan.md <- variant/mini-lite-type.md (plan_tier: mini, Rule 38.2)"
     fi
 fi
 
@@ -113,12 +196,38 @@ if [ -f "task_plan.md" ]; then
 else
     if [ "$TASK_PLAN_SRC" != "task_plan.md" ]; then
         # variant source: copy directly to task_plan.md (project-level override first)
-        if project_templates=$(find_project_templates) && [ -f "$project_templates/$TASK_PLAN_SRC" ]; then
-            cp "$project_templates/$TASK_PLAN_SRC" "task_plan.md"
-        else
-            cp "${BUILTIN_TEMPLATES}/${TASK_PLAN_SRC}" "task_plan.md"
+        # [2026-09-21 task-v086 S6] TASK_PLAN_SRC 为绝对路径=项目 plan-templates 自造模板
+        # (项目发现段命中, 内置未命中回落项目文件); 直接 cp 并置 PROJECT_TPL_USED=1
+        case "$TASK_PLAN_SRC" in
+            /*)
+                cp "$TASK_PLAN_SRC" "task_plan.md"
+                PROJECT_TPL_USED=1
+                ;;
+            *)
+                if project_templates=$(find_project_templates) && [ -f "$project_templates/$TASK_PLAN_SRC" ]; then
+                    cp "$project_templates/$TASK_PLAN_SRC" "task_plan.md"
+                else
+                    cp "${BUILTIN_TEMPLATES}/${TASK_PLAN_SRC}" "task_plan.md"
+                fi
+                ;;
+        esac
+        # [2026-09-21 task-v086 S6] 自造模板 frontmatter 兜底: 复制产物无 template_type 标识行
+        # (首行注释或表格行均无) 时头部插入一行, 保证 check-template-type 机器门控可识别
+        if [ "$PROJECT_TPL_USED" = 1 ] && [ -n "$TEMPLATE_TYPE" ]; then
+            if ! head -1 "task_plan.md" | grep -q "template_type" \
+               && ! grep -qE '^[[:space:]]*\|[[:space:]]*template_type[[:space:]]*\|' "task_plan.md"; then
+                awk -v tt="$TEMPLATE_TYPE" 'NR==1{print "<!-- template_type: " tt " -->"} {print}' "task_plan.md" > "task_plan.md.tmp" \
+                    && mv "task_plan.md.tmp" "task_plan.md"
+                echo "    [init] 项目模板缺 template_type 标识, 已插入 frontmatter 行 (template_type: $TEMPLATE_TYPE, task-v086 S6)"
+            fi
         fi
-        echo "    Created task_plan.md (variant: $TEMPLATE_TYPE)"
+        if [ -n "$TEMPLATE_TYPE" ]; then
+            echo "    Created task_plan.md (variant: $TEMPLATE_TYPE)"
+        elif [ -n "$PLAN_TIER" ]; then
+            echo "    Created task_plan.md (plan_tier: $PLAN_TIER)"
+        else
+            echo "    Created task_plan.md"
+        fi
     elif copy_template "task_plan.md"; then
         echo "    Created task_plan.md"
     fi

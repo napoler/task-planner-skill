@@ -2,6 +2,7 @@
 <!-- 发布型模板 — 适用于 API 发布/批量部署/数据同步 -->
 <!-- 批量发布(≥5 单元)时必须遵守 Rule 18 批量处理质量门控(references/batch-quality-gate.md) + 填写 Batch Report 区块 -->
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话描述发布目标]
 

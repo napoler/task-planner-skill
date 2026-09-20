@@ -5,6 +5,7 @@
 
 # Task Plan: [代码编辑任务名称]
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话:编辑哪个文件的哪段代码,达成什么效果]
 

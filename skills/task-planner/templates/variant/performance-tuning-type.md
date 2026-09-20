@@ -5,6 +5,7 @@
 
 # Task Plan: [性能优化任务名称]
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话:优化哪个模块/接口的性能,达成什么指标(P95 下降 X%/TPS 提升 Y%)]
 

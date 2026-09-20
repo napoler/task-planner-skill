@@ -60,6 +60,49 @@ if ! grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
     exit 0
 fi
 
+# ── [2026-09-20 task-v086 P2-S3 Rule 38.1/38.4④] mini 档: 判定前置 + S-unit 豁免 + MISMATCH ──
+# 判定公共前置: grep 计划文件(init 复制产物 task_plan.md)「plan_tier: mini」; standard 模板
+# 标记 plan_tier: standard 天然不命中 → 非 mini 路径零改动。
+PLAN_TIER_MINI=0
+MINI_EXEMPT=0
+PTIER="warn"
+if grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+    # 档位解析: env TASK_PLANNER_PLAN_TIER_ENFORCE > config.json plan_tier_enforce.default > warn
+    ptcfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
+    m="${TASK_PLANNER_PLAN_TIER_ENFORCE:-}"
+    case "$m" in enforce|warn|off) : ;; *)
+        m="$(jq -r '.properties.plan_tier_enforce.default // "warn"' "$ptcfg" 2>/dev/null)" || m=""
+        case "$m" in enforce|warn|off) : ;; *) m="warn" ;; esac ;;
+    esac
+    PTIER="$m"
+    PLAN_TIER_MINI=1
+    if [ "$PTIER" = "off" ]; then
+        # off = mini 声明也走全量门控: 豁免关闭 + MISMATCH 不提示 (Rule 38.5)
+        PLAN_TIER_MINI=0
+    fi
+fi
+if [ "$PLAN_TIER_MINI" = 1 ]; then
+    # S-unit 豁免(38.4④): 全 Phase Executor 均主进程(或无子代理 Executor 声明)→ 视为非派发型;
+    # 仍声明子代理 Executor 的 Phase 不豁免(has_subagent=1 → MINI_EXEMPT 保持 0)
+    has_subagent="$(grep -E '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null | grep -vc '主进程' || true)"
+    [ "${has_subagent:-0}" -eq 0 ] && MINI_EXEMPT=1
+    # MISMATCH(38.1): 声明 mini 但机器条件不满足(①Goal 行缺 ≤15min 字样 ②执行范围表数据行>2)
+    mismatch_items=""
+    goal_sec="$(awk '/^##[[:space:]]*Goal/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
+    printf '%s\n' "$goal_sec" | grep -qE '≤15min|<=15min' || mismatch_items="${mismatch_items}Goal 行缺 ≤15min 预估时长字样 "
+    scope_sec="$(awk '/^##[[:space:]]*.*执行范围限制/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
+    scope_rows="$(printf '%s\n' "$scope_sec" | grep -c '^|' || true)"
+    [ "${scope_rows:-0}" -gt 4 ] && mismatch_items="${mismatch_items}执行范围表数据行>2 (${scope_rows}行表格行) "
+    if [ -n "$mismatch_items" ]; then
+        if [ "$PTIER" = "enforce" ]; then
+            echo "[plan-tier] MISMATCH: mini 判定条件不满足(${mismatch_items% }) — 阻断锁定(plan_tier_enforce=enforce, Rule 38.1); 改回 standard 或补齐条件" >&2
+            exit 1
+        else
+            echo "[plan-tier] MISMATCH: mini 判定条件不满足(${mismatch_items% }) — 提示不阻断(plan_tier_enforce=warn 默认; 建议改回 standard, 或 TASK_PLANNER_PLAN_TIER_ENFORCE=enforce 升级阻断)"
+        fi
+    fi
+fi
+
 # ── S-unit 数值门控阈值（task-v075 P2-S1，仅派发型 Phase 数据行生效）────────
 # [2026-09-16] jq 读 config.json（键参照 attest-plan.sh:80-97 tcfg 范式）；
 # jq 缺失/键缺失 → 回退默认值（step_max_minutes=15 / step_max_files=2）
@@ -130,6 +173,11 @@ settle_phase() {
         return 0    # 主进程 Phase：不要求 S-unit 表
     fi
     dispatch_count=$(( dispatch_count + 1 ))
+    # [2026-09-20 task-v086 P2-S3 Rule 38.4④] mini 豁免: 全 Phase Executor=主进程 → 缺 S-unit 表视为合规;
+    # MINI_EXEMPT=0(非 mini / off 档 / 含子代理 Executor)走原逻辑=零改动
+    if [ "$MINI_EXEMPT" = 1 ] && [ "$has_table" -eq 0 ] && [ "$has_rows" -eq 0 ]; then
+        return 0
+    fi
     if [ "$has_table" -eq 0 ] || [ "$has_rows" -eq 0 ]; then
         add_violation "$phase_no" "缺 S-unit 表或数据行(Rule 22.6)"
     fi

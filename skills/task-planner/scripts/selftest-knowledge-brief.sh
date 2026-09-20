@@ -35,7 +35,7 @@ t "T1c 行数 ≤150" bash -c "[ \"\$(wc -l < '$BRIEF')\" -le 150 ]"
 
 # T2: SKILL.md 引用 knowledge-brief ≥2 且行数 ≤540
 t "T2a SKILL.md grep 'knowledge-brief' ≥2" bash -c "[ \"\$(grep -c 'knowledge-brief' '$SKILL')\" -ge 2 ]"
-t "T2b SKILL.md 行数 ≤549（task-v076 扩充 545; [2026-09-17 task-v080] 调研路由增补 545→548; [2026-09-20 task-v085] 机制画像增量 548→549）" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 549 ]"
+t "T2b SKILL.md 行数 ≤552（task-v076 扩充 545; [2026-09-17 task-v080] 调研路由增补 545→548; [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-20 task-v086] Rule 38 联动 549→551, 上限 549→552）" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 552 ]"
 
 # T3: init-session.sh grep 'knowledge-brief.md' ≥2 (建立循环 + 复核循环) 且 '6/6' 校验行 ≥1
 t "T3a init-session.sh 'knowledge-brief.md' ≥2" bash -c "[ \"\$(grep -c 'knowledge-brief.md' '$INIT')\" -ge 2 ]"
