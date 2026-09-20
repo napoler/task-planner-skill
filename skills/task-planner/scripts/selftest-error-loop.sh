@@ -56,7 +56,7 @@ if grep -q '| C19 |' "$SKILLMD" && grep 'C19' "$SKILLMD" | grep -q 'Rule 31'; th
 # EL-10
 if grep -q '错误指出特判' "$SKILLMD"; then ok 10 "SKILL.md 用户新指令处理指针"; else bad 10 "SKILL.md 缺错误指出特判"; fi
 # EL-11
-if grep -qE 'Rules 1-3[1-6]' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x 范围"; else bad 11 "SKILL.md 缺 Rules 1-3x"; fi
+if grep -qE 'Rules 1-3[1-7]' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x 范围"; else bad 11 "SKILL.md 缺 Rules 1-3x"; fi
 # EL-12
 if grep -q '"error_loop_enforce"' "$CONFIG" && python3 -c "
 import json,sys

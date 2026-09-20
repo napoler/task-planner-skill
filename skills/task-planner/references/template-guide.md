@@ -47,7 +47,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `variant/schema-migration-type.md` (v2) | DB schema 变更 | 可逆 up/down / 数据零丢失 |
 | `variant/rule-enhancement-type.md` (v2,沉淀) | 技能规则增强/新增 Rule/门控守护 | 条款锚 / 三档键 / selftest 守护 |
 
-**决策树**详见 `references/template-mapping.md`;`plan-writer` agent 按关键词自动匹配。
+**决策树**详见 `references/template-mapping.md`;`plan-writer` agent 按关键词自动匹配。各类型适用的机制画像见 template-mapping.md §九（Rule 37）。
 
 ### 2.3 辅助模板（v2.1 新增）
 

@@ -18,6 +18,7 @@
 <!--
   设计代码修改类任务：将下方值改为 required
   纯调研/文档/规划类任务：留空或写 n/a
+  默认按 template_type 机制画像自动判定（Rule 37 + template-mapping.md §九）：代码组默认 required，内容组默认 n/a，通用组未声明时按通用守卫；显式声明优先于画像默认值
 -->
 | 字段 | 值 |
 |------|-----|
@@ -178,6 +179,7 @@ Phase 1
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
+（示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
   机器契约(check-plan-dispatch.sh attest 校验):

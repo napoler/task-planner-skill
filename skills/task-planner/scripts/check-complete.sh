@@ -852,6 +852,16 @@ END {print n+0}'
         printf '[plan] SKILL-MODIFY GATE SKIPPED (计划未声明涉及技能文件修改)\n' >&2
     fi
 
+    # [2026-09-20 task-v085 Rule 37] 机制画像抽查：内容组 (writing/research/publish) 计划声明 code_review: required 时，
+    # warn=仅 stderr 提示不改 exit / enforce=exit 1 / off=跳过。档位 env > config.json mechanism_profile_enforce > warn(jq 缺失 fail-open)。
+    mp_tier="${TASK_PLANNER_MECHANISM_PROFILE_ENFORCE:-}"
+    case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="$(jq -r '.properties.mechanism_profile_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || mp_tier=""; case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="warn" ;; esac ;; esac
+    if [ "$mp_tier" != "off" ]; then
+        mp_tt="$(grep -m1 '^template_type:' "$PLAN_FILE" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"; mp_tt="${mp_tt%%[[:space:]（]*}"
+        [ -z "$mp_tt" ] && mp_tt="$(grep -m1 'template_type' "$PLAN_FILE" 2>/dev/null | awk -F'|' '{for(i=1;i<=NF;i++){t=$i;gsub(/[[:space:]`]/,"",t);if(t=="template_type"){v=$(i+1);gsub(/[[:space:]`]/,"",v);print v;exit}}}' | head -1 | sed 's/（.*//')"
+        case "$mp_tt" in writing|research|publish) grep -qE 'code_review: required|^[[:space:]]*\|[[:space:]]*`?code_review`?[[:space:]]*\|[[:space:]]*`?required`?[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null && case "$mp_tier" in enforce) echo "[mechanism-profile] ✗ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；enforce 档 exit 1 — 显式例外须在计划 Decisions 登记理由或改 n/a）" >&2; exit 1 ;; *) echo "[mechanism-profile] ⚠ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；如属显式例外请登记理由）" >&2 ;; esac ;; esac
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then

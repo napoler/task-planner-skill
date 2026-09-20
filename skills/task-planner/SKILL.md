@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-36（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 全集 1-37（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -198,6 +198,7 @@ model: opus
 | C22 | attest 前 template_type 已过 check-template-type.sh 门控（逃生须披露）；命中 34.3 沉淀触发时已按 34.4 沉淀或登记不沉淀理由 | ☐ |
 | C23 | 准备以否定结论（无法查看/不存在/不支持）结束任务或上报 prompt 过大失败前：能力否定已过 Rule 35.2 三关（完整接口面/CRUD 推断/替代路径，查证动作按 35.6 最小探针原则）并附证据，或已按 35.3 落盘引用补救（内容写文件+prompt 只放路径与 Read 指令）；违规按 Rule 26 回炉 | ☐ |
 | C24 | 本任务涉及技能文件修改时（Rule 36.1 范围）：已按 36.2 完成归因（指向技能本体才可提案）+ 36.3 删除基线与删除性行为清单已落 findings/progress；功能性删除/语义改写已逐项获用户确认（36.4，D6 级）；纯新增或机械联动 → 本项 PASS 记一行 | ☐ |
+| C25 | 本任务已按 Rule 37 套用机制画像：template_type 对应的代码组/内容组机制适用性已核对（Code Review Gate、code-assistant 路由等按画像取捨）；画像不适用或未命中登记一行理由 | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -279,7 +280,7 @@ Block 1 (选题) complete
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-36）：
+详见 `references/critical-rules.md`（Rules 1-37）：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -306,6 +307,7 @@ Block 1 (选题) complete
 - **Rule 34（P0）模板生命周期门控与沉淀**：选取门控(34.1)/四点同步(34.2)/沉淀触发(34.3)/沉淀流程(34.4)/防滥用(34.5)/机制(34.6)——attest 前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；命中沉淀触发→提炼新 variant 模板+四点同步；开关键 `config.json#template_gate_enforce`（默认 warn，详见 references/critical-rules.md Rule 34）
 - **Rule 35（P0）执行结论纪律**：能力否定三关查证（35.2 通读完整接口面/CRUD 一致性推断/替代路径）+ 大输入落盘引用补救（35.3 prompt 超限→内容写文件+Read 指令）——「没找到」禁写成「不存在」收场、prompt 过大禁失败收场；+ 最小探针原则（35.6 验证动作最小化：echo ok 类单条最小输出测试，禁一上来复杂化）；check-dispatch 超限提示+selftest-conclusion-discipline 守护，无新 config 键（详见 references/critical-rules.md Rule 35）
 - **Rule 36（P0）技能修改保守化与功能删除防护**：适用范围(36.1)/归因前置门(36.2)/修改前基线(36.3)/删除=高危确认门(36.4)/纯增量纪律(36.5)/回归验证(36.6)/机制(36.7)——"归因→基线→确认→增量→回归"链路：技能文件写操作先按 31.2 归因且归因指向本体才可提案，功能性删除/语义改写须用户逐项确认（D6 级硬停点），默认纯增量，杜绝偷渡式修改与功能静默丢失；开键 `config.json#skill_modify_enforce`（默认 warn，详见 references/critical-rules.md Rule 36）
+- **Rule 37（P0）任务类型机制画像**：画像表(37.1 权威源=template-mapping.md §九)/判定时点(37.2 计划创建期)/三类机制组(37.3)/消费侧(37.4 委派检查点+Code Review Gate 触发条件)/机制(37.5 mechanism_profile_enforce+selftest)——「按类型裁剪机制适用性」链路：仅裁剪类型组机制，3-File/委派率/漂移检测等通用守卫全类型不变（详见 references/critical-rules.md Rule 37）
 
 ## Completion Gate
 
@@ -329,7 +331,7 @@ Block 1 (选题) complete
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-36（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化） |
+| `references/critical-rules.md` | Critical Rules 1-37（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -352,6 +354,8 @@ Block 1 (选题) complete
 **强制约束**（P0）：执行任何任务时,**先按本表选择 subagent,再开始工作**。违反 = 反模式。
 
 ### 路由表（按任务类型）
+
+> **类型适配（Rule 37）**：下表为代码组画像的默认路由；内容类任务（writing/research/publish）按 references/template-mapping.md §九 机制画像路由到内容类执行体（article-writer 等），不适用 code-assistant/debugger/code-reviewer 行。仅裁剪代码组机制，通用守卫不变。
 
 | 任务类型 | 推荐 subagent | model 档位 | 主进程直接做? | 规模上限 | 超限动作 |
 | --- | --- | --- | --- | --- | --- |

@@ -308,6 +308,12 @@
       "default": "warn",
       "description": "Rule 34 模板选取门控三档: enforce=attest 锁定前 template_type 缺失/非法拒绝锁定; warn=告警放行; off=门控关闭。白名单源=templates/variant/ 动态派生+general, 见 references/critical-rules.md Rule 34。"
     },
+    "mechanism_profile_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 37 任务类型机制画像三档：warn=终验画像抽查仅提示；enforce=内容组计划声明 code_review: required 时 exit 1；off=跳过。详见 template-mapping.md §九"
+    },
     "skill_modify_enforce": {
       "type": "string",
       "enum": ["enforce", "warn", "off"],

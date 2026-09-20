@@ -67,9 +67,9 @@ else
         [ \$(grep -c '\"off\"' <<<\"\$c\") -ge 1 ]"
 fi
 
-# T8: SKILL.md 「环境级中断自愈」条款在位 且 行数 ≤548 (task-v073 后基线 529, 净增 ≤9; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧))
+# T8: SKILL.md 「环境级中断自愈」条款在位 且 行数 ≤549 (task-v073 后基线 529, 净增 ≤9; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧); [2026-09-20 task-v085] 机制画像增量 548→549)
 t "T8a SKILL.md '环境级中断自愈' ≥1" bash -c "[ \"\$(grep -c '环境级中断自愈' '$SKILL')\" -ge 1 ]"
-t "T8b SKILL.md 行数 ≤548" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 548 ]"
+t "T8b SKILL.md 行数 ≤549" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 549 ]"
 
 # T9: 跨文件键名一致: hook_self_heal_enforce 出现在 config.json + SKILL.md (各 ≥1, 共 ≥2 文件)
 #     且无拼写变体 hook-self-heal (两文件全 0)
