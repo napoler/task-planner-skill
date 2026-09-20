@@ -5,6 +5,7 @@
   WHEN: Create this FIRST, before starting any work. Update after each phase completes.
 -->
 
+<!-- plan_tier: standard -->
 ## Goal
 <!-- 
   WHAT: One clear sentence describing what you're trying to achieve.

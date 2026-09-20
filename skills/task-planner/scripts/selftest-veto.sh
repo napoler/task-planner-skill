@@ -48,7 +48,7 @@ if grep -q '| C20 |' "$SKILLMD" && grep 'C20' "$SKILLMD" | grep -q '32.2'; then 
 # VT-09
 if grep -q '用户否决登记（Rule 32' "$SKILLMD"; then ok 09 "SKILL.md 用户否决登记指针"; else bad 09 "SKILL.md 缺否决登记指针"; fi
 # VT-10
-if grep -qE 'Rules 1-3[1-7]' "$SKILLMD"; then ok 10 "SKILL.md Rules 1-3x 范围"; else bad 10 "SKILL.md 缺 Rules 1-3x"; fi
+if grep -qE 'Rules 1-3[1-8]' "$SKILLMD"; then ok 10 "SKILL.md Rules 1-3x 范围"; else bad 10 "SKILL.md 缺 Rules 1-3x"; fi
 # VT-11
 if grep -q '"veto_enforce"' "$CONFIG" && python3 -c "
 import json,sys

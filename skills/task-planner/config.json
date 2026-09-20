@@ -320,6 +320,12 @@
       "default": "warn",
       "description": "Rule 36 技能修改保守化三档: enforce=未授权技能文件写入硬阻断(pretooluse exit 2); warn=注入提醒放行(观察期, 默认); off=不触发。消费侧=check-skill-modify.sh(pretooluse 接线)+check-complete SKILL-MODIFY GATE+selftest-skill-modify.sh 守护。"
     },
+    "plan_tier_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 38 任务难度分级与轻量档(plan tier)三档: off=mini 声明也走全量门控(38.4 豁免全关闭); warn=豁免生效+FMEA/VC-GATE 等 MISMATCH 提示不阻断(默认); enforce=豁免生效+MISMATCH 阻断锁定。判定=计划 frontmatter plan_tier: mini ∧ scope ≤2 文件 ∧ ≤15min ∧ 单模块; 消费侧=attest-plan FMEA 段/check-complete VC-GATE+委派统计/check-plan-dispatch S-unit 表+knowledge-brief 5 锚点 if 前置豁免(非 mini 路径零改动)+init-session.sh tier 分流; selftest-plan-tier.sh 守护。详见 references/critical-rules.md Rule 38"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",

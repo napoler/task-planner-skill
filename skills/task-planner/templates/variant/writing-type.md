@@ -1,6 +1,7 @@
 # Task Plan: [文章创作任务]
 <!-- 写作型模板 — 适用于文章管线 Phase 0→6 -->
 
+<!-- plan_tier: standard -->
 ## Goal
 [一句话描述文章目标，如：为 soundgearx 站点创作关于 XXX 的长尾关键词文章]
 

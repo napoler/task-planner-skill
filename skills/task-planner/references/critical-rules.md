@@ -325,3 +325,15 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 37.5 **机制**：开关键 `config.json#mechanism_profile_enforce`（默认 warn，三档语义同 template_gate_enforce：档位解析 env > config > warn）；终验画像抽查由 check-complete.sh 末段消费（计划 template_type 对应行 vs Code Review 配置/Executor 字段一致性抽查）；守护 `scripts/selftest-mechanism-profile.sh`（静态断言：37.x 条款锚 + 矩阵 §九 存在 + config 键 + C 清单联动）。
 
 **边界明示（FMEA R1 兜底）**：画像仅裁剪类型组机制——3-File 落盘（Rule 19）、委派率门控（Rule 25）、漂移检测（Rule 15）、错误学习闭环（Rule 31）等通用守卫对全部任务类型不变；「不适用」仅指 37.3 所列代码组机制在内容组中不触发，不构成对通用守卫的豁免。
+
+### 38 任务难度分级与轻量档（P0 — task-v086，目标：轻量任务可用 mini-lite 精简模板并豁免仪式区块，消除"轻任务跑全套重仪式"的慢源；未声明档位的既有计划零影响）
+
+计划与门控长期按"统一全量模板 + 全量仪式区块"执行，≤2 文件的轻量任务也被迫走 418 行模板、VC≥5、FMEA 段、知识储备表、委派统计全量门控，慢源主要在仪式而非内容。本条建立难度分级：**档位判定=计划 frontmatter 声明 `plan_tier: mini`**；未声明=standard 全量，非 mini 路径逐字节零改动（Rule 36.5 纯增量）。
+
+38.1 **判定（三条件机器可测 + MISMATCH 提示）**：mini 档成立 ⇔ ① 计划 frontmatter 声明 `plan_tier: mini` ∧ ② 执行范围表 scope_files 文件数 ≤2 ∧ ③ 预估时长 ≤15min（写 Goal 行）∧ ④ 单模块（无跨模块改动）。三处脚本统一 `grep -m1 'plan_tier: mini' task_plan.md` 消费 frontmatter 标记而非模板文件名（防手搓计划绕过）。声明 `plan_tier: mini` 但任一机器条件不满足 → check-plan-dispatch 打 `[plan-tier] MISMATCH` 提示（默认 warn 不阻断，提示用户改回 standard；档位语义见 38.5）。未声明 plan_tier 的既有计划 → 全部按 standard 执行，零影响。
+38.2 **档位矩阵（mini / standard / full 三档）**：① **mini（新增）**=模板 `templates/variant/mini-lite-type.md`（frontmatter `plan_tier: mini`），≤80 行，VC≥2 条无 V-N 映射表，2 个 Phase（实施+验收），跳 FMEA/知识储备表/委派统计/Batch 区块，中/重任务禁用 mini 模板；② **standard（中档，现有）**=现有 13 个 variant，VC≥5 全量仪式，缺省即 standard（未声明零改动）；③ **full（重档，现有）**=general 全量模板不变。中/重任务误用 mini 模板 = 范畴违规（34.1 白名单校验仍生效；非机器阻断，指导层——误配 MISMATCH 条件时由 38.1 MISMATCH 提示兜底）。
+38.3 **轻量模板契约（mini-lite-type 区块白名单）**：mini-lite-type.md 仅允许以下区块，禁增其他仪式区块：① Goal（含预估时长 ≤15min 一行）② Verification Contract（VC≥2 条，无 V-N 映射表）③ 2 个 Phase（实施+验收，每 Phase 仪式降为 Phase 级一次 3-File 回填）④ 执行范围限制表（scope_files ≤2 行）⑤ Subagent Handoff 登记表。超出白名单区块 = 模板违约，selftest-plan-tier.sh 断言。
+38.4 **门控豁免清单（锚表 5 点，非 mini 路径零影响铁律）**：mini 计划（`grep -q 'plan_tier: mini'` 命中）豁免/降档五处——① attest-plan.sh FMEA 段：FMEA 段缺失直接 OK + 打一行 `[fmea-gate] MINI-TIER SKIP`；② check-complete.sh VC-GATE：VC 最低要求 5→2、无实质 V-N 映射行的 Phase 不阻断（mini 等效阈值 0）；有映射行时仍须全部映射到已定义 VC 编号；③ check-complete.sh 委派统计段：floor 0.7→0.0 且 main_direct 全部理由视白名单（WHITELIST-EXEMPT 直通），仅 violations 仍计；④ check-plan-dispatch.sh S-unit 表：Executor 字段全为「主进程」的 Phase 视为非派发型豁免 S-unit 表要求，仍声明子代理 Executor 的 Phase 不豁免；⑤ knowledge-brief：brief 降为可选单段「速览」（流程层，SKILL 指针行注明降档）。**非 mini 零影响铁律**：每处豁免均 if 前置 plan_tier 命中才走降档分支，未命中路径行为与 task-v086 前逐字节一致。
+38.5 **机制**：开关键 `config.json#plan_tier_enforce`（enum [enforce, warn, off]，默认 warn；档位解析 env `TASK_PLANNER_PLAN_TIER_ENFORCE` > config > warn）——off=mini 声明也走全量门控（豁免全关闭）；warn=豁免生效 + MISMATCH 提示不阻断（默认）；enforce=豁免生效 + MISMATCH 阻断锁定。消费侧挂 38.4 锚表 5 点脚本 + init-session.sh tier 分流；守护 `scripts/selftest-plan-tier.sh`（静态断言：38.x 条款锚 + config 键 json 校验 + SKILL 联动索引行/C26/摘要行 + mini 判定机器可测）；SKILL 联动 = 索引行 Rules 1-38 + 合规清单 C26 + Critical Rules 摘要行（净增 ≤10 行）。
+
+**边界明示（与 Rule 37 关系）**：38 裁的是**任务体量档**（文件数/时长/模块数 → 仪式区块量级），37 裁的是**任务类型画像**（template_type → 机制适用性），两维正交——mini 档计划仍按 37 机制画像路由执行体；38 豁免仅 38.4 锚表 5 点所列仪式门控，3-File 落盘（Rule 19，降为 Phase 级一次）、漂移检测（Rule 15）、错误学习闭环（Rule 31）等通用守卫在 mini 档内不变。

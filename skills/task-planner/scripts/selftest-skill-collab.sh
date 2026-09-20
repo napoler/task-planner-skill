@@ -77,8 +77,8 @@ t "T8b SKILL.md 含 command -v comet" grep -q 'command -v comet' "$SKILL"
 t "T9a skill_collab_enforce 出现在 ≥2 文件" bash -c "[ \"\$(grep -rl 'skill_collab_enforce' '$CONFIG' '$ROOT/references/' '$SKILL' | wc -l)\" -ge 2 ]"
 t "T9b 无连字符变体 skill-collab-enforce" bash -c "! grep -rq 'skill-collab-enforce' '$CONFIG' '$ROOT/references/' '$SKILL'"
 
-# T10: SKILL.md 行数 ≤549（task-v073 Rule 32 摘要行+C20+否决登记指针 联动后 SKILL.md 529 行,上限同步 530→538; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧); [2026-09-20 task-v085] 机制画像增量 548→549)
-t "T10 SKILL.md 行数 ≤549" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 549 ]"
+# T10: SKILL.md 行数 ≤552（task-v073 Rule 32 摘要行+C20+否决登记指针 联动后 SKILL.md 529 行,上限同步 530→538; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧); [2026-09-20 task-v085] 机制画像增量 548→549)
+t "T10 SKILL.md 行数 ≤552" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 552 ]"
 
 # T11: [2026-09-17 task-v080] 网络调研/网页访问路由显式化(SKILL.md 调研链 L458 注记+平台适配声明+路由表行)
 t "T11a SKILL.md 调研链含 browser-use 插件路由(≥3 行)" bash -c "[ \"\$(grep -c 'browser-use' '$SKILL')\" -ge 3 ]"

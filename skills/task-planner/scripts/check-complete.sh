@@ -112,6 +112,12 @@ check_scope_porcelain "$PLAN_FILE" || {
 # 实现位置:放在 python 内联末尾之后(已通过 3-File Gate/Porcelain 等前置门),
 # 所有判定放行后才查委派率 — 这是「最后一道闸」。
 DELEGATION_RATE_FLOOR="$(jq -r '.properties.delegation_rate_floor.default // 0.7' "$SKILL_ROOT/config.json" 2>/dev/null || echo 0.7)"
+# [2026-09-20 task-v086 P2-S3 Rule 38.4③] mini 降档: 计划文件 grep「plan_tier: mini」命中 →
+# floor 0.7→0.0（main_direct 全部理由视白名单直通, 即 rate 永远 >= floor）; violations 仍照常计(L441 verdict 路径不动);
+# 非 mini 路径 DELEGATION_RATE_FLOOR 保持 config 原值=零改动
+if grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+    DELEGATION_RATE_FLOOR="0.0"
+fi
 
 python3 - "$PLAN_FILE" "$SKILL_ROOT" << 'PYEOF'
 import sys, re
@@ -535,6 +541,13 @@ if [ "$python_rc" -eq 0 ]; then
     }
 
     VC_GATE_TIER="$(resolve_vc_gate_tier)"
+    # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 档降档: 判定前置 grep 计划文件(init 复制产物)
+    # 「plan_tier: mini」(standard 模板标记 plan_tier: standard 天然不命中);
+    # mini: VC 最低 5→2 / 每 Phase V-N 阈值 2→1 / 无 V-N 映射行不阻断; 非 mini 变量取原值=零改动
+    PLAN_TIER_MINI=0
+    grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null && PLAN_TIER_MINI=1
+    vc_min=5; [ "$PLAN_TIER_MINI" = 1 ] && vc_min=2
+    vn_thresh_base=2; [ "$PLAN_TIER_MINI" = 1 ] && vn_thresh_base=1
     if [ "$VC_GATE_TIER" != "off" ]; then
         vc_gate_section="$(mktemp)" || vc_gate_section="$(pwd)/.vc-gate-section.$$"
         # Phase 段 = `### Phase` 标题到下一 Phase/二级标题/--- 段边界（与 python 段切同口径）
@@ -619,8 +632,10 @@ if [ "$python_rc" -eq 0 ]; then
                 # 逐 P-N 段保持 ≥2 语义不变（segf 在 rm 前探测）
                 _p_no_grep="$(grep -cE '^[[:space:]]*-[[:space:]]*\[[ xX]\][[:space:]]*V-'"$p_no"'\.[0-9]+\s*[:：]' "$PLAN_FILE" 2>/dev/null || true)"
                 _compact_grep="$(grep -cE '^[[:space:]]*-[[:space:]]*\*\*V-N:' "$segf" 2>/dev/null || true)"
-                _vn_thresh=2
+                _vn_thresh=$vn_thresh_base
                 if [ "${_p_no_grep:-0}" = "0" ] && [ "${_compact_grep:-0}" -gt 0 ]; then _vn_thresh=1; fi
+                # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 无 V-N 映射行不阻断(降档容忍缺口)
+                if [ "$PLAN_TIER_MINI" = 1 ] && [ "${vn_sub:-0}" -eq 0 ]; then continue; fi
                 rm -f "$segf"
                 if [ "$vn_sub" -ge "$_vn_thresh" ]; then
                     # 实质映射达标 → 映射目标须全部 ∈ 已定义 VC（goal-gate「映射到 VC 编号」）
@@ -648,13 +663,14 @@ if [ "$python_rc" -eq 0 ]; then
         rm -f "$vc_gate_section"
 
         # 判定: VC ≥5 且 所有 Phase 映射合规
-        if [ "$vc_count" -lt 5 ] || [ -n "$vc_bad_phases" ]; then
+        # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 降档: 阈值用 $vc_min(5→2), 非 mini 恒 5
+        if [ "$vc_count" -lt "$vc_min" ] || [ -n "$vc_bad_phases" ]; then
             vc_gate_fail=1
         fi
 
         if [ "$vc_gate_fail" -eq 1 ]; then
             vc_count_part="VC 表=${vc_count}"
-            [ "$vc_count" -lt 5 ] && vc_count_part="${vc_count_part} (需≥5)"
+            [ "$vc_count" -lt "$vc_min" ] && vc_count_part="${vc_count_part} (需≥${vc_min})"
             phase_part=""
             [ -n "$vc_bad_phases" ] && phase_part="; Phase V-N 映射缺口: ${vc_bad_phases%; }"
             case "$VC_GATE_TIER" in
@@ -669,7 +685,8 @@ if [ "$python_rc" -eq 0 ]; then
                     ;;
             esac
         else
-            printf '[plan] VC-GATE PASSED (VC 表=%s, %s 个 Phase 各 ≥2 条 V-N 映射)\n' "$vc_count" "$p_no" >&2
+            # [2026-09-20 task-v086 P2-S3 Rule 38.4②] 回显按档位: standard=≥2, mini=≥1(原措辞固定 2 对 mini 不准)
+            printf '[plan] VC-GATE PASSED (VC 表=%s, %s 个 Phase 各 ≥%s 条 V-N 映射)\n' "$vc_count" "$p_no" "$vn_thresh_base" >&2
         fi
     fi
 

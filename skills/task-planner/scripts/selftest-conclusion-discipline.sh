@@ -60,8 +60,8 @@ check "grep -qF 'Rule 35（P0）执行结论纪律' \"\$SKILL\"" "SKILL.md 含 '
 # CD-10 C23 检查项
 check "grep -qF '| C23 |' \"\$SKILL\"" "SKILL.md 含 '| C23 |' 检查项行"
 # CD-11 1-3[5-7] 宽容锚计数 ≥3（兼容 1-35/1-36 过渡，task-v079）
-n35=$(grep -cE '1-3[5-7]' "$SKILL" || true); n35=$((n35+0))
-check "test ${n35} -ge 3" "SKILL.md '1-3[5-7]' 计数 ≥3（兼容 1-35/1-36 过渡，当前=${n35}）"
+n35=$(grep -cE '1-3[5-8]' "$SKILL" || true); n35=$((n35+0))
+check "test ${n35} -ge 3" "SKILL.md ‘1-3[5-8]’ 计数 ≥3（兼容 1-35-38 过渡，当前=${n35}）"
 # CD-12 1-34 零命中（防回退）
 n34=$(grep -c '1-34' "$SKILL" || true); n34=$((n34+0))
 check "test ${n34} -eq 0" "SKILL.md 不含 '1-34'（防回退，当前=${n34}）"
@@ -76,9 +76,9 @@ check "grep -qF '超限补救(Rule 35.3)' \"\$TMPL\"" "subagent_dispatch.md 含 
 # CD-17 notepad veto 段名
 check "grep -qF '🚫 被否决方案' \"\$NOTEPAD_TPL\"" "notepad-learnings.md 含 '🚫 被否决方案' 段"
 # CD-18 README 版本号修复锚
-check "grep -qE 'Rules 1-3[5-7]' \"\$README_SKILL\"" "README.md 含 'Rules 1-3[5-7]' 宽容锚（兼容 1-35/1-36 过渡）"
+check "grep -qE 'Rules 1-3[5-8]' \"\$README_SKILL\"" "README.md 含 1-3[5-8] 宽容锚（task-v086 级联 1-38）（兼容 1-35/1-36 过渡）"
 # CD-19 batch-gate 版本号修复锚
-check "grep -qE '隶属 Rules 1-3[5-7]' \"\$BGATE\"" "batch-quality-gate.md 含 '隶属 Rules 1-3[5-7]' 宽容锚（兼容 1-35/1-36 过渡）"
+check "grep -qE '隶属 Rules 1-3[5-8]' \"\$BGATE\"" "batch-quality-gate.md 含 1-3[5-8] 宽容锚（task-v086 级联 1-38）（兼容 1-35/1-36 过渡）"
 # CD-20 plan-writer S-unit 契约行
 check "grep -q '纯数字' \"\$PLANWRITER\"" "plan-writer.md 含 '纯数字'（s_unit_id 契约行）"
 # CD-21 task_plan 模板 ④ 注释行
