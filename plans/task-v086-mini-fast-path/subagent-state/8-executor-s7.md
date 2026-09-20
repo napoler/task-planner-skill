@@ -42,3 +42,9 @@
 - ledger-append: 任务书给定的 event 值 `delivery-complete` 被脚本拒绝——`[ledger] invalid event 'delivery-complete' (allowed: progress phase_complete error gate_block attest note)` rc=2（**负结果：任务书命令的 event 不在脚本允许集内**，与 CHANGELOG deferred D2「簿记措辞更正」吻合）
 - 按脚本允许集改 event=phase_complete 重跑 → `[ledger] tick 1 -> ./ledger-main.jsonl (event=phase_complete agent=main)` rc=0
 - 落盘证据: plans/task-v086-mini-fast-path/ledger-main.jsonl 末行 `{"tick":1,"ts":"2026-09-20T18:24:22Z","agent":"main","phase":"4","event":"phase_complete","summary":"CR 二轮 APPROVED; merge 4a925bb; 3 实体位 IDENTICAL; 全量 430/0; deferred D1/D2 登记","files":[]}`
+
+[S9-1] ✅ completed
+- 改动: .zcode/ledger/task-planner-maintenance/task-planner-maintenance.jsonl 追加 1 行单行 JSON 条目（ts=2026-09-20T18:29:00Z 真实 UTC，主进程拟稿逐字写入，status=done）
+- 复核（如实记录）: ① 追加行单行 JSON 合法（python3 json.loads OK）② 全文件逐行校验 line-valid=13/46 行 invalid——**负结果**: 既有 13 条条目为 pretty 多行格式（非标准单行 JSONL），逐行校验对既有内容必然 FAIL，非本次追加引入；③ 全文件容错对象级解析 objects=15 全合法，末对象 status=done、action 头「task-v086 难度分级轻量档交付（」在位
+[S9-2] ✅ completed
+- 改动: 仓根 progress.md 文末（既有 Error Log 段之后）追加 1 段（主进程拟稿逐字），标题「### task-v086 难度分级轻量档 + 项目多模板（2026-09-21，交付 COMPLETE）」+3 要点（430/0、内容清单、deferred D1）；Read 复核在位，段落风格与既有 ### 段一致
