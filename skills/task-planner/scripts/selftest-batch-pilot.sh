@@ -8,7 +8,7 @@
 #   BP-05 SKILL.md Rule 18 摘要行含「试点先行」（联动防漏）
 #   BP-06 batch-quality-gate.md §二表含 18.9/18.10/18.11 三行
 #   BP-07 batch-quality-gate.md 含 §八试点先行硬门详解
-#   BP-08 SKILL.md 行数 ≤549（[2026-09-20 task-v085] 机制画像增量 行数回归钉; 548→549）; task-v083 净增 0 后基线 543）
+#   BP-08 SKILL.md 行数 ≤549（行数回归钉; [2026-09-20 task-v085] 机制画像增量 548→549; task-v083 净增 0 后基线 543）
 #   BP-09 batch-quality-gate.md 含「隶属 Rules 1-36」（CD-19 宽容锚子串保护钉）
 #   BP-10 仓库根 CHANGELOG.md 含 task-v083 条目（非仓库部署环境显式 SKIP）
 # 10 断言全 PASS（SKIP 不计 FAIL）exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。

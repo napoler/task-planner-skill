@@ -64,7 +64,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── config.json                              ← 阈值配置（18 键）
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 8 篇规则文档
-│   ├── critical-rules.md                    # Rules 1-36（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36 技能修改保守化）
+│   ├── critical-rules.md                    # Rules 1-37（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36 技能修改保守化 + 37 任务类型机制画像）
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── template-mapping.md                  # variant 选择决策树

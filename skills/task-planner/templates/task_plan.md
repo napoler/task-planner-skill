@@ -18,11 +18,11 @@
 <!--
   设计代码修改类任务：将下方值改为 required
   纯调研/文档/规划类任务：留空或写 n/a
+  默认按 template_type 机制画像自动判定（Rule 37 + template-mapping.md §九）：代码组默认 required，内容组默认 n/a，通用组未声明时按通用守卫；显式声明优先于画像默认值
 -->
 | 字段 | 值 |
 |------|-----|
 | `code_review` | `n/a` / `required` |
-> 默认按 template_type 机制画像自动判定（Rule 37 + template-mapping.md §九）：代码组默认 required，内容组默认 n/a，通用组未声明时按通用守卫；显式声明优先于画像默认值。
 | `session_id` | `<uuid>` | 启动时生成,注册表追踪 |
 | `worktree_path` | `<path>` | §十一 隔离决策已有字段 |
 | `scope_files` | `[paths]` | 从「执行范围限制」解析,并发检测基础 |
