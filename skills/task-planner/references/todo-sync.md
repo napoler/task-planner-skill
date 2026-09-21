@@ -43,7 +43,7 @@ PostToolUse hook（`zcode-posttooluse.sh`）在检测到**计划文档超龄**�
 
 hook 提醒是**阻断性提示**：不响应则同一提醒会在后续调用中反复出现，且违反 Critical Rules（计划腐化 = 目标丢失）。
 
-另有 UserPromptSubmit hook 在用户每条指令到达时注入 `[plan-note]` 提示（有活跃计划时）：提示先做 A/B/C 影响判定，命中 B/C 按 S5 处理——计划变更三步同上（回写计划 → Todo 重映射 → INDEX 刷新）。
+另有 UserPromptSubmit hook 在用户每条指令到达时注入 `[plan-note]` 提示（有活跃计划时）：提示先做 D/A/B/C 影响判定（D=新任务边界，Rule 8.1）——命中 D 类（与当前计划 Goal/范围/交付物均无关联）→ 为该新指令开新计划目录 `plans/{new-task-id}/`（init-session 全流程 + 新计划自己的 S1 映射），**旧计划的 Todo 映射原样保留**（旧计划 Phase/VC 继续推进，不删不改）；命中 B/C 按 S5 处理——计划变更三步同上（回写计划 → Todo 重映射 → INDEX 刷新）。
 
 ## 5. 命令速查
 

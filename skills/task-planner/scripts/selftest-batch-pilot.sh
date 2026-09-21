@@ -8,7 +8,7 @@
 #   BP-05 SKILL.md Rule 18 摘要行含「试点先行」（联动防漏）
 #   BP-06 batch-quality-gate.md §二表含 18.9/18.10/18.11 三行
 #   BP-07 batch-quality-gate.md 含 §八试点先行硬门详解
-#   BP-08 SKILL.md 行数 ≤552（行数回归钉; [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-20 task-v086] Rule 38 联动 549→551, 上限 549→552）
+#   BP-08 SKILL.md 行数 ≤555（行数回归钉; [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-20 task-v086] Rule 38 联动 549→551, 上限 549→552; [2026-09-22 task-v087] Rule 8.1 D 类联动 551→555, 上限 552→555）
 #   BP-09 batch-quality-gate.md 含「隶属 Rules 1-36」（CD-19 宽容锚子串保护钉）
 #   BP-10 仓库根 CHANGELOG.md 含 task-v083 条目（非仓库部署环境显式 SKIP）
 # 10 断言全 PASS（SKIP 不计 FAIL）exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
@@ -52,7 +52,7 @@ if [ "$tbl_ok" -eq 1 ]; then ok 06 "batch-quality-gate §二表 18.9-18.11 三�
 if grep -q '## 八、试点先行硬门详解' "$BGATE"; then ok 07 "§八 试点先行硬门详解"; else bad 07 "缺 §八 详解段"; fi
 # BP-08
 lines=$(wc -l < "$SKILLMD")
-if [ "$lines" -le 552 ]; then ok 08 "SKILL.md 行数 $lines ≤552"; else bad 08 "SKILL.md 行数 $lines 超 552"; fi
+if [ "$lines" -le 555 ]; then ok 08 "SKILL.md 行数 $lines ≤555"; else bad 08 "SKILL.md 行数 $lines 超 555"; fi
 # BP-09
 if grep -q '隶属 Rules 1-36' "$BGATE"; then ok 09 "CD-19 宽容锚子串保护（隶属 Rules 1-36）"; else bad 09 "CD-19 子串被破坏"; fi
 # BP-10

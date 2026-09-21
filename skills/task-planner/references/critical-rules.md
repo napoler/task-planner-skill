@@ -26,6 +26,8 @@
 ### 8 新请求强制重新规划（三分类判定）
 新请求 = 重规划触发器：停 → 记 `notepad-learnings.md` → A/B/C 影响判定（A 无影响照常执行 / B 扩展 / C 矛盾，详见 SKILL.md § 用户新指令处理）→ **凡影响计划（B/C）：先更新 task_plan.md 对应 Phase/VC/范围，并紧邻同步原生 Todo（todo-sync.md S5），再执行** → 确认 → 继续。禁止口头接受新指令而计划与 Todo 不动。**用户指出错误（A/B/C 判定命中「已产出/结论有误」）时先走 Rule 31 根因分析闭环（31.2 分析 → 31.3 定向修 → 31.4 沉淀），禁止跳过归因直接改**。
 
+8.1 **新任务边界判定（D 类，task-v087）**:新指令到达时先做**任务边界判定（D 先于 A/B/C）**——对照当前活跃 task_plan.md 三要素（`## Goal` + `scope_files`/执行范围 + 交付物），若该指令与三要素**均无主题/范围/交付物关联**（用户要的是一个独立新任务，而非对当前任务的追问/扩展/纠正），判定 **D 类「新任务」**，处置：①**禁止**把该指令当 A 类「照常执行」在当前计划上下文里做（= 不相干内容混入当前计划），**禁止**当 B 类扩进当前计划范围；②为新任务开**新计划目录** `plans/{new-task-id}/`（init-session.sh 全流程：三文件 + 初始化 + 哨兵清除 + S1 Todo 映射）；③旧计划**原样保留**（其 Phase/VC/Todo 映射继续有效，不标 superseded——区别于 C 类）；④判定落一行 `notepad-learnings.md`（指令摘要 → D 判定 → 新计划目录路径）+ Decisions Made。仅当**存在进行中的活跃计划**时本条适用；无活跃计划（或旧计划已 COMPLETE/BLOCKED）时新指令天然开新计划，本条 N/A。指令与当前目标**有关联**（哪怕影响小）则回退 A 类。机制侧守护：SKILL.md §用户新指令处理 D 行+特判段、UPS hook [plan-note] D 类指引（scripts/zcode-userpromptsubmit.sh）、todo-sync.md S5 D 类分支、selftest-task-boundary.sh 静态锚（防条款误删）。
+
 ### 9 错误提前暴露
 出错 → 记 progress.md + 告诉用户 + `config.json#escalation_threshold` 次失败则 AskUserQuestion。
 
