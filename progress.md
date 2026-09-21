@@ -6,3 +6,8 @@
 - 合并 4a925bb / 簿记 55db912 已 push origin master；三位部署 IDENTICAL；master 全量 selftest 430/0
 - 内容：Rule 38（plan_tier: mini 判定 ≤2 文件∧≤15min∧单模块）+ mini-lite 49 行模板 + 5 锚点门控豁免（非 mini 零影响实证）+ S6 项目多模板极简支持（--list/项目 default 指针/env TASK_TEMPLATE_DEFAULT，每次任务只加载 1 个模板）+ check-template-type 第三形态注释提取（CR 首轮 BLOCKER 修复）
 - 遗留 deferred：D1 项目自造模板名不入 34.1 白名单（enforce 档拒锁，留独立任务）
+
+### task-v087 新任务边界判定（2026-09-22，交付 COMPLETE）
+- 合并 a2ae738 / 簿记见本仓 progress 段；三位部署 IDENTICAL；master 全量 selftest 441/0
+- 内容：Rule 8 族纯追加 8.1 D 类新任务边界判定（与当前 Goal/scope/交付物均无关联→开新计划目录+旧计划原样保留）+SKILL.md 用户新指令表 D 行/特判段/C12 扩 D/A/B/C+UPS hook [plan-note] D 类指引+todo-sync S5 D 类分支+selftest-task-boundary 11 断言
+- 零新 config 键（判定=LLM 行为面，机器守护条款在位）
