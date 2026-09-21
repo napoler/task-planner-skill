@@ -81,3 +81,9 @@
 - **Status:** complete
 
 - [git-commit] worktree 提交 7b5ec73（本任务全部产物，10 文件：CHANGELOG+SKILL+critical-rules+todo-sync+4 selftest+UPS hook+selftest-task-boundary 新）
+
+## Phase 6 — 文档对齐 + 部署 + push（B 类扩围，2026-09-22）
+- **Started:** 2026-09-22 02:0x
+- Actions taken: 用户指令「同步对齐文档 部署 并推送到github」= B 类扩围 → 计划扩 Phase 6 重 attest。①文档对齐：CLAUDE.md L32 / README_zh.md L136+L229 Rules 1-34→1-38；skills/task-planner/README.md 陈旧计数对齐（config 18→40 键、variant 12→15 补 mini-lite/rule-enhancement/video 名、模板 20→25）；②v086 误挂账根因=data 侧（task_plan Phase 4 重复 Status 行 L86 被 sync-todos rollup 多计 5/4）→ 删重复行后 rollup 4/4 complete，INDEX 回归 complete；脚本缺陷（rollup 全文件 Status 匹配非 Phase 块作用域）=保护区未授权，登记 deferred-issues.log D1；③verification outcome 行落 COMPLETE 证据；④INDEX 刷新（in_progress=0 complete=33）；⑤三位部署 cp -rL 重跑 + diff -r 亲验 IDENTICAL×3；⑥全量 selftest：主仓循环求和 441/0（26 脚本），部署位 440/0（已知自跳口径差 1，逐脚本无 FAIL）；⑦commit+push。
+- Test Results: 三处文档锚 grep 复核（Rules 1-38 ×4 处）；v086 Status 行数 5→4；diff -r 三位 IDENTICAL；selftest 441/0（主仓）。
+- **Status:** complete

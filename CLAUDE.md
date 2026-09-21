@@ -29,7 +29,7 @@ skills/task-planner/
 │   ├── progress.md       ← 会话进度日志
 │   └── notepad-learnings.md
 └── references/
-    ├── critical-rules.md ← Rules 1-34 核心执行约束
+    ├── critical-rules.md ← Rules 1-38 核心执行约束
     ├── completion-gate.md← 子代理验证 + 串行同步协议
     ├── goal-gate.md      ← VC 规则 + COMPLETE/PARTIAL/BLOCKED 退出标准
     └── billing.md        ← 计费模式说明

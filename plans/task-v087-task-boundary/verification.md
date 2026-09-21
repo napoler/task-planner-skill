@@ -104,7 +104,7 @@ JSON 输出：
 - [ ] VC-2: {evidence} → PASS/FAIL
 ...
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: **COMPLETE**（2026-09-22 终验：VC-1..5 全 PASS；合并 a2ae738+簿记 见 progress；三位部署 IDENTICAL；主仓全量 441/0；B 类扩围 Phase 6=文档对齐+重部署+push）
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

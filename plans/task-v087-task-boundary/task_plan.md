@@ -101,7 +101,7 @@
 Phase 1
 
 ## Next Step
-Phase 5：INDEX 刷新 + ledger 更新 + check-complete 终验
+Phase 6（B 类）：文档对齐 README/CLAUDE/README_zh Rules 1-38 + v086 重复 Status 清理 + INDEX 刷新 + 三位重部署 + push
 
 ## Phases
 <!-- 
@@ -153,9 +153,21 @@ Phase 5：INDEX 刷新 + ledger 更新 + check-complete 终验
 ### Phase 5: 计划收尾
 - [x] 三文件回填（findings/progress/verification 终验）
 - [x] check-complete.sh 终验 + notepad 沉淀 + INDEX 刷新 + ledger 更新
-- **V-N:** VC-1, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② 簿记——Rule 25.3 白名单②）
+
+### Phase 6: 文档对齐 + 部署 + push（B 类扩围 — 用户指令「同步对齐文档 部署 并推送到github」，2026-09-22）
+- [x] 三处文档同步 Rules 1-34→1-38（CLAUDE.md L32 / README_zh.md L136、L229）+ 陈旧计数对齐（config 18 键→40 / variant 13→15 / 12→15）
+- [x] v086 task_plan.md 清理 Phase 4 重复 Status 行（L86 删，留 L82 标准位）→ rollup 4/4 complete，INDEX 误挂账根除
+- [x] v087 verification.md outcome 行落 COMPLETE 证据
+- [x] INDEX 刷新（sync-todos --index，v086/v087 均 complete；v087 Phase 6 complete 后终刷）
+- [x] sync-todos.sh rollup 重复 Status 缺陷根因（脚本=保护区，未经授权不改——已登记 deferred-issues.log，报告用户）
+- [x] 三位部署重跑 + diff -r 亲验 IDENTICAL
+- [x] 全量 selftest 441/0 亲验（改动面仅 .md 文档，锚零影响，需实证）
+- [x] git commit + push origin master（用户显式授权）
+- **V-N:** VC-1, VC-5（文档锚 grep + 全量/部署复验）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:② 计划系统文件维护+纯文档 .md 对齐——Rule 25.3 白名单②；§十一 纯文档例外②直接主仓，无需 worktree）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 

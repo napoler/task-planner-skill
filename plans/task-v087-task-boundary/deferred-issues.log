@@ -1,0 +1,1 @@
+[2026-09-22 task-v087] D1: scripts/sync-todos.sh rollup_task() 状态计数缺陷——`/[Ss]tatus:\*\*/` 全文件匹配（L93），Phase 块外/块内重复的 `- **Status:**` 行被多计，导致 total≠Phase 数时（如 v086 Phase 4 重复 Status 行）INDEX 误挂账 in_progress（实已 complete）。本轮=v086 数据侧修复（删重复行，sync-todos.sh 未动=技能脚本保护区未经授权不改，Rule 36.1）。修复方向=rollup 状态计数限定 Phase 块作用域（状态机与 parse_task_plan 对齐）。待用户授权后独立任务处理。

@@ -20,7 +20,7 @@
 - **原生 Todo 双向同步**：S1-S5 强制同步时机（计划文档 ↔ TodoWrite/Task 系统）
 - **漂移检测**：每 phase 完成后自动调用 `task-drift-guard`
 - **工作树隔离**：实现类任务默认首选 worktree（防改坏运行中基础设施）
-- **场景化模板**：12 个 variant 模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration；不匹配时回退通用 task_plan.md）按 `template_type` 字段自动分发；全部 20 个模板统一含「📚 必要知识储备」章节（任务知识库对齐）
+- **场景化模板**：15 个 variant 模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration + mini-lite/rule-enhancement/video；不匹配时回退通用 task_plan.md）按 `template_type` 字段自动分发；全部 25 个模板统一含「📚 必要知识储备」章节（任务知识库对齐）
 
 ---
 
@@ -32,7 +32,7 @@
 │   (独立 git 仓库, 41 文件, 4 commits)                    │
 │   - SKILL.md (剥除 hooks)                                │
 │   - references/  (8 篇规则)                              │
-│   - templates/   (5 核心 + 3 辅助 + 12 variant)          │
+│   - templates/   (5 核心 + 3 辅助 + 15 variant)          │
 │   - scripts/     (17 个工具脚本)                         │
 │   - lib/         (5 个 installer 脚本)                   │
 │   - tests/       (smoke.sh 16/16 pass)                   │
@@ -61,7 +61,7 @@
 ```
 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
-├── config.json                              ← 阈值配置（18 键）
+├── config.json                              ← 阈值配置（40 键）
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 8 篇规则文档
 │   ├── critical-rules.md                    # Rules 1-38（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36 技能修改保守化 + 37 任务类型机制画像 + 38 任务难度分级与轻量档）
@@ -70,7 +70,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── template-mapping.md                  # variant 选择决策树
 │   ├── template-guide.md                    # 模板定制指南
 │   ├── goal-gate.md / completion-gate.md / billing.md
-├── templates/                               ← 5 核心 + 3 辅助 + 12 个 variant
+├── templates/                               ← 5 核心 + 3 辅助 + 15 个 variant
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   └── variant/
 │       ├── research-type.md                 # 调研任务

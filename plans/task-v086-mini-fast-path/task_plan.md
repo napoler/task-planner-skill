@@ -83,7 +83,6 @@
 - 全量回归 0 FAIL → **CR Gate（Code Reviewer 二轮范式）**：首轮 CHANGES_REQUESTED——**发现 1（BLOCKER）=init-session frontmatter 插入形态 `<!-- template_type: X -->` 注释 check-template-type 提取链不识别（只认行首直书 `^template_type:` 与表格行），mini 主路径在 template_gate enforce 档拒锁**；发现 2=38.4② 条款「2→1」与实现等效阈值 0 矛盾；发现 3=38.2 中/重禁用 mini 无机器锚；发现 4=selftest 样例手造双形态 plan_tier 标记偏离真实产物 → S7 修复单元（check-template-type 提取链补第三形态注释 form（gate 侧修复）+ 条款 2 处措辞对齐 + selftest 样例改真实 mini-lite cp 基座+PT-28）后复跑定数
 - worktree 内提交 commit → 主仓 smart-merge-back（--no-ff）→ 部署 3 实体位（~/.zcode、~/.claude、~/.config/opencode 的 skills/task-planner，diff -r 复验 IDENTICAL）→ **push origin master（用户指令 09-20「提交 github」）** + INDEX/ledger 簿记 + worktree 清理 + 记忆沉淀
 - **V-N:** VC-5, VC-6
-- **Status:** complete
 - **Executor:** 主进程（白名单①②）
 
 ## 🔀 隔离决策
