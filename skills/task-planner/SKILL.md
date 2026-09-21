@@ -185,7 +185,7 @@ model: opus
 | C9 | Code Review Gate 的 fix-phase（如有）已 complete | ☐ |
 | C10 | 计划创建后已按 S1 建立原生 Todo 映射（TodoWrite 或 Task） | ☐ |
 | C11 | 每个 Phase 状态变更后已同步 Todo（S2）；`[plan-sync]` 提醒均已响应（S3） | ☐ |
-| C12 | 用户新指令已做 A/B/C 影响判定；B/C 类已完成计划 + Todo 同步更新（S5） | ☐ |
+| C12 | 用户新指令已做 D/A/B/C 影响判定（D 新任务边界先判，8.1）；D 类已开新计划目录且旧计划原样保留；B/C 类已完成计划 + Todo 同步更新（S5） | ☐ |
 | C13 | Phase complete 后已被动调 `Skill("plan-resume")` 扫描中断任务(若用户未说"不要 plan-resume")；执行中扫描只报告,恢复触发点按 Rule 24.5 自主续推(或已按"不要自动续推"降级) | ☐ |
 | C14 | 本 Phase 执行体与计划 Executor 字段一致；主进程直做已在计划登记例外理由（Rule 25） | ☐ |
 | C15 | 本 Phase 无未处置质量违规：V-N 全勾且 Evidence 非空、Handoff verify_done 已勾、无 Rule 26 触发项（或已豁免登记）（Rule 26） | ☐ |
@@ -211,9 +211,12 @@ model: opus
 
 | 类 | 判定 | 强制动作 |
 |----|------|----------|
+| D 新任务边界 | 与当前计划 Goal/范围/交付物均无关联（用户要的是独立新任务，详见 8.1） | **开新计划**：为该指令建 `plans/{new-task-id}/`（init-session 全流程）；旧计划原样保留（不标 superseded）；判定落 notepad 一行 + Decisions Made；**禁止**在当前计划上下文里照做（A）或扩进当前计划范围（B）= 不相干内容混入 |
 | A 无影响 | 闲聊/追问/与当前计划无关 | 正常执行，不改计划 |
 | B 扩展 | 新需求/加范围/改交付物 | **先重规划再执行**：`Edit task_plan.md`（新增/修改 Phase、VC、执行范围表，注明来源指令与时间）→ 紧邻同步原生 Todo（S5：新增/调整对应条目）→ 向用户复述计划变更 → 再执行 |
 | C 矛盾 | 与已确认计划/VC/用户先前决策冲突 | 停止当前写入：更新计划中被推翻部分（标注 superseded + 新内容）→ 同步 Todo（改/删对应条目）→ 展示新旧对比获确认后执行；与用户此前关键决策冲突时必须 STOP 等决策 |
+
+**判定顺序**：先 D（任务边界）再 A/B/C——指令与当前目标有关联时回退 A/B/C 正常判定；仅当存在进行中的活跃计划时 D 类适用。
 
 **稳定性铁律**：禁止"口头接受新指令、计划文档与 Todo 不动"——计划外执行是后期执行不稳定与漂移的首要来源。
 **错误指出特判（Rule 31 — task-v072）**：用户指出的若是「已产出/结论/执行有误」、或对同一问题重复反馈 ≥2 次、或执行中打断补充新数据推翻既有结论 → 先 STOP 当前写入，按 31.2 完成 4 维归因表（现象/直接原因/根因 5 Whys/类别）并落 progress.md Error Log（Root Cause 列）+ findings.md Issues 段，再按 31.3 修正路由定向修、31.4 同步沉淀 notepad 两段；**禁止跳过归因直接改症状处**。完整条款见 `references/critical-rules.md` Rule 31。
@@ -221,6 +224,7 @@ model: opus
 **解决后反思-验证循环（Rule 33 — task-v074）**：每个问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后、标记完成前，走「反思四问（33.2）→独立验证（33.3）」微循环，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；≤3 轮（33.4），超限按 Rule 22.3 升级。完整条款见 `references/critical-rules.md` Rule 33。
 **模板选取门控与沉淀（Rule 34 — task-v074）**：attest 锁定前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；终验时命中 34.3 沉淀触发（同类第 2 次/类型空缺可泛化/用户点名）→ 按 34.4 提炼新 variant 模板入库+四点同步，防滥用见 34.5。完整条款见 `references/critical-rules.md` Rule 34。
 **技能文件修改保守化（Rule 36 — task-v079）**：任何技能文件写操作（36.1 范围）先过 36.2 归因前置门——执行期失败/异常禁止拿「改技能」当第一补救，归因指向技能本体且用户显式要求才可提案；修改前按 36.3 建删除基线产出删除性行为清单，功能性删除/语义改写按 36.4 交用户逐项确认（D6 级，silent 亦不可跳过），默认 36.5 纯增量；新守卫 check-skill-modify.sh 挂 pretooluse 对主进程与子代理一致生效（skill_modify_enforce 默认 warn）。完整条款见 `references/critical-rules.md` Rule 36。
+**新增任务边界判定（Rule 8.1 — task-v087）**：用户新指令与当前计划 Goal/范围/交付物均无关联 = **D 类新任务**——先判 D 再判 A/B/C：开新计划目录（init-session 全流程），旧计划原样保留（不标 superseded，区别于 C 类）；禁止把不相干指令在当前计划上下文照做（A）或扩进当前计划范围（B）——不相干内容混入既有 task_plan.md 是三文件污染与终验失焦的首要来源。判定依据 = 当前 task_plan.md 三要素（Goal + scope_files/执行范围 + 交付物）；指令与当前目标有关联（哪怕影响小）回退 A 类；无活跃计划时 D 类 N/A（天然开新计划）。判定落 notepad-learnings.md 一行 + Decisions Made。完整条款见 `references/critical-rules.md` 8.1。
 - 每次 B/C 类变更 → `Decisions Made` 表记一行（指令→变更）+ progress.md 记录
 - B/C 类处理完必须再跑 `Skill("task-drift-guard")`
 - 配套提醒：UserPromptSubmit hook 在指令到达时注入 `[plan-note]` 判定提示（有活跃计划时）

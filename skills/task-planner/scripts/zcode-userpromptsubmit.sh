@@ -6,8 +6,8 @@
 #       证据:turn-start 注入是防漂移最有效手段;per-tool-call 注入省略(v3 autonomous 结论)。
 # 职责 2(attestation 校验,Rule 20.1,2026-09-02):计划目录存在 .plan-attestation 时先校验 SHA-256;
 #       不匹配 → 只注入 [PLAN TAMPERED] 警告,拒绝注入计划内容(防篡改计划继续当事实源)。
-# 职责 3(原有,[2026-08-28]):[plan-note] A/B/C 影响判定提醒,节流:第 1 条 + 每 prompt_note_interval 条一次;
-#       已完结计划(COMPLETE/BLOCKED)静默。
+# 职责 3(原有,[2026-08-28]):[plan-note] D/A/B/C 影响判定提醒(D=新任务边界,task-v087 Rule 8.1),
+#       节流:第 1 条 + 每 prompt_note_interval 条一次;已完结计划(COMPLETE/BLOCKED)静默。
 # 约束:fail-open —— 任何异常 exit 0 不阻塞指令;无活跃计划时零输出;
 #       注入块内不回显用户 prompt;外部内容只进 findings.md 不进 task_plan.md(20.2,防注入放大)。
 
@@ -127,7 +127,7 @@ n=$(( n + 1 ))
 echo "$n" > "$ups_state"
 note=""
 if [ "$n" -eq 1 ] || [ $(( n % interval )) -eq 0 ]; then
-  note="[plan-note] 新指令到达 — 先做影响判定: A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘。"
+  note="[plan-note] 新指令到达 — 先做影响判定: D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧计划原样保留; A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘;不相干内容禁止混入当前计划(Rule 8.1)。"
 fi
 
 # ─── 并发冲突检测(Rule 23)────────────────────────────────────────────────
