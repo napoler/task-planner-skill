@@ -88,7 +88,7 @@ Phase 1
 
 ### Phase 3: SKILL/索引/selftest 联动同步
 
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 - **动作**：5 组联动（逐 S-unit 严格串行）——① SKILL.md：Rule 39 摘要行（Critical Rules 段 Rule 38 行后）+ C27 合规清单项 + 🤝 协同路由矩阵 dynamic-workflows 行 + L288/L340「Rules 1-38」→「Rules 1-39」；② CLAUDE.md/README_zh.md/skills/task-planner/README.md 索引换字；③ 4 个既有 selftest 行数锚 555→563（含注释行）
 - **验收**：V-2（SKILL 净增 ≤8 行/总 ≤563）、V-3（"Rules 1-38" 残留 =0，历史注释里的 555 字样不属于 1-38 不受影响——先 grep 全仓核对清单再动手）、V-4（4 处 ≤563）

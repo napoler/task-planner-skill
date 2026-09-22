@@ -100,7 +100,7 @@ WF-07: SKILL.md 含 "Rule 39"（摘要行存在）
 WF-08: SKILL.md 含 "C27"（合规清单项存在）
 WF-09: SKILL.md 协同路由含 "dynamic-workflows" 行
 WF-10: 全仓 "Rules 1-39" 命中 ≥6（SKILL×2 + CLAUDE + README_zh×2 + skills/task-planner/README）
-WF-11: 全仓 "Rules 1-38" 在 SKILL/CLAUDE/README 三文档残留 = 0（selftest 脚本历史注释不含 1-38 字样，不受影响）
+WF-11: 4 索引文档（SKILL.md/CLAUDE.md/README_zh.md/skills/task-planner/README.md）"Rules 1-38" 残留 = 0（critical-rules.md 38.5 条款内「索引行 Rules 1-38」为 Rule 38 自身历史机制描述，不在 WF-11 范围——P3 已实测该处残留 1 处合法）
 WF-12: config.json properties 键数 = 40（零新增，jq -r '.properties|keys|length'）
 ```
 
@@ -115,7 +115,7 @@ WF-12: config.json properties 键数 = 40（零新增，jq -r '.properties|keys|
 - 39.5 机器校验边界如实披露：官方文档未提及 check-dispatch 覆盖 workflow 内部，机器校验归 harness 侧
 - 39.6 零新 config 键（与 v087 同范式）；守护 scripts/selftest-workflow-orchestration.sh（WF-01..12 静态断言）
 - SKILL 联动：协同路由矩阵 dynamic-workflows 行 + Rule 39 摘要行 + C27 + 「Rules 1-38」→「1-39」索引级联 6 处（SKILL×2/CLAUDE/README_zh×2/skills/task-planner/README）
-- 4 既有 selftest 行数上限锚 555→563（batch-pilot/execution-stability/knowledge-brief/skill-collab）
+- 4 既有 selftest 行数上限锚 555→558（batch-pilot/execution-stability/knowledge-brief/skill-collab）
 - 部署：三位实体位 IDENTICAL + push 远端
 ```
 EOF
