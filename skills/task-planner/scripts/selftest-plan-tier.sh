@@ -8,7 +8,7 @@
 #   PT-05 含 38.4 门控豁免清单锚（锚表 5 点 + 非 mini 零影响铁律）
 #   PT-06 含 38.5 机制锚（plan_tier_enforce + selftest-plan-tier）
 #   PT-07 config.json 含 plan_tier_enforce 键（默认 warn, enum 三档）
-#   PT-08 SKILL.md frontmatter 索引含「1-38」
+#   PT-08 SKILL.md frontmatter 索引含「1-39」（task-v088 级联 1-38→1-39）
 #   PT-09 SKILL.md 含 C26 检查项（Rule 38 档位判定）
 #   PT-10 SKILL.md Critical Rules 列表含 Rule 38 摘要行
 #   PT-11 templates/variant/mini-lite-type.md 存在 ∧ ≤80 行 ∧ frontmatter 含 plan_tier: mini
@@ -68,7 +68,7 @@ else
   bad 07 "config.json plan_tier_enforce 缺失/默认非 warn/enum 非三档"
 fi
 # PT-08
-if grep -q 'Critical Rules 全集 1-38' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-38"; else bad 08 "SKILL.md frontmatter 缺「1-38」"; fi
+if grep -q 'Critical Rules 全集 1-39' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-39（v088 级联）"; else bad 08 "SKILL.md frontmatter 缺「1-39」"; fi
 # PT-09
 if grep -q '^| C26 ' "$SKILLMD" && grep '^| C26 ' "$SKILLMD" | grep -q 'Rule 38'; then ok 09 "SKILL.md C26 检查项"; else bad 09 "SKILL.md 缺 C26 行"; fi
 # PT-10

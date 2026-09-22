@@ -71,6 +71,19 @@
   | bash -n 语法检查 | bash -n | rc=0 | rc=0 | PASS |
   | CHANGELOG 结构复核 | Read 头部 | v088 条目在 v087 之上，「## [Unreleased] / ### 新增」未破坏 | L8=## [Unreleased]、L10=### 新增、L12=v088 条目、L14=v087 条目 | PASS |
 
+### Phase 5: 既有 selftest 宽容锚扩围（1-3[5-8]/1-3[1-8] → 9）
+- **Status:** complete
+- **Started:** 2026-09-23（code-assistant 派发）
+- Actions taken:
+  - S5-1 4 个既有 selftest 宽容锚扩围 5 处：selftest-conclusion-discipline.sh L63 `1-3[5-8]`→`1-3[5-9]`（CD-11 计数锚）+ L79 `Rules 1-3[5-8]`→`Rules 1-3[5-9]`（CD-18 README 锚，L81 batch-quality-gate 锚按 v085 先例保留不改）；selftest-reflect-verify.sh L60 断言与 ok/bad 两行文案同步 `[5-8]`→`[5-9]`；selftest-error-loop.sh L59 与 selftest-veto.sh L51 `Rules 1-3[1-8]`→`Rules 1-3[1-9]`——验收 bash -n 4 文件 rc=0，4 selftest 单跑 Total=55 全部 FAIL=0，残留 grep 仅 CD L64/L79/L81 注释文案行（L81 为合法保留）
+- Files created/modified:
+  - skills/task-planner/scripts/selftest-conclusion-discipline.sh（2 行 L63/L79）、selftest-reflect-verify.sh（1 行 L60）、selftest-error-loop.sh（1 行 L59）、selftest-veto.sh（1 行 L51）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 4 selftest 单跑 | bash 运行 | FAIL=0 | CD 24 PASS / EL 16 PASS / RV 12 PASS / VT 13 PASS，全部 FAIL=0 | PASS |
+  | bash -n 4 文件 | bash -n | rc=0 | rc=0 | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

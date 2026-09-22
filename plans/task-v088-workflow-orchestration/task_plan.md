@@ -156,6 +156,7 @@ Phase 5 主进程：全量 27 selftest（FAIL=0）→ git add scope + commit →
 | 沉淀出口=SaveWorkflow（project .zcode/workflows / global ~/.zcode/workflows）挂 34.3 触发 | 官方载体即既有沉淀通道的延伸；同名覆盖走 36.4 用户确认 |
 | 守卫=新建 selftest-workflow-orchestration.sh 静态断言 | 本仓所有 Rule 守护范式=静态 selftest；行为面无法 bash 断言，锚+索引+行数即可守护 |
 | 部署+push 纳入 P5（三实体位+远端） | 用户宪法 §二 部署拓扑记忆：仓库改动不自动生效；v086 P4 先例=实体位部署后 push 用户授权模式（本会话用户指令=优化技能→交付含部署，push 为既定交付节） |
+| B 类扩展登记（P5）：4 selftest 宽容锚 1-3[1-8]/1-3[5-8]→[1-9]/[5-9] 共 5 处（conclusion-discipline CD-12/CD-19 + error-loop EL-11 + veto VT-10 + reflect-verify RV-10）+ SKILL.md L9 frontmatter references 行索引 1-38→1-39 + selftest-plan-tier.sh PT-08 字面锚 1-38→1-39 | 索引升级 1-39 后旧宽容锚上界 8 不再命中→全量假 FAIL（v085 级联教训第 2 次实证）；扩 9 为机械级联零语义改动；batch-quality-gate.md 独立文档锚保留 1-3[5-8] 字面（文档零改动原则）；PT-08 首跑暴露=扩围 grep 未含字面 `1-38` 锚位（P5 全量兜底第 1 处） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
