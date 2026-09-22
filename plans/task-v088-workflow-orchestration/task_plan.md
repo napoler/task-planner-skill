@@ -115,7 +115,7 @@ Phase 5 主进程：全量 27 selftest（FAIL=0）→ git add scope + commit →
 
 ### Phase 5: 全量验证 + 合并部署 + push
 
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由：③ 机械验证命令 + ①② git/worktree 编排与簿记——Rule 25.3 白名单）
 - **动作**：全量 27 selftest 运行（FAIL=0）→ jq config 键数=40 复核 → bash -n 全脚本 → git add scope + commit（Rule 27）→ 主仓副本 smart-merge-back.sh --deploy（三位部署 IDENTICAL 亲验 diff -r）→ worktree remove + branch -d → push
 - **验收**：V-5/V-6/V-7；合并后 master 全量 selftest 复跑 FAIL=0（worktree 基线与 master 可能被并行推进——部署前重跑兜底，v079 教训）

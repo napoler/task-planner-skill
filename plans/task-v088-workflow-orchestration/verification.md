@@ -1,127 +1,31 @@
-# Verification Contract & Phase Gates
+# Verification Contract & Phase Gates — task-v088 动态工作流编排 Rule 39
 
-## Goal (1 sentence)
+## Goal
+task-planner 接入 /workflow（dynamic-workflows）路由与映射合约（Rule 39）落地：规则+守卫+索引级联+部署，全量 453/0。
 
-[One sentence describing the end state — must be objectively verifiable]
+## Verification Contract（终验逐条复验）
 
----
+- [x] V-1: critical-rules.md 含 `### 39 动态工作流编排` 六子条锚点
+  Evidence: `grep -n "^### 39\|^39\.[0-9]" skills/task-planner/references/critical-rules.md` → L343/L347-349/L359-361 全命中（P2 亲验，+20 行 341→361，diff 逐字节 IDENTICAL）
+- [x] V-2: SKILL.md 净增 3 行、558 行（Rule 39 摘要行+C27+协同路由行+Rules 1-39 索引）
+  Evidence: `wc -l skills/task-planner/SKILL.md` = 558；L9/L290/L343 均 1-39
+- [x] V-3: Rules 1-38→1-39 索引级联全同步
+  Evidence: `grep -rc "Rules 1-39"` SKILL(2)+CLAUDE(1)+README_zh(2)+skills/README(1)=6；4 文档 "Rules 1-38" 残留=0（P5 补 SKILL L9 frontmatter 行）
+- [x] V-4: 4 既有 selftest 行数锚 555→558（batch-pilot/execution-stability/knowledge-brief/skill-collab 各 10/19/16/25 PASS）
+- [x] V-5: 新建 selftest-workflow-orchestration.sh（WF-01..12）全 PASS；全量 27 selftest FAIL=0
+  Evidence: worktree 全量 453/0（基线 441+12）；P5 级联补全（宽容锚 5 处+PT-08）后 master 全量 453/0 复跑
+- [x] V-6: config.json 键数恒 40（零新键）
+  Evidence: `jq -r '.properties|keys|length'` = 40
+- [x] V-7: worktree 合并 + 清理 + 三位部署 IDENTICAL
+  Evidence: smart-merge-back merge a3d8679；diff -r 亲验三实体位全 IDENTICAL；worktree remove + branch -d 完成
+- [x] V-8: CHANGELOG.md v088 条目
+  Evidence: `sed -n '8,14p' CHANGELOG.md` v088 条目在 v087 之上
 
-## Verification Contract (≥5 items, objective standards)
+## 委派统计（Rule 25.4）
+- 子代理执行 Phase 3/5（P2/P3/P4）；主进程 P1（④③）/P5（①②③）
+- 委派率 0.6 → WHITELIST-EXEMPT（直做理由全命中 25.3 白名单）
 
-> These are the FINAL checks. All must pass for goal to be COMPLETE.
-> Each item: observable, testable, traceable to evidence.
+## 质量门控统计
+- 22.7 换档 0 次；22.3 拆细 0 次（一次过）；错误学习：P5 全量兜底捕获 v085 级联漏网 2 层→B 类登记 Decisions Made（31.2 根因=索引级联 grep 清单未含字面 `1-38` 锚位）
 
-- [ ] VC-1: [What to check / test command / file to inspect]
-  Evidence: [file path / command output / screenshot]
-- [ ] VC-2: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-3: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-4: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-5: [What to check]
-  Evidence: [file path / command output]
-
----
-
-## Phase Gates
-
-### Phase 1: {Name}
-
-**Goal**: [1 sentence, what this phase produces]
-
-**Depends on**: [previous phase or "none"]
-
-**Done when**:
-- [ ] {objective completion condition}
-
-**Verification** (run before moving on):
-- [ ] V-1.1: [mapped to VC-? or custom]
-- [ ] V-1.2: [mapped to VC-? or custom]
-
-Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
-
----
-
-### Phase 2: {Name}
-
-**Goal**: ...
-
-**Depends on**: Phase 1
-
-**Done when**:
-- [ ] ...
-
-**Verification**:
-- [ ] V-2.1: ...
-- [ ] V-2.2: ...
-
-Status: `pending` Last verified: —
-
----
-
-### Phase 3: {Name}
-
-...
-
----
-
-## 📚 必要知识储备符合性核验（终验项）
-<!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
-| 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
-|-----------|----------------------|---------------------|
-|           |                      |                     |
-
-## 委派统计复验（Rule 25.4）
-
-**机器统计为事实源，人工仅复核**：运行 `bash <skill>/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
-
-```bash
-# 证据（粘贴以下 JSON 原文）
-bash <skill>/scripts/check-delegation.sh stats <plan-dir>
-```
-
-JSON 输出：
-```json
-{粘贴 stats 命令原文输出}
-```
-
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
-
-## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
-
-## Goal Gate (终验，所有 phase complete 后执行)
-
-```
-## Goal Verification — {Goal 语句}
-对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
-
- outcome: COMPLETE / PARTIAL / BLOCKED
-```
-
-**COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。
-
-**PARTIAL**：VC 通过但存在已知遗留缺陷 → 列出 + 建议后续。
-
-**BLOCKED**：≥1 VC 失败且 3 次重试无效 → 升级用户决策。
-
----
-
-## 5-Question Reboot Check
-
-| # | Question | Answer (fill on resume) |
-|---|----------|--------------------------|
-| 1 | Where am I? | Phase N |
-| 2 | Where am I going? | Remaining phases |
-| 3 | What's the goal? | Goal statement above |
-| 4 | What have I learned? | See findings.md |
-| 5 | What have I done? | See progress.md |
-| 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+## Outcome: COMPLETE
