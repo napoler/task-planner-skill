@@ -339,3 +339,23 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 38.5 **机制**：开关键 `config.json#plan_tier_enforce`（enum [enforce, warn, off]，默认 warn；档位解析 env `TASK_PLANNER_PLAN_TIER_ENFORCE` > config > warn）——off=mini 声明也走全量门控（豁免全关闭）；warn=豁免生效 + MISMATCH 提示不阻断（默认）；enforce=豁免生效 + MISMATCH 阻断锁定。消费侧挂 38.4 锚表 5 点脚本 + init-session.sh tier 分流；守护 `scripts/selftest-plan-tier.sh`（静态断言：38.x 条款锚 + config 键 json 校验 + SKILL 联动索引行/C26/摘要行 + mini 判定机器可测）；SKILL 联动 = 索引行 Rules 1-38 + 合规清单 C26 + Critical Rules 摘要行（净增 ≤10 行）。
 
 **边界明示（与 Rule 37 关系）**：38 裁的是**任务体量档**（文件数/时长/模块数 → 仪式区块量级），37 裁的是**任务类型画像**（template_type → 机制适用性），两维正交——mini 档计划仍按 37 机制画像路由执行体；38 豁免仅 38.4 锚表 5 点所列仪式门控，3-File 落盘（Rule 19，降为 Phase 级一次）、漂移检测（Rule 15）、错误学习闭环（Rule 31）等通用守卫在 mini 档内不变。
+
+### 39 动态工作流编排（dynamic workflow orchestration routing — task-v088，目标：用户显式点名 /workflow 时路由到 dynamic-workflows 编排，把 task-planner 失败兜底/断点续做/人工升级/模板沉淀四机制映射到 workflow 原生能力；未点名时既有串行派发零改动）
+
+task-planner 执行模型长期只有「串行 Agent() 逐 S-unit 派发」一条路，对多步、有类型化中间结果、需按停止条件循环的编排型任务串行慢、失败重跑全量重付、人工干预无原生通道；harness 已内置 dynamic-workflows 能力（AmendWorkflow cache 导入 / ResumeWorkflowRun 断点 / ResolveWorkflowQuestion 升级 / SaveWorkflow 沉淀），技能层却零路由零映射。本条建立「点名才路由 + 四机制映射 + 并行豁免登记 + 机器校验边界」链路；未点名任务保持 Rule 21.4 串行铁律零改动（Rule 36.5 纯增量）。
+
+39.1 **触发纪律（显式点名才路由 — 官方红线复刻）**：仅当用户显式调用 `/workflow` 或明确措辞要求 workflow 编排（"use a workflow"/"用工作流"）时，本条生效，路由到 `CreateWorkflow`（编排替代纯串行 Agent 派发）；**agent 不得自主判断启动 workflow**（官方 L46-55「explicit request is binding」）。未点名 → 一律走既有 Rule 21.4 串行派发，Rule 39 零影响面；单一委托/几个独立查询仍走 Agent 工具。
+39.2 **前置条件（skill 加载门槛）**：`CreateWorkflow`/`AmendWorkflow`/`SaveWorkflow`/`EvalWorkflowSnippet` 四工具在本会话未 `Skill("dynamic-workflows")` 加载时拒绝运行（官方 L11-12）；运行 `saved:` 来源的 `CreateWorkflow` 是唯一豁免路径（官方 L942-943）。编排前须确认该 skill 可加载；四工具脚本（inline 一次性 / saved / path）提交前必须已加载本 skill（typecheck + 确认窗）。
+39.3 **四机制映射（task-planner 机制 → workflow 原生能力，单一权威源表）**：
+
+| task-planner 机制（权威源） | workflow 原生机制 | 映射说明 |
+|---|---|---|
+| 失败换档/修复续做（Rule 22.3 ①-⑤ / 22.7） | 编辑 `scriptPath` 文件 + `AmendWorkflow` | errored run 不可 resume，须修脚本再 amend；amend 导入旧 run 已完成工作作 cache 零成本回放（官方 L764-767, L787-795） |
+| 断点续做（Rule 22.8 resume_from / plan-resume Rule 24） | `ResumeWorkflowRun`（stopped）/ `AmendWorkflow`（errored） | stopped(reason=interrupted) 直接 resume 原样恢复；errored 必须 amend（官方 L764-772）。cache 按 subagent 名+指令字节匹配 → subagent 命名须稳定、可调常数不进 ask 文本（官方 L832-859） |
+| 人工升级（Rule 28 D5-D6 询问点） | `ResolveWorkflowQuestion(dwfq-…)` | 子代理升级的阻塞问题带全局唯一 question id；答复文本原样成为该 subagent 调用结果；只停提问的那个 subagent，兄弟与控制流继续；通知丢失用 `GetWorkflowRun.pendingQuestions` 兜底；每个 ask 最多 3 次升级（官方 L861-906） |
+| 模板沉淀（Rule 34.3 触发 / 34.4 流程） | `SaveWorkflow`（project `.zcode/workflows/` / global `~/.zcode/workflows/`） | 可复用编排沉淀为 saved workflow（args 声明=调用约定）；官方纪律=绝不主动保存，须用户同意或点名（官方 L1453-1498）；同名覆盖走 Rule 36.4 用户确认 |
+| 每 Phase 验收门控 | `phase()` 验收节点图 + `report()` verified/notCovered + `world.run` 确定性门控 | phase() 强制画验收节点图；report() 条目随失败通知送达且不重复；确定性验收用 world.run（cmd 编译期字面量，确认时批准命令集，官方 L968-1346） |
+
+39.4 **并行豁免与 Rule 21.4 调和**：workflow subagent 默认可并行（fan-out / `Promise.all`，官方 L308-310）；当用户显式点名 workflow 编排时，Rule 21.4 串行铁律在**该 workflow run 内部**豁免（显式调用期登记制，非改写 21.4 原文）——豁免一行登记 Decisions Made + progress.md；用户同时要求串行 → 传 `max_concurrency: 1`（官方 L955-959）。Rule 21.4 文本零改动（Rule 36.5 纯增量）。
+39.5 **机器校验边界（Rule 35.2 防虚构）**：workflow 内部 subagent 是否受 `check-dispatch.sh` 派发守卫 hook 约束 = **官方文档未提及**（已 grep 核实 SKILL.md/examples/patterns）；禁止在 Rule 39 声称机器守卫覆盖 workflow 内部。机器校验归 harness 侧（`ListWorkflowRuns`/`GetWorkflowRun` 终态与 pendingQuestions 可查）；派发契约（九字段 prompt / 8 字段返回，Rule 22.4/22.4b）由脚本作者在 persona/ask 文本内自行内嵌，**非 hook 强制**——这是与 Agent() 派发的关键区别，须如实披露。
+39.6 **机制（零新 config 键 — 与 task-v087 同范式）**：判定面=LLM 行为（显式点名才触发，非机器）；机器面=dynamic-workflows 官方自身约束（skill 加载前置 / 确认窗 / typecheck 拒跑，官方 L11-12, L920-921），无需再造开关键。守护=`scripts/selftest-workflow-orchestration.sh` 静态断言（39.x 条款锚 + SKILL 协同路由行 + Rule 39 摘要行 + C27 + 「Rules 1-39」索引 + 零 config 键 + 行数上限）；消费侧=SKILL.md 🤝 协同路由矩阵 dynamic-workflows 行 + C27。
