@@ -60,10 +60,10 @@
 - [x] 方法清晰：纯增量规则 + 静态 selftest + 索引级联 + 部署，不动 1-38 语义
 
 ## Current Phase
-Phase 1
+Phase 4（complete）
 
 ## Next Step
-用户 D1 批准本计划 → attest 锁定 → Phase 2 派 code-assistant 追加 Rule 39 到 critical-rules.md
+Phase 5 主进程：全量 27 selftest（FAIL=0）→ git add scope + commit → smart-merge-back 三位部署 → worktree 清理 → push
 
 ## Phases
 
@@ -103,7 +103,7 @@ Phase 1
 
 ### Phase 4: 新建守卫 selftest + CHANGELOG
 
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 - **动作**：① 新建 scripts/selftest-workflow-orchestration.sh（WF-01..12 十二断言，范式=自检测 t() helper，路径锚定相对 SKILL_ROOT，参照 selftest-plan-tier.sh 结构）；② CHANGELOG.md 头部新增 v088 条目（Rule 39 六子条摘要+守卫+部署+零新键）
 - **验收**：V-5 新 selftest 单跑 PASS、V-8 CHANGELOG 条目在位；bash -n 语法过

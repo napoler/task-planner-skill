@@ -55,6 +55,22 @@
   | selftest-knowledge-brief.sh | bash 运行 | 16 PASS | 16 PASS=16 FAIL=0 | PASS |
   | selftest-skill-collab.sh | bash 运行 | 25 PASS | 25 PASS=25 FAIL=0 | PASS |
 
+### Phase 4: 新建守卫 selftest + CHANGELOG
+- **Status:** complete
+- **Started:** 2026-09-23（code-assistant 派发）
+- Actions taken:
+  - S4-1 新建 skills/task-planner/scripts/selftest-workflow-orchestration.sh（66 行）：WF-01..12 静态断言，set -u + SCRIPT_DIR/SKILL_ROOT 相对解析，ok/bad 计数器 + printf Total + exit $((FAIL>0))，范式同 selftest-plan-tier.sh；WF-10/11 4 索引文档（SKILL.md/CLAUDE.md/README_zh.md/skills/task-planner/README.md）"Rules 1-39" 命中总和 ≥6、"Rules 1-38" 残留 =0，仓内上跳路径 $SKILL_ROOT/../../CLAUDE.md 与 ../README_zh.md（CLAUDE.md/README_zh.md 在 skills/ 的兄弟仓根层），文件缺失计 0 不 FAIL；WF-12 config.json properties 键数 =40，jq 缺失打 SKIPPED 不 FAIL
+  - S4-2 CHANGELOG.md「## [Unreleased] / ### 新增」列表最前（v087 条目之上）插入 v088 单行 bullet（Rule 39 六子条摘要 + SKILL 5 处联动 + 4 索引文档级联 + 4 既有 selftest 行数锚 555→558 + 新 selftest WF-01..12 + 全量 27 selftest 预期 FAIL=0 + 部署三位；草稿「555→563」按实际 SKILL.md 558 行修正）
+- Files created/modified:
+  - skills/task-planner/scripts/selftest-workflow-orchestration.sh（新建，66 行，chmod +x）
+  - CHANGELOG.md（L12 插入 1 条 v088 bullet）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | selftest-workflow-orchestration.sh | bash 运行 | 12 PASS exit 0 | 12 PASS=12 FAIL=0，exit=0（WF-10 命中总和=6） | PASS |
+  | bash -n 语法检查 | bash -n | rc=0 | rc=0 | PASS |
+  | CHANGELOG 结构复核 | Read 头部 | v088 条目在 v087 之上，「## [Unreleased] / ### 新增」未破坏 | L8=## [Unreleased]、L10=### 新增、L12=v088 条目、L14=v087 条目 | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
