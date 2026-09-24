@@ -45,7 +45,7 @@ P1-P4 全主进程直做：P1/P3/P4=② 计划簿记+③ 机械验证（白名�
 - [x] VC-6: 全量 457/0 → PASS
 - [x] VC-7: 部署 diff=0；部署位 15/16（WF-10 已知遗留）→ PASS（含遗留登记）
 
- outcome: PARTIAL
+ outcome: COMPLETE（check-complete.sh rc=0：ALL PHASES COMPLETE 4/4 + VC-GATE PASSED；PARTIAL 候选=遗留已登记 non-blocking）
  遗留（不阻断交付，均已登记）：
   1. WF-10 部署位上跳路径非鲁棒（3<6）——v089 审查报告 ⑤ 同型登记；修复=单独任务
   2. printf 文案教训已沉淀 progress Error Log（${tool} 插值范式）
