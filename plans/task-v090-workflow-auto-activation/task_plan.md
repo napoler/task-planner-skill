@@ -8,12 +8,15 @@
 ## 执行范围限制
 | 类别 | 允许的文件 | 禁止 |
 |------|-----------|------|
-| 规则 | skills/task-planner/references/critical-rules.md（仅 39.5 注记 + 39.7 追加） | 其他 Rule 改写 |
-| 守卫 | skills/task-planner/scripts/zcode-pretooluse.sh（新增 39.7② 观察分支） | check-dispatch/check-scope 语义改动 |
-| hook 注册 | skills/task-planner/scripts/register-hooks-cj.ts（PreToolUse matcher 同步） | 其他 event 注册 |
-| 守护 | skills/task-planner/scripts/selftest-workflow-orchestration.sh（WF-13..16 追加） | 其他 selftest 改写 |
-| 簿记 | CHANGELOG.md（仓根 [Unreleased] 追加一条）、plans/ 本目录 | 其他文档 |
-| harness | ~/.zcode/cli/config.json PreToolUse matcher 扩围（P0 基础设施，用户已授权） | 其他 hooks/config 改动 |
+| 规则 | skills/task-planner/references/critical-rules.md | 其他 Rule 改写 |
+| 守卫 | skills/task-planner/scripts/zcode-pretooluse.sh | check-dispatch/check-scope 语义改动 |
+| hook 注册 | skills/task-planner/scripts/register-hooks-cj.ts | 其他 event 注册 |
+| 守护 | skills/task-planner/scripts/selftest-workflow-orchestration.sh | 其他 selftest 改写 |
+| 簿记 | CHANGELOG.md | 其他文档 |
+| 计划 | plans/task-v090-workflow-auto-activation | 其他 plans 目录 |
+| harness | ~/.zcode/cli/config.json | 其他 hooks/config 改动 |
+
+> 改动注记（不进 27.3 提取）：critical-rules=仅 39.5 注记+39.7 追加；pretooluse=新增 39.7.3 观察分支；register-hooks=matcher 一行扩围；selftest=WF-13..16 追加；CHANGELOG=[Unreleased] 一条；config.json=PreToolUse matcher 字段（P0 已授权）。
 
 ## Verification Contract
 | # | 判定标准 | 验证方式 |
