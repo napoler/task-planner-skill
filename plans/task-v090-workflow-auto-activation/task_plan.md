@@ -34,7 +34,7 @@
 ### Phase 1: 规则层 39.7 + 39.5 注记（纯追加）
 - [x] 39.5 尾追加「39.7② 观察面扩展」注记
 - [x] 39.6 后追加 39.7（三子条）
-- - **V-N:** VC-1
+- **V-N:** VC-1, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划/规则簿记属 25.3 白名单②计划系统文件维护——规则文件本身按用户显式授权修改，见 Decisions）
 
@@ -42,7 +42,7 @@
 - [x] zcode-pretooluse.sh 在 case 分支追加 workflow 四工具观察分支（39.7②：注入提醒 + exit 0；Write/Edit/Agent 分支零改动）
 - [x] register-hooks-cj.ts PreToolUse matcher 同步扩围
 - [x] ~/.zcode/cli/config.json matcher 扩围（P0 已授权）
-- - **V-N:** VC-2, VC-3, VC-4
+- **V-N:** VC-2, VC-3, VC-4, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:④ 用户显式授权选项 1 + ②③ 簿记/机械验证）
 
@@ -50,7 +50,7 @@
 - [x] selftest-workflow-orchestration.sh 追加 WF-13..16
 - [x] worktree 全量 27 selftest 回归
 - [x] CHANGELOG.md [Unreleased] 追加条目
-- - **V-N:** VC-5, VC-6
+- **V-N:** VC-5, VC-6
 - **Status:** complete
 - **Executor:** 主进程（例外理由:③ 机械验证 + ② 簿记白名单）
 
@@ -60,7 +60,7 @@
 - [x] 三位部署：4 文件定向 cp + 逐文件 diff 全空（WF-10 部署位 FAIL=已知「SKILL_ROOT/../.. 上跳不可达」非鲁棒项，登记遗留不阻断）
 - [x] 主仓全量 27 selftest PASS=457 FAIL=0；部署位 wf selftest 15/16（仅 WF-10 已知项）
 - [x] verification.md 逐条 VC-1..7 复验 + 委派统计（WHITELIST-EXEMPT）；outcome=COMPLETE
-- - **V-N:** VC-5, VC-6, VC-7
+- **V-N:** VC-5, VC-6, VC-7
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排 + ② 簿记——Rule 25.3 白名单①②）
 
