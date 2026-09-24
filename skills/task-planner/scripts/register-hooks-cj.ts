@@ -122,7 +122,11 @@ function buildHooks(canonicalRoot: string): Record<string, unknown[]> {
     ],
     PreToolUse: [
       {
-        matcher: 'Write|Edit',
+        // [2026-09-25 task-v090] Rule 39.7.3 matcher 观察面扩围（ZCode 运行位由
+        // ~/.zcode/cli/config.json + zcode-pretooluse.sh 39.7.3 观察分支承接；此处保持
+        // check-scope.sh command 不变——workflow 四工具无 file_path → check-scope 空路径
+        // exit 0 天然放行，零阻断语义；39.5 守卫面不变）
+        matcher: 'Write|Edit|CreateWorkflow|AmendWorkflow|SaveWorkflow|EvalWorkflowSnippet',
         command: 'bash ' + SD + '/check-scope.sh "' + HOOK_TOOL + '" "' + HOOK_FILE + '"',
       },
     ],
