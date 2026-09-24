@@ -77,6 +77,14 @@ case "$tool" in
     [ "$rc" -eq 2 ] && exit 2
     exit 0
     ;;
+  CreateWorkflow|AmendWorkflow|SaveWorkflow|EvalWorkflowSnippet)
+    # [2026-09-25 task-v090] Rule 39.7.3 workflow 工具观察分支（39.5 观察面扩展，零阻断语义）:
+    # 仅注入一行观察提醒——workflow 编排已激活（用户显式点名 /workflow，Rule 39.1），
+    # 39.4 并行豁免须登记 Decisions Made + progress.md；派发契约（22.4/22.4b）非 hook 强制（39.5 披露），
+    # 本分支 exit 0 恒放行，不构成守卫（39.7.3: 观察面扩展 ≠ 守卫面扩展）。
+    printf '%s\n' "[workflow-observe] Rule 39.7.3 观察提醒（非阻断）: workflow 编排工具调用已见（tool=${tool}）。须登记 Decisions Made + progress.md 一行 39.4 并行豁免（显式调用期登记制）；workflow 内部派发契约非 hook 强制（39.5 边界不变）。"
+    exit 0
+    ;;
 esac
 
 # Rule 23: 运行时并发冲突检测(仅 Write/Edit)
