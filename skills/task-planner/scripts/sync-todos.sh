@@ -13,6 +13,12 @@
 
 set -euo pipefail
 
+# [2026-09-27 task-v091 S17 C-1c] scope 提取统一库(语义权威源+调用方清单见 lib/plan-parse.sh);
+# 以脚本自身绝对路径 source(范式同 check-conflicts.sh S16 接入)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/plan-parse.sh
+. "$SCRIPT_DIR/lib/plan-parse.sh"
+
 PLANS_DIR=""
 JSON_OUTPUT=false
 INDEX_MODE=false
@@ -194,7 +200,9 @@ extract_plan_meta() {
     sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
     wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
     # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
-    scopes="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\.[a-zA-Z]/) printf "%s\n", $i}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -10 | tr '\n' ',' | sed 's/,$//')"
+    # [2026-09-27 task-v091 S17 C-1c] 内联四级管线 → 统一库 plan_parse_scope(一行一条);
+    # head -10 上限与逗号串 join 保留在调用侧, echo 输出与旧形态逐字节一致(37 计划对拍)
+    scopes="$(plan_parse_scope "$plan" | head -10 | tr '\n' ',' | sed 's/,$//')"
     echo "${sid:-none}|${wt}|${scopes}"
 }
 
