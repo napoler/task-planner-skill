@@ -33,6 +33,23 @@ cd "$repo" 2>/dev/null || { echo "[conflict-scan] 无法进入 $repo,跳过"; ex
 
 command -v git >/dev/null 2>&1 || { echo "[conflict-scan] 无 git,跳过"; exit 0; }
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "[conflict-scan] 非 git 仓库,跳过"; exit 0; }
+# [2026-09-27 task-v091 C-1f] 探测合并方案(status 单调用兼任探测+信号①采集, runtime 3→2)
+# 实测为净负优化已回退: status 作为首个仓库子命令会拖慢其后 plans/* 目录循环的 fork-exec
+# 链(主仓配对中位 +44ms, 20/20 同向), 大于省 1 次 rev-parse 的 ~10ms; 探测保持 rev-parse
+# 独立形, porcelain 由 init/D 段各自采集(与原行为一致)。证据见 S18 checkpoint。
+
+# [2026-09-27 task-v091 C-1f] worktree 清单单次采集+多消费点共享(原 --porcelain 计数与
+# 普通格式列表两次独立调用合并为一); 计数等价性: 两种格式每个 worktree 恰好输出一行,
+# 非空行计数与原 '^worktree ' 计数一致; 列表经同一 tail/sed 管道输出与原逐字节一致。
+# 惰性采集: --runtime 无活跃 plan 快路径提前 exit 0 不触发, 该路径保持仅 1 次仓库探测调用
+CC_WT_LIST=""
+cc_wt_loaded=false
+cc_worktree_list() {
+  if [ "$cc_wt_loaded" = false ]; then
+    CC_WT_LIST="$(git worktree list 2>/dev/null)"
+    cc_wt_loaded=true
+  fi
+}
 
 risk=0
 echo "[conflict-scan] repo=$repo mode=$([ "$RUNTIME" = true ] && echo "runtime" || echo "init")"
@@ -54,20 +71,25 @@ if [ "$RUNTIME" = false ]; then
   fi
 
   # ② 额外 worktree
-  wt="$(git worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
+  # [2026-09-27 task-v091 C-1f] 单次 worktree 采集+计数/列表同变量消费(原两次独立调用:
+  # --porcelain 计数 + 普通格式列表); 计数等价=每 worktree 恰一行, 列表管道与原逐字节一致
+  cc_worktree_list
+  wt="$(printf '%s\n' "$CC_WT_LIST" | grep -c . || true)"
   wt_extra=$(( wt - 1 ))
   if [ "$wt_extra" -gt 0 ]; then
     risk=1
     echo "[conflict-scan] ⚠ 信号②: 存在 ${wt_extra} 个额外 worktree(可能有并行工作):"
-    git worktree list 2>/dev/null | tail -n +2 | sed 's/^/    /'
+    printf '%s\n' "$CC_WT_LIST" | tail -n +2 | sed 's/^/    /'
   fi
 
   # ③ 遗留隔离分支
-  lb="$(git branch --list 'wt/*' 2>/dev/null | grep -c . || true)"
+  # [2026-09-27 task-v091 C-1f] 计数+列表合并为单次采集同变量消费(原两次独立 branch 调用)
+  wt_branches="$(git branch --list 'wt/*' 2>/dev/null)"
+  lb="$(printf '%s\n' "$wt_branches" | grep -c . || true)"
   if [ "$lb" -gt 0 ]; then
     risk=1
     echo "[conflict-scan] ⚠ 信号③: 遗留 wt/* 分支 ${lb} 个(可能含未合并的隔离工作):"
-    git branch --list 'wt/*' 2>/dev/null | sed 's/^/    /'
+    printf '%s\n' "$wt_branches" | sed 's/^/    /'
   fi
 
   # ④ 在册未完成任务
@@ -176,10 +198,13 @@ for other_plan in "${active_plans[@]}"; do
 done
 
 # D: 环境信号(复用五信号,仅风险信号)
+# [2026-09-27 task-v091 C-1f] ①保持独立采集(探测合并方案实测负优化已回退, 见探测段注释);
+# ②改单次 worktree 采集共享(原独立调用, 计数等价=每 worktree 一行)
 porcelain="$(git status --porcelain 2>/dev/null)"
 dirty="$(printf '%s' "$porcelain" | grep -c . || true)"
 [ "$dirty" -gt 0 ] && risk=1 && echo "[conflict-scan] ⚠ 信号①: 未提交变更 ${dirty} 个文件"
-wt="$(git worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
+cc_worktree_list
+wt="$(printf '%s\n' "$CC_WT_LIST" | grep -c . || true)"
 wt_extra=$(( wt - 1 ))
 [ "$wt_extra" -gt 0 ] && risk=1 && echo "[conflict-scan] ⚠ 信号②: 存在 ${wt_extra} 个额外 worktree"
 
