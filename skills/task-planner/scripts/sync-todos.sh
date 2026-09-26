@@ -158,57 +158,24 @@ forward_sync() {
     fi
 }
 
-# ─── Task index rollup (for --index mode) ───────────────────────────────────
-# Per-task status rollup from a single task_plan.md.
-# Output pipe-delimited: TASK_ID|GOAL|TOTAL|COMPLETE|INPROG|PENDING|MTIME
-rollup_task() {
-    local task_plan="$1"
-    local task_id
-    task_id="$(dirname "$task_plan" | xargs basename)"
-    local mtime
-    mtime="$(stat -c %y "$task_plan" 2>/dev/null | cut -d' ' -f1)"
-    mtime="${mtime:-?}"
-
-    awk -v tid="$task_id" -v mt="$mtime" '
-        /^## Goal[[:space:]]*$/ { ingoal=1; next }
-        ingoal && /^#/ { ingoal=0 }
-        ingoal {
-            line=$0
-            sub(/<!--.*-->/,"",line)
-            sub(/^[[:space:]]*/,"",line)
-            if (line != "" && goal == "") goal=line
-        }
-        /^### Phase [0-9]+:/ { total++ }
-        /[Ss]tatus:\*\*/ {
-            s=$0; sub(/.*[Ss]tatus:\*\*[[:space:]]*/,"",s); gsub(/\*\*/,"",s); gsub(/[[:space:]]/,"",s)
-            if (s ~ /complete/) complete++
-            else if (s ~ /in_progress/) inprog++
-            else if (s ~ /pending/) pending++
-        }
-        END {
-            if (goal=="") goal="(no goal)"
-            printf "%s|%s|%d|%d|%d|%d|%s\n", tid, substr(goal,1,50), total+0, complete+0, inprog+0, pending+0, mt
-        }
-    ' "$task_plan"
-}
-
-# ─── Extract frontmatter metadata ──────────────────────────────────────────
-# Returns: session_id|worktree_path|scope_files_path
-extract_plan_meta() {
-    local plan="$1"
-    local sid wt scopes=""
-    sid="$(awk '/^session_id:/{print $2; exit}' "$plan" 2>/dev/null || echo "")"
-    wt="$(awk '/^worktree_path:/{print $2; exit}' "$plan" 2>/dev/null || echo "n/a")"
-    # scope_files: extract paths from "执行范围限制" table (allow/forbid columns)
-    # [2026-09-27 task-v091 S17 C-1c] 内联四级管线 → 统一库 plan_parse_scope(一行一条);
-    # head -10 上限与逗号串 join 保留在调用侧, echo 输出与旧形态逐字节一致(37 计划对拍)
-    scopes="$(plan_parse_scope "$plan" | head -10 | tr '\n' ',' | sed 's/,$//')"
-    echo "${sid:-none}|${wt}|${scopes}"
-}
-
 # ─── Write plans/INDEX.md (persistent cross-task registry) ──────────────────
 # Answers "which tasks need processing after interruption?" by rolling up every
 # task-{id}/ state into ONE file at the plans/ parent level. Read INDEX.md first on resume.
+#
+# [2026-09-27 task-v091 C-3] 重构为单 awk 全量重算: 原实现(rollup_task+extract_plan_meta)
+# 每计划 fork stat/cut/dirname/xargs basename/awk×3/head/tr/sed ≈11 进程 ×37 计划;
+# 现合并为 find -printf 携 mtime 出一次清单 → sort -k1,1(与旧 find|sort 字典序逐字一致,
+# 37 计划对拍) → 单 awk getline 流式解析全部计划, 直接产出 R/T/D/S 四类成品行, bash 仅
+# 回写 INDEX.md 骨架。输出与重构前逐字节一致(37 计划对拍, 见 selftest-sync-index.sh)。
+# v3 口径: 「按 mtime 仅重写变化行」增量选项已在提案终审 #4 删除——恒全量重算, mv 归档
+# 后目录从 find 清单消失即行同步消失(critical-rules 29.6 防 INDEX 统计回归依赖此特性;
+# 现行实现本无 mtime 比较分支, 此处无删除物, 行为=保持全量重算)。
+# 语义锚义务(任一处语义变更必须同步另一处, 改本块前先跑 selftest-sync-index.sh):
+#   - scope 提取块 = lib/plan-parse.sh plan_parse_scope 的内联语义副本(范式同
+#     zcode-pretooluse.sh Rule23 内联锚); head -10 上限+逗号 join 保留原调用侧口径
+#   - goal/Phase/状态计数块 = 原 rollup_task awk 规则逐字迁移(含括号注记整词归一
+#     与 goal 50 字符截断)
+#   - session_id 缺省补 none / worktree_path 无缺省 = 原 extract_plan_meta 口径
 write_index() {
     local plans_dir="$1"
     if [[ ! -d "$plans_dir" ]]; then
@@ -217,29 +184,105 @@ write_index() {
     fi
 
     local -a rows_arr=() todo_arr=() done_arr=()
-    local task_id goal total comp inp pend mtime status icon row
     local ttodo=0 tdone=0 tinprog=0
+    local tag rest
 
-    while IFS= read -r task_plan; do
-        [[ -z "$task_plan" ]] && continue
-        row="$(rollup_task "$task_plan")"
-        [[ -z "$row" ]] && continue
-        IFS='|' read -r task_id goal total comp inp pend mtime <<< "$row"
+    # 行标签: R=汇总表行 T=待处理行(in_progress+pending) D=已完成行 S=三类计数
+    # (tab 分隔, 防与行内容中的表格 | 冲突)
+    while IFS=$'\t' read -r tag rest; do
+        [[ -z "$tag" ]] && continue
+        case "$tag" in
+            R) rows_arr+=("$rest") ;;
+            T) todo_arr+=("$rest") ;;
+            D) done_arr+=("$rest") ;;
+            S) IFS=$'\t' read -r tinprog ttodo tdone <<< "$rest" ;;
+        esac
+    done < <(
+        find "$plans_dir" -maxdepth 2 -name "task_plan.md" -type f \
+             -printf '%p\t%TY-%Tm-%Td\n' 2>/dev/null \
+        | sort -t$'\t' -k1,1 \
+        | awk '
+            # 每条 stdin 记录 = <task_plan.md 路径>\t<mtime YYYY-MM-DD>;
+            # FS 显式 tab: 路径含空格时 $1 仍为完整路径(对齐旧实现 while read 整行语义)
+            BEGIN { FS = "\t" }
+            {
+                path = $1; mt = $2
+                # —— 每文件状态复位(= 原两函数每计划独立进程的复位语义) ——
+                goal = ""; ingoal = 0
+                total = comp = inp = pend = 0
+                sid = ""; sid_seen = 0; wt = ""; wt_seen = 0
+                scopes = ""; nscope = 0; inscope = 0
+                nseg = split(path, seg, "/")            # task_id = basename(dirname(path))
+                tid = seg[nseg - 1]
 
-        if [[ "${total:-0}" -gt 0 && "${comp:-0}" -eq "${total:-0}" ]]; then
-            status="complete"; icon="✓"; tdone=$((tdone+1))
-            done_arr+=("- ${task_id} ✓ (${comp}/${total}) — ${mtime}")
-        elif [[ "${inp:-0}" -gt 0 || "${comp:-0}" -gt 0 ]]; then
-            status="in_progress"; icon="⚠ 续"; tinprog=$((tinprog+1))
-            todo_arr+=("- **${task_id}** — in_progress, Phase ${comp}/${total}（中断恢复首选）")
-        else
-            status="pending"; icon="⚠ 未开始"; ttodo=$((ttodo+1))
-            todo_arr+=("- **${task_id}** — pending, 未开始 (0/${total})")
-        fi
-        meta="$(extract_plan_meta "$task_plan")"
-        IFS='|' read -r meta_sid meta_wt meta_scopes <<< "$meta"
-        rows_arr+=("| ${task_id} | ${status} | ${comp}/${total} | ${goal} | ${meta_sid} | ${meta_wt} | ${meta_scopes} | ${mtime} | ${icon} |")
-    done < <(find "$plans_dir" -maxdepth 2 -name "task_plan.md" -type f 2>/dev/null | sort)
+                r = (getline line < path)
+                if (r < 0) next          # 读失败: 原实现 rollup 输出空被 [[ -z row ]] 跳过
+                while (r > 0) {
+                    # —— goal: 「## Goal」起, 下一标题止, 首个剥注释/前导空白后非空行 ——
+                    if (line ~ /^## Goal[[:space:]]*$/) { ingoal = 1 }
+                    else if (ingoal && line ~ /^#/) { ingoal = 0 }
+                    else if (ingoal) {
+                        t = line
+                        sub(/<!--.*-->/, "", t)
+                        sub(/^[[:space:]]*/, "", t)
+                        if (t != "" && goal == "") goal = t
+                    }
+                    # —— Phase/状态计数: 任一 Status:** 行均计(含括号注记, 整词归一) ——
+                    if (line ~ /^### Phase [0-9]+:/) total++
+                    if (line ~ /[Ss]tatus:\*\*/) {
+                        s = line
+                        sub(/.*[Ss]tatus:\*\*[[:space:]]*/, "", s)
+                        gsub(/\*\*/, "", s)
+                        gsub(/[[:space:]]/, "", s)
+                        if (s ~ /complete/) comp++
+                        else if (s ~ /in_progress/) inp++
+                        else if (s ~ /pending/) pend++
+                    }
+                    # —— frontmatter 首个命中(原独立 awk …exit 的首行语义) ——
+                    if (!sid_seen && line ~ /^session_id:/) { split(line, f, " "); sid = f[2]; sid_seen = 1 }
+                    if (!wt_seen && line ~ /^worktree_path:/) { split(line, f, " "); wt = f[2]; wt_seen = 1 }
+                    # —— scope(语义锚=lib/plan-parse.sh plan_parse_scope): 「## …执行
+                    #    范围限制」到下一「## 」标题, 表格行第 3+ 字段含点分路径的整格,
+                    #    头 10 条逗号 join(原 head -10|tr|sed 口径) ——
+                    if (line ~ /^## .*执行范围限制/) { inscope = 1 }
+                    else if (line ~ /^## /) { inscope = 0 }
+                    if (inscope && line ~ /^\|/ && line !~ /^\|---/) {
+                        n = split(line, c, "|")
+                        for (i = 3; i <= n; i++) {
+                            s = c[i]
+                            gsub(/^[[:space:]]+/, "", s)
+                            gsub(/[[:space:]]+$/, "", s)
+                            if (s ~ /\.[a-zA-Z]/ && nscope < 10) {
+                                scopes = (nscope ? scopes "," : "") s
+                                nscope++
+                            }
+                        }
+                    }
+                    r = (getline line < path)
+                }
+                close(path)
+
+                if (goal == "") goal = "(no goal)"
+                if (sid == "") sid = "none"
+                g = substr(goal, 1, 50)
+
+                # —— 状态归并(原 write_index bash 判定逐字迁移)与三类行产出 ——
+                if (total+0 > 0 && comp+0 == total+0) {
+                    st = "complete"; icon = "✓"; tdone++
+                    printf "D\t- %s ✓ (%d/%d) — %s\n", tid, comp, total, mt
+                } else if (inp+0 > 0 || comp+0 > 0) {
+                    st = "in_progress"; icon = "⚠ 续"; tinprog++
+                    printf "T\t- **%s** — in_progress, Phase %d/%d（中断恢复首选）\n", tid, comp, total
+                } else {
+                    st = "pending"; icon = "⚠ 未开始"; ttodo++
+                    printf "T\t- **%s** — pending, 未开始 (0/%d)\n", tid, total
+                }
+                printf "R\t| %s | %s | %d/%d | %s | %s | %s | %s | %s | %s |\n", \
+                       tid, st, comp, total, g, sid, wt, scopes, mt, icon
+            }
+            END { printf "S\t%d\t%d\t%d\n", tinprog, ttodo, tdone }
+        '
+    )
 
     local now
     now="$(date +%Y-%m-%d_%H:%M)"
