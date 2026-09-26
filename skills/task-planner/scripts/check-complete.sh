@@ -111,7 +111,8 @@ check_scope_porcelain "$PLAN_FILE" || {
 # - 顺带输出 warn 档触发计数(/tmp/task-planner-warn-<sid>.count 若存在,提醒终验关注 M-1)
 # 实现位置:放在 python 内联末尾之后(已通过 3-File Gate/Porcelain 等前置门),
 # 所有判定放行后才查委派率 — 这是「最后一道闸」。
-DELEGATION_RATE_FLOOR="$(jq -r '.properties.delegation_rate_floor.default // 0.7' "$SKILL_ROOT/config.json" 2>/dev/null || echo 0.7)"
+# [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+DELEGATION_RATE_FLOOR="$(jq -r '.delegation_rate_floor // .properties.delegation_rate_floor.default // 0.7' "$SKILL_ROOT/config.json" 2>/dev/null || echo 0.7)"
 # [2026-09-20 task-v086 P2-S3 Rule 38.4③] mini 降档: 计划文件 grep「plan_tier: mini」命中 →
 # floor 0.7→0.0（main_direct 全部理由视白名单直通, 即 rate 永远 >= floor）; violations 仍照常计(L441 verdict 路径不动);
 # 非 mini 路径 DELEGATION_RATE_FLOOR 保持 config 原值=零改动
@@ -467,7 +468,8 @@ if [ "$python_rc" -eq 0 ]; then
         local m="${TASK_PLANNER_FMEA_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.fmea_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.fmea_enforce // .properties.fmea_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -536,7 +538,8 @@ if [ "$python_rc" -eq 0 ]; then
             printf 'warn'
             return 0
         fi
-        m="$(jq -r '.properties.vc_gate_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+        m="$(jq -r '.vc_gate_enforce // .properties.vc_gate_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
 
@@ -702,7 +705,8 @@ if [ "$python_rc" -eq 0 ]; then
         local m="${TASK_PLANNER_ERROR_LOOP_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.error_loop_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.error_loop_enforce // .properties.error_loop_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -803,7 +807,8 @@ END {print n+0}'
         local m="${TASK_PLANNER_REFLECT_VERIFY_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.reflect_verify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.reflect_verify_enforce // .properties.reflect_verify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -841,7 +846,8 @@ END {print n+0}'
         local m="${TASK_PLANNER_SKILL_MODIFY_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.skill_modify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.skill_modify_enforce // .properties.skill_modify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -872,7 +878,8 @@ END {print n+0}'
     # [2026-09-20 task-v085 Rule 37] 机制画像抽查：内容组 (writing/research/publish) 计划声明 code_review: required 时，
     # warn=仅 stderr 提示不改 exit / enforce=exit 1 / off=跳过。档位 env > config.json mechanism_profile_enforce > warn(jq 缺失 fail-open)。
     mp_tier="${TASK_PLANNER_MECHANISM_PROFILE_ENFORCE:-}"
-    case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="$(jq -r '.properties.mechanism_profile_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || mp_tier=""; case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="warn" ;; esac ;; esac
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+    case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="$(jq -r '.mechanism_profile_enforce // .properties.mechanism_profile_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || mp_tier=""; case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="warn" ;; esac ;; esac
     if [ "$mp_tier" != "off" ]; then
         mp_tt="$(grep -m1 '^template_type:' "$PLAN_FILE" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"; mp_tt="${mp_tt%%[[:space:]（]*}"
         [ -z "$mp_tt" ] && mp_tt="$(grep -m1 'template_type' "$PLAN_FILE" 2>/dev/null | awk -F'|' '{for(i=1;i<=NF;i++){t=$i;gsub(/[[:space:]`]/,"",t);if(t=="template_type"){v=$(i+1);gsub(/[[:space:]`]/,"",v);print v;exit}}}' | head -1 | sed 's/（.*//')"

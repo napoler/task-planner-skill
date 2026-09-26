@@ -127,7 +127,8 @@ get_mode() {
     if [ ! -f "$CONFIG_JSON" ]; then
         printf 'enforce'; return 0
     fi
-    m="$(jq -r '.properties.dispatch_contract_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || m="enforce"
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+    m="$(jq -r '.dispatch_contract_enforce // .properties.dispatch_contract_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || m="enforce"
     case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'enforce' ;; esac
 }
 
@@ -265,7 +266,8 @@ fine_grain_checks() {
     local pmax pchar sids n hits wf h smax step_n tb tn
     # ① prompt 长度: wc -m vs prompt_max_chars(jq 读 config .properties.subagent.prompt_max_chars.default;
     #    与 ② 同源: jq 缺失/键缺失/非数字 → 回退 3000 + 一行 SKIPPED 说明(P2 check-plan-dispatch 范式)
-    pmax="$(jq -r '.properties.subagent.prompt_max_chars.default // "3000"' "$CONFIG_JSON" 2>/dev/null)" || pmax=""
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+    pmax="$(jq -r '.subagent.prompt_max_chars // .properties.subagent.properties.prompt_max_chars.default // "3000"' "$CONFIG_JSON" 2>/dev/null)" || pmax=""
     if ! [[ "$pmax" =~ ^[0-9]+$ ]]; then
         pmax=3000
         echo "[dispatch-guard] SKIPPED prompt_max_chars 未解析(jq 缺失或键缺),回退默认 3000" >&2

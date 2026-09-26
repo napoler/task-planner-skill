@@ -71,7 +71,8 @@ if grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
     ptcfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
     m="${TASK_PLANNER_PLAN_TIER_ENFORCE:-}"
     case "$m" in enforce|warn|off) : ;; *)
-        m="$(jq -r '.properties.plan_tier_enforce.default // "warn"' "$ptcfg" 2>/dev/null)" || m=""
+        # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+        m="$(jq -r '.plan_tier_enforce // .properties.plan_tier_enforce.default // "warn"' "$ptcfg" 2>/dev/null)" || m=""
         case "$m" in enforce|warn|off) : ;; *) m="warn" ;; esac ;;
     esac
     PTIER="$m"
