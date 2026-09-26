@@ -112,6 +112,7 @@ if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
     # tgt 空串分支已删: 原 tgt == "" ||(源自 grep -qF "" 恒真语义)在 ② 提取正则修复后成可触发误报源(空 basename 将命中任意点分 scope 行),
     #   改 tgt 空恒不命中(gawk index(s,"") 恒 0, fail-open 自洽)
     # 原 plan_dir/current_scope 为死代码(赋值后无引用)随合并一并移除
+    # [2026-09-27 task-v091 C-1c] scope 提取语义权威源=scripts/lib/plan-parse.sh plan_parse_scope(本处热路径保留内联不 source, 语义变更两处必须同步——互指锚)
     tgt="$(basename "$file")"
     # 检查写入文件是否在其他 plan 的 scope 中(保持 ls -t 顺序; 自计划跳过; 路径含空格为与原实现一致的既有未解限制)
     for other_plan in $(ls -t "$CWD/plans"/*/task_plan.md 2>/dev/null); do

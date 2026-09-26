@@ -14,6 +14,11 @@
 #       详见 references/worktree-isolation.md。
 
 set -u
+# [2026-09-27 task-v091 S16 C-1c] scope 提取统一库(语义权威源+调用方清单见 lib/plan-parse.sh);
+# 在下方 cd "$repo" 之前以脚本自身绝对路径 source, 不受目标仓库切换影响
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/plan-parse.sh
+. "$SCRIPT_DIR/lib/plan-parse.sh"
 REPO_PATH=""
 RUNTIME=false
 
@@ -105,7 +110,11 @@ if [ -f plans/INDEX.md ]; then
     session_id="$(awk '/^session_id:/{print $2; exit}' "$plan_dir/task_plan.md" 2>/dev/null || echo "")"
     worktree_path="$(awk '/^worktree_path:/{print $2; exit}' "$plan_dir/task_plan.md" 2>/dev/null || echo "")"
     # scope_files 从「⚠️ 执行范围限制」区块提取
-    scope="$(awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ && NF>2 {gsub(/^[[:space:]]*\|[[:space:]]*/, ""); gsub(/[[:space:]]*\|[[:space:]]*$/, ""); print}' "$plan_dir/task_plan.md" 2>/dev/null | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    # [2026-09-27 task-v091 S16 C-1c] 原内联整行清洗(表头/类别/禁止列均产出+逗号拆分, 无点分过滤)
+    # 改统一库 plan_parse_scope(点分整格语义, 语义权威源见 lib/plan-parse.sh);
+    # 行为差异: 35/37 本仓计划提取结果变化, 两两交集 528 对(表头碰撞假阳性)→5 对(真实共享路径),
+    # v090 类无 emoji 表头由提取恒空变可提取——量化见 plans/task-v091 S16 checkpoint
+    scope="$(plan_parse_scope "$plan_dir/task_plan.md")"
     
     plan_sessions["$plan_dir"]="$session_id"
     plan_worktrees["$plan_dir"]="$worktree_path"
@@ -131,7 +140,8 @@ fi
 
 current_session="$(awk '/^session_id:/{print $2; exit}' "$current_plan_dir/task_plan.md" 2>/dev/null || echo "")"
 current_worktree="$(awk '/^worktree_path:/{print $2; exit}' "$current_plan_dir/task_plan.md" 2>/dev/null || echo "")"
-current_scope="$(awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ && NF>2 {gsub(/^[[:space:]]*\|[[:space:]]*/, ""); gsub(/[[:space:]]*\|[[:space:]]*$/, ""); print}' "$current_plan_dir/task_plan.md" 2>/dev/null | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+# [2026-09-27 task-v091 S16 C-1c] 同上方 plan_scopes 处: 原内联整行清洗改统一库(点分整格语义)
+current_scope="$(plan_parse_scope "$current_plan_dir/task_plan.md")"
 
 # A 同文件检测
 for other_plan in "${active_plans[@]}"; do
