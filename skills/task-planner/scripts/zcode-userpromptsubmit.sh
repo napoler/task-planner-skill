@@ -69,14 +69,66 @@ fi
 
 # ─── smart 注入块(Rule 20.4 — 结构感知,字段级提取)──────────────────────────
 inject=""
-# 注释块剥离后再提取(多行 HTML 注释会污染字段值)
-plan_clean="$(sed '/<!--/,/-->/d' "$plan" 2>/dev/null)"
-goal="$(awk '/^## Goal/{f=1;next} /^## /{f=0} f && $0 !~ /^$/ {print; exit}' <<< "$plan_clean" 2>/dev/null)"
-next_step="$(awk '/^## Next Step/{f=1;next} /^## /{f=0} f && $0 !~ /^$/ {print; exit}' <<< "$plan_clean" 2>/dev/null)"
-current="$(awk '/^## Current Phase/{f=1;next} /^## /{f=0} f && $0 !~ /^$/ {print; exit}' <<< "$plan_clean" 2>/dev/null)"
-# in_progress Phase 全文(以 ### Phase 为记录分隔,取含 in_progress 的第一个记录)
-ip="$(awk -v RS='### Phase' '/\*\*Status:\*\* in_progress/{print "### Phase" $0; exit}' "$plan" 2>/dev/null | sed '/^$/d' | sed '/<!--/,/-->/d')"
-decisions="$(awk '/^## Decisions Made/{f=1;next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | grep -vE '^\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*$' | tail -3)"
+# [2026-09-27 task-v091 C-1e] 原实现为 6 组独立字段提取(1 sed 剥注释 + 3 个单行字段 awk +
+# ip 的 awk|sed|sed + decisions 的 awk|grep|grep|grep|tail),每条用户消息孵化 ~14 进程;
+# 合并为单 awk 双遍扫描一次产出全部 5 字段,削 UPS 热路径进程孵化开销。字段语义逐一保持:
+#   goal/next_step/current = 剥离 <!-- --> 注释块后各节首个非空行(原 plan_clean 语义:
+#   sed 区间起点行只开区间、终点模式自下一行起才匹配,同行含 <!-- 与 --> 只开不闭,
+#   未闭合删到 EOF);ip = 原文以 "### Phase" 为 RS 取首个含
+#   **Status:** in_progress 的记录再删空行+注释区间;decisions = 原文 Decisions Made 节内
+#   ^| 行滤 |--- 分隔行与 | | | 空单元格行取末 3;各字段缺失/为空兜底仍为空串。
+#   字段值以 \x1e(US 控制符) 分隔输出后逐段拆出(计划文本不含 \x1e,语义无损)。
+_ups_fields="$(awk -v plan="$plan" '
+BEGIN {
+  US = sprintf("%c", 30)
+  # ── 遍1: 行级扫描(等价原 :73-76 plan_clean 流 + 原 :79 原文流) ──
+  cmt = 0  # 复刻 sed "/<!--/,/-->/d" 区间状态(起点行只开区间,终点自下一行起匹配)
+  while ((getline ln < plan) > 0) {
+    # decisions 走原始行(原 :79 awk 直读 $plan,注释行照常参与)
+    if (ln ~ /^## Decisions Made/) df = 1
+    else if (ln ~ /^## /) df = 0
+    else if (df && ln ~ /^\|/ && ln !~ /^\|---/ && ln !~ /^\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*$/) { nd++; dec[nd] = ln }
+    # goal/next_step/current 走剥注释后的行(原 plan_clean 语义)
+    if (cmt == 0 && ln ~ /<!--/) { cmt = 1; continue }
+    if (cmt == 1) { if (ln ~ /-->/) cmt = 0; continue }
+    if (ln ~ /^## /) {  # 节标题行只切状态不作内容(原 awk f=1;next 语义)
+      gf = (ln ~ /^## Goal/) ? 1 : 0
+      wf = (ln ~ /^## Next Step/) ? 1 : 0
+      cf = (ln ~ /^## Current Phase/) ? 1 : 0
+    } else {
+      if (gf && goal == "" && ln !~ /^$/) goal = ln
+      if (wf && nxt == "" && ln !~ /^$/) nxt = ln
+      if (cf && cur == "" && ln !~ /^$/) cur = ln
+    }
+  }
+  close(plan)
+  # ── 遍2: ip 字段,RS="### Phase" 于原文取首个 in_progress 记录(原 :78) ──
+  RS = "### Phase"
+  while ((getline rec < plan) > 0) {
+    if (rec ~ /\*\*Status:\*\* in_progress/) { raw = "### Phase" rec; break }
+  }
+  close(plan)
+  # 复刻原管道 "| sed /^$/d | sed /<!--/,/-->/d"(空行不参与注释状态转移,可合一循环)
+  if (raw != "") {
+    nl = split(raw, L, "\n")
+    icmt = 0
+    for (i = 1; i <= nl; i++) {
+      if (icmt == 0 && L[i] ~ /<!--/) { icmt = 1; continue }
+      if (icmt == 1) { if (L[i] ~ /-->/) icmt = 0; continue }
+      if (L[i] == "") continue
+      ip = ip (ip == "" ? "" : "\n") L[i]
+    }
+  }
+  for (i = (nd > 3 ? nd - 2 : 1); i <= nd; i++) d = d (d == "" ? "" : "\n") dec[i]
+  printf "%s%s%s%s%s%s%s%s%s", goal, US, nxt, US, cur, US, ip, US, d
+}' 2>/dev/null)"
+_ups_us=$'\x1e'
+goal="${_ups_fields%%"$_ups_us"*}"; _ups_fields="${_ups_fields#*"$_ups_us"}"
+next_step="${_ups_fields%%"$_ups_us"*}"; _ups_fields="${_ups_fields#*"$_ups_us"}"
+current="${_ups_fields%%"$_ups_us"*}"; _ups_fields="${_ups_fields#*"$_ups_us"}"
+ip="${_ups_fields%%"$_ups_us"*}"; _ups_fields="${_ups_fields#*"$_ups_us"}"
+decisions="$_ups_fields"
+unset -v _ups_fields _ups_us
 prog_tail=""
 [ -f "$progress_file" ] && prog_tail="$(tail -5 "$progress_file" 2>/dev/null)"
 
