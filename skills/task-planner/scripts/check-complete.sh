@@ -455,9 +455,52 @@ if [ "$python_rc" -eq 0 ]; then
         printf '[plan] DELEGATION GATE SKIPPED — check-delegation.sh stats produced no output (fail-open, see warning above)\n' >&2
     fi
 
-    # [2026-09-09 task-v058] 计划期 S-unit 执行体终验门控(Rule 22.6/25.1);check-plan-dispatch.sh 缺失 → fail-open
+    # ── [2026-09-27 task-v091 C-2] 终验重复门四元内容键 SKIP-BY-HASH(提案 §三 C-2 v3, efficiency-proposal.md:139-146)──
+    # 现象=同一计划终验 2-3 轮反复全量重跑两道重复门(PLAN-DISPATCH/FMEA,27 脚本 65.7s/轮);
+    # 原行为=两门每轮无条件必跑; 新行为=四元内容键全一致→两门 SKIP-BY-HASH 引用 attest 结果,余门照跑。
+    # 四元键(任何位置不使用 mtime/size — touch -r 绕过窗口由键①内容哈希闭合):
+    #   ① task_plan.md 实时内容 sha256,且须等于 .plan-attestation 锁定哈希(未锁定/不一致→不 SKIP,走全量)
+    #   ② check-plan-dispatch.sh 整文件 sha256(门脚本变更→陈旧 SKIP 由键②闭合)
+    #   ③ 本脚本「FMEA 门段」sha256 — 锚=下行 sed 在全文件中的首个锚匹配(即 sed 命令行自身,含锚字面量)
+    #      至 task-v065 S-1 F-1 挽救门注释行; 实际覆盖键计算+两门+状态写入整段(提案 FMEA 段的超集:
+    #      只增失效不漏失效,SKIP 逻辑自身变更亦使状态失效)
+    #   ④ 两门实际消费 config 键全集生效值(v3 终审 #3): plan_tier_enforce / subagent.step_max_minutes /
+    #      subagent.step_max_files / subagent.properties.step_max_steps / fmea_enforce;
+    #      完整性守护= selftest-final-gate-hash.sh 程序化 grep 两脚本 jq .properties.* 消费集合==此枚举。
+    #      tier 两键 env 覆盖(TASK_PLANNER_PLAN_TIER_ENFORCE/TASK_PLANNER_FMEA_ENFORCE)计入快照:
+    #      env 改变生效值同样不 SKIP — 只收窄不扩大 SKIP 面,符合提案「无残留窗口」意图。
+    # 状态文件= ${TMPDIR:-/tmp}/task-planner-final-gate-<plan_dir 哈希前16位>.state(两门全过后写入;
+    #   门失败路径已在下方 exit 1 不到达写点=失败永不落状态; 损坏/缺失→读不出 fg_key→全量 fail-open
+    #   并自愈重写; 放 /tmp 不在计划目录产生未跟踪文件污染 Rule 27.3 porcelain,先例
+    #   /tmp/task-planner-warn-<sid>.count; 键①含内容哈希→同路径新计划/归档重建不会误 SKIP)。
+    # attest 本体与 TAMPERED 分支、UPS:61/posttooluse 重锁零改动(提案护栏)。
+    fg_state_id="$(printf '%s' "$PLAN_DIR_GUESS" | sha256sum | cut -c1-16)"
+    FG_STATE_FILE="${TMPDIR:-/tmp}/task-planner-final-gate-${fg_state_id}.state"
+    FG_PLAN_HASH="$(sha256sum "$PLAN_FILE" 2>/dev/null | awk '{print $1}')"
+    FG_ATTEST_LOCK=""
+    [ -f "$PLAN_DIR_GUESS/.plan-attestation" ] && FG_ATTEST_LOCK="$(grep -am1 '^plan_sha256=' "$PLAN_DIR_GUESS/.plan-attestation" 2>/dev/null | cut -d= -f2-)"
     cpl="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
-    if [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
+    FG_CPD_HASH="$(sha256sum "$cpl" 2>/dev/null | awk '{print $1}')"
+    FG_FMEA_SEG_HASH="$(sed -n '/FMEA 门控终验点/,/失败挽救链路终验门控/p' "$SKILL_ROOT/scripts/check-complete.sh" 2>/dev/null | sha256sum | awk '{print $1}')"
+    # 键④: 单次 jq 取五键生效值(与门内解析同式: 顶层覆盖优先→schema 默认→字面兜底; jq 失败→空串→键必变→全量 fail-safe)
+    FG_CFG_CSV="$(jq -r '[.plan_tier_enforce // .properties.plan_tier_enforce.default // "warn",
+                         .subagent.step_max_minutes // .properties.subagent.properties.step_max_minutes.default // "15",
+                         .subagent.step_max_files // .properties.subagent.properties.step_max_files.default // "2",
+                         .properties.subagent.properties.step_max_steps.default // "4",
+                         .fmea_enforce // .properties.fmea_enforce.default // "warn"] | @csv' "$CONFIG_JSON" 2>/dev/null || true)"
+    FG_CFG_SNAP="env_plan_tier=${TASK_PLANNER_PLAN_TIER_ENFORCE:-_}|env_fmea=${TASK_PLANNER_FMEA_ENFORCE:-_}|cfg=${FG_CFG_CSV}"
+    FG_KEY="$(printf '%s\n%s\n%s\n%s\n' "$FG_PLAN_HASH" "$FG_CPD_HASH" "$FG_FMEA_SEG_HASH" "$FG_CFG_SNAP" | sha256sum | awk '{print $1}')"
+    FG_SKIP=0
+    if [ -n "$FG_ATTEST_LOCK" ] && [ "$FG_ATTEST_LOCK" = "$FG_PLAN_HASH" ] && [ -f "$FG_STATE_FILE" ]; then
+        FG_STORED="$(grep -am1 '^fg_key=' "$FG_STATE_FILE" 2>/dev/null | cut -d= -f2-)"
+        [ -n "$FG_STORED" ] && [ "$FG_STORED" = "$FG_KEY" ] && FG_SKIP=1
+    fi
+
+    # [2026-09-09 task-v058] 计划期 S-unit 执行体终验门控(Rule 22.6/25.1);check-plan-dispatch.sh 缺失 → fail-open
+    # [2026-09-27 task-v091 C-2] 四元键一致 → SKIP-BY-HASH 引用 attest 锁定结果(不重扫;余门照跑)
+    if [ "$FG_SKIP" -eq 1 ]; then
+        printf '[plan] PLAN-DISPATCH GATE SKIP-BY-HASH (task-v091 C-2: 四元内容键一致, 引用 attest 锁定结果)\n' >&2
+    elif [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
 
     # [2026-09-16 task-v075 P4 B1] FMEA 门控终验点(fmea_enforce 双点消费之二,与 attest-plan.sh 同逻辑):
     # 档位解析范式同本文件既有 resolve_*_tier 段: env TASK_PLANNER_FMEA_ENFORCE > config.json fmea_enforce.default > warn
@@ -474,7 +517,10 @@ if [ "$python_rc" -eq 0 ]; then
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
     FMEA_TIER="$(resolve_fmea_tier)"
-    if [ "$FMEA_TIER" != "off" ] && grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
+    # [2026-09-27 task-v091 C-2] 四元键一致 → SKIP-BY-HASH 引用 attest 锁定结果(键④已含 fmea_enforce 生效值)
+    if [ "$FG_SKIP" -eq 1 ]; then
+        printf '[fmea-gate] SKIP-BY-HASH (task-v091 C-2: 四元内容键一致, 引用 attest 锁定结果, fmea_enforce=%s)\n' "$FMEA_TIER" >&2
+    elif [ "$FMEA_TIER" != "off" ] && grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
         # FMEA 判定(与 attest-plan.sh check-fmea-gate 同口径; 独立实现避免 source 依赖):
         fmea_datanum=0
         fmea_bad=""
@@ -510,6 +556,15 @@ if [ "$python_rc" -eq 0 ]; then
         else
             echo "[fmea-gate] OK (fmea_enforce=$FMEA_TIER)" >&2
         fi
+    fi
+
+    # [2026-09-27 task-v091 C-2] 两门全过(全量通过,或本轮按四元键 SKIP)→ 写四元键状态供下轮 SKIP 判定;
+    # 门失败路径已在上方 exit 1 不会到达此处=失败永不落状态; 状态文件不含 mtime/size(提案护栏)。
+    # 写入前置 attest 一致: SKIP 语义=引用 attest 结果,为 attest 不匹配(篡改/未锁定)的内容落状态
+    # 无复用价值且会污染已还原内容的复用键 — 篡改轮一律不写,保持状态=最近一次 attest 一致的全量通过条件
+    if [ "$FG_SKIP" -ne 1 ] && [ -n "$FG_ATTEST_LOCK" ] && [ "$FG_ATTEST_LOCK" = "$FG_PLAN_HASH" ]; then
+        printf 'fg_key=%s\nfg_v=1\nkey1_plan_sha256=%s\nkey2_cpd_sha256=%s\nkey3_fmea_seg_sha256=%s\nkey4_cfg_snap=%s\n' \
+            "$FG_KEY" "$FG_PLAN_HASH" "$FG_CPD_HASH" "$FG_FMEA_SEG_HASH" "$FG_CFG_SNAP" > "$FG_STATE_FILE" 2>/dev/null || true
     fi
 
     # [2026-09-13 task-v065 S-1 F-1] 失败挽救链路终验门控(挽救而非摆烂);缺失 → fail-open
