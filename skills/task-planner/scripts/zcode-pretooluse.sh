@@ -91,7 +91,10 @@ esac
 if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
   # 探测活跃 plan
   plan=""
-  CWD="${PWD}"
+  # [2026-09-26 task-v091 C-1a①：cwd 来源修复] 原 $PWD 是宿主进程 cwd 非目标项目根，改从 stdin JSON .cwd 取（兜底链保留）
+  # 范式对齐 zcode-posttooluse.sh:18-19 / zcode-userpromptsubmit.sh:16（.cwd // empty → ${CWD:-$PWD}）
+  CWD="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)"
+  CWD="${CWD:-$PWD}"
   if [ -d "$CWD/plans" ]; then
     plan="$(ls -t "$CWD"/plans/*/task_plan.md 2>/dev/null | head -1)"
   fi
