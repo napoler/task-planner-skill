@@ -106,14 +106,16 @@ fi
 
 # ─── 读阈值（config.json；解析失败兜底默认值，保证 fail-open）────────────────
 SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
-todo_n="$(jq -r '.properties.todo_sync_interval_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
-plan_min="$(jq -r '.properties.plan_update_interval_minutes.default // 15' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
-cooldown="$(jq -r '.properties.stale_remind_cooldown_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+# [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] config.json 顶层键=用户覆盖值、.properties.X.default=schema 默认值；
+# 原单层路径致顶层用户覆盖静默失效 → 6 键统一改为 .X // .properties.X.default // 原兜底（无覆盖时行为与原值一致）
+todo_n="$(jq -r '.todo_sync_interval_calls // .properties.todo_sync_interval_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+plan_min="$(jq -r '.plan_update_interval_minutes // .properties.plan_update_interval_minutes.default // 15' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+cooldown="$(jq -r '.stale_remind_cooldown_calls // .properties.stale_remind_cooldown_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 # [2026-09-04 Rule 19.7] 新增 findings/progress 陈旧阈值；解析失败兜底默认。
-findings_n="$(jq -r '.properties.findings_stale_minutes.default // 20' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
-progress_n="$(jq -r '.properties.progress_stale_minutes.default // 25' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+findings_n="$(jq -r '.findings_stale_minutes // .properties.findings_stale_minutes.default // 20' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+progress_n="$(jq -r '.progress_stale_minutes // .properties.progress_stale_minutes.default // 25' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 # [2026-09-05 Rule 19.7 升级] 连续无响应提醒达 compass_escalate_after 次 → 升级警告；解析失败兜底默认 2。
-esc_after="$(jq -r '.properties.compass_escalate_after.default // 2' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+esc_after="$(jq -r '.compass_escalate_after // .properties.compass_escalate_after.default // 2' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 case "$todo_n" in ''|*[!0-9]*) todo_n=10 ;; esac
 case "$plan_min" in ''|*[!0-9]*) plan_min=15 ;; esac
 case "$cooldown" in ''|*[!0-9]*) cooldown=10 ;; esac
