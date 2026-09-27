@@ -35,7 +35,9 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [2026-09-27 S5] check-conflicts 1a 修复：sed 区间 end 模式 `^|-------`→`^[^|]`（整表入管道）+管道中段 `grep -vE` 滤分隔行（单行 diff+4 行注记，worktree commit 59b1471）；/tmp/s5-fixtures/repo-s5 真实形态夹具端到端 2 条 in_progress 全解析、跨计划冲突 A 出现 rc=1（1b 自报显形如预期留 S6）；主仓真实 INDEX 管道 38 数据行零误滤；selftest 双基线 6/6 PASS 零回归。详见 findings.md「### S5 修复记录」
+  - [2026-09-27 S6] check-conflicts 1b 修复：:131 plan_dir 改 `"$repo/plans/$task_id"` 与 current_plan_dir glob 同源构造（候选 a 构造点归一，+5/-1 单文件，worktree commit cba40ec）；S5 夹具（恢复 beta=in_progress 后）端到端自计划冲突 A/B 全消、仅剩 task-beta 真冲突 rc=1；自计划唯一夹具 rc=0；repo=`.` 相对形态自跳过成立、深相对形态修前修后行为一致（既有提前退出非回归）；selftest 6/6 PASS 零回归。详见 findings.md「### S6 修复记录」；checkpoint=subagent-state/6-executor.md
+  - [2026-09-27 S7] CC-06 夹具同步改造+CC-07 新增：INDEX 改真实形态（9 字段表头+紧邻 6 字段分隔行首列 9 连字符+9 列数据行，表头/分隔行与主仓 INDEX.md:8-9 逐字节一致）+头注「已知既有限制」改历史注记（S5 已修失效）+CC-06 断言强化（恰 1 条冲突 A 且报他计划）+CC-07 自计划跳过断言（仅自计划零冲突 rc=0），+50/-14 单文件 worktree commit 7bdd6ff；selftest 7/7 PASS（6→7 用例）零回归；负向验证 :130 门控/:178 跳过两处反转新断言均变红、check-conflicts 本体 sha256 零触碰。详见 findings.md「### S7 修复记录」；checkpoint=subagent-state/7-executor.md
 - Files created/modified:
   -
 - Test Results:

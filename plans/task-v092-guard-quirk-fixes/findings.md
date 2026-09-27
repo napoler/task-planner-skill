@@ -215,7 +215,75 @@ templates/ 下 .md 总数 = **25**。
 5. **:69** → 脚本引用改如实描述：「该区块被 check-conflicts.sh 经 lib/plan-parse.sh plan_parse_scope（宽松表头状态机）与 check-drift.sh:205（区间式，已知 gawk 区间陷阱，接库后按 lib 形态）提取」——若 S9 已接库则以接库后形态为准
 6. **template-mapping.md** :26 与 §六 表两处同型漂移登记留后续任务（本 scope 禁改）；修正完成后复跑三件套 `ls *.md|wc -l` ×2 + grep 锚对账（若 Phase 2/3 不新增模板，22/23/25 即终值）
 
-## Technical Decisions
+### S5 修复记录（2026-09-27，executor）
+对象：worktree 内 `skills/task-planner/scripts/check-conflicts.sh`（分支 wt/task-v092-guard-quirk-fixes，commit **59b1471**，+5/-1 单文件，worktree 提交后干净）。修法一句话：sed 区间 end 模式 `^|-------` 改 `^[^|]`（首个非表行止，表头→分隔行→数据行整表入管道），管道中段新增 `grep -vE '^[[:space:]:|-]+$'` 滤分隔行（纯 |/-/:/空格 构成行），表头由既有 `tail -n +2` 滤除。改动面=原 :144 管道行（修后 :148）+:123 前 4 行注记；plan_parse_scope 接入（:134-139）与 :166 调用、:147-157 current_plan_dir、:170 自计划跳过零触碰。
+
+#### 验证证据（全实跑，夹具 /tmp/s5-fixtures/repo-s5=真实形态 INDEX：9 字段表头+紧邻 6 字段分隔行首列 9 连字符+数据行）
+- 管道首段：pre-fix 旧模式 2 行（表头+分隔行，4 数据行全丢）；post-fix 新模式 6 行（整表）；全管道 post-fix 输出 4 数据行（task-alpha/task-beta=in_progress、task-gamma=pending、task-delta=complete）
+- 端到端 runtime：pre-fix `✓ 运行时并发冲突检测通过` rc=0（2 条 in_progress 零检测=1a 复现）；post-fix `🔴 冲突 A(同文件): plan task-beta session=sess-beta 覆盖文件: src/shared.py`（跨计划真冲突）+ 1b 自报 task-alpha 冲突 A/B（S6 已知）rc=1；task-beta 改 pending 后 beta 冲突行消失（:126 pending 门控正常，pending 不进 active_plans）
+- 主仓真实 INDEX.md（21:42 刷新版）post-fix 全管道：38 数据行 = `grep -c '^| task-'` 直数 38，`grep -vE` 仅滤真分隔行 1 条（cat -A 证实）；区间捕获 42 = 表头1+分隔行1+数据38+空行1+终止行 `## 完成计划（归档）`1，空行/终止行由既有 `grep '^|'` 滤除——零数据行误滤
+- selftest 双基线：pre-fix（/tmp/cc-baseline 副本 + HEAD 版脚本）**6/6 PASS**；post-fix worktree 实跑 **6/6 PASS**，零回归无红项（任务预警的 CC-06 红未发生：分隔行置尾夹具在新管道下仍解析）
+
+#### 供 S6/S7 注意
+1. 1b 已如 S1 预判显形：夹具端到端出现 task-alpha 自报冲突 A（scope 全量自交 `lib/util.ts`/`src/alpha.py`/`src/shared.py`）+ 冲突 B 自报（worktree_path 与自身相等）——S6 修 :170 路径归一后两行应消失，仅剩 task-beta 真冲突行
+2. scope 交集为整格精确匹配：两计划共享文件但整格写法不同（`src/shared.py, src/alpha.py` vs `src/shared.py`）时交集为空（S1 注记③ 既有语义非缺陷）——S6/S7 验证夹具须用相同整格才能演示真冲突 A（本 S5 夹具首版即踩此坑后修正）
+3. CC-06 语义已过时（改造仍属 S7）：CC-06 夹具「分隔行置尾」锁定的是旧行为路径，selftest 头注 :14-18「已知既有限制」描述的 sed 区间缺陷已被本 S5 修复——S7 应按真实形态（9 字段表头+紧邻 6 字段分隔行）改造 CC-06 夹具并刷新头注，锁定新行为
+
+### S6 修复记录（2026-09-27，executor）
+对象：worktree 内 `skills/task-planner/scripts/check-conflicts.sh`（分支 wt/task-v092-guard-quirk-fixes，commit **cba40ec**，+5/-1 单文件，提交后 worktree 干净）。修法一句话：:131 `plan_dir="plans/$task_id"`（相对）改 `plan_dir="$repo/plans/$task_id"`（与 :153 current_plan_dir 的 glob `"$repo/plans"/*` **同源构造**）+4 行注记；S5 管道行/plan_parse_scope 接入/:147-157 mtime 判定/空值分支零触碰。
+
+#### 选型：候选 a（构造点归一），候选 b（basename 双侧）不采的理由
+1. 同源构造后两侧共享**逐字** `$repo/plans/` 前缀——repo 传参任意形态（绝对/`.`/尾斜杠/含 `..`）字符串恒等，比较语义保持「同一目录」精确判定，不引入 basename 派生
+2. 单点单行改动；assoc 数组键（plan_sessions/plan_worktrees/plan_scopes）与 active_plans 同步归一，下游零波及（冲突输出本就走 `basename $other_plan`，输出不变）
+3. 候选 b 覆盖面与 a **完全相同**：深相对 repo（如 `s5-fixtures/repo-s5`）下 glob 侧 cd 后匹配不到 → current_plan_dir 空 → :162 提前 exit，:174 比较根本不执行——basename 归一无处生效，故无额外收益
+4. 深相对 repo 提前退出为**既有行为**（修前 HEAD 版本对拍逐字节一致，V3c），属 v091 progress 登记的 deferred 项，不在本 S6 范围
+
+#### 验证证据（全实跑，S5 夹具 /tmp/s5-fixtures/repo-s5；证据 /tmp/s6-evidence/）
+夹具复用前 drift 修正：task-beta 被 S5 验证改为 pending + 2 个未提交修改 → 恢复 beta=in_progress 并提交夹具树（信号基线归零），scope 整格共享 `src/shared.py` 确认在。
+
+| repo 形态 | pre-fix（HEAD 59b1471 对拍） | post-fix（cba40ec） | 判定 |
+|---|---|---|---|
+| 绝对 `/tmp/s5-fixtures/repo-s5` | 自报 A(task-alpha, 3 文件全量自交)+自报 B(/tmp/s5-wt-alpha)+真冲突 A(task-beta, src/shared.py) rc=1 | **仅真冲突 A(task-beta)** rc=1 | 1b 消除 ✅ |
+| `.`（repo 内相对） | 同上三段 rc=1 | **仅真冲突 A(task-beta)** rc=1 | 相对形态自跳过成立 ✅ |
+| 深相对 `s5-fixtures/repo-s5`（/tmp 下） | `无活跃 plan,跳过运行时检测` rc=0 | 同左（逐字节一致） | 非回归 ✅ |
+| 自计划唯一（/tmp/s6-fixtures/repo-s6-selfonly，仅 task-alpha 行+目录） | —（未测，无对照意义） | `✓ 运行时并发冲突检测通过` **rc=0** | 零冲突 ✅ |
+| selftest（worktree 实跑） | — | **6/6 PASS** rc=0 | 零回归 ✅ |
+
+#### 消费点核对结论（硬约束④）
+`current_plan_dir` 全部消费点：:162 空值分支、:167/:168/:170 属性读取（非比较）、**:174 唯一字符串比较点**（已由构造点归一覆盖）；冲突 B 比较的是 worktree_path **值**（同计划自等是 1b 跳过失效的下游症状，非独立路径缺陷）；冲突 C 的自报被 :198 `current_session != other_session` 天然抑制（同一 plan session 必等）——均无需额外归一，diff 保持最小。
+
+#### 供 S7 注意
+1. CC-06 改造（真实形态 9 字段表头+紧邻 6 字段分隔行）可增加「自计划跳过」断言：S6 夹具 /tmp/s5-fixtures/repo-s5（alpha 自+beta 他共享整格 `src/shared.py`）期望输出恰 1 条冲突 A 且 plan=非当前 plan；/tmp/s6-fixtures/repo-s6-selfonly 期望 rc=0
+2. 深相对 repo 提前退出是既有 deferred 行为（v091 progress:79），CC-06 若要覆盖「repo 传参形态」维度需另行立项，勿顺手扩
+3. 本 S6 夹具 INDEX/session/worktree 字段构造可直接复用；注意夹具是 git 仓，改完须 commit 保持信号①不干扰断言
+
+### S7 修复记录（2026-09-27，executor）
+对象：worktree 内 `skills/task-planner/scripts/selftest-check-conflicts.sh`（分支 wt/task-v092-guard-quirk-fixes，commit **7bdd6ff**，+50/-14 单文件，提交后 worktree 干净；被测 check-conflicts.sh 本体零触碰——sha256 对 HEAD 逐位一致 f015837e…）。改造一句话：CC-06 夹具 INDEX 由「分隔行置尾」畸形（6 字段表头+数据行+尾置分隔行）改真实形态（9 字段表头+紧邻 6 字段分隔行+9 列数据行，表头/分隔行两行与主仓 plans/INDEX.md:8-9 **逐字节一致**），头注「已知既有限制」块改「历史限制注记」（声明 S5 已修失效+保留变更脉络），新增 CC-07 自计划跳过用例；CC-01..05 五夹具零改动（diff 区块逐一核验）。
+
+#### 断言清单（改造后 7 用例，7/7 PASS）
+| 用例 | 断言 | 语义 |
+|---|---|---|
+| CC-06（改造） | rc=1 + `mode=runtime` + **冲突 A 行数==1**（grep -c 计数断言）+ 行内容逐字锁 `🔴 冲突 A(同文件): plan t-other session=sess-other` + 交集文件 `src/shared.py` | 原底线（冲突 A 报警+交集文件+rc=1）全保留；「恰 1 条且报他计划」即增补项 3a（自计划 task-cur 被正确跳过，S6 修复后语义） |
+| CC-07（新增） | rc=0 + `✓ 运行时并发冲突检测通过` + **冲突 A 行数==0** | 增补项 3b：仅自计划（INDEX 在册唯一 in_progress=当前计划自身）零冲突；跳过失效时将自报 `plan self-plan … src/solo.py` 且 rc=1 即红，非恒真 |
+
+#### 夹具 INDEX 与真实 INDEX.md 形态一致性对照（VC-3）
+- 表头：`| Task ID | Status | Phase 进度 | Goal | session_id | worktree | scope_files | 最后更新 | 待办 |` = **9 字段**，与主仓 plans/INDEX.md:8 逐字节一致（sed 剥壳 diff 实证「逐字节一致」）
+- 分隔行：`|---------|--------|-----------|------|---------|------|` = **6 字段、首列 9 连字符（≥7）**，紧邻表头，与主仓 :9 逐字节一致；S5 新管道 `grep -vE '^[[:space:]:|-]+$'` 正确滤除
+- 数据行：9 列同构（task_id|status|phase|goal|session_id|worktree 空|反引号 scope_files|日期|待办）；解析管道仅取前 6 列，session_id/worktree 仍从 task_plan.md awk 读取——与真实形态解析路径完全一致
+- 陷阱遵守（S6 checkpoint 移交）：夹具 git 仓构造后 commit（信号①归零，rc 断言不被污染）；本脚本无 sid 依赖（mktemp 目录天然唯一，v078 教训不适用）
+
+#### 负向验证（防恒真；/tmp/s7-neg 副本实施，本体零触碰，验证后副本已弃）
+| 破坏点 | 手法 | selftest 结果（/tmp 副本实跑） |
+|---|---|---|
+| check-conflicts.sh:130 pending 门控 | `!=` 反转 `==` | **CC-06 FAIL**（零冲突 A、`✓ 运行时并发冲突检测通过`、rc=0）、其余 6 例 PASS，Total 6 PASS=1 FAIL rc=1 |
+| check-conflicts.sh:178 自计划跳过 | `==` 反转 `!=` | **CC-06 FAIL**（t-other 被误跳过、rc=0）+ **CC-07 FAIL**（自报 `🔴 冲突 A(同文件): plan self-plan session=sess-self 覆盖文件: src/solo.py`、rc=1），Total 5 PASS=2 FAIL rc=1 |
+
+#### 实跑结果
+- 改造前基线 6/6 PASS rc=0 → 改造后 7/7 PASS rc=0（提交前 + 提交后 7bdd6ff 复跑各一次）
+- `git diff HEAD~1 --stat` 仅 selftest-check-conflicts.sh（+50/-14）；worktree 提交后 `git status` 干净
+- 深相对 repo 提前退出（v091 deferred）未顺手扩覆盖（S6 移交约束②遵守）；对账注记：selftest 总用例 6→7，VC-2 全量求和基线对账时 +1 PASS
+
+
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
 |----------|-----------|

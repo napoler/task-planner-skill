@@ -86,11 +86,11 @@ Phase 2
 
 ### Phase 2: worktree 创建 + check-conflicts.sh 修复（1a+1b）+ CC-06 夹具同步改造
 
-- [ ] 主进程建 worktree：`git worktree add /home/terry/task-planner-skill-worktrees/task-v092-guard-quirk-fixes -b wt/task-v092-guard-quirk-fixes master`（基线 0b2208b）
-- [ ] S5 修 1a：按 Phase 1 根因修 :123-145 管道（候选：sed 区间模式对真实表头形态/sed 尾域清洗），使真实 INDEX.md 形态下 active_plans 非空、A/B/C 维度可触发
-- [ ] S6 修 1b：按 Phase 1 根因修 :147-157 current_plan_dir 与 active_plans 条目的跳过判定（路径形态/空白归一）
-- [ ] S7 CC-06 夹具同步改造：selftest-check-conflicts.sh CC-06 INDEX 构造改为修复后可解析形态（保「分隔行置尾 S16 先例」或换真实形态，以 Phase 1 结论为准），断言仍为「冲突 A 报警+交集文件 src/shared.py+rc=1」；不回退 :139/:166 plan_parse_scope 接入
-- **Status:** pending
+- [x] 主进程建 worktree：`git worktree add /home/terry/task-planner-skill-worktrees/task-v092-guard-quirk-fixes -b wt/task-v092-guard-quirk-fixes master`（基线 0b2208b）
+- [x] S5 修 1a：按 Phase 1 根因修 :123-145 管道（候选：sed 区间模式对真实表头形态/sed 尾域清洗），使真实 INDEX.md 形态下 active_plans 非空、A/B/C 维度可触发
+- [x] S6 修 1b：按 Phase 1 根因修 :147-157 current_plan_dir 与 active_plans 条目的跳过判定（路径形态/空白归一）
+- [x] S7 CC-06 夹具同步改造：selftest-check-conflicts.sh CC-06 INDEX 构造改为修复后可解析形态（保「分隔行置尾 S16 先例」或换真实形态，以 Phase 1 结论为准），断言仍为「冲突 A 报警+交集文件 src/shared.py+rc=1」；不回退 :139/:166 plan_parse_scope 接入
+- **Status:** complete（verified 2026-09-27：S5=59b1471/S6=cba40ec/S7=7bdd6ff 三提交，selftest 7/7 含新 CC-07；主进程 git show 逐一复核 diff）
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标（≤1 句） | 执行体 | 输入（路径 + ≤10 行摘要） | 验收（可观察） | 预估时长 | 状态 |
@@ -189,6 +189,9 @@ Phase 2
 | 3 | Phase 1/S2 | executor(继承) | 2026-09-27 | S2 取证：check-drift 3a/3b/3c 三 quirk 复现 | ✅ | subagent-state/2-executor.md | status=done；3a 初值虚构 pending 前驱致首行 complete 即误报（比登记宽）；3b=3c 区间+sed 贪婪取空双层叠加；3c=区间闭于起始行恒剩标题 1 行（跨 gawk/mawk） | ✅ Read findings S2 节（五段实测+探针组+先例对照） | ✅ |
 | 4 | Phase 1/S3 | executor(继承) | 2026-09-27 | S3 取证：plan_parse_scope 语义对拍+接库裁决 | ✅ | subagent-state/3-executor.md | status=done；裁决=接库+可选列限参数（仅字段3）+消费侧保留 tr 拆逗号；禁止列反向风险实证（仓内 17/38 计划中招）；3 调用方零波及 | ✅ Read findings S3 节（25 格矩阵+裁决论证） | ✅ |
 | 5 | Phase 1/S4 | executor(继承) | 2026-09-27 | S4 取证：template-guide 计数实测+锚漂移归因 | ✅ | subagent-state/4-executor.md | status=done；三声明归因闭环（:60=21/:66=21/:74=20 均过时，variant 13→15 归因 d6a0f76+51ca883）；:69 定案=契约安全行正则与两脚本现状失配，修正面 :69+:74；template-mapping 同型漂移 2 处登记不修 | ✅ Read findings S4 节抽查 | ✅ |
+| 6 | Phase 2/S5 | executor(继承) | 2026-09-27 | S5 修复：check-conflicts :123-145 INDEX 解析（worktree 内） | ✅ | subagent-state/5-executor.md | status=done；commit 59b1471（+5/-1）；end 模式改 `^[^|]`+中段滤分隔行；夹具真冲突 A 触发+pending 门控正常；主仓真实形态 38 数据行零误滤；selftest 6/6 | ✅ 主进程 git show 复核 diff+findings S5 节 | ✅ |
+| 7 | Phase 2/S6 | executor(继承) | 2026-09-27 | S6 修复：:147-170 自计划跳过路径归一（worktree 内） | ✅ | subagent-state/6-executor.md | status=done；commit cba40ec（+5/-1）；候选 a 构造点归一 plan_dir="$repo/plans/$task_id"；自跳过/他检测/相对 repo 三场景+selftest 6/6 全过 | ✅ 主进程 git show 复核变更行 | ✅ |
+| 8 | Phase 2/S7 | executor(继承) | 2026-09-27 | S7：CC-06 夹具按真实 INDEX 形态改造+selftest 头注刷新 | ✅ | subagent-state/7-executor.md | status=done；commit 7bdd6ff（+50/-14）；7/7 PASS（新增 CC-07 自跳过用例）；负向验证双断言非恒真；夹具与真实 INDEX 逐字节一致 | ✅ Read findings S7 节（断言清单+形态对照） | ✅ |
 
 ## Key Questions
 
