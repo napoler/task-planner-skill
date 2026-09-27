@@ -85,7 +85,13 @@
      Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 2026-09-27 | S1 派发遭 check-dispatch 拦截（22.4a/b 契约 token 缺失） | 1 | 主进程补全 findings.md/progress.md/status:/acceptance:/checkpoint: 字面 token 后重派通过 | 派发 prompt 未按 templates/subagent_dispatch.md §2/§7 逐字对齐机器 grep 锚（自检漏项） | 派发前按契约五 token 清单自查 prompt；模板复制而非凭记忆重构 |
+| 2026-09-27 | S12 首派 code-runner-agent(mini) Provider rejected | 1 | 按 22.3③ 升档 executor 重派一次通过（Handoff/progress 均登记兜底） | mini 档位间歇不可用（v081/v083 同型，逐会话探针勿跨会话推断） | code-runner 派发失败即升档 executor，不重试同档 |
+| 2026-09-27 | check-delegation stats verdict=violation（Handoff 类型列 token 不纯净+Phase5 Executor 混合表述） | 1 | Handoff 类型列纯 token 化+Phase5 Executor 拆分（executor+白名单③ 登记），verdict=ok | 机器校验要求 Executor token 以 `\|` 纯净形态存在于 Handoff 表，括号后缀阻断匹配（v077 教训同型复发） | Handoff subagent_type 列恒写纯 token；模型/理由注记移入 prompt 要点列 |
+
+## 删除性行为清单（Rule 36.6/36.7② 声明）
+
+删除性行为清单：**无**——本任务全部为缺陷行为恢复（恒空/恒跳过/恒误报 → 设计意图行为），无功能性删除、无语义改写；36.4 删除清单=空，删除基线=git 历史（master 0b2208b..f15c285）；回归验证=全量 selftest 525/0（Rule 36.6）。
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->

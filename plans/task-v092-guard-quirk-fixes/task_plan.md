@@ -74,6 +74,7 @@ Phase 5
 - [ ] plan_parse_scope 语义核对：Read lib/plan-parse.sh:30-46（点分整格语义）+ check-drift「允许的文件」列语义对拍（两列范围表/逗号清单样张），裁决「接库 or 状态机化」，结论落 findings.md
 - [ ] template-guide.md 计数实测：`ls templates/*.md | wc -l`=10、`ls templates/variant/*.md | wc -l`=15（=5+10? 以 Phase 1 实测为准）、`grep -rl "## 📚 必要知识储备" templates/ | wc -l`=22（2026-09-27 主进程计划期实测），与 §2.3 声明 21/§2.5 声明 20 三方差值归因；固定 sid 教训核查 selftest 新增用例命名
 - [x] 四组复现证据+根因结论+修复方向裁决全部落 findings.md；knowledge-brief.md §2/§3 回填
+- **V-N:** VC-1, VC-5
 - **Status:** complete（verified 2026-09-27：S1-S4 四取证全 done 且主进程逐一 Read 复核；3-File Gate PASS）
 - **Executor:** executor（sonnet-1）
 
@@ -90,6 +91,7 @@ Phase 5
 - [x] S5 修 1a：按 Phase 1 根因修 :123-145 管道（候选：sed 区间模式对真实表头形态/sed 尾域清洗），使真实 INDEX.md 形态下 active_plans 非空、A/B/C 维度可触发
 - [x] S6 修 1b：按 Phase 1 根因修 :147-157 current_plan_dir 与 active_plans 条目的跳过判定（路径形态/空白归一）
 - [x] S7 CC-06 夹具同步改造：selftest-check-conflicts.sh CC-06 INDEX 构造改为修复后可解析形态（保「分隔行置尾 S16 先例」或换真实形态，以 Phase 1 结论为准），断言仍为「冲突 A 报警+交集文件 src/shared.py+rc=1」；不回退 :139/:166 plan_parse_scope 接入
+- **V-N:** VC-1, VC-3
 - **Status:** complete（verified 2026-09-27：S5=59b1471/S6=cba40ec/S7=7bdd6ff 三提交，selftest 7/7 含新 CC-07；主进程 git show 逐一复核 diff）
 - **Executor:** executor（sonnet-1）
 
@@ -104,6 +106,7 @@ Phase 5
 - [x] S8 修 3a：check_phase_order prev_status 初值改中性（如空/"none"），全 complete 序列不再误报 CRITICAL；ALIGNED 夹具 rc=0
 - [x] S9 修 3b/3c：按 Phase 1 S3 裁决——语义一致则 check_scope_breach 接 plan_parse_scope 统一库（消除 :205 第 5 处复制+lib 头注「未纳入」同步更新）并取对「允许的文件」列；不一致则状态机化+取对列
 - [x] 修复不削弱 Check 1-3 既有检测（diff 审查确认）；行为级用例先于或同步于修复（VC-5 回归）
+- **V-N:** VC-1, VC-2
 - **Status:** complete（verified 2026-09-27：S8=f3966eb/S9=11c294c；S9 四夹具+38 计划 byte-identical+sync-todos 对拍全过；主进程 git show 复核）
 - **Executor:** executor（sonnet-1）
 
@@ -116,6 +119,7 @@ Phase 5
 
 - [x] S10 行号锚改章节锚：§2.5 内「:65 的 grep 锚计数」改「§2.4 的 grep 锚验收」（§2.4 形态，抗插行漂移；材料包锚点 :69 实漂至 §2.4 契约安全 bullet 与 :74，Phase 1 S4 归因为准）
 - [x] S11 计数按实测修正：以 Phase 1 实测（ls=10 核心+15 variant、grep=22）修正「维持 20」声明，与 §2.3「21 个」三方对齐（20/21/22 以实测+归因结果为准）；template-mapping.md 若同型漂移只登记不修
+- **V-N:** VC-1, VC-5
 - **Status:** complete（verified 2026-09-27：S10=35cd075/S11=e5a402d；三实测数与文档自洽+旧值零残留；:32 §2.2 同型漂移与 template-mapping 漂移超 scope 已登记 findings）
 - **Executor:** code-assistant（haiku-1）
 
@@ -129,6 +133,7 @@ Phase 5
 - [x] S12 check-drift 行为级用例：三 quirk 修复正反向断言（全 complete 不误报/越级仍报；两列表提取成功/无表 SCOPE-NONE 保留）——承载文件按 Phase 1 S2 确认（新建 selftest-check-drift.sh 或既有断言脚本追加），固定 sid 每次唯一（v078 教训）
 - [x] S13 CC-06 与 1a/1b 行为断言已在 Phase 2 S7 落地，此处复核 + 查漏补用例
 - [x] 全量回归：worktree 内 32 脚本逐脚本实跑求和 ≥518 PASS/0 FAIL，逐脚本结果落 progress.md
+- **V-N:** VC-2, VC-3
 - **Status:** complete（verified 2026-09-27：S12=8b3bab0 六用例 6/6+负向验证非恒真+registry 33/33；S13 主进程白名单③逐脚本实跑求和 525 PASS/0 FAIL（33 脚本=32 既有+新增，518+1+6 算术闭环））
 - **Executor:** executor（S12 实派执行体；原派 code-runner-agent mini 遭 Provider 拒绝按 22.3③ 升档，兜底登记 Handoff/progress；S13 全量回归主进程白名单③接管见 Handoff 表）
 
@@ -143,6 +148,7 @@ Phase 5
 - [x] `smart-merge-back.sh --deploy` 三实体位 + 主进程 `diff -r` ×3 亲验（IDENTICAL，diff_lines=0；sha256 抽查）
 - [x] 主仓全量 selftest 复跑 ≥518/0；Read 关键文件复验（check-conflicts/check-drift/template-guide 三处修复点）
 - [x] 簿记：verification.md 回填 VC 证据、INDEX 刷新（sync-todos）、worktree remove+分支删除、merge_back=merged(<commit>)
+- **V-N:** VC-4, VC-5
 - **Status:** complete（verified 2026-09-27：CR APPROVED（3 非阻塞=1 minor 登记 deferred+2 nit 已修 eaa0d8d）；merge d82720e；部署三位 diff -r ×3=0；主仓 525/0；worktree/分支清理完成）
 - **Executor:** 主进程（例外理由:白名单① git/worktree 编排+部署对账 + ② 计划系统文件簿记维护，均非业务代码 Edit）
 
