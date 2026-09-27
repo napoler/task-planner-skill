@@ -58,6 +58,7 @@
 - [x] 3-File 回填（findings 瓶颈总表摘要 / progress Actions）+ check-3file-gate 过 → complete
 - **Status:** complete
 - **Executor:** dynamic-workflows 编排（用户已显式 /workflow 授权，Rule 39.1 路由；CreateWorkflow 承载 4 领域并行取证+综合+批判循环；39.4 并行豁免已声明，登记后生效——例外理由：用户显式点名 workflow 编排，官方「explicit request is binding」）
+- **V-N:** VC-1, VC-2
 
 <!-- S-unit 表：workflow 内部步骤非 Agent() 派发（39.5：派发契约非 hook 强制，此处表为编排蓝图） -->
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -73,6 +74,7 @@
 - [x] 3-File 回填 + gate 过 → complete（scope_files 细单已按采纳项草拟并实例化进 Phase 3 S-unit 表）
 - **Status:** complete
 - **Executor:** 主进程（白名单②计划系统文件写入 + 用户交互 D1 裁决；例外理由：用户裁决不可代理，精修对象为 plan 目录内文档，白名单内）
+- **V-N:** VC-3, VC-4
 
 ### Phase 3: 实施采纳项（worktree 隔离 + 纯增量优先 + selftest 守护）
 - [x] worktree 建立（`/mnt/data/dev/task-planner-skill-worktrees/task-v091`，branch wt/task-v091-efficiency-optimization，宪法 §十一新路径规范）+ 基线复跑（2026-09-26 实测：27 脚本逐行求和 **457 PASS/0 FAIL 全 rc=0**，与 v090 基线一致）
