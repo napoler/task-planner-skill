@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 14 用例(SM-01..11 断言 12 行 + SM-12/SM-13/SM-14 回归 3 行, 共 15 断言行; 另 SM-10 注入时 +1 → Total 动态): 脏 worktree exit3 / 干净合并 exit0+merge commit /
+# 用例 SM-01..SM-15a/15b: 必跑断言行 16 条(基线 SM-01..03/04a/04b/05..09/11..14 共 14 条 + SM-15a/15b locale 回归 2 条;
+#   另 SM-10 注入时 +1 → Total 动态 16/17):脏 worktree exit3 / 干净合并 exit0+merge commit /
 #   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
 #   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
 #   slot 含空格 → REJECTED exit6 /
@@ -435,17 +436,72 @@ SMOK=0
   [ "$(cat "$T14/slotB/SKILL_MARKER")" != "stale-content" ] && SMOK=1
 report SM-14 "$SMOK" "rc=$R1(期望0) IDENTICAL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T14/slotB" && echo 在 || echo 缺) slotB-SKILL_MARKER=$(cat "$T14/slotB/SKILL_MARKER" 2>/dev/null)(期望canonical-v077非stale-content)"
 
+# ---------- SM-15a/SM-15b (2026-09-27 task-v091/C-5-locale 回归钉子, S32 组5 C-5 实测缺陷: 非 C locale 下
+#           comm 未 pin LC_ALL 时混合大小写文件名(B.md/a.md)顺序错乱 → L2 清单定向 inman 空 → B.md 不入
+#           targets → 假 IDENTICAL(rc=0)。修复=deploy_reconcile 内 comm 逐处 pin LC_ALL=C(commit cc64c1b);
+#           本用例从 TARGET 抽真实函数双跑对拍 — 有人剥掉 pin 时 P15 基线与 DRIFT 断言立即 FAIL) ----------
+# 抽取被测函数(_re_lines+deploy_reconcile, awk 范式实测抽 40 行): P15 基线=抽出行含 deploy_reconcile 定义
+# 且含 LC_ALL=C comm 钉; 夹具: git 仓(B.md+a.md 混合大小写, mb 基线 commit → 改 B.md → branch commit) +
+# src/slot 两侧(B.md 内容差异, a.md 相同) → 清单定向 diff 必报 DRIFT-L2(B.md), rc=1
+T15="$(mktemp -d)"; record_dir "$T15"
+FN15="$T15/fn.sh"
+awk '/^    _re_lines\(\) \{/,/^    \}$/' "$TARGET" > "$FN15"
+P15=0
+grep -q 'deploy_reconcile() {' "$FN15" && grep -q 'LC_ALL=C comm' "$FN15" && P15=1
+# git 仓夹具(禁全局 hooks, 同 mk_fixture 口径)
+git -c core.hooksPath=/dev/null init -q "$T15/repo" 2>/dev/null
+git -C "$T15/repo" config user.email selftest@local 2>/dev/null
+git -C "$T15/repo" config user.name selftest 2>/dev/null
+git -C "$T15/repo" config core.hooksPath /dev/null 2>/dev/null
+git -C "$T15/repo" config advice.detachedHead false 2>/dev/null
+mkdir -p "$T15/repo/skills/task-planner"
+echo "v0" > "$T15/repo/skills/task-planner/B.md"
+echo "shared" > "$T15/repo/skills/task-planner/a.md"
+git -C "$T15/repo" add . && git -C "$T15/repo" commit -qm mb-base 2>/dev/null
+echo "v1-branch" > "$T15/repo/skills/task-planner/B.md"
+git -C "$T15/repo" add . && git -C "$T15/repo" commit -qm branch-Bmd 2>/dev/null
+MB15="$(git -C "$T15/repo" rev-parse HEAD~1)"
+BR15="$(git -C "$T15/repo" rev-parse HEAD)"
+# DEPLOY_SRC(= 合并后内容) 与 slot: B.md 内容差异(源 v1-branch vs slot v0), a.md 两侧相同
+mkdir -p "$T15/src" "$T15/slot"
+echo "v1-branch" > "$T15/src/B.md";  echo "shared" > "$T15/src/a.md"
+echo "v0"        > "$T15/slot/B.md";  echo "shared" > "$T15/slot/a.md"
+# 包装器: source 抽取函数 + 注入 DEPLOY_SRC/MAIN_REPO/MB/BRANCH + 调 deploy_reconcile(不经完整脚本入口,
+# 专测函数内 locale pin; 定位参数 $6=slot 目录)
+cat > "$T15/h15.sh" <<'EOF15'
+#!/usr/bin/env bash
+set -u
+. "$1"
+DEPLOY_SRC="$2"; MAIN_REPO="$3"; MB="$4"; BRANCH="$5"
+deploy_reconcile "$6"
+exit $?
+EOF15
+ERRF="$T15/err"
+# SM-15a: zh locale 下仍报 DRIFT-L2(B.md) 且 rc=1(修复前 comm 乱序 → inman 空 → 假 IDENTICAL rc=0)
+run env LC_ALL=zh_CN.UTF-8 bash "$T15/h15.sh" "$FN15" "$T15/src" "$T15/repo" "$MB15" "$BR15" "$T15/slot"
+OUT15A="$R2"; RC15A="$R1"
+SMOK=0
+[ "$RC15A" = 1 ] && printf '%s' "$OUT15A" | grep -qF 'DRIFT-L2' && \
+  printf '%s' "$OUT15A" | grep -qF 'B.md' && SMOK=1
+report SM-15a "$SMOK" "P15基线(抽取含deploy_reconcile定义+LC_ALL=C comm钉)=$([ "$P15" = 1 ] && echo 在 || echo 缺) zh-locale rc=$RC15A(期望1) DRIFT-L2=$(printf '%s' "$OUT15A" | grep -qF 'DRIFT-L2' && echo 在 || echo 缺) B.md入DRIFT明细=$(printf '%s' "$OUT15A" | grep -qF 'B.md' && echo 在 || echo 缺)"
+# SM-15b: 同夹具 LC_ALL=C 跑, 与 15a 输出逐字节一致且 rc=1(pin 生效 → 行为 locale 无关)
+run env LC_ALL=C bash "$T15/h15.sh" "$FN15" "$T15/src" "$T15/repo" "$MB15" "$BR15" "$T15/slot"
+OUT15B="$R2"; RC15B="$R1"
+SMOK=0
+[ "$RC15B" = 1 ] && [ "$OUT15A" = "$OUT15B" ] && SMOK=1
+report SM-15b "$SMOK" "C-locale rc=$RC15B(期望1) 与15a-zh逐字节一致=$([ "$OUT15A" = "$OUT15B" ] && echo 是 || echo 否)"
+
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
 # [2026-09-12 R2 记账修复 / R3 SKIP 口径 / 复审 5 轮 P1 动态口径] 统计口径:
-#   必跑断言行 14 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-14),
-#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 14 + (SM10_INJECTED ? 1 : 0) 动态计算:
-#   SKIP(SM-10 未注入) → 14; 注入 → 15。
+#   必跑断言行 16 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-14、SM-15a、SM-15b),
+#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 16 + (SM10_INJECTED ? 1 : 0) 动态计算:
+#   SKIP(SM-10 未注入) → 16; 注入 → 17。
 #   PASS/FAIL 为 report() 真实累计值; 框架断言 PASS+FAIL == TOTAL_CASES(动态), 不一致打印
 #   FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败); SKIP 单列, 不计入断言行总数。
 #   连跑两遍结果一致(trap 幂等)。
-TOTAL_BASE=14
+TOTAL_BASE=16
 TOTAL_CASES=$(( TOTAL_BASE + ( SM10_INJECTED ? 1 : 0 ) ))
 SKIPPED=$(( SM10_INJECTED ? 0 : 1 ))
 PASS_TOTAL=$((PASS + FAIL))
