@@ -95,10 +95,37 @@ copy_template() {
 PROJECT_NAME="${1:-project}"
 TEMPLATE_TYPE="${2:-${TASK_TEMPLATE_TYPE:-}}"   # positional first, env fallback
 # [2026-09-20 task-v086 P2-S2 Rule 38.2] 第 3 位置参或 env TASK_PLAN_TIER=mini（tier 路由，
-#   与 template_type 正交；缺省=现状行为逐字节不变，38.4 非 mini 零影响铁律）
+#   与 template_type 正交；38.4 非 mini 零影响铁律）
+# [2026-09-27 task-v091 S22 A-1 Rule 38.6] 缺省契约改写（36.4 清单①登记）：
+#   原「缺省=现状行为逐字节不变」→「四条件全命中（env TASK_AUTO_TIER=1 提交体量事实且
+#   预估 ≤15min ∧ scope_files ≤2 ∧ 单模块 ∧ ④排除未命中）且未显式指定 tier 时自动 mini」；
+#   无 TASK_AUTO_TIER=1 输入的调用路径仍与 task-v091 前逐字节一致
 PLAN_TIER="${3:-${TASK_PLAN_TIER:-}}"
 # [2026-09-21 task-v086 S6] 复制源命中项目级自造模板=1 (frontmatter 插入判定用)
 PROJECT_TPL_USED=0
+# [2026-09-27 task-v091 S22 A-1] auto-tier 四条件判定（Rule 38.6；慢源 R16=忘传 tier 即落
+#   419 行 general 重档）。主进程调用前以 env 提交任务体量事实（三体量条件为派发前模型估计、
+#   ④排除同为模型自判——提案质量风险披露），脚本侧机器闸门：四条件全过且未显式指定 tier
+#   才自动降 mini；任一不过/输入缺失/非法 → 保持缺省档（fail-safe，兼容 38.4 非 mini 零影响
+#   铁律：无 TASK_AUTO_TIER=1 的调用零影响）。显式优先：第 3 位置参 > env TASK_PLAN_TIER >
+#   自动判定（显式声明任何档位时本块不参与，auto_tier 不覆盖显式值）。
+#   ④排除语义：目标命中保护区（§六 skills/agents/commands/AGENTS.md）、Rule 36 技能修改类、
+#   D6 高危类（schema/基础设施/破坏性操作）→ 禁止自动降 mini（显式指定 mini 仍可）。
+AUTO_TIER_FIRED=0
+_s22_uint() { case "$1" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
+if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
+    if [ "${TASK_TIER_EXCLUDE:-}" = "1" ]; then
+        echo "[init] auto-tier: 命中④排除条件（保护区/Rule 36 技能修改/D6 高危），不自动降 mini（Rule 38.6；显式指定 mini 仍可）"
+    elif _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
+       && _s22_uint "${TASK_SCOPE_FILES:-}" && [ "${TASK_SCOPE_FILES}" -ge 1 ] && [ "${TASK_SCOPE_FILES}" -le 2 ] \
+       && _s22_uint "${TASK_SCOPE_MODULES:-}" && [ "${TASK_SCOPE_MODULES}" -eq 1 ]; then
+        PLAN_TIER="mini"
+        AUTO_TIER_FIRED=1
+        echo "[init] auto-tier: 四条件全过（预估 ${TASK_EST_MINUTES}min ≤15 ∧ scope_files ${TASK_SCOPE_FILES} ≤2 ∧ 单模块 ∧ ④排除未命中）→ 自动降档 mini（Rule 38.6）"
+    else
+        echo "[init] auto-tier: 体量三条件未全命中或输入缺失/非法，保持缺省档（Rule 38.6 fail-safe）"
+    fi
+fi
 DATE=$(date +%Y-%m-%d)
 
 echo "Initializing planning files for: $PROJECT_NAME"
@@ -220,6 +247,16 @@ else
                     && mv "task_plan.md.tmp" "task_plan.md"
                 echo "    [init] 项目模板缺 template_type 标识, 已插入 frontmatter 行 (template_type: $TEMPLATE_TYPE, task-v086 S6)"
             fi
+        fi
+        # [2026-09-27 task-v091 S22 A-1] auto_tier 标记：自动降档命中的 mini 产物在 plan_tier: mini
+        # 行后插一行 auto_tier: mini（终验 AUTO-TIER 复核段消费锚，提案终审 #7 闭环：把误判从
+        # 「单程 warn 提示」升级为「终验可观察复核点」）。显式声明 mini 不打标（auto_tier 只记
+        # 自动判定，显式优先=不覆盖显式值）；variant 定制优先场景产物无 plan_tier: mini 行 →
+        # 不打标（38.2 正交语义同 :164 分流）。
+        if [ "$AUTO_TIER_FIRED" = 1 ] && grep -q 'plan_tier: mini' "task_plan.md" 2>/dev/null; then
+            awk '!_s22done && /plan_tier: mini/ { print; print "<!-- auto_tier: mini -->"; _s22done=1; next } { print }' \
+                "task_plan.md" > "task_plan.md.tmp" && mv "task_plan.md.tmp" "task_plan.md"
+            echo "    [init] auto-tier 命中: frontmatter 已记 auto_tier: mini 标记 (Rule 38.6, task-v091 S22)"
         fi
         if [ -n "$TEMPLATE_TYPE" ]; then
             echo "    Created task_plan.md (variant: $TEMPLATE_TYPE)"
