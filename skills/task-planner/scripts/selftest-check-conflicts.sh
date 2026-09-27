@@ -10,12 +10,15 @@
 #   CC-03 init 信号③: 遗留 wt/leftover 分支 → ③wt/* 分支计数 + 分支列表行
 #   CC-04 init 信号④: plans/INDEX.md 待处理区列表行(已提交) → ④在册未完成任务计数
 #   CC-05 init 全绿: 干净仓无 INDEX → ✓ 无冲突信号行 + rc=0
-#   CC-06 runtime 冲突 A: 两计划 scope 交集 → 🔴 冲突 A 行 + 交集文件行(覆盖 --runtime 慢路径)
-# 已知既有限制(S16 登记 deferred, 本 selftest 不修不扩散, 如实覆盖可触发的形态):
-#   check-conflicts.sh INDEX 解析管道 sed '/^| Task ID/,/^|-------/' 区间止于首个分隔行,
-#   真实格式 INDEX(分隔行紧跟表头)下数据行恒不可达 → active_plans 恒空、A/B/C 不触发。
-#   CC-06 按 S16 对拍先例构造「分隔行置尾」畸形可解析 INDEX, 锁定 A 检测代码现行为,
-#   不构成对真实格式 INDEX 的覆盖声明。信号④解析用「## 待处理」区段列表行, 与表格 INDEX 互不相干。
+#   CC-06 runtime 冲突 A: 两计划 scope 交集 → 🔴 冲突 A 行恰 1 条(报他计划, 自计划被跳过)
+#   + 交集文件行(覆盖 --runtime 慢路径; task-v092/S7 起夹具 INDEX 改真实形态)
+#   CC-07 runtime 自计划跳过: INDEX 在册唯一 in_progress=当前计划自身 → 零冲突 A + ✓ 通过行 + rc=0
+# 历史限制注记(task-v092/S5 已修, 原「S16 已知既有限制」随之失效, 保留变更脉络):
+#   check-conflicts.sh INDEX 解析管道旧 sed 区间 '/^| Task ID/,/^|-------/' 的 end 模式曾被真实
+#   格式 INDEX(分隔行紧跟表头)的分隔行命中 → 区间提前终止、数据行恒不可达 → active_plans 恒空、
+#   A/B/C 不触发; CC-06 当年按 S16 对拍先例以「分隔行置尾」畸形 INDEX 锁定旧行为。S5 修复(end
+#   模式改 /^[^|]/ + 管道中段滤分隔行)后真实形态可解析, CC-06 夹具同步改造为真实形态并锁定修复
+#   后行为; S6 修自计划跳过后增补 CC-07 断言。信号④解析用「## 待处理」区段列表行, 与表格 INDEX 互不相干。
 # Total 行汇总, 任一 FAIL exit 1。只读被测脚本, 写入仅 /tmp 夹具, 退出清理。
 set -u
 
@@ -47,10 +50,10 @@ run_cc() {
     RC=$?
 }
 
-R1=""; R2=""; R3=""; R4=""; R5=""; R6=""
+R1=""; R2=""; R3=""; R4=""; R5=""; R6=""; R7=""
 cleanup() {
     local d
-    for d in "$R1" "$R2" "$R3" "$R4" "$R5" "$R6"; do
+    for d in "$R1" "$R2" "$R3" "$R4" "$R5" "$R6" "$R7"; do
         [ -n "$d" ] && rm -rf "$d"
     done
     return 0
@@ -130,8 +133,10 @@ else
   printf '%s\n' "$OUT" | sed 's/^/  out| /'
 fi
 
-# CC-06 runtime 冲突 A: 可解析 INDEX(分隔行置尾, S16 先例)+两计划 scope 交集
+# CC-06 runtime 冲突 A: 真实形态 INDEX(9 字段表头+紧邻 6 字段分隔行, 与主仓 plans/INDEX.md 同构;
+#   task-v092/S7 改造, 原「分隔行置尾」畸形夹具随 S5 修复退役)+两计划 scope 交集
 #   plans/task-cur(当前, glob 序在前) 与 plans/t-other(in_progress) 共享 src/shared.py
+#   → 恰 1 条冲突 A 且报他计划 t-other(自计划 task-cur 被跳过, S6 修复后语义)
 R6="$(mktemp -d "${TMPDIR:-/tmp}/cc-selftest-6-XXXXXX")"
 mk_sandbox "$R6/repo"
 mkdir -p "$R6/repo/plans/task-cur" "$R6/repo/plans/t-other"
@@ -149,20 +154,51 @@ mkdir -p "$R6/repo/plans/task-cur" "$R6/repo/plans/t-other"
 } > "$R6/repo/plans/t-other/task_plan.md"
 {
     printf '# plans index\n\n'
-    printf '| Task ID | Status | Phase | Goal | Updated | Icon |\n'
-    printf '| t-other | in_progress | 1/3 | other | 2026-09-27 | x |\n'
-    printf '|-------|-------|-------|-------|-------|-------|\n'
+    printf '| Task ID | Status | Phase 进度 | Goal | session_id | worktree | scope_files | 最后更新 | 待办 |\n'
+    printf '|---------|--------|-----------|------|---------|------|\n'
+    printf '| t-other | in_progress | 1/3 | other | sess-other |  | `src/shared.py` | 2026-09-27 |  |\n'
 } > "$R6/repo/plans/INDEX.md"
 git -C "$R6/repo" add plans/
 git -C "$R6/repo" -c user.email=selftest@t -c user.name=selftest commit -q -m plans
 run_cc runtime "$R6"
 if [ "$RC" -eq 1 ] \
    && printf '%s' "$OUT" | grep -qF 'mode=runtime' \
+   && [ "$(printf '%s' "$OUT" | grep -cF '🔴 冲突 A(同文件)')" -eq 1 ] \
    && printf '%s' "$OUT" | grep -qF '🔴 冲突 A(同文件): plan t-other session=sess-other' \
    && printf '%s' "$OUT" | grep -qF 'src/shared.py'; then
-  ok 06 "runtime 同文件冲突 A 报警+交集文件, rc=1"
+  ok 06 "runtime 同文件冲突 A(真实形态 INDEX)恰 1 条且报他计划 t-other, rc=1"
 else
-  bad 06 "冲突 A 输出或 rc 不符(得 rc=$RC)"
+  bad 06 "冲突 A 输出/条数或 rc 不符(得 rc=$RC)"
+  printf '%s\n' "$OUT" | sed 's/^/  out| /'
+fi
+
+# CC-07 runtime 自计划跳过: INDEX 在册唯一 in_progress=当前计划自身(task-v092/S6 修复后语义;
+#   夹具构造复用 S6 checkpoint 思路)。若自计划跳过失效(worktree_path=n/a 抑制冲突 B,
+#   scope 自交仍触发冲突 A)将自报冲突 A 且 rc=1 → 本用例即红, 非恒真
+R7="$(mktemp -d "${TMPDIR:-/tmp}/cc-selftest-7-XXXXXX")"
+mk_sandbox "$R7/repo"
+mkdir -p "$R7/repo/plans/self-plan"
+{
+    printf '# task_plan: self-plan\nsession_id: sess-self\nworktree_path: n/a\n\n'
+    printf '## ⚠️ 执行范围限制\n\n'
+    printf '| # | 文件路径 | 操作 |\n|---|---------|------|\n'
+    printf '| 1 | src/solo.py | 修改 |\n'
+} > "$R7/repo/plans/self-plan/task_plan.md"
+{
+    printf '# plans index\n\n'
+    printf '| Task ID | Status | Phase 进度 | Goal | session_id | worktree | scope_files | 最后更新 | 待办 |\n'
+    printf '|---------|--------|-----------|------|---------|------|\n'
+    printf '| self-plan | in_progress | 1/2 | self only | sess-self |  | `src/solo.py` | 2026-09-27 |  |\n'
+} > "$R7/repo/plans/INDEX.md"
+git -C "$R7/repo" add plans/
+git -C "$R7/repo" -c user.email=selftest@t -c user.name=selftest commit -q -m plans
+run_cc runtime "$R7"
+if [ "$RC" -eq 0 ] \
+   && printf '%s' "$OUT" | grep -qF '✓ 运行时并发冲突检测通过' \
+   && [ "$(printf '%s' "$OUT" | grep -cF '🔴 冲突 A(同文件)')" -eq 0 ]; then
+  ok 07 "仅自计划在册零冲突 A 全绿通过, rc=0"
+else
+  bad 07 "自计划被误报或 rc 不符(得 rc=$RC)"
   printf '%s\n' "$OUT" | sed 's/^/  out| /'
 fi
 

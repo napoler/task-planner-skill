@@ -11,15 +11,18 @@
 #      S25 修正)——head -10 上限与逗号串 join 保留在调用侧(见该文件 :174/:244 一带语义锚注释)
 #   3. scripts/zcode-pretooluse.sh Rule 23 扫描 — 热路径保留 S15 内联单 awk 不 source 本库
 #      (每计划 1 fork 是 C-1a③ 性能成果); 与本库互为语义锚, 任一处语义变更必须同步另一处
-#   未纳入: scripts/check-drift.sh:205 另有独立旧形态(严格 ⚠️ 区间形), 待后续组统一
+#   4. scripts/check-drift.sh check_scope_breach — 列限调用形态(第 2 参=3 仅取允许列;
+#      task-v092 S9 接入, 原 :205 独立区间式提取已废; tr 拆逗号/trim/空滤留在消费侧逐条清单)
 #
 # 本文件仅被 source, 不直接执行(无 main 逻辑; source 侧须已 set -u 兼容)。
 
-# plan_parse_scope <task_plan.md> — 提取 scope 条目, 一行一条打印到 stdout
+# plan_parse_scope <task_plan.md> [maxcol] — 提取 scope 条目, 一行一条打印到 stdout
 # 语义权威源(2026-09-27 task-v091 C-1c 定格, 同 zcode-pretooluse.sh Rule23 注释锚):
 #   - 区间: 「## …执行范围限制」标题(宽松匹配, 含/不含 ⚠️ 均命中——修复 v090 类表头
 #     无 emoji 时旧严格形提取恒空的盲区)到下一个「## 」标题前
 #   - 行:   仅表格行(行首 |), 排除 |--- 分隔行
+#   - 列限: 可选第 2 参 [maxcol](2026-09-27 task-v092 S9 新增)——指定时扫描上界=该列
+#     (如 3=仅允许列, 供 check-drift 排除任意后位禁止列); 缺省空=现行为 3..n 整行不变
 #   - 条目: 第 3+ 字段(-F'|' 语义, 跳过序号/类别列)中含点分路径(/\.[a-zA-Z]/)的单元格,
 #     去首尾空白后**整格**输出; 不做逗号拆分({a.sh,b.sh} 括号清单与带注 prose 均为一条,
 #     对齐 pretooluse 子串匹配语义); 无点分内容(纯目录路径/中文描述/表头)自然滤除
@@ -29,13 +32,15 @@
 #   周期调用 check-conflicts --runtime 的 zcode-userpromptsubmit.sh 路径。
 plan_parse_scope() {
   local plan="$1"
+  local maxcol="${2:-}"
   [ -f "$plan" ] || return 0
-  awk '
+  awk -v maxcol="$maxcol" '
     /^## .*执行范围限制/ { inscope = 1; next }
     /^## /                { inscope = 0 }
     inscope && /^\|/ && !/^\|---/ {
       n = split($0, c, "|")
-      for (i = 3; i <= n; i++) {
+      hi = (maxcol == "" ? n : maxcol + 0)
+      for (i = 3; i <= hi; i++) {
         s = c[i]
         gsub(/^[[:space:]]+/, "", s)
         gsub(/[[:space:]]+$/, "", s)

@@ -20,6 +20,12 @@
 # NOTE: no set -e; grep/awk returning non-zero is normal (no matches),
 # not an error condition. Errors are handled explicitly below.
 
+# [2026-09-27 task-v092 S9] scope 提取统一库(语义权威源+调用方清单见 lib/plan-parse.sh);
+# 以脚本自身绝对路径 source, 不受被检计划所在目录影响(范式同 check-conflicts.sh S16 接入)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/plan-parse.sh
+. "$SCRIPT_DIR/lib/plan-parse.sh"
+
 PLAN_FILE="${1:-task_plan.md}"
 PROGRESS_FILE="${2:-progress.md}"
 FINDINGS_FILE="${3:-findings.md}"
@@ -119,7 +125,11 @@ check_phase_order() {
         return
     fi
 
-    local prev_status="pending"
+    # 修复(v092/S8, 2026-09-27): 原初值 "pending" 凭空虚构「虚拟 Phase 0=pending」前驱，
+    # 致扫描区间内首个状态行=complete 即误报 CRITICAL PHASE-SKIP（全 complete 与
+    # complete,in_progress 正常推进态均恒误报）。原行为见 findings.md S2 3a 节。
+    # 改中性初值 "none"，仅真实前驱为 pending 时才触发越级判定；真越级报警路径不变。
+    local prev_status="none"
     local violated=false
     local violation_detail=""
 
@@ -201,11 +211,13 @@ check_scope_breach() {
     fi
 
     # Extract allowed files from task_plan.md Scope Guard table
+    # [2026-09-27 task-v092 S9] 原区间式 awk 提取(gawk 区间陷阱+严格 ⚠️ 表头+取末列语义,
+    # 三缺陷叠加致 SCOPE-NONE 恒跳过/禁止列反向风险)替换为统一库 plan_parse_scope;
+    # 第 2 参=3 列限仅取允许列(findings.md S3 裁决: 禁止列可在任意后位字段, 勿做 3..N-1)。
+    # tr 拆逗号/trim/grep -v '^$'/|| true 为消费侧逐条清单依赖(下方 allowed_files 管道的
+    # `|| true` 兜底即 check_scope_breach 的 fail-open 路径), 勿并入库 [v092-CR nit: 行号锚改语义锚]
     local allowed_files
-    allowed_files=$(awk '/^## ⚠️ 执行范围限制/,/^## /' "$PLAN_FILE" 2>/dev/null \
-        | grep '|' \
-        | grep -vE '(类别|允许|禁止|---)' \
-        | sed 's/.*|//;s/|.*//' \
+    allowed_files=$(plan_parse_scope "$PLAN_FILE" 3 \
         | tr ',' '\n' \
         | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
         | grep -v '^$' || true)
