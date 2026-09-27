@@ -1,0 +1,22 @@
+# S22 checkpoint — A-1 机制层（init-session auto-tier + Rule 38.6 + auto_tier 标记）
+
+- status: done（待主进程 VC 复验）
+- worktree: /mnt/data/dev/task-planner-skill-worktrees/task-v091（基线 d3a787c，单 commit）
+- files_changed:
+  - skills/task-planner/scripts/init-session.sh（316→355 行，+39/-1）
+    - :97-102 缺省契约注释改写（36.4 清单①：原「缺省=逐字节不变」→四条件自动 mini）
+    - :106-127 auto-tier 四条件判定块（AUTO_TIER_FIRED，env：TASK_AUTO_TIER/TASK_EST_MINUTES/TASK_SCOPE_FILES/TASK_SCOPE_MODULES/TASK_TIER_EXCLUDE）
+    - :251-260 auto_tier: mini 标记插入（plan_tier: mini 行后，仅自动降档命中打标）
+  - skills/task-planner/references/critical-rules.md（365→366 行，+1）
+- **行号变化登记（S27 C 锚核对用）**：
+  - critical-rules.md：新 340 行=38.6 子条（单行追加）；旧 340（空行）→341、旧 341 边界明示→342、旧 343 `### 39`→344——**≥340 全部 +1**；38.1-38.5（335-339）行号与内容零改动；Rule 39 起（39.x 各行）整体 +1
+  - init-session.sh：旧 :99 PLAN_TIER→103；旧 :162-171 tier 分流→166-175；旧 :194-234 创建分支→198-243 附近（auto_tier 插入块 251-260）；旧 :318 末行→355
+- **编号裁决记录**：任务标题写「Rule 38.5 增补」，但 Read 实查 38.5 已被 task-v086 的 plan_tier_enforce 机制条占用且 38.1 内有「档位语义见 38.5」交叉引用 + selftest PT-06 锚 `^38\.5 `=plan_tier_enforce——按硬约束「纯追加不重编号」落为 **38.6**，38.6 行首已注明顺延缘由
+- verification:
+  - 甲（四条件全过）: frontmatter `<!-- plan_tier: mini -->`+`<!-- auto_tier: mini -->`，日志「auto-tier: 四条件全过（预估 10min ≤15 ∧ scope_files 1 ≤2 ∧ 单模块 ∧ ④排除未命中）→ 自动降档 mini」
+  - 乙（3 文件 60min）: 日志「体量三条件未全命中…保持缺省档（fail-safe）」，产物 general 首行，plan_tier:mini/auto_tier 计数=0
+  - 丙（显式 TASK_PLAN_TIER=general）: 无 auto-tier 输出（显式优先，块不参与），产物 general，计数=0/0
+  - 丁（TASK_TIER_EXCLUDE=1，对应改 critical-rules.md 场景）: 日志「命中④排除条件…不自动降 mini」，产物 general，计数=0/0
+  - bash -n OK；selftest-plan-tier.sh Total: 28 PASS=28 FAIL=0；另跑 selftest-template-lifecycle.sh 18/18、selftest-active-plan.sh 19/19 均 0 FAIL
+  - /tmp/s22-atier 夹具已清理；selftest 自身 /tmp 夹具无残留
+- 未做（按分工留后续）: SKILL.md:64 trivial 判定步、check-complete.sh AUTO-TIER 复核段、selftest-plan-tier.sh 新增断言（S23）

@@ -11,3 +11,4 @@
 - 合并 a2ae738 / 簿记见本仓 progress 段；三位部署 IDENTICAL；master 全量 selftest 441/0
 - 内容：Rule 8 族纯追加 8.1 D 类新任务边界判定（与当前 Goal/scope/交付物均无关联→开新计划目录+旧计划原样保留）+SKILL.md 用户新指令表 D 行/特判段/C12 扩 D/A/B/C+UPS hook [plan-note] D 类指引+todo-sync S5 D 类分支+selftest-task-boundary 11 断言
 - 零新 config 键（判定=LLM 行为面，机器守护条款在位）
+- 2026-09-26 B 类扩展：用户补充硬约束⑦（子代理干净上下文测试——技能修改后须在全新子代理中验证，主进程上下文测试无效）+ 授权⑧（优化→合并→部署全链路）；task_plan.md 三处增补（约束⑦⑧/Phase 3 测试项/Decisions Made）+ attest 重锁
