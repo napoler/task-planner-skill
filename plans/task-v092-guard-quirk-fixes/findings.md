@@ -328,6 +328,24 @@ templates/ 下 .md 总数 = **25**。
 2. lib 头注调用方清单现 4 条，后续新增调用方若需列限形态一律走第 2 参，勿再复制 awk（v091 C-1c 既定方向）
 3. template-guide.md:69 修正措辞中「check-drift.sh:205 区间式」的如实描述现应更新为接库后形态（S4 节修正指令 5 已预留此分支：「若 S9 已接库则以接库后形态为准」）
 
+### S10 修复记录（2026-09-27，code-assistant）
+对象：worktree 内 `skills/task-planner/references/template-guide.md`（分支 wt/task-v092-guard-quirk-fixes，commit **35cd075**，+2/-2 单文件，仅 :69/:74 两行）。改前/改后对照：① :74「故 **:65** 的 grep 锚计数」→「故 **§2.4「统一标题」条**的 grep 锚计数」（行号锚改章节锚，S4 归因的插行漂移失配消除）；② :69「以状态机方式提取（`/^## ⚠️ 执行范围限制/{f=1;next} /^## /{f=0}`）」→「经统一库 lib/plan-parse.sh 的 `plan_parse_scope` 提取（check-conflicts 默认形态、check-drift 列限形态，语义权威源见库头注）」（S9 接库后两脚本现状：check-conflicts.sh:147/:174 单参默认形态、check-drift.sh:219 列限 `plan_parse_scope "$PLAN_FILE" 3`，旧 awk 状态机正则已不存在）。验证：全文件 `grep -n ':65'` 零命中；`git diff HEAD~1 --stat` 仅 template-guide.md 一文件（+2/-2 ≤6 行硬约束内）；未做计数修正（留 S11）与无关润色。
+
+### S11 修复记录（2026-09-27，code-assistant）
+对象：worktree 内 `skills/task-planner/references/template-guide.md`（分支 wt/task-v092-guard-quirk-fixes，commit **e5a402d**，基线 35cd075，+5/-5 单文件）。按 S4「Phase 4 修正指令」执行计数三处声明修正（指令 2/3/4 合并 + 直接关联措辞）：
+
+| 位置 | 改前 | 改后 |
+|---|---|---|
+| §2.3（:60） | 「5 核心 + 3 辅助 + 13 variant = **21 个模板**（2026-09-16 task-v074 P8 核对…）」 | 「5 核心 + 3 辅助 + 15 variant = **23 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）不入此口径，templates/ 实际 25 个 .md（…漂移自 v086/v085 两批新增未回写——mini-lite-type d6a0f76、video-type 51ca883 重建）」 |
+| §2.4 标题（:62） | 「全部 21 个模板统一含」 | 「22/25 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外」 |
+| §2.4 验收（:66） | 「验收（应为 21）」 | 「验收（应为 22；例外：knowledge-brief、shared-tracker、variant/mini-lite-type）」 |
+| §2.4 task_plan 系（:67） | 「主模板 + 13 variant」 | 「主模板 + 15 variant，含锚 14——mini-lite 除外」（防与 :62/:66 矛盾，直接关联措辞） |
+| §2.5（:74） | 「…grep 锚计数 … 维持 20 不变」 | 「…grep 锚计数 … 现为 22（= 25 − 3 无锚例外：knowledge-brief/shared-tracker/variant/mini-lite-type）」（语义保持：knowledge-brief 不含该章节故不计入锚数，数值 20→22 与 S4 双重过时归因一致） |
+
+三实测数（worktree 改后复跑，与文档声明一致）：`ls templates/*.md | wc -l`=**10**（5 核心+3 辅助+knowledge-brief+shared-tracker）；`ls templates/variant/*.md | wc -l`=**15**；`grep -rl "## 📚 必要知识储备" templates/ | wc -l`=**22**（=25 总 − 3 无锚）。零残留验证：`grep -n "21 个\|应为 21\|维持 20"` rc=1 零命中；`git diff HEAD~1 --stat` 仅 template-guide.md（+5/-5=10 行 diff，≤12 硬约束内）。
+
+**template-mapping.md 同型漂移登记（只登记不修——scope 禁改，留后续任务）**：① :26「类型不在既有 13 类」→ variant 实为 15，少记 mini-lite/video；② §六 速查表（:132-144）列 13 个 variant 路径，磁盘 15，缺 `variant/mini-lite-type.md`/`variant/video-type.md` 两行（与 guide :32 §2.2 表同源，v086/v085 两批未回写）；③ :191 §八 白名单注释「应包含: findings.md…verification.md」列 5 文件 vs init 白名单实为 6（+knowledge-brief），措辞为「应包含」非穷举，可顺手补（可选）。check-template-type.sh 白名单动态派生，不受纯文档漂移影响。
+
 ## Issues Encountered
 <!-- 阻塞/意外问题与解法;代码错误走 progress.md Error Log(Rule 19.4) -->
 | Issue | Resolution |

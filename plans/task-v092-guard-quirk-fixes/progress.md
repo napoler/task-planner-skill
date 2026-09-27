@@ -54,6 +54,17 @@
 - Test Results:
   -
 
+### Phase 4: template-guide.md 文档锚+计数修正
+- **Status:** in_progress
+- **Started:** 2026-09-27 22:22
+- Actions taken:
+  - [2026-09-27 S10] template-guide.md 行号锚改章节锚：:74「故 :65 的 grep 锚计数」→「故 §2.4「统一标题」条的 grep 锚计数」（S4 归因插行漂移失配）+ :69 契约安全行状态机 awk 正则描述改 S9 接库后形态（「经统一库 lib/plan-parse.sh 的 plan_parse_scope 提取（check-conflicts 默认形态、check-drift 列限形态，语义权威源见库头注）」，实测 check-conflicts.sh:147/:174 单参+check-drift.sh:219 列限）；+2/-2 单文件 worktree commit 35cd075；验收 `grep -n ':65'` 全文件零命中、`git diff HEAD~1 --stat` 仅 template-guide.md；计数修正留 S11。详见 findings.md「### S10 修复记录」；checkpoint=subagent-state/10-code-assistant.md
+  - [2026-09-27 S11] template-guide.md 计数三声明按 S4 实测修正：§2.3（:60）13 variant/21 总数 → 15 variant/23 口径+25 实数（归因 d6a0f76 mini-lite+51ca883 video 重建）、§2.4 标题（:62）「全部 21」→「22/25 三者例外」、验收（:66）「应为 21」→「应为 22；例外 3 文件」、§2.5（:74）「维持 20」→「现为 22（=25−3）」；+5/-5 单文件 worktree commit e5a402d；三实测对照通过（10/15/22），`grep -n "21 个\|应为 21\|维持 20"` 零残留；template-mapping.md 同型漂移（:26/§六表/:191）只登记不修。详见 findings.md「### S11 修复记录」；checkpoint=subagent-state/11-code-assistant.md
+- Files created/modified:
+  -
+- Test Results:
+  -
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

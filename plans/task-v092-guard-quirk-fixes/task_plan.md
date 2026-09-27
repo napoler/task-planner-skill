@@ -63,7 +63,7 @@
 
 ## Current Phase
 
-Phase 4
+Phase 5
 
 ## Phases
 
@@ -114,9 +114,9 @@ Phase 4
 
 ### Phase 4: template-guide.md 文档锚+计数修正
 
-- [ ] S10 行号锚改章节锚：§2.5 内「:65 的 grep 锚计数」改「§2.4 的 grep 锚验收」（§2.4 形态，抗插行漂移；材料包锚点 :69 实漂至 §2.4 契约安全 bullet 与 :74，Phase 1 S4 归因为准）
-- [ ] S11 计数按实测修正：以 Phase 1 实测（ls=10 核心+15 variant、grep=22）修正「维持 20」声明，与 §2.3「21 个」三方对齐（20/21/22 以实测+归因结果为准）；template-mapping.md 若同型漂移只登记不修
-- **Status:** pending
+- [x] S10 行号锚改章节锚：§2.5 内「:65 的 grep 锚计数」改「§2.4 的 grep 锚验收」（§2.4 形态，抗插行漂移；材料包锚点 :69 实漂至 §2.4 契约安全 bullet 与 :74，Phase 1 S4 归因为准）
+- [x] S11 计数按实测修正：以 Phase 1 实测（ls=10 核心+15 variant、grep=22）修正「维持 20」声明，与 §2.3「21 个」三方对齐（20/21/22 以实测+归因结果为准）；template-mapping.md 若同型漂移只登记不修
+- **Status:** complete（verified 2026-09-27：S10=35cd075/S11=e5a402d；三实测数与文档自洽+旧值零残留；:32 §2.2 同型漂移与 template-mapping 漂移超 scope 已登记 findings）
 - **Executor:** code-assistant（haiku-1）
 
 | ID | 目标（≤1 句） | 执行体 | 输入（路径 + ≤10 行摘要） | 验收（可观察） | 预估时长 | 状态 |
@@ -194,6 +194,8 @@ Phase 4
 | 8 | Phase 2/S7 | executor(继承) | 2026-09-27 | S7：CC-06 夹具按真实 INDEX 形态改造+selftest 头注刷新 | ✅ | subagent-state/7-executor.md | status=done；commit 7bdd6ff（+50/-14）；7/7 PASS（新增 CC-07 自跳过用例）；负向验证双断言非恒真；夹具与真实 INDEX 逐字节一致 | ✅ Read findings S7 节（断言清单+形态对照） | ✅ |
 | 9 | Phase 3/S8 | executor(继承) | 2026-09-27 | S8 修复：check_phase_order 初值误报（worktree 内） | ✅ | subagent-state/8-executor.md | status=done；commit f3966eb（+5/-1）；初值 pending→none；四夹具+probe-e 五组验证（误报消/真越级保持/既有行为不变） | ✅ 主进程 git show 复核变更行 | ✅ |
 | 10 | Phase 3/S9 | executor(继承) | 2026-09-27 | S9 修复：check_scope_breach 接 plan_parse_scope 列限扩展（worktree 内） | ✅ | subagent-state/9-executor.md | status=done；commit 11c294c（+20/-8 两文件）；四夹具 pre/post 全过（反向风险消除+fail-open 保持）；38 计划单参 byte-identical+sync-todos 对拍零波及 | ✅ 主进程 git show 复核 lib diff | ✅ |
+| 11 | Phase 4/S10 | code-assistant(haiku-1) | 2026-09-27 | S10：template-guide :69 区行号锚改章节锚（worktree 内） | ✅ | subagent-state/10-code-assistant.md | status=done；commit 35cd075（+2/-2）；:65 引用清零；:69 契约安全行按 S9 接库后现状改写（区分两脚本调用形态） | ✅ Read worktree 文件现状核对两行 | ✅ |
+| 12 | Phase 4/S11 | code-assistant(haiku-1) | 2026-09-27 | S11：计数声明按 S4 实测修正（worktree 内） | ✅ | subagent-state/11-code-assistant.md | status=done；commit e5a402d（+5/-5）；23 口径/22 锚数/25 实数自洽+零残留；:32 §2.2 同型漂移+template-mapping 漂移登记留后续 | ✅ 主进程复核 diff 全文 | ✅ |
 
 ## Key Questions
 
