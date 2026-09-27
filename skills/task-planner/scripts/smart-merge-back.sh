@@ -12,7 +12,9 @@
 # 参数:
 #   <worktree-path>  必填; worktree 绝对路径
 #   --base <branch>  目标分支, 默认 master
-#   --deploy         合并后对部署位执行既有 SOP(改名换位: slot→.bak.$$ → tmp→slot → rm .bak; diff -rq 对账;
+#   --deploy         合并后对部署位执行既有 SOP(改名换位: slot→.bak.$$ → tmp→slot → rm .bak;
+#                    两级对账: L1 文件集合差(find|sort 抓增/缺/改名)+ L2 内容定向 diff(git 程序化清单+≥3 抽检;
+#                    清单空/不可用 → 保守回退全交集内容对比) — 2026-09-27 task-v091 C-5 替代原全树 diff -rq;
 #                    源=主仓 skills/task-planner — 2026-09-17 task-v077 修复假 IDENTICAL: 部署源/对账基准不再用
 #                    SKILL_ROOT(脚本运行处), 从部署位运行亦以主仓 canonical 内容为源);
 #                    逐位 [DEPLOY] 判定, 任一 DRIFT exit 6(部署源缺失亦 DRIFT fail-closed)
@@ -86,7 +88,7 @@
 #   3 = PRECHECK_DIRTY        (worktree 有未提交变更, 列出文件)
 #   4 = SCOPE_OVERLAP         (主仓未提交文件 ∩ 分支变更文件非空, 列出交集)
 #   5 = MASTER_AHEAD          (base 前进于 merge-base, 建议先 merge base 入分支再重跑; --force 才继续)
-#   6 = DEPLOY_DRIFT          (--deploy 任一位 DRIFT: diff -rq 有差异(基准=主仓 skills/task-planner) / cp 失败 / 部署源缺失 / slot 校验 REJECTED(危险路径))
+#   6 = DEPLOY_DRIFT          (--deploy 任一位 DRIFT: 两级对账 L1 文件集合差/L2 内容定向 diff 有差异(基准=主仓 skills/task-planner) / cp 失败 / 部署源缺失 / slot 校验 REJECTED(危险路径))
 #   7 = MERGE_CONFLICT        (merge 冲突, STOP 语义 — 不自动解决, 报告用户; 主仓残留 mid-merge, 恢复: git -C <主仓> merge --abort)
 #   8 = MERGE_IN_PROGRESS     (V1 检测主仓存在未完成合并 MERGE_HEAD — 恢复: git -C <主仓> merge --abort 后重跑)
 #   2 = ARG_INVALID           (参数错误: 未知选项/缺参/多余位置参数 — 与文档对齐, 原 exit 1 矛盾已修)
@@ -504,6 +506,55 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     # [2026-09-12 R3] 部署循环恒执行(不再条件包裹): HOME 未设且 env 未覆盖时 SLOTS="" → 循环零次,
     # DRIFT=1 已在上方(SLOTS 分支, 先于循环初始化)置位 → 仍走 exit 6
     # (DRIFT=0 初始化已移至 SLOTS 分支之前; 条件包裹会吞掉 HOME 空的 DRIFT 标志, 均已实证修复 rc=0 假绿回归)
+    # [2026-09-17 task-v077] 对账基准 = DEPLOY_SRC(主仓 skills/task-planner), 非脚本运行处
+    # [2026-09-27 task-v091 C-5] 部署对账两级化：L1 确定性文件集合差（抓增/缺/改名）+ L2 内容定向 diff（git porcelain 清单）+≥3 抽检；残留面=清单外同名文件带外热改
+    # C-5 两级对账(定义先于 deploy 循环; 原 :555 全树 diff -rq 改为两级, 省 2 次全树内容读取成本):
+    #   L1 确定性文件集合差: find|sort 逐行 diff — 抓增(多余)/缺(缺失)/改名, 全树文件面保留(确定性断言)
+    #   L2 内容定向 diff: git 程序化清单(git diff --name-only MB..BRANCH 限 skills/task-planner, 禁手填 — 来源恒为 git 输出)
+    #      + ≥3 清单外同名文件内容抽检(清单外不足 3 则全取; 取排序前 3 保可复现, 不依赖 $RANDOM)
+    #   保守回退: 清单为空/不可用(无 skill 变更 / 非 git 环境 / 清单命令失败) → 全交集内容对比
+    #   (语义与旧全树 diff -rq 等价, 非静默降级)
+    #   残留面(明示): 清单外同名文件的带外内容热改不在定向清单内, 靠 ≥3 概率抽检兜底(未抽中即漏检, 记录在案)
+    # 返回 0=IDENTICAL / 1=DRIFT(DRIFT 明细行 DRIFT-L1/DRIFT-L2 先行打印; 判定行与退出码语义不变, 由调用方打印)
+    _re_lines() { [ -n "${1-}" ] && printf '%s\n' "$1"; return 0; }   # 空安全行清单(空变量→零行, 防 comm 对单空行误匹配)
+    deploy_reconcile() {
+        local slotdir="$1"
+        local src_list slot_list
+        # L1: 两侧相对路径文件清单(skill 根内相对路径口径; find -L 与 cp -rL 实体化口径一致, %P 输出相对路径)
+        src_list="$(find -L "$DEPLOY_SRC" -type f -printf '%P\n' 2>/dev/null | sed 's|^\./||' | LC_ALL=C sort)"
+        slot_list="$(cd "$slotdir" 2>/dev/null && find -L . -type f -printf '%P\n' 2>/dev/null | sed 's|^\./||' | LC_ALL=C sort)"
+        local missing extra
+        missing="$(comm -23 <(_re_lines "$src_list") <(_re_lines "$slot_list") | head -n 5)"
+        extra="$(comm -13 <(_re_lines "$src_list") <(_re_lines "$slot_list") | head -n 5)"
+        if [ -n "$missing" ] || [ -n "$extra" ]; then
+            echo "[DEPLOY] DRIFT-L1: $slotdir (文件集合差: 缺/多如下)"
+            [ -n "$missing" ] && echo "  缺失: $missing"
+            [ -n "$extra" ] && echo "  多余: $extra"
+            return 1
+        fi
+        # L2: 内容定向 diff。git 程序化清单 = 本次合并 MB..BRANCH 变更的 skill 文件(剥 skill 根前缀, 禁手填)
+        local manifest common inman outman targets T
+        manifest="$(git -C "$MAIN_REPO" diff --name-only "$MB" "$BRANCH" -- skills/task-planner 2>/dev/null | sed 's|^skills/task-planner/||' | sed '/^$/d' | LC_ALL=C sort)"
+        common="$(comm -12 <(_re_lines "$src_list") <(_re_lines "$slot_list"))"
+        if [ -n "$manifest" ]; then
+            inman="$(comm -12 <(_re_lines "$manifest") <(_re_lines "$common"))"
+            # 抽检: 清单外同名文件(交集-清单), 取前 3 保可复现; 不足 3 则全取
+            outman="$(comm -23 <(_re_lines "$common") <(_re_lines "$manifest") | head -n 3)"
+            # 定向目标 = 清单内∩存在(删除文件不入 targets, 防假 DRIFT) + 清单外抽检; 均 ⊆ common(cmp 两侧必存在)
+            targets="$(printf '%s\n%s' "$inman" "$outman" | sed '/^$/d' | LC_ALL=C sort -u)"
+        else
+            # 保守回退: 清单为空/不可用 → 全交集内容对比(与旧全树 diff -rq 语义等价, 非静默降级)
+            targets="$common"
+        fi
+        while IFS= read -r T; do
+            [ -n "$T" ] || continue
+            if ! cmp -s "$DEPLOY_SRC/$T" "$slotdir/$T" 2>/dev/null; then
+                echo "[DEPLOY] DRIFT-L2: $slotdir (内容差异: $T)"
+                return 1
+            fi
+        done <<< "$targets"
+        return 0
+    }
     IFS=':' read -r -a slots <<< "$SLOTS"
     for slot in "${slots[@]}"; do
         [ -n "$slot" ] || continue
@@ -552,10 +603,11 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         slotbak=""
         BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
         # [2026-09-17 task-v077] 对账基准 = DEPLOY_SRC(主仓 skills/task-planner), 非脚本运行处
-        if diff -rq "$DEPLOY_SRC" "$slotdir" >/dev/null 2>&1; then
+        # [2026-09-27 task-v091 C-5] 全树 diff -rq → 两级对账(L1 集合差 + L2 定向 diff, 明细行 DRIFT-L1/DRIFT-L2
+        # 先行打印; 判定行与 exit 码语义不变: 两级全过 = IDENTICAL)
+        if deploy_reconcile "$slotdir"; then
             echo "[DEPLOY] IDENTICAL: $slotdir (基准=主仓 skills/task-planner)"
         else
-            echo "[DEPLOY] DRIFT: $slotdir"
             DRIFT=1
         fi
     done
