@@ -960,6 +960,69 @@ END {print n+0}'
         fi
     fi
 
+    # [2026-09-27 task-v091 S27 A-3] 终验 COMPLIANCE-CHECK 抽查段（提案 A-3「先加后删」护栏，终审 #8 互锁）:
+    # 对 SKILL C 表声称「机器门承载」的关键可机器查产物做抽查点名——缺失 → [compliance] WARNING
+    # 点名（warn 档不阻断，exit 码仍为 python_rc）。映射表=脚本内表（提案「脚本内表或 registry」取舍:
+    # 零新文件、零 registry 同步负担，与 AUTO-TIER 段同范式）。
+    # tier 感知分域（终审 #8 防 A-1 提高 mini 命中率后新断言误报）: 复用 :606 PLAN_TIER_MINI 前置判定——
+    #   standard 域=全量抽查；mini 域只检 mini 适用子集（3-File / VC 行数降档 / Handoff 存在性），
+    #   委派率 38.4③ floor 豁免项与 mini-lite 模板无产物的「委派统计段 / Handoff verify_done」两项在 mini 域跳过。
+    # 插入位=本段位于 C-2 键③哈希覆盖段（FMEA 段）之后（注释措辞避开锚字面量，键③哈希零扰动），
+    # S20/S23 既有块语义零改动（仅紧邻插入）；本段不消费新 config 键 → 键④五键枚举零扰动。
+    compliance_missing=""
+    cc_plan_dir="$(dirname "$PLAN_FILE")"
+    # ① 3-File 抽查（Rule 19.5/C16 承载声称）: mini/standard 同域（mini 38.3 区块白名单要求三文件，降档=19.2 非豁免）
+    for cf in findings.md progress.md; do
+        [ -f "$cc_plan_dir/$cf" ] || compliance_missing="${compliance_missing} 3-File ${cf} missing(C16/Rule 19.5) "
+    done
+    # ② VC 表行数（C6 承载声称）: 档位阈值与 VC-GATE 分域同口径 standard≥5 / mini≥2
+    comp_vc_count="$(grep -cE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null || true)"
+    comp_vc_min=5; [ "${PLAN_TIER_MINI:-0}" = 1 ] && comp_vc_min=2
+    [ "${comp_vc_count:-0}" -lt "$comp_vc_min" ] && compliance_missing="${compliance_missing} VC表=${comp_vc_count:-0}<${comp_vc_min}(C6) "
+    # ③④ 仅 standard 域: mini 域 38.4③ 委派率豁免 + mini-lite 六列 Handoff 无 verify_done 列/无委派统计段产物 → 跳过不误报
+    if [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
+        # ③ 委派统计段（Rule 25/C14 承载声称: verification.md「委派统计」段为委派率统计落点）
+        grep -q '委派统计' "$cc_plan_dir/verification.md" 2>/dev/null || compliance_missing="${compliance_missing} verification.md 委派统计段缺失(C14/Rule 25) "
+        # ③b S-unit 表抽查（Rule 22.6/C14 承载声称, 口径同 CPD 38.4④）: 声明子代理 Executor 的
+        #     派发型计划须有 `| ID |…执行体…` 表头 + ≥1 行 `| S<n> |` 数据行；38.4④ 全主进程豁免跳过
+        comp_sunit_hdr="$(grep -cE '^\|[[:space:]]*ID[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null || true)"
+        comp_sunit_rows="$(grep -cE '^\|[[:space:]]*S[0-9]+[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null || true)"
+        comp_subagent_pre="$(grep -E '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null | grep -vc '主进程' || true)"
+        if [ "${comp_subagent_pre:-0}" -gt 0 ] && [ "${comp_sunit_hdr:-0}" -eq 0 ]; then
+            compliance_missing="${compliance_missing} 派发型缺S-unit表(表头=0,Rule 22.6/C14) "
+        elif [ "${comp_subagent_pre:-0}" -gt 0 ] && [ "${comp_sunit_hdr:-0}" -gt 0 ] && [ "${comp_sunit_rows:-0}" -eq 0 ]; then
+            compliance_missing="${compliance_missing} S-unit表数据行=0(有表头无S行,Rule 22.6/C14) "
+        fi
+        # ④ Handoff 登记抽查（Rule 22.5/C16 承载声称: 声明子代理 Executor 时须有已填数据行且 verify_done 已勾）
+        comp_subagent_exec="$(grep -E '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null | grep -vc '主进程' || true)"
+        if [ "${comp_subagent_exec:-0}" -gt 0 ]; then
+            # Handoff 数据行= `| N |` 开头且第 5 列（任务目标）非空非占位；限「Subagent Handoff 登记表」节内
+            # （节标题锚=standard/mini-lite 两模板共有的「Subagent Handoff 登记表」字样，遇下一 ## 节截止）
+            comp_handoff_filled="$(awk '/Subagent Handoff 登记表/{f=1;next} f&&/^##[[:space:]]/{f=0} f&&/^[[:space:]]*\|[[:space:]]*[0-9]+[[:space:]]*\|/{c=$5;gsub(/^[[:space:]]+|[[:space:]]+$/,"",c);if(c!=""&&c!="[任务目标(≤1句)]")n++}END{print n+0}' "$PLAN_FILE" 2>/dev/null)"
+            if [ "${comp_handoff_filled:-0}" -eq 0 ]; then
+                compliance_missing="${compliance_missing} Handoff登记表未回填(声明${comp_subagent_exec}个子代理Executor,Rule 22.5/C16) "
+            else
+                # verify_done 列位由表头行动态定位（仅 `|` 开头表头行，避开 HTML 注释内 mention；
+                # B-2 列位折叠后自动跟列位）; 表头无该列 → fail-open 跳过
+                comp_vd_col="$(grep -m1 '^[[:space:]]*|.*verify_done' "$PLAN_FILE" 2>/dev/null | awk -F'|' '{for(i=2;i<=NF;i++){v=$i;gsub(/^[[:space:]]+|[[:space:]]+$/,"",v);if(v=="verify_done"){print i;exit}}}' 2>/dev/null)"
+                if [ -n "$comp_vd_col" ]; then
+                    comp_vd_unchecked="$(awk -v c="$comp_vd_col" '/Subagent Handoff 登记表/{f=1;next} f&&/^##[[:space:]]/{f=0} f&&/^[[:space:]]*\|[[:space:]]*[0-9]+[[:space:]]*\|/{v=$c;gsub(/^[[:space:]]+|[[:space:]]+$/,"",v);if(v=="☐"||v==""||v=="[ ]")n++}END{print n+0}' "$PLAN_FILE" 2>/dev/null)"
+                    [ "${comp_vd_unchecked:-0}" -gt 0 ] && compliance_missing="${compliance_missing} Handoff ${comp_vd_unchecked}行verify_done未勾(Rule 22.5/C16) "
+                fi
+            fi
+        fi
+    fi
+    comp_tier_label="standard"; [ "${PLAN_TIER_MINI:-0}" = 1 ] && comp_tier_label="mini"
+    if [ -n "$compliance_missing" ]; then
+        printf '[compliance] WARNING (task-v091 A-3 终验抽查, warn 档不阻断, tier=%s 分域): 抽查缺项点名 — %s\n' "$comp_tier_label" "${compliance_missing% }" >&2
+    else
+        printf '[compliance] OK (task-v091 A-3 终验抽查通过, tier=%s 分域: 3-File/VC 行数%s/委派统计段%s/Handoff verify_done%s)\n' \
+            "$comp_tier_label" \
+            "$([ "$comp_tier_label" = mini ] && printf 降档阈值 || printf 全量)" \
+            "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" \
+            "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" >&2
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then
