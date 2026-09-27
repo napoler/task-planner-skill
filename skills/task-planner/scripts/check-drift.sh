@@ -119,7 +119,11 @@ check_phase_order() {
         return
     fi
 
-    local prev_status="pending"
+    # 修复(v092/S8, 2026-09-27): 原初值 "pending" 凭空虚构「虚拟 Phase 0=pending」前驱，
+    # 致扫描区间内首个状态行=complete 即误报 CRITICAL PHASE-SKIP（全 complete 与
+    # complete,in_progress 正常推进态均恒误报）。原行为见 findings.md S2 3a 节。
+    # 改中性初值 "none"，仅真实前驱为 pending 时才触发越级判定；真越级报警路径不变。
+    local prev_status="none"
     local violated=false
     local violation_detail=""
 
