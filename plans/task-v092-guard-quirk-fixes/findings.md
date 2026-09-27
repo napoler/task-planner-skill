@@ -346,6 +346,28 @@ templates/ 下 .md 总数 = **25**。
 
 **template-mapping.md 同型漂移登记（只登记不修——scope 禁改，留后续任务）**：① :26「类型不在既有 13 类」→ variant 实为 15，少记 mini-lite/video；② §六 速查表（:132-144）列 13 个 variant 路径，磁盘 15，缺 `variant/mini-lite-type.md`/`variant/video-type.md` 两行（与 guide :32 §2.2 表同源，v086/v085 两批未回写）；③ :191 §八 白名单注释「应包含: findings.md…verification.md」列 5 文件 vs init 白名单实为 6（+knowledge-brief），措辞为「应包含」非穷举，可顺手补（可选）。check-template-type.sh 白名单动态派生，不受纯文档漂移影响。
 
+### S12 修复记录（2026-09-27，executor——原派 code-runner-agent 遭 Provider 拒绝，Rule 22.3③ 升档改派，主进程已登记兜底）
+对象：worktree 内 `skills/task-planner/scripts/selftest-check-drift.sh`（**新建**，+155 行）+ `selftest-registry.tsv`（登记行 +1，插在 selftest-registry.sh 自登记末行之前，保持「末行自登记」约定）；分支 wt/task-v092-guard-quirk-fixes，commit **8b3bab0**（基线 e5a402d），+156/-0 两文件。为 S8（f3966eb，3a 初值）/S9（11c294c，3b/3c 列限接库）修复补行为级回归锁；主仓 grep 实证既有 selftest 无 check-drift 承载，新建属 S12 授权 scope。
+
+用例清单（夹具全部 /tmp `mktemp -d` 唯一目录动态构造、trap 退出清理——v078 固定路径跨运行污染教训遵守；断言均为 rc+输出字面计数，非恒真恒假；骨架对齐 selftest-check-conflicts.sh 的 ok/bad/diag+Total 行+`exit $((FAIL>0))` 约定）：
+
+| 用例 | 断言面 | 实跑结果 |
+|---|---|---|
+| CD-01 3a 正向 | 全 complete 计划 → PHASE-SKIP 计数==0 + 字面 `[DRIFT-INFO] PHASE-ORDER: Phase 顺序正常` + rc=0 | PASS |
+| CD-02 3a 正向 | complete,in_progress,pending 正常推进态（S8 实证缺陷面 fixture-c）→ 同上 rc=0 | PASS |
+| CD-03 3a 反向 | pending,complete,pending 真越级 → rc=1 + PHASE-SKIP 恰 1 条 + 逐字锁 `[DRIFT-CRIT] PHASE-SKIP: 发现 phase 越级…`（报警不削弱） | PASS |
+| CD-04 3b 正向 | 三列表（允许列逗号清单+禁止列点分路径）+ progress 越权 → rc=1 + BREACH 行含 forbidden/secret.py 与 hack/evil.py（禁止列文件被报=S9 反向风险修复语义）+ src/main.py 计数==0（允许列不误报） | PASS |
+| CD-05 3b 负向 | 无范围表计划 + progress 含文件引用 → rc=0 + 字面 `[DRIFT-INFO] SCOPE-NONE`（fail-open 保持，无表不因此判漂移） | PASS |
+| CD-06 两列表 | 仅类别+允许列 + progress 越权 → rc=1 + BREACH 含 hack/evil.py + src/main.py 不误报 | PASS |
+
+实跑 `Total: 6 PASS=6 FAIL=0` exit 0；`bash -n` 通过。夹具计划骨架刻意最小化隔离被测面：Goal <10 字走 GOAL-EMPTY 短路、无 VC-N 条目、无 Errors 表——其余检查全落 INFO 不计分，不污染断言。开发期缺陷：CD-02/CD-03 两处 `mk_case` 调用漏传第 5 参 scope（`set -u` 下 `$6: unbound variable`），各 1 轮即修，单用例调试 ≤2 轮约束内。
+
+**负向验证（防恒真，本体零触碰）**：/tmp 副本（`check-drift.sh` + `lib/plan-parse.sh` 同拷——被测脚本以自身绝对路径 source 统一库）将初值行还原为 `"pending"`，`CD_TARGET` 环境变量指向副本重跑 → **CD-01/CD-02 转红**（CRITICAL PHASE-SKIP 误报复现：`drift_score=3，需人工复核` rc=1，文案与 S2 取证逐字一致）+ CD-05 连带转红（rc==0 断言失效），CD-03/04/06 按预期保持绿；`Total: 6 PASS=3 FAIL=3`、NEG-EXIT=1 → 用例确实锁住 S8 修复语义，非恒真得证。验证后 /tmp 副本已清理，本体 `grep -n 'local prev_status'` 复核仍为 `"none"`，复跑 6/6 PASS，worktree git status 干净。
+
+**行号锚勘误登记**：S2/S8 记载的初值行 `:122` 现位于 **:132**（grep -n 实证）——漂移 +10 归因：S8 在该行前插 +4 行修复注记（:122→:126）、S9 头部设施 hunk（@@ -20,6 +20,12 @@）插 +6 行（:126→:132）。后续引用初值行一律以 :132 为准（S10 已立的「章节锚优先」同理适用）。
+
+registry 处置：selftest-registry.sh T02「新增未登记→FAIL」机制**要求登记**——按既有 4 列 tab 行格式新增 `selftest-check-drift.sh` 行（domain/trigger_scenarios/dep_anchors 对齐 check-conflicts 行风格，dep_anchors=`check-drift.sh;lib/plan-parse.sh`），awk `NF=4` 核验；实跑 `selftest-registry.sh` **T01-T05 全 PASS**（`Total: 5 PASS=5 FAIL=0 (registry rows=33, actual selftest=33)`）exit 0。验收范围核验：`git diff HEAD~1 --stat` 仅 selftest-check-drift.sh（+155）+ selftest-registry.tsv（+1）两文件，提交后 worktree status 干净。
+
 ## Issues Encountered
 <!-- 阻塞/意外问题与解法;代码错误走 progress.md Error Log(Rule 19.4) -->
 | Issue | Resolution |

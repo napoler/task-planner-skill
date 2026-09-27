@@ -65,6 +65,16 @@
 - Test Results:
   -
 
+### Phase 5: selftest 行为级回归用例补写
+- **Status:** in_progress
+- **Started:** 2026-09-27 23:23
+- Actions taken:
+  - [2026-09-27 S12] check-drift 行为级回归用例补写（原派 code-runner-agent 遭 Provider 拒绝，Rule 22.3③ 升档改派 executor，主进程已登记兜底）：新建 scripts/selftest-check-drift.sh 六用例正反双向（CD-01 全 complete / CD-02 complete,in_progress,pending 推进态零误报 rc=0；CD-03 真越级 CRITICAL 恰 1 条 rc=1；CD-04 三列表越权+禁止列文件均报 BREACH 且允许列不误报 rc=1；CD-05 无表 SCOPE-NONE fail-open rc=0；CD-06 两列表越权 BREACH rc=1），mktemp 唯一夹具+trap 清理（v078 教训遵守），+155 行 + registry 登记行 +1（插自登记行前），worktree commit 8b3bab0；实跑 6/6 PASS exit 0；负向验证——/tmp 副本 :132 初值还原 "pending" 后 CD-01/02/05 转红（误报复现 drift_score=3）、本体零触碰；selftest-registry.sh 对账 5/5 PASS（rows=33/actual=33）。详见 findings.md「### S12 修复记录」；checkpoint=subagent-state/12-code-runner.md
+- Files created/modified:
+  -
+- Test Results:
+  -
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
@@ -93,3 +103,6 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+- 2026-09-27 S13 全量回归（主进程白名单③接管：S12 首派 code-runner-agent mini 遭 Provider 拒绝实证 mini 档不可用，机械验证命令直跑）：worktree 内 33 脚本（32 既有+selftest-check-drift 新增）逐脚本实跑，主进程逐 Total 行求和 **525 PASS / 0 FAIL 全 rc=0**（≥518 基线达成；算术闭环=518+1[CC-07]+6[CD-01..06]）。逐脚本：active-plan 19/batch-pilot 10/check-conflicts 7/check-drift 6/conclusion-discipline 24/context-hygiene 12/delegation 38/dispatch 29/error-loop 16/execution-stability 19/fallback 31/final-gate-hash 22/fine-grain-steps 11/interaction 11/knowledge-brief 16/mechanism-profile 19/methodology 16/plan-dispatch 12/plan-tier 32/reflect-verify 12/registry 5/rescue-chain 11/rule23-conflict-scan 3/shared-tracker 11/skill-collab 25/skill-modify 9/smart-merge 17/sync-index 13/task-boundary 11/template-lifecycle 18/vc-gate 11/veto 13/workflow-orchestration 16
+- [reflect] 反思: Phase 2-5 六提交（59b1471/cba40ec/7bdd6ff/f3966eb/11c294c/35cd075/e5a402d/8b3bab0）全部先取证后修复、每步带正反夹具与负向验证；1a/1b 叠加缺陷的处置顺序（先修 1a 记录 1b 显形、再修 1b）避免了单点修复误判
+- [reflect] 验证: S13 全量 525/0 独立复跑（主进程逐脚本，非子代理自报）+ 各 S-unit 负向验证（S7 双断言破坏实验/S12 初值还原实验）证明用例非恒真；3 调用方 byte-identical 对拍证明零波及

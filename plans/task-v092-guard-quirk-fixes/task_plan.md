@@ -126,11 +126,11 @@ Phase 5
 
 ### Phase 5: selftest 行为级用例补写 + 全量回归 ≥518/0
 
-- [ ] S12 check-drift 行为级用例：三 quirk 修复正反向断言（全 complete 不误报/越级仍报；两列表提取成功/无表 SCOPE-NONE 保留）——承载文件按 Phase 1 S2 确认（新建 selftest-check-drift.sh 或既有断言脚本追加），固定 sid 每次唯一（v078 教训）
-- [ ] S13 CC-06 与 1a/1b 行为断言已在 Phase 2 S7 落地，此处复核 + 查漏补用例
-- [ ] 全量回归：worktree 内 32 脚本逐脚本实跑求和 ≥518 PASS/0 FAIL，逐脚本结果落 progress.md
-- **Status:** pending
-- **Executor:** code-runner-agent（mini）
+- [x] S12 check-drift 行为级用例：三 quirk 修复正反向断言（全 complete 不误报/越级仍报；两列表提取成功/无表 SCOPE-NONE 保留）——承载文件按 Phase 1 S2 确认（新建 selftest-check-drift.sh 或既有断言脚本追加），固定 sid 每次唯一（v078 教训）
+- [x] S13 CC-06 与 1a/1b 行为断言已在 Phase 2 S7 落地，此处复核 + 查漏补用例
+- [x] 全量回归：worktree 内 32 脚本逐脚本实跑求和 ≥518 PASS/0 FAIL，逐脚本结果落 progress.md
+- **Status:** complete（verified 2026-09-27：S12=8b3bab0 六用例 6/6+负向验证非恒真+registry 33/33；S13 主进程白名单③逐脚本实跑求和 525 PASS/0 FAIL（33 脚本=32 既有+新增，518+1+6 算术闭环））
+- **Executor:** code-runner-agent（mini）→ S12 实派 Provider 拒绝后升档 executor；S13 主进程白名单③
 
 | ID | 目标（≤1 句） | 执行体 | 输入（路径 + ≤10 行摘要） | 验收（可观察） | 预估时长 | 状态 |
 |----|------------|--------|------------------------|-------------|---------|------|
@@ -196,6 +196,8 @@ Phase 5
 | 10 | Phase 3/S9 | executor(继承) | 2026-09-27 | S9 修复：check_scope_breach 接 plan_parse_scope 列限扩展（worktree 内） | ✅ | subagent-state/9-executor.md | status=done；commit 11c294c（+20/-8 两文件）；四夹具 pre/post 全过（反向风险消除+fail-open 保持）；38 计划单参 byte-identical+sync-todos 对拍零波及 | ✅ 主进程 git show 复核 lib diff | ✅ |
 | 11 | Phase 4/S10 | code-assistant(haiku-1) | 2026-09-27 | S10：template-guide :69 区行号锚改章节锚（worktree 内） | ✅ | subagent-state/10-code-assistant.md | status=done；commit 35cd075（+2/-2）；:65 引用清零；:69 契约安全行按 S9 接库后现状改写（区分两脚本调用形态） | ✅ Read worktree 文件现状核对两行 | ✅ |
 | 12 | Phase 4/S11 | code-assistant(haiku-1) | 2026-09-27 | S11：计数声明按 S4 实测修正（worktree 内） | ✅ | subagent-state/11-code-assistant.md | status=done；commit e5a402d（+5/-5）；23 口径/22 锚数/25 实数自洽+零残留；:32 §2.2 同型漂移+template-mapping 漂移登记留后续 | ✅ 主进程复核 diff 全文 | ✅ |
+| 13 | Phase 5/S12 | code-runner-agent(mini) | 2026-09-27 | S12：新建 selftest-check-drift.sh 行为级用例（worktree 内；承载文件已裁决=新建，grep 实证无既有承载） | ✅ | subagent-state/12-code-runner.md | 首派 mini Provider 拒绝→22.3③ 升档 executor 重派；status=done；commit 8b3bab0（+155 selftest+registry.tsv 1 行）；6 用例 6/6+负向验证非恒真+registry 33/33 | ✅ Read findings S12 节+主进程复跑全量佐证 | ✅ |
+| 14 | Phase 5/S13 | 主进程(白名单③) | 2026-09-27 | S13：全量回归逐脚本实跑求和（mini 档已实证 Provider 拒绝，机械验证命令白名单③接管） | ✅ | 无（主进程执行） | 33 脚本 525 PASS/0 FAIL 全 rc=0（≥518 基线；518+1+6 闭环） | ✅ 主进程实跑输出逐脚本留 progress | ✅ |
 
 ## Key Questions
 
