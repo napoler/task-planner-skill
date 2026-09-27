@@ -55,7 +55,7 @@ Skill("task-drift-guard")
 主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.sh/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
 
 ### 15 高频漂移纠正强制（P0）
-每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。详见 SKILL.md §「高频漂移纠正」。
+每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜；2026-09-27 task-v091/A-3: 该 skill 调用为漂移检测同点唯一载体,`check-drift.sh` 降为可选佐证不双跑——ALIGNED/DRIFT/BLOCKED 三态契约零改动）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。详见 SKILL.md §「高频漂移纠正」。
 
 ### 16 任务开启期选模板（P0）
 禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement 共 13 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 21 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
@@ -159,8 +159,9 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 
 ### 24 plan-resume 被动扫描与自主续推(P1,v0.5 契约)
 每个 Phase complete 后,在调 task-drift-guard **之前**,主进程**被动**调一次 `Skill("plan-resume")` 扫描工作区其他未完成计划。v0.5 起行为分模式:**当前计划执行中 → 只报告**(防打断进行中工作);**恢复触发点(会话启动无活跃计划 / 用户恢复类指令 / 当前计划交付终态后)→ 自主选 1 个续推**(config `autonomous_resume: true`,详见 plan-resume SKILL.md §7)。本规则保证:恢复场景不再"报告完等用户点名",同时执行中的扫描不抢当前工作。
+（2026-09-27 task-v091/A-3 触发点收敛:plan-resume 调用点由「每 Phase complete」收敛为「交付终态/会话恢复触发点」两类(即下述 24.5 恢复触发点),Phase 循环内不再逐 Phase 扫描;v0.5 行为契约(执行中只报告/恢复点自主续推 Top 1)与守卫条款 24.2-24.7 零改动)
 
-24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 调 task-drift-guard 的时机);**不是**每个 todo 完成时(避免噪音)。执行中扫描恒为只报告模式
+24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 调 task-drift-guard 的时机);**不是**每个 todo 完成时(避免噪音)。执行中扫描恒为只报告模式（A-3 收敛后:仅「交付终态/会话恢复」触发点实际调用,见 24 注）
 24.2 **扫描源**:用户当前工作目录 `$(pwd)`,scope = 仓库根(扫描 `plans/*/task_plan.md` + `.zcode/plans/plan-sess_*.md` + `openspec/changes/*/tasks.md` + `specs/*/tasks.md` 共 3 种格式);自主续推仅考虑仓内计划,跨仓候选只报告(宪法 §五 跨项目隔离 P0)
 24.3 **跳过自身**:当前 plan 的 `task_plan.md` 不进报告(避免重复/自触发);当前 plan 自身状态由三文件罗盘(task_plan/findings/progress)跟踪,不依赖本扫描
 24.4 **报告输出**:`<cwd>/.zcode/plans/plan-resume-report.md`(幂等覆盖);主上下文打印摘要(≤5 行):`扫到 N 个中断任务 → M 个推荐 resume / K 个推荐 archive / X 个推荐 drop`;自主续推时必须先打印「选中 task-X + score + 理由」再动手(透明性对冲自主风险)
