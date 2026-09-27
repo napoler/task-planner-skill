@@ -91,24 +91,61 @@ esac
 if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
   # 探测活跃 plan
   plan=""
-  CWD="${PWD}"
+  # [2026-09-26 task-v091 C-1a①：cwd 来源修复] 原 $PWD 是宿主进程 cwd 非目标项目根，改从 stdin JSON .cwd 取（兜底链保留）
+  # 范式对齐 zcode-posttooluse.sh:18-19 / zcode-userpromptsubmit.sh:16（.cwd // empty → ${CWD:-$PWD}）
+  CWD="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)"
+  CWD="${CWD:-$PWD}"
   if [ -d "$CWD/plans" ]; then
     plan="$(ls -t "$CWD"/plans/*/task_plan.md 2>/dev/null | head -1)"
   fi
   [ -z "$plan" ] && [ -f "$CWD/task_plan.md" ] && plan="$CWD/task_plan.md"
   
   if [ -n "$plan" ]; then
-    plan_dir="$(dirname "$plan")"
-    current_scope="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\\.[a-zA-Z]/) printf "%s\n", $i}' | tr -d ' ')"
-    # 检查写入文件是否在其他 plan 的 scope 中
+    # [2026-09-27 task-v091 C-1a②③] 完结计划豁免+提取正则修复+awk 合并；非 COMPLETE 全保留（残留面：COMPLETE 后带外改动不再提醒）
+    #   日期注记: 原草稿标 09-26 系沿用 a① 标签笔误, 以实际落盘日 2026-09-27 为准
+    # ②提取正则修复: 原 /\\.[a-zA-Z]/ 被 awk 解析为「字面反斜杠+任意字符」, 点分路径(src/main.py)不命中 → other_scope 恒空 → [conflict] 从不产出; 改 /\.[a-zA-Z]/(转义点号)
+    # ③性能合并: 每计划 1 次 awk 双文件输入完成「outcome 豁免+scope 提取+session_id 提取」(原每计划 ~9 进程流水线 → 每计划 1 进程; 仅命中时 +1 次 jq 转义)
+    # verification.md outcome 兜底(本仓约定 outcome 常落盘于 verification.md 而 task_plan.md 不含, 对齐 zcode-posttooluse.sh:100-105 v078 先例):
+    #   实测 gawk 5.2.1 对 argv 中不存在文件为 fatal(rc=2 且 END 不执行), 故 [ -f ] 前置过滤、2>/dev/null 仅兜底残留告警——
+    #   无 verification.md 的计划退化为单文件输入照常扫; scope/session 提取以 NR==FNR 门控仅取第一文件(task_plan.md), verification.md 表格不扩大 hit 面
+    # 豁免只看 outcome(两文件任一行命中即豁免; tolower 等价 grep -qiE 同款判定), 无 mtime/指针门槛 → 非 COMPLETE(含无指针过期在途)全保留(R23-03)
+    # tgt 空串分支已删: 原 tgt == "" ||(源自 grep -qF "" 恒真语义)在 ② 提取正则修复后成可触发误报源(空 basename 将命中任意点分 scope 行),
+    #   改 tgt 空恒不命中(gawk index(s,"") 恒 0, fail-open 自洽)
+    # 原 plan_dir/current_scope 为死代码(赋值后无引用)随合并一并移除
+    # [2026-09-27 task-v091 C-1c] scope 提取语义权威源=scripts/lib/plan-parse.sh plan_parse_scope(本处热路径保留内联不 source, 语义变更两处必须同步——互指锚)
+    tgt="$(basename "$file")"
+    # 检查写入文件是否在其他 plan 的 scope 中(保持 ls -t 顺序; 自计划跳过; 路径含空格为与原实现一致的既有未解限制)
     for other_plan in $(ls -t "$CWD/plans"/*/task_plan.md 2>/dev/null); do
       [ "$other_plan" = "$plan" ] && continue
-      other_dir="$(dirname "$other_plan")"
-      other_scope="$(awk '/^## .*执行范围限制/{f=1; next} /^## /{f=0} f' "$other_plan" 2>/dev/null | grep '^|' | grep -v '^|---' | awk -F'|' '{for(i=3;i<=NF;i++) if($i ~ /\\.[a-zA-Z]/) printf "%s\n", $i}' | tr -d ' ')"
-      # 简单字符串匹配(file 在 other_scope 中)
-      if echo "$other_scope" | grep -qF "$(basename "$file")"; then
-        other_taskid="$(basename "$other_dir")"
-        other_session="$(awk '/^session_id:/{print $2; exit}' "$other_plan" 2>/dev/null || echo 'unknown')"
+      other_dir="${other_plan%/task_plan.md}"
+      scan_files=("$other_plan")
+      [ -f "$other_dir/verification.md" ] && scan_files+=("$other_dir/verification.md")
+      scan_out="$(awk -v tgt="$tgt" '
+        # 第一文件(task_plan.md, NR==FNR): outcome 豁免 + session_id 首次出现捕获(等价原 print $2; exit 单用途 awk) +
+        # 「## 执行范围限制」状态机区间内表格行第 3+ 列点分路径提取(等价原 awk|grep ^| 管线)后与 basename 子串匹配(等价 grep -qF);
+        # completed 单调置位, 命中先记 hit、END 统一判(防 outcome 落在 scope 之后漏豁免)
+        NR == FNR {
+          if (tolower($0) ~ /outcome: *(complete|blocked)/) completed = 1
+          if ($0 ~ /^session_id:/ && !seen_sess) { seen_sess = 1; sess = $2 }
+          if ($0 ~ /^## .*执行范围限制/) { inscope = 1; next }
+          if (inscope && $0 ~ /^## /) inscope = 0
+          if (inscope && $0 ~ /^\|/ && $0 !~ /^\|---/) {
+            n = split($0, f, "|")
+            for (i = 3; i <= n; i++)
+              if (f[i] ~ /\.[a-zA-Z]/) {
+                s = f[i]; gsub(/ /, "", s)
+                if (index(s, tgt) > 0) hit = 1
+              }
+          }
+          next
+        }
+        # 第二文件(verification.md, NR>FNR 自然门控): 只参与 outcome 豁免, 不扫 scope/session(防其表格扩大 hit 面)
+        tolower($0) ~ /outcome: *(complete|blocked)/ { completed = 1 }
+        END { if (hit && !completed) { print "HIT"; print (sess == "" ? "unknown" : sess) } }
+      ' "${scan_files[@]}" 2>/dev/null)"
+      if [ "${scan_out%%$'\n'*}" = "HIT" ]; then
+        other_taskid="${other_dir##*/}"
+        other_session="${scan_out#*$'\n'}"
         printf '{"additionalContext": %s}\n' "$(printf '[conflict] 文件 %s 可能与其他 plan(%s, session=%s)冲突,请确认 scope' "$file" "$other_taskid" "$other_session" | jq -Rs .)"
         break
       fi

@@ -14,6 +14,11 @@
 #       详见 references/worktree-isolation.md。
 
 set -u
+# [2026-09-27 task-v091 S16 C-1c] scope 提取统一库(语义权威源+调用方清单见 lib/plan-parse.sh);
+# 在下方 cd "$repo" 之前以脚本自身绝对路径 source, 不受目标仓库切换影响
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/plan-parse.sh
+. "$SCRIPT_DIR/lib/plan-parse.sh"
 REPO_PATH=""
 RUNTIME=false
 
@@ -28,6 +33,23 @@ cd "$repo" 2>/dev/null || { echo "[conflict-scan] 无法进入 $repo,跳过"; ex
 
 command -v git >/dev/null 2>&1 || { echo "[conflict-scan] 无 git,跳过"; exit 0; }
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "[conflict-scan] 非 git 仓库,跳过"; exit 0; }
+# [2026-09-27 task-v091 C-1f] 探测合并方案(status 单调用兼任探测+信号①采集, runtime 3→2)
+# 实测为净负优化已回退: status 作为首个仓库子命令会拖慢其后 plans/* 目录循环的 fork-exec
+# 链(主仓配对中位 +44ms, 20/20 同向), 大于省 1 次 rev-parse 的 ~10ms; 探测保持 rev-parse
+# 独立形, porcelain 由 init/D 段各自采集(与原行为一致)。证据见 S18 checkpoint。
+
+# [2026-09-27 task-v091 C-1f] worktree 清单单次采集+多消费点共享(原 --porcelain 计数与
+# 普通格式列表两次独立调用合并为一); 计数等价性: 两种格式每个 worktree 恰好输出一行,
+# 非空行计数与原 '^worktree ' 计数一致; 列表经同一 tail/sed 管道输出与原逐字节一致。
+# 惰性采集: --runtime 无活跃 plan 快路径提前 exit 0 不触发, 该路径保持仅 1 次仓库探测调用
+CC_WT_LIST=""
+cc_wt_loaded=false
+cc_worktree_list() {
+  if [ "$cc_wt_loaded" = false ]; then
+    CC_WT_LIST="$(git worktree list 2>/dev/null)"
+    cc_wt_loaded=true
+  fi
+}
 
 risk=0
 echo "[conflict-scan] repo=$repo mode=$([ "$RUNTIME" = true ] && echo "runtime" || echo "init")"
@@ -49,20 +71,25 @@ if [ "$RUNTIME" = false ]; then
   fi
 
   # ② 额外 worktree
-  wt="$(git worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
+  # [2026-09-27 task-v091 C-1f] 单次 worktree 采集+计数/列表同变量消费(原两次独立调用:
+  # --porcelain 计数 + 普通格式列表); 计数等价=每 worktree 恰一行, 列表管道与原逐字节一致
+  cc_worktree_list
+  wt="$(printf '%s\n' "$CC_WT_LIST" | grep -c . || true)"
   wt_extra=$(( wt - 1 ))
   if [ "$wt_extra" -gt 0 ]; then
     risk=1
     echo "[conflict-scan] ⚠ 信号②: 存在 ${wt_extra} 个额外 worktree(可能有并行工作):"
-    git worktree list 2>/dev/null | tail -n +2 | sed 's/^/    /'
+    printf '%s\n' "$CC_WT_LIST" | tail -n +2 | sed 's/^/    /'
   fi
 
   # ③ 遗留隔离分支
-  lb="$(git branch --list 'wt/*' 2>/dev/null | grep -c . || true)"
+  # [2026-09-27 task-v091 C-1f] 计数+列表合并为单次采集同变量消费(原两次独立 branch 调用)
+  wt_branches="$(git branch --list 'wt/*' 2>/dev/null)"
+  lb="$(printf '%s\n' "$wt_branches" | grep -c . || true)"
   if [ "$lb" -gt 0 ]; then
     risk=1
     echo "[conflict-scan] ⚠ 信号③: 遗留 wt/* 分支 ${lb} 个(可能含未合并的隔离工作):"
-    git branch --list 'wt/*' 2>/dev/null | sed 's/^/    /'
+    printf '%s\n' "$wt_branches" | sed 's/^/    /'
   fi
 
   # ④ 在册未完成任务
@@ -105,7 +132,11 @@ if [ -f plans/INDEX.md ]; then
     session_id="$(awk '/^session_id:/{print $2; exit}' "$plan_dir/task_plan.md" 2>/dev/null || echo "")"
     worktree_path="$(awk '/^worktree_path:/{print $2; exit}' "$plan_dir/task_plan.md" 2>/dev/null || echo "")"
     # scope_files 从「⚠️ 执行范围限制」区块提取
-    scope="$(awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ && NF>2 {gsub(/^[[:space:]]*\|[[:space:]]*/, ""); gsub(/[[:space:]]*\|[[:space:]]*$/, ""); print}' "$plan_dir/task_plan.md" 2>/dev/null | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    # [2026-09-27 task-v091 S16 C-1c] 原内联整行清洗(表头/类别/禁止列均产出+逗号拆分, 无点分过滤)
+    # 改统一库 plan_parse_scope(点分整格语义, 语义权威源见 lib/plan-parse.sh);
+    # 行为差异: 35/37 本仓计划提取结果变化, 两两交集 528 对(表头碰撞假阳性)→5 对(真实共享路径),
+    # v090 类无 emoji 表头由提取恒空变可提取——量化见 plans/task-v091 S16 checkpoint
+    scope="$(plan_parse_scope "$plan_dir/task_plan.md")"
     
     plan_sessions["$plan_dir"]="$session_id"
     plan_worktrees["$plan_dir"]="$worktree_path"
@@ -131,7 +162,8 @@ fi
 
 current_session="$(awk '/^session_id:/{print $2; exit}' "$current_plan_dir/task_plan.md" 2>/dev/null || echo "")"
 current_worktree="$(awk '/^worktree_path:/{print $2; exit}' "$current_plan_dir/task_plan.md" 2>/dev/null || echo "")"
-current_scope="$(awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ && NF>2 {gsub(/^[[:space:]]*\|[[:space:]]*/, ""); gsub(/[[:space:]]*\|[[:space:]]*$/, ""); print}' "$current_plan_dir/task_plan.md" 2>/dev/null | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+# [2026-09-27 task-v091 S16 C-1c] 同上方 plan_scopes 处: 原内联整行清洗改统一库(点分整格语义)
+current_scope="$(plan_parse_scope "$current_plan_dir/task_plan.md")"
 
 # A 同文件检测
 for other_plan in "${active_plans[@]}"; do
@@ -166,10 +198,13 @@ for other_plan in "${active_plans[@]}"; do
 done
 
 # D: 环境信号(复用五信号,仅风险信号)
+# [2026-09-27 task-v091 C-1f] ①保持独立采集(探测合并方案实测负优化已回退, 见探测段注释);
+# ②改单次 worktree 采集共享(原独立调用, 计数等价=每 worktree 一行)
 porcelain="$(git status --porcelain 2>/dev/null)"
 dirty="$(printf '%s' "$porcelain" | grep -c . || true)"
 [ "$dirty" -gt 0 ] && risk=1 && echo "[conflict-scan] ⚠ 信号①: 未提交变更 ${dirty} 个文件"
-wt="$(git worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
+cc_worktree_list
+wt="$(printf '%s\n' "$CC_WT_LIST" | grep -c . || true)"
 wt_extra=$(( wt - 1 ))
 [ "$wt_extra" -gt 0 ] && risk=1 && echo "[conflict-scan] ⚠ 信号②: 存在 ${wt_extra} 个额外 worktree"
 

@@ -111,7 +111,8 @@ check_scope_porcelain "$PLAN_FILE" || {
 # - 顺带输出 warn 档触发计数(/tmp/task-planner-warn-<sid>.count 若存在,提醒终验关注 M-1)
 # 实现位置:放在 python 内联末尾之后(已通过 3-File Gate/Porcelain 等前置门),
 # 所有判定放行后才查委派率 — 这是「最后一道闸」。
-DELEGATION_RATE_FLOOR="$(jq -r '.properties.delegation_rate_floor.default // 0.7' "$SKILL_ROOT/config.json" 2>/dev/null || echo 0.7)"
+# [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+DELEGATION_RATE_FLOOR="$(jq -r '.delegation_rate_floor // .properties.delegation_rate_floor.default // 0.7' "$SKILL_ROOT/config.json" 2>/dev/null || echo 0.7)"
 # [2026-09-20 task-v086 P2-S3 Rule 38.4③] mini 降档: 计划文件 grep「plan_tier: mini」命中 →
 # floor 0.7→0.0（main_direct 全部理由视白名单直通, 即 rate 永远 >= floor）; violations 仍照常计(L441 verdict 路径不动);
 # 非 mini 路径 DELEGATION_RATE_FLOOR 保持 config 原值=零改动
@@ -454,9 +455,52 @@ if [ "$python_rc" -eq 0 ]; then
         printf '[plan] DELEGATION GATE SKIPPED — check-delegation.sh stats produced no output (fail-open, see warning above)\n' >&2
     fi
 
-    # [2026-09-09 task-v058] 计划期 S-unit 执行体终验门控(Rule 22.6/25.1);check-plan-dispatch.sh 缺失 → fail-open
+    # ── [2026-09-27 task-v091 C-2] 终验重复门四元内容键 SKIP-BY-HASH(提案 §三 C-2 v3, efficiency-proposal.md:139-146)──
+    # 现象=同一计划终验 2-3 轮反复全量重跑两道重复门(PLAN-DISPATCH/FMEA,27 脚本 65.7s/轮);
+    # 原行为=两门每轮无条件必跑; 新行为=四元内容键全一致→两门 SKIP-BY-HASH 引用 attest 结果,余门照跑。
+    # 四元键(任何位置不使用 mtime/size — touch -r 绕过窗口由键①内容哈希闭合):
+    #   ① task_plan.md 实时内容 sha256,且须等于 .plan-attestation 锁定哈希(未锁定/不一致→不 SKIP,走全量)
+    #   ② check-plan-dispatch.sh 整文件 sha256(门脚本变更→陈旧 SKIP 由键②闭合)
+    #   ③ 本脚本「FMEA 门段」sha256 — 锚=下行 sed 在全文件中的首个锚匹配(即 sed 命令行自身,含锚字面量)
+    #      至 task-v065 S-1 F-1 挽救门注释行; 实际覆盖键计算+两门+状态写入整段(提案 FMEA 段的超集:
+    #      只增失效不漏失效,SKIP 逻辑自身变更亦使状态失效)
+    #   ④ 两门实际消费 config 键全集生效值(v3 终审 #3): plan_tier_enforce / subagent.step_max_minutes /
+    #      subagent.step_max_files / subagent.properties.step_max_steps / fmea_enforce;
+    #      完整性守护= selftest-final-gate-hash.sh 程序化 grep 两脚本 jq .properties.* 消费集合==此枚举。
+    #      tier 两键 env 覆盖(TASK_PLANNER_PLAN_TIER_ENFORCE/TASK_PLANNER_FMEA_ENFORCE)计入快照:
+    #      env 改变生效值同样不 SKIP — 只收窄不扩大 SKIP 面,符合提案「无残留窗口」意图。
+    # 状态文件= ${TMPDIR:-/tmp}/task-planner-final-gate-<plan_dir 哈希前16位>.state(两门全过后写入;
+    #   门失败路径已在下方 exit 1 不到达写点=失败永不落状态; 损坏/缺失→读不出 fg_key→全量 fail-open
+    #   并自愈重写; 放 /tmp 不在计划目录产生未跟踪文件污染 Rule 27.3 porcelain,先例
+    #   /tmp/task-planner-warn-<sid>.count; 键①含内容哈希→同路径新计划/归档重建不会误 SKIP)。
+    # attest 本体与 TAMPERED 分支、UPS:61/posttooluse 重锁零改动(提案护栏)。
+    fg_state_id="$(printf '%s' "$PLAN_DIR_GUESS" | sha256sum | cut -c1-16)"
+    FG_STATE_FILE="${TMPDIR:-/tmp}/task-planner-final-gate-${fg_state_id}.state"
+    FG_PLAN_HASH="$(sha256sum "$PLAN_FILE" 2>/dev/null | awk '{print $1}')"
+    FG_ATTEST_LOCK=""
+    [ -f "$PLAN_DIR_GUESS/.plan-attestation" ] && FG_ATTEST_LOCK="$(grep -am1 '^plan_sha256=' "$PLAN_DIR_GUESS/.plan-attestation" 2>/dev/null | cut -d= -f2-)"
     cpl="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
-    if [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
+    FG_CPD_HASH="$(sha256sum "$cpl" 2>/dev/null | awk '{print $1}')"
+    FG_FMEA_SEG_HASH="$(sed -n '/FMEA 门控终验点/,/失败挽救链路终验门控/p' "$SKILL_ROOT/scripts/check-complete.sh" 2>/dev/null | sha256sum | awk '{print $1}')"
+    # 键④: 单次 jq 取五键生效值(与门内解析同式: 顶层覆盖优先→schema 默认→字面兜底; jq 失败→空串→键必变→全量 fail-safe)
+    FG_CFG_CSV="$(jq -r '[.plan_tier_enforce // .properties.plan_tier_enforce.default // "warn",
+                         .subagent.step_max_minutes // .properties.subagent.properties.step_max_minutes.default // "15",
+                         .subagent.step_max_files // .properties.subagent.properties.step_max_files.default // "2",
+                         .properties.subagent.properties.step_max_steps.default // "4",
+                         .fmea_enforce // .properties.fmea_enforce.default // "warn"] | @csv' "$CONFIG_JSON" 2>/dev/null || true)"
+    FG_CFG_SNAP="env_plan_tier=${TASK_PLANNER_PLAN_TIER_ENFORCE:-_}|env_fmea=${TASK_PLANNER_FMEA_ENFORCE:-_}|cfg=${FG_CFG_CSV}"
+    FG_KEY="$(printf '%s\n%s\n%s\n%s\n' "$FG_PLAN_HASH" "$FG_CPD_HASH" "$FG_FMEA_SEG_HASH" "$FG_CFG_SNAP" | sha256sum | awk '{print $1}')"
+    FG_SKIP=0
+    if [ -n "$FG_ATTEST_LOCK" ] && [ "$FG_ATTEST_LOCK" = "$FG_PLAN_HASH" ] && [ -f "$FG_STATE_FILE" ]; then
+        FG_STORED="$(grep -am1 '^fg_key=' "$FG_STATE_FILE" 2>/dev/null | cut -d= -f2-)"
+        [ -n "$FG_STORED" ] && [ "$FG_STORED" = "$FG_KEY" ] && FG_SKIP=1
+    fi
+
+    # [2026-09-09 task-v058] 计划期 S-unit 执行体终验门控(Rule 22.6/25.1);check-plan-dispatch.sh 缺失 → fail-open
+    # [2026-09-27 task-v091 C-2] 四元键一致 → SKIP-BY-HASH 引用 attest 锁定结果(不重扫;余门照跑)
+    if [ "$FG_SKIP" -eq 1 ]; then
+        printf '[plan] PLAN-DISPATCH GATE SKIP-BY-HASH (task-v091 C-2: 四元内容键一致, 引用 attest 锁定结果)\n' >&2
+    elif [ -f "$cpl" ]; then bash "$cpl" "$PLAN_FILE" || { echo "[plan] PLAN-DISPATCH GATE FAILED (Rule 22.6/25.1)" >&2; exit 1; }; fi
 
     # [2026-09-16 task-v075 P4 B1] FMEA 门控终验点(fmea_enforce 双点消费之二,与 attest-plan.sh 同逻辑):
     # 档位解析范式同本文件既有 resolve_*_tier 段: env TASK_PLANNER_FMEA_ENFORCE > config.json fmea_enforce.default > warn
@@ -467,12 +511,16 @@ if [ "$python_rc" -eq 0 ]; then
         local m="${TASK_PLANNER_FMEA_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.fmea_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.fmea_enforce // .properties.fmea_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
     FMEA_TIER="$(resolve_fmea_tier)"
-    if [ "$FMEA_TIER" != "off" ] && grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
+    # [2026-09-27 task-v091 C-2] 四元键一致 → SKIP-BY-HASH 引用 attest 锁定结果(键④已含 fmea_enforce 生效值)
+    if [ "$FG_SKIP" -eq 1 ]; then
+        printf '[fmea-gate] SKIP-BY-HASH (task-v091 C-2: 四元内容键一致, 引用 attest 锁定结果, fmea_enforce=%s)\n' "$FMEA_TIER" >&2
+    elif [ "$FMEA_TIER" != "off" ] && grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
         # FMEA 判定(与 attest-plan.sh check-fmea-gate 同口径; 独立实现避免 source 依赖):
         fmea_datanum=0
         fmea_bad=""
@@ -510,6 +558,15 @@ if [ "$python_rc" -eq 0 ]; then
         fi
     fi
 
+    # [2026-09-27 task-v091 C-2] 两门全过(全量通过,或本轮按四元键 SKIP)→ 写四元键状态供下轮 SKIP 判定;
+    # 门失败路径已在上方 exit 1 不会到达此处=失败永不落状态; 状态文件不含 mtime/size(提案护栏)。
+    # 写入前置 attest 一致: SKIP 语义=引用 attest 结果,为 attest 不匹配(篡改/未锁定)的内容落状态
+    # 无复用价值且会污染已还原内容的复用键 — 篡改轮一律不写,保持状态=最近一次 attest 一致的全量通过条件
+    if [ "$FG_SKIP" -ne 1 ] && [ -n "$FG_ATTEST_LOCK" ] && [ "$FG_ATTEST_LOCK" = "$FG_PLAN_HASH" ]; then
+        printf 'fg_key=%s\nfg_v=1\nkey1_plan_sha256=%s\nkey2_cpd_sha256=%s\nkey3_fmea_seg_sha256=%s\nkey4_cfg_snap=%s\n' \
+            "$FG_KEY" "$FG_PLAN_HASH" "$FG_CPD_HASH" "$FG_FMEA_SEG_HASH" "$FG_CFG_SNAP" > "$FG_STATE_FILE" 2>/dev/null || true
+    fi
+
     # [2026-09-13 task-v065 S-1 F-1] 失败挽救链路终验门控(挽救而非摆烂);缺失 → fail-open
     # 档位由 check-rescue-chain.sh 自解析(config.json rescue_chain_enforce, 默认 warn):
     #   enforce 档存在违规 → 该脚本 exit 1 → 本门阻断 complete;warn/off 档恒 exit 0(仅提示)。
@@ -536,7 +593,8 @@ if [ "$python_rc" -eq 0 ]; then
             printf 'warn'
             return 0
         fi
-        m="$(jq -r '.properties.vc_gate_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+        m="$(jq -r '.vc_gate_enforce // .properties.vc_gate_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
 
@@ -702,7 +760,8 @@ if [ "$python_rc" -eq 0 ]; then
         local m="${TASK_PLANNER_ERROR_LOOP_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.error_loop_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.error_loop_enforce // .properties.error_loop_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -803,7 +862,8 @@ END {print n+0}'
         local m="${TASK_PLANNER_REFLECT_VERIFY_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.reflect_verify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.reflect_verify_enforce // .properties.reflect_verify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -841,7 +901,8 @@ END {print n+0}'
         local m="${TASK_PLANNER_SKILL_MODIFY_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
         if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
-            m="$(jq -r '.properties.skill_modify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+            # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+            m="$(jq -r '.skill_modify_enforce // .properties.skill_modify_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || m=""
         fi
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
@@ -872,11 +933,94 @@ END {print n+0}'
     # [2026-09-20 task-v085 Rule 37] 机制画像抽查：内容组 (writing/research/publish) 计划声明 code_review: required 时，
     # warn=仅 stderr 提示不改 exit / enforce=exit 1 / off=跳过。档位 env > config.json mechanism_profile_enforce > warn(jq 缺失 fail-open)。
     mp_tier="${TASK_PLANNER_MECHANISM_PROFILE_ENFORCE:-}"
-    case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="$(jq -r '.properties.mechanism_profile_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || mp_tier=""; case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="warn" ;; esac ;; esac
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+    case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="$(jq -r '.mechanism_profile_enforce // .properties.mechanism_profile_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || mp_tier=""; case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="warn" ;; esac ;; esac
     if [ "$mp_tier" != "off" ]; then
         mp_tt="$(grep -m1 '^template_type:' "$PLAN_FILE" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"; mp_tt="${mp_tt%%[[:space:]（]*}"
         [ -z "$mp_tt" ] && mp_tt="$(grep -m1 'template_type' "$PLAN_FILE" 2>/dev/null | awk -F'|' '{for(i=1;i<=NF;i++){t=$i;gsub(/[[:space:]`]/,"",t);if(t=="template_type"){v=$(i+1);gsub(/[[:space:]`]/,"",v);print v;exit}}}' | head -1 | sed 's/（.*//')"
         case "$mp_tt" in writing|research|publish) grep -qE 'code_review: required|^[[:space:]]*\|[[:space:]]*`?code_review`?[[:space:]]*\|[[:space:]]*`?required`?[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null && case "$mp_tier" in enforce) echo "[mechanism-profile] ✗ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；enforce 档 exit 1 — 显式例外须在计划 Decisions 登记理由或改 n/a）" >&2; exit 1 ;; *) echo "[mechanism-profile] ⚠ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；如属显式例外请登记理由）" >&2 ;; esac ;; esac
+    fi
+
+    # [2026-09-27 task-v091 S23 A-1 Rule 38.6] 终验 AUTO-TIER 复核段（提案 A-1 误判闭环，S22 风险①）:
+    # 消费 S22 自动降档标记（auto_tier: mini）→ 复核实际体量是否超限（Phase 数>2 或 执行范围表
+    # 数据行>2，机器可测口径同 CPD 38.1 MISMATCH 探针）→ 超限 WARNING 点名，warn 档不阻断
+    # （Rule 38.6 明文「误判闭环止于 warn 的补强」；不消费新 config 键 → S20 C-2 键④五键枚举零扰动）。
+    # 插入位=mechanism-profile 段后，位于 C-2 键③哈希覆盖段（:484 sed 锚对所夹区间）之外——注释
+    # 措辞避开锚字面量，键③哈希与 S20 落地版逐字节一致（SKIP 块零扰动）。无标记/显式 mini 零影响。
+    if grep -qm1 'auto_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+        atier_items=""
+        atier_phases="$(grep -cE '^###[[:space:]]+Phase' "$PLAN_FILE" 2>/dev/null || true)"
+        [ "${atier_phases:-0}" -gt 2 ] && atier_items="Phase 数=${atier_phases} >2 "
+        atier_scope="$(awk '/^##[[:space:]]*.*执行范围限制/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null | grep -c '^|' || true)"
+        [ "${atier_scope:-0}" -gt 4 ] && atier_items="${atier_items}执行范围表数据行>2（表格行=${atier_scope}） "
+        if [ -n "$atier_items" ]; then
+            printf '[plan] AUTO-TIER WARNING (task-v091 S23 Rule 38.6 复核, warn 档不阻断): auto_tier=mini 但实际体量超限 — %s — 误降档计划带收缩门组走完全程, 复核任务体量与 38.1 条件（后续任务可显式 TASK_PLAN_TIER=standard）\n' "${atier_items% }" >&2
+        else
+            printf '[plan] AUTO-TIER REVIEW PASSED (auto_tier=mini 体量复核合规: Phase ≤2 ∧ 执行范围表数据行 ≤2)\n' >&2
+        fi
+    fi
+
+    # [2026-09-27 task-v091 S27 A-3] 终验 COMPLIANCE-CHECK 抽查段（提案 A-3「先加后删」护栏，终审 #8 互锁）:
+    # 对 SKILL C 表声称「机器门承载」的关键可机器查产物做抽查点名——缺失 → [compliance] WARNING
+    # 点名（warn 档不阻断，exit 码仍为 python_rc）。映射表=脚本内表（提案「脚本内表或 registry」取舍:
+    # 零新文件、零 registry 同步负担，与 AUTO-TIER 段同范式）。
+    # tier 感知分域（终审 #8 防 A-1 提高 mini 命中率后新断言误报）: 复用 :606 PLAN_TIER_MINI 前置判定——
+    #   standard 域=全量抽查；mini 域只检 mini 适用子集（3-File / VC 行数降档 / Handoff 存在性），
+    #   委派率 38.4③ floor 豁免项与 mini-lite 模板无产物的「委派统计段 / Handoff verify_done」两项在 mini 域跳过。
+    # 插入位=本段位于 C-2 键③哈希覆盖段（FMEA 段）之后（注释措辞避开锚字面量，键③哈希零扰动），
+    # S20/S23 既有块语义零改动（仅紧邻插入）；本段不消费新 config 键 → 键④五键枚举零扰动。
+    compliance_missing=""
+    cc_plan_dir="$(dirname "$PLAN_FILE")"
+    # ① 3-File 抽查（Rule 19.5/C16 承载声称）: mini/standard 同域（mini 38.3 区块白名单要求三文件，降档=19.2 非豁免）
+    for cf in findings.md progress.md; do
+        [ -f "$cc_plan_dir/$cf" ] || compliance_missing="${compliance_missing} 3-File ${cf} missing(C16/Rule 19.5) "
+    done
+    # ② VC 表行数（C6 承载声称）: 档位阈值与 VC-GATE 分域同口径 standard≥5 / mini≥2
+    comp_vc_count="$(grep -cE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null || true)"
+    comp_vc_min=5; [ "${PLAN_TIER_MINI:-0}" = 1 ] && comp_vc_min=2
+    [ "${comp_vc_count:-0}" -lt "$comp_vc_min" ] && compliance_missing="${compliance_missing} VC表=${comp_vc_count:-0}<${comp_vc_min}(C6) "
+    # ③④ 仅 standard 域: mini 域 38.4③ 委派率豁免 + mini-lite 六列 Handoff 无 verify_done 列/无委派统计段产物 → 跳过不误报
+    if [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
+        # ③ 委派统计段（Rule 25/C14 承载声称: verification.md「委派统计」段为委派率统计落点）
+        grep -q '委派统计' "$cc_plan_dir/verification.md" 2>/dev/null || compliance_missing="${compliance_missing} verification.md 委派统计段缺失(C14/Rule 25) "
+        # ③b S-unit 表抽查（Rule 22.6/C14 承载声称, 口径同 CPD 38.4④）: 声明子代理 Executor 的
+        #     派发型计划须有 `| ID |…执行体…` 表头 + ≥1 行 `| S<n> |` 数据行；38.4④ 全主进程豁免跳过
+        comp_sunit_hdr="$(grep -cE '^\|[[:space:]]*ID[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null || true)"
+        comp_sunit_rows="$(grep -cE '^\|[[:space:]]*S[0-9]+[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null || true)"
+        comp_subagent_pre="$(grep -E '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null | grep -vc '主进程' || true)"
+        if [ "${comp_subagent_pre:-0}" -gt 0 ] && [ "${comp_sunit_hdr:-0}" -eq 0 ]; then
+            compliance_missing="${compliance_missing} 派发型缺S-unit表(表头=0,Rule 22.6/C14) "
+        elif [ "${comp_subagent_pre:-0}" -gt 0 ] && [ "${comp_sunit_hdr:-0}" -gt 0 ] && [ "${comp_sunit_rows:-0}" -eq 0 ]; then
+            compliance_missing="${compliance_missing} S-unit表数据行=0(有表头无S行,Rule 22.6/C14) "
+        fi
+        # ④ Handoff 登记抽查（Rule 22.5/C16 承载声称: 声明子代理 Executor 时须有已填数据行且 verify_done 已勾）
+        comp_subagent_exec="$(grep -E '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null | grep -vc '主进程' || true)"
+        if [ "${comp_subagent_exec:-0}" -gt 0 ]; then
+            # Handoff 数据行= `| N |` 开头且第 5 列（任务目标）非空非占位；限「Subagent Handoff 登记表」节内
+            # （节标题锚=standard/mini-lite 两模板共有的「Subagent Handoff 登记表」字样，遇下一 ## 节截止）
+            comp_handoff_filled="$(awk '/Subagent Handoff 登记表/{f=1;next} f&&/^##[[:space:]]/{f=0} f&&/^[[:space:]]*\|[[:space:]]*[0-9]+[[:space:]]*\|/{c=$5;gsub(/^[[:space:]]+|[[:space:]]+$/,"",c);if(c!=""&&c!="[任务目标(≤1句)]")n++}END{print n+0}' "$PLAN_FILE" 2>/dev/null)"
+            if [ "${comp_handoff_filled:-0}" -eq 0 ]; then
+                compliance_missing="${compliance_missing} Handoff登记表未回填(声明${comp_subagent_exec}个子代理Executor,Rule 22.5/C16) "
+            else
+                # verify_done 列位由表头行动态定位（仅 `|` 开头表头行，避开 HTML 注释内 mention；
+                # B-2 列位折叠后自动跟列位）; 表头无该列 → fail-open 跳过
+                comp_vd_col="$(grep -m1 '^[[:space:]]*|.*verify_done' "$PLAN_FILE" 2>/dev/null | awk -F'|' '{for(i=2;i<=NF;i++){v=$i;gsub(/^[[:space:]]+|[[:space:]]+$/,"",v);if(v=="verify_done"){print i;exit}}}' 2>/dev/null)"
+                if [ -n "$comp_vd_col" ]; then
+                    comp_vd_unchecked="$(awk -v c="$comp_vd_col" '/Subagent Handoff 登记表/{f=1;next} f&&/^##[[:space:]]/{f=0} f&&/^[[:space:]]*\|[[:space:]]*[0-9]+[[:space:]]*\|/{v=$c;gsub(/^[[:space:]]+|[[:space:]]+$/,"",v);if(v=="☐"||v==""||v=="[ ]")n++}END{print n+0}' "$PLAN_FILE" 2>/dev/null)"
+                    [ "${comp_vd_unchecked:-0}" -gt 0 ] && compliance_missing="${compliance_missing} Handoff ${comp_vd_unchecked}行verify_done未勾(Rule 22.5/C16) "
+                fi
+            fi
+        fi
+    fi
+    comp_tier_label="standard"; [ "${PLAN_TIER_MINI:-0}" = 1 ] && comp_tier_label="mini"
+    if [ -n "$compliance_missing" ]; then
+        printf '[compliance] WARNING (task-v091 A-3 终验抽查, warn 档不阻断, tier=%s 分域): 抽查缺项点名 — %s\n' "$comp_tier_label" "${compliance_missing% }" >&2
+    else
+        printf '[compliance] OK (task-v091 A-3 终验抽查通过, tier=%s 分域: 3-File/VC 行数%s/委派统计段%s/Handoff verify_done%s)\n' \
+            "$comp_tier_label" \
+            "$([ "$comp_tier_label" = mini ] && printf 降档阈值 || printf 全量)" \
+            "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" \
+            "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" >&2
     fi
 
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1

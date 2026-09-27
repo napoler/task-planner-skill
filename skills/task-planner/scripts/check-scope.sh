@@ -48,7 +48,14 @@ done
 [ -z "$ROOT" ] && exit 0
 
 # ─── ② 目标路径 abs 化 + plans/ 目录豁免（原样保留，放行优先复用）──────────
-abs_path="$(python3 -c "import os,sys; print(os.path.abspath(sys.argv[1]))" "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")"
+# [2026-09-27 task-v091 S17 C-1d] python3 abspath → realpath -m: 去除每次调用 fork python
+# 解释器(Python 冷启动数十 ms vs realpath ~1ms, PreToolUse 热路径); 语义对拍一致
+# (绝对/相对/../×2/尾斜杠/不存在路径共 10 组 byte 一致; realpath -m 同为不要求路径存在,
+# `--` 防 - 开头路径被当选项, 对齐 python argv 语义; 两个已界定边界: ① 空串 python 回
+# cwd / realpath rc1——不可达, :32 已在前拦截空 FILE_PATH; ② realpath 额外解析已存在
+# symlink 组件为物理路径(如 slink→sub), 对本脚本下游(向上找 plans 名目录/文件名豁免/
+# memory 前缀豁免, 本机 $HOME 为真实目录)无行为影响, 详见 S17 报告 risks)
+abs_path="$(realpath -m -- "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")"
 
 # Walk up from abs_path to find plans/ ancestor
 _check_dir="$(dirname "$abs_path")"

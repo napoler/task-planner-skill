@@ -128,7 +128,9 @@ get_enforce_mode() {
         return 0
     fi
     local mode
-    mode="$(jq -r '.properties.delegation_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || {
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] config.json 顶层键=用户覆盖值、.properties.delegation_enforce.default=schema 默认值；
+    # 原单层路径致顶层用户覆盖静默失效 → 改为 .delegation_enforce // .properties.delegation_enforce.default // "enforce"（无覆盖时行为与原值一致）
+    mode="$(jq -r '.delegation_enforce // .properties.delegation_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || {
         printf 'failopen\n' >&2
         printf 'failopen'
         return 0

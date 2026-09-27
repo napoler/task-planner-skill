@@ -61,7 +61,7 @@ model: opus
   > `[2026-09-10 task-planrequired-race] 哨兵会话私有化`：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core，剥 sess 前缀；写入位置=向上解析的 plans/ 祖先项目根，无 plans/ 祖先不写；sid 缺失不写任何哨兵，fail-open）；legacy `<root>/.plan-required` 不再写入、仅作兼容读取
   - SessionStart hook 自动写入本会话私有哨兵（标记"本会话尚未创建计划"；resume 判定：本会话 side 指针已指向有效计划则哨兵不启用）
   - 运行 `bun scripts/session-catchup.ts` 检测中断恢复点
-  - 创建 `plans/{task-id}/` 目录，运行 `bash scripts/init-session.sh`
+  - 创建 `plans/{task-id}/` 目录，运行 `bash scripts/init-session.sh`（trivial 判定：预估 ≤15min ∧ scope ≤2 文件 ∧ 单模块 ∧ 非④排除（保护区/Rule 36/D6 高危）→ 前置 env `TASK_AUTO_TIER=1 TASK_EST_MINUTES/TASK_SCOPE_FILES/TASK_SCOPE_MODULES` 提交体量事实，脚本四条件闸门自动降 mini 并打 `auto_tier: mini` 标记供终验复核，Rule 38.6；显式 tier 恒优先）
   - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 legacy `plans/.active_plan`（兜底），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
   - **模板优先级**（由 init-session.sh 自动处理，无需手动干预）：
     - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
@@ -99,12 +99,11 @@ model: opus
      - **⚠️ 3-File 回填门控（19.2 — 执行中硬门控）**：标记 complete 前必须满足双条件——① progress.md 对应 Phase 段已回填（Actions taken / Files created-modified / Test Results）；② findings.md 在本 Phase 期间有实质增量。运行 `bash <skill>/scripts/check-3file-gate.sh <plan-dir>` 校验：信号优先级 = ledger 工作账本（`ledger-*.jsonl` 含锚点后的行 = 语义工作证据）> mtime 判定（无 ledger 时兜底）；exit 1 → 禁止翻转 complete，先回填再重跑直至 exit 0
   4.5 **提交工作产物（Rule 27 — git 管理强制）**：实现类 Phase 在标记 complete 前，必须把本 Phase 产物 commit 到当前工作分支（worktree 隔离场景提交在 worktree 内分支；direct 场景提交在主仓当前分支）——**禁止跨 Phase 攒批、禁止留到终验才提交**，丢弃上限收敛为单 Phase 增量。范围 = 本 Phase 实际产出文件（以 scope_files / progress.md「Files created-modified」清单为准），**禁止 `git add -A` / `git add .` 盲扫**（防卷入 plans/、.env、临时文件与并行任务产物；plans/ 按仓约定不入库）。message：`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。提交后 `git status --porcelain -- <scope 文件>` 必须为空；非 git 目录 → progress.md 记一行 `[git-commit] 跳过:非 git 仓库` 不阻塞；豁免（计划声明 `git_commit: deferred` 或用户显式"先不提交"）须已写入计划并登记 verification.md。详见 `references/critical-rules.md` Rule 27
   5. **同步 Todo + 索引（S2/S4）**：该 Phase todo → `completed`；运行 `bash scripts/sync-todos.sh --index` 刷新 INDEX.md
-  6. **[DRIFT CHECK]** 调用 `Skill("task-drift-guard")`
+  6. **[DRIFT CHECK]** 调用 `Skill("task-drift-guard")`（本触发点唯一检测载体——`check-drift.sh` 仅作可选佐证，不双跑；C4）
     - ✅ ALIGNED → 继续下一 Phase
     - ⚠️ DRIFT → 记录 progress.md，警觉继续
     - 🔴 BLOCKED → **STOP**，报告用户，等决策
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
-  - **PLAN-RESUME 被动扫描（Rule 24）**：Phase complete 后，**在 DRIFT CHECK 之前**被动调 `Skill("plan-resume")` 扫工作区其他中断任务。产出报告写到 `<cwd>/.zcode/plans/plan-resume-report.md`，主上下文打印摘要（≤5 行）。**当前计划执行中 → 仅报告不续推**（防打断）；恢复触发点（会话启动无活跃计划 / 用户恢复类指令 / 本计划交付终态后）→ 按计划自动打分选 Top 1 **自主续推**（config `autonomous_resume`，守卫：单次 1 个 / skip_states 排除 / 跨仓只报告 / 用户说"不要自动续推"即降级，详见 plan-resume §7）。若用户已在 prompt 说"不要 plan-resume"或任务 ≤3 个 phase → 跳过
   - `task-drift-guard` 为只读检测层，发现 BLOCKED 时必须等用户明确决策后再继续
 
 ### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
@@ -134,7 +133,7 @@ model: opus
     2. 验证交接产物存在：`Read` 检查目标文件
     3. 更新下游 Block `depends_on` 状态为 `in_progress`
     4. 调用 `Skill("task-drift-guard")`
-    5. 调用 `Skill("plan-resume")` 被动扫描（Rule 24）
+    5. 恢复触发点（交付终态/会话恢复）按 Rule 24.5 自主续推（per-block 扫描已收敛）
   - **handoff 合约**（每次交接前必须满足）：
     ```
     [BLOCK-N COMPLETE] 产物: {path} 大小:{size} 内容确认:{Read 结果摘要}
@@ -177,31 +176,30 @@ model: opus
 | C1 | 用户任务已复述，目标无歧义 | ☐ |
 | C2 | `task_plan.md` 存在且含 Phase + VC 表 | ☐ |
 | C3 | 计划已展示并获得用户显式授权 | ☐ |
-| C4 | 每个 Phase 完成后已调用 `task-drift-guard` | ☐ |
-| C4a | Phase 完成后已运行 `check-drift.sh --json` 输出合法 JSON | ☐ |
-| C5 | subagent 返回后已 Read 实际产出文件 | ☐ |
-| C6 | 全部 VC 逐条复验，有可查证据 | ☐ |
-| C7 | 交付结论为 COMPLETE/PARTIAL/BLOCKED 之一 | ☐ |
-| C8 | `code_review: required` 任务已完成 Code Review Gate 且输出 APPROVED | ☐ |
-| C9 | Code Review Gate 的 fix-phase（如有）已 complete | ☐ |
-| C10 | 计划创建后已按 S1 建立原生 Todo 映射（TodoWrite 或 Task） | ☐ |
-| C11 | 每个 Phase 状态变更后已同步 Todo（S2）；`[plan-sync]` 提醒均已响应（S3） | ☐ |
-| C12 | 用户新指令已做 D/A/B/C 影响判定（D 新任务边界先判，8.1）；D 类已开新计划目录且旧计划原样保留；B/C 类已完成计划 + Todo 同步更新（S5） | ☐ |
-| C13 | Phase complete 后已被动调 `Skill("plan-resume")` 扫描中断任务(若用户未说"不要 plan-resume")；执行中扫描只报告,恢复触发点按 Rule 24.5 自主续推(或已按"不要自动续推"降级) | ☐ |
-| C14 | 本 Phase 执行体与计划 Executor 字段一致；主进程直做已在计划登记例外理由（Rule 25） | ☐ |
-| C15 | 本 Phase 无未处置质量违规：V-N 全勾且 Evidence 非空、Handoff verify_done 已勾、无 Rule 26 触发项（或已豁免登记）（Rule 26） | ☐ |
-| C16 | 三文件罗盘可验证：Phase complete 前 `check-3file-gate.sh` exit 0（findings 本 Phase 有增量 + progress Phase 段已回填，Rule 19.2）；Handoff 表各行「findings 落点」已填且 verify_done 已勾（Rule 22.5）；终验前两文件非 stub（Rule 19.5） | ☐ |
-| C17 | 本 Phase 产物已按 Rule 27 提交：scope 文件 `git status --porcelain` 为空（或已登记非 git 跳过 / `git_commit: deferred` 豁免 / 无仓内产物） | ☐ |
-| C18 | ask 模式计划批准前已按 28.2.1 口头复述大体执行思路（≤5 行，内容可对照计划）且已登记 Decisions Made（silent 模式不适用） | ☐ |
-| C19 | 用户指出错误场景（31.1 触发①②③任一）已按 Rule 31 走 31.2 根因分析：progress.md Error Log 对应行 Root Cause/Prevention 列非空（`<待沉淀>` 占位不算）且 notepad 沉淀两段已写；未命中错误指出 → 本项 N/A 记一行 | ☐ |
-| C20 | 本任务全部方案候选/建议/D2 选项已过 32.2 禁令检查（禁令源=当前+历史 notepad「被否决方案」段+memory）；命中项已剔除或按 32.4 标注否决出处+新证据交用户裁决；无禁令命中 → 本项 PASS 记一行 | ☐ |
-| C21 | 每个问题解决动作后已按 Rule 33 落 [reflect] 反思+验证两行（progress.md 可查）；计划声明 reflect_verify: required 时 REFLECT-GATE 必过（check-complete.sh） | ☐ |
-| C22 | attest 前 template_type 已过 check-template-type.sh 门控（逃生须披露）；命中 34.3 沉淀触发时已按 34.4 沉淀或登记不沉淀理由 | ☐ |
-| C23 | 准备以否定结论（无法查看/不存在/不支持）结束任务或上报 prompt 过大失败前：能力否定已过 Rule 35.2 三关（完整接口面/CRUD 推断/替代路径，查证动作按 35.6 最小探针原则）并附证据，或已按 35.3 落盘引用补救（内容写文件+prompt 只放路径与 Read 指令）；违规按 Rule 26 回炉 | ☐ |
-| C24 | 本任务涉及技能文件修改时（Rule 36.1 范围）：已按 36.2 完成归因（指向技能本体才可提案）+ 36.3 删除基线与删除性行为清单已落 findings/progress；功能性删除/语义改写已逐项获用户确认（36.4，D6 级）；纯新增或机械联动 → 本项 PASS 记一行 | ☐ |
-| C25 | 本任务已按 Rule 37 套用机制画像：template_type 对应的代码组/内容组机制适用性已核对（Code Review Gate、code-assistant 路由等按画像取捨）；画像不适用或未命中登记一行理由 | ☐ |
-| C26 | 本任务已按 Rule 38 判定计划档位：轻量任务声明 plan_tier: mini 时已套用 mini-lite 模板+豁免清单（5 锚点），非轻量任务未误用 mini 档；MISMATCH 提示已处置 | ☐ |
-| C27 | 用户显式点名 /workflow 编排时已按 Rule 39 路由：Skill("dynamic-workflows") 已加载、CreateWorkflow 三来源其一提交、21.4 并行豁免已登记 Decisions Made+progress（39.4）；未点名 → 本项 N/A 记一行（走 21.4 串行） | ☐ |
+| C4 | 每个 Phase 完成后已调用 `Skill("task-drift-guard")`（同点唯一检测载体，ALIGNED/DRIFT/BLOCKED 三态，BLOCKED→STOP；`check-drift.sh` 仅作可选佐证，不再与 skill 双跑） | ☐ |
+| C5 | subagent 返回后已 Read 实际产出文件（check-complete 终验抽查承载） | ☐ |
+| C6 | 全部 VC 逐条复验，有可查证据（check-complete 逐条校验承载） | ☐ |
+| C7 | 交付结论为 COMPLETE/PARTIAL/BLOCKED 之一（check-complete 终态判定承载） | ☐ |
+| C8 | `code_review: required` 任务已完成 Code Review Gate 且输出 APPROVED（APPROVED 为门控前置条件，终验人工确认） | ☐ |
+| C9 | Code Review Gate 的 fix-phase（如有）已 complete（check-complete 全 Phase complete 判定承载） | ☐ |
+| C10 | 计划创建后已按 S1 建立原生 Todo 映射（TodoWrite 或 Task；原生 Todo 无机器门，人工） | ☐ |
+| C11 | 每个 Phase 状态变更后已同步 Todo（S2）；`[plan-sync]` 提醒均已响应（S3，hook 提醒响应为人工动作） | ☐ |
+| C12 | 用户新指令已做 D/A/B/C 影响判定（D 新任务边界先判，8.1）；D 类已开新计划目录且旧计划原样保留；B/C 类已完成计划 + Todo 同步更新（S5，判定为人工动作） | ☐ |
+| C13 | 计划交付终态/会话恢复触发点已按 Rule 24.5 调 `Skill("plan-resume")` 自主续推 Top 1（不再每 Phase 被动扫描；24.7 豁免场景登记跳过） | ☐ |
+| C14 | 本 Phase 执行体与计划 Executor 字段一致；主进程直做已在计划登记例外理由（check-delegation stats 终验承载） | ☐ |
+| C15 | 本 Phase 无未处置质量违规：V-N 全勾且 Evidence 非空、Handoff verify_done 已勾、无 Rule 26 触发项（或已豁免登记）（Rule 26 人工核查；无机器门承载，人工保留不收敛） | ☐ |
+| C16 | 三文件罗盘可验证：Phase complete 前 `check-3file-gate.sh` exit 0（findings 本 Phase 有增量 + progress Phase 段已回填，Rule 19.2 机器门承载）；Handoff 表各行「findings 落点」已填且 verify_done 已勾（Rule 22.5 人工）；终验前两文件非 stub（check-complete 3-File Gate 机器门承载） | ☐ |
+| C17 | 本 Phase 产物已按 Rule 27 提交：scope 文件 `git status --porcelain` 为空（或已登记非 git 跳过 / `git_commit: deferred` 豁免 / 无仓内产物）（check-complete porcelain 终验预检承载） | ☐ |
+| C18 | ask 模式计划批准前已按 28.2.1 口头复述大体执行思路（≤5 行，内容可对照计划）且已登记 Decisions Made（silent 模式不适用；复述为人工动作） | ☐ |
+| C19 | 用户指出错误场景（31.1 触发①②③任一）已按 Rule 31 走 31.2 根因分析：progress.md Error Log 对应行 Root Cause/Prevention 列非空（`<待沉淀>` 占位不算）且 notepad 沉淀两段已写（check-complete Learning Gate 机器门承载；未命中错误指出则不触发，无需记行） | ☐ |
+| C20 | 本任务全部方案候选/建议/D2 选项已过 32.2 禁令检查（禁令源=当前+历史 notepad「被否决方案」段+memory）；命中项已剔除或按 32.4 标注否决出处+新证据交用户裁决（veto 核查无机器门，人工保留不收敛；无禁令命中则无需记行） | ☐ |
+| C21 | 每个问题解决动作后已按 Rule 33 落 [reflect] 反思+验证两行（progress.md 可查；check-complete REFLECT-GATE 机器门承载，声明 reflect_verify: required 时） | ☐ |
+| C22 | attest 前 template_type 已过 check-template-type.sh 门控（逃生须披露，机器门承载）；命中 34.3 沉淀触发时已按 34.4 沉淀或登记不沉淀理由（沉淀判定人工） | ☐ |
+| C23 | 准备以否定结论（无法查看/不存在/不支持）结束任务或上报 prompt 过大失败前：能力否定已过 Rule 35.2 三关（完整接口面/CRUD 推断/替代路径，查证动作按 35.6 最小探针原则）并附证据，或已按 35.3 落盘引用补救（内容写文件+prompt 只放路径与 Read 指令）；违规按 Rule 26 回炉（三关查证人工，结论证据随交付报告留痕） | ☐ |
+| C24 | 本任务涉及技能文件修改时（Rule 36.1 范围）：已按 36.2 完成归因（指向技能本体才可提案）+ 36.3 删除基线与删除性行为清单已落 findings/progress；功能性删除/语义改写已逐项获用户确认（36.4，D6 级；check-skill-modify 机器门承载写操作，确认动作人工） | ☐ |
+| C25 | 本任务已按 Rule 37 套用机制画像：template_type 对应的代码组/内容组机制适用性已核对（Code Review Gate、code-assistant 路由等按画像取捨）；画像不适用或未命中登记一行理由（机制画像核对人工） | ☐ |
+| C26 | 本任务已按 Rule 38 判定计划档位：轻量任务声明 plan_tier: mini 时已套用 mini-lite 模板+豁免清单（5 锚点），非轻量任务未误用 mini 档；MISMATCH 提示已处置（check-template-type/plan-tier 机器门承载 MISMATCH 检测，套用人工） | ☐ |
+| C27 | 用户显式点名 /workflow 编排时已按 Rule 39 路由：Skill("dynamic-workflows") 已加载、CreateWorkflow 三来源其一提交、21.4 并行豁免已登记 Decisions Made+progress（39.4，未点名则走 21.4 串行，无需记行） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -300,7 +298,7 @@ Block 1 (选题) complete
 - **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发严格串行——一次一个、验收通过再派下一个（21.4 串行派发铁律）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
-- **Rule 24（P1）plan-resume 被动扫描与自主续推**：Phase complete 后扫中断任务；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
+- **Rule 24（P1）plan-resume 被动扫描与自主续推**：交付终态/会话恢复触发点扫中断任务（task-v091 A-3 收敛，不再每 Phase 扫）；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**（fmea_enforce 消费机器校验已生效：attest+check-complete）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
 - **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）

@@ -43,13 +43,15 @@ load_config() {
     # config.json#properties.provider_fallback.* 缺失 → 保持内置默认
     command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ] || return 0
     local v
-    v="$(jq -r '.properties.provider_fallback.enabled.default // empty' "$CONFIG_JSON" 2>/dev/null)"
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+    # 4 键统一改为 .provider_fallback.X // .properties.provider_fallback.properties.X.default // empty（原兜底不变）
+    v="$(jq -r '.provider_fallback.enabled // .properties.provider_fallback.properties.enabled.default // empty' "$CONFIG_JSON" 2>/dev/null)"
     [ -n "$v" ] && CFG_ENABLED="$v"
-    v="$(jq -r '.properties.provider_fallback.variant_types.default // empty' "$CONFIG_JSON" 2>/dev/null)"
+    v="$(jq -r '.provider_fallback.variant_types // .properties.provider_fallback.properties.variant_types.default // empty' "$CONFIG_JSON" 2>/dev/null)"
     [ -n "$v" ] && CFG_VARIANT_TYPES="$v"
-    v="$(jq -r '.properties.provider_fallback.fallback_slugs.default // empty' "$CONFIG_JSON" 2>/dev/null)"
+    v="$(jq -r '.provider_fallback.fallback_slugs // .properties.provider_fallback.properties.fallback_slugs.default // empty' "$CONFIG_JSON" 2>/dev/null)"
     [ -n "$v" ] && CFG_FALLBACK_SLUGS="$v"
-    v="$(jq -r '.properties.provider_fallback.probe_timeout_ms.default // empty' "$CONFIG_JSON" 2>/dev/null)"
+    v="$(jq -r '.provider_fallback.probe_timeout_ms // .properties.provider_fallback.properties.probe_timeout_ms.default // empty' "$CONFIG_JSON" 2>/dev/null)"
     [ -n "$v" ] && CFG_PROBE_TIMEOUT_MS="$v"
 }
 

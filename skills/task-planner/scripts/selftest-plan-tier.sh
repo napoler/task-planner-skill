@@ -29,7 +29,11 @@
 #   PT-26 S6: 全缺省(无项目目录/无 default/env) 零影响: 产物=general 首行, 无 S6 路由/插入行
 #   PT-27 S6: 自造模板(无 template_type 行)显式指定 type 时复制后头部插入 frontmatter 行
 #   PT-28 S7: mini 样例在 plan_tier enforce 档(plan_tier 消费链 attest 锁定+check-complete 终验)通过
-# 28 断言全 PASS exit 0; 任一 FAIL exit 1。行为级样例在 /tmp/selftest-plan-tier-* 目录, 用完即清理。
+#   PT-29 行为: init auto-tier 四条件 env 提交(TASK_AUTO_TIER=1) → mini 产物含 auto_tier: mini 标记(Rule 38.6, task-v091 S23)
+#   PT-30 行为: 显式 TASK_PLAN_TIER=mini(无 TASK_AUTO_TIER) → 产物无 auto_tier 标记(显式不打标, 显式优先)
+#   PT-31 行为: auto_tier=mini ∧ 执行范围表数据行>2 → check-complete AUTO-TIER WARNING 点名 rc=0(warn 档不阻断)
+#   PT-32 行为: auto_tier=mini ∧ 体量合规 → AUTO-TIER REVIEW PASSED 无 WARNING(复核两态闭环, S23)
+# 32 断言全 PASS exit 0; 任一 FAIL exit 1。行为级样例在 /tmp/selftest-plan-tier-* 目录, 用完即清理。
 # [task-v086 S7-3] PT-18~21 mini 样例构造改为真实 mini-lite 模板 cp 基座(注释单形态 plan_tier 标记, 与真实 init 产物一致), 仅最小改写占位。
 
 set -u
@@ -219,6 +223,73 @@ if [ "$rc_a" -eq 0 ] && printf '%s\n' "$out_a" | grep -q 'MINI-TIER SKIP' \
   ok 28 "mini 样例 enforce 档 attest 锁定(FMEA SKIP)+check-complete VC-GATE 均通过"
 else
   bad 28 "mini 样例 enforce 档消费链失败 attest_rc=$rc_a cc_rc=$rc_c（输出尾部: $(printf '%s' "$out_a" | tail -1) | $(printf '%s' "$out_c" | tail -1)）"
+fi
+
+
+# ── [2026-09-27 task-v091 S23 A-1] auto-tier 消费层行为级（标记存在性 + 终验 AUTO-TIER 复核两态）──
+mkdir -p "$T/auto/plans/pa" "$T/expl/plans/pe" "$T/planautobad" "$T/planautook"
+
+# PT-29 init auto-tier 路径: 四条件 env 事实提交 → mini 产物 + auto_tier 标记(S22 机制, S23 消费侧断言)
+(cd "$T/auto/plans/pa" && TASK_AUTO_TIER=1 TASK_EST_MINUTES=10 TASK_SCOPE_FILES=1 TASK_SCOPE_MODULES=1 bash "$INIT" pa > "$T/auto/out.log" 2>&1)
+if [ -f "$T/auto/plans/pa/task_plan.md" ] \
+   && grep -q 'plan_tier: mini' "$T/auto/plans/pa/task_plan.md" \
+   && grep -q 'auto_tier: mini' "$T/auto/plans/pa/task_plan.md" \
+   && grep -q 'auto-tier: 四条件全过' "$T/auto/out.log"; then
+  ok 29 "auto-tier 路径: 四条件 env 提交 → mini 产物含 auto_tier: mini 标记（Rule 38.6）"
+else
+  bad 29 "auto-tier 路径标记缺失（产物/日志异常）"
+fi
+
+# PT-30 显式 mini 不打标: TASK_PLAN_TIER=mini 且无 TASK_AUTO_TIER → 产物有 plan_tier 无 auto_tier
+(cd "$T/expl/plans/pe" && TASK_PLAN_TIER=mini bash "$INIT" pe >/dev/null 2>&1)
+if grep -q 'plan_tier: mini' "$T/expl/plans/pe/task_plan.md" 2>/dev/null \
+   && ! grep -q 'auto_tier: mini' "$T/expl/plans/pe/task_plan.md" 2>/dev/null; then
+  ok 30 "显式 mini 不打 auto_tier 标记（显式优先=不覆盖显式值）"
+else
+  bad 30 "显式 mini 场景 auto_tier 标记异常（应无标记）"
+fi
+
+# auto_tier 标记样例: planmini 基座 + plan_tier: mini 行后插标记（同 S22 init 产物形态注释行）
+python3 - "$T/planmini/task_plan.md" "$T/planautobad/task_plan.md" "$T/planautook/task_plan.md" <<'PYEOF'
+import sys
+s = open(sys.argv[1], encoding='utf-8').read()
+assert 'plan_tier: mini' in s, '基座锚缺失: plan_tier: mini'
+# 标记插入=行级（S22 init awk 同语义）：plan_tier: mini 所在行后插一行注释标记
+# （模板形态为 `<!-- plan_tier: mini -->`，纯字符串 'plan_tier: mini\n' 不命中）
+_lines = s.split('\n')
+for _i, _ln in enumerate(_lines):
+    if 'plan_tier: mini' in _ln:
+        _lines.insert(_i + 1, '<!-- auto_tier: mini -->')
+        break
+marked = '\n'.join(_lines)
+# planautobad = 标记 ∧ 体量超限（范围表数据行>2: 附加 4 行, 表格行 2+1+4=7>4, 口径同 PT-20 构造）
+anchor = '| a.md | b.md |\n'
+extra = ''.join(f'| r{i} | x |\n' for i in range(1, 5))
+assert anchor in s, '基座锚缺失: 范围表数据行'
+open(sys.argv[2], 'w', encoding='utf-8').write(marked.replace(anchor, anchor + extra, 1))
+# planautook = 仅标记, 体量合规（2 Phase ∧ 范围表数据行=1）
+open(sys.argv[3], 'w', encoding='utf-8').write(marked)
+print('planautobad/planautook written')
+PYEOF
+cp "$T/planmini/findings.md" "$T/planmini/progress.md" "$T/planautobad/"
+cp "$T/planmini/findings.md" "$T/planmini/progress.md" "$T/planautook/"
+
+# PT-31 AUTO-TIER 复核触发态: 超限 → WARNING 点名 且 warn 档不阻断
+out="$(bash "$CC" "$T/planautobad/task_plan.md" 2>&1)"; rc=$?
+if [ "$rc" -eq 0 ] && printf '%s\n' "$out" | grep -q 'AUTO-TIER WARNING' \
+   && printf '%s\n' "$out" | grep -q '执行范围表数据行>2'; then
+  ok 31 "AUTO-TIER 复核触发: 超限 → WARNING 点名 rc=0（warn 档不阻断）"
+else
+  bad 31 "AUTO-TIER 复核触发态异常 rc=$rc（输出尾部: $(printf '%s' "$out" | tail -1)）"
+fi
+
+# PT-32 AUTO-TIER 复核合规态: 体量合规 → REVIEW PASSED 且无 WARNING
+out="$(bash "$CC" "$T/planautook/task_plan.md" 2>&1)"; rc=$?
+if [ "$rc" -eq 0 ] && printf '%s\n' "$out" | grep -q 'AUTO-TIER REVIEW PASSED' \
+   && ! printf '%s\n' "$out" | grep -q 'AUTO-TIER WARNING'; then
+  ok 32 "AUTO-TIER 复核合规态: REVIEW PASSED 且无 WARNING rc=0"
+else
+  bad 32 "AUTO-TIER 复核合规态异常 rc=$rc（输出尾部: $(printf '%s' "$out" | tail -1)）"
 fi
 
 

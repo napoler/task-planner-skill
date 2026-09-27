@@ -289,5 +289,55 @@ printf '%s' "$CERR" | grep -qF 'SKIPPED 打包检测' && ! printf '%s' "$CERR" |
 [ "$FGOK" = 1 ] && { PASS=$((PASS+1)); printf 'FG-05 PASS (双条件豁免: SKIPPED 提示, 未判打包)\n'; } \
   || { FAIL=$((FAIL+1)); printf 'FG-05 FAIL (rc=%s err=[%s])\n' "$RC" "$(printf '%s' "$CERR" | head -n2 | tr '\n' ' | ')"; }
 
+# DX-01..05b [2026-09-27 task-v091 B-1] 静态断言: 22.4b 条款 ↔ references/dispatch-examples.md 绑定
+# (提案终审 #12: 现状 22.4b/已填示例零 selftest 锚; 绑定同 commit 不可拆分, 此处机器化)
+SKROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DX="$SKROOT/references/dispatch-examples.md"
+CR="$SKROOT/references/critical-rules.md"
+dxC() { # 与 T 序列同范式: PASS/FAIL 计数 + 行输出
+  local name="$1" okc="$2"
+  [ "$okc" = 1 ] && { PASS=$((PASS+1)); printf 'DX-%s PASS\n' "$name"; } \
+    || { FAIL=$((FAIL+1)); printf 'DX-%s FAIL (%s)\n' "$name" "$3"; }
+}
+# DX-01 examples 文件存在 且 22.4b 条款引用其路径
+DOK=1; [ -f "$DX" ] && grep -qF 'references/dispatch-examples.md' "$CR" || DOK=0
+dxC 01 "$DOK" 'examples 缺或 22.4b 未引用'
+# DX-02 反向绑定: 22.4b 被引用时 examples 必在(防单侧漂移); 且 22.4b 已改路径引用口径
+DOK=1; grep -qF '22.4b' "$CR" && [ -f "$DX" ] && grep -qF '必须附模板路径引用' "$CR" || DOK=0
+dxC 02 "$DOK" '反向绑定或路径引用口径缺失'
+# DX-03 examples 承载「已填 8 字段示例」段(模板 §7 外移目标在位)
+DOK=1; grep -q '已填 8 字段返回示例' "$DX" && grep -q '^status: done$' "$DX" || DOK=0
+dxC 03 "$DOK" '§1 已填示例段缺失'
+# DX-04 好样例(按压缩模板 §2/§7/§8 结构构造: 三文件路径 + 8 字段标记 + subagent-state/ 检查点) → check rc=0
+DXG="$TMP/dx-good.md"
+{ echo "目标: B-1 双向 rc 守护"
+  echo "- task_plan: $PLAN/task_plan.md"
+  echo "- findings: $PLAN/findings.md"
+  echo "- progress: $PLAN/progress.md"
+  echo "返回严格 8 字段(§7):"
+  echo "status: done"
+  echo "acceptance: 1/1 pass"
+  echo "files: none"
+  echo "evidence: n/a"
+  echo "checkpoint: $PLAN/subagent-state/dx04.md (status: done)"
+  echo "findings_written: none"
+  echo "blockers: none"
+  echo "confidence: HIGH"
+} > "$DXG"
+run_case off "$TMP" bash "$DISPATCH" check "$DXG" "$PLAN"
+[ "$RC" = 0 ] && { DOK=1; } || { DOK=0; }
+dxC 04 "$DOK" "好样例 check rc=$RC exp=0"
+# DX-05 坏样例(缺三文件路径 + 打包多 S-unit S1/S2) → check rc=1 且 stdout 逐行点名缺项(固定序首行 task_plan.md, 末行 subagent-state/)
+DXB="$TMP/dx-bad.md"
+printf 'S1 做 A\nS2 做 B\n' > "$DXB"
+run_case off "$TMP" bash "$DISPATCH" check "$DXB" "$PLAN"
+[ "$RC" = 1 ] && printf '%s' "$COUT" | grep -qF 'task_plan.md' && printf '%s' "$COUT" | grep -qF 'subagent-state/' \
+  && { DOK=1; } || { DOK=0; }
+dxC 05 "$DOK" "坏样例 check rc=$RC exp=1 + 缺项点名"
+# DX-05b 坏样例 pretool enforce → rc=2 阻断(双向 rc 拦截面)
+run_case enforce "$TMP" bash "$DISPATCH" pretool "$DXB" "$SID"
+[ "$RC" = 2 ] && { DOK=1; } || { DOK=0; }
+dxC 05b "$DOK" "坏样例 pretool enforce rc=$RC exp=2"
+
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

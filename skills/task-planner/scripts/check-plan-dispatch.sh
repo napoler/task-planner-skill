@@ -71,7 +71,8 @@ if grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
     ptcfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
     m="${TASK_PLANNER_PLAN_TIER_ENFORCE:-}"
     case "$m" in enforce|warn|off) : ;; *)
-        m="$(jq -r '.properties.plan_tier_enforce.default // "warn"' "$ptcfg" 2>/dev/null)" || m=""
+        # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
+        m="$(jq -r '.plan_tier_enforce // .properties.plan_tier_enforce.default // "warn"' "$ptcfg" 2>/dev/null)" || m=""
         case "$m" in enforce|warn|off) : ;; *) m="warn" ;; esac ;;
     esac
     PTIER="$m"
@@ -112,8 +113,10 @@ STEP_MAX_FILES=2
 STEP_MAX_STEPS=4
 cfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
 if command -v jq >/dev/null 2>&1 && [ -f "$cfg" ]; then
-    STEP_MAX_MIN="$(jq -r '.properties.subagent.step_max_minutes.default // "15"' "$cfg" 2>/dev/null)" || STEP_MAX_MIN=""
-    STEP_MAX_FILES="$(jq -r '.properties.subagent.step_max_files.default // "2"' "$cfg" 2>/dev/null)" || STEP_MAX_FILES=""
+    # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原 :115-116 缺第二层 .properties（键恒空只落字面兜底）；
+    # 改为 .subagent.X // .properties.subagent.properties.X.default // 兜底（顶层覆盖优先，无覆盖时读 schema 默认，与 :118 step_max_steps 同构）
+    STEP_MAX_MIN="$(jq -r '.subagent.step_max_minutes // .properties.subagent.properties.step_max_minutes.default // "15"' "$cfg" 2>/dev/null)" || STEP_MAX_MIN=""
+    STEP_MAX_FILES="$(jq -r '.subagent.step_max_files // .properties.subagent.properties.step_max_files.default // "2"' "$cfg" 2>/dev/null)" || STEP_MAX_FILES=""
     # [task-v081] 双层 properties 为 config 实际结构（.properties.subagent.properties.<key>.default）
     STEP_MAX_STEPS="$(jq -r '.properties.subagent.properties.step_max_steps.default // "4"' "$cfg" 2>/dev/null)" || STEP_MAX_STEPS=""
 fi
