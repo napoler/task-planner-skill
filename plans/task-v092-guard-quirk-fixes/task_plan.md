@@ -130,7 +130,7 @@ Phase 5
 - [x] S13 CC-06 与 1a/1b 行为断言已在 Phase 2 S7 落地，此处复核 + 查漏补用例
 - [x] 全量回归：worktree 内 32 脚本逐脚本实跑求和 ≥518 PASS/0 FAIL，逐脚本结果落 progress.md
 - **Status:** complete（verified 2026-09-27：S12=8b3bab0 六用例 6/6+负向验证非恒真+registry 33/33；S13 主进程白名单③逐脚本实跑求和 525 PASS/0 FAIL（33 脚本=32 既有+新增，518+1+6 算术闭环））
-- **Executor:** code-runner-agent（mini）→ S12 实派 Provider 拒绝后升档 executor；S13 主进程白名单③
+- **Executor:** executor（S12 实派执行体；原派 code-runner-agent mini 遭 Provider 拒绝按 22.3③ 升档，兜底登记 Handoff/progress；S13 全量回归主进程白名单③接管见 Handoff 表）
 
 | ID | 目标（≤1 句） | 执行体 | 输入（路径 + ≤10 行摘要） | 验收（可观察） | 预估时长 | 状态 |
 |----|------------|--------|------------------------|-------------|---------|------|
@@ -139,11 +139,11 @@ Phase 5
 
 ### Phase 6: 合并 + 部署 + 终验
 
-- [ ] 合并回合约核验（11.3 五条全过）→ 主仓 `git merge --no-ff wt/task-v092-guard-quirk-fixes`
-- [ ] `smart-merge-back.sh --deploy` 三实体位 + 主进程 `diff -r` ×3 亲验（IDENTICAL，diff_lines=0；sha256 抽查）
-- [ ] 主仓全量 selftest 复跑 ≥518/0；Read 关键文件复验（check-conflicts/check-drift/template-guide 三处修复点）
-- [ ] 簿记：verification.md 回填 VC 证据、INDEX 刷新（sync-todos）、worktree remove+分支删除、merge_back=merged(<commit>)
-- **Status:** pending
+- [x] 合并回合约核验（11.3 五条全过）→ 主仓 `git merge --no-ff wt/task-v092-guard-quirk-fixes`
+- [x] `smart-merge-back.sh --deploy` 三实体位 + 主进程 `diff -r` ×3 亲验（IDENTICAL，diff_lines=0；sha256 抽查）
+- [x] 主仓全量 selftest 复跑 ≥518/0；Read 关键文件复验（check-conflicts/check-drift/template-guide 三处修复点）
+- [x] 簿记：verification.md 回填 VC 证据、INDEX 刷新（sync-todos）、worktree remove+分支删除、merge_back=merged(<commit>)
+- **Status:** complete（verified 2026-09-27：CR APPROVED（3 非阻塞=1 minor 登记 deferred+2 nit 已修 eaa0d8d）；merge d82720e；部署三位 diff -r ×3=0；主仓 525/0；worktree/分支清理完成）
 - **Executor:** 主进程（例外理由:白名单① git/worktree 编排+部署对账 + ② 计划系统文件簿记维护，均非业务代码 Edit）
 
 ## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 references/methodology.md §R2）
@@ -165,7 +165,7 @@ Phase 5
 | `isolation` | `worktree`（§十一 P0：skills 保护区文件修改必隔离） |
 | `worktree_path` | /home/terry/task-planner-skill-worktrees/task-v092-guard-quirk-fixes |
 | `branch` | wt/task-v092-guard-quirk-fixes（从 master 0b2208b 拉） |
-| `merge_back` | pending → merged(<commit>)（Phase 6 回填） |
+| `merge_back` | merged(d82720e)（CR nit 收尾 eaa0d8d 后合并；worktree/分支已清理） |
 
 ## 🔁 原生 Todo 同步
 
@@ -185,19 +185,19 @@ Phase 5
 | # | Phase/S-unit | subagent_type(model) | 派发时间 | prompt 要点 | 计划三文件路径已传 | 检查点路径 | 返回摘要 | 产出 Read 复核 | verify_done |
 |---|-------------|---------------------|---------|------------|------------------|-----------|---------|---------------|------------|
 | 1 | 计划期/plan-writer | Plan Writer(sonnet-1) | 2026-09-27 | bugfix 模板+材料包引用+attest 硬契约 | ✅ | subagent-state/00-plan-writer.md | status=done；6P/13 S-unit/VC5；发现 template-guide 计数三声明与实测不一致留 S4 | ✅ Read 复核（结构全项+锚点抽查） | ✅ |
-| 2 | Phase 1/S1 | executor(继承) | 2026-09-27 | S1 取证：check-conflicts 1a+1b 管道逐段实跑复现 | ✅ | subagent-state/1-executor.md | status=done；1a=sed 区间被紧邻分隔行提前终止（≥7 连字符命中 end 模式）；1b=:170 相对 vs 绝对路径比较恒不等；两缺陷叠加，1a 修后 1b 必显形 | ✅ Read findings S1 节（证据表+夹具对照齐全） | ✅ |
-| 3 | Phase 1/S2 | executor(继承) | 2026-09-27 | S2 取证：check-drift 3a/3b/3c 三 quirk 复现 | ✅ | subagent-state/2-executor.md | status=done；3a 初值虚构 pending 前驱致首行 complete 即误报（比登记宽）；3b=3c 区间+sed 贪婪取空双层叠加；3c=区间闭于起始行恒剩标题 1 行（跨 gawk/mawk） | ✅ Read findings S2 节（五段实测+探针组+先例对照） | ✅ |
-| 4 | Phase 1/S3 | executor(继承) | 2026-09-27 | S3 取证：plan_parse_scope 语义对拍+接库裁决 | ✅ | subagent-state/3-executor.md | status=done；裁决=接库+可选列限参数（仅字段3）+消费侧保留 tr 拆逗号；禁止列反向风险实证（仓内 17/38 计划中招）；3 调用方零波及 | ✅ Read findings S3 节（25 格矩阵+裁决论证） | ✅ |
-| 5 | Phase 1/S4 | executor(继承) | 2026-09-27 | S4 取证：template-guide 计数实测+锚漂移归因 | ✅ | subagent-state/4-executor.md | status=done；三声明归因闭环（:60=21/:66=21/:74=20 均过时，variant 13→15 归因 d6a0f76+51ca883）；:69 定案=契约安全行正则与两脚本现状失配，修正面 :69+:74；template-mapping 同型漂移 2 处登记不修 | ✅ Read findings S4 节抽查 | ✅ |
-| 6 | Phase 2/S5 | executor(继承) | 2026-09-27 | S5 修复：check-conflicts :123-145 INDEX 解析（worktree 内） | ✅ | subagent-state/5-executor.md | status=done；commit 59b1471（+5/-1）；end 模式改 `^[^|]`+中段滤分隔行；夹具真冲突 A 触发+pending 门控正常；主仓真实形态 38 数据行零误滤；selftest 6/6 | ✅ 主进程 git show 复核 diff+findings S5 节 | ✅ |
-| 7 | Phase 2/S6 | executor(继承) | 2026-09-27 | S6 修复：:147-170 自计划跳过路径归一（worktree 内） | ✅ | subagent-state/6-executor.md | status=done；commit cba40ec（+5/-1）；候选 a 构造点归一 plan_dir="$repo/plans/$task_id"；自跳过/他检测/相对 repo 三场景+selftest 6/6 全过 | ✅ 主进程 git show 复核变更行 | ✅ |
-| 8 | Phase 2/S7 | executor(继承) | 2026-09-27 | S7：CC-06 夹具按真实 INDEX 形态改造+selftest 头注刷新 | ✅ | subagent-state/7-executor.md | status=done；commit 7bdd6ff（+50/-14）；7/7 PASS（新增 CC-07 自跳过用例）；负向验证双断言非恒真；夹具与真实 INDEX 逐字节一致 | ✅ Read findings S7 节（断言清单+形态对照） | ✅ |
-| 9 | Phase 3/S8 | executor(继承) | 2026-09-27 | S8 修复：check_phase_order 初值误报（worktree 内） | ✅ | subagent-state/8-executor.md | status=done；commit f3966eb（+5/-1）；初值 pending→none；四夹具+probe-e 五组验证（误报消/真越级保持/既有行为不变） | ✅ 主进程 git show 复核变更行 | ✅ |
-| 10 | Phase 3/S9 | executor(继承) | 2026-09-27 | S9 修复：check_scope_breach 接 plan_parse_scope 列限扩展（worktree 内） | ✅ | subagent-state/9-executor.md | status=done；commit 11c294c（+20/-8 两文件）；四夹具 pre/post 全过（反向风险消除+fail-open 保持）；38 计划单参 byte-identical+sync-todos 对拍零波及 | ✅ 主进程 git show 复核 lib diff | ✅ |
-| 11 | Phase 4/S10 | code-assistant(haiku-1) | 2026-09-27 | S10：template-guide :69 区行号锚改章节锚（worktree 内） | ✅ | subagent-state/10-code-assistant.md | status=done；commit 35cd075（+2/-2）；:65 引用清零；:69 契约安全行按 S9 接库后现状改写（区分两脚本调用形态） | ✅ Read worktree 文件现状核对两行 | ✅ |
-| 12 | Phase 4/S11 | code-assistant(haiku-1) | 2026-09-27 | S11：计数声明按 S4 实测修正（worktree 内） | ✅ | subagent-state/11-code-assistant.md | status=done；commit e5a402d（+5/-5）；23 口径/22 锚数/25 实数自洽+零残留；:32 §2.2 同型漂移+template-mapping 漂移登记留后续 | ✅ 主进程复核 diff 全文 | ✅ |
-| 13 | Phase 5/S12 | code-runner-agent(mini) | 2026-09-27 | S12：新建 selftest-check-drift.sh 行为级用例（worktree 内；承载文件已裁决=新建，grep 实证无既有承载） | ✅ | subagent-state/12-code-runner.md | 首派 mini Provider 拒绝→22.3③ 升档 executor 重派；status=done；commit 8b3bab0（+155 selftest+registry.tsv 1 行）；6 用例 6/6+负向验证非恒真+registry 33/33 | ✅ Read findings S12 节+主进程复跑全量佐证 | ✅ |
-| 14 | Phase 5/S13 | 主进程(白名单③) | 2026-09-27 | S13：全量回归逐脚本实跑求和（mini 档已实证 Provider 拒绝，机械验证命令白名单③接管） | ✅ | 无（主进程执行） | 33 脚本 525 PASS/0 FAIL 全 rc=0（≥518 基线；518+1+6 闭环） | ✅ 主进程实跑输出逐脚本留 progress | ✅ |
+| 2 | Phase 1/S1 | executor | 2026-09-27 | S1 取证：check-conflicts 1a+1b 管道逐段实跑复现 | ✅ | subagent-state/1-executor.md | status=done；1a=sed 区间被紧邻分隔行提前终止（≥7 连字符命中 end 模式）；1b=:170 相对 vs 绝对路径比较恒不等；两缺陷叠加，1a 修后 1b 必显形 | ✅ Read findings S1 节（证据表+夹具对照齐全） | ✅ |
+| 3 | Phase 1/S2 | executor | 2026-09-27 | S2 取证：check-drift 3a/3b/3c 三 quirk 复现 | ✅ | subagent-state/2-executor.md | status=done；3a 初值虚构 pending 前驱致首行 complete 即误报（比登记宽）；3b=3c 区间+sed 贪婪取空双层叠加；3c=区间闭于起始行恒剩标题 1 行（跨 gawk/mawk） | ✅ Read findings S2 节（五段实测+探针组+先例对照） | ✅ |
+| 4 | Phase 1/S3 | executor | 2026-09-27 | S3 取证：plan_parse_scope 语义对拍+接库裁决 | ✅ | subagent-state/3-executor.md | status=done；裁决=接库+可选列限参数（仅字段3）+消费侧保留 tr 拆逗号；禁止列反向风险实证（仓内 17/38 计划中招）；3 调用方零波及 | ✅ Read findings S3 节（25 格矩阵+裁决论证） | ✅ |
+| 5 | Phase 1/S4 | executor | 2026-09-27 | S4 取证：template-guide 计数实测+锚漂移归因 | ✅ | subagent-state/4-executor.md | status=done；三声明归因闭环（:60=21/:66=21/:74=20 均过时，variant 13→15 归因 d6a0f76+51ca883）；:69 定案=契约安全行正则与两脚本现状失配，修正面 :69+:74；template-mapping 同型漂移 2 处登记不修 | ✅ Read findings S4 节抽查 | ✅ |
+| 6 | Phase 2/S5 | executor | 2026-09-27 | S5 修复：check-conflicts :123-145 INDEX 解析（worktree 内） | ✅ | subagent-state/5-executor.md | status=done；commit 59b1471（+5/-1）；end 模式改 `^[^|]`+中段滤分隔行；夹具真冲突 A 触发+pending 门控正常；主仓真实形态 38 数据行零误滤；selftest 6/6 | ✅ 主进程 git show 复核 diff+findings S5 节 | ✅ |
+| 7 | Phase 2/S6 | executor | 2026-09-27 | S6 修复：:147-170 自计划跳过路径归一（worktree 内） | ✅ | subagent-state/6-executor.md | status=done；commit cba40ec（+5/-1）；候选 a 构造点归一 plan_dir="$repo/plans/$task_id"；自跳过/他检测/相对 repo 三场景+selftest 6/6 全过 | ✅ 主进程 git show 复核变更行 | ✅ |
+| 8 | Phase 2/S7 | executor | 2026-09-27 | S7：CC-06 夹具按真实 INDEX 形态改造+selftest 头注刷新 | ✅ | subagent-state/7-executor.md | status=done；commit 7bdd6ff（+50/-14）；7/7 PASS（新增 CC-07 自跳过用例）；负向验证双断言非恒真；夹具与真实 INDEX 逐字节一致 | ✅ Read findings S7 节（断言清单+形态对照） | ✅ |
+| 9 | Phase 3/S8 | executor | 2026-09-27 | S8 修复：check_phase_order 初值误报（worktree 内） | ✅ | subagent-state/8-executor.md | status=done；commit f3966eb（+5/-1）；初值 pending→none；四夹具+probe-e 五组验证（误报消/真越级保持/既有行为不变） | ✅ 主进程 git show 复核变更行 | ✅ |
+| 10 | Phase 3/S9 | executor | 2026-09-27 | S9 修复：check_scope_breach 接 plan_parse_scope 列限扩展（worktree 内） | ✅ | subagent-state/9-executor.md | status=done；commit 11c294c（+20/-8 两文件）；四夹具 pre/post 全过（反向风险消除+fail-open 保持）；38 计划单参 byte-identical+sync-todos 对拍零波及 | ✅ 主进程 git show 复核 lib diff | ✅ |
+| 11 | Phase 4/S10 | code-assistant | 2026-09-27 | S10：template-guide :69 区行号锚改章节锚（worktree 内） | ✅ | subagent-state/10-code-assistant.md | status=done；commit 35cd075（+2/-2）；:65 引用清零；:69 契约安全行按 S9 接库后现状改写（区分两脚本调用形态） | ✅ Read worktree 文件现状核对两行 | ✅ |
+| 12 | Phase 4/S11 | code-assistant | 2026-09-27 | S11：计数声明按 S4 实测修正（worktree 内） | ✅ | subagent-state/11-code-assistant.md | status=done；commit e5a402d（+5/-5）；23 口径/22 锚数/25 实数自洽+零残留；:32 §2.2 同型漂移+template-mapping 漂移登记留后续 | ✅ 主进程复核 diff 全文 | ✅ |
+| 13 | Phase 5/S12 | executor | 2026-09-27 | S12：新建 selftest-check-drift.sh 行为级用例（worktree 内；承载文件已裁决=新建，grep 实证无既有承载） | ✅ | subagent-state/12-code-runner.md | 首派 mini Provider 拒绝→22.3③ 升档 executor 重派；status=done；commit 8b3bab0（+155 selftest+registry.tsv 1 行）；6 用例 6/6+负向验证非恒真+registry 33/33 | ✅ Read findings S12 节+主进程复跑全量佐证 | ✅ |
+| 14 | Phase 5/S13 | 主进程 | 2026-09-27 | S13：全量回归逐脚本实跑求和（mini 档已实证 Provider 拒绝，机械验证命令白名单③接管） | ✅ | 无（主进程执行） | 33 脚本 525 PASS/0 FAIL 全 rc=0（≥518 基线；518+1+6 闭环） | ✅ 主进程实跑输出逐脚本留 progress | ✅ |
 
 ## Key Questions
 
