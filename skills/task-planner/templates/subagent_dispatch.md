@@ -10,7 +10,7 @@
 - task_plan: {plan_dir}/task_plan.md — 只读(状态由主进程翻转,禁止修改)
 - findings:  {plan_dir}/findings.md — 可读;可写=仅追加 `#### [sub:{seq}-{type}] <标题>` 到 `## Research Findings` 段末(`## Technical Decisions` 前),禁改既有内容
 - progress:  {plan_dir}/progress.md — 可读;可写=仅在当前 Phase 段「Actions taken」下追加 `  - [sub:{seq}] <摘要>`,禁改 Status/Started
-- 材料包(取自 S-unit 表「输入」列,计划期预写):{path_1} {path_2}
+- 材料包绝对路径/来源:取自 task_plan.md 该 Phase S-unit 表「输入」列(计划期预写):{path_1} {path_2}(此处只填路径,总量受 §9 预算约束)
 - findings.md 相关摘要(≤10 行):{findings_excerpt}
 - 上下文依赖:{context_dependencies}
 
@@ -21,18 +21,13 @@
 | {knowledge_brief}(`<plan-dir>/knowledge-brief.md`,任务知识简略要点) | §1-§5 五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引 | 材料包段引用对应节锚点;brief 存在时必读其索引节(§5) |
 
 ## 3. 验收标准(2-5 条可观察证据)
-- [ ] {acceptance_1}
-- [ ] {acceptance_2}
-- [ ] {acceptance_3}
-- [ ] {acceptance_4}(可选)
+- [ ] {acceptance_1} / {acceptance_2} / {acceptance_3} / {acceptance_4}(可选)
 
 ## 4. Scope 禁改清单
-- 禁止修改:{forbidden_path_1}, {forbidden_path_2}
-- 禁止操作:{forbidden_op_1}, {forbidden_op_2};默认禁止 git 写操作(add/commit/checkout/reset),只读 git diff/status/log 允许
+- 禁止修改:{forbidden_path_1}, {forbidden_path_2} | 禁止操作:{forbidden_op_1}, {forbidden_op_2};默认禁止 git 写操作(add/commit/checkout/reset),只读 git diff/status/log 允许
 
 ## 5. 工作路径
-- worktree 绝对路径(若在 worktree 中):{worktree_abs_path}
-- 否则 cwd:{cwd}(不切换 CWD,用绝对路径操作文件)
+- worktree 绝对路径(若在 worktree 中):{worktree_abs_path} | 否则 cwd:{cwd}(不切换 CWD,用绝对路径操作文件)
 
 ## 6. 时长预算
 - 任务类型:{type} → 超时阈值:{timeout_minutes} 分钟;超过阈值:立即返回 partial,报告未完成部分
@@ -60,8 +55,6 @@ confidence: HIGH | MED | LOW
 - 文件格式:头部 status 行 + 已完成里程碑(append-only 带时间戳) + 进行中 + 产出文件清单 + 错误与受阻 + 最终结论;纯 markdown,无 frontmatter
 
 ## 9. 上下文预算(强制 — Rule 22.4 第 ⑨ 字段,小模型短上下文友好)
-- 本 prompt 总长 ≤ `config.json#subagent.prompt_max_chars`(默认 3000 字符);超出 = 材料没在计划期拆好,回 S-unit 表把输入拆成"路径 + ≤10 行摘要"再派
-- 超限补救(Rule 35.3):拆细后仍超 → 把大内容写入 <plan-dir>/subagent-state/{seq}-prompt.md 或材料包文件,prompt 只放「绝对路径+第一步 Read 该文件」指令,禁止失败收场/静默截断
-- 只注入本 S-unit 所需材料(路径 + 摘要);**禁止**贴 task_plan.md / findings.md 全文或大段源码
-- 子代理侧:只 Read 本节列出的路径/区段,不做计划外探索;疑问按第 4 节 Scope 处理,不扩读
+- 本 prompt 总长 ≤ `config.json#subagent.prompt_max_chars`(默认 3000 字符);超出=材料没在计划期拆好,回 S-unit 表把输入拆成"路径 + ≤10 行摘要"再派 | 超限补救(Rule 35.3):拆细后仍超 → 大内容写入 <plan-dir>/subagent-state/{seq}-prompt.md 或材料包文件,prompt 只放「绝对路径+第一步 Read 该文件」指令,禁止失败收场/静默截断
+- 只注入本 S-unit 所需材料(路径 + 摘要),**禁止**贴 task_plan.md / findings.md 全文或大段源码 | 子代理侧:只 Read 本节列出的路径/区段,不做计划外探索;疑问按第 4 节 Scope 处理,不扩读
 <!-- resume_from / STOP 上报模板(主进程专用,Rule 22.8.4 / 22.7.1)已外置 references/dispatch-examples.md §2/§3 [2026-09-27 task-v091 B-1] -->
