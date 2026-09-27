@@ -63,7 +63,7 @@
 
 ## Current Phase
 
-Phase 2
+Phase 4
 
 ## Phases
 
@@ -101,10 +101,10 @@ Phase 2
 
 ### Phase 3: check-drift.sh 修复（3a 初值 + 3b/3c scope 提取）
 
-- [ ] S8 修 3a：check_phase_order prev_status 初值改中性（如空/"none"），全 complete 序列不再误报 CRITICAL；ALIGNED 夹具 rc=0
-- [ ] S9 修 3b/3c：按 Phase 1 S3 裁决——语义一致则 check_scope_breach 接 plan_parse_scope 统一库（消除 :205 第 5 处复制+lib 头注「未纳入」同步更新）并取对「允许的文件」列；不一致则状态机化+取对列
-- [ ] 修复不削弱 Check 1-3 既有检测（diff 审查确认）；行为级用例先于或同步于修复（VC-5 回归）
-- **Status:** pending
+- [x] S8 修 3a：check_phase_order prev_status 初值改中性（如空/"none"），全 complete 序列不再误报 CRITICAL；ALIGNED 夹具 rc=0
+- [x] S9 修 3b/3c：按 Phase 1 S3 裁决——语义一致则 check_scope_breach 接 plan_parse_scope 统一库（消除 :205 第 5 处复制+lib 头注「未纳入」同步更新）并取对「允许的文件」列；不一致则状态机化+取对列
+- [x] 修复不削弱 Check 1-3 既有检测（diff 审查确认）；行为级用例先于或同步于修复（VC-5 回归）
+- **Status:** complete（verified 2026-09-27：S8=f3966eb/S9=11c294c；S9 四夹具+38 计划 byte-identical+sync-todos 对拍全过；主进程 git show 复核）
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标（≤1 句） | 执行体 | 输入（路径 + ≤10 行摘要） | 验收（可观察） | 预估时长 | 状态 |
@@ -192,6 +192,8 @@ Phase 2
 | 6 | Phase 2/S5 | executor(继承) | 2026-09-27 | S5 修复：check-conflicts :123-145 INDEX 解析（worktree 内） | ✅ | subagent-state/5-executor.md | status=done；commit 59b1471（+5/-1）；end 模式改 `^[^|]`+中段滤分隔行；夹具真冲突 A 触发+pending 门控正常；主仓真实形态 38 数据行零误滤；selftest 6/6 | ✅ 主进程 git show 复核 diff+findings S5 节 | ✅ |
 | 7 | Phase 2/S6 | executor(继承) | 2026-09-27 | S6 修复：:147-170 自计划跳过路径归一（worktree 内） | ✅ | subagent-state/6-executor.md | status=done；commit cba40ec（+5/-1）；候选 a 构造点归一 plan_dir="$repo/plans/$task_id"；自跳过/他检测/相对 repo 三场景+selftest 6/6 全过 | ✅ 主进程 git show 复核变更行 | ✅ |
 | 8 | Phase 2/S7 | executor(继承) | 2026-09-27 | S7：CC-06 夹具按真实 INDEX 形态改造+selftest 头注刷新 | ✅ | subagent-state/7-executor.md | status=done；commit 7bdd6ff（+50/-14）；7/7 PASS（新增 CC-07 自跳过用例）；负向验证双断言非恒真；夹具与真实 INDEX 逐字节一致 | ✅ Read findings S7 节（断言清单+形态对照） | ✅ |
+| 9 | Phase 3/S8 | executor(继承) | 2026-09-27 | S8 修复：check_phase_order 初值误报（worktree 内） | ✅ | subagent-state/8-executor.md | status=done；commit f3966eb（+5/-1）；初值 pending→none；四夹具+probe-e 五组验证（误报消/真越级保持/既有行为不变） | ✅ 主进程 git show 复核变更行 | ✅ |
+| 10 | Phase 3/S9 | executor(继承) | 2026-09-27 | S9 修复：check_scope_breach 接 plan_parse_scope 列限扩展（worktree 内） | ✅ | subagent-state/9-executor.md | status=done；commit 11c294c（+20/-8 两文件）；四夹具 pre/post 全过（反向风险消除+fail-open 保持）；38 计划单参 byte-identical+sync-todos 对拍零波及 | ✅ 主进程 git show 复核 lib diff | ✅ |
 
 ## Key Questions
 

@@ -283,11 +283,50 @@ templates/ 下 .md 总数 = **25**。
 - `git diff HEAD~1 --stat` 仅 selftest-check-conflicts.sh（+50/-14）；worktree 提交后 `git status` 干净
 - 深相对 repo 提前退出（v091 deferred）未顺手扩覆盖（S6 移交约束②遵守）；对账注记：selftest 总用例 6→7，VC-2 全量求和基线对账时 +1 PASS
 
+### S8 修复记录（2026-09-27，executor）
+对象：worktree 内 `skills/task-planner/scripts/check-drift.sh` check_phase_order 函数（分支 wt/task-v092-guard-quirk-fixes，commit **f3966eb**，+5/-1 单文件，提交后 worktree 干净）。修法一句话：:122 `local prev_status="pending"` → `"none"`（中性初值，+4 行修复注记注明原因/时间/原行为/出处 findings S2 3a），:138 越级判定 `status=="complete" && prev_status=="pending"` 对中性初值天然不命中 → 「虚拟 Phase 0=pending」前驱消失，首状态行=complete 不再违约；Check 1-3/5 与 check_scope_breach 零触碰（diff 审查确认仅该函数一处 hunk）。
+
+#### 修复前/后四夹具对照（/tmp/s8-fixtures/fixture-{a,b,c,d}/plans/task-x/，复刻 S2 构造；全脚本实跑）
+| 夹具 | Status 序列 | 修复前 | 修复后 | 验收 |
+|------|------------|--------|--------|------|
+| fixture-a | complete,complete,complete | **CRITICAL PHASE-SKIP 误报** rc=1 | INFO PHASE-ORDER「Phase 顺序正常」rc=0 | ✅ 不再误报 |
+| fixture-b | pending,complete,pending（真越级）| CRITICAL PHASE-SKIP rc=1 | CRITICAL PHASE-SKIP rc=1（文案不变）| ✅ 报警能力保持 |
+| fixture-c | complete,in_progress,pending | **CRITICAL PHASE-SKIP 误报** rc=1 | INFO PHASE-ORDER rc=0 | ✅ 不再误报 |
+| fixture-d | pending,in_progress,complete | INFO PHASE-ORDER rc=0 | INFO PHASE-ORDER rc=0 | ✅ 既有行为不变 |
+
+补充探针 probe-e（pending,pending,complete）：仍报 CRITICAL PHASE-SKIP rc=1——真实前驱 pending→complete 的越级判定在任意位置均保持。误报文案与真越级文案未区分（按 S8 约束不作要求：初值修复后误报场景本身已消失，仅真越级会进入该文案路径）。
+
+#### 实跑结果
+- `bash -n` 语法通过；`git diff HEAD~1 --stat` 仅 check-drift.sh（+5/-1）；证据 /tmp/s8-evidence/{baseline-runs,postfix-runs,probe-e}.txt
+- 修复未削弱任何检测维度：四夹具+探针中 Check 1（VC）/Check 3（GOAL）/Check 5（SCOPE）/循环错误检测输出与修复前逐行一致
+
 
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
 |----------|-----------|
 |          |           |
+
+### S9 修复记录（2026-09-27，executor）
+对象：worktree 内 `skills/task-planner/scripts/lib/plan-parse.sh` + `check-drift.sh`（分支 wt/task-v092-guard-quirk-fixes，commit **11c294c**，+20/-8 两文件，提交后 worktree 干净）。修法一句话（按 S3 裁决落地）：① lib `plan_parse_scope` 增可选第 2 参 `[maxcol]`——`local maxcol="${2:-}"` + `awk -v maxcol=` + 循环上界 `hi = (maxcol == "" ? n : maxcol + 0)`（缺省空=现行为 3..n 整行不变；`+0` 强制数值比较防 strnum 歧义）+ 签名/语义注释与头注注记；② check-drift `check_scope_breach` 补 SCRIPT_DIR+source 设施（参照 check-conflicts.sh:19-21 形态，插在 :23 NOTE 块后）并将原 :209-215 区间式提取管道（`awk '/^## ⚠️ 执行范围限制/,/^## /'|grep|grep -vE|sed 取末列`）替换为 `plan_parse_scope "$PLAN_FILE" 3`——`tr ',' '\n'|sed trim|grep -v '^$'||true` 留消费侧（:213 fail-open 依赖，勿并入库）；③ lib 头注调用方清单 `未纳入: check-drift.sh:205` 标注改判为 `4. check-drift.sh check_scope_breach（列限调用形态，S9 接入）`。Check 1-3/5、check_phase_order（S8 已修）零触碰（diff 仅 2 hunks 实证）。
+
+#### 验证证据（全实跑，夹具复用 /tmp/s3-fixtures/ 四形态；证据 /tmp/s9-evidence/）
+| 夹具 | pre-fix（HEAD f3966eb 版） | post-fix（11c294c 实跑） | 判定 |
+|---|---|---|---|
+| t1 两列·竖线收尾（progress 越权 hack/evil.py） | SCOPE-NONE rc=0（3c 恒跳过复现） | **WARNING SCOPE-BREACH: hack/evil.py rc=1** | ✅ |
+| t2 三列·竖线收尾·禁止列点分（越权 forbidden/secret.py + hack/extra.py） | SCOPE-NONE rc=0 | **BREACH: forbidden/secret.py, hack/extra.py rc=1**（禁止列文件被报，反向风险已修） | ✅ |
+| t5 三列·无尾竖线·禁止列（progress 明写越权 forbidden/secret.py） | SCOPE-NONE rc=0（整案零检出复现） | **BREACH: forbidden/secret.py rc=1** | ✅ |
+| t4 无范围表 | SCOPE-NONE rc=0 | SCOPE-NONE rc=0（fail-open 保持，rc 不因此变 1） | ✅ |
+
+- 提取层实证：t2 列限（maxcol=3）输出恰 `src/main.py, src/util.py`+`docs/guide.md` 两格，禁止列 `forbidden/secret.py, hack/*.py` 不再混入——消费端双报即此因；t5 输出恰允许列两格；四夹具 POST 段全部 WARN/CRIT 仅 3 条预期 BREACH，零其他信号污染
+- mawk 交叉验证（延续 S3 P7 教训）：列限 awk 程序 gawk 5.2.1 vs mawk 1.3.4 对 t1/t2/t5 输出逐字节一致（`maxcol+0` 数值化后无 strnum 歧义）
+- **3 调用方零波及回归（S3 论证实证）**：① REG1 单参对拍——修改前后 lib 对主仓 `plans/*/task_plan.md` 全部 **38 计划**逐个 `plan_parse_scope <file>` 输出 **diff 为空 byte-identical**（check-conflicts.sh:139/:166 单参调用点语义不变）；② REG2 sync-todos 夹具实跑（/tmp/s9-sync-fixture，pre=HEAD 版脚本+HEAD lib vs post=worktree 版）默认报告与 `--index` 产物 INDEX.md 均 **byte-identical**，INDEX `scope_files` 列正常输出（内联副本 :241-253 未触及）；③ zcode-pretooluse.sh 不 source 库（:115 互指注释锚，默认行为未变=无语义变更，零改动，diff 不含该文件）
+- check-conflicts selftest worktree 实跑 **7/7 PASS** rc=0（CC-01~CC-07，S5/S6/S7 修复无回归）
+- 验收范围核验：`git diff HEAD~1 --stat` = lib/plan-parse.sh + check-drift.sh 恰两文件（+20/-8），worktree 提交后 `git status` 干净
+
+#### 供 Phase 4 注意
+1. t3（逗号清单+方向1包含边界）属两可判定案，S3 已裁决拆逗号留消费侧、lib 整格权威语义不变——本 S9 未改该行为，无需再裁
+2. lib 头注调用方清单现 4 条，后续新增调用方若需列限形态一律走第 2 参，勿再复制 awk（v091 C-1c 既定方向）
+3. template-guide.md:69 修正措辞中「check-drift.sh:205 区间式」的如实描述现应更新为接库后形态（S4 节修正指令 5 已预留此分支：「若 S9 已接库则以接库后形态为准」）
 
 ## Issues Encountered
 <!-- 阻塞/意外问题与解法;代码错误走 progress.md Error Log(Rule 19.4) -->

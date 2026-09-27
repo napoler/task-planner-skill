@@ -43,6 +43,17 @@
 - Test Results:
   -
 
+### Phase 3: check-drift.sh 修复（3a 初值 + 3b/3c scope 提取）
+- **Status:** in_progress
+- **Started:** 2026-09-27 22:22
+- Actions taken:
+  - [2026-09-27 S8] check-drift 3a 修复：check_phase_order :122 prev_status 初值 `"pending"`→`"none"`（+4 行修复注记，+5/-1 单文件，worktree commit f3966eb）；/tmp/s8-fixtures 四夹具端到端——fixture-a（全 complete）/fixture-c（complete,in_progress,pending）误报 CRITICAL 全消改 INFO PHASE-ORDER rc=0，fixture-b（真越级）仍报 CRITICAL rc=1、fixture-d（渐进完成）INFO rc=0 既有行为不变，probe-e（pending,pending,complete）真越级仍报；Check 1-3/5 输出逐行一致零削弱，check_scope_breach 零触碰（留 S9）。详见 findings.md「### S8 修复记录」；checkpoint=subagent-state/8-executor.md
+  - [2026-09-27 S9] check-drift 3b/3c 修复（Phase 3 收尾）：check_scope_breach :209-215 区间式提取管道接库 `plan_parse_scope "$PLAN_FILE" 3` + lib 增可选 `[maxcol]` 列限参数（缺省空=3..n 单参 byte-identical；tr/trim/grep -v '^$'/||true 留消费侧 fail-open）+ SCRIPT_DIR source 设施 + lib 头注「未纳入」标注改判为第 4 调用方（+20/-8 两文件，worktree commit 11c294c）；/tmp/s3-fixtures 四夹具端到端——t1 两列/t2 三列禁止列/t5 无尾竖线三案 pre-fix SCOPE-NONE 恒跳过全部转为预期 SCOPE-BREACH rc=1（t2 禁止列 forbidden/secret.py 被报=反向风险消除），t4 无表 SCOPE-NONE rc=0 fail-open 保持；3 调用方零波及实证——主仓 38 计划单参输出 diff 空 + sync-todos 夹具 INDEX.md byte-identical + pretooluse 注释锚零改动 + check-conflicts selftest 7/7 PASS。详见 findings.md「### S9 修复记录」；checkpoint=subagent-state/9-executor.md
+- Files created/modified:
+  -
+- Test Results:
+  -
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
