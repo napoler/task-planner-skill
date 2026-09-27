@@ -120,6 +120,10 @@ declare -A plan_sessions    # plan_dir -> session_id
 declare -A plan_worktrees   # plan_dir -> worktree_path
 declare -a active_plans=()  # in_progress plan 目录列表
 
+# [2026-09-27 task-v092/S5] 原管道首段 sed 区间 end 模式 /^|-------/ 被表头紧邻的分隔行
+# (首列≥7 连字符)命中 → 区间只输出表头+分隔行 2 行, 数据行永不入管道 → active_plans 恒空
+# (根因取证: plans/task-v092-guard-quirk-fixes findings S1)。修法: end 改为首个不以 | 开头
+# 的行(整表入管道), 管道中段 grep -vE 滤除分隔行(仅 |/-/:/空格 构成的行)
 if [ -f plans/INDEX.md ]; then
   while IFS='|' read -r task_id status phase_total goal mtime _icon; do
     # 只处理 in_progress
@@ -141,7 +145,7 @@ if [ -f plans/INDEX.md ]; then
     plan_sessions["$plan_dir"]="$session_id"
     plan_worktrees["$plan_dir"]="$worktree_path"
     plan_scopes["$plan_dir"]="$scope"
-  done < <(sed -n '/^| Task ID/,/^|-------/p' plans/INDEX.md | tail -n +2 | grep '^|' | sed 's/^|//;s/|$//' | awk -F'|' '{gsub(/[[:space:]]*/, "", $1); gsub(/[[:space:]]*/, "", $2); print $1"|"$2"|"$3"|"$4"|"$5"|"$6}')
+  done < <(sed -n '/^| Task ID/,/^[^|]/p' plans/INDEX.md | tail -n +2 | grep '^|' | grep -vE '^[[:space:]:|-]+$' | sed 's/^|//;s/|$//' | awk -F'|' '{gsub(/[[:space:]]*/, "", $1); gsub(/[[:space:]]*/, "", $2); print $1"|"$2"|"$3"|"$4"|"$5"|"$6}')
 fi
 
 # 判断当前 plan 的目录
