@@ -7,8 +7,8 @@
 #
 # 调用方(语义同步义务——改本库语义必须逐处核对并同步):
 #   1. scripts/check-conflicts.sh — plan_scopes 与 current_scope 两处(task-v091 S16 已接入)
-#   2. scripts/sync-todos.sh extract_plan_meta — task-v091 S17 已接入(head -10 上限与
-#      逗号串 join 保留在调用侧, 见该文件 :196 一带)
+#   2. scripts/sync-todos.sh write_index 内联语义副本(S17 原 extract_plan_meta 已删, 2026-09-27
+#      S25 修正)——head -10 上限与逗号串 join 保留在调用侧(见该文件 :174/:244 一带语义锚注释)
 #   3. scripts/zcode-pretooluse.sh Rule 23 扫描 — 热路径保留 S15 内联单 awk 不 source 本库
 #      (每计划 1 fork 是 C-1a③ 性能成果); 与本库互为语义锚, 任一处语义变更必须同步另一处
 #   未纳入: scripts/check-drift.sh:205 另有独立旧形态(严格 ⚠️ 区间形), 待后续组统一

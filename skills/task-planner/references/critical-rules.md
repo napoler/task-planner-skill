@@ -314,6 +314,7 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 36.4 **删除=高危确认门**：任何功能性删除或既有语义改写（非纯新增）→ 逐项列清单交用户确认（ask 模式 AskUserQuestion 列删除项+理由；属 Rule 28 D6 级硬停点语义（引用不扩列，不改 Rule 28 既有语义））；silent 模式同样不得跳过（D6 两模式一致）。未确认前禁止执行该删除。
 36.5 **保守化修改纪律**：默认纯增量追加；既有条款语义变更须同时 ① 计划「执行范围限制」表逐行登记 ② progress.md 记录旧语义→新语义对照；禁止以「重构/顺手整理/清理」名义触碰未授权区域。
 36.6 **修改后回归验证**：对照 36.3 基线——删除清单每项要么已获用户确认、要么实际零删除；selftest 全量 0 FAIL；SKILL/锚点 grep 复核。
+36.6a **selftest 分域实跑（v091 C-4 纯增补子条，不改 36.6 原句）**：按 `scripts/selftest-registry.tsv` 分域索引（每脚本标注 domain/触发场景/依赖锚）——开发过程中间轮次只跑改动域子集（registry trigger_scenarios 列按本次改动文件反查命中行）；**交付终验必须全量 selftest 0 FAIL，全量总门不降**（36.6 原句原文保留）；registry 与 selftest-*.sh 实际清单双向一致性由 selftest-registry.sh 守护（改增/删/改名任一 selftest 必须同步 TSV，守护 FAIL 即回归缺陷）。
 36.7 **机制**：config 键 `skill_modify_enforce`（enum [enforce,warn,off]，默认 warn，description 注明 Rule 36）。消费侧三件：① 新建 `scripts/check-skill-modify.sh` 挂入 zcode-pretooluse.sh 的 Write/Edit 分支——目标路径（realpath 归一化，兼容 worktree 与部署位）命中技能文件模式 且 当前活跃计划「执行范围限制」表未列该文件 → warn 注入提醒（enforce 档 exit 2 阻断）；对主进程与子代理一致生效（补 check-delegation 子代理 exit 0 的空档）；② check-complete.sh 追加 SKILL-MODIFY GATE（终验校验删除性行为清单已登记且逐项有确认记录，resolve tier 范式）；③ 新建 `scripts/selftest-skill-modify.sh` 静态守护（selftest-veto.sh 范式：36.x 条款锚 + config 键 json 校验 + SKILL 联动 + C24 + pretooluse 接线锚 + GATE 锚）。
 
 ### 37 任务类型机制画像（mechanism profile — 按 template_type 裁剪机制适用性）
