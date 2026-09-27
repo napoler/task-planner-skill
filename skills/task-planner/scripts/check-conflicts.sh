@@ -128,7 +128,11 @@ if [ -f plans/INDEX.md ]; then
   while IFS='|' read -r task_id status phase_total goal mtime _icon; do
     # 只处理 in_progress
     [[ "$status" != "in_progress" ]] && continue
-    plan_dir="plans/$task_id"
+    # [2026-09-27 task-v092/S6] 原 plan_dir="plans/$task_id"(相对) 与下方 current_plan_dir 的
+    # glob "$repo/plans"/* (绝对/含 $repo 前缀) 字符串比较恒不等 → 自计划跳过失效,
+    # A(scope 自交)/B(worktree 自等) 恒自报(1b, 根因取证见 plans/task-v092 findings S1);
+    # 改为与 glob 同源构造, 两侧共享逐字 $repo/plans/ 前缀, repo 传参任意形态恒等
+    plan_dir="$repo/plans/$task_id"
     [ -f "$plan_dir/task_plan.md" ] || continue
     active_plans+=("$plan_dir")
     
