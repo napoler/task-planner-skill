@@ -214,7 +214,8 @@ check_scope_breach() {
     # [2026-09-27 task-v092 S9] 原区间式 awk 提取(gawk 区间陷阱+严格 ⚠️ 表头+取末列语义,
     # 三缺陷叠加致 SCOPE-NONE 恒跳过/禁止列反向风险)替换为统一库 plan_parse_scope;
     # 第 2 参=3 列限仅取允许列(findings.md S3 裁决: 禁止列可在任意后位字段, 勿做 3..N-1)。
-    # tr 拆逗号/trim/grep -v '^$'/|| true 为消费侧逐条清单依赖(:213 fail-open 路径), 勿并入库
+    # tr 拆逗号/trim/grep -v '^$'/|| true 为消费侧逐条清单依赖(下方 allowed_files 管道的
+    # `|| true` 兜底即 check_scope_breach 的 fail-open 路径), 勿并入库 [v092-CR nit: 行号锚改语义锚]
     local allowed_files
     allowed_files=$(plan_parse_scope "$PLAN_FILE" 3 \
         | tr ',' '\n' \
