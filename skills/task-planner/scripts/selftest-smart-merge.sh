@@ -7,6 +7,10 @@
 #   SM-14(2026-09-17 S4 task-v077 新增, 陈旧副本回归钉子): 脚本副本置于陈旧部署位 A(预置 stale-content)
 #   运行 --deploy, slot 指 B → 断言 B 终态 SKILL_MARKER==主仓 canonical-v077(非 stale-content) 且输出含
 #   [DEPLOY] IDENTICAL → exit 0; 防 v076 假 IDENTICAL 复发(以 SKILL_ROOT 为源时 cp 陈旧副本自 diff 恒真)。
+#   [2026-09-27 task-v091/C-5-locale] SM-15a/SM-15b 回归: 从 TARGET 抽真实 _re_lines+deploy_reconcile,
+#   混合大小写文件名(B.md+a.md)清单内容差异场景, zh locale 下仍报 DRIFT-L2(修复前 comm 未 pin locale →
+#   inman 空 → B.md 不入 L2 targets → 假 IDENTICAL, S32 组5 C-5 实测缺陷); SM-15b LC_ALL=C 与 ambient
+#   双跑判定一致。TOTAL_BASE 14→16(SM-10 注入时 Total=17)。
 #   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
 #   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(SELFTEST_SM10_WT 注入) md5 前后一致(零改动)。
 #   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
