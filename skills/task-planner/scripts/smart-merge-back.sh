@@ -524,8 +524,9 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         src_list="$(find -L "$DEPLOY_SRC" -type f -printf '%P\n' 2>/dev/null | sed 's|^\./||' | LC_ALL=C sort)"
         slot_list="$(cd "$slotdir" 2>/dev/null && find -L . -type f -printf '%P\n' 2>/dev/null | sed 's|^\./||' | LC_ALL=C sort)"
         local missing extra
-        missing="$(comm -23 <(_re_lines "$src_list") <(_re_lines "$slot_list") | head -n 5)"
-        extra="$(comm -13 <(_re_lines "$src_list") <(_re_lines "$slot_list") | head -n 5)"
+        # [2026-09-27 task-v091 C-5-locale] comm 输入已 LC_ALL=C sort, comm 本身未 pin → zh_CN.UTF-8 下 L2 清单内差异假 IDENTICAL/L1 乱序; 逐处包 LC_ALL=C
+        missing="$(LC_ALL=C comm -23 <(_re_lines "$src_list") <(_re_lines "$slot_list") | head -n 5)"
+        extra="$(LC_ALL=C comm -13 <(_re_lines "$src_list") <(_re_lines "$slot_list") | head -n 5)"
         if [ -n "$missing" ] || [ -n "$extra" ]; then
             echo "[DEPLOY] DRIFT-L1: $slotdir (文件集合差: 缺/多如下)"
             [ -n "$missing" ] && echo "  缺失: $missing"
@@ -535,11 +536,11 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         # L2: 内容定向 diff。git 程序化清单 = 本次合并 MB..BRANCH 变更的 skill 文件(剥 skill 根前缀, 禁手填)
         local manifest common inman outman targets T
         manifest="$(git -C "$MAIN_REPO" diff --name-only "$MB" "$BRANCH" -- skills/task-planner 2>/dev/null | sed 's|^skills/task-planner/||' | sed '/^$/d' | LC_ALL=C sort)"
-        common="$(comm -12 <(_re_lines "$src_list") <(_re_lines "$slot_list"))"
+        common="$(LC_ALL=C comm -12 <(_re_lines "$src_list") <(_re_lines "$slot_list"))"
         if [ -n "$manifest" ]; then
-            inman="$(comm -12 <(_re_lines "$manifest") <(_re_lines "$common"))"
+            inman="$(LC_ALL=C comm -12 <(_re_lines "$manifest") <(_re_lines "$common"))"
             # 抽检: 清单外同名文件(交集-清单), 取前 3 保可复现; 不足 3 则全取
-            outman="$(comm -23 <(_re_lines "$common") <(_re_lines "$manifest") | head -n 3)"
+            outman="$(LC_ALL=C comm -23 <(_re_lines "$common") <(_re_lines "$manifest") | head -n 3)"
             # 定向目标 = 清单内∩存在(删除文件不入 targets, 防假 DRIFT) + 清单外抽检; 均 ⊆ common(cmp 两侧必存在)
             targets="$(printf '%s\n%s' "$inman" "$outman" | sed '/^$/d' | LC_ALL=C sort -u)"
         else
