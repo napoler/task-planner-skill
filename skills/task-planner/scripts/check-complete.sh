@@ -941,6 +941,25 @@ END {print n+0}'
         case "$mp_tt" in writing|research|publish) grep -qE 'code_review: required|^[[:space:]]*\|[[:space:]]*`?code_review`?[[:space:]]*\|[[:space:]]*`?required`?[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null && case "$mp_tier" in enforce) echo "[mechanism-profile] ✗ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；enforce 档 exit 1 — 显式例外须在计划 Decisions 登记理由或改 n/a）" >&2; exit 1 ;; *) echo "[mechanism-profile] ⚠ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；如属显式例外请登记理由）" >&2 ;; esac ;; esac
     fi
 
+    # [2026-09-27 task-v091 S23 A-1 Rule 38.6] 终验 AUTO-TIER 复核段（提案 A-1 误判闭环，S22 风险①）:
+    # 消费 S22 自动降档标记（auto_tier: mini）→ 复核实际体量是否超限（Phase 数>2 或 执行范围表
+    # 数据行>2，机器可测口径同 CPD 38.1 MISMATCH 探针）→ 超限 WARNING 点名，warn 档不阻断
+    # （Rule 38.6 明文「误判闭环止于 warn 的补强」；不消费新 config 键 → S20 C-2 键④五键枚举零扰动）。
+    # 插入位=mechanism-profile 段后，位于 C-2 键③哈希覆盖段（:484 sed 锚对所夹区间）之外——注释
+    # 措辞避开锚字面量，键③哈希与 S20 落地版逐字节一致（SKIP 块零扰动）。无标记/显式 mini 零影响。
+    if grep -qm1 'auto_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+        atier_items=""
+        atier_phases="$(grep -cE '^###[[:space:]]+Phase' "$PLAN_FILE" 2>/dev/null || true)"
+        [ "${atier_phases:-0}" -gt 2 ] && atier_items="Phase 数=${atier_phases} >2 "
+        atier_scope="$(awk '/^##[[:space:]]*.*执行范围限制/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null | grep -c '^|' || true)"
+        [ "${atier_scope:-0}" -gt 4 ] && atier_items="${atier_items}执行范围表数据行>2（表格行=${atier_scope}） "
+        if [ -n "$atier_items" ]; then
+            printf '[plan] AUTO-TIER WARNING (task-v091 S23 Rule 38.6 复核, warn 档不阻断): auto_tier=mini 但实际体量超限 — %s — 误降档计划带收缩门组走完全程, 复核任务体量与 38.1 条件（后续任务可显式 TASK_PLAN_TIER=standard）\n' "${atier_items% }" >&2
+        else
+            printf '[plan] AUTO-TIER REVIEW PASSED (auto_tier=mini 体量复核合规: Phase ≤2 ∧ 执行范围表数据行 ≤2)\n' >&2
+        fi
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then

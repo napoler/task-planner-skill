@@ -61,7 +61,7 @@ model: opus
   > `[2026-09-10 task-planrequired-race] 哨兵会话私有化`：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core，剥 sess 前缀；写入位置=向上解析的 plans/ 祖先项目根，无 plans/ 祖先不写；sid 缺失不写任何哨兵，fail-open）；legacy `<root>/.plan-required` 不再写入、仅作兼容读取
   - SessionStart hook 自动写入本会话私有哨兵（标记"本会话尚未创建计划"；resume 判定：本会话 side 指针已指向有效计划则哨兵不启用）
   - 运行 `bun scripts/session-catchup.ts` 检测中断恢复点
-  - 创建 `plans/{task-id}/` 目录，运行 `bash scripts/init-session.sh`
+  - 创建 `plans/{task-id}/` 目录，运行 `bash scripts/init-session.sh`（trivial 判定：预估 ≤15min ∧ scope ≤2 文件 ∧ 单模块 ∧ 非④排除（保护区/Rule 36/D6 高危）→ 前置 env `TASK_AUTO_TIER=1 TASK_EST_MINUTES/TASK_SCOPE_FILES/TASK_SCOPE_MODULES` 提交体量事实，脚本四条件闸门自动降 mini 并打 `auto_tier: mini` 标记供终验复核，Rule 38.6；显式 tier 恒优先）
   - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 legacy `plans/.active_plan`（兜底），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
   - **模板优先级**（由 init-session.sh 自动处理，无需手动干预）：
     - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
