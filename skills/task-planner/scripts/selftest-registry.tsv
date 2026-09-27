@@ -5,7 +5,7 @@ selftest-check-conflicts.sh	check-conflicts 五类信号行为级(v091 C-1f)	che
 selftest-conclusion-discipline.sh	Rule 35 执行结论纪律	Rule 35 条款 / check-dispatch.sh 超限提示 / batch-quality-gate.md 措辞改动	references/critical-rules.md;references/batch-quality-gate.md;SKILL.md
 selftest-context-hygiene.sh	R29 上下文与工作文件主动维护面	context-hygiene 条款 / check-context-hygiene.sh / config.json 相关键改动	check-context-hygiene.sh;references/critical-rules.md;config.json
 selftest-delegation.sh	Rule 21.4 委派门控	check-delegation.sh / config.json 委派键改动	check-delegation.sh;config.json
-selftest-dispatch.sh	check-dispatch + pretooluse Agent 分支	check-dispatch.sh / zcode-pretooluse.sh Agent 分支改动	check-dispatch.sh;zcode-pretooluse.sh
+selftest-dispatch.sh	check-dispatch + pretooluse Agent 分支 + 22.4b 绑定静态断言(DX 组)	check-dispatch.sh / zcode-pretooluse.sh Agent 分支 / critical-rules.md 22.4b 条款 / dispatch-examples.md 绑定改动	check-dispatch.sh;zcode-pretooluse.sh;references/critical-rules.md;references/dispatch-examples.md;templates/subagent_dispatch.md
 selftest-error-loop.sh	Rule 31 错误学习闭环	Rule 31 条款 / check-complete.sh FMEA 段措辞改动	references/critical-rules.md;scripts/check-complete.sh;config.json
 selftest-execution-stability.sh	执行稳定性(环境级中断自愈面)	execution-stability 条款措辞改动	references/critical-rules.md;config.json
 selftest-fallback.sh	subagent-fallback 救援链	subagent-fallback.sh / skill-collaboration.md 改动	subagent-fallback.sh;references/skill-collaboration.md;config.json
