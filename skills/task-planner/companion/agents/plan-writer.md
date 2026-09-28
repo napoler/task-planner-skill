@@ -19,7 +19,7 @@ model: "custom:9e221f47-3040-4ea7-b742-20b813fb79aa:sonnet-1"
 
 ```yaml
 ---
-template_type: code-edit  # 13 类之一（详见 SKILL.md §任务模板库）
+template_type: code-edit  # variant 白名单之一（动态派生，详见 SKILL.md §任务模板库）
 cost_estimate:
   main_process_opus: 1          # 主会话 opus 调用次数（通常 1）
   subagent_calls:
@@ -61,6 +61,7 @@ cost_estimate:
 | `performance-tuning` | `templates/variant/performance-tuning-type.md` | 性能瓶颈定位/优化/benchmark |
 | `schema-migration` | `templates/variant/schema-migration-type.md` | DB schema 变更/migration/索引 |
 | `rule-enhancement` | `templates/variant/rule-enhancement-type.md` | 技能规则增强/新增 Rule/门控/守护/selftest |
+| `video-fix` | `templates/variant/video-fix-type.md` | 视频修正/局部重生成/QC FAIL 处置（video 家族 C 修正分支展开；A/B 型回 video） |
 
 > **门控契约（Rule 34.1 — task-v074）**：template_type 必填且 attest 锁定前会被 `check-template-type.sh` 机器校验（白名单=variant/ 动态派生+general）；缺失/非法在 attest enforce 档拒绝锁定（warn 档告警放行，`--skip-template-check` 逃生须披露）。
 
