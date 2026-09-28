@@ -81,9 +81,11 @@ t "T9b 无连字符变体 skill-collab-enforce" bash -c "! grep -rq 'skill-colla
 t "T10 SKILL.md 行数 ≤558" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 
 # T11: [2026-09-17 task-v080] 网络调研/网页访问路由显式化(SKILL.md 调研链 L458 注记+平台适配声明+路由表行)
-t "T11a SKILL.md 调研链含 browser-use 插件路由(≥3 行)" bash -c "[ \"\$(grep -c 'browser-use' '$SKILL')\" -ge 3 ]"
-t "T11b SKILL.md 调研链 research-assistant 主通道定位" grep -q '网络调研主通道' "$SKILL"
-t "T11c SKILL.md 平台适配声明(禁假设不存在 MCP,恰 1 行)" bash -c "[ \"\$(grep -c 'playwright' '$SKILL')\" -eq 1 ]"
+# [task-v095 P2] 调研链正文已迁至卫星 plan-research-router/references/research-routing.md，T11 断言跟随迁移（修改原因见 plans/task-v095-skill-split）
+RRT="$ROOT/../plan-research-router/references/research-routing.md"   # 卫星引用, 同级相对解析(保持脚本既有 $ROOT 解析风格)
+t "T11a 调研链含 browser-use 插件路由(SKILL.md≥3 或 routing.md 合计≥3)" bash -c "[ \"\$(grep -c 'browser-use' '$SKILL')\" -ge 3 ] || [ \"\$(( \$(grep -c 'browser-use' '$SKILL') + \$(grep -c 'browser-use' '$RRT') ))\" -ge 3 ]"
+t "T11b 调研链 research-assistant 主通道定位" grep -q '网络调研主通道' "$RRT"
+t "T11c 平台适配声明(禁假设不存在 MCP, 恰 1 行)" bash -c "[ \"\$(grep -c 'playwright' '$RRT')\" -eq 1 ]"
 t "T11d SKILL.md 路由表网页访问行" grep -q '网页访问（JS 渲染/登录态/交互页）' "$SKILL"
 
 # T12: [2026-09-17 task-v080] collaboration.md §二矩阵 research-assistant/browser-use 行
