@@ -123,9 +123,8 @@ repl = [
  ('[一句话: 目标 + 「预估 ≤15min」（Rule 38.1 机器条件，必写 Goal 行）]', '[一句话: 目标 + 预估 ≤15min]'),
  ('| [文件 1] | [禁改文件 / 禁改范围] |', '| a.md | b.md |'),
  ('- [1-3 条实施动作]', '- 动作 1'),
- ('- [Read 回填复核 + 回归验证]', '- Read 回填复核'),
- # [S7-3] 基座 Phase 2 Executor 裸「主进程」无白名单理由 → check-complete 委派段 missing_reason violation, 补标准理由与基座 Phase 1 同范式
- ('- **Executor:** 主进程\n', '- **Executor:** 主进程（白名单②登记）\n'),
+ ('- [Read 回填复核 + 回归验证（与实施同 Phase 闭环）]', '- Read 回填复核'),  # [task-v094 T-B2] 单 Phase 模板锚同步
+ # [task-v094 T-B2] 单 Phase 模板 Executor 行已自带「白名单②⑥登记」理由, S7-3 裸主进程补理由 repl 移除
 ]
 for a, b in repl:
     assert a in s, f'S7-3 基座锚缺失: {a!r}'
