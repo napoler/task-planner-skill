@@ -15,8 +15,7 @@ references:
 - references/cost-control.md: 成本控制策略详解（Rule 17 详解）
 - references/batch-quality-gate.md: 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report）
 - references/billing.md: 计费模式（单次触发）
-- references/template-guide.md: 模板定制指南（模板优先级/项目级 .claude/plan-templates 覆盖/路径规范）
-- references/template-mapping.md: 模板分流单一权威源（Rule 16 配套：决策树/模板清单/互斥关系）
+- 卫星技能 plan-template-kit: 模板选型/定制/沉淀知识库（template-mapping/template-guide 已迁至其 references/，Rule 16/34 经 Skill() 调用）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
 # See: ~/.claude/skills/task-planner/SKILL.md (Claude Code) / ~/.zcode/skills/task-planner/SKILL.md (ZCode)
 model: opus
@@ -290,7 +289,7 @@ Block 1 (选题) complete
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
 - **Rule 15 高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
-- **Rule 16 任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `references/template-mapping.md`，模板分流单一权威源）
+- **Rule 16 任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `../plan-template-kit/references/template-mapping.md`，模板分流单一权威源）
 - **Rule 17 成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
 - **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；试点先行硬门（18.9-18.11：单件未验证禁批量、单件失败即投毒红线、宁慢勿错，task-v083）+ 前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
@@ -362,7 +361,7 @@ Block 1 (选题) complete
 
 ### 路由表（按任务类型）
 
-> **类型适配（Rule 37）**：下表为代码组画像的默认路由；内容类任务（writing/research/publish）按 references/template-mapping.md §九 机制画像路由到内容类执行体（article-writer 等），不适用 code-assistant/debugger/code-reviewer 行。仅裁剪代码组机制，通用守卫不变。
+> **类型适配（Rule 37）**：下表为代码组画像的默认路由；内容类任务（writing/research/publish）按 ../plan-template-kit/references/template-mapping.md §九 机制画像路由到内容类执行体（article-writer 等），不适用 code-assistant/debugger/code-reviewer 行。仅裁剪代码组机制，通用守卫不变。
 
 | 任务类型 | 推荐 subagent | model 档位 | 主进程直接做? | 规模上限 | 超限动作 |
 | --- | --- | --- | --- | --- | --- |
@@ -504,16 +503,14 @@ hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:
 
 ## 📚 任务模板库（任务开启期必选）
 
-> **权威源声明**：模板分流决策树、模板清单与互斥关系的**单一权威源** = `references/template-mapping.md` §一（决策树）/ §六（模板清单）/ §七（互斥关系）。执行时按需 Read；本节仅保留流程约束与模板集成侧独有的强制要求。
+> **权威源指针**：模板选型/定制/沉淀知识库 = 卫星技能 `plan-template-kit`（`../plan-template-kit/references/template-mapping.md` 决策树/模板清单/互斥 + `template-guide.md` 定制指南），经 `Skill("plan-template-kit")` 调用或按需 Read。
 
-**原则**：每种任务类型有专属模板,任务开启期（创建 task_plan.md 前）必须先选定,确保 VC/Phase/Scope 表与任务类型匹配,避免通用模板应付所有任务导致 VC 漏项。
+**原则**：每种任务类型有专属模板，任务开启期（创建 task_plan.md 前）必须先选定，避免通用模板应付所有任务导致 VC 漏项。
 
-### 强制约束（模板集成侧独有 — 模板分流细节以 template-mapping.md 为准）
+### 流程要点（指针节 — 选型/定制/沉淀细节见卫星 plan-template-kit references/）
 
-- 任务开启期必须先选模板 → 写进 task_plan.md frontmatter 的 `template_type` 字段
-- `init-session.sh` 自动按 `template_type` 从 `templates/variant/` 复制对应文件
-- **禁止**用通用 `task_plan.md` 套用所有任务（常见反模式：VC 字段与任务类型不匹配）
-- **所有模板统一含 `## 📚 必要知识储备` 章节**（任务知识库对齐）：计划创建时**采集**本任务依赖的规范/官方文档/内部知识库/文献/图书，Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写
-  - 计划创建时同步**提炼**产物 `knowledge-brief`（任务知识简略要点，五段：速览/已验证事实/文件锚点/易错点/S-unit 材料包索引）：由 `plan-writer` 写入 `<plan-dir>/knowledge-brief.md`（`init-session` 第 6 文件）
-  - 执行期派发材料包引用 brief 节锚点（Rule 21.2/22.4：brief 存在时材料包摘要引用 §1-§5 对应节锚点）；开关键 `config.json#knowledge_brief_enforce`（默认 warn，三档流程层执行无 hook 校验，细则见 templates/knowledge-brief.md 与 companion/agents/plan-writer.md knowledge_brief 契约行）
-- 模板可被项目级 `.claude/plan-templates/` 覆盖（优先级 1,见 `references/template-guide.md` §一）；`plan-writer` agent 接收 `template_type` 参数,自动选模板填充
+- ① 任务开启期必须按 Rule 16 选模板 → 写进 task_plan.md frontmatter `template_type`；`init-session.sh` 自动从 `templates/variant/` 复制对应文件；**禁止**通用 task_plan 套用所有任务
+- ② 沉淀新类型：命中 Rule 34.3 沉淀触发 → 按 34.4 提炼新 variant 模板 + 四点同步（防滥用 34.5）
+- ③ `knowledge-brief`（任务知识简略要点，五段）= `init-session` 第 6 文件，由 `plan-writer` 写入 `<plan-dir>/knowledge-brief.md`；执行期材料包引用其 §1-§5 节锚点（开关键 `config.json#knowledge_brief_enforce`，默认 warn）
+
+> **主路由**：模板选型/定制/沉淀一律走 `Skill("plan-template-kit")`；本技能 `templates/variant/` 机械层留守，映射源 = 卫星 template-mapping §六
