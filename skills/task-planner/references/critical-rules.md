@@ -61,7 +61,7 @@ Skill("task-drift-guard")
 禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement/mini-lite/video/video-fix 共 16 类,general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `../plan-template-kit/references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 21 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
 
 ### 17 成本控制（P0）— 降低 Opus 使用频率
-opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `references/cost-control.md`。
+opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `../plan-cost-guard/references/cost-control.md`。
 
 17.1 **opus Skill 节流**:opus 档 Skill 同 phase 内 ≤1 次;超出 → AskUserQuestion「继续/拆型/降级」
 17.2 **subagent 嵌套禁止**:禁止 plan-writer 调 plan-writer / code-assistant 调 code-assistant(frontmatter `tools` 不含 Agent/Skill 已防止)
@@ -70,7 +70,7 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 17.5 **opus 调用门控**:单次会话 opus 累计(主进程 + Skill 嵌套 + subagent 升级)≥10 次 → AskUserQuestion
 17.6 **复杂任务优先 subagent**:opus 上下文长读文件(>500 行)必派 subagent(沿用 Rule 13)
 17.7 **代码 review 必含 `required`**:`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")`
-17.8 **每次 opus 调用记 `cost_log.md`**:子代理/Skill 调用记录到 `templates/cost_log.md` 便于复盘;`plan-writer` 产出契约加 `cost_estimate` 字段
+17.8 **每次 opus 调用记 `cost_log.md`**:子代理/Skill 调用记录到 `../plan-cost-guard/references/cost_log.md` 便于复盘;`plan-writer` 产出契约加 `cost_estimate` 字段
 
 ### 18 批量处理质量门控（P0）— 禁止以牺牲质量为代价换批量
 批量操作(脚本/并发/多文件处理)**禁止以牺牲内容质量或准确性为代价**。批量脚本撰写之前必须先做质量影响评估(前置 3 问);明显降低质量 → 必须停下慎重决策,禁止静默执行。详见 `references/batch-quality-gate.md`。

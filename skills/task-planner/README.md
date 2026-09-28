@@ -69,7 +69,8 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── template-mapping.md                  # variant 选择决策树
 │   ├── template-guide.md                    # 模板定制指南
-│   ├── goal-gate.md / completion-gate.md / billing.md
+│   ├── goal-gate.md / completion-gate.md
+│   ├── [billing.md → ../plan-cost-guard/references/billing.md]
 ├── templates/                               ← 5 核心 + 3 辅助 + 16 个 variant
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   └── variant/

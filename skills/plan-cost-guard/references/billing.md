@@ -58,4 +58,4 @@ opus 累计调用 ≥10 次 → 触发 AskUserQuestion「继续 / 拆型 / 降�
 - `session-catchup.ts` — 恢复上下文
 - `init-session.sh` — 初始化任务目录
 - `check-scope.sh` — 范围检查（不计费）
-- `templates/cost_log.md` — opus 调用日志（Rule 17.8 配套）
+- `references/cost_log.md` — opus 调用日志（Rule 17.8 配套）

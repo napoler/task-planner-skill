@@ -12,9 +12,8 @@ references:
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
 - references/todo-sync.md: 原生 Todo 同步契约（S1-S5 强制同步时机 + 映射规则 + hook 提醒响应协议）
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
-- references/cost-control.md: 成本控制策略详解（Rule 17 详解）
+- 卫星技能 plan-cost-guard: 成本控制与计费知识库（cost-control/billing/cost_log 已迁至其 references/，Rule 17 场景经 Skill() 调用）
 - references/batch-quality-gate.md: 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report）
-- references/billing.md: 计费模式（单次触发）
 - 卫星技能 plan-template-kit: 模板选型/定制/沉淀知识库（template-mapping/template-guide 已迁至其 references/，Rule 16/34 经 Skill() 调用）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
 # See: ~/.claude/skills/task-planner/SKILL.md (Claude Code) / ~/.zcode/skills/task-planner/SKILL.md (ZCode)
@@ -290,7 +289,7 @@ Block 1 (选题) complete
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
 - **Rule 15 高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
 - **Rule 16 任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `../plan-template-kit/references/template-mapping.md`，模板分流单一权威源）
-- **Rule 17 成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `references/cost-control.md`）
+- **Rule 17 成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `../plan-cost-guard/references/cost-control.md`）
 - **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；试点先行硬门（18.9-18.11：单件未验证禁批量、单件失败即投毒红线、宁慢勿错，task-v083）+ 前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
@@ -340,8 +339,8 @@ Block 1 (选题) complete
 | `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
-| `references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
-| `references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
+| `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
+| `../plan-cost-guard/references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
 | `references/batch-quality-gate.md` | 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report） |
 | `examples.md` | 实际示例 |
 | `references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
