@@ -72,6 +72,15 @@ if [ -n "$plan_cfg_row" ] && [ -r "$plan_cfg_row" ]; then
   # 缺行/非法值 → 降级 ③
 fi
 
+# ---- ②b [2026-09-28 task-v094 T-B3] mini 档缺省层: plan_tier=mini 且未显式声明 interaction_mode → silent
+#      用户显式(env/计划配置表行)已在上层返回; mini 简单任务免 D1 批准往返(墙钟下限=用户响应时间),
+#      静默决策清单留痕供复核(Rule 28); standard/full 档不受影响
+if [ -n "$plan_cfg_row" ] && [ -r "$plan_cfg_row" ] && [ -z "${row_val:-}" ]; then
+  if grep -qm1 'plan_tier: mini' "$plan_cfg_row" 2>/dev/null; then
+    emit "silent"
+  fi
+fi
+
 # ---- ③ config.json 层 (脚本同级 skill 目录 ../config.json) ----
 self_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null) || self_dir=""
 cfg="${self_dir}/../config.json"
