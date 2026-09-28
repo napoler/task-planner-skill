@@ -136,7 +136,7 @@ task-planner-skill/
         ├── critical-rules.md      ← Rules 1-39 核心执行约束
         ├── completion-gate.md     ← 子代理验证协议
         ├── goal-gate.md           ← COMPLETE / PARTIAL / BLOCKED 判定标准
-        └── billing.md             ← 计费模式说明
+        └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）
 ```
 
 ---

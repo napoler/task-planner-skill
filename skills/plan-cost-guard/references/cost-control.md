@@ -33,7 +33,7 @@
 | **17.5** | opus 调用门控：单次会话 opus 累计调用（含主进程 + Skill 嵌套 + subagent 升级）≥10 次 → 触发 AskUserQuestion | PostToolUse hook 计数 + 软警告 |
 | **17.6** | 复杂任务优先 subagent：opus 上下文长读文件（>500 行）必派 subagent（沿用 Rule 13） | Rule 13 已护住 |
 | **17.7** | 代码 review 必含 `required`：`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")` | 既定 design |
-| **17.8** | 每次 opus 调用记 cost_log.md：子代理/Skill 调用记录到 `templates/cost_log.md` 便于复盘 | plan-writer 产出模板加 cost_estimate |
+| **17.8** | 每次 opus 调用记 cost_log.md：子代理/Skill 调用记录到 `references/cost_log.md` 便于复盘 | plan-writer 产出模板加 cost_estimate |
 
 ---
 
@@ -59,7 +59,7 @@
 
 ---
 
-## 四、cost_log.md 模板（双仓 templates/）
+## 四、cost_log.md 模板（plan-cost-guard references/）
 
 ```markdown
 # Opus 调用成本日志
@@ -167,5 +167,5 @@ cost_estimate:
 | `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` | agent 模型分档约定 |
 | `references/critical-rules.md` | Rule 17 八条款（核心载体） |
 | `references/billing.md` | 子代理成本估算表（与本文件 §三同步） |
-| `templates/cost_log.md` | opus 调用日志模板 |
+| `references/cost_log.md` | opus 调用日志模板 |
 | `agents/plan-writer.md` | plan-writer 产出契约含 cost_estimate |

@@ -8,6 +8,9 @@
 #   - mkdir -p stub_dir
 #   - rsync scripts/ → stub_dir/scripts/ (with sed-rewritten hardcoded paths)
 #   - rsync references/ + templates/ + config.json → stub_dir/
+#   - rsync 4 satellite skills (plan-research-router/plan-template-kit/
+#     plan-cost-guard/plan-collab-router) whole-dir → stub 位同级 skills/<sat>/
+#     [task-v095 P7 扩展; 卫星无 scripts/config 无需 sed 重写; 源缺失则跳过]
 #   - Write stub SKILL.md (template) with tool-specific frontmatter
 #   - chmod +x scripts
 #
@@ -16,6 +19,11 @@
 set -u
 
 : "${TASK_PLANNER_ROOT:?TASK_PLANNER_ROOT must be set}"
+
+# [task-v095 P7] 卫星技能: 仓库顶层 skills/ 下 4 个卫星目录(零 config 零 hook 零硬编码路径),
+# 随 task-planner 安装到各工具位同级位置(<tool_root>/skills/<sat>/); 卫星无 scripts/config,
+# sed 重写不适用, 整目录 rsync 全量复制即最小 diff 方案(找不到目录则跳过, 向后兼容不阻塞)
+SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router)
 
 # Per-tool SKILL.md frontmatter template generator
 generate_stub_skill_md() {
@@ -220,6 +228,27 @@ rewrite_paths_in_scripts() {
     done
 }
 
+# [task-v095 P7] 卫星技能整目录安装: 仓库顶层 skills/ 下 4 个卫星(零 scripts/config/hook,
+# 无硬编码路径)随 task-planner 同步到各工具位同级 skills/<sat>/; 全量 rsync 即最小 diff 方案
+# (无需 sed 重写); 源目录缺失(如非 canonical 运行)则跳过, 不阻塞主安装
+install_satellite_skills() {
+  local stub_dir="$1"
+  local repo_skills target_skills_dir
+  repo_skills="$(cd "$(dirname "$(dirname "$TASK_PLANNER_ROOT")")" 2>/dev/null && pwd)/skills"
+  target_skills_dir="$(dirname "$stub_dir")"
+  [ -d "$repo_skills" ] || return 0
+  for sat in "${SATELLITE_SKILLS[@]}"; do
+    local src="$repo_skills/$sat" dst="$target_skills_dir/$sat"
+    if [ ! -d "$src" ]; then
+      echo "[install-stub] satellite $sat not found under $repo_skills — skip"
+      continue
+    fi
+    [ "$src" -ef "$dst" ] && continue   # 源与目标同目录(部署副本重跑)幂等跳过
+    rsync -a "$src/" "$dst/" 2>/dev/null
+    echo "[install-stub] satellite $sat → $dst"
+  done
+}
+
 install_stub_for_tool() {
   local tool_name="$1"
   local stub_dir="$2"
@@ -232,6 +261,9 @@ install_stub_for_tool() {
   # Rsync content dirs (exclude SKILL.md, we'll generate it)
   rsync -a --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
     "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null
+
+  # [task-v095 P7] 4 卫星技能整目录安装到工具位同级 skills/ 目录
+  install_satellite_skills "$stub_dir"
 
   # Generate tool-specific SKILL.md (overwrites canonical's stripped version)
   generate_stub_skill_md "$tool_name" "$hook_style" "${stub_dir}/SKILL.md"

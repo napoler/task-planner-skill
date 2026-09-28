@@ -31,7 +31,7 @@ CTT="$SKILL_ROOT/scripts/check-template-type.sh"
 ATTEST="$SKILL_ROOT/scripts/attest-plan.sh"
 INIT="$SKILL_ROOT/scripts/init-session.sh"
 SKILL="$SKILL_ROOT/SKILL.md"
-TMAP="$SKILL_ROOT/references/template-mapping.md"
+TMAP="$SKILL_ROOT/../plan-template-kit/references/template-mapping.md"
 
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'TL-%s PASS %s\n' "$1" "$2"; }
@@ -79,8 +79,9 @@ if grep -q '模板选取门控与沉淀' "$SKILL"; then ok 15 "SKILL.md「模板
 # TL-16
 if grep -q 'check-template-type' "$TMAP" && grep -q 'Rule 34' "$TMAP"; then ok 16 "template-mapping.md Rule 34 门控提示"; else bad 16 "template-mapping.md 缺 Rule 34 门控提示"; fi
 # TL-17
-TGUIDE="$SKILL_ROOT/references/template-guide.md"
-if grep -q 'rule-enhancement' "$TGUIDE" && grep -q '13 个' "$TGUIDE"; then ok 17 "template-guide.md 含 rule-enhancement 且计数 13 个"; else bad 17 "template-guide.md 缺 rule-enhancement/计数 13 个（四点同步第 4 落点腐化）"; fi
+# [task-v095 P3] template-guide 迁至卫星 plan-template-kit，路径与计数断言跟随迁移
+TGUIDE="$SKILL_ROOT/../plan-template-kit/references/template-guide.md"
+if grep -q 'rule-enhancement' "$TGUIDE" && grep -q '16 个' "$TGUIDE"; then ok 17 "template-guide.md 含 rule-enhancement 且计数 16 个"; else bad 17 "template-guide.md 缺 rule-enhancement/计数 16 个（四点同步第 4 落点腐化）"; fi
 # TL-18
 if grep -q '^## 九、' "$TMAP"; then ok 18 "template-mapping.md 含 §九 机制适用性矩阵"; else bad 18 "template-mapping.md 缺 §九 机制适用性矩阵（Rule 37 权威源误删）"; fi
 

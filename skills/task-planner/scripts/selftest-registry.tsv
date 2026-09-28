@@ -8,7 +8,7 @@ selftest-delegation.sh	Rule 21.4 委派门控	check-delegation.sh / config.json 
 selftest-dispatch.sh	check-dispatch + pretooluse Agent 分支 + 22.4b 绑定静态断言(DX 组)	check-dispatch.sh / zcode-pretooluse.sh Agent 分支 / critical-rules.md 22.4b 条款 / dispatch-examples.md 绑定改动	check-dispatch.sh;zcode-pretooluse.sh;references/critical-rules.md;references/dispatch-examples.md;templates/subagent_dispatch.md
 selftest-error-loop.sh	Rule 31 错误学习闭环	Rule 31 条款 / check-complete.sh FMEA 段措辞改动	references/critical-rules.md;scripts/check-complete.sh;config.json
 selftest-execution-stability.sh	执行稳定性(环境级中断自愈面)	execution-stability 条款措辞改动	references/critical-rules.md;config.json
-selftest-fallback.sh	subagent-fallback 救援链	subagent-fallback.sh / skill-collaboration.md 改动	subagent-fallback.sh;references/skill-collaboration.md;config.json
+selftest-fallback.sh	subagent-fallback 救援链	subagent-fallback.sh / skill-collaboration.md 改动	subagent-fallback.sh;../plan-collab-router/references/skill-collaboration.md;config.json
 selftest-final-gate-hash.sh	tier|C-2 终验重复门四元内容键 SKIP-BY-HASH	attest-plan.sh / check-plan-dispatch.sh / check-complete.sh FMEA 段 / config 四元键(plan_tier_enforce、subagent.step_max_minutes、subagent.step_max_files、subagent.properties.step_max_steps、fmea_enforce)改动	scripts/attest-plan.sh;scripts/check-plan-dispatch.sh;scripts/check-complete.sh;config.json
 selftest-fine-grain-steps.sh	step_max_steps 步骤枚举门	check-dispatch.sh / check-plan-dispatch.sh 步骤上限 / config.subagent.properties.step_max_steps 改动	scripts/check-dispatch.sh;scripts/check-plan-dispatch.sh;references/critical-rules.md;config.json
 selftest-interaction.sh	resolve-interaction-mode 解析优先级	resolve-interaction-mode.sh / Rule 28 条款改动	scripts/resolve-interaction-mode.sh;references/critical-rules.md;config.json
@@ -20,8 +20,8 @@ selftest-plan-tier.sh	tier|auto-tier|Rule 38 任务难度分级(mini/standard)	R
 selftest-reflect-verify.sh	Rule 33 解决→反思→验证迭代循环	Rule 33 条款 / check-complete.sh 反思段措辞改动	references/critical-rules.md;scripts/check-complete.sh;config.json
 selftest-rescue-chain.sh	check-rescue-chain 救援链	行为级	check-rescue-chain.sh;config.json
 selftest-rule23-conflict-scan.sh	v091 C-1a② Rule 23 运行时并发冲突扫描	Rule 23 条款 / zcode-pretooluse.sh 扫描逻辑 / zcode-posttooluse.sh 重锁 / config 并发键改动	references/critical-rules.md;zcode-pretooluse.sh;zcode-posttooluse.sh;check-delegation.sh
-selftest-shared-tracker.sh	Rule 30 共享内容认领追踪	Rule 30 条款 / skill-collaboration.md 措辞改动	references/critical-rules.md;references/skill-collaboration.md;config.json
-selftest-skill-collab.sh	协同路由面	skill-collaboration.md 条款措辞改动	references/skill-collaboration.md;references/critical-rules.md;config.json
+selftest-shared-tracker.sh	Rule 30 共享内容认领追踪	Rule 30 条款 / skill-collaboration.md 措辞改动	references/critical-rules.md;../plan-collab-router/references/skill-collaboration.md;config.json
+selftest-skill-collab.sh	协同路由面	skill-collaboration.md 条款措辞改动	../plan-collab-router/references/skill-collaboration.md;references/critical-rules.md;config.json
 selftest-skill-modify.sh	Rule 36 技能修改保守化与删除防护	Rule 36 条款 / check-skill-modify.sh / zcode-pretooluse.sh 技能文件分支 / config.skill_modify_enforce 改动	references/critical-rules.md;scripts/check-skill-modify.sh;scripts/zcode-pretooluse.sh;scripts/check-complete.sh;config.json
 selftest-smart-merge.sh	smart-merge-back 智能门	smart-merge-back.sh 改动	scripts/smart-merge-back.sh;config.json
 selftest-sync-index.sh	sync-todos --index 单 awk 全量重算(v091 C-3)	sync-todos.sh write_index / INDEX.md 结构语义改动	scripts/sync-todos.sh;check-conflicts.sh
@@ -31,5 +31,6 @@ selftest-vc-gate.sh	check-complete 终验 VC/V-N 门控	check-complete.sh VC/V-N
 selftest-veto.sh	Rule 32 用户否决与禁令追踪	Rule 32 条款措辞改动	references/critical-rules.md;config.json
 selftest-workflow-orchestration.sh	Rule 39 动态工作流编排	Rule 39 条款 / zcode-pretooluse.sh workflow 分支措辞改动	references/critical-rules.md;zcode-pretooluse.sh;config.json
 selftest-check-drift.sh	check-drift 五检行为级(v092 S12: 3a 初值中性/3b 列限提取+fail-open 正反双向)	check-drift.sh check_phase_order 初值或越级判定 / check_scope_breach 提取管道 / lib/plan-parse.sh plan_parse_scope maxcol 语义改动	check-drift.sh;lib/plan-parse.sh
+selftest-skill-split.sh	task-v095 拆分终态守护(4 卫星目录结构/主 SKILL.md 行数收敛+4 路由指针/迁移内容抽检/死路径零残留/锚点抽验/守卫+registry 联动)	4 卫星 SKILL.md 与 references/ 内容改动 / 主 SKILL.md 行数或路由指针变动 / check-skill-modify.sh 保护 pattern 改动 / 拆分回滚事件	../plan-research-router/SKILL.md;../plan-template-kit/SKILL.md;../plan-cost-guard/SKILL.md;../plan-collab-router/SKILL.md
 selftest-registry.sh	C-4 分域 registry 一致性自守护(本行自登记)	selftest-*.sh 增删/改名 或 selftest-registry.tsv 本身改动	scripts/selftest-registry.tsv
 selftest-tier-b.sh	task-v094 TierB 7项守护（直做/silent/单Phase/T5免写/一行声明/CR分级/分槽）	改动 check-delegation/check-dispatch/resolve-interaction-mode/mini-lite模板/Rule14/19.2/21.4/22.8.2/28.2/38.3/SKILL CR段	check-delegation ④b/serial_slot_check ④参/resolve ②b

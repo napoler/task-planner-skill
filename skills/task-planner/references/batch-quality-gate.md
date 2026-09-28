@@ -135,7 +135,7 @@ done
 | `references/critical-rules.md` | Rule 18 十一条款（核心载体，隶属 Rules 1-36） |
 | `templates/batch_report.md` | Batch Report 区块模板（双仓） |
 | `templates/variant/publish-type.md` | 批量发布模板（含批量专属 VC） |
-| `references/cost-control.md` | Rule 17 成本控制（对仗规则） |
+| `../plan-cost-guard/references/cost-control.md` | Rule 17 成本控制（对仗规则） |
 | `agents/plan-writer.md` | 18.7 聚合 Phase 产出校验 + 批量关键词匹配 |
 
 ---

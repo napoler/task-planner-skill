@@ -25,6 +25,11 @@ is_skill_file() {
   case "$name" in
     */*)
       local rest="${name#*/}"
+      local rest="${name#*/}"
+      case "${name%%/*}" in
+        # [task-v095 P7] 卫星技能纳入 Rule 36 保护(首段命中即整目录受控, 不依赖 rest 泛化前缀)
+        plan-research-router|plan-template-kit|plan-cost-guard|plan-collab-router) return 0 ;;
+      esac
       case "$rest" in
         SKILL.md|config.json|knowledge-brief.md|references/*|scripts/*|templates/*|agents/*|assets/*|companion/*) return 0 ;;
       esac

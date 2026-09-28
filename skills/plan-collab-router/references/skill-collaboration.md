@@ -69,7 +69,7 @@
 
 ## §三 卡壳升级阶梯 22.3.3（D2 全文）
 
-> 22.3.3 **协同技能接管评估(task-v066)**：位于 ④主进程接管 与 ⑤AskUserQuestion 之间的兜底档——④ 接管不可行（任务超单文件 ≤300 行上限且 22.3.2 拆细后仍无法接管）或 ④ 接管后仍失败时，⑤ AskUser/STOP 之前，主进程必须先评估「是否存在更适配的专业技能族可接管」：① 任务整体超载/需跨会话托管 → `Skill("comet")`（先跑 CLI 探针，见 references/skill-collaboration.md D1）② 需求/规格层反复返工 → `Skill("openspec-propose")` 规格化 ③ 单点能力缺口（调试/TDD/审查）→ superpowers 对应成员技能。探针前置：`command -v comet` / `command -v openspec`，CLI 缺失或项目未激活 → 该族标记不可接管并评估下一族，禁止假设已装。接管语义：把剩余工作连同 task_plan 快照（Goal+VC+已完成 Phase 摘要，格式见 skill-collaboration.md §移交/回填合约）交目标技能，task_plan.md Handoff 表登记 `skill:<name>` 行；接管成功 → 剩余 Phase 由目标工作流推进；接管失败 → 才允许 ⑤ AskUser（silent 模式按 28.4.1 降级交付，禁空等）。约束：接管调用计入 Rule 17 opus 节流；接管后执行体仍受 Rule 13/14 约束；本评估为 22.7 穷尽集合的组成部分（①②③④+22.3.3）。
+> 22.3.3 **协同技能接管评估(task-v066)**：位于 ④主进程接管 与 ⑤AskUserQuestion 之间的兜底档——④ 接管不可行（任务超单文件 ≤300 行上限且 22.3.2 拆细后仍无法接管）或 ④ 接管后仍失败时，⑤ AskUser/STOP 之前，主进程必须先评估「是否存在更适配的专业技能族可接管」：① 任务整体超载/需跨会话托管 → `Skill("comet")`（先跑 CLI 探针，见本文 §二触发矩阵 D1）② 需求/规格层反复返工 → `Skill("openspec-propose")` 规格化 ③ 单点能力缺口（调试/TDD/审查）→ superpowers 对应成员技能。探针前置：`command -v comet` / `command -v openspec`，CLI 缺失或项目未激活 → 该族标记不可接管并评估下一族，禁止假设已装。接管语义：把剩余工作连同 task_plan 快照（Goal+VC+已完成 Phase 摘要，格式见本文 §四「移交/回填合约」）交目标技能，task_plan.md Handoff 表登记 `skill:<name>` 行；接管成功 → 剩余 Phase 由目标工作流推进；接管失败 → 才允许 ⑤ AskUser（silent 模式按 28.4.1 降级交付，禁空等）。约束：接管调用计入 Rule 17 opus 节流；接管后执行体仍受 Rule 13/14 约束；本评估为 22.7 穷尽集合的组成部分（①②③④+22.3.3）。
 
 ### 22.3 兜底全序图
 

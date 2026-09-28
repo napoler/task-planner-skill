@@ -63,13 +63,14 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
 ├── config.json                              ← 阈值配置（40 键）
 ├── README.md / examples.md / reference.md
-├── references/                              ← 8 篇规则文档
+├── references/                              ← 8 篇规则文档（实测 8：13 篇基线中 template-mapping/template-guide/billing 等 5 篇已迁出至卫星）
 │   ├── critical-rules.md                    # Rules 1-39（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36 技能修改保守化 + 37 任务类型机制画像 + 38 任务难度分级与轻量档 + 39 动态工作流编排）
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
-│   ├── template-mapping.md                  # variant 选择决策树
-│   ├── template-guide.md                    # 模板定制指南
-│   ├── goal-gate.md / completion-gate.md / billing.md
+│   ├── [template-mapping.md → ../plan-template-kit/references/template-mapping.md]
+│   ├── [template-guide.md → ../plan-template-kit/references/template-guide.md]
+│   ├── goal-gate.md / completion-gate.md
+│   └── [billing.md → ../plan-cost-guard/references/billing.md]
 ├── templates/                               ← 5 核心 + 3 辅助 + 16 个 variant
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   └── variant/
@@ -138,7 +139,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 | `findings_stale_minutes` | 20 | findings.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
 | `compass_escalate_after` | 2 | 连续陈旧提醒未响应次数；达到后升级 `[plan-compass]` 警告 | Rule 19.7 |
 | `progress_stale_minutes` | 25 | progress.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
-| `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | references/template-mapping.md |
+| `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | ../plan-template-kit/references/template-mapping.md |
 | `subagent` | (见 config) | 子代理超时档位（explore/editor/debugger/executor） | Rule 22.3 |
 | `interaction_mode` | `ask` | 交互双模式（Rule 28）：ask=关键决策点询问用户；silent=自主决策+静默决策清单登记；解析优先级 env > 计划配置表 > 本键 > 默认 ask | Rule 28.1 |
 | `fmea_enforce` | `warn` | v063 规划期 FMEA 预演档位（enforce/warn/off），RPN>100 Phase 须登记兜底动作（methodology.md R2） | v063 |

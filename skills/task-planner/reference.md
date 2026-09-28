@@ -283,3 +283,48 @@ https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Ma
 - Subagent Handoff 登记表出现连续失败(≥2 次)
 
 **修正时间**:2026-09 修复悬空引用(SKILL.md:328 原指向 `reference.md § Handoff` 但该节不存在,本节补全)。
+
+## Chain 模式详解（chain_mode 值语义与执行规则）
+
+> [task-v095 P6] 自主 SKILL.md「Chain 模式详解」内敛（2026-09-29），与 Chain Handoff Contract 合约同址维护。本段定义 `chain_mode` 取值语义（single/linked/fan-out）与执行规则；交接的字段表/6 条件/重规划触发以上方「Chain Handoff Contract」节为唯一权威源，两节互补不重叠。
+
+### linked（串行接力）
+
+适用场景：同一任务被拆解为多 skill 接力，如 `调研 → 创作 → 发布`。
+
+```
+Block 1 (调研) complete
+  → handoff: data/{site}/{id}/research/research_data.json
+  → Block 2 (创作) depends_on → in_progress
+  → Block 2 Phases 执行 → complete
+  → handoff: data/{site}/{id}/article/article.json
+  → Block 3 (发布) depends_on → in_progress
+  → ...
+```
+
+**chain_mode: linked 时必须**：
+- 每个 block 是独立的 Goal + Phases + VC
+- `passes_to` 字段指向下一个 block 的输入文件
+- 交接产物必须存在且非空，才能标记下游 block 为 in_progress
+
+### fan-out（一对多派发）
+
+适用场景：同一个上游产物，多个下游 skill 依次消费（派发仍串行 — Rule 21.4）。
+
+```
+Block 1 (选题) complete
+  → 串行逐个派发 Block 2A → 2B → 2C（Rule 21.4 铁律）
+  → 全部 complete → Block 3 (汇总)
+```
+
+**chain_mode: fan-out 时**：
+- 上游 Block 完成后，所有下游 Block 状态变为 `pending`
+- 每个 Block 独立执行，派发仍按 Rule 21.4 串行（互不依赖不构成并行理由）
+- 汇合点需等所有下游 Block complete 后才继续
+
+### 执行规则
+
+1. **chain_mode 默认 `single`**：只有一个 block，不需要 chain 区块
+2. **初始化时填写 chain 区块**：任务开始前根据复杂度选择模式
+3. **block 之间用 `---` 分隔**：`task_plan.md` 可按 `---` 分割为多个独立 plan
+4. **下游 block 的 Phase 编号可以复用**（各 block 独立计数）
