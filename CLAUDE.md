@@ -32,7 +32,7 @@ skills/task-planner/
     ├── critical-rules.md ← Rules 1-39 核心执行约束
     ├── completion-gate.md← 子代理验证 + 串行同步协议
     ├── goal-gate.md      ← VC 规则 + COMPLETE/PARTIAL/BLOCKED 退出标准
-    └── billing.md        ← 计费模式说明
+    └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）
 ```
 
 ## 核心架构

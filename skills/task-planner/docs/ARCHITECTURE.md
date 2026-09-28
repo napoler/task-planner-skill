@@ -10,7 +10,7 @@
 
 canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源：
 - `SKILL.md`（剥除 hooks）
-- `references/`（8 篇规则文档）
+- `references/`（8 篇规则文档，实测；原 13 篇中 template-mapping/template-guide/billing/cost-control/skill-collaboration 共 5 篇已迁出至卫星 skill）
 - `templates/`（5 个核心模板 + 3 个辅助模板 + 12 个变体，统一含「📚 必要知识储备」章节）
 - `scripts/`（16 个工具脚本）
 - `config.json`（阈值配置）
@@ -43,11 +43,11 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── critical-rules.md
 │   ├── todo-sync.md
 │   ├── worktree-isolation.md
-│   ├── template-mapping.md
-│   ├── template-guide.md
+│   ├── [template-mapping.md → ../plan-template-kit/references/template-mapping.md]
+│   ├── [template-guide.md → ../plan-template-kit/references/template-guide.md]
 │   ├── goal-gate.md
 │   ├── completion-gate.md
-│   └── billing.md
+│   └── [billing.md → ../plan-cost-guard/references/billing.md]
 ├── templates/                               ← 计划文件模板
 │   ├── task_plan.md
 │   ├── progress.md
