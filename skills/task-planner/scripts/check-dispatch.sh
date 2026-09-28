@@ -196,7 +196,7 @@ cmd_pretool() {
         if [ -n "$pd" ] && [ -d "$pd" ]; then
             missing="$(scan_missing "$pf" "$pd")"
             # [task-v075 P3-S1] 兜底命中且无缺项 → 三项增量检测(warn 档计数观察)+ 串行槽检查
-            [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
+            [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; serial_slot_check "$pd" "$mode" "$sid" "$ro"; exit 0; }
             names="$(join_missing "$missing")"
         else
             names="unknown"
@@ -209,7 +209,7 @@ cmd_pretool() {
     # [task-v075 P3-S1] 既有缺项扫描之后的三项增量(长度/打包/brief 引用), 挂既有档位处置
     missing="$(scan_missing "$pf" "$pd")"
     # [task-v061-serial-dispatch] 契约校验通过(无缺项), 即将放行前执行串行槽检查; 缺项 exit 2 路径不写锁不检查
-    [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; serial_slot_check "$pd" "$mode" "$sid"; exit 0; }
+    [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; serial_slot_check "$pd" "$mode" "$sid" "$ro"; exit 0; }
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
         echo "[dispatch-warn] ⚠ 派发契约缺项: $names"
@@ -348,7 +348,7 @@ fine_grain_checks() {
 # 由 Rule 21.4 文本条款(后台派发视为持续占用串行槽)覆盖。
 # 边界(多会话): 全局指针被翻转向他任务且他会话 Agent 返回时,可能误删本任务锁(120s TTL 自愈,仅短暂旁路串行约束)
 serial_slot_check() {
-    local pd="${1:-}" mode="${2:-}" sid="${3:-unknown}" lf now ts age
+    local pd="${1:-}" mode="${2:-}" sid="${3:-unknown}" ro="${4:-0}" lf now ts age
     case "$mode" in enforce|warn) ;; *) return 0 ;; esac        # off/nojq → 跳过
     [ -n "$pd" ] && [ -d "$pd" ] || return 0                     # plan-dir 未解析 → fail-open
     lf="$pd/subagent-state/.dispatch-inflight"
@@ -361,6 +361,12 @@ serial_slot_check() {
             age=$(( now - ts ))
             [ "$age" -lt 0 ] && age=0
             if [ "$age" -lt 120 ]; then                           # 槽占用
+                # [2026-09-28 task-v094 T-B1] 只读并行豁免: 计划声明 parallel_readonly: true ∧ prompt 含 [readonly-parallel] 标记
+                # → 放行且不覆盖写类锁; 写类(无标记)仍严格串行; 残留面=只读子代理越权写入无机器防护(22.4a 只读契约+验收 Read 承载)
+                if [ "$ro" = "1" ]; then
+                    echo "[dispatch-readonly] 只读并行豁免命中(声明+标记双条件), 槽占用(age=${age}s)放行, 写类锁保留" >&2
+                    return 0
+                fi
                 if [ "$mode" = "warn" ]; then
                     echo "[dispatch-warn] ⚠ Rule 21.4 串行派发铁律: 串行槽被占用(锁 age=${age}s<120s), 本派发按 warn 档放行 — 应等上一个子代理验收通过" >&2
                     return 0

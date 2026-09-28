@@ -142,7 +142,7 @@ model: opus
   - fan-out 模式：多个下游 Block 同时 pending → 串行逐个派发（Rule 21.4 铁律），全部完成才汇合
 
 - [ ] **Code Review Gate**（仅 `code_review: required` 的任务）
-  - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`
+  - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`；**diff 分级（[task-v094 T-B6]）**：轻 diff（代码文件 ≤3 个且合计 ≤50 行）→ 单轮轻量审查（code-review 单轮或主进程逐 hunk 自查+抽验登记），重 diff → 全量多轮 CR 原流程不变
   - 触发时机：全部 Phase `complete` 之后、终验交付之前
   - 审查范围：本次任务 Write/Edit 修改过的文件，过滤为代码文件（`.py/.sh/.ts/.tsx/.js/.jsx/.go/.rs/.java/.c/.cpp/.h/.hpp`），排除 `.md/.json/.yaml/.yml/.txt/.toml/.cfg`
   - 执行步骤：
@@ -454,8 +454,8 @@ hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:
 
 ### 修改后验证流程（每个代码修改完成）
 
-1. `Agent(subagent_type: code-runner-agent)` 跑编译/lint/测试
-2. 测试失败 → `Agent(subagent_type: build-error-resolver)` 修复
+1. `Agent(subagent_type: code-runner-agent)` 跑编译/lint/测试；**轻 diff 合并（[task-v094 T-B6]）**：改动 ≤3 文件且 ≤50 行时编译/lint/测试合并单代理一次跑完（不再拆 code-runner/build-error 两轮派发）
+2. 测试失败 → `Agent(subagent_type: build-error-resolver)` 修复（轻 diff 场景由同一合并代理内联修复）
 3. 通过 → `Skill("code-review")` 上下文隔离审查（Code Review Gate）
 4. APPROVED → commit；CHANGES_REQUESTED → 回到子代理修复
 

@@ -3,7 +3,7 @@
 <!-- 适用场景: 轻量任务（≤2 文件 ∧ 预估 ≤15min ∧ 单模块）——跳过中/重仪式区块，中/重任务禁用本模板（Rule 38.2） -->
 <!-- 触发关键词: 轻量/小改/单文件/快修/微调/15 分钟/小任务 -->
 <!-- 推荐 subagent: 主进程直做（白名单②）或 executor(haiku) 单文件小改；无强制派发 -->
-<!-- 38.3 区块白名单: 仅 Goal/VC/执行范围限制表/2 Phase/Handoff 表, 增其他仪式区块=模板违约(selftest-plan-tier 断言) -->
+<!-- 38.3 区块白名单: 仅 Goal/VC/执行范围限制表/单 Phase/Handoff 表, 增其他仪式区块=模板违约(selftest-plan-tier 断言); [task-v094 T-B2] 2 Phase→单 Phase(实施+验收合一) -->
 
 # Task Plan: [轻量任务名]
 
@@ -28,19 +28,14 @@
 
 约束: 单模块；任一机器条件不满足 → [plan-tier] MISMATCH 提示，改回 standard 全量模板
 
-## Phases（固定 2，每 Phase 仅 Phase 级一次 3-File 回填，Rule 19.2 降档）
+## Phases（固定 1：实施+验收合一，[task-v094 T-B2]；3-File 双条件在本 Phase 照常一次，Rule 19.2 降档）
 
-### Phase 1: 实施
+### Phase 1: 实施+验收（合一）
 - [1-3 条实施动作]
-- **V-N:** VC-1, VC-2
+- [Read 回填复核 + 回归验证（与实施同 Phase 闭环）]
+- **V-N:** VC-1, VC-2（总计 ≥2，允许集中映射）
 - **Status:** pending
-- **Executor:** 主进程（白名单②登记）/ executor
-
-### Phase 2: 验收
-- [Read 回填复核 + 回归验证]
-- **V-N:** VC-1, VC-2
-- **Status:** pending
-- **Executor:** 主进程
+- **Executor:** 主进程（白名单②⑥登记）/ executor
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5）
 
