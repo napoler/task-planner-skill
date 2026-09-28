@@ -288,6 +288,27 @@ mode_pretool() {
         esac
     fi
 
+    # ④b [2026-09-28 task-v094 T-B4] mini 直做通道: 活跃计划 plan_tier=mini(显式或 auto-tier) ∧ 目标非保护区 → 放行
+    #    纪律口径(≤30 行/≤2 文件/单模块/≤15min)由计划 Executor 字段登记(25.3 白名单⑥)+终验 stats 抽查承载;
+    #    保护区(§六: skills/agents/commands/AGENTS.md/cli config/基础设施)永不放行 — mini 直做红线
+    if [ -f "$plan_dir/task_plan.md" ] && grep -q 'plan_tier: mini' "$plan_dir/task_plan.md" 2>/dev/null; then
+        case "$file_path" in
+            */.zcode/skills/*) ;;
+            */.claude/skills/*) ;;
+            */.config/opencode/skills/*) ;;
+            */.agents/skills/*) ;;
+            */.zcode/agents/*) ;;
+            */.zcode/commands/*) ;;
+            */.zcode/AGENTS.md) ;;
+            */.agents/AGENTS.md) ;;
+            */.zcode/cli/config.json) ;;
+            *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) ;;
+            *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*) ;;
+            *) exit 0 ;;  # 非保护区 mini 直做 → 放行
+        esac
+        # 保护区命中 → 落到 ⑤⑥ 原链
+    fi
+
     # ⑤ .allow-direct 有效 → 放行 + ledger 记录
     if check_allow_direct "$plan_dir" "$sid" "pretool"; then
         exit 0
