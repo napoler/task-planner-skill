@@ -43,10 +43,7 @@ model: opus
 
 ### 🤝 专业技能协同路由（comet / OpenSpec / superpowers / dynamic-workflows — 权威源 ../plan-collab-router/references/skill-collaboration.md）
 
-主路由：`Skill("plan-collab-router")` 加载协同路由知识库（触发矩阵全文 / 移交 vs 嵌入合约 / 22.3.3 卡壳接管评估 / 反模式 → `../plan-collab-router/references/skill-collaboration.md`）。
-- **判定顺序敏感先命中先用**：comet → OpenSpec → superpowers；多族命中 = 叠加协同；comet 移交 = **任意 3 项** 命中（Phase ≥5 / 跨模块 / 需架构选型 / 需三件套归档 / 跨会话续做）即停止在 task-planner 内执行并建议移交 `/comet`。
-- **CLI 探针前置**：`command -v comet` / `command -v openspec`，缺失则该族不可接管（禁假设已装）；开关键 `config.json#skill_collab_enforce`（默认 warn）。
-- **22.3.3 卡壳接管**：④ 主进程接管不可行或仍失败时，先评估「是否存在更适配的专业技能族可接管」（comet / openspec-propose / superpowers），接管失败才落 ⑤ AskUser/STOP。
+主路由 = `Skill("plan-collab-router")`（知识库→`../plan-collab-router/references/skill-collaboration.md`）。**判定顺序敏感先命中先用**：comet → OpenSpec → superpowers（多族命中=叠加协同；comet 移交=任意 3 项命中（Phase ≥5 / 跨模块 / 需架构选型 / 需三件套归档 / 跨会话续做）即建议移交 `/comet`）；**CLI 探针前置** `command -v comet` / `command -v openspec` 缺失则该族不可接管，开关键 `config.json#skill_collab_enforce`（默认 warn）；**22.3.3 卡壳接管**：④ 主进程接管不可行/仍失败 → 先评估更适配专业族接管（comet / openspec-propose / superpowers），失败才落 ⑤ AskUser/STOP。
 - **dynamic-workflows（用户显式点名 /workflow 才路由，Rule 39）**：用户显式调用 `/workflow` 或明确措辞要求 workflow 编排 → 先 `Skill("dynamic-workflows")` 加载再 `CreateWorkflow` 编排；未点名一律走既有 Rule 21.4 串行 Agent 派发（Rule 39.1 触发纪律；四机制映射见 `references/critical-rules.md` Rule 39）。
 
 > 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
@@ -117,11 +114,7 @@ model: opus
 
 ### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token 判定）
 
-- 刚写完一个文件 → **不要再 Read**（内容还在上下文里）
-- 看过图片/PDF/网页/浏览器/搜索返回 → 立即写 findings.md（多模态内容不持久,转文字落盘）
-- 开始新 Phase → 读 plan + findings（上下文可能已陈旧,重新定位）
-- 发生错误 → 读相关文件（需要当前真实状态才能修）
-- 中断/压缩后恢复 → 读全部三文件（Rule 19.3 顺序重建状态）
+> 权威源 = `references/critical-rules.md` Rule 20.5（判定矩阵表 + 五场景）。场景速查：刚写完一个文件 → **不要再 Read**（内容还在上下文里）；看过的图/PDF/网页/浏览器/搜索返回 → 立即写 findings.md；开新 Phase → 读 plan+findings；出错 → 读相关文件；中断/压缩恢复 → 读全部三文件（Rule 19.3）。
 
 - [ ] **Chain 区块交接（仅 linked/fan-out 模式）**
   - 当前 Block 所有 Phase complete 后：
@@ -236,48 +229,9 @@ model: opus
 
 **完成后主动合并回**（合约见 `references/worktree-isolation.md`）：worktree 内全 VC 复验 → **`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`**（智能门：预检+已合并检测+合并+可选部署对账）→ 按 [CLEANUP] 提示行清理 worktree/分支 → 主仓 Read 关键文件复验合并结果。复杂场景可配合 `Skill("using-git-worktrees")`。
 
-## Chain 模式详解
+## Chain 模式详解（已内敛 → reference.md）
 
-### linked（串行接力）
-
-适用场景：同一任务被拆解为多 skill 接力，如 `调研 → 创作 → 发布`。
-
-```
-Block 1 (调研) complete
-  → handoff: data/{site}/{id}/research/research_data.json
-  → Block 2 (创作) depends_on → in_progress
-  → Block 2 Phases 执行 → complete
-  → handoff: data/{site}/{id}/article/article.json
-  → Block 3 (发布) depends_on → in_progress
-  → ...
-```
-
-**chain_mode: linked 时必须**：
-- 每个 block 是独立的 Goal + Phases + VC
-- `passes_to` 字段指向下一个 block 的输入文件
-- 交接产物必须存在且非空，才能标记下游 block 为 in_progress
-
-### fan-out（一对多派发）
-
-适用场景：同一个上游产物，多个下游 skill 依次消费（派发仍串行 — Rule 21.4）。
-
-```
-Block 1 (选题) complete
-  → 串行逐个派发 Block 2A → 2B → 2C（Rule 21.4 铁律）
-  → 全部 complete → Block 3 (汇总)
-```
-
-**chain_mode: fan-out 时**：
-- 上游 Block 完成后，所有下游 Block 状态变为 `pending`
-- 每个 Block 独立执行，派发仍按 Rule 21.4 串行（互不依赖不构成并行理由）
-- 汇合点需等所有下游 Block complete 后才继续
-
-### 执行规则
-
-1. **chain_mode 默认 `single`**：只有一个 block，不需要 chain 区块
-2. **初始化时填写 chain 区块**：任务开始前根据复杂度选择模式
-3. **block 之间用 `---` 分隔**：`task_plan.md` 可按 `---` 分割为多个独立 plan
-4. **下游 block 的 Phase 编号可以复用**（各 block 独立计数）
+`chain_mode` 默认 `single`（单 block，无 chain 区块）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，派发仍守 Rule 21.4 串行铁律）的值语义、示意图与执行规则权威源 = `reference.md § Chain 模式详解`；block 交接字段表/6 条件/重规划触发见 `reference.md § Chain Handoff Contract`。
 
 ## Critical Rules
 
@@ -465,49 +419,11 @@ hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:
 
 ---
 
-## 🔁 高频漂移纠正（每 2-3 轮 todo）
+## 🔁 高频漂移纠正（每 2-3 轮 todo，已内敛 → critical-rules.md §15）
 
-**问题**：任务执行中上下文变长,主进程视野变窄,容易偏离原计划（改错文件/跳过 VC/做计划外的事）。Phase 级漂移检测太粗,问题累积到 Phase 完成才暴露已晚。
-
-### 强制密度
-
-执行过程中,以下任一条件命中立即调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）：
-
-| 触发时机 | 说明 |
-|---------|------|
-| **每完成 2-3 个原生 todo 条目后** | 最高频,2-3 步内发现问题 |
-| **切换模块/文件前** | 确认未越界 |
-| **连续 ≥3 次工具调用后** | 防止连续跑偏 |
-| **Phase 标记 complete 后** | Phase 级门控（已存在 Rule 11） |
-| **用户发出新指令时** | A/B/C 判定后做漂移检查 |
-
-### 纠正条目入 Todo（自动）
-
-| task-drift-guard 输出 | 动作 |
-|---------------------|------|
-| ✅ ALIGNED | 不入 todo,继续 |
-| ⚠️ DRIFT | **自动追加 todo 条目**：`[drift-fix] {问题描述}`（activeForm: 纠正漂移）,用户决策后执行 |
-| 🔴 BLOCKED | **立即 STOP**；**不自动入 todo**（避免静默改向）,必须报告用户等决策 |
-
-### 为什么高频 / 与 Rule 11 关系
-
-- Phase 级漂移检测（Rule 11）：粗粒度,问题累积数小时才暴露
-- todo 级纠正（Rule 15）：细粒度,2-3 步内发现,代价小
-- `task-drift-guard` 是 haiku 档,token 便宜,可高频跑
-- 两者并存：Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控
+> 权威源 = `references/critical-rules.md` Rule 15（触发时机表 15.1 / 纠正条目自动入 Todo 15.2 / 与 Rule 11 的关系 15.3）。摘要：任一触发条件命中立即调 `Skill("task-drift-guard")`（含「用户发出新指令时：A/B/C 判定后做漂移检查」）；⚠️ DRIFT 自动入 todo、🔴 BLOCKED 立即 STOP。
 
 ---
 
 ## 📚 任务模板库（任务开启期必选）
-
-> **权威源指针**：模板选型/定制/沉淀知识库 = 卫星技能 `plan-template-kit`（`../plan-template-kit/references/template-mapping.md` 决策树/模板清单/互斥 + `template-guide.md` 定制指南），经 `Skill("plan-template-kit")` 调用或按需 Read。
-
-**原则**：每种任务类型有专属模板，任务开启期（创建 task_plan.md 前）必须先选定，避免通用模板应付所有任务导致 VC 漏项。
-
-### 流程要点（指针节 — 选型/定制/沉淀细节见卫星 plan-template-kit references/）
-
-- ① 任务开启期必须按 Rule 16 选模板 → 写进 task_plan.md frontmatter `template_type`；`init-session.sh` 自动从 `templates/variant/` 复制对应文件；**禁止**通用 task_plan 套用所有任务
-- ② 沉淀新类型：命中 Rule 34.3 沉淀触发 → 按 34.4 提炼新 variant 模板 + 四点同步（防滥用 34.5）
-- ③ `knowledge-brief`（任务知识简略要点，五段）= `init-session` 第 6 文件，由 `plan-writer` 写入 `<plan-dir>/knowledge-brief.md`；执行期材料包引用其 §1-§5 节锚点（开关键 `config.json#knowledge_brief_enforce`，默认 warn）
-
-> **主路由**：模板选型/定制/沉淀一律走 `Skill("plan-template-kit")`；本技能 `templates/variant/` 机械层留守，映射源 = 卫星 template-mapping §六
+权威源 = 卫星技能 `plan-template-kit`（`../plan-template-kit/references/` template-mapping.md 决策树/模板清单/互斥 + template-guide.md 定制指南，经 `Skill("plan-template-kit")` 调用或按需 Read）。要点：① 任务开启期按 Rule 16 选模板 → frontmatter `template_type`（`init-session.sh` 自动从 `templates/variant/` 复制；禁止通用 task_plan 套用所有任务）；② 命中 Rule 34.3 沉淀触发 → 按 34.4 提炼新 variant 模板+四点同步（防滥用 34.5）；③ `knowledge-brief`（五段）= `init-session` 第 6 文件，由 `plan-writer` 写入 `<plan-dir>/knowledge-brief.md`，执行期材料包引用其 §1-§5（开关键 `config.json#knowledge_brief_enforce`，默认 warn）；模板选型/定制/沉淀主路由一律 `Skill("plan-template-kit")`，本技能 `templates/variant/` 机械层留守，映射源=卫星 template-mapping §六
