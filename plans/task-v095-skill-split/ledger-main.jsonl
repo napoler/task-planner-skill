@@ -1,0 +1,8 @@
+{"tick":1,"ts":"2026-09-28T17:09:32Z","agent":"main","phase":"1","event":"attest","summary":"计划锁定 SHA=3995ad7a；用户 yes 批准（ask 模式，思路复述已呈示）；8P/19S/VC6/FMEA7","files":[]}
+{"tick":2,"ts":"2026-09-28T17:15:38Z","agent":"main","phase":"1","event":"phase_complete","summary":"P1 基线冻结与隔离区建立：selftest 基线 543/0（34 脚本实测）；worktree wt/task-v095-skill-split@5c1cdcd；v094 已合并 F3 解除；映射表 M1-M13 落 findings","files":[]}
+{"tick":3,"ts":"2026-09-28T17:36:38Z","agent":"main","phase":"2","event":"phase_complete","summary":"P2 试点卫星 plan-research-router：骨架41行+SOP外迁42行+主技能556→519+T11×3断链修复（S3b）+全量复验543/0持平；commit 475f2a5","files":[]}
+{"tick":4,"ts":"2026-09-28T17:57:34Z","agent":"main","phase":"3","event":"phase_complete","summary":"P3 卫星 plan-template-kit：知识层外迁(git mv×2+计数16)+主技能指针化 519→516+锚随迁(TL/MP/KB/白名单/attest 全绿)+独立复验 543/0；commit bdbd3ba","files":[]}
+{"tick":5,"ts":"2026-09-28T18:11:29Z","agent":"main","phase":"4","event":"phase_complete","summary":"P4 卫星 plan-cost-guard：三件套 git mv+九处指针化+SKILL 517→515+独立复验 543/0；仓根3处死路径 defer P7","files":[]}
+{"tick":6,"ts":"2026-09-28T18:33:51Z","agent":"main","phase":"5","event":"phase_complete","summary":"P5 卫星 plan-collab-router：git mv 113行无损+七文件一致性同步（含 WF-09 意外修复）+独立复验 543/0；SKILL.md 513 行","files":[]}
+{"tick":7,"ts":"2026-09-28T19:02:37Z","agent":"main","phase":"6","event":"phase_complete","summary":"P6 主技能收尾内敛：Chain→reference.md+漂移/读写矩阵→critical-rules 15.x/20.5+微收拢+T6 窗口随迁；SKILL.md 556→429(-22.8%) VC-1 达标；锚点 24 项全集在位；543/0","files":[]}
+{"tick":8,"ts":"2026-09-28T19:30:13Z","agent":"main","phase":"7","event":"phase_complete","summary":"P7 安装面+合并+部署：install-stub 卫星数组/守卫 pattern/selftest-skill-split 41 断言/registry 35 行；merge aa092cc；三部署位 15/15 IDENTICAL+位上实跑 41/41；worktree 已清","files":[]}
