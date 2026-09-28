@@ -127,7 +127,7 @@ task-planner-skill/
     ├── templates/
     │   ├── task_plan.md           ← 阶段 + VC 模板
     │   ├── knowledge-brief.md     ← 必要知识储备（6 文件之一）
-    │   ├── variant/               ← 15 个 template_type 变体（*-*-type.md，含 mini-lite/rule-enhancement/video）
+    │   ├── variant/               ← 16 个 template_type 变体（*-*-type.md，含 mini-lite/rule-enhancement/video/video-fix）
     │   ├── verification.md        ← VC + 阶段门控模板
     │   ├── findings.md            ← 发现与决策记录
     │   ├── progress.md            ← 会话进度日志
