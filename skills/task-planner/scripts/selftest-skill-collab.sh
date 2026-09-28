@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # [2026-09-13 task-v066-skill-collab-routing] selftest-skill-collab.sh — 协同路由面守护套件
-# 守护 references/skill-collaboration.md + SKILL.md 指针 + critical-rules.md 22.3.3/22.7
+# 守护 ../plan-collab-router/references/skill-collaboration.md + SKILL.md 指针 + critical-rules.md 22.3.3/22.7
 # + subagent-fallback.sh tier_order + config.json#skill_collab_enforce 一致性。
 # 10 组用例 T1-T10，共 19 断言, 全 PASS exit 0, 任一 FAIL exit 1。纯 grep/python3 机械断言, 无 fixture。
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$SCRIPT_DIR/.."                       # <repo-root>/skills/task-planner
-COLLAB="$ROOT/references/skill-collaboration.md"
+# [task-v095 P5] skill-collaboration.md 迁至卫星 plan-collab-router，COLLAB 路径跟随迁移
+COLLAB="$ROOT/../plan-collab-router/references/skill-collaboration.md"
 SKILL="$ROOT/SKILL.md"
 CRULES="$ROOT/references/critical-rules.md"
 CONFIG="$ROOT/config.json"

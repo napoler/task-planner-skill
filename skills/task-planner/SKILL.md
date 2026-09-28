@@ -41,15 +41,13 @@ model: opus
 
 **Code Review 工具**：当 `task_plan.md` 声明 `code_review: required` 时，启用 `Skill("code-review")` 上下文隔离审查（在终验交付前触发）。详见 [Code Review Gate](#code-review-gate代码审查门控)。
 
-### 🤝 专业技能协同路由（comet / OpenSpec / superpowers — 权威源 references/skill-collaboration.md）
+### 🤝 专业技能协同路由（comet / OpenSpec / superpowers / dynamic-workflows — 权威源 ../plan-collab-router/references/skill-collaboration.md）
 
-**触发矩阵**（计划期 T0 评估；判定顺序敏感先命中先用：comet → OpenSpec → superpowers；多族命中=叠加协同）：
-- **移交 comet**（满足以下**任意 3 项**即停止在 task-planner 内执行，建议用户改用 `/comet`）：Phase 数 ≥ 5 / 跨多个文件/模块 / 需架构设计或技术选型 / 涉及新功能（feature）而非 bug 修复/小改动 / 需 proposal/design/tasks 三件套归档 / 期望跨会话断点续做。移交流程：总结当前 plan 已有内容（Goal + VC + Phase 列表）→ 提示用户"此任务复杂度匹配 `/comet`，建议移交" → 用户确认 → 引导 `Skill("comet")` 启动 open 阶段 → comet 接管后续阶段（design→build→verify→archive）。区别：task-planner=单会话轻量即时；comet=跨会话 5 阶段重量托管可恢复。
-- **移交 OpenSpec**：需求模糊需 spec 化（proposal/design/specs/tasks 有留存价值）/ 项目已有 `openspec/` 且变更触及 spec / 用户要求提案评审流 → `Skill("openspec-propose")` 等 change 工作流（单会话中成本）。
-- **嵌入 superpowers**（主进程保持统筹，Phase 内调用成员技能作 SOP，无需确认）：bug→systematic-debugging / 需求不清→brainstorming / 实现前→test-driven-development / 按既有计划执行→executing-plans / 合并前→requesting-code-review。
+主路由：`Skill("plan-collab-router")` 加载协同路由知识库（触发矩阵全文 / 移交 vs 嵌入合约 / 22.3.3 卡壳接管评估 / 反模式 → `../plan-collab-router/references/skill-collaboration.md`）。
+- **判定顺序敏感先命中先用**：comet → OpenSpec → superpowers；多族命中 = 叠加协同；comet 移交 = **任意 3 项** 命中（Phase ≥5 / 跨模块 / 需架构选型 / 需三件套归档 / 跨会话续做）即停止在 task-planner 内执行并建议移交 `/comet`。
 - **CLI 探针前置**：`command -v comet` / `command -v openspec`，缺失则该族不可接管（禁假设已装）；开关键 `config.json#skill_collab_enforce`（默认 warn）。
-- **dynamic-workflows（用户显式点名 /workflow 才路由 — Rule 39）**：用户显式调用 `/workflow` 或明确措辞要求 workflow 编排 → 先 `Skill("dynamic-workflows")` 加载，再 `CreateWorkflow` 编排（多步类型化中间结果 / 停止条件循环 / fan-out→fan-in 的任务）；未点名一律走既有 Rule 21.4 串行 Agent 派发（Rule 39.1 触发纪律）。四机制映射（失败→AmendWorkflow cache / 断点→ResumeWorkflowRun / 升级→ResolveWorkflowQuestion / 沉淀→SaveWorkflow）见 `references/critical-rules.md` Rule 39。
-- 触发矩阵全文 / 移交 vs 嵌入合约 / 22.3.3 卡壳接管评估 / 反模式 → `references/skill-collaboration.md`。
+- **22.3.3 卡壳接管**：④ 主进程接管不可行或仍失败时，先评估「是否存在更适配的专业技能族可接管」（comet / openspec-propose / superpowers），接管失败才落 ⑤ AskUser/STOP。
+- **dynamic-workflows（用户显式点名 /workflow 才路由，Rule 39）**：用户显式调用 `/workflow` 或明确措辞要求 workflow 编排 → 先 `Skill("dynamic-workflows")` 加载再 `CreateWorkflow` 编排；未点名一律走既有 Rule 21.4 串行 Agent 派发（Rule 39.1 触发纪律；四机制映射见 `references/critical-rules.md` Rule 39）。
 
 > 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
 
@@ -303,7 +301,7 @@ Block 1 (选题) complete
 - **Methodology 指针（v063）可靠性 4 条/内容质量 5 条/思维方法论 5 条（T1-T5：问题先行/解构四问/金字塔原理/逐步推导/消费点，零新键，task-v084）方法论，门控+指针范式，不改 Rule 1-28 既有语义（详见 references/methodology.md，开关键 fmea_enforce/content_quality_enforce 默认 warn）**（机器校验已生效：attest-plan.sh FMEA 门控段 + check-complete.sh 终验双点，三档 warn/enforce/off）
 - **Rule 28（P0）交互模式与询问门控**：ask（默认：D1-D6 关键决策点给选项供用户选，D1 批准前按 28.2.1 口头复述大体执行思路供用户不读计划文档预知流程）| silent（静默：自主决策+登记静默决策清单）；解析优先级 env > 计划配置表 > config.json > 默认 ask；D6 硬停点（连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认）两模式一致不可豁免（详见 references/critical-rules.md Rule 28）
 - **Rule 29（P0）上下文与工作文件主动维护**：触发时机(29.1)/退场 SOP(29.2)/压缩 SOP(29.3)/工作文件整理 SOP(29.4)/配置键语义(29.5)/反模式(29.6)——主动维护"多→删"链路，与 Rule 19"缺→补"链路对称（详见 references/critical-rules.md Rule 29）
-- **Rule 30（P0）共享内容认领追踪**：识别条件(30.1)/创建复用(30.2)/认领登记(30.3)/防冲突(30.4)/机制(30.5)——"共→认领"链路，可枚举共享资源（页面/内容/功能/部署位）的部分认领任务须登记项目级共享追踪账本（progress-tracker `.zcode/ledger/` 多平台跟随），后续任务先查后做，杜绝重复混乱；开关键 `config.json#shared_tracker_enforce`（默认 warn，详见 references/critical-rules.md Rule 30 与 references/skill-collaboration.md progress-tracker 协同行）
+- **Rule 30（P0）共享内容认领追踪**：识别条件(30.1)/创建复用(30.2)/认领登记(30.3)/防冲突(30.4)/机制(30.5)——"共→认领"链路，可枚举共享资源（页面/内容/功能/部署位）的部分认领任务须登记项目级共享追踪账本（progress-tracker `.zcode/ledger/` 多平台跟随），后续任务先查后做，杜绝重复混乱；开关键 `config.json#shared_tracker_enforce`（默认 warn，详见 references/critical-rules.md Rule 30 与 ../plan-collab-router/references/skill-collaboration.md progress-tracker 协同行）
 - **Rule 31（P0）错误学习闭环**：触发(31.1)/根因分析(31.2)/修正路由(31.3)/沉淀(31.4)/消费侧(31.5)/机制(31.6)——“错→析→修→防”链路，用户指出错误/重复反馈/打断补充数据时先 4 维归因（现象/直接原因/根因 5 Whys ≤5 层/类别）并落 progress.md Error Log（Root Cause 列）+ findings.md Issues 段，禁止盲目改症状处；防复现措施沉淀 notepad-learnings 并被下一 Phase/新任务消费（31.5 消费侧）；终验 Learning Gate（check-complete.sh 校验 Error Log Root Cause 非空）；开关键 `config.json#error_loop_enforce`（默认 warn，详见 references/critical-rules.md Rule 31）
 - **Rule 32（P0）用户否决与禁令追踪**：登记(32.1)/计划期必查(32.2)/执行期消费(32.3)/解禁条件(32.4)/机制(32.5)——"否决→登记→提方案前必查→无证据禁重提"链路：用户裁决「不允许/禁止/X 是错的」即时落盘 notepad「🚫 被否决方案」段+Decisions Made（veto: 行）；提出任何方案候选/D2 选项/B 类重规划建议前必查禁令源（当前+历史 notepad+memory），命中的方案禁止进入候选、禁止推荐、禁止作为默认项；解禁仅限用户显式撤销（veto-lift）或可引用新证据且标注否决出处交用户裁决——**禁止静默改回（倒退式改法=循环开发）**；开关键 `config.json#veto_enforce`（默认 warn，详见 references/critical-rules.md Rule 32）
 - **Rule 33（P0）解决→反思→验证迭代循环**：触发(33.1)/反思四问(33.2)/独立验证(33.3)/迭代边界≤3 轮(33.4)/沉淀联动(33.5)/机制(33.6)——问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后标记完成前，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；REFLECT-GATE（check-complete.sh，声明 reflect_verify: required 时校验，默认 warn）；开关键 `config.json#reflect_verify_enforce`（详见 references/critical-rules.md Rule 33）
@@ -343,12 +341,12 @@ Block 1 (选题) complete
 | `../plan-cost-guard/references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
 | `references/batch-quality-gate.md` | 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report） |
 | `examples.md` | 实际示例 |
-| `references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
+| `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
 | `templates/knowledge-brief.md` | 任务知识简略要点模板（init-session 第 6 文件；五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引） |
 | `templates/shared-tracker.md` | 共享内容认领追踪区块模板（Rule 30；task_plan 引用，账本权威源=progress-tracker 技能） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
-| 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） / `Skill("progress-tracker")` 共享内容认领追踪（Rule 30 调用入口，协同契约见 references/skill-collaboration.md） |
+| 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） / `Skill("progress-tracker")` 共享内容认领追踪（Rule 30 调用入口，协同契约见 ../plan-collab-router/references/skill-collaboration.md） |
 
 ---
 

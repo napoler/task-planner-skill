@@ -285,7 +285,7 @@ cmd_next() {
             return 0
             ;;
         *)
-            printf '{"dispatch_as":null,"reason":"non_provider_error","hint":"非 provider 类失败按 Rule 22.3 原顺序: ①改派(换类型) → ②拆细 → ③降档 → ④主进程接管 → 22.3.3 技能族接管评估(见 references/skill-collaboration.md) → ⑤AskUser（消耗 retry_limit）","tier_order":["dispatch_swap","split","model_downgrade","main_takeover","skill_takeover","ask_user"]}\n'
+            printf '{"dispatch_as":null,"reason":"non_provider_error","hint":"非 provider 类失败按 Rule 22.3 原顺序: ①改派(换类型) → ②拆细 → ③降档 → ④主进程接管 → 22.3.3 技能族接管评估(见 ../plan-collab-router/references/skill-collaboration.md) → ⑤AskUser（消耗 retry_limit）","tier_order":["dispatch_swap","split","model_downgrade","main_takeover","skill_takeover","ask_user"]}\n'
             return 0
             ;;
     esac

@@ -122,7 +122,7 @@ t "T09b 拆细指引(对照 21.1b + ② 拆细)" bash -c "echo '$out9' | grep -q
 
 # T10: [task-v065 F-6] 非 provider 分支 → hint 含 22.3.3 评估档全序 + tier_order 数组 6 项含 split
 out10="$(ZCODE_HOME="$FAKE" bash "$TARGET" next executor logic --out "$FAKE/health-ok.json")"
-t "T10a hint 含全序(①改派→②拆细→③降档→④主进程接管→22.3.3 技能族接管评估→⑤AskUser)" bash -c "echo '$out10' | grep -q '①改派(换类型) → ②拆细 → ③降档 → ④主进程接管 → 22.3.3 技能族接管评估(见 references/skill-collaboration.md) → ⑤AskUser'"
+t "T10a hint 含全序(①改派→②拆细→③降档→④主进程接管→22.3.3 技能族接管评估→⑤AskUser)" bash -c "echo '$out10' | grep -q '①改派(换类型) → ②拆细 → ③降档 → ④主进程接管 → 22.3.3 技能族接管评估(见 ../plan-collab-router/references/skill-collaboration.md) → ⑤AskUser'"
 t "T10b tier_order 数组 6 项" bash -c "echo '$out10' | jq -e '.tier_order | length == 6' >/dev/null"
 t "T10c tier_order 含 split" bash -c "echo '$out10' | jq -e '.tier_order | index(\"split\") != null' >/dev/null"
 t "T10d tier_order 含 skill_takeover" bash -c "echo '$out10' | jq -e '.tier_order | index(\"skill_takeover\") != null' >/dev/null"
