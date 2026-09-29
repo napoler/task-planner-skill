@@ -2,7 +2,7 @@
 # [2026-09-29 task-v095 P7-S1] selftest-skill-split.sh — 技能拆分终态守护套件
 # 守护 task-v095 4+3 拆分方案的安装面四件套行为不变判据:
 #   ① 4 卫星技能目录结构 + SKILL.md 薄正文 + frontmatter name 一致
-#   ② 主 SKILL.md 行数收敛(≤430 目标 / ≤558 行数钉上限) + 4 路由指针在位
+#   ② 主 SKILL.md 行数收敛(≤433 目标,task-v097 Rule 40 联动 430→433 / ≤558 行数钉上限) + 4 路由指针在位
 #   ③ 迁移内容抽检(5 个迁移源文件在卫星 references/ 内闭环 + 特征锚在位)
 #   ④ 主 SKILL.md 死路径零残留(旧 references/ 相对路径过滤 plan- 前缀后零命中)
 #   ⑤ 锚点抽验(Rule 17 成本控制 / C19 / C25 / C26 / Rules 1-3 计数锚)
