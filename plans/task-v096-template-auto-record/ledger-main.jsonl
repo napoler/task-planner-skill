@@ -1,0 +1,8 @@
+{"tick":1,"ts":"2026-09-28T23:33:21Z","agent":"main","phase":"","event":"attest","summary":"计划锁定 SHA=240b2a71；用户 yes 批准（D1 两裁决：三时点感知网+全自动静默生成/34.5 闸门内置生成侧）；S-unit ID 批量改纯数字后过派发门","files":[]}
+{"tick":2,"ts":"2026-09-28T23:36:40Z","agent":"main","phase":"1","event":"phase_complete","summary":"P1 基线与隔离区：基线 584/0（35 脚本实测）；worktree@de8e8fe；四改点断言清点完成（final-gate-hash 走沙箱=可编辑/T6 窗口零位移/PT-13 三锚保全）","files":[]}
+{"tick":3,"ts":"2026-09-28T23:50:30Z","agent":"main","phase":"2","event":"phase_complete","summary":"P2 T1 感知块：general/unknown 两分支 emit+区块追加 55 行纯增量；负例/幂等/正交/下游门全过；五 selftest 绿","files":[]}
+{"tick":4,"ts":"2026-09-28T23:59:02Z","agent":"main","phase":"3","event":"phase_complete","summary":"P3 条款层：34.7 纯追加 critical-rules L319（170→171 零位移）+SKILL 三处联动（净增1，锚差集空）；五 selftest 绿","files":[]}
+{"tick":5,"ts":"2026-09-29T00:23:02Z","agent":"main","phase":"4","event":"phase_complete","summary":"P4 T3 终验层：check-complete +10 行 template-sense warn 段（正/负例实测+8 消费 selftest 绿）；越权 commit 内容接受已登记","files":[]}
+{"tick":6,"ts":"2026-09-29T00:28:01Z","agent":"main","phase":"5","event":"phase_complete","summary":"P5 卫星联动：plan-template-kit 沉淀节+2 bullets（全自动合约/双闸门/同步清单含 TL-17 级联）；mapping-guide 零改；TL/MP 绿","files":[]}
+{"tick":7,"ts":"2026-09-29T00:34:06Z","agent":"main","phase":"6","event":"phase_complete","summary":"P6 selftest-template-sense 新建（6 断言行为级）+registry 36=36；回归 TL/PT 绿","files":[]}
+{"tick":8,"ts":"2026-09-29T00:36:49Z","agent":"main","phase":"7","event":"phase_complete","summary":"P7 全量验证+合并+部署：36 脚本 590/0；merge ed8712d；三部署位 15/15 IDENTICAL；worktree 已清理","files":[]}

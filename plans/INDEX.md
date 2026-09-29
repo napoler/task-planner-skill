@@ -48,6 +48,7 @@
 | task-v093-video-fix-template-collect | complete | 5/5 | 收录 video-fix 模板（merge 6d008e1+簿记 f6bf8a6 已 push）<!-- 计划文件状态为他会话簿记债务，交付证据见 f6bf8a6 --> | none |  |  | 2026-09-29 | ✓ |
 | task-v094-tier-b-rollout | complete | 6/6 | 落地 v091 Tier B 全 7 项（merge dcfd8a3+簿记 5c1cdcd 已 push，543/0）<!-- 计划文件状态为他会话簿记债务，交付证据见 5c1cdcd --> | none |  |  | 2026-09-29 | ✓ |
 | task-v095-skill-split | complete | 8/8 | 拆分 task-planner：4 卫星+3 内敛，SKILL.md 556→429（-22.8%），584/0+锚点全在+三部署位 15/15 IDENTICAL，merge aa092cc+bea7341 | none |  |  | 2026-09-29 | ✓ |
+| task-v096-template-auto-record | complete | 8/8 | 模板自动记录与三时点主动激活（34.7 全自动生成合约+init-session 感知块+check-complete warn 兜底），592/0，merge ed8712d+79a82e2 | none |  |  | 2026-09-29 | ✓ |
 
 ## 待处理（需关注）
 -（无——v093/v094/v095 已按交付证据翻 complete；v093/v094 计划文件内 Status 未翻属他会话簿记债务，交付证据=簿记提交）
@@ -94,6 +95,7 @@
 - task-v093-video-fix-template-collect ✓ (5/5) — 2026-09-29
 - task-v094-tier-b-rollout ✓ (6/6) — 2026-09-29
 - task-v095-skill-split ✓ (8/8) — 2026-09-29
+- task-v096-template-auto-record ✓ (8/8) — 2026-09-29
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 41
+- in_progress: 0 | pending: 0 | complete: 42
