@@ -130,6 +130,20 @@ Phase 1
 -->
 [一句话下一步动作]
 
+## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
+<!--
+  WHAT: 逐 Phase 登记命中的 harness 执行工具面与选择理由（Rule 40.1 六类: /workflow 动态工作流、/goal 会话目标、Agent 子代理、卫星技能、MCP/平台工具、机械守卫脚本）。
+  WHY: 计划期显式选择最合适的执行工具,替代"默认只有串行 Agent 派发一条路"的隐式决策;记录工具选择的可追溯依据。
+  WHEN: 计划创建时（plan-writer）填写;执行期工具变更时回填。
+  定位声明: 本区块是 Executor 字段的**上游分析记录,不替代**其委派门控机器事实源地位（check-delegation/check-plan-dispatch 消费面不变）;本区块内禁止出现 Phase/Status/Executor 三形态伪行。mini 档豁免本区块（Rule 38.3 区块白名单）。机器校验边界见 Rule 40.5（LLM 行为面,selftest-tool-selection.sh 静态守护）。
+-->
+| Phase | 命中工具面（40.1 六类） | 选择理由 |
+|-------|----------------------|---------|
+| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
+
+**workflow 编排判定（Rule 40.4）**: [未命中编排条件 → 维持 Rule 21.4 串行;命中（独立并行子任务可 fan-out / 长链多 skill 接力可复用 / 用户点名）→ 登记"建议 CreateWorkflow"并按 Rule 39.4 做并行豁免登记（Decisions Made + progress）]
+**/goal 对齐（Rule 40.3）**: [本计划 Goal+VC 即 session goal 的证据源;如用户已用 /goal 锚定本任务,在执行范围或 Goal 段注明映射;/goal 为用户侧 harness 命令,技能层不可代调]
+
 ## Phases
 <!-- 
   WHAT: Break your task into 3-7 logical phases. Each phase should be completable.
