@@ -362,4 +362,4 @@
 - 触发信号: rule-enhancement 命中（加规则/新增 Rule/条款/门控/守护）
 - Rule 34.3②: 沉淀预登记 —— 终验时例行评估,预期登记不另沉淀理由
 - 终验必查: check-complete T3（template-sense warn 兜底,已知类型应零触发）
-- 处置登记处: **不沉淀理由**（2026-09-30 终验登记）——本任务即规则增强本体（rule-enhancement 已知类型）,无新任务类型泛化点,34.3 三条件均未命中新类型 → 沿用 rule-enhancement-type 不另沉淀（Decisions Made 同步登记）
+- 处置登记处: 不沉淀理由: 本任务即规则增强本体（rule-enhancement 已知类型）,无新任务类型泛化点,34.3 三条件均未命中新类型 → 沿用 rule-enhancement-type 不另沉淀（2026-09-30 终验登记,Decisions Made 同步）
