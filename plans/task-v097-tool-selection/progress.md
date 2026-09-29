@@ -159,6 +159,8 @@
 - outcome: **COMPLETE**（verification.md Goal Gate 全 PASS）
 - master HEAD: CR P2-a commit（52b434f 之后 1 commit）;远端未 push（用户未授权 push,本轮不动）
 - 部署: 三位 skills/task-planner IDENTICAL+agents 两部署位已同步（新会话生效）
+- **Rule 36.3 删除基线声明（SKILL-MODIFY GATE 应答）**: 本任务全量 diff 零功能性删除——3 处 deletions 均为行内括注替换（L241/L295「Rules 1-39」→括注形态）与断言上限行内替换（selftest-skill-split ≤430→≤433）,CR 专项⑤「纯增量纪律」已核通过;无任何功能行为被移除,无删除性行为清单项
+- template-sense 处置: 不沉淀理由已登记（task_plan.md 模板感知区块+Decisions Made;沿用 rule-enhancement-type）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
