@@ -316,6 +316,7 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 34.4 **沉淀流程**：从已完成任务提炼 → 新建 `templates/variant/<new-type>-type.md`（须含 Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备最小结构，≤100 行）→ 完成 34.2 四点登记 → selftest 断言通过 → 沉淀动作登记计划 Decisions Made 表。
 34.5 **防滥用**：已有类型禁重复沉淀（先 ls variant/ 目录查重）；一次性任务、泛化性不足的禁沉淀；沉淀模板质量对齐既有 13 变体（含 frontmatter 字段说明与类型适用边界）。
 34.6 **机制**：开关键 `config.json#template_gate_enforce`（默认 warn：选取门控失败在 attest 输出告警不阻断；enforce=拒绝锁定；off=门控关闭）；档位解析 env `TASK_PLANNER_TEMPLATE_GATE_ENFORCE` > config > warn；`scripts/check-template-type.sh` + `scripts/selftest-template-lifecycle.sh` 静态守护。
+34.7 **模板感知（template-sense，task-v096）**：三时点激活网+全自动生成合约——【激活时点】①计划创建期：init-session.sh 类型空缺（general 兜底）或未知类型时 emit `[template-sense]` 并在生成的 task_plan.md 末尾追加「🔁 模板感知」区块（34.3② 预登记），已知类型零触发 ②计划期：主进程/plan-writer 创建计划时对照 variant 清单评估类型覆盖，空缺即预登记终验沉淀评估 ③终验期：check-complete.sh 对含「🔁 模板感知」区块且未登记沉淀/不沉淀理由的计划输出 warn 兜底。【全自动生成合约】终验 outcome=COMPLETE 且命中 34.3 任一条件 → 主进程**直接派执行体生成** `templates/variant/<new-type>-type.md`（全自动不 AskUserQuestion，silent 合法）→ 生成侧强制执行 34.5 双闸门（`ls templates/variant/` 查重+泛化性评估；一次性/不可泛化任务 → 登记「不沉淀理由」收场而非硬生成）→ 按 34.2 完成同步（拓扑注意：template-mapping.md 与 template-guide.md 在 plan-template-kit/references/，SKILL.md 模板节为指针，plan-writer 映射表在 companion）→ **计数级联**：template-guide「N 个」计数 +1 且 `scripts/selftest-template-lifecycle.sh` TL-17 断言计数同步修改（v093 教训：同源锚必同改）→ 全量 selftest 绿 → 沉淀动作登记计划 Decisions Made。执行体=plan-writer 或 code-assistant（终验期按上下文路由）。
 
 ### 35 执行结论纪律：能力否定查证 + 大输入落盘引用（P0 — task-v076）
 

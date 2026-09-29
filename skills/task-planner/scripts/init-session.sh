@@ -270,6 +270,61 @@ else
     fi
 fi
 
+# [2026-09-29 task-v096 P2-S1 T1 分支①] template-sense 区块（Rule 34.3② 预登记触发点）：
+# 仅当 TEMPLATE_TYPE 最终决议为 general（类型空缺落 general 兜底）时 emit 提示行并向 task_plan.md
+# 末尾追加「🔁 模板感知」区块。已知 16 类（bugfix 等）零调用，known-type 路径逐字节不变。
+# 区块内同时声明 template_type: general + 34.3② 预登记 → check-template-type 三形态命中
+# （模板本体 task_plan.md 无 template_type 标记，运行时追加而非改本体，§4 条 1 约束）。
+# 正交性（§4 条 10）：本调用点在 tier 分流/复制之后，mini 档只改 tier 不碰 sense；
+# unknown 类型分支（L183-186 区段）本 S-unit 不动（P2-S2）。
+# 追加后幂等保护：同任务目录重复运行 init（task_plan.md 已存在=skip 分支）不重复追加。
+if [ -z "$TEMPLATE_TYPE" ] && [ -f "task_plan.md" ]; then
+    echo "[template-sense] ⚠ 任务类型空缺（general 兜底）——按 Rule 34.3②/34.7 评估沉淀，终验必查"
+    if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
+        cat >> "task_plan.md" <<'EOF'
+
+## 🔁 模板感知
+<!-- template_type: general -->
+<!-- task-v096 P2-S1: 运行时追加区块（非模板本体）; general=类型空缺兜底, 已知 16 类类型不产生本区块;
+     上方注释行为 check-template-type 第三形态机读标记（general 恒合法, gate exit 0）, 同时完成 Rule 34.3② 预登记 -->
+- 触发信号: 任务类型空缺 → 落 general 兜底（非 16 类已知类型之一）
+- Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
+- 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
+- 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP
+EOF
+        echo "    [template-sense] task_plan.md 末尾已追加「🔁 模板感知」区块"
+    fi
+fi
+
+# [2026-09-29 task-v096 P2-S2 T1 分支②] unknown 类型感知块（Rule 34.3② 预登记触发点）：
+# 显式给了未知类型（不在白名单, L183-186 WARNING 分支，WARNING 行为原样保留）→ 落 general 兜底：
+# 与 P2-S1 同款 emit 提示行（措辞区分）+ 追加同款「🔁 模板感知」区块（机读注释行同为
+# <!-- template_type: general -->, 因 unknown 最终落 general 产物; 区块正文与注释行区分 unknown 语义）。
+# 判定条件与 L180/L183 白名单判定同构: TEMPLATE_TYPE 非空 ∧ 不在 VALID_TYPES ∧ 最终 TASK_PLAN_SRC
+# 仍为 generic task_plan.md（unknown+tier=mini 时 mini 分流胜出=产物非 general, 不触发;
+# 白名单内类型文件缺失（L181-182 WARNING）不触发——不在白名单才是 unknown）。
+# 与 P2-S1 块互斥（一为 -z、一为 -n）; TASK_TEMPLATE_DEFAULT 显式=general（TEMPLATE_TYPE=general
+# 在白名单内）不触发——字面语义=用户显式选了 general 不算空缺/未知（P2-S1 裁量项维持, findings 登记）。
+# 幂等去重与 P2-S1 同款 grep。
+if [ -n "$TEMPLATE_TYPE" ] && ! echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE " \
+   && [ "$TASK_PLAN_SRC" = "task_plan.md" ] && [ -f "task_plan.md" ]; then
+    echo "[template-sense] ⚠ 任务类型未知（$TEMPLATE_TYPE 不在白名单）——将落 general 兜底，按 Rule 34.3②/34.7 评估沉淀，终验必查"
+    if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
+        cat >> "task_plan.md" <<EOF
+
+## 🔁 模板感知
+<!-- template_type: general -->
+<!-- task-v096 P2-S2: 运行时追加区块（非模板本体）; unknown=显式类型 $TEMPLATE_TYPE 不在白名单, 落 general 兜底; 已知 16 类类型不产生本区块;
+     上方注释行为 check-template-type 第三形态机读标记（general 恒合法, gate exit 0）, 同时完成 Rule 34.3② 预登记 -->
+- 触发信号: 显式类型 $TEMPLATE_TYPE 不在白名单 → WARNING 后落 general 兜底（非 16 类已知类型之一）
+- Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
+- 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
+- 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP
+EOF
+        echo "    [template-sense] task_plan.md 末尾已追加「🔁 模板感知」区块"
+    fi
+fi
+
 echo ""
 # [2026-09-04 Rule 19.5 配套] 文件存在性复核：缺失或空 → exit 1
 # [2026-09-13 task-v067] 5 文件→6 文件（+knowledge-brief.md）

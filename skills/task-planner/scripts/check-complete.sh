@@ -558,6 +558,16 @@ if [ "$python_rc" -eq 0 ]; then
         fi
     fi
 
+    # [2026-09-29 task-v096 P4-S1 T3] template-sense warn 抽查段（Rule 34.7 全自动生成合约，
+    # fmea-gate warn 范式：不阻断、零新 config 键）：
+    # 计划含「🔁 模板感知」区块（init-session 运行时追加）且「处置登记处」未填写
+    # （「沉淀理由/不沉淀理由」冒号后带实质内容, 或「已沉淀」登记; 占位行关键词后无冒号不命中）
+    # → 单行 warn；已登记 → 零输出。
+    if grep -q '🔁 模板感知' "$PLAN_FILE" 2>/dev/null \
+       && ! grep -qE '不沉淀理由[[:space:]]*[:：][^[:space:]]|沉淀理由[[:space:]]*[:：][^[:space:]]|已沉淀' "$PLAN_FILE" 2>/dev/null; then
+        echo '[template-sense] ⚠ 计划含模板感知区块但终验未登记沉淀/不沉淀理由（Rule 34.7 全自动生成合约）' >&2
+    fi
+
     # [2026-09-27 task-v091 C-2] 两门全过(全量通过,或本轮按四元键 SKIP)→ 写四元键状态供下轮 SKIP 判定;
     # 门失败路径已在上方 exit 1 不会到达此处=失败永不落状态; 状态文件不含 mtime/size(提案护栏)。
     # 写入前置 attest 一致: SKIP 语义=引用 attest 结果,为 attest 不匹配(篡改/未锁定)的内容落状态
