@@ -22,6 +22,8 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 
 - Rule 34.3 触发条件命中（同类任务第 2 次 / 新类型可泛化 / 用户点名）→ 按 34.4 流程新建 variant 模板后，执行 **34.2 四点同步**：① template-mapping.md 决策树与清单 ② plan-writer 映射表 ③ task-planner SKILL.md 模板节 ④ template-guide.md 变体表与计数
 - 一致性由 task-planner `scripts/selftest-template-lifecycle.sh` 守护；沉淀动作登记计划 Decisions Made 表
+- **全自动生成合约（34.7）**：终验 outcome=COMPLETE 且命中 34.3 任一条件 → 主进程直接派 plan-writer 或 code-assistant 生成新 variant（不问用户）；生成侧双闸门=34.5 的 `ls templates/variant/` 查重+泛化性评估，一次性/不可泛化则登记「不沉淀理由」收场而非硬生成
+- 同步清单：template-mapping.md 清单与计数、template-guide.md 变体表与「N 个」计数加一（均在本卫星 references/）、companion 的 plan-writer.md 映射表行、主 SKILL.md 模板节指针核对；计数级联要求=selftest-template-lifecycle TL-17「N 个」断言同改（v093 教训）；init-session 与 check-template-type 白名单动态派生免同步
 
 ## 使用入口（两种）
 
