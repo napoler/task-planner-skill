@@ -209,7 +209,7 @@
 - [x] 簿记收尾: INDEX/ledger/notepad 沉淀/静默决策清单（Decisions Made silent: 行 ×13）齐备
 - **V-N:** VC-6, VC-7, VC-4——全部 ✅（verification.md Goal Gate 全 PASS → outcome: COMPLETE）
 - **Status:** complete
-- **Executor:** code-reviewer + 主进程（主进程例外理由:⑤ 终验裁决与终验结论定级属主进程终裁;② 簿记落盘,Rule 25.3 白名单）
+- **Executor:** code-reviewer + 主进程（主进程例外理由:⑤ 终验裁决与终验结论定级属主进程终裁;② 计划系统文件/簿记落盘（三件套+INDEX+ledger）,Rule 25.3 白名单）
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|------------------------|-------------|---------|------|
 | S1 | CR 审查 wt 全量 diff | code-reviewer | `git diff master..wt/task-v097-tool-selection` + knowledge-brief §4 条 2/3/8 | APPROVED/BLOCKED 结论+问题清单落检查点;锚保全与 40.3 披露措辞专项核对 | 15min | pending |
