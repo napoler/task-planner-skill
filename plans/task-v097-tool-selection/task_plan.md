@@ -316,14 +316,14 @@
 
 | 字段 | 值 |
 |------|-----|
-| `total` | （不适用——非批量任务） |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` |  |
-| `sampled_pass` |  |
-| `sampled_fail` |  |
+| `total` | 0（零单元声明——本任务非批量,无 ≥5 同构单元批量操作） |
+| `success` | 0 |
+| `failed` | 0 |
+| `failure_rate` | 0%（0/0,无批量面;>5% → STOP 条款不适用） |
+| `sampled_pass` | 0（零单元,抽检不适用） |
+| `sampled_fail` | 0（零单元,熔断条款不适用） |
 | `pre_check` | Q1:否（无每单元独立判断依赖）/Q2:有（VC 逐条客观验收）/Q3:能（worktree+git 可回滚） |
-| `rollback_point` | master@P1 基线 commit |
+| `rollback_point` | master@26f938c（P1 基线,已合并 52b434f 后回滚点=其父提交） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
