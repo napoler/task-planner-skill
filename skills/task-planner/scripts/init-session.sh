@@ -277,8 +277,12 @@ fi
 # （模板本体 task_plan.md 无 template_type 标记，运行时追加而非改本体，§4 条 1 约束）。
 # 正交性（§4 条 10）：本调用点在 tier 分流/复制之后，mini 档只改 tier 不碰 sense；
 # unknown 类型分支（L183-186 区段）本 S-unit 不动（P2-S2）。
-# 追加后幂等保护：同任务目录重复运行 init（task_plan.md 已存在=skip 分支）不重复追加。
-if [ -z "$TEMPLATE_TYPE" ] && [ -f "task_plan.md" ]; then
+# 幂等保护：同任务目录重复运行 init（task_plan.md 已存在=skip 分支）不重复追加。
+# [task-v096 CR-fix] 仅无 template_type 标记的产物才追加（防 mini/known-type 产物被二次标记）:
+# 新鲜 general 兜底副本（templates/task_plan.md）无 template_type: 标记 → 触发；
+# bugfix 等 known-type / mini-lite 产物首行带 <!-- template_type: X --> 标记 → 不触发。
+if [ -z "$TEMPLATE_TYPE" ] && [ -f "task_plan.md" ] \
+   && ! grep -q 'template_type:' "task_plan.md" 2>/dev/null; then
     echo "[template-sense] ⚠ 任务类型空缺（general 兜底）——按 Rule 34.3②/34.7 评估沉淀，终验必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<'EOF'
@@ -306,8 +310,12 @@ fi
 # 与 P2-S1 块互斥（一为 -z、一为 -n）; TASK_TEMPLATE_DEFAULT 显式=general（TEMPLATE_TYPE=general
 # 在白名单内）不触发——字面语义=用户显式选了 general 不算空缺/未知（P2-S1 裁量项维持, findings 登记）。
 # 幂等去重与 P2-S1 同款 grep。
+# [task-v096 CR-fix] 仅无 template_type 标记的产物才追加（防 mini/known-type 产物被二次标记）:
+# unknown 路径重跑时产物可能是已带标记的 mini/known-type 产物 → 不触发（与 P2-S1 同根，
+# 既有 TASK_PLAN_SRC 来源守卫保留, 与无标记守卫双条件同时成立才追加）。
 if [ -n "$TEMPLATE_TYPE" ] && ! echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE " \
-   && [ "$TASK_PLAN_SRC" = "task_plan.md" ] && [ -f "task_plan.md" ]; then
+   && [ "$TASK_PLAN_SRC" = "task_plan.md" ] && [ -f "task_plan.md" ] \
+   && ! grep -q 'template_type:' "task_plan.md" 2>/dev/null; then
     echo "[template-sense] ⚠ 任务类型未知（$TEMPLATE_TYPE 不在白名单）——将落 general 兜底，按 Rule 34.3②/34.7 评估沉淀，终验必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<EOF

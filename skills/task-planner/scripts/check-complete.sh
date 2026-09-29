@@ -561,10 +561,14 @@ if [ "$python_rc" -eq 0 ]; then
     # [2026-09-29 task-v096 P4-S1 T3] template-sense warn 抽查段（Rule 34.7 全自动生成合约，
     # fmea-gate warn 范式：不阻断、零新 config 键）：
     # 计划含「🔁 模板感知」区块（init-session 运行时追加）且「处置登记处」未填写
-    # （「沉淀理由/不沉淀理由」冒号后带实质内容, 或「已沉淀」登记; 占位行关键词后无冒号不命中）
+    # （「不沉淀理由 / 沉淀理由」冒号后带实质内容方命中; 占位行关键词后无冒号不命中）
     # → 单行 warn；已登记 → 零输出。
+    # [task-v096 CR-fix P2] 排除式收紧: 去掉无锚定「已沉淀」字面量（原式致计划任意处提及
+    # 「已沉淀 3 个 variant」即静默吞 warn, 边缘误抑制）。剩余 fail-open 裁量: 仅当冒号前
+    # 关键词与冒号间仅空白（不隔其他字）才排除 warn；「不沉淀理由: 无沉淀价值」等带实质
+    # 内容必命中排除=登记有效，属既有语义保留。
     if grep -q '🔁 模板感知' "$PLAN_FILE" 2>/dev/null \
-       && ! grep -qE '不沉淀理由[[:space:]]*[:：][^[:space:]]|沉淀理由[[:space:]]*[:：][^[:space:]]|已沉淀' "$PLAN_FILE" 2>/dev/null; then
+       && ! grep -qE '不沉淀理由[[:space:]]*[:：][^[:space:]]|沉淀理由[[:space:]]*[:：][^[:space:]]' "$PLAN_FILE" 2>/dev/null; then
         echo '[template-sense] ⚠ 计划含模板感知区块但终验未登记沉淀/不沉淀理由（Rule 34.7 全自动生成合约）' >&2
     fi
 
