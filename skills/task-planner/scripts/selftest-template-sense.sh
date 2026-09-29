@@ -7,7 +7,9 @@
 #   case-4 条款锚: critical-rules.md 首列 34.7 恰 1 条且含「全自动生成合约」；SKILL.md C22 行含「34.7 全自动生成」
 #   case-5 T3 warn: 计划含「🔁 模板感知」区块且无处置登记 → check-complete 输出含 [template-sense]；无区块计划零输出
 #   case-6 registry 自检: selftest-registry.tsv 含本脚本登记行（含本 S-unit 写入的 dep_anchors）
-# 6 断言全 PASS exit 0; 任一 FAIL exit 1。行为级用例临时产物均在 mktemp -d 目录, 脚本退出前清理, 不写仓库内任何路径。
+#   case-7 T1 CR-fix 负例: mini 档（tier=mini + 空类型）→ 产物 mini-lite 带标记, 无「🔁 模板感知」区块、无 general 注释（无标记守卫消除 P1-1）
+#   case-8 T1 CR-fix 负例: 重跑（先 bugfix 再空类型重跑）→ 产物类型标记仍 bugfix 且无感知区块（无标记守卫消除 P1-2, 来源守卫保留）
+# 8 断言全 PASS exit 0; 任一 FAIL exit 1。行为级用例临时产物均在 mktemp -d 目录, 脚本退出前清理, 不写仓库内任何路径。
 
 set -u
 
@@ -33,6 +35,14 @@ trap cleanup EXIT
 run_init() { # $1=task-dir $2=type-arg(""=不传)
     local dir="$1" ttype="$2"
     ( cd "$dir/plans/demo" && TASK_TEMPLATE_TYPE= TASK_TEMPLATE_DEFAULT= bash "$INIT" proj ${ttype:+"$ttype"} ) 2>&1
+}
+
+# case-7/8 CR-fix 负例: 第 3 位置参 tier 直传 (init-session.sh proj "" mini)。
+# 注意: ttype 为空时须显式传空串占位, 否则 tier 会前移落入第 2 位置参 (template_type),
+# 本 helper 与 run_init 的区别正在此。清掉 env tier/类型兜底防干扰
+run_init_tier() { # $1=task-dir $2=type-arg(""=显式传空串占位) $3=tier-arg(""=不传)
+    local dir="$1" ttype="$2" tier="$3"
+    ( cd "$dir/plans/demo" && TASK_TEMPLATE_TYPE= TASK_TEMPLATE_DEFAULT= TASK_PLAN_TIER= TASK_AUTO_TIER= bash "$INIT" proj "${ttype:-}" ${tier:+"$tier"} ) 2>&1
 }
 
 # case-1 T1 general 空缺正例
@@ -113,6 +123,35 @@ if [ -f "$TSV" ] \
     ok 6 "selftest-registry.tsv 含本脚本登记行且 dep_anchors 四条在位"
 else
     bad 6 "registry 缺本脚本行或 dep_anchors 漂移"
+fi
+
+# case-7 CR-fix 负例: mini 档 tier=mini + 空类型 → mini-lite 产物无感知区块、无 general 注释（P1-1 消除）
+T7D="$(mktemp -d /tmp/tsense-case7.XXXXXX)"; T_DIRS="$T_DIRS $T7D"
+mkdir -p "$T7D/plans/demo"
+out7="$(run_init_tier "$T7D" "" "mini")"
+p7="$(grep -cF 'mini-lite' "$T7D/plans/demo/task_plan.md" 2>/dev/null || true)"
+s7="$(grep -cF '🔁 模板感知' "$T7D/plans/demo/task_plan.md" 2>/dev/null || true)"
+g7="$(grep -cF 'template_type: general' "$T7D/plans/demo/task_plan.md" 2>/dev/null || true)"
+n7="$(grep -cF '[template-sense]' <<<"$out7" || true)"
+if [ "$p7" -ge 1 ] && [ "$s7" = 0 ] && [ "$g7" = 0 ] && [ "$n7" = 0 ]; then
+    ok 7 "mini 档空类型 → mini-lite 产物带标记, 无感知区块、无 general 注释（CR P1-1 负例通过）"
+else
+    bad 7 "mini 档误触发/缺标记: mini-lite 计 $p7, 区块计 $s7, general 注释计 $g7, 输出 [template-sense] 计 $n7"
+fi
+
+# case-8 CR-fix 负例: 先 bugfix 再空类型重跑 → 产物标记仍 bugfix 且无感知区块（P1-2 消除, 幂等/来源双守卫）
+T8D="$(mktemp -d /tmp/tsense-case8.XXXXXX)"; T_DIRS="$T_DIRS $T8D"
+mkdir -p "$T8D/plans/demo"
+out8a="$(run_init "$T8D" "bugfix")"
+out8b="$(run_init "$T8D" "")"
+b8="$(grep -cF 'template_type: bugfix' "$T8D/plans/demo/task_plan.md" 2>/dev/null || true)"
+s8="$(grep -cF '🔁 模板感知' "$T8D/plans/demo/task_plan.md" 2>/dev/null || true)"
+g8="$(grep -cF 'template_type: general' "$T8D/plans/demo/task_plan.md" 2>/dev/null || true)"
+n8b="$(grep -cF '[template-sense]' <<<"$out8b" || true)"
+if [ "$b8" -ge 1 ] && [ "$s8" = 0 ] && [ "$g8" = 0 ] && [ "$n8b" = 0 ]; then
+    ok 8 "bugfix 后空类型重跑 → 产物标记仍 bugfix 且无感知区块（CR P1-2 负例通过）"
+else
+    bad 8 "重跑误追加: bugfix 标记计 $b8, 区块计 $s8, general 注释计 $g8, 二次输出 [template-sense] 计 $n8b"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
