@@ -18,6 +18,7 @@
 #                    源=主仓 skills/task-planner — 2026-09-17 task-v077 修复假 IDENTICAL: 部署源/对账基准不再用
 #                    SKILL_ROOT(脚本运行处), 从部署位运行亦以主仓 canonical 内容为源);
 #                    逐位 [DEPLOY] 判定, 任一 DRIFT exit 6(部署源缺失亦 DRIFT fail-closed)
+#                    --deploy 对账通过后自动执行池成员顶层枚举挂载(install_pool_links): <skills>/<member> 相对软链→task-planner/review-library/<member>;冲突跳过 LINK-WARN;增强段不改 exit 码 [task-v105]
 #                    守卫语义(2026-09-12 R3): $HOME 内部 slot = 白名单口径 — 仅当位于任一默认部署根
 #                    ($HOME/.zcode/skills/task-planner、$HOME/.claude/skills/task-planner、
 #                    $HOME/.config/opencode/skills/task-planner)之内(或等于)才放行; 其余 $HOME 子路径
@@ -556,6 +557,39 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         done <<< "$targets"
         return 0
     }
+    # [task-v105] 池成员顶层枚举挂载: 宿主 skill 发现面=顶层 <skills>/<member>/SKILL.md,
+    # 池嵌套在 task-planner/review-library/ 下对宿主不可见 → 每成员建相对软链
+    # <parent>/<m> → task-planner/review-library/<m>(单一维护源,池更新自动同步)。
+    # 冲突语义: 顶层已有条目→跳过+LINK-WARN(独立 skill 不覆盖);挂载后校验失败→仅回滚本次新建的链。
+    # 增强段: 失败不改 exit 码(部署判定已定),LINK-* 仅输出。
+    install_pool_links() {
+        local slotdir="$1" parent m link tgt
+        parent="$(dirname "$slotdir")"
+        [ -d "$parent" ] || { echo "[DEPLOY] LINK-SKIP: $slotdir (父目录缺失,跳过池挂载)"; return 0; }
+        local members
+        members="$(ls -d "$slotdir/review-library/"*/ 2>/dev/null | xargs -n1 basename 2>/dev/null | LC_ALL=C sort)"
+        [ -n "$members" ] || { echo "[DEPLOY] LINK-SKIP: $slotdir (池目录缺失/空,跳过挂载)"; return 0; }
+        for m in $members; do
+            link="$parent/$m"
+            tgt="task-planner/review-library/$m"
+            if [ -e "$link" ] || [ -L "$link" ]; then
+                if [ -L "$link" ] && [ "$(readlink "$link")" = "$tgt" ]; then
+                    echo "[DEPLOY] LINK-OK: $link (既有挂载有效)"
+                else
+                    echo "[DEPLOY] LINK-WARN: $link (顶层已被独立条目占用,不触碰)"
+                fi
+                continue
+            fi
+            ln -s "$tgt" "$link" 2>/dev/null || { echo "[DEPLOY] LINK-WARN: $link (ln 失败,跳过)"; continue; }
+            if [ -f "$link/SKILL.md" ] && grep -q '^name:' "$link/SKILL.md" 2>/dev/null; then
+                echo "[DEPLOY] LINK-OK: $link → $tgt"
+            else
+                rm -f "$link"
+                echo "[DEPLOY] LINK-WARN: $link (挂载后校验失败,已回滚)"
+            fi
+        done
+        return 0
+    }
     IFS=':' read -r -a slots <<< "$SLOTS"
     for slot in "${slots[@]}"; do
         [ -n "$slot" ] || continue
@@ -608,6 +642,7 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         # 先行打印; 判定行与 exit 码语义不变: 两级全过 = IDENTICAL)
         if deploy_reconcile "$slotdir"; then
             echo "[DEPLOY] IDENTICAL: $slotdir (基准=主仓 skills/task-planner)"
+            install_pool_links "$slotdir"
         else
             DRIFT=1
         fi
