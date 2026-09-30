@@ -191,6 +191,7 @@ model: opus
 | C26 | 本任务已按 Rule 38 判定计划档位：轻量任务声明 plan_tier: mini 时已套用 mini-lite 模板+豁免清单（5 锚点），非轻量任务未误用 mini 档；MISMATCH 提示已处置（check-template-type/plan-tier 机器门承载 MISMATCH 检测，套用人工） | ☐ |
 | C27 | 用户显式点名 /workflow 编排时已按 Rule 39 路由：Skill("dynamic-workflows") 已加载、CreateWorkflow 三来源其一提交、21.4 并行豁免已登记 Decisions Made+progress（39.4，未点名则走 21.4 串行，无需记行） | ☐ |
 | C28 | standard/full 档计划含「🧰 工具选择与编排」区块且逐 Phase 登记工具面与理由、workflow 编排判定与 /goal 对齐两判定行已填（Rule 40.2/40.3/40.4；Executor 字段仍是委派门控机器事实源,区块不替代；mini 档豁免无需记行）；命中建议 CreateWorkflow 时已按 39.4 登记并行豁免（机器面=selftest-tool-selection 静态断言,区块完整性人工核查） | ☐ |
+| C29 | 本任务执行中出现失败/阻塞/升级冲动时已按 Rule 41 过消解链与升级四门槛：升级用户仅限 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记禁呈报（41.2/41.3）；任何 AskUserQuestion/STOP 前已过 41.4 消解清单并在上报附「已尝试清单」；多待决项打包呈报附推荐（41.5）（机器面=selftest-self-resolution 静态断言,消解过程人工核查） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -238,7 +239,7 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40））：
+详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40/41））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -269,6 +270,7 @@ model: opus
 - **Rule 38（P0）任务难度分级与轻量档**：判定(38.1 plan_tier: mini ∧ ≤2 文件 ∧ ≤15min ∧ 单模块, 三条件机器可测+MISMATCH 提示)/档位矩阵(38.2 mini-lite 模板+standard 13 variant+full general)/轻量模板契约(38.3 区块白名单)/门控豁免清单(38.4 5 锚点 if 前置, 非 mini 路径零改动)/机制(38.5 plan_tier_enforce 三档默认 warn+init-session tier 分流+selftest-plan-tier.sh)——轻任务走精简仪式消除慢源，未声明档位计划零影响（详见 references/critical-rules.md Rule 38）
 - **Rule 39（动态工作流编排 — task-v088）**：用户显式点名 `/workflow` 才路由 dynamic-workflows 编排（未点名=既有 21.4 串行零改动）；skill 加载前置门槛（39.2）；四机制映射 失败/断点/升级/沉淀→AmendWorkflow/ResumeWorkflowRun/ResolveWorkflowQuestion/SaveWorkflow（39.3 表）；21.4 并行豁免登记（39.4）；机器校验边界=官方文档未提及 check-dispatch 覆盖 workflow 内部（39.5）；零新 config 键，selftest-workflow-orchestration.sh 守护（39.6）
 - **Rule 40（harness 工具面主动选择 — task-v097）**：工具面六类清单（/workflow、/goal、Agent 子代理、卫星技能、MCP、机械守卫脚本）（40.1）；计划期「🧰 工具选择与编排」区块=Executor 上游分析记录,不替代委派门控机器事实源（40.2）；/goal 对齐映射指引+用户侧命令如实披露（40.3）；workflow 编排建议登记制、39.1 显式点名红线不变（40.4）；机器校验边界如实披露（40.5）；零新 config 键+selftest-tool-selection.sh 守护（40.6）
+- **Rule 41（问题自主消解与升级纪律 — task-v098）**：消解优先链=重读计划→22.3 ①-④ 兜底→最小探针→拆细→替代路径,升级用户是最后手段非默认出口（41.1）；升级四门槛 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记（41.2）；trivial 小修直接做+登记,禁「留用户裁决」推诿（41.3）；升级前必过消解清单并附「已尝试清单」,D6 硬停点语义保留不弱化（41.4）；多待决项打包呈报附推荐（41.5）；零新 config 键+selftest-self-resolution.sh 守护（41.6）
 
 ## Completion Gate
 
@@ -292,7 +294,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择） |
+| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
