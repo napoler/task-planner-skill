@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-review-library.sh — task-v100 P3-S6: Rule 42 质量审查兜底池（review-library）静态守护
 # 范式同 selftest-self-resolution.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
-# 本脚本仅做静态断言（grep/wc/ls 为主），RL-01..RL-10 全 PASS exit 0；任一 FAIL exit 1。
+# 本脚本仅做静态断言（grep/wc/ls 为主），RL-01..RL-11 全 PASS exit 0；任一 FAIL exit 1。
 #   RL-01     review-library/ 目录数 = 11（恰 11 目录）[2026-09-30 task-v101 +alignment-review]
 #   RL-02     11 个目录名与清单精确一致（逐一 -d 判定）
 #   RL-03     每目录含 SKILL.md（11 个 -f 全过）
@@ -14,6 +14,7 @@
 #             且 CRIT `grep -c '三级检测顺序'`=0（关键负断言,防三级残留）
 #             [task-v100 锚修正: 原文 ④ 与池 token 之间有 `**` 强调符,故主体锚去 ④ 前缀,防假断言]
 #   RL-10     全池 11 文件 `grep -nE '1-4[0-9]'` 零命中（越界字面负断言）
+#   RL-11     alignment-review 验证优先升级锚：「写入前校验」≥2、「未经一致性校验，不直接追加新内容」=1、「变更记录输出」≥1（task-v102）
 # 静态只读（grep/wc/ls），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
@@ -95,6 +96,16 @@ fi
 # RL-10 越界字面负断言（全池 11 文件）
 hits="$(grep -nE '1-4[0-9]' "$RLIB"/*/SKILL.md || true)"
 if [ -z "$hits" ]; then ok 10 "全池 11 文件 1-4[0-9] 越界字面零命中"; else bad 10 "全池越界字面命中:$(printf '%s' "$hits" | head -3)"; fi
+# RL-11 alignment-review 验证优先升级锚（task-v102）
+A="$RLIB/alignment-review/SKILL.md"
+g="$(grep -c '写入前校验' "$A" || true)"
+h="$(grep -c '未经一致性校验，不直接追加新内容' "$A" || true)"
+i="$(grep -c '变更记录输出' "$A" || true)"
+if [ "$g" -ge 2 ] && [ "$h" -eq 1 ] && [ "$i" -ge 1 ]; then
+  ok 11 "alignment-review 验证优先锚：写入前校验 $g ≥2 / 未经一致性校验 $h =1 / 变更记录输出 $i ≥1"
+else
+  bad 11 "alignment-review 验证优先锚漂移（写入前校验 $g 应 ≥2 / 未经一致性校验 $h 应 =1 / 变更记录输出 $i 应 ≥1）"
+fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
