@@ -163,7 +163,28 @@ if [ -d "$REPO_SKILLS" ]; then
   for skill_dir in "$REPO_SKILLS"/*/; do
     [ -d "$skill_dir" ] || continue
     skill_name="$(basename "$skill_dir")"
-    [ "$skill_name" = "task-planner" ] && continue
+    if [ "$skill_name" = "task-planner" ]; then
+      # [task-v105] 池成员宿主可枚举分发: review-library/<member>/SKILL.md → <root>/skills/<member>/SKILL.md
+      # 单文件分发(池成员为纯文档 skill,零 scripts/config);幂等=cmp 等同由 sync_one 自跳;
+      # 顶层已有独立 skill 且内容不同 → 独立 skill 不覆盖,skip+WARN 留痕
+      pool_dir="$REPO_SKILLS/task-planner/review-library"
+      if [ -d "$pool_dir" ]; then
+        for member_dir in "$pool_dir"/*/; do
+          [ -d "$member_dir" ] || continue
+          member_name="$(basename "$member_dir")"
+          member_skill="$member_dir/SKILL.md"
+          [ -f "$member_skill" ] || continue
+          member_dst="$TARGET_ROOT/skills/$member_name/SKILL.md"
+          if [ -f "$member_dst" ] && ! cmp -s "$member_skill" "$member_dst"; then
+            echo "[companion] WARN: skip pool member $member_name (顶层已存在独立 skill 且内容不同,不覆盖)"
+            skipped=$((skipped+1))
+            continue
+          fi
+          sync_one "$member_skill" "$member_dst"
+        done
+      fi
+      continue
+    fi
     [ -f "$skill_dir/SKILL.md" ] || { echo "  skip: $skill_name (no SKILL.md)"; continue; }
     # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
     # 排除 .git / tests/ 等非同步内容

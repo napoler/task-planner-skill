@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-review-library.sh — task-v100 P3-S6: Rule 42 质量审查兜底池（review-library）静态守护
 # 范式同 selftest-self-resolution.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
-# 本脚本仅做静态断言（grep/wc/ls 为主），RL-01..RL-13 全 PASS exit 0；任一 FAIL exit 1。
+# 本脚本仅做静态断言（grep/wc/ls 为主），RL-01..RL-15 全 PASS exit 0；任一 FAIL exit 1。
 #   RL-01     review-library/ 目录数 = 11（恰 11 目录）[2026-09-30 task-v101 +alignment-review]
 #   RL-02     11 个目录名与清单精确一致（逐一 -d 判定）
 #   RL-03     每目录含 SKILL.md（11 个 -f 全过）
@@ -17,6 +17,8 @@
 #   RL-11     alignment-review 验证优先升级锚：「写入前校验」≥2、「未经一致性校验，不直接追加新内容」=1、「变更记录输出」≥1（task-v102）
 #   RL-12     alignment-review 闸门深化锚（task-v104）：「全文扫描」≥1 且「删除或归档」≥1 且「变更范围」≥1（alignment-review/SKILL.md）
 #   RL-13     42.6.3 三要素升级锚（task-v104）：CRIT 42.6.3 行「三要素」≥1 且 SKILL.md C32 行「三要素」≥1
+#   RL-14     池成员宿主枚举挂载锚（task-v105）：scripts/smart-merge-back.sh 'install_pool_links' ≥1 且 'LINK-WARN' ≥1（冲突跳过语义）
+#   RL-15     install-companion 池分发锚（task-v105）：lib/install-companion.sh 'review-library' ≥1 且 '独立 skill' ≥1（不覆盖语义）
 # 静态只读（grep/wc/ls），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
@@ -26,6 +28,8 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 RLIB="$SKILL_ROOT/review-library"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+SMB="$SKILL_ROOT/scripts/smart-merge-back.sh"
+ICOMP="$SKILL_ROOT/lib/install-companion.sh"
 
 DIRS="general-review code-quality-review test-quality-review security-review image-review content-quality-review documentation-review data-quality-review ui-quality-review release-review alignment-review"
 
@@ -125,6 +129,14 @@ if [ "$p" -ge 1 ] && [ "$m" -ge 1 ]; then
 else
   bad 13 "42.6.3 三要素升级锚漂移（CRIT 42.6.3 行三要素 $p 应 ≥1 / SKILL.md C32 行三要素 $m 应 ≥1）"
 fi
+# RL-14 池成员宿主枚举挂载锚（task-v105）
+a="$(grep -c 'install_pool_links' "$SMB" || true)"
+b="$(grep -c 'LINK-WARN' "$SMB" || true)"
+if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 14 "smart-merge-back 池挂载函数+冲突跳过锚在位"; else bad 14 "smart-merge-back 池挂载锚缺失(install_pool_links=$a/LINK-WARN=$b)"; fi
+# RL-15 install-companion 池分发锚（task-v105）
+a="$(grep -c 'review-library' "$ICOMP" || true)"
+b="$(grep -c '独立 skill' "$ICOMP" || true)"
+if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 15 "install-companion 池分发+独立 skill 不覆盖锚在位"; else bad 15 "install-companion 池分发锚缺失(review-library=$a/独立 skill=$b)"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
