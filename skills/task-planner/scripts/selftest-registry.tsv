@@ -39,3 +39,4 @@ selftest-tool-selection.sh	tier|Rule 40 工具面主动选择面(🧰 区块锚/
 selftest-self-resolution.sh	tier|Rule 41 问题自主消解与升级纪律(六子条锚/四门槛措辞/消解清单/trivial 裁定/零新 config 键)	Rule 41 问题自主消解与升级纪律;升级四门槛;消解清单;trivial 自主裁定	critical-rules.md ^41 锚;SKILL.md C29+Rule 41 摘要;Rules 1-39 字面锚;skill-split 级联 label
 selftest-reliability-institution.sh	Rule 42/43 质量审查检测+执行可靠性制度化	Rule 42 质量审查工具检测登记;Rule 43 证据先行/档位经济/候选预验证;C30/C31;SKILL 三锚;零新 config 键	critical-rules.md ^42/^43 锚;SKILL.md C30/C31+摘要行;templates 质量审查工具行;config properties=40
 selftest-review-library.sh	Rule 42 质量审查兜底池（review-library）	Rule 42.2 四级检测第④层兜底池;10 通用质量审核技能;C30 四级化	review-library 10 目录;SKILL C30 四级;CRIT 42.2 四层锚
+selftest-ask-default-timeout.sh	tier|Rule 44 用户选择点默认项与自动超时(四子条锚/用户原话锚/C33 行/模板默认项行/mini-lite 豁免/零新 config 键)	Rule 44 条款 / SKILL.md C33 或 Rule 44 摘要行 / 模板自动超时默认项行 / mini-lite 豁免行改动	critical-rules.md ^44 锚;SKILL.md C33+Rule 44 摘要行;templates 自动超时默认项;mini-lite 豁免;config properties=40
