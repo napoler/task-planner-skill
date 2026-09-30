@@ -90,10 +90,11 @@ if [ "$(grep -c 'task-v099' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$S
 else
   bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099 / -le 4 前缀断言行）"
 fi
-# SR-12 registry 双向登记：含 selftest-self-resolution 行 ≥1 且总行数 = 40（表头+39 数据行）[2026-09-30 task-v099 B 类扩围: v099 新增 selftest-reliability-institution.sh 登记 +1 行,锚值 39→40,断言语义不变]
+# SR-12 registry 双向登记：含 selftest-self-resolution 行 ≥1 且行数=脚本数+表头（动态口径）[2026-09-30 task-v100 B 类扩围根治: 硬编码行数随每次新脚本登记必然级联断裂（v099 改 39→40 后 v100 又断）,改动态比较——期望行数=ls selftest-*.sh 计数+1 表头,断言语义等价且免未来级联]
 n="$(grep -c 'selftest-self-resolution' "$REGISTRY" || true)"
 lines="$(wc -l < "$REGISTRY")"
-if [ "$n" -ge 1 ] && [ "$lines" -eq 40 ]; then ok 12 "registry selftest-self-resolution 登记行 ≥1 且总行数 40"; else bad 12 "registry 漂移（selftest-self-resolution 命中 $n 应 ≥1 / 总行数 $lines 应 40）"; fi
+expected=$(( $(ls "$(dirname "$REGISTRY")"/selftest-*.sh 2>/dev/null | wc -l) + 1 ))
+if [ "$n" -ge 1 ] && [ "$lines" -eq "$expected" ]; then ok 12 "registry selftest-self-resolution 登记行 ≥1 且总行数 $lines=脚本数+表头（动态）"; else bad 12 "registry 漂移（selftest-self-resolution 命中 $n 应 ≥1 / 总行数 $lines 应 $expected=脚本数+表头）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
