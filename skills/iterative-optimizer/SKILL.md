@@ -34,7 +34,7 @@ loop-based iterative mode: 固定五步 + 状态文件,轮次执行 stable repea
 | 改进约束(可选) | 禁改区域/必须保留要素 | 无 |
 
 契约规则:
-- 缺任一必填项 → STOP,按默认项 + 自动超时规则与用户协商;协商不成 → 不启动
+- 缺任一必填项 → STOP,按默认项 + 自动超时规则(task-planner Rule 44)与用户协商;协商不成 → 不启动
 - QC 条款禁止含不可机械判定的主观判定词;只允许机器可检查或客观可定义的判据
 
 ## 执行流程(每轮五步,门控推进)
@@ -45,7 +45,7 @@ loop-based iterative mode: 固定五步 + 状态文件,轮次执行 stable repea
   - 已有状态文件 → Read 断点续跑(接上轮次,不重头)
 - [ ] **Step 1 评估 (evaluate)**: 当前产出逐条核验 QC-1..N
   - 机器可检查项必须实际跑检查命令并附输出,禁止替代性推断
-  - 每条记 PASS/FAIL + 证据;全 PASS → 跳 Step 4 ①
+  - 每条记 PASS/FAIL + 证据;全 PASS → 跳至 Step 4 情形①
 - [ ] **Step 2 诊断弱点 (diagnose · identify weaknesses)**:
   - 列全部 FAIL 项,按影响排序
   - 选定本轮最弱项 1-2 个(单 focus: 每轮只治最弱项,禁止一次全改——多改致归因失效)
@@ -57,6 +57,7 @@ loop-based iterative mode: 固定五步 + 状态文件,轮次执行 stable repea
   - ① QC 全 PASS → 收敛,输出摘要,结论 RESOLVED
   - ② 有 FAIL 且轮次 < max_iterations → 回 Step 1
   - ③ 轮次 ≥ max_iterations → 停止,输出摘要 + 遗留 FAIL 清单,结论 PARTIAL
+  - 补充出口: 同一 FAIL 连续 2 轮无改善(门控铁律 P1)→ 随时停止,结论 BLOCKED
 
 每轮执行纪律:
 - 每轮结束必须回写状态文件(轮次表 + QC 证据 + 门控结果)
