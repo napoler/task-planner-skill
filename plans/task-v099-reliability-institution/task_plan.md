@@ -176,7 +176,7 @@ cost_estimate:
 - [x] 簿记收尾：findings.md 回填全部 Handoff 行 verify_done；progress.md Error Log Prevention 列回填；Decisions Made 补登 silent: 决策；task_plan.md 各 Phase 翻 complete + 隔离决策 merge_back=merged(<commit>)；计划八件套随簿记提交入库
 - [x] 学习闭环终验：check-complete Learning Gate（Error Log Root Cause 非空）；REFLECT-GATE 两行落 progress.md
 - **V-N:** VC-5, VC-6（CR APPROVED + 终验全 VC 复验 + 零回归 + 部署位复验）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** code-reviewer（sonnet-1）+ 主进程簿记（例外理由:② 计划系统文件簿记 + ⑤ 委派统计/质量门控机械复核——Rule 25.3 白名单②⑤；CR 本体经子代理隔离执行非主进程亲审）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
