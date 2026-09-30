@@ -144,13 +144,6 @@ cost_estimate:
 - **V-N:** VC-6
 - **Status:** complete
 - **Executor:** code-reviewer（sonnet-1）（CR 隔离审查）+ 主进程（② 计划系统文件簿记 + ⑤ 终验机械复核——Rule 25.3 白名单②⑤）
-### Phase 5: CR Gate + 终验簿记
-- [x] CR Gate: code-reviewer 隔离审查全量 diff（10 SKILL.md 内容质量主审+42.2 修订+新 selftest）;APPROVED 才终验
-- [x] 终验簿记: verification.md 全 VC/委派率/check-complete（簿记提交后）/INDEX/notepad/memory/收尾
-- **V-N:** VC-6
-- **Status:** complete
-- **Executor:** code-reviewer（sonnet-1）+ 主进程（② 簿记 + ⑤ 终验机械复核）
-
 ## 🔀 隔离决策
 | 字段 | 值 |
 |------|-----|
