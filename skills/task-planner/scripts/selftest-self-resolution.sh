@@ -84,11 +84,11 @@ if grep -qF '升级四门槛' "$SKILLMD" || grep -qF '四门槛' "$SKILLMD"; the
 else
   bad 10 "SKILL.md 缺摘要行锚（升级四门槛 / 四门槛）"
 fi
-# SR-11 skill-split 级联落地锚（task-v099 label + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v099 B 类扩围: 级联 label 随 v099 联动 435→439,锚 token 同步 task-v098→task-v099,断言语义不变]
-if [ "$(grep -c 'task-v099' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
-  ok 11 "selftest-skill-split.sh task-v099 label + -le 4 前缀断言行在位"
+# SR-11 skill-split 级联落地锚（task-vNNN label 宽容正则 + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v100 锚 v098→v099;2026-10-01 task-v102 B 类扩围根治: label token 随级联任务必变（v098→v099→v102 三连断）,改宽容正则 task-v099|task-v10x,断言语义不变]
+if [ "$(grep -cE 'task-v099|task-v10[0-9]' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
+  ok 11 "selftest-skill-split.sh task-v099/task-v10x label + -le 4 前缀断言行在位"
 else
-  bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099 / -le 4 前缀断言行）"
+  bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099|task-v10x / -le 4 前缀断言行）"
 fi
 # SR-12 registry 双向登记：含 selftest-self-resolution 行 ≥1 且行数=脚本数+表头（动态口径）[2026-09-30 task-v100 B 类扩围根治: 硬编码行数随每次新脚本登记必然级联断裂（v099 改 39→40 后 v100 又断）,改动态比较——期望行数=ls selftest-*.sh 计数+1 表头,断言语义等价且免未来级联]
 n="$(grep -c 'selftest-self-resolution' "$REGISTRY" || true)"
