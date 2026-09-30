@@ -46,7 +46,8 @@ alignment-review 写入前校验闸门深化为「五维全文扫描→标记冲
 
 outcome: **COMPLETE**
 
+## CR fix-phase（2026-10-01）
+- [x] CR P2×2 指针收编: CRIT 42.6.4 与 C32 行「RL-11」→「RL-11..13」+registry review-library 旧文「10 目录/10 通用」→「11 目录/11 通用（含 alignment-review）」（v101 漏更收编）——commit 90ac03a+三位部署同步+push;RL 13/0+SR 12/0+T 41/0 复跑全 PASS
+
 **遗留披露（不阻塞）**:
-1. CR P2×2: CRIT 42.6.4 与 C32 行机器面指针仍写「RL-11」未随 RL-12/13 扩展（按计划零改动约束留置,后续簿记任务收编）
-2. CR 留痕: selftest-registry.tsv:41「review-library 10 目录」自 task-v101 起过期（先于本区间基线,登记后续）
-3. 闸门「确认后整理」的 silent 通道依赖 Rule 44 自动超时裁决（行为面消费待实战）
+1. 闸门「确认后整理」的 silent 通道依赖 Rule 44 自动超时裁决（行为面消费待实战）
