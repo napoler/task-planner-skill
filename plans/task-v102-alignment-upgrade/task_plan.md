@@ -110,7 +110,7 @@ plan_tier: standard
 - [ ] 预检→smart-merge-back --deploy（部署位「写入前」锚 grep）→push（ls-remote 终验）→清理 0/0
 - **V-N:** VC-5
 - **Status:** complete
-- **Executor:** 主进程（①②③）
+- **Executor:** 主进程（① git 编排（merge/deploy/push/cleanup 全链）+ ② merge_back 簿记 + ③ 机械验证（只读预检/部署位终裁）——Rule 25.3 白名单①②③）
 
 ### Phase 5: CR Gate + 终验簿记
 - [ ] CR（code-reviewer 隔离审全量 diff）;APPROVED 才终验
