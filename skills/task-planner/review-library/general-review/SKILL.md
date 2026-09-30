@@ -5,7 +5,7 @@ description: 通用综合质量审核技能（兜底池）——无更专用审�
 
 # general-review · 通用综合质量审核
 
-review-library 兜底池的通用质量审核技能,Rule 42.2 四级检测链中的「兜底的兜底」。当任务产出类型未命中对应领域专用审核技能（code/test/security/image/content/documentation/data/UI/release）,或任务为混合领域、无单一专用技能可完整覆盖时,用本技能做最终综合质量审查。
+review-library 兜底池的通用质量审核技能,Rule 42.2 四级检测链中的「兜底的兜底」。当任务产出类型未命中对应领域专用审核技能（code/test/security/image/content/documentation/data/UI/release/alignment）,或任务为混合领域、无单一专用技能可完整覆盖时,用本技能做最终综合质量审查。
 输出二值 `APPROVED` / `CHANGES_REQUESTED`,每条结论必须附机器可复现证据。
 
 ## 触发条件
