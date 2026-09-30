@@ -54,6 +54,7 @@
 | task-v099-reliability-institution | complete | 5/5 | Rule 42 质量审查技能主动检测与补充（五子条，按需检测制）+Rule 43 执行可靠性制度化（四子条：证据先行/小模型档位经济/候选预验证）+SKILL C30/C31+模板「质量审查工具」行+plan-writer 义务行+selftest-reliability-institution R-01..12，39 脚本 628/0，CR APPROVED，merge d066159+push 6789780 | none |  |  | 2026-09-30 | ✓ |
 | task-v100-review-library | complete | 5/5 | 10 个通用质量审核技能兜底池（general/code/test/security/image/content/documentation/data/ui/release,各 50-51 行四要素）+Rule 42.2 三级→四级检测链（④层内置兜底池）+C30 级联+selftest-review-library RL-01..10+SR-12 动态口径根治，40 脚本 638/0，CR fix-phase 后复验 APPROVED，merge 9b17c05+CR P1 ecae12d 已 push | none |  |  | 2026-09-30 | ✓ |
 | task-v101-alignment-review | complete | 5/5 | 第 11 技能 alignment-review（对齐/同步一致性审查,清单 14 条全案例化）+池计数/枚举级联 10→11 三处（RL-01/DIRS+CRIT 42.2+general-review）,40 脚本 638/0,CR 首审 APPROVED+fix-phase 处置,merge 54bd512+cae66ad 已 push | none |  |  | 2026-09-30 | ✓ |
+| task-v102-alignment-upgrade | complete | 5/5 | alignment-review 验证优先升级（写入前校验闸门五步+变更记录五要素+触发扩展,50→75 行）+Rule 42.6 四子条+C32/模板行+RL-11+R-01/T-主/SR-11 三处级联（SR-11 宽容正则根治），40 脚本 639/0，CR APPROVED（executor 改派），merge f419419 已 push | none |  |  | 2026-10-01 | ✓ |
 
 ## 待处理（需关注）
 -（无——v093/v094/v095 已按交付证据翻 complete；v093/v094 计划文件内 Status 未翻属他会话簿记债务，交付证据=簿记提交）
@@ -106,6 +107,7 @@
 - task-v099-reliability-institution ✓ (5/5) — 2026-09-30
 - task-v100-review-library ✓ (5/5) — 2026-09-30
 - task-v101-alignment-review ✓ (5/5) — 2026-09-30
+- task-v102-alignment-upgrade ✓ (5/5) — 2026-10-01
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 47
+- in_progress: 0 | pending: 0 | complete: 48
