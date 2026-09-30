@@ -191,6 +191,7 @@ cost_estimate:
 
 ## Notes
 - 本任务自身即 Rule 42.2 四级检测链的首个消费示范: 检测=review-library 从 0→10
+- **无删除声明（Rule 36.3/36.6 登记,2026-09-30 终验）**: 本任务全量 diff 零功能性删除——review-library 10 技能全为新建;CRIT 仅 42.2 行改写+42.5 一词（Rule 1-41/42 其余与 43.x 零触碰）;SKILL 仅 C30 行内措辞;config.json 零改动（properties=40,RL 断言覆盖）——删除性行为清单=空
 - 禁止在新增文本产生「1-4x」越界数字字面;「Rules 1-39」字面 2 处不动
 
 ## 🚨 Drift Log
