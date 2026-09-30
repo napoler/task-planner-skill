@@ -28,6 +28,7 @@
 | `worktree_path` | `<path>` | §十一 隔离决策已有字段 |
 | `scope_files` | `[paths]` | 从「执行范围限制」解析,并发检测基础 |
 | `interaction_mode` | `ask` / `silent`（可省略，缺省回落 config.json#interaction_mode） | Rule 28 交互模式：ask=关键决策点给选项；silent=静默+静默决策清单登记 |
+| `质量审查工具` | `[检测结论]` | Rule 42 消费登记（42.4）：任务涉及质量审查面时按 42.2 三级检测,填 技能名/既有 agent 名/待补充 S-unit 指针;缺口按 42.3 补建并登记 S-unit;执行期必须用登记工具;mini 档豁免（42.5） |
 
 ## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
 
