@@ -12,8 +12,8 @@
 #   SR-08     SKILL.md 含「含 Rule 40/41」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
 #   SR-09     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
 #   SR-10     SKILL.md 摘要行锚：「升级四门槛」或「四门槛」≥1
-#   SR-11     selftest-skill-split.sh 级联落地锚：「task-v098」≥1 且 `-le 4` 前缀断言行存在（不锁具体数值）
-#   SR-12     selftest-registry.tsv 含「selftest-self-resolution」≥1 且总行数 = 39（S5 登记后断言）
+#   SR-11     selftest-skill-split.sh 级联落地锚：「task-v099」≥1 且 `-le 4` 前缀断言行存在（不锁具体数值）[2026-09-30 task-v099 级联: 锚 token task-v098→task-v099]
+#   SR-12     selftest-registry.tsv 含「selftest-self-resolution」≥1 且总行数 = 40（v099 登记后断言）[2026-09-30 task-v099 级联: 锚值 39→40]
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
