@@ -84,10 +84,10 @@ Phase 2
 - **Executor:** 主进程（①git 编排+③机械验证——白名单）
 
 ### Phase 2: alignment-review 技能+级联 3 处
-- [ ] S1: 新建 review-library/alignment-review/SKILL.md（范式对标 general-review;领域清单 ≥10: 文档↔代码同步/代码↔配置同步/引用完整性(失效链接与锚)/计数与枚举联动/多副本部署同步/术语一致性/变更日志同步/锚点有效性/版本对齐/跨文件语义一致——本会话实例: 三级→四级级联/RL-01 计数/B 类澄清枚举回溯,均为清单来源）
-- [ ] S2: 级联 3 处——selftest RL-01 =10→=11+DIRS +alignment-review+相关文本;CRIT 42.2 枚举 +alignment-review 且「10 类」→「11 类」;general-review :8 枚举 +alignment（B 类澄清回溯防线: grep 全池 alignment 一致性）
+- [x] S1: 新建 review-library/alignment-review/SKILL.md（范式对标 general-review;领域清单 ≥10: 文档↔代码同步/代码↔配置同步/引用完整性(失效链接与锚)/计数与枚举联动/多副本部署同步/术语一致性/变更日志同步/锚点有效性/版本对齐/跨文件语义一致——本会话实例: 三级→四级级联/RL-01 计数/B 类澄清枚举回溯,均为清单来源）
+- [x] S2: 级联 3 处——selftest RL-01 =10→=11+DIRS +alignment-review+相关文本;CRIT 42.2 枚举 +alignment-review 且「10 类」→「11 类」;general-review :8 枚举 +alignment（B 类澄清回溯防线: grep 全池 alignment 一致性）
 - **V-N:** VC-1, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（S1 建议档位 sonnet-1 / S2 建议档位 haiku-1;21.4 串行 S1→S2——S2 依赖 S1 产出的枚举一致性）
 | ID | 目标 | 执行体 | 建议档位 | 输入 | 验收 | 预估 | 状态 |
 |----|------|--------|---------|------|------|------|------|
@@ -95,20 +95,20 @@ Phase 2
 | S2 | 级联 3 处 | executor | haiku-1 | selftest :5,:27-35+CRIT :420+general-review :8 | RL-01=11;DIRS 含 alignment;枚举 2 处含 alignment;三处外零改动 | 10min | pending |
 
 ### Phase 3: 全量回归
-- [ ] 主进程全量回归定数（40 脚本双形态求和: selftest-review-library 11/0+全量 0 FAIL,PASS ≥ 638+循环增量）
+- [x] 主进程全量回归定数（40 脚本双形态求和: selftest-review-library 11/0+全量 0 FAIL,PASS ≥ 638+循环增量）
 - **V-N:** VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（③机械验证——白名单）
 
 ### Phase 4: 合并+部署+push+清理
-- [ ] 预检→smart-merge-back --deploy（池 11/11 三位）→push（ls-remote 终验）→清理 0/0
+- [x] 预检→smart-merge-back --deploy（池 11/11 三位）→push（ls-remote 终验）→清理 0/0
 - **V-N:** VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（①②③——白名单）
 
 ### Phase 5: CR Gate + 终验簿记
-- [ ] CR: code-reviewer 审全量 diff（新技能内容主审+级联面）;APPROVED 才终验;CHANGES_REQUESTED→fix-phase
-- [ ] 簿记: verification/INDEX/notepad/memory/check-complete（簿记提交后）/收尾
+- [x] CR: code-reviewer 审全量 diff（新技能内容主审+级联面）;APPROVED 才终验;CHANGES_REQUESTED→fix-phase
+- [x] 簿记: verification/INDEX/notepad/memory/check-complete（簿记提交后）/收尾
 - **V-N:** VC-5
 - **Status:** complete
 - **Executor:** code-reviewer（sonnet-1）+ 主进程（② 计划系统文件簿记 + ⑤ 终验机械复核——Rule 25.3 白名单②⑤）
