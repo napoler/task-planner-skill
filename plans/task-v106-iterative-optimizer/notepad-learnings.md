@@ -1,15 +1,14 @@
-# Task Learnings: {task-name}
+# Task Learnings: task-v106-iterative-optimizer
 
 ## New Requests
-<!-- Log user-injected requests here. Each entry: timestamp + request + implied scope + plan impact. -->
--
+- 2026-10-01(英文自包含指令): 创建循环迭代优化 skill(评估→诊断→定向改进→门控收敛,质量标准或最大轮次收敛,稳定可重复,迭代摘要)→顶层 skills/iterative-optimizer 已交付(merge b5acff6+4e55894 已 push,三宿主分发)
 
 ## What Worked
--
+- 用户指令自包含(八锚原文)→设计规格零歧义,executor 一次成型
+- 顶层 skill 首次走 install-companion 分发路径,三宿主 diff IDENTICAL——顶层 skill 交付范式闭环(此前仅 task-planner/池)
 
 ## What Didn't Work
-<!-- [task-v072 Rule 31.4] 结构化条目 = 错误描述 + 类别标签（信息缺失/假设未验/规则缺位/数据源过时/执行偏差）；来源：31.2 根因分析闭环（用户指出错误/重复反馈/打断补充数据）与三击协议 -->
--
+- **CR P2-d 误判登记**: code-reviewer 把 task-planner/ 当仓根,报「lib/install-companion.sh 不存在」——审查者路径基准错误,主进程对照实存证伪。防线=审查报告涉及「文件不存在」类断言必须附 find 证据再采信
 
 ## 🚫 被否决方案（User Rejected — Rule 32）
 <!-- [task-v073 Rule 32.1] 用户裁决「不允许/禁止/X 是错的/不要再做」的方案登记于此：方案描述 + 否决原文 + 日期 + 适用范围。
@@ -32,5 +31,6 @@
 - 待补齐的知识缺口:
 
 ## Notes for Next Time
-<!-- [task-v072 Rule 31.4/31.5] 消费侧契约：条目格式 = 触发条件 + 防线一句话；31.5 ① 下一 Phase 开工前 Read 未消费项命中即执行并记 [learn-apply]；31.5 ② 新任务 init-session 后 Read 上一 completed 任务同段作风险预演输入 -->
--
+- 触发=优化类任务(提示词精修/参数调优/缺陷修正): 防线=iterative-optimizer 五步闭环(先协商 QC≥3 含机器可检查→单 focus 每轮最弱项→gate 逐条证据→达上限如实 PARTIAL)
+- 触发=新建顶层 skill: 防线=deploy 用 install-companion --target ×3(顶层循环自动分发)+diff 亲验;勿忘新会话快照刷新
+- 触发=CR 报「文件不存在」: 防线=要求 find 证据,核对审查者 cwd 基准(v106 P2-d 教训)
