@@ -1,15 +1,15 @@
-# Task Learnings: {task-name}
+# Task Learnings: task-v105-pool-host-enumerable
 
 ## New Requests
-<!-- Log user-injected requests here. Each entry: timestamp + request + implied scope + plan impact. -->
--
+- 2026-10-01(用户「fix」+AskUserQuestion 三选项裁决):「池成员提升为宿主可枚举 skill」→ 相对软链挂载已交付(merge fbe2109 已 push;三宿主 11/11/10 链)
 
 ## What Worked
--
+- 相对软链(非物理复制)=单一维护源:池升级自动同步顶层,零漂移;与 alignment-review「多副本同步 P0」制度对齐
+- 冲突跳过语义(LINK-WARN)保住 opencode 独立 security-review 用户资产——「顶层已存在且非我们的链」一律不触碰
+- 挂载=deploy 成功后增强段(不改 exit):SM selftest 17/17 零回归
 
 ## What Didn't Work
-<!-- [task-v072 Rule 31.4] 结构化条目 = 错误描述 + 类别标签（信息缺失/假设未验/规则缺位/数据源过时/执行偏差）；来源：31.2 根因分析闭环（用户指出错误/重复反馈/打断补充数据）与三击协议 -->
--
+- **[执行偏差] 部署脚本自替换竞态**: 首跑「merge+--deploy 同一 smart-merge-back 调用」,merge 原地替换了 bash 正在执行的脚本自身→首跑按旧内容跑完部署段(LINK 无输出,挂载未执行);重放(ALREADY_MERGED 路径)才补齐挂载。防线=merge 与执行同一脚本时**两段式调用**(先 merge 完再单独跑 --deploy),或部署动作放独立 wrapper
 
 ## 🚫 被否决方案（User Rejected — Rule 32）
 <!-- [task-v073 Rule 32.1] 用户裁决「不允许/禁止/X 是错的/不要再做」的方案登记于此：方案描述 + 否决原文 + 日期 + 适用范围。
@@ -32,5 +32,7 @@
 - 待补齐的知识缺口:
 
 ## Notes for Next Time
-<!-- [task-v072 Rule 31.4/31.5] 消费侧契约：条目格式 = 触发条件 + 防线一句话；31.5 ① 下一 Phase 开工前 Read 未消费项命中即执行并记 [learn-apply]；31.5 ② 新任务 init-session 后 Read 上一 completed 任务同段作风险预演输入 -->
--
+- 触发=merge 与执行同一脚本: 防线=两段式调用(先 merge 再 --deploy),防自替换竞态(v105 实证)
+- 触发=池成员宿主可见性: 防线=相对软链挂载由 smart-merge-back deploy 自动维护(install_pool_links);新增池成员 deploy 后自动出现在宿主顶层
+- 触发=宿主 available-skills 快照: 防线=新 skill 须新会话/重启刷新——验证宿主枚举须开新会话
+- 触发=顶层命名冲突: 防线=冲突跳过不覆盖(LINK-WARN/独立 skill 不覆盖)——用户既有资产不可触碰
