@@ -52,6 +52,68 @@
 - Test Results:
   -
 
+### Phase 2: alignment-review 技能+级联 3 处
+- **Status:** complete
+- **Started:** 2026-09-30
+- Actions taken:
+  - P2-S1（executor,任务书 01）: alignment-review/SKILL.md（50 行,四要素,清单 14 条——10 来源案例化+4 补强;成员注释 11/11）
+  - P2-S2（executor,任务书 02）: 级联 3 处（RL-01 三处=11+DIRS+alignment-review/CRIT 42.2「11 类」+alignment 尾注/general-review :8 枚举+alignment）;RL-02..10 文案 10→11 由主进程白名单③补全（9 处,≥10 下限保留）
+  - P2 提交（主进程白名单①）: commit,skills/ porcelain 清
+- Files created/modified:
+  - review-library/alignment-review/SKILL.md（新建）
+  - scripts/selftest-review-library.sh（级联+文案）
+  - references/critical-rules.md（42.2 枚举）
+  - review-library/general-review/SKILL.md（枚举）
+- Test Results:
+  | Test | Expected | Actual | Status |
+  |------|----------|--------|--------|
+  | VC-1 四要素+清单 ≥10 | 齐备 | 50 行/14 条 | ✅ |
+  | VC-2 级联 3 处 | 全落地 | 全落地（CR 专项 3 PASS） | ✅ |
+  | selftest-review-library | 10/0 | 10/0 | ✅ |
+
+### Phase 3: 全量回归
+- **Status:** complete
+- **Started:** 2026-09-30
+- Actions taken:
+  - 主进程全量定数（白名单③）: 40 脚本 638 PASS / 0 FAIL（池+1 但 RL 断言条数不变,恒等咬合）
+- Test Results:
+  | Test | Expected | Actual | Status |
+  |------|----------|--------|--------|
+  | VC-3 全量 | 0 FAIL | 40 脚本 638/0 | ✅ |
+
+### Phase 4: 合并+部署+push+清理
+- **Status:** complete
+- **Started:** 2026-09-30
+- Actions taken:
+  - 预检 origin 领先 0;smart-merge-back RC=0 → merge **54bd512**;三位 IDENTICAL（池 11/11+alignment 三平台亲验）;worktree/branch 清理 0/0
+  - push 4194f34..54bd512;ls-remote 终验一致
+- Files created/modified:
+  - 主仓 master=54bd512;三位部署
+- Test Results:
+  | Test | Expected | Actual | Status |
+  |------|----------|--------|--------|
+  | VC-4 | RC=0+池 11/11 | 全过 | ✅ |
+
+### Phase 5: CR Gate + 终验簿记
+- **Status:** complete
+- **Started:** 2026-09-30
+- Actions taken:
+  - CR Gate（code-reviewer 隔离,任务书 03）: 首审 **APPROVED**（0 P0/2 P1 文案级计数锚漂移/2 P2）→fix-phase: P1×2 general-review 计数锚 9→10/10→11 一词级+P2-b alignment 案例归因纠正（commit cae66ad 三位同步+push）;P2-a 池尾注分母登记快照语义不修
+  - 终验簿记（白名单②⑤）: verification.md 全 VC COMPLETE;INDEX 47;memory
+  - [reflect] 反思: CR 抓出的 2 处 P1 计数锚漂移恰是 alignment-review 技能领域失效实例——「新增池成员的枚举/计数联动」正是该技能清单第 2 条;技能价值被自身交付过程实证
+  - [reflect] 验证: CR 首审+主进程亲验交叉一致（grep alignment 全池/RL 10/0/全量 638/0/ls-remote cae66ad）
+- Files created/modified:
+  - review-library/{general-review,alignment-review}/SKILL.md（CR fix-phase）
+  - verification.md+INDEX+memory
+- Test Results:
+  | Test | Expected | Actual | Status |
+  |------|----------|--------|--------|
+  | VC-5 CR | APPROVED | APPROVED（fix-phase 后全处置） | ✅ |
+  | push 终验 | ls-remote=master | cae66ad | ✅ |
+
+## 会话收尾状态
+- outcome: **COMPLETE**;master=cae66ad+簿记 push;三位部署 IDENTICAL 池 11/11
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

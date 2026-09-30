@@ -1,15 +1,14 @@
-# Task Learnings: {task-name}
+# Task Learnings: task-v101-alignment-review
 
 ## New Requests
-<!-- Log user-injected requests here. Each entry: timestamp + request + implied scope + plan impact. -->
--
+- 2026-09-30（D 类,silent）:「对齐功能作为 skill 补充为专业的 skill,用于对齐文档代码等等各个方面确保所有更新的同步更新」→ 第 11 池技能 alignment-review+级联 3 处,已交付（merge 54bd512+cae66ad 已 push）
 
 ## What Worked
--
+- alignment 清单来源=本会话真实失效实例（级联锚/计数漂移/枚举回溯）——技能即经验制度化,CR 亦实证（2×P1 漂移恰为该技能领域案例）
+- S2 executor 范围纪律: 授权外文案漂移不动+issues 上报（主进程白名单③补全）——41.2 精神延续
 
 ## What Didn't Work
-<!-- [task-v072 Rule 31.4] 结构化条目 = 错误描述 + 类别标签（信息缺失/假设未验/规则缺位/数据源过时/执行偏差）；来源：31.2 根因分析闭环（用户指出错误/重复反馈/打断补充数据）与三击协议 -->
--
+- **CR P1×2: general-review 计数锚漂移**（执行偏差+规则缺位）: 池 10→11 时「其余 9 个」「兜底池 10 技能」未随级联——根因=级联清单只覆盖计划预估锚,无「全池 grep 旧计数」防线。预防=池成员变更时 grep 旧计数/旧分母全池（已入 alignment-review 清单条目 2/4,下次任务消费）
 
 ## 🚫 被否决方案（User Rejected — Rule 32）
 <!-- [task-v073 Rule 32.1] 用户裁决「不允许/禁止/X 是错的/不要再做」的方案登记于此：方案描述 + 否决原文 + 日期 + 适用范围。
@@ -32,5 +31,5 @@
 - 待补齐的知识缺口:
 
 ## Notes for Next Time
-<!-- [task-v072 Rule 31.4/31.5] 消费侧契约：条目格式 = 触发条件 + 防线一句话；31.5 ① 下一 Phase 开工前 Read 未消费项命中即执行并记 [learn-apply]；31.5 ② 新任务 init-session 后 Read 上一 completed 任务同段作风险预演输入 -->
--
+- 触发=review-library 池成员增减: 防线=四步级联（RL-01 计数/DIRS 清单/CRIT 枚举+类数/general-review 枚举+「其余 N 个」计数）+grep 旧计数全池清零
+- 触发=引用历史案例: 防线=案例归因先查簿记核实（CR P2-b:42.5 归因张冠李戴被 CR 指出）
