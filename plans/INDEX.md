@@ -51,6 +51,7 @@
 | task-v096-template-auto-record | complete | 8/8 | 模板自动记录与三时点主动激活（34.7 全自动生成合约+init-session 感知块+check-complete warn 兜底），592/0，merge ed8712d+79a82e2 | none |  |  | 2026-09-29 | ✓ |
 | task-v097-tool-selection | complete | 7/7 | Rule 40 harness 工具面主动选择（六子条+🧰 计划区块+/goal 对齐/workflow 建议登记制），37 脚本 604/0，CR APPROVED，merge 52b434f，三部署位 IDENTICAL | none |  |  | 2026-09-30 | ✓ |
 | task-v098-auto-resolution | complete | 5/5 | Rule 41 问题自主消解与升级纪律（六子条+升级四门槛 G1-G4+消解清单,零新键；.gitignore 41.3 消费示范）+workflow 编排执行（用户点名 /workflow）+selftest-self-resolution SR×12,38 脚本 616/0,CR APPROVED,merge 88eca16 已 push | none |  |  | 2026-09-30 | ✓ |
+| task-v099-reliability-institution | complete | 5/5 | Rule 42 质量审查技能主动检测与补充（五子条，按需检测制）+Rule 43 执行可靠性制度化（四子条：证据先行/小模型档位经济/候选预验证）+SKILL C30/C31+模板「质量审查工具」行+plan-writer 义务行+selftest-reliability-institution R-01..12，39 脚本 628/0，CR APPROVED，merge d066159+push 6789780 | none |  |  | 2026-09-30 | ✓ |
 
 ## 待处理（需关注）
 -（无——v093/v094/v095 已按交付证据翻 complete；v093/v094 计划文件内 Status 未翻属他会话簿记债务，交付证据=簿记提交）
@@ -100,6 +101,7 @@
 - task-v096-template-auto-record ✓ (8/8) — 2026-09-29
 - task-v097-tool-selection ✓ (7/7) — 2026-09-30
 - task-v098-auto-resolution ✓ (5/5) — 2026-09-30
+- task-v099-reliability-institution ✓ (5/5) — 2026-09-30
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 44
+- in_progress: 0 | pending: 0 | complete: 45
