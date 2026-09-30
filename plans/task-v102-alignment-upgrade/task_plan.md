@@ -83,7 +83,7 @@ plan_tier: standard
 - [ ] worktree @5ddc317,porcelain=0;基线复测（40 脚本 638/0+alignment 行数+RL 计数 10）
 - **V-N:** VC-4, VC-6
 - **Status:** complete
-- **Executor:** 主进程（①③——白名单）
+- **Executor:** 主进程（① 纯 git/worktree 编排 + ③ 机械验证（基线求和纪律禁子代理自报）——Rule 25.3 白名单①③）
 
 ### Phase 2: 升级面（技能+条款+SKILL/模板+守护）
 - [ ] S1: alignment-review 升级——触发条件段+1 条（写入动作前命中）;新增「## 写入前校验闸门（验证优先）」段（五步:读最新态→对照待写内容→识别前后版本不一致/重复/过期→按最新有效版本合并+删除冗余→输出变更记录;含用户原话锚「未经一致性校验，不直接追加新内容」）;新增「## 变更记录输出」段（更新/合并/删除/依据版本/残留冲突五要素）
@@ -104,7 +104,7 @@ plan_tier: standard
 - [ ] 主进程定数（40 脚本双形态求和: selftest-review-library 11/0+全量 0 FAIL,PASS ≥639）
 - **V-N:** VC-4
 - **Status:** complete
-- **Executor:** 主进程（③）
+- **Executor:** 主进程（③ 机械验证（全量求和定数禁子代理自报）——Rule 25.3 白名单③）
 
 ### Phase 4: 合并+部署+push+清理
 - [ ] 预检→smart-merge-back --deploy（部署位「写入前」锚 grep）→push（ls-remote 终验）→清理 0/0
@@ -117,7 +117,7 @@ plan_tier: standard
 - [ ] 簿记: verification/INDEX/notepad/memory/check-complete（簿记提交后）
 - **V-N:** VC-6
 - **Status:** complete
-- **Executor:** code-reviewer（sonnet-1）+ 主进程（②⑤）
+- **Executor:** code-reviewer（sonnet-1）（CR 隔离审查）+ 主进程（② 计划系统文件簿记 + ⑤ 终验机械复核——Rule 25.3 白名单②⑤）
 
 ## 🔀 隔离决策
 | 字段 | 值 |
