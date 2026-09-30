@@ -58,6 +58,7 @@
 | task-v103-ask-default-timeout | complete | 5/5 | Rule 44 用户选择点默认项与自动超时裁决（默认选项+5 分钟自动超时+超时按推荐执行+裁决记录;44.2 低区分度直接裁决 41.3 衔接）+C33/模板「自动超时默认项」行+RT selftest 9 断言+T-主 440→442 级联，41 脚本 648/0，CR APPROVED+fix-phase 全处置，merge 926af49+d3e3381 已 push | none |  |  | 2026-10-01 | ✓ |
 | task-v104-align-gate-upgrade | complete | 5/5 | alignment 写入前校验闸门深化（五维全文扫描+标记冲突建议处置+确认后整理+删除或归档+四项统一+简短变更记录三要素）+42.6.1/.3 行内升级+C32 级联+RL-12/13，41 脚本 650/0，CR APPROVED，merge 77daa52 已 push | none |  |  | 2026-10-01 | ✓ |
 | task-v105-pool-host-enumerable | complete | 5/5 | review-library 11 池成员宿主可枚举：smart-merge-back install_pool_links 顶层相对软链挂载(deploy 自动,冲突跳过+回滚,不改 exit)+install-companion 池分发(独立 skill 不覆盖)+RL-14/15,41 脚本 652/0,三宿主软链 11/11/10(opencode security-review 独立副本保留),CR APPROVED,merge fbe2109 已 push | none |  |  | 2026-10-01 | ✓ |
+| task-v106-iterative-optimizer | complete | 5/5 | 新建顶层 skill iterative-optimizer（五步迭代闭环:评估→诊断弱点→定向改进→门控三态;QC≥3 且≥1 机器可检查;max_iterations 默认 5;禁自报收敛;连续 2 轮无改善停止;状态文件断点;迭代摘要 what/why/门控+RESOLVED/PARTIAL/BLOCKED）+selftest IL-01..08,42 脚本 660/0,CR APPROVED+fix-phase,三宿主分发,merge b5acff6+4e55894 已 push | none |  |  | 2026-10-01 | ✓ |
 
 ## 待处理（需关注）
 -（无——v093/v094/v095 已按交付证据翻 complete；v093/v094 计划文件内 Status 未翻属他会话簿记债务，交付证据=簿记提交）
@@ -114,6 +115,7 @@
 - task-v103-ask-default-timeout ✓ (5/5) — 2026-10-01
 - task-v104-align-gate-upgrade ✓ (5/5) — 2026-10-01
 - task-v105-pool-host-enumerable ✓ (5/5) — 2026-10-01
+- task-v106-iterative-optimizer ✓ (5/5) — 2026-10-01
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 51
+- in_progress: 0 | pending: 0 | complete: 52
