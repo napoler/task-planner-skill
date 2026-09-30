@@ -133,16 +133,22 @@ cost_estimate:
 | S6 | selftest-review-library + registry | executor | sonnet-1 | selftest-self-resolution.sh 范式 | RL-01..10 全 PASS;bash -n 过;tsv 41 行 rows=actual | 15min | pending |
 
 ### Phase 4: 合并回 + 三位部署 + push + 清理
-- [ ] 只读预检（origin 领先量=0/主仓 porcelain 无 scope 重叠）→ smart-merge-back --deploy（三位 IDENTICAL+部署位 `ls review-library`=10 亲验）→ push origin master（ls-remote 终验）→ worktree/branch 清理 0/0
+- [x] 只读预检（origin 领先量=0/主仓 porcelain 无 scope 重叠）→ smart-merge-back --deploy（三位 IDENTICAL+部署位 `ls review-library`=10 亲验）→ push origin master（ls-remote 终验）→ worktree/branch 清理 0/0
 - **V-N:** VC-5, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（① git 编排 + ② merge_back 簿记 + ③ 机械验证——白名单）
 
 ### Phase 5: CR Gate + 终验簿记
 - [x] CR Gate: code-reviewer 隔离审查全量 diff（10 SKILL.md 内容质量主审+42.2 修订+新 selftest）;APPROVED 才终验
 - [x] 终验簿记: verification.md 全 VC/委派率/check-complete（簿记提交后）/INDEX/notepad/memory/收尾
 - **V-N:** VC-6
-- **Status:** pending
+- **Status:** complete
+- **Executor:** code-reviewer（sonnet-1）+ 主进程（② 簿记 + ⑤ 终验机械复核）
+### Phase 5: CR Gate + 终验簿记
+- [x] CR Gate: code-reviewer 隔离审查全量 diff（10 SKILL.md 内容质量主审+42.2 修订+新 selftest）;APPROVED 才终验
+- [x] 终验簿记: verification.md 全 VC/委派率/check-complete（簿记提交后）/INDEX/notepad/memory/收尾
+- **V-N:** VC-6
+- **Status:** complete
 - **Executor:** code-reviewer（sonnet-1）+ 主进程（② 簿记 + ⑤ 终验机械复核）
 
 ## 🔀 隔离决策
