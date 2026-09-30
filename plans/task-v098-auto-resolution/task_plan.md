@@ -304,3 +304,4 @@ Phase 4
 <!-- template_type: rule-enhancement -->
 - 已知 16 类类型之一（rule-enhancement），非 general 兜底；无 [template-sense] 激活需求
 - Rule 34.3① 同类第 N 次命中（v071/v074/v076/v079/... 规则增强序列）——variant 已存在（rule-enhancement-type.md），无重复沉淀（34.5 先查重已过）
+- 处置登记处: 不沉淀理由: 本任务为 rule-enhancement 已知类型第 N 次消费,variant 模板在位且覆盖全部结构需求（VC/级联/SR 守护范式均已有先例）,34.3 三触发条件均不命中新沉淀点 → 沿用 rule-enhancement-type 不另沉淀（2026-09-30 终验登记）
