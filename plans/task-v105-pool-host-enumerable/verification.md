@@ -46,4 +46,4 @@ outcome: **COMPLETE**
 **遗留披露（不阻塞）**:
 1. 宿主 available-skills 为会话快照——软链已就位,新 skill 须新会话/重启刷新(install-companion 既有同语义注记)
 2. CR Nit×2 前瞻(池成员命名扩空格时改 find -printf;池成员引入 scripts/ 时扩目录级分发)——登记后续
-3. opencode security-review 保持独立版(2026-04 手工副本);池内版本仍经 task-planner 流程消费——用户如需统一可后续裁决
+3. ~~opencode security-review 保持独立版~~ **[2026-10-01 用户裁决统一,已处置]**: 独立副本备份移出扫描路径 ~/skill-deploy-backups-task-v106-pool-unify/security-review-opencode-20260410(含独有 cloud-infrastructure-security.md),opencode 顶层改挂池版本相对软链;三宿主软链终态 **11/11/11**,下次 deploy 该链识别为 LINK-OK(不再 WARN);全库普查确认无其他实体副本残留
