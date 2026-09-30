@@ -21,6 +21,8 @@
 - [P0 撰写 2026-09-30] 主进程直接撰写计划（plan-writer 档位 v099 实测死亡不复发;计划系统文件白名单②）;基线实测 master=539adcc/SKILL=439/CRIT=432/42.2 锚 :420/C30 锚 :195/review-library 待建/registry 40 行
 - [Rule 32 出处] v099 notepad 否决段=「每项目≥10 个固定配额」（用户原话"过于呆板"）;本任务=「一次性 10 个通用兜底池」（用户主动重提,兜底池语义）——交互登记于 task_plan 头注+Decisions
 
+- **Rule 36.3/36.6 无删除声明（终验登记 2026-09-30）**: 本任务全量 diff 零功能性删除——review-library 10 技能全为新建;CRIT 仅 42.2 行改写+42.5 一词（Rule 1-41/42 其余与 43.x 零触碰,CR 专项 3 byte 级核过）;SKILL 仅 C30 行内措辞;config.json 零改动（properties=40,RL-10 断言覆盖）——**删除性行为清单=空**
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
