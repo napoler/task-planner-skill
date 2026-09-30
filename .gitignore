@@ -5,3 +5,4 @@ plans/.active_plan_side/
 plans/.plan_required_side/
 
 plans/**/.session-owner
+.backup-*/
