@@ -57,6 +57,7 @@
 | task-v102-alignment-upgrade | complete | 5/5 | alignment-review 验证优先升级（写入前校验闸门五步+变更记录五要素+触发扩展,50→75 行）+Rule 42.6 四子条+C32/模板行+RL-11+R-01/T-主/SR-11 三处级联（SR-11 宽容正则根治），40 脚本 639/0，CR APPROVED（executor 改派），merge f419419 已 push | none |  |  | 2026-10-01 | ✓ |
 | task-v103-ask-default-timeout | complete | 5/5 | Rule 44 用户选择点默认项与自动超时裁决（默认选项+5 分钟自动超时+超时按推荐执行+裁决记录;44.2 低区分度直接裁决 41.3 衔接）+C33/模板「自动超时默认项」行+RT selftest 9 断言+T-主 440→442 级联，41 脚本 648/0，CR APPROVED+fix-phase 全处置，merge 926af49+d3e3381 已 push | none |  |  | 2026-10-01 | ✓ |
 | task-v104-align-gate-upgrade | complete | 5/5 | alignment 写入前校验闸门深化（五维全文扫描+标记冲突建议处置+确认后整理+删除或归档+四项统一+简短变更记录三要素）+42.6.1/.3 行内升级+C32 级联+RL-12/13，41 脚本 650/0，CR APPROVED，merge 77daa52 已 push | none |  |  | 2026-10-01 | ✓ |
+| task-v105-pool-host-enumerable | complete | 5/5 | review-library 11 池成员宿主可枚举：smart-merge-back install_pool_links 顶层相对软链挂载(deploy 自动,冲突跳过+回滚,不改 exit)+install-companion 池分发(独立 skill 不覆盖)+RL-14/15,41 脚本 652/0,三宿主软链 11/11/10(opencode security-review 独立副本保留),CR APPROVED,merge fbe2109 已 push | none |  |  | 2026-10-01 | ✓ |
 
 ## 待处理（需关注）
 -（无——v093/v094/v095 已按交付证据翻 complete；v093/v094 计划文件内 Status 未翻属他会话簿记债务，交付证据=簿记提交）
@@ -112,6 +113,7 @@
 - task-v102-alignment-upgrade ✓ (5/5) — 2026-10-01
 - task-v103-ask-default-timeout ✓ (5/5) — 2026-10-01
 - task-v104-align-gate-upgrade ✓ (5/5) — 2026-10-01
+- task-v105-pool-host-enumerable ✓ (5/5) — 2026-10-01
 
 ## 汇总
-- in_progress: 0 | pending: 0 | complete: 50
+- in_progress: 0 | pending: 0 | complete: 51
