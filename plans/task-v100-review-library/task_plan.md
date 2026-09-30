@@ -127,7 +127,7 @@ cost_estimate:
 - [x] 主进程全量回归定数（40 脚本双形态求和,0 FAIL 且 ≥628+12）
 - **V-N:** VC-4
 - **Status:** complete
-- **Executor:** executor（S6 建议档位 sonnet-1）+ 主进程求和（③）
+- **Executor:** executor（sonnet-1）（S6;主进程回归求和=③机械验证——Rule 25.3 白名单③,注解挪注）
 | ID | 目标 | 执行体 | 建议档位 | 输入 | 验收 | 预估 | 状态 |
 |----|------|--------|---------|------|------|------|------|
 | S6 | selftest-review-library + registry | executor | sonnet-1 | selftest-self-resolution.sh 范式 | RL-01..10 全 PASS;bash -n 过;tsv 41 行 rows=actual | 15min | pending |
@@ -143,7 +143,7 @@ cost_estimate:
 - [x] 终验簿记: verification.md 全 VC/委派率/check-complete（簿记提交后）/INDEX/notepad/memory/收尾
 - **V-N:** VC-6
 - **Status:** complete
-- **Executor:** code-reviewer（sonnet-1）+ 主进程（② 簿记 + ⑤ 终验机械复核）
+- **Executor:** code-reviewer（sonnet-1）（CR 隔离审查）+ 主进程（② 计划系统文件簿记 + ⑤ 终验机械复核——Rule 25.3 白名单②⑤）
 ### Phase 5: CR Gate + 终验簿记
 - [x] CR Gate: code-reviewer 隔离审查全量 diff（10 SKILL.md 内容质量主审+42.2 修订+新 selftest）;APPROVED 才终验
 - [x] 终验簿记: verification.md 全 VC/委派率/check-complete（簿记提交后）/INDEX/notepad/memory/收尾
