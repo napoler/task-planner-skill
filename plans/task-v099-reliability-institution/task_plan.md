@@ -308,4 +308,5 @@ cost_estimate:
 - 触发信号: 任务类型空缺 → 落 general 兜底（非 16 类已知类型之一）
 - Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
-- 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP
+- 处置登记处: 不沉淀理由: 本任务为 rule-enhancement 已知类型（本计划 frontmatter 即 template_type: rule-enhancement）第 N 次消费,34.3 三触发条件（同类新类型/类型空缺/用户点名沉淀）均不命中 → 沿用既有 rule-enhancement-type 不另沉淀（2026-09-30 终验登记）
+- **无删除声明（Rule 36.3/36.6 登记,2026-09-30 终验）**: 本任务全量 diff 零功能性删除——critical-rules.md 纯追加 19 行;SKILL.md 3 处 deletion 均为行内括注/枚举扩写（CR 专项 1 核过）;模板/契约各 +1 行;config.json 零改动（properties=40）——删除性行为清单=空
