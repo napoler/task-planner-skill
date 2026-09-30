@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-review-library.sh — task-v100 P3-S6: Rule 42 质量审查兜底池（review-library）静态守护
 # 范式同 selftest-self-resolution.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
-# 本脚本仅做静态断言（grep/wc/ls 为主），RL-01..RL-11 全 PASS exit 0；任一 FAIL exit 1。
+# 本脚本仅做静态断言（grep/wc/ls 为主），RL-01..RL-13 全 PASS exit 0；任一 FAIL exit 1。
 #   RL-01     review-library/ 目录数 = 11（恰 11 目录）[2026-09-30 task-v101 +alignment-review]
 #   RL-02     11 个目录名与清单精确一致（逐一 -d 判定）
 #   RL-03     每目录含 SKILL.md（11 个 -f 全过）
@@ -15,6 +15,8 @@
 #             [task-v100 锚修正: 原文 ④ 与池 token 之间有 `**` 强调符,故主体锚去 ④ 前缀,防假断言]
 #   RL-10     全池 11 文件 `grep -nE '1-4[0-9]'` 零命中（越界字面负断言）
 #   RL-11     alignment-review 验证优先升级锚：「写入前校验」≥2、「未经一致性校验，不直接追加新内容」=1、「变更记录输出」≥1（task-v102）
+#   RL-12     alignment-review 闸门深化锚（task-v104）：「全文扫描」≥1 且「删除或归档」≥1 且「变更范围」≥1（alignment-review/SKILL.md）
+#   RL-13     42.6.3 三要素升级锚（task-v104）：CRIT 42.6.3 行「三要素」≥1 且 SKILL.md C32 行「三要素」≥1
 # 静态只读（grep/wc/ls），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
@@ -105,6 +107,23 @@ if [ "$g" -ge 2 ] && [ "$h" -eq 1 ] && [ "$i" -ge 1 ]; then
   ok 11 "alignment-review 验证优先锚：写入前校验 $g ≥2 / 未经一致性校验 $h =1 / 变更记录输出 $i ≥1"
 else
   bad 11 "alignment-review 验证优先锚漂移（写入前校验 $g 应 ≥2 / 未经一致性校验 $h 应 =1 / 变更记录输出 $i 应 ≥1）"
+fi
+# RL-12 alignment-review 闸门深化锚（task-v104）
+s="$(grep -c '全文扫描' "$A" || true)"
+u="$(grep -c '删除或归档' "$A" || true)"
+v="$(grep -c '变更范围' "$A" || true)"
+if [ "$s" -ge 1 ] && [ "$u" -ge 1 ] && [ "$v" -ge 1 ]; then
+  ok 12 "alignment-review 闸门深化锚：全文扫描 $s ≥1 / 删除或归档 $u ≥1 / 变更范围 $v ≥1"
+else
+  bad 12 "alignment-review 闸门深化锚漂移（全文扫描 $s 应 ≥1 / 删除或归档 $u 应 ≥1 / 变更范围 $v 应 ≥1）"
+fi
+# RL-13 42.6.3 三要素升级锚（task-v104）
+p="$(grep '^42\.6\.3' "$CRIT" | grep -c '三要素' || true)"
+m="$(grep '^| C32 |' "$SKILLMD" | grep -c '三要素' || true)"
+if [ "$p" -ge 1 ] && [ "$m" -ge 1 ]; then
+  ok 13 "42.6.3 三要素升级锚：CRIT 42.6.3 行三要素 $p ≥1 / SKILL.md C32 行三要素 $m ≥1"
+else
+  bad 13 "42.6.3 三要素升级锚漂移（CRIT 42.6.3 行三要素 $p 应 ≥1 / SKILL.md C32 行三要素 $m 应 ≥1）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
