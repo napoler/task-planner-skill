@@ -2,7 +2,7 @@
 # selftest-reliability-institution.sh — task-v099 P3: Rule 42/43 质量审查检测+执行可靠性制度化静态守护
 # 范式同 selftest-self-resolution.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
 # 本脚本仅做静态断言（grep/wc/jq 为主），R-01..R-12 全 PASS exit 0；任一 FAIL exit 1。
-#   R-01     critical-rules.md Rule 42 五子条锚 `grep -c '^42\.'` = 5
+#   R-01     critical-rules.md Rule 42 子条锚 `grep -c '^42\.'` = 10 [2026-10-01 task-v102 B 类扩围: 42.6 追加级联, 5→10]
 #   R-02     Rule 43 四子条锚 `grep -c '^43\.'` = 4
 #   R-03     42.2 行内锚：「均未命中=缺口」≥1（三级检测缺口判定）
 #   R-04     42.3 行内锚：「S-unit」≥1（补充动作 S-unit 登记禁私建）
@@ -31,9 +31,9 @@ PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'R-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'R-%s FAIL %s\n' "$1" "$2"; }
 
-# R-01 Rule 42 五子条锚
+# R-01 Rule 42 子条锚（42.1-42.5 五子条+42.6 主体+42.6.1-.4 五行 [2026-10-01 task-v102 B 类扩围: 42.6 追加级联, 5→10]）
 n="$(grep -c '^42\.' "$CRIT" || true)"
-if [ "$n" -eq 5 ]; then ok 01 "critical-rules.md Rule 42 五子条锚 = 5"; else bad 01 "critical-rules.md Rule 42 子条数 $n（应 5）"; fi
+if [ "$n" -eq 10 ]; then ok 01 "critical-rules.md Rule 42 子条锚 = 10"; else bad 01 "critical-rules.md Rule 42 子条数 $n（应 10）"; fi
 # R-02 Rule 43 四子条锚
 n="$(grep -c '^43\.' "$CRIT" || true)"
 if [ "$n" -eq 4 ]; then ok 02 "critical-rules.md Rule 43 四子条锚 = 4"; else bad 02 "critical-rules.md Rule 43 子条数 $n（应 4）"; fi
