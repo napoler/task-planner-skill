@@ -84,16 +84,16 @@ if grep -qF '升级四门槛' "$SKILLMD" || grep -qF '四门槛' "$SKILLMD"; the
 else
   bad 10 "SKILL.md 缺摘要行锚（升级四门槛 / 四门槛）"
 fi
-# SR-11 skill-split 级联落地锚（task-v098 label + -le 4 前缀断言行；数值不锁定）
-if [ "$(grep -c 'task-v098' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
-  ok 11 "selftest-skill-split.sh task-v098 label + -le 4 前缀断言行在位"
+# SR-11 skill-split 级联落地锚（task-v099 label + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v099 B 类扩围: 级联 label 随 v099 联动 435→439,锚 token 同步 task-v098→task-v099,断言语义不变]
+if [ "$(grep -c 'task-v099' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
+  ok 11 "selftest-skill-split.sh task-v099 label + -le 4 前缀断言行在位"
 else
-  bad 11 "selftest-skill-split.sh 级联锚缺失（task-v098 / -le 4 前缀断言行）"
+  bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099 / -le 4 前缀断言行）"
 fi
-# SR-12 registry 双向登记：含 selftest-self-resolution 行 ≥1 且总行数 = 39（表头+38 数据行）
+# SR-12 registry 双向登记：含 selftest-self-resolution 行 ≥1 且总行数 = 40（表头+39 数据行）[2026-09-30 task-v099 B 类扩围: v099 新增 selftest-reliability-institution.sh 登记 +1 行,锚值 39→40,断言语义不变]
 n="$(grep -c 'selftest-self-resolution' "$REGISTRY" || true)"
 lines="$(wc -l < "$REGISTRY")"
-if [ "$n" -ge 1 ] && [ "$lines" -eq 39 ]; then ok 12 "registry selftest-self-resolution 登记行 ≥1 且总行数 39"; else bad 12 "registry 漂移（selftest-self-resolution 命中 $n 应 ≥1 / 总行数 $lines 应 39）"; fi
+if [ "$n" -ge 1 ] && [ "$lines" -eq 40 ]; then ok 12 "registry selftest-self-resolution 登记行 ≥1 且总行数 40"; else bad 12 "registry 漂移（selftest-self-resolution 命中 $n 应 ≥1 / 总行数 $lines 应 40）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
