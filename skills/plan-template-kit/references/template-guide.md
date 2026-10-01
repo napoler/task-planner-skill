@@ -225,7 +225,7 @@ Phase 对齐管线 Phase 0→6，范围限制表列 `data/{site}/{id}/`：
 
 **字段说明**:
 - 工具面表 3 列: Phase / 命中工具面（Rule 40.1 六类之一或组合: /workflow 动态工作流、/goal 会话目标、Agent 子代理、卫星技能、MCP/平台工具、机械守卫脚本）/ 选择理由（一句话,选型依据=template-mapping.md §工具选择映射）
-- workflow 编排判定行（Rule 40.4）: 未命中编排条件写"维持 Rule 21.4 串行";命中（独立并行子任务可 fan-out / 长链多 skill 接力可复用 / 用户点名）写"建议 CreateWorkflow"并按 Rule 39.4 做并行豁免登记
+- workflow 编排判定行（Rule 40.4）: 未命中编排条件写"按 Rule 21.4 独立性守门调度（并行默认+声明组，未声明=串行，10-02）";命中（独立并行子任务可 fan-out / 长链多 skill 接力可复用 / 用户点名）写"建议 CreateWorkflow"并按 Rule 39.4 做并行豁免登记
 - /goal 对齐行（Rule 40.3）: 注明 Goal+VC 与 session goal 的映射关系;如实披露 /goal 为用户侧 harness 命令,技能层不可代调
 
 **定制红线**: ① 定位声明（"上游分析记录,不替代 Executor 委派门控机器事实源"）禁删;② 区块内禁出现 `### Phase N:` / `**Status:**` / `**Executor:**` 三形态伪行（防 check-delegation 状态机误读）;③ mini 档禁加本区块;④ 工具面命名须对齐 Rule 40.1 六类措辞;⑤ 路径引用遵守本文档 §七 规范。

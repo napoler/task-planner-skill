@@ -83,7 +83,7 @@
      | 时长 | ≥30min 必再拆批 | ≤15min/步 | 取严：≤15min |
 
   3. 失败时按 5 Whys 逐层追问（现象 → 直接原因 → … → 根因，≤5 层），根因写入 progress.md Error Log；禁止停在"再重试一次"。
-- **与既有机制映射**：Rule 18（批量质量门控：八字段 Batch Report / failure_rate≤5%）+ Rule 21.1b（步级 ≤2 文件/≤100 行/≤15min）+ Rule 21.4（串行派发，一次一个）+ Rule 7（永不重复失败，5 Whys 是其取证工具）。
+- **与既有机制映射**：Rule 18（批量质量门控：八字段 Batch Report / failure_rate≤5%）+ Rule 21.1b（步级 ≤2 文件/≤100 行/≤15min）+ Rule 21.4（子代理调度铁律：独立性守门，声明组并行/未声明串行，10-02）+ Rule 7（永不重复失败，5 Whys 是其取证工具）。
 - **失败惩罚映射**：chunk>3 或步级超限仍派发 → 计划无效，按 Rule 26.3「Q6 批量违规未处置」依 Rule 18.3 STOP/熔断；failure_rate>5% 未 STOP → outcome 最高 PARTIAL。
 - **开关键**：无新增键（复用 Rule 18/21 既有阈值）。
 

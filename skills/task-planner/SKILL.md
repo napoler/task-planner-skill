@@ -44,7 +44,7 @@ model: opus
 ### 🤝 专业技能协同路由（comet / OpenSpec / superpowers / dynamic-workflows — 权威源 ../plan-collab-router/references/skill-collaboration.md）
 
 主路由 = `Skill("plan-collab-router")`（知识库→`../plan-collab-router/references/skill-collaboration.md`）。**判定顺序敏感先命中先用**：comet → OpenSpec → superpowers（多族命中=叠加协同；comet 移交=任意 3 项命中（Phase ≥5 / 跨模块 / 需架构选型 / 需三件套归档 / 跨会话续做）即建议移交 `/comet`）；**CLI 探针前置** `command -v comet` / `command -v openspec` 缺失则该族不可接管，开关键 `config.json#skill_collab_enforce`（默认 warn）；**22.3.3 卡壳接管**：④ 主进程接管不可行/仍失败 → 先评估更适配专业族接管（comet / openspec-propose / superpowers），失败才落 ⑤ AskUser/STOP。
-- **dynamic-workflows（用户显式点名 /workflow 才路由，Rule 39）**：用户显式调用 `/workflow` 或明确措辞要求 workflow 编排 → 先 `Skill("dynamic-workflows")` 加载再 `CreateWorkflow` 编排；未点名一律走既有 Rule 21.4 串行 Agent 派发（Rule 39.1 触发纪律；四机制映射见 `references/critical-rules.md` Rule 39）。
+- **dynamic-workflows（用户显式点名 /workflow 才路由，Rule 39）**：用户显式调用 `/workflow` 或明确措辞要求 workflow 编排 → 先 `Skill("dynamic-workflows")` 加载再 `CreateWorkflow` 编排；未点名一律按既有 Rule 21.4 调度铁律 Agent 派发（独立性守门：声明并行组内可并行、未声明组=串行，10-02；Rule 39.1 触发纪律；四机制映射见 `references/critical-rules.md` Rule 39）。
 - **Rule 40 计划期工具面主动选择（harness 工具面清单+🧰 区块+/goal 对齐，Rule 40）**：计划期在「🧰 工具选择与编排」区块逐 Phase 登记执行工具面与选择理由（六类工具面清单见 critical-rules.md Rule 40.1）；分析命中编排条件（独立并行子任务/fan-out/长链复用）时按 Rule 39.4 登记建议 CreateWorkflow（Rule 39.1 显式点名红线不变）；/goal 对齐仅做映射指引（用户侧 harness 命令技能不可代调，40.3 如实披露）；mini 档豁免（Rule 38.3）。
 
 > 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
@@ -82,7 +82,7 @@ model: opus
 - [ ] **Phase 执行循环**（每个 Phase 独立闭环，6 步顺序执行）
   1. **开启 Phase**：`Edit task_plan.md` 当前 Phase 状态 → `in_progress`（Current Phase 同步更新）
   2. **同步 Todo（S2）**：`TodoWrite`/`TaskUpdate` 该 Phase 对应 todo → `in_progress`；步骤 1/2 必须紧邻执行，禁止只做其一
-  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按九字段模板（Rule 22.4）逐 S-unit（22.6 表每行一次，严格串行：一次一个、验收通过再派下一个 — Rule 21.4）`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"。**hook 已机制化**：主进程白名单外 Write/Edit 被 check-delegation.sh 拦截（enforce=exit 2；warn 档注入警告并计数）
+  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按九字段模板（Rule 22.4）逐 S-unit（22.6 表每行一次；按 Rule 21.4 调度铁律：声明并行组内成员可并行（独立性四问通过）、未声明组=一次验收一组成员再派下一组成员（10-02））`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"。**hook 已机制化**：主进程白名单外 Write/Edit 被 check-delegation.sh 拦截（enforce=exit 2；warn 档注入警告并计数）
   2.6 **上下文卫生检查点（Rule 29.1①，每 2 个 Phase complete 触发一次）**：运行 `bash scripts/check-context-hygiene.sh <plan-dir>`（findings/progress 退场扫描，exit 1=有建议）→ 有建议按 29.2 处置（superseded 标记/压缩/progress 折叠，拿不准保留标"待复核"）；工作文件侧（`bash scripts/plan-hygiene.sh <plans-dir>`）在会话恢复时（29.1②）或用户显式指令（29.1③）时运行，--execute 前须先登记 dry-run 清单。开关键 `config.json#context_hygiene_enforce` / `plan_hygiene_enforce`（默认 warn，详见 `references/critical-rules.md` Rule 29）
   3. **执行 Phase 工作**（内嵌 3-File 落盘强制点，Rule 19）：
      - **3a. 子代理产出回填（19.1）**：每次子代理（Explore / research / debugger / codebase-analyzer 等）或调研类 Skill 返回后，**紧邻一次 `Edit findings.md`** 写入结论摘要 + 证据路径（映射见下方「产出落盘映射」）——禁止让结论只留在会话记忆（context reset 即丢失）；回填完成才可勾 Handoff 登记表 `verify_done`（Read 产出 + findings 回填双条件，见 22.5）
@@ -129,7 +129,7 @@ model: opus
     [BLOCK-N COMPLETE] 产物: {path} 大小:{size} 内容确认:{Read 结果摘要}
     → BLOCK-N+1 开始  依赖: {path}
     ```
-  - fan-out 模式：多个下游 Block 同时 pending → 串行逐个派发（Rule 21.4 铁律），全部完成才汇合
+  - fan-out 模式：多个下游 Block 同时 pending → 按 Rule 21.4 声明组并行（成员通过独立性四问即组内并行；10-02），全部完成才汇合
 
 - [ ] **Code Review Gate**（仅 `code_review: required` 的任务）
   - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`；**diff 分级（[task-v094 T-B6]）**：轻 diff（代码文件 ≤3 个且合计 ≤50 行）→ 单轮轻量审查（code-review 单轮或主进程逐 hunk 自查+抽验登记），重 diff → 全量多轮 CR 原流程不变
@@ -189,7 +189,7 @@ model: opus
 | C24 | 本任务涉及技能文件修改时（Rule 36.1 范围）：已按 36.2 完成归因（指向技能本体才可提案）+ 36.3 删除基线与删除性行为清单已落 findings/progress；功能性删除/语义改写已逐项获用户确认（36.4，D6 级；check-skill-modify 机器门承载写操作，确认动作人工） | ☐ |
 | C25 | 本任务已按 Rule 37 套用机制画像：template_type 对应的代码组/内容组机制适用性已核对（Code Review Gate、code-assistant 路由等按画像取捨）；画像不适用或未命中登记一行理由（机制画像核对人工） | ☐ |
 | C26 | 本任务已按 Rule 38 判定计划档位：轻量任务声明 plan_tier: mini 时已套用 mini-lite 模板+豁免清单（5 锚点），非轻量任务未误用 mini 档；MISMATCH 提示已处置（check-template-type/plan-tier 机器门承载 MISMATCH 检测，套用人工） | ☐ |
-| C27 | 用户显式点名 /workflow 编排时已按 Rule 39 路由：Skill("dynamic-workflows") 已加载、CreateWorkflow 三来源其一提交、21.4 并行豁免已登记 Decisions Made+progress（39.4，未点名则走 21.4 串行，无需记行） | ☐ |
+| C27 | 用户显式点名 /workflow 编排时已按 Rule 39 路由：Skill("dynamic-workflows") 已加载、CreateWorkflow 三来源其一提交、21.4 并行豁免已登记 Decisions Made+progress（39.4，未点名则按 21.4 独立性守门调度执行，无需记行） | ☐ |
 | C28 | standard/full 档计划含「🧰 工具选择与编排」区块且逐 Phase 登记工具面与理由、workflow 编排判定与 /goal 对齐两判定行已填（Rule 40.2/40.3/40.4；Executor 字段仍是委派门控机器事实源,区块不替代；mini 档豁免无需记行）；命中建议 CreateWorkflow 时已按 39.4 登记并行豁免（机器面=selftest-tool-selection 静态断言,区块完整性人工核查） | ☐ |
 | C29 | 本任务执行中出现失败/阻塞/升级冲动时已按 Rule 41 过消解链与升级四门槛：升级用户仅限 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记禁呈报（41.2/41.3）；任何 AskUserQuestion/STOP 前已过 41.4 消解清单并在上报附「已尝试清单」；多待决项打包呈报附推荐（41.5）（机器面=selftest-self-resolution 静态断言,消解过程人工核查） | ☐ |
 | C30 | 质量审查工具检测与登记（Rule 42）：本任务涉及质量审查面（内容组=发布前质量审计/代码组=Code Review）时已按 42.2 四级顺序检测（项目级→用户级→环境既有 agents→内置 review-library 兜底池），检测结论（技能名/既有 agent 名/待补充 S-unit 指针）已登记计划「质量审查工具」行；缺口已按 42.3 补充合约处置（补建动作作为 S-unit 登记进计划，禁无登记私建技能）；执行期质量审查动作已用登记工具（未检测=违规，Rule 26 降质面）（机器面=selftest-reliability-institution 静态断言，检测过程人工核查；mini 档 42.5 豁免） | ☐ |
@@ -239,7 +239,7 @@ model: opus
 
 ## Chain 模式详解（已内敛 → reference.md）
 
-`chain_mode` 默认 `single`（单 block，无 chain 区块）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，派发仍守 Rule 21.4 串行铁律）的值语义、示意图与执行规则权威源 = `reference.md § Chain 模式详解`；block 交接字段表/6 条件/重规划触发见 `reference.md § Chain Handoff Contract`。
+`chain_mode` 默认 `single`（单 block，无 chain 区块）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，fan-out 成员按 Rule 21.4 声明组并行——组内独立性四问通过即可并行，未声明组=串行，10-02）的值语义、示意图与执行规则权威源 = `reference.md § Chain 模式详解`；block 交接字段表/6 条件/重规划触发见 `reference.md § Chain Handoff Contract`。
 
 ## Critical Rules
 
@@ -253,7 +253,7 @@ model: opus
 - **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；试点先行硬门（18.9-18.11：单件未验证禁批量、单件失败即投毒红线、宁慢勿错，task-v083）+ 前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
 - **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
-- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发严格串行——一次一个、验收通过再派下一个（21.4 串行派发铁律）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
+- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发按 21.4 调度铁律——声明并行组内成员可并行（独立性四问通过）、未声明组一次验收一组成员再派下一组成员（21.4 子代理调度铁律，10-02）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
 - **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：交付终态/会话恢复触发点扫中断任务（task-v091 A-3 收敛，不再每 Phase 扫）；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
@@ -272,7 +272,7 @@ model: opus
 - **Rule 36（P0）技能修改保守化与功能删除防护**：适用范围(36.1)/归因前置门(36.2)/修改前基线(36.3)/删除=高危确认门(36.4)/纯增量纪律(36.5)/回归验证(36.6)/机制(36.7)——"归因→基线→确认→增量→回归"链路：技能文件写操作先按 31.2 归因且归因指向本体才可提案，功能性删除/语义改写须用户逐项确认（D6 级硬停点），默认纯增量，杜绝偷渡式修改与功能静默丢失；开键 `config.json#skill_modify_enforce`（默认 warn，详见 references/critical-rules.md Rule 36）
 - **Rule 37（P0）任务类型机制画像**：画像表(37.1 权威源=template-mapping.md §九)/判定时点(37.2 计划创建期)/三类机制组(37.3)/消费侧(37.4 委派检查点+Code Review Gate 触发条件)/机制(37.5 mechanism_profile_enforce+selftest)——「按类型裁剪机制适用性」链路：仅裁剪类型组机制，3-File/委派率/漂移检测等通用守卫全类型不变（详见 references/critical-rules.md Rule 37）
 - **Rule 38（P0）任务难度分级与轻量档**：判定(38.1 plan_tier: mini ∧ ≤2 文件 ∧ ≤15min ∧ 单模块, 三条件机器可测+MISMATCH 提示)/档位矩阵(38.2 mini-lite 模板+standard 17 variant+full general)/轻量模板契约(38.3 区块白名单)/门控豁免清单(38.4 5 锚点 if 前置, 非 mini 路径零改动)/机制(38.5 plan_tier_enforce 三档默认 warn+init-session tier 分流+selftest-plan-tier.sh)——轻任务走精简仪式消除慢源，未声明档位计划零影响（详见 references/critical-rules.md Rule 38）
-- **Rule 39（动态工作流编排 — task-v088）**：用户显式点名 `/workflow` 才路由 dynamic-workflows 编排（未点名=既有 21.4 串行零改动）；skill 加载前置门槛（39.2）；四机制映射 失败/断点/升级/沉淀→AmendWorkflow/ResumeWorkflowRun/ResolveWorkflowQuestion/SaveWorkflow（39.3 表）；21.4 并行豁免登记（39.4）；机器校验边界=官方文档未提及 check-dispatch 覆盖 workflow 内部（39.5）；零新 config 键，selftest-workflow-orchestration.sh 守护（39.6）
+- **Rule 39（动态工作流编排 — task-v088）**：用户显式点名 `/workflow` 才路由 dynamic-workflows 编排（未点名=按 21.4 独立性守门调度，声明组并行/未声明串行，10-02）；skill 加载前置门槛（39.2）；四机制映射 失败/断点/升级/沉淀→AmendWorkflow/ResumeWorkflowRun/ResolveWorkflowQuestion/SaveWorkflow（39.3 表）；21.4 并行豁免登记（39.4）；机器校验边界=官方文档未提及 check-dispatch 覆盖 workflow 内部（39.5）；零新 config 键，selftest-workflow-orchestration.sh 守护（39.6）
 - **Rule 40（harness 工具面主动选择 — task-v097）**：工具面六类清单（/workflow、/goal、Agent 子代理、卫星技能、MCP、机械守卫脚本）（40.1）；计划期「🧰 工具选择与编排」区块=Executor 上游分析记录,不替代委派门控机器事实源（40.2）；/goal 对齐映射指引+用户侧命令如实披露（40.3）；workflow 编排建议登记制、39.1 显式点名红线不变（40.4）；机器校验边界如实披露（40.5）；零新 config 键+selftest-tool-selection.sh 守护（40.6）
 - **Rule 41（问题自主消解与升级纪律 — task-v098）**：消解优先链=重读计划→22.3 ①-④ 兜底→最小探针→拆细→替代路径,升级用户是最后手段非默认出口（41.1）；升级四门槛 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记（41.2）；trivial 小修直接做+登记,禁「留用户裁决」推诿（41.3）；升级前必过消解清单并附「已尝试清单」,D6 硬停点语义保留不弱化（41.4）；多待决项打包呈报附推荐（41.5）；零新 config 键+selftest-self-resolution.sh 守护（41.6）
 - **Rule 42（质量审查技能主动检测与补充 — task-v099）**：任务涉及质量审查面时按四级顺序检测（42.1/42.2 项目级→用户级→环境 agents→内置 review-library 兜底池，均未命中=缺口）；缺口按补充合约处置——该任务项目级补建专用质量审查技能且补建动作作为 S-unit 登记进计划，禁无登记私建技能（42.3）；计划「质量审查工具」行登记检测结论，执行期必须用登记工具（42.4）；零新 config 键+mini 档豁免（42.5）；对齐审查前置与收尾消费——写入前版本一致性校验闸门（42.6.1 未经校验不追加）+任务完成前对齐标准流程（42.6.2 全文档过 alignment-review）+变更记录输出（42.6.3）+零新键机制（42.6.4,task-v102）
