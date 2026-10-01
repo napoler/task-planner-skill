@@ -51,7 +51,7 @@ t "T4 check-scope.sh 'knowledge-brief.md' ≥1" bash -c "[ \"\$(grep -c 'knowled
 t "T5a 3file-gate '6 planning files' ≥1" bash -c "[ \"\$(grep -c '6 planning files' '$GATE')\" -ge 1 ]"
 t "T5b 3file-gate 存在性循环首行不含 knowledge-brief (=0, KQ3)" bash -c "[ \"\$(grep -c '^for f in .*knowledge-brief' '$GATE')\" -eq 0 ]"
 
-# T6: critical-rules.md 'knowledge-brief' 行号覆盖 21.2 与 22.4 段 (均 >100 且 <160)
+# T6: critical-rules.md knowledge-brief 行号覆盖 21.2 与 22.4 段（均 >100 且 <200,窗口放宽 task-v110）
 # [task-v095 P6] critical-rules 新增 15.1-15.3 致 21.2/22.4 行号合法后移，窗口随迁（原上限 135）
 L_212=$(grep -n "knowledge-brief" "$CRULES" | grep -F '21.2' | head -1 | cut -d: -f1)
 L_224=$(grep -n "knowledge-brief" "$CRULES" | grep -F '22.4' | head -1 | cut -d: -f1)
