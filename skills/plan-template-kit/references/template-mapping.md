@@ -229,7 +229,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | writing | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | article-writer/article-writing-phase-agent |
 | video | 内容组-视频 | content_quality 门控（Q3/Q4）+人工门 32.2 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | Agnes 视频链路（母图/分镜/镜头/成片 QC 8 类） |
 | video-fix | 内容组-视频 | content_quality 门控（Q3/Q4）+disposition_ref 必填 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | videop1-video-fix SOP（full-regen 仅 d 级显式批准） |
-| mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
+| mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备表/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
 | general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
 
 新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。
