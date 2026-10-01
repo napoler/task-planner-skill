@@ -1,0 +1,42 @@
+01	selftest-active-plan.sh	RC=0	Total: 19 PASS=19 FAIL=0
+02	selftest-ask-default-timeout.sh	RC=0	Total: 9 PASS=9 FAIL=0
+03	selftest-batch-pilot.sh	RC=0	Total: 10 PASS=10 FAIL=0
+04	selftest-check-conflicts.sh	RC=0	Total: 7 PASS=7 FAIL=0
+05	selftest-check-drift.sh	RC=0	Total: 6 PASS=6 FAIL=0
+06	selftest-conclusion-discipline.sh	RC=0	Total: 24 PASS=24 FAIL=0
+07	selftest-context-hygiene.sh	RC=0	Total: 12 PASS=12 FAIL=0
+08	selftest-delegation.sh	RC=0	Total: 38    PASS=38  FAIL=0
+09	selftest-dispatch.sh	RC=0	Total: 31 PASS=31 FAIL=0
+10	selftest-error-loop.sh	RC=0	Total: 16 PASS=16 FAIL=0
+11	selftest-execution-stability.sh	RC=0	Total: 19  PASS=19  FAIL=0
+12	selftest-fallback.sh	RC=0	Total: 31  PASS=31  FAIL=0
+13	selftest-final-gate-hash.sh	RC=0	(no Total line)
+14	selftest-fine-grain-steps.sh	RC=0	Total: 11 PASS=11 FAIL=0
+15	selftest-interaction.sh	RC=0	Total: 11 PASS=11 FAIL=0
+16	selftest-iterative-optimizer.sh	RC=0	Total: 8 PASS=8 FAIL=0
+17	selftest-knowledge-brief.sh	RC=1	Total: 16  PASS=15  FAIL=1
+18	selftest-mechanism-profile.sh	RC=0	Total: 19 PASS=19 FAIL=0
+19	selftest-methodology.sh	RC=0	Total: 16 PASS=16 FAIL=0
+20	selftest-plan-dispatch.sh	RC=0	Total: 12 PASS=12 FAIL=0
+21	selftest-plan-tier.sh	RC=0	Total: 32 PASS=32 FAIL=0
+22	selftest-reflect-verify.sh	RC=0	Total: 12 PASS=12 FAIL=0
+23	selftest-registry.sh	RC=0	Total: 5 PASS=5 FAIL=0 (registry rows=42, actual selftest=42)
+24	selftest-reliability-institution.sh	RC=0	Total: 12 PASS=12 FAIL=0
+25	selftest-rescue-chain.sh	RC=0	Total: 11 PASS=11 FAIL=0
+26	selftest-review-library.sh	RC=0	Total: 15 PASS=15 FAIL=0
+27	selftest-rule23-conflict-scan.sh	RC=0	Total: 3 PASS=3 FAIL=0
+28	selftest-self-resolution.sh	RC=0	Total: 12 PASS=12 FAIL=0
+29	selftest-shared-tracker.sh	RC=0	Total: 11 PASS=11 FAIL=0
+30	selftest-skill-collab.sh	RC=0	Total: 25  PASS=25  FAIL=0
+31	selftest-skill-modify.sh	RC=0	Total: 9 PASS=9 FAIL=0 (SKIP=0)
+32	selftest-skill-split.sh	RC=0	Total: 41  PASS=41  FAIL=0
+33	selftest-smart-merge.sh	RC=0	Total: 17 PASS=17 FAIL=0
+34	selftest-sync-index.sh	RC=0	Total: 13 PASS=13 FAIL=0
+35	selftest-task-boundary.sh	RC=0	Total: 11 PASS=11 FAIL=0
+36	selftest-template-lifecycle.sh	RC=0	Total: 18 PASS=18 FAIL=0
+37	selftest-template-sense.sh	RC=0	Total: 8 PASS=8 FAIL=0
+38	selftest-tier-b.sh	RC=0	Total: 18 PASS=18 FAIL=0
+39	selftest-tool-selection.sh	RC=0	Total: 12 PASS=12 FAIL=0
+40	selftest-vc-gate.sh	RC=0	Total: 11 PASS=11 FAIL=0
+41	selftest-veto.sh	RC=0	Total: 13 PASS=13 FAIL=0
+42	selftest-workflow-orchestration.sh	RC=0	Total: 16 PASS=16 FAIL=0

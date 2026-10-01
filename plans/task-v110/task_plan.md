@@ -3,6 +3,8 @@
 
 <!-- template_type: rule-enhancement -->
 <!-- plan_tier: standard -->
+<!-- parallel_groups: verify-tpl, verify-mem, verify-idx -->
+<!-- [2026-10-02 task-v110] 并行组声明（Rule 21.4 新机制自证）：Phase 3 双代理并行实测用——verify-tpl=模板面核查/verify-mem=记忆治理核查（已完成）/verify-idx=INDEX 核查；三组文件集不相交、互不依赖，符合独立性四问 -->
 
 ## Goal
 
@@ -66,11 +68,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 fresh executor 普查 Rule 21.4 影响面（规则全文/全库引用/守卫逻辑/断言锚）
+交付；部署同步（v108-v110 三批积压）待用户裁决；宪法 §一 同步待用户授权
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -116,12 +118,12 @@ Phase 1
 | S2 | 守卫适配+selftest 级联+模板行 | 继承 | 守卫改动点+断言清单 | ≤15min | pending |
 
 ### Phase 3: 独立子代理验证（fresh ×3，含并行实测）
-- [ ] 全量 42 selftest 回归（worktree）
-- [ ] **并行行为实测（VC-3）**：同一消息派发 2 个互不依赖 fresh 子代理，双 checkpoint 时间线证并行+产出交叉核验
-- [ ] 串行保留场景核验（VC-4）：守卫行为/规则文本实测
-- [ ] alignment-review 对齐审查
+- [x] 全量 42 selftest 回归——抓 knowledge-brief T6 行号窗口漏网（22.4 行号 161 越界 160），已放宽 200 并复跑 16/16
+- [x] **并行行为实测（VC-3）**：首轮无标记双派发=组 A 被守卫拦截（VC-4 实证）+组 B 完成；补 parallel_groups 声明后带标记双派发=真并行（A/C 时间线交叠 7s）+产出正确
+- [x] 串行保留场景核验（VC-4）：TS-08 无标记拦截断言+实战拦截双态
+- [x] alignment-review 对齐审查：APPROVED（P0/P1=0，P2×2 登记）
 - **V-N:** VC-1, VC-3, VC-4, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -131,12 +133,12 @@ Phase 1
 | S3 | 串行保留核验+对齐审查 | 继承 | 守卫行为+alignment-review SKILL | ≤15min | pending |
 
 ### Phase 4: 合并回与终验簿记
-- [ ] smart-merge-back 合并回+清理+主仓复验
-- [ ] 部署对账（fresh）+结论登记（部署待用户指令）
-- [ ] memory 演进记录更新（serial-dispatch-iron-rule.md：09-12→09-28→10-02 演进链+验证锚+失效条件——**按 M5 三要素**）
-- [ ] verification.md 全量+check-complete+INDEX+簿记 commit
+- [x] smart-merge-back 合并回（V5 拦截→worktree merge master→MERGED e0527b6）+清理+主仓复验三项全过
+- [x] 部署对账（fresh sub:10）：三宿主 v110 面 13/13 落后，zcode 累积 31 文件积压 → 待用户裁决
+- [x] memory 演进记录更新（serial-dispatch-iron-rule.md 三段演进链+M5 三要素）+MEMORY.md 索引行同步
+- [x] verification.md 全量（6/6 PASS）+check-complete+INDEX+簿记 commit
 - **V-N:** VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（① git+② 簿记+③ 记忆系统职责面——白名单）
 
 ## 🔀 隔离决策（冲突分析）
@@ -186,6 +188,7 @@ Phase 1
 | 验证全部独立子代理（延续 P0） | v108/v109 用户明示；并行实测本身即本任务验证对象 |
 | 思路复述已呈示 | 2026-10-02 按 28.2.1 |
 | silent: 自动裁决 D1 批准（Rule 44.3：超时 5min/默认批准/触发 2026-10-02/理由=用户裁决指令明确+改动全程 worktree+独立验证兜底/被覆盖=等显式 yes） | — |
+| silent: 并行实测首轮=守卫拦截实证（组 A 无标记被串行槽拦截 age=0s<120s，组 B 独立完成）——构成 VC-4「无声明默认串行」行为实证；补 frontmatter parallel_groups 声明后带标记重派完成 VC-3 真并行（44.2 直接裁决登记） | 守卫「拦截-放行」双态实测=新机制完整证据链 |
 
 ## Errors Encountered
 
@@ -209,9 +212,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 4 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 4（rate 0.75 verdict=ok violations=0） |
+| 主进程直做 Phase 清单 | Phase 4（① git 编排+② 簿记+③ 记忆系统职责面——白名单）；少量 ⑥ ≤3 行机械修正 |
+| 委派率 | 0.75 ≥ floor；验证独立性：八波 fresh 子代理（含双代理并行实测） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 
