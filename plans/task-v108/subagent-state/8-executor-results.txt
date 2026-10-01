@@ -1,0 +1,45 @@
+1 selftest-active-plan.sh rc=0 dur=6s :: Total: 19 PASS=19 FAIL=0 
+2 selftest-ask-default-timeout.sh rc=0 dur=0s :: Total: 9 PASS=9 FAIL=0 
+3 selftest-batch-pilot.sh rc=0 dur=0s :: Total: 10 PASS=10 FAIL=0 
+4 selftest-check-conflicts.sh rc=0 dur=2s :: Total: 7 PASS=7 FAIL=0 
+5 selftest-check-drift.sh rc=0 dur=3s :: Total: 6 PASS=6 FAIL=0 
+6 selftest-conclusion-discipline.sh rc=0 dur=0s :: Total: 24 PASS=24 FAIL=0 
+7 selftest-context-hygiene.sh rc=0 dur=1s :: Total: 12 PASS=12 FAIL=0 
+8 selftest-delegation.sh rc=0 dur=5s :: PASS  T_RATE_OK rate>=floor exit0 且比较式 1 处  (exit=0) PASS  T_RATE_LOW rate<floor exit1  (exit=1) Total: 38    PASS=38  FAIL=0 
+9 selftest-dispatch.sh rc=0 dur=6s :: Total: 29 PASS=29 FAIL=0 
+10 selftest-error-loop.sh rc=0 dur=0s :: Total: 16 PASS=16 FAIL=0 
+11 selftest-execution-stability.sh rc=0 dur=2s :: Total: 19  PASS=19  FAIL=0 
+12 selftest-fallback.sh rc=0 dur=2s :: Total: 31  PASS=31  FAIL=0 
+13 selftest-final-gate-hash.sh rc=0 dur=20s :: <no summary line>
+14 selftest-fine-grain-steps.sh rc=0 dur=2s :: Total: 11 PASS=11 FAIL=0 
+15 selftest-interaction.sh rc=0 dur=1s :: Total: 11 PASS=11 FAIL=0 
+16 selftest-iterative-optimizer.sh rc=0 dur=0s :: Total: 8 PASS=8 FAIL=0 
+17 selftest-knowledge-brief.sh rc=0 dur=1s :: Total: 16  PASS=16  FAIL=0 
+18 selftest-mechanism-profile.sh rc=0 dur=5s :: Total: 19 PASS=19 FAIL=0 
+19 selftest-methodology.sh rc=0 dur=1s :: Total: 16 PASS=16 FAIL=0 
+20 selftest-plan-dispatch.sh rc=0 dur=3s :: Total: 12 PASS=12 FAIL=0 
+21 selftest-plan-tier.sh rc=0 dur=10s :: Total: 32 PASS=32 FAIL=0 
+22 selftest-reflect-verify.sh rc=0 dur=0s :: Total: 12 PASS=12 FAIL=0 
+23 selftest-registry.sh rc=0 dur=0s :: Total: 5 PASS=5 FAIL=0 (registry rows=42, actual selftest=42) 
+24 selftest-reliability-institution.sh rc=0 dur=0s :: Total: 12 PASS=12 FAIL=0 
+25 selftest-rescue-chain.sh rc=0 dur=1s :: Total: 11 PASS=11 FAIL=0 
+26 selftest-review-library.sh rc=0 dur=0s :: Total: 15 PASS=15 FAIL=0 
+27 selftest-rule23-conflict-scan.sh rc=0 dur=2s :: Total: 3 PASS=3 FAIL=0 
+28 selftest-self-resolution.sh rc=0 dur=0s :: Total: 12 PASS=12 FAIL=0 
+29 selftest-shared-tracker.sh rc=0 dur=0s :: Total: 11 PASS=11 FAIL=0 
+30 selftest-skill-collab.sh rc=0 dur=1s :: Total: 25  PASS=25  FAIL=0 
+31 selftest-skill-modify.sh rc=0 dur=0s :: Total: 9 PASS=9 FAIL=0 (SKIP=0) 
+32 selftest-skill-split.sh rc=0 dur=0s :: Total: 41  PASS=41  FAIL=0 
+33 selftest-smart-merge.sh rc=0 dur=12s :: Total: 17 PASS=17 FAIL=0 
+34 selftest-sync-index.sh rc=0 dur=1s :: Total: 13 PASS=13 FAIL=0 
+35 selftest-task-boundary.sh rc=0 dur=0s :: Total: 11 PASS=11 FAIL=0 
+36 selftest-template-lifecycle.sh rc=0 dur=0s :: Total: 18 PASS=18 FAIL=0 
+37 selftest-template-sense.sh rc=0 dur=4s :: Total: 8 PASS=8 FAIL=0 
+38 selftest-tier-b.sh rc=0 dur=2s :: Total: 18 PASS=18 FAIL=0 
+39 selftest-tool-selection.sh rc=0 dur=0s :: Total: 12 PASS=12 FAIL=0 
+40 selftest-vc-gate.sh rc=0 dur=22s :: Total: 11 PASS=11 FAIL=0 
+41 selftest-veto.sh rc=0 dur=1s :: Total: 13 PASS=13 FAIL=0 
+42 selftest-workflow-orchestration.sh rc=0 dur=0s :: Total: 16 PASS=16 FAIL=0 
+
+机械求和: PASS=660 FAIL=0 (grep -o 'PASS=[0-9]*' 全日志; final-gate-hash 结果行 '==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====' 计入)
+基线对照: sub:5 worktree 基线 660/0 → master 5a30382 后 660/0, 一致无漂移

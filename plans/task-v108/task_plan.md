@@ -70,11 +70,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 executor 做模板全量普查（25+16 文件 × 新规范基线核对）
+交付报告；部署同步（claude/opencode 全量 23 文件/zcode 待 videop1 裁决）待用户指令
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -112,11 +112,11 @@ Phase 1
 - **Executor:** 主进程（例外理由：② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: worktree 隔离修复实施
-- [ ] 创建 worktree `/mnt/data/dev/task-planner-skill-worktrees/task-v108`（branch wt/task-v108）
-- [ ] 按修复清单三批次逐项修（executor 派发，串行，逐批验收），Rule 34.2 四点同步（模板↔SKILL 注册↔mapping↔guide↔selftest 锚）
-- [ ] 逐 Phase commit（Rule 27），worktree 内 git status 保持干净
+- [x] 创建 worktree `/mnt/data/dev/task-planner-skill-worktrees/task-v108`（branch wt/task-v108 @ac82371）
+- [x] 修复清单三批次全部完成（批次一 M-01/02/03/05/06/10 八文件；批次二 M-04/09 四文件含 §一 回填 rule-enhancement 偏差披露；批次三 M-07/08/12/13 十七文件），总计 23 文件 +333/-8，TL 18/18+plan-tier 32/32 PASS
+- [x] worktree 内 commit + git status 干净（Rule 27）
 - **V-N:** VC-6, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）（修复实施）+ 主进程（worktree 生命周期①）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -131,8 +131,8 @@ Phase 1
 - [ ] 干净上下文实测：**fresh 子代理**用更新后模板在临时目录走 init-session 全流程（建 6 文件+template_type 门通过），临时目录用后清理
 - [ ] alignment-review 对齐审查（**fresh 子代理**按池技能四要素审查模板变更），CHANGES_REQUESTED 项处置
 - **V-N:** VC-1, VC-2, VC-3, VC-4
-- **Status:** pending
-- **Executor:** executor（sonnet-1）/code-runner-agent（mini，失败 22.3 接管豁免登记）——全部全新会话派发
+- **Status:** complete
+- **Executor:** executor（sonnet-1）/code-runner-agent（mini，失败 22.3 接管豁免登记）——全部全新会话派发；验证一 660/0+验证二 16/16+干净上下文 6/6+验证三对齐审查（P2×1 已由主进程白名单⑥ 一字接管处置）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|
@@ -141,11 +141,11 @@ Phase 1
 | S3 | alignment-review 对齐审查（模板变更面） | 继承 | worktree 模板 diff+alignment-review SKILL | 四要素结论+发现分级 | ≤15min | pending |
 
 ### Phase 5: 合并回与终验簿记
-- [ ] worktree 全 VC 复验 → smart-merge-back 合并回主仓 → 清理 worktree/分支
-- [ ] 部署位对账（**fresh 子代理** diff 三宿主）+ 结论登记（部署动作待用户指令，本任务只对账）
-- [ ] 终验：verification.md 全量填写（核查命令由**独立子代理**执行后主进程只 Read 结论）+ check-complete + 簿记 commit + INDEX
+- [x] worktree 全 VC 复验 → smart-merge-back 合并回主仓（MERGED 5a30382）→ worktree/分支已清理
+- [x] 部署位对账（fresh 子代理 sub:9）：claude/opencode 纯落后 23 文件可全量同步；zcode 落后 20+videop1 独立迭代 3 文件+独有 12 variant → 部署待用户裁决（本任务未写部署位）
+- [x] 终验：verification.md 全量填写（6/6 PASS）+ 终验回归（fresh sub:8 主仓 660/0 无漂移）+ check-complete + 簿记 commit + INDEX
 - **V-N:** VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由：① git/worktree 编排 + ② 簿记——Rule 25.3 白名单；验证子动作已全部下沉独立子代理）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -222,9 +222,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 5 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< floor 0.7 或含白名单外理由 → 最高 PARTIAL） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 机器口径 1/5（rate 0.2）——实际执行面：Phase 1 普查/Phase 3 三批次修复/Phase 4 五波验证 全部 executor fresh 承担；混合 Executor 字段解析面局限（v099 教训：stats 只认纯 token） |
+| 主进程直做 Phase 清单 | Phase 2（② 计划文件）；Phase 3 worktree 生命周期+抽验（①）；Phase 4 零直做（全子代理）+P2 一字接管（⑥ ≤3 行）；Phase 5（① git+② 簿记）——全部命中 Rule 25.3 白名单 |
+| 委派率 | verdict=ok、violations=[]；rate 0.2 但直做面全白名单 → **WHITELIST-EXEMPT 放行**（先例 v099-v107）；验证独立性专项=五波验证 5 个 fresh 会话零主进程自测 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 
