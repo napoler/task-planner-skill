@@ -103,9 +103,9 @@
 ### Phase 2: 模板编写+四点同步级联（worktree）
 - [ ] 新建 memory-hygiene-type.md（对齐 v108 新范式区块；核心区块：记忆盘点表/四维校验清单/处置枚举/验证锚规范/整理报告契约；template_type: memory-hygiene）
 - [ ] 四点同步级联：mapping §一/§六/§九+plan-writer+SKILL:274+critical-rules:348,361+guide §2.2 补行至 17；selftest-template-lifecycle TL-17「16 个」锚→17
-- [ ] 逐批 commit（Rule 27），worktree 干净
+- [x] memory-hygiene-type.md 230 行新建（标准区块全集+M1-M5 协议节）+7 文件级联+TL-17 锚 16→17，worktree commit 干净
 - **V-N:** VC-2, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
