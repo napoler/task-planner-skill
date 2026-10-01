@@ -14,7 +14,7 @@
 - **Started:** [YYYY-MM-DD HH:MM]
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
-  -
+  - [sub:1] 模板全量普查完成（六维结论+修复清单 v1 M-01~M-13，全文见 subagent-state/1-executor.md；M-11/M-12 待主进程裁决）
 - Files created/modified:
   -
 - Test Results:

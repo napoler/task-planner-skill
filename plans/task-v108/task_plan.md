@@ -104,24 +104,26 @@ Phase 1
 | S1 | 模板体系普查出修复清单 v1 | 继承 | templates/ 全部+mapping/guide+v107 report §3.3/3.4（只读核对） | 清单 v1 逐项锚点+修法+性质 | ≤15min | pending |
 
 ### Phase 2: 修复方案定稿与计划增补
-- [ ] 普查清单 v1 并入本计划（B 类扩展：Phase 3 S-unit 表逐项化），逐项标注修改性质
-- [ ] 功能性删除/语义改写候选（如有）单独标出 → D6 逐项确认，默认纯增量（36.5）
+- [x] 普查清单 v1（M-01~M-13，全文见 subagent-state/1-executor.md + findings [sub:1-executor]）并入本计划：Phase 3 改三批次实施
+- [x] 三项裁决：M-11 不镜像委派统计节到 variant task_plan（Rule 25.4 机器落点=verification.md，variant 共用已覆盖；避免模板膨胀）；M-12 补齐 3 行+🧰 区块（Rule 40.2/C28 standard 档语义，variant 补区块为唯一自洽选项，40.2 表述不改）；M-13 落点 A+B 双写（verification.md Goal Gate 段+task_plan.md VC 段头部；不升 Rule——33.3 已有语义锚；不加 selftest 新断言——全量回归+对齐审查兜底）
+- [x] D6 核查：清单全部为修正（过期值/旧约定纠正）或增量（补缺失区块/注释/行），无功能性删除无语义改写 → 不触发 D6
 - **V-N:** VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由：② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: worktree 隔离修复实施
 - [ ] 创建 worktree `/mnt/data/dev/task-planner-skill-worktrees/task-v108`（branch wt/task-v108）
-- [ ] 按修复清单逐项修（executor 派发，串行，逐项验收），Rule 34.2 四点同步（模板↔SKILL 注册↔mapping↔guide↔selftest 锚）
+- [ ] 按修复清单三批次逐项修（executor 派发，串行，逐批验收），Rule 34.2 四点同步（模板↔SKILL 注册↔mapping↔guide↔selftest 锚）
 - [ ] 逐 Phase commit（Rule 27），worktree 内 git status 保持干净
 - **V-N:** VC-6, VC-2
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** executor（sonnet-1）（修复实施）+ 主进程（worktree 生命周期①）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|
-| S1 | worktree 内模板修复批次 1（声明形态+计数锚+worktree 约定） | 继承 | 修复清单 worktree 路径+逐项锚点 | diff 逐项对应+git status 干净 | ≤15min | pending |
-| S2 | worktree 内模板修复批次 2（T-2 区块补齐+mapping/guide 清单+验证独立性制度化落点） | 继承 | 修复清单+Rule 34.2 四点同步面 | diff 逐项对应+selftest 锚级联 | ≤15min | pending |
+| S1 | 批次一：计数锚与声明形态面（M-01 主模板 worktree 约定/M-02 Rule12 同源/M-03 knowledge-brief 20→22/M-05 guide 26→25+23/26→22/25/M-06 四 variant 注释/M-10 T-1 注脚） | 继承 | 修复清单 M-01..03,05,06,10+worktree 模板路径 | diff 逐项对应+git status 干净 | ≤15min | pending |
+| S2 | 批次二：16 variant 四点同步面（M-04 mapping §一/§六/§九+M-09 plan-writer/SKILL:274/critical-rules:348,361 13→16） | 继承 | 修复清单 M-04/M-09+四点同步面清单 | diff 逐项对应+TL 断言健康 | ≤15min | pending |
+| S3 | 批次三：区块补齐与制度化面（M-07 九 variant Drift Log+M-08 十五 variant Handoff 节+M-12 十五 variant 3 行+🧰 区块+M-13 验证独立性 A+B 落点） | 继承 | 修复清单 M-07/08/12/13+主模板范式锚 | diff 逐项对应+区块计数 | ≤15min | pending |
 
 ### Phase 4: 独立子代理验证（用户 P0 — 全部全新会话）
 - [ ] 全量 42 selftest 回归（**fresh 子代理**在 worktree 内执行，逐脚本 rc 回报）
@@ -189,6 +191,9 @@ Phase 1
 | Decision | Rationale |
 |----------|-----------|
 | template_type=refactor | 模板体系整理重构语义；白名单动态派生合法值 |
+| M-11 不镜像委派统计节到 variant task_plan | Rule 25.4 机器落点=verification.md（variant 计划共用已覆盖）；避免模板膨胀与 38.3 白名单边界模糊 |
+| M-12 补齐 3 行+🧰 区块（variant） | Rule 40.2/C28 standard 档计划须含区块——variant 生成的即 standard 档计划，补区块是唯一自洽选项；40.2 规范表述不弱化 |
+| M-13 落点 A+B 双写，不升 Rule 不加 selftest 断言 | verification.md Goal Gate 段（终验判定面）+task_plan.md VC 段头部（计划期声明面）；Rule 33.3 已有「独立验证」语义锚；机器面由全量回归+对齐审查兜底 |
 | D 类新任务开 task-v108 | 用户指令与 v107 审查任务 Goal/范围/交付物不同（Rule 8.1）；v107 原样保留已重锁终态 |
 | 验证全部独立子代理（用户 P0） | 用户明示「确保所有的验证都是在独立子代理进行执行，确保不会受到主代理的上下文的影响」+ 9-26 裁决制度化 |
 | R-01~R-15 非模板项不纳入 | v107 待授权清单仍在；本任务 scope=模板面（用户指令边界），扩围须再授权 |
