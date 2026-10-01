@@ -58,7 +58,7 @@
 | 项目内部文档 | v106 基线：42 selftest 660/0、三部署位 IDENTICAL、iterative-optimizer 已交付 | plans/INDEX.md + memory task-v106-iterative-optimizer | 必读 | ☑ |
 | 项目内部文档 | review-library 池 11 技能清单与 alignment-review 四要素清单 | `~/.zcode/skills/alignment-review/SKILL.md` | 必读 | ☑ |
 | 项目内部文档 | 审查锚点清单：SKILL 文档索引面（v103 教训 :246/:304 两处）、计数锚、RL/R 系列守卫 | `skills/task-planner/references/critical-rules.md` | 必读 | ☑ |
-| 项目内部文档 | 部署合约：install-companion（三宿主分发）+ smart-merge-back | `skills/task-planner/scripts/install-companion.sh` | 参考 | ☑ |
+| 项目内部文档 | 部署合约：install-companion（三宿主分发）+ smart-merge-back | `skills/task-planner/lib/install-companion.sh`（v107-S1 审查修正：lib/ 非 scripts/） | 参考 | ☑ |
 
 ## ⚠️ 核心问题定义（强制 - 任务开始前必须回答）
 
@@ -94,12 +94,12 @@ Phase 1
 ## Phases
 
 ### Phase 1: 基线与全面回归（机械层）
-- [ ] bash -n 全量语法扫描 `skills/*/scripts/*.sh`
-- [ ] 42 个 selftest 全量回归，逐脚本 Total 行汇总（对照 v106 基线 660/0）
-- [ ] 三宿主部署位盘点：~/.zcode/skills、~/.claude/skills、~/.opencode 对应位的存在性与软链/实体形态（task-planner 主 skill + 4 卫星 + review-library 池 11 + iterative-optimizer）
-- [ ] 知识储备必读项已确认（上表 ☑）
+- [x] bash -n 全量语法扫描 `skills/*/scripts/*.sh`（75 脚本 0 FAIL）
+- [x] 42 个 selftest 全量回归，逐脚本 Total 行汇总（660/0，与 v106 基线一致）
+- [x] 三宿主部署位盘点：~/.zcode、~/.claude、~/.opencode 三位 10 skill+11 池全在位；⚠️ 发现 ~/.config/opencode/skills 第二套旧部署（缺 8 个新技能）→ 移交 Phase 3
+- [x] 知识储备必读项已确认（上表 ☑）
 - **V-N:** VC-1, VC-4（部署位盘点为 Phase 3 输入基线）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -109,12 +109,12 @@ Phase 1
 | S3 | 三宿主部署位盘点 | 继承 | ~/.zcode/skills、~/.claude/skills、~/.opencode（盘点 16 个目标技能位的存在性与形态） | 部署位清单表（存在/缺失/软链/实体） | ≤10min | pending |
 
 ### Phase 2: 内容质量深度审查（文档面）
-- [ ] S1 主文档面：task-planner SKILL.md + references/critical-rules.md 一致性（Rules 1-44 编号连续无跳号/重复、SKILL 文档索引面（v103 教训两处：正文括注+文件索引行）、C1-C33 清单编号连续、计数锚 vs 实测值）
-- [ ] S2 其余 references/*.md 全部（completion-gate/goal-gate/todo-sync/batch-quality-gate/methodology/worktree-isolation/subagent_dispatch/critical-rules 已含 S1）+ templates/（16 variant+内置模板）引用完整性与锚点核对
-- [ ] S3 卫星与配套技能：plan-template-kit / plan-collab-router / plan-cost-guard / plan-research-router / plan-resume / todo-skill / task-drift-guard / progress-tracker / iterative-optimizer 文档面（引用路径实存、计数锚、registry 一致性）
-- [ ] S4 根目录文档：README_zh / INSTALL_zh / CHANGELOG / CONTRIBUTING / CONTRIBUTING_zh / CLAUDE.md 数字与引用面（版本号、脚本数、池技能数、目录结构引用）
+- [x] S1 主文档面：task-planner SKILL.md + references/critical-rules.md 一致性（Rules 1-44 编号连续✓/索引面覆盖✓/C1-C33 连续✓/计数锚 2 处 P1 过期/19 引用全实存）
+- [x] S2 其余 references + templates/（P1×2：task_plan 模板旧 worktree 约定+knowledge-brief 计数 20≠22；P2×6；config 键 11 对拍全一致）
+- [x] S3 卫星与配套技能（P1×1：cost-guard Rule 17.5 幽灵 STOP 档；P2×4；6 技能零问题）
+- [x] S4 根目录文档（P1×2：根级 scripts 入口全失效+session-catchup.py 幽灵；P2×17 过期数字簇）
 - **V-N:** VC-2, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -236,7 +236,7 @@ Phase 1
 
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-10-02 01:20 | ✅ ALIGNED（Phase 1 complete 后） | VC-1, VC-4 | 75 脚本 0 语法 FAIL+42 selftest 660/0+三宿主盘点完成；仅动 plans/task-v107/；继续 Phase 2 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
@@ -253,9 +253,8 @@ Phase 1
 | 1 | | code-runner-agent→主进程 | Phase 1 S1 bash -n 全量语法扫描 | done-接管 | mini provider rejected×1（22.3.1）；④主进程接管（白名单③ 机械验证命令） | | | plans/task-v107/subagent-state/1-code-runner.md | rescue=④接管 / 0 / ☐ |
 | 2 | | code-runner→改派 | Phase 1 S2 42 selftest 全量回归 | queued-改派 | mini rejected×2 → 22.3① 改派 executor 承担 | | | plans/task-v107/subagent-state/2-code-runner.md | rescue=①改派 / 0 / ☐ |
 | 9 | | code-runner-agent→主进程 | Phase 1 S3 三宿主部署位盘点 | done-接管 | mini 已 2 连拒不再探针；④接管（白名单③ 机械盘点） | | | plans/task-v107/subagent-state/9-code-runner.md | rescue=④接管 / 0 / ☐ |
-| 3 | | executor | Phase 2 S1 主文档面审查 | queued | | | | plans/task-v107/subagent-state/3-executor.md | - / 0 / ☐ |
-| 4 | | executor | Phase 2 S2 references+templates 审查 | queued | | | | plans/task-v107/subagent-state/4-executor.md | - / 0 / ☐ |
-| 5 | | executor | Phase 2 S3 卫星+配套技能审查 | queued | | | | plans/task-v107/subagent-state/5-executor.md | - / 0 / ☐ |
-| 6 | | executor | Phase 2 S4 根目录文档审查 | queued | | | | plans/task-v107/subagent-state/6-executor.md | - / 0 / ☐ |
+| 3 | | executor | Phase 2 S1 主文档面审查 | done | 6 项问题（P1×2:SKILL:64 五文件过期锚+Rule16 锚 21≠22;P2×4）;主进程抽验 3 条全证实;P-4 为 v097 宽容锚设计权衡非缺陷 | findings.md [sub:3-executor] | findings.md | plans/task-v107/subagent-state/3-executor.md | rescue=- / 0 / ☑ || 4 | | executor | Phase 2 S2 references+templates 审查 | done | P1×2（task_plan:249 旧 worktree 约定+knowledge-brief:9 计数 20≠22 双过期）+P2×6+待复核×2;主进程抽验 P1 两条全证实 | findings.md [sub:4-executor] | findings.md | plans/task-v107/subagent-state/4-executor.md | rescue=- / 0 / ☑ |
+| 5 | | executor | Phase 2 S3 卫星配套技能审查 | done | P1×1（cost-guard Rule17.5 幽灵 STOP 档,主侧 0 命中已证实）+P2×4+待复核×1;6 技能零问题 | findings.md [sub:5-executor] | findings.md | plans/task-v107/subagent-state/5-executor.md | rescue=- / 0 / ☑ |
+| 6 | | executor | Phase 2 S4 根目录文档审查 | done | 19 项（P1×2:根级 scripts 入口全失效+session-catchup.py 幽灵;P2×17 数字/口径过期簇）;主进程抽验 2 条 P1 全证实 | findings.md [sub:6-executor] | findings.md | plans/task-v107/subagent-state/6-executor.md | rescue=- / 0 / ☑ |
 | 7 | | executor | Phase 3 部署位 diff 对账 | queued | | | | plans/task-v107/subagent-state/7-executor.md | - / 0 / ☐ |
 | 8 | | executor | Phase 4 汇总撰写 report.md | queued | | | | plans/task-v107/subagent-state/8-executor.md | - / 0 / ☐ |

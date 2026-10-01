@@ -27,10 +27,15 @@
 
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+- **Status:** in_progress
+- **Started:** 2026-10-02 01:30
 - Actions taken:
-  -
+  - [sub:3] S1 主文档面审查完成（SKILL.md + critical-rules.md 五维一致性）：6 项问题（P1×2 计数锚过期 / P2×4 写法与待复核），两文件 19 条引用路径全部实存；清单全文见 checkpoint subagent-state/3-executor.md；主进程抽验 P-1/P-2/P-6 全证实（P-6=计划引用路径错 lib/ 非 scripts/，已修计划）
+  - [sub:4] S2 references+templates 四维审查完成：8 项问题（P1×2 旧 worktree 路径锚/knowledge-brief 计数 20≠22；P2×6 章节重复编号/SKILL 行号锚漂移/批量 variant 唯一性过期/DX 断言范围/4 variant 缺 template_type 注释）+2 项待复核；config.json 11 键对拍全 PASS；清单全文见 checkpoint subagent-state/4-executor.md
+  - [sub:5] S3 卫星+配套 9 技能四维审查完成：4 项问题（P1×1 plan-cost-guard 17.5「>15 STOP」阈值主侧无源；P2×3 template-guide 数字簇 25≠26/23≠22 三口径互斥、template-mapping §一 14≠16 缺 video/mini-lite 两条、progress-tracker 边界表幽灵技能 plan-bookkeeper）+1 项待复核（session-catchup 口径）；路径 20+ 条 0 MISSING、跨技能锚 12 条全实存、registry 42=42、iterative-optimizer selftest 8/8 PASS；清单全文见 checkpoint subagent-state/5-executor.md
+  - [sub:6-verify] 主进程抽验 S4 两条 P1 全证实（根级 scripts/ 不存在+session-catchup.py 幽灵实为 .ts）;Phase 2 四波合计 P1×7/P2×31/待复核×4
+  - [sub:6] S4 根目录 6 文档三维审查完成：19 项问题（P1×2 根级 scripts/ 口径全面失效+session-catchup.py 幽灵 / P2×17 INSTALL_zh 安装清单过期 13 变体≠16/37 键≠40/55 脚本≠81、install.sh 实 flag 与文档零交集、英文死链、模板树漏 knowledge-brief、Rules 1-39≠1-44、5 文件≠6）+1 项待复核（CHANGELOG 英文文档移除记录缺失）；清单全文见 checkpoint subagent-state/6-executor.md
+
 - Files created/modified:
   -
 - Test Results:
