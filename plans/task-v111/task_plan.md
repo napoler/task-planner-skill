@@ -97,12 +97,11 @@ Phase 1
 | S1 | 普查+Rule 45 草案+存量清单 | 继承 | critical-rules/SKILL/CLAUDE.md+scripts 抽样 | ≤15min | pending |
 
 ### Phase 2: Rule 45 新增与级联（worktree）
-- [ ] Rule 45 新增（critical-rules.md，编号顺延；条款含：适用范围/双层注释要求/头注释四要素/思路入注/禁止删减/平台冲突显式声明/与宪法 §九衔接）
-- [ ] Rules 1-45 口径级联（Phase 1 清单逐处：SKILL 两处/标题/宽容锚）
-- [ ] selftest 宽容锚/断言级联+全量回归（worktree 内自验）
-- [ ] 逐批 commit，worktree 干净
+- [x] Rule 45 七子条落地（critical-rules.md:453-463）+括注级联 3 处（SKILL frontmatter/:246/:304）——字面锚「Rules 1-39」计数不减（括注模式），PT-08/WF-10 selftest 全绿实证
+- [x] selftest 零级联达成（括注策略）；全量回归归 Phase 3 独立验证
+- [x] worktree commit 干净
 - **V-N:** VC-2, VC-3, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |

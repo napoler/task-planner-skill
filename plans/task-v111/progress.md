@@ -15,6 +15,7 @@
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -
+  - [sub:1] 注释规范面普查完成: ①技能侧注释条款零映射(宪法§九:158-159 有 4 项最小条款, skill 侧缺口成立)②级联面全集=正文 4 处+索引 2 处+selftest 硬字面断言 6 处(必改), REGEX 宽容锚 5 处天然兼容零改③密度基线: 12 脚本头注释 100% 在位/函数前置注释 100%/逻辑段注释 4-44% 中位 22%/Why 注释点状存在④Rule 45 草案七子条+存量补强清单(脚本 5 行+文档 4 行, S/M/L 分级)已落 checkpoint; 结论摘要见 findings.md `#### [sub:1-executor]` 段
 - Files created/modified:
   -
 - Test Results:
@@ -27,7 +28,7 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:2] Rule 45 注释完整性规范落地: critical-rules.md 44.4 后新增「### 45」七子条(45.1 适用范围/45.2 What+Why 双层+有效边界/45.3 头注释四要素/45.4 修改三要素衔接宪法§九/45.5 禁为美观删减/45.6 平台冲突显式声明用户裁决优先/45.7 机器承载 CC 组); 括注级联 3 处(SKILL.md:9「Critical Rules 全集 1-39（含 40-45）」/:246 括注加 /45/:304 索引行加 Rule 45 注释完整性规范); 偏差=方案预期 critical-rules 标题含「1-44」字样实际无→0 处; 验证 grep 锚 2/2 + selftest-plan-tier 32 PASS + selftest-workflow-orchestration 16 PASS + git diff 恰 2 文件; 未 commit(禁 git 写)
 - Files created/modified:
   -
 - Test Results:
