@@ -55,7 +55,7 @@ t "T5b 3file-gate 存在性循环首行不含 knowledge-brief (=0, KQ3)" bash -c
 # [task-v095 P6] critical-rules 新增 15.1-15.3 致 21.2/22.4 行号合法后移，窗口随迁（原上限 135）
 L_212=$(grep -n "knowledge-brief" "$CRULES" | grep -F '21.2' | head -1 | cut -d: -f1)
 L_224=$(grep -n "knowledge-brief" "$CRULES" | grep -F '22.4' | head -1 | cut -d: -f1)
-t "T6 critical-rules 21.2($L_212)+22.4($L_224) 命中且 100<行号<160" bash -c "[ '$L_212' -gt 100 ] && [ '$L_212' -lt 160 ] && [ '$L_224' -gt 100 ] && [ '$L_224' -lt 160 ] && [ '$L_212' -ne 0 ] && [ '$L_224' -ne 0 ]"
+t "T6 critical-rules 21.2($L_212)+22.4($L_224) 命中且 100<行号<200（窗口放宽:Rule 21.4 演进正文膨胀,task-v110）" bash -c "[ '$L_212' -gt 100 ] && [ '$L_212' -lt 200 ] && [ '$L_224' -gt 100 ] && [ '$L_224' -lt 200 ] && [ '$L_212' -ne 0 ] && [ '$L_224' -ne 0 ]"
 
 # T7: subagent_dispatch.md 知识包表行含 knowledge-brief ≥1
 t "T7 subagent_dispatch.md 'knowledge-brief' ≥1" bash -c "[ \"\$(grep -c 'knowledge-brief' '$DISPATCH')\" -ge 1 ]"
