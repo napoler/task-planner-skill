@@ -63,12 +63,11 @@
 | task-v108 | complete | 5/5 | 整理更新模板体系全部文件（主技能 templates/ 全部 .md + variant/ 16 个 | none |  | `skills/plan-template-kit/references/{template-mapping,template-guide}.md`,`skills/task-planner/scripts/selftest-template-lifecycle.sh`（锚断言数值级联）、SKILL.md 模板注册计数行（仅计数联动）,SKILL.md 其他段落；Rule 36.4 功能性删除/语义改写须逐项确认 | 2026-10-02 | ✓ |
 | task-v109 | complete | 5/5 | 在模板体系中新增「记忆整理」variant 模板（memory-hygiene-type），固化「写 | none |  | `skills/task-planner/templates/variant/memory-hygiene-type.md`（新建）,template-mapping.md（§一/§六/§九 补行）、template-guide.md（§2.2 补行）、plan-writer.md（映射表补行）、SKILL.md:274（16→17）、critical-rules.md:348,361（17 variant/18 行）、selftest-template-lifecycle.sh（TL-17「16 个」锚→17）,`~/.zcode/cli/memories/projects/task-planner-skill-fba311568bf6d7b3/memory/` 的 topic 文件更新与 MEMORY.md **修正版先落 plans/task-v109/**（主进程抽验后才应用） | 2026-10-02 | ✓ |
 | task-v110 | complete | 4/4 | 将用户 2026-10-02 裁决「子代理调度可以并行运行，但必须确保互不影响、互不依赖（否则错误资 | none |  | `references/critical-rules.md`（Rule 21.4+全库「21.4」引用面级联）,`scripts/check-dispatch.sh`（serial_slot_check 适配，最小改动）,`templates/subagent_dispatch.md` 工具面提示行,`~/.zcode/cli/memories/.../serial-dispatch-iron-rule.md`（演进记录）,宪法 `~/.zcode/AGENTS.md` §一（用户级保护区，不擅动——交付时提醒用户自行同步或另行授权） | 2026-10-02 | ✓ |
-| task-v111 | in_progress | 3/4 | 将用户 2026-10-02 注释纪律裁决沉淀为技能规范 **Rule 45（注释完整性规范）**： | none |  | `references/critical-rules.md`（Rule 45 新增+口径级联）,`SKILL.md` 索引面两处+References 表行；selftest 宽容锚行（普查清单）,新增 feedback 记忆条目+MEMORY.md 索引行 | 2026-10-02 | ⚠ 续 |
+| task-v111 | complete | 4/4 | 将用户 2026-10-02 注释纪律裁决沉淀为技能规范 **Rule 45（注释完整性规范）**： | none |  | `references/critical-rules.md`（Rule 45 新增+口径级联）,`SKILL.md` 索引面两处+References 表行；selftest 宽容锚行（普查清单）,新增 feedback 记忆条目+MEMORY.md 索引行 | 2026-10-02 | ✓ |
 
 ## 待处理（需关注）
 - **task-v093-video-fix-template-collect** — in_progress, Phase 1/5（中断恢复首选）
 - **task-v094-tier-b-rollout** — in_progress, Phase 0/6（中断恢复首选）
-- **task-v111** — in_progress, Phase 3/4（中断恢复首选）
 
 ## 已完成
 - task-v055-scheduler-enforce ✓ (5/5) — 2026-09-08
@@ -125,6 +124,7 @@
 - task-v108 ✓ (5/5) — 2026-10-02
 - task-v109 ✓ (5/5) — 2026-10-02
 - task-v110 ✓ (4/4) — 2026-10-02
+- task-v111 ✓ (4/4) — 2026-10-02
 
 ## 汇总
-- in_progress: 3 | pending: 0 | complete: 54
+- in_progress: 2 | pending: 0 | complete: 55
