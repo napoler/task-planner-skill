@@ -47,6 +47,12 @@
 - Actions taken:
   - [sub:7] 10 skill × 三宿主部署位 diff -rq 对账完成：.claude/.opencode 各 9/10 IDENTICAL（task-planner 仅主仓多 companion/.backup-20261001-* 2 目录；plan-resume 主仓独有 tests/）；.zcode 3 处实质 DIFF（task-planner: plan-writer.md+selftest-template-lifecycle.sh differ、部署位多 12 个 templates/variant/*-type.md；plan-template-kit: template-guide.md+template-mapping.md differ；plan-resume 仅 tests/）；~/.config/opencode/skills 第二套部署疑虑撤销——~/.opencode 为软链 → ~/.config/opencode（同 inode），二者同一目录，10 skill 全同，Rule 44 在位，config.json 仅 $schema 无 skills 配置项；33 条池软链（11×3）readlink 全实存且三宿主目标一致；差异清单全文见 checkpoint subagent-state/7-executor.md
 
+### Phase 4: 审查报告汇总与问题分级
+- **Status:** in_progress
+- **Started:** 2026-10-02 02:35
+- Actions taken:
+  - [sub:8] Phase 4 汇总完成：report.md 六段落盘（三维执行摘要+问题总表 44 条[EX-1+P1×7/P2×31/待复核×4/负结果1]+R-01~R-15 授权候选+待裁决清单+变更记录）；四波锚点与 checkpoint 逐条保留，同根因合并互引；无 findings↔checkpoint 矛盾
+
 - Files created/modified:
   -
 - Test Results:

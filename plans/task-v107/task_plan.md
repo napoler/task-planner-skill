@@ -139,10 +139,10 @@ Phase 1
 | S1 | 三宿主部署位 diff 对账 | 继承 | 主仓 skills/ vs Phase 1 部署位清单（diff -r 逐 skill,汇总差异表） | 差异清单或 IDENTICAL 结论 | ≤15min | pending |
 
 ### Phase 4: 审查报告汇总与问题分级
-- [ ] 三维结论汇总 → `plans/task-v107/report.md`：执行摘要/三维分节/P0-P2 分级问题表（锚点+证据+建议）/授权修复候选清单/待裁决清单
-- [ ] 每条问题附 file:line 锚点与第一手证据（grep/find 输出摘录）
+- [x] 三维结论汇总 → `plans/task-v107/report.md`（136 行）：执行摘要/三维分节/44 条问题总表（EX-1 执行维 P1-高 + P1×7 + P2×31 + 待复核×4）/R-01~R-15 授权修复候选/待裁决清单/变更记录三要素
+- [x] 每条问题附 file:line 锚点与证据出处（保留原 checkpoint 引用，同根因五链合并互引）
 - **V-N:** VC-2, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -239,6 +239,7 @@ Phase 1
 |------|---------|--------|------|
 | 2026-10-02 01:20 | ✅ ALIGNED（Phase 1 complete 后） | VC-1, VC-4 | 75 脚本 0 语法 FAIL+42 selftest 660/0+三宿主盘点完成；仅动 plans/task-v107/；继续 Phase 2 |
 | 2026-10-02 01:55 | ✅ ALIGNED（Phase 2 complete 后） | VC-2, VC-3 | 四波审查完成 P1×7/P2×31/待复核×4，抽验全证实；仅动 plans/task-v107/；继续 Phase 3 |
+| 2026-10-02 02:30 | ✅ ALIGNED（Phase 3 complete 后） | VC-4 | 部署对账完成（.zcode videop1 双向漂移为关键发现，.claude/.opencode 同步）；仅动 plans/task-v107/；继续 Phase 4 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
@@ -259,4 +260,4 @@ Phase 1
 | 5 | | executor | Phase 2 S3 卫星配套技能审查 | done | P1×1（cost-guard Rule17.5 幽灵 STOP 档,主侧 0 命中已证实）+P2×4+待复核×1;6 技能零问题 | findings.md [sub:5-executor] | findings.md | plans/task-v107/subagent-state/5-executor.md | rescue=- / 0 / ☑ |
 | 6 | | executor | Phase 2 S4 根目录文档审查 | done | 19 项（P1×2:根级 scripts 入口全失效+session-catchup.py 幽灵;P2×17 数字/口径过期簇）;主进程抽验 2 条 P1 全证实 | findings.md [sub:6-executor] | findings.md | plans/task-v107/subagent-state/6-executor.md | rescue=- / 0 / ☑ |
 | 7 | | executor | Phase 3 部署位 diff 对账 | done | ⚠️ .zcode 位被 videop1 项目线迭代（部署位 28 variant vs 主仓 16,双向漂移;.claude/.opencode 位与主仓同步）;「第二套部署」误判已证伪撤销（.opencode=.config 软链）;33/33 池软链健康 | findings.md [sub:7-executor] | findings.md | plans/task-v107/subagent-state/7-executor.md | rescue=- / 0 / ☑ |
-| 8 | | executor | Phase 4 汇总撰写 report.md | queued | | | | plans/task-v107/subagent-state/8-executor.md | - / 0 / ☐ |
+| 8 | | executor | Phase 4 汇总撰写 report.md | done | report.md 136 行六段齐备:44 条问题(EX-1+P1×7/P2×31/待复核×4)+R-01~R-15 修复候选+待裁决清单;主进程 Read 复核结构完整 | plans/task-v107/report.md | （无新增,汇总以既有为准） | plans/task-v107/subagent-state/8-executor.md | rescue=- / 0 / ☑ |
