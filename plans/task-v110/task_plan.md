@@ -105,11 +105,11 @@
 ### Phase 2: 规范修订与守卫适配（worktree）
 - [ ] Rule 21.4 重写（保留历史演进链 09-12→09-28→10-02；新语义=并行默认允许+独立性四问守门：①文件集相交？②资源相争？③输入依赖他者产出？④验收依赖他者结果？任一 yes→串行；声明制：计划 frontmatter/S-unit 行 `[P]` 组标注；验收纪律与串行槽回收不变）
 - [ ] 全库「21.4」引用面级联（普查清单逐处，旧措辞挂演进标注或改写）
-- [ ] check-dispatch.sh serial_slot_check 最小适配（声明组放行/无声明默认串行保留）
-- [ ] selftest 断言级联+templates/subagent_dispatch.md 提示行
-- [ ] 逐批 commit（Rule 27），worktree 干净
+- [x] check-dispatch.sh serial_slot_check 最小适配（+12/-4：第⑤参组标记分支，无标记路径零变化）
+- [x] selftest 断言级联（TS-07/08 新增+T6 窗口）+templates/subagent_dispatch.md 提示行（批次一含）
+- [x] 逐批 commit（Rule 27），worktree 干净
 - **V-N:** VC-2, VC-4, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
