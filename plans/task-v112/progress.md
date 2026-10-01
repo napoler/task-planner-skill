@@ -35,6 +35,19 @@
 - Test Results:
   -
 
+### Phase 3: [Title]
+<!-- Phase N 按上方 Phase 1 结构续加 -->
+- **Status:** pending
+- **Started:**
+- Actions taken:
+  -
+  - [sub:3] 全量回归 42/42 脚本跑毕（timeout 90s 包裹零超时）：41/42 rc=0；唯一失败=skill-split rc=1 `Total: 41 PASS=40 FAIL=1`，失败断言 `T-主 行数 ≤442`（selftest-skill-split.sh:41，task-v103 C33 定数）未随 Phase 2 dec6196(+2 行→444) 级联，根因=断言定数漏更新（非 558 红线破坏）；TL-19/20/21 全 PASS；逐脚本 Total 行原文 42 条落 findings「#### [sub:3-executor] 回归验证」段，8 字段结论落 subagent-state/3-executor.md
+  - [sub:4] 自证样例+对齐审查完成（只读审查+样例落盘）：按新模板五区块撰写 task-v112 真实交付总结样例落 delivery-summary-sample.md（VC-3 达标=用户可独立决策）；alignment-review 四要素 verdict=APPROVED（P0=0/P1=0/P2=2）：diff↔意图 5 处对应/口径「不入此口径」句+TL-20/21 健康/引用零失效/守卫锚重跑佐证 TL 21/21+kb 16/16+skill-split 41/41（HEAD=a3730c9 定数修正后全绿）；四要素证据落 findings「#### [sub:4-executor]」段，8 字段结论落 subagent-state/4-executor.md
+- Files created/modified:
+  -
+- Test Results:
+  -
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

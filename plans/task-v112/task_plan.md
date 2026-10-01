@@ -65,11 +65,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 fresh executor 普查交付面现状+模板草案
+交付（按新模板首证）；部署同步待用户裁决
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -109,10 +109,10 @@ Phase 1
 | S1 | 模板+指针+断言 | 继承 | Phase 1 草案+级联清单 | ≤15min | pending |
 
 ### Phase 3: 独立验证（fresh ×2，含模板自证）
-- [ ] 全量 42 selftest 回归（worktree）
-- [ ] **模板自证（VC-3）**：fresh 子代理按新模板对 task-v112 本任务产出真实交付总结样例（delivery-summary-sample.md）+ alignment-review 对齐审查
+- [x] 全量 42 selftest 回归——抓 skill-split T-主 442 定数漏网（SKILL +2 行级联），已修 444 并 41/41 复验（sub:3）
+- [x] **模板自证（VC-3）**：fresh 子代理按新模板产出 delivery-summary-sample.md（五区块+诚实标注，主进程抽验达标）+ 对齐审查四要素全过（sub:4）
 - **V-N:** VC-1, VC-3, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
@@ -121,12 +121,12 @@ Phase 1
 | S2 | 自证样例+对齐审查 | 继承 | 新模板+本任务三件套/report 类产出 | ≤15min | pending |
 
 ### Phase 4: 合并回与终验簿记
-- [ ] smart-merge-back+清理+主仓复验
-- [ ] 部署对账（fresh）+结论登记
-- [ ] memory feedback 条目（五要素+失效条件）+MEMORY.md 索引
-- [ ] verification.md+check-complete+INDEX+簿记 commit；**交付报告按新模板输出（首证）**
+- [x] smart-merge-back（V5 预案→MERGED 20b1930）+清理+主仓复验（grep=2+TL 21/21）
+- [x] 部署对账：三宿主 10-01 快照积压状态延续（v108-v112 五批），随交付报告呈报待裁决
+- [x] memory feedback 条目（delivery-summary-template）+MEMORY.md 索引（61 行 13.8KB）
+- [x] verification.md 全量（6/6 PASS）+check-complete+INDEX+簿记 commit；交付报告按新模板输出（首证）
 - **V-N:** VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（① git+② 簿记+③ memory——白名单）
 
 ## 🔀 隔离决策（冲突分析）
@@ -197,9 +197,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 4 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 4（rate 0.75 verdict=ok violations=0） |
+| 主进程直做 Phase 清单 | Phase 4（① git+② 簿记+③ memory）+少量 ⑥ 机械修正——全白名单 |
+| 委派率 | 0.75 ≥ floor；验证独立性：四波 fresh 子代理（sub:1/2/3/4） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 
