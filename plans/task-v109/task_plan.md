@@ -133,7 +133,7 @@
 - [x] 主进程六项抽验全过 → 已应用：MEMORY.md 45.4→11.9KB+6 条 topic 标注（原版备份 MEMORY.md.backup）
 - **V-N:** VC-4
 - **Status:** complete
-- **Executor:** executor（sonnet-1）fresh（整理执行）+ 主进程（抽验+应用——② 簿记面）
+- **Executor:** executor（sonnet-1）fresh（整理执行；主进程抽验应用=② 簿记白名单）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|
