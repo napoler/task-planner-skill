@@ -10,6 +10,14 @@
 ## Goal
 [一句话：对问题件/段按四级阶梯取最小范围修正到八类 QC 全过 + 收口三登记（台账/NAS VERSIONS/归档）齐全；禁止未定位重发、禁止默认全量]
 
+## 🔍 Code Review 配置
+| 字段 | 值 |
+|------|-----|
+| `code_review` | `n/a` / `required` |
+| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
+| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
+| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
+
 ## 任务分型（本模板固定 = C 修正，不可改选 A/B）
 | 型 | 场景 | 本模板 Phase 骨架 |
 |----|------|------------------|
@@ -28,6 +36,12 @@
 | VC-6 | 八类 QC：重生成/修正批成片 QC 按 tools/specs/qc-items-video-8cat.json 八类（T1-T8）全执行；UNVERIFIED 记缺陷待人工，禁止凭满分放行（EP6 判例：五类盲区 17/17 段带错放行） | qc.py verdict JSON 8 item 落盘 | tmp/<任务前缀>/qc/ |
 | VC-7 | N 维对拍双查：生成前 epNN-prompts 逐镜 vs epNN-script 画面行核对四要素（地点/动作/在场角色/事件），镜头词错先修词再重生成；生成后抽帧对拍同四要素（QC T8 对应；判例 EP6 S03-S05 三层错配） | 对拍核对表+T8 evidence | progress.md 对拍行 |
 | VC-8 | 收口三登记+seam QC：拼接件过 seam QC（否定式接缝 item）才入台账；台账逐段注记（S\<NN\>.\<seg\> 与回拼终态关系×处置路径）；NAS 覆盖同步+VERSIONS.md 更新+逐件 stat 核对；被替换旧件当日归档（-superseded）登记 docs/archive/README.md | 台账行+NAS stat+归档簿行 | output/ 台账 + docs/archive/README.md |
+
+## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
+逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
+| Phase | 命中工具面 | 选择理由 |
+|-------|----------|---------|
+| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases
 
@@ -131,3 +145,9 @@
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 |      |         |        |      |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
+|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
+| 1 |  |  |  | queued |  |  |  |  |

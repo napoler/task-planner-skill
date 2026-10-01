@@ -60,9 +60,9 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `batch_report.md` | 批量处理质量门控八字段报告（Rule 18.6 配套） |
 | `subagent_dispatch.md` | 子代理派发 prompt 九字段模板(含计划三文件必传 + 8 字段严格返回)(Rule 22.4 配套) |
 
-**总文件数**:5 核心 + 3 辅助 + 16 variant = **24 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）不入此口径，templates/ 实际 26 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093）。
+**总文件数**:5 核心 + 3 辅助 + 16 variant = **24 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）不入此口径，templates/ 实际 25 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093）。
 
-### 2.4 标准章节：「📚 必要知识储备」（23/26 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外；v2.3 新增，v093 +video-fix）
+### 2.4 标准章节：「📚 必要知识储备」（22/25 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外；v2.3 新增，v093 +video-fix）
 
 **目的**：任务知识库对齐——计划创建时列出本任务依赖的知识源（规范/标准、官方文档、项目内部文档/知识库、文献/论文、图书/教程），Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写。
 

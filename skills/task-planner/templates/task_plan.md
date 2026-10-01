@@ -45,6 +45,8 @@
        check-complete.sh 终验 VC-GATE 段机械校验（config.json vc_gate_enforce，默认 warn）。
 -->
 
+> **验证独立性**：本计划验证动作默认由独立子代理执行（Executor 字段可填 V-类执行体），主进程既有上下文自测不作为有效验收（Rule 33.3 延伸）
+
 | # | 判定标准 | 验证方式 | 证据路径/命令 |
 |---|----------|----------|---------------|
 | VC-1 | [交付物可观测要求 1] | [运行命令 / 检查文件 / 查看输出] | [路径或命令] |
@@ -246,7 +248,7 @@ Phase 1
 |------|-----|
 | `conflict_scan` | `safe` / `risk`（信号①-⑤ 摘要） |
 | `isolation` | `worktree`（实现类默认首选） / `direct`（纯文档/调研或用户否决） |
-| `worktree_path` | `../<repo>-wt-<task-id>` 或 n/a |
+| `worktree_path` | `<repo-parent>/<repo>-worktrees/<task-id>` 或 n/a |
 | `branch` | `wt/<task-id>` 或 n/a |
 | `merge_back` | `pending` / `merged(<commit>)` / n/a |
 

@@ -1,9 +1,18 @@
 # Task Plan: [文章创作任务]
+<!-- template_type: writing -->
 <!-- 写作型模板 — 适用于文章管线 Phase 0→6 -->
 
 <!-- plan_tier: standard -->
 ## Goal
 [一句话描述文章目标，如：为 soundgearx 站点创作关于 XXX 的长尾关键词文章]
+
+## 🔍 Code Review 配置
+| 字段 | 值 |
+|------|-----|
+| `code_review` | `n/a` / `required` |
+| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
+| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
+| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
 
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 | 证据路径 |
@@ -14,6 +23,8 @@
 | VC-4 | SEO 字段完整 | jq '.meta_title, .focus_keyword' article.json | article.json |
 | VC-5 | 配图 ≥3 张 | jq '.images | length' article.json | article.json |
 | VC-6 | 无 Amazon 链接 | grep -c "amazon.com" content | content 字段 |
+
+> 注：VC 表中脚本路径为示例值（目标项目相对路径），非本技能仓文件
 
 ## ⚠️ 执行范围限制
 | 类别 | 允许的文件 | 禁止 |
@@ -37,6 +48,12 @@
 | 风格/SEO 规范 | 写作风格指南与 SEO 基线 + 主题权威文献 | 路径/URL | 必读 | ☐ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
+
+## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
+逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
+| Phase | 命中工具面 | 选择理由 |
+|-------|----------|---------|
+| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases（对齐管线 Phase 0→6）
 
@@ -76,3 +93,9 @@
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 |      |          |        |      |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
+|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
+| 1 |  |  |  | queued |  |  |  |  |

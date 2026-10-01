@@ -1,10 +1,19 @@
 # Task Plan: [发布任务名称]
+<!-- template_type: publish -->
 <!-- 发布型模板 — 适用于 API 发布/批量部署/数据同步 -->
 <!-- 批量发布(≥5 单元)时必须遵守 Rule 18 批量处理质量门控(references/batch-quality-gate.md) + 填写 Batch Report 区块 -->
 
 <!-- plan_tier: standard -->
 ## Goal
 [一句话描述发布目标]
+
+## 🔍 Code Review 配置
+| 字段 | 值 |
+|------|-----|
+| `code_review` | `n/a` / `required` |
+| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
+| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
+| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
 
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 | 证据路径 |
@@ -16,6 +25,8 @@
 | VC-5 | 发布后验证通过 | GET {resource-id} | tmp/post-publish-check.json |
 | VC-6 | 无数据丢失 | diff 原数据与新数据 | tmp/data-diff.txt |
 | VC-7 | 批量前置 3 问已通过(Rule 18,批量 ≥5 单元必填) | Batch Report `pre_check` = Q1:否/Q2:有/Q3:能 | task_plan.md Batch Report 区块 |
+
+> 注：VC 表中脚本路径为示例值（目标项目相对路径），非本技能仓文件
 | VC-8 | 批量双采样抽检通过(Rule 18.2,批量 ≥10 单元必填) | 运行前抽 2 + 运行后抽 10% 全 PASS | Batch Report `sampled_pass`/`sampled_fail` |
 | VC-9 | 批量失败率 ≤5%(Rule 18.3,批量必填) | failure_rate ≤5% | Batch Report `failure_rate` |
 
@@ -47,6 +58,12 @@
 | API schema 规范 | OpenAPI/接口契约文档 | URL + 版本号 | 必读 | ☐ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
+
+## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
+逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
+| Phase | 命中工具面 | 选择理由 |
+|-------|----------|---------|
+| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases
 
@@ -109,3 +126,9 @@
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 |      |          |        |      |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
+|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
+| 1 |  |  |  | queued |  |  |  |  |

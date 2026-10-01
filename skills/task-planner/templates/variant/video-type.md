@@ -8,6 +8,14 @@
 ## Goal
 [一句话：本视频任务产出什么（N 段视频/一批资产/修正重出），达成标准（QC 全 PASS + 台账登记 + 草稿经人工门放行）]
 
+## 🔍 Code Review 配置
+| 字段 | 值 |
+|------|-----|
+| `code_review` | `n/a` / `required` |
+| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
+| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
+| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
+
 ## 任务分型（三选一，决定 Phase 序列）
 | 型 | 场景 | Phase 骨架 |
 |----|------|-----------|
@@ -25,6 +33,12 @@
 | VC-5 | 台账登记：生成物 URL/seed/参数落 output/ 台账；可复现任务 seed 记录 | 台账行 grep URL | output/*.md |
 | VC-6 | 成本警示：video 调用前已向用户提示配额/计费；逐 case 测试走 smoke-test 不裸调 video | progress.md 警示行 | progress.md |
 | VC-7 | **草稿人工审查门（AGENTS.md 关键约束 14）**：任一 video 调用前，草稿图已 tmp/ 呈示+用户定稿放行；放行/跳过/否决三登记齐全（镜位×草稿版本×判定×日期）；跳过仅当用户显式指令且 `[gate-skip]` 逐字登记 progress.md+Decisions；无登记=违规，产出按"未经门"作废重走门 | grep progress.md 放行/gate-skip 行 | progress.md + task_plan Decisions |
+
+## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
+逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
+| Phase | 命中工具面 | 选择理由 |
+|-------|----------|---------|
+| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases（A 型示例；B/C 型按上表骨架裁剪）
 
@@ -82,3 +96,9 @@
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 |      |          |        |      |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
+|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
+| 1 |  |  |  | queued |  |  |  |  |
