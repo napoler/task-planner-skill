@@ -41,6 +41,9 @@
 - `templates/variant/deployment-type.md`(v2)
 - `templates/variant/performance-tuning-type.md`(v2)
 - `templates/variant/schema-migration-type.md`(v2)
+- `templates/variant/rule-enhancement-type.md`(v2,沉淀；技能规则增强/新增 Rule/门控/selftest 守护模板，§六 速查表既有落点回填)
+- `templates/variant/mini-lite-type.md`(v2，task-v086 新增；轻量档 mini 计划模板，Rule 38.3 区块白名单承载)
+- `templates/variant/video-type.md`(v3，task-v093 收录；视频生产任务模板，video 家族主分支)
 - `templates/variant/video-fix-type.md`(v3，task-v093 收录；视频修正/局部重生成/QC FAIL 处置，video 家族 C 修正分支展开)
 
 **选择策略**:按场景词命中优先(见决策树),复杂度评分仅作辅助;若 plan 涉及多类场景(罕见),可同时引用多个模板的 VC 字段。
@@ -143,6 +146,9 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 性能调优(v2) | `templates/variant/performance-tuning-type.md` | 基线 benchmark / P95 降幅 / 资源 |
 | schema 迁移(v2) | `templates/variant/schema-migration-type.md` | 可逆 up/down / 数据零丢失 / 在线切换 |
 | 规则增强(v2,沉淀) | `templates/variant/rule-enhancement-type.md` | 新增 Rule 条款 / config 三档键 / selftest 守护 / SKILL 联动 / 锚定级联防呆 |
+| 轻量档(v2) | `templates/variant/mini-lite-type.md` | 轻量档豁免（Rule 38.3 区块白名单：≤2 文件 ∧ ≤15min ∧ 单模块） |
+| 视频生产(v3) | `templates/variant/video-type.md` | 内容组-视频：人工门 32.2 / QC 8 类 / video 家族主分支 |
+| 视频修正(v3) | `templates/variant/video-fix-type.md` | 内容组-视频：disposition_ref 必填 / full-regen 仅 d 级显式批准 |
 | 已有 .execution-plan.json | 允许替代 | — |
 
 ### 模板互斥关系(避免误选)
@@ -221,6 +227,9 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | schema-migration | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/database-optimizer |
 | test-writing | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/test-engineer |
 | writing | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | article-writer/article-writing-phase-agent |
+| video | 内容组-视频 | content_quality 门控（Q3/Q4）+人工门 32.2 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | Agnes 视频链路（母图/分镜/镜头/成片 QC 8 类） |
+| video-fix | 内容组-视频 | content_quality 门控（Q3/Q4）+disposition_ref 必填 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | videop1-video-fix SOP（full-regen 仅 d 级显式批准） |
+| mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
 | general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
 
 新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。

@@ -13,6 +13,9 @@
 | 字段 | 值 |
 |------|-----|
 | `code_review` | `n/a` / `required` |
+| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
+| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
+| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
 
 ## ✅ Verification Contract
 
@@ -59,6 +62,12 @@
 
 ## Current Phase
 Phase 1
+
+## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
+逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
+| Phase | 命中工具面 | 选择理由 |
+|-------|----------|---------|
+| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases
 
@@ -144,3 +153,14 @@ Phase 1
 - **铁律**:覆盖率不达标禁止 CI 集成
 - 测试文件主进程不直接 Edit — 派 code-assistant 子代理
 - 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+
+## 🚨 Drift Log（漂移检测记录）
+| 时间 | 检测结果 | 涉及VC | 结论 |
+|------|---------|--------|------|
+|      |          |        |      |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
+|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
+| 1 |  |  |  | queued |  |  |  |  |
