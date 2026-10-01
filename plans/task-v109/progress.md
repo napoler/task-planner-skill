@@ -14,7 +14,7 @@
 - **Started:** [YYYY-MM-DD HH:MM]
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
-  -
+  - [sub:1] 记忆体系全量盘点完成:57 条索引全量+A16 全读+B15 抽查+C26 登记;过时风险 3 条(1 updated 部署拓扑+2 stale-marked 基线);selftest 实测 43 脚本 655/0;模板设计稿(memory-hygiene-type 17 区块+特有 5 块)全文落 checkpoint
 - Files created/modified:
   -
 - Test Results:
@@ -27,11 +27,19 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:2] 新建 memory-hygiene-type.md（M1-M5 全量+gate exit 0）+7 文件 16→17 级联；selftest-template-lifecycle 18/18 PASS
+  - [sub:3] 全量 42 selftest 回归: 41/42 rc=0、断言 684 PASS/1 FAIL; 唯一失败=skill-split L50 "16 个"断言(Phase 2 级联遗漏); 明细落 subagent-state/3-executor-results.txt
 - Files created/modified:
   -
 - Test Results:
   -
+
+### Phase 3: [Title]
+- **Status:**
+- **Started:**
+- Actions taken:
+  - [sub:4] 形态核查 17/17 template_type 全匹配+新模板区块对照（缺口=无 Drift Log）; 干净上下文抽样 3 条四维校验→stale-marked×2（v091 基线 33/525 被 42/684 替代、v056 领先 7 被 ahead 20 漂移）/verified×1（clean-context）; 协议 M1-M5 闭环可用,缺口 G-1/G-2 已登记
+  - [sub:5] 对齐审查 APPROVED(P0/P1=0): 四要素逐项核对(文档↔产出 diff 5 处原文/17-18-25 计数全链+16 零残留/引用 10 条抽验+gate rc=0/TL-17+skill-split:50 锚健康+节标题逐字一致); P2×3 均为 pre-existing(ARCHITECTURE:15 16 脚本/README:23 26 vs 25/模板:30 旧口径示例),已落 findings
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

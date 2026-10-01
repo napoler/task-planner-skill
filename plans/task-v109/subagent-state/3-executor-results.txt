@@ -1,0 +1,169 @@
+== selftest-active-plan.sh rc=0 | Total: 19 PASS=19 FAIL=0
+    Total: 19 PASS=19 FAIL=0
+    T12d PASS 12d
+    Total: 19 PASS=19 FAIL=0
+== selftest-ask-default-timeout.sh rc=0 | Total: 9 PASS=9 FAIL=0
+    Total: 9 PASS=9 FAIL=0
+    RT-09 PASS config.json properties 键数 40（零新增）
+    Total: 9 PASS=9 FAIL=0
+== selftest-batch-pilot.sh rc=0 | Total: 10 PASS=10 FAIL=0
+    Total: 10 PASS=10 FAIL=0
+    BP-10 PASS CHANGELOG task-v083 条目
+    Total: 10 PASS=10 FAIL=0
+== selftest-check-conflicts.sh rc=0 | Total: 7 PASS=7 FAIL=0
+    Total: 7 PASS=7 FAIL=0
+    CC-07 PASS 仅自计划在册零冲突 A 全绿通过, rc=0
+    Total: 7 PASS=7 FAIL=0
+== selftest-check-drift.sh rc=0 | Total: 6 PASS=6 FAIL=0
+    Total: 6 PASS=6 FAIL=0
+    CD-06 PASS 两列表越权报 BREACH 含 hack/evil.py, 允许列不误报, rc=1
+    Total: 6 PASS=6 FAIL=0
+== selftest-conclusion-discipline.sh rc=0 | Total: 24 PASS=24 FAIL=0
+    Total: 24 PASS=24 FAIL=0
+    CD-24 PASS smart-merge-back.sh 含 'DEPLOY_SRC' 且含 '禁回退 SKILL_ROOT'（fail-closed）
+    Total: 24 PASS=24 FAIL=0
+== selftest-context-hygiene.sh rc=0 | Total: 12 PASS=12 FAIL=0
+    Total: 12 PASS=12 FAIL=0
+    T12 PASS check-context-hygiene.sh 只读 (运行前后 fixture mtime 不变)
+    Total: 12 PASS=12 FAIL=0
+== selftest-delegation.sh rc=0 | Total: 38    PASS=38  FAIL=0
+    Total: 38    PASS=38  FAIL=0
+    Total: 38    PASS=38  FAIL=0
+    ========================================
+== selftest-dispatch.sh rc=0 | Total: 29 PASS=29 FAIL=0
+    Total: 29 PASS=29 FAIL=0
+    DX-05b PASS
+    Total: 29 PASS=29 FAIL=0
+== selftest-error-loop.sh rc=0 | Total: 16 PASS=16 FAIL=0
+    Total: 16 PASS=16 FAIL=0
+    EL-16 PASS check-complete.sh Learning Gate 锚点
+    Total: 16 PASS=16 FAIL=0
+== selftest-execution-stability.sh rc=0 | Total: 19  PASS=19  FAIL=0
+    Total: 19  PASS=19  FAIL=0
+    [PASS] T12 B2 三侧 canon 一致 (pretooluse L17 / UPS L34 / jq 全链路, sid=sess-abc123)
+    Total: 19  PASS=19  FAIL=0
+== selftest-fallback.sh rc=0 | Total: 31  PASS=31  FAIL=0
+    Total: 31  PASS=31  FAIL=0
+    [PASS] T11c hint 含 22.3.2 拆细再接管
+    Total: 31  PASS=31  FAIL=0
+== selftest-final-gate-hash.sh rc=0 | (no Total line)
+    ==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====
+    
+    ==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====
+== selftest-fine-grain-steps.sh rc=0 | Total: 11 PASS=11 FAIL=0
+    Total: 11 PASS=11 FAIL=0
+    SG-11 PASS 双脚本口径一致(=4)
+    Total: 11 PASS=11 FAIL=0
+== selftest-interaction.sh rc=0 | Total: 11 PASS=11 FAIL=0
+    Total: 11 PASS=11 FAIL=0
+    TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)
+    Total: 11 PASS=11 FAIL=0
+== selftest-iterative-optimizer.sh rc=0 | Total: 8 PASS=8 FAIL=0
+    Total: 8 PASS=8 FAIL=0
+    IL-08 PASS banned 词（更好/大致/应该/足够）命中 0
+    Total: 8 PASS=8 FAIL=0
+== selftest-knowledge-brief.sh rc=0 | Total: 16  PASS=16  FAIL=0
+    Total: 16  PASS=16  FAIL=0
+    [PASS] T10b 无拼写变体 knowledge-brief-enforce (全 0)
+    Total: 16  PASS=16  FAIL=0
+== selftest-mechanism-profile.sh rc=0 | Total: 19 PASS=19 FAIL=0
+    Total: 19 PASS=19 FAIL=0
+    MP-19 PASS 行为: off 档整段跳过（exit 0, 无输出）
+    Total: 19 PASS=19 FAIL=0
+== selftest-methodology.sh rc=0 | Total: 16 PASS=16 FAIL=0
+    Total: 16 PASS=16 FAIL=0
+    M-16 PASS plan-writer 问题解构四问契约行 (实测 1)
+    Total: 16 PASS=16 FAIL=0
+== selftest-plan-dispatch.sh rc=0 | Total: 12 PASS=12 FAIL=0
+    Total: 12 PASS=12 FAIL=0
+    T12 PASS 12
+    Total: 12 PASS=12 FAIL=0
+== selftest-plan-tier.sh rc=0 | Total: 32 PASS=32 FAIL=0
+    Total: 32 PASS=32 FAIL=0
+    PT-27 PASS 自造模板无 template_type 行时显式指定 → 头部插入 frontmatter 行
+    Total: 32 PASS=32 FAIL=0
+== selftest-reflect-verify.sh rc=0 | Total: 12 PASS=12 FAIL=0
+    Total: 12 PASS=12 FAIL=0
+    RV-12 PASS SKILL.md「解决后反思-验证循环」段
+    Total: 12 PASS=12 FAIL=0
+== selftest-registry.sh rc=0 | Total: 5 PASS=5 FAIL=0 (registry rows=42, actual selftest=42)
+    Total: 5 PASS=5 FAIL=0 (registry rows=42, actual selftest=42)
+    T05 PASS
+    Total: 5 PASS=5 FAIL=0 (registry rows=42, actual selftest=42)
+== selftest-reliability-institution.sh rc=0 | Total: 12 PASS=12 FAIL=0
+    Total: 12 PASS=12 FAIL=0
+    R-12 PASS config.json properties 键数 40（零新增）
+    Total: 12 PASS=12 FAIL=0
+== selftest-rescue-chain.sh rc=0 | Total: 11 PASS=11 FAIL=0
+    Total: 11 PASS=11 FAIL=0
+    T10 PASS
+    Total: 11 PASS=11 FAIL=0
+== selftest-review-library.sh rc=0 | Total: 15 PASS=15 FAIL=0
+    Total: 15 PASS=15 FAIL=0
+    RL-15 PASS install-companion 池分发+独立 skill 不覆盖锚在位
+    Total: 15 PASS=15 FAIL=0
+== selftest-rule23-conflict-scan.sh rc=0 | Total: 3 PASS=3 FAIL=0
+    Total: 3 PASS=3 FAIL=0
+    R23-03 PASS 无指针过期在途计划仍被扫到
+    Total: 3 PASS=3 FAIL=0
+== selftest-self-resolution.sh rc=0 | Total: 12 PASS=12 FAIL=0
+    Total: 12 PASS=12 FAIL=0
+    SR-12 PASS registry selftest-self-resolution 登记行 ≥1 且总行数 43=脚本数+表头（动态）
+    Total: 12 PASS=12 FAIL=0
+== selftest-shared-tracker.sh rc=0 | Total: 11 PASS=11 FAIL=0
+    Total: 11 PASS=11 FAIL=0
+    ST-11 PASS progress-tracker 技能探针（存在）
+    Total: 11 PASS=11 FAIL=0
+== selftest-skill-collab.sh rc=0 | Total: 25  PASS=25  FAIL=0
+    Total: 25  PASS=25  FAIL=0
+    [PASS] T12b collab 矩阵 browser-use 行
+    Total: 25  PASS=25  FAIL=0
+== selftest-skill-modify.sh rc=0 | Total: 9 PASS=9 FAIL=0 (SKIP=0)
+    Total: 9 PASS=9 FAIL=0 (SKIP=0)
+    SM-08 PASS SKILL.md C24 检查项（P4 联动已实, A=6 B=1）
+    Total: 9 PASS=9 FAIL=0 (SKIP=0)
+== selftest-skill-split.sh rc=1 | Total: 41  PASS=40  FAIL=1
+    [FAIL] T-迁 template-guide.md 含 16 个
+    Total: 41  PASS=40  FAIL=1
+    [PASS] T-reg registry.tsv 含 selftest-skill-split 行
+    Total: 41  PASS=40  FAIL=1
+== selftest-smart-merge.sh rc=0 | Total: 17 PASS=17 FAIL=0
+    Total: 17 PASS=17 FAIL=0
+    SM-15b PASS C-locale rc=1(期望1) 与15a-zh逐字节一致=是
+    Total: 17 PASS=17 FAIL=0
+== selftest-sync-index.sh rc=0 | Total: 13 PASS=13 FAIL=0
+    Total: 13 PASS=13 FAIL=0
+    T13 PASS 13
+    Total: 13 PASS=13 FAIL=0
+== selftest-task-boundary.sh rc=0 | Total: 11 PASS=11 FAIL=0
+    Total: 11 PASS=11 FAIL=0
+    TB-11 PASS SKILL.md 漂移触发时机行兼容
+    Total: 11 PASS=11 FAIL=0
+== selftest-template-lifecycle.sh rc=0 | Total: 18 PASS=18 FAIL=0
+    Total: 18 PASS=18 FAIL=0
+    TL-18 PASS template-mapping.md 含 §九 机制适用性矩阵
+    Total: 18 PASS=18 FAIL=0
+== selftest-template-sense.sh rc=0 | Total: 8 PASS=8 FAIL=0
+    Total: 8 PASS=8 FAIL=0
+    case-8 PASS bugfix 后空类型重跑 → 产物标记仍 bugfix 且无感知区块（CR P1-2 负例通过）
+    Total: 8 PASS=8 FAIL=0
+== selftest-tier-b.sh rc=0 | Total: 18 PASS=18 FAIL=0
+    Total: 18 PASS=18 FAIL=0
+    TB-18 PASS 21.4 豁免子条在位
+    Total: 18 PASS=18 FAIL=0
+== selftest-tool-selection.sh rc=0 | Total: 12 PASS=12 FAIL=0
+    Total: 12 PASS=12 FAIL=0
+    TS-12 PASS config.json properties 键数 40（零新增）
+    Total: 12 PASS=12 FAIL=0
+== selftest-vc-gate.sh rc=0 | Total: 11 PASS=11 FAIL=0
+    Total: 11 PASS=11 FAIL=0
+    T09 PASS
+    Total: 11 PASS=11 FAIL=0
+== selftest-veto.sh rc=0 | Total: 13 PASS=13 FAIL=0
+    Total: 13 PASS=13 FAIL=0
+    VT-13 PASS 无禁令项作 Recommended 矛盾表述
+    Total: 13 PASS=13 FAIL=0
+== selftest-workflow-orchestration.sh rc=0 | Total: 16 PASS=16 FAIL=0
+    Total: 16 PASS=16 FAIL=0
+    WF-16 PASS register-hooks-cj.ts matcher 含 workflow 四工具（39.7.3 观察面扩围）
+    Total: 16 PASS=16 FAIL=0

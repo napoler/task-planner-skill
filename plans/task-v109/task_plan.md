@@ -91,9 +91,9 @@ Phase 1
 
 ### Phase 1: 记忆体系全量盘点+模板设计（fresh 只读）
 - [ ] 57 条记忆逐条四维预检：①定位实存（引用的文件/规则号/数字锚 grep 实证）②时效性（绝对日期+失效条件评估）③冲突检测（与其他记忆/仓内现状矛盾）④消费风险分级（高=会被直接执行的断言/低）
-- [ ] 产出过时风险清单+处置预判（verified/updated/stale-marked/删除建议）+ memory-hygiene 模板设计稿（区块清单+校验动作定义+处置枚举）
+- [x] 产出过时风险清单（33 条）+处置预判+设计稿（M1-M5）——子代理「43 脚本 655 PASS」数字错误已由主进程第一手证伪（实 42 脚本+selftest-registry.tsv 误计），以 v108 终验 42/660 为准
 - **V-N:** VC-4, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -105,7 +105,7 @@ Phase 1
 - [ ] 四点同步级联：mapping §一/§六/§九+plan-writer+SKILL:274+critical-rules:348,361+guide §2.2 补行至 17；selftest-template-lifecycle TL-17「16 个」锚→17
 - [ ] 逐批 commit（Rule 27），worktree 干净
 - **V-N:** VC-2, VC-6
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -113,11 +113,11 @@ Phase 1
 | S1 | 新模板+级联+TL 锚 | 继承 | 设计稿+worktree 路径+级联面清单（7 文件） | ≤15min | pending |
 
 ### Phase 3: 独立子代理验证（fresh ×3）
-- [ ] 全量 42 selftest 回归（worktree，含 TL 级联后）
-- [ ] 形态核查（17/17 声明+计数全链一致）+ 干净上下文实测（新模板对 ≥3 条抽样记忆跑校验流程）
-- [ ] alignment-review 对齐审查（模板变更面）；CHANGES_REQUESTED 项处置
+- [x] 全量 42 selftest 回归（worktree）——**抓到漏网锚 selftest-skill-split:50「16 个」**，主进程 ④ 接管全库扫尾补修 6 处（guide:64,71+README×3+断言行），复跑 41/41+TL 18/18
+- [x] 形态核查 17/17+新模板区块完整性（**抓到缺 Drift Log 区块**已补+M2/M3 协议缺口补强）+ 干净上下文抽样 3 条四维校验跑通（协议可用性实证）
+- [x] alignment-review 对齐审查：P0=0/P1=0/P2×3（模板示例已处置，另两处超 scope 登记）——三个 fresh 会话 checkpoint subagent-state/{3,4,5}-executor.md
 - **V-N:** VC-1, VC-2, VC-3, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh ×3
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -127,6 +127,7 @@ Phase 1
 | S3 | 对齐审查 | 继承 | worktree diff+alignment-review SKILL | ≤15min | pending |
 
 ### Phase 4: dogfood 记忆整理（fresh 执行+主进程抽验）
+
 - [ ] fresh executor 按新模板整理 57 条：逐条处置记录（verified/updated/stale-marked/删除建议）+每条验证锚证据
 - [ ] MEMORY.md 修正版落 `plans/task-v109/MEMORY.md.proposed`（索引行精简至 ≤200 字符+验证戳）；**不直接覆盖**真实 MEMORY.md
 - [ ] 主进程抽验 ≥5 条处置证据 → 通过后主进程应用（updated/stale 标注类直接应用；删除建议类留待用户裁决）
