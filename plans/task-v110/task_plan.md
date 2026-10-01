@@ -117,11 +117,11 @@ Phase 1
 
 ### Phase 3: 独立子代理验证（fresh ×3，含并行实测）
 - [ ] 全量 42 selftest 回归（worktree）
-- [ ] **并行行为实测（VC-3）**：同一消息派发 2 个互不依赖 fresh 子代理（A=worktree variant 计数核查/B=记忆条目数核查——文件集不相交/无依赖），双 checkpoint 时间线证并行+产出交叉核验证正确
+- [ ] **并行行为实测（VC-3）**：同一消息派发 2 个互不依赖 fresh 子代理，双 checkpoint 时间线证并行+产出交叉核验
 - [ ] 串行保留场景核验（VC-4）：守卫行为/规则文本实测
 - [ ] alignment-review 对齐审查
 - **V-N:** VC-1, VC-3, VC-4, VC-6
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
