@@ -15,6 +15,7 @@
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -
+  - [sub:1] 影响面普查完成：五维结论+修订三件套（Rule 21.4 新文本草案/级联清单/守卫改动点）→ subagent-state/1-executor.md；关键发现=config.json:343 悬挂引用（retry_limit 指向 21.4 应为 22.3，越 scope_files 登记 Phase 2 决策）+ MEMORY.md:101 计数锚 21.4=7 行（本任务改 :144 行内容不加行→计数保持）
 - Files created/modified:
   -
 - Test Results:
@@ -28,6 +29,8 @@
 - **Started:**
 - Actions taken:
   -
+  - [sub:2] Rule 21.4 规范演进重写（件 1）+ 引用面级联（件 2）完成：WT 内 10 文件 36 insertions/26 deletions（critical-rules/SKILL/reference/completion-gate/methodology/plan-template-kit×2/templates×3）；本批次未动 scripts/selftest（件 3 归 S2）；checkpoint→subagent-state/2-executor.md
+  - [sub:3] check-dispatch.sh 守卫最小适配（件 3）落地：入口双路径 pg 双条件检测（parallel_groups: 声明 ∧ [parallel-group:] 标记）+ serial_slot_check 第⑤参 + 组槽放行分支；无标记路径（warn/enforce 拦截文案含「串行」）零改动；selftest-dispatch.sh 新增 TS-07（组标记放行）/TS-08（无标记回归 rc=2）；三 selftest 全 PASS（31/18/11）；checkpoint→subagent-state/3-executor.md
 - Files created/modified:
   -
 - Test Results:

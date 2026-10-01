@@ -91,9 +91,9 @@ Phase 1
 - [ ] 全库「21.4」引用面普查（critical-rules 内 7 处+SKILL.md+selftest+templates+hooks——grep 实测全集）
 - [ ] check-dispatch.sh serial_slot_check 逻辑解剖（第④参放行机制/写类锁行为）
 - [ ] selftest 断言锚清单（断言「串行/21.4/至多 1 个」的行）
-- [ ] 产出修订方案：Rule 21.4 新文本草案（独立性四问守门/声明制/串行保留场景枚举）+级联清单+守卫改动点
+- [x] 产出修订方案三件套（新文本草案含演进链+独立性四问+声明制+串行保留 5 场景/级联清单 12 文件含硬锚 :198,371,373,385,400/守卫最小 diff 5 点且无标记路径零改动）；越 scope 候选 2 处（config.json:343/CLAUDE.md:33）裁决不动登记
 - **V-N:** VC-2, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -117,11 +117,11 @@ Phase 1
 
 ### Phase 3: 独立子代理验证（fresh ×3，含并行实测）
 - [ ] 全量 42 selftest 回归（worktree）
-- [ ] **并行行为实测（VC-3）**：同一消息派发 2 个互不依赖 fresh 子代理（A=worktree variant 计数核查/B=记忆条目数核查——文件集不相交/无依赖），双 checkpoint 时间线证并行+产出交叉核验证正确
+- [ ] **并行行为实测（VC-3）**：同一消息派发 2 个互不依赖 fresh 子代理，双 checkpoint 时间线证并行+产出交叉核验
 - [ ] 串行保留场景核验（VC-4）：守卫行为/规则文本实测
 - [ ] alignment-review 对齐审查
 - **V-N:** VC-1, VC-3, VC-4, VC-6
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
