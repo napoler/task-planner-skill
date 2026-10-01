@@ -155,6 +155,7 @@ model: opus
   - **隔离任务合并回**（isolation=worktree 时，按 references/worktree-isolation.md 合约）：worktree 内全 VC 复验且无未提交变更 → **`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`**（智能门：预检+已合并检测+--no-ff 合并+可选部署对账；ALREADY_MERGED=另一会话已合并→跳过合并补簿记）→ 按 [CLEANUP] 提示行 `git worktree remove` + `git branch -d` → 主仓 Read 关键文件复验
   - **git 提交核验（Rule 27 终验联动）**：确认任务 scope 文件无未提交变更（`git status --porcelain -- <scope>` 为空，或各 Phase 已按 27.1 逐 Phase 提交）；遗留未提交 → 先补提交（注明"终验补提交"）再交付，防修改被丢弃
   - 交付结论：`COMPLETE` / `PARTIAL` / `BLOCKED`
+  - **交付总结（五要素）**：按 `templates/delivery-summary.md` 向用户输出任务交付总结（任务说明/产出清单/审查信息/风险点/下一步建议；数据引 verification.md/progress.md/subagent-state/ 指针不重写；风险点区块必须列举，无则逐项写「无」；需存证时落 plans/<task-id>/delivery-summary.md）
   - **退出前**：运行 `bash scripts/check-complete.sh` 验证所有 Phase 已 complete
     - exit 0 → 正常结束
     - exit 1 → STOP，报告未完成任务，不结束会话
@@ -312,6 +313,7 @@ model: opus
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
 | `templates/knowledge-brief.md` | 任务知识简略要点模板（init-session 第 6 文件；五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引） |
 | `templates/shared-tracker.md` | 共享内容认领追踪区块模板（Rule 30；task_plan 引用，账本权威源=progress-tracker 技能） |
+| `templates/delivery-summary.md` | 终验交付总结五要素模板（终验交付段消费；数据源=verification/progress/report 引用不重写；非计划模板不入 25 口径） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
 | 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） / `Skill("progress-tracker")` 共享内容认领追踪（Rule 30 调用入口，协同契约见 ../plan-collab-router/references/skill-collaboration.md） |
 

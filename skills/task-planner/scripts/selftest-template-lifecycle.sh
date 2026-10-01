@@ -19,7 +19,10 @@
 #   TL-16 references/template-mapping.md 含 Rule 34 门控提示
 #   TL-17 [task-v074 P9] references/template-guide.md 含 rule-enhancement 且计数含「17 个」（四点同步第 4 落点防腐化；task-v109 memory-hygiene 收录 16→17）
 #   TL-18 [task-v085 S8] references/template-mapping.md 含 §九 机制适用性矩阵（Rule 37 权威源, 防腐化）
-# 18 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
+#   TL-19 [task-v112] templates/delivery-summary.md 存在且五要素区块标题计数 = 5（grep -cE '^## [1-5]\.' 实测）
+#   TL-20 [task-v112] SKILL.md 含 delivery-summary 指针行 ≥2 处（终验交付段指针 + References 表行）
+#   TL-21 [task-v112] plan-template-kit/references/template-guide.md 口径句含 delivery-summary.md（不入口径表述在位）
+# 21 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
 
 set -u
 
@@ -84,6 +87,13 @@ TGUIDE="$SKILL_ROOT/../plan-template-kit/references/template-guide.md"
 if grep -q 'rule-enhancement' "$TGUIDE" && grep -q '17 个' "$TGUIDE"; then ok 17 "template-guide.md 含 rule-enhancement 且计数 17 个"; else bad 17 "template-guide.md 缺 rule-enhancement/计数 17 个（四点同步第 4 落点腐化）"; fi
 # TL-18
 if grep -q '^## 九、' "$TMAP"; then ok 18 "template-mapping.md 含 §九 机制适用性矩阵"; else bad 18 "template-mapping.md 缺 §九 机制适用性矩阵（Rule 37 权威源误删）"; fi
+# TL-19 [task-v112] delivery-summary.md 存在且五要素区块齐备
+TDEL="$SKILL_ROOT/templates/delivery-summary.md"
+if [ -f "$TDEL" ] && [ "$(grep -cE '^## [1-5]\.' "$TDEL")" = "5" ]; then ok 19 "delivery-summary.md 存在且五区块=5"; else bad 19 "delivery-summary.md 缺失或五要素区块计数≠5"; fi
+# TL-20 [task-v112] SKILL.md delivery-summary 指针行 ≥2 处（终验段指针 + References 行）
+if [ "$(grep -c 'delivery-summary' "$SKILL")" -ge 2 ]; then ok 20 "SKILL.md 含 delivery-summary 指针 ≥2"; else bad 20 "SKILL.md delivery-summary 指针 <2"; fi
+# TL-21 [task-v112] template-guide.md 口径句含 delivery-summary.md（不入口径表述）
+if grep -q 'delivery-summary.md' "$TGUIDE"; then ok 21 "template-guide.md 口径句含 delivery-summary.md"; else bad 21 "template-guide.md 口径句缺 delivery-summary.md"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
