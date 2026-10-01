@@ -84,12 +84,9 @@
 ## Phases
 
 ### Phase 1: 注释规范面普查（fresh 只读）
-- [ ] 技能内注释条款全集（critical-rules/SKILL/CLAUDE.md 中「注释/docstring/comment」相关表述）
-- [ ] Rules 1-45 口径级联面：SKILL :246 括注+:304 索引行+critical-rules 标题「Rules 1-44」+selftest 宽容锚（grep「1-44\|1-3\[」全集）
-- [ ] 脚本注释密度基线：75 脚本抽样分层（头注释在位率/函数注释率/逻辑段注释率/Why 注释存在性）
-- [ ] Rule 45 草案：条款结构（适用范围/What+Why 双层要求/头注释四要素/禁止删减/平台冲突声明/例外面）
+- [x] 技能内注释条款全集（skill 侧零映射实证）+级联面全集（8 必改+6 硬锚+5 宽容零改）+密度基线（12 脚本抽样）+Rule 45 草案（七子条）+存量清单（9 项 S/M/L）
 - **V-N:** VC-2, VC-4
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
