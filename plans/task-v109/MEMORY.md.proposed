@@ -1,0 +1,114 @@
+- [task-v108 模板体系整理更新](task-v108-template-system-alignment.md) — 10-02：COMPLETE 23 文件合并 5a30382，M-01~M-13 闭环，双场 660/0；遗留=部署同步待裁决（zcode videop1 分叉） [v109 2026-10-02 盘点 verified]
+
+- [task-v107 项目三维深度审查对齐](task-v107-deep-review-alignment.md) — 10-02：COMPLETE 42 条审查结论+R-01~R-15 候选待授权；EX-1 videop1 双源分叉 28vs16 待裁决（现行事实） [v109 2026-10-02 盘点 verified]
+
+- [task-v106 新建顶层 skill iterative-optimizer](task-v106-iterative-optimizer.md) — 10-01：COMPLETE merge b5acff6，42 脚本 660/0，三宿主分发 IDENTICAL；遗留 2 项 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v105 review-library 池成员宿主可枚举](task-v105-pool-host-enumerable.md) — 10-01：COMPLETE merge fbe2109，41 脚本 652/0，池 11；遗留 3 项（③opencode security-review 统一已用户裁决处置） [v109 2026-10-02 盘点 verified]
+
+- [task-v104 alignment 写入前校验闸门深化](task-v104-align-gate-upgrade.md) — 10-01：COMPLETE merge 77daa52，41 脚本 650/0；遗留 1 项 silent 通道待实战 [v109 2026-10-02 盘点 verified]
+
+- [task-v103 Rule 44 默认项与自动超时裁决](task-v103-ask-default-timeout.md) — 10-01：COMPLETE merge 926af49，41 脚本 648/0；遗留 2 项行为面待实战 [v109 2026-10-02 盘点 verified]
+
+- [task-v102 alignment-review 验证优先升级](task-v102-alignment-upgrade.md) — 10-01：COMPLETE merge f419419，40 脚本 639/0；遗留 3 项（①SKILL C32 措辞分叉仍存） [v109 2026-10-02 盘点 verified]
+
+- [task-v101 第 11 池技能 alignment-review](task-v101-alignment-review.md) — 09-30：COMPLETE merge 54bd512，40 脚本 638/0，池 11/11；遗留 2 项 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v100 review-library 10 技能兜底池](task-v100-review-library.md) — 09-30：COMPLETE merge 9b17c05，40 脚本 638/0，Rule 42.2 四级检测链；遗留 3 项 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v099 Rule 42 质量审查+Rule 43 可靠性制度化](task-v099-reliability-institution.md) — 09-30：COMPLETE merge d066159，39 脚本 628/0；遗留 3 项 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v098 Rule 41 问题自主消解纪律](task-v098-auto-resolution.md) — 09-30：COMPLETE merge 88eca16，38 脚本 616/0；遗留 4 项 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v097 Rule 40 harness 工具面主动选择](task-v097-tool-selection.md) — 09-30：COMPLETE merge 52b434f，37 脚本 604/0（「未 push」=时点事实,后续 v100+ 已 push）；遗留 4 项 [v109 2026-10-02 盘点 verified]
+
+- [task-v096 模板自动记录与三时点激活](task-v096-template-auto-record.md) — 09-29：COMPLETE merge ed8712d，36 脚本 592/0；遗留 5 项 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v095 主技能拆分 4 卫星+3 内敛](task-v095-skill-split.md) — 09-29：COMPLETE merge aa092cc，35 脚本 584/0，4 卫星在位；遗留 5 项部分被 v096 吸收 [v109 2026-10-02 盘点 verified]
+
+- [task-v093 收录 video-fix 变体模板](task-v093-video-fix-template-intake.md) — 09-28：COMPLETE merge 6d008e1，白名单 16 类生效；「33 脚本 525/0」时点基线 [v109 2026-10-02 盘点 stale-marked; 失效条件=selftest 重跑≠行内值]
+
+- [task-v092 v091 遗留四组守卫缺陷修复](task-v092-guard-quirk-fixes.md) — 09-27：COMPLETE merge d82720e，33 脚本 525/0（时点基线）；遗留 3 面 OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v091 skill 执行效率优化](task-v091-efficiency-optimization.md) — 09-25/27：COMPLETE Tier A 10 项 merge b5b9bc0；Tier B 7 项暂缓；基线 525/0 superseded-by-v108（42/660） [v109 2026-10-02 盘点 updated]
+
+- [task-v090 动态激活边界锚定+matcher 扩围](task-v090-workflow-auto-activation.md) — 09-25：COMPLETE merge df8149f，457/0；遗留 WF-10 部署位上跳非鲁棒 [v109 2026-10-02 盘点 verified]
+
+- [task-v089 /workflow 审查+自动激活缺口评估](task-v089-workflow-auto-activation.md) — 09-23/25：报告+簿记 03b75cd 入库；后遗两项已由 v090 全部落地 09-25 [v109 2026-10-02 盘点 verified]
+
+- [task-v088 动态工作流编排 Rule 39](task-v088-workflow-orchestration.md) — 09-23：COMPLETE merge a3d8679，453/0；「v089 后遗两项待决」尾句已被 v090 清账 [v109 2026-10-02 盘点 verified]
+
+- [task-v087 新任务边界判定](task-v087-task-boundary.md) — 09-22：COMPLETE merge a2ae738，441/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v086 难度分级轻量档](task-v086-mini-fast-path.md) — 09-20/21：COMPLETE merge 4a925bb，430/0；S7 注释形态提取盲区已由后续收编 [v109 2026-10-02 盘点 verified]
+
+
+- [task-v072 错误学习闭环 Rule 31](task-v072-error-loop.md) — 09-14：COMPLETE 0119614 push，222/0（时点）；31.2 4维归因+5Whys 在位（grep 31.2=7） [v109 2026-10-02 盘点 verified]
+- [task-v085 任务类型机制画像](task-v085-task-type-mechanism-profile.md) — 09-20：COMPLETE merge f452a2c，402/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v084 思维方法论](task-v084-thinking-methodology.md) — 09-18：COMPLETE merge 871e71a，382/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v082 最小探针原则](task-v082-minimal-probe.md) — 09-18：COMPLETE merge e120331，377/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v083 批量试点先行硬门](task-v083-batch-pilot-first.md) — 09-18：COMPLETE origin 8fed498，377/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v081 步骤枚举门控](task-v081-fine-grain-step-gate.md) — 09-17/18：COMPLETE origin c10e8f2，366/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v080 网络调研工具路由显式化](task-v080-web-research-routing.md) — 09-17：COMPLETE 34c3959，355/0 [v109 2026-10-02 盘点 verified]
+
+- [task-v079 Rule 36 技能修改保守化](task-v079-skill-modify-conservatism.md) — 09-17：COMPLETE 89a6e5f，349/0；硬拦截升级 TASK_PLANNER_SKILL_MODIFY_ENFORCE=enforce [v109 2026-10-02 盘点 verified]
+
+- [task-v078 守卫误报双修复](task-v078-guard-fp-fixes.md) — 09-17：COMPLETE f56ffb9，340/0；「deferred 模板补骨架」已由 v108 M-01~M-13 清账 [v109 2026-10-02 盘点 verified]
+
+- [task-v077 deferred 清账](task-v077-deferred-fixes.md) — 09-17：COMPLETE 187194b，337/0；v076 登记 4 问题全修 [v109 2026-10-02 盘点 verified]
+
+- [task-v076 Rule 35 执行结论纪律](task-v076-conclusion-discipline.md) — 09-16：COMPLETE 5ad18f6，330/0；deferred 3 项由 v077 清账 [v109 2026-10-02 盘点 verified]
+
+- [task-v075 小步快跑机器化+methodology 兑现](task-v075-fine-grain-methodology.md) — 09-16：COMPLETE d975ee0，313/0（时点基线,后续演进至 v108 42/660） [v109 2026-10-02 盘点 verified]
+
+- [task-v074 Rule 33 反思验证循环+Rule 34 模板生命周期](task-v074-template-reflect-loop.md) — 09-15/16：COMPLETE merge 8c8c24a；294/0 vs 301/0 双源+「未 push」态过时 [v109 2026-10-02 盘点 stale-marked; 失效条件=git ls-remote 重验]
+
+- [task-v073 Rule 32 用户否决与禁令追踪](task-v073-veto-tracker.md) — 09-14：COMPLETE 7ef6214 push，235/0（时点） [v109 2026-10-02 盘点 verified]
+
+- [task-v071 共享内容认领追踪](task-v071-shared-tracker.md) — 09-14：COMPLETE 760c2a3/bf43250 push，config 33 键（时点快照） [v109 2026-10-02 盘点 verified]
+
+- [task-v070 ask 模式执行思路复述](task-v070-exec-approach-echo.md) — 09-14：COMPLETE ce009d6/b2047a4，227/0（时点） [v109 2026-10-02 盘点 verified]
+
+- [task-v063 方法论引入](task-v063-methodology-intro.md) — 09-12：COMPLETE merge 9f89908，113/0（时点）；遗留①verify.sh 白名单由 v075 B3 清账 [v109 2026-10-02 盘点 verified]
+
+- [task-v062 交互双模式](task-v062-interaction-modes.md) — 09-12：COMPLETE merge b0da240；遗留①plan-resume@.zcode 缺位实测已在位=机制面已解 [v109 2026-10-02 盘点 verified]
+
+- [task-v057 子代理 I/O 契约](task-v057-subagent-io-contract-plan.md) — 09-09：COMPLETE merge 83282d2；遗留 PostToolUse 写守卫/Claude Task matcher OPEN [v109 2026-10-02 盘点 verified]
+
+- [task-v056 拆分粒度精细化](task-v056-fine-grained-dispatch-plan.md) — 09-09：COMPLETE merge 2d3c017；「领先 origin 7 未 push」时点,现 ahead 21；反转遗留由 v057 清账 [[v109 2026-10-02 盘点 stale-marked]; 时点断言失效条件=push 后删除]
+
+- [部署拓扑+合并回智能门（v064 起）](task-planner-repo-deploy-flow.md) — 09-16 正文止点=v075；9 位/3 位口径双源+videop1 zcode 分叉 28vs16 现状已并入；索引双行已合并 [v109 2026-10-02 盘点 updated]
+
+- [三文件罗盘强制（用户核心诉求）](task-planner-three-file-compass.md) — Rule 19.5-19.7+3-File Gate+[plan-compass] 提醒在位（grep 19.5=1） [v109 2026-10-02 盘点 verified]
+
+- [task_plan 解析与会话陷阱](task-planner-plan-parsing-pitfalls.md) — 陷阱恒效；「仓根 scripts/ 入口」实测不存在、「session-catchup.py」实为仓内 .ts [[v109 2026-10-02 盘点 stale-marked]; 局部锚失效,主体保留]
+
+- [20260905 批次缺陷（已清账 19a40ca）](task-planner-known-defects-20260905.md) — 6 项全修勿重复修；新遗留看 plans/archive/task-v053-skillfix-deploy/deferred-issues.log（实测在位） [v109 2026-10-02 盘点 verified]
+
+- [check-complete 委派率门控反转（已修复 83282d2）](task-planner-check-complete-gate-inverted.md) — v057 去双重取反,check-complete.sh:418 exit (r+0 < f+0) 在位 [v109 2026-10-02 盘点 verified]
+
+- [区间式 awk scope 提取 bug（已修复 19a40ca）](task-planner-awk-scope-extraction-bug.md) — gawk 区间坍缩陷阱,新写 awk 区间提取一律状态机式 [v109 2026-10-02 盘点 verified]
+
+- [质量优先于速度（skill 增强原则）](quality-over-speed-in-skill-enhancement.md) — 流程门控+降质惩罚机制化（Rule 25 族 grep=28 在位） [v109 2026-10-02 盘点 verified]
+
+- [串行派发铁律（用户 P0 裁决 09-12）](serial-dispatch-iron-rule.md) — 执行期至多 1 个活跃子代理（Rule 21.4 grep=7 在位）；AGENTS.md §一 未对齐（实测 0 命中）待授权 [v109 2026-10-02 盘点 verified]
+
+- [小步快跑拆分理念（用户核心诉求）](fine-grained-dispatch-philosophy.md) — 计划期细拆步级+执行期小模型短上下文；失败先拆细不先升档 [v109 2026-10-02 盘点 verified]
+
+- [拆细先于升档/小步快跑（用户 09-09 理念）](split-before-upgrade-small-steps.md) — S-unit ≤2 文件/100 行/15min,prompt ≤3000 字符（Rule 21.1b grep=4 在位） [v109 2026-10-02 盘点 verified]
+
+- [变更联动审计（用户 P0 要求 09-12）](change-linkage-audit.md) — 修改文件后宽口径核查联动引用并同步,禁留失效关联（实证 bc4107e 在史） [v109 2026-10-02 盘点 verified]
+
+- [技能备份禁改名留扫描路径（用户 P0 纠正）](skill-backup-no-rename-in-scan-path.md) — 备份须移出扫描路径,~/skill-deploy-backups-* 3 目录实测在位 [v109 2026-10-02 盘点 verified]
+
+- [子代理干净上下文测试（用户 09-26 裁决）](subagent-clean-context-testing.md) — 技能/上下文敏感改动必须派全新子代理验证（v108/v109 验证独立性铁律活跃消费中） [v109 2026-10-02 盘点 verified]
+
+- [中断恢复先复验（09-12 实证）](interruption-recovery-first-verify.md) — 恢复会话先 git 考古+第一手复验再继续；Handoff 滞后会扭曲委派率（历史时点值 0.44 vs 0.778） [v109 2026-10-02 盘点 verified]
+
+- [TodoWrite status 参数 \r 序列化异常（harness 侧）](zcode-todowrite-status-cr-glitch.md) — 偶发 \r 注入致枚举校验失败（2026-09-09 实测）；最简 ASCII 重试或先置 pending；v109 sub:6 未复现 [v109 2026-10-02 盘点 verified]
+

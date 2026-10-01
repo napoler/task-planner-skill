@@ -41,6 +41,12 @@
   - [sub:4] 形态核查 17/17 template_type 全匹配+新模板区块对照（缺口=无 Drift Log）; 干净上下文抽样 3 条四维校验→stale-marked×2（v091 基线 33/525 被 42/684 替代、v056 领先 7 被 ahead 20 漂移）/verified×1（clean-context）; 协议 M1-M5 闭环可用,缺口 G-1/G-2 已登记
   - [sub:5] 对齐审查 APPROVED(P0/P1=0): 四要素逐项核对(文档↔产出 diff 5 处原文/17-18-25 计数全链+16 零残留/引用 10 条抽验+gate rc=0/TL-17+skill-split:50 锚健康+节标题逐字一致); P2×3 均为 pre-existing(ARCHITECTURE:15 16 脚本/README:23 26 vs 25/模板:30 旧口径示例),已落 findings
 
+### Phase 4: 记忆整理 dogfood
+- **Status:**
+- **Started:**
+- Actions taken:
+  - [sub:6] 57 条 M1-M5 全量盘点+处置完成(verified=49/updated=2/stale-marked=4/删除建议=0): 实测纠偏底稿(selftest=42 非 43/主仓 variant=16 部署位 zcode=28/INDEX 表行 52+2/38 commit 锚全在史); 产出 memory-hygiene-report.md(总表 57 行+原文留存+删除建议节)+MEMORY.md.proposed(57 索引行,max 200 字符,验证戳齐全); 记忆目录零修改,全量 checkpoint 落 subagent-state/6-executor.md
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
@@ -69,3 +75,10 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+### Phase 5: 合并回与终验簿记
+- Status: in_progress
+- Started: 2026-10-02
+- Actions taken:
+  - [sub:8] master@d8eb770 全量回归终验: 42/42 selftest rc=0 FAIL=0 断言合计 660 PASS(程序化求和验证); sub:3 漏网锚 skill-split:50 已修复复跑 41/41 PASS; 明细落 subagent-state/8-executor.md
+  - [sub:9] 三宿主部署对账(只读): memory-hygiene-type.md 三宿主均缺失(未部署); 7 级联文件三宿主 diff -q 全部 differ(全部落后); variant 计数 zcode=28(videop1 分叉, 独有 12 个)/claude=16/opencode=16(17 旧基线落后 +1); v109 探针(memory-hygiene/"17 个")三宿主全 0 命中; 部署建议=zcode 合入式(28→29 不可整树覆盖)/claude+opencode 直接全量同步; 明细落 findings [sub:9-executor]+subagent-state/9-executor.md

@@ -68,11 +68,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 fresh executor 盘点 57 条记忆出过时风险清单+模板设计稿
+交付；部署同步待用户裁决（zcode 合入式/claude+opencode 全量）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -219,9 +219,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 5 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（rate 0.6，verdict=ok violations=0） |
+| 主进程直做 Phase 清单 | Phase 2 部分（② 计划文件）+Phase 4 抽验应用（② 簿记）+Phase 5（① git+② 簿记）+少量 ⑥ ≤3 行机械修正——全白名单 → WHITELIST-EXEMPT |
+| 委派率 | 0.6；验证独立性专项：六波验证全部 fresh 子代理（sub:1/3/4/5/8/9），主进程零自测替代 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 

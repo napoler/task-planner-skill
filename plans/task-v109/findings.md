@@ -35,6 +35,13 @@
 - 验证：`bash selftest-template-lifecycle.sh` → Total: 18 PASS=18 FAIL=0 exit=0；`git status --porcelain` 恰 7 M+1 未跟踪=8 文件；SKILL/critical-rules「16 variant」grep 零残留
 - 全量 checkpoint 落 `plans/task-v109/subagent-state/2-executor.md`
 
+#### [sub:6-executor] dogfood 整理
+- 57 条逐条 M1-M5 处置完成：**verified=49 / updated=2 / stale-marked=4 / 删除建议=0**；产出 `plans/task-v109/memory-hygiene-report.md`（总表 57 行+原文留存+删除建议节）+ `MEMORY.md.proposed`（57 索引行，max line=200 字符，验证戳 `[v109 2026-10-02 盘点 verified|stale-marked|updated]`）
+- 实测纠偏 sub:1 底稿：selftest 仓内脚本=**42**（非 43，registry.tsv=43 行含表头=SR-12 动态口径一致）；主仓 variant=16、worktree=17；部署位 zcode=28（videop1 分叉实锤,独有 audio-voice-type 等）/claude=16/opencode=16；INDEX 表行 complete=52/in_progress=2（L48-49 的 v093/v094 行陈旧,尾注 L124 与表行一致）；38 个 commit 锚逐 sha grep 全部在史
+- updated 2 条（不直接改 topic,更新文案+原文留存入报告 §二）：①task-v091（基线 525/0 superseded-by-v108 42/660）②task-planner-repo-deploy-flow（frontmatter 9 位口径 vs 3 实体位双源+正文止于 09-16 未随 v076-v108 追加+videop1 分叉现状+索引双行合并 1 行）
+- stale-marked 4 条（M3 固定标注文案入报告 §三）：task-v093（33 脚本 525/0 时点基线）/task-v074（294/0 vs 301/0 双源+未 push 态）/task-v056（领先 origin 7 时点,现 ahead 21）/task-planner-plan-parsing-pitfalls（仓根 scripts/ 锚灭,session-catchup.py 实为 .ts）
+- 全量 checkpoint 落 `plans/task-v109/subagent-state/6-executor.md`（4 里程碑+8 字段终块）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
@@ -84,3 +91,20 @@
   2. `[P2] skills/task-planner/README.md:23 — "全部 26 个模板统一含「📚 必要知识储备」" 与 guide:64「25 个模板」及实测 grep 锚=23 互斥 — master 既有（diff 仅改 16→17，未动 26/25），建议下任务统一口径`
   3. `[P2] skills/task-planner/templates/variant/memory-hygiene-type.md:30 — VC-5 指令示例「grep 16 variant 零残留/17 命中」为旧口径示例（本模板=旧基线视角的通用范例）— 与当前 17 基线易混淆，建议改「按当前基线 N 口径 grep 零残留/(N+1) 命中」`
 - 变更记录三要素:变更范围=worktree skills 面 8 文件（新模板+级联 7）；冲突处理结果=16→17 级联全链闭合（漏网锚 e3e93cb 补修 skill-split:50/guide:64,71/README×3，Drift Log beebf95 补齐），无未决残留冲突（P2 三项=pre-existing 非本变更引入）；文档当前状态=17/18/25 计数全链自洽，selftest TL+split rerun 全 PASS
+
+#### [sub:8-executor] 合并后终验
+- **HEAD=d8eb770 (merge wt/task-v109) master 全量回归终验**: `skills/task-planner/scripts/selftest-*.sh` 42/42 逐一 `bash` 运行（timeout 90s 包裹, 无超时）——**42/42 rc=0, FAIL=0, 断言合计 660 PASS（程序化求和 SUM-ASSERTIONS=660 复跑验证）**; 其中 `selftest-registry.sh` Total: 5 PASS=5 (registry rows=42, actual selftest=42)
+- **负结果**: 逐脚本 grep FAIL/Assertion/✗ 全部 0 命中; sub:3 阶段的唯一失败 `selftest-skill-split.sh` L50「'16 个'→'17 个'」级联遗漏已在本 HEAD 修复（selftest-skill-split.sh 41/41 PASS rc=0, 与 TL-17 同型修正生效）
+- **环境备注**: 42 个脚本权限位均为 `-rw-rw-r--`（无 +x）, 直接 `./` 执行 rc=127 属环境问题非脚本缺陷; `selftest-final-gate-hash.sh` 输出格式特殊（`==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====` 无 Total 行, 同 sub:3 记载）
+- **结论**: 合并后 master 全量回归通过, 无新增失败断言; 明细 42 行原文落 `plans/task-v109/subagent-state/8-executor.md`
+
+#### [sub:9-executor] 部署对账
+- **主仓基线 (d8eb770)**: `skills/task-planner/templates/variant/` 实测 17 个 (含 memory-hygiene-type.md); 7 级联文件定位: plan-template-kit/references/template-mapping.md, task-planner/companion/agents/plan-writer.md, task-planner/SKILL.md, task-planner/references/critical-rules.md, plan-template-kit/references/template-guide.md, task-planner/scripts/selftest-skill-split.sh, task-planner/scripts/selftest-template-lifecycle.sh
+- **宿主1 ~/.zcode/skills**: ① memory-hygiene-type.md 缺失 (ls → No such file or directory); ② 7/7 级联文件 `diff -q` 全部 differ (全部落后); ③ variant 计数=28 (v107 已知 videop1 分叉, 独有 audio-voice/character-design/final-assembly/image/motion-camera/multiview-ref/physics-compliance/prompt-struct/qc-defect/script-dev/storyboard/video-prompt 12 个, 主仓 17 中无缺失但 memory-hygiene 亦无); ④ v109 标记探针: `memory-hygiene` grep 全 6 级联宿主文件=0 命中, `17 个` 探针=0 命中 (仅存量 "16 个" 旧锚残留于 selftest-skill-split.sh/critical-rules.md)
+- **宿主2 ~/.claude/skills**: ① memory-hygiene-type.md 缺失; ② 7/7 级联文件 diff -q 全部 differ; ③ variant 计数=16 (17 旧基线, 落后 v109 +1); ④ `17 个` 探针=0, "16 个" 旧锚残留 4 处 (guide/skill-split/TL/critical-rules)
+- **宿主3 ~/.opencode/skills**: 同宿主2逐项一致——memory-hygiene 缺失/7/7 differ/variant=16/"16 个" 旧锚 4 处
+- **每宿主部署建议 (供用户裁决)**:
+  - ~/.zcode/skills: 合并式部署——主仓 17 面 (memory-hygiene + 7 级联) 合入 28 variant 分叉树 (28→29), 不可整树覆盖 (12 独有 variant 会被抹除+16 个分叉同名文件会回退)
+  - ~/.claude/skills: 直接全量同步主仓 17 面 (整树=16 旧基线, 无独有分叉, 可整体覆盖)
+  - ~/.opencode/skills: 直接全量同步主仓 17 面 (同 claude)
+- **负结果声明**: 未修改任何部署位/主仓文件, 未执行 git 写操作; 全部证据=`diff -q`+`ls|wc -l`+`grep` 只读探针; checkpoint 落 `plans/task-v109/subagent-state/9-executor.md`
