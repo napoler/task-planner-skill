@@ -128,11 +128,11 @@
 
 ### Phase 4: dogfood 记忆整理（fresh 执行+主进程抽验）
 
-- [ ] fresh executor 按新模板整理 57 条：逐条处置记录（verified/updated/stale-marked/删除建议）+每条验证锚证据
-- [ ] MEMORY.md 修正版落 `plans/task-v109/MEMORY.md.proposed`（索引行精简至 ≤200 字符+验证戳）；**不直接覆盖**真实 MEMORY.md
-- [ ] 主进程抽验 ≥5 条处置证据 → 通过后主进程应用（updated/stale 标注类直接应用；删除建议类留待用户裁决）
+- [x] fresh executor 按新模板整理 57 条：verified 49/updated 2/stale-marked 4/删除建议 0（memory-hygiene-report.md）
+- [x] MEMORY.md 修正版落 plans/task-v109/MEMORY.md.proposed（57 行 ≤200 字符+验证戳），未直接覆盖
+- [x] 主进程六项抽验全过 → 已应用：MEMORY.md 45.4→11.9KB+6 条 topic 标注（原版备份 MEMORY.md.backup）
 - **V-N:** VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh（整理执行）+ 主进程（抽验+应用——② 簿记面）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -140,11 +140,11 @@
 | S1 | 57 条整理执行+修正版产出 | 继承 | Phase 1 清单+新模板+记忆目录 | ≤15min | pending |
 
 ### Phase 5: 合并回与终验簿记
-- [ ] smart-merge-back 合并回+清理+主仓 Read 复验
-- [ ] 部署对账（fresh）+结论登记（部署待用户指令）
-- [ ] verification.md 全量+check-complete+INDEX+簿记 commit
+- [x] smart-merge-back 合并回（V5 拦截→worktree merge master 处置→MERGED d8eb770）+清理+主仓复验（variant=17）
+- [x] 部署对账（fresh sub:9）：三宿主均未含 v109 面；建议=zcode 合入式/claude+opencode 全量（部署待用户指令）
+- [x] verification.md 全量+终验回归（fresh sub:8 主仓 660/0）+INDEX+簿记 commit
 - **V-N:** VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（① git 编排+② 簿记——白名单）
 
 ## 🔀 隔离决策（冲突分析）
