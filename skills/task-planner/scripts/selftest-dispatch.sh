@@ -134,7 +134,8 @@ mk_prompt "$TMP/p12.md"
   cd "$TMP"; bash "$DISPATCH" pretool "$TMP/p12.md" "$SID" >"$TMP/out" 2>"$TMP/err" )
 RC=$?; COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 12 "$RC" 0 - out
 
-# TS-01..06 [task-v061] 串行槽守卫 serial_slot_check(经真实入口 pretool 触发):
+# TS-01..08 [task-v061] 串行槽守卫 serial_slot_check(经真实入口 pretool 触发);
+# [task-v110] TS-07/08=并行组放行(声明+标记双条件)与无标记回归
 # 独立夹具 plan-dir(禁触真实 plans/): 三文件 + 合规 prompt + subagent-state/; 用例间清锁防互扰
 TSCL="$TMP/tscl"; TSCLP="$TSCL/plans/task-ts"; mkdir -p "$TSCLP/subagent-state"
 printf 'ts task plan\n' > "$TSCLP/task_plan.md"
@@ -205,6 +206,26 @@ rm -f "$LOCK"   # PostToolUse 清锁: 子代理验收通过后串行槽释放
   && { TSOK=1; } || { TSOK=0; }
 [ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-06 PASS (rc=%s, 锁已清除)\n' "$RC"; } \
   || { FAIL=$((FAIL+1)); printf 'TS-06 FAIL (rc=%s, 锁=%s)\n' "$RC" "$([ -f "$LOCK" ] && echo 残留 || echo 无)"; }
+
+# TS-07 [task-v110] 并行组放行: 计划声明 parallel_groups: ∧ prompt 组标记 [parallel-group:] + 新鲜锁 + enforce → 放行且 stderr 含 [dispatch-parallel-group]
+printf '%s' "$(date +%s)" > "$LOCK"; tscl_prompt "$TSCL/p7.md"
+printf '\n执行组: [parallel-group:g1] 目标 G1\n' >> "$TSCL/p7.md"
+printf '\n<!-- parallel_groups: [g1, g2] -->\n' >> "$TSCLP/task_plan.md"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=enforce \
+  bash "$DISPATCH" pretool "$TSCL/p7.md" "$SID"
+[ "$RC" = 0 ] && printf '%s' "$CERR" | grep -qF 'dispatch-parallel-group' && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-07 PASS (rc=0, 组标记槽占用放行)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-07 FAIL (rc=%s exp=0, stderr=%s)\n' "$RC" "$(printf '%s' "$CERR" | head -n1)"; }
+rm -f "$LOCK"   # 清新鲜锁防扰 TS-08 写锁动作
+# TS-08 [task-v110] 无组标记回归: 撤声明+撤标记 → 新鲜锁 + enforce 仍 exit 2(=TS-02 语义防回归, 无标记路径行为零改动)
+sed -i '/parallel_groups: \[g1, g2\]/d' "$TSCLP/task_plan.md"
+tscl_prompt "$TSCL/p8.md"
+printf '%s' "$(date +%s)" > "$LOCK"
+run_case off "$TMP" env TASK_PLANNER_PLAN_DIR="$TSCLP" TASK_PLANNER_DISPATCH_ENFORCE=enforce \
+  bash "$DISPATCH" pretool "$TSCL/p8.md" "$SID"
+[ "$RC" = 2 ] && printf '%s' "$CERR" | grep -qF '串行' && { TSOK=1; } || { TSOK=0; }
+[ "$TSOK" = 1 ] && { PASS=$((PASS+1)); printf 'TS-08 PASS (rc=2, 无标记仍按串行槽拦截)\n'; } \
+  || { FAIL=$((FAIL+1)); printf 'TS-08 FAIL (rc=%s exp=2, stderr=%s)\n' "$RC" "$(printf '%s' "$CERR" | head -n1)"; }
 
 # FG-01..05 [task-v075 P3-S2] 三项增量检测 fine_grain_checks(经真实入口 pretool 触发);
 # [task-v078] FG-05=打包检测双条件豁免(任务书+subagent-state/), FG-03 反向回归保留

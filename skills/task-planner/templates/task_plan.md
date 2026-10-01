@@ -146,7 +146,7 @@ Phase 1
 |-------|----------------------|---------|
 | Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
-**workflow 编排判定（Rule 40.4）**: [未命中编排条件 → 维持 Rule 21.4 串行;命中（独立并行子任务可 fan-out / 长链多 skill 接力可复用 / 用户点名）→ 登记"建议 CreateWorkflow"并按 Rule 39.4 做并行豁免登记（Decisions Made + progress）]
+**workflow 编排判定（Rule 40.4）**: [未命中编排条件 → 按 Rule 21.4 独立性守门调度（并行默认+声明组，未声明=串行，10-02）;命中（独立并行子任务可 fan-out / 长链多 skill 接力可复用 / 用户点名）→ 登记"建议 CreateWorkflow"并按 Rule 39.4 做并行豁免登记（Decisions Made + progress）]
 **/goal 对齐（Rule 40.3）**: [本计划 Goal+VC 即 session goal 的证据源;如用户已用 /goal 锚定本任务,在执行范围或 Goal 段注明映射;/goal 为用户侧 harness 命令,技能层不可代调]
 
 ## Phases

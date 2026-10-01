@@ -14,6 +14,7 @@
 - findings.md 相关摘要(≤10 行):{findings_excerpt}
 - 上下文依赖:{context_dependencies}
 - 工具面提示（Rule 40）: 若该 S-unit 执行工具面非 Agent 子代理（如 workflow 编排/机械脚本/卫星技能）,须在本节注明所用工具与选择理由;「🧰 工具选择与编排」区块（计划内）是上游分析记录,本任务书按其结论派发。
+- 并行组声明（Rule 21.4，10-02）: 若该 S-unit 属并行组,须注明组名——计划 frontmatter `parallel_groups:` 组名清单 + S-unit 行/本任务书标记 `[parallel-group:<组名>]`;独立性四问（①文件集②资源③输入④验收依赖,任一 yes=不同组转串行）见 Rule 21.4;只读类预置组沿承 `[readonly-parallel]`;未声明组=串行槽。
 
 ## 📚 必要知识储备上下文包(随 prompt 注入 — prompt 自包含)
 <!-- WHAT: 派发时必须注入的知识源;全文摘录或路径引用,保证子代理无会话记忆也能对齐知识库 -->

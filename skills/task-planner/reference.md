@@ -309,17 +309,17 @@ Block 1 (调研) complete
 
 ### fan-out（一对多派发）
 
-适用场景：同一个上游产物，多个下游 skill 依次消费（派发仍串行 — Rule 21.4）。
+适用场景：同一个上游产物，多个下游 skill 依次消费（linked 块间存在输入依赖——独立性四问③，属 21.4 串行保留场景①，10-02）。
 
 ```
 Block 1 (选题) complete
-  → 串行逐个派发 Block 2A → 2B → 2C（Rule 21.4 铁律）
+  → 逐个派发 Block 2A → 2B → 2C（linked 串行接力，Rule 21.4 场景①）
   → 全部 complete → Block 3 (汇总)
 ```
 
 **chain_mode: fan-out 时**：
 - 上游 Block 完成后，所有下游 Block 状态变为 `pending`
-- 每个 Block 独立执行，派发仍按 Rule 21.4 串行（互不依赖不构成并行理由）
+- 每个 Block 独立执行，派发按 Rule 21.4 调度铁律（10-02）：下游 Block 间无输入依赖（四问③ no）且文件集/资源不相交时可声明并行组并行，未声明=逐个串行
 - 汇合点需等所有下游 Block complete 后才继续
 
 ### 执行规则

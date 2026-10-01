@@ -196,7 +196,8 @@ cmd_pretool() {
         if [ -n "$pd" ] && [ -d "$pd" ]; then
             missing="$(scan_missing "$pf" "$pd")"
             # [task-v075 P3-S1] 兜底命中且无缺项 → 三项增量检测(warn 档计数观察)+ 串行槽检查
-            [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; serial_slot_check "$pd" "$mode" "$sid" "$ro"; exit 0; }
+            [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0 pg=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; # [2026-10-02 task-v110] 并行组放行: 计划 frontmatter 声明 parallel_groups: ∧ prompt 含 [parallel-group:<组名>] 标记 → pg=1(独立性四问责任在计划期声明, 守卫信任标记不做文件集比对); 无标记路径零改动
+            grep -qm1 'parallel_groups:' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[parallel-group:' "$pf" 2>/dev/null && pg=1; serial_slot_check "$pd" "$mode" "$sid" "$ro" "$pg"; exit 0; }
             names="$(join_missing "$missing")"
         else
             names="unknown"
@@ -209,7 +210,8 @@ cmd_pretool() {
     # [task-v075 P3-S1] 既有缺项扫描之后的三项增量(长度/打包/brief 引用), 挂既有档位处置
     missing="$(scan_missing "$pf" "$pd")"
     # [task-v061-serial-dispatch] 契约校验通过(无缺项), 即将放行前执行串行槽检查; 缺项 exit 2 路径不写锁不检查
-    [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; serial_slot_check "$pd" "$mode" "$sid" "$ro"; exit 0; }
+    [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0 pg=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; # [2026-10-02 task-v110] 并行组放行(与 warn 兜底路径同语义): 声明 parallel_groups: ∧ 组标记 → pg=1
+    grep -qm1 'parallel_groups:' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[parallel-group:' "$pf" 2>/dev/null && pg=1; serial_slot_check "$pd" "$mode" "$sid" "$ro" "$pg"; exit 0; }
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
         echo "[dispatch-warn] ⚠ 派发契约缺项: $names"
@@ -347,8 +349,10 @@ fine_grain_checks() {
 # 边界(如实): run_in_background 的 Agent 调用 PostToolUse 立即返回即清锁, 后台并发不由本守卫捕获,
 # 由 Rule 21.4 文本条款(后台派发视为持续占用串行槽)覆盖。
 # 边界(多会话): 全局指针被翻转向他任务且他会话 Agent 返回时,可能误删本任务锁(120s TTL 自愈,仅短暂旁路串行约束)
+# [2026-10-02 task-v110] 并行组槽语义演进: 第⑤参 pg(声明 parallel_groups: ∧ prompt [parallel-group:] 双条件命中=1)
+# → 槽占用放行(组内共享锁不覆盖); 无组标记路径(warn/enforce 拦截文案含「串行」)行为零改动, 守卫信任标记不做四问机器校验
 serial_slot_check() {
-    local pd="${1:-}" mode="${2:-}" sid="${3:-unknown}" ro="${4:-0}" lf now ts age
+    local pd="${1:-}" mode="${2:-}" sid="${3:-unknown}" ro="${4:-0}" pg="${5:-0}" lf now ts age
     case "$mode" in enforce|warn) ;; *) return 0 ;; esac        # off/nojq → 跳过
     [ -n "$pd" ] && [ -d "$pd" ] || return 0                     # plan-dir 未解析 → fail-open
     lf="$pd/subagent-state/.dispatch-inflight"
@@ -365,6 +369,12 @@ serial_slot_check() {
                 # → 放行且不覆盖写类锁; 写类(无标记)仍严格串行; 残留面=只读子代理越权写入无机器防护(22.4a 只读契约+验收 Read 承载)
                 if [ "$ro" = "1" ]; then
                     echo "[dispatch-readonly] 只读并行豁免命中(声明+标记双条件), 槽占用(age=${age}s)放行, 写类锁保留" >&2
+                    return 0
+                fi
+                # [2026-10-02 task-v110] 并行组槽放行: 声明制组标记命中(计划 parallel_groups: ∧ prompt [parallel-group:<组名>]),
+                # 槽占用放行且组内共享锁不覆盖; 组间/未声明仍走下方串行路径(无标记行为零改动)
+                if [ "$pg" = "1" ]; then
+                    echo "[dispatch-parallel-group] 并行组标记命中(10-02 独立性守门), 槽占用(age=${age}s)放行 — 组内四问责任在计划期声明, 组间串行不变" >&2
                     return 0
                 fi
                 if [ "$mode" = "warn" ]; then
