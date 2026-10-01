@@ -94,6 +94,19 @@
   - **池软链健康（33 条）**：11 池技能 × 3 宿主 readlink 全为 `task-planner/review-library/<name>`（相对软链），33/33 目标实存，三宿主目标字符串一致（无 MISMATCH）。注：hosts 侧 `brainstorming` 为实体目录（非池技能、不在 11 池内），不计入 33；config/opencode/skills 另有多出条目 `superpowers`（软链指向 superpowers/skills，异常项已记录，非本任务范围）
   - 差异清单全文 + 命令证据：checkpoint `plans/task-v107/subagent-state/7-executor.md`；原始 diff 日志 /tmp/sub7-diff.log /tmp/sub7-opencode.log /tmp/sub7-links.log
 
+#### [sub:10-executor] 对齐审查
+- **[Phase 6] alignment-review 对齐审查收尾（2026-10-02，sub:10-executor，Rule 42.6.2 标准流程）**：四要素逐项核对，结论 = **CHANGES_REQUESTED（0 P0 / 1 P1 / 2 P2）**。摘要：
+  - 要素1 文档↔产出同步（PASS，附 1 项 P2）：抽 5 条 report↔checkpoint 对照全一致——①「75 脚本 0 语法 FAIL」=checkpoint 1 原文「scanned=75 syntax_fail=0」（1-code-runner.md:7）②「42/42 PASS 660/FAIL 0」=checkpoint 2 final 汇总「PASS=660 FAIL=0（final-gate-hash PASS=22 已计入）」（2-code-runner.md:67；results.txt 638+22=660 复测吻合）③「.zcode 28 vs 主仓 16、差集 12 video 家族」=checkpoint 7 diff -rq 原文「(12 个)」（7-executor.md:22），ls/comm 复测一致（主仓 16/.zcode 28/差集 12）④「init-session 6/6」实测 init-session.sh:351「6/6 planning files verified」⑤「EX-1 videop1 双向漂移」diff -rq 复现 plan-template-kit references differ。progress [sub:N] 行与 9 份 checkpoint 一一对应✓；但六件套状态面 task_plan Phase 1-4=complete vs progress Phase 1-4 Status=in_progress（:13/30/45/51）未翻转→P2-Q1。
+  - 要素2 计数联动 **命中 P1**：report 问题总表 §3.1-3.5 实际数据行 = 1(EX-1)+6(§3.2 P-1~P-6)+10(§3.3 P1-1~P2-6,T-1,T-2)+6(§3.4 C-P1~C-P6)+19(§3.5 D6-01~D6-19) = **42 行**，但 report:3 头声明「44 条」且 progress:54/task_plan:142 同写「44 条[EX-1+P1×7/P2×31/待复核×4/负结果1]」——**声明 44 vs 表格实 42，缺口 2 行**；P2×31 声明 vs 表格 P2-labeled 实 33、待复核×4 声明 vs 表格 待复核-labeled 实 5（P-5/P-6/T-1/T-2/C-P6）口径漂移。P1×7 经核一致（P-1,P-2,P1-1,P1-2,C-P1,D6-01,D6-02）；R-01~R-15 表实 15 行✓。三件套文件间「44」表述彼此一致，不一致发生在「report 头声明 vs report 自身表格内容」（声明/事实不符=P1）。
+  - 要素3 引用完整性 PASS（抽验 11/11 实存）：3-executor §P-1~P-6（表格行 :31-36）✓ / 4-executor §P1-1~P2-6,T-1,T-2（:21-34）✓ / 5-executor §C-P1~C-P6（:73-100）✓ / 6-executor §D6-01/02/19（:34/35/52）✓ / 7-executor §diff 清单（:22）✓ / report「checkpoint N §ID」8 处引用✓ / `readlink ~/.zcode/skills/alignment-review → task-planner/review-library/alignment-review`✓ / lib/install-companion.sh 实位（ls✓）✓ / 根 6 md（ls✓）✓ / ~/.opencode 与 ~/.config/opencode 同 inode 3436922（stat✓）✓ / score-plans.py 实位 plan-resume/scripts/（find✓）。
+  - 要素4 守卫锚级联 PASS（report 零过期锚）：report.md grep「Rules 1-39 / Rules 1-36」共 5 处（:18/:48/:59/:89/:124），全为「引述被守护锚（P-4 的 1-39 机器锚 / P2-3 的 1-36）」非自身漂移措辞；WF-10「Rules 1-39」机器锚（selftest-workflow-orchestration.sh:52-57）未被 report 误引。task_plan 三登记行核对：自动超时默认项=D1 批准（Decisions Made:222 silent D1，与执行一致✓）、对齐审查=本 sub:10（进行中✓）、质量审查工具行（:22）登记 4 工具但 documentation-review/code-quality-review 未作为独立工具面执行（仅 alignment-review 经 sub:10 实际执行）→P2-Q1。
+  - **发现项**（分级+锚点；P1 阻断，建议主进程收尾修复）：
+    - [P1] report.md:3 头声明「44 条」vs report §3.1-3.5 表格实 42 数据行（awk 计数）（+progress:54 / task_plan:142 同写 44）— 声明 44 ≠ 表格实 42 缺 2 行，且 P2×31/待复核×4 声明 vs 表格 P2×33/待复核×5 口径漂移；计数未随表格联动 — 修法：以表格实行为准重算声明（42 行 / P2×33 / 待复核×5）或补齐缺口行使 44 成立，report+progress+task_plan 三处同步
+    - [P2] progress.md:13/30/45/51「Status: in_progress」×4 vs task_plan.md:102/117/134/145「Status: complete」— progress Phase 1-4 状态行未随主进程翻转为 complete（六件套状态同步缺失）；契约 sub:10 禁改既有 Status，登记待主进程收尾补翻
+    - [P2] task_plan.md:22 质量审查工具登记含 documentation-review/code-quality-review，实际仅 alignment-review 经 sub:10 独立执行（documentation-review/code-quality-review 由 executor 审查波次承担，未独立执行）— 登记 vs 执行口径偏差，主进程终验注明（Rule 25.4 口径）
+    - 负结果：三副本同步面（池 11 技能×3 宿主）与模板/实例面已由 checkpoint 7 33/33 软链健康覆盖，本次未新增检查项；report.md 无机器断言锚（非 selftest 断言对象），守卫锚级联面=WF-10「Rules 1-39」4 索引文档，report 未引述其过期措辞，零漂移。
+  - 全文证据与逐条命令输出：checkpoint `plans/task-v107/subagent-state/10-executor.md`
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

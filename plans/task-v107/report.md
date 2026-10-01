@@ -1,13 +1,13 @@
 # task-v107 深度审查报告（内容质量 / 稳定性 / 执行与部署）
 
-日期 2026-10-02 · 执行体 sub:8-executor（汇总）· 结论源 = 8 份 checkpoint + findings.md（全部只读材料）
+日期 2026-10-02 · 执行体 sub:8-executor（汇总）· 结论源 = 8 份 checkpoint + findings.md（全部只读材料）· v107-对齐审查修正：条目计数以 §3 表格数据行实数为准（42 条 = EX-1×1 + P1×7 + P2×27 + 待复核×5 + 核验通过/负结果×2；sub:10 抓出「44 条」漂移已更正）
 
 ## 1. 执行摘要
 
 - 审查范围：task-planner 项目 10 skill（主 + 9 卫星）× 文档面/脚本面/部署位三维；材料 = Phase 1 机械回归 + Phase 2 四波内容审查 + Phase 3 三宿主 diff 对账。
 - 方法：42 selftest 逐脚本回归（v106 基线 660/0 对照）+ bash -n 语法扫描 75 脚本 + diff -rq 部署对账 + 四维文档审查（引用实存/计数锚/结构/过期数字），每条断言附 grep/find 第一手证据。
 - 稳定性结论：全绿——75 脚本 0 语法 FAIL；42/42 selftest rc=0，PASS 660 / FAIL 0，与 v106 基线完全一致。
-- 内容质量结论：四波合计 **P1×7 / P2×31 / 待复核×4**，主进程抽验全证实；缺陷集中于「计数锚漂移链 + 安装口径文档簇」。
+- 内容质量结论：四波合计 **42 条条目（P1×7 / P2×27 / 待复核×5 / 核验通过或负结果×2，口径=§3 表格数据行）**，主进程抽验全证实；缺陷集中于「计数锚漂移链 + 安装口径文档簇」。
 - 执行维结论：「第二套部署缺 8 技能」误判已证伪撤销（~/.opencode 为 ~/.config/opencode 软链，单一活跃部署）；关键实存问题 = **~/.zcode 位 videop1 双向漂移（部署位 28 variant vs 主仓 16）**，本会话 skill 加载源即 .zcode 位，影响面最高。
 - 处置：授权修复候选 R-01~R-15（主仓文档面，Phase 5 worktree 隔离逐项授权）；跨项目归属（videop1 12 variant 回流与否）与 4 项待复核列待裁决清单。
 - 本报告本身为 Phase 4 产出，Phase 6 须 alignment-review 收尾 + 变更记录三要素（§6）。
@@ -123,7 +123,7 @@
 1. **误判撤销记录**：findings [sub:S3]「~/.config/opencode/skills 第二套旧部署缺 8 技能」——Phase 3 证伪撤销（~/.opencode 软链 → ~/.config/opencode 同 inode 3436922，单一活跃部署，Rule 44 在位；checkpoint 7）。另 P-6 install-companion.sh 路径错已由主进程修计划（lib/ 非 scripts/）。
 2. **设计权衡项**：SKILL.md:246/:304「Rules 1-39（含 40-44）」宽容锚措辞（v097 设计；「1-39」是 selftest WF-10 机器锚 selftest-workflow-orchestration.sh:52-57，断言命中≥6）。改 1-44 须连 WF-10 自测断言 + 4 索引文档（含 D6-11 三处 README/CLAUDE）同源同改——建议 Phase 5 单列一 D6 项，或维持机器锚仅修括注口径「（1-39 存量锚 + 40-44 新增）」。
 3. **跨项目归属项（只列不修）**：EX-1 videop1 双向漂移——.zcode 位 task-planner 多出的 12 个 video 家族 variant（部署位 28 vs 主仓 16）+ plan-writer.md / selftest-template-lifecycle.sh / plan-template-kit 2 references 的内容分叉，属 videop1 项目线资产；回流与否及归一方向（install-companion 单向部署 or 主仓收编）须 videop1 侧与主仓侧共同裁决。
-4. **待复核×4**：P-5（SKILL.md:9 frontmatter 索引面口径）/ T-1（variant VC 表 4 脚本示例值口径，建议注脚）/ T-2（8 标准 variant 缺 3 区块，是否由 plan-writer 补全，否则升 P1）/ C-P6（session-catchup 三处口径统一）。
+4. **待复核×4（实质待裁决口径；表格标注口径为待复核×5，差 1 = P-6 计划路径已由主进程处置留痕）**：P-5（SKILL.md:9 frontmatter 索引面口径）/ T-1（variant VC 表 4 脚本示例值口径，建议注脚）/ T-2（8 标准 variant 缺 3 区块，是否由 plan-writer 补全，否则升 P1）/ C-P6（session-catchup 三处口径统一）。
 5. **异常记录（非本任务范围）**：~/.config/opencode/skills 下 `superpowers` 软链指向 superpowers/skills（checkpoint 7 记录项）。
 
 ## 6. 变更记录（42.6.3 三要素：what/why/how-verify）

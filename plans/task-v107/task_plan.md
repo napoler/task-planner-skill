@@ -19,7 +19,7 @@
 | `interaction_mode` | `ask`（默认；Rule 44 询问点自动超时默认项已登记） |
 | `对齐审查` | 产出 report.md 与（如有）修复变更，完成前跑 alignment-review 对齐审查（42.6.2）；文档更新前跑版本一致性校验（42.6.1 未经校验不追加）；变更记录三要素随报告落盘（42.6.3） |
 | `自动超时默认项` | D1 计划批准：默认=批准执行，超时 5 分钟（Rule 44.1/44.3，非 D6 硬停点）；执行中 D2-D5 询问点如出现，逐个登记默认项+超时 5 分钟；低区分度选项按 44.2 直接裁决登记 |
-| `质量审查工具` | Rule 42.2 四级检测：①项目级无注册 ②用户级命中 review-library 池（alignment-review/documentation-review/code-quality-review）③环境 agents 命中 frontmatter-linter/agent-quality-auditor（frontmatter 机械面）④内置兜底池在位。登记执行工具：**alignment-review**（对齐面收尾）+ **documentation-review**（文档质量面）+ **code-quality-review**（脚本面）+ frontmatter-linter/agent-quality-auditor（frontmatter 机械抽查）；无需补建（缺口=无） |
+| `质量审查工具` | Rule 42.2 四级检测：①项目级无注册 ②用户级命中 review-library 池（alignment-review/documentation-review/code-quality-review）③环境 agents 命中 frontmatter-linter/agent-quality-auditor ④内置兜底池在位。**实际消费（sub:10 对齐审查如实修正）**：alignment-review 独立执行（Phase 6 sub:10，结论 CHANGES_REQUESTED 已处置）；documentation-review/code-quality-review 未独立调用——四波文档审查（sub:3~6）与脚本机械回归（Phase 1）按等效四维/机械清单消费，覆盖面等效但非池技能本体，如实披露；frontmatter-linter 未消费（本任务无 frontmatter 变更面）。无需补建（缺口=无） |
 
 ## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
 
@@ -139,7 +139,7 @@ Phase 1
 | S1 | 三宿主部署位 diff 对账 | 继承 | 主仓 skills/ vs Phase 1 部署位清单（diff -r 逐 skill,汇总差异表） | 差异清单或 IDENTICAL 结论 | ≤15min | pending |
 
 ### Phase 4: 审查报告汇总与问题分级
-- [x] 三维结论汇总 → `plans/task-v107/report.md`（136 行）：执行摘要/三维分节/44 条问题总表（EX-1 执行维 P1-高 + P1×7 + P2×31 + 待复核×4）/R-01~R-15 授权修复候选/待裁决清单/变更记录三要素
+- [x] 三维结论汇总 → `plans/task-v107/report.md`（136 行）：执行摘要/三维分节/42 条问题总表（EX-1 执行维 P1-高 + P1×7 + P2×27 + 待复核×5 + 核验×2，口径=表格数据行，sub:10 对齐审查更正）/R-01~R-15 授权修复候选/待裁决清单/变更记录三要素
 - [x] 每条问题附 file:line 锚点与证据出处（保留原 checkpoint 引用，同根因五链合并互引）
 - **V-N:** VC-2, VC-3
 - **Status:** complete
@@ -150,11 +150,11 @@ Phase 1
 | S1 | 汇总撰写 report.md | 继承 | plans/task-v107/findings.md（Phase 1-3 全部回填结论）+ task_plan.md | report.md 五段结构齐备 | ≤15min | pending |
 
 ### Phase 5: 授权修复与回归（条件 Phase — 用户裁决后）
-- [ ] 展示修复候选清单，逐项获用户授权（D6 级：技能文件修改须逐项确认，36.4）
-- [ ] 授权项在 worktree（wt/task-v107）隔离修复 → 全量 42 selftest 回归 → smart-merge-back 合并回 → 清理
-- [ ] 未授权项留 report.md 待裁决清单，不实施
+- [x] 展示修复候选清单，逐项获用户授权（D6 级）——2026-10-02 AskUserQuestion 分组呈报（组A 技能文档面 9 项/组B 根目录 6 项/EX-1/待裁决 5 项），**用户超时未答复**
+- [x] 授权处置：未获授权 → **零修复实施**（§六 P0 未授权禁写 + 28.4 D6 不可自动裁决）；R-01~R-15 全部留 report.md §4 待授权清单；EX-1 与待裁决 5 项留 §5
+- [x] 未授权项待裁决清单完整（report.md §4/§5）→ 按 Phase 5 豁免路径判定
 - **V-N:** VC-5, VC-1
-- **Status:** pending
+- **Status:** skipped（未获授权，修复候选完整留档；后续用户授权后可按 R-01~R-15 单独开修复轮）
 - **Executor:** executor（sonnet-1）（修复实施）+ 主进程（① git 编排+worktree 生命周期——Rule 25.3 白名单）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -168,7 +168,7 @@ Phase 1
 - [ ] VC 逐条复验（verification.md V-N.N 逐项填证据）+ check-complete.sh exit 0
 - [ ] 簿记：INDEX.md 更新 + 簿记 commit + sync-todos --index
 - **V-N:** VC-6, VC-5
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** 主进程（例外理由：① git/worktree 编排 + ② 计划系统文件簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -238,7 +238,7 @@ Phase 1
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-02 01:20 | ✅ ALIGNED（Phase 1 complete 后） | VC-1, VC-4 | 75 脚本 0 语法 FAIL+42 selftest 660/0+三宿主盘点完成；仅动 plans/task-v107/；继续 Phase 2 |
-| 2026-10-02 01:55 | ✅ ALIGNED（Phase 2 complete 后） | VC-2, VC-3 | 四波审查完成 P1×7/P2×31/待复核×4，抽验全证实；仅动 plans/task-v107/；继续 Phase 3 |
+| 2026-10-02 01:55 | ✅ ALIGNED（Phase 2 complete 后） | VC-2, VC-3 | 四波审查完成（计数口径后经 sub:10 更正为 42 条=P1×7/P2×27/待复核×5/核验×2），抽验全证实；仅动 plans/task-v107/；继续 Phase 3 |
 | 2026-10-02 02:30 | ✅ ALIGNED（Phase 3 complete 后） | VC-4 | 部署对账完成（.zcode videop1 双向漂移为关键发现，.claude/.opencode 同步）；仅动 plans/task-v107/；继续 Phase 4 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
@@ -260,4 +260,4 @@ Phase 1
 | 5 | | executor | Phase 2 S3 卫星配套技能审查 | done | P1×1（cost-guard Rule17.5 幽灵 STOP 档,主侧 0 命中已证实）+P2×4+待复核×1;6 技能零问题 | findings.md [sub:5-executor] | findings.md | plans/task-v107/subagent-state/5-executor.md | rescue=- / 0 / ☑ |
 | 6 | | executor | Phase 2 S4 根目录文档审查 | done | 19 项（P1×2:根级 scripts 入口全失效+session-catchup.py 幽灵;P2×17 数字/口径过期簇）;主进程抽验 2 条 P1 全证实 | findings.md [sub:6-executor] | findings.md | plans/task-v107/subagent-state/6-executor.md | rescue=- / 0 / ☑ |
 | 7 | | executor | Phase 3 部署位 diff 对账 | done | ⚠️ .zcode 位被 videop1 项目线迭代（部署位 28 variant vs 主仓 16,双向漂移;.claude/.opencode 位与主仓同步）;「第二套部署」误判已证伪撤销（.opencode=.config 软链）;33/33 池软链健康 | findings.md [sub:7-executor] | findings.md | plans/task-v107/subagent-state/7-executor.md | rescue=- / 0 / ☑ |
-| 8 | | executor | Phase 4 汇总撰写 report.md | done | report.md 136 行六段齐备:44 条问题(EX-1+P1×7/P2×31/待复核×4)+R-01~R-15 修复候选+待裁决清单;主进程 Read 复核结构完整 | plans/task-v107/report.md | （无新增,汇总以既有为准） | plans/task-v107/subagent-state/8-executor.md | rescue=- / 0 / ☑ |
+| 8 | | executor | Phase 4 汇总撰写 report.md | done | report.md 六段齐备:42 条问题(EX-1×1+P1×7+P2×27+待复核×5+核验×2,sub:10 更正口径)+R-01~R-15 修复候选+待裁决清单;主进程 Read 复核结构完整 | plans/task-v107/report.md | （无新增,汇总以既有为准） | plans/task-v107/subagent-state/8-executor.md | rescue=- / 0 / ☑ |
