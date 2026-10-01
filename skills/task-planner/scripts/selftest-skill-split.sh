@@ -47,7 +47,7 @@ done
 t "T-迁 research-routing.md 含 强制引用格式" grep -q '强制引用格式' "$S1/references/research-routing.md"
 t "T-迁 template-guide.md 存在" test -f "$S2/references/template-guide.md"
 t "T-迁 template-mapping.md 存在" test -f "$S2/references/template-mapping.md"
-t "T-迁 template-guide.md 含 16 个" grep -q '16 个' "$S2/references/template-guide.md"
+t "T-迁 template-guide.md 含 17 个" grep -q '17 个' "$S2/references/template-guide.md"
 t "T-迁 cost-control.md 存在" test -f "$S3/references/cost-control.md"
 t "T-迁 billing.md 存在" test -f "$S3/references/billing.md"
 t "T-迁 cost_log.md 存在" test -f "$S3/references/cost_log.md"

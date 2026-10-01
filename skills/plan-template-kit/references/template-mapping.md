@@ -20,10 +20,11 @@
 ├─ 部署 / CI-CD / Docker / k8s / nginx / 基础设施 → deployment-type.md
 ├─ 性能瓶颈定位 / 优化 / 压测 / benchmark → performance-tuning-type.md
 ├─ DB schema 变更 / migration / 索引 / 数据回填 → schema-migration-type.md
+├─ 记忆体系盘点/整理/治理（记忆目录 MEMORY.md+topic）→ memory-hygiene-type.md
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
-> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
+> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
 
 > 选定 template_type 后，立即按 §九「机制适用性矩阵」套用该类型的机制画像（Rule 37）：Code Review Gate、执行体路由等按矩阵行取捨。
 
@@ -45,6 +46,7 @@
 - `templates/variant/mini-lite-type.md`(v2，task-v086 新增；轻量档 mini 计划模板，Rule 38.3 区块白名单承载)
 - `templates/variant/video-type.md`(v3，task-v093 收录；视频生产任务模板，video 家族主分支)
 - `templates/variant/video-fix-type.md`(v3，task-v093 收录；视频修正/局部重生成/QC FAIL 处置，video 家族 C 修正分支展开)
+- `templates/variant/memory-hygiene-type.md`(v4，task-v109 收录；记忆体系盘点/整理/治理模板，M1-M5 记忆整理协议承载)
 
 **选择策略**:按场景词命中优先(见决策树),复杂度评分仅作辅助;若 plan 涉及多类场景(罕见),可同时引用多个模板的 VC 字段。
 
@@ -149,6 +151,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 轻量档(v2) | `templates/variant/mini-lite-type.md` | 轻量档豁免（Rule 38.3 区块白名单：≤2 文件 ∧ ≤15min ∧ 单模块） |
 | 视频生产(v3) | `templates/variant/video-type.md` | 内容组-视频：人工门 32.2 / QC 8 类 / video 家族主分支 |
 | 视频修正(v3) | `templates/variant/video-fix-type.md` | 内容组-视频：disposition_ref 必填 / full-regen 仅 d 级显式批准 |
+| 记忆卫生(v4) | `templates/variant/memory-hygiene-type.md` | 通用组-记忆卫生：M1 盘点表 / M2 四维校验 / M3 四态处置(删除仅建议) / M4 修正版抽验契约 / M5 写入三要素 |
 | 已有 .execution-plan.json | 允许替代 | — |
 
 ### 模板互斥关系(避免误选)
@@ -230,6 +233,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | video | 内容组-视频 | content_quality 门控（Q3/Q4）+人工门 32.2 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | Agnes 视频链路（母图/分镜/镜头/成片 QC 8 类） |
 | video-fix | 内容组-视频 | content_quality 门控（Q3/Q4）+disposition_ref 必填 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | videop1-video-fix SOP（full-regen 仅 d 级显式批准） |
 | mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备表/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
+| memory-hygiene | 通用组 | 记忆整理协议 M1-M5（M1 盘点表/M2 四维机械校验/M3 四态处置删除仅建议/M4 修正版抽验契约/M5 写入三要素） | content_quality 门控；仓内无代码功能变更 | executor(fresh) 盘点 / verifier 抽验 |
 | general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
 
 新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。

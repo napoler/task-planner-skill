@@ -66,6 +66,7 @@ cost_estimate:
 | `video-fix` | `templates/variant/video-fix-type.md` | 视频修正/局部重生成/QC FAIL 处置（video 家族 C 修正分支展开；A/B 型回 video） |
 | `video` | `templates/variant/video-type.md` | 视频创作（母图/分镜/镜头生产/成片质检；video 家族主分支，task-v093 收录） |
 | `mini-lite` | `templates/variant/mini-lite-type.md` | 轻量档 mini 计划（≤2 文件 ∧ ≤15min ∧ 单模块，Rule 38.3 区块白名单豁免） |
+| `memory-hygiene` | `templates/variant/memory-hygiene-type.md` | 记忆体系盘点/整理/治理（M1-M5 记忆整理协议；删除类处置仅建议；修正版先落计划目录抽验） |
 
 > **门控契约（Rule 34.1 — task-v074）**：template_type 必填且 attest 锁定前会被 `check-template-type.sh` 机器校验（白名单=variant/ 动态派生+general）；缺失/非法在 attest enforce 档拒绝锁定（warn 档告警放行，`--skip-template-check` 逃生须披露）。
 
