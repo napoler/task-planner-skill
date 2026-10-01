@@ -10,8 +10,8 @@
 
 ### Phase 1: [Title]
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
-- **Started:** [YYYY-MM-DD HH:MM]
+- **Status:** complete
+- **Started:** 2026-10-02 03:20
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   - [sub:1] 模板全量普查完成（六维结论+修复清单 v1 M-01~M-13，全文见 subagent-state/1-executor.md；M-11/M-12 待主进程裁决）
@@ -22,19 +22,18 @@
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
 
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+### Phase 2: 修复方案定稿与计划增补（主进程白名单②）
+- **Status:** complete
+- **Started:** 2026-10-02 03:10
 - Actions taken:
-  -
+  - [main] 清单 v1（M-01~M-13）定稿：三裁决落 Decisions Made（M-11 不镜像/M-12 补区块/M-13 双落点）；D6 核查零功能性删除；Phase 3 改三批次 S-unit；计划重锁 e4e31534
 - Files created/modified:
-  -
+  - plans/task-v108/task_plan.md（增补）
 - Test Results:
-  -
+  - attest 重锁 OK（template_type=refactor 过 gate）
 
 ### Phase 3: worktree 隔离修复实施（批次一）
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-02
 - Actions taken:
   - [sub:2] 批次一六项（M-01/M-02/M-03/M-05/M-06/M-10）在 worktree 完成：旧 worktree 约定清零（task_plan.md:249+critical-rules.md:49 改 `<repo-parent>/<repo>-worktrees/<task-id>`）、knowledge-brief.md:9 计数锚 20→22、template-guide.md 26→25/23·26→22·25、4 variant 补 template_type 声明、3 variant VC 表加示例值注脚；diff 恰 8 文件，selftest-template-lifecycle 18/18 PASS（逐项证据见 subagent-state/2-executor.md）
@@ -46,7 +45,7 @@
   -
 
 ### Phase 4: 独立回归验证（sub:5 全新会话）
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-02
 - Actions taken:
   - [sub:5] 独立全量回归：worktree 内 42/42 selftest 全部 rc=0，机械求和 PASS=660 FAIL=0（与基线 660/0 一致），无超时（单脚本最大 22s<90s）；42 行逐脚本原文见 subagent-state/5-executor-results.txt，结论 8 字段块见 5-executor.md
