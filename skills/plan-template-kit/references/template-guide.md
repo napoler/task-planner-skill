@@ -61,7 +61,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `batch_report.md` | 批量处理质量门控八字段报告（Rule 18.6 配套） |
 | `subagent_dispatch.md` | 子代理派发 prompt 九字段模板(含计划三文件必传 + 8 字段严格返回)(Rule 22.4 配套) |
 
-**总文件数**:5 核心 + 3 辅助 + 17 variant = **25 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）不入此口径，templates/ 实际 25 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093）。
+**总文件数**:5 核心 + 3 辅助 + 17 variant = **25 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）/delivery-summary.md（交付总结模板）不入此口径，templates/ 实际 25 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093）。
 
 ### 2.4 标准章节：「📚 必要知识储备」（22/25 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外；v2.3 新增，v093 +video-fix）
 
