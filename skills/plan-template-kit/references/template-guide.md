@@ -29,7 +29,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `progress.md` | 会话日志：动作/测试/错误记录 | session-catchup.ts |
 | `notepad-learnings.md` | 经验记录：New Requests/What Worked/Files Modified | 会话结束归档 |
 
-### 2.2 Variant 模板（16 个 — 任务开启期选其一；2026-09-29 task-v095 由 13 修正，mini-lite d6a0f76 / video 51ca883 / video-fix task-v093 收编）
+### 2.2 Variant 模板（17 个 — 任务开启期选其一；2026-09-29 task-v095 由 13 修正，mini-lite d6a0f76 / video 51ca883 / video-fix task-v093 收编，memory-hygiene task-v109 收录）
 
 | 文件名 | 适用场景 | 关键 VC 字段 |
 |--------|---------|--------------|
@@ -42,13 +42,14 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `variant/bugfix-type.md` | bug 修复/根因定位 | 复现 / 根因证据 / 回归 |
 | `variant/migration-type.md` (v2) | 跨语言/框架迁移 | 基线归档 / 双跑对照 |
 | `variant/test-writing-type.md` (v2) | 单元/集成/E2E 测试 | 用例数 / 覆盖率 / 边界 |
-| `variant/deployment-type.md` (v2) | 部署/CI-CD/Docker | staging 验证 / 回滚预案 |
-| `variant/performance-tuning-type.md` (v2) | 性能瓶颈定位 | 基线 benchmark / P95 降幅 |
+| `variant/deployment-type.md` (v2) | 部署/CI-CD/Docker | staging 验证 / 健康检查 / 回滚预案 |
+| `variant/performance-tuning-type.md` (v2) | 性能瓶颈定位 | 基线 benchmark / P95 降幅 / 资源 |
 | `variant/schema-migration-type.md` (v2) | DB schema 变更 | 可逆 up/down / 数据零丢失 |
 | `variant/rule-enhancement-type.md` (v2,沉淀) | 技能规则增强/新增 Rule/门控守护 | 条款锚 / 三档键 / selftest 守护 |
 | `variant/mini-lite-type.md` | 轻量任务（≤2 文件 ∧ ≤15min ∧ 单模块，Rule 38.2） | 单 Phase / 仪式区块白名单 38.3 |
 | `variant/video-type.md` | 视频创作（母图/分镜/镜头生产/成片质检） | 人工门 32.2 / QC 8 类 |
 | `variant/video-fix-type.md` (v3, task-v093 收录) | 视频修正/局部重生成/QC FAIL 处置 | disposition_ref 必填 / full-regen 仅 d 级显式批准 |
+| `variant/memory-hygiene-type.md` (v4, task-v109 收录) | 记忆体系盘点/整理/治理 | M1 盘点表 / M2 四维校验 / M3 四态处置 / M4 修正版抽验 / M5 写入三要素 |
 
 **决策树**详见 `references/template-mapping.md`;`plan-writer` agent 按关键词自动匹配。各类型适用的机制画像见 template-mapping.md §九（Rule 37）。
 
