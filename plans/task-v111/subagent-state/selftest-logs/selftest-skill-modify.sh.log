@@ -1,0 +1,10 @@
+SM-01 PASS 36 标题
+SM-02 PASS 36.1-36.7 七子条锚齐全
+SM-03 PASS 36.2 衔接 31.3 + 36.4 引 D6
+SM-04 PASS config.json skill_modify_enforce（warn 默认+三档）
+SM-05 PASS check-skill-modify.sh 存在+可执行+语法
+SM-06 PASS zcode-pretooluse.sh 接线
+SM-07 PASS check-complete.sh GATE 锚+tier 函数
+SM-08 PASS SKILL.md Rule 36 行（P4 联动已实，A=6 B=1）
+SM-08 PASS SKILL.md C24 检查项（P4 联动已实, A=6 B=1）
+Total: 9 PASS=9 FAIL=0 (SKIP=0)

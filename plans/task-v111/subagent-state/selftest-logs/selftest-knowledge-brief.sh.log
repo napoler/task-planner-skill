@@ -1,0 +1,17 @@
+[PASS] T1a knowledge-brief.md 存在
+[PASS] T1b 五段标题 grep -c '^## §' = 5
+[PASS] T1c 行数 ≤150
+[PASS] T2a SKILL.md grep 'knowledge-brief' ≥2
+[PASS] T2b SKILL.md 行数 ≤558（task-v076 扩充 545; [2026-09-17 task-v080] 调研路由增补 545→548; [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-20 task-v086] Rule 38 联动 549→551, 上限 549→552; [2026-09-22 task-v087] Rule 8.1 D 类联动 551→555, 上限 552→555; [2026-09-23 task-v088] Rule 39 联动 555→558, 上限 555→558）
+[PASS] T3a init-session.sh 'knowledge-brief.md' ≥2
+[PASS] T3b init-session.sh '6/6' ≥1
+[PASS] T4 check-scope.sh 'knowledge-brief.md' ≥1
+[PASS] T5a 3file-gate '6 planning files' ≥1
+[PASS] T5b 3file-gate 存在性循环首行不含 knowledge-brief (=0, KQ3)
+[PASS] T6 critical-rules 21.2(142)+22.4(161) 命中且 100<行号<200（窗口放宽:Rule 21.4 演进正文膨胀,task-v110）
+[PASS] T7 subagent_dispatch.md 'knowledge-brief' ≥1
+[PASS] T8 plan-writer.md 'knowledge-brief|知识简略要点' ≥3
+[PASS] T9 config knowledge_brief_enforce=warn (python3)
+[PASS] T10a knowledge_brief_enforce 出现在 config.json+SKILL.md ≥2 文件
+[PASS] T10b 无拼写变体 knowledge-brief-enforce (全 0)
+Total: 16  PASS=16  FAIL=0

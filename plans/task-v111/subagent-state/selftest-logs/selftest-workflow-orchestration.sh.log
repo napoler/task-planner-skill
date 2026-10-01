@@ -1,0 +1,17 @@
+WF-01 PASS Rule 39 头
+WF-02 PASS 39.1 触发纪律锚
+WF-03 PASS 39.3 四机制映射锚
+WF-04 PASS 39.4 并行豁免锚
+WF-05 PASS 39.5 机器校验边界锚
+WF-06 PASS 39.6 机制锚（零新 config 键）
+WF-07 PASS SKILL.md Rule 39 摘要行
+WF-08 PASS SKILL.md C27 清单项
+WF-09 PASS SKILL.md 协同路由 dynamic-workflows 行
+WF-10 PASS 4 索引文档 Rules 1-39 命中总和 6 ≥6
+WF-11 PASS Rules 1-38 残留 0
+WF-12 PASS config.json properties 键数 40（零新增）
+WF-13 PASS 39.7 动态激活边界锚（三子条 + 39.5 观察面注记）
+WF-14 PASS 用户级 skills 目录无 dynamic-workflows 副本（39.7.2 负断言）
+WF-15 PASS zcode-pretooluse.sh 39.7.3 workflow 观察分支（观察文案在位且零阻断）
+WF-16 PASS register-hooks-cj.ts matcher 含 workflow 四工具（39.7.3 观察面扩围）
+Total: 16 PASS=16 FAIL=0

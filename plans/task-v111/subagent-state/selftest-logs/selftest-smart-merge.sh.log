@@ -1,0 +1,19 @@
+SM-01 PASS rc=3(期望3) PRECHECK_DIRTY=在
+SM-02 PASS rc=0(期望0) MERGED=在
+SM-03 PASS rc=0(期望0) ALREADY=在 master无新commit=是 无MERGE_HEAD残留(绝对路径 /tmp/tmp.ZbUfoZf2JW/main/.git/MERGE_HEAD)=是
+SM-04a PASS rc=5(期望5) MASTER_AHEAD=在
+SM-04b PASS --force rc=0(期望0) MERGED=在
+SM-05 PASS rc=4(期望4) SCOPE_OVERLAP=在 交集含base.txt=在
+SM-06 PASS rc=6(期望6) s1-IDENTICAL=在 s2-DRIFT=在
+SM-07 PASS rc=0 CLEANUP行=在 worktree保留=是
+SM-08 PASS rc=6(期望6) REJECTED行数=3(期望≥3) wt-md5不变=是 main未被部署替换=是
+SM-09 PASS rc=6(期望6) REJECTED含空格=在
+Deleted branch wt/task-test (was 9b5c27c).
+SM-10 PASS rc=6(期望6) 真实wt注入=是 REJECTED祖先=在 slot=/tmp/tmp.XVtiCag0vS/ancestor(guard=/tmp/tmp.XVtiCag0vS/ancestor/task-test) 零改动=是
+SM-11 PASS rc=8(期望8) MERGE_IN_PROGRESS=在
+SM-12 PASS rc=6(期望6) HOME内部白名单外REJECTED=在 白名单拒绝原因=在 zcode存活+清单md5不变=是
+SM-13 PASS rc=6(期望6) 部署根内主仓exact-REJECTED(= 受保护路径)=在 .git存活=是 主仓根清单md5不变=是
+SM-14 PASS rc=0(期望0) IDENTICAL=在 slotB-SKILL_MARKER=canonical-v077(期望canonical-v077非stale-content)
+SM-15a PASS P15基线(抽取含deploy_reconcile定义+LC_ALL=C comm钉)=在 zh-locale rc=1(期望1) DRIFT-L2=在 B.md入DRIFT明细=在
+SM-15b PASS C-locale rc=1(期望1) 与15a-zh逐字节一致=是
+Total: 17 PASS=17 FAIL=0

@@ -1,0 +1,8 @@
+CC-01 PASS 未提交变更计数+porcelain 列表+基础设施子信号, rc=1
+CC-02 PASS 额外 worktree 计数+路径列表, rc=1
+CC-03 PASS 遗留 wt/* 分支计数+列表, rc=1
+CC-04 PASS 待处理区在册任务计数=2, rc=1
+CC-05 PASS 无冲突基线全绿输出, rc=0
+CC-06 PASS runtime 同文件冲突 A(真实形态 INDEX)恰 1 条且报他计划 t-other, rc=1
+CC-07 PASS 仅自计划在册零冲突 A 全绿通过, rc=0
+Total: 7 PASS=7 FAIL=0

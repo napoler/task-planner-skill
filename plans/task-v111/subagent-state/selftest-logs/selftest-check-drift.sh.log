@@ -1,0 +1,7 @@
+CD-01 PASS 全 complete 计划零 PHASE-SKIP 误报, INFO PHASE-ORDER, rc=0
+CD-02 PASS complete,in_progress,pending 推进态零误报, INFO PHASE-ORDER, rc=0
+CD-03 PASS 真越级仍报 CRITICAL PHASE-SKIP 恰 1 条, rc=1(报警不削弱)
+CD-04 PASS 三列表: 越权+禁止列文件均报 BREACH, 允许列不误报, rc=1(S9 反向风险语义)
+CD-05 PASS 无范围表计划 SCOPE-NONE 跳过, rc=0(fail-open 保持)
+CD-06 PASS 两列表越权报 BREACH 含 hack/evil.py, 允许列不误报, rc=1
+Total: 6 PASS=6 FAIL=0

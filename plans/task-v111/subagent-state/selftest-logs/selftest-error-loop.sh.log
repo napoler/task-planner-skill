@@ -1,0 +1,17 @@
+EL-01 PASS 31.1 触发条件
+EL-02 PASS 31.2 根因分析（5 Whys）
+EL-03 PASS 31.3 修正路由（禁盲目）
+EL-04 PASS 31.4 沉淀（notepad 两段）
+EL-05 PASS 31.5 消费侧（Learning Gate）
+EL-06 PASS 31.6 机制（开关键）
+EL-07 PASS Rule 8 联动 Rule 31
+EL-08 PASS SKILL.md 摘要行 Rule 31
+EL-09 PASS SKILL.md C19 检查项
+EL-10 PASS SKILL.md 用户新指令处理指针
+EL-11 PASS SKILL.md Rules 1-3x 范围
+EL-12 PASS config.json error_loop_enforce（warn 默认+三档）
+EL-13 PASS progress.md 模板 Error Log 加列
+EL-14 PASS task_plan.md Errors 表 Prevention 指针
+EL-15 PASS notepad 模板消费侧契约
+EL-16 PASS check-complete.sh Learning Gate 锚点
+Total: 16 PASS=16 FAIL=0

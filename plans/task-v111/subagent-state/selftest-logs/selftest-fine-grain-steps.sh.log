@@ -1,0 +1,12 @@
+SG-01 PASS 13×StepN → 13
+SG-02 PASS 跨风格去重 distinct=4
+SG-03 PASS enforce 13 步 → exit 2
+SG-04 PASS enforce 4 步 → exit 0 静默
+SG-05 PASS warn 13 步 → exit 0 + 计数落盘
+SG-06 PASS 任务书 13 步 → exit 2 防绕门
+SG-07 PASS 回退双分支: 剥键静默拦 / 缺 config SKIPPED+拦
+SG-08 PASS 计划侧 6 步枚举 → SKIPPED 提示 exit 0
+SG-09 PASS 对照无枚举 → 静默 exit 0
+SG-10 PASS 条款/SKILL/模板 静态锚齐
+SG-11 PASS 双脚本口径一致(=4)
+Total: 11 PASS=11 FAIL=0

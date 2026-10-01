@@ -1,0 +1,26 @@
+[PASS] T1a 文件存在
+[PASS] T1b 行数 ≤300
+[PASS] T1c 含 三族
+[PASS] T1d 含 触发矩阵
+[PASS] T1e 含 22.3.3
+[PASS] T1f 含 移交
+[PASS] T2a SKILL.md 含 专业技能协同路由
+[PASS] T2b skill-collaboration.md 引用 ≥2
+[PASS] T3 SKILL.md 含 任意 3 项
+[PASS] T4 行号序 22.3.1(159) < 22.3.3(160) < 22.4(161)
+[PASS] T5 22.7 行含 22.3.3 协同接管评估
+[PASS] T6a skill_takeover ≥1
+[PASS] T6b tier_order 全串 2 处(timeout+non_provider)
+[PASS] T7 config skill_collab_enforce=warn (python3)
+[PASS] T8a collaboration.md 含 command -v comet
+[PASS] T8b SKILL.md 含 command -v comet
+[PASS] T9a skill_collab_enforce 出现在 ≥2 文件
+[PASS] T9b 无连字符变体 skill-collab-enforce
+[PASS] T10 SKILL.md 行数 ≤558
+[PASS] T11a 调研链含 browser-use 插件路由(SKILL.md≥3 或 routing.md 合计≥3)
+[PASS] T11b 调研链 research-assistant 主通道定位
+[PASS] T11c 平台适配声明(禁假设不存在 MCP, 恰 1 行)
+[PASS] T11d SKILL.md 路由表网页访问行
+[PASS] T12a collab 矩阵 research-assistant 行
+[PASS] T12b collab 矩阵 browser-use 行
+Total: 25  PASS=25  FAIL=0

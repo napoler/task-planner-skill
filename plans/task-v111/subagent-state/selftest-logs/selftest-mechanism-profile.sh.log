@@ -1,0 +1,20 @@
+MP-01 PASS Rule 37 头
+MP-02 PASS 37.1 权威源锚
+MP-03 PASS 37.2 判定时点
+MP-04 PASS 37.3 三类机制组
+MP-05 PASS 37.4 消费侧
+MP-06 PASS 37.5 机制（开关键+守护）
+MP-07 PASS FMEA R1 兜底措辞
+MP-08 PASS template-mapping.md §九 矩阵
+MP-09 PASS 矩阵 writing/research/publish 三行不适用
+MP-10 PASS SKILL.md「类型适配（Rule 37）」提示
+MP-11 PASS SKILL.md C25 检查项
+MP-12 PASS SKILL.md Critical Rules 列表 Rule 37 行
+MP-13 PASS config.json mechanism_profile_enforce（warn 默认+三档）
+MP-14 PASS task_plan.md「机制画像」≥2 处（实测 2）
+MP-15 PASS template-guide.md「机制画像」（实测 1）
+MP-16 PASS check-complete.sh mechanism-profile 抽查段锚
+MP-17 PASS 行为: 默认档 exit 0 且打 ⚠ 提示（基线不变）
+MP-18 PASS 行为: enforce 档 exit 1 且打 ✗
+MP-19 PASS 行为: off 档整段跳过（exit 0, 无输出）
+Total: 19 PASS=19 FAIL=0

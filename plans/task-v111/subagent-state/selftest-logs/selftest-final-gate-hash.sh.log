@@ -1,0 +1,25 @@
+==== selftest-final-gate-hash (task-v091/S20 C-2) ====
+  [PASS] 前置-键④完整性: 两脚本 jq .properties.* 消费集合==五键枚举 (fmea_enforce plan_tier_enforce subagent.step_max_files subagent.step_max_minutes subagent.step_max_steps )
+  [PASS] setup: 沙箱 skill 副本+夹具计划+attest 锁定就绪
+  [PASS] 基线: 全量轮 rc=0 无 SKIP, 两门实跑([plan-dispatch]+[fmea-gate] OK), 状态已落 fg_key
+  [PASS] ①a: attest --verify 篡改后 rc=1 (TAMPERED 仍抓, attest 本体零改动)
+  [PASS] ①b: check-complete 不 SKIP 走全量(rc=0, [plan-dispatch] 实跑在证), 篡改未被 SKIP 吞掉
+  [PASS] ①c: 恢复后 attest --verify rc=0
+  [PASS] ②a: plan+cpd mtime 改到 2020 后仍 SKIP×2 rc=0(缓存键不进 mtime)
+  [PASS] ②b: 状态文件内容无 mtime/size 字样(提案护栏: 缓存键禁 mtime/size)
+  [PASS] ③a: 未变重跑两门 SKIP-BY-HASH×2, 终态 rc=0 与全量轮一致
+  [PASS] ③b: 余门照跑在证(四类余门标记命中 4/4)
+  [PASS] ④a(键①): 内容变+re-attest 后不 SKIP(attest 层绿,状态层键①拦截)
+  [PASS] ④b(键②): check-plan-dispatch.sh 变更后不 SKIP
+  [PASS] ④c(键③): check-complete.sh FMEA 段变更后不 SKIP
+  [PASS] ④d(键④/fmea_enforce): 消费键值 warn→enforce 后不 SKIP
+  [PASS] ④e(键④/step_max_minutes): 消费键值 15→9 后不 SKIP
+  [PASS] ④f-1: 还原后首轮全量重锁 rc=0(状态语义=最近全量通过条件, 上轮键④残留触发)
+  [PASS] ④f-2: 次轮 SKIP 复效(四类突变还原完整性)
+  [PASS] ⑤a: 状态缺失→全量 rc=0 且自愈重写 fg_key
+  [PASS] ⑤b: 状态损坏(含 NUL)→全量 rc=0 且自愈重写
+  [PASS] ⑥a: 篡改后 attest --verify rc=1(TAMPERED)
+  [PASS] ⑥b: 真变化(Executor→子代理,缺 S-unit 表)全量重跑被拦 rc=1(SKIP 未吞掉门失败)
+  [PASS] ⑥c: 恢复后 verify rc=0 且 SKIP 复效(失败轮未污染状态)
+
+==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====

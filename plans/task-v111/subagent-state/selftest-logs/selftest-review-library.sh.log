@@ -1,0 +1,16 @@
+RL-01 PASS review-library/ 目录数 = 11
+RL-02 PASS 11 个目录名与清单精确一致
+RL-03 PASS 11 目录各含 SKILL.md
+RL-04 PASS 11 个 SKILL.md frontmatter name/description 全在位
+RL-05 PASS 11 个 SKILL.md APPROVED/CHANGES_REQUESTED/Rule 43.1 全在位
+RL-06 PASS 11 个 SKILL.md 清单条目均 ≥10
+RL-07 PASS 11 个 SKILL.md 四要素标题全在位
+RL-08 PASS SKILL.md C30 项 =1 且「四级顺序」2 ≥1
+RL-09 PASS CRIT 42.2 池主体锚 ≥1 / 均未命中=缺口 ≥1 / 三级检测顺序 =0
+RL-10 PASS 全池 11 文件 1-4[0-9] 越界字面零命中
+RL-11 PASS alignment-review 验证优先锚：写入前校验 3 ≥2 / 未经一致性校验 1 =1 / 变更记录输出 3 ≥1
+RL-12 PASS alignment-review 闸门深化锚：全文扫描 2 ≥1 / 删除或归档 4 ≥1 / 变更范围 1 ≥1
+RL-13 PASS 42.6.3 三要素升级锚：CRIT 42.6.3 行三要素 1 ≥1 / SKILL.md C32 行三要素 1 ≥1
+RL-14 PASS smart-merge-back 池挂载函数+冲突跳过锚在位
+RL-15 PASS install-companion 池分发+独立 skill 不覆盖锚在位
+Total: 15 PASS=15 FAIL=0

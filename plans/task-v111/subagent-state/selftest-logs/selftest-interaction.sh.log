@@ -1,0 +1,12 @@
+TI-01 PASS 01 (out=ask rc=0)
+TI-02 PASS 02 (out=silent rc=0)
+TI-03 PASS 03 (out=silent rc=0)
+TI-04 PASS 04 (out=silent rc=0)
+TI-05 PASS 05 (out=ask rc=0)
+TI-06 PASS 06 (out=silent rc=0)
+TI-07 PASS 07 (out=ask rc=0)
+TI-08 PASS 08 (out=silent rc=0)
+TI-09 PASS 09 (out=silent rc=0)
+TI-10 PASS 10 (out=silent rc=0)
+TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)
+Total: 11 PASS=11 FAIL=0

@@ -64,11 +64,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 fresh executor 普查注释规范面（条款现状/口径级联面/注释密度基线）
+交付；存量补强范围+部署同步待用户裁决
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -109,10 +109,10 @@ Phase 1
 | S1 | Rule 45+口径级联+断言 | 继承 | Phase 1 草案+级联清单 | ≤15min | pending |
 
 ### Phase 3: 独立验证（fresh ×2）
-- [ ] 全量 42 selftest 回归（worktree）
-- [ ] 注释标准自证审查（fresh 按 Rule 45 审本任务 diff 中脚本/文档改动的注释合规）+ alignment-review 对齐审查
+- [x] 全量 42 selftest 回归全绿（sub:3）
+- [x] 自证审查+对齐审查（sub:4）：CHANGES_REQUESTED 三项（F-1 CC 诚实化/F-2 抵牾/F-3 嵌套）已处置 commit
 - **V-N:** VC-1, VC-3, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
@@ -121,12 +121,12 @@ Phase 1
 | S2 | 自证审查+对齐审查 | 继承 | worktree diff+Rule 45+alignment-review SKILL | ≤15min | pending |
 
 ### Phase 4: 合并回与终验簿记
-- [ ] smart-merge-back+清理+主仓复验
-- [ ] 部署对账（fresh）+结论登记
-- [ ] memory feedback 条目（裁决原话+平台冲突声明+失效条件）+MEMORY.md 索引
-- [ ] verification.md+check-complete+INDEX+簿记 commit
+- [x] smart-merge-back（V5 预案→MERGED 21d87b3）+清理+主仓复验
+- [x] 部署对账（fresh sub:5）：三宿主同一 10-01 快照，v108-v111 四批积压待裁决
+- [x] memory feedback 条目（comment-completeness-rule45）+MEMORY.md 索引
+- [x] verification.md 全量（6/6 PASS）+check-complete+INDEX+簿记 commit
 - **V-N:** VC-4, VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（① git+② 簿记+③ memory——白名单）
 
 ## 🔀 隔离决策（冲突分析）
@@ -199,9 +199,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 4 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 4（rate 0.75 verdict=ok violations=0） |
+| 主进程直做 Phase 清单 | Phase 4（① git+② 簿记+③ memory）+少量 ⑥ 机械修正——全白名单 |
+| 委派率 | 0.75 ≥ floor；验证独立性：五波 fresh 子代理 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 

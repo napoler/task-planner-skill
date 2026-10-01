@@ -1,0 +1,17 @@
+M-01 PASS config 两键存在
+M-02 PASS 两键 default=warn 且 enum 长度=3
+M-03 PASS methodology.md 方法名关键词 ≥9 (实测 37)
+M-04 PASS 模板 FMEA 段在位 (预演=1, RPN 7 列表头 2)
+M-05 PASS writing-type.md 五维评分卡指针
+M-06 PASS SKILL.md methodology 指针 ≥3 (实测 4)
+M-07 PASS README 21 项说明 (实测 1/2)
+M-08 PASS 无 FMEA 段计划: warn 档锁定成功且 stderr 有 ⚠ (实测 rc=0 attested=y)
+M-09 PASS 无 FMEA 段计划: enforce 档 (env TASK_PLANNER_FMEA_ENFORCE=enforce) attest exit 1
+M-10 PASS 高 RPN(>100) 无兜底行 enforce 档 exit 1; 有兜底行通过 (实测 rc=1/0)
+M-11 PASS off 档: 无 FMEA 段计划静默锁定成功 (实测 rc=0)
+M-12 PASS methodology.md T1-T5 条目标题锚逐条≥1（任一节删除即红）
+M-13 PASS §思维方法论章标题=1 且 同法不同时≥1 (实测 1/2)
+M-14 PASS 机械联动 14 条≥1 且 9 条=0 (实测 4/0)
+M-15 PASS SKILL.md 解构 bullet≥1 且 Poka-Yoke 指针≥1 (实测 1/1)
+M-16 PASS plan-writer 问题解构四问契约行 (实测 1)
+Total: 16 PASS=16 FAIL=0

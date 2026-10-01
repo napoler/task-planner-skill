@@ -1,0 +1,10 @@
+RT-01 PASS critical-rules.md Rule 44 子条锚 = 4
+RT-02 PASS CRIT 44 节用户原话锚「默认选项」4 /「自动超时」2 /「5 分钟」2 均 ≥1
+RT-03 PASS 44.2 行内「41.3」衔接引用 1 ≥1
+RT-04 PASS SKILL.md C33 合规清单项 = 1
+RT-05 PASS 模板 task_plan.md「自动超时默认项」行 1 ≥1
+RT-06 PASS mini-lite「Rule 44 豁免」声明行 1 ≥1
+RT-07 PASS registry 含 selftest-ask-default-timeout 行 = 1
+RT-08 PASS 越界 1-4x 字面零命中（CRIT 44 节=0 / SKILL.md=0）
+RT-09 PASS config.json properties 键数 40（零新增）
+Total: 9 PASS=9 FAIL=0

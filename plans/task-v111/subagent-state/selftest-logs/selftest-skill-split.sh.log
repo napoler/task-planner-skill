@@ -1,0 +1,42 @@
+[PASS] T-plan-research-router 目录+SKILL.md 存在
+[PASS] T-plan-research-router name 与目录名一致
+[PASS] T-plan-research-router SKILL.md <100 行(薄正文)
+[PASS] T-plan-template-kit 目录+SKILL.md 存在
+[PASS] T-plan-template-kit name 与目录名一致
+[PASS] T-plan-template-kit SKILL.md <100 行(薄正文)
+[PASS] T-plan-cost-guard 目录+SKILL.md 存在
+[PASS] T-plan-cost-guard name 与目录名一致
+[PASS] T-plan-cost-guard SKILL.md <100 行(薄正文)
+[PASS] T-plan-collab-router 目录+SKILL.md 存在
+[PASS] T-plan-collab-router name 与目录名一致
+[PASS] T-plan-collab-router SKILL.md <100 行(薄正文)
+[PASS] T-主 行数 ≤442（task-v103 C33/Rule44 摘要 440→442）且 ≤558 上限
+[PASS] T-主 路由指针在位 plan-research-router ≥1
+[PASS] T-主 路由指针在位 plan-template-kit ≥1
+[PASS] T-主 路由指针在位 plan-cost-guard ≥1
+[PASS] T-主 路由指针在位 plan-collab-router ≥1
+[PASS] T-迁 research-routing.md 含 强制引用格式
+[PASS] T-迁 template-guide.md 存在
+[PASS] T-迁 template-mapping.md 存在
+[PASS] T-迁 template-guide.md 含 17 个
+[PASS] T-迁 cost-control.md 存在
+[PASS] T-迁 billing.md 存在
+[PASS] T-迁 cost_log.md 存在
+[PASS] T-迁 skill-collaboration.md 存在
+[PASS] T-迁 skill-collaboration.md ≤300 行
+[PASS] T-死 references/research-routing.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/template-guide.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/template-mapping.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/cost-control.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/skill-collaboration.md 零残留(plan- 过滤后, N=0)
+[PASS] T-锚 Rule 17 成本控制
+[PASS] T-锚 C19 行在位
+[PASS] T-锚 C25 行在位
+[PASS] T-锚 C26 行在位
+[PASS] T-锚 Rules 1-3 计数锚 ≥1
+[PASS] T-守 check-skill-modify.sh 含 plan-research-router
+[PASS] T-守 check-skill-modify.sh 含 plan-template-kit
+[PASS] T-守 check-skill-modify.sh 含 plan-cost-guard
+[PASS] T-守 check-skill-modify.sh 含 plan-collab-router
+[PASS] T-reg registry.tsv 含 selftest-skill-split 行
+Total: 41  PASS=41  FAIL=0

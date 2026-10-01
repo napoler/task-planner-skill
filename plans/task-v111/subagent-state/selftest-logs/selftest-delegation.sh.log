@@ -1,0 +1,45 @@
+
+========================================
+selftest-delegation results
+========================================
+PASS  T01 无计划放行  (exit=0)
+PASS  T02 子代理 sid 放行  (exit=0)
+PASS  T03 plans 白名单放行  (exit=0)
+PASS  T04 SKILL_ROOT 放行  (exit=0)
+PASS  T05 trivial 3 行放行  (exit=0)
+PASS  T06 4 行拦截  (exit=2)
+PASS  T07 enforce exit2  (exit=2)
+PASS  T08 warn 不阻断  (exit=0)
+PASS  T08 warn 注入  (grep hit)
+PASS  T09 .allow-direct 放行  (exit=0)
+PASS  T09b ledger 写入 bypass
+PASS  T10 过期 allow-direct 拦截  (exit=2)
+PASS  T11a 首次 on 成功  (exit=0)
+PASS  T11b 二次 on 拒绝  (exit=3)
+PASS  T12 stats 占位/理由检测  (grep hit)
+PASS  T12 stats 退出码非 0(violation)  (exit=1)
+PASS  T13 Handoff 交叉校验  (grep hit)
+PASS  T14 jq 失败 fail-open  (exit=0)
+PASS  T15 复合Executor全在Handoff不误报
+PASS  T15b 复合Executor仍计delegated
+PASS  T16 复合Executor部分缺失触发unverified
+PASS  T16b reason字段含缺失token
+PASS  T17 白名单④标记理由不触发violation
+PASS  T17b 白名单标记main_direct全部self_declared=0
+PASS  T18 无理由触发missing_reason violation
+PASS  T18b verdict=violation exit=1  (exit=1)
+PASS  T19 owner 多行注入 sid 放行(子代理语义)  (exit=0)
+PASS  T19b owner 首行主进程+白名单外=exit2  (exit=2)
+PASS  T20 owner 缺失 exit 0  (exit=0)
+PASS  T20b owner 缺失输出观察模式  (grep hit)
+PASS  T21 plans/ 内 .ts 不放行  (exit=2)
+PASS  T21b plans/ 内 .md 放行  (exit=0)
+PASS  T22a 同 sid 首次 on 成功  (exit=0)
+PASS  T22b 同 sid 二次 on 拒绝  (exit=3)
+PASS  T22c 不同 sid on 放行  (exit=0)
+PASS  T_MEM 记忆目录白名单放行  (exit=0)
+PASS  T_RATE_OK rate>=floor exit0 且比较式 1 处  (exit=0)
+PASS  T_RATE_LOW rate<floor exit1  (exit=1)
+----------------------------------------
+Total: 38    PASS=38  FAIL=0
+========================================

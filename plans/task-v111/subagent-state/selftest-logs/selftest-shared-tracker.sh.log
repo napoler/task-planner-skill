@@ -1,0 +1,12 @@
+ST-01 PASS 30.1 识别条件
+ST-02 PASS 30.2 创建/复用（progress-tracker 权威源）
+ST-03 PASS 30.3 认领登记（禁悬挂）
+ST-04 PASS 30.4 防冲突（重复认领 D4）
+ST-05 PASS 30.5 机制（开关键）
+ST-06 PASS SKILL.md 摘要行 Rule 30
+ST-07 PASS SKILL.md 设计期检查点
+ST-08 PASS config.json shared_tracker_enforce（warn 默认+三档）
+ST-09 PASS templates/shared-tracker.md 存在
+ST-10 PASS skill-collab 矩阵 progress-tracker 行
+ST-11 PASS progress-tracker 技能探针（存在）
+Total: 11 PASS=11 FAIL=0

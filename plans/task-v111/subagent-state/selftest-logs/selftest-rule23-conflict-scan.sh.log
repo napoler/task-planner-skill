@@ -1,0 +1,4 @@
+R23-01 PASS 在途第二计划命中 scope → 报 [conflict]
+R23-02 PASS 完结计划被豁免
+R23-03 PASS 无指针过期在途计划仍被扫到
+Total: 3 PASS=3 FAIL=0
