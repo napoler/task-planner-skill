@@ -15,6 +15,7 @@
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -
+  - [sub:1] 交付面普查+模板草案+级联清单完成（只读，0 修改）：现状=SKILL 终验段无用户面格式约束+verification.md 机器面边界+五要素覆盖度逐条评估；模板草案=五区块全文+根目录位置决策；级联=SKILL:157 插入行+References:314+口径句 1 处+selftest 并入 3 断言；全文与 8 字段结论落 checkpoint subagent-state/1-executor.md，摘要落 findings「#### [sub:1-executor] 交付面普查」段
 - Files created/modified:
   -
 - Test Results:

@@ -88,9 +88,9 @@ Phase 1
 - [ ] 终验交付段现状（SKILL.md 终验段流程/check-complete 输出结构/verification.md 模板与交付消息的关系）
 - [ ] 交付实践样本复盘（v107-v111 交付消息——五要素覆盖度评估：哪些总是有/哪些常缺）
 - [ ] 模板草案：delivery-summary.md 完整结构（五要素区块+每区块填写指引+数据来源指针（从 verification.md/progress.md/report 引用而非重写）+详略标准（尽量详细以用户可独立决策为准））
-- [ ] 级联面清单：SKILL 终验段指针行落点+References 表+selftest 断言点（grep 现有「终验交付」引用）
+- [x] 级联面清单：SKILL:157 插入行+References:314+template-guide.md:64 口径句+selftest 并入方案+脚本零改动；模板位置裁决=templates/ 根（variant/ 会错入白名单）
 - **V-N:** VC-2, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
