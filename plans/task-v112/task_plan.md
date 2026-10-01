@@ -98,12 +98,10 @@ Phase 1
 | S1 | 交付面普查+模板草案+级联清单 | 继承 | SKILL 终验段+verification 模板+v107-v111 交付样本 | ≤15min | pending |
 
 ### Phase 2: 模板创建与终验段级联（worktree）
-- [ ] 新增 templates/delivery-summary.md（五要素区块+填写指引+数据来源指针+详略标准）
-- [ ] SKILL.md 终验交付段挂模板指针（「交付总结：按 templates/delivery-summary.md 五要素输出」）+References 表行
-- [ ] selftest 最小断言（模板文件存在+SKILL 指针行存在——新增 selftest 或并入既有，Phase 1 定）
-- [ ] 逐批 commit，worktree 干净
+- [x] 模板 46 行五区块齐备+SKILL :158 指针+:316 References 行+口径句+TL-19/20/21 断言（TL 21/21+knowledge-brief 16/16 既有锚零破坏）
+- [x] worktree commit 干净
 - **V-N:** VC-2, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |

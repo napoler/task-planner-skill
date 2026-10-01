@@ -32,6 +32,15 @@
 
 级联清单（全文在 checkpoint M3）：① SKILL.md:157 与 :158 之间插入指针行 1 行（442→443 行，T2b 上限 558 余量充足）；② References 表 :314 行后加 1 行；③ plan-template-kit/template-guide.md:64 口径句句尾追加「/delivery-summary.md」1 处；④ selftest 最小方案=并入 selftest-template-lifecycle.sh 3 条静态断言（模板 5 区块/SKILL 引用 ≥2/口径句在位），不新增脚本=42 脚本数与 660 基线漂移面最小（SUM 断言 +3 若 660 有字面锚则 Phase 2 实测更新）；⑤ check-complete.sh/init-session.sh/check-template-type.sh 零改动。
 
+#### [sub:2-executor] 模板落地（Phase 2 S1，2026-10-02）
+- 新建 `skills/task-planner/templates/delivery-summary.md`（46 行，WT）：严格照 1-executor M2 草案五区块（任务说明/产出清单/审查信息/风险点/下一步建议）落地，每区块含填写指引+数据来源指针（verification.md/progress.md/subagent-state/、report.md 如有）；头部 HTML 注释说明区=定位（终验交付阶段用户面输出模板，主进程交付时消费，非 init-session 计划模板，无 template_type 头）+使用方式+详略标准（用户可独立决策）。
+- SKILL.md 级联 2 处：终验段 L158 插入「交付总结（五要素）」指针行（交付结论行 L157 后、退出前 check-complete 行前，实测 442→444 行）；References 表 L316 追加模板行（shared-tracker 行后）。
+- 口径句 1 处：plan-template-kit/references/template-guide.md:64 句尾追加「/delivery-summary.md（交付总结模板）」（同 knowledge-brief 先例「不入此口径」句式），25/17/3 辅助计数全部未动=零漂移。
+- selftest=并入 selftest-template-lifecycle.sh 新 TL-19/20/21 三条静态 grep 断言（模板五区块=5 / SKILL delivery-summary ≥2 / 口径句在位），不新增脚本，42 脚本数不变。
+- 660 基线漂移核查：`grep -rn "SUM-ASSERTIONS\|=660\| 660\|660/0" skills/task-planner/scripts/` 零命中 → 仓库内无 660 字面锚，SUM 断言无需更新（与 1-executor M3.4 预测一致；660 属任务基线记录不入仓库）。
+- 回归实测：selftest-template-lifecycle.sh `Total: 21 PASS=21 FAIL=0` rc=0（既有 TL-01~18 全 PASS 零破坏+新增 TL-19/20/21 PASS）；selftest-knowledge-brief.sh `Total: 16 PASS=16 FAIL=0` rc=0。
+- git diff --stat 文件集=方案级联清单 4 文件（template-guide.md 1 行改 / SKILL.md +2 / selftest-template-lifecycle.sh +12 / 新建 delivery-summary.md）；未 git add/commit，worktree 外零写入（本段+progress 行=计划三文件白名单）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

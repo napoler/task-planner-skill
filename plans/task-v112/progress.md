@@ -29,6 +29,7 @@
 - **Started:**
 - Actions taken:
   -
+  - [sub:2] 模板+级联落地（worktree）：新建 templates/delivery-summary.md（五区块 46 行）；SKILL.md 终验段 L158 指针行+References L316 行；template-guide.md:64 口径句追加；selftest-template-lifecycle.sh 并入 TL-19/20/21 三条断言（42 脚本不变，660 字面锚 grep 零命中=SUM 无需更新）；回归 21/21+16/16 全 PASS；未 commit（Phase 2 簿记面）
 - Files created/modified:
   -
 - Test Results:
