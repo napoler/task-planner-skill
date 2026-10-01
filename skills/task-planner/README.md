@@ -20,7 +20,7 @@
 - **原生 Todo 双向同步**：S1-S5 强制同步时机（计划文档 ↔ TodoWrite/Task 系统）
 - **漂移检测**：每 phase 完成后自动调用 `task-drift-guard`
 - **工作树隔离**：实现类任务默认首选 worktree（防改坏运行中基础设施）
-- **场景化模板**：16 个 variant 模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration + mini-lite/rule-enhancement/video/video-fix；不匹配时回退通用 task_plan.md）按 `template_type` 字段自动分发；全部 26 个模板统一含「📚 必要知识储备」章节（任务知识库对齐）
+- **场景化模板**：17 个 variant 模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration + mini-lite/rule-enhancement/video/video-fix/memory-hygiene；不匹配时回退通用 task_plan.md）按 `template_type` 字段自动分发；全部 26 个模板统一含「📚 必要知识储备」章节（任务知识库对齐）
 
 ---
 
@@ -32,7 +32,7 @@
 │   (独立 git 仓库, 41 文件, 4 commits)                    │
 │   - SKILL.md (剥除 hooks)                                │
 │   - references/  (8 篇规则)                              │
-│   - templates/   (5 核心 + 3 辅助 + 16 variant)          │
+│   - templates/   (5 核心 + 3 辅助 + 17 variant)          │
 │   - scripts/     (17 个工具脚本)                         │
 │   - lib/         (5 个 installer 脚本)                   │
 │   - tests/       (smoke.sh 16/16 pass)                   │
@@ -71,7 +71,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── [template-guide.md → ../plan-template-kit/references/template-guide.md]
 │   ├── goal-gate.md / completion-gate.md
 │   └── [billing.md → ../plan-cost-guard/references/billing.md]
-├── templates/                               ← 5 核心 + 3 辅助 + 16 个 variant
+├── templates/                               ← 5 核心 + 3 辅助 + 17 个 variant
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   └── variant/
 │       ├── research-type.md                 # 调研任务
