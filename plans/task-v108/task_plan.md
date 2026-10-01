@@ -94,9 +94,9 @@
 ### Phase 1: 模板全量普查（只读）
 - [ ] 盘点模板体系全名单：主技能 templates/ 全部 .md（含 variant/ 16）+ 卫星 mapping/guide
 - [ ] 新规范基线核对：v107 模板类结论逐项核实（R-02 计数/R-03 worktree 新约定/R-04 mapping-guide 清单/R-15 模板部分 4 variant 注释/T-1 示例脚本注脚方案/T-2 八个 13 节 variant 缺 3 区块）+ Rule 34.2 四点同步面 + Rule 38.3 mini-lite 五锚点豁免核实 + Rule 44.1「自动超时默认项」行在位性 + 验证独立性原则落点评估
-- [ ] 产出修复清单 v1（逐项：锚点/修法/修改性质[修正|增量]/影响联动面）
+- [x] 产出修复清单 v1（逐项：锚点/修法/修改性质[修正|增量]/影响联动面）——M-01~M-13 全文见 subagent-state/1-executor.md
 - **V-N:** VC-6, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
