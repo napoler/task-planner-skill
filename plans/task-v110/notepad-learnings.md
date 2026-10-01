@@ -34,4 +34,3 @@
 ## Notes for Next Time
 <!-- [task-v072 Rule 31.4/31.5] 消费侧契约：条目格式 = 触发条件 + 防线一句话；31.5 ① 下一 Phase 开工前 Read 未消费项命中即执行并记 [learn-apply]；31.5 ② 新任务 init-session 后 Read 上一 completed 任务同段作风险预演输入 -->
 -
-- 2026-10-02 D 类判定+用户关键裁决：「子代理可并行运行，前提=互不影响+互不依赖（否则错误资料产出错误内容）」——演进 09-12 串行铁律（memory serial-dispatch-iron-rule 需更新），落地为 task-v110 规范变更任务
