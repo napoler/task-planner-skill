@@ -127,10 +127,11 @@ Phase 1
 > 审查断言纪律（v106 P2-d 教训）：每条「文件/锚点不存在」类断言必须附 find/grep 第一手证据，禁止仅凭未命中推断。
 
 ### Phase 3: 部署一致性对齐审查
-- [ ] 主仓 skills/* vs 三宿主部署位逐 skill `diff -r`（以 Phase 1 盘点清单为准）
-- [ ] 差异逐条记录（方向：主仓→部署位 缺失/内容漂移/多余文件），只记录不修改
+- [x] 主仓 skills/* vs 三宿主部署位逐 skill `diff -r`：.claude/.opencode 位 9/10 IDENTICAL（task-planner 仅主仓 backup 目录差异、plan-resume tests 不部署）；⚠️ .zcode 位双向漂移（task-planner：plan-writer/selftest-template-lifecycle/template-mapping differ + 部署位多 12 个 video 家族 variant=28 vs 主仓 16；plan-template-kit：guide/mapping differ）
+- [x] 差异逐条记录（差异清单全文 subagent-state/7-executor.md），只记录未修改
+- [x] ~/.config/opencode/skills 第二套部署角色核实：**误判证伪撤销**——~/.opencode 是 ~/.config/opencode 的软链（同 inode），单一活跃部署；Phase 1 S3 的「缺 8 技能」为主进程盘点 grep 模式差异所致，已在 findings 撤销登记
 - **V-N:** VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -237,6 +238,7 @@ Phase 1
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-02 01:20 | ✅ ALIGNED（Phase 1 complete 后） | VC-1, VC-4 | 75 脚本 0 语法 FAIL+42 selftest 660/0+三宿主盘点完成；仅动 plans/task-v107/；继续 Phase 2 |
+| 2026-10-02 01:55 | ✅ ALIGNED（Phase 2 complete 后） | VC-2, VC-3 | 四波审查完成 P1×7/P2×31/待复核×4，抽验全证实；仅动 plans/task-v107/；继续 Phase 3 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
@@ -256,5 +258,5 @@ Phase 1
 | 3 | | executor | Phase 2 S1 主文档面审查 | done | 6 项问题（P1×2:SKILL:64 五文件过期锚+Rule16 锚 21≠22;P2×4）;主进程抽验 3 条全证实;P-4 为 v097 宽容锚设计权衡非缺陷 | findings.md [sub:3-executor] | findings.md | plans/task-v107/subagent-state/3-executor.md | rescue=- / 0 / ☑ || 4 | | executor | Phase 2 S2 references+templates 审查 | done | P1×2（task_plan:249 旧 worktree 约定+knowledge-brief:9 计数 20≠22 双过期）+P2×6+待复核×2;主进程抽验 P1 两条全证实 | findings.md [sub:4-executor] | findings.md | plans/task-v107/subagent-state/4-executor.md | rescue=- / 0 / ☑ |
 | 5 | | executor | Phase 2 S3 卫星配套技能审查 | done | P1×1（cost-guard Rule17.5 幽灵 STOP 档,主侧 0 命中已证实）+P2×4+待复核×1;6 技能零问题 | findings.md [sub:5-executor] | findings.md | plans/task-v107/subagent-state/5-executor.md | rescue=- / 0 / ☑ |
 | 6 | | executor | Phase 2 S4 根目录文档审查 | done | 19 项（P1×2:根级 scripts 入口全失效+session-catchup.py 幽灵;P2×17 数字/口径过期簇）;主进程抽验 2 条 P1 全证实 | findings.md [sub:6-executor] | findings.md | plans/task-v107/subagent-state/6-executor.md | rescue=- / 0 / ☑ |
-| 7 | | executor | Phase 3 部署位 diff 对账 | queued | | | | plans/task-v107/subagent-state/7-executor.md | - / 0 / ☐ |
+| 7 | | executor | Phase 3 部署位 diff 对账 | done | ⚠️ .zcode 位被 videop1 项目线迭代（部署位 28 variant vs 主仓 16,双向漂移;.claude/.opencode 位与主仓同步）;「第二套部署」误判已证伪撤销（.opencode=.config 软链）;33/33 池软链健康 | findings.md [sub:7-executor] | findings.md | plans/task-v107/subagent-state/7-executor.md | rescue=- / 0 / ☑ |
 | 8 | | executor | Phase 4 汇总撰写 report.md | queued | | | | plans/task-v107/subagent-state/8-executor.md | - / 0 / ☐ |

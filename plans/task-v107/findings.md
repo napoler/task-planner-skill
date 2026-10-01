@@ -84,6 +84,16 @@
   - 负结果：README_zh 16 variant✓/config 9 键示例✓/3 伴生 agent✓/billing 软链注记✓/lib/install-companion.sh 实位✓；CHANGELOG:89 ARCHITECTURE.md §2.6 指针实存✓（D6-16 核验项）
   - 全文问题清单（19 条含逐条证据）见 checkpoint: plans/task-v107/subagent-state/6-executor.md
 
+#### [sub:7-executor] 部署位 diff 对账
+- **[Phase 3] 主仓 skills/ × 三宿主部署位逐 skill diff 对账 + 第二套部署角色核实（2026-10-02，sub:7-executor）**：
+  - **逐 skill 结论（10 × 3，diff -rq）**：
+    - `~/.zcode/skills`：plan-collab-router / plan-cost-guard / plan-research-router / todo-skill / task-drift-guard / progress-tracker / iterative-optimizer = IDENTICAL；**task-planner = DIFF**（companion/agents/plan-writer.md + scripts/selftest-template-lifecycle.sh 内容 differ；部署位多出 12 个 templates/variant/*-type.md——主仓 skills/ 下无此目录，主仓独有 companion/.backup-20261001-*）；**plan-template-kit = DIFF**（references/template-guide.md + template-mapping.md differ）；**plan-resume = DIFF**（主仓独有 tests/，部署位无）
+    - `~/.claude/skills`：9/10 IDENTICAL；task-planner 仅主仓多 companion/.backup-20261001-*（部署位无，其余全同）
+    - `~/.opencode/skills`：9/10 IDENTICAL；task-planner 同上仅 backup 目录差异；plan-resume 仅主仓有 tests/
+  - **第二套部署角色核实（~/.config/opencode/skills）**：`~/.opencode` 是**软链** → `/home/terry/.config/opencode`（同 inode 3436922，`~/.opencode/skills` 与 `~/.config/opencode/skills` 为同一目录）→ **不存在第二套部署，findings [sub:S3] 的「缺 8 个新技能」疑虑撤销**：10 个 skill 的 SKILL.md 逐个 diff -q 全 IDENTICAL；task-planner/9 个 satellite 的 diff -rq 亦全同（除主仓独有 backup/tests 目录）；critical-rules.md 含 Rule 44（grep -c=1，与主仓一致）；mtime 2026-10-01 07:19 与 ~/.opencode 一致。`~/.opencode/config.json` 仅 52 字节（$schema），无 skills 目录配置项，加载走默认 `~/.opencode/skills`
+  - **池软链健康（33 条）**：11 池技能 × 3 宿主 readlink 全为 `task-planner/review-library/<name>`（相对软链），33/33 目标实存，三宿主目标字符串一致（无 MISMATCH）。注：hosts 侧 `brainstorming` 为实体目录（非池技能、不在 11 池内），不计入 33；config/opencode/skills 另有多出条目 `superpowers`（软链指向 superpowers/skills，异常项已记录，非本任务范围）
+  - 差异清单全文 + 命令证据：checkpoint `plans/task-v107/subagent-state/7-executor.md`；原始 diff 日志 /tmp/sub7-diff.log /tmp/sub7-opencode.log /tmp/sub7-links.log
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
