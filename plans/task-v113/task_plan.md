@@ -90,9 +90,9 @@ Phase 1
 - [ ] Rule 41.1 消解优先链现行全文——同步扩档点
 - [ ] 全库「22.3」「41.1」「五档」引用面普查（grep 实测全集 file:line）
 - [ ] selftest 断言锚（selftest-rescue-chain/selftest-self-resolution/selftest-fallback 相关断言行）
-- [ ] 修订方案：资料档条款草案（工具错误→help/--help/man/官方文档→仍失败→网络现成方案 research-assistant/Doc Search/web-search→评估后进改派/拆细）+换道义务草案（≥2 次 Rule 7 联动必须换道且优先评估现成方案/子代理/拆解；3 次禁第 4 次同法）+级联清单
+- [x] 修订方案三件：资料档=22.3.0 前置（序号不变零冲突，skill-collab T4 实证无既有断言）+换道义务=22.3.0b+级联清单 14 项（含 selftest-fallback T10a 全序断言级联）；宪法 §七落差确认
 - **V-N:** VC-2, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
