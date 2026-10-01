@@ -93,7 +93,7 @@ Phase 1
 - [ ] 57 条记忆逐条四维预检：①定位实存（引用的文件/规则号/数字锚 grep 实证）②时效性（绝对日期+失效条件评估）③冲突检测（与其他记忆/仓内现状矛盾）④消费风险分级（高=会被直接执行的断言/低）
 - [ ] 产出过时风险清单+处置预判（verified/updated/stale-marked/删除建议）+ memory-hygiene 模板设计稿（区块清单+校验动作定义+处置枚举）
 - **V-N:** VC-4, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |
@@ -105,7 +105,7 @@ Phase 1
 - [ ] 四点同步级联：mapping §一/§六/§九+plan-writer+SKILL:274+critical-rules:348,361+guide §2.2 补行至 17；selftest-template-lifecycle TL-17「16 个」锚→17
 - [ ] 逐批 commit（Rule 27），worktree 干净
 - **V-N:** VC-2, VC-6
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 预估时长 | 状态 |

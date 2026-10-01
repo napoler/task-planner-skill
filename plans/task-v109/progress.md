@@ -14,7 +14,7 @@
 - **Started:** [YYYY-MM-DD HH:MM]
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
-  -
+  - [sub:1] 记忆体系全量盘点完成:57 条索引全量+A16 全读+B15 抽查+C26 登记;过时风险 3 条(1 updated 部署拓扑+2 stale-marked 基线);selftest 实测 43 脚本 655/0;模板设计稿(memory-hygiene-type 17 区块+特有 5 块)全文落 checkpoint
 - Files created/modified:
   -
 - Test Results:

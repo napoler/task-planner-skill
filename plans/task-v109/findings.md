@@ -19,6 +19,16 @@
 <!-- 调研/搜索/文档/子代理结论:摘要 + 证据路径。子代理返回后紧邻写(Rule 19.1) -->
 -
 
+#### [sub:1-executor] 记忆盘点
+- 盘点范围:MEMORY.md 90 行/57 条索引全量+A 类 16 条(强时效断言)全读+B 类 15 条抽查(≥8 达标)+C 类 26 条免检登记
+- 过时风险清单 33 条(逐条四维+处置+证据):全量清单落 `plans/task-v109/subagent-state/1-executor.md` 里程碑 2/3/4 节
+- 高危 2 条:A1 `task-planner-repo-deploy-flow`(正文 09-16 基线后未追加,实测 zcode 位 28 variant vs claude/opencode 16=videop1 双向分叉实锤 diff -rq zcode 20+ 文件 differ/claude 23 行,与 v108 遗留「部署待裁决」一致,处置=updated);A16 `task-v091`(「33 脚本 525/0 基线」被实测 43 脚本 655/0 替代,处置=stale-marked 标注 superseded)
+- B 类 15 条:14 verified+1 stale-marked(`task-v056`「master 领先 origin 7 未 push」时点声明失效,遗留已由 v057 清账);规则号锚抽查全在位(grep 21.4=7/19.5=1/session-catchup.ts 仓内存在/仓根 scripts//session-catchup.py 不存在=幽灵锚实锤)
+- C 类 26 条:纯历史教训/交付记录,低消费风险,标注保留
+- 实测锚:selftest 全量(43 脚本仓内)PASS=655 FAIL=0(含 final-gate-hash 22/0,其输出 Total 行格式特殊需单独汇总);plans/INDEX in_progress=2(v093/v094 中断挂账)
+- 模板设计稿完整:memory-hygiene-type.md 区块清单(头部 template_type/plan_tier 注释+17 区块含 Drift Log/Handoff/委派统计/配置 3 行)+特有区块 5(M1 盘点表 7 列/M2 四维机械命令范式/M3 处置枚举 verified·updated·stale-marked·删除建议仅建议+守门/M4 验证锚规范+MEMORY.md.proposed 抽验契约/M5 写入三要素=绝对日期+验证锚+失效条件),全文落 `plans/task-v109/subagent-state/1-executor.md`「设计稿」节
+- 结论:57 条中真正需 updated=1、stale-marked=2(含 A16+B1 task-v056),删除建议=0(无需删除即可恢复可用性,Phase 4 dogfood 保守策略可达)
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
