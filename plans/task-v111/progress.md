@@ -15,6 +15,7 @@
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -
+  - [sub:1] 注释规范面普查完成: ①技能侧注释条款零映射(宪法§九:158-159 有 4 项最小条款, skill 侧缺口成立)②级联面全集=正文 4 处+索引 2 处+selftest 硬字面断言 6 处(必改), REGEX 宽容锚 5 处天然兼容零改③密度基线: 12 脚本头注释 100% 在位/函数前置注释 100%/逻辑段注释 4-44% 中位 22%/Why 注释点状存在④Rule 45 草案七子条+存量补强清单(脚本 5 行+文档 4 行, S/M/L 分级)已落 checkpoint; 结论摘要见 findings.md `#### [sub:1-executor]` 段
 - Files created/modified:
   -
 - Test Results:
