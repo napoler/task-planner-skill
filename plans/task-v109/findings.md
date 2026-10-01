@@ -29,6 +29,12 @@
 - 模板设计稿完整:memory-hygiene-type.md 区块清单(头部 template_type/plan_tier 注释+17 区块含 Drift Log/Handoff/委派统计/配置 3 行)+特有区块 5(M1 盘点表 7 列/M2 四维机械命令范式/M3 处置枚举 verified·updated·stale-marked·删除建议仅建议+守门/M4 验证锚规范+MEMORY.md.proposed 抽验契约/M5 写入三要素=绝对日期+验证锚+失效条件),全文落 `plans/task-v109/subagent-state/1-executor.md`「设计稿」节
 - 结论:57 条中真正需 updated=1、stale-marked=2(含 A16+B1 task-v056),删除建议=0(无需删除即可恢复可用性,Phase 4 dogfood 保守策略可达)
 
+#### [sub:2-executor] 模板编写级联
+- N-01 新建 `WT/skills/task-planner/templates/variant/memory-hygiene-type.md`（设计稿 M1-M5 全量嵌入「📋 记忆整理协议」节+标准区块齐备+验证独立性行+三区块修改面声明）；gate 实测 `check-template-type.sh <新模板>` → `[template-gate] OK: template_type=memory-hygiene` exit=0；variant 目录实测 17 个
+- N-02 级联 7 文件 16→17：template-mapping.md（§一 决策树+清单补行+门控提示 v093 起 16→17 类、§六 速查表补「记忆卫生(v4) 通用组-记忆卫生」行、§九 矩阵补 memory-hygiene 行=18 行）；plan-writer.md 映射表补 `memory-hygiene` 行（17 行）；SKILL.md:274「standard 17 variant」；critical-rules.md:348「18 行：17 variant + general」+:361「现有 17 个 variant」；template-guide.md §2.2 表补 17 行（标题 17 个）；selftest-template-lifecycle.sh TL-17 注释+断言「16 个」→「17 个」
+- 验证：`bash selftest-template-lifecycle.sh` → Total: 18 PASS=18 FAIL=0 exit=0；`git status --porcelain` 恰 7 M+1 未跟踪=8 文件；SKILL/critical-rules「16 variant」grep 零残留
+- 全量 checkpoint 落 `plans/task-v109/subagent-state/2-executor.md`
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

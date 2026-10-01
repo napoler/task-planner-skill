@@ -27,7 +27,7 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:2] 新建 memory-hygiene-type.md（M1-M5 全量+gate exit 0）+7 文件 16→17 级联；selftest-template-lifecycle 18/18 PASS
 - Files created/modified:
   -
 - Test Results:

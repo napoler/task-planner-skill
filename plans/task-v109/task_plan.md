@@ -91,7 +91,7 @@ Phase 1
 
 ### Phase 1: 记忆体系全量盘点+模板设计（fresh 只读）
 - [ ] 57 条记忆逐条四维预检：①定位实存（引用的文件/规则号/数字锚 grep 实证）②时效性（绝对日期+失效条件评估）③冲突检测（与其他记忆/仓内现状矛盾）④消费风险分级（高=会被直接执行的断言/低）
-- [ ] 产出过时风险清单+处置预判（verified/updated/stale-marked/删除建议）+ memory-hygiene 模板设计稿（区块清单+校验动作定义+处置枚举）
+- [x] 产出过时风险清单（33 条）+处置预判+设计稿（M1-M5）——子代理「43 脚本 655 PASS」数字错误已由主进程第一手证伪（实 42 脚本+selftest-registry.tsv 误计），以 v108 终验 42/660 为准
 - **V-N:** VC-4, VC-2
 - **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
