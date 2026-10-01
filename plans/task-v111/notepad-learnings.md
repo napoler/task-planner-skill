@@ -34,4 +34,3 @@
 ## Notes for Next Time
 <!-- [task-v072 Rule 31.4/31.5] 消费侧契约：条目格式 = 触发条件 + 防线一句话；31.5 ① 下一 Phase 开工前 Read 未消费项命中即执行并记 [learn-apply]；31.5 ② 新任务 init-session 后 Read 上一 completed 任务同段作风险预演输入 -->
 -
-- 2026-10-02 D 类判定：用户注释纪律裁决「所有产出完整注释/禁止为美观减少/思路入注释」→ task-v111 规范变更任务
