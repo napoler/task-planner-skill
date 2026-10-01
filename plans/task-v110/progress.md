@@ -15,6 +15,7 @@
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -
+  - [sub:1] 影响面普查完成：五维结论+修订三件套（Rule 21.4 新文本草案/级联清单/守卫改动点）→ subagent-state/1-executor.md；关键发现=config.json:343 悬挂引用（retry_limit 指向 21.4 应为 22.3，越 scope_files 登记 Phase 2 决策）+ MEMORY.md:101 计数锚 21.4=7 行（本任务改 :144 行内容不加行→计数保持）
 - Files created/modified:
   -
 - Test Results:
