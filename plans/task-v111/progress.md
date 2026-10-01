@@ -28,7 +28,7 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:2] Rule 45 注释完整性规范落地: critical-rules.md 44.4 后新增「### 45」七子条(45.1 适用范围/45.2 What+Why 双层+有效边界/45.3 头注释四要素/45.4 修改三要素衔接宪法§九/45.5 禁为美观删减/45.6 平台冲突显式声明用户裁决优先/45.7 机器承载 CC 组); 括注级联 3 处(SKILL.md:9「Critical Rules 全集 1-39（含 40-45）」/:246 括注加 /45/:304 索引行加 Rule 45 注释完整性规范); 偏差=方案预期 critical-rules 标题含「1-44」字样实际无→0 处; 验证 grep 锚 2/2 + selftest-plan-tier 32 PASS + selftest-workflow-orchestration 16 PASS + git diff 恰 2 文件; 未 commit(禁 git 写)
 - Files created/modified:
   -
 - Test Results:

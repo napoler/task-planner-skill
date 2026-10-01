@@ -28,6 +28,12 @@
 
 **④ Rule 45 草案 + 存量补强清单**: 草案七子条(45.1 适用范围/45.2 What+Why 双层+有效注释边界/45.3 头注释四要素/45.4 修改三要素衔接宪法§九/45.5 禁为美观删减/45.6 平台冲突显式声明用户裁决优先/45.7 机器承载 selftest CC 组+registry+C34)全文在 checkpoint; 补强清单=脚本 5 行(check-complete M / attest-plan S / check-dispatch+check-delegation S / selftest 触改面 S·全量 L / ledger-append 无缺口)+文档 4 行(critical-rules/SKILL 级联 M·任务内 / 3 模板 S / CLAUDE+README_zh S·任务内), 明细表在 checkpoint, 交用户裁决不自动实施。
 
+#### [sub:2-executor] Rule 45 落地
+- critical-rules.md 44.4 后新增「### 45 注释完整性规范（P0,2026-10-02 task-v111）」: 标题+溯源段(用户裁决原话+宪法§九衔接)+45.1-45.7 七子条照方案草案全文落地; `grep -c '^45\.'` = 7, 编号连续 44→45, 既有 1-44 原文零改动
+- 括注级联 3 处(字面锚「Rules 1-39」「Critical Rules 全集 1-39」保持, 仅追加括注): SKILL.md:9 frontmatter→「Critical Rules 全集 1-39（含 40-45）」/ :246→「（含 Rule 40/41/42/43/44/45）」/ :304 References 表行→追加「/ Rule 45 注释完整性规范（含 40-45）」
+- 偏差披露: 方案预期 critical-rules.md 标题/头注含「Rules 1-44」类字样需同款括注化, 实测标题=「# Critical Rules — 核心执行规则」不含该字样→0 处, 级联实做 3 处
+- 验证: `grep -c "Rules 1-39" SKILL.md`=2(锚不减) / `grep -c "含 40-45\|/45)"`=2 / selftest-plan-tier.sh 32/32 PASS / selftest-workflow-orchestration.sh 16/16 PASS / `git diff --stat`=恰 2 文件(critical-rules.md +15/-0, SKILL.md +3/-3), 未 commit
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
