@@ -15,6 +15,7 @@
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -
+  - [sub:1] 交付面普查+模板草案+级联清单完成（只读，0 修改）：现状=SKILL 终验段无用户面格式约束+verification.md 机器面边界+五要素覆盖度逐条评估；模板草案=五区块全文+根目录位置决策；级联=SKILL:157 插入行+References:314+口径句 1 处+selftest 并入 3 断言；全文与 8 字段结论落 checkpoint subagent-state/1-executor.md，摘要落 findings「#### [sub:1-executor] 交付面普查」段
 - Files created/modified:
   -
 - Test Results:
@@ -28,6 +29,7 @@
 - **Started:**
 - Actions taken:
   -
+  - [sub:2] 模板+级联落地（worktree）：新建 templates/delivery-summary.md（五区块 46 行）；SKILL.md 终验段 L158 指针行+References L316 行；template-guide.md:64 口径句追加；selftest-template-lifecycle.sh 并入 TL-19/20/21 三条断言（42 脚本不变，660 字面锚 grep 零命中=SUM 无需更新）；回归 21/21+16/16 全 PASS；未 commit（Phase 2 簿记面）
 - Files created/modified:
   -
 - Test Results:

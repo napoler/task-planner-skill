@@ -88,9 +88,9 @@ Phase 1
 - [ ] 终验交付段现状（SKILL.md 终验段流程/check-complete 输出结构/verification.md 模板与交付消息的关系）
 - [ ] 交付实践样本复盘（v107-v111 交付消息——五要素覆盖度评估：哪些总是有/哪些常缺）
 - [ ] 模板草案：delivery-summary.md 完整结构（五要素区块+每区块填写指引+数据来源指针（从 verification.md/progress.md/report 引用而非重写）+详略标准（尽量详细以用户可独立决策为准））
-- [ ] 级联面清单：SKILL 终验段指针行落点+References 表+selftest 断言点（grep 现有「终验交付」引用）
+- [x] 级联面清单：SKILL:157 插入行+References:314+template-guide.md:64 口径句+selftest 并入方案+脚本零改动；模板位置裁决=templates/ 根（variant/ 会错入白名单）
 - **V-N:** VC-2, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
@@ -98,12 +98,10 @@ Phase 1
 | S1 | 交付面普查+模板草案+级联清单 | 继承 | SKILL 终验段+verification 模板+v107-v111 交付样本 | ≤15min | pending |
 
 ### Phase 2: 模板创建与终验段级联（worktree）
-- [ ] 新增 templates/delivery-summary.md（五要素区块+填写指引+数据来源指针+详略标准）
-- [ ] SKILL.md 终验交付段挂模板指针（「交付总结：按 templates/delivery-summary.md 五要素输出」）+References 表行
-- [ ] selftest 最小断言（模板文件存在+SKILL 指针行存在——新增 selftest 或并入既有，Phase 1 定）
-- [ ] 逐批 commit，worktree 干净
+- [x] 模板 46 行五区块齐备+SKILL :158 指针+:316 References 行+口径句+TL-19/20/21 断言（TL 21/21+knowledge-brief 16/16 既有锚零破坏）
+- [x] worktree commit 干净
 - **V-N:** VC-2, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |

@@ -19,6 +19,28 @@
 <!-- 调研/搜索/文档/子代理结论:摘要 + 证据路径。子代理返回后紧邻写(Rule 19.1) -->
 -
 
+#### [sub:1-executor] 交付面普查（Phase 1 S1，2026-10-02）
+
+现状（证据指针，全文结论落 checkpoint `plans/task-v112/subagent-state/1-executor.md`）：
+- SKILL.md:147-160 终验交付段 8 步流程（VC 复验/委派统计/3-File/质量门控/内容质量/Read 产出/合并回/结论+check-complete），L157 交付结论三态与 L158 退出前 check-complete 之间**无用户面交付总结格式约束**——交付消息=自由格式，五要素无结构承载（旁证：SKILL.md:74 silent 交付报告须附静默决策清单但无区块）。
+- verification.md（模板 129 行）=机器面档案：VC/Phase Gates/委派统计 25.4/质量门控 26/Goal Gate（L112 PARTIAL「列出+建议后续」）/5Q Reboot（Q2 承载遗留，如 v109:126「部署同步待用户裁决」）；用户面总结缺位，与 task_plan Decisions（L175 划界）一致。
+- check-complete.sh 输出=机器信号行（L453 DELEGATION/L761 VC-GATE/L850 LEARNING/L895 REFLECT/L1038 compliance），可作模板第 3 区块指针源，脚本本身不动。
+- 五要素覆盖度（v107/v108/v109 三任务对照）：任务说明=Goal 总是有/执行摘要常缺；产出清单=progress.md「Files created/modified」数据齐备但三列表（路径+变更摘要+验证状态）常缺；审查信息=机器面总是有/用户面常缺透传；风险点=常缺（仅 v107 report §4/§5 有遗留+待裁决；失效条件先例 memory-hygiene-type.md:162；回滚方式零提及，仅 merge hash 散在 VC 证据）；下一步建议=常缺（5Q Q2 一行遗留提示有，无排序/无推荐标注）。
+
+模板草案（全文在 checkpoint M2）：templates/delivery-summary.md 五区块=任务说明（Goal+执行摘要+silent 裁决清单）/产出清单（文件级三列表）/审查信息（VC/回归/对齐/委派 JSON/质量门控/验证独立性，全指针）/风险点（已知遗留+待裁决+失效条件+回滚方式四子项，必须列举）/下一步建议（Rule 41.5 打包+44.1 推荐排序）；头部 HTML 注释指引（根模板惯例）；详略标准=用户可独立决策。
+位置决策：templates/ 根目录（与 batch_report/knowledge-brief/shared-tracker 同列，零白名单影响）；否决 variant/（check-template-type.sh:17 白名单=general+variant/*-type.md 派生，入 variant 会造成「delivery-summary」成为合法 template_type 的语义错误或破坏 *-type.md 命名契约）。
+
+级联清单（全文在 checkpoint M3）：① SKILL.md:157 与 :158 之间插入指针行 1 行（442→443 行，T2b 上限 558 余量充足）；② References 表 :314 行后加 1 行；③ plan-template-kit/template-guide.md:64 口径句句尾追加「/delivery-summary.md」1 处；④ selftest 最小方案=并入 selftest-template-lifecycle.sh 3 条静态断言（模板 5 区块/SKILL 引用 ≥2/口径句在位），不新增脚本=42 脚本数与 660 基线漂移面最小（SUM 断言 +3 若 660 有字面锚则 Phase 2 实测更新）；⑤ check-complete.sh/init-session.sh/check-template-type.sh 零改动。
+
+#### [sub:2-executor] 模板落地（Phase 2 S1，2026-10-02）
+- 新建 `skills/task-planner/templates/delivery-summary.md`（46 行，WT）：严格照 1-executor M2 草案五区块（任务说明/产出清单/审查信息/风险点/下一步建议）落地，每区块含填写指引+数据来源指针（verification.md/progress.md/subagent-state/、report.md 如有）；头部 HTML 注释说明区=定位（终验交付阶段用户面输出模板，主进程交付时消费，非 init-session 计划模板，无 template_type 头）+使用方式+详略标准（用户可独立决策）。
+- SKILL.md 级联 2 处：终验段 L158 插入「交付总结（五要素）」指针行（交付结论行 L157 后、退出前 check-complete 行前，实测 442→444 行）；References 表 L316 追加模板行（shared-tracker 行后）。
+- 口径句 1 处：plan-template-kit/references/template-guide.md:64 句尾追加「/delivery-summary.md（交付总结模板）」（同 knowledge-brief 先例「不入此口径」句式），25/17/3 辅助计数全部未动=零漂移。
+- selftest=并入 selftest-template-lifecycle.sh 新 TL-19/20/21 三条静态 grep 断言（模板五区块=5 / SKILL delivery-summary ≥2 / 口径句在位），不新增脚本，42 脚本数不变。
+- 660 基线漂移核查：`grep -rn "SUM-ASSERTIONS\|=660\| 660\|660/0" skills/task-planner/scripts/` 零命中 → 仓库内无 660 字面锚，SUM 断言无需更新（与 1-executor M3.4 预测一致；660 属任务基线记录不入仓库）。
+- 回归实测：selftest-template-lifecycle.sh `Total: 21 PASS=21 FAIL=0` rc=0（既有 TL-01~18 全 PASS 零破坏+新增 TL-19/20/21 PASS）；selftest-knowledge-brief.sh `Total: 16 PASS=16 FAIL=0` rc=0。
+- git diff --stat 文件集=方案级联清单 4 文件（template-guide.md 1 行改 / SKILL.md +2 / selftest-template-lifecycle.sh +12 / 新建 delivery-summary.md）；未 git add/commit，worktree 外零写入（本段+progress 行=计划三文件白名单）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
