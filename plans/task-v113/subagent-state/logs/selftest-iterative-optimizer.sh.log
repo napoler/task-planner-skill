@@ -1,0 +1,9 @@
+IL-01 PASS iterative-optimizer/SKILL.md 存在且 frontmatter「name: iterative-optimizer」=1
+IL-02 PASS SKILL.md 行数 97 ∈ [90,120]
+IL-03 PASS 五步锚在位（评估 1 / 诊断弱点 1 / 定向改进 1 / 门控判定 1, 各 ≥1）
+IL-04 PASS 状态文件锚 plans/loop-<task-id>-state.md 行 2 ≥1
+IL-05 PASS 输入契约锚在位（≥3 条 2 / 机器可检查 5 / max_iterations 6 / 默认 5 1, 各 ≥1）
+IL-06 PASS 门控铁律在位（禁止宣称 RESOLVED=1 且 连续 2 轮 3 ≥1）
+IL-07 PASS 迭代摘要表头在位（改了什么 (what) 1 / 为什么 (why 1 / 门控结果 4, 各 ≥1）
+IL-08 PASS banned 词（更好/大致/应该/足够）命中 0
+Total: 8 PASS=8 FAIL=0

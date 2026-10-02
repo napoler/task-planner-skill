@@ -1,0 +1,13 @@
+TS-01 PASS critical-rules.md 六子条锚 = 6
+TS-02 PASS 40.3 披露措辞「不可代调」命中 2
+TS-03 PASS 40.4 显式点名 + 40.6 零新 config 键 行内锚在位
+TS-04 PASS SKILL.md Rule 40 锚命中 5 ≥3
+TS-05 PASS SKILL.md 字面锚 Rules 1-39=2 且 1-40=0
+TS-06 PASS SKILL.md 既有三锚（Rule 39 摘要行/C27/协同路由 dynamic-workflows）保全
+TS-07 PASS SKILL.md C28 清单项在位
+TS-08 PASS general 模板 🧰 区块与「上游分析记录」定位声明在位
+TS-09 PASS mini-lite 豁免声明 =1 且 48 行 ≤80
+TS-10 PASS subagent_dispatch 工具面提示行在位
+TS-11 PASS 卫星两文档 + plan-writer 契约锚在位
+TS-12 PASS config.json properties 键数 40（零新增）
+Total: 12 PASS=12 FAIL=0

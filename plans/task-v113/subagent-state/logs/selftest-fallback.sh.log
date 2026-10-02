@@ -1,0 +1,38 @@
+[PASS] T01a probe(no-network) health.json 存在
+[PASS] T01b entries=2
+[PASS] T01c 全 skipped
+[PASS] T02a dispatch_as=null
+[PASS] T02b 含 no_health_file
+[PASS] T02c escalation=split_then_takeover_or_askuser
+[PASS] T03a dispatch_as=executor-fb
+[PASS] T03b model=custom:pk-agg:agnes-2.5-flash
+[PASS] T03c zero_cost=true
+[PASS] T04 dispatch_as=null + non_provider_error
+[PASS] T05a created 含 executor+explore
+[PASS] T05b failures 含 code-assistant
+[PASS] T05c failures 含 general-purpose
+[PASS] T06a executor-fb.md 存在
+[PASS] T06b 含 name_suffix 登记
+[PASS] T06c model 行=custom:pk-agg:agnes-2.5-flash
+[PASS] T06d 原键保留(name/description/tools)
+[PASS] T06e ccr uuid 不残留
+jq: error: syntax error, unexpected INVALID_CHARACTER (Unix shell quoting issues?) at <top-level>, line 1:
+.files[\"executor-fb.md\"].hash       
+jq: 1 compile error
+jq: error: syntax error, unexpected INVALID_CHARACTER (Unix shell quoting issues?) at <top-level>, line 1:
+.files[\"executor-fb.md\"].hash       
+jq: 1 compile error
+[PASS] T07a skipped 含 executor
+[PASS] T07b created 为空
+[PASS] T07c meta hash 不变
+[PASS] T08 config.json provider_fallback.enabled=true
+[PASS] T09a 含 timeout_split_first
+[PASS] T09b 拆细指引(对照 21.1b + ② 拆细)
+[PASS] T10a hint 含全序(①改派→②拆细→③降档→④主进程接管→22.3.3 技能族接管评估→⑤AskUser)
+[PASS] T10b tier_order 数组 6 项
+[PASS] T10c tier_order 含 split
+[PASS] T10d tier_order 含 skill_takeover
+[PASS] T11a escalation=split_then_takeover_or_askuser
+[PASS] T11b no_healthy_channel 保留
+[PASS] T11c hint 含 22.3.2 拆细再接管
+Total: 31  PASS=31  FAIL=0

@@ -1,0 +1,9 @@
+case-1 PASS general 空缺 → 输出含 [template-sense] 且 task_plan.md 含「🔁 模板感知」
+case-2 PASS unknown 类型 foobar → 输出含 [template-sense] 且 task_plan.md 含「🔁 模板感知」
+case-3 PASS known 类型 bugfix → [template-sense] 计 0（输出与产物区块均零触发）
+case-4 PASS critical-rules 34.7 恰 1 条且含「全自动生成合约」; SKILL.md C22 行含「34.7 全自动生成」
+case-5 PASS 含区块且无登记 → [template-sense] warn; 无区块计划 → 零 [template-sense] 输出
+case-6 PASS selftest-registry.tsv 含本脚本登记行且 dep_anchors 四条在位
+case-7 PASS mini 档空类型 → mini-lite 产物带标记, 无感知区块、无 general 注释（CR P1-1 负例通过）
+case-8 PASS bugfix 后空类型重跑 → 产物标记仍 bugfix 且无感知区块（CR P1-2 负例通过）
+Total: 8 PASS=8 FAIL=0

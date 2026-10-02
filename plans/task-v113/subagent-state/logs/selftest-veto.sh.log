@@ -1,0 +1,14 @@
+VT-01 PASS 32.1 禁令登记
+VT-02 PASS 32.2 计划期必查
+VT-03 PASS 32.3 执行期消费
+VT-04 PASS 32.4 解禁条件（两条）
+VT-05 PASS 32.5 机制（开关键）
+VT-06 PASS 31.5 消费侧联动 Rule 32
+VT-07 PASS SKILL.md 摘要行 Rule 32
+VT-08 PASS SKILL.md C20 检查项
+VT-09 PASS SKILL.md 用户否决登记指针
+VT-10 PASS SKILL.md Rules 1-3x 范围
+VT-11 PASS config.json veto_enforce（warn 默认+三档）
+VT-12 PASS notepad 模板被否决方案段
+VT-13 PASS 无禁令项作 Recommended 矛盾表述
+Total: 13 PASS=13 FAIL=0

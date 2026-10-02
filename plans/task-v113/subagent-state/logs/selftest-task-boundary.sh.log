@@ -1,0 +1,12 @@
+TB-01 PASS 8.1 新任务边界子条
+TB-02 PASS 8.1 判定依据三要素
+TB-03 PASS 8.1 处置语义锚
+TB-04 PASS Rule 8 原文未改动
+TB-05 PASS SKILL.md D 行
+TB-06 PASS SKILL.md D 特判段
+TB-07 PASS SKILL.md C12 扩 D/A/B/C
+TB-08 PASS UPS hook [plan-note] D 类指引
+TB-09 PASS UPS hook 职责 3 注释联动
+TB-10 PASS todo-sync.md S5 D 类分支
+TB-11 PASS SKILL.md 漂移触发时机行兼容
+Total: 11 PASS=11 FAIL=0

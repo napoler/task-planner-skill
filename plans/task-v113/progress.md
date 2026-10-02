@@ -34,6 +34,20 @@
 - Test Results:
   -
 
+### Phase 3: 独立验证（回归+推演自证）
+<!-- Phase 3: 独立验证（回归+推演自证） -->
+- **Status:** pending
+- **Started:**
+- Actions taken:
+  - [sub:3] 全量 42 selftest 回归（worktree，22.3.0 资料先行档+22.3.0b 换道义务落地后）：42/42 rc=0，合计 666 PASS / 0 FAIL / 0 超时（单脚本 90s 包裹）；验收锚 fallback 31/31 + rescue-chain 11/11 + self-resolution 13/13（含 SR-13）+ skill-collab 25/25 + skill-split 41/41 + registry rows=42/actual=42 全部 PASS，无失败断言，无回归风险 → findings.md §[sub:3-executor] + checkpoint subagent-state/3-executor.md + logs/*.log
+  - [sub:4] 语义推演自证（VC-3）+ alignment-review 对齐审查（VC-4）：两案例对照——案例二（dispatch-guard 连续3次误拦）22.3.0b 第2击强制换道「读守卫源码/示例方案集」O(1) 定位 3 类检查点精确通过条件，实质差异 HIGH；案例一（provider rejected×2）22.3.0 资料先行在 ④/22.3.3 前插入文档/网络评估可改变「接管 vs 新会话 -fb 派发」选择，实质差异 MEDIUM；对齐四要素 APPROVED（P0/P1=0，P2×1=selftest-conclusion-discipline.sh:68 CD-13 注释「五档」措辞陈旧，不阻断）；守卫锚级联 4 脚本重跑 31/31+11/11+13/13+25/25 全绿 → findings.md §[sub:4-executor] + checkpoint subagent-state/4-executor.md
+- Files created/modified:
+  -
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 42 selftest 全量回归 | worktree task-v113 selftest-*.sh ×42 | 全 rc=0 且 FAIL=0 | 42/42 rc=0, 666 PASS / 0 FAIL | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

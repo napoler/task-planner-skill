@@ -1,0 +1,33 @@
+T01 PASS 01 (rc=0)
+T02 PASS 02 (rc=2)
+T03 PASS 03 (rc=2)
+T04 PASS 04 (rc=2)
+T05 PASS 05 (rc=0)
+T06 PASS 06 (rc=0)
+T07 PASS 07 (rc=0)
+T08 PASS 08 (rc=1)
+  (stdout 恰 2 行: progress.md | checkpoint:)
+T09 PASS 09 (rc=2)
+T10 PASS 10 (rc=0)
+T11 PASS 11 (rc=0)
+T12 PASS 12 (rc=0)
+TS-01 PASS (rc=0, 锁写入=1790899942)
+TS-02 PASS (rc=2, stderr 含 串行)
+TS-03 PASS (rc=0, stderr 含 串行警告)
+TS-04 PASS (rc=0, 锁刷新=1790899942)
+TS-05 PASS (rc=0, 锁未改写)
+TS-06 PASS (rc=0, 锁已清除)
+TS-07 PASS (rc=0, 组标记槽占用放行)
+TS-08 PASS (rc=2, 无标记仍按串行槽拦截)
+FG-01 PASS (rc=0, 零细粒度输出, 基线一致)
+FG-02 PASS (rc=0, warn 告警+计数落盘)
+FG-03 PASS (rc=0, 双 S-unit 打包检出)
+FG-04 PASS (rc=0, brief 引用提示)
+FG-05 PASS (双条件豁免: SKIPPED 提示, 未判打包)
+DX-01 PASS
+DX-02 PASS
+DX-03 PASS
+DX-04 PASS
+DX-05 PASS
+DX-05b PASS
+Total: 31 PASS=31 FAIL=0

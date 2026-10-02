@@ -1,0 +1,22 @@
+TL-01 PASS Rule 34 头
+TL-02 PASS 34.1 选取门控
+TL-03 PASS 34.2 四点同步
+TL-04 PASS 34.3 沉淀触发三条件
+TL-05 PASS 34.4 沉淀流程（≤100 行+登记）
+TL-06 PASS 34.5 防滥用（查重）
+TL-07 PASS 34.6 机制（开关键+门控+selftest）
+TL-08 PASS config.json template_gate_enforce（warn 默认+三档）
+TL-09 PASS check-template-type.sh 动态派生白名单
+TL-10 PASS attest 集成门控+逃生
+TL-11 PASS init-session env 兜底+动态派生
+TL-12 PASS 行为: bugfix 计划 exit 0
+TL-13 PASS 行为: nonexistent 计划 exit 1
+TL-14 PASS SKILL.md 检查清单 C22 行
+TL-15 PASS SKILL.md「模板选取门控与沉淀」段
+TL-16 PASS template-mapping.md Rule 34 门控提示
+TL-17 PASS template-guide.md 含 rule-enhancement 且计数 17 个
+TL-18 PASS template-mapping.md 含 §九 机制适用性矩阵
+TL-19 PASS delivery-summary.md 存在且五区块=5
+TL-20 PASS SKILL.md 含 delivery-summary 指针 ≥2
+TL-21 PASS template-guide.md 口径句含 delivery-summary.md
+Total: 21 PASS=21 FAIL=0

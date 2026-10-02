@@ -1,0 +1,20 @@
+[PASS] T1 check-scope.sh 'memories' 豁免 ≥1
+[PASS] T2a plan-created.cjs '兜底清除' ≥1
+[PASS] T2b plan-created.cjs 假成功旧文案行为注释在位 ('无残留哨兵' ≥1)
+[PASS] T3 zcode-posttooluse.sh 'attested_by_sid|自动重锁' ≥1
+[PASS] T4 attest-plan.sh 'attested_by_sid' ≥1
+[PASS] T5 zcode-userpromptsubmit.sh 'CLAUDE_CODE_SESSION_ID' ≥1
+[PASS] T6 check-delegation.sh 'task-planner-observe' 节流 flag ≥1
+[PASS] T7 config hook_self_heal_enforce=warn (python3)
+[PASS] T8a SKILL.md '环境级中断自愈' ≥1
+[PASS] T8b SKILL.md 行数 ≤558
+[PASS] T9a hook_self_heal_enforce 出现在 config.json+SKILL.md ≥2 文件
+[PASS] T9b 无拼写变体 hook-self-heal (全 0)
+[PASS] T10a knowledge-brief.md 五段 grep -c '^## §' = 5
+[PASS] T10b init-session.sh '6/6' ≥1
+[PASS] T11a B1 正例: 相对含 slash 路径 Edit → 自动重锁(attested_by_sid=sessabc123 且 plan_sha256=新文件哈希)
+[PASS] T11b B1 负例: 改内容后 owner=othersid999 → 重锁不命中(plan_sha256 仍为旧值 且 attested_by_sid 重置为空, 不被洗白)
+[PASS] T13a S5 正例: 陈旧计划+verification.md(前导空格 outcome: COMPLETE) → POSTTOOL 输出无 plan-compass/plan-sync 提醒(兜底豁免生效)
+[PASS] T13b S5 因果对照: 同 fixture 删 verification.md → 输出含 plan-compass/plan-sync 陈旧提醒(豁免由兜底分支因果生效, 非环境巧合)
+[PASS] T12 B2 三侧 canon 一致 (pretooluse L17 / UPS L34 / jq 全链路, sid=sess-abc123)
+Total: 19  PASS=19  FAIL=0

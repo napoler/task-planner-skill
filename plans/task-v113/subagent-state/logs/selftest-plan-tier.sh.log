@@ -1,0 +1,36 @@
+PT-01 PASS Rule 38 头
+PT-02 PASS 38.1 判定锚
+PT-03 PASS 38.2 档位矩阵锚
+PT-04 PASS 38.3 轻量模板契约锚
+PT-05 PASS 38.4 豁免清单锚（铁律+VC 降档）
+PT-06 PASS 38.5 机制锚（开关键+守护）
+PT-07 PASS config.json plan_tier_enforce（warn 默认+三档）
+PT-08 PASS SKILL.md frontmatter 索引 1-39（v088 级联）
+PT-09 PASS SKILL.md C26 检查项
+PT-10 PASS SKILL.md Critical Rules 列表 Rule 38 摘要行
+PT-11 PASS mini-lite 模板契约（48 行 ≤80 + plan_tier: mini 标记）
+PT-12 PASS mini-lite 无六仪式区块
+PT-13 PASS init-session.sh tier 分流锚（env+复制源+variant 忽略提示）
+PT-14 PASS 13 variant + general 含 plan_tier: standard 标记（实测 17 处）
+PT-15 PASS init 缺省场景=general 源（无 mini 标记）
+PT-16 PASS init TASK_PLAN_TIER=mini 复制 mini-lite
+PT-17 PASS mini+variant 定制优先+忽略提示
+planmini written
+PT-18 PASS 锚1: mini attest FMEA MINI-TIER SKIP + 锁定 rc=0
+PT-19 PASS 锚2: mini check-complete VC=2 降档 PASSED rc=0
+planbad written
+PT-20 PASS 锚4: MISMATCH warn 档提示 rc=0
+PT-21 PASS 锚4: MISMATCH enforce 档阻断 rc=1
+PT-22 PASS 非 mini 回归: standard rc=0 且无 plan-tier 输出
+PT-28 PASS mini 样例 enforce 档 attest 锁定(FMEA SKIP)+check-complete VC-GATE 均通过
+PT-29 PASS auto-tier 路径: 四条件 env 提交 → mini 产物含 auto_tier: mini 标记（Rule 38.6）
+PT-30 PASS 显式 mini 不打 auto_tier 标记（显式优先=不覆盖显式值）
+planautobad/planautook written
+PT-31 PASS AUTO-TIER 复核触发: 超限 → WARNING 点名 rc=0（warn 档不阻断）
+PT-32 PASS AUTO-TIER 复核合规态: REVIEW PASSED 且无 WARNING rc=0
+PT-23 PASS --list 输出内置 17 项+project 项+[default] 标记, 不创建文件
+PT-24 PASS 项目 default 文件生效: 未显式 type → my-custom + frontmatter 插入
+PT-25 PASS env TASK_TEMPLATE_DEFAULT=bugfix 生效(无项目 default 文件)
+PT-26 PASS 全缺省零影响: 产物=general 首行且无 S6 路由/插入行
+PT-27 PASS 自造模板无 template_type 行时显式指定 → 头部插入 frontmatter 行
+Total: 32 PASS=32 FAIL=0

@@ -1,0 +1,13 @@
+T01 PASS critical-rules.md '### 29' 标题 + 29.1-29.6 六子条款
+T02 PASS SKILL.md 'Rule 29' 指针 ≥2 (实测 2)
+T03 PASS check-context-hygiene.sh clean fixture exit 0
+T04 PASS check-context-hygiene.sh superseded+同主题≥5 fixture exit 1
+T05 PASS check-context-hygiene.sh findings>500 行 fixture exit 2
+T06 PASS check-context-hygiene.sh 不存在 plan-dir exit 0 (fail-open)
+T07 PASS plan-hygiene.sh --dry-run: 超龄 completed 出 ARCHIVE 行, in_progress 不出
+T08 PASS plan-hygiene.sh --execute: 超龄目录 mv 入 archive/, in_progress 不动, exit 0
+T09 PASS plan-hygiene.sh --age 3 对 3 天前 completed 出 ARCHIVE; --age 5 不出
+T10 PASS config.json 3 键注册 (context/plan hygiene=warn, plan_archive_age_days=7)
+T11 PASS config.json 合法 (json.load 不抛异常)
+T12 PASS check-context-hygiene.sh 只读 (运行前后 fixture mtime 不变)
+Total: 12 PASS=12 FAIL=0

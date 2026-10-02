@@ -1,0 +1,11 @@
+BP-01 PASS 18.9 试点先行硬门
+BP-02 PASS 18.10 单件失败禁批量（投毒红线）
+BP-03 PASS 18.11 宁慢勿错
+BP-04 PASS 18.1-18.11 编号连续各 1 次
+BP-05 PASS SKILL.md Rule 18 摘要行联动
+BP-06 PASS batch-quality-gate §二表 18.9-18.11 三行
+BP-07 PASS §八 试点先行硬门详解
+BP-08 PASS SKILL.md 行数 444 ≤558
+BP-09 PASS CD-19 宽容锚子串保护（隶属 Rules 1-36）
+BP-10 PASS CHANGELOG task-v083 条目
+Total: 10 PASS=10 FAIL=0

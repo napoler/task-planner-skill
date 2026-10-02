@@ -1,0 +1,19 @@
+TB-01 PASS mini 业务文件直做放行
+TB-02 PASS mini 保护区仍拦截
+TB-03 PASS 非 mini 不受通道影响
+TB-04 PASS Rule 14 ④ 通道条款在位
+TB-05 PASS mini 无声明缺省 silent
+TB-06 PASS mini 显式 ask 优先
+TB-07 PASS standard 档不受影响
+TB-08 PASS mini-lite 单 Phase 锚
+TB-09 PASS 38.3 契约同步
+TB-10 PASS 22.8.2 T5 豁免句
+TB-11 PASS 19.2 一行声明句
+TB-12 PASS SKILL CR 分级句
+TB-13 PASS 验证流程合并句
+TB-14 PASS 只读声明+标记槽占用放行
+TB-15 PASS 写类槽占用仍拦截
+TB-16 PASS 双条件缺声明仍拦
+TB-17 PASS 槽空闲写类正常
+TB-18 PASS 21.4 豁免子条在位
+Total: 18 PASS=18 FAIL=0

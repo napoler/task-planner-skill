@@ -66,11 +66,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 fresh executor 普查 22.3/41 引用面+现行链全文+断言锚
+交付；部署同步（五批积压）待用户裁决
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -112,10 +112,10 @@ Phase 1
 | S1 | 扩档+级联+断言 | 继承 | Phase 1 方案+级联清单 | ≤15min | pending |
 
 ### Phase 3: 独立验证（fresh ×2，含推演自证）
-- [ ] 全量 42 selftest 回归（worktree）
-- [ ] **语义推演自证（VC-3）**：fresh 子代理取 2 个本会话真实失败案例（①code-runner mini provider rejected×2→本轮实际改派/接管 ②dispatch-guard 误拦→改写 prompt），按新消解链逐步推演——验证「资料档」是否提供旧链没有的解决路径（灵活性实证）+ alignment-review 对齐审查
+- [x] 全量 42 selftest 回归全绿（sub:3，666 PASS=基线 660+SR-13 新增）
+- [x] **语义推演自证（VC-3）**：案例二（守卫连续误拦）HIGH 差异——22.3.0b 第 2 次失败强制换道，评估序①=读守卫源码+方案集（O(1) 对齐）替代 O(n) 试错；案例一 MEDIUM；对齐审查 APPROVED（sub:4）
 - **V-N:** VC-1, VC-3, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
@@ -124,12 +124,12 @@ Phase 1
 | S2 | 推演自证+对齐审查 | 继承 | 新链文本+2 个失败案例描述 | ≤15min | pending |
 
 ### Phase 4: 合并回与终验簿记
-- [ ] smart-merge-back+清理+主仓复验
-- [ ] 部署对账（fresh）+结论登记
-- [ ] memory feedback 条目（裁决原话+查资料优先级+失效条件）+MEMORY.md 索引
-- [ ] verification.md+check-complete+INDEX+簿记 commit
+- [x] smart-merge-back（V5 预案→MERGED 7e82231）+清理+主仓复验
+- [x] 部署对账：三宿主积压延续（v108-v113 五批），随交付报告呈报待裁决
+- [x] memory feedback 条目（flexible-problem-solving-2230）+MEMORY.md 索引（62 行 14.1KB）
+- [x] verification.md 全量（6/6 PASS）+check-complete+INDEX+簿记 commit
 - **V-N:** VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（① git+② 簿记+③ memory——白名单）
 
 ## 🔀 隔离决策（冲突分析）
@@ -202,9 +202,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 4 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 4（rate 0.75 verdict=ok violations=0） |
+| 主进程直做 Phase 清单 | Phase 4（① git+② 簿记+③ memory）——全白名单 |
+| 委派率 | 0.75 ≥ floor；验证独立性：四波 fresh 子代理 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 

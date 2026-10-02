@@ -44,6 +44,89 @@
 
 **验证**：4 个验收 selftest 全 PASS（fallback 31/31、rescue-chain 11/11、self-resolution 13/13 含新 SR-13、skill-collab 25/25）+ selftest-skill-split 41/41；grep -c "22\.3\.0" critical-rules.md = 9 ≥2；diff --stat 5 文件 = critical-rules.md/SKILL.md/dispatch-examples.md/selftest-self-resolution.sh/task_plan.md，与级联清单 14 项文件集一致。
 
+#### [sub:3-executor] 回归验证
+（task-v113 Phase 3 S1 全量回归执行结论，fresh 独立子代理；日志全文见 `plans/task-v113/subagent-state/logs/*.log`，checkpoint 见 `plans/task-v113/subagent-state/3-executor.md`）
+
+**环境**：worktree `/mnt/data/dev/task-planner-skill-worktrees/task-v113`（含 22.3.0 资料先行档 + 22.3.0b 换道义务落地），42 个 selftest-*.sh 逐个 `timeout 90 bash` 运行，42/42 rc=0，无超时、无 SKIP 吞失败（registry.tsv 非脚本未纳入运行，符合预期）。合计 666 PASS / 0 FAIL / 0 rc 非零。
+
+**42 行逐项原文（脚本名 | rc | Total 行原文）**：
+- selftest-active-plan.sh rc=0 | Total: 19 PASS=19 FAIL=0
+- selftest-ask-default-timeout.sh rc=0 | Total: 9 PASS=9 FAIL=0
+- selftest-batch-pilot.sh rc=0 | Total: 10 PASS=10 FAIL=0
+- selftest-check-conflicts.sh rc=0 | Total: 7 PASS=7 FAIL=0
+- selftest-check-drift.sh rc=0 | Total: 6 PASS=6 FAIL=0
+- selftest-conclusion-discipline.sh rc=0 | Total: 24 PASS=24 FAIL=0
+- selftest-context-hygiene.sh rc=0 | Total: 12 PASS=12 FAIL=0
+- selftest-delegation.sh rc=0 | Total: 38    PASS=38  FAIL=0
+- selftest-dispatch.sh rc=0 | Total: 31 PASS=31 FAIL=0
+- selftest-error-loop.sh rc=0 | Total: 16 PASS=16 FAIL=0
+- selftest-execution-stability.sh rc=0 | Total: 19  PASS=19  FAIL=0
+- selftest-fallback.sh rc=0 | Total: 31  PASS=31  FAIL=0
+- selftest-final-gate-hash.sh rc=0 | ==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====
+- selftest-fine-grain-steps.sh rc=0 | Total: 11 PASS=11 FAIL=0
+- selftest-interaction.sh rc=0 | Total: 11 PASS=11 FAIL=0
+- selftest-iterative-optimizer.sh rc=0 | Total: 8 PASS=8 FAIL=0
+- selftest-knowledge-brief.sh rc=0 | Total: 16  PASS=16  FAIL=0
+- selftest-mechanism-profile.sh rc=0 | Total: 19 PASS=19 FAIL=0
+- selftest-methodology.sh rc=0 | Total: 16 PASS=16 FAIL=0
+- selftest-plan-dispatch.sh rc=0 | Total: 12 PASS=12 FAIL=0
+- selftest-plan-tier.sh rc=0 | Total: 32 PASS=32 FAIL=0
+- selftest-reflect-verify.sh rc=0 | Total: 12 PASS=12 FAIL=0
+- selftest-registry.sh rc=0 | Total: 5 PASS=5 FAIL=0 (registry rows=42, actual selftest=42)
+- selftest-reliability-institution.sh rc=0 | Total: 12 PASS=12 FAIL=0
+- selftest-rescue-chain.sh rc=0 | Total: 11 PASS=11 FAIL=0
+- selftest-review-library.sh rc=0 | Total: 15 PASS=15 FAIL=0
+- selftest-rule23-conflict-scan.sh rc=0 | Total: 3 PASS=3 FAIL=0
+- selftest-self-resolution.sh rc=0 | Total: 13 PASS=13 FAIL=0
+- selftest-shared-tracker.sh rc=0 | Total: 11 PASS=11 FAIL=0
+- selftest-skill-collab.sh rc=0 | Total: 25  PASS=25  FAIL=0
+- selftest-skill-modify.sh rc=0 | Total: 9 PASS=9 FAIL=0 (SKIP=0)
+- selftest-skill-split.sh rc=0 | Total: 41  PASS=41  FAIL=0
+- selftest-smart-merge.sh rc=0 | Total: 17 PASS=17 FAIL=0
+- selftest-sync-index.sh rc=0 | Total: 13 PASS=13 FAIL=0
+- selftest-task-boundary.sh rc=0 | Total: 11 PASS=11 FAIL=0
+- selftest-template-lifecycle.sh rc=0 | Total: 21 PASS=21 FAIL=0
+- selftest-template-sense.sh rc=0 | Total: 8 PASS=8 FAIL=0
+- selftest-tier-b.sh rc=0 | Total: 18 PASS=18 FAIL=0
+- selftest-tool-selection.sh rc=0 | Total: 12 PASS=12 FAIL=0
+- selftest-vc-gate.sh rc=0 | Total: 11 PASS=11 FAIL=0
+- selftest-veto.sh rc=0 | Total: 13 PASS=13 FAIL=0
+- selftest-workflow-orchestration.sh rc=0 | Total: 16 PASS=16 FAIL=0
+
+**失败断言**：无（rc≠0 与 FAIL>0 均为 0，无失败根因条目）。
+
+**验收锚专项核对（Phase 2 断言面）**：selftest-fallback 31/31（T10a hint 串级联后仍全序匹配）、selftest-rescue-chain 11/11、selftest-self-resolution 13/13（含新 SR-13：^22.3.0 行存在+资料先行/换道评估顺序/官方文档关键词各 ≥1）、selftest-skill-collab 25/25、selftest-skill-split 41/41（T-主 SKILL.md ≤444 行净 0 行控未被本次变更破坏）——全部 PASS。registry 登记一致性（rows=42, actual=42）PASS。
+
+**负结果报告**：检查了 42/42 个 .sh 脚本的 rc、FAIL 计数与 Total 行；未发现任何失败断言；排除了 22.3.0/22.3.0b 扩档对既有 selftest 断言面（fallback/rescue-chain/self-resolution/skill-collab/skill-split 及全部 37 个非验收脚本）的回归风险；唯一非 Total 行格式的 final-gate-hash 已单独核对其末行 `结果: PASS=22 FAIL=0`，确认非异常。
+
+#### [sub:4-executor] 推演与对齐
+（task-v113 Phase 3 S2 语义推演自证 + alignment-review 对齐审查，fresh 独立子代理；全文见 `plans/task-v113/subagent-state/4-executor.md`。规范文件行号=worktree `/mnt/data/dev/task-planner-skill-worktrees/task-v113` critical-rules.md 实测行号）
+
+**一、推演自证（VC-3）**
+
+案例一（code-runner-agent(mini) 连续 2 次 Provider rejected）：
+- 触发判定（新链）：连续 2 次失败 = retry_limit 达限（22.3:158）→ 命中 22.3 行尾「任一档位连续失败 ≥2 次 → 先走 22.3.0 资料先行档评估换道（task-v113）」（:158）与 22.3.0 触发条件「工具持续报错或同一方法/档位连续失败（≥2 次）」（:159）。
+- 旧链决策：22.3.1 ①-fb probe/next/bind 后，因「变体 agent 定义随会话启动固化——当前会话不可见」边界（:161），决策输出=④ 主进程接管（单文件 ≤300 行）或 ⑤ AskUser；链路中无任何「查文档/查网络」动作档。
+- 新链推演（22.3.0 两步）：第一步本地帮助面——`subagent-fallback.sh` 完整接口面（实测 usage 在 :294、`-h|--help` 入口 :311）+ 22.3.1 登记的 `.task-planner-fallback-meta.json` 机制 → 确认通道健康状态与变体可见性边界；第二步网络现成方案——web-search「provider rejected/400 rejected」检索既有解法（平台状态页/GitHub issue/PR），评估「等通道恢复+新会话派发」是否优于「立即 ④ 接管」。
+- 决策差异判定：存在实质差异——旧链决策输出=直接 ④ 接管/⑤；新链在 ④/22.3.3 之前插入资料先行评估，资料可改变「接管 vs 新会话派发」的选择（若检索证实通道短暂故障，最优动作=新会话起 `Agent(<type>-fb)` 而非 ④ 接管，保持子代理执行+主上下文清洁）。差异真实但边际强度=MEDIUM（22.3.1 已部分覆盖 provider 面，新增量=文档/网络信息驱动的选择依据）。
+
+案例二（dispatch-guard 连续 3 次误拦：S 字样打包/knowledge-brief 未引用/步骤枚举超限）：
+- 旧链实际行为：逐次改写 prompt 重试（试错式同法），「失败兜底链」旧文只有「≥2 次禁同法重试」但无换道评估序定义，行为退化为同类改写 n 次。
+- 新链 22.3.0b 强制触发时点（:160）：第 2 次改写失败时（「同一方法/档位失败 ≥2 次 = Rule 7 三击第 2 击强制换道——禁止第 3 次同法」）；第 3 次改写失败时命中「连续 3 次失败 = 禁止第 4 次同法 + 强制登记 [switch-path] 换道理由」。
+- 换道评估顺序推演：① 资料先行档现成方案——「官方文档等价物」=check-dispatch.sh 守卫源码 + dispatch-examples.md 方案集：S 字样误拦根因=`grep -oE 'S[0-9]+'` 字面匹配（check-dispatch.sh:286-297），且 :290 已有「prompt 引用落盘任务书(Rule 35.3 范式)→打包检测 SKIPPED」的官方豁免语义；brief 未引用=「计划含 knowledge-brief.md 但 prompt 未引用节锚点(brief/§)」告警（:304）；步骤枚举=「step_n > step_max_steps(4)」（:329）。三根因一次读源码全部拿到精确通过条件。② 子代理隔离不适用（失败面=prompt 文本非任务本身）；③ 拆解逐个击破=按精确触发条件改写/35.3 任务书落盘引用。
+- 决策差异判定：存在实质差异且更优（HIGH）——旧链=O(n) 试错（每次 30s-1min+主上下文污染，且第 3 次仍同法）；新链=第 2 击即强制切换到「读守卫源码/示例方案集」权威对齐（O(1) 拿到 3 类检查点全部通过条件）+ [switch-path] 登记留痕。行为改变明确。
+
+推演自证结论：合格——案例二 HIGH 实质决策差异，案例一 MEDIUM 实质决策差异，两案例新链均提供旧链没有的解决路径。
+
+**二、alignment-review 对齐四要素（VC-4）**
+
+1. **diff↔意图对应（抽 5 处）**：critical-rules.md:159（22.3.0 资料档=意图①）/:160（22.3.0b 换道=意图②）/:417（41.1⑤ 扩档=意图③ 消解链同步）；SKILL.md:385 五档标题行演进注+「五机械档 ①-⑤ 序号不变」（索引面同步）；selftest-self-resolution.sh SR-13 静态锚（断言面新增）——5/5 与 Goal 意图一一对应，无越界改动。
+2. **语义联动**：「22.3.0」全库引用面 9 处（grep -c 实测）=21.4:149/22.3:158/22.3.0:159/22.3.0b:160/22.7:169「含 22.3.0 评估」/22.7.1:170「22.3.0 评估记录」/41.1:417/41.4:420 全链一致；「五档→六档」演进=41.1 本条前段:415「扩 22.3.0 资料先行档后为六档语义，五机械档 ①-⑤ 序号不变」+SKILL.md:385 同口径+templates/task_plan.md:261 WHY 注同步——演进口径三处一致。
+3. **引用完整性**：新文本引用 Rule 号 35.2/35.6/19.1/Rule 7/21.1/21.4/22.3.1-22.3.3 全部实存（grep 命中）；`scripts/subagent-fallback.sh` 实存（usage:294）；卫星名 research-assistant/Doc Search Agent/web-search=宪法 §七 路由表外部实体（非本地文件，引用合法）。**P2 ×1**：selftest-conclusion-discipline.sh:11/68/69 CD-13 注释「五档兜底引用注」为陈旧措辞（六档后应更新），断言本体（SKILL.md:394「Rule 35.3 大输入落盘引用」串）不含「五档」不受影响——注释级，非阻断。
+4. **守卫锚级联**：重跑 4 守卫锚全绿——selftest-fallback 31/31（T10a hint 全序串+tier_order 6 项含 22.3.3）、selftest-rescue-chain 11/11、selftest-self-resolution 13/13（SR-13 新锚 PASS：^22.3.0 行+资料先行/换道评估顺序/官方文档关键词）、selftest-skill-collab 25/25，均 rc=0 本会话复现。
+
+对齐结论：APPROVED（P0/P1=0；P2 ×1=CD-13 注释措辞，建议下轮演进顺手更新，不阻断合并）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
