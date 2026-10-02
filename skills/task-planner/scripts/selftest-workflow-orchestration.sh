@@ -51,10 +51,11 @@ if grep -qF '| C27 |' "$SKILLMD"; then ok 08 "SKILL.md C27 清单项"; else bad 
 if grep -qF 'dynamic-workflows（用户显式点名' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
 # WF-10 4 索引文档 "Rules 1-39" 命中总和 ≥6（文件缺失计 0 不 FAIL，仅对存在文件求和）
 cnt=0
+# task-v116: 锚口径扩展=「Rules 1-39」(括注模式字面)+「Rules 1-45」(演进后全集)合计——守卫意图不变(索引面覆盖现行全集)
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
-  if [ -f "$f" ]; then c="$(grep -c 'Rules 1-39' "$f" || true)"; cnt=$((cnt + c)); fi
+  if [ -f "$f" ]; then c="$(grep -c 'Rules 1-39' "$f" || true)"; c2="$(grep -c 'Rules 1-45' "$f" || true)"; cnt=$((cnt + c + c2)); fi
 done
-if [ "$cnt" -ge 6 ]; then ok 10 "4 索引文档 Rules 1-39 命中总和 $cnt ≥6"; else bad 10 "Rules 1-39 命中总和 $cnt <6"; fi
+if [ "$cnt" -ge 6 ]; then ok 10 "4 索引文档 Rules 1-39+1-45 命中总和 $cnt ≥6"; else bad 10 "Rules 1-39+1-45 命中总和 $cnt <6"; fi
 # WF-11 4 索引文档 "Rules 1-38" 残留 =0（同 WF-10 口径；critical-rules.md 内 1 处历史描述不在范围）
 res=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
