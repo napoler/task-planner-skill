@@ -37,18 +37,18 @@ cd task-planner-skill
 
 # 2. 快速检查所有脚本
 bash -n scripts/*.sh
-python3 -m py_compile skills/task-planner/scripts/session-catchup.py
+bash -n skills/task-planner/scripts/*.sh; bun build --no-bundle skills/task-planner/scripts/session-catchup.ts --outdir /tmp >/dev/null 2>&1 || echo "ts 语法检查: 依赖 bun,可跳过"
 node -e "require('typescript')" 2>/dev/null && npx tsc --noEmit scripts/sync-ide-folders.ts
 
 # 3. 安装 Skill 到本地环境进行真实测试
-bash scripts/install.sh
+bash skills/task-planner/install.sh
 
 # 4. 验证
 bash scripts/validate.sh
 # 预期输出：VALIDATION PASSED
 
 # 5. 修改 → 重新安装 → 重新验证
-bash scripts/install.sh --force
+bash skills/task-planner/install.sh --force
 bash scripts/validate.sh
 
 # 6. 提交（遵循 Conventional Commits）
@@ -86,7 +86,7 @@ git commit -m "feat(install): install.sh 新增 --source 参数"
 - 这些模板由 `init-session.sh` 渲染到用户工作区
 - 保留占位符（`[task-id]`、`[目标]` 等），但让它们自解释
 - 本项目的目标受众支持双语标题（中文 + 英文）
-- 每次修改后：运行 `bash scripts/install.sh` 并抽查生成的文件
+- 每次修改后：运行 `bash skills/task-planner/install.sh` 并抽查生成的文件
 
 ### `references/*.md`
 
@@ -117,7 +117,7 @@ chore: 更新 README 快速上手代码块
 - [ ] 所有新 Shell 脚本通过 `bash -n` 语法检查
 - [ ] 所有新 Python 脚本通过 `python3 -m py_compile`
 - [ ] `scripts/validate.sh` 对已安装 Skill 验证通过（退出码 0）
-- [ ] `scripts/install.sh --dry-run` 和 `--force` 均可正常执行
+- [ ] `skills/task-planner/install.sh --dry-run` 和 `--force` 均可正常执行
 - [ ] `README.md` 和 `README_zh.md` 链接了所有新增文档
 - [ ] `CHANGELOG.md` 有 `[Unreleased]` 条目描述变更
 - [ ] `CLAUDE.md`（如有仓库结构变更）保持一致
@@ -133,7 +133,7 @@ chore: 更新 README 快速上手代码块
 ```bash
 # 干净环境
 rm -rf /tmp/test-skill-install
-bash scripts/install.sh --target /tmp/test-skill-install
+bash skills/task-planner/install.sh --target /tmp/test-skill-install
 bash scripts/validate.sh /tmp/test-skill-install
 
 # 启动一个真实任务计划

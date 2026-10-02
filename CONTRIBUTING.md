@@ -37,18 +37,18 @@ cd task-planner-skill
 
 # 2. Quick sanity check on all scripts
 bash -n scripts/*.sh
-python3 -m py_compile skills/task-planner/scripts/session-catchup.py
+bash -n skills/task-planner/scripts/*.sh; bun build --no-bundle skills/task-planner/scripts/session-catchup.ts --outdir /tmp >/dev/null 2>&1 || echo "ts 语法检查: 依赖 bun,可跳过"
 node -e "require('typescript')" 2>/dev/null && npx tsc --noEmit scripts/sync-ide-folders.ts
 
 # 3. Install the skill into your own environment for real testing
-bash scripts/install.sh
+bash skills/task-planner/install.sh
 
 # 4. Validate
 bash scripts/validate.sh
 # expected: VALIDATION PASSED
 
 # 5. Make changes → re-install → re-validate
-bash scripts/install.sh --force
+bash skills/task-planner/install.sh --force
 bash scripts/validate.sh
 
 # 6. Commit (conventional commits)
@@ -86,7 +86,7 @@ git commit -m "feat(install): add --source flag to install.sh"
 - These are rendered into user workspaces by `init-session.sh`.
 - Keep placeholders (`[task-id]`, `[Goal]`, etc.) but make them self-explanatory.
 - Bilingual headings (English + Chinese) are encouraged for this project's audience.
-- After every edit: run `bash scripts/install.sh` and spot-check the generated files.
+- After every edit: run `bash skills/task-planner/install.sh` and spot-check the generated files.
 
 ### `references/*.md`
 
@@ -117,7 +117,7 @@ Before opening a PR:
 - [ ] All new shell scripts pass `bash -n`.
 - [ ] All new Python scripts pass `python3 -m py_compile`.
 - [ ] `scripts/validate.sh` passes against the installed skill (exit 0).
-- [ ] `scripts/install.sh --dry-run` and `--force` both succeed.
+- [ ] `skills/task-planner/install.sh --dry-run` and `--force` both succeed.
 - [ ] `README.md` links to any new docs you added.
 - [ ] `CHANGELOG.md` has an `[Unreleased]` entry describing your change.
 - [ ] `CLAUDE.md` (if you change repo structure) stays consistent.
@@ -133,7 +133,7 @@ The canonical test:
 ```bash
 # Clean slate
 rm -rf /tmp/test-skill-install
-bash scripts/install.sh --target /tmp/test-skill-install
+bash skills/task-planner/install.sh --target /tmp/test-skill-install
 bash scripts/validate.sh /tmp/test-skill-install
 
 # Spin a real task plan
