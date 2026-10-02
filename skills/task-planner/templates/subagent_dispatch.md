@@ -14,6 +14,7 @@
 
 ## 1. 目标
 {goal_one_sentence}
+> 本会话只执行本 S-unit：完成后交回主进程验收，再由主进程派发下一个 S-unit（Rule 46.1）；禁止本会话内领取多个 S-unit 或批次追加
 
 ## 2. 输入(计划三文件必传,绝对路径 — Rule 22.4a 读写契约)
 - task_plan: {plan_dir}/task_plan.md — 只读(状态由主进程翻转,禁止修改)
@@ -63,6 +64,7 @@ confidence: HIGH | MED | LOW
 ## 8. checkpoint 落盘路径(强制 — Rule 22.8)
 - 检查点文件:{checkpoint_path}(约定 `<plan-dir>/subagent-state/{seq}-{agent_type}.md`)
 - 落盘纪律: T1 每完成一文件 Edit/Write → 追加里程碑行(带时间戳) / T2 搜索调研得结论 → 追加 / T3 中间判断(根因/取舍) → 追加 / T4 遇错无法继续 → 写「错误与受阻」段(现象+已尝试方案),置 status: failed / T5 任务结束 → 写「最终结论」段(= 第 7 节同一 8 字段块),置 status: done(必做,防返回消息丢失)
+> 每会话单检查点：禁止在既有 checkpoint 文件上追加「批次 2/批次 3」式续写（Rule 46.1 批次追加禁令）；一个 S-unit = 一个新检查点文件
 - 文件格式:头部 status 行 + 已完成里程碑(append-only 带时间戳) + 进行中 + 产出文件清单 + 错误与受阻 + 最终结论;纯 markdown,无 frontmatter
 
 ## 9. 上下文预算(强制 — Rule 22.4 第 ⑨ 字段,小模型短上下文友好)
