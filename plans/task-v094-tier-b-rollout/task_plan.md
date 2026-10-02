@@ -18,19 +18,19 @@ skills/task-planner/{references/critical-rules.md,SKILL.md,scripts/check-*.sh,sc
 - **Status:** complete
 - **Executor:** 主进程（白名单④用户显式效率指令+本任务即 T-B4 试点 dogfood；复杂槽锁改造超限仍派发）
 ### Phase 2: T-B3 mini silent + T-B2 单 Phase（Rule 28.2/mini-lite 模板/check-complete mini 分支）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（同上）
 ### Phase 3: T-B5 T5 免写 + T-B7 findings 放宽（22.8.2/check-3file-gate）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（同上）
 ### Phase 4: T-B6 CR 分级+验证流程合并（SKILL CR Gate 段/修改后验证流程）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（同上）
 ### Phase 5: T-B1 只读分槽并行（21.4 豁免子条+check-dispatch 槽锁只读放行+selftest）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（超限派发 executor）
 ### Phase 6: 全量回归+干净上下文验证+合并部署+push+簿记
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（白名单①③）
 ## 🧭 Decisions Made
 | 时间 | 决策 | 依据 |

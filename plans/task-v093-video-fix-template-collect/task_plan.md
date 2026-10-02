@@ -166,7 +166,7 @@ Phase 1
 - [ ] Create project structure if needed
 - [ ] Document decisions with rationale
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation
@@ -178,7 +178,7 @@ Phase 1
 - [ ] Write code to files before executing
 - [ ] Test incrementally
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 （示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）
 
@@ -203,7 +203,7 @@ Phase 1
 - [ ] Document test results in progress.md
 - [ ] Fix any issues found
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）
 
 ### Phase 5: Delivery
@@ -215,7 +215,7 @@ Phase 1
 - [ ] Ensure deliverables are complete
 - [ ] Deliver to user
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
