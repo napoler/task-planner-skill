@@ -346,7 +346,7 @@ model: opus
 | **文档/规范搜索** | `doc-search-agent` | mini | ❌ | ≤1 规范文件 | 拆 doc-search-agent |
 | **综合调研（API + 选型 + 风险）** | `research-assistant` | **sonnet-1** | ❌ | ≤1 选型, ≤3 API | 升级 codebase-analyzer |
 | **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ | ≤1 模块, ≤3 文件 | 拆多 executor |
-| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 ComplexProblemSolver |
+| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 ComplexProblemSolver 或升级 complex-planner（高复杂度规划备用，GLM5.3/Opus 级） |
 | **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ | ≤1 PR, ≤3 文件 | 拆评论任务 |
 | **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ | 高频(≤3次/phase) | 无需(已节流) |
 | **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
