@@ -9,7 +9,7 @@
 #   RT-05    模板 task_plan.md `grep -c '自动超时默认项'` ≥1（配置行锚）
 #   RT-06    mini-lite `grep -c 'Rule 44 豁免'` ≥1（豁免声明锚）
 #   RT-07    registry `grep -c 'selftest-ask-default-timeout'` = 1（登记锚）
-#   RT-08    越界负断言——CRIT 44 节与 SKILL.md `grep -E '1-4[0-9]'` 零命中（禁 1-4x 越界字面；[task-v117 口径扩展] 全集 1-45，1-45 为合法形态加白 grep -vE 剔除）
+#   RT-08    越界负断言——CRIT 44 节与 SKILL.md `grep -E '1-4[0-9]'` 零命中（禁 1-4x 越界字面；[task-v118 口径扩展] 全集 1-46，1-4[56] 为合法形态加白 grep -vE 剔除）
 #   RT-09    零新 config 键——config.json properties 键数 = 40（同 R-12/WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
 
@@ -57,11 +57,15 @@ if [ "$n" -ge 1 ]; then ok 06 "mini-lite「Rule 44 豁免」声明行 $n ≥1"; 
 n="$(grep -c 'selftest-ask-default-timeout' "$REGISTRY" || true)"
 if [ "$n" -eq 1 ]; then ok 07 "registry 含 selftest-ask-default-timeout 行 = 1"; else bad 07 "registry 登记数 $n（应 1）"; fi
 # RT-08 越界负断言——CRIT 44 节与 SKILL.md 均零 1-4x 越界字面
-# [task-v117 口径扩展] SKILL.md frontmatter 全集已具名「1-45」，1-45 为合法形态→加白（grep -vE 剔除后计数），
-# 越界口径=1-4x 字面中除 1-45 外者（既有断言意图=防越界规则引用字面，语义零改动，同 WF-10 v116 处置范式）
-a="$(printf '%s\n' "$S44" | grep -E '1-4[0-9]' | grep -vcE '1-45' || true)"
-b="$(grep -E '1-4[0-9]' "$SKILLMD" | grep -vcE '1-45' || true)"
-if [ "$a" -eq 0 ] && [ "$b" -eq 0 ]; then ok 08 "越界 1-4x 字面零命中（CRIT 44 节=$a / SKILL.md=$b，1-45 已加白 task-v117）"; else bad 08 "越界 1-4x 字面命中（CRIT 44 节=$a / SKILL.md=$b，除 1-45 外均应 0）"; fi
+# [task-v118 口径扩展] frontmatter 全集具名 1-45→1-46（task-v118 Phase 2 落地），1-4[56] 为合法形态→加白（grep -vE 剔除后计数），
+# 越界口径=1-4x 字面中除 1-4[56] 外者（既有断言意图=防越界规则引用字面，语义零改动，同 v117 WF-10/PT-08 先例）
+# [task-v118 口径扩展 2026-10-03] 原行为=grep -vcE '1-45'（仅 1-45 加白），现 1-4[56] 均加白；断言语义不反转（越界仍须零命中）
+# [task-v118 fix-phase CR finding 3] 原行为=grep -E '1-4[0-9]' | grep -vcE '1-4[56]'（整行过滤：同一行 1-46 与 1-47
+# 共现时 1-47 越界字面被合法 1-46 带着加白，漏报）。现改逐匹配粒度：grep -oE 每匹配独立成行，
+# grep -vE '^1-4[56]$' 仅剔恰好等于 1-45/1-46 的匹配，余者（含 1-47）计入越界计数。
+a="$(printf '%s\n' "$S44" | grep -oE '1-4[0-9]' | grep -vE '^1-4[56]$' | wc -l)"
+b="$(grep -oE '1-4[0-9]' "$SKILLMD" | grep -vE '^1-4[56]$' | wc -l)"
+if [ "$a" -eq 0 ] && [ "$b" -eq 0 ]; then ok 08 "越界 1-4x 字面零命中（CRIT 44 节=$a / SKILL.md=$b，1-4[56] 已加白 task-v117+task-v118）"; else bad 08 "越界 1-4x 字面命中（CRIT 44 节=$a / SKILL.md=$b，除 1-4[56] 外均应 0）"; fi
 # RT-09 零新 config 键——properties 键数 = 40（同 R-12/WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
