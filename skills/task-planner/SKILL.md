@@ -275,7 +275,7 @@ model: opus
 - **Rule 38（P0）任务难度分级与轻量档**：判定(38.1 plan_tier: mini ∧ ≤2 文件 ∧ ≤15min ∧ 单模块, 三条件机器可测+MISMATCH 提示)/档位矩阵(38.2 mini-lite 模板+standard 17 variant+full general)/轻量模板契约(38.3 区块白名单)/门控豁免清单(38.4 5 锚点 if 前置, 非 mini 路径零改动)/机制(38.5 plan_tier_enforce 三档默认 warn+init-session tier 分流+selftest-plan-tier.sh)——轻任务走精简仪式消除慢源，未声明档位计划零影响（详见 references/critical-rules.md Rule 38）
 - **Rule 39（动态工作流编排 — task-v088）**：用户显式点名 `/workflow` 才路由 dynamic-workflows 编排（未点名=按 21.4 独立性守门调度，声明组并行/未声明串行，10-02）；skill 加载前置门槛（39.2）；四机制映射 失败/断点/升级/沉淀→AmendWorkflow/ResumeWorkflowRun/ResolveWorkflowQuestion/SaveWorkflow（39.3 表）；21.4 并行豁免登记（39.4）；机器校验边界=官方文档未提及 check-dispatch 覆盖 workflow 内部（39.5）；零新 config 键，selftest-workflow-orchestration.sh 守护（39.6）
 - **Rule 40（harness 工具面主动选择 — task-v097）**：工具面六类清单（/workflow、/goal、Agent 子代理、卫星技能、MCP、机械守卫脚本）（40.1）；计划期「🧰 工具选择与编排」区块=Executor 上游分析记录,不替代委派门控机器事实源（40.2）；/goal 对齐映射指引+用户侧命令如实披露（40.3）；workflow 编排建议登记制、39.1 显式点名红线不变（40.4）；机器校验边界如实披露（40.5）；零新 config 键+selftest-tool-selection.sh 守护（40.6）
-- **Rule 41（问题自主消解与升级纪律 — task-v098）**：消解优先链=重读计划→22.3 ①-④ 兜底→最小探针→拆细→替代路径,升级用户是最后手段非默认出口（41.1）；升级四门槛 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记（41.2）；trivial 小修直接做+登记,禁「留用户裁决」推诿（41.3）；升级前必过消解清单并附「已尝试清单」,D6 硬停点语义保留不弱化（41.4）；多待决项打包呈报附推荐（41.5）；零新 config 键+selftest-self-resolution.sh 守护（41.6）
+- **Rule 41（问题自主消解与升级纪律 — task-v098）**：消解优先链=重读计划→22.3 ①-④ 兜底→最小探针→拆细→替代路径(含 22.3.0 官方文档/网络现成方案),升级用户是最后手段非默认出口（41.1）；升级四门槛 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记（41.2）；trivial 小修直接做+登记,禁「留用户裁决」推诿（41.3）；升级前必过消解清单并附「已尝试清单」,D6 硬停点语义保留不弱化（41.4）；多待决项打包呈报附推荐（41.5）；零新 config 键+selftest-self-resolution.sh 守护（41.6）
 - **Rule 42（质量审查技能主动检测与补充 — task-v099）**：任务涉及质量审查面时按四级顺序检测（42.1/42.2 项目级→用户级→环境 agents→内置 review-library 兜底池，均未命中=缺口）；缺口按补充合约处置——该任务项目级补建专用质量审查技能且补建动作作为 S-unit 登记进计划，禁无登记私建技能（42.3）；计划「质量审查工具」行登记检测结论，执行期必须用登记工具（42.4）；零新 config 键+mini 档豁免（42.5）；对齐审查前置与收尾消费——写入前版本一致性校验闸门（42.6.1 未经校验不追加）+任务完成前对齐标准流程（42.6.2 全文档过 alignment-review）+变更记录输出（42.6.3）+零新键机制（42.6.4,task-v102）
 - **Rule 43（执行可靠性制度化 — task-v099）**：证据先行反幻觉——重要声称必附机器可复现验证证据，未验证内容只能以「未验证」显式登记，子代理 8 字段 evidence 无证据=该项未完成（43.1）；模型档位经济性路由——S-unit 逐行标注建议档位，取最小可承载档，失败先 22.3 升档（43.2）；方案预验证与最优选择——呈报前枚举 ≥2 候选各过最轻验证，候选对比表裁决，验证成本过高降级假设清单（43.3）；C30/C31 消费+零新 config 键+selftest-reliability-institution.sh 守护（43.4）
 - **Rule 44（用户选择点默认项与自动超时裁决 — task-v103）**：给用户的所有选择点必设默认选项+自动超时（44.1 默认 5 分钟,询问点可声明覆盖值）;产出一致仅步骤/耗时差异的低区分度选项优先按 41.3 直接裁决登记而非打扰用户（44.2）;用户超时未答复→按推荐默认项自动执行+登记自动裁决记录五要素（44.3,不打断≠不留痕）;零新 config 键+C33 消费+RT 静态守护（44.4）
@@ -382,7 +382,7 @@ model: opus
 
 **步骤 0 — 先查检查点(Rule 22.8.4)**:任何兜底动作执行前,主进程必须先 Read 该子代理的检查点文件(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,路径见 Handoff 登记表「checkpoint 路径」列)——有实质进度 → 重试 prompt 注入 resume_from 段从断点续做(模板见 `templates/subagent_dispatch.md` 附录);无进度 → 按下表兜底。
 
-**五档兜底(优先级顺序,Rule 22.3 — 拆细先于升档)**:
+**五档兜底(优先级顺序,Rule 22.3 — 拆细先于升档;任一档连续失败 ≥2 次先走 22.3.0 资料先行前置评估——help/man/官方文档→research-assistant/Doc Search Agent/web-search 现成方案,换道义务 22.3.0b,task-v113 演进,五机械档 ①-⑤ 序号不变)**:
 
 | 序 | 兜底动作 | 何时用 | 执行者 |
 |---|---------|-------|-------|
@@ -403,7 +403,7 @@ model: opus
 派发前在 task_plan.md `## 🔗 Subagent Handoff 登记表` 填一行(时间/subagent_type/目标/状态);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 `Edit findings.md` 回填结论**（「findings 落点」列记段落锚点），两动作完成才勾 `verify_done`;未 Read → findings.md 记"未验证"。Handoff 登记表含 checkpoint 路径列,failed/timeout 行必填。
 
 **反模式(禁止)**:
-- ❌ 失败后静默重试同法(违反 Rule 7 三击协议 + Rule 22.3)
+- ❌ 失败后静默重试同法(违反 Rule 7 三击协议 + Rule 22.3)；同法失败 ≥2 次第 3 次仍同法且不登记换道理由(违反 22.3.0b 换道义务,task-v113)
 - ❌ 改派/拆细/降档时无登记(违反 Rule 22.5 流程追溯)
 - ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
 - ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)

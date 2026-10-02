@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-self-resolution.sh — task-v098 P3-S4: Rule 41 问题自主消解与升级纪律静态守护
 # 范式同 selftest-tool-selection.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
-# 本脚本仅做静态断言（grep/wc/jq 为主），SR-01..SR-12 全 PASS exit 0；任一 FAIL exit 1。
+# 本脚本仅做静态断言（grep/wc/jq 为主），SR-01..SR-13 全 PASS exit 0；任一 FAIL exit 1。
 #   SR-01     critical-rules.md Rule 41 六子条锚 `grep -c '^41\.'` = 6
 #   SR-02     41.2 升级四门槛区域锚：全文件「G1」「G4」各 ≥1
 #   SR-03     消解清单措辞锚：「已尝试清单」≥1 且「D6 硬停点语义保留不弱化」≥1
@@ -84,17 +84,27 @@ if grep -qF '升级四门槛' "$SKILLMD" || grep -qF '四门槛' "$SKILLMD"; the
 else
   bad 10 "SKILL.md 缺摘要行锚（升级四门槛 / 四门槛）"
 fi
-# SR-11 skill-split 级联落地锚（task-vNNN label 宽容正则 + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v100 锚 v098→v099;2026-10-01 task-v102 B 类扩围根治: label token 随级联任务必变（v098→v099→v102 三连断）,改宽容正则 task-v099|task-v10x,断言语义不变]
-if [ "$(grep -cE 'task-v099|task-v10[0-9]' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
-  ok 11 "selftest-skill-split.sh task-v099/task-v10x label + -le 4 前缀断言行在位"
+# SR-11 skill-split 级联落地锚（task-vNNN label 宽容正则 + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v100 锚 v098→v099;2026-10-01 task-v102 B 类扩围根治: label token 随级联任务必变（v098→v099→v102 三连断）,改宽容正则 task-v099|task-v10x,断言语义不变;2026-10-02 task-v113 基线修复: f549958 上 selftest-skill-split.sh label 已演进至 task-v112 致 SR-11 断裂,正则扩 task-v11x,断言语义不变]
+if [ "$(grep -cE 'task-v099|task-v1[0-1][0-9]' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
+  ok 11 "selftest-skill-split.sh task-v099/task-v1x label + -le 4 前缀断言行在位"
 else
-  bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099|task-v10x / -le 4 前缀断言行）"
+  bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099|task-v1x / -le 4 前缀断言行）"
 fi
 # SR-12 registry 双向登记：含 selftest-self-resolution 行 ≥1 且行数=脚本数+表头（动态口径）[2026-09-30 task-v100 B 类扩围根治: 硬编码行数随每次新脚本登记必然级联断裂（v099 改 39→40 后 v100 又断）,改动态比较——期望行数=ls selftest-*.sh 计数+1 表头,断言语义等价且免未来级联]
 n="$(grep -c 'selftest-self-resolution' "$REGISTRY" || true)"
 lines="$(wc -l < "$REGISTRY")"
 expected=$(( $(ls "$(dirname "$REGISTRY")"/selftest-*.sh 2>/dev/null | wc -l) + 1 ))
 if [ "$n" -ge 1 ] && [ "$lines" -eq "$expected" ]; then ok 12 "registry selftest-self-resolution 登记行 ≥1 且总行数 $lines=脚本数+表头（动态）"; else bad 12 "registry 漂移（selftest-self-resolution 命中 $n 应 ≥1 / 总行数 $lines 应 $expected=脚本数+表头）"; fi
+# SR-13 task-v113 扩档级联锚：22.3.0 资料先行档 + 22.3.0b 换道义务 静态锚（零新 config 键维持）
+n2230="$(grep -c '^22\.3\.0 ' "$CRIT" || true)"
+k1="$(grep -c '资料先行' "$CRIT" || true)"
+k2="$(grep -c '换道评估顺序' "$CRIT" || true)"
+k3="$(grep -c '官方文档' "$CRIT" || true)"
+if [ "$n2230" -ge 1 ] && [ "$k1" -ge 1 ] && [ "$k2" -ge 1 ] && [ "$k3" -ge 1 ]; then
+  ok 13 "22.3.0 资料先行档行存在 + 资料先行/换道评估顺序/官方文档 关键词在位"
+else
+  bad 13 "22.3.0 扩档锚缺失（^22.3.0 行=$n2230 应 ≥1 / 资料先行=$k1 / 换道评估顺序=$k2 / 官方文档=$k3）"
+fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
