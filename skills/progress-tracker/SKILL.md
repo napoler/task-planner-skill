@@ -189,5 +189,5 @@ TodoWrite 或 TaskCreate：
 |-------|------|--------------------------|
 | `session-kv` | 会话级临时 KV（/tmp，重启即焚） | progress-tracker 是项目级长期账本（`.zcode/ledger/`，跨会话持久） |
 | `task-planner` | 单次任务计划（plans/task-xxx/progress.md） | progress-tracker 跨任务累积，按主题归类 |
-| `plan-bookkeeper` | task-planner 三文件机械回填 | progress-tracker 独立于 task-planner，直接追加 JSONL |
+| ~~plan-bookkeeper~~（已移除，task-v116 v107 C-P5 清账：仓内无此技能）→ task-planner 主进程簿记职能（ledger-append.sh+plan-bookkeeper 职责并入三文件回填） | task-planner 三文件机械回填 | progress-tracker 独立于 task-planner，直接追加 JSONL |
 | `todo-skill` | 单任务步骤拆解 + TaskCreate 推进 | progress-tracker 记录历史进度，不管当前任务拆解 |

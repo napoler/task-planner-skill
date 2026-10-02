@@ -30,7 +30,7 @@
 | **17.2** | subagent 嵌套禁止：禁止 plan-writer 调 plan-writer / code-assistant 调 code-assistant（递归） | Subagent frontmatter `tools` 不含 Agent/Skill 已防止 |
 | **17.3** | 任务模板复用：禁止 plan-writer 重复生成同 task_plan；用 Decisions Made 复用旧决策 | plan-writer 输入契约检查 |
 | **17.4** | drift 检测频次上限：每 phase 内 task-drift-guard ≤3 次（2-3 todo + 切模块 + phase complete） | PostToolUse hook 计数 |
-| **17.5** | opus 调用门控：单次会话 opus 累计调用（含主进程 + Skill 嵌套 + subagent 升级）≥10 次 → 触发 AskUserQuestion | PostToolUse hook 计数 + 软警告 |
+| **17.5** | opus 调用门控：单次会话 opus 累计调用（含主进程 + Skill 嵌套 + subagent 升级）≥10 次 → 触发 AskUserQuestion | PostToolUse hook 计数 + 软警告 |（与主侧 17.5 同源，无更高 STOP 档，task-v116 对齐）
 | **17.6** | 复杂任务优先 subagent：opus 上下文长读文件（>500 行）必派 subagent（沿用 Rule 13） | Rule 13 已护住 |
 | **17.7** | 代码 review 必含 `required`：`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")` | 既定 design |
 | **17.8** | 每次 opus 调用记 cost_log.md：子代理/Skill 调用记录到 `references/cost_log.md` 便于复盘 | plan-writer 产出模板加 cost_estimate |

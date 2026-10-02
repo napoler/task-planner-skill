@@ -18,7 +18,7 @@ description: 成本控制与计费知识库——Rule 17 嵌套 opus Skill 节�
 ## 关键契约速记
 
 - **Rule 17.1**：opus 档 Skill（systematic-debugging/code-review/brainstorming/writing-plans/comet-*）同 phase 内 ≤1 次，超出 → AskUserQuestion「继续/拆型/降级」
-- **Rule 17.5**：单会话 opus 累计调用（主进程+嵌套+subagent 升级）≥10 次 → 触发 AskUserQuestion；>15 次强制 STOP
+- **Rule 17.5**：单会话 opus 累计调用（主进程+嵌套+subagent 升级）≥10 次 → 触发 AskUserQuestion（与主侧 critical-rules.md 17.5 同源同改 task-v116：删除无源「>15 强制 STOP」档，v107 C-P1 清账）
 - **Rule 17.8**：每次 opus 调用记 `references/cost_log.md` 模板对应的一行；plan-writer 产出契约含 `cost_estimate` 字段（main_process_opus / subagent_calls / estimated_opus_equivalent / estimated_savings_vs_naive）
 - 典型 phase 成本 ≈ 1.5-3.0 opus 等效（naive 全 opus 为 5-7×，节流后节省约 50-70%）
 
