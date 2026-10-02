@@ -100,13 +100,11 @@ Phase 1
 | S1 | 普查+修订方案 | 继承 | critical-rules Rule 22.3/41+grep 引用面+selftest 锚 | ≤15min | pending |
 
 ### Phase 2: 扩档修订与级联（worktree）
-- [ ] Rule 22.3 资料档新增+换道义务条款+41.1 消解链扩档（按 Phase 1 方案）
-- [ ] 引用面级联（普查清单逐处；「五档」→「六档」或演进标注，以普查为准）
-- [ ] SKILL.md 兜底段同步行
-- [ ] selftest 断言级联+worktree 内全量自验
-- [ ] 逐批 commit，worktree 干净
+- [x] 22.3.0 资料先行档+22.3.0b 换道义务落地+41.1⑤ 扩档引用+级联 14 项（5 文件 +29/-17）
+- [x] selftest 级联：fallback 31/31+rescue-chain 11/11+self-resolution 13/13（含新 SR-13）+skill-collab 25/25；偏差披露 2 处（SR-11 基线 pre-existing 正则修复+SKILL 444 满额处置=演进注净 0 行）
+- [x] worktree commit 干净
 - **V-N:** VC-2, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |

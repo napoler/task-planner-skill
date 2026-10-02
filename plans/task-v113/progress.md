@@ -28,6 +28,7 @@
 - **Started:**
 - Actions taken:
   -
+  - [sub:2] Rule 22.3/41 消解链扩档级联完成（方案 A）：critical-rules.md 插 22.3.0 资料先行档+22.3.0b 换道义务、21.4/22.7/22.7.1/41.1/41.4/413 七处扩档；SKILL.md :385/:278/:406 三处；templates/task_plan.md:261；dispatch-examples.md:33；selftest-self-resolution.sh 新增 SR-13 静态锚；偏差披露 2 处（基线 pre-existing SR-11 FAIL 修复正则扩 task-v11x；SKILL.md ≤444 行硬锚净 0 行控）；验证 4 验收 selftest+skill-split 全 PASS（31/31、11/11、13/13、25/25、41/41），grep -c "22.3.0" critical-rules.md=9，diff --stat 5 文件与级联清单一致 → findings.md §[sub:2-executor] + checkpoint subagent-state/2-executor.md
 - Files created/modified:
   -
 - Test Results:
