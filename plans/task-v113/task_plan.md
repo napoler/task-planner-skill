@@ -90,9 +90,9 @@ Phase 1
 - [ ] Rule 41.1 消解优先链现行全文——同步扩档点
 - [ ] 全库「22.3」「41.1」「五档」引用面普查（grep 实测全集 file:line）
 - [ ] selftest 断言锚（selftest-rescue-chain/selftest-self-resolution/selftest-fallback 相关断言行）
-- [ ] 修订方案：资料档条款草案（工具错误→help/--help/man/官方文档→仍失败→网络现成方案 research-assistant/Doc Search/web-search→评估后进改派/拆细）+换道义务草案（≥2 次 Rule 7 联动必须换道且优先评估现成方案/子代理/拆解；3 次禁第 4 次同法）+级联清单
+- [x] 修订方案三件：资料档=22.3.0 前置（序号不变零冲突，skill-collab T4 实证无既有断言）+换道义务=22.3.0b+级联清单 14 项（含 selftest-fallback T10a 全序断言级联）；宪法 §七落差确认
 - **V-N:** VC-2, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
@@ -100,13 +100,11 @@ Phase 1
 | S1 | 普查+修订方案 | 继承 | critical-rules Rule 22.3/41+grep 引用面+selftest 锚 | ≤15min | pending |
 
 ### Phase 2: 扩档修订与级联（worktree）
-- [ ] Rule 22.3 资料档新增+换道义务条款+41.1 消解链扩档（按 Phase 1 方案）
-- [ ] 引用面级联（普查清单逐处；「五档」→「六档」或演进标注，以普查为准）
-- [ ] SKILL.md 兜底段同步行
-- [ ] selftest 断言级联+worktree 内全量自验
-- [ ] 逐批 commit，worktree 干净
+- [x] 22.3.0 资料先行档+22.3.0b 换道义务落地+41.1⑤ 扩档引用+级联 14 项（5 文件 +29/-17）
+- [x] selftest 级联：fallback 31/31+rescue-chain 11/11+self-resolution 13/13（含新 SR-13）+skill-collab 25/25；偏差披露 2 处（SR-11 基线 pre-existing 正则修复+SKILL 444 满额处置=演进注净 0 行）
+- [x] worktree commit 干净
 - **V-N:** VC-2, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体 | 输入(路径+摘要) | 预估时长 | 状态 |
