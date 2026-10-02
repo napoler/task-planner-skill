@@ -27,7 +27,7 @@ LLM 会遗忘。经过约 50 次工具调用后，原始目标会漂移，指令
 | 多任务并行 | ❌ 仅单任务 | ✅ N 个子代理，`plans/INDEX.md` 协调者 |
 | 范围守护 | 手动 | PreToolUse Hook 阻止计划外写入 |
 | 子代理验证 | 信任"完成" | Read 实际文件后才接受 |
-| 跨会话恢复 | 手动恢复 | `session-catchup.py` 自动检测 |
+| 跨会话恢复 | 手动恢复 | `session-catchup.ts`（bun/node）自动检测 |
 | 配置阈值 | 硬编码 | `config.json`（max_vc、retry_count 等） |
 
 ---
@@ -43,7 +43,7 @@ LLM 会遗忘。经过约 50 次工具调用后，原始目标会漂移，指令
 | **多任务并行** | 启动 N 个子代理，各拥有 `plans/task-XXX-*`；协调者通过 `plans/INDEX.md` 跟踪 |
 | **子代理验证** | 子代理返回"完成"后，必须 Read 验证文件实际变更（completion-gate 规则） |
 | **配置驱动阈值** | `config.json` 集中管理 `max_vc`、`retry_count`、`escalation_threshold` 等参数 |
-| **中断恢复** | `session-catchup.py` 检测上一轮中断点，避免重复劳动 |
+| **中断恢复** | `session-catchup.ts`（bun/node）检测上一轮中断点，避免重复劳动 |
 | **项目模板覆盖** | 在项目中放置 `.claude/plan-templates/` 可覆盖内置模板 |
 | **跨平台** | 脚本支持 Linux/macOS/WSL；PowerShell 镜像用于原生 Windows |
 
@@ -56,16 +56,16 @@ LLM 会遗忘。经过约 50 次工具调用后，原始目标会漂移，指令
 ```bash
 git clone https://github.com/napoler/task-planner-skill.git
 cd task-planner-skill
-bash scripts/install.sh
+bash skills/task-planner/install.sh
 ```
 
-默认安装位置：`~/.claude/skills/task-planner/`。可通过 `--target DIR` 自定义。
+安装脚本自动检测已装的 AI 工具（claude-code / zcode / opencode 等多工具软壳模型），为每个检测到的工具安装对应位置的软壳并迁移外部引用；可用 `--tools <列表>` 指定目标工具、`--canonical <路径>` 指定规范源、`--no-verify` / `--no-backup` / `--dry-run` 控制行为。
 
 ### 2. 验证安装
 
 ```bash
-bash scripts/validate.sh
-# 预期输出：VALIDATION PASSED
+bash skills/task-planner/lib/verify.sh
+# 预期输出：[verify] summary: N pass / 0 fail
 ```
 
 ### 3. 重启 Claude Code 并调用
@@ -77,7 +77,7 @@ bash scripts/validate.sh
 ```
 
 Claude 将：
-1. 运行 `session-catchup.py`（检测残留计划）
+1. 运行 `session-catchup.ts`（bun/node；检测残留计划）
 2. 创建 `plans/task-001/` 并运行 `init-session.sh`
 3. 展示计划并等待你确认"yes"
 4. 逐阶段执行，在计划文件中标记进度
@@ -122,18 +122,18 @@ task-planner-skill/
     │   ├── check-complete.sh      ← Stop Hook：汇总阶段完成情况
     │   ├── check-complete.ps1     ← Windows 镜像
     │   ├── init-session.ps1       ← Windows 镜像
-    │   ├── session-catchup.py     ← 跨会话恢复
+    │   ├── session-catchup.ts     ← 跨会话恢复（bun/node）
     │   └── sync-ide-folders.ts    ← IDE 工作区同步
     ├── templates/
     │   ├── task_plan.md           ← 阶段 + VC 模板
-    │   ├── knowledge-brief.md     ← 必要知识储备（6 文件之一）
-    │   ├── variant/               ← 16 个 template_type 变体（*-*-type.md，含 mini-lite/rule-enhancement/video/video-fix）
+    │   ├── knowledge-brief.md     ← 必要知识储备（6 个计划文件之一）
+    │   ├── variant/               ← 29 类 template_type 变体（*-*-type.md，含 video/image 家族 12 类）
     │   ├── verification.md        ← VC + 阶段门控模板
     │   ├── findings.md            ← 发现与决策记录
     │   ├── progress.md            ← 会话进度日志
     │   └── notepad-learnings.md
     └── references/
-        ├── critical-rules.md      ← Rules 1-39 核心执行约束
+        ├── critical-rules.md      ← Rules 1-45 核心执行约束
         ├── completion-gate.md     ← 子代理验证协议
         ├── goal-gate.md           ← COMPLETE / PARTIAL / BLOCKED 判定标准
         └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）
@@ -147,10 +147,10 @@ task-planner-skill/
 用户任务
    │
    ▼
-session-catchup.py     ← 如有残留计划则恢复
+session-catchup.ts     ← 如有残留计划则恢复（bun/node）
    │
    ▼
-init-session.sh        ← 创建 plans/task-XXX/ 及 5 个模板文件
+init-session.sh        ← 创建 plans/task-XXX/ 及 6 个计划文件
    │
    ▼
 填写 task_plan.md      ← 写入目标 + 阶段 + VC + 范围
@@ -181,8 +181,8 @@ init-session.sh        ← 创建 plans/task-XXX/ 及 5 个模板文件
 | # | 判定标准 | 验证方式 | 证据路径 |
 |---|----------|----------|----------|
 | VC-1 | README ≥3000 字符 | wc -c README.md | README.md |
-| VC-2 | install.sh 退出码 0 | bash install.sh --dry-run | stdout |
-| VC-3 | validate.sh 退出码 0 | bash validate.sh | 退出码 |
+| VC-2 | install.sh 退出码 0 | bash skills/task-planner/install.sh --dry-run | stdout |
+| VC-3 | lib/verify.sh 退出码 0 | bash skills/task-planner/lib/verify.sh | 退出码 |
 | ... | | | |
 ```
 
@@ -214,7 +214,7 @@ plans/
 
 ## 英文文档
 
-暂无独立英文 README / 安装文档。英文贡献流程见 `CONTRIBUTING.md`；安装与说明以 `INSTALL_zh.md` / 本文件为主（内含英文术语）。
+Skill 包内英文文档：`skills/task-planner/INSTALL.md`（英文安装说明）与 `skills/task-planner/README.md`（英文说明）。英文贡献流程见 `CONTRIBUTING.md`；安装与说明以 `INSTALL_zh.md` / 本文件为主（内含英文术语）。
 
 ---
 
@@ -226,7 +226,7 @@ plans/
 | `examples/full-workflow.md` | 端到端演示：从用户请求到 COMPLETE |
 | `skills/task-planner/examples.md` | Skill 包内实战示例 |
 | `skills/task-planner/reference.md` | Manus Context Engineering 原则 + 决策矩阵 |
-| `skills/task-planner/references/critical-rules.md` | Rules 1-39 —— 自定义前必读 |
+| `skills/task-planner/references/critical-rules.md` | Rules 1-45 —— 自定义前必读 |
 | `skills/task-planner/references/goal-gate.md` | VC 门控工作原理、COMPLETE/PARTIAL/BLOCKED 规则 |
 | `skills/task-planner/references/completion-gate.md` | 子代理验证协议 |
 | `CONTRIBUTING.md` / `CONTRIBUTING_zh.md` | 开发流程、脚本规范、PR 检查清单 |
@@ -263,4 +263,4 @@ MIT —— 见 [`LICENSE`](LICENSE)。
 
 ## 贡献
 
-欢迎 PR。详见 [`CONTRIBUTING_zh.md`](CONTRIBUTING_zh.md)（中文版）或 [`CONTRIBUTING.md`](CONTRIBUTING.md)（英文版）。Skill 逻辑位于 `skills/task-planner/`；安装/验证/卸载脚本位于仓库根目录 `scripts/`。修改前请先阅读相关参考文档。
+欢迎 PR。详见 [`CONTRIBUTING_zh.md`](CONTRIBUTING_zh.md)（中文版）或 [`CONTRIBUTING.md`](CONTRIBUTING.md)（英文版）。Skill 逻辑位于 `skills/task-planner/`；安装/验证/卸载脚本位于 `skills/task-planner/` 内（`install.sh` / `lib/verify.sh` / `uninstall.sh`）。修改前请先阅读相关参考文档。
