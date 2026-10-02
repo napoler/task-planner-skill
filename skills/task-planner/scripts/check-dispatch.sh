@@ -279,9 +279,27 @@ count_step_markers() {
         grep -oE '第[0-9]{1,3}步' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
         # [2026-10-03 task-v118] 任务书模式: 行首 markdown 编号项编号入去重集合;
         # 只提取行首序号位数字（sed 剥前导空白+首个非数字截断）, 避免把正文数字（如 "1. 改 step 3"）拖入
-        [ -n "$taskbook" ] && grep -E '^[[:space:]]*[0-9]+[.、)）]' "$f" 2>/dev/null | sed -E 's/^[[:space:]]+//; s/[^0-9].*//'
+        # [2026-10-03 task-v118 CR] 位数上限 {1,2}: 原行为 [0-9]+ 无上限定, 任务书含行首日期
+        # 「2025.10.03 修订记录」时 2025/10/3 三个值混入去重集合 → enforce 档步骤枚举门误拦;
+        # 枚举列表行首编号几乎不超 99, 位限后日期不再命中本口径。
+        [ -n "$taskbook" ] && grep -E '^[[:space:]]*[0-9]{1,2}[.、)）]' "$f" 2>/dev/null | sed -E 's/^[[:space:]]+//; s/[^0-9].*//'
         grep -oE '①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩|⑪|⑫|⑬|⑭|⑮' "$f" 2>/dev/null | awk '{if($0=="①")print 1;else if($0=="②")print 2;else if($0=="③")print 3;else if($0=="④")print 4;else if($0=="⑤")print 5;else if($0=="⑥")print 6;else if($0=="⑦")print 7;else if($0=="⑧")print 8;else if($0=="⑨")print 9;else if($0=="⑩")print 10;else if($0=="⑪")print 11;else if($0=="⑫")print 12;else if($0=="⑬")print 13;else if($0=="⑭")print 14;else if($0=="⑮")print 15}'
     } | sort -n -u | grep -c . || true
+}
+
+# [2026-10-03 task-v118 CR-BLOCKER] 守卫②(任务书打包)/守卫④(任务书步骤计数)共用提取器
+# 原行为 = ②④两处各自内联 grep -oE '[^[:space:]"]*subagent-state/[^[:space:]"]*' + sed 剥标点,
+#   且两处字符类不一致(②剥「」④不剥); 字符类不含全角括号（）与全角冒号：, 中文最自然引用形态
+#   「执行（任务书：/path/subagent-state/tb.md）按序」提取出整串含前后缀的 token, 对存在的文件
+#   -f 判定失败 → fail-open, 守卫②④对全角形态失明(CR 必修项 1)。
+# 修法 = 提取字符类两侧扩展 ASCII+全角定界(「」『』“”（）(),，。：:；;、！!?？等),
+#   再用 LC_ALL=C sed 按字节剥残余非 ASCII 前后缀(纯 CJK 粘连形态「详见subagent-state/x.md按序」兜底),
+#   归一为 1 行 1 个去重路径(≤3 个)供 ②④ 统一消费。
+extract_subagent_state_refs() {
+    local f="$1"
+    grep -oE '[^[:space:]"「」『』“”（）(),，。：:；;、！!?？]*subagent-state/[^[:space:]"「」『』“”（）(),，。：:；;、！!?？]*' "$f" 2>/dev/null \
+        | LC_ALL=C sed -E 's/^[^[:print:]]*//; s/[^[:print:]]*$//' \
+        | sort -u | head -3 || true
 }
 
 # [task-v075 P3-S1 + task-v081] 四项增量检测（Rule 22.4 KQ3; 口径与档位语义见文件头注释 2026-09-16 段）
@@ -319,8 +337,11 @@ fine_grain_checks() {
     #    计 distinct `S[0-9]+` 数 n: n≥2 → 打包命中计入 hits(走既有档位管线); n≤1 或引用文件全部不存在/不可读
     #    → fail-open: SKIPPED 行(不计 hits, 维持 selftest FG-05 fixture 语义——其引用文件从未创建)
     if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
-        tb="$(grep -oE '[^[:space:]"]*subagent-state/[^[:space:]"]*' "$pf" 2>/dev/null \
-             | sed -E 's/^[「"]+//; s/[),。，；;」”]+$//' | sort -u | head -3 || true)"
+        # [2026-10-03 task-v118 CR-BLOCKER] 提取器改共用函数 extract_subagent_state_refs:
+        # 原行为 = 内联 grep 字符类 [^[:space:]"] 不含全角括号（）/全角冒号：, 全角引用形态
+        # 提取出含前后缀的整串 token → -f 判定失败 fail-open; 且与守卫④内联提取字符类不一致
+        # (②剥「」④不剥)。现 ②④ 统一消费共用提取器(字符类含全角定界+残余非 ASCII 前后缀按字节剥离)。
+        tb="$(extract_subagent_state_refs "$pf")"
         tn=""
         for tb in $tb; do
             [ -f "$tb" ] && [ -r "$tb" ] && tn="$tn
@@ -367,7 +388,10 @@ $(cat -- "$tb" 2>/dev/null)"
     if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
         # [2026-10-03 task-v118] 任务书分支改用任务书模式(第二参 tb): 行首 markdown 编号并入计数
         # (原行为=count_step_markers "$tb" 单参, 行首 markdown 编号不入口径, 任务书 `1.`-`6.` 全漏检)
-        tb="$(grep -oE '[^[:space:]"]*subagent-state/[^[:space:]"]*' "$pf" 2>/dev/null | sed -E 's/[),。，；;]+$//' | head -3 || true)"
+        # [2026-10-03 task-v118 CR-BLOCKER] 提取器改共用函数 extract_subagent_state_refs:
+        # 原行为 = 内联 grep 字符类 [^[:space:]"] 不含全角括号（）/全角冒号：且本处不剥「」
+        # (与守卫②内联提取不一致), 全角引用形态 -f 判定失败 fail-open; 现 ②④ 统一消费共用提取器。
+        tb="$(extract_subagent_state_refs "$pf")"
         for tb in $tb; do
             [ -f "$tb" ] || continue
             tn="$(count_step_markers "$tb" tb)"

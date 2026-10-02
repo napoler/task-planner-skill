@@ -10,9 +10,15 @@
 #   GR-07 [fixture] 任务书（subagent-state/ 落盘）含 2 个不同 S-id + prompt 引用它 → enforce exit 2 且 stderr 含「任务书检出」
 #   GR-08 [fixture] 任务书含 6 个行首 markdown 编号动作 → enforce exit 2 且 stderr 含「步骤枚举超限」
 #   GR-09 [fixture] 自由 prompt（无任务书双条件）含 6 个行首 markdown 编号 → exit 0（自由口径排除行首编号, 不拦）
+#   GR-10 [fixture] 全角形态引用「执行（任务书：TB 路径）」（全角括号+全角冒号）+ 任务书含 2 个不同 S-id → enforce exit 2 且 stderr 含「任务书检出」
 # 档位: 行为 fixture 实跑 check-dispatch.sh pretool, TASK_PLANNER_DISPATCH_ENFORCE=enforce + TASK_PLANNER_PLAN_DIR=<tmp 最小计划目录>
-# 依据: critical-rules.md L474-483（Rule 46 条款块）/ check-dispatch.sh L48-53（②收窄注释）L304-327（②实现）
-#   L264-277（④count_step_markers tb 模式）/ SKILL.md L85（2.5 委派检查点）/ templates/subagent_dispatch.md L17、L67（Rule 46.1 引导行）
+# 依据（字面锚, 不用行号——check-dispatch.sh 持续演进, 行号必漂移）:
+#   critical-rules.md Rule 46 条款块（「### 46 子代理单任务专注度」及其 46.1..46.5 子条）
+#   check-dispatch.sh 守卫②收窄注释（「任务书豁免收窄(Rule 46.2)」注释块）; ②实现=「任务书检出」分支
+#     （双条件命中后 cat 合并任务书计 distinct S-id, ≥2 →「任务书检出 N 个 S-unit ID」计入 hits）;
+#   ④=count_step_markers "$tb" tb 模式调用（fine_grain_checks ④ 任务书分支）;
+#   提取器=extract_subagent_state_refs 共用函数（②④ 统一消费, 字符类含全角定界）
+#   SKILL.md 委派检查点 2.5（「单会话单 S-unit（Rule 46.1」措辞）/ templates/subagent_dispatch.md Rule 46.1 引导行
 # 9 断言全 PASS exit 0; 任一 FAIL exit 1。fixture prompt 含派发契约必备标签（三文件路径 + status:/acceptance:/checkpoint: +
 # subagent-state/ 字面）避免缺项扫描（scan_missing）干扰——范式对照 selftest-fine-grain-steps.sh SG-06 PBOOK 构造
 # （任务书引用行用 ASCII 括号闭合, 与 ②③ 的 sed 去尾标点类 `[),。，；;「”]` 对齐, 保证提取路径 -f 可命中）。
@@ -117,6 +123,20 @@ r9="$(run_guard "$P9")"; rc9="${r9%%$'\t'*}"; err9="${r9#*$'\t'}"
 if [ "$rc9" -eq 0 ] && ! printf '%s' "$err9" | grep -q '步骤枚举'; then
   ok 09 "自由 prompt 6 编号 → exit 0 不拦"
 else bad 09 "rc=$rc9 err=$err9 (期望 exit 0 且无步骤枚举告警)"; fi
+
+# GR-10 全角形态引用「执行（任务书：<TB 路径>）」（全角括号+全角冒号）→ 防 CR BLOCKER 盲区形态回退
+# Why: 原内联提取字符类 [^[:space:]"] 不含（）：, 全角引用形态提取出含前后缀的整串 token, -f 判定失败
+# fail-open（CR BLOCKER）; 现 ②④ 统一消费共用提取器 extract_subagent_state_refs（字符类含全角定界+
+# 字节级剥残余非 ASCII 前后缀）, 该形态必须被 ②收窄拦截——本断言即回退防护（与 GR-07 半角形态互补）。
+TB10="$FP/subagent-state/taskbook-gr10.md"
+printf 'S3 做动作丙\nS4 做动作丁\n' > "$TB10"
+printf '执行（任务书：%s）按序\n' "$TB10" > "$RUN/body10.txt"
+P10="$RUN/p10.md"
+mk_prompt "$P10" "$RUN/body10.txt"
+r10="$(run_guard "$P10")"; rc10="${r10%%$'\t'*}"; err10="${r10#*$'\t'}"
+if [ "$rc10" -eq 2 ] && printf '%s' "$err10" | grep -q '任务书检出'; then
+  ok 10 "全角形态引用 + 2 S-id 任务书 → exit 2 + 任务书检出"
+else bad 10 "rc=$rc10 err=$err10 (期望 exit 2 + 任务书检出)"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
