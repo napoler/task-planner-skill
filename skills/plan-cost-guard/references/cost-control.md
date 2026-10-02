@@ -165,7 +165,7 @@ cost_estimate:
 |------|------|
 | `~/.zcode/AGENTS.md §十` | ZCode 模型档位事实 |
 | `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` | agent 模型分档约定 |
-| `references/critical-rules.md` | Rule 17 八条款（核心载体） |
+| `../../task-planner/references/critical-rules.md` | Rule 17 八条款（核心载体） |
 | `references/billing.md` | 子代理成本估算表（与本文件 §三同步） |
 | `references/cost_log.md` | opus 调用日志模板 |
 | `agents/plan-writer.md` | plan-writer 产出契约含 cost_estimate |

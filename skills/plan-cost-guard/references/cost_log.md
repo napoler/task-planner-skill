@@ -4,7 +4,7 @@
 
 > 每次 opus 档 Skill 调用 / 主进程 opus 计算 / 嵌套 opus 都记一行。
 > 主进程在 PostToolUse hook 检测到 opus 类调用时自动追加;用户也可手工补充。
-> 详见 `references/cost-control.md` §四 + critical-rules.md Rule 17.5。
+> 详见 `references/cost-control.md` §四 + `../../task-planner/references/critical-rules.md` Rule 17.5。
 
 ---
 
@@ -66,7 +66,7 @@
 | 文档 | 用途 |
 |------|------|
 | `references/cost-control.md` | 完整成本控制策略 + 模型档位映射 |
-| `references/critical-rules.md` | Rule 17 八条款（核心载体） |
+| `../../task-planner/references/critical-rules.md` | Rule 17 八条款（核心载体） |
 | `references/billing.md` | 子代理成本估算表 |
 | `agents/plan-writer.md` | `cost_estimate` 字段定义 |
 

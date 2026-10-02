@@ -108,7 +108,7 @@ done
 | Rule 9（错误提前暴露） | 18.3 failure_rate >5% STOP = Rule 9 的批量特化 |
 | Rule 11/15（漂移检测） | 漂移检测比对 Goal/VC；18.3/18.6 补上"批量累积指标"这一盲区 |
 | Rule 17（成本控制） | 对仗关系：17 节流 opus 数量，18 节流质量损失；批量子代理派发同时受两者约束 |
-| publish-type.md 模板 | 唯一提到批量的 variant，其批量 VC 由本文件 §三 八字段支撑 |
+| 含批量语境的 variant 模板 | 实测（v117 R-15 清账，grep '批量\|batch' templates/variant/ 命中 6 家）：publish-type.md（唯一显式引用本门控 §三 八字段/Rule 18，批量 VC 由此支撑）；video/video-fix/image/character-design/motion-camera 5 家含批量语境（批量出图/多抽/逐段生成等）但未显式引用 Rule 18——批量 ≥5 单元时按 Rule 18 门控仍适用，显式登记为 follow-up |
 | fan-out chain_mode | 18.7 把"结构标记"升级为"质量责任"（聚合 Phase 强制） |
 | article-batch-publisher 等 agent | 本文件是规则层；agent 层 flag 改造（分项跳过）为 follow-up，待用户授权 |
 | Rule 31（错误学习闭环） | 18.10 投毒红线处置链直接消费 31.2（根因定位）/31.4（沉淀）；单件失败先归因再谈批量，禁直接重跑 |

@@ -107,7 +107,7 @@
 
 ### 删除
 
-(无)
+- **仓根 `README.md` / `INSTALL.md` 英文版删除,移入 `skills/task-planner/{README,INSTALL}.md`**（2026-10-02 task-v117 回填 D6-19,commit 2337ce0）— 英文版文档随 skill 包归入 skill 目录,仓根不再保留独立英文 README/INSTALL;中文版 `README_zh.md` / `INSTALL_zh.md` 维持仓根不动。
 
 
 ## [2.0.0] — 2026-08-08
