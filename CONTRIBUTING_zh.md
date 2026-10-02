@@ -37,7 +37,7 @@ cd task-planner-skill
 
 # 2. 快速检查所有脚本
 bash -n scripts/*.sh
-python3 -m py_compile skills/task-planner/scripts/session-catchup.py
+bash -n skills/task-planner/scripts/*.sh; bun build --no-bundle skills/task-planner/scripts/session-catchup.ts --outdir /tmp >/dev/null 2>&1 || echo "ts 语法检查: 依赖 bun,可跳过"
 node -e "require('typescript')" 2>/dev/null && npx tsc --noEmit scripts/sync-ide-folders.ts
 
 # 3. 安装 Skill 到本地环境进行真实测试
