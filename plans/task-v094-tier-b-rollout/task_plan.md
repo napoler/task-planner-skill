@@ -1,6 +1,7 @@
 <!-- template_type: rule-enhancement -->
 # Task Plan: task-v094 Tier B 全 7 项落地（执行消耗结构性削减）
 ## Goal
+> **[清账标注 2026-10-02 task-v115]** 本计划 Tier B 7 项已由后续任务实际落地（v095 主技能拆分/v096 模板自动记录/v097 工具面主动选择——各任务 memory 可查）；本计划不再独立推进，状态翻 complete 归档。原始 Goal 保留如下：
 落地 v091 提案 Tier B 全 7 项（用户 2026-09-28 AskUserQuestion 裁决「全 7 项」=Rule 32.4 显式解禁），削减简单/复杂任务执行消耗：T-B4 直做通道 / T-B3 mini silent / T-B2 mini 单 Phase / T-B5 T5 免写 / T-B7 findings 放宽 / T-B6 CR 分级 / T-B1 只读分槽并行。质量门控判定力不削弱（G1-G10 护栏延续）。
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 |
@@ -14,7 +15,7 @@
 skills/task-planner/{references/critical-rules.md,SKILL.md,scripts/check-*.sh,scripts/selftest-*.sh,templates/mini-lite-type.md,config.json(如需键)}；worktree 隔离；Rule 36.4 语义变更清单=提案 §四 Tier B 表+本次用户裁决，逐项 commit。
 ## Phases
 ### Phase 1: T-B4 直做通道+委派联动（Rule 14/25.3/25.4/check-delegation）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（白名单④用户显式效率指令+本任务即 T-B4 试点 dogfood；复杂槽锁改造超限仍派发）
 ### Phase 2: T-B3 mini silent + T-B2 单 Phase（Rule 28.2/mini-lite 模板/check-complete mini 分支）
 - **Status:** pending
