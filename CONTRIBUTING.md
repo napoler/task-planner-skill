@@ -9,22 +9,20 @@ Thanks for looking at this project. Here's how to work on it without stepping on
 ```
 task-planner-skill/
 ├── CLAUDE.md                  # repo-level guidance (read this)
-├── scripts/                   # installation / validation tooling (your entry point)
-│   ├── install.sh
-│   ├── uninstall.sh
-│   └── validate.sh
 ├── examples/
 │   └── full-workflow.md       # end-to-end walkthrough
 ├── skills/task-planner/       # THE SKILL — read-only reference during polish
 │   ├── SKILL.md
 │   ├── config.json
+│   ├── install.sh / uninstall.sh   # installation tooling (actual location; task-v117 R-09)
+│   ├── lib/                   # verify.sh — install validation entry (requires TASK_PLANNER_ROOT)
 │   ├── scripts/               # existing scripts (do not add new ones here without reviewing)
 │   ├── templates/
 │   └── references/
 └── plans/                     # workspace for planning your work (gitignored)
 ```
 
-**Rule:** changes to the skill live in `skills/task-planner/`. Changes to packaging/install/validation live in repo-level `scripts/` and markdown files.
+**Rule:** changes to the skill live in `skills/task-planner/`. Changes to packaging/install/validation live in `skills/task-planner/install.sh` / `uninstall.sh` / `lib/verify.sh` and the repo-root markdown files.
 
 ---
 
@@ -35,21 +33,20 @@ task-planner-skill/
 git clone <repo>
 cd task-planner-skill
 
-# 2. Quick sanity check on all scripts
-bash -n scripts/*.sh
-bash -n skills/task-planner/scripts/*.sh; bun build --no-bundle skills/task-planner/scripts/session-catchup.ts --outdir /tmp >/dev/null 2>&1 || echo "ts 语法检查: 依赖 bun,可跳过"
-node -e "require('typescript')" 2>/dev/null && npx tsc --noEmit scripts/sync-ide-folders.ts
+# 2. Quick syntax check on scripts
+bash -n skills/task-planner/scripts/*.sh; bun build --no-bundle skills/task-planner/scripts/session-catchup.ts --outdir /tmp >/dev/null 2>&1 || echo "ts syntax check: depends on bun, skippable"
 
 # 3. Install the skill into your own environment for real testing
 bash skills/task-planner/install.sh
 
-# 4. Validate
-bash scripts/validate.sh
-# expected: VALIDATION PASSED
+# 4. Validate (task-v117 R-09: real entry = lib/verify.sh, requires TASK_PLANNER_ROOT)
+TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh
+# expected: [verify] summary: N pass / 0 fail (exit 0)
 
 # 5. Make changes → re-install → re-validate
-bash skills/task-planner/install.sh --force
-bash scripts/validate.sh
+# (task-v117 R-09: install.sh flag surface = --canonical / --tools / --no-verify / --no-backup / --dry-run)
+bash skills/task-planner/install.sh --no-backup
+TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh
 
 # 6. Commit (conventional commits)
 git add -p
@@ -60,14 +57,14 @@ git commit -m "feat(install): add --source flag to install.sh"
 
 ## Script Rules
 
-### `scripts/*.sh`
+### `skills/task-planner/scripts/*.sh`
 
 - Bash, `set -euo pipefail` at the top.
-- `--dry-run` is the safe default; `--force` overrides it.
+- `--dry-run` is the safe default; the flag surface is `--canonical / --tools / --no-verify / --no-backup / --dry-run` (task-v117 R-09, per install.sh).
 - Exit codes: 0 success, 1 user error, 2 environment error, 3 validation failure.
 - Never depend on Python or Node — shell scripts must run on a plain bash environment.
 - After every edit: `bash -n path/to/script.sh` passes before committing.
-- After every edit: test with `--dry-run` and `--force` before committing.
+- After every edit: test with `--dry-run` before committing.
 
 ### `scripts/*.py`
 
@@ -116,8 +113,8 @@ Before opening a PR:
 
 - [ ] All new shell scripts pass `bash -n`.
 - [ ] All new Python scripts pass `python3 -m py_compile`.
-- [ ] `scripts/validate.sh` passes against the installed skill (exit 0).
-- [ ] `skills/task-planner/install.sh --dry-run` and `--force` both succeed.
+- [ ] `TASK_PLANNER_ROOT=<skill dir> bash skills/task-planner/lib/verify.sh` exits 0 against the installed skill.
+- [ ] `skills/task-planner/install.sh --dry-run` succeeds (flag surface: --canonical / --tools / --no-verify / --no-backup / --dry-run; task-v117 R-09).
 - [ ] `README.md` links to any new docs you added.
 - [ ] `CHANGELOG.md` has an `[Unreleased]` entry describing your change.
 - [ ] `CLAUDE.md` (if you change repo structure) stays consistent.
@@ -133,8 +130,11 @@ The canonical test:
 ```bash
 # Clean slate
 rm -rf /tmp/test-skill-install
-bash skills/task-planner/install.sh --target /tmp/test-skill-install
-bash scripts/validate.sh /tmp/test-skill-install
+# task-v117 R-09: install.sh has no install-destination flag; the canonical location is set by --canonical (env TASK_PLANNER_ROOT is the same knob)
+bash skills/task-planner/install.sh --dry-run --canonical /tmp/test-skill-install  # pre-flight: dry run first
+bash skills/task-planner/install.sh --canonical /tmp/test-skill-install
+# validate the installed layout (task-v117 R-09: real entry = lib/verify.sh, requires TASK_PLANNER_ROOT)
+TASK_PLANNER_ROOT=/tmp/test-skill-install bash skills/task-planner/lib/verify.sh
 
 # Spin a real task plan
 mkdir -p /tmp/test-plan && cd /tmp/test-plan
@@ -166,7 +166,7 @@ Breaking changes belong in a major version bump and must be in `CHANGELOG.md` un
 ## Issues & Help
 
 - File issues on GitHub with tag `bug`, `feature`, or `docs`.
-- If you hit a validation failure, paste the full `validate.sh` output — it lists every check.
+- If you hit a validation failure, paste the full `lib/verify.sh` output — it lists every check.
 - If a script behaves differently on your OS, note the OS + bash version in the issue.
 
 ---

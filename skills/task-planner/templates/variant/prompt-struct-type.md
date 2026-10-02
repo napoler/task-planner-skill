@@ -76,3 +76,32 @@
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 |      |          |        |      |
+
+## 📊 委派统计（Rule 25.4 — 终验前必填）
+<!-- 
+  WHAT: 本计划子代理 vs 主进程的执行分布统计。
+  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
+  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
+-->
+| 字段 | 值 |
+|------|-----|
+| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
+| 主进程直做 Phase 清单 | （含例外理由） |
+| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
+<!--
+  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才在「备注」列勾 verify_done;failed/timeout 行必须回填 checkpoint 路径列(Rule 22.8.4)
+  WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
+  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
+  列说明: 备注列 = 低频列折叠单列(rescue 换档挽救记录 档位/结果/时间,failed|timeout 行必填,Rule 22.7;retry_count = 22.3 retry_limit 计数,初值 0,每次重试 +1;verify_done☐ = Read 产出 + findings 复核/回填双条件,Rule 22.5)——字段内容不删,仅列位折叠;verify_done 无机器消费(grep 实证 scripts/*.sh 除 selftest 零命中),为人工义务,不声称机器门
+  派发 prompt 八字段模板: templates/subagent_dispatch.md
+  # [2026-09-27 task-v091 B-2] 单写者澄清+Handoff 低频列折叠（verify_done 无机器消费如实披露）
+-->
+
+| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
+|---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
+| 1 | | | | queued | | | | | - / 0 / ☐ |
+| 2 | | | | | | | | | - / 0 / ☐ |
+| 3 | | | | | | | | | - / 0 / ☐ |
+

@@ -27,7 +27,8 @@ skills/task-planner/
 │   ├── verification.md   ← 验证契约模板（phase gate + 5 问重启检查）
 │   ├── findings.md       ← 调研发现记录
 │   ├── progress.md       ← 会话进度日志
-│   └── notepad-learnings.md
+│   ├── notepad-learnings.md
+│   └── knowledge-brief.md ← 任务知识简略要点（第 6 文件，v067 起 init-session 生成，五段结构）
 └── references/
     ├── critical-rules.md ← Rules 1-39 核心执行约束
     ├── completion-gate.md← 子代理验证 + 串行同步协议
@@ -76,9 +77,9 @@ skills/task-planner/
 ## 常用命令
 
 ```bash
-# 语法检查所有脚本（含新增 check-drift.sh）
+# 语法检查所有脚本（含新增 check-drift.sh；session-catchup.ts 为 TS，须 bun 运行，v117 R-10 清账）
 bash -n skills/task-planner/scripts/*.sh && bash -n skills/task-planner/scripts/check-drift.sh
-python3 -m py_compile skills/task-planner/scripts/session-catchup.ts
+bun skills/task-planner/scripts/session-catchup.ts
 
 # 验证 config.json schema
 python3 -c "import jsonschema, json; jsonschema.validate({}, json.load(open('skills/task-planner/config.json')))"

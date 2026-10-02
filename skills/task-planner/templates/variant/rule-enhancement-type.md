@@ -92,6 +92,18 @@
 |------|---------|--------|------|
 |      |          |        |      |
 
+## 📊 委派统计（Rule 25.4 — 终验前必填）
+<!-- 
+  WHAT: 本计划子代理 vs 主进程的执行分布统计。
+  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
+  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
+-->
+| 字段 | 值 |
+|------|-----|
+| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
+| 主进程直做 Phase 清单 | （含例外理由） |
+| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |

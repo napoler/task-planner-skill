@@ -9,22 +9,20 @@
 ```
 task-planner-skill/
 ├── CLAUDE.md                  # 仓库级指南（必读）
-├── scripts/                   # 安装/验证工具（你的入口）
-│   ├── install.sh
-│   ├── uninstall.sh
-│   └── validate.sh
 ├── examples/
 │   └── full-workflow.md       # 端到端演示
 ├── skills/task-planner/       # Skill 本体 —— 打磨时只读参考
 │   ├── SKILL.md
 │   ├── config.json
+│   ├── install.sh / uninstall.sh   # 安装工具实际位置（task-v117 R-09 修实位）
+│   ├── lib/                   # verify.sh —— 安装校验入口（需 TASK_PLANNER_ROOT）
 │   ├── scripts/               # 现有脚本（新增脚本前请先评审）
 │   ├── templates/
 │   └── references/
 └── plans/                     # 规划工作区（已 gitignore）
 ```
 
-**规则：** Skill 逻辑改动在 `skills/task-planner/` 中；打包/安装/验证改动在仓库根目录的 `scripts/` 和 Markdown 文件中。
+**规则：** Skill 逻辑改动在 `skills/task-planner/` 中；打包/安装/验证改动在 `skills/task-planner/install.sh` / `uninstall.sh` / `lib/verify.sh` 与仓库根的 Markdown 文件中。
 
 ---
 
@@ -35,21 +33,20 @@ task-planner-skill/
 git clone <repo>
 cd task-planner-skill
 
-# 2. 快速检查所有脚本
-bash -n scripts/*.sh
+# 2. 快速语法检查所有脚本
 bash -n skills/task-planner/scripts/*.sh; bun build --no-bundle skills/task-planner/scripts/session-catchup.ts --outdir /tmp >/dev/null 2>&1 || echo "ts 语法检查: 依赖 bun,可跳过"
-node -e "require('typescript')" 2>/dev/null && npx tsc --noEmit scripts/sync-ide-folders.ts
 
 # 3. 安装 Skill 到本地环境进行真实测试
 bash skills/task-planner/install.sh
 
-# 4. 验证
-bash scripts/validate.sh
-# 预期输出：VALIDATION PASSED
+# 4. 验证（task-v117 R-09：实位入口 = lib/verify.sh，需 TASK_PLANNER_ROOT）
+TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh
+# 预期输出：[verify] summary: N pass / 0 fail（退出码 0）
 
 # 5. 修改 → 重新安装 → 重新验证
-bash skills/task-planner/install.sh --force
-bash scripts/validate.sh
+# （task-v117 R-09：install.sh 实 flag 面 = --canonical / --tools / --no-verify / --no-backup / --dry-run）
+bash skills/task-planner/install.sh --no-backup
+TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh
 
 # 6. 提交（遵循 Conventional Commits）
 git add -p
@@ -60,14 +57,14 @@ git commit -m "feat(install): install.sh 新增 --source 参数"
 
 ## 脚本规范
 
-### `scripts/*.sh`
+### `skills/task-planner/scripts/*.sh`
 
 - Bash 编写，顶部必须包含 `set -euo pipefail`
-- `--dry-run` 是安全默认值；`--force` 覆盖确认提示
+- `--dry-run` 是安全默认值；实 flag 面 = `--canonical / --tools / --no-verify / --no-backup / --dry-run`（task-v117 R-09，按 install.sh 实测）
 - 退出码：0 成功，1 用户错误，2 环境错误，3 验证失败
 - 禁止依赖 Python 或 Node —— Shell 脚本必须在裸 bash 环境中可运行
 - 每次修改后：`bash -n path/to/script.sh` 必须通过才能提交
-- 每次修改后：用 `--dry-run` 和 `--force` 测试后再提交
+- 每次修改后：用 `--dry-run` 测试后再提交
 
 ### `scripts/*.py`
 
@@ -116,8 +113,8 @@ chore: 更新 README 快速上手代码块
 
 - [ ] 所有新 Shell 脚本通过 `bash -n` 语法检查
 - [ ] 所有新 Python 脚本通过 `python3 -m py_compile`
-- [ ] `scripts/validate.sh` 对已安装 Skill 验证通过（退出码 0）
-- [ ] `skills/task-planner/install.sh --dry-run` 和 `--force` 均可正常执行
+- [ ] `TASK_PLANNER_ROOT=<skill 目录> bash skills/task-planner/lib/verify.sh` 对已安装 Skill 验证通过（退出码 0）
+- [ ] `skills/task-planner/install.sh --dry-run` 可正常执行（实 flag 面：--canonical / --tools / --no-verify / --no-backup / --dry-run；task-v117 R-09）
 - [ ] `README.md` 和 `README_zh.md` 链接了所有新增文档
 - [ ] `CHANGELOG.md` 有 `[Unreleased]` 条目描述变更
 - [ ] `CLAUDE.md`（如有仓库结构变更）保持一致
@@ -133,14 +130,20 @@ chore: 更新 README 快速上手代码块
 ```bash
 # 干净环境
 rm -rf /tmp/test-skill-install
-bash skills/task-planner/install.sh --target /tmp/test-skill-install
-bash scripts/validate.sh /tmp/test-skill-install
+# task-v117 R-09：install.sh 无安装目标 flag；canonical 位置由 --canonical（env TASK_PLANNER_ROOT 同旋钮）设定
+bash skills/task-planner/install.sh --dry-run --canonical /tmp/test-skill-install  # 先 dry run 预检
+bash skills/task-planner/install.sh --canonical /tmp/test-skill-install
+# 校验安装布局（task-v117 R-09：实位入口 = lib/verify.sh，需 TASK_PLANNER_ROOT）
+TASK_PLANNER_ROOT=/tmp/test-skill-install bash skills/task-planner/lib/verify.sh
 
 # 启动一个真实任务计划
 mkdir -p /tmp/test-plan && cd /tmp/test-plan
 bash /tmp/test-skill-install/scripts/init-session.sh test-task
 cat task_plan.md | head -30
 # 应包含：目标、VC 表、阶段、范围
+
+# 清理
+rm -rf /tmp/test-skill-install /tmp/test-plan
 ```
 
 通过此测试即意味着 PR 可安装。
@@ -163,7 +166,7 @@ Skill 的外部接口是**目录结构和 frontmatter**。请勿变更：
 ## 问题与帮助
 
 - 在 GitHub 提交 Issue，标签使用 `bug`、`feature` 或 `docs`
-- 如遇验证失败，请粘贴完整的 `validate.sh` 输出 —— 它会列出每一项检查结果
+- 如遇验证失败，请粘贴完整的 `lib/verify.sh` 输出 —— 它会列出每一项检查结果
 - 如脚本在不同操作系统上行为异常，请在 Issue 中注明操作系统 + bash 版本
 
 ---

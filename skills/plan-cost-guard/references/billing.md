@@ -13,7 +13,7 @@
 | **opus Skill 嵌套调用**（systematic-debugging / code-review / brainstorming / writing-plans / comet-*）| **1次 opus / 次（Rule 17.1 节流：同 phase ≤1 次）** |
 | 子代理调用（plan-writer / code-assistant / debugger 等）| 按子代理模型独立计费（sonnet-1 / haiku-1 / mini） |
 | 高频 task-drift-guard | haiku 档，极便宜（Rule 15 节流：每 phase ≤3 次） |
-| 中断后用 session-catchup 恢复 | 不计费 |
+| 中断后用 task-planner scripts/session-catchup.ts 恢复 | 不计费 |
 | 重复调用 `/plan`（同一会话） | 额外 opus 计费 ❌ |
 
 ## 子代理成本估算表（v2.1 新增）
@@ -37,7 +37,7 @@
 ## 避免重复计费
 
 - 任务已开始 → 不用再次调用 `/plan`
-- 中断恢复 → 用 `session-catchup.ts`
+- 中断恢复 → 用 `task-planner scripts/session-catchup.ts`
 - 变更需求 → Edit task_plan.md 调整，不重新规划
 - 新会话重启 → 算新计费（context 已重置）
 - **嵌套 opus Skill 复用**:同一 phase 已触发 `Skill("code-review")`,复用其输出而非再次调用（Rule 17.1）
@@ -54,7 +54,7 @@ opus 累计调用 ≥10 次 → 触发 AskUserQuestion「继续 / 拆型 / 降�
 
 ## 相关脚本
 
-- `session-catchup.ts` — 恢复上下文
+- `task-planner scripts/session-catchup.ts` — 恢复上下文
 - `init-session.sh` — 初始化任务目录
 - `check-scope.sh` — 范围检查（不计费）
 - `references/cost_log.md` — opus 调用日志（Rule 17.8 配套）

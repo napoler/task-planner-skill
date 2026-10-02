@@ -243,7 +243,7 @@ git log --since="<last_update>" --oneline | grep -iE "<goal_keywords>"
 |-------|------|
 | `task-planner` | 本 skill 只**读取** task-plan 文件,不修改/不触发它的 hooks。续推时调它新建计划 |
 | `task-drift-guard` | drift-guard 是"执行中检测漂移",本 skill 是"中断后盘点过期"。**互不替代** |
-| `session-catchup` | session-catchup 扫 Claude session jsonl 找上下文断点;本 skill 扫文件系统找任务断点。互补 |
+| `task-planner scripts/session-catchup.ts` | 该脚本扫 Claude session jsonl 找上下文断点;本 skill 扫文件系统找任务断点。互补 |
 | `todo-skill` | todo-skill 是 Claude 内的轻量 todo 列表;本 skill 处理 task-planner 的长期计划文件 |
 | `memory-cleanup` | memory-cleanup 处理记忆系统;本 skill 处理任务系统。结构类似(扫 → 判断 → 报告) |
 | `agent-browser` / `Browser Automation` | 不涉及 |
