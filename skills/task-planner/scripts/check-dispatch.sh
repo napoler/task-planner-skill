@@ -45,6 +45,12 @@
 #      口径（定死）: 全 prompt 内 distinct `S<n>` 字面集合计数（行首/非行首一律计,
 #      非自由文本豁免——与 P2 KQ1 同源 token 计数范式）; warn 档默认仅作观察期数据,
 #      误伤代价=计数警告, 观察数据回填后再定行首限定收紧（task_plan FMEA P3 行兜底）。
+#      [2026-10-03 task-v118] 任务书豁免收窄（Rule 46.2）: 双条件（任务书 ∧ subagent-state/）命中时
+#      不再整体 SKIPPED（原行为=task-v078 双条件整体跳过, 任务书塞多 S-unit 畅通无阻, task-v116 实证）,
+#      改为从 prompt 提取 subagent-state/ 引用路径（定界=空白与「」()，;等; 去尾标点, ≤3 个）,
+#      对存在且可读（-f）的文件合并内容计 distinct `S[0-9]+` 数 n:
+#      n≥2 → 打包命中（「任务书检出 N 个 S-unit ID」行, 计入 hits 走既有档位管线）;
+#      n≤1 或引用文件全部不存在/不可读 → fail-open: SKIPPED 行（不计 hits）。
 #   ③ knowledge-brief 引用提示: 仅当计划目录已解析（pd 非空）且 <pd>/knowledge-brief.md
 #      存在、且 prompt 既不含 `brief` 也不含 `§` → 告警提示引用 brief 节锚点
 #      （Rule 21.2/22.4）; 无 brief / 已引用 → 静默, 不产生输出。
@@ -52,7 +58,11 @@
 #      step_max_steps（jq 读 .properties.subagent.properties.step_max_steps.default;
 #      缺失 → 回退默认 4 + SKIPPED 一行, ①②③ 同范式）→ 告警+计入 hits, 按档位处置
 #      （任务书豁免场景对任务书文件同步计数取最大, 防 13 步躲进落盘任务书绕门）。
-#      口径与边界见 count_step_markers 函数注释。
+#      [2026-10-03 task-v118] 任务书模式例外（Rule 46.2 收窄）: 任务书分支对任务书文件调用
+#      count_step_markers <file> tb（行首 markdown 编号项计入去重集合）——task-v116 实证任务书
+#      以 `1.`-`6.` 行首编号列 6 类动作时, 原行为=两模式统一排除行首 markdown 编号, 计数=0
+#      全漏检; 自由 prompt 分支保持 count_step_markers <file> 单参口径（行首 markdown 编号
+#      依旧不入口径, 防误伤合法 prompt 形态）。口径与边界见 count_step_markers 函数注释。
 #   ①②③④ 均在缺项扫描之后追加; 缺项存在时（既有处置: warn=告警放行 / enforce=exit 2）
 #   仍先执行既有缺项路径（行为不变）, 仅当缺项扫描通过（即将串行槽检查放行）时执行四项,
 #   四项目前全部通过 → 保持既有静默 exit 0 语义（成功路径零输出）。
@@ -251,17 +261,25 @@ cmd_check() {
     exit 0
 }
 
-# count_step_markers <file> — [task-v081] distinct 步骤枚举序号计数（fine_grain_checks ④ 消费）
+# count_step_markers <file> [taskbook] — [task-v081] distinct 步骤枚举序号计数（fine_grain_checks ④ 消费）
 # 口径（定死）: `StepN`/`step N`（大小写不敏感,允许空格）/ `步骤N`（允许空格）/ `第N步`（仅数字）
 #   / 圆圈序号 ①-⑮。序号值归一去重（Step3/③/第3步 同序号计 1）。
-# 边界（如实）: 行首 markdown 编号列表（`1. `/`1) `）与验收清单难区分,不入口径防误伤;
-#   汉字数字（第十一步）不入口径; 口径外写法=计数偏低（fail-open 方向）,显式 StepN 类为拦截主口径。
+# [2026-10-03 task-v118] 任务书模式例外（第二参 taskbook=1, Rule 46.2 收窄）: 额外计入行首 markdown
+#   编号项（`^[[:space:]]*[0-9]+[.、)）]`）, 提取行首编号数字并入同一去重集合。
+#   Why: task-v116 实证任务书以 `1.`-`6.` 行首编号列 6 类动作时, 原行为=两模式统一排除行首
+#   markdown 编号, 计数=0 全漏检, ④ 步骤枚举门形同虚设; 任务书是计划层自写落盘产物, 行首编号
+#   即「任务书动作枚举」, 误伤验收清单的风险低, 故仅任务书模式例外纳入; 自由 prompt 调用点
+#   （第二参缺省）行为零变化——行首 markdown 编号与验收清单难区分, 仍不入口径防误伤合法 prompt 形态。
+# 边界（如实）: 汉字数字（第十一步）不入口径; 口径外写法=计数偏低（fail-open 方向）,显式 StepN 类为拦截主口径。
 count_step_markers() {
-    local f="$1"
+    local f="$1" taskbook="${2:-}"
     {
         grep -oiE 'step ?[0-9]{1,3}' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
         grep -oE '步骤 ?[0-9]{1,3}' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
         grep -oE '第[0-9]{1,3}步' "$f" 2>/dev/null | grep -oE '[0-9]{1,3}'
+        # [2026-10-03 task-v118] 任务书模式: 行首 markdown 编号项编号入去重集合;
+        # 只提取行首序号位数字（sed 剥前导空白+首个非数字截断）, 避免把正文数字（如 "1. 改 step 3"）拖入
+        [ -n "$taskbook" ] && grep -E '^[[:space:]]*[0-9]+[.、)）]' "$f" 2>/dev/null | sed -E 's/^[[:space:]]+//; s/[^0-9].*//'
         grep -oE '①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩|⑪|⑫|⑬|⑭|⑮' "$f" 2>/dev/null | awk '{if($0=="①")print 1;else if($0=="②")print 2;else if($0=="③")print 3;else if($0=="④")print 4;else if($0=="⑤")print 5;else if($0=="⑥")print 6;else if($0=="⑦")print 7;else if($0=="⑧")print 8;else if($0=="⑨")print 9;else if($0=="⑩")print 10;else if($0=="⑪")print 11;else if($0=="⑫")print 12;else if($0=="⑬")print 13;else if($0=="⑭")print 14;else if($0=="⑮")print 15}'
     } | sort -n -u | grep -c . || true
 }
@@ -295,10 +313,28 @@ fine_grain_checks() {
     # ② 多 S-unit 打包: 全 prompt distinct S<n> 字面集合计数(P2 KQ1 同源 grep -o|wc -l 范式);
     #    ≥2 → 告警(warn 档观察期数据用, 口径见头注释)
     # [2026-09-17 task-v078] 双条件豁免: 单条件 subagent-state 会被合规派发的检查点路径命中(废掉打包门), 禁用
+    # [2026-10-03 task-v118] 任务书豁免收窄(Rule 46.2): 原行为=双条件命中→打包计数整体 SKIPPED(任务书塞多
+    #    S-unit 畅通无阻, task-v116 实证); 新行为=双条件触发不变, 但从 prompt 提取 subagent-state/ 引用路径
+    #    (grep -oE 定界=空白与「」"等, 与 ④ 同源范式, 去首尾标点, ≤3 个), 对 -f 且 -r 的文件 cat 合并内容
+    #    计 distinct `S[0-9]+` 数 n: n≥2 → 打包命中计入 hits(走既有档位管线); n≤1 或引用文件全部不存在/不可读
+    #    → fail-open: SKIPPED 行(不计 hits, 维持 selftest FG-05 fixture 语义——其引用文件从未创建)
     if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
-        echo "[dispatch-guard] SKIPPED 打包检测: prompt 引用落盘任务书(Rule 35.3 范式), 打包判定以任务书内容为准" >&2
-        # 豁免: 打包计数跳过, ② 不再累计 hits; ③ 照常
-        n=0
+        tb="$(grep -oE '[^[:space:]"]*subagent-state/[^[:space:]"]*' "$pf" 2>/dev/null \
+             | sed -E 's/^[「"]+//; s/[),。，；;」”]+$//' | sort -u | head -3 || true)"
+        tn=""
+        for tb in $tb; do
+            [ -f "$tb" ] && [ -r "$tb" ] && tn="$tn
+$(cat -- "$tb" 2>/dev/null)"
+        done
+        n="$(printf '%s' "$tn" | grep -oE 'S[0-9]+' | sort -u | grep -c . || true)"
+        if [ "$n" -ge 2 ]; then
+            echo "[dispatch-guard] ⚠ 任务书检出 $n 个 S-unit ID（Rule 46.2 任务书豁免收窄）" >&2
+            [ -n "$hits" ] && hits="$hits; "
+            hits="${hits}任务书打包($n 个 S-unit ID)"
+        else
+            echo "[dispatch-guard] SKIPPED 打包检测: prompt 引用落盘任务书(Rule 35.3 范式), 打包判定以任务书内容为准 (任务书无多 S-unit 或不可解析)" >&2
+            n=0
+        fi
     else
     sids="$(grep -oE 'S[0-9]+' "$pf" 2>/dev/null | sort -u)"
     n="$(printf '%s' "$sids" | grep -c . || true)"
@@ -329,10 +365,12 @@ fine_grain_checks() {
     fi
     step_n="$(count_step_markers "$pf")"
     if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
+        # [2026-10-03 task-v118] 任务书分支改用任务书模式(第二参 tb): 行首 markdown 编号并入计数
+        # (原行为=count_step_markers "$tb" 单参, 行首 markdown 编号不入口径, 任务书 `1.`-`6.` 全漏检)
         tb="$(grep -oE '[^[:space:]"]*subagent-state/[^[:space:]"]*' "$pf" 2>/dev/null | sed -E 's/[),。，；;]+$//' | head -3 || true)"
         for tb in $tb; do
             [ -f "$tb" ] || continue
-            tn="$(count_step_markers "$tb")"
+            tn="$(count_step_markers "$tb" tb)"
             [ "$tn" -gt "$step_n" ] && step_n="$tn"
         done
     fi
