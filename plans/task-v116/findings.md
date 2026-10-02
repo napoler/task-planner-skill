@@ -41,3 +41,30 @@
 
 ---
 <!-- ⚠️ [plan-compass] 提醒 = 本文件陈旧 → 立即回填再继续(Rule 19.7);二次未响应触发升级警告(Rule 26.3 处置) -->
+
+#### [sub:1-executor] 根目录刷新
+- 结论:README_zh.md+INSTALL_zh.md 六类过期口径全部刷新完成,验收 grep 零残留通过
+- 实测对照表(WT=/mnt/data/dev/task-planner-skill-worktrees/task-v116,2026-10-02):
+  | 口径 | 旧值 | 新值(实测证据) |
+  |------|------|----------------|
+  | variant 数 | 13/16 变体 | 29 类(含 video/image 家族 12 类;ls templates/variant=29,grep audio/character/image/motion/multiview/physics/prompt-struct/qc/storyboard/video=12) |
+  | config.json 键 | 37 键 | 40(properties len,python 实测) |
+  | scripts 规模 | 55 个 | 81 项(.sh 72 个,含 42 selftest selftest-*.sh;scripts/ 总项=81) |
+  | 计划文件 | 5 个 | 6 个(init-session.sh:340 六文件循环 task_plan/findings/progress/notepad-learnings/verification/knowledge-brief) |
+  | Rules 编号 | 1-39 | 1-45(critical-rules.md Rule 号最大 45) |
+  | 总大小 | 1.3MB | 2.0M(du -sh skills/task-planner) |
+  | 安装脚本位 | bash scripts/install.sh | skills/task-planner/install.sh(实 flag:--canonical/--tools/--no-verify/--no-backup/--dry-run;无 --target/--uninstall/--force) |
+  | 校验 | bash scripts/validate.sh | skills/task-planner/lib/verify.sh(输出 [verify] summary: N pass / N fail) |
+  | 卸载 | bash scripts/uninstall.sh / --uninstall | skills/task-planner/uninstall.sh(实 flag:--canonical/--keep-canonical/--keep-backups/--dry-run) |
+  | session-catchup | .py(python3) | .ts(bun/node;INSTALL 依赖表 python3 行→bun/node+jq) |
+  | 模板总数 | 「26 个模板」类 | 39(find templates -name '*.md'=39;顶层 10+variant 29) |
+  | 英文链接 | 根 INSTALL.md/README.md 死链 | skills/task-planner/{INSTALL,README}.md |
+  | 安装模型 | ~/.claude 单目录+--target | 多工具软壳(detect-tools 五工具:claude-code/zcode/opencode/cursor/continue) |
+- 修改文件:WT README_zh.md(9 处)+INSTALL_zh.md(14 处);未触碰 skills/,未 git add/commit(git status 仅 2 文件 M)
+- checkpoint:plans/task-v116/subagent-state/1-executor.md
+
+#### [sub:2-executor] 回归与对齐
+- 回归:42 selftest 全运行(单脚本 timeout 90s),41 rc=0;**selftest-workflow-orchestration.sh rc=1:WF-10 FAIL "Rules 1-39 命中总和 4 <6"**——根因=Phase 1b(85ab33b)将 README_zh.md:136,229 "Rules 1-39"刷新为"Rules 1-45"(实测数字),WF-10 断言锚(scripts/selftest-workflow-orchestration.sh:52-57)未随动,属守卫锚级联漏网(FMEA RPN48);逐文件实测 SKILL.md=2/CLAUDE.md=1/README_zh.md=0/skills/task-planner/README.md=1
+- 对齐四要素:diff↔意图 5 处全过(SKILL.md:64 六文件/cost-guard:21 STOP 档删除/cost-control:33 对齐/progress-tracker:192 清账/README+INSTALL 数字簇);引用实存全过(install.sh/uninstall.sh/lib/verify.sh/session-catchup.ts 均 EXISTS);守卫锚 TL+skill-split 重跑 PASS(21/41 FAIL=0)
+- **旧表述残留(未修,v116 scope 外)**:① billing.md:54 `>15 次 强制 STOP` 门控表行(R-06 漏网,billing.md 不在 scope_files;部署位同残留)② CLAUDE.md:24,43,54,81 `session-catchup.py` ×4(实为 .ts)③ CONTRIBUTING.md/CONTRIBUTING_zh.md `bash scripts/install.sh` ×8(含幽灵 flag --force/--target)④ P2:check-scope.sh:80 白名单/memory-hygiene 模板例句/CHANGELOG:140 历史条目/template-guide.md:143 行号锚漂移
+- 证据:plans/task-v116/subagent-state/2-executor.md §1/§2(全部命令可重跑)

@@ -16,18 +16,20 @@
 - Actions taken:
   -
 - Files created/modified:
-  -
+  - [sub:1] 根目录文档刷新:README_zh.md+INSTALL_zh.md 六类过期口径刷新完成(安装命令实位 skills/task-planner/{install.sh,lib/verify.sh,uninstall.sh}/session-catchup.py→.ts(bun/node)/数字簇 29 变体-40 键-81 项-6 文件-Rules 1-45-2.0MB/英文链接实位);grep 零残留验证通过(2026-10-02,executor subagent)
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | AC-1 零残留 grep | bash scripts/\|session-catchup.py\|13 变体\|37 键\|Rules 1-39\|5 个模板文件 | 0 | RC=1(0 匹配) | PASS |
+  | AC-2 数字对照 | 实测 ls/du 逐项 | 与文档一致 | 见 checkpoint | PASS |
+  | AC-3 checkpoint | 1-executor.md | 含 8 字段块 | 已写 | PASS |
 
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:2] 回归 42 selftest 全运行:41 rc=0;selftest-workflow-orchestration.sh rc=1(WF-10 "Rules 1-39" 命中 4<6,根因=README_zh.md 刷新为 1-45 后断言锚未随动,守卫锚级联漏网);对齐四要素:diff↔意图 5 处全过/引用实存全过/TL+skill-split 重跑 PASS/旧表述残留 4 类(v116 scope 外:billing.md:54 STOP 档、CLAUDE.md session-catchup.py×4、CONTRIBUTING×2 bash scripts/install.sh×8、P2 历史/模板例句)→ 结论 partial,详见 findings.md [sub:2-executor] 段与 subagent-state/2-executor.md (2026-10-02,executor subagent)
 - Files created/modified:
   -
 - Test Results:
