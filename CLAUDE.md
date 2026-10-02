@@ -21,7 +21,7 @@ skills/task-planner/
 │   ├── check-scope.sh    ← PreToolUse hook：Write/Edit 前验证文件是否在 scope 内
 │   ├── sync-todos.sh     ← Phase 状态 → Todo 同步 + plans/INDEX.md 生成（--index 模式）
 │   ├── check-complete.sh ← Stop hook：汇总 phase 完成情况
-│   └── session-catchup.py ← 跨会话恢复：扫描历史 session，检测未同步规划更新
+│   └── session-catchup.ts ← 跨会话恢复：扫描历史 session，检测未同步规划更新
 ├── templates/
 │   ├── task_plan.md      ← 主计划模板（含 VC 表、scope 表、phase 追踪）
 │   ├── verification.md   ← 验证契约模板（phase gate + 5 问重启检查）
@@ -40,7 +40,7 @@ skills/task-planner/
 **规划循环（每轮任务执行）：**
 
 ```
-用户请求 → session-catchup.py(中断恢复?) → init-session.sh(新建)
+用户请求 → session-catchup.ts(中断恢复?) → init-session.sh(新建)
 → 填写 task_plan.md(含 VC 表 + Scope 表) → 展示计划等待 "yes"
 → 逐 Phase 执行（每 phase 完 Edit task_plan.md + sync-todos.sh --index）
 → 全部 phase complete → 逐条复验 VC → 输出 COMPLETE/PARTIAL/BLOCKED
@@ -51,7 +51,7 @@ skills/task-planner/
 - `check-scope.sh` 通过 PreToolUse hook 拦截，防止计划外文件写入（exit 1 = blocked, exit 2 = 需初始化 plan）
 - `config.json` 是运行时唯一配置入口，所有阈值中心化管理（`max_vc`, `retry_count`, `escalation_threshold` 等）
 - 子代理完成"done"后必须 Read 实际文件验证，禁止信任子代理自述——见 `completion-gate.md`
-- `session-catchup.py` 在 workflow 第一步运行，检测上一轮中断点，避免重复劳动
+- `session-catchup.ts` 在 workflow 第一步运行，检测上一轮中断点，避免重复劳动
 
 **模板优先级：** `init-session.sh` 先搜 `{project}/.claude/plan-templates/`（项目级），未找到则 fallback 到内置模板。项目可通过此机制覆盖默认行为。
 
@@ -78,7 +78,7 @@ skills/task-planner/
 ```bash
 # 语法检查所有脚本（含新增 check-drift.sh）
 bash -n skills/task-planner/scripts/*.sh && bash -n skills/task-planner/scripts/check-drift.sh
-python3 -m py_compile skills/task-planner/scripts/session-catchup.py
+python3 -m py_compile skills/task-planner/scripts/session-catchup.ts
 
 # 验证 config.json schema
 python3 -c "import jsonschema, json; jsonschema.validate({}, json.load(open('skills/task-planner/config.json')))"
