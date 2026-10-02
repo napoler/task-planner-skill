@@ -62,11 +62,11 @@
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
-派 fresh executor 普查回流级联面全集+3 分叉文件合并点甄别
+交付；部署已单轨化（三宿主 29 variant 全一致）
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -88,7 +88,7 @@ Phase 1
 - [ ] 计数级联面 grep 全集（17→29：variant 计数/「17 个」/「18 行」/「25 个 .md」/「34 行」矩阵/knowledge-brief 锚 22→34/TL-17/skill-split/SKILL:274/critical-rules:348,361/README）
 - [ ] 产出收编清单+合并方案+级联清单
 - **V-N:** VC-1, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** executor（sonnet-1）fresh
 
 | ID | 目标 | 执行体 | 输入 | 预估 | 状态 |
@@ -101,7 +101,7 @@ Phase 1
 - [ ] **线 C（comment-audit 组）**：v111 清单注释补强（5 脚本+3 模板头，Rule 45 合规）
 - [ ] 三线各自 commit（worktree 内 A/C；宪法非 git 直改+备份）
 - **V-N:** VC-2, VC-3, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）×2 并行 + 主进程（④ 用户显式授权宪法修改——白名单）
 
 | ID | 目标 | 执行体 | 输入 | 预估 | 状态 |
@@ -112,13 +112,13 @@ Phase 1
 ### Phase 3: 回归+合并+部署单轨化
 - [ ] worktree 全量 42 selftest（fresh）→ 合并回 master → 三宿主部署（zcode 位**全量含 variant 29**=单轨化）→ 探针对账（fresh 或机械）
 - **V-N:** VC-1, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor fresh（回归）+ 主进程（① git+部署编排——白名单）
 
 ### Phase 4: 对齐审查+终验簿记
 - [ ] alignment-review（fresh）+code-review 轻量（脚本注释 diff）+memory 更新+verification+INDEX+commit
 - **V-N:** VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（② 簿记+③ memory）+ executor fresh（审查）
 
 ## 🔀 隔离决策
@@ -192,9 +192,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 4 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 4（rate 0.75 verdict 预期 ok；Phase 2 线 B 宪法=④ 用户显式授权白名单） |
+| 主进程直做 Phase 清单 | Phase 2 线 B（④ 宪法④用户授权）+Phase 3 部署编排（①）+Phase 4（② 簿记+③ memory）+checkpoint 代补（代理未回报按实物验证） |
+| 委派率 | 0.75；验证独立性：五波 fresh 子代理 |
 
 ## 🔗 Subagent Handoff 登记表
 

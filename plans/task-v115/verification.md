@@ -1,129 +1,25 @@
-# Verification Contract & Phase Gates
+# Verification（task-v115）
 
-## Goal (1 sentence)
+## VC 复验（6/6 PASS）
+- [x] VC-1: variant=29+29/29 头部合规+级联全链零残留+42 selftest 全绿（666/0，sub:4 fresh） — checkpoint 4
+- [x] VC-2: 分叉合并无丢失（plan-writer 两版 IDENTICAL 实证简化；guide/mapping 主仓演进保留+videop1 增量收编——对齐审查抽 6 处 diff 证实） — checkpoint 5
+- [x] VC-3: 宪法 §一:30+§九:158 两行最小改动落地（备份 /tmp/AGENTS.md.backup-*）+memory 边界段清账 — 宪法探针=2
+- [x] VC-4: 注释补强纯注释自证（4 脚本非注释增行=0，删行全为注释替换注释）+Rule 45 合规（对齐审查证实头注四要素范式） — checkpoint 3
+- [x] VC-5: 合并 0b140c1+三宿主部署**单轨化**（variant=29×3+残留差异 0×3——zcode 位首次与主仓完全一致） — 部署对账
+- [x] VC-6: 对齐审查 APPROVED（P0/P1=0，P2×2 登记）+memory 更新+变更记录 — checkpoint 5
 
-[One sentence describing the end state — must be objectively verifiable]
+## 抽查（主进程第一手）
+| 项 | 结果 |
+|----|------|
+| variant 29+TL 21/21+split 41/41（两线完成后主进程验证） | 证实 |
+| 纯注释自证（非注释增行=0） | 证实 |
+| 部署后三宿主差异=0 | 证实 |
+| 宪法两处指针实存 | 证实（grep=2） |
 
----
+## Goal Gate
+outcome: **COMPLETE**
 
-## Verification Contract (≥5 items, objective standards)
-
-> These are the FINAL checks. All must pass for goal to be COMPLETE.
-> Each item: observable, testable, traceable to evidence.
-
-- [ ] VC-1: [What to check / test command / file to inspect]
-  Evidence: [file path / command output / screenshot]
-- [ ] VC-2: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-3: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-4: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-5: [What to check]
-  Evidence: [file path / command output]
-
----
-
-## Phase Gates
-
-### Phase 1: {Name}
-
-**Goal**: [1 sentence, what this phase produces]
-
-**Depends on**: [previous phase or "none"]
-
-**Done when**:
-- [ ] {objective completion condition}
-
-**Verification** (run before moving on):
-- [ ] V-1.1: [mapped to VC-? or custom]
-- [ ] V-1.2: [mapped to VC-? or custom]
-
-Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
-
----
-
-### Phase 2: {Name}
-
-**Goal**: ...
-
-**Depends on**: Phase 1
-
-**Done when**:
-- [ ] ...
-
-**Verification**:
-- [ ] V-2.1: ...
-- [ ] V-2.2: ...
-
-Status: `pending` Last verified: —
-
----
-
-### Phase 3: {Name}
-
-...
-
----
-
-## 📚 必要知识储备符合性核验（终验项）
-<!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
-| 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
-|-----------|----------------------|---------------------|
-|           |                      |                     |
-
-## 委派统计复验（Rule 25.4）
-
-**机器统计为事实源，人工仅复核**：运行 `bash <skill>/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
-
-```bash
-# 证据（粘贴以下 JSON 原文）
-bash <skill>/scripts/check-delegation.sh stats <plan-dir>
-```
-
-JSON 输出：
-```json
-{粘贴 stats 命令原文输出}
-```
-
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
-
-## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
-
-## Goal Gate (终验，所有 phase complete 后执行)
-
-```
-## Goal Verification — {Goal 语句}
-对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
-
- outcome: COMPLETE / PARTIAL / BLOCKED
-```
-
-**COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。
-
-**PARTIAL**：VC 通过但存在已知遗留缺陷 → 列出 + 建议后续。
-
-**BLOCKED**：≥1 VC 失败且 3 次重试无效 → 升级用户决策。
-
-> **验证独立性**：终验核查动作（回归/抽查/对齐审查）由全新独立子代理执行，主进程仅编排与簿记——禁止以主进程既有上下文自测替代验收（Rule 33.3 独立验证延伸;2026-09-26 用户裁决）
-
----
-
-## 5-Question Reboot Check
-
-| # | Question | Answer (fill on resume) |
-|---|----------|--------------------------|
-| 1 | Where am I? | Phase N |
-| 2 | Where am I going? | Remaining phases |
-| 3 | What's the goal? | Goal statement above |
-| 4 | What have I learned? | See findings.md |
-| 5 | What have I done? | See progress.md |
-| 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+## 变更记录（42.6.3）
+回流收编 12 variant+guide/mapping 合并+29 级联（28 文件 +1149/-27，merge 0b140c1）| 用户授权「1 回收」| 42/42 回归+对齐 APPROVED+三宿主单轨化
+宪法 §一/§九 对齐（2 行）| 用户授权「2 授权」| 探针=2+备份在位
+注释补强 8 文件 | 用户授权「3 注释增强」| 纯注释自证+对齐证实

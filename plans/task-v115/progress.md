@@ -34,7 +34,25 @@
 - Test Results:
   -
 
-## 📚 必要知识储备使用记录
+### Phase 3: 回归+合并+部署单轨化
+- **Status:** in_progress
+- **Started:** 2026-10-02
+- Actions taken:
+  - [sub:4] Phase 3 回归完成：worktree 内 42 selftest 全量运行 rc=0，总断言 560 PASS=560 FAIL=0（含 registry 42/42 对账、final-gate-hash PASS=22、skill-modify SKIP=0），零失败零超时，明细 subagent-state/4-executor-regression.log
+- Files created/modified:
+  -
+- Test Results:
+  -
+
+### Phase 4: 对齐审查+终验簿记
+- **Status:** in_progress
+- **Started:** 2026-10-02
+- Actions taken:
+  - [sub:5] 对齐审查（alignment-review 四要素）完成：APPROVED（P0=0/P1=0/P2=2）；守卫锚级联重跑 TL 21/21+skill-split 41/41 全绿 rc=0；variant ls=29/知识锚 35/§九 30 行实测一致；6 处 diff 三线意图对应通过；结论落 checkpoint subagent-state/5-executor.md，分级发现（P2×2）落 findings「#### [sub:5-executor] 对齐审查」段
+- Files created/modified:
+  -
+- Test Results:
+  -
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
 |       |           |                     |
