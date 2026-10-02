@@ -73,6 +73,9 @@ scan_missing() {
     for item in "$pd/task_plan.md" "$pd/findings.md" "$pd/progress.md" "status:" "acceptance:" "checkpoint:" "subagent-state/"; do
         case "$item" in
         */task_plan.md|*/findings.md|*/progress.md)
+            # Why（task-v115 线C）: 三文件走文件身份判定(stat inode)、固定 key 走字面 grep -qF——
+            # 取舍=身份类缺项须免疫 /home 与 /mnt/data 双视图拼写（bind mount 不折叠路径），
+            # 而 "status:"/"checkpoint:" 等固定 key 无路径语义，字面匹配即精确且零误判。
             hit=0
             for c in $cands; do
                 case "$c" in
@@ -115,6 +118,9 @@ scan_missing() {
 
 # 档位解析: 环境变量优先;未设 → jq 读 .properties.dispatch_contract_enforce.default // "enforce"
 # (config 缺失/jq 解析失败 → enforce;jq 二进制缺失 → "nojq" sentinel,调用方 fail-open)
+# Why（task-v115 线C）: 双轨 fail 方向取舍——config 缺失/解析失败属项目侧问题（守卫应生效却没配置），
+# 取 fail-closed(enforce) 防静默逃逸；jq 二进制缺失属环境侧问题，若 fail-closed 则无 jq 宿主上
+# 一切派发全被阻断锁死，故 "nojq" sentinel 交调用方走 fail-open + stderr 痕迹（错误必须曝光）。
 get_mode() {
     local m="${TASK_PLANNER_DISPATCH_ENFORCE:-}"
     if [ -n "$m" ]; then
@@ -163,6 +169,9 @@ cmd_pretool() {
         echo "[dispatch-guard] jq 缺失, 派发契约守卫 fail-open" >&2; exit 0
     fi
     [ "$mode" = "off" ] && exit 0
+    # Why（task-v115 线C）: 三级解析的取舍=锚定可信度决定档位——env 显式与 prompt 自声明是
+    # 本会话自身给出的计划目录证据（可信），维持 enforce；resolve 链兜底的 side/全局指针
+    # 可被并发会话翻转向他会话（B5 实锤 4 次误拦），只能当弱证据降级 warn，根治跨会话误拦。
     # [2026-09-10 task-planrequired-race] 三级计划目录解析,决定 pd 与处置档位(见头部修改说明):
     # ① TASK_PLANNER_PLAN_DIR env 显式 → enforce; ② prompt 自声明(声明含 task_plan.md 路径的目录
     # 且该目录 task_plan.md 真实存在,取首个命中拼写,兼容 /home 与 /mnt/data 双视图) → enforce;
@@ -300,6 +309,8 @@ fine_grain_checks() {
     fi
     fi
     # ③ knowledge-brief 引用提示: 仅 pd 非空且 brief 存在、且 prompt 既无 `brief` 也无 `§` 时告警
+    # Why（task-v115 线C）: 只出提示不阻断——brief 是知识底座「应引非必引」（小模型宿主可自主定位），
+    # 且双关键词(brief/§)判「未引用」存在漏报可能，升级为 enforce 误伤面大于收益，保持 warn 观察。
     if [ -n "$pd" ] && [ -f "$pd/knowledge-brief.md" ] && ! grep -qE 'brief|§' "$pf" 2>/dev/null; then
         echo "[dispatch-guard] ⚠ 计划含 knowledge-brief.md 但 prompt 未引用节锚点(brief/§), 建议按 Rule 21.2/22.4 引用 brief 相关节" >&2
         [ -n "$hits" ] && hits="$hits; "

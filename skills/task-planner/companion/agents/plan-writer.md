@@ -67,6 +67,18 @@ cost_estimate:
 | `video` | `templates/variant/video-type.md` | 视频创作（母图/分镜/镜头生产/成片质检；video 家族主分支，task-v093 收录） |
 | `mini-lite` | `templates/variant/mini-lite-type.md` | 轻量档 mini 计划（≤2 文件 ∧ ≤15min ∧ 单模块，Rule 38.3 区块白名单豁免） |
 | `memory-hygiene` | `templates/variant/memory-hygiene-type.md` | 记忆体系盘点/整理/治理（M1-M5 记忆整理协议；删除类处置仅建议；修正版先落计划目录抽验） |
+| `image` | `templates/variant/image-type.md` | 图像生成（母图/关键帧批/修词重抽；静默自动；task-videop1-planimage-001 收录） |
+| `script-dev` | `templates/variant/script-dev-type.md` | 剧本工序 M0 大纲/M1 定稿本（原子六相+八红线自检，零生成；task-videop1-videotpl-001 收录） |
+| `character-design` | `templates/variant/character-design-type.md` | 角色设计+一致性锁定（定妆根图/multiview/MCD 角色卡含音色，G1 放行） |
+| `multiview-ref` | `templates/variant/multiview-ref-type.md` | 既有锚件补制 multiview/sheet/装备变体合版（全静默） |
+| `storyboard` | `templates/variant/storyboard-type.md` | 分镜拆解（线稿定稿页+关键帧九宫格，逐格双硬 QC） |
+| `prompt-struct` | `templates/variant/prompt-struct-type.md` | 结构化提示词卡产出（镜头词/资产词，四段齐+判定层快审） |
+| `video-prompt` | `templates/variant/video-prompt-type.md` | 镜头行转视频提示词与 spec（机械门全过+逐镜转换卡，零视频调用） |
+| `motion-camera` | `templates/variant/motion-camera-type.md` | 运动与运镜方案落词（运动卡/可行性核对/POV 纪律） |
+| `physics-compliance` | `templates/variant/physics-compliance-type.md` | 物理事实与交通合规判定（逐镜判定报告+修正路由） |
+| `qc-defect` | `templates/variant/qc-defect-type.md` | 成图/成片质检与缺陷处置（逐件质检卡+FAIL 全路由+判例固化） |
+| `audio-voice` | `templates/variant/audio-voice-type.md` | 音频配音对齐（声线表/语言锁三层，零生成） |
+| `final-assembly` | `templates/variant/final-assembly-type.md` | 终剪组装验证（段片组整集成片，seam 全过+NAS 备份+终审登记） |
 
 > **门控契约（Rule 34.1 — task-v074）**：template_type 必填且 attest 锁定前会被 `check-template-type.sh` 机器校验（白名单=variant/ 动态派生+general）；缺失/非法在 attest enforce 档拒绝锁定（warn 档告警放行，`--skip-template-check` 逃生须披露）。
 

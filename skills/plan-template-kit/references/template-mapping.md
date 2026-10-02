@@ -21,10 +21,22 @@
 ├─ 性能瓶颈定位 / 优化 / 压测 / benchmark → performance-tuning-type.md
 ├─ DB schema 变更 / migration / 索引 / 数据回填 → schema-migration-type.md
 ├─ 记忆体系盘点/整理/治理（记忆目录 MEMORY.md+topic）→ memory-hygiene-type.md
+├─ 图像生成工作流（母图/资产图/关键帧·线稿批/批量出图/修词重抽，Agnes 图像链路）→ image-type.md
+├─ 剧本开发与合规审查（M0 大纲→M1→M2→M3，零生成）→ script-dev-type.md
+├─ 角色设计与一致性锁定（设定→根图→G1→multiview→MCD 锁）→ character-design-type.md
+├─ 多视角参考图补制（既有根锚 i2i 派生合版）→ multiview-ref-type.md
+├─ 分镜规划与镜头拆解（走位清单/geo lock/线稿关键帧页）→ storyboard-type.md
+├─ 图像提示词结构化（四段式写词，零生成）→ prompt-struct-type.md
+├─ 视频提示词转换（reference 配置+机械门，零视频调用）→ video-prompt-type.md
+├─ 运动与运镜控制（运动卡/运镜词，零生成）→ motion-camera-type.md
+├─ 物理事实与交通合规核验（判定工序，零生成）→ physics-compliance-type.md
+├─ 质量审查与缺陷检测（机检+亲检+最小范围处置）→ qc-defect-type.md
+├─ 音频配音对齐（音色/语言锁/TTS 声线，零生成）→ audio-voice-type.md
+├─ 终剪组装验证（组装/seam/成片判定/NAS 备份）→ final-assembly-type.md
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
-> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
+> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类，task-videop1 起 image=18 类+视频工序 11 类=28 类，task-v115 videop1 回流起 29 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `references/critical-rules.md` Rule 34。
 
 > 选定 template_type 后，立即按 §九「机制适用性矩阵」套用该类型的机制画像（Rule 37）：Code Review Gate、执行体路由等按矩阵行取捨。
 
@@ -47,6 +59,18 @@
 - `templates/variant/video-type.md`(v3，task-v093 收录；视频生产任务模板，video 家族主分支)
 - `templates/variant/video-fix-type.md`(v3，task-v093 收录；视频修正/局部重生成/QC FAIL 处置，video 家族 C 修正分支展开)
 - `templates/variant/memory-hygiene-type.md`(v4，task-v109 收录；记忆体系盘点/整理/治理模板，M1-M5 记忆整理协议承载)
+- `templates/variant/image-type.md`(v1，task-videop1-planimage-001 收录；图像生成九原子步骤管线——三检闭环+静默自动，video 家族姊妹模板)
+- `templates/variant/script-dev-type.md`(剧本工序 M0-M3+合规审查，零生成；task-videop1-videotpl-001 收录)
+- `templates/variant/character-design-type.md`(角色设定→根图→G1→multiview→MCD 一致性锁)
+- `templates/variant/multiview-ref-type.md`(既有根锚派生 multiview/sheet/装备变体补制)
+- `templates/variant/storyboard-type.md`(分镜拆解：走位清单/geo lock/线稿关键帧页)
+- `templates/variant/prompt-struct-type.md`(图像提示词四段式结构化，零生成)
+- `templates/variant/video-prompt-type.md`(视频提示词转换+reference 配置+机械门，零视频调用)
+- `templates/variant/motion-camera-type.md`(运动与运镜控制写词，零生成)
+- `templates/variant/physics-compliance-type.md`(物理事实与交通合规判定，零生成)
+- `templates/variant/qc-defect-type.md`(质量审查与缺陷检测+最小范围处置)
+- `templates/variant/audio-voice-type.md`(音色/语言锁/TTS 声线对齐，零生成)
+- `templates/variant/final-assembly-type.md`(终剪组装/seam QC/成片判定/NAS 备份)
 
 **选择策略**:按场景词命中优先(见决策树),复杂度评分仅作辅助;若 plan 涉及多类场景(罕见),可同时引用多个模板的 VC 字段。
 
@@ -152,6 +176,18 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 视频生产(v3) | `templates/variant/video-type.md` | 内容组-视频：人工门 32.2 / QC 8 类 / video 家族主分支 |
 | 视频修正(v3) | `templates/variant/video-fix-type.md` | 内容组-视频：disposition_ref 必填 / full-regen 仅 d 级显式批准 |
 | 记忆卫生(v4) | `templates/variant/memory-hygiene-type.md` | 通用组-记忆卫生：M1 盘点表 / M2 四维校验 / M3 四态处置(删除仅建议) / M4 修正版抽验契约 / M5 写入三要素 |
+| 图像生成 | `templates/variant/image-type.md` | 九原子步骤管线 / 三检闭环 / 静默自动 / 预算账本 |
+| 剧本工序 | `templates/variant/script-dev-type.md` | M0-M3 六相 / 八红线 / M0 放行门 |
+| 角色设计 | `templates/variant/character-design-type.md` | 根图先行 / G1 终审 / MCD 一致性锁 |
+| 多视角补制 | `templates/variant/multiview-ref-type.md` | i2i 派生 / 合版护栏 / 全静默 |
+| 分镜拆解 | `templates/variant/storyboard-type.md` | walk_lock / geo lock / 四步准入 |
+| 图像写词 | `templates/variant/prompt-struct-type.md` | 四段式 / 判定层 / 零生成 |
+| 视频写词 | `templates/variant/video-prompt-type.md` | 槽位配置 / 机械门 / 零视频调用 |
+| 运镜控制 | `templates/variant/motion-camera-type.md` | 运动卡 / POV 纪律 / 零生成 |
+| 物理合规 | `templates/variant/physics-compliance-type.md` | 风险状态卡 / 判定清单 / 多态声明 |
+| 质检 | `templates/variant/qc-defect-type.md` | 机检+亲检 / 四级处置 / 判例固化 |
+| 配音对齐 | `templates/variant/audio-voice-type.md` | 声线表 / 语言锁 / 零生成 |
+| 终剪组装 | `templates/variant/final-assembly-type.md` | seam 5 边界 / 成片判定 / NAS |
 | 已有 .execution-plan.json | 允许替代 | — |
 
 ### 模板互斥关系(避免误选)
@@ -164,6 +200,10 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | test-writing vs code-edit | test-writing 缺**覆盖率门槛/独立性/边界 case**;code-edit 通用编辑 |
 | schema-migration vs bugfix | schema-migration=**可逆 up/down** + **在线切换**;bugfix 假设修复即正确 |
 | bugfix vs diagnostic | bugfix=**根因已知**进入修复;diagnostic=**根因排查**阶段 |
+| video vs image | video=**视频生产链**（草稿→video 调用→成片 QC）;image=纯图像层（成图三检即验收；产出进视频仍走 video 门） |
+| video/image vs 工序 11 类 | video=全流程整集;image=通用图像批;工序 11 类=**单专业任务**（各模板头注边界声明，误选回互斥表对账） |
+| script-dev vs video | script-dev=剧本文字层止于定稿（零生成）;video=生成生产链 |
+| qc-defect vs video-fix | qc-defect=判定与处置路由;video-fix=重生成执行域 |
 
 ---
 
@@ -234,13 +274,27 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | video-fix | 内容组-视频 | content_quality 门控（Q3/Q4）+disposition_ref 必填 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | videop1-video-fix SOP（full-regen 仅 d 级显式批准） |
 | mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备表/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
 | memory-hygiene | 通用组 | 记忆整理协议 M1-M5（M1 盘点表/M2 四维机械校验/M3 四态处置删除仅建议/M4 修正版抽验契约/M5 写入三要素） | content_quality 门控；仓内无代码功能变更 | executor(fresh) 盘点 / verifier 抽验 |
+| image | 内容组 | 成图三检 QC 门控（合规/一致性/质量——本仓 videop1-review-image 族+tools/qc.py 机检+主进程亲检） | Code Review Gate；content_quality（Q3/Q4）；code-assistant/debugger/code-reviewer 路由 | 生成/写词/QC 子代理+tools/gen.py·qc.py |
+| script-dev | 内容组 | 剧本判定层全集（script-craft P/V/E 维+八红线自检+M0 放行门） | Code Review Gate；content_quality；代码类路由 | script-writer/script-auditor |
+| character-design | 内容组 | 成图双硬 QC+审美基线+G1 门控+MCD 锁 | Code Review Gate；content_quality；代码类路由 | 生成/QC 子代理+主进程亲检 |
+| multiview-ref | 内容组 | 成图双硬 QC+根锚溯源+合版护栏（全静默） | Code Review Gate；content_quality；代码类路由 | 生成/QC/合版子代理+主进程亲检 |
+| storyboard | 内容组 | 线稿/关键帧准入门+走位铁律+geo lock+草稿人工门 | Code Review Gate；content_quality；代码类路由 | 线稿生成/QC 子代理 |
+| prompt-struct | 内容组 | review-prompt 判定层（零生成） | Code Review Gate；content_quality；代码类路由 | 写词/审查子代理 |
+| video-prompt | 内容组 | gen.py 机械门+语言音色子句核对（零视频调用） | Code Review Gate；content_quality；代码类路由 | 写词子代理+主进程机械 |
+| motion-camera | 内容组 | POV 纪律+物理可行性判定（零生成） | Code Review Gate；content_quality；代码类路由 | 写词/审查子代理 |
+| physics-compliance | 内容组 | physics/safety 判定层清单（判定工序） | Code Review Gate；content_quality；代码类路由 | 判定子代理 |
+| qc-defect | 内容组 | 双硬 QC+亲检仲裁+最小范围四级处置 | Code Review Gate；content_quality；代码类路由 | QC 子代理+主进程亲检 |
+| audio-voice | 内容组 | 语言锁三层+音色逐字核对（零生成） | Code Review Gate；content_quality；代码类路由 | 核对子代理 |
+| final-assembly | 内容组 | seam 5 边界+成片判定层+NAS 对账+用户终审 | Code Review Gate；content_quality；代码类路由 | 剪辑/QC/备份子代理 |
 | general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
 
 新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。
-> 内容组「不适用」项（3 行，Code Review Gate 与代码类执行体路由不触发）：
+> 内容组「不适用」项（15 行，Code Review Gate 与代码类执行体路由不触发）：
 > - writing（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
 > - research（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
 > - publish（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
+> - image（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由；content_quality Q3/Q4——图像域按成图三检 QC 门控）
+> - videotpl 工序 11 类（script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly——不适用同 image 行，另按各自域 QC/判定层门控）
 
 ## §十 工具选择映射（Rule 40.1/40.2 权威消费点 — task-v097）
 
@@ -249,7 +303,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | 任务类型族（对齐 §九） | 默认执行体（对齐 SKILL 路由表） | 计划期工具面建议（Rule 40.1 六类） | 编排判定倾向（Rule 40.4） |
 |----------------------|------------------------------|--------------------------------|------------------------|
 | 代码组（code-edit/bugfix/refactor/performance/test-writing） | code-assistant / executor / build-error-resolver 子代理 | Agent 子代理为主;机械守卫脚本（selftest/编译/lint）为验证面 | 串行为主;≥3 个独立同构单元或独立模块并行可分析 → 建议 CreateWorkflow |
-| 内容组（writing/research/publish/video） | 内容类执行体（article-writer 等）+plan-research-router 卫星 | 卫星技能+子代理;长任务建议用户 /goal 锚定会话目标（40.3 提示点） | 阶段链（研究→写作→审查）强串行;仅批量多文发布可 fan-out |
+| 内容组（writing/research/publish/video/image+videotpl 工序 11 类） | 内容类执行体（article-writer 等）+plan-research-router 卫星 | 卫星技能+子代理;长任务建议用户 /goal 锚定会话目标（40.3 提示点） | 阶段链（研究→写作→审查）强串行;仅批量多文发布可 fan-out |
 | 规则/模板组（rule-enhancement/schema-migration） | executor（worktree 隔离必须） | Agent 子代理+机械 selftest 面;主进程 git 编排（Rule 25.3 白名单①） | 串行;级联锚清单先行 |
 | 迁移/部署组（migration/deployment） | 主进程 git 编排+executor | 机械守卫脚本+git 编排（白名单①③）;MCP 工具按需 | 串行;合并回走 smart-merge-back |
 | 轻量档（mini-lite） | code-assistant 或主进程白名单 | 豁免「🧰」区块（Rule 38.3）;默认按 21.4 独立性守门（并行默认+声明组，未声明=串行，10-02） | 不判定 |

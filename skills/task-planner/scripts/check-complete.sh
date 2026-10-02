@@ -1,7 +1,16 @@
 #!/bin/bash
-# Check if all phases in task_plan.md are complete
-# Supports single-block and multi-block chain tasks (chain_mode: linked / fan-out)
-# Exits 1 when gates fail (Batch Report Rule 18.6 / Aggregator Rule 23.6 / 3-File Gate Rule 19.5 / Learning Gate Rule 31.5)
+# check-complete.sh — 终验完成度校验: 解析 task_plan.md 全部 Phase 的 - [x] 进度并在「全 complete」判定前
+# 依次跑各门控(头注四要素范式对齐 Rule 45.3 / task-v115 线C 注释补强; 原头部无脚本名范式第一行, 此处补齐)
+# 用途: 判定所有 Phase 是否 complete; 供 Stop hook 调用汇报任务完成状态 (Rule 18.6/19.5/23.6/31.5/25.4)
+# 输入: $1=plan 文件路径(默认 task_plan.md, 相对/绝对均可); 读取同目录 findings.md/progress.md
+#      (3-File Gate)、config.json 各门档位键(vc_gate_enforce/error_loop_enforce/fmea_enforce/delegation_rate_floor);
+#      依赖外部命令: python3(段解析主体)/ jq(档位解析, 缺失时按各门 fail-open 语义回退)
+# 输出: exit 0=全 complete 且各门放行(或全门 fail-open 通过); exit 1=门控失败或进度未完成;
+#      stdout 输出 [plan] 行; 全 complete 时透传 [plan-deferred-delegation-check] plan_dir= 行供 shell 层委派率终验
+# 依赖: 同目录 check-rescue-chain.sh / check-delegation.sh / check-plan-dispatch.sh(缺失各自行 fail-open)
+#       + templates/progress.md(3-File Gate stub 判定对照)
+# 支持 single-block 与 multi-block 链式任务 (chain_mode: linked / fan-out)
+# 门控失败时 exit 1 (Batch Report Rule 18.6 / Aggregator Rule 23.6 / 3-File Gate Rule 19.5 / Learning Gate Rule 31.5)
 # Used by Stop hook to report task completion status
 
 PLAN_FILE="${1:-task_plan.md}"
@@ -292,7 +301,9 @@ if chain_mode == "fan-out":
         aggregator_missing = ["Aggregator Phase (Rule 23.6)"]
 
 # [2026-09-04 Rule 19.5] 3-File Gate — findings.md / progress.md 必须存在且非模板 stub
-# 仅在 plan 目录有 Phase 内容（total>0 或 block_statuses 非空）时生效。
+# Why（task-v115 线C 补强）: 拦截「只建 task_plan.md 就声称完成」的三文件口径违背——findings/progress
+# 是决策维/进度维承载面，缺失或仍是模板 stub（实质行<3）= 计划声称的 Research/Actions 无处落盘，
+# 终验必须挡住。仅在 plan 目录有 Phase 内容（total>0 或 block_statuses 非空）时生效。
 # 模板路径来自 argv[2]（SKILL_ROOT），缺失则跳过 stub 判定只检查文件存在。
 import os
 plan_dir = os.path.dirname(os.path.abspath(plan_file))
@@ -379,6 +390,9 @@ python_rc=$?
 
 # [2026-09-07 task-v055] 终验委派率接线 — shell 层 last gate
 # 仅当 python 返回 0(全 Phase complete 判定通过)时执行;否则放过(python 自己已 exit 1)
+# Why（task-v115 线C 补强）: 委派统计/率门是最后一道闸（置于所有判定门之后）——拦截「主进程全程
+# 亲做却报 done」的委派纪律违背（Rule 25.4 去口供化）；stats 输出不可用时 fail-open 但留 stderr 痕迹，
+# 门控自身故障不得锁死正常终验（fail-open 方向=放行，错误必须曝光）。
 if [ "$python_rc" -eq 0 ]; then
     # 委托率统计(fail-open:脚本异常不阻断,但 stderr 记警告)
     stats_output=""
@@ -600,6 +614,10 @@ if [ "$python_rc" -eq 0 ]; then
     # 缺映射行即告警（v065 计划自身 8VC/0V-N 即实例——计划可以有 0 条 V-N 也过终验的漏洞）。
     # 档位: env TASK_PLANNER_VC_GATE_ENFORCE > config.json vc_gate_enforce > fail-open warn
     # warn=仅 stderr 警告 / enforce=exit 1 阻断 complete / off=跳过；脚本自身异常 → fail-open warn
+    # Why（task-v115 线C 补强）: 本门拦截「VC 表形同虚设」——没有 V-N 映射的验证契约等于没写：
+    # Phase 完成与否与声明的 Verification Contract 脱钩，主进程可以按自己的口径报完成。
+    # 映射目标必须 ∈ 已定义 VC 编号，防止映射到不存在的 VC（自造编号即造假）；
+    # mini 档降阈值（5→2/2→1）是 Rule 38.4② 体量豁免，不是放松 fail-closed 判定逻辑。
     resolve_vc_gate_tier() {
         local m="${TASK_PLANNER_VC_GATE_ENFORCE:-}"
         case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac

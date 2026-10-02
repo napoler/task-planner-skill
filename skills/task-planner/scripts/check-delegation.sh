@@ -143,6 +143,9 @@ get_enforce_mode() {
 #       .claude/plan-templates/, .zcode/plans/, $SKILL_ROOT(全部放行)
 # [2026-09-07 task-v055-fix-review] M-5:祖先含 plans/ 还需扩展名命中计划文件白名单
 #   - 业务项目自带 plans/<...>/*.ts 等代码文件不应被无差别放行
+# Why（task-v115 线C）: 扩展名限定取舍=plans/ 目录在用户业务仓中常混放代码/脚本文件，
+# 无差别放行整目录会把「主进程直写业务代码」伪装成计划簿记逃过门控；限制 .md/.json
+# 即覆盖三件套/INDEX/ledger 全部合法簿记面而零误放行。
 is_whitelisted_path() {
     local fp="$1"
     case "$fp" in
@@ -177,8 +180,11 @@ is_whitelisted_path() {
 }
 
 # allow-direct 标记有效性检查 + ledger 记录
-# [2026-09-07 task-v055] 文件内容=过期时刻(epoch,写入时 now+1800),
-# 有效性 = remain = stamp - now ∈ [0, TTL];原 age=now-stamp 方向反了(恒不放行),已修
+    # [2026-09-07 task-v055] 文件内容=过期时刻(epoch,写入时 now+1800),
+    # 有效性 = remain = stamp - now ∈ [0, TTL];原 age=now-stamp 方向反了(恒不放行),已修
+    # Why（task-v115 线C）: TTL 语义取舍=bypass 是用户显式裁决的 30 分钟窗口授权，
+    # 过期即失效——防止一次「亲为」授权被无限期复用成常设豁免；stamp-now 方向修复
+    # （原 now-stamp 使 remain 恒 ≤0 不放行）属行为修复，方向改回后旧数据自然过期无迁移问题。
 check_allow_direct() {
     local plan_dir="$1"
     local sid="$2"
@@ -248,6 +254,8 @@ mode_pretool() {
     fi
 
     # ② session_id 非空且 ≠ .session-owner → 判定为子代理 → 放行
+    # Why（task-v115 线C）: 取舍=只识别「主进程违规直做」，子代理按 sid≠owner 放行而不验其白名单——
+    # 子代理本就该在 prompt 授权范围内写文件（22.4a 契约承载），验 owner 之外即误伤全部合法子代理写入。
     # [2026-09-07 task-v055-fix-review] M-2 健壮化:
     #   a) owner 读取走 read_session_owner(首行 + 规范化,防多行注入绕过)
     #   b) owner 缺失/空 → 不放行也不拦截:输出观察模式提示 + 视为主进程继续走白名单链
