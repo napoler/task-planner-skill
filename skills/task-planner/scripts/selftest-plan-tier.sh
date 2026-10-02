@@ -8,7 +8,7 @@
 #   PT-05 含 38.4 门控豁免清单锚（锚表 5 点 + 非 mini 零影响铁律）
 #   PT-06 含 38.5 机制锚（plan_tier_enforce + selftest-plan-tier）
 #   PT-07 config.json 含 plan_tier_enforce 键（默认 warn, enum 三档）
-#   PT-08 SKILL.md frontmatter 索引含「1-45」（task-v088 级联 1-38→1-39；[task-v117 口径扩展] 字面锚 1-39→1-45，frontmatter 全集具名演进，语义等价）
+#   PT-08 SKILL.md frontmatter 索引含「1-4[56]」（task-v088 级联 1-38→1-39；[task-v117 口径扩展] 字面锚 1-39→1-45，frontmatter 全集具名演进，语义等价；[task-v118 口径扩展] 字面锚 1-45→宽容 1-4[56]（frontmatter 全集具名演进 1-46，语义等价，同 v117 WF-10/PT-08 先例））
 #   PT-09 SKILL.md 含 C26 检查项（Rule 38 档位判定）
 #   PT-10 SKILL.md Critical Rules 列表含 Rule 38 摘要行
 #   PT-11 templates/variant/mini-lite-type.md 存在 ∧ ≤80 行 ∧ frontmatter 含 plan_tier: mini
@@ -72,8 +72,9 @@ else
   bad 07 "config.json plan_tier_enforce 缺失/默认非 warn/enum 非三档"
 fi
 # PT-08
-# PT-08 [task-v117 口径扩展] 字面锚 1-39→1-45（frontmatter 全集具名为「Critical Rules 全集 1-45」，守护 frontmatter 索引面存在性，语义等价演进同 WF-10 先例）
-if grep -q 'Critical Rules 全集 1-45' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-45（task-v117 口径扩展，v088 级联 1-39 后继）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 全集 1-45」（task-v117 口径扩展后字面锚）"; fi
+# PT-08 [task-v118 口径扩展] 字面锚 1-45→宽容 1-4[56]（frontmatter 全集具名演进 1-46，语义等价，同 v117 WF-10/PT-08 先例；
+# 守护 frontmatter 索引面存在性，断言语义不变。修改时间 2026-10-03，原行为=固定字面 grep -q 'Critical Rules 全集 1-45'）
+if grep -qE 'Critical Rules 全集 1-4[56]' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-4[56]（task-v117+task-v118 口径扩展，v088 级联 1-39 后继）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 全集 1-4[56]」（task-v117+task-v118 口径扩展后宽容字面锚）"; fi
 # PT-09
 if grep -q '^| C26 ' "$SKILLMD" && grep '^| C26 ' "$SKILLMD" | grep -q 'Rule 38'; then ok 09 "SKILL.md C26 检查项"; else bad 09 "SKILL.md 缺 C26 行"; fi
 # PT-10
