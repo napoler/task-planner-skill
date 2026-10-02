@@ -62,10 +62,11 @@ if [ "$n" -eq 1 ]; then ok 07 "registry 含 selftest-ask-default-timeout 行 = 1
 # [task-v118 口径扩展 2026-10-03] 原行为=grep -vcE '1-45'（仅 1-45 加白），现 1-4[56] 均加白；断言语义不反转（越界仍须零命中）
 # [task-v118 fix-phase CR finding 3] 原行为=grep -E '1-4[0-9]' | grep -vcE '1-4[56]'（整行过滤：同一行 1-46 与 1-47
 # 共现时 1-47 越界字面被合法 1-46 带着加白，漏报）。现改逐匹配粒度：grep -oE 每匹配独立成行，
-# grep -vE '^1-4[56]$' 仅剔恰好等于 1-45/1-46 的匹配，余者（含 1-47）计入越界计数。
-a="$(printf '%s\n' "$S44" | grep -oE '1-4[0-9]' | grep -vE '^1-4[56]$' | wc -l)"
-b="$(grep -oE '1-4[0-9]' "$SKILLMD" | grep -vE '^1-4[56]$' | wc -l)"
-if [ "$a" -eq 0 ] && [ "$b" -eq 0 ]; then ok 08 "越界 1-4x 字面零命中（CRIT 44 节=$a / SKILL.md=$b，1-4[56] 已加白 task-v117+task-v118）"; else bad 08 "越界 1-4x 字面命中（CRIT 44 节=$a / SKILL.md=$b，除 1-4[56] 外均应 0）"; fi
+# grep -vE '^1-4[5-9]$' 仅剔恰好等于 1-45..1-49 的匹配，余者计入越界计数。
+# [task-v121 预扩 2026-10-03] 1-4[56]→1-4[5-9]（用户裁决采纳 task-v118 建议 3：预扩消除 Rule 47-49 级联；代价=Rule 47 落地前 1-47..49 越界字面暂被加白，窗口期已知）
+a="$(printf '%s\n' "$S44" | grep -oE '1-4[0-9]' | grep -vE '^1-4[5-9]$' | wc -l)"
+b="$(grep -oE '1-4[0-9]' "$SKILLMD" | grep -vE '^1-4[5-9]$' | wc -l)"
+if [ "$a" -eq 0 ] && [ "$b" -eq 0 ]; then ok 08 "越界 1-4x 字面零命中（CRIT 44 节=$a / SKILL.md=$b，1-4[5-9] 已加白 task-v117+task-v118+task-v121）"; else bad 08 "越界 1-4x 字面命中（CRIT 44 节=$a / SKILL.md=$b，除 1-4[5-9] 外均应 0）"; fi
 # RT-09 零新 config 键——properties 键数 = 40（同 R-12/WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
