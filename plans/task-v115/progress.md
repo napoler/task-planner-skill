@@ -14,6 +14,7 @@
 - **Started:** [YYYY-MM-DD HH:MM]
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
+  - [sub:1-executor] Phase 1 回流普查完成：12 variant 预检 12/12 合规；3 分叉文件合并方案（plan-writer=两版一致仅补表 12 行；guide/mapping 收编 12 行增量+保留主仓演进+4 冲突点判定）；29 级联清单 14 主处+5 扩展锚（16 类残留）+知识锚 23→35 修正；三清单全文落 checkpoint subagent-state/1-executor.md
   -
 - Files created/modified:
   -
