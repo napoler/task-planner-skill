@@ -30,6 +30,7 @@
 - **Started:**
 - Actions taken:
   - [sub:2] 回归 42 selftest 全运行:41 rc=0;selftest-workflow-orchestration.sh rc=1(WF-10 "Rules 1-39" 命中 4<6,根因=README_zh.md 刷新为 1-45 后断言锚未随动,守卫锚级联漏网);对齐四要素:diff↔意图 5 处全过/引用实存全过/TL+skill-split 重跑 PASS/旧表述残留 4 类(v116 scope 外:billing.md:54 STOP 档、CLAUDE.md session-catchup.py×4、CONTRIBUTING×2 bash scripts/install.sh×8、P2 历史/模板例句)→ 结论 partial,详见 findings.md [sub:2-executor] 段与 subagent-state/2-executor.md (2026-10-02,executor subagent)
+  - [sub:3] 终验回归(主仓 HEAD 70b9f38,全新独立会话):42 selftest 全运行→42/42 rc=0 FAIL=0(sub:2 WF-10 复验清零,dirty 区 WF-10 锚口径扩展生效 TOTAL=6≥6);registry.tsv 双向 diff 零差集;零写入仓库(Pre/Post git status 一致)→ 结论 done,详见 findings.md [sub:3-executor] 段与 subagent-state/3-executor.md (2026-10-02,executor subagent)
 - Files created/modified:
   -
 - Test Results:

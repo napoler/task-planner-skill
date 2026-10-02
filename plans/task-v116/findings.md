@@ -68,3 +68,11 @@
 - 对齐四要素:diff↔意图 5 处全过(SKILL.md:64 六文件/cost-guard:21 STOP 档删除/cost-control:33 对齐/progress-tracker:192 清账/README+INSTALL 数字簇);引用实存全过(install.sh/uninstall.sh/lib/verify.sh/session-catchup.ts 均 EXISTS);守卫锚 TL+skill-split 重跑 PASS(21/41 FAIL=0)
 - **旧表述残留(未修,v116 scope 外)**:① billing.md:54 `>15 次 强制 STOP` 门控表行(R-06 漏网,billing.md 不在 scope_files;部署位同残留)② CLAUDE.md:24,43,54,81 `session-catchup.py` ×4(实为 .ts)③ CONTRIBUTING.md/CONTRIBUTING_zh.md `bash scripts/install.sh` ×8(含幽灵 flag --force/--target)④ P2:check-scope.sh:80 白名单/memory-hygiene 模板例句/CHANGELOG:140 历史条目/template-guide.md:143 行号锚漂移
 - 证据:plans/task-v116/subagent-state/2-executor.md §1/§2(全部命令可重跑)
+
+#### [sub:3-executor] 终验回归
+- 回归(主仓 HEAD 70b9f38,33c7325 为其祖先):42 selftest 全运行(timeout 90s 包裹,无一超时)→ **42/42 rc=0 FAIL=0**
+- sub:2 唯一 FAIL 复验清零:selftest-workflow-orchestration.sh `Total: 16 PASS=16 FAIL=0` rc=0 ✓——dirty 区已含 WF-10 锚口径扩展(扩 `Rules 1-45` 演进全集锚,守卫意图不变);逐文件实测 SKILL.md 1-39=2、CLAUDE.md 1-39=1、README_zh.md 1-45=2、skills/task-planner/README.md 1-39=1 → TOTAL=6 ≥6
+- registry.tsv(selftest-registry.tsv)非脚本核验:43 行=表头 1+42 行;双向 diff vs 磁盘 42 个 selftest-*.sh=零差集;selftest-registry.sh 断言 `registry rows=42, actual selftest=42` 独立复验一致
+- 零写入仓库:git status Pre/Post 完全一致(2 项 M=.dispatch-inflight 戳+workflow-orchestration dirty 修复,均 pre-existing,非本回归引入)
+- 遗留(v116 scope 外,需主进程裁决是否立 v117):billing.md:54 幽灵 STOP 档 / CLAUDE.md session-catchup.py×4 / CONTRIBUTING×2 bash scripts/install.sh×8 / P2 模板例句与行号锚漂移(同 sub:2 §2.2,本次未新增未消除)
+- 证据:plans/task-v116/subagent-state/3-executor.md §1/§2/§3(42 行逐项原文 rc+Total;全部命令可重跑)

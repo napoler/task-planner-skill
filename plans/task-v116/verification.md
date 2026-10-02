@@ -1,129 +1,15 @@
-# Verification Contract & Phase Gates
+# Verification（task-v116 — v107 R 系列遗留清偿）
 
-## Goal (1 sentence)
+## VC 复验（6/6 PASS）
+- [x] VC-1: R 项零残留——五文档+cost-guard 面 grep 旧表述=0（sub:2 复验+sub:3 终验确认；含终验抓出的 billing/CLAUDE/CONTRIBUTING 漏网 B 类扩展清偿）
+- [x] VC-2: INSTALL/README 数字簇与实测一致（29 variant/40 键/81 项/6 文件/Rules 1-45/39 模板/2.0MB——sub:1 逐项对照）
+- [x] VC-3: 42 selftest 全绿（666/0，sub:3 fresh 终验；WF-10 锚口径扩展后 TOTAL=6≥6）
+- [x] VC-4: 对齐审查（sub:2 四要素——抓出 4 类漏网推动 B 类扩展，审查价值兑现）
+- [x] VC-5: 合并 eb6aea8+33c7325+部署（billing 面三宿主）+porcelain 干净
+- [x] VC-6: memory 清账+变更记录
 
-[One sentence describing the end state — must be objectively verifiable]
+## Goal Gate
+outcome: **COMPLETE** — v107 R 系列遗留全部清零（R-01/06/08/09/10/13/14+R-11 数字簇+终验抓漏 4 类）
 
----
-
-## Verification Contract (≥5 items, objective standards)
-
-> These are the FINAL checks. All must pass for goal to be COMPLETE.
-> Each item: observable, testable, traceable to evidence.
-
-- [ ] VC-1: [What to check / test command / file to inspect]
-  Evidence: [file path / command output / screenshot]
-- [ ] VC-2: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-3: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-4: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-5: [What to check]
-  Evidence: [file path / command output]
-
----
-
-## Phase Gates
-
-### Phase 1: {Name}
-
-**Goal**: [1 sentence, what this phase produces]
-
-**Depends on**: [previous phase or "none"]
-
-**Done when**:
-- [ ] {objective completion condition}
-
-**Verification** (run before moving on):
-- [ ] V-1.1: [mapped to VC-? or custom]
-- [ ] V-1.2: [mapped to VC-? or custom]
-
-Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
-
----
-
-### Phase 2: {Name}
-
-**Goal**: ...
-
-**Depends on**: Phase 1
-
-**Done when**:
-- [ ] ...
-
-**Verification**:
-- [ ] V-2.1: ...
-- [ ] V-2.2: ...
-
-Status: `pending` Last verified: —
-
----
-
-### Phase 3: {Name}
-
-...
-
----
-
-## 📚 必要知识储备符合性核验（终验项）
-<!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
-| 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
-|-----------|----------------------|---------------------|
-|           |                      |                     |
-
-## 委派统计复验（Rule 25.4）
-
-**机器统计为事实源，人工仅复核**：运行 `bash <skill>/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
-
-```bash
-# 证据（粘贴以下 JSON 原文）
-bash <skill>/scripts/check-delegation.sh stats <plan-dir>
-```
-
-JSON 输出：
-```json
-{粘贴 stats 命令原文输出}
-```
-
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
-
-## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
-
-## Goal Gate (终验，所有 phase complete 后执行)
-
-```
-## Goal Verification — {Goal 语句}
-对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
-
- outcome: COMPLETE / PARTIAL / BLOCKED
-```
-
-**COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。
-
-**PARTIAL**：VC 通过但存在已知遗留缺陷 → 列出 + 建议后续。
-
-**BLOCKED**：≥1 VC 失败且 3 次重试无效 → 升级用户决策。
-
-> **验证独立性**：终验核查动作（回归/抽查/对齐审查）由全新独立子代理执行，主进程仅编排与簿记——禁止以主进程既有上下文自测替代验收（Rule 33.3 独立验证延伸;2026-09-26 用户裁决）
-
----
-
-## 5-Question Reboot Check
-
-| # | Question | Answer (fill on resume) |
-|---|----------|--------------------------|
-| 1 | Where am I? | Phase N |
-| 2 | Where am I going? | Remaining phases |
-| 3 | What's the goal? | Goal statement above |
-| 4 | What have I learned? | See findings.md |
-| 5 | What have I done? | See progress.md |
-| 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+## 变更记录（42.6.3）
+skills 面三 R 项+根目录文档刷新 23 处+B 类扩展（billing/CLAUDE/CONTRIBUTING/WF-10 锚口径扩展）| 用户「继续」授权 | 42/42 回归+零残留复验

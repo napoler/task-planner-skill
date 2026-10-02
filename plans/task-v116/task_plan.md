@@ -47,7 +47,7 @@ v107 审查证实的文档面缺陷（P1×7）经 v108-v115 部分消解后仍�
 
 ## Current Phase
 
-Phase 1
+（全部 Phase complete — 终验 COMPLETE）
 
 ## Next Step
 
@@ -68,13 +68,13 @@ Phase 1
 - [ ] R-01 SKILL:64「5 个文件」→6+knowledge-brief；R-06 cost-guard:21 删幽灵 STOP 档（cost-control:33 对齐核查）；R-08 plan-bookkeeper 行→实存承接方（task-planner 簿记职能）；R-09 README 根级 scripts→skills/task-planner 实位；R-10 session-catchup.py→.ts（README×5+INSTALL:61）；R-13 INSTALL 卸载/验证命令实位化；R-14 英文死链→skills/task-planner/ 实位；R-11 数字簇按实测刷新（29 variant/40 键/6 文件/81 项脚本——逐项 ls 实测后改）
 - [ ] worktree commit
 - **V-N:** VC-1, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（⑥ 纯文档修正扩展口径——零逻辑变更，逐项 ls 实测驱动）
 
 ### Phase 2: 回归+合并+部署+对齐审查+簿记
 - [ ] fresh 42 selftest（合并后主仓）→ 对齐审查（fresh）→ 部署 skills 面 → INDEX+commit+memory 清账
 - **V-N:** VC-3, VC-4, VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor fresh（回归/审查）+ 主进程（① 部署+② 簿记）
 
 ## 🔀 隔离决策
@@ -132,9 +132,9 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 2 |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 |  |
+| 子代理执行 Phase 数 / 总 Phase 数 | 1 / 2（Phase 2 回归/对齐=executor fresh） |
+| 主进程直做 Phase 清单 | Phase 1 修复（⑥ 纯文档+锚修正）+B 类扩展（billing/CLAUDE/CONTRIBUTING/WF-10 锚）+部署（①）+簿记（②）——全白名单 |
+| 委派率 | 0.5；验证独立性：三波 fresh（根目录刷新/回归+对齐/终验回归） |
 
 ## 🔗 Subagent Handoff 登记表
 
