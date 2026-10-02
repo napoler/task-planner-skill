@@ -18,5 +18,5 @@ critical-rules.md（Rule 38.7 新增子条）+SKILL.md（Rule 38 摘要行括注
 ## Phase
 ### Phase 1: 修订+回归+交付（L0 单 Phase）
 - 主进程直做（白名单⑥+②：修订本体为规范文本 ≤30 行；worktree 隔离；相关 selftest（plan-tier/skill-split/knowledge-brief）+单波 fresh 全量终验；精简簿记）
-- Status: in_progress
+- Status: complete
 - Executor: 主进程（L0 通道：⑥ 扩展口径首次行使，登记于本行）
