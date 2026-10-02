@@ -16,7 +16,7 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 
 - 只读引用目录 `../task-planner/templates/variant/`（仓内相对路径随部署位走；SKILL 内引用遵循 template-guide §七：优先 `${TASK_PLANNER_ROOT}` 绝对路径）
 - 本技能**不执行**任何机械动作：模板查找/复制/白名单=init-session.sh，类型门控=check-template-type.sh + attest，均为 task-planner 脚本职责
-- 白名单动态派生自 variant/ 目录（16 类），本技能两份 reference 只描述、不改机械行为
+- 白名单动态派生自 variant/ 目录（task-v115 videop1 回流后 29 类），本技能两份 reference 只描述、不改机械行为
 
 ## 沉淀指针（Rule 34）
 

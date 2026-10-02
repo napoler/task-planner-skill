@@ -29,7 +29,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `progress.md` | 会话日志：动作/测试/错误记录 | session-catchup.ts |
 | `notepad-learnings.md` | 经验记录：New Requests/What Worked/Files Modified | 会话结束归档 |
 
-### 2.2 Variant 模板（17 个 — 任务开启期选其一；2026-09-29 task-v095 由 13 修正，mini-lite d6a0f76 / video 51ca883 / video-fix task-v093 收编，memory-hygiene task-v109 收录）
+### 2.2 Variant 模板（29 个 — 任务开启期选其一；2026-09-29 task-v095 由 13 修正，mini-lite d6a0f76 / video 51ca883 / video-fix task-v093 收编，memory-hygiene task-v109 收录；2026-10-01 task-videop1-planimage-001 +image；2026-10-01 task-videop1-videotpl-001 +视频工序 11 类；task-v115 videop1 回流收编 17→29）
 
 | 文件名 | 适用场景 | 关键 VC 字段 |
 |--------|---------|--------------|
@@ -50,6 +50,18 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `variant/video-type.md` | 视频创作（母图/分镜/镜头生产/成片质检） | 人工门 32.2 / QC 8 类 |
 | `variant/video-fix-type.md` (v3, task-v093 收录) | 视频修正/局部重生成/QC FAIL 处置 | disposition_ref 必填 / full-regen 仅 d 级显式批准 |
 | `variant/memory-hygiene-type.md` (v4, task-v109 收录) | 记忆体系盘点/整理/治理 | M1 盘点表 / M2 四维校验 / M3 四态处置 / M4 修正版抽验 / M5 写入三要素 |
+| `variant/image-type.md` (v1, task-videop1-planimage-001 收录) | 图像生成（母图/关键帧批/修词重抽；静默自动） | 三检闭环 / 预算账本 / 静默纪律 |
+| `variant/script-dev-type.md` (videotpl) | 剧本工序 M0-M3+合规审查（零生成） | 原子六相 / 八红线 / M0 放行门 |
+| `variant/character-design-type.md` (videotpl) | 角色设计+一致性锁定 | 根图先行 / G1 终审 / MCD 锁 |
+| `variant/multiview-ref-type.md` (videotpl) | 多视角参考图补制（全静默） | i2i 派生 / 合版护栏 / 预算账本 |
+| `variant/storyboard-type.md` (videotpl) | 分镜规划与镜头拆解 | walk_lock / geo lock / 四步准入 |
+| `variant/prompt-struct-type.md` (videotpl) | 图像提示词结构化（零生成） | 四段式 / 判定层快审 |
+| `variant/video-prompt-type.md` (videotpl) | 视频提示词转换（零视频调用） | 槽位配置 / 机械门 0.4-2.5 |
+| `variant/motion-camera-type.md` (videotpl) | 运动与运镜控制（零生成） | 运动卡 / POV 纪律 / 可行性 |
+| `variant/physics-compliance-type.md` (videotpl) | 物理事实与交通合规核验（零生成） | 风险状态卡 / 判定清单 / 多态声明 |
+| `variant/qc-defect-type.md` (videotpl) | 质量审查与缺陷检测 | 机检+亲检 / 四级处置 / 判例固化 |
+| `variant/audio-voice-type.md` (videotpl) | 音频配音对齐（零生成） | 声线表 / 语言锁三层 |
+| `variant/final-assembly-type.md` (videotpl) | 终剪组装验证 | seam 5 边界 / 成片判定 / NAS |
 
 **决策树**详见 `references/template-mapping.md`;`plan-writer` agent 按关键词自动匹配。各类型适用的机制画像见 template-mapping.md §九（Rule 37）。
 
@@ -61,21 +73,21 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `batch_report.md` | 批量处理质量门控八字段报告（Rule 18.6 配套） |
 | `subagent_dispatch.md` | 子代理派发 prompt 九字段模板(含计划三文件必传 + 8 字段严格返回)(Rule 22.4 配套) |
 
-**总文件数**:5 核心 + 3 辅助 + 17 variant = **25 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）/delivery-summary.md（交付总结模板）不入此口径，templates/ 实际 25 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093）。
+**总文件数**:5 核心 + 3 辅助 + 29 variant = **37 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）/delivery-summary.md（交付总结模板）不入此口径，templates/ 实际 38 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093；+image task-videop1-planimage-001；+视频工序 11 类 task-videop1-videotpl-001）。
 
-### 2.4 标准章节：「📚 必要知识储备」（22/25 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外；v2.3 新增，v093 +video-fix）
+### 2.4 标准章节：「📚 必要知识储备」（35/38 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外；v2.3 新增，v093 +video-fix，planimage +image，videotpl +11）
 
 **目的**：任务知识库对齐——计划创建时列出本任务依赖的知识源（规范/标准、官方文档、项目内部文档/知识库、文献/论文、图书/教程），Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写。
 
-- **统一标题**：`## 📚 必要知识储备`（副标题按模板适配）——全库唯一 grep 锚，可用 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 验收（应为 22；例外：knowledge-brief、shared-tracker、variant/mini-lite-type）
-- **task_plan 系（主模板 + 17 variant，含锚 16——mini-lite 除外）**：完整五类知识源表 + 填写规则，插入于「⚠️ 执行范围限制」之后；variant 另含 1 行类型示例行（如 bugfix=官方 Issue/changelog、schema-migration=DB 官方 DDL 文档）；Phase 1 追加确认 checkbox
+- **统一标题**：`## 📚 必要知识储备`（副标题按模板适配）——全库唯一 grep 锚，可用 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 验收（应为 35；例外：knowledge-brief、shared-tracker、variant/mini-lite-type；task-v115 videop1 回流 12 类全含锚，实测 35）
+- **task_plan 系（主模板 + 29 variant，含锚 28——mini-lite 除外）**：完整五类知识源表 + 填写规则，插入于「⚠️ 执行范围限制」之后；variant 另含 1 行类型示例行（如 bugfix=官方 Issue/changelog、schema-migration=DB 官方 DDL 文档）；Phase 1 追加确认 checkbox
 - **辅助模板**：轻量适配版——findings=对齐记录、progress=使用记录、verification=符合性核验、batch_report=知识依据、cost_log=计费知识依据、notepad-learnings=储备备注、subagent_dispatch=知识上下文包（随 prompt 注入子代理）
 - **契约安全**：该章节属可定制结构区（见 §四）。内容不含 `### Phase N:`、`- **Status:**`、行首 `---`，标题避开 `Batch Report` 字样（防误触 Rule 18.6 正则）；插入位置必须在「⚠️ 执行范围限制」区块**完整结束之后**——该区块被 check-conflicts.sh / check-drift.sh 经统一库 lib/plan-parse.sh 的 `plan_parse_scope` 提取（check-conflicts 默认形态、check-drift 列限形态，语义权威源见库头注），任何 `##` 级标题插入区块中间都会截断 scope 提取
 
 ### 2.5 knowledge-brief.md（第 6 计划文件 — task-v067 新增）
 
 - 定位：五段结构（任务速览/已验证事实/关键文件锚点表/易错点清单/S-unit 材料包索引）；计划期由 plan-writer 产出，执行期各 S-unit 完成后回填 §2/§3
-- 差异：本模板不含 2.4 所述「📚 必要知识储备」章节（头部注释已声明），故 §2.4「统一标题」条的 grep 锚计数 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 现为 22（= 25 − 3 无锚例外：knowledge-brief/shared-tracker/variant/mini-lite-type）；由 init-session.sh 建档并计入白名单（模板白名单 5→6，见 template-mapping.md §七）
+- 差异：本模板不含 2.4 所述「📚 必要知识储备」章节（头部注释已声明），故 §2.4「统一标题」条的 grep 锚计数 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 现为 35（task-v115 回流后 29 variant 中 28 含锚+顶层 7 含锚，= 39 − 3 无锚例外：knowledge-brief/shared-tracker/variant/mini-lite-type）；由 init-session.sh 建档并计入白名单（模板白名单 5→6，见 template-mapping.md §七）
 
 ---
 

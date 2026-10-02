@@ -200,6 +200,9 @@ case "$mode" in
       fi
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
+    # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/FMEA 三道前置门之后的
+    # 计划内容；若先写 attestation 再跑门控，门失败退出时留下一份锁定着「未获批计划」的哈希，
+    # 后续 hook 会把未获批内容当事实源注入（篡改语义等价）。锁定动作必须是批准流程的终点。
     # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,
     # 无 sid 时空串;向后兼容: verify 仅读 plan_sha256, 旧 attestation 无此字段不影响校验)
     attest_sid="${ZCODE_SESSION_ID:-${CLAUDE_SESSION_ID:-}}"
@@ -212,6 +215,9 @@ case "$mode" in
     if [ -f "$attest_file" ]; then cat "$attest_file"; else echo "[attest] 未锁定: $attest_file 不存在"; exit 2; fi
     ;;
   clear)
+    # Why（task-v115 线C 补强）: --clear 幂等设计——锁定文件不存在时不报错而是提示「无锁定可清除」
+    # 并 exit 0：重规划流程常连跑「clear → 重新 attest」，中间态（已清/从未锁）必须可重复执行；
+    # 若 clear 失败路径 exit 非 0，重规划脚本链会误报失败阻断重新批准流程。
     if [ -f "$attest_file" ]; then rm "$attest_file" && echo "[attest] 已清除: $attest_file"; else echo "[attest] 无锁定可清除"; fi
     ;;
   verify)
