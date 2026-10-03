@@ -279,6 +279,7 @@ model: opus
 - **Rule 42（质量审查技能主动检测与补充 — task-v099）**：任务涉及质量审查面时按四级顺序检测（42.1/42.2 项目级→用户级→环境 agents→内置 review-library 兜底池，均未命中=缺口）；缺口按补充合约处置——该任务项目级补建专用质量审查技能且补建动作作为 S-unit 登记进计划，禁无登记私建技能（42.3）；计划「质量审查工具」行登记检测结论，执行期必须用登记工具（42.4）；零新 config 键+mini 档豁免（42.5）；对齐审查前置与收尾消费——写入前版本一致性校验闸门（42.6.1 未经校验不追加）+任务完成前对齐标准流程（42.6.2 全文档过 alignment-review）+变更记录输出（42.6.3）+零新键机制（42.6.4,task-v102）
 - **Rule 43（执行可靠性制度化 — task-v099）**：证据先行反幻觉——重要声称必附机器可复现验证证据，未验证内容只能以「未验证」显式登记，子代理 8 字段 evidence 无证据=该项未完成（43.1）；模型档位经济性路由——S-unit 逐行标注建议档位，取最小可承载档，失败先 22.3 升档（43.2）；方案预验证与最优选择——呈报前枚举 ≥2 候选各过最轻验证，候选对比表裁决，验证成本过高降级假设清单（43.3）；C30/C31 消费+零新 config 键+selftest-reliability-institution.sh 守护（43.4）
 - **Rule 44（用户选择点默认项与自动超时裁决 — task-v103）**：给用户的所有选择点必设默认选项+自动超时（44.1 默认 5 分钟,询问点可声明覆盖值）;产出一致仅步骤/耗时差异的低区分度选项优先按 41.3 直接裁决登记而非打扰用户（44.2）;用户超时未答复→按推荐默认项自动执行+登记自动裁决记录五要素（44.3,不打断≠不留痕）;零新 config 键+C33 消费+RT 静态守护（44.4）
+- **Rule 47（媒体制作任务派发纪律 — task-v122）**：媒体拆分轴=制作阶段×生产单元，单 S-unit=单单元×单阶段（47.1）；具名执行体路由=executor+工序模板 SOP+生成技能，general-purpose 默认兜底禁止、例外登记理由（47.2）；批量生成试点先行联动 Rule 18.9 硬门（47.3）；零新 config 键+selftest-media-dispatch.sh 守护（47.4）
 
 ## Completion Gate
 
@@ -302,7 +303,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度） |
+| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -352,6 +353,8 @@ model: opus
 | **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
+| **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
+| **剧集创作管线（多集/多镜整链）** | `executor` 按集→场→镜逐级拆 Phase/S-unit（Rule 47.1） | **sonnet-1** | ❌ | ≤1 集 × 1 工序 per S-unit | 拆 Phase |
 
 ### 模型档位依据
 
