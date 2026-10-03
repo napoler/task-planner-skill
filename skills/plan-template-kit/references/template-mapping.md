@@ -295,6 +295,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 > - publish（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由）
 > - image（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由；content_quality Q3/Q4——图像域按成图三检 QC 门控）
 > - videotpl 工序 11 类（script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly——不适用同 image 行，另按各自域 QC/判定层门控）
+> 媒体族执行体兜底路由（task-v122 Rule 47.2）：路由组列引用的项目专属资产（tools/gen.py·qc.py / script-writer / videop1 SOP 等）在当前环境缺位时，通用兜底路由 = executor(sonnet-1) + 对应工序 variant 模板 SOP + 生成技能（如 agnes-ai-generation-skill，派发 prompt 点名）；质检工序 = QC/审查类子代理；禁止 general-purpose 无登记默认兜底。
 
 ## §十 工具选择映射（Rule 40.1/40.2 权威消费点 — task-v097）
 
@@ -304,6 +305,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 |----------------------|------------------------------|--------------------------------|------------------------|
 | 代码组（code-edit/bugfix/refactor/performance/test-writing） | code-assistant / executor / build-error-resolver 子代理 | Agent 子代理为主;机械守卫脚本（selftest/编译/lint）为验证面 | 串行为主;≥3 个独立同构单元或独立模块并行可分析 → 建议 CreateWorkflow |
 | 内容组（writing/research/publish/video/image+videotpl 工序 11 类） | 内容类执行体（article-writer 等）+plan-research-router 卫星 | 卫星技能+子代理;长任务建议用户 /goal 锚定会话目标（40.3 提示点） | 阶段链（研究→写作→审查）强串行;仅批量多文发布可 fan-out |
+| 媒体制作族（video/video-fix/image+工序 11 类，自内容组行特化拆出 — task-v122 Rule 47.2） | executor(sonnet-1) + 工序 variant 模板 SOP + 生成技能；QC=审查类子代理 | 子代理+生成技能；机械 QC/机检脚本为验证面 | 同参批量单元可声明组并行；跨工序阶段链（母图/分镜/剧本依赖）强串行 |
 | 规则/模板组（rule-enhancement/schema-migration） | executor（worktree 隔离必须） | Agent 子代理+机械 selftest 面;主进程 git 编排（Rule 25.3 白名单①） | 串行;级联锚清单先行 |
 | 迁移/部署组（migration/deployment） | 主进程 git 编排+executor | 机械守卫脚本+git 编排（白名单①③）;MCP 工具按需 | 串行;合并回走 smart-merge-back |
 | 轻量档（mini-lite） | code-assistant 或主进程白名单 | 豁免「🧰」区块（Rule 38.3）;默认按 21.4 独立性守门（并行默认+声明组，未声明=串行，10-02） | 不判定 |
