@@ -1,0 +1,11 @@
+# S7fix-code-assistant checkpoint（22.8.1 最终 8 字段）
+- started: 2026-10-04（S-unit: CR fix-phase 三处微修）
+- finished: 2026-10-04
+- status: complete
+- key_findings: 修1 RC-01 grep -c '^51\.' → grep -cE '^[[:space:]]*51\.'（:30，行首缩进容错）；修2 RC-12 grep -q '需求覆盖核对' → grep -q '^## 需求覆盖核对（Rule 51.3'（:130，锚定区块标题形态）；修3 critical-rules.md :528 行尾追加「（silent 模式对本款不适用：G4 缩水项必须显式等待用户答复，不得按推荐项自走。）」。
+- evidence: selftest-requirement-coverage.sh Total: 15 PASS=15 FAIL=0 (exit=0)；selftest-lane-advancement.sh Total: 14 PASS=14 FAIL=0 (exit=0)；wc -l critical-rules.md=530、SKILL.md=451（未动 SKILL.md）；git diff 仅 2 文件 3 insertions/3 deletions，恰好对应三处，无其他行。
+- acceptance: 逐条通过——RC FAIL=0(15/15)✓ / LA FAIL=0(锚邻检 Rule 49/51 未破坏)✓ / wc 530+451 ✓ / git diff 三处精确 ✓。
+- files_touched: /mnt/data/dev/task-planner-skill-worktrees/task-v129/skills/task-planner/scripts/selftest-requirement-coverage.sh、/mnt/data/dev/task-planner-skill-worktrees/task-v129/skills/task-planner/references/critical-rules.md
+- risks: 无（行内替换+行尾追加，零结构变更；RC-01 注释 :26 仍写 `grep -c '^51\.'` 与实现已有轻微文字漂移，属既有注释非本单元授权范围，未动）。
+- open_questions: 无。git commit 由主进程编排执行。
+- checkpoint: 本文件即 22.8.1 落盘确认（最终 8 字段齐备）。
