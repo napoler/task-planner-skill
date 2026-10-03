@@ -199,6 +199,70 @@ case "$mode" in
         fi
       fi
     fi
+    # [2026-10-04 task-v128 D3] Rule 编号查重段(Rule 20.6, fail-open):
+    # 全仓计划锁定入口, 稳定性优先 —— rule-reserve.sh 缺失 / 查重失败 / 账本损坏
+    # → 打印 SKIPPED 并继续锁定(knowledge-brief §4-1, 禁阻断全仓 attest)。
+    # 解析 new_rule 两种声明形态(对齐 check-template-type.sh 三形态先例 :20-30):
+    #   ① HTML 注释 `<!-- new_rule: <N> -->` ② 配置表行 `| `new_rule` | <N> |`
+    # 值为 none/缺失 → 整段跳过零输出(F4 逐字节 diff 零硬门, 老计划行为不变)
+    new_rule="$(grep -m1 -oE '<!--[[:space:]]*new_rule:[[:space:]]*[A-Za-z0-9-]+' "$plan_file" 2>/dev/null | sed 's/.*new_rule:[[:space:]]*//')"
+    if [ -z "$new_rule" ]; then
+      new_rule="$(grep -m1 -E '^[[:space:]]*\|[[:space:]]*`?new_rule`?' "$plan_file" 2>/dev/null | awk -F'|' '{gsub(/[[:space:]`]/, "", $3); print $3}')"
+    fi
+    case "$new_rule" in
+      ''|none|None|NONE|留空)
+        : # 未声明/显式 none → 零输出(F4)
+        ;;
+      *[!0-9]*)
+        echo "[rule-reserve] SKIPPED (new_rule 解析失败: '${new_rule}', fail-open 继续, Rule 20.6)" >&2
+        ;;
+      *)
+        rr="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/rule-reserve.sh"
+        if [ ! -f "$rr" ]; then
+          echo "[rule-reserve] SKIPPED (rule-reserve.sh 缺失, fail-open 继续, Rule 20.6)" >&2
+        else
+          rr_task="$(basename "$plan_dir")"
+          # 账本路径 env 透传: RULE_RESERVE_LEDGER 由调用方设置(测试台阶=/tmp 临时账本),
+          # 未设置时 rule-reserve.sh 走 CWD 祖先 plans/ 解析三级链(D2 契约)
+          rr_out="$(bash "$rr" check "$new_rule" 2>&1)"; rr_rc=$?
+          # check 非 0 且输出无「rule <N>」持有人行 = 查重自身失败(账本损坏/路径解析失败) → fail-open
+          if [ "$rr_rc" -ne 0 ] && ! printf '%s\n' "$rr_out" | grep -q "rule ${new_rule}"; then
+            echo "[rule-reserve] SKIPPED (查重失败 fail-open: ${rr_out:-无输出}, Rule 20.6)" >&2
+          else
+            case "$rr_rc" in
+              0)
+                # 空闲 → 自动登记(D3 ③)
+                rr_rev="$(bash "$rr" reserve "$new_rule" "$rr_task" 2>&1)"; rr_rev_rc=$?
+                if [ "$rr_rev_rc" -eq 0 ]; then
+                  echo "[rule-reserve] INFO: rule ${new_rule} 空闲 → 自动登记 (task=${rr_task}, 账本见 rule-reserve.sh)"
+                else
+                  # 登记自身失败(竞态被他人抢占等) → fail-open 不阻断
+                  echo "[rule-reserve] SKIPPED (登记失败 fail-open: ${rr_rev:-无输出})" >&2
+                fi
+                ;;
+              3)
+                # 被持有(D3 ④/⑤): 持有人=本任务 → INFO 已登记(幂等, 含 contested 本任务在 claimants);
+                # 他人持有/contested → WARN + next 建议, 默认不阻断
+                if printf '%s\n' "$rr_out" | grep -qE "held by ${rr_task}[[:space:]]*\(|contested\[[^]]*${rr_task}"; then
+                  echo "[rule-reserve] INFO: rule ${new_rule} 已由本任务登记/持有 (${rr_out}; task=${rr_task})"
+                else
+                  rr_next="$(bash "$rr" next 2>/dev/null)"
+                  echo "[rule-reserve] WARN: ${rr_out} (task=${rr_task}; 建议改号 next=${rr_next:-?}; 默认不阻断, TASK_PLANNER_RULE_RESERVE_STRICT=1 可阻断)" >&2
+                  if [ "${TASK_PLANNER_RULE_RESERVE_STRICT:-0}" = "1" ]; then
+                    echo "[attest] ✗ Rule 编号冲突: new_rule=${new_rule} 被持有/contested, 拒绝锁定 (Rule 20.6, TASK_PLANNER_RULE_RESERVE_STRICT=1; 改号或用 \`rule-reserve.sh next\` 取建议号后重 attest)" >&2
+                    exit 2
+                  fi
+                fi
+                ;;
+              *)
+                # 非 0/3 的异常退出码(用法/IO 等) → fail-open
+                echo "[rule-reserve] SKIPPED (rule-reserve.sh check exit ${rr_rc}: ${rr_out:-无输出}, fail-open 继续, Rule 20.6)" >&2
+                ;;
+            esac
+          fi
+        fi
+        ;;
+    esac
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
     # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/FMEA 三道前置门之后的
     # 计划内容；若先写 attestation 再跑门控，门失败退出时留下一份锁定着「未获批计划」的哈希，
