@@ -22,7 +22,10 @@
 #   TL-19 [task-v112] templates/delivery-summary.md 存在且五要素区块标题计数 = 5（grep -cE '^## [1-5]\.' 实测）
 #   TL-20 [task-v112] SKILL.md 含 delivery-summary 指针行 ≥2 处（终验交付段指针 + References 表行）
 #   TL-21 [task-v112] plan-template-kit/references/template-guide.md 口径句含 delivery-summary.md（不入口径表述在位）
-# 21 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
+#   TL-22 [task-v123] templates/delivery-summary.md 可定位性硬规则三锚在位（Rule 48.5: 可定位性硬规则/反模式/定位三要素）
+#   TL-23 [task-v123] SKILL.md 终验段含「可定位性（Rule 48）」括注锚（Rule 48.5 机制）
+#   TL-24 [task-v123] critical-rules.md Rule 48 子条 ≥5 且 48.5「零新 config 键」声明在位（Rule 48.5 机制）
+# 24 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
 
 set -u
 
@@ -94,6 +97,12 @@ if [ -f "$TDEL" ] && [ "$(grep -cE '^## [1-5]\.' "$TDEL")" = "5" ]; then ok 19 "
 if [ "$(grep -c 'delivery-summary' "$SKILL")" -ge 2 ]; then ok 20 "SKILL.md 含 delivery-summary 指针 ≥2"; else bad 20 "SKILL.md delivery-summary 指针 <2"; fi
 # TL-21 [task-v112] template-guide.md 口径句含 delivery-summary.md（不入口径表述）
 if grep -q 'delivery-summary.md' "$TGUIDE"; then ok 21 "template-guide.md 口径句含 delivery-summary.md"; else bad 21 "template-guide.md 口径句缺 delivery-summary.md"; fi
+# TL-22 [task-v123] delivery-summary.md 可定位性硬规则三锚（Rule 48.5）
+if [ -f "$TDEL" ] && grep -q '可定位性硬规则' "$TDEL" && grep -q '反模式' "$TDEL" && grep -q '定位三要素' "$TDEL"; then ok 22 "delivery-summary.md 三锚（硬规则/反模式/定位三要素）在位"; else bad 22 "delivery-summary.md 缺可定位性锚（硬规则/反模式/定位三要素）"; fi
+# TL-23 [task-v123] SKILL.md 终验段可定位性括注锚
+if grep -q '可定位性（Rule 48）' "$SKILL"; then ok 23 "SKILL.md 含可定位性（Rule 48）括注"; else bad 23 "SKILL.md 缺可定位性（Rule 48）括注"; fi
+# TL-24 [task-v123] critical-rules.md Rule 48 子条 ≥5 + 零新键声明
+if [ "$(grep -cE '^48\.[1-5]' "$CRIT")" -ge 5 ] && grep -q '48\.5.*零新 config 键' "$CRIT"; then ok 24 "Rule 48 子条≥5 且 48.5 零新键声明在位"; else bad 24 "Rule 48 子条不足或零新键声明缺失"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
