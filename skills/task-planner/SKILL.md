@@ -353,8 +353,8 @@ model: opus
 | **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
-| **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
-| **剧集创作管线（多集/多镜整链）** | `executor` 按集→场→镜逐级拆 Phase/S-unit（Rule 47.1） | **sonnet-1** | ❌ | ≤1 集 × 1 工序 per S-unit | 拆 Phase |
+| **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `image-generation-executor` / `video-generation-executor`（在位优先）；缺位回退 `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
+| **剧集创作管线（多集/多镜整链）** | `video-generation-executor` 按集→场→镜逐级拆 Phase/S-unit（Rule 47.1）；组合工序缺位回退 executor | **sonnet-1** | ❌ | ≤1 集 × 1 工序 per S-unit | 拆 Phase |
 
 ### 模型档位依据
 

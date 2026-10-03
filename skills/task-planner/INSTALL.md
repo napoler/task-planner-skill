@@ -137,6 +137,9 @@ git pull
 | `companion/agents/plan-writer.md` | `~/.zcode/agents/` | 计划撰写子代理(sonnet-1,Rule 13-16) |
 | `companion/agents/article-batch-publisher.md` | `~/.zcode/agents/` | 批量发布(Rule 18.1-18.6 分项门控) |
 | `companion/agents/article-field-fixer.md` | `~/.zcode/agents/` | 批量字段修复(verify 抽检,Rule 18.2/18.4) |
+| `companion/agents/complex-planner.md` | `~/.zcode/agents/` | 高复杂度规划备用(GLM-5.3,常规档升级链穷尽后启用) |
+| `companion/agents/image-generation-executor.md` | `~/.zcode/agents/` | 图片生成专业执行体(Rule 47.2 具名路由,三检-QC 门控) |
+| `companion/agents/video-generation-executor.md` | `~/.zcode/agents/` | 视频生成专业执行体(Rule 47.2 具名路由,单镜试水→异步生成→QC 回执) |
 | `skills/task-drift-guard/` | `~/.zcode/skills/` | 漂移检测 skill(含批量 failure_rate 判定) |
 | `skills/plan-resume/` | `~/.zcode/skills/` | 中断/过期计划扫描与续推决策 skill |
 | `skills/todo-skill/` | `~/.zcode/skills/` | 跨会话 todo 持久化 skill |

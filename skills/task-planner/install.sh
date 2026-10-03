@@ -176,7 +176,7 @@ for tool in "${TOOLS_DETECTED[@]}"; do
 done
 
 # ─── Phase 5.6: Install companion files (agents + top-level peripheral skills) ──────
-# companion/agents/ 存放随行 agents(plan-writer/article-batch-publisher/article-field-fixer);
+# companion/agents/ 存放随行 agents(plan-writer/article-batch-publisher/article-field-fixer/complex-planner/image-generation-executor/video-generation-executor);
 # 外围 skill(task-drift-guard/plan-resume/todo-skill)位于仓库顶层 skills/,由
 # install-companion.sh 统一分发。一键安装保证新机器装完 task-planner 即拥有全部依赖;
 # 日常修改用 scripts/sync-companion.sh 拉回仓。
