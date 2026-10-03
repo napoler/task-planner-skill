@@ -38,7 +38,7 @@ for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-ro
 done
 
 # T2 主 SKILL.md 行数收敛 + 4 路由指针各 ≥1
-t "T-主 行数 ≤447（task-v122 Rule 47 联动 +3;演进 440→442→444→447）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 447 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
+t "T-主 行数 ≤451（task-v129 Rule 51 联动 +2;演进 440→442→444→447→449→451）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 451 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do
     t "T-主 路由指针在位 $sat ≥1" bash -c "[ \"\$(grep -c '$sat' '$SKILL')\" -ge 1 ]"
 done
