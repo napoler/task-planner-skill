@@ -20,6 +20,7 @@ selftest-plan-tier.sh	tier|auto-tier|Rule 38 任务难度分级(mini/standard)	R
 selftest-reflect-verify.sh	Rule 33 解决→反思→验证迭代循环	Rule 33 条款 / check-complete.sh 反思段措辞改动	references/critical-rules.md;scripts/check-complete.sh;config.json
 selftest-rescue-chain.sh	check-rescue-chain 救援链	行为级	check-rescue-chain.sh;config.json
 selftest-rule23-conflict-scan.sh	v091 C-1a② Rule 23 运行时并发冲突扫描	Rule 23 条款 / zcode-pretooluse.sh 扫描逻辑 / zcode-posttooluse.sh 重锁 / config 并发键改动	references/critical-rules.md;zcode-pretooluse.sh;zcode-posttooluse.sh;check-delegation.sh
+selftest-rule-reserve.sh	Rule 20.6 规则编号预留登记机制守护（静态锚：rule-reserve.sh 可执行/usage 六命令/账本路径常量/STRICT env 名/attest 挂点引用 + 行为 fixture：reserve 冲突 exit3、next 跳过占用、release 越权 exit4、contested list 可见 + 负向缺锚自检;task-v128 S5）	rule-reserve.sh 六命令/账本 schema/路径三级解析改动 / attest-plan.sh 查重段（rule-reserve 引用或 TASK_PLANNER_RULE_RESERVE_STRICT）改动 / Rule 20.6 条款锚改动	scripts/rule-reserve.sh;scripts/attest-plan.sh;references/critical-rules.md
 selftest-shared-tracker.sh	Rule 30 共享内容认领追踪	Rule 30 条款 / skill-collaboration.md 措辞改动	references/critical-rules.md;../plan-collab-router/references/skill-collaboration.md;config.json
 selftest-skill-collab.sh	协同路由面	skill-collaboration.md 条款措辞改动	../plan-collab-router/references/skill-collaboration.md;references/critical-rules.md;config.json
 selftest-skill-modify.sh	Rule 36 技能修改保守化与删除防护	Rule 36 条款 / check-skill-modify.sh / zcode-pretooluse.sh 技能文件分支 / config.skill_modify_enforce 改动	references/critical-rules.md;scripts/check-skill-modify.sh;scripts/zcode-pretooluse.sh;scripts/check-complete.sh;config.json

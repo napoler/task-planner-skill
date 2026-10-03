@@ -1,0 +1,8 @@
+{"rule":46,"status":"landed","task_id":"task-v118","ts":"2026-10-03","note":"子代理单任务专注度"}
+{"rule":47,"status":"landed","task_id":"task-v122","ts":"2026-10-03","note":"媒体制作任务派发纪律"}
+{"rule":48,"status":"landed","task_id":"task-v123","ts":"2026-10-03","note":"交付总结可定位性与实用性"}
+{"rule":49,"status":"landed","task_id":"task-v126","ts":"2026-10-04","note":"单元线多路并行推进（merge 957a7a8/48c6952；v125 原同瞄已改号 50）"}
+{"rule":50,"status":"contested","claimants":["task-v125","task-v127"],"ts":"2026-10-04","note":"v125 由 49 改号至 50（残留注释待清）与 v127 自取 50 同瞄；待仲裁/改号（next=52）"}
+{"rule":51,"status":"reserved","task_id":"task-v129","ts":"2026-10-04","note":"videop1 mvlock 事故整改（new_rule: 51 已 attest；应其请求补录）"}
+{"rule":51,"status":"landed","task_id":"task-v129","ts":"2026-10-04","note":""}
+{"rule":50,"status":"landed","task_id":"task-v127","ts":"2026-10-04","note":""}
