@@ -111,7 +111,7 @@ task-planner-skill/
     ├── examples.md                ← 实战示例
     ├── INSTALL.md                 ← 安装说明（LLM 自动安装 + 手动安装）
     ├── install.sh                 ← 一键安装（同目录 uninstall.sh 安全卸载）
-    ├── companion/agents/          ← 3 个伴生 agent（plan-writer 等）
+    ├── companion/agents/          ← 6 个伴生 agent（plan-writer / article-batch-publisher / article-field-fixer / complex-planner / image-generation-executor / video-generation-executor）
     ├── scripts/
     │   ├── init-session.sh        ← 初始化计划文件
     │   ├── check-scope.sh         ← PreToolUse Hook：范围守护

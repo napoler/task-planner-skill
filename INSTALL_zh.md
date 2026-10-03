@@ -302,8 +302,10 @@ ls task_plan.md   # 应存在
 ├── references/                    (8 个: critical-rules / completion-gate / goal-gate /
 │   │                               dispatch-examples / methodology / todo-sync /
 │   │                               worktree-isolation / batch-quality-gate)
-└── companion/agents/              (3 个配套 agent: plan-writer /
-                                     article-batch-publisher / article-field-fixer,
+└── companion/agents/              (6 个配套 agent: plan-writer /
+                                     article-batch-publisher / article-field-fixer /
+                                     complex-planner / image-generation-executor /
+                                     video-generation-executor,
                                      部署到 ~/.zcode/agents/ 等)
 ```
 
