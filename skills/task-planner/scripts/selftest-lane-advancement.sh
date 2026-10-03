@@ -112,10 +112,11 @@ fi
 # LA-11 SKILL.md References 表括号追加锚 `grep -q 'Rule 49 单元线多路并行推进）'`
 # What：断言 References 表 critical-rules.md 行的括号追加「/ Rule 49 单元线多路并行推进）」在位。
 # Why：References 表是 SKILL.md 引用面索引——括号追加缺失 = 文档表与条款脱钩（防 References 行重写时 49 名被丢；以追加尾字符「）」为锚锁括号完整闭合）。
-if grep -q 'Rule 49 单元线多路并行推进）' "$SKILLMD"; then
-  ok 11 "SKILL.md References 表 Rule 49 括号追加在位"
+# [task-v127 S12 合流重锚] 锚尾字符「）」在 v129 合流后被 50/51 追加顶出末位，宽容化去尾字符只锁 49 名在位，语义不反转，2026-10-04
+if grep -q 'Rule 49 单元线多路并行推进' "$SKILLMD"; then
+  ok 11 "SKILL.md References 表 Rule 49 名在位"
 else
-  bad 11 "SKILL.md References 表「Rule 49 单元线多路并行推进）」缺失（文档表未联动）"
+  bad 11 "SKILL.md References 表「Rule 49 单元线多路并行推进」缺失（文档表未联动）"
 fi
 
 # LA-12 SKILL.md 主锚守护 `grep -c 'Rules 1-39'` =2

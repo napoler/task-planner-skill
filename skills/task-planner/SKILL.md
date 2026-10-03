@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-49（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 全集 1-51（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -283,6 +283,7 @@ model: opus
 - **Rule 44（用户选择点默认项与自动超时裁决 — task-v103）**：给用户的所有选择点必设默认选项+自动超时（44.1 默认 5 分钟,询问点可声明覆盖值）;产出一致仅步骤/耗时差异的低区分度选项优先按 41.3 直接裁决登记而非打扰用户（44.2）;用户超时未答复→按推荐默认项自动执行+登记自动裁决记录五要素（44.3,不打断≠不留痕）;零新 config 键+C33 消费+RT 静态守护（44.4）
 - **Rule 47（媒体制作任务派发纪律 — task-v122）**：媒体拆分轴=制作阶段×生产单元，单 S-unit=单单元×单阶段（47.1）；具名执行体路由=executor+工序模板 SOP+生成技能，general-purpose 默认兜底禁止、例外登记理由（47.2）；批量生成试点先行联动 Rule 18.9 硬门（47.3）；零新 config 键+selftest-media-dispatch.sh 守护（47.4）
 - **Rule 49（单元线多路并行推进 — task-v126）**：可枚举生产单元×序贯工序任务族启用 lane 模型（49.1）；推进三条件=已验收+前置在位+独立性四问（49.2）；满足即派发不等批、跨 Phase 前移双登记、Phase 翻转语义不变（49.3）；汇合点强串行+单写者/单 S-unit 不变（49.4）；零新 config 键+selftest-lane-advancement.sh 守护（49.5）
+- **Rule 50（内容要求权重分级与评级 — task-v127）**：复合需求拆原子验收条目表（存在性 P/程度 E × 硬约束 H/评分项 S，50.1）；程度约束词显式成条且未标注默认 H（50.2）；逐条评级 PASS/PARTIAL/FAIL、程度条目双向判（过显眼 FAIL/不可见亦 FAIL，50.3）；加权判定=全 H 过+S 加权≥阈值（50.4）；条目表随任务书派发供 QC 链消费（50.5）；零新 config 键+selftest-requirement-grading.sh 守护（50.6）
 - **Rule 51（需求覆盖与完成声称门控 — task-v129）**：需求原文锚定+验证机制先行+完成声称对照门+自缩水禁令+生成前置盘点六子条；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
 
 ## Completion Gate
@@ -307,7 +308,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 51 需求覆盖与完成声称门控 / Rule 49 单元线多路并行推进） |
+| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -357,7 +358,7 @@ model: opus
 | **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
-| **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
+| **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2）+评级契约（Rule 50） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
 | **剧集创作管线（多集/多镜整链）** | `executor` 按集→场→镜逐级拆 Phase/S-unit（Rule 47.1） | **sonnet-1** | ❌ | ≤1 集 × 1 工序 per S-unit | 拆 Phase |
 
 ### 模型档位依据
