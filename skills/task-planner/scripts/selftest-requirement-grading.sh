@@ -87,11 +87,11 @@ fi
 # What：断言 SKILL.md 含全集行 '1-50'（Critical Rules 全集扩号到 50）且 'Rule 50' 命中 ≥2 处（摘要 bullet + 路由/正文消费点）。
 # Why：'1-50' 缺失 = 全集行未扩号（LLM 读到 1-49 全集即认为 50 不存在）；'Rule 50' 命中 <2 = 摘要与消费点至少一处脱钩
 #      （防 49 范式同类级联断链：条款扩到 50 但 SKILL.md 面停摆）。
-if grep -q '1-50' "$SKILLMD" && [ "$(grep -c 'Rule 50' "$SKILLMD" || true)" -ge 2 ]; then
-  ok 06 "SKILL.md '1-50' 在位 ∧ 'Rule 50' 命中 ≥2"
+if grep -q '1-5[0-9]' "$SKILLMD" && [ "$(grep -c 'Rule 50' "$SKILLMD" || true)" -ge 2 ]; then
+  ok 06 "SKILL.md '1-5[0-9]' 在位 ∧ 'Rule 50' 命中 ≥2"
 else
   n="$(grep -c 'Rule 50' "$SKILLMD" || true)"
-  bad 06 "SKILL.md 路由面锚缺失（'1-50' 或 'Rule 50' 命中=$n <2）"
+  bad 06 "SKILL.md 路由面锚缺失（'1-5[0-9]' 或 'Rule 50' 命中=$n <2）"
 fi
 
 # RG-07 零新 config 键——properties 键数 = 40（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）

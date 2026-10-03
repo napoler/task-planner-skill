@@ -75,8 +75,8 @@ fi
 # PT-08 [task-v118 口径扩展] 字面锚 1-45→宽容 1-4[56]（frontmatter 全集具名演进 1-46，语义等价，同 v117 WF-10/PT-08 先例；
 # 守护 frontmatter 索引面存在性，断言语义不变。修改时间 2026-10-03，原行为=固定字面 grep -q 'Critical Rules 全集 1-45'）
 # [task-v121 预扩] 1-4[56]→1-4[5-9]（消除 Rule 47-49 级联，2026-10-03）
-# [task-v127 口径演进] 1-4[5-9]→1-4[5-9]|1-50（Rule 50 落体 SKILL.md 现值「全集 1-50」，只扩匹配窗，断言语义=「全集行存在且覆盖至 1-4x 段」不反转，2026-10-04）
-if grep -qE 'Critical Rules 全集 1-4[5-9]|1-50' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-4[5-9]|1-50（task-v117+task-v118 口径扩展+task-v121 预扩+task-v127 口径演进，v088 级联 1-39 后继）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 全集 1-4[5-9]|1-50」（task-v117+task-v118+task-v121+task-v127 口径扩展后宽容字面锚）"; fi
+# [task-v127 口径演进] 1-4[5-9]→1-4[5-9]|1-50（Rule 50 落体 SKILL.md 现值「全集 1-50」，只扩匹配窗，断言语义=「全集行存在且覆盖至 1-4x 段」不反转，2026-10-04）；[S12 合流重锚] 1-50→1-5[0-9]（v129 并入全集 1-51，匹配窗再扩一档，语义不反转）
+if grep -qE 'Critical Rules 全集 1-4[5-9]|1-5[0-9]' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-4[5-9]|1-5[0-9]（task-v127 S12 合流重锚：v129 并入全集 1-51，1-50→1-5[0-9]）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 全集 1-4[5-9]|1-5[0-9]」（task-v127 S12 合流重锚后宽容字面锚）"; fi
 # PT-09
 if grep -q '^| C26 ' "$SKILLMD" && grep '^| C26 ' "$SKILLMD" | grep -q 'Rule 38'; then ok 09 "SKILL.md C26 检查项"; else bad 09 "SKILL.md 缺 C26 行"; fi
 # PT-10
