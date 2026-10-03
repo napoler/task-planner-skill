@@ -27,7 +27,7 @@ bad() { FAIL=$((FAIL+1)); printf 'RC-%s FAIL %s\n' "$1" "$2"; }
 # What：断言 51.1-51.6 六条子条主体行（行首 '51.N'）在位。
 # Why：锁 Rule 51 条款本体未被裁剪/重排——六子条是需求原文锚定/覆盖判据/核对表/自缩水禁令/前置盘点的唯一文本落点，
 #      缺任一子条 = 需求覆盖门控条款失守（防后续任务改写 critical-rules.md 时误删 51.x 段）。
-n="$(grep -c '^51\.' "$CRIT" || true)"
+n="$(grep -cE '^[[:space:]]*51\.' "$CRIT" || true)"
 if [ "$n" -ge 6 ]; then ok 01 "critical-rules.md Rule 51 子条锚 $n ≥6"; else bad 01 "critical-rules.md Rule 51 子条数 $n（应 ≥6）"; fi
 
 # RC-02 Rule 51 标题锚 `grep -q '^### 51 '`
@@ -127,7 +127,7 @@ fi
 # What：断言 delivery-summary.md 含「需求覆盖核对」区块，且既有 5 个编号区块（^## N.）未被新增/删除。
 # Why：delivery-summary.md 是 51.x 核对表模板载体——区块缺失 = 模板与条款脱钩；区块数 ≠5 说明模板被重构增删区块（防模板面漂移）。
 n="$(grep -cE '^## [1-5]\.' "$TDEL" || true)"
-if grep -q '需求覆盖核对' "$TDEL" && [ "$n" -eq 5 ]; then
+if grep -q '^## 需求覆盖核对（Rule 51.3' "$TDEL" && [ "$n" -eq 5 ]; then
   ok 12 "delivery-summary.md「需求覆盖核对」区块在位且编号区块数 =5"
 else
   bad 12 "delivery-summary.md「需求覆盖核对」缺失或编号区块数=$n（应 =5）"
