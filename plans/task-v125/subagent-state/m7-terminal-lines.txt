@@ -1,0 +1,50 @@
+skills/task-planner/scripts/selftest-active-plan.sh | terminal=Total: 19 PASS=19 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-agent-coverage.sh | terminal=Total: 8 PASS=8 FAIL=0 SKIPPED=0 | rc=0
+skills/task-planner/scripts/selftest-ask-default-timeout.sh | terminal=Total: 9 PASS=9 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-batch-pilot.sh | terminal=Total: 10 PASS=10 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-check-conflicts.sh | terminal=Total: 7 PASS=7 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-check-drift.sh | terminal=Total: 6 PASS=6 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-conclusion-discipline.sh | terminal=Total: 24 PASS=24 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-context-hygiene.sh | terminal=Total: 12 PASS=12 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-delegation.sh | terminal=Total: 38    PASS=38  FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-dispatch-grain.sh | terminal=Total: 10 PASS=10 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-dispatch.sh | terminal=Total: 31 PASS=31 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-error-loop.sh | terminal=Total: 16 PASS=16 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-execution-stability.sh | terminal=Total: 19  PASS=19  FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-fallback.sh | terminal=Total: 31  PASS=31  FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-final-gate-hash.sh | terminal===== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ==== | rc=0
+skills/task-planner/scripts/selftest-fine-grain-steps.sh | terminal=Total: 11 PASS=11 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-interaction.sh | terminal=Total: 11 PASS=11 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-iterative-optimizer.sh | terminal=Total: 8 PASS=8 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-knowledge-brief.sh | terminal=Total: 16  PASS=16  FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-lane-advancement.sh | terminal=Total: 14 PASS=14 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-mechanism-profile.sh | terminal=Total: 19 PASS=19 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-media-agents.sh | terminal=Total: 10 PASS=10 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-media-dispatch.sh | terminal=Total: 9 PASS=9 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-methodology.sh | terminal=Total: 16 PASS=16 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-plan-dispatch.sh | terminal=Total: 12 PASS=12 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-plan-tier.sh | terminal=Total: 32 PASS=32 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-reflect-verify.sh | terminal=Total: 12 PASS=12 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-registry.sh | terminal=Total: 5 PASS=5 FAIL=0 (registry rows=50, actual selftest=50) | rc=0
+skills/task-planner/scripts/selftest-reliability-institution.sh | terminal=Total: 12 PASS=12 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-requirement-coverage.sh | terminal=Total: 15 PASS=15 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-requirement-grading.sh | terminal=Total: 7 PASS=7 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-rescue-chain.sh | terminal=Total: 11 PASS=11 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-review-library.sh | terminal=Total: 15 PASS=15 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-rule23-conflict-scan.sh | terminal=Total: 3 PASS=3 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-rule-reserve.sh | terminal=Total: 10 PASS=10 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-self-resolution.sh | terminal=Total: 13 PASS=13 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-shared-tracker.sh | terminal=Total: 11 PASS=11 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-skill-collab.sh | terminal=Total: 25  PASS=25  FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-skill-modify.sh | terminal=Total: 9 PASS=9 FAIL=0 (SKIP=0) | rc=0
+skills/task-planner/scripts/selftest-skill-split.sh | terminal=Total: 41  PASS=41  FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-smart-merge.sh | terminal=Total: 17 PASS=17 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-sync-index.sh | terminal=Total: 13 PASS=13 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-task-boundary.sh | terminal=Total: 11 PASS=11 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-template-lifecycle.sh | terminal=Total: 24 PASS=24 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-template-sense.sh | terminal=Total: 8 PASS=8 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-tier-b.sh | terminal=Total: 18 PASS=18 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-tool-selection.sh | terminal=Total: 12 PASS=12 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-vc-gate.sh | terminal=Total: 11 PASS=11 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-veto.sh | terminal=Total: 13 PASS=13 FAIL=0 | rc=0
+skills/task-planner/scripts/selftest-workflow-orchestration.sh | terminal=Total: 16 PASS=16 FAIL=0 | rc=0

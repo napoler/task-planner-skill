@@ -1,0 +1,229 @@
+# subagent-state: m8-executor (S8 fresh 全量 50 脚本独立复跑)
+
+- 执行面: worktree /mnt/data/dev/task-planner-skill-worktrees/task-v125（cwd 未切换；只运行不修改）
+- 命令: 单 for 循环 `for f in skills/task-planner/scripts/selftest-*.sh; do echo "== $f"; timeout 60 bash "$f"; echo "rc=$?"; done`，逐条捕获 ==/终态/rc
+- 独立性: fresh 会话独立重跑；未引用 m7 日志/主进程口径；FAIL>0 grep 负结果（无 FAIL>0 命中）
+- 异常: 无单脚本超 60s（timeout 未触发，无跳过项）
+
+## 逐脚本原文（== 名 / 终态行 / rc 行，共 50 组）
+（final-gate-hash 终态行为其自有格式 `==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====`；registry 终态行含括号注）
+
+```
+== skills/task-planner/scripts/selftest-active-plan.sh
+Total: 19 PASS=19 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-agent-coverage.sh
+Total: 8 PASS=8 FAIL=0 SKIPPED=0
+rc=0
+
+== skills/task-planner/scripts/selftest-ask-default-timeout.sh
+Total: 9 PASS=9 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-batch-pilot.sh
+Total: 10 PASS=10 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-check-conflicts.sh
+Total: 7 PASS=7 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-check-drift.sh
+Total: 6 PASS=6 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-conclusion-discipline.sh
+Total: 24 PASS=24 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-context-hygiene.sh
+Total: 12 PASS=12 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-delegation.sh
+Total: 38    PASS=38  FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-dispatch-grain.sh
+Total: 10 PASS=10 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-dispatch.sh
+Total: 31 PASS=31 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-error-loop.sh
+Total: 16 PASS=16 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-execution-stability.sh
+Total: 19  PASS=19  FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-fallback.sh
+Total: 31  PASS=31  FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-final-gate-hash.sh
+==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====
+rc=0
+
+== skills/task-planner/scripts/selftest-fine-grain-steps.sh
+Total: 11 PASS=11 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-interaction.sh
+Total: 11 PASS=11 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-iterative-optimizer.sh
+Total: 8 PASS=8 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-knowledge-brief.sh
+Total: 16  PASS=16  FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-lane-advancement.sh
+Total: 14 PASS=14 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-mechanism-profile.sh
+Total: 19 PASS=19 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-media-agents.sh
+Total: 10 PASS=10 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-media-dispatch.sh
+Total: 9 PASS=9 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-methodology.sh
+Total: 16 PASS=16 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-plan-dispatch.sh
+Total: 12 PASS=12 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-plan-tier.sh
+Total: 32 PASS=32 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-reflect-verify.sh
+Total: 12 PASS=12 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-registry.sh
+Total: 5 PASS=5 FAIL=0 (registry rows=50, actual selftest=50)
+rc=0
+
+== skills/task-planner/scripts/selftest-reliability-institution.sh
+Total: 12 PASS=12 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-requirement-coverage.sh
+Total: 15 PASS=15 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-requirement-grading.sh
+Total: 7 PASS=7 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-rescue-chain.sh
+Total: 11 PASS=11 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-review-library.sh
+Total: 15 PASS=15 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-rule23-conflict-scan.sh
+Total: 3 PASS=3 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-rule-reserve.sh
+Total: 10 PASS=10 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-self-resolution.sh
+Total: 13 PASS=13 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-shared-tracker.sh
+Total: 11 PASS=11 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-skill-collab.sh
+Total: 25  PASS=25  FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-skill-modify.sh
+Total: 9 PASS=9 FAIL=0 (SKIP=0)
+rc=0
+
+== skills/task-planner/scripts/selftest-skill-split.sh
+Total: 41  PASS=41  FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-smart-merge.sh
+Total: 17 PASS=17 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-sync-index.sh
+Total: 13 PASS=13 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-task-boundary.sh
+Total: 11 PASS=11 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-template-lifecycle.sh
+Total: 24 PASS=24 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-template-sense.sh
+Total: 8 PASS=8 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-tier-b.sh
+Total: 18 PASS=18 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-tool-selection.sh
+Total: 12 PASS=12 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-vc-gate.sh
+Total: 11 PASS=11 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-veto.sh
+Total: 13 PASS=13 FAIL=0
+rc=0
+
+== skills/task-planner/scripts/selftest-workflow-orchestration.sh
+Total: 16 PASS=16 FAIL=0
+rc=0
+
+```
+
+## 机械求和（可复算证据）
+- `grep -c '^[[:space:]]*== ' `脚本数 = 50；`rc=0 行数 = 50；非零 rc = 0`
+- 逐脚本 PASS 机械和 = 752，FAIL 机械和 = 0（含 final-gate-hash 结果行 22、agent-coverage 8）
+- registry 终态行原文: `Total: 5 PASS=5 FAIL=0 (registry rows=50, actual selftest=50)`
+
+## 最终结论（8 字段块）
+```
+status: done
+acceptance: 50/50 pass — [逐脚本原文行见上节；关键原文: selftest-registry.sh / Total: 5 PASS=5 FAIL=0 (registry rows=50, actual selftest=50) / rc=0；selftest-agent-coverage.sh / Total: 8 PASS=8 FAIL=0 SKIPPED=0 / rc=0]
+files: none（纯只读执行；checkpoint 本文件 + findings.md/progress.md 契约追加 +1 段/+1 行）
+evidence: for 循环 50 脚本 → 50× rc=0；grep FAIL=[1-9] 零命中；PASS 机械和=752 FAIL=0；git status --short 空（worktree 未污染）
+checkpoint: /mnt/data/dev/task-planner-skill/plans/task-v125/subagent-state/m8-executor.md (status: done)
+findings_written: findings.md §Research Findings 段末 `#### [sub:S8]`
+blockers: none
+confidence: HIGH
+```
