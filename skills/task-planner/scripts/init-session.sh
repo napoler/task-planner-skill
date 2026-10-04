@@ -87,6 +87,115 @@ copy_template() {
     fi
 }
 
+# ============================================================================
+# [2026-10-05 task-v131 Phase 2] inject_requirement_block —
+# Rule 51.1「🎯 用户需求原文」区块的生成面注入兜底（审计 H-3 清账）
+#
+# What: 对任何刚生成/复制完成的 task_plan.md——若不含锚 `## 🎯 用户需求原文`
+#   且非 mini 档 → 在第一个 `## Goal` 标题行之前插入脚手架区块（无 Goal 行则
+#   插在文件头部注释块之后）；占位符保留供规划者填写；已含锚（主模板/
+#   rule-enhancement 变体自带载体）→ echo 一行 INFO 跳过。
+# Why: 29 个 variant 模板零载体（审计 H-3）——前序单元只给了主模板+
+#   rule-enhancement 变体载体；生成面注入是最后兜底，保证任何模板生成的新
+#   计划必有 Rule 51.1 载体（计划侧零兜底修复）。fail-open 设计：注入失败
+#   （awk/写文件/磁盘/权限）仅 stderr 警告后继续 init、函数恒 return 0——
+#   注入是增强而非前置依赖：缺区块不应阻断 6 文件校验与活跃指针写入，
+#   规划者仍可手补（Rule 51.1 校验在 attest 侧另行把关）。
+#   mini 豁免（Rule 38.2 区块白名单）：mini-lite 白名单仅 Goal/VC/执行范围
+#   限制表/单 Phase/Handoff 表，增仪式区块=模板违约（selftest-plan-tier
+#   断言）→ mini 档跳过注入。判定沿用脚本内既有分流变量/文件标记（二者或）：
+#     ① TASK_PLAN_SRC=variant/mini-lite-type.md（L195 tier 分流路由产物）
+#     ② 产物含 `plan_tier: mini` 标记（mini-lite 模板 :2 frontmatter /
+#        auto-tier 命中标记 L256-258）
+#   ①②都未命中而 PLAN_TIER=mini 且 variant 定制优先（L191-197 忽略场景）时，
+#   产物实为中档定制 → 不豁免照注入（中档计划必须载 Rule 51.1 区块）。
+# 幂等：已含锚 → return 0；task_plan.md 已存在走 skip 分支的重复 init 再入
+#   本函数也被锚判定短路，不会重复插入。
+# 插入量=空行分隔符 1 + 脚手架 9 行共 10 行（Rule 45 完整注释：What 如上，
+#   Why=29 模板零载体 + mini 白名单违约风险 + fail-open 取舍）。
+# ============================================================================
+inject_requirement_block() {
+    local file="task_plan.md"
+    local scaffold insat
+
+    [ -f "$file" ] || return 0
+
+    # Gate 1: 已含锚（主模板/rule-enhancement 变体自带载体）→ INFO 跳过
+    if grep -q '## 🎯 用户需求原文' "$file" 2>/dev/null; then
+        echo "[init] INFO: task_plan.md 已含 🎯 用户需求原文 区块（模板自带载体）— 注入跳过"
+        return 0
+    fi
+
+    # Gate 2: mini 档豁免（Rule 38.2 白名单；判定见函数头注释 ①②）
+    if [ "$TASK_PLAN_SRC" = "variant/mini-lite-type.md" ] \
+       || grep -q 'plan_tier: mini' "$file" 2>/dev/null; then
+        echo "[init] INFO: mini 档豁免（Rule 38.2 区块白名单）— 不注入 🎯 用户需求原文 区块"
+        return 0
+    fi
+
+    # 插入位计算: 第一个 `## Goal` 标题行之前；无 Goal 行 → 文件头部注释块
+    # （顶部连续的 空行 / HTML 注释行 / --- frontmatter 定界行）之后
+    insat="$(grep -n '^## Goal' "$file" | head -n1 | cut -d: -f1)"
+    if [ -z "$insat" ]; then
+        # Why 用 awk 单遍扫描而非 shell 循环: 头部判定需跟踪多行 HTML 注释
+        # 开闭状态（<!-- ... --> 跨行），awk 变量比 shell 临时文件干净
+        insat="$(awk '
+            {
+                if (done) next
+                # 首行即正文（非空行/非 HTML 注释开/非 frontmatter 定界）→ 插文件顶
+                # 注意: mawk 不支持 POSIX 逻辑运算符 || &&，多条件用 AND 串接
+                if (NR==1 && $0 !~ /^[[:space:]]*$/ && $0 !~ /^<!--/ && $0 !~ /^---$/) { print 1; done=1; exit }
+                # 空行 / frontmatter 定界 / HTML 注释开闭行均属头部块
+                $0 ~ /^[[:space:]]*$/ || $0 ~ /^---$/ { last=FNR; next }
+                $0 ~ /^<!--/ { cmt=1; last=FNR; next }
+                $0 ~ /^-->[[:space:]]*$/ { cmt=0; last=FNR; next }
+                # 多行 HTML 注释内部行（既非开也非闭）
+                cmt { last=FNR; next }
+                # 首个正文行 → 头部块止于上一行（插入点=本行行号，即"之后"）
+                print FNR; done=1; exit
+            }
+            END { if (!done) print (last>0 ? last+1 : 1) }
+        ' "$file")" || insat=""
+    fi
+    [ -n "$insat" ] || insat=1
+
+    # 脚手架落临时文件（quoted heredoc: 占位符 <...> 与 ** 须原样保留，禁展开）
+    scaffold="$(mktemp)" || {
+        echo "[init] WARN: 🎯 用户需求原文 注入失败（mktemp 失败）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        return 0
+    }
+    cat > "$scaffold" <<'EOF'
+## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）
+<!-- 2026-10-05 task-v131：init 注入载体（审计 H-3 清账；Rule 51.1 计划侧零兜底修复）。R 行=用户原话逐条编号；映射=每条核心需求 ≥1 VC；本脚手架由规划者填写后 attest 校验 -->
+
+- **R1**: 「<用户原话第 1 条，逐字抄录，禁转译>」
+
+### R→VC 映射（Rule 51.2 验证机制先行）
+| R | 映射 VC | 覆盖判据（可观察证据形态） |
+|---|---------|---------------------------|
+| R1 | VC-1 | <判据：计数=0/文件在位+绝对路径/命令输出形态> |
+EOF
+    # 在 insat 行之前打印脚手架 + 1 行空行分隔（共 10 行写入，保住 markdown 结构）
+    if ! awk -v f="$scaffold" -v insat="$insat" '
+        NR==insat && !done { while ((getline s < f) > 0) print s; print ""; done=1 }
+        { print }
+    ' "$file" > "${file}.v131tmp" 2>/dev/null; then
+        # fail-open（见函数头 Why）: awk 失败 → stderr 警告，清理，继续 init
+        echo "[init] WARN: 🎯 用户需求原文 注入失败（awk 写出异常）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        rm -f "${file}.v131tmp" "$scaffold"
+        return 0
+    fi
+    if ! mv "${file}.v131tmp" "$file" 2>/dev/null; then
+        # fail-open: 磁盘/权限类写回失败同样不中断 init
+        echo "[init] WARN: 🎯 用户需求原文 区块写回失败（磁盘/权限）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        rm -f "${file}.v131tmp" "$scaffold"
+        return 0
+    fi
+    rm -f "$scaffold"
+    echo "    [init] 🎯 用户需求原文 脚手架已插入（Rule 51.1 生成面兜底, task-v131；规划者填写 R 行+映射后 attest 校验）"
+    return 0
+}
+
 # [2026-09-15 task-v074 P4-S1] 1) TEMPLATE_TYPE 位置参数为空时兜底 env TASK_TEMPLATE_TYPE
 #    (消 SKILL.md:524 "自动路由"语义漂移——SKILL 描述与实现一致化)
 #    2) VALID_TYPES 改为从 $BUILTIN_TEMPLATES/variant/*-type.md 动态派生 + general 兜底
@@ -332,6 +441,14 @@ EOF
         echo "    [template-sense] task_plan.md 末尾已追加「🔁 模板感知」区块"
     fi
 fi
+
+# [2026-10-05 task-v131 Phase 2] Rule 51.1 生成面注入调用点（审计 H-3 清账）：
+# 调用点选择理由：须在整个模板复制/tier 分流/template-sense 追加完成之后执行——
+# 此时 TASK_PLAN_SRC/plan_tier 标记/frontmatter 插入均定型，mini 判定 ①② 数据齐备；
+# 且须放在下方 6 文件存在性复核（L"missing_files"循环）之前，保证注入产物参与复核。
+# 幂等：已含锚/mini 档均 return 0（函数头注释）；重复 init（task_plan.md 已存在
+# 走 skip 分支）再入亦被锚判定短路。fail-open：任何失败仅 WARN，不阻断 init。
+inject_requirement_block
 
 echo ""
 # [2026-09-04 Rule 19.5 配套] 文件存在性复核：缺失或空 → exit 1

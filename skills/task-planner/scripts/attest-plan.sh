@@ -10,6 +10,8 @@
 #   attest-plan.sh --clear  [plan_file]     # 清除锁定(计划重规划并重新获批后使用)
 #   attest-plan.sh --skip-template-check [plan_file]  # 跳过模板门控(Rule 34.1, 须在交付报告披露)
 #   attest-plan.sh --skip-fmea-check [plan_file]      # 跳过 FMEA 门控(v075 P4, 与 --skip-dispatch-check 同构, 须在交付报告披露)
+# 说明: Rule 51.1 需求原文区块门(缺区块/无 R 行/无 R→VC 映射 → 拒锁)为 fail-closed 硬门, 无 --skip 逃生口;
+#       mini 档(plan_tier: mini)整块豁免(与 FMEA mini 豁免同先例), 非 mini 计划必含三锚方可锁定。
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
 set -uo pipefail
 
@@ -26,7 +28,7 @@ for arg in "$@"; do
     --skip-dispatch-check) skip_dispatch=1 ;;
     --skip-template-check) skip_template=1 ;;
     --skip-fmea-check) skip_fmea=1 ;;
-    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    -h|--help) sed -n '2,14p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
 done
@@ -115,6 +117,32 @@ case "$mode" in
       fi
     else
       echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
+    fi
+    # [2026-10-05 task-v131 S-unit P2-S3] Rule 51.1 需求原文区块门(审计 H-3 清账, 锁定面载体):
+    # ① What: 非 mini 计划锁定前必含三锚——标题「## 🎯 用户需求原文」+ R 需求行 ≥1
+    #   (正则 ^- \*\*R[0-9] 同时覆盖 `- **R1**:` 逐字行与宽松 `**R1**` 形态)+ 「R→VC 映射」段;
+    #   任一缺失 = 51.1「缺区块=计划无效」的机器化, fail-closed 拒绝锁定(exit 1)。
+    # ② Why: 51.1 原文锚堵「绕过 init 手写计划」的转译漂移入口(判例: 一个月→72h, videop1 S15
+    #   改写后全链绿灯); 本门为锁定面硬门(生成面=init-session.sh 注入已同任务落地),
+    #   故不新增 --skip 逃生口——缺区块只能回炉补区块后重 attest(与「先哈希后写」纪律同向:
+    #   门失败退出时不产生 .plan-attestation, 未获批内容不会被 hook 当事实源注入)。
+    # ③ 位置: check-plan-dispatch → check-template-type 之后、锁定写入(哈希)之前(本文件
+    #   :266 注释口径「三道前置门」扩展为四道); mini 档(plan_tier: mini)整块豁免——
+    #   轻量计划不做需求逐条抄录(与 FMEA mini 豁免 Rule 38.4① 同先例, 口径=全文 grep)。
+    tier_flag="$(grep -qm1 'plan_tier: mini' "$plan_file" 2>/dev/null && printf mini || printf standard)"
+    if [ "$tier_flag" = "mini" ]; then
+      echo "[requirement-gate] INFO: plan_tier: mini 豁免(Rule 51.1 mini 档不要求需求原文区块, 同 FMEA mini 先例)"
+    else
+      req_msgs=""
+      grep -q '^## 🎯 用户需求原文' "$plan_file" 2>/dev/null || req_msgs="${req_msgs}· 标题「## 🎯 用户需求原文」缺失"
+      grep -qE '^- \*\*R[0-9]' "$plan_file" 2>/dev/null || req_msgs="${req_msgs} · R 需求行(≥1, 正则 ^- \*\*R[0-9])缺失"
+      grep -q 'R→VC 映射' "$plan_file" 2>/dev/null || req_msgs="${req_msgs} · 「R→VC 映射」段缺失"
+      if [ -n "$req_msgs" ]; then
+        echo "[attest] ✗ 缺 Rule 51.1 用户需求原文区块（标题/R 行/R→VC 映射三锚任一）；mini 档豁免——先回炉补区块再锁定" >&2
+        echo "[attest] ✗ 缺失锚:${req_msgs} (fail-closed 硬门, 无 --skip 逃生口; 补区块或声明 plan_tier: mini 后重 attest)" >&2
+        exit 1
+      fi
+      echo "[attest] [requirement-gate] OK (Rule 51.1 三锚在位)"
     fi
     # [2026-09-16 task-v075 P4 B1] FMEA 门控(v063 fmea_enforce 首次消费; 与 check-complete.sh 终验双点):
     # 档位解析(挂载范式照抄上方 resolve_template_tier 段 :77-100):
@@ -264,7 +292,8 @@ case "$mode" in
         ;;
     esac
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
-    # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/FMEA 三道前置门之后的
+    # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/51.1 需求区块/FMEA
+    # 四道前置门之后的
     # 计划内容；若先写 attestation 再跑门控，门失败退出时留下一份锁定着「未获批计划」的哈希，
     # 后续 hook 会把未获批内容当事实源注入（篡改语义等价）。锁定动作必须是批准流程的终点。
     # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,
