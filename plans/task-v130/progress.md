@@ -71,6 +71,7 @@
 |-----------|-------|---------|------------|------------|------------|
 | 2026-10-04 18:40 | Agnes API 全链调用被拒：`HTTP 401 {"error":{"message":"无效的令牌"}}`（chat 端点复核同 401；BASE_URL 正=api.agnes-ai.cn 已排除域名陷阱） | 1 | 判定为环境凭证失效（env 仅存 AGNES_API_KEY 且被拒、无备用 token 变量）；agent 零浪费重抽上报；已排计划任务 automation-13c74ca0（2h 后复测） | 直接原因=AGNES_API_KEY 值失效/被轮换；根因=外部凭证生命周期（上次实测 2026-09-18 通过，历时约 2 周失效）（类别:环境） | smoke-test 先行纪律生效（未浪费预算）；凭证刷新后计划任务自动复测；后续媒体任务开工前先跑 agnes smoke-test 探针 |
 | 2026-10-04 19:00 | [Rule 36] 删除性行为清单：本任务零仓内文件修改（纯测试） | — | — | — | — |
+| 2026-10-04 19:10 | check-delegation 报 `verdict=violation`（unverified_delegation：Executor 含「未登记」类型） | 1 | 根因定位=Executor 复合字段用 `/` 分隔致合并 token 与 Handoff 表匹配失败（非类型缺失）；字段改 `+` 后 check-complete 全门通过 | 直接原因=字段分隔符不在守卫解析口径内（仅认 `+`）；根因=测试计划的 Executor 写法未对齐 check-delegation 复合解析约定（类别:簿记规范/字段格式） | 行为层测试抓出静态 selftest 未覆盖的字段格式类问题；改进建议已入 smoke-report §F1（守卫 `/`→`+` 归一或模板明示，deferred 待裁）；后续计划多执行体一律用 `+` |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->

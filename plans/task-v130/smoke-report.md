@@ -21,6 +21,13 @@
 - **解除条件**：刷新 `AGNES_API_KEY`（或提供 `AGNES_API_TOKEN`/`APIHUB_AGNES_API_KEY` 中任一有效值）→ 全链层可复测。
 - **计划任务已排**：`automation-13c74ca0-6816-41dd-9c30-759b130eb7e8`（标题「2小时后重试媒体agent全链冒烟测试（计划任务）」）——两小时后自动重跑 S3 全链；成功则本报告追加「§全链复测」段，仍 401 则记录并停止。可在 Automations 页随时编辑/删除。
 
+## §冒烟连带发现（行为层抓到、静态 selftest 未覆盖）
+
+| # | 发现 | 判定 | 处置 |
+|---|------|------|------|
+| F1 | **check-delegation 的 Phase Executor 复合字段只认 `+` 分隔**：本测试初稿用「 `image-generation-executor / video-generation-executor`」→ 合并 token 在 Handoff 表匹配失败 → `verdict=violation（unverified_delegation）` | 计划字段格式问题（非注册表缺名——两类型在 Handoff 表各自成行均在位；守卫对 `/` 分隔视为单 token） | 已修：字段改 `+` 分隔 → check-complete 全门通过（cc_rc=0）。**改进建议（deferred）**：守卫可加 `/`→`+` 归一（换道一行 sed），或计划模板明示「多执行体仅用 `+`」——交后续任务裁决（本任务为测试不扩范围） |
+| F2 | Agnes 凭证 401（见 L3） | 外部环境 | 计划任务 automation-13c74ca0 复测；需用户刷新 `AGNES_API_KEY` |
+
 ## §全链复测（由计划任务写入）
 
 - （待 2 小时后自动写入：URL + 三检逐项 + 重抽计数，或 401 原文）
