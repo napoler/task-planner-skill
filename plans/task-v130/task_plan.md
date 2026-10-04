@@ -71,7 +71,7 @@
 ### Phase 2: 可见性 + 守卫冒烟（HARD_BLOCK 路径，零成本）
 - **V-N:** VC-1, VC-2
 - **Status:** complete
-- **Executor:** image-generation-executor / video-generation-executor（被测体直派=冒烟本体）
+- **Executor:** image-generation-executor + video-generation-executor（被测体直派=冒烟本体；多类型分隔符用 `+`——check-delegation 复合解析口径）
 - **Evidence:** S1/S2 均派发成功（**可见性 PASS**）；双 HARD_BLOCK 列全缺项、零调用零产物（s1-image.md / s2-video.md）
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|
