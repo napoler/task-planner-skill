@@ -154,13 +154,13 @@ else
   bad 14 "registry.tsv 未登记 selftest-requirement-coverage.sh（registry 漏项）"
 fi
 
-# RC-15 负断言 `grep -c '^52\.'` =0
-# What：断言 critical-rules.md 内行首 '50.' 子条命中数为 0（50 号未被误占）。
-# Why：task-v129 直接占用 51 号（49 已被 task-v126 占、50 空缺）——若 '50.' 出现说明他任务并行插入了 Rule 50，
+# RC-15 负断言 `grep -c '^53\.'` =0
+# What：断言 critical-rules.md 内行首 '53.' 子条命中数为 0（53 号未被误占）。
+# Why：task-v125 合法占用 52 号（52.1-52.4 已落地）——若 '53.' 出现说明他任务并行插入了 Rule 53，
 #      本任务的编号假设被破坏，需重新对齐条款号（防编号冲突/并行任务踩踏）。
-# [task-v127 S12 合流重锚] '^50.'→'^52.'（合流后 Rule 50 被 task-v127 S5 合法占用，负断言改锁后继号 52 未被占用，语义不反转，2026-10-04）
-n="$(grep -c '^52\.' "$CRIT" || true)"
-if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '52.' 子条命中 0（52 号未被误占，task-v127 合流重锚）"; else bad 15 "critical-rules.md '52.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
+# [task-v125 S5 演进重锚] '^52.'→'^53.'（Rule 52 被 task-v125 S2 合法落地 52.1-52.4，负断言改锁后继号 53，语义不反转，先例同 v127 ^50→^52，2026-10-04）
+n="$(grep -c '^53\.' "$CRIT" || true)"
+if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '53.' 子条命中 0（53 号未被误占，task-v125 演进重锚）"; else bad 15 "critical-rules.md '53.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
