@@ -6,3 +6,4 @@
 {"rule":51,"status":"reserved","task_id":"task-v129","ts":"2026-10-04","note":"videop1 mvlock 事故整改（new_rule: 51 已 attest；应其请求补录）"}
 {"rule":51,"status":"landed","task_id":"task-v129","ts":"2026-10-04","note":""}
 {"rule":50,"status":"landed","task_id":"task-v127","ts":"2026-10-04","note":""}
+{"rule":52,"status":"reserved","task_id":"task-v125","ts":"2026-10-04","note":"执行体专业化优先与覆盖矩阵（50 被 v127 占用后第三次改号；v121 预扩位体系内）"}
