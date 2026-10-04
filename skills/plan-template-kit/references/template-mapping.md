@@ -263,9 +263,9 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | diagnostic | 代码组 | Code Review Gate（修复类）+修改后验证 | content_quality 门控 | code-assistant/debugger |
 | migration | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | executor/code-assistant |
 | performance-tuning | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | executor/code-reviewer |
-| publish | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | code-runner-agent/article-batch-publish |
+| publish | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | code-runner-agent/article-batch-publisher |
 | refactor | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-simplifier/executor |
-| research | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | research-assistant/web-search-agent |
+| research | 内容组 | content_quality 门控（Q3/Q4） | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | research-assistant（Skill 调用）/web-search-agent（agent） |
 | rule-enhancement | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/executor |
 | schema-migration | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/database-optimizer |
 | test-writing | 代码组 | Code Review Gate+修改后验证流程 | content_quality 门控 | code-assistant/test-engineer |
@@ -275,7 +275,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备表/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
 | memory-hygiene | 通用组 | 记忆整理协议 M1-M5（M1 盘点表/M2 四维机械校验/M3 四态处置删除仅建议/M4 修正版抽验契约/M5 写入三要素） | content_quality 门控；仓内无代码功能变更 | executor(fresh) 盘点 / verifier 抽验 |
 | image | 内容组 | 成图三检 QC 门控（合规/一致性/质量——本仓 videop1-review-image 族+tools/qc.py 机检+主进程亲检） | Code Review Gate；content_quality（Q3/Q4）；code-assistant/debugger/code-reviewer 路由 | 生成/写词/QC 子代理+tools/gen.py·qc.py |
-| script-dev | 内容组 | 剧本判定层全集（script-craft P/V/E 维+八红线自检+M0 放行门） | Code Review Gate；content_quality；代码类路由 | script-writer/script-auditor |
+| script-dev | 内容组 | 剧本判定层全集（script-craft P/V/E 维+八红线自检+M0 放行门） | Code Review Gate；content_quality；代码类路由 | 兜底路由=executor(sonnet-1)+script-dev variant 模板 SOP（同 :298 媒体族兜底范式；专用体缺位时） |
 | character-design | 内容组 | 成图双硬 QC+审美基线+G1 门控+MCD 锁 | Code Review Gate；content_quality；代码类路由 | 生成/QC 子代理+主进程亲检 |
 | multiview-ref | 内容组 | 成图双硬 QC+根锚溯源+合版护栏（全静默） | Code Review Gate；content_quality；代码类路由 | 生成/QC/合版子代理+主进程亲检 |
 | storyboard | 内容组 | 线稿/关键帧准入门+走位铁律+geo lock+草稿人工门 | Code Review Gate；content_quality；代码类路由 | 线稿生成/QC 子代理 |

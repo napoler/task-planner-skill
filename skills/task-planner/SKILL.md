@@ -287,6 +287,7 @@ model: opus
 - **Rule 49（单元线多路并行推进 — task-v126）**：可枚举生产单元×序贯工序任务族启用 lane 模型（49.1）；推进三条件=已验收+前置在位+独立性四问（49.2）；满足即派发不等批、跨 Phase 前移双登记、Phase 翻转语义不变（49.3）；汇合点强串行+单写者/单 S-unit 不变（49.4）；零新 config 键+selftest-lane-advancement.sh 守护（49.5）
 - **Rule 50（内容要求权重分级与评级 — task-v127）**：复合需求拆原子验收条目表（存在性 P/程度 E × 硬约束 H/评分项 S，50.1）；程度约束词显式成条且未标注默认 H（50.2）；逐条评级 PASS/PARTIAL/FAIL、程度条目双向判（过显眼 FAIL/不可见亦 FAIL，50.3）；加权判定=全 H 过+S 加权≥阈值（50.4）；条目表随任务书派发供 QC 链消费（50.5）；零新 config 键+selftest-requirement-grading.sh 守护（50.6）
 - **Rule 51（需求覆盖与完成声称门控 — task-v129）**：需求原文锚定+验证机制先行+完成声称对照门+自缩水禁令+生成前置盘点六子条；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
+- **Rule 52（执行体专业化优先与覆盖矩阵维护 — task-v125）**：派发选型专用体优先——先查覆盖矩阵 `references/agent-coverage.md` 与三登记面（52.1）；三类缺口（A 无具名映射/B 登记指向不存在或名不符实体/C 实体未登记）禁新增，B 类零容忍实体存在性（52.2）；agent 增删改名或登记面改动→矩阵与登记面同任务同步（52.3）；零新 config 键+selftest-agent-coverage.sh 静态守护（52.4）
 
 ## Completion Gate
 
@@ -310,7 +311,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控） |
+| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
@@ -344,7 +345,7 @@ model: opus
 | **代码编辑（>3 文件 或 >300 行）** | `executor` | **sonnet-1** | ❌ | ≤3 文件, ≤300行 | 升级 executor |
 | **代码编辑（重构/瘦身）** | `code-simplifier` | 继承主会话 | ❌ | ≤1 模块, ≤500行 | 升级 executor |
 | **构建/编译错** | `build-error-resolver` | **sonnet-1** | ❌ | ≤1 构建错误 | 升级 debugger |
-| **修 bug / 根因分析** | `debugger` + `Skill("systematic-debugging")` | **sonnet-1** | ❌ | ≤1 bug, ≤3 文件 | 升级 ComplexProblemSolver |
+| **修 bug / 根因分析** | `debugger` + `Skill("systematic-debugging")` | **sonnet-1** | ❌ | ≤1 bug, ≤3 文件 | 升级 complex-problem-solver |
 | **跑测试/构建** | `code-runner-agent` | mini | ❌ | ≤1 测试套件 | 拆多个命令 |
 | **代码库深度分析/体检** | `codebase-analyzer` | **sonnet-1** | ❌ | ≤1 子系统, ≤5 文件 | 拆 Phase |
 | **关键词搜索/抓静态页** | `web-search-agent` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
@@ -352,14 +353,20 @@ model: opus
 | **网页访问（JS 渲染/登录态/交互页）** | Browser Automation（browser-use:control-browser / mcp__node_repl__js） | mini | ❌ | ≤1 批 URL, 单次 ≤120s | 超时降级 web_reader/splash 链 |
 | **跨文件搜索定位** | `explore` | mini | ❌ | ≤1 子系统 | 拆多 explore |
 | **文档/规范搜索** | `doc-search-agent` | mini | ❌ | ≤1 规范文件 | 拆 doc-search-agent |
-| **综合调研（API + 选型 + 风险）** | `research-assistant` | **sonnet-1** | ❌ | ≤1 选型, ≤3 API | 升级 codebase-analyzer |
+| **综合调研（API + 选型 + 风险）** | `Skill("research-assistant")` / `web-search-agent（agent）` | **sonnet-1** | ❌ | ≤1 选型, ≤3 API | 升级 codebase-analyzer |
 | **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ | ≤1 模块, ≤3 文件 | 拆多 executor |
-| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 ComplexProblemSolver 或升级 complex-planner（高复杂度规划备用，GLM5.3/Opus 级） |
+| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 complex-problem-solver 或升级 complex-planner（高复杂度规划备用，GLM5.3/Opus 级） |
 | **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ | ≤1 PR, ≤3 文件 | 拆评论任务 |
 | **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ | 高频(≤3次/phase) | 无需(已节流) |
 | **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
+| **质量审查族（质量校验/审查/QC 实体）** | `quality-auditor` / `quality-check-agent` / `quality-control-agent` / `content-origin-verify-agent` / `doc-sync-verify-agent` | haiku-1 / sonnet-1 | ❌ | ≤1 审查对象 | 拆审查项 |
+| **Git 运维族（Git/worktree/记忆运维）** | `git-master` / `git-security-expert` / `worktree-janitor` / `cron-patrol` / `memory-librarian` | mini / haiku-1 / sonnet-1 | ❌ | ≤1 运维项 | 拆多项运维 |
+| **营销 SEO 族（营销内容/SEO/有机增长）** | `marketing-content-creator` / `marketing-seo-specialist` / `organic-content-strategist` / `seo-specialist` | haiku-1 / mini | ❌ | ≤1 主题 | 拆 S-unit |
+| **数据研究族（数据/API/研究分析）** | `api-tester` / `scientist` / `data-consolidation-agent` / `search-query-analyst` / `log-distiller` | sonnet-1 / haiku-1 | ❌ | ≤1 数据集/主题 | 拆多研究 |
+| **文档 UI 族（技术文档/UI/前端）** | `technical-writer` / `ui-designer` / `frontend-developer` | sonnet-1 | ❌ | ≤1 模块 | 拆 S-unit |
+| **文章管线补充族（article-* 未登记 10 实体）** | `article-content-editor` / `article-data-fetcher` / `article-field-fixer` / `article-publish-phase-agent` / `article-research-heavy-agent` / `article-research-phase-agent` / `article-reviewer` / `article-site-router` / `article-synthesis-phase-agent` / `article-batch-publisher`（逐行登记与豁免理由见 `references/agent-coverage.md`，Rule 52.1） | 按 agent frontmatter 声明档 | ❌ | ≤1 篇 × 1 相位 | 拆 S-unit |
 | **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `image-generation-executor` / `video-generation-executor`（在位优先）；缺位回退 `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2）+评级契约（Rule 50） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
 | **剧集创作管线（多集/多镜整链）** | `video-generation-executor` 按集→场→镜逐级拆 Phase/S-unit（Rule 47.1）；组合工序缺位回退 executor | **sonnet-1** | ❌ | ≤1 集 × 1 工序 per S-unit | 拆 Phase |
 
