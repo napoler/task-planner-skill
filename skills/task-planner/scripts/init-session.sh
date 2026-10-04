@@ -89,18 +89,25 @@ copy_template() {
 
 # ============================================================================
 # [2026-10-05 task-v131 Phase 2] inject_requirement_block —
-# Rule 51.1「🎯 用户需求原文」区块的生成面注入兜底（审计 H-3 清账）
+# Rule 51.1「🎯 用户需求原文」+ 第 4 锚「🧮 根源覆盖表」（Rule 53.1 载体）
+# 区块的生成面注入兜底（审计 H-3 清账 + critic P1-3 对称性修复）
 #
-# What: 对任何刚生成/复制完成的 task_plan.md——若不含锚 `## 🎯 用户需求原文`
-#   且非 mini 档 → 在第一个 `## Goal` 标题行之前插入脚手架区块（无 Goal 行则
-#   插在文件头部注释块之后）；占位符保留供规划者填写；已含锚（主模板/
-#   rule-enhancement 变体自带载体）→ echo 一行 INFO 跳过。
+# What: 对任何刚生成/复制完成的 task_plan.md——两个区块锚**各自独立判断**：
+#   锚 A `## 🎯 用户需求原文` / 锚 B `根源覆盖表`，缺哪个补哪个（模板已含其一
+#   则只注入缺的那个；两者都缺则一次插入两个区块：🎯 区块在前、🧮 区块紧随其后，
+#   格式对齐主模板 task_plan.md 现有同名区块）；非 mini 档 → 在第一个 `## Goal`
+#   标题行之前插入脚手架（无 Goal 行则插在文件头部注释块之后）；占位符保留供
+#   规划者填写；两锚俱在（主模板/rule-enhancement 变体自带载体）→ echo 一行
+#   INFO 跳过。
 # Why: 29 个 variant 模板零载体（审计 H-3）——前序单元只给了主模板+
 #   rule-enhancement 变体载体；生成面注入是最后兜底，保证任何模板生成的新
-#   计划必有 Rule 51.1 载体（计划侧零兜底修复）。fail-open 设计：注入失败
+#   计划必有 Rule 51.1 载体（计划侧零兜底修复）。critic P1-3：根源覆盖表无
+#   锁定门与 51.1 三锚不对称 → 53.5 定稿「attest 51.1 门第 4 锚=根源覆盖表」，
+#   生成面同步兜底（非 mini 计划两区块必在位，「不适用+定性理由」声明由规划者
+#   在表格区填写，注入脚手架保留占位）。fail-open 设计：注入失败
 #   （awk/写文件/磁盘/权限）仅 stderr 警告后继续 init、函数恒 return 0——
 #   注入是增强而非前置依赖：缺区块不应阻断 6 文件校验与活跃指针写入，
-#   规划者仍可手补（Rule 51.1 校验在 attest 侧另行把关）。
+#   规划者仍可手补（attest 侧四锚门另行把关）。
 #   mini 豁免（Rule 38.2 区块白名单）：mini-lite 白名单仅 Goal/VC/执行范围
 #   限制表/单 Phase/Handoff 表，增仪式区块=模板违约（selftest-plan-tier
 #   断言）→ mini 档跳过注入。判定沿用脚本内既有分流变量/文件标记（二者或）：
@@ -108,28 +115,33 @@ copy_template() {
 #     ② 产物含 `plan_tier: mini` 标记（mini-lite 模板 :2 frontmatter /
 #        auto-tier 命中标记 L256-258）
 #   ①②都未命中而 PLAN_TIER=mini 且 variant 定制优先（L191-197 忽略场景）时，
-#   产物实为中档定制 → 不豁免照注入（中档计划必须载 Rule 51.1 区块）。
-# 幂等：已含锚 → return 0；task_plan.md 已存在走 skip 分支的重复 init 再入
-#   本函数也被锚判定短路，不会重复插入。
-# 插入量=空行分隔符 1 + 脚手架 9 行共 10 行（Rule 45 完整注释：What 如上，
-#   Why=29 模板零载体 + mini 白名单违约风险 + fail-open 取舍）。
+#   产物实为中档定制 → 不豁免照注入（中档计划必须载 Rule 51.1/53.1 区块）。
+# 幂等：锚 A/锚 B 独立判断，已含者永不重复插入；task_plan.md 已存在走
+#   skip 分支的重复 init 再入本函数亦被锚判定短路。
+# 插入量=🎯 脚手架 10 行（空行分隔符 1 + 9）；🧮 脚手架 11 行（空行分隔符 1
+#   + 10，含 HTML 注释 2 行+四列表+占位行，格式对齐 templates/task_plan.md :19-25）；
+#   双缺场景共写 21 行。
 # ============================================================================
 inject_requirement_block() {
     local file="task_plan.md"
-    local scaffold insat
+    local scaffold insat inja injb
 
     [ -f "$file" ] || return 0
 
-    # Gate 1: 已含锚（主模板/rule-enhancement 变体自带载体）→ INFO 跳过
-    if grep -q '## 🎯 用户需求原文' "$file" 2>/dev/null; then
-        echo "[init] INFO: task_plan.md 已含 🎯 用户需求原文 区块（模板自带载体）— 注入跳过"
+    # Gate 1: 双锚独立判断（P1-3：模板已含其一则只注入缺的那个）
+    # 锚 A = 51.1 需求原文区块；锚 B = 53.1 根源覆盖表（grep「根源覆盖表」字样）
+    inja=0; injb=0
+    grep -q '## 🎯 用户需求原文' "$file" 2>/dev/null || inja=1
+    grep -q '根源覆盖表' "$file" 2>/dev/null || injb=1
+    if [ "$inja" -eq 0 ] && [ "$injb" -eq 0 ]; then
+        echo "[init] INFO: task_plan.md 已含 🎯 用户需求原文 + 🧮 根源覆盖表 双区块（模板自带载体）— 注入跳过"
         return 0
     fi
 
     # Gate 2: mini 档豁免（Rule 38.2 白名单；判定见函数头注释 ①②）
     if [ "$TASK_PLAN_SRC" = "variant/mini-lite-type.md" ] \
        || grep -q 'plan_tier: mini' "$file" 2>/dev/null; then
-        echo "[init] INFO: mini 档豁免（Rule 38.2 区块白名单）— 不注入 🎯 用户需求原文 区块"
+        echo "[init] INFO: mini 档豁免（Rule 38.2 区块白名单）— 不注入 🎯 用户需求原文/🧮 根源覆盖表 区块"
         return 0
     fi
 
@@ -160,11 +172,13 @@ inject_requirement_block() {
     [ -n "$insat" ] || insat=1
 
     # 脚手架落临时文件（quoted heredoc: 占位符 <...> 与 ** 须原样保留，禁展开）
+    # 双区块独立拼接：缺哪个注入哪个；双缺=🎯 在前 🧮 紧随（主模板 :19-25 顺序）
     scaffold="$(mktemp)" || {
-        echo "[init] WARN: 🎯 用户需求原文 注入失败（mktemp 失败）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        echo "[init] WARN: 需求区块注入失败（mktemp 失败）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
         return 0
     }
-    cat > "$scaffold" <<'EOF'
+    if [ "$inja" -eq 1 ]; then
+        cat > "$scaffold" <<'EOF'
 ## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）
 <!-- 2026-10-05 task-v131：init 注入载体（审计 H-3 清账；Rule 51.1 计划侧零兜底修复）。R 行=用户原话逐条编号；映射=每条核心需求 ≥1 VC；本脚手架由规划者填写后 attest 校验 -->
 
@@ -175,24 +189,47 @@ inject_requirement_block() {
 |---|---------|---------------------------|
 | R1 | VC-1 | <判据：计数=0/文件在位+绝对路径/命令输出形态> |
 EOF
-    # 在 insat 行之前打印脚手架 + 1 行空行分隔（共 10 行写入，保住 markdown 结构）
+    fi
+    if [ "$injb" -eq 1 ]; then
+        # 双缺场景补空行分隔 🎯/🧮 两区块；单缺场景（仅注 🧮）前补空行与上文隔开
+        printf '\n' >> "$scaffold"
+        cat >> "$scaffold" <<'EOF'
+## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）
+<!-- 2026-10-05 task-v131：Rule 53.1 载体（critic P1-3 对称性修复：attest 51.1 门第 4 锚=根源覆盖表，
+     53.5 定稿）；结果级需求（确保质量/性能/可靠类）必须分解生产管线逐工序审计缺陷面；
+     非结果级（单点动作）任务须写「不适用（非结果级需求）」+一句定性理由（53.1 禁裸豁免，
+     attest/终验可核）；attest 锚级 grep 本区块标题/字样判定在位 -->
+
+| 工序 | 缺陷面 | 修复点 | VC |
+|------|--------|--------|----|
+| <工序 1> | <此工序削弱该结果的缺陷/缺口，无则"无"> | <修复 S-unit/Phase> | <VC-n> |
+EOF
+    fi
+    # 在 insat 行之前打印脚手架 + 1 行空行分隔（保住 markdown 结构；写入行数
+    # =🎯 9 行 / 🧮 10 行 / 双缺 9+1+10，见函数头「插入量」注释）
     if ! awk -v f="$scaffold" -v insat="$insat" '
         NR==insat && !done { while ((getline s < f) > 0) print s; print ""; done=1 }
         { print }
     ' "$file" > "${file}.v131tmp" 2>/dev/null; then
         # fail-open（见函数头 Why）: awk 失败 → stderr 警告，清理，继续 init
-        echo "[init] WARN: 🎯 用户需求原文 注入失败（awk 写出异常）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        echo "[init] WARN: 需求区块注入失败（awk 写出异常）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
         rm -f "${file}.v131tmp" "$scaffold"
         return 0
     fi
     if ! mv "${file}.v131tmp" "$file" 2>/dev/null; then
         # fail-open: 磁盘/权限类写回失败同样不中断 init
-        echo "[init] WARN: 🎯 用户需求原文 区块写回失败（磁盘/权限）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        echo "[init] WARN: 需求区块写回失败（磁盘/权限）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
         rm -f "${file}.v131tmp" "$scaffold"
         return 0
     fi
     rm -f "$scaffold"
-    echo "    [init] 🎯 用户需求原文 脚手架已插入（Rule 51.1 生成面兜底, task-v131；规划者填写 R 行+映射后 attest 校验）"
+    if [ "$inja" -eq 1 ] && [ "$injb" -eq 1 ]; then
+        echo "    [init] 🎯 用户需求原文 + 🧮 根源覆盖表 双脚手架已插入（Rule 51.1/53.1 生成面兜底, task-v131 P1-3；规划者填写 R 行/映射/覆盖表后 attest 校验）"
+    elif [ "$inja" -eq 1 ]; then
+        echo "    [init] 🎯 用户需求原文 脚手架已插入（Rule 51.1 生成面兜底, task-v131；规划者填写 R 行+映射后 attest 校验；🧮 根源覆盖表已含于模板）"
+    else
+        echo "    [init] 🧮 根源覆盖表 脚手架已插入（Rule 53.1 载体, critic P1-3；🎯 用户需求原文已含于模板；规划者填表或写「不适用+定性理由」后 attest 校验）"
+    fi
     return 0
 }
 

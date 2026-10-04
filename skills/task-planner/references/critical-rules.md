@@ -72,7 +72,8 @@ Skill("task-drift-guard")
 15.3 **为什么高频 / 与 Rule 11 的关系**:Phase 级漂移检测（Rule 11）粗粒度,问题累积数小时才暴露；todo 级纠正（Rule 15）细粒度,2-3 步内发现,代价小；`task-drift-guard` 是 haiku 档,token 便宜,可高频跑；两者并存——Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控。
 
 ### 16 任务开启期选模板（P0）
-禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement/mini-lite/video/video-fix/image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly/memory-hygiene 共 29 类，task-v115 videop1 回流 17→29；general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `../plan-template-kit/references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（全部模板标配,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 35 且 scope 区块提取非空,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
+禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement/mini-lite/video/video-fix/image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly/memory-hygiene 共 29 类，task-v115 videop1 回流 17→29；general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `../plan-template-kit/references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（白名单模板标配（38.3 豁免 4 类不计入）,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 35/39 且 scope 区块提取非空,39=templates/ 现行全量模板数（主模板+variant）,35/39=含知识储备区块的白名单模板数,豁免 4 类（delivery-summary/knowledge-brief/shared-tracker/variant/mini-lite-type,38.3 白名单或共享载体,不计入标配口径）,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
+> [2026-10-05 task-v131] 修改原因：「全部模板标配」措辞与实况不符——templates/ 现行 39 文件中仅 35 含「📚 必要知识储备」区块（豁免 4 类：delivery-summary.md/knowledge-brief.md/shared-tracker.md/variant/mini-lite-type.md,38.3 白名单或共享载体）；时间：2026-10-05；原行为：写「全部模板标配...= 35」隐含 35/35 全标配口径,与 39 全量分母矛盾（findings L-2）；修法：措辞改「白名单模板标配（38.3 豁免 4 类不计入）」,验收口径补 35/39 如实分母。
 
 ### 17 成本控制（P0）— 降低 Opus 使用频率
 opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `../plan-cost-guard/references/cost-control.md`。
@@ -471,7 +472,8 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 45.4 **修改注明三要素（衔接宪法 §九:158，引用不重复）**：修改现有函数/条款/脚本 → 注释注明 修改原因 + 时间 + 原行为（范式: 本仓 `[2026-09-27 task-v091]` 标注惯例）; 新增函数 → docstring/前置注释块; 修 bug → 现象+根因+修法; 禁止只写 `TODO` 替代修改说明。
 45.5 **禁止为美观/简洁删减注释**：重构/简化/格式化/清理类动作不得删除既有 Why 注释与修改留痕注释；删注释 = 删除性行为, 按 Rule 36.3/36.4 列清单确认；「代码短一点」不构成删注释理由（与 Rule 18 质量门控同构）。
 45.6 **平台冲突显式声明（用户裁决优先）**：平台默认注释倾向=克制（「注释只写代码无法自明的约束」）；用户 2026-10-02 裁决=「所有产出必须包含完整注释，便于理解与维护，不要为了美观减少注释，思路上面的最好也写到注释」——**本 Rule 45 与用户裁决一致并优先于平台默认克制倾向**；执行层遇「注释是否冗余」判断时按 45.2 双层标准判定, 不以「简洁/美观/代码可读就少写」为由跳过 Why 或减少注释。
-45.7 **机器承载与落地边界**：CC 组（selftest-comment-completeness）机器面**规划为后续轮待落地项**（task-v111 交付时未实现,消费方勿引用不存在的脚本——Rule 43.1 诚实登记）；当前承载=①本条文本锚（grep '^45\.' ≥5）②Phase 3 自证审查范式（fresh 审查者按本条审 diff 注释合规,task-v111 已实证）③存量补强清单（plans/task-v111/legacy-comment-audit.md,交用户裁决范围）。落地边界：存量注释回溯不自动实施（工程量与回归风险,清单待裁决）;新增/修改产出自本裁决起即时执行本条标准。
+45.7 **机器承载与落地边界**：CC 组（selftest-comment-completeness）机器面**规划为后续轮待落地项**（task-v111 交付时未实现,消费方勿引用不存在的脚本——Rule 43.1 诚实登记）；当前承载=①本条文本锚（grep '^45\.' ≥5）②Phase 3 自证审查范式（fresh 审查者按本条审 diff 注释合规,task-v111 已实证）③存量补强清单（登记于 plans/task-v111/progress.md,交用户裁决范围）。落地边界：存量注释回溯不自动实施（工程量与回归风险,清单待裁决）;新增/修改产出自本裁决起即时执行本条标准。
+> [2026-10-05 task-v131] 修改原因：45.7 ③原引 `plans/task-v111/legacy-comment-audit.md` 为死路径（`git log -S "legacy-comment-audit"` 证实该文件从未入库, plans/task-v111/ 目录实存文件无此清单文件）；时间：2026-10-05；原行为：③引用不存在的 legacy-comment-audit.md，消费方按原文引用会踩死路径（Rule 43.1 诚实登记口径失效）；修法：改指 task-v111 目录内实存载体 progress.md（清单登记处）。
 
 
 38.7 **执行通道分级（proportionality principle 比例原则，task-v114；用户裁决 2026-10-02「好几个小时解决一个最简单的问题」流程膨胀投诉的规范回应）**：流程开销必须与变更体量成比例——计划创建期按变更体量定级执行通道，三级：
@@ -555,6 +557,8 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 > 判例源：videop1 mvlock 虚假执行（2026-10-04）——声称"停线完成"但核心需求仅 2/18+自挂起+17 次零需求生成；用户定性「流程失控/缺失，非能力问题」。
 
 51.1 需求原文锚定（目标先行）：计划创建与重规划时必须设「🎯 用户需求原文」区块，逐条编号抄录用户原话（R1..Rn；禁转译/缩写/合并——转译即漂移入口）；每条核心需求映射 ≥1 条 VC（R→VC 映射）。缺该区块或核心需求零 VC 映射=计划无效，先回炉再 attest（判例：videop1 S15 被改写为"无替代件不归档，挂起"后全链绿灯）。
+51.1a **载体双机制（task-v131 清账）**: 区块载体=① scripts/init-session.sh 生成时注入（无载体模板自动插脚手架；mini 档豁免；fail-open）② scripts/attest-plan.sh 锁定三锚门（标题/R 行/R→VC 映射缺一拒锁；fail-closed）③ 模板可见区块（主模板+variant 随维护逐个补齐）。**派发侧锚**=templates/subagent_dispatch.md 需求锚字段：需求相关 S-unit 的派发 prompt 必须逐字引用治理 R 条目（禁转译；判例：用户「一个月」被两次改写为「前 72 小时」）。
+
 51.2 验证机制先行：每条核心需求在计划期预登记「覆盖判据」——covered 的可观察证据形态（计数=0/文件在位+绝对路径/命令输出形态）；VC 验证方式必须引用判据。先设计验证后执行，禁止"先做完再想怎么算完成"。
 51.3 完成声称对照门：交付终态逐需求条目出「需求覆盖核对表」（covered/partial/uncovered+证据路径）；任一用户显式核心需求 uncovered/partial 且无用户显式让步（Decisions Made 登记）→ 终态禁 COMPLETE，只可 PARTIAL 并显式列未覆盖项与原因；交付总结按 templates/delivery-summary.md「需求覆盖核对」区块输出（缺区块=交付不完整）。
 51.4 自缩水禁令：对用户已明确需求做「挂起/搁置/收口/暂不/降级/有条件不执行」类缩水处置=Rule 41 G4 语义级目标分叉，必须 AskUser/STOP+Decisions Made 登记获确认后才可写入计划；禁止仅把缩水措辞写进计划/进度即视为已处置，禁止按缩水版计划自报完成。（silent 模式对本款不适用：G4 缩水项必须显式等待用户答复，不得按推荐项自走。）
@@ -572,3 +576,11 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 52.3 **矩阵维护责任**：agent 增/删/改名或登记面改动 → 矩阵与三登记面同任务同步（禁悬空）；新增专用体落地后必须回填矩阵与登记面行（task-v124→v125 联动先例：媒体执行体落地即登记）。
 
 52.4 **机制（零新 config 键 — 与 43.4/44.4/47.4 同范式）**：判定面=LLM 行为（选型查矩阵、兜底登记理由、维护同步）；机器面=`scripts/selftest-agent-coverage.sh` 静态断言（矩阵在位/三登记面锚/B 类实体存在性/C 类处置覆盖/零新键）；消费侧=委派检查点（执行循环 2.5）选型对照与 Handoff 摘要附注；既有 21/25/37/47 原文零改动（Rule 36.5 纯增量）。
+
+### 53 根源解决与决策管辖（P0, 2026-10-05 task-v131）
+
+53.1 **结果级需求全链工序审计（根源覆盖）**: 计划期对结果级需求（「确保质量/高性能/高可靠/安全」类结果表述，区别于单点动作指令）必须做全链审计——①把该结果的生产管线分解为完整工序链（如内容质量=选题→调研→结构→写作→审校→发布→复检，禁止只取最显性工序）；②逐工序对照该结果审计缺陷面（每工序至少一问「此工序当前有无削弱该结果的缺陷/缺口」）；③审计结论落 task_plan.md「根源覆盖表」区块（工序×缺陷面×修复点×VC 四列）。只修最显性层而管线其余缺陷面未枚举=需求未覆盖（51.3 口径 partial/uncovered）。结果级判定口径=用户表述含结果性词（质量/性能/可靠/安全/稳定/准确/彻底/从根源/确保/保证等）即结果级；疑似从严默认按结果级处理（对齐 50.2 程度词默认 H 先例）；「根源覆盖表」写「不适用（非结果级）」必须附一句定性理由（attest/终验可核，禁裸豁免）。判例反例（task-v131 用户原话锚定）：用户要求「确保产出内容质量高质量内容」，方案只写「要求标题怎么写」而未从内容创作的流程及其他部分的缺陷进行挖掘=典型违规。
+53.2 **根治判据（防复发测试）**: 每个「解决问题」类条目（bug 修复/缺陷清账/规则增强）必须给出根治判据=「同类问题在修复后如何被系统性阻止」，载体三选一：机制（流程/角色/时序改变）/守卫（机器校验断言）/载体（模板/字段/区块强制存在）；只有症状修补而无根治判据=未解决，按 Rule 26.3 惩罚映射语义处置（触发面=Q8 无根治判据，登记于 53.5；不扩 26.1 既有 Q1-Q6 枚举）。判例：条款已写但模板/脚本零挂点=条款死文（51.1 计划侧零载体教训，task-v131 清账）。
+53.3 **决策管辖二分（反推诿）**: 决策点管辖以 Rule 41.2 四门槛为唯一权威边界：**用户专属=G1-G4 之一**（真实偏好二选属 G4 语义级目标分叉范畴；D6 硬停点按其既定语义等待确认，不适用 Rule 44 自动超时），四门槛外**一律代理可判**——判别参考（非并行体系，防自设出口）：可逆或影响局部/有客观判据或领域默认可循/信息在手/在任务范围内。代理可判项必须代理裁决并在 Decisions Made 登记决策+一句理由，禁止把代理可判项包装成「待用户确认/提供选项」推给用户（惰性违规，按 Rule 26.3 惩罚映射语义处置：触发面=Q7 惰性推诿，登记于 53.5，不扩 26.1 枚举）；与 41.3/44.2 联动（低区分度选项必须直接裁决）；升级呈报前按 41.4 消解清单附「已尝试清单」。
+53.4 **返工成本核算（质量优先落地）**: 方案取舍涉及「快而浅 vs 慢而彻」时必须核算返工期望成本：返工成本（重新派发/重新审查/重新部署/用户二次反馈的等待与信任损耗）计入浅路径总成本；返工期望成本>彻底解决的增量时间成本→禁选浅路径。核算口径=可陈述三元组（彻底路径增量成本/浅路径返工概率及其依据/返工成本，其中返工成本按 ≥ 该条目首次执行成本计）；无客观证据支撑低返工概率时，从严默认彻底路径。验收深度必须覆盖 53.2 根治判据（未验证根治判据=不可声称完成，43.1 口径）。质量优先于速度（Rule 26 总纲）在本条的落点=返工核算入决策。
+53.5 **机制**: 零新 config 键；selftest-root-resolution.sh 静态守护（53.x 条款锚+SKILL C36/索引锚+51.1 载体锚+派发模板需求锚+负断言）；触发面登记=Q7 惰性推诿/Q8 无根治判据（均挂 26.3 惩罚映射语义消费，不扩 26.1 枚举）；attest 51.1 门第 4 锚=「根源覆盖表」（非 mini 计划须在位，含「不适用+定性理由」声明行亦算在位）；check-dispatch.sh 对派发 prompt 缺「需求锚」字样输出 advisory 提醒（warn 档 fail-open 不阻断——机器边界如实披露，锚义务由派发者承担）；RC-15 断言 ^5[0-2]→^53 随守卫脚本同步演进。消费点=SKILL 合规清单 C36+计划模板「🎯 用户需求原文」区块（51.1 载体，R 行即 53.1 需求锚源）+「根源覆盖表」区块。
