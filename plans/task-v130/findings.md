@@ -35,6 +35,12 @@
 - **遵守规程**: 确定性 401（非模型随机）→ 第 2 抽必然同果，未消耗重抽预算（实际生成调用 1 次，重抽 0）；未扩批；key 轮换超本执行体权限，按 Rule 22.3 负结果报告停止并升级主进程。
 - **证据**: subagent-state/s3-image.md 执行日志；诊断命令→输出行见回执 evidence 字段。
 
+#### [sub:S3b] 全链复测 — 仍阻塞于 Agnes key 凭证（401）
+- **结论**: BLOCKED（环境类，复现）— 单张 t2i 全链复测在「试水 smoke-test」步再次被 Agnes API 拒令牌（HTTP 401「无效的令牌」），核词四段式已冻结但零产物。距离上次 S3（2026-10-04 18:40）约 10.5 小时，凭证未恢复。
+- **故障定位（非猜测，二证）**: ① smoke-test 返回 `HTTP 401 … 无效的令牌 (request id: 20261004211135816474694Y6xxt5gN)`，type=AgnesAI_error；② 唯一 1 次 curl 凭证自检 `POST https://api.agnes-ai.cn/v1/chat/completions` 亦 `HTTP_STATUS=401` 同错误体（request id: 20261004211315367795693ze4uG4gW）；③ `agnes_api.py:20` BASE_URL=`https://api.agnes-ai.cn`（正确域，非 apihub 陷阱）→ 请求抵达正确端点，指 key 值本身无效/未刷新生效。
+- **遵守规程**: 契约限定 401 后仅 1 次重试探测（已用尽）；未换端点猜测、未扩批、零仓内写；确定性 401 未消耗显式 image 重抽预算（重抽 0）。
+- **证据**: subagent-state/s3b-image.md 执行记录表；回执 evidence 字段含命令→输出行与时间戳（05:11–05:13 CST）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

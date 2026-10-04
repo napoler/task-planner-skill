@@ -30,4 +30,19 @@
 
 ## §全链复测（由计划任务写入）
 
-- （待 2 小时后自动写入：URL + 三检逐项 + 重抽计数，或 401 原文）
+**复测时间**: 2026-10-05 05:11-05:13 CST（automation-13c74ca0，前次 S3 后约 10.5h）｜ **复测执行体**: `image-generation-executor`（`subagent-state/s3b-image.md` 全文）
+
+**结果：仍 BLOCKED——Agnes 凭证未恢复（HTTP 401「无效的令牌」）**
+
+| 项 | 实测 |
+|----|------|
+| smoke-test | `HTTP 401 from /v1/chat/completions: {"error":{"code":"","message":"无效的令牌 (request id: 20261004211135816474694Y6xxt5gN)","type":"AgnesAI_error"}}`（05:11 CST） |
+| curl 直证 | `HTTP_STATUS=401` 同错误体（request id: 20261004211315367795693ze4uG4gW，05:13 CST） |
+| 环境事实 | `AGNES_API_KEY` 在位（len=52）；BASE_URL=api.agnes-ai.cn（正确域，非 apihub 陷阱） |
+| 重试纪律 | 零多余重试（401 确定性故障；未换端点猜测、未扩批、零产物） |
+
+**判定**：key 未刷新或刷新未生效（两 request id 相隔 2 分钟、跨 10.5h 与 S3 同错误）——**解除条件=换发有效 `AGNES_API_KEY`**；换发后由用户手动触发一次复测即可（本次计划任务为一次性，已按指令不再新建自动化）。
+
+## §发现汇总（更新）
+- F2（凭证）：**仍未解除**（2026-10-05 05:13 直证 401；需用户换发 key）
+- F1（门控字段格式）：已修（Executor `+` 分隔；改进建议 deferred 待裁）

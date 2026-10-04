@@ -54,6 +54,7 @@
 - **Started:** 2026-10-04 18:45
 - Actions taken:
   - smoke-report.md 落盘（4 层判定+复现命令）；计划任务已排（automation-13c74ca0，2h 后自动复测 S3 并回写「§全链复测」）
+  - [sub:S3b] 全链复测：核词四段式冻结→smoke-test 再次被拒 `HTTP 401 无效的令牌`（req id 20261004211135…）；BASE_URL 双证（agnes_api.py:20 正确域）+ 唯一 1 次 curl 自检同 401（req id 20261004211315…，05:13 CST）→ 凭证仍未恢复，零产物、零扩批、重抽 0；HARD_BLOCK/BLOCKED 升级主进程（详情 findings [sub:S3b]）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
