@@ -246,6 +246,20 @@ model: opus
 
 `chain_mode` 默认 `single`（单 block，无 chain 区块）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，fan-out 成员按 Rule 21.4 声明组并行——组内独立性四问通过即可并行，未声明组=串行，10-02）的值语义、示意图与执行规则权威源 = `reference.md § Chain 模式详解`；block 交接字段表/6 条件/重规划触发见 `reference.md § Chain Handoff Contract`。
 
+## 🧵 并行创作组（Unit × Lane — Rule 21.4 / 23.9-23.13 / 47 / 49）
+
+> **核心模型**：把「场景段落 / 关键帧批 / 资产批」抽象为 **创作单元 Unit**；每个 Unit 一条 **工序链 lane**（写词→生成→质检→放行→组装）。**并行单位 = Unit（lane）；Unit 内工序强串行**（Rule 47.1 阶段×生产单元轴 + Rule 49.1 单元线模型，不造新机制）。冲突检测/引用管理规则本体见 `references/critical-rules.md` Rule 23.9-23.13。
+
+**① 声明格式（task_plan.md 三层声明）**：**(a) frontmatter** `parallel_groups: [u-seg01, u-seg02, ...]`（组名=创作单元 id）∧ `lanes: [u-seg01, ...]`（单元线名册，Rule 49）——必须**一次性声明全部 lane**（frontmatter 受 SHA-256 attest 锁定 Rule 20，执行期追加触发重锁）；只读并行组沿用 `parallel_readonly: true` + `[readonly-parallel]`。**(b) S-unit 表（22.6）增「单元/并行组」列**，每行填 `[parallel-group:<unit-id>]`（Rule 21.4 机器可消费组标记，check-dispatch.sh 消费；check-plan-dispatch.sh 只硬校验「执行体」列，加列安全）。**(c) 「📐 创作单元并行表（Lane 状态表）」区块**（Rule 49.1，主进程单写者）：列 = 单元 id | 工序链 | 当前工序 | 前置 S-unit | 前置验收证据 | 组标记 | 共享引用集 | 预估烧秒 | 状态 | 最后推进时间；推进双登记（49.3）= Lane 表翻格 + progress.md `[advance]` 行。
+
+**② fan-out / Aggregator（与既有 chain_mode 一致）**：`fan-out` = 上游 complete → 下游 Block 按 Rule 21.4 声明组**并行**派发（未声明组仍串行）→ 等齐；`chain_mode: fan-out` 计划**必须**预置 Aggregator Phase（Rule 23.6 / 18.7，check-complete.sh 硬校验正则 `Phase \d+:.*Aggregator|聚合`），模板预置 `### Phase N: Aggregator（汇合：整片组装 / 成片 QC / 台账收口）`；`linked` 语义不变（同上游产物多下游依次消费 = 四问③串行）。
+
+**③ 冲突检测清单（哪些情况不能并行）**：两 Unit 可并行 ⇔ 独立性四问全 **no**：① 写集相交？② 资源相争（同 worktree/分支、同交付物、同计划文件锚点、同预算 piece_id、同 NAS/VERSIONS.md、同额度窗口）？③ 输入依赖他者产物？④ 验收依赖他者结果？**项目专属冲突类（强串行）**：锚件换代（换装/装备变体/母图重抽）；同场景组连续成片（同场景组镜头=同一 lane 内串行）；同单元内生成→质检→放行→视频工序链；人工门（草稿门/试水门/G1）=lane 内屏障不可并行越过（跨 lane 可同批呈示）；生成额度=全局共享资源（Σ 在飞 lane 预算 ≤ 当日剩余额度）。三检测时机（计划期静态 / 派发期对全部在飞过四问 / 验收后三证据）与 RefSet 见 Rule 23.10-23.12。
+
+**④ 引用管理（共享资源处理）**：① 只读共享+版本冻结（共享锚件 `id+版本+sha256` 冻结，子代理只读，派发 prompt §4 Scope 禁改）；② 单写者（masters-registry/upload-map/master-prompt-store/VERSIONS.md/Lane 表/计划三文件由主进程单写，子代理只追加自己锚点，22.4a/49.4②）；③ 共享引用登记表（task_plan.md 区块：资源 id|类型|路径|sha256|引用单元清单|状态(现役/frozen/stale)）；④ 产出命名空间隔离（每单元 `output/<ep>/<unit>/` 与 `tmp/<task>/<unit>/`，汇合件由 Aggregator 单写）；⑤ 锚件换代协议（G1 人工门+单写者登记+stale 广播+冻结锁，换代后按 sha 差集重跑，grep 旧 sha 0 命中方可 complete）；⑥ 预算账本隔离（每单元独立 piece_id 命名空间）。
+
+**⑤ 子代理拆分模板（Unit × 工序 = S-unit）**：单 S-unit = 单创作单元 × 单工序（禁「整集生成/整批关键帧」粗粒度，Rule 47.1）；派发纪律 = 单会话单 S-unit（46.1）+ 每 lane 至多 1 个在飞 + 跨 lane 在飞 ≤ 并发上限（建议 2-4）+ 推进三条件（49.2）满足即派不等批（跨 Phase 前移 49.3）+ 失败 lane 冻结不阻塞其它 lane（Rule 49 核心收益）。**派发 prompt 增补字段**（在 `templates/subagent_dispatch.md` 并行组声明行基础上）：单元 id + `[parallel-group:<unit>]` + 引用集 sha 清单 + Scope 禁改（共享锚/registry/VERSIONS.md/Lane 表/三文件既有内容）+ 前置验收证据指针 + checkpoint `subagent-state/{seq}-{agent}-<unit>.md`。**执行体路由**：视频生成=`video-generation-executor`（缺位回退 executor(sonnet-1)+videop1-tools skill）；图片/关键帧=`image-generation-executor`；质检=对应 review-*；放行=用户（主进程 STOP，子代理无权代放行，约束 14/15）；禁因路由表无匹配行默认落 general-purpose（Rule 47.2/52.1）。**机器守卫边界（如实披露）**：check-dispatch.sh `serial_slot_check` 只有全局锁 `subagent-state/.dispatch-inflight`（120s age），组标记命中即放行、不区分组名、不做四问机器校验——责任在计划期声明+执行期四问（Rule 23.13）。
+
 ## Critical Rules
 
 详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40/41/42/43/44/45/46/47/48/49/51））：
@@ -260,7 +274,7 @@ model: opus
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
 - **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发按 21.4 调度铁律——声明并行组内成员可并行（独立性四问通过）、未声明组一次验收一组成员再派下一组成员（21.4 子代理调度铁律，10-02）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
-- **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
+- **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验 + 并行创作组单元级冲突检测/引用管理（Rule 23.9-23.13，衔接 Rule 21.4/47/49）（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：交付终态/会话恢复触发点扫中断任务（task-v091 A-3 收敛，不再每 Phase 扫）；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**（fmea_enforce 消费机器校验已生效：attest+check-complete）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
