@@ -1,0 +1,2 @@
+{"tick":1,"ts":"2026-10-05T13:40:06Z","agent":"main","phase":"1","event":"phase_complete","summary":"Phase 1 端点定论：官方文档无额度端点+billing 端点存在但计费层未填充（sub:02..06 四波探针+鉴权校准）","files":[]}
+{"tick":2,"ts":"2026-10-05T14:06:52Z","agent":"main","phase":"2","event":"phase_complete","summary":"Phase 2：Rule 55 条款+SKILL 索引+纪元/行数钉同步（commit d6cc6c8，+23/-9，触链脚本自测全绿）","files":[]}

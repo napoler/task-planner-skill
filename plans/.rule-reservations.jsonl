@@ -7,3 +7,10 @@
 {"rule":51,"status":"landed","task_id":"task-v129","ts":"2026-10-04","note":""}
 {"rule":50,"status":"landed","task_id":"task-v127","ts":"2026-10-04","note":""}
 {"rule":52,"status":"reserved","task_id":"task-v125","ts":"2026-10-04","note":"执行体专业化优先与覆盖矩阵（50 被 v127 占用后第三次改号；v121 预扩位体系内）"}
+{"rule":52,"status":"landed","task_id":"task-v125","ts":"2026-10-04","note":""}
+{"rule":53,"status":"reserved","task_id":"task-v131","ts":"2026-10-05","note":""}
+{"rule":53,"status":"landed","task_id":"task-v131","ts":"2026-10-05","note":""}
+{"rule":54,"status":"reserved","task_id":"task-v136","ts":"2026-10-05","note":""}
+{"rule":55,"status":"reserved","task_id":"task-v138","ts":"2026-10-05","note":""}
+{"rule":54,"status":"landed","task_id":"task-v136","ts":"2026-10-05","note":""}
+{"rule":55,"status":"landed","task_id":"task-v138","ts":"2026-10-06","note":""}
