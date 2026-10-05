@@ -94,11 +94,13 @@
 ## Phases
 
 ### Phase 1: worktree 建立与锚点基线 ✅ complete（2026-10-05）
+- **Status:** complete
 - git worktree add /home/terry/task-planner-skill-worktrees/task-v137 -b wt/task-v137 master；基线 selftest 求和（主进程逐 Total 行）；四落点锚点终验（对照本计划 2026-10-05 实测值）
 - **Executor:** 主进程（白名单① git 编排）
 - **证据:** worktree 在位（wt/task-v137@4e734b2）；锚点全对齐（21.2@:145、`^## §`=5、SKILL=478）；基线 51 脚本 PASS=760 FAIL=0（findings.md Research Findings 段）
 
 ### Phase 2: 四落点实施（隔离区内）✅ complete（2026-10-05，4 文件 +11/-0，详见 progress.md Phase 2 段与 Handoff 表 2-5 行）
+- **Status:** complete
 <!-- S-unit 表：attest 机器校验执行体列；46.1 单会话单单元串行派发 -->
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|-------------|---------|------|
@@ -108,6 +110,7 @@
 | S4 | rule-enhancement-type.md :93 必读表加台账供料简报行 | executor(sonnet-1) | worktree 内 templates/variant/rule-enhancement-type.md（122 行）+ 提案落点 4 | grep 台账供料 ≥1；必读表竖线列结构完整 | 8min | complete |
 
 ### Phase 3: 回归验证（隔离区内）✅ complete（2026-10-05，51 脚本 FAIL=0、SKILL=478，详见 progress.md Phase 3 段）
+- **Status:** complete
 - selftest-knowledge-brief.sh 全组 + selftest-skill-split.sh + check-dispatch.sh 冒烟 + 全量 selftest 逐脚本求和（对照 Phase 1 基线）+ SKILL.md wc -l=478 复核
 - **Executor:** code-runner-agent（mini）
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
@@ -115,6 +118,7 @@
 | S5 | worktree 内全量 selftest 回归 + SKILL.md 行数复核 | code-runner-agent | worktree 根（scripts/selftest-*.sh 51 个）+ Phase 1 基线求和值 | 逐脚本 Total 行求和 0 FAIL；wc -l SKILL.md=478 | 15min | complete |
 
 ### Phase 4: 合并部署与簿记 ✅ complete（2026-10-05，合并 4bca3dd+b11f3fd、四位 IDENTICAL、51 脚本 FAIL=0，详见 progress.md Phase 4 段）
+- **Status:** complete
 - worktree 内 Phase 产物 commit（Rule 27 逐 Phase）→ smart-merge-back.sh --deploy → 4 实体位 IDENTICAL 对账 → INDEX/ledger 簿记 → worktree 清理 → alignment-review 收尾
 - **Executor:** 主进程（白名单①② git 与计划系统编排）
 
