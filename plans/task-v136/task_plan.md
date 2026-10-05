@@ -99,7 +99,7 @@ workflow 编排判定：未点名 /workflow；任务线性串行+单小组并行
 
 ### Phase 1: 隔离与基线
 - worktree 建立 `/home/terry/task-planner-skill-worktrees/task-v136`（宪法 §十一 集中目录）+ 全量 selftest 基线（code-runner 跑批，主进程逐 Total 求和记基线数）+ 插入点锚确认（critical-rules Rule 53 块尾/SKILL 摘要区/C 行区/行数断言所在脚本）
-- **Executor:** 主进程（白名单① git 编排）+ code-runner-agent（基线跑批）
+- **Executor:** general-purpose（基线跑批；mini 档 2 连拒后改派）+ 主进程（白名单① git/worktree 编排）
 - **Status:** complete（2026-10-05 20:3x；worktree 基点 4bca3dd，双侧 593/478 一致；基线 **784/0** 主进程 raw 重算定数，检查点 subagent-state/02-baseline-selftest.md §五含 762→784 修正记录；C37 最大、Rule 53 块尾=593 行、行数断言 ≤558×3）
 
 ### Phase 2: EP8 因果链全链分析（证据驱动条款设计前置）
@@ -138,7 +138,7 @@ workflow 编排判定：未点名 /workflow；任务线性串行+单小组并行
 
 ### Phase 6: 审查 Gate + 合并回 + 部署 + 簿记
 - Code Review Gate（code-review skill，轻 diff ≤6 文件走单轮轻量）→ alignment-review（42.6.2）→ 合并前重读 master 基点 → smart-merge-back --deploy → worktree 清理 → rule-reserve land 54 → INDEX/ledger/notepad 案例登记（EP8 错误示例→Rule 54 映射+因果链结论，31.4）→ 终验交付总结
-- **Executor:** 主进程（白名单①②）+ Skill(code-review/alignment-review)
+- **Executor:** general-purpose（align 审查）+ code-reviewer（CR Gate）+ executor（P1/CR 建议修复×2）+ 主进程（白名单①② 合并部署与簿记）
 - **Status:** complete（2026-10-05 22:1x；align CHANGES_REQUESTED→P1×4 修复+P2×4 处置；CR **APPROVED**→建议 3 条采纳；master 合流零冲突 798/0；合并 **b2d38e5**；3 位 IDENTICAL；land 54；worktree 清理；merge_back=merged(b2d38e5)）
 
 ## 📚 必要知识储备
@@ -173,7 +173,12 @@ workflow 编排判定：未点名 /workflow；任务线性串行+单小组并行
 | 1 | 2026-10-05 18:4x | Explore | F1/F2/F3 规则覆盖缺口提取 | verified | 三缺口各有相邻条款无直接覆盖；关键锚 457/458/570/527/529 | subagent-state/01-explore-rule-coverage.md | findings Research Findings | subagent-state/01-explore-rule-coverage.md |
 | 2 | 2026-10-05 20:1x | code-runner-agent(mini) | worktree selftest 基线跑批 | rejected | provider 拒绝×2（同文重派亦拒）；按 22.3①/v127 先例改派 general-purpose | progress Error Log ① | findings Technical Decisions | （未产出检查点） |
 | 3 | 2026-10-05 20:2x | general-purpose | worktree selftest 基线跑批（改派） | verified | 51 脚本全跑 0 FAIL 0 TIMEOUT；主进程 raw 重算定数 **784/0**（子代理头部 762 漏加 22，检查点 §五修正） | subagent-state/02-baseline-selftest.md + /tmp/selftest_v136_raw/ | findings Technical Decisions + progress Test Results | subagent-state/02-baseline-selftest.md |
-| 4 | 2026-10-05 20:4x | executor(sonnet-1) | S0 因果链全链分析 | verified | 4/5 箭头 verified + A1 使能边降级；54 子条映射建议齐；**发现锚漂移+2 行并给出复核新行号（01 旧行号作废）**；主进程抽验 43.1:455/49.2:530/51.8:573/53.5:593 全部命中 | subagent-state/03-causal-chain.md | findings 因果链证据表段 | subagent-state/03-causal-chain.md |
-| 5 | 2026-10-05 21:0x | executor(sonnet-1) | S1 Rule 54 条款写入 | verified | 54.0-54.6 七子条 +17/0 行（593→610）；grep ^54.[0-6]=7；案例词=0；差异面六项自查全过；主进程 sed 亲读全文复核 | worktree critical-rules.md:594-610 | findings Research Findings | subagent-state/04-s1-clause.md |
-| 6 | 2026-10-05 21:1x | executor(sonnet-1) [g-linkage] | S2 SKILL.md 联动 | verified | 4 hunks（C38:206/40-54:268/摘要:309/References:333）净增+2（478→480）；锚级联扫出 4 脚本改齐（R-09/SR-08/RR-16 宽容化+RC-15 ^55 防线前移），5 脚本回归 FAIL=0 | subagent-state/05-s2-skill-linkage.md | progress Phase 3 段 | subagent-state/05-s2-skill-linkage.md |
-| 7 | 2026-10-05 21:1x | executor(sonnet-1) [g-linkage] | S3 模板+companion 联动 | verified | 3 文件各 +1/0（delivery-summary:34/两 companion :37/:38）；Rule 54 指针各=1；案例词=0；主进程 grep 亲验 | subagent-state/06-s3-template-companion.md | progress Phase 3 段 | subagent-state/06-s3-template-companion.md |
+| 4 | 2026-10-05 20:4x | executor | S0 因果链全链分析（sonnet-1） | verified | 4/5 箭头 verified + A1 使能边降级；54 子条映射建议齐；**发现锚漂移+2 行并给出复核新行号（01 旧行号作废）**；主进程抽验 43.1:455/49.2:530/51.8:573/53.5:593 全部命中 | subagent-state/03-causal-chain.md | findings 因果链证据表段 | subagent-state/03-causal-chain.md |
+| 5 | 2026-10-05 21:0x | executor | S1 Rule 54 条款写入（sonnet-1） | verified | 54.0-54.6 七子条 +17/0 行（593→610）；grep ^54.[0-6]=7；案例词=0；差异面六项自查全过；主进程 sed 亲读全文复核 | worktree critical-rules.md:594-610 | findings Research Findings | subagent-state/04-s1-clause.md |
+| 6 | 2026-10-05 21:1x | executor | S2 SKILL.md 联动（sonnet-1，[g-linkage]） | verified | 4 hunks（C38:206/40-54:268/摘要:309/References:333）净增+2（478→480）；锚级联扫出 4 脚本改齐（R-09/SR-08/RR-16 宽容化+RC-15 ^55 防线前移），5 脚本回归 FAIL=0 | subagent-state/05-s2-skill-linkage.md | progress Phase 3 段 | subagent-state/05-s2-skill-linkage.md |
+| 7 | 2026-10-05 21:1x | executor | S3 模板+companion 联动（sonnet-1，[g-linkage]） | verified | 3 文件各 +1/0（delivery-summary:34/两 companion :37/:38）；Rule 54 指针各=1；案例词=0；主进程 grep 亲验 | subagent-state/06-s3-template-companion.md | progress Phase 3 段 | subagent-state/06-s3-template-companion.md |
+| 8 | 2026-10-05 21:2x | executor | S5 全量回归+修复（sonnet-1） | verified | 52 脚本 798/0 两轮；skill-split 行数钉修复；registry 登记；主进程 raw 重算一致 | subagent-state/08-s5-regression.md | progress Phase 5 段 | subagent-state/08-s5-regression.md |
+| 9 | 2026-10-05 21:4x | general-purpose | alignment-review 对齐审查（14 项 SOP） | verified | CHANGES_REQUESTED→P1×4+P2×4；实质功能面全过；报告存档 09 | subagent-state/09-alignment-review.md | progress Phase 6 段 | subagent-state/09-alignment-review.md |
+| 10 | 2026-10-05 21:5x | code-reviewer | CR Gate 正式审查 | verified | **APPROVED**（零 P0/P1；VC 独立复验全过；798/0 独立重算）；建议 3 条 | （结论在代理回执，要点入 progress Phase 6 段） | progress Phase 6 段 | （只读 Gate 无检查点） |
+| 11 | 2026-10-05 22:0x | executor | align P1×4 修复+全量复跑 | verified | 5 行级修改（3 脚本 docblock/诊断串）；798/0 保持 | subagent-state/10-p1-fix.md | progress Phase 6 段 | subagent-state/10-p1-fix.md |
+| 12 | 2026-10-05 22:1x | executor | CR 建议 1/2/3 修复 | verified | SKILL:9 全集 1-54+RR-09 宽容化+RR-17 串；798/0 保持 | subagent-state/12-cr-fix.md | progress Phase 6 段 | subagent-state/12-cr-fix.md |
