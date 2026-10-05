@@ -97,7 +97,7 @@
 | 项目内部 | 最近两轮规则块范式 | references/critical-rules.md 末尾 | ☑ |
 | 项目内部 | selftest 写法范式 | scripts/selftest-veto.sh | ☑ |
 | 项目内部 | 三档键范式 | config.json 最新三档键 | ☑ |
-| 项目内部 | 台账供料简报（B8 编号账本+审计台账路径等） | `<plan-dir>/knowledge-brief.md` §2/§3/§5（台账路径锚供料，禁 prompt 内联基线） | ☑ |
+| 项目内部 | 台账供料简报（Rule 编号账本+审计台账路径等） | `<plan-dir>/knowledge-brief.md` §2/§3/§5（台账路径锚供料，禁 prompt 内联基线） | ☑ |
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |
