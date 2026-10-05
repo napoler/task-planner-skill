@@ -31,9 +31,11 @@
 
 ## 📚 必要知识储备上下文包(随 prompt 注入 — prompt 自包含)
 <!-- WHAT: 派发时必须注入的知识源;全文摘录或路径引用,保证子代理无会话记忆也能对齐知识库 -->
+<!-- Why 台账供料纪律(2026-10-05 task-v137 S2, 收窄提案落点 2): 基线定数(行数/Rule 编号/实体清单/selftest 基线)已由台账承载;prompt 逐项内联重建(v116 A2 变体)无时效戳,锚漂移后即成谣言源——一律经 brief §2/§3 台账路径锚供料(21.2.1 台账供料优先),禁既贴台账原文又给路径(22.4 §9 既有纪律) -->
 | 知识源 | 定位 | 注入方式 |
 |--------|------|---------|
 | {knowledge_brief}(`<plan-dir>/knowledge-brief.md`,任务知识简略要点) | §1-§5 五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引 | 材料包段引用对应节锚点;brief 存在时必读其索引节(§5) |
+| {baseline_injection}基线定数(行数定数/Rule 编号/实体清单/selftest 基线) | 台账路径锚(`plans/.rule-reservations.jsonl` 等既有台账产物;缺口维度如实回填 brief §2 原文锚) | 一律经 `<plan-dir>/knowledge-brief.md` §2/§3 台账路径锚供料;派发 prompt 禁止内联重建基线定数(收口 v116 A2 变体;21.2.1 台账供料优先) |
 
 ## 3. 验收标准(2-5 条可观察证据)
 - [ ] {acceptance_1} / {acceptance_2} / {acceptance_3} / {acceptance_4}(可选)
