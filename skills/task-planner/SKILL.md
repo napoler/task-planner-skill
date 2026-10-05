@@ -301,7 +301,7 @@ model: opus
 - **Rule 47（媒体制作任务派发纪律 — task-v122）**：媒体拆分轴=制作阶段×生产单元，单 S-unit=单单元×单阶段（47.1）；具名执行体路由=executor+工序模板 SOP+生成技能，general-purpose 默认兜底禁止、例外登记理由（47.2）；批量生成试点先行联动 Rule 18.9 硬门（47.3）；零新 config 键+selftest-media-dispatch.sh 守护（47.4）
 - **Rule 49（单元线多路并行推进 — task-v126）**：可枚举生产单元×序贯工序任务族启用 lane 模型（49.1）；推进三条件=已验收+前置在位+独立性四问（49.2）；满足即派发不等批、跨 Phase 前移双登记、Phase 翻转语义不变（49.3）；汇合点强串行+单写者/单 S-unit 不变（49.4）；零新 config 键+selftest-lane-advancement.sh 守护（49.5）
 - **Rule 50（内容要求权重分级与评级 — task-v127）**：复合需求拆原子验收条目表（存在性 P/程度 E × 硬约束 H/评分项 S，50.1）；程度约束词显式成条且未标注默认 H（50.2）；逐条评级 PASS/PARTIAL/FAIL、程度条目双向判（过显眼 FAIL/不可见亦 FAIL，50.3）；加权判定=全 H 过+S 加权≥阈值（50.4）；条目表随任务书派发供 QC 链消费（50.5）；零新 config 键+selftest-requirement-grading.sh 守护（50.6）
-- **Rule 51（需求覆盖与完成声称门控 — task-v129）**：需求原文锚定+验证机制先行+完成声称对照门+自缩水禁令+生成前置盘点六子条；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
+- **Rule 51（需求覆盖与完成声称门控 — task-v129）**：需求原文锚定+验证机制先行+完成声称对照门+自缩水禁令+生成前置盘点七子条（51.1-51.7，含 51.7 纠正=回锚重译/窗口口径 lint 增补，task-v132）；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
 - **Rule 52（执行体专业化优先与覆盖矩阵维护 — task-v125）**：派发选型专用体优先——先查覆盖矩阵 `references/agent-coverage.md` 与三登记面（52.1）；三类缺口（A 无具名映射/B 登记指向不存在或名不符实体/C 实体未登记）禁新增，B 类零容忍实体存在性（52.2）；agent 增删改名或登记面改动→矩阵与登记面同任务同步（52.3）；零新 config 键+selftest-agent-coverage.sh 静态守护（52.4）
 - **Rule 53（根源解决与决策管辖 — task-v131）**：结果级需求全链工序审计+根源覆盖表（53.1）/根治判据=机制·守卫·载体三选一防复发（53.2）/决策管辖二分反推诿（53.3）/返工成本核算质量优先（53.4）；零新 config 键+selftest-root-resolution.sh 守护（53.5）
 

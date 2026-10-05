@@ -100,7 +100,7 @@ fi
 # 负断言锁旧字面零残留（残留 = 级联更新漏改，与 knowledge-brief §4「锚级联第 3 次教训」同判例；
 # 注意 grep -F 固定匹配不误伤 1-52/1-53 子串，因 '1-51' 为独立字面）。
 n="$(grep -cF 'Critical Rules 全集 1-53' "$SKILLMD" || true)"
-m="$(grep -cF '1-51' "$SKILLMD" || true)"
+m="$(grep -cE '(全集|Rules) 1-51' "$SKILLMD" || true)"  # [2026-10-05 task-v132] 裸 '1-51' 固定匹配被 SKILL:304「51.1-51.7」子串误触（级联第 5 变体：负断言须语境锚定防子串误伤）
 if [ "$n" -eq 1 ] && [ "$m" -eq 0 ]; then
   ok 09 "SKILL.md 全集声明「Critical Rules 全集 1-53」=1 且旧「1-51」残留=0"
 else

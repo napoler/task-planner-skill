@@ -526,6 +526,69 @@ if [ ${#missing_files[@]} -gt 0 ]; then
     exit 1
 fi
 echo "[init] 6/6 planning files verified"
+# [2026-10-05 task-v132 G3 R3] silent 路径锚哈希即时落盘（G3：防窗口期篡改）：
+# 原因: silent/自动档交互模式（Rule 28 唯一权威解析口径, 层级见下方 ALIGN-P1b 注）下
+#       计划生成后即直接执行、无用户批准环节——原行为哈希锁定（attest-plan.sh）延后到执行中
+#       甚至遗漏，审批→锁定之间存在窗口期，期间 task_plan.md 可被篡改而无 attestation 门禁；
+#       非 silent（ask）路径保持原行为（锁定发生在用户批准计划时，见 SKILL.md Rule 28），零改动。
+# 时间: 2026-10-05 (task-v132 Phase 3 R3; Phase 4 ALIGN-P1b 解析口径修正)
+# 原行为: init 生成 6 文件后仅写活跃计划指针，不做任何哈希锁定；silent 档的 .plan-attestation
+#         依赖后续人工/执行中补跑 attest-plan.sh，锁定前窗口期内篡改无机器门禁。
+# [2026-10-05 task-v132/Phase4 ALIGN-P1b] silent 判定接权威解析器（06-code-reviewer P1-ALIGN-2:
+# 原实现仅 ① env 直判, 经 ②/③ 判定 silent 的计划不会即时落锁=窗口期保护缺口; :530 注释自称
+# 「Rule 28 解析口径」与实现不符）。判定层级（对齐 Rule 28 解析优先级 env>plan>config）:
+#   第一优先 = env TASK_PLANNER_INTERACTION_MODE=silent 直判（保留 Phase 3 原判定, 零额外调用）;
+#   第二/三优先 = 权威解析器 resolve-interaction-mode.sh（② 计划配置表行 → ②b mini 档缺省
+#     → ③ config.json → ④ 兜底 ask）: 非交互环境 env 缺失时经 ②/②b/③ 判定 silent 的计划
+#     此前永不落锁, 现在也走两级落锁。
+#   覆盖性论证: 解析器第一层即 env（合法值原样输出）——env 直判命中时解析器恒同结果,
+#   故「env 直判 + 解析器补充」= 解析器的超集; 非交互环境 env 缺失解析器兜底 ask 的担忧
+#   不成立——env 通道恒可达（调用方显式设 env 即命中第一优先）, silent 落锁不会永不触发。
+#   解析器缺失/异常 → 其自身 fail-safe 降级 ask（exit 恒 0 + 兜底 ask）= 保持 Phase 3 原行为,
+#   ask 路径零改动。
+# fail-open: attest 失败（磁盘/权限/脚本异常）仅 WARN 不阻断 init（与 inject_requirement_block
+# 同范式：增强而非前置依赖，规划者可事后手补 attest）。两级锁定策略（2026-10-05 实测 /tmp/v132-g3
+# 发现：标准档新计划无 S-unit 表→dispatch 门 exit 1 拒锁，直接 attest 成功率为 0，G3 落盘目标落空）：
+#   ① 主锁 attest-plan.sh（全门控）——已填 S-unit 表的计划一次成功；
+#   ② 兜底加 --skip-dispatch-check --skip-fmea-check 再试——新计划无 S-unit 表/无 FMEA 段属
+#      规划期常态（非篡改信号），此时先锁哈希堵住窗口期；--skip 仅限 dispatch/fmea 两可跳过
+#      门（脚本既有先例，WARN 可留痕），Rule 51.1 需求原文四锚门仍 fail-closed 在位不绕——
+#      缺锚的 silent 计划照样拒锁+WARN，门禁语义不倒退；两锁均失败 → WARN 落 stderr，init 照过。
+# 幂等: 重复 init（task_plan.md 已存在走 skip 分支）再次触发 attest=重锁既有哈希，无副作用。
+# 留痕: 落锁输出带 silent 判定来源（env=第一优先直判 / resolver=二三优先解析器口径）。
+silent_lock=0
+silent_src=""
+if [ "${TASK_PLANNER_INTERACTION_MODE:-}" = "silent" ]; then
+    silent_lock=1
+    silent_src="env"
+elif [ -f "task_plan.md" ]; then
+    # 二三优先（ALIGN-P1b）: 权威解析器 ②计划配置表行 → ②b mini 缺省 → ③config.json → ④兜底 ask。
+    # 传参=当前计划目录（解析器 usage: <plan_dir> → 取 <dir>/task_plan.md 配置表行）;
+    # 取 stdout 首行（解析器契约: stdout 单行 ask|silent, exit 恒 0）; 脚本缺失/无输出 → 保持非 silent。
+    _ri="$(bash "$SCRIPT_DIR/resolve-interaction-mode.sh" "$(pwd)" 2>/dev/null | head -n1)"
+    case "$_ri" in
+        silent)
+            silent_lock=1
+            silent_src="resolver"
+            ;;
+        *)
+            # ask/无输出/解析器缺失 → fail-safe 保持非 silent 路径（Phase 3 原行为, 零改动）
+            :
+            ;;
+    esac
+fi
+if [ "$silent_lock" -eq 1 ] && [ -f "task_plan.md" ]; then
+    if ! bash "$SCRIPT_DIR/attest-plan.sh" "$(pwd)/task_plan.md" >/dev/null 2>&1; then
+        # 兜底级（见 fail-open 注两级策略）：dispatch/fmea 可跳过门逃生再试，51.1 硬门仍生效
+        if bash "$SCRIPT_DIR/attest-plan.sh" --skip-dispatch-check --skip-fmea-check "$(pwd)/task_plan.md" >/dev/null 2>&1; then
+            echo "[init] INFO: silent 路径兜底锁已落盘 .plan-attestation（G3：防窗口期篡改；判定来源=${silent_src}; dispatch/fmea 门逃生锁，S-unit 表/FMEA 段补齐后应重跑全门控 attest 复锁）"
+        else
+            echo "[init] WARN: silent 路径 attest-plan.sh 锁定失败（判定来源=${silent_src}; 主锁/兜底锁均拒锁——51.1 需求区块缺失或磁盘/脚本异常）— 不阻断 init（fail-open: 规划者须事后补跑 attest-plan.sh 锁定）" >&2
+        fi
+    else
+        echo "[init] INFO: silent 路径已即时落盘 .plan-attestation（G3：防窗口期篡改；判定来源=${silent_src}）"
+    fi
+fi
 # [2026-09-05 task-active-plan] 自动写活跃计划指针(最新创建的计划=默认活跃);
 # 失败仅警告不阻断(指针缺失时 resolve-plan-dir.sh 回退 mtime 最新)
 # 2026-09-10 active-plan-race: 原行为=无条件覆写全局 plans/.active_plan(后写者赢,多并行会话互顶,
