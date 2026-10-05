@@ -47,7 +47,7 @@
 | 路径 | 行号 | ≤10 行摘要（该区段做什么） |
 |------|------|---------------------------|
 | {示例：scripts/init-session.sh} | :90-98 | 4 文件循环建立（findings/progress/notepad-learnings/verification） |
-| {设计插入点示例：references/critical-rules.md} | :557-567 | 最新范式块 ### 52（插入点=21.2 后；供料 2026-10-05，源=B8 landed 最大号；行号以实施日重验为准） |
+| {设计插入点示例：references/critical-rules.md} | :<起-止> | 最新范式块 ### <NN>（插入点=21.2 后；供料 <日期>，源=编号账本最大 landed 号；行号以实施日重验为准） |
 | {路径} | :{行号} | {摘要} |
 
 <!-- 填写说明：编号清单；含历史教训/陷阱/禁止假设；末尾必须挂本任务 FMEA RPN>100 项的兜底动作指针（→ task_plan.md FMEA 表对应行） -->
