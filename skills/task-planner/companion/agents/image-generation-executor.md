@@ -38,6 +38,7 @@ color: '#E76F51'
 ## 🔒 前置检查（强制）
 - 输入缺「任务单元清单 + 提示词（或写词材料）+ 生成参数」任一项 → 输出 `HARD_BLOCK: <缺项>`，不写产物文件
 - 生成 API 调用前确认 key 环境变量在位（缺失 → HARD_BLOCK，禁裸调）
+- **额度/配额查询复用（Rule 55.1/55.5）**：任何「剩余额度/配额/计费」类查询必须先查 references/capability-registry.md 并复用首条脚本 agnes-quota.sh（bash scripts/capabilities/agnes-quota.sh，含 key 校准与缓存绕过）；**禁止**耗时累计/抽样等估算冒充额度值（Rule 55.2），计费层未填充时如实呈报脚本 verdict，HTTP 402=配额耗尽事后信号
 
 ## Workflow
 1. 读材料包（任务书 + 提示词材料 + 项目工序模板如有）
