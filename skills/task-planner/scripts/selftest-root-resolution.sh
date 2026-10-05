@@ -157,7 +157,7 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 # 口径：:266 索引行「详见 references/critical-rules.md（Rules 1-39…）」为 LLM 读取入口的全集声明行——
 # 历史级联漏改判例（锚级联第 3 次教训 §4 + task-v131 CR P1-2：Rule 50/52/53 新增后括注停摆于逐号
 # 「Rule 40/41/…/51」漏 50/52/53）已改简洁括注「含 Rule 40-53 全集」。断言：索引行（'（Rules 1-39' =1 定位）
-# 须同时含「Rule 40-53」（或至少含 50 与 53 两个号=逐号式括注的兜底判定）——防下次全集扩张时索引行再次脱钩。
+# 须同时含「Rule 40-5[3-9]」（或至少含 50 与 53 两个号=逐号式括注的兜底判定）——防下次全集扩张时索引行再次脱钩。
 # [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 主断言宽容化 40-5[3-9]（宽容正则优先）, 兜底判定保留]
 idxn="$(grep -cF '（Rules 1-39' "$SKILLMD" || true)"
 idxline="$(grep -F '（Rules 1-39' "$SKILLMD" || true)"
@@ -166,11 +166,11 @@ if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE 'Rule 40-5[3-9]'; then
 elif [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -q '50' && printf '%s' "$idxline" | grep -q '53'; then
   ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且逐号式括注含 50 与 53（兜底判定）"
 else
-  bad 16 "SKILL.md 索引行命中=$idxn（应 =1）或索引行未含「Rule 40-53」（亦未同时含 50 与 53——级联漏改，CR P1-2 复发）"
+  bad 16 "SKILL.md 索引行命中=$idxn（应 =1）或索引行未含「Rule 40-5[3-9]」（亦未同时含 50 与 53——级联漏改，CR P1-2 复发）"
 fi
 
 # RR-17 critical-rules.md 侧 Rule 53 区块锚 `grep -c '^### 53 '` =1
-# 口径：条款侧区块标题锚（与 RR-07 SKILL 侧摘要 bullet 对称）——SKILL 索引行声明「Rule 40-53 全集」但条款侧
+# 口径：条款侧区块标题锚（与 RR-07 SKILL 侧摘要 bullet 对称）——SKILL 索引行声明「Rule 40-54 全集」但条款侧
 # 无 53 区块 = 索引指向虚空（挂空锚）；=1 锁唯一落点（与 RR-01..05 子条锚同口径，防 53 段复制漂移）。
 n="$(grep -c '^### 53 ' "$CRIT" || true)"
 if [ "$n" -eq 1 ]; then ok 17 "critical-rules.md 区块锚「^### 53 」=1（索引行 40-53 全集的条款侧落点在位）"; else bad 17 "critical-rules.md 区块锚「^### 53 」命中=$n（应 =1，索引行挂空锚/条款侧缺失）"; fi

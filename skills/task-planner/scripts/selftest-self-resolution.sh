@@ -9,7 +9,7 @@
 #   SR-05     41.6 行内锚：「零新 config 键」≥1 且「selftest-self-resolution.sh」≥1
 #   SR-06     SKILL.md `grep -c 'Rule 41'` ≥3 且 `grep -c '| C29 |'` = 1（合规清单 C29 项）
 #   SR-07     SKILL.md `grep -c 'Rules 1-39'` = 2 且 `grep -c '1-40'` = 0（字面锚——关键负断言）
-#   SR-08     SKILL.md 含「含 Rule 40-53」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
+#   SR-08     SKILL.md 含「含 Rule 40-5[3-9]」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
 #             [2026-10-05 task-v131 CR P1-2 级联: SKILL.md:266 括注演进→「（含 Rule 40-53 全集）」, 锚随之演进, 原锚「含 Rule 40/41」, 判例 SR-11 锚演进必同步; ^40\.=6 子条断言保留]
 #   SR-09     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
 #   SR-10     SKILL.md 摘要行锚：「升级四门槛」或「四门槛」≥1
