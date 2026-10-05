@@ -100,7 +100,7 @@ workflow 编排判定：未点名 /workflow；任务线性串行+单小组并行
 ### Phase 1: 隔离与基线
 - worktree 建立 `/home/terry/task-planner-skill-worktrees/task-v136`（宪法 §十一 集中目录）+ 全量 selftest 基线（code-runner 跑批，主进程逐 Total 求和记基线数）+ 插入点锚确认（critical-rules Rule 53 块尾/SKILL 摘要区/C 行区/行数断言所在脚本）
 - **Executor:** 主进程（白名单① git 编排）+ code-runner-agent（基线跑批）
-- **状态:** complete（2026-10-05 20:3x；worktree 基点 4bca3dd，双侧 593/478 一致；基线 **784/0** 主进程 raw 重算定数，检查点 subagent-state/02-baseline-selftest.md §五含 762→784 修正记录；C37 最大、Rule 53 块尾=593 行、行数断言 ≤558×3）
+- **Status:** complete（2026-10-05 20:3x；worktree 基点 4bca3dd，双侧 593/478 一致；基线 **784/0** 主进程 raw 重算定数，检查点 subagent-state/02-baseline-selftest.md §五含 762→784 修正记录；C37 最大、Rule 53 块尾=593 行、行数断言 ≤558×3）
 
 ### Phase 2: EP8 因果链全链分析（证据驱动条款设计前置）
 - S0 逐节点验证初步因果链假设（ep8-transcript.md 尾段）：每节点产出=实录原文锚 T# + 行为定性 + 现行条款锚（file:line，说明相邻条款为何拦不住）+ 节点间依赖的反事实检查；产出「因果链证据表」落 findings.md 专段 + checkpoint；**无锚声称=0（有依据原则自证）**；验证不通过的箭头须降级为独立缺陷面并修正条款覆盖设计
