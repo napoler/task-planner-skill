@@ -134,7 +134,8 @@ case "$mode" in
     #   故不新增 --skip 逃生口——缺区块只能回炉补区块后重 attest(与「先哈希后写」纪律同向:
     #   门失败退出时不产生 .plan-attestation, 未获批内容不会被 hook 当事实源注入)。
     # ③ 位置: check-plan-dispatch → check-template-type 之后、锁定写入(哈希)之前(本文件
-    #   :266 注释口径「三道前置门」扩展为四道); mini 档(plan_tier: mini)整块豁免——
+    #   注释口径「前置门」= 本四道可拒锁门, v132/Phase4 后另有窗口 lint 增强检查
+    #   挂于四门之后/写锁之前, 不入 rejectable 门计数); mini 档(plan_tier: mini)整块豁免——
     #   轻量计划不做需求逐条抄录(与 FMEA mini 豁免 Rule 38.4① 同先例, 口径=全文 grep)。
     tier_flag="$(grep -qm1 'plan_tier: mini' "$plan_file" 2>/dev/null && printf mini || printf standard)"
     if [ "$tier_flag" = "mini" ]; then
@@ -308,9 +309,31 @@ case "$mode" in
         fi
         ;;
     esac
+    # [2026-10-05 task-v132/Phase4 ALIGN-P1a+CR-P2b] 窗口口径 lint 接线（Rule 51.7「重建派发前重过
+    # attest/dispatch 门（含窗口口径 lint）」的机器落地）:
+    # ① What: 四道前置门（dispatch/template/51.1 requirement/FMEA）全部通过后、锁定写入(哈希)之前,
+    #   调用 check-window-consistency.sh <plan-dir>（通用窗口口径一致性 lint, Rule 51.1a/51.7 G2）;
+    #   lint 输出警报（跨族口径冲突）时按 warn 档打 [window-lint] 警告行、不阻断锁定（fail-open）——
+    #   lint 的 exit 码只影响提示、不拒锁（同上方 FMEA 门 warn 档先例「warn 档不阻断」范式）;
+    #   脚本缺失 / 无输出 → 静默（零行, 无警报可打故不打 SKIPPED 行）。
+    #   需求锚 R2 判定口径: 该 lint 是增强检查非前置依赖（lint 头注释「无证据无指控」同向）,
+    #   51.7 条文声称的「窗口口径 lint 门」落地为 warn 级=警报留痕供人复核, 不升级拒锁语义。
+    # ② Why: 51.7 原文承诺运行期门控但代码无调用点（CR P2-CR-3「孤立机制」实锤: lint 仅 selftest
+    #   可达, 生产链路永不自动运行）; 本接线使 G2 窗口口径保护在每次锁定自动运行。挂点选
+    #   「四门后/写锁前」= 被 lint 的计划内容恰是即将被哈希固化的版本, 警报与固化内容一一对应。
+    # ③ 位置: 本段（51.1 需求区块门 + FMEA 门之后、下方 hash= 哈希取用之前）;
+    #   与「先哈希后写」纪律不冲突——lint 零写入零副作用, 仅读计划+载荷出警报行。
+    wcl="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-window-consistency.sh"
+    if [ -f "$wcl" ]; then
+      wl_out="$(bash "$wcl" "$plan_dir" 2>/dev/null)" || true
+      if printf '%s\n' "$wl_out" | grep -q '⚠'; then
+        printf '%s\n' "$wl_out" | grep '⚠' >&2
+        echo "[attest] [window-lint] 警告: 窗口口径跨族冲突（Rule 51.7 G2, 增强检查 warn 级不拒锁——重建派发/修正口径前重跑 check-window-consistency.sh 复核; 锁定照常继续）" >&2
+      fi
+    fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
-    # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/51.1 需求区块/FMEA
-    # 四道前置门之后的
+    # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/51.1 需求区块/FMEA/窗口
+    # lint（增强）检查之后的
     # 计划内容；若先写 attestation 再跑门控，门失败退出时留下一份锁定着「未获批计划」的哈希，
     # 后续 hook 会把未获批内容当事实源注入（篡改语义等价）。锁定动作必须是批准流程的终点。
     # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,

@@ -107,6 +107,24 @@ EXEMPT_W1="判例"; EXEMPT_W2="事故"; EXEMPT_W3="incident-reports"
 # ── 词匹配工具（纯 bash 字符串包含，CJK 字面词精确匹配最稳，免 grep 转义）────
 contains() { [[ "$1" == *"$2"* ]]; }
 
+# [2026-10-05 task-v132/Phase4 CR-P2 修复] 带词边界的窗口词匹配（替代裸 contains 的判定路径）:
+#   ① 命中前一字符为数字 → 不判命中（词是更长数字串的子串, 如「124小时」中的「24小时」、
+#      「第7天」中的「7天」——里程碑「第N天」语境整体豁免）
+#   ② 命中后一字符为同族计量单位延续（天/小时/日）→ 不判命中（更长数字串尾巴, 如
+#      「124小时」按家族词判定）
+#   实现: grep -qE 行级匹配 + sed 转义（族词含「7 天」空格/「小时级」等无特殊字符, 仍走转义
+#   口径免硬编码词表变更时踩坑）; grep 失败→该词判未命中（fail-safe 方向=不警报, 与
+#   无证据无指控口径一致）。需求锚负例样张「一个月→7 天」中「7 天」独立出现（前字符非数字、
+#   非「第N天」形态）→ 仍命中警报（样张钉住, 验证 c 实测 rc=1）。
+window_word_hit() {  # $1=行  $2=词; 命中且边界合规 exit 0, 否则 exit 1
+    local pat
+    pat="$(printf '%s' "$2" | sed -e 's/[].[\\^$*]/\\&/g')"
+    # 前字符排除数字/「第」（「第」=「第N天」里程碑形态标记, 连同数字前缀整体豁免,
+    # 覆盖任务书「第N天 形态整体豁免（里程碑语境）」口径）;
+    # 后字符排除同族计量单位延续（「124小时」中的「24小时」尾巴不拆词）
+    grep -qE "(^|[^0-9第])${pat}([^天小时日]|$)" <<< "$1"
+}
+
 # ── 提取：🎯 区块 R 行（需求锚）─────────────────────────────────────────────
 # What: 从含「🎯」的标题行起，收集至下一个 markdown 标题（`#` 开头行）前，
 # 形如 `^[[:space:]]*[-*]?[[:space:]]*\**R[0-9]+` 的 R 行（需求行）。
@@ -183,7 +201,9 @@ for f in "${files[@]}"; do
         for fam in $(fam_names); do
             while IFS= read -r w; do
                 [ -n "$w" ] || continue
-                if contains "$line" "$w"; then
+                # [2026-10-05 task-v132/Phase4 CR-P2] 边界感知匹配: 数字前缀/单位尾巴不计入
+                # 出现表（与判定①同口径, 防「第7天/124小时」伪计数）
+                if window_word_hit "$line" "$w"; then
                     term_plan["$w"]=1
                     [ "$f" != "$PLAN_FILE" ] && term_payload["$w"]=1
                 fi
@@ -224,7 +244,12 @@ EOF_W
         [ "$fam_is_anchor" -eq 1 ] && continue   # 锚族词=合规口径，跳过
         while IFS= read -r w; do
             [ -n "$w" ] || continue
-            if contains "$line" "$w"; then
+            # [2026-10-05 task-v132/Phase4 CR-P2] 跨族警报判定改边界感知匹配:
+            # 裸 contains 下「第7天」(周族「7天」子串)/「124小时」(小时族「24小时」子串)
+            # 被误升为阻断级 exit 1（FMEA F2 声明「exit 1 仅样张级明确不一致」, 越级误报）;
+            # window_word_hit 前数字排除=「第N天」里程碑语境整体豁免, 后单位延续排除=长数字串
+            # 不拆词。独立「7 天」样张（锚=一个月 月族, 载荷=周族）仍命中→警报保持。
+            if window_word_hit "$line" "$w"; then
                 echo "[window-lint] ⚠ task_plan.md:$line_no 出现『$w』，与锚定窗口词不一致（锚词: ${ANCHOR_WORDS% }；非锚族计量词）"
                 ALERTS=$((ALERTS + 1))
             fi
@@ -263,7 +288,8 @@ EOF_W
             [ "$fam_is_anchor" -eq 1 ] && continue
             while IFS= read -r w; do
                 [ -n "$w" ] || continue
-                if contains "$line" "$w"; then
+                # [2026-10-05 task-v132/Phase4 CR-P2] 同判定①口径: 边界感知匹配（注释见计划全文扫描段）
+                if window_word_hit "$line" "$w"; then
                     echo "[window-lint] ⚠ $rel:$line_no 出现『$w』，与锚定窗口词不一致（锚词: ${ANCHOR_WORDS% }；非锚族计量词）"
                     ALERTS=$((ALERTS + 1))
                     hit_reported=1

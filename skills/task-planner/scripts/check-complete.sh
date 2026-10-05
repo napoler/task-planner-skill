@@ -794,15 +794,25 @@ if [ "$python_rc" -eq 0 ]; then
     if [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
         # 计划 R 行集合: 「🎯 用户需求原文」区块内 `- **R<n>**: ...` 列表行(awk 状态机抽区块, 同 27.3 porcelain 预检范式;
         # 区块至下一个 ##/### 标题截止, 避免误吞 R→VC 映射表内的 R 编号)
+        # [2026-10-05 task-v132/Phase4 CR-P1] R 集合提取锚定: R 编号只从 R 行**行首编号**提取,
+        # 行内交叉引用（「另见 R9」「（R3 重申）」）一律不计数; 原行为=awk 抽全量 `- ` 列表行后
+        # 未锚定 `grep -oE 'R[0-9]+'` 提 R 号, R7 行「（R3 重申）」先例及任意 R 行交叉引用都被误当
+        # 需求编号, enforce 档下「真实需求未变却报核对表缺行」=误拦合法交付（72h 事故同形态误报面）。
+        # 锚定形态（任务书给式）: `^[[:space:]]*[-*][[:space:]]*\**R[0-9]+`——行首即列表标记
+        # （`-`/`*`, 可带缩进）+ 可选星号修饰 + R 编号; 状态机内 match() 取首个 R 数字串
+        # （锚定保证首个=行首编号本体）直接输出 R 号, 后续 sort -u 即得 R 集合。
+        # 核对表侧（下方 rcov_cov_awk 表格行首 R cell 提取）本就只认行首 R 号, 两侧口径一致。
         rcov_req_awk='
 /^##[[:space:]].*🎯 用户需求原文/ {f=1; next}
 f && /^##[[:space:]]/ {f=0}
-f && /^\-[[:space:]]/ {print}'
+f && /^[[:space:]]*[-*][[:space:]]*\**R[0-9]+/ {
+    match($0, /R[0-9]+/)
+    if (RSTART > 0) print substr($0, RSTART, RLENGTH)
+}'
         _rcov_req_awk_file="$(mktemp "${TMPDIR:-/tmp}/rcov-req.XXXXXX" 2>/dev/null)" || _rcov_req_awk_file="$(pwd)/.rcov-req.$$"
         printf '%s\n' "$rcov_req_awk" > "$_rcov_req_awk_file" 2>/dev/null
-        rcov_req_rows="$(awk -f "$_rcov_req_awk_file" "$PLAN_FILE" 2>/dev/null)" || rcov_req_rows=""
+        rcov_plan_rs="$(awk -f "$_rcov_req_awk_file" "$PLAN_FILE" 2>/dev/null | sort -u || true)"
         rm -f "$_rcov_req_awk_file" 2>/dev/null
-        rcov_plan_rs="$(printf '%s\n' "$rcov_req_rows" | grep -oE 'R[0-9]+' | sort -u || true)"
         rcov_r_count="$(printf '%s\n' "$rcov_plan_rs" | grep -c 'R[0-9]' 2>/dev/null || true)"
         rcov_r_count="${rcov_r_count:-0}"
         if [ "$rcov_r_count" -lt 1 ]; then
@@ -851,11 +861,19 @@ f && /^\|/ {
                 rcov_sum_rows="$(awk -f "$_rcov_cov_awk_file" "$rcov_file" 2>/dev/null)" || rcov_sum_rows=""
                 rm -f "$_rcov_cov_awk_file" 2>/dev/null
 
-                # ④ 让步登记判定: 计划「Decisions Made」区块内存在同时含该 R 编号与让步关键词
-                # (concession/让步/uncovered/partial) 的数据行 → 视为已登记显式缩水
+                # ④ 让步登记判定: 计划「Decisions Made」区块内存在同时含该 R 编号与「让步」字面的数据行
+                # → 视为已登记显式缩水
+                # [2026-10-05 task-v132/Phase4 ALIGN-P2 收紧] 原行为=grep 链宽词同现
+                # `grep -qE '让步|uncovered|partial'`: Decisions 行若仅以状态词描述（如「R3 目前是
+                # partial」「uncovered 项见上」，非真让步语境）会被误判「已登记让步」→ 裸 uncovered/
+                # partial 误放行。收紧为「R<k> 与 让步 明确同现」——「让步」字面=显式缩水声明的强
+                # 信号，状态词 uncovered/partial 是弱信号不再计数（需求锚 R1:「任一 R uncovered/partial
+                # 且无 Decisions 让步登记→拒 COMPLETE 只可 PARTIAL」——登记判据=让步，非状态词复述）。
+                # RC-20 正例「R1 显式让步（uncovered 登记）」收紧后仍双命中(R1+让步)；负例 (a) Decisions
+                # 行文案刻意避开「让步」字面（见 selftest 踩坑注）→ 判定结果不漂移。
                 rcov_concession_registered() {
                     awk '/^##[[:space:]]*Decisions Made/{f=1; next} f && /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null \
-                        | grep -E "\b$1\b" 2>/dev/null | grep -qE '让步|uncovered|partial'
+                        | grep -E "\b$1\b" 2>/dev/null | grep -qE '让步'
                 }
 
                 rcov_viol=""
