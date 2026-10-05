@@ -2,7 +2,7 @@
 # selftest-capability-persistence.sh — task-v138: Rule 55「可复用能力落盘纪律」静态守护（自写 55.6 机器面）
 #
 # What（守护对象清单 + 运行方式）:
-#   静态断言 Rule 55 新增锚全部在位且既有锚未被破坏（Rule 36.5 纯增量守护），共 18 条 CP-01..CP-18：
+#   静态断言 Rule 55 新增锚全部在位且既有锚未被破坏（Rule 36.5 纯增量守护），共 20 条 CP-01..CP-20：
 #     CP-01/02/03 critical-rules.md：`^### 55 ` 标题=1、`^55\.[1-6] ` 六子条=6、块首说明行含 task-v138
 #     CP-04/05/06 SKILL.md：`Rule 55` ≥3、`40-55` =1、`40-53` =0（演进完成，样式参照 RR-16 演进后口径）
 #     CP-07/08/09 references/capability-registry.md：文件在、表头 8 列、agnes-quota 行 8 字段全非空
@@ -10,6 +10,8 @@
 #     CP-14/15 companion/agents/{video,image}-generation-executor.md：各含 `capability-registry` ≥1
 #     CP-16 config.json：.properties 键数=40（零新 config 键声明锚，沿用 tsv 末列既有口径）
 #     CP-17/18 脚本自身：SCRIPT_DIR 自定位行在位（仓库/worktree/部署位三处可跑）、头注释 What+Why 齐备
+#     CP-19/20 scripts/capabilities/agnes-quota.sh 运行时判定（本地 mock 实跑，F1 修复回归钉）：
+#              CP-19 404 模式 → exit≠0 + 失败语义且禁含成功 verdict；CP-20 200 模式 → exit 0 + verdict 含「未填充」
 #   运行方式：`bash scripts/selftest-capability-persistence.sh`（只读 grep/jq，零写入）；
 #   逐行打印 `CP-NN PASS/FAIL <说明>`，末行 `Total: N PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。
 #   被检文件路径全部相对 SCRIPT_DIR 解析（`$SCRIPT_DIR/../references/...`、`$SCRIPT_DIR/../companion/agents/...`、
@@ -24,6 +26,8 @@
 #   本脚本即该防复发的固定落盘资产（对应 R1「常用/可复用功能及时落盘到固定脚本」的自守护实例）。
 # 依赖：bash + grep；config.json 键数校验需 jq（缺失降级 python3，二者皆缺打 SKIPPED 不 FAIL，fail-open 非静默——
 #       打印提示行，与 selftest-reliability-institution.sh R-12 / selftest-media-dispatch.sh MD-08 先例一致）。
+#       CP-19/20 运行时判定需 python3 + curl + timeout（任一缺失打 SKIPPED 不 FAIL，同 fail-open 口径）；
+#       mock 仅监听 127.0.0.1 随机端口，零外网依赖，timeout 20 保护，teardown 清理临时目录与后台进程。
 
 set -u
 
@@ -171,6 +175,92 @@ if grep -q '# What' "$SELF" && grep -q '# Why' "$SELF"; then
   ok 18 "脚本头注释 What+Why 齐备（Rule 45）"
 else
   bad 18 "脚本头注释缺 What 或 Why（Rule 45）"
+fi
+
+# CP-19/20 agnes-quota.sh 运行时判定回归钉（本地 mock 实跑，2026-10-05 F1 修复守护）
+# What：用 python3 本地 mock（仅绑 127.0.0.1、随机端口）注入 AGNES_QUOTA_BASE 实跑 agnes-quota.sh，覆盖两条运行时路径：
+#   CP-19（404 模式）：两计费端点返回 404 → 脚本必须 exit≠0 且输出失败语义，禁含「计费层已回传数值」。
+#   CP-20（200 模式，subscription 含 1e8 占位）：两计费端点返回 200 → 脚本必须 exit 0 且 verdict 含「未填充」。
+# Why：F1=非 2xx 失败被伪报成功（R3「完全不对的结果」根因）；纯静态 grep 无法守护运行时判定逻辑，
+#      必须实跑脚本咬合「非 200 不得落成功 verdict」——这是 Rule 55.2「禁伪成功」的机器面（CP-11 只验语法、不验判定）。
+if command -v python3 >/dev/null 2>&1 && command -v curl >/dev/null 2>&1 && command -v timeout >/dev/null 2>&1; then
+  MOCK_DIR="$(mktemp -d)"
+  MOCK_PID=''; MOCK_PORT=''
+  mock_cleanup() { [ -n "$MOCK_PID" ] && kill "$MOCK_PID" 2>/dev/null; rm -rf "$MOCK_DIR"; }
+  trap mock_cleanup EXIT
+
+  cat > "$MOCK_DIR/mock.py" <<'PYEOF'
+import sys, http.server
+mode = sys.argv[1]
+portfile = sys.argv[2]
+if mode == '200':
+    BODY = (b'{"object":"billing_subscription","has_payment_method":true,'
+            b'"soft_limit_usd":100000000,"hard_limit_usd":100000000,'
+            b'"system_hard_limit_usd":100000000,"access_until":0}')
+    CODE = 200
+else:
+    BODY = b'{"error":{"code":"","message":"mock error"}}'
+    CODE = 404
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(CODE)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(BODY)))
+        self.end_headers()
+        self.wfile.write(BODY)
+    def log_message(self, *a):
+        pass
+srv = http.server.HTTPServer(('127.0.0.1', 0), H)
+open(portfile, 'w').write(str(srv.server_address[1]))
+srv.serve_forever()
+PYEOF
+
+  start_mock() {
+    : > "$MOCK_DIR/port"
+    python3 "$MOCK_DIR/mock.py" "$1" "$MOCK_DIR/port" >/dev/null 2>&1 &
+    MOCK_PID=$!
+    local i=0
+    while [ ! -s "$MOCK_DIR/port" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i+1)); done
+    MOCK_PORT="$(cat "$MOCK_DIR/port" 2>/dev/null || true)"
+  }
+  stop_mock() { [ -n "$MOCK_PID" ] && kill "$MOCK_PID" 2>/dev/null; MOCK_PID=''; }
+
+  # --- CP-19：404 模式 → exit≠0 + 失败语义，禁含成功 verdict ---
+  start_mock 404
+  if [ -n "$MOCK_PORT" ]; then
+    out19="$(AGNES_API_KEY='mock-test-key' AGNES_QUOTA_BASE="http://127.0.0.1:$MOCK_PORT" timeout 20 bash "$CAP" --json 2>&1)"; rc19=$?
+    stop_mock
+    if [ "$rc19" -ne 0 ] && printf '%s' "$out19" | grep -qE '无法判定|失败|不可达' \
+       && ! printf '%s' "$out19" | grep -q '计费层已回传数值'; then
+      ok 19 "agnes-quota.sh 404 模式 exit=$rc19 + 失败语义（F1 回归钉：禁伪成功）"
+    else
+      bad 19 "agnes-quota.sh 404 模式未咬合（exit=$rc19，需 exit≠0+失败语义且禁含成功 verdict）"
+    fi
+  else
+    stop_mock
+    bad 19 "mock(404) 启动失败（端口未就绪）"
+  fi
+
+  # --- CP-20：200 模式（1e8 占位体）→ exit 0 + verdict 含「未填充」 ---
+  start_mock 200
+  if [ -n "$MOCK_PORT" ]; then
+    out20="$(AGNES_API_KEY='mock-test-key' AGNES_QUOTA_BASE="http://127.0.0.1:$MOCK_PORT" timeout 20 bash "$CAP" --json 2>&1)"; rc20=$?
+    stop_mock
+    if [ "$rc20" -eq 0 ] && printf '%s' "$out20" | grep -q '未填充'; then
+      ok 20 "agnes-quota.sh 200 模式 exit=0 + verdict 含未填充（成功路径未回归）"
+    else
+      bad 20 "agnes-quota.sh 200 模式未咬合（exit=$rc20，需 exit=0 且 verdict 含未填充）"
+    fi
+  else
+    stop_mock
+    bad 20 "mock(200) 启动失败（端口未就绪）"
+  fi
+
+  mock_cleanup
+  trap - EXIT
+else
+  printf 'CP-19 SKIPPED python3/curl/timeout 缺失，无法运行 mock 负向断言（安装后重跑）\n'
+  printf 'CP-20 SKIPPED python3/curl/timeout 缺失，无法运行 mock 正向断言（安装后重跑）\n'
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
