@@ -80,7 +80,14 @@ rm -f "$FP/subagent-state/.dispatch-inflight"
 err="$(TASK_PLANNER_DISPATCH_ENFORCE=enforce TASK_PLANNER_PLAN_DIR="$FP" bash "$GUARD" pretool "$P13" "fg$$-a" 2>&1 >/dev/null)"; rc=$?
 if [ "$rc" -eq 2 ] && printf '%s' "$err" | grep -q '步骤枚举超限(13>4)'; then ok 03 "enforce 13 步 → exit 2"; else bad 03 "rc=$rc err=$err"; fi
 # SG-04
+# [2026-10-05 task-v131 回归清账] 给 SG-04 prompt 补「需求锚: 不适用（纯机械单元）」行:
+# Why: P6 L-1 后 check-dispatch 新增 51.1a 需求锚 advisory(warn fail-open, stderr 提醒, 不阻断);
+# 夹具 prompt(P04) 为纯机械单元, 按 51.1a 口径声明「不适用（纯机械单元）」使 advisory 静默,
+# 原断言「enforce 4 步 → exit 0 且 stderr 为空」保持不变。
+# 原行为: P04 无需求锚字段 → advisory 打 stderr → SG-04 实测 err 非空 → FAIL。
+# (SG-03/SG-05/SG-06/SG-07 的 err 经 grep -q 子串匹配断言, 新增 advisory 行不影响命中, 无需改动)
 rm -f "$FP/subagent-state/.dispatch-inflight"
+printf '需求锚: 不适用（纯机械单元）\n' >> "$P04"
 err="$(TASK_PLANNER_DISPATCH_ENFORCE=enforce TASK_PLANNER_PLAN_DIR="$FP" bash "$GUARD" pretool "$P04" "fg$$-b" 2>&1 >/dev/null)"; rc=$?
 if [ "$rc" -eq 0 ] && [ -z "$err" ]; then ok 04 "enforce 4 步 → exit 0 静默"; else bad 04 "rc=$rc err=$err"; fi
 # SG-05

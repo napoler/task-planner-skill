@@ -96,7 +96,18 @@ b1_pos() {
     T="$(mktemp -d)" || { echo "[B1] fixture mktemp failed"; return 1; }
     P="$T/plans/task-x"
     mkdir -p "$P"
-    echo "goal" > "$P/task_plan.md"
+    # [2026-10-05 task-v131 回归清账 Rule 45] 原行为: 夹具计划=裸 'goal' 一行, 新增 Rule 51.1
+    #   四锚 fail-closed 门先拒基线/重锁 attest → T11a/T11b FAIL。修法: 夹具补四锚最小集
+    #   (标题+R1 行+R→VC 映射+🧮 根源覆盖表, 非结果级声明带定性理由), 测试目标(自动重锁/
+    #   归属护栏防洗白)不变。后续 append 'goal v2' 仍与锚区块共存, 哈希链路断言不受影响。
+    { echo "goal"
+      printf '%s\n' \
+        '## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
+        '- **R1**: 「fixture」' \
+        '### R→VC 映射' \
+        '## 🧮 根源覆盖表' \
+        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
+    } > "$P/task_plan.md"
     printf 'sessabc123' > "$P/.session-owner"
     rm -f "/tmp/task-planner-hook-sessabc123.state"
     env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check >/dev/null 2>&1
@@ -122,7 +133,17 @@ b1_neg() {
     T="$(mktemp -d)" || { echo "[B1-neg] fixture mktemp failed"; return 1; }
     P="$T/plans/task-x"
     mkdir -p "$P"
-    echo "goal" > "$P/task_plan.md"
+    # [2026-10-05 task-v131 回归清账 Rule 45] 同 b1_pos: 裸 'goal' 夹具补 Rule 51.1 四锚最小集,
+    #   基线 attest 才能落锁; 负例语义(owner 换他会话后重锁不命中, attested_by_sid 保持基线值)
+    #   不变——基线值由基线 attest 写入, 本用例断言的是「未更新/不被洗白」。
+    { echo "goal"
+      printf '%s\n' \
+        '## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
+        '- **R1**: 「fixture」' \
+        '### R→VC 映射' \
+        '## 🧮 根源覆盖表' \
+        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
+    } > "$P/task_plan.md"
     printf 'sessabc123' > "$P/.session-owner"
     rm -f "/tmp/task-planner-hook-sessabc123.state"
     env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check >/dev/null 2>&1

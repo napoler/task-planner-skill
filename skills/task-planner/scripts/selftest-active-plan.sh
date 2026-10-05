@@ -135,6 +135,19 @@ RC=0; COUT="$( cd "$R10/plans/aa" && bash "$SYNC" --json 2>/dev/null )"; RC=$?
 #          sid 缺失时 resolver 走 default side/legacy/mtime 链, T02 场景合法回落 legacy;
 #          本用例断言的是「带会话 sid 时 side 指针锁死目标, 不被 mtime 最新计划顶掉」
 R11="$(mk_root t11)"
+# [2026-10-05 task-v131 回归清账 Rule 45] 原行为: bb 夹具=裸 '# plan bb', 新增的 Rule 51.1 四锚
+#   fail-closed 门(51.1 标题/R 行/R→VC 映射/🧮 根源覆盖表)先拒锁 → T11 attest rc=1 连锁 FAIL。
+#   修法: bb(attest 实际锁定对象)补四锚最小集, 只让夹具过新门; 原测试目标(side 指针锁 bb 不
+#   被 mtime 最新的 aa 顶掉)不变; aa 保持裸文本——T11 仅断言 aa 侧「不产生」attestation, 不需过门。
+printf '%s\n' \
+'## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
+'- **R1**: 「fixture」' \
+'### R→VC 映射' \
+'## 🧮 根源覆盖表' \
+'| 工序 | 缺陷面 | 修复点 | VC |' \
+'|------|--------|--------|----|' \
+'> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）' \
+>> "$R11/plans/bb/task_plan.md"
 bash "$SET" aa "$R11" > /dev/null 2>&1
 bash "$SET" set bb --sid s11 "$R11" > /dev/null 2>&1
 touch "$R11/plans/aa/task_plan.md"

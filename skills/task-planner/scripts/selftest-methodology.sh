@@ -111,13 +111,30 @@ assert 07 "README 21 项说明 (实测 ${N_E:-0}/${N_F:-0})" "$M07_RC"
 # 档位一律经 env TASK_PLANNER_FMEA_ENFORCE 注入 (高于 config 键, hermetic 不受真实
 # config 默认值影响); CWD 锁定 $TMP 使 attest 活跃计划探测链 (resolve-plan-dir.sh)
 # 解析不到真实仓 plans/, 零主仓写入; attest 落盘 .plan-attestation 只在 $TMP 内。
+# [2026-10-05 task-v131 回归清账 Rule 45] 原行为: 夹具无 Rule 51.1 需求区块, 新增的
+#   51.1 四锚 fail-closed 门先于 FMEA 门拒锁 → M-08..M-11 全 FAIL (实测 attest rc=1,
+#   连 off 档「静默锁定成功」也 rc=1)。修法: 三处夹具 heredoc 统一补四锚最小集 (下方
+#   锚块变量), 只让夹具过新门; 各用例原本测试目标 (FMEA warn/enforce/off 三档分化) 不变。
 cd "$TMP"
 PLAN_T="$TMP/plan-fmea.md"
-cat > "$PLAN_T" <<'EOF'
+# 四锚最小集 (Rule 51.1 三锚 + Rule 53.1 第 4 锚; 非结果级需求按 53.1 口径写「不适用」+定性理由)
+ANCHORS='## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）
+
+- **R1**: 「fixture」
+
+### R→VC 映射
+
+## 🧮 根源覆盖表
+
+> 不适用（非结果级需求）: FMEA 门控夹具为单点动作场景, 无「确保质量/性能/可靠」类
+> 结果级需求, 无需全链工序审计（Rule 53.1 口径）。'
+cat > "$PLAN_T" <<EOF
 # Task Plan
 ### Phase 1: X
 - **Executor:** executor（sonnet-1）
 - **Status:** pending
+
+$ANCHORS
 EOF
 ATT="$TMP/.plan-attestation"
 ATTARGS=(--skip-dispatch-check --skip-template-check "$PLAN_T")
@@ -139,11 +156,15 @@ fi
 assert 09 "无 FMEA 段计划: enforce 档 (env TASK_PLANNER_FMEA_ENFORCE=enforce) attest exit 1" "$M09_RC"
 
 # M-10: 高 RPN(>100) 行: 无兜底 enforce 档 exit 1; 补兜底后同档位通过
-cat > "$PLAN_T" <<'EOF'
+# [2026-10-05 task-v131 回归清账 Rule 45] 夹具补 Rule 51.1 四锚最小集 (同 M-08 段 ANCHORS),
+#   FMEA 段为 M-10 原测试目标, 不变。
+cat > "$PLAN_T" <<EOF
 # Task Plan
 ### Phase 1: X
 - **Executor:** executor（sonnet-1）
 - **Status:** pending
+
+$ANCHORS
 
 ## 📊 FMEA 预演
 | Phase | 失败模式 | S | O | D | RPN | 预设兜底动作（RPN>100 必填） |
@@ -164,12 +185,15 @@ out_e3="$(TASK_PLANNER_FMEA_ENFORCE=enforce bash "$FIX/scripts/attest-plan.sh" "
 assert 10 "高 RPN(>100) 无兜底行 enforce 档 exit 1; 有兜底行通过 (实测 rc=$rc_e2/$rc_e3)" "$M10_RC"
 
 # M-11: off 档完全静默 (无任何 fmea-gate 输出, 锁定成功) — 复用无 FMEA 段夹具
+# [2026-10-05 task-v131 回归清账 Rule 45] 同 M-08 夹具补 Rule 51.1 四锚最小集, off 档断言不变。
 rm -f "$ATT"
-cat > "$PLAN_T" <<'EOF'
+cat > "$PLAN_T" <<EOF
 # Task Plan
 ### Phase 1: X
 - **Executor:** executor（sonnet-1）
 - **Status:** pending
+
+$ANCHORS
 EOF
 out_o="$(TASK_PLANNER_FMEA_ENFORCE=off bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_o=$?
 M11_RC=1
