@@ -61,7 +61,17 @@ if [ -f "$attest_file" ]; then
   if bash "$SKILL_ROOT/attest-plan.sh" --verify "$plan" 2>/dev/null; then
     attest_line="[attest] Plan-SHA256 校验通过 ✅"
   else
-    msg="[PLAN TAMPERED] ⚠️ task_plan.md 与锁定哈希不符(文件在获批后被修改)。已拒绝注入计划内容。处置:若是你自己重规划了计划 → 重跑 bash $SKILL_ROOT/attest-plan.sh \"$plan\" 重新锁定;若否 → 立即 STOP 并向用户报告计划被篡改。"
+    # [2026-10-05 task-v132 G3] 文案收紧（仅 msg 字符串改动，逻辑零改动）：
+    # 原因: 重锁(重跑 attest)本身可抹平一切篡改痕迹，无登记约束的"重规划→重锁"是
+    #       72h 事故同形态的逃生门——收紧为前置登记要求（Decisions Made 须先登记本次
+    #       纠正/让步编号，条款回溯 critical-rules 第 51.7 条「纠正=回锚重译」），未登记
+    #       的重新锁定按篡改处置（msg 内「重锁未登记=篡改信号」语义锚与 51.7 条款引用各
+    #       恰好 1 处，RC-21 静态守护按 =1 断言 grep 锚字面串；故本注释避开锚串原样字面、
+    #       以 "第 51.7 条" 指代条款，防注释区第 2 处命中破坏断言）。
+    # 时间: 2026-10-05 (task-v132 Phase 3 R3)
+    # 原行为: 处置句仅"重跑 attest 重新锁定;若否 → STOP 报告"，未要求重锁前登记纠正/让步，
+    #         用户可借"重规划"名义静默重锁被篡改计划（篡改信号无登记门禁）。
+    msg="[PLAN TAMPERED] ⚠️ task_plan.md 与锁定哈希不符(文件在获批后被修改)。已拒绝注入计划内容。处置:若是你自己重规划了计划 → 重跑 bash $SKILL_ROOT/attest-plan.sh \"$plan\" 重新锁定（重锁前置：Decisions Made 须已登记本次纠正/让步编号——无登记的重锁视为篡改信号，应立即 STOP 报告用户，Rule 51.7）；若否 → 立即 STOP 并向用户报告计划被篡改。"
     printf '{"additionalContext": %s}\n' "$(printf '%s' "$msg" | jq -Rs .)"
     exit 0
   fi
