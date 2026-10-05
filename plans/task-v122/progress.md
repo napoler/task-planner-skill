@@ -140,4 +140,4 @@
 <!-- 📋 plan-resume 报告检查点:Phase complete 后 <cwd>/.zcode/plans/plan-resume-report.md 应已更新;未更新记 [plan-resume 跳过原因] -->
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
-| `~/.zcode/plans/plan-resume-report.md` |  |
+| `~/.zcode/plans/plan-resume-report.md` | 2026-10-03 18:10（实际写入仓内 `.zcode/plans/plan-resume-report.md`；扫描 69 计划，唯一未完成=task-v123 他会话并行持有→只报告不接管；本任务无残留） |

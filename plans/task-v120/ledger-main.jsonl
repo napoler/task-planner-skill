@@ -1,3 +1,4 @@
 {"tick":1,"ts":"2026-10-02T21:32:22Z","agent":"main","phase":"1","event":"attest","summary":"计划锁定 SHA 10c14692, D1 yes+D2/D3 确认, worktree task-v120 已建","files":[]}
 {"tick":2,"ts":"2026-10-02T21:35:56Z","agent":"main","phase":"1","event":"phase_complete","summary":"Phase 1 complete: 2 处行内追加逐字落位, 行数 444/483 不变, VC-1/2/3 过","files":[]}
 {"tick":3,"ts":"2026-10-02T21:47:33Z","agent":"main","phase":"2","event":"phase_complete","summary":"Phase 2 complete: TOTAL=43 FAIL=0 + smoke 17/0 (预案内接管白名单③)","files":[]}
+{"tick":4,"ts":"2026-10-02T21:52:05Z","agent":"main","phase":"3","event":"note","summary":"终验 COMPLETE: 6/6 VC PASS, merge 6961857, 部署 6/6 diff=0, 簿记入库, check-complete 3/3+VC-GATE PASSED","files":[]}

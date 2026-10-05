@@ -206,6 +206,8 @@
 | 2026-10-03 09:02 | ✅ ALIGNED | — | Phase 1 后：worktree 无越界改动，主仓 plans 簿记均在计划内 |
 | 2026-10-03 09:25 | ✅ ALIGNED | VC-1/3/4 | Phase 2 后：worktree 仅 4bdfa4a（scope 3 文件 +17/−1），主仓无越界 |
 | 2026-10-03 09:50 | ✅ ALIGNED | VC-1/5 | Phase 3 后：worktree 两提交（4bdfa4a/16d7df8）均在 scope；回归抓获 FAIL 属计划 FMEA 预登记分支，修复在范围内 |
+| 2026-10-03 10:05 | ✅ ALIGNED | VC-5 | Phase 4 后：worktree 三提交均在 scope；两级联修复（skill-split/SR-11）均属 FMEA 预登记「锚过窄→宽容化」分支 |
+| 2026-10-03 10:35 | ✅ ALIGNED | 全 VC | Phase 5 后（终局）：merge bf9bb97 + 部署 3 位 IDENTICAL + worktree 清理；check-complete exit 0；无越界 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
