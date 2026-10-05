@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# selftest-agent-coverage.sh — task-v125 S6: Rule 52 执行体专业化优先 + 覆盖矩阵静态守护（AC-01..08）
+# selftest-agent-coverage.sh — task-v125 S6: Rule 52 执行体专业化优先 + 覆盖矩阵静态守护（AC-01..09）
 # 范式对齐 selftest-media-agents.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、双层注释、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言覆盖矩阵（references/agent-coverage.md）在位、SKILL.md 六族行在位、B 类旧字面登记面零残留、
 #      矩阵 §一 agent 实体存在性（~/.zcode/agents，目录缺位 fail-open SKIPPED）、C 类 41 行处置覆盖、
-#      Rule 52 四子条+标题在位、config 零新键（properties=40）、既有锚（^21.1b/^47.）守护。
+#      Rule 52 四子条+标题在位、config 零新键（properties=40）、既有锚（^21.1b/^47.）守护、矩阵行数锚（=128 精确，task-v131 审计 L-3 对称守护）。
 # 输入：references/agent-coverage.md、SKILL.md、../plan-template-kit/references/template-mapping.md、
 #      companion/agents/、templates/、references/critical-rules.md、config.json、
 #      $HOME/.zcode/agents/（仓外只读 test -f；目录缺位 fail-open SKIPPED，不硬 FAIL）。
-# 输出：AC-01..AC-08 逐行 PASS/FAIL（AC-04 目录缺位时打 SKIPPED 不 FAIL，jq 缺失同先例）+ 末行 Total；
+# 输出：AC-01..AC-09 逐行 PASS/FAIL（AC-04 目录缺位时打 SKIPPED 不 FAIL，jq 缺失同先例）+ 末行 Total；
 #      全 PASS exit 0，任一 FAIL exit 1。
 # 依赖：bash + grep + awk；config 键数校验需 jq（缺失打 SKIPPED 不 FAIL，与 selftest-media-agents.sh MA-10 先例一致）。
 
@@ -191,6 +191,20 @@ if [ "$a21" -ge 1 ] && [ "$a47" -ge 4 ]; then
   ok 08 "既有锚在位 ^21.1b=$a21 ≥1 / ^47.=$a47 ≥4"
 else
   bad 08 "既有锚漂移（^21.1b=$a21 应 ≥1 / ^47.=$a47 应 ≥4，既有 Rules 原文零改动被破坏）"
+fi
+
+# AC-09 矩阵行数锚（=128 精确，task-v131 审计 L-3 对称守护）
+# What：断言 references/agent-coverage.md 行数=128（wc -l 精确锚，128 为 2026-10-05 task-v131 实测值）。
+# Why：task-v131 审计 L-3 指出 SKILL.md 行数在 selftest-skill-split.sh 有阈值断言（461→477 演进史），
+#      而矩阵 128 行锚此前无机器断言=文档瘦身/膨胀双侧漂移零守卫（矩阵被裁=选型事实源缩水，矩阵被灌水=维护成本膨胀）；
+#      选精确=（非 ≤ 上限）：矩阵是选型单一事实源，行数=内容量的直接度量，精确锚使任何未走 Rule 52.3 增删同步流程的
+#      加行/删行立即 FAIL——演进规则=Rule 52.3（增删同步：矩阵行数变化必须与 C 表行数 41 及 §一/§二 变更同 commit 联动，
+#      同步更新本锚 128→新值并在此行注记演进史，格式先例 selftest-skill-split.sh T-主 440→…→477）。
+ml="$(wc -l < "$MATRIX" 2>/dev/null || true)"
+if [ "$ml" = "128" ]; then
+  ok 09 "矩阵行数=128 精确锚在位（task-v131 审计 L-3 对称守护；演进=Rule 52.3 增删同步）"
+else
+  bad 09 "矩阵行数=$ml（应 128；增删须走 Rule 52.3 增删同步并更新本锚，演进史先例 skill-split T-主）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d SKIPPED=%d\n' "$((PASS+FAIL+SKIP))" "$PASS" "$FAIL" "$SKIP"
