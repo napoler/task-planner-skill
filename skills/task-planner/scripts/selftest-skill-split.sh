@@ -38,7 +38,7 @@ for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-ro
 done
 
 # T2 主 SKILL.md 行数收敛 + 4 路由指针各 ≥1
-t "T-主 行数 ≤478（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）;演进 440→442→444→447→449→452→454→461→475→477→478，先例 v112/v122/v126/v127/v125/v131/v133）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 478 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
+t "T-主 行数 ≤490（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）; task-v138 Rule 55 索引演进 +1（478→479，钉随纪元上调 478→490）;演进 440→442→444→447→449→452→454→461→475→477→478→479，先例 v112/v122/v126/v127/v125/v131/v133/v138）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 490 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]" # task-v138 (2026-10-05): SKILL.md Rule 55 索引演进 478→479，钉随纪元上调（先例 v074 ≤523→≤540）
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do
     t "T-主 路由指针在位 $sat ≥1" bash -c "[ \"\$(grep -c '$sat' '$SKILL')\" -ge 1 ]"
 done

@@ -99,8 +99,8 @@ fi
 # 口径：SKILL.md 顶部全集声明由 1-51 演进为 1-53（task-v131 新增 53 段）——正断言锁新字面在位，
 # 负断言锁旧字面零残留（残留 = 级联更新漏改，与 knowledge-brief §4「锚级联第 3 次教训」同判例；
 # 注意 grep -F 固定匹配不误伤 1-52/1-53 子串，因 '1-51' 为独立字面）。
-n="$(grep -cF 'Critical Rules 全集 1-53' "$SKILLMD" || true)"
-m="$(grep -cE '(全集|Rules) 1-51' "$SKILLMD" || true)"  # [2026-10-05 task-v132] 裸 '1-51' 固定匹配被 SKILL:304「51.1-51.7」子串误触（级联第 5 变体：负断言须语境锚定防子串误伤）
+n="$(grep -cF 'Critical Rules 全集 1-55' "$SKILLMD" || true)"  # [2026-10-05 task-v138 演进重锚] 全集 1-53→1-55（Rule 55 落地，锚随 SKILL 全集合法演进；先例 v127 RC-15）
+m="$(grep -cE '(全集|Rules) 1-(51|53)' "$SKILLMD" || true)"  # [2026-10-05 task-v132] 裸 '1-51' 固定匹配被 SKILL:304「51.1-51.7」子串误触（级联第 5 变体：负断言须语境锚定防子串误伤）; [2026-10-05 task-v138] 负断言并入 53（1-53→1-55 演进后旧纪元清单={51,53}，强度不减弱，先例 v127 RC-15 ^50→^52）
 if [ "$n" -eq 1 ] && [ "$m" -eq 0 ]; then
   ok 09 "SKILL.md 全集声明「Critical Rules 全集 1-53」=1 且旧「1-51」残留=0"
 else
@@ -160,7 +160,7 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 # 须同时含「Rule 40-53」（或至少含 50 与 53 两个号=逐号式括注的兜底判定）——防下次全集扩张时索引行再次脱钩。
 idxn="$(grep -cF '（Rules 1-39' "$SKILLMD" || true)"
 idxline="$(grep -F '（Rules 1-39' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qF 'Rule 40-53'; then
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qF 'Rule 40-55'; then  # [2026-10-05 task-v138 演进重锚] 括注 40-53→40-55（Rule 55 落地，CR P1-2 防级联漏改语义不变）
   ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且含「Rule 40-53」全集括注（CR P1-2 防级联漏改）"
 elif [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -q '50' && printf '%s' "$idxline" | grep -q '53'; then
   ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且逐号式括注含 50 与 53（兜底判定）"
