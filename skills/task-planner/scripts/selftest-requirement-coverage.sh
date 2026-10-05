@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # selftest-requirement-coverage.sh — task-v129 S5: Rule 51 需求覆盖与完成声称门控静态守护
 # 范式对齐 selftest-lane-advancement.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构），task-v129 S5 产出。
-# 用途：静态断言 Rule 51 七子条（51.1-51.7，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块 [2026-10-05 task-v133] 51.8 新增, 七→八子条（51.1-51.8；51.8 未测试就声称完成禁令，级联 43.5/43.6+53.5-Q9+SKILL C37）
+# 用途：静态断言 Rule 51 八子条（51.1-51.8，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块 [2026-10-05 task-v133] 51.8 新增, 七→八子条（51.1-51.8；51.8 未测试就声称完成禁令，级联 43.5/43.6+53.5-Q9+SKILL C37）
 #      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=40，与 43.4/44.4/47.4 同口径）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/templates/delivery-summary.md、task-planner/config.json
 #      （只读，grep/jq，零写入）。
-# 输出：RC-01..RC-22 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 RC-13 打 SKIPPED 不 FAIL，
+# 输出：RC-01..RC-23 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 RC-13 打 SKIPPED 不 FAIL，
 #      与 selftest-lane-advancement.sh LA-14 / reliability-institution R-12 先例一致）。
 # 依赖：bash + grep + awk；registry 自登记校验 RC-14；config.json 键数校验需 jq（缺失降级 SKIPPED，fail-open 非静默——打印提示行）。
 
@@ -23,9 +23,9 @@ PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'RC-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'RC-%s FAIL %s\n' "$1" "$2"; }
 
-# RC-01 Rule 51 七子条锚 `grep -c '^51\.'` ≥7
-# What：断言 51.1-51.7 七条子条主体行（行首 '51.N'）在位。
-# Why：锁 Rule 51 条款本体未被裁剪/重排——七子条（51.1-51.7，task-v132 增补 51.7 纠正=回锚重译）
+# RC-01 Rule 51 八子条（51.1-51.8）锚 `grep -c '^51\.'` ≥7
+# What：断言 51.1-51.8 八条子条主体行（行首 '51.N'）在位。
+# Why：锁 Rule 51 条款本体未被裁剪/重排——八子条（51.1-51.8，task-v132 增补 51.7 纠正=回锚重译；task-v133 增补 51.8 未测试就声称完成禁令）
 #      是需求原文锚定/覆盖判据/核对表/自缩水禁令/前置盘点的唯一文本落点，
 #      缺任一子条 = 需求覆盖门控条款失守（防后续任务改写 critical-rules.md 时误删 51.x 段）。
 # [2026-10-05 task-v132/Phase4 P2] 口径 6→7: 51.7 增量后「六子条」枚举过期（P2-ALIGN-3），
