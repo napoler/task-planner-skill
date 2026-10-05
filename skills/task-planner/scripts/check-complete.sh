@@ -780,6 +780,142 @@ if [ "$python_rc" -eq 0 ]; then
         fi
     fi
 
+    # [2026-10-05 task-v132 G1 (Rule 51.1a) R-COVERAGE 门 — 72h 事故修复: 完成声称对照(51.3)的机器化]
+    # 校验 delivery-summary.md「需求覆盖核对」区块是否逐项覆盖计划 R 行:
+    #   ① R 行数=计划 R 行数(按 R 编号对齐, 缺行/多行=FAIL)
+    #   ② 每行状态 ∈ {covered, partial, uncovered}(状态列缺失=FAIL)
+    #   ③ covered/partial 行须带证据路径(证据区=状态列后的单元格, 实质内容引用/路径/锚, 空值与否定值=FAIL;
+    #      判定=非空 ∧ ∉{无,—,N/A} — 原「含 / 或 . 字面 token」口径负向实测误伤 v131 R7「同 R3」式引用, 已放宽)
+    #   ④ 任一 R partial/uncovered 且计划 Decisions Made 无对应让步登记 → 拒 COMPLETE 只可 PARTIAL(列缺口)
+    # 档位复用既有 VC_GATE_TIER(env TASK_PLANNER_VC_GATE_ENFORCE > config.json vc_gate_enforce > 默认 warn, 零新键):
+    #   违规时 warn 档输出 WARNING / enforce 档 exit 1; 已登记让步的 uncovered/partial 两档均不阻断, 只给 PARTIAL 语义提示。
+    # delivery-summary.md 不存在 → fail-open INFO(既有计划豁免口径, FMEA F1 兜底); 无🎯区块/mini 豁免/无 R 行 → SKIPPED INFO。
+    # 插入位=VC-GATE 块后(Requirement 51.1a 字面「VC-GATE 外增」), C-2 四元键③哈希锚区间(至 :502 行)之外=键哈希零扰动。
+    if [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
+        # 计划 R 行集合: 「🎯 用户需求原文」区块内 `- **R<n>**: ...` 列表行(awk 状态机抽区块, 同 27.3 porcelain 预检范式;
+        # 区块至下一个 ##/### 标题截止, 避免误吞 R→VC 映射表内的 R 编号)
+        rcov_req_awk='
+/^##[[:space:]].*🎯 用户需求原文/ {f=1; next}
+f && /^##[[:space:]]/ {f=0}
+f && /^\-[[:space:]]/ {print}'
+        _rcov_req_awk_file="$(mktemp "${TMPDIR:-/tmp}/rcov-req.XXXXXX" 2>/dev/null)" || _rcov_req_awk_file="$(pwd)/.rcov-req.$$"
+        printf '%s\n' "$rcov_req_awk" > "$_rcov_req_awk_file" 2>/dev/null
+        rcov_req_rows="$(awk -f "$_rcov_req_awk_file" "$PLAN_FILE" 2>/dev/null)" || rcov_req_rows=""
+        rm -f "$_rcov_req_awk_file" 2>/dev/null
+        rcov_plan_rs="$(printf '%s\n' "$rcov_req_rows" | grep -oE 'R[0-9]+' | sort -u || true)"
+        rcov_r_count="$(printf '%s\n' "$rcov_plan_rs" | grep -c 'R[0-9]' 2>/dev/null || true)"
+        rcov_r_count="${rcov_r_count:-0}"
+        if [ "$rcov_r_count" -lt 1 ]; then
+            printf '[rcov-gate] SKIPPED (计划「🎯 用户需求原文」区块无 R 行=旧计划/无锚定计划, 不要求覆盖核对, 51.1a 触发条件 R 行数≥1 不满足)\n' >&2
+        else
+            rcov_file="$PLAN_DIR_GUESS/delivery-summary.md"
+            if [ ! -f "$rcov_file" ]; then
+                # FMEA F1 兜底: 旧计划无 delivery-summary/核对表 → fail-open INFO, 不阻断存量计划终验
+                printf '[rcov-gate] SKIPPED (fail-open: %s 不存在, 既有计划豁免口径 F1 兜底, 不影响本计划终验)\n' "$rcov_file" >&2
+            else
+                # 「需求覆盖核对」区块数据行解析(awk 程序存临时文件走 -f, 免内联 $() 截断陷阱, 同 Learning Gate 范式):
+                # 数据行=首列为 R<n> 的表格行; 首个含 covered/partial/uncovered 的单元格=状态列(uncovered 先判避免被 covered 子串吞);
+                # 状态列之后的单元格=证据区。输出: R \t 状态(缺状态列=status_missing) \t 证据区 \t 证据区含/或. 路径 token(0/1)
+                rcov_cov_awk='
+/需求覆盖核对/ {f=1; next}
+f && /^##[[:space:]]/ {f=0}
+f && /^\|/ {
+    n = split($0, a, "|")
+    if (n < 3) next
+    r = ""
+    for (i = 1; i <= n; i++) {
+        t = a[i]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); gsub(/\*/, "", t)
+        if (t ~ /^R[0-9]+$/) { r = t; break }
+    }
+    if (r == "") next
+    si = 0; st = ""; ev = ""
+    for (j = 2; j <= n; j++) {
+        t = a[j]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); gsub(/\*/, "", t)
+        if (si == 0) {
+            if (index(t, "uncovered") > 0) { si = j; st = "uncovered"; continue }
+            if (index(t, "partial") > 0) { si = j; st = "partial"; continue }
+            if (index(t, "covered") > 0) { si = j; st = "covered"; continue }
+        } else { ev = ev " " t }
+    }
+    if (si == 0) { printf "%s\tstatus_missing\t\n", r }
+    else {
+        gsub(/^[[:space:]]+/, "", ev)
+        # 证据路径判定: 证据区非空且非否定值(无/—/N/A); v131 实测 R7 证据="同 R3;…(Decisions Made 全登记)"
+        # 不含 / 与 . 字面 → 原「含 / 或 . 路径 token」判定误伤存量合格 summary(负向实测 2026-10-05), 放宽为实质证据引用
+        p = 0; if (ev != "" && ev != "无" && ev != "—" && ev != "N/A") p = 1
+        printf "%s\t%s\t%s\t%d\n", r, st, ev, p
+    }
+}'
+                _rcov_cov_awk_file="$(mktemp "${TMPDIR:-/tmp}/rcov-cov.XXXXXX" 2>/dev/null)" || _rcov_cov_awk_file="$(pwd)/.rcov-cov.$$"
+                printf '%s\n' "$rcov_cov_awk" > "$_rcov_cov_awk_file" 2>/dev/null
+                rcov_sum_rows="$(awk -f "$_rcov_cov_awk_file" "$rcov_file" 2>/dev/null)" || rcov_sum_rows=""
+                rm -f "$_rcov_cov_awk_file" 2>/dev/null
+
+                # ④ 让步登记判定: 计划「Decisions Made」区块内存在同时含该 R 编号与让步关键词
+                # (concession/让步/uncovered/partial) 的数据行 → 视为已登记显式缩水
+                rcov_concession_registered() {
+                    awk '/^##[[:space:]]*Decisions Made/{f=1; next} f && /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null \
+                        | grep -E "\b$1\b" 2>/dev/null | grep -qE '让步|uncovered|partial'
+                }
+
+                rcov_viol=""
+                rcov_partials=""
+                rcov_sum_rs="$(printf '%s\n' "$rcov_sum_rows" | grep -oE '^R[0-9]+' | sort -u || true)"
+                # 逐行判定: ② 状态列缺失 / ③ 证据路径缺失 / ④ partial·uncovered 的让步登记分岔
+                while IFS=$'\t' read -r rr rst rev rhp; do
+                    [ -n "$rr" ] || continue
+                    case "$rst" in
+                        status_missing)
+                            rcov_viol="${rcov_viol} ${rr}(状态列缺失, 须 ∈ covered/partial/uncovered)" ;;
+                        covered|partial)
+                            [ "${rhp:-0}" = "1" ] || rcov_viol="${rcov_viol} ${rr}(${rst} 缺证据路径)"
+                            if [ "$rst" = "partial" ]; then
+                                if rcov_concession_registered "$rr"; then
+                                    rcov_partials="${rcov_partials} ${rr}"
+                                else
+                                    rcov_viol="${rcov_viol} ${rr}(partial 且 Decisions 无让步登记)"
+                                fi
+                            fi
+                            ;;
+                        uncovered)
+                            if rcov_concession_registered "$rr"; then
+                                rcov_partials="${rcov_partials} ${rr}"
+                            else
+                                rcov_viol="${rcov_viol} ${rr}(uncovered 且 Decisions 无让步登记)"
+                            fi
+                            ;;
+                    esac
+                done <<< "$rcov_sum_rows"
+                # ① 缺行/多行: 计划 R 集合 vs 核对表 R 集合双向对齐(按 R 编号)
+                while IFS= read -r pr; do
+                    [ -n "$pr" ] || continue
+                    printf '%s\n' "$rcov_sum_rs" | grep -qxF "$pr" || rcov_viol="${rcov_viol} ${pr}(核对表缺行)"
+                done <<< "$rcov_plan_rs"
+                while IFS= read -r sr; do
+                    [ -n "$sr" ] || continue
+                    printf '%s\n' "$rcov_plan_rs" | grep -qxF "$sr" || rcov_viol="${rcov_viol} ${sr}(多行, 不在计划 R 清单)"
+                done <<< "$rcov_sum_rs"
+
+                if [ -n "$rcov_viol" ]; then
+                    rcov_gap="${rcov_viol# }"
+                    case "$VC_GATE_TIER" in
+                        enforce)
+                            printf '[rcov-gate] ✗ R-COVERAGE FAILED (task-v132 G1 Rule 51.1a, vc_gate_enforce=enforce): 缺口 — %s — 拒 COMPLETE 只可 PARTIAL: 回填 delivery-summary 需求覆盖核对表(补行/补证据路径)或 Decisions 登记让步后重跑\n' "$rcov_gap" >&2
+                            exit 1
+                            ;;
+                        *)
+                            printf '[rcov-gate] ⚠ R-COVERAGE WARNING (task-v132 G1 Rule 51.1a, warn 档不阻断: TASK_PLANNER_VC_GATE_ENFORCE=enforce 或 config.json vc_gate_enforce=enforce 可升级) — 缺口: %s\n' "$rcov_gap" >&2
+                            ;;
+                    esac
+                elif [ -n "$rcov_partials" ]; then
+                    # ④ 让步已登记的 uncovered/partial: 不阻断(enforce 亦 exit 0), 只给 PARTIAL 语义提示
+                    # — 显式缩水 = 完成度只能 PARTIAL(终验规则「R uncovered→PARTIAL 列明」)
+                    printf '[rcov-gate] PARTIAL 语义提示 (R-COVERAGE 门: %s uncovered/partial 已登记 Decisions 让步 — 完成状态只可 PARTIAL, 缺口已在覆盖核对表列明)\n' "${rcov_partials# }" >&2
+                fi
+                # 全部 R covered 且带证据路径 → PASS 静默(零输出, 与「PASS 静默」验收口径一致)
+            fi
+        fi
+    fi
 
     # [2026-09-14 task-v072 Rule 31] 终验 Learning Gate — 错误学习闭环:
     # progress.md 若含数据行(非模板占位)的「Root Cause」/「Prevention」列,则各行 Root Cause 非空
