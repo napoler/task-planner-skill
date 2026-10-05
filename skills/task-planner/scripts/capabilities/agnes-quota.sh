@@ -7,10 +7,12 @@
 #         这类高频、可复用操作复用。内置：key 候选链解析 + 零成本鉴权校准 + 强制绕 CDN 缓存。
 #   用法：bash agnes-quota.sh          # 人读形态（分节输出：key_source / endpoints / 原始字段 / 判定行）
 #         bash agnes-quota.sh --json   # 机读形态（stdout 仅纯 JSON，无任何附加文本）
-#   退出码：0 = 取到数据（含「计费层未填充」的显式判定行）
+#   退出码：0 = 取到数据（subscription 与 usage 均 HTTP 200；含「计费层未填充」的显式判定行）
 #           2 = 用法错误（未知参数）
 #           3 = 全部 key 候选均鉴权无效（控制组返回 HTTP 401）
-#           4 = 端点不可达（控制组/计费端点连续连接失败，http_code=000）
+#           4 = 端点不可达（控制组 /agnesapi 对全部 key 候选连续连接失败，http_code=000）
+#           5 = 计费端点未返回有效数据（subscription/usage 任一非 HTTP 200，含 000/4xx/5xx）：
+#               无法判定计费层状态，禁按返回值解读（2026-10-05 F1 修复新增；任务号见注册表任务来源列）
 #
 # Why（为什么存在 / 关键取舍，Rule 45 What+Why 双层）：
 #   本脚本是 Rule 55「可复用能力落盘纪律」的首个落盘实例（2026-10-05，任务号见
@@ -26,6 +28,15 @@
 #     cache-control: public, max-age=14400（可被 CDN 缓存），陈旧/他人态会冒充实时数据。
 #     故本脚本全请求强制绕缓存（Cache-Control/Pragma: no-cache + 随机 ?_=<epoch_ns>），
 #     且必须先做 /agnesapi 鉴权校准（有效 key→404 任务不存在 / 无效 key→401）再采信计费值。
+#   判例三（2026-10-05，F1 缺陷修复 — 原行为→新行为，Rule 45 三要素）：
+#     现象：计费端点返回非 200（4xx/5xx，如文档化的 429 限流、401 鉴权失败、5xx 服务端错误）时，
+#           curl -f 抑制错误体 → body 为空，而旧判定逻辑把「http_code != 000」（非连接失败）当作端点
+#           「可达」→ 落入默认成功 verdict「计费层已回传数值」且 exit 0——失败被伪报为成功
+#           （正是用户 R3 要根除的「完全不对的结果」/「不可信产出」）。
+#     根因：成功判据误用「非 000 = 可达」而非「HTTP 200 = 有效数据」；非 2xx 响应体为空却仍被当成有效直查结果。
+#     新行为：以 code=200 为唯一成功判据；subscription/usage 任一非 200（含 000/4xx/5xx）一律判失败，
+#           输出显式失败 verdict 并 exit 5（不再有伪成功 exit 0 路径）；仅两码均 200 才进入
+#           「已回传数值 / 未填充」二态判定与 exit 0。回归钉=selftest-capability-persistence.sh CP-19/CP-20（本地 mock）。
 #   事实来源：plans/ 下本任务 findings.md 的探针第三/四波块（2026-10-05，计费层未回传有效配额）。
 #   禁止：硬编码密钥（key 从 env 与 ~/.bashrc 同源解析，候选链与 agnes_api.py 的 get_api_key()
 #         一致）；使用已知错误域（恒 401 陷阱，base 唯一取 https://api.agnes-ai.cn）。
@@ -35,7 +46,10 @@
 
 set -u
 
-BASE="https://api.agnes-ai.cn"
+# BASE：生产端点为唯一合法默认值。AGNES_QUOTA_BASE 仅测试用途（2026-10-05 新增可测试性缝）：
+#   允许 selftest 用本地 mock（127.0.0.1）注入 base 以覆盖非 200 失败路径（F1 回归钉）；
+#   未设该变量时取生产默认值，行为与既有一致（默认行为不变）。
+BASE="${AGNES_QUOTA_BASE:-https://api.agnes-ai.cn}"
 MAX_TIME=15
 JSON_MODE=0
 
@@ -44,7 +58,7 @@ usage() {
     '用法: bash agnes-quota.sh [--json]' \
     '  无参数   人读形态（分节输出）' \
     '  --json   机读形态（stdout 仅纯 JSON）' \
-    '退出码: 0=取到数据 / 2=用法错误 / 3=全部 key 无效 / 4=端点不可达'
+    '退出码: 0=取到数据(两计费端点均200) / 2=用法错误 / 3=全部 key 无效 / 4=控制组端点不可达 / 5=计费端点非200(无法判定)'
 }
 
 for arg in "$@"; do
@@ -139,24 +153,35 @@ mk_tmp; use_out="$TMP_OUT"
 use_url="$BASE/v1/dashboard/billing/usage?start_date=$TODAY&end_date=$TOMORROW&_=$(ns)"
 use_code="$(http_get "$use_url" "$use_out" "$WORK_KEY")"
 
-if [ "$sub_code" = '000' ] && [ "$use_code" = '000' ]; then
-  printf 'agnes-quota.sh: 计费端点不可达（subscription/usage 均连接失败）\n' >&2
-  exit 4
-fi
-
 sub_body="$(<"$sub_out")"
 use_body="$(<"$use_out")"
 
-reach_sub=0; [ "$sub_code" != '000' ] && reach_sub=1
-reach_use=0; [ "$use_code" != '000' ] && reach_use=1
+# ---- 成功判据（2026-10-05 F1 修复）----
+# What：以 HTTP 200 为唯一成功判据计算 ok_sub/ok_use（旧逻辑的 reach_* 按「非 000」计，已废弃）。
+# Why（F1 现象+根因+原行为→新行为）：curl -f 在 4xx/5xx 时抑制错误体（body 为空）但仍回传 http_code；
+#   旧逻辑把「http_code != 000」（非连接失败）当作端点「可达」→ 非 2xx 失败码（429 限流/401 鉴权失败/5xx）
+#   落入默认成功 verdict「计费层已回传数值」且 exit 0——失败被伪报成功（R3「完全不对的结果」根因）。
+#   新行为：非 200（含 000/4xx/5xx）一律 ok=0；任一非 200 → 显式失败 verdict + exit 5；仅两码均 200 才
+#   进入「已回传数值 / 未填充」二态判定与 exit 0。
+ok_sub=0; [ "$sub_code" = '200' ] && ok_sub=1
+ok_use=0; [ "$use_code" = '200' ] && ok_use=1
 
-# ---- 判定行（Rule 55.2：只直查、不推算；计费层未填充时如实报告） ----
-verdict='计费层已回传数值（本脚本仅直查原始字段，不推算剩余额度；权威面=登录仪表板 Usage/Billing）'
-if [ "$reach_sub" -eq 0 ] || [ "$reach_use" -eq 0 ]; then
-  verdict='计费端点部分不可达：原始字段缺失，本次无法判定计费层填充状态；请重试或登录仪表板 Usage/Billing'
-elif printf '%s' "$sub_body" | grep -q '100000000' \
-  || printf '%s' "$use_body" | grep -qE '"total_usage"[[:space:]]*:[[:space:]]*0([^0-9]|$)'; then
-  verdict='计费层数据未填充：剩余额度不可由本 API 推出；权威面=登录仪表板 Usage/Billing；HTTP 402=配额耗尽事后信号'
+# ---- 判定行（Rule 55.2：只直查、不推算；非 200 一律显式失败，禁伪成功） ----
+if [ "$ok_sub" -eq 0 ] || [ "$ok_use" -eq 0 ]; then
+  # 任一计费端点非 200 → 失败语义 + exit 5（双失败 / 单失败两种 verdict，均含两端点 HTTP 码）
+  if [ "$ok_sub" -eq 0 ] && [ "$ok_use" -eq 0 ]; then
+    verdict="计费端点均未返回有效数据（subscription=HTTP $sub_code, usage=HTTP $use_code）：两个端点均非 HTTP 200，无法判定计费层状态（鉴权/限流/服务端错误/不可达）；禁按返回值解读"
+  else
+    verdict="计费端点部分不可达（subscription=$sub_code usage=$use_code）：本次无法判定计费层状态；请重试或登录仪表板 Usage/Billing"
+  fi
+  VERDICT_FAIL=1
+else
+  VERDICT_FAIL=0
+  verdict='计费层已回传数值（本脚本仅直查原始字段，不推算剩余额度；权威面=登录仪表板 Usage/Billing）'
+  if printf '%s' "$sub_body" | grep -q '100000000' \
+    || printf '%s' "$use_body" | grep -qE '"total_usage"[[:space:]]*:[[:space:]]*0([^0-9]|$)'; then
+    verdict='计费层数据未填充：剩余额度不可由本 API 推出；权威面=登录仪表板 Usage/Billing；HTTP 402=配额耗尽事后信号'
+  fi
 fi
 
 tf() { [ "$1" -eq 1 ] && printf 'yes' || printf 'no'; }
@@ -167,7 +192,7 @@ jraw() { case "$1" in \{*) printf '%s' "$1" ;; *) printf 'null' ;; esac; }
 if [ "$JSON_MODE" -eq 0 ]; then
   printf 'Agnes 额度直查（agnes-quota.sh · Rule 55 首个落盘实例）\n'
   printf 'key_source: %s (%s)\n' "$WORK_SRC" "$(mask_key "$WORK_KEY")"
-  printf 'endpoints_reachable: /agnesapi=yes subscription=%s usage=%s\n' "$(tf "$reach_sub")" "$(tf "$reach_use")"
+  printf 'endpoints_reachable: /agnesapi=yes subscription=%s usage=%s\n' "$(tf "$ok_sub")" "$(tf "$ok_use")"
   printf '\n--- subscription（原始字段，直查未加工）---\n%s\n' "${sub_body:-<空>}"
   printf '\n--- usage（原始字段，直查未加工）---\n%s\n' "${use_body:-<空>}"
   printf '\n--- verdict ---\n%s\n' "$verdict"
@@ -175,11 +200,12 @@ else
   printf '{\n'
   printf '  "key_source": %s,\n' "$(jstr "$WORK_SRC")"
   printf '  "key_masked": %s,\n' "$(jstr "$(mask_key "$WORK_KEY")")"
-  printf '  "endpoints_reachable": {"agnesapi": true, "subscription": %s, "usage": %s},\n' "$(jb "$reach_sub")" "$(jb "$reach_use")"
+  printf '  "endpoints_reachable": {"agnesapi": true, "subscription": %s, "usage": %s},\n' "$(jb "$ok_sub")" "$(jb "$ok_use")"
   printf '  "subscription": %s,\n' "$(jraw "$sub_body")"
   printf '  "usage": %s,\n' "$(jraw "$use_body")"
   printf '  "verdict": %s\n' "$(jstr "$verdict")"
   printf '}\n'
 fi
 
+if [ "$VERDICT_FAIL" -eq 1 ]; then exit 5; fi
 exit 0
