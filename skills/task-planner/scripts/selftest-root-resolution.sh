@@ -158,10 +158,11 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 # 历史级联漏改判例（锚级联第 3 次教训 §4 + task-v131 CR P1-2：Rule 50/52/53 新增后括注停摆于逐号
 # 「Rule 40/41/…/51」漏 50/52/53）已改简洁括注「含 Rule 40-53 全集」。断言：索引行（'（Rules 1-39' =1 定位）
 # 须同时含「Rule 40-53」（或至少含 50 与 53 两个号=逐号式括注的兜底判定）——防下次全集扩张时索引行再次脱钩。
+# [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 主断言宽容化 40-5[3-9]（宽容正则优先）, 兜底判定保留]
 idxn="$(grep -cF '（Rules 1-39' "$SKILLMD" || true)"
 idxline="$(grep -F '（Rules 1-39' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qF 'Rule 40-53'; then
-  ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且含「Rule 40-53」全集括注（CR P1-2 防级联漏改）"
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE 'Rule 40-5[3-9]'; then
+  ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且含「Rule 40-5x」全集宽容括注（CR P1-2 防级联漏改）"
 elif [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -q '50' && printf '%s' "$idxline" | grep -q '53'; then
   ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且逐号式括注含 50 与 53（兜底判定）"
 else

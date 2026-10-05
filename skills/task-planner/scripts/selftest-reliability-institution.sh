@@ -74,9 +74,10 @@ b="$(grep -c '| C31 |' "$SKILLMD" || true)"
 if [ "$a" -eq 1 ] && [ "$b" -eq 1 ]; then ok 08 "SKILL.md C30/C31 合规清单项各 =1"; else bad 08 "SKILL.md C30 项 $a（应 1）/ C31 项 $b（应 1）"; fi
 # R-09 SKILL.md 括注全集锚 + 越界负断言
 # [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41/42/43」→「含 Rule 40-53 全集」(SKILL.md:266 括注演进), 1-40 负断言保留]
-a="$(grep -c '含 Rule 40-53 全集' "$SKILLMD" || true)"
+# [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 锚宽容化 40-5[3-9]（v118/v131/v132 教训: 先扫后改, 宽容正则优先）, 1-40 负断言保留]
+a="$(grep -cE '含 Rule 40-5[3-9] 全集' "$SKILLMD" || true)"
 b="$(grep -c '1-40' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 09 "SKILL.md「含 Rule 40-53 全集」锚 $a ≥1 且越界 1-40 =0"; else bad 09 "SKILL.md 括注锚漂移（含 Rule 40-53 全集=$a 应 ≥1 / 1-40=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 09 "SKILL.md「含 Rule 40-5x 全集」宽容锚 $a ≥1 且越界 1-40 =0"; else bad 09 "SKILL.md 括注锚漂移（含 Rule 40-5[3-9] 全集=$a 应 ≥1 / 1-40=$b 应 0）"; fi
 # R-10 模板配置表「质量审查工具」行 + plan-writer 义务行（检测登记）
 a="$(grep -c '质量审查工具' "$TPL" || true)"
 b="$(grep -c '质量审查工具检测登记' "$PLANWRITER" || true)"

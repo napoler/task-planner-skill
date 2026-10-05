@@ -31,6 +31,7 @@
   Decisions Made 表 `silent:` 前缀行逐项列出），3-6 行；数据源 = progress.md Phase 段 + task_plan.md Decisions Made]
 - **行为面变化**: [必填行——本任务完成后用户可感知的变化（下次会看到什么不一样/能做什么新事）；无则写「无」，禁止省略]
 - **交付结论**: COMPLETE / PARTIAL / BLOCKED [引 verification.md Goal Gate outcome]
+- **真实进展对照（Rule 54.1③/50.3）**: 呈报状态必须按需求原子条目表（Rule 50.1）逐项给真实评级对照——准备物完成、仪式动作、推迟项均不得表述为需求推进；推迟决策附 Rule 54.4 四要素举证；决策依据数据引用落盘锚（Rule 54.5，file#锚点形态，禁裸会话数据）
 
 ## 需求覆盖核对（Rule 51.3 — 交付必载）
 <!-- task-v129：逐需求条目判定；任一用户显式核心需求 uncovered/partial 且无用户让步登记 → 终态禁 COMPLETE -->

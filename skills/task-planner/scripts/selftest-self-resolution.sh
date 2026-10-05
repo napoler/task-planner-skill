@@ -68,10 +68,11 @@ b="$(grep -c '1-40' "$SKILLMD" || true)"
 if [ "$a" -eq 2 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 Rules 1-39=2 且 1-40=0"; else bad 07 "SKILL.md 字面锚漂移（Rules 1-39=$a 应 2 / 1-40=$b 应 0）"; fi
 # SR-08 Rule 40/41 共存零损伤
 # [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41」→「含 Rule 40-53」(SKILL.md:266 括注演进), ^40\.=6 子条断言保留]
-if [ "$(grep -c '含 Rule 40-53' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
-  ok 08 "SKILL.md「含 Rule 40-53」锚 + critical-rules.md Rule 40 六子条 = 6（共存零损伤）"
+# [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 锚宽容化 40-5[3-9]（宽容正则优先）, ^40\.=6 子条断言保留]
+if [ "$(grep -cE '含 Rule 40-5[3-9]' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
+  ok 08 "SKILL.md「含 Rule 40-5x」宽容锚 + critical-rules.md Rule 40 六子条 = 6（共存零损伤）"
 else
-  bad 08 "Rule 40/41 共存锚损伤（含 Rule 40-53 缺失或 ^40\. 子条数 ≠6）"
+  bad 08 "Rule 40/41 共存锚损伤（含 Rule 40-5[3-9] 缺失或 ^40\. 子条数 ≠6）"
 fi
 # SR-09 零新 config 键——properties 键数 = 40（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
 if command -v jq >/dev/null 2>&1; then

@@ -203,6 +203,7 @@ model: opus
 | C35 | 需求覆盖门控（Rule 51）：计划含「🎯 用户需求原文」区块且 R→VC 映射完整（51.1/51.2）；交付终态出「需求覆盖核对表」且核心需求全 covered 或有用户让步登记（51.3/51.4）；生成类动作前有盘点记录（51.5）（机器面=selftest-requirement-coverage.sh 静态断言，核对过程人工核查；mini 档豁免） | ☐ |
 | C36 | 根源解决纪律（Rule 53）：计划含「根源覆盖表」区块（结果级需求全链审计，53.1）；解决类条目附根治判据（53.2）；决策点过管辖二分（53.3）；浅快路径过返工核算（53.4）（机器面=selftest-root-resolution.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
 | C37 | 未验证优点宣传核查（Rule 43.5/43.6 + Rule 51.8 + 53.5-Q9）：提示词/参数优化类修改的产出已附实际生成测试证据（生成回执 + 产物质检，43.5 三件套）；未经验证的结果（含零消耗/零成本类统计）未以优点口吻呈现，缺证据项已降级「未验证」登记（43.1/43.6）；需求条目覆盖判据属实测形态的，无实测证据未声称 covered（51.8）（机器面=selftest-reliability-institution R-13..R-16 + selftest-requirement-coverage RC-23 静态断言，测试证据人工核查；mini 档豁免） | ☐ |
+| C38 | 执行诚实性与即时执行自查（Rule 54）：对外声称（状态/资源/阻塞/里程碑/完成/统计）已附第一手证据锚（54.0）；「就绪」仅用于交付物、资源状态类声称有第一手查询记录否则显式「未验证」（54.1）；阻塞已逐项出阻塞/未阻塞矩阵、未阻塞项不被连带推迟（54.2）；准备类仪式动作未作为里程碑呈报（54.3）；推迟决策四要素（阻塞证据/未阻塞子集/立即可执行项记录/恢复触发器）齐备（54.4）；决策引用数据走落盘锚（findings/knowledge-brief）而非裸会话数据（54.5）（机器面=selftest-execution-honesty.sh 静态断言，声称可回溯/矩阵/举证人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -264,7 +265,7 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40-53 全集））：
+详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40-54 全集））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -305,6 +306,7 @@ model: opus
 - **Rule 51（需求覆盖与完成声称门控 — task-v129）**：自缩水禁令+生成前置盘点+未测试就声称完成禁令八子条（51.1-51.8，含 51.7 纠正=回锚重译/窗口口径 lint 增补 task-v132；51.8 未测试就声称完成禁令 task-v133）；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
 - **Rule 52（执行体专业化优先与覆盖矩阵维护 — task-v125）**：派发选型专用体优先——先查覆盖矩阵 `references/agent-coverage.md` 与三登记面（52.1）；三类缺口（A 无具名映射/B 登记指向不存在或名不符实体/C 实体未登记）禁新增，B 类零容忍实体存在性（52.2）；agent 增删改名或登记面改动→矩阵与登记面同任务同步（52.3）；零新 config 键+selftest-agent-coverage.sh 静态守护（52.4）
 - **Rule 53（根源解决与决策管辖 — task-v131）**：结果级需求全链工序审计+根源覆盖表（53.1）/根治判据=机制·守卫·载体三选一防复发（53.2）/决策管辖二分反推诿（53.3）/返工成本核算质量优先（53.4）；零新 config 键+selftest-root-resolution.sh 守护（53.5）
+- **Rule 54（执行诚实性与即时执行纪律 — task-v136）**：54.0 有依据原则总则 / 54.1 就绪语义+资源状态第一手 / 54.2 阻塞影响矩阵 / 54.3 仪式性进展禁令 / 54.4 推迟举证四要素 / 54.5 决策依据落盘与引用义务 / 54.6 机制=零新 config 键+selftest-execution-honesty.sh 守护（54.6）
 
 ## Completion Gate
 
@@ -328,7 +330,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖） |
+| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
