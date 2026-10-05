@@ -87,17 +87,19 @@ else
   bad 08 "critical-rules.md 关键短语 evidence-first=$a / decision-basis=$b / 零新 config 键=$c（各应 ≥1，语义内核被裁）"
 fi
 
-# EH-09 SKILL.md 联动面：「Rule 54」≥1（C38 行/摘要 bullet/References 行三落点）且「C38」=1 且「Rule 40-54」=1（索引括注）
+# EH-09 SKILL.md 联动面：「Rule 54」≥1（C38 行/摘要 bullet/References 行三落点）且「C38」=1 且索引全集括注宽容锚 40-5[3-9] ≥1
 # Why: SKILL.md 是 LLM 读条款的入口索引（RC-09/RR-07 同范式）——「Rule 54」漏联动=摘要与条款脱钩（条款扩到 54 但索引停摆）；
-# C38 行=Rule 54 的合规清单消费点（丢行=合规面与 54 子条脱钩）；「Rule 40-54」=索引行全集括注（RR-16 同先例，级联漏改面）；
-# C38/40-54 各 =1 锁唯一落点（重复落点=段落复制漂移）。
+# C38 行=Rule 54 的合规清单消费点（丢行=合规面与 54 子条脱钩）；索引行全集括注（RR-16 同先例，级联漏改面）；
+# C38 =1 锁唯一落点（重复落点=段落复制漂移）。
+# [2026-10-05 task-v138 合并级联] 全集括注 40-54→40-55（Rule 55 合法落地）——锚由固定 'Rule 40-54'=1 改宽容正则 40-5[3-9]≥1
+# （覆盖 40-53/54/55 各纪元，v136 R-09/SR-08/RR-16「宽容正则优先」先例；防止下次全集演进再钉死；C38 唯一性断言不变）。
 x="$(grep -cF 'Rule 54' "$SKILLMD" || true)"
 y="$(grep -cF 'C38' "$SKILLMD" || true)"
-z="$(grep -cF 'Rule 40-54' "$SKILLMD" || true)"
-if [ "$x" -ge 1 ] && [ "$y" -eq 1 ] && [ "$z" -eq 1 ]; then
-  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引括注「Rule 40-54」=1"
+z="$(grep -cE 'Rule 40-5[3-9]' "$SKILLMD" || true)"
+if [ "$x" -ge 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
+  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引全集括注「Rule 40-5x」宽容锚≥1（现状 40-55）"
 else
-  bad 09 "SKILL.md Rule 54=$x（应 ≥1）或 C38=$y（应 =1）或「Rule 40-54」=$z（应 =1，级联漏改）"
+  bad 09 "SKILL.md Rule 54=$x（应 ≥1）或 C38=$y（应 =1）或「Rule 40-5[3-9]」=$z（应 ≥1，级联漏改）"
 fi
 
 # EH-10 模板面：delivery-summary.md「54.1」≥1 且「54.4」≥1（真实进展对照行双锚）
@@ -124,15 +126,22 @@ if [ "$n" -eq 1 ]; then ok 12 "video-generation-executor.md「Rule 54」指针�
 # EH-13 负断言（语境锚定）：critical-rules.md 54 块尾上下文（末条 54.6 行起至文件尾）「55.x」=0
 # Why: RC-15 前移防线（'^55.'=0 防 55 号误占）的呼应面——扫「54 块之后」而非全文：裸全文匹配 "55.[0-9]" 会被子串误触
 # （v127/RR-09 第 5 变体判例：负断言须语境锚定）；块尾后出现 55.x = Rule 55 未被本任务合法创建却被顺手写入（54 块编辑时越界扩号探测）。
+# [2026-10-05 task-v138 合并级联] 55 号已被 task-v138 Rule 55 合法创建（55.1-55.6，判定面 55.6 机器面=selftest-capability-persistence.sh）——
+# 本条 RC-15 呼应面语义相应演进：54 块尾后「未经 task-v138 合法创建的 55.x」=违规。实现=54 块尾上下文中「^### 55 标题行含 task-v138」
+# 至多 1 处，且「55.x 子条行」若出现必须与该标题行同块（=合法 Rule 55 块，非顺手写入）；无标题行时 55.x 仍 =0 即 PASS（原语义不变，向下兼容 55 未落地态）。
 last54line="$(grep -nE '^54\.[0-6] ' "$CRIT" | tail -1 | cut -d: -f1 || true)"
 if [ -z "$last54line" ]; then
   bad 13 "critical-rules.md 未找到 54.x 末条行（块缺失，负断言无法语境锚定）"
 else
-  m="$(tail -n +"$last54line" "$CRIT" | grep -cE '55\.[0-9]' || true)"
-  if [ "$m" -eq 0 ]; then
+  tailctx="$(tail -n +"$last54line" "$CRIT")"
+  rule55_hdr="$(printf '%s\n' "$tailctx" | grep -cE '^### 55 .*task-v138' || true)"
+  rule55_sub="$(printf '%s\n' "$tailctx" | grep -cE '^55\.[0-9] ' || true)"
+  if [ "$rule55_hdr" -eq 0 ] && [ "$rule55_sub" -eq 0 ]; then
     ok 13 "critical-rules.md 54 块尾上下文（L${last54line}起）「55.x」=0（RC-15 前移防线呼应，55 号未被顺手创建）"
+  elif [ "$rule55_hdr" -eq 1 ] && [ "$rule55_sub" -le 6 ]; then
+    ok 13 "critical-rules.md 54 块尾 55.x 属 task-v138 合法 Rule 55 块（^### 55 task-v138 标题=1，子条 $rule55_sub ≤6）（task-v138 合并级联口径）"
   else
-    bad 13 "critical-rules.md 54 块尾上下文「55.x」命中=$m（应 =0，55 号被顺手写入）"
+    bad 13 "critical-rules.md 54 块尾「^### 55 task-v138」=$rule55_hdr（应 0 或 1）/「55.x」=$rule55_sub（合法 Rule 55 块应 ≤6；越界扩号或顺手写入）"
   fi
 fi
 

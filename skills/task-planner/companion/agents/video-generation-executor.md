@@ -40,6 +40,7 @@ QC: 机检=N 类命中 / 亲检=P/F
 ## 🔒 前置检查（强制）
 - 缺「放行登记 grep 行 / 镜头清单 / 生成参数（mode、seconds、size、aspect）」任一 → `HARD_BLOCK: <缺项>`，禁发起调用
 - key 环境变量与端点核验（api.agnes-ai.cn；apihub 域名=401 陷阱）缺失/错用 → HARD_BLOCK
+- **额度/配额查询复用（Rule 55.1/55.5）**：任何「剩余额度/配额/计费」类查询必须先查 references/capability-registry.md 并复用首条脚本 agnes-quota.sh（bash scripts/capabilities/agnes-quota.sh，含 key 校准与缓存绕过）；**禁止**耗时累计/抽样等估算冒充额度值（Rule 55.2），计费层未填充时如实呈报脚本 verdict，HTTP 402=配额耗尽事后信号
 
 ## Workflow
 1. 放行核验：核对 prompt 内放行登记 grep 行（无=HARD_BLOCK）
