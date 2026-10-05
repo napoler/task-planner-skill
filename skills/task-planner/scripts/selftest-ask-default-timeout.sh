@@ -11,8 +11,8 @@
 #   RT-07    registry `grep -c 'selftest-ask-default-timeout'` = 1（登记锚）
 #   RT-08    越界负断言——CRIT 44 节与 SKILL.md `grep -E '1-4[0-9]'` 零命中（禁 1-4x 越界字面；[task-v118 口径扩展] 全集 1-46，1-4[56] 为合法形态加白 grep -vE 剔除）
 #   RT-09    零新 config 键——config.json properties 键数 = 40（同 R-12/WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
-#   RT-10    44.5 条款在位锚——critical-rules.md `grep -c '^44\.5'` = 1 且该行含「阻塞点展示限制」（task-v134 新增）
-#   RT-11    44.5 关键词守护锚——critical-rules.md 全文「阻塞点展示限制」命中 ≥1（防 44.5 行被误删,与 RT-10 行锚双保险）
+#   RT-10    44.5 条款在位锚——critical-rules.md `grep -c '^44\.5'` = 1 且 `grep '^44\.5' | grep -c '阻塞点展示限制'` = 1（行级计数+行内容断言，task-v134 新增）
+#   RT-11    44.5 关键词守护锚——critical-rules.md 全文「阻塞点展示限制」命中 ≥1（守护面=44.4 机制行+44.5 条款行；与 RT-10 同测单文件非双保险，防 44.4/44.5 行同时误删）
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
@@ -76,10 +76,12 @@ if command -v jq >/dev/null 2>&1; then
 else
   printf 'RT-09 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
-# RT-10 44.5 条款在位锚（task-v134 新增：阻塞点展示限制条款行锚，grep -c 行级计数=1 防重复行）
+# RT-10 44.5 条款在位锚（task-v134 新增：`^44.5` 行级计数=1 防重复行 + 行内容断言「阻塞点展示限制」，防 44.5 行被截断/改题）
 n="$(grep -c '^44\.5' "$CRIT" || true)"
-if [ "$n" -eq 1 ]; then ok 10 "critical-rules.md 44.5 阻塞点展示限制条款行 = 1"; else bad 10 "critical-rules.md 44.5 条款行数 $n（应 1）"; fi
-# RT-11 44.5 关键词守护锚——「阻塞点展示限制」全文命中 ≥1（44.5 行标题锚；与 RT-10 行锚双保险防误删）
+m="$(grep '^44\.5' "$CRIT" | grep -c '阻塞点展示限制' || true)"
+if [ "$n" -eq 1 ] && [ "$m" -eq 1 ]; then ok 10 "critical-rules.md 44.5 阻塞点展示限制条款行 = 1 且行内容锚在位"; else bad 10 "critical-rules.md 44.5 条款行数 $n（应 1）/ 行内容锚 $m（应 1）"; fi
+# RT-11 44.5 关键词守护锚——「阻塞点展示限制」全文命中 ≥1（守护面=44.4 机制行+44.5 条款行+SKILL 摘要面；
+# 与 RT-10 非双保险——二者同测 critical-rules.md 单文件，RT-11 是全文命中面，防 44.4/44.5 两行同时误删）
 n="$(grep -c '阻塞点展示限制' "$CRIT" || true)"
 if [ "$n" -ge 1 ]; then ok 11 "critical-rules.md「阻塞点展示限制」关键词命中 $n ≥1"; else bad 11 "critical-rules.md「阻塞点展示限制」关键词缺失（$n 应 ≥1）"; fi
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-reliability-institution.sh — task-v099 P3: Rule 42/43 质量审查检测+执行可靠性制度化静态守护
 # 范式同 selftest-self-resolution.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
-# 本脚本仅做静态断言（grep/wc/jq 为主），R-01..R-12 全 PASS exit 0；任一 FAIL exit 1。
+# 本脚本仅做静态断言（grep/wc/jq 为主），R-01..R-16 全 PASS exit 0；任一 FAIL exit 1。
 #   R-01     critical-rules.md Rule 42 子条锚 `grep -c '^42\.'` = 10 [2026-10-01 task-v102 B 类扩围: 42.6 追加级联, 5→10]
 #   R-02     Rule 43 六子条锚 `grep -c '^43\.'` = 6 [2026-10-05 task-v133: 43.5/43.6 新增级联, 4→6]
 #   R-03     42.2 行内锚：「均未命中=缺口」≥1（三级检测缺口判定）
@@ -15,6 +15,10 @@
 #   R-10     模板/契约消费面：templates/task_plan.md「质量审查工具」≥1 且 plan-writer.md「质量审查工具检测登记」≥1
 #   R-11     mini-lite 豁免锚：variant/mini-lite-type.md「Rule 42.5 豁免」≥1
 #   R-12     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
+#   R-13     43.5 行内锚：「实际生成测试」≥1（提示词/参数修改后必须实测，task-v133 新增）
+#   R-14     43.6 行内锚：「优点」≥1（未验证结果禁止优点宣传，task-v133 新增）
+#   R-15     53.5 行 Q9 触发面登记锚（Q9 属主=43.5/43.6/51.8，挂 26.3 惩罚映射语义，先例 Q7/Q8，task-v133 新增）
+#   R-16     SKILL.md 合规清单 C37 行 =1（未验证优点宣传核查消费行，C31 行内追加不受 '| C31 |' 计数影响，task-v133 新增）
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
