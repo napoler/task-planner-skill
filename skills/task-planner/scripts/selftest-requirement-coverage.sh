@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-requirement-coverage.sh — task-v129 S5: Rule 51 需求覆盖与完成声称门控静态守护
 # 范式对齐 selftest-lane-advancement.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构），task-v129 S5 产出。
-# 用途：静态断言 Rule 51 七子条（51.1-51.7，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块
+# 用途：静态断言 Rule 51 七子条（51.1-51.7，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块 [2026-10-05 task-v133] 51.8 新增, 七→八子条（51.1-51.8；51.8 未测试就声称完成禁令，级联 43.5/43.6+53.5-Q9+SKILL C37）
 #      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=40，与 43.4/44.4/47.4 同口径）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/templates/delivery-summary.md、task-planner/config.json
 #      （只读，grep/jq，零写入）。
@@ -484,6 +484,20 @@ if [ "$_rc22_a" -eq 1 ] && [ "$_rc22_b" -eq 1 ]; then
   ok 22 "init-session.sh silent 路径 INFO 锚双行各 =1（主锁+兜底锁，G3 即时落盘在位）"
 else
   bad 22 "init-session.sh silent 路径 INFO 锚异常: 主锁=$_rc22_a 兜底锁=$_rc22_b（应各 =1，G3 即时落盘逻辑被删/重复插入？）"
+fi
+
+# RC-23 51.8 行锚 + SKILL.md 51.8 联动锚（task-v133：未测试就声称完成禁令）
+# What：断言 ① '^51.8 ' 行在位且含语义锚「未测试就声称完成」② SKILL.md 内 '51.8' 命中 ≥1（摘要 bullet M5.4 或 C37 行任一）。
+# Why：51.8 是 VC-1 的条款本体（覆盖判据属实测形态的需求条目无实测证据=uncovered，51.3 口径）——
+#      行锚=1 防重复插入/误删（RC-16 三锚范式）；SKILL 联动锚=防「条款扩到 51.8 但 SKILL 停摆 51.7」级联断链（RC-09 语义）。
+#      RC-01（≥7）与 RC-15（'^54.'=0）不受 51.8 影响（51.8 不产生 54 号、≥7 阈值向下兼容 9 计数）。
+_rc23_a="$(grep -c '^51\.8 ' "$CRIT" || true)"
+_rc23_b="$(grep '^51\.8 ' "$CRIT" | grep -c '未测试就声称完成' || true)"
+_rc23_c="$(grep -c '51\.8' "$SKILLMD" || true)"
+if [ "$_rc23_a" -eq 1 ] && [ "$_rc23_b" -eq 1 ] && [ "$_rc23_c" -ge 1 ]; then
+  ok 23 "critical-rules.md 51.8 行锚=1 且语义锚「未测试就声称完成」在位 且 SKILL.md '51.8' 联动 $_rc23_c ≥1"
+else
+  bad 23 "51.8 守护异常: 行锚=$_rc23_a(应1) 语义锚=$_rc23_b(应1) SKILL联动=$_rc23_c(应≥1)"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

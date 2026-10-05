@@ -3,7 +3,7 @@
 # 范式同 selftest-self-resolution.sh（SCRIPT_DIR/SKILL_ROOT 解析、ok()/bad() 结构、Total 行、exit 语义同构）：
 # 本脚本仅做静态断言（grep/wc/jq 为主），R-01..R-12 全 PASS exit 0；任一 FAIL exit 1。
 #   R-01     critical-rules.md Rule 42 子条锚 `grep -c '^42\.'` = 10 [2026-10-01 task-v102 B 类扩围: 42.6 追加级联, 5→10]
-#   R-02     Rule 43 四子条锚 `grep -c '^43\.'` = 4
+#   R-02     Rule 43 六子条锚 `grep -c '^43\.'` = 6 [2026-10-05 task-v133: 43.5/43.6 新增级联, 4→6]
 #   R-03     42.2 行内锚：「均未命中=缺口」≥1（三级检测缺口判定）
 #   R-04     42.3 行内锚：「S-unit」≥1（补充动作 S-unit 登记禁私建）
 #   R-05     43.1 行内锚：「未验证」≥1（证据先行/未验证显式登记）
@@ -35,9 +35,9 @@ bad() { FAIL=$((FAIL+1)); printf 'R-%s FAIL %s\n' "$1" "$2"; }
 # R-01 Rule 42 子条锚（42.1-42.5 五子条+42.6 主体+42.6.1-.4 五行 [2026-10-01 task-v102 B 类扩围: 42.6 追加级联, 5→10]）
 n="$(grep -c '^42\.' "$CRIT" || true)"
 if [ "$n" -eq 10 ]; then ok 01 "critical-rules.md Rule 42 子条锚 = 10"; else bad 01 "critical-rules.md Rule 42 子条数 $n（应 10）"; fi
-# R-02 Rule 43 四子条锚
+# R-02 Rule 43 六子条锚 [task-v133 演进: 43.5/43.6 新增, 4→6]
 n="$(grep -c '^43\.' "$CRIT" || true)"
-if [ "$n" -eq 4 ]; then ok 02 "critical-rules.md Rule 43 四子条锚 = 4"; else bad 02 "critical-rules.md Rule 43 子条数 $n（应 4）"; fi
+if [ "$n" -eq 6 ]; then ok 02 "critical-rules.md Rule 43 六子条锚 = 6"; else bad 02 "critical-rules.md Rule 43 子条数 $n（应 6）"; fi
 # R-03 42.2 三级检测缺口判定锚
 if grep '^42\.2' "$CRIT" | grep -q '均未命中=缺口'; then
   ok 03 "42.2 行内锚「均未命中=缺口」在位"
@@ -91,6 +91,27 @@ if command -v jq >/dev/null 2>&1; then
 else
   printf 'R-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
+# R-13 43.5 行内锚：「实际生成测试」≥1（提示词/参数修改后必须实测）
+if grep '^43\.5' "$CRIT" | grep -q '实际生成测试'; then
+  ok 13 "43.5 行内锚「实际生成测试」在位"
+else
+  bad 13 "43.5 行内锚缺失（实际生成测试）"
+fi
+# R-14 43.6 行内锚：「优点」≥1（未验证结果禁止优点宣传）
+if grep '^43\.6' "$CRIT" | grep -q '优点'; then
+  ok 14 "43.6 行内锚「优点」在位"
+else
+  bad 14 "43.6 行内锚缺失（优点）"
+fi
+# R-15 53.5 行 Q9 触发面登记锚（Q9 属主=43.5/43.6/51.8，挂 26.3 惩罚映射语义，先例 Q7/Q8）
+if grep '^53\.5' "$CRIT" | grep -q 'Q9'; then
+  ok 15 "53.5 行「Q9」触发面登记在位"
+else
+  bad 15 "53.5 行「Q9」登记缺失（未验证结果优点宣传触发面失锚）"
+fi
+# R-16 SKILL.md 合规清单 C37 行 =1（未验证优点宣传核查消费行，C31 行内追加不受 '| C31 |' 计数影响）
+n="$(grep -c '| C37 |' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 16 "SKILL.md C37 合规清单项 =1"; else bad 16 "SKILL.md C37 合规清单项 $n（应 1）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
