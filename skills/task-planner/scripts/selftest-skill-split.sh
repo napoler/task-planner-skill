@@ -38,7 +38,8 @@ for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-ro
 done
 
 # T2 主 SKILL.md 行数收敛 + 4 路由指针各 ≥1
-t "T-主 行数 ≤478（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）;演进 440→442→444→447→449→452→454→461→475→477→478，先例 v112/v122/v126/v127/v125/v131/v133）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 478 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
+# [2026-10-05 task-v136 S5] 钉上调 478→480（S2 SKILL.md 联动净增 +2（478→480，Rule 54 摘要/索引/C38），knowledge-brief §4-4 行数纪律先例：上限断言随净增同步上调带 label；≤558 总上限不动）
+t "T-主 行数 ≤480（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）; task-v136 S2 联动净增 +2（478→480）;演进 440→442→444→447→449→452→454→461→475→477→478→480，先例 v112/v122/v126/v127/v125/v131/v133/v136）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 480 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do
     t "T-主 路由指针在位 $sat ≥1" bash -c "[ \"\$(grep -c '$sat' '$SKILL')\" -ge 1 ]"
 done

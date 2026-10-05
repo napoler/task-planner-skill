@@ -157,14 +157,15 @@ else
   bad 14 "registry.tsv 未登记 selftest-requirement-coverage.sh（registry 漏项）"
 fi
 
-# RC-15 负断言 `grep -c '^54\.'` =0
+# RC-15 负断言 `grep -c '^55\.'` =0（[task-v136 S2] 防线前移: 54 号已被本任务 S1 合法占用 54.0-54.6）
 # What：断言 critical-rules.md 内行首 '54.' 子条命中数为 0（54 号未被误占）。
 # Why：53 号已由 task-v131 合法占用（53.1-53.5 已落地）——若 '54.' 出现说明他任务并行插入了 Rule 54，
 #      本任务的编号假设被破坏，需重新对齐条款号（防编号冲突/并行任务踩踏）。
 # [task-v125 S5 演进重锚] '^52.'→'^53.'（Rule 52 被 task-v125 S2 合法落地 52.1-52.4，负断言改锁后继号 53，语义不反转，先例同 v127 ^50→^52，2026-10-04）
 # [task-v131 演进重锚] '^53.'→'^54.'：Rule 53 已落地（53.1-53.5），防线前移至 54（先例 v125 S5），2026-10-05
-n="$(grep -c '^54\.' "$CRIT" || true)"
-if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '54.' 子条命中 0（54 号未被误占，task-v131 演进重锚）"; else bad 15 "critical-rules.md '54.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
+# [2026-10-05 task-v136 S2 级联] '^54.'→'^55.'：Rule 54 被本任务 S1 合法落地（54.0-54.6），防线前移至 55（先例 v125 S5/v131 重锚）
+n="$(grep -c '^55\.' "$CRIT" || true)"
+if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '55.' 子条命中 0（55 号未被误占，task-v136 演进重锚）"; else bad 15 "critical-rules.md '55.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
 
 # RC-16..20 共用的被测对象定位（task-v132 G1/G2 产出脚本，均为 worktree 内本目录文件）
 CC_SCRIPT="$SCRIPT_DIR/check-complete.sh"      # RC-18/19/20：worktree 版 check-complete.sh（R-COVERAGE 门载体）
@@ -490,7 +491,7 @@ fi
 # What：断言 ① '^51.8 ' 行在位且含语义锚「未测试就声称完成」② SKILL.md 内 '51.8' 命中 ≥1（摘要 bullet M5.4 或 C37 行任一）。
 # Why：51.8 是 VC-1 的条款本体（覆盖判据属实测形态的需求条目无实测证据=uncovered，51.3 口径）——
 #      行锚=1 防重复插入/误删（RC-16 三锚范式）；SKILL 联动锚=防「条款扩到 51.8 但 SKILL 停摆 51.7」级联断链（RC-09 语义）。
-#      RC-01（≥7）与 RC-15（'^54.'=0）不受 51.8 影响（51.8 不产生 54 号、≥7 阈值向下兼容 9 计数）。
+#      RC-01（≥7）与 RC-15（'^55.'=0，task-v136 前移）不受 51.8 影响（51.8 不产生 54/55 号、≥7 阈值向下兼容 9 计数）。
 _rc23_a="$(grep -c '^51\.8 ' "$CRIT" || true)"
 _rc23_b="$(grep '^51\.8 ' "$CRIT" | grep -c '未测试就声称完成' || true)"
 _rc23_c="$(grep -c '51\.8' "$SKILLMD" || true)"
