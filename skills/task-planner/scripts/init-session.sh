@@ -96,7 +96,8 @@ copy_template() {
 #   锚 A `## 🎯 用户需求原文` / 锚 B `根源覆盖表`，缺哪个补哪个（模板已含其一
 #   则只注入缺的那个；两者都缺则一次插入两个区块：🎯 区块在前、🧮 区块紧随其后，
 #   格式对齐主模板 task_plan.md 现有同名区块）；非 mini 档 → 在第一个 `## Goal`
-#   标题行之前插入脚手架（无 Goal 行则插在文件头部注释块之后）；占位符保留供
+#   标题行之前插入脚手架（即头部「空行/HTML 注释/frontmatter 定界」块之后；无
+#   Goal 行 → 头部块之后的首正文行之前；首行即正文时回落第 1 行）；占位符保留供
 #   规划者填写；两锚俱在（主模板/rule-enhancement 变体自带载体）→ echo 一行
 #   INFO 跳过。
 # Why: 29 个 variant 模板零载体（审计 H-3）——前序单元只给了主模板+
@@ -151,25 +152,47 @@ inject_requirement_block() {
     if [ -z "$insat" ]; then
         # Why 用 awk 单遍扫描而非 shell 循环: 头部判定需跟踪多行 HTML 注释
         # 开闭状态（<!-- ... --> 跨行），awk 变量比 shell 临时文件干净
+        # [2026-10-05 task-v131 CR-fix P1-1] 原 awk 在 { } 块内使用 pattern-action
+        # 混合形式（`:154-186 区段`）gawk/mawk 均报 syntax error → 命令替换吞错
+        # 置 insat=1 插文件顶、破坏 frontmatter，且 fail-open WARN 永不触发（与函数头
+        # 文档不符）。整体重写为顶层 if/else 语句链 + END，语义不变=记录最后一个
+        # 空行/分隔行位置作为插入点（frontmatter 注释块之后）。同步修正 :99 函数头
+        # 「插文件头部注释块之后」不实描述与 :158 旧注释「mawk 不支持 || &&」错误
+        # 前提（原行为 mawk 1.3.4 / gawk 5.2.1 实测均支持 || &&，该注释无实据）。
+        # [2026-10-05 task-v131 CR-fix P1-1b] 注释开闭判定修正：
+        # ① 单行自闭注释（含 --> 一行内闭合）原被误置 cmt=1；
+        # ② 多行注释闭行若 --> 前有其它文本（如 "     multi-line note -->"），
+        #    行首锚定正则 ^--> / ^[[:space:]]*--> 均不命中 → cmt 永不复位 →
+        #    后续正文行全被吞为「注释内部」→ last 滑到文件尾 → 插入点越界
+        #    （insat=文件行数+1，脚手架静默丢失，实测 insat=6/5 行文件）。
+        # 修法：闭行判定改为「行内含 -->」（自闭注释与多行闭行同命中，cmt 复位）。
         insat="$(awk '
             {
                 if (done) next
                 # 首行即正文（非空行/非 HTML 注释开/非 frontmatter 定界）→ 插文件顶
-                # 注意: mawk 不支持 POSIX 逻辑运算符 || &&，多条件用 AND 串接
                 if (NR==1 && $0 !~ /^[[:space:]]*$/ && $0 !~ /^<!--/ && $0 !~ /^---$/) { print 1; done=1; exit }
-                # 空行 / frontmatter 定界 / HTML 注释开闭行均属头部块
-                $0 ~ /^[[:space:]]*$/ || $0 ~ /^---$/ { last=FNR; next }
-                $0 ~ /^<!--/ { cmt=1; last=FNR; next }
-                $0 ~ /^-->[[:space:]]*$/ { cmt=0; last=FNR; next }
+                # 行内含 -->（自闭注释行 或 多行注释闭行，闭行 --> 前可带任意文本/缩进）
+                # → 注释态复位，头部块记到本行
+                if ($0 ~ /-->/) { cmt=0; last=FNR; next }
+                # 空行 / frontmatter 定界行属头部块
+                if ($0 ~ /^[[:space:]]*$/ || $0 ~ /^---$/) { last=FNR; next }
+                # 多行 HTML 注释开（<!-- 起且本行未闭合，上一 if 已排除）
+                if ($0 ~ /^<!--/) { cmt=1; last=FNR; next }
                 # 多行 HTML 注释内部行（既非开也非闭）
-                cmt { last=FNR; next }
+                if (cmt) { last=FNR; next }
                 # 首个正文行 → 头部块止于上一行（插入点=本行行号，即"之后"）
                 print FNR; done=1; exit
             }
             END { if (!done) print (last>0 ? last+1 : 1) }
-        ' "$file")" || insat=""
+        ' "$file" 2>/dev/null)"
+        if [ -z "$insat" ]; then
+            # [2026-10-05 task-v131 CR-fix P1-1] awk 失败原本仅 `|| insat=""` 静默回落
+            # insat=1，fail-open WARN 永不触发（与 :107-110 文档不符）。改为显式
+            # WARN 到 stderr 后回落（fail-open 语义保留：仅警告不阻断 init）
+            echo "[init] WARN: 需求区块插入位计算失败（awk 扫描异常）— 回落第 1 行注入（fail-open: 规划者可复核插入位置）" >&2
+            insat=1
+        fi
     fi
-    [ -n "$insat" ] || insat=1
 
     # 脚手架落临时文件（quoted heredoc: 占位符 <...> 与 ** 须原样保留，禁展开）
     # 双区块独立拼接：缺哪个注入哪个；双缺=🎯 在前 🧮 紧随（主模板 :19-25 顺序）

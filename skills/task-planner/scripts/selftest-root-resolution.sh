@@ -7,7 +7,7 @@
 #    · SKILL.md: Rule 53 摘要 bullet + 合规清单 C36 行（含「根源覆盖表」消费词）+ 全集声明 1-53 演进（负断言 1-51 残留=0）；
 #    · 模板面: task_plan.md「🎯 用户需求原文/🧮 根源覆盖表」双区块 + rule-enhancement 变体区块 + subagent_dispatch.md 派发需求锚；
 #    · 脚本面: init-session.sh inject_requirement_block（定义+调用）+ 根源覆盖表注入 + attest-plan.sh 第 4 锚锁定门。
-#    共 RR-01..RR-15 十五个编号用例，逐条 grep 字面锚 + 期望命中数比对。
+#    共 RR-01..RR-17 十七个编号用例，逐条 grep 字面锚 + 期望命中数比对。
 # ② Why（为什么）: 53.2 根治判据的「守卫」载体落地——Rule 53 若后续被裁剪/误删/锚漂移，机器校验先行报警
 #    （条款死文 51.1 计划侧零载体判例的反向清账）；RR-09 负断言锁全集 1-51→1-53 演进不回退（锚级联第 3 次教训 §4）；
 #    RR-15 负断言钉死 critic P0 修复：「或无客观判据的真实偏好二选」旧并行判别面已从 53.3 收口为 41.2 四门槛唯一权威边界，
@@ -152,6 +152,27 @@ if [ "$n" -ge 1 ] && [ "$m" -ge 2 ]; then ok 14 "attest-plan.sh「第 4 锚」=$
 # 旧字面复现 = 判别面被偷改回并行体系（防自设出口的回归探测，命中即 P0 漂移 FAIL）。
 n="$(grep -cF '或无客观判据的真实偏好二选' "$CRIT" || true)"
 if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客观判据的真实偏好二选」=0（critic P0 收口钉住）"; else bad 15 "critical-rules.md 旧判别面字面命中=$n（应 =0，53.3 唯一权威边界被破——P0 漂移）"; fi
+
+# RR-16 SKILL.md 索引行全集括注锚（防级联漏改，CR P1-2）
+# 口径：:266 索引行「详见 references/critical-rules.md（Rules 1-39…）」为 LLM 读取入口的全集声明行——
+# 历史级联漏改判例（锚级联第 3 次教训 §4 + task-v131 CR P1-2：Rule 50/52/53 新增后括注停摆于逐号
+# 「Rule 40/41/…/51」漏 50/52/53）已改简洁括注「含 Rule 40-53 全集」。断言：索引行（'（Rules 1-39' =1 定位）
+# 须同时含「Rule 40-53」（或至少含 50 与 53 两个号=逐号式括注的兜底判定）——防下次全集扩张时索引行再次脱钩。
+idxn="$(grep -cF '（Rules 1-39' "$SKILLMD" || true)"
+idxline="$(grep -F '（Rules 1-39' "$SKILLMD" || true)"
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qF 'Rule 40-53'; then
+  ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且含「Rule 40-53」全集括注（CR P1-2 防级联漏改）"
+elif [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -q '50' && printf '%s' "$idxline" | grep -q '53'; then
+  ok 16 "SKILL.md 索引行「（Rules 1-39」=1 且逐号式括注含 50 与 53（兜底判定）"
+else
+  bad 16 "SKILL.md 索引行命中=$idxn（应 =1）或索引行未含「Rule 40-53」（亦未同时含 50 与 53——级联漏改，CR P1-2 复发）"
+fi
+
+# RR-17 critical-rules.md 侧 Rule 53 区块锚 `grep -c '^### 53 '` =1
+# 口径：条款侧区块标题锚（与 RR-07 SKILL 侧摘要 bullet 对称）——SKILL 索引行声明「Rule 40-53 全集」但条款侧
+# 无 53 区块 = 索引指向虚空（挂空锚）；=1 锁唯一落点（与 RR-01..05 子条锚同口径，防 53 段复制漂移）。
+n="$(grep -c '^### 53 ' "$CRIT" || true)"
+if [ "$n" -eq 1 ]; then ok 17 "critical-rules.md 区块锚「^### 53 」=1（索引行 40-53 全集的条款侧落点在位）"; else bad 17 "critical-rules.md 区块锚「^### 53 」命中=$n（应 =1，索引行挂空锚/条款侧缺失）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

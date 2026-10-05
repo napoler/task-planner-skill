@@ -263,7 +263,7 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40/41/42/43/44/45/46/47/48/49/51））：
+详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40-53 全集））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
