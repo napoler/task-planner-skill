@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-51（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 全集 1-53（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -83,7 +83,7 @@ model: opus
 - [ ] **Phase 执行循环**（每个 Phase 独立闭环，6 步顺序执行）
   1. **开启 Phase**：`Edit task_plan.md` 当前 Phase 状态 → `in_progress`（Current Phase 同步更新）
   2. **同步 Todo（S2）**：`TodoWrite`/`TaskUpdate` 该 Phase 对应 todo → `in_progress`；步骤 1/2 必须紧邻执行，禁止只做其一
-  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按九字段模板（Rule 22.4）逐 S-unit（22.6 表每行一次；单会话单 S-unit（Rule 46.1：一次执行会话只领一行，禁批次追加）；按 Rule 21.4 调度铁律：声明并行组内成员可并行（独立性四问通过）、未声明组=一次验收一组成员再派下一组成员（10-02））`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"。**hook 已机制化**：主进程白名单外 Write/Edit 被 check-delegation.sh 拦截（enforce=exit 2；warn 档注入警告并计数）；**验收后推进检查（Rule 49）**：每完成一个 S-unit 验收（22.5 三证据），立即核对该单元线下一工序是否满足推进三条件（49.2 已验收+前置在位+独立性四问），满足即派发不等批（跨 Phase 前移按 49.3 双登记，汇合点按 49.4① 等齐）
+  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按九字段模板（Rule 22.4）逐 S-unit（22.6 表每行一次；单会话单 S-unit（Rule 46.1：一次执行会话只领一行，禁批次追加）；按 Rule 21.4 调度铁律：声明并行组内成员可并行（独立性四问通过）、未声明组=一次验收一组成员再派下一组成员（10-02）；执行体选型先查覆盖矩阵与三登记面（Rule 52.1））`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"。**hook 已机制化**：主进程白名单外 Write/Edit 被 check-delegation.sh 拦截（enforce=exit 2；warn 档注入警告并计数）；**验收后推进检查（Rule 49）**：每完成一个 S-unit 验收（22.5 三证据），立即核对该单元线下一工序是否满足推进三条件（49.2 已验收+前置在位+独立性四问），满足即派发不等批（跨 Phase 前移按 49.3 双登记，汇合点按 49.4① 等齐）
   2.6 **上下文卫生检查点（Rule 29.1①，每 2 个 Phase complete 触发一次）**：运行 `bash scripts/check-context-hygiene.sh <plan-dir>`（findings/progress 退场扫描，exit 1=有建议）→ 有建议按 29.2 处置（superseded 标记/压缩/progress 折叠，拿不准保留标"待复核"）；工作文件侧（`bash scripts/plan-hygiene.sh <plans-dir>`）在会话恢复时（29.1②）或用户显式指令（29.1③）时运行，--execute 前须先登记 dry-run 清单。开关键 `config.json#context_hygiene_enforce` / `plan_hygiene_enforce`（默认 warn，详见 `references/critical-rules.md` Rule 29）
   3. **执行 Phase 工作**（内嵌 3-File 落盘强制点，Rule 19）：
      - **3a. 子代理产出回填（19.1）**：每次子代理（Explore / research / debugger / codebase-analyzer 等）或调研类 Skill 返回后，**紧邻一次 `Edit findings.md`** 写入结论摘要 + 证据路径（映射见下方「产出落盘映射」）——禁止让结论只留在会话记忆（context reset 即丢失）；回填完成才可勾 Handoff 登记表 `verify_done`（Read 产出 + findings 回填双条件，见 22.5）
@@ -201,6 +201,7 @@ model: opus
 | C33 | 用户选择点默认项与自动超时（Rule 44）：向用户提供 2+ 选项的每个询问点已指定默认选项（推荐项排第 1 位标注默认/推荐）+自动超时时长（默认 5 分钟,询问点可声明覆盖值,登记于「自动超时默认项」行）;低区分度选项（产出一致仅步骤/耗时差异）已按 41.3 直接裁决并登记理由而非打扰用户;用户超时未答复已按默认选项自动执行且登记自动裁决记录五要素（超时值/推荐项/触发时间/理由/被覆盖选项）;本任务无 2+ 选项询问点时登记豁免理由（机器面=selftest-ask-default-timeout RT 静态断言,消费过程人工核查;mini 档豁免） | ☐ |
 | C34 | 单元线推进检查（Rule 49）：多单元线任务每个跨 Phase 前移已过推进三条件（已验收/前置在位/独立性四问）并双登记（Lane 表或 progress [advance] 行）；汇合点工序已等齐上游验收；单单元线任务登记豁免理由（机器面=selftest-lane-advancement 静态断言，推进核查人工；mini 档豁免） | ☐ |
 | C35 | 需求覆盖门控（Rule 51）：计划含「🎯 用户需求原文」区块且 R→VC 映射完整（51.1/51.2）；交付终态出「需求覆盖核对表」且核心需求全 covered 或有用户让步登记（51.3/51.4）；生成类动作前有盘点记录（51.5）（机器面=selftest-requirement-coverage.sh 静态断言，核对过程人工核查；mini 档豁免） | ☐ |
+| C36 | 根源解决纪律（Rule 53）：计划含「根源覆盖表」区块（结果级需求全链审计，53.1）；解决类条目附根治判据（53.2）；决策点过管辖二分（53.3）；浅快路径过返工核算（53.4）（机器面=selftest-root-resolution.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -246,9 +247,23 @@ model: opus
 
 `chain_mode` 默认 `single`（单 block，无 chain 区块）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，fan-out 成员按 Rule 21.4 声明组并行——组内独立性四问通过即可并行，未声明组=串行，10-02）的值语义、示意图与执行规则权威源 = `reference.md § Chain 模式详解`；block 交接字段表/6 条件/重规划触发见 `reference.md § Chain Handoff Contract`。
 
+## 🧵 并行创作组（Unit × Lane — Rule 21.4 / 23.9-23.13 / 47 / 49）
+
+> **核心模型**：把「场景段落 / 关键帧批 / 资产批」抽象为 **创作单元 Unit**；每个 Unit 一条 **工序链 lane**（写词→生成→质检→放行→组装）。**并行单位 = Unit（lane）；Unit 内工序强串行**（Rule 47.1 阶段×生产单元轴 + Rule 49.1 单元线模型，不造新机制）。冲突检测/引用管理规则本体见 `references/critical-rules.md` Rule 23.9-23.13。
+
+**① 声明格式（task_plan.md 三层声明）**：**(a) frontmatter** `parallel_groups: [u-seg01, u-seg02, ...]`（组名=创作单元 id）∧ `lanes: [u-seg01, ...]`（单元线名册，Rule 49）——必须**一次性声明全部 lane**（frontmatter 受 SHA-256 attest 锁定 Rule 20，执行期追加触发重锁）；只读并行组沿用 `parallel_readonly: true` + `[readonly-parallel]`。**(b) S-unit 表（22.6）增「单元/并行组」列**，每行填 `[parallel-group:<unit-id>]`（Rule 21.4 机器可消费组标记，check-dispatch.sh 消费；check-plan-dispatch.sh 只硬校验「执行体」列，加列安全）。**(c) 「📐 创作单元并行表（Lane 状态表）」区块**（Rule 49.1，主进程单写者）：列 = 单元 id | 工序链 | 当前工序 | 前置 S-unit | 前置验收证据 | 组标记 | 共享引用集 | 预估烧秒 | 状态 | 最后推进时间；推进双登记（49.3）= Lane 表翻格 + progress.md `[advance]` 行。
+
+**② fan-out / Aggregator（与既有 chain_mode 一致）**：`fan-out` = 上游 complete → 下游 Block 按 Rule 21.4 声明组**并行**派发（未声明组仍串行）→ 等齐；`chain_mode: fan-out` 计划**必须**预置 Aggregator Phase（Rule 23.6 / 18.7，check-complete.sh 硬校验正则 `Phase \d+:.*Aggregator|聚合`），模板预置 `### Phase N: Aggregator（汇合：整片组装 / 成片 QC / 台账收口）`；`linked` 语义不变（同上游产物多下游依次消费 = 四问③串行）。
+
+**③ 冲突检测清单（哪些情况不能并行）**：两 Unit 可并行 ⇔ 独立性四问全 **no**：① 写集相交？② 资源相争（同 worktree/分支、同交付物、同计划文件锚点、同预算 piece_id、同 NAS/VERSIONS.md、同额度窗口）？③ 输入依赖他者产物？④ 验收依赖他者结果？**项目专属冲突类（强串行）**：锚件换代（换装/装备变体/母图重抽）；同场景组连续成片（同场景组镜头=同一 lane 内串行）；同单元内生成→质检→放行→视频工序链；人工门（草稿门/试水门/G1）=lane 内屏障不可并行越过（跨 lane 可同批呈示）；生成额度=全局共享资源（Σ 在飞 lane 预算 ≤ 当日剩余额度）。三检测时机（计划期静态 / 派发期对全部在飞过四问 / 验收后三证据）与 RefSet 见 Rule 23.10-23.12。
+
+**④ 引用管理（共享资源处理）**：① 只读共享+版本冻结（共享锚件 `id+版本+sha256` 冻结，子代理只读，派发 prompt §4 Scope 禁改）；② 单写者（masters-registry/upload-map/master-prompt-store/VERSIONS.md/Lane 表/计划三文件由主进程单写，子代理只追加自己锚点，22.4a/49.4②）；③ 共享引用登记表（task_plan.md 区块：资源 id|类型|路径|sha256|引用单元清单|状态(现役/frozen/stale)）；④ 产出命名空间隔离（每单元 `output/<ep>/<unit>/` 与 `tmp/<task>/<unit>/`，汇合件由 Aggregator 单写）；⑤ 锚件换代协议（G1 人工门+单写者登记+stale 广播+冻结锁，换代后按 sha 差集重跑，grep 旧 sha 0 命中方可 complete）；⑥ 预算账本隔离（每单元独立 piece_id 命名空间）。
+
+**⑤ 子代理拆分模板（Unit × 工序 = S-unit）**：单 S-unit = 单创作单元 × 单工序（禁「整集生成/整批关键帧」粗粒度，Rule 47.1）；派发纪律 = 单会话单 S-unit（46.1）+ 每 lane 至多 1 个在飞 + 跨 lane 在飞 ≤ 并发上限（建议 2-4）+ 推进三条件（49.2）满足即派不等批（跨 Phase 前移 49.3）+ 失败 lane 冻结不阻塞其它 lane（Rule 49 核心收益）。**派发 prompt 增补字段**（在 `templates/subagent_dispatch.md` 并行组声明行基础上）：单元 id + `[parallel-group:<unit>]` + 引用集 sha 清单 + Scope 禁改（共享锚/registry/VERSIONS.md/Lane 表/三文件既有内容）+ 前置验收证据指针 + checkpoint `subagent-state/{seq}-{agent}-<unit>.md`。**执行体路由**：视频生成=`video-generation-executor`（缺位回退 executor(sonnet-1)+videop1-tools skill）；图片/关键帧=`image-generation-executor`；质检=对应 review-*；放行=用户（主进程 STOP，子代理无权代放行，约束 14/15）；禁因路由表无匹配行默认落 general-purpose（Rule 47.2/52.1）。**机器守卫边界（如实披露）**：check-dispatch.sh `serial_slot_check` 只有全局锁 `subagent-state/.dispatch-inflight`（120s age），组标记命中即放行、不区分组名、不做四问机器校验——责任在计划期声明+执行期四问（Rule 23.13）。
+
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40/41/42/43/44/45/46/47/48/49/51））：
+详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40-53 全集））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -260,7 +275,7 @@ model: opus
 - **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
 - **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发按 21.4 调度铁律——声明并行组内成员可并行（独立性四问通过）、未声明组一次验收一组成员再派下一组成员（21.4 子代理调度铁律，10-02）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
 - **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
-- **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验（详见 `references/critical-rules.md` Rule 23）
+- **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验 + 并行创作组单元级冲突检测/引用管理（Rule 23.9-23.13，衔接 Rule 21.4/47/49）（详见 `references/critical-rules.md` Rule 23）
 - **Rule 24（P1）plan-resume 被动扫描与自主续推**：交付终态/会话恢复触发点扫中断任务（task-v091 A-3 收敛，不再每 Phase 扫）；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
 - **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**（fmea_enforce 消费机器校验已生效：attest+check-complete）
 - **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
@@ -288,6 +303,7 @@ model: opus
 - **Rule 50（内容要求权重分级与评级 — task-v127）**：复合需求拆原子验收条目表（存在性 P/程度 E × 硬约束 H/评分项 S，50.1）；程度约束词显式成条且未标注默认 H（50.2）；逐条评级 PASS/PARTIAL/FAIL、程度条目双向判（过显眼 FAIL/不可见亦 FAIL，50.3）；加权判定=全 H 过+S 加权≥阈值（50.4）；条目表随任务书派发供 QC 链消费（50.5）；零新 config 键+selftest-requirement-grading.sh 守护（50.6）
 - **Rule 51（需求覆盖与完成声称门控 — task-v129）**：需求原文锚定+验证机制先行+完成声称对照门+自缩水禁令+生成前置盘点六子条；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
 - **Rule 52（执行体专业化优先与覆盖矩阵维护 — task-v125）**：派发选型专用体优先——先查覆盖矩阵 `references/agent-coverage.md` 与三登记面（52.1）；三类缺口（A 无具名映射/B 登记指向不存在或名不符实体/C 实体未登记）禁新增，B 类零容忍实体存在性（52.2）；agent 增删改名或登记面改动→矩阵与登记面同任务同步（52.3）；零新 config 键+selftest-agent-coverage.sh 静态守护（52.4）
+- **Rule 53（根源解决与决策管辖 — task-v131）**：结果级需求全链工序审计+根源覆盖表（53.1）/根治判据=机制·守卫·载体三选一防复发（53.2）/决策管辖二分反推诿（53.3）/返工成本核算质量优先（53.4）；零新 config 键+selftest-root-resolution.sh 守护（53.5）
 
 ## Completion Gate
 
@@ -311,7 +327,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护） |
+| `references/critical-rules.md` | Critical Rules 1-39（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |

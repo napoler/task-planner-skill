@@ -28,11 +28,14 @@ bash install.sh
 **自动行为**：
 1. ✅ Pre-flight：检查 `git`、`bash`、`jq`、`node` 可用性
 2. ✅ Clone canonical：若 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}` 不存在，git init；存在则 `git pull`
-3. ✅ Detect tools：扫描 `~/.claude/`、`~/.zcode/`、`~/.opencode/`、`~/.cursor/`、`~/.continue/` 是否存在
+3. ✅ Detect tools：扫描 `~/.claude/`、`~/.zcode/`、`~/.config/opencode/`（物理路径；`~/.opencode` 为其 symlink 兼容入口，探测以物理路径为准）、`~/.cursor/`、`~/.continue/` 是否存在
+   <!-- 修改说明（task-v131, 2026-10-05）：原行为=探测行写 `~/.opencode/`（symlink 入口），symlink 缺失时误判 opencode 未部署；改为与 lib/detect-tools.sh TOOL_PROBES 一致的物理路径 `~/.config/opencode/`（审计 L-5 遗留 Phase 5 行内残留，本次补齐）。 -->
 4. ✅ Backup：现有 stub 备份到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<timestamp>/`
-5. ✅ Install stub：每个检测到的工具创建薄壳 stub（SKILL.md + scripts + references + templates）
+5. ✅ Install：将本仓 `skills/task-planner/` 安装源**全量副本**同步到各宿主位——`~/.zcode/skills/task-planner`、`~/.claude/skills/task-planner`、`~/.config/opencode/skills/task-planner`、cursor 位（检测到的工具）；hooks 注册于各宿主配置（zcode 位 = `~/.zcode/cli/config.json`，claude 位 = `~/.claude/settings.local.json`，经 `scripts/register-hooks-cj.ts`）
 6. ✅ Migrate refs：`~/.claude/CLAUDE.md`、`commands/*.md`、`prompts/*.md` 中的硬编码路径替换为 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}` 形式
 7. ✅ Verify：7 项自检（canonical git 状态、stub 文件完整性、零硬编码路径、SKILL.md 大小、check-complete.sh/check-doc-sync.sh 可执行、external refs 已迁移）
+
+> 〔task-v131 M-1, 2026-10-05〕口径修正：原表述「每个检测到的工具创建薄壳 stub」与实盘不符——对齐审计（memory/align-audit-2026-10-05.md M-1）核实 zcode/claude/opencode/cursor 各宿主位均为本仓 `skills/task-planner/` 的全量副本（scripts/references/templates/config 全同步，非指针引用薄壳），hooks 注册于各宿主配置（zcode 位实测位于 `~/.zcode/cli/config.json`，非 SKILL.md frontmatter）。本次改为全量副本口径；「stub」一词在 §2/§5 保留为脚本命名（install-stub.sh 等）的历史术语，非部署形态描述。
 
 ---
 

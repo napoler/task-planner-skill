@@ -70,6 +70,11 @@ set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # [task-v057] BASH_SOURCE 推导出的 SKILL_ROOT 是 scripts/ 目录;config.json 在 skill 根(上一级)
+# [2026-10-05 task-v131 P6-S2 审计 L-1] 语义注明(仅注释,变量名与解析逻辑零改动):
+#   变量名 SKILL_ROOT 为遗留误称,实指 **scripts/ 目录**(即 BASH_SOURCE 所在目录),并非 skill 根;
+#   与 selftest-agent-coverage.sh:17 的 SKILL_ROOT(= $SCRIPT_DIR/..,指 skill 根)语义相反——
+#   两脚本同名变量不同语义,跨脚本阅读时勿混用。CONFIG_JSON="$SKILL_ROOT/../config.json" 的上跳
+#   即 skill 根,是本变量 scripts/ 语义的佐证。
 CONFIG_JSON="$SKILL_ROOT/../config.json"
 
 # 缺项扫描: $1=prompt 文件 $2=计划目录 → stdout 每行一个缺项名(固定顺序 P1..P3,R1..R3,C1)
@@ -402,6 +407,15 @@ $(cat -- "$tb" 2>/dev/null)"
         echo "[dispatch-guard] ⚠ 单次派发步骤枚举 ${step_n} 步 > step_max_steps(${smax})(Rule 21.1b) — 回计划层拆成多个 S-unit 再派" >&2
         [ -n "$hits" ] && hits="$hits; "
         hits="${hits}步骤枚举超限(${step_n}>${smax})"
+    fi
+    # ⑤ 需求锚 advisory（[2026-10-05 task-v131 P6-S2, Rule 51.1a/53.5 机器边界; critic P1-4 裁定落地, warn 档 fail-open）
+    # What: prompt 全文缺「需求锚」字样 → stderr 一行提醒, 不改变任何 exit 码。
+    # Why: 锚定义务（需求相关 S-unit 逐字引用治理 R 条目, 禁转译）由派发者承担（P1-4 裁定）,
+    #      机器面仅提醒不阻断——「需求相关/纯机械单元」判定在规划者侧, 强制机器断言误伤面大于收益;
+    #      刻意不并入 ①-④ 的 hits/计数管线: ①-④ 在 enforce 档会 exit 2 阻断, 本项须在任何档位
+    #      (含 enforce 无缺项路径) 都只输出 stderr 一行, 成功路径 exit 0 与静默语义保持不变。
+    if ! grep -qF '需求锚' "$pf" 2>/dev/null; then
+        echo "[dispatch-guard] ⚠ 派发 prompt 未含「需求锚」字段（Rule 51.1a：需求相关 S-unit 须逐字引用治理 R 条目；纯机械单元可写「不适用（纯机械单元）」）——advisory 不阻断" >&2
     fi
     [ -z "$hits" ] && return 0
     if [ "$mode" = "warn" ]; then

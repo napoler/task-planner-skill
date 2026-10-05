@@ -10,7 +10,8 @@
 #   R-06     43.2 行内锚：「最小档位」≥1（档位经济）
 #   R-07     43.3 行内锚：「候选对比表」≥1（候选预验证）
 #   R-08     SKILL.md `grep -c '| C30 |'` = 1 且 `grep -c '| C31 |'` = 1（合规清单 C30/C31 消费行）
-#   R-09     SKILL.md `grep -c '含 Rule 40/41/42/43'` ≥1 且 `grep -c '1-40'` = 0（括注扩写锚+越界负断言）
+#   R-09     SKILL.md `grep -c '含 Rule 40-53 全集'` ≥1 且 `grep -c '1-40'` = 0（括注全集锚+越界负断言）
+#            [2026-10-05 task-v131 CR P1-2 级联: SKILL.md:266 括注演进「（含 Rule 40/41/42/43/44/45/46/47/48/49/51）」→「（含 Rule 40-53 全集）」, 锚随之演进, 原锚「含 Rule 40/41/42/43」, 判例 SR-11 锚演进必同步]
 #   R-10     模板/契约消费面：templates/task_plan.md「质量审查工具」≥1 且 plan-writer.md「质量审查工具检测登记」≥1
 #   R-11     mini-lite 豁免锚：variant/mini-lite-type.md「Rule 42.5 豁免」≥1
 #   R-12     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
@@ -71,10 +72,11 @@ fi
 a="$(grep -c '| C30 |' "$SKILLMD" || true)"
 b="$(grep -c '| C31 |' "$SKILLMD" || true)"
 if [ "$a" -eq 1 ] && [ "$b" -eq 1 ]; then ok 08 "SKILL.md C30/C31 合规清单项各 =1"; else bad 08 "SKILL.md C30 项 $a（应 1）/ C31 项 $b（应 1）"; fi
-# R-09 SKILL.md 括注扩写锚 + 越界负断言
-a="$(grep -c '含 Rule 40/41/42/43' "$SKILLMD" || true)"
+# R-09 SKILL.md 括注全集锚 + 越界负断言
+# [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41/42/43」→「含 Rule 40-53 全集」(SKILL.md:266 括注演进), 1-40 负断言保留]
+a="$(grep -c '含 Rule 40-53 全集' "$SKILLMD" || true)"
 b="$(grep -c '1-40' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 09 "SKILL.md「含 Rule 40/41/42/43」锚 $a ≥1 且越界 1-40 =0"; else bad 09 "SKILL.md 括注锚漂移（含 Rule 40/41/42/43=$a 应 ≥1 / 1-40=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 09 "SKILL.md「含 Rule 40-53 全集」锚 $a ≥1 且越界 1-40 =0"; else bad 09 "SKILL.md 括注锚漂移（含 Rule 40-53 全集=$a 应 ≥1 / 1-40=$b 应 0）"; fi
 # R-10 模板配置表「质量审查工具」行 + plan-writer 义务行（检测登记）
 a="$(grep -c '质量审查工具' "$TPL" || true)"
 b="$(grep -c '质量审查工具检测登记' "$PLANWRITER" || true)"

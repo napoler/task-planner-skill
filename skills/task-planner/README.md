@@ -41,11 +41,16 @@
                    │  rsync + sed-rewrite
        ┌───────────┼───────────┬───────────┬────────────┐
        ▼           ▼           ▼           ▼            ▼
-  ~/.claude   ~/.zcode    ~/.opencode  ~/.cursor   ~/.continue
-  /skills/    /skills/    /skills/     /skills/    /skills/
-  task-planner/                                           
+  ~/.claude   ~/.zcode  ~/.config/    ~/.cursor   ~/.continue
+  /skills/    /skills/   opencode/    /skills/    /skills/
+  task-planner/          skills/
+                          task-planner/
   (thin shell + content rsync)
 ```
+
+> [2026-10-05 task-v131 审计 L-5 修正] opencode 物理部署位 = `~/.config/opencode/skills/task-planner`；
+> `~/.opencode` 为其 symlink 兼容入口（实测 `~/.opencode -> ~/.config/opencode`）。
+> 原行为=上图仅写 `~/.opencode` symlink 路径，未标注物理路径。
 
 每个工具的 stub：
 - **SKILL.md** 薄壳（< 4KB）— 仅声明该平台 hook 格式

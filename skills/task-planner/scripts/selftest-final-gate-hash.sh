@@ -67,6 +67,10 @@ setup_sandbox() {
     cp "$SKL/scripts/check-plan-dispatch.sh" "$SB/cpd.orig"
     cp "$SKL/config.json" "$SB/config.orig"
     mkdir -p "$PLAN_DIR" || return 1
+    # [2026-10-05 task-v131 回归清账 Rule 45] 原行为: 夹具计划无 Rule 51.1 区块, Phase 2 新增的
+    #   四锚 fail-closed 门先于锁定拒 attest → setup_sandbox 走「沙箱建立失败」exit 2, 0 用例执行。
+    #   修法: 夹具补四锚最小集 (51.1 标题 + R1 行 + R→VC 映射 + 🧮 根源覆盖表, 非结果级按
+    #   53.1 口径写「不适用」声明+定性理由), 六夹具 SKIP-BY-HASH 原测试目标不变。
     cat > "$PLAN" <<'EOF'
 ---
 template_type: general
@@ -89,6 +93,17 @@ template_type: general
 | 子代理 | 检查点路径 |
 |---|---|
 | explorer | plans/t1/subagent-state/1-explore.md |
+
+## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）
+
+- **R1**: 「验证终验重复门四元内容键 SKIP-BY-HASH 行为（selftest 夹具，非真实任务）」
+
+### R→VC 映射
+
+## 🧮 根源覆盖表
+
+> 不适用（非结果级需求）: 本夹具为自测镜像计划, 无「确保质量/性能/可靠」类结果级需求,
+> 无需全链工序审计（Rule 53.1 口径）。
 
 ## 📊 FMEA 预演
 

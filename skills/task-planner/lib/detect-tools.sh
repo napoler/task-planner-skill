@@ -17,7 +17,10 @@ set -u
 TOOL_PROBES=(
   "claude-code|$HOME/.claude/skills/task-planner|claude-settings|$HOME/.claude"
   "zcode|$HOME/.zcode/skills/task-planner|zcode-frontmatter|$HOME/.zcode"
-  "opencode|$HOME/.opencode/skills/task-planner|opencode-frontmatter|$HOME/.opencode"
+  # opencode 物理路径=~/.config/opencode；~/.opencode 为其 symlink 兼容入口
+  # （2026-10-05 task-v131 审计 L-5 修正：原行为=探测/记录均用 ~/.opencode symlink 路径，
+  #   symlink 缺失时探测误判工具未部署；改为物理路径后探测更稳健）
+  "opencode|$HOME/.config/opencode/skills/task-planner|opencode-frontmatter|$HOME/.config/opencode"
   "cursor|$HOME/.cursor/skills/task-planner|cursor-frontmatter|$HOME/.cursor"
   "continue|$HOME/.continue/skills/task-planner|continue-frontmatter|$HOME/.continue"
 )

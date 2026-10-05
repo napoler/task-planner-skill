@@ -9,7 +9,8 @@
 #   SR-05     41.6 行内锚：「零新 config 键」≥1 且「selftest-self-resolution.sh」≥1
 #   SR-06     SKILL.md `grep -c 'Rule 41'` ≥3 且 `grep -c '| C29 |'` = 1（合规清单 C29 项）
 #   SR-07     SKILL.md `grep -c 'Rules 1-39'` = 2 且 `grep -c '1-40'` = 0（字面锚——关键负断言）
-#   SR-08     SKILL.md 含「含 Rule 40/41」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
+#   SR-08     SKILL.md 含「含 Rule 40-53」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
+#             [2026-10-05 task-v131 CR P1-2 级联: SKILL.md:266 括注演进→「（含 Rule 40-53 全集）」, 锚随之演进, 原锚「含 Rule 40/41」, 判例 SR-11 锚演进必同步; ^40\.=6 子条断言保留]
 #   SR-09     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
 #   SR-10     SKILL.md 摘要行锚：「升级四门槛」或「四门槛」≥1
 #   SR-11     selftest-skill-split.sh 级联落地锚：「task-v099」≥1 且 `-le 4` 前缀断言行存在（不锁具体数值）[2026-09-30 task-v099 级联: 锚 token task-v098→task-v099]
@@ -66,10 +67,11 @@ a="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"
 b="$(grep -c '1-40' "$SKILLMD" || true)"
 if [ "$a" -eq 2 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 Rules 1-39=2 且 1-40=0"; else bad 07 "SKILL.md 字面锚漂移（Rules 1-39=$a 应 2 / 1-40=$b 应 0）"; fi
 # SR-08 Rule 40/41 共存零损伤
-if [ "$(grep -c '含 Rule 40/41' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
-  ok 08 "SKILL.md「含 Rule 40/41」锚 + critical-rules.md Rule 40 六子条 = 6（共存零损伤）"
+# [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41」→「含 Rule 40-53」(SKILL.md:266 括注演进), ^40\.=6 子条断言保留]
+if [ "$(grep -c '含 Rule 40-53' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
+  ok 08 "SKILL.md「含 Rule 40-53」锚 + critical-rules.md Rule 40 六子条 = 6（共存零损伤）"
 else
-  bad 08 "Rule 40/41 共存锚损伤（含 Rule 40/41 缺失或 ^40\\. 子条数 ≠6）"
+  bad 08 "Rule 40/41 共存锚损伤（含 Rule 40-53 缺失或 ^40\. 子条数 ≠6）"
 fi
 # SR-09 零新 config 键——properties 键数 = 40（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
 if command -v jq >/dev/null 2>&1; then

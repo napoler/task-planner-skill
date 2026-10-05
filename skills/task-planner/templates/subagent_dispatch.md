@@ -16,6 +16,9 @@
 {goal_one_sentence}
 > 本会话只执行本 S-unit：完成后交回主进程验收，再由主进程派发下一个 S-unit（Rule 46.1）；禁止本会话内领取多个 S-unit 或批次追加
 
+- **需求锚（Rule 51.1a，task-v131）**: {requirement_anchor} — 需求相关 S-unit 必填；格式=治理 R 条目逐字引用 `R<n>:「<用户原话>」`；禁转译/缩写/换算（判例：用户「一个月」被两次改写为「前 72 小时」）；需求无关的纯机械 S-unit 可写「不适用（纯机械单元）」
+<!-- 2026-10-05 task-v131: 派发侧锚（Rule 51.1a 追加子句 / 53.5 载体清单）——子代理无会话记忆，转述后的目标易被上游改写漂移（判例见上字段行）；逐字引用 task_plan.md「🎯 用户需求原文」区块的 R 条目作本 S-unit 目标锚，让子代理对齐用户原话而非转译版；纯机械单元（记账/搬运类）写「不适用（纯机械单元）」即可，不强行挂 R -->
+
 ## 2. 输入(计划三文件必传,绝对路径 — Rule 22.4a 读写契约)
 - task_plan: {plan_dir}/task_plan.md — 只读(状态由主进程翻转,禁止修改)
 - findings:  {plan_dir}/findings.md — 可读;可写=仅追加 `#### [sub:{seq}-{type}] <标题>` 到 `## Research Findings` 段末(`## Technical Decisions` 前),禁改既有内容

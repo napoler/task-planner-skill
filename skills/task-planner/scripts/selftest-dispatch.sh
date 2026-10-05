@@ -242,10 +242,15 @@ FGC_LOCK="$FGC_PLAN/subagent-state/.dispatch-inflight"
 # 清锁+清 wf 防 T05/TS 残留扰动(同 T05/TS-06 清锁范式; wf 为自测 sid 专属文件, trap 兜底清理)
 fgc_pre() { rm -f "$FGC_LOCK" "$FGC_WF"; }
 fgc_prompt() {
+  # [2026-10-05 task-v131 回归清账] fgc_prompt 增加「需求锚: 不适用（纯机械单元）」行:
+  # Why: P6 L-1 后 check-dispatch 新增 51.1a 需求锚 advisory(warn fail-open, stderr 提醒, 不阻断);
+  # 本夹具为纯机械单元(非需求相关 S-unit), 按 51.1a 口径声明「不适用（纯机械单元）」使 advisory 静默,
+  # 保留 FG-01 原测试目标=零细粒度输出断言不变。原行为: 夹具 prompt 无需求锚字段 → advisory 打 stderr → FG-01 FAIL。
   cat <<EOF > "$1"
 - task_plan: $FGC_PLAN/task_plan.md
 - findings: $FGC_PLAN/findings.md
 - progress: $FGC_PLAN/progress.md
+需求锚: 不适用（纯机械单元）
 status:
 acceptance:
 checkpoint: $FGC_PLAN/subagent-state/fg.md

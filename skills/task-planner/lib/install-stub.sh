@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
-# lib/install-stub.sh — Install per-tool thin stub that delegates to canonical
+# lib/install-stub.sh — Install a full copy of task-planner (scripts/references/templates/config)
+# into each host stub dir.
+#
+# [task-v131 M-1, 2026-10-05] 口径修正 (Rule 45): 原头注释「Install per-tool thin stub that
+# delegates to canonical」与实盘不符——对齐审计 (memory/align-audit-2026-10-05.md M-1) 核实
+# 实盘=全量副本同步: 安装源=本仓 skills/task-planner/, 四位宿主位
+# (~/.zcode / ~/.claude / ~/.config/opencode / ~/.cursor 下 skills/task-planner/) 均为全量副本,
+# 无指针引用薄壳形态。本次改描述文字; 「stub」保留为脚本/函数命名历史术语, 不改文件名与函数名。
 #
 # Usage:
 #   install_stub_for_tool <tool_name> <stub_dir>
@@ -8,6 +15,9 @@
 #   - mkdir -p stub_dir
 #   - rsync scripts/ → stub_dir/scripts/ (with sed-rewritten hardcoded paths)
 #   - rsync references/ + templates/ + config.json → stub_dir/
+#   [task-v131 M-1, 2026-10-05] 口径注: 上述 rsync 即全量副本同步 (安装源=本仓
+#   skills/task-planner/, 四位宿主位均为完整副本, 非指针引用薄壳);
+#   「stub_dir」为脚本命名历史术语, 保留。
 #   - rsync 4 satellite skills (plan-research-router/plan-template-kit/
 #     plan-cost-guard/plan-collab-router) whole-dir → stub 位同级 skills/<sat>/
 #     [task-v095 P7 扩展; 卫星无 scripts/config 无需 sed 重写; 源缺失则跳过]
@@ -259,6 +269,10 @@ install_stub_for_tool() {
   mkdir -p "$stub_dir/scripts"
 
   # Rsync content dirs (exclude SKILL.md, we'll generate it)
+  # [task-v131 M-1, 2026-10-05] 口径修正 (Rule 45): 原口径把宿主位描述为「thin stub」,
+  # 实盘=全量副本同步: 安装源=${TASK_PLANNER_ROOT}(本仓 skills/task-planner/) 全量 rsync 到
+  # 四位宿主位 (~/.zcode / ~/.claude / ~/.config/opencode / ~/.cursor 的 skills/task-planner/),
+  # 宿主位是完整副本而非指向 canonical 的指针薄壳; 下方 sed 重写只是副本内的路径本地化。
   rsync -a --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
     "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null
 
