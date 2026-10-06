@@ -144,9 +144,9 @@ Phase 1
 
 ### Phase 4: 交付
 
-- [ ] 终验交付
+- [x] 终验交付
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
