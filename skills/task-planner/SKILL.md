@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-56（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 全集 1-57（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行、57 迭代测试轮次落盘纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -90,6 +90,7 @@ model: opus
      - **3b. 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 操作后写 findings.md；多模态内容（截图/网页）必须立即转文字落盘
      - **3c. 动作留痕**：关键动作（文件创建/修改、命令执行、测试）随做随记 progress.md 对应 Phase 段；错误发生 → **立即**写 progress.md Error Log（不等 Phase 结束，19.4）。关键动作同步追加工作账本：`bash <skill>/scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N]`（event 枚举：Phase 翻转=`phase_complete`/子代理回填=`progress`/错误=`error`/门控拦截=`gate_block`/锁定=`attest`/其他=`note`）——ledger 行是 check-3file-gate.sh 的语义工作信号（19.2），无 ledger 时门控退回 mtime 判定
      - **3d. hook 响应**：期间收到 `[plan-sync]` hook 提醒 → 立即执行 references/todo-sync.md §4 响应协议（回写计划 + 同步 Todo）；每 `todo_sync_interval_calls`（默认 10）次工具调用内保持计划文档未腐化；收到 `[plan-compass]` 提醒（findings/progress 陈旧，Rule 19.7）→ 立即回填对应文件再继续；回写内容按三文件分流——状态与指针进 task_plan.md，调研与结论进 findings.md，动作与测试进 progress.md，禁止把 findings 类细节塞进 task_plan.md（Rule 19.6）
+     - **3e. 迭代落盘检查点（Rule 57 — 每轮测试/迭代结束强制）**：每一次测试/迭代轮次（回归测试/迭代更新/复测/重跑）结束后，**当次**把本轮结果写入 progress.md 对应 Phase 段（禁止攒批、禁止留待 Phase 末、禁止只留会话记忆）——落盘四要素齐备：① 轮次编号（Round N，Phase 内自增）② 测试命令（可复现完整命令）③ 测试结果（PASS/FAIL 显式标注）④ 关键输出摘要（FAIL 含错误原文/堆栈关键行，PASS 含断言计数或产物路径）；四要素缺一视为未落盘。**未落盘即进入下一轮 = 违规**，禁止基于会话记忆的轮次数据做下一轮判断（防多轮迭代错误累积/上下文分散）；迭代密集期逐轮触发。机器面=`scripts/selftest-iteration-persistence.sh` 静态守护。详见 `references/critical-rules.md` Rule 57
   4. **回写计划**：`Edit task_plan.md` Phase 状态 → `complete` + 勾选 checkbox + 记录证据路径；错误记 Errors 表
      - **⚠️ 3-File 回填门控（19.2 — 执行中硬门控）**：标记 complete 前必须满足双条件——① progress.md 对应 Phase 段已回填（Actions taken / Files created-modified / Test Results）；② findings.md 在本 Phase 期间有实质增量。运行 `bash <skill>/scripts/check-3file-gate.sh <plan-dir>` 校验：信号优先级 = ledger 工作账本（`ledger-*.jsonl` 含锚点后的行 = 语义工作证据）> mtime 判定（无 ledger 时兜底）；exit 1 → 禁止翻转 complete，先回填再重跑直至 exit 0
   4.5 **提交工作产物（Rule 27 — git 管理强制）**：实现类 Phase 在标记 complete 前，必须把本 Phase 产物 commit 到当前工作分支（worktree 隔离场景提交在 worktree 内分支；direct 场景提交在主仓当前分支）——**禁止跨 Phase 攒批、禁止留到终验才提交**，丢弃上限收敛为单 Phase 增量。范围 = 本 Phase 实际产出文件（以 scope_files / progress.md「Files created-modified」清单为准），**禁止 `git add -A` / `git add .` 盲扫**（防卷入 plans/、.env、临时文件与并行任务产物；plans/ 按仓约定不入库）。message：`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。提交后 `git status --porcelain -- <scope 文件>` 必须为空；非 git 目录 → progress.md 记一行 `[git-commit] 跳过:非 git 仓库` 不阻塞；豁免（计划声明 `git_commit: deferred` 或用户显式"先不提交"）须已写入计划并登记 verification.md。详见 `references/critical-rules.md` Rule 27
@@ -204,7 +205,7 @@ model: opus
 | C36 | 根源解决纪律（Rule 53）：计划含「根源覆盖表」区块（结果级需求全链审计，53.1）；解决类条目附根治判据（53.2）；决策点过管辖二分（53.3）；浅快路径过返工核算（53.4）（机器面=selftest-root-resolution.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
 | C37 | 未验证优点宣传核查（Rule 43.5/43.6 + Rule 51.8 + 53.5-Q9）：提示词/参数优化类修改的产出已附实际生成测试证据（生成回执 + 产物质检，43.5 三件套）；未经验证的结果（含零消耗/零成本类统计）未以优点口吻呈现，缺证据项已降级「未验证」登记（43.1/43.6）；需求条目覆盖判据属实测形态的，无实测证据未声称 covered（51.8）（机器面=selftest-reliability-institution R-13..R-16 + selftest-requirement-coverage RC-23 静态断言，测试证据人工核查；mini 档豁免） | ☐ |
 | C38 | 执行诚实性与即时执行自查（Rule 54）：对外声称（状态/资源/阻塞/里程碑/完成/统计）已附第一手证据锚（54.0）；「就绪」仅用于交付物、资源状态类声称有第一手查询记录否则显式「未验证」（54.1）；阻塞已逐项出阻塞/未阻塞矩阵、未阻塞项不被连带推迟（54.2）；准备类仪式动作未作为里程碑呈报（54.3）；推迟决策四要素（阻塞证据/未阻塞子集/立即可执行项记录/恢复触发器）齐备（54.4）；决策引用数据走落盘锚（findings/knowledge-brief）而非裸会话数据（54.5）（机器面=selftest-execution-honesty.sh 静态断言，声称可回溯/矩阵/举证人工核查；mini 档豁免） | ☐ |
-| C39 | 周期性回顾与前后对照（Rule 57）：每 N 次工具调用（默认 8）触发回顾；重读 task_plan/findings/progress 关键部分；前后对照检查结论一致性；发现矛盾自动纠正+报告用户（机器面=periodic-review.sh 检测+selftest-periodic-review.sh 静态守护，回顾过程人工核查；mini 档豁免） | ☐ |
+| C40 | 迭代测试轮次落盘自查（Rule 57）：每一次测试/迭代轮次结束已**当次**将本轮结果写入 progress.md 对应 Phase 段（未落盘即进入下一轮=违规，57.1）；落盘四要素齐备——轮次编号 Round N / 可复现测试命令 / PASS-FAIL 显式结果 / 关键输出摘要（FAIL 含错误原文/堆栈，PASS 含断言计数或产物路径）（57.2）；迭代更新数据及时落盘、下一轮基于文件事实而非会话记忆判断（57.3）（机器面=selftest-iteration-persistence.sh 静态断言，逐轮落盘事实人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -309,6 +310,7 @@ model: opus
 - **Rule 53（根源解决与决策管辖 — task-v131）**：结果级需求全链工序审计+根源覆盖表（53.1）/根治判据=机制·守卫·载体三选一防复发（53.2）/决策管辖二分反推诿（53.3）/返工成本核算质量优先（53.4）；零新 config 键+selftest-root-resolution.sh 守护（53.5）
 - **Rule 54（执行诚实性与即时执行纪律 — task-v136）**：54.0 有依据原则总则 / 54.1 就绪语义+资源状态第一手 / 54.2 阻塞影响矩阵 / 54.3 仪式性进展禁令 / 54.4 推迟举证四要素 / 54.5 决策依据落盘与引用义务 / 54.6 机制=零新 config 键+selftest-execution-honesty.sh 守护（54.6）
 - **Rule 55（可复用能力落盘纪律 — task-v138）**：复用前置检查(55.1)/权威来源优先禁令(55.2)/首次成功即落盘(55.3)/固定位置与注册表(55.4)/执行体接线(55.5)/机制(55.6)——「首成即落盘→注册可发现→复用不再发明」链路，scripts/capabilities/ + references/capability-registry.md，零新 config 键（详见 references/critical-rules.md Rule 55）
+- **Rule 57（迭代测试轮次落盘纪律 — task-v141）**：每轮测试/迭代结果必落盘(57.1)/落盘四要素=轮次编号·测试命令·PASS-FAIL·关键输出摘要(57.2)/迭代更新即时落盘防上下文分散(57.3)/机制=零新 config 键+selftest-iteration-persistence.sh 守护+合规清单 C40(57.4)——「每轮落盘→下轮基于文件事实→根除多轮错误累积」链路（详见 references/critical-rules.md Rule 57）
 
 ## Completion Gate
 
