@@ -326,6 +326,18 @@
       "default": "warn",
       "description": "Rule 38 任务难度分级与轻量档(plan tier)三档: off=mini 声明也走全量门控(38.4 豁免全关闭); warn=豁免生效+FMEA/VC-GATE 等 MISMATCH 提示不阻断(默认); enforce=豁免生效+MISMATCH 阻断锁定。判定=计划 frontmatter plan_tier: mini ∧ scope ≤2 文件 ∧ ≤15min ∧ 单模块; 消费侧=attest-plan FMEA 段/check-complete VC-GATE+委派统计/check-plan-dispatch S-unit 表+knowledge-brief 5 锚点 if 前置豁免(非 mini 路径零改动)+init-session.sh tier 分流; selftest-plan-tier.sh 守护。详见 references/critical-rules.md Rule 38"
     },
+    "periodic_review_enforce": {
+      "type": "string",
+      "enum": ["enforce", "warn", "off"],
+      "default": "warn",
+      "description": "Rule 57 周期性回顾与前后对照三档: enforce=发现矛盾立即阻断; warn=注入警告并计数(默认); off=关闭。触发条件/执行步骤/前后对照检查维度/自动纠正机制见 references/critical-rules.md Rule 57。"
+    },
+    "periodic_review_interval_calls": {
+      "type": "integer",
+      "default": 8,
+      "minimum": 1,
+      "description": "Rule 57 周期性回顾触发间隔（工具调用次数）：每 N 次工具调用触发一次回顾。默认 8，与 Rule 15 的每 2-3 个 todo 互补。"
+    },
     "subagent": {
       "type": "object",
       "description": "Subagent dispatch scaling thresholds — all mutable numbers live here (all mutable numbers live here principle)",

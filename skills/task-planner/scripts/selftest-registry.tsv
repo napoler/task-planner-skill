@@ -29,6 +29,7 @@ selftest-sync-index.sh	sync-todos --index 单 awk 全量重算(v091 C-3)	sync-to
 selftest-task-boundary.sh	Rule 8.1 新任务边界判定(D 类)	Rule 8.1 条款 / zcode-userpromptsubmit.sh / todo-sync.md 措辞改动	references/critical-rules.md;references/todo-sync.md;zcode-userpromptsubmit.sh;SKILL.md
 selftest-template-lifecycle.sh	tier|Rule 34 模板生命周期	Rule 34 条款 / check-template-type.sh / init-session.sh tier 分流改动	references/critical-rules.md;references/template-guide.md;references/template-mapping.md;scripts/attest-plan.sh;scripts/check-template-type.sh;scripts/init-session.sh;config.json
 selftest-vc-gate.sh	check-complete 终验 VC/V-N 门控	check-complete.sh VC/V-N 段改动	scripts/check-complete.sh;config.json
+selftest-periodic-review.sh	Rule 57 周期性回顾与前后对照	Rule 57 条款 / periodic-review.sh / config.json 相关键改动	references/critical-rules.md;scripts/periodic-review.sh;config.json;SKILL.md
 selftest-veto.sh	Rule 32 用户否决与禁令追踪	Rule 32 条款措辞改动	references/critical-rules.md;config.json
 selftest-workflow-orchestration.sh	Rule 39 动态工作流编排	Rule 39 条款 / zcode-pretooluse.sh workflow 分支措辞改动	references/critical-rules.md;zcode-pretooluse.sh;config.json
 selftest-check-drift.sh	check-drift 五检行为级(v092 S12: 3a 初值中性/3b 列限提取+fail-open 正反双向)	check-drift.sh check_phase_order 初值或越级判定 / check_scope_breach 提取管道 / lib/plan-parse.sh plan_parse_scope maxcol 语义改动	check-drift.sh;lib/plan-parse.sh
