@@ -1,0 +1,56 @@
+test	exit	duration_s	total_line
+selftest-active-plan.sh	1	3	Total: 19 PASS=14 FAIL=5
+selftest-agent-coverage.sh	1	0	Total: 9 PASS=6 FAIL=3 SKIPPED=0
+selftest-ask-default-timeout.sh	1	0	Total: 11 PASS=9 FAIL=2
+selftest-batch-pilot.sh	1	0	Total: 10 PASS=7 FAIL=3
+selftest-capability-persistence.sh	1	1	Total: 20 PASS=15 FAIL=5
+selftest-check-conflicts.sh	0	2	Total: 7 PASS=7 FAIL=0
+selftest-check-drift.sh	0	2	Total: 6 PASS=6 FAIL=0
+selftest-conclusion-discipline.sh	1	0	Total: 24 PASS=17 FAIL=7
+selftest-context-hygiene.sh	0	1	Total: 12 PASS=12 FAIL=0
+selftest-delegation.sh	0	4	Total: 38    PASS=38  FAIL=0
+selftest-dispatch-grain.sh	1	1	Total: 10 PASS=9 FAIL=1
+selftest-dispatch.sh	1	6	Total: 31 PASS=28 FAIL=3
+selftest-error-loop.sh	1	0	Total: 16 PASS=13 FAIL=3
+selftest-execution-honesty.sh	1	0	Total: 14 PASS=11 FAIL=3
+selftest-execution-stability.sh	1	2	Total: 19  PASS=18  FAIL=1
+selftest-fallback.sh	0	3	Total: 31  PASS=31  FAIL=0
+selftest-final-gate-hash.sh	0	17	
+selftest-fine-grain-steps.sh	1	2	Total: 11 PASS=10 FAIL=1
+selftest-interaction.sh	0	1	Total: 11 PASS=11 FAIL=0
+selftest-iteration-persistence.sh	0	0	Total: 18 PASS=18 FAIL=0
+selftest-iterative-optimizer.sh	1	0	Total: 8 PASS=0 FAIL=8
+selftest-knowledge-brief.sh	1	0	Total: 16  PASS=11  FAIL=5
+selftest-lane-advancement.sh	0	0	Total: 14 PASS=14 FAIL=0
+selftest-mechanism-profile.sh	1	5	Total: 19 PASS=15 FAIL=4
+selftest-media-agents.sh	1	0	Total: 10 PASS=2 FAIL=8
+selftest-media-dispatch.sh	1	0	Total: 9 PASS=7 FAIL=2
+selftest-methodology.sh	1	1	Total: 16 PASS=8 FAIL=8
+selftest-plan-dispatch.sh	0	2	Total: 12 PASS=12 FAIL=0
+selftest-plan-tier.sh	1	5	Total: 32 PASS=17 FAIL=15
+selftest-reflect-verify.sh	0	0	Total: 12 PASS=12 FAIL=0
+selftest-registry.sh	0	0	Total: 5 PASS=5 FAIL=0 (registry rows=55, actual selftest=55)
+selftest-reliability-institution.sh	1	0	Total: 16 PASS=14 FAIL=2
+selftest-requirement-coverage.sh	1	13	Total: 23 PASS=21 FAIL=2
+selftest-requirement-grading.sh	1	0	Total: 7 PASS=5 FAIL=2
+selftest-rescue-chain.sh	0	1	Total: 11 PASS=11 FAIL=0
+selftest-review-library.sh	1	0	Total: 15 PASS=5 FAIL=10
+selftest-root-resolution.sh	1	1	Total: 17 PASS=14 FAIL=3
+selftest-rule23-conflict-scan.sh	0	1	Total: 3 PASS=3 FAIL=0
+selftest-rule-reserve.sh	0	0	Total: 10 PASS=10 FAIL=0
+selftest-self-resolution.sh	0	1	Total: 13 PASS=13 FAIL=0
+selftest-shared-tracker.sh	1	0	Total: 11 PASS=9 FAIL=2
+selftest-skill-collab.sh	1	0	Total: 25  PASS=13  FAIL=12
+selftest-skill-modify.sh	0	0	Total: 9 PASS=9 FAIL=0 (SKIP=0)
+selftest-skill-split.sh	1	1	Total: 41  PASS=20  FAIL=21
+selftest-smart-merge.sh	0	8	Total: 17 PASS=17 FAIL=0
+selftest-sync-index.sh	0	1	Total: 13 PASS=13 FAIL=0
+selftest-task-boundary.sh	1	0	Total: 11 PASS=10 FAIL=1
+selftest-template-lifecycle.sh	1	0	Total: 24 PASS=17 FAIL=7
+selftest-template-sense.sh	1	3	Total: 8 PASS=5 FAIL=3
+selftest-tier-b.sh	1	1	Total: 18 PASS=17 FAIL=1
+selftest-tool-selection.sh	1	0	Total: 12 PASS=8 FAIL=4
+selftest-user-instruction-priority.sh	0	0	
+selftest-vc-gate.sh	0	16	Total: 11 PASS=11 FAIL=0
+selftest-veto.sh	1	0	Total: 13 PASS=12 FAIL=1
+selftest-workflow-orchestration.sh	1	0	Total: 16 PASS=15 FAIL=1
