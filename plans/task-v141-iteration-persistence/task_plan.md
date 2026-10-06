@@ -212,14 +212,14 @@ Phase 1
 
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` |  |
-| `sampled_pass` |  |
-| `sampled_fail` |  |
-| `pre_check` |  |
-| `rollback_point` |  |
+| `total` | n/a（非批量任务） |
+| `success` | n/a |
+| `failed` | n/a |
+| `failure_rate` | n/a |
+| `sampled_pass` | n/a |
+| `sampled_fail` | n/a |
+| `pre_check` | n/a |
+| `rollback_point` | n/a |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
