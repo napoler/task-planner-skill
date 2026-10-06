@@ -106,13 +106,7 @@ Phase 1
 - [x] 更新 SKILL.md 执行循环
 - **V-N:** VC-1, VC-3
 - **Status:** complete
-- **Executor:** executor（sonnet-1）
-
-<!-- S-unit 派发单元表(Rule 22.6) -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|
-| S1 | 编写 Rule 57 条款并写入 critical-rules.md | 继承 | critical-rules.md 现有 Rule 55/56 格式 | grep "Rule 57" 可查 | 10min | pending |
-| S2 | 更新 SKILL.md 执行循环增加落盘检查点 | 继承 | SKILL.md 执行循环段落 | grep "落盘检查点" 可查 | 5min | pending |
+- **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ### Phase 2: 机器守护脚本创建
 
@@ -120,13 +114,7 @@ Phase 1
 - [x] 更新 selftest-registry.tsv
 - **V-N:** VC-4, VC-5
 - **Status:** complete
-- **Executor:** executor（sonnet-1）
-
-<!-- S-unit 派发单元表(Rule 22.6) -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|
-| S1 | 创建 selftest-iteration-persistence.sh | 继承 | 现有 selftest-*.sh 格式 | 脚本 exit 0 | 10min | pending |
-| S2 | 更新 selftest-registry.tsv | 继承 | selftest-registry.tsv 现有格式 | grep "iteration-persistence" 可查 | 5min | pending |
+- **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ### Phase 3: 验证与回归
 
@@ -134,13 +122,7 @@ Phase 1
 - [x] 运行全量 selftest 回归
 - **V-N:** VC-4, VC-5
 - **Status:** complete
-- **Executor:** code-runner-agent（mini）
-
-<!-- S-unit 派发单元表(Rule 22.6) -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|
-| S1 | 运行 selftest-iteration-persistence.sh | 继承 | 脚本路径 | exit 0 | 5min | pending |
-| S2 | 运行全量 selftest 回归 | 继承 | selftest-registry.tsv | 全量 0 FAIL | 15min | pending |
+- **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ### Phase 4: 交付
 
