@@ -66,6 +66,24 @@
 #   ①②③④ 均在缺项扫描之后追加; 缺项存在时（既有处置: warn=告警放行 / enforce=exit 2）
 #   仍先执行既有缺项路径（行为不变）, 仅当缺项扫描通过（即将串行槽检查放行）时执行四项,
 #   四项目前全部通过 → 保持既有静默 exit 0 语义（成功路径零输出）。
+#
+# [2026-10-08 task-v145 S-1] 契约收窄 lint（Rule 60.2 不可收窄禁令; 挂既有 get_mode() 档位:
+# enforce=exit 2 阻断 / warn=stderr 告警 + 计数落盘(复用本文件 fine_grain_checks 的
+# task-planner-dispatch-warn-<sid> 计数文件范式) / off=跳过; 只增不改既有分支,
+# scan_missing 七项判定/三级计划目录解析/fine_grain_checks ①-⑤/串行槽检查/成功路径静默 exit 0
+# 语义全部不变）:
+#   What: 新增 scan_contract_narrowing()——prompt 契约收窄措辞检测, 双条件 ∧ 缺一不判（防误报）:
+#     A(收窄词): 某行含「只写检查点」; 或同行含「主进程回填」且紧随否定性续文
+#       （你只|不用写|无需写|不必写|禁止写|不要写）;
+#     B(缺 append 锚点): 全文不含 findings append 锚点标记（`#### [sub:` 或 `可写=仅追加`）。
+#     A ∧ B → 判契约收窄违规, 输出前缀 `[dispatch-contract]`（含 Rule 60.2 指引）。
+#   Why: videop1 实证调研子代理被派发 prompt「findings.md（主进程回填，你只写检查点）」收窄
+#     22.4a 契约, 知识发现型产出停检查点不入 findings（30KB 知识 vs findings 43 行 0 小节）;
+#     守卫原只查三文件路径存在性, 对契约措辞语义盲区。双条件设计=降误报: 兜底说明语境合法引用
+#     「主进程回填」而同时给出 append 契约（含 B 锚点）的不违规; 检查点(22.8) 与 findings 自写
+#     (22.4a) 是叠加义务非二选一。
+#   接入点: cmd_check 缺项通过后追加（stdout 一行 + exit 1）; fine_grain_checks ⑥（enforce=exit 2 /
+#     warn=stderr 告警 + 计数落盘）。
 set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -129,6 +147,31 @@ scan_missing() {
             grep -qF -- "$item" "$f" 2>/dev/null || printf '%s\n' "$item" ;;
         esac
     done
+}
+
+# scan_contract_narrowing <prompt-file> — [2026-10-08 task-v145 S-1, Rule 60.2] 契约收窄措辞检测
+# stdout: 命中违规 → 输出一行（前缀 [dispatch-contract]）; 未命中 → 无输出（空串）。
+# 判定（双条件 ∧, 缺一不判——降误报）:
+#   A(收窄词): 某行含「只写检查点」; 或同行含「主进程回填」且紧随否定性续文
+#     （你只|不用写|无需写|不必写|禁止写|不要写）;
+#   B(缺 append 锚点): 全文不含 findings append 锚点标记（`#### [sub:` 或 `可写=仅追加`）。
+#   A ∧ B → 违规; 仅解释性/兜底语境提及「主进程回填」但已给出 append 契约（含 B 锚点）→ 合规放行。
+# 只读判定, 不改变任何 exit 码（档位处置由调用方承载）; 本函数不修改 prompt 文件。
+scan_contract_narrowing() {
+    local f="$1" hit=0
+    # 条件 B 先判: 已给出 append 契约（任一锚点）→ 契约未被收窄, 直接放行（短路, 零误报面）
+    if grep -qF '#### [sub:' "$f" 2>/dev/null || grep -qF '可写=仅追加' "$f" 2>/dev/null; then
+        return 0
+    fi
+    # 条件 A: 收窄词（「只写检查点」独立命中; 或同行「主进程回填」+紧随否定性续文）
+    # Why 同行限制: grep 无换行匹配（. 不跨行）→ 收窄语义须落在同一行, 跨行共现不判（防误报）。
+    if grep -qF '只写检查点' "$f" 2>/dev/null; then
+        hit=1
+    elif grep -qE '主进程回填.*(你只|不用写|无需写|不必写|禁止写|不要写)' "$f" 2>/dev/null; then
+        hit=1
+    fi
+    [ "$hit" -eq 1 ] || return 0
+    printf '[dispatch-contract] 🚫 派发 prompt 契约收窄违规(Rule 60.2 不可收窄禁令): 检出收窄措辞(「只写检查点」/「主进程回填」+否定性续文)且缺 findings append 锚点(「#### [sub:」或「可写=仅追加」) — 收窄=把 22.4a 子代理必做自写降级为禁写/主进程代劳; 检查点(22.8)与 findings 自写(22.4a)是叠加义务非二选一, 请补 findings 可写契约\n'
 }
 
 # 档位解析: 环境变量优先;未设 → jq 读 .properties.dispatch_contract_enforce.default // "enforce"
@@ -261,6 +304,14 @@ cmd_check() {
     missing="$(scan_missing "$pf" "$pd")"
     if [ -n "$missing" ]; then
         printf '%s\n' "$missing"
+        exit 1
+    fi
+    # [2026-10-08 task-v145 S-1, Rule 60.2] 缺项通过后追加契约收窄 lint（只增不改既有缺项路径）:
+    # 命中 → stdout 一行 + exit 1（与既有缺项同为「不通过」语义, check 与档位无关）。
+    local cn
+    cn="$(scan_contract_narrowing "$pf")"
+    if [ -n "$cn" ]; then
+        printf '%s\n' "$cn"
         exit 1
     fi
     exit 0
@@ -416,6 +467,18 @@ $(cat -- "$tb" 2>/dev/null)"
     #      (含 enforce 无缺项路径) 都只输出 stderr 一行, 成功路径 exit 0 与静默语义保持不变。
     if ! grep -qF '需求锚' "$pf" 2>/dev/null; then
         echo "[dispatch-guard] ⚠ 派发 prompt 未含「需求锚」字段（Rule 51.1a：需求相关 S-unit 须逐字引用治理 R 条目；纯机械单元可写「不适用（纯机械单元）」）——advisory 不阻断" >&2
+    fi
+    # ⑥ 契约收窄 lint（[2026-10-08 task-v145 S-1, Rule 60.2 不可收窄禁令]）
+    # What: scan_contract_narrowing 命中（收窄词 ∧ 缺 append 锚点）→ stderr 一行 [dispatch-contract] 告警,
+    #       并计入 hits 走既有档位管线（warn=计数落盘 / enforce=exit 2）。
+    # Why: 与 ①-④ 同管线（enforce 须阻断契约收窄的派发）; 与 ⑤ 不同——⑤ 是 advisory 刻意不入 hits,
+    #       ⑥ 是硬契约（22.4a 子代理必做自写被收窄 = 知识流转断裂, videop1 实证）, 须按档位处置。
+    local cn
+    cn="$(scan_contract_narrowing "$pf")"
+    if [ -n "$cn" ]; then
+        echo "$cn" >&2
+        [ -n "$hits" ] && hits="$hits; "
+        hits="${hits}契约收窄(缺 findings append 锚点)"
     fi
     [ -z "$hits" ] && return 0
     if [ "$mode" = "warn" ]; then

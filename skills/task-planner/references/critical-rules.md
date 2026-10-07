@@ -710,3 +710,21 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 - 本规则与 22.3 系列规则**互补**，不冲突
 
 60.8 **机制（零新 config 键）**：判定面=LLM 行为（遇到障碍时自我审查是否已枚举替代方案）；机器面=无（本规则为纯行为约束，无脚本守护）；消费侧=SKILL.md 合规清单（后续补充 C 条目）。
+
+<!-- Rule 62 (task-v145 2026-10-08): 纯增量新增；判例=videop1 调研派发 prompt 手写「findings.md（主进程回填，你只写检查点）」收窄 22.4a 契约——调研子代理守约禁写，30KB 知识只停检查点，findings.md 43 行 0 小节；守卫 check-dispatch.sh 只查三文件路径存在性，对契约措辞语义盲区 -->
+
+### 62 四文件罗盘数据流转与调研知识沉淀纪律（P0 — task-v145，目标：task_plan/findings/progress/knowledge-brief 四文件 = 主代理↔子代理数据流转唯一协议介质，调研产出双落盘、派发契约不可收窄、知识增量门控；判定面=LLM 行为+check-dispatch.sh/check-3file-gate.sh 机器扩展，零新 config 键；衔接 Rule 19/22.4a/22.5/22.8/55，既有 Rules 原文零改动）
+
+本条源于用户 2026-10-08 反馈：调研子代理被派发 prompt 明确禁写 findings.md（「主进程回填，你只写检查点」），知识发现型产出的积累链路断裂——三文件罗盘（Rule 19）与知识底座（v067 起第 6 计划文件）各自为政未成体系。本条把四文件升格为跨代理数据流转协议，并给派发契约措辞上机器守卫。
+
+62.1 **四文件体系定位（协议介质）**：`task_plan.md`（目标维：状态与指针）/ `findings.md`（决策维：调研结论与证据）/ `progress.md`（进度维：动作与测试）/ `knowledge-brief.md`（知识维：可复用知识底座）四文件 = 主代理↔子代理数据流转的**唯一协议介质**——子代理上下文 = 易失缓存（RAM），四文件 = 持久层（Disk），任何跨代理传递的结论/状态/知识必须经四文件落盘，禁止只存在于子代理返回消息或会话记忆。会话恢复读序在 Rule 19.3 三文件之上扩展第 4 步：task_plan（在哪/去哪）→ progress（做过什么）→ findings（已知什么）→ knowledge-brief（可复用什么）。
+
+62.2 **派发读写契约不可收窄禁令（no-contract-narrowing）**：派发 prompt 对四文件的读写契约必须与 22.4a 标准契约**同语义**——task_plan 只读 / findings 可读+可写（仅追加 `#### [sub:{seq}-{type}]` 锚点小节，22.4a 必做义务）/ progress 可读+仅追加 `[sub:{seq}]` 子项 / knowledge-brief 只读（主进程单写者）。禁止出现「只写检查点」「主进程回填（你不用写）」类**收窄措辞**——收窄 = 把 22.4a 子代理必做自写降级为主进程代劳或禁写；**检查点（22.8）与 findings 自写（22.4a）是叠加义务不是二选一**。机器面 = `check-dispatch.sh` 契约措辞 lint：prompt 含收窄词（「只写检查点」/「主进程回填」+否定性续文如「你只」「不用写」「无需写」）**且**缺 findings append 锚点标记（`#### [sub:` 或 `可写=仅追加`）→ 判契约收窄违规，处置挂 `dispatch_contract_enforce` 既有档位（enforce=exit 2 / warn=stderr 告警+计数 / off=跳过）；单一条件命中不判（降误报：兜底说明语境合法引用「主进程回填」而同时给出 append 契约的不违规）。
+
+62.3 **调研产出罗盘沉淀（双落盘）**：调研类子代理（explore/web-search/doc-search/research/codebase-analyzer 族）的结论 = **双落盘**——① findings.md 追加自己的小节（22.4a 既有必做，原始结论+证据锚）；② 主进程 22.5 复核时**蒸馏归档** knowledge-brief.md 对应节（可复用事实→§2 / 文件锚点→§3 / 易错点→§4），蒸馏=提炼可复用知识非复制原文。22.5 回填义务对调研类升格为**双动作**「findings 复核 + knowledge-brief 蒸馏」，Handoff 登记表「findings 落点」列记双锚 `findings锚|kb:§N`；knowledge-brief 为主进程单写者（结构化底座供派发材料包消费，禁止子代理直写，与 22.4a B-2 单写者纪律同构），只更新对应节内容、禁改 §1-§5 既有结构。
+
+62.4 **知识消费闭环（先查后调）**：调研型 S-unit 派发 prompt 的材料包摘要**必须**引用 knowledge-brief.md 对应节锚点（升格 22.4「brief 存在时应引用」为调研型强制）；后续同类调研先查 kb §2（已验证事实）与 §4（易错点），命中已验证结论的禁止从零重调研（联动 55.1 复用前置检查）——knowledge-brief 是调研结论的第一消费入口。
+
+62.5 **知识增量门控（kb-distill gate）**：调研型 Phase 标记 complete 前，除 19.2 双条件（progress 回填 + findings 增量）外加查 **knowledge-brief 本 Phase 增量**（ledger `kb_distill` 事件行或 mtime 晚于 Phase 锚点；本 Phase 无调研产出的登记豁免一行，禁裸豁免）。机器面 = `check-3file-gate.sh --require-kb`（调研型 Phase 传入）+ `ledger-append.sh` 事件枚举增补 `kb_distill`（纯增量，既有枚举零改动）。
+
+62.6 **机制**：零新 config 键（lint 挂 dispatch_contract_enforce 既有档位、gate 扩展为参数传入）；`scripts/selftest-four-file-dataflow.sh` 静态守护（62.1-62.5 条款锚 + 派发模板 kb 契约行 + SKILL 触点 + lint/gate/ledger 扩展锚）；合规清单 C42；适用面 = 所有 Agent() 派发（62.2）与调研型 Phase（62.3-62.5），纯机械 S-unit（记账/搬运类）62.3-62.5 豁免（登记一行）。

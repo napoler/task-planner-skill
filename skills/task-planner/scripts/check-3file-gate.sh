@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check-3file-gate.sh — Rule 19.2 执行中 3-File 回填门控（Phase complete 翻转前必须调用）
 #
-# 用法: check-3file-gate.sh <plan-dir 或 task_plan.md 路径>
+# 用法: check-3file-gate.sh <plan-dir 或 task_plan.md 路径> [--require-kb]
 # 退出码: 0 = 门控通过（可翻转 complete）; 1 = 违规/缺失（禁止翻转,先回填）
 #
 # 判定逻辑:
@@ -11,15 +11,36 @@
 #      锚点缺失/不可解析 → 退化为 stale 阈值（config.json#findings_stale_minutes /
 #      #progress_stale_minutes,默认 20/25 分钟）: mtime 距今必须小于阈值
 #   4. findings.md 与 progress.md 的 mtime 必须晚于锚点,任一不满足 → exit 1
+#   5. [--require-kb] knowledge-brief.md 存在 且（mtime 晚于锚点 或 ledger-*.jsonl
+#      含锚点后 event="kb_distill" 的行）; 否则 exit 1（Rule 60.5 知识增量门控）
 #
 # 设计取向: mtime 是代理指标,可被无关写入污染 —— 宁可误报（代价=多一次回填动作）,
 # 不可漏报（漏报=三文件罗盘失效回潮,即本门控要杜绝的现象）。依赖 GNU stat/date。
+#
+# [2026-10-08 task-v145 S-2 Rule 60.5] 修改说明:
+#   What: 新增可选旗标 --require-kb（第 5 条判定）+ kb_distill_activity() 语义信号函数。
+#   Why:  调研型 Phase 原只校验 findings/progress 增量,知识沉淀（knowledge-brief 蒸馏）
+#         无门控 → 调研知识停检查点/会话记忆回潮（Rule 60.3/60.5 判例）。本扩展把
+#         「知识增量」纳入完成门控: 调研型 Phase 翻转 complete 前必须已有 kb 蒸馏动作。
+#   兼容: 参数解析纯增量（--require-kb 剥离后再定位置参数,不传时 PLAN_ARG=$1 与改动前
+#         逐字节一致; 既有 findings/progress 判定分支零改动）。
 
 set -euo pipefail
 
-PLAN_ARG="${1:-}"
+# [2026-10-08 task-v145 S-2 Rule 60.5] 参数解析: 先剥离可选旗标 --require-kb,再取首个位置
+# 参数为 PLAN_ARG。纯增量——不传旗标时 ARGS=("$@")、PLAN_ARG=$1,与改动前行为一致。
+REQUIRE_KB=0
+ARGS=()
+for _a in "$@"; do
+    if [ "$_a" = "--require-kb" ]; then
+        REQUIRE_KB=1
+    else
+        ARGS+=("$_a")
+    fi
+done
+PLAN_ARG="${ARGS[0]:-}"
 if [ -z "$PLAN_ARG" ]; then
-    echo "[3file-gate] usage: check-3file-gate.sh <plan-dir or task_plan.md>"
+    echo "[3file-gate] usage: check-3file-gate.sh <plan-dir or task_plan.md> [--require-kb]"
     exit 1
 fi
 
@@ -98,6 +119,22 @@ ledger_activity() {
     ' "${PLAN_DIR}"/ledger-*.jsonl
 }
 
+# [2026-10-08 task-v145 S-2 Rule 60.5] kb 蒸馏语义信号: 计划目录内任意 ledger-*.jsonl 含
+# ts >= 锚点(UTC 字典序=时间序) 且 event="kb_distill" 的行 = 本 Phase 有知识沉淀动作。
+# 与 ledger_activity 同范式（同锚点/同 awk 提取）,仅多一个 event 字段过滤;无锚点则退化
+# 到 mtime 判定（与 check_file 一致,不在此处返回真）。
+kb_distill_activity() {
+    [ -n "$ANCHOR_UTC" ] || return 1
+    ls "${PLAN_DIR}"/ledger-*.jsonl >/dev/null 2>&1 || return 1
+    awk -v a="${ANCHOR_UTC}" '
+        { if (match($0, /"ts":"[^"]*"/)) {
+            ts = substr($0, RSTART+6, RLENGTH-7)
+            if (ts >= a && $0 ~ /"event":"kb_distill"/) { found = 1; exit }
+        } }
+        END { exit !found }
+    ' "${PLAN_DIR}"/ledger-*.jsonl
+}
+
 VIOLATIONS=()
 check_file() {
     local file="$1" label="$2" stale_min="$3"
@@ -131,6 +168,31 @@ if [ "${#VIOLATIONS[@]}" -gt 0 ]; then
     done
     echo "[3file-gate] Fix: 把本 Phase 的调研结论回填 findings.md、动作/文件/测试回填 progress.md 对应 Phase 段后重跑本门控。"
     exit 1
+fi
+
+# [2026-10-08 task-v145 S-2 Rule 60.5] --require-kb: 调研型 Phase 知识增量门控（第 5 条件）。
+# 通过判据 = knowledge-brief.md 存在 且（ledger 含锚点后 kb_distill 行 或 mtime 晚于锚点）。
+# 无 Started 锚点时退化到 stale 阈值（复用 findings_stale_minutes,与 check_file 同范式）。
+# 不满足 → exit 1,输出 Rule 60.5 指引（蒸馏归档 kb 或登记本 Phase 无调研产出的豁免一行）。
+if [ "$REQUIRE_KB" -eq 1 ]; then
+    KB_FILE="$PLAN_DIR/knowledge-brief.md"
+    KB_OK=0
+    if [ -f "$KB_FILE" ]; then
+        if kb_distill_activity; then
+            KB_OK=1
+        else
+            kb_mtime="$(stat -c %Y "$KB_FILE")"
+            if [ "$ANCHORED" -eq 1 ]; then
+                [ "$kb_mtime" -gt "$ANCHOR_EPOCH" ] && KB_OK=1
+            else
+                [ "$(( NOW - kb_mtime ))" -lt "$(( F_STALE * 60 ))" ] && KB_OK=1
+            fi
+        fi
+    fi
+    if [ "$KB_OK" -ne 1 ]; then
+        echo "[3file-gate] kb 增量缺失（Rule 60.5：调研型 Phase 需 knowledge-brief 蒸馏或豁免登记）"
+        exit 1
+    fi
 fi
 
 echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定$( [ "$ANCHORED" -eq 1 ] && echo ":锚点 $STARTED_RAW" || echo ":stale 阈值模式" )）" )"
