@@ -114,6 +114,7 @@ model: opus
 | 有用的 URL / 文件路径 / API 引用 | `## Resources` | 发现时 |
 | 截图 / 网页等多模态信息 | `## Visual/Browser Findings`（转文字） | **立即**（多模态不持久） |
 | 用户需求拆解 | `## Requirements` | Phase 1 期间 |
+| 调研蒸馏知识（可复用事实/文件锚点/易错点） | `knowledge-brief.md` §2/§3/§4（主进程单写者蒸馏，Rule 60.3 双落盘） | 22.5 复核时（调研类子代理返回后 30s，Handoff 落点列记双锚 `findings锚\|kb:§N`） |
 
 ### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token 判定）
 
@@ -206,6 +207,7 @@ model: opus
 | C37 | 未验证优点宣传核查（Rule 43.5/43.6 + Rule 51.8 + 53.5-Q9）：提示词/参数优化类修改的产出已附实际生成测试证据（生成回执 + 产物质检，43.5 三件套）；未经验证的结果（含零消耗/零成本类统计）未以优点口吻呈现，缺证据项已降级「未验证」登记（43.1/43.6）；需求条目覆盖判据属实测形态的，无实测证据未声称 covered（51.8）（机器面=selftest-reliability-institution R-13..R-16 + selftest-requirement-coverage RC-23 静态断言，测试证据人工核查；mini 档豁免） | ☐ |
 | C38 | 执行诚实性与即时执行自查（Rule 54）：对外声称（状态/资源/阻塞/里程碑/完成/统计）已附第一手证据锚（54.0）；「就绪」仅用于交付物、资源状态类声称有第一手查询记录否则显式「未验证」（54.1）；阻塞已逐项出阻塞/未阻塞矩阵、未阻塞项不被连带推迟（54.2）；准备类仪式动作未作为里程碑呈报（54.3）；推迟决策四要素（阻塞证据/未阻塞子集/立即可执行项记录/恢复触发器）齐备（54.4）；决策引用数据走落盘锚（findings/knowledge-brief）而非裸会话数据（54.5）（机器面=selftest-execution-honesty.sh 静态断言，声称可回溯/矩阵/举证人工核查；mini 档豁免） | ☐ |
 | C40 | 迭代测试轮次落盘自查（Rule 57）：每一次测试/迭代轮次结束已**当次**将本轮结果写入 progress.md 对应 Phase 段（未落盘即进入下一轮=违规，57.1）；落盘四要素齐备——轮次编号 Round N / 可复现测试命令 / PASS-FAIL 显式结果 / 关键输出摘要（FAIL 含错误原文/堆栈，PASS 含断言计数或产物路径）（57.2）；迭代更新数据及时落盘、下一轮基于文件事实而非会话记忆判断（57.3）（机器面=selftest-iteration-persistence.sh 静态断言，逐轮落盘事实人工核查；mini 档豁免） | ☐ |
+| C41 | 四文件罗盘数据流转自查（Rule 60）：派发 prompt 四文件读写契约与 22.4a 同语义且无收窄措辞（60.2，机器面=check-dispatch.sh 契约措辞 lint）；调研类子代理结论双落盘——findings 自写小节（22.4a 既有）+主进程 22.5 复核时蒸馏 knowledge-brief 对应节（60.3，Handoff「findings 落点」列双锚 `findings锚\|kb:§N`）；调研型 Phase complete 前 knowledge-brief 有增量或登记豁免（60.5，机器面=check-3file-gate.sh --require-kb + selftest-four-file-dataflow.sh 静态断言；60.2 复核动作与 60.3 蒸馏质量人工核查；纯机械 S-unit 豁免登记一行；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -311,6 +313,7 @@ model: opus
 - **Rule 54（执行诚实性与即时执行纪律 — task-v136）**：54.0 有依据原则总则 / 54.1 就绪语义+资源状态第一手 / 54.2 阻塞影响矩阵 / 54.3 仪式性进展禁令 / 54.4 推迟举证四要素 / 54.5 决策依据落盘与引用义务 / 54.6 机制=零新 config 键+selftest-execution-honesty.sh 守护（54.6）
 - **Rule 55（可复用能力落盘纪律 — task-v138）**：复用前置检查(55.1)/权威来源优先禁令(55.2)/首次成功即落盘(55.3)/固定位置与注册表(55.4)/执行体接线(55.5)/机制(55.6)——「首成即落盘→注册可发现→复用不再发明」链路，scripts/capabilities/ + references/capability-registry.md，零新 config 键（详见 references/critical-rules.md Rule 55）
 - **Rule 57（迭代测试轮次落盘纪律 — task-v141）**：每轮测试/迭代结果必落盘(57.1)/落盘四要素=轮次编号·测试命令·PASS-FAIL·关键输出摘要(57.2)/迭代更新即时落盘防上下文分散(57.3)/机制=零新 config 键+selftest-iteration-persistence.sh 守护+合规清单 C40(57.4)——「每轮落盘→下轮基于文件事实→根除多轮错误累积」链路（详见 references/critical-rules.md Rule 57）
+- **Rule 60（四文件罗盘数据流转与调研知识沉淀纪律 — task-v145）**：四文件定位=主子代理数据流转唯一协议介质，恢复读序 4 文件化(60.1)/派发读写契约不可收窄禁令+check-dispatch 措辞 lint，收窄词∧缺 append 锚点双条件(60.2)/调研产出双落盘=findings 自写小节(22.4a 既有)+主进程 22.5 复核时蒸馏 knowledge-brief §2/§3/§4，Handoff 双锚(60.3)/调研型派发强制引用 kb §锚先查后调，联动 55.1(60.4)/kb 增量门控 gate --require-kb+ledger kb_distill(60.5)/机制=零新 config 键+selftest-four-file-dataflow.sh 守护+合规清单 C41(60.6)——「四文件=协议介质→调研双落盘→知识可消费」链路（详见 references/critical-rules.md Rule 60）
 
 ## Completion Gate
 
