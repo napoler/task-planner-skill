@@ -381,6 +381,10 @@ extract_subagent_state_refs() {
 fine_grain_checks() {
     local pf="$1" pd="$2" mode="$3" sid="${4:-unknown}"
     local pmax pchar sids n hits wf h smax step_n tb tn
+    # [2026-10-08 task-v144 S18 P2-5 local 卫生] ⑥ 粒度三值检测(fmax/lmax/mmax/gtok/gfv/grange/gl/gm) 与
+    # ⑦ 伴飞路径校验(esrcs/er/epath/p) 新增变量并入函数顶部 local 声明（原 ⑥⑦ 落地时未声明,
+    # 泄漏至外层 shell 变量域; 此处补齐后行为零变化——Bash 局部性修正, 31+10+11 断言全过验证）
+    local fmax lmax mmax gtok gfv grange gl gm esrcs er epath p
     # ① prompt 长度: wc -m vs prompt_max_chars(jq 读 config .properties.subagent.prompt_max_chars.default;
     #    与 ② 同源: jq 缺失/键缺失/非数字 → 回退 3000 + 一行 SKIPPED 说明(P2 check-plan-dispatch 范式)
     # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效

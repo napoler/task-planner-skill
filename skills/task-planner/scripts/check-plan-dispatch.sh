@@ -115,8 +115,18 @@ cfg="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json"
 if command -v jq >/dev/null 2>&1 && [ -f "$cfg" ]; then
     # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原 :115-116 缺第二层 .properties（键恒空只落字面兜底）；
     # 改为 .subagent.X // .properties.subagent.properties.X.default // 兜底（顶层覆盖优先，无覆盖时读 schema 默认，与 :118 step_max_steps 同构）
-    STEP_MAX_MIN="$(jq -r '.subagent.step_max_minutes // .properties.subagent.properties.step_max_minutes.default // "15"' "$cfg" 2>/dev/null)" || STEP_MAX_MIN=""
-    STEP_MAX_FILES="$(jq -r '.subagent.step_max_files // .properties.subagent.properties.step_max_files.default // "2"' "$cfg" 2>/dev/null)" || STEP_MAX_FILES=""
+# [2026-10-08 task-v144 S17 P1-2] Rule 59.1 粒度三值列 enforce 门控落地（attest 侧,
+# 对应用户 R1「单子代理巨量任务」——计划期硬门必须真实存在）:
+#   S-unit 表 $8 粒度三值列（模板行格式 `1f/65l/13min`）trim 后匹配
+#   ^([0-9]+)f/([0-9]+)l/([0-9]+)min$；三值逐一对 jq 读
+#   .properties.subagent.properties.step_max_files/lines/minutes（缺失回退默认 2/100/15）
+#   超限 → add_violation（enforce 拒锁, 超限 S-unit 回炉重拆, 59.1）；
+#   列空或不匹配 = 旧格式计划 → 逐行 SKIPPED 提示「粒度三值未填报（Rule 59.1 强制）」
+#   不阻断（fail-open, 旧格式兼容）。
+STEP_MAX_MIN="$(jq -r '.subagent.step_max_minutes // .properties.subagent.properties.step_max_minutes.default // "15"' "$cfg" 2>/dev/null)" || STEP_MAX_MIN=""
+STEP_MAX_FILES="$(jq -r '.subagent.step_max_files // .properties.subagent.properties.step_max_files.default // "2"' "$cfg" 2>/dev/null)" || STEP_MAX_FILES=""
+# [2026-10-08 task-v144 S17 P1-2] step_max_lines 供 $8 粒度三值列校验（同双层路径范式）
+STEP_MAX_LINES="$(jq -r '.subagent.step_max_lines // .properties.subagent.properties.step_max_lines.default // "100"' "$cfg" 2>/dev/null)" || STEP_MAX_LINES=""
     # [task-v081] 双层 properties 为 config 实际结构（.properties.subagent.properties.<key>.default）
     STEP_MAX_STEPS="$(jq -r '.properties.subagent.properties.step_max_steps.default // "4"' "$cfg" 2>/dev/null)" || STEP_MAX_STEPS=""
 fi
@@ -127,6 +137,10 @@ fi
 if ! [[ "$STEP_MAX_FILES" =~ ^[0-9]+$ ]]; then
     STEP_MAX_FILES=2
     echo "[plan-dispatch] SKIPPED step_max_files 未解析(jq 缺失或键缺),回退默认 2"
+fi
+if ! [[ "$STEP_MAX_LINES" =~ ^[0-9]+$ ]]; then
+    STEP_MAX_LINES=100
+    echo "[plan-dispatch] SKIPPED step_max_lines 未解析(jq 缺失或键缺),回退默认 100"
 fi
 if ! [[ "$STEP_MAX_STEPS" =~ ^[0-9]+$ ]]; then
     STEP_MAX_STEPS=4
@@ -256,6 +270,35 @@ while IFS= read -r line; do
         pcount="$(printf '%s\n' "$col5" | grep -oE '[^ ]+\.(sh|md|json|ts|js|py|cjs)' | wc -l)"
         if [ "$pcount" -gt "$STEP_MAX_FILES" ]; then
             echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 输入 ${pcount} 个文件路径 > step_max_files(${STEP_MAX_FILES}) — 建议拆分(提示不阻断,复杂度由模型判断)"
+        fi
+        # [2026-10-08 task-v144 S17 P1-2] ⑤-c 粒度三值列($8, Nf/Nl/Nmin, 模板行格式 1f/65l/13min)
+        # Rule 59.1 enforce 硬门: 匹配 ^([0-9]+)f/([0-9]+)l/([0-9]+)min$ 且三值任一超
+        # step_max_files/step_max_lines/step_max_minutes → add_violation（拒锁, 回炉重拆）；
+        # 列空/不匹配 = 旧格式计划 → SKIPPED 提示（fail-open 兼容, 59.5 任务书豁免同口径）
+        col8="$(printf '%s' "$line" | awk -F'|' '{print $8}')"
+        col8="$(trim "$col8")"
+        # [2026-10-08 task-v144 S17] 例外登记在案放行（留痕不阻断）：行内含「例外」
+        # 标记（如 S15 同质批量清账「文件数例外登记」）= 超限已登记理由，超限降为
+        # SKIPPED 提示不拒锁——防 59.1 硬门误杀登记过例外的存量批量工序
+        if [[ "$line" == *"例外"* ]]; then
+            if [[ "$col8" =~ ^([0-9]+)f/([0-9]+)l/([0-9]+)min$ ]] && { [ "${BASH_REMATCH[1]}" -gt "$STEP_MAX_FILES" ] || [ "${BASH_REMATCH[2]}" -gt "$STEP_MAX_LINES" ] || [ "${BASH_REMATCH[3]}" -gt "$STEP_MAX_MIN" ]; }; then
+                echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值 ${col8} 超限但行内例外登记在案 — 留痕不阻断(Rule 59.1 例外放行)"
+            fi
+        elif [[ "$col8" =~ ^([0-9]+)f/([0-9]+)l/([0-9]+)min$ ]]; then
+            gfiles="${BASH_REMATCH[1]}"; glines="${BASH_REMATCH[2]}"; gmin="${BASH_REMATCH[3]}"
+            if [ "$gfiles" -gt "$STEP_MAX_FILES" ]; then
+                add_violation "$phase_no" "行 S${s_id} 粒度三值 ${gfiles}f/${glines}l/${gmin}min: 文件数 ${gfiles} > step_max_files(${STEP_MAX_FILES})（Rule 59.1 粒度三值硬门）— 回炉重拆"
+            fi
+            if [ "$glines" -gt "$STEP_MAX_LINES" ]; then
+                add_violation "$phase_no" "行 S${s_id} 粒度三值 ${gfiles}f/${glines}l/${gmin}min: 新增行数 ${glines} > step_max_lines(${STEP_MAX_LINES})（Rule 59.1 粒度三值硬门）— 回炉重拆"
+            fi
+            if [ "$gmin" -gt "$STEP_MAX_MIN" ]; then
+                add_violation "$phase_no" "行 S${s_id} 粒度三值 ${gfiles}f/${glines}l/${gmin}min: 时长 ${gmin}min > step_max_minutes(${STEP_MAX_MIN})（Rule 59.1 粒度三值硬门）— 回炉重拆"
+            fi
+        elif [ -n "$col8" ]; then
+            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值格式不可解析(${col8})（Rule 59.1 粒度三值未填报或格式漂移,Nf/Nl/Nmin）"
+        else
+            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值未填报（Rule 59.1 强制）— 旧格式计划兼容 fail-open"
         fi
         # 步骤枚举（task-v081 第三维,advisory）: 目标($3) distinct 步骤枚举序号 > step_max_steps
         # → 提示拆分（不阻断,与前两维同范式）; 计数口径=上方 count_step_markers
