@@ -66,6 +66,20 @@
 #   ①②③④ 均在缺项扫描之后追加; 缺项存在时（既有处置: warn=告警放行 / enforce=exit 2）
 #   仍先执行既有缺项路径（行为不变）, 仅当缺项扫描通过（即将串行槽检查放行）时执行四项,
 #   四项目前全部通过 → 保持既有静默 exit 0 语义（成功路径零输出）。
+#
+# [2026-10-08 task-v144 S6] 两项增量检测（Rule 59.1/59.2 粒度三值+伴飞技能, 均挂既有 get_mode()
+# 档位管线, enforce=exit 2 硬阻断, 计入 hits 与 ①-④ 同管线; 只增不改既有 ①-⑤ 分支）:
+#   ⑥ 粒度三值: 从 prompt（及 ② 任务书分支的落盘任务书, 59.5 豁免收窄同口径）提取
+#      `Nf/Nl/Nmin` 行首 token（正则 ^[0-9]+f/[0-9]+l/[0-9]+min$）, 首个 token 三值任一超
+#      config subagent.step_max_files/step_max_lines/step_max_minutes（现行 2/100/15,
+#      59.7 零新键复用既有键; jq 缺失/非数字 → 回退默认 + SKIPPED 一行）→ 提示串含
+#      「Rule 59.1 粒度三值硬门」计违规; 无 token → fail-open 跳过（三值强制填报的表侧
+#      校验由 check-plan-dispatch.sh 承接, 非本守卫面）.
+#   ⑦ 伴飞技能路径存在性: prompt 内「伴飞」关键行提取 .md 路径 token（字符类
+#      [A-Za-z0-9._/-], 实例化绝对路径完整命中; 未实例化占位符 <path>/SKILL.md 最长
+#      匹配得 /SKILL.md → -f 必失败按违规计——口径裁决: 伴飞路径未实例化本就不应放行,
+#      无剔除特例保持单一判据）, 任务书分支同步提取; 逐路径 -f 校验, 不存在 → fail-closed
+#      计违规（提示串含「Rule 59.2 伴飞路径不存在」）; 无伴飞声明 → 跳过不误报.
 set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -407,6 +421,88 @@ $(cat -- "$tb" 2>/dev/null)"
         echo "[dispatch-guard] ⚠ 单次派发步骤枚举 ${step_n} 步 > step_max_steps(${smax})(Rule 21.1b) — 回计划层拆成多个 S-unit 再派" >&2
         [ -n "$hits" ] && hits="$hits; "
         hits="${hits}步骤枚举超限(${step_n}>${smax})"
+    fi
+    # ⑥ 粒度三值检测（[2026-10-08 task-v144 S6, Rule 59.1/59.7] 粒度三值 SKIPPED→enforce 升级落地）
+    # What: 提取 prompt（及 ② 任务书分支的落盘任务书, 59.5 豁免收窄同口径）内 `Nf/Nl/Nmin`
+    #   形态 token: 全文 grep -oE 提取 10 字节形态候选 → awk 行级边界双验证（前界=行首/空白/|
+    #   表列竖线; 后界=行尾/空白/|——表格行 `| 1f/45l/15min |` 列内嵌与裸独立行 `3f/150l/20min`
+    #   均合法入口; 自由文本粘连（如 `见3f/150l/20min页`）前后界验证不过即剔除, 防误报）,
+    #   首个 token 三值任一超限 → 计入 hits 走既有档位管线（enforce=exit 2 硬阻断, 拒锁回炉重拆）
+    # Why: R1「单个子代理解决巨量任务」+ R3「上下文反复叠加」——超限 S-unit 三值流入派发=巨量任务源头；
+    #   上限复用既有 config subagent.step_max_files/lines/minutes（59.7 零新键, 现行 2/100/15,
+    #   顶层覆盖优先路径与 ①④ 家族同范式; jq 缺失/非数字 → 回退默认 2/100/15 + SKIPPED 一行, 禁静默失败）
+    # 边界: 无 token=未填报三值（plan 侧 59.1 强制填报由 check-plan-dispatch 表侧承接, 本守卫 prompt 侧
+    #   仅对已声明 token 把关, 无 token fail-open 不误报）; 多 token 取首个（单 prompt 单 S-unit 口径,
+    #   多 S-unit 已被 ② 打包门捕获）
+    fmax="$(jq -r '.subagent.step_max_files // .properties.subagent.properties.step_max_files.default // "2"' "$CONFIG_JSON" 2>/dev/null)" || fmax=""
+    lmax="$(jq -r '.subagent.step_max_lines // .properties.subagent.properties.step_max_lines.default // "100"' "$CONFIG_JSON" 2>/dev/null)" || lmax=""
+    mmax="$(jq -r '.subagent.step_max_minutes // .properties.subagent.properties.step_max_minutes.default // "15"' "$CONFIG_JSON" 2>/dev/null)" || mmax=""
+    fmax="${fmax//[!0-9]/}"; [ -n "$fmax" ] || { fmax=2; echo "[dispatch-guard] SKIPPED step_max_files 未解析(jq 缺失或键缺),回退默认 2" >&2; }
+    lmax="${lmax//[!0-9]/}"; [ -n "$lmax" ] || { lmax=100; echo "[dispatch-guard] SKIPPED step_max_lines 未解析(jq 缺失或键缺),回退默认 100" >&2; }
+    mmax="${mmax//[!0-9]/}"; [ -n "$mmax" ] || { mmax=15; echo "[dispatch-guard] SKIPPED step_max_minutes 未解析(jq 缺失或键缺),回退默认 15" >&2; }
+    # Nf/Nl/Nmin 形态候选全文提取 + 行级边界双验证（前界∈行首/空白/|, 后界∈行尾/空白/|）:
+    # 裸独立行与表格列内嵌（| 1f/45l/15min |）均合法; 自由文本粘连（见3f/150l/20min页）剔除防误报
+    gran_tok() {
+        local src="$1" c
+        for c in $(grep -oE '[0-9]+f/[0-9]+l/[0-9]+min' "$src" 2>/dev/null); do
+            grep -F -- "$c" "$src" 2>/dev/null \
+                | grep -E "(^|[[:space:]|])$(printf '%s' "$c" | sed 's/[.[\*^$]/\\&/g')([[:space:]|]|$)" \
+                | grep -q . && { printf '%s\n' "$c"; return 0; }
+        done
+        return 0
+    }
+    gtok="$(gran_tok "$pf")"
+    if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null && [ -z "$gtok" ]; then
+        # 59.5 豁免收窄: 任务书分支对引用任务书同步提取（无 token 的 fail-open 语义与 ② 一致——引用文件不存在则跳过）
+        tb="$(extract_subagent_state_refs "$pf")"
+        for tb in $tb; do
+            [ -f "$tb" ] || continue
+            gtok="$(gran_tok "$tb")"
+            [ -n "$gtok" ] && break
+        done
+    fi
+    if [ -n "$gtok" ]; then
+        gfv="${gtok%%/*}"; gfv="${gfv%f}"; grange="${gtok#*/}"
+        gl="${grange%%/*}"; gl="${gl%l}"; gm="${grange#*/}"; gm="${gm%min}"
+        if [ "$gfv" -gt "$fmax" ] || [ "$gl" -gt "$lmax" ] || [ "$gm" -gt "$mmax" ]; then
+            echo "[dispatch-guard] ⚠ 粒度三值 $gtok 超限(files≤$fmax/lines≤$lmax/min≤$mmax)（Rule 59.1 粒度三值硬门）— 回计划层拆细 S-unit 再派" >&2
+            [ -n "$hits" ] && hits="$hits; "
+            hits="${hits}粒度三值超限($gtok)"
+        fi
+    fi
+    # ⑦ 伴飞技能路径存在性（[2026-10-08 task-v144 S6, Rule 59.2]）
+    # What: prompt 内「伴飞」关键行提取 .md 路径 token, 逐路径 -f 校验；不存在 → 计入 hits
+    #   （fail-closed: 伴飞路径缺失=子代理首动作 Read 必然失败, 阻断优于静默）
+    # Why: R2「单个子代理不具备skill」——59.2 伴飞以「路径+首动作 Read」形态注入, 路径虚设=伴飞失效
+    # 边界: 无「伴飞」声明行 → 跳过（纯机械单元合法形态, 不误报）; 任务书分支对引用任务书同步提取（59.5 同 ⑥）
+    # 提取器口径（定死）: 仅「伴飞」关键行内 .md 路径 token（grep 伴飞行 → grep -oE .md 路径）——
+    # 路径样本域=伴飞声明行而非全文, 防误抓 prompt 内的 plan 三文件/subagent-state 引用（非伴飞路径,
+    # 其存在性由 scan_missing 与 ②④ 任务书分支分别承载, ⑦ 越界=误伤面失控）;
+    # 字符类 [A-Za-z0-9._/-]: 实例化绝对路径 /abs/path/SKILL.md 完整命中; 未实例化占位符
+    # <path>/SKILL.md 中 < > 不属字符类, 最长匹配得 /SKILL.md——-f 判定必然失败, 按 fail-closed
+    # 计 59.2 违规（口径裁决: 派发 prompt 伴飞路径未实例化=伴飞注入未声明完成, 本就不应放行;
+    # 不针对 basename 纯文件名形态做额外剔除——相对路径样 token 同入口径由 cwd 判定 -f,
+    # 保持单一判据零特例; 模板未实例化的 prompt 属违规面而非误报面）
+    esrcs=()
+    while IFS= read -r er; do esrcs+=("$er"); done < <(grep '伴飞' "$pf" 2>/dev/null | grep -oE '[A-Za-z0-9._/-]+\.md' | sort -u || true)
+    if grep -qF '任务书' "$pf" 2>/dev/null && grep -qF 'subagent-state/' "$pf" 2>/dev/null; then
+        tb="$(extract_subagent_state_refs "$pf")"
+        for tb in $tb; do
+            [ -f "$tb" ] || continue
+            while IFS= read -r er; do esrcs+=("$er"); done < <(grep '伴飞' "$tb" 2>/dev/null | grep -oE '[A-Za-z0-9._/-]+\.md' | sort -u || true)
+        done
+    fi
+    if [ "${#esrcs[@]}" -gt 0 ]; then
+        # 去重后逐路径 -f 校验; 首个不存在即短路违规（阻断语义下无需全量枚举）
+        epath=""
+        for p in $(printf '%s\n' "${esrcs[@]}" | sort -u); do
+            if [ ! -f "$p" ]; then epath="$p"; break; fi
+        done
+        if [ -n "$epath" ]; then
+            echo "[dispatch-guard] ⚠ Rule 59.2 伴飞路径不存在: $epath — 伴飞技能注入失效(子代理首动作 Read 将失败), 需修正路径或伴飞列改「无」" >&2
+            [ -n "$hits" ] && hits="$hits; "
+            hits="${hits}伴飞路径不存在($epath)"
+        fi
     fi
     # ⑤ 需求锚 advisory（[2026-10-05 task-v131 P6-S2, Rule 51.1a/53.5 机器边界; critic P1-4 裁定落地, warn 档 fail-open）
     # What: prompt 全文缺「需求锚」字样 → stderr 一行提醒, 不改变任何 exit 码。
