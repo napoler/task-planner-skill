@@ -19,3 +19,8 @@
 {"rule": 59, "status": "reserved", "task_id": "task-v144", "ts": "2026-10-08", "note": "子代理拆分粒度硬门与技能伴飞纪律（拆分细致化+技能激活路由+能力预防）"}
 {"rule": 60, "status": "reserved", "task_id": "task-v145-four-file-dataflow", "ts": "2026-10-08", "note": "四文件罗盘数据流转与调研知识沉淀纪律（含派发契约收窄 lint；v143 若改号请避开 60）"}
 {"rule": 58, "status": "landed", "task_id": "task-v143", "ts": "2026-10-08", "note": "调研分析证据纪律与核心目标达成门控（merge 96c474c；合并编号仲裁：v142 未走预留强占 58 落地 a7c01a8，已重编号 60 内容零改动；58 归 task-v143）"}
+{"rule":61,"status":"reserved","task_id":"task-v146-drift-check-subagent","ts":"2026-10-08","note":""}
+{"rule":60,"status":"abandoned","task_id":"task-v145-four-file-dataflow","ts":"2026-10-08","note":"60 内容位被 v143 仲裁（v142 规则改号 58→60）占用，账本让位；本任务规则改号 62"}
+{"rule":62,"status":"reserved","task_id":"task-v145-four-file-dataflow","ts":"2026-10-08","note":"四文件罗盘数据流转与调研知识沉淀纪律（60→62 两轮改号：v143 仲裁占 60/v146 占 61）"}
+{"rule":62,"status":"landed","task_id":"task-v145-four-file-dataflow","ts":"2026-10-08","note":""}
+{"rule":59,"status":"landed","task_id":"task-v144","ts":"2026-10-08","note":""}

@@ -147,6 +147,12 @@ while IFS= read -r line; do
     fi
     # 解析粒度列（正则口径=check-plan-dispatch ⑤-c 统一 Nf/Nl/Nmin 无空格,task-v144 CR 复审建议2） $8：`Nf/Nl/Nmin`（三段；[2026-10-08 task-v144 S18 P2-3 注释修正: 原注「缺段按 0 计——
     # 部分填报也体检已报值」与实现相反——实际缺段/畸形走 SKIPPED 放行（不计违规, 与头注释口径一致）,
+    # [2026-10-08 task-v144 合并后自洽] 例外登记 token 跳过——与 check-plan-dispatch ⑤-c 收窄口径对齐:
+    # 含显式「例外登记」的行(批量机械清账等 L0 通道单元)不计违规,只提示;整行「例外」二字不再旁路(防验收列「无例外」误触)
+    if [[ "$line" == *"例外登记"* ]]; then
+      echo "[analyze-splits] SKIPPED Phase ${phase_no} S${s_id} 已登记例外(例外登记 token) — 不计违规"
+      continue
+    fi
     # 仅当行尾 regex 三段全命中时逐段取数, 取数失败才 ${f:-0} 兜底）
     raw="$(printf '%s' "$line" | awk -F'|' -v c=8 '{print $c}')"
     raw="$(trim "$raw")"

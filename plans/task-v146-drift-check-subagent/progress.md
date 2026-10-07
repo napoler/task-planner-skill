@@ -1,0 +1,76 @@
+# Progress Log
+<!--
+  动作日志:做过什么/改了什么文件/测试结果/错误。5Q Reboot 第 5 问答案源。
+  Rule 19.2: Phase 标记 complete 前,对应 Phase 段必须已回填(check-3file-gate.sh 硬校验)。
+  Rule 19.4: 错误立即写 Error Log,不等 Phase 结束。
+-->
+
+## Session: 2026-10-08
+
+### Phase 0: 计划期（主进程白名单②）
+**Actions taken**
+- Explore 子代理侦察偏移检查现状（触发 6 处坐标/卫星 82 行/子代理无 Skill() 约束）→ findings §1
+- 锚级联预扫：三判例正则只锚 `Rules 1-39` 头部；行数断言 ≤558（现 484）；hook :220 载体文案坐标 → findings §3
+- rule-reserve check 61 = free；init-session 6/6 文件；active_plan side 指针指向本任务（sid=afd0b28e…）
+- check-conflicts：信号①②③全登记 → 隔离决策=worktree task-v146（基点 a7c01a8），v143/v144/v145 禁触
+- task_plan.md（rule-enhancement 实例化）/findings/knowledge-brief §5 材料包 落盘
+
+**Files created-modified**
+- plans/task-v146-drift-check-subagent/{task_plan,findings,knowledge-brief,progress}.md（主仓，白名单②）
+
+**Test Results**
+- rule-reserve.sh check 61 → `free`（PASS）
+- init-session 6/6 verified（PASS）
+
+### Phase 1: 隔离、基线与精确锚扫描
+**Actions taken**
+- worktree 建立：/mnt/data/dev/task-planner-skill-worktrees/task-v146（分支 wt/task-v146，HEAD=da1f308；master 已被 v143 并行合入前进，取最新基点）
+- 精确锚扫描（worktree 实测）：SKILL.md 载体串 9 处（:98/:103/:127/:173/:237/:275/:352/:385/:481 附近）；Rule 15 块内 4 处旧载体词（导语/15.1/15.2/15.3，selftest 零锚已验证）；agent-coverage AC-09 上界 ≤128 级联点；critical-rules 尾部=Rule 60.8（61 插入锚）；Rule 15 现 :57 块
+- 编号仲裁勘误：master 上 58=v143（landed）、v142 规则改号 60、59 待 v144；本任务 61 已 reserve（账本实测 held by task-v146）
+- material 包修正：KB §5.4 扩为 12 行措辞表（+2 遗漏点）、§5.2 扩为 Rule 15 块内 4 处+15.4、§4 易错点 +3 条（coverage 上界/Rule 15 四处/编号仲裁）
+- 基线回归派发 code-runner-agent（后台），PARTIAL 检查点 22.8 落盘；主进程 Read 收取并分类
+
+**Files created-modified**
+- worktree：无（零修改，纯基线）
+- 主仓 plans/：knowledge-brief/findings/task_plan 修正（白名单②）
+
+**Test Results（Round 1 — 基线）**
+- 命令：`for f in selftest-*.sh; do timeout 90 bash "$f"; done` @ worktree scripts/
+- 结果：**ΣPASS=863 / ΣFAIL=21**（57 脚本，15 个带 FAIL）——FAIL 全部预存分类见 findings §4
+- 关键输出：AC-07/RT-09/CP-16/IP-15/LA-14/MA-10/MD-08/R-12/RC-13/RG-07/SR-09/TS-12/WF-12 = config 键数 42≠40（预存）；PR-03/04/05/09/10+T02+SR-12 = periodic-review/registry 预存；RC-15 = '56.' 编号假设预存
+- 证据：subagent-state/1-code-runner-agent.md（主进程已 Read 全文）
+
+**Phase 1 验收自证**
+- worktree 在位且 `git status --short` 干净 ✓；基线求和落 findings §4 ✓；锚清单落 KB §5.4/findings §3 ✓
+- 基线 FINAL 补充：code-runner 复算 rc 抽查 4 脚本复现一致；检查点已升 FINAL（18:58:30Z）；worktree 全程零写入 ✓
+
+### Phase 2: Rule 61 条款 + drift-checker agent 定义 + 覆盖矩阵行
+**Actions taken**
+- S1（executor）：critical-rules.md——Rule 15 块 4 处载体切换+15.4+Rule 61 全文+5 处规则内互引补切换（Rule 11×2/17.4/Rule 24×2，首轮材料包遗漏由主进程 grep 复验捕获后派回原代理补刀）
+- S2（executor）：companion/agents/drift-checker.md 新建（frontmatter model=haiku-1 引号格式对齐现行惯例）+ agent-coverage.md 追加行（128→129）+ selftest-agent-coverage.sh AC-09 上界 128→129 label 注记 task-v146
+- 主进程独立复验：`Skill("task-drift-guard")` critical-rules=0；61.1-61.6/15.4 锚全命中；diff 四文件符合 scope
+
+**Files created-modified**（worktree）
+- references/critical-rules.md（22+/9-）、companion/agents/drift-checker.md（新建）、references/agent-coverage.md（+1 行）、scripts/selftest-agent-coverage.sh（AC-09 一处）
+
+**Test Results**
+- Round 1（S2 内，selftest-agent-coverage 单脚本）：`Total: 9 PASS=8 FAIL=1`——唯一 FAIL=AC-07（config 键数 42≠40，预存基线）；AC-09 PASS（129≤129）；AC-04 暂态 FAIL 于部署后复验转 PASS（VC-4 已登记口径）
+- deviations 登记：S1 首轮未写检查点（22.8 违规，已补写并派回修复）；S1 首轮遗漏 5 处规则内互引（主进程复验捕获）
+
+### Phase 3: 载体切换全链（SKILL + 卫星 + hook + 模板联动 + 文档联动）
+**Actions taken**
+- S3（executor）：SKILL.md 十二处切换（六触发点+只读检测层行+反模式追加+索引括注 40-61+Rule 61 摘要 bullet+References 双载体行）——主进程复验：旧串 0/488 行 ≤558/Rules 1-39 保全/40-61 在位/Rule 61 bullet 在位 ✓
+- S4（executor）：卫星 SKILL.md 文末 +3 行双载体说明节（82→85）；zcode-userpromptsubmit.sh :220 文案切换（bash -n 通过）
+- S4b（executor）：模板联动进行中（首轮因主进程漏写 KB §5.9 诚实阻塞，补落后 resume 续做）
+
+**Files created-modified**（worktree，Phase 3 累计）
+- skills/task-planner/SKILL.md（12+/10-）、skills/task-drift-guard/SKILL.md（+4 行含空行）、scripts/zcode-userpromptsubmit.sh（1 行）
+
+**Test Results**
+- Round 1（S3 自验+主进程复验）：`Skill("task-drift-guard")` SKILL.md=0；drift-checker=11；wc=488≤558——PASS
+- Round 2（S4 自验）：卫星增量 3 行 ≤10；hook drift-checker=1/task-drift-guard=0；bash -n 通过——PASS
+
+**Error Log（Rule 19.4 即时登记）**
+- [2026-10-08] S4b 首轮阻塞：KB §5.9 缺失。现象=executor 报「task_plan 引用 §5.9 但 KB 只到 §5.8」；直接原因=主进程此前一次 Edit 因缺 old_string 被 InputValidationError 拒绝，重做时只补了 §5.8 漏了 §5.9；根因=编辑失败后未核对失败编辑的完整意图清单（部分重做）；修法=补落 §5.9+resume 原代理；预防=编辑失败重做时对照原意图逐项核对（沉淀 notepad）
+
+**Phase 3 待收**：S4b 模板联动 / S4c 文档联动
