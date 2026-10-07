@@ -15,7 +15,7 @@
 #   SR-09     零新 config 键——config.json properties 键数 = 42（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
 #             [2026-10-08 task-v144 合并级联: v145 已合法新增 2 键（FF 守护 selftest-four-file-dataflow FF-15 断言 42 为准）,键数 40→42]
 #   SR-10     SKILL.md 摘要行锚：「升级四门槛」或「四门槛」≥1
-#   SR-11     selftest-skill-split.sh 级联落地锚：「task-v099」≥1 且 `-le 4` 前缀断言行存在（不锁具体数值）[2026-09-30 task-v099 级联: 锚 token task-v098→task-v099]
+#   SR-11     selftest-skill-split.sh 级联落地锚：「task-v099」≥1 且 `-le 4/5` 前缀断言行存在（不锁具体数值）[2026-09-30 task-v099 级联: 锚 token task-v098→task-v099]
 #   SR-12     selftest-registry.tsv 含「selftest-self-resolution」≥1 且总行数 = 60（脚本数 59+表头 1）
 #             [2026-09-30 task-v099 级联: 锚值 39→40][2026-10-08 task-v144 合并级联: 写定数按「补登后」事实=60（selftest 脚本 59+表头）,因 periodic-review 补登由后续单元执行,若未补登时总行数=59 本断言留 FAIL——blockers 注明依赖后续单元]
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
@@ -91,9 +91,9 @@ if grep -qF '升级四门槛' "$SKILLMD" || grep -qF '四门槛' "$SKILLMD"; the
 else
   bad 10 "SKILL.md 缺摘要行锚（升级四门槛 / 四门槛）"
 fi
-# SR-11 skill-split 级联落地锚（task-vNNN label 宽容正则 + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v100 锚 v098→v099;2026-10-01 task-v102 B 类扩围根治: label token 随级联任务必变（v098→v099→v102 三连断）,改宽容正则 task-v099|task-v10x,断言语义不变;2026-10-02 task-v113 基线修复: f549958 上 selftest-skill-split.sh label 已演进至 task-v112 致 SR-11 断裂,正则扩 task-v11x,断言语义不变;2026-10-03 task-v122 锚演进: skill-split label 迁至 task-v122 越出 v11x，正则扩 v12x（[10-2] 覆盖 v100-v129），断言语义不变]
-if [ "$(grep -cE 'task-v099|task-v1[0-2][0-9]' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le 4' "$SPLIT"; then
-  ok 11 "selftest-skill-split.sh task-v099/task-v1x label + -le 4 前缀断言行在位"
+# SR-11 skill-split 级联落地锚（task-vNNN label 宽容正则 + -le 4 前缀断言行；数值不锁定）[2026-09-30 task-v100 锚 v098→v099;2026-10-01 task-v102 B 类扩围根治: label token 随级联任务必变（v098→v099→v102 三连断）,改宽容正则 task-v099|task-v10x,断言语义不变;2026-10-02 task-v113 基线修复: f549958 上 selftest-skill-split.sh label 已演进至 task-v112 致 SR-11 断裂,正则扩 task-v11x,断言语义不变;2026-10-03 task-v122 锚演进: skill-split label 迁至 task-v122 越出 v11x，正则扩 v12x（[10-2] 覆盖 v100-v129），断言语义不变;2026-10-08 task-v144 合并级联: skill-split label 演进 task-v144 越出 v12x 且行数钉 490→500（-le 4→-le 5）,正则扩 [10-4] 覆盖 v100-v149+-le [45],断言语义不变]
+if [ "$(grep -cE 'task-v099|task-v1[0-4][0-9]' "$SPLIT" || true)" -ge 1 ] && grep -q -e '-le [45]' "$SPLIT"; then
+  ok 11 "selftest-skill-split.sh task-v099/task-v1x label + -le 4/5 前缀断言行在位"
 else
   bad 11 "selftest-skill-split.sh 级联锚缺失（task-v099|task-v1x / -le 4 前缀断言行）"
 fi
