@@ -70,11 +70,38 @@ const PLANS_DIR = path.join(projectRoot, 'plans');
 // sidkey（SessionStart 在会话启动时刚写入 = 本会话真实 sid 的落地物）。
 // 多会话并发局限：最新 mtime 的启动会话优先，属已知取舍。
 // 语义红线：env sid 有对应哨兵时行为完全不变（仅探测不到才 fallback）。
+// [2026-10-07 fix-pointer-race RC-2] 兜底两级化:① .sidmap 确定性映射(SessionStart 写
+// <env_sidkey>.sidmap=hook sidkey)优先;② 无映射才探测最新哨兵,且仅新鲜(≤120s)才采用——
+// 陈旧哨兵=并行会话的,采用=误删他会话哨兵(执行状态抢占覆盖事故家族)。
+const SENTINEL_FALLBACK_MAX_AGE_MS = 120000;
+// [2026-10-07 fix-pointer-race CR-fix] sidmap 升级为权威身份事实(与 init-session.sh 两级兜底同语义):
+// ① sidmap 命中不再要求目标哨兵存在——目标哨兵已被正常清除属常态(同会话第二次建计划时已删,
+//    身份映射仍有效); ② 仅当无 sidmap 文件时才允许新鲜窗探测(mapPath 存在=sidmapAuthoritative,
+//    身份已确定绝不探测, 防误删他会话哨兵); ③ sidmap 内容损坏(mapped 空)→ fail-conservative
+//    按 primaryKey 原样落盘, 不探测。
 function sentinelFallbackSidkey(primaryKey) {
   if (primaryKey && fs.existsSync(path.join(PLANS_DIR, '.plan_required_side', primaryKey + '.plan_required'))) {
     return primaryKey; // env sid 命中哨兵 → 维持现状
   }
   const dir = path.join(PLANS_DIR, '.plan_required_side');
+  let sidmapAuthoritative = false; // [CR-fix] mapPath 存在即置位(声明前置, try 内赋值): 身份已确定 → ② 绝不探测
+  // ① sidmap 确定性映射优先
+  if (primaryKey) {
+    try {
+      const mapPath = path.join(dir, primaryKey + '.sidmap');
+      if (fs.existsSync(mapPath)) {
+        sidmapAuthoritative = true;
+        const mapped = normSidkey(fs.readFileSync(mapPath, 'utf8').trim());
+        if (mapped && mapped !== primaryKey) {
+          console.log('[task-plan] INFO: env sidkey(' + primaryKey + ') 经 sidmap 映射到会话哨兵 sidkey(' + mapped + ')(目标哨兵缺失属已清除常态)');
+          return mapped;
+        }
+      }
+    } catch (e) { /* fail-conservative → sidmapAuthoritative 已置位则末尾直接 return primaryKey, 不再探测 */ }
+  }
+  // 有身份记录(sidmap 文件存在)绝不探测: 探到他会话新鲜哨兵=误删他会话 .plan_required
+  if (sidmapAuthoritative) return primaryKey;
+  // ② 最新哨兵探测(新鲜度窗内才采用)
   if (!fs.existsSync(dir)) return primaryKey; // 目录无哨兵 → 维持现状
   let latest = '';
   let latestMt = 0;
@@ -88,9 +115,13 @@ function sentinelFallbackSidkey(primaryKey) {
   }
   if (!latest) return primaryKey;
   const altKey = normSidkey(latest.slice(0, -'.plan_required'.length));
-  if (altKey && altKey !== primaryKey) {
-    console.log('[task-plan] INFO: env sidkey(' + (primaryKey || '(空)') + ') 无对应哨兵,fallback 最新哨兵 sidkey(' + altKey + ')');
+  const ageMs = Date.now() - latestMt;
+  if (altKey && altKey !== primaryKey && ageMs <= SENTINEL_FALLBACK_MAX_AGE_MS) {
+    console.log('[task-plan] INFO: env sidkey(' + (primaryKey || '(空)') + ') 无对应哨兵,fallback 最新哨兵 sidkey(' + altKey + ', age=' + Math.round(ageMs / 1000) + 's≤120s)');
     return altKey;
+  }
+  if (altKey && altKey !== primaryKey) {
+    console.log('[task-plan] WARN: env sidkey(' + (primaryKey || '(空)') + ') 无对应哨兵,最新哨兵(' + altKey + ') age=' + Math.round(ageMs / 1000) + 's>120s 疑似他会话 → 不抢用');
   }
   return primaryKey;
 }
@@ -124,6 +155,12 @@ if (fs.existsSync(PLANS_DIR)) {
     // sidkey 为空(未取到任何会话 id) → 枚举目录下全部 *.active_plan(手工/子代理场景, 取 TTL 内任一指向有效计划的)
     if (sidkey) {
       pointerCandidates.push({ file: path.join(sideDir, sidkey + '.active_plan'), label: '会话指针 .active_plan_side' });
+      // [2026-10-07 fix-pointer-race RC-1] 双命名空间读:主形态 miss 时补 sess<sidkey> 形态回查
+      // (历史写入方曾以裸 sid 落盘;仅文件存在才回查,优先级仍让位于主形态,对齐 task-plan-init.cjs resume 判定)
+      if (!fs.existsSync(path.join(sideDir, sidkey + '.active_plan')) &&
+          fs.existsSync(path.join(sideDir, 'sess' + sidkey + '.active_plan'))) {
+        pointerCandidates.push({ file: path.join(sideDir, 'sess' + sidkey + '.active_plan'), label: '会话指针 .active_plan_side(sess 形态回查)' });
+      }
     } else if (fs.existsSync(sideDir)) {
       try {
         for (const f of fs.readdirSync(sideDir)) {
@@ -222,7 +259,13 @@ if (sidkey) {
     for (const f of entries) {
       if (!f.endsWith('.plan_required')) continue;
       const sk = f.slice(0, -'.plan_required'.length);
-      const ptr = path.join(SIDE_PTR, sk + '.active_plan');
+      let ptr = path.join(SIDE_PTR, sk + '.active_plan');
+      // [2026-10-07 fix-pointer-race RC-1] 双命名空间读:主形态 miss 时回查 sess<sk> 形态
+      // (历史写入方曾以裸 sid 落盘;仅文件存在才回查,优先级让位主形态——避免误判"无指针认领"而误删)
+      if (!fs.existsSync(ptr)) {
+        const ptrSess = path.join(SIDE_PTR, 'sess' + sk + '.active_plan');
+        if (fs.existsSync(ptrSess)) ptr = ptrSess;
+      }
       let ptrStale = false;
       // [task-v068 fix-B P2-1] 循环内 existsSync(ptr) 原本三次调用, 缓存一次:
       // unlink 后 existsSync 恒 false 导致误打「无活跃指针认领」, 现按 unlink 前快照输出真实原因

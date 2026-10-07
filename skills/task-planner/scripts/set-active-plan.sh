@@ -138,8 +138,16 @@ case "$ACTION" in
                 rm -f "$f" 2>/dev/null && m=$((m+1))
             done < <(find "$REQ_SIDE_DIR" -name '*.plan_required' -type f -mmin +1440 2>/dev/null)
         fi
+        # [2026-10-07 fix-pointer-race] 同语义清扫 sidmap 映射文件(env sid→hook sid,SessionStart 写;TTL 同 24h)
+        k=0
+        if [ -d "$REQ_SIDE_DIR" ]; then
+            while IFS= read -r f; do
+                rm -f "$f" 2>/dev/null && k=$((k+1))
+            done < <(find "$REQ_SIDE_DIR" -name '*.sidmap' -type f -mmin +1440 2>/dev/null)
+        fi
         echo "[active-plan] gc 清除过期 side 指针: ${n} 个"
         echo "[active-plan] gc 清除过期 side 哨兵(.plan_required_side): ${m} 个"
+        echo "[active-plan] gc 清除过期 sidmap 映射: ${k} 个"
         exit 0
         ;;
     set)
