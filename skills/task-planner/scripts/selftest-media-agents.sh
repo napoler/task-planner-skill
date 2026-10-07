@@ -3,7 +3,7 @@
 # 范式对齐 selftest-media-dispatch.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言 companion/agents 双媒体 agent 产物在位、frontmatter 格式规范（name/触发/MUST BE USED/model）、
 #      SKILL.md 路由表媒体两行联动、template-mapping.md §九注+§十行联动、README_zh/INSTALL_zh 6 个计数口径、
-#      INSTALL.md 双 agent 表行、install.sh 注释 6 名清单，并确认零新 config 键（properties=40，与 43.4/44.4/47 同口径）。
+#      INSTALL.md 双 agent 表行、install.sh 注释 6 名清单，并确认零新 config 键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]，与 43.4/44.4/47 同口径）。
 # 输入：task-planner/companion/agents/{image,video}-generation-executor.md、task-planner/SKILL.md、task-planner/config.json、
 #      task-planner/install.sh、README_zh.md、INSTALL_zh.md、INSTALL.md、../plan-template-kit/references/template-mapping.md（只读，grep/test/jq，零写入）。
 # 输出：MA-01..MA-10 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 MA-10 打 SKIPPED 不 FAIL，
@@ -136,13 +136,14 @@ else
   bad 09 "install.sh 注释双 agent 名缺失（image=$i / video=$v，应各 ≥1）"
 fi
 
-# MA-10 零新 config 键——properties 键数 = 40（同 43.4/44.4/47 口径；jq 缺失打 SKIPPED 不 FAIL）
-# What：断言 config.json .properties 顶层键数保持 40（媒体双执行体为 LLM 具名路由面，零机器触发面，不得新增 config 键）。
+# MA-10 零新 config 键——properties 键数 = 42（同 43.4/44.4/47 口径；jq 缺失打 SKIPPED 不 FAIL）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+# What：断言 config.json .properties 顶层键数保持 42（媒体双执行体为 LLM 具名路由面，零机器触发面，不得新增 config 键）。
 # Why：agent 新增承诺"零新键"——键数膨胀 = 有人给媒体执行体加了机器门控键，突破 43.4/44.4 既定零新键范式，
 #      属机制漂移（需走 36 条款流程）；jq 缺失 fail-open 打 SKIPPED（沿用 MD-08/R-12 先例：无 jq 属环境降级非内容漂移）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 10 "config.json properties 键数 40（零新增）"; else bad 10 "config.json properties 键数=$keys（应 40，零新键承诺被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 10 "config.json properties 键数 42（零新增）"; else bad 10 "config.json properties 键数=$keys（应 42，零新键承诺被破坏）"; fi
 else
   printf 'MA-10 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

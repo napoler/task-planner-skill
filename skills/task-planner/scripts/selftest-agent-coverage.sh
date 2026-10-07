@@ -3,7 +3,7 @@
 # 范式对齐 selftest-media-agents.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、双层注释、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言覆盖矩阵（references/agent-coverage.md）在位、SKILL.md 六族行在位、B 类旧字面登记面零残留、
 #      矩阵 §一 agent 实体存在性（~/.zcode/agents，目录缺位 fail-open SKIPPED）、C 类 41 行处置覆盖、
-#      Rule 52 四子条+标题在位、config 零新键（properties=40）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 128 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
+#      Rule 52 四子条+标题在位、config 零新键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 128 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
 # 输入：references/agent-coverage.md、SKILL.md、../plan-template-kit/references/template-mapping.md、
 #      companion/agents/、templates/、references/critical-rules.md、config.json、
 #      $HOME/.zcode/agents/（仓外只读 test -f；目录缺位 fail-open SKIPPED，不硬 FAIL）。
@@ -170,13 +170,14 @@ else
   bad 06 "Rule 52 锚漂移（^52. 子条=$s52 应 4 / ^### 52 标题=$t52 应 ≥1）"
 fi
 
-# AC-07 零新 config 键（properties=40）
-# What：断言 config.json .properties 顶层键数保持 40（与 43.4/44.4/47/49/50/51 零新键同口径；jq 缺失打 SKIPPED 不 FAIL）。
+# AC-07 零新 config 键（properties=42）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+# What：断言 config.json .properties 顶层键数保持 42（与 43.4/44.4/47/49/50/51 零新键同口径；jq 缺失打 SKIPPED 不 FAIL）。
 # Why：Rule 52.4 承诺「零新 config 键——判定面=LLM 行为+静态守护，机器面不加新键」——键数膨胀=有人给执行体
 #      选型加了机器门控键，属机制漂移（需走 Rule 36 条款流程）；jq 缺失=环境降级非内容漂移（MA-10 先例）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 07 "config.json properties 键数 40（零新增）"; else bad 07 "config.json properties 键数=$keys（应 40，零新键承诺被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 07 "config.json properties 键数 42（零新增）"; else bad 07 "config.json properties 键数=$keys（应 42，零新键承诺被破坏）"; fi
 else
   skip 07 "jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）"
 fi

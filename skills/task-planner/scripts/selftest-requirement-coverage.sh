@@ -2,7 +2,7 @@
 # selftest-requirement-coverage.sh — task-v129 S5: Rule 51 需求覆盖与完成声称门控静态守护
 # 范式对齐 selftest-lane-advancement.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构），task-v129 S5 产出。
 # 用途：静态断言 Rule 51 八子条（51.1-51.8，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块 [2026-10-05 task-v133] 51.8 新增, 七→八子条（51.1-51.8；51.8 未测试就声称完成禁令，级联 43.5/43.6+53.5-Q9+SKILL C37）
-#      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=40，与 43.4/44.4/47.4 同口径）。
+#      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=42，[2026-10-08 task-v144 合并级联] 40→42，v145 合法新增 2 键，与 43.4/44.4/47.4 口径同步）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/templates/delivery-summary.md、task-planner/config.json
 #      （只读，grep/jq，零写入）。
 # 输出：RC-01..RC-23 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 RC-13 打 SKIPPED 不 FAIL，
@@ -115,15 +115,17 @@ else
   bad 10 "SKILL.md 合规清单 C35 行缺失（Rule 51 消费点未联动）"
 fi
 
-# RC-11 SKILL.md 主锚守护 `grep -c 'Rules 1-39'` =2 且 `grep -c '1-40'` =0
-# What：断言 SKILL.md 内 `Rules 1-39` 字面命中数保持 2（SR-07 既有锚），且 `1-40` 变体命中数为 0。
-# Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——task-v129 全部联动采用"追加/括注"而非"改写"范式，
-#      主锚计数变动或 1-40 变体出现 = 有人动了主锚或误写变体（与 selftest-lane-advancement.sh LA-12/LA-13 同口径）。
-n="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"
-if [ "$n" -eq 2 ] && [ "$(grep -c '1-40' "$SKILLMD" || true)" -eq 0 ]; then
-  ok 11 "SKILL.md 主锚 'Rules 1-39' 命中 =2 且 '1-40' 变体 0（SR-07 不变）"
+# RC-11 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-62'` ≥1 且 `grep -c '1-39'` = 0
+# What：断言 SKILL.md 内 `Critical Rules 1-62` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
+# Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——SKILL.md L273 References 行 label 已由前序级联单元演进为
+#      「Critical Rules 1-62」（含 Rule 40-62 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
+#      演进为 TS-05/SR-07 范式（≥1 新 label + 旧变体负断言），与 selftest-lane-advancement.sh LA-12 同口径。
+# [2026-10-08 task-v144 合并级联] 'Rules 1-39'=2 + '1-40'=0 → 'Critical Rules 1-62'≥1 + '1-39'=0：SKILL.md L273 锚已演进为 Critical Rules 1-62（SR-07/TS-05 同批演进），本锚同步
+n="$(grep -c 'Critical Rules 1-62' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ] && [ "$(grep -c '1-39' "$SKILLMD" || true)" -eq 0 ]; then
+  ok 11 "SKILL.md 主锚 'Critical Rules 1-62' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
 else
-  bad 11 "SKILL.md 主锚 'Rules 1-39' 命中=$n（应 =2）或 '1-40' 变体非 0（SR-07 主锚被改动）"
+  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-62=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
 fi
 
 # RC-12 delivery-summary.md 需求覆盖区块锚 `grep -q '需求覆盖核对'` 且 `^## [1-5].` 区块数 =5
@@ -136,13 +138,13 @@ else
   bad 12 "delivery-summary.md「需求覆盖核对」缺失或编号区块数=$n（应 =5）"
 fi
 
-# RC-13 零新 config 键——properties 键数 = 40（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）
-# What：断言 config.json .properties 顶层键数保持 40（Rule 51 判定面纯 LLM 行为 + 静态守护，零机器触发面，故不得新增 config 键）。
-# Why：51.x 承诺"零新 config 键"——键数膨胀 = 有人给需求覆盖门控加了机器门控键，突破既定零新键范式，属机制漂移（需走 36 条款流程）。
+# RC-13 零新 config 键——properties 键数 = 42（[2026-10-08 task-v144 合并级联] 40→42：v145 已合法新增 2 键，基线键数同步；同 43.4/44.4/47.4/TS-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# What：断言 config.json .properties 顶层键数保持 42（Rule 51 判定面纯 LLM 行为 + 静态守护，零机器触发面，故 Rule 51 自身不得新增 config 键；基线含 v145 合法新增的 2 键）。
+# Why：51.x 承诺"零新 config 键"——键数偏离 42 = 有人给需求覆盖门控加了机器门控键，突破既定零新键范式，属机制漂移（需走 36 条款流程）。
 #      jq 缺失 fail-open 打 SKIPPED（沿用 LA-14/R-12 先例：无 jq 属环境降级非内容漂移，不误报 FAIL；打印提示行非静默）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 13 "config.json properties 键数 40（零新增）"; else bad 13 "config.json properties 键数=$keys（应 40，Rule 51 零新键被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 13 "config.json properties 键数 42（零新增，基线含 v145 2 键）"; else bad 13 "config.json properties 键数=$keys（应 42，Rule 51 零新键被破坏）"; fi
 else
   printf 'RC-13 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
@@ -157,16 +159,18 @@ else
   bad 14 "registry.tsv 未登记 selftest-requirement-coverage.sh（registry 漏项）"
 fi
 
-# RC-15 负断言 `grep -c '^56\.'` =0（[task-v136 S2] 防线前移 '^55.'；[2026-10-05 task-v138 合并级联] 55 号已被 task-v138 Rule 55 合法占用（55.1-55.6），防线再前移至 56）
-# What：断言 critical-rules.md 内行首 '56.' 子条命中数为 0（56 号未被误占）。
-# Why：55 号已由 task-v138 合法占用（55.1-55.6 已落地，selftest-capability-persistence.sh 守护）——若 '56.' 出现说明他任务并行插入了 Rule 56，
-#      本任务的编号假设被破坏，需重新对齐条款号（防编号冲突/并行任务踩踏）。
+# RC-15 负断言 `grep -c '^63\.'` =0（[2026-10-08 task-v144 合并级联] 防线前移 '^56.'→'^63.'：Rule 56 已被 task-v140 合法落地 56.1-56.5（实测 5 子条），
+#      且 57/58/59/60/62 号均已落地、61 预留未落地（SKILL.md L9 括注明示），负断言对象演进为下一个未用编号 '63.'，=0 保持负断言语义：防顺手创建未登记新号）
+# What：断言 critical-rules.md 内行首 '63.' 子条命中数为 0（63 号未被误占）。
+# Why：56-62 号均已合法落地（56 用户指令优先/57 迭代测试轮次/58 调研证据纪律/59 拆分粒度硬门/60 主动解决问题/62 四文件罗盘，61 预留）——
+#      若 '63.' 出现说明他任务并行插入了 Rule 63，本任务的编号假设被破坏，需重新对齐条款号（防编号冲突/并行任务踩踏）。
 # [task-v125 S5 演进重锚] '^52.'→'^53.'（Rule 52 被 task-v125 S2 合法落地 52.1-52.4，负断言改锁后继号 53，语义不反转，先例同 v127 ^50→^52，2026-10-04）
 # [task-v131 演进重锚] '^53.'→'^54.'：Rule 53 已落地（53.1-53.5），防线前移至 54（先例 v125 S5），2026-10-05
 # [2026-10-05 task-v136 S2 级联] '^54.'→'^55.'：Rule 54 被本任务 S1 合法落地（54.0-54.6），防线前移至 55（先例 v125 S5/v131 重锚）
 # [2026-10-05 task-v138 合并级联] '^55.'→'^56.'：Rule 55 被 task-v138 合法落地（55.1-55.6），防线前移至 56（先例 v125 S5/v131 重锚）
-n="$(grep -c '^56\.' "$CRIT" || true)"
-if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '56.' 子条命中 0（56 号未被误占，task-v138 合并演进重锚）"; else bad 15 "critical-rules.md '56.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
+# [2026-10-08 task-v144 合并级联] '^56.'→'^63.'：Rule 56 被 task-v140 合法落地（56.1-56.5）且 57/58/59/60/62 已落地、61 预留，防线前移至 63（先例 v125 S5/v131/v136/v138 重锚）
+n="$(grep -c '^63\.' "$CRIT" || true)"
+if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '63.' 子条命中 0（63 号未被误占，task-v144 合并级联演进重锚）"; else bad 15 "critical-rules.md '63.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
 
 # RC-16..20 共用的被测对象定位（task-v132 G1/G2 产出脚本，均为 worktree 内本目录文件）
 CC_SCRIPT="$SCRIPT_DIR/check-complete.sh"      # RC-18/19/20：worktree 版 check-complete.sh（R-COVERAGE 门载体）
@@ -492,7 +496,7 @@ fi
 # What：断言 ① '^51.8 ' 行在位且含语义锚「未测试就声称完成」② SKILL.md 内 '51.8' 命中 ≥1（摘要 bullet M5.4 或 C37 行任一）。
 # Why：51.8 是 VC-1 的条款本体（覆盖判据属实测形态的需求条目无实测证据=uncovered，51.3 口径）——
 #      行锚=1 防重复插入/误删（RC-16 三锚范式）；SKILL 联动锚=防「条款扩到 51.8 但 SKILL 停摆 51.7」级联断链（RC-09 语义）。
-#      RC-01（≥7）与 RC-15（'^56.'=0，task-v138 合并前移）不受 51.8 影响（51.8 不产生 54/55/56 号、≥7 阈值向下兼容 9 计数）。
+#      RC-01（≥7）与 RC-15（'^63.'=0，[2026-10-08 task-v144 合并级联] 前移，原 '^56.'=0 task-v138）不受 51.8 影响（51.8 不产生 54/55/56 号、≥7 阈值向下兼容 9 计数）。
 _rc23_a="$(grep -c '^51\.8 ' "$CRIT" || true)"
 _rc23_b="$(grep '^51\.8 ' "$CRIT" | grep -c '未测试就声称完成' || true)"
 _rc23_c="$(grep -c '51\.8' "$SKILLMD" || true)"

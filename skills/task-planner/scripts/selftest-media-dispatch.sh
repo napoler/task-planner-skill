@@ -2,7 +2,7 @@
 # selftest-media-dispatch.sh — task-v122 S4: Rule 47 媒体制作任务派发纪律静态守护（自写 Rule 47.4 机器面）
 # 范式对齐 selftest-reliability-institution.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言 Rule 47 四子条（critical-rules.md）+ SKILL.md 路由表媒体行/摘要 bullet + template-mapping.md §九兜底注/§十特化行
-#      全部在位且既有锚未破坏（Rule 36.5 纯增量守护），并确认零新 config 键（properties=40，与 43.4/44.4 同口径）。
+#      全部在位且既有锚未破坏（Rule 36.5 纯增量守护），并确认零新 config 键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]，与 43.4/44.4 同口径）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/config.json、
 #      ../plan-template-kit/references/template-mapping.md（只读，grep/jq，零写入）。
 # 输出：MD-01..MD-09 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 MD-08 打 SKIPPED 不 FAIL，
@@ -72,13 +72,14 @@ if [ "$n" -ge 1 ]; then ok 06 "template-mapping.md §九兜底注「Rule 47.2」
 n="$(grep -c '媒体制作族' "$TMAP" || true)"
 if [ "$n" -ge 1 ]; then ok 07 "template-mapping.md §十「媒体制作族」特化行 $n ≥1"; else bad 07 "template-mapping.md「媒体制作族」特化行缺失（命中 $n 应 ≥1）"; fi
 
-# MD-08 零新 config 键——properties 键数 = 40（同 reliability-institution R-12 口径；jq 缺失打 SKIPPED 不 FAIL）
-# What：断言 config.json .properties 顶层键数保持 40（Rule 47 判定面纯 LLM 行为 + 静态守护，零机器触发面，故不得新增 config 键）。
+# MD-08 零新 config 键——properties 键数 = 42（同 reliability-institution R-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+# What：断言 config.json .properties 顶层键数保持 42（Rule 47 判定面纯 LLM 行为 + 静态守护，零机器触发面，故不得新增 config 键）。
 # Why：47.4 承诺"零新 config 键"——键数膨胀 = 有人给媒体派发加了机器门控键，突破 43.4/44.4 既定零新键范式，属机制漂移（需走 36 条款流程）。
 #      jq 缺失 fail-open 打 SKIPPED（沿用 R-12 先例：无 jq 属环境降级非内容漂移，不误报 FAIL）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 08 "config.json properties 键数 40（零新增）"; else bad 08 "config.json properties 键数=$keys（应 40，Rule 47 零新键被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 08 "config.json properties 键数 42（零新增）"; else bad 08 "config.json properties 键数=$keys（应 42，Rule 47 零新键被破坏）"; fi
 else
   printf 'MD-08 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

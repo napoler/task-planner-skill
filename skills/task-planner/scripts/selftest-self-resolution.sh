@@ -8,13 +8,16 @@
 #   SR-04     trivial 自主裁定措辞锚：「直接做」≥1 且「留用户裁决」≥1
 #   SR-05     41.6 行内锚：「零新 config 键」≥1 且「selftest-self-resolution.sh」≥1
 #   SR-06     SKILL.md `grep -c 'Rule 41'` ≥3 且 `grep -c '| C29 |'` = 1（合规清单 C29 项）
-#   SR-07     SKILL.md `grep -c 'Rules 1-39'` = 2 且 `grep -c '1-40'` = 0（字面锚——关键负断言）
-#   SR-08     SKILL.md 含「含 Rule 40-5[3-9]」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
+#   SR-07     SKILL.md `grep -c 'Critical Rules 1-62'` ≥1 且 `grep -c '1-39'` = 0（字面锚——关键负断言）
+#             [2026-10-08 task-v144 合并级联: References 表行 label 演进为「Critical Rules 1-62」,锚断言同步演进,旧 'Rules 1-39'=2 变体改为负断言 1-39=0]
+#   SR-08     SKILL.md 含「含 Rule 40-(5[3-9]|6[0-9])」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
 #             [2026-10-05 task-v131 CR P1-2 级联: SKILL.md:266 括注演进→「（含 Rule 40-53 全集）」, 锚随之演进, 原锚「含 Rule 40/41」, 判例 SR-11 锚演进必同步; ^40\.=6 子条断言保留]
-#   SR-09     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
+#   SR-09     零新 config 键——config.json properties 键数 = 42（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
+#             [2026-10-08 task-v144 合并级联: v145 已合法新增 2 键（FF 守护 selftest-four-file-dataflow FF-15 断言 42 为准）,键数 40→42]
 #   SR-10     SKILL.md 摘要行锚：「升级四门槛」或「四门槛」≥1
 #   SR-11     selftest-skill-split.sh 级联落地锚：「task-v099」≥1 且 `-le 4` 前缀断言行存在（不锁具体数值）[2026-09-30 task-v099 级联: 锚 token task-v098→task-v099]
-#   SR-12     selftest-registry.tsv 含「selftest-self-resolution」≥1 且总行数 = 40（v099 登记后断言）[2026-09-30 task-v099 级联: 锚值 39→40]
+#   SR-12     selftest-registry.tsv 含「selftest-self-resolution」≥1 且总行数 = 60（脚本数 59+表头 1）
+#             [2026-09-30 task-v099 级联: 锚值 39→40][2026-10-08 task-v144 合并级联: 写定数按「补登后」事实=60（selftest 脚本 59+表头）,因 periodic-review 补登由后续单元执行,若未补登时总行数=59 本断言留 FAIL——blockers 注明依赖后续单元]
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
@@ -62,23 +65,23 @@ fi
 n="$(grep -c 'Rule 41' "$SKILLMD" || true)"
 c="$(grep -c '| C29 |' "$SKILLMD" || true)"
 if [ "$n" -ge 3 ] && [ "$c" -eq 1 ]; then ok 06 "SKILL.md Rule 41 锚 $n ≥3 且 C29 项 =1"; else bad 06 "SKILL.md Rule 41 锚 $n（应 ≥3）或 C29 项 $c（应 1）"; fi
-# SR-07 字面锚：「Rules 1-39」= 2 且「1-40」= 0（关键负断言）
-a="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"
-b="$(grep -c '1-40' "$SKILLMD" || true)"
-if [ "$a" -eq 2 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 Rules 1-39=2 且 1-40=0"; else bad 07 "SKILL.md 字面锚漂移（Rules 1-39=$a 应 2 / 1-40=$b 应 0）"; fi
+# SR-07 字面锚：「Critical Rules 1-62」≥1 且「1-39」= 0（关键负断言）[2026-10-08 task-v144 合并级联: References 表行 label 演进,旧 'Rules 1-39'=2 改为 '1-39'=0 负断言]
+a="$(grep -c 'Critical Rules 1-62' "$SKILLMD" || true)"
+b="$(grep -c '1-39' "$SKILLMD" || true)"
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 Critical Rules 1-62≥1 且 1-39=0"; else bad 07 "SKILL.md 字面锚漂移（Critical Rules 1-62=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # SR-08 Rule 40/41 共存零损伤
 # [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41」→「含 Rule 40-53」(SKILL.md:266 括注演进), ^40\.=6 子条断言保留]
 # [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 锚宽容化 40-5[3-9]（宽容正则优先）, ^40\.=6 子条断言保留]
 # [2026-10-05 task-v138 合并级联: 括注演进「40-55 全集」（Rule 55 落地），宽容正则 40-5[3-9] 仍覆盖 40-55，保持宽容锚不重新钉死（v136「宽容正则优先」先例；v138 侧 40-55 固定锚在合并面让位于宽容锚，命中 40-53/54/55 任一纪元即通过，语义强度不降）]
-if [ "$(grep -cE '含 Rule 40-5[3-9]' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
+if [ "$(grep -cE '含 Rule 40-(5[3-9]|6[0-9])' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
   ok 08 "SKILL.md「含 Rule 40-5x」宽容锚 + critical-rules.md Rule 40 六子条 = 6（共存零损伤）"
 else
   bad 08 "Rule 40/41 共存锚损伤（含 Rule 40-5[3-9] 缺失或 ^40\. 子条数 ≠6）"
 fi
-# SR-09 零新 config 键——properties 键数 = 40（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# SR-09 零新 config 键——properties 键数 = 42（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 已合法加 2 键,FF 守护断言 42 为准]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 09 "config.json properties 键数 40（零新增）"; else bad 09 "config.json properties 键数=$keys（应 40）"; fi
+  if [ "$keys" = "42" ]; then ok 09 "config.json properties 键数 42（v145 已合法加 2 键）"; else bad 09 "config.json properties 键数=$keys（应 42）"; fi
 else
   printf 'SR-09 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

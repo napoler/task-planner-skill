@@ -6,7 +6,8 @@
 #   TS-02     40.3 /goal 披露措辞「不可代调」≥1
 #   TS-03     40.4 行含「显式点名」≥1 且 40.6 行含「零新 config 键」≥1
 #   TS-04     SKILL.md `grep -c 'Rule 40'` ≥3（四锚：协同路由行/C28/摘要行/References 括注）
-#   TS-05     SKILL.md `grep -c 'Rules 1-39'` = 2 且 `grep -c '1-40'` = 0（对策 b 字面锚——关键负断言）
+#   TS-05     SKILL.md `grep -c 'Critical Rules 1-62'` ≥1 且 `grep -c '1-39'` = 0（对策 b 字面锚——关键负断言）
+#             [2026-10-08 task-v144 合并级联: References 表行 label 演进为「Critical Rules 1-62」,锚断言同步演进,旧 'Rules 1-39'=2 变体改为负断言 1-39=0]
 #   TS-06     SKILL.md 三个既有锚子串各 ≥1：「Rule 39（动态工作流编排」「| C27 |」「dynamic-workflows（用户显式点名」
 #   TS-07     SKILL.md 含「| C28 |」≥1
 #   TS-08     templates/task_plan.md 含「🧰 工具选择与编排」≥1 且含「上游分析记录」≥1
@@ -14,7 +15,8 @@
 #   TS-10     templates/subagent_dispatch.md 含「工具面提示」≥1
 #   TS-11     plan-template-kit 两文档 + plan-writer 契约：template-mapping.md 含「工具选择映射」≥1；
 #             template-guide.md 含「工具选择与编排」≥1；companion/agents/plan-writer.md 含「工具选择与编排区块」=1
-#   TS-12     零新 config 键——config.json 顶层 properties 键数 = 40（与 WF-12 同口径；jq 缺失时打 SKIPPED 不 FAIL）
+#   TS-12     零新 config 键——config.json 顶层 properties 键数 = 42（与 WF-12 同口径；jq 缺失时打 SKIPPED 不 FAIL）
+#             [2026-10-08 task-v144 合并级联: v145 已合法新增 2 键（FF 守护 selftest-four-file-dataflow FF-15 断言 42 为准）,键数 40→42]
 # 静态只读（grep/wc/jq），零仓库写入；无临时文件（无需 mktemp）。
 
 set -u
@@ -50,10 +52,10 @@ fi
 # TS-04 SKILL.md Rule 40 四锚 ≥3
 n="$(grep -c 'Rule 40' "$SKILLMD" || true)"
 if [ "$n" -ge 3 ]; then ok 04 "SKILL.md Rule 40 锚命中 $n ≥3"; else bad 04 "SKILL.md Rule 40 锚命中 $n <3"; fi
-# TS-05 对策 b 字面锚：「Rules 1-39」= 2 且「1-40」= 0（关键负断言）
-a="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"
-b="$(grep -c '1-40' "$SKILLMD" || true)"
-if [ "$a" -eq 2 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Rules 1-39=2 且 1-40=0"; else bad 05 "SKILL.md 字面锚漂移（Rules 1-39=$a 应 2 / 1-40=$b 应 0）"; fi
+# TS-05 对策 b 字面锚：「Critical Rules 1-62」≥1 且「1-39」= 0（关键负断言）[2026-10-08 task-v144 合并级联: References 表行 label 演进,旧 'Rules 1-39'=2 改为 '1-39'=0 负断言]
+a="$(grep -c 'Critical Rules 1-62' "$SKILLMD" || true)"
+b="$(grep -c '1-39' "$SKILLMD" || true)"
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-62≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-62=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # TS-06 SKILL.md 三个既有锚子串各 ≥1（WF-07/08/09 锚保全）
 if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD" \
    && grep -qF '| C27 |' "$SKILLMD" \
@@ -86,10 +88,10 @@ if grep -q '工具选择映射' "$KIT_MAPPING" \
 else
   bad 11 "卫星 template-mapping/template-guide 或 plan-writer 契约锚缺失"
 fi
-# TS-12 零新 config 键——properties 键数 = 40（与 WF-12 同口径；jq 缺失打 SKIPPED 不 FAIL）
+# TS-12 零新 config 键——properties 键数 = 42（与 WF-12 同口径；jq 缺失打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 已合法加 2 键,FF 守护断言 42 为准]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 12 "config.json properties 键数 40（零新增）"; else bad 12 "config.json properties 键数=$keys（应 40）"; fi
+  if [ "$keys" = "42" ]; then ok 12 "config.json properties 键数 42（v145 已合法加 2 键）"; else bad 12 "config.json properties 键数=$keys（应 42）"; fi
 else
   printf 'TS-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

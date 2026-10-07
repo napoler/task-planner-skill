@@ -5,10 +5,17 @@
 #   WF-01..06 critical-rules.md Rule 39 条款锚（头 + 39.1/39.3/39.4/39.5 + 39.6 机制+零新 config 键）
 #   WF-07..09 SKILL.md 联动（Rule 39 摘要行 + C27 清单项 + 协同路由 dynamic-workflows 行）
 #   WF-10/11  4 索引文档（SKILL.md/CLAUDE.md/README_zh.md/skills/task-planner/README.md）
-#             "Rules 1-39" 命中总和 ≥6；"Rules 1-38" 残留 =0（仓内 CLAUDE/README_zh 按
+#             新锚 'Critical Rules 1-62'+'1-62' 变体族命中总和 ≥3，且 SKILL.md 旧 'Rules 1-39/1-45' 变体残留 =0；
+#             "Rules 1-38" 残留 =0（仓内 CLAUDE/README_zh 按
 #             SKILL_ROOT/../.. 解析；部署位上跳路径缺失时该文件计 0 不 FAIL，仅对存在文件求和；
 #             critical-rules.md 38.5 条款内 1 处历史描述不在 WF-11 检查范围）
-#   WF-12     config.json properties 键数 = 40（零新增；jq 缺失时打 SKIPPED 不 FAIL）
+#             [2026-10-08 task-v144 合并级联] 旧口径「Rules 1-39+1-45 总和 ≥6」演进为新锚 1-62 族：
+#             SKILL.md 三锚（L9 索引行/L273 References 行/L342 critical-rules 表行）已演进为 Critical Rules 1-62
+#             （前序级联单元 complete，LA-12 三同步范式）；旧变体负断言锚定 SKILL.md 主文件（=0），
+#             CLAUDE/README_zh/skills-README 旧残留归另行级联单元，不在本锚检核面
+#   WF-12     config.json properties 键数 = 42（基线自 40 演进；jq 缺失时打 SKIPPED 不 FAIL）
+#             [2026-10-08 task-v144 合并级联] task-v142 遗留 2 个 periodic_review 孤儿键 40→42
+#             （selftest-iteration-persistence.sh IP-15 同现漂移面，口径对齐）
 #   WF-13     [2026-09-25 task-v090] 39.7 动态激活边界锚（39.7 头 + 39.7.1/39.7.2/39.7.3 三子条 + 39.5 观察面注记）
 #   WF-14     [2026-09-25 task-v090] 禁自建副本负断言（39.7.2）：~/.zcode/skills 与
 #             ~/.agents/skills 下无 dynamic-workflows/ 目录（存在=遮蔽官方 bundled skill）
@@ -49,23 +56,26 @@ if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD"; then ok 07 "SKILL.md R
 if grep -qF '| C27 |' "$SKILLMD"; then ok 08 "SKILL.md C27 清单项"; else bad 08 "SKILL.md 缺 C27 行"; fi
 # WF-09 SKILL.md 协同路由 dynamic-workflows 行
 if grep -qF 'dynamic-workflows（用户显式点名' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
-# WF-10 4 索引文档 "Rules 1-39" 命中总和 ≥6（文件缺失计 0 不 FAIL，仅对存在文件求和）
+# WF-10 4 索引文档 新锚 1-62 族（'Critical Rules 1-62' + '1-62' 变体）命中总和 ≥3
+#       且 SKILL.md 旧 'Rules 1-39'/'Rules 1-45' 变体残留 =0（文件缺失计 0 不 FAIL，仅对存在文件求和）
+# [2026-10-08 task-v144 合并级联] 旧口径 'Rules 1-39+1-45 总和 ≥6' 随 SKILL.md 锚演进 1-62 同步（LA-12 范式）
 cnt=0
-# task-v116: 锚口径扩展=「Rules 1-39」(括注模式字面)+「Rules 1-45」(演进后全集)合计——守卫意图不变(索引面覆盖现行全集)
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
-  if [ -f "$f" ]; then c="$(grep -c 'Rules 1-39' "$f" || true)"; c2="$(grep -c 'Rules 1-45' "$f" || true)"; cnt=$((cnt + c + c2)); fi
+  if [ -f "$f" ]; then c="$(grep -c 'Critical Rules 1-62' "$f" || true)"; c2="$(grep -c '1-62' "$f" || true)"; cnt=$((cnt + c + c2)); fi
 done
-if [ "$cnt" -ge 6 ]; then ok 10 "4 索引文档 Rules 1-39+1-45 命中总和 $cnt ≥6"; else bad 10 "Rules 1-39+1-45 命中总和 $cnt <6"; fi
+oldres="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"; oldres2="$(grep -c 'Rules 1-45' "$SKILLMD" || true)"; oldres=$((oldres + oldres2))
+if [ "$cnt" -ge 3 ] && [ "$oldres" -eq 0 ]; then ok 10 "4 索引文档 'Critical Rules 1-62'+'1-62' 命中总和 $cnt ≥3 且 SKILL.md 旧 1-39/1-45 变体 0"; else bad 10 "1-62 族命中总和 $cnt <3 或 SKILL.md 旧 1-39/1-45 残留 $oldres（应 0）"; fi
 # WF-11 4 索引文档 "Rules 1-38" 残留 =0（同 WF-10 口径；critical-rules.md 内 1 处历史描述不在范围）
 res=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
   if [ -f "$f" ]; then res=$((res + $(grep -c 'Rules 1-38' "$f" || true))); fi
 done
 if [ "$res" -eq 0 ]; then ok 11 "Rules 1-38 残留 0"; else bad 11 "Rules 1-38 残留 $res（应 0）"; fi
-# WF-12 config.json properties 键数 = 40（jq 缺失打 SKIPPED 不 FAIL，家族范式无先例故自定义）
+# WF-12 config.json properties 键数 = 42（jq 缺失打 SKIPPED 不 FAIL，家族范式无先例故自定义）
+# [2026-10-08 task-v144 合并级联] 40→42：task-v142 遗留 periodic_review 孤儿键 2 个并入 master，键数漂移为合法现状
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 12 "config.json properties 键数 40（零新增）"; else bad 12 "config.json properties 键数=$keys（应 40）"; fi
+  if [ "$keys" = "42" ]; then ok 12 "config.json properties 键数 42（基线演进 40→42，零新增于本体系）"; else bad 12 "config.json properties 键数=$keys（应 42）"; fi
 else
   printf 'WF-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
