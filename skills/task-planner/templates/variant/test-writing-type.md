@@ -103,7 +103,7 @@ Phase 1
 ### Phase 5: CI 集成
 - [ ] CI 配置更新(`bun test` 加入 CI 流程)
 - [ ] 随机顺序跑(`bun test --random-order`)确认无依赖
-- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** test-engineer（sonnet-1）
 
@@ -152,7 +152,7 @@ Phase 1
 
 - **铁律**:覆盖率不达标禁止 CI 集成
 - 测试文件主进程不直接 Edit — 派 code-assistant 子代理
-- 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |

@@ -100,7 +100,7 @@ Phase 1
 ### Phase 5: 提交 + 收尾
 - [ ] `git add` + `git commit` 修改文件(commit message 含 plan 引用)
 - [ ] 更新 task_plan.md 全部 Phase → complete
-- [ ] 运行 `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
 
@@ -144,7 +144,7 @@ Phase 1
 
 ## Notes
 
-- 每次 Phase 完成 → 调用 `Skill("task-drift-guard")`
+- 每次 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 - 修改必须派 `code-assistant`/`executor` 子代理,主进程不直接 Edit 业务代码
 
 ## 🚨 Drift Log（漂移检测记录）

@@ -15,7 +15,7 @@
 | 1 | 09:00 | 主会话 | task-planner 启动 | 1 | 主进程烧 1 次（必烧） |
 | 2 | 09:15 | Skill("code-review") | Phase 3 complete | 2 | 嵌套 opus（Rule 17.1 第 1 次） |
 | 3 | 09:20 | Agent(code-assistant) | 修改 src/foo.ts | 2 | haiku-1，不计入 opus 累计 |
-| 4 | 09:25 | Skill("task-drift-guard") | 每 2-3 todo | 2 | haiku，不计入 |
+| 4 | 09:25 | drift-checker 派发 | 每 2-3 todo | 2 | haiku，不计入 |
 | 5 | 09:30 | Skill("code-review") | Phase 4 complete | 3 | 嵌套 opus（Rule 17.1 第 2 次，⚠️ 节流警告） |
 | ... | ... | ... | ... | ... | ... |
 

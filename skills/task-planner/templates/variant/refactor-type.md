@@ -103,7 +103,7 @@ Phase 1
 ### Phase 5: Code Review Gate + 提交
 - [ ] 调用 `Skill("code-review")` 审查(重点:行为是否真不变 + API 兼容性)
 - [ ] APPROVED → commit;CHANGES_REQUESTED → 回到 Phase 3
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
@@ -150,7 +150,7 @@ Phase 1
 
 - 重构 = 行为不变,任何测试失败 = 立即回滚
 - 复杂度报告用 codebase-analyzer 子代理,主进程不直接读源码
-- 每 2-3 个 Phase 完成 → 跑一次 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |

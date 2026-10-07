@@ -105,7 +105,7 @@ Phase 1
 - [ ] 监控告警阈值检查(错误率/延迟/资源)
 - [ ] CI/CD 流水线更新(GitHub Actions / GitLab CI)
 - [ ] RUNBOOK.md 更新(部署步骤/回滚步骤/常见问题)
-- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 
@@ -155,7 +155,7 @@ Phase 1
 - **铁律**:无 staging 验证 → 禁止生产部署(VC-1 门控)
 - 无回滚预案 → 禁止生产部署(VC-3 门控)
 - 部署相关配置主进程不直接 Edit — 派子代理
-- 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 - 部署属 §十一 P0 必 worktree 范围
 
 ## 🚨 Drift Log（漂移检测记录）

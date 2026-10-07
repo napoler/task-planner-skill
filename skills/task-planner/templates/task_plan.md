@@ -388,7 +388,7 @@ Phase 1
 
 ## 🚨 Drift Log（漂移检测记录）
 <!-- 
-  WHEN: 每次调用 Skill("task-drift-guard") 后追加一行记录
+  WHEN: 每次派发 drift-checker 偏移检查（Rule 61 载体）后追加一行记录
   FORMAT: | timestamp | 结果 | VC条目 | 结论 |
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |

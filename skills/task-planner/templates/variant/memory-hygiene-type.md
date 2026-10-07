@@ -114,7 +114,7 @@ Phase 1
 - [ ] 独立 verifier 子代理重跑 M2 抽样锚(≥3 条),复现输出入 checkpoint
 - [ ] grep 全库计数级联自洽(任务涉及时,如 variant 17 口径)
 - [ ] 删除建议节 Read 复核=零自动执行(VC-4)
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** verifier（fresh）+ 主进程（例外理由:簿记与终验）
 
@@ -209,7 +209,7 @@ Phase 1
 
 - **铁律**:验证锚缺一=处置不成立(M4);删除永不自动执行(M3)
 - 新增/更新条目必须满足 M5 三要素(绝对日期+验证锚+失效条件)
-- 每 2 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 
 ## 📊 FMEA 预演
 

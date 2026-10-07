@@ -229,7 +229,7 @@ grep -E "task-drift|drift-guard" ~/.zcode/cli/config.json
 ls ~/.zcode/skills/task-drift-guard/SKILL.md
 
 # 3. 手动跑一次验证(SKILL.md 描述)
-# 主进程:Skill("task-drift-guard")
+# 主进程:派发 drift-checker 子代理（Rule 61 载体）
 ```
 
 ### 5.6 `plan-writer` agent 缺失

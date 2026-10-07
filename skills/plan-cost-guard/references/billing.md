@@ -12,7 +12,7 @@
 | 执行中工具调用（Read/Write/Bash等） | 不计费 |
 | **opus Skill 嵌套调用**（systematic-debugging / code-review / brainstorming / writing-plans / comet-*）| **1次 opus / 次（Rule 17.1 节流：同 phase ≤1 次）** |
 | 子代理调用（plan-writer / code-assistant / debugger 等）| 按子代理模型独立计费（sonnet-1 / haiku-1 / mini） |
-| 高频 task-drift-guard | haiku 档，极便宜（Rule 15 节流：每 phase ≤3 次） |
+| 高频 drift-checker（偏移检查子代理，Rule 61 载体） | haiku-1 档，极便宜（Rule 15/61 节流：每 phase ≤3 次） |
 | 中断后用 task-planner scripts/session-catchup.ts 恢复 | 不计费 |
 | 重复调用 `/plan`（同一会话） | 额外 opus 计费 ❌ |
 
@@ -24,7 +24,7 @@
 | plan-writer | sonnet-1 | ≈ 0.3× | 1 | 0.3 |
 | code-assistant | haiku-1 | ≈ 0.05× | 1-3 | 0.05-0.15 |
 | code-runner-agent | mini | ≈ 0.02× | 2-5 | 0.04-0.10 |
-| task-drift-guard | haiku | ≈ 0.05× | 1-3 | 0.05-0.15 |
+| drift-checker（Rule 61 载体） | haiku-1 | ≈ 0.05× | 1-3 | 0.05-0.15 |
 | **嵌套 opus Skill** | opus | 1.0× | 0-1（Rule 17.1 节流） | 0-1.0 |
 | debugger | sonnet-1 | ≈ 0.3× | 0-1（仅 bugfix） | 0-0.3 |
 | **phase 总计** | — | — | — | **≈ 1.5-3.0 opus 等效** |

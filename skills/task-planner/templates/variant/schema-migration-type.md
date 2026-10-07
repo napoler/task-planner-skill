@@ -107,7 +107,7 @@ Phase 1
 - [ ] down 脚本演练记录入档
 - [ ] docs/schema-changelog.md 更新
 - [ ] RUNBOOK.md 更新(紧急回滚 SOP)
-- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** database-optimizer
 
@@ -157,7 +157,7 @@ Phase 1
 - **铁律**:up/down 双向脚本必须成对(VC-1 门控)
 - 无 staging 演练 → 禁止生产(VC-2 门控)
 - 数据库 migration 主进程不直接写 SQL — 派 database-optimizer / code-assistant
-- 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 - 数据库属 §十一 P0 必 worktree 范围
 
 ## 🚨 Drift Log（漂移检测记录）

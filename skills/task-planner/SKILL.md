@@ -95,12 +95,12 @@ model: opus
      - **⚠️ 3-File 回填门控（19.2 — 执行中硬门控）**：标记 complete 前必须满足双条件——① progress.md 对应 Phase 段已回填（Actions taken / Files created-modified / Test Results）；② findings.md 在本 Phase 期间有实质增量。运行 `bash <skill>/scripts/check-3file-gate.sh <plan-dir>` 校验：信号优先级 = ledger 工作账本（`ledger-*.jsonl` 含锚点后的行 = 语义工作证据）> mtime 判定（无 ledger 时兜底）；exit 1 → 禁止翻转 complete，先回填再重跑直至 exit 0
   4.5 **提交工作产物（Rule 27 — git 管理强制）**：实现类 Phase 在标记 complete 前，必须把本 Phase 产物 commit 到当前工作分支（worktree 隔离场景提交在 worktree 内分支；direct 场景提交在主仓当前分支）——**禁止跨 Phase 攒批、禁止留到终验才提交**，丢弃上限收敛为单 Phase 增量。范围 = 本 Phase 实际产出文件（以 scope_files / progress.md「Files created-modified」清单为准），**禁止 `git add -A` / `git add .` 盲扫**（防卷入 plans/、.env、临时文件与并行任务产物；plans/ 按仓约定不入库）。message：`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。提交后 `git status --porcelain -- <scope 文件>` 必须为空；非 git 目录 → progress.md 记一行 `[git-commit] 跳过:非 git 仓库` 不阻塞；豁免（计划声明 `git_commit: deferred` 或用户显式"先不提交"）须已写入计划并登记 verification.md。详见 `references/critical-rules.md` Rule 27
   5. **同步 Todo + 索引（S2/S4）**：该 Phase todo → `completed`；运行 `bash scripts/sync-todos.sh --index` 刷新 INDEX.md
-  6. **[DRIFT CHECK]** 调用 `Skill("task-drift-guard")`（本触发点唯一检测载体——`check-drift.sh` 仅作可选佐证，不双跑；C4）
+  6. **[DRIFT CHECK]** 派发 `drift-checker` 子代理偏移检查（本触发点唯一检测载体=Rule 61 子代理化载体——`check-drift.sh` 仅作 61.5 降级佐证，不双跑；C4）
     - ✅ ALIGNED → 继续下一 Phase
     - ⚠️ DRIFT → 记录 progress.md，警觉继续
     - 🔴 BLOCKED → **STOP**，报告用户，等决策
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
-  - `task-drift-guard` 为只读检测层，发现 BLOCKED 时必须等用户明确决策后再继续
+  - `drift-checker` 为只读检测执行体，发现 BLOCKED 时必须等用户明确决策后再继续
 
 ### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
 
@@ -124,7 +124,7 @@ model: opus
     1. 更新 Handoff 追踪表对应行（状态=complete + 完成时间）
     2. 验证交接产物存在：`Read` 检查目标文件
     3. 更新下游 Block `depends_on` 状态为 `in_progress`
-    4. 调用 `Skill("task-drift-guard")`
+    4. 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）
     5. 恢复触发点（交付终态/会话恢复）按 Rule 24.5 自主续推（per-block 扫描已收敛）
   - **handoff 合约**（每次交接前必须满足）：
     ```
@@ -170,7 +170,7 @@ model: opus
 | C1 | 用户任务已复述，目标无歧义 | ☐ |
 | C2 | `task_plan.md` 存在且含 Phase + VC 表 | ☐ |
 | C3 | 计划已展示并获得用户显式授权 | ☐ |
-| C4 | 每个 Phase 完成后已调用 `Skill("task-drift-guard")`（同点唯一检测载体，ALIGNED/DRIFT/BLOCKED 三态，BLOCKED→STOP；`check-drift.sh` 仅作可选佐证，不再与 skill 双跑） | ☐ |
+| C4 | 每个 Phase 完成后已派发 `drift-checker` 子代理偏移检查（Rule 61 载体，同点唯一检测载体，ALIGNED/DRIFT/BLOCKED 三态，BLOCKED→STOP；`check-drift.sh` 仅作 61.5 降级佐证，不与子代理双跑） | ☐ |
 | C5 | subagent 返回后已 Read 实际产出文件（check-complete 终验抽查承载） | ☐ |
 | C6 | 全部 VC 逐条复验，有可查证据（check-complete 逐条校验承载） | ☐ |
 | C7 | 交付结论为 COMPLETE/PARTIAL/BLOCKED 之一（check-complete 终态判定承载） | ☐ |
@@ -234,7 +234,7 @@ model: opus
 **技能文件修改保守化（Rule 36 — task-v079）**：任何技能文件写操作（36.1 范围）先过 36.2 归因前置门——执行期失败/异常禁止拿「改技能」当第一补救，归因指向技能本体且用户显式要求才可提案；修改前按 36.3 建删除基线产出删除性行为清单，功能性删除/语义改写按 36.4 交用户逐项确认（D6 级，silent 亦不可跳过），默认 36.5 纯增量；新守卫 check-skill-modify.sh 挂 pretooluse 对主进程与子代理一致生效（skill_modify_enforce 默认 warn）。完整条款见 `references/critical-rules.md` Rule 36。
 **新增任务边界判定（Rule 8.1 — task-v087）**：用户新指令与当前计划 Goal/范围/交付物均无关联 = **D 类新任务**——先判 D 再判 A/B/C：开新计划目录（init-session 全流程），旧计划原样保留（不标 superseded，区别于 C 类）；禁止把不相干指令在当前计划上下文照做（A）或扩进当前计划范围（B）——不相干内容混入既有 task_plan.md 是三文件污染与终验失焦的首要来源。判定依据 = 当前 task_plan.md 三要素（Goal + scope_files/执行范围 + 交付物）；指令与当前目标有关联（哪怕影响小）回退 A 类；无活跃计划时 D 类 N/A（天然开新计划）。判定落 notepad-learnings.md 一行 + Decisions Made。完整条款见 `references/critical-rules.md` 8.1。
 - 每次 B/C 类变更 → `Decisions Made` 表记一行（指令→变更）+ progress.md 记录
-- B/C 类处理完必须再跑 `Skill("task-drift-guard")`
+- B/C 类处理完必须再派发 `drift-checker` 偏移检查（Rule 61 载体）
 - 配套提醒：UserPromptSubmit hook 在指令到达时注入 `[plan-note]` 判定提示（有活跃计划时）
 
 ### 🔀 冲突分析与工作树隔离（默认首选）
@@ -268,11 +268,11 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40-55 全集，Rule 55 可复用能力落盘纪律））：
+详见 `references/critical-rules.md`（Rules 1-39（含 Rule 40-61 全集，Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
-- **Rule 15 高频漂移纠正强制**：每 2-3 个原生 todo 后必须跑 `Skill("task-drift-guard")`（详见下方 §高频漂移纠正）
+- **Rule 15 高频漂移纠正强制**：每 2-3 个原生 todo 后必须派发 `drift-checker` 偏移检查（Rule 61 载体，详见下方 §高频漂移纠正）
 - **Rule 16 任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `../plan-template-kit/references/template-mapping.md`，模板分流单一权威源）
 - **Rule 17 成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `../plan-cost-guard/references/cost-control.md`）
 - **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；试点先行硬门（18.9-18.11：单件未验证禁批量、单件失败即投毒红线、宁慢勿错，task-v083）+ 前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
@@ -313,6 +313,7 @@ model: opus
 - **Rule 55（可复用能力落盘纪律 — task-v138）**：复用前置检查(55.1)/权威来源优先禁令(55.2)/首次成功即落盘(55.3)/固定位置与注册表(55.4)/执行体接线(55.5)/机制(55.6)——「首成即落盘→注册可发现→复用不再发明」链路，scripts/capabilities/ + references/capability-registry.md，零新 config 键（详见 references/critical-rules.md Rule 55）
 - **Rule 57（迭代测试轮次落盘纪律 — task-v141）**：每轮测试/迭代结果必落盘(57.1)/落盘四要素=轮次编号·测试命令·PASS-FAIL·关键输出摘要(57.2)/迭代更新即时落盘防上下文分散(57.3)/机制=零新 config 键+selftest-iteration-persistence.sh 守护+合规清单 C40(57.4)——「每轮落盘→下轮基于文件事实→根除多轮错误累积」链路（详见 references/critical-rules.md Rule 57）
 - **Rule 58（调研分析证据纪律与核心目标达成门控 — task-v143）**：证据面清单=自身/对标/外部约束三基线面(58.1)/对标取证强制·无对标取证禁归因结论(58.2)/结论-证据锚定+反证检查(58.3)/手段/目标二分+[目标]行必映射问题解决判据(58.4)/完成裁决门 solved-partial-not-solved·交付物冒充问题解决禁令·not-solved 禁 COMPLETE(58.5)/手段-目标因果链·绕弯活动禁令(58.6)/机制=零新 config 键+selftest-evidence-goal-gate.sh 守护+计划模板双区块注入(58.7)——「先取证后结论+以问题解决状态裁决完成」双链路（详见 references/critical-rules.md Rule 58）
+- **Rule 61（偏移检查子代理化 — task-v146）**：15.1 触发点检查由 `drift-checker` 伴随 agent 承载，主进程只消费单行判定+检查点（详见 references/critical-rules.md Rule 61）
 
 ## Completion Gate
 
@@ -349,7 +350,7 @@ model: opus
 | `templates/shared-tracker.md` | 共享内容认领追踪区块模板（Rule 30；task_plan 引用，账本权威源=progress-tracker 技能） |
 | `templates/delivery-summary.md` | 终验交付总结五要素模板（终验交付段消费；数据源=verification/progress/report 引用不重写；非计划模板不入 25 口径） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
-| 外部 skill | `Skill("task-drift-guard")` 漂移检测 / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） / `Skill("progress-tracker")` 共享内容认领追踪（Rule 30 调用入口，协同契约见 ../plan-collab-router/references/skill-collaboration.md） |
+| 外部 skill | `drift-checker` agent 偏移检查执行载体（Rule 61；`task-drift-guard` skill=交互/独立场景载体） / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） / `Skill("progress-tracker")` 共享内容认领追踪（Rule 30 调用入口，协同契约见 ../plan-collab-router/references/skill-collaboration.md） |
 
 ---
 
@@ -382,7 +383,7 @@ model: opus
 | **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ | ≤1 模块, ≤3 文件 | 拆多 executor |
 | **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 complex-problem-solver 或升级 complex-planner（高复杂度规划备用，GLM5.3/Opus 级） |
 | **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ | ≤1 PR, ≤3 文件 | 拆评论任务 |
-| **漂移检测（高频）** | `Skill("task-drift-guard")` | haiku（内置） | ❌ | 高频(≤3次/phase) | 无需(已节流) |
+| **漂移检测（高频）** | `drift-checker`（伴随 agent，Rule 61 载体） | haiku-1 | ❌ | 高频(≤3次/phase) | 无需(已节流) |
 | **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
 | **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
@@ -415,6 +416,7 @@ model: opus
 - ❌ 主进程直接接收 `Skill("code-review")` / `Skill("systematic-debugging")` 长输出
 - ❌ 主进程直接接收 `Agent(subagent_type=codebase-analyzer)` 的体检报告全文
 - ❌ Phase 无 `**Executor:**` 字段即开始执行（违反 Rule 25，计划视为无效，须补字段并重跑 attest）
+- ❌ 主进程为偏移比对 Read task_plan.md 全文或收集 git diff 大输出（偏移检查=drift-checker 子代理载体，Rule 61）
 
 ---
 
@@ -478,7 +480,7 @@ hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:
 
 ## 🔁 高频漂移纠正（每 2-3 轮 todo，已内敛 → critical-rules.md §15）
 
-> 权威源 = `references/critical-rules.md` Rule 15（触发时机表 15.1 / 纠正条目自动入 Todo 15.2 / 与 Rule 11 的关系 15.3）。摘要：任一触发条件命中立即调 `Skill("task-drift-guard")`（含「用户发出新指令时：A/B/C 判定后做漂移检查」）；⚠️ DRIFT 自动入 todo、🔴 BLOCKED 立即 STOP。
+> 权威源 = `references/critical-rules.md` Rule 15（触发时机表 15.1 / 纠正条目自动入 Todo 15.2 / 与 Rule 11 的关系 15.3）。摘要：任一触发条件命中立即派发 `drift-checker` 子代理（载体=Rule 61；含「用户发出新指令时：A/B/C 判定后做漂移检查」）；⚠️ DRIFT 自动入 todo、🔴 BLOCKED 立即 STOP。
 
 ---
 
