@@ -1,16 +1,21 @@
-{"rule":46,"status":"landed","task_id":"task-v118","ts":"2026-10-03","note":"子代理单任务专注度"}
-{"rule":47,"status":"landed","task_id":"task-v122","ts":"2026-10-03","note":"媒体制作任务派发纪律"}
-{"rule":48,"status":"landed","task_id":"task-v123","ts":"2026-10-03","note":"交付总结可定位性与实用性"}
-{"rule":49,"status":"landed","task_id":"task-v126","ts":"2026-10-04","note":"单元线多路并行推进（merge 957a7a8/48c6952；v125 原同瞄已改号 50）"}
-{"rule":50,"status":"contested","claimants":["task-v125","task-v127"],"ts":"2026-10-04","note":"v125 由 49 改号至 50（残留注释待清）与 v127 自取 50 同瞄；待仲裁/改号（next=52）"}
-{"rule":51,"status":"reserved","task_id":"task-v129","ts":"2026-10-04","note":"videop1 mvlock 事故整改（new_rule: 51 已 attest；应其请求补录）"}
-{"rule":51,"status":"landed","task_id":"task-v129","ts":"2026-10-04","note":""}
-{"rule":50,"status":"landed","task_id":"task-v127","ts":"2026-10-04","note":""}
-{"rule":52,"status":"reserved","task_id":"task-v125","ts":"2026-10-04","note":"执行体专业化优先与覆盖矩阵（50 被 v127 占用后第三次改号；v121 预扩位体系内）"}
-{"rule":52,"status":"landed","task_id":"task-v125","ts":"2026-10-04","note":""}
-{"rule":53,"status":"reserved","task_id":"task-v131","ts":"2026-10-05","note":""}
-{"rule":53,"status":"landed","task_id":"task-v131","ts":"2026-10-05","note":""}
-{"rule":54,"status":"reserved","task_id":"task-v136","ts":"2026-10-05","note":""}
-{"rule":55,"status":"reserved","task_id":"task-v138","ts":"2026-10-05","note":""}
-{"rule":54,"status":"landed","task_id":"task-v136","ts":"2026-10-05","note":""}
-{"rule":55,"status":"landed","task_id":"task-v138","ts":"2026-10-06","note":""}
+{"rule": 46, "status": "landed", "task_id": "task-v118", "ts": "2026-10-03", "note": "子代理单任务专注度"}
+{"rule": 47, "status": "landed", "task_id": "task-v122", "ts": "2026-10-03", "note": "媒体制作任务派发纪律"}
+{"rule": 48, "status": "landed", "task_id": "task-v123", "ts": "2026-10-03", "note": "交付总结可定位性与实用性"}
+{"rule": 49, "status": "landed", "task_id": "task-v126", "ts": "2026-10-04", "note": "单元线多路并行推进（merge 957a7a8/48c6952；v125 原同瞄已改号 50）"}
+{"rule": 50, "status": "contested", "claimants": ["task-v125", "task-v127"], "ts": "2026-10-04", "note": "v125 由 49 改号至 50（残留注释待清）与 v127 自取 50 同瞄；待仲裁/改号（next=52）"}
+{"rule": 51, "status": "reserved", "task_id": "task-v129", "ts": "2026-10-04", "note": "videop1 mvlock 事故整改（new_rule: 51 已 attest；应其请求补录）"}
+{"rule": 51, "status": "landed", "task_id": "task-v129", "ts": "2026-10-04", "note": ""}
+{"rule": 50, "status": "landed", "task_id": "task-v127", "ts": "2026-10-04", "note": ""}
+{"rule": 52, "status": "reserved", "task_id": "task-v125", "ts": "2026-10-04", "note": "执行体专业化优先与覆盖矩阵（50 被 v127 占用后第三次改号；v121 预扩位体系内）"}
+{"rule": 52, "status": "landed", "task_id": "task-v125", "ts": "2026-10-04", "note": ""}
+{"rule": 53, "status": "reserved", "task_id": "task-v131", "ts": "2026-10-05", "note": ""}
+{"rule": 53, "status": "landed", "task_id": "task-v131", "ts": "2026-10-05", "note": ""}
+{"rule": 54, "status": "reserved", "task_id": "task-v136", "ts": "2026-10-05", "note": ""}
+{"rule": 55, "status": "reserved", "task_id": "task-v138", "ts": "2026-10-05", "note": ""}
+{"rule": 54, "status": "landed", "task_id": "task-v136", "ts": "2026-10-05", "note": ""}
+{"rule": 55, "status": "landed", "task_id": "task-v138", "ts": "2026-10-06", "note": ""}
+{"rule": 57, "status": "reserved", "task_id": "task-v142", "ts": "2026-10-07", "note": ""}
+{"rule": 58, "status": "reserved", "task_id": "task-v143", "ts": "2026-10-07", "note": "调研分析证据纪律与核心目标达成门控（merge 96c474c；合并编号仲裁：v142 未走预留强占 58 落地 a7c01a8，已重编号 60 内容零改动；58 归 task-v143）"}
+{"rule": 59, "status": "reserved", "task_id": "task-v144", "ts": "2026-10-08", "note": "子代理拆分粒度硬门与技能伴飞纪律（拆分细致化+技能激活路由+能力预防）"}
+{"rule": 60, "status": "reserved", "task_id": "task-v145-four-file-dataflow", "ts": "2026-10-08", "note": "四文件罗盘数据流转与调研知识沉淀纪律（含派发契约收窄 lint；v143 若改号请避开 60）"}
+{"rule": 58, "status": "landed", "task_id": "task-v143", "ts": "2026-10-08", "note": "调研分析证据纪律与核心目标达成门控（merge 96c474c；合并编号仲裁：v142 未走预留强占 58 落地 a7c01a8，已重编号 60 内容零改动；58 归 task-v143）"}
