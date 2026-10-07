@@ -145,12 +145,12 @@ while IFS= read -r line; do
       echo "[analyze-splits] SKIPPED Phase ${phase_no} S${s_id} 未见 S-unit 表头(列位未知) — 不计违规"
       continue
     fi
-    # 解析粒度列 $8：`Nf/Nl/Nmin`（三段；[2026-10-08 task-v144 S18 P2-3 注释修正: 原注「缺段按 0 计——
+    # 解析粒度列（正则口径=check-plan-dispatch ⑤-c 统一 Nf/Nl/Nmin 无空格,task-v144 CR 复审建议2） $8：`Nf/Nl/Nmin`（三段；[2026-10-08 task-v144 S18 P2-3 注释修正: 原注「缺段按 0 计——
     # 部分填报也体检已报值」与实现相反——实际缺段/畸形走 SKIPPED 放行（不计违规, 与头注释口径一致）,
     # 仅当行尾 regex 三段全命中时逐段取数, 取数失败才 ${f:-0} 兜底）
     raw="$(printf '%s' "$line" | awk -F'|' -v c=8 '{print $c}')"
     raw="$(trim "$raw")"
-    if ! [[ "$raw" =~ ^[0-9]+[[:space:]]*f?/[0-9]+[[:space:]]*l?/[0-9]+[[:space:]]*min?$ ]] \
+    if ! [[ "$raw" =~ ^([0-9]+)f/([0-9]+)l/([0-9]+)min$ ]] \
        && ! [[ "$raw" =~ ^[0-9]+/[0-9]+/[0-9]+$ ]]; then
       skipped_bad=$(( skipped_bad + 1 ))
       echo "[analyze-splits] SKIPPED Phase ${phase_no} S${s_id} 粒度列不可解析('${raw}') — 不计违规"

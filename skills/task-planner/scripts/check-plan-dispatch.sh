@@ -280,7 +280,7 @@ while IFS= read -r line; do
         # [2026-10-08 task-v144 S17] 例外登记在案放行（留痕不阻断）：行内含「例外」
         # 标记（如 S15 同质批量清账「文件数例外登记」）= 超限已登记理由，超限降为
         # SKIPPED 提示不拒锁——防 59.1 硬门误杀登记过例外的存量批量工序
-        if [[ "$line" == *"例外"* ]]; then
+        if [[ "$line" == *"例外登记"* ]]; then  # [task-v144 CR 复审建议] 收窄:整行「例外」子串过宽(验收列「无例外」即旁路),锚定显式登记 token
             if [[ "$col8" =~ ^([0-9]+)f/([0-9]+)l/([0-9]+)min$ ]] && { [ "${BASH_REMATCH[1]}" -gt "$STEP_MAX_FILES" ] || [ "${BASH_REMATCH[2]}" -gt "$STEP_MAX_LINES" ] || [ "${BASH_REMATCH[3]}" -gt "$STEP_MAX_MIN" ]; }; then
                 echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值 ${col8} 超限但行内例外登记在案 — 留痕不阻断(Rule 59.1 例外放行)"
             fi
