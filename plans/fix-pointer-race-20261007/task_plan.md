@@ -127,7 +127,7 @@ Phase 5
 - **Status:** complete
 - **Executor:** code-assistant
 
-| ID | 目标(≤1 句) | 承接体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|
 | S1 | cjs sidmap 写+读+窗 | 继承 | worktree task-plan-init.cjs:75-122 + plan-created.cjs:59-97 + 派发 prompt 内嵌规格 | `node --check` 两文件过；grep sidmap 写/读在位 | ≤15min | done |
 
@@ -148,7 +148,7 @@ Phase 5
 - [ ] 6 文件同步 ~/.zcode/skills/task-planner/scripts/ + diff IDENTICAL
 - [ ] 合并回 master（--no-ff）+ worktree/分支清理 + 交付总结
 - **V-N:** VC-6, VC-7
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记+③ 部署位同步——Rule 25.3 白名单）
 
 ## 🔀 隔离决策
@@ -159,7 +159,7 @@ Phase 5
 | `isolation` | `worktree`（§11.1 命中：技能文件+运行中基础设施） |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/fix-pointer-race` |
 | `branch` | `wt/fix-pointer-race`（自 master d806d05） |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(b7967db)` |
 
 ## 📊 FMEA 预演
 

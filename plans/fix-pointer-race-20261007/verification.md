@@ -127,3 +127,17 @@ JSON 输出：
 | 4 | What have I learned? | See findings.md |
 | 5 | What have I done? | See progress.md |
 | 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+
+## 终验记录（2026-10-07）
+
+| VC | 判定 | 证据 |
+|----|------|------|
+| VC-1 | ✅ | selftest T13/T12l 双读+env-only 转译行为断言 PASS |
+| VC-2 | ✅ | T12a/e/f/g/j init canon+映射权威+新鲜窗行为断言 PASS |
+| VC-3 | ✅ | T12h/k cjs sidmap 落盘/清理行为断言 PASS；grep init 12 处/created 14 处 |
+| VC-4 | ✅ | userpromptsubmit _ups_sidkey 剥前缀（:183-187），owner 协议未动 |
+| VC-5 | ✅ | selftest-active-plan 29/29 PASS exit 0；gc T14 sidmap 清扫 PASS |
+| VC-6 | ✅ | 定向回归 execution-stability 19/19 + delegation 38/38；全量回归 15 FAIL 经 master 对照=既有零增量；部署位 7 文件 diff IDENTICAL |
+| VC-7 | ✅ | CR NEEDS_FIXES 4 项→3 修 1 deferred 闭环；merge b7967db；worktree+分支已清理（git worktree list 仅主仓） |
+
+outcome: COMPLETE
