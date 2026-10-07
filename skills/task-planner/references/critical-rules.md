@@ -37,13 +37,13 @@
 ### 11 漂移检测（周期性）
 每个 phase 标记 complete 后、连续 ≥3 次工具调用后、切模块前，调用：
 ```
-Skill("task-drift-guard")
+派发 `drift-checker` 子代理偏移检查（Rule 61 载体）
 ```
 - ✅ ALIGNED → 继续执行
 - ⚠️ DRIFT → 记录到 progress.md，继续但警觉
 - 🔴 BLOCKED → STOP，报告用户，等决策
 
-`task-drift-guard` 是只读检测层，不做任何文件写入；发现偏差后输出结构化报告并等待用户决策。
+`drift-checker` 是只读检测执行体，不做任何文件写入；发现偏差后输出结构化报告并等待用户决策。
 
 ### 12 冲突即隔离（工作树默认首选）
 任务启动前运行 `check-conflicts.sh`；**实现类任务默认建议工作树隔离**（`wt/<task-id>` 分支，`<repo-parent>/<repo>-worktrees/<task-id>` 目录），完成后验证并主动合并回原分支再清理（合约见 `references/worktree-isolation.md`）。纯文档/调研类或用户显式否决时才直接开发。原因：本仓多为运行中基础设施，直接改动可能使功能在工作期间无法使用。
@@ -55,9 +55,9 @@ Skill("task-drift-guard")
 主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.sh/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）④ mini 直做通道（[task-v094 T-B4]：plan_tier=mini 含 auto-tier ∧ 非保护区 → 主进程直做合法；纪律口径 ≤30 行/≤2 文件/单模块由 Executor 登记 25.3 白名单⑥ 承载，机器面=check-delegation pretool ④b 放行，保护区永不放行）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
 
 ### 15 高频漂移纠正强制（P0）
-每完成 2-3 个原生 todo 后必须调用 `Skill("task-drift-guard")`（model: haiku,token 便宜；2026-09-27 task-v091/A-3: 该 skill 调用为漂移检测同点唯一载体,`check-drift.sh` 降为可选佐证不双跑——ALIGNED/DRIFT/BLOCKED 三态契约零改动）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。**问题背景（task-v095 P6-S2 内敛自 SKILL.md §「高频漂移纠正」段）**：任务执行中上下文变长,主进程视野变窄,容易偏离原计划（改错文件/跳过 VC/做计划外的事）；Phase 级漂移检测太粗,问题累积到 Phase 完成才暴露已晚——详见下方 15.1-15.3。
+每完成 2-3 个原生 todo 后必须派发 `drift-checker` 子代理偏移检查（haiku-1 档,主上下文零占用；2026-09-27 task-v091/A-3: 原为 skill 调用唯一载体,`check-drift.sh` 降为可选佐证不双跑；2026-10-08 task-v146/Rule 61: 载体切换为子代理派发——ALIGNED/DRIFT/BLOCKED 三态契约零改动）。纠正条目入 todo：⚠️ DRIFT → 自动追加 `[drift-fix]` 条目；🔴 BLOCKED → 立即 STOP 不自动入 todo,必须报告用户等决策。Phase 级 Rule 11 仍生效,作为粗粒度兜底。**问题背景（task-v095 P6-S2 内敛自 SKILL.md §「高频漂移纠正」段）**：任务执行中上下文变长,主进程视野变窄,容易偏离原计划（改错文件/跳过 VC/做计划外的事）；Phase 级漂移检测太粗,问题累积到 Phase 完成才暴露已晚——详见下方 15.1-15.3。
 
-15.1 **触发时机表（强制密度）**:执行过程中,以下任一条件命中立即调用 `Skill("task-drift-guard")`（model: haiku,token 便宜）：
+15.1 **触发时机表（强制密度）**:执行过程中,以下任一条件命中立即派发 `drift-checker` 子代理（haiku-1 档,Rule 61 载体）：
 
 | 触发时机 | 说明 |
 |---------|------|
@@ -67,9 +67,11 @@ Skill("task-drift-guard")
 | **Phase 标记 complete 后** | Phase 级门控（已存在 Rule 11） |
 | **用户发出新指令时** | A/B/C 判定后做漂移检查 |
 
-15.2 **纠正条目自动入 Todo**:task-drift-guard 输出 → 动作对照：✅ ALIGNED 不入 todo,继续；⚠️ DRIFT **自动追加 todo 条目** `[drift-fix] {问题描述}`（activeForm: 纠正漂移）,用户决策后执行；🔴 BLOCKED **立即 STOP**,**不自动入 todo**（避免静默改向）,必须报告用户等决策。
+15.2 **纠正条目自动入 Todo**:drift-checker 判定 → 动作对照：✅ ALIGNED 不入 todo,继续；⚠️ DRIFT **自动追加 todo 条目** `[drift-fix] {问题描述}`（activeForm: 纠正漂移）,用户决策后执行；🔴 BLOCKED **立即 STOP**,**不自动入 todo**（避免静默改向）,必须报告用户等决策。
 
-15.3 **为什么高频 / 与 Rule 11 的关系**:Phase 级漂移检测（Rule 11）粗粒度,问题累积数小时才暴露；todo 级纠正（Rule 15）细粒度,2-3 步内发现,代价小；`task-drift-guard` 是 haiku 档,token 便宜,可高频跑；两者并存——Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控。
+15.3 **为什么高频 / 与 Rule 11 的关系**:Phase 级漂移检测（Rule 11）粗粒度,问题累积数小时才暴露；todo 级纠正（Rule 15）细粒度,2-3 步内发现,代价小；`drift-checker` 是 haiku-1 档子代理,token 便宜,可高频跑且主上下文零占用（Rule 61）；两者并存——Phase 完成 = 粗粒度兜底,todo 完成 = 细粒度主控。
+
+- **15.4 子代理载体（Rule 61 — task-v146）**：15.1 触发点的检查动作由 `drift-checker` 子代理承载（61.1-61.3 契约），主进程不亲自读计划文件做偏移比对；本条触发时机、三态判定与处置链均不变（载体切换≠语义变更）
 
 ### 16 任务开启期选模板（P0）
 禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement/mini-lite/video/video-fix/image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly/memory-hygiene 共 29 类，task-v115 videop1 回流 17→29；general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `../plan-template-kit/references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（白名单模板标配（38.3 豁免 4 类不计入）,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 35/39 且 scope 区块提取非空,39=templates/ 现行全量模板数（主模板+variant）,35/39=含知识储备区块的白名单模板数,豁免 4 类（delivery-summary/knowledge-brief/shared-tracker/variant/mini-lite-type,38.3 白名单或共享载体,不计入标配口径）,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
@@ -81,7 +83,7 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 17.1 **opus Skill 节流**:opus 档 Skill 同 phase 内 ≤1 次;超出 → AskUserQuestion「继续/拆型/降级」
 17.2 **subagent 嵌套禁止**:禁止 plan-writer 调 plan-writer / code-assistant 调 code-assistant(frontmatter `tools` 不含 Agent/Skill 已防止)
 17.3 **任务模板复用**:禁止 plan-writer 重复生成同 task_plan;复用 `Decisions Made` 旧决策
-17.4 **drift 检测频次上限**:每 phase 内 `Skill("task-drift-guard")` ≤3 次(2-3 todo + 切模块 + phase complete)
+17.4 **drift 检测频次上限**:每 phase 内 `drift-checker` 派发 ≤3 次(2-3 todo + 切模块 + phase complete)
 17.5 **opus 调用门控**:单次会话 opus 累计(主进程 + Skill 嵌套 + subagent 升级)≥10 次 → AskUserQuestion
 17.6 **复杂任务优先 subagent**:opus 上下文长读文件(>500 行)必派 subagent(沿用 Rule 13)
 17.7 **代码 review 必含 `required`**:`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")`
@@ -200,10 +202,10 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 23.13 **机器守卫边界（如实披露，Rule 35.2 防虚构）**:`scripts/check-dispatch.sh` 的 `serial_slot_check` 只有一个全局锁 `subagent-state/.dispatch-inflight`（120s age），组标记命中即放行，**不区分组名、不做四问机器校验**（21.4 机器守护段同述；该函数内注释明写「守卫信任标记不做四问机器校验」）。结论：机器层只能「放行有标记的派发」，冲突检测责任在计划期声明+执行期四问（LLM 行为面）。若要机器兜底 lane 内串行，建议把单一时间戳锁升级为 `{lane: ts}` 映射、派发时校验「同 lane 无在飞」——零新 config 键，仅加富锁文件格式（后续任务项，本规则不实现）。**fan-out Aggregator 硬校验（23.6/18.7）现已生效**（check-complete.sh 校验正则 `Phase \d+:.*Aggregator|聚合`，缺失 exit 1）：fan-out 计划必须预置 Aggregator Phase 占位。
 
 ### 24 plan-resume 被动扫描与自主续推(P1,v0.5 契约)
-每个 Phase complete 后,在调 task-drift-guard **之前**,主进程**被动**调一次 `Skill("plan-resume")` 扫描工作区其他未完成计划。v0.5 起行为分模式:**当前计划执行中 → 只报告**(防打断进行中工作);**恢复触发点(会话启动无活跃计划 / 用户恢复类指令 / 当前计划交付终态后)→ 自主选 1 个续推**(config `autonomous_resume: true`,详见 plan-resume SKILL.md §7)。本规则保证:恢复场景不再"报告完等用户点名",同时执行中的扫描不抢当前工作。
+每个 Phase complete 后,在派发 drift-checker **之前**,主进程**被动**调一次 `Skill("plan-resume")` 扫描工作区其他未完成计划。v0.5 起行为分模式:**当前计划执行中 → 只报告**(防打断进行中工作);**恢复触发点(会话启动无活跃计划 / 用户恢复类指令 / 当前计划交付终态后)→ 自主选 1 个续推**(config `autonomous_resume: true`,详见 plan-resume SKILL.md §7)。本规则保证:恢复场景不再"报告完等用户点名",同时执行中的扫描不抢当前工作。
 （2026-09-27 task-v091/A-3 触发点收敛:plan-resume 调用点由「每 Phase complete」收敛为「交付终态/会话恢复触发点」两类(即下述 24.5 恢复触发点),Phase 循环内不再逐 Phase 扫描;v0.5 行为契约(执行中只报告/恢复点自主续推 Top 1)与守卫条款 24.2-24.7 零改动)
 
-24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 调 task-drift-guard 的时机);**不是**每个 todo 完成时(避免噪音)。执行中扫描恒为只报告模式（A-3 收敛后:仅「交付终态/会话恢复」触发点实际调用,见 24 注）
+24.1 **触发时机**:Phase 状态变更为 `complete` 之后(同 Rule 11 派发 drift-checker 的时机);**不是**每个 todo 完成时(避免噪音)。执行中扫描恒为只报告模式（A-3 收敛后:仅「交付终态/会话恢复」触发点实际调用,见 24 注）
 24.2 **扫描源**:用户当前工作目录 `$(pwd)`,scope = 仓库根(扫描 `plans/*/task_plan.md` + `.zcode/plans/plan-sess_*.md` + `openspec/changes/*/tasks.md` + `specs/*/tasks.md` 共 3 种格式);自主续推仅考虑仓内计划,跨仓候选只报告(宪法 §五 跨项目隔离 P0)
 24.3 **跳过自身**:当前 plan 的 `task_plan.md` 不进报告(避免重复/自触发);当前 plan 自身状态由三文件罗盘(task_plan/findings/progress)跟踪,不依赖本扫描
 24.4 **报告输出**:`<cwd>/.zcode/plans/plan-resume-report.md`(幂等覆盖);主上下文打印摘要(≤5 行):`扫到 N 个中断任务 → M 个推荐 resume / K 个推荐 archive / X 个推荐 drop`;自主续推时必须先打印「选中 task-X + score + 理由」再动手(透明性对冲自主风险)
@@ -710,3 +712,14 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 - 本规则与 22.3 系列规则**互补**，不冲突
 
 60.8 **机制（零新 config 键）**：判定面=LLM 行为（遇到障碍时自我审查是否已枚举替代方案）；机器面=无（本规则为纯行为约束，无脚本守护）；消费侧=SKILL.md 合规清单（后续补充 C 条目）。
+
+### 61 偏移检查子代理化（上下文防爆炸 — task-v146）
+
+> 结果级需求：偏移检查不得污染主上下文（用户 2026-10-08：「检查偏移…放入到子代理中检查…保持上下文干净…规避上下文爆炸」）。
+
+- **61.1 载体强制**：Rule 15.1 全部触发点的偏移检查一律派发 `drift-checker` 伴随 agent（haiku-1 档）在子代理隔离上下文执行（SKILL 路由表「漂移检测」行同步）；主进程禁止为偏移比对 Read task_plan.md 全文或收集 git diff 大输出；主进程只消费单行判定 + 检查点指针
+- **61.2 派发契约**：按 Rule 22.4 九字段模板派发，增补 drift 专用四字段=用户目标原话（≤200 字）+当前 Phase/S-unit 一行+近期动作摘要（≤5 行）+触发点类型；prompt ≤3000 字符（21.1b 沿用）；检查点=`<plan-dir>/subagent-state/{seq}-drift-checker.md`（22.8 命名沿用）
+- **61.3 产出契约**：drift-checker 只读仓库（唯一写权限=自身检查点）；检查点含判定+证据+建议；返回单行 status: `ALIGNED|DRIFT|BLOCKED` + evidence=检查点绝对路径；三态语义与处置链（15.2 追加 [drift-fix] / BLOCKED→STOP）不变；`task-drift-guard` skill 保留为交互/独立场景载体（双载体三态一致，selftest 守护）
+- **61.4 防自触发**：偏移检查的派发与回收不计入「连续 ≥3 次工具调用」累计；每次检查完成后计数清零（检查即新基线），防高频检查自我触发死循环
+- **61.5 失败兜底**：drift-checker 失败/超时 → 先 Read 检查点（22.8.4）→ 重试 1 次 → 仍失败降级主进程跑 `check-drift.sh`（只消费脚本输出，禁读计划全文）并登记债务；同 Phase 连续 3 次降级 → 按 Rule 41 评估上报
+- **61.6 机制**：零新 config 键；`selftest-drift-check-subagent.sh` 静态守护（六处载体锚+负断言+三态一致+覆盖矩阵行+hook 文案）；SKILL.md 路由表/合规清单 C4/References 同步措辞；锚定级联护栏=索引括注扩展头部 `Rules 1-39` 不动

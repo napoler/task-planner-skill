@@ -193,19 +193,19 @@ else
   bad 08 "既有锚漂移（^21.1b=$a21 应 ≥1 / ^47.=$a47 应 ≥4，既有 Rules 原文零改动被破坏）"
 fi
 
-# AC-09 矩阵行数上界锚（-le 128，task-v131 审计 L-3 对称守护 + CR P2-1 对齐）
-# What：断言 references/agent-coverage.md 行数 ≤128（wc -l 上界断言，128 为 2026-10-05 task-v131 实测值）。
+# AC-09 矩阵行数上界锚（-le 129，task-v131 审计 L-3 对称守护 + CR P2-1 对齐）
+# What：断言 references/agent-coverage.md 行数 ≤129（wc -l 上界断言，129 为 2026-10-08 task-v146 实测值）。
 # Why：task-v131 审计 L-3 指出 SKILL.md 行数在 selftest-skill-split.sh 有阈值断言（461→477 演进史），
 #      而矩阵 128 行锚此前无机器断言=文档膨胀侧漂移零守卫（矩阵被灌水=维护成本膨胀，矩阵被裁=选型事实源缩水）；
 #      演进规则：行数只增不减由 AC-05（C 表 41 行逐行含 纳入|豁免 内容锚）守内容完整性，AC-09 守上界防膨胀失控——
-#      原 =128 精确断言与 skill-split `-le` 上界惯例不一致、易漂移（CR P2-1），改 -le 128：矩阵合法增行（走
-#      Rule 52.3 增删同步）不破坏本锚，超上界 FAIL 并须按 52.3 同步流程后更新本上界 128→新值并在此行注记
+#      原 =129 精确断言与 skill-split `-le` 上界惯例不一致、易漂移（CR P2-1），改 -le 129：矩阵合法增行（走
+#      Rule 52.3 增删同步）不破坏本锚，超上界 FAIL 并须按 52.3 同步流程后更新本上界 129→新值并在此行注记
 #      演进史（格式先例 selftest-skill-split.sh T-主 440→…→477）。
 ml="$(wc -l < "$MATRIX" 2>/dev/null || true)"
-if [ -n "$ml" ] && [ "$ml" -le 128 ]; then
-  ok 09 "矩阵行数=$ml ≤128 上界锚在位（task-v131 审计 L-3 对称守护 + CR P2-1；内容锚=AC-05，演进=Rule 52.3 增删同步）"
+if [ -n "$ml" ] && [ "$ml" -le 129 ]; then
+  ok 09 "矩阵行数=$ml ≤129 上界锚在位（task-v131 审计 L-3 对称守护 + CR P2-1；内容锚=AC-05，演进=Rule 52.3 增删同步）; [2026-10-08 task-v146] drift-checker 行 +1"
 else
-  bad 09 "矩阵行数=$ml（应 ≤128；超限须走 Rule 52.3 增删同步并更新本上界，演进史先例 skill-split T-主）"
+  bad 09 "矩阵行数=$ml（应 ≤129；超限须走 Rule 52.3 增删同步并更新本上界，演进史先例 skill-split T-主）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d SKIPPED=%d\n' "$((PASS+FAIL+SKIP))" "$PASS" "$FAIL" "$SKIP"

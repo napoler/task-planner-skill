@@ -36,8 +36,9 @@
 | 24 | video-fix | videop1-video-fix SOP(D3:274)→v124 video-fix-executor(D3:274 承接位) | B*：同上，v124 承接 |
 | 25 | 媒体 11 类工序（character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly + image） | 「写词/QC/判定/剪辑/核对子代理」泛称(D3:277-288) | A：无具名映射，兜底=executor(sonnet-1)+工序 SOP（D3:298 条款）；image 生成由 v124 image-generation-executor 承接 |
 | 26 | 规则/模板组、迁移/部署组、轻量档、调研/诊断组、general | executor+worktree 隔离(D3:309) / 主进程 git 编排+executor(D3:310) / code-assistant 或主进程白名单(D3:311) / explore/web-search/debugger(D3:312) / 按 Phase Executor 逐案路由(D3:289) | 在位（general=设计如此） |
+| 27 | 偏移检查/漂移检测 | drift-checker(D1) | 在位（Rule 61 载体，haiku-1 档） |
 
-注：「登记面」D1=SKILL.md 路由表、D2=skill-agent-router、D3=template-mapping §九/§十；行 26 为底稿 5 行（规则/模板组、迁移/部署组、轻量档、调研/诊断组、general）合并，矩阵行号 1-26 对应底稿原 26 行类型族。
+注：「登记面」D1=SKILL.md 路由表、D2=skill-agent-router、D3=template-mapping §九/§十；行 26 为底稿 5 行（规则/模板组、迁移/部署组、轻量档、调研/诊断组、general）合并，矩阵行号 1-27 对应底稿原 26 行类型族（行 27=task-v146 新增）。
 
 ## 二、三类缺口处置表
 
