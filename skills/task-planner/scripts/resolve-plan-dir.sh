@@ -57,6 +57,31 @@ slug_is_valid() {
 
 # 1. 会话私有指针(side 优先于全局:本会话归属强于他人覆写的陈旧全局指针)
 SIDE_FILE="${SIDE_DIR}/${SID}.active_plan"
+# [2026-10-07 fix-pointer-race RC-1] 双命名空间兼容读(对齐 check-scope.sh 同款补丁语义):
+# 历史写入方(init-session.sh SIDKEY / userpromptsubmit 认领协议)曾以裸 sid(含 sess 前缀)落盘,
+# 剥前缀形态 miss 时回查 sess<sidkey> 形态。否则本会话指针"写得出读不到" → 解析链跌入
+# mtime 最新兜底 → 被并行会话活跃计划持续劫持(2026-10-07 指针抢占事故根因之一)。
+if [ ! -f "$SIDE_FILE" ]; then
+    SIDE_FILE="${SIDE_DIR}/sess${SID}.active_plan"
+fi
+# [2026-10-07 fix-pointer-race CR-fix] env-only 调用方 sidmap 转译: init-session 经 sidmap
+# (SessionStart 写 <env_sidkey>.sidmap=hook sidkey)把指针落到 hook 键名下后, env-only 调用方
+# (allow-direct / check-delegation / plan-doctor / posttooluse 清锁 / attest 回退)无第二参 sid、
+# 只有 env CLAUDE_CODE_SESSION_ID(env 键), 双形态(裸/sess)皆 miss 时需经 sidmap 转译到映射键
+# 才能命中。动机=防本会话指针"写得出读不到"再次跌入 mtime 兜底被他会话劫持。
+# 读法与 init-session.sh 一致: 第一行剥非字母数字取前 40; 非空且 ≠SID 时追加映射键双形态候选,
+# 顺序探测(先映射裸形态后映射 sess 形态, 存在即选定 break); TTL/slug 校验仍作用于最终 SIDE_FILE。
+if [ ! -f "$SIDE_FILE" ]; then
+    _sidmap="${PLAN_ROOT}/.plan_required_side/${SID}.sidmap"
+    if [ -f "$_sidmap" ]; then
+        _mapped_sid="$(head -n 1 < "$_sidmap" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+        if [ -n "$_mapped_sid" ] && [ "$_mapped_sid" != "$SID" ]; then
+            for _cand in "${SIDE_DIR}/${_mapped_sid}.active_plan" "${SIDE_DIR}/sess${_mapped_sid}.active_plan"; do
+                if [ -f "$_cand" ]; then SIDE_FILE="$_cand"; break; fi
+            done
+        fi
+    fi
+fi
 if [ -f "$SIDE_FILE" ]; then
     now="$(date +%s)"
     mt="$(stat -c %Y "$SIDE_FILE" 2>/dev/null || echo "$now")"

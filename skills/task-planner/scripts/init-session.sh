@@ -612,14 +612,40 @@ else
 fi
 SIDSRC="${CLAUDE_CODE_SESSION_ID:-}"
 if [ -n "$SIDSRC" ]; then
+    # [2026-10-07 fix-pointer-race RC-1] canon 对齐:剥 sess 前缀(与 task-plan-init.cjs normSidkey /
+    # resolve-plan-dir.sh / set-active-plan.sh / check-scope.sh 一致)。原只剥非字母数字,ZCode env sid
+    # 带 sess 前缀时指针/哨兵落 sess* 双命名空间,resolve 侧查不到 → mtime 兜底被并行会话劫持。
     SIDKEY="$(printf '%s' "$SIDSRC" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    case "$SIDKEY" in
+        sess*) SIDKEY="${SIDKEY#sess}" ;;
+    esac
     # [2026-09-16 task-v074 P10 sid 哨兵探测 fallback] env CLAUDE_CODE_SESSION_ID 与
     # hook stdin .session_id 是两个命名空间(SessionStart 哨兵用 hook sid 写,init 用 env sid
-    # 清/登记 → 指针/哨兵错位,见 findings P1-2)。当 env sid 无对应哨兵时,探测
-    # .plan_required_side/ 下 mtime 最新的哨兵 stem 作为本会话真实 sidkey
-    # (SessionStart 在会话启动时刚写入=本会话落地物)。多会话并发局限:最新 mtime 的
-    # 启动会话优先,属已知取舍。无哨兵 → 维持现状 fallback(env sid 或无 sid)。
+    # 清/登记 → 指针/哨兵错位,见 findings P1-2)。
+    # [2026-10-07 fix-pointer-race RC-2] 兜底两级化:① .sidmap 确定性映射(SessionStart 写
+    # <env_sidkey>.sidmap=hook sidkey)优先——消除"最新哨兵=本会话"猜测;② 无映射才探测最新哨兵,
+    # 且仅当其 mtime ≤120s(会话刚启动场景)才抢用;陈旧哨兵=并行会话的,抢用=把指针写进他会话
+    # 命名空间(2026-10-07 事故根因,实时复现 4272173a 污染)。超窗拒抢+WARN。
+    # [2026-10-07 fix-pointer-race CR-fix] sidmap 升级为权威身份事实:
+    # ① 命中不再要求目标哨兵存在——目标哨兵已被正常清除属常态(同会话第二次建计划时
+    #    plan-created 已删哨兵,身份映射仍有效); ② 仅当本 env sidkey 不存在 sidmap 文件时才允许
+    #    新鲜窗探测(有 sidmap=身份已确定,绝不抢他会话); sidmap 内容损坏(_mapped 为空)同样跳过
+    #    ②(fail-conservative: 指针按 env sid 落盘,不抢)。修后语义: ① sidmap 在→用映射键;
+    #    ② 无 sidmap→新鲜窗探测; ③ 其余→env key 原样。
+    _sidmap_checked=0
     if [ -n "$SIDKEY" ] && [ ! -f "${PLAN_ROOT}/.plan_required_side/${SIDKEY}.plan_required" ]; then
+        _sent_dir="${PLAN_ROOT}/.plan_required_side"
+        _map="${_sent_dir}/${SIDKEY}.sidmap"
+        if [ -f "$_map" ]; then
+            _sidmap_checked=1   # 读到 sidmap 文件存在即置位: 身份已确定, ② 不再探测(无论映射是否有效)
+            _mapped="$(head -n 1 "$_map" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+            if [ -n "$_mapped" ] && [ "$_mapped" != "$SIDKEY" ]; then
+                echo "[init] INFO: env sid(${SIDKEY}) 经 sidmap 映射到会话哨兵 sid(${_mapped})(目标哨兵缺失属已清除常态)"
+                SIDKEY="$_mapped"
+            fi
+        fi
+    fi
+    if [ "$_sidmap_checked" -eq 0 ] && [ -n "$SIDKEY" ] && [ ! -f "${PLAN_ROOT}/.plan_required_side/${SIDKEY}.plan_required" ]; then
         _sent_dir="${PLAN_ROOT}/.plan_required_side"
         if [ -d "$_sent_dir" ]; then
             _latest_sent=""
@@ -632,9 +658,14 @@ if [ -n "$SIDSRC" ]; then
             if [ -n "$_latest_sent" ]; then
                 _sent_sid="$(basename "$_latest_sent" .plan_required)"
                 _sent_sid="$(printf '%s' "$_sent_sid" | tr -cd 'a-zA-Z0-9' | head -c 40)"
-                if [ -n "$_sent_sid" ] && [ "$_sent_sid" != "$SIDKEY" ]; then
-                    echo "[init] INFO: env sid(${SIDKEY}) 无对应哨兵,fallback 最新哨兵 sid(${_sent_sid})"
+                case "$_sent_sid" in sess*) _sent_sid="${_sent_sid#sess}" ;; esac
+                _now="$(date +%s)"
+                _sent_age=$(( _now - _latest_mt ))
+                if [ -n "$_sent_sid" ] && [ "$_sent_sid" != "$SIDKEY" ] && [ "$_sent_age" -le 120 ]; then
+                    echo "[init] INFO: env sid(${SIDKEY}) 无对应哨兵,fallback 最新哨兵 sid(${_sent_sid}, age=${_sent_age}s≤120s)"
                     SIDKEY="$_sent_sid"
+                elif [ -n "$_sent_sid" ] && [ "$_sent_sid" != "$SIDKEY" ]; then
+                    echo "[init] WARN: env sid(${SIDKEY}) 无对应哨兵,最新哨兵(${_sent_sid}) age=${_sent_age}s>120s 疑似他会话 → 不抢用;指针按本 env sid 落盘,如错位请跑 set-active-plan.sh set <task> --sid" >&2
                 fi
             fi
         fi

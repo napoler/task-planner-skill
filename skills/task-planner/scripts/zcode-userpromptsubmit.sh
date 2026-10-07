@@ -177,9 +177,14 @@ if [ -n "$UPS_SID" ] && [ "$UPS_SID" != "default" ] && { [ -z "$owner" ] || [ "$
     *[!A-Za-z0-9._-]*|'') : ;;
     *)
       side_dir="$plan_dir/../.active_plan_side"
+      # [2026-10-07 fix-pointer-race RC-1] side 指针文件名剥 sess 前缀(resolve-plan-dir.sh 读取侧
+      # 只认剥前缀形态;原裸 UPS_SID 落 sess* 命名空间 → 本会话指针解析永远 miss → mtime 兜底被
+      # 并行会话劫持)。.session-owner 保持裸 UPS_SID 口径不动(与 zcode-posttooluse.sh 比对侧自洽)。
+      _ups_sidkey="$UPS_SID"
+      case "$_ups_sidkey" in sess*) _ups_sidkey="${_ups_sidkey#sess}" ;; esac
       mkdir -p "$side_dir" 2>/dev/null || true
       side_tmp="$(mktemp "$side_dir/.tmp.XXXXXX" 2>/dev/null)" || side_tmp=""
-      [ -n "$side_tmp" ] && printf '%s\n' "$pid" > "$side_tmp" 2>/dev/null && mv -f "$side_tmp" "$side_dir/${UPS_SID}.active_plan" 2>/dev/null || true
+      [ -n "$side_tmp" ] && printf '%s\n' "$pid" > "$side_tmp" 2>/dev/null && mv -f "$side_tmp" "$side_dir/${_ups_sidkey}.active_plan" 2>/dev/null || true
       ;;
   esac
 fi

@@ -99,13 +99,37 @@ try {
   console.log('[task-plan] ⚠ 写入哨兵失败: ' + e.message);
 }
 
+// [2026-10-07 fix-pointer-race RC-2] sidmap 确定性映射落盘:env CLAUDE_CODE_SESSION_ID 与 hook sid
+// 是两套命名空间时,下游 init-session.sh / plan-created.cjs 靠 <env_sidkey>.sidmap 找到本会话
+// hook sidkey,替代"抢最新哨兵"猜测(多会话并发下=抢他会话命名空间,指针抢占事故根因)。
+// 仅 env 存在且与 hook sidkey 不同才写;原子写(fail-open,失败仅告警不阻断会话)。
+try {
+  const envSid = process.env.CLAUDE_CODE_SESSION_ID || '';
+  const envKey = normSidkey(envSid);
+  if (envKey && envKey !== sidkey) {
+    const mapPath = path.join(SIDE_DIR, envKey + '.sidmap');
+    const mapTmp = path.join(SIDE_DIR, `.${envKey}.sidmap.tmp`);
+    fs.writeFileSync(mapTmp, sidkey + '\n', { encoding: 'utf-8' });
+    fs.renameSync(mapTmp, mapPath);
+    console.log('[task-plan] sidmap 已写: ' + mapPath + ' (env=' + envKey + ' → hook=' + sidkey + ')');
+  }
+} catch (e) {
+  console.log('[task-plan] ⚠ sidmap 写入失败(fail-open): ' + e.message);
+}
+
 // [2026-09-10 task-planrequired-race · CR P0 修正后] resume 判定：仅当本会话 side 指针
 // （由 set-active-plan --sid / init-session 等显式为本会话写入）指向存在 task_plan.md 的
 // 有效计划时，视为"带计划恢复"，撤掉刚写的哨兵。【不读全局 legacy、不做盲 adoption】——
 // 否则活跃仓里全局指针恒有效 → 任何新会话启动即撤哨兵（VC-2 保护回归，Code Review 2026-09-10）。
 // 指针缺失 → 哨兵保留；解除路径 = 创建计划后 init-session 置全局指针（D10' 解析命中）或 plan-created。
 try {
-  const sidePlan2 = path.join(root, 'plans', '.active_plan_side', sidkey + '.active_plan');
+  // [2026-10-07 fix-pointer-race RC-1] resume 判定双命名空间读(剥前缀 miss 回查 sess<sidkey> 形态,
+  // 对齐 resolve-plan-dir.sh 兼容读;历史写入方曾以裸 sid 落盘,单读会误判"无计划"→哨兵误启用)
+  const sideDir2 = path.join(root, 'plans', '.active_plan_side');
+  let sidePlan2 = path.join(sideDir2, sidkey + '.active_plan');
+  if (!fs.existsSync(sidePlan2)) {
+    sidePlan2 = path.join(sideDir2, 'sess' + sidkey + '.active_plan');
+  }
   let planId = '';
   if (fs.existsSync(sidePlan2)) {
     planId = fs.readFileSync(sidePlan2, 'utf8').trim();

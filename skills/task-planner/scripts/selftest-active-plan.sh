@@ -3,6 +3,11 @@
 # [2026-09-10] T01 side 指针优先(side 有/无 sid 双验) / T02 无 sid legacy 兜底(零破坏回归) / T03 TTL 24h 过期
 #   / T04 side 内容路径穿越拒绝 / T05 set 旧位置参数写 legacy + set --sid 写 side / T06 gc 清扫
 #   / T07 --show 双视图 / T08 init-session sid 分支(有 sid 写 side / 无 sid 写 legacy) / T09 fail-open
+# [2026-10-07 fix-pointer-race] T12e 新鲜窗负例(陈旧哨兵=他会话拒抢, 指针按 env sid 落盘) / T12f sidmap 确定性映射优先
+#   / T12g env 带前缀直配(canon 剥 sess 前缀; 诱饵新鲜哨兵判别力加固) / T12h cjs sidmap 优先(node 依赖)
+#   / T12i cjs 新鲜窗负例(无映射+陈旧拒抢防误删) / T12j init sidmap 权威+防抢负例(映射键无哨兵仍采用, 不探新鲜诱饵)
+#   / T12k cjs sidmap 同语义(映射键无哨兵不删不探, 他会话新鲜哨兵留存) / T12l resolve env-only sidmap 转译(双形态 miss 经 sidmap 命中)
+#   / T13 resolve 双命名空间读(历史 sess* 指针回查) / T14 gc 清扫 sidmap(TTL 24h)
 # hermetic: 夹具全在 mktemp -d, 跑完 trap rm -rf; 不触真实 plans/。全 PASS exit 0; 任一 FAIL exit 1。
 set -u
 
@@ -161,14 +166,17 @@ RC=$?
 # T12 [2026-09-16 task-v074 P10] sid 哨兵探测 fallback 行为级断言（env sid 与哨兵命名空间错位修复）
 # T12a init-session: env sid(133bb…) 无对应哨兵 + 目录内存在 mtime 最新哨兵(sess038d…)
 #   → side 指针文件名应为哨兵 stem 而非 env sid（对齐 SessionStart hook 命名空间）
+# [2026-10-07 fix-pointer-race] canon 统一：原断言 sess* 文件名固化双命名空间缺陷，已随 RC-1 修复更新
+#   （RC-1：init-session.sh 抢用哨兵时 canon 剥 sess 前缀 → 指针落 038d… 形态; 并补负例断言 sess* 形态不产生）
 ROOT12A="$(mk_root t12a)"
 mkdir -p "$ROOT12A/plans/.plan_required_side" "$ROOT12A/plans/tt"
 printf 'plan-required\ncreated_epoch: 1789475721144\n' > "$ROOT12A/plans/.plan_required_side/sess038ddeadbeef.plan_required"
 ( cd "$ROOT12A/plans/tt" && env CLAUDE_CODE_SESSION_ID=133bbenvdead1 bash "$INIT" ) > "$TMP/err" 2>&1
 RC=$?
-if [ "$RC" = 0 ] && [ -f "$ROOT12A/plans/.active_plan_side/sess038ddeadbeef.active_plan" ] && \
-   [ "$(cat "$ROOT12A/plans/.active_plan_side/sess038ddeadbeef.active_plan")" = "tt" ] && \
-   [ ! -e "$ROOT12A/plans/.active_plan_side/133bbenvdead1.active_plan" ]; then
+if [ "$RC" = 0 ] && [ -f "$ROOT12A/plans/.active_plan_side/038ddeadbeef.active_plan" ] && \
+   [ "$(cat "$ROOT12A/plans/.active_plan_side/038ddeadbeef.active_plan")" = "tt" ] && \
+   [ ! -e "$ROOT12A/plans/.active_plan_side/133bbenvdead1.active_plan" ] && \
+   [ ! -e "$ROOT12A/plans/.active_plan_side/sess038ddeadbeef.active_plan" ]; then
     PASS=$((PASS+1)); echo "T12a PASS 12a"
 else
     FAIL=$((FAIL+1)); echo "T12a FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
@@ -214,6 +222,157 @@ if [ "$PCRE" = "yes" ]; then
       FAIL=$((FAIL+1)); echo "T12d FAIL rc=$RC out=$OUT12D"
   fi
 fi
+
+# T12e [2026-10-07 fix-pointer-race RC-2] 新鲜窗负例: 陈旧哨兵(mtime 10min 前) = 他会话
+#   → 拒抢(超 120s 新鲜窗), 指针按 env sid(133bb…) 落盘; 防「抢用他会话陈旧哨兵」误写命名空间
+ROOT12E="$(mk_root t12e)"
+mkdir -p "$ROOT12E/plans/.plan_required_side" "$ROOT12E/plans/tt"
+printf 'plan-required\ncreated_epoch: 1789475721144\n' > "$ROOT12E/plans/.plan_required_side/sess038ddeadbeef.plan_required"
+touch -d '10 minutes ago' "$ROOT12E/plans/.plan_required_side/sess038ddeadbeef.plan_required"
+( cd "$ROOT12E/plans/tt" && env CLAUDE_CODE_SESSION_ID=133bbenvdead1 bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12E/plans/.active_plan_side/133bbenvdead1.active_plan" ] && \
+   [ "$(cat "$ROOT12E/plans/.active_plan_side/133bbenvdead1.active_plan")" = "tt" ] && \
+   [ ! -e "$ROOT12E/plans/.active_plan_side/038ddeadbeef.active_plan" ]; then
+    PASS=$((PASS+1)); echo "T12e PASS 12e"
+else
+    FAIL=$((FAIL+1)); echo "T12e FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12f [2026-10-07 fix-pointer-race RC-2] sidmap 确定性映射优先:
+#   <env_sidkey>.sidmap 内容=目标哨兵 sidkey(确定性事实) → 即便目标哨兵 mtime 陈旧(10min) 也命中,
+#   映射优先于新鲜窗探测; 指针落映射目标(038d…)而非 env sid
+ROOT12F="$(mk_root t12f)"
+mkdir -p "$ROOT12F/plans/.plan_required_side" "$ROOT12F/plans/tt"
+printf 'plan-required\ncreated_epoch: 1789475721144\n' > "$ROOT12F/plans/.plan_required_side/038ddeadbeef.plan_required"
+touch -d '10 minutes ago' "$ROOT12F/plans/.plan_required_side/038ddeadbeef.plan_required"
+printf '038ddeadbeef\n' > "$ROOT12F/plans/.plan_required_side/133bbenvdead1.sidmap"
+( cd "$ROOT12F/plans/tt" && env CLAUDE_CODE_SESSION_ID=133bbenvdead1 bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12F/plans/.active_plan_side/038ddeadbeef.active_plan" ] && \
+   [ "$(cat "$ROOT12F/plans/.active_plan_side/038ddeadbeef.active_plan")" = "tt" ]; then
+    PASS=$((PASS+1)); echo "T12f PASS 12f"
+else
+    FAIL=$((FAIL+1)); echo "T12f FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12g [2026-10-07 fix-pointer-race RC-1] env 带 sess 前缀直配:
+#   CLAUDE_CODE_SESSION_ID=sess62e7… 经 canon 剥 sess 前缀 → 直配无前缀哨兵 62e7…;
+#   指针落剥前缀形态, 不产生 sess* 双命名空间, 不走兜底探测
+# [2026-10-07 CR-fix 判别力加固] 主哨兵 touch '5 minutes ago'(陈旧), 另写当前时间的诱饵新鲜哨兵
+#   decoy9999aaaa.plan_required: 直配(direct-strip)命中主哨兵 → 不走②新鲜窗探测; 若实现退化为
+#   「仅探测最新哨兵」变异, 会误采更新的诱饵 decoy9999aaaa 指针落错键(CR 变异实测: 无
+#   direct-strip 时落 decoy9999aaaa, 改造后真判别)。断言不变 + 追加诱饵键指针不产生。
+ROOT12G="$(mk_root t12g)"
+mkdir -p "$ROOT12G/plans/.plan_required_side" "$ROOT12G/plans/tt"
+printf 'plan-required\ncreated_epoch: 1789475721144\n' > "$ROOT12G/plans/.plan_required_side/62e7uuiddeadbeef.plan_required"
+touch -d '5 minutes ago' "$ROOT12G/plans/.plan_required_side/62e7uuiddeadbeef.plan_required"
+printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12G/plans/.plan_required_side/decoy9999aaaa.plan_required"   # 诱饵: 当前时间(比主哨兵新鲜, 且无 120s 窗约束干扰——直配命中先于探测)
+( cd "$ROOT12G/plans/tt" && env CLAUDE_CODE_SESSION_ID=sess62e7uuiddeadbeef bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12G/plans/.active_plan_side/62e7uuiddeadbeef.active_plan" ] && \
+   [ "$(cat "$ROOT12G/plans/.active_plan_side/62e7uuiddeadbeef.active_plan")" = "tt" ] && \
+   [ ! -e "$ROOT12G/plans/.active_plan_side/sess62e7uuiddeadbeef.active_plan" ] && \
+   [ ! -e "$ROOT12G/plans/.active_plan_side/decoy9999aaaa.active_plan" ]; then
+    PASS=$((PASS+1)); echo "T12g PASS 12g"
+else
+    FAIL=$((FAIL+1)); echo "T12g FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12h [2026-10-07 fix-pointer-race RC-2] cjs sidmap 优先(node 依赖, PCRE 包裹):
+#   plan-created.cjs 清侧路径: env sidkey(deadbeef55) 经 .sidmap 映射到陈旧哨兵 ffff… → 命中映射
+#   (确定性事实优先于新鲜窗), 哨兵被清, 输出含「经 sidmap 映射」留痕
+if [ "$PCRE" = "yes" ]; then
+  ROOT12H="$(mk_root t12h)"
+  mkdir -p "$ROOT12H/plans/.plan_required_side" "$ROOT12H/plans/zz"
+  printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12H/plans/.plan_required_side/ffff0011aaaa2233.plan_required"
+  touch -d '10 minutes ago' "$ROOT12H/plans/.plan_required_side/ffff0011aaaa2233.plan_required"
+  printf 'ffff0011aaaa2233\n' > "$ROOT12H/plans/.plan_required_side/deadbeef55.sidmap"
+  OUT12H="$( cd "$ROOT12H/plans/zz" && env -u TASK_PLANNER_SID CLAUDE_CODE_SESSION_ID=deadbeef55 node "$SCRIPT_DIR/plan-created.cjs" </dev/null 2>&1 )"
+  RC=$?
+  if [ "$RC" = 0 ] && [ ! -f "$ROOT12H/plans/.plan_required_side/ffff0011aaaa2233.plan_required" ] && \
+     printf '%s' "$OUT12H" | grep -q '经 sidmap 映射'; then
+      PASS=$((PASS+1)); echo "T12h PASS 12h"
+  else
+      FAIL=$((FAIL+1)); echo "T12h FAIL rc=$RC out=$OUT12H"
+  fi
+fi
+# T12i [2026-10-07 fix-pointer-race RC-2] cjs 新鲜窗负例(node 依赖, PCRE 包裹):
+#   无 sidmap + 陈旧哨兵(10min) → 拒抢(防误删他会话哨兵), 哨兵保留, 输出含「疑似他会话」WARN 留痕
+if [ "$PCRE" = "yes" ]; then
+  ROOT12I="$(mk_root t12i)"
+  mkdir -p "$ROOT12I/plans/.plan_required_side" "$ROOT12I/plans/zz"
+  printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12I/plans/.plan_required_side/ffff0011aaaa2244.plan_required"
+  touch -d '10 minutes ago' "$ROOT12I/plans/.plan_required_side/ffff0011aaaa2244.plan_required"
+  OUT12I="$( cd "$ROOT12I/plans/zz" && env -u TASK_PLANNER_SID CLAUDE_CODE_SESSION_ID=deadbeef66 node "$SCRIPT_DIR/plan-created.cjs" </dev/null 2>&1 )"
+  RC=$?
+  if [ "$RC" = 0 ] && [ -f "$ROOT12I/plans/.plan_required_side/ffff0011aaaa2244.plan_required" ] && \
+     printf '%s' "$OUT12I" | grep -q '疑似他会话'; then
+      PASS=$((PASS+1)); echo "T12i PASS 12i"
+  else
+      FAIL=$((FAIL+1)); echo "T12i FAIL rc=$RC out=$OUT12I"
+  fi
+fi
+# T12j [2026-10-07 fix-pointer-race CR-fix] init sidmap 权威+防抢负例:
+#   sidmap 存在(133bbenvdead1→038ddeadbeef)但映射目标哨兵已被正常清除(不存在) → 映射键权威采用,
+#   指针落 038ddeadbeef; 绝不因"有新鲜诱饵"而探 ②——他会话新鲜哨兵 freshdecoy000001 指针不产生(防抢)
+ROOT12J="$(mk_root t12j)"
+mkdir -p "$ROOT12J/plans/.plan_required_side" "$ROOT12J/plans/tt"
+printf '038ddeadbeef\n' > "$ROOT12J/plans/.plan_required_side/133bbenvdead1.sidmap"
+printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12J/plans/.plan_required_side/freshdecoy000001.plan_required"   # 诱饵: 当前时间(新鲜), 若误入②探测会被抢用
+( cd "$ROOT12J/plans/tt" && env CLAUDE_CODE_SESSION_ID=133bbenvdead1 bash "$INIT" ) > "$TMP/err" 2>&1
+RC=$?
+if [ "$RC" = 0 ] && [ -f "$ROOT12J/plans/.active_plan_side/038ddeadbeef.active_plan" ] && \
+   [ "$(cat "$ROOT12J/plans/.active_plan_side/038ddeadbeef.active_plan")" = "tt" ] && \
+   [ ! -e "$ROOT12J/plans/.active_plan_side/freshdecoy000001.active_plan" ]; then
+    PASS=$((PASS+1)); echo "T12j PASS 12j"
+else
+    FAIL=$((FAIL+1)); echo "T12j FAIL got_rc=$RC err=$(tail -n 3 "$TMP/err")"
+fi
+# T12k [2026-10-07 fix-pointer-race CR-fix] cjs 同语义(node 依赖, PCRE 包裹):
+#   sidmap(deadbeef77→aaaa7777bbbb)目标哨兵不存在 → 权威采用映射键, 不探测; 他会话新鲜哨兵
+#   othercccc1111.plan_required 必须留存(防探测误删他会话哨兵)
+if [ "$PCRE" = "yes" ]; then
+  ROOT12K="$(mk_root t12k)"
+  mkdir -p "$ROOT12K/plans/.plan_required_side" "$ROOT12K/plans/zz"
+  printf 'aaaa7777bbbb\n' > "$ROOT12K/plans/.plan_required_side/deadbeef77.sidmap"
+  printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12K/plans/.plan_required_side/othercccc1111.plan_required"
+  OUT12K="$( cd "$ROOT12K/plans/zz" && env -u TASK_PLANNER_SID CLAUDE_CODE_SESSION_ID=deadbeef77 node "$SCRIPT_DIR/plan-created.cjs" </dev/null 2>&1 )"
+  RC=$?
+  if [ "$RC" = 0 ] && [ -f "$ROOT12K/plans/.plan_required_side/othercccc1111.plan_required" ]; then
+      PASS=$((PASS+1)); echo "T12k PASS 12k"
+  else
+      FAIL=$((FAIL+1)); echo "T12k FAIL rc=$RC out=$OUT12K (othercccc1111 哨兵应留存)"
+  fi
+fi
+# T12l [2026-10-07 fix-pointer-race CR-fix] resolve env-only sidmap 转译:
+#   指针落 hook 键名 aa00hookdead0001(active_plan), 调用方 env-only 只有 bb00envdead0001(无第二参);
+#   双形态(裸/sess)皆 miss → 经 bb00envdead0001.sidmap=aa00hookdead0001 转译命中映射键指针
+R12L="$(mk_root t12l)"
+mkdir -p "$R12L/plans/.active_plan_side" "$R12L/plans/.plan_required_side"
+printf 'bb\n' > "$R12L/plans/.active_plan_side/aa00hookdead0001.active_plan"
+printf 'aa00hookdead0001\n' > "$R12L/plans/.plan_required_side/bb00envdead0001.sidmap"
+COUT="$(cd "$R12L" && env CLAUDE_CODE_SESSION_ID=bb00envdead0001 bash "$RES" "$R12L" 2>"$TMP/err")"
+RC=$?
+if [ "$RC" = 0 ] && [ "$COUT" = "$R12L/plans/bb/task_plan.md" ]; then
+    PASS=$((PASS+1)); echo "T12l PASS 12l"
+else
+    FAIL=$((FAIL+1)); echo "T12l FAIL rc=$RC out=$COUT exp=$R12L/plans/bb/task_plan.md err=$(tail -n 3 "$TMP/err")"
+fi
+#   历史写入方曾以裸 sid(含 sess 前缀)落盘 side 指针 → 主形态 miss 时回查 sess<sidkey> 形态,
+#   剥前缀 sid 仍可解析(防本会话指针「写得出读不到」跌入 mtime 兜底被他会话劫持)
+R13="$(mk_root t13)"
+mkdir -p "$R13/plans/.active_plan_side"
+printf 'bb\n' > "$R13/plans/.active_plan_side/sessq13sid.active_plan"
+call bash "$RES" "$R13" q13sid
+[ "$COUT" = "$R13/plans/bb/task_plan.md" ] && pass 13 || fail 13 "got=$COUT exp=$R13/plans/bb/task_plan.md"
+# T14 [2026-10-07 fix-pointer-race] gc 清扫 sidmap: TTL 24h 同语义(.sidmap 映射文件 mtime>24h 删, 新的留)
+R14="$(mk_root t14)"
+mkdir -p "$R14/plans/.plan_required_side"
+printf 'oldtarget\n' > "$R14/plans/.plan_required_side/oldmap.sidmap"
+touch -d '25 hours ago' "$R14/plans/.plan_required_side/oldmap.sidmap"
+printf 'newtarget\n' > "$R14/plans/.plan_required_side/newmap.sidmap"
+call bash "$SET" gc "$R14"
+[ "$RC" = 0 ] && [ ! -f "$R14/plans/.plan_required_side/oldmap.sidmap" ] && [ -f "$R14/plans/.plan_required_side/newmap.sidmap" ] && \
+  printf '%s' "$COUT" | grep -qF 'sidmap 映射: 1' && pass 14 || \
+  fail 14 "rc=$RC out=$COUT (oldmap 应删 newmap 应留 计数=1)"
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
