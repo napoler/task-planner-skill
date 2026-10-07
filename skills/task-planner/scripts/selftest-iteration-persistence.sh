@@ -18,7 +18,7 @@
 #               四要素 schema 的权威定义在 critical-rules.md 57.2（由 IP-08 锁定文本），progress.md 为其消费载体——
 #               本项锁载体存在（57.4「progress.md 落盘四要素/轮次编号锚」的载体侧机器佐证）
 #     · 负断言（IP-14）:
-#         IP-14 critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^58\.[0-9] ` =0（RC-15 前向防线：58 号未被顺手创建）
+#         IP-14 critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^59\.[0-9] ` =0（RC-15 前向防线：59 号未被顺手创建；2026-10-07 task-v143 合并级联演进：58 号已被 task-v143 Rule 58 合法创建，负断言对象 58.x→59.x，口径扩展非回退）
 #     · config.json（零新键声明，IP-15/IP-16）:
 #         IP-15 .properties 键数=40（沿用 tsv 末列既有口径，零新 config 键）
 #         IP-16 `iteration_persistence` / `iteration-persistence` 键字面 =0（57.4 零新键声明的机器佐证）
@@ -155,17 +155,19 @@ else
   bad 13 "templates/progress.md 缺失（$PROG，落盘载体不存在）"
 fi
 
-# IP-14 负断言（语境锚定）：critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^58\.[0-9] ` =0
-# What：断言 57.4 之后不存在 58.x 子条行。
-# Why：RC-15 前向防线（防 58 号被顺手创建）的语境锚定实现——扫「57 块之后」而非全文：裸全文匹配会被子串误触
-#      （v127/RR-09 第 5 变体判例：负断言须语境锚定）；块尾后出现 58.x = 58 号未经合法登记却被顺手写入（57 块编辑越界扩号探测）。
+# IP-14 负断言（语境锚定）：critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^59\.[0-9] ` =0
+# What：断言 57.4 之后不存在 59.x 子条行。
+# Why：RC-15 前向防线（防下一编号被顺手创建）的语境锚定实现——扫「57 块之后」而非全文：裸全文匹配会被子串误触
+#      （v127/RR-09 第 5 变体判例：负断言须语境锚定）；块尾后出现 59.x = 下一编号未经合法登记却被顺手写入（57 块编辑越界扩号探测）。
+#      [2026-10-07 task-v143 合并级联] 58 号已被 task-v143 Rule 58 合法创建（58.1-58.7，判定面 58.7 机器面=selftest-evidence-goal-gate.sh）——
+#      本条负断言对象相应演进：58.x→59.x（口径扩展非回退，task-v127「RC-15 负断言 ^50→^52 演进」同范式）。
 last57line="$(grep -nE '^57\.[1-4] ' "$CRIT" | tail -1 | cut -d: -f1 || true)"
 if [ -z "$last57line" ]; then
   bad 14 "critical-rules.md 未找到 57.x 末条行（块缺失，负断言无法语境锚定）"
 else
   tailctx="$(tail -n +"$last57line" "$CRIT")"
-  n="$(printf '%s\n' "$tailctx" | grep -cE '^58\.[0-9] ' || true)"
-  if [ "$n" -eq 0 ]; then ok 14 "critical-rules.md 57 块尾上下文（L${last57line}起）「58.x」=0（RC-15 前向防线）"; else bad 14 "critical-rules.md 57 块尾「58.x」=$n（应 =0，58 号被顺手创建）"; fi
+  n="$(printf '%s\n' "$tailctx" | grep -cE '^59\.[0-9] ' || true)"
+  if [ "$n" -eq 0 ]; then ok 14 "critical-rules.md 57 块尾上下文（L${last57line}起）「59.x」=0（RC-15 前向防线；task-v143 级联演进 58→59）"; else bad 14 "critical-rules.md 57 块尾「59.x」=$n（应 =0，59 号被顺手创建）"; fi
 fi
 
 # IP-15 config.json .properties 键数=40（零新 config 键声明锚）

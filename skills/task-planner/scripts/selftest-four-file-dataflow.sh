@@ -18,7 +18,7 @@
 #         FF-10 `knowledge-brief: {plan_dir}`≥1（四文件契约第 4 文件行）且 `可写=仅追加`≥1（findings 可写契约行
 #               仍在位——模板自身被收窄=守卫自盲，FF-10 双条件锁死）
 #     · SKILL.md（消费侧联动，FF-11..FF-14）:
-#         FF-11 `^\| C41 ` 合规行=1；FF-12 `Rule 62（四文件罗盘` 摘要行=1
+#         FF-11 `^\| C42 ` 合规行=1（C41 归 v143 Rule 58，C42=本任务顺延）；FF-12 `Rule 62（四文件罗盘` 摘要行=1
 #         FF-13 映射表蒸馏行「主进程单写者蒸馏，Rule 62.3 双落盘」=1；FF-14 `Rule 62` 全文 ≥3（C41/摘要/映射三落点联动）
 #     · config.json（零新键声明，FF-15）:
 #         FF-15 `four_file`/`kb_distill`/`contract_narrow`/`require_kb` 键字面=0 且 .properties 键数=42
@@ -89,7 +89,7 @@ ge   "FF-09 ledger-append VALID_EVENTS 行含 kb_distill"   "$(cnt 'VALID_EVENTS
 pair "FF-10 dispatch 模板 kb 行+findings 可写行双在位"      "$(cnt 'knowledge-brief: {plan_dir}' "$TPL")" "$(cnt '可写=仅追加' "$TPL")"
 
 # ── SKILL.md 消费侧 ──
-eq   "FF-11 SKILL C41 合规行=1"                           "$(cnt '^| C41 |' "$SKILL")" 1
+eq   "FF-11 SKILL C42 合规行=1"                           "$(cnt '^| C42 |' "$SKILL")" 1
 eq   "FF-12 SKILL Rule 62 摘要行=1"                        "$(cnt 'Rule 62（四文件罗盘' "$SKILL")" 1
 eq   "FF-13 SKILL 映射表蒸馏行=1"                          "$(cnt '主进程单写者蒸馏，Rule 62.3 双落盘' "$SKILL")" 1
 ge   "FF-14 SKILL Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule 62' "$SKILL")" 3
