@@ -11,7 +11,8 @@
 #         FF-06 60.5 门控语义锚 `--require-kb` ≥1 且 `kb_distill` ≥1（机器面声明与实现配对）
 #     · scripts/（机器面三脚本，FF-07..FF-09）:
 #         FF-07 check-dispatch.sh `scan_contract_narrowing()`≥1 且 `[dispatch-contract]`≥1（60.2 lint 实现锚）
-#         FF-08 check-3file-gate.sh `--require-kb`≥2(usage+逻辑) 且 `kb_distill_activity()`=1（60.5 gate 实现锚）
+#         FF-08 check-3file-gate.sh `kb_distill_activity`(无括号,注释+定义+调用)≥3 且 `--require-kb`≥2（60.5 gate 实现锚，
+#              [2026-10-08 CR-P2 加固]无括号计数锁调用点不被删）；FF-09 锚 `VALID_EVENTS=.*kb_distill` 行=1（锁枚举实改非注释）
 #         FF-09 ledger-append.sh `kb_distill`≥2（VALID_EVENTS+注释，60.5 事件枚举锚）
 #     · templates/subagent_dispatch.md（派发契约载体，FF-10）:
 #         FF-10 `knowledge-brief: {plan_dir}`≥1（四文件契约第 4 文件行）且 `可写=仅追加`≥1（findings 可写契约行
@@ -62,7 +63,9 @@ pair() { # pair <desc> <n1> <n2> — 两锚各 ≥1（复合语义内核，单 g
     local d="$1" a="$2" b="$3"
     if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok "$d"; else bad "$d" "got=($a,$b) expect=(>=1,>=1)"; fi
 }
-cnt() { grep -c -e "$1" "$2" 2>/dev/null || true; }  # -e 承载 -- 开头模式（如 --require-kb）
+cnt() { # [2026-10-08 CR-P2 修正] 缺失文件回显 0（防空串进整数比较报 bash 错）；-e 承载 -- 开头模式
+    [ -f "$2" ] || { echo 0; return; }
+    grep -c -e "$1" "$2" 2>/dev/null || true; }
 
 # ── critical-rules.md Rule 60 条款本体 ──
 eq   "FF-01 critical-rules ### 60 标题=1"                 "$(cnt '^### 60 ' "$CR")" 1
@@ -74,12 +77,13 @@ pair "FF-06 60.5 门控语义(--require-kb+kb_distill)"        "$(cnt '--require
 
 # ── scripts 机器面三脚本 ──
 pair "FF-07 check-dispatch lint 实现(scan函数+[dispatch-contract]前缀)" "$(cnt 'scan_contract_narrowing()' "$CD_")" "$(cnt '\[dispatch-contract\]' "$CD_")"
-if [ "$(cnt '--require-kb' "$GATE")" -ge 2 ] && [ "$(cnt 'kb_distill_activity()' "$GATE")" -ge 2 ]; then
-    ok "FF-08 check-3file-gate 实现(--require-kb≥2+kb_distill_activity定义调用≥2)"
+# [2026-10-08 CR-P2 加固] FF-08 数无括号出现次数（注释+定义+调用≥3，锁调用点不被删）；FF-09 锚 VALID_EVENTS 行实改
+if [ "$(cnt 'kb_distill_activity' "$GATE")" -ge 3 ] && [ "$(cnt '--require-kb' "$GATE")" -ge 2 ]; then
+    ok "FF-08 check-3file-gate 实现(kb_distill_activity 定义调用≥3 + --require-kb≥2)"
 else
-    bad "FF-08 check-3file-gate 实现" "got=($(cnt '--require-kb' "$GATE"),$(cnt 'kb_distill_activity()' "$GATE")) expect=(>=2,>=2)"
+    bad "FF-08 check-3file-gate 实现" "got=($(cnt 'kb_distill_activity' "$GATE"),$(cnt '--require-kb' "$GATE")) expect=(>=3,>=2)"
 fi
-ge   "FF-09 ledger-append kb_distill 枚举≥2"              "$(cnt 'kb_distill' "$LEDGER")" 2
+ge   "FF-09 ledger-append VALID_EVENTS 行含 kb_distill"   "$(cnt 'VALID_EVENTS=.*kb_distill' "$LEDGER")" 1
 
 # ── templates 派发契约载体 ──
 pair "FF-10 dispatch 模板 kb 行+findings 可写行双在位"      "$(cnt 'knowledge-brief: {plan_dir}' "$TPL")" "$(cnt '可写=仅追加' "$TPL")"
