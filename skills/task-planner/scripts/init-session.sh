@@ -256,6 +256,126 @@ EOF
     return 0
 }
 
+# ============================================================================
+# [2026-10-07 task-v143 CR-fix F-1] inject_evidence_goal_block —
+#   Rule 58 计划载体生成面兜底（镜像 inject_requirement_block 范式，task-v131 先例）。
+#
+# What:
+#   variant 路由任务（cp variant/<x>-type.md task_plan.md 直拷，含 research-type.md——
+#   恰是 Rule 58 的首要覆盖面）的产物不含主模板新增的「🔍 证据面清单」「🎯 核心目标达成裁决」
+#   双区块；本函数对缺锚产物按同一脚手架兜底注入，使 58.1/58.7「init 全任务注入」声明在
+#   主模板与 variant 双路径下均成立。
+#
+# Why:
+#   Rule 58 的任务级强制依赖模板载体（58.7 消费侧声明）；仅主模板携带而 variant 零载体 =
+#   调研/分析类任务（research-type 路由）恰成覆盖盲区（CR F-1 MAJOR，2026-10-07）。
+#   与 51.1 注入兜底（task-v131 因 29 variant 零载体补建）同构。
+#
+# 语义（与 inject_requirement_block 同范式）:
+#   幂等：锚 C（证据面清单）/锚 D（达成裁决）独立判断，已含者永不重复插入；重复 init 走
+#   skip 分支再入本函数亦被锚判定短路。mini 档豁免（Rule 38.2，判定同 51.1 函数：mini-lite
+#   路由或 plan_tier: mini 标记）。插入位=「## Current Phase」行之前（对齐主模板区块序）；
+#   无该行回落「## Goal」行之前；再无（极端残缺模板）→ stderr WARN 跳过（fail-open：
+#   注入是增强非前置依赖，规划者可手补），不阻断 init。
+# 插入量=🔍 脚手架 13 行（含 HTML 注释 4+空行分隔）+🎯 脚手架 16 行（含 HTML 注释 5）
+#   +区块间空行 1；双缺共写 30 行；单缺按需。内容与 templates/task_plan.md 对应区块一致。
+# ============================================================================
+inject_evidence_goal_block() {
+    local file="task_plan.md"
+    local insc insd insat scaffold
+
+    [ -f "$file" ] || return 0
+
+    # Gate 1: 双锚独立判断
+    insc=0; insd=0
+    grep -q '## 🔍 证据面清单' "$file" 2>/dev/null || insc=1
+    grep -q '## 🎯 核心目标达成裁决' "$file" 2>/dev/null || insd=1
+    if [ "$insc" -eq 0 ] && [ "$insd" -eq 0 ]; then
+        echo "[init] INFO: task_plan.md 已含 🔍 证据面清单 + 🎯 核心目标达成裁决 双区块（模板自带载体）— 注入跳过"
+        return 0
+    fi
+
+    # Gate 2: mini 档豁免（Rule 38.2 白名单，与 inject_requirement_block 同判定）
+    if [ "$TASK_PLAN_SRC" = "variant/mini-lite-type.md" ] \
+       || grep -q 'plan_tier: mini' "$file" 2>/dev/null; then
+        echo "[init] INFO: mini 档豁免（Rule 38.2 区块白名单）— 不注入 🔍 证据面清单/🎯 核心目标达成裁决 区块"
+        return 0
+    fi
+
+    # 插入位：优先「## Current Phase」行前（主模板区块序）；回落「## Goal」行前；
+    # 均无 → WARN 跳过（fail-open，不阻断 init）
+    insat="$(grep -n '^## Current Phase' "$file" | head -n1 | cut -d: -f1)"
+    if [ -z "$insat" ]; then
+        insat="$(grep -n '^## Goal' "$file" | head -n1 | cut -d: -f1)"
+    fi
+    if [ -z "$insat" ]; then
+        echo "[init] WARN: Rule 58 区块插入位未找到（无 Current Phase/Goal 锚行）— 跳过注入（fail-open: 规划者可手补双区块）" >&2
+        return 0
+    fi
+
+    # 脚手架落临时文件（quoted heredoc: 占位符原样保留，禁展开）；双区块独立拼接
+    scaffold="$(mktemp)" || {
+        echo "[init] WARN: Rule 58 区块注入失败（mktemp 失败）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        return 0
+    }
+    if [ "$insc" -eq 1 ]; then
+        cat > "$scaffold" <<'EOF'
+## 🔍 证据面清单（Rule 58.1 — 调研/分析/评估/归因类任务计划期必填）
+<!-- 2026-10-07 task-v143：init 注入载体（CR F-1 修复，镜像 51.1 注入兜底范式）。适用判定:产出=结论/判断/建议/原因解释的任务；
+     豁免: 纯执行类任务(单点动作)填 `n/a（纯执行类）`;对标面豁免仅限 58.2 两种登记理由,禁裸豁免 -->
+| 证据面 | 取证对象（可指名） | 取证方式 | 落盘锚（54.5 格式） | 状态 |
+|--------|------------------|---------|---------------------|------|
+| ① 自身样本 | （自身内容/产品/数据） | | | ☐ |
+| ② 对标样本（58.2 强制） | （竞品/同类成功案例/历史基线，≥1 个可指名） | | | ☐ |
+| ③ 外部约束 | （平台规则/市场环境/算法机制） | | | ☐ |
+
+> 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。
+EOF
+    fi
+    if [ "$insd" -eq 1 ]; then
+        # 双缺/单缺场景统一前补空行与上文隔开
+        printf '\n' >> "$scaffold"
+        cat >> "$scaffold" <<'EOF'
+## 🎯 核心目标达成裁决（Rule 58.5 — 含目标型需求([目标]标注)的任务终验必填）
+<!-- 2026-10-07 task-v143：init 注入载体（CR F-1 修复）。58.4 手段/目标二分在需求区 R 行标注 [手段]/[目标]；
+     本区块终验时回收目标型需求的解决状态；not-solved/partial 禁止标 COMPLETE（58.5②） -->
+| 字段 | 值 |
+|------|-----|
+| **目标型需求** | （R 行编号，如 R1/R3） |
+| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
+| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
+| **未解决面+原因** | （partial/not-solved 必填） |
+| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
+| **下一步建议** | （not-solved 必填：可执行的下一步） |
+
+> 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
+EOF
+    fi
+    # 在 insat 行之前打印脚手架 + 1 行空行分隔（保住 markdown 结构）
+    if ! awk -v f="$scaffold" -v insat="$insat" '
+        NR==insat && !done { while ((getline s < f) > 0) print s; print ""; done=1 }
+        { print }
+    ' "$file" > "${file}.v143tmp" 2>/dev/null; then
+        echo "[init] WARN: Rule 58 区块注入失败（awk 写出异常）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        rm -f "${file}.v143tmp" "$scaffold"
+        return 0
+    fi
+    if ! mv "${file}.v143tmp" "$file" 2>/dev/null; then
+        echo "[init] WARN: Rule 58 区块写回失败（磁盘/权限）— 继续 init（fail-open: 注入是增强非前置依赖，规划者可手补）" >&2
+        rm -f "${file}.v143tmp" "$scaffold"
+        return 0
+    fi
+    rm -f "$scaffold"
+    if [ "$insc" -eq 1 ] && [ "$insd" -eq 1 ]; then
+        echo "    [init] 🔍 证据面清单 + 🎯 核心目标达成裁决 双脚手架已插入（Rule 58.1/58.5 生成面兜底, task-v143 CR-fix F-1；规划者填写取证行/裁决表后 attest 复核）"
+    elif [ "$insc" -eq 1 ]; then
+        echo "    [init] 🔍 证据面清单 脚手架已插入（Rule 58.1 生成面兜底, task-v143；🎯 核心目标达成裁决已含于模板）"
+    else
+        echo "    [init] 🎯 核心目标达成裁决 脚手架已插入（Rule 58.5 生成面兜底, task-v143；🔍 证据面清单已含于模板）"
+    fi
+    return 0
+}
+
 # [2026-09-15 task-v074 P4-S1] 1) TEMPLATE_TYPE 位置参数为空时兜底 env TASK_TEMPLATE_TYPE
 #    (消 SKILL.md:524 "自动路由"语义漂移——SKILL 描述与实现一致化)
 #    2) VALID_TYPES 改为从 $BUILTIN_TEMPLATES/variant/*-type.md 动态派生 + general 兜底
@@ -509,6 +629,9 @@ fi
 # 幂等：已含锚/mini 档均 return 0（函数头注释）；重复 init（task_plan.md 已存在
 # 走 skip 分支）再入亦被锚判定短路。fail-open：任何失败仅 WARN，不阻断 init。
 inject_requirement_block
+# [2026-10-07 task-v143 CR-fix F-1] Rule 58 载体注入调用点（与上方 51.1 调用点同位理由：
+# 模板复制/tier 分流定型后、6 文件复核前；幂等+mini 豁免+fail-open 同范式）
+inject_evidence_goal_block
 
 echo ""
 # [2026-09-04 Rule 19.5 配套] 文件存在性复核：缺失或空 → exit 1

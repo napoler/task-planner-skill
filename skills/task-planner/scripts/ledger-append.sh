@@ -6,7 +6,7 @@
 #         裁剪上游 od/dd 字节级 UTF-8 兜底(仅 busybox/无 iconv 场景,本仓部署为 Linux glibc)。
 #
 # 用法: ledger-append.sh <plan-dir> <event> <summary> [--agent NAME] [--phase N] [--files f1,f2]
-#   <event> 枚举: progress | phase_complete | error | gate_block | attest | note
+#   <event> 枚举: progress | phase_complete | error | gate_block | attest | note | kb_distill
 # 写入: <plan-dir>/ledger-<agent>.jsonl 单行 JSON:
 #   {"tick":N,"ts":"ISO8601Z","agent":"...","phase":"...","event":"...","summary":"...","files":[...]}
 # tick = 计划目录内全部 ledger-*.jsonl 的 max+1 —— 并发 agent 共享单调计数,
@@ -15,10 +15,17 @@
 # 为什么用账本而非 mtime: 上游完成门 G5 设计注记 —— "mtime moves on any file
 # touch and is thus unreliable as a progress indicator"。ledger 行 = 语义化真实
 # 工作记录,不可通过 touch 伪造。
+#
+# [2026-10-08 task-v145 S-2 Rule 60.5] 修改说明:
+#   What: 事件枚举增补 kb_distill（仅 VALID_EVENTS 加一项,既有枚举零改动）。
+#   Why:  知识增量门控 check-3file-gate.sh --require-kb 以「锚点后 event=kb_distill 行」
+#         作为本 Phase 知识蒸馏的语义证据（Rule 60.5）——主进程 22.5 复核时蒸馏归档
+#         knowledge-brief 后追加一行,供门控机器判定,不可用 touch 伪造。
 
 set -u
 
-VALID_EVENTS="progress phase_complete error gate_block attest note"
+# [2026-10-08 task-v145 S-2 Rule 60.5] kb_distill 追加为第 7 项（既有 6 项零改动）
+VALID_EVENTS="progress phase_complete error gate_block attest note kb_distill"
 
 usage() {
     printf 'Usage: %s <plan-dir> <event> <summary> [--agent NAME] [--phase N] [--files f1,f2]\n' "$0" >&2

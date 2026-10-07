@@ -183,4 +183,5 @@
 - task-v139 ✓ (3/3) — 2026-10-06
 
 ## 汇总
-- in_progress: 3 | pending: 0 | complete: 82
+- in_progress: 3 | pending: 0 | complete: 83（v143 2026-10-07 落地）
+- task-v143 ✓ (5/5) — 2026-10-07
