@@ -12,7 +12,7 @@
 #         IP-09 执行循环 3e 锚「迭代落盘检查点（Rule 57」=1（57.4 声明的消费侧，防条款死文 53.2 反例）
 #         IP-10 `Rule 57` ≥3（3e 行 / C40 行 / References 摘要行三落点联动）
 #         IP-11 `^\| C40 ` 合规行 =1（57.4 声明的合规清单消费侧）
-#         IP-12 全集声明宽容锚 `Rule 40-5[5-9]` ≥1（纪元演进防钉死，task-v136 EH-09 先例）
+#         IP-12 全集声明宽容锚 `Rule 40-(5[5-9]|6[0-9])` ≥1（纪元演进防钉死，task-v136 EH-09 先例）
 #     · templates/progress.md（落盘载体，IP-13）:
 #         IP-13 文件在位且含「Test Results」段（迭代轮次结果的落盘载体出口）；
 #               四要素 schema 的权威定义在 critical-rules.md 57.2（由 IP-08 锁定文本），progress.md 为其消费载体——
@@ -136,12 +136,13 @@ if [ "$n" -ge 3 ]; then ok 10 "SKILL.md 'Rule 57' 计数 $n ≥3"; else bad 10 "
 n="$(grep -cE '^\| C40 ' "$SKILLMD" || true)"
 if [ "$n" -eq 1 ]; then ok 11 "SKILL.md 合规行 C40 =1"; else bad 11 "SKILL.md C40 行命中=$n（应 =1）"; fi
 
-# IP-12 SKILL.md 全集声明宽容锚 `Rule 40-5[5-9]` ≥1
-# What：断言 SKILL.md 出现 Rules 40-5x 全集声明（宽容正则覆盖 40-55..40-59 各纪元）。
-# Why：全集声明随 Rule 号演进（当前 40-55，Rule 57 落地后可能再演进）；固定字面会随纪元漂移误报，
+# IP-12 SKILL.md 全集声明宽容锚 `Rule 40-(5[5-9]|6[0-9])` ≥1
+# What：断言 SKILL.md 出现 Rules 40-5x/6x 全集声明（宽容正则覆盖 40-55..40-69 各纪元）。
+# Why：全集声明随 Rule 号演进（当前 40-61，后续 Rule 落地后可能再演进）；固定字面会随纪元漂移误报，
 #      故用宽容正则（task-v136 EH-09 / RR-16 先例：宽容正则优先，防下次全集演进再钉死）。
-n="$(grep -cE 'Rule 40-5[5-9]' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ]; then ok 12 "SKILL.md 全集声明「Rule 40-5x」宽容锚 ≥1（$n）"; else bad 12 "SKILL.md 全集声明「Rule 40-5[5-9]」=$n（应 ≥1，级联漏改）"; fi
+# [2026-10-08 task-v146 合并级联: 括注演进「40-61 全集」（Rule 61 落地），宽容正则 40-5[5-9]→40-(5[5-9]|6[0-9])]
+n="$(grep -cE 'Rule 40-(5[5-9]|6[0-9])' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ]; then ok 12 "SKILL.md 全集声明「Rule 40-5x/6x」宽容锚 ≥1（$n）"; else bad 12 "SKILL.md 全集声明「Rule 40-(5[5-9]|6[0-9])」=$n（应 ≥1，级联漏改）"; fi
 
 # IP-13 templates/progress.md 在位且含「Test Results」段（落盘载体出口）
 # What：断言 progress.md 模板存在且含 `Test Results` 段（迭代轮次结果的落盘载体）。

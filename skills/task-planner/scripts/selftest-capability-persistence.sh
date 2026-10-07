@@ -4,7 +4,7 @@
 # What（守护对象清单 + 运行方式）:
 #   静态断言 Rule 55 新增锚全部在位且既有锚未被破坏（Rule 36.5 纯增量守护），共 20 条 CP-01..CP-20：
 #     CP-01/02/03 critical-rules.md：`^### 55 ` 标题=1、`^55\.[1-6] ` 六子条=6、块首说明行含 task-v138
-#     CP-04/05/06 SKILL.md：`Rule 55` ≥3、`40-55` =1、`40-53` =0（演进完成，样式参照 RR-16 演进后口径）
+#     CP-04/05/06 SKILL.md：`Rule 55` ≥3、`40-5x/6x 宽容` =1、`40-53` =0（演进完成，样式参照 RR-16 演进后口径）
 #     CP-07/08/09 references/capability-registry.md：文件在、表头 8 列、agnes-quota 行 8 字段全非空
 #     CP-10..13 scripts/capabilities/agnes-quota.sh：存在、`bash -n` 通过、无硬编码密钥、头注释含 Rule 55
 #     CP-14/15 companion/agents/{video,image}-generation-executor.md：各含 `capability-registry` ≥1
@@ -21,7 +21,7 @@
 #   55.6 声明 Rule 55 的机器面 = 本脚本静态守护；判定面=LLM 行为（复用前置检查/权威来源取舍/首次成功落盘），
 #   非机器触发，故零新 config 键（与 43.4/44.4/47.4/52.4 同范式）——CP-16 把「零新键」机器化。
 #   只断言 Rule 55 新增锚、绝不触碰既有 selftest 断言行（防锚级联：新守护脚本自身不得改写既有脚本任何行）；
-#   CP-06（`40-53`=0）与 CP-05（`40-55`=1）配对，锁死「纪元演进已收口」——防后续任务改写 SKILL.md 时
+#   CP-06（`40-53`=0）与 CP-05（`40-5x/6x 宽容`=1）配对，锁死「纪元演进已收口」——防后续任务改写 SKILL.md 时
 #   旧纪元字面残留（锚级联漂移）。条款写完但无机器守卫 → 回归期可被静默删改（task_plan 根源覆盖表第 ⑦ 行），
 #   本脚本即该防复发的固定落盘资产（对应 R1「常用/可复用功能及时落盘到固定脚本」的自守护实例）。
 # 依赖：bash + grep；config.json 键数校验需 jq（缺失降级 python3，二者皆缺打 SKIPPED 不 FAIL，fail-open 非静默——
@@ -75,11 +75,12 @@ fi
 n="$(grep -c 'Rule 55' "$SKILLMD" || true)"
 if [ "$n" -ge 3 ]; then ok 04 "SKILL.md 'Rule 55' 计数 $n ≥3"; else bad 04 "SKILL.md 'Rule 55' 计数=$n（应 ≥3）"; fi
 
-# CP-05 SKILL.md `40-55` 计数=1（新纪元全集声明）
-# What：断言 SKILL.md 出现 `40-55` 恰 1 次（Rules 40-55 全集声明行）。
-# Why：纪元演进后全集声明必须指向 55；=1 防漏改（仍写旧区间）或重复声明（多处不一致）。
-n="$(grep -c '40-55' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 05 "SKILL.md '40-55' 全集声明 =1"; else bad 05 "SKILL.md '40-55' 计数=$n（应 =1）"; fi
+# [2026-10-08 task-v146 合并级联: 括注演进「40-61 全集」（Rule 61 落地），字面 40-55 宽容化 40-(5[3-9]|6[0-9])]
+# CP-05 SKILL.md `40-5x/6x 宽容` 计数=1（新纪元全集声明）
+# What：断言 SKILL.md 出现 `40-5x/6x 宽容` 恰 1 次（Rules 40-61 全集声明行）。
+# Why：纪元演进后全集声明必须指向 61；=1 防漏改（仍写旧区间）或重复声明（多处不一致）。
+n="$(grep -cE '40-(5[3-9]|6[0-9])' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 05 "SKILL.md '40-5x/40-6x' 全集声明 =1"; else bad 05 "SKILL.md '40-5x/40-6x' 计数=$n（应 =1）"; fi
 
 # CP-06 SKILL.md `40-53` 计数=0（旧纪元字面零残留，演进完成断言）
 # What：断言 SKILL.md 不再出现旧区间 `40-53`。
