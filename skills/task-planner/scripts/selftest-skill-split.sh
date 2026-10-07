@@ -5,7 +5,7 @@
 #   ② 主 SKILL.md 行数收敛(≤433 目标,task-v097 Rule 40 联动 430→433 / ≤558 行数钉上限) + 4 路由指针在位
 #   ③ 迁移内容抽检(5 个迁移源文件在卫星 references/ 内闭环 + 特征锚在位)
 #   ④ 主 SKILL.md 死路径零残留(旧 references/ 相对路径过滤 plan- 前缀后零命中)
-#   ⑤ 锚点抽验(Rule 17 成本控制 / C19 / C25 / C26 / Rules 1-3 计数锚)
+#   ⑤ 锚点抽验(Rule 17 成本控制 / C19 / C25 / C26 / Rules 1-3 计数锚)[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[0-9]|[4-6][0-9])
 #   ⑥ 守卫与 registry 联动(check-skill-modify.sh 含 4 卫星名 / registry.tsv 含本行)
 # 纯 grep/test 机械断言, 无 fixture; 全 PASS exit 0, 任一 FAIL exit 1。
 set -u
@@ -40,7 +40,8 @@ done
 # T2 主 SKILL.md 行数收敛 + 4 路由指针各 ≥1
 # [2026-10-05 task-v136 S5] 钉上调 478→480（S2 SKILL.md 联动净增 +2（478→480，Rule 54 摘要/索引/C38），knowledge-brief §4-4 行数纪律先例：上限断言随净增同步上调带 label；≤558 总上限不动）
 # [2026-10-05 task-v138 合并级联] 合并面 Rule 54（v136）与 Rule 55（v138）共存 → SKILL.md 实际 481 行（v136 系 480 + v138 侧 Rule 55 摘要行 +1，v138 基线未含 Rule 54 故钉按 479→490；合并后取两侧并集 → 481），钉随并集上调 480→490（两分支钉值并集口径，语义强度不降；≤558 总上限不动，先例 v074 ≤523→≤540）
-t "T-主 行数 ≤490（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）; task-v136 S2 联动净增 +2（478→480）; task-v138 合并级联 Rule 54+55 并集净 +1（480→481，钉上调 480→490）;演进 440→442→444→447→449→452→454→461→475→477→478→480→481，先例 v112/v122/v126/v127/v125/v131/v133/v136/v138）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 490 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
+# [2026-10-08 task-v144 合并级联] merge v143(58)/v145(62) 索引行演进 + C43 合规行/执行循环 2.5 指针/Rule 59 bullet + P1-1 frontmatter 换行修复 → SKILL.md 实际 492 行（490→492），钉随演进上调 490→500（钉值随内容演进先例；≤558 总上限不动）
+t "T-主 行数 ≤500（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）; task-v136 S2 联动净增 +2（478→480）; task-v138 合并级联 Rule 54+55 并集净 +1（480→481，钉上调 480→490）; task-v144 合并级联 58/59/62 落地+C43/2.5/bullet 净 +11（481→492，钉上调 490→500）;演进 440→442→444→447→449→452→454→461→475→477→478→480→481→492，先例 v112/v122/v126/v127/v125/v131/v133/v136/v138/v144）且 ≤558 上限" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 500 ] && [ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do
     t "T-主 路由指针在位 $sat ≥1" bash -c "[ \"\$(grep -c '$sat' '$SKILL')\" -ge 1 ]"
 done
@@ -68,7 +69,9 @@ t "T-锚 Rule 17 成本控制" grep -q 'Rule 17 成本控制' "$SKILL"
 t "T-锚 C19 行在位" grep -q '| C19 |' "$SKILL"
 t "T-锚 C25 行在位" grep -q '| C25 |' "$SKILL"
 t "T-锚 C26 行在位" grep -q '| C26 |' "$SKILL"
-t "T-锚 Rules 1-3 计数锚 ≥1" bash -c "[ \"\$(grep -c 'Rules 1-3' '$SKILL')\" -ge 1 ]"
+# [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
+# 原固定字面 'Rules 1-3' 计数锚在 1-62 纪元 SKILL.md 已零命中（级联漏改面）→ 宽容正则 1-(3[0-9]|[4-6][0-9]) 覆盖旧 1-3x..新 6x 纪元, 合计语义零改动
+t "T-锚 Rules 1-3..6 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-6][0-9])' '$SKILL')\" -ge 1 ]"
 
 # T6 守卫 + registry 联动
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do

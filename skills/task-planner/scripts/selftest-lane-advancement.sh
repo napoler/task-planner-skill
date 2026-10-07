@@ -2,7 +2,7 @@
 # selftest-lane-advancement.sh — task-v126 S3: Rule 49 单元线多路并行推进静态守护（自写 49.5 机器面）
 # 范式对齐 selftest-media-dispatch.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构），task-v126 S3 产出。
 # 用途：静态断言 Rule 49 五子条（critical-rules.md）+ SKILL.md 摘要 bullet/C34 合规行/执行循环步骤 2.5 推进检查括注/References 表括号追加
-#      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=40，与 43.4/44.4/47.4 同口径）。
+#      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=42，[2026-10-08 task-v144 合并级联] 40→42，v145 合法新增 2 键，与 43.4/44.4/47.4 口径同步）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/config.json（只读，grep/jq，零写入）。
 # 输出：LA-01..LA-14 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 LA-14 打 SKIPPED 不 FAIL，
 #      与 selftest-media-dispatch.sh MD-08 / reliability-institution R-12 先例一致）。
@@ -119,12 +119,15 @@ else
   bad 11 "SKILL.md References 表「Rule 49 单元线多路并行推进」缺失（文档表未联动）"
 fi
 
-# LA-12 SKILL.md 主锚守护 `grep -c 'Rules 1-39'` =2
-# What：断言 SKILL.md 内 `Rules 1-39` 字面命中数保持 2（SR-07 既有锚，v126 不动主锚的承诺）。
-# Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——v126 全部联动采用"追加/括注"而非"改写"范式，主锚计数变动 = 有人动了 Rules 1-39 字面
-#      或误写 1-40 变体（防误改破坏 SR-07 自守护；与 baseline 2 严格等值，非 ≥）。
-n="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"
-if [ "$n" -eq 2 ]; then ok 12 "SKILL.md 主锚 'Rules 1-39' 命中 =2（SR-07 不变）"; else bad 12 "SKILL.md 主锚 'Rules 1-39' 命中=$n（应 =2，SR-07 主锚被改动）"; fi
+# LA-12 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-62'` ≥1 且 `grep -c '1-39'` = 0
+# What：断言 SKILL.md 内 `Critical Rules 1-62` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
+# Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——SKILL.md L273 References 行 label 已由前序级联单元演进为
+#      「Critical Rules 1-62」（含 Rule 40-62 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
+#      演进为 TS-05 范式（≥1 新 label + 旧变体负断言），防主 label 回退/新旧双 label 漂移。
+# [2026-10-08 task-v144 合并级联] 'Rules 1-39'=2 → 'Critical Rules 1-62'≥1 + '1-39'=0：SKILL.md L273 锚已演进为 Critical Rules 1-62（SR-07/TS-05 同批演进），本锚同步
+n="$(grep -c 'Critical Rules 1-62' "$SKILLMD" || true)"
+m="$(grep -c '1-39' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-62' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-62=$n 应 ≥1 / 1-39=$m 应 0）"; fi
 
 # LA-13 SKILL.md 负断言 `grep -c '1-40'` =0
 # What：断言 SKILL.md 内 `1-40` 字面命中数为 0（与 SR-07 同口径负断言）。
@@ -132,13 +135,13 @@ if [ "$n" -eq 2 ]; then ok 12 "SKILL.md 主锚 'Rules 1-39' 命中 =2（SR-07 �
 n="$(grep -c '1-40' "$SKILLMD" || true)"
 if [ "$n" -eq 0 ]; then ok 13 "SKILL.md '1-40' 变体命中 0（负断言成立）"; else bad 13 "SKILL.md '1-40' 变体命中=$n（应 =0，主锚漂移）"; fi
 
-# LA-14 零新 config 键——properties 键数 = 40（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）
-# What：断言 config.json .properties 顶层键数保持 40（Rule 49 判定面纯 LLM 行为 + 静态守护，零机器触发面，故不得新增 config 键）。
-# Why：49.5 承诺"零新 config 键"——键数膨胀 = 有人给单元线推进加了机器门控键，突破 43.4/44.4/47.4 既定零新键范式，属机制漂移（需走 36 条款流程）。
+# LA-14 零新 config 键——properties 键数 = 42（[2026-10-08 task-v144 合并级联] 40→42：v145 已合法新增 2 键，基线键数同步；同 TS-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# What：断言 config.json .properties 顶层键数保持 42（Rule 49 判定面纯 LLM 行为 + 静态守护，零机器触发面，故 Rule 49 自身不得新增 config 键；基线含 v145 合法新增的 2 键）。
+# Why：49.5 承诺"零新 config 键"——键数偏离 42 = 有人给单元线推进加了机器门控键，突破 43.4/44.4/47.4 既定零新键范式，属机制漂移（需走 36 条款流程）。
 #      jq 缺失 fail-open 打 SKIPPED（沿用 MD-08/R-12 先例：无 jq 属环境降级非内容漂移，不误报 FAIL；打印提示行非静默）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 14 "config.json properties 键数 40（零新增）"; else bad 14 "config.json properties 键数=$keys（应 40，Rule 49 零新键被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 14 "config.json properties 键数 42（零新增，基线含 v145 2 键）"; else bad 14 "config.json properties 键数=$keys（应 42，Rule 49 零新键被破坏）"; fi
 else
   printf 'LA-14 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

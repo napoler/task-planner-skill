@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # [2026-09-13 task-v067-knowledge-brief] selftest-knowledge-brief.sh — 任务知识简略要点(knowledge-brief)面守护套件
-# 守护 templates/knowledge-brief.md 五段骨架 + 全链路接入面
+# 守护 templates/knowledge-brief.md 六段骨架 + 全链路接入面
+# [2026-10-08 task-v144 合并级联] 五段→六段（§6 技能扫描区块，Rule 59.3）
 # (SKILL.md / init-session.sh / check-scope.sh / check-3file-gate.sh / critical-rules.md /
 #  subagent_dispatch.md / plan-writer.md / config.json#knowledge_brief_enforce) 一致性。
 # 10 组用例 T1-T10, 全 PASS exit 0, 任一 FAIL exit 1。纯 grep/python3 机械断言, 无 fixture。
@@ -28,9 +29,9 @@ t() { # t <name> <cond-expr...>
     fi
 }
 
-# T1: knowledge-brief.md 存在 + 五段标题 + ≤150 行
+# T1: knowledge-brief.md 存在 + 六段标题 + ≤150 行（[2026-10-08 task-v144 合并级联] 五段→六段（§6 技能扫描区块，Rule 59.3））
 t "T1a knowledge-brief.md 存在" test -f "$BRIEF"
-t "T1b 五段标题 grep -c '^## §' = 5" bash -c "[ \"\$(grep -c '^## §' '$BRIEF')\" -eq 5 ]"
+t "T1b 六段标题 grep -c '^## §' = 6（[2026-10-08 task-v144 合并级联] 五段→六段（§6 技能扫描区块，Rule 59.3））" bash -c "[ \"\$(grep -c '^## §' '$BRIEF')\" -eq 6 ]"
 t "T1c 行数 ≤150" bash -c "[ \"\$(wc -l < '$BRIEF')\" -le 150 ]"
 
 # T2: SKILL.md 引用 knowledge-brief ≥2 且行数 ≤540

@@ -2,7 +2,7 @@
 # selftest-requirement-grading.sh — task-v127 S5: Rule 50 内容要求权重分级与评级静态守护（50.6 机器面落地物）
 # What：静态断言 Rule 50 全部落点在位——critical-rules.md 章节标题/50.1-50.6 子条/泪痣双条目锚、
 #      三个内容模板（image-type / character-design-type / qc-defect-type）的评级契约块、
-#      goal-gate.md 分级联动、SKILL.md 摘要路由面，以及零新 config 键承诺（properties=40）。
+#      goal-gate.md 分级联动、SKILL.md 摘要路由面，以及零新 config 键承诺（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]）。
 # Why：Rule 50 消除「存在性约束被判定、程度约束被整体忽略」双断链（泪痣案例 findings §[sub:02-explore]）——
 #      本脚本是 50.6 声明的机器面自守护：任何后续任务改写 critical-rules.md/SKILL.md/模板/goal-gate.md
 #      时误删 50.x 条款、双条目锚或模板契约块，selftest 立即 FAIL 暴露（Rule 36.5 纯增量回归防护）；
@@ -94,13 +94,14 @@ else
   bad 06 "SKILL.md 路由面锚缺失（'1-5[0-9]' 或 'Rule 50' 命中=$n <2）"
 fi
 
-# RG-07 零新 config 键——properties 键数 = 40（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）
-# What：断言 config.json .properties 顶层键数保持 40（Rule 50 判定面=LLM 行为 + 静态守护，零机器触发面）。
+# RG-07 零新 config 键——properties 键数 = 42（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+# What：断言 config.json .properties 顶层键数保持 42（Rule 50 判定面=LLM 行为 + 静态守护，零机器触发面）。
 # Why：50.6 承诺"零新 config 键"——键数膨胀 = 有人给分级评级加了机器门控键，突破 43.4/44.4/47.4 零新键范式，
 #      属机制漂移（需走 Rule 36 条款流程）；jq 缺失 fail-open 打 SKIPPED（无 jq 属环境降级非内容漂移，不误报 FAIL）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 07 "config.json properties 键数 40（零新增）"; else bad 07 "config.json properties 键数=$keys（应 40，Rule 50 零新键被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 07 "config.json properties 键数 42（零新增）"; else bad 07 "config.json properties 键数=$keys（应 42，Rule 50 零新键被破坏）"; fi
 else
   printf 'RG-07 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

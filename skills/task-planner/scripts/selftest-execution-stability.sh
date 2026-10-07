@@ -76,8 +76,9 @@ t "T8b SKILL.md 行数 ≤558" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 t "T9a hook_self_heal_enforce 出现在 config.json+SKILL.md ≥2 文件" bash -c "[ \"\$(grep -rln 'hook_self_heal_enforce' '$CONFIG' '$SKILL' | wc -l)\" -ge 2 ]"
 t "T9b 无拼写变体 hook-self-heal (全 0)" bash -c "[ \"\$(grep -rc 'hook-self-heal' '$CONFIG' '$SKILL' | awk -F: '{s+=\$2} END{print s+0}')\" -eq 0 ]"
 
-# T10: 回归哨兵 (v067 机制未被本次破坏): knowledge-brief 五段 = 5 且 init '6/6' ≥1
-t "T10a knowledge-brief.md 五段 grep -c '^## §' = 5" bash -c "[ \"\$(grep -c '^## §' '$BRIEF')\" -eq 5 ]"
+# T10: 回归哨兵 (v067 机制未被本次破坏): knowledge-brief 六段 = 6 且 init '6/6' ≥1
+#     [2026-10-08 task-v144 合并级联] 五段→六段（§6 技能扫描区块，Rule 59.3）
+t "T10a knowledge-brief.md 六段 grep -c '^## §' = 6（[2026-10-08 task-v144 合并级联] 五段→六段（§6 技能扫描区块，Rule 59.3））" bash -c "[ \"\$(grep -c '^## §' '$BRIEF')\" -eq 6 ]"
 t "T10b init-session.sh '6/6' ≥1" bash -c "[ \"\$(grep -c '6/6' '$INIT')\" -ge 1 ]"
 
 # T11: [2026-09-14 task-v068 Fix-C P2-2] 行为级断言 — 现有 T1-T10 全是 grep 字符串存在性,
