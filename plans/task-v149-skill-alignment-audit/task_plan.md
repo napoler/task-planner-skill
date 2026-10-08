@@ -146,7 +146,11 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 - [x] knowledge-brief.md 审计种子（§2 五条已验证事实+§4 易错点）
 - [x] 知识储备必读项确认（memory/技能本体/selftest 面/部署拓扑/worktree SOP）
 - **V-N:** VC-1, VC-3
-- **Status:** complete（2026-10-09 补翻：基线跑批+遗留归集+kb 种子全部完成于 10-08，状态行漏翻由 check-complete 4/5 提示发现）
+- **Status:** complete
+
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|
+| S0 | 全量 62 脚本 selftest 基线跑批（后台） | code-runner-agent（mini） | skills/task-planner/scripts/selftest-*.sh 清单 | 检查点 01 含 ΣPASS/ΣFAIL 与 FAIL 明细 | 15min | 0f/0l/15min | 无 | complete |（2026-10-09 补翻：基线跑批+遗留归集+kb 种子全部完成于 10-08，状态行漏翻由 check-complete 4/5 提示发现）
 - **Executor:** code-runner-agent（mini）
 
 ### Phase 2: 系统性审计扫描（4 面并行）
@@ -191,7 +195,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 | S17 | 守卫级联批 1：selftest-lane-advancement.sh(LA-12)+selftest-requirement-coverage.sh(RC-11) 1-64→1-65+负断言（D8） | executor（sonnet-1） | v147 先例 commit bd7a31c diff 模式 | 两脚本 FAIL=0 | 10min | 2f/10l/10min | 无 | pending |
 | S18 | 守卫级联批 2：selftest-self-resolution.sh(SR-07)+selftest-tool-selection.sh(TS-05) 同上演进 | executor（sonnet-1） | 同 D8 模式 | 两脚本 FAIL=0 | 10min | 2f/10l/10min | 无 | pending |
 | S19 | 守卫级联批 3：selftest-workflow-orchestration.sh(WF-10)+selftest-drift-check-subagent.sh(DCS-11) 同上演进 | executor（sonnet-1） | 同 D8 模式 | 两脚本 FAIL=0 | 10min | 2f/10l/10min | 无 | pending |
-| S20 | 守卫级联批 4：selftest-research-first.sh(RF-06/07/10)+selftest-registry.tsv 行更新+DCE 行措辞核对（L4）+grep「1-64\|\^65」余量清点 | executor（sonnet-1） | S7 返回的级联面清单（10 脚本） | grep 余量=0 或逐项登记 | 15min | 2f/30l/15min | 无 | pending |
+| S20 | 守卫级联批 4：selftest-research-first.sh(RF-06/07/10)+selftest-registry.tsv 行更新+DCE 行措辞核对（L4）+grep「1-64 与 ^65」余量清点 | executor（sonnet-1） | S7 返回的级联面清单（10 脚本） | grep 余量=0 或逐项登记 | 15min | 2f/30l/15min | 无 | pending |
 | S21 | 守卫级联批 5：selftest-four-file-dataflow.sh(FF-16)+selftest-evidence-goal-gate.sh(EG-16) 负断言 ^65\.→^66\. 演进（S7 实测新增面） | executor（sonnet-1） | S7 返回级联清单第 7/8 项 | 两脚本 FAIL=0 | 10min | 2f/10l/10min | 无 | pending |
 | S22 | 守卫级联批 6：selftest-iteration-persistence.sh(IP-14) 负断言演进+全量 selftest 受影响面复跑核对（S7 实测新增面） | executor（sonnet-1） | S7 返回级联清单第 9 项 | IP 脚本 FAIL=0 | 10min | 2f/20l/10min | 无 | pending |
 | S23 | 守卫级联批 7：selftest-skill-split.sh:44 SKILL.md 行数断言 ≤500→≤510（S16 实测 505 行，S16 返回新增面） | executor（sonnet-1） | S16 返回异常段 | 该断言 PASS | 5min | 1f/5l/5min | 无 | complete |
