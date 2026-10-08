@@ -74,3 +74,36 @@
 - [2026-10-08] S4b 首轮阻塞：KB §5.9 缺失。现象=executor 报「task_plan 引用 §5.9 但 KB 只到 §5.8」；直接原因=主进程此前一次 Edit 因缺 old_string 被 InputValidationError 拒绝，重做时只补了 §5.8 漏了 §5.9；根因=编辑失败后未核对失败编辑的完整意图清单（部分重做）；修法=补落 §5.9+resume 原代理；预防=编辑失败重做时对照原意图逐项核对（沉淀 notepad）
 
 **Phase 3 待收**：S4b 模板联动 / S4c 文档联动
+
+### Phase 4: selftest 守护 + registry + 全量回归
+**Actions taken**
+- S5（executor）：selftest-drift-check-subagent.sh 新建（DCS-01..20 全绿）+ registry.tsv 登记行；主进程复验 Total 行+registry 计数 ✓
+- S6（code-runner-agent）：全量回归 58 脚本 ΣPASS=876 ΣFAIL=28——预期内（新脚本 +20 PASS、AC-04 暂态 +1）+ **预期外 6 条**：索引括注 40-55→40-61 断 6 守卫宽容锚（CP-05/IP-12/R-09/SR-08/EH-09/RR-16，40-5[3-9] 与 40-5[5-9] 与字面 40-55 三种形态）
+- S7/S8/S9（executor×3）：6 守卫锚宽容化 40-(5[3-9]|6[0-9]) / 40-(5[5-9]|6[0-9])（v121 先例范式，各带级联史注记），六脚本自跑断言全转 PASS 且 FAIL 集合=各自基线
+- 主进程复验：6/6 宽容锚 grep 在位；差值账 28-6=22=基线 21+AC-04 ✓
+
+**Files created-modified**（worktree）
+- scripts/selftest-drift-check-subagent.sh（新建 20 断言）、scripts/selftest-registry.tsv（+1 行）、6 个 selftest 守卫锚宽容化
+
+**Test Results**
+- Round 2（S6 全量回归）：58 脚本 / ΣPASS=876 / ΣFAIL=28（6 条级联，原文存检查点 8）——FAIL
+- Round 3（S7-S9 修复后六脚本自跑）：CP-05/R-09/IP-12/RR-16/SR-08/EH-09 全 PASS；六脚本 Total=19+1/15+1/17+1/17+0/11+2/14+0 与基线一致——PASS
+- 终态口径：ΣFAIL=22（基线 21 预存 + AC-04 部署前暂态，Phase 5 部署后复验转 PASS）
+- 证据：subagent-state/7、8、10、11、12-executor/checkpoint
+
+### Phase 5: 合并回 + 部署 + 审查 + 簿记 + 交付
+**Actions taken**
+- CR Gate：code-reviewer 全量审查 9 个 .sh → **APPROVED**（0 blocker/major + 2 minor）；2 minor（DCS-03 缺 -q、DCS-14 恒真断言）合并前修复并复跑 20/20
+- alignment-review：critic 执行 14 项清单 → CHANGES_REQUESTED（1P1+3P2）；P1（AC-09 头注 128）+2P2（cost_log 档位、CHANGELOG 条目）已修复；1P2（SKILL frontmatter 上界措辞）按审查建议登记 deferred
+- 合并：首跑 smart-merge-back 因 master 前进（v144/v145 已合入 ee978a1）中止 → worktree 内 merge master 解 10 文件冲突（守卫 7 文件取 master 40-[56][0-9] 方案/SKILL 索引并集 62+61/规则块 61-62-59 并存/registry 并集+periodic 行补回）→ 合并提交 738eeca → smart-merge-back 合并入 master **e54973d**
+- 部署：claude/opencode 自动 IDENTICAL；zcode 位按「运行位手动原子换位」先例执行（备份 ~/skill-deploy-backups-task-v146/task-planner-20261008095516）；卫星 task-drift-guard/plan-cost-guard 同步；drift-checker 双 agents 位 installed
+- 部署后复验：AC-04 转 PASS（agent-coverage 9/9）；发现并清理 companion/.backup-* 扫描路径内备份 13 处（主仓 1+部署位 12，判例复发已移出）；DCS 复跑 20/20
+- 簿记：rule-reserve land 61 ✓；INDEX 刷新（complete=85）；ledger 6 事件；verification.md 勾稽全 VC；worktree+wt/task-v146 分支清理 ✓
+- **终态回归（主进程白名单③，仅采 Total 行）**：60 脚本 ΣPASS=934 ΣFAIL=4——FAIL=periodic-review PR-03/04/05/10（基线预存，v144 仅修登记面）
+
+**Test Results（Round 4 — 终态）**
+- 命令：`for f in selftest-*.sh; do timeout 90 bash "$f" | grep -E '^Total:|结果:'; done` @ 主仓 scripts/（e54973d）
+- 结果：**ΣPASS=934 / ΣFAIL=4**（对照基线 863/21：v144/v145 合法化 config=42 消 13 条、periodic 补登记消 3 条、AC-04 部署后消 1 条、我方 DCS+20）
+- 原始行：/tmp/tpv146_final_sweep.txt；证据链=progress 本段+verification.md
+
+**交付裁决：COMPLETE（全 VC 过+双审闭+部署一致+守卫绿）**

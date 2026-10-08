@@ -125,7 +125,7 @@ workflow 编排判定：未命中（无 fan-out/长链复用，S-unit 串行依�
 | S4c | 文档联动切换：plan-cost-guard 3 refs + README:21 + INSTALL:221-232 + ARCHITECTURE:115（措辞=KB §5.9） | executor(sonnet-1) | KB §5.9 逐文件锚清单 | 目标行切换；history/deploy 注释行保留；`grep -rn 'Skill("task-drift-guard")' ../plan-cost-guard/` = 0 | 12min | pending |
 
 ### Phase 4: selftest 守护 + registry + 全量回归
-- **状态:** in_progress（2026-10-08）
+- **状态:** complete（2026-10-08；证据=检查点 7/8/10/11/12 + S7-S9 六锚宽容化 commit + 回归差值账：58 脚本 ΣFAIL 28-6=22=基线 21+AC-04 暂态）
 - **Executor:** executor（sonnet-1）+ code-runner-agent
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|-------------|---------|------|------|
@@ -136,6 +136,7 @@ workflow 编排判定：未命中（无 fan-out/长链复用，S-unit 串行依�
 | S9 | 守卫锚宽容化③：self-resolution SR-08 + execution-honesty EH-09 | executor(sonnet-1) | 同上 | 同上 | 6min | pending |
 
 ### Phase 5: 合并回 + 部署 + 审查 + 簿记 + 交付
+- **状态:** complete（2026-10-08；证据=master e54973d + 三位部署对账 + CR APPROVED + align 修复闭环 + rule-reserve land 61 + worktree/分支清理完成 + 终态回归 60 脚本 ΣPASS=934/ΣFAIL=4 全预存）
 - **Executor:** 主进程（白名单① git 编排 + ② 计划系统文件）
 - CR Gate（code-review，重 diff 全量）→ alignment-review → smart-merge-back --deploy（3 实体位对账+agents 位验证）→ `rule-reserve.sh land 61 task-v146` → INDEX/ledger 簿记 → worktree 清理 → delivery-summary 落盘+呈报（含静默决策清单）
 
@@ -165,7 +166,7 @@ workflow 编排判定：未命中（无 fan-out/长链复用，S-unit 串行依�
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |          |        |      |
+| 2026-10-08 交付前自审 | ALIGNED | 全部 | 逐 Phase 验收均第一手 grep/Total 复验；变更未出 scope 表（31 文件全命中授权清单）；漂移零发生。备注：本会话启动早于 drift-checker 部署，本条为交互载体自审（新会话起 Rule 15/61 走子代理载体） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
@@ -183,9 +184,16 @@ workflow 编排判定：未命中（无 fan-out/长链复用，S-unit 串行依�
 | 4 | 2026-10-08 | executor | S2 agent+矩阵 | done | drift-checker.md 新建（frontmatter/三态/SOP 全锚）；矩阵行 128→129；AC-09 上界级联 ≤129 新跑 PASS；AC-04 部署前暂态 FAIL 已登记（Phase 5 转 PASS）；AC-07 预存 | checkpoint 3-executor.md | §2 | subagent-state/3-executor.md |
 | 5 | 2026-10-08 | executor | S3 SKILL 载体 | done | 十二处切换；旧串 0；488 行 ≤558；主进程复验六锚全过 | SKILL.md diff 12+/10- | §3 | subagent-state/4-executor.md |
 | 6 | 2026-10-08 | executor | S4 卫星+hook | done | 卫星 +3 行双载体节；hook 文案切换 bash -n 通过 | 卫星 82→85 行 | §3 | subagent-state/5-executor.md |
-| 7 |  | executor | S5 selftest | queued |  |  | §4 | subagent-state/6-executor.md |
-| 8 |  | code-runner-agent | S6 全量回归 | queued |  |  | §4 | subagent-state/7-code-runner-agent.md |
+| 7 |  | executor | S5 selftest（原计划行，并入 #11） | merged |  |  | §4 | — |
+| 8 |  | code-runner-agent | S6 全量回归（原计划行，并入 #12） | merged |  |  | §4 | — |
 | 9 | 2026-10-08 | executor | S4b 模板联动 | done | 首会话停滞停止后改派续做；10 文件全部切换；templates/ 旧串 0、drift-checker 10 文件 | checkpoint 6-executor.md | §3 | subagent-state/6-executor.md |
 | 10 | 2026-10-08 | executor | S4c 文档联动 | done | 6 文件 9 处切换；plan-cost-guard 旧串 0；history/deploy 行保全 | checkpoint 9-executor.md | §3 | subagent-state/9-executor.md |
 | 11 | 2026-10-08 | executor | S5 selftest 守护 | done | 20 断言全 PASS；registry 行登记；registry.sh 无新增 FAIL | Total: 20 PASS=20 FAIL=0 | §4 | subagent-state/7-executor.md |
 | 12 | 2026-10-08 | code-runner-agent | S6 全量回归 | done | 58 脚本 ΣPASS=876 ΣFAIL=28：基线 21+新脚本 20PASS+AC-04 暂态 1+**预期外 6 条锚级联**（40-55→40-61 断 6 守卫宽容锚 40-5[3-9]） | 检查点 8-code-runner-agent.md | §4 | subagent-state/8-code-runner-agent.md |
+| 13 | 2026-10-08 | executor | S7 守卫锚宽容化① | done | CP-05/R-09 转 PASS | 检查点 10-executor.md | §4 | subagent-state/10-executor.md |
+| 14 | 2026-10-08 | executor | S8 守卫锚宽容化② | done | IP-12/RR-16 转 PASS | 检查点 11-executor.md | §4 | subagent-state/11-executor.md |
+| 15 | 2026-10-08 | executor | S9 守卫锚宽容化③ | done | SR-08/EH-09 转 PASS | 检查点 12-executor.md | §4 | subagent-state/12-executor.md |
+| 16 | 2026-10-08 | Code Reviewer | CR Gate | done | **APPROVED**（0 blocker/major；2 minor 已由 #18 前置修复轮处理） | 检查点 13-code-reviewer.md | verification | subagent-state/13-code-reviewer.md |
+| 17 | 2026-10-08 | critic | alignment-review | done | 初判 CHANGES_REQUESTED（1P1+3P2+1QUESTION）；P1+2P2 由 #18 修复，1P2 按建议登记 deferred | 检查点 15-alignment-reviewer.md | verification | subagent-state/15-alignment-reviewer.md |
+| 18 | 2026-10-08 | executor | CR 修复+对齐修复 | done | DCS-03 -q/DCS-14 非空断言/AC-09 头注 129/cost_log haiku-1/CHANGELOG 条目 | 检查点 14/16-executor.md | verification | subagent-state/14+16-executor.md |
+| 19 | 2026-10-08 | executor | 合并解纷（v144/v145 合流 10 文件） | done | 守卫 7 文件取 master 40-[56][0-9] 方案；SKILL 索引并集 62+61；规则块 61/62/59 并存；registry 并集+periodic 行补回（T02/SR-12 转 PASS）；DCS-11 对齐 62 现实 | 检查点 17-executor.md | §4 | subagent-state/17-executor.md |

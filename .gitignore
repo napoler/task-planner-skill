@@ -6,3 +6,6 @@ plans/.plan_required_side/
 
 plans/**/.session-owner
 .backup-*/
+
+# 偏移节奏 hook 会话运行态(task-v148 Rule 64.3)不入库
+plans/.drift-rhythm/

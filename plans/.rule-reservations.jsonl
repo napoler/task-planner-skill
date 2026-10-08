@@ -24,3 +24,8 @@
 {"rule":62,"status":"reserved","task_id":"task-v145-four-file-dataflow","ts":"2026-10-08","note":"四文件罗盘数据流转与调研知识沉淀纪律（60→62 两轮改号：v143 仲裁占 60/v146 占 61）"}
 {"rule":62,"status":"landed","task_id":"task-v145-four-file-dataflow","ts":"2026-10-08","note":""}
 {"rule":59,"status":"landed","task_id":"task-v144","ts":"2026-10-08","note":""}
+{"rule":61,"status":"landed","task_id":"task-v146-drift-check-subagent","ts":"2026-10-08","note":""}
+{"rule":63,"status":"reserved","task_id":"task-v147-research-first","ts":"2026-10-08","note":"检索优先与反推诿纪律（attest new_rule 解析 fail-open，手动补登）"}
+{"rule":64,"status":"reserved","task_id":"task-v148-drift-enforce","ts":"2026-10-08","note":"偏移检查留痕强制与节奏化触发纪律（attest new_rule 括注解析 fail-open，手动补登；63 已被 v147 占）"}
+{"rule":64,"status":"landed","task_id":"task-v148-drift-enforce","ts":"2026-10-08","note":""}
+{"rule":63,"status":"landed","task_id":"task-v147-research-first","ts":"2026-10-08","note":""}

@@ -1,6 +1,6 @@
 # task-v146 executor checkpoint (S9 守卫锚宽容化③)
 
-## 状态: PARTIAL
+## 状态: FINAL
 
 ## 任务摘要
 修复 selftest-self-resolution.sh (SR-08) 和 selftest-execution-honesty.sh (EH-09) 的级联断言，
