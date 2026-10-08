@@ -6,7 +6,7 @@
 #         裁剪上游 od/dd 字节级 UTF-8 兜底(仅 busybox/无 iconv 场景,本仓部署为 Linux glibc)。
 #
 # 用法: ledger-append.sh <plan-dir> <event> <summary> [--agent NAME] [--phase N] [--files f1,f2]
-#   <event> 枚举: progress | phase_complete | error | gate_block | attest | note | kb_distill
+#   <event> 枚举: progress | phase_complete | error | gate_block | attest | note | kb_distill | drift_check
 # 写入: <plan-dir>/ledger-<agent>.jsonl 单行 JSON:
 #   {"tick":N,"ts":"ISO8601Z","agent":"...","phase":"...","event":"...","summary":"...","files":[...]}
 # tick = 计划目录内全部 ledger-*.jsonl 的 max+1 —— 并发 agent 共享单调计数,
@@ -21,11 +21,13 @@
 #   Why:  知识增量门控 check-3file-gate.sh --require-kb 以「锚点后 event=kb_distill 行」
 #         作为本 Phase 知识蒸馏的语义证据（Rule 60.5）——主进程 22.5 复核时蒸馏归档
 #         knowledge-brief 后追加一行,供门控机器判定,不可用 touch 伪造。
+#   事件枚举增补 drift_check（2026-10-08 task-v148/Rule 64.1：偏移检查留痕事件，summary 格式建议 "<verdict>+一句话结论"，既有枚举零改动）。
 
 set -u
 
 # [2026-10-08 task-v145 S-2 Rule 60.5] kb_distill 追加为第 7 项（既有 6 项零改动）
-VALID_EVENTS="progress phase_complete error gate_block attest note kb_distill"
+# [2026-10-08 task-v148 S-2 Rule 64.1] drift_check 追加为第 8 项（既有 7 项零改动）
+VALID_EVENTS="progress phase_complete error gate_block attest note kb_distill drift_check"
 
 usage() {
     printf 'Usage: %s <plan-dir> <event> <summary> [--agent NAME] [--phase N] [--files f1,f2]\n' "$0" >&2

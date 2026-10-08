@@ -43,6 +43,69 @@ RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
 [ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" "$SID" 2>/dev/null || true)"
 [ -z "$plan" ] && exit 0
 
+# ─── [task-v148 Rule 64.3] [drift-rhythm] 节奏化偏移检查提醒 ──────────────────
+# What: 活跃计划存在时维护会话级计数状态 <plans>/.drift-rhythm/<sidkey>.state
+#       （三键 count/last_inject/due），每满 N 次工具调用（默认 10，env
+#       TASK_PLANNER_DRIFT_RHYTHM_N 可覆盖）标记 due=1，由主流程末尾 end-emit
+#       统一注入单行偏移检查提醒，并重置计数锚点（last_inject=count）与清 due。
+#       due 位跨分支命中轮持久保留（N1 修复），由下一个无分支调用轮投递。
+# Why: 用户 2026-10-08 反馈「防偏移容易失效，需要时刻记得纠正」；task-v141~v145
+#      共 25 Phase drift-check 执行率 0%（软触发不可靠实证）。64.3 管「时刻」
+#      （高频可见性），拦截力由 64.2 Phase complete 硬门控承载——两层分工。
+# 容错: 缺文件/坏行按 0 处理；mkdir -p 幂等初始化；O(1) 状态读写，禁全仓扫描。
+# fail-open: plan-dir 解析失败/目录不可写/无 jq → 全段静默跳过（零 stdout——平台对
+#       hook stdout 做严格 JSON 校验，杂输出会污染所有会话的 hook 链）。
+# [F5 前移] 函数定义与调用点均置于 plan 解析成功后、任何早退之前，确保优先级 1-4
+# 命中 exit 0 时 drift 计数仍自增。函数体零改动，仅移动位置。
+emit() {
+  printf '{"additionalContext": %s}\n' "$(printf '%s' "$1" | jq -Rs .)"
+}
+
+drift_rhythm_check() {
+  local plan_dir="$1" sid="$2"
+  local n="${TASK_PLANNER_DRIFT_RHYTHM_N:-10}"
+  case "$n" in ''|*[!0-9]*) n=10 ;; esac
+  # fail-open 前置：目录必须存在且可写
+  [ -d "$plan_dir" ] && [ -w "$plan_dir" ] || return 0
+  # 无 jq → 静默跳过（emit 依赖 jq -Rs 包装 JSON 字符串）
+  command -v jq >/dev/null 2>&1 || return 0
+  local sdir="$(dirname "$plan_dir")/.drift-rhythm"
+  mkdir -p "$sdir" 2>/dev/null || return 0
+  local sfile="$sdir/${sid}.state"
+  # 容错解析：缺文件/坏行按 0 处理
+  local count=0 last_inject=0 v
+  v="$(sed -n 's/^count[[:space:]]\{1,\}//p' "$sfile" 2>/dev/null | head -1)"
+  case "$v" in ''|*[!0-9]*) ;; *) count="$v" ;; esac
+  v="$(sed -n 's/^last_inject[[:space:]]\{1,\}//p' "$sfile" 2>/dev/null | head -1)"
+  case "$v" in ''|*[!0-9]*) ;; *) last_inject="$v" ;; esac
+  # [task-v148 Rule 64.3 N1 修复] 读回既有 due 位（读-改-写，防 clobber）
+  # What: 早调用写 state 前先读回上一轮遗留的 due 位；阈值命中轮置 1，未命中轮原样保留。
+  # Why: N1 投递饥饿——优先级 1-4 命中即 exit 0，永远到不了主流程末尾 end-emit，该轮
+  #      due=1 残留；旧 else 分支无脑写 due 0 把残留位 clobber 掉，当 rhythm N 与
+  #      todo_sync 周期相位锁定（默认均 10）时提醒永不投递（实测 30 调用 0 投递）。
+  #      保留 due 后：分支命中轮 due 留存，下一（或下几个）无分支调用轮的 end-emit
+  #      投递并清零——延迟数调用而非饥饿，分支消息零改动零吞没。
+  # 容错: 三键 state {count, last_inject, due}（due=待投递持久位；缺 due 的旧 state）或坏行 → due 按 0 处理（向后兼容）。
+  # Rule 64.3 + Rule 45（What+Why）
+  local due=0 vdue
+  vdue="$(sed -n 's/^due[[:space:]]\{1,\}//p' "$sfile" 2>/dev/null | head -1)"
+  case "$vdue" in ''|*[!0-9]*) ;; *) due="$vdue" ;; esac
+  count=$(( count + 1 ))
+  # 第三键 due：0=无待注入，1=阈值命中待注入（end-emit 处统一 emit）
+  # 写回 count（未触发时也写回，保持状态一致）；未达阈值时保留既有 due 不 clobber
+  if [ "$(( count - last_inject ))" -ge "$n" ]; then
+    printf 'count %s\nlast_inject %s\ndue 1\n' "$count" "$count" > "$sfile" 2>/dev/null || true
+  else
+    printf 'count %s\nlast_inject %s\ndue %s\n' "$count" "$last_inject" "$due" > "$sfile" 2>/dev/null || return 0
+  fi
+  return 0
+}
+
+# [task-v148 Rule 64.3] [drift-rhythm] 节奏提醒前移（F5）：置于 plan 解析成功后、
+# 任何早退之前，确保优先级 1-4 命中 exit 0 时 drift 计数仍自增。
+# fail-open：解析失败/目录不可写/无 jq → 全段静默跳过（零 stdout）。
+drift_rhythm_check "$(dirname "$plan")" "$SID"
+
 # ─── [task-v068 E2] TAMPERED 自愈: 本会话 Edit/Write 活跃计划 task_plan.md → 后台自动重锁 ───
 # 触发(全部满足,廉价前置短路,未命中零子进程): tool ∈ {Write,Edit,MultiEdit}
 #  且 .tool_input.file_path 归一后 == 本会话活跃计划 plan(上述探测结果)
@@ -94,6 +157,28 @@ esac
 now="$(date +%s)"
 mt="$(stat -c %Y "$plan" 2>/dev/null || echo "$now")"
 age=$(( now - mt ))
+
+# ─── [task-v148 Rule 64.3 F10] 完结/超龄计划 → 清 rhythm due ─────────────────
+# What: 计划完结（task_plan.md 或同目录 verification.md 含 outcome: COMPLETE|BLOCKED）
+#       或 task_plan.md mtime 超 24h → 把 .drift-rhythm/<sid>.state 的 due 标志清零。
+# Why: F10——早调用已把 due=1 记入 state，但既有 :147/:150/:155 静默守卫会直接
+#       exit 0，永远走不到主流程末尾的 end-emit；若不在早退前清 due，已完结/历史
+#       计划会残留 due=1（state 脏，违背「不注入即清零」语义）。此处「同条件重查」
+#       与既有守卫同口径（不修改既有分支），只做状态清理，不产生任何 stdout。
+# Rule 64.3 + Rule 45（What+Why）
+rhythm_f10="$(dirname "$plan_dir")/.drift-rhythm/${SID}.state"
+if [ -f "$rhythm_f10" ]; then
+  if [ "$age" -gt 86400 ] \
+     || grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "$plan" 2>/dev/null \
+     || { [ -f "${plan_dir}/verification.md" ] && grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "${plan_dir}/verification.md" 2>/dev/null; }; then
+    f10_count="$(sed -n 's/^count[[:space:]]\{1,\}//p' "$rhythm_f10" 2>/dev/null | head -1)"
+    f10_last="$(sed -n 's/^last_inject[[:space:]]\{1,\}//p' "$rhythm_f10" 2>/dev/null | head -1)"
+    case "$f10_count" in ''|*[!0-9]*) f10_count=0 ;; esac
+    case "$f10_last" in ''|*[!0-9]*) f10_last=0 ;; esac
+    printf 'count %s\nlast_inject %s\ndue 0\n' "$f10_count" "$f10_last" > "$rhythm_f10" 2>/dev/null || true
+  fi
+fi
+
 [ "$age" -gt 86400 ] && exit 0   # >24h 未更新 = 历史任务，不打扰
 
 # ─── 完结计划静默（[2026-08-28] 防误报:outcome 已定局的任务不再催）────────────
@@ -150,10 +235,6 @@ count=$(( count + 1 ))
 [ "$cd_left" -gt 0 ] && cd_left=$(( cd_left - 1 ))
 [ "$cd_findings" -gt 0 ] && cd_findings=$(( cd_findings - 1 ))
 [ "$cd_progress" -gt 0 ] && cd_progress=$(( cd_progress - 1 ))
-
-emit() {
-  printf '{"additionalContext": %s}\n' "$(printf '%s' "$1" | jq -Rs .)"
-}
 
 # ─── 优先级 1：计划文档陈旧且不在冷却期 → 强制回写，随后进入冷却 ─────────────
 # [2026-09-04 Rule 19.6/19.7] 提醒文案改为三文件分流版本，治理"一切塞 task_plan"。
@@ -235,6 +316,34 @@ if [ "$count" -ge "$todo_n" ]; then
   echo "0 $(date +%s) $cd_left $cd_findings $cd_progress $f_last $p_last $f_miss $p_miss" > "$state"
   emit "[plan-sync] 🔄 已 ${count} 次工具调用未同步：核对 ${plan} 的 Phase 状态，并用 TodoWrite/TaskUpdate 同步原生 Todo（S2/S3）。"
   exit 0
+fi
+
+# ─── [task-v148 Rule 64.3] [drift-rhythm] 延迟 emit（F9/F10/N1 修复）────────
+# What: 早调用只计数并记录 due 状态，此处统一 emit（保证单轮单 JSON）
+# Why: F9 BLOCKER——早调用直接 emit 与后续优先级分支 emit 同轮并存 → 双行 JSON；
+#      F10——end-emit 前置与 :147/:150 同语义守卫，禁绕过既有静默语义；
+#      N1——due 由早调用读-改-写持久保留（跨优先级 1-4 exit 0 的分支命中轮不清），
+#      故本块在无分支调用轮必见 due=1 并投递，投递后清 due（延迟数调用而非饥饿）。
+# Rule 64.3 + Rule 45（What+Why 注释）
+rhythm_sfile="$(dirname "$plan_dir")/.drift-rhythm/${SID}.state"
+due="$(sed -n 's/^due[[:space:]]\{1,\}//p' "$rhythm_sfile" 2>/dev/null | head -1)"
+case "$due" in ''|*[!0-9]*) due=0 ;; esac
+if [ "$due" -eq 1 ]; then
+  rhythm_n="${TASK_PLANNER_DRIFT_RHYTHM_N:-10}"
+  case "$rhythm_n" in ''|*[!0-9]*) rhythm_n=10 ;; esac
+  rhythm_count="$(sed -n 's/^count[[:space:]]\{1,\}//p' "$rhythm_sfile" 2>/dev/null | head -1)"
+  rhythm_last="$(sed -n 's/^last_inject[[:space:]]\{1,\}//p' "$rhythm_sfile" 2>/dev/null | head -1)"
+  case "$rhythm_count" in ''|*[!0-9]*) rhythm_count=0 ;; esac
+  case "$rhythm_last" in ''|*[!0-9]*) rhythm_last=0 ;; esac
+  # F10 前置守卫：与 :147/:150 同语义——计划完结或 mtime 超 24h → 不注入（due 清零）
+  if grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "$plan" 2>/dev/null; then
+    printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
+  elif [ "$age" -gt 86400 ]; then
+    printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
+  else
+    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套"
+    printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
+  fi
 fi
 
 # 未命中任何提醒 → 9 字段原样写回 state
