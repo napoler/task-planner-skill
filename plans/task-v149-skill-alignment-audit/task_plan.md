@@ -141,12 +141,12 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 ## Phases
 
 ### Phase 1: 基线自检与遗留清单归集
-- [ ] code-runner-agent 跑全量 62 个 selftest-*.sh，产出基线 FAIL 清单（逐条分类：已知基线/待修/环境性）
-- [ ] 主进程归集 memory 遗留清单（≥10 项）+ 各任务 delivery-summary「下一步/deferred」→ findings.md §遗留核对表
-- [ ] knowledge-brief.md 写入审计种子事实（已知遗留+部署拓扑+健康参照）
-- [ ] 知识储备必读项已确认可获取
+- [x] code-runner-agent 跑全量 62 个 selftest-*.sh 基线：ΣFAIL=4（全部 periodic，检查点 01）——后被本任务 Rule 65 恢复清零
+- [x] memory 遗留归集 16 项（L1-L16）→ findings.md §遗留核对表
+- [x] knowledge-brief.md 审计种子（§2 五条已验证事实+§4 易错点）
+- [x] 知识储备必读项确认（memory/技能本体/selftest 面/部署拓扑/worktree SOP）
 - **V-N:** VC-1, VC-3
-- **Status:** in_progress
+- **Status:** complete（2026-10-09 补翻：基线跑批+遗留归集+kb 种子全部完成于 10-08，状态行漏翻由 check-complete 4/5 提示发现）
 - **Executor:** code-runner-agent（mini）+ 主进程归集（例外理由：② 计划系统文件维护——memory/簿记归集属白名单）
 
 ### Phase 2: 系统性审计扫描（4 面并行）
