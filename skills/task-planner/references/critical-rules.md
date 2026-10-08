@@ -798,3 +798,37 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 64.5 **机制守护（mechanism guard）**：机器面五接线——`ledger-append.sh` VALID_EVENTS 增 `drift_check` 枚举（值尾追加，锚行随实现漂移以 grep VALID_EVENTS 为准，既有枚举零改动）；`check-3file-gate.sh` 追加第 6 条件段（既有条件 1-5 语义零改动）；`zcode-posttooluse.sh` 追加计数段（复用既有 additionalContext 注入 helper）；`companion/agents/drift-checker.md` 判定输入段；SKILL.md 接线 2 处（Phase 循环第 6 步 [DRIFT CHECK] 块内追加 64.1 留痕行 + 合规清单 C4 行末追加留痕句——DCS-01~20 字面锚零触碰）。守护面=`scripts/selftest-drift-enforcement.sh`（静态断言+行为级 fixture（DCE-01~23，随守护面演进），fixture 范式对照 selftest-four-file-dataflow.sh）+ selftest-registry.tsv 登记。What=每处接线挂既有管线+静态与行为双断言；Why=53.2 根治判据=机制·守卫·载体三件齐，条款无挂点=死文（59.6 同范式）；行为 fixture 防「守措辞不守行为」错位复发（根因③）。
 
 64.6 **零新 config 键与既有 Rules 关系**：不新增任何 config.json 键——降档与调参走 env（`TASK_PLANNER_DRIFT_ENFORCE` / `TASK_PLANNER_DRIFT_RHYTHM_N`），豁免走计划声明行 `drift_exempt`（59.7/43.4/44.4 同范式：键膨胀=配置面失控面）。关系：Rule 11/15 触发时机与三态判定原文零改动（本条只加证据链与节奏）；Rule 61 载体契约零改动（64.4 只加输入要求）；Rule 19.2 门控=第三条件追加非改写；Rule 62 四文件流转正交；SKILL.md 上界计数措辞（「1-62」等）本次不动（63 未落地避免计数失真，v146 同款遗留延续）。
+
+<!-- [2026-10-08 task-v149 编号仲裁恢复] 本条款原编号 57（task-v142 1a92ef3 落地），Rule 57 已被 task-v141 迭代测试轮次落盘占用（撞号合并中本条款文本静默丢失，仅存脚本/config 键/selftest）；依 :676 先例重编号 57→65 恢复，子条与自引用同步改号，条款内容零改动。 -->
+
+### 65 周期性回顾与前后对照（P0 — task-v142，目标：长任务执行中周期性回顾文件体系与结论一致性，发现前面步骤的错误结论并自动纠正，防止错误累积导致后续全部偏离；判定面=LLM 行为+selftest 静态守护；衔接 Rule 11/15/33，既有 Rules 原文零改动）
+
+本条源于用户 2026-10-06 反馈：长任务执行几小时后容易跑偏——不知道前面做了什么、不知道后面做什么、不知道下一步该做什么。现有 Rule 11/15 是事件驱动（Phase/todo 完成才触发），缺少周期性强制回顾；且缺少前后结论一致性检查（第 5 步发现第 2 步结论错误时无法反向纠正）。本条补齐周期性回顾 + 前后对照 + 反向纠正机制。
+
+**核心原则**：将线性执行转变为迭代执行——每 N 次工具调用强制回顾，前后对照发现矛盾，自动纠正错误步骤并报告用户。
+
+65.1 **触发时机**：每 N 次工具调用（默认 8，`config.json#periodic_review_interval_calls`）触发一次回顾。与 Rule 15（每 2-3 个 todo）互补——Rule 15 是 todo 级漂移检测，Rule 65 是步骤级前后对照。
+
+65.2 **执行步骤**：
+1. 重读 `task_plan.md` 的 Goal/VC/Scope Guard
+2. 重读 `findings.md` 的结论条目（带编号）
+3. 重读 `progress.md` 的最近 Action 结论
+4. 前后对照：检查当前结论与前面结论是否矛盾
+5. 发现矛盾 → 自动纠正 + 报告用户
+
+65.3 **前后对照检查维度**：
+- **结论一致性**：当前结论是否与前面结论矛盾（如第 2 步说 A，第 5 步说非 A）
+- **假设一致性**：当前假设是否与前面假设矛盾（未声明的假设变化）
+
+65.4 **自动纠正机制**：
+1. 在 `progress.md` 标记 `[corrected]` 条目（原结论 + 新结论 + 原因）
+2. 自动回到错误步骤，重新执行
+3. 报告用户（纠正了什么 + 为什么）
+
+65.5 **机器守护**：`scripts/periodic-review.sh` 检测结论一致性，输出结构化报告（JSON）；`scripts/selftest-periodic-review.sh` 静态守护 65.1-65.5 子条文本锚 + 脚本存在性 + config 开关键 + 注册表注册。
+
+65.6 **开关键**：`config.json#periodic_review_enforce`（默认 warn；enforce=发现矛盾立即阻断；warn=注入警告并计数；off=关闭）；`config.json#periodic_review_interval_calls`（默认 8，最小 1）。
+
+65.7 **与现有 Rule 的关系**：Rule 11（Phase 级漂移检测）= 粗粒度兜底；Rule 15（todo 级高频漂移纠正）= 细粒度主控；Rule 65（步骤级前后对照）= 周期性回顾 + 反向纠正。三者并存，形成完整的漂移检测体系。
+
+65.8 **反模式**：❌ 只在 Phase 完成时才回顾（问题累积数小时才暴露）；❌ 发现矛盾不纠正（错误结论继续影响后续）；❌ 自动纠正不报告用户（用户不知道发生了什么）；❌ 回顾时不重读关键文件（凭记忆回顾 = 不可靠）。

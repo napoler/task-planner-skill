@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# selftest-periodic-review.sh — Rule 57 周期性回顾与前后对照静态守护
+# selftest-periodic-review.sh — Rule 65 周期性回顾与前后对照静态守护
 # task-v142 P3-S1
+# 2026-10-08 task-v149 重编号 57→65（Rule 45 注释纪律；v141 撞号合并致条款文本静默丢失，依 :676 先例恢复）
 # 断言 ID：PR-01 到 PR-10
 # 全 PASS exit 0; 任一 FAIL exit 1
 # 只读，不修改任何文件
@@ -29,39 +30,39 @@ bad() {
   FAIL=$((FAIL + 1))
 }
 
-# PR-01: Rule 57 条款存在
-if grep -q '^### 57 ' "$CRIT"; then
-  ok "PR-01" "Rule 57 条款存在"
+# PR-01: Rule 65 条款存在
+if grep -q '^### 65 ' "$CRIT"; then
+  ok "PR-01" "Rule 65 条款存在"
 else
-  bad "PR-01" "Rule 57 条款缺失"
+  bad "PR-01" "Rule 65 条款缺失"
 fi
 
-# PR-02: Rule 57 含触发时机
+# PR-02: Rule 65 含触发时机
 if grep -q '触发时机' "$CRIT"; then
-  ok "PR-02" "Rule 57 含触发时机"
+  ok "PR-02" "Rule 65 含触发时机"
 else
-  bad "PR-02" "Rule 57 触发时机缺失"
+  bad "PR-02" "Rule 65 触发时机缺失"
 fi
 
-# PR-03: Rule 57 含前后对照检查维度
+# PR-03: Rule 65 含前后对照检查维度
 if grep -q '前后对照' "$CRIT"; then
-  ok "PR-03" "Rule 57 含前后对照检查维度"
+  ok "PR-03" "Rule 65 含前后对照检查维度"
 else
-  bad "PR-03" "Rule 57 前后对照检查维度缺失"
+  bad "PR-03" "Rule 65 前后对照检查维度缺失"
 fi
 
-# PR-04: Rule 57 含自动纠正机制
+# PR-04: Rule 65 含自动纠正机制
 if grep -q '自动纠正' "$CRIT"; then
-  ok "PR-04" "Rule 57 含自动纠正机制"
+  ok "PR-04" "Rule 65 含自动纠正机制"
 else
-  bad "PR-04" "Rule 57 自动纠正机制缺失"
+  bad "PR-04" "Rule 65 自动纠正机制缺失"
 fi
 
-# PR-05: Rule 57 含开关键
+# PR-05: Rule 65 含开关键
 if grep -q 'periodic_review_enforce' "$CRIT"; then
-  ok "PR-05" "Rule 57 含开关键"
+  ok "PR-05" "Rule 65 含开关键"
 else
-  bad "PR-05" "Rule 57 开关键缺失"
+  bad "PR-05" "Rule 65 开关键缺失"
 fi
 
 # PR-06: periodic-review.sh 存在且可执行

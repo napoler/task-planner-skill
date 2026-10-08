@@ -16,6 +16,10 @@
 #   3. Phase 越级：跳过 in_progress 直接标记后续 phase complete
 #   4. Scope 扩张：修改了计划范围外的文件
 #   5. 循环重试：同一错误在同一 phase 重复出现 ≥3 次
+#
+# 定位：本脚本自 Rule 61（偏移检查子代理化）起仅作 61.5 降级佐证（drift-checker 子代理不可用时的兜底检测），
+#       正常流程由 drift-checker 子代理承载、不与子代理双跑（SKILL.md C4）。
+# [2026-10-08 task-v149 D22] 补定位说明，对齐 SKILL C4 措辞（Rule 45 修改三要素：原因+时间+编号）。
 
 # NOTE: no set -e; grep/awk returning non-zero is normal (no matches),
 # not an error condition. Errors are handled explicitly below.
