@@ -119,16 +119,17 @@ else
   bad 11 "SKILL.md References 表「Rule 49 单元线多路并行推进」缺失（文档表未联动）"
 fi
 
-# LA-12 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-63'` ≥1 且 `grep -c '1-39'` = 0
-# What：断言 SKILL.md 内 `Critical Rules 1-63` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
+# LA-12 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-64'` ≥1 且 `grep -c '1-39'` = 0
+# What：断言 SKILL.md 内 `Critical Rules 1-64` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
 # Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——SKILL.md L273 References 行 label 已由前序级联单元演进为
-#      「Critical Rules 1-63」（含 Rule 40-63 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
+#      「Critical Rules 1-64」（含 Rule 40-64 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
 #      演进为 TS-05 范式（≥1 新 label + 旧变体负断言），防主 label 回退/新旧双 label 漂移。
 # [2026-10-08 task-v144 合并级联] 'Rules 1-39'=2 → 'Critical Rules 1-62'≥1 + '1-39'=0：SKILL.md L273 锚已演进为 Critical Rules 1-62（SR-07/TS-05 同批演进），本锚同步
 # [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
-n="$(grep -c 'Critical Rules 1-63' "$SKILLMD" || true)"
+# [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
+n="$(grep -c 'Critical Rules 1-64' "$SKILLMD" || true)"
 m="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-63' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-63=$n 应 ≥1 / 1-39=$m 应 0）"; fi
+if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-64' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-64=$n 应 ≥1 / 1-39=$m 应 0）"; fi
 
 # LA-13 SKILL.md 负断言 `grep -c '1-40'` =0
 # What：断言 SKILL.md 内 `1-40` 字面命中数为 0（与 SR-07 同口径负断言）。

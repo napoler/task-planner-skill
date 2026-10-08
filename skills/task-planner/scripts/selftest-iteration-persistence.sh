@@ -18,9 +18,10 @@
 #               四要素 schema 的权威定义在 critical-rules.md 57.2（由 IP-08 锁定文本），progress.md 为其消费载体——
 #               本项锁载体存在（57.4「progress.md 落盘四要素/轮次编号锚」的载体侧机器佐证）
 #     · 负断言（IP-14）:
-#         IP-14 critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^64\.[0-9] ` =0（RC-15 前向防线：63 号未被顺手创建；2026-10-07 task-v143 合并级联演进：58 号已被 task-v143 Rule 58 合法创建，负断言对象 58.x→59.x，口径扩展非回退）
+#         IP-14 critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^65\.[0-9] ` =0（RC-15 前向防线：63 号未被顺手创建；2026-10-07 task-v143 合并级联演进：58 号已被 task-v143 Rule 58 合法创建，负断言对象 58.x→59.x，口径扩展非回退）
 #         [2026-10-08 task-v144 合并级联] 59 号已由 task-v144 Rule 59 合法创建（59.1-59.8），且 60=v142 Rule 60 / 62=v145 Rule 62 均已落地（61 为预留登记号），
 #         63=首个全未占用号；负断言对象 59.x→63.x（保持「首个全未占用号」防顺手创建语义，口径扩展非回退）
+#         [2026-10-08 task-v147 第二代级联] 63.x→64.x→65.x：Rule 63 已由 task-v147 落地、Rule 64 已由 task-v148 落地（64.1-64.6），防线前移至 65
 #     · config.json（零新键声明，IP-15/IP-16）:
 #         IP-15 .properties 键数=42（沿用 tsv 末列既有口径，零新 config 键）
 #         IP-16 `iteration_persistence` / `iteration-persistence` 键字面 =0（57.4 零新键声明的机器佐证）
@@ -159,7 +160,7 @@ else
   bad 13 "templates/progress.md 缺失（$PROG，落盘载体不存在）"
 fi
 
-# IP-14 负断言（语境锚定）：critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^64\.[0-9] ` =0
+# IP-14 负断言（语境锚定）：critical-rules.md 57 块尾上下文（末条 57.4 行起至文件尾）`^65\.[0-9] ` =0
 # What：断言 57.4 之后不存在 63.x 子条行。
 # Why：RC-15 前向防线（防下一编号被顺手创建）的语境锚定实现——扫「57 块之后」而非全文：裸全文匹配会被子串误触
 #      （v127/RR-09 第 5 变体判例：负断言须语境锚定）；块尾后出现 63.x = 下一编号未经合法登记却被顺手写入（57 块编辑越界扩号探测）。
@@ -172,7 +173,7 @@ if [ -z "$last57line" ]; then
   bad 14 "critical-rules.md 未找到 57.x 末条行（块缺失，负断言无法语境锚定）"
 else
   tailctx="$(tail -n +"$last57line" "$CRIT")"
-  n="$(printf '%s\n' "$tailctx" | grep -cE '^64\.[0-9] ' || true)"
+  n="$(printf '%s\n' "$tailctx" | grep -cE '^65\.[0-9] ' || true)"
   if [ "$n" -eq 0 ]; then ok 14 "critical-rules.md 57 块尾上下文（L${last57line}起）「63.x」=0（RC-15 前向防线；task-v144 级联演进 59→63）"; else bad 14 "critical-rules.md 57 块尾「63.x」=$n（应 =0，63 号被顺手创建）"; fi
 fi
 

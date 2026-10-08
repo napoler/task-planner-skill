@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-63（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行、57 迭代测试轮次落盘纪律、58 调研分析证据纪律与核心目标达成门控、59 子代理拆分粒度硬门与技能伴飞纪律、60 主动解决问题泛化行为原则、62 四文件罗盘数据流转与调研知识沉淀纪律（61 预留未落地）、63 检索优先与反推诿纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 全集 1-64（1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行、57 迭代测试轮次落盘纪律、58 调研分析证据纪律与核心目标达成门控、59 子代理拆分粒度硬门与技能伴飞纪律、60 主动解决问题泛化行为原则、62 四文件罗盘数据流转与调研知识沉淀纪律（61 预留未落地）、63 检索优先与反推诿纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 36 技能修改保守化与功能删除防护）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -274,7 +274,7 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Critical Rules 1-63（含 Rule 40-63 全集，Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律））：
+详见 `references/critical-rules.md`（Critical Rules 1-64（含 Rule 40-64 全集，Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -323,6 +323,7 @@ model: opus
 - **Rule 61（偏移检查子代理化 — task-v146）**：15.1 触发点检查由 `drift-checker` 伴随 agent 承载，主进程只消费单行判定+检查点（详见 references/critical-rules.md Rule 61）
 - **Rule 62（四文件罗盘数据流转与调研知识沉淀纪律 — task-v145）**：四文件定位=主子代理数据流转唯一协议介质，恢复读序 4 文件化(62.1)/派发读写契约不可收窄禁令+check-dispatch 措辞 lint，收窄词∧缺 append 锚点双条件(62.2)/调研产出双落盘=findings 自写小节(22.4a 既有)+主进程 22.5 复核时蒸馏 knowledge-brief §2/§3/§4，Handoff 双锚(62.3)/调研型派发强制引用 kb §锚先查后调，联动 55.1(62.4)/kb 增量门控 gate --require-kb+ledger kb_distill(62.5)/机制=零新 config 键+selftest-four-file-dataflow.sh 守护+合规清单 C42(62.6)——「四文件=协议介质→调研双落盘→知识可消费」链路（详见 references/critical-rules.md Rule 62）
 - **Rule 63（检索优先与反推诿纪律 — task-v147）**：目标公理=解决问题是唯一不变目标，推诿/不作为=违规（63.1）；检索优先=遇到不知道第一反应主动检索，四步链（本地→帮助面→官方文档/网络→社区），联网检索=首要信息源（网络权限→信息面基本无限制，用户私人数据除外）（63.2）；反推诿禁令=「不知道」穷尽检索链并附证据前禁止作答，合法形态=已检索清单+证据锚+下一步（63.3）；有理有据边界=结论附来源锚、禁编造（Q3 最高档）、查证无解按 58.5 三态诚实收场（63.4）；与 Rule 60/22.3.0/35/41/58 触发面互补（63.5）；机制=零新 config 键+selftest-research-first.sh 守护+派发模板契约行（63.6）（详见 references/critical-rules.md Rule 63）
+- **Rule 64（偏移检查留痕强制与节奏化触发纪律 — task-v148）**：留痕三件套=检查点+ledger drift_check+Drift Log 行（64.1）；Phase complete 第三条件门控=check-3file-gate 追加 drift_check 痕迹必查（64.2）；节奏提醒=posttooluse 每 ≥10 次工具调用注入单行提醒（64.3）；判定输入三锚=Goal 原文+近期动作+scope 文件集，无锚 ALIGNED 无效（64.4）；机制=selftest-drift-enforcement.sh+零新 config 键（env 降档，64.5/64.6）（详见 references/critical-rules.md Rule 64）
 
 ## Completion Gate
 
@@ -346,7 +347,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-63（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律 / Rule 55 可复用能力落盘纪律 / Rule 56 用户指令优先与自动执行 / Rule 57 迭代测试轮次落盘 / Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 59 子代理拆分粒度硬门与技能伴飞纪律 / Rule 60 主动解决问题泛化行为原则 / Rule 62 四文件罗盘数据流转与调研知识沉淀纪律 / Rule 63 检索优先与反推诿纪律） |
+| `references/critical-rules.md` | Critical Rules 1-64（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律 / Rule 55 可复用能力落盘纪律 / Rule 56 用户指令优先与自动执行 / Rule 57 迭代测试轮次落盘 / Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 59 子代理拆分粒度硬门与技能伴飞纪律 / Rule 60 主动解决问题泛化行为原则 / Rule 62 四文件罗盘数据流转与调研知识沉淀纪律 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律） |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |

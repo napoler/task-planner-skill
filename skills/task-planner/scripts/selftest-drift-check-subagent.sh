@@ -52,9 +52,10 @@ if grep 'drift-checker.*agent.*偏移检查执行载体' "$SKILLMD" | grep -q 't
 # DCS-10: SKILL.md 反模式段含偏移比对禁止行且含 Rule 61
 if grep '偏移比对' "$SKILLMD" | grep -q 'Rule 61'; then ok 10 "反模式偏移比对禁止行含 Rule 61"; else bad 10 "反模式偏移比对禁止行缺失"; fi
 
-# DCS-11: SKILL.md 含 Rule 40-63 全集 且含 Rule 61 偏移检查子代理化 且含 Rule 61 摘要 bullet
+# DCS-11: SKILL.md 含 Rule 40-64 全集 且含 Rule 61 偏移检查子代理化 且含 Rule 61 摘要 bullet
 # [2026-10-08 task-v147 合并级联] 'Rule 40-62 全集'→'Rule 40-63 全集'：Rule 63 已落地，头注全集括注同步演进
-if grep -q 'Rule 40-63 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-63 全集+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失"; fi
+# [2026-10-08 task-v147 第二代级联] 'Rule 40-63 全集'→'Rule 40-64 全集'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
+if grep -q 'Rule 40-64 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-64 全集+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失"; fi
 
 # DCS-12: critical-rules.md 含 ### 61 标题 + **61.1..**61.6 六锚各 >=1
 if grep -q '^### 61 ' "$CRIT" && grep -q '\*\*61\.1' "$CRIT" && grep -q '\*\*61\.2' "$CRIT" && grep -q '\*\*61\.3' "$CRIT" && grep -q '\*\*61\.4' "$CRIT" && grep -q '\*\*61\.5' "$CRIT" && grep -q '\*\*61\.6' "$CRIT"; then ok 12 "Rule 61 标题+六锚齐全"; else bad 12 "Rule 61 锚缺失"; fi

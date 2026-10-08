@@ -115,18 +115,19 @@ else
   bad 10 "SKILL.md 合规清单 C35 行缺失（Rule 51 消费点未联动）"
 fi
 
-# RC-11 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-63'` ≥1 且 `grep -c '1-39'` = 0
-# What：断言 SKILL.md 内 `Critical Rules 1-63` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
+# RC-11 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-64'` ≥1 且 `grep -c '1-39'` = 0
+# What：断言 SKILL.md 内 `Critical Rules 1-64` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
 # Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——SKILL.md L273 References 行 label 已由前序级联单元演进为
-#      「Critical Rules 1-63」（含 Rule 40-63 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
+#      「Critical Rules 1-64」（含 Rule 40-64 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
 #      演进为 TS-05/SR-07 范式（≥1 新 label + 旧变体负断言），与 selftest-lane-advancement.sh LA-12 同口径。
 # [2026-10-08 task-v144 合并级联] 'Rules 1-39'=2 + '1-40'=0 → 'Critical Rules 1-62'≥1 + '1-39'=0：SKILL.md L273 锚已演进为 Critical Rules 1-62（SR-07/TS-05 同批演进），本锚同步
 # [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
-n="$(grep -c 'Critical Rules 1-63' "$SKILLMD" || true)"
+# [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
+n="$(grep -c 'Critical Rules 1-64' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$(grep -c '1-39' "$SKILLMD" || true)" -eq 0 ]; then
-  ok 11 "SKILL.md 主锚 'Critical Rules 1-63' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
+  ok 11 "SKILL.md 主锚 'Critical Rules 1-64' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
 else
-  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-63=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
+  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-64=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
 fi
 
 # RC-12 delivery-summary.md 需求覆盖区块锚 `grep -q '需求覆盖核对'` 且 `^## [1-5].` 区块数 =5
@@ -160,7 +161,7 @@ else
   bad 14 "registry.tsv 未登记 selftest-requirement-coverage.sh（registry 漏项）"
 fi
 
-# RC-15 负断言 `grep -c '^64\.'` =0（[2026-10-08 task-v144 合并级联] 防线前移 '^56.'→'^63.'：Rule 56 已被 task-v140 合法落地 56.1-56.5（实测 5 子条），
+# RC-15 负断言 `grep -c '^65\.'` =0（[2026-10-08 task-v144 合并级联] 防线前移 '^56.'→'^63.'：Rule 56 已被 task-v140 合法落地 56.1-56.5（实测 5 子条），
 #      且 57/58/59/60/62 号均已落地、61 预留未落地（SKILL.md L9 括注明示），负断言对象演进为下一个未用编号 '63.'，=0 保持负断言语义：防顺手创建未登记新号）
 # What：断言 critical-rules.md 内行首 '63.' 子条命中数为 0（63 号未被误占）。
 # Why：56-62 号均已合法落地（56 用户指令优先/57 迭代测试轮次/58 调研证据纪律/59 拆分粒度硬门/60 主动解决问题/62 四文件罗盘，61 预留）——
@@ -171,8 +172,9 @@ fi
 # [2026-10-05 task-v138 合并级联] '^55.'→'^56.'：Rule 55 被 task-v138 合法落地（55.1-55.6），防线前移至 56（先例 v125 S5/v131 重锚）
 # [2026-10-08 task-v144 合并级联] '^56.'→'^63.'：Rule 56 被 task-v140 合法落地（56.1-56.5）且 57/58/59/60/62 已落地、61 预留，防线前移至 63（先例 v125 S5/v131/v136/v138 重锚）
 # [2026-10-08 task-v147 合并级联] '^63.'→'^64.'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），防线前移至 64（先例 v125 S5/v131/v136/v138/v144 重锚）
-n="$(grep -c '^64\.' "$CRIT" || true)"
-if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '63.' 子条命中 0（63 号未被误占，task-v144 合并级联演进重锚）"; else bad 15 "critical-rules.md '63.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
+# [2026-10-08 task-v147 第二代级联] '^64.'→'^65.'：Rule 64 已由 task-v148 落地（64.1-64.6），防线前移至 65
+n="$(grep -c '^65\.' "$CRIT" || true)"
+if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '65.' 子条命中 0（65 号未被误占，task-v147 第二代级联演进重锚）"; else bad 15 "critical-rules.md '65.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
 
 # RC-16..20 共用的被测对象定位（task-v132 G1/G2 产出脚本，均为 worktree 内本目录文件）
 CC_SCRIPT="$SCRIPT_DIR/check-complete.sh"      # RC-18/19/20：worktree 版 check-complete.sh（R-COVERAGE 门载体）
@@ -498,7 +500,7 @@ fi
 # What：断言 ① '^51.8 ' 行在位且含语义锚「未测试就声称完成」② SKILL.md 内 '51.8' 命中 ≥1（摘要 bullet M5.4 或 C37 行任一）。
 # Why：51.8 是 VC-1 的条款本体（覆盖判据属实测形态的需求条目无实测证据=uncovered，51.3 口径）——
 #      行锚=1 防重复插入/误删（RC-16 三锚范式）；SKILL 联动锚=防「条款扩到 51.8 但 SKILL 停摆 51.7」级联断链（RC-09 语义）。
-#      RC-01（≥7）与 RC-15（'^63.'=0，[2026-10-08 task-v144 合并级联] 前移，原 '^56.'=0 task-v138）不受 51.8 影响（51.8 不产生 54/55/56 号、≥7 阈值向下兼容 9 计数）。
+#      RC-01（≥7）与 RC-15（'^65.'=0，[2026-10-08 task-v147 第二代级联] 前移，原 '^63.'=0 task-v147）不受 51.8 影响（51.8 不产生 54/55/56 号、≥7 阈值向下兼容 9 计数）。
 _rc23_a="$(grep -c '^51\.8 ' "$CRIT" || true)"
 _rc23_b="$(grep '^51\.8 ' "$CRIT" | grep -c '未测试就声称完成' || true)"
 _rc23_c="$(grep -c '51\.8' "$SKILLMD" || true)"
