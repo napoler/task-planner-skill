@@ -99,6 +99,7 @@ model: opus
     - ✅ ALIGNED → 继续下一 Phase
     - ⚠️ DRIFT → 记录 progress.md，警觉继续
     - 🔴 BLOCKED → **STOP**，报告用户，等决策
+  - 64.1 留痕三件套（Rule 64）：返回 30s 内 ① 检查点（61.2 既有）② `ledger-append.sh <plan-dir> drift_check "<verdict>+一句话" --phase N` ③ task_plan.md Drift Log 表一行——缺任一=未执行，64.2 门控按未执行拦截
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
   - `drift-checker` 为只读检测执行体，发现 BLOCKED 时必须等用户明确决策后再继续
 
@@ -171,7 +172,7 @@ model: opus
 | C1 | 用户任务已复述，目标无歧义 | ☐ |
 | C2 | `task_plan.md` 存在且含 Phase + VC 表 | ☐ |
 | C3 | 计划已展示并获得用户显式授权 | ☐ |
-| C4 | 每个 Phase 完成后已派发 `drift-checker` 子代理偏移检查（Rule 61 载体，同点唯一检测载体，ALIGNED/DRIFT/BLOCKED 三态，BLOCKED→STOP；`check-drift.sh` 仅作 61.5 降级佐证，不与子代理双跑） | ☐ |
+| C4 | 每个 Phase 完成后已派发 `drift-checker` 子代理偏移检查（Rule 61 载体，同点唯一检测载体，ALIGNED/DRIFT/BLOCKED 三态，BLOCKED→STOP；`check-drift.sh` 仅作 61.5 降级佐证，不与子代理双跑）；留痕三件套已落实（Rule 64.1，缺一=未执行） | ☐ |
 | C5 | subagent 返回后已 Read 实际产出文件（check-complete 终验抽查承载） | ☐ |
 | C6 | 全部 VC 逐条复验，有可查证据（check-complete 逐条校验承载） | ☐ |
 | C7 | 交付结论为 COMPLETE/PARTIAL/BLOCKED 之一（check-complete 终态判定承载） | ☐ |
