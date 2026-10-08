@@ -9,7 +9,7 @@
 
 ### 新增
 
-- **Rule 63 检索优先与反推诿纪律（task-v147）** — 目标公理（解决问题=唯一不变目标，推诿/不作为=违规，63.1）+ 检索优先（不知道第一反应四步检索链：本地→帮助面→官方文档/网络→社区；联网检索=首要信息源，网络权限→信息面基本无限制，用户私人数据除外，63.2）+ 反推诿禁令（「不知道」穷尽检索链并附证据前禁止作答，63.3）+ 有理有据边界（结论附来源锚、禁编造、查证无解按 58.5 三态诚实收场，63.4）；SKILL.md 三处计数 1-62→1-63+摘要 bullet+合规清单 C44；templates/subagent_dispatch.md §2 检索优先契约行（子代理侧传播）；selftest-four-file-dataflow.sh FF-16 负断言宽容化 `^63\.`→`^64\.`（锚演进，v121/v146 先例）；新增 scripts/selftest-research-first.sh 守护；零新 config 键
+- **Rule 63 检索优先与反推诿纪律（task-v147）** — 目标公理（解决问题=唯一不变目标，推诿/不作为=违规，63.1）+ 检索优先（不知道第一反应四步检索链：本地→帮助面→官方文档/网络→社区；联网检索=首要信息源，网络权限→信息面基本无限制，用户私人数据除外，63.2）+ 反推诿禁令（「不知道」穷尽检索链并附证据前禁止作答，63.3）+ 有理有据边界（结论附来源锚、禁编造、查证无解按 58.5 三态诚实收场，63.4）；SKILL.md 三处计数 1-62→1-63+摘要 bullet+合规清单 C44；templates/subagent_dispatch.md §2 检索优先契约行（子代理侧传播）；selftest-four-file-dataflow.sh FF-16 负断言宽容化 `^63\.`→`^64\.`（锚演进，v121/v146 先例）；新增 scripts/selftest-research-first.sh 守护；零新 config 键；并入 master（task-v148 Rule 64）后完成第二世代演进：SKILL 计数 1-63→1-64+全集 40-64+Rule 64 摘要 bullet，六守卫 1-63→1-64，四尾部负断言 `^64\.`→`^65\.`，RF 守护同步（全量回归 ΣFAIL=4=基线）
 - **Rule 64 偏移检查留痕强制与节奏化触发纪律（task-v148）** — 2026-10-08: 64.1 留痕三件套（检查点+ledger drift_check+Drift Log）/64.2 Phase complete 第三条件硬门控（drift_exempt 豁免+env 降档）/64.3 posttooluse [drift-rhythm] 节奏提醒/64.4 判定输入三锚契约/64.5-64.6 机制守护与零新键；判例=25 Phase 执行率 0% 实证，载体 Rule 61 语义零改动
 
 - **Rule 61 偏移检查子代理化（task-v146）** — 新增 drift-checker 伴随 agent，Rule 15/11 等全部触发点载体从 Skill("task-drift-guard") 切换为子代理派发（SKILL 十二处/卫星双载体节/hook/10 模板/6 联动文档），selftest-drift-check-subagent.sh 20 断言守护+6 守卫锚宽容化 40-61
