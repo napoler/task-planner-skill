@@ -3,7 +3,7 @@
 # 范式对齐 selftest-media-agents.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、双层注释、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言覆盖矩阵（references/agent-coverage.md）在位、SKILL.md 六族行在位、B 类旧字面登记面零残留、
 #      矩阵 §一 agent 实体存在性（~/.zcode/agents，目录缺位 fail-open SKIPPED）、C 类 41 行处置覆盖、
-#      Rule 52 四子条+标题在位、config 零新键（properties=40）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 128 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
+#      Rule 52 四子条+标题在位、config 零新键（properties=40）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 129 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
 # 输入：references/agent-coverage.md、SKILL.md、../plan-template-kit/references/template-mapping.md、
 #      companion/agents/、templates/、references/critical-rules.md、config.json、
 #      $HOME/.zcode/agents/（仓外只读 test -f；目录缺位 fail-open SKIPPED，不硬 FAIL）。
