@@ -13,6 +13,10 @@
 #   4. findings.md 与 progress.md 的 mtime 必须晚于锚点,任一不满足 → exit 1
 #   5. [--require-kb] knowledge-brief.md 存在 且（mtime 晚于锚点 或 ledger-*.jsonl
 #      含锚点后 event="kb_distill" 的行）; 否则 exit 1（Rule 60.5 知识增量门控）
+#   6. [Rule 64.2] drift 痕迹门控: ledger 含锚点后 event="drift_check" 行 或
+#      subagent-state/*-drift-checker.md mtime 晚于锚点 或 task_plan.md 含 drift_exempt:
+#      声明且当前 Phase 命中豁免清单 或 plan_tier: mini 整体豁免; 否则按 env
+#      TASK_PLANNER_DRIFT_ENFORCE 降档 (off=跳过/warn=stderr 提示不阻断/默认 exit 1)
 #
 # 设计取向: mtime 是代理指标,可被无关写入污染 —— 宁可误报（代价=多一次回填动作）,
 # 不可漏报（漏报=三文件罗盘失效回潮,即本门控要杜绝的现象）。依赖 GNU stat/date。
@@ -135,6 +139,55 @@ kb_distill_activity() {
     ' "${PLAN_DIR}"/ledger-*.jsonl
 }
 
+# [2026-10-08 task-v148 S-2 Rule 64.2] drift 痕迹语义信号: 计划目录内任意 ledger-*.jsonl 含
+# ts >= 锚点(UTC 字典序=时间序) 且 event="drift_check" 的行 = 本 Phase 有偏移检查留痕。
+# 与 kb_distill_activity 同范式（同锚点/同 awk 提取）,仅多一个 event 字段过滤;无锚点则退化
+# 到 mtime 判定（与 check_file 一致,不在此处返回真）。
+drift_check_activity() {
+    [ -n "$ANCHOR_UTC" ] || return 1
+    ls "${PLAN_DIR}"/ledger-*.jsonl >/dev/null 2>&1 || return 1
+    awk -v a="${ANCHOR_UTC}" '
+        { if (match($0, /"ts":"[^"]*"/)) {
+            ts = substr($0, RSTART+6, RLENGTH-7)
+            if (ts >= a && $0 ~ /"event":"drift_check"/) { found = 1; exit }
+        } }
+        END { exit !found }
+    ' "${PLAN_DIR}"/ledger-*.jsonl
+}
+
+# [2026-10-08 task-v148 S-2 Rule 64.2] drift 检查点 mtime 兜底: subagent-state/*-drift-checker.md
+# 的 mtime 晚于锚点 = 本 Phase 有偏移检查留痕（ledger 缺失时的兜底信号）。
+# 无锚点时退化到 stale 阈值（与 check_file 同范式）。
+drift_checkpoint_activity() {
+    local latest_mtime=0
+    local f m
+    for f in "${PLAN_DIR}"/subagent-state/*-drift-checker.md; do
+        [ -f "$f" ] || continue
+        m="$(stat -c %Y "$f")"
+        [ "$m" -gt "$latest_mtime" ] && latest_mtime="$m"
+    done
+    [ "$latest_mtime" -eq 0 ] && return 1
+    if [ "$ANCHORED" -eq 1 ]; then
+        [ "$latest_mtime" -gt "$ANCHOR_EPOCH" ] && return 0
+    else
+        [ "$(( NOW - latest_mtime ))" -lt "$(( F_STALE * 60 ))" ] && return 0
+    fi
+    return 1
+}
+
+# [2026-10-08 task-v148 S-2 Rule 64.2] drift_exempt 豁免检查: task_plan.md 含 drift_exempt: 声明
+# 且当前 Phase 号命中豁免清单 = 本 Phase 豁免 drift 痕迹门控。
+drift_exempt_check() {
+    local exempt_line phases p
+    exempt_line="$(grep -E '^drift_exempt:' "$PLAN_FILE" 2>/dev/null || true)"
+    [ -z "$exempt_line" ] && return 1
+    phases="$(printf '%s' "$exempt_line" | sed -e 's/^drift_exempt:[[:space:]]*//' -e 's/[,[:space:]]\+/ /g')"
+    for p in $phases; do
+        [ "$p" = "$CURRENT_PHASE" ] && return 0
+    done
+    return 1
+}
+
 VIOLATIONS=()
 check_file() {
     local file="$1" label="$2" stale_min="$3"
@@ -193,6 +246,39 @@ if [ "$REQUIRE_KB" -eq 1 ]; then
         echo "[3file-gate] kb 增量缺失（Rule 60.5：调研型 Phase 需 knowledge-brief 蒸馏或豁免登记）"
         exit 1
     fi
+fi
+
+# [2026-10-08 task-v148 S-2 Rule 64.2] drift 痕迹门控（第 6 条件）。
+# 通过判据 = ledger 含锚点后 drift_check 行 或 subagent-state/*-drift-checker.md mtime 晚于锚点
+# 或 task_plan.md 含 drift_exempt: 声明且当前 Phase 命中豁免清单。
+# 无 Started 锚点时退化到 stale 阈值（复用 findings_stale_minutes,与 check_file 同范式）。
+# 不满足 → 按 env TASK_PLANNER_DRIFT_ENFORCE 降档: off=跳过 / warn=stderr 提示不阻断 / 默认 exit 1。
+DRIFT_ENFORCE="${TASK_PLANNER_DRIFT_ENFORCE:-enforce}"
+DRIFT_OK=0
+if drift_check_activity; then
+    DRIFT_OK=1
+elif drift_checkpoint_activity; then
+    DRIFT_OK=1
+elif drift_exempt_check; then
+    DRIFT_OK=1
+    echo "[3file-gate] drift_exempt 豁免放行（Phase $CURRENT_PHASE 已登记豁免）"
+elif grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+    DRIFT_OK=1
+    echo "[3file-gate] plan_tier=mini 豁免放行（Rule 64.2b）"
+fi
+if [ "$DRIFT_OK" -ne 1 ]; then
+    case "$DRIFT_ENFORCE" in
+        off)
+            echo "[3file-gate] TASK_PLANNER_DRIFT_ENFORCE=off — 跳过 Rule 64.2 drift 痕迹门控"
+            ;;
+        warn)
+            echo "[drift-gate] Rule 64.2: 本 Phase 窗口内无 drift_check 痕迹——派发 drift-checker（Rule 61 载体）并按 64.1 留痕三件套，或在 task_plan.md 登记 drift_exempt" >&2
+            ;;
+        *)
+            echo "[drift-gate] Rule 64.2: 本 Phase 窗口内无 drift_check 痕迹——派发 drift-checker（Rule 61 载体）并按 64.1 留痕三件套，或在 task_plan.md 登记 drift_exempt" >&2
+            exit 1
+            ;;
+    esac
 fi
 
 echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定$( [ "$ANCHORED" -eq 1 ] && echo ":锚点 $STARTED_RAW" || echo ":stale 阈值模式" )）" )"
