@@ -10,7 +10,7 @@
 | 来源 | 档位 | 频次 | 是否可控 |
 |------|------|------|----------|
 | task-planner 主会话 | opus（frontmatter） | 1 次/会话 | ❌ 必烧 opus |
-| `Skill("task-drift-guard")` | haiku | 高频（每 2-3 todo） | ✅ 已优化 |
+| `drift-checker` 派发（Rule 61 载体） | haiku-1 | 高频（每 2-3 todo） | ✅ 已优化 |
 | `Skill("systematic-debugging")` | 继承主会话 = opus | bug 类任务触发 | 🔴 嵌套 opus |
 | `Skill("code-review")` | 继承主会话 = opus | code_review: required 触发 | 🔴 嵌套 opus |
 | `Skill("brainstorming")` | opus 档 | 用户主动触发 | 🟡 用户可控 |
@@ -29,7 +29,7 @@
 | **17.1** | opus Skill 节流：opus 档 Skill（systematic-debugging/code-review/brainstorming/writing-plans/comet-*）同 phase 内 ≤1 次 | PreToolUse hook 提醒 + 软警告；超出 → AskUserQuestion "继续/拆型/降级" |
 | **17.2** | subagent 嵌套禁止：禁止 plan-writer 调 plan-writer / code-assistant 调 code-assistant（递归） | Subagent frontmatter `tools` 不含 Agent/Skill 已防止 |
 | **17.3** | 任务模板复用：禁止 plan-writer 重复生成同 task_plan；用 Decisions Made 复用旧决策 | plan-writer 输入契约检查 |
-| **17.4** | drift 检测频次上限：每 phase 内 task-drift-guard ≤3 次（2-3 todo + 切模块 + phase complete） | PostToolUse hook 计数 |
+| **17.4** | drift 检测频次上限：每 phase 内 drift-checker 派发 ≤3 次（Rule 61 载体）（2-3 todo + 切模块 + phase complete） | PostToolUse hook 计数 |
 | **17.5** | opus 调用门控：单次会话 opus 累计调用（含主进程 + Skill 嵌套 + subagent 升级）≥10 次 → 触发 AskUserQuestion | PostToolUse hook 计数 + 软警告 |（与主侧 17.5 同源，无更高 STOP 档，task-v116 对齐）
 | **17.6** | 复杂任务优先 subagent：opus 上下文长读文件（>500 行）必派 subagent（沿用 Rule 13） | Rule 13 已护住 |
 | **17.7** | 代码 review 必含 `required`：`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")` | 既定 design |
@@ -46,7 +46,7 @@
 | 代码编辑（>3 文件） | executor | sonnet-1 | ≈ 0.3× opus |
 | 跑测试/构建 | code-runner-agent | mini | ≈ 0.02× opus |
 | 跨文件搜索 | explore | haiku-1 | ≈ 0.05× opus |
-| 漂移检测 | task-drift-guard skill | haiku | ≈ 0.05× opus |
+| 漂移检测 | drift-checker 子代理（Rule 61 载体；task-drift-guard skill=交互载体） | haiku-1 | ≈ 0.05× opus |
 | bug 根因 | debugger | sonnet-1 | ≈ 0.3× opus |
 | 主进程调度 | task-planner 主会话 | opus | 1× opus（必烧） |
 | **嵌套 opus** | `Skill("systematic-debugging")` / `Skill("code-review")` | opus（继承主会话） | **1× opus（Rule 17.1 节流）** |

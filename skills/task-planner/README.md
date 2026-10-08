@@ -18,7 +18,7 @@
 **核心特性**：
 - **5 个生命周期 hook**：SessionStart（哨兵）/ PreToolUse（范围阻断 + 委派门控 + Agent 派发契约守卫，matcher 须含 Agent）/ PostToolUse（计划陈旧检测）/ UserPromptSubmit（新指令影响判定）/ Stop（完成检测）
 - **原生 Todo 双向同步**：S1-S5 强制同步时机（计划文档 ↔ TodoWrite/Task 系统）
-- **漂移检测**：每 phase 完成后自动调用 `task-drift-guard`
+- **漂移检测**：每 phase 完成后自动派发 `drift-checker` 子代理（Rule 61 载体；task-drift-guard skill 保留交互场景）
 - **工作树隔离**：实现类任务默认首选 worktree（防改坏运行中基础设施）
 - **场景化模板**：29 个 variant 模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration + mini-lite/rule-enhancement/video/video-fix/memory-hygiene + image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly；task-v115 videop1 回流 12 类；不匹配时回退通用 task_plan.md）按 `template_type` 字段自动分发；除 knowledge-brief/shared-tracker/mini-lite 外统一含「📚 必要知识储备」章节（任务知识库对齐，grep 锚实测 35/39）
 

@@ -106,7 +106,7 @@ Phase 1
 ### Phase 5: 复现性归档 + 文档
 - [ ] commit 引用 + benchmark 脚本入库
 - [ ] docs/perf-notes.md 更新(优化了什么 + 为什么)
-- [ ] `**主进程** `Skill("task-drift-guard")`（子代理无 Skill() 工具）` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** performance-optimizer
 
@@ -156,7 +156,7 @@ Phase 1
 - **铁律**:无基线 benchmark → 禁止优化(VC-1 门控)
 - 优化不是 refactor,允许功能+性能共同变化(但不允许引入回归)
 - 修改必须派子代理,主进程不直接 Edit
-- 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |

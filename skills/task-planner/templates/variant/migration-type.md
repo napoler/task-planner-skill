@@ -105,7 +105,7 @@ Phase 1
 ### Phase 5: 文档更新 + 旧入口归档
 - [ ] 更新 README.md / INSTALL.md / MIGRATION.md
 - [ ] 记录迁移决策到 Decisions Made + commit 引用
-- [ ] 跑 `Skill("task-drift-guard")` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 
@@ -155,7 +155,7 @@ Phase 1
 - **铁律**:旧实现必须先归档,否则禁止切流(防丢代码)
 - 双跑 diff >5% → 修复新实现,不允许"凑合切流"
 - 修改必须派子代理,主进程不直接 Edit
-- 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |

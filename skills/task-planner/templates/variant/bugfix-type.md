@@ -106,7 +106,7 @@ Phase 1
 - [ ] 派 `code-runner-agent` 跑 `bun test` 全量回归
 - [ ] 调用 `Skill("code-review")`(重点:根因是否真解决 + 是否有副作用)
 - [ ] APPROVED → commit;CHANGES_REQUESTED → 回到 Phase 4
-- [ ] `Skill("task-drift-guard")` 终验
+- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** 主进程（例外理由:编排与交付属主进程白名单）
 
@@ -155,7 +155,7 @@ Phase 1
 - **铁律**:根因未明禁止进入修复(VC-2 门控)
 - 修复必须新增回归测试(VC-5 强制)
 - 修代码必须派 `code-assistant`,主进程不直接 Edit
-- 每 2-3 个 Phase 完成 → 跑 `Skill("task-drift-guard")`
+- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |

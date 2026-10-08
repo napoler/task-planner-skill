@@ -112,7 +112,8 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 
 | Skill | 描述 | 文件 |
 |-------|------|------|
-| `task-drift-guard` | 执行中漂移检测(每 phase 完成后调) | 顶层 3 文件:SKILL.md / EXAMPLES.md / README.md |
+| `task-drift-guard` | 交互/独立场景漂移检测载体 | 顶层 3 文件:SKILL.md / EXAMPLES.md / README.md |
+| `drift-checker`（companion agent） | 执行中漂移检测执行载体（Rule 61，逐触发点派发） | companion/agents/drift-checker.md |
 | `plan-resume` | 中断/过期计划扫描与续推决策(支持 task-planner / openspec / spec-kit 三格式) | SKILL.md / README.md + `scripts/`(4 脚本)+ `tests/`(1 smoke) |
 | `todo-skill` | 跨会话 todo/计划状态持久化 | SKILL.md + `scripts/` |
 
