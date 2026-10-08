@@ -93,7 +93,7 @@
 
 ### P10 拆细先于升档（本体已有，索引条目）
 
-- **判据**：任务执行失败时，先尝试拆细（拆为更小 S-unit）而非升档（换更强模型）；模型四档路由=机械任务→廉价模型 / 集成判断→标准模型 / 架构设计→最强模型
+- **判据**：任务执行失败时，先尝试拆细（拆为更小 S-unit）而非升档（换更强模型）；模型分档路由（mini/haiku-1/sonnet-1/opus 按任务取最小可承载档）
 - **反例**：任务失败后直接换更强模型（成本激增）；或未拆细导致模型能力不匹配
 - **消费时机**：执行期任务失败时，先拆细重试，再考虑升档
 - **来源**：subagent-driven-development §Model Selection + 本体 critical-rules.md Rule 22.3/21.3
@@ -118,7 +118,8 @@
 | 嵌套/长时派发 | sub-agent-protocol | /home/terry/.zcode/skills/sub-agent-protocol/SKILL.md | 嵌套与超时控制，派发约束消费 |
 | 技能本体修改 | writing-skills | /home/terry/.agents/skills/writing-skills/SKILL.md | 技能文件撰写/改进，文档规范消费 |
 | 对齐审查收尾 | alignment-review | /home/terry/.zcode/skills/alignment-review/SKILL.md | 对齐审查收尾，跨载体一致性消费 |
-## 未吸收登记（53.3 管辖二分）
+
+## 未吸收登记（管辖边界说明）
 
 - task-drift-guard 量化漂移阈值（5%/20%）→ 执行期漂移检测归 Rule 61/64 管辖，不入模式库
 - skill-handoff Skill() 降级协议 → 派发容错面，以 59.2 伴飞候选承载，不入模式

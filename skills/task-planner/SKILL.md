@@ -212,7 +212,7 @@ model: opus
 | C41 | 调研分析证据与目标裁决自查（Rule 58）：调研/分析/评估/归因类任务计划期已编证据面清单（自身/对标/外部约束三基线面齐备，58.1）；归因结论前对标面已第一手取证（≥1 可指名对标对象，无对标取证禁下结论，58.2）；每个结论已引证据锚+过反证检查、无据判断标注「推测」（58.3）；需求区 R 行已标注 [手段]/[目标]、[目标] 行已映射问题解决判据 VC（58.4）；终验已出三态裁决（solved/partial/not-solved+证据锚，not-solved/partial 禁 COMPLETE、禁交付物冒充问题解决，58.5）；实质活动已挂靠目标型需求（绕弯活动禁执行，58.6）（机器面=selftest-evidence-goal-gate.sh 静态断言；mini 档豁免） | ☐ |
 | C42 | 四文件罗盘数据流转自查（Rule 62）：派发 prompt 四文件读写契约与 22.4a 同语义且无收窄措辞（62.2，机器面=check-dispatch.sh 契约措辞 lint）；调研类子代理结论双落盘——findings 自写小节（22.4a 既有）+主进程 22.5 复核时蒸馏 knowledge-brief 对应节（62.3，Handoff「findings 落点」列双锚 `findings锚\|kb:§N`）；调研型 Phase complete 前 knowledge-brief 有增量或登记豁免（62.5，机器面=check-3file-gate.sh --require-kb + selftest-four-file-dataflow.sh 静态断言；62.2 复核动作与 62.3 蒸馏质量人工核查；纯机械 S-unit 豁免登记一行；mini 档豁免） | ☐ |
 | C43 | 子代理拆分粒度与技能伴飞自查（Rule 59）：S-unit 表粒度三值 `Nf/Nl/Nmin` 逐行强制填报（59.1，机器面=check-plan-dispatch.sh attest 时 $8 粒度列超限 enforce 拒锁 + check-dispatch.sh 派发侧 token 检测）；S-unit 表伴飞技能列已填（59.2，派发任务书 §2 注入 SKILL.md 绝对路径，子代理首动作 Read）；任务画像期已扫描可用强化技能写入 knowledge-brief（59.3）；复杂度预估超档时先拆细再派（59.4）；多段任务=多 S-unit 多派发+检查点链（59.5）；超限回炉重拆而非升档换模型 | ☐ |
-| C43a | 拆分前已查模式库 split-pattern-library | ☐ |
+| C43a | 拆分模式库消费自查（Rule 21.6）：拆分前已查模式库（21.6.1）、S-unit 过边界三判据（21.6.2）（机器面=selftest-split-pattern-library.sh 静态断言，消费过程人工核查；mini 档豁免） | ☐ |
 | C44 | 检索优先与反推诿自查（Rule 63）：任务中出现「不知道/不清楚/无法确定」类判断前已按 63.2 四步检索链（本地→帮助面→官方文档/网络→社区）穷尽检索并附来源锚（63.2/63.4）；「不知道/未解决」类上报已取「已检索清单+证据锚+下一步建议」合法形态（63.3）；无来源断言/虚构检索结果零容忍（63.4，Rule 26 Q3 最高档）；本任务无知识缺口场景时登记豁免一行（机器面=selftest-research-first.sh 静态断言，检索过程人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
@@ -351,7 +351,7 @@ model: opus
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
 | `references/critical-rules.md` | Critical Rules 1-64（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律 / Rule 55 可复用能力落盘纪律 / Rule 56 用户指令优先与自动执行 / Rule 57 迭代测试轮次落盘 / Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 59 子代理拆分粒度硬门与技能伴飞纪律 / Rule 60 主动解决问题泛化行为原则 / Rule 62 四文件罗盘数据流转与调研知识沉淀纪律 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律） |
-| `references/split-pattern-library.md` | 拆分模式库（Rule 21.6）：10 模式+伴飞映射表，计划期拆分 S-unit 前必读 |
+| `references/split-pattern-library.md` | 拆分模式库（Rule 21.6）：11 模式+伴飞映射表，计划期拆分 S-unit 前必读 |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
 | `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |

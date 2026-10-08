@@ -2,7 +2,7 @@
 # selftest-split-pattern-library.sh — task-v150 S6: Rule 21.6 拆分模式库机器面静态守护
 # 用法：bash scripts/selftest-split-pattern-library.sh（只读零写入，幂等可重复运行；SP-01..13 逐行 PASS/FAIL，
 # 末行 Total，全 PASS exit 0 / 任一 FAIL exit 1）。范式对齐 selftest-media-dispatch.sh（同构骨架）。
-# 守护面：库文件 11 模式/来源锚/低档贡献行/消费契约/未吸收登记/伴飞表路径 + critical-rules 21.6 五子条 +
+# 守护面：库文件 11 模式/来源锚/低档贡献行/消费契约/未吸收登记/伴飞表路径 + critical-rules 21.6.1-21.6.6 六子条 +
 # 既有 21.1b/21.4/`### 22` 锚未破坏（36.5 纯增量）+ SKILL.md 接线 ≥3 处 + dispatch 模板 No-Placeholder 契约行。
 
 set -u
@@ -25,22 +25,22 @@ if [ -f "$LIB" ]; then ok 01 "库文件在位"; else bad 01 "库文件缺失 $LI
 n="$(grep -c '^### P' "$LIB" 2>/dev/null || true)"
 if [ "$n" = "11" ]; then ok 02 "模式数 11（P1-P11）"; else bad 02 "模式数 $n（应 =11）"; fi
 
-# SP-03 伴飞表 ≥7 数据行 且 表内 / 路径逐一 [ -f ]（21.6.5 消费面；路径失效=低档模型首动作 Read 即失败，
-# 机器锁死 kb §5⑤ 已验证路径，防漂移）
+# SP-03 伴飞表 ≥6 数据行 且 表内 / 路径逐一 [ -f ]（21.6.5 消费面「≥6 行」契约；守卫不得严于契约；
+# 路径失效=低档模型首动作 Read 即失败，机器锁死 kb §5⑤ 已验证路径，防漂移）
 rows="$(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -c '^|')"
 miss=0; tot=0
 while IFS= read -r p; do
   tot=$((tot+1)); [ -f "$p" ] || { miss=$((miss+1)); printf 'SP-03      路径缺失 %s\n' "$p"; }
 done < <(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -o '/[^ |)]*SKILL\.md' | sort -u)
-if [ "$rows" -ge 7 ] && [ "$miss" = "0" ]; then
-  ok 03 "伴飞表数据行 $rows ≥7 且路径 $tot 条全部存在（0 缺失）"
+if [ "$rows" -ge 6 ] && [ "$miss" = "0" ]; then
+  ok 03 "伴飞表数据行 $rows ≥6 且路径 $tot 条全部存在（0 缺失）"
 else
-  bad 03 "伴飞表数据行 $rows（应 ≥7）或路径缺失 $miss/$tot 条"
+  bad 03 "伴飞表数据行 $rows（应 ≥6）或路径缺失 $miss/$tot 条"
 fi
 
-# SP-04 21.6.1-21.6.5 五子条锚 ≥5（条款本体；缺任一=拆分质量条款失守）
-n="$(grep -cE '21\.6\.[1-5]' "$CRIT" 2>/dev/null || true)"
-if [ "$n" -ge 5 ]; then ok 04 "21.6 子条锚 $n ≥5"; else bad 04 "21.6 子条锚 $n（应 ≥5）"; fi
+# SP-04 21.6.1-21.6.6 六子条锚 ≥6（条款本体；缺任一=拆分质量条款失守）
+n="$(grep -cE '21\.6\.[1-6]' "$CRIT" 2>/dev/null || true)"
+if [ "$n" -ge 6 ]; then ok 04 "21.6 子条锚(1-6) $n ≥6"; else bad 04 "21.6 子条锚(1-6) $n（应 ≥6）"; fi
 
 # SP-05 `### 22` 结构锚仍在（21/22 分界；被误删=53.3 二分管辖失去边界依据）
 if grep -q '^### 22 子代理规模限制' "$CRIT"; then ok 05 "结构锚 '### 22 子代理规模限制' 在位"; else bad 05 "结构锚 '### 22' 缺失（分界被破坏）"; fi
