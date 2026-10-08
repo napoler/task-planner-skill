@@ -181,11 +181,11 @@ VC 逐条复验 → smart-merge-back --deploy 合并部署 → 簿记+delivery-s
 <!-- S-unit 派发单元表(Rule 22.6) -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S1 | 创建 references/split-pattern-library.md：头部（定位+消费契约+来源技能总表）+ 模式 P1-P5（每模式=判据/反例/消费时机/来源锚） | executor(sonnet-1) | worktree 内设计契约（kb §5 路径+要点）；源技能 SKILL.md 路径清单（kb §2） | 文件在位；`grep -c '^### P'` =5；头部含消费契约段 | ≤15min | 1f/95l/15min | 无 | pending |
-| S2 | 同文件追加模式 P6-P10 + 伴飞映射表（任务画像→伴飞技能绝对路径 ≥6 行）+ 消费自查清单 | executor(sonnet-1) | S1 产物（追加不改写）+ 设计契约 P6-P10 要点 | `grep -c '^### P'` =10；伴飞表 ≥6 行且路径存在 | ≤15min | 1f/95l/15min | 无 | pending |
-| S3 | [parallel-group:impl-wave] critical-rules.md 纯增量追加 21.6（21.6.1 模式库强制消费/21.6.2 边界三判据/21.6.3 步内 bite-sized/21.6.4 No-Placeholder/21.6.5 伴飞映射联动 59.3），插于 21.5 行后 `### 22` 前 | executor(sonnet-1) | 设计契约 21.6 五子条文案要点（kb §5）+ critical-rules.md:159 插入锚 | grep '21.6\.' ≥5 命中；`git diff master -- 该文件` 零删除行；21.1-21.5 文本未动 | ≤10min | 1f/30l/10min | 无 | pending |
-| S4 | [parallel-group:impl-wave] SKILL.md 接线三锚：References 表加库行、委派检查点 2.5 加模式库对照短句、C43 补「拆分前已查模式库」自查句、Rule 21 摘要行（:287）补 21.6 提及 | executor(sonnet-1) | 设计契约三锚目标文案（kb §5）+ SKILL.md 对应行号锚 | `grep -c 'split-pattern-library' SKILL.md` ≥3；新增行 ≤12 | ≤10min | 1f/12l/10min | 无 | pending |
-| S5 | [parallel-group:impl-wave] templates/subagent_dispatch.md §3 验收标准段追加 No-Placeholder 契约行（任务书禁 TBD/待定/占位符，材料必须实指路径+摘要） | executor(sonnet-1) | 设计契约契约行文案（kb §5） | grep '占位\|TBD' 命中新行；新增 ≤4 行 | ≤5min | 1f/4l/5min | 无 | pending |
+| S1 | 创建 references/split-pattern-library.md：头部（定位+消费契约+来源技能总表）+ 模式 P1-P5（每模式=判据/反例/消费时机/来源锚） | executor | worktree 内设计契约（kb §5 路径+要点）；源技能 SKILL.md 路径清单（kb §2） | 文件在位；`grep -c '^### P'` =5；头部含消费契约段 | ≤15min | 1f/95l/15min | 无 | pending |
+| S2 | 同文件追加模式 P6-P10 + 伴飞映射表（任务画像→伴飞技能绝对路径 ≥6 行）+ 消费自查清单 | executor | S1 产物（追加不改写）+ 设计契约 P6-P10 要点 | `grep -c '^### P'` =10；伴飞表 ≥6 行且路径存在 | ≤15min | 1f/95l/15min | 无 | pending |
+| S3 | [parallel-group:impl-wave] critical-rules.md 纯增量追加 21.6（21.6.1 模式库强制消费/21.6.2 边界三判据/21.6.3 步内 bite-sized/21.6.4 No-Placeholder/21.6.5 伴飞映射联动 59.3），插于 21.5 行后 `### 22` 前 | executor | 设计契约 21.6 五子条文案要点（kb §5）+ critical-rules.md:159 插入锚 | grep '21.6\.' ≥5 命中；`git diff master -- 该文件` 零删除行；21.1-21.5 文本未动 | ≤10min | 1f/30l/10min | 无 | pending |
+| S4 | [parallel-group:impl-wave] SKILL.md 接线三锚：References 表加库行、委派检查点 2.5 加模式库对照短句、C43 补「拆分前已查模式库」自查句、Rule 21 摘要行（:287）补 21.6 提及 | executor | 设计契约三锚目标文案（kb §5）+ SKILL.md 对应行号锚 | `grep -c 'split-pattern-library' SKILL.md` ≥3；新增行 ≤12 | ≤10min | 1f/12l/10min | 无 | pending |
+| S5 | [parallel-group:impl-wave] templates/subagent_dispatch.md §3 验收标准段追加 No-Placeholder 契约行（任务书禁 TBD/待定/占位符，材料必须实指路径+摘要） | executor | 设计契约契约行文案（kb §5） | grep '占位\|TBD' 命中新行；新增 ≤4 行 | ≤5min | 1f/4l/5min | 无 | pending |
 
 ### Phase 4: 守卫与全量回归
 - [x] 撰写 selftest-split-pattern-library.sh（断言清单=设计契约④：库存在/模式锚/伴飞表路径存在性/critical-rules 21.6 子条锚/SKILL.md ≥3 锚/dispatch 模板契约行/负断言）
@@ -197,11 +197,11 @@ VC 逐条复验 → smart-merge-back --deploy 合并部署 → 簿记+delivery-s
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S6 | 撰写 scripts/selftest-split-pattern-library.sh（静态断言 ≥12 条，紧凑实现 ≤95 行） | code-assistant(haiku-1) | 设计契约断言清单（kb §5④）+ scripts/selftest-media-dispatch.sh（参照骨架） | worktree 内运行 exit 0，输出断言计数 | ≤15min | 1f/95l/15min | 无 | done（13/13 PASS，78 行） |
-| S8 | 扩展波（B 类 2026-10-09）：库追加 P11 术语语义锚定与理解复述（实验犬误读反例）+ critical-rules 21.6.6 术语锚定子条 | executor(sonnet-1) | kb §5⑥（术语锚定设计契约）+ 库文件/critical-rules 实态 | `grep '^### P11'`+`grep '21\.6\.6'` 命中；既有内容零改动（diff 零删除） | ≤15min | 2f/18l/15min | 无 | pending |
-| S9 | selftest 断言同步（SP-02/SP-11 的 =10→=11）+ 复跑全绿 | code-assistant(haiku-1) | S6 产物 + kb §5⑥ 断言同步说明 | selftest Total: 15 PASS=15 FAIL=0 | ≤5min | 1f/4l/5min | 无 | pending |
-| S7 | 全量回归跑批（S8/S9 后执行，覆盖扩展产物）：逐个运行 selftest-*.sh，产出 PASS/FAIL 对照基线分类表 | code-runner-agent(mini) | 基线清单（findings §基线，含已知 FAIL 集） | 分类表落 progress.md；新增 FAIL =0 | ≤10min | 0f/0l/10min | 无 | done（63 脚本：3 新增 FAIL 全部定位根因，S10 承接清零） |
-| S10 | 锚级联修复（S7 发现）：selftest-registry.tsv 登记新脚本行（解 registry+self-resolution 两条同源 FAIL）+ selftest-skill-split.sh:44 SKILL 行数钉值 500→510（502 实测，≤558 总上限内，脚本注释「钉值随内容演进同步上调」先例）+ 复跑 3 脚本全绿 | code-assistant(haiku-1) | S7 回归明细（findings [sub:16] 段）+ selftest-registry.tsv 表头格式 + selftest-skill-split.sh:40-48 | 3 脚本复跑 rc=0；全量对账新增 FAIL=0 | ≤10min | 2f/6l/10min | 无 | pending |
+| S6 | 撰写 scripts/selftest-split-pattern-library.sh（静态断言 ≥12 条，紧凑实现 ≤95 行） | code-assistant | 设计契约断言清单（kb §5④）+ scripts/selftest-media-dispatch.sh（参照骨架） | worktree 内运行 exit 0，输出断言计数 | ≤15min | 1f/95l/15min | 无 | done（13/13 PASS，78 行） |
+| S8 | 扩展波（B 类 2026-10-09）：库追加 P11 术语语义锚定与理解复述（实验犬误读反例）+ critical-rules 21.6.6 术语锚定子条 | executor | kb §5⑥（术语锚定设计契约）+ 库文件/critical-rules 实态 | `grep '^### P11'`+`grep '21\.6\.6'` 命中；既有内容零改动（diff 零删除） | ≤15min | 2f/18l/15min | 无 | pending |
+| S9 | selftest 断言同步（SP-02/SP-11 的 =10→=11）+ 复跑全绿 | code-assistant | S6 产物 + kb §5⑥ 断言同步说明 | selftest Total: 15 PASS=15 FAIL=0 | ≤5min | 1f/4l/5min | 无 | pending |
+| S7 | 全量回归跑批（S8/S9 后执行，覆盖扩展产物）：逐个运行 selftest-*.sh，产出 PASS/FAIL 对照基线分类表 | code-runner-agent | 基线清单（findings §基线，含已知 FAIL 集） | 分类表落 progress.md；新增 FAIL =0 | ≤10min | 0f/0l/10min | 无 | done（63 脚本：3 新增 FAIL 全部定位根因，S10 承接清零） |
+| S10 | 锚级联修复（S7 发现）：selftest-registry.tsv 登记新脚本行（解 registry+self-resolution 两条同源 FAIL）+ selftest-skill-split.sh:44 SKILL 行数钉值 500→510（502 实测，≤558 总上限内，脚本注释「钉值随内容演进同步上调」先例）+ 复跑 3 脚本全绿 | code-assistant | S7 回归明细（findings [sub:16] 段）+ selftest-registry.tsv 表头格式 + selftest-skill-split.sh:40-48 | 3 脚本复跑 rc=0；全量对账新增 FAIL=0 | ≤10min | 2f/6l/10min | 无 | pending |
 
 ### Phase 5: 审查闭环（CR + 对齐审查 + 修复轮）
 - [x] Code Review：审查 worktree 内改动文件（S11 CHANGES_REQUESTED 7 发现）
@@ -214,12 +214,12 @@ VC 逐条复验 → smart-merge-back --deploy 合并部署 → 簿记+delivery-s
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S11 | Code Review：审查 worktree 内改动文件的正确性/一致性/守卫健壮性（含扩展波 P11/21.6.6） | code-reviewer(sonnet-1) | git diff master...HEAD 摘要 + 改动文件清单 | 8 字段返回含 APPROVED 或逐条修复清单 | ≤15min | 0f/0l/15min | 无 | pending |
-| S12 | 对齐审查：按 alignment-review 标准审查全部产出文档（跨载体一致性/引用有效性） | general-purpose(sonnet-1) | 改动文档清单 + alignment-review SKILL.md 路径 | 8 字段返回含通过或逐条问题清单 | ≤15min | 0f/0l/15min | `/home/terry/.zcode/skills/alignment-review/SKILL.md`（首动作 Read） | done（ISSUES_FOUND 6 条，与 CR 去重后 9 修复点全采纳） |
-| S13 | 修复波1 [parallel-group:fix-wave]：SP-04 扩 [1-6]≥6+SP-03 阈值 ≥7→≥6 对齐契约+registry 描述「五子条」→「21.6.1-21.6.6」 | code-assistant(haiku-1) | CR F2/F3+align P2（findings [sub:19][sub:20] 段） | selftest 复跑 Total FAIL=0；diff 仅数值/描述 | ≤10min | 2f/6l/10min | 无 | pending |
-| S14 | 修复波2 [parallel-group:fix-wave]：critical-rules「10 模式」→「11 模式」+机制句去 53.3 错配改直述+kb 瞬态指针改脚本头注释；SKILL References「11 模式」+C43a 行补 Rule/机器面/豁免结构 | code-assistant(haiku-1) | CR F1/F4/F5/F6（findings [sub:19] 段） | grep '11 模式' ×2 命中；grep '53.3' 于 21.6 区段零命中；C43a 含机器面锚 | ≤10min | 2f/8l/10min | 无 | pending |
-| S15 | 修复波3 [parallel-group:fix-wave]：库文件补尾换行+表后空行+「53.3 管辖二分」标题改直述+P10 四档表述修正；CHANGELOG.md 追加 task-v150 条目（对齐既有条目格式） | code-assistant(haiku-1) | CR F7/F8/F9（findings [sub:19][sub:20] 段）+ CHANGELOG 尾部格式 | tail -c1 为换行；awk 空行检查过；CHANGELOG grep task-v150 命中 | ≤10min | 2f/12l/10min | 无 | pending |
-| S16 | CR 复审（fix 后）：复核 S13-S15 全部修复点+回归 3 脚本 | code-reviewer(sonnet-1) | git diff（fix commit）+ S11 问题清单 | VERDICT: APPROVED | ≤15min | 0f/0l/15min | 无 | pending |
+| S11 | Code Review：审查 worktree 内改动文件的正确性/一致性/守卫健壮性（含扩展波 P11/21.6.6） | code-reviewer | git diff master...HEAD 摘要 + 改动文件清单 | 8 字段返回含 APPROVED 或逐条修复清单 | ≤15min | 0f/0l/15min | 无 | pending |
+| S12 | 对齐审查：按 alignment-review 标准审查全部产出文档（跨载体一致性/引用有效性） | general-purpose | 改动文档清单 + alignment-review SKILL.md 路径 | 8 字段返回含通过或逐条问题清单 | ≤15min | 0f/0l/15min | `/home/terry/.zcode/skills/alignment-review/SKILL.md`（首动作 Read） | done（ISSUES_FOUND 6 条，与 CR 去重后 9 修复点全采纳） |
+| S13 | 修复波1 [parallel-group:fix-wave]：SP-04 扩 [1-6]≥6+SP-03 阈值 ≥7→≥6 对齐契约+registry 描述「五子条」→「21.6.1-21.6.6」 | code-assistant | CR F2/F3+align P2（findings [sub:19][sub:20] 段） | selftest 复跑 Total FAIL=0；diff 仅数值/描述 | ≤10min | 2f/6l/10min | 无 | pending |
+| S14 | 修复波2 [parallel-group:fix-wave]：critical-rules「10 模式」→「11 模式」+机制句去 53.3 错配改直述+kb 瞬态指针改脚本头注释；SKILL References「11 模式」+C43a 行补 Rule/机器面/豁免结构 | code-assistant | CR F1/F4/F5/F6（findings [sub:19] 段） | grep '11 模式' ×2 命中；grep '53.3' 于 21.6 区段零命中；C43a 含机器面锚 | ≤10min | 2f/8l/10min | 无 | pending |
+| S15 | 修复波3 [parallel-group:fix-wave]：库文件补尾换行+表后空行+「53.3 管辖二分」标题改直述+P10 四档表述修正；CHANGELOG.md 追加 task-v150 条目（对齐既有条目格式） | code-assistant | CR F7/F8/F9（findings [sub:19][sub:20] 段）+ CHANGELOG 尾部格式 | tail -c1 为换行；awk 空行检查过；CHANGELOG grep task-v150 命中 | ≤10min | 2f/12l/10min | 无 | pending |
+| S16 | CR 复审（fix 后）：复核 S13-S15 全部修复点+回归 3 脚本 | code-reviewer | git diff（fix commit）+ S11 问题清单 | VERDICT: APPROVED | ≤15min | 0f/0l/15min | 无 | pending |
 
 ### Phase 6: 合并部署与簿记
 - [x] worktree 内全 VC 复验（VC-1..7 全绿）+ `git status` 干净 → `smart-merge-back.sh --deploy` → master=998d6e4
@@ -321,22 +321,22 @@ VC 逐条复验 → smart-merge-back --deploy 合并部署 → 簿记+delivery-s
 | 2 | 2026-10-08 | Explore(mini) | 盘点仓内拆分机制载体锚点 | done | 12 项锚点清单（Rule 21/46/47/49/59 位置+脚本+模板+编号账本） | agent 返回报告 | findings §R1 自身面 | （同上） | - / 0 / ☑ |
 | 3 | 2026-10-09 00:00 | general-purpose（drift-checker 改派，22.3①） | Phase 1 偏移检查（Rule 61/64 载体） | done | ALIGNED——动作与 Goal/scope 一致，交付面零触碰 | subagent-state/03-drift-checker.md | progress.md Phase 1（ledger drift_check tick2） | subagent-state/03-drift-checker.md | provider 拒绝改派 / 0 / ☑ |
 | 4 | 2026-10-09 00:06 | drift 检查（general-purpose 承载） | Phase 2 偏移检查 | done | ALIGNED——worktree 交付面零写入，锚点/契约与 VC 一致 | subagent-state/08-drift-checker-p2.md | task_plan.md Drift Log 第 2 行 | subagent-state/08-drift-checker-p2.md | - / 0 / ☑ |
-| 5 | 2026-10-09 00:07 | executor(sonnet-1) | S1 模式库上半（头部+P1-P5） | queued | | | | subagent-state/04-executor-S1.md | [parallel-group:impl-wave] / 0 / ☐ |
-| 6 | 2026-10-09 00:07 | executor(sonnet-1) | S3 Rule 21.6 纯增量插入 | queued | | | | subagent-state/05-executor-S3.md | [parallel-group:impl-wave] / 0 / ☐ |
-| 7 | 2026-10-09 00:07 | executor(sonnet-1) | S4 SKILL.md 四点接线 | queued | | | | subagent-state/06-executor-S4.md | [parallel-group:impl-wave] / 0 / ☐ |
-| 8 | 2026-10-09 00:07 | executor(sonnet-1) | S5 dispatch 模板 No-Placeholder 契约行 | done | 3 行追加（主行+双明确+验收可观察子行），零删除 | git diff +3/-0 | findings [sub:07-executor-S5] | subagent-state/07-executor-S5.md | [parallel-group:impl-wave] / 0 / ☑ |
-| 9 | 2026-10-09 00:25 | executor(sonnet-1) | S2 模式库下半（P6-P10+伴飞表+未吸收登记） | done | 115 行总（+55），P1-P10 齐、伴飞表 7 行路径 -f 全过；首派 provider 失败但已写入，重试验证后未重复追加 | wc/grep 计数+主进程防双写复核 | findings [sub:09-executor-S2] | subagent-state/09-executor-S2.md | S1 后串行 / 0 / ☑ |
-| 10 | 2026-10-09 00:45 | code-assistant(haiku-1) | S6 selftest-split-pattern-library.sh 撰写 | done | 78 行 13 断言 SP-01..13 全 PASS 幂等（自跑 2 次一致） | bash 自跑 Total: 13 PASS=13 FAIL=0 | findings [sub:11-code-assistant-S6] | subagent-state/11-code-assistant-S6.md | - / 0 / ☑ |
-| 11 | 2026-10-09 02:12 | executor(sonnet-1) | S8 扩展波：库 P11+Rule 21.6.6 | done | P11 五要素（实验犬真实反例 :105）+21.6.6（:168）；12+/0- | git numstat 9+0/3+0 | findings [sub:14-executor-S8] | subagent-state/14-executor-S8.md | B 类扩展 / 0 / ☑ |
-| 12 | 2026-10-09 02:35 | code-assistant(haiku-1) | S9 selftest 断言同步=11 并复跑 | done | SP-02/SP-11 期望 10→11（按实态字符串比较形态改）+头部描述；复跑 13/13 | bash Total: 13 PASS=13 | findings [sub:15-code-assistant-S9] | subagent-state/15-code-assistant-S9.md | S8 后串行 / 0 / ☑ |
-| 13 | 2026-10-09 02:12 | code-runner-agent(mini) | S7 全量回归（重派，首派被取消） | done | 63 脚本三桶分类：已知基线 1（periodic 4 FAIL）+新增 3（registry/self-resolution/skill-split 钉值）机械 diff 定位根因 | regression-worktree.log | findings [sub:16-code-runner-S7] | subagent-state/16-code-runner-S7.md | S9 后串行 / 1 / ☑ |
-| 14 | 2026-10-09 02:50 | code-assistant(haiku-1) | S10 锚级联修复（registry 登记+钉值上调） | done | tsv+1 行同构登记；钉值 500→510；4 脚本复跑 rc=0（执行体+主进程双源核验） | 4×Total FAIL=0 | findings [sub:17-code-assistant-S10] | subagent-state/17-code-assistant-S10.md | - / 0 / ☑ |
-| 15 | 2026-10-09 03:20 | code-reviewer(sonnet-1) | S11 Code Review | done | CHANGES_REQUESTED：7 发现（2 计数漂移+守卫覆盖缺口+53.3 错配+C43a 格式+文件卫生等），逐条 file:line 取证 | subagent-state/19-code-reviewer-S11.md | findings [sub:19-code-reviewer-S11] | subagent-state/19-code-reviewer-S11.md | - / 0 / ☑ |
-| 16 | 2026-10-09 03:20 | general-purpose(sonnet-1) | S12 对齐审查（alignment-review 伴飞） | done | ISSUES_FOUND 6 条（3 P1 含 CHANGELOG 缺失/3 P2）；互引 59.2/59.3/63.2 验证匹配 | subagent-state/20-alignment-S12.md | findings [sub:20-alignment-S12] | subagent-state/20-alignment-S12.md | - / 0 / ☑ |
-| 17 | 2026-10-09 03:40 | code-assistant(haiku-1) | S13 修复波1（SP-04/SP-03/registry 描述） | queued | | | | subagent-state/21-code-assistant-S13.md | [parallel-group:fix-wave] / 0 / ☐ |
-| 18 | 2026-10-09 03:40 | code-assistant(haiku-1) | S14 修复波2（critical-rules+SKILL 措辞） | queued | | | | subagent-state/22-code-assistant-S14.md | [parallel-group:fix-wave] / 0 / ☐ |
-| 19 | 2026-10-09 03:40 | code-assistant(haiku-1) | S15 修复波3（库卫生+CHANGELOG） | done | 尾换行+空行+标题去 53.3+P10 措辞；CHANGELOG task-v150 条目（S15+主进程措辞 trivial 修正） | tail 0a+awk+grep 验证 | findings [sub:23] | subagent-state/23-code-assistant-S15.md | [parallel-group:fix-wave] / 0 / ☑ |
-| 20 | 2026-10-09 03:55 | code-reviewer(sonnet-1) | S16 CR 复审 | done | VERDICT: APPROVED——11/11 闭环，残留 grep 零命中，三守卫 rc=0；nit（脚本注释 53.3/kb 3 行）登记 deferred | subagent-state/24-code-reviewer-S16.md | findings [sub:24-code-reviewer-S16] | subagent-state/24-code-reviewer-S16.md | - / 0 / ☑ |
+| 5 | 2026-10-09 00:07 | executor | S1 模式库上半（头部+P1-P5） | queued | | | | subagent-state/04-executor-S1.md | [parallel-group:impl-wave] / 0 / ☐ |
+| 6 | 2026-10-09 00:07 | executor | S3 Rule 21.6 纯增量插入 | queued | | | | subagent-state/05-executor-S3.md | [parallel-group:impl-wave] / 0 / ☐ |
+| 7 | 2026-10-09 00:07 | executor | S4 SKILL.md 四点接线 | queued | | | | subagent-state/06-executor-S4.md | [parallel-group:impl-wave] / 0 / ☐ |
+| 8 | 2026-10-09 00:07 | executor | S5 dispatch 模板 No-Placeholder 契约行 | done | 3 行追加（主行+双明确+验收可观察子行），零删除 | git diff +3/-0 | findings [sub:07-executor-S5] | subagent-state/07-executor-S5.md | [parallel-group:impl-wave] / 0 / ☑ |
+| 9 | 2026-10-09 00:25 | executor | S2 模式库下半（P6-P10+伴飞表+未吸收登记） | done | 115 行总（+55），P1-P10 齐、伴飞表 7 行路径 -f 全过；首派 provider 失败但已写入，重试验证后未重复追加 | wc/grep 计数+主进程防双写复核 | findings [sub:09-executor-S2] | subagent-state/09-executor-S2.md | S1 后串行 / 0 / ☑ |
+| 10 | 2026-10-09 00:45 | code-assistant | S6 selftest-split-pattern-library.sh 撰写 | done | 78 行 13 断言 SP-01..13 全 PASS 幂等（自跑 2 次一致） | bash 自跑 Total: 13 PASS=13 FAIL=0 | findings [sub:11-code-assistant-S6] | subagent-state/11-code-assistant-S6.md | - / 0 / ☑ |
+| 11 | 2026-10-09 02:12 | executor | S8 扩展波：库 P11+Rule 21.6.6 | done | P11 五要素（实验犬真实反例 :105）+21.6.6（:168）；12+/0- | git numstat 9+0/3+0 | findings [sub:14-executor-S8] | subagent-state/14-executor-S8.md | B 类扩展 / 0 / ☑ |
+| 12 | 2026-10-09 02:35 | code-assistant | S9 selftest 断言同步=11 并复跑 | done | SP-02/SP-11 期望 10→11（按实态字符串比较形态改）+头部描述；复跑 13/13 | bash Total: 13 PASS=13 | findings [sub:15-code-assistant-S9] | subagent-state/15-code-assistant-S9.md | S8 后串行 / 0 / ☑ |
+| 13 | 2026-10-09 02:12 | code-runner-agent | S7 全量回归（重派，首派被取消） | done | 63 脚本三桶分类：已知基线 1（periodic 4 FAIL）+新增 3（registry/self-resolution/skill-split 钉值）机械 diff 定位根因 | regression-worktree.log | findings [sub:16-code-runner-S7] | subagent-state/16-code-runner-S7.md | S9 后串行 / 1 / ☑ |
+| 14 | 2026-10-09 02:50 | code-assistant | S10 锚级联修复（registry 登记+钉值上调） | done | tsv+1 行同构登记；钉值 500→510；4 脚本复跑 rc=0（执行体+主进程双源核验） | 4×Total FAIL=0 | findings [sub:17-code-assistant-S10] | subagent-state/17-code-assistant-S10.md | - / 0 / ☑ |
+| 15 | 2026-10-09 03:20 | code-reviewer | S11 Code Review | done | CHANGES_REQUESTED：7 发现（2 计数漂移+守卫覆盖缺口+53.3 错配+C43a 格式+文件卫生等），逐条 file:line 取证 | subagent-state/19-code-reviewer-S11.md | findings [sub:19-code-reviewer-S11] | subagent-state/19-code-reviewer-S11.md | - / 0 / ☑ |
+| 16 | 2026-10-09 03:20 | general-purpose | S12 对齐审查（alignment-review 伴飞） | done | ISSUES_FOUND 6 条（3 P1 含 CHANGELOG 缺失/3 P2）；互引 59.2/59.3/63.2 验证匹配 | subagent-state/20-alignment-S12.md | findings [sub:20-alignment-S12] | subagent-state/20-alignment-S12.md | - / 0 / ☑ |
+| 17 | 2026-10-09 03:40 | code-assistant | S13 修复波1（SP-04/SP-03/registry 描述） | queued | | | | subagent-state/21-code-assistant-S13.md | [parallel-group:fix-wave] / 0 / ☐ |
+| 18 | 2026-10-09 03:40 | code-assistant | S14 修复波2（critical-rules+SKILL 措辞） | queued | | | | subagent-state/22-code-assistant-S14.md | [parallel-group:fix-wave] / 0 / ☐ |
+| 19 | 2026-10-09 03:40 | code-assistant | S15 修复波3（库卫生+CHANGELOG） | done | 尾换行+空行+标题去 53.3+P10 措辞；CHANGELOG task-v150 条目（S15+主进程措辞 trivial 修正） | tail 0a+awk+grep 验证 | findings [sub:23] | subagent-state/23-code-assistant-S15.md | [parallel-group:fix-wave] / 0 / ☑ |
+| 20 | 2026-10-09 03:55 | code-reviewer | S16 CR 复审 | done | VERDICT: APPROVED——11/11 闭环，残留 grep 零命中，三守卫 rc=0；nit（脚本注释 53.3/kb 3 行）登记 deferred | subagent-state/24-code-reviewer-S16.md | findings [sub:24-code-reviewer-S16] | subagent-state/24-code-reviewer-S16.md | - / 0 / ☑ |
 
 **S-unit 验收补记（主进程 22.5 复核，2026-10-09）**：S1=60 行库上半 Read 复核五要素齐（含每模式低档模型贡献行）；S3=:160-168 五子条+机制句，`### 22` 顺移 :169，diff 零删除；S4=4 处新增（2.5 句/C43a 行/Rule 21.6 摘要条目/References 表行）——C43a 独立行与独立摘要条目为对既定锚点的合理适配，登记 Decisions Made；S5=3 行契约追加。全部证据：worktree git diff（16 insertions, 0 deletions）。
 
