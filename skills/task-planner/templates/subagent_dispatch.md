@@ -46,6 +46,9 @@
 
 ## 3. 验收标准(2-5 条可观察证据)
 - [ ] {acceptance_1} / {acceptance_2} / {acceptance_3} / {acceptance_4}(可选)
+- **No-Placeholder 契约（Rule 21.6.4）**: 任务书禁 TBD/待定/占位符描述；执行者（低档模型）拿到任务书必须无需追问即知做什么（§1 目标一句）+怎么做（§2 方案/步骤）+做到什么程度（§3 验收可观察）；材料必须实指绝对路径+摘要，禁「参考相关文件」类模糊指代
+  - 双明确: 目标明确（§1 一句话说清做什么）+ 方案明确（§2 绝对路径+摘要，禁模糊指代）
+  - 验收可观察: §3 每条验收必须可机器验证（grep/文件存在/命令输出），禁「确保质量」等不可测描述
 
 ## 4. Scope 禁改清单
 - 禁止修改:{forbidden_path_1}, {forbidden_path_2} | 禁止操作:{forbidden_op_1}, {forbidden_op_2};默认禁止 git 写操作(add/commit/checkout/reset),只读 git diff/status/log 允许
