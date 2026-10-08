@@ -24,6 +24,7 @@
 - findings:  {plan_dir}/findings.md — 可读;可写=仅追加 `#### [sub:{seq}-{type}] <标题>` 到 `## Research Findings` 段末(`## Technical Decisions` 前),禁改既有内容
 - progress:  {plan_dir}/progress.md — 可读;可写=仅在当前 Phase 段「Actions taken」下追加 `  - [sub:{seq}] <摘要>`,禁改 Status/Started
 - knowledge-brief: {plan_dir}/knowledge-brief.md — 只读(知识底座,主进程单写者;调研类 S-unit 的材料包摘要必须引用其 §1-§5 节锚点,Rule 62.4;[2026-10-08 task-v145] 四文件契约第 4 文件,Rule 62.2 不可收窄)
+- 检索优先契约（Rule 63，task-v147）：任务中遇到不知道/不清楚的事实、报错、API 用法 → 第一反应检索资料（①本地 ②--help/man ③官方文档/网络搜索 ④社区），检索结论必须附来源锚；**穷尽检索前禁止以「不知道/无法确定」作答**；查证后仍无法解决 → 如实写 blockers 并附已检索清单，**禁止编造检索结果**（编造=Rule 26 Q3 最高档违规）
 - 材料包绝对路径/来源:取自 task_plan.md 该 Phase S-unit 表「输入」列(计划期预写):{path_1} {path_2}(此处只填路径,总量受 §9 预算约束)
 - findings.md 相关摘要(≤10 行):{findings_excerpt}
 - 上下文依赖:{context_dependencies}

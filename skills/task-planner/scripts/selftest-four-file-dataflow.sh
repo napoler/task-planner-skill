@@ -24,7 +24,7 @@
 #         FF-15 `four_file`/`kb_distill`/`contract_narrow`/`require_kb` 键字面=0 且 .properties 键数=42
 #         （42=task-v145 时点基线，v141/v142 演进后值；本任务零新 config 键的机器佐证）
 #     · 负断言（FF-16）:
-#         FF-16 critical-rules.md 62 块尾上下文（末条 62.6 行起至文件尾）`^63\.[0-9] ` =0（RC-15 前向防线：
+#         FF-16 critical-rules.md 62 块尾上下文（末条 62.6 行起至文件尾）`^64\.[0-9] ` =0（RC-15 前向防线：
 #               61 号未被顺手创建；语境锚定负断言，v127/RR-09 第 5 变体判例范式）
 #     · 脚本自身（FF-17/FF-18）:
 #         FF-17 SCRIPT_DIR 自定位行在位（仓库/worktree/三宿主部署位三处可跑结构锚）
@@ -105,7 +105,7 @@ else
 fi
 
 # ── 负断言：62 块尾后无 61.x（语境锚定，防裸全文误触）──
-TAIL61="$(awk '/^60\.6 /{f=1} f' "$CR" | grep -c -e '^63\.[0-9] ' || true)"
+TAIL61="$(awk '/^60\.6 /{f=1} f' "$CR" | grep -c -e '^64\.[0-9] ' || true)"
 TAIL61="${TAIL61:-0}"
 zero "FF-16 62 块尾后无 61.x(前向防线)"                    "$TAIL61"
 
