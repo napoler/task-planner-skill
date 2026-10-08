@@ -147,7 +147,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 - [x] 知识储备必读项确认（memory/技能本体/selftest 面/部署拓扑/worktree SOP）
 - **V-N:** VC-1, VC-3
 - **Status:** complete（2026-10-09 补翻：基线跑批+遗留归集+kb 种子全部完成于 10-08，状态行漏翻由 check-complete 4/5 提示发现）
-- **Executor:** code-runner-agent（mini）（跑批）；主进程仅做遗留归集簿记=白名单②，登记见委派统计
+- **Executor:** code-runner-agent（mini）
 
 ### Phase 2: 系统性审计扫描（4 面并行）
 - [ ] S1 一致性扫描：规则编号 1-64 连续性、SKILL 计数断言、行号锚、互引完整性（Rule/文件引用悬空）
@@ -157,7 +157,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 - [ ] 四面发现汇总 findings.md §审计发现清单（每条带证据锚 file:line）
 - **V-N:** VC-2, VC-3
 - **Status:** complete（2026-10-08 22:58：四面审计 57 项发现→处置表 36 项闭环登记；drift-check=ALIGNED 三件套齐（06 检查点/ledger tick4/Drift Log 行）；整改两条已执行）
-- **Executor:** Explore（mini）×4 并行（general-purpose 承担部署对账面）
+- **Executor:** Explore（mini）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
@@ -208,7 +208,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 - [x] 审查意见 fix 闭环（两轮各一轮收敛）
 - **V-N:** VC-1, VC-5
 - **Status:** complete（2026-10-09：drift-check 判 DRIFT 簿记面 2 项已整改——progress Phase 4 回填+本计划字段同步；回归口径勘误=per-log Total FAIL=0 为准，summary exit 列无效已登记）
-- **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）+ alignment-review skill
+- **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）+ general-purpose（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
@@ -308,7 +308,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 10-08 21:5x | code-runner-agent | 全量 selftest 基线（后台） | done | 62 脚本 ΣFAIL=4 全 periodic | 01-code-runner-agent.md | §基线段 | subagent-state/01-code-runner-agent.md | provider 终错但检查点完整/0 / ☑ |
-| 2 | 10-08 22:1x | explore×3+general-purpose | 四面审计并行（一致性/文档/三面对齐/部署） | done | 57 项发现（H16/M22/L19） | 02-05 检查点 | §处置表 D1-D36 | 02/03/04/05-*.md | S1 无 Write 由主进程代写/0 / ☑ |
+| 2 | 10-08 22:1x | Explore | 四面审计并行×3+部署面 general-purpose×1（一致性/文档/三面对齐/部署） | done | 57 项发现（H16/M22/L19） | 02-05 检查点 | §处置表 D1-D36 | 02/03/04/05-*.md | S1 无 Write 由主进程代写/0 / ☑ |
 | 3 | 10-08 22:5x | general-purpose(改派) | Phase1-2 drift 检查 | done | ALIGNED+2 整改已执行 | 06-drift-checker.md | Drift Log | 06-drift-checker.md | haiku 拒改派 22.3①/0 / ☑ |
 | 4 | 10-08 23:5x | executor | S7 Rule 65 恢复 | done | CR:802-834+PR 10 断言重接 | critical-rules:802 | D6/D7 | 07-executor-S7.md | ☑ |
 | 5 | 10-09 00:1x | executor | S16 SKILL 对齐+S5 INDEX+S6 头注 | done | D2-D5/D1/D22 全 fixed | SKILL:9,210,278 | D1-D5/D22 | 08/09/10-*.md | 两次契约拦截后过/0 / ☑ |
