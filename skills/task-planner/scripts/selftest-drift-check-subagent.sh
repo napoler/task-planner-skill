@@ -29,7 +29,7 @@ if grep '\[DRIFT CHECK\]' "$SKILLMD" | grep -q 'drift-checker'; then ok 01 "[DRI
 if grep '只读检测执行体' "$SKILLMD" | grep -q 'drift-checker' && ! grep '只读检测执行体' "$SKILLMD" | grep -q 'task-drift-guard'; then ok 02 "只读检测执行体行含 drift-checker 无 task-drift-guard"; else bad 02 "只读检测执行体行条件不满足"; fi
 
 # DCS-03: SKILL.md Chain 交接步骤 4 行含 drift-checker
-if grep '4\. 派发.*drift-checker' "$SKILLMD"; then ok 03 "Chain 步骤 4 含 drift-checker"; else bad 03 "Chain 步骤 4 缺 drift-checker"; fi
+if grep -q '4\. 派发.*drift-checker' "$SKILLMD"; then ok 03 "Chain 步骤 4 含 drift-checker"; else bad 03 "Chain 步骤 4 缺 drift-checker"; fi
 
 # DCS-04: 合规清单 C4 行含 drift-checker
 if grep '| C4 |' "$SKILLMD" | grep -q 'drift-checker'; then ok 04 "C4 行含 drift-checker"; else bad 04 "C4 行缺 drift-checker"; fi
@@ -62,7 +62,7 @@ if grep -q '^### 61 ' "$CRIT" && grep -q '\*\*61\.1' "$CRIT" && grep -q '\*\*61\
 if grep -q '\*\*15\.4' "$CRIT" && [ "$(grep -c 'Skill("task-drift-guard")' "$CRIT")" -eq 0 ]; then ok 13 "15.4 锚+Skill(task-drift-guard) 计数=0"; else bad 13 "DCS-13 条件缺失"; fi
 
 # DCS-14: drift-checker.md 存在 + frontmatter tools: 含 Read 与 Write + model: 行非空
-if [ -f "$DRIFT_CHECKER" ] && grep '^tools:' "$DRIFT_CHECKER" | grep -q 'Read' && grep '^tools:' "$DRIFT_CHECKER" | grep -q 'Write' && grep '^model:' "$DRIFT_CHECKER" | grep -q 'model:'; then ok 14 "drift-checker.md 存在+tools Read/Write+model 非空"; else bad 14 "DCS-14 条件缺失"; fi
+if [ -f "$DRIFT_CHECKER" ] && grep '^tools:' "$DRIFT_CHECKER" | grep -q 'Read' && grep '^tools:' "$DRIFT_CHECKER" | grep -q 'Write' && grep -qE '^model: *[^ ]' "$DRIFT_CHECKER"; then ok 14 "drift-checker.md 存在+tools Read/Write+model 非空"; else bad 14 "DCS-14 条件缺失"; fi
 
 # DCS-15: drift-checker.md 与 task-drift-guard/SKILL.md 双文件各自含 ALIGNED、DRIFT、BLOCKED 三词
 if grep -q 'ALIGNED' "$DRIFT_CHECKER" && grep -q 'DRIFT' "$DRIFT_CHECKER" && grep -q 'BLOCKED' "$DRIFT_CHECKER" && grep -q 'ALIGNED' "$SATELLITE_SKILL" && grep -q 'DRIFT' "$SATELLITE_SKILL" && grep -q 'BLOCKED' "$SATELLITE_SKILL"; then ok 15 "双载体三态一致"; else bad 15 "双载体三态缺失"; fi
