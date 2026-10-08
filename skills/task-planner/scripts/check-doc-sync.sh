@@ -11,7 +11,7 @@
 #
 # Falls back to config.json#plan_update_interval_minutes if max_age_minutes not given.
 # [2026-10-08 task-v149 D13] 注释原引用 sync_interval_calls（不存在）；实际代码用 plan_update_interval_minutes。
-# git log -S 考证：sync_interval_calls 在 commit 2337ce0 重命名为 todo_sync_interval_calls（语义相同），
+# git log -S '"sync_interval_calls"' 全历史零命中（该独立键从未存在）；2337ce0 为目录搬迁 refactor 非键改名；本脚本实际读取键=plan_update_interval_minutes（与代码一致）。
 # 但本脚本实际引用的是 plan_update_interval_minutes（时间间隔阈值），与 todo_sync 调用次数阈值语义不同。
 # 修正注释使其与实际代码一致。
 

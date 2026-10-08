@@ -287,7 +287,7 @@ ls task_plan.md   # 应存在
 ```
 ~/.claude/skills/task-planner/   （软壳指向规范源 skills/task-planner/；下列以规范源为准）
 ├── SKILL.md                       (入口文件)
-├── config.json                    (JSON-Schema 阈值配置, 40 键)
+├── config.json                    (JSON-Schema 阈值配置, 42 键)
 ├── reference.md                   (Manus 原则 + Chain Handoff Contract)
 ├── examples.md                    (实战示例)
 ├── scripts/                       (106 项: .sh 96 个（含 62 selftest）; <!-- 2026-10-08 task-v149 对齐实态 -->

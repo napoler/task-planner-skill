@@ -66,7 +66,7 @@
 ```
 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
-├── config.json                              ← 阈值配置（40 键）
+├── config.json                              ← 阈值配置（42 键）
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 10 篇规则文档（实测 10：13 篇基线中 template-mapping/template-guide/billing 等 3 篇已迁出至卫星） <!-- 2026-10-08 task-v149 对齐实态 -->
 │   ├── critical-rules.md                    # Rules 1-65（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36-39 技能修改保守化/任务类型画像/难度分级/动态工作流 + 40-43 工具面/问题消解/质量审查/执行可靠性 + 44-45 用户选择点/注释规范 + 46-50 子代理专注/媒体派发/交付总结/并行推进/内容分级 + 51-58 需求覆盖/执行体专业化/根源解决/执行诚实/可复用能力/用户指令/迭代测试/调研证据 + 59-62 拆分粒度/主动解决/偏移检查/四文件罗盘 + 63-65 检索优先/偏移留痕/周期性回顾） <!-- 2026-10-08 task-v149 对齐实态 -->

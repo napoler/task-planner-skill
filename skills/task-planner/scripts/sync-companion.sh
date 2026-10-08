@@ -13,7 +13,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
-COMPAANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion"
+COMPANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion" # 2026-10-09 task-v149 CR L-2 拼写修正
 # 外围 skill 回同步目标 = 仓库顶层 skills/(2026-09-04 自 companion/skills/ 迁移,排除 task-planner 本体)
 # SKILL_ROOT = <repo>/skills/task-planner → 上两级才是仓根
 REPO_ROOT="$(dirname "$(dirname "$SKILL_ROOT")")"
@@ -39,12 +39,12 @@ if [ -z "${TARGET_ROOT:-}" ]; then
 fi
 TARGET_ROOT="${TARGET_ROOT:-$HOME/.zcode}"
 
-[ -d "$COMPAANION_DIR" ] || { echo "[sync] ERROR: companion dir missing: $COMPAANION_DIR" >&2; exit 1; }
+[ -d "$COMPANION_DIR" ] || { echo "[sync] ERROR: companion dir missing: $COMPANION_DIR" >&2; exit 1; } # 2026-10-09 task-v149 CR L-2 拼写修正
 # 顶层 skills/ 合理性校验:防止从已部署副本运行时把部署目录误当回同步目标(canonical 仓根必含 CHANGELOG.md)
 [ -f "$REPO_ROOT/CHANGELOG.md" ] && [ -d "$REPO_SKILLS/task-planner" ] || { echo "[sync] ERROR: $REPO_SKILLS 不是 canonical 仓顶层 skills/" >&2; exit 1; }
 
 echo "[sync] source root: $TARGET_ROOT"
-echo "[sync] companion:   $COMPAANION_DIR"
+echo "[sync] companion:   $COMPANION_DIR" # 2026-10-09 task-v149 CR L-2 拼写修正
 
 changed=0; same=0; missing=0
 
@@ -56,7 +56,7 @@ ZCODE_UUID=""
 detect_zcode_uuid() {
   local probe
   # 优先从本机 ZCode agents 提取;纯 Claude 机器无 ~/.zcode → 从 companion 自身兜底(companion 存 ZCode 格式)
-  for probe in "$HOME/.zcode/agents/"*.md "$COMPAANION_DIR"/agents/*.md; do
+  for probe in "$HOME/.zcode/agents/"*.md "$COMPANION_DIR"/agents/*.md; do # 2026-10-09 task-v149 CR L-2 拼写修正
     [ -e "$probe" ] || continue
     ZCODE_UUID="$(grep -m1 -o '[0-9a-fA-F]\{8\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{4\}-[0-9a-fA-F]\{12\}' "$probe" 2>/dev/null)"
     [ -n "$ZCODE_UUID" ] && return 0
@@ -100,12 +100,12 @@ pull_one() {
     fi
   fi
   if cmp -s "$cfile" "$cmp_src"; then
-    echo "  = ${cfile#$COMPAANION_DIR/} (no change)"
+    echo "  = ${cfile#$COMPANION_DIR/} (no change)" # 2026-10-09 task-v149 CR L-2 拼写修正
     same=$((same+1))
     [ -n "$tmp_conv" ] && rm -f "$tmp_conv"
     return
   fi
-  echo "  ← ${cfile#$COMPAANION_DIR/} (source newer/different)"
+  echo "  ← ${cfile#$COMPANION_DIR/} (source newer/different)" # 2026-10-09 task-v149 CR L-2 拼写修正
   [ "$SHOW_DIFF" -eq 1 ] && diff -u "$cfile" "$cmp_src" | head -60
   if [ "$DRY_RUN" -eq 0 ]; then
     cp "$cmp_src" "$cfile"
@@ -114,7 +114,7 @@ pull_one() {
   changed=$((changed+1))
 }
 
-for f in "$COMPAANION_DIR"/agents/*.md; do
+for f in "$COMPANION_DIR"/agents/*.md; do # 2026-10-09 task-v149 CR L-2 拼写修正
   [ -e "$f" ] || continue
   pull_one "$f" "$TARGET_ROOT/agents/$(basename "$f")"
 done

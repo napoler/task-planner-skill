@@ -17,7 +17,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
-# [2026-10-08 task-v149 D25] 修正变量名拼写 COMPANION_DIR→COMPANION_DIR（原多一个 A，定义与引用一致故未暴露，但属命名缺陷）
+# [2026-10-08 task-v149 D25] 修正变量名拼写 COMPAANION_DIR→COMPANION_DIR（原多一个 A，定义与引用一致故未暴露，但属命名缺陷）
 COMPANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion"
 # 外围 skill 安装源 = 仓库顶层 skills/(2026-09-04 自 companion/skills/ 迁移,排除 task-planner 本体)
 # SKILL_ROOT = <repo>/skills/task-planner → 上两级才是仓根

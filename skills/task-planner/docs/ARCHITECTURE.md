@@ -14,7 +14,7 @@ canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task
   <!-- 修改说明（task-v131, 2026-10-05）：原行为=「8 篇」为旧数字（审计 L-4 判定过期）；改为 9 篇并以 find 实测为准。原因：目录自审计后新增 methodology.md，且原数字未随演化更新。 -->
 - `templates/`（10 个主模板 + 29 个场景变体；2026-10-05 task-v131 Phase 6 实测 `find templates -maxdepth 1 -type f` = 10，`find templates/variant -maxdepth 1 -type f` = 29；统一含「📚 必要知识储备」章节）
   <!-- 修改说明（task-v131, 2026-10-05）：原行为=「5 核心 + 3 辅助 + 12 变体」旧口径；现主模板 10 个（task_plan/progress/findings/verification/knowledge-brief/dispatch 等），变体 29 个（审计 L-4 判过期，find 实测为准）。 -->
-- `scripts/`（106 个文件，2026-10-08 task-v149 实测 `find scripts -maxdepth 1 -type f | wc -l` → 106：含 62 个 selftest-*.sh 守护脚本 + check-*/resolve-*/sync-* 工具 + 级联 selftest 注册表）
+- `scripts/`（106 个条目 = 104 个文件 + 2 个子目录（lib/、capabilities/），2026-10-08 task-v149 实测 `ls -1 scripts | wc -l` → 106，`find scripts -maxdepth 1 -type f | wc -l` → 104：含 62 个 selftest-*.sh 守护脚本 + check-*/resolve-*/sync-* 工具 + 级联 selftest 注册表）
   <!-- 修改说明（task-v131, 2026-10-05）：原行为=「16 个工具脚本」严重过期（审计 L-4 判）；守卫/自查类脚本随 Rule 演进累积至 90，改为 find 实测口径。 -->
 - `lib/`（6 个 installer 库脚本：detect-tools/backup/install-stub/install-companion/migrate-refs/verify；2026-10-05 实测 `find lib -maxdepth 1 -type f` = 6）
 - `config.json`（阈值配置）
@@ -61,7 +61,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / batch_report.md / delivery-summary.md / shared-tracker.md（其余主模板）
 │   └── variant/                             ← 场景化变体（实测 29 个 *-type.md，含 research/writing/diagnostic/publish 等）
-├── scripts/                                 ← 工具无关脚本（实测 106 文件，2026-10-08）
+├── scripts/                                 ← 工具无关脚本（实测 106 条目 = 104 文件 + 2 子目录，2026-10-08）
 │   ├── check-complete.sh / .ps1
 │   ├── check-conflicts.sh
 │   ├── check-doc-sync.sh
