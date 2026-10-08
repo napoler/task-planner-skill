@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# selftest-split-pattern-library.sh — task-v150 S6: Rule 21.6 拆分模式库机器面静态守护
+# 用法：bash scripts/selftest-split-pattern-library.sh（只读零写入，幂等可重复运行；SP-01..13 逐行 PASS/FAIL，
+# 末行 Total，全 PASS exit 0 / 任一 FAIL exit 1）。范式对齐 selftest-media-dispatch.sh（同构骨架）。
+# 守护面：库文件 11 模式/来源锚/低档贡献行/消费契约/未吸收登记/伴飞表路径 + critical-rules 21.6 五子条 +
+# 既有 21.1b/21.4/`### 22` 锚未破坏（36.5 纯增量）+ SKILL.md 接线 ≥3 处 + dispatch 模板 No-Placeholder 契约行。
+
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LIB="$SKILL_ROOT/references/split-pattern-library.md"
+CRIT="$SKILL_ROOT/references/critical-rules.md"
+SKILLMD="$SKILL_ROOT/SKILL.md"
+DISP="$SKILL_ROOT/templates/subagent_dispatch.md"
+
+PASS=0; FAIL=0
+ok()  { PASS=$((PASS+1)); printf 'SP-%s PASS %s\n' "$1" "$2"; }
+bad() { FAIL=$((FAIL+1)); printf 'SP-%s FAIL %s\n' "$1" "$2"; }
+
+# SP-01 库文件在位（21.6.1 消费面唯一载体，缺文件=拆分决策链断链）
+if [ -f "$LIB" ]; then ok 01 "库文件在位"; else bad 01 "库文件缺失 $LIB"; fi
+
+# SP-02 模式数 =11（P1-P11 设计契约冻结量；多=未冻结名混入，少=模式被裁）
+n="$(grep -c '^### P' "$LIB" 2>/dev/null || true)"
+if [ "$n" = "11" ]; then ok 02 "模式数 11（P1-P11）"; else bad 02 "模式数 $n（应 =11）"; fi
+
+# SP-03 伴飞表 ≥7 数据行 且 表内 / 路径逐一 [ -f ]（21.6.5 消费面；路径失效=低档模型首动作 Read 即失败，
+# 机器锁死 kb §5⑤ 已验证路径，防漂移）
+rows="$(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -c '^|')"
+miss=0; tot=0
+while IFS= read -r p; do
+  tot=$((tot+1)); [ -f "$p" ] || { miss=$((miss+1)); printf 'SP-03      路径缺失 %s\n' "$p"; }
+done < <(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -o '/[^ |)]*SKILL\.md' | sort -u)
+if [ "$rows" -ge 7 ] && [ "$miss" = "0" ]; then
+  ok 03 "伴飞表数据行 $rows ≥7 且路径 $tot 条全部存在（0 缺失）"
+else
+  bad 03 "伴飞表数据行 $rows（应 ≥7）或路径缺失 $miss/$tot 条"
+fi
+
+# SP-04 21.6.1-21.6.5 五子条锚 ≥5（条款本体；缺任一=拆分质量条款失守）
+n="$(grep -cE '21\.6\.[1-5]' "$CRIT" 2>/dev/null || true)"
+if [ "$n" -ge 5 ]; then ok 04 "21.6 子条锚 $n ≥5"; else bad 04 "21.6 子条锚 $n（应 ≥5）"; fi
+
+# SP-05 `### 22` 结构锚仍在（21/22 分界；被误删=53.3 二分管辖失去边界依据）
+if grep -q '^### 22 子代理规模限制' "$CRIT"; then ok 05 "结构锚 '### 22 子代理规模限制' 在位"; else bad 05 "结构锚 '### 22' 缺失（分界被破坏）"; fi
+
+# SP-06 负断言：21.1b 关键句仍在（21.6 纯增量禁改 21.1-21.5 既有文本，锁步级三值上限条款本体）
+if grep -q '步级(S-unit)派发粒度上限' "$CRIT"; then ok 06 "21.1b 关键句 '步级(S-unit)派发粒度上限' 在位"; else bad 06 "21.1b 关键句缺失（存量条款被破坏）"; fi
+
+# SP-07 负断言：21.4 调度铁律关键句仍在（P0 铁律与 21.6 拆分面相邻，锁句防调度面非对称修改）
+if grep -q '子代理调度铁律' "$CRIT"; then ok 07 "21.4 关键句 '子代理调度铁律' 在位"; else bad 07 "21.4 关键句缺失（调度铁律被破坏）"; fi
+
+# SP-08 SKILL.md 库引用 ≥3（S4 接线四锚；<3=部分接线丢失，SKILL.md 查不到库入口）
+n="$(grep -c 'split-pattern-library' "$SKILLMD" 2>/dev/null || true)"
+if [ "$n" -ge 3 ]; then ok 08 "SKILL.md 库引用 $n ≥3"; else bad 08 "SKILL.md 库引用 $n（应 ≥3，S4 接线断锚）"; fi
+
+# SP-09 dispatch 模板 No-Placeholder 契约行在位（21.6.4 任务书侧载体；被删=模板与 Rule 脱钩）
+if grep -q 'No-Placeholder 契约' "$DISP"; then ok 09 "dispatch 模板 No-Placeholder 契约行在位"; else bad 09 "dispatch 模板 No-Placeholder 契约行缺失"; fi
+
+# SP-10 来源锚 ≥10（每模式五要素之一，锁「池内实践非凭空新造」证据链，Rule 21.2 可追溯）
+n="$(grep -c '来源' "$LIB" 2>/dev/null || true)"
+if [ "$n" -ge 10 ]; then ok 10 "来源锚 $n ≥10"; else bad 10 "来源锚 $n（应 ≥10，来源证据链断裂）"; fi
+
+# SP-11 低档模型贡献行 =11（/goal 锚定硬约束；<11=有模式退化为无贡献声明的泛化条目，任务动机失守）
+n="$(grep -c '对低档模型执行明确性的贡献' "$LIB" 2>/dev/null || true)"
+if [ "$n" = "11" ]; then ok 11 "低档模型贡献行 11（每模式一行）"; else bad 11 "低档模型贡献行 $n（应 =11，硬约束）"; fi
+
+# SP-12 消费契约段 + 未吸收登记段双锚（消费纪律库侧载体 + 53.3 管辖显式记录，缺=库边界/消费面失锚）
+a="$(grep -c '^## 消费契约' "$LIB" 2>/dev/null || true)"
+b="$(grep -c '^## 未吸收登记' "$LIB" 2>/dev/null || true)"
+if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 12 "消费契约段 + 未吸收登记段双锚在位"; else bad 12 "库段锚缺失（消费契约=$a 未吸收登记=$b）"; fi
+
+# SP-13 （加分）库内 'Rule 21.6' 引用（库与 Rule 互为锚，防库被复制带走后与条款脱钩）
+if grep -q 'Rule 21\.6' "$LIB"; then ok 13 "库内 'Rule 21.6' 引用在位"; else bad 13 "库内 'Rule 21.6' 引用缺失"; fi
+
+printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
+exit $((FAIL > 0))
