@@ -5,7 +5,7 @@
 #    · critical-rules.md: Rule 54 七子条（54.0-54.6）逐条行首标题字面锚（EH-01..EH-07，各 =1 锁唯一落点）
 #      + 54.0 有依据原则/54.5 落盘义务/54.6 零新键三关键短语（EH-08，各 ≥1）
 #      + 负断言：54 块尾上下文（末条 54.6 行起至文件尾）无 "55.x" 子条被顺手创建（EH-13，语境锚定，RC-15 前移防线呼应）
-#    · SKILL.md: 摘要行「Rule 54」≥1（实际 3 落点：C38 行/摘要 bullet/References 行）+ C38 合规行 =1 + 索引括注「Rule 40-54」=1（EH-09）
+#    · SKILL.md: 摘要行「Rule 54」≥1（实际 3 落点：C38 行/摘要 bullet/References 行）+ C38 合规行 =1 + 索引括注「Rule 40-5x」宽容锚 ≥1（EH-09）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 #    · 模板面: delivery-summary.md「54.1」≥1 且「54.4」≥1（EH-10，真实进展对照行双锚）
 #    · companion 面: image/video-generation-executor.md「Rule 54 消费」指针行各 =1（EH-11/EH-12）
 #    · config 面: 零新键负断言「"execution_honesty」=0（EH-14，54.6 零新 config 键声明的机器佐证）
@@ -87,20 +87,19 @@ else
   bad 08 "critical-rules.md 关键短语 evidence-first=$a / decision-basis=$b / 零新 config 键=$c（各应 ≥1，语义内核被裁）"
 fi
 
-# EH-09 SKILL.md 联动面：「Rule 54」≥1（C38 行/摘要 bullet/References 行三落点）且「C38」=1 且索引全集括注宽容锚 40-5[3-9] ≥1
+# EH-09 SKILL.md 联动面：「Rule 54」≥1（C38 行/摘要 bullet/References 行三落点）且「C38」=1 且索引全集括注宽容锚 40-(5[3-9]|6[0-9]) ≥1 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 # Why: SKILL.md 是 LLM 读条款的入口索引（RC-09/RR-07 同范式）——「Rule 54」漏联动=摘要与条款脱钩（条款扩到 54 但索引停摆）；
 # C38 行=Rule 54 的合规清单消费点（丢行=合规面与 54 子条脱钩）；索引行全集括注（RR-16 同先例，级联漏改面）；
 # C38 =1 锁唯一落点（重复落点=段落复制漂移）。
 # [2026-10-05 task-v138 合并级联] 全集括注 40-54→40-55（Rule 55 合法落地）——锚由固定 'Rule 40-54'=1 改宽容正则 40-5[3-9]≥1
 # （覆盖 40-53/54/55 各纪元，v136 R-09/SR-08/RR-16「宽容正则优先」先例；防止下次全集演进再钉死；C38 唯一性断言不变）。
-# [2026-10-08 task-v146 合并级联: 括注演进「40-61 全集」（Rule 61 落地），宽容正则 40-5[3-9]→40-(5[3-9]|6[0-9])]
 x="$(grep -cF 'Rule 54' "$SKILLMD" || true)"
 y="$(grep -cF 'C38' "$SKILLMD" || true)"
 z="$(grep -cE 'Rule 40-(5[3-9]|6[0-9])' "$SKILLMD" || true)"
 if [ "$x" -ge 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
-  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引全集括注「Rule 40-5x/6x」宽容锚≥1（现状 40-61）"
+  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引全集括注「Rule 40-(5[3-9]|6[0-9])」宽容锚≥1（现状 40-62）"
 else
-  bad 09 "SKILL.md Rule 54=$x（应 ≥1）或 C38=$y（应 =1）或「Rule 40-5x/6x」=$z（应 ≥1，级联漏改）"
+  bad 09 "SKILL.md Rule 54=$x（应 ≥1）或 C38=$y（应 =1）或「Rule 40-(5[3-9]|6[0-9])」=$z（应 ≥1，级联漏改）"
 fi
 
 # EH-10 模板面：delivery-summary.md「54.1」≥1 且「54.4」≥1（真实进展对照行双锚）

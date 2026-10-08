@@ -10,11 +10,11 @@
 #   R-06     43.2 行内锚：「最小档位」≥1（档位经济）
 #   R-07     43.3 行内锚：「候选对比表」≥1（候选预验证）
 #   R-08     SKILL.md `grep -c '| C30 |'` = 1 且 `grep -c '| C31 |'` = 1（合规清单 C30/C31 消费行）
-#   R-09     SKILL.md `grep -cE '含 Rule 40-(5[3-9]|6[0-9]) 全集'` ≥1 且 `grep -c '1-40'` = 0（括注全集锚+越界负断言）
+#   R-09     SKILL.md `grep -c '含 Rule 40-[56][0-9] 全集'` ≥1 且 `grep -c '1-40'` = 0（括注全集锚+越界负断言）
 #            [2026-10-05 task-v131 CR P1-2 级联: SKILL.md:266 括注演进「（含 Rule 40/41/42/43/44/45/46/47/48/49/51）」→「（含 Rule 40-53 全集）」, 锚随之演进, 原锚「含 Rule 40/41/42/43」, 判例 SR-11 锚演进必同步]
 #   R-10     模板/契约消费面：templates/task_plan.md「质量审查工具」≥1 且 plan-writer.md「质量审查工具检测登记」≥1
 #   R-11     mini-lite 豁免锚：variant/mini-lite-type.md「Rule 42.5 豁免」≥1
-#   R-12     零新 config 键——config.json properties 键数 = 40（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）
+#   R-12     零新 config 键——config.json properties 键数 = 42（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 #   R-13     43.5 行内锚：「实际生成测试」≥1（提示词/参数修改后必须实测，task-v133 新增）
 #   R-14     43.6 行内锚：「优点」≥1（未验证结果禁止优点宣传，task-v133 新增）
 #   R-15     53.5 行 Q9 触发面登记锚（Q9 属主=43.5/43.6/51.8，挂 26.3 惩罚映射语义，先例 Q7/Q8，task-v133 新增）
@@ -80,10 +80,10 @@ if [ "$a" -eq 1 ] && [ "$b" -eq 1 ]; then ok 08 "SKILL.md C30/C31 合规清单�
 # [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41/42/43」→「含 Rule 40-53 全集」(SKILL.md:266 括注演进), 1-40 负断言保留]
 # [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 锚宽容化 40-5[3-9]（v118/v131/v132 教训: 先扫后改, 宽容正则优先）, 1-40 负断言保留]
 # [2026-10-05 task-v138 合并级联: 括注演进「40-55 全集」（Rule 55 落地），宽容正则 40-5[3-9] 仍覆盖 40-55，保持宽容锚不重新钉死（宽容正则优先先例；v138 侧 40-55 固定锚在合并面让位于宽容锚，语义强度不降）]
-# [2026-10-08 task-v146 合并级联: 括注演进「40-61 全集」（Rule 61 落地），宽容正则 40-5[3-9]→40-(5[3-9]|6[0-9])]
-a="$(grep -cE '含 Rule 40-(5[3-9]|6[0-9]) 全集' "$SKILLMD" || true)"
+# [2026-10-08 task-v144 合并级联（附带, 同 IP-12 宽容正则先例）: SKILL.md 全集声明已演进为「Rule 40-62 全集」(L273), 旧宽容正则 40-5[3-9] 失配=0, 随动 40-5[3-9]→40-[56][0-9]（覆盖 40-53..40-69 全区间, 语义强度不降: 仍为宽容锚不重新钉死）, 1-40 负断言保留]
+a="$(grep -cE '含 Rule 40-[56][0-9] 全集' "$SKILLMD" || true)"
 b="$(grep -c '1-40' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 09 "SKILL.md「含 Rule 40-5x/6x 全集」宽容锚 $a ≥1 且越界 1-40 =0"; else bad 09 "SKILL.md 括注锚漂移（含 Rule 40-5[3-9] 全集=$a 应 ≥1 / 1-40=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 09 "SKILL.md「含 Rule 40-5x/6x 全集」宽容锚 $a ≥1 且越界 1-40 =0"; else bad 09 "SKILL.md 括注锚漂移（含 Rule 40-[56][0-9] 全集=$a 应 ≥1 / 1-40=$b 应 0）"; fi
 # R-10 模板配置表「质量审查工具」行 + plan-writer 义务行（检测登记）
 a="$(grep -c '质量审查工具' "$TPL" || true)"
 b="$(grep -c '质量审查工具检测登记' "$PLANWRITER" || true)"
@@ -91,10 +91,11 @@ if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 10 "模板「质量审查工具」�
 # R-11 mini-lite 豁免声明锚
 n="$(grep -c 'Rule 42.5 豁免' "$MINILITE" || true)"
 if [ "$n" -ge 1 ]; then ok 11 "mini-lite「Rule 42.5 豁免」声明行 $n ≥1"; else bad 11 "mini-lite 豁免声明行缺失（Rule 42.5 豁免 命中 $n 应 ≥1）"; fi
-# R-12 零新 config 键——properties 键数 = 40（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# R-12 零新 config 键——properties 键数 = 42（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 12 "config.json properties 键数 40（零新增）"; else bad 12 "config.json properties 键数=$keys（应 40）"; fi
+  if [ "$keys" = "42" ]; then ok 12 "config.json properties 键数 42（零新增）"; else bad 12 "config.json properties 键数=$keys（应 42）"; fi
 else
   printf 'R-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

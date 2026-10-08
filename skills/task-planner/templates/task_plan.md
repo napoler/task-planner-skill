@@ -256,15 +256,17 @@ Phase 1
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
   机器契约(check-plan-dispatch.sh attest 校验):
-  ① 预估时长列一律写 NNmin 格式(先估出可测的时长),逐行数值校验——超限打 SKIPPED 提示(不阻断,复杂度由模型判断:预估超 15min 或输入超 2 文件时,模型应自行把该行拆成更小 S-unit)
-  ② 输入列文件路径 token 计数 ≤2,超限同样 SKIPPED 提示
-  ③ 拆分决策基准 = 预估时间(用户裁决 09-17):写表时先给每行可测的 NNmin 预估,模型据此决定拆不拆,机侧提示行只是复述供 review 对照
+  ① 预估时长列一律写 NNmin 格式(先估出可测的时长),逐行数值校验——超限= enforce 档硬阻断拒锁回炉重拆（Rule 59.1，2026-10-08 由 SKIPPED 提示升级）
+  ② 输入列文件路径 token 计数 ≤2,超限= enforce 档硬阻断拒锁回炉重拆（Rule 59.1，2026-10-08 由 SKIPPED 提示升级）
+  ③ 拆分决策基准 = 预估时间(用户裁决 09-17):写表时先给每行可测的 NNmin 预估,模型据此决定拆不拆,机侧校验行供 review 对照
   ④ ID 列一律纯数字（S1/S2…），禁字母后缀——check-plan-dispatch.sh 数据行正则不认 S2a 式命名，attest 拒锁（task-v076 教训）
+  - 粒度三值列 Nf/Nl/Nmin 格式逐行校验,任一超 step_max_files/step_max_lines/step_max_minutes → enforce 拒锁
+  - 伴飞技能列非「无」→ 校验对应 SKILL.md 路径存在(Rule 59.2)
 -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
-|----|------------|------------------------|-------------|---------|------|
-| S1 | | 继承 | | | ≤15min | pending |
-| S2 | | 继承 | | | ≤15min | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|
+| S1 | | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | pending |
+| S2 | | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | pending |
 
 ### Phase 4: Testing & Verification
 <!-- 

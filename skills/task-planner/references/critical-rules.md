@@ -723,3 +723,43 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 - **61.4 防自触发**：偏移检查的派发与回收不计入「连续 ≥3 次工具调用」累计；每次检查完成后计数清零（检查即新基线），防高频检查自我触发死循环
 - **61.5 失败兜底**：drift-checker 失败/超时 → 先 Read 检查点（22.8.4）→ 重试 1 次 → 仍失败降级主进程跑 `check-drift.sh`（只消费脚本输出，禁读计划全文）并登记债务；同 Phase 连续 3 次降级 → 按 Rule 41 评估上报
 - **61.6 机制**：零新 config 键；`selftest-drift-check-subagent.sh` 静态守护（六处载体锚+负断言+三态一致+覆盖矩阵行+hook 文案）；SKILL.md 路由表/合规清单 C4/References 同步措辞；锚定级联护栏=索引括注扩展头部 `Rules 1-39` 不动
+
+<!-- Rule 62 (task-v145 2026-10-08): 纯增量新增；判例=videop1 调研派发 prompt 手写「findings.md（主进程回填，你只写检查点）」收窄 22.4a 契约——调研子代理守约禁写，30KB 知识只停检查点，findings.md 43 行 0 小节；守卫 check-dispatch.sh 只查三文件路径存在性，对契约措辞语义盲区 -->
+
+### 62 四文件罗盘数据流转与调研知识沉淀纪律（P0 — task-v145，目标：task_plan/findings/progress/knowledge-brief 四文件 = 主代理↔子代理数据流转唯一协议介质，调研产出双落盘、派发契约不可收窄、知识增量门控；判定面=LLM 行为+check-dispatch.sh/check-3file-gate.sh 机器扩展，零新 config 键；衔接 Rule 19/22.4a/22.5/22.8/55，既有 Rules 原文零改动）
+
+本条源于用户 2026-10-08 反馈：调研子代理被派发 prompt 明确禁写 findings.md（「主进程回填，你只写检查点」），知识发现型产出的积累链路断裂——三文件罗盘（Rule 19）与知识底座（v067 起第 6 计划文件）各自为政未成体系。本条把四文件升格为跨代理数据流转协议，并给派发契约措辞上机器守卫。
+
+62.1 **四文件体系定位（协议介质）**：`task_plan.md`（目标维：状态与指针）/ `findings.md`（决策维：调研结论与证据）/ `progress.md`（进度维：动作与测试）/ `knowledge-brief.md`（知识维：可复用知识底座）四文件 = 主代理↔子代理数据流转的**唯一协议介质**——子代理上下文 = 易失缓存（RAM），四文件 = 持久层（Disk），任何跨代理传递的结论/状态/知识必须经四文件落盘，禁止只存在于子代理返回消息或会话记忆。会话恢复读序在 Rule 19.3 三文件之上扩展第 4 步：task_plan（在哪/去哪）→ progress（做过什么）→ findings（已知什么）→ knowledge-brief（可复用什么）。
+
+62.2 **派发读写契约不可收窄禁令（no-contract-narrowing）**：派发 prompt 对四文件的读写契约必须与 22.4a 标准契约**同语义**——task_plan 只读 / findings 可读+可写（仅追加 `#### [sub:{seq}-{type}]` 锚点小节，22.4a 必做义务）/ progress 可读+仅追加 `[sub:{seq}]` 子项 / knowledge-brief 只读（主进程单写者）。禁止出现「只写检查点」「主进程回填（你不用写）」类**收窄措辞**——收窄 = 把 22.4a 子代理必做自写降级为主进程代劳或禁写；**检查点（22.8）与 findings 自写（22.4a）是叠加义务不是二选一**。机器面 = `check-dispatch.sh` 契约措辞 lint：prompt 含收窄词（「只写检查点」/「主进程回填」+否定性续文如「你只」「不用写」「无需写」）**且**缺 findings append 锚点标记（`#### [sub:` 或 `可写=仅追加`）→ 判契约收窄违规，处置挂 `dispatch_contract_enforce` 既有档位（enforce=exit 2 / warn=stderr 告警+计数 / off=跳过）；单一条件命中不判（降误报：兜底说明语境合法引用「主进程回填」而同时给出 append 契约的不违规）。
+
+62.3 **调研产出罗盘沉淀（双落盘）**：调研类子代理（explore/web-search/doc-search/research/codebase-analyzer 族）的结论 = **双落盘**——① findings.md 追加自己的小节（22.4a 既有必做，原始结论+证据锚）；② 主进程 22.5 复核时**蒸馏归档** knowledge-brief.md 对应节（可复用事实→§2 / 文件锚点→§3 / 易错点→§4），蒸馏=提炼可复用知识非复制原文。22.5 回填义务对调研类升格为**双动作**「findings 复核 + knowledge-brief 蒸馏」，Handoff 登记表「findings 落点」列记双锚 `findings锚|kb:§N`；knowledge-brief 为主进程单写者（结构化底座供派发材料包消费，禁止子代理直写，与 22.4a B-2 单写者纪律同构），只更新对应节内容、禁改 §1-§5 既有结构。
+
+62.4 **知识消费闭环（先查后调）**：调研型 S-unit 派发 prompt 的材料包摘要**必须**引用 knowledge-brief.md 对应节锚点（升格 22.4「brief 存在时应引用」为调研型强制）；后续同类调研先查 kb §2（已验证事实）与 §4（易错点），命中已验证结论的禁止从零重调研（联动 55.1 复用前置检查）——knowledge-brief 是调研结论的第一消费入口。
+
+62.5 **知识增量门控（kb-distill gate）**：调研型 Phase 标记 complete 前，除 19.2 双条件（progress 回填 + findings 增量）外加查 **knowledge-brief 本 Phase 增量**（ledger `kb_distill` 事件行或 mtime 晚于 Phase 锚点；本 Phase 无调研产出的登记豁免一行，禁裸豁免）。机器面 = `check-3file-gate.sh --require-kb`（调研型 Phase 传入）+ `ledger-append.sh` 事件枚举增补 `kb_distill`（纯增量，既有枚举零改动）。
+
+62.6 **机制**：零新 config 键（lint 挂 dispatch_contract_enforce 既有档位、gate 扩展为参数传入）；`scripts/selftest-four-file-dataflow.sh` 静态守护（62.1-62.5 条款锚 + 派发模板 kb 契约行 + SKILL 触点 + lint/gate/ledger 扩展锚）；合规清单 C42；适用面 = 所有 Agent() 派发（62.2）与调研型 Phase（62.3-62.5），纯机械 S-unit（记账/搬运类）62.3-62.5 豁免（登记一行）。
+
+<!-- Rule 59 (task-v144 2026-10-08): 纯增量新增；判例=用户 R1-R6 五条缺陷原话（拆分不细致/子代理无技能/上下文叠加/能力不匹配/技能库闲置，全文见 plans/task-v144/task_plan.md「🎯 用户需求原文」） -->
+
+### 59 子代理拆分粒度硬门与技能伴飞纪律（P0, 2026-10-08 task-v144，目标：计划期粒度三值 enforce 硬门 + 派发侧技能伴飞注入 + 执行前技能扫描 + 能力预防判据 + 分段执行锚，根除「单子代理巨量任务/子代理无技能强化/上下文反复叠加/复杂任务超执行体档位能力/200+ 技能库闲置」五缺陷；判定面=LLM 行为+check-dispatch.sh enforce 硬门+selftest 静态守护、零新 config 键；衔接 Rule 21.1b/21.4/22.3/22.4/43.2/46.1，既有 Rules 原文零改动）
+
+本条源于用户 2026-10-08 反馈原话 R1-R6（逐字抄录于 plans/task-v144/task_plan.md「🎯 用户需求原文」区块，51.1 口径）：「没有将子代理任务拆分细致 导致单个子代理解决巨量任务」（R1）；「尤其单个子代理不具备skill」（R2）；「子代理过大也会导致上下文反复叠加」（R3）；「子代理执行复杂任务 导致模型能力不够时候导致无法正确运行」（R4）；「基本没有调研 /comet 技能来进行任务执行的强化执行 我从来没有见过激活 …… supowerpowers 的相关技能也从未激活过 比如 头脑风暴」（R5）；「总之就是存在严重的缺陷 子代理拆分细致拆分 以及 任务分段执行」（R6）。归因（根源覆盖表，task_plan.md）：21.1b 粒度三值仅 SKIPPED 提示不阻断（超限 S-unit 合法流入派发）；22.4 九字段派发任务书无技能字段且工具面事实=仅 3 agent（task-orchestrator/auto-agent/article-research-heavy-agent）具备 Skill 工具而 Read 全量具备；技能库 200+（comet 族/superpowers 族/brainstorming 等）在计划期零扫描零匹配；22.3 拆细先于升档仅是失败后兜底而非计划期预防；46.1 单会话单 S-unit 在位但分段执行未与粒度门成链，大任务书可经任务书豁免 fail-open 溜入。
+
+59.1 **粒度三值硬门（three-value granularity gate，对应用户 R1/R3/R6）**：每个 S-unit 必须在 task_plan.md S-unit 表强制填报三值 `Nf/Nl/Nmin`（文件数/新增行数/预估分钟，模板行格式 `1f/65l/13min`）；三值任一项超 `config.json#subagent.step_max_files`(2)/`step_max_lines`(100)/`step_max_minutes`(15) → check-plan-dispatch.sh attest 时对粒度三值列超限 SKIPPED→enforce 拒锁（本条落地,task-v144）;check-dispatch.sh 派发侧为新增检测（该脚本此前无粒度检查）,prompt 含 Nf/Nl/Nmin token 超限即 enforce（复用既有档位键，超限 S-unit 拒锁回炉重拆，禁止整体派出；行内「例外」登记在案=超限留痕不阻断，见 check-plan-dispatch.sh ⑤-c 注释）。What=超限即拒锁而非提示；Why=R1「单个子代理解决巨量任务」+R3「子代理过大导致上下文反复叠加」——三值超限行流入派发=巨量任务源头，提示不阻断（21.1b 自认「拆分判断归模型」）使守门形同虚设；回炉重拆（而非升档换模型）是 R6「细致拆分」的计划期机器落地。
+
+59.2 **技能伴飞（skill-escort injection，对应用户 R2）**：S-unit 表新增「伴飞技能」列（技能名或 `无`=纯机械单元）；派发任务书 §2 按列值注入伴飞技能 SKILL.md **绝对路径**，子代理任务书规定**首动作 Read 该路径**（工具面事实：全部子代理具备 Read，仅 3 个 agent 具备 Skill 工具——Read 伴飞为唯一可泛化的注入路径，改 agent 定义=动保护区，59.7 同面）；重型技能（SKILL.md 全文 >300 行或含多 variant 文档）禁止要求子代理通读全文，由**主进程提炼 ≤20 行要点内联**进任务书材料包并附全文路径供子代理按需回读。What=技能以「路径+首动作 Read」形态随任务书到达子代理；Why=R2「单个子代理不具备skill」——22.4 九字段无技能字段+子代理多数无 Skill 工具=技能强化全链缺失；主进程提炼要点内联同时防 R3 上下文叠加（子代理只读 20 行要点而非数百行全文）。
+
+59.3 **执行前技能扫描（pre-dispatch skill scan，对应用户 R5）**：任务画像期（plan-writer/knowledge-brief 填写阶段）必须扫描可用技能面（~/.zcode/skills 与 ~/.agents/skills 索引），把匹配本任务画像的强化技能（comet 族、superpowers 族、brainstorming 等）写入 knowledge-brief「可用强化技能」区块（技能名/路径/匹配点/激活方式四列），供 S-unit 伴飞技能列取值；**用户触发型技能（comet 族等 frontmatter 声明 disable-model-invocation 设计者）仅提示用户可手动激活，禁止主进程/子代理自动代激活**——尊重其设计语义，「从未见过激活」（R5）的治理解法=显式可见性（扫描入 brief 供用户与执行体择用），而非越权代触发。What=计划期技能选型先于派发；Why=R5 技能库 200+ 从不被扫描匹配、comet/superpowers/brainstorming 闲置=强化执行能力存在但无接线。
+
+59.4 **能力预防判据（capability-prevention rule，对应用户 R4）**：计划期预估（59.1 三值 + 任务复杂度定性档 43.2）超出目标执行体档位承载能力（如判断型复杂任务预估需多轮试错/长上下文）时，**先拆细再派，禁止派出去等失败再兜底**——22.3「拆细先于升档」理念前移到计划期预防性执行：预估超档 → 拆成多个低档可载 S-unit（各自过 59.1 硬门）；拆后仍超档才走 22.3 既有兜底链（改派/升档/降档五档）。What=超档复杂度=拆细触发器，非执行后补救信号；Why=R4「子代理执行复杂任务 导致模型能力不够无法正确运行」——既有 22.3 只在失败后兜底，失败时上下文已污染，预防性拆细是唯一不付失败代价的路径。
+
+59.5 **分段执行锚（segmented-execution anchor，对应用户 R6「任务分段执行」）**：多段任务 = 多 S-unit + 多次独立 Agent() 派发 + 检查点链（每段独立 checkpoint 文件 `<plan-dir>/subagent-state/{seq}-{agent_type}.md`，46.1 单会话单 S-unit 口径：段与段之间=会话与会话之间的交接，前段三证据验收后才派后段）；**任务书豁免 fail-open 收窄**：46.2 任务书场景打包检测在文件可解析时不再整体豁免——59.1 三值列与 59.2 伴飞列在任务书内同样受 enforce 硬门约束，豁免仅保留「文件不可解析」fail-open 一档（既有 FG-05 fixture 语义不变）。What=分段=计划结构（S-unit 表行数）而非执行时临时切分；Why=R3/R6 上下文叠加与分段执行诉求——单一大任务书经豁免溜入即分段纪律失效，收窄豁免面使 46.1 与 59.1 成链。
+
+59.6 **机制守护（mechanism guard）**：机器面=`scripts/analyze-splits.sh`（读 S-unit 表三值列输出超限行拆分建议：干净 exit 0 / 有超限 exit 1，吸收 task-v135 丢失的拆分体检目标）+ `scripts/selftest-subagent-granularity-skill-escort.sh`（59.1-59.7 七子条文本锚 + 模板双列锚 + 伴飞子节锚 + check-dispatch enforce 断言 + 零新键声明，静态守护）+ selftest-registry.tsv 登记；消费侧=SKILL.md 合规清单 + 委派检查点（执行循环 2.5）对照。What=新条款挂既有档位管线+静态断言，防锚级联（55.6 同范式：只断言新增锚）；Why=53.2 根治判据载体=守卫（机器校验断言）+机制（三值列成链），条款无挂点=条款死文。
+
+59.7 **零新 config 键（no-new-key constraint）**：本条体系不新增任何 config.json 键——59.1 三值上限直接复用既有 `subagent.step_max_files/step_max_lines/step_max_minutes` 键（现行值 2/100/15），enforce 档位复用既有 dispatch 三档（off/warn/enforce）；伴飞技能列与「可用强化技能」区块为模板/任务书面字段，非机器键。Why=与 43.4/44.4/46.5/47.4/54.6/55.6 同范式（判定面主体=LLM 行为+模板字段，机器面挂既有档位管线不新增键）——键膨胀=配置面失控面，零新键是本体系可演进前提。
+
+59.8 **与既有 Rules 关系（complementary）**：本条与 21.1b（粒度上限）=提示→enforce 升级（原文零改动，升级在脚本档）；与 46.1（单会话单 S-unit）=分段执行锚的会话级载体（46.1 管会话内不连领，59.5 管段间验收链）；与 22.3（失败兜底链）=前移预防（59.4 计划期拆细先于 22.3 执行期兜底，两者串联非替代）；与 52.1（专用体优先选型）正交——52 管「选谁执行」，59 管「怎么拆/带什么技能/分几段」；既有 Rules 原文零改动（Rule 36.5 纯增量；合并序注：58=v143/60=v142 改号/62=v145 先行落地，59 按合并时间序列文件尾）。

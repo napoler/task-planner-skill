@@ -3,7 +3,7 @@
 # 范式对齐 selftest-media-agents.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、双层注释、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言覆盖矩阵（references/agent-coverage.md）在位、SKILL.md 六族行在位、B 类旧字面登记面零残留、
 #      矩阵 §一 agent 实体存在性（~/.zcode/agents，目录缺位 fail-open SKIPPED）、C 类 41 行处置覆盖、
-#      Rule 52 四子条+标题在位、config 零新键（properties=40）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 129 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
+#      Rule 52 四子条+标题在位、config 零新键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 129 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
 # 输入：references/agent-coverage.md、SKILL.md、../plan-template-kit/references/template-mapping.md、
 #      companion/agents/、templates/、references/critical-rules.md、config.json、
 #      $HOME/.zcode/agents/（仓外只读 test -f；目录缺位 fail-open SKIPPED，不硬 FAIL）。
@@ -170,13 +170,14 @@ else
   bad 06 "Rule 52 锚漂移（^52. 子条=$s52 应 4 / ^### 52 标题=$t52 应 ≥1）"
 fi
 
-# AC-07 零新 config 键（properties=40）
-# What：断言 config.json .properties 顶层键数保持 40（与 43.4/44.4/47/49/50/51 零新键同口径；jq 缺失打 SKIPPED 不 FAIL）。
+# AC-07 零新 config 键（properties=42）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+# What：断言 config.json .properties 顶层键数保持 42（与 43.4/44.4/47/49/50/51 零新键同口径；jq 缺失打 SKIPPED 不 FAIL）。
 # Why：Rule 52.4 承诺「零新 config 键——判定面=LLM 行为+静态守护，机器面不加新键」——键数膨胀=有人给执行体
 #      选型加了机器门控键，属机制漂移（需走 Rule 36 条款流程）；jq 缺失=环境降级非内容漂移（MA-10 先例）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 07 "config.json properties 键数 40（零新增）"; else bad 07 "config.json properties 键数=$keys（应 40，零新键承诺被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 07 "config.json properties 键数 42（零新增）"; else bad 07 "config.json properties 键数=$keys（应 42，零新键承诺被破坏）"; fi
 else
   skip 07 "jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）"
 fi
@@ -194,12 +195,12 @@ else
 fi
 
 # AC-09 矩阵行数上界锚（-le 129，task-v131 审计 L-3 对称守护 + CR P2-1 对齐）
-# What：断言 references/agent-coverage.md 行数 ≤129（wc -l 上界断言，129 为 2026-10-08 task-v146 实测值）。
+# What：断言 references/agent-coverage.md 行数 ≤129（wc -l 上界断言，129 为 2026-10-08 task-v146 合并后实测值）。
 # Why：task-v131 审计 L-3 指出 SKILL.md 行数在 selftest-skill-split.sh 有阈值断言（461→477 演进史），
 #      而矩阵 128 行锚此前无机器断言=文档膨胀侧漂移零守卫（矩阵被灌水=维护成本膨胀，矩阵被裁=选型事实源缩水）；
 #      演进规则：行数只增不减由 AC-05（C 表 41 行逐行含 纳入|豁免 内容锚）守内容完整性，AC-09 守上界防膨胀失控——
-#      原 =129 精确断言与 skill-split `-le` 上界惯例不一致、易漂移（CR P2-1），改 -le 129：矩阵合法增行（走
-#      Rule 52.3 增删同步）不破坏本锚，超上界 FAIL 并须按 52.3 同步流程后更新本上界 129→新值并在此行注记
+#      原 =128 精确断言与 skill-split `-le` 上界惯例不一致、易漂移（CR P2-1），改 -le 128：矩阵合法增行（走
+#      Rule 52.3 增删同步）不破坏本锚，超上界 FAIL 并须按 52.3 同步流程后更新本上界 128→新值并在此行注记
 #      演进史（格式先例 selftest-skill-split.sh T-主 440→…→477）。
 ml="$(wc -l < "$MATRIX" 2>/dev/null || true)"
 if [ -n "$ml" ] && [ "$ml" -le 129 ]; then

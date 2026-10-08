@@ -23,11 +23,17 @@
 - task_plan: {plan_dir}/task_plan.md — 只读(状态由主进程翻转,禁止修改)
 - findings:  {plan_dir}/findings.md — 可读;可写=仅追加 `#### [sub:{seq}-{type}] <标题>` 到 `## Research Findings` 段末(`## Technical Decisions` 前),禁改既有内容
 - progress:  {plan_dir}/progress.md — 可读;可写=仅在当前 Phase 段「Actions taken」下追加 `  - [sub:{seq}] <摘要>`,禁改 Status/Started
+- knowledge-brief: {plan_dir}/knowledge-brief.md — 只读(知识底座,主进程单写者;调研类 S-unit 的材料包摘要必须引用其 §1-§5 节锚点,Rule 62.4;[2026-10-08 task-v145] 四文件契约第 4 文件,Rule 62.2 不可收窄)
 - 材料包绝对路径/来源:取自 task_plan.md 该 Phase S-unit 表「输入」列(计划期预写):{path_1} {path_2}(此处只填路径,总量受 §9 预算约束)
 - findings.md 相关摘要(≤10 行):{findings_excerpt}
 - 上下文依赖:{context_dependencies}
 - 工具面提示（Rule 40）: 若该 S-unit 执行工具面非 Agent 子代理（如 workflow 编排/机械脚本/卫星技能）,须在本节注明所用工具与选择理由;「🧰 工具选择与编排」区块（计划内）是上游分析记录,本任务书按其结论派发。
 - 并行组声明（Rule 21.4，10-02）: 若该 S-unit 属并行组,须注明组名——计划 frontmatter `parallel_groups:` 组名清单 + S-unit 行/本任务书标记 `[parallel-group:<组名>]`;独立性四问（①文件集②资源③输入④验收依赖,任一 yes=不同组转串行）见 Rule 21.4;只读类预置组沿承 `[readonly-parallel]`;未声明组=串行槽。
+
+### 伴飞技能（Rule 59.2，任务书派发侧载体）
+- 取值规则: 计划 S-unit 表「伴飞技能」列值非「无」时本节必填,列值为「无」写「无（纯机械单元）」。
+- 注入格式: 伴飞技能 SKILL.md 绝对路径:{escort_skill_path}；子代理首动作：Read 该路径对齐方法论后再执行本任务。
+- 重型技能规则: 若该技能 SKILL.md 全文 >300 行（或含多 variant 文档）,本节另附主进程提炼的 ≤20 行要点 + 全文路径供子代理按需回读,禁止要求子代理通读全文——防上下文叠加（Rule 59.2 / R3）。
 
 ## 📚 必要知识储备上下文包(随 prompt 注入 — prompt 自包含)
 <!-- WHAT: 派发时必须注入的知识源;全文摘录或路径引用,保证子代理无会话记忆也能对齐知识库 -->

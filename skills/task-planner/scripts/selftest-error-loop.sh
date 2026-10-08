@@ -11,7 +11,7 @@
 #   EL-08 SKILL.md Critical Rules 摘要行含 Rule 31（防摘要漏联动）
 #   EL-09 SKILL.md 含 C19 合规检查项（Rule 31 联动）
 #   EL-10 SKILL.md 用户新指令处理含「错误指出特判」指针
-#   EL-11 SKILL.md frontmatter/References 含 Rules 1-3[1-6]（宽容锚: P4 时为 1-32, P5 加 Rule 33/34 后改 1-34, S4 加 Rule 35 后改 1-35, [2026-09-17 task-v079] Rule 36 级联后扩至 1-36 仍命中）
+#   EL-11 SKILL.md frontmatter/References 含 Rules 1-3[1-6]（宽容锚: P4 时为 1-32, P5 加 Rule 33/34 后改 1-34, S4 加 Rule 35 后改 1-35, [2026-09-17 task-v079] Rule 36 级联后扩至 1-36 仍命中）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[1-9]|[4-6][0-9])
 #   EL-12 config.json 含 error_loop_enforce 键（默认 warn，enum 三档）
 #   EL-13 templates/progress.md Error Log 含 Root Cause / Prevention 列
 #   EL-14 templates/task_plan.md Errors 表含 Prevention 指针列
@@ -55,8 +55,8 @@ if grep -q 'Rule 31' "$SKILLMD" && grep 'Rule 31' "$SKILLMD" | grep -q '错误�
 if grep -q '| C19 |' "$SKILLMD" && grep 'C19' "$SKILLMD" | grep -q 'Rule 31'; then ok 09 "SKILL.md C19 检查项"; else bad 09 "SKILL.md 缺 C19"; fi
 # EL-10
 if grep -q '错误指出特判' "$SKILLMD"; then ok 10 "SKILL.md 用户新指令处理指针"; else bad 10 "SKILL.md 缺错误指出特判"; fi
-# EL-11
-if grep -qE 'Rules 1-3[1-9]' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x 范围"; else bad 11 "SKILL.md 缺 Rules 1-3x"; fi
+# EL-11 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
+if grep -qE 'Rules 1-(3[1-9]|[4-6][0-9])' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x..6x 宽容范围（task-v144 扩 6x 纪元）"; else bad 11 "SKILL.md 缺 Rules 1-3x..6x 宽容锚"; fi
 # EL-12
 if grep -q '"error_loop_enforce"' "$CONFIG" && python3 -c "
 import json,sys

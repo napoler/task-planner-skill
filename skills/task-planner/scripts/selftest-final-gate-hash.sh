@@ -13,7 +13,10 @@
 #   ⑤ 状态文件缺失/损坏 → fail-open 全量 + 自愈重写(可再 SKIP)
 #   ⑥ SKIP 后真变化的门仍拦截 — Executor 改子代理(派发型缺 S-unit 表) → 全量重跑
 #                PLAN-DISPATCH GATE FAILED + rc=1; 恢复后 SKIP 复效(失败轮未落状态)
-# 前置断言(提案 L141 指定): 程序化 grep 两脚本 jq .properties.* 消费集合 == 键④五键枚举。
+# 前置断言(提案 L141 指定): 程序化 grep 两脚本 jq .properties.* 消费集合 == 键④六键枚举。
+# [2026-10-08 task-v144 合并级联: check-plan-dispatch ⑤-c 新消费键] S17 的 check-plan-dispatch
+# ⑤-c 粒度三值硬门新消费 subagent.step_max_lines（双层路径范式, check-plan-dispatch.sh:128-129）,
+# 键④枚举 五键→六键, 本处补入 step_max_lines 保持枚举与实现消费集合一致（漂移即 FAIL 报警）。
 # 环境: /tmp 沙箱复制 skill 树运行(一切篡改发生在副本,不动仓内文件); 结束清理沙箱与状态文件。
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,10 +54,10 @@ pre_key4_integrity() {
     # 与实现同锚: 首锚匹配(sed 命令行自身)→挽救门注释行, = 键③哈希覆盖段
     sed -n '/FMEA 门控终验点/,/失败挽救链路终验门控/p' "$CC" > "$seg" 2>/dev/null
     { fg_logical_keys "$CPD"; fg_logical_keys "$seg"; } | sort -u > "$SB/keys.actual"
-    printf 'fmea_enforce\nplan_tier_enforce\nsubagent.step_max_files\nsubagent.step_max_minutes\nsubagent.step_max_steps\n' \
+    printf 'fmea_enforce\nplan_tier_enforce\nsubagent.step_max_files\nsubagent.step_max_lines\nsubagent.step_max_minutes\nsubagent.step_max_steps\n' \
         | sort > "$SB/keys.expected"
     if diff -u "$SB/keys.expected" "$SB/keys.actual" > "$SB/keys.diff" 2>&1; then
-        ok "前置-键④完整性: 两脚本 jq .properties.* 消费集合==五键枚举 ($(tr '\n' ' ' < "$SB/keys.actual"))"
+        ok "前置-键④完整性: 两脚本 jq .properties.* 消费集合==六键枚举 ($(tr '\n' ' ' < "$SB/keys.actual"))"
     else
         bad "前置-键④完整性漂移(键④枚举需同步更新): $(head -20 "$SB/keys.diff" | tr '\n' '; ')"
     fi

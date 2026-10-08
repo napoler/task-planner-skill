@@ -4,11 +4,11 @@
 # What（守护对象清单 + 运行方式）:
 #   静态断言 Rule 55 新增锚全部在位且既有锚未被破坏（Rule 36.5 纯增量守护），共 20 条 CP-01..CP-20：
 #     CP-01/02/03 critical-rules.md：`^### 55 ` 标题=1、`^55\.[1-6] ` 六子条=6、块首说明行含 task-v138
-#     CP-04/05/06 SKILL.md：`Rule 55` ≥3、`40-5x/6x 宽容` =1、`40-53` =0（演进完成，样式参照 RR-16 演进后口径）
+#     CP-04/05/06 SKILL.md：`Rule 55` ≥3、`40-[56][0-9]`（宽容, 当前声明=40-62）=1、`40-5[3-9]`（旧纪元）=0（演进完成，样式参照 RR-16 演进后口径；[2026-10-08 task-v144 合并级联（附带, 同 IP-12 宽容正则先例）]）
 #     CP-07/08/09 references/capability-registry.md：文件在、表头 8 列、agnes-quota 行 8 字段全非空
 #     CP-10..13 scripts/capabilities/agnes-quota.sh：存在、`bash -n` 通过、无硬编码密钥、头注释含 Rule 55
 #     CP-14/15 companion/agents/{video,image}-generation-executor.md：各含 `capability-registry` ≥1
-#     CP-16 config.json：.properties 键数=40（零新 config 键声明锚，沿用 tsv 末列既有口径）
+#     CP-16 config.json：.properties 键数=42（零新 config 键声明锚，沿用 tsv 末列既有口径）[2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 #     CP-17/18 脚本自身：SCRIPT_DIR 自定位行在位（仓库/worktree/部署位三处可跑）、头注释 What+Why 齐备
 #     CP-19/20 scripts/capabilities/agnes-quota.sh 运行时判定（本地 mock 实跑，F1 修复回归钉）：
 #              CP-19 404 模式 → exit≠0 + 失败语义且禁含成功 verdict；CP-20 200 模式 → exit 0 + verdict 含「未填充」
@@ -21,8 +21,8 @@
 #   55.6 声明 Rule 55 的机器面 = 本脚本静态守护；判定面=LLM 行为（复用前置检查/权威来源取舍/首次成功落盘），
 #   非机器触发，故零新 config 键（与 43.4/44.4/47.4/52.4 同范式）——CP-16 把「零新键」机器化。
 #   只断言 Rule 55 新增锚、绝不触碰既有 selftest 断言行（防锚级联：新守护脚本自身不得改写既有脚本任何行）；
-#   CP-06（`40-53`=0）与 CP-05（`40-5x/6x 宽容`=1）配对，锁死「纪元演进已收口」——防后续任务改写 SKILL.md 时
-#   旧纪元字面残留（锚级联漂移）。条款写完但无机器守卫 → 回归期可被静默删改（task_plan 根源覆盖表第 ⑦ 行），
+#   CP-06（`40-5[3-9]`=0）与 CP-05（`40-[56][0-9]`=1, 宽容正则）配对，锁死「纪元演进已收口」——防后续任务改写 SKILL.md 时
+#   旧纪元字面残留（锚级联漂移）。[2026-10-08 task-v144 合并级联（附带, 同 IP-12 宽容正则先例）: 原 CP-05 `40-55`=1/CP-06 `40-53`=0, SKILL.md 声明已演进 40-55→40-62, 随动宽容化]条款写完但无机器守卫 → 回归期可被静默删改（task_plan 根源覆盖表第 ⑦ 行），
 #   本脚本即该防复发的固定落盘资产（对应 R1「常用/可复用功能及时落盘到固定脚本」的自守护实例）。
 # 依赖：bash + grep；config.json 键数校验需 jq（缺失降级 python3，二者皆缺打 SKIPPED 不 FAIL，fail-open 非静默——
 #       打印提示行，与 selftest-reliability-institution.sh R-12 / selftest-media-dispatch.sh MD-08 先例一致）。
@@ -75,19 +75,20 @@ fi
 n="$(grep -c 'Rule 55' "$SKILLMD" || true)"
 if [ "$n" -ge 3 ]; then ok 04 "SKILL.md 'Rule 55' 计数 $n ≥3"; else bad 04 "SKILL.md 'Rule 55' 计数=$n（应 ≥3）"; fi
 
-# [2026-10-08 task-v146 合并级联: 括注演进「40-61 全集」（Rule 61 落地），字面 40-55 宽容化 40-(5[3-9]|6[0-9])]
-# CP-05 SKILL.md `40-5x/6x 宽容` 计数=1（新纪元全集声明）
-# What：断言 SKILL.md 出现 `40-5x/6x 宽容` 恰 1 次（Rules 40-61 全集声明行）。
-# Why：纪元演进后全集声明必须指向 61；=1 防漏改（仍写旧区间）或重复声明（多处不一致）。
-n="$(grep -cE '40-(5[3-9]|6[0-9])' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 05 "SKILL.md '40-5x/40-6x' 全集声明 =1"; else bad 05 "SKILL.md '40-5x/40-6x' 计数=$n（应 =1）"; fi
+# CP-05 SKILL.md `40-[56][0-9]` 计数=1（新纪元全集声明, 宽容正则）
+# [2026-10-08 task-v144 合并级联（附带, 同 IP-12 宽容正则先例）: SKILL.md 全集声明已演进为 `40-62`(L273), 旧固定锚 `40-55` 失配=0, 随动 40-55→宽容正则 40-[56][0-9]（覆盖 40-53..40-69, 后续合法扩号不触发本锚, 语义强度不降）, =1 计数语义不变]
+# What：断言 SKILL.md `40-[56][0-9]` 出现恰 1 次（Rules 全集声明行, 当前声明=`40-62`）。
+# Why：纪元演进后全集声明必须指向最新区间；=1 防漏改（仍写旧区间）或重复声明（多处不一致）。
+n="$(grep -cE '40-[56][0-9]' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 05 "SKILL.md '40-5x/6x' 全集声明（宽容 40-[56][0-9]）=1"; else bad 05 "SKILL.md '40-[56][0-9]' 计数=$n（应 =1）"; fi
 
-# CP-06 SKILL.md `40-53` 计数=0（旧纪元字面零残留，演进完成断言）
-# What：断言 SKILL.md 不再出现旧区间 `40-53`。
+# CP-06 SKILL.md `40-5[3-9]` 计数=0（旧纪元字面零残留, 演进完成断言）
+# [2026-10-08 task-v144 合并级联（附带, 同 IP-12）: SKILL.md 声明演进 40-55→40-62, CP-05/06 配对随动——CP-05 固定锚 40-55→宽容 40-[56][0-9]; CP-06 负断言对象 40-53→40-5[3-9]（覆盖 40-53/54/55 全部旧纪元, 语义=旧纪元字面零残留）]
+# What：断言 SKILL.md 不再出现旧区间字面 `40-5[3-9]`（40-53..40-59 零残留）。
 # Why：与 CP-05 配对锁死演进收口——旧纪元字面残留 = 索引自相矛盾（锚级联漂移），
 #      样式参照 RR-16 演进后口径（task-v131 先例：断言旧字面=0）。
-n="$(grep -c '40-53' "$SKILLMD" || true)"
-if [ "$n" -eq 0 ]; then ok 06 "SKILL.md '40-53' 旧纪元字面 =0（演进收口）"; else bad 06 "SKILL.md '40-53' 计数=$n（应 =0，旧纪元残留）"; fi
+n="$(grep -cE '40-5[3-9]' "$SKILLMD" || true)"
+if [ "$n" -eq 0 ]; then ok 06 "SKILL.md '40-5[3-9]' 旧纪元字面 =0（演进收口）"; else bad 06 "SKILL.md '40-5[3-9]' 计数=$n（应 =0，旧纪元残留）"; fi
 
 # CP-07 capability-registry.md 文件存在
 # What：断言 Rule 55.4 唯一索引文件 `references/capability-registry.md` 在位。
@@ -145,16 +146,17 @@ if [ "$n" -ge 1 ]; then ok 14 "video-generation-executor.md 接线 capability-re
 n="$(grep -c 'capability-registry' "$AGENT_IMAGE" 2>/dev/null || true)"
 if [ "$n" -ge 1 ]; then ok 15 "image-generation-executor.md 接线 capability-registry（$n）"; else bad 15 "image-generation-executor.md 缺 capability-registry 接线"; fi
 
-# CP-16 config.json .properties 键数=40（零新 config 键声明锚）
-# What：断言 config.json 顶层 properties 键数保持 40。
+# CP-16 config.json .properties 键数=42（零新 config 键声明锚）
+# [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+# What：断言 config.json 顶层 properties 键数保持 42。
 # Why：55.6 承诺「零新 config 键」（与 43.4/44.4/47.4/52.4 同范式）——键数膨胀 = 有人给 Rule 55 加了机器门控键，
-#      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=40`。
+#      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=42`。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 16 "config.json properties 键数 40（零新增）"; else bad 16 "config.json properties 键数=$keys（应 40，零新键被破坏）"; fi
+  if [ "$keys" = "42" ]; then ok 16 "config.json properties 键数 42（零新增）"; else bad 16 "config.json properties 键数=$keys（应 42，零新键被破坏）"; fi
 elif command -v python3 >/dev/null 2>&1; then
   keys="$(python3 -c "import json;print(len(json.load(open('$CONFIG'))['properties']))" 2>/dev/null || true)"
-  if [ "$keys" = "40" ]; then ok 16 "config.json properties 键数 40（python3 校验）"; else bad 16 "config.json properties 键数=$keys（应 40）"; fi
+  if [ "$keys" = "42" ]; then ok 16 "config.json properties 键数 42（python3 校验）"; else bad 16 "config.json properties 键数=$keys（应 42）"; fi
 else
   printf 'CP-16 SKIPPED jq/python3 均缺失，无法校验 config.json 键数（安装任一后重跑）\n'
 fi
