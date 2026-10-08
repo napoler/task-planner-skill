@@ -1,0 +1,8 @@
+{"tick":1,"ts":"2026-10-08T13:55:47Z","agent":"main","phase":"1","event":"attest","summary":"task-v149 计划锁定 SHA=3c054bac; 基线跑批已后台派发","files":[]}
+{"tick":2,"ts":"2026-10-08T14:00:41Z","agent":"main","phase":"1","event":"progress","summary":"L1 五任务终态核实(八行全幽灵)+L5 periodic 根因面确认(条款文本 0 命中)","files":[]}
+{"tick":3,"ts":"2026-10-08T14:52:59Z","agent":"main","phase":"2","event":"progress","summary":"Phase2 四面审计收口：57 项发现→处置表 36 项(D1-D36)；B 类重规划 new_rule=65+S-unit 14 行具体化；重 attest","files":[]}
+{"tick":4,"ts":"2026-10-08T14:57:48Z","agent":"main","phase":"2","event":"drift_check","summary":"ALIGNED+两整改已执行(Phase1-2 检查点06)","files":[]}
+{"tick":5,"ts":"2026-10-08T15:02:54Z","agent":"main","phase":"3","event":"progress","summary":"Phase3 启动：worktree 创建(21f7e6b)+三波并行组声明+重锁","files":[]}
+{"tick":6,"ts":"2026-10-08T17:52:39Z","agent":"main","phase":"3","event":"drift_check","summary":"Phase3 判定 DRIFT(低危行政)4 项整改全消解(commit aa06dde+scope 补录+S8 检查点代写+状态对齐)","files":[]}
+{"tick":7,"ts":"2026-10-08T23:25:15Z","agent":"main","phase":"4","event":"drift_check","summary":"Phase4 DRIFT 簿记面 2 项整改完成+回归口径勘误","files":[]}
+{"tick":8,"ts":"2026-10-08T23:34:57Z","agent":"main","phase":"5","event":"note","summary":"Phase5 合并回 0ff54bd+三部署位 IDENTICAL+cursor 重同步+备份外移 5 目录","files":[]}

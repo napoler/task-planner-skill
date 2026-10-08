@@ -29,3 +29,5 @@
 {"rule":64,"status":"reserved","task_id":"task-v148-drift-enforce","ts":"2026-10-08","note":"偏移检查留痕强制与节奏化触发纪律（attest new_rule 括注解析 fail-open，手动补登；63 已被 v147 占）"}
 {"rule":64,"status":"landed","task_id":"task-v148-drift-enforce","ts":"2026-10-08","note":""}
 {"rule":63,"status":"landed","task_id":"task-v147-research-first","ts":"2026-10-08","note":""}
+{"rule":65,"status":"reserved","task_id":"task-v149-skill-alignment-audit","ts":"2026-10-08","note":"恢复 v142 周期性回顾条款（v141 撞号文本丢失，按 critical-rules:676 仲裁先例重编号；task-v149）"}
+{"rule":65,"status":"landed","task_id":"task-v149-skill-alignment-audit","ts":"2026-10-09","note":""}
