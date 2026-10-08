@@ -26,7 +26,12 @@ cnt() { [ -f "$2" ] || { echo 0; return; }; grep -c -e "$1" "$2" 2>/dev/null || 
 [ "$(cnt '留痕三件套已落实' "$SKILL")" -ge 1 ] && ok "DCE-07 SKILL C4 行含留痕三件套已落实" || bad "DCE-07" "C4 追加缺失"
 [ "$(cnt '判定输入' "$AGENT")" -ge 1 ] && ok "DCE-08 drift-checker.md 含判定输入锚" || bad "DCE-08" "判定输入缺失"
 [ "$(cnt 'drift_enforce' "$CONFIG")" -eq 0 ] && ok "DCE-09 config.json 不含 drift_enforce（零新键）" || bad "DCE-09" "got=$(cnt 'drift_enforce' "$CONFIG") expect=0"
-[ "$(cnt 'Rule 64' "$CHANGELOG")" -ge 1 ] && ok "DCE-10 CHANGELOG 含 Rule 64" || bad "DCE-10" "条目缺失"
+# [2026-10-08 task-v148] DCE-10 部署布局自适应：CHANGELOG 为仓级文件，部署位不存在——缺失时 SKIP 计 PASS（What=部署位跑 selftest 不因仓级文件缺席而红；Why=selftest 权威运行位是仓源，部署位布局差异 FAIL 会污染真实回归信号）
+if [ -f "$CHANGELOG" ]; then
+  [ "$(cnt 'Rule 64' "$CHANGELOG")" -ge 1 ] && ok "DCE-10 CHANGELOG 含 Rule 64" || bad "DCE-10" "条目缺失"
+else
+  ok "DCE-10 CHANGELOG 含 Rule 64（SKIP：部署布局无仓级 CHANGELOG）"
+fi
 # ── 行为 fixture DCE-11~16 ──
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 # fixture: 合法 plan（满足 gate 条件 1-5）
