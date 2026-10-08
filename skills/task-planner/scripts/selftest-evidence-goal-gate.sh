@@ -26,10 +26,12 @@
 #     · scripts/init-session.sh（variant 路由兜底注入，EG-21 — CR F-1 修复载体）:
 #         EG-21 `inject_evidence_goal_block()` 定义 =1 且主流程调用行 =1（variant 产物缺锚时兜底注入双区块，镜像 51.1 注入范式）
 #     · 负断言（EG-16）:
-#         EG-16 critical-rules.md 58 块尾上下文（末条 58.7 行起至文件尾）`^63\.[0-9] ` =0
+#         EG-16 critical-rules.md 58 块尾上下文（末条 58.7 行起至文件尾）`^65\.[0-9] ` =0
 #               （RC-15 前向防线语境锚定变体：63 号未合法登记不得顺手创建；随下一编号落地时同步演进锚——
 #                task-v127「RC-15 负断言 ^50→^52 演进」同范式，口径扩展非回退）
 #               [2026-10-08 task-v144 合并级联] 负断言对象 '^59\.' → '^63\.'：Rule 59 已由 task-v144 合法落地
+#               [2026-10-08 task-v147 首代级联] '^63\.'→'^64\.'：Rule 63 已由 task-v147 落地（63.1-63.6）
+#               [2026-10-08 task-v147 第二代级联] '^64\.'→'^65\.'：Rule 64 已由 task-v148 落地（64.1-64.6），防线前移至 65
 #               （59.1-59.8 在位，旧 ^59 负断言过时）；61 预留未落地/62 已落地，63 为首个全未占用编号，
 #               演进后 =0 保持防顺手创建语义不弱化
 #     · config.json（零新键声明，EG-17/EG-18）:
@@ -217,18 +219,19 @@ if [ "$n" -eq 1 ]; then ok 14 "SKILL.md 合规行 C41 =1"; else bad 14 "SKILL.md
 n="$(grep -cF 'selftest-evidence-goal-gate.sh' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ]; then ok 15 "SKILL.md 机器面指称 selftest-evidence-goal-gate.sh=$n（≥1）"; else bad 15 "SKILL.md 机器面指称=$n（应 ≥1）"; fi
 
-# EG-16 负断言（语境锚定）：critical-rules.md 58 块尾上下文（末条 58.7 行起至文件尾）`^63\.[0-9] ` =0
+# EG-16 负断言（语境锚定）：critical-rules.md 58 块尾上下文（末条 58.7 行起至文件尾）`^65\.[0-9] ` =0
 # What：断言 58.7 之后不存在 63.x 子条行。
 # Why：RC-15 前向防线（防下一编号被顺手创建）的语境锚定实现——扫「58 块之后」而非全文（v127/RR-09 第 5 变体判例）；
 #      下一未占用编号合法落地时须同步演进本锚（task-v127「RC-15 负断言 ^50→^52 演进」同范式，口径扩展非回退）。
 #      [2026-10-08 task-v144 合并级联] '^59\.' → '^63\.'：Rule 59 已合法落地 59.1-59.8（本仓在位），
+#      [2026-10-08 task-v147 首代级联] '^63\.'→'^64\.'：Rule 63 已由 task-v147 落地（63.1-63.6 实测）；
 #      旧 ^59 负断言实测 =8 FAIL；61 预留未落地、62 已落地，63 为首个全未占用编号，演进防误报且不弱化防线。
 last58line="$(grep -nE '^58\.[1-7] ' "$CRIT" | tail -1 | cut -d: -f1 || true)"
 if [ -z "$last58line" ]; then
   bad 16 "critical-rules.md 未找到 58.x 末条行（块缺失，负断言无法语境锚定）"
 else
   tailctx="$(tail -n +"$last58line" "$CRIT")"
-  n="$(printf '%s\n' "$tailctx" | grep -cE '^63\.[0-9] ' || true)"
+  n="$(printf '%s\n' "$tailctx" | grep -cE '^65\.[0-9] ' || true)"
   if [ "$n" -eq 0 ]; then ok 16 "critical-rules.md 58 块尾上下文（L${last58line}起）「63.x」=0（RC-15 前向防线；task-v144 级联 59.1-59.8 已合法落地）"; else bad 16 "critical-rules.md 58 块尾「63.x」=$n（应 =0，63 号被顺手创建）"; fi
 fi
 
