@@ -10,11 +10,11 @@
 
 canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源：
 - `SKILL.md`（剥除 hooks）
-- `references/`（9 篇规则文档，2026-10-05 task-v131 Phase 6 实测 `find references -maxdepth 1 -type f | wc -l`；原 13 篇中 5 篇已迁出至卫星 skill，此后新增 agent-coverage/batch-quality-gate/dispatch-examples/methodology 4 篇）
+- `references/`（10 篇规则文档，2026-10-08 task-v149 实测 `find references -maxdepth 1 -type f | wc -l` → 10；原 13 篇中 5 篇已迁出至卫星 skill，此后新增 agent-coverage/batch-quality-gate/dispatch-examples/methodology/capability-registry 等）
   <!-- 修改说明（task-v131, 2026-10-05）：原行为=「8 篇」为旧数字（审计 L-4 判定过期）；改为 9 篇并以 find 实测为准。原因：目录自审计后新增 methodology.md，且原数字未随演化更新。 -->
 - `templates/`（10 个主模板 + 29 个场景变体；2026-10-05 task-v131 Phase 6 实测 `find templates -maxdepth 1 -type f` = 10，`find templates/variant -maxdepth 1 -type f` = 29；统一含「📚 必要知识储备」章节）
   <!-- 修改说明（task-v131, 2026-10-05）：原行为=「5 核心 + 3 辅助 + 12 变体」旧口径；现主模板 10 个（task_plan/progress/findings/verification/knowledge-brief/dispatch 等），变体 29 个（审计 L-4 判过期，find 实测为准）。 -->
-- `scripts/`（90 个文件，2026-10-05 task-v131 Phase 6 实测 `find scripts -maxdepth 1 -type f` = 90：含 51 个 selftest-*.sh 守护脚本 + check-*/resolve-*/sync-* 工具 + 级联 selftest 注册表）
+- `scripts/`（106 个文件，2026-10-08 task-v149 实测 `find scripts -maxdepth 1 -type f | wc -l` → 106：含 62 个 selftest-*.sh 守护脚本 + check-*/resolve-*/sync-* 工具 + 级联 selftest 注册表）
   <!-- 修改说明（task-v131, 2026-10-05）：原行为=「16 个工具脚本」严重过期（审计 L-4 判）；守卫/自查类脚本随 Rule 演进累积至 90，改为 find 实测口径。 -->
 - `lib/`（6 个 installer 库脚本：detect-tools/backup/install-stub/install-companion/migrate-refs/verify；2026-10-05 实测 `find lib -maxdepth 1 -type f` = 6）
 - `config.json`（阈值配置）
@@ -43,7 +43,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── README.md
 ├── examples.md
 ├── reference.md
-├── references/                              ← 规则文档（实测 9 篇，2026-10-05）
+├── references/                              ← 规则文档（实测 10 篇，2026-10-08）
 │   ├── critical-rules.md
 │   ├── todo-sync.md
 │   ├── worktree-isolation.md
@@ -61,7 +61,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / batch_report.md / delivery-summary.md / shared-tracker.md（其余主模板）
 │   └── variant/                             ← 场景化变体（实测 29 个 *-type.md，含 research/writing/diagnostic/publish 等）
-├── scripts/                                 ← 工具无关脚本（实测 90 文件，2026-10-05）
+├── scripts/                                 ← 工具无关脚本（实测 106 文件，2026-10-08）
 │   ├── check-complete.sh / .ps1
 │   ├── check-conflicts.sh
 │   ├── check-doc-sync.sh
@@ -78,7 +78,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │   ├── zcode-sessionstart.sh
 │   ├── zcode-userpromptsubmit.sh
 │   ├── attest-plan.sh / check-dispatch.sh / check-plan-dispatch.sh / resolve-plan-dir.sh / smart-merge-back.sh / rule-reserve.sh / ledger-append.sh 等（守卫与簿记脚本，2026-10-05 归类笔述）
-│   └── selftest-*.sh ×51 + selftest-registry.tsv（自测守护族，含 task-v131 新建 selftest-root-resolution.sh；不逐列）
+│   └── selftest-*.sh ×62 + selftest-registry.tsv（自测守护族，含 task-v131 新建 selftest-root-resolution.sh；不逐列） <!-- 2026-10-08 task-v149 对齐实态 -->
 ├── lib/                                     ← installer 库（实测 6 脚本）
 │   ├── detect-tools.sh
 │   ├── backup.sh
@@ -97,6 +97,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 └── .gitignore
 
 # 部署形态（2026-10-05 task-v131 M-1 口径修正：实盘=各宿主位均为全量副本，非「薄壳+rsync 指针」）
+<!-- 2026-10-08 task-v149 对齐实态：部署候选五工具（claude/zcode/opencode/cursor/continue，lib/detect-tools.sh）；在役三位=zcode/claude/opencode（全量 IDENTICAL）；cursor 位陈旧待 Phase 5 重同步；continue 未部署 -->
 宿主位清单（均 = 本仓 `skills/task-planner/` 全量副本：SKILL.md / scripts/ / references/ / templates/ / config.json 全同步，无独立 lib/、tests/、docs/、install.sh）：
 - `~/.zcode/skills/task-planner/`          ← ZCode 位
 - `~/.claude/skills/task-planner/`        ← Claude Code 位

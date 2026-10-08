@@ -377,7 +377,7 @@ EOF
 }
 
 # [2026-09-15 task-v074 P4-S1] 1) TEMPLATE_TYPE 位置参数为空时兜底 env TASK_TEMPLATE_TYPE
-#    (消 SKILL.md:524 "自动路由"语义漂移——SKILL 描述与实现一致化)
+#    (消 SKILL.md:505 "自动路由"语义漂移——SKILL 描述与实现一致化) # 2026-10-08 task-v149 行号锚对齐实态（D10）
 #    2) VALID_TYPES 改为从 $BUILTIN_TEMPLATES/variant/*-type.md 动态派生 + general 兜底
 #    (Rule 34.1 单一事实源=模板目录, 与 check-template-type.sh 同源原则; 原行为保留:
 #     未知/缺失类型 WARNING 回退 generic task_plan.md)

@@ -68,15 +68,15 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
 ├── config.json                              ← 阈值配置（40 键）
 ├── README.md / examples.md / reference.md
-├── references/                              ← 8 篇规则文档（实测 8：13 篇基线中 template-mapping/template-guide/billing 等 5 篇已迁出至卫星）
-│   ├── critical-rules.md                    # Rules 1-39（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36 技能修改保守化 + 37 任务类型机制画像 + 38 任务难度分级与轻量档 + 39 动态工作流编排）
+├── references/                              ← 10 篇规则文档（实测 10：13 篇基线中 template-mapping/template-guide/billing 等 3 篇已迁出至卫星） <!-- 2026-10-08 task-v149 对齐实态 -->
+│   ├── critical-rules.md                    # Rules 1-65（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36-39 技能修改保守化/任务类型画像/难度分级/动态工作流 + 40-43 工具面/问题消解/质量审查/执行可靠性 + 44-45 用户选择点/注释规范 + 46-50 子代理专注/媒体派发/交付总结/并行推进/内容分级 + 51-58 需求覆盖/执行体专业化/根源解决/执行诚实/可复用能力/用户指令/迭代测试/调研证据 + 59-62 拆分粒度/主动解决/偏移检查/四文件罗盘 + 63-65 检索优先/偏移留痕/周期性回顾） <!-- 2026-10-08 task-v149 对齐实态 -->
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── [template-mapping.md → ../plan-template-kit/references/template-mapping.md]
 │   ├── [template-guide.md → ../plan-template-kit/references/template-guide.md]
 │   ├── goal-gate.md / completion-gate.md
 │   └── [billing.md → ../plan-cost-guard/references/billing.md]
-├── templates/                               ← 5 核心 + 3 辅助 + 29 个 variant
+├── templates/                               ← 10 核心 + 29 个 variant <!-- 2026-10-08 task-v149 对齐实态 -->
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   └── variant/
 │       ├── research-type.md                 # 调研任务
@@ -117,7 +117,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── uninstall.sh                             ← 卸载（v2 新增）
 ├── INSTALL.md / MIGRATION.md                ← 用户文档
 ├── .gitignore                               # 排除 .backup/
-├── companion/                               — 伴生 agents（plan-writer / article-batch-publisher / article-field-fixer，跨平台部署用）
+├── companion/                               — 伴生 agents（plan-writer / article-batch-publisher / article-field-fixer / complex-planner / image-generation-executor / video-generation-executor / drift-checker，跨平台部署用） <!-- 2026-10-08 task-v149 对齐实态 -->
 ```
 
 ---

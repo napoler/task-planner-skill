@@ -17,13 +17,13 @@ A 3-phase task: research → synthesize → write.
 ```bash
 git clone https://github.com/napoler/task-planner-skill.git
 cd task-planner-skill
-bash scripts/install.sh
+bash skills/task-planner/install.sh
 ```
 
 Verify:
 
 ```bash
-bash scripts/validate.sh
+bash skills/task-planner/lib/verify.sh
 # → VALIDATION PASSED
 ```
 
@@ -38,8 +38,8 @@ Restart Claude Code.
 Claude (running the task-planner skill) does:
 
 ```
-1. session-catchup.py — no leftover plans found.
-2. mkdir -p plans/task-001/ && bash scripts/init-session.sh task-001
+1. session-catchup.ts — no leftover plans found.
+2. mkdir -p plans/task-001/ && bash skills/task-planner/scripts/init-session.sh task-001
 3. Write plans/task-001/task_plan.md with filled-in content
 4. Present the plan to you
 ```
@@ -100,7 +100,7 @@ phase: in_progress → complete
 The PreToolUse hook runs on every Write:
 
 ```bash
-bash scripts/check-scope.sh Write "plans/task-001/findings.md" "plans/task-001/task_plan.md"
+bash skills/task-planner/scripts/check-scope.sh Write "plans/task-001/findings.md" "plans/task-001/task_plan.md"
 # exit 0 → write allowed
 ```
 

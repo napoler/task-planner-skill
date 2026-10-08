@@ -34,7 +34,7 @@ P11="$TMP/emptydur/task_plan.md"; P12="$TMP/allgood/task_plan.md"
 
 # T01 合规: 2 派发型 Phase(Executor=executor(sonnet-1), 7 列 S 表, 执行体=继承) + 1 主进程 Phase(无表)
 # [2026-09-13 task-v065 S-1 F-2] 夹具 Executor 行补 `- ` 前缀 = canonical 模板格式
-#   (templates/task_plan.md:144 `- **Executor:** explore（mini）`)。裸 `**Executor:**`(无前缀)
+#   (templates/task_plan.md:224 `- **Executor:** explore（mini）`)。裸 `**Executor:**`(无前缀) # 2026-10-08 task-v149 行号锚对齐实态（D11）
 #   按新判定键计 legacy → T01/T02/T03/T06 会整体失覆盖，故统一为模板格式。
 printf '%s\n' \
 '# task_plan' \

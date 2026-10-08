@@ -1,6 +1,6 @@
 # 安装 task-planner
 
-两种安装路径：**LLM 自动安装**（将代码块粘贴到 AI 提示词中）或**手动安装**（手动执行命令）。安装脚本按 `lib/detect-tools.sh` 自动检测本机已装工具（claude-code / zcode / opencode / cursor / continue 五工具），为每个检测到的工具安装对应位置的软壳（多工具软壳模型，非单一目标目录）。
+两种安装路径：**LLM 自动安装**（将代码块粘贴到 AI 提示词中）或**手动安装**（手动执行命令）。安装脚本按 `lib/detect-tools.sh` 自动检测本机已装工具（claude-code / zcode / opencode / cursor / continue 五工具），为每个检测到的工具安装对应位置的软壳（多工具软壳模型，非单一目标目录）。 <!-- 2026-10-08 task-v149 对齐实态：在役三位=zcode/claude/opencode（全量 IDENTICAL）；cursor 位陈旧待 Phase 5 重同步；continue 未部署 -->
 
 > **安装后效果：** `task-planner` Skill 会被 Claude Code / ZCode / OpenCode 等已装工具自动发现。安装完成后，重启工具，然后让它规划一个多步骤任务即可。
 
@@ -290,7 +290,7 @@ ls task_plan.md   # 应存在
 ├── config.json                    (JSON-Schema 阈值配置, 40 键)
 ├── reference.md                   (Manus 原则 + Chain Handoff Contract)
 ├── examples.md                    (实战示例)
-├── scripts/                       (81 项: .sh 72 个（含 42 selftest）;
+├── scripts/                       (106 项: .sh 96 个（含 62 selftest）; <!-- 2026-10-08 task-v149 对齐实态 -->
 │   │                               另有 .ps1/.ts/.cjs 镜像与 lib/ 辅助)
 ├── templates/                     (39 个模板: 顶层 10 个 md
 │   │                               （task_plan / verification / findings / progress /
@@ -299,17 +299,18 @@ ls task_plan.md   # 应存在
 │   │                                delivery-summary）
 │   │                               + variant/ 29 类 template_type 变体
 │   │                                （*-*-type.md，含 video/image 家族 12 类）)
-├── references/                    (8 个: critical-rules / completion-gate / goal-gate /
+├── references/                    (10 个: critical-rules / completion-gate / goal-gate / <!-- 2026-10-08 task-v149 对齐实态 -->
 │   │                               dispatch-examples / methodology / todo-sync /
-│   │                               worktree-isolation / batch-quality-gate)
-└── companion/agents/              (6 个配套 agent: plan-writer /
+│   │                               worktree-isolation / batch-quality-gate /
+│   │                               agent-coverage / capability-registry)
+└── companion/agents/              (7 个配套 agent: plan-writer / <!-- 2026-10-08 task-v149 对齐实态 -->
                                      article-batch-publisher / article-field-fixer /
                                      complex-planner / image-generation-executor /
-                                     video-generation-executor,
+                                     video-generation-executor / drift-checker,
                                      部署到 ~/.zcode/agents/ 等)
 ```
 
-> 实际清单以 `ls -R skills/task-planner/` 为准（2026-10-02 实测：39 个模板、29 类 variant、81 项 scripts、8 个 references）；companion agent 变更后需重跑 `lib/install-companion.sh` 或定向 cp 到各平台 agents/ 目录。
+> 实际清单以 `ls -R skills/task-planner/` 为准（2026-10-08 实测：39 个模板（顶层 10 个 md + variant 29 类）、106 项 scripts（含 62 selftest）、10 个 references、7 个 companion agent）；companion agent 变更后需重跑 `lib/install-companion.sh` 或定向 cp 到各平台 agents/ 目录。 <!-- 2026-10-08 task-v149 对齐实态 -->
 
 总大小约 2.0 MB（2026-10-02 `du -sh` 实测），安装过程不会在 Skill 目录外写入任何内容。
 

@@ -30,7 +30,7 @@ skills/task-planner/
 │   ├── notepad-learnings.md
 │   └── knowledge-brief.md ← 任务知识简略要点（第 6 文件，v067 起 init-session 生成，五段结构）
 └── references/
-    ├── critical-rules.md ← Rules 1-39 核心执行约束
+    ├── critical-rules.md ← Rules 1-65 核心执行约束 <!-- 2026-10-08 task-v149 对齐实态 -->
     ├── completion-gate.md← 子代理验证 + 串行同步协议
     ├── goal-gate.md      ← VC 规则 + COMPLETE/PARTIAL/BLOCKED 退出标准
     └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）

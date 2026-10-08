@@ -10,13 +10,13 @@
 #         RF-04 63.2 块四步检索链词（本地/帮助面/官方文档/社区）各≥1（检索链本体锚）
 #         RF-05 63.4 块「编造」≥1 且「not-solved」≥1（有理有据边界双面：禁编造+诚实裁决收场）
 #     · SKILL.md（消费侧联动，RF-06..RF-08）:
-#         RF-06 `1-64` ≥3（三处计数联动）；RF-07 双锚=bullet 全角括号行≥1 ∧ 头注 `Critical Rules 1-64（含 Rule 40-64 全集` ≥1
+#         RF-06 `1-65` ≥3（三处计数联动）；RF-07 双锚=bullet 全角括号行≥1 ∧ 头注 `Critical Rules 1-65（含 Rule 40-65 全集` ≥1
 #               （[2026-10-08 主进程修正]原单模式 ≥2 系过度指定——头注行规则名带空格非全角括号，S2 误判 AC2 与 S5 空转的根因）
 #         RF-08 `^| C44 ` 合规行含 Rule 63 =1
 #     · templates/subagent_dispatch.md（派发契约载体，RF-09）:
 #         RF-09 `Rule 63` ≥1 且 `禁止编造` ≥1（检索优先契约行双条件在位）
 #     · 守卫级联（RF-10）:
-#         RF-10 selftest-four-file-dataflow.sh 含 `^65\.[0-9] ` ≥2（FF-16 宽容化后注释+断言）且 `^64\.[0-9] ` =0（防宽容化回退）
+#         RF-10 selftest-four-file-dataflow.sh 含 `^66\.[0-9] ` ≥2（FF-16 宽容化后注释+断言）且 `^65\.[0-9] ` =0（防宽容化回退）
 #     · registry（RF-11）: selftest-registry.tsv 含本脚本登记行 ≥1
 #     · config.json（零新键声明，RF-12）: `research_first`/`research-first` 键字面=0
 #   运行方式：`bash scripts/selftest-research-first.sh`（只读 grep，零写入）；
@@ -69,20 +69,20 @@ quart "RF-04 63.2 四步检索链词齐备"                          "$B62" '本
 pair "RF-05 63.4 有理有据边界(编造+not-solved)"             "$(_words '编造' "$B64")" "$(_words 'not-solved' "$B64")"
 
 # ── SKILL.md 消费侧 ──
-ge   "RF-06 SKILL 1-64 计数≥3(三处联动)"                   "$(cnt '1-64' "$SKILL")" 3
-pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-64 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-64（含 Rule 40-64 全集' "$SKILL")"
+ge   "RF-06 SKILL 1-65 计数≥3(三处联动)"                   "$(cnt '1-65' "$SKILL")" 3  # 2026-10-08 task-v149 Rule 65 落地演进
+pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-65 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-65（含 Rule 40-65 全集' "$SKILL")"  # 2026-10-08 task-v149 Rule 65 落地演进
 ge   "RF-08 SKILL C44 合规行含 Rule 63"                     "$(cnt '^| C44 .*Rule 63' "$SKILL")" 1
 
 # ── templates 派发契约载体 ──
 pair "RF-09 dispatch 模板契约行(Rule 63+禁止编造)"          "$(cnt 'Rule 63' "$TPL")" "$(cnt '禁止编造' "$TPL")"
 
 # ── 守卫级联（FF-16 宽容化不回退，字面固定串匹配防转义歧义）──
-FF64="$(cntf '^65\.[0-9] ' "$FF")"
-FF63="$(cntf '^64\.[0-9] ' "$FF")"
-if [ "$FF64" -ge 2 ] && [ "$FF63" -eq 0 ]; then
-    ok "RF-10 FF-16 宽容化在位(65.x≥2 ∧ 64.x 残留=0)"
+FF65="$(cntf '^66\.[0-9] ' "$FF")"  # 2026-10-08 task-v149 Rule 65 落地演进
+FF64="$(cntf '^65\.[0-9] ' "$FF")"  # 2026-10-08 task-v149 Rule 65 落地演进
+if [ "$FF65" -ge 2 ] && [ "$FF64" -eq 0 ]; then
+    ok "RF-10 FF-16 宽容化在位(66.x≥2 ∧ 65.x 残留=0)"
 else
-    bad "RF-10 FF-16 宽容化在位" "got=(65x=$FF64,64x=$FF63) expect=(>=2,==0)"
+    bad "RF-10 FF-16 宽容化在位" "got=(66x=$FF65,65x=$FF64) expect=(>=2,==0)"
 fi
 
 # ── registry 登记行 ──
