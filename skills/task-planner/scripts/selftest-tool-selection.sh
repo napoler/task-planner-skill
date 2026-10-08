@@ -6,8 +6,9 @@
 #   TS-02     40.3 /goal 披露措辞「不可代调」≥1
 #   TS-03     40.4 行含「显式点名」≥1 且 40.6 行含「零新 config 键」≥1
 #   TS-04     SKILL.md `grep -c 'Rule 40'` ≥3（四锚：协同路由行/C28/摘要行/References 括注）
-#   TS-05     SKILL.md `grep -c 'Critical Rules 1-62'` ≥1 且 `grep -c '1-39'` = 0（对策 b 字面锚——关键负断言）
+#   TS-05     SKILL.md `grep -c 'Critical Rules 1-63'` ≥1 且 `grep -c '1-39'` = 0（对策 b 字面锚——关键负断言）
 #             [2026-10-08 task-v144 合并级联: References 表行 label 演进为「Critical Rules 1-62」,锚断言同步演进,旧 'Rules 1-39'=2 变体改为负断言 1-39=0]
+#             [2026-10-08 task-v147 合并级联: '1-62'→'1-63'，Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进]
 #   TS-06     SKILL.md 三个既有锚子串各 ≥1：「Rule 39（动态工作流编排」「| C27 |」「dynamic-workflows（用户显式点名」
 #   TS-07     SKILL.md 含「| C28 |」≥1
 #   TS-08     templates/task_plan.md 含「🧰 工具选择与编排」≥1 且含「上游分析记录」≥1
@@ -52,10 +53,11 @@ fi
 # TS-04 SKILL.md Rule 40 四锚 ≥3
 n="$(grep -c 'Rule 40' "$SKILLMD" || true)"
 if [ "$n" -ge 3 ]; then ok 04 "SKILL.md Rule 40 锚命中 $n ≥3"; else bad 04 "SKILL.md Rule 40 锚命中 $n <3"; fi
-# TS-05 对策 b 字面锚：「Critical Rules 1-62」≥1 且「1-39」= 0（关键负断言）[2026-10-08 task-v144 合并级联: References 表行 label 演进,旧 'Rules 1-39'=2 改为 '1-39'=0 负断言]
-a="$(grep -c 'Critical Rules 1-62' "$SKILLMD" || true)"
+# TS-05 对策 b 字面锚：「Critical Rules 1-63」≥1 且「1-39」= 0（关键负断言）[2026-10-08 task-v144 合并级联: References 表行 label 演进,旧 'Rules 1-39'=2 改为 '1-39'=0 负断言]
+# [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
+a="$(grep -c 'Critical Rules 1-63' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-62≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-62=$a 应 ≥1 / 1-39=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-63≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-63=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # TS-06 SKILL.md 三个既有锚子串各 ≥1（WF-07/08/09 锚保全）
 if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD" \
    && grep -qF '| C27 |' "$SKILLMD" \
