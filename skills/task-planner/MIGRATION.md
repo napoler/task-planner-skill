@@ -42,7 +42,7 @@ bash install.sh
 bash tests/smoke.sh
 ```
 
-应输出：`[smoke] summary: 16 pass / 0 fail`
+应输出：`[smoke] summary: 17 pass / 0 fail` <!-- 2026-10-08 task-v149 对齐实态：实测 17 pass -->
 
 ---
 

@@ -10,7 +10,7 @@
 
 | # | 类型族 | 专用体（登记面） | 登记状态/兜底 |
 |---|---|---|---|
-| 1 | 计划/架构/编排 | plan-writer(D1), complex-planner(D1/D2), planner(D1/D2), architect(D1/D2), task-orchestrator(D1/D2) | 全部在位 |
+| 1 | 计划/架构/编排 | plan-writer(D1), complex-planner(D1/D2, GLM-5.3), planner(D1/D2), architect(D1/D2), task-orchestrator(D1/D2) | 全部在位 |
 | 2 | 代码编辑小改 | code-assistant(D1/D2/D3) | 在位 |
 | 3 | 代码编辑大改/跨文件 | executor(D1/D2/D3) | 在位 |
 | 4 | 重构/瘦身 | code-simplifier(D1/D3), refactor-cleaner(D2) | 在位 |
@@ -27,13 +27,13 @@
 | 15 | 浏览器/抓取 | browser-automation(D1/D2), web-scraper(D2) | 在位 |
 | 16 | CLI | cli-executor-agent(D2), cli-tool-builder(D2) | 在位 |
 | 17 | 数据 | data-engineer / analyst / analytics-reporter / data-cleaning-expert / data-synthesizer / ai-data-remediation-engineer (D2) | 全部在位 |
-| 18 | 其他 | simple-agent/complex-problem-solver/context-manager/time-keeper/meta-corrector(D2), complex-planner(D2) | 全部在位 |
+| 18 | 其他 | simple-agent/complex-problem-solver/context-manager/time-keeper/meta-corrector(D2), complex-planner(D2, GLM-5.3) | 全部在位 |
 | 19 | writing | article-writer(D1/D3), article-writing-phase-agent(D3) | 在位 |
 | 20 | research | research-assistant(D1/D3), web-search-agent(D3) | B3：research-assistant 为 skill 非 agent，双列标注（见 §二 B3） |
 | 21 | publish | code-runner-agent/article-batch-publisher(D3) | B4：登记名原为 article-batch-publish，已改 article-batch-publisher（见 §二 B4） |
 | 22 | memory-hygiene | executor(fresh)/verifier(D3) | 在位 |
 | 23 | video | Agnes 视频链路→v124 video-generation-executor(D3) | B*：原指向项目专属资产，v124 承接（在位后登记） |
-| 24 | video-fix | videop1-video-fix SOP(D3:274)→v124 video-fix-executor(D3:274 承接位) | B*：同上，v124 承接 |
+| 24 | video-fix | videop1-video-fix SOP(D3:274)→v124 video-fix-executor(D3:274 承接位) | **未落地**：video-fix-executor 实体不存在（companion/agents/ 实态仅 image-generation-executor + video-generation-executor 两件）；落地条件=videop1-video-fix SOP 项目资产可用 [2026-10-08 task-v149 D20] |
 | 25 | 媒体 11 类工序（character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly + image） | 「写词/QC/判定/剪辑/核对子代理」泛称(D3:277-288) | A：无具名映射，兜底=executor(sonnet-1)+工序 SOP（D3:298 条款）；image 生成由 v124 image-generation-executor 承接 |
 | 26 | 规则/模板组、迁移/部署组、轻量档、调研/诊断组、general | executor+worktree 隔离(D3:309) / 主进程 git 编排+executor(D3:310) / code-assistant 或主进程白名单(D3:311) / explore/web-search/debugger(D3:312) / 按 Phase Executor 逐案路由(D3:289) | 在位（general=设计如此） |
 | 27 | 偏移检查/漂移检测 | drift-checker(D1) | 在位（Rule 61 载体，haiku-1 档） |
@@ -47,7 +47,7 @@
 | 条目 | 证据 | 处置 | 状态 |
 |---|---|---|---|
 | 媒体工序 11 类（image 及 videotpl 工序族） | template-mapping.md:277-288 路由组列仅泛称；依赖 :298 兜底条款 | image 生成=v124 image-generation-executor；其余 10 工序（写词/审查/QC/判定/剪辑/核对）=兜底登记 executor(sonnet-1)+variant SOP（Rule 47.2），专用体增补列入 §四 增补候选 | 兜底已登记 |
-| video / video-fix | template-mapping.md:273-274 指向「Agnes 视频链路」「videop1-video-fix SOP」项目专属资产 | v124 补 video-generation-executor / video-fix-executor 两专用体，在位后回填本矩阵 §一 行 23/24（52.3 联动先例） | v124 承接 |
+| video / video-fix | template-mapping.md:273-274 指向「Agnes 视频链路」「videop1-video-fix SOP」项目专属资产 | v124 补 video-generation-executor（在位）；video-fix-executor 未落地（落地条件=videop1-video-fix SOP 项目资产可用）[2026-10-08 task-v149 D20] | 部分承接 |
 
 ### B 类 = 登记名指向不存在/名不符实体（零容忍，逐条实证 `test -f ~/.zcode/agents/<name>.md`）
 
@@ -117,7 +117,7 @@ AC-03 守护口径：B1/B2 修正后 script-dev 行无 `script-writer`/`script-a
 
 | # | 领域 | 现状 | 建议增补优先级 |
 |---|---|---|---|
-| 1 | 媒体生成/编辑（图像/视频/音频/音乐/storyboard） | 0 专用体；v124 已补 image-generation-executor + video-generation-executor + video-fix-executor 两族三件（在位后回填 §一 行 23/25） | P0（v124 补中） |
+| 1 | 媒体生成/编辑（图像/视频/音频/音乐/storyboard） | 0 专用体；v124 已补 image-generation-executor + video-generation-executor 两件（在位）；video-fix-executor 未落地（落地条件=videop1-video-fix SOP 项目资产可用）[2026-10-08 task-v149 D20] | P0（v124 补中） |
 | 2 | 字幕（字幕生成/校对工序） | 0 专用体（媒体 11 类 audio-voice 工序兜底中） | P1 |
 | 3 | 翻译/本地化 | 0 专用体 | P1 |
 | 4 | DevOps/云原生/SRE/K8s/CI | 0 专用体（git-security-expert 仅 Git 层） | P1 |

@@ -17,7 +17,8 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
-COMPAANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion"
+# [2026-10-08 task-v149 D25] 修正变量名拼写 COMPAANION_DIR→COMPANION_DIR（原多一个 A，定义与引用一致故未暴露，但属命名缺陷）
+COMPANION_DIR="${TASK_PLANNER_ROOT:-$SKILL_ROOT}/companion"
 # 外围 skill 安装源 = 仓库顶层 skills/(2026-09-04 自 companion/skills/ 迁移,排除 task-planner 本体)
 # SKILL_ROOT = <repo>/skills/task-planner → 上两级才是仓根
 REPO_ROOT="$(dirname "$(dirname "$SKILL_ROOT")")"
@@ -36,8 +37,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ ! -d "$COMPAANION_DIR" ]; then
-  echo "[companion] ERROR: companion dir not found: $COMPAANION_DIR" >&2
+if [ ! -d "$COMPANION_DIR" ]; then
+  echo "[companion] ERROR: companion dir not found: $COMPANION_DIR" >&2
   exit 1
 fi
 
@@ -60,7 +61,8 @@ if [ -z "$TARGET_ROOT" ]; then
   fi
 fi
 
-BACKUP_DIR="$COMPAANION_DIR/.backup-$(date +%Y%m%d-%H%M%S)"
+# [2026-10-08 task-v149 D25] 备份根移出技能扫描路径：原落 $COMPANION_DIR/.backup-*（当 TASK_PLANNER_ROOT 指向部署位时备份落进扫描路径内，v146 判例复发）；仓库内无 skill-deploy-backups 惯例（grep=0），改用 ~/.task-planner-backups/companion/<ts>/
+BACKUP_DIR="$HOME/.task-planner-backups/companion/$(date +%Y%m%d-%H%M%S)"
 installed=0; skipped=0; updated=0
 
 # ─── 平台 model 行适配(v2.2.2)─────────────────────────────────────────
@@ -115,8 +117,9 @@ sync_one() {
   if [ -f "$dst" ]; then
     action="update"
     if [ "$FORCE" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+      # [2026-10-08 task-v149 D25] cp 目标路径与 mkdir 对齐（原 basename 拍平致备份扁平化+同名覆盖）
       mkdir -p "$BACKUP_DIR/$(dirname "${dst#$TARGET_ROOT/}")"
-      cp "$dst" "$BACKUP_DIR/$(basename "$dst")"
+      cp "$dst" "$BACKUP_DIR/${dst#$TARGET_ROOT/}"
       echo "  backup: $(basename "$dst") → $BACKUP_DIR"
     fi
   fi
@@ -146,12 +149,12 @@ adapt_model_line_quiet() {
 }
 
 echo "[companion] target root: $TARGET_ROOT"
-echo "[companion] companion dir: $COMPAANION_DIR"
+echo "[companion] companion dir: $COMPANION_DIR"
 
 # 1. agents/*.md → <root>/agents/
-if [ -d "$COMPAANION_DIR/agents" ]; then
+if [ -d "$COMPANION_DIR/agents" ]; then
   echo "[companion] agents:"
-  for f in "$COMPAANION_DIR"/agents/*.md; do
+  for f in "$COMPANION_DIR"/agents/*.md; do
     [ -e "$f" ] || continue
     sync_one "$f" "$TARGET_ROOT/agents/$(basename "$f")"
   done

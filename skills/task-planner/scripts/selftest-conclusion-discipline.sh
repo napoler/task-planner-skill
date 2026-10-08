@@ -13,7 +13,7 @@
 #   CD-15 check-dispatch.sh 仍含 "⚠ prompt 长度"（防误删破坏 selftest-dispatch FG 断言）
 #   CD-16 templates/subagent_dispatch.md 含 "超限补救(Rule 35.3)"
 #   CD-17 templates/notepad-learnings.md 含 "🚫 被否决方案"（veto 段名存在，联动 Rule 35.5 消费侧）
-#   CD-18 README.md 含 "Rules 1-3[5-7]" 宽容锚（S5 滞后的版本号修复在位，防回退 1-27；[2026-09-17 task-v079] 级联）
+#   CD-18 README.md 含 "Rules 1-6[0-9]|1-3[5-9]" 宽容锚（S5 滞后的版本号修复在位，防回退 1-27；[2026-09-17 task-v079] 级联）[2026-10-09 task-v149 对齐 1-65]
 #   CD-19 batch-quality-gate.md 含 "隶属 Rules 1-3[5-7]" 宽容锚（S5 同批修复锚；[2026-09-17 task-v079] 级联）
 #   CD-20 plan-writer.md 含 "纯数字"（s_unit_id 契约行在位）
 #   CD-21 templates/task_plan.md 含 "ID 列一律纯数字"（④ S-unit 注释行在位）
@@ -85,7 +85,7 @@ check "grep -qF '超限补救(Rule 35.3)' \"\$TMPL\"" "subagent_dispatch.md 含 
 # CD-17 notepad veto 段名
 check "grep -qF '🚫 被否决方案' \"\$NOTEPAD_TPL\"" "notepad-learnings.md 含 '🚫 被否决方案' 段"
 # CD-18 README 版本号修复锚
-check "grep -qE 'Rules 1-3[5-9]' \"\$README_SKILL\"" "README.md 含 1-3[5-8] 宽容锚（task-v086 级联 1-38）（兼容 1-35/1-36 过渡）"
+check "grep -qE 'Rules 1-6[0-9]|Rules 1-3[5-9]' \"\$README_SKILL\"" "README.md 含 1-6[0-9]|1-3[5-9] 宽容锚（task-v149 对齐 1-65，兼容 1-35/1-36 过渡）"
 # CD-19 batch-gate 版本号修复锚
 check "grep -qE '隶属 Rules 1-3[5-8]' \"\$BGATE\"" "batch-quality-gate.md 含 1-3[5-8] 宽容锚（task-v086 级联 1-38）（兼容 1-35/1-36 过渡）"
 # CD-20 plan-writer S-unit 契约行

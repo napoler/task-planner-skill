@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# periodic-review.sh — Rule 57 周期性回顾与前后对照检测
+# periodic-review.sh — Rule 65 周期性回顾与前后对照检测
+# 2026-10-08 task-v149 重编号 57→65 补漏（CR M-1）
 # task-v142 P2-S1
 # 用途：检测 findings.md 与 progress.md 中的结论一致性，输出结构化报告（JSON）
 # 退出码：0=无矛盾 / 1=发现矛盾 / 2=参数错误或文件缺失

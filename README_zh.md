@@ -111,7 +111,7 @@ task-planner-skill/
     ├── examples.md                ← 实战示例
     ├── INSTALL.md                 ← 安装说明（LLM 自动安装 + 手动安装）
     ├── install.sh                 ← 一键安装（同目录 uninstall.sh 安全卸载）
-    ├── companion/agents/          ← 6 个伴生 agent（plan-writer / article-batch-publisher / article-field-fixer / complex-planner / image-generation-executor / video-generation-executor）
+    ├── companion/agents/          ← 7 个伴生 agent（plan-writer / article-batch-publisher / article-field-fixer / complex-planner / image-generation-executor / video-generation-executor / drift-checker） <!-- 2026-10-08 task-v149 对齐实态 -->
     ├── scripts/
     │   ├── init-session.sh        ← 初始化计划文件
     │   ├── check-scope.sh         ← PreToolUse Hook：范围守护
@@ -133,7 +133,7 @@ task-planner-skill/
     │   ├── progress.md            ← 会话进度日志
     │   └── notepad-learnings.md
     └── references/
-        ├── critical-rules.md      ← Rules 1-45 核心执行约束
+        ├── critical-rules.md      ← Rules 1-65 核心执行约束 <!-- 2026-10-08 task-v149 对齐实态 -->
         ├── completion-gate.md     ← 子代理验证协议
         ├── goal-gate.md           ← COMPLETE / PARTIAL / BLOCKED 判定标准
         └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）
@@ -226,7 +226,7 @@ Skill 包内英文文档：`skills/task-planner/INSTALL.md`（英文安装说明
 | `examples/full-workflow.md` | 端到端演示：从用户请求到 COMPLETE |
 | `skills/task-planner/examples.md` | Skill 包内实战示例 |
 | `skills/task-planner/reference.md` | Manus Context Engineering 原则 + 决策矩阵 |
-| `skills/task-planner/references/critical-rules.md` | Rules 1-45 —— 自定义前必读 |
+| `skills/task-planner/references/critical-rules.md` | Rules 1-65 —— 自定义前必读 <!-- 2026-10-08 task-v149 对齐实态 --> |
 | `skills/task-planner/references/goal-gate.md` | VC 门控工作原理、COMPLETE/PARTIAL/BLOCKED 规则 |
 | `skills/task-planner/references/completion-gate.md` | 子代理验证协议 |
 | `CONTRIBUTING.md` / `CONTRIBUTING_zh.md` | 开发流程、脚本规范、PR 检查清单 |

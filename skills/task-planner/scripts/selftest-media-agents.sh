@@ -2,7 +2,7 @@
 # selftest-media-agents.sh — task-v124 S6: Rule 47.2 媒体双专业执行体（image/video-generation-executor）静态守护
 # 范式对齐 selftest-media-dispatch.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言 companion/agents 双媒体 agent 产物在位、frontmatter 格式规范（name/触发/MUST BE USED/model）、
-#      SKILL.md 路由表媒体两行联动、template-mapping.md §九注+§十行联动、README_zh/INSTALL_zh 6 个计数口径、
+#      SKILL.md 路由表媒体两行联动、template-mapping.md §九注+§十行联动、README_zh/INSTALL_zh 7 个计数口径、
 #      INSTALL.md 双 agent 表行、install.sh 注释 6 名清单，并确认零新 config 键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]，与 43.4/44.4/47 同口径）。
 # 输入：task-planner/companion/agents/{image,video}-generation-executor.md、task-planner/SKILL.md、task-planner/config.json、
 #      task-planner/install.sh、README_zh.md、INSTALL_zh.md、INSTALL.md、../plan-template-kit/references/template-mapping.md（只读，grep/test/jq，零写入）。
@@ -109,19 +109,21 @@ else
   bad 07 "template-mapping.md 联动漂移（媒体族专用执行体注=$n / image 名=$i / video 名=$v，应各 ≥1）"
 fi
 
-# MA-08 文档计数口径：README_zh「6 个伴生」+ INSTALL_zh「6 个配套」+ INSTALL.md 双 agent 表行
-# What：三处文档锚并存断言——README_zh.md 树状图「6 个伴生 agent」、INSTALL_zh.md 树状图「6 个配套 agent」、
+# MA-08 文档计数口径：README_zh「7 个伴生」+ INSTALL_zh「7 个配套」+ INSTALL.md 双 agent 表行
+# What：三处文档锚并存断言——README_zh.md 树状图「7 个伴生 agent」、INSTALL_zh.md 树状图「7 个配套 agent」、
 #      INSTALL.md 表内 image/video 两 agent 行各 1 命中。
 # Why：S4/S5 已把 3→6 计数与 INSTALL.md 补行修正为 6 名口径（stale 欠账含 v119 漏 complex-planner）——
-#      计数回退 3 或表行缺失 = 文档面与 companion/agents/ 实际 6 文件脱节（防文档重写回退旧计数）。
-a="$(grep -c '6 个伴生' "$READMEZH" || true)"
-b="$(grep -c '6 个配套' "$INSTALLZH" || true)"
+#      2026-10-09 task-v149 对齐 6→7（drift-checker 入列），文档实态已演进为 7 个伴生。
+#      计数回退 3/6 或表行缺失 = 文档面与 companion/agents/ 实际 7 文件脱节（防文档重写回退旧计数）。
+# 2026-10-09 task-v149 对齐 6→7（drift-checker 入列）
+a="$(grep -c '7 个伴生' "$READMEZH" || true)"
+b="$(grep -c '7 个配套' "$INSTALLZH" || true)"
 c="$(grep -c 'companion/agents/image-generation-executor.md' "$INSTALLMD" || true)"
 d="$(grep -c 'companion/agents/video-generation-executor.md' "$INSTALLMD" || true)"
 if [ "$a" -ge 1 ] && [ "$b" -ge 1 ] && [ "$c" -ge 1 ] && [ "$d" -ge 1 ]; then
-  ok 08 "文档计数口径 README 6 个伴生=$a / INSTALL_zh 6 个配套=$b / INSTALL.md 双 agent 行 image=$c video=$d 各 ≥1"
+  ok 08 "文档计数口径 README 7 个伴生=$a / INSTALL_zh 7 个配套=$b / INSTALL.md 双 agent 行 image=$c video=$d 各 ≥1"
 else
-  bad 08 "文档计数/表行漂移（README 6 个伴生=$a / INSTALL_zh 6 个配套=$b / INSTALL.md image 行=$c video 行=$d，应各 ≥1）"
+  bad 08 "文档计数/表行漂移（README 7 个伴生=$a / INSTALL_zh 7 个配套=$b / INSTALL.md image 行=$c video 行=$d，应各 ≥1）"
 fi
 
 # MA-09 install.sh 注释 6 名清单含双 agent 名

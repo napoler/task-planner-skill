@@ -247,10 +247,10 @@ cp /path/to/task-planner-skill/companion/agents/plan-writer.md ~/.zcode/agents/p
 
 ### 5.7 模板完整性验证(v2.1+)
 
-12 个 variant 模板文件必须齐全:
+29 个 variant 模板文件必须齐全: <!-- 2026-10-08 task-v149 对齐实态：实测 29 个 variant 模板 -->
 ```bash
 ls ~/.zcode/skills/task-planner/templates/variant/*.md | wc -l
-# 应 = 12
+# 应 = 29
 
 # 缺哪个补哪个:
 for f in research diagnostic writing publish code-edit refactor bugfix migration test-writing deployment performance-tuning schema-migration; do
