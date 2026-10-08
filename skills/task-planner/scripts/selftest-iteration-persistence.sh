@@ -182,7 +182,7 @@ fi
 # IP-15 config.json .properties 键数=42（零新 config 键声明锚）
 # What：断言 config.json 顶层 properties 键数保持 42。
 # Why：57.4 承诺「零新 config 键」（与 43.4/54.6/55.6/56.5 同范式）——键数膨胀 = 有人给 Rule 57 加了机器门控键，
-#      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=40`。
+#      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=42`。
 #      [2026-10-08 task-v144 合并级联] 键数锚值 40→42：task-v145（Rule 62 四文件罗盘）合法新增 2 键（FF 守护口径 42 为准，
 #      见 selftest-four-file-dataflow.sh），Rule 57 自身仍零新键（IP-16 负断言锁），本条仅随全局基线演进，非 57 扩键。
 if command -v jq >/dev/null 2>&1; then

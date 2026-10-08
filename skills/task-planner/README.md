@@ -29,13 +29,13 @@
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ canonical source: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                    │
-│   (独立 git 仓库, 41 文件, 4 commits)                    │
+│   (独立 git 仓库, 18 顶层条目)                           │
 │   - SKILL.md (剥除 hooks)                                │
-│   - references/  (8 篇规则)                              │
-│   - templates/   (5 核心 + 3 辅助 + 29 variant)          │
-│   - scripts/     (17 个工具脚本)                         │
-│   - lib/         (5 个 installer 脚本)                   │
-│   - tests/       (smoke.sh 16/16 pass)                   │
+│   - references/  (10 篇规则)                             │
+│   - templates/   (10 核心 + 29 variant)                  │
+│   - scripts/     (96 个 .sh 含 62 selftest)              │
+│   - lib/         (6 个 installer 脚本)                   │
+│   - tests/       (smoke.sh 17/17 pass)                   │
 │   - install.sh / uninstall.sh                            │
 └──────────────────┬───────────────────────────────────────┘
                    │  rsync + sed-rewrite
@@ -83,7 +83,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 │       ├── writing-type.md                  # 写作任务
 │       ├── diagnostic-type.md               # 诊断/修复
 │       └── publish-type.md                  # 发布/集成
-├── scripts/                                 ← 17 个工具脚本
+├── scripts/                                 ← 96 个 .sh（含 62 selftest）
 │   ├── check-complete.sh / .ps1             # Stop hook 完成检测
 │   ├── check-conflicts.sh                   # git 冲突分析
 │   ├── check-doc-sync.sh                    # 计划陈旧度检测

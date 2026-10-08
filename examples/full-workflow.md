@@ -189,7 +189,7 @@ Claude halts, updates `task_plan.md` (adds phase), re-shows the plan, waits for 
 
 ### Session crashes / `/clear` between phases
 
-On the next session, Claude runs `session-catchup.py` first. It finds `plans/task-001/task_plan.md` with Phase 2 still `in_progress` and resumes from Phase 2. No duplicate work.
+On the next session, Claude runs `session-catchup.ts` first. It finds `plans/task-001/task_plan.md` with Phase 2 still `in_progress` and resumes from Phase 2. No duplicate work.
 
 ---
 
