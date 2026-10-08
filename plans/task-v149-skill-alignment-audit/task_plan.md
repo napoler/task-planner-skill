@@ -147,7 +147,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 - [x] 知识储备必读项确认（memory/技能本体/selftest 面/部署拓扑/worktree SOP）
 - **V-N:** VC-1, VC-3
 - **Status:** complete（2026-10-09 补翻：基线跑批+遗留归集+kb 种子全部完成于 10-08，状态行漏翻由 check-complete 4/5 提示发现）
-- **Executor:** code-runner-agent（mini）+ 主进程归集（例外理由：② 计划系统文件维护——memory/簿记归集属白名单）
+- **Executor:** code-runner-agent（mini）（跑批）；主进程仅做遗留归集簿记=白名单②，登记见委派统计
 
 ### Phase 2: 系统性审计扫描（4 面并行）
 - [ ] S1 一致性扫描：规则编号 1-64 连续性、SKILL 计数断言、行号锚、互引完整性（Rule/文件引用悬空）
@@ -157,7 +157,7 @@ smart-merge-back 合并五 commit 至 master → 三位部署+cursor 重同步+�
 - [ ] 四面发现汇总 findings.md §审计发现清单（每条带证据锚 file:line）
 - **V-N:** VC-2, VC-3
 - **Status:** complete（2026-10-08 22:58：四面审计 57 项发现→处置表 36 项闭环登记；drift-check=ALIGNED 三件套齐（06 检查点/ledger tick4/Drift Log 行）；整改两条已执行）
-- **Executor:** explore（mini）×4 并行
+- **Executor:** Explore（mini）×4 并行（general-purpose 承担部署对账面）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
