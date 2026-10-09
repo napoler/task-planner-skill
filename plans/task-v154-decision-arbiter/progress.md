@@ -117,7 +117,8 @@
   | Round 5 部署后 AC-04 | bash selftest-agent-coverage.sh（zcode 部署位） | 转 PASS | Total 9 PASS=9 FAIL=0 | PASS |
   | Round 5 部署后 DA | bash selftest-decision-arbiter.sh（zcode 部署位） | 16/16 | 16/16 | PASS |
   | Round 5 部署对账 | diff -rq zcode skills 位 vs 主仓 | 0 差异 | 0 | PASS |
-- Error Log 续：部署路径笔误（rm 后即刻正确 cp 恢复）→Prevention=部署命令一律先验源路径再执行（ls 守门）
+- Error Log 续：部署路径笔误（cp 源写漏 -skill 后缀且 rm 已执行）→ 1 次内恢复（rm 后即正确 cp）→ Root Cause=复合命令内路径手写未先 ls 验证；Prevention=部署命令一律先验源路径（ls 守门）再执行破坏性步骤
+- 删除性行为清单（Rule 36.3/36.4 登记）：本任务无功能性删除——skill_modify 面=companion/agents/decision-arbiter.md 纯新增+SKILL.md/critical-rules.md/矩阵/template-mapping 纯增量+selftest 锚演进（无既有断言语义弱化，均经 CR 双审+回归验证）
 - [drift] Phase 5 complete 后偏移检查：ALIGNED（checkpoint=subagent-state/drift-checker-5.md；三件套 ✓；并行 worktree v152/v155/v157/v158 保留确认）
 
 ### Phase 6: 终验与交付
