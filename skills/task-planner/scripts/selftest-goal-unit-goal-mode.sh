@@ -17,10 +17,11 @@
 #         G-06 `goal-gate` 输出前缀锚 ≥1 + `[goal:G` grep 逻辑锚 ≥1
 #     · selftest-registry.tsv（登记行，G-07）:
 #         G-07 含 `selftest-goal-unit-goal-mode.sh` 数据行（含断言，防跨任务追加登记行打破末行口径）
+#             [2026-10-10 task-v155 合并并集同验：v155 追加 selftest-report-reviewability 登记行后本断言仍成立]
 #     · config.json（零新键声明，G-08）:
 #         G-08 properties 键名中 `goal[_-](unit|gate|advance)` =0（零新 config 键负断言）
 #     · 钉值联动（G-09）:
-#         G-09 SKILL.md 行数 ≤526（D2 上调后上限，留 5 行余量）
+#         G-09 SKILL.md 行数 ≤555（task-v155 合并并集后上限 = n+25，n=合并后 SKILL.md 实际行数 530）
 #   运行方式：`bash scripts/selftest-goal-unit-goal-mode.sh`（只读 grep/jq，零写入）；
 #   逐行打印 `G-NN PASS/FAIL <说明>`，末行 `Total: 9 PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。
 #   被检文件路径全部相对 SCRIPT_DIR 解析，保证仓库/worktree/三宿主部署位三处均可直接跑。
@@ -105,6 +106,7 @@ if [ "$n" -ge 1 ] && [ "$grep_logic" -ge 1 ]; then ok 06 "check-complete.sh 'goa
 # What：断言 registry 中存在登记本脚本的数据行（2026-10-09 健壮化：末行口径改含口径——
 # 现象=v153 按仓约定追加新 selftest 登记行后本断言末行口径被跨任务打破复跑 FAIL；
 # 根因=末行钉口径与 registry 纯增量追加约定冲突；修法=含数据行同义断言，编号与 Total 不变）。
+# 2026-10-10 task-v155 合并并集同验：v155 追加 selftest-report-reviewability 登记行后本断言仍成立
 # Why：selftest-registry.tsv 是全部 selftest 脚本的登记账本；新脚本必须登记以形成闭环。
 row="$(grep 'selftest-goal-unit-goal-mode.sh' "$REGISTRY" || true)"
 if [ -n "$row" ]; then ok 07 "selftest-registry.tsv 含 selftest-goal-unit-goal-mode.sh 数据行"; else bad 07 "selftest-registry.tsv 未含 selftest-goal-unit-goal-mode.sh 数据行"; fi
@@ -119,11 +121,11 @@ else
 fi
 if [ "$n" -eq 0 ]; then ok 08 "config.json properties 键名 goal[_-](unit|gate|advance) =0（零新键）"; else bad 08 "config.json properties 键名 goal[_-](unit|gate|advance) =$n（应 =0，零新键承诺被破）"; fi
 
-# G-09 SKILL.md 行数 ≤526（D2 上调后上限）
-# What：断言 SKILL.md 行数不超过 526 行。
-# Why：SKILL.md Rule 69 路由表行+摘要 bullet+触发点标记 T1-T6 六行+C46 合规行+外部引用行 → 实际 521 行（515→521），钉值上调 515→526（留 5 行余量；v150/v151 判例：留缓冲）。
+# G-09 SKILL.md 行数 ≤555（task-v155 合并并集后上限 = n+25）
+# What：断言 SKILL.md 行数不超过 555 行（=合并后实际行数 530 + 25 余量）。
+# Why：Rule 66 摘要行 +1、C45 行 +1 → 511 触顶；master 侧 task-v154 D2 上调：Rule 69 路由表行+摘要 bullet+触发点标记 T1-T6 六行+C46 合规行+外部引用行 → 实际 521 行（515→521），钉值上调 515→526（留 5 行余量）；HEAD 侧 task-v155 Rule 70 接线净 +7 → 触顶。合并并集后实际 530 行，钉取并集后实值+25=555（留余量给后续并行任务 v152/v156；v150/v151 判例：钉值上调留缓冲）。
 n="$(wc -l < "$SKILLMD" || true)"
-if [ "$n" -le 526 ]; then ok 09 "SKILL.md 行数=$n ≤526（D2 上调后上限）"; else bad 09 "SKILL.md 行数=$n >526（超限）"; fi
+if [ "$n" -le 555 ]; then ok 09 "SKILL.md 行数=$n ≤555（task-v155 合并并集后上限 = n+25）"; else bad 09 "SKILL.md 行数=$n >555（超限）"; fi
 
 printf 'Total: 9 PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
