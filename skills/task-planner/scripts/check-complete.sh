@@ -935,6 +935,59 @@ f && /^\|/ {
         fi
     fi
 
+    # [2026-10-10 task-v155 S14 (Rule 48/70)] 交付总结呈报可审批性轻量守护 — report-lint 段
+    # WHAT: 对同目录 delivery-summary.md 做三项轻量 lint——①「## 2. 产出清单」区表格数据行路径形态
+    #       （Rule 48.2/70② 可定位性）②「## 5. 下一步建议」区看点/动作三要素（Rule 48.4/70④）
+    #       ③「待裁决」行对象定位（Rule 70②）；命中即 printf '[report-lint] ⚠ ...' 到 stderr。
+    # WHY : 消费方=check-complete 终验（交付总结呈报前的最后一道软提示）；fail-open 理由=exit 语义是
+    #       交付门控承重墙——本段只增 warn 提示，绝不改 exit code / 写 FAIL 计数 / return 非 0 传播；
+    #       delivery-summary.md 不存在则 SKIPPED 直接返回。依据=task-v155（Rule 48/70 呈报契约机器面）。
+    # 插入位=rcov-gate 段结束之后、同层级（4 空格缩进）；风格对齐 rcov-gate（printf stderr / fail-open）。
+    # 区块锚容忍模板阿拉伯数字式（`## 2.`/`## 5.`，金标准 templates/delivery-summary.md）与历史
+    # 中文数字式（`## 二、`/`## 五、`）两种写法，定位语义不变、不弱化判定。
+    run_report_lint() {
+        local ds_file="$PLAN_DIR_GUESS/delivery-summary.md"
+        # 1. 定位 delivery-summary.md；不存在 → fail-open SKIPPED 直接返回（不影响终验 exit 语义）
+        if [ ! -f "$ds_file" ]; then
+            printf '[report-lint] SKIPPED (fail-open: 无 delivery-summary.md, 不影响终验)\n' >&2
+            return 0
+        fi
+        # 2. 检查① 产出清单路径形态：「## 2. 产出清单」标题行至下一个 ^## 之间的表格数据行
+        #    （排除表头行=区块内首个表格行 / 分隔行=| --- |），若 ≥2 行不含 /（绝对/仓内路径形态）→ warn。
+        local rl_nopath
+        rl_nopath="$(awk '
+            /^##[[:space:]]*(2\.|二、)[[:space:]]*产出清单/ {f=1; next}
+            f && /^##[[:space:]]/ {f=0}
+            f && /^[[:space:]]*\|/ {
+                if ($0 ~ /^[[:space:]]*\|[[:space:]:|-]+\|[[:space:]]*$/) next   # 分隔行
+                if (!hdr) { hdr=1; next }                                        # 区块内首个表格行=表头
+                if (index($0, "/") == 0) n++
+            }
+            END {print n+0}' "$ds_file" 2>/dev/null)" || rl_nopath=0
+        if [ "${rl_nopath:-0}" -ge 2 ]; then
+            printf '[report-lint] ⚠ 产出清单存在无路径行 (Rule 48.2/70② 可定位性)\n' >&2
+        fi
+        # 3. 检查② 下一步建议三要素：「## 5. 下一步建议」区（至文件尾/下一 ^##）须同时含「看点」与「动作」，
+        #    缺任一 → warn（Rule 48.4/70④）；区块不存在则跳过（不误报）。
+        if grep -qE '^##[[:space:]]*(5\.|五、)[[:space:]]*下一步建议' "$ds_file" 2>/dev/null; then
+            local rl_sec5
+            rl_sec5="$(awk '
+                /^##[[:space:]]*(5\.|五、)[[:space:]]*下一步建议/ {f=1; next}
+                f && /^##[[:space:]]/ {f=0}
+                f' "$ds_file" 2>/dev/null)" || rl_sec5=""
+            if ! printf '%s\n' "$rl_sec5" | grep -q '看点' || ! printf '%s\n' "$rl_sec5" | grep -q '动作'; then
+                printf '[report-lint] ⚠ 下一步建议缺看点/动作定位三要素 (Rule 48.4/70④)\n' >&2
+            fi
+        fi
+        # 4. 检查③ 待裁决定位：「待裁决」字样所在行若同行无路径形态（/ 或 http）→ warn（Rule 70②）。
+        if grep -n '待裁决' "$ds_file" 2>/dev/null | grep -vqE '/|http'; then
+            printf '[report-lint] ⚠ 待裁决项缺对象定位 (Rule 70②)\n' >&2
+        fi
+        # 5. 全部检查只 printf warn 到 stderr；不改 exit code / 不写 FAIL 计数 / return 恒 0（fail-open）。
+        return 0
+    }
+    run_report_lint
+
     # [2026-09-14 task-v072 Rule 31] 终验 Learning Gate — 错误学习闭环:
     # progress.md 若含数据行(非模板占位)的「Root Cause」/「Prevention」列,则各行 Root Cause 非空
     # (<待沉淀> 占位/空 均 FAIL)。列识别:表头含 "Root Cause" 列;无表头/无该列/无 Error Log → PASS 静默(存量计划兼容)。
