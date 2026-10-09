@@ -220,7 +220,8 @@ model: opus
 | C43a | 拆分模式库消费自查（Rule 21.6）：拆分前已查模式库（21.6.1）、S-unit 过边界三判据（21.6.2）（机器面=selftest-split-pattern-library.sh 静态断言，消费过程人工核查；mini 档豁免） | ☐ |
 | C44 | 检索优先与反推诿自查（Rule 63）：任务中出现「不知道/不清楚/无法确定」类判断前已按 63.2 四步检索链（本地→帮助面→官方文档/网络→社区）穷尽检索并附来源锚（63.2/63.4）；「不知道/未解决」类上报已取「已检索清单+证据锚+下一步建议」合法形态（63.3）；无来源断言/虚构检索结果零容忍（63.4，Rule 26 Q3 最高档）；本任务无知识缺口场景时登记豁免一行（机器面=selftest-research-first.sh 静态断言，检索过程人工核查；mini 档豁免） | ☐ |
 | C45 | goal 单元自查（Rule 66）：66.1 六列填写 / 66.3 [goal:Gn] 证据行逐落 / 66.4 G 序推进 / 66.2 禁 /goal 代调声称；机器面=check-plan-dispatch 硬门+check-complete 对照+selftest-goal-unit-goal-mode.sh 静态守护；mini 档豁免 | ☐ |
-| C46 | 判断裁决委派自查（Rule 69）：判断类场景（T1 方案终裁/T3 失败定级/T4 验收争议/T5 DRIFT 处置/T6 CR 分歧）主进程拿不准时已委派 decision-arbiter 而非硬决或直接 AskUser（G1-G4 门槛场景除外，69.1 豁免）；REJECT-REWORK 裁决已按驳回单五要素返工且 progress.md 有 [arbiter-reject] 行（69.3 禁静默继续）；ESCALATE-USER 仅限四门槛；本任务无判断争议场景时登记豁免一行（机器面=selftest-decision-arbiter.sh 静态断言，委派与消费动作人工核查；mini 档豁免） | ☐ |
+| C46 | 计划期依赖与并行分组自查（Rule 68）：68.1 前置依赖列 / 68.2 组由依赖推导 / 68.3 组内异构 / 68.4 组域写隔离；机器面=check-plan-dispatch 两档+selftest-parallel-scheduling.sh 静态守护；mini 档豁免 | ☐ |
+| C47 | 判断裁决委派自查（Rule 69）：判断类场景（T1 方案终裁/T3 失败定级/T4 验收争议/T5 DRIFT 处置/T6 CR 分歧）主进程拿不准时已委派 decision-arbiter 而非硬决或直接 AskUser（G1-G4 门槛场景除外，69.1 豁免）；REJECT-REWORK 裁决已按驳回单五要素返工且 progress.md 有 [arbiter-reject] 行（69.3 禁静默继续）；ESCALATE-USER 仅限四门槛；本任务无判断争议场景时登记豁免一行（机器面=selftest-decision-arbiter.sh 静态断言，委派与消费动作人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -341,6 +342,7 @@ model: opus
 - **Rule 64（偏移检查留痕强制与节奏化触发纪律 — task-v148）**：留痕三件套=检查点+ledger drift_check+Drift Log 行（64.1）；Phase complete 第三条件门控=check-3file-gate 追加 drift_check 痕迹必查（64.2）；节奏提醒=posttooluse 每 ≥10 次工具调用注入单行提醒（64.3）；判定输入三锚=Goal 原文+近期动作+scope 文件集，无锚 ALIGNED 无效（64.4）；机制=selftest-drift-enforcement.sh+零新 config 键（env 降档，64.5/64.6）（详见 references/critical-rules.md Rule 64）
 - **Rule 65（周期性回顾与前后对照 — task-v142）**：每 N 次工具调用触发回顾，前后对照检查结论一致性，发现矛盾自动纠正+报告用户（机器面=periodic-review.sh 检测+selftest-periodic-review.sh 静态守护）
 - **Rule 66（goal 单元固化与 /goal 驱动推进纪律 — task-v151）**：goal 单元固化六列契约（66.1）+/goal 内置命令映射供料口径（66.2，40.3 延伸）+逐 goal 验证通过门（66.3）+分解→调度→逐个解决推进序（66.4）；机器面=check-plan-dispatch/check-complete+selftest-goal-unit-goal-mode.sh，零新 config 键
+- **Rule 68（计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律 — task-v153）**：计划期强制依赖分析=S-unit 表定稿后过独立性四问静态版、结论显式落「前置依赖」列，空白=计划无效回炉（68.1）；并行分组推导=parallel_groups 必须由依赖分析推导、依赖者与被依赖者禁同组、组间拓扑串行不变（68.2）；组内异构分摊=同组执行体 subagent_type 或 model 档位至少一项不同、最小可承载档位优先（68.3）；组域写隔离=成员只写检查点/findings 追加小节/自己 scope 文件，计划三文件由主进程按组串行回写（68.4）；机器面=check-plan-dispatch.sh 计划期两档校验（hard 拒锁+advisory 提示）+selftest-parallel-scheduling.sh 静态守护+合规清单 C46，零新 config 键
 - **Rule 69（判断裁决子代理化与驳回打回纪律 — task-v154）**：六触发点矩阵 T1-T6+豁免清单与管辖二分（69.1）/委派契约=22.4 九字段+arbiter 专用字段·检查点 22.8 沿用（69.2）/裁决消费协议=四态+REJECT-REWORK 强制返工+[arbiter-reject] 留痕·禁静默继续（69.3）/驳回单五要素（69.4）/强模型档 GLM-5.3 与经济性边界=低频单派（69.5）；机器面=selftest-decision-arbiter.sh+selftest-registry.tsv，零新 config 键
 
 ## Completion Gate

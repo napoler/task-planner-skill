@@ -2,7 +2,7 @@
 # selftest-decision-arbiter.sh — task-v154 S7: Rule 69 判断裁决子代理化与驳回打回纪律载体锚静态守护
 # What: 守护 Rule 69 判断/裁决子代理化的载体锚（decision-arbiter.md agent 定义：四态裁决+驳回单五要素+
 #       T1-T6 六触发点+管辖二分 / critical-rules.md Rule 69 六子条+[arbiter-reject] 留痕 / SKILL.md 路由表
-#       「判断/裁决」行+触发点标记+C46 合规行 / agent-coverage.md 28 行判断裁决行 / registry 自登记 / 零新 config 键负断言）。
+#       「判断/裁决」行+触发点标记+C47 合规行 / agent-coverage.md 28 行判断裁决行 / registry 自登记 / 零新 config 键负断言）。
 # Why: 防未来把判断类问题改回主进程硬决（R4 需求：判断裁决成为可被派发消费的正式执行体），
 #      防四态/驳回单/触发点措辞漂移致裁决消费协议失效（驳回打回闭环断裂），task-v154 成果锁住。
 # 16 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
@@ -71,10 +71,10 @@ if grep -q '判断/裁决（低频）' "$SKILLMD"; then ok 11 "路由表判断/�
 # Why: 触发点标记=六触发点在执行流程的可消费落点（69.6 消费面），<5=触发点未接线到流程。
 if [ "$(grep -c 'Rule 69.1 T[1-6]' "$SKILLMD")" -ge 5 ]; then ok 12 "SKILL 触发点标记 ≥5"; else bad 12 "SKILL 触发点标记 <5"; fi
 
-# DA-13 SKILL.md 合规清单 C46 行
-# What: SKILL.md 含合规清单 C46 行锚。
-# Why: C46=判断裁决委派自查清单项（69.6），行丢=合规检查面缺判断裁决自查。
-if grep -q '| C46 |' "$SKILLMD"; then ok 13 "合规清单 C46 行在位"; else bad 13 "合规清单 C46 行缺失"; fi
+# DA-13 SKILL.md 合规清单 C47 行
+# What: SKILL.md 含合规清单 C47 行锚。
+# Why: C47=判断裁决委派自查清单项（69.6），行丢=合规检查面缺判断裁决自查。
+if grep -q '| C47 |' "$SKILLMD"; then ok 13 "合规清单 C47 行在位"; else bad 13 "合规清单 C47 行缺失"; fi
 
 # DA-14 agent-coverage.md 28 行判断裁决行
 # What: agent-coverage.md 含「判断/裁决 | decision-arbiter」行（编号 28）。
