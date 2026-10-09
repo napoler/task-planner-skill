@@ -1218,7 +1218,15 @@ END {print n+0}'
     # 挂点: COMPLIANCE-CHECK 段后、warn count 段前（终验段内，python_rc=0 条件下）
     # mini 档: 整段跳过（66.5 mini 豁免）
     # 输出前缀: [goal-gate] 便于 selftest 锚定（G-06）
-    if [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
+    # [2026-10-09 task-v151 CR F2] 档位口径与 check-plan-dispatch.sh 66.5 三分支统一：
+    #   What：原判定=`[ "${PLAN_TIER_MINI:-0}" != 1 ]`（非 mini 即进入 goal-gate），
+    #         即「无 plan_tier 标记」的 legacy/合成夹具也会进入终验 goal-gate 段。
+    #   Why ：check-plan-dispatch 采用 D2 裁决「仅显式 plan_tier: standard|full 才硬门；
+    #         无标记=缺省档跳过」。二者分叉 → 无标记计划出现「attest 门放行、终验门却对
+    #         complete 无 [goal:Gn] 证据 exit 1」的两门口径不一致。修正=统一为显式 standard|full
+    #         才进入；无标记（legacy/合成夹具）与显式 mini 均跳过（66.5 mini 豁免 + 缺省档兼容）。
+    #   原行为：`[ "${PLAN_TIER_MINI:-0}" != 1 ]`（无标记亦进入，与 attest 门分叉）。
+    if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
         # awk 状态机抽「^## 🎯 Goal 单元表」区块（参照脚本行 92-94 既有状态机写法，禁区间 next 坍缩范式）
         goal_gate_sec="$(awk '/^##[[:space:]]*🎯[[:space:]]*Goal[[:space:]]*单元表/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
         if [ -z "$goal_gate_sec" ]; then
@@ -1252,7 +1260,7 @@ END {print n+0}'
             [ -n "$goal_gate_pending" ] && printf '[goal-gate] ⚠ 有 goal 未 complete (%s), 终态最高 PARTIAL (Rule 66.3/58.5)\n' "${goal_gate_pending# }" >&2
         fi
     else
-        printf '[goal-gate] SKIPPED (mini 档豁免, Rule 66.5)\n' >&2
+        printf '[goal-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 66.5)\n' >&2
     fi
 
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
