@@ -20,7 +20,7 @@
   - 21:47-21:50 plan-brief.md 任务书落盘（含用户补充 R7 组内更新防错乱→68.4 条款位；守卫步骤枚举口径适配改写）
   - 21:50-22:03 plan 撰写派发：plan-writer 被派发守卫拦 3 次（22.4a 三文件路径/acceptance token/步骤枚举 8>4 契约补全）+ provider reasoning-level-missing 2 次（selection 9e221f47/sonnet-1）→ 按 Rule 22.3.1 改派 general-purpose 成功
   - 22:03 task_plan.md 产出（361 行/7 S-unit/8 VC/三组 parallel_groups）+ 主进程 Read 全文复核通过；修正两处：Phase 1 Executor→general-purpose（rescue 登记）、Handoff #1 翻 done+verify_done☑
-  - 22:04 用户第三条补充并入：R7（组内更新防错乱）已由 plan-writer 落为 68.4 条款位+VC-g 吃狗粮协议行
+  - 22:04 用户第三条补充并入：R7（组内更新防错乱）已由 plan-writer 落为 68.4 条款位+VC-7 吃狗粮协议行
 - Files created/modified:
   - plans/task-v153-parallel-scheduling/{task_plan,findings,progress,notepad-learnings,verification,knowledge-brief}.md（init 六件套）
   - plans/.rule-reservations.jsonl（68 reserved 追加一行）

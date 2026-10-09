@@ -6,23 +6,23 @@ task-planner 技能新增 Rule 68（计划期强制依赖分析→并行分组�
 
 ---
 
-## Verification Contract（终验 8 条=VC-a~VC-h，全部通过=COMPLETE）
+## Verification Contract（终验 8 条=VC-1~VC-8，全部通过=COMPLETE）
 
-- [x] VC-a: critical-rules.md 含 Rule 68 完整条款（68.1-68.7）
+- [x] VC-1: critical-rules.md 含 Rule 68 完整条款（68.1-68.7）
   Evidence: 合并后 master `grep -cE '^68\.[1-7] '` =7（含「依赖分析/并行分组/异构分摊/组域写隔离」四关键词，master 66.2 v151 增强新文同步在位）；file=/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md:862 起
-- [x] VC-b: templates/task_plan.md S-unit 表含「前置依赖」列
+- [x] VC-2: templates/task_plan.md S-unit 表含「前置依赖」列
   Evidence: 模板表头 :279 + 注释 :277；file=skills/task-planner/templates/task_plan.md
-- [x] VC-c: check-plan-dispatch.sh 扩展校验（依赖-同组矛盾 reject+组内全同 WARN）
+- [x] VC-3: check-plan-dispatch.sh 扩展校验（依赖-同组矛盾 reject+组内全同 WARN）
   Evidence: fixA 跑 H4 矛盾夹具 `exit 1` 原文 + W1 WARN rc=0 原文 + 真实计划零误报 + F8 双夹具（裸管道 reject/转义放行）+ CR 二轮复验 eight findings fixed
-- [x] VC-d: selftest-parallel-scheduling.sh 存在、registry 登记、断言通过
+- [x] VC-4: selftest-parallel-scheduling.sh 存在、registry 登记、断言通过
   Evidence: `Total: 9 PASS=9 FAIL=0`（P-09 硬 PASS）；`selftest-registry.sh Total: 5 PASS=5 FAIL=0 (registry rows=65, actual selftest=65)`
-- [x] VC-e: 全量 selftest FAIL=0（相对基线零新增失败）
+- [x] VC-5: 全量 selftest FAIL=0（相对基线零新增失败）
   Evidence: 基线 baseline-selftest.log 64 脚本全 rc=0 ΣFAIL=0 → Round4/合并态 R5 回归 65 脚本全 rc=0 ΣFAIL=0（零新增；新增 1=本任务 selftest）
-- [x] VC-f: SKILL.md 计数级联正确，含 Rule 68 索引行与合规清单行
+- [x] VC-6: SKILL.md 计数级联正确，含 Rule 68 索引行与合规清单行
   Evidence: `Critical Rules 1-68` ×3 + 枚举补 66 + Rule 68 摘要 bullet + C46 行 + 计划期强制步骤行（CR F5/F6/F7 修复后）
-- [x] VC-g: 本计划自身含 parallel_groups 声明+组内异构执行体分配+组域写隔离协议行（吃狗粮）
+- [x] VC-7: 本计划自身含 parallel_groups 声明+组内异构执行体分配+组域写隔离协议行（吃狗粮）
   Evidence: task_plan frontmatter `parallel_groups: [p3-core, p3-guard, p3-docs]`；三组内 haiku-1/sonnet-1（三 provider：longcat/agnes×2）混派；68.4 组域协议行在 S-unit 表注；并行实证 p3-core 三成员 6min vs 串行预估 ~40min
-- [x] VC-h: 三部署位 IDENTICAL（合并后对账）
+- [x] VC-8: 三部署位 IDENTICAL（合并后对账）
   Evidence: git merge b20974f 零冲突自动归并；repo/`~/.zcode`/`~/.claude` 关键文件 diff -q 全 OK
 
 ---
@@ -53,14 +53,14 @@ task-planner 技能新增 Rule 68（计划期强制依赖分析→并行分组�
 ## 质量门控统计（Rule 26）
 
 - Q1-Q6：Q1 提示词/参数类修改（68 条款=规则文本）→ 触发验证型：selftest+CR+回归三轮，无未处置；Q3 伪造证据零容忍：所有通过项均附实测原文行（bash/grep/diff 输出贴回），无一来源虚构；Q4 串联模板拼凑无；Q5 占位符无；Q6 用户否决禁令无命中（C20 已过 notepad/memory 禁令源）
-- Evidence 抽查 3 条：VC-a（grep=7 实测）、VC-d（P-09 硬 PASS+registry 65/65）、VC-g（frontmatter+三组执行体列+并行墙钟 6min 对照）
+- Evidence 抽查 3 条：VC-1（grep=7 实测）、VC-4（P-09 硬 PASS+registry 65/65）、VC-7（frontmatter+三组执行体列+并行墙钟 6min 对照）
 - 发现治理：自曝 1 起幻觉注入（findings 初版食物照片段）当次删除+Error Log；plan-writer/drift-checker/alignment 载体 provider 故障/取消 5 起按 22.3.1 改派或路由变更，全部登记无静默
 
 ## Goal Gate（终验）
 
 ```
-## Goal Verification — Rule 68 全链落地（R1-R7 → VC-a~VC-h 全覆盖）
-VC-a PASS（grep=7+66.2 在位） / VC-b PASS（:277+:279） / VC-c PASS（H4 rc=1+W1 WARN+F8 双夹具） / VC-d PASS（9/9+65/65） / VC-e PASS（R5 合并态 65/65 ΣFAIL=0） / VC-f PASS（1-68×3+C46+bullet+步骤行） / VC-g PASS（三组混派+6min 并行实证） / VC-h PASS（b20974f+三部署位 diff OK）
+## Goal Verification — Rule 68 全链落地（R1-R7 → VC-1~VC-8 全覆盖）
+VC-1 PASS（grep=7+66.2 在位） / VC-2 PASS（:277+:279） / VC-3 PASS（H4 rc=1+W1 WARN+F8 双夹具） / VC-4 PASS（9/9+65/65） / VC-5 PASS（R5 合并态 65/65 ΣFAIL=0） / VC-6 PASS（1-68×3+C46+bullet+步骤行） / VC-7 PASS（三组混派+6min 并行实证） / VC-8 PASS（b20974f+三部署位 diff OK）
  outcome: COMPLETE（待 check-complete 终态确认）
 ```
 
