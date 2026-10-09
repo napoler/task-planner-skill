@@ -12,12 +12,16 @@
 # 参数:
 #   <worktree-path>  必填; worktree 绝对路径
 #   --base <branch>  目标分支, 默认 master
-#   --deploy         合并后对部署位执行既有 SOP(改名换位: slot→.bak.$$ → tmp→slot → rm .bak;
-#                    两级对账: L1 文件集合差(find|sort 抓增/缺/改名)+ L2 内容定向 diff(git 程序化清单+≥3 抽检;
-#                    清单空/不可用 → 保守回退全交集内容对比) — 2026-09-27 task-v091 C-5 替代原全树 diff -rq;
+#   --deploy         合并后对部署位执行 F5 staging 原子化部署 — 2026-10-10 task-v159 替代旧直写路径
+#                    (D4 事故根因: 2026-10-10 04:45-04:49 claude 写入后 zcode 删除致技能全局停摆):
+#                    ①staging: 全部 slot 先行 cp -rL 至同父目录 <slot>.stage.$$(内容就位与指针切换分离,
+#                    任 slot stage 失败=整体 exit 1 不进入 swap); ②swap: 逐 slot rm -rf <slot> &&
+#                    mv <slot>.stage.$$ <slot>(rename 原子切换, 失败恢复原位); ③post-verify: 每 slot
+#                    存在性 + diff -r <slot> 零差异, 任一失败 exit 1 并输出缺失/diff 详情,
+#                    禁止部分 slot 成功当整体成功; EXIT trap 清理 stage 残留。
 #                    源=主仓 skills/task-planner — 2026-09-17 task-v077 修复假 IDENTICAL: 部署源/对账基准不再用
 #                    SKILL_ROOT(脚本运行处), 从部署位运行亦以主仓 canonical 内容为源);
-#                    逐位 [DEPLOY] 判定, 任一 DRIFT exit 6(部署源缺失亦 DRIFT fail-closed)
+#                    slot 校验 REJECTED / 部署源缺失 → DRIFT exit 6(fail-closed);
 #                    --deploy 对账通过后自动执行池成员顶层枚举挂载(install_pool_links): <skills>/<member> 相对软链→task-planner/review-library/<member>;冲突跳过 LINK-WARN;增强段不改 exit 码 [task-v105]
 #                    守卫语义(2026-09-12 R3): $HOME 内部 slot = 白名单口径 — 仅当位于任一默认部署根
 #                    ($HOME/.zcode/skills/task-planner、$HOME/.claude/skills/task-planner、
@@ -25,7 +29,9 @@
 #                    (含 $HOME/.zcode 本身、$HOME/.ssh) → REJECTED;
 #                    显式逃生口 --allow-home-slot(默认关): $HOME 内部任意子路径放行(风险自担, 无生产需要);
 #                    SKILL_ROOT/WT_PATH/MAIN_REPO = exact + 内部 + 祖先全向
-#   --force          V5 MASTER_AHEAD 时强制继续(默认中止; merge 冲突仍 exit 7 STOP)
+#   --legacy         仅 --deploy 相关: 走 F5 之前旧直写路径(cp→rm→mv 改名换位 + 两级对账 L1/L2);
+#                    2026-10-10 task-v159 保留为 fallback(新路径默认启用; 旧路径失败语义 exit 6 不变)
+#   --force          V5 MASTER_AHEAD 时强制继续(默认中止;  merge 冲突仍 exit 7 STOP)
 #   --allow-home-slot  仅 --deploy 相关: $HOME 内部任意子路径放行(默认关; 生产三默认位均在白名单内, 无需要)
 #
 # 接口规格(照 findings「smart-merge-back.sh 设计」):
@@ -105,10 +111,12 @@ set -u
 # ---------- 参数解析 ----------
 usage() {
     cat <<'EOF'
-Usage: smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force] [--allow-home-slot]
+Usage: smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force] [--allow-home-slot] [--legacy]
 退出码: 0 成功 | 2 PRECHECK_INVALID/ARG_INVALID | 3 PRECHECK_DIRTY | 4 SCOPE_OVERLAP
         5 MASTER_AHEAD | 6 DEPLOY_DRIFT | 7 MERGE_CONFLICT | 8 MERGE_IN_PROGRESS
+        1 环境错误/未归类项(含 --deploy F5 staging/swap/post-verify 阶段失败)
 --allow-home-slot  $HOME 内部任意 slot 放行(默认关, 风险自担)
+--legacy          --deploy 走 F5 前旧直写路径(fallback; 新路径默认)
 EOF
 }
 
@@ -117,6 +125,7 @@ BASE="master"
 DO_DEPLOY=0
 DO_FORCE=0
 ALLOW_HOME_SLOT=0
+DO_LEGACY=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -129,6 +138,7 @@ while [ $# -gt 0 ]; do
     --deploy) DO_DEPLOY=1; shift ;;
     --force)  DO_FORCE=1; shift ;;
     --allow-home-slot) ALLOW_HOME_SLOT=1; shift ;;
+    --legacy) DO_LEGACY=1; shift ;;
     -h|--help) usage; exit 0 ;;
     -*)
         echo "[V1] ARG_INVALID: 未知选项 $1" >&2; usage; exit 2 ;;
@@ -391,9 +401,14 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     GUARDS="${HOME:-}:home|$SKILL_ROOT:full|$WT_PATH:full|$MAIN_REPO:full"
     # [2026-09-12 R2 P3] 本批次 tmpdir 数组累积, trap 逐个清理(原前缀 glob 匹配他进程 .tmp-deploy.*)
     BATCH_TMPDIRS=()
+    # [task-v159 F5] staging 原子化路径用: slot 归一路径与对应 stage 路径(并行数组, 下标对齐)
+    SLOTDIRS=()
+    STAGEDIRS=()
     # [2026-09-12 R3 P2] trap 体封成 cleanup_tmpdirs() 函数(原顶层 local 报错), stderr 零输出;
     # [2026-09-12 R3 P3] 正常退出/TERM/INT 由 EXIT trap 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位);
     # SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回原位
+    # [task-v159 F5] stage 残留清理: swap 成功位 stagedir 已 mv 走(不存在, 幂等); 异常中断(TERM/INT)
+    #   时若 slotdir 缺席且 stagedir 尚在 → 先 mv 回原位(恢复语义同 swap 失败路径), 再清理其余残留
     slotbak=""
     slotdir=""
     cleanup_tmpdirs() {
@@ -401,6 +416,15 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
             [ -n "$_t" ] && rm -rf "$_t" 2>/dev/null
         done
         [ -n "${slotbak:-}" ] && [ ! -e "${slotdir:-x}" ] && [ -e "${slotbak:-y}" ] && mv "$slotbak" "$slotdir" 2>/dev/null
+        for _i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+            _sd="${STAGEDIRS[$_i]:-}"
+            [ -n "$_sd" ] || continue
+            if [ ! -e "${SLOTDIRS[$_i]:-}" ] && [ -e "$_sd" ]; then
+                mv "$_sd" "${SLOTDIRS[$_i]}" 2>/dev/null || true
+            else
+                [ -e "$_sd" ] && rm -rf "$_sd" 2>/dev/null || true
+            fi
+        done
         return 0
     }
     trap 'cleanup_tmpdirs' EXIT
@@ -591,62 +615,154 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         return 0
     }
     IFS=':' read -r -a slots <<< "$SLOTS"
-    for slot in "${slots[@]}"; do
-        [ -n "$slot" ] || continue
-        if ! validate_slot "$slot"; then
-            DRIFT=1
-            continue
-        fi
-        # [2026-09-17 task-v077] fail-closed: 源缺失时整位跳过(不 cp/diff/mv, slot 原样保留)。
-        # 检查置于 validate_slot 之后 — REJECTED 危险 slot 仍走既有拒绝路径(诊断语义不变);
-        # 此处不再置 DRIFT(上方 DRIFT 初始化已置 1 → exit 6), 防重复标志语义漂移。
-        if [ ! -d "$DEPLOY_SRC" ]; then
-            echo "[DEPLOY] DRIFT: $slot (部署源缺失, 跳过部署)"
-            continue
-        fi
-        slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
-        tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
-        # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
-        # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 正常退出/TERM/INT 由 EXIT trap 兜底
-        # 恢复(.bak 尚在且 slot 缺席 → mv 回原位); SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回
-        # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
-        rm -rf "$tmpdir" 2>/dev/null || true
-        if ! cp -rL "$DEPLOY_SRC" "$tmpdir" 2>/dev/null; then
+    if [ "$DO_LEGACY" -eq 1 ]; then
+        # [--legacy task-v159] 旧直写路径: cp→rm→mv 改名换位 + 两级对账(L1/L2), 保留为 fallback。
+        # Why: F5 之前唯一实现; 新路径默认启用, --legacy 仅用于对照/应急(失败语义 exit 6 不变)。
+        for slot in "${slots[@]}"; do
+            [ -n "$slot" ] || continue
+            if ! validate_slot "$slot"; then
+                DRIFT=1
+                continue
+            fi
+            # [2026-09-17 task-v077] fail-closed: 源缺失时整位跳过(不 cp/diff/mv, slot 原样保留)。
+            # 检查置于 validate_slot 之后 — REJECTED 危险 slot 仍走既有拒绝路径(诊断语义不变);
+            # 此处不再置 DRIFT(上方 DRIFT 初始化已置 1 → exit 6), 防重复标志语义漂移。
+            if [ ! -d "$DEPLOY_SRC" ]; then
+                echo "[DEPLOY] DRIFT: $slot (部署源缺失, 跳过部署)"
+                continue
+            fi
+            slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
+            tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
+            # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
+            # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 正常退出/TERM/INT 由 EXIT trap 兜底
+            # 恢复(.bak 尚在且 slot 缺席 → mv 回原位); SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回
+            # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
             rm -rf "$tmpdir" 2>/dev/null || true
-            echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
-            DRIFT=1
-            continue
-        fi
-        BATCH_TMPDIRS+=("$tmpdir")
-        slotbak="$slotdir.bak.$$"
-        if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
-            rm -rf "$tmpdir" 2>/dev/null || true
-            slotbak=""
-            echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
-            DRIFT=1
-            continue
-        fi
-        if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
-            mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
+            if ! cp -rL "$DEPLOY_SRC" "$tmpdir" 2>/dev/null; then
+                rm -rf "$tmpdir" 2>/dev/null || true
+                echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
+                DRIFT=1
+                continue
+            fi
+            BATCH_TMPDIRS+=("$tmpdir")
+            slotbak="$slotdir.bak.$$"
+            if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
+                rm -rf "$tmpdir" 2>/dev/null || true
+                slotbak=""
+                echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
+                DRIFT=1
+                continue
+            fi
+            if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
+                mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
+                rm -rf "$slotbak" 2>/dev/null
+                slotbak=""
+                echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
+                DRIFT=1
+                continue
+            fi
             rm -rf "$slotbak" 2>/dev/null
             slotbak=""
-            echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
-            DRIFT=1
-            continue
+            BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
+            # [2026-09-17 task-v077] 对账基准 = DEPLOY_SRC(主仓 skills/task-planner), 非脚本运行处
+            # [2026-09-27 task-v091 C-5] 全树 diff -rq → 两级对账(L1 集合差 + L2 定向 diff, 明细行 DRIFT-L1/DRIFT-L2
+            # 先行打印; 判定行与 exit 码语义不变: 两级全过 = IDENTICAL)
+            if deploy_reconcile "$slotdir"; then
+                echo "[DEPLOY] IDENTICAL: $slotdir (基准=主仓 skills/task-planner)"
+                install_pool_links "$slotdir"
+            else
+                DRIFT=1
+            fi
+        done
+    else
+        # [task-v159 F5] staging 原子化三段(替代旧直写路径; 默认启用)
+        # Why(D4 事故根因=2026-10-10 04:45-04:49 claude 写入后 zcode 删除致技能全局停摆):
+        #   旧路径 rm slot 后直写新内容, 写入中断=slot 缺席=全部会话技能停摆。新路径把"内容就位"
+        #   与"指针切换"分离: staging 全部先行(任 slot stage 失败=整体 exit 1 不进入 swap);
+        #   swap 逐位 rename 原子切换(失败恢复原位); post-verify 存在性+diff -r 零差异,
+        #   任一失败 exit 1, 禁止部分 slot 成功当整体成功。
+        # ---------- staging: 全部 slot 先行 cp -rL 至同父目录 <slot>.stage.$$ ----------
+        for slot in "${slots[@]}"; do
+            [ -n "$slot" ] || continue
+            if ! validate_slot "$slot"; then
+                DRIFT=1
+                continue
+            fi
+            if [ ! -d "$DEPLOY_SRC" ]; then
+                echo "[DEPLOY] DRIFT: $slot (部署源缺失, 跳过部署)"
+                continue
+            fi
+            slotdir="${slot%/}"
+            stagedir="${slotdir}.stage.$$"
+            rm -rf "$stagedir" 2>/dev/null || true    # 防 PID 复用残留嵌套
+            if ! cp -rL "$DEPLOY_SRC" "$stagedir" 2>/dev/null; then
+                rm -rf "$stagedir" 2>/dev/null || true
+                echo "[DEPLOY] STAGE-FAIL: $slotdir (cp 失败 — 整体退出, 不进入 swap)"
+                # 清理本批已 stage 的残留(防半成品 stage 目录遗留父目录)
+                for _sd in ${STAGEDIRS[@]+"${STAGEDIRS[@]}"}; do
+                    [ -n "$_sd" ] && rm -rf "$_sd" 2>/dev/null || true
+                done
+                STAGEDIRS=()
+                echo "[DEPLOY] DEPLOY_DRIFT: staging 阶段失败" >&2
+                exit 1
+            fi
+            SLOTDIRS+=("$slotdir")
+            STAGEDIRS+=("$stagedir")
+            echo "[DEPLOY] STAGED: $slotdir → ${slotdir}.stage.$$"
+        done
+        # ---------- swap: 逐 slot rm -rf <slot> && mv <slot>.stage.$$ <slot> ----------
+        # rename(2) 原子切换(同父目录); 失败不继续 post-verify(整体 exit 1)
+        SWAP_FAIL=0
+        for i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+            [ -n "${SLOTDIRS[$i]:-}" ] || continue
+            slotdir="${SLOTDIRS[$i]}"
+            stagedir="${STAGEDIRS[$i]}"
+            if ! rm -rf "$slotdir" 2>/dev/null; then
+                echo "[DEPLOY] SWAP-FAIL: $slotdir (rm 失败 — 原 slot 保留未动)"
+                SWAP_FAIL=1
+                continue
+            fi
+            if ! mv "$stagedir" "$slotdir" 2>/dev/null; then
+                # 恢复原位: stage 尚在, mv 回(rm 已执行, stage 回即恢复)
+                mv "$stagedir" "$slotdir" 2>/dev/null || true
+                echo "[DEPLOY] SWAP-FAIL: $slotdir (mv 失败 — stage 已回原位)"
+                SWAP_FAIL=1
+                continue
+            fi
+            echo "[DEPLOY] SWAPPED: $slotdir"
+        done
+        if [ "$SWAP_FAIL" -eq 1 ]; then
+            echo "[DEPLOY] DEPLOY_DRIFT: swap 阶段失败(已 swap 位保持新内容一致态, 失败位已恢复原位)" >&2
+            exit 1
         fi
-        rm -rf "$slotbak" 2>/dev/null
-        slotbak=""
-        BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
-        # [2026-09-17 task-v077] 对账基准 = DEPLOY_SRC(主仓 skills/task-planner), 非脚本运行处
-        # [2026-09-27 task-v091 C-5] 全树 diff -rq → 两级对账(L1 集合差 + L2 定向 diff, 明细行 DRIFT-L1/DRIFT-L2
-        # 先行打印; 判定行与 exit 码语义不变: 两级全过 = IDENTICAL)
-        if deploy_reconcile "$slotdir"; then
-            echo "[DEPLOY] IDENTICAL: $slotdir (基准=主仓 skills/task-planner)"
-            install_pool_links "$slotdir"
-        else
-            DRIFT=1
+        # ---------- post-verify: 每 slot 存在性 + diff -r 零差异 ----------
+        # 任一失败 exit 1 并输出 slot 缺失/diff 详情, 禁止部分 slot 成功当整体成功
+        VERIFY_FAIL=0
+        for i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+            [ -n "${SLOTDIRS[$i]:-}" ] || continue
+            slotdir="${SLOTDIRS[$i]}"
+            if [ ! -d "$slotdir" ]; then
+                echo "[DEPLOY] VERIFY-FAIL: $slotdir (slot 缺失)"
+                VERIFY_FAIL=1
+                continue
+            fi
+            if ! diff -r "$slotdir" "$DEPLOY_SRC" >/dev/null 2>&1; then
+                echo "[DEPLOY] VERIFY-FAIL: $slotdir (diff -r 差异详情:)"
+                diff -r "$slotdir" "$DEPLOY_SRC" 2>&1 | head -n 10
+                VERIFY_FAIL=1
+            fi
+        done
+        if [ "$VERIFY_FAIL" -eq 1 ]; then
+            echo "[DEPLOY] DEPLOY_DRIFT: post-verify 阶段失败(存在性/diff 零差异未过)" >&2
+            exit 1
         fi
-    done
+        # [task-v105] 池成员顶层枚举挂载(增强段, 失败不改 exit 码)
+        for i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+            [ -n "${SLOTDIRS[$i]:-}" ] || continue
+            install_pool_links "${SLOTDIRS[$i]}"
+        done
+        echo "[DEPLOY] OK: 全部部署位 post-verify 零差异(基准=主仓 skills/task-planner)"
+    fi
     if [ "$DRIFT" -eq 1 ]; then
         echo "[DEPLOY] DEPLOY_DRIFT: 至少一位部署位 DRIFT/REJECTED(详见上)" >&2
         exit 6
