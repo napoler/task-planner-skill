@@ -95,14 +95,15 @@ else
   bad "CP-06" "bn=$bn_ok env=$c1 cp=$c2 emit=$emit_now/expect=$emit_expect"
 fi
 
-# CP-07: SKILL 短串 1-69=3 ∧ 整串 Critical Rules 1-69>=2 ∧ C48>=1
+# CP-07: SKILL 短串 1-69=3 ∧ 整串 Critical Rules 1-69>=2 ∧ C48>=1（v155 Rule 70 行）∧ C49>=1（本任务 Rule 67 行，2026-10-10 三方并集后本任务行由 C46→C48→C49）
 c1=$(grep -c '1-69' "$SKILL_MD")
 c2=$(grep -c 'Critical Rules 1-69' "$SKILL_MD")
 c3=$(grep -c 'C48' "$SKILL_MD")
-if [ "$c1" -eq 3 ] && [ "$c2" -ge 2 ] && [ "$c3" -ge 1 ]; then
-  ok "CP-07" "1-69=$c1=3 ∧ CR1-69=$c2≥2 ∧ C48=$c3≥1"
+c4=$(grep -c 'C49' "$SKILL_MD")
+if [ "$c1" -eq 3 ] && [ "$c2" -ge 2 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ]; then
+  ok "CP-07" "1-69=$c1=3 ∧ CR1-69=$c2≥2 ∧ C48=$c3≥1 ∧ C49=$c4≥1"
 else
-  bad "CP-07" "1-69=$c1 CR1-69=$c2 C48=$c3"
+  bad "CP-07" "1-69=$c1 CR1-69=$c2 C48=$c3 C49=$c4"
 fi
 
 # CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列

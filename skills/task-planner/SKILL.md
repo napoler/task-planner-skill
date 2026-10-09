@@ -226,6 +226,7 @@ model: opus
 | C45 | goal 单元自查（Rule 66）：66.1 六列填写 / 66.3 [goal:Gn] 证据行逐落 / 66.4 G 序推进 / 66.2 禁 /goal 代调声称；机器面=check-plan-dispatch 硬门+check-complete 对照+selftest-goal-unit-goal-mode.sh 静态守护；mini 档豁免 | ☐ |
 | C46 | 计划期依赖与并行分组自查（Rule 68）：68.1 前置依赖列 / 68.2 组由依赖推导 / 68.3 组内异构 / 68.4 组域写隔离；机器面=check-plan-dispatch 两档+selftest-parallel-scheduling.sh 静态守护；mini 档豁免 | ☐ |
 | C47 | 判断裁决委派自查（Rule 69）：判断类场景（T1 方案终裁/T3 失败定级/T4 验收争议/T5 DRIFT 处置/T6 CR 分歧）主进程拿不准时已委派 decision-arbiter 而非硬决或直接 AskUser（G1-G4 门槛场景除外，69.1 豁免）；REJECT-REWORK 裁决已按驳回单五要素返工且 progress.md 有 [arbiter-reject] 行（69.3 禁静默继续）；ESCALATE-USER 仅限四门槛；本任务无判断争议场景时登记豁免一行（机器面=selftest-decision-arbiter.sh 静态断言，委派与消费动作人工核查；mini 档豁免） | ☐ |
+| C48 | 用户呈报可审批性（Rule 70）：一切审批/审查/确认/升级/熔断呈报已含四要素（①待审项清单+逐项简介②可定位地址③看点④动作+默认项；轻呈报≥②③）；交付总结按 Rule 48 权威源（机器面=selftest-report-reviewability.sh 静态断言+check-complete report-lint，呈报内容人工核查；mini 档豁免） | ☐ |
 | C49 | 上下文压力主动评估自查（Rule 67）：三档触发（节奏/事件/高危信号）已响应；[assess] 留痕已落 progress.md；CONFUSED 已写会话交接文档或登记豁免（机器面=selftest-context-pressure.sh 静态断言，评估过程人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
