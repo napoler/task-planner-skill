@@ -129,6 +129,7 @@ fi
 # [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
 # [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
 # 2026-10-08 task-v149 Rule 65 落地演进（1-64→1-65）：Rule 65 已由 task-v149 落地（65.1-65.8），锚同步演进
+# [2026-10-09 task-v151 S4 钉值级联] '1-65'→'1-66'：Rule 66 已由 task-v151 落地（66.1-66.6），SKILL.md 三处 1-65 计数级联为 1-66，锚同步演进
 n="$(grep -c 'Critical Rules 1-67' "$SKILLMD" || true)"
 m="$(grep -c '1-39' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-67' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-67=$n 应 ≥1 / 1-39=$m 应 0）"; fi

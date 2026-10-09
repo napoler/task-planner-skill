@@ -10,6 +10,7 @@
 #   attest-plan.sh --clear  [plan_file]     # 清除锁定(计划重规划并重新获批后使用)
 #   attest-plan.sh --skip-template-check [plan_file]  # 跳过模板门控(Rule 34.1, 须在交付报告披露)
 #   attest-plan.sh --skip-fmea-check [plan_file]      # 跳过 FMEA 门控(v075 P4, 与 --skip-dispatch-check 同构, 须在交付报告披露)
+#   attest-plan.sh --skip-goal-check [plan_file]      # 跳过 Rule 66.5 Goal 单元表门(2026-10-09 CR F1 接线; 透传 check-plan-dispatch.sh, 须在交付报告披露)
 # 说明: Rule 51.1 需求原文区块门(缺区块/无 R 行/无 R→VC 映射/无 🧮 根源覆盖表 → 拒锁)为 fail-closed 硬门, 无 --skip 逃生口;
 #       mini 档(plan_tier: mini)整块豁免(与 FMEA mini 豁免同先例), 非 mini 计划必含四锚(51.1 三锚 + 53.1 第 4 锚)方可锁定。
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
@@ -20,6 +21,7 @@ mode="attest"
 skip_dispatch=""
 skip_template=""
 skip_fmea=""
+skip_goal=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
@@ -28,7 +30,8 @@ for arg in "$@"; do
     --skip-dispatch-check) skip_dispatch=1 ;;
     --skip-template-check) skip_template=1 ;;
     --skip-fmea-check) skip_fmea=1 ;;
-    -h|--help) sed -n '2,14p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    --skip-goal-check) skip_goal=1 ;;
+    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
 done
@@ -69,7 +72,12 @@ case "$mode" in
     cpl="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-plan-dispatch.sh"
     if [ -z "$skip_dispatch" ]; then
       if [ -x "$cpl" ]; then
-        bash "$cpl" "$plan_file" || { echo "[attest] ✗ 派发型 Phase 未规划子代理,拒绝锁定(Rule 22.6/25.1);紧急 --skip-dispatch-check(将记 ledger 告警)" >&2; exit 1; }
+        # [2026-10-09 task-v151 CR F1] --skip-goal-check 透传到 check-plan-dispatch.sh：
+        #   What：attest 真入口此前无该参数分支，传入即落入 `*) plan_file="$arg"` 被静默吞掉，
+        #         故声称「对齐 --skip-dispatch-check 惯例」的 Rule 66.5 逃生口经 attest 不可达。
+        #   Why ：--skip-dispatch-check 走「整段跳过调用」，而 66.5 goal 门与 S-unit 门同处一次 cpl 调用，
+        #         不能整段跳过（会连 S-unit 校验一并放行）——故按 flag 透传范式接线（CR F1 修复建议方案①）。
+        bash "$cpl" "$plan_file" $([ -n "$skip_goal" ] && echo --skip-goal-check) || { echo "[attest] ✗ 派发型 Phase 未规划子代理,拒绝锁定(Rule 22.6/25.1);紧急 --skip-dispatch-check(将记 ledger 告警)" >&2; exit 1; }
       else
         # [2026-09-16 task-v074 P10] fail-open 显式化(CR P2a 收口):脚本缺失/不可执行时不再静默跳过
         echo "[plan-dispatch] SKIPPED (check-plan-dispatch.sh 不可执行)" >&2

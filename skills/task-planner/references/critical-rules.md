@@ -844,7 +844,21 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 65.7 **与现有 Rule 的关系**：Rule 11（Phase 级漂移检测）= 粗粒度兜底；Rule 15（todo 级高频漂移纠正）= 细粒度主控；Rule 65（步骤级前后对照）= 周期性回顾 + 反向纠正。三者并存，形成完整的漂移检测体系。
 
 65.8 **反模式**：❌ 只在 Phase 完成时才回顾（问题累积数小时才暴露）；❌ 发现矛盾不纠正（错误结论继续影响后续）；❌ 自动纠正不报告用户（用户不知道发生了什么）；❌ 回顾时不重读关键文件（凭记忆回顾 = 不可靠）。
-### 67 上下文压力主动评估与会话交接纪律（P0, 2026-10-09 task-v152，目标：执行期上下文过长/混乱从「被动等事件触发」升级为「主动三档评估→三态裁决→即压缩或交接」，根除长任务上下文膨胀与混乱累积；判定面=LLM 行为留痕+posttooluse 节奏提醒+selftest 静态守护、零新 config 键；衔接 Rule 19/22/24/29/61/62/64.3/65，既有条款原文零改动）
+### 66 goal 单元固化与 /goal 驱动推进纪律（P0, 2026-10-09 task-v151，目标：规划获批后任务自动分解固化为 goal 单元（任务名+目标+完整验证方式），执行按 goal 逐个调度推进并与 ZCode 内置 /goal 目标模式对齐供料，确保后期执行可靠性；判定面=计划期区块+执行期门控，机器面=check-plan-dispatch/check-complete/selftest-goal-unit-goal-mode.sh，零新 config 键；Rule 40.3 /goal 既有口径不动）
+
+66.1 **goal 单元固化（goal-unit freezing）**：计划获批（attest）后，任务必须自动分解固化为「🎯 Goal 单元表」逐行 goal 单元——六列契约：goal-id（G1/G2… 纯数字递增）| 任务名（≤8 字）| 目标（≤1 句）| 完整验证方式（可复现：命令+判据 或 路径+关键行 或 diff/输出形态，三选一必具其一，禁「检查没问题」类无据表述）| 对应 S-unit/Phase | 状态（pending/complete）。standard/full 档必填（缺一列或验证方式列空白=计划无效回炉）；mini 档豁免（66.5）。
+
+66.2 **/goal 内置命令口径（built-in /goal semantics）**：/goal = ZCode 用户侧 harness 内置命令（输入框直接输入即激活目标模式，会话朝目标迭代），技能层**不可代调、不可读取其运行态**（40.3 如实披露口径延伸，防虚构 54.0）；技能层职责=「映射供料」——Goal 单元表是 /goal 完成审计的证据源；执行期每 goal 翻 complete 时单行呈示对应 VC/证据锚（44.5 展示限制，不循环重展）；禁止「技能已设置 /goal」「/goal 状态为…」类无第一手证据表述；多 goal 单元=任务级分解与证据源，**不作** /goal replace 轮替（官方：一个会话同一时间仅一个目标，且 goal 状态跨会话保留；消费方式裁决=只作证据源非轮替，轮替会丢审计链）；/goal 设定须已在执行模式（官方：计划模式与目标模式冲突，任务运行中无法设定——提示用户先切执行模式）。
+
+66.3 **逐 goal 验证通过门（verify-gate）**：执行按 goal 逐个推进（单 goal 焦点，禁跨 goal 连做——46.1 单任务专注度 goal 级延伸）；goal 行翻 complete 前必须：①「完整验证方式」实跑通过 ②progress.md 追加 `[goal:Gn] 证据锚` 行（验证命令+PASS 结果+产物路径，三要素）；缺任一=禁止翻格。check-complete.sh 终验逐行对照：status=complete 的 goal 行无对应 [goal:Gn] 证据行=exit 1（与 64.2 门控同档）；有 goal 未 complete=终态最高 PARTIAL（58.5 三态语义对齐，禁 COMPLETE 冒充）。
+
+66.4 **分解→调度→逐个解决推进序（advance order）**：自动分解=S-unit 表（22.6，拆分前查 21.6.1 模式库）；调度=Rule 21.4 铁律（声明并行组内并行、未声明串行）+Goal 单元表 G 序；逐个解决=每 goal 走「派发起→验收（22.5 三证据）→实跑验证方式→翻格+[goal:Gn] 落盘+单行呈示→下一 goal」；跨 goal 前移/跳序仅按 49.2 推进三条件双登记（Lane 表或 progress [advance] 行），未登记=越序违规。
+
+66.5 **模板区块承载与 mini 豁免（template carriage）**：「🎯 Goal 单元表」=general 模板区块（插入位=「🎯 核心目标达成裁决」后、「⚠️ 执行范围限制」前）；mini-lite 模板按 38.3 区块白名单声明豁免（未加区块不构成违约）；check-plan-dispatch.sh attest 期对 standard/full 档做区块存在性+六列+验证方式列非空机械校验，缺失=拒锁（59.1 硬门同档；--skip-goal-check 逃生口对齐 --skip-dispatch-check 惯例，登记 Decisions）；档位判定：显式 plan_tier: standard/full 才执行硬拒锁；无标记计划=缺省档跳过（legacy/合成夹具兼容口径，主进程 2026-10-09 D2 裁决）；mini 豁免。
+
+66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。
+
+### 67 上下文压力主动评估与会话交接纪律（P0, 2026-10-09 task-v152，目标：执行期上下文过长/混乱从「被动等事件触发」升级为「主动三档评估→三态裁决→即压缩或交接」，根除长任务上下文膨胀与混乱累积；判定面=LLM 行为留痕+posttooluse 节奏提醒+selftest 静态守护、零新 config 键；衔接 Rule 19/22/24/29/61/62/64.3/65/66，既有条款原文零改动）
 
 本条源于用户 2026-10-09 反馈原话（逐字抄录于 plans/task-v152-proactive-context/task_plan.md「🎯 用户需求原文」，51.1 口径）：R1「在遇到上下文过长，或者说出现就是出现混乱的时候，我希望可以进行主动地进行压缩，或者说是整理优化」；R2「如果实在是解决不了，也可以撰写交接文档，要求在新的会话中开启」；R3「核心就是主动评估、主动优化」。归因（实证，findings.md Research Findings A/B/C/G）：Rule 29.1 触发仅三档事件驱动（Phase complete/会话恢复/用户显式）且 check-context-hygiene.sh 4 项全为行数代理指标——「上下文过长/混乱/重复失败」无任何信号触发；Rule 29.5 自述 hook 未接读取、Rule 65 周期回顾亦未接 hook——主动性能靠纯 LLM 自律不可靠；全仓无会话级交接文档模板/机制（grep 会话交接/交接文档零命中）——「解决不了转新会话」无载体。本条补齐「主动评估→主动优化→交接兜底」链路。
 
@@ -858,4 +872,4 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 
 67.5 **hook 节奏承载（rhythm nudge 接线）**：`scripts/zcode-posttooluse.sh` 在 64.3 drift-rhythm 注入点（grep 锚=注入文案 `[drift-rhythm]`，实施日重验行号）经同一 additionalContext 通道追加单行：`[context-pressure] 主动评估（Rule 67.2）：四信号自评 → HEALTHY 继续 / PRESSURE 即压缩(67.3) / CONFUSED 写会话交接文档(67.4)`——前置判定 env `TASK_PLANNER_CONTEXT_PRESSURE != off` 才注入；**既有 drift-rhythm 三键计数（count/last_inject/due）与注入文案零改动**（64.3 性能约束同款：O(1) 三键读写，禁止全仓扫描）。注入=软提醒不拦截（PostToolUse 平台事实，64.3 同款），拦截力由 67.2 留痕与 Phase complete 门控承载。只改技能侧脚本，**不动 `/home/terry/.zcode/cli/config.json`**（hooks.events 挂载表零改动）。
 
-67.6 **机制守护（mechanism guard）**：零新 config 键（64.6 同范式，键膨胀=配置面失控面）——开关与调参全走 env：`TASK_PLANNER_CONTEXT_PRESSURE`（on/off，默认 on）/ `TASK_PLANNER_CONTEXT_PRESSURE_N`（提醒间隔倍数，默认 1=随 64.3 每次同触发；≥2 隔次注入降频）。静态守卫 `scripts/selftest-context-pressure.sh` 断言面：六子条文本锚（`^67\.[1-6] `=6）/ 三态 verdict 词（HEALTHY|PRESSURE|CONFUSED ≥3）/「主动评估」「主动优化」关键词 /「不等 Phase complete」语义锚 / 交接模板五段在位与恢复链锚 / hook env 锚与 drift-rhythm 零改动负锚 / SKILL「Critical Rules 1-67」三处 / C46 在位 / registry 新行——并入 `selftest-registry.tsv`（4 列表头+N 行，SR-12 动态行数断言自动跟随）。SKILL.md 接线三处：Rule 67 摘要 bullet、「Critical Rules 1-65」→「1-67」计数三处级联、合规清单新增 C46。关系：Rule 29.1/29.2/29.3/29.5、Rule 65.1 触发时机与全部既有条款**原文零改动**——67 只追加「主动」通道与交接兜底，29 管「多→退场」SOP 本体，65 管结论一致性，61/64 管漂移，分工正交。
+67.6 **机制守护（mechanism guard）**：零新 config 键（64.6 同范式，键膨胀=配置面失控面）——开关与调参全走 env：`TASK_PLANNER_CONTEXT_PRESSURE`（on/off，默认 on）/ `TASK_PLANNER_CONTEXT_PRESSURE_N`（提醒间隔倍数，默认 1=随 64.3 每次同触发；≥2 隔次注入降频）。静态守卫 `scripts/selftest-context-pressure.sh` 断言面：六子条文本锚（`^67\.[1-6] `=6）/ 三态 verdict 词（HEALTHY|PRESSURE|CONFUSED ≥3）/「主动评估」「主动优化」关键词 /「不等 Phase complete」语义锚 / 交接模板五段在位与恢复链锚 / hook env 锚与 drift-rhythm 零改动负锚 / SKILL「Critical Rules 1-67」三处 / C46 在位 / registry 新行——并入 `selftest-registry.tsv`（4 列表头+N 行，SR-12 动态行数断言自动跟随）。SKILL.md 接线三处：Rule 67 摘要 bullet、「Critical Rules 1-67」计数三处级联（v150 期 1-65 → v151 期 1-66 → 本任务 1-67，锚演进并集）、合规清单 C46（v151 已占 C45=goal，本任务避让重编号）。关系：Rule 29.1/29.2/29.3/29.5、Rule 65.1 触发时机与全部既有条款**原文零改动**——67 只追加「主动」通道与交接兜底，29 管「多→退场」SOP 本体，65 管结论一致性，66 管 goal 单元推进，61/64 管漂移，分工正交。

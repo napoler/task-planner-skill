@@ -124,6 +124,7 @@ fi
 # [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
 # [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
 # 2026-10-08 task-v149 Rule 65 落地演进（1-64→1-65）：Rule 65 已由 task-v149 落地（65.1-65.8），锚同步演进
+# [2026-10-09 task-v151 S4 钉值级联] '1-65'→'1-66'：Rule 66 已由 task-v151 落地（66.1-66.6），SKILL.md 三处 1-65 计数级联为 1-66，锚同步演进
 # [2026-10-09 task-v152 Rule 67 落地] '1-65'→'1-67'：Rule 67 已由 task-v152 落地，四索引文档锚同步演进
 n="$(grep -c 'Critical Rules 1-67' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$(grep -c '1-39' "$SKILLMD" || true)" -eq 0 ]; then
@@ -176,8 +177,11 @@ fi
 # [2026-10-08 task-v147 合并级联] '^63.'→'^64.'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），防线前移至 64（先例 v125 S5/v131/v136/v138/v144 重锚）
 # [2026-10-08 task-v147 第二代级联] '^64.'→'^65.'：Rule 64 已由 task-v148 落地（64.1-64.6），防线前移至 65
 # 2026-10-08 task-v149 Rule 65 落地演进（1-64→1-65）：Rule 65 已由 task-v149 落地（65.1-65.8），防线前移至 66
+# [2026-10-09 task-v151 S4 钉值级联] '^66.' =0 → =6：Rule 66 已由 task-v151 合法落地（66.1-66.6 六子条），
+#   本负断言原为「防顺手创建下一未用号」，Rule 66 落地后该假设失效；按 D2 同法改为全文件面 ^66. 计数 =6
+#   （与 selftest-goal-unit-goal-mode.sh G-02 同口径），保持「66 号已合法登记」正向锚定。
 n="$(grep -c '^66\.' "$CRIT" || true)"
-if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md '66.' 子条命中 0（66 号未被误占，task-v149 Rule 65 落地演进重锚）"; else bad 15 "critical-rules.md '66.' 子条命中=$n（应 =0，编号假设被破坏）"; fi
+if [ "$n" -eq 6 ]; then ok 15 "critical-rules.md '66.' 子条命中 6（Rule 66 已合法落地 66.1-66.6，task-v151 钉值级联重锚）"; else bad 15 "critical-rules.md '66.' 子条命中=$n（应 =6，Rule 66 落地或条款被裁）"; fi
 
 # RC-16..20 共用的被测对象定位（task-v132 G1/G2 产出脚本，均为 worktree 内本目录文件）
 CC_SCRIPT="$SCRIPT_DIR/check-complete.sh"      # RC-18/19/20：worktree 版 check-complete.sh（R-COVERAGE 门载体）
