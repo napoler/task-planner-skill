@@ -77,3 +77,8 @@
   - [05:26] S4 返回 5/5 PASS：dispatch.md:88-91 §10 段（+5/-0 纯追加，§9 与尾注零改动）；主进程复核三锚+numstat 通过 ☑
   - [05:34] S5 返回 5/5 PASS：findings.md:6,41+progress.md:6 三锚（+3/-0 纯追加）；主进程复核通过 ☑
 - [goal:G3] 证据锚（Rule 66.3）：grep "## 10. 防幻觉契约|无锚点行=违规退回|写入前五问" dispatch.md=:88/:90/:91 三锚；grep "Rule 71" findings.md=:6,:41+progress.md=:6 共 3 锚；git diff +8/-0 纯追加——VC-2/VC-3 支撑证据齐
+  - [05:58] S11 返回 4/4：requirement-coverage ×4+tool-selection ×3 纯标签替换，bash -n 过；复核+commit ☑
+  - [06:02] S12 返回 4/4：self-resolution ×3+lane-advancement ×3；commit ☑
+  - [06:06] S13 返回 4/4：research-first ×2+CLAUDE.md:33（1-68 基线）；预警 MEDIUM=research-first:73 锚串后段 40-69 vs SKILL 40-71 失配风险（移交 S8 跑批验证）；commit ☑
+  - [06:10] S14 返回 4/4：README_zh :136/:229（1-68→1-71）；commit ☑
+- [goal:G4] 证据锚（Rule 66.3）：bash selftest-source-anchor-discipline.sh=12/12 exit 0（05:52 实跑）；grep -rn "1-69" skills/ 四脚本=0；仓根 Rules 1-68=0；registry.tsv:68 登记行在——VC-5/VC-6 支撑证据齐

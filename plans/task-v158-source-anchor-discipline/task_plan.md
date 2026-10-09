@@ -93,7 +93,7 @@ plan_tier: standard
 | G1 | 基线复验 | 独立子代理复验级联面/编号/部署位基线并回填 findings | findings.md §3/§5 有 explore 复验行+锚 | S1/Phase 1 | complete |
 | G2 | 规则层 | critical-rules.md 追加 Rule 71 七子条+SKILL.md 四处 | grep 71.1-71.7 锚全命中+1-71×2+C48 | S2,S3/Phase 2 | complete |
 | G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | complete |
-| G4 | 守护层 | 新 selftest 12 断言+registry+19 处级联 | selftest exit 0+grep 1-69=0 | S9-S14/Phase 4 | pending |
+| G4 | 守护层 | 新 selftest 12 断言+registry+级联 18 处 | selftest exit 0+grep 1-69=0 | S9-S14/Phase 4 | complete |
 | G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 66/66 PASS | S8/Phase 5 | pending |
 | G6 | 交付 | CHANGELOG+delivery-summary+合并回主仓+簿记 | delivery-summary 在位+merge commit | Phase 6 | pending |
 
@@ -134,7 +134,7 @@ plan_tier: standard
 n/a（纯执行类——机制建设任务，产出=规则条款/模板/脚本，非调研/归因/评估类结论；对标面=仓内 Rule 68/69 追加先例已在「必要知识储备」表消费）
 
 ## Current Phase
-Phase 4
+Phase 5
 
 ## Next Step
 派 S11（code-assistant haiku-1）级联 requirement-coverage.sh+tool-selection.sh 计数 1-69→1-71
@@ -192,11 +192,11 @@ Phase 4
 | S5 | findings/progress 模板各加 2 处 Rule 71 占位注释（design §四） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §四（4 锚精确稿） | 两模板 grep Rule 71 共 4 锚以上 | 10min | 2f/6l/10min | 无 | S1 | done |
 
 ### Phase 4: 守护层实施+冒烟
-- [ ] 新建 selftest-source-anchor-discipline.sh（design §五 12 断言）+ registry.tsv 登记
-- [ ] 19 处 1-69→1-71 级联（grep 实锚逐文件 sed + git diff 逐 hunk 目审）
-- [ ] 新 selftest 冒烟 PASS
+- [x] 新建 selftest-source-anchor-discipline.sh（design §五 12 断言）+ registry.tsv 登记
+- [x] 级联完成：skills/ 15 处 1-69→1-71（4 脚本）+ 仓根 3 处 1-68→1-71（CLAUDE:33/README_zh:136,229）
+- [x] 新 selftest 冒烟 12/12 PASS（S10 后全绿）
 - **V-N:** VC-6, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -206,7 +206,7 @@ Phase 4
 | S11 | 级联 1-69→1-71：requirement-coverage.sh（4 处）+tool-selection.sh（3 处） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §六（grep 实锚法） | 两文件 grep 1-69 命中 0；diff 仅计数标签行 | 10min | 2f/7l/10min | 无 | S2 | done |
 | S12 | 级联：self-resolution.sh（3 处）+lane-advancement.sh（3 处） | code-assistant(haiku-1) | 同 §六 | 同上（两文件 1-69 清零） | 10min | 2f/6l/10min | 无 | S2 | done |
 | S13 | 级联：research-first.sh（2 处）+仓根 CLAUDE.md 33 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 同上（两文件清零；CLAUDE 行为 1-68 基线） | 10min | 2f/3l/10min | 无 | S2 | done |
-| S14 | 级联：README_zh.md 136 与 229 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 该两行 1-68 清零且为 1-71 | 5min | 1f/2l/5min | 无 | S2 | pending |
+| S14 | 级联：README_zh.md 136 与 229 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 该两行 1-68 清零且为 1-71 | 5min | 1f/2l/5min | 无 | S2 | done |
 
 ### Phase 5: Testing & Verification
 - [ ] 全量 selftest 跑批（66+1 脚本）对照基线 FAIL=0
@@ -255,7 +255,7 @@ Phase 4
 | Phase 1 | ☑ | 2026-10-10 05:08 | S1 done；Phase 1 complete |
 | Phase 2 | ☑ | 2026-10-10 05:20 | S2/S3 done，Phase 2 complete |
 | Phase 3 | ☑ | 2026-10-10 05:36 | S4/S5 done，Phase 3 complete |
-| Phase 4 | ☐ |  |  |
+| Phase 4 | ☑ | 2026-10-10 06:12 | S9-S14 全 done，Phase 4 complete |
 | Phase 5 | ☐ |  |  |
 | Phase 6 | ☐ |  |  |
 
@@ -290,6 +290,7 @@ Phase 4
 | 2026-10-10 05:08 | 主进程自查：目标=Rule 71 制度化三载体+守护；当前步=Phase 1 基线复验 complete；scope=worktree 内 6 类目标文件+簿记 | VC-1..7 | ALIGNED（无漂移；Phase 1→2 换道前留痕，Rule 64.2） |
 | 2026-10-10 05:20 | 主进程自查：Phase 2 产出=critical-rules.md:888-902+SKILL.md 四处；与 Goal/VC-1/VC-5 对照一致；无范围外文件 | VC-1, VC-5 | ALIGNED（S2/S3 双 verify_done；Phase 2→3 换道前留痕） |
 | 2026-10-10 05:36 | 主进程自查：Phase 3 产出=dispatch:88-91+findings:6,41+progress:6；与 VC-2/VC-3 对照一致；无范围外文件 | VC-2, VC-3 | ALIGNED（S4/S5 双 verify_done；Phase 3→4 换道前留痕） |
+| 2026-10-10 06:12 | 主进程自查：Phase 4 产出=selftest 52 行 12/12+registry+级联 18 处（S13 预警 40-69 锚失配风险移交 S8 验证）；无范围外文件 | VC-5, VC-6 | ALIGNED（S9-S14 六 done 双 verify_done；Phase 4→5 换道前留痕） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
