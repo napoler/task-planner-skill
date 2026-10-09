@@ -93,7 +93,7 @@ task-planner 技能新增 Rule 66「goal 单元固化与 /goal 驱动推进纪�
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 需求定稿与 /goal 实证 | R 行逐字落盘+/goal 无程序化触面实证 | findings.md 含 R1-R5 行 + ledger error 事件 + subagent-state /goal-empirical.md 三处「不存在」结论在位 | Phase 1 | complete |
-| G2 | 机制设计定稿 | Rule 66 子条文本+Goal 单元表格式+钉值清单定稿 | plans/task-v151-goal-mode/design-draft.md 存在且含 66.1-66.6 草案全文 + 钉值级联清单逐条可查 | Phase 2 | pending |
+| G2 | 机制设计定稿 | Rule 66 子条文本+Goal 单元表格式+钉值清单定稿 | plans/task-v151-goal-mode/design-draft.md 存在且含 66.1-66.6 草案全文 + 钉值级联清单逐条可查 | Phase 2 | complete |
 | G3 | 规则与模板落地 | critical-rules/SKILL/模板/两守卫脚本落地 worktree | worktree 内 `git diff --stat` 覆盖 scope_files 且 S2-S4 各 selftest 锚 grep 命中（逐 S-unit 验收列） | Phase 3 | complete |
 | G4 | 守卫与 selftest | 新 selftest 全 PASS+registry 登记+钉值全绿 | worktree 内新 selftest exit 0 + 全量 selftest ΣFAIL=0（S4b POST-FIX 行） | Phase 3 | complete |
 | G5 | 部署与回归 | 三部署位 IDENTICAL+全量回归 | 部署 zcode/cursor/claude 位 8 核心文件 cmp 全 OK（SKILL.md 各平台前缀差异=install 固有平台定制面）+ final-regression.log ΣFAIL=0（64 脚本，Total 行口径） | Phase 5 | complete |
