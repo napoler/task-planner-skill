@@ -190,7 +190,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - **V-2.1:** VC-h（worktree 创建成功，分支 `wt/v153-parallel-scheduling`，关键文件与主仓 `git diff` 一致）——Evidence: git worktree list=ebb5fba + 7 文件三面 sha256 OK（progress Phase 2 段）
 - **V-2.2:** VC-e（selftest 基线跑批 PASS/FAIL 数记录在 progress.md，作为 Phase 4 回归对照基线）——Evidence: baseline-selftest.log（64/64 rc=0，ΣFAIL=0）
 - **Status:** complete（2026-10-09 23:05；3-File Gate+drift 61.5 降级佐证 ALIGNED+双痕；[git-commit] 跳过=本 Phase 无仓内产物，worktree 未提交为正常初始态）
-- **Executor:** 主进程（例外理由: git 编排 + 机械守卫跑批——Rule 25.3 白名单）
+- **Executor:** 主进程（例外理由:① git/worktree 编排 +③ 机械守卫跑批——Rule 25.3 白名单①③）
 
 ### Phase 3: 实施（worktree 内，逐 S-unit 派发）
 - [ ] **p3-core**={S1,S2,S3} 同消息并行派发（文件集不相交：critical-rules.md/SKILL.md/templates/task_plan.md；共同输入=design 稿；组内异构：sonnet-1/haiku-1 混）→ 三证据验收
@@ -205,7 +205,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - **V-3.4:** VC-d（selftest-parallel-scheduling.sh 存在，registry 登记，断言通过）
 - **V-3.5:** VC-g（本计划 parallel_groups 声明 + 组内异构执行体 + 组域写隔离协议行）
 - **Status:** complete（2026-10-09 23:38；三批全验收+commit 5c5b3f6；drift=61.5 降级佐证；G6 证据见 progress [goal:G6]）
-- **Executor:** 主进程（例外理由: git 编排 + 派发编排——Rule 25.3 白名单；S-unit 派发表见下）
+- **Executor:** 主进程（例外理由:① 派发编排（21.4 调度管理器职责）+② 三文件簿记——Rule 25.3 白名单①②；S-unit 派发表见下）
 
 <!-- S-unit 派发单元表(Rule 22.6 — 每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟;ID 纯数字;粒度三值 Nf/Nl/Nmin 逐行校验;「伴飞技能」列非「无」→ 校验 SKILL.md 路径存在(Rule 59.2);Rule 68.1 前置依赖列必填,无依赖填 `-`) -->
 | ID | 目标(≤ 1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 并行组 | 检查点 | 状态 |
@@ -229,13 +229,13 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - **V-4.2:** VC-c（check-plan-dispatch.sh 守卫扩展测试证据：reject+WARN 用例）——Evidence: fixA 复跑 H4 矛盾 rc=1 原文+W1 WARN rc=0+真实计划零误报+F8 双夹具（裸管道 reject/转义放行）
 - **V-4.3:** VC-f（SKILL.md 计数级联正确，alignment-review 通过）——Evidence: CR 二轮 APPROVED（八发现全 fixed+3 新 MINOR 中 2 已修 1 为检查点文档口径）+主进程六维对齐核验（载体=gp Skill 调用连续两次取消→22.3.1 路由变更，已登记降级理由）
 - **Status:** complete（2026-10-10 03:3x；V1 Round1-4 三轮修复闭环+CR 二轮 APPROVED+对齐六维全绿+commit 74177a6；drift=61.5 降级佐证+人工复核）
-- **Executor:** code-runner-agent（mini）+ Code Reviewer（sonnet-1）+ alignment-review skill（主进程调用，42.6.2；载体取消降级已登记）
+- **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）+ alignment-review skill（42.6.2；载体取消降级已登记）
 
 <!-- S-unit 派发单元表(Rule 22.6 — 每行 = 一次 Agent() 派发;粒度三值 Nf/Nl/Nmin 逐行校验) -->
 | ID | 目标(≤ 1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 并行组 | 检查点 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|---------|--------|--------|------|
 | V1 | worktree 内全量 selftest 跑批回归与基线对比（FAIL 计数=基线零新增） | code-runner-agent（mini） | worktree scripts/ 全量 selftest + plans/task-v153-parallel-scheduling/baseline-selftest.log（Phase 2 基线） | 跑批输出 Total/FAIL 行逐条贴回（逐行原文，禁自报汇总）；FAIL 数=基线 | 15min | 2f/20l/15min | 无 | S1-S6 | - | subagent-state/4-code-runner-V1.md | pending |
-| V2 | Code Reviewer 全量 CR（Rule 68 条款+SKILL 级联+模板列+守卫+selftest 七文件重 diff） | code-reviewer（sonnet-1） | worktree `git diff master` 全量 + design-rule68.md（审查基准） | 输出 APPROVED 或 CHANGES_REQUESTED（CHANGES → fix-phase 回炉） | 15min | 2f/100l/15min | 无 | S1-S6 | - | subagent-state/4-code-reviewer-V2.md | pending |
+| S9 | Code Reviewer 全量 CR（Rule 68 条款+SKILL 级联+模板列+守卫+selftest 七文件重 diff） | code-reviewer（sonnet-1） | worktree `git diff master` 全量 + design-rule68.md（审查基准） | 输出 APPROVED 或 CHANGES_REQUESTED（CHANGES → fix-phase 回炉） | 15min | 2f/100l/15min | 无 | S1-S6 | - | subagent-state/4-code-reviewer-V2.md | pending |
 
 ### Phase 5: 合并回+部署对账+收尾簿记
 - [x] smart-merge-back（`git merge --no-ff wt/v153-parallel-scheduling`）——b20974f 自动归并零冲突（v151 终态 5afba9c+wt/v153 74177a6 并集）
@@ -246,7 +246,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - **V-5.1:** VC-f（SKILL.md 计数级联合并后实际值正确，Rule 68 索引行与合规清单行在位）——Evidence: 合并态 grep 1-68×3+C46+bullet+66 枚举
 - **V-5.2:** VC-h（三部署位 IDENTICAL，合并后对账 diff 一致）——Evidence: b20974f+三部署位 diff -q OK
 - **Status:** complete（2026-10-10 04:0x；merge 零冲突+部署 IDENTICAL+land 68+R5 合并态回归 65/65 ΣFAIL=0；drift=61.5 降级佐证+Drift Log 双痕）
-- **Executor:** 主进程（例外理由: git 编排 + 簿记——Rule 25.3 白名单）
+- **Executor:** 主进程（例外理由:① git/worktree 编排（合并/清理/部署）+② 收尾簿记——Rule 25.3 白名单①②）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 
