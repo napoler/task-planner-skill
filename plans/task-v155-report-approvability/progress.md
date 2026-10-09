@@ -174,3 +174,7 @@
 - [goal:G7] complete — 证据: Round1 62/65→S17a/S17b 修 4 级联→Round2/Round4/Round6 67/67 ΣFAIL=0（Phase 7 段）
 - [goal:G8] complete — 证据: 18-code-reviewer.md CHANGES_REQUESTED→S20 修复（n>0 守卫 :988/双锚 :146-151）；19-align-reviewer.md→S20b/c/d 修复；复跑全 PASS
 - [goal:G9] complete — 证据: master merge 2a12229；部署 3 位 IDENTICAL（smart-merge-back DEPLOY 段）；rule 70 landed；worktree/branch 已清理；verification.md 7 VC 全 PASS+outcome=COMPLETE
+
+## [skill-modify] 删除性行为清单登记（Rule 36.3/36.6 终验）
+- 本任务涉及技能文件修改（skills/task-planner/ 下 18 文件），删除性行为清单：**[skill-modify] 无功能性删除**。
+- 逐项确认：① 零文件删除、零条款删除；② SKILL 索引口径 1-66→1-69+70 为并集解下的口径演进（parallel 任务 67-69 条文保留）；③ 合规清单 C46→C48 为编号新增非删除（v153/v154 的 C46/C47 保留）；④ selftest 改造全部为断言锚精确化（总数不减：RRV 13/9/41/12 条）；⑤ 唯一实质重写=SKILL.md:287 段首行（u1 并集解，语义仅增"Rule 70 条目+67-69 落位表述"）。改动前已 Read 全部目标文件并展示 diff（S-unit 验收逐项 grep 对拍）。
