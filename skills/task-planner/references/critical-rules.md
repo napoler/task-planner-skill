@@ -849,7 +849,7 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 
 66.1 **goal 单元固化（goal-unit freezing）**：计划获批（attest）后，任务必须自动分解固化为「🎯 Goal 单元表」逐行 goal 单元——六列契约：goal-id（G1/G2… 纯数字递增）| 任务名（≤8 字）| 目标（≤1 句）| 完整验证方式（可复现：命令+判据 或 路径+关键行 或 diff/输出形态，三选一必具其一，禁「检查没问题」类无据表述）| 对应 S-unit/Phase | 状态（pending/complete）。standard/full 档必填（缺一列或验证方式列空白=计划无效回炉）；mini 档豁免（66.5）。
 
-66.2 **/goal 内置命令口径（built-in /goal semantics）**：/goal = ZCode 用户侧 harness 内置命令（输入框直接输入即激活目标模式，会话朝目标迭代），技能层**不可代调、不可读取其运行态**（40.3 如实披露口径延伸，防虚构 54.0）；技能层职责=「映射供料」——Goal 单元表是 /goal 完成审计的证据源；执行期每 goal 翻 complete 时单行呈示对应 VC/证据锚（44.5 展示限制，不循环重展）；禁止「技能已设置 /goal」「/goal 状态为…」类无第一手证据表述。
+66.2 **/goal 内置命令口径（built-in /goal semantics）**：/goal = ZCode 用户侧 harness 内置命令（输入框直接输入即激活目标模式，会话朝目标迭代），技能层**不可代调、不可读取其运行态**（40.3 如实披露口径延伸，防虚构 54.0）；技能层职责=「映射供料」——Goal 单元表是 /goal 完成审计的证据源；执行期每 goal 翻 complete 时单行呈示对应 VC/证据锚（44.5 展示限制，不循环重展）；禁止「技能已设置 /goal」「/goal 状态为…」类无第一手证据表述；多 goal 单元=任务级分解与证据源，**不作** /goal replace 轮替（官方：一个会话同一时间仅一个目标，且 goal 状态跨会话保留；消费方式裁决=只作证据源非轮替，轮替会丢审计链）；/goal 设定须已在执行模式（官方：计划模式与目标模式冲突，任务运行中无法设定——提示用户先切执行模式）。
 
 66.3 **逐 goal 验证通过门（verify-gate）**：执行按 goal 逐个推进（单 goal 焦点，禁跨 goal 连做——46.1 单任务专注度 goal 级延伸）；goal 行翻 complete 前必须：①「完整验证方式」实跑通过 ②progress.md 追加 `[goal:Gn] 证据锚` 行（验证命令+PASS 结果+产物路径，三要素）；缺任一=禁止翻格。check-complete.sh 终验逐行对照：status=complete 的 goal 行无对应 [goal:Gn] 证据行=exit 1（与 64.2 门控同档）；有 goal 未 complete=终态最高 PARTIAL（58.5 三态语义对齐，禁 COMPLETE 冒充）。
 
