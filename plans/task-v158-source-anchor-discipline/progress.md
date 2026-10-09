@@ -82,3 +82,8 @@
   - [06:06] S13 返回 4/4：research-first ×2+CLAUDE.md:33（1-68 基线）；预警 MEDIUM=research-first:73 锚串后段 40-69 vs SKILL 40-71 失配风险（移交 S8 跑批验证）；commit ☑
   - [06:10] S14 返回 4/4：README_zh :136/:229（1-68→1-71）；commit ☑
 - [goal:G4] 证据锚（Rule 66.3）：bash selftest-source-anchor-discipline.sh=12/12 exit 0（05:52 实跑）；grep -rn "1-69" skills/ 四脚本=0；仓根 Rules 1-68=0；registry.tsv:68 登记行在——VC-5/VC-6 支撑证据齐
+  - [06:24] 主进程诊断跑批：67 脚本 14 FAIL——逐项归因=宽容锚纪元缺陷（[4-6][0-9] 类正则不含 7x），非 S11-S14 误改（替换面 grep 零误伤）；S11-S14 首检跑批前置完成
+  - [06:26] B 类扩展登记（Decisions）+S15a-g 七批入表+重锁（29f9d1fb→520a7c51 两轮：S15 入表+parallel_groups 声明）；首轮 S15 行插入因 old_string 静默失配未写入（python replace 无匹配不报错教训），68.2 hard 拦截后行级插入修复
+  - [06:28-06:38] S15a-g 七批并行派发（anchor-7x 组，68.3 组内同档 haiku-1=advisory WARN 已知）→ 七批全 done（15a 遗留 error-loop:14 头注释 6x 文案按禁改未动备裁；15c 合理适配新增 cntE() 助手 2 行；15g 纠正任务书描述误差[:225 无 1-71 字面，cnt=8≥3 不受影响]）
+  - [06:40] 主进程复跑全量：67/67 全绿零 FAIL
+- Error Log 登记见 task_plan.md Errors 区（宽容锚纪元首检 14 FAIL→S15a-g 处置）

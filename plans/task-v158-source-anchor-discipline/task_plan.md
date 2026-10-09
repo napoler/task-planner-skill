@@ -1,6 +1,7 @@
 ---
 template_type: general
 plan_tier: standard
+parallel_groups: [anchor-7x]
 ---
 
 # Task Plan: task-v158 把「无源不写·空段占位·写必带锚」制度化进 task-planner 技能层（Rule 71）
@@ -93,7 +94,7 @@ plan_tier: standard
 | G1 | 基线复验 | 独立子代理复验级联面/编号/部署位基线并回填 findings | findings.md §3/§5 有 explore 复验行+锚 | S1/Phase 1 | complete |
 | G2 | 规则层 | critical-rules.md 追加 Rule 71 七子条+SKILL.md 四处 | grep 71.1-71.7 锚全命中+1-71×2+C48 | S2,S3/Phase 2 | complete |
 | G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | complete |
-| G4 | 守护层 | 新 selftest 12 断言+registry+级联 18 处 | selftest exit 0+grep 1-69=0 | S9-S14/Phase 4 | complete |
+| G4 | 守护层 | 新 selftest 12 断言+registry+级联 18 处+宽容锚 7x 扩展 | selftest exit 0+grep 1-69=0 | S9-S15g/Phase 4 | complete |
 | G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 66/66 PASS | S8/Phase 5 | pending |
 | G6 | 交付 | CHANGELOG+delivery-summary+合并回主仓+簿记 | delivery-summary 在位+merge commit | Phase 6 | pending |
 
@@ -207,6 +208,13 @@ Phase 5
 | S12 | 级联：self-resolution.sh（3 处）+lane-advancement.sh（3 处） | code-assistant(haiku-1) | 同 §六 | 同上（两文件 1-69 清零） | 10min | 2f/6l/10min | 无 | S2 | done |
 | S13 | 级联：research-first.sh（2 处）+仓根 CLAUDE.md 33 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 同上（两文件清零；CLAUDE 行为 1-68 基线） | 10min | 2f/3l/10min | 无 | S2 | done |
 | S14 | 级联：README_zh.md 136 与 229 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 该两行 1-68 清零且为 1-71 | 5min | 1f/2l/5min | 无 | S2 | done |
+| S15a | 宽容锚：conclusion-discipline（[4-6][0-9]×4）+error-loop（1-(3[1-9]|[4-6][0-9])） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 两脚本原 FAIL 断言转 PASS；bash -n 过 | 10min | 2f/6l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
+| S15b | 宽容锚：reflect-verify+veto（Rules 1-(3[x-9]|[4-6][0-9]) 形各 1） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/2l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
+| S15c | 宽容锚：skill-split（[4-6]→[4-7]）+research-first（RF-06 计数族+RF-07 头注双锚） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/4l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
+| S15d | 宽容锚：drift-check-subagent（DCS-11 40-69 字面）+execution-honesty（40-(5[3-9]|6[0-9])） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/2l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
+| S15e | 宽容锚：root-resolution（:176 区间锚）+self-resolution（SR-08 共存锚） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/2l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
+| S15f | 宽容锚：capability-persistence（CP-05 40-[56][0-9]）+iteration-persistence（IP-12） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/2l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
+| S15g | 宽容锚：reliability-institution（R-09）+workflow-orchestration（WF-10 哨兵族扩容） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/6l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
 
 ### Phase 5: Testing & Verification
 - [ ] 全量 selftest 跑批（66+1 脚本）对照基线 FAIL=0
@@ -255,7 +263,7 @@ Phase 5
 | Phase 1 | ☑ | 2026-10-10 05:08 | S1 done；Phase 1 complete |
 | Phase 2 | ☑ | 2026-10-10 05:20 | S2/S3 done，Phase 2 complete |
 | Phase 3 | ☑ | 2026-10-10 05:36 | S4/S5 done，Phase 3 complete |
-| Phase 4 | ☑ | 2026-10-10 06:12 | S9-S14 全 done，Phase 4 complete |
+| Phase 4 | ☑ | 2026-10-10 06:38 | S9-S15g 全 done（B 类扩展七批并入），Phase 4 complete |
 | Phase 5 | ☐ |  |  |
 | Phase 6 | ☐ |  |  |
 
@@ -273,11 +281,12 @@ Phase 5
 | interaction_mode=silent | 用户非实时在场，连续「继续」即授权；静默决策随 delivery 呈报 |
 | worktree 从 master 创建后必须与主仓 HEAD 对账 | 本任务实证：初建落 f6d6158，master 随即前进至 5280cb3（v154 合入），已 merge 同步 |
 | v150 重锁（Phase 6 簿记） | attest 后两个簿记提交（02c61d7/1a87387）未重锁致 PLAN TAMPERED 告警；按 Rule 51.7 登记+重锁消音 |
+| B 类扩展：宽容锚 7x 纪元扩展（2026-10-10 06:20，S15a-g） | 主进程诊断跑批发现 14 selftest FAIL，根因=宽容锚正则只覆盖 6x 纪元（[4-6][0-9]），本任务把全集推至 71 首次跨入 7x → 宽容锚需纪元扩展（v144「宽容扩 6x」判例同范式）；五类形态=①[4-6][0-9]→[4-7][0-9]（6 文件）②40-[56][0-9]→40-[567][0-9]（3 文件）③40-(5[3-9]|6[0-9])→+7[0-1]（3 文件）④40-69 全集字面→40-(69\|71)（2 文件）⑤WF-10 哨兵族+RF-06 计数族扩容（2 文件）；与本任务 Goal 同域（级联一致性的遗漏面），纯机械正则扩展，拆 7 批（≤2 文件/批）派发 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
 |-------|---------|------------|---------------------------|
-| （本任务暂无错误——未验证项随执行期登记） | 1 | - | → progress.md Error Log |
+| 全量跑批首检 14 FAIL（宽容锚纪元未扩） | 1 | 逐项诊断归因=宽容锚只覆盖 6x 纪元非本任务误改（S11-S14 替换零误伤）；处置=S15a-g 七批扩展（见 Decisions B 类扩展） | → progress.md Error Log（级联前应 grep 宽容锚形态族，S1 复验清单教训） |
 
 ## Notes
 - Update phase status as you progress: pending → in_progress → complete
@@ -291,6 +300,7 @@ Phase 5
 | 2026-10-10 05:20 | 主进程自查：Phase 2 产出=critical-rules.md:888-902+SKILL.md 四处；与 Goal/VC-1/VC-5 对照一致；无范围外文件 | VC-1, VC-5 | ALIGNED（S2/S3 双 verify_done；Phase 2→3 换道前留痕） |
 | 2026-10-10 05:36 | 主进程自查：Phase 3 产出=dispatch:88-91+findings:6,41+progress:6；与 VC-2/VC-3 对照一致；无范围外文件 | VC-2, VC-3 | ALIGNED（S4/S5 双 verify_done；Phase 3→4 换道前留痕） |
 | 2026-10-10 06:12 | 主进程自查：Phase 4 产出=selftest 52 行 12/12+registry+级联 18 处（S13 预警 40-69 锚失配风险移交 S8 验证）；无范围外文件 | VC-5, VC-6 | ALIGNED（S9-S14 六 done 双 verify_done；Phase 4→5 换道前留痕） |
+| 2026-10-10 06:38 | 主进程自查：S15a-g 七批并行（anchor-7x 组）全 done——宽容锚 7x 纪元扩展 14 文件 ~20 处，主进程复跑全量 67/67 全绿；15a 遗留 error-loop:14 注释文案（禁改未动，备裁）；15c 合理适配 cntE 助手 2 行；无范围外文件 | VC-4, VC-5 | ALIGNED（S15 七 done；S13 预警已被 S15c 处置[40-(65|69|71) 全集宽容化]；Phase 4 complete 翻转留痕） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
