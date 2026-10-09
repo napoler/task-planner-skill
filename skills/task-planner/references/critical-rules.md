@@ -844,3 +844,17 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 65.7 **与现有 Rule 的关系**：Rule 11（Phase 级漂移检测）= 粗粒度兜底；Rule 15（todo 级高频漂移纠正）= 细粒度主控；Rule 65（步骤级前后对照）= 周期性回顾 + 反向纠正。三者并存，形成完整的漂移检测体系。
 
 65.8 **反模式**：❌ 只在 Phase 完成时才回顾（问题累积数小时才暴露）；❌ 发现矛盾不纠正（错误结论继续影响后续）；❌ 自动纠正不报告用户（用户不知道发生了什么）；❌ 回顾时不重读关键文件（凭记忆回顾 = 不可靠）。
+
+### 66 goal 单元固化与 /goal 驱动推进纪律（P0, 2026-10-09 task-v151，目标：规划获批后任务自动分解固化为 goal 单元（任务名+目标+完整验证方式），执行按 goal 逐个调度推进并与 ZCode 内置 /goal 目标模式对齐供料，确保后期执行可靠性；判定面=计划期区块+执行期门控，机器面=check-plan-dispatch/check-complete/selftest-goal-unit-goal-mode.sh，零新 config 键；Rule 40.3 /goal 既有口径不动）
+
+66.1 **goal 单元固化（goal-unit freezing）**：计划获批（attest）后，任务必须自动分解固化为「🎯 Goal 单元表」逐行 goal 单元——六列契约：goal-id（G1/G2… 纯数字递增）| 任务名（≤8 字）| 目标（≤1 句）| 完整验证方式（可复现：命令+判据 或 路径+关键行 或 diff/输出形态，三选一必具其一，禁「检查没问题」类无据表述）| 对应 S-unit/Phase | 状态（pending/complete）。standard/full 档必填（缺一列或验证方式列空白=计划无效回炉）；mini 档豁免（66.5）。
+
+66.2 **/goal 内置命令口径（built-in /goal semantics）**：/goal = ZCode 用户侧 harness 内置命令（输入框直接输入即激活目标模式，会话朝目标迭代），技能层**不可代调、不可读取其运行态**（40.3 如实披露口径延伸，防虚构 54.0）；技能层职责=「映射供料」——Goal 单元表是 /goal 完成审计的证据源；执行期每 goal 翻 complete 时单行呈示对应 VC/证据锚（44.5 展示限制，不循环重展）；禁止「技能已设置 /goal」「/goal 状态为…」类无第一手证据表述。
+
+66.3 **逐 goal 验证通过门（verify-gate）**：执行按 goal 逐个推进（单 goal 焦点，禁跨 goal 连做——46.1 单任务专注度 goal 级延伸）；goal 行翻 complete 前必须：①「完整验证方式」实跑通过 ②progress.md 追加 `[goal:Gn] 证据锚` 行（验证命令+PASS 结果+产物路径，三要素）；缺任一=禁止翻格。check-complete.sh 终验逐行对照：status=complete 的 goal 行无对应 [goal:Gn] 证据行=exit 1（与 64.2 门控同档）；有 goal 未 complete=终态最高 PARTIAL（58.5 三态语义对齐，禁 COMPLETE 冒充）。
+
+66.4 **分解→调度→逐个解决推进序（advance order）**：自动分解=S-unit 表（22.6，拆分前查 21.6.1 模式库）；调度=Rule 21.4 铁律（声明并行组内并行、未声明串行）+Goal 单元表 G 序；逐个解决=每 goal 走「派发起→验收（22.5 三证据）→实跑验证方式→翻格+[goal:Gn] 落盘+单行呈示→下一 goal」；跨 goal 前移/跳序仅按 49.2 推进三条件双登记（Lane 表或 progress [advance] 行），未登记=越序违规。
+
+66.5 **模板区块承载与 mini 豁免（template carriage）**：「🎯 Goal 单元表」=general 模板区块（插入位=「🎯 核心目标达成裁决」后、「⚠️ 执行范围限制」前）；mini-lite 模板按 38.3 区块白名单声明豁免（未加区块不构成违约）；check-plan-dispatch.sh attest 期对 standard/full 档做区块存在性+六列+验证方式列非空机械校验，缺失=拒锁（59.1 硬门同档；--skip-goal-check 逃生口对齐 --skip-dispatch-check 惯例，登记 Decisions）；档位判定：显式 plan_tier: standard/full 才执行硬拒锁；无标记计划=缺省档跳过（legacy/合成夹具兼容口径，主进程 2026-10-09 D2 裁决）；mini 豁免。
+
+66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。

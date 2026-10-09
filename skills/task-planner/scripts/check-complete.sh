@@ -1209,6 +1209,60 @@ END {print n+0}'
             "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" >&2
     fi
 
+    # [2026-10-09 task-v151 S3] Rule 66.3 Goal 单元表终验对照段
+    # WHAT: 逐行对照 Goal 单元表 status=complete 的 goal 行与 progress.md [goal:Gn] 证据行
+    #       + 存在 pending goal 行时降级 PARTIAL 提示
+    # WHY: Rule 66.3 逐 goal 验证通过门——goal 行翻 complete 前必须①实跑验证方式 ②progress.md
+    #      追加 [goal:Gn] 证据行（验证命令+PASS 结果+产物路径，三要素）；缺任一=禁止翻格。
+    #      check-complete.sh 终验逐行对照（66.3 机器面），exit 1 与 64.2 门控同档
+    # 挂点: COMPLIANCE-CHECK 段后、warn count 段前（终验段内，python_rc=0 条件下）
+    # mini 档: 整段跳过（66.5 mini 豁免）
+    # 输出前缀: [goal-gate] 便于 selftest 锚定（G-06）
+    # [2026-10-09 task-v151 CR F2] 档位口径与 check-plan-dispatch.sh 66.5 三分支统一：
+    #   What：原判定=`[ "${PLAN_TIER_MINI:-0}" != 1 ]`（非 mini 即进入 goal-gate），
+    #         即「无 plan_tier 标记」的 legacy/合成夹具也会进入终验 goal-gate 段。
+    #   Why ：check-plan-dispatch 采用 D2 裁决「仅显式 plan_tier: standard|full 才硬门；
+    #         无标记=缺省档跳过」。二者分叉 → 无标记计划出现「attest 门放行、终验门却对
+    #         complete 无 [goal:Gn] 证据 exit 1」的两门口径不一致。修正=统一为显式 standard|full
+    #         才进入；无标记（legacy/合成夹具）与显式 mini 均跳过（66.5 mini 豁免 + 缺省档兼容）。
+    #   原行为：`[ "${PLAN_TIER_MINI:-0}" != 1 ]`（无标记亦进入，与 attest 门分叉）。
+    if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
+        # awk 状态机抽「^## 🎯 Goal 单元表」区块（参照脚本行 92-94 既有状态机写法，禁区间 next 坍缩范式）
+        goal_gate_sec="$(awk '/^##[[:space:]]*🎯[[:space:]]*Goal[[:space:]]*单元表/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
+        if [ -z "$goal_gate_sec" ]; then
+            # 区块缺失=该段静默跳过+一行提示（不 exit 1）
+            printf '[goal-gate] SKIPPED (计划无「🎯 Goal 单元表」区块, 66.5 mini 豁免或旧计划)\n' >&2
+        else
+            # 数据行提取: goal-id($2) + 状态($7)（六列契约: goal-id|任务名|目标|完整验证方式|对应S-unit/Phase|状态）
+            goal_gate_complete=""
+            goal_gate_pending=""
+            while IFS= read -r row; do
+                [ -n "$row" ] || continue
+                gid="$(printf '%s' "$row" | awk -F'|' '{v=$2; gsub(/^[[:space:]]+|[[:space:]]+$/, "", v); print v}')"
+                status="$(printf '%s' "$row" | awk -F'|' '{v=$7; gsub(/^[[:space:]]+|[[:space:]]+$/, "", v); print v}')"
+                case "$status" in
+                    complete) goal_gate_complete="${goal_gate_complete} ${gid}" ;;
+                    pending) goal_gate_pending="${goal_gate_pending} ${gid}" ;;
+                esac
+            done < <(printf '%s\n' "$goal_gate_sec" | grep -E '^\|[[:space:]]*G[0-9]+[[:space:]]*\|' || true)
+
+            # ② status=complete 的 goal 行 → progress.md grep [goal:Gn] 证据行，缺 → exit 1
+            goal_gate_fail=0
+            for gid in $goal_gate_complete; do
+                if ! grep -q "\[goal:${gid}\]" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null; then
+                    printf '[goal-gate] ✗ %s complete 无 [goal:%s] 证据行 (Rule 66.3: 补 progress.md 证据行后重跑)\n' "$gid" "$gid" >&2
+                    goal_gate_fail=1
+                fi
+            done
+            [ "$goal_gate_fail" -eq 1 ] && exit 1
+
+            # ③ 存在 status=pending 的 goal 行 → 降级 PARTIAL 提示（不单独 exit 1，58.5 三态语义对齐）
+            [ -n "$goal_gate_pending" ] && printf '[goal-gate] ⚠ 有 goal 未 complete (%s), 终态最高 PARTIAL (Rule 66.3/58.5)\n' "${goal_gate_pending# }" >&2
+        fi
+    else
+        printf '[goal-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 66.5)\n' >&2
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then

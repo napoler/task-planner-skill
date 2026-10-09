@@ -106,11 +106,13 @@ else
     bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,42)"
 fi
 
-# ── 负断言：62 块尾后无 66.x（语境锚定，防裸全文误触）──
-# 2026-10-08 task-v149 Rule 65 落地演进（^65→^66）
-TAIL61="$(awk '/^60\.6 /{f=1} f' "$CR" | grep -c -e '^66\.[0-9] ' || true)"
+# ── 负断言：Rule 62 块范围内无 66.x（语境锚定，防裸全文误触）──
+# [2026-10-09 task-v151 S4 钉值级联/D2 同法] 语境锚定由「60.6 起至文件尾」收窄为「Rule 62 区块」（awk: ### 62 起至下一 ### 止）
+#   ——Rule 66 已合法落地于 62 块之后，tail-to-EOF 口径下 66.x 计数=6 必红；收窄后保留「62 块内无 66 入侵」负断言。
+FF16_BLOCK="$(awk '/^### 62 /{f=1;next} /^### /{f=0} f' "$CR" 2>/dev/null)"
+TAIL61="$(printf '%s\n' "$FF16_BLOCK" | grep -c -e '^66\.[0-9] ' || true)"
 TAIL61="${TAIL61:-0}"
-zero "FF-16 62 块尾后无 66.x(前向防线)"                    "$TAIL61"
+zero "FF-16 62 块范围内无 66.x(前向防线)"                    "$TAIL61"
 
 # ── 脚本自身结构 ──
 ge   "FF-17 SCRIPT_DIR 自定位行"                          "$(cnt 'SCRIPT_DIR=' "$0")" 1

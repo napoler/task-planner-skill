@@ -170,13 +170,15 @@ fi
 #      本条负断言对象相应演进：58.x→59.x（口径扩展非回退，task-v127「RC-15 负断言 ^50→^52 演进」同范式）。
 #      [2026-10-08 task-v144 合并级联] 59 号已由 task-v144 Rule 59 合法创建（59.1-59.8），且 60=v142 / 62=v145 已落地、61 为预留号，
 #      首个全未占用号=63；负断言对象 59.x→63.x（保持「首个全未占用号」防顺手创建语义，同范式再演进）。
-last57line="$(grep -nE '^57\.[1-4] ' "$CRIT" | tail -1 | cut -d: -f1 || true)"
-if [ -z "$last57line" ]; then
-  bad 14 "critical-rules.md 未找到 57.x 末条行（块缺失，负断言无法语境锚定）"
+# [2026-10-09 task-v151 S4 钉值级联/D2 同法] 语境锚定由「末条 57.x 行起至文件尾」收窄为「Rule 57 区块」
+#   （awk: ### 57 起至下一 ### 止）——Rule 66 已合法落地于 57 块之后，tail-to-EOF 口径必红；收窄后保留
+#   「57 块内无 66 入侵」负断言（编辑越界探测），全文件面 ^66.x 计数由 selftest-goal-unit-goal-mode.sh G-02（=6）承载。
+block57="$(awk '/^### 57 /{f=1;next} /^### /{f=0} f' "$CRIT" 2>/dev/null)"
+if [ -z "$block57" ]; then
+  bad 14 "critical-rules.md 未找到 Rule 57 区块（### 57 标题行，负断言无法语境锚定）"
 else
-  tailctx="$(tail -n +"$last57line" "$CRIT")"
-  n="$(printf '%s\n' "$tailctx" | grep -cE '^66\.[0-9] ' || true)"
-  if [ "$n" -eq 0 ]; then ok 14 "critical-rules.md 57 块尾上下文（L${last57line}起）「66.x」=0（RC-15 前向防线；task-v149 级联演进 65→66）"; else bad 14 "critical-rules.md 57 块尾「66.x」=$n（应 =0，66 号被顺手创建）"; fi
+  n="$(printf '%s\n' "$block57" | grep -cE '^66\.[0-9] ' || true)"
+  if [ "$n" -eq 0 ]; then ok 14 "critical-rules.md 57 块范围内「66.x」=0（57 块无 66 入侵；task-v151 钉值级联 D2 同法）"; else bad 14 "critical-rules.md 57 块范围内「66.x」=$n（应 =0，57 块被 66 入侵）"; fi
 fi
 
 # IP-15 config.json .properties 键数=42（零新 config 键声明锚）
