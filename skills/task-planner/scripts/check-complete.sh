@@ -980,7 +980,13 @@ f && /^\|/ {
             fi
         fi
         # 4. 检查③ 待裁决定位：「待裁决」字样所在行若同行无路径形态（/ 或 http）→ warn（Rule 70②）。
-        if grep -n '待裁决' "$ds_file" 2>/dev/null | grep -vqE '/|http'; then
+        # [2026-10-10 task-v155 修正] 原 `grep -n ... | grep -vqE` 在空输入（无「待裁决」行）时，
+        # ugrep 的 `grep -vqE` 退出码=0（误报 warn），GNU grep=1（正确不报）。
+        # 根因：ugrep 对空输入的 grep -v 语义与 GNU 不一致（ZCode 环境 grep=ugrep 7.8.4）。
+        # 修法：先取命中行数 n，仅当 n>0 再判路径形态，与 :741 同惯用（显式测非空）。
+        local rl_pending_n
+        rl_pending_n=$(grep -c '待裁决' "$ds_file" 2>/dev/null || true)
+        if [ "${rl_pending_n:-0}" -gt 0 ] && grep -n '待裁决' "$ds_file" 2>/dev/null | grep -vqE '/|http'; then
             printf '[report-lint] ⚠ 待裁决项缺对象定位 (Rule 70②)\n' >&2
         fi
         # 5. 全部检查只 printf warn 到 stderr；不改 exit code / 不写 FAIL 计数 / return 恒 0（fail-open）。

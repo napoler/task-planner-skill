@@ -140,11 +140,15 @@ fi
 
 # ── RRV-07: check-complete report-lint 段（常驻 FAIL 档）──
 # 登记行与 lint 段已落位（S14/S15），2026-10-10 翻硬档，缺失即 FAIL
-RRV07_LINT=$(cnt "report-lint" "$CHECKCOMPLETE")
-if [ "$RRV07_LINT" -ge 1 ]; then
-    ok "RRV-07" "check-complete report-lint 段在位"
+# [2026-10-10 task-v155 修正] 原 `grep -c 'report-lint'` 命中 6 次（含 5 次注释行），
+# 若删除 run_report_lint 可执行体仅留注释头，断言仍 PASS（守卫可腐化）。
+# 修法：双锚精确化——锚可执行代码行（函数定义 + printf 输出行），排除注释行计入。
+RRV07_FUNC=$(cnt 'run_report_lint()' "$CHECKCOMPLETE")
+RRV07_PRINTF=$(cnt "printf '\[report-lint\]" "$CHECKCOMPLETE")
+if [ "$RRV07_FUNC" -ge 1 ] && [ "$RRV07_PRINTF" -ge 1 ]; then
+    ok "RRV-07" "check-complete report-lint 段在位(双锚: func=$RRV07_FUNC printf=$RRV07_PRINTF)"
 else
-    bad "RRV-07" "check-complete report-lint 段缺失(常驻 FAIL 档)"
+    bad "RRV-07" "check-complete report-lint 段缺失(双锚: func=$RRV07_FUNC printf=$RRV07_PRINTF)"
 fi
 
 # ── RRV-08: 模板面组（FAIL 档）──
