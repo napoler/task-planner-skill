@@ -6,6 +6,7 @@
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/config.json（只读，grep/jq，零写入）。
 # 输出：LA-01..LA-14 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 LA-14 打 SKIPPED 不 FAIL，
 #      与 selftest-media-dispatch.sh MD-08 / reliability-institution R-12 先例一致）。
+# [2026-10-09 task-v152 Rule 67 落地] '1-65'→'1-67'：Rule 67 已由 task-v152 落地，锚同步演进
 # 依赖：bash + grep；config.json 键数校验需 jq（缺失降级 SKIPPED，fail-open 非静默——打印提示行）。
 
 set -u

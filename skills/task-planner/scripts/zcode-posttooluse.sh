@@ -12,6 +12,8 @@
 # 约束：fail-open —— 任何异常一律 exit 0 不阻塞工具调用；
 #       ZCode 对 hook stdout 做严格 JSON 校验，有提醒时包装为 {"additionalContext": ...}（与
 #       zcode-sessionstart.sh 同一约定），无提醒时输出空。
+# [task-v152 Rule 67.5] [context-pressure] 主动评估提醒随 drift-rhythm 同发（单行 JSON 携带双行文本，
+#       F9 单轮单输出约束）；env TASK_PLANNER_CONTEXT_PRESSURE=off 跳过。
 
 input="$(cat)"
 
@@ -331,6 +333,7 @@ case "$due" in ''|*[!0-9]*) due=0 ;; esac
 if [ "$due" -eq 1 ]; then
   rhythm_n="${TASK_PLANNER_DRIFT_RHYTHM_N:-10}"
   case "$rhythm_n" in ''|*[!0-9]*) rhythm_n=10 ;; esac
+  [ "$rhythm_n" -ge 1 ] 2>/dev/null || rhythm_n=10   # 除零防护（env 可注入 0）
   rhythm_count="$(sed -n 's/^count[[:space:]]\{1,\}//p' "$rhythm_sfile" 2>/dev/null | head -1)"
   rhythm_last="$(sed -n 's/^last_inject[[:space:]]\{1,\}//p' "$rhythm_sfile" 2>/dev/null | head -1)"
   case "$rhythm_count" in ''|*[!0-9]*) rhythm_count=0 ;; esac
@@ -341,7 +344,15 @@ if [ "$due" -eq 1 ]; then
   elif [ "$age" -gt 86400 ]; then
     printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
   else
-    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套"
+    _cp=""
+    if [ "${TASK_PLANNER_CONTEXT_PRESSURE:-on}" != "off" ]; then
+      _cpn="${TASK_PLANNER_CONTEXT_PRESSURE_N:-1}"; case "$_cpn" in ''|*[!0-9]*) _cpn=1 ;; esac
+      [ "$_cpn" -ge 1 ] 2>/dev/null || _cpn=1   # 除零防护（_cpn=0 纯数字绕过 case）
+      if [ "$_cpn" -eq 1 ] || [ $(( rhythm_count / rhythm_n % _cpn )) -eq 0 ]; then
+        _cp="$(printf '\n%s' '[context-pressure] 主动评估（Rule 67.2）：四信号自评 → HEALTHY 继续 / PRESSURE 即压缩(67.3) / CONFUSED 写会话交接文档(67.4)')"
+      fi
+    fi
+    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套${_cp}"
     printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
   fi
 fi

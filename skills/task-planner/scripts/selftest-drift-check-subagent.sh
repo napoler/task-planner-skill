@@ -56,6 +56,7 @@ if grep '偏移比对' "$SKILLMD" | grep -q 'Rule 61'; then ok 10 "反模式偏�
 # [2026-10-08 task-v147 合并级联] 'Rule 40-62 全集'→'Rule 40-63 全集'：Rule 63 已落地，头注全集括注同步演进
 # [2026-10-08 task-v147 第二代级联] 'Rule 40-63 全集'→'Rule 40-64 全集'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
 # [2026-10-08 task-v149 Rule 65 落地演进] 'Rule 40-64 全集'→'Rule 40-65 全集'：Rule 65 已由 task-v149 落地，锚同步演进
+# [2026-10-09 task-v152 Rule 67 落地] '40-65'→'40-67'：Rule 67 已由 task-v152 落地，锚同步演进
 # [2026-10-10 task-v154 S5 接线演进] 'Rule 40-65 全集'→'Rule 40-69 全集'：Rule 66(v151)/69(v154) 已落地，章节引言行欠账修正同步
 if grep -q 'Rule 40-69 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-69 全集+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失"; fi
 
