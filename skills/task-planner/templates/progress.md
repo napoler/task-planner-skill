@@ -3,6 +3,7 @@
   动作日志:做过什么/改了什么文件/测试结果/错误。5Q Reboot 第 5 问答案源。
   Rule 19.2: Phase 标记 complete 前,对应 Phase 段必须已回填(check-3file-gate.sh 硬校验)。
   Rule 19.4: 错误立即写 Error Log,不等 Phase 结束。
+  <!-- Rule 71（task-v158）：Actions/Test Results 空段=显式占位「（本任务暂无…）」合法；测试结果必附命令原文，禁自报无锚汇总 -->
 -->
 
 ## Session: [DATE]

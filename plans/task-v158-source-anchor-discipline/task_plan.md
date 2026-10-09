@@ -92,7 +92,7 @@ plan_tier: standard
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 基线复验 | 独立子代理复验级联面/编号/部署位基线并回填 findings | findings.md §3/§5 有 explore 复验行+锚 | S1/Phase 1 | complete |
 | G2 | 规则层 | critical-rules.md 追加 Rule 71 七子条+SKILL.md 四处 | grep 71.1-71.7 锚全命中+1-71×2+C48 | S2,S3/Phase 2 | complete |
-| G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | pending |
+| G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | complete |
 | G4 | 守护层 | 新 selftest 12 断言+registry+19 处级联 | selftest exit 0+grep 1-69=0 | S9-S14/Phase 4 | pending |
 | G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 66/66 PASS | S8/Phase 5 | pending |
 | G6 | 交付 | CHANGELOG+delivery-summary+合并回主仓+簿记 | delivery-summary 在位+merge commit | Phase 6 | pending |
@@ -134,10 +134,10 @@ plan_tier: standard
 n/a（纯执行类——机制建设任务，产出=规则条款/模板/脚本，非调研/归因/评估类结论；对标面=仓内 Rule 68/69 追加先例已在「必要知识储备」表消费）
 
 ## Current Phase
-Phase 3
+Phase 4
 
 ## Next Step
-派 S4（code-assistant haiku-1）向 subagent_dispatch.md 插 §10 防幻觉契约段
+派 S9（code-assistant haiku-1）新建 selftest-source-anchor-discipline.sh（SA-01..12）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 | Phase | 命中工具面（40.1 六类） | 选择理由 |
@@ -180,16 +180,16 @@ Phase 3
 | S3 | SKILL.md 四处改动（详见行计数+Rule 71 bullet+C48 行+References 行，design §二） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §二（4 处精确稿） | grep 计数标签 1-71 命中 2 处以上；C48 行与 bullet 行均在；diff 仅 4 处 | 15min | 1f/12l/15min | 无 | S2 | done |
 
 ### Phase 3: 模板层实施
-- [ ] subagent_dispatch.md §9 后插 §10 防幻觉契约段（design §三原文）
-- [ ] findings.md/progress.md 模板注释追加（design §四 4 处锚）
+- [x] subagent_dispatch.md §9 后插 §10 防幻觉契约段（design §三原文）
+- [x] findings.md/progress.md 模板注释追加（design §四 4 处锚）
 - **V-N:** VC-2, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S4 | dispatch 模板插 §10 防幻觉契约段（不打乱九字段编号） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §三（段全文+插入位） | grep 三锚命中：段头编号 10 防幻觉契约、无锚点行违规退回、写入前五问 | 10min | 1f/12l/10min | 无 | S1 | pending |
-| S5 | findings/progress 模板各加 2 处 Rule 71 占位注释（design §四） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §四（4 锚精确稿） | 两模板 grep Rule 71 共 4 锚以上 | 10min | 2f/6l/10min | 无 | S1 | pending |
+| S4 | dispatch 模板插 §10 防幻觉契约段（不打乱九字段编号） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §三（段全文+插入位） | grep 三锚命中：段头编号 10 防幻觉契约、无锚点行违规退回、写入前五问 | 10min | 1f/12l/10min | 无 | S1 | done |
+| S5 | findings/progress 模板各加 2 处 Rule 71 占位注释（design §四） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §四（4 锚精确稿） | 两模板 grep Rule 71 共 4 锚以上 | 10min | 2f/6l/10min | 无 | S1 | done |
 
 ### Phase 4: 守护层实施+冒烟
 - [ ] 新建 selftest-source-anchor-discipline.sh（design §五 12 断言）+ registry.tsv 登记
@@ -254,7 +254,7 @@ Phase 3
 |-------|-----------|--------------|------|
 | Phase 1 | ☑ | 2026-10-10 05:08 | S1 done；Phase 1 complete |
 | Phase 2 | ☑ | 2026-10-10 05:20 | S2/S3 done，Phase 2 complete |
-| Phase 3 | ☐ |  |  |
+| Phase 3 | ☑ | 2026-10-10 05:36 | S4/S5 done，Phase 3 complete |
 | Phase 4 | ☐ |  |  |
 | Phase 5 | ☐ |  |  |
 | Phase 6 | ☐ |  |  |
@@ -289,6 +289,7 @@ Phase 3
 |------|---------|--------|------|
 | 2026-10-10 05:08 | 主进程自查：目标=Rule 71 制度化三载体+守护；当前步=Phase 1 基线复验 complete；scope=worktree 内 6 类目标文件+簿记 | VC-1..7 | ALIGNED（无漂移；Phase 1→2 换道前留痕，Rule 64.2） |
 | 2026-10-10 05:20 | 主进程自查：Phase 2 产出=critical-rules.md:888-902+SKILL.md 四处；与 Goal/VC-1/VC-5 对照一致；无范围外文件 | VC-1, VC-5 | ALIGNED（S2/S3 双 verify_done；Phase 2→3 换道前留痕） |
+| 2026-10-10 05:36 | 主进程自查：Phase 3 产出=dispatch:88-91+findings:6,41+progress:6；与 VC-2/VC-3 对照一致；无范围外文件 | VC-2, VC-3 | ALIGNED（S4/S5 双 verify_done；Phase 3→4 换道前留痕） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |

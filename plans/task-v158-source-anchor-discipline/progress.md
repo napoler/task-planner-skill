@@ -74,3 +74,6 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+  - [05:26] S4 返回 5/5 PASS：dispatch.md:88-91 §10 段（+5/-0 纯追加，§9 与尾注零改动）；主进程复核三锚+numstat 通过 ☑
+  - [05:34] S5 返回 5/5 PASS：findings.md:6,41+progress.md:6 三锚（+3/-0 纯追加）；主进程复核通过 ☑
+- [goal:G3] 证据锚（Rule 66.3）：grep "## 10. 防幻觉契约|无锚点行=违规退回|写入前五问" dispatch.md=:88/:90/:91 三锚；grep "Rule 71" findings.md=:6,:41+progress.md=:6 共 3 锚；git diff +8/-0 纯追加——VC-2/VC-3 支撑证据齐

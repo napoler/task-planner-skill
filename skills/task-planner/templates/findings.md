@@ -3,6 +3,7 @@
   知识库:一切发现/决策/证据的落盘处。Context Window = RAM(易失),本文件 = Disk(持久)。
   Rule 19.1: 子代理/调研返回后紧邻回填对应段落(结论摘要 + 证据路径 file:line/URL)。
   Rule 3:    每 2 次 view/browser/search 操作后必须更新本文件。
+  <!-- Rule 71（task-v158）：事实结论必带源锚；模板空段=显式占位合法；写入前过五问（见 critical-rules.md Rule 71） -->
 -->
 
 ## Requirements
@@ -37,6 +38,7 @@
 
 ## Visual/Browser Findings
 <!-- 截图/PDF/网页等多模态信息必须立即转文字落盘(多模态不持久) -->
+<!-- 2026-10-10 task-v158 Rule 71.3：无多模态信息时合法形态=显式占位「（本任务暂无多模态发现——未产生截图/PDF/网页证据）」；禁推测填充（v153 事故判例：无源照片描述） -->
 -
 
 ---
