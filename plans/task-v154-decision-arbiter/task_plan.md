@@ -450,7 +450,7 @@ Phase 5
 | D6: 编号预留 new_rule=69 | rule-reservations.jsonl：67=v152 占、68=v153 占（并行任务在途），69 为下一空闲号；attest 自动查重兜底 |
 | D7: 判定必须第一手取证（Read/Grep/命令），禁凭派发摘要单独下结论；只读仓库，唯一写=检查点+裁决单 | drift-checker 先例硬约束迁移；防止强模型幻觉直接污染主进程决策 |
 | D8（2026-10-10 用户追加 B 类扩展登记）: 触发点矩阵 T1-T6——**T1 计划期方案终裁**（43.3 候选对比 ≥2 候选难决时）；**T2 兜底链换道裁决**（Rule 22.3 五档兜底①-④ 选择拿不准时）；**T3 子代理失败复核定级**（failed/FAIL 真缺陷 vs 误报、严重度与返工路径）；**T4 验收完成度争议**（22.5 三证据 vs 子代理自报 done 冲突时独立仲裁）；**T5 DRIFT 处置裁决**（drift-checker 判 DRIFT 后「警觉继续 vs 立即返工」拿不准，不替代检测本体）；**T6 CR 分歧与终验边界**（CHANGES_REQUESTED 意见接受度/PARTIAL-COMPLETE 边界拿不准）。豁免清单（防滥用）：trivial 机械判断（41.3 主进程直做）/偏移检测本体（61 载体 drift-checker）/代码审查本体（42 族）/G1-G4 直接升级场景（41.2）——arbiter 每问题单次独立派发，禁高频循环裁决 | 用户明确要求「明确在哪个阶段需要引入判别执行」——泛泛条款不满足，须在 SKILL.md 执行流程对应位置落可定位触发点标记；T1-T6 对应 SKILL.md 六个流程锚，执行期 S5/S4 落地 |
-| D11（2026-10-10 委派守卫口径修正，Rule 51.7 重锁登记）: Handoff 表 subagent_type 列裸名化（去 (mini)/(sonnet-1) 后缀——check-delegation 归一化剥括号后与表内精确竖线匹配，v150 教训复发防再发）+补 S9/S10 两行登记（Phase 4 Executor token=alignment-review/code-quality-review 须在 Handoff 表）→ 重锁 attest | check-complete DELEGATION GATE verdict=violation（4 Phase Executor 含未登记 token）→根因=后缀别名+漏登记非未派发 |
+| D11（2026-10-10 委派守卫口径修正，Rule 51.7 重锁登记）: Handoff 表 subagent_type 列裸名化（去 (mini)/(sonnet-1) 后缀——check-delegation 归一化剥括号后与表内精确竖线匹配，v150 教训复发防再发）+S9/S10 两行登记（Phase 4 Executor token=alignment-review/code-quality-review 须在 Handoff 表；插入曾因锚文本不匹配静默失败→精确锚二次插入成功）+前置依赖列补全→ attest 重锁 | check-complete DELEGATION GATE verdict=violation→两次修正（token 别名/漏登记）后 delegated 0→3→6 预期转白名单豁免 |
 | D10（2026-10-10 CR Gate 处置，B 类扩 scope 登记）: S9 verdict=CHANGES_REQUESTED(P0=0/P1=1/P2=1:P1-01=AC-04 部署暂态 Phase 5 验证,P2-01=CHANGELOG 未登→查证 v146-v153 全部登记惯例→裁决补登扩 scope)；S10 verdict=CHANGES_REQUESTED(P0=0/P1=1/P2=2:DA-16 BRE `+` 量词可移植性必修+awk `,0` 范围+文件缺失 stderr 顺修) | Rule 42.6.2 收尾对齐+P0=0 不阻断→fix-phase 一次修完（CHANGELOG 补登+DA-16/P2）后进 Phase 5 |
 | D9（B 类变更重锁登记，Rule 51.7）: 2026-10-10 用户批准+追加触发点矩阵要求 → 计划更新 R5+VC-3 扩展（grep ≥8 处）+D8 触发点矩阵 → 重跑 attest 重锁 | 用户 yes=原计划批准；追加要求按 B 类「先重规划再执行」流程落计划后重锁 |
 
@@ -524,7 +524,9 @@ Phase 5
 | 5 | 2026-10-10 | executor | S5 SKILL 接线+触发点 | done | 11 处写入 grep=12 occurrences/Rule69=11 行/T1-T6 全在位/欠账修正披露 | diff 11+/1- | findings §Implementation | subagent-state/5-executor.md | - / 0 / ☑ |
 | 6 | 2026-10-10 | executor | S6 矩阵+D3 登记 | done | 矩阵 28 行+计数同步 2 处+§九§十各+1 行+D2 文本入检查点；AC-09 上界 129→130 待 S7 | diff 5+/2- | findings §Implementation | subagent-state/6-executor.md | - / 0 / ☑ |
 | 7 | 2026-10-10 | executor | S7 selftest 编写+AC-09+registry | done | DA-01..16 全 PASS（主进程复跑独立验证）；AC-09 上界演进；registry 65 行 | commit 3322259 | findings §Verification | subagent-state/7-executor.md | - / 0 / ☑ |
-| 8 | | code-runner-agent | S8 全量回归 | queued | | | §Verification | subagent-state/8-code-runner.md | - / 0 / ☐ |
+| 9 | 2026-10-10 | alignment-review | S9 alignment 全量审查（general-purpose 加载 skill 执行） | done | CHANGES_REQUESTED P0=0/P1=1 部署暂态/P2-1 CHANGELOG 补登 | s9-alignment-review.md | findings §Verification | subagent-state/s9-alignment-review.md | - / 0 / ☑ |
+| 10 | 2026-10-10 | code-quality-review | S10 代码面审查（general-purpose 加载 skill 执行） | done | CHANGES_REQUESTED P0=0/P1-1 DA-16/P2-2 均 fix | s10-code-quality-review.md | findings §Verification | subagent-state/s10-code-quality-review.md | - / 0 / ☑ |
+| 8 | 2026-10-10 | code-runner-agent | S8 全量回归（派发取消后主进程按 22.3④白名单⑤代跑） | done | 首跑 5 FAIL→Fix 四批；终跑 failed=1 部署暂态 | progress Round 3 | findings §Verification | subagent-state/fix-*-executor.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
