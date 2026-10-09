@@ -40,10 +40,10 @@
 
 ## 需求覆盖核对表（Rule 51.3 — R→VC 全覆盖）
 
-| R | 需求原文（逐字） | 映射 VC | 覆盖证据（可复现） | 状态 |
-|---|----------------|---------|------------------|------|
-| R1 | 「创建一个skill」 | VC-1/2/3/5/6 | skills/error-fix-prompt-forge/{SKILL.md,templates/fix-prompt-template.md}(grep 六区块/九槽位锚)+task-planner/scripts/selftest-error-fix-prompt-forge.sh(8/8 exit 0)+三宿主 diff IDENTICAL+merge 6d46d3ec | covered |
-| R2 | 「对错误排查调研 将排查结果 并且生成提供专业的提示词 用于后期的修正」 | VC-4（问题解决判据）+VC-1..3 | 冒烟实跑产物 subagent-state/04-executor/fix-prompt-sample.md（fixture=v153 真实排查产物；九槽位/绝对路径 8 行/单 S-unit/grep 机器验收）+qc-fp-selfcheck.md(QC-FP 6/6,READY)；核心目标达成裁决=solved | covered |
+| R | 需求原文（逐字） | 映射 VC | 状态 | 覆盖证据（可复现） |
+|---|----------------|---------|------|------------------|
+| R1 | 「创建一个skill」 | VC-1/2/3/5/6 | covered | /mnt/data/dev/task-planner-skill/skills/error-fix-prompt-forge/SKILL.md（grep 六区块锚命中 7≥6）+ /mnt/data/dev/task-planner-skill/skills/error-fix-prompt-forge/templates/fix-prompt-template.md（九槽位逐词 8/8）+ /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-error-fix-prompt-forge.sh（bash 自跑 8/8 exit 0）+ 三宿主 diff -r IDENTICAL×3 + merge commit 6d46d3ec |
+| R2 | 「对错误排查调研 将排查结果 并且生成提供专业的提示词 用于后期的修正」 | VC-4（问题解决判据）+VC-1..3 | covered | /mnt/data/dev/task-planner-skill/plans/task-v157-error-fix-prompt-forge/subagent-state/04-executor/fix-prompt-sample.md（fixture=v153 真实排查产物；九槽位/绝对路径 8 行/单 S-unit/grep 机器验收）+ 同目录 qc-fp-selfcheck.md（QC-FP 1..6 全 PASS，结论 READY）；核心目标达成裁决=solved（verification.md） |
 
 ## 5. 下一步建议
 
