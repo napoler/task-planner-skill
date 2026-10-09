@@ -311,6 +311,106 @@ while IFS= read -r line; do
 done < "$PLAN_FILE"
 settle_phase    # EOF 结算最后一个 Phase
 
+# ── [2026-10-09 task-v151 S2] Rule 66.5 Goal 单元表校验段 ──────────────────
+# WHAT: 校验「🎯 Goal 单元表」区块存在性 + 六列表头锚 + 数据行 goal-id 连续性
+#       + 完整验证方式列非空且非占位符
+# WHY: Rule 66.5 模板区块承载与 mini 豁免——standard/full 档必填，mini 档豁免；
+#      check-plan-dispatch.sh attest 期对 standard/full 档做区块存在性+六列+验证方式列非空机械校验，
+#      缺失=拒锁（59.1 硬门同档）；--skip-goal-check 逃生口对齐 --skip-dispatch-check 惯例
+# 挂点: S-unit 校验段之后、最终 exit 判定前
+# 逃生口: --skip-goal-check（echo 登记行，对齐脚本内既有 --skip-* 实现方式）
+
+# --skip-goal-check 逃生口登记
+GOAL_CHECK_SKIP=0
+for arg in "$@"; do
+    if [ "$arg" = "--skip-goal-check" ]; then
+        GOAL_CHECK_SKIP=1
+        echo "[plan-dispatch] SKIPPED Rule 66.5 Goal 单元表校验（--skip-goal-check 逃生口登记）"
+        break
+    fi
+done
+
+if [ "$GOAL_CHECK_SKIP" = 0 ]; then
+    # [2026-10-09 task-v151 S4b 主进程 D2 裁决 方案①] 档位判定修正：
+    #   What：原判定=「PLAN_TIER_MINI=1（仅显式 plan_tier: mini）才豁免，否则（含无 plan_tier 标记）
+    #         一律按 standard/full 硬拒锁」。
+    #   Why ：该口径对「无 plan_tier 标记」的 legacy 计划/合成夹具硬拒锁，破坏既有行为契约
+    #         （selftest-plan-tier PT-22 明示无标记样例 check-plan-dispatch rc=0），波及 7 个行为级
+    #         selftest（24 FAIL）。修正=向后兼容优先：仅**显式** plan_tier: standard|full 才执行 66.5
+    #         硬拒锁；无标记=缺省档整体跳过（legacy/合成夹具兼容口径，不影响 exit）；显式 mini=跳过
+    #         （66.5 mini 豁免原文义）。缺省档的 66.5 覆盖由模板兜底（新计划经 init 必有
+    #         「🎯 Goal 单元表」区块），非由拒锁兜底。判定写法对齐脚本内既有 plan_tier grep 范式。
+    if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
+        # standard/full 档：区块存在性 + 六列表头锚 + 数据行校验（原逻辑保留）
+        # awk 状态机抽「^## 🎯 Goal 单元表」区块（参照脚本行 92-94 既有状态机写法，禁区间 next 坍缩范式）
+        goal_sec="$(awk '/^##[[:space:]]*🎯[[:space:]]*Goal[[:space:]]*单元表/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
+        
+        # ① 区块存在性
+        if [ -z "$goal_sec" ]; then
+            add_violation "N/A" "Rule 66.5: 缺「🎯 Goal 单元表」区块（standard/full 档必填）"
+        else
+            # ② 六列表头锚 grep
+            goal_header="$(printf '%s\n' "$goal_sec" | grep -E '^\|[[:space:]]*goal-id[[:space:]]*\|' | head -1)"
+            if [ -z "$goal_header" ]; then
+                add_violation "N/A" "Rule 66.5: Goal 单元表缺表头行（goal-id 列锚）"
+            else
+                # 检查六列关键词各命中
+                for kw in "goal-id" "任务名" "目标" "完整验证方式" "对应 S-unit" "状态"; do
+                    if ! printf '%s\n' "$goal_header" | grep -q "$kw"; then
+                        add_violation "N/A" "Rule 66.5: Goal 单元表表头缺列「${kw}」"
+                    fi
+                done
+            fi
+            
+            # ③ 数据行校验
+            goal_data_rows="$(printf '%s\n' "$goal_sec" | grep -E '^\|[[:space:]]*G[0-9]+[[:space:]]*\|' || true)"
+            if [ -z "$goal_data_rows" ]; then
+                add_violation "N/A" "Rule 66.5: Goal 单元表无数据行（G1 起）"
+            else
+                # goal-id 连续性 + 完整验证方式列校验
+                expected_g=1
+                while IFS= read -r row; do
+                    # 提取 goal-id（$2，awk -F'|'）
+                    gid="$(printf '%s' "$row" | awk -F'|' '{print $2}')"
+                    gid="$(trim "$gid")"
+                    # 提取完整验证方式列（$5）
+                    verify_col="$(printf '%s' "$row" | awk -F'|' '{print $5}')"
+                    verify_col="$(trim "$verify_col")"
+                    
+                    # goal-id 匹配 ^G[0-9]+$ 且序号连续
+                    if ! [[ "$gid" =~ ^G([0-9]+)$ ]]; then
+                        add_violation "N/A" "Rule 66.5: goal-id「${gid}」不匹配 ^G[0-9]+$"
+                    else
+                        actual_g="${BASH_REMATCH[1]}"
+                        if [ "$actual_g" -ne "$expected_g" ]; then
+                            add_violation "N/A" "Rule 66.5: goal-id 序号不连续（期望 G${expected_g}，实际 ${gid}）"
+                        fi
+                        expected_g=$(( expected_g + 1 ))
+                    fi
+                    
+                    # 完整验证方式列非空且不含未填占位（尖括号 < 起头）与黑名单词
+                    if [ -z "$verify_col" ] || [ "$verify_col" = "-" ]; then
+                        add_violation "N/A" "Rule 66.5: goal ${gid} 完整验证方式列为空"
+                    elif [[ "$verify_col" == \<* ]]; then
+                        add_violation "N/A" "Rule 66.5: goal ${gid} 完整验证方式列为占位符（< 起头）"
+                    elif [[ "$verify_col" == *"检查没问题"* ]]; then
+                        add_violation "N/A" "Rule 66.5: goal ${gid} 完整验证方式列含黑名单词「检查没问题」"
+                    fi
+                done <<< "$goal_data_rows"
+            fi
+        fi
+    elif grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+        # mini 档豁免：缺区块仅 WARN 提示行不硬拒锁（66.5 mini 豁免原文义）
+        goal_sec="$(awk '/^##[[:space:]]*🎯[[:space:]]*Goal[[:space:]]*单元表/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
+        if [ -z "$goal_sec" ]; then
+            echo "[plan-dispatch] WARN Rule 66.5: mini 档豁免，Goal 单元表区块缺失（不拒锁）"
+        fi
+    else
+        # 无 plan_tier 标记 = 缺省档（legacy/合成夹具）：66.5 段整体跳过，不影响 exit
+        echo "[goal-check] 无 plan_tier 标记，66.5 goal 门缺省跳过（legacy/无档位兼容口径）"
+    fi
+fi
+
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 if [ -n "$violation_list" ]; then
     printf '%s' "$violation_list"

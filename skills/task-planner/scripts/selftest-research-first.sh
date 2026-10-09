@@ -69,8 +69,8 @@ quart "RF-04 63.2 四步检索链词齐备"                          "$B62" '本
 pair "RF-05 63.4 有理有据边界(编造+not-solved)"             "$(_words '编造' "$B64")" "$(_words 'not-solved' "$B64")"
 
 # ── SKILL.md 消费侧 ──
-ge   "RF-06 SKILL 1-65 计数≥3(三处联动)"                   "$(cnt '1-65' "$SKILL")" 3  # 2026-10-08 task-v149 Rule 65 落地演进
-pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-65 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-65（含 Rule 40-65 全集' "$SKILL")"  # 2026-10-08 task-v149 Rule 65 落地演进
+ge   "RF-06 SKILL 1-66 计数≥3(三处联动)"                   "$(cnt '1-66' "$SKILL")" 3  # 2026-10-09 task-v151 S4 钉值级联 '1-65'→'1-66'（Rule 66 落地）
+pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-66 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-66（含 Rule 40-65 全集' "$SKILL")"  # 2026-10-09 task-v151 S4 钉值级联
 ge   "RF-08 SKILL C44 合规行含 Rule 63"                     "$(cnt '^| C44 .*Rule 63' "$SKILL")" 1
 
 # ── templates 派发契约载体 ──

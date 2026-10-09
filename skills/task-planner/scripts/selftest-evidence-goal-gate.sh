@@ -220,20 +220,24 @@ if [ "$n" -eq 1 ]; then ok 14 "SKILL.md 合规行 C41 =1"; else bad 14 "SKILL.md
 n="$(grep -cF 'selftest-evidence-goal-gate.sh' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ]; then ok 15 "SKILL.md 机器面指称 selftest-evidence-goal-gate.sh=$n（≥1）"; else bad 15 "SKILL.md 机器面指称=$n（应 ≥1）"; fi
 
-# EG-16 负断言（语境锚定）：critical-rules.md 58 块尾上下文（末条 58.7 行起至文件尾）`^66\.[0-9] ` =0
-# What：断言 58.7 之后不存在 66.x 子条行。
-# Why：RC-15 前向防线（防下一编号被顺手创建）的语境锚定实现——扫「58 块之后」而非全文（v127/RR-09 第 5 变体判例）；
+# EG-16 负断言（语境锚定）：critical-rules.md 58 块范围内（### 58 标题至下一 ### 标题）`^66\.[0-9] ` =0
+# What：断言 Rule 58 区块内不存在 66.x 子条行。
+# Why：58 块编辑越界探测（task-v151 S4 D2 语义演进）——扫「58 块范围内」而非全文（v127/RR-09 第 5 变体判例）；
 #      下一未占用编号合法落地时须同步演进本锚（task-v127「RC-15 负断言 ^50→^52 演进」同范式，口径扩展非回退）。
 #      [2026-10-08 task-v144 合并级联] '^59\.' → '^63\.'：Rule 59 已合法落地 59.1-59.8（本仓在位），
 #      [2026-10-08 task-v147 首代级联] '^63\.'→'^64\.'：Rule 63 已由 task-v147 落地（63.1-63.6 实测）；
 #      [2026-10-08 task-v149 Rule 65 落地演进] '^65\.'→'^66\.'：Rule 65 已由 task-v149 落地，防线前移至 66。
-last58line="$(grep -nE '^58\.[1-7] ' "$CRIT" | tail -1 | cut -d: -f1 || true)"
-if [ -z "$last58line" ]; then
-  bad 16 "critical-rules.md 未找到 58.x 末条行（块缺失，负断言无法语境锚定）"
+#      [2026-10-09 task-v151 S4 D2 语义演进] 全文件面 `^66\.[0-9] =0` 断言移交新自测 selftest-goal-unit-goal-mode.sh G-02（=6）；
+#              本断言保留 58 块尾上下文负断言（58 块范围内无 66 入侵），守护语义不变。
+# [2026-10-09 task-v151 S4 D2] 语境锚定由「末条 58.x 行起至文件尾」收窄为「Rule 58 区块」（awk 状态机：
+#   `### 58 ` 标题行起至下一 `### ` 标题行止）——Rule 66 已合法落地于 58 块之后，tail-to-EOF 口径下 66.x 计数=6
+#   必红；收窄为区块内后「58 块内无 66 入侵」负断言保留（编辑越界探测），全文件面 ^66.x 计数移交新自测 G-02（=6）。
+block58="$(awk '/^### 58 /{f=1;next} /^### /{f=0} f' "$CRIT" 2>/dev/null)"
+if [ -z "$block58" ]; then
+  bad 16 "critical-rules.md 未找到 Rule 58 区块（### 58 标题行，负断言无法语境锚定）"
 else
-  tailctx="$(tail -n +"$last58line" "$CRIT")"
-  n="$(printf '%s\n' "$tailctx" | grep -cE '^66\.[0-9] ' || true)"
-  if [ "$n" -eq 0 ]; then ok 16 "critical-rules.md 58 块尾上下文（L${last58line}起）「66.x」=0（RC-15 前向防线；task-v149 级联 Rule 65 已合法落地）"; else bad 16 "critical-rules.md 58 块尾「66.x」=$n（应 =0，66 号被顺手创建）"; fi
+  n="$(printf '%s\n' "$block58" | grep -cE '^66\.[0-9] ' || true)"
+  if [ "$n" -eq 0 ]; then ok 16 "critical-rules.md 58 块范围内「66.x」=0（58 块无 66 入侵；task-v151 D2 全文件面断言移交 G-02）"; else bad 16 "critical-rules.md 58 块范围内「66.x」=$n（应 =0，58 块被 66 入侵）"; fi
 fi
 
 # EG-17 config.json .properties 键数 ≥40（零新 config 键声明锚 — 宽容下界口径）
