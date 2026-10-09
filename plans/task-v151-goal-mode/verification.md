@@ -1,129 +1,93 @@
-# Verification Contract & Phase Gates
+# Verification Contract & Phase Gates — task-v151 终验档案
 
 ## Goal (1 sentence)
 
-[One sentence describing the end state — must be objectively verifiable]
+task-planner 技能新增 Rule 66「goal 单元固化与 /goal 驱动推进纪律」：规划获批后任务自动分解固化为 goal 单元（goal-id+任务名+目标+完整验证方式），执行按 goal 逐个调度推进、验证通过才翻 complete，并与 ZCode 内置 /goal 命令做映射供料，确保后期执行可靠性。
 
 ---
 
-## Verification Contract (≥5 items, objective standards)
+## Verification Contract（逐条终验，2026-10-10 复验）
 
-> These are the FINAL checks. All must pass for goal to be COMPLETE.
-> Each item: observable, testable, traceable to evidence.
-
-- [ ] VC-1: [What to check / test command / file to inspect]
-  Evidence: [file path / command output / screenshot]
-- [ ] VC-2: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-3: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-4: [What to check]
-  Evidence: [file path / command output]
-- [ ] VC-5: [What to check]
-  Evidence: [file path / command output]
+- [x] VC-1: critical-rules.md 含 Rule 66 六子条；SKILL.md Rule 66 登记+1-66 计数级联完成
+  Evidence: `grep -c '^66\.[1-6] ' skills/task-planner/references/critical-rules.md` = 6（行 848-860）；SKILL.md 行 9/281/362 `1-66` 三处 + Rule 66 摘要行 + C45 合规行；检查点 03-executor-S1（S1 三行验证输出）
+- [x] VC-2: 模板含「🎯 Goal 单元表」区块 + check-plan-dispatch.sh attest 期四要素机械校验（缺列/缺验证方式=拒锁）
+  Evidence: 模板行 104 起六列表头；66.5 段行 314 起（档位三分支：显式 standard|full 硬门/mini 豁免/无标记缺省跳过——S4b D2 裁决）；正样本（本计划 G1-G6）66.5 违规=0、剥离区块负样本 rc=1（检查点 10/15 三态试跑原文）
+- [x] VC-3: check-complete.sh 终验追加 Goal 单元表逐行对照（验证方式证据 vs 状态，未完成禁 COMPLETE）
+  Evidence: [goal-gate] 段行 1212 起（CR F2 后档位口径与 66.5 统一：grep 显式 standard|full）；G2 pending 时实测输出「[goal-gate] ⚠ 有 goal 未 complete (G2), 终态最高 PARTIAL」，G2 翻 complete 后该提示消失（终验 exit 0 输出）
+- [x] VC-4: 新 selftest-goal-unit-goal-mode.sh 全 PASS 且登记 registry
+  Evidence: `bash scripts/selftest-goal-unit-goal-mode.sh` → `Total: 9 PASS=9 FAIL=0` exit 0；registry.tsv 末行含新脚本（wc -l = 65）；全量回归 final-regression.log「scripts=64 ΣFAIL=0」
+- [x] VC-5: 零回归 + 部署位同步后 diff 空
+  Evidence: 全 selftest ΣFAIL=0（final-regression.log）；zcode/cursor/claude 三位置 8 核心文件 cmp 全 OK（部署位 SKILL.md 平台前缀差异=install 固有定制面，8 文件口径判定）；master ebb5fba（feat 101475f + CR 修复 6cf8cd7）+ 7fa66ac（S9 官方文档 66.2 增强 d56276e）
 
 ---
 
 ## Phase Gates
 
-### Phase 1: {Name}
+### Phase 1: 需求定稿与 /goal 实证
+**Done when**: R1-R5 逐字落盘 + /goal 无程序化触达面实证 + 检查点 01-explore
+Status: `complete` Last verified: 2026-10-10
 
-**Goal**: [1 sentence, what this phase produces]
+### Phase 2: 机制设计定稿（worktree + 基线 + 设计草案）
+**Done when**: worktree 创建且 5 关键文件 vs 部署位 diff OK + baseline ΣFAIL=0 + design-draft.md 含 66.1-66.6 草案+钉值清单
+Status: `complete` Last verified: 2026-10-10
 
-**Depends on**: [previous phase or "none"]
+### Phase 3: 实现（worktree 内，逐 S-unit 派发）
+**Done when**: S1-S4+S4b 全交付 + 回归 ΣFAIL=0
+Status: `complete` Last verified: 2026-10-10
 
-**Done when**:
-- [ ] {objective completion condition}
+### Phase 4: Code Review Gate
+**Done when**: 全量 CR + CHANGES F1-F3 修复闭环（6cf8cd7）
+Status: `complete` Last verified: 2026-10-10
 
-**Verification** (run before moving on):
-- [ ] V-1.1: [mapped to VC-? or custom]
-- [ ] V-1.2: [mapped to VC-? or custom]
+### Phase 5: 交付与合并回
+**Done when**: smart-merge 合并回 + worktree/分支清理 + 部署对账 + rule-reserve land 66 + check-complete exit 0
+Status: `complete` Last verified: 2026-10-10
 
-Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
-
----
-
-### Phase 2: {Name}
-
-**Goal**: ...
-
-**Depends on**: Phase 1
-
-**Done when**:
-- [ ] ...
-
-**Verification**:
-- [ ] V-2.1: ...
-- [ ] V-2.2: ...
-
-Status: `pending` Last verified: —
+### Phase 6: 官方文档对照与重 CR（用户追加）
+**Done when**: 官方 /goal 文档落盘（09 检查点）+ 重 CR 偏差裁决（15 检查点，必须修 0/增强 2）+ 增强落地 7fa66ac + 三部署位对账
+Status: `complete` Last verified: 2026-10-10
 
 ---
 
-### Phase 3: {Name}
+## Goal Gate 终验（2026-10-10 复跑）
 
-...
+```
+Goal Verification — Rule 66 全链落地且零回归
+对照 VC 逐条：
+- [x] VC-1: critical-rules 66 六子条 grep=6 + SKILL 级联 → PASS
+- [x] VC-2: 模板 Goal 单元表 + 66.5 四态实测 → PASS
+- [x] VC-3: [goal-gate] 三语义实测（G2 pending 时拦截提示在位，全 complete 后消失） → PASS
+- [x] VC-4: 新 selftest 9/9 + registry + 全量 ΣFAIL=0 → PASS
+- [x] VC-5: 三部署位 8 文件 cmp OK + master 7fa66ac 终态 → PASS
+check-complete.sh plans/task-v151-goal-mode/task_plan.md exit=0（仅剩 warn 档提示：rcov 覆盖核对表=51.1a 登记面/warn 不阻断，见下方回填）
+outcome: COMPLETE
+```
 
----
+## 需求覆盖核对表（Rule 51.1a — 51.3 终验载体）
 
-## 📚 必要知识储备符合性核验（终验项）
-<!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
-| 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
-|-----------|----------------------|---------------------|
-|           |                      |                     |
+| R | 状态 | 证据路径 |
+|---|------|---------|
+| R1 | covered | plans/task-v151-goal-mode/subagent-state/03-executor-S1.md（66 条款落地）+ worktree 提交 101475f git log |
+| R2 | covered | subagent-state/10-executor-S4b.md（回归 ΣFAIL=0 行）+ 15-code-reviewer-S9.md（V1 偏差对照=官方写法要点对齐确认） |
+| R3 | covered | subagent-state/00-goal-empirical.md（/goal 实证三处「不存在」结论）+ 09-goal-official-docs.md（官方文档定位=内置命令，与 R3 一致） |
+| R4 | covered | critical-rules.md 行 856（66.4 分解→调度→逐个解决推进序）+ 检查点 04/06（模板+attest 段落地） |
+| R5 | covered | task_plan.md Errors Encountered 表 R5 误判行 + Decisions veto 行 + ledger-main.jsonl error 事件 |
 
 ## 委派统计复验（Rule 25.4）
 
-**机器统计为事实源，人工仅复核**：运行 `bash <skill>/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
-
-```bash
-# 证据（粘贴以下 JSON 原文）
-bash <skill>/scripts/check-delegation.sh stats <plan-dir>
-```
-
-JSON 输出：
+JSON 输出（check-delegation.sh stats plans/task-v151-goal-mode 原样）：
 ```json
-{粘贴 stats 命令原文输出}
+{"phases_total":6,"phases_delegated":4,"main_direct_count":2,"delegation_rate":0.667,"main_direct":[{"phase":"2 机制设计定稿（worktree + 基线 + 设计草案）","executor":"主进程（例外理由:① git/worktree 编排 + ② 计划系统文件维护（design-draft/基线落盘属 plans/ 计划系统文件）——Rule 25.3 白名单）"},{"phase":"5 交付与合并回","executor":"主进程（例外理由:① git 编排（合并/清理/部署对账）+ ② 簿记（交付总结/账本/attest）——Rule 25.3 白名单）"}],"violations":[],"verdict":"ok"}
 ```
-
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
+- [x] 主进程直做 2 条理由=白名单①②（check-complete 输出 WHITELIST-EXEMPT 面：rate=0.333 时因 S6/S8/S9 未登记曾判 violation，委派面清账后 verdict=ok）
+- [x] 委派率 0.667 < floor 0.7 但全部直做理由命中 Rule 25.3 白名单 → WHITELIST-EXEMPT 放行（25.4）
 
 ## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
+- [x] Q1-Q6 逐项核查：触发 2 项（S4 回归 24 FAIL=22.3 兜底面/Q 降质无命中）、豁免 0 项、未处置 0 项
+- [x] Evidence 抽查 3 条：检查点 03/04/10 三处 grep 输出原文可 Read（本轮终验已复跑 grep -c '^66.'=6 复验通过）
+- [x] 豁免登记：无（Q3 不适用——本任务无伪造证据面）
 
-## Goal Gate (终验，所有 phase complete 后执行)
+## Goal Gate (终验)
+> outcome: **COMPLETE**（全部 VC 通过；Goal 单元表 G1-G6 全 complete 且 [goal:G1..G6] 证据行逐落在 progress.md）
 
-```
-## Goal Verification — {Goal 语句}
-对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
-
- outcome: COMPLETE / PARTIAL / BLOCKED
-```
-
-**COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。
-
-**PARTIAL**：VC 通过但存在已知遗留缺陷 → 列出 + 建议后续。
-
-**BLOCKED**：≥1 VC 失败且 3 次重试无效 → 升级用户决策。
-
-> **验证独立性**：终验核查动作（回归/抽查/对齐审查）由全新独立子代理执行，主进程仅编排与簿记——禁止以主进程既有上下文自测替代验收（Rule 33.3 独立验证延伸;2026-09-26 用户裁决）
-
----
-
-## 5-Question Reboot Check
-
-| # | Question | Answer (fill on resume) |
-|---|----------|--------------------------|
-| 1 | Where am I? | Phase N |
-| 2 | Where am I going? | Remaining phases |
-| 3 | What's the goal? | Goal statement above |
-| 4 | What have I learned? | See findings.md |
-| 5 | What have I done? | See progress.md |
-| 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+**遗留面（不阻塞 COMPLETE，登记在 delivery-summary 风险点）**：仓内 .backup 目录外移（用户裁决）、新会话 /goal 行为面冒烟（需新会话）、宪法 §一 同步（保护区文件须授权）。

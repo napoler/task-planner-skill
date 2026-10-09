@@ -22,6 +22,17 @@
 - 结论：首轮 CHANGES_REQUESTED（V2 一致性 FAIL：F1 逃生口未接线 attest / F2 goal-gate 档位口径与 66.5 分叉 / F3 死变量）→ fix-phase commit 6cf8cd7 三态复测全过 → 修复面 8 字段 4/4 pass（检查点 13-executor-S6fix.md）
 - 对齐/回归面：修复后全量 64 selftest ΣFAIL=0（plans/task-v151-goal-mode/final-regression.log「scripts=64 ΣFAIL=0」行）
 - 独立审计：Explore 全仓审计（检查点 02-audit-full.md）——机械锚 20+ 条/条款引用 48 脚本+20 config 键/C1-C45/registry 64=64/部署位 diff/守卫误报面试跑，全部通过
+- 第二轮重 CR（官方文档对照）：检查点 15-code-reviewer-S9.md，必须修 0/建议增强 2（66.2 补单目标约束消歧+plan 模式冲突提示）→ 增强已落地 7fa66ac
+
+## 需求覆盖核对表（Rule 51.1a 终验载体）
+
+| R | 状态 | 证据路径 |
+|---|------|---------|
+| R1 | covered | plans/task-v151-goal-mode/subagent-state/03-executor-S1.md（Rule 66 六子条 848-860 落地验证行） |
+| R2 | covered | plans/task-v151-goal-mode/subagent-state/10-executor-S4b.md（POST-FIX ΣFAIL=0 行）+ 15-code-reviewer-S9.md（V1-e 官方写法要点对齐） |
+| R3 | covered | plans/task-v151-goal-mode/subagent-state/00-goal-empirical.md（/goal 无程序化触达面实证 3 处）+ 09-goal-official-docs.md（官方 4 页定位=内置命令） |
+| R4 | covered | skills/task-planner/references/critical-rules.md 行 856（66.4 推进序）+ subagent-state/04-executor-S2.md（attest 门 66.5 段） |
+| R5 | covered | plans/task-v151-goal-mode/task_plan.md Errors Encountered 表 + Decisions veto 行 + ledger-main.jsonl error 事件 |
 
 ## 4. 风险点
 1. ~~**仓内扫描路径遗留 .backup**~~ 已处置（2026-10-10）：`skills/task-planner/.backup/claude-stub-20261009-222907/`（11MB）已移至 `~/skill-deploy-backups-task-v151-claude-stub-20261009-222907`（v146 判例惯例位置）；仓内 .backup 目录已清空（gitignored 空壳保留无害）。
