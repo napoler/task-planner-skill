@@ -869,7 +869,7 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 
 68.4 **组域写隔离与状态一致性（group write isolation）**：组内成员只写三类目标——自己检查点（22.8 subagent-state）、findings.md 追加小节（22.4a 契约）、自己 scope_files；计划三文件（task_plan/findings/progress/verification）的状态列、Subagent Handoff 表、Lane 表一律由主进程**按组串行回写**（单写者原则 49.4② 推广到通用 S-unit）。推进序=成员完成→组批验收（22.5 三证据）→主进程统一翻状态（含 [goal:Gn] 证据行，66.3 联动）；禁止组内并行成员直接 Edit 计划三文件（check-delegation 既有拦截为主、68.6 advisory 检测为辅）；跨组状态变更经主进程协调，任何成员不得代表他组翻格。目标=整段并行运行时状态更新不错乱。
 
-68.5 **借鉴 workflow 编排三要点（parallel playbook）**：先收窄再 fan-out（派发前用 Explore/grep 把候选集收窄到可指名文件集，禁对未收窄全集并行派发——dynamic-workflows patterns.md:45-54 同源）；唯一 join 原则（每并行组仅一个汇合点=组批验收或 Aggregator Phase，禁多 barrier 使最慢成员卡住全组后续——SK.md:321-345 同源）；结果即落盘（成员每完成一里程碑立即写检查点，中途被杀不丢产出——22.8 检查点纪律在并行语境的重申）。
+68.5 **借鉴 workflow 编排三要点（parallel playbook）**：先收窄再 fan-out（派发前用 Explore/grep 把候选集收窄到可指名文件集，禁对未收窄全集并行派发——dynamic-workflows patterns.md:45-54 同源）；唯一 join 原则（每并行组仅一个汇合点=组批验收或 Aggregator Phase，禁多 barrier 使最慢成员卡住全组后续——dynamic-workflows SKILL.md:321-345 同源）；结果即落盘（成员每完成一里程碑立即写检查点，中途被杀不丢产出——22.8 检查点纪律在并行语境的重申）。
 
 68.6 **守卫（guard）**：check-plan-dispatch.sh 计划期扩展两档——hard 档（拒锁）：组标记存在性（frontmatter `parallel_groups` 每个组名在 S-unit 表内有对应 `[parallel-group:<组名>]` 标记行）、依赖-同组矛盾（「前置依赖」列非空的行与其被依赖行同组）、「前置依赖」列存在且逐行非空（无依赖显式 `-`）；advisory 档（WARN 不拒锁）：组内执行体全同（同组内 `subagent_type(model)` 列全部相同→提示异构化）、组内成员执行体全部「继承」。机器边界如实披露：守卫只消费表内显式字段，不做文件集交集自动推断（68.1 分析责任在计划者）；串行槽仍为全局单锁、组间串行为 21.4 既有语义（`{组名: ts}` 富锁升级=已登记后续任务项，非本条范围）。
 

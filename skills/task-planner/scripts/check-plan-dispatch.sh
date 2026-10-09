@@ -416,9 +416,13 @@ fi
 #   hard 档（走既有 add_violation 管线 → 拒锁 exit 1）：
 #     H1 「前置依赖」列存在性——任一 S-unit 表头须含「前置依赖」字样，S-unit 表存在但缺列即违规；
 #     H2 逐行非空——S-unit 数据行「前置依赖」单元格为空（未显式填 -）即违规；
+#        F8 列数漂移（2026-10-09 CR 补）：数据行按 | 切分列数≠表头列数 → 违规（格式漂移/裸管道，
+#        design §二 H2 承诺「单元格含裸管道按 violation 提示」落地）；
 #     H3 组标记存在性——frontmatter parallel_groups 声明的每个组名，计划内须有
 #        [parallel-group:<组名>] 标记，声明无成员即违规；
 #     H4 依赖-同组矛盾——行 R「前置依赖」含单元 D，且 R 与 D 同属一组即违规。
+#   F1 组归属口径统一（2026-10-09 CR 补）：H4/W1/W2 的行组归属取值优先级=行内标记 >「并行组」列 >
+#    注解行 `[parallel-group:X] = ID 列表`（模板无「并行组」列，真实计划以注解形态承载；见下方解析）。
 #   advisory 档（echo `[plan-dispatch] WARN …` → 不拒锁）：
 #     W1 组内全同——同组内执行体列值全部相同（提示 68.3 异构分摊）；
 #     W2 组内成员执行体全部为「继承」。
@@ -429,6 +433,8 @@ fi
 #   advisory 提示）；mini 档/无标记档整体跳过（legacy/合成夹具兼容，66.5 D2 裁决先例）；
 #   无 S-unit 表的计划整体跳过。全部走既有 add_violation 管线，零新 config 键。
 # awk 状态机: 参照 66.5 段范式（flag 状态机；禁区间 next 坍缩范式——gawk 区间 bug 已知）。
+#   F2 列位陈旧修复（2026-10-09 CR 补）：遇非 S-unit 表头（^| ID | 但无「执行体」）或空行即重置列位状态，
+#   防连续无空行两表沿用陈旧 dep 列位→第二表数据行产生假 H2。
 
 # frontmatter parallel_groups 声明解析（行内 bracket 列表形态，对齐设计稿 `parallel_groups: [g1, g2]`）
 rule68_groups=""
@@ -457,22 +463,35 @@ rule68_expand_deps() {
 }
 
 if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
-    # 抽取各 S-unit 表：表头列位（前置依赖/执行体/并行组）+ 数据行四列 + 行内组标记。
+    # 抽取各 S-unit 表：表头列位（前置依赖/执行体/并行组）+ 数据行四列 + 行内组标记 + 列数漂移标志。
     # 字段分隔符 = \037（单元分隔符，非空白 → 空单元格不坍缩；tab 属 IFS 空白会坍缩，故不用）。
-    # 输出行：HDR\037dep_idx\037exec_idx\037grp_idx\037表头原文
-    #         ROW\037id\037执行体\037前置依赖\037并行组\037行内组标记
+    # 输出行：HDR\037dep_idx\037exec_idx\037grp_idx\037表头列数\037表头原文
+    #         ROW\037id\037执行体\037前置依赖\037并行组\037行内组标记\037列数漂移标志
+    # [2026-10-09 task-v153 CR-F2] awk 状态机列位陈旧修复：遇非 S-unit 表头（^| ID | 但无「执行体」，
+    #   如 Goal 单元表）或空行即关闭表状态并清列位——原实现仅在「非 | 行」重置 in_tbl 而不清 dep/ex/gr，
+    #   连续无空行分隔的两表会沿用陈旧列位，第二表数据行按旧 dep 列位解析产生假 H2。
+    # [2026-10-09 task-v153 CR-F8] 裸管道列数漂移：记录表头列数 hdr_nf，数据行 NF≠hdr_nf 即标漂移
+    #   （design §二 H2 承诺：单元格含裸管道按 violation 提示；本仓判例=管道未转义挤列）。
+    #   [修复C 2026-10-09 CR二轮MINOR] 计列前先剔除转义管道「\|」：awk -F'|' 不区分裸/转义管道，
+    #   合法 grep BRE 交替（如 grep A\|B）会把 NF 虚增导致假 F8；剔除后计数，裸管道仍触发（语义保持）。
     rule68_dump="$(awk -F'|' '
-        /^\|[[:space:]]*ID[[:space:]]*\|/ && /执行体/ {
-            in_tbl=1; dep=0; ex=0; gr=0
-            for (i=1;i<=NF;i++) {
-                c=$i; gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
-                if (c ~ /前置依赖/) dep=i
-                if (c ~ /执行体/)   ex=i
-                if (c ~ /并行组/)   gr=i
+        /^\|[[:space:]]*ID[[:space:]]*\|/ {
+            if (/执行体/) {
+                in_tbl=1; dep=0; ex=0; gr=0
+                ht=$0; gsub(/\\\|/, "", ht); hdr_nf=split(ht, htmp, "|")
+                for (i=1;i<=NF;i++) {
+                    c=$i; gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
+                    if (c ~ /前置依赖/) dep=i
+                    if (c ~ /执行体/)   ex=i
+                    if (c ~ /并行组/)   gr=i
+                }
+                printf "HDR\037%d\037%d\037%d\037%d\037%s\n", dep, ex, gr, hdr_nf, $0
+            } else {
+                in_tbl=0; dep=0; ex=0; gr=0; hdr_nf=0
             }
-            printf "HDR\037%d\037%d\037%d\037%s\n", dep, ex, gr, $0
             next
         }
+        /^[[:space:]]*$/ { in_tbl=0; dep=0; ex=0; gr=0; hdr_nf=0; next }
         /^\|[[:space:]]*-+/ { next }
         in_tbl && /^\|[[:space:]]*[A-Za-z]+[0-9]+[[:space:]]*\|/ {
             id=$2; gsub(/^[[:space:]]+|[[:space:]]+$/, "", id)
@@ -482,7 +501,12 @@ if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null
             if (gr>0)  { gv=$gr;  gsub(/^[[:space:]]+|[[:space:]]+$/, "", gv) }
             mk=""
             if (match($0, /\[parallel-group:[^]]+\]/)) mk=substr($0, RSTART+16, RLENGTH-17)
-            printf "ROW\037%s\037%s\037%s\037%s\037%s\n", id, ev, dv, gv, mk
+            drift=0
+            # [修复C 2026-10-09 CR二轮MINOR] 漂移比较前剔除「\|」转义对再计数（与 hdr_nf 同口径）；
+            #   裸管道（未转义挤列）仍计入 → 真实漂移照样触发 F8。
+            rt=$0; gsub(/\\\|/, "", rt)
+            if (hdr_nf>0 && split(rt, rtmp, "|")!=hdr_nf) drift=1
+            printf "ROW\037%s\037%s\037%s\037%s\037%s\037%d\n", id, ev, dv, gv, mk, drift
             next
         }
         { if (in_tbl && $0 !~ /^[[:space:]]*\|/) in_tbl=0 }
@@ -491,11 +515,57 @@ if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null
     if [ -z "$rule68_dump" ]; then
         :   # 无 S-unit 表（mini/legacy）→ Rule 68 段整体跳过（对齐 66.5「无表整体跳过」口径）
     else
-        # ── 第一遍：H1（表头列存在性）+ H2（数据行前置依赖非空）+ 收集行数据 ──
+        # ── 注解形态组归属兜底（F1，2026-10-09 task-v153 CR）────────────────────────────
+        # WHAT: 扫描计划内 `[parallel-group:<组名>]` 后随「= 单元ID 列表」（逗号/顿号/全角逗号分隔，
+        #   支持 S1-S6 同前缀区间）的注解行，建立 单元ID→组名 映射（ANN\037id\037组名）。
+        # WHY: 模板无「并行组」列（grep -c '并行组' templates/task_plan.md=0），21.4 允许注解行
+        #   承载组标记——真实计划以「[parallel-group:X] = S1, S2, …」注解形态声明组归属。
+        #   原实现 H4/W1/W2 的行组归属只取「并行组」列或行内标记，注解形态下全空 → H4(hard)/W1/W2
+        #   静默失效。本兜底把注解解析并入同一 ID→组映射表，使注解形态可触发 H4 判定。
+        #   消费优先级：行内标记 > 「并行组」列 > 注解兜底（列/行内已有归属不覆盖）。
+        rule68_ann="$(awk '
+            {
+                s=$0
+                while (match(s, /\[parallel-group:[^]]+\]/)) {
+                    grpname=substr(s, RSTART+16, RLENGTH-17)
+                    rest=substr(s, RSTART+RLENGTH)
+                    seg=rest
+                    sub(/^[[:space:]`*]*/, "", seg)
+                    if (seg ~ /^=/) {
+                        seg=substr(seg, 2)
+                        sub(/[（(；;。*|].*$/, "", seg)
+                        n=split(seg, arr, /[[:space:]]*[,、，][[:space:]]*/)
+                        for (k=1;k<=n;k++) {
+                            tok=arr[k]
+                            gsub(/^[[:space:]`*]+|[[:space:]`*]+$/, "", tok)
+                            if (tok ~ /^[A-Za-z]+[0-9]+-[A-Za-z]+[0-9]+$/) {
+                                split(tok, rg, "-")
+                                pfx=rg[1]; sub(/[0-9]+$/, "", pfx)
+                                lo=rg[1]; sub(/^[A-Za-z]+/, "", lo)
+                                hi=rg[2]; sub(/^[A-Za-z]+/, "", hi)
+                                for (mm=lo+0; mm<=hi+0; mm++) printf "ANN\037%s%s\037%s\n", pfx, mm, grpname
+                            } else if (tok ~ /^[A-Za-z]+[0-9]+$/) {
+                                printf "ANN\037%s\037%s\n", tok, grpname
+                            }
+                        }
+                    }
+                    s=rest
+                }
+            }
+        ' "$PLAN_FILE" 2>/dev/null || true)"
+        declare -A rule68_ann_grp=()
+        while IFS=$'\037' read -r rule68_at rule68_aid rule68_agrp; do
+            [ "$rule68_at" = "ANN" ] || continue
+            [ -n "$rule68_aid" ] || continue
+            [ -n "$rule68_agrp" ] || continue
+            rule68_ann_grp["$rule68_aid"]="$rule68_agrp"
+        done <<< "$rule68_ann"
+
+        # ── 第一遍：H1（表头列存在性）+ H2（数据行前置依赖非空）+ F8（列数漂移）+ 收集行数据 ──
         rule68_rows=""
         rule68_tbl=0
         rule68_dep_idx=0; rule68_ex_idx=0; rule68_grp_idx=0
-        while IFS=$'\037' read -r rule68_tag rule68_f1 rule68_f2 rule68_f3 rule68_f4 rule68_f5; do
+        while IFS=$'\037' read -r rule68_tag rule68_f1 rule68_f2 rule68_f3 rule68_f4 rule68_f5 rule68_f6; do
             case "$rule68_tag" in
                 HDR)
                     rule68_tbl=$(( rule68_tbl + 1 ))
@@ -505,13 +575,19 @@ if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null
                     fi
                     ;;
                 ROW)
-                    # f1=id f2=执行体 f3=前置依赖 f4=并行组 f5=行内组标记
+                    # f1=id f2=执行体 f3=前置依赖 f4=并行组 f5=行内组标记 f6=列数漂移标志
                     if [ "$rule68_dep_idx" -gt 0 ] && [ -z "$rule68_f3" ]; then
                         add_violation "N/A" "Rule 68.1: 行 ${rule68_f1} 「前置依赖」单元格为空（未显式填 -，hard H2）"
+                    fi
+                    if [ "${rule68_f6:-0}" = "1" ]; then
+                        add_violation "N/A" "Rule 68.1: 行 ${rule68_f1} 列数漂移——数据行列数与表头列数不一致（格式漂移/裸管道，hard F8）"
                     fi
                     rule68_g="$rule68_f5"
                     if [ -z "$rule68_g" ] && [ -n "$rule68_f4" ] && [ "$rule68_f4" != "-" ]; then
                         rule68_g="$rule68_f4"
+                    fi
+                    if [ -z "$rule68_g" ]; then
+                        rule68_g="${rule68_ann_grp[$rule68_f1]:-}"
                     fi
                     rule68_rows="${rule68_rows}${rule68_f1}"$'\037'"${rule68_f2}"$'\037'"${rule68_f3}"$'\037'"${rule68_g}"$'\n'
                     ;;

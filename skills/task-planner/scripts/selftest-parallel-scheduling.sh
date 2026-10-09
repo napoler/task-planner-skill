@@ -9,9 +9,9 @@
 #         P-02 条款四关键词串 依赖分析/并行分组/异构分摊/组域写隔离 各 ≥1
 #     · templates/task_plan.md（S-unit 表「前置依赖」列载体，P-03）:
 #         P-03 S-unit 表头行含「前置依赖」≥1
-#     · scripts/check-plan-dispatch.sh（计划期守卫，P-04，双层口径）:
-#         P-04 锚落位时硬断言：Rule 68 校验段锚 + hard 串（依赖-同组）+ advisory 串（组内全同）各 ≥1；
-#              守卫单元未落位时 WARN-SOFT 降级（不计 FAIL，落位后下次运行自动升硬）
+#     · scripts/check-plan-dispatch.sh（计划期守卫，P-04，硬断言）:
+#         P-04 Rule 68 校验段锚 + hard 串（依赖-同组，锚 add_violation 可执行行）+ advisory 串
+#              （组内全同，锚 echo WARN 可执行行）各 ≥1；任一缺失=FAIL（2026-10-09 CR 收敛硬断言）
 #     · SKILL.md（执行期入口联动，P-05，动态求值禁硬编码）:
 #         P-05 C46 合规行 =1 + `Rule 68` 摘要引用 ≥1 + SKILL 内 `Critical Rules 1-NN` 上界
 #              与 critical-rules.md 实测最大编号动态一致
@@ -21,12 +21,11 @@
 #         P-07 全文无 parallel/model-allocation 类新增 config 键（键名口径计数 =0）
 #     · 既有语义回退负断言（P-08）:
 #         P-08 21.4 段「未声明者默认串行」原文锚仍在（Rule 68 不回退 21.4 组间串行语义）
-#     · references/split-pattern-library.md（模式库 P12 载体，P-09，双层口径）:
-#         P-09 `P12` 与「依赖分批并行」锚在位（文档单元未落位时 WARN-SOFT 降级）
+#     · references/split-pattern-library.md（模式库 P12 载体，P-09，硬断言）:
+#         P-09 `P12` 与「依赖分批并行」双锚在位；任一缺失=FAIL（2026-10-09 CR 收敛硬断言）
 #   运行方式：`bash scripts/selftest-parallel-scheduling.sh`（只读 grep/python3，零写入）；
-#   逐行打印 `P-NN PASS/FAIL/SOFT <说明>`，末行 `Total: 9 PASS=x FAIL=y`；
-#   核心断言（P-01/02/03/05/06/07/08）任一 FAIL exit 1，全 PASS exit 0；
-#   P-04/P-09 软降级（SOFT）不影响 exit——双轨施工窗口期设计，锚落位后自动升硬。
+#   逐行打印 `P-NN PASS/FAIL <说明>`，末行 `Total: 9 PASS=x FAIL=y`；
+#   九条断言（P-01..P-09）任一 FAIL exit 1，全 PASS exit 0（2026-10-09 起 P-04/P-09 亦为硬断言）。
 #   被检文件路径全部相对 SCRIPT_DIR 解析，保证仓库/worktree/三宿主部署位三处均可直接跑。
 #
 # Why（Rule 68.7 机制锚，task-v153 2026-10-09）:
@@ -34,9 +33,11 @@
 #   分摊→组内写隔离防状态错乱。Rule 68 是 LLM 行为面条款（68.1 前置依赖列必填/68.2 组由依赖
 #   推导/68.3 组内异构/68.4 组域写隔离均为行为义务，非机器触发），若条款锚/模板列/SKILL 联动
 #   被后续裁剪误删，条款即变死文；本脚本=条款死文探测器。
-#   P-04/P-09 双层口径的取舍：selftest 与守卫/文档单元同批并行施工（组域写隔离 68.4），
-#   本单元不得阻塞等待他单元落盘；用「锚在位→硬断言、未落位→SOFT 不计 FAIL」把回归
-#   窗口期与永久守护合并在一个脚本内，杜绝锚落位后再来一次脚本返工。
+#   P-04/P-09 硬断言收敛（2026-10-09 task-v153 CR F3）：原双层 SOFT 逻辑自指——判定「已落位」用的
+#   锚正是被守护对象本身，anchor 被删即 SOFT（exit 不受影响）而非 FAIL，无法区分「未施工」与
+#   「回归删除」。施工窗口已结束（守卫段/模式库均已落位），故收敛为硬断言：锚缺失=回归 FAIL。
+#   P-04 探针锚定可执行代码行（2026-10-09 CR F4）：原探针（`依赖-同组|组内全同`）命中守卫自身注释头
+#   文字，仅注释留存即 PASS，断言可腐化；改锚 add_violation/echo 调用行后，注释保留而代码删除即 FAIL。
 #   只断言 Rule 68 新增锚 + 21.4 不回退负断言，不触碰既有 selftest 断言行（防锚级联，
 #   Rule 36.5 纯增量）；计数锚一律动态求值（施工图 §八钉值级联三查③，禁硬编码当前态）。
 # 依赖：bash + grep；P-05 动态上界对照需 awk（零新依赖，POSIX 口径）。只读，零写入。
@@ -56,7 +57,6 @@ SPL="$SKILL_ROOT/references/split-pattern-library.md"
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'P-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'P-%s FAIL %s\n' "$1" "$2"; }
-soft(){ printf 'P-%s SOFT %s\n' "$1" "$2"; }
 
 # P-01 critical-rules.md `^68\.[1-7] ` 七子条计数=7
 # What：断言 68.1-68.7 七条子条主体行全在位（施工图 T1）。
@@ -81,22 +81,19 @@ if [ -z "$miss" ]; then ok 02 "critical-rules.md 四关键词串 依赖分析/�
 n="$(grep -cE '^\| ID .*前置依赖.*状态' "$TPL" || true)"
 if [ "$n" -ge 1 ]; then ok 03 "templates/task_plan.md S-unit 表头含「前置依赖」列 =${n}（≥1）"; else bad 03 "templates/task_plan.md S-unit 表头「前置依赖」列缺失（计数=$n，应 ≥1）"; fi
 
-# P-04 check-plan-dispatch.sh 守卫段：硬锚在位则硬断言，未落位则 SOFT 降级（施工图 T4）
-# What：断言 68 校验段三锚——段标识 `Rule 68` + hard 串（依赖-同组矛盾）+ advisory 串（组内全同）；
-#      三锚齐=守卫段已施工 → 硬断言 PASS/FAIL；段标识缺失=守卫单元并行施工中 → SOFT 不计 FAIL。
-# Why：双轨施工窗口期（本单元与守卫单元同批并行，组域写隔离 68.4）；锚落位后下次运行自动升硬，
-#      永久守护面=三锚全量硬断言。
+# P-04 check-plan-dispatch.sh 守卫段：三锚全量硬断言（施工图 T4；2026-10-09 CR F3 收敛）
+# What：断言 68 校验段三锚——段标识 `Rule 68` + hard 串（依赖-同组矛盾，锚 add_violation 可执行行）
+#      + advisory 串（组内全同，锚 echo WARN 可执行行）；三锚任一缺失=FAIL。
+# Why：① 双层 SOFT 收敛为硬断言（2026-10-09 task-v153 CR F3）——施工窗口已结束，守卫段已落位，
+#      锚缺失即为「回归删除」而非「未施工」，必须 FAIL 拦截；② 探针锚定可执行代码行（CR F4）——
+#      原探针命中守卫自身注释头文字，仅注释留存即 PASS，断言可腐化；改锚调用行后注释保留而代码删除即 FAIL。
 seg="$(grep -cE 'Rule 68' "$DISPATCH" || true)"
-hardc="$(grep -cE '依赖-同组|依赖同组|同组矛盾' "$DISPATCH" || true)"
-advc="$(grep -cE '组内全同|执行体全同|组内.*全同' "$DISPATCH" || true)"
-if [ "$seg" -ge 1 ]; then
-  if [ "$hardc" -ge 1 ] && [ "$advc" -ge 1 ]; then
-    ok 04 "check-plan-dispatch.sh 68 守卫段在位：段锚=$seg + hard 串(依赖-同组)=$hardc + advisory 串(组内全同)=$advc（均 ≥1）"
-  else
-    bad 04 "check-plan-dispatch.sh 68 段锚在位(=$seg)但 hard 串=$hardc / advisory 串=$advc（各应 ≥1）"
-  fi
+hardc="$(grep -cE 'add_violation.*依赖-同组矛盾' "$DISPATCH" || true)"
+advc="$(grep -cE '(echo|add_violation).*组内(全同|成员执行体全部为)' "$DISPATCH" || true)"
+if [ "$seg" -ge 1 ] && [ "$hardc" -ge 1 ] && [ "$advc" -ge 1 ]; then
+  ok 04 "check-plan-dispatch.sh 68 守卫段在位：段锚=$seg + hard 串(依赖-同组)=$hardc + advisory 串(组内全同)=$advc（均 ≥1）"
 else
-  soft 04 "check-plan-dispatch.sh 无 Rule 68 校验段（守卫单元并行施工中；落位后本断言自动升硬）"
+  bad 04 "check-plan-dispatch.sh 68 守卫段锚缺失：段锚=$seg / hard 串=$hardc / advisory 串=$advc（各应 ≥1；2026-10-09 已收敛硬断言）"
 fi
 
 # P-05 SKILL.md C46 行 + Rule 68 摘要行 + 上界动态对照（施工图 T5，动态求值禁硬编码）
@@ -135,17 +132,16 @@ if [ "$n" -eq 0 ]; then ok 07 "config.json parallel/model-allocat 类键 =0（�
 n="$(grep -c '未声明者默认串行' "$CRIT" || true)"
 if [ "$n" -ge 1 ]; then ok 08 "critical-rules.md 21.4「未声明者默认串行」原文锚 =${n}（≥1，语义未回退）"; else bad 08 "critical-rules.md「未声明者默认串行」锚缺失（计数=$n，应 ≥1；21.4 语义回退风险）"; fi
 
-# P-09 split-pattern-library.md P12「依赖分批并行」锚：在位则硬断言，未落位则 SOFT 降级（施工图 T9）
-# What：断言模式库 `P12` 与「依赖分批并行」双锚在位；双锚齐=文档单元已施工→PASS；
-#      缺失=文档单元并行施工中→SOFT 不计 FAIL。
-# Why：P12 是 68.5 parallel playbook 的模式库承载面（施工图 §六草案）；与 P-04 同一
-#      双轨窗口期口径，锚落位后自动升硬。
+# P-09 split-pattern-library.md P12「依赖分批并行」锚：双锚硬断言（施工图 T9；2026-10-09 CR F3 收敛）
+# What：断言模式库 `P12` 与「依赖分批并行」双锚均在位；任一缺失=FAIL。
+# Why：双层 SOFT 收敛为硬断言（2026-10-09 task-v153 CR F3）——文档单元已落位，锚缺失即为回归删除；
+#      P12 是 68.5 parallel playbook 的模式库承载面（施工图 §六草案）。
 p12="$(grep -cE 'P12' "$SPL" 2>/dev/null || true)"
 dep="$(grep -c '依赖分批并行' "$SPL" 2>/dev/null || true)"
 if [ "$p12" -ge 1 ] && [ "$dep" -ge 1 ]; then
   ok 09 "split-pattern-library.md P12 锚=$p12 +「依赖分批并行」锚=$dep（均 ≥1）"
 else
-  soft 09 "split-pattern-library.md P12=$p12 / 依赖分批并行=$dep（文档单元并行施工中；落位后本断言自动升硬）"
+  bad 09 "split-pattern-library.md P12=$p12 / 依赖分批并行=$dep（各应 ≥1；2026-10-09 已收敛硬断言）"
 fi
 
 printf 'Total: 9 PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
