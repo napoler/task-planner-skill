@@ -336,14 +336,14 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 17（Agent 派发总数：7 实施+CR2+验收回填轮6+对齐2；v122/判例:按 Handoff 行计） |
+| `success` | 17 |
+| `failed` | 0 |
+| `failure_rate` | 0.0%（<5% 阈值，无 STOP/熔断触发） |
+| `sampled_pass` | n/a 非同质批量——本任务为 Rule 68 实现单元批次（单元间目标/文件集不同），不适用同质抽检；质量门=全量 selftest×5 轮+CR 两轮承担（Rule 18.4 语义） |
+| `sampled_fail` | n/a（同上；运行前抽 2 语义不适配异质单元） |
+| `pre_check` | Q1:否（异质单元非同质大批量）/Q2:有（check-dispatch 契约门+组内异构守卫）/Q3:能（每单元独立验收） |
+| `rollback_point` | master b20974f（合并前点=worktree 74177a6；worktree 已清理，回滚路径=git revert 74177a6 与 5c5b3f6 区间） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
