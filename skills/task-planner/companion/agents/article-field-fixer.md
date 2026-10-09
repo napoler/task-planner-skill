@@ -45,6 +45,7 @@ color: '#A23B72'
 ```
 
 **verify 字段为 Rule 18.2/18.4 强制输出**(sampled/passed/failed/dup_titles),批量 ≥10 篇时缺失 = 批次视为未验证;failed >0 → 整批熔断报告用户。
+（呈报按 Rule 70 四要素：单元清单+路径+看点+动作）
 
 ## 证据要求（强制）
 每个修复必须包含:
