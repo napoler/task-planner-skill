@@ -16,11 +16,14 @@
 #     · scripts/check-complete.sh（终验对照，G-06）:
 #         G-06 `goal-gate` 输出前缀锚 ≥1 + `[goal:G` grep 逻辑锚 ≥1
 #     · selftest-registry.tsv（登记行，G-07）:
-#         G-07 末行含 `selftest-goal-unit-goal-mode.sh`
+#         G-07 表内含 `selftest-goal-unit-goal-mode.sh` 登记行（存在性断言，不钉绝对位置）
+#             [2026-10-10 task-v155 级联修复: 原断言钉「末行=goal-unit 登记行」，本任务在 registry 尾部新增
+#              selftest-report-reviewability.sh 行后末行改变导致 FAIL。修法=改为 grep 存在性断言，语义等价
+#              （登记行在位即闭环），不再钉绝对位置，免未来新增登记行再级联。]
 #     · config.json（零新键声明，G-08）:
 #         G-08 properties 键名中 `goal[_-](unit|gate|advance)` =0（零新 config 键负断言）
 #     · 钉值联动（G-09）:
-#         G-09 SKILL.md 行数 ≤515（D1 上调后上限，留 4 行余量）
+#         G-09 SKILL.md 行数 ≤540（task-v155 上调后上限，Rule 70 接线 +7 触顶，留余量）
 #   运行方式：`bash scripts/selftest-goal-unit-goal-mode.sh`（只读 grep/jq，零写入）；
 #   逐行打印 `G-NN PASS/FAIL <说明>`，末行 `Total: 9 PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。
 #   被检文件路径全部相对 SCRIPT_DIR 解析，保证仓库/worktree/三宿主部署位三处均可直接跑。
@@ -101,11 +104,13 @@ n="$(grep -cE 'goal-gate' "$SKILL_ROOT/scripts/check-complete.sh" || true)"
 grep_logic="$(grep -cE '\[goal:G' "$SKILL_ROOT/scripts/check-complete.sh" || true)"
 if [ "$n" -ge 1 ] && [ "$grep_logic" -ge 1 ]; then ok 06 "check-complete.sh 'goal-gate' 锚=$n（≥1）+ '[goal:G' grep 锚=$grep_logic（≥1）"; else bad 06 "check-complete.sh 'goal-gate' 锚=$n（应 ≥1）/ '[goal:G' grep 锚=$grep_logic（应 ≥1）"; fi
 
-# G-07 selftest-registry.tsv 末行含 `selftest-goal-unit-goal-mode.sh`
-# What：断言 registry 末行登记本脚本。
+# G-07 selftest-registry.tsv 表内含 `selftest-goal-unit-goal-mode.sh` 登记行（存在性断言，不钉绝对位置）
+# What：断言 registry 表内存在本脚本的登记行（grep 存在性，非末行位置钉死）。
 # Why：selftest-registry.tsv 是全部 selftest 脚本的登记账本；新脚本必须登记以形成闭环。
-last_line="$(tail -1 "$REGISTRY" || true)"
-if printf '%s\n' "$last_line" | grep -q 'selftest-goal-unit-goal-mode.sh'; then ok 07 "selftest-registry.tsv 末行含 selftest-goal-unit-goal-mode.sh"; else bad 07 "selftest-registry.tsv 末行=$last_line（应含 selftest-goal-unit-goal-mode.sh）"; fi
+#      2026-10-10 task-v155 级联修复：原断言钉「末行=goal-unit 登记行」，本任务在 registry 尾部新增
+#      selftest-report-reviewability.sh 行后末行改变导致 FAIL。改为存在性断言，语义等价（登记行在位即闭环），
+#      不再钉绝对位置，免未来新增登记行再级联。
+if grep -q 'selftest-goal-unit-goal-mode.sh' "$REGISTRY"; then ok 07 "selftest-registry.tsv 表内含 selftest-goal-unit-goal-mode.sh 登记行"; else bad 07 "selftest-registry.tsv 表内未找到 selftest-goal-unit-goal-mode.sh 登记行"; fi
 
 # G-08 config.json 零新键负断言：properties 键名中 `goal[_-](unit|gate|advance)` =0
 # What：断言 config.json properties 键名中不存在 goal-unit/goal-gate/goal-advance 相关新键。
@@ -117,11 +122,11 @@ else
 fi
 if [ "$n" -eq 0 ]; then ok 08 "config.json properties 键名 goal[_-](unit|gate|advance) =0（零新键）"; else bad 08 "config.json properties 键名 goal[_-](unit|gate|advance) =$n（应 =0，零新键承诺被破）"; fi
 
-# G-09 SKILL.md 行数 ≤515（D1 上调后上限）
-# What：断言 SKILL.md 行数不超过 515 行。
-# Why：Rule 66 摘要行 +1、C45 行 +1 → 511 触顶；上调 515 留 4 行余量（v150 判例：钉值上调留缓冲）。
+# G-09 SKILL.md 行数 ≤540（task-v155 上调后上限）
+# What：断言 SKILL.md 行数不超过 540 行。
+# Why：Rule 66 摘要行 +1、C45 行 +1 → 511 触顶；task-v155 Rule 70 接线净 +7 → 518 触顶；钉随演进上调 515→540（留 22 行余量给后续并行任务 v152-154/v156，v150 判例：钉值上调留缓冲）。
 n="$(wc -l < "$SKILLMD" || true)"
-if [ "$n" -le 515 ]; then ok 09 "SKILL.md 行数=$n ≤515（D1 上调后上限）"; else bad 09 "SKILL.md 行数=$n >515（超限）"; fi
+if [ "$n" -le 540 ]; then ok 09 "SKILL.md 行数=$n ≤540（task-v155 上调后上限，Rule 70 接线 +7 触顶，留余量）"; else bad 09 "SKILL.md 行数=$n >540（超限）"; fi
 
 printf 'Total: 9 PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
