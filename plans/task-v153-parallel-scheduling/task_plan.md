@@ -179,6 +179,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - [x] templates/task_plan.md 加列 diff 预览（S-unit 表「前置依赖」列）
 - [x] 落 `plans/task-v153-parallel-scheduling/design-rule68.md`
 - **V-1.1:** VC-a（条款草案含 68.1-68.7 全部子条，grep 锚可验证）——Evidence: design-rule68.md §一（7 子条全文，grep '^68\.[1-7]' 可验）
+- **V-N:** VC-1, VC-2（=VC-a/VC-b 别名映射，warn 档 VC-GATE 数字口径）
 - **V-1.2:** VC-b（模板加列 diff 预览含「前置依赖」列）——Evidence: design-rule68.md §三（表头 278 行 diff）
 - **Status:** complete（2026-10-09 22:55；3-File Gate exit 0+drift ALIGNED 22:52+Drift Log/ledger 双痕；[git-commit] 跳过=plans/ 按仓约定不入库）
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——design-rule68.md 属 `plans/` 计划系统文件，条款草案承自 plan-brief §四 设计方向——Rule 25.3 白名单；v152 同型判例）
@@ -188,6 +189,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - [ ] selftest 基线跑批存证（全量 selftest 脚本集，记录 PASS/FAIL 数）
 - [ ] check-conflicts.sh 复核（确认 v151/v152 在途状态未变）
 - **V-2.1:** VC-h（worktree 创建成功，分支 `wt/v153-parallel-scheduling`，关键文件与主仓 `git diff` 一致）——Evidence: git worktree list=ebb5fba + 7 文件三面 sha256 OK（progress Phase 2 段）
+- **V-N:** VC-5, VC-8（=VC-e/VC-h 别名映射）
 - **V-2.2:** VC-e（selftest 基线跑批 PASS/FAIL 数记录在 progress.md，作为 Phase 4 回归对照基线）——Evidence: baseline-selftest.log（64/64 rc=0，ΣFAIL=0）
 - **Status:** complete（2026-10-09 23:05；3-File Gate+drift 61.5 降级佐证 ALIGNED+双痕；[git-commit] 跳过=本 Phase 无仓内产物，worktree 未提交为正常初始态）
 - **Executor:** 主进程（例外理由:① git/worktree 编排 +③ 机械守卫跑批——Rule 25.3 白名单①③）
@@ -204,6 +206,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - **V-3.3:** VC-c（check-plan-dispatch.sh 扩展校验存在，构造用例测试有证据）
 - **V-3.4:** VC-d（selftest-parallel-scheduling.sh 存在，registry 登记，断言通过）
 - **V-3.5:** VC-g（本计划 parallel_groups 声明 + 组内异构执行体 + 组域写隔离协议行）
+- **V-N:** VC-1, VC-2, VC-3, VC-4, VC-7（=VC-a,b,c,d,g 别名映射）
 - **Status:** complete（2026-10-09 23:38；三批全验收+commit 5c5b3f6；drift=61.5 降级佐证；G6 证据见 progress [goal:G6]）
 - **Executor:** 主进程（例外理由:① 派发编排（21.4 调度管理器职责）+② 三文件簿记——Rule 25.3 白名单①②；S-unit 派发表见下）
 
@@ -228,6 +231,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - **V-4.1:** VC-e（全量 selftest FAIL=0，相对基线零新增失败）——Evidence: regression-v1.log Round1(7 FAIL→修复)/Round2 65/65/Round3 65/65/Round4 65/65，ΣFAIL=0（Round 4 终态，fix C 后）
 - **V-4.2:** VC-c（check-plan-dispatch.sh 守卫扩展测试证据：reject+WARN 用例）——Evidence: fixA 复跑 H4 矛盾 rc=1 原文+W1 WARN rc=0+真实计划零误报+F8 双夹具（裸管道 reject/转义放行）
 - **V-4.3:** VC-f（SKILL.md 计数级联正确，alignment-review 通过）——Evidence: CR 二轮 APPROVED（八发现全 fixed+3 新 MINOR 中 2 已修 1 为检查点文档口径）+主进程六维对齐核验（载体=gp Skill 调用连续两次取消→22.3.1 路由变更，已登记降级理由）
+- **V-N:** VC-3, VC-5, VC-6（=VC-c/e/f 别名映射）
 - **Status:** complete（2026-10-10 03:3x；V1 Round1-4 三轮修复闭环+CR 二轮 APPROVED+对齐六维全绿+commit 74177a6；drift=61.5 降级佐证+人工复核）
 - **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）+ alignment-review skill（42.6.2；载体取消降级已登记）
 
@@ -245,6 +249,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - [ ] delivery-summary + 清理 worktree（`git worktree remove` + `git branch -d`）
 - **V-5.1:** VC-f（SKILL.md 计数级联合并后实际值正确，Rule 68 索引行与合规清单行在位）——Evidence: 合并态 grep 1-68×3+C46+bullet+66 枚举
 - **V-5.2:** VC-h（三部署位 IDENTICAL，合并后对账 diff 一致）——Evidence: b20974f+三部署位 diff -q OK
+- **V-N:** VC-6, VC-8（=VC-f/h 别名映射）
 - **Status:** complete（2026-10-10 04:0x；merge 零冲突+部署 IDENTICAL+land 68+R5 合并态回归 65/65 ΣFAIL=0；drift=61.5 降级佐证+Drift Log 双痕）
 - **Executor:** 主进程（例外理由:① git/worktree 编排（合并/清理/部署）+② 收尾簿记——Rule 25.3 白名单①②）
 
@@ -375,6 +380,20 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 | 16 | 2026-10-10 03:2x | code-assistant | fix C（F8 转义管道误报+registry 陈旧描述） | done | 双夹具（转义放行/裸管道 reject）+9/9+5/5 | subagent-state/4-code-assistant-fixC.md | findings [sub:修复C] | subagent-state/4-code-assistant-fixC.md | - / 0 / ☑ |
 | 17 | 2026-10-10 03:3x | 主进程 | alignment-review 载体连续两次取消→22.3.1 路由变更主进程六维机械对齐 | done | 六维全绿（SKILL 计数/条款↔守卫↔selftest/模板↔模式库↔示例↔registry/仓文档/悬挂引用/design↔impl） | 本对话对齐浏览器结果 | findings §Technical Decisions | n/a | 路由变更已登记 Decisions / 0 / ☑ |
 
+## 📋 需求覆盖核对表（Rule 51.3/51.4 终验交付态）
+
+| R | 需求核心 | 覆盖 VC | 状态 | 证据锚 |
+|---|---------|---------|------|--------|
+| R1 | 计划初期分析任务依赖 | VC-1, VC-2 | covered | 68.1 条款+前置依赖列+守卫 H1/H2 |
+| R2 | 可并行并行/有依赖串行 | VC-1, VC-7 | covered | 68.2 条款+H4 依赖-同组矛盾硬门+本计划三组分组 |
+| R3 | 以后都自动并行加速（机制固化） | VC-4, VC-5 | covered | selftest 9/9+全量 65/65 零回归 |
+| R4 | 纠正 workflow 单模型缺陷 | VC-1, VC-6 | covered | findings §A A4 schema 实证+68.3 条款+SKILL 级联 |
+| R5 | 不同 Agent+模型运作 | VC-1, VC-7 | covered | 68.3+本计划组内三 provider 混派实证 |
+| R6 | 执行慢（动机） | VC-3, VC-4 | covered | 守卫+两级 selftest+并行实测 6min vs ~40min |
+| R7 | 分组后组内更新防错乱 | VC-1, VC-7 | covered | 68.4 组域写隔离+本计划协议行+组域隔离每批复验 |
+
+让步登记：无（7/7 R 全 covered）。
+
 ## 🔗 Chain 区块交接配置（可选）
 
 ### Chain 模式
@@ -392,7 +411,7 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 | **goal** | Rule 68 落地（条款+模板+守卫+selftest） |
 | **depends_on** | none |
 | **passes_to** | n/a（单 Block 任务） |
-| **status** | in_progress |
+| **status** | complete |
 
 ### 🔗 Handoff 追踪表
 
@@ -407,3 +426,4 @@ Phase 1：plan-writer 产出 design-rule68.md（条款 68.1-68.7 全文草案 + 
 - Rule 34.3 沉淀预登记: 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
 - 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP
+- **处置（2026-10-10 终验）：不沉淀**——理由=rule-enhancement 既有 variant 覆盖本任务型（design-draft 驱动流程=既有契约面），Rule 68 内容已由 critical-rules 本体承载，无新 variant 抽象空间（Rule 34.3 三条件均不命中）

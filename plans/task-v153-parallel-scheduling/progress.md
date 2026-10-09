@@ -110,6 +110,7 @@
   | [goal:G4] 验证锚 | 夹具：依赖-同组矛盾 rc + 组内全同 WARN + bash -n | rc=1/WARN/rc=0 | H4 rc=1 原文+WARN rc=0 原文+syntax OK | PASS |
   | [goal:G5] 验证锚 | bash selftest-parallel-scheduling.sh + registry 自校验 | exit 0 + rows=65 | 9/9 PASS exit 0 + 65/65 | PASS |
   | [goal:G6] 验证锚 | grep P12/依赖分批并行 + 异构示例 | ≥1 each | :110 + :52（7 处命中） | PASS |
+  | [goal:G7] 证据锚（66.3 三要素）| 全量 selftest for 循环+code-reviewer 两轮 | 65/65 rc=0 ΣFAIL=0+APPROVED | R2-R5 四轮/CR 二轮 products: regression-v1.log+4-code-reviewer-V2*.md | PASS |
   | 组域写隔离核验 | git status worktree（每批后） | 仅各批 scope 文件 M | 三批逐一吻合 | PASS |
   | 并行实证 | p3-core 墙钟 | 串行预估 ~40min | 三成员并行 ~6min（R6 执行慢的直接对照） | PASS |
 
