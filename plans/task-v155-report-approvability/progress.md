@@ -163,3 +163,18 @@
   - [sub:u2] worktree 合并冲突并集解（registry.tsv + research-first.sh）：registry.tsv 并集 master Rule68 行在前+本任务 Rule70 行在后（各 4 列）；research-first.sh RF-06 取 master 宽容锚 `1-6[0-9]`≥3、RF-07 保留 HEAD 双锚结构头注字面改 `Critical Rules 1-69+70（含 Rule 40-69 全集`（现场 grep count=1）+注释追加合并并集口径；两文件 ^<<<<<<< 均 0，selftest-research-first exit0 12 PASS 0 FAIL，selftest-registry exit0 5 PASS；未 git add，UU 交主进程 staging；checkpoint=subagent-state/u2-executor.md
   - [sub:u3] worktree 合并冲突并集解（最后两文件）：selftest-skill-split.sh T-主行数钉并集（master v154 条目保留 + v155 说明改写，`≤540`→`≤555`=n+25，演进链补 521→530）；selftest-goal-unit-goal-mode.sh 三块（G-07 取 master 含数据行断言+v155 同验注释、G-08 取 master、G-09 钉 `≤540`/`≤526`→`≤555` 并集注释双历史）；两文件 ^<<<<<<< 均 0，skill-split exit0 41 PASS 0 FAIL、goal-unit exit0 9 PASS 0 FAIL（G-09 530≤555）、research-first 交叉 exit0 12 PASS；SKILL.md 530 ≤ 555 同钉；diff 删除行仅限冲突块；未 git add，UU 交主进程 staging；checkpoint=subagent-state/u3-executor.md
   - [sub:u4] RRV-04 绝对编号锚→内容锚：selftest-report-reviewability.sh 原 `grep -e '^| C46 '` 改为内容锚（`^| C[0-9]* |` 合规行中 grep 用户呈报可审批性 → 唯一命中 SKILL.md:229 C48 行），断言该行待审项清单/可定位地址各≥1、Rule 70≥4 首锚保留；变量去 C46 令牌、注释补根因（并集后编号位被 Rule 68/69 占用→绝对编号锚必级联）；验收 grep -c C46→0、selftest exit0 PASS=13 FAIL=0、bash -n OK、负向稳健性通过；prompt §2「点名 C46/C47」与验收硬门 grep=0 字面互斥→优先硬门；未 git add；checkpoint=subagent-state/u4-executor.md
+
+## [goal:Gn] 证据行（Rule 66.3 — goal 单元逐格验证通过记录）
+- [goal:G1] complete — 证据: findings.md §触点审计（13 文件缺口表）+§Rule 31 归因段；checkpoint=subagent-state/（Explore 审计返回，Phase 1 段落）
+- [goal:G2] complete — 证据: critical-rules.md:888 起 Rule 70（70.1-70.6 六子条）+SKILL.md grep「Rule 70」8 处（:9/:165/:220/:287/:341/:369…）；Round 1 验收 RRV-01/02/04 PASS
+- [goal:G3] complete — 证据: SKILL 四触点 :73/:107/:153/:251、reference.md:234、worktree-isolation.md:12/:27/:81/:87；drift-phase3 ALIGNED
+- [goal:G4] complete — 证据: templates/task_plan.md:100/:135/:337、batch_report.md:6、image-type.md:88、multiview-ref-type.md:27；drift-phase4 ALIGNED
+- [goal:G5] complete — 证据: batch-quality-gate.md:30/:33/:102、plan-writer.md:107、article-batch-publisher.md:78/:92、article-field-fixer.md:48、review-library×3 :45/:68/:45；drift-phase5 ALIGNED
+- [goal:G6] complete — 证据: selftest-report-reviewability.sh 自跑 Total PASS=13 FAIL=0 WARN=0（RRV-06/07 翻硬档）；registry.tsv:69 NF=4；check-complete.sh:948 report-lint 段
+- [goal:G7] complete — 证据: Round1 62/65→S17a/S17b 修 4 级联→Round2/Round4/Round6 67/67 ΣFAIL=0（Phase 7 段）
+- [goal:G8] complete — 证据: 18-code-reviewer.md CHANGES_REQUESTED→S20 修复（n>0 守卫 :988/双锚 :146-151）；19-align-reviewer.md→S20b/c/d 修复；复跑全 PASS
+- [goal:G9] complete — 证据: master merge 2a12229；部署 3 位 IDENTICAL（smart-merge-back DEPLOY 段）；rule 70 landed；worktree/branch 已清理；verification.md 7 VC 全 PASS+outcome=COMPLETE
+
+## [skill-modify] 删除性行为清单登记（Rule 36.3/36.6 终验）
+- 本任务涉及技能文件修改（skills/task-planner/ 下 18 文件），删除性行为清单：**[skill-modify] 无功能性删除**。
+- 逐项确认：① 零文件删除、零条款删除；② SKILL 索引口径 1-66→1-69+70 为并集解下的口径演进（parallel 任务 67-69 条文保留）；③ 合规清单 C46→C48 为编号新增非删除（v153/v154 的 C46/C47 保留）；④ selftest 改造全部为断言锚精确化（总数不减：RRV 13/9/41/12 条）；⑤ 唯一实质重写=SKILL.md:287 段首行（u1 并集解，语义仅增"Rule 70 条目+67-69 落位表述"）。改动前已 Read 全部目标文件并展示 diff（S-unit 验收逐项 grep 对拍）。

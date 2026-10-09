@@ -89,15 +89,15 @@ task-planner 技能全工作流所有「向用户请求审批/审查/确认/呈�
 ## 🎯 Goal 单元表（Rule 66.1 — standard 必填）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 调研与归因 | 全触点审计+Rule 31 四维归因落盘 | findings.md 触点审计表 13 文件锚+归因段在位 | S0/Phase 1 | pending |
-| G2 | 条文与索引 | Rule 70 条文+SKILL 接线落位 | grep 70.1-70.6 锚 ≥6；SKILL 索引含 Rule 70 | S1-S2/Phase 2 | pending |
-| G3 | 主链触点 | SKILL/reference/worktree 触点四要素指针 | 3 文件 grep Rule 70 命中 | S3-S4/Phase 3 | pending |
-| G4 | 模板触点 | 4 模板呈报规格补全 | 4 文件 grep Rule 70 或四要素词命中 | S5-S7/Phase 4 | pending |
-| G5 | 管线触点 | 引用面+管线 6 文件补齐 | 6 文件 grep 命中 | S8-S11/Phase 5 | pending |
-| G6 | 机器守护 | selftest+lint+registry 落位 | selftest 自跑 exit 0+registry 行在位 | S12-S15/Phase 6 | pending |
-| G7 | 回归清账 | 全量 selftest ΣFAIL=0 | 跑批记录（progress.md Round 行四要素） | S16-S17/Phase 7 | pending |
-| G8 | 双审查 | 代码面+对齐面双 APPROVED | 两 checkpoint verdict=APPROVED | S18-S20/Phase 8 | pending |
-| G9 | 合并交付 | 合并+部署 IDENTICAL+终验交付 | merge commit+逐位 diff=0+delivery-summary | P9 | pending |
+| G1 | 调研与归因 | 全触点审计+Rule 31 四维归因落盘 | findings.md 触点审计表 13 文件锚+归因段在位 | S0/Phase 1 | complete |
+| G2 | 条文与索引 | Rule 70 条文+SKILL 接线落位 | grep 70.1-70.6 锚 ≥6；SKILL 索引含 Rule 70 | S1-S2/Phase 2 | complete |
+| G3 | 主链触点 | SKILL/reference/worktree 触点四要素指针 | 3 文件 grep Rule 70 命中 | S3-S4/Phase 3 | complete |
+| G4 | 模板触点 | 4 模板呈报规格补全 | 4 文件 grep Rule 70 或四要素词命中 | S5-S7/Phase 4 | complete |
+| G5 | 管线触点 | 引用面+管线 6 文件补齐 | 6 文件 grep 命中 | S8-S11/Phase 5 | complete |
+| G6 | 机器守护 | selftest+lint+registry 落位 | selftest 自跑 exit 0+registry 行在位 | S12-S15/Phase 6 | complete |
+| G7 | 回归清账 | 全量 selftest ΣFAIL=0 | 跑批记录（progress.md Round 行四要素） | S16-S17/Phase 7 | complete |
+| G8 | 双审查 | 代码面+对齐面双 APPROVED | 两 checkpoint verdict=APPROVED | S18-S20/Phase 8 | complete |
+| G9 | 合并交付 | 合并+部署 IDENTICAL+终验交付 | merge commit+逐位 diff=0+delivery-summary | P9 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -173,9 +173,9 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** explore（mini）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S0 | 全触点呈报缺口审计+Rule 31 归因 | explore(mini) | skills/task-planner/（20+ 文件扫描，审计式派发） | 缺口触点表+归因段落落盘 findings.md | 15min | 0f/0l/15min | 无 | complete |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S0 | 全触点呈报缺口审计+Rule 31 归因 | explore(mini) | skills/task-planner/（20+ 文件扫描，审计式派发） | 缺口触点表+归因段落落盘 findings.md | 15min | 0f/0l/15min | 无 | - | complete |
 
 ### Phase 2: Rule 70 条文与 SKILL 主索引
 - [x] critical-rules.md 追加 Rule 70 条文（§70.1-70.6，材料=本计划「📜 Rule 70 条文草案」节）
@@ -184,10 +184,10 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** executor（sonnet-1）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S1 | Rule 70 条文写入 critical-rules.md（Rule 66 之后追加，不硬编码行号锚） | executor(sonnet-1) | skills/task-planner/references/critical-rules.md + plans/task-v155-report-approvability/task_plan.md（§条文草案逐字采用） | `grep -cE "70\.[1-6]" references/critical-rules.md` ≥6 | 15min | 1f/60l/15min | 无 | pending |
-| S2 | SKILL.md 接线：Rules 全集行加「Rule 70 用户呈报可审批性纪律（task-v155）」条目+范围改「1-66+70（67-69 并行预留）」、References 表 critical-rules 行同步、终验交付段补 Rule 70 联动半句、合规清单新增 C46 行（材料=本计划 §接线材料包） | executor(sonnet-1) | skills/task-planner/SKILL.md + plans/task-v155-report-approvability/task_plan.md（§接线材料包） | grep "Rule 70" SKILL.md ≥4 命中且 C46 行在位 | 15min | 1f/12l/10min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S1 | Rule 70 条文写入 critical-rules.md（Rule 66 之后追加，不硬编码行号锚） | executor(sonnet-1) | skills/task-planner/references/critical-rules.md + plans/task-v155-report-approvability/task_plan.md（§条文草案逐字采用） | `grep -cE "70\.[1-6]" references/critical-rules.md` ≥6 | 15min | 1f/60l/15min | 无 | - | pending |
+| S2 | SKILL.md 接线：Rules 全集行加「Rule 70 用户呈报可审批性纪律（task-v155）」条目+范围改「1-66+70（67-69 并行预留）」、References 表 critical-rules 行同步、终验交付段补 Rule 70 联动半句、合规清单新增 C46 行（材料=本计划 §接线材料包） | executor(sonnet-1) | skills/task-planner/SKILL.md + plans/task-v155-report-approvability/task_plan.md（§接线材料包） | grep "Rule 70" SKILL.md ≥4 命中且 C46 行在位 | 15min | 1f/12l/10min | 无 | - | pending |
 
 ### Phase 3: 触点修补 A（主链呈报点）
 - [x] SKILL.md 触点指针行（计划确认/drift BLOCKED/CR Gate/B-C 变更四段）
@@ -196,10 +196,10 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S3 | SKILL.md 四触点段各补「呈报按 Rule 70 四要素」指针半句（材料=§触点指针材料包 T1-T4） | code-assistant(haiku-1) | skills/task-planner/SKILL.md + plans/task-v155-report-approvability/task_plan.md | 4 处 grep "Rule 70" 新增命中 | 10min | 1f/10l/10min | 无 | pending |
-| S4 | reference.md 升级呈报点+worktree-isolation.md 四个 STOP/报告点补 Rule 70 指针行（T5-T6） | code-assistant(haiku-1) | skills/task-planner/reference.md + skills/task-planner/references/worktree-isolation.md | 两文件 grep "Rule 70" ≥5 命中 | 10min | 2f/10l/10min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S3 | SKILL.md 四触点段各补「呈报按 Rule 70 四要素」指针半句（材料=§触点指针材料包 T1-T4） | code-assistant(haiku-1) | skills/task-planner/SKILL.md + plans/task-v155-report-approvability/task_plan.md | 4 处 grep "Rule 70" 新增命中 | 10min | 1f/10l/10min | 无 | - | pending |
+| S4 | reference.md 升级呈报点+worktree-isolation.md 四个 STOP/报告点补 Rule 70 指针行（T5-T6） | code-assistant(haiku-1) | skills/task-planner/reference.md + skills/task-planner/references/worktree-isolation.md | 两文件 grep "Rule 70" ≥5 命中 | 10min | 2f/10l/10min | 无 | - | pending |
 
 ### Phase 4: 触点修补 B（模板面）
 - [x] templates/task_plan.md 呈报字段规格补全
@@ -209,11 +209,11 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S5 | task_plan.md 三处呈报字段（not-solved 下一步建议/范围自检问用户/FMEA AskUser）补 Rule 70 四要素引用（T7） | code-assistant(haiku-1) | skills/task-planner/templates/task_plan.md | 3 处 grep "Rule 70" 命中 | 5min | 1f/10l/5min | 无 | pending |
-| S6 | batch_report.md 头部注释+呈报区块补「面向用户呈报按 Rule 70 四要素」（T8） | code-assistant(haiku-1) | skills/task-planner/templates/batch_report.md | grep "Rule 70" ≥1 | 8min | 1f/15l/8min | 无 | pending |
-| S7 | image-type.md:87 与 multiview-ref-type.md:25 送审清单补「逐件清单+看点+动作」列规格（T9） | code-assistant(haiku-1) | skills/task-planner/templates/variant/image-type.md + skills/task-planner/templates/variant/multiview-ref-type.md | 两文件 grep "Rule 70" 命中 | 8min | 2f/12l/8min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S5 | task_plan.md 三处呈报字段（not-solved 下一步建议/范围自检问用户/FMEA AskUser）补 Rule 70 四要素引用（T7） | code-assistant(haiku-1) | skills/task-planner/templates/task_plan.md | 3 处 grep "Rule 70" 命中 | 5min | 1f/10l/5min | 无 | - | pending |
+| S6 | batch_report.md 头部注释+呈报区块补「面向用户呈报按 Rule 70 四要素」（T8） | code-assistant(haiku-1) | skills/task-planner/templates/batch_report.md | grep "Rule 70" ≥1 | 8min | 1f/15l/8min | 无 | - | pending |
+| S7 | image-type.md:87 与 multiview-ref-type.md:25 送审清单补「逐件清单+看点+动作」列规格（T9） | code-assistant(haiku-1) | skills/task-planner/templates/variant/image-type.md + skills/task-planner/templates/variant/multiview-ref-type.md | 两文件 grep "Rule 70" 命中 | 8min | 2f/12l/8min | 无 | - | pending |
 
 ### Phase 5: 触点修补 C（引用面与管线）
 - [x] batch-quality-gate.md + companion + review-library 呈报合约补齐
@@ -221,12 +221,12 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S8 | batch-quality-gate.md 熔断/跳过率呈报点+companion/plan-writer.md 质量风险呈报点补 Rule 70 指针（T10-T11） | code-assistant(haiku-1) | skills/task-planner/references/batch-quality-gate.md + skills/task-planner/companion/agents/plan-writer.md | 两文件 grep "Rule 70" ≥3 | 5min | 2f/8l/5min | 无 | pending |
-| S9 | article-batch-publisher.md 与 article-field-fixer.md 熔断/跳过呈报点补 Rule 70 指针（T12） | code-assistant(haiku-1) | skills/task-planner/companion/agents/article-batch-publisher.md + skills/task-planner/companion/agents/article-field-fixer.md | 两文件 grep "Rule 70" ≥2 | 5min | 2f/8l/5min | 无 | pending |
-| S10 | review-library general-review 与 alignment-review 输出合约补「审查对象总清单（编号+路径）」要素行（T13） | code-assistant(haiku-1) | skills/task-planner/review-library/general-review/SKILL.md + skills/task-planner/review-library/alignment-review/SKILL.md | 两文件输出合约段 grep "Rule 70" 命中 | 8min | 2f/8l/8min | 无 | pending |
-| S11 | review-library code-quality-review 输出合约同款补行（T13 同措辞） | code-assistant(haiku-1) | skills/task-planner/review-library/code-quality-review/SKILL.md | grep "Rule 70" 命中 | 5min | 1f/4l/5min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S8 | batch-quality-gate.md 熔断/跳过率呈报点+companion/plan-writer.md 质量风险呈报点补 Rule 70 指针（T10-T11） | code-assistant(haiku-1) | skills/task-planner/references/batch-quality-gate.md + skills/task-planner/companion/agents/plan-writer.md | 两文件 grep "Rule 70" ≥3 | 5min | 2f/8l/5min | 无 | - | pending |
+| S9 | article-batch-publisher.md 与 article-field-fixer.md 熔断/跳过呈报点补 Rule 70 指针（T12） | code-assistant(haiku-1) | skills/task-planner/companion/agents/article-batch-publisher.md + skills/task-planner/companion/agents/article-field-fixer.md | 两文件 grep "Rule 70" ≥2 | 5min | 2f/8l/5min | 无 | - | pending |
+| S10 | review-library general-review 与 alignment-review 输出合约补「审查对象总清单（编号+路径）」要素行（T13） | code-assistant(haiku-1) | skills/task-planner/review-library/general-review/SKILL.md + skills/task-planner/review-library/alignment-review/SKILL.md | 两文件输出合约段 grep "Rule 70" 命中 | 8min | 2f/8l/8min | 无 | - | pending |
+| S11 | review-library code-quality-review 输出合约同款补行（T13 同措辞） | code-assistant(haiku-1) | skills/task-planner/review-library/code-quality-review/SKILL.md | grep "Rule 70" 命中 | 5min | 1f/4l/5min | 无 | - | pending |
 
 ### Phase 6: 机器守护
 - [x] 新建 selftest-report-reviewability.sh（RR 断言：条文锚/接线锚/触点锚/registry/零新键）
@@ -236,12 +236,12 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** executor（sonnet-1）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S12 | 新建 scripts/selftest-report-reviewability.sh 上半（RRV-01..07：Rule 70 条款锚+SKILL 接线锚+registry 自登记断言；范式=selftest-research-first.sh） | executor(sonnet-1) | skills/task-planner/scripts/selftest-research-first.sh + plans/task-v155-report-approvability/task_plan.md（§守护断言清单） | 脚本存在且 bash 语法检查通过 | 15min | 1f/90l/15min | 无 | pending |
-| S13 | 追加上半（RRV-08..13：13 触点文件锚断言+check-complete lint 段锚）+chmod+x+自跑 | executor(sonnet-1) | skills/task-planner/scripts/selftest-report-reviewability.sh + plans/task-v155-report-approvability/task_plan.md | 自跑 exit 0 | 10min | 1f/70l/10min | 无 | pending |
-| S14 | check-complete.sh rcov-gate 段后增 report-lint（fail-open printf warn：产出清单绝对路径/下一步建议看点动作/待裁决对象定位；不动任何 exit） | executor(sonnet-1) | skills/task-planner/scripts/check-complete.sh | bash -n 通过；grep "report-lint" ≥3；既有 selftest 无 FAIL | 12min | 1f/45l/12min | 无 | pending |
-| S15 | registry.tsv 追加 selftest-report-reviewability.sh 登记行（4 列格式）+全仓计数钉核查（grep 脚本总数断言并按需上调） | executor(sonnet-1) | skills/task-planner/scripts/selftest-registry.tsv + skills/task-planner/SKILL.md | registry 新行在位；S16 回归无计数 FAIL | 5min | 2f/8l/5min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S12 | 新建 scripts/selftest-report-reviewability.sh 上半（RRV-01..07：Rule 70 条款锚+SKILL 接线锚+registry 自登记断言；范式=selftest-research-first.sh） | executor(sonnet-1) | skills/task-planner/scripts/selftest-research-first.sh + plans/task-v155-report-approvability/task_plan.md（§守护断言清单） | 脚本存在且 bash 语法检查通过 | 15min | 1f/90l/15min | 无 | - | pending |
+| S13 | 追加上半（RRV-08..13：13 触点文件锚断言+check-complete lint 段锚）+chmod+x+自跑 | executor(sonnet-1) | skills/task-planner/scripts/selftest-report-reviewability.sh + plans/task-v155-report-approvability/task_plan.md | 自跑 exit 0 | 10min | 1f/70l/10min | 无 | S12 | pending |
+| S14 | check-complete.sh rcov-gate 段后增 report-lint（fail-open printf warn：产出清单绝对路径/下一步建议看点动作/待裁决对象定位；不动任何 exit） | executor(sonnet-1) | skills/task-planner/scripts/check-complete.sh | bash -n 通过；grep "report-lint" ≥3；既有 selftest 无 FAIL | 12min | 1f/45l/12min | 无 | - | pending |
+| S15 | registry.tsv 追加 selftest-report-reviewability.sh 登记行（4 列格式）+全仓计数钉核查（grep 脚本总数断言并按需上调） | executor(sonnet-1) | skills/task-planner/scripts/selftest-registry.tsv + skills/task-planner/SKILL.md | registry 新行在位；S16 回归无计数 FAIL | 5min | 2f/8l/5min | 无 | S13,S14 | pending |
 
 ### Phase 7: 全量回归与锚级联清账
 - [x] worktree 内全量 selftest 跑批（Round 1，结果四要素落 progress.md）
@@ -250,10 +250,10 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** code-runner-agent（mini）+executor（sonnet-1，条件修复）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S16 | worktree 内全量 selftest 跑批（for f in selftest-*.sh）+FAIL 清单落盘 subagent-state 检查点 | code-runner-agent(mini) | skills/task-planner/scripts/selftest-*.sh（跑批，禁逐文件罗列） | 输出含每脚本 PASS/FAIL 与 ΣFAIL 计数 | 15min | 0f/0l/15min | 无 | pending |
-| S17 | （条件：ΣFAIL>0）按 FAIL 清单修锚级联（单次派发 ≤2 文件，超限再拆多轮派发）→ 重跑至 ΣFAIL=0 | executor(sonnet-1) | 检查点 FAIL 清单（S16 产出路径执行期回填）+涉及断言脚本 | 重跑 ΣFAIL=0 | 15min | 2f/30l/15min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S16 | worktree 内全量 selftest 跑批（for f in selftest-*.sh）+FAIL 清单落盘 subagent-state 检查点 | code-runner-agent(mini) | skills/task-planner/scripts/selftest-*.sh（跑批，禁逐文件罗列） | 输出含每脚本 PASS/FAIL 与 ΣFAIL 计数 | 15min | 0f/0l/15min | 无 | - | pending |
+| S17 | （条件：ΣFAIL>0）按 FAIL 清单修锚级联（单次派发 ≤2 文件，超限再拆多轮派发）→ 重跑至 ΣFAIL=0 | executor(sonnet-1) | 检查点 FAIL 清单（S16 产出路径执行期回填）+涉及断言脚本 | 重跑 ΣFAIL=0 | 15min | 2f/30l/15min | 无 | S16 | pending |
 
 ### Phase 8: 双审查（Code Review Gate）
 - [x] 代码面审查（本次改动 .sh 文件）
@@ -263,11 +263,11 @@ Phase 9（全部 complete）
 - **Status:** complete
 - **Executor:** code-reviewer（sonnet-1）+general-purpose（alignment-review）
 
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
-|----|------------|------------------------|-------------|---------|------|------|------|------|
-| S18 | 代码面审查：worktree 内 git diff 的 .sh 改动（selftest 新脚本+check-complete lint），输出 APPROVED/CHANGES_REQUESTED+逐条 file:line | code-reviewer(sonnet-1) | worktree 内 skills/task-planner/scripts/*.sh（本次改动 3 文件，执行期给 git diff 基线） | checkpoint 落 verdict 行 | 15min | 0f/0l/15min | 无 | pending |
-| S19 | 对齐面审查：按 review-library/alignment-review/SKILL.md 对全部 .md 改动跑对齐审查，输出 verdict+问题清单 | general-purpose(sonnet-1) | skills/task-planner/review-library/alignment-review/SKILL.md + worktree git diff（.md 集合） | checkpoint 落 verdict 行 | 15min | 0f/0l/15min | 无 | pending |
-| S20 | （条件：CHANGES_REQUESTED）逐条修复（单次派发 ≤2 文件，超限多轮）→复验→两 verdict 翻 APPROVED | executor(sonnet-1) | 两 checkpoint 的 CHANGES 清单（执行期回填路径） | 复跑两审查 verdict=APPROVED | 15min | 2f/80l/15min | 无 | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S18 | 代码面审查：worktree 内 git diff 的 .sh 改动（selftest 新脚本+check-complete lint），输出 APPROVED/CHANGES_REQUESTED+逐条 file:line | code-reviewer(sonnet-1) | worktree 内 skills/task-planner/scripts/*.sh（本次改动 3 文件，执行期给 git diff 基线） | checkpoint 落 verdict 行 | 15min | 0f/0l/15min | 无 | - | pending |
+| S19 | 对齐面审查：按 review-library/alignment-review/SKILL.md 对全部 .md 改动跑对齐审查，输出 verdict+问题清单 | general-purpose(sonnet-1) | skills/task-planner/review-library/alignment-review/SKILL.md + worktree git diff（.md 集合） | checkpoint 落 verdict 行 | 15min | 0f/0l/15min | 无 | - | pending |
+| S20 | （条件：CHANGES_REQUESTED）逐条修复（单次派发 ≤2 文件，超限多轮）→复验→两 verdict 翻 APPROVED | executor(sonnet-1) | 两 checkpoint 的 CHANGES 清单（执行期回填路径） | 复跑两审查 verdict=APPROVED | 15min | 2f/80l/15min | 无 | S18,S19 | pending |
 
 ### Phase 9: 合并回+部署+终验簿记交付
 - [x] smart-merge-back.sh --deploy（预期与 v152/153/154 尾段冲突→并集解，v149 判例）
@@ -326,6 +326,7 @@ Phase 9（全部 complete）
 | 新增 Rule 70 而非扩写 Rule 48 | Rule 48 权威源绑定交付总结单点；呈报契约是全工作流纪律，独立编号便于触点统一引用（70.4） |
 | 机器守护只增 warn 不改 check-complete exit | exit 语义是交付门控承重墙；对齐 rcov-gate fail-open 先例 |
 | 范围含 review-library×3 与 companion×3 | 用户明示「其他类似的情况必须修正+全部需要补全」；同缺陷类呈报触点 |
+| Rule 36.3 删除性行为清单（技能修改基线） | **无删除性行为**：本任务对技能文件零功能性删除/零语义改写；SKILL 索引行 1-66→1-69+70 为口径演进（并集解保各方条文），C46 让位 C48 为编号新增非删除；selftest 改造全部为断言锚精确化（条数不减：13/9/41/12） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
@@ -368,15 +369,18 @@ Phase 9（全部 complete）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-10 | explore | 全触点呈报缺口审计 | done | ~30 触点缺口+零机器守护+金标准单点确认 | findings.md#触点审计 | Research Findings/触点审计 | （探索类无检查点，结论已回填 findings） | - / 0 / ☑ |
-| 2 | 2026-10-10 | executor | S1 Rule 70 条文 | done | 条文 26 行逐字落位，70.1-70.6 全在 | critical-rules.md:861-885 | #### [sub:1-executor] | plans/task-v155-report-approvability/subagent-state/1-executor.md | - / 0 / ☑ |
+| 2 | 2026-10-10 | executor | S1 Rule 70 条文 | done | 条文 26 行逐字落位，70.1-70.6 全在 | critical-rules.md:888 起 | #### [sub:1-executor] | plans/task-v155-report-approvability/subagent-state/1-executor.md | - / 0 / ☑ |
 | 3 | 2026-10-10 | executor | S2 SKILL 接线 | done | 五处接线（:9/:165/:220/:341/:365），+5/-2 | SKILL.md:341 | #### [sub:2-executor] | plans/task-v155-report-approvability/subagent-state/2-executor.md | - / 0 / ☑ |
-| 4 | | | S3 SKILL 触点指针 | queued | | | | plans/task-v155-report-approvability/subagent-state/3-code-assistant.md | - / 0 / ☐ |
-| 5 | | | S4 reference+worktree 触点 | queued | | | | plans/task-v155-report-approvability/subagent-state/4-code-assistant.md | - / 0 / ☐ |
-| 6 | | | S5-S7 模板触点 | queued | | | | plans/task-v155-report-approvability/subagent-state/5-code-assistant.md | - / 0 / ☐ |
-| 7 | | | S8-S11 管线触点 | queued | | | | plans/task-v155-report-approvability/subagent-state/8-code-assistant.md | - / 0 / ☐ |
-| 8 | | | S12-S15 机器守护 | queued | | | | plans/task-v155-report-approvability/subagent-state/12-executor.md | - / 0 / ☐ |
-| 9 | | | S16 全量回归 | queued | | | | plans/task-v155-report-approvability/subagent-state/16-code-runner.md | - / 0 / ☐ |
-| 10 | | | S18/S19 双审查 | queued | | | | plans/task-v155-report-approvability/subagent-state/18-code-reviewer.md | - / 0 / ☐ |
+| 4 | 2026-10-10 | code-assistant | S3 SKILL 触点指针 | done | 四触点 Rule 70 指针行（:73/:107/:153/:251），+4/-0 | SKILL.md:73 | #### [sub:3-code-assistant] | plans/task-v155-report-approvability/subagent-state/3-code-assistant.md | - / 0 / ☑ |
+| 5 | 2026-10-10 | code-assistant | S4 reference+worktree 触点 | done | reference:234+worktree-isolation 4 处（:12/:27/:81/:87） | reference.md:234 | #### [sub:4-code-assistant] | plans/task-v155-report-approvability/subagent-state/4-code-assistant.md | - / 0 / ☑ |
+| 6 | 2026-10-10 | code-assistant | S5-S7 模板触点 | done | task_plan×3/batch_report/variant×2 六处（S5-S7 三个单元） | task_plan.md:100/:135/:337 | #### [sub:5..7-code-assistant] | plans/task-v155-report-approvability/subagent-state/{5,6,7}-code-assistant.md | - / 0 / ☑ |
+| 7 | 2026-10-10 | code-assistant | S8-S11 管线触点 | done | batch-gate+3/companion×3+review-library×3 十处 | batch-quality-gate.md:30 | #### [sub:8..11-code-assistant] | plans/task-v155-report-approvability/subagent-state/{8,9,10,11}-code-assistant.md | - / 0 / ☑ |
+| 8 | 2026-10-10 | executor | S12-S15 机器守护 | done | RRV selftest 215 行+report-lint+registry 登记+计数钉核查 | check-complete.sh:948 | #### [sub:12..15-executor] | plans/task-v155-report-approvability/subagent-state/{12,13,14,15}-executor.md | - / 0 / ☑ |
+| 9 | 2026-10-10 | code-runner-agent | S16 全量回归 | done | Round1 62/65→S17a/b 修 4 级联→Round2/4/6 65→67 全绿 | progress.md#Phase7 | #### [sub:16/16b-code-runner] | plans/task-v155-report-approvability/subagent-state/{16,16b,17a,17b}-*.md | - / 0 / ☑ |
+| 10 | 2026-10-10 | code-reviewer | S18 代码面审查 | done | CHANGES_REQUESTED 2 项→S20 修复（空输入守卫+RRV-07 双锚） | check-complete.sh:988 | #### [sub:18-code-reviewer] | plans/task-v155-report-approvability/subagent-state/{18,20}-*.md | - / 0 / ☑ |
+| 11 | 2026-10-10 | general-purpose | S19 对齐面审查（22.3① 改派载体同型） | done | CHANGES_REQUESTED 2 项→S20b/c/d 修复闭环 | SKILL.md:287 | #### [sub:19-align-reviewer] | plans/task-v155-report-approvability/subagent-state/19-align-reviewer.md | 22.3①改派 / 0 / ☑ |
+| 12 | 2026-10-10 | general-purpose | 每 Phase 偏移检查（drift-checker haiku 拒→22.3① 改派） | done | P2-P9 全程 ALIGNED，8 检查点 | subagent-state/drift-phase*.md | Research Findings/新投诉归因 | plans/task-v155-report-approvability/subagent-state/drift-phase2..8.md | 22.3①改派 / 0 / ☑ |
+| 13 | 2026-10-10 | executor | 合并冲突并集解（U1-U4） | done | 6 冲突文件并集解+RRV-04 内容锚化；Round6 67/67 全绿 | git log 619c848 | #### [sub:u1..u4-executor] | plans/task-v155-report-approvability/subagent-state/u{1,2,3,4}-*.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置
 不适用（chain_mode: single，单 skill 任务，区块删除合规）。
@@ -451,4 +455,4 @@ Phase 9（全部 complete）
 - 触发信号: 技能条文增强类任务（无既有 variant 完全匹配）→ 落 general 兜底
 - Rule 34.3②: 沉淀预登记 —— 终验时评估：本任务为规则/守卫类增强，与历史 Rule 落地任务同型（v138-v151 系列均未沉淀 variant，条款型增强不可模板化），预期登记不沉淀理由
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
-- 处置登记处: 不沉淀理由（条款型技能增强，无可泛化任务模板；判例=v138-v151 系列）
+- 处置登记处: 不沉淀理由：条款型技能增强（Rule 条文+指针补丁+静态守护）无「同类任务重复生产」的模板化面；判例=v138-v151 系列 Rule 落地任务均未沉淀 variant；若未来同型任务 ≥3 次再触发 34.3①（已登记 2026-10-10 终验）
