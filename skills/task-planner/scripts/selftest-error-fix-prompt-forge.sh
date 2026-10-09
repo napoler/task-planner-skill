@@ -13,7 +13,9 @@
 #   FP-04  QC-FP 自检表行（^| QC-FP-）≥6 且含机器可检查条款（「机器可检查」≥1）
 #   FP-05  模板存在 + 八槽位锚，逐词各 ≥1：根因/复现/禁改区/验收/回滚/未验证假设区/DoD/验证命令
 #   FP-06  模板槽位词与 SKILL Step 1 槽位表互现 ≥5（候选 7 词逐词 grep -qF：问题陈述/根因+证据/复现/禁改区/验证判据/回滚/参考材料）
-#   FP-07  registry 末行登记 error-fix-prompt-forge
+#   FP-07  registry 含口径登记 error-fix-prompt-forge（数据行出现 ≥1 即 PASS）
+#       [2026-10-10 合并级联修复 sub:09] 末行口径改含口径: 合并 master(v155 report-reviewability 登记行)后
+#       跨任务追加登记行会打破末行断言, 对齐 G-07 含口径范式防复发
 #   FP-08  config.json 零新键（grep error-fix-prompt-forge = 0）
 
 set -u
@@ -71,11 +73,13 @@ if [ "$mut" -ge 5 ]; then
 else
   bad 06 "槽位词互现漂移（互现 $mut/7 应 ≥5）"
 fi
-# FP-07 registry 末行登记 error-fix-prompt-forge
-if [ -f "$REG" ] && tail -1 "$REG" | grep -q 'error-fix-prompt-forge'; then
-  ok 07 "registry 末行已登记 error-fix-prompt-forge"
+# FP-07 registry 含口径登记 error-fix-prompt-forge（数据行出现 ≥1 即 PASS; 末行口径已废弃——
+# 跨任务追加登记行会打破末行断言, 对齐 G-07 含口径范式）
+n="$(grep -c 'error-fix-prompt-forge' "$REG" 2>/dev/null || true)"
+if [ "$n" -ge 1 ]; then
+  ok 07 "registry 含 error-fix-prompt-forge 数据行（命中 $n ≥1）"
 else
-  bad 07 "registry 末行未登记 error-fix-prompt-forge（末行快照: $(tail -1 "$REG" 2>/dev/null | cut -c1-60)）"
+  bad 07 "registry 未含 error-fix-prompt-forge 数据行（命中 $n 应 ≥1）"
 fi
 # FP-08 config.json 零新键（grep error-fix-prompt-forge = 0）
 n="$(grep -c 'error-fix-prompt-forge' "$CFG" || true)"

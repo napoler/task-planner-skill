@@ -27,8 +27,10 @@
 | # | 条款 | 门控机制 | 违反信号 |
 |---|------|---------|---------|
 | **18.1** | **门控 flag 禁止一刀切跳过**：批量禁止用单一布尔 flag（如 `--skip-quality-gate`）绕过全部门控；允许"分项跳过 + 理由必填"（如 `--skip-cover-check=reason:已人工抽检5篇`）；跳过单元 ≥总数 10% → AskUserQuestion 重审 | 脚本参数审查 | 批量命令中出现无理由的全局 skip flag |
+> **18.1 跳过单元 AskUserQuestion 重审呈报规格（task-v155）**：报告按 Rule 70 四要素——受影响单元清单+产物路径+看点（failure 明细行）+动作（重审/回滚+默认项）。
 | **18.2** | **批次前后双采样**：批量 ≥10 单元时，**运行前随机抽 2 单元完整跑**（ground truth），**运行后随机抽 10% 单元跑 verify**；任一抽检失败 → 整批熔断，禁止部分回滚 | 抽检脚本（sample-before / sample-after） | 无抽检记录直接全量跑 |
 | **18.3** | **失败隔离硬约束**：单单元失败不阻塞其他单元继续，但必须累计 `failure_rate`；>5% → STOP 报告用户等决策；>20% → 自动熔断 + 回滚到最近 backup | failure_rate 计数器 | 失败被 `except: pass` 吞掉 / 失败率超阈继续跑 |
+> **18.3 failure_rate STOP 呈报规格（task-v155）**：报告按 Rule 70 四要素——受影响单元清单+产物路径+看点（failure 明细行）+动作（重审/回滚+默认项）。
 | **18.4** | **跨单元一致性闸门**：批量 ≥5 单元且属生成型操作（写作/翻译/格式化），必须跑跨单元一致性检查（标题去重/模板克隆检测/数值范围 sanity）；命中 ≥1 → STOP 报告重复模式 | 一致性检查脚本 | N 篇输出高度雷同（模板化失真）未被察觉 |
 | **18.5** | **并发覆写隔离**：批量写共享状态文件（session.json/global index）必须按"按单元分文件"或"加文件锁"二选一；禁止多并发 worker 直写同一 JSON | 写入规范 | 多 worker 并发写同一状态文件 |
 | **18.6** | **批次元数据必填**：每次批量在 task_plan.md 追加「📦 Batch Report」区块，含 `total/success/failed/failure_rate/sampled_pass/sampled_fail/pre_check/rollback_point` 八字段；缺项 → 视为 Phase 未完成 | 模板强制（templates/batch_report.md） | 批量完成但无 Batch Report |
@@ -97,6 +99,7 @@ done
 ```
 
 **抽检失败处理**：整批熔断 = 停止批量的后续单元 + 已跑单元回滚到 `rollback_point` + 报告用户。禁止"抽检失败但继续跑完剩下单元"。
+> **熔断/跳过呈报规格（task-v155）**：报告按 Rule 70 四要素——受影响单元清单+产物路径+看点（failure 明细行）+动作（重审/回滚+默认项）。
 
 ---
 

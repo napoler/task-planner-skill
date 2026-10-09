@@ -3,7 +3,7 @@
 # 范式对齐 selftest-media-agents.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、双层注释、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言覆盖矩阵（references/agent-coverage.md）在位、SKILL.md 六族行在位、B 类旧字面登记面零残留、
 #      矩阵 §一 agent 实体存在性（~/.zcode/agents，目录缺位 fail-open SKIPPED）、C 类 41 行处置覆盖、
-#      Rule 52 四子条+标题在位、config 零新键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 129 上界，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
+#      Rule 52 四子条+标题在位、config 零新键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]）、既有锚（^21.1b/^47.）守护、矩阵行数锚（-le 130 上界 [2026-10-10 task-v154 上界演进: 129→130，Rule 69 判断/裁决族 decision-arbiter 行落地]，task-v131 审计 L-3 对称守护 + CR P2-1 对齐；内容完整性由 AC-05 内容锚守）。
 # 输入：references/agent-coverage.md、SKILL.md、../plan-template-kit/references/template-mapping.md、
 #      companion/agents/、templates/、references/critical-rules.md、config.json、
 #      $HOME/.zcode/agents/（仓外只读 test -f；目录缺位 fail-open SKIPPED，不硬 FAIL）。
@@ -194,19 +194,21 @@ else
   bad 08 "既有锚漂移（^21.1b=$a21 应 ≥1 / ^47.=$a47 应 ≥4，既有 Rules 原文零改动被破坏）"
 fi
 
-# AC-09 矩阵行数上界锚（-le 129，task-v131 审计 L-3 对称守护 + CR P2-1 对齐）
-# What：断言 references/agent-coverage.md 行数 ≤129（wc -l 上界断言，129 为 2026-10-08 task-v146 合并后实测值）。
+# AC-09 矩阵行数上界锚（-le 130，task-v131 审计 L-3 对称守护 + CR P2-1 对齐）
+# What：断言 references/agent-coverage.md 行数 ≤130（wc -l 上界断言，130 为 2026-10-10 task-v154 合并后实测值）。
 # Why：task-v131 审计 L-3 指出 SKILL.md 行数在 selftest-skill-split.sh 有阈值断言（461→477 演进史），
 #      而矩阵 128 行锚此前无机器断言=文档膨胀侧漂移零守卫（矩阵被灌水=维护成本膨胀，矩阵被裁=选型事实源缩水）；
 #      演进规则：行数只增不减由 AC-05（C 表 41 行逐行含 纳入|豁免 内容锚）守内容完整性，AC-09 守上界防膨胀失控——
 #      原 =128 精确断言与 skill-split `-le` 上界惯例不一致、易漂移（CR P2-1），改 -le 128：矩阵合法增行（走
 #      Rule 52.3 增删同步）不破坏本锚，超上界 FAIL 并须按 52.3 同步流程后更新本上界 128→新值并在此行注记
 #      演进史（格式先例 selftest-skill-split.sh T-主 440→…→477）。
+# [2026-10-10 task-v154 上界演进] -le 129→-le 130：Rule 69 判断/裁决族 decision-arbiter 行落地
+# （矩阵 28 行判断/裁决，Rule 69 载体），按上述 Rule 52.3 增删同步流程更新上界并注记。
 ml="$(wc -l < "$MATRIX" 2>/dev/null || true)"
-if [ -n "$ml" ] && [ "$ml" -le 129 ]; then
-  ok 09 "矩阵行数=$ml ≤129 上界锚在位（task-v131 审计 L-3 对称守护 + CR P2-1；内容锚=AC-05，演进=Rule 52.3 增删同步）; [2026-10-08 task-v146] drift-checker 行 +1"
+if [ -n "$ml" ] && [ "$ml" -le 130 ]; then
+  ok 09 "矩阵行数=$ml ≤130 上界锚在位（task-v131 审计 L-3 对称守护 + CR P2-1；内容锚=AC-05，演进=Rule 52.3 增删同步）; [2026-10-08 task-v146] drift-checker 行 +1; [2026-10-10 task-v154] 判断/裁决行 +1"
 else
-  bad 09 "矩阵行数=$ml（应 ≤129；超限须走 Rule 52.3 增删同步并更新本上界，演进史先例 skill-split T-主）"
+  bad 09 "矩阵行数=$ml（应 ≤130；超限须走 Rule 52.3 增删同步并更新本上界，演进史先例 skill-split T-主）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d SKIPPED=%d\n' "$((PASS+FAIL+SKIP))" "$PASS" "$FAIL" "$SKIP"

@@ -874,3 +874,39 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 68.6 **守卫（guard）**：check-plan-dispatch.sh 计划期扩展两档——hard 档（拒锁）：组标记存在性（frontmatter `parallel_groups` 每个组名在 S-unit 表内有对应 `[parallel-group:<组名>]` 标记行）、依赖-同组矛盾（「前置依赖」列非空的行与其被依赖行同组）、「前置依赖」列存在且逐行非空（无依赖显式 `-`）；advisory 档（WARN 不拒锁）：组内执行体全同（同组内 `subagent_type(model)` 列全部相同→提示异构化）、组内成员执行体全部「继承」。机器边界如实披露：守卫只消费表内显式字段，不做文件集交集自动推断（68.1 分析责任在计划者）；串行槽仍为全局单锁、组间串行为 21.4 既有语义（`{组名: ts}` 富锁升级=已登记后续任务项，非本条范围）。
 
 68.7 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4/66.6 零新键纪律）；机器面=check-plan-dispatch.sh 计划期两档校验 + scripts/selftest-parallel-scheduling.sh 静态守护（68.1-68.7 子条锚 / 模板「前置依赖」列锚 / SKILL 摘要行 / C46 合规行 / registry 登记行 / 零新键负断言 / 21.4 语义未回退负断言）+ selftest-registry.tsv 登记；合规清单 C46（SKILL.md 消费侧）；模板承载=templates/task_plan.md S-unit 表「前置依赖」列（68.1 消费面）；模式库承载=split-pattern-library.md P12 依赖分批并行。
+### 69 判断裁决子代理化与驳回打回纪律（P0 — task-v154，目标：主进程遇判断类问题（方案终裁/失败定级/验收争议/DRIFT 处置/CR 分歧）时以强模型独立裁决出口取代硬决，并以驳回打回闭环保证裁决被执行；判定面=LLM 行为+selftest 静态守护，零新 config 键；衔接 Rule 15/22.3/22.4/22.5/41/42/61，既有 Rules 原文零改动）
+
+> 定位（Rule 69）：判断类问题的强模型独立裁决出口 + 驳回打回闭环——主进程「拿不准」时委派 decision-arbiter（GLM-5.3 强档）出唯一裁决，REJECT-REWORK 态按驳回单强制返工，禁止静默继续原方向。
+
+- **69.1 触发场景与管辖二分**：六触发点矩阵（T1 计划期方案终裁=43.3 候选对比 ≥2 候选方案难决；T2 兜底链换道裁决=Rule 22.3 五档兜底（改派/拆细/降档/接管）选择拿不准；T3 子代理失败复核定级=failed/FAIL 是真缺陷还是误报、严重度与返工路径；T4 验收完成度争议=22.5 三证据与子代理自报 done 冲突时独立仲裁；T5 DRIFT 处置裁决=drift-checker 判 DRIFT 后「警觉继续 vs 立即返工」拿不准，不替代检测本体；T6 CR 分歧与终验边界=CHANGES_REQUESTED 意见接受度/PARTIAL-COMPLETE 边界拿不准）。豁免清单（防滥用）：trivial 机械判断（41.3 主进程直做）/偏移检测本体（61 载体 drift-checker）/代码审查本体（42 族）/G1-G4 直接升级场景（41.2）。管辖二分：判断类裁决出口唯一=decision-arbiter；偏移检测=drift-checker；产物挑刺=critic；自我纠偏=meta-corrector；规划升级=complex-planner。四类场景主进程拿不准时**应委派** arbiter 独立裁决，禁止硬决或直接 AskUser——AskUser 是 G 门槛与 arbiter 裁决之后的出口。
+- **69.2 委派契约**：按 Rule 22.4 九字段模板派发，增补 arbiter 专用字段=争议点一句+双方声称摘要（≤5 行）+证据材料包（路径清单）+引用判据提示（VC 条目/规则锚/用户目标原话）；prompt ≤3000 字符（21.1b 沿用）；检查点=`<plan-dir>/subagent-state/{seq}-decision-arbiter.md`（22.8 命名沿用）；执行体=decision-arbiter 伴随 agent（GLM-5.3 强档，companion/agents/decision-arbiter.md）；SKILL.md 路由表「判断/裁决」行同步（接线在 task-v154 S5 落地）。单次独立派发：每争议一次裁决，同题重裁须附新证据。
+- **69.3 裁决消费协议（驳回打回闭环）**：四态=APPROVE/REJECT-REWORK/ESCALATE-USER/INSUFFICIENT-EVIDENCE（与 agent 文件字面一致）。**REJECT-REWORK 强制返工**：主进程收到该裁决必须在 progress.md 登记 `[arbiter-reject]` 行（含裁决指针+严重度）并按驳回单五要素执行返工，禁止静默继续原方向（违者按 Rule 26 降质处置）。ESCALATE-USER 消费=主进程转 AskUserQuestion/STOP（不自行代答）；INSUFFICIENT-EVIDENCE 消费=按补充取证清单补证后重新派发；APPROVE 附带放行条件时条件须逐条验证后才可继续。消费动作留痕：progress.md 每次裁决消费记一行（裁决态/驳回单指针/返工结果）。
+- **69.4 驳回单五要素（REJECT-REWORK 态必附）**：①问题定位（file:line 级精确锚）/②违反判据（VC 条目编号或规则锚或用户目标原话引用）/③第一手证据（命令输出关键行或文件行摘录，禁转述）/④严重度（BLOCKER=阻断交付/MAJOR=须返工/MINOR=可登记后续）/⑤建议返工路径（可执行动作+验收判据）——五要素齐备主代理方可直接执行返工（可定位性对齐 Rule 48 精神）；缺任一要素=裁决无效，主进程按 INSUFFICIENT-EVIDENCE 处理并要求补全
+- **69.5 强模型档与经济性边界**：执行体固定=decision-arbiter 伴随 agent（`companion/agents/decision-arbiter.md`，model=`account:zai-individual-coding-plan/GLM-5.3`，thoughtLevel enabled——判断质量依赖推理深度，对齐 complex-planner 强档先例，禁降档改判，frontmatter 为 truth source）；经济性边界=低频重推理定位——每争议单次独立派发、禁驻留循环裁决、同题重裁须附新证据；高频轻量判定（对齐性检查等）不适用本 Rule（走 Rule 61 drift-checker haiku 档），防止强模型预算被机械判定挤占（Rule 17 成本纪律衔接）
+- **69.6 机制**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=scripts/selftest-decision-arbiter.sh 静态守护（agent 文件锚/Rule 69 六子条锚/SKILL 路由表与触发点锚/覆盖矩阵行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C47（SKILL.md 合规检查清单同步增行；C46 由并行任务 task-v153 先行占用，本任务避让改号，cite=SKILL.md:224）；触发点标记消费面=SKILL.md 执行流程六处（T1-T6 对应位置「→ 委派 decision-arbiter 裁决（Rule 69）」式标记，S5 落地）
+
+## Rule 70（用户呈报可审批性纪律 — task-v155）
+
+> **呈报** = 工作流中一切请求用户审批/审查/确认/复核或向用户知情通报的输出点。本条全工作流适用；交付总结（最重呈报形态）契约仍以 Rule 48 + templates/delivery-summary.md 为权威源，本条不重复定义。
+
+### 70.1 适用范围（呈报触点族）
+以下场景一律属呈报触点，受 70.2 最小信息集约束：D1 计划批准展示 / D2-D6 选项呈报（28.3）/ B-C 类变更确认 / drift BLOCKED 与子代理失败升级呈报 / worktree 冲突与合并回 STOP / 批量熔断与跳过率呈报（Rule 18）/ 否定结论上报（35.4）/ 代码审查与对齐审查结果面向用户呈报 / 媒体送审清单 / 静默决策清单呈现 / 非选项类阻塞点展示（44.5）/ 周期回顾矛盾报告（65.4）/ 技能修改 diff 逐项确认（36.4）/ 交付总结（Rule 48）。
+
+### 70.2 呈报最小信息集（四要素，缺一即违规）
+1. **待审项清单**：编号 + 逐项一句话简介；禁止裸「请审批/请审查」——用户无从知道审什么（R1 缺陷本体）。
+2. **可定位地址**：逐项给绝对路径 / 完整 URL / 可执行命令；禁止裸文件名、模糊指代（「相关文件」「见上文」）、未解析占位符（口径同 Rule 48.2）。
+3. **看点**：逐项写明看什么/判什么（锚点、段落、判据）——读者未读上下文也能开审。
+4. **动作**：逐项写明用户做什么（批准/驳回/修改/无需动作）+ 默认项排首位标「推荐」（联动 44.1；超时自动裁决按 44.3）。
+
+### 70.3 强度分级
+- **重呈报**（需用户拍板：D1/D2-D6/合并回确认/送审/熔断处置/危险操作确认）：四要素全量；危险操作（D6 级）另附影响面与回滚方式。
+- **轻呈报**（知情类：drift 警告/阻塞点展示/静默清单/进度通报）：≥要素②③（地址+看点）；无动作须写「无需动作，观察判据 X」。
+
+### 70.4 单一权威源
+呈报契约唯一权威源=本条；各触点条款只引用不复制全文（禁自造弱化版规格）；交付总结口径以 Rule 48 为准，冲突时交付总结以 Rule 48 裁决。
+
+### 70.5 与既有规则关系
+41.5 打包呈报补四要素；44.1 默认项=要素④消费口径；48.2 可定位性=要素②同口径延伸到全部触点；36.4 展示 diff 满足要素①形态（逐项清单+路径）；28.3 选项呈现=重呈报形态。
+
+### 70.6 机制
+零新 config 键。机器面 = scripts/selftest-report-reviewability.sh（RRV 断言：条款锚+触点锚静态守护）+ check-complete.sh report-lint（fail-open warn，不改 exit 语义）。呈报违规按 Rule 26 降质处置：回炉补齐四要素后方可呈报。

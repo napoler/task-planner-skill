@@ -231,6 +231,7 @@ https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Ma
 第3次: 全局重想 → 质疑假设 → 搜索方案 → 考虑更新计划
 3次后: 升级用户  → 解释尝试 → 分享具体错误 → 请求指导
 ```
+升级呈报按 Rule 70 四要素：已尝试清单逐项附命令与错误输出绝对路径（检查点文件），看点=失败根因行，动作=继续/换道/停止+默认项。
 
 ## § 五问重启测试
 
