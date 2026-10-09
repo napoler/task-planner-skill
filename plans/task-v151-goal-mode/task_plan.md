@@ -183,11 +183,11 @@ Phase 5（complete；全部 Phase 终态，交付中）
 - [x] CHANGES 若有→fix-phase（≤3 轮）+ 回归 + 部署对账（增强 2 条已走 S9f 修复闭环；selftest 4 脚本抽验全绿）
 - **V-N:** VC-1, VC-5（66 条款面受官方文档校正；零回归）
 - **Status:** complete
-- **Executor:** web-search-agent（S8，mini）/ code-reviewer（S9，sonnet-1）
+- **Executor:** general-purpose（S8 官方文档检索；原 web-search-agent 类型 provider 拒→22.3.1 改派登记）/ code-reviewer（S9 重 CR）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S8 | /goal 官方文档检索+要点提炼落盘 | web-search-agent（mini） | ① ZCode 官方文档（zcode.z.ai/官网 docs，搜索词 Goal Mode//goal slash command 中英文）② 检查点=14-websearch-goal-docs.md | 官方 /goal 文档全文要点（语法/迭代语义/完成验证方式/程序化触达面）落盘；无官方文档=已检索清单合法形态（63.3） | 15min | 0f/60l/15min | 无 | complete |
+| S8 | /goal 官方文档检索+要点提炼落盘 | general-purpose（原派 web-search-agent 类型 provider 拒→22.3.1 改派） | ① ZCode 官方文档（zcode.z.ai/官网 docs，搜索词 Goal Mode//goal slash command 中英文）② 检查点=14-websearch-goal-docs.md | 官方 /goal 文档全文要点（语法/迭代语义/完成验证方式/程序化触达面）落盘；无官方文档=已检索清单合法形态（63.3） | 15min | 0f/60l/15min | 无 | complete |
 | S9 | 带官方文档的重 CR | code-reviewer（sonnet-1） | ① worktree diff 101475f+6cf8cd7 ② subagent-state/09-goal-official-docs.md ③ 前次 CR 检查点 11/13（F1-F3 已修面复验） | 结论 APPROVED 或 CHANGES_REQUESTED（F 清单）；66.2 与官方语义偏差逐条定性 | 15min | 0f/100l/15min | 无 | complete |
 
 ### Phase 3: 实现（worktree 内，逐 S-unit 派发）
@@ -302,6 +302,15 @@ Phase 5（complete；全部 Phase 终态，交付中）
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 05:xx | explore | 机制插入点与部署位侦察（8 问） | done | 8 问全答：仓布局/Rule 64-65 插入位/SKILL 3 处 1-65/S-unit 9 列契约/钉值清单 5 处+registry | plans/task-v151-goal-mode/subagent-state/01-explore-goal-mode-recon.md | Research Findings §1 | subagent-state/01-explore-goal-mode-recon.md | verify_done ☑ |
 | 2 | 06:xx | explore | /goal 内置命令机制面实证 | done | 无程序化触达面：/opt/ZCode 无 goal 模块、~/.zcode/cli config 无字段、agent metadata 无结构化 goal（grep 命中均为 prompt 文本）；/goal=纯用户侧命令，与 40.3 口径一致 | 主进程 3 命令输出（ls ~/.zcode/cli + grep goal config + find /opt/ZCode -iname *goal* 空） | Research Findings §2 | subagent-state/02-explore-goal-command-mechanism.md（本检查点由主进程实证代写：子代理已取消，实证面=主进程直查 3 处均「不存在」合法形态） | verify_done ☑（实证代写登记） |
+| 3 | 06:5x | code-assistant | S1 critical-rules 文末追加 Rule 66 六子条 | done | 848-860 +14 行，1-65 零改动；grep 6 子条=6 | subagent-state/03-executor-S1.md | Research Findings §3 | subagent-state/03-executor-S1.md | verify_done ☑ |
+| 4 | 06:5x | executor | S2 模板 Goal 单元表+66.5 校验段 | done | 模板 +12/check-plan-dispatch +90；三态试跑全过（任务书 05-brief-S2 落盘重派，首派 inline 被 dispatch-guard 拦截） | subagent-state/04-executor-S2.md | Research Findings §3 | subagent-state/04-executor-S2.md | verify_done ☑ |
+| 5 | 07:2x | executor | S3 check-complete [goal-gate] 段+SKILL 级联 | done | +46/+5-3；两态试跑符合语义（任务书 07-brief-S3） | subagent-state/06-executor-S3.md | Research Findings §3 | subagent-state/06-executor-S3.md | verify_done ☑ |
+| 6 | 07:5x | executor | S4 新 selftest+registry+钉值级联 | partial→改派 | 5/6 pass；A5 回归 24 FAIL（66.5 档位语义波及 7 行为级 selftest）→ 22.3.1 provider 面改派 general-purpose（任务书 09-brief-S4） | subagent-state/08-executor-S4.md | Issues Encountered §1 | subagent-state/08-executor-S4.md | verify_done ☑（partial 登记） |
+| 7 | 08:1x | general-purpose | S4b 66.5 档位三分支修正（D2 裁决方案①） | done | ΣFAIL=24→0（64 脚本）；正样本 66.5 违规=0、剥离区块负样本 rc=1 | subagent-state/10-executor-S4b.md | Research Findings §4 | subagent-state/10-executor-S4b.md | verify_done ☑ |
+| 8 | 21:3x | code-reviewer | S6 全量 CR（101475f） | done | CHANGES_REQUESTED：F1 attest 逃生口未接线/F2 goal-gate 档位口径分叉/F3 死变量（V2 FAIL，余 V1/V3/V4/V5 PASS） | subagent-state/11-code-reviewer-S6.md | Issues Encountered §2 | subagent-state/11-code-reviewer-S6.md | verify_done ☑ |
+| 9 | 21:5x | general-purpose | S6fix F1-F3 修复 | done | commit 6cf8cd7（+20/-5 三文件）；三态复测全过；回归 64 ΣFAIL=0 | subagent-state/13-executor-S6fix.md | Research Findings §4 | subagent-state/13-executor-S6fix.md | verify_done ☑ |
+| 10 | 22:4x | general-purpose | S8 /goal 官方文档检索（原 web-search-agent 类型 provider 拒→22.3.1 改派登记） | done | 官方 4 页引句落盘（zcode.z.ai/cn+en/docs/goal 等）；本地 goal.md=用户自建命令区分面 | subagent-state/09-goal-official-docs.md | Research Findings §5 | subagent-state/09-goal-official-docs.md | verify_done ☑ |
+| 11 | 23:1x | code-reviewer | S9 带官方文档重 CR | done | 必须修 0/建议增强 2（66.2 单目标约束消歧+plan 模式冲突提示）→主进程采纳→d56276e | subagent-state/15-code-reviewer-S9.md | Research Findings §5 | subagent-state/15-code-reviewer-S9.md | verify_done ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 <!-- 单 skill 单任务，删除本区块内容（区块保留） -->
