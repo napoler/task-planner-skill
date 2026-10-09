@@ -60,10 +60,10 @@ if [ "$n" -ge 3 ]; then ok 04 "SKILL.md Rule 40 锚命中 $n ≥3"; else bad 04 
 # [2026-10-09 task-v151 S4 钉值级联] '1-65'→'1-66'：Rule 66 已由 task-v151 落地（66.1-66.6），锚同步演进
 # [2026-10-09 task-v152 Rule 67 落地] '1-65'→'1-67'：Rule 67 已由 task-v152 落地，锚同步演进
 # [2026-10-09 task-v153 级联单元] '1-66'→'1-68'：Rule 68 已由 task-v153 落地（68.1-68.7 计划期并行调度），SKILL.md 计数锚级联 1-68，锚同步演进
-# [2026-10-10 task-v154 合并并集演进] '1-68'→'1-69'：task-v153 Rule 68 与 task-v154 Rule 69 合流落地，SKILL 章节引言行最终态 1-69
-a="$(grep -c 'Critical Rules 1-69' "$SKILLMD" || true)"
+# [2026-10-10 task-v154 合并并集演进] '1-68'→'1-71'：task-v153 Rule 68 与 task-v154 Rule 69 合流落地，SKILL 章节引言行最终态 1-71
+a="$(grep -c 'Critical Rules 1-71' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-69≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-69=$a 应 ≥1 / 1-39=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-71≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-71=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # TS-06 SKILL.md 三个既有锚子串各 ≥1（WF-07/08/09 锚保全）
 if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD" \
    && grep -qF '| C27 |' "$SKILLMD" \

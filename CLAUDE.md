@@ -30,7 +30,7 @@ skills/task-planner/
 │   ├── notepad-learnings.md
 │   └── knowledge-brief.md ← 任务知识简略要点（第 6 文件，v067 起 init-session 生成，五段结构）
 └── references/
-    ├── critical-rules.md ← Rules 1-69 核心执行约束 <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态（Rule 66/68 已落地，67 为 v152 在途预留不列名，CR F7 级联） --> <!-- 2026-10-10 task-v154 合并并集演进 1-68→1-69 -->
+    ├── critical-rules.md ← Rules 1-71 核心执行约束 <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态（Rule 66/68 已落地） --> <!-- 2026-10-10 task-v158 演进 1-69→1-71（Rule 71 落地，67/70 已并集） -->
     ├── completion-gate.md← 子代理验证 + 串行同步协议
     ├── goal-gate.md      ← VC 规则 + COMPLETE/PARTIAL/BLOCKED 退出标准
     └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）

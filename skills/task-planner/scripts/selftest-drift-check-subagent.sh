@@ -58,7 +58,7 @@ if grep '偏移比对' "$SKILLMD" | grep -q 'Rule 61'; then ok 10 "反模式偏�
 # [2026-10-08 task-v149 Rule 65 落地演进] 'Rule 40-64 全集'→'Rule 40-65 全集'：Rule 65 已由 task-v149 落地，锚同步演进
 # [2026-10-09 task-v152 Rule 67 落地] '40-65'→'40-67'：Rule 67 已由 task-v152 落地，锚同步演进
 # [2026-10-10 task-v154 S5 接线演进] 'Rule 40-65 全集'→'Rule 40-69 全集'：Rule 66(v151)/69(v154) 已落地，章节引言行欠账修正同步
-if grep -q 'Rule 40-69 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-69 全集+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失"; fi
+if grep -qE 'Rule 40-(69|71) 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-69/40-71 全集+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失"; fi
 
 # DCS-12: critical-rules.md 含 ### 61 标题 + **61.1..**61.6 六锚各 >=1
 if grep -q '^### 61 ' "$CRIT" && grep -q '\*\*61\.1' "$CRIT" && grep -q '\*\*61\.2' "$CRIT" && grep -q '\*\*61\.3' "$CRIT" && grep -q '\*\*61\.4' "$CRIT" && grep -q '\*\*61\.5' "$CRIT" && grep -q '\*\*61\.6' "$CRIT"; then ok 12 "Rule 61 标题+六锚齐全"; else bad 12 "Rule 61 锚缺失"; fi
