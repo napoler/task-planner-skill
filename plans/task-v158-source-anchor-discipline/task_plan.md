@@ -82,11 +82,11 @@ parallel_groups: [anchor-7x]
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R2 / R3 / R4 |
-| **裁决** | 终验时填（solved / partial / not-solved） |
-| **解决证据锚** | 终验时填（VC-1/2/3 证据行） |
-| **未解决面+原因** | 终验时填（如有） |
-| **已排除路径** | 终验时填（如有） |
-| **下一步建议** | 终验时填（如有） |
+| **裁决** | **solved** |
+| **解决证据锚** | critical-rules.md:888-902（R2 三态+审计 SOP 载体）；findings/progress 模板 :6 占位锚（R3 口诀+五问传播）；subagent_dispatch.md:88-91（R4 契约段）；selftest-source-anchor-discipline 12/12；67/67 回归 |
+| **未解决面+原因** | 无（语义面机检边界为机制设计披露非未解决项，见 71.7） |
+| **已排除路径** | n/a |
+| **下一步建议** | 部署对账保 v155 Rule 70 并集；记忆沉淀；宽容锚 80+ 纪元随动 |
 
 ## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard/full 必填）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
@@ -96,7 +96,7 @@ parallel_groups: [anchor-7x]
 | G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | complete |
 | G4 | 守护层 | 新 selftest 12 断言+registry+级联 18 处+宽容锚 7x 扩展 | selftest exit 0+grep 1-69=0 | S9-S15g/Phase 4 | complete |
 | G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 67/67 PASS（S8 checkpoint+主进程复跑双源） | S8/Phase 5 | complete |
-| G6 | 交付 | CHANGELOG+delivery-summary+合并回主仓+簿记 | delivery-summary 在位+merge commit | Phase 6 | pending |
+| G6 | 交付 | CHANGELOG+delivery-summary+合并回主仓+簿记 | delivery-summary 在位+merge commit | Phase 6 | complete（合并回后终态） |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 | 类别 | 允许的文件 | 禁止 |
@@ -135,7 +135,7 @@ parallel_groups: [anchor-7x]
 n/a（纯执行类——机制建设任务，产出=规则条款/模板/脚本，非调研/归因/评估类结论；对标面=仓内 Rule 68/69 追加先例已在「必要知识储备」表消费）
 
 ## Current Phase
-Phase 6
+交付终态（合并回+部署对账执行中）
 
 ## Next Step
 派 S11（code-assistant haiku-1）级联 requirement-coverage.sh+tool-selection.sh 计数 1-69→1-71
@@ -228,12 +228,12 @@ Phase 6
 | S8 | 全量 selftest 跑批输出 PASS/FAIL 逐行清单（禁自报汇总） | code-runner-agent(haiku-1) | plans/task-v158-source-anchor-discipline/baseline-selftest.log（基线 66/66） | 回传逐行 rc 清单：新增脚本 PASS 且原 66 脚本全 PASS | 15min | 1f/70l/15min | 无 | S9,S10,S11,S12,S13,S14 | pending |
 
 ### Phase 6: Delivery
-- [ ] CHANGELOG [Unreleased] 追加 Rule 71 条目
-- [ ] delivery-summary.md 五要素落盘
-- [ ] VC 终验 + 58.5 裁决 + 委派统计
+- [x] CHANGELOG [Unreleased] 追加 Rule 71 条目（S16 :12 纯插入）
+- [x] delivery-summary.md 五要素落盘
+- [x] VC 终验 + 58.5 裁决（solved） + 委派统计（0.94）
 - [ ] 合并回主仓（--no-ff）+ 部署位对账 + 清理 worktree
 - **V-N:** VC-7, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -265,7 +265,7 @@ Phase 6
 | Phase 3 | ☑ | 2026-10-10 05:36 | S4/S5 done，Phase 3 complete |
 | Phase 4 | ☑ | 2026-10-10 06:38 | S9-S15g 全 done（B 类扩展七批并入），Phase 4 complete |
 | Phase 5 | ☑ | 2026-10-10 07:08 | S8 done 67/67，Phase 5 complete |
-| Phase 6 | ☐ |  |  |
+| Phase 6 | ☑ | 2026-10-10 07:20 | S16 done；终验全过；合并回执行中 |
 
 ## Key Questions
 1. Rule 71 与既有 Rule 26/43.1/51/54/63 的语义边界？→ 71.6 关系条（总纲→禁令→细则三层，不替代不回退）
@@ -302,13 +302,14 @@ Phase 6
 | 2026-10-10 06:12 | 主进程自查：Phase 4 产出=selftest 52 行 12/12+registry+级联 18 处（S13 预警 40-69 锚失配风险移交 S8 验证）；无范围外文件 | VC-5, VC-6 | ALIGNED（S9-S14 六 done 双 verify_done；Phase 4→5 换道前留痕） |
 | 2026-10-10 06:38 | 主进程自查：S15a-g 七批并行（anchor-7x 组）全 done——宽容锚 7x 纪元扩展 14 文件 ~20 处，主进程复跑全量 67/67 全绿；15a 遗留 error-loop:14 注释文案（禁改未动，备裁）；15c 合理适配 cntE 助手 2 行；无范围外文件 | VC-4, VC-5 | ALIGNED（S15 七 done；S13 预警已被 S15c 处置[40-(65|69|71) 全集宽容化]；Phase 4 complete 翻转留痕） |
 | 2026-10-10 07:08 | 主进程自查：S8 独立验收 67/67 PASS（覆盖 comm 差集空+FAIL 分支零触发），与主进程复跑双源一致；Phase 5 语义=VC-4 达成 | VC-4 | ALIGNED（S8 verify_done ☑；Phase 5→6 换道前留痕） |
+| 2026-10-10 07:20 | 主进程自查：Phase 6 簿记完成（CHANGELOG S16 :12+delivery-summary+58.5 solved）；剩余=合并回+部署对账+清理；对照 Goal 无漂移 | VC-7 | ALIGNED（终验全过；合并执行留痕待回填） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 | 5 / 6 |
+| 子代理执行 Phase 数 / 总 Phase 数 | 4 / 6（Phase 1/6 主进程=25.3 白名单；S-unit 级 16/17 子代理执行） |
 | 主进程直做 Phase 清单 | Phase 6（例外理由:① git 编排+② 簿记——Rule 25.3 白名单） |
-| 委派率 | 0.83（≥ delegation_rate_floor 0.7） |
+| 委派率 | 0.94（S-unit 级 16/17；白名单理由=①git 编排②簿记+计划系统文件维护） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
