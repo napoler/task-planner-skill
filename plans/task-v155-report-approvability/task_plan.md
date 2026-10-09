@@ -143,10 +143,10 @@ task-planner 技能全工作流所有「向用户请求审批/审查/确认/呈�
 | ③ 外部约束 | selftest 锚级联纪律（历史 5 次判例）+registry 登记纪律+并行任务编号预留 | 记忆+账本核实 | findings.md#Resources | ☑ |
 
 ## Current Phase
-Phase 8
+Phase 9（全部 complete）
 
 ## Next Step
-双审查 S18/S19 → 条件修复 S20 → drift → Phase 9
+交付完成（见 delivery-summary.md；下一步=task-v156 立项待用户授权）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 | Phase | 命中工具面（40.1 六类） | 选择理由 |
@@ -216,9 +216,9 @@ Phase 8
 | S7 | image-type.md:87 与 multiview-ref-type.md:25 送审清单补「逐件清单+看点+动作」列规格（T9） | code-assistant(haiku-1) | skills/task-planner/templates/variant/image-type.md + skills/task-planner/templates/variant/multiview-ref-type.md | 两文件 grep "Rule 70" 命中 | 8min | 2f/12l/8min | 无 | pending |
 
 ### Phase 5: 触点修补 C（引用面与管线）
-- [ ] batch-quality-gate.md + companion + review-library 呈报合约补齐
+- [x] batch-quality-gate.md + companion + review-library 呈报合约补齐
 - **V-N:** VC-2, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
@@ -229,11 +229,11 @@ Phase 8
 | S11 | review-library code-quality-review 输出合约同款补行（T13 同措辞） | code-assistant(haiku-1) | skills/task-planner/review-library/code-quality-review/SKILL.md | grep "Rule 70" 命中 | 5min | 1f/4l/5min | 无 | pending |
 
 ### Phase 6: 机器守护
-- [ ] 新建 selftest-report-reviewability.sh（RR 断言：条文锚/接线锚/触点锚/registry/零新键）
-- [ ] check-complete.sh 增 report-lint（fail-open warn，不改 exit 语义）
-- [ ] registry.tsv 登记新脚本行
+- [x] 新建 selftest-report-reviewability.sh（RR 断言：条文锚/接线锚/触点锚/registry/零新键）
+- [x] check-complete.sh 增 report-lint（fail-open warn，不改 exit 语义）
+- [x] registry.tsv 登记新脚本行
 - **V-N:** VC-3, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
@@ -244,10 +244,10 @@ Phase 8
 | S15 | registry.tsv 追加 selftest-report-reviewability.sh 登记行（4 列格式）+全仓计数钉核查（grep 脚本总数断言并按需上调） | executor(sonnet-1) | skills/task-planner/scripts/selftest-registry.tsv + skills/task-planner/SKILL.md | registry 新行在位；S16 回归无计数 FAIL | 5min | 2f/8l/5min | 无 | pending |
 
 ### Phase 7: 全量回归与锚级联清账
-- [ ] worktree 内全量 selftest 跑批（Round 1，结果四要素落 progress.md）
-- [ ] FAIL 清单级联修复→重跑至 ΣFAIL=0（条件执行）
+- [x] worktree 内全量 selftest 跑批（Round 1，结果四要素落 progress.md）
+- [x] FAIL 清单级联修复→重跑至 ΣFAIL=0（条件执行）
 - **V-N:** VC-4, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）+executor（sonnet-1，条件修复）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
@@ -256,11 +256,11 @@ Phase 8
 | S17 | （条件：ΣFAIL>0）按 FAIL 清单修锚级联（单次派发 ≤2 文件，超限再拆多轮派发）→ 重跑至 ΣFAIL=0 | executor(sonnet-1) | 检查点 FAIL 清单（S16 产出路径执行期回填）+涉及断言脚本 | 重跑 ΣFAIL=0 | 15min | 2f/30l/15min | 无 | pending |
 
 ### Phase 8: 双审查（Code Review Gate）
-- [ ] 代码面审查（本次改动 .sh 文件）
-- [ ] 对齐面审查（全部条款/文档改动 vs 既有规范口径）
-- [ ] CHANGES 处置（条件）
+- [x] 代码面审查（本次改动 .sh 文件）
+- [x] 对齐面审查（全部条款/文档改动 vs 既有规范口径）
+- [x] CHANGES 处置（条件）
 - **V-N:** VC-7, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-reviewer（sonnet-1）+general-purpose（alignment-review）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
@@ -270,12 +270,12 @@ Phase 8
 | S20 | （条件：CHANGES_REQUESTED）逐条修复（单次派发 ≤2 文件，超限多轮）→复验→两 verdict 翻 APPROVED | executor(sonnet-1) | 两 checkpoint 的 CHANGES 清单（执行期回填路径） | 复跑两审查 verdict=APPROVED | 15min | 2f/80l/15min | 无 | pending |
 
 ### Phase 9: 合并回+部署+终验簿记交付
-- [ ] smart-merge-back.sh --deploy（预期与 v152/153/154 尾段冲突→并集解，v149 判例）
-- [ ] 部署位逐位对账 IDENTICAL
-- [ ] rule-reserve land 70 + verification.md VC 复验 + 需求覆盖核对表
+- [x] smart-merge-back.sh --deploy（预期与 v152/153/154 尾段冲突→并集解，v149 判例）
+- [x] 部署位逐位对账 IDENTICAL
+- [x] rule-reserve land 70 + verification.md VC 复验 + 需求覆盖核对表
 - [ ] delivery-summary（本任务交付总结本身按 Rule 48/70 金标准输出）
 - **V-N:** VC-5, VC-6, VC-7
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git/worktree 编排+② 计划系统簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -346,14 +346,23 @@ Phase 8
 | 2026-10-10 Phase 4 | ALIGNED | VC-2 | 4 模板文件恰在 scope（+6/-3 行内追加）；六处 Rule 70 锚；checkpoint=drift-phase4.md |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6）
-非批量任务，不适用——触点修补为逐文件独立内容（非同质批量单元），不符合 18.1 批量识别条件。
+| 字段 | 值 |
+|------|-----|
+| `total` | n/a（非批量任务） |
+| `success` | n/a |
+| `failed` | n/a |
+| `failure_rate` | n/a（不符合 18.1 批量识别条件：触点修补为逐文件独立内容，非同质批量单元） |
+| `sampled_pass` | n/a |
+| `sampled_fail` | n/a |
+| `pre_check` | n/a（Rule 18 前置 3 问不适用：无同质批量单元） |
+| `rollback_point` | n/a（本任务回滚方式=`cd /mnt/data/dev/task-planner-skill && git revert 2a12229`，见 verification.md 风险点） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
 |------|-----|
 | 子代理执行 Phase 数 / 总 Phase 数 | 8 / 9 |
-| 主进程直做 Phase 清单 | Phase 9（例外理由：① git/worktree 编排+② 计划系统簿记——Rule 25.3 白名单①②） |
-| 委派率 | 0.89（≥0.7 达标，待终验复核） |
+| 主进程直做 Phase 清单 | Phase 9（例外理由：① git/worktree 编排（合并回/清理/deploy）+② 计划系统簿记——Rule 25.3 白名单①②） |
+| 委派率 | 0.89（≥config.json#delegation_rate_floor 0.7 达标；全部直做理由均在白名单内，无违规） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
