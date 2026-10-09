@@ -38,9 +38,16 @@
 4. **v150 教训本轮复发一次**：Executor/Handoff 档位后缀致委派统计 violation——已修+复跑 ok，建议后续任务计划期直接裸名（见下）。
 5. **行为面收敛依赖排查结果包质量**：skill 的输入契约靠用户/上游提供合格的排查产物；首实战后经验回灌路径=iterative-optimizer（未闭环，不阻断）。
 
+## 需求覆盖核对表（Rule 51.3 — R→VC 全覆盖）
+
+| R | 需求原文（逐字） | 映射 VC | 覆盖证据（可复现） | 状态 |
+|---|----------------|---------|------------------|------|
+| R1 | 「创建一个skill」 | VC-1/2/3/5/6 | skills/error-fix-prompt-forge/{SKILL.md,templates/fix-prompt-template.md}(grep 六区块/九槽位锚)+task-planner/scripts/selftest-error-fix-prompt-forge.sh(8/8 exit 0)+三宿主 diff IDENTICAL+merge 6d46d3ec | covered |
+| R2 | 「对错误排查调研 将排查结果 并且生成提供专业的提示词 用于后期的修正」 | VC-4（问题解决判据）+VC-1..3 | 冒烟实跑产物 subagent-state/04-executor/fix-prompt-sample.md（fixture=v153 真实排查产物；九槽位/绝对路径 8 行/单 S-unit/grep 机器验收）+qc-fp-selfcheck.md(QC-FP 6/6,READY)；核心目标达成裁决=solved | covered |
+
 ## 5. 下一步建议
 
-1. **生效验证（新会话）**：重启 ZCode 会话后跑 `Skill(skill="error-fix-prompt-forge")` 或用一次真实排查结果实跑，验证触发与五步流程端到端可用（对象：~/.zcode/skills/error-fix-prompt-forge/SKILL.md）。
-2. **模板沉淀评估（Rule 34.3②）**：variant 目录缺 skill-creation 类型模板；若年内出现第 2 次同类任务（新建顶层 skill），按 34.4 提炼 `skill-creation-type.md` 入库（本次已登记 template-sense）。
-3. **教训固化**：把「Executor=裸注册名、selftest 落位 task-planner/scripts、registry 行用含口径断言」三条写入计划期 checklist（本轮 3 个 P1/级联/统计问题的共同根因都是既有教训未前置消费）。
-4. **遗留清理（非本任务范围，仅呈报）**：plans/INDEX.md 仍有 v152/v154/v155/v156 等 in_progress 任务与 3 个未清理 wt/ worktree（v152/v154/v155）属并行会话资产；另 task-v150 计划文件存在 attest 后修改未重签的流程违规（详见会话终报）。
+1. **生效验证（新会话）**：对象=/home/terry/.zcode/skills/error-fix-prompt-forge/SKILL.md；看点=skill 是否可被 Skill 工具枚举且五步流程端到端可跑；动作=重启 ZCode 会话后用一次真实排查结果（建议取 plans/task-v153-parallel-scheduling/fix-prompts.md 同类产物）实跑验证。
+2. **模板沉淀评估（Rule 34.3②）**：对象=/mnt/data/dev/task-planner-skill/skills/task-planner/templates/variant/；看点=目录中无 skill-creation 类型模板（本次 template-sense 已登记）；动作=年内出现第 2 次同类任务时按 34.4 提炼 skill-creation-type.md 并四点同步。
+3. **教训固化**：对象=/mnt/data/dev/task-planner-skill/plans/task-v157-error-fix-prompt-forge/progress.md Error Log 第 2/4/6 行；看点=Executor 档位后缀致 stats violation、Explore 只读代理代写、部署运行位自保护三条教训；动作=后续任务计划期把「Executor=裸注册名/selftest 落位 task-planner/scripts/registry 含口径断言」写入 checklist。
+4. **遗留清理（非本任务范围，仅呈报）**：对象=/mnt/data/dev/task-planner-skill/plans/INDEX.md 待处理区与 `git worktree list`；看点=v152/v154/v155 三个 wt/ worktree 与 v150 计划 attest 后未重签；动作=由相应对话句/用户决策处置，本任务不越权。
