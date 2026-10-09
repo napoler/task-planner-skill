@@ -87,3 +87,5 @@
   - [06:28-06:38] S15a-g 七批并行派发（anchor-7x 组，68.3 组内同档 haiku-1=advisory WARN 已知）→ 七批全 done（15a 遗留 error-loop:14 头注释 6x 文案按禁改未动备裁；15c 合理适配新增 cntE() 助手 2 行；15g 纠正任务书描述误差[:225 无 1-71 字面，cnt=8≥3 不受影响]）
   - [06:40] 主进程复跑全量：67/67 全绿零 FAIL
 - Error Log 登记见 task_plan.md Errors 区（宽容锚纪元首检 14 FAIL→S15a-g 处置）
+  - [06:50-07:08] S8 code-runner-agent 独立验收跑批（67 脚本逐行 rc 清单+comm 差集覆盖核验）：67/67 PASS，FAIL 分支零触发，与主进程复跑双源一致 ☑（VC-4 达成）
+- [goal:G5] 证据锚（Rule 66.3）：S8 checkpoint 逐行清单（subagent-state/08-code-runner-full-run.md）+主进程复跑 67 P 零 F（07:02 实跑）；基线对照=66 旧脚本全 PASS+新增 selftest-source-anchor-discipline PASS——VC-4 证据齐

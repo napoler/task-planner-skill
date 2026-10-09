@@ -95,7 +95,7 @@ parallel_groups: [anchor-7x]
 | G2 | 规则层 | critical-rules.md 追加 Rule 71 七子条+SKILL.md 四处 | grep 71.1-71.7 锚全命中+1-71×2+C48 | S2,S3/Phase 2 | complete |
 | G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | complete |
 | G4 | 守护层 | 新 selftest 12 断言+registry+级联 18 处+宽容锚 7x 扩展 | selftest exit 0+grep 1-69=0 | S9-S15g/Phase 4 | complete |
-| G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 66/66 PASS | S8/Phase 5 | pending |
+| G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 67/67 PASS（S8 checkpoint+主进程复跑双源） | S8/Phase 5 | complete |
 | G6 | 交付 | CHANGELOG+delivery-summary+合并回主仓+簿记 | delivery-summary 在位+merge commit | Phase 6 | pending |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
@@ -135,7 +135,7 @@ parallel_groups: [anchor-7x]
 n/a（纯执行类——机制建设任务，产出=规则条款/模板/脚本，非调研/归因/评估类结论；对标面=仓内 Rule 68/69 追加先例已在「必要知识储备」表消费）
 
 ## Current Phase
-Phase 5
+Phase 6
 
 ## Next Step
 派 S11（code-assistant haiku-1）级联 requirement-coverage.sh+tool-selection.sh 计数 1-69→1-71
@@ -217,10 +217,10 @@ Phase 5
 | S15g | 宽容锚：reliability-institution（R-09）+workflow-orchestration（WF-10 哨兵族扩容） | code-assistant(haiku-1) | 主进程锚清单（progress.md 06:20 行+本行验收列） | 同上 | 10min | 2f/6l/10min | 无 | S14 | done [parallel-group:anchor-7x] |
 
 ### Phase 5: Testing & Verification
-- [ ] 全量 selftest 跑批（66+1 脚本）对照基线 FAIL=0
-- [ ] VC-1..VC-6 逐条复验并记录 progress.md
+- [x] 全量 selftest 跑批（67 脚本）对照基线 FAIL=0（S8 独立验收 67/67 PASS+主进程复跑一致）
+- [x] VC-1..VC-6 逐条复验并记录 progress.md
 - **V-N:** VC-4, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（haiku-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -264,7 +264,7 @@ Phase 5
 | Phase 2 | ☑ | 2026-10-10 05:20 | S2/S3 done，Phase 2 complete |
 | Phase 3 | ☑ | 2026-10-10 05:36 | S4/S5 done，Phase 3 complete |
 | Phase 4 | ☑ | 2026-10-10 06:38 | S9-S15g 全 done（B 类扩展七批并入），Phase 4 complete |
-| Phase 5 | ☐ |  |  |
+| Phase 5 | ☑ | 2026-10-10 07:08 | S8 done 67/67，Phase 5 complete |
 | Phase 6 | ☐ |  |  |
 
 ## Key Questions
@@ -301,6 +301,7 @@ Phase 5
 | 2026-10-10 05:36 | 主进程自查：Phase 3 产出=dispatch:88-91+findings:6,41+progress:6；与 VC-2/VC-3 对照一致；无范围外文件 | VC-2, VC-3 | ALIGNED（S4/S5 双 verify_done；Phase 3→4 换道前留痕） |
 | 2026-10-10 06:12 | 主进程自查：Phase 4 产出=selftest 52 行 12/12+registry+级联 18 处（S13 预警 40-69 锚失配风险移交 S8 验证）；无范围外文件 | VC-5, VC-6 | ALIGNED（S9-S14 六 done 双 verify_done；Phase 4→5 换道前留痕） |
 | 2026-10-10 06:38 | 主进程自查：S15a-g 七批并行（anchor-7x 组）全 done——宽容锚 7x 纪元扩展 14 文件 ~20 处，主进程复跑全量 67/67 全绿；15a 遗留 error-loop:14 注释文案（禁改未动，备裁）；15c 合理适配 cntE 助手 2 行；无范围外文件 | VC-4, VC-5 | ALIGNED（S15 七 done；S13 预警已被 S15c 处置[40-(65|69|71) 全集宽容化]；Phase 4 complete 翻转留痕） |
+| 2026-10-10 07:08 | 主进程自查：S8 独立验收 67/67 PASS（覆盖 comm 差集空+FAIL 分支零触发），与主进程复跑双源一致；Phase 5 语义=VC-4 达成 | VC-4 | ALIGNED（S8 verify_done ☑；Phase 5→6 换道前留痕） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
