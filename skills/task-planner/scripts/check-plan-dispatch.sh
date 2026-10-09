@@ -411,6 +411,169 @@ if [ "$GOAL_CHECK_SKIP" = 0 ]; then
     fi
 fi
 
+# ── [2026-10-09 task-v153 S4] Rule 68 依赖与并行分组校验段 ──────────────────
+# WHAT: Rule 68 计划期两档校验（插于 66.5 Goal 单元表校验段之后、最终输出判定之前）：
+#   hard 档（走既有 add_violation 管线 → 拒锁 exit 1）：
+#     H1 「前置依赖」列存在性——任一 S-unit 表头须含「前置依赖」字样，S-unit 表存在但缺列即违规；
+#     H2 逐行非空——S-unit 数据行「前置依赖」单元格为空（未显式填 -）即违规；
+#     H3 组标记存在性——frontmatter parallel_groups 声明的每个组名，计划内须有
+#        [parallel-group:<组名>] 标记，声明无成员即违规；
+#     H4 依赖-同组矛盾——行 R「前置依赖」含单元 D，且 R 与 D 同属一组即违规。
+#   advisory 档（echo `[plan-dispatch] WARN …` → 不拒锁）：
+#     W1 组内全同——同组内执行体列值全部相同（提示 68.3 异构分摊）；
+#     W2 组内成员执行体全部为「继承」。
+# WHY: 68.1 前置依赖列空白=计划无效回炉（59.1 硬门同档）；68.2 依赖者与被依赖者禁同组、
+#   组标记承载声明制；68.3 组内异构分摊（同组 subagent_type 或 model 至少一项不同）；
+#   68.6 机器边界如实披露——守卫只消费表内显式字段，不做文件集交集自动推断（分析责任在计划者）。
+# 档位接线: 与 66.5 段三分支口径一致——仅显式 plan_tier: standard|full 执行（hard 拒锁 +
+#   advisory 提示）；mini 档/无标记档整体跳过（legacy/合成夹具兼容，66.5 D2 裁决先例）；
+#   无 S-unit 表的计划整体跳过。全部走既有 add_violation 管线，零新 config 键。
+# awk 状态机: 参照 66.5 段范式（flag 状态机；禁区间 next 坍缩范式——gawk 区间 bug 已知）。
+
+# frontmatter parallel_groups 声明解析（行内 bracket 列表形态，对齐设计稿 `parallel_groups: [g1, g2]`）
+rule68_groups=""
+rule68_pg_line="$(grep -m1 -E '^[[:space:]]*parallel_groups:' "$PLAN_FILE" 2>/dev/null || true)"
+if [ -n "$rule68_pg_line" ]; then
+    rule68_groups="$(printf '%s' "$rule68_pg_line" \
+        | sed -E 's/^[^:]*:[[:space:]]*//; s/^\[//; s/\][[:space:]]*$//' \
+        | tr ',' '\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | grep -v '^$' || true)"
+fi
+
+# 依赖列单元格展开：顿号/逗号分隔 + 同前缀区间（如 S1-S6 → S1 S2 ... S6；H4 消费）
+rule68_expand_deps() {
+    local cell="$1" tok pfx lo hi n out=""
+    cell="${cell//、/ }"; cell="${cell//,/ }"; cell="${cell//，/ }"
+    for tok in $cell; do
+        if [[ "$tok" =~ ^([A-Za-z]+)([0-9]+)-([A-Za-z]+)([0-9]+)$ ]] && [ "${BASH_REMATCH[1]}" = "${BASH_REMATCH[3]}" ]; then
+            pfx="${BASH_REMATCH[1]}"; lo="${BASH_REMATCH[2]}"; hi="${BASH_REMATCH[4]}"
+            if [ "$lo" -le "$hi" ]; then
+                n="$lo"; while [ "$n" -le "$hi" ]; do out="${out} ${pfx}${n}"; n=$(( n + 1 )); done
+            fi
+        else
+            out="${out} ${tok}"
+        fi
+    done
+    printf '%s' "$out"
+}
+
+if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
+    # 抽取各 S-unit 表：表头列位（前置依赖/执行体/并行组）+ 数据行四列 + 行内组标记。
+    # 字段分隔符 = \037（单元分隔符，非空白 → 空单元格不坍缩；tab 属 IFS 空白会坍缩，故不用）。
+    # 输出行：HDR\037dep_idx\037exec_idx\037grp_idx\037表头原文
+    #         ROW\037id\037执行体\037前置依赖\037并行组\037行内组标记
+    rule68_dump="$(awk -F'|' '
+        /^\|[[:space:]]*ID[[:space:]]*\|/ && /执行体/ {
+            in_tbl=1; dep=0; ex=0; gr=0
+            for (i=1;i<=NF;i++) {
+                c=$i; gsub(/^[[:space:]]+|[[:space:]]+$/, "", c)
+                if (c ~ /前置依赖/) dep=i
+                if (c ~ /执行体/)   ex=i
+                if (c ~ /并行组/)   gr=i
+            }
+            printf "HDR\037%d\037%d\037%d\037%s\n", dep, ex, gr, $0
+            next
+        }
+        /^\|[[:space:]]*-+/ { next }
+        in_tbl && /^\|[[:space:]]*[A-Za-z]+[0-9]+[[:space:]]*\|/ {
+            id=$2; gsub(/^[[:space:]]+|[[:space:]]+$/, "", id)
+            ev=""; dv=""; gv=""
+            if (ex>0)  { ev=$ex;  gsub(/^[[:space:]]+|[[:space:]]+$/, "", ev) }
+            if (dep>0) { dv=$dep; gsub(/^[[:space:]]+|[[:space:]]+$/, "", dv) }
+            if (gr>0)  { gv=$gr;  gsub(/^[[:space:]]+|[[:space:]]+$/, "", gv) }
+            mk=""
+            if (match($0, /\[parallel-group:[^]]+\]/)) mk=substr($0, RSTART+16, RLENGTH-17)
+            printf "ROW\037%s\037%s\037%s\037%s\037%s\n", id, ev, dv, gv, mk
+            next
+        }
+        { if (in_tbl && $0 !~ /^[[:space:]]*\|/) in_tbl=0 }
+    ' "$PLAN_FILE" 2>/dev/null || true)"
+
+    if [ -z "$rule68_dump" ]; then
+        :   # 无 S-unit 表（mini/legacy）→ Rule 68 段整体跳过（对齐 66.5「无表整体跳过」口径）
+    else
+        # ── 第一遍：H1（表头列存在性）+ H2（数据行前置依赖非空）+ 收集行数据 ──
+        rule68_rows=""
+        rule68_tbl=0
+        rule68_dep_idx=0; rule68_ex_idx=0; rule68_grp_idx=0
+        while IFS=$'\037' read -r rule68_tag rule68_f1 rule68_f2 rule68_f3 rule68_f4 rule68_f5; do
+            case "$rule68_tag" in
+                HDR)
+                    rule68_tbl=$(( rule68_tbl + 1 ))
+                    rule68_dep_idx="$rule68_f1"; rule68_ex_idx="$rule68_f2"; rule68_grp_idx="$rule68_f3"
+                    if [ "$rule68_dep_idx" -eq 0 ]; then
+                        add_violation "N/A" "Rule 68.1: S-unit 表(第${rule68_tbl}表)缺「前置依赖」列（hard H1）"
+                    fi
+                    ;;
+                ROW)
+                    # f1=id f2=执行体 f3=前置依赖 f4=并行组 f5=行内组标记
+                    if [ "$rule68_dep_idx" -gt 0 ] && [ -z "$rule68_f3" ]; then
+                        add_violation "N/A" "Rule 68.1: 行 ${rule68_f1} 「前置依赖」单元格为空（未显式填 -，hard H2）"
+                    fi
+                    rule68_g="$rule68_f5"
+                    if [ -z "$rule68_g" ] && [ -n "$rule68_f4" ] && [ "$rule68_f4" != "-" ]; then
+                        rule68_g="$rule68_f4"
+                    fi
+                    rule68_rows="${rule68_rows}${rule68_f1}"$'\037'"${rule68_f2}"$'\037'"${rule68_f3}"$'\037'"${rule68_g}"$'\n'
+                    ;;
+            esac
+        done <<< "$rule68_dump"
+
+        # id → 组 映射（H4 依赖-同组矛盾消费）
+        declare -A rule68_id2grp=()
+        while IFS=$'\037' read -r rule68_id rule68_ev rule68_dv rule68_gv; do
+            [ -n "$rule68_id" ] || continue
+            [ -n "$rule68_gv" ] && rule68_id2grp["$rule68_id"]="$rule68_gv"
+        done <<< "$rule68_rows"
+
+        # ── H4 依赖-同组矛盾（行 R 前置依赖含单元 D 且 R 与 D 同组）──
+        while IFS=$'\037' read -r rule68_id rule68_ev rule68_dv rule68_gv; do
+            [ -n "$rule68_id" ] || continue
+            [ -n "$rule68_gv" ] || continue
+            [ -n "$rule68_dv" ] || continue
+            [ "$rule68_dv" = "-" ] && continue
+            for rule68_d in $(rule68_expand_deps "$rule68_dv"); do
+                [ "$rule68_d" = "$rule68_id" ] && continue
+                if [ "${rule68_id2grp[$rule68_d]:-}" = "$rule68_gv" ]; then
+                    add_violation "N/A" "Rule 68.2: 依赖-同组矛盾——行 ${rule68_id} 前置依赖含 ${rule68_d}，且二者同属并行组「${rule68_gv}」（hard H4）"
+                fi
+            done
+        done <<< "$rule68_rows"
+
+        # ── H3 组标记存在性（声明组须有计划内 [parallel-group:<组名>] 标记；全计划 grep 标记集）──
+        while IFS= read -r rule68_g; do
+            [ -n "$rule68_g" ] || continue
+            if ! grep -qF "[parallel-group:${rule68_g}]" "$PLAN_FILE" 2>/dev/null; then
+                add_violation "N/A" "Rule 68.2: parallel_groups 声明组「${rule68_g}」无对应 [parallel-group:${rule68_g}] 标记（hard H3）"
+            fi
+        done <<< "$rule68_groups"
+
+        # ── W1/W2 组内异构（advisory，WARN 不拒锁；68.3）──
+        rule68_glist=""
+        while IFS=$'\037' read -r rule68_id rule68_ev rule68_dv rule68_gv; do
+            [ -n "$rule68_gv" ] || continue
+            case " ${rule68_glist} " in
+                *" ${rule68_gv} "*) ;;
+                *) rule68_glist="${rule68_glist} ${rule68_gv}" ;;
+            esac
+        done <<< "$rule68_rows"
+        for rule68_g in $rule68_glist; do
+            rule68_execs=""
+            while IFS=$'\037' read -r rule68_id rule68_ev rule68_dv rule68_gv; do
+                [ "$rule68_gv" = "$rule68_g" ] && rule68_execs="${rule68_execs}${rule68_ev}"$'\n'
+            done <<< "$rule68_rows"
+            rule68_n="$(printf '%s' "$rule68_execs" | grep -c . || true)"
+            [ "${rule68_n:-0}" -ge 2 ] || continue
+            rule68_inherit="$(printf '%s' "$rule68_execs" | grep -cx '继承' || true)"
+            rule68_uniq="$(printf '%s' "$rule68_execs" | sort -u | grep -c . || true)"
+            if [ "$rule68_inherit" -eq "$rule68_n" ]; then
+                echo "[plan-dispatch] WARN Rule 68.3: 并行组「${rule68_g}」组内成员执行体全部为「继承」（${rule68_n} 成员）— 建议显式具体化执行体并异构分摊（agent 类型或模型档位至少一项不同）"
+            elif [ "$rule68_uniq" -eq 1 ]; then
+                echo "[plan-dispatch] WARN Rule 68.3: 并行组「${rule68_g}」组内全同执行体「$(printf '%s' "$rule68_execs" | head -1)」（${rule68_n} 成员）— 建议组内异构分摊（agent 类型或模型档位至少一项不同）"
+            fi
+        done
+    fi
+fi
+
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 if [ -n "$violation_list" ]; then
     printf '%s' "$violation_list"

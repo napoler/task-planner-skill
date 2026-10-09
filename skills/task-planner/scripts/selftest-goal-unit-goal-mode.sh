@@ -16,7 +16,7 @@
 #     · scripts/check-complete.sh（终验对照，G-06）:
 #         G-06 `goal-gate` 输出前缀锚 ≥1 + `[goal:G` grep 逻辑锚 ≥1
 #     · selftest-registry.tsv（登记行，G-07）:
-#         G-07 末行含 `selftest-goal-unit-goal-mode.sh`
+#         G-07 含 `selftest-goal-unit-goal-mode.sh` 数据行（含断言，防跨任务追加登记行打破末行口径）
 #     · config.json（零新键声明，G-08）:
 #         G-08 properties 键名中 `goal[_-](unit|gate|advance)` =0（零新 config 键负断言）
 #     · 钉值联动（G-09）:
@@ -101,11 +101,13 @@ n="$(grep -cE 'goal-gate' "$SKILL_ROOT/scripts/check-complete.sh" || true)"
 grep_logic="$(grep -cE '\[goal:G' "$SKILL_ROOT/scripts/check-complete.sh" || true)"
 if [ "$n" -ge 1 ] && [ "$grep_logic" -ge 1 ]; then ok 06 "check-complete.sh 'goal-gate' 锚=$n（≥1）+ '[goal:G' grep 锚=$grep_logic（≥1）"; else bad 06 "check-complete.sh 'goal-gate' 锚=$n（应 ≥1）/ '[goal:G' grep 锚=$grep_logic（应 ≥1）"; fi
 
-# G-07 selftest-registry.tsv 末行含 `selftest-goal-unit-goal-mode.sh`
-# What：断言 registry 末行登记本脚本。
+# G-07 selftest-registry.tsv 含 `selftest-goal-unit-goal-mode.sh` 数据行
+# What：断言 registry 中存在登记本脚本的数据行（2026-10-09 健壮化：末行口径改含口径——
+# 现象=v153 按仓约定追加新 selftest 登记行后本断言末行口径被跨任务打破复跑 FAIL；
+# 根因=末行钉口径与 registry 纯增量追加约定冲突；修法=含数据行同义断言，编号与 Total 不变）。
 # Why：selftest-registry.tsv 是全部 selftest 脚本的登记账本；新脚本必须登记以形成闭环。
-last_line="$(tail -1 "$REGISTRY" || true)"
-if printf '%s\n' "$last_line" | grep -q 'selftest-goal-unit-goal-mode.sh'; then ok 07 "selftest-registry.tsv 末行含 selftest-goal-unit-goal-mode.sh"; else bad 07 "selftest-registry.tsv 末行=$last_line（应含 selftest-goal-unit-goal-mode.sh）"; fi
+row="$(grep 'selftest-goal-unit-goal-mode.sh' "$REGISTRY" || true)"
+if [ -n "$row" ]; then ok 07 "selftest-registry.tsv 含 selftest-goal-unit-goal-mode.sh 数据行"; else bad 07 "selftest-registry.tsv 未含 selftest-goal-unit-goal-mode.sh 数据行"; fi
 
 # G-08 config.json 零新键负断言：properties 键名中 `goal[_-](unit|gate|advance)` =0
 # What：断言 config.json properties 键名中不存在 goal-unit/goal-gate/goal-advance 相关新键。

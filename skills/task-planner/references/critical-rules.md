@@ -858,3 +858,19 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 66.5 **模板区块承载与 mini 豁免（template carriage）**：「🎯 Goal 单元表」=general 模板区块（插入位=「🎯 核心目标达成裁决」后、「⚠️ 执行范围限制」前）；mini-lite 模板按 38.3 区块白名单声明豁免（未加区块不构成违约）；check-plan-dispatch.sh attest 期对 standard/full 档做区块存在性+六列+验证方式列非空机械校验，缺失=拒锁（59.1 硬门同档；--skip-goal-check 逃生口对齐 --skip-dispatch-check 惯例，登记 Decisions）；档位判定：显式 plan_tier: standard/full 才执行硬拒锁；无标记计划=缺省档跳过（legacy/合成夹具兼容口径，主进程 2026-10-09 D2 裁决）；mini 豁免。
 
 66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。
+
+### 68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律（2026-10-09 task-v153，目标：计划初期显式分析依赖→推导并行分组→组内异构 agent/模型分摊→组内更新防错乱，可并行者并行加速、有依赖者串行逐个击破）
+
+68.1 **计划期强制依赖分析（plan-time dependency analysis）**：S-unit 表定稿后、attest 前，对全部 S-unit 过独立性四问静态版（21.4 四问的计划期口径）——①写集相交（scope_files 交集非空）②资源相争（同部署位/分支/交付物/计划文件锚点/额度窗口）③输入依赖他者产出（本单元输入=他单元输出路径或其产物内容）④验收依赖他者结果（本单元验收证据取自他单元产物）。分析结论显式落 S-unit 表「前置依赖」列（无依赖显式填 `-`，多依赖顿号分隔、引用被依赖单元 ID）；未做分析或该列空白=计划无效回炉（59.1 硬门同档）；分析过程在计划内留痕（依赖分析注记/design 稿引用），禁口头心算（54.5 决策依据落盘）。
+
+68.2 **并行分组推导（group derivation）**：`parallel_groups` 声明必须由 68.1 依赖分析推导——同组成员两两四问全 no 才可入组；「前置依赖」非空者禁止与其被依赖者同组（68.6 hard 档机器可校验）；组间按依赖拓扑排序，前组未齐验收不得派后组（21.4 组间串行语义不变，不回退）；未声明组=串行（21.4 默认不回退）。分组目标=在依赖约束下最大化并行度：优先把经四问判定独立的单元划入同一批准组，杜绝「全计划默认串行」的惰性分组。
+
+68.3 **组内异构分摊（heterogeneous allocation）**：同一并行组内成员的执行体 subagent_type 或 model 档位至少一项互不相同；整组「继承」同一 Phase Executor 禁止——并行组内成员的执行体列必须逐行具体化。43.2 最小可承载档位优先级高于异构：禁止为追求异构而升档/降档；同档可承载时优先按 agent 类型差异实现异构（专用体/通用体分工），模型档位差异其次。依据（如实披露）：把所有并行子任务交给单一模型=资源消耗不可控（dynamic-workflows schema 级实证：其 subagent_model 为 run 级单一字段、agent() 无 per-task 模型/类型覆盖——SKILL.md:115,960-963,1023），异构分摊将并行负载分散到不同 agent/模型档位。
+
+68.4 **组域写隔离与状态一致性（group write isolation）**：组内成员只写三类目标——自己检查点（22.8 subagent-state）、findings.md 追加小节（22.4a 契约）、自己 scope_files；计划三文件（task_plan/findings/progress/verification）的状态列、Subagent Handoff 表、Lane 表一律由主进程**按组串行回写**（单写者原则 49.4② 推广到通用 S-unit）。推进序=成员完成→组批验收（22.5 三证据）→主进程统一翻状态（含 [goal:Gn] 证据行，66.3 联动）；禁止组内并行成员直接 Edit 计划三文件（check-delegation 既有拦截为主、68.6 advisory 检测为辅）；跨组状态变更经主进程协调，任何成员不得代表他组翻格。目标=整段并行运行时状态更新不错乱。
+
+68.5 **借鉴 workflow 编排三要点（parallel playbook）**：先收窄再 fan-out（派发前用 Explore/grep 把候选集收窄到可指名文件集，禁对未收窄全集并行派发——dynamic-workflows patterns.md:45-54 同源）；唯一 join 原则（每并行组仅一个汇合点=组批验收或 Aggregator Phase，禁多 barrier 使最慢成员卡住全组后续——SK.md:321-345 同源）；结果即落盘（成员每完成一里程碑立即写检查点，中途被杀不丢产出——22.8 检查点纪律在并行语境的重申）。
+
+68.6 **守卫（guard）**：check-plan-dispatch.sh 计划期扩展两档——hard 档（拒锁）：组标记存在性（frontmatter `parallel_groups` 每个组名在 S-unit 表内有对应 `[parallel-group:<组名>]` 标记行）、依赖-同组矛盾（「前置依赖」列非空的行与其被依赖行同组）、「前置依赖」列存在且逐行非空（无依赖显式 `-`）；advisory 档（WARN 不拒锁）：组内执行体全同（同组内 `subagent_type(model)` 列全部相同→提示异构化）、组内成员执行体全部「继承」。机器边界如实披露：守卫只消费表内显式字段，不做文件集交集自动推断（68.1 分析责任在计划者）；串行槽仍为全局单锁、组间串行为 21.4 既有语义（`{组名: ts}` 富锁升级=已登记后续任务项，非本条范围）。
+
+68.7 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4/66.6 零新键纪律）；机器面=check-plan-dispatch.sh 计划期两档校验 + scripts/selftest-parallel-scheduling.sh 静态守护（68.1-68.7 子条锚 / 模板「前置依赖」列锚 / SKILL 摘要行 / C46 合规行 / registry 登记行 / 零新键负断言 / 21.4 语义未回退负断言）+ selftest-registry.tsv 登记；合规清单 C46（SKILL.md 消费侧）；模板承载=templates/task_plan.md S-unit 表「前置依赖」列（68.1 消费面）；模式库承载=split-pattern-library.md P12 依赖分批并行。
