@@ -31,3 +31,7 @@
 {"rule":63,"status":"landed","task_id":"task-v147-research-first","ts":"2026-10-08","note":""}
 {"rule":65,"status":"reserved","task_id":"task-v149-skill-alignment-audit","ts":"2026-10-08","note":"恢复 v142 周期性回顾条款（v141 撞号文本丢失，按 critical-rules:676 仲裁先例重编号；task-v149）"}
 {"rule":65,"status":"landed","task_id":"task-v149-skill-alignment-audit","ts":"2026-10-09","note":""}
+{"rule":67,"status":"reserved","task_id":"task-v152-proactive-context","ts":"2026-10-09","note":""}
+{"rule":68,"status":"reserved","task_id":"task-v153-parallel-scheduling","ts":"2026-10-09","note":"计划期依赖分析与并行分组+组内异构 agent/模型分摊（借鉴 dynamic-workflows 并行策略，纠正单模型缺陷）；66=v151 在途(漏声明)、67=v152 已占"}
+{"rule":66,"status":"reserved","task_id":"task-v151-goal-mode","ts":"2026-10-09","note":"task-v151 goal 单元固化与 /goal 驱动推进纪律（attest new_rule 解析因计划回炉重写未自动登记，手动补登）"}
+{"rule":66,"status":"landed","task_id":"task-v151-goal-mode","ts":"2026-10-09","note":""}
