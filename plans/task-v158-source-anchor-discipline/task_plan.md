@@ -205,7 +205,7 @@ Phase 4
 | S10 | registry.tsv 登记+worktree 幂等重 reserve 71 | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §五 SA-11（登记行格式，参考既有行） | registry.tsv 新行在；rule-reserve check 71 输出含本任务 | 5min | 2f/3l/5min | 无 | S9 | done |
 | S11 | 级联 1-69→1-71：requirement-coverage.sh（4 处）+tool-selection.sh（3 处） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §六（grep 实锚法） | 两文件 grep 1-69 命中 0；diff 仅计数标签行 | 10min | 2f/7l/10min | 无 | S2 | done |
 | S12 | 级联：self-resolution.sh（3 处）+lane-advancement.sh（3 处） | code-assistant(haiku-1) | 同 §六 | 同上（两文件 1-69 清零） | 10min | 2f/6l/10min | 无 | S2 | done |
-| S13 | 级联：research-first.sh（2 处）+仓根 CLAUDE.md 33 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 同上（两文件清零；CLAUDE 行为 1-68 基线） | 10min | 2f/3l/10min | 无 | S2 | pending |
+| S13 | 级联：research-first.sh（2 处）+仓根 CLAUDE.md 33 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 同上（两文件清零；CLAUDE 行为 1-68 基线） | 10min | 2f/3l/10min | 无 | S2 | done |
 | S14 | 级联：README_zh.md 136 与 229 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 该两行 1-68 清零且为 1-71 | 5min | 1f/2l/5min | 无 | S2 | pending |
 
 ### Phase 5: Testing & Verification
