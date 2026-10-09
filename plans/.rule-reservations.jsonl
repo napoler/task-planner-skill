@@ -40,3 +40,4 @@
 {"rule":68,"status":"landed","task_id":"task-v153-parallel-scheduling","ts":"2026-10-10","note":""}
 {"rule":71,"status":"reserved","task_id":"task-v158-source-anchor-discipline","ts":"2026-10-10","note":"无源不写·空段占位·写必带锚纪律（制度化 v153 fix-prompts A/B/C：写入前五问+三态溯源审计+派发防幻觉契约+模板占位合法化）"}
 {"rule":69,"status":"landed","task_id":"task-v154-decision-arbiter","ts":"2026-10-10","note":""}
+{"rule":70,"status":"landed","task_id":"task-v155-report-approvability","ts":"2026-10-10","note":""}
