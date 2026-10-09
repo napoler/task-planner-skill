@@ -91,7 +91,7 @@ plan_tier: standard
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 基线复验 | 独立子代理复验级联面/编号/部署位基线并回填 findings | findings.md §3/§5 有 explore 复验行+锚 | S1/Phase 1 | complete |
-| G2 | 规则层 | critical-rules.md 追加 Rule 71 七子条+SKILL.md 四处 | grep 71.1-71.7 锚全命中+1-71×2+C48 | S2,S3/Phase 2 | pending |
+| G2 | 规则层 | critical-rules.md 追加 Rule 71 七子条+SKILL.md 四处 | grep 71.1-71.7 锚全命中+1-71×2+C48 | S2,S3/Phase 2 | complete |
 | G3 | 模板层 | dispatch §10 契约段+findings/progress 占位注释 | grep 三锚+四锚 | S4,S5/Phase 3 | pending |
 | G4 | 守护层 | 新 selftest 12 断言+registry+19 处级联 | selftest exit 0+grep 1-69=0 | S9-S14/Phase 4 | pending |
 | G5 | 回归 | 全量 selftest FAIL=0 对照基线 | 跑批 log 66/66 PASS | S8/Phase 5 | pending |
@@ -134,10 +134,10 @@ plan_tier: standard
 n/a（纯执行类——机制建设任务，产出=规则条款/模板/脚本，非调研/归因/评估类结论；对标面=仓内 Rule 68/69 追加先例已在「必要知识储备」表消费）
 
 ## Current Phase
-Phase 2
+Phase 3
 
 ## Next Step
-attest 本计划后派 S2（code-assistant haiku-1）追加 critical-rules.md Rule 71
+派 S4（code-assistant haiku-1）向 subagent_dispatch.md 插 §10 防幻觉契约段
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 | Phase | 命中工具面（40.1 六类） | 选择理由 |
@@ -168,16 +168,16 @@ attest 本计划后派 S2（code-assistant haiku-1）追加 critical-rules.md Ru
 | S1 | 独立复验：级联 1-69 分布/Rule 71 编号 free/C48 占用/部署位 ~/.zcode 现状 | explore(haiku-1) | plans/task-v158-…/findings.md §2-§5（既有快照+锚，子代理逐条复核并回填差异行） | findings.md 回填"复验"行：四处结论与 grep/命令输出一致或差异已标注 | 15min | 1f/30l/15min | 无 | - | done |
 
 ### Phase 2: 规则层实施
-- [ ] critical-rules.md 文末追加 Rule 71 七子条（design §一原文）
-- [ ] SKILL.md 四处（详见行 1-69→1-71+Rule 71 bullet+C48 行+References 行）
+- [x] critical-rules.md 文末追加 Rule 71 七子条（design §一原文）
+- [x] SKILL.md 四处（详见行 1-69→1-71+Rule 71 bullet+C48 行+References 行）
 - **V-N:** VC-1, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S2 | critical-rules.md 文末追加 Rule 71 七子条（design §一 逐字） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §一（Rule 71 全文 ~95 行） | grep 子条锚（### 71 及 71.1 至 71.7）全命中；git diff 零删除既有行 | 15min | 1f/95l/15min | 无 | S1 | pending |
-| S3 | SKILL.md 四处改动（详见行计数+Rule 71 bullet+C48 行+References 行，design §二） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §二（4 处精确稿） | grep 计数标签 1-71 命中 2 处以上；C48 行与 bullet 行均在；diff 仅 4 处 | 15min | 1f/12l/15min | 无 | S2 | pending |
+| S2 | critical-rules.md 文末追加 Rule 71 七子条（design §一 逐字） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §一（Rule 71 全文 ~95 行） | grep 子条锚（### 71 及 71.1 至 71.7）全命中；git diff 零删除既有行 | 15min | 1f/95l/15min | 无 | S1 | done |
+| S3 | SKILL.md 四处改动（详见行计数+Rule 71 bullet+C48 行+References 行，design §二） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §二（4 处精确稿） | grep 计数标签 1-71 命中 2 处以上；C48 行与 bullet 行均在；diff 仅 4 处 | 15min | 1f/12l/15min | 无 | S2 | done |
 
 ### Phase 3: 模板层实施
 - [ ] subagent_dispatch.md §9 后插 §10 防幻觉契约段（design §三原文）
@@ -253,7 +253,7 @@ attest 本计划后派 S2（code-assistant haiku-1）追加 critical-rules.md Ru
 | Phase | Todo 已建 | 最近同步时间 | 备注 |
 |-------|-----------|--------------|------|
 | Phase 1 | ☑ | 2026-10-10 05:08 | S1 done；Phase 1 complete |
-| Phase 2 | ☐ |  |  |
+| Phase 2 | ☑ | 2026-10-10 05:20 | S2/S3 done，Phase 2 complete |
 | Phase 3 | ☐ |  |  |
 | Phase 4 | ☐ |  |  |
 | Phase 5 | ☐ |  |  |
@@ -288,6 +288,7 @@ attest 本计划后派 S2（code-assistant haiku-1）追加 critical-rules.md Ru
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-10 05:08 | 主进程自查：目标=Rule 71 制度化三载体+守护；当前步=Phase 1 基线复验 complete；scope=worktree 内 6 类目标文件+簿记 | VC-1..7 | ALIGNED（无漂移；Phase 1→2 换道前留痕，Rule 64.2） |
+| 2026-10-10 05:20 | 主进程自查：Phase 2 产出=critical-rules.md:888-902+SKILL.md 四处；与 Goal/VC-1/VC-5 对照一致；无范围外文件 | VC-1, VC-5 | ALIGNED（S2/S3 双 verify_done；Phase 2→3 换道前留痕） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
@@ -299,9 +300,9 @@ attest 本计划后派 S2（code-assistant haiku-1）追加 critical-rules.md Ru
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-10 04:55 | explore(haiku-1) | S1 基线独立复验（级联/编号/C48/插入位 4 项） | done | 4/4 PASS；仓根 3 处仍 1-68（主进程快照有误已修正 design §六）；worktree 台账无 71 行（S10 幂等重 reserve 处置） | subagent-state/01-explore-baseline-reverify.md 汇总段 | findings.md #### [sub:01-explore] 段 | 同左 | - / 0 / ☑ |
+| 2 | 2026-10-10 05:12 | code-assistant(haiku-1) | S2 critical-rules.md 追加 Rule 71 七子条 | done | 4/4 PASS：:888 标题+71.1-71.7 全在；diff +16/-0 纯追加（69.6 后）；轻微同义措辞偏差语义无漂移 | critical-rules.md:888-902 | findings.md（S2 未写 findings 段，返回 none，结论以 checkpoint 为准） | subagent-state/02-code-assistant-rule71.md | - / 0 / ☑ |
+| 3 | 2026-10-10 05:18 | code-assistant(haiku-1) | S3 SKILL.md 四处（详见行/bullet/C48/References） | done | 5/5 PASS：:225 C48/:287 详见行 1-71/:347 bullet/:370 References 1-71（原 1-66 实锚纠偏已披露）；1-69 残留=0；C47/68/69 零改动 | SKILL.md:225,287,347,370 | findings.md #### [sub:03-code] 段 | subagent-state/03-code-assistant-skill-md.md | - / 0 / ☑ |
 
 ## 🔁 模板感知
 <!-- template_type: general -->

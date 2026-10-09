@@ -74,6 +74,14 @@
 3. C48：SKILL.md:224 C47 行含 Rule 69，C48 零命中——C47 已占用、C48 空闲，PASS。
 4. dispatch 插入位：subagent_dispatch.md §9 在 :85，§10 不存在——现有段落止于 §9，可插入，PASS。
 
+#### [sub:03-code] SKILL.md 登记面 4 处改动实况（S-unit 03）
+
+1. 详见行实锚=SKILL.md:287（非 design 假设的 1-69 全文形态）：原为「Critical Rules 1-69（含 Rule 40-69 全集…」，已行内替换为 1-71/40-71，括注尾部插「/ Rule 71 无源不写·空段占位·写必带锚纪律」（与 design-rule71.md §二.1 一致）。
+2. Rule 71 摘要 bullet 插入位=Rule 68 bullet 后、Rule 69 bullet 前（现 :347，与 design-rule71.md:34 逐字一致）。
+3. C48 合规清单行插入位=C47 行后（现 :225，与 design-rule71.md:38 逐字一致）。
+4. **差异披露**：design §二.4 称 References 行「1-69→1-71」，实测 SKILL.md:370 该行计数标签为 **1-66**（v154 合入时未演进该行），为全文件除 :287 外唯一另一处计数标签——按 design「以 Edit 时 grep 实锚为准」指令改至 1-71。
+5. 验收 5/5：grep -c "1-71"=2（:287/:370）；"Rule 71（无源不写"命中 1；"| C48 |"命中 1；git diff --numstat 仅 SKILL.md 4/2（deletions=2 均为行内替换旧行）；C47(:224)/Rule 68(:346)/Rule 69(:348) 原文零改动；grep -c "1-69"=0。
+
 ## Technical Decisions
 | Decision | Rationale |
 |----------|-----------|
