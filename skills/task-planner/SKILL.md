@@ -70,6 +70,7 @@ model: opus
 
 - [ ] **计划确认**
   - 展示 `task_plan.md`（含 Phase 列表 + Verification Contract 表）给用户
+  - 呈报规格（Rule 70）：展示计划时必须附计划文件绝对路径+待审项清单（Phase 序列即清单，逐项一句话目标）+看点（VC 表与隔离决策）+动作（批准/驳回/修改）
   - **门控**：等待用户显式 `"yes"` — 无授权禁止执行；确认后立即 `bash scripts/attest-plan.sh` 锁定，其内置 `check-plan-dispatch.sh` 校验派发型 Phase 是否已规划子代理（S-unit 执行体列，Rule 22.6/25.1；缺失拒绝锁定，`--skip-dispatch-check` 逃生）
   - **交互模式（Rule 28）**：ask 模式保持本门控，且按 **28.2.1** 在计划全文之后口头复述「大体执行思路」（≤5 行：Phase 序列与一句话目标 / 执行体与模型档位 / 关键门控 D2-D6 与失败兜底路径 / 隔离与合并策略 / 交付节奏与终验方式），使不查计划文档也知大体工作流程——复述是补充，不替代等待显式 yes，复述完成登记 Decisions Made（`思路复述已呈示,<时间>`）；silent 模式本门控自动通过——计划照常 `bash scripts/attest-plan.sh` 锁定后直接执行，无需等待确认；计划全文落盘可查，交付报告须附「静默决策清单」（Decisions Made 表 `silent:` 前缀行）供用户复核；模式解析优先级 env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > config.json > 默认 ask，用户会话中口头切换优先于一切
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号时在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`），冲突时按 `next` 建议改号。
@@ -103,6 +104,7 @@ model: opus
   - 64.1 留痕三件套（Rule 64）：返回 30s 内 ① 检查点（61.2 既有）② `ledger-append.sh <plan-dir> drift_check "<verdict>+一句话" --phase N` ③ task_plan.md Drift Log 表一行——缺任一=未执行，64.2 门控按未执行拦截
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
   - `drift-checker` 为只读检测执行体，发现 BLOCKED 时必须等用户明确决策后再继续
+  - 呈报规格（Rule 70）：阻塞报告必须含①阻塞项清单+一句话简介②对象文件绝对路径③看点（哪条证据/哪个偏差）④动作选项+默认项（轻呈报≥②③）
 
 ### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
 
@@ -148,6 +150,7 @@ model: opus
     5. 输出 `CHANGES_REQUESTED` → 自动追加 fix-phase → 回到执行循环
   - **门控**：`code-review` 输出 `APPROVED` 才允许进入终验交付；否则阻断
   - **失败处理**：`fix-phase` 失败 3 次 → `AskUserQuestion` 决策（继续/停止/降级）；交互模式语义见 Rule 28（ask=选项化询问并回填 Decisions；silent=按推荐项自主处置并登记 `silent:` 决策行，D6 硬停点除外）
+  - 呈报规格（Rule 70）：审查结果面向用户呈报时必须附①审查对象文件清单（绝对路径）③看点（verdict+关键发现行号）④动作（修复/放行+默认项）
 
 - [ ] **终验交付**
   - Read `verification.md`
@@ -245,6 +248,7 @@ model: opus
 **技能文件修改保守化（Rule 36 — task-v079）**：任何技能文件写操作（36.1 范围）先过 36.2 归因前置门——执行期失败/异常禁止拿「改技能」当第一补救，归因指向技能本体且用户显式要求才可提案；修改前按 36.3 建删除基线产出删除性行为清单，功能性删除/语义改写按 36.4 交用户逐项确认（D6 级，silent 亦不可跳过），默认 36.5 纯增量；新守卫 check-skill-modify.sh 挂 pretooluse 对主进程与子代理一致生效（skill_modify_enforce 默认 warn）。完整条款见 `references/critical-rules.md` Rule 36。
 **新增任务边界判定（Rule 8.1 — task-v087）**：用户新指令与当前计划 Goal/范围/交付物均无关联 = **D 类新任务**——先判 D 再判 A/B/C：开新计划目录（init-session 全流程），旧计划原样保留（不标 superseded，区别于 C 类）；禁止把不相干指令在当前计划上下文照做（A）或扩进当前计划范围（B）——不相干内容混入既有 task_plan.md 是三文件污染与终验失焦的首要来源。判定依据 = 当前 task_plan.md 三要素（Goal + scope_files/执行范围 + 交付物）；指令与当前目标有关联（哪怕影响小）回退 A 类；无活跃计划时 D 类 N/A（天然开新计划）。判定落 notepad-learnings.md 一行 + Decisions Made。完整条款见 `references/critical-rules.md` 8.1。
 - 每次 B/C 类变更 → `Decisions Made` 表记一行（指令→变更）+ progress.md 记录
+- 呈报规格（Rule 70）：变更确认必须逐项列变更文件绝对路径+变更一句话简介+看点（新旧对比锚点）+动作（确认/回退+默认项）
 - B/C 类处理完必须再派发 `drift-checker` 偏移检查（Rule 61 载体）
 - 配套提醒：UserPromptSubmit hook 在指令到达时注入 `[plan-note]` 判定提示（有活跃计划时）
 
