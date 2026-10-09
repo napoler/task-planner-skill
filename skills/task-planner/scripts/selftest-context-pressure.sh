@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# selftest-context-pressure.sh — Rule 67 上下文压力主动评估与会话交接纪律静态守护
+# task-v152 P3-S5
+# 2026-10-09 task-v152 新建（design-draft.md §1 67.6 断言面 + §4#7 registry 行范式）
+# 断言 ID：CP-01 到 CP-09
+# 全 PASS exit 0; 任一 FAIL exit 1
+# 只读，不修改任何文件
+
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+CRIT="$SKILL_ROOT/references/critical-rules.md"
+CONFIG="$SKILL_ROOT/config.json"
+REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
+SKILL_MD="$SKILL_ROOT/SKILL.md"
+HANDOFF="$SKILL_ROOT/templates/session-handoff.md"
+POSTTOOLUSE="$SCRIPT_DIR/zcode-posttooluse.sh"
+
+PASS=0
+FAIL=0
+
+ok() {
+  echo "$1 PASS $2"
+  PASS=$((PASS + 1))
+}
+
+bad() {
+  echo "$1 FAIL $2"
+  FAIL=$((FAIL + 1))
+}
+
+# CP-01: 六子条锚 critical-rules ^67.[1-6] =6
+count=$(grep -cE '^67\.[1-6] ' "$CRIT")
+if [ "$count" -eq 6 ]; then
+  ok "CP-01" "六子条锚=6"
+else
+  bad "CP-01" "六子条锚=$count≠6"
+fi
+
+# CP-02: 主动评估>=2 ∧ 主动优化>=1 于 critical-rules
+c1=$(grep -c '主动评估' "$CRIT")
+c2=$(grep -c '主动优化' "$CRIT")
+if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ]; then
+  ok "CP-02" "主动评估=$c1≥2 ∧ 主动优化=$c2≥1"
+else
+  bad "CP-02" "主动评估=$c1 主动优化=$c2"
+fi
+
+# CP-03: HEALTHY/PRESSURE/CONFUSED 各>=1 于 critical-rules ∧ hook 文件交叉断言>=1
+c1=$(grep -c 'HEALTHY' "$CRIT")
+c2=$(grep -c 'PRESSURE' "$CRIT")
+c3=$(grep -c 'CONFUSED' "$CRIT")
+c4=$(grep -cE 'HEALTHY|PRESSURE|CONFUSED' "$POSTTOOLUSE")
+if [ "$c1" -ge 1 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ]; then
+  ok "CP-03" "HEALTHY=$c1 PRESSURE=$c2 CONFUSED=$c3 hook=$c4≥1"
+else
+  bad "CP-03" "HEALTHY=$c1 PRESSURE=$c2 CONFUSED=$c3 hook=$c4"
+fi
+
+# CP-04: 「不等 Phase complete」语义锚 ∈ critical-rules
+if grep -q '不等 Phase complete' "$CRIT"; then
+  ok "CP-04" "「不等 Phase complete」语义锚存在"
+else
+  bad "CP-04" "「不等 Phase complete」语义锚缺失"
+fi
+
+# CP-05: session-handoff.md 五段标题各=1 ∧ session-catchup>=1 ∧ plan-resume>=1 ∧ 62.1>=1
+c1=$(grep -c '^## 1\. 目标锚' "$HANDOFF")
+c2=$(grep -c '^## 2\. 已完成与证据' "$HANDOFF")
+c3=$(grep -c '^## 3\. 当前断点' "$HANDOFF")
+c4=$(grep -c '^## 4\. 未决问题' "$HANDOFF")
+c5=$(grep -c '^## 5\. 新会话恢复指令' "$HANDOFF")
+c6=$(grep -c 'session-catchup' "$HANDOFF")
+c7=$(grep -c 'plan-resume' "$HANDOFF")
+c8=$(grep -c '62\.1' "$HANDOFF")
+if [ "$c1" -eq 1 ] && [ "$c2" -eq 1 ] && [ "$c3" -eq 1 ] && [ "$c4" -eq 1 ] && [ "$c5" -eq 1 ] && [ "$c6" -ge 1 ] && [ "$c7" -ge 1 ] && [ "$c8" -ge 1 ]; then
+  ok "CP-05" "五段各=1 ∧ session-catchup=$c6 ∧ plan-resume=$c7 ∧ 62.1=$c8"
+else
+  bad "CP-05" "五段=$c1/$c2/$c3/$c4/$c5 catchup=$c6 resume=$c7 62.1=$c8"
+fi
+
+# CP-06: bash -n zcode-posttooluse.sh 通过 ∧ TASK_PLANNER_CONTEXT_PRESSURE>=2 ∧ [context-pressure]>=1 ∧ emit 计数=常量基线
+# hook emit 总数基线=12，本任务 hook 接线前后实测；变更须同步此常量与注释
+emit_expect=12
+bash -n "$POSTTOOLUSE" 2>/dev/null
+bn_ok=$?
+c1=$(grep -c 'TASK_PLANNER_CONTEXT_PRESSURE' "$POSTTOOLUSE")
+c2=$(grep -c '\[context-pressure\]' "$POSTTOOLUSE")
+emit_now=$(grep -c 'emit ' "$POSTTOOLUSE")
+if [ "$bn_ok" -eq 0 ] && [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ] && [ "$emit_now" -eq "$emit_expect" ]; then
+  ok "CP-06" "bash -n OK ∧ env=$c1≥2 ∧ [context-pressure]=$c2 ∧ emit=$emit_now==$emit_expect"
+else
+  bad "CP-06" "bn=$bn_ok env=$c1 cp=$c2 emit=$emit_now/expect=$emit_expect"
+fi
+
+# CP-07: SKILL 短串 1-67=3 ∧ 整串 Critical Rules 1-67>=2 ∧ C46>=1 ∧ 1-65=0
+c1=$(grep -c '1-67' "$SKILL_MD")
+c2=$(grep -c 'Critical Rules 1-67' "$SKILL_MD")
+c3=$(grep -c 'C46' "$SKILL_MD")
+c4=$(grep -c '1-65' "$SKILL_MD")
+if [ "$c1" -eq 3 ] && [ "$c2" -ge 2 ] && [ "$c3" -ge 1 ] && [ "$c4" -eq 0 ]; then
+  ok "CP-07" "1-67=$c1=3 ∧ CR1-67=$c2≥2 ∧ C46=$c3≥1 ∧ 1-65=$c4=0"
+else
+  bad "CP-07" "1-67=$c1 CR1-67=$c2 C46=$c3 1-65=$c4"
+fi
+
+# CP-08: registry 尾行含 selftest-context-pressure ∧ TAB 4 列
+last_line=$(tail -1 "$REGISTRY")
+if echo "$last_line" | grep -q 'selftest-context-pressure'; then
+  cols=$(echo "$last_line" | awk -F'\t' '{print NF}')
+  if [ "$cols" -eq 4 ]; then
+    ok "CP-08" "registry 尾行含 selftest-context-pressure ∧ 4 列"
+  else
+    bad "CP-08" "registry 尾行列数=$cols≠4"
+  fi
+else
+  bad "CP-08" "registry 尾行不含 selftest-context-pressure"
+fi
+
+# CP-09: jq '.properties|length' config.json =42
+props=$(jq '.properties|length' "$CONFIG" 2>/dev/null)
+if [ "$props" -eq 42 ]; then
+  ok "CP-09" "config properties=$props=42"
+else
+  bad "CP-09" "config properties=$props≠42"
+fi
+
+printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
+exit $((FAIL > 0))

@@ -30,6 +30,7 @@
 #   任一面被后续裁剪误删即 FAIL 报警（防复发，Rule 31.5 消费侧）。
 #   产出背景：本脚本由主进程按 25.3 白名单⑤（22.3 兜底接管，单文件 ≤300 行）编写——前两轮 executor 派发
 #   因 RF-07 断言规格过度指定推理空转零产出（Rule 7 两败换道判例），RF-07 已修正为双锚。
+# [2026-10-09 task-v152 Rule 67 落地] '1-65'→'1-67'：Rule 67 已由 task-v152 落地，锚同步演进
 
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -69,8 +70,8 @@ quart "RF-04 63.2 四步检索链词齐备"                          "$B62" '本
 pair "RF-05 63.4 有理有据边界(编造+not-solved)"             "$(_words '编造' "$B64")" "$(_words 'not-solved' "$B64")"
 
 # ── SKILL.md 消费侧 ──
-ge   "RF-06 SKILL 1-65 计数≥3(三处联动)"                   "$(cnt '1-65' "$SKILL")" 3  # 2026-10-08 task-v149 Rule 65 落地演进
-pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-65 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-65（含 Rule 40-65 全集' "$SKILL")"  # 2026-10-08 task-v149 Rule 65 落地演进
+ge   "RF-06 SKILL 1-67 计数≥3(三处联动)"                   "$(cnt '1-67' "$SKILL")" 3  # 2026-10-09 task-v152 Rule 67 落地演进
+pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-67 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-67（含 Rule 40-67 全集' "$SKILL")"  # 2026-10-09 task-v152 Rule 67 落地演进
 ge   "RF-08 SKILL C44 合规行含 Rule 63"                     "$(cnt '^| C44 .*Rule 63' "$SKILL")" 1
 
 # ── templates 派发契约载体 ──

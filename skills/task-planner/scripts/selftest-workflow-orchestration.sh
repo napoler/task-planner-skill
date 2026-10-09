@@ -65,12 +65,13 @@ if grep -qF 'dynamic-workflows（用户显式点名' "$SKILLMD"; then ok 09 "SKI
 # [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
 # [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
 # [2026-10-08 task-v149 Rule 65 落地演进] '1-64'→'1-65'：Rule 65 已由 task-v149 落地，锚同步演进
+# [2026-10-09 task-v152 Rule 67 落地] '1-65'→'1-67'：Rule 67 已由 task-v152 落地，四索引文档锚同步演进
 cnt=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
-  if [ -f "$f" ]; then c="$(grep -c 'Critical Rules 1-65' "$f" || true)"; c2="$(grep -c '1-65' "$f" || true)"; cnt=$((cnt + c + c2)); fi
+  if [ -f "$f" ]; then c="$(grep -c 'Critical Rules 1-67' "$f" || true)"; c2="$(grep -c '1-67' "$f" || true)"; cnt=$((cnt + c + c2)); fi
 done
 oldres="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"; oldres2="$(grep -c 'Rules 1-45' "$SKILLMD" || true)"; oldres=$((oldres + oldres2))
-if [ "$cnt" -ge 3 ] && [ "$oldres" -eq 0 ]; then ok 10 "4 索引文档 'Critical Rules 1-65'+'1-65' 命中总和 $cnt ≥3 且 SKILL.md 旧 1-39/1-45 变体 0"; else bad 10 "1-65 族命中总和 $cnt <3 或 SKILL.md 旧 1-39/1-45 残留 $oldres（应 0）"; fi
+if [ "$cnt" -ge 3 ] && [ "$oldres" -eq 0 ]; then ok 10 "4 索引文档 'Critical Rules 1-67'+'1-67' 命中总和 $cnt ≥3 且 SKILL.md 旧 1-39/1-45 变体 0"; else bad 10 "1-67 族命中总和 $cnt <3 或 SKILL.md 旧 1-39/1-45 残留 $oldres（应 0）"; fi
 # WF-11 4 索引文档 "Rules 1-38" 残留 =0（同 WF-10 口径；critical-rules.md 内 1 处历史描述不在范围）
 res=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
