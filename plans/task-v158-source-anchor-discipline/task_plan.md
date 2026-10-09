@@ -137,7 +137,7 @@ n/a（纯执行类——机制建设任务，产出=规则条款/模板/脚本�
 Phase 4
 
 ## Next Step
-派 S9（code-assistant haiku-1）新建 selftest-source-anchor-discipline.sh（SA-01..12）
+派 S11（code-assistant haiku-1）级联 requirement-coverage.sh+tool-selection.sh 计数 1-69→1-71
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 | Phase | 命中工具面（40.1 六类） | 选择理由 |
@@ -202,7 +202,7 @@ Phase 4
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S9 | 新建 selftest 脚本（SA-01..12 断言，≤95 行紧凑实现） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §五（断言清单） | bash selftest-source-anchor-discipline.sh 输出 exit 0（脚本先可容缺 registry 行再补） | 15min | 1f/95l/15min | 无 | S2,S4,S5 | pending |
-| S10 | registry.tsv 登记+worktree 幂等重 reserve 71 | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §五 SA-11（登记行格式，参考既有行） | registry.tsv 新行在；rule-reserve check 71 输出含本任务 | 5min | 2f/3l/5min | 无 | S9 | pending |
+| S10 | registry.tsv 登记+worktree 幂等重 reserve 71 | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §五 SA-11（登记行格式，参考既有行） | registry.tsv 新行在；rule-reserve check 71 输出含本任务 | 5min | 2f/3l/5min | 无 | S9 | done |
 | S11 | 级联 1-69→1-71：requirement-coverage.sh（4 处）+tool-selection.sh（3 处） | code-assistant(haiku-1) | plans/task-v158-source-anchor-discipline/design-rule71.md §六（grep 实锚法） | 两文件 grep 1-69 命中 0；diff 仅计数标签行 | 10min | 2f/7l/10min | 无 | S2 | pending |
 | S12 | 级联：self-resolution.sh（3 处）+lane-advancement.sh（3 处） | code-assistant(haiku-1) | 同 §六 | 同上（两文件 1-69 清零） | 10min | 2f/6l/10min | 无 | S2 | pending |
 | S13 | 级联：research-first.sh（2 处）+仓根 CLAUDE.md 33 行（1-68→1-71） | code-assistant(haiku-1) | 同 §六 | 同上（两文件清零；CLAUDE 行为 1-68 基线） | 10min | 2f/3l/10min | 无 | S2 | pending |
