@@ -368,15 +368,18 @@ Phase 9（全部 complete）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-10 | explore | 全触点呈报缺口审计 | done | ~30 触点缺口+零机器守护+金标准单点确认 | findings.md#触点审计 | Research Findings/触点审计 | （探索类无检查点，结论已回填 findings） | - / 0 / ☑ |
-| 2 | 2026-10-10 | executor | S1 Rule 70 条文 | done | 条文 26 行逐字落位，70.1-70.6 全在 | critical-rules.md:861-885 | #### [sub:1-executor] | plans/task-v155-report-approvability/subagent-state/1-executor.md | - / 0 / ☑ |
+| 2 | 2026-10-10 | executor | S1 Rule 70 条文 | done | 条文 26 行逐字落位，70.1-70.6 全在 | critical-rules.md:888 起 | #### [sub:1-executor] | plans/task-v155-report-approvability/subagent-state/1-executor.md | - / 0 / ☑ |
 | 3 | 2026-10-10 | executor | S2 SKILL 接线 | done | 五处接线（:9/:165/:220/:341/:365），+5/-2 | SKILL.md:341 | #### [sub:2-executor] | plans/task-v155-report-approvability/subagent-state/2-executor.md | - / 0 / ☑ |
-| 4 | | | S3 SKILL 触点指针 | queued | | | | plans/task-v155-report-approvability/subagent-state/3-code-assistant.md | - / 0 / ☐ |
-| 5 | | | S4 reference+worktree 触点 | queued | | | | plans/task-v155-report-approvability/subagent-state/4-code-assistant.md | - / 0 / ☐ |
-| 6 | | | S5-S7 模板触点 | queued | | | | plans/task-v155-report-approvability/subagent-state/5-code-assistant.md | - / 0 / ☐ |
-| 7 | | | S8-S11 管线触点 | queued | | | | plans/task-v155-report-approvability/subagent-state/8-code-assistant.md | - / 0 / ☐ |
-| 8 | | | S12-S15 机器守护 | queued | | | | plans/task-v155-report-approvability/subagent-state/12-executor.md | - / 0 / ☐ |
-| 9 | | | S16 全量回归 | queued | | | | plans/task-v155-report-approvability/subagent-state/16-code-runner.md | - / 0 / ☐ |
-| 10 | | | S18/S19 双审查 | queued | | | | plans/task-v155-report-approvability/subagent-state/18-code-reviewer.md | - / 0 / ☐ |
+| 4 | 2026-10-10 | code-assistant | S3 SKILL 触点指针 | done | 四触点 Rule 70 指针行（:73/:107/:153/:251），+4/-0 | SKILL.md:73 | #### [sub:3-code-assistant] | plans/task-v155-report-approvability/subagent-state/3-code-assistant.md | - / 0 / ☑ |
+| 5 | 2026-10-10 | code-assistant | S4 reference+worktree 触点 | done | reference:234+worktree-isolation 4 处（:12/:27/:81/:87） | reference.md:234 | #### [sub:4-code-assistant] | plans/task-v155-report-approvability/subagent-state/4-code-assistant.md | - / 0 / ☑ |
+| 6 | 2026-10-10 | code-assistant | S5-S7 模板触点 | done | task_plan×3/batch_report/variant×2 六处（S5-S7 三个单元） | task_plan.md:100/:135/:337 | #### [sub:5..7-code-assistant] | plans/task-v155-report-approvability/subagent-state/{5,6,7}-code-assistant.md | - / 0 / ☑ |
+| 7 | 2026-10-10 | code-assistant | S8-S11 管线触点 | done | batch-gate+3/companion×3+review-library×3 十处 | batch-quality-gate.md:30 | #### [sub:8..11-code-assistant] | plans/task-v155-report-approvability/subagent-state/{8,9,10,11}-code-assistant.md | - / 0 / ☑ |
+| 8 | 2026-10-10 | executor | S12-S15 机器守护 | done | RRV selftest 215 行+report-lint+registry 登记+计数钉核查 | check-complete.sh:948 | #### [sub:12..15-executor] | plans/task-v155-report-approvability/subagent-state/{12,13,14,15}-executor.md | - / 0 / ☑ |
+| 9 | 2026-10-10 | code-runner-agent | S16 全量回归 | done | Round1 62/65→S17a/b 修 4 级联→Round2/4/6 65→67 全绿 | progress.md#Phase7 | #### [sub:16/16b-code-runner] | plans/task-v155-report-approvability/subagent-state/{16,16b,17a,17b}-*.md | - / 0 / ☑ |
+| 10 | 2026-10-10 | code-reviewer | S18 代码面审查 | done | CHANGES_REQUESTED 2 项→S20 修复（空输入守卫+RRV-07 双锚） | check-complete.sh:988 | #### [sub:18-code-reviewer] | plans/task-v155-report-approvability/subagent-state/{18,20}-*.md | - / 0 / ☑ |
+| 11 | 2026-10-10 | general-purpose | S19 对齐面审查（22.3① 改派载体同型） | done | CHANGES_REQUESTED 2 项→S20b/c/d 修复闭环 | SKILL.md:287 | #### [sub:19-align-reviewer] | plans/task-v155-report-approvability/subagent-state/19-align-reviewer.md | 22.3①改派 / 0 / ☑ |
+| 12 | 2026-10-10 | general-purpose | 每 Phase 偏移检查（drift-checker haiku 拒→22.3① 改派） | done | P2-P9 全程 ALIGNED，8 检查点 | subagent-state/drift-phase*.md | Research Findings/新投诉归因 | plans/task-v155-report-approvability/subagent-state/drift-phase2..8.md | 22.3①改派 / 0 / ☑ |
+| 13 | 2026-10-10 | executor | 合并冲突并集解（U1-U4） | done | 6 冲突文件并集解+RRV-04 内容锚化；Round6 67/67 全绿 | git log 619c848 | #### [sub:u1..u4-executor] | plans/task-v155-report-approvability/subagent-state/u{1,2,3,4}-*.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置
 不适用（chain_mode: single，单 skill 任务，区块删除合规）。
