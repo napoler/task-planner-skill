@@ -5,7 +5,7 @@
 #   WF-01..06 critical-rules.md Rule 39 条款锚（头 + 39.1/39.3/39.4/39.5 + 39.6 机制+零新 config 键）
 #   WF-07..09 SKILL.md 联动（Rule 39 摘要行 + C27 清单项 + 协同路由 dynamic-workflows 行）
 #   WF-10/11  4 索引文档（SKILL.md/CLAUDE.md/README_zh.md/skills/task-planner/README.md）
-#             新锚 'Critical Rules 1-65'+'1-65' 变体族命中总和 ≥3，且 SKILL.md 旧 'Rules 1-39/1-45' 变体残留 =0；
+#             新锚 'Critical Rules 1-68'+'1-68' 变体族命中总和 ≥3，且 SKILL.md 旧 'Rules 1-39/1-45' 变体残留 =0；
 #             "Rules 1-38" 残留 =0（仓内 CLAUDE/README_zh 按
 #             SKILL_ROOT/../.. 解析；部署位上跳路径缺失时该文件计 0 不 FAIL，仅对存在文件求和；
 #             critical-rules.md 38.5 条款内 1 处历史描述不在 WF-11 检查范围）
@@ -59,18 +59,19 @@ if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD"; then ok 07 "SKILL.md R
 if grep -qF '| C27 |' "$SKILLMD"; then ok 08 "SKILL.md C27 清单项"; else bad 08 "SKILL.md 缺 C27 行"; fi
 # WF-09 SKILL.md 协同路由 dynamic-workflows 行
 if grep -qF 'dynamic-workflows（用户显式点名' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
-# WF-10 4 索引文档 新锚 1-65 族（'Critical Rules 1-65' + '1-65' 变体）命中总和 ≥3
+# WF-10 4 索引文档 新锚 1-68 族（'Critical Rules 1-68' + '1-68' 变体）命中总和 ≥3
 #       且 SKILL.md 旧 'Rules 1-39'/'Rules 1-45' 变体残留 =0（文件缺失计 0 不 FAIL，仅对存在文件求和）
 # [2026-10-08 task-v144 合并级联] 旧口径 'Rules 1-39+1-45 总和 ≥6' 随 SKILL.md 锚演进 1-62 同步（LA-12 范式）
 # [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
 # [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
 # [2026-10-08 task-v149 Rule 65 落地演进] '1-64'→'1-65'：Rule 65 已由 task-v149 落地，锚同步演进
+# [2026-10-09 task-v153 级联（CR F7）] '1-65'→'1-68'：Rule 66（goal 单元固化，v151 已落 master）与 Rule 68（本任务）已落地，67 为 v152 在途预留不列名，四索引文档计数行同步 1-68
 cnt=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
-  if [ -f "$f" ]; then c="$(grep -c 'Critical Rules 1-65' "$f" || true)"; c2="$(grep -c '1-65' "$f" || true)"; cnt=$((cnt + c + c2)); fi
+  if [ -f "$f" ]; then c="$(grep -c 'Critical Rules 1-68' "$f" || true)"; c2="$(grep -c '1-68' "$f" || true)"; cnt=$((cnt + c + c2)); fi
 done
 oldres="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"; oldres2="$(grep -c 'Rules 1-45' "$SKILLMD" || true)"; oldres=$((oldres + oldres2))
-if [ "$cnt" -ge 3 ] && [ "$oldres" -eq 0 ]; then ok 10 "4 索引文档 'Critical Rules 1-65'+'1-65' 命中总和 $cnt ≥3 且 SKILL.md 旧 1-39/1-45 变体 0"; else bad 10 "1-65 族命中总和 $cnt <3 或 SKILL.md 旧 1-39/1-45 残留 $oldres（应 0）"; fi
+if [ "$cnt" -ge 3 ] && [ "$oldres" -eq 0 ]; then ok 10 "4 索引文档 'Critical Rules 1-68'+'1-68' 命中总和 $cnt ≥3 且 SKILL.md 旧 1-39/1-45 变体 0"; else bad 10 "1-68 族命中总和 $cnt <3 或 SKILL.md 旧 1-39/1-45 残留 $oldres（应 0）"; fi
 # WF-11 4 索引文档 "Rules 1-38" 残留 =0（同 WF-10 口径；critical-rules.md 内 1 处历史描述不在范围）
 res=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
