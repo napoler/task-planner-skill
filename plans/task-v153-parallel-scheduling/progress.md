@@ -168,6 +168,8 @@
   | [goal:G8] 编号锚 | rule-reserve check 68 | landed | landed | PASS |
   | R5 合并态回归 | 65 脚本 | ΣFAIL=0 | 65/65 rc=0 ΣFAIL=0 | PASS |
 
+[skill-modify] 无功能性删除：本任务对 skills/task-planner/** 的全部改动=纯追加（Rule 68 条款/守卫段/selftest/CHANGELOG 条目/P12/示例节）+同义级联改写（计数 1-66→1-68、ID 命名、理由编号化、词序还原、断言末行→含口径），无任何既有条款语义删除或功能移除（Rule 36.3/36.4 确认：无删除性行为清单，唯一语义级改写=statistically 同义的级联与健壮化，逐项已在 CR 审查与 Decisions Made 登记）。
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

@@ -33,3 +33,19 @@
 - 对象=scripts/check-dispatch.sh serial_slot_check：看点=全局单锁；动作=富锁 {组名:ts} 使独立组可同波并行（68.2 边界演进）
 - 对象=~/.zcode/agents/plan-writer.md frontmatter：看点=custom:9e221f47... sonnet-1 reasoning-missing；动作=用户授权后补 reasoning 档或换 provider
 - docs/1 指针：验证方式=检查 /mnt/data/dev/task-planner-skill/CHANGELOG.md [Unreleased] 首条=v153 条目；看点=变更记录三要素齐全
+
+---
+
+## 📋 需求覆盖核对表（Rule 51.3/51.4 终验交付态）
+
+| R | 覆盖 VC | 状态 | 证据 |
+|---|---------|------|------|
+| R1 | VC-1, VC-2 | covered | 68.1 条款（worktree/仓 critical-rules.md:862 起）+S-unit 表「前置依赖」列+守卫 H1/H2 |
+| R2 | VC-1, VC-7 | covered | 68.2 条款+H4 依赖-同组矛盾 hard 门（夹具 rc=1 原文）+本计划三组依赖推导 |
+| R3 | VC-4, VC-5 | covered | selftest-parallel-scheduling.sh 9/9+全量回归 R2-R5 65/65 ΣFAIL=0 |
+| R4 | VC-1, VC-6 | covered | findings §A A4 schema 级实证（SKILL.md:115/960-963/1023 引证）+68.3 条款+SKILL.md 级联 |
+| R5 | VC-1, VC-7 | covered | 68.3+本计划组内三 provider 混派（longcat/agnes×2）实证 |
+| R6 | VC-3, VC-4 | covered | 守卫两档+CR 两轮+p3-core 并行 6min vs 串行预估 ~40min 对照 |
+| R7 | VC-1, VC-7 | covered | 68.4 组域写隔离+本计划组域协议行+每批量域隔离核验 |
+
+让步：无（R1-R7 全 covered）。
