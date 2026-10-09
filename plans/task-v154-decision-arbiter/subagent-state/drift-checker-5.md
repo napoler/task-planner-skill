@@ -1,0 +1,11 @@
+# Drift Checkpoint — drift-checker-5
+- 时间：2026-10-10（Phase 5 complete 触发点，Rule 15.1/64.3 节奏点）
+- 触发点：Phase complete（Phase 5 合并回+部署+清理）
+- 判定：ALIGNED
+- 证据：
+  - git log: HEAD=5280cb3 Merge branch 'wt/v154-decision-arbiter'（合并回在位）
+  - git status --short -- skills → 空（禁碰面无写入）
+  - git worktree list → v154 已清理；v152/v155/v157/v158 并行位保留（未误清）
+  - git branch wt/* → v154 已删；其余并行分支保留
+  - progress.md Phase 5 complete 段与近期动作摘要逐项吻合（merge 5280cb3/AC-04 PASS 9/9/DA 16/16/diff=0/land 69/原子换位）
+- 建议：Phase 5 可标 complete，进 Phase 6 终验（check-complete.sh+VC 逐条复验+Rule 58.5 三态裁决）

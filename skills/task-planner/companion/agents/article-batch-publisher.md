@@ -75,6 +75,7 @@ color: '#E63946'
 - ✅ 仅允许 `skip_gates` 逐项声明，每项 skip 必须带 `reason` 字段（理由为空 = 视为未声明，门控照常执行）
 - 分项枚举: `originality` / `cover_whitelist` / `seo_length` / `brand_injection`
 - 跳过单元 ≥ 批次总数 10% → 必须停下 AskUserQuestion 重审,禁止静默继续
+（呈报按 Rule 70 四要素：单元清单+路径+看点+动作）
 
 **双采样抽检（Rule 18.2 强制,批次 ≥10 篇）**:
 1. 运行前: 随机抽 2 篇完整走一遍门控(ground truth),任一 FAIL → 整批熔断,禁止继续
@@ -88,6 +89,7 @@ color: '#E63946'
 4. **并发控制**: 使用 asyncio.Semaphore 或 ThreadPool
 5. **调用**: `api_client.py posts update --site {site} --id {id} --article-dir {dir}`(分项 skip 仅在 `options.skip_gates` 声明时逐项传,禁止全局 `--skip-quality-gate`)
 6. **失败率监控**: 累计 failure_rate,>5% → STOP 报告用户;>20% → 自动熔断 + 回滚到 backup(Rule 18.3)
+   （呈报按 Rule 70 四要素：单元清单+路径+看点+动作）
 7. **重试**: 失败自动重试最多 3 次（指数退避）
 8. **回滚**: 若更新后验证失败，自动恢复到备份
 9. **运行后抽检**: 随机抽 10% GET 回读验证(Rule 18.2)
