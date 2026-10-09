@@ -9,7 +9,8 @@
 #         RRV-02 四要素词（待审项清单/可定位地址/看点/动作）各≥1
 #         RRV-03 Rule 70 段内 `:\s?[0-9]+` 行号引用形态=0（防级联漂移，v148 判例）
 #     · SKILL.md（消费侧联动，RRV-04）:
-#         RRV-04 `Rule 70` ≥4 且 `C46` ≥1（C46 行含「待审项清单」与「可定位地址」字样）
+#         RRV-04 `Rule 70` ≥4 且 合规行内容锚「用户呈报可审批性」≥1（该行含「待审项清单」与「可定位地址」字样）
+#                —— 合规行内容锚（用户呈报可审批性），未来编号让位不再级联（2026-10-10 task-v155 合并并集 cardinality 教训）
 #     · 13 触点文件清单（RRV-05）:
 #         RRV-05 逐一 grep "Rule 70" ≥1，任一缺失=FAIL
 #     · registry + config（RRV-06，常驻 FAIL 档）:
@@ -100,16 +101,21 @@ else
     bad "RRV-03" "Rule 70 段行号引用形态命中=$RRV03_HITS"
 fi
 
-# ── RRV-04: SKILL 接线锚（Rule 70≥4 C46≥1 含四要素）──
+# ── RRV-04: SKILL 接线锚（Rule 70≥4 + 合规行内容锚「用户呈报可审批性」含四要素）──
+# What: 原以绝对编号定位 Rule 70 合规行（绝对编号锚），现改为内容锚——取 `^| C<digits> |`
+#       合规行中含「用户呈报可审批性」的那行作为 Rule 70 合规行锚，再在该行断言四要素词。
+# Why（合规行内容锚（用户呈报可审批性），未来编号让位不再级联——2026-10-10 task-v155 合并并集 cardinality 教训）:
+#   根因：合并并集后 Rule 70 合规行的绝对编号位被并行任务（Rule 68/69）占用，合规行整体让位（现为 C48 行）；
+#   绝对编号锚随编号后移必级联误报，故改内容锚（用户呈报可审批性），编号让位不再级联。
 RRV04_RULE70=$(cnt "Rule 70" "$SKILL")
-RRV04_C46=$(cnt "C46" "$SKILL")
-C46_LINE=$(grep -e '^| C46 ' "$SKILL" 2>/dev/null || true)
-RRV04_C46_LIST=$(printf '%s' "$C46_LINE" | grep -c "待审项清单" 2>/dev/null || true)
-RRV04_C46_ADDR=$(printf '%s' "$C46_LINE" | grep -c "可定位地址" 2>/dev/null || true)
-if [ "$RRV04_RULE70" -ge 4 ] && [ "$RRV04_C46" -ge 1 ] && [ "$RRV04_C46_LIST" -ge 1 ] && [ "$RRV04_C46_ADDR" -ge 1 ]; then
-    ok "RRV-04" "SKILL 接线锚(Rule 70≥4 C46≥1 含四要素)"
+# 内容锚：取所有 `^| C<digits> |` 合规行中含「用户呈报可审批性」的那行作为 Rule 70 合规行锚
+RRV04_LINE=$(grep -e '^| C[0-9]* |' "$SKILL" 2>/dev/null | grep "用户呈报可审批性" 2>/dev/null || true)
+RRV04_LIST=$(printf '%s' "$RRV04_LINE" | grep -c "待审项清单" 2>/dev/null || true)
+RRV04_ADDR=$(printf '%s' "$RRV04_LINE" | grep -c "可定位地址" 2>/dev/null || true)
+if [ "$RRV04_RULE70" -ge 4 ] && [ "$RRV04_LIST" -ge 1 ] && [ "$RRV04_ADDR" -ge 1 ]; then
+    ok "RRV-04" "SKILL 接线锚(Rule 70≥4 合规行内容锚含四要素)"
 else
-    bad "RRV-04" "SKILL 接线锚(got Rule70=$RRV04_RULE70 C46=$RRV04_C46 list=$RRV04_C46_LIST addr=$RRV04_C46_ADDR)"
+    bad "RRV-04" "SKILL 接线锚(got Rule70=$RRV04_RULE70 list=$RRV04_LIST addr=$RRV04_ADDR)"
 fi
 
 # ── RRV-05 13 触点文件 Rule 70 锚齐备 ──

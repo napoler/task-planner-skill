@@ -859,6 +859,32 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 
 66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。
 
+### 68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律（2026-10-09 task-v153，目标：计划初期显式分析依赖→推导并行分组→组内异构 agent/模型分摊→组内更新防错乱，可并行者并行加速、有依赖者串行逐个击破）
+
+68.1 **计划期强制依赖分析（plan-time dependency analysis）**：S-unit 表定稿后、attest 前，对全部 S-unit 过独立性四问静态版（21.4 四问的计划期口径）——①写集相交（scope_files 交集非空）②资源相争（同部署位/分支/交付物/计划文件锚点/额度窗口）③输入依赖他者产出（本单元输入=他单元输出路径或其产物内容）④验收依赖他者结果（本单元验收证据取自他单元产物）。分析结论显式落 S-unit 表「前置依赖」列（无依赖显式填 `-`，多依赖顿号分隔、引用被依赖单元 ID）；未做分析或该列空白=计划无效回炉（59.1 硬门同档）；分析过程在计划内留痕（依赖分析注记/design 稿引用），禁口头心算（54.5 决策依据落盘）。
+
+68.2 **并行分组推导（group derivation）**：`parallel_groups` 声明必须由 68.1 依赖分析推导——同组成员两两四问全 no 才可入组；「前置依赖」非空者禁止与其被依赖者同组（68.6 hard 档机器可校验）；组间按依赖拓扑排序，前组未齐验收不得派后组（21.4 组间串行语义不变，不回退）；未声明组=串行（21.4 默认不回退）。分组目标=在依赖约束下最大化并行度：优先把经四问判定独立的单元划入同一批准组，杜绝「全计划默认串行」的惰性分组。
+
+68.3 **组内异构分摊（heterogeneous allocation）**：同一并行组内成员的执行体 subagent_type 或 model 档位至少一项互不相同；整组「继承」同一 Phase Executor 禁止——并行组内成员的执行体列必须逐行具体化。43.2 最小可承载档位优先级高于异构：禁止为追求异构而升档/降档；同档可承载时优先按 agent 类型差异实现异构（专用体/通用体分工），模型档位差异其次。依据（如实披露）：把所有并行子任务交给单一模型=资源消耗不可控（dynamic-workflows schema 级实证：其 subagent_model 为 run 级单一字段、agent() 无 per-task 模型/类型覆盖——SKILL.md:115,960-963,1023），异构分摊将并行负载分散到不同 agent/模型档位。
+
+68.4 **组域写隔离与状态一致性（group write isolation）**：组内成员只写三类目标——自己检查点（22.8 subagent-state）、findings.md 追加小节（22.4a 契约）、自己 scope_files；计划三文件（task_plan/findings/progress/verification）的状态列、Subagent Handoff 表、Lane 表一律由主进程**按组串行回写**（单写者原则 49.4② 推广到通用 S-unit）。推进序=成员完成→组批验收（22.5 三证据）→主进程统一翻状态（含 [goal:Gn] 证据行，66.3 联动）；禁止组内并行成员直接 Edit 计划三文件（check-delegation 既有拦截为主、68.6 advisory 检测为辅）；跨组状态变更经主进程协调，任何成员不得代表他组翻格。目标=整段并行运行时状态更新不错乱。
+
+68.5 **借鉴 workflow 编排三要点（parallel playbook）**：先收窄再 fan-out（派发前用 Explore/grep 把候选集收窄到可指名文件集，禁对未收窄全集并行派发——dynamic-workflows patterns.md:45-54 同源）；唯一 join 原则（每并行组仅一个汇合点=组批验收或 Aggregator Phase，禁多 barrier 使最慢成员卡住全组后续——dynamic-workflows SKILL.md:321-345 同源）；结果即落盘（成员每完成一里程碑立即写检查点，中途被杀不丢产出——22.8 检查点纪律在并行语境的重申）。
+
+68.6 **守卫（guard）**：check-plan-dispatch.sh 计划期扩展两档——hard 档（拒锁）：组标记存在性（frontmatter `parallel_groups` 每个组名在 S-unit 表内有对应 `[parallel-group:<组名>]` 标记行）、依赖-同组矛盾（「前置依赖」列非空的行与其被依赖行同组）、「前置依赖」列存在且逐行非空（无依赖显式 `-`）；advisory 档（WARN 不拒锁）：组内执行体全同（同组内 `subagent_type(model)` 列全部相同→提示异构化）、组内成员执行体全部「继承」。机器边界如实披露：守卫只消费表内显式字段，不做文件集交集自动推断（68.1 分析责任在计划者）；串行槽仍为全局单锁、组间串行为 21.4 既有语义（`{组名: ts}` 富锁升级=已登记后续任务项，非本条范围）。
+
+68.7 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4/66.6 零新键纪律）；机器面=check-plan-dispatch.sh 计划期两档校验 + scripts/selftest-parallel-scheduling.sh 静态守护（68.1-68.7 子条锚 / 模板「前置依赖」列锚 / SKILL 摘要行 / C46 合规行 / registry 登记行 / 零新键负断言 / 21.4 语义未回退负断言）+ selftest-registry.tsv 登记；合规清单 C46（SKILL.md 消费侧）；模板承载=templates/task_plan.md S-unit 表「前置依赖」列（68.1 消费面）；模式库承载=split-pattern-library.md P12 依赖分批并行。
+### 69 判断裁决子代理化与驳回打回纪律（P0 — task-v154，目标：主进程遇判断类问题（方案终裁/失败定级/验收争议/DRIFT 处置/CR 分歧）时以强模型独立裁决出口取代硬决，并以驳回打回闭环保证裁决被执行；判定面=LLM 行为+selftest 静态守护，零新 config 键；衔接 Rule 15/22.3/22.4/22.5/41/42/61，既有 Rules 原文零改动）
+
+> 定位（Rule 69）：判断类问题的强模型独立裁决出口 + 驳回打回闭环——主进程「拿不准」时委派 decision-arbiter（GLM-5.3 强档）出唯一裁决，REJECT-REWORK 态按驳回单强制返工，禁止静默继续原方向。
+
+- **69.1 触发场景与管辖二分**：六触发点矩阵（T1 计划期方案终裁=43.3 候选对比 ≥2 候选方案难决；T2 兜底链换道裁决=Rule 22.3 五档兜底（改派/拆细/降档/接管）选择拿不准；T3 子代理失败复核定级=failed/FAIL 是真缺陷还是误报、严重度与返工路径；T4 验收完成度争议=22.5 三证据与子代理自报 done 冲突时独立仲裁；T5 DRIFT 处置裁决=drift-checker 判 DRIFT 后「警觉继续 vs 立即返工」拿不准，不替代检测本体；T6 CR 分歧与终验边界=CHANGES_REQUESTED 意见接受度/PARTIAL-COMPLETE 边界拿不准）。豁免清单（防滥用）：trivial 机械判断（41.3 主进程直做）/偏移检测本体（61 载体 drift-checker）/代码审查本体（42 族）/G1-G4 直接升级场景（41.2）。管辖二分：判断类裁决出口唯一=decision-arbiter；偏移检测=drift-checker；产物挑刺=critic；自我纠偏=meta-corrector；规划升级=complex-planner。四类场景主进程拿不准时**应委派** arbiter 独立裁决，禁止硬决或直接 AskUser——AskUser 是 G 门槛与 arbiter 裁决之后的出口。
+- **69.2 委派契约**：按 Rule 22.4 九字段模板派发，增补 arbiter 专用字段=争议点一句+双方声称摘要（≤5 行）+证据材料包（路径清单）+引用判据提示（VC 条目/规则锚/用户目标原话）；prompt ≤3000 字符（21.1b 沿用）；检查点=`<plan-dir>/subagent-state/{seq}-decision-arbiter.md`（22.8 命名沿用）；执行体=decision-arbiter 伴随 agent（GLM-5.3 强档，companion/agents/decision-arbiter.md）；SKILL.md 路由表「判断/裁决」行同步（接线在 task-v154 S5 落地）。单次独立派发：每争议一次裁决，同题重裁须附新证据。
+- **69.3 裁决消费协议（驳回打回闭环）**：四态=APPROVE/REJECT-REWORK/ESCALATE-USER/INSUFFICIENT-EVIDENCE（与 agent 文件字面一致）。**REJECT-REWORK 强制返工**：主进程收到该裁决必须在 progress.md 登记 `[arbiter-reject]` 行（含裁决指针+严重度）并按驳回单五要素执行返工，禁止静默继续原方向（违者按 Rule 26 降质处置）。ESCALATE-USER 消费=主进程转 AskUserQuestion/STOP（不自行代答）；INSUFFICIENT-EVIDENCE 消费=按补充取证清单补证后重新派发；APPROVE 附带放行条件时条件须逐条验证后才可继续。消费动作留痕：progress.md 每次裁决消费记一行（裁决态/驳回单指针/返工结果）。
+- **69.4 驳回单五要素（REJECT-REWORK 态必附）**：①问题定位（file:line 级精确锚）/②违反判据（VC 条目编号或规则锚或用户目标原话引用）/③第一手证据（命令输出关键行或文件行摘录，禁转述）/④严重度（BLOCKER=阻断交付/MAJOR=须返工/MINOR=可登记后续）/⑤建议返工路径（可执行动作+验收判据）——五要素齐备主代理方可直接执行返工（可定位性对齐 Rule 48 精神）；缺任一要素=裁决无效，主进程按 INSUFFICIENT-EVIDENCE 处理并要求补全
+- **69.5 强模型档与经济性边界**：执行体固定=decision-arbiter 伴随 agent（`companion/agents/decision-arbiter.md`，model=`account:zai-individual-coding-plan/GLM-5.3`，thoughtLevel enabled——判断质量依赖推理深度，对齐 complex-planner 强档先例，禁降档改判，frontmatter 为 truth source）；经济性边界=低频重推理定位——每争议单次独立派发、禁驻留循环裁决、同题重裁须附新证据；高频轻量判定（对齐性检查等）不适用本 Rule（走 Rule 61 drift-checker haiku 档），防止强模型预算被机械判定挤占（Rule 17 成本纪律衔接）
+- **69.6 机制**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=scripts/selftest-decision-arbiter.sh 静态守护（agent 文件锚/Rule 69 六子条锚/SKILL 路由表与触发点锚/覆盖矩阵行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C47（SKILL.md 合规检查清单同步增行；C46 由并行任务 task-v153 先行占用，本任务避让改号，cite=SKILL.md:224）；触发点标记消费面=SKILL.md 执行流程六处（T1-T6 对应位置「→ 委派 decision-arbiter 裁决（Rule 69）」式标记，S5 落地）
+
 ## Rule 70（用户呈报可审批性纪律 — task-v155）
 
 > **呈报** = 工作流中一切请求用户审批/审查/确认/复核或向用户知情通报的输出点。本条全工作流适用；交付总结（最重呈报形态）契约仍以 Rule 48 + templates/delivery-summary.md 为权威源，本条不重复定义。

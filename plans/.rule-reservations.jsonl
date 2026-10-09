@@ -35,3 +35,8 @@
 {"rule":68,"status":"reserved","task_id":"task-v153-parallel-scheduling","ts":"2026-10-09","note":"计划期依赖分析与并行分组+组内异构 agent/模型分摊（借鉴 dynamic-workflows 并行策略，纠正单模型缺陷）；66=v151 在途(漏声明)、67=v152 已占"}
 {"rule":66,"status":"reserved","task_id":"task-v151-goal-mode","ts":"2026-10-09","note":"task-v151 goal 单元固化与 /goal 驱动推进纪律（attest new_rule 解析因计划回炉重写未自动登记，手动补登）"}
 {"rule":66,"status":"landed","task_id":"task-v151-goal-mode","ts":"2026-10-09","note":""}
+{"rule":69,"status":"reserved","task_id":"task-v154-decision-arbiter","ts":"2026-10-10","note":""}
+{"rule":70,"status":"reserved","task_id":"task-v155-report-approvability","ts":"2026-10-10","note":""}
+{"rule":68,"status":"landed","task_id":"task-v153-parallel-scheduling","ts":"2026-10-10","note":""}
+{"rule":71,"status":"reserved","task_id":"task-v158-source-anchor-discipline","ts":"2026-10-10","note":"无源不写·空段占位·写必带锚纪律（制度化 v153 fix-prompts A/B/C：写入前五问+三态溯源审计+派发防幻觉契约+模板占位合法化）"}
+{"rule":69,"status":"landed","task_id":"task-v154-decision-arbiter","ts":"2026-10-10","note":""}
