@@ -48,3 +48,58 @@ confidence: HIGH
 4. **剩余未尝试档位或不适用原因**:{如 ③ 降档已至顶档,不适用原因:...}
 5. **建议下一步**:{拆细方案 / 接管范围 / 所需决策}
 6. **证据**:{file:line 或 命令→关键输出}
+
+## 4. 同批不同 agent/模型派发示例（Rule 68.2/68.3 — 组内异构分摊，task-v153 [2026-10-09]）
+
+<!-- 定位（Rule 45 What+Why 双层）:
+  ① 何时用: 同一并行组（parallel_groups 声明制 21.4）内有 ≥2 个两两独立的 S-unit，
+     且组内成员的 subagent_type(model) 需逐行具体化、至少一项互不相同（Rule 68.3 组内异构分摊）。
+  ② 为何示例: 68.3 禁止「整组继承同一 Phase Executor」——把所有并行子任务交给单一
+     agent/模型档位=资源消耗不可控（68.3 依据：workflow schema 级实证 subagent_model 为
+     run 级单一字段）。本段以 p3-core 组三个并行单元为例，演示「同批不同 agent/模型」
+     的混派 prompt 骨架（executor + code-assistant ×2），主进程派发时照此逐条调整。
+  ③ 43.2 优先级: 最小可承载档位优先于异构——禁止为追求异构而升档/降档；同档可承载时
+     优先按 agent 类型差异（专用体/通用体分工）实现异构，模型档位差异其次。 -->
+
+以 p3-core 组三个并行 S-unit（三单元两两过 68.1 四问全 no）为例，三条派发 prompt 骨架如下。
+每条均含 `[parallel-group:p3-core]` 组标记、组域写隔离声明（Rule 68.4）、验收三证据要点：
+
+```
+[parallel-group:p3-core] 单元 p3-a（脚本与守卫施工，专用执行体）
+  子代理类型: executor（sonnet-1 档）
+  任务范围: ……（目标/验收/验证三字段）
+  组域写隔离: 只写 <plan-dir>/subagent-state/03-executor.md（checkpoint）与本单元 scope 文件
+    {scope 文件绝对路径清单}；计划三文件（task_plan/findings/progress）状态列由主进程
+    按组串行统一回写，本成员不得直接 Edit（Rule 68.4 单写者原则）
+  验收三要点: ① 逐条贴出验收命令的原文输出行 ② 产物文件绝对路径+Read 复核证据
+    ③ checkpoint 已落盘且含最终结论
+```
+
+```
+[parallel-group:p3-core] 单元 p3-b（文档单元，通用代码执行体）
+  子代理类型: code-assistant（haiku-1 档）
+  任务范围: ……（目标/验收/验证三字段）
+  组域写隔离: 只写 <plan-dir>/subagent-state/04-code-assistant.md（checkpoint）与本单元
+    scope 文件 {scope 文件绝对路径清单}；计划三文件禁碰（同上一条 68.4 口径）
+  验收三要点: 同上三证据（原文行 + 产物路径 + checkpoint 落盘）
+```
+
+```
+[parallel-group:p3-core] 单元 p3-c（第二条文档工程，通用代码执行体）
+  子代理类型: code-assistant（haiku-1 档）
+  任务范围: ……（目标/验收/验证三字段）
+  组域写隔离: 只写 <plan-dir>/subagent-state/05-code-assistant.md（checkpoint）与本单元
+    scope 文件 {scope 文件绝对路径清单}；计划三文件禁碰
+  验收三要点: 同上三证据
+```
+
+三单元异构口径=executor(sonnet-1) + code-assistant(haiku-1) ×2：agent 类型两分
+（专用执行体 vs 通用代码体）即满足 68.3「至少一项互不相同」；同档可承载时优先按
+agent 类型差异实现异构，不做档位级强行拉差（43.2 最小可承载档优先）。
+
+组间串行（Rule 68.2，21.4 默认语义不回退）：p3-core 组未齐验收（组批验收三证据 22.5，
+唯一 join 点 68.5）前，主进程不得派发后组（如 p4-*）；后组的前置依赖=前组验收通过。
+
+「组内全同」后果：同组内 `subagent_type(model)` 列全部相同时，check-plan-dispatch.sh
+68.6 advisory 档输出 WARN（不拒锁）——并行负载集中于单一 agent/模型档位，资源消耗
+不可控；处理=按 68.3 调整组内分工（换专用体/通用体或可承载档位），而非升档迁就。

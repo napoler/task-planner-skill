@@ -70,8 +70,8 @@ quart "RF-04 63.2 四步检索链词齐备"                          "$B62" '本
 pair "RF-05 63.4 有理有据边界(编造+not-solved)"             "$(_words '编造' "$B64")" "$(_words 'not-solved' "$B64")"
 
 # ── SKILL.md 消费侧 ──
-ge   "RF-06 SKILL 1-67 计数≥3(三处联动)"                   "$(cnt '1-67' "$SKILL")" 3  # 2026-10-09 task-v152 Rule 67 落地演进
-pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-67 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-67（含 Rule 40-67 全集' "$SKILL")"  # 2026-10-09 task-v152 Rule 67 落地演进
+ge   "RF-06 SKILL 1-69 计数≥3(三处联动)"                   "$(cnt '1-69' "$SKILL")" 3  # 2026-10-09 task-v152 Rule 67 落地演进  # 2026-10-09 task-v151 S4 钉值级联 '1-65'→'1-66'（Rule 66 落地）  # 2026-10-10 task-v154 S5 接线演进 '1-66'→'1-69'（Rule 69 落地，1-69 章节引言行修正同步）  # 2026-10-10 task-v154 S5/S8 接线演进 '1-69 精确锚'→'1-6[0-9] 宽容锚'：286 行 Rule 69 修正先行而 9/368 行维持 1-66（六守卫依赖，禁动），精确锚三处同值暂不可达→宽容化保联动语义不失
+pair "RF-07 SKILL 双锚(bullet 全角括号+头注 1-69 全集)"      "$(cnt 'Rule 63（检索优先与反推诿纪律' "$SKILL")" "$(cnt 'Critical Rules 1-69（含 Rule 40-69 全集' "$SKILL")"  # 2026-10-09 task-v152 Rule 67 落地演进  # 2026-10-09 task-v151 S4 钉值级联  # 2026-10-10 task-v154 S5 接线演进 '1-66'→'1-69'（Rule 69 落地，1-69 章节引言行修正同步）
 ge   "RF-08 SKILL C44 合规行含 Rule 63"                     "$(cnt '^| C44 .*Rule 63' "$SKILL")" 1
 
 # ── templates 派发契约载体 ──

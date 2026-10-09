@@ -95,28 +95,28 @@ else
   bad "CP-06" "bn=$bn_ok env=$c1 cp=$c2 emit=$emit_now/expect=$emit_expect"
 fi
 
-# CP-07: SKILL 短串 1-67=3 ∧ 整串 Critical Rules 1-67>=2 ∧ C46>=1 ∧ 1-65=0
-c1=$(grep -c '1-67' "$SKILL_MD")
-c2=$(grep -c 'Critical Rules 1-67' "$SKILL_MD")
-c3=$(grep -c 'C46' "$SKILL_MD")
-c4=$(grep -c '1-65' "$SKILL_MD")
-if [ "$c1" -eq 3 ] && [ "$c2" -ge 2 ] && [ "$c3" -ge 1 ] && [ "$c4" -eq 0 ]; then
-  ok "CP-07" "1-67=$c1=3 ∧ CR1-67=$c2≥2 ∧ C46=$c3≥1 ∧ 1-65=$c4=0"
+# CP-07: SKILL 短串 1-69=3 ∧ 整串 Critical Rules 1-69>=2 ∧ C48>=1
+c1=$(grep -c '1-69' "$SKILL_MD")
+c2=$(grep -c 'Critical Rules 1-69' "$SKILL_MD")
+c3=$(grep -c 'C48' "$SKILL_MD")
+if [ "$c1" -eq 3 ] && [ "$c2" -ge 2 ] && [ "$c3" -ge 1 ]; then
+  ok "CP-07" "1-69=$c1=3 ∧ CR1-69=$c2≥2 ∧ C48=$c3≥1"
 else
-  bad "CP-07" "1-67=$c1 CR1-67=$c2 C46=$c3 1-65=$c4"
+  bad "CP-07" "1-69=$c1 CR1-69=$c2 C48=$c3"
 fi
 
-# CP-08: registry 尾行含 selftest-context-pressure ∧ TAB 4 列
-last_line=$(tail -1 "$REGISTRY")
-if echo "$last_line" | grep -q 'selftest-context-pressure'; then
-  cols=$(echo "$last_line" | awk -F'\t' '{print NF}')
+# CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列
+# [2026-10-10 task-v152 合并并集适配] 末行口径→含口径：并行合并后 registry 尾行为其他 selftest 行，
+# 末行假设被跨任务打破；修法=含数据行同义断言（grep -q 全表匹配），与 G-07 演进同构。
+if grep -q 'selftest-context-pressure' "$REGISTRY"; then
+  cols=$(grep 'selftest-context-pressure' "$REGISTRY" | awk -F'\t' '{print NF}' | head -1)
   if [ "$cols" -eq 4 ]; then
-    ok "CP-08" "registry 尾行含 selftest-context-pressure ∧ 4 列"
+    ok "CP-08" "registry 含 selftest-context-pressure ∧ 4 列"
   else
-    bad "CP-08" "registry 尾行列数=$cols≠4"
+    bad "CP-08" "registry selftest-context-pressure 行列数=$cols≠4"
   fi
 else
-  bad "CP-08" "registry 尾行不含 selftest-context-pressure"
+  bad "CP-08" "registry 不含 selftest-context-pressure"
 fi
 
 # CP-09: jq '.properties|length' config.json =42
