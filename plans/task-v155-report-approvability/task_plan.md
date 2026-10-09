@@ -89,15 +89,15 @@ task-planner 技能全工作流所有「向用户请求审批/审查/确认/呈�
 ## 🎯 Goal 单元表（Rule 66.1 — standard 必填）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 调研与归因 | 全触点审计+Rule 31 四维归因落盘 | findings.md 触点审计表 13 文件锚+归因段在位 | S0/Phase 1 | pending |
-| G2 | 条文与索引 | Rule 70 条文+SKILL 接线落位 | grep 70.1-70.6 锚 ≥6；SKILL 索引含 Rule 70 | S1-S2/Phase 2 | pending |
-| G3 | 主链触点 | SKILL/reference/worktree 触点四要素指针 | 3 文件 grep Rule 70 命中 | S3-S4/Phase 3 | pending |
-| G4 | 模板触点 | 4 模板呈报规格补全 | 4 文件 grep Rule 70 或四要素词命中 | S5-S7/Phase 4 | pending |
-| G5 | 管线触点 | 引用面+管线 6 文件补齐 | 6 文件 grep 命中 | S8-S11/Phase 5 | pending |
-| G6 | 机器守护 | selftest+lint+registry 落位 | selftest 自跑 exit 0+registry 行在位 | S12-S15/Phase 6 | pending |
-| G7 | 回归清账 | 全量 selftest ΣFAIL=0 | 跑批记录（progress.md Round 行四要素） | S16-S17/Phase 7 | pending |
-| G8 | 双审查 | 代码面+对齐面双 APPROVED | 两 checkpoint verdict=APPROVED | S18-S20/Phase 8 | pending |
-| G9 | 合并交付 | 合并+部署 IDENTICAL+终验交付 | merge commit+逐位 diff=0+delivery-summary | P9 | pending |
+| G1 | 调研与归因 | 全触点审计+Rule 31 四维归因落盘 | findings.md 触点审计表 13 文件锚+归因段在位 | S0/Phase 1 | complete |
+| G2 | 条文与索引 | Rule 70 条文+SKILL 接线落位 | grep 70.1-70.6 锚 ≥6；SKILL 索引含 Rule 70 | S1-S2/Phase 2 | complete |
+| G3 | 主链触点 | SKILL/reference/worktree 触点四要素指针 | 3 文件 grep Rule 70 命中 | S3-S4/Phase 3 | complete |
+| G4 | 模板触点 | 4 模板呈报规格补全 | 4 文件 grep Rule 70 或四要素词命中 | S5-S7/Phase 4 | complete |
+| G5 | 管线触点 | 引用面+管线 6 文件补齐 | 6 文件 grep 命中 | S8-S11/Phase 5 | complete |
+| G6 | 机器守护 | selftest+lint+registry 落位 | selftest 自跑 exit 0+registry 行在位 | S12-S15/Phase 6 | complete |
+| G7 | 回归清账 | 全量 selftest ΣFAIL=0 | 跑批记录（progress.md Round 行四要素） | S16-S17/Phase 7 | complete |
+| G8 | 双审查 | 代码面+对齐面双 APPROVED | 两 checkpoint verdict=APPROVED | S18-S20/Phase 8 | complete |
+| G9 | 合并交付 | 合并+部署 IDENTICAL+终验交付 | merge commit+逐位 diff=0+delivery-summary | P9 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -326,6 +326,7 @@ Phase 9（全部 complete）
 | 新增 Rule 70 而非扩写 Rule 48 | Rule 48 权威源绑定交付总结单点；呈报契约是全工作流纪律，独立编号便于触点统一引用（70.4） |
 | 机器守护只增 warn 不改 check-complete exit | exit 语义是交付门控承重墙；对齐 rcov-gate fail-open 先例 |
 | 范围含 review-library×3 与 companion×3 | 用户明示「其他类似的情况必须修正+全部需要补全」；同缺陷类呈报触点 |
+| Rule 36.3 删除性行为清单（技能修改基线） | **无删除性行为**：本任务对技能文件零功能性删除/零语义改写；SKILL 索引行 1-66→1-69+70 为口径演进（并集解保各方条文），C46 让位 C48 为编号新增非删除；selftest 改造全部为断言锚精确化（条数不减：13/9/41/12） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
@@ -454,4 +455,4 @@ Phase 9（全部 complete）
 - 触发信号: 技能条文增强类任务（无既有 variant 完全匹配）→ 落 general 兜底
 - Rule 34.3②: 沉淀预登记 —— 终验时评估：本任务为规则/守卫类增强，与历史 Rule 落地任务同型（v138-v151 系列均未沉淀 variant，条款型增强不可模板化），预期登记不沉淀理由
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
-- 处置登记处: 不沉淀理由（条款型技能增强，无可泛化任务模板；判例=v138-v151 系列）
+- 处置登记处: **不沉淀（已登记 2026-10-10）**——理由=条款型技能增强（Rule 条文+指针补丁+静态守护），无「同类任务重复生产」的模板化面；判例=v138-v151 系列 Rule 落地任务均未沉淀 variant；若未来出现同型任务 ≥3 次再触发 34.3① 沉淀
