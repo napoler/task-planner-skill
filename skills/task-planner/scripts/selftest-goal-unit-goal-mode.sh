@@ -20,7 +20,7 @@
 #     · config.json（零新键声明，G-08）:
 #         G-08 properties 键名中 `goal[_-](unit|gate|advance)` =0（零新 config 键负断言）
 #     · 钉值联动（G-09）:
-#         G-09 SKILL.md 行数 ≤515（D1 上调后上限，留 4 行余量）
+#         G-09 SKILL.md 行数 ≤526（D2 上调后上限，留 5 行余量）
 #   运行方式：`bash scripts/selftest-goal-unit-goal-mode.sh`（只读 grep/jq，零写入）；
 #   逐行打印 `G-NN PASS/FAIL <说明>`，末行 `Total: 9 PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。
 #   被检文件路径全部相对 SCRIPT_DIR 解析，保证仓库/worktree/三宿主部署位三处均可直接跑。
@@ -119,11 +119,11 @@ else
 fi
 if [ "$n" -eq 0 ]; then ok 08 "config.json properties 键名 goal[_-](unit|gate|advance) =0（零新键）"; else bad 08 "config.json properties 键名 goal[_-](unit|gate|advance) =$n（应 =0，零新键承诺被破）"; fi
 
-# G-09 SKILL.md 行数 ≤515（D1 上调后上限）
-# What：断言 SKILL.md 行数不超过 515 行。
-# Why：Rule 66 摘要行 +1、C45 行 +1 → 511 触顶；上调 515 留 4 行余量（v150 判例：钉值上调留缓冲）。
+# G-09 SKILL.md 行数 ≤526（D2 上调后上限）
+# What：断言 SKILL.md 行数不超过 526 行。
+# Why：SKILL.md Rule 69 路由表行+摘要 bullet+触发点标记 T1-T6 六行+C46 合规行+外部引用行 → 实际 521 行（515→521），钉值上调 515→526（留 5 行余量；v150/v151 判例：留缓冲）。
 n="$(wc -l < "$SKILLMD" || true)"
-if [ "$n" -le 515 ]; then ok 09 "SKILL.md 行数=$n ≤515（D1 上调后上限）"; else bad 09 "SKILL.md 行数=$n >515（超限）"; fi
+if [ "$n" -le 526 ]; then ok 09 "SKILL.md 行数=$n ≤526（D2 上调后上限）"; else bad 09 "SKILL.md 行数=$n >526（超限）"; fi
 
 printf 'Total: 9 PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
