@@ -858,3 +858,11 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 66.5 **模板区块承载与 mini 豁免（template carriage）**：「🎯 Goal 单元表」=general 模板区块（插入位=「🎯 核心目标达成裁决」后、「⚠️ 执行范围限制」前）；mini-lite 模板按 38.3 区块白名单声明豁免（未加区块不构成违约）；check-plan-dispatch.sh attest 期对 standard/full 档做区块存在性+六列+验证方式列非空机械校验，缺失=拒锁（59.1 硬门同档；--skip-goal-check 逃生口对齐 --skip-dispatch-check 惯例，登记 Decisions）；档位判定：显式 plan_tier: standard/full 才执行硬拒锁；无标记计划=缺省档跳过（legacy/合成夹具兼容口径，主进程 2026-10-09 D2 裁决）；mini 豁免。
 
 66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。
+
+### 69 判断裁决子代理化与驳回打回纪律（P0 — task-v154，目标：主进程遇判断类问题（方案终裁/失败定级/验收争议/DRIFT 处置/CR 分歧）时以强模型独立裁决出口取代硬决，并以驳回打回闭环保证裁决被执行；判定面=LLM 行为+selftest 静态守护，零新 config 键；衔接 Rule 15/22.3/22.4/22.5/41/42/61，既有 Rules 原文零改动）
+
+> 定位（Rule 69）：判断类问题的强模型独立裁决出口 + 驳回打回闭环——主进程「拿不准」时委派 decision-arbiter（GLM-5.3 强档）出唯一裁决，REJECT-REWORK 态按驳回单强制返工，禁止静默继续原方向。
+
+- **69.1 触发场景与管辖二分**：六触发点矩阵（T1 计划期方案终裁=43.3 候选对比 ≥2 候选方案难决；T2 兜底链换道裁决=Rule 22.3 五档兜底（改派/拆细/降档/接管）选择拿不准；T3 子代理失败复核定级=failed/FAIL 是真缺陷还是误报、严重度与返工路径；T4 验收完成度争议=22.5 三证据与子代理自报 done 冲突时独立仲裁；T5 DRIFT 处置裁决=drift-checker 判 DRIFT 后「警觉继续 vs 立即返工」拿不准，不替代检测本体；T6 CR 分歧与终验边界=CHANGES_REQUESTED 意见接受度/PARTIAL-COMPLETE 边界拿不准）。豁免清单（防滥用）：trivial 机械判断（41.3 主进程直做）/偏移检测本体（61 载体 drift-checker）/代码审查本体（42 族）/G1-G4 直接升级场景（41.2）。管辖二分：判断类裁决出口唯一=decision-arbiter；偏移检测=drift-checker；产物挑刺=critic；自我纠偏=meta-corrector；规划升级=complex-planner。四类场景主进程拿不准时**应委派** arbiter 独立裁决，禁止硬决或直接 AskUser——AskUser 是 G 门槛与 arbiter 裁决之后的出口。
+- **69.2 委派契约**：按 Rule 22.4 九字段模板派发，增补 arbiter 专用字段=争议点一句+双方声称摘要（≤5 行）+证据材料包（路径清单）+引用判据提示（VC 条目/规则锚/用户目标原话）；prompt ≤3000 字符（21.1b 沿用）；检查点=`<plan-dir>/subagent-state/{seq}-decision-arbiter.md`（22.8 命名沿用）；执行体=decision-arbiter 伴随 agent（GLM-5.3 强档，companion/agents/decision-arbiter.md）；SKILL.md 路由表「判断/裁决」行同步（接线在 task-v154 S5 落地）。单次独立派发：每争议一次裁决，同题重裁须附新证据。
+- **69.3 裁决消费协议（驳回打回闭环）**：四态=APPROVE/REJECT-REWORK/ESCALATE-USER/INSUFFICIENT-EVIDENCE（与 agent 文件字面一致）。**REJECT-REWORK 强制返工**：主进程收到该裁决必须在 progress.md 登记 `[arbiter-reject]` 行（含裁决指针+严重度）并按驳回单五要素执行返工，禁止静默继续原方向（违者按 Rule 26 降质处置）。ESCALATE-USER 消费=主进程转 AskUserQuestion/STOP（不自行代答）；INSUFFICIENT-EVIDENCE 消费=按补充取证清单补证后重新派发；APPROVE 附带放行条件时条件须逐条验证后才可继续。消费动作留痕：progress.md 每次裁决消费记一行（裁决态/驳回单指针/返工结果）。
