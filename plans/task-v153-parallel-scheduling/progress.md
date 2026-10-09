@@ -181,7 +181,7 @@
      Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-| 2026-10-09 21:46 | findings Visual/Browser 段混入无来源虚构内容（食堂菜单/牛奶照片描述，本会话无此素材） | 1 | 当次 Edit 删除并替换为如实占位行 | 直接原因=写模板段落时幻觉补位；根因=对「暂无」状态未做如实占位而由模型自由填充（反造谣铁律 P0 面） | 写空段落一律显式占位「（本任务暂无…）」禁止自由发挥；同类段落写完即刻复核来源可追溯性 |
+| 2026-10-09 21:46 | findings Visual/Browser 段混入无来源虚构内容（食堂菜单/牛奶照片描述，本会话无此素材） | 1 | 当次 Edit 删除并替换为如实占位行；深潜归因+专项提示词组=fix-prompts.md | 直接原因=写模板空段时幻觉补位；根因=真实性让位于完整性、占位合法化意识缺位（findings §D 5 Whys） | fix-prompts.md 三提示词（A 事后溯源审计/B 事前 5 问/C 派发契约行）+空段一律显式占位铁律 |
 | 2026-10-09 23:45 | V1 Round 1 回归 7 旧 selftest rc≠0（ΣFAIL=9）：计划期钉值三查只覆盖 SKILL 面，漏旧 selftest 钉值面（1-66 literal×4/全集正则/模式数 11×2） | 1 | B 类扩 scope+派发七脚本钉值级联修复单元+SKILL:9 词序还原 | 直接原因=S2 验收 grep 词序自适配+设计清单「钉值三查」仅列 SKILL/registry/selftest 注释三处；根因=级联面枚举不完整（锚级联第 5 变体：旧 selftest 钉值未入设计清单） | 设计阶段钉值清单必须 grep 全仓 '1-NN' 类字面+计数钉全集枚举（含旧 selftest 面），禁只列已知三处；v151 S4 判例应入 split-pattern/设计 checklist |
 | 2026-10-09 21:45 | [PLAN TAMPERED] hook 连续拦截 v150 计划注入（哈希 7d672276≠55f844f5） | 1 | 考古证实=锁定后两次正当收尾簿记提交（02c61d7/1a87387）+本会话指针键位分裂读到全局陈旧指针；非本会话计划不重锁（Rule 51.7），补 sidmap+双键指针修复 | 直接原因=SessionStart 漏写 sidmap；根因=env sid 与 hook sidkey 双命名空间下映射缺失时 init 回退 env 键落盘，hook 侧跌入全局陈旧指针 | sidmap 缺失时补写映射+双键落指针并 resolve 双键验证（本会话 21:45 已执行，验证 PASS） |
 
@@ -201,3 +201,12 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+
+---
+
+## ✅ 完成后学习沉淀（Rule 31.4/31.5，任务 COMPLETE 后追加段，不推翻执行期记录）
+
+- 幻觉补位事故闭环：根因与提示词组见 fix-prompts.md + findings §D；Error Log 行已升级引用。
+- 反向经验（确认有效的做法）：本会话「不信自报」铁律（主进程 12 次独立复验）+「空段占位」纪律在事故发生后的所有文档段零复发（verification/kb/收尾段均显式占位或带锚）。
+- 未越权事项登记：防幻觉契约行进技能层 templates/subagent_dispatch.md 属保护区改动，待用户授权后另立任务（本任务只落计划层）。
