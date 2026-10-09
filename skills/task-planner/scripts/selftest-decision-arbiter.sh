@@ -89,7 +89,10 @@ if grep -q 'selftest-decision-arbiter.sh' "$REGISTRY"; then ok 15 "registry 自�
 # DA-16 零新 config 键负断言
 # What: config.json 无 arbiter 键字面 (=0) 且新增面（decision-arbiter.md + Rule 69 段）无 _enforce 新键声明 (=0)。
 # Why: 69.6 承诺零新 config 键（判定面=LLM 行为+静态守护）——键字面出现=有人给判断裁决加机器门控键（机制漂移）。
-if [ "$(grep -cE 'arbiter' "$CONFIG")" -eq 0 ] && [ "$(grep -cE '[a-z_]+_enforce' "$ARBITER")" -eq 0 ] && [ "$(awk '/^### 69 /,0' "$CRIT" | grep -cE '[a-z_]+_enforce')" -eq 0 ]; then ok 16 "零新 config 键：arbiter=0 且新增面无 _enforce 键"; else bad 16 "零新 config 键被破（arbiter 键或新增面 _enforce 键）"; fi
+# [2026-10-10 task-v154 CR fix] P1 可移植性：原写法 grep -cE '[a-z_]+_enforce' 的 `+` 量词在非 GNU/ugrep 的 POSIX grep 下当字面量，_enforce 计数恒 0（负断言假阴性、守护失效）；修法=两处均改 POSIX BRE/ERE 通吃的 [a-z_][a-z_]*_enforce（去掉 + 量词依赖）。
+# [2026-10-10 task-v154 CR fix] P2-1 awk 范围：原写法 awk '/^### 69 /,0' 的 `,0` 结束模式是 GNU awk 扩展（POSIX awk 要求范围结束为 pattern）；修法=显式锚范围 /^### 69 /,/^### 7[0-9] /（69 为末节、下一规则号锚当前不存在→等价至 EOF，未来加 70+ 段自动收口）。
+# [2026-10-10 task-v154 CR fix] P2-2 stderr 噪音：文件缺失时 grep 报 No such file 且 [ "" -eq 0 ] 触发 integer expression 报错；修法=文件读取加 2>/dev/null 静默 + 计数比较改字符串 = "0"（判定不变：在位正常计数、缺失则空串≠"0"→FAIL）。
+if [ "$(grep -cE 'arbiter' "$CONFIG" 2>/dev/null)" = "0" ] && [ "$(grep -cE '[a-z_][a-z_]*_enforce' "$ARBITER" 2>/dev/null)" = "0" ] && [ "$(awk '/^### 69 /,/^### 7[0-9] /' "$CRIT" 2>/dev/null | grep -cE '[a-z_][a-z_]*_enforce')" = "0" ]; then ok 16 "零新 config 键：arbiter=0 且新增面无 _enforce 键"; else bad 16 "零新 config 键被破（arbiter 键或新增面 _enforce 键）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
