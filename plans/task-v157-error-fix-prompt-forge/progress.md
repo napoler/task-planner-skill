@@ -90,7 +90,12 @@
      Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 2026-10-10 04:20 | init-session.sh 仓根运行报「必须在 plans/<task-id>/ 内运行」 | 1 | cd 计划目录后重跑成功 | 未先读脚本 usage 头部（CWD 前置条件写在注释里）——流程类 | 跑仓库脚本前先读头部 usage 注释再执行 |
+| 2026-10-10 07:35 | check-delegation stats verdict=violation（Executor 含未登记类型 explore） | 1 | Executor/Handoff 规范化裸注册名+登记 Decisions+重签 attest→复跑 verdict=ok | Executor 字段带档位后缀(explore(mini))致 Handoff 交叉校验失配——v150「Handoff 裸名」教训复发 | 计划期 Executor 字段直接写裸注册类型名，档位信息入 S-unit 表/Decisions |
+| 2026-10-10 07:12 | smart-merge-back V5 MASTER_AHEAD ×2（master 前进 ce670cb→f1a61d0→4b914b3） | 3 轮 | worktree 内 git merge master 追并（registry 冲突解并集）+组合命令压缩竞态窗口→MERGED 6d46d3ec | 并发会话高频提交致 master 持续前进——环境类 | 合并前先追并 master；merge+merge-back 串一条命令执行 |
+| 2026-10-10 04:45 | Explore 子代理返回但工具集只读，checkpoint/findings 无法自写 | 1 | 按预注册模式由主进程代写（内容=子代理返回原文） | Explore 代理无 Write/Edit 工具面——工具面事实 | 派只读代理时任务书预声明「主进程代写回填」路径 |
+| 2026-10-10 04-07 时 | drift-checker 子代理 3 次 provider 拒绝 | 3 | 按 Rule 22.3 同法失败≥2 永久换道：61.5 check-drift.sh 降级佐证+三件套留痕 | provider 侧该 agent 模型档位不可用——环境类 | 降级路径常态化登记，不反复重试同一载体 |
+| 2026-10-10 07:30 | smart-merge-back --deploy zcode 位 REJECTED（运行位自保护） | 1 | 改用主仓副本 scripts/smart-merge-back.sh 运行→三位 IDENTICAL | 从 live 部署副本运行触发「运行位自保护」——流程类 | 部署/对账一律从主仓 canonical 副本运行 |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
@@ -134,3 +139,15 @@
   | 部署对账 | diff -r skill vs 3 宿主 + --deploy 本体三位 | IDENTICAL | zcode/claude/cursor skill 位 IDENTICAL×3;task-planner 本体 zcode/claude/opencode IDENTICAL;宿主位 selftest exit 0 | PASS |
   | 委派统计机器门 | check-delegation stats | verdict=ok | verdict=ok(裸名规范化+重签 attest 后复跑;rate 0.4 白名单豁免) | PASS |
   - 注:drift-checker 子代理本会话 3 次 provider 拒,按 22.3 永久切 61.5 降级(check-drift.sh 佐证),4 次 drift 三件套留痕齐全
+
+## Goal 单元证据行（Rule 66.3 — 翻 complete 时逐条落盘）
+
+- [goal:G1] 完成证据: subagent-state/01-explore.md(边界 6 条+能力清单) + findings.md####[sub:01-explore];主进程 Read 复核;Phase 1 complete 04:30
+- [goal:G2] 完成证据: knowledge-brief.md §5 设计定稿详述(11 项结构/九槽位/QC-FP/FP-01..08) + findings.md Technical Decisions 3 条 + task_plan Decisions Made 设计行;Phase 2 complete 05:00
+- [goal:G3] 完成证据: skills/error-fix-prompt-forge/SKILL.md(84 行)+templates/fix-prompt-template.md(49 行)+task-planner/scripts/selftest-error-fix-prompt-forge.sh(8/8 PASS)+registry.tsv 追加行;主进程 Read/grep 复跑复核;alignment-review APPROVED;Phase 3 complete 06:00
+- [goal:G4] 完成证据: subagent-state/04-executor/fix-prompt-sample.md(QC-FP 6/6,READY) + Round 4/5/6 回归(66→68 脚本,820→836 断言,FAIL=0 主进程独立复算);Phase 4 complete 06:40
+- [goal:G5] 完成证据: merge commit 6d46d3ec(smart-merge-back V1-V6)+ diff -r 三宿主 skill 位 IDENTICAL×3 + task-planner 本体三位 IDENTICAL + check-delegation stats verdict=ok + check-complete 机器门(见 verification.md);Phase 5 complete 07:45
+
+## Rule 36 技能修改登记（check-skill-modify 门消费）
+
+- 本任务对技能文件的行为=纯新增（skills/error-fix-prompt-forge/{SKILL.md,templates/}）+ registry 追加 1 行 + task-planner/scripts 新增 1 个 selftest;对既有技能文件零删除、零语义改写（registry 既有 66 行 diff 零改动实证）;删除性行为清单=无（登记于此，Rule 36.3/36.4 无触发面）
