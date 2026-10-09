@@ -287,6 +287,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | audio-voice | 内容组 | 语言锁三层+音色逐字核对（零生成） | Code Review Gate；content_quality；代码类路由 | 核对子代理 |
 | final-assembly | 内容组 | seam 5 边界+成片判定层+NAS 对账+用户终审 | Code Review Gate；content_quality；代码类路由 | 剪辑/QC/备份子代理 |
 | general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
+| decision-arbiter | 判断/裁决组 | 裁决执行体路由（Rule 69 触发点 T1-T6：方案终裁/失败定级/验收争议/DRIFT 处置/CR 分歧） | 高频轻量判定（drift-checker 管辖）、产物挑刺（critic 管辖）、机械判断（41.3 直做） | decision-arbiter(GLM-5.3) |
 
 新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。
 > 内容组「不适用」项（15 行，Code Review Gate 与代码类执行体路由不触发）：
@@ -310,5 +311,6 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | 迁移/部署组（migration/deployment） | 主进程 git 编排+executor | 机械守卫脚本+git 编排（白名单①③）;MCP 工具按需 | 串行;合并回走 smart-merge-back |
 | 轻量档（mini-lite） | code-assistant 或主进程白名单 | 豁免「🧰」区块（Rule 38.3）;默认按 21.4 独立性守门（并行默认+声明组，未声明=串行，10-02） | 不判定 |
 | 调研/诊断组（research/diagnostic） | Explore/web-search/debugger 子代理 | 子代理+MCP（web_reader/node_repl）+research 卫星 | 串行;多主题可拆多 explore |
+| 判断/裁决 | decision-arbiter（Rule 69 载体） | Agent 子代理（低频单次独立派发，Rule 69.5） | 未命中编排条件（单点裁决，无 fan-out 需求） |
 
 **映射使用规则**: ① 本表是建议面非强制路由——Executor 字段仍是委派门控机器事实源（Rule 40.2,区块不替代）;② 编排判定倾向=命中才在「🧰」区块登记"建议 CreateWorkflow"并按 Rule 39.4 做并行豁免登记,未命中按 Rule 21.4 独立性守门调度（并行默认+声明组，未声明=串行，10-02）;③ 类型不在表中 → 按最近似族套用并在区块理由列注明。
