@@ -86,18 +86,21 @@ session_id: de2c5bba-v159
 ## Phases
 
 ### Phase 1: 设计定稿
-- [ ] design-pointer-fix.md：F1-F5 逐点函数定位+行区间+夹具设计+SKILL 行落点
+- [x] design-pointer-fix.md：F1-F5 逐点函数定位+行区间+夹具设计+SKILL 行落点
+- **Status:** complete（2026-10-10 06:0x；design-pointer-fix.md 已落盘含 F1-F5 定点+PL-01..10）
 - **Executor:** 主进程（例外理由:② 计划系统文件 design 落 plans/）
 
 ### Phase 2: worktree+基线
-- [ ] worktree `wt/v159-pointer-lifecycle`（从 fetch 后最新 master 创建；v152 Rule 67 或已 land，创建后 git log 复核）
-- [ ] 基线 selftest 跑批（脚本数/FAIL 数存证）
+- [x] worktree `wt/v159-pointer-lifecycle`（从 fetch 后最新 master 创建；v152 Rule 67 或已 land，创建后 git log 复核）
+- [x] 基线 selftest 跑批（脚本数/FAIL 数存证）
+- **Status:** complete（2026-10-10 06:1x；worktree=merge 时 master，66/66 基线；后随合并态再验 5 轮）
 - **Executor:** 主进程（例外理由:①git+③机械）
 
 ### Phase 3: 实施（组内异构+组域写隔离）
 - p3-core={S1 set-active-plan四修点; S2 init-session同语义; S3 check-complete+SKILL移交纪律}（文件集不相交，共同输入=design 稿；执行体：executor sonnet-1 + code-assistant haiku-1 混）
 - p3-guard={S4 smart-merge-back deploy staging 化; S5 selftest-pointer-lifecycle+registry}（文件集不相交；executor sonnet-1 + code-assistant haiku-1 混）
 - S7 串行尾：合并预检（master 实态 grep）
+- **Status:** complete（2026-10-10 07:0x；S1-S5 全验收+git adfd8d7+R3/R4 69/69）
 - **Executor:** 主进程（例外理由:①派发编排+②簿记）
 
 <!-- S-unit 派发单元表(Rule 22.6+68;ID=S<数字>;Nf/Nl/Nmin;前置依赖必填;-=无依赖) -->
@@ -113,8 +116,9 @@ session_id: de2c5bba-v159
 > 单元组标记（Rule 21.4+68.2）：`[parallel-group:p3-core]`=S1,S2,S3（文件集互斥：set-active-plan.sh/init-session.sh/check-complete+SKILL；四问全否）；`[parallel-group:p3-guard]`=S4,S5（文件集互斥：smart-merge-back.sh/新 selftest+registry）；S7 前置=S1-S6 串行尾。组内异构：p3-core=sonnet-1+haiku-1×2；p3-guard=sonnet-1+haiku-1。派发 prompt 必含组标记+组域写隔离（68.4）。
 
 ### Phase 4: 验证
-- [ ] V1 全量回归（FAIL=0）+新 selftest 8-10 断言全 PASS
-- [ ] V2 Code Reviewer 全量 CR（五处改点+新 selftest）
+- [x] V1 全量回归（FAIL=0）+新 selftest 8-10 断言全 PASS
+- [x] V2 Code Reviewer 全量 CR（五处改点+新 selftest）
+- **Status:** complete（2026-10-10 07:1x；CR3 APPROVED+R5 71/71）
 - **Executor:** code-runner-agent（mini）+code-reviewer（sonnet-1）
 
 <!-- S-unit 派发单元表(Rule 22.6；ID=S<数字>;粒度三值 Nf/Nl/Nmin;前置依赖列必填 68.1) -->
@@ -124,9 +128,10 @@ session_id: de2c5bba-v159
 | S9 | Code Reviewer 全量 CR（五修点+新 selftest 重 diff） | code-reviewer（sonnet-1） | worktree diff master 全量+design-pointer-fix.md | APPROVED 或发现清单 | 15min | 2f/100l/15min | 无 | S-S6 | - | subagent-state/4-code-reviewer-S9.md | complete |
 
 ### Phase 5: 合并+部署对账+簿记
-- [ ] smart-merge-back（**合并后部署必须跑三 slot 存在性+diff 后验——D4 直接回归项**）
-- [ ] 部署后实弹：新 sid 会话解析演练（只读巡检）
-- [ ] delivery-summary+ledger
+- [x] smart-merge-back（**合并后部署必须跑三 slot 存在性+diff 后验——D4 直接回归项**）
+- [x] 部署后实弹：新 sid 会话解析演练（只读巡检）
+- [x] delivery-summary+ledger
+- **Status:** complete（2026-10-10 07:2x；merge b6e6e2e+F5 实弹+D4 后验+worktree 清理）
 - **Executor:** 主进程（①git+②簿记）
 
 ## FMEA（RPN>100）
