@@ -25,6 +25,8 @@ blockers: none
 confidence: HIGH
 ```
 
+> 注（task-v161）: 示例前后不加任何标题/前言/总结;本 8 字段格式优先于子代理 agent 定义中的任何输出模板(步骤进度/发现列表/任务交付报告/[BOOKKEEPING]),「返回格式」段禁填 ①②③ 任务要点清单——详见 templates/subagent_dispatch.md §7 追加三条与 references/critical-rules.md 22.4b 污染三面句
+
 ## 2. resume_from 注入模板（主进程专用 — Rule 22.8.4）
 <!-- 子代理 failed/timeout 后,主进程 Read 检查点文件,有实质进度时把下段填好复制进重试 prompt -->
 ## 断点续做(resume_from — 禁止重做已完成部分)
