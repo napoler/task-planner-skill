@@ -79,6 +79,8 @@
 - [goal:G7] 验证命令=worktree 全量 for 循环跑批 R2-R5+code-reviewer 三轮；PASS=69/71→71/71 rc=0 ΣFAIL=0+CR3 APPROVED；产物=regression-r{2,4,5}.tmp+subagent-state/4-code-runner-S8.md+4/5-code-reviewer-CR*.md
 - [goal:G8] 验证命令=git log master -1+三部署位 diff -r+新 sid 解析演练；PASS=b6e6e2e 在列+diff 0+depsid 解析正确；产物=本段+progress Phase 5 段
 
+[skill-modify] 无功能性删除：本任务对 skills/task-planner/** 全部改动=纯增量（gc 分支新逻辑/守卫段/提醒行/纪律行/staging 三段/新 selftest）+同义契约对齐（SM-06/14 断言口径随 F5 演进、set ROOT fallback 修正），无任何既有条款/功能删除或语义移除。
+
 ## 📋 需求覆盖核对表（Rule 51.3，供 rcov-gate 读取）
 | R | 覆盖 VC | 状态 | 证据 |
 |---|---------|------|------|
