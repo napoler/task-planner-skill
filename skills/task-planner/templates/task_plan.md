@@ -27,6 +27,16 @@
 | <工序 1> | <此工序削弱该结果的缺陷/缺口，无则"无"> | <修复 S-unit/Phase> | <VC-n> |
 
 <!-- plan_tier: standard -->
+
+## 🔒 不变量声明区（Rule 73.3 — 声明后改动须走 73.2 对齐三问）
+<!-- WHAT: 任务要素显式分三态——不变量(锁)/可变量(自主调+登记)/学得量(只入 findings、禁反写不变量)。
+     WHY: 用户 R2「强化四文件，确保哪些不变/哪些可变/哪些学得」；无声明=执行期风格/范围漂移无对照物（R1 实证）。 -->
+| 三态 | 条目 | 来源锚 |
+|------|------|--------|
+| 🔒 不变量 | <Goal/VC 表/用户需求原文 R 条目/风格与质量约束，逐条列> | <task_plan.md 对应章节锚> |
+| 🔀 可变量 | <执行细节/工序排期/工具选型/S-unit 拆分> | - |
+| 📈 学得量 | <执行期新事实/教训/锚点→findings.md/notepad-learnings.md；禁反向改写不变量> | findings.md |
+
 ## Goal
 <!-- 
   WHAT: One clear sentence describing what you're trying to achieve.
