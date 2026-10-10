@@ -44,18 +44,33 @@ esac
 shift
 
 # 剩余参数: --sid <val> 提取,余下为位置参数
+# [2026-10-09 pointer-lifecycle] F3: --force flag 提取(与 --sid 同款参数解析)
+# Why: side 写入所有权守卫需要显式覆盖入口(D3 缺陷修复);无 --force 时默认拒绝 trample。
+# 基线行为: 无 --force 参数,set 无所有权检查。
 SIDARG=""
+FORCE_FLAG=""
 positional=()
 while [ $# -gt 0 ]; do
     case "$1" in
         --sid) SIDARG="${2:-}"; shift 2 ;;
+        --force) FORCE_FLAG=1; shift ;;
         *) positional+=("$1"); shift ;;
     esac
 done
 
 # 各命令语义: set 模式位置参数=[task-id, root?];其余命令位置参数=[root?]
 pid="${positional[0]:-}"
-ROOT="${positional[1]:-${positional[0]:-$PWD}}"
+# [2026-10-09 pointer-lifecycle] F4: set 模式 ROOT 默认 $PWD
+# Why: 原实现 positional[0] fallback 在计划目录内运行时把 task-id 当 root，
+#   导致 PLAN_ROOT 双重要素→require_plan 误报 exit 2（D5 缺陷）。
+#   改后: positional[1] 空时 fallback 到 $PWD；若 $PWD 本身即计划目录
+#   （含 task_plan.md），则 ROOT 取 $PWD 上级，使 PLAN_ROOT=$PWD/plans 正确解析。
+# 基线行为: ROOT="${positional[1]:-${positional[0]:-$PWD}}"（set 模式 positional[1] 空时 fallback 到 task-id）
+ROOT="${positional[1]:-$PWD}"
+# F4 补充: 若 $PWD 本身是计划目录（含 task_plan.md），ROOT 取上上级使 PLAN_ROOT=$PWD/../plans 正确
+if [ -z "${positional[1]:-}" ] && [ -f "$PWD/task_plan.md" ]; then
+    ROOT="$(dirname "$(dirname "$PWD")")"
+fi
 case "$ACTION" in
     set) ;;                       # pid=positional[0],ROOT=positional[1]|PWD
     --show|--clear|gc)           # 无 task-id;位置参数[0]=root
@@ -145,6 +160,53 @@ case "$ACTION" in
                 rm -f "$f" 2>/dev/null && k=$((k+1))
             done < <(find "$REQ_SIDE_DIR" -name '*.sidmap' -type f -mmin +1440 2>/dev/null)
         fi
+        # [2026-10-09 pointer-lifecycle] F1: gc 全局指针生命周期
+        # Why: 原 gc 仅清扫 side 指针/哨兵/sidmap,全局 .active_plan 残留无人清理(D1 缺陷:
+        #   v150 完成后指针残留→sid-less 消费者 PLAN TAMPERED)。新增:全局指针非空时检查目标:
+        #   ①目标目录缺失=dead-ref;②目标 task_plan Status=complete 且指针 mtime>24h=completed-ttl。
+        #   命中则置空(写空串,不删文件,slug 校验自然回退 mtime)并报告。
+        # 基线行为: gc 分支不触碰 .active_plan。
+        if [ -f "$ACTIVE_FILE" ]; then
+            GLOBAL_PID="$(tr -d ' \r\n\t' < "$ACTIVE_FILE" 2>/dev/null || true)"
+            if [ -n "$GLOBAL_PID" ]; then
+                STALE_REASON=""
+                if [ ! -d "$PLAN_ROOT/$GLOBAL_PID" ]; then
+                    STALE_REASON="dead-ref"
+                # [2026-10-10 CR2 修复 BLOCKER-B1+MAJOR-M1] 整体完成判定: 锚定真实状态行两子句
+                # Why: 原 `grep -Ei 'Status.*in_progress'` 未锚定行首, 命中模板固定行
+                #   「- Update phase status as you progress: pending → in_progress → complete」
+                #   (templates/task_plan.md 默认生成) → 真·完成态计划被判「非整体完成」而永不清除(B1)。
+                #   且未拦「部分完成」=1 阶段 complete + 其余 pending(M1)。
+                #   修法=锚定真实状态行: ①has_complete=存在 `^\s*[-*]\s*\*\*Status:\*\*\s*complete` 行;
+                #   ②no_active=无任何 `^\s*[-*]\s*\*\*Status:\*\*\s*(in_progress|pending)` 行;
+                #   ③指针 mtime>24h 条件保持不变。禁裸 `Status.*in_progress`。
+                elif [ -f "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" ] \
+                     && grep -Eq '^[[:space:]]*[-*][[:space:]]*\*\*Status:\*\*[[:space:]]*complete' "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" 2>/dev/null \
+                     && ! grep -Eq '^[[:space:]]*[-*][[:space:]]*\*\*Status:\*\*[[:space:]]*(in_progress|pending)' "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" 2>/dev/null \
+                     && [ -n "$(find "$ACTIVE_FILE" -mmin +1440 2>/dev/null)" ]; then
+                    STALE_REASON="completed-ttl"
+                fi
+                if [ -n "$STALE_REASON" ]; then
+                    : > "$ACTIVE_FILE"
+                    echo "[active-plan] gc 全局指针 stale(${STALE_REASON})=${GLOBAL_PID} -> 已置空"
+                fi
+            fi
+        fi
+        # [2026-10-09 pointer-lifecycle] F2: 哨兵-side 缺口巡检
+        # Why: 活跃哨兵(mtime<24h)存在但对应 side 指针缺失→该 sid 解析将回退全局/mtime,
+        #   造成并行会话串台(D2 缺陷)。gc 巡检列名报告(advisory 只报告不代写,§十一 并行踩踏禁令)。
+        # 基线行为: gc 仅清扫哨兵本身,不检查 side 指针对应关系。
+        if [ -d "$REQ_SIDE_DIR" ]; then
+            while IFS= read -r f; do
+                sidkey="$(basename "$f" .plan_required)"
+                # [2026-10-10 CR修复 MINOR-7] F2 双命名空间: 同时查 ${sidkey} 与 sess${sidkey} 两形态 side 指针
+                # Why: 原实现仅查剥前缀 `<sidkey>.active_plan`, 而 resolve 双命名空间兼容读 `sess<sidkey>.active_plan`
+                #   (历史写入方) → 遗留 sess 形态可能误报缺口(advisory 只读, 无写入)。
+                if [ ! -f "${SIDE_DIR}/${sidkey}.active_plan" ] && [ ! -f "${SIDE_DIR}/sess${sidkey}.active_plan" ]; then
+                    echo "[active-plan] gc 巡检: 哨兵 ${sidkey} 无 side 指针（该会话解析将回退全局/mtime，建议其跑 set-active-plan set --sid）"
+                fi
+            done < <(find "$REQ_SIDE_DIR" -name '*.plan_required' -type f -mmin -1440 2>/dev/null)
+        fi
         echo "[active-plan] gc 清除过期 side 指针: ${n} 个"
         echo "[active-plan] gc 清除过期 side 哨兵(.plan_required_side): ${m} 个"
         echo "[active-plan] gc 清除过期 sidmap 映射: ${k} 个"
@@ -154,10 +216,46 @@ case "$ACTION" in
         validate_slug "$pid" || { echo "[active-plan] 非法 task-id: ${pid:-<空>}" >&2; exit 2; }
         require_plan "$pid"
         mkdir -p "$SIDE_DIR" 2>/dev/null || { echo "[active-plan] 无法创建 ${SIDE_DIR}" >&2; exit 1; }
-        if atomic_write "${SIDE_DIR}/${SID}.active_plan" "$pid"; then
-            echo "[active-plan] side 指针已设置: ${pid}(sid=${SID})"
+        # [2026-10-09 pointer-lifecycle] F3: side 写入所有权守卫
+        # Why: side 键以 sess<SID> 为命名空间,多计划并行时后写者赢导致互踩(D3 缺陷:
+        #   v156/v157 owner=sesscbab959f 与 v153 会话撞键)。写 side 键前扫 plans/*/.session-owner:
+        #   ①claimant 存在且!=本计划且其 Status=in_progress→拒绝 trample,不写该键,WARN 含 claimant;
+        #   ②claimant complete/不存在→fail-open 正常写仅提示。--force 显式覆盖。
+        # 基线行为: set 无所有权检查,直接写 side 键。
+        SKIP_SIDE_WRITE=0
+        claimant=""
+        if [ -d "$PLAN_ROOT" ]; then
+            for ownfile in "$PLAN_ROOT"/*/.session-owner; do
+                [ -f "$ownfile" ] || continue
+                # [2026-10-10 CR修复 MAJOR-F3] owner 匹配兼容双形态 ^(sess)?${SID}$
+                # Why: 原 `^sess${SID}` 仅匹配带 sess 前缀 owner; 裸 uuid owner 会话(无 sess 前缀)被漏判,
+                #   守卫失效直接写入(trample)。修法=兼容双形态, 整行锚定($)实现 norm 后比较。
+                if grep -qE "^(sess)?${SID}$" "$ownfile" 2>/dev/null; then
+                    claimant="$(basename "$(dirname "$ownfile")")"
+                    break
+                fi
+            done
         fi
-        exit $?
+        if [ -n "$claimant" ] && [ "$claimant" != "$pid" ]; then
+            if [ -f "$PLAN_ROOT/$claimant/task_plan.md" ] \
+               && grep -qi 'Status.*in_progress' "$PLAN_ROOT/$claimant/task_plan.md" 2>/dev/null; then
+                if [ -n "$FORCE_FLAG" ]; then
+                    echo "[active-plan] WARN: side 键 sid=${SID} 已被在途计划 ${claimant} 声明，--force 覆盖，继续写入" >&2
+                else
+                    echo "[active-plan] WARN: side 键 sid=${SID} 已被在途计划 ${claimant} 声明，skip 写入防沿袭互踩；--force 可覆盖" >&2
+                    SKIP_SIDE_WRITE=1
+                fi
+            else
+                echo "[active-plan] WARN: side 键 sid=${SID} 曾被计划 ${claimant} 声明（已 complete/不存在），fail-open 继续写入" >&2
+            fi
+        fi
+        if [ "$SKIP_SIDE_WRITE" = "0" ]; then
+            if atomic_write "${SIDE_DIR}/${SID}.active_plan" "$pid"; then
+                echo "[active-plan] side 指针已设置: ${pid}(sid=${SID})"
+            fi
+            exit $?
+        fi
+        exit 0
         ;;
     *)
         validate_slug "$pid" || { echo "[active-plan] 非法 task-id: $pid" >&2; exit 2; }

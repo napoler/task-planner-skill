@@ -1333,6 +1333,18 @@ END {print n+0}'
             printf '  - sid=%s count=%s\n' "$sid" "$n" >&2
         done
     fi
+
+    # [2026-10-10 task-v159 pointer-lifecycle F1/D1] 移交提醒（Rule 25 完成项机制化）：
+    # Why: D1 孤儿指针根因——任务完成后全局指针 plans/.active_plan 常仍指向本任务，
+    #   无人提示时漂移直到 gc 兜底清理；本段在终验成功（python_rc=0）时主动提醒移交。
+    # What: 读取 <plans>/.active_plan 当前值（PLAN_DIR_GUESS 的上级目录），若等于
+    #   本任务 id（从 plan 目录名 basename 推导）则输出一行 warn 提醒（stderr，风格对齐
+    #   同段 warn count 行）；warn 语义恒不改退出码（exit 码仍为 python_rc，零阻断）；
+    #   指针缺失/不可读 → 静默跳过（fail-open，不影响终验判定）。
+    _cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"
+    if [ -n "$_cp_active_ptr" ] && [ "$_cp_active_ptr" = "$(basename "$PLAN_DIR_GUESS")" ]; then
+        printf '[plan] 移交提醒( pointer-lifecycle ): 全局指针仍指向本任务，完成后请移交（置空或指向在途任务；gc 亦会清理 stale）\n' >&2
+    fi
 fi
 
 exit $python_rc
