@@ -130,6 +130,13 @@
 - 验收复核：`grep -c 'task-v164'`→1/1；`grep -nE '全局 legacy'`→空 rc=1；`git diff --stat`→仅 INSTALL.md(+1/-1)+README.md(+3/-2)（第三行 `.dispatch-inflight` 为派发期既有 M，非本次产生）
 - 负结果报告：仅改清单内两文件区段；未动 skills/ 下其他文件与任何脚本；未改安装命令/表格；未执行 git add/commit/checkout/reset
 
+#### [sub:7-executor] S7 两 hook 注释改述
+- 事实（命令→关键输出）：基线 `grep -nE '互顶全局|全局 legacy' zcode-userpromptsubmit.sh zcode-posttooluse.sh` = 2 hits（UPS:23、PTU:44）；改述后 = 0（rc=1 空集）；`grep -c 'task-v164'` 两脚本各=1（改述前各 0）
+- 改述锚：UPS:23（原「并行会话不再互顶全局 legacy 指针」→ `优先(权威层,2026-10-07 fix-pointer-race 后)` + `[2026-10-10 task-v164]` 三点块：全局 `plans/.active_plan` 实为工作树内瞬态 fallback（路径随 $PWD 本地化；git rm --cached+.gitignore，与 .active_plan_side/ 同族）；正常路径=side 会话私有指针（权威层）；退役"互顶"叙事）。PTU:43-44（原「不再被全局 legacy 指针互顶」→ 同三点块 + 注记）。注记仿 S5/S6 用「原措辞以「legacy 全局指针被互顶」描述」避开字面「全局 legacy」连写，防 grep 误伤（A4 与保留原措辞说明兼得）
+- 保留纪律核验：改述处仅增 `#` 行，历史勘误注释（[2026-09-10 active-plan-race] 等）逐字保留未删；`set -u` 之后/全部代码、变量、函数、usage 零改动（`git diff -U0 | 非#行 | grep -c .` = 0）
+- 验收复核：`grep -c 'task-v164'`→1/1；`grep -nE '互顶全局|全局 legacy'`→rc=1 空；`bash -n` 双脚本 rc=0；`git diff --stat`→仅 zcode-userpromptsubmit.sh(+5/-1)+zcode-posttooluse.sh(+6/-2)（`.dispatch-inflight`/`7-prompt-material.md` 为派发期既有，非本次产生）
+- 负结果报告：仅改清单内两脚本注释区；未动其他 26 个引用面文件、未动任何代码行；未执行 git add/commit/checkout/reset
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

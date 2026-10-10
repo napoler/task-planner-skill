@@ -84,6 +84,7 @@
   - [sub:4] 引用面分级完成
   - [sub:5] critical-rules+SKILL 改述完成
   - [sub:6] README+INSTALL 改述完成
+  - [sub:7] 两 hook 注释改述完成
   -
 - Files created/modified:
   -
