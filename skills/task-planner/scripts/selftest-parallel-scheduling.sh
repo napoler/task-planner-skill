@@ -104,7 +104,7 @@ fi
 c46="$(grep -cE '^\| C46 ' "$SKILLMD" || true)"
 r68="$(grep -cE 'Rule 68' "$SKILLMD" || true)"
 crit_max="$(grep -oE '^### [0-9]+ ' "$CRIT" | awk '{print $2}' | sort -n | tail -1)"
-skill_max="$(grep -oE 'Critical Rules 1-[0-9]+' "$SKILLMD" | grep -oE '[0-9]+' | sort -n | tail -1)"
+skill_max="$(grep -oE 'Critical Rules 1-[0-9]+(\+[0-9]+)?' "$SKILLMD" | grep -oE '[0-9]+' | sort -n | tail -1)"
 if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ -n "$crit_max" ] && [ -n "$skill_max" ] && [ "$skill_max" -eq "$crit_max" ]; then
   ok 05 "SKILL.md C46 行=$c46（=1）+ 'Rule 68' 引用=$r68（≥1）+ 上界 1-${skill_max} = critical-rules 实测最大 ${crit_max}（动态一致）"
 else
