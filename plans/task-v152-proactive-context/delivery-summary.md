@@ -44,7 +44,7 @@
 
 ## 4. 风险点（必须列举）
 - **已知遗留**: ① 并行 v158 于 08:00 后推进主仓标签 1-71，三部署位暂未含其演进（部署同步归 task-v158 收尾；本任务部署对账以 a7b1619 刻为准）② C 编号让位链（C46→C48→C49）已由 v158 归属修正确认，后续并行任务若继续加 C 行仍需逐个并集 ③ Rule 70 区块采用 `## Rule 70` 标题层级（v155 体例），与 ### 66-69 不一致——纯体例差，功能无碍
-- **待裁决**: 用户下一任务（task-v156-drift-shield）的 D 决策点——待计划产出后随 AskUserQuestion 呈报（默认项已排）
+- **待裁决**: 用户下一任务（task-v156-drift-shield）的 D 决策点——对象: `/mnt/data/dev/task-planner-skill/plans/task-v156-drift-shield/`（task_plan.md 待产出）｜看点: D1-D5 默认项与 Rule 形态选择 ｜动作: 计划产出后随 AskUserQuestion 呈报，超时按默认执行
 - **失效条件**: 「69/69/0 回归+CP 9/9」在任一新增/演进 selftest 或 SKILL 标签再变时可能转红——重验：`cd /mnt/data/dev/task-planner-skill && for s in skills/task-planner/scripts/selftest-*.sh; do bash "$s" >/dev/null 2>&1 || echo "FAIL: $s"; done`
 - **回滚方式**: `cd /mnt/data/dev/task-planner-skill && git revert -m 1 a7b1619`（若需整体回退本任务主仓合并；注意将同时回退已在其后落盘的 v158 演进→建议改按文件级 `git checkout a7b1619~1 -- skills/task-planner/` 后重新部署）
 
