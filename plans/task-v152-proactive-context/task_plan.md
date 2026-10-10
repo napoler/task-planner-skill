@@ -173,11 +173,11 @@ task-planner 技能新增 Rule 67「上下文压力主动评估与会话交接�
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-Phase 5
+（终态：6/6 Phase complete — outcome=COMPLETE）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-Phase 5：派 code-reviewer（S7）对 worktree 全量 diff（17 文件，重 diff）做 Code Review——条款语义正确性+hook 零副作用+selftest 断言有效性；APPROVED 才进终验，CHANGES_REQUESTED 走 fix-phase（≤3 轮）
+无（本任务 COMPLETE 已交付）。后续=task-v156-drift-shield（用户新指令 D 类任务：防漂移强化，待计划产出后呈 D 决策点）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!-- 逐 Phase 登记命中的 harness 执行工具面（Rule 40.1 六类）；本区块是 Executor 字段的上游分析记录，不替代其委派门控机器事实源地位。 -->
@@ -224,25 +224,25 @@ Phase 5：派 code-reviewer（S7）对 worktree 全量 diff（17 文件，重 di
 - **Executor:** executor（sonnet-1）
 
 <!-- S-unit 派发单元表(Rule 22.6 — 每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟;ID 纯数字;粒度三值 Nf/Nl/Nmin 逐行校验;「伴飞技能」列非「无」→ 校验 SKILL.md 路径存在(Rule 59.2)) -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S1 | critical-rules.md 文末追加 Rule 67 六子条（67.1 触发三档/67.2 三态 verdict/67.3 PRESSURE 压缩/67.4 CONFUSED 交接/67.5 hook 承载/67.6 机制守护） | executor（sonnet-1） | ① plans/task-v152-proactive-context/design-draft.md（Rule 67 草案全文）② 部署位 references/critical-rules.md 行 846 后追加位（Rule 65 之后） | `grep -cE '^67\.[1-6] '` =6 且含「主动评估/主动优化/HEALTHY/PRESSURE/CONFUSED」；既有 Rule 1-65 正文 `git diff` 零改动（仅文末追加） | 15min | 1f/90l/15min | writing-skills | done |
-| S2 | SKILL.md 级联：Rule 67 登记行 + 「Critical Rules 1-65」三处(:9,:280,:360)→1-67 + 合规清单新条目 C45 + 钉值级联清单逐项（skill-split 行数钉值随动） | executor（sonnet-1） | ① design-draft.md（钉值级联清单）② 部署位 SKILL.md 行 9/280/360 及 C44 条目位 | 短串 `grep -c '1-67'` =3（RF-06 口径）；整串 `Critical Rules 1-67` ≥2（纠正-3，原 =3 误设）；`C45` ≥1；`1-65`=0；行数记录供行数钉单元 | 15min | 1f/25l/15min | writing-skills | done |
-| S3 | 新建 templates/session-handoff.md 五段模板（目标锚/已完成与证据/当前断点/未决问题/新会话恢复指令） | executor（sonnet-1） | ① design-draft.md（五段模板草案 + 恢复链指引）② 部署位 templates/ 目录（无同类模板，纯新增） | 文件在位且五段标题逐段 grep 命中；含恢复链 session-catchup→四文件读序(62.1)→plan-resume(24.5) | 15min | 1f/60l/15min | writing-skills | done |
-| S4 | zcode-posttooluse.sh drift-rhythm 节奏块内追加单行主动评估提醒（env 降档 TASK_PLANNER_CONTEXT_PRESSURE_*，默认开可关），既有计数变量零改动 | executor（sonnet-1） | ① design-draft.md（hook 接线方案：插入位 :46-107/:321-344 + env 名）② 部署位 scripts/zcode-posttooluse.sh | `grep -c 'TASK_PLANNER_CONTEXT_PRESSURE'` ≥1；`bash -n` 语法通过；既有 drift-rhythm 变量 `git diff` 零改动 | 15min | 1f/12l/15min | 无 | done |
-| S5 | 新建 scripts/selftest-context-pressure.sh（静态锚：67 子条/三态 verdict/session-handoff 五段/hook env 锚/registry 行）+ selftest-registry.tsv 加 1 行 | executor（sonnet-1） | ① design-draft.md（selftest 断言清单）② 部署位 selftest-registry.tsv（4 列表头+63 行基线） | 新 selftest exit 0 全 PASS；`tail -1 registry.tsv` 含新行且 4 列；SR-12 动态行数断言（=ls+1）通过 | 15min | 2f/80l/15min | 无 | done |
-| S8 | 索引文档标签级联：skills `README.md:72` + 仓根 `CLAUDE.md:33` 的 `Rules 1-65`→`Rules 1-67`（补 67 描述，v149 对齐注先例） | executor（sonnet-1） | ① design-draft.md §4#5 ② worktree 内两文件锚行 | 两文件 `grep -c '1-67'` 各 ≥1 且 `1-65`=0；改动行带 task-v152 对齐注 | 10min | 2f/8l/10min | 无 | done |
-| S9 | 仓根 `README_zh.md:136,229` 两处 + `scripts/selftest-drift-check-subagent.sh` DCS-11(:59 `Rule 40-65 全集`→`Rule 40-67 全集`) 标签级联 | executor（sonnet-1） | ① design-draft.md §4 ② 三处锚行 | 三处 grep 新标签命中且旧标签=0；`bash -n` DCS 通过 | 10min | 2f/8l/10min | 无 | done |
-| S10 | `selftest-research-first.sh` RF-06/RF-07(:72-73) + `selftest-lane-advancement.sh` LA-12(:131,133) 锚演进 1-65→1-67、40-65→40-67 | executor（sonnet-1） | ① design-draft.md §4#5 ② v149 同构判例 plans/task-v149-skill-alignment-audit/subagent-state/12-executor-S18.md | 两脚本单跑 exit 0；演进注释按 v149 范式追加 | 15min | 2f/14l/15min | 无 | done |
-| S11 | `selftest-self-resolution.sh` SR-07(:74,76+注:15,76) + `selftest-tool-selection.sh` TS-05(:60,62) 锚演进 | executor（sonnet-1） | ① 同 S10 判例 ② 两脚本锚行 | 两脚本单跑 exit 0；SR-12 行数断言不受损 | 10min | 2f/10l/10min | 无 | done |
-| S12 | `selftest-requirement-coverage.sh` RC-11(:127-131) + `selftest-workflow-orchestration.sh` WF-10(:70-73) 锚演进（**RC-15/FF-16/EG-16/IP-14 的 `^66\.` 前向防线与 WO 演进注释链零破坏**） | executor（sonnet-1） | ① 同 S10 判例 ② 两脚本锚行 | 两脚本单跑 exit 0；`git diff` 显示 `^66\.` 断言行零改动 | 15min | 2f/16l/15min | 无 | done |
-| S13 | `selftest-skill-split.sh` 行数钉 510→按 S2 后 `wc -l` 实测+余量上调（带 task-v152 演进注释，先例 :44-46；≤558 总上限不动）——**S2 验收后才可执行** | executor（sonnet-1） | ① S2 完成后实测 `wc -l <worktree>/skills/task-planner/SKILL.md` ② skill-split:44-46 注释链 | 单跑 exit 0；钉值 ≥实测；演进注释含 task-v152 | 10min | 1f/8l/10min | 无 | done |
-| S14 | fix-wave：posttooluse `_cpn` 除零防护（MAJOR-1）+ rhythm_n 钳位移出 `_cp` 块（MINOR-3） | executor（sonnet-1） | CR checkpoint subagent-state/8-code-reviewer-S7.md MAJOR-1/MINOR-3 段 | `bash -n` 过；fixture `TASK_PLANNER_CONTEXT_PRESSURE_N=0` 直调无 division-by-0 且单行 JSON 仍在；drift 文案不随新开关变化 | 10min | 1f/6l/10min | 无 | done |
-| S15 | fix-wave：selftest-context-pressure CP-06 去 git 依赖固化常量（MAJOR-2）+ CP-03 增 hook 交叉断言（MINOR-2）+ CP-07 C45→C46 断言（MAJOR-3 联动） | executor（sonnet-1） | CR checkpoint 同上 + SKILL C46 已就位（前置=本表 S16 完成） | 脚本 exit 0 全 PASS；`grep -c 'git show'`=0 | 10min | 1f/10l/10min | 无 | done |
-| S16 | fix-wave：SKILL C45 行→C46（goal 行 C45 保留属 master）+ critical-rules 67.6 措辞 C45→C46（MAJOR-3） | executor（sonnet-1） | CR checkpoint 同上 MAJOR-3 段 | SKILL `grep -c C46`≥1 且 C45=goal 行（grep C45 上下文核）；critical-rules 67.6 含 C46 | 10min | 2f/4l/10min | 无 | done |
-| S17 | fix-wave：skills README templates 计数 10→11 两行+对齐注（MINOR-1） | executor（sonnet-1） | CR checkpoint 同上 MINOR-1 段 | `grep -c '11 核心'`≥1；diff 仅该文件 | 5min | 1f/4l/5min | 无 | done |
+| S1 | critical-rules.md 文末追加 Rule 67 六子条（67.1 触发三档/67.2 三态 verdict/67.3 PRESSURE 压缩/67.4 CONFUSED 交接/67.5 hook 承载/67.6 机制守护） | executor（sonnet-1） | ① plans/task-v152-proactive-context/design-draft.md（Rule 67 草案全文）② 部署位 references/critical-rules.md 行 846 后追加位（Rule 65 之后） | `grep -cE '^67\.[1-6] '` =6 且含「主动评估/主动优化/HEALTHY/PRESSURE/CONFUSED」；既有 Rule 1-65 正文 `git diff` 零改动（仅文末追加） | 15min | 1f/90l/15min | writing-skills | done | - |
+| S2 | SKILL.md 级联：Rule 67 登记行 + 「Critical Rules 1-65」三处(:9,:280,:360)→1-67 + 合规清单新条目 C45 + 钉值级联清单逐项（skill-split 行数钉值随动） | executor（sonnet-1） | ① design-draft.md（钉值级联清单）② 部署位 SKILL.md 行 9/280/360 及 C44 条目位 | 短串 `grep -c '1-67'` =3（RF-06 口径）；整串 `Critical Rules 1-67` ≥2（纠正-3，原 =3 误设）；`C45` ≥1；`1-65`=0；行数记录供行数钉单元 | 15min | 1f/25l/15min | writing-skills | done | - |
+| S3 | 新建 templates/session-handoff.md 五段模板（目标锚/已完成与证据/当前断点/未决问题/新会话恢复指令） | executor（sonnet-1） | ① design-draft.md（五段模板草案 + 恢复链指引）② 部署位 templates/ 目录（无同类模板，纯新增） | 文件在位且五段标题逐段 grep 命中；含恢复链 session-catchup→四文件读序(62.1)→plan-resume(24.5) | 15min | 1f/60l/15min | writing-skills | done | - |
+| S4 | zcode-posttooluse.sh drift-rhythm 节奏块内追加单行主动评估提醒（env 降档 TASK_PLANNER_CONTEXT_PRESSURE_*，默认开可关），既有计数变量零改动 | executor（sonnet-1） | ① design-draft.md（hook 接线方案：插入位 :46-107/:321-344 + env 名）② 部署位 scripts/zcode-posttooluse.sh | `grep -c 'TASK_PLANNER_CONTEXT_PRESSURE'` ≥1；`bash -n` 语法通过；既有 drift-rhythm 变量 `git diff` 零改动 | 15min | 1f/12l/15min | 无 | done | - |
+| S5 | 新建 scripts/selftest-context-pressure.sh（静态锚：67 子条/三态 verdict/session-handoff 五段/hook env 锚/registry 行）+ selftest-registry.tsv 加 1 行 | executor（sonnet-1） | ① design-draft.md（selftest 断言清单）② 部署位 selftest-registry.tsv（4 列表头+63 行基线） | 新 selftest exit 0 全 PASS；`tail -1 registry.tsv` 含新行且 4 列；SR-12 动态行数断言（=ls+1）通过 | 15min | 2f/80l/15min | 无 | done | S1-S4 三证据验收后 |
+| S8 | 索引文档标签级联：skills `README.md:72` + 仓根 `CLAUDE.md:33` 的 `Rules 1-65`→`Rules 1-67`（补 67 描述，v149 对齐注先例） | executor（sonnet-1） | ① design-draft.md §4#5 ② worktree 内两文件锚行 | 两文件 `grep -c '1-67'` 各 ≥1 且 `1-65`=0；改动行带 task-v152 对齐注 | 10min | 2f/8l/10min | 无 | done | - |
+| S9 | 仓根 `README_zh.md:136,229` 两处 + `scripts/selftest-drift-check-subagent.sh` DCS-11(:59 `Rule 40-65 全集`→`Rule 40-67 全集`) 标签级联 | executor（sonnet-1） | ① design-draft.md §4 ② 三处锚行 | 三处 grep 新标签命中且旧标签=0；`bash -n` DCS 通过 | 10min | 2f/8l/10min | 无 | done | - |
+| S10 | `selftest-research-first.sh` RF-06/RF-07(:72-73) + `selftest-lane-advancement.sh` LA-12(:131,133) 锚演进 1-65→1-67、40-65→40-67 | executor（sonnet-1） | ① design-draft.md §4#5 ② v149 同构判例 plans/task-v149-skill-alignment-audit/subagent-state/12-executor-S18.md | 两脚本单跑 exit 0；演进注释按 v149 范式追加 | 15min | 2f/14l/15min | 无 | done | - |
+| S11 | `selftest-self-resolution.sh` SR-07(:74,76+注:15,76) + `selftest-tool-selection.sh` TS-05(:60,62) 锚演进 | executor（sonnet-1） | ① 同 S10 判例 ② 两脚本锚行 | 两脚本单跑 exit 0；SR-12 行数断言不受损 | 10min | 2f/10l/10min | 无 | done | - |
+| S12 | `selftest-requirement-coverage.sh` RC-11(:127-131) + `selftest-workflow-orchestration.sh` WF-10(:70-73) 锚演进（**RC-15/FF-16/EG-16/IP-14 的 `^66\.` 前向防线与 WO 演进注释链零破坏**） | executor（sonnet-1） | ① 同 S10 判例 ② 两脚本锚行 | 两脚本单跑 exit 0；`git diff` 显示 `^66\.` 断言行零改动 | 15min | 2f/16l/15min | 无 | done | - |
+| S13 | `selftest-skill-split.sh` 行数钉 510→按 S2 后 `wc -l` 实测+余量上调（带 task-v152 演进注释，先例 :44-46；≤558 总上限不动）——**S2 验收后才可执行** | executor（sonnet-1） | ① S2 完成后实测 `wc -l <worktree>/skills/task-planner/SKILL.md` ② skill-split:44-46 注释链 | 单跑 exit 0；钉值 ≥实测；演进注释含 task-v152 | 10min | 1f/8l/10min | 无 | done | S2 验收后 |
+| S14 | fix-wave：posttooluse `_cpn` 除零防护（MAJOR-1）+ rhythm_n 钳位移出 `_cp` 块（MINOR-3） | executor（sonnet-1） | CR checkpoint subagent-state/8-code-reviewer-S7.md MAJOR-1/MINOR-3 段 | `bash -n` 过；fixture `TASK_PLANNER_CONTEXT_PRESSURE_N=0` 直调无 division-by-0 且单行 JSON 仍在；drift 文案不随新开关变化 | 10min | 1f/6l/10min | 无 | done | - |
+| S15 | fix-wave：selftest-context-pressure CP-06 去 git 依赖固化常量（MAJOR-2）+ CP-03 增 hook 交叉断言（MINOR-2）+ CP-07 C45→C46 断言（MAJOR-3 联动） | executor（sonnet-1） | CR checkpoint 同上 + SKILL C46 已就位（前置=本表 S16 完成） | 脚本 exit 0 全 PASS；`grep -c 'git show'`=0 | 10min | 1f/10l/10min | 无 | done | S16 验收后 |
+| S16 | fix-wave：SKILL C45 行→C46（goal 行 C45 保留属 master）+ critical-rules 67.6 措辞 C45→C46（MAJOR-3） | executor（sonnet-1） | CR checkpoint 同上 MAJOR-3 段 | SKILL `grep -c C46`≥1 且 C45=goal 行（grep C45 上下文核）；critical-rules 67.6 含 C46 | 10min | 2f/4l/10min | 无 | done | - |
+| S17 | fix-wave：skills README templates 计数 10→11 两行+对齐注（MINOR-1） | executor（sonnet-1） | CR checkpoint 同上 MINOR-1 段 | `grep -c '11 核心'`≥1；diff 仅该文件 | 5min | 1f/4l/5min | 无 | done | - |
 
-> **单元组标记（Rule 21.4 声明制）**：`[parallel-group:p3-core]` = S1, S2, S3, S4（文件集互斥：critical-rules.md / SKILL.md / session-handoff.md / zcode-posttooluse.sh；输入各自独立、验收独立——独立性四问全否 → 组内并行）；**`[parallel-group:p3-b]` = S5, S8, S9, S10, S11, S12, S13**（文件集互斥且全部依赖 S2 已落的 SKILL 新标签为验收前提——组间序=先 p3-core 后 p3-b；组内分批：B 批={S5,S8,S9,S13}、C 批={S10,S11,S12}，每批 ≤4 在飞，批间等验收；S13 前置=S2 验收后的实测行数）；**`[parallel-group:p3-fix]` = S14, S15, S16, S17**（fix-wave：文件集互斥 posttooluse/selftest-context-pressure/SKILL+条款/README；S15 前置=SKILL C46 就位（S16 完成）→ 先派 S14+S16+S17 再 S15）。**派发 prompt 必须含对应 `[parallel-group:...]` 标记**（check-dispatch.sh:280-281 计划声明 + prompt 标记双条件放行槽锁；缺标记 → 槽锁拦截/告警）。组内各 = 独立 Agent 会话领 1 行（Rule 46.1 合规）。
+> **单元组标记（Rule 21.4 声明制）**：`[parallel-group:p3-core]` = S1, S2, S3, S4（文件集互斥：critical-rules.md / SKILL.md / session-handoff.md / zcode-posttooluse.sh；输入各自独立、验收独立——独立性四问全否 → 组内并行）；**`[parallel-group:p3-b]` = S5, S8, S9, S10, S11, S12, S13**（文件集互斥且全部依赖 S2 已落的 SKILL 新标签为验收前提——组间序=先 p3-core 后 p3-b；组内分批：B 批={S5,S8,S9,S13}、C 批={S10,S11,S12}，每批 ≤4 在飞，批间等验收；S13 前置=S2 验收后的实测行数）；**`[parallel-group:p3-fix]` = S14, S16, S17**（fix-wave 批 1：文件集互斥 posttooluse、SKILL+条款、README）；**S15 不属该组**——前置=S16 验收后（selftest-context-pressure 的 CP-07 断言须待 C46→C48 更名落定），按 Rule 68.2 依赖-同组禁令串行于批 1 之后单独派发（实际执行序 2026-10-10 03:0x 同此）。**派发 prompt 必须含对应 `[parallel-group:...]` 标记**（check-dispatch.sh:280-281 计划声明 + prompt 标记双条件放行槽锁；缺标记 → 槽锁拦截/告警）。组内各 = 独立 Agent 会话领 1 行（Rule 46.1 合规）。
 
 ### Phase 4: 验证（独立执行体）
 - [x] worktree 内跑新 selftest-context-pressure.sh（exit 0 全 PASS）——9/9 两轮（S5+主进程+S6）
@@ -254,9 +254,9 @@ Phase 5：派 code-reviewer（S7）对 worktree 全量 diff（17 文件，重 di
 - **Executor:** code-runner-agent（mini）
 
 <!-- S-unit 派发单元表(Rule 22.6) -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S6 | worktree 内全量 selftest 回归 + 基线对比 + 新 selftest 复跑 + hook cadence 实弹冒烟 | code-runner-agent（mini） | ① plans/task-v152-proactive-context/baseline-selftest.log（Phase 2 快照）② worktree skills/task-planner/scripts/selftest-context-pressure.sh | 回归 FAIL 计数=基线（对比日志）；新 selftest exit 0；冒烟输出含提醒行（记录 subagent-state） | 15min | 0f/20l/15min | 无 | done |
+| S6 | worktree 内全量 selftest 回归 + 基线对比 + 新 selftest 复跑 + hook cadence 实弹冒烟 | code-runner-agent（mini） | ① plans/task-v152-proactive-context/baseline-selftest.log（Phase 2 快照）② worktree skills/task-planner/scripts/selftest-context-pressure.sh | 回归 FAIL 计数=基线（对比日志）；新 selftest exit 0；冒烟输出含提醒行（记录 subagent-state） | 15min | 0f/20l/15min | 无 | done | S1-S5 全验收后 |
 
 ### Phase 5: Code Review Gate
 - [x] 收集 worktree diff 改动文件清单 → 过滤代码文件（条款/模板/hook/selftest）——CR round1 已完成（17 文件，剔除 master 前进面后真实对象=git diff HEAD + 2 新文件）
@@ -267,9 +267,9 @@ Phase 5：派 code-reviewer（S7）对 worktree 全量 diff（17 文件，重 di
 - **Executor:** code-reviewer（sonnet-1）
 
 <!-- S-unit 派发单元表(Rule 22.6) -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|
-| S7 | 全量 CR：worktree `git diff master --stat` 覆盖 6 文件，逐条给出 APPROVED / CHANGES_REQUESTED | code-reviewer（sonnet-1） | ① worktree 6 变更文件 diff ② design-draft.md（设计意图对照） | CR 结论=APPROVED（或逐条 CHANGES_REQUESTED 落 subagent-state） | 15min | 0f/100l/15min | 无 | done |
+| S7 | 全量 CR：worktree `git diff master --stat` 覆盖 6 文件，逐条给出 APPROVED / CHANGES_REQUESTED | code-reviewer（sonnet-1） | ① worktree 6 变更文件 diff ② design-draft.md（设计意图对照） | CR 结论=APPROVED（或逐条 CHANGES_REQUESTED 落 subagent-state） | 15min | 0f/100l/15min | 无 | done | S1-S17 全验收后 |
 
 ### Phase 6: 终验与交付合并回
 - [x] 逐 VC 复验（VC-1..VC-5 全通过，对照本表证据列；verification.md Goal Gate outcome=COMPLETE）
