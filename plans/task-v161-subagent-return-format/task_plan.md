@@ -394,6 +394,7 @@ Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 age
 | S1/S2/S3 并行组 pg1 + S4 串行 | 独立性四问全 no（文件集互斥/输入互不依赖/验收独立）；S4 的 SKILL 级联断言需引用 S1/S2 最终措辞字面 |
 | worktree 基点=master HEAD b6e6e2e（非 main） | main 落后 master 905 commit（实测 git log main..master | wc -l）；memory worktree-branch-desync 教训 |
 | 修复范围限定「返回消息格式治理」，不含既有交付总结模板 | 用户诉求=子代理返回固定列表格式；delivery-summary 是用户面终验产物（SKILL:171 定位明确），两者隔离不动（防 Rule 8.1 不相干混入） |
+| Rule 36.3 删除基线声明（2026-10-10 收尾登记）：本任务全链纯增量零删除——master 合并 8 文件仅追加条款/bullet/函数/断言/登记行与机械标签同步（+225/-1;唯一 -1 行=SKILL.md Rule 22 摘要行行内 rewrite 机械同步非语义删除）;并行会话 master 侧内容一律保留不删 | 满足 check-complete SKILL-MODIFY GATE 的删除性行为清单登记要求（36.3/36.4）
 | 根因面由两层扩为三层（2026-10-10 用户 mid-turn 实证，B 类扩展）：新增「派发 prompt §7 段填写污染」为第一优先根因，S3 拆为 prompt 侧（check-dispatch.sh 增强）+返回侧（check-subagent-return.sh 新写）双脚本 | 用户实证样本：派发 prompt「## 返回格式」段被填入 ①②③ 任务要点清单（且标题重复「## 返回格式## 返回格式」）——子代理照被污染指令返回总结式清单；check-dispatch.sh 现行只查 3 个 key 存在性，段结构污染可漏放；机器校验必须覆盖 prompt 侧结构而非仅返回侧结果。51.7 登记后重锁 |
 
 ## Errors Encountered

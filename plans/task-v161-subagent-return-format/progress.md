@@ -67,6 +67,7 @@
   - [goal:G3] 返回机械校验——check-subagent-return.sh 93 行,四夹具分流+值域负例复验通过
   - [goal:G4] selftest 守护——selftest-subagent-return.sh 11/11 rc=0+registry 4 列 tab 登记复验通过
   - 回归跑批两轮独立:①子代理 code-runner-agent 跑 72 脚本全 rc=0/FAIL=0(证据 subagent-state/7-code-runner.md+regression-run-1.log)②主进程同一 worktree 独立复跑 72 脚本 rc0=72 fail=0(本机 Bash 跑批,输出见下 Test Results)
+  - [goal:G5] 全链回归双轮独立——①子代理 code-runner-agent 跑批 72/72 rc=0 FAIL=0(7-code-runner.md+regression-run-1.log)②主进程同 worktree 独立复跑 selftest total=72 rc0=72 fail=0;两轮均含新增 selftest-subagent-return.sh 11/11,FAIL 计数=0 达成
   - VC-1..7 独立复验(general-purpose 改派,verifier provider 拒请按 22.3.1 换道):6/7 PASS;VC-5 FAIL=progress 未回填(本行即回填,条件闭环);复验员 /tmp 夹具残留 4 个已由主进程清理
   - 实战证据登记:general-purpose agent 定义内置「任务交付报告」输出模板,但在任务书 §7 优先级声明下返回纯 8 字段块(零模板形态)——S1 条款在冲突 agent 上生效的首例实证
 - Files created/modified:
