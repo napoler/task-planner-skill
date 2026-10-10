@@ -559,6 +559,24 @@ else
     fi
 fi
 
+# [2026-10-11 task-v167 Rule 38.7] 执行通道（lane）定级接线：计划文件创建后调 lane-detect.sh 对
+# 当前 git 状态判定（BASE=env TASK_LANE_BASE, 默认 HEAD；非 git 仓/判不定 → lane-detect 兜底 L1,
+# fail-safe 向重侧）。lane=执行通道, 与 plan_tier=模板轻重正交（两者并存写入计划头）。
+# 写入行 execution_lane: L0|L1|L2 供 check-complete.sh L0 门组消费（缺 L1 行=零行为变化）。
+if [ -f "task_plan.md" ] && [ -f "${SCRIPT_DIR}/lane-detect.sh" ]; then
+    # 2>/dev/null + || true: 判不定 rc=2（非 git 仓/BASE 无效）不得经 set -e 传播中断 init 主流程
+    #（lane-detect 已兜底 stdout 输出 L1, 此处取不到合法值时同样兜底 L1——fail-safe 向重侧）
+    _lane="$(bash "${SCRIPT_DIR}/lane-detect.sh" --diff "${TASK_LANE_BASE:-HEAD}" 2>/dev/null)" || true
+    _lane="${_lane#execution_lane: }"; case "${_lane}" in L0|L1|L2) ;; *) _lane=L1 ;; esac
+    # 2i 而非 1i: 保持文件首行语义不变（自造模板 frontmatter 插入落在首行, 既有 selftest
+    # plan-tier PT-24/27 断言 head -1；lane 行居第 2 行不位移任何既有首行锚）
+    grep -qE '^[[:space:]]*execution_lane:' "task_plan.md" 2>/dev/null || sed -i "2i execution_lane: ${_lane}" "task_plan.md"
+    # Why if 块式: set -e 下「[ ... ] && echo」尾链在 L1 时返回 1 会中断脚本（实测 selftest 回归）
+    if [ "$_lane" = "L0" ]; then
+        echo "    [lane] L0 微变更通道已激活（相关 selftest 子集+交付前 fresh 全量终验）"
+    fi
+fi
+
 # [2026-09-29 task-v096 P2-S1 T1 分支①] template-sense 区块（Rule 34.3② 预登记触发点）：
 # 仅当 TEMPLATE_TYPE 最终决议为 general（类型空缺落 general 兜底）时 emit 提示行并向 task_plan.md
 # 末尾追加「🔁 模板感知」区块。已知 16 类（bugfix 等）零调用，known-type 路径逐字节不变。

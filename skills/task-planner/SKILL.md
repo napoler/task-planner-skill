@@ -144,7 +144,7 @@ model: opus
   - fan-out 模式：多个下游 Block 同时 pending → 按 Rule 21.4 声明组并行（成员通过独立性四问即组内并行；10-02），全部完成才汇合
 
 - [ ] **Code Review Gate**（仅 `code_review: required` 的任务）
-  - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`；**diff 分级（[task-v094 T-B6]）**：轻 diff（代码文件 ≤3 个且合计 ≤50 行）→ 单轮轻量审查（code-review 单轮或主进程逐 hunk 自查+抽验登记），重 diff → 全量多轮 CR 原流程不变
+  - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`；**diff 分级（[task-v094 T-B6]）**：轻 diff（代码文件 ≤3 个且合计 ≤50 行）→ 单轮轻量审查（code-review 单轮或主进程逐 hunk 自查+抽验登记），重 diff → 全量多轮 CR 原流程不变；**CR 触发制（Rule 42.7，task-v167 波次4/5）**：无风险信号（纯文档/注释/文案/配置 tautology）→ 免除 CR、Decisions 登记一行理由（42.7 等价防线=留痕不降质量）；命中风险信号（逻辑变更/跨文件影响/公共 API/安全/性能敏感/diff>3 文件或>50 行）→ 必须 CR 且 progress.md 留 CR APPROVED 行，边界争议按 69.1 T6 委派 decision-arbiter；机器面=`check-complete.sh` [CR-GATE]（L0 lane 跳过），收尾一次跑完清单=`scripts/auto-finalize.sh`
   - 触发时机：全部 Phase `complete` 之后、终验交付之前
   - 审查范围：本次任务 Write/Edit 修改过的文件，过滤为代码文件（`.py/.sh/.ts/.tsx/.js/.jsx/.go/.rs/.java/.c/.cpp/.h/.hpp`），排除 `.md/.json/.yaml/.yml/.txt/.toml/.cfg`
   - 执行步骤：
