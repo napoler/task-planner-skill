@@ -173,6 +173,12 @@
 - PL-06 未动核对：selftest :41-42 保留 `移交提醒` + `移交提醒.*>&2` 双锚未变；check-complete.sh:1337 块头 + :1350 消息前缀「移交提醒( pointer-lifecycle )」仍在 → PL-06 PASS，material「PL-06 不动」满足
 - 负结果报告：`git diff --stat` 仅 selftest 4 ++--（=PL-07 两行），Total 计数不变（仍 10）；未动其他文件；未执行 git add/commit/checkout/reset（`.dispatch-inflight` M 为派发期既有，非本 unit）
 
+#### [sub:11-code-runner-agent] S11 回归
+- 事实（命令→关键输出）：worktree 内 72 脚本单轮 `for f in skills/task-planner/scripts/selftest-*.sh; do bash "$f"; rc=$?` → regression-worktree.log 72 段全 rc=0（首段 :1 `=== selftest-active-plan.sh rc=0`；末段 :353 `=== selftest-workflow-orchestration.sh rc=0`）；跑批窗口 17:23:23-17:25:54；`FAIL=[1-9]` 搜索 NO_REAL_FAIL；TRUNCATED 计数 0
+- 对照：baseline 71 脚本名全集在本次逐一在位，唯一新增 selftest-decision-grading.sh rc=0（`Total: PASS=12 FAIL=0 WARN=0`）
+- 格式差异备注（判读=主进程）：selftest-final-gate-hash.sh（:116-120）与 selftest-user-instruction-priority.sh（:341-342）无 `Total` 行——前者收尾 `结果: PASS=22 FAIL=0`、后者 `=== ALL PASS ===`，均 rc=0
+- 负结果报告：无 rc≠0 脚本（空集）；未做单脚本复跑/深验证；未执行 git 写操作；本次仅写 regression-worktree.log + 本 findings 追加 + progress 追加 + 检查点文件
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

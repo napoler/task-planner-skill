@@ -108,6 +108,7 @@
 - **Started:**
 - Actions taken:
   -
+  - [sub:11] 回归 72 脚本 rc/Total 落 regression-worktree.log
 - Files created/modified:
   -
 - Test Results:
