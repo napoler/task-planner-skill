@@ -5,7 +5,7 @@
   Rule 19.4: 错误立即写 Error Log,不等 Phase 结束。
 -->
 
-## Session: [DATE]
+## Session: 2026-10-10
 <!-- 本会话日期,如 2026-09-05 -->
 
 ### Phase 1: [Title]
