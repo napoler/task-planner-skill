@@ -70,6 +70,13 @@
 - 边界事实（主进程注意）：`.gitignore` 为未暂存（` M`）改动，故 `git diff --cached --stat` 当前仅见 `plans/.active_plan | 1 -`（D），`.gitignore` 行在 `git diff`（未暂存）；按 §4「禁 git add」未暂存，暂存/提交归主进程
 - 负结果报告：未执行 git add/commit/checkout/reset；未删工作区文件；未动 skills/task-planner/**；`git status` 另见 ` M subagent-state/.dispatch-inflight` 为派发期既有改动（非本次产生）
 
+#### [sub:3-executor] S3 头注释改述
+- 事实（命令→关键输出）：`grep -c 'task-v164'` → set-active-plan.sh:6 / resolve-plan-dir.sh:4；`bash -n` 两脚本 rc=0；`git diff --stat` 仅两脚本（+ 既有派发期 `.dispatch-inflight` 改动）
+- 改述锚：set-active-plan.sh:3-8（摘要行"全局 fallback"+side 权威层补注）:9-17（新增 `[2026-10-10 task-v164]` 三点块：①路径本地化既成事实 ②瞬态化 git rm --cached+.gitignore 同族 ③角色降级 fallback+退役"移交"叙事）:41（usage 行内补注，命令形态不变）:33-34（尾部"全局 legacy"→"全局 fallback"补注）；resolve-plan-dir.sh:7-14（同三点块）:19（解析链第 2 行"全局指针"→"全局 fallback"补注）:29-30（2026-09-10 errata 段末补注）
+- 保留纪律核验：2026-09-10 active-plan-race / task-planrequired-race 既有 errata 段落逐字保留，仅追加/行内补注 `[2026-10-10 task-v164]`；usage 命令形态未改；`set -u` 之后零改动
+- 验收复核：`git diff -U0 -- <两脚本> | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -vE '^[+-][[:space:]]*#' | grep -c .` → 0（代码区零改动）；"移交"7 处均为退役/历史事实陈述（"退役'移交全局指针'叙事"/"不再称'移交/指认全局指针'"/历史 chore 移交噪音），无推荐操作表述
+- 负结果报告：未改函数体/变量/usage 命令形态/解析链逻辑；未执行 git add/commit/checkout/reset；未动其他文件（`.dispatch-inflight` M 为派发期既有改动，非本次产生）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 # set-active-plan.sh — 设置/查看活跃计划指针
-#   全局: plans/.active_plan            (单会话/cron 场景;原行为,兼容旧调用方)
-#   会话: plans/.active_plan_side/<sid>.active_plan (2026-09-10 active-plan-race 新增,并行安全)
+#   全局 fallback: plans/.active_plan   (原措辞"全局: 单会话/cron 场景;原行为,兼容旧调用方";
+#     [2026-10-10 task-v164] 工作树内瞬态文件,路径随 $PWD 本地化,仅服务 sid-less/cron legacy 调用方)
+#   会话: plans/.active_plan_side/<sid>.active_plan (2026-09-10 active-plan-race 新增,并行安全;
+#     [2026-10-10 task-v164 补注] 2026-10-07 fix-pointer-race 后=权威层,正常路径优先)
 # (移植适配自上游 planning-with-files v3;本仓无 .planning 布局,指针放 plans/ 下)
+#
+# [2026-10-10 task-v164] 头注释改述(原措辞"全局 legacy 指针"误导为跨树共享/需移交,实为
+#   工作树内瞬态 fallback,改述之;解析链逻辑/参数/函数体零改动):
+#   ① 路径本地化既成事实:全局指针路径 = $PWD/plans/.active_plan,随工作树各自一份(set-active-plan.sh:69,84-85),
+#      非跨树共享文件;旧叙事"全局"易被误读为全局单例。
+#   ② 瞬态化(2026-10-10 task-v164):git rm --cached + .gitignore,与 .active_plan_side/ / .plan_required_side/ /
+#      .drift-rhythm/ 同族(即写即弃运行态不入库)→ 跨树零共享、合并零冲突、git churn 止息(历史 8 次 chore 移交/收尾噪音)。
+#   ③ 角色降级为 fallback:正常路径=side 会话私有指针(2026-10-07 fix-pointer-race 后权威层);
+#      全局层仅服务 sid-less/cron legacy 调用方。退役"移交全局指针"叙事(该叙事=并行可见漂移来源)。
 #
 # 2026-09-10 active-plan-race: 原行为=单文件全局指针,多并行会话互顶(后写者赢,
 #   09-09 实锤 7 次 check-dispatch 误拦)。新增:
 #   set-active-plan.sh set <task-id> [--sid s] [project-root]   # 会话私有指针(mktemp+mv 原子写,推荐)
-#   set-active-plan.sh <task-id> [project-root]                 # 全局 legacy(=原位置参数行为)
+#   set-active-plan.sh <task-id> [project-root]                 # 全局 fallback(=原位置参数行为) [2026-10-10 task-v164 补注:原措辞"全局 legacy",改述为 fallback]
 #   set-active-plan.sh --show [--sid s] [project-root]          # 带 sid 时同时展示 side 与全局
 #   set-active-plan.sh --clear [--sid s] [project-root]         # 清全局;--sid 时连 side 一起清
 #   set-active-plan.sh gc [project-root]                         # 清扫 .active_plan_side/ 中 mtime>24h 的残留
@@ -18,7 +29,8 @@
 #   gc 同语义扩展清扫 plans/.plan_required_side/ 中 mtime>24h 的 *.plan_required(side 哨兵,TTL 对齐 resolve 侧)。
 #
 # 指针生效后 hook(zcode-userpromptsubmit/zcode-posttooluse)经 resolve-plan-dir.sh 解析
-# (会话 side 优先 → 全局 legacy → mtime 最新),多计划并行时消除注入歧义。
+# (会话 side 优先 → 全局 fallback → mtime 最新),多计划并行时消除注入歧义。
+#   [2026-10-10 task-v164 补注] 原措辞"全局 legacy",降级为 fallback(角色表述统一)。
 
 set -u
 

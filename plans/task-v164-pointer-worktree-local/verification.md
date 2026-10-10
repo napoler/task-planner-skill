@@ -53,14 +53,14 @@ Status: `complete` Last verified: 2026-10-10 15:2x
 **Depends on**: Phase 1
 
 **Done when**:
-- [ ] S2: `git rm --cached plans/.active_plan` 完成 + `.gitignore` 追加条目 + 工作区文件保留
-- [ ] S3: 两脚本头注释改述完成，diff 只见注释区（逻辑零改动）
+- [x] S2: `git rm --cached plans/.active_plan` 完成 + `.gitignore`:15 追加条目 + 工作区文件保留
+- [x] S3: 两脚本头注释改述完成，diff 只见注释区（逻辑零改动）
 
 **Verification**:
-- [ ] V-2.1: VC-1 命令级判定全过（ls-files 空/ignore 命中/实 set 后 status 无 M）
-- [ ] V-2.2: diff 验证解析链逻辑零改动（git diff 只含注释区）
+- [x] V-2.1: VC-1 命令级判定全过（ls-files exit1/ignore 命中/legacy set 后仅 D 态无 ??）
+- [x] V-2.2: diff 验证解析链逻辑零改动（`git diff -U0` 非注释行=0；bash -n 双过）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 15:5x
 
 ---
 

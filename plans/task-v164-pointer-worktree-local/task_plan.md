@@ -87,7 +87,7 @@
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | complete（2026-10-10 15:2x：71/71 rc=0+FF master 79cd10a） |
-| G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | pending |
+| G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | complete（2026-10-10 15:5x：8ea2eb3+S3 复验） |
 | G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S7 | pending |
 | G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S8-S10 | pending |
 | G5 | 交付合并 | 合并回 master+部署对账+簿记+规则登记 | smart-merge-back no-ff 对账+INDEX/ledger/CHANGELOG+check-complete exit 0 | Phase 5 | pending |
@@ -142,10 +142,10 @@
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
 | S2 | `plans/.active_plan` 改瞬态：`git rm --cached` + `.gitignore` 追加 `plans/.active_plan`（工作区文件保留） | executor（sonnet-1） | ① findings.md A-D 节 ② 仓根 `.gitignore`:1-10 ③ worktree 绝对路径 | VC-1 命令级判定全过（ls-files 空/ignore 命中/legacy set 后 status 无 M）+ 工作区文件仍在 | 10min | 1f/1l/10min | 无 | done（2026-10-10 15:4x，主进程复验） | S1 基线后 |
-| S3 | set-active-plan.sh + resolve-plan-dir.sh 头注释改述：全局指针="工作树内瞬态 fallback"，退役"移交"叙事 | executor（sonnet-1） | ① set-active-plan.sh:1-21 ② resolve-plan-dir.sh:1-27（knowledge-brief.md §3 由派发模板自动注入） | 头注释无"移交/入库"旧语义 + git diff 只见注释区 + `bash -n` 双通过 | 10min | 2f/20l/10min | 无 | pending | S2 后 |
+| S3 | set-active-plan.sh + resolve-plan-dir.sh 头注释改述：全局指针="工作树内瞬态 fallback"，退役"移交"叙事 | executor（sonnet-1） | ① set-active-plan.sh:1-21 ② resolve-plan-dir.sh:1-27（knowledge-brief.md §3 由派发模板自动注入） | 头注释无"移交/入库"旧语义 + git diff 只见注释区 + `bash -n` 双通过 | 10min | 2f/20l/10min | 无 | done（2026-10-10 15:5x，主进程复验代码区 0 改动） | S2 后 |
 
-- **Status:** in_progress（S2 done；S3 派发中）
-- **V-N:** VC-1（S2 四项命令判定全过并经主进程复验）
+- **Status:** complete（2026-10-10 15:5x；S2 四判定+S3 注释区零代码改动均经主进程复验）
+- **V-N:** VC-1（S2 四项命令判定）+ VC-3 部分（S3 头注释旧语义清零）
 - **Executor:** executor（sonnet-1）
 
 ### Phase 3: 引用面措辞级联
@@ -195,14 +195,15 @@
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-10 15:2x | Phase 1 收口自检（drift-rhythm due=0 未到 hook 提醒阈值，按 64.2 主动自检）：原目标=.active_plan 瞬态化全链 vs 当前步=Phase 1 隔离基线全部达成； master 快进=防 S5 撞车的预防动作不改目标；R1-R5 范围零蔓延 | 全 VC | ALIGNED |
+| 2026-10-10 15:5x | Phase 2 收口自检：S2/S3 均经主进程独立复验（非采信子代理自报）；diff 只见注释区+索引态，解析链零改动=R1/R3/R4 路径 intact；G2 达成 | VC-1, VC-3 | ALIGNED |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-2（in_progress：S2 done 并经主进程复验，S3 头注释改述派发中）
+3（in_progress：Phase 2 complete，S4 引用面分级派发中）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 S3（executor，sonnet-1）：两指针脚本头注释退役"移交"叙事、改述全局指针=工作树内瞬态 fallback（材料 subagent-state/3-prompt-material.md，checkpoint 3-executor.md）
+派发 S4（executor，sonnet-1）：28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md（材料 subagent-state/4-prompt-material.md，checkpoint 4-executor.md）
 
 ## Decisions
 | 时间 | 决策 | 理由 |
