@@ -145,6 +145,12 @@ function buildHooks(canonicalRoot: string): Record<string, unknown[]> {
     ],
     Stop: [
       {
+        // [2026-10-11 task-v167] 停止护栏(stall 检测 + block 次数 cap 20): 置于 check-complete 之前,
+        // 先拦"任务未完成就停止"(五重 guard 判定), 再由 check-complete 做完成度终验
+        command: 'bash ' + SD + '/check-stop-guard.sh',
+        statusMessage: '[task-planner] 停止护栏(stall/上限20)...',
+      },
+      {
         command: 'SD="' + SD + '"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File ' + HOOK_SD + '/check-complete.ps1 2>/dev/null || sh ' + HOOK_SD + '/check-complete.sh',
         statusMessage: '[task-planner] 完成检测...',
       },
