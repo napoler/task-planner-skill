@@ -89,7 +89,7 @@
 | G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | complete（2026-10-10 15:2x：71/71 rc=0+FF master 79cd10a） |
 | G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | complete（2026-10-10 15:5x：8ea2eb3+S3 复验） |
 | G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S10+锁步 | complete（2026-10-10 16:4x：全域扫描 ZERO-RESIDUE，残余仅注记引文） |
-| G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S8-S10 | pending |
+| G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S11-S13 | complete（2026-10-10 17:4x：72/72+APPROVED 7/7） |
 | G5 | 交付合并 | 合并回 master+部署对账+簿记+规则登记 | smart-merge-back no-ff 对账+INDEX/ledger/CHANGELOG+check-complete exit 0 | Phase 5 | pending |
 
 ## ⚠️ 执行范围限制
@@ -174,6 +174,8 @@
 | S13 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：APPROVED 7/7+3 NIT 已处置登记） | S11/S12 后 |
 | S13-nit | CR NIT 收尾：两指针脚本头注释自指行号锚漂移修正（resolve-plan-dir.sh:9 的 :30→实测；set-active-plan.sh:11 的 :69,84-85→实测） | executor（sonnet-1） | ① CR NIT 清单（findings [sub:13] 段）② `grep -n 'ROOT=\|ACTIVE_FILE=' 两脚本` 实测 | 锚=实施日实测行号+[task-v164 CR-nit] 注记；diff 仅注释行；`bash -n` 双过 | 8min | 2f/2l/8min | 无 | pending | S13 后 |
 
+- **Status:** complete（2026-10-10 17:4x；S11 零增量/S12 双树实证/S13 CR APPROVED/NIT 收尾，均主进程独立复验）
+- **V-N:** VC-2（S12 行为验证）+ VC-4（S11 主进程求和零增量+CR 质量面）
 - **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）
 
 ### Phase 5: 合并回 + 部署 + 簿记
@@ -207,14 +209,15 @@
 | 2026-10-10 15:5x | Phase 2 收口自检：S2/S3 均经主进程独立复验（非采信子代理自报）；diff 只见注释区+索引态，解析链零改动=R1/R3/R4 路径 intact；G2 达成 | VC-1, VC-3 | ALIGNED |
 | 2026-10-10 16:0x | S4 分级后计划重构（16:0x Decisions 登记）：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8），远超原 S5-S7 三单预估；按 step_max_files=2 拆为 S5-S10 六个派发；原 S7 selftest 适配目的经主进程实测（active-plan 29/29、pointer-lifecycle 10/10 瞬态化后全绿）证明无事可做→撤销，其槽位由脚本注释改述接替 | VC-3 | ALIGNED（范围未超：12 目标全在 S4 清单内，D3 禁扩范围） |
 | 2026-10-10 16:4x | Phase 3 收口自检：12 目标+S9b+锁步全落地，每单均主进程独立复验（diff/语法/grep 三件套）；全域旧语义扫描 ZERO-RESIDUE（7 残余均为 [task-v164] 注记引文）；S10 display 字符串偏离经仲裁登记未越 R2/R4 目标 | VC-3 | ALIGNED |
+| 2026-10-10 17:4x | Phase 4 收口自检：S11/S12/S13 均独立执行体产出+主进程亲验（回归日志逐段、行为 log 原文、CR 七项）；NIT 3 条全部处置（2 锚修正+1 口径更正）；VC-1~4 证据齐 | VC-1~4 | ALIGNED |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-4（in_progress：Phase 3 complete，S11 全量回归派发中）
+5（in_progress：Phase 4 complete，合并回+部署+簿记）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 S11（code-runner-agent，mini）：变更后态全量 selftest（72 脚本）回归跑批，逐脚本 rc/Total 落 regression-worktree.log 对照 baseline-selftest.log（材料 subagent-state/11-prompt-material.md，checkpoint 11-code-runner-agent.md）
+Phase 5：主进程 git 编排——预处置主仓脏 plans/.active_plan（按已登记瞬态合并规则：stash 后合并、禁抢救指针值）→ smart-merge-back --deploy 三部署位对账 → INDEX/ledger/CHANGELOG v164 条目 → worktree 清理
 
 ## Decisions
 | 时间 | 决策 | 理由 |

@@ -107,17 +107,21 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
   - [sub:11] 回归 72 脚本 rc/Total 落 regression-worktree.log
   - [sub:12] 双树行为验证完成
   - [sub:13] CR 结论：APPROVED（七项必查全 PASS；3 项文档/注释 nit 非阻断）
   - [sub:13-nit] 锚漂移修正完成
 - Files created/modified:
-  -
+  - plans/task-v164-pointer-worktree-local/{regression-worktree.log, behavior-verification.log}（+357/+20）
+  - skills/task-planner/scripts/resolve-plan-dir.sh、set-active-plan.sh（锚修正，代码区 0 改动）
+  - subagent-state/11-13-nit 各 checkpoint
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | S11 全量回归 | 72 脚本逐跑 | 零增量 | 72 段 rc=0、FAIL 行=0；vs 基线差集=decision-grading 新增且过（主进程亲验） | ☑ PASS |
+  | S12 双树行为 | 命令集实跑 | VC-2 | 互不感知/status 无条目/双树解析隔离/新树 mtime 兜底/side 归位/零残留（主进程亲验 log 原文） | ☑ PASS |
+  | S13 CR | 七项必查 | APPROVED | 7/7 PASS+3 NIT（2 锚漂移已修+1 计划口径已更正登记） | ☑ PASS |
+  | S13-nit | 自指锚修正 | 实测行号 | :41,109 / :97；代码区 0 改动 | ☑ PASS |
 
 ### Phase 5: 合并回 + 部署 + 簿记
 - **Status:** pending
@@ -157,7 +161,7 @@
 | G1（隔离基线） | （待 Phase 1 complete：baseline-selftest.log 求和记录+worktree list） | |
 | G2（指针瞬态化） | （待 Phase 2 complete：VC-1 命令判定+diff 注释区） | |
 | G3（级联完成） | 全域旧语义扫描 ZERO-RESIDUE（7 残余均为注记引文）+锁步 selftest 10/10+findings 28 行清单 | 2026-10-10 16:4x |
-| G4（独立验证） | （待 Phase 4 complete：S8 求和+S9 行为输出+S10 CR） | |
+| G4（独立验证） | S11 回归 72/72 主进程亲验+S12 行为 log 原文亲验+S13 CR APPROVED（7/7） | 2026-10-10 17:4x |
 | G5（交付合并） | （待 Phase 5 complete：merge 对账+INDEX/ledger/CHANGELOG） | |
 
 ---

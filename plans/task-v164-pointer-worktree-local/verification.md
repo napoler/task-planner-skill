@@ -90,16 +90,16 @@ Status: `complete` Last verified: 2026-10-10 16:4x
 **Depends on**: Phase 3
 
 **Done when**:
-- [ ] S11: 全量 selftest 主进程逐 Total 求和，对照基线新增 FAIL=0
-- [ ] S12: 双 worktree 行为验证通过（VC-2）
-- [ ] S13: code-reviewer CR APPROVED
+- [x] S11: 全量 selftest 主进程逐 Total 求和，对照基线新增 FAIL=0（72 段 rc=0，差集=decision-grading 新增且过）
+- [x] S12: 双 worktree 行为验证通过（VC-2，主进程亲验 log 原文）
+- [x] S13: code-reviewer CR APPROVED（7/7，3 NIT 已处置：2 锚修正+1 口径更正）
 
 **Verification**:
-- [ ] V-4.1: selftest Total 求和=0 新增 FAIL → mapped VC-4
-- [ ] V-4.2: 行为验证命令+输出落 progress.md → mapped VC-2
-- [ ] V-4.3: CR 结论（APPROVED/意见闭环）落 subagent-state → mapped VC-4 质量面
+- [x] V-4.1: selftest Total 求和=0 新增 FAIL → mapped VC-4
+- [x] V-4.2: 行为验证命令+输出落 progress.md → mapped VC-2
+- [x] V-4.3: CR 结论（APPROVED+nit 清单）落 subagent-state → mapped VC-4 质量面
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 17:4x
 
 ---
 
