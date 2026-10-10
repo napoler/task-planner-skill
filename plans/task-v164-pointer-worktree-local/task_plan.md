@@ -172,7 +172,8 @@
 | S11 | 变更后态全量 selftest（现 72 个）回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S10 已落）② baseline-selftest.log 对照（71 段；decision-grading 为新脚本对照 master 态） | 主进程求和：新增 FAIL=0（既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：72/72 rc=0 零 FAIL，主进程亲验+CR 证据项⑥ PASS） | S5-S10 后 |
 | S12 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | done（2026-10-10 17:3x：双树隔离+新树兜底+零残留全 PASS，主进程亲验 log 原文） | S11 后 |
 | S13 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：APPROVED 7/7+3 NIT 已处置登记） | S11/S12 后 |
-| S13-nit | CR NIT 收尾：两指针脚本头注释自指行号锚漂移修正（resolve-plan-dir.sh:9 的 :30→实测；set-active-plan.sh:11 的 :69,84-85→实测） | executor（sonnet-1） | ① CR NIT 清单（findings [sub:13] 段）② `grep -n 'ROOT=\|ACTIVE_FILE=' 两脚本` 实测 | 锚=实施日实测行号+[task-v164 CR-nit] 注记；diff 仅注释行；`bash -n` 双过 | 8min | 2f/2l/8min | 无 | pending | S13 后 |
+| S13-nit | CR NIT 收尾：两指针脚本头注释自指行号锚漂移修正（resolve-plan-dir.sh:9 的 :30→实测；set-active-plan.sh:11 的 :69,84-85→实测） | executor（sonnet-1） | ① CR NIT 清单（findings [sub:13] 段）② `grep -n 'ROOT=\|ACTIVE_FILE=' 两脚本` 实测 | 锚=实施日实测行号+[task-v164 CR-nit] 注记；diff 仅注释行；`bash -n` 双过 | 8min | 2f/2l/8min | 无 | done（2026-10-10 17:3x） | S13 后 |
+| S11-r2 | 合并后态全量回归（master 26 提交已并入，5 文件交集经自动/手动解消）：对最终待合并态重跑 72 脚本 | code-runner-agent（mini） | ① worktree（merge 40a72f7 后态）② baseline-selftest.log 对照 | 主进程求和：72 段 rc=0、零 FAIL（与 S11 同口径） | 12min | 0f/0l/12min | 无 | pending | S13-nit 后 |
 
 - **Status:** complete（2026-10-10 17:4x；S11 零增量/S12 双树实证/S13 CR APPROVED/NIT 收尾，均主进程独立复验）
 - **V-N:** VC-2（S12 行为验证）+ VC-4（S11 主进程求和零增量+CR 质量面）
@@ -210,6 +211,7 @@
 | 2026-10-10 16:0x | S4 分级后计划重构（16:0x Decisions 登记）：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8），远超原 S5-S7 三单预估；按 step_max_files=2 拆为 S5-S10 六个派发；原 S7 selftest 适配目的经主进程实测（active-plan 29/29、pointer-lifecycle 10/10 瞬态化后全绿）证明无事可做→撤销，其槽位由脚本注释改述接替 | VC-3 | ALIGNED（范围未超：12 目标全在 S4 清单内，D3 禁扩范围） |
 | 2026-10-10 16:4x | Phase 3 收口自检：12 目标+S9b+锁步全落地，每单均主进程独立复验（diff/语法/grep 三件套）；全域旧语义扫描 ZERO-RESIDUE（7 残余均为 [task-v164] 注记引文）；S10 display 字符串偏离经仲裁登记未越 R2/R4 目标 | VC-3 | ALIGNED |
 | 2026-10-10 17:4x | Phase 4 收口自检：S11/S12/S13 均独立执行体产出+主进程亲验（回归日志逐段、行为 log 原文、CR 七项）；NIT 3 条全部处置（2 锚修正+1 口径更正）；VC-1~4 证据齐 | VC-1~4 | ALIGNED |
+| 2026-10-10 17:5x | Phase 5 合并前置：master 已前进 26 提交（v156 Rule 73 等），与分支 5 文件交集 → 先在分支内 merge master 解冲突（仅 SKILL.md:111 一处，取本方改述+v156 注释精度修正，merge commit 40a72f7）；主仓脏指针 v163 值按已登记瞬态合并规则 stash 不抢救 → 增设 S11-r2 对合并后态复跑全量后方可 merge-back | VC-4 | ALIGNED（防“S11 绿的是合并前态”证据断链） |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
