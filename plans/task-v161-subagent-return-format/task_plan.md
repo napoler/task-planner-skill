@@ -472,10 +472,10 @@ Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1�
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | 2026-10-10 10:30 | code-assistant(haiku-1) | S1 subagent_dispatch.md §7 优先级声明+点名禁令+段填写禁令 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/1-code-assistant.md | pg1 / 0 / ☐ |
-| 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | done | 22.4b 段末追加污染三面句（+1/-0 纯增量，与任务书指定文本逐字一致） | critical-rules.md:186（22.4c 段前唯一 + 行）；git diff --numstat = 1 0；子代理 evidence 含逐字 diff MATCH_EXACT | findings.md#主进程侧动作闭环（S2 写入） | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☑ |
-| 3 | 2026-10-10 10:30 | code-assistant(haiku-1) | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☐ |
-| 4 | 2026-10-10 10:30 | code-assistant(haiku-1) | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☐ |
+| 1 | 2026-10-10 10:30 | code-assistant(haiku-1) | S1 subagent_dispatch.md §7 优先级声明+点名禁令+段填写禁令 | done | §7 追加三 blockquote（:79-83,既有 :62-77 零改动,+6/-0）；子代理返回块前带「8 字段返回：」前言行（轻违「不加标题/前言」,块本体 8 字段合规,登记不阻断） | subagent_dispatch.md:79-83；git diff --numstat=6 0；主进程复跑 grep -c task-v161=3 | findings.md#[sub:1-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/1-code-assistant.md | pg1 / 0 / ☑ |
+| 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | done | 22.4b 段末追加污染三面句（+1/-0 纯增量，与任务书指定文本逐字一致） | critical-rules.md:185（22.4c 段前唯一 + 行）；git diff --numstat = 1 0；子代理 evidence 含逐字 diff MATCH_EXACT | findings.md#[sub:2-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☑ |
+| 3 | 2026-10-10 10:30 | code-assistant(haiku-1) | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | done | 93 行（≤95）；--selftest 4 夹具全 PASS；主进程独立复跑 summary 污染→rc1+点名、块尾附加→rc1、自然人言→rc1 | check-subagent-return.sh:1-21 头注+判据实现；主进程复跑 stdin 夹具 rc 分流正确；wc -l=93 | findings.md#[sub:3-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☑ |
+| 4 | 2026-10-10 10:30 | code-assistant(haiku-1) | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | done | +31/-0；污染夹具（标题重复+①②③清单）enforce rc=2 段结构违规；干净夹具 rc=0；selftest-dispatch.sh 31/31 不破；主进程复现一致（判据 C 命中） | check-dispatch.sh:195 return_section_check+挂点 :306/:321/:358；主进程复跑 v3 夹具：污染 rc=2、干净 rc=0 | findings.md#[sub:6-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☑（注:子代理 152 工具调用/61min 超 15min 预算未返回 partial——执行偏差登记,产物验收通过） |
 
 ## 🔗 Chain 区块交接配置（可选）
 

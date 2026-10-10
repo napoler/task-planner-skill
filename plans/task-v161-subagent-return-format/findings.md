@@ -47,7 +47,23 @@
 #### 用户原话转译核对（Rule 51.1 反造谣自检）
 - 用户反馈「现在返回了和正常执行任务返回一样的格式」= 子代理返回被总结式/步骤进度式自然语言格式替代固定列表格式，与上述三层根因完全对应（实证 75.9% 违规率 + 用户 §7 段污染样本）
 
+#### [sub:1-code-assistant] subagent_dispatch.md §7 三反污染条款（2026-10-10，主进程兜底回填）
+- 操作：§7 段追加三 blockquote（:79-83）——优先级声明（本模板优先于 agent 定义输出模板）/点名禁令（步骤进度/发现列表/任务交付报告/[BOOKKEEPING] 四形态）/段填写禁令（返回格式段禁填 ①②③ 任务清单）；既有 :62-77 零改动（+6/-0）
+- 附证：本任务自身即判例——S1 返回消息带「8 字段返回：」前言行（块本体 8 字段合规），登记 Handoff 备注；S2/S3/S6 返回均为无前言纯块
+
+#### [sub:3-code-assistant] check-subagent-return.sh 返回侧机械校验（2026-10-10，主进程兜底回填）
+- 操作：新写 scripts/check-subagent-return.sh（93 行,头部 What+Why 注释）；四判据=字段齐全/契约外字段/块尾无附加/值域；--selftest 4 夹具；输出前缀 [return-guard]
+- 主进程独立复跑：--selftest 4/4 PASS；summary 污染块→VIOLATION 判据二点名 rc=1；合规块→PASS rc=0
+- 证据：check-subagent-return.sh:1-21 及判据实现体；主进程 stdin 复跑 rc 分流记录（progress.md Phase 3）
+
+#### [sub:6-code-assistant] check-dispatch.sh prompt 侧段结构校验（2026-10-10，主进程兜底回填）
+- 操作：check-dispatch.sh 新增 return_section_check()（:195 函数体,挂点 :306/:321/:358 三路径）；判据=标题唯一/段含四 key/段内禁序号清单；输出前缀段沿用 [dispatch-guard]；纯增量 +31/-0
+- 主进程独立复现：完整污染夹具（重复标题+①②③ 三项清单+全套必需 key）→ enforce rc=2「✗ 返回格式段结构违规: C: 段内序号清单行 3 行且缺 key」；干净夹具（§7 原文）→ rc=0；selftest-dispatch.sh 31/31 不破
+- 边界登记：return_section_check 挂 fine_grain_checks 之后——prompt 同时违 KQ3（brief 未引用）时报 KQ3 exit 2,段结构违规不展示（双违规任一拦,防御不塌）;判据 A 双标题形态由 S6 自测夹具直接覆盖
+- 附带发现（S6 执行偏差）：152 工具调用/61min 远超 15min 预算未返 partial——产物验收通过,偏差登记 Handoff,不阻断
+
 ## Technical Decisions
+
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
 |----------|-----------|
