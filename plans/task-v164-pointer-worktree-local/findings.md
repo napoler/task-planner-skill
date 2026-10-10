@@ -122,6 +122,14 @@
 - ⚠️ 副作用（主进程注意，S4 未列）：`selftest-pointer-lifecycle.sh` PL-07（:43-44 `cnt '指针移交' "$SKILL" -ge 1`）因 SKILL.md 字面「指针移交」被改述 → 该脚本 rc=1（`FAIL PL-07 (SKILL.md 移交纪律行缺失)`、`Total: 10 PASS=9 FAIL=1`）。禁动 .sh（S5 边界）→ 需后续 S-unit 同步 PL-07 锚为「指针清理」（Phase 3/4 .sh 措辞更新批次）
 - 负结果报告：仅改清单内两文件区段；未改 :298/其他规则/SKILL 其他节；未动任何 .sh/.cjs；未执行 git add/commit/checkout/reset；`git diff --stat` 除两目标文件外仅 `.dispatch-inflight`（派发期既有 M，非本次产生）
 
+#### [sub:6-executor] S6 README+INSTALL 改述
+- 事实（命令→关键输出）：基线 `grep -nE '全局 legacy' README.md INSTALL.md` = 3 hits（README:100/101、INSTALL:189）；改述后 = 0（rc=1 空集）；`grep -c 'task-v164'` README.md=1 / INSTALL.md=1（改述前各 0）
+- 改述锚：README.md:100（`全局 legacy .active_plan`→`全局 fallback .active_plan（工作树内瞬态兜底）`）；:101（同→`全局 fallback .active_plan`）；:102 邻行新增 `│   # [2026-10-10 task-v164] 上两行原措辞以 legacy 描述该层，改述为「全局 fallback」：实为工作树内瞬态兜底（路径随 $PWD 本地化；git rm --cached+.gitignore，与 .active_plan_side/ 同族瞬态运行态）；正常路径=side 会话私有指针（权威层）；退役「legacy/移交」叙事`。INSTALL.md:189（`全局 legacy plans/.active_plan`→`全局 fallback plans/.active_plan（工作树内瞬态兜底，路径随 $PWD 本地化）`+行内 `[2026-10-10 task-v164 补注：原措辞以 legacy 描述该层…退役「legacy/移交」叙事]`）
+- 防 grep 误伤核验：注记避开字面「全局 legacy」连写（仿 S5 用「原措辞以 legacy 描述该层」），故 A2 grep=0 与「保留原措辞说明」兼得
+- 保留纪律核验：两文件仅动清单内行（README 净 +1 行 ≤±2、INSTALL 行数不变）；代码块箱线/安装命令块/表格零改动（`git diff` 仅 2 hunk，未触及 install.sh 命令块与 §0/§4.5 表格）
+- 验收复核：`grep -c 'task-v164'`→1/1；`grep -nE '全局 legacy'`→空 rc=1；`git diff --stat`→仅 INSTALL.md(+1/-1)+README.md(+3/-2)（第三行 `.dispatch-inflight` 为派发期既有 M，非本次产生）
+- 负结果报告：仅改清单内两文件区段；未动 skills/ 下其他文件与任何脚本；未改安装命令/表格；未执行 git add/commit/checkout/reset
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
