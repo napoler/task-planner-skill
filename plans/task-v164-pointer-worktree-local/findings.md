@@ -200,6 +200,12 @@
 - rc≠0 段：空集（75/75 rc=0）。
 - 来源锚：regression-worktree-merged.log:1（首段 `=== selftest-absorption-discipline.sh rc=0`）、:368（末段 `=== selftest-workflow-orchestration.sh rc=0`）。
 
+#### [sub:16-executor] S16 瞬态适配守卫修复
+- 现象锚：`skills/task-planner/scripts/check-complete.sh:1375`（修复前）`_cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"`——指针文件缺失时 shell 重定向失败行 `No such file or directory` 漏 stderr（`tr` 的 `2>/dev/null` 只作用于 `tr` 自身，捕不住 shell 层的 `< file` 重定向错误）。
+- 修法：改为存在性前置守卫 `_cp_active_ptr=""; [ -f "$PLAN_DIR_GUESS/../.active_plan" ] && _cp_active_ptr="$(...)"`，保持"缺失→静默跳过"fail-open 语义；下方 `if [ -n ... ]` 判断逻辑未动。
+- 证据锚：`bash -n` rc=0；/tmp 夹具实测 OLD 变体漏 `/bin/bash: line 9: .../.active_plan: No such file or directory`、NEW 变体 stderr 为空；CASE B（指针=task-foo）warn 分支 FIRED、CASE C（指针=other-task）silent——warn 逻辑不受影响。
+- git diff：仅 check-complete.sh 一文件（+2/-1，含一行 Rule 45 注释）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

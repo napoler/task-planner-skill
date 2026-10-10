@@ -1372,7 +1372,8 @@ END {print n+0}'
     #   本任务 id（从 plan 目录名 basename 推导）则输出一行 warn 提醒（stderr，风格对齐
     #   同段 warn count 行）；warn 语义恒不改退出码（exit 码仍为 python_rc，零阻断）；
     #   指针缺失/不可读 → 静默跳过（fail-open，不影响终验判定）。
-    _cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"
+    # [2026-10-10 task-v164 fix-wave2] 原行为=直接重定向读取:指针缺失时 shell 的重定向失败信息漏 stderr(tr 的 2>/dev/null 捕不住 shell 重定向错误);改为存在性前置守卫,保持"缺失→静默跳过"语义(fail-open 不变)
+    _cp_active_ptr=""; [ -f "$PLAN_DIR_GUESS/../.active_plan" ] && _cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"
     if [ -n "$_cp_active_ptr" ] && [ "$_cp_active_ptr" = "$(basename "$PLAN_DIR_GUESS")" ]; then
         printf '[plan] 移交提醒( pointer-lifecycle ): 全局指针仍指向本任务，完成后无需移交、请清理（置空或指向在途任务；gc 亦会清理 stale）\n' >&2
     fi
