@@ -27,3 +27,11 @@
 - 对象 scripts/set-active-plan.sh：看点=中文状态行兼容（NIT-a）；动作=后续任务把 has_complete 扩为「Status|状态」双语锚定
 - 对象 scripts/check-dispatch.sh serial_slot：看点=组间同波并行；动作=富锁 {组名:ts}（Rule 68.2 边界演进，v153 已登记）
 - 对象 plans/.active_plan：看点=移交纪律已机制化（本次）；动作=各任务完成时遵 B 提示词移交
+
+---
+
+## 📋 需求覆盖核对表（Rule 51.3/51.4）
+| R | 覆盖 VC | 状态 | 证据 |
+|---|---------|------|------|
+| R1 | VC-1..VC-8 | covered | 五 Phase 全部 complete+CR3 APPROVED+R5 71/71+F5 实弹 exit 0（verification.md 八条+各 subagent-state） |
+让步：无。
