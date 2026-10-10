@@ -148,3 +148,20 @@ session_id: de2c5bba-v159
 - 不动 critical-rules：纪律文本已在 v153 pointer-lifecycle-fix.md（B/C 提示词），本任务做机制化（gc/守卫/提醒/selftest）而非立 Rule（与 v158 source-anchor 制度化分工不重叠）
 - D2 只巡检不代写：其他会话 side 指针缺位属其自身 init 职责，越权补写=§十一 并行踩踏
 - F5 只改 deploy 段 staging/后验，merge 本体零改动
+
+## 🔗 Subagent Handoff 登记表（Rule 22.5）
+
+| # | 时间 | subagent_type | 任务目标(≤1句) | 状态 | 结论摘要 | checkpoint 路径 | verify_done |
+|---|------|---------------|----------------|------|---------|----------------|------------|
+| 1 | 10-10 06:0x | executor | set-active-plan 四修点（F1/F2/F3/F4） | done | 8/8 夹具过 | subagent-state/3-executor-S1.md | ☑ |
+| 2 | 10-10 06:1x | code-assistant | init-session F3 同语义守卫 | done | skip-WARN+fail-open 双夹具 | subagent-state/3-code-assistant-S2.md | ☑ |
+| 3 | 10-10 06:1x | code-assistant | check-complete 移交提醒+SKILL 纪律行 | done | 夹具命中+负对照 | subagent-state/3-code-assistant-S3.md | ☑ |
+| 4 | 10-10 06:2x | executor | smart-merge-back F5 staging 原子化 | done | 双夹具+真 slot 零触碰 | subagent-state/3-executor-S4.md | ☑ |
+| 5 | 10-10 06:2x | code-assistant | selftest-pointer-lifecycle 新建+registry | done | PL-01..10 全 PASS | subagent-state/3-code-assistant-S5.md | ☑ |
+| 6 | 10-10 06:3x | code-runner-agent | V1 全量回归（69 脚本） | done | 2 FAIL(契约漂移)→级联修复 | subagent-state/4-code-runner-S8.md | ☑ |
+| 7 | 10-10 06:3x | code-reviewer | V2 CR 一轮 | done | CHANGES_REQUESTED 1B+4M+3m | subagent-state/4-code-reviewer-CR.md | ☑ |
+| 8 | 10-10 06:4x | code-assistant | SM-06/SM-14 契约更新 | done | 17/17 PASS | subagent-state/4-code-assistant-SM.md | ☑ |
+| 9 | 10-10 06:5x | executor | CR 修复单元（B1 前置轮） | done | 9/9 验收 | subagent-state/5-executor-crfix.md | ☑ |
+| 10 | 10-10 07:0x | code-reviewer | CR 二轮复审 | done | 抓 B1 反向回归 | subagent-state/5-code-reviewer-CR2.md | ☑ |
+| 11 | 10-10 07:0x | executor | B1/M1/N1 锚定式修复 | done | 夹具三态+SM-16 legacy | subagent-state/5-executor-b1fix.md | ☑ |
+| 12 | 10-10 07:1x | code-reviewer | CR 三轮终审 | done | APPROVED | subagent-state/5-code-reviewer-CR3.md | ☑ |
