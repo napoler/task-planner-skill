@@ -103,7 +103,10 @@ fi
 #      条款面漂移（v150 计数钉值教训）——动态对照消除钉值腐化。
 c46="$(grep -cE '^\| C46 ' "$SKILLMD" || true)"
 r68="$(grep -cE 'Rule 68' "$SKILLMD" || true)"
-crit_max="$(grep -oE '^### [0-9]+ ' "$CRIT" | awk '{print $2}' | sort -n | tail -1)"
+# [2026-10-10 task-v160 合并级联：Rule 72 落地后上界对齐] 提取模式由旧纪元 `^### N `（实测 max=69，
+#   Rule 70/72 段无该标题形态）改为当前条文形态 `^## Rule N`（Rule 70/72 用 `## Rule N（…）`，实测 max=72）；
+#   判据语义不变：SKILL 上界须 == critical-rules 实测最大编号（纯机械对齐，不改判据强度）。
+crit_max="$(grep -oE '^## Rule [0-9]+' "$CRIT" | grep -oE '[0-9]+' | sort -n | tail -1)"
 skill_max="$(grep -oE 'Critical Rules 1-[0-9]+' "$SKILLMD" | grep -oE '[0-9]+' | sort -n | tail -1)"
 if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ -n "$crit_max" ] && [ -n "$skill_max" ] && [ "$skill_max" -eq "$crit_max" ]; then
   ok 05 "SKILL.md C46 行=$c46（=1）+ 'Rule 68' 引用=$r68（≥1）+ 上界 1-${skill_max} = critical-rules 实测最大 ${crit_max}（动态一致）"
