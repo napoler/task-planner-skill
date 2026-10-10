@@ -254,7 +254,7 @@ Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 age
 - [ ] knowledge-brief.md 基线定数落账
 - [ ] Document decisions with rationale
 - **V-N:** VC-1, VC-2（计划映射前瞻）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（契约层+条款层+校验层+守护层）
@@ -311,7 +311,7 @@ Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 age
 - [x] delivery-summary.md 落盘（含待授权项：内置 agent 定义输出模板修改+部署同步）
 - [x] Delete 隔离分支清理复验（wt/v161 已删）
 - **V-N:** VC-5, VC-6, VC-7
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
