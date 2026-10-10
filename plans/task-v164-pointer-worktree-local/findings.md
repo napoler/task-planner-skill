@@ -77,6 +77,43 @@
 - 验收复核：`git diff -U0 -- <两脚本> | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -vE '^[+-][[:space:]]*#' | grep -c .` → 0（代码区零改动）；"移交"7 处均为退役/历史事实陈述（"退役'移交全局指针'叙事"/"不再称'移交/指认全局指针'"/历史 chore 移交噪音），无推荐操作表述
 - 负结果报告：未改函数体/变量/usage 命令形态/解析链逻辑；未执行 git add/commit/checkout/reset；未动其他文件（`.dispatch-inflight` M 为派发期既有改动，非本次产生）
 
+#### [sub:4-executor] S4 引用面分级
+- 全集：`grep -rln 'active_plan' skills/task-planner/` = **28 文件**；`grep -rn 'active_plan' skills/task-planner/` = **170 hits**（材料记 166，实测 170，差 4；以实测为准，文件数 28 与材料一致）
+- 判据：hit 落在代码逻辑（路径拼装/守卫断言/resolver 调用）或注释语义中性 → 只读消费方；hit（或其所处注释块 ±5 行）为注释/文档正文且把全局指针框为旧语义（全局 legacy / 全局指针·单例 / 移交 / 跨树共享 / 入库 / git 跟踪 / legacy…指针）→ 措辞更新方；S3 已改述两文件单列
+| 文件(相对 skills/task-planner/) | hits | 分类 | 依据(file:line + 一句理由) |
+|--------|------|------|---------------------------|
+| INSTALL.md | 1 | 措辞更新方 | :189 正文"全局 legacy `plans/.active_plan` 仅兜底"→旧语义"全局 legacy" |
+| README.md | 2 | 措辞更新方 | :100,:101 文档"全局 legacy .active_plan"→旧语义 |
+| scripts/selftest-check-conflicts.sh | 1 | 只读消费方 | :18 注释述测试局部变量 active_plans 恒空(中性,无指针语义) |
+| scripts/selftest-rule23-conflict-scan.sh | 2 | 只读消费方 | :12,:98 注释=测试场景"无 active_plan 指针"(中性) |
+| scripts/plan-hygiene.sh | 2 | 只读消费方 | :7 注释=side 指针残留(中性); :117 代码 for 循环 |
+| scripts/allow-direct.sh | 3 | 只读消费方 | :73,:140,:159 代码 error 串 "no_active_plan"(守卫断言) |
+| scripts/zcode-userpromptsubmit.sh | 5 | 措辞更新方 | :23 注释"并行会话不再互顶全局 legacy 指针"→旧语义 |
+| scripts/plan-doctor.sh | 2 | 只读消费方 | :4 注释"无 .active_plan 指针"(中性); :48 代码路径拼装 |
+| SKILL.md | 2 | 措辞更新方 | :59 "全局 legacy"(旧语义); :111 "指针移交…全局指针"(旧语义 移交) |
+| scripts/ledger-append.sh | 1 | 只读消费方 | :5 注释"本仓脚本惯例,无 .active_plan"(中性) |
+| scripts/selftest-delegation.sh | 11 | 只读消费方 | :93,:94,:410 等测试代码写/清 .active_plan 路径拼装 |
+| scripts/zcode-posttooluse.sh | 2 | 措辞更新方 | :43-44 注释块"不再被全局 legacy 指针互顶"→旧语义 |
+| scripts/check-scope.sh | 2 | 只读消费方 | :136 注释 side 指针(中性); :140 代码守卫断言 |
+| scripts/zcode-sessionstart.sh | 1 | 只读消费方 | :30 注释=gc 清扫 side 指针(中性) |
+| scripts/task-plan-init.cjs | 3 | 措辞更新方 | :128-131 代码,邻注释 :122-124"不读全局 legacy/全局指针恒有效"→旧语义 |
+| scripts/selftest-drift-enforcement.sh | 12 | 只读消费方 | :66-158 测试代码 mkdir/printf side 指针路径拼装 |
+| scripts/resolve-plan-dir.sh | 11 | 已改述（S3） | :7-14,:18,:29-30 [2026-10-10 task-v164] 三点块+"全局 fallback"补注在位 |
+| scripts/init-session.sh | 12 | 措辞更新方 | :719,:720"不碰/写全局 legacy"; :727"legacy 全局指针"→旧语义 |
+| scripts/zcode-pretooluse.sh | 1 | 措辞更新方 | :72-73 注释"不再被互顶的全局指针误拦"→旧语义 |
+| scripts/check-conflicts.sh | 4 | 只读消费方 | :121,:137,:177 代码 active_plans 数组(局部变量) |
+| scripts/check-complete.sh | 3 | 措辞更新方 | :1338 注释"全局指针…仍指向本任务"; :1346"移交提醒…请移交"→旧语义 移交 |
+| scripts/set-active-plan.sh | 15 | 已改述（S3） | :3-17 [task-v164] 三点块 + :21,:33"全局 legacy"→fallback 补注在位 |
+| scripts/selftest-active-plan.sh | 42 | 只读消费方 | :59-363 测试代码 side/global 指针路径拼装与断言 |
+| scripts/plan-created.cjs | 17 | 措辞更新方 | :134 注释"③ legacy plans/.active_plan 指针"→旧语义 legacy…指针 |
+| scripts/check-dispatch.sh | 2 | 措辞更新方 | :20 注释"全局指针 .active_plan 被并发会话/cron 频繁翻转"; :216"全局 legacy 指针"→旧语义 |
+| scripts/selftest-pointer-lifecycle.sh | 7 | 只读消费方 | :59 注释测试判据(中性); :61-82 测试代码指针路径 |
+| scripts/check-skill-modify.sh | 2 | 只读消费方 | :64,:65 代码守卫断言读 side 指针 |
+| references/critical-rules.md | 2 | 措辞更新方 | :196 Rule22.9"全局 legacy…互顶全局指针"(旧语义); :298 side 指针(中性) |
+
+汇总：只读 14 个 / 措辞更新 12 个 / 已改述 2 个（14+12+2=28）
+- 负结果报告：本 S-unit 零文件编辑（仅 findings.md 追加段 + progress.md 单行）；未执行 git 写操作；未动 skills/task-planner/**（`git status --short` 无 skills/ 条目，见 checkpoint）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

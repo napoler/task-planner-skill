@@ -66,33 +66,33 @@ Status: `complete` Last verified: 2026-10-10 15:5x
 
 ### Phase 3: 引用面措辞级联
 
-**Goal**: 28 文件引用面逐个判定（S4）后按 ≤2 文件/次完成措辞改述（S5 critical-rules+合并规则登记 / S6 README+INSTALL / S7 两 selftest）
+**Goal**: 28 文件引用面逐个判定（S4）后按 ≤2 文件/次完成措辞改述（S5 critical-rules+SKILL / S6 README+INSTALL / S7-S10 八脚本注释）
 
 **Depends on**: Phase 2
 
 **Done when**:
-- [ ] S4: findings.md 级联清单=28 文件逐个判定
-- [ ] S5-S7: critical-rules 指针段+合并规则登记段/SKILL/README/INSTALL/selftest 按清单改述完成 + 只读消费方登记不改
+- [x] S4: findings.md 级联清单=28 文件逐个判定（只读14/措辞更新12/已改述2，主进程复核）
+- [ ] S5-S10: 12 个措辞更新目标按清单改述完成 + 只读消费方登记不改
 
 **Verification**:
 - [ ] V-3.1: VC-3 grep 无旧语义残留
 - [ ] V-3.2: findings.md 级联清单含 28 文件逐个判定
 - [ ] V-3.3: 合并规则段在位（critical-rules，RPN=90 FMEA 兜底）
 
-Status: `pending` Last verified: —
+Status: `in_progress` Last verified: 2026-10-10 16:0x
 
 ---
 
 ### Phase 4: 全量回归 + 行为验证 + CR
 
-**Goal**: selftest 回归零新增 FAIL（S8）+ 并行行为验证（S9）+ code-reviewer 全量 CR（S10）
+**Goal**: selftest 回归零新增 FAIL（S11，现 72 脚本）+ 并行行为验证（S12）+ code-reviewer 全量 CR（S13）
 
 **Depends on**: Phase 3
 
 **Done when**:
-- [ ] S8: 全量 selftest 主进程逐 Total 求和，对照基线新增 FAIL=0
-- [ ] S9: 双 worktree 行为验证通过（VC-2）
-- [ ] S10: code-reviewer CR APPROVED
+- [ ] S11: 全量 selftest 主进程逐 Total 求和，对照基线新增 FAIL=0
+- [ ] S12: 双 worktree 行为验证通过（VC-2）
+- [ ] S13: code-reviewer CR APPROVED
 
 **Verification**:
 - [ ] V-4.1: selftest Total 求和=0 新增 FAIL → mapped VC-4

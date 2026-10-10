@@ -151,19 +151,22 @@
 ### Phase 3: 引用面措辞级联
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S4 | 28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md | executor（sonnet-1） | ① `grep -rn 'active_plan' skills/task-planner/` 输出 ② findings.md E 节 | findings.md 级联清单=28 文件逐个判定（只读/更新+一行理由） | 12min | 1f/30l/12min | 无 | pending | S3 后 |
-| S5 | critical-rules.md 指针相关段措辞改述 + 瞬态文件合并规则登记段（按 S4 清单） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚（critical-rules 指针段行号实施日重测） | 无"入库/跟踪"旧语义；合并规则段在位；git diff 仅清单内行 | 12min | 1f/35l/12min | 无 | pending | S4 后 |
-| S6 | README.md + INSTALL.md 措辞改述（按 S4 清单） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚 | 两文件无旧语义；git diff 仅清单内行 | 10min | 2f/20l/10min | 无 | pending | S5 后 |
-| S7 | selftest-active-plan.sh + selftest-pointer-lifecycle.sh 注释/断言适配（按 S4 清单；禁删既有断言） | executor（sonnet-1） | ① S4 级联清单 ② 两 selftest 全文 | 断言逻辑零删（除瞬态化失效的跟踪态断言）；`bash -n` 通过 | 10min | 2f/20l/10min | 无 | pending | S6 后 |
+| S4 | 28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md | executor（sonnet-1） | ① `grep -rn 'active_plan' skills/task-planner/` 输出 ② findings.md E 节 | findings.md 级联清单=28 文件逐个判定（只读/更新+一行理由） | 12min | 1f/30l/12min | 无 | done（2026-10-10 16:0x：只读14/措辞更新12/已改述2，主进程复核） | S3 后 |
+| S5 | critical-rules.md 指针相关段措辞改述 + 瞬态文件合并规则登记段（按 S4 清单 :196/:298） | executor（sonnet-1） | ① S4 级联清单（findings.md [sub:4] 段）② knowledge-brief.md §3 锚（行号实施日重测） | 无"入库/跟踪/移交"旧语义；合并规则段在位；git diff 仅清单内行 | 12min | 1f/35l/12min | 无 | pending | S4 后 |
+| S6 | README.md + INSTALL.md 措辞改述（按 S4 清单 :100-101/:189） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚 | 两文件无旧语义；git diff 仅清单内行 | 10min | 2f/20l/10min | 无 | pending | S5 后 |
+| S7 | zcode-userpromptsubmit.sh + zcode-posttooluse.sh 注释改述（按 S4 清单 :23/:43-44） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零+[task-v164] 锚各 ≥1；`bash -n` 双过 | 10min | 2f/12l/10min | 无 | pending | S6 后 |
+| S8 | zcode-pretooluse.sh + task-plan-init.cjs 注释改述（按 S4 清单 :72-73/:122-124） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check` 验语法） | 10min | 2f/12l/10min | 无 | pending | S7 后 |
+| S9 | init-session.sh + plan-created.cjs 注释改述（按 S4 清单 :719-727/:134） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check`） | 10min | 2f/12l/10min | 无 | pending | S8 后 |
+| S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | pending | S9 后 |
 
 - **Executor:** executor（sonnet-1）
 
 ### Phase 4: 全量回归 + 行为验证 + CR
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S8 | 变更后态全量 selftest 回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S7 已落）② baseline-selftest.log 对照 | 主进程求和：新增 FAIL=0（对照基线既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | pending | S5-S7 后 |
-| S9 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | pending | S8 后 |
-| S10 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | pending | S8/S9 后 |
+| S11 | 变更后态全量 selftest（现 72 个）回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S10 已落）② baseline-selftest.log 对照（71 段；decision-grading 为新脚本对照 master 态） | 主进程求和：新增 FAIL=0（既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | pending | S5-S10 后 |
+| S12 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | pending | S11 后 |
+| S13 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | pending | S11/S12 后 |
 
 - **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）
 
@@ -196,14 +199,15 @@
 |------|---------|--------|------|
 | 2026-10-10 15:2x | Phase 1 收口自检（drift-rhythm due=0 未到 hook 提醒阈值，按 64.2 主动自检）：原目标=.active_plan 瞬态化全链 vs 当前步=Phase 1 隔离基线全部达成； master 快进=防 S5 撞车的预防动作不改目标；R1-R5 范围零蔓延 | 全 VC | ALIGNED |
 | 2026-10-10 15:5x | Phase 2 收口自检：S2/S3 均经主进程独立复验（非采信子代理自报）；diff 只见注释区+索引态，解析链零改动=R1/R3/R4 路径 intact；G2 达成 | VC-1, VC-3 | ALIGNED |
+| 2026-10-10 16:0x | S4 分级后计划重构（16:0x Decisions 登记）：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8），远超原 S5-S7 三单预估；按 step_max_files=2 拆为 S5-S10 六个派发；原 S7 selftest 适配目的经主进程实测（active-plan 29/29、pointer-lifecycle 10/10 瞬态化后全绿）证明无事可做→撤销，其槽位由脚本注释改述接替 | VC-3 | ALIGNED（范围未超：12 目标全在 S4 清单内，D3 禁扩范围） |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-3（in_progress：Phase 2 complete，S4 引用面分级派发中）
+3（in_progress：S4 分级 done，S5 critical-rules+SKILL 改述派发中）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 S4（executor，sonnet-1）：28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md（材料 subagent-state/4-prompt-material.md，checkpoint 4-executor.md）
+派发 S5（executor，sonnet-1）：critical-rules.md 指针段措辞改述+瞬态文件合并规则登记 + SKILL.md 旧语义清零（按 findings.md [sub:4] 清单，材料 subagent-state/5-prompt-material.md，checkpoint 5-executor.md）
 
 ## Decisions
 | 时间 | 决策 | 理由 |
@@ -211,6 +215,7 @@
 | 2026-10-10 11:3x | D 类新任务判定（Rule 8.1）：用户指针反馈与 v152（Rule 67，已 COMPLETE）及 v163（调研诚实性 R1-R14）目标均无关联 → 开新计划 task-v164-pointer-worktree-local 独立承载，R1-R5 逐字归档；v152/v163 不收编 | 用户原话五连发（状态入工作数/指针严重混乱/为何不存工作数/合并时忽略状态文件/执行会话实证）；03:3x D 类分立先例 |
 | 2026-10-10 11:3x | 方案比选：采纳 D1（untracked+gitignore，语义改述为工作树内瞬态 fallback）；不取 D2（保留跟踪+合并约定）；否决 D3（删全局只留 side+mtime） | git log 实证 8 次 churn chore；.gitignore:3-9 兄弟瞬态范式在先；R4 用户明示"合并时忽略该文件"；D3 破坏 cron/sid-less legacy 消费者（set-active-plan.sh:3） |
 | 2026-10-10 11:3x | 路径本地化纠正：用户"指针存工作数内"的路径诉求是既成事实（ROOT=$PWD），真缺陷=git 跟踪态+移交叙事 → 方案聚焦瞬态化而非路径改造 | set-active-plan.sh:69,84-85 + resolve-plan-dir.sh:30 一手实证；避免不必要的大改 |
+| 2026-10-10 16:0x | 计划重构：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8）远超原 S5-S7 预估 → 按 step_max_files=2 拆为 S5-S10 六派发；原 S7 selftest 适配目的经主进程实测（瞬态化后 active-plan 29/19、pointer-lifecycle 10/10 全绿）证明无事可做→撤销 | S4 findings 清单为界（禁扩范围）；实测命令原文见 progress.md Phase 3 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
