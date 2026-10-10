@@ -761,7 +761,13 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
             [ -n "${SLOTDIRS[$i]:-}" ] || continue
             install_pool_links "${SLOTDIRS[$i]}"
         done
-        echo "[DEPLOY] OK: 全部部署位 post-verify 零差异(基准=主仓 skills/task-planner)"
+        # [2026-10-10 CR修复 MINOR-6] OK 文案条件化: 仅当无 DRIFT/SWAP_FAIL/VERIFY_FAIL 且 slot 非空时才打印
+        # Why: 原实现无条件打印 OK 文案, DRIFT=1(reconcile 失败但 post-verify 过)时先打印 OK 再 exit 6,
+        #   成功文案误导(用户看到 OK 以为部署成功)。SWAP_FAIL/VERIFY_FAIL 虽已 exit 1 不到此,
+        #   但条件包含它们作防御性断言(防未来控制流变更致 OK 文案在失败路径打印)。
+        if [ "$DRIFT" -eq 0 ] && [ "${SWAP_FAIL:-0}" -eq 0 ] && [ "$VERIFY_FAIL" -eq 0 ] && [ "${#SLOTDIRS[@]}" -gt 0 ]; then
+            echo "[DEPLOY] OK: 全部部署位 post-verify 零差异(基准=主仓 skills/task-planner)"
+        fi
     fi
     if [ "$DRIFT" -eq 1 ]; then
         echo "[DEPLOY] DEPLOY_DRIFT: 至少一位部署位 DRIFT/REJECTED(详见上)" >&2

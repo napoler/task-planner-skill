@@ -172,8 +172,17 @@ case "$ACTION" in
                 STALE_REASON=""
                 if [ ! -d "$PLAN_ROOT/$GLOBAL_PID" ]; then
                     STALE_REASON="dead-ref"
+                # [2026-10-10 CR2 修复 BLOCKER-B1+MAJOR-M1] 整体完成判定: 锚定真实状态行两子句
+                # Why: 原 `grep -Ei 'Status.*in_progress'` 未锚定行首, 命中模板固定行
+                #   「- Update phase status as you progress: pending → in_progress → complete」
+                #   (templates/task_plan.md 默认生成) → 真·完成态计划被判「非整体完成」而永不清除(B1)。
+                #   且未拦「部分完成」=1 阶段 complete + 其余 pending(M1)。
+                #   修法=锚定真实状态行: ①has_complete=存在 `^\s*[-*]\s*\*\*Status:\*\*\s*complete` 行;
+                #   ②no_active=无任何 `^\s*[-*]\s*\*\*Status:\*\*\s*(in_progress|pending)` 行;
+                #   ③指针 mtime>24h 条件保持不变。禁裸 `Status.*in_progress`。
                 elif [ -f "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" ] \
-                     && grep -qi 'Status.*complete' "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" 2>/dev/null \
+                     && grep -Eq '^[[:space:]]*[-*][[:space:]]*\*\*Status:\*\*[[:space:]]*complete' "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" 2>/dev/null \
+                     && ! grep -Eq '^[[:space:]]*[-*][[:space:]]*\*\*Status:\*\*[[:space:]]*(in_progress|pending)' "$PLAN_ROOT/$GLOBAL_PID/task_plan.md" 2>/dev/null \
                      && [ -n "$(find "$ACTIVE_FILE" -mmin +1440 2>/dev/null)" ]; then
                     STALE_REASON="completed-ttl"
                 fi
@@ -190,7 +199,10 @@ case "$ACTION" in
         if [ -d "$REQ_SIDE_DIR" ]; then
             while IFS= read -r f; do
                 sidkey="$(basename "$f" .plan_required)"
-                if [ ! -f "${SIDE_DIR}/${sidkey}.active_plan" ]; then
+                # [2026-10-10 CR修复 MINOR-7] F2 双命名空间: 同时查 ${sidkey} 与 sess${sidkey} 两形态 side 指针
+                # Why: 原实现仅查剥前缀 `<sidkey>.active_plan`, 而 resolve 双命名空间兼容读 `sess<sidkey>.active_plan`
+                #   (历史写入方) → 遗留 sess 形态可能误报缺口(advisory 只读, 无写入)。
+                if [ ! -f "${SIDE_DIR}/${sidkey}.active_plan" ] && [ ! -f "${SIDE_DIR}/sess${sidkey}.active_plan" ]; then
                     echo "[active-plan] gc 巡检: 哨兵 ${sidkey} 无 side 指针（该会话解析将回退全局/mtime，建议其跑 set-active-plan set --sid）"
                 fi
             done < <(find "$REQ_SIDE_DIR" -name '*.plan_required' -type f -mmin -1440 2>/dev/null)
@@ -215,7 +227,10 @@ case "$ACTION" in
         if [ -d "$PLAN_ROOT" ]; then
             for ownfile in "$PLAN_ROOT"/*/.session-owner; do
                 [ -f "$ownfile" ] || continue
-                if grep -q "^sess${SID}" "$ownfile" 2>/dev/null; then
+                # [2026-10-10 CR修复 MAJOR-F3] owner 匹配兼容双形态 ^(sess)?${SID}$
+                # Why: 原 `^sess${SID}` 仅匹配带 sess 前缀 owner; 裸 uuid owner 会话(无 sess 前缀)被漏判,
+                #   守卫失效直接写入(trample)。修法=兼容双形态, 整行锚定($)实现 norm 后比较。
+                if grep -qE "^(sess)?${SID}$" "$ownfile" 2>/dev/null; then
                     claimant="$(basename "$(dirname "$ownfile")")"
                     break
                 fi

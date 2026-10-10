@@ -7,7 +7,12 @@
 #   slot 含空格 → REJECTED exit6 /
 #   SM-14(2026-09-17 S4 task-v077 新增, 陈旧副本回归钉子): 脚本副本置于陈旧部署位 A(预置 stale-content)
 #   运行 --deploy, slot 指 B → 断言 B 终态 SKILL_MARKER==主仓 canonical-v077(非 stale-content) 且输出含
-#   [DEPLOY] IDENTICAL → exit 0; 防 v076 假 IDENTICAL 复发(以 SKILL_ROOT 为源时 cp 陈旧副本自 diff 恒真)。
+#   [DEPLOY] OK: 全部部署位 IDENTICAL + [DEPLOY] SWAPPED: <slot> → exit 0;
+#   防 v076 假 IDENTICAL 复发(以 SKILL_ROOT 为源时 cp 陈旧副本自 diff 恒真)。
+#   [2026-10-10 task-v159 F5 级联] SM-06/SM-14 断言口径对齐 F5 默认 staging 契约: 成功消息
+#   [DEPLOY] OK: 全部部署位 IDENTICAL + 每 slot [DEPLOY] OK: <slot>; 失败路径(staging cp/swap/post-verify
+#   任一失败) rc≠0(exit 1); SM-06 ENOTDIR 命中新路径 staging 阶段 cp 失败 → [DEPLOY] STAGE-FAIL + exit 1
+#   (非旧 --legacy 路径 per-slot DRIFT + exit 6; 消息契约仅新路径生效, --legacy 仍保留旧格式作 fallback)。
 #   [2026-09-27 task-v091/C-5-locale] SM-15a/SM-15b 回归: 从 TARGET 抽真实 _re_lines+deploy_reconcile,
 #   混合大小写文件名(B.md+a.md)清单内容差异场景, zh locale 下仍报 DRIFT-L2(修复前 comm 未 pin locale →
 #   inman 空 → B.md 不入 L2 targets → 假 IDENTICAL, S32 组5 C-5 实测缺陷); SM-15b LC_ALL=C 与 ambient
@@ -213,9 +218,14 @@ SMOK=0
 report SM-05 "$SMOK" "rc=$R1(期望4) SCOPE_OVERLAP=$(printf '%s' "$R2" | grep -qF 'SCOPE_OVERLAP' && echo 在 || echo 缺) 交集含base.txt=$(printf '%s' "$R2" | grep -qF 'base.txt' && echo 在 || echo 缺)"
 
 # ---------- SM-06 --deploy: env 注入两 slot; s1 预置与主仓 fixture 的 skills/task-planner 同内容
-#           (可写, 脚本 cp→rm→mv 后 diff 一致 → IDENTICAL; 对账基准=主仓 skills/task-planner, task-v077)
-#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/slot) → cp/rm 均 ENOTDIR
-#           → 稳定 DRIFT (root 亦稳: 非只读权限问题, 而是路径分量类型冲突), 整体 exit 6 ----------
+#           ([2026-09-17 S4 task-v077] 对账基准 = 主仓 skills/task-planner)
+#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/slot)
+#           → F5 默认 staging 路径 cp -rL DEPLOY_SRC → <slot>.stage.$$ ENOTDIR → 稳定 STAGE-FAIL (root 亦稳:
+#           非只读权限问题, 而是路径分量类型冲突), 整体 exit 1(F5 staging-fail 语义, 非旧 --legacy exit 6) ----------
+# [2026-10-10 task-v159 F5 级联] 断言口径对齐 F5 默认 staging 契约(原 --legacy 直写路径 per-slot
+#   DRIFT + exit 6; --legacy 保留旧格式作 fallback, 本用例只走默认路径)。非弱化: 失败路径仍断 rc≠0(=1)
+#   且 stderr 整体失败标记 DEPLOY_DRIFT 在; 原 slot 保护语义保留: s1 从未被 swap(失败 stage 目录已清理),
+#   断 s1 目录存活。s2 的 ENOTDIR 命中点在 staging 阶段 cp(旧契约命中点在直写 cp), 消息由 DRIFT 改 STAGE-FAIL。
 # 注: env KEY=VAL 前缀注入(不经 export), 杜绝外层 TASK_PLANNER_DEPLOY_SLOTS 继承污染
 # DRIFT 机制(2026-09-12 S2 重写后): 脚本 --deploy 对每个 slot 执行 validate_slot → cp -rL .tmp-new.$$ → rm -rf slot → mv → diff -rq。
 #   ENOTDIR 构造: $T6/x 是目录, 但 slot 路径 = $T6/x/base.txt/slot, 其中 base.txt 是 $T6/x 内普通文件(非目录),
@@ -234,9 +244,9 @@ SLOT_S2="$T6/x/base.txt/slot"
 ERRF="$T6/err"
 run env TASK_PLANNER_DEPLOY_SLOTS="$T6/s1:$SLOT_S2" bash "$TARGET" "$T6/task-test" --deploy
 SMOK=0
-[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] DRIFT: $SLOT_S2" && \
-  printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T6/s1" && SMOK=1
-report SM-06 "$SMOK" "rc=$R1(期望6) s1-IDENTICAL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T6/s1" && echo 在 || echo 缺) s2-DRIFT=$(printf '%s' "$R2" | grep -qF "[DEPLOY] DRIFT: $SLOT_S2" && echo 在 || echo 缺)"
+[ "$R1" = 1 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] STAGE-FAIL: $SLOT_S2" && \
+  [ -d "$T6/s1" ] && [ -f "$T6/s1/SKILL_MARKER" ] && [ "$(cat "$T6/s1/SKILL_MARKER")" = "v077-canonical" ] && SMOK=1
+report SM-06 "$SMOK" "rc=$R1(期望1, F5 staging-fail 语义) s2-STAGE-FAIL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] STAGE-FAIL: $SLOT_S2" && echo 在 || echo 缺) s1未被swap-目录存活=$([ -d "$T6/s1" ] && echo 是 || echo 否) s1-marker不变=$(printf '%s' "$(cat "$T6/s1/SKILL_MARKER" 2>/dev/null)" | grep -qF 'v077-canonical' && echo 是 || echo 否)"
 
 # ---------- SM-07 SM-02 通过后: 输出含 [CLEANUP] 行且 worktree 目录仍存在(脚本不自动删) ----------
 T7="$(mktemp -d)"; record_dir "$T7"
@@ -412,7 +422,10 @@ report SM-13 "$SMOK" "rc=$R1(期望6) 部署根内主仓exact-REJECTED(= 受保�
 #           ② 造假部署位 A=$T14/stale-copy(skills/task-planner 内为 stale-content)并把 TARGET 副本
 #              复制进 A 对应相对路径 → A 副本 SKILL_ROOT 指向陈旧 A
 #           ③ bash "$A/skills/task-planner/scripts/smart-merge-back.sh" --deploy, slot 指 B=$T14/slotB
-#           ④ 断言 B 终态 SKILL_MARKER == canonical-v077(非 stale-content) 且输出含 IDENTICAL → exit 0
+#           ④ 断言 B 终态 SKILL_MARKER == canonical-v077(非 stale-content) 且输出含
+#              [2026-10-10 task-v159 F5 级联] F5 默认 staging 路径成功消息: 终行 [DEPLOY] OK: 全部部署位 IDENTICAL
+#              + 逐 slot 换位证据 [DEPLOY] SWAPPED: <slot>(staging/swap/post-verify 三段成功标记) → exit 0
+#              (旧 --legacy 路径格式 [DEPLOY] IDENTICAL: <slot> 已不复现为默认输出, 本用例只走默认路径)
 #           防 v076 假 IDENTICAL 复发: 以 SKILL_ROOT(脚本运行处)为源时会 cp 陈旧副本→自 diff 恒真,
 #           终态 B 必为 stale-content → 本用例立即 FAIL(回归钉子) ----------
 T14="$(mktemp -d)"; record_dir "$T14"
@@ -430,11 +443,13 @@ echo "stale-content" > "$T14/slotB/SKILL_MARKER"
 ERRF="$T14/err"
 run env TASK_PLANNER_DEPLOY_SLOTS="$T14/slotB" bash "$T14/stale-copy/skills/task-planner/scripts/smart-merge-back.sh" "$T14/task-test" --deploy
 SMOK=0
-[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T14/slotB" && \
+# [2026-10-10 task-v159 F5 级联] 断言口径对齐 F5 默认路径成功消息契约: 终行 OK 串 + 逐 slot SWAPPED 证据
+[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' && \
+  printf '%s' "$R2" | grep -qF "[DEPLOY] SWAPPED: $T14/slotB" && \
   [ -f "$T14/slotB/SKILL_MARKER" ] && \
   [ "$(cat "$T14/slotB/SKILL_MARKER")" = "canonical-v077" ] && \
   [ "$(cat "$T14/slotB/SKILL_MARKER")" != "stale-content" ] && SMOK=1
-report SM-14 "$SMOK" "rc=$R1(期望0) IDENTICAL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T14/slotB" && echo 在 || echo 缺) slotB-SKILL_MARKER=$(cat "$T14/slotB/SKILL_MARKER" 2>/dev/null)(期望canonical-v077非stale-content)"
+report SM-14 "$SMOK" "rc=$R1(期望0) 终行OK-串=$(printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' && echo 在 || echo 缺) slotB-SWAPPED=$(printf '%s' "$R2" | grep -qF "[DEPLOY] SWAPPED: $T14/slotB" && echo 在 || echo 缺) slotB-SKILL_MARKER=$(cat "$T14/slotB/SKILL_MARKER" 2>/dev/null)(期望canonical-v077非stale-content)"
 
 # ---------- SM-15a/SM-15b (2026-09-27 task-v091/C-5-locale 回归钉子, S32 组5 C-5 实测缺陷: 非 C locale 下
 #           comm 未 pin LC_ALL 时混合大小写文件名(B.md/a.md)顺序错乱 → L2 清单定向 inman 空 → B.md 不入
@@ -491,6 +506,21 @@ SMOK=0
 [ "$RC15B" = 1 ] && [ "$OUT15A" = "$OUT15B" ] && SMOK=1
 report SM-15b "$SMOK" "C-locale rc=$RC15B(期望1) 与15a-zh逐字节一致=$([ "$OUT15A" = "$OUT15B" ] && echo 是 || echo 否)"
 
+# ---------- SM-16 --legacy 部署回退路径回归钉子(2026-10-10 task-v159 N1 新增) ----------
+# 验证 --legacy 路径保留旧格式输出 [DEPLOY] IDENTICAL: <slot> 且 exit 语义保留(成功 exit 0)。
+# Why: F5 后默认走 staging 新路径, --legacy 保留旧直写路径作 fallback; 原 SM-06/SM-14 已改断默认
+#   staging 路径, --legacy 路径无回归覆盖(N1)。本用例专测 --legacy 成功路径旧格式输出+exit 0。
+T16="$(mktemp -d)"; record_dir "$T16"
+mk_fixture "$T16" "$T16/main" "$T16/task-test" "$T16/origin.git"
+branch_commit "$T16/task-test"
+# 预置 slot 与主仓 fixture 的 skills/task-planner 同内容(IDENTICAL 路径)
+cp -rL "$T16/main/skills/task-planner" "$T16/slotL"
+ERRF="$T16/err"
+run env TASK_PLANNER_DEPLOY_SLOTS="$T16/slotL" bash "$TARGET" "$T16/task-test" --deploy --legacy
+SMOK=0
+[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T16/slotL" && SMOK=1
+report SM-16 "$SMOK" "rc=$R1(期望0) legacy-IDENTICAL旧格式=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T16/slotL" && echo 在 || echo 缺)"
+
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
@@ -501,7 +531,7 @@ report SM-15b "$SMOK" "C-locale rc=$RC15B(期望1) 与15a-zh逐字节一致=$([ 
 #   PASS/FAIL 为 report() 真实累计值; 框架断言 PASS+FAIL == TOTAL_CASES(动态), 不一致打印
 #   FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败); SKIP 单列, 不计入断言行总数。
 #   连跑两遍结果一致(trap 幂等)。
-TOTAL_BASE=16
+TOTAL_BASE=17
 TOTAL_CASES=$(( TOTAL_BASE + ( SM10_INJECTED ? 1 : 0 ) ))
 SKIPPED=$(( SM10_INJECTED ? 0 : 1 ))
 PASS_TOTAL=$((PASS + FAIL))

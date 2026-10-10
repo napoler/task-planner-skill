@@ -805,7 +805,10 @@ if [ -n "$SIDSRC" ]; then
     _claimant=""
     for _ownfile in "${PLAN_ROOT}"/*/.session-owner; do
         [ -f "$_ownfile" ] || continue
-        if grep -q "^sess${SIDKEY}" "$_ownfile" 2>/dev/null; then
+        # [2026-10-10 CR修复 MAJOR-F3] owner 匹配兼容双形态 ^(sess)?${SIDKEY}$
+        # Why: 同 set-active-plan.sh set 分支 F3 修复——裸 uuid owner 会话(无 sess 前缀)被漏判,
+        #   守卫失效直接写入(trample)。修法=兼容双形态, 整行锚定($)实现 norm 后比较。
+        if grep -qE "^(sess)?${SIDKEY}$" "$_ownfile" 2>/dev/null; then
             _claimant="$(basename "$(dirname "$_ownfile")")"
             break
         fi
