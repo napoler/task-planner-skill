@@ -9,3 +9,7 @@ plans/**/.session-owner
 
 # 偏移节奏 hook 会话运行态(task-v148 Rule 64.3)不入库
 plans/.drift-rhythm/
+
+# 活跃计划全局指针瞬态化(task-v164 2026-10-10)：随工作树本地化的运行态，
+# 与 .active_plan_side/.plan_required_side/.drift-rhythm 同族，合并零冲突
+plans/.active_plan

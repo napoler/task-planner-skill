@@ -56,16 +56,21 @@
   | worktree 对账 | `git rev-parse HEAD` vs master | 一致或快进后可对齐 | 7317455→FF 至 79cd10a，scope 重叠仅 SKILL/critical-rules | ☑ PASS |
 
 ### Phase 2: 指针瞬态化（git 索引 + 头注释）
-- **Status:** pending
-- **Started:**
+- **Status:** in_progress（S2 done 经主进程复验；S3 派发中）
+- **Started:** 2026-10-10 15:44
 - Actions taken:
-  -
+  - [sub:2] 索引瞬态化完成
+  - S2 派发 executor（prompt 3309 超限，按 Rule 35.3 压缩至材料引用式重派通过）；主进程复验四项判定全过
 - Files created/modified:
-  -
+  - .gitignore（+3/-0：Why 注释 2 行+`plans/.active_plan`:15）；plans/.active_plan（索引 D 态，工作区文件保留，legacy set 测试后内容=task-v164-pointer-worktree-local）
+  - subagent-state/2-executor.md（checkpoint）、findings.md（[sub:2] 小节）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | 跟踪态 | `git ls-files --error-unmatch plans/.active_plan` | exit 1 | exit 1（pathspec 无匹配） | ☑ PASS |
+  | ignore 命中 | `grep -n '^plans/.active_plan$' .gitignore` | 命中 | :15 命中（带 Why 注释） | ☑ PASS |
+  | 工作区保留 | `ls -la plans/.active_plan` | 文件在 | 33B 在（内容=v164，legacy set 写入） | ☑ PASS |
+  | 瞬态性 | `git status --short -uall \| grep active_plan` | 仅 D 无 ?? | 仅 `D  plans/.active_plan` | ☑ PASS |
 
 ### Phase 3: 引用面措辞级联
 - **Status:** pending

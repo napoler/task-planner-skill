@@ -63,6 +63,13 @@
 - 两段特殊格式（无 Total 字样但含 PASS/FAIL 关键行原文）：selftest-final-gate-hash.sh 段 log:155-161 结行 `==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====`；selftest-user-instruction-priority.sh 段 log:468-469 输出 `=== ALL PASS ===`（脚本自带格式，无 Total 行）
 - 负结果报告：未发现任何 rc≠0 脚本；未发现 log 中非零 FAIL 计数；未修改 worktree 内除 baseline-selftest.log / subagent-state/1-code-runner-agent.md / 本 findings 段 / progress.md 单行外的任何文件；未执行 git 写操作（git status 复核：M progress.md、?? baseline-selftest.log、?? subagent-state/）
 
+#### [sub:2-executor] S2 索引瞬态化
+- 事实（命令→关键输出）：`git rm --cached plans/.active_plan` → `rm 'plans/.active_plan'`（exit 0；工作区文件保留，`ls -la` 仍见 28B）；`.gitignore` 末尾追加 3 行（Why 注释 2 行 + `plans/.active_plan`，仓根 .gitignore 现 15 行）
+- 验收复核：`git ls-files --error-unmatch plans/.active_plan` → `error: pathspec 'plans/.active_plan' did not match any file(s) known to git`（exit 1）；`grep -n '^plans/.active_plan$' .gitignore` → `15:plans/.active_plan`；legacy `set-active-plan.sh task-v164-pointer-worktree-local` → `全局指针已设置`，`cat plans/.active_plan`=`task-v164-pointer-worktree-local`
+- 瞬态性确认：`git status --short --untracked-files=all | grep -F plans/.active_plan` 仅见 `D  plans/.active_plan`（索引删除态），**无 `??` 未跟踪条目** → gitignore 生效
+- 边界事实（主进程注意）：`.gitignore` 为未暂存（` M`）改动，故 `git diff --cached --stat` 当前仅见 `plans/.active_plan | 1 -`（D），`.gitignore` 行在 `git diff`（未暂存）；按 §4「禁 git add」未暂存，暂存/提交归主进程
+- 负结果报告：未执行 git add/commit/checkout/reset；未删工作区文件；未动 skills/task-planner/**；`git status` 另见 ` M subagent-state/.dispatch-inflight` 为派发期既有改动（非本次产生）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

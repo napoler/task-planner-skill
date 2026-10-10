@@ -141,9 +141,11 @@
 ### Phase 2: 指针瞬态化（git 索引 + 头注释）
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S2 | `plans/.active_plan` 改瞬态：`git rm --cached` + `.gitignore` 追加 `plans/.active_plan`（工作区文件保留） | executor（sonnet-1） | ① findings.md A-D 节 ② 仓根 `.gitignore`:1-10 ③ worktree 绝对路径 | VC-1 命令级判定全过（ls-files 空/ignore 命中/legacy set 后 status 无 M）+ 工作区文件仍在 | 10min | 1f/1l/10min | 无 | pending | S1 基线后 |
+| S2 | `plans/.active_plan` 改瞬态：`git rm --cached` + `.gitignore` 追加 `plans/.active_plan`（工作区文件保留） | executor（sonnet-1） | ① findings.md A-D 节 ② 仓根 `.gitignore`:1-10 ③ worktree 绝对路径 | VC-1 命令级判定全过（ls-files 空/ignore 命中/legacy set 后 status 无 M）+ 工作区文件仍在 | 10min | 1f/1l/10min | 无 | done（2026-10-10 15:4x，主进程复验） | S1 基线后 |
 | S3 | set-active-plan.sh + resolve-plan-dir.sh 头注释改述：全局指针="工作树内瞬态 fallback"，退役"移交"叙事 | executor（sonnet-1） | ① set-active-plan.sh:1-21 ② resolve-plan-dir.sh:1-27（knowledge-brief.md §3 由派发模板自动注入） | 头注释无"移交/入库"旧语义 + git diff 只见注释区 + `bash -n` 双通过 | 10min | 2f/20l/10min | 无 | pending | S2 后 |
 
+- **Status:** in_progress（S2 done；S3 派发中）
+- **V-N:** VC-1（S2 四项命令判定全过并经主进程复验）
 - **Executor:** executor（sonnet-1）
 
 ### Phase 3: 引用面措辞级联
@@ -196,11 +198,11 @@
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-2（in_progress：Phase 1 complete，S2 索引瞬态化派发中）
+2（in_progress：S2 done 并经主进程复验，S3 头注释改述派发中）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 S2（executor，sonnet-1）：git rm --cached plans/.active_plan + .gitignore 追加瞬态条目（材料 subagent-state/2-prompt-material.md，checkpoint 2-executor.md）
+派发 S3（executor，sonnet-1）：两指针脚本头注释退役"移交"叙事、改述全局指针=工作树内瞬态 fallback（材料 subagent-state/3-prompt-material.md，checkpoint 3-executor.md）
 
 ## Decisions
 | 时间 | 决策 | 理由 |
