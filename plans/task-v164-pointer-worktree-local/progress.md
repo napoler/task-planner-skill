@@ -34,6 +34,9 @@
   | 冲突 hook 误报查证 | INDEX:101 v146 行 vs 实际状态 | 无真实冲突 | 陈旧行（pending vs COMPLETE）致误报 | ☑ 记录 |
   | attest 合规回炉 | `attest-plan.sh` 首跑 | 锁定成功 | exit 1：Phase 4 缺 S-unit 表/缺 Goal 单元表/缺前置依赖列/粒度三值未填 → 按 v152 范式补 10 列 S-unit 表（S1-S10）+Goal 单元表（G1-G5）+FMEA 预演段 | ☑ 已修待复跑 |
 
+### 交付后修复轮（fix-wave 2）
+  - [sub:16] check-complete 守卫修复完成
+
 ### Phase 1: 隔离与基线
 - **Status:** complete（2026-10-10 15:2x；基线 71/71 全绿+master 快进对账；drift 自检 ALIGNED 见 task_plan Drift Log 首行）
 - **Started:** 2026-10-10 12:07
