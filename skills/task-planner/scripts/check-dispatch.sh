@@ -17,13 +17,17 @@
 # [2026-09-10 task-planrequired-race] 修改说明(仅 cmd_pretool 的计划目录解析与违规处置语义;
 # 其余函数/subcommand 字节不变):
 #   原行为 = pd 仅按「env TASK_PLANNER_PLAN_DIR → resolve-plan-dir.sh 链」解析,缺项一律 exit 2;
-#   全局指针 .active_plan 被并发会话/cron 频繁翻转指向他会话计划目录时,任何合规 prompt
+#   全局 fallback .active_plan 被并发会话/cron 频繁翻转指向他会话计划目录时,任何合规 prompt
 #   (含本会话计划路径) 都被误判"缺项"而 exit 2 阻断派发(当日实锤 4 次,见 findings.md B5/B5a)。
 #   现改三级解析: ① TASK_PLANNER_PLAN_DIR env 显式 → enforce(显式指定维持强校验);
 #   ② prompt 自声明(三文件路径同目录三件齐 且 task_plan.md 真实存在,兼容 /home 与 /mnt/data
 #   双视图拼写) → enforce; ③ resolve 链(sid 指针/global/mtime)兜底未命中 → 降级 warn:
 #   打印一行 [dispatch-guard] ⚠ 到 stderr 后 exit 0(fail-open,根治 B5 跨会话误拦)。
 #   TASK_PLANNER_DISPATCH_ENFORCE=off 全程放行 与 =warn 既有分支语义保持不变;成功路径(无缺项)保持静默 exit 0。
+#   [2026-10-10 task-v164 补注] 上段「全局指针」改述为「全局 fallback」:该指针实为工作树内
+#   瞬态 fallback(路径随 $PWD 本地化;git rm --cached+.gitignore,与 .active_plan_side/ 同族瞬态
+#   运行态),非跨树共享单例;正常路径=side 会话私有指针(2026-10-07 fix-pointer-race 后权威层);
+#   退役"来回切换/互相覆写"叙事(该叙事即并行可见漂移来源)。
 #
 # [2026-09-10 task-path-identity] 身份判定改造记录(仅 scan_missing 三文件分支;档位分档不变):
 #   现象 = 混拼写 prompt(task_plan 行 /home、findings 行 /mnt/data、progress 行 /home)在 enforce 档
@@ -81,6 +85,8 @@
 #      无剔除特例保持单一判据）, 任务书分支同步提取; 逐路径 -f 校验, 不存在 → fail-closed
 #      计违规（提示串含「Rule 59.2 伴飞路径不存在」）; 无伴飞声明 → 跳过不误报.
 #
+# [2026-10-10 task-v161 S6] 返回格式段结构校验(Rule 22.4b 反污染, 判据明细见 return_section_check 注释; 挂 pretool
+# 两条成功路径 fine_grain_checks 后 + cmd_check 尾; 违规 enforce exit 2/warn 告警, 无段 fail-open)
 # [2026-10-08 task-v145 S-1] 契约收窄 lint（Rule 60.2 不可收窄禁令; 挂既有 get_mode() 档位:
 # enforce=exit 2 阻断 / warn=stderr 告警 + 计数落盘(复用本文件 fine_grain_checks 的
 # task-planner-dispatch-warn-<sid> 计数文件范式) / off=跳过; 只增不改既有分支,
@@ -188,6 +194,29 @@ scan_contract_narrowing() {
     printf '[dispatch-contract] 🚫 派发 prompt 契约收窄违规(Rule 60.2 不可收窄禁令): 检出收窄措辞(「只写检查点」/「主进程回填」+否定性续文)且缺 findings append 锚点(「#### [sub:」或「可写=仅追加」) — 收窄=把 22.4a 子代理必做自写降级为禁写/主进程代劳; 检查点(22.8)与 findings 自写(22.4a)是叠加义务非二选一, 请补 findings 可写契约\n'
 }
 
+# [2026-10-10 task-v161 S6] return_section_check <prompt-file> <mode> — 返回格式段结构校验(Rule 22.4b 反污染):
+# 违规→stderr 一行 ✗(enforce=exit 2 / warn 告警放行); 合规/无「## 返回格式」段→静默 0(fail-open, 与 ⑤⑥ 同口径); 只读判定
+return_section_check() {
+    local f="$1" mode="$2" n ln seg k v miss lst
+    # A: 标题唯一——双形态行首计（模板「## 7. 返回格式」/判例「## 返回格式」; 判例拼接态「## 返回格式## 返回格式」按 1 行计）
+    n="$(grep -cE '^## ([0-9][.] )?返回格式' "$f" 2>/dev/null || true)"
+    ln="$(grep -nE '^## ([0-9][.] )?返回格式' "$f" 2>/dev/null | head -1 | cut -d: -f1)"
+    [ -n "$ln" ] || return 0
+    # 段界(用户 2026-10-10 裁定): 「## 返回格式」标题行至下一个 '^## ' 标题行(含)或文件尾; B: 段内四 key 齐(缺任一=段被替换成任务清单)
+    seg="$(awk -v s="$ln" 'NR>=s{print; if(NR>s && /^## /) exit}' "$f" 2>/dev/null)"
+    v="" miss=""
+    for k in status: acceptance: checkpoint: confidence:; do printf '%s\n' "$seg" | grep -qF -- "$k" || miss="$miss $k"; done
+    [ "$n" -gt 1 ] && v="A: 标题重复(共 $n 处, 拼接污染形态)"
+    if [ -n "$miss" ]; then
+        # C: 段内序号清单行(①-⑥ 行首 或 数字+[.、] 行首)≥3 且四 key 有缺=段被任务清单替换实证; 否则记 B
+        lst="$(printf '%s\n' "$seg" | grep -cE '^([①②③④⑤⑥]|[0-9]+[.、])' || true)"
+        if [ "${lst:-0}" -ge 3 ]; then v="${v:+$v; }C: 段内序号清单行 ${lst} 行且缺 key($miss) — 段被任务清单污染"; else [ -z "$v" ] && v="B: 段缺 key($miss)"; fi
+    fi
+    [ -z "$v" ] && return 0
+    echo "[dispatch-guard] ✗ 返回格式段结构违规: $v" >&2
+    [ "$mode" = "enforce" ] && exit 2
+}
+
 # 档位解析: 环境变量优先;未设 → jq 读 .properties.dispatch_contract_enforce.default // "enforce"
 # (config 缺失/jq 解析失败 → enforce;jq 二进制缺失 → "nojq" sentinel,调用方 fail-open)
 # Why（task-v115 线C）: 双轨 fail 方向取舍——config 缺失/解析失败属项目侧问题（守卫应生效却没配置），
@@ -213,7 +242,10 @@ get_mode() {
 # 计划目录解析: 环境变量 TASK_PLANNER_PLAN_DIR 优先,否则 resolve-plan-dir.sh 输出(= task_plan.md 路径)取 dirname
 # [2026-09-10 active-plan-race] resolver 二参带会话 sid(zcode-pretooluse.sh Agent 分支 export TASK_PLANNER_SID
 # 传入;未设则回 env CLAUDE_CODE_SESSION_ID/resolver 内置 default) → .active_plan_side/<sid>.active_plan
-# 会话私有指针优先,并行会话的派发守卫各查各的计划,不再被互顶的全局 legacy 指针误拦
+# 会话私有指针优先,并行会话的派发守卫各查各的计划,不再被全局 fallback 指针误拦
+# [2026-10-10 task-v164 补注] 上段原以「legacy 全局指针被来回覆写」描述本行,改述为「全局 fallback
+#   指针」:该层实为工作树内瞬态 fallback(路径随 $PWD 本地化;git rm --cached+.gitignore,与
+#   .active_plan_side/ 同族),非跨树共享单例;正常路径=side 会话私有指针(权威层);退役"来回切换"叙事。
 resolve_plan_dir() {
     local pd="${TASK_PLANNER_PLAN_DIR:-}" pfile
     if [ -n "$pd" ]; then
@@ -278,6 +310,7 @@ cmd_pretool() {
             missing="$(scan_missing "$pf" "$pd")"
             # [task-v075 P3-S1] 兜底命中且无缺项 → 三项增量检测(warn 档计数观察)+ 串行槽检查
             [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0 pg=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; # [2026-10-02 task-v110] 并行组放行: 计划 frontmatter 声明 parallel_groups: ∧ prompt 含 [parallel-group:<组名>] 标记 → pg=1(独立性四问责任在计划期声明, 守卫信任标记不做文件集比对); 无标记路径零改动
+            return_section_check "$pf" "$mode"   # [2026-10-10 task-v161 S6] 返回格式段结构门(挂两条成功路径 fine_grain 后/串行槽前, 与下方 enforce 路径同语义): 违规 enforce exit 2 / warn 告警放行, 无段 fail-open
             grep -qm1 'parallel_groups:' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[parallel-group:' "$pf" 2>/dev/null && pg=1; serial_slot_check "$pd" "$mode" "$sid" "$ro" "$pg"; exit 0; }
             names="$(join_missing "$missing")"
         else
@@ -292,6 +325,7 @@ cmd_pretool() {
     missing="$(scan_missing "$pf" "$pd")"
     # [task-v061-serial-dispatch] 契约校验通过(无缺项), 即将放行前执行串行槽检查; 缺项 exit 2 路径不写锁不检查
     [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0 pg=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; # [2026-10-02 task-v110] 并行组放行(与 warn 兜底路径同语义): 声明 parallel_groups: ∧ 组标记 → pg=1
+    return_section_check "$pf" "$mode"   # [2026-10-10 task-v161 S6] 返回格式段结构门(挂两条成功路径 fine_grain 后/串行槽前, 独立行插入原行零改动): 违规 enforce exit 2 / warn 告警放行, 无段 fail-open
     grep -qm1 'parallel_groups:' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[parallel-group:' "$pf" 2>/dev/null && pg=1; serial_slot_check "$pd" "$mode" "$sid" "$ro" "$pg"; exit 0; }
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
@@ -328,6 +362,10 @@ cmd_check() {
         printf '%s\n' "$cn"
         exit 1
     fi
+    # [2026-10-10 task-v161 S6] 返回格式段结构门(check 模式: 违规 exit 1 / 合规·无段 exit 0, 与档位无关——check 是纯检查语义)。
+    # 违规路径 exit 2 会终止所在 shell → 子 shell 承接(子 shell rc=2 即违规 → 主流程 exit 1); 违规提示行经子 shell stderr 原样透传
+    ( return_section_check "$pf" "enforce" )
+    [ $? -eq 2 ] && exit 1
     exit 0
 }
 

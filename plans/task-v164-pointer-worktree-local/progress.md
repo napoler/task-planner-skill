@@ -34,64 +34,133 @@
   | 冲突 hook 误报查证 | INDEX:101 v146 行 vs 实际状态 | 无真实冲突 | 陈旧行（pending vs COMPLETE）致误报 | ☑ 记录 |
   | attest 合规回炉 | `attest-plan.sh` 首跑 | 锁定成功 | exit 1：Phase 4 缺 S-unit 表/缺 Goal 单元表/缺前置依赖列/粒度三值未填 → 按 v152 范式补 10 列 S-unit 表（S1-S10）+Goal 单元表（G1-G5）+FMEA 预演段 | ☑ 已修待复跑 |
 
-### Phase 1: 隔离与基线
-- **Status:** pending
-- **Started:**（待用户批准后填真实时间=check-3file-gate mtime 锚点）
-- Actions taken:
-  -
-- Files created/modified:
-  -
+### 交付后修复轮（fix-wave 2）
+- [sub:16] check-complete 守卫修复完成
+- 主进程：终验 check-complete 暴露两类问题——①[judge-gate] Rule 73.4 留痕缺失（v163 并行会话当日落地新规，本任务正好撞门）②shell 重定向错误漏行（S4 分级盲区：check-complete:1375 读取全局指针未做存在性守卫，"代码读取方=只读消费方"判据漏掉"假设文件必存在"）→ S16 executor 修复（/tmp 夹具 OLD/NEW 对照实证）+ 二轮 merge ea640d6 + 部署 IDENTICAL
+- `[skill-modify] 删除清单: 全链唯一删除=plans/.active_plan 的 git rm --cached 索引态变更（工作区瞬态文件保留为运行态，非内容删除）；16 文件技能侧均为注释/措辞改述（[task-v164] 原措辞注记保真，Rule 45）；selftest 仅 PL-07 断言锚锁步（指针移交→指针清理）无断言净删——逐项对照 36.3 基线确认`
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | S16 守卫修复 | /tmp 夹具 OLD/NEW 对照 | 无漏行+warn 逻辑不变 | OLD 漏 `No such file or directory`/NEW stderr 空+CASE B warn 仍触发 | ☑ PASS |
+  | 二轮合并 | smart-merge-back V1-V6+deploy | 合并+IDENTICAL | ea640d6 在册；三部署位零差异 | ☑ PASS |
+
+## ⚖️ [judge] 评判留痕（Rule 73.4 — 变更决策后/Phase complete 前/合并回前）
+- `[judge]` 2026-10-10 15:4x（变更型决策-索引瞬态化+S3 注释退役）：守住——三问：R1-R4 执行是；不变量（瞬态不入库/解析链冻结/side 权威）守住；[align] 行齐备（Drift Log 15:2x/15:5x）
+- `[judge]` 2026-10-10 16:1x（变更型决策-S5 措辞级联）：守住——级联清单内 12 目标零越界；[align] 行齐备（Drift Log 16:0x）
+- `[judge]` 2026-10-10 16:4x（变更型裁决-S10 display 字符串偏离）：接受并登记（目标优先于机械口径，行为零变化 PL-06 实证）；不变量守住（提醒 stderr 通道与 warn 形态不变）
+- `[judge]` 2026-10-10 17:4x（Phase 2/3/4 complete 前×3 逐次）：均守住——各 Phase 主进程独立复验（diff/语法/grep 三件套）；[align] 行齐备（Drift Log 四行）
+- `[judge]` 2026-10-11（合并回前×2 轮：a849947/ea640d6）：守住——合并后态全量回归 72→75/75 rc=0 复验后才合；瞬态文件按已登记规则处置（stash 不抢救/restore 后合）；[align] 行齐备（Drift Log 17:5x/深夜行）
+- `[align]` 全链对应行：task_plan.md Drift Log 六行全部 ALIGNED，无 BLOCKED
+
+### Phase 1: 隔离与基线
+- **Status:** complete（2026-10-10 15:2x；基线 71/71 全绿+master 快进对账；drift 自检 ALIGNED 见 task_plan Drift Log 首行）
+- **Started:** 2026-10-10 12:07
+- Actions taken:
+  - 计划合规回炉后 attest 锁定（SHA 0745106a）→ commit 7317455 落 master
+  - worktree 建立：/mnt/data/dev/task-planner-skill-worktrees/v164-pointer-worktree-local（HEAD 对账一致；critical-rules/.gitignore/两指针脚本 md5 全 OK；71 selftest；工作区干净）
+  - 复读 plans/fix-pointer-race-20261007/findings.md：既有 FAIL ~15 个为 2026-10-07 时点清单（10-07→10-10 间已修复，本基线不复现=零增量口径干净起点）+ sidmap/side 权威先例禁重复设计
+  - S1 基线跑批派发 code-runner-agent（材料 subagent-state/1-prompt-material.md）→ 71/71 rc=0 FAIL=0（主进程复核：11 处 rc≠0 行均为 selftest 内部负用例文本、段头 71 全 rc=0、全日志 FAIL[1-9]=0）
+  - master 16 提交快进合并（79cd10a：v160 Rule 72 落地+v161 簿记；触及 SKILL.md/critical-rules.md=S5 scope → 先合并防冲突；selftest 71→72 新增 decision-grading）
+- Files created/modified:
+  - plans/task-v164-pointer-worktree-local/baseline-selftest.log（+490）
+  - plans/task-v164-pointer-worktree-local/subagent-state/1-prompt-material.md、1-code-runner-agent.md
+  - plans/task-v164-pointer-worktree-local/findings.md（[sub:1] 小节追加）、progress.md（本段）
+  - task_plan.md（执行期簿记：G1 翻格/Phase 1 Status+V-N/Drift Log 首行/Current Phase→2/Next Step，按 51.7 登记后重锁）+ verification.md（Phase 1 门 complete）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | S1 基线（71 脚本） | 逐脚本 `bash $f` 取真 rc+Total 段落 log | 逐脚本 rc+Total 落 log | 71 段全 rc=0；`grep -cE '^=== selftest-.*\.sh rc=0$'`=71；FAIL[1-9]=0 | ☑ PASS |
+  | 基线内容复核 | `grep -n 'rc=[^0]' baseline-selftest.log` | 无非零段头 | 11 行均为负用例文本（CC-03/CD-04/SM-15a 等 PASS 行），段头无 | ☑ PASS |
+  | worktree 对账 | `git rev-parse HEAD` vs master | 一致或快进后可对齐 | 7317455→FF 至 79cd10a，scope 重叠仅 SKILL/critical-rules | ☑ PASS |
 
 ### Phase 2: 指针瞬态化（git 索引 + 头注释）
-- **Status:** pending
-- **Started:**
+- **Status:** complete（2026-10-10 15:5x；S2 四判定+S3 代码区零改动均主进程复验；drift 自检 ALIGNED 见 task_plan Drift Log）
+- **Started:** 2026-10-10 15:44
 - Actions taken:
-  -
+  - [sub:2] 索引瞬态化完成
+  - [sub:3] 头注释改述完成
+  - S2 派发 executor（prompt 3309 超限，按 Rule 35.3 压缩至材料引用式重派通过）；主进程复验四项判定全过
+  - S3 派发 executor；主进程复验：`git diff -U0 | 非注释行`=0、bash -n 双过、task-v164 锚各 ≥1（6/4 处）
 - Files created/modified:
-  -
+  - .gitignore（+3/-0：Why 注释 2 行+`plans/.active_plan`:15）；plans/.active_plan（索引 D 态，工作区文件保留）
+  - skills/task-planner/scripts/set-active-plan.sh（+20/-2）、resolve-plan-dir.sh（+13/-1）——纯注释区
+  - subagent-state/2-executor.md、3-executor.md（checkpoint）；findings.md（[sub:2][sub:3] 小节）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | 跟踪态 | `git ls-files --error-unmatch plans/.active_plan` | exit 1 | exit 1（pathspec 无匹配） | ☑ PASS |
+  | ignore 命中 | `grep -n '^plans/.active_plan$' .gitignore` | 命中 | :15 命中（带 Why 注释） | ☑ PASS |
+  | 工作区保留 | `ls -la plans/.active_plan` | 文件在 | 33B 在（legacy set 写入 v164） | ☑ PASS |
+  | 瞬态性 | `git status --short -uall \| grep active_plan` | 仅 D 无 ?? | 仅 `D  plans/.active_plan` | ☑ PASS |
+  | 代码区零改动 | `git diff -U0 \| 非#行 \| grep -c .` | =0 | 0 | ☑ PASS |
+  | 语法 | `bash -n` 双脚本 | rc=0 | 双 rc=0 | ☑ PASS |
 
 ### Phase 3: 引用面措辞级联
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:4] 引用面分级完成
+  - [sub:5] critical-rules+SKILL 改述完成
+  - [sub:6] README+INSTALL 改述完成
+  - [sub:7] 两 hook 注释改述完成
+  - [sub:8] pretooluse+init.cjs 注释改述完成
+  - [sub:9] init-session+plan-created 注释改述完成
+  - [sub:9b] plan-created 残留清零
+  - [sub:10] check-dispatch+check-complete 改述完成
+  - [sub:14] PL-07 锁步完成
+  - 主进程复验链：每单 diff/语法（bash -n|node --check）/grep 三件套；S10 display 字符串偏离经仲裁登记（Decisions 16:4x）
 - Files created/modified:
-  -
+  - skills/task-planner/references/critical-rules.md（Rule 22.9 改述+瞬态合并规则登记段）、SKILL.md（2 处）、README.md、INSTALL.md
+  - scripts/zcode-userpromptsubmit.sh、zcode-posttooluse.sh、zcode-pretooluse.sh、task-plan-init.cjs、init-session.sh、plan-created.cjs、check-dispatch.sh、check-complete.sh、selftest-pointer-lifecycle.sh（PL-07 锁步）
+  - subagent-state/4-14 各 unit checkpoint 与 prompt-material
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | 全域旧语义扫描 | `grep -rn '全局 legacy\|legacy 指针\|指针移交\|互顶全局\|请移交' skills/task-planner/` | 0 实际语义命中 | 7 命中均为 [task-v164] 注记引文（Rule 45 原措辞说明），实际语义 0 | ☑ PASS |
+  | 锁步 selftest | `bash selftest-pointer-lifecycle.sh` | 10/10 | Total: 10 PASS=10 FAIL=0（改前 PL-07 FAIL） | ☑ PASS |
+  | 指针 selftest 复跑 | `bash selftest-active-plan.sh` | 29/29 保持 | Total: 29 PASS=29 FAIL=0 | ☑ PASS |
+  | 语法全检 | 九个改动脚本 `bash -n`/两个 cjs `node --check` | 全过 | 全过 | ☑ PASS |
 
 ### Phase 4: 全量回归 + 行为验证 + CR
 - **Status:** pending
 - **Started:**
 - Actions taken:
-  -
+  - [sub:11] 回归 72 脚本 rc/Total 落 regression-worktree.log
+  - [sub:12] 双树行为验证完成
+  - [sub:13] CR 结论：APPROVED（七项必查全 PASS；3 项文档/注释 nit 非阻断）
+  - [sub:13-nit] 锚漂移修正完成
 - Files created/modified:
-  -
+  - plans/task-v164-pointer-worktree-local/{regression-worktree.log, behavior-verification.log}（+357/+20）
+  - skills/task-planner/scripts/resolve-plan-dir.sh、set-active-plan.sh（锚修正，代码区 0 改动）
+  - subagent-state/11-13-nit 各 checkpoint
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | S11 全量回归 | 72 脚本逐跑 | 零增量 | 72 段 rc=0、FAIL 行=0；vs 基线差集=decision-grading 新增且过（主进程亲验） | ☑ PASS |
+  | S12 双树行为 | 命令集实跑 | VC-2 | 互不感知/status 无条目/双树解析隔离/新树 mtime 兜底/side 归位/零残留（主进程亲验 log 原文） | ☑ PASS |
+  | S13 CR | 七项必查 | APPROVED | 7/7 PASS+3 NIT（2 锚漂移已修+1 计划口径已更正登记） | ☑ PASS |
+  | S13-nit | 自指锚修正 | 实测行号 | :41,109 / :97；代码区 0 改动 | ☑ PASS |
 
 ### Phase 5: 合并回 + 部署 + 簿记
-- **Status:** pending
-- **Started:**
+- **Status:** complete（2026-10-11；merge a849947+部署 IDENTICAL+簿记落库；drift 自检 ALIGNED 见 task_plan Drift Log 末行）
+- **Started:** 2026-10-10 17:5x
 - Actions taken:
-  -
+  - [sub:15] 合并后态回归 75 脚本（派发口径 72 + master 并入新增 3）rc/Total 落 regression-worktree-merged.log；75/75 rc=0，BATCH 22:41:22→22:44:09
+  - 主进程：主仓脏指针 v163 值按已登记瞬态合并规则 stash（stash@{0}，禁抢救）→ 分支内 merge master 解 SKILL.md:111 冲突（40a72f7）→ smart-merge-back --deploy 过 V1-V6（a849947 no-ff）+三部署位 post-verify 零差异 IDENTICAL
+  - .active_plan 瞬态终态亲验：主仓工作区无该文件（瞬态按需再生）+`git ls-files --error-unmatch` exit 1+`.gitignore:15` 命中；部署位 sanity：set-active-plan.sh task-v164 锚 7 处
+  - Handoff 17 行补登 → check-delegation stats verdict=ok/violations=[]/rate 0.600（白名单豁免：①git/worktree 编排+①②）
+  - check-complete 首跑 exit 1（scope 未提交）→ 本簿记提交后复跑
 - Files created/modified:
-  -
+  - plans/task-v164-pointer-worktree-local/{task_plan,progress,verification,delivery-summary,ledger-main}.md(+)；plans/INDEX.md（v164 行）；CHANGELOG.md（v164 条目）
+  - 仓根 .gitignore（+3/-0，:15 plans/.active_plan）；skills/task-planner/ 14 文件（两指针脚本+critical-rules+SKILL+README+INSTALL+8 hook/selftest）
+  - plans/.active_plan（git rm --cached，索引态删除；工作区瞬态文件保留语义）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
-  |------|-------|----------|--------|        |
+  |------|-------|----------|--------|--------|
+  | S11-r2 合并后态 | 75 脚本逐跑 | 零增量+并入新增绿 | 75 段 rc=0、FAIL 行=0（主进程亲验） | ☑ PASS |
+  | smart-merge-back | V1-V6+deploy | 合并+IDENTICAL | a849947 在册；三部署位 post-verify 零差异 | ☑ PASS |
+  | 瞬态终态 | ls-files/check-ignore/ls | 不再跟踪+ignore 命中 | exit1；.gitignore:15；主仓无工作区文件（按需再生） | ☑ PASS |
+  | 委派统计 | check-delegation stats | verdict=ok | ok；violations=[]；17 派发全登记 | ☑ PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
@@ -102,7 +171,9 @@
 ## Error Log
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 2026-10-10 16:2x | check-complete 改述后 selftest-pointer-lifecycle PL-07 FAIL（rc=1，SKILL.md 移交纪律行缺失） | 1（S5 executor 自报） | 新增锁步单元将 PL-07 锚同步为 SKILL 新措辞「指针清理」；10/10 恢复 PASS | 信息缺失类：S4 引用面分级按 active_plan 字面 grep，漏掉 selftest 对 SKILL.md 旧措辞的跨文件字面断言（selftest=旧语义的机器契约） | 措辞退役类任务必须同步排查 selftest 对目标字面的断言（grep 旧词×selftest 全集）；锁步单元置于全部改述落地后执行 |
+| 2026-10-10 17:5x | 写守卫误拦主进程 Edit worktree/SKILL.md（.plan-required 哨兵判定失败） | 1 | 查证=守卫按 $PWD（主仓）解析 ROOT+hook sid（3c76a06c）与 env sid（de2c5bba）双命名空间，主仓无 hook-sid side 指针→解析落陈旧全局 v152→D10 仲裁失败；补设 hook-sid side 指针→v164 后放行 | 规则缺位类：worktree 执行期主进程写入时，守卫的 ROOT 推导（$PWD）与文件路径（worktree）错位，双 sid 命名空间无映射 | 长任务 worktree 执行期，主进程首次写 worktree 文件前先 `set-active-plan.sh set <task> --sid <hook-sid>` 锚定；该坑已登记 delivery-summary 风险节 |
+| 2026-10-10 深夜 | check-complete:1375 裸读 plans/../.active_plan 漏 shell 重定向错误行（终验输出污染） | 1（check-complete 复跑自暴露） | S16 executor 加 [ -f ] 存在性前置守卫；/tmp 夹具 OLD/NEW 对照实证；二轮 merge ea640d6 | 假设未验类：S4 分级把"代码读取方"一律判只读消费方，漏掉"读取处假设文件必存在"的隐式前提；瞬态化后文件按需不存在=正常态 | 引用面分级判据增加第三维：读取方是否假设文件存在（裸重定向/< 操作无 -f 守卫=瞬态化高风险点）；grep 模式补 `plans/../.active_plan` 族 |
 
 ## 5-Question Reboot Check
 | Question | Answer |
@@ -119,9 +190,9 @@
 |---------|------|------|
 | G1（隔离基线） | （待 Phase 1 complete：baseline-selftest.log 求和记录+worktree list） | |
 | G2（指针瞬态化） | （待 Phase 2 complete：VC-1 命令判定+diff 注释区） | |
-| G3（级联完成） | （待 Phase 3 complete：VC-3 grep+级联清单） | |
-| G4（独立验证） | （待 Phase 4 complete：S8 求和+S9 行为输出+S10 CR） | |
-| G5（交付合并） | （待 Phase 5 complete：merge 对账+INDEX/ledger/CHANGELOG） | |
+| G3（级联完成） | 全域旧语义扫描 ZERO-RESIDUE（7 残余均为注记引文）+锁步 selftest 10/10+findings 28 行清单 | 2026-10-10 16:4x |
+| G4（独立验证） | S11 回归 72/72 主进程亲验+S12 行为 log 原文亲验+S13 CR APPROVED（7/7） | 2026-10-10 17:4x |
+| G5（交付合并） | merge a849947+三部署位 IDENTICAL+stats verdict=ok+check-complete 复跑 PASS | 2026-10-11 |
 
 ---
 <!-- 📋 plan-resume 报告检查点:Phase complete 后 <cwd>/.zcode/plans/plan-resume-report.md 应已更新;未更新记 [plan-resume 跳过原因] -->

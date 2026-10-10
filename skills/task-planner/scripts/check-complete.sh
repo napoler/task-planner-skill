@@ -1322,6 +1322,33 @@ END {print n+0}'
         printf '[goal-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 66.5)\n' >&2
     fi
 
+    # [2026-10-10 task-v156] Rule 73.4 [judge-gate] 强制评判点终验对照段
+    # WHAT: standard/full 档计划对照 progress.md [judge]/[align] 留痕行数—— Phase complete 前
+    #       强制评判（73.4②）未留痕=评判未执行；warn 默认提示，env TASK_PLANNER_DECISION_JUDGE=enforce 升 exit 1。
+    # WHY: 用户 R3「周期性评判数据、及时发现错误」+R4「每次做出决定/更改前对齐设定」的机器承载面。
+    # 档位: 仅 plan_tier: standard|full 进入（mini 档豁免，同 goal-gate 门控范式）;env TASK_PLANNER_DECISION_JUDGE = off(跳过)/enforce(缺失 exit 1)/默认 warn(提示不阻断)
+    # [2026-10-10 06b 修正] 计数行鲁棒化：grep -c 零匹配已打印 0 且 exit 1 → `|| echo 0` 会捕获
+    #       "0\n0" 致 [ -eq ] 报错、闸门对失败面静默失效；改 `|| true`+case 兜底（覆盖文件缺失/空值）
+    # [2026-10-10 CR S8 修正] 档位门控补全（MAJOR）：按 goal-gate 同款 grep plan_tier 前置门,
+    #       mini/legacy 计划走 SKIPPED 分支——否则 warn 对 mini 误报、enforce 对 mini exit 1 违背 C51「mini 档豁免」契约
+    if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
+      case "${TASK_PLANNER_DECISION_JUDGE:-warn}" in
+        off) printf '[judge-gate] SKIPPED (env TASK_PLANNER_DECISION_JUDGE=off)\n' >&2 ;;
+        enforce|warn)
+          _jl="$(grep -c '\[judge\]\|\[align\]' "$PLAN_DIR_GUESS/progress.md" 2>/dev/null || true)"
+          case "$_jl" in ''|*[!0-9]*) _jl=0 ;; esac
+          if [ "$_jl" -eq 0 ]; then
+            printf '[judge-gate] ✗ progress.md 无 [judge]/[align] 留痕行 (Rule 73.4: 变更决策后/Phase complete 前/合并回前各一次评判)\n' >&2
+            [ "${TASK_PLANNER_DECISION_JUDGE:-warn}" = enforce ] && exit 1
+          else
+            printf '[judge-gate] OK ([judge]/[align] 留痕 %s 行, Rule 73.4)\n' "$_jl" >&2
+          fi
+          ;;
+      esac
+    else
+      printf '[judge-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 73.4/C51)\n' >&2
+    fi
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then
@@ -1335,15 +1362,20 @@ END {print n+0}'
     fi
 
     # [2026-10-10 task-v159 pointer-lifecycle F1/D1] 移交提醒（Rule 25 完成项机制化）：
-    # Why: D1 孤儿指针根因——任务完成后全局指针 plans/.active_plan 常仍指向本任务，
-    #   无人提示时漂移直到 gc 兜底清理；本段在终验成功（python_rc=0）时主动提醒移交。
+    # Why: D1 孤儿指针根因——任务完成后全局 fallback plans/.active_plan 常仍指向本任务，
+    #   无人提示时漂移直到 gc 兜底清理；本段在终验成功（python_rc=0）时主动提醒清理（无需移交）。
+    #   [2026-10-10 task-v164 补注] 上两行原措辞以「全局指针」框该层并称「提醒移交」,改述如下:
+    #   全局 plans/.active_plan 实为工作树内瞬态 fallback(路径随 $PWD 本地化;git rm --cached+
+    #   .gitignore,与 .active_plan_side/ 同族瞬态运行态),非跨树共享单例;正常路径=side 会话私有
+    #   指针(权威层);退役「移交」叙事——终验提醒语义=提醒清理/无需移交(stderr 通道与 warn 形态不变)。
     # What: 读取 <plans>/.active_plan 当前值（PLAN_DIR_GUESS 的上级目录），若等于
     #   本任务 id（从 plan 目录名 basename 推导）则输出一行 warn 提醒（stderr，风格对齐
     #   同段 warn count 行）；warn 语义恒不改退出码（exit 码仍为 python_rc，零阻断）；
     #   指针缺失/不可读 → 静默跳过（fail-open，不影响终验判定）。
-    _cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"
+    # [2026-10-10 task-v164 fix-wave2] 原行为=直接重定向读取:指针缺失时 shell 的重定向失败信息漏 stderr(tr 的 2>/dev/null 捕不住 shell 重定向错误);改为存在性前置守卫,保持"缺失→静默跳过"语义(fail-open 不变)
+    _cp_active_ptr=""; [ -f "$PLAN_DIR_GUESS/../.active_plan" ] && _cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"
     if [ -n "$_cp_active_ptr" ] && [ "$_cp_active_ptr" = "$(basename "$PLAN_DIR_GUESS")" ]; then
-        printf '[plan] 移交提醒( pointer-lifecycle ): 全局指针仍指向本任务，完成后请移交（置空或指向在途任务；gc 亦会清理 stale）\n' >&2
+        printf '[plan] 移交提醒( pointer-lifecycle ): 全局指针仍指向本任务，完成后无需移交、请清理（置空或指向在途任务；gc 亦会清理 stale）\n' >&2
     fi
 fi
 

@@ -716,16 +716,20 @@ fi
 # 失败仅警告不阻断(指针缺失时 resolve-plan-dir.sh 回退 mtime 最新)
 # 2026-09-10 active-plan-race: 原行为=无条件覆写全局 plans/.active_plan(后写者赢,多并行会话互顶,
 #   09-09 实锤 7 次 check-dispatch 误拦)。改为:env CLAUDE_CODE_SESSION_ID 有值(ZCode 会话)→
-#   原子写会话私有 side 指针 .active_plan_side/<sidkey>.active_plan,不碰全局 legacy;
-#   无值(cron/纯脚本单会话场景)→保持原行为写全局 legacy(7am cron 兼容)。
+#   原子写会话私有 side 指针 .active_plan_side/<sidkey>.active_plan,不碰全局 fallback 指针;
+#   无值(cron/纯脚本单会话场景)→保持原行为写全局 fallback 指针(7am cron 兼容)。
+# [2026-10-10 task-v164] 上两行原措辞以「legacy」描述全局 plans/.active_plan 层,改述为「全局 fallback 指针」:
+#   实为工作树内瞬态兜底(路径随 $PWD 本地化;git rm --cached + .gitignore,与 .active_plan_side/ 同族瞬态运行态);
+#   正常路径 = side 会话私有指针(权威层);退役「legacy/移交」旧叙事。
 # [2026-09-16 task-v074 P10] PLAN_ROOT 解析修正：原 `cd .. && pwd` 假设 CWD=plans/<task-id>/
 # （即 <root>/plans/<task-id>），哨兵/指针写到 <root>/.active_plan_side；但 canonical 侧
 # 目录（task-plan-init.cjs :76 / resolve-plan-dir.sh :33 / set-active-plan.sh / check-scope.sh
 # 及主仓真实布局）均在 <root>/plans/ 下。原错位下新写的指针 resolve 侧查不到 →
 # P1-2 指针/哨兵错位根因之一。修正：CWD=plans/ → root=CWD；CWD=plans/<task-id>/（既有标准
 # 运行方式）→ root=..（行为不变）；其他（非标准目录）→ 维持旧 cd ..（降级，无破坏）。
-# 副作用登记：CWD=plans/<task-id> 运行时 legacy 全局指针与 side 指针落点从 <root>/.active_plan
+# 副作用登记：CWD=plans/<task-id> 运行时全局 fallback 指针与 side 指针落点从 <root>/.active_plan
 # 迁移到 <root>/plans/.active_plan{,_side}，与 set-active-plan/resolve/attest 的现有口径对齐。
+# [2026-10-10 task-v164] 上一行原措辞以「legacy」框定该全局层,改述为「全局 fallback 指针」(语义见 :720 注记)。
 if [ "$(basename "$(pwd)")" = "plans" ]; then
     PLAN_ROOT="$(pwd)"
 elif [ "$(basename "$(dirname "$(pwd)")")" = "plans" ]; then

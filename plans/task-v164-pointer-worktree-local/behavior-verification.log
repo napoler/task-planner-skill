@@ -1,0 +1,20 @@
+Preparing worktree (detached HEAD 67ed84a)
+HEAD is now at 67ed84a test(state): task-v164/S11 — 全量回归 72/72 rc=0 零 FAIL（主进程亲验：非零段头0+FAIL行0；vs 基线唯一差集=decision-grading 新增且过=零增量）
+[active-plan] 全局指针已设置: task-v160-decision-grading(/tmp/v164-btree/plans/.active_plan)
+B全局=task-v160-decision-grading
+A全局=task-v164-pointer-worktree-local
+B-status=NO-ENTRY(PASS)
+resolveB=/tmp/v164-btree/plans/task-v160-decision-grading/task_plan.md
+resolveA=/mnt/data/dev/task-planner-skill-worktrees/v164-pointer-worktree-local/plans/task-v164-pointer-worktree-local/task_plan.md
+Preparing worktree (detached HEAD 67ed84a)
+Updating files:  91% (2361/2569)Updating files:  92% (2364/2569)Updating files:  93% (2390/2569)Updating files:  94% (2415/2569)Updating files:  95% (2441/2569)Updating files:  96% (2467/2569)Updating files:  97% (2492/2569)Updating files:  98% (2518/2569)Updating files:  99% (2544/2569)Updating files: 100% (2569/2569)Updating files: 100% (2569/2569), done.
+HEAD is now at 67ed84a test(state): task-v164/S11 — 全量回归 72/72 rc=0 零 FAIL（主进程亲验：非零段头0+FAIL行0；vs 基线唯一差集=decision-grading 新增且过=零增量）
+ls: cannot access '/tmp/v164-ctree/plans/.active_plan': No such file or directory
+C全局=不存在(预期)
+resolveC-noside=/tmp/v164-ctree/plans/fix-pointer-race-20261007/task_plan.md
+C-noside-rc=0
+[active-plan] side 指针已设置: task-v164-pointer-worktree-local(sid=sidy)
+resolveC-side=/tmp/v164-ctree/plans/task-v164-pointer-worktree-local/task_plan.md
+/mnt/data/dev/task-planner-skill                                         547d8e0 [master]
+/mnt/data/dev/task-planner-skill-worktrees/task-v163-proactive-research  ba5ee1c [wt/task-v163-proactive-research]
+/mnt/data/dev/task-planner-skill-worktrees/v164-pointer-worktree-local   67ed84a [wt/v164-pointer-worktree-local]

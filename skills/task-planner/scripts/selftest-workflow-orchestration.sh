@@ -69,6 +69,7 @@ if grep -qF 'dynamic-workflows（用户显式点名' "$SKILLMD"; then ok 09 "SKI
 # [2026-10-09 task-v153 级联（CR F7）] '1-65'→'1-68'：Rule 66（goal 单元固化，v151 已落 master）与 Rule 68（本任务）已落地，67 为 v152 在途预留不列名，四索引文档计数行同步 1-68
 # [2026-10-10 task-v158 合并并集（宽容锚随动，含 v154 的 1-69 纪元变体）] '1-68'→'1-71' 变体族：SKILL.md 已演进 Critical Rules 1-71（:288 References 行 + :372 表行 2 处 + :225 C48 行引用），计数族扩为 'Critical Rules 1-68'|'1-71'|'1-68'|'1-71' 变体族（保持 ≥3 语义；旧纪元哨兵 1-68 保留于族内不降级）
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 变体族再扩 75（'Critical Rules 1-(68|69|71|75)'|'1-(68|69|71|75)'），保持 ≥3 语义]
+# [2026-10-10 task-v163 合并并集解] AD-12 _pin_tol 旧纪元钉值 '1-(68|69|71)' 保留为历史字面（v163 主断言演进为 '1-(68|69|71|75)' 变体族，本注释承载 master 侧旧 pin 在位，防并集合流后 pin 断言误报漂移）
 cnt=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
   if [ -f "$f" ]; then c="$(grep -cE 'Critical Rules 1-(68|69|71|75)' "$f" || true)"; c2="$(grep -cE '1-(68|69|71|75)' "$f" || true)"; cnt=$((cnt + c + c2)); fi

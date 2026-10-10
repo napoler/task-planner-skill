@@ -20,7 +20,11 @@ CWD="${CWD:-$PWD}"
 # [2026-09-05 task-active-plan] 指针优先(resolve-plan-dir.sh:.active_plan→mtime→legacy),
 # resolver 缺失时兜底旧 ls -t 逻辑(部署位同步前的过渡)
 # 会话 sid 提前解析(2026-09-10 active-plan-race): resolver 带第二参 sid → 会话私有
-# 指针 .active_plan_side/<sid>.active_plan 优先,并行会话不再互顶全局 legacy 指针
+# 指针 .active_plan_side/<sid>.active_plan 优先(权威层,2026-10-07 fix-pointer-race 后)
+# [2026-10-10 task-v164] 原措辞以「legacy 全局指针被并行会话互顶」描述本行,改述如下:
+#   全局 plans/.active_plan 实为工作树内瞬态 fallback(路径随 $PWD 本地化;
+#   git rm --cached+.gitignore,与 .active_plan_side/ 同族瞬态运行态),非跨树共享单例;
+#   正常路径=side 会话私有指针(权威层);退役"互顶"叙事(该叙事即并行可见漂移来源)
 # [2026-09-13 task-v068 E3] UPS_SID 补 env 兜底链: stdin .session_id → CLAUDE_CODE_SESSION_ID →
 #   ZCODE_SESSION_ID → default (写法对齐 resolve-plan-dir.sh:31 / attest-plan.sh:34;
 #   修根因: stdin 无 .session_id 时 sid 源断裂, owner 恒不写, delegation-observe 反复注入)

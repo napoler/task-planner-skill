@@ -131,7 +131,9 @@ const sidkey = sentinelFallbackSidkey(SIDKEY0);
 // (task-v065/V-7 [2026-09-13]：原逻辑=「readdirSync 首个含 task_plan.md 的目录即有效」，
 //  32 个历史计划下永不 exit 1——实证误认 task-3file-enforce；
 //  现按 ① env TASK_PLANNER_PLAN_DIR ② plans/.active_plan_side/<sidkey>.active_plan(会话指针,
-//  sidkey 取法与上方 normSidkey 一致;TTL 24h) ③ legacy plans/.active_plan 指针
+//  sidkey 取法与上方 normSidkey 一致;TTL 24h) ③ 全局 fallback plans/.active_plan 指针
+//  [2026-10-10 task-v164] 上一行原措辞以「legacy」描述该层,改述为「全局 fallback」(工作树内瞬态兜底,
+//  路径随 $PWD 本地化;git rm --cached + .gitignore 同族瞬态;正常路径=side 会话私有指针权威层;退役「legacy/移交」旧叙事)
 //  ④ mtime 最新(跳过 archive 前缀/隐藏/非 slug 目录) 逐层解析，
 //  仅当解析出的活跃计划含 task_plan.md 才 planFound=true)
 function isValidSlug(name) {
@@ -148,7 +150,8 @@ if (fs.existsSync(PLANS_DIR)) {
     planPath = path.join(envDir, 'task_plan.md');
     planSource = 'env TASK_PLANNER_PLAN_DIR';
   } else {
-    // ②③ 会话指针 → legacy 指针（TTL 24h 与 resolve-plan-dir.sh 对齐）
+    // ②③ 会话指针 → 全局 fallback 指针（TTL 24h 与 resolve-plan-dir.sh 对齐）
+    // [2026-10-10 task-v164] 原措辞说明：本行本层旧称已改述为「全局 fallback 指针」（同上方 ③ 层口径）
     const pointerCandidates = [];
     const sideDir = path.join(PLANS_DIR, '.active_plan_side');
     // sidkey 有值 → 只查本会话 side 文件(与 resolve-plan-dir.sh 口径一致: 查 <sidkey>.active_plan 单文件);
@@ -169,7 +172,7 @@ if (fs.existsSync(PLANS_DIR)) {
         }
       } catch (e) { /* side 目录不可读视为无效 */ }
     }
-    pointerCandidates.push({ file: path.join(PLANS_DIR, '.active_plan'), label: 'legacy 指针 .active_plan' });
+    pointerCandidates.push({ file: path.join(PLANS_DIR, '.active_plan'), label: '全局 fallback 指针 .active_plan' });
     const nowMs = Date.now();
     for (const pc of pointerCandidates) {
       if (!fs.existsSync(pc.file)) continue;

@@ -40,8 +40,8 @@ else
 fi
 # PL-06: check-complete 含移交提醒（S3 实现: 提醒行走 stderr, 断言用 2>&1 等价 grep 校验 stderr 锚在位）
 [ "$(cnt '移交提醒' "$COMPL")" -ge 1 ] && [ "$(cnt '移交提醒.*>&2' "$COMPL")" -ge 1 ] && ok "PL-06 check-complete 移交提醒在位（stderr 通道锚已校验）" || bad "PL-06" "移交提醒或 stderr 通道锚缺失"
-# PL-07: SKILL.md 含移交纪律行（指针移交 25 完成项）
-[ "$(cnt '指针移交' "$SKILL")" -ge 1 ] && ok "PL-07 SKILL.md 含移交纪律行（指针移交锚在位）" || bad "PL-07" "SKILL.md 移交纪律行缺失"
+# PL-07: SKILL.md 含指针清理纪律行（指针清理 25 完成项）[2026-10-10 task-v164 锁步：原锚'指针移交'随 S5 改述退役，语义不变]
+[ "$(cnt '指针清理' "$SKILL")" -ge 1 ] && ok "PL-07 SKILL.md 含指针清理纪律行（锚在位）" || bad "PL-07" "SKILL.md 指针清理纪律行缺失"
 
 # ── 行为断言 PL-08..10（/tmp 隔离夹具, 禁触真实 plans/ 与真实 side 键）──
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT

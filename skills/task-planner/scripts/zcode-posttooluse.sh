@@ -40,8 +40,12 @@ if [ -d "$CWD/plans" ]; then
 fi
 # [2026-09-05 task-active-plan] 指针优先(resolve-plan-dir.sh:.active_plan→mtime→legacy)
 RESOLVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/resolve-plan-dir.sh"
-# [2026-09-10 active-plan-race] 带会话 sid 二参 → .active_plan_side/<sid>.active_plan 优先,
-# 并行会话各自解析本会话的计划,不再被全局 legacy 指针互顶
+# [2026-09-10 active-plan-race] 带会话 sid 二参 → .active_plan_side/<sid>.active_plan 优先(权威层,2026-10-07 fix-pointer-race 后),
+# 并行会话各自解析本会话的计划
+# [2026-10-10 task-v164] 原措辞以「legacy 全局指针被互顶」描述本行,改述如下:全局
+#   plans/.active_plan 实为工作树内瞬态 fallback(路径随 $PWD 本地化;git rm --cached+
+#   .gitignore,与 .active_plan_side/ 同族瞬态运行态),非跨树共享单例;退役"互顶"叙事
+#   (该叙事即并行可见漂移来源)
 [ -f "$RESOLVER" ] && plan="$(bash "$RESOLVER" "$CWD" "$SID" 2>/dev/null || true)"
 [ -z "$plan" ] && exit 0
 
@@ -352,7 +356,11 @@ if [ "$due" -eq 1 ]; then
         _cp="$(printf '\n%s' '[context-pressure] 主动评估（Rule 67.2）：四信号自评 → HEALTHY 继续 / PRESSURE 即压缩(67.3) / CONFUSED 写会话交接文档(67.4)')"
       fi
     fi
-    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套${_cp}"
+    _jr=""
+    if [ "${TASK_PLANNER_DECISION_JUDGE:-on}" != "off" ]; then
+      _jr="$(printf '\n%s' '[judge] 变更型决策点评判（Rule 73.1/73.4）：凡改风格/范围/采信可疑结论/收口声称前过对齐三问（73.2）并留 [align]/[judge] 行')"
+    fi
+    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套${_cp}${_jr}"
     printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
   fi
 fi

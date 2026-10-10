@@ -86,11 +86,11 @@
 ## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard/full 必填，mini 档豁免）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | pending |
-| G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | pending |
-| G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S7 | pending |
-| G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S8-S10 | pending |
-| G5 | 交付合并 | 合并回 master+部署对账+簿记+规则登记 | smart-merge-back no-ff 对账+INDEX/ledger/CHANGELOG+check-complete exit 0 | Phase 5 | pending |
+| G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | complete（2026-10-10 15:2x：71/71 rc=0+FF master 79cd10a） |
+| G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | complete（2026-10-10 15:5x：8ea2eb3+S3 复验） |
+| G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S10+锁步 | complete（2026-10-10 16:4x：全域扫描 ZERO-RESIDUE，残余仅注记引文） |
+| G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S11-S13 | complete（2026-10-10 17:4x：72/72+APPROVED 7/7） |
+| G5 | 交付合并 | 合并回 master+部署对账+簿记+规则登记 | smart-merge-back no-ff 对账+INDEX/ledger/CHANGELOG+check-complete exit 0 | Phase 5 | complete（2026-10-11：a849947+三部署位 IDENTICAL+check-complete 复跑中） |
 
 ## ⚠️ 执行范围限制
 
@@ -129,6 +129,9 @@
 ### Phase 1: 隔离与基线
 - 按宪法 §十一 建 worktree（`wt/v164-pointer-worktree-local`，集中目录 /mnt/data/dev/task-planner-skill-worktrees/ 下）+ **worktree 初建即对账主仓 HEAD**（worktree-branch-desync 教训）
 - 复读 plans/fix-pointer-race-20261007/（上一轮修复先例，禁重复设计）
+- master 16 提交快进合并（79cd10a，S5 scope 重叠面预防：v160 Rule 72 改过 SKILL/critical-rules）
+- **Status:** complete（2026-10-10 15:2x；S1 基线 71/71 rc=0 FAIL=0 经主进程复核）
+- **V-N:** VC-4 前置（基线=零增量对照锚）+ VC-2 前置（双树验证的树 A）
 - **Executor:** 主进程（白名单① git/worktree 编排）+ code-runner-agent（S1 基线跑批）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
@@ -138,32 +141,49 @@
 ### Phase 2: 指针瞬态化（git 索引 + 头注释）
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S2 | `plans/.active_plan` 改瞬态：`git rm --cached` + `.gitignore` 追加 `plans/.active_plan`（工作区文件保留） | executor（sonnet-1） | ① findings.md A-D 节 ② 仓根 `.gitignore`:1-10 ③ worktree 绝对路径 | VC-1 命令级判定全过（ls-files 空/ignore 命中/legacy set 后 status 无 M）+ 工作区文件仍在 | 10min | 1f/1l/10min | 无 | pending | S1 基线后 |
-| S3 | set-active-plan.sh + resolve-plan-dir.sh 头注释改述：全局指针="工作树内瞬态 fallback"，退役"移交"叙事 | executor（sonnet-1） | ① set-active-plan.sh:1-21 ② resolve-plan-dir.sh:1-27（knowledge-brief.md §3 由派发模板自动注入） | 头注释无"移交/入库"旧语义 + git diff 只见注释区 + `bash -n` 双通过 | 10min | 2f/20l/10min | 无 | pending | S2 后 |
+| S2 | `plans/.active_plan` 改瞬态：`git rm --cached` + `.gitignore` 追加 `plans/.active_plan`（工作区文件保留） | executor（sonnet-1） | ① findings.md A-D 节 ② 仓根 `.gitignore`:1-10 ③ worktree 绝对路径 | VC-1 命令级判定全过（ls-files 空/ignore 命中/legacy set 后 status 无 M）+ 工作区文件仍在 | 10min | 1f/1l/10min | 无 | done（2026-10-10 15:4x，主进程复验） | S1 基线后 |
+| S3 | set-active-plan.sh + resolve-plan-dir.sh 头注释改述：全局指针="工作树内瞬态 fallback"，退役"移交"叙事 | executor（sonnet-1） | ① set-active-plan.sh:1-21 ② resolve-plan-dir.sh:1-27（knowledge-brief.md §3 由派发模板自动注入） | 头注释无"移交/入库"旧语义 + git diff 只见注释区 + `bash -n` 双通过 | 10min | 2f/20l/10min | 无 | done（2026-10-10 15:5x，主进程复验代码区 0 改动） | S2 后 |
 
+- **Status:** complete（2026-10-10 15:5x；S2 四判定+S3 注释区零代码改动均经主进程复验）
+- **V-N:** VC-1（S2 四项命令判定）+ VC-3 部分（S3 头注释旧语义清零）
 - **Executor:** executor（sonnet-1）
 
 ### Phase 3: 引用面措辞级联
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S4 | 28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md | executor（sonnet-1） | ① `grep -rn 'active_plan' skills/task-planner/` 输出 ② findings.md E 节 | findings.md 级联清单=28 文件逐个判定（只读/更新+一行理由） | 12min | 1f/30l/12min | 无 | pending | S3 后 |
-| S5 | critical-rules.md 指针相关段措辞改述 + 瞬态文件合并规则登记段（按 S4 清单） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚（critical-rules 指针段行号实施日重测） | 无"入库/跟踪"旧语义；合并规则段在位；git diff 仅清单内行 | 12min | 1f/35l/12min | 无 | pending | S4 后 |
-| S6 | README.md + INSTALL.md 措辞改述（按 S4 清单） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚 | 两文件无旧语义；git diff 仅清单内行 | 10min | 2f/20l/10min | 无 | pending | S5 后 |
-| S7 | selftest-active-plan.sh + selftest-pointer-lifecycle.sh 注释/断言适配（按 S4 清单；禁删既有断言） | executor（sonnet-1） | ① S4 级联清单 ② 两 selftest 全文 | 断言逻辑零删（除瞬态化失效的跟踪态断言）；`bash -n` 通过 | 10min | 2f/20l/10min | 无 | pending | S6 后 |
+| S4 | 28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md | executor（sonnet-1） | ① `grep -rn 'active_plan' skills/task-planner/` 输出 ② findings.md E 节 | findings.md 级联清单=28 文件逐个判定（只读/更新+一行理由） | 12min | 1f/30l/12min | 无 | done（2026-10-10 16:0x：只读14/措辞更新12/已改述2，主进程复核） | S3 后 |
+| S5 | critical-rules.md 指针相关段措辞改述 + 瞬态文件合并规则登记段（按 S4 清单 :196/:298） | executor（sonnet-1） | ① S4 级联清单（findings.md [sub:4] 段）② knowledge-brief.md §3 锚（行号实施日重测） | 无"入库/跟踪/移交"旧语义；合并规则段在位；git diff 仅清单内行 | 12min | 1f/35l/12min | 无 | done（2026-10-10 16:4x） | S4 后 |
+| S6 | README.md + INSTALL.md 措辞改述（按 S4 清单 :100-101/:189） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚 | 两文件无旧语义；git diff 仅清单内行 | 10min | 2f/20l/10min | 无 | done（2026-10-10 16:4x） | S5 后 |
+| S7 | zcode-userpromptsubmit.sh + zcode-posttooluse.sh 注释改述（按 S4 清单 :23/:43-44） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零+[task-v164] 锚各 ≥1；`bash -n` 双过 | 10min | 2f/12l/10min | 无 | done（2026-10-10 16:4x） | S6 后 |
+| S8 | zcode-pretooluse.sh + task-plan-init.cjs 注释改述（按 S4 清单 :72-73/:122-124） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check` 验语法） | 10min | 2f/12l/10min | 无 | done（2026-10-10 16:4x） | S7 后 |
+| S9 | init-session.sh + plan-created.cjs 注释改述（按 S4 清单 :719-727/:134） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check`） | 10min | 2f/12l/10min | 无 | done（2026-10-10 16:4x） | S8 后 |
+| S9b | S9 收尾补充：plan-created.cjs :153 注释「legacy 指针」+:174 label 字符串 `'legacy 指针 .active_plan'` 两处残留清零（S9 自报边界事实；无 selftest 耦合） | executor（sonnet-1） | ① findings [sub:9] 段边界事实行 ② plan-created.cjs:150-176 | 两处改述+[task-v164] 注记；`node --check` 过；diff 仅注释行+该 1 处 label 字符串 | 8min | 1f/4l/8min | 无 | done（2026-10-10 16:4x） | S9 后 |
+| S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | done（2026-10-10 16:4x，含 A2 偏离仲裁见 Decisions） | S9b 后 |
+| S14 | selftest-pointer-lifecycle.sh 契约锁步同步：PL-07 锚随 SKILL 新措辞（"指针清理"）、PL-06 锚随 check-complete 新措辞（如保留"移交提醒"废弃标签则不动，以实测为准）；禁删其他断言 | executor（sonnet-1） | ① S5/S10 改述后实测措辞 ② selftest-pointer-lifecycle.sh:40-46 | PL-06/PL-07 PASS 且断言锚=新措辞；`bash -n` 过 | 10min | 1f/10l/10min | 无 | done（2026-10-10 16:4x，10/10 PASS） | S5-S10 后 |
+
+- **Status:** complete（2026-10-10 16:4x；12 个措辞目标+S9b 残留清零+锁步同步全落地，全域旧语义扫描零残留）
+- **V-N:** VC-3（全域 grep 旧语义=0，残余 7 处均为 [task-v164] 原措辞注记引文，Rule 45 合规）
 
 - **Executor:** executor（sonnet-1）
 
 ### Phase 4: 全量回归 + 行为验证 + CR
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S8 | 变更后态全量 selftest 回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S7 已落）② baseline-selftest.log 对照 | 主进程求和：新增 FAIL=0（对照基线既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | pending | S5-S7 后 |
-| S9 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | pending | S8 后 |
-| S10 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | pending | S8/S9 后 |
+| S11 | 变更后态全量 selftest（现 72 个）回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S10 已落）② baseline-selftest.log 对照（71 段；decision-grading 为新脚本对照 master 态） | 主进程求和：新增 FAIL=0（既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：72/72 rc=0 零 FAIL，主进程亲验+CR 证据项⑥ PASS） | S5-S10 后 |
+| S12 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | done（2026-10-10 17:3x：双树隔离+新树兜底+零残留全 PASS，主进程亲验 log 原文） | S11 后 |
+| S13 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：APPROVED 7/7+3 NIT 已处置登记） | S11/S12 后 |
+| S13-nit | CR NIT 收尾：两指针脚本头注释自指行号锚漂移修正（resolve-plan-dir.sh:9 的 :30→实测；set-active-plan.sh:11 的 :69,84-85→实测） | executor（sonnet-1） | ① CR NIT 清单（findings [sub:13] 段）② `grep -n 'ROOT=\|ACTIVE_FILE=' 两脚本` 实测 | 锚=实施日实测行号+[task-v164 CR-nit] 注记；diff 仅注释行；`bash -n` 双过 | 8min | 2f/2l/8min | 无 | done（2026-10-10 17:3x） | S13 后 |
+| S11-r2 | 合并后态全量回归（master 26 提交已并入，5 文件交集经自动/手动解消）：对最终待合并态重跑 72 脚本 | code-runner-agent（mini） | ① worktree（merge 40a72f7 后态）② baseline-selftest.log 对照 | 主进程求和：72 段 rc=0、零 FAIL（与 S11 同口径） | 12min | 0f/0l/12min | 无 | pending | S13-nit 后 |
 
+- **Status:** complete（2026-10-10 17:4x；S11 零增量/S12 双树实证/S13 CR APPROVED/NIT 收尾，均主进程独立复验）
+- **V-N:** VC-2（S12 行为验证）+ VC-4（S11 主进程求和零增量+CR 质量面）
 - **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）
 
 ### Phase 5: 合并回 + 部署 + 簿记
 - smart-merge-back --deploy 部署位对账（.gitignore 不随部署=预期差登记）+ INDEX/ledger/CHANGELOG v164 条目 + worktree 清理
+- master 26 提交并入解冲突（40a72f7）+S11-r2 合并后态 75/75 复验 + 合并回 a849947 + 三部署位 IDENTICAL
+- **Status:** complete（2026-10-10 深夜~10-11；merge a849947 已在册，部署对账 IDENTICAL，.active_plan 瞬态终态亲验：主仓无该文件/ls-files exit1/gitignore:15 命中）
+- **V-N:** VC-4（75/75 合并后态回归）+ VC-5（部署对账+簿记）
 - **Executor:** 主进程（白名单①②）
 
 ## 📚 必要知识储备
@@ -189,15 +209,22 @@
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |          |        |      |
+| 2026-10-10 15:2x | Phase 1 收口自检（drift-rhythm due=0 未到 hook 提醒阈值，按 64.2 主动自检）：原目标=.active_plan 瞬态化全链 vs 当前步=Phase 1 隔离基线全部达成； master 快进=防 S5 撞车的预防动作不改目标；R1-R5 范围零蔓延 | 全 VC | ALIGNED |
+| 2026-10-10 15:5x | Phase 2 收口自检：S2/S3 均经主进程独立复验（非采信子代理自报）；diff 只见注释区+索引态，解析链零改动=R1/R3/R4 路径 intact；G2 达成 | VC-1, VC-3 | ALIGNED |
+| 2026-10-10 16:0x | S4 分级后计划重构（16:0x Decisions 登记）：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8），远超原 S5-S7 三单预估；按 step_max_files=2 拆为 S5-S10 六个派发；原 S7 selftest 适配目的经主进程实测（active-plan 29/29、pointer-lifecycle 10/10 瞬态化后全绿）证明无事可做→撤销，其槽位由脚本注释改述接替 | VC-3 | ALIGNED（范围未超：12 目标全在 S4 清单内，D3 禁扩范围） |
+| 2026-10-10 16:4x | Phase 3 收口自检：12 目标+S9b+锁步全落地，每单均主进程独立复验（diff/语法/grep 三件套）；全域旧语义扫描 ZERO-RESIDUE（7 残余均为 [task-v164] 注记引文）；S10 display 字符串偏离经仲裁登记未越 R2/R4 目标 | VC-3 | ALIGNED |
+| 2026-10-10 17:4x | Phase 4 收口自检：S11/S12/S13 均独立执行体产出+主进程亲验（回归日志逐段、行为 log 原文、CR 七项）；NIT 3 条全部处置（2 锚修正+1 口径更正）；VC-1~4 证据齐 | VC-1~4 | ALIGNED |
+| 2026-10-10 17:5x | Phase 5 合并前置：master 已前进 26 提交（v156 Rule 73 等），与分支 5 文件交集 → 先在分支内 merge master 解冲突（仅 SKILL.md:111 一处，取本方改述+v156 注释精度修正，merge commit 40a72f7）；主仓脏指针 v163 值按已登记瞬态合并规则 stash 不抢救 → 增设 S11-r2 对合并后态复跑全量后方可 merge-back | VC-4 | ALIGNED（防“S11 绿的是合并前态”证据断链） |
+| 2026-10-10 深夜 | Phase 5 收口：smart-merge-back --deploy 过 V1-V6（a849947 no-ff 在册）+三部署位 post-verify 零差异 IDENTICAL；.active_plan 瞬态终态亲验（主仓无文件/ls-files exit1/ignore:15）；Handoff 17 行补登后 stats verdict=ok；委派率 0.600 经白名单豁免（①git/worktree 编排+①②）；check-complete 首跑因 scope 未提交 exit 1→簿记提交后复跑 | VC-5 | ALIGNED |
+| 2026-10-11 | fix-wave 2（check-complete 终验自暴露）：①[judge-gate] Rule 73.4 留痕缺失→progress 补六类 [judge]+[align] 行；②S4 分级盲区（check-complete:1375 裸读瞬态指针漏 shell 错误行）→S16 [ -f ] 守卫修复+/tmp 夹具 OLD/NEW 实证；③SKILL-MODIFY 门声明补登 progress（`[skill-modify] 删除清单:`）；④Error Log 三条实质归因（PL-07 跨文件字面断言/守卫双 sid 误拦/裸读漏行）→learning-gate 占位清零；二轮 merge ea640d6+部署 IDENTICAL（V3 曾因 .dispatch-inflight 瞬态标记被跟踪撞车→restore 最小处置，登记第三笔卫生债） | VC-5, Rule 73.4/36.6/31 | ALIGNED |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-1（in_progress：用户已批准"彻底解决164"，worktree+S1 基线進行中）
+终态：5/5 Phase complete（outcome=COMPLETE 待 check-complete 复跑确认）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-Phase 1：建 worktree（wt/v164-pointer-worktree-local，对账 master HEAD）→ S1 selftest 基线跑批 → 复读 fix-pointer-race-20261007 先例
+无（交付完成）。Worktree 清理（§11.3）+ stash@ 瞬态指针处置（按已登记规则 drop 不抢救）随收尾执行
 
 ## Decisions
 | 时间 | 决策 | 理由 |
@@ -205,16 +232,35 @@ Phase 1：建 worktree（wt/v164-pointer-worktree-local，对账 master HEAD）�
 | 2026-10-10 11:3x | D 类新任务判定（Rule 8.1）：用户指针反馈与 v152（Rule 67，已 COMPLETE）及 v163（调研诚实性 R1-R14）目标均无关联 → 开新计划 task-v164-pointer-worktree-local 独立承载，R1-R5 逐字归档；v152/v163 不收编 | 用户原话五连发（状态入工作数/指针严重混乱/为何不存工作数/合并时忽略状态文件/执行会话实证）；03:3x D 类分立先例 |
 | 2026-10-10 11:3x | 方案比选：采纳 D1（untracked+gitignore，语义改述为工作树内瞬态 fallback）；不取 D2（保留跟踪+合并约定）；否决 D3（删全局只留 side+mtime） | git log 实证 8 次 churn chore；.gitignore:3-9 兄弟瞬态范式在先；R4 用户明示"合并时忽略该文件"；D3 破坏 cron/sid-less legacy 消费者（set-active-plan.sh:3） |
 | 2026-10-10 11:3x | 路径本地化纠正：用户"指针存工作数内"的路径诉求是既成事实（ROOT=$PWD），真缺陷=git 跟踪态+移交叙事 → 方案聚焦瞬态化而非路径改造 | set-active-plan.sh:69,84-85 + resolve-plan-dir.sh:30 一手实证；避免不必要的大改 |
+| 2026-10-10 16:0x | 计划重构：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8）远超原 S5-S7 预估 → 按 step_max_files=2 拆为 S5-S10 六派发；原 S7 selftest 适配目的经主进程实测（瞬态化后 active-plan 29/19、pointer-lifecycle 10/10 全绿）证明无事可做→撤销 | S4 findings 清单为界（禁扩范围）；实测命令原文见 progress.md Phase 3 |
+| 2026-10-10 16:2x | S5 实测回归发现 PL-07 字面依赖：selftest-pointer-lifecycle.sh:44 断言 `grep '指针移交' SKILL.md`、PL-06 断言 `grep '移交提醒' check-complete.sh`——selftest 是旧措辞的机器契约，退役叙事必须断言锁步同步 → 新增 S14（置 S5-S10 全部改述落地后执行，以终态措辞为准）；暂留 PL-07 FAIL 态至 S14（S11 前须清零） | 主进程亲验：PL-07 FAIL（SKILL.md 移交纪律行缺失）、PL-06 当前 PASS（check-complete 未改）；S10 落地后 PL-06 亦需复核 |
+| 2026-10-10 16:4x | S10 偏离仲裁（子代理自报+主进程裁量）：check-complete.sh:1346 warn 消息字符串由「完成后请移交」改「完成后无需移交、请清理」——接受。理由：该 printf 字符串=用户可见文案，"请移交"推荐本身即 R2/R4 要退役的对象（VC-3 口径）；逻辑/触发条件/warn 形态/stderr 通道/退出码零变化（PL-06 实测 PASS，label「移交提醒」保留作废弃警示锚）；"代码区零改动"验收口径本意为禁逻辑改动，display-only 字符串改述不违其本意 → 记账接受，S10 验收 A2 口径按"逻辑零改动+display 字符串 1 处"结案 | 主进程亲验 diff：非注释行仅该 printf 一行；bash -n 双过；PL-06 PASS/PL-07 FAIL（S14 处置中） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 | 0 / 5（计划期） |
-| 主进程直做 Phase 清单 | Phase 1（白名单① git/worktree 编排）+ Phase 5（白名单①②簿记） |
-| 委派率 | （终验由 check-delegation.sh stats 定数） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（Phase 2/3/4，17 次派发全登记 Handoff） |
+| 主进程直做 Phase 清单 | Phase 1（白名单① git/worktree 编排）+ Phase 5（白名单①② git 编排+簿记） |
+| 委派率 | 0.600（<floor 0.7 但 main_direct 两条理由全命中白名单关键词 ①git/worktree 编排+①② → check-complete 白名单豁免放行；stats verdict=ok/violations=[]） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
 |---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
-| 1 |  |  |  | queued |  |  |  |  |
+| 1 | 2026-10-10 12:07 | code-runner-agent | S1 变更前全量 selftest 基线跑批（71 脚本） | done | 71 段 rc=0 FAIL=0；主进程复核 11 处 rc≠0 行均为负用例文本 | baseline-selftest.log:1,484 | [sub:1-code-runner-agent] | subagent-state/1-code-runner-agent.md |
+| 2 | 2026-10-10 15:44 | executor | S2 指针索引瞬态化（git rm --cached+gitignore） | done | 四判定全过：不再跟踪/ignore:15/工作区保留/瞬态无 ?? | .gitignore:15；git ls-files exit 1 | [sub:2-executor] | subagent-state/2-executor.md |
+| 3 | 2026-10-10 15:5x | executor | S3 两指针脚本头注释退役"移交"叙事 | done | 三点改述块+代码区 0 改动（diff 非#行=0） | set-active-plan.sh:9-16 | [sub:3-executor] | subagent-state/3-executor.md |
+| 4 | 2026-10-10 16:0x | executor | S4 28 文件引用面逐个分级 | done | 只读14/措辞12/已改述2；hits 实测 170 纠正旧数 | findings.md [sub:4] 表 | [sub:4-executor] | subagent-state/4-executor.md |
+| 5 | 2026-10-10 16:1x | executor | S5 critical-rules 改述+瞬态合并规则登记+SKILL 两处 | done | Rule 22.9 行内改述+登记段四要素；diff 仅两文件 | critical-rules.md:196,198-201 | [sub:5-executor] | subagent-state/5-executor.md |
+| 6 | 2026-10-10 16:2x | executor | S6 README+INSTALL 旧语义清零 | done | 全局 legacy→全局 fallback；安装命令/表格零改动 | README.md:100-102;INSTALL.md:189 | [sub:6-executor] | subagent-state/6-executor.md |
+| 7 | 2026-10-10 16:3x | executor | S7 userpromptsubmit+posttooluse 注释改述 | done | 代码区 0 改动+bash -n 双过 | zcode-userpromptsubmit.sh:23-27 | [sub:7-executor] | subagent-state/7-executor.md |
+| 8 | 2026-10-10 16:3x | executor | S8 pretooluse+task-plan-init.cjs 注释改述 | done | sh/cjs 代码区 0 改动；node --check 过 | zcode-pretooluse.sh:73-76 | [sub:8-executor] | subagent-state/8-executor.md |
+| 9 | 2026-10-10 16:3x | executor | S9 init-session+plan-created 注释改述 | done | 代码区 0 改动；自报 :151 残留交 S9b | init-session.sh:719-729 | [sub:9-executor] | subagent-state/9-executor.md |
+| 10 | 2026-10-10 16:4x | executor | S9b plan-created 残留清零（:153 注释+:174 label） | done | 指针层 legacy=0；node --check 过 | plan-created.cjs:153-154,175 | [sub:9b-executor] | subagent-state/9b-executor.md |
+| 11 | 2026-10-10 16:4x | executor | S10 check-dispatch+check-complete 改述 | done | 旧语义清零；warn 文案「请移交」→「无需移交、请清理」（display-only 仲裁登记） | check-complete.sh:1350 | [sub:10-executor] | subagent-state/10-executor.md |
+| 12 | 2026-10-10 16:4x | executor | selftest 锁步：PL-07 锚随 SKILL 新措辞 | done | 10/10 PASS；PL-06 保 label 未动 | selftest-pointer-lifecycle.sh:43-44 | [sub:14-executor] | subagent-state/14-executor.md |
+| 13 | 2026-10-10 17:2x | code-runner-agent | S11 变更后态全量回归（72 脚本） | done | 72 段 rc=0 零 FAIL；vs 基线差集=decision-grading 新增且过 | regression-worktree.log:1,353 | [sub:11-code-runner-agent] | subagent-state/11-code-runner-agent.md |
+| 14 | 2026-10-10 17:3x | code-runner-agent | S12 双树行为验证（VC-2） | done | 互不感知/status 无条目/双树解析隔离/新树 mtime 兜底/side 归位/零残留 | behavior-verification.log:4-17 | [sub:12-code-runner-agent] | subagent-state/12-code-runner-agent.md |
+| 15 | 2026-10-10 17:3x | code-reviewer | S13 全量 diff 七项 CR | done | APPROVED 7/7+3 NIT（2 锚漂移+1 口径） | findings.md [sub:13] 七项明细 | [sub:13-code-reviewer] | subagent-state/13-code-reviewer.md |
+| 16 | 2026-10-10 17:4x | executor | S13-nit CR NIT 收尾：自指锚改实测行号 | done | :41,109 / :97；代码区 0 改动 | resolve-plan-dir.sh:9 | [sub:13-nit-executor] | subagent-state/13-nit-executor.md |
+| 17 | 2026-10-10 22:41 | code-runner-agent | S11-r2 合并后态（master 26 提交并入）全量回归 | done | 75/75 rc=0 零 FAIL（并入新增 3 脚本亦过） | regression-worktree-merged.log:1,368 | [sub:15-code-runner-agent] | subagent-state/15-code-runner-agent.md |

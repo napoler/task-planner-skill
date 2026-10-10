@@ -62,16 +62,19 @@
 
 | S-unit ID | 应读本 brief 哪节 | 额外材料路径 |
 |-----------|-------------------|-------------|
-| S1（基线跑批） | §2（side 保护事实）+ §3（selftest 锚） | worktree 根（=master HEAD 态） |
+| S1（基线跑批） | §2（side 保护事实）+ §3（selftest 锚） | worktree 根（master FF 后 79cd10a 态） |
 | S2（git 索引瞬态化） | §2（跟踪态事实）+ §3（.gitignore 锚） | /mnt/data/dev/task-planner-skill/.gitignore |
 | S3（头注释改述） | §3（两脚本头注释锚）+ §4.7 | skills/task-planner/scripts/set-active-plan.sh、resolve-plan-dir.sh |
 | S4（引用面分级） | §2（引用面规模）+ §4.2 | `grep -rn 'active_plan' skills/task-planner/` 输出 |
-| S5（critical-rules+SKILL 改述） | §3（critical-rules 指针段锚，实施日重测） | findings.md 级联清单 |
-| S6（README+INSTALL 改述） | §3（文档锚） | findings.md 级联清单 |
-| S7（selftest 适配） | §3（两 selftest 锚） | selftest-active-plan.sh、selftest-pointer-lifecycle.sh |
-| S8（回归跑批） | §2（基线事实）+ §4.5 | baseline-selftest.log（对照） |
-| S9（行为验证） | §4.5/§4.6 | 主进程给定验证命令原文 |
-| S10（CR） | §4.3 | worktree `git diff master...HEAD` |
+| S5（critical-rules+SKILL 改述） | §3（critical-rules 指针段锚，实施日重测） | findings.md [sub:4] 级联清单 |
+| S6（README+INSTALL 改述） | §3（文档锚） | findings.md [sub:4] 级联清单 |
+| S7（userpromptsubmit+posttooluse 注释） | §3（hooks 锚） | findings.md [sub:4] 级联清单 |
+| S8（pretooluse+task-plan-init.cjs 注释） | §3（hooks 锚） | findings.md [sub:4] 级联清单 |
+| S9（init-session+plan-created.cjs 注释） | §3（hooks 锚） | findings.md [sub:4] 级联清单 |
+| S10（check-dispatch+check-complete 注释） | §3（hooks 锚） | findings.md [sub:4] 级联清单 |
+| S11（回归跑批） | §2（基线事实）+ §4.5 | baseline-selftest.log（对照） |
+| S12（行为验证） | §4.5/§4.6 | 主进程给定验证命令原文 |
+| S13（CR） | §4.3 | worktree `git diff master...HEAD` |
 
 ## §6 可用强化技能清单（Rule 59.3 — 执行前技能扫描）
 
