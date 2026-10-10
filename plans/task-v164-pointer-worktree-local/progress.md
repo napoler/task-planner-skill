@@ -127,6 +127,7 @@
 - **Status:** pending
 - **Started:**
 - Actions taken:
+  - [sub:15] 合并后态回归 75 脚本（派发口径 72 + master 并入新增 3）rc/Total 落 regression-worktree-merged.log；75/75 rc=0，BATCH 22:41:22→22:44:09
   -
 - Files created/modified:
   -

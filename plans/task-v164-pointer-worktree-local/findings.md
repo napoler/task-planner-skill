@@ -193,6 +193,13 @@
 - 验证：`git diff -U0 -- 两脚本 | 非#行 | grep -c .` = 0（仅 `#` 注释区改动，代码零改动）；`bash -n` 双脚本 rc=0。
 - 来源锚：findings.md:229-230（CR nit 原文，:41/:109 与 :97 修法）。
 
+#### [sub:15-code-runner-agent] S11-r2 合并后态回归
+- 事实：worktree HEAD=74691cb（40a72f7 merge master 之后）重跑 selftest-*.sh 全集；实测全集=75 个（prior S11=72 + merge 并入 master 新增 3：selftest-absorption-discipline.sh / selftest-decision-drift.sh / selftest-subagent-return.sh）；log regression-worktree-merged.log:1-372 共 75 段，全部 rc=0、零 FAIL=[1-9]、无 TRUNCATED；BATCH 22:41:22→22:44:09（167s）。
+- 自证：selftest-registry.sh Total 行 `Total: 5 PASS=5 FAIL=0 (registry rows=75, actual selftest=75)`（regression-worktree-merged.log:225）——树内注册表即按 75 个 selftest 对齐，派发口径「72 个」为 merge 前计数。
+- 唯一无 Total 行段：selftest-user-instruction-priority.sh（regression-worktree-merged.log:356）以 `=== ALL PASS ===`（:357）收尾，rc=0。
+- rc≠0 段：空集（75/75 rc=0）。
+- 来源锚：regression-worktree-merged.log:1（首段 `=== selftest-absorption-discipline.sh rc=0`）、:368（末段 `=== selftest-workflow-orchestration.sh rc=0`）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

@@ -1,0 +1,372 @@
+=== selftest-absorption-discipline.sh rc=0
+AD-12 PASS pinning 锚 11 处逐个断言：live 锚字面（精确 5：Critical Rules 1-74 / 1-74 计数）或宽容正则族（6）二者居一
+AD-13 PASS 自举消费：变更标注表含 14 行 CA-n 条目（≥10）
+AD-14 PASS 脚本自身 chmod+x（可执行位）且 bash -n 语法通过
+Total: 14 pass, 0 fail, 0 skip
+=== selftest-active-plan.sh rc=0
+T12l PASS 12l
+T13 PASS 13
+T14 PASS 14
+Total: 29 PASS=29 FAIL=0
+=== selftest-agent-coverage.sh rc=0
+AC-07 PASS config.json properties 键数 42（零新增）
+AC-08 PASS 既有锚在位 ^21.1b=1 ≥1 / ^47.=4 ≥4
+AC-09 PASS 矩阵行数=130 ≤130 上界锚在位（task-v131 审计 L-3 对称守护 + CR P2-1；内容锚=AC-05，演进=Rule 52.3 增删同步）; [2026-10-08 task-v146] drift-checker 行 +1; [2026-10-10 task-v154] 判断/裁决行 +1
+Total: 9 PASS=9 FAIL=0 SKIPPED=0
+=== selftest-ask-default-timeout.sh rc=0
+RT-09 PASS config.json properties 键数 42（零新增）
+RT-10 PASS critical-rules.md 44.5 阻塞点展示限制条款行 = 1 且行内容锚在位
+RT-11 PASS critical-rules.md「阻塞点展示限制」关键词命中 2 ≥1
+Total: 11 PASS=11 FAIL=0
+=== selftest-batch-pilot.sh rc=0
+BP-08 PASS SKILL.md 行数 547 ≤558
+BP-09 PASS CD-19 宽容锚子串保护（隶属 Rules 1-36）
+BP-10 PASS CHANGELOG task-v083 条目
+Total: 10 PASS=10 FAIL=0
+=== selftest-capability-persistence.sh rc=0
+CP-18 PASS 脚本头注释 What+Why 齐备（Rule 45）
+CP-19 PASS agnes-quota.sh 404 模式 exit=5 + 失败语义（F1 回归钉：禁伪成功）
+CP-20 PASS agnes-quota.sh 200 模式 exit=0 + verdict 含未填充（成功路径未回归）
+Total: 20 PASS=20 FAIL=0
+=== selftest-check-conflicts.sh rc=0
+CC-05 PASS 无冲突基线全绿输出, rc=0
+CC-06 PASS runtime 同文件冲突 A(真实形态 INDEX)恰 1 条且报他计划 t-other, rc=1
+CC-07 PASS 仅自计划在册零冲突 A 全绿通过, rc=0
+Total: 7 PASS=7 FAIL=0
+=== selftest-check-drift.sh rc=0
+CD-04 PASS 三列表: 越权+禁止列文件均报 BREACH, 允许列不误报, rc=1(S9 反向风险语义)
+CD-05 PASS 无范围表计划 SCOPE-NONE 跳过, rc=0(fail-open 保持)
+CD-06 PASS 两列表越权报 BREACH 含 hack/evil.py, 允许列不误报, rc=1
+Total: 6 PASS=6 FAIL=0
+=== selftest-conclusion-discipline.sh rc=0
+CD-22 PASS task_plan.md 含 'ID 列一律纯数字'（④ 注释行）
+CD-23 PASS subagent_dispatch.md 含 '机械求和'（禁自报汇总行）
+CD-24 PASS smart-merge-back.sh 含 'DEPLOY_SRC' 且含 '禁回退 SKILL_ROOT'（fail-closed）
+Total: 24 PASS=24 FAIL=0
+=== selftest-context-hygiene.sh rc=0
+T10 PASS config.json 3 键注册 (context/plan hygiene=warn, plan_archive_age_days=7)
+T11 PASS config.json 合法 (json.load 不抛异常)
+T12 PASS check-context-hygiene.sh 只读 (运行前后 fixture mtime 不变)
+Total: 12 PASS=12 FAIL=0
+=== selftest-context-pressure.sh rc=0
+CP-07 PASS 1-(69|71|74)=4≥2 ∧ CR1-(69|71|74)=2≥1 ∧ C48=2≥1 ∧ C49=1≥1 ∧ C50=1≥1
+CP-08 PASS registry 含 selftest-context-pressure ∧ 4 列
+CP-09 PASS config properties=42=42
+Total: 9 PASS=9 FAIL=0
+=== selftest-decision-arbiter.sh rc=0
+DA-14 PASS 覆盖矩阵 28 行判断裁决行在位
+DA-15 PASS registry 自登记行在位
+DA-16 PASS 零新 config 键：arbiter=0 且新增面无 _enforce 键
+Total: 16 PASS=16 FAIL=0
+=== selftest-decision-drift.sh rc=0
+PASS DD-20 config.json properties 键数=42（零新键）
+PASS DD-21 SKILL 计数宽锚 1-7[0-9]
+PASS DD-22 运行时留痕格式示范（[align]/[judge]）
+Total: 23 PASS=23 FAIL=0
+=== selftest-decision-grading.sh rc=0
+DG-10 PASS: 管线面组(batch-publisher=2 field-fixer=1)
+DG-11 PASS: SKILL 接线组(Rule 72>=5 合规行内容锚含 A 级/C 级)
+DG-12 PASS: 行为面 fixture 回归预留骨架在位(TODO(DG-13))
+Total: PASS=12 FAIL=0 WARN=0
+=== selftest-delegation.sh rc=0
+PASS  T_MEM 记忆目录白名单放行  (exit=0)
+PASS  T_RATE_OK rate>=floor exit0 且比较式 1 处  (exit=0)
+PASS  T_RATE_LOW rate<floor exit1  (exit=1)
+Total: 38    PASS=38  FAIL=0
+=== selftest-dispatch-grain.sh rc=0
+GR-08 PASS 任务书 6 编号 → exit 2 + 步骤枚举超限
+GR-09 PASS 自由 prompt 6 编号 → exit 0 不拦
+GR-10 PASS 全角形态引用 + 2 S-id 任务书 → exit 2 + 任务书检出
+Total: 10 PASS=10 FAIL=0
+=== selftest-dispatch.sh rc=0
+DX-04 PASS
+DX-05 PASS
+DX-05b PASS
+Total: 31 PASS=31 FAIL=0
+=== selftest-drift-check-subagent.sh rc=0
+DCS-18 PASS hook 含 drift-checker 无 task-drift-guard
+DCS-19 PASS SKILL.md 行数<=558+61.4 清零+61.5 check-drift.sh
+DCS-20 PASS 本技能目录 Skill(task-drift-guard) 精确串=0
+Total: 20 PASS=20 FAIL=0
+=== selftest-drift-enforcement.sh rc=0
+PASS DCE-21 F10 超龄计划静默
+PASS DCE-22 N1 due 跨分支轮持久化并投递
+PASS DCE-23 N1 相位锁定 30 调用投递 >=2（实际 2）
+Total: 23 PASS=23 FAIL=0
+=== selftest-error-fix-prompt-forge.sh rc=0
+FP-06 PASS 模板与 SKILL Step 1 槽位词互现 7/7 ≥5
+FP-07 PASS registry 含 error-fix-prompt-forge 数据行（命中 1 ≥1）
+FP-08 PASS config.json 零新键（error-fix-prompt-forge 命中 0）
+Total: 8 PASS=8 FAIL=0
+=== selftest-error-loop.sh rc=0
+EL-14 PASS task_plan.md Errors 表 Prevention 指针
+EL-15 PASS notepad 模板消费侧契约
+EL-16 PASS check-complete.sh Learning Gate 锚点
+Total: 16 PASS=16 FAIL=0
+=== selftest-evidence-goal-gate.sh rc=0
+EG-19 PASS 脚本 SCRIPT_DIR 自定位行在位
+EG-20 PASS 脚本头注释 What+Why 齐备（Rule 45）
+EG-21 PASS init-session.sh inject_evidence_goal_block 定义=1 + 调用=1（variant 兜底在位）
+Total: 21 PASS=21 FAIL=0
+=== selftest-execution-honesty.sh rc=0
+EH-12 PASS video-generation-executor.md「Rule 54」指针行=1
+EH-13 PASS critical-rules.md 54 块尾 55.x 属 task-v138 合法 Rule 55 块（^### 55 task-v138 标题=1，子条 6 ≤6）（task-v138 合并级联口径）
+EH-14 PASS config.json 零新键：「"execution_honesty」命中=0（54.6 零 config 键声明成立）
+Total: 14 PASS=14 FAIL=0
+=== selftest-execution-stability.sh rc=0
+[PASS] T13a S5 正例: 陈旧计划+verification.md(前导空格 outcome: COMPLETE) → POSTTOOL 输出无 plan-compass/plan-sync 提醒(兜底豁免生效)
+[PASS] T13b S5 因果对照: 同 fixture 删 verification.md → 输出含 plan-compass/plan-sync 陈旧提醒(豁免由兜底分支因果生效, 非环境巧合)
+[PASS] T12 B2 三侧 canon 一致 (pretooluse L17 / UPS L34 / jq 全链路, sid=sess-abc123)
+Total: 19  PASS=19  FAIL=0
+=== selftest-fallback.sh rc=0
+[PASS] T11a escalation=split_then_takeover_or_askuser
+[PASS] T11b no_healthy_channel 保留
+[PASS] T11c hint 含 22.3.2 拆细再接管
+Total: 31  PASS=31  FAIL=0
+=== selftest-final-gate-hash.sh rc=0
+  [PASS] ⑥a: 篡改后 attest --verify rc=1(TAMPERED)
+  [PASS] ⑥b: 真变化(Executor→子代理,缺 S-unit 表)全量重跑被拦 rc=1(SKIP 未吞掉门失败)
+  [PASS] ⑥c: 恢复后 verify rc=0 且 SKIP 复效(失败轮未污染状态)
+==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====
+=== selftest-fine-grain-steps.sh rc=0
+SG-09 PASS 对照无枚举 → 静默 exit 0
+SG-10 PASS 条款/SKILL/模板 静态锚齐
+SG-11 PASS 双脚本口径一致(=4)
+Total: 11 PASS=11 FAIL=0
+=== selftest-four-file-dataflow.sh rc=0
+PASS FF-16 62 块范围内无 66.x(前向防线)
+PASS FF-17 SCRIPT_DIR 自定位行
+PASS FF-18 头注释 What+Why 齐备
+Total: 18 PASS=18 FAIL=0
+=== selftest-goal-unit-goal-mode.sh rc=0
+G-07 PASS selftest-registry.tsv 含本脚本登记（并集口径：任意行，末行假设不适用于并行合并）
+G-08 PASS config.json properties 键名 goal[_-](unit|gate|advance) =0（零新键）
+G-09 PASS SKILL.md 行数=547 ≤555（task-v155 合并并集后上限 = n+25）
+Total: 9 PASS=9 FAIL=0
+=== selftest-interaction.sh rc=0
+TI-09 PASS 09 (out=silent rc=0)
+TI-10 PASS 10 (out=silent rc=0)
+TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)
+Total: 11 PASS=11 FAIL=0
+=== selftest-iteration-persistence.sh rc=0
+IP-16 PASS config.json 零新键：「iteration[_-]persistence」命中=0（57.4 零 config 键声明成立）
+IP-17 PASS 脚本 SCRIPT_DIR 自定位行在位
+IP-18 PASS 脚本头注释 What+Why 齐备（Rule 45）
+Total: 18 PASS=18 FAIL=0
+=== selftest-iterative-optimizer.sh rc=0
+IL-06 PASS 门控铁律在位（禁止宣称 RESOLVED=1 且 连续 2 轮 3 ≥1）
+IL-07 PASS 迭代摘要表头在位（改了什么 (what) 1 / 为什么 (why 1 / 门控结果 4, 各 ≥1）
+IL-08 PASS banned 词（更好/大致/应该/足够）命中 0
+Total: 8 PASS=8 FAIL=0
+=== selftest-knowledge-brief.sh rc=0
+[PASS] T9 config knowledge_brief_enforce=warn (python3)
+[PASS] T10a knowledge_brief_enforce 出现在 config.json+SKILL.md ≥2 文件
+[PASS] T10b 无拼写变体 knowledge-brief-enforce (全 0)
+Total: 16  PASS=16  FAIL=0
+=== selftest-lane-advancement.sh rc=0
+LA-12 PASS SKILL.md 主锚 'Critical Rules 1-74' ≥1 且 '1-39' 变体 0（SR-07 同步演进）
+LA-13 PASS SKILL.md '1-40' 变体命中 0（负断言成立）
+LA-14 PASS config.json properties 键数 42（零新增，基线含 v145 2 键）
+Total: 14 PASS=14 FAIL=0
+=== selftest-mechanism-profile.sh rc=0
+MP-17 PASS 行为: 默认档 exit 0 且打 ⚠ 提示（基线不变）
+MP-18 PASS 行为: enforce 档 exit 1 且打 ✗
+MP-19 PASS 行为: off 档整段跳过（exit 0, 无输出）
+Total: 19 PASS=19 FAIL=0
+=== selftest-media-agents.sh rc=0
+MA-08 PASS 文档计数口径 README 7 个伴生=1 / INSTALL_zh 7 个配套=1 / INSTALL.md 双 agent 行 image=1 video=1 各 ≥1
+MA-09 PASS install.sh 注释双 agent 名 image=1 / video=1 各 ≥1
+MA-10 PASS config.json properties 键数 42（零新增）
+Total: 10 PASS=10 FAIL=0
+=== selftest-media-dispatch.sh rc=0
+MD-07 PASS template-mapping.md §十「媒体制作族」特化行 1 ≥1
+MD-08 PASS config.json properties 键数 42（零新增）
+MD-09 PASS 既有锚守护 21.1b=1 ≥1 且 SKILL.md「代码编辑（单文件」行 1 ≥1
+Total: 9 PASS=9 FAIL=0
+=== selftest-methodology.sh rc=0
+M-14 PASS 机械联动 14 条≥1 且 9 条=0 (实测 4/0)
+M-15 PASS SKILL.md 解构 bullet≥1 且 Poka-Yoke 指针≥1 (实测 1/1)
+M-16 PASS plan-writer 问题解构四问契约行 (实测 1)
+Total: 16 PASS=16 FAIL=0
+=== selftest-parallel-scheduling.sh rc=0
+P-07 PASS config.json parallel/model-allocat 类键 =0（零新键）
+P-08 PASS critical-rules.md 21.4「未声明者默认串行」原文锚 =1（≥1，语义未回退）
+P-09 PASS split-pattern-library.md P12 锚=1 +「依赖分批并行」锚=1（均 ≥1）
+Total: 9 PASS=9 FAIL=0
+=== selftest-periodic-review.sh rc=0
+PR-08 PASS config.json 有 periodic_review_interval_calls 键
+PR-09 PASS selftest-registry.tsv 有注册
+PR-10 PASS SKILL.md 有 C39 引用
+Total: 10 PASS=10 FAIL=0
+=== selftest-plan-dispatch.sh rc=0
+T10 PASS 10
+T11 PASS 11
+T12 PASS 12
+Total: 12 PASS=12 FAIL=0
+=== selftest-plan-tier.sh rc=0
+PT-25 PASS env TASK_TEMPLATE_DEFAULT=bugfix 生效(无项目 default 文件)
+PT-26 PASS 全缺省零影响: 产物=general 首行且无 S6 路由/插入行
+PT-27 PASS 自造模板无 template_type 行时显式指定 → 头部插入 frontmatter 行
+Total: 32 PASS=32 FAIL=0
+=== selftest-pointer-lifecycle.sh rc=0
+PASS PL-08 set ROOT 回归（计划目录内 set exit 0, side 指针写入）
+PASS PL-09 stale 夹具 gc（dead-ref + completed-ttl 双场景, 输出含 stale 且指针置空）
+PASS PL-10 所有权守卫（假 claimant in_progress → skip 写入 + WARN 含 claimant 键名; --force 覆盖写入）
+Total: 10 PASS=10 FAIL=0
+=== selftest-reflect-verify.sh rc=0
+RV-10 PASS SKILL.md 'Rules 1-(3[5-9]|[4-7][0-9])' 宽容锚索引行（兼容 1-35..1-72 各纪元过渡, 7x 纪元）
+RV-11 PASS SKILL.md 检查清单 C21 行
+RV-12 PASS SKILL.md「解决后反思-验证循环」段
+Total: 12 PASS=12 FAIL=0
+=== selftest-registry.sh rc=0
+T03 PASS
+T04 PASS
+T05 PASS
+Total: 5 PASS=5 FAIL=0 (registry rows=75, actual selftest=75)
+=== selftest-reliability-institution.sh rc=0
+R-14 PASS 43.6 行内锚「优点」在位
+R-15 PASS 53.5 行「Q9」触发面登记在位
+R-16 PASS SKILL.md C37 合规清单项 =1
+Total: 16 PASS=16 FAIL=0
+=== selftest-report-reviewability.sh rc=0
+RRV-11 PASS: 主链面组(reference>=1 worktree-isolation>=4)
+RRV-12 PASS: SKILL 触点组(呈报规格=4 终验句=1)
+RRV-13 PASS: 预留骨架(TODO RRVV-14 占位注释在位)
+Total: PASS=13 FAIL=0 WARN=0
+=== selftest-requirement-coverage.sh rc=0
+RC-21 PASS zcode-userpromptsubmit.sh TAMPERED 文案锚「无登记的重锁视为篡改信号」=1 且 Rule 51.7 引用 =1（G3 重锁前置收紧在位）
+RC-22 PASS init-session.sh silent 路径 INFO 锚双行各 =1（主锁+兜底锁，G3 即时落盘在位）
+RC-23 PASS critical-rules.md 51.8 行锚=1 且语义锚「未测试就声称完成」在位 且 SKILL.md '51.8' 联动 2 ≥1
+Total: 23 PASS=23 FAIL=0
+=== selftest-requirement-grading.sh rc=0
+RG-05 PASS goal-gate.md '分级'∧'Rule 50' 双锚在位
+RG-06 PASS SKILL.md '1-5[0-9]' 在位 ∧ 'Rule 50' 命中 ≥2
+RG-07 PASS config.json properties 键数 42（零新增）
+Total: 7 PASS=7 FAIL=0
+=== selftest-rescue-chain.sh rc=0
+T08 PASS
+T09 PASS
+T10 PASS
+Total: 11 PASS=11 FAIL=0
+=== selftest-research-first.sh rc=0
+PASS RF-10 FF-16 宽容化在位(66.x≥2 ∧ 65.x 残留=0)
+PASS RF-11 registry 含本脚本登记行
+PASS RF-12 config 零新键(research 字面=0)
+Total: 12 PASS=12 FAIL=0
+=== selftest-review-library.sh rc=0
+RL-13 PASS 42.6.3 三要素升级锚：CRIT 42.6.3 行三要素 1 ≥1 / SKILL.md C32 行三要素 1 ≥1
+RL-14 PASS smart-merge-back 池挂载函数+冲突跳过锚在位
+RL-15 PASS install-companion 池分发+独立 skill 不覆盖锚在位
+Total: 15 PASS=15 FAIL=0
+=== selftest-root-resolution.sh rc=0
+RR-15 PASS critical-rules.md 旧判别面字面「或无客观判据的真实偏好二选」=0（critic P0 收口钉住）
+RR-16 PASS SKILL.md 索引行「详见 critical-rules.md（Critical Rules」=1 且含「Rule 40-(5[3-9]|6[0-9]|7[0-4])」全集宽容括注（CR P1-2 防级联漏改）
+RR-17 PASS critical-rules.md 区块锚「^### 53 」=1（索引行 40-54 全集的条款侧落点在位）
+Total: 17 PASS=17 FAIL=0
+=== selftest-rule23-conflict-scan.sh rc=0
+R23-01 PASS 在途第二计划命中 scope → 报 [conflict]
+R23-02 PASS 完结计划被豁免
+R23-03 PASS 无指针过期在途计划仍被扫到
+Total: 3 PASS=3 FAIL=0
+=== selftest-rule-reserve.sh rc=0
+RR-08 PASS 行为: contested 可表达且 list 可见（claimants 呈现）
+RR-09 PASS attest-plan.sh 含 rule-reserve 挂点引用
+RR-10 PASS 负向自检: 缺锚副本使 RR-03 同款判定 FAIL（有牙齿实测: 输入=sed 抹除 basename 锚的副本, 输出=grep 不命中）
+Total: 10 PASS=10 FAIL=0
+=== selftest-self-resolution.sh rc=0
+SR-11 PASS selftest-skill-split.sh task-v099/task-v1x label + -le 4/5 前缀断言行在位
+SR-12 PASS registry selftest-self-resolution 登记行 ≥1 且总行数 76=脚本数+表头（动态）
+SR-13 PASS 22.3.0 资料先行档行存在 + 资料先行/换道评估顺序/官方文档 关键词在位
+Total: 13 PASS=13 FAIL=0
+=== selftest-shared-tracker.sh rc=0
+ST-09 PASS templates/shared-tracker.md 存在
+ST-10 PASS skill-collab 矩阵 progress-tracker 行
+ST-11 PASS progress-tracker 技能探针（存在）
+Total: 11 PASS=11 FAIL=0
+=== selftest-skill-collab.sh rc=0
+[PASS] T11d SKILL.md 路由表网页访问行
+[PASS] T12a collab 矩阵 research-assistant 行
+[PASS] T12b collab 矩阵 browser-use 行
+Total: 25  PASS=25  FAIL=0
+=== selftest-skill-modify.sh rc=0
+SM-07 PASS check-complete.sh GATE 锚+tier 函数
+SM-08 PASS SKILL.md Rule 36 行（P4 联动已实，A=6 B=1）
+SM-08 PASS SKILL.md C24 检查项（P4 联动已实, A=6 B=1）
+Total: 9 PASS=9 FAIL=0 (SKIP=0)
+=== selftest-skill-split.sh rc=0
+[PASS] T-守 check-skill-modify.sh 含 plan-cost-guard
+[PASS] T-守 check-skill-modify.sh 含 plan-collab-router
+[PASS] T-reg registry.tsv 含 selftest-skill-split 行
+Total: 41  PASS=41  FAIL=0
+=== selftest-smart-merge.sh rc=0
+SM-15a PASS P15基线(抽取含deploy_reconcile定义+LC_ALL=C comm钉)=在 zh-locale rc=1(期望1) DRIFT-L2=在 B.md入DRIFT明细=在
+SM-15b PASS C-locale rc=1(期望1) 与15a-zh逐字节一致=是
+SM-16 PASS rc=0(期望0) legacy-IDENTICAL旧格式=在
+Total: 18 PASS=18 FAIL=0
+=== selftest-source-anchor-discipline.sh rc=0
+SA-10 PASS fix-prompts.md 含「提示词 A — 溯源审计」（素材锚活）
+SA-11 PASS selftest-registry.tsv 含 'selftest-source-anchor-discipline.sh' 登记行
+SA-12 PASS config.json 不含 source_anchor/anti_halluc/no_source 任一键名
+Total: 12 pass, 0 fail
+=== selftest-split-pattern-library.sh rc=0
+SP-11 PASS 低档模型贡献行 12（每模式一行）
+SP-12 PASS 消费契约段 + 未吸收登记段双锚在位
+SP-13 PASS 库内 'Rule 21.6' 引用在位
+Total: 13 PASS=13 FAIL=0
+=== selftest-subagent-granularity-skill-escort.sh rc=0
+SG-21 PASS config.json 零新键：59 候选键字面命中=0（59.7 零 config 键声明成立）
+SG-22 PASS 脚本 SCRIPT_DIR 自定位行在位
+SG-23 PASS 脚本头注释 What+Why 齐备（Rule 45）
+Total: 23 PASS=23 FAIL=0
+=== selftest-subagent-return.sh rc=0
+A9 PASS 污染夹具 pretool rc=2+stderr 点名
+A10 PASS 干净夹具 pretool rc=0
+A11 PASS registry 行已在位
+Total: 11 PASS=11 FAIL=0
+=== selftest-sync-index.sh rc=0
+T11 PASS 11
+T12 PASS 12
+T13 PASS 13
+Total: 13 PASS=13 FAIL=0
+=== selftest-task-boundary.sh rc=0
+TB-09 PASS UPS hook 职责 3 注释联动
+TB-10 PASS todo-sync.md S5 D 类分支
+TB-11 PASS SKILL.md 漂移触发时机行兼容
+Total: 11 PASS=11 FAIL=0
+=== selftest-template-lifecycle.sh rc=0
+TL-22 PASS delivery-summary.md 三锚（硬规则/反模式/定位三要素）在位
+TL-23 PASS SKILL.md 含可定位性（Rule 48）括注
+TL-24 PASS Rule 48 子条≥5 且 48.5 零新键声明在位
+Total: 24 PASS=24 FAIL=0
+=== selftest-template-sense.sh rc=0
+case-6 PASS selftest-registry.tsv 含本脚本登记行且 dep_anchors 四条在位
+case-7 PASS mini 档空类型 → mini-lite 产物带标记, 无感知区块、无 general 注释（CR P1-1 负例通过）
+case-8 PASS bugfix 后空类型重跑 → 产物标记仍 bugfix 且无感知区块（CR P1-2 负例通过）
+Total: 8 PASS=8 FAIL=0
+=== selftest-tier-b.sh rc=0
+TB-16 PASS 双条件缺声明仍拦
+TB-17 PASS 槽空闲写类正常
+TB-18 PASS 21.4 豁免子条在位
+Total: 18 PASS=18 FAIL=0
+=== selftest-tool-selection.sh rc=0
+TS-10 PASS subagent_dispatch 工具面提示行在位
+TS-11 PASS 卫星两文档 + plan-writer 契约锚在位
+TS-12 PASS config.json properties 键数 42（v145 已合法加 2 键）
+Total: 12 PASS=12 FAIL=0
+=== selftest-user-instruction-priority.sh rc=0
+=== ALL PASS ===
+=== selftest-vc-gate.sh rc=0
+T07 PASS
+T08 PASS
+T09 PASS
+Total: 11 PASS=11 FAIL=0
+=== selftest-veto.sh rc=0
+VT-11 PASS config.json veto_enforce（warn 默认+三档）
+VT-12 PASS notepad 模板被否决方案段
+VT-13 PASS 无禁令项作 Recommended 矛盾表述
+Total: 13 PASS=13 FAIL=0
+=== selftest-workflow-orchestration.sh rc=0
+WF-14 PASS 用户级 skills 目录无 dynamic-workflows 副本（39.7.2 负断言）
+WF-15 PASS zcode-pretooluse.sh 39.7.3 workflow 观察分支（观察文案在位且零阻断）
+WF-16 PASS register-hooks-cj.ts matcher 含 workflow 四工具（39.7.3 观察面扩围）
+Total: 16 PASS=16 FAIL=0
