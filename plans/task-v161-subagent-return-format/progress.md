@@ -121,3 +121,21 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+### Phase 5: Delivery（合并+部署登记+交付总结）
+- **Status:** complete
+- **Started:** 2026-10-10 17:0x
+- Actions taken:
+  - worktree 内 commit f454a51（8 面 +225/-1,零删除性变更——删除 1 行=SKILL.md 摘要行内 rewrite 非语义删除）
+  - 合并前对账:主仓 skills 面无未提交变更（plans 面 M 属并行会话指针/INDEX,不重叠,§11.3③  satisfied）
+  - 主仓 merge --no-ff → a578531;Read 关键文件复验（三条款+两新脚本+master 复跑 selftest 11/11）
+  - worktree remove+branch -d wt/v161-subagent-return-format 完成（§11.3⑤;其余 wt/* 属并行会话在飞未动）
+  - delivery-summary.md 落盘（五要素+2 待授权项:内置 agent 定义修改+部署位同步）
+- Files created/modified:
+  - 主仓 master:a578531（merge f454a51）;worktree 已清理
+  - plans/task-v161-subagent-return-format/delivery-summary.md 新增
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | master 复验 | merge 后 master | 产物在位 | grep task-v161=3/1;两新脚本存在;selftest 11/11 | PASS |
+  | worktree 清理 | git worktree list | 零 v161 残留 | wt/v161 已删,branch -d done | PASS |

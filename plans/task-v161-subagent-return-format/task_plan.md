@@ -198,10 +198,10 @@ parallel_groups: [pg0, pg1]
 > 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。
 
 ## Current Phase
-Phase 5 Delivery（合并+部署登记+交付总结）
+Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 agent 授权待用户）
 
 ## Next Step
-worktree 内 git add 8 面+commit → 主仓 git merge --no-ff wt/v161-subagent-return-format → Read 关键文件复验 → git worktree remove+branch -d → delivery-summary.md 落盘（含 agent 定义层待授权项）
+（任务收尾）交付总结呈报:待授权项=①内置 agent 定义输出模板修改（~/.zcode/agents）+②部署位同步;用户授权后按 Rule 8.1 开新任务承载
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -306,9 +306,9 @@ worktree 内 git add 8 面+commit → 主仓 git merge --no-ff wt/v161-subagent-
 并行组声明（Rule 21.4）：S2 依赖 S1 基线结论先行，串行执行；S1 内部单子代理串行跑批（Runner 类）。
 
 ### Phase 5: Delivery（合并+部署登记+交付总结）
-- [ ] worktree git status 干净 + merge --no-ff 回 master + Read 关键文件复验 + 清理 worktree/branch
-- [ ] 部署同步裁定登记（部署位=~/.zcode/skills/task-planner 等四位——按 Rule 36.3/36.4 删除基线声明先行；改动即时生效风险=部署只覆盖不增删键）
-- [ ] delivery-summary.md 落盘（含待授权项：内置 agent 定义输出模板修改）
+- [x] worktree git status 干净 + merge --no-ff 回 master + Read 关键文件复验 + 清理 worktree/branch
+- [x] 部署同步裁定登记（部署位=~/.zcode/skills 等——未同步,待用户授权,delivery-summary 待裁决②）
+- [x] delivery-summary.md 落盘（含待授权项：内置 agent 定义输出模板修改+部署同步）
 - [ ] Delete 隔离分支清理复验
 - **V-N:** VC-5, VC-6, VC-7
 - **Status:** pending
@@ -327,7 +327,7 @@ worktree 内 git add 8 面+commit → 主仓 git merge --no-ff wt/v161-subagent-
 | `isolation` | `worktree`（实现类默认首选；修改 skills/**=保护区天然命中） |
 | `worktree_path` | `/home/terry/task-planner-skill-worktrees/v161-subagent-return-format` |
 | `branch` | `wt/v161-subagent-return-format`（基点 master HEAD b6e6e2e；main 落后 master 905 commit 不可用） |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(a578531)` |
 
 > 契约详见 `~/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
