@@ -82,6 +82,7 @@
 - **Started:**
 - Actions taken:
   - [sub:4] 引用面分级完成
+  - [sub:5] critical-rules+SKILL 改述完成
   -
 - Files created/modified:
   -

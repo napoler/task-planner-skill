@@ -158,6 +158,7 @@
 | S8 | zcode-pretooluse.sh + task-plan-init.cjs 注释改述（按 S4 清单 :72-73/:122-124） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check` 验语法） | 10min | 2f/12l/10min | 无 | pending | S7 后 |
 | S9 | init-session.sh + plan-created.cjs 注释改述（按 S4 清单 :719-727/:134） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check`） | 10min | 2f/12l/10min | 无 | pending | S8 后 |
 | S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | pending | S9 后 |
+| S14 | selftest-pointer-lifecycle.sh 契约锁步同步：PL-07 锚随 SKILL 新措辞（"指针清理"）、PL-06 锚随 check-complete 新措辞（如保留"移交提醒"废弃标签则不动，以实测为准）；禁删其他断言 | executor（sonnet-1） | ① S5/S10 改述后实测措辞 ② selftest-pointer-lifecycle.sh:40-46 | PL-06/PL-07 PASS 且断言锚=新措辞；`bash -n` 过 | 10min | 1f/10l/10min | 无 | pending | S5-S10 后 |
 
 - **Executor:** executor（sonnet-1）
 
@@ -207,7 +208,7 @@
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 S5（executor，sonnet-1）：critical-rules.md 指针段措辞改述+瞬态文件合并规则登记 + SKILL.md 旧语义清零（按 findings.md [sub:4] 清单，材料 subagent-state/5-prompt-material.md，checkpoint 5-executor.md）
+派发 S6（executor，sonnet-1）：README.md（:100-101）+INSTALL.md（:189）旧语义按 findings.md [sub:4] 清单改述（材料 subagent-state/6-prompt-material.md，checkpoint 6-executor.md）
 
 ## Decisions
 | 时间 | 决策 | 理由 |
@@ -216,6 +217,7 @@
 | 2026-10-10 11:3x | 方案比选：采纳 D1（untracked+gitignore，语义改述为工作树内瞬态 fallback）；不取 D2（保留跟踪+合并约定）；否决 D3（删全局只留 side+mtime） | git log 实证 8 次 churn chore；.gitignore:3-9 兄弟瞬态范式在先；R4 用户明示"合并时忽略该文件"；D3 破坏 cron/sid-less legacy 消费者（set-active-plan.sh:3） |
 | 2026-10-10 11:3x | 路径本地化纠正：用户"指针存工作数内"的路径诉求是既成事实（ROOT=$PWD），真缺陷=git 跟踪态+移交叙事 → 方案聚焦瞬态化而非路径改造 | set-active-plan.sh:69,84-85 + resolve-plan-dir.sh:30 一手实证；避免不必要的大改 |
 | 2026-10-10 16:0x | 计划重构：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8）远超原 S5-S7 预估 → 按 step_max_files=2 拆为 S5-S10 六派发；原 S7 selftest 适配目的经主进程实测（瞬态化后 active-plan 29/19、pointer-lifecycle 10/10 全绿）证明无事可做→撤销 | S4 findings 清单为界（禁扩范围）；实测命令原文见 progress.md Phase 3 |
+| 2026-10-10 16:2x | S5 实测回归发现 PL-07 字面依赖：selftest-pointer-lifecycle.sh:44 断言 `grep '指针移交' SKILL.md`、PL-06 断言 `grep '移交提醒' check-complete.sh`——selftest 是旧措辞的机器契约，退役叙事必须断言锁步同步 → 新增 S14（置 S5-S10 全部改述落地后执行，以终态措辞为准）；暂留 PL-07 FAIL 态至 S14（S11 前须清零） | 主进程亲验：PL-07 FAIL（SKILL.md 移交纪律行缺失）、PL-06 当前 PASS（check-complete 未改）；S10 落地后 PL-06 亦需复核 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |

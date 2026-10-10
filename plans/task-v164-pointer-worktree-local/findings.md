@@ -114,6 +114,14 @@
 汇总：只读 14 个 / 措辞更新 12 个 / 已改述 2 个（14+12+2=28）
 - 负结果报告：本 S-unit 零文件编辑（仅 findings.md 追加段 + progress.md 单行）；未执行 git 写操作；未动 skills/task-planner/**（`git status --short` 无 skills/ 条目，见 checkpoint）
 
+#### [sub:5-executor] S5 critical-rules+SKILL 改述
+- 事实（命令→关键输出）：基线 `grep -nE '全局 legacy|指针移交'` = 4 hits（SKILL.md:59/111、critical-rules.md:196）；改述后 = 0（rc=1 空集）；`grep -c 'task-v164'` critical-rules.md=2 / SKILL.md=2（改述前各 0）
+- 改述锚：critical-rules.md:196（Rule 22.9 解析链 ②「全局 legacy」→「全局 fallback」+`[2026-10-10 task-v164]` 补注；「互顶全局指针」→「覆写全局层」+退役叙事补注）；:198-201 新增「### [2026-10-10 task-v164] 瞬态状态文件合并规则」登记段（范围/合并纪律/依据+R4 锚四要素，全文照 5-prompt-material.md）；SKILL.md:59（「全局 legacy」→「全局 fallback」+补注）；:111（「指针移交」→「指针清理」、「全局指针」→「全局 fallback」、「显式移交」→「显式改写」、「移交提醒」→「提醒」+补注；task-v159 HTML 注释逐字保留）
+- :298 核对为中性（仅 side 指针 .active_plan_side/，无旧语义）→ 不改（与 S4 判只读一致）
+- 语义零改动核验：`git diff` 内解析链①②③④/set-active-plan 命令形态/check-complete warn 行为均未变，仅措辞+新增段（critical-rules +7/-2、SKILL +2/-2）
+- ⚠️ 副作用（主进程注意，S4 未列）：`selftest-pointer-lifecycle.sh` PL-07（:43-44 `cnt '指针移交' "$SKILL" -ge 1`）因 SKILL.md 字面「指针移交」被改述 → 该脚本 rc=1（`FAIL PL-07 (SKILL.md 移交纪律行缺失)`、`Total: 10 PASS=9 FAIL=1`）。禁动 .sh（S5 边界）→ 需后续 S-unit 同步 PL-07 锚为「指针清理」（Phase 3/4 .sh 措辞更新批次）
+- 负结果报告：仅改清单内两文件区段；未改 :298/其他规则/SKILL 其他节；未动任何 .sh/.cjs；未执行 git add/commit/checkout/reset；`git diff --stat` 除两目标文件外仅 `.dispatch-inflight`（派发期既有 M，非本次产生）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

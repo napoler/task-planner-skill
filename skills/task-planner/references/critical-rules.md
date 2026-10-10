@@ -193,7 +193,12 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 22.8.3 **检查点文件格式**:纯 markdown 分段(头部 status 行 / 已完成里程碑 append-only 带时间戳 / 进行中 / 产出文件清单 / 错误与受阻 / 最终结论),人读为主,无 frontmatter
 22.8.4 **断点重试**:子代理 failed/timeout/返回异常时,主进程兜底动作(22.3)执行前必须**先 Read 检查点文件**——有实质进度(≥1 条里程碑或已有产出文件)→ 重试 prompt 注入 resume_from 段(已完成清单[禁止重做] + 已有产出文件[直接复用/续写] + 剩余任务);无进度 → 按 22.3 正常兜底;resume_from 注入不重置 22.3 的 retry_limit 计数
 22.8.5 **返回缺失兜底**:主进程 30s Read 产出复核(22.5)时,若返回消息缺失但检查点 status: done,以检查点「最终结论」段为准完成回填
-22.9 **活跃计划解析会话隔离(active-plan-race,2026-09-10)**:hook 解析"当前活跃计划"经 `resolve-plan-dir.sh [root] [sid]` 双参——第 2 可选参 sid 缺省取 `CLAUDE_CODE_SESSION_ID`(规范化=剥非字母数字取前 40,与 hook 状态文件命名一致;[task-planrequired-race] sid 以 `sess` 开头时再剥该前缀——sidkey=uuid core,与哨兵文件名 canon 四处对齐);解析链 = ① 会话层 `plans/.active_plan_side/<sid>.active_plan`(mtime TTL 24h 过期跳过)→ ② 全局 legacy `plans/.active_plan`(兜底,cron/纯脚本单会话场景)→ ③ mtime 最新 → ④ 项目根 legacy;会话层优先,消除并行会话后写者赢互顶全局指针致 check-dispatch 误拦(09-09 实锤 7 次)。写入侧:UserPromptSubmit hook 按 sid 自动认领本会话 side 指针(mktemp+mv 原子写;`.session-owner` 属主校验防他会话越权认领);`set-active-plan.sh` 提供 set <task-id> [--sid s] / --show / --clear / gc(清扫 >24h 残留,SessionStart 顺带执行;[task-planrequired-race] gc 同语义扩展清扫 `plans/.plan_required_side/` 中 >24h 的 side 哨兵 `*.plan_required`)
+22.9 **活跃计划解析会话隔离(active-plan-race,2026-09-10)**:hook 解析"当前活跃计划"经 `resolve-plan-dir.sh [root] [sid]` 双参——第 2 可选参 sid 缺省取 `CLAUDE_CODE_SESSION_ID`(规范化=剥非字母数字取前 40,与 hook 状态文件命名一致;[task-planrequired-race] sid 以 `sess` 开头时再剥该前缀——sidkey=uuid core,与哨兵文件名 canon 四处对齐);解析链 = ① 会话层 `plans/.active_plan_side/<sid>.active_plan`(mtime TTL 24h 过期跳过)→ ② 全局 fallback `plans/.active_plan`(工作树内瞬态兜底,cron/纯脚本单会话场景;[2026-10-10 task-v164] 原措辞以 legacy 单例描述该层,实为路径随 $PWD 本地化的瞬态 fallback,untracked+gitignore 与 .active_plan_side/ 同族)→ ③ mtime 最新 → ④ 项目根 legacy;会话层优先(正常路径=side 会话私有指针,2026-10-07 fix-pointer-race 后权威层),[2026-10-10 task-v164] 消除并行会话后写者赢覆写全局层致 check-dispatch 误拦(09-09 实锤 7 次);退役"移交/互顶全局指针"叙事(该叙事=并行可见漂移来源)。写入侧:UserPromptSubmit hook 按 sid 自动认领本会话 side 指针(mktemp+mv 原子写;`.session-owner` 属主校验防他会话越权认领);`set-active-plan.sh` 提供 set <task-id> [--sid s] / --show / --clear / gc(清扫 >24h 残留,SessionStart 顺带执行;[task-planrequired-race] gc 同语义扩展清扫 `plans/.plan_required_side/` 中 >24h 的 side 哨兵 `*.plan_required`)
+
+### [2026-10-10 task-v164] 瞬态状态文件合并规则
+- 范围：`plans/.active_plan` 及同族瞬态运行态（`.active_plan_side/`、`.plan_required_side/`、`.drift-rhythm/`、`plans/**/.session-owner`）一律不入库（.gitignore 在册）
+- 合并纪律：worktree 合并回 master 时如遇瞬态文件冲突（含 untracking 导致的删除态冲突），一律按瞬态处置——取删除/忽略态，**禁抢救指针值**；各会话指针由 `set-active-plan.sh set` 再生
+- 依据：git log 实证 8 次 chore 移交/收尾噪音（f6d6158…26878fe）；2026-10-10 用户指令 R4「合并时忽略掉这个状态临时文件」
 
 ### 23 并行任务检测与冲突规避(P0)
 并发执行多 plan 时,同文件/同 worktree/同名 task-id 会产生难以追踪的冲突。必须通过自动检测 + 规避建议提前暴露风险(Rule 23 落地到 hooks + 注册表)。
