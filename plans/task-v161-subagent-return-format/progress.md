@@ -66,11 +66,23 @@
   - [goal:G2] 条款补强——22.4b 污染三面句 critical-rules.md:185（+1/-0 逐字 MATCH 复验）
   - [goal:G3] 返回机械校验——check-subagent-return.sh 93 行,四夹具分流+值域负例复验通过
   - [goal:G4] selftest 守护——selftest-subagent-return.sh 11/11 rc=0+registry 4 列 tab 登记复验通过
-  - 待填（Phase 4 回归跑批+VC 复验结果）
+  - 回归跑批两轮独立:①子代理 code-runner-agent 跑 72 脚本全 rc=0/FAIL=0(证据 subagent-state/7-code-runner.md+regression-run-1.log)②主进程同一 worktree 独立复跑 72 脚本 rc0=72 fail=0(本机 Bash 跑批,输出见下 Test Results)
+  - VC-1..7 独立复验(general-purpose 改派,verifier provider 拒请按 22.3.1 换道):6/7 PASS;VC-5 FAIL=progress 未回填(本行即回填,条件闭环);复验员 /tmp 夹具残留 4 个已由主进程清理
+  - 实战证据登记:general-purpose agent 定义内置「任务交付报告」输出模板,但在任务书 §7 优先级声明下返回纯 8 字段块(零模板形态)——S1 条款在冲突 agent 上生效的首例实证
 - Files created/modified:
-  -
+  - plans/task-v161-subagent-return-format/subagent-state/:7-code-runner.md、regression-run-1.log、8-verifier.md、8-prompt-material.md 新增;/tmp/vc3*.txt 4 夹具残留清理
 - Test Results:
-  |
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 回归跑批(子代理轮) | worktree 72 selftest | 全 rc=0 FAIL=0 | 72/72 rc=0;子代理 acceptance 逐脚本原文行+regression-run-1.log「rc!=0 脚本:无」「FAIL>0 脚本:无」 | PASS |
+  | 回归跑批(主进程轮) | 同上同一 worktree | 独立复跑一致 | selftest total=72 rc0=72 fail=0(主进程 Bash for 循环逐脚本 timeout 120 实跑) | PASS |
+  | VC-1 契约条款 | subagent_dispatch.md | 三 task-v161 条款+优先级句 | :79/81/83 命中;8 字段块 grep -c=2 | PASS |
+  | VC-2 22.4b 补强 | critical-rules.md | 污染三面+check-subagent-return | awk 段内截取两处命中 | PASS |
+  | VC-3 双夹具 | 两脚本 | 4 夹具+段结构 rc 分流 | --selftest 4/4;summary→rc1 点名;污染 pretool rc=2 段结构违规;干净 rc=0 | PASS |
+  | VC-4 守护 | selftest+registry | 11/11+登记 | Total: 11 PASS=11 FAIL=0;registry 尾行 NF=4 | PASS |
+  | VC-5 全仓回归 | 72 脚本 | FAIL=0 双轮独立 | 子代理轮+主进程轮 rc0=72 fail=0(见上两行) | PASS(本轮回填后) |
+  | VC-6 级联 | SKILL+examples | 两处措辞 | SKILL.md:308 双短语;dispatch-examples.md:28 注记 | PASS |
+  | VC-7 越界登记 | Decisions+scope | 登记+零越界 | task_plan.md:392+:142;git status 8 面全 scope 内 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
