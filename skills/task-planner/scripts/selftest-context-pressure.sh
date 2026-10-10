@@ -97,8 +97,9 @@ fi
 
 # CP-07: SKILL 短串 1-69=3 ∧ 整串 Critical Rules 1-69>=2 ∧ C48>=1（v155 Rule 70 行）∧ C49>=1（本任务 Rule 67 行，2026-10-10 三方并集后本任务行由 C46→C48→C49）
 # [2026-10-10 task-v158 合并演进] 全集 1-69→1-71（Rule 71 落地）：计数锚宽容化 1-(69|71)；C50≥1（Rule 71 行）
+# [2026-10-10 task-v160 合并级联] 全集 1-72 纪元：c2 锚宽容化 1-(69|71|72)
 c1=$(grep -cE '1-(69|71)' "$SKILL_MD")
-c2=$(grep -cE 'Critical Rules 1-(69|71)' "$SKILL_MD")
+c2=$(grep -cE 'Critical Rules 1-(69|71|72)' "$SKILL_MD")
 c3=$(grep -c 'C48' "$SKILL_MD")
 c4=$(grep -c 'C49' "$SKILL_MD")
 c5=$(grep -c 'C50' "$SKILL_MD")
