@@ -470,9 +470,10 @@ Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1�
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-10 10:30 | code-assistant(haiku-1) | S1 subagent_dispatch.md §7 优先级声明+点名禁令+段填写禁令 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/1-code-assistant.md | pg1 / 0 / ☐ |
+| 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☐ |
+| 3 | 2026-10-10 10:30 | code-assistant(haiku-1) | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☐ |
+| 4 | 2026-10-10 10:30 | code-assistant(haiku-1) | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☐ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
