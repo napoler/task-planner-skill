@@ -36,7 +36,7 @@ chk "SA-05" "71.5 行含「无锚点行=违规退回」" "line=\$(grep '^71\.5 '
 # SA-06 71.7 零新 config 键 + 机器边界披露
 chk "SA-06" "71.7 行含「零新 config 键」与「机器边界如实披露」" "line=\$(grep '^71\.7 ' \"\$RULES\"); test -n \"\$line\" && grep -qF '零新 config 键' <<<\"\$line\" && grep -qF '机器边界如实披露' <<<\"\$line\""
 # SA-07 SKILL.md Rule 71 bullet + C50 行 + 1-71 计数
-chk "SA-07" "SKILL.md 含 'Rule 71（无源不写' bullet + '| C50 |' 行 + '1-71' 计数 ≥2" "grep -qF 'Rule 71（无源不写' \"\$SKILL\" && grep -qF '| C50 |' \"\$SKILL\" && test \$(grep -cF '1-71' \"\$SKILL\") -ge 2"
+chk "SA-07" "SKILL.md 含 'Rule 71（无源不写' bullet + '| C50 |' 行 + '1-71/1-72' 计数 ≥2（容忍 1-72 纪元）" "grep -qF 'Rule 71（无源不写' \"\$SKILL\" && grep -qF '| C50 |' \"\$SKILL\" && test \$(grep -cE '1-7[12]' \"\$SKILL\") -ge 2"
 # SA-08 dispatch 模板防幻觉契约段 + 五问回溯行
 chk "SA-08" "subagent_dispatch.md 含 '## 10. 防幻觉契约' 段与 '写入前五问' 回溯行" "grep -qF '## 10. 防幻觉契约' \"\$DISPATCH_TPL\" && grep -qF '写入前五问' \"\$DISPATCH_TPL\""
 # SA-09 findings/progress 模板 Rule 71 注释锚合计 ≥3
