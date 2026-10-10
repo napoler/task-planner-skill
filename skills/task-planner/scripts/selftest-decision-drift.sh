@@ -74,7 +74,7 @@ _JG_SEC="$(awk '/task-v156\] Rule 73\.4 \[judge-gate\]/{f=1} f{print} /Rule 73\.
 
 # ── DD-16~17 SKILL.md 接线 ──
 [ "$(cnt 'Rule 73' "$SKILL")" -ge 4 ] && ok "DD-16 SKILL Rule 73 摘要/接线（命中 $(cnt 'Rule 73' "$SKILL")）" || bad "DD-16" "got=$(cnt 'Rule 73' "$SKILL") expect>=4"
-[ "$(cnt 'C51' "$SKILL")" -ge 1 ] && ok "DD-17 SKILL C51 合规行" || bad "DD-17" "C51 缺失"
+[ "$(cnt 'C53' "$SKILL")" -ge 1 ] && ok "DD-17 SKILL C53 合规行" || bad "DD-17" "C53 缺失"
 
 # ── DD-18 selftest-registry.tsv 自登记行 =1 ──
 [ "$(cnt 'decision-drift' "$REGISTRY")" -eq 1 ] && ok "DD-18 selftest-registry 自登记行=1" || bad "DD-18" "got=$(cnt 'decision-drift' "$REGISTRY") expect=1"

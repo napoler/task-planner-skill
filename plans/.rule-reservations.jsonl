@@ -43,3 +43,7 @@
 {"rule":70,"status":"landed","task_id":"task-v155-report-approvability","ts":"2026-10-10","note":""}
 {"rule":71,"status":"landed","task_id":"task-v158-source-anchor-discipline","ts":"2026-10-10","note":""}
 {"rule":67,"status":"landed","task_id":"task-v152-proactive-context","ts":"2026-10-10","note":""}
+{"rule":74,"status":"reserved","task_id":"task-v162-change-absorption-safety","ts":"2026-10-10","note":""}
+{"rule":75,"status":"reserved","task_id":"task-v163-proactive-research","ts":"2026-10-10","note":""}
+{"rule":72,"status":"reserved","task_id":"task-v160-decision-grading","ts":"2026-10-10","note":""}
+{"rule":72,"status":"landed","task_id":"task-v160-decision-grading","ts":"2026-10-10","note":""}

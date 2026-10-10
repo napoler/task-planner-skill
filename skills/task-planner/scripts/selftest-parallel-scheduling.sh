@@ -101,10 +101,14 @@ fi
 #      与 critical-rules.md 实测最大章节编号一致（awk 动态求值，v152/v153 级联漂移自吸收）。
 # Why：C46 是 68 消费侧合规清单唯一落点；上界若滞后于条款实际最大编号=SKILL 枚举面与
 #      条款面漂移（v150 计数钉值教训）——动态对照消除钉值腐化。
-# [2026-10-10 task-v156 CR/M 级联] 锚随 SKILL 计数「1-71+73」插入形态宽容化:DCS-11/R-09/RF-07/RR-09/P-05 正则加 `(\+[0-9]+)?` 族（K9）,负断言保留
 c46="$(grep -cE '^\| C46 ' "$SKILLMD" || true)"
 r68="$(grep -cE 'Rule 68' "$SKILLMD" || true)"
-crit_max="$(grep -oE '^### [0-9]+ ' "$CRIT" | awk '{print $2}' | sort -n | tail -1)"
+# [2026-10-10 task-v160：提取口径并集 `## Rule|###` 两形态，Rule 72 落地后上界对齐] 旧口径 `^## Rule N`
+#   仅命中 2 行（Rule 70/72），Rules 1-69 的 `### N` 形态退出采样面（P-05 采样收窄，CR P2 修）；
+#   并集两形态 `^(## Rule|###) N` 后覆盖全量 1-72，判据=SKILL 上界须 == critical-rules 全量实测最大编号
+#   （纯机械对齐，不改判据强度；Rule 72 落地后上界对齐）。
+# [2026-10-10 task-v156 CR/M 级联] 锚随 SKILL 计数「1-71+73」插入形态宽容化:DCS-11/R-09/RF-07/RR-09/P-05 正则加 `(\+[0-9]+)?` 族（K9）,负断言保留
+crit_max="$(grep -oE '^(## Rule|###) [0-9]+' "$CRIT" | grep -oE '[0-9]+' | sort -n | tail -1)"
 skill_max="$(grep -oE 'Critical Rules 1-[0-9]+(\+[0-9]+)?' "$SKILLMD" | grep -oE '[0-9]+' | sort -n | tail -1)"
 if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ -n "$crit_max" ] && [ -n "$skill_max" ] && [ "$skill_max" -eq "$crit_max" ]; then
   ok 05 "SKILL.md C46 行=$c46（=1）+ 'Rule 68' 引用=$r68（≥1）+ 上界 1-${skill_max} = critical-rules 实测最大 ${crit_max}（动态一致）"
