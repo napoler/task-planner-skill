@@ -45,11 +45,14 @@
 |       |           |                     |
 
 ## Error Log
-<!-- [task-v072 Rule 31] 加 Root Cause / Prevention 两列（错误学习闭环：先析后修 + 防复现沉淀）
-     Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
+<!-- [task-v072 Rule 31] 错误学习闭环：先析后修 + 防复现沉淀（Learning Gate 校验 Root Cause/Prevention 非占位） -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 2026-10-10 | S2 接线任务书被 dispatch-guard 拦（步骤枚举 5>4） | 1 | 拆 S2a/S2b 两单元重派各 ≤3 步 | 材料包五处指示一次派发触粒度上限 | 多落点接线按 ≤4 步预拆多单元再派（v155 判例第 2 次） |
+| 2026-10-10 | S16 prompt 超 3000 字符被拦 2 次（3114/3202） | 2 | 按 Rule 35.3 落盘 {7,8}-prompt-material.md，prompt 只留路径+Read | 断言规格全文内联超上下文预算 | 详情规格先落 subagent-state 材料文件再派（第 3 次判例） |
+| 2026-10-10 | Round 3 回归 8 脚本 FAIL（EL/VT/LA/RC/SR/TS/RV/SS） | 1 | S14a-d 扩 7x 纪元锚 → Round 4 69/69 | :295 索引残留修正后 8 脚本锚集体漂移；新增 Rule 必有索引级联（第 6-8 代），Round 2 时残留掩盖 | 新增 Rule 必跑 ≥2 轮全量回归+索引三处同步 |
+| 2026-10-10 | 合并 master 双轮冲突（13+0 文件） | 2 | UA-UG 分批并集解+UZ 交叉修复 → Round 6/7 72/72 | 并行任务 v158/v162/v163/v164 同改索引/锚/registry | 合并前先 git merge master 进 worktree 再 merge-back；并集解判例 |
+| 2026-10-10 | 误删已提交未合并的 worktree 目录（merge-back V5 中止后仍 remove） | 1 | 从 wt 分支重建 worktree 续完合并 | 清理动作未与合并成功状态绑定 | §11.3 清理仅在 merge-back MERGED 之后执行 |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
