@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# selftest-decision-drift.sh — task-v156 S5: Rule 73 执行期决策对齐与不变量纪律 机制守护面（静态 DD-01~22）
+# selftest-decision-drift.sh — task-v156 S5: Rule 73 执行期决策对齐与不变量纪律 机制守护面（静态 DD-01~22 + DD-14b）
 # What: 守护 Rule 73 落点全集——critical-rules.md 七子条锚 + templates/deprecated.md 五段五要素
 #       + templates/task_plan.md 🔒 三态区块 + check-complete.sh [judge-gate] + zcode-posttooluse.sh [judge] 注入
 #       + SKILL.md 接线与计数宽锚 + selftest-registry.tsv 自登记 + 本计划 dogfood 🔒 区块 + 零新 config 键。
@@ -63,6 +63,12 @@ done
 
 # ── DD-14~15 双承载脚本 ──
 [ "$(cnt 'judge-gate' "$GATE")" -ge 1 ] && ok "DD-14 check-complete [judge-gate] 锚" || bad "DD-14" "门控锚缺失"
+# DD-14b（CR S8 F2）：守护 [judge-gate] 段档位门控存在性——awk 抽 judge-gate 段（锚段头 [judge-gate] 注释至
+#   Rule 73.4/C51 else 分支），断言段内含 plan_tier 前置门 + standard|full 判据，使 F1「缺档位门控致 mini 误伤」可机检。
+_JG_SEC="$(awk '/task-v156\] Rule 73\.4 \[judge-gate\]/{f=1} f{print} /Rule 73\.4\/C51/{if(f)exit}' "$GATE" 2>/dev/null)"
+{ [ "$(printf '%s\n' "$_JG_SEC" | grep -c 'plan_tier')" -ge 1 ] \
+  && [ "$(printf '%s\n' "$_JG_SEC" | grep -c 'standard|full')" -ge 1 ]; } \
+  && ok "DD-14b check-complete [judge-gate] 档位门控（plan_tier: standard|full）" || bad "DD-14b" "judge-gate 缺 plan_tier 档位门控"
 { [ "$(cnt '\[judge\]' "$HOOK")" -ge 1 ] && [ "$(cnt 'TASK_PLANNER_DECISION_JUDGE' "$HOOK")" -ge 1 ]; } \
   && ok "DD-15 posttooluse [judge] 注入+env 降档锚" || bad "DD-15" "注入/env 锚缺失"
 
@@ -102,5 +108,5 @@ fi
 { [ "$(cnt '\[align\]' "$CR")" -ge 1 ] && [ "$(cnt '\[judge\]' "$CR")" -ge 1 ]; } \
   && ok "DD-22 运行时留痕格式示范（[align]/[judge]）" || bad "DD-22" "留痕格式锚缺失"
 
-echo "Total: 22 PASS=$PASS FAIL=$FAIL"
+echo "Total: 23 PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
