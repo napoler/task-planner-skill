@@ -439,11 +439,11 @@ Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 age
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
+| `total` | 10（Phase 1-4 实际执行完成的子代理运行数:explore×2+code-assistant×6+code-runner×1+general-purpose×1;派发被 guard 拦 3 次与 provider 拒 1 次不计入执行面） |
+| `success` | 9（8 个全字段合规返回+1 个 S1 仅有块前「8 字段返回：」前言行、块本体 8 字段合规,经机械判据判 PASS） |
+| `failed` | 1（S5 子代理自报 partial=验收 3/4——任务书验收口径与行内插入规格内部矛盾,主进程复验裁决实质合规,非产物缺陷） |
+| `failure_rate` | 0%（10%/0 warning: 执行面 10 runs 中 0 个产物需重做;偏差均在派发层被机械拦截或主进程裁决闭环） |
+| `sampled_pass` | 双采样抽检 2/2：sample-1=S3 产物（check-subagent-return.sh --selftest 4/4+主进程 stdin 复跑 rc 分流一致）;sample-2=S6 产物（check-dispatch.sh 污染夹具 rc=2+干净 rc=0+selftest-dispatch 31/31 不破）——机器复跑结论与子代理自报一致 |
 | `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
 | `pre_check` | （Q1:否/Q2:有/Q3:能） |
 | `rollback_point` | （为空 → 禁止批量） |
