@@ -88,20 +88,20 @@ session_id: de2c5bba-v159
 ### Phase 1: 设计定稿
 - [x] design-pointer-fix.md：F1-F5 逐点函数定位+行区间+夹具设计+SKILL 行落点
 - **Status:** complete（2026-10-10 06:0x；design-pointer-fix.md 已落盘含 F1-F5 定点+PL-01..10）
-- **Executor:** 主进程（例外理由:② 计划系统文件 design 落 plans/）
+- **Executor:** 主进程（例外理由:② 计划系统文件维护——design-pointer-fix.md 落 plans/——Rule 25.3 白名单②）
 
 ### Phase 2: worktree+基线
 - [x] worktree `wt/v159-pointer-lifecycle`（从 fetch 后最新 master 创建；v152 Rule 67 或已 land，创建后 git log 复核）
 - [x] 基线 selftest 跑批（脚本数/FAIL 数存证）
 - **Status:** complete（2026-10-10 06:1x；worktree=merge 时 master，66/66 基线；后随合并态再验 5 轮）
-- **Executor:** 主进程（例外理由:①git+③机械）
+- **Executor:** 主进程（例外理由:① git/worktree 编排 +③ 机械验证跑批——Rule 25.3 白名单①③）
 
 ### Phase 3: 实施（组内异构+组域写隔离）
 - p3-core={S1 set-active-plan四修点; S2 init-session同语义; S3 check-complete+SKILL移交纪律}（文件集不相交，共同输入=design 稿；执行体：executor sonnet-1 + code-assistant haiku-1 混）
 - p3-guard={S4 smart-merge-back deploy staging 化; S5 selftest-pointer-lifecycle+registry}（文件集不相交；executor sonnet-1 + code-assistant haiku-1 混）
 - S7 串行尾：合并预检（master 实态 grep）
 - **Status:** complete（2026-10-10 07:0x；S1-S5 全验收+git adfd8d7+R3/R4 69/69）
-- **Executor:** 主进程（例外理由:①派发编排+②簿记）
+- **Executor:** 主进程（例外理由:① 派发编排（21.4 调度管理器职责）+② 计划三文件簿记——Rule 25.3 白名单①②）
 
 <!-- S-unit 派发单元表(Rule 22.6+68;ID=S<数字>;Nf/Nl/Nmin;前置依赖必填;-=无依赖) -->
 | ID | 目标(≤1句) | 执行体(subagent_type(model)) | 输入(路径+摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 并行组 | 检查点 | 状态 |
@@ -132,7 +132,7 @@ session_id: de2c5bba-v159
 - [x] 部署后实弹：新 sid 会话解析演练（只读巡检）
 - [x] delivery-summary+ledger
 - **Status:** complete（2026-10-10 07:2x；merge b6e6e2e+F5 实弹+D4 后验+worktree 清理）
-- **Executor:** 主进程（①git+②簿记）
+- **Executor:** 主进程（例外理由:① git/worktree 编排（合并/清理/部署）+② 计划系统文件簿记——Rule 25.3 白名单①②）
 
 ## FMEA（RPN>100）
 
