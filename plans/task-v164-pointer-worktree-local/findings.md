@@ -179,6 +179,14 @@
 - 格式差异备注（判读=主进程）：selftest-final-gate-hash.sh（:116-120）与 selftest-user-instruction-priority.sh（:341-342）无 `Total` 行——前者收尾 `结果: PASS=22 FAIL=0`、后者 `=== ALL PASS ===`，均 rc=0
 - 负结果报告：无 rc≠0 脚本（空集）；未做单脚本复跑/深验证；未执行 git 写操作；本次仅写 regression-worktree.log + 本 findings 追加 + progress 追加 + 检查点文件
 
+#### [sub:12-code-runner-agent] S12 双树行为验证
+- 事实（命令→关键输出，全部落 behavior-verification.log）：B 树 legacy set → `:3 [active-plan] 全局指针已设置: task-v160-decision-grading(/tmp/v164-btree/plans/.active_plan)`、`:4 B全局=task-v160-decision-grading`，同时 `:5 A全局=task-v164-pointer-worktree-local`（A 树未受 B 写影响）；`:6 B-status=NO-ENTRY(PASS)`（瞬态文件不入 git status）
+- 同 sid-x 双树解析互不感知：`:7 resolveB=/tmp/v164-btree/plans/task-v160-decision-grading/task_plan.md`、`:8 resolveA=/mnt/data/dev/task-planner-skill-worktrees/v164-pointer-worktree-local/plans/task-v164-pointer-worktree-local/task_plan.md`（各自树内正解，互不串树）
+- C 树（无全局指针的新建树）兜底链：`:13 C全局=不存在(预期)`、`:14 resolveC-noside=/tmp/v164-ctree/plans/fix-pointer-race-20261007/task_plan.md`（mtime 兜底产出合法 task_plan.md 路径；目标目录经 `git -C $WT ls-tree HEAD --name-only plans/` 计数=1 证实存在于该检出）、`:15 C-noside-rc=0`（保真备注：按命令原文 `echo "resolveC-noside=$(...)"` 后接 `$?` 捕获的是 echo 自身退出码恒 0，非 resolve 的 rc 证明；佐证=substitution 无 stderr 输出且结果为合法路径）、`:17 resolveC-side=/tmp/v164-ctree/plans/task-v164-pointer-worktree-local/task_plan.md`
+- side 存储观察（终端观察，不入 log）：C 树 `plans/.active_plan_side/sidy.active_plan => task-v164-pointer-worktree-local`——入参 `--sid sid-y` 被规范化为 `sidy` 落盘，且 :17 以 `sid-y` 解析命中同键，读写两侧规范化一致；set 消息 `(sid=sidy)` 同源
+- 清理：`:18-20 git worktree list` 仅 3 行（master/v163/v164），无 /tmp/v164- 残留；终端复核 /tmp/v164-btree、/tmp/v164-ctree 均已删除
+- 负结果报告：log 无 fatal/command-not-found；唯一 `No such file`（:12）= C 树无全局指针的预期探测输出；未探测 C 树 set 是否同时写全局（树已清理，不采信推测，标注未验证）；未执行 git 写操作；未探索命令集外路径
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
