@@ -76,7 +76,9 @@ t "T-锚 C25 行在位" grep -q '| C25 |' "$SKILL"
 t "T-锚 C26 行在位" grep -q '| C26 |' "$SKILL"
 # [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 # 原固定字面 'Rules 1-3' 计数锚在 1-62 纪元 SKILL.md 已零命中（级联漏改面）→ 宽容正则 1-(3[0-9]|[4-6][0-9]) 覆盖旧 1-3x..新 6x 纪元, 合计语义零改动
-t "T-锚 Rules 1-3..6 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-6][0-9])' '$SKILL')\" -ge 1 ]"
+# [2026-10-10 task-v160 合并级联: SKILL.md 索引锚演进至 1-72（Rule 72 决策分级已落地）]
+# 原宽容正则 1-(3[0-9]|[4-6][0-9]) 在 1-72 纪元 SKILL.md 零命中（第 6-8 次同类级联漏改面）→ 追加 7[0-2] 分支覆盖新 7x 纪元, 合计语义零改动
+t "T-锚 Rules 1-3..6 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-6][0-9]|7[0-2])' '$SKILL')\" -ge 1 ]"
 
 # T6 守卫 + registry 联动
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do

@@ -292,7 +292,7 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Critical Rules 1-69+70（含 Rule 40-69 全集 + Rule 70 用户呈报可审批性纪律，67-69 已由并行任务落位；含 Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 66 goal 单元固化与 /goal 驱动推进 / Rule 69 判断裁决子代理化与驳回打回））：
+详见 `references/critical-rules.md`（Critical Rules 1-72（含 Rule 40-69 全集 + Rule 70 用户呈报可审批性纪律、72 决策分级与用户打断纪律，67-69/71/72 后续任务已落位；含 Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 66 goal 单元固化与 /goal 驱动推进 / Rule 69 判断裁决子代理化与驳回打回））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）

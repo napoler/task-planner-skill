@@ -9,8 +9,8 @@
 #         DG-02 三级关键词齐备（A 级必须询问 / C 级禁止询问 / 基础质检硬门 各>=1）
 #         DG-03 Rule 72 段内 ASCII 冒号紧邻数字的引用形态=0（防级联漂移，v148 判例）
 #     · SKILL.md（消费侧接线，DG-04/DG-11）:
-#         DG-04 `Rule 72` >=5 且合规清单行 `C49` 在位，且该行含「A 级」与「C 级」字样
-#         DG-11 SKILL 接线组：同 DG-04 口径（Rule 72>=5 + C49 含 A 级/C 级），按触点分组再组织
+#         DG-04 `Rule 72` >=5 且合规清单行内容锚（`^| C<N> | ...决策分级与用户打断...`）在位，且该行含「A 级」与「C 级」字样
+#         DG-11 SKILL 接线组：同 DG-04 口径（Rule 72>=5 + 合规行内容锚含 A 级/C 级），按触点分组再组织
 #     · 触点文件清单（DG-05 总锚 + DG-08..DG-10 分组锚）:
 #         DG-05 5 文件逐一 grep "Rule 72" 达阈值（critical-rules>=5 其余见阈值数组），任一缺失=FAIL
 #         DG-08 引用面组：critical-rules.md `Rule 72`>=5
@@ -67,8 +67,13 @@ bad()  { echo "$1 FAIL: $2"; FAIL=$((FAIL+1)); }
 warn() { echo "$1 WARN: $2"; WARN=$((WARN+1)); }
 
 # ── 通用计数 helper（文件缺失计 0，非静默失败：计数即证据）──
-cnt()  { [ -f "$2" ] || { echo 0; return; }; grep -c -e "$1" "$2" 2>/dev/null || true; }
-cntE() { [ -f "$2" ] || { echo 0; return; }; grep -cE -- "$1" "$2" 2>/dev/null || true; }
+# 2026-10-10 task-v160 S13b（修 S11 代码审查 Nit#3）: 原实现 `grep -c ... 2>/dev/null || true`
+#   在「文件存在但不可读」时 stdout 为空 → 调用方 `[ "" -lt N ]` 触发 `integer expression expected`，
+#   且 `2>/dev/null` 静默吞错（违反 §九 禁吞错）。改为显式捕获计数 + 空值兜底 0：
+#     · 有匹配(rc=0)/无匹配(rc=1，stdout 已为 0)/读错误(rc=2，stdout 空) 三态均得合法整数；
+#     · 不再 `2>/dev/null`，grep/ugrep 的权限/IO 报错仍可见（退出码不吞）。
+cnt()  { [ -f "$2" ] || { echo 0; return; }; local n; n="$(grep -c -e "$1" "$2")"; printf '%s' "${n:-0}"; }
+cntE() { [ -f "$2" ] || { echo 0; return; }; local n; n="$(grep -cE -- "$1" "$2")"; printf '%s' "${n:-0}"; }
 
 # ── DG-01: Rule 72 条款锚（标题=1 六子条>=6）──
 DG01_TITLE=$(cnt '^## Rule 72' "$CR")
@@ -102,19 +107,21 @@ else
     bad "DG-03" "Rule 72 段行号引用形态命中=$DG03_HITS"
 fi
 
-# ── DG-04: SKILL 接线锚（Rule 72>=5 + 合规清单行 C49 含 A 级/C 级字样）──
+# ── DG-04: SKILL 接线锚（Rule 72>=5 + 合规清单行内容锚含 A 级/C 级字样）──
 # What: 断言 SKILL.md 中 `Rule 72` 命中数>=5（Rules 全集行/References 表/终验段/索引段/合规清单），
-#       并定位 `^| C49 |` 合规行，断言其含「A 级」「C 级」字样。
-# Why: 合规行内容锚（而非绝对编号）——编号让位不级联；同时锁分级语义未被裁剪。
+#       并以内容定位合规清单行（`^| C<N> | ...决策分级与用户打断...`），断言其含「A 级」「C 级」字样。
+# Why: 内容锚（而非绝对编号）——合规行编号是并集易位资源（历史 C46→C48→C49），编号让位不级联
+#      （v155 RRV-04 同款教训：编号锚级联 false-positive；文本锚替代行号锚是本仓硬纪律，见 DG-03）；
+#      同时锁分级语义（A 级必须询问/C 级禁问）未被裁剪。
 DG04_R72=$(cnt "Rule 72" "$SKILL")
-DG04_C49=$(cnt "C49" "$SKILL")
-DG04_C49LINE="$(grep '^| C49' "$SKILL" 2>/dev/null || true)"
-DG04_A=$(printf '%s' "$DG04_C49LINE" | grep -c "A 级" 2>/dev/null || true)
-DG04_C=$(printf '%s' "$DG04_C49LINE" | grep -c "C 级" 2>/dev/null || true)
-if [ "$DG04_R72" -ge 5 ] && [ "$DG04_C49" -ge 1 ] && [ "$DG04_A" -ge 1 ] && [ "$DG04_C" -ge 1 ]; then
-    ok "DG-04" "SKILL 接线锚(Rule 72>=5 C49 行含 A 级/C 级)"
+DG04_ROWCNT=$(cnt '^| C[0-9]* | .*决策分级与用户打断' "$SKILL")
+DG04_ROWLINE="$(grep -e '^| C[0-9]* | .*决策分级与用户打断' "$SKILL")"
+DG04_A=$(printf '%s' "$DG04_ROWLINE" | grep -c "A 级")
+DG04_C=$(printf '%s' "$DG04_ROWLINE" | grep -c "C 级")
+if [ "$DG04_R72" -ge 5 ] && [ "$DG04_ROWCNT" -ge 1 ] && [ "$DG04_A" -ge 1 ] && [ "$DG04_C" -ge 1 ]; then
+    ok "DG-04" "SKILL 接线锚(Rule 72>=5 合规行内容锚含 A 级/C 级)"
 else
-    bad "DG-04" "SKILL 接线锚(got R72=$DG04_R72 C49=$DG04_C49 A=$DG04_A C=$DG04_C expect R72>=5,C49>=1,A>=1,C>=1)"
+    bad "DG-04" "SKILL 接线锚(got R72=$DG04_R72 ROW=$DG04_ROWCNT A=$DG04_A C=$DG04_C expect R72>=5,ROW>=1,A>=1,C>=1)"
 fi
 
 # ── DG-05: 触点文件清单 Rule 72 锚齐备（逐文件阈值断言）──
@@ -190,15 +197,16 @@ else
     bad "DG-10" "管线面组缺失(batch-publisher=$DG10_PUB expect>=2, field-fixer=$DG10_FIX expect>=1)"
 fi
 
-# ── DG-11: SKILL 接线组（SKILL.md Rule 72>=5 且 C49 行含「A 级」「C 级」）──
-# What: 与 DG-04 同口径的触点分组再组织（SKILL 接线面单列一组）。
-# Why: 分组锚定位「接线面」被裁剪（Rules 全集行/References 表/终验段/索引段/合规清单任一丢失）。
+# ── DG-11: SKILL 接线组（SKILL.md Rule 72>=5 且合规行内容锚含「A 级」「C 级」）──
+# What: 与 DG-04 同口径（同一内容锚 `^| C<N> | ...决策分级与用户打断...`）的触点分组再组织（SKILL 接线面单列一组）。
+# Why: 分组锚定位「接线面」被裁剪（Rules 全集行/References 表/终验段/索引段/合规清单任一丢失）；
+#      与 DG-04 共用内容锚（非绝对编号），合规行编号让位不级联。
 DG11_R72=$(cnt "Rule 72" "$SKILL")
-DG11_C49LINE="$(grep '^| C49' "$SKILL" 2>/dev/null || true)"
-DG11_A=$(printf '%s' "$DG11_C49LINE" | grep -c "A 级" 2>/dev/null || true)
-DG11_C=$(printf '%s' "$DG11_C49LINE" | grep -c "C 级" 2>/dev/null || true)
+DG11_ROWLINE="$(grep -e '^| C[0-9]* | .*决策分级与用户打断' "$SKILL")"
+DG11_A=$(printf '%s' "$DG11_ROWLINE" | grep -c "A 级")
+DG11_C=$(printf '%s' "$DG11_ROWLINE" | grep -c "C 级")
 if [ "$DG11_R72" -ge 5 ] && [ "$DG11_A" -ge 1 ] && [ "$DG11_C" -ge 1 ]; then
-    ok "DG-11" "SKILL 接线组(Rule 72>=5 C49 行含 A 级/C 级)"
+    ok "DG-11" "SKILL 接线组(Rule 72>=5 合规行内容锚含 A 级/C 级)"
 else
     bad "DG-11" "SKILL 接线组缺失(R72=$DG11_R72 A=$DG11_A C=$DG11_C expect R72>=5,A>=1,C>=1)"
 fi
