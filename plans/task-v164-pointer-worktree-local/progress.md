@@ -89,13 +89,19 @@
   - [sub:9] init-session+plan-created 注释改述完成
   - [sub:9b] plan-created 残留清零
   - [sub:10] check-dispatch+check-complete 改述完成
-  -
+  - [sub:14] PL-07 锁步完成
+  - 主进程复验链：每单 diff/语法（bash -n|node --check）/grep 三件套；S10 display 字符串偏离经仲裁登记（Decisions 16:4x）
 - Files created/modified:
-  -
+  - skills/task-planner/references/critical-rules.md（Rule 22.9 改述+瞬态合并规则登记段）、SKILL.md（2 处）、README.md、INSTALL.md
+  - scripts/zcode-userpromptsubmit.sh、zcode-posttooluse.sh、zcode-pretooluse.sh、task-plan-init.cjs、init-session.sh、plan-created.cjs、check-dispatch.sh、check-complete.sh、selftest-pointer-lifecycle.sh（PL-07 锁步）
+  - subagent-state/4-14 各 unit checkpoint 与 prompt-material
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | 全域旧语义扫描 | `grep -rn '全局 legacy\|legacy 指针\|指针移交\|互顶全局\|请移交' skills/task-planner/` | 0 实际语义命中 | 7 命中均为 [task-v164] 注记引文（Rule 45 原措辞说明），实际语义 0 | ☑ PASS |
+  | 锁步 selftest | `bash selftest-pointer-lifecycle.sh` | 10/10 | Total: 10 PASS=10 FAIL=0（改前 PL-07 FAIL） | ☑ PASS |
+  | 指针 selftest 复跑 | `bash selftest-active-plan.sh` | 29/29 保持 | Total: 29 PASS=29 FAIL=0 | ☑ PASS |
+  | 语法全检 | 九个改动脚本 `bash -n`/两个 cjs `node --check` | 全过 | 全过 | ☑ PASS |
 
 ### Phase 4: 全量回归 + 行为验证 + CR
 - **Status:** pending
@@ -146,7 +152,7 @@
 |---------|------|------|
 | G1（隔离基线） | （待 Phase 1 complete：baseline-selftest.log 求和记录+worktree list） | |
 | G2（指针瞬态化） | （待 Phase 2 complete：VC-1 命令判定+diff 注释区） | |
-| G3（级联完成） | （待 Phase 3 complete：VC-3 grep+级联清单） | |
+| G3（级联完成） | 全域旧语义扫描 ZERO-RESIDUE（7 残余均为注记引文）+锁步 selftest 10/10+findings 28 行清单 | 2026-10-10 16:4x |
 | G4（独立验证） | （待 Phase 4 complete：S8 求和+S9 行为输出+S10 CR） | |
 | G5（交付合并） | （待 Phase 5 complete：merge 对账+INDEX/ledger/CHANGELOG） | |
 

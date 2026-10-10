@@ -166,6 +166,13 @@
 - ⚠️ A2 备注（主进程裁量）：`git diff -U0 | 非#行 | grep -c .` = **2**（非 0）——唯一边界为 check-complete.sh:1346 的 printf warn **消息字符串**（`-请移交` / `+无需移交、请清理`）；该行改动为 dispatch 目标 ①「退役'请移交'推荐表述」+ A4「请移交=0」+ task_plan S10「'请移交'推荐表述退役」+ material ④ 直接要求，逻辑/触发条件/warn 形态/stderr 通道/exit 码零变化（消息字符串外全部 diff 行均为 `#` 注释）。A2 字面 =0 与 A4+目标互斥，按目标优先执行并报备
 - 负结果报告：仅改两脚本注释区 + 1 行 warn 消息字符串；未动 set -u 后任何逻辑/函数/变量/usage；未动其他 26 引用面文件；未执行 git add/commit/checkout/reset（`git status --short` 除两脚本外仅 `.dispatch-inflight` M 与 10-prompt-material.md ?? 为派发期既有）
 
+#### [sub:14-executor] PL-07 锁步同步
+- 事实（命令→关键输出）：改前 `bash skills/task-planner/scripts/selftest-pointer-lifecycle.sh` → `FAIL PL-07 (SKILL.md 移交纪律行缺失)` / `Total: 10 PASS=9 FAIL=1` rc=1；改后 → `PASS PL-07 SKILL.md 含指针清理纪律行（锚在位）` / `Total: 10 PASS=10 FAIL=0` rc=0
+- 改动锚：selftest-pointer-lifecycle.sh:43（注释行，原「SKILL.md 含移交纪律行（指针移交 25 完成项）」→「含指针清理纪律行（指针清理 25 完成项）」+ `[2026-10-10 task-v164 锁步：原锚'指针移交'随 S5 改述退役，语义不变]`）:44（断言行 `cnt '指针移交'`→`cnt '指针清理'`，ok/bad 消息文案同步）
+- 双边命中：`grep -n '指针清理' selftest-pointer-lifecycle.sh ../SKILL.md` → selftest:43/:44 + SKILL.md:111（`  - **指针清理（25 完成项）**`，非注释行，cnt 剥注释后仍计得）
+- PL-06 未动核对：selftest :41-42 保留 `移交提醒` + `移交提醒.*>&2` 双锚未变；check-complete.sh:1337 块头 + :1350 消息前缀「移交提醒( pointer-lifecycle )」仍在 → PL-06 PASS，material「PL-06 不动」满足
+- 负结果报告：`git diff --stat` 仅 selftest 4 ++--（=PL-07 两行），Total 计数不变（仍 10）；未动其他文件；未执行 git add/commit/checkout/reset（`.dispatch-inflight` M 为派发期既有，非本 unit）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

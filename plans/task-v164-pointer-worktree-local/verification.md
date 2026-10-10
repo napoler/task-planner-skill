@@ -72,14 +72,14 @@ Status: `complete` Last verified: 2026-10-10 15:5x
 
 **Done when**:
 - [x] S4: findings.md 级联清单=28 文件逐个判定（只读14/措辞更新12/已改述2，主进程复核）
-- [ ] S5-S10: 12 个措辞更新目标按清单改述完成 + 只读消费方登记不改
+- [x] S5-S10+9b+锁步: 12 个措辞更新目标+S9b 两处残留+PL-07 锁步全部落地 + 只读消费方登记不改
 
 **Verification**:
-- [ ] V-3.1: VC-3 grep 无旧语义残留
-- [ ] V-3.2: findings.md 级联清单含 28 文件逐个判定
-- [ ] V-3.3: 合并规则段在位（critical-rules，RPN=90 FMEA 兜底）
+- [x] V-3.1: VC-3 grep 无旧语义残留（全域扫描 ZERO-RESIDUE，残余 7 处=注记引文）
+- [x] V-3.2: findings.md 级联清单含 28 文件逐个判定
+- [x] V-3.3: 合并规则段在位（critical-rules:198-201，RPN=90 FMEA 兜底）
 
-Status: `in_progress` Last verified: 2026-10-10 16:0x
+Status: `complete` Last verified: 2026-10-10 16:4x
 
 ---
 

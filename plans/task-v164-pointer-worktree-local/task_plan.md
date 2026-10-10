@@ -88,7 +88,7 @@
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | complete（2026-10-10 15:2x：71/71 rc=0+FF master 79cd10a） |
 | G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | complete（2026-10-10 15:5x：8ea2eb3+S3 复验） |
-| G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S7 | pending |
+| G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S10+锁步 | complete（2026-10-10 16:4x：全域扫描 ZERO-RESIDUE，残余仅注记引文） |
 | G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S8-S10 | pending |
 | G5 | 交付合并 | 合并回 master+部署对账+簿记+规则登记 | smart-merge-back no-ff 对账+INDEX/ledger/CHANGELOG+check-complete exit 0 | Phase 5 | pending |
 
@@ -152,14 +152,17 @@
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
 | S4 | 28 文件引用面逐个判定分级（只读消费方/措辞更新方），级联清单落 findings.md | executor（sonnet-1） | ① `grep -rn 'active_plan' skills/task-planner/` 输出 ② findings.md E 节 | findings.md 级联清单=28 文件逐个判定（只读/更新+一行理由） | 12min | 1f/30l/12min | 无 | done（2026-10-10 16:0x：只读14/措辞更新12/已改述2，主进程复核） | S3 后 |
-| S5 | critical-rules.md 指针相关段措辞改述 + 瞬态文件合并规则登记段（按 S4 清单 :196/:298） | executor（sonnet-1） | ① S4 级联清单（findings.md [sub:4] 段）② knowledge-brief.md §3 锚（行号实施日重测） | 无"入库/跟踪/移交"旧语义；合并规则段在位；git diff 仅清单内行 | 12min | 1f/35l/12min | 无 | pending | S4 后 |
-| S6 | README.md + INSTALL.md 措辞改述（按 S4 清单 :100-101/:189） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚 | 两文件无旧语义；git diff 仅清单内行 | 10min | 2f/20l/10min | 无 | pending | S5 后 |
-| S7 | zcode-userpromptsubmit.sh + zcode-posttooluse.sh 注释改述（按 S4 清单 :23/:43-44） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零+[task-v164] 锚各 ≥1；`bash -n` 双过 | 10min | 2f/12l/10min | 无 | pending | S6 后 |
-| S8 | zcode-pretooluse.sh + task-plan-init.cjs 注释改述（按 S4 清单 :72-73/:122-124） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check` 验语法） | 10min | 2f/12l/10min | 无 | pending | S7 后 |
-| S9 | init-session.sh + plan-created.cjs 注释改述（按 S4 清单 :719-727/:134） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check`） | 10min | 2f/12l/10min | 无 | pending | S8 后 |
-| S9b | S9 收尾补充：plan-created.cjs :153 注释「legacy 指针」+:174 label 字符串 `'legacy 指针 .active_plan'` 两处残留清零（S9 自报边界事实；无 selftest 耦合） | executor（sonnet-1） | ① findings [sub:9] 段边界事实行 ② plan-created.cjs:150-176 | 两处改述+[task-v164] 注记；`node --check` 过；diff 仅注释行+该 1 处 label 字符串 | 8min | 1f/4l/8min | 无 | pending | S9 后 |
-| S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | pending | S9b 后 |
-| S14 | selftest-pointer-lifecycle.sh 契约锁步同步：PL-07 锚随 SKILL 新措辞（"指针清理"）、PL-06 锚随 check-complete 新措辞（如保留"移交提醒"废弃标签则不动，以实测为准）；禁删其他断言 | executor（sonnet-1） | ① S5/S10 改述后实测措辞 ② selftest-pointer-lifecycle.sh:40-46 | PL-06/PL-07 PASS 且断言锚=新措辞；`bash -n` 过 | 10min | 1f/10l/10min | 无 | pending | S5-S10 后 |
+| S5 | critical-rules.md 指针相关段措辞改述 + 瞬态文件合并规则登记段（按 S4 清单 :196/:298） | executor（sonnet-1） | ① S4 级联清单（findings.md [sub:4] 段）② knowledge-brief.md §3 锚（行号实施日重测） | 无"入库/跟踪/移交"旧语义；合并规则段在位；git diff 仅清单内行 | 12min | 1f/35l/12min | 无 | done（2026-10-10 16:4x） | S4 后 |
+| S6 | README.md + INSTALL.md 措辞改述（按 S4 清单 :100-101/:189） | executor（sonnet-1） | ① S4 级联清单 ② knowledge-brief.md §3 锚 | 两文件无旧语义；git diff 仅清单内行 | 10min | 2f/20l/10min | 无 | done（2026-10-10 16:4x） | S5 后 |
+| S7 | zcode-userpromptsubmit.sh + zcode-posttooluse.sh 注释改述（按 S4 清单 :23/:43-44） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零+[task-v164] 锚各 ≥1；`bash -n` 双过 | 10min | 2f/12l/10min | 无 | done（2026-10-10 16:4x） | S6 后 |
+| S8 | zcode-pretooluse.sh + task-plan-init.cjs 注释改述（按 S4 清单 :72-73/:122-124） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check` 验语法） | 10min | 2f/12l/10min | 无 | done（2026-10-10 16:4x） | S7 后 |
+| S9 | init-session.sh + plan-created.cjs 注释改述（按 S4 清单 :719-727/:134） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check`） | 10min | 2f/12l/10min | 无 | done（2026-10-10 16:4x） | S8 后 |
+| S9b | S9 收尾补充：plan-created.cjs :153 注释「legacy 指针」+:174 label 字符串 `'legacy 指针 .active_plan'` 两处残留清零（S9 自报边界事实；无 selftest 耦合） | executor（sonnet-1） | ① findings [sub:9] 段边界事实行 ② plan-created.cjs:150-176 | 两处改述+[task-v164] 注记；`node --check` 过；diff 仅注释行+该 1 处 label 字符串 | 8min | 1f/4l/8min | 无 | done（2026-10-10 16:4x） | S9 后 |
+| S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | done（2026-10-10 16:4x，含 A2 偏离仲裁见 Decisions） | S9b 后 |
+| S14 | selftest-pointer-lifecycle.sh 契约锁步同步：PL-07 锚随 SKILL 新措辞（"指针清理"）、PL-06 锚随 check-complete 新措辞（如保留"移交提醒"废弃标签则不动，以实测为准）；禁删其他断言 | executor（sonnet-1） | ① S5/S10 改述后实测措辞 ② selftest-pointer-lifecycle.sh:40-46 | PL-06/PL-07 PASS 且断言锚=新措辞；`bash -n` 过 | 10min | 1f/10l/10min | 无 | done（2026-10-10 16:4x，10/10 PASS） | S5-S10 后 |
+
+- **Status:** complete（2026-10-10 16:4x；12 个措辞目标+S9b 残留清零+锁步同步全落地，全域旧语义扫描零残留）
+- **V-N:** VC-3（全域 grep 旧语义=0，残余 7 处均为 [task-v164] 原措辞注记引文，Rule 45 合规）
 
 - **Executor:** executor（sonnet-1）
 
@@ -202,14 +205,15 @@
 | 2026-10-10 15:2x | Phase 1 收口自检（drift-rhythm due=0 未到 hook 提醒阈值，按 64.2 主动自检）：原目标=.active_plan 瞬态化全链 vs 当前步=Phase 1 隔离基线全部达成； master 快进=防 S5 撞车的预防动作不改目标；R1-R5 范围零蔓延 | 全 VC | ALIGNED |
 | 2026-10-10 15:5x | Phase 2 收口自检：S2/S3 均经主进程独立复验（非采信子代理自报）；diff 只见注释区+索引态，解析链零改动=R1/R3/R4 路径 intact；G2 达成 | VC-1, VC-3 | ALIGNED |
 | 2026-10-10 16:0x | S4 分级后计划重构（16:0x Decisions 登记）：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8），远超原 S5-S7 三单预估；按 step_max_files=2 拆为 S5-S10 六个派发；原 S7 selftest 适配目的经主进程实测（active-plan 29/29、pointer-lifecycle 10/10 瞬态化后全绿）证明无事可做→撤销，其槽位由脚本注释改述接替 | VC-3 | ALIGNED（范围未超：12 目标全在 S4 清单内，D3 禁扩范围） |
+| 2026-10-10 16:4x | Phase 3 收口自检：12 目标+S9b+锁步全落地，每单均主进程独立复验（diff/语法/grep 三件套）；全域旧语义扫描 ZERO-RESIDUE（7 残余均为 [task-v164] 注记引文）；S10 display 字符串偏离经仲裁登记未越 R2/R4 目标 | VC-3 | ALIGNED |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-3（in_progress：S4-S10 改述全落地，selftest 锁步同步派发中）
+4（in_progress：Phase 3 complete，S11 全量回归派发中）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 selftest 锁步单元（executor，sonnet-1）：PL-07 断言锚随 SKILL 新措辞「指针清理」同步（PL-06 经实测保留 label 无需动），材料 subagent-state/14-prompt-material.md，checkpoint 14-executor.md
+派发 S11（code-runner-agent，mini）：变更后态全量 selftest（72 脚本）回归跑批，逐脚本 rc/Total 落 regression-worktree.log 对照 baseline-selftest.log（材料 subagent-state/11-prompt-material.md，checkpoint 11-code-runner-agent.md）
 
 ## Decisions
 | 时间 | 决策 | 理由 |
