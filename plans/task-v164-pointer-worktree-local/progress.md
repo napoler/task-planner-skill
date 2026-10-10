@@ -124,16 +124,25 @@
   | S13-nit | 自指锚修正 | 实测行号 | :41,109 / :97；代码区 0 改动 | ☑ PASS |
 
 ### Phase 5: 合并回 + 部署 + 簿记
-- **Status:** pending
-- **Started:**
+- **Status:** complete（2026-10-11；merge a849947+部署 IDENTICAL+簿记落库；drift 自检 ALIGNED 见 task_plan Drift Log 末行）
+- **Started:** 2026-10-10 17:5x
 - Actions taken:
   - [sub:15] 合并后态回归 75 脚本（派发口径 72 + master 并入新增 3）rc/Total 落 regression-worktree-merged.log；75/75 rc=0，BATCH 22:41:22→22:44:09
-  -
+  - 主进程：主仓脏指针 v163 值按已登记瞬态合并规则 stash（stash@{0}，禁抢救）→ 分支内 merge master 解 SKILL.md:111 冲突（40a72f7）→ smart-merge-back --deploy 过 V1-V6（a849947 no-ff）+三部署位 post-verify 零差异 IDENTICAL
+  - .active_plan 瞬态终态亲验：主仓工作区无该文件（瞬态按需再生）+`git ls-files --error-unmatch` exit 1+`.gitignore:15` 命中；部署位 sanity：set-active-plan.sh task-v164 锚 7 处
+  - Handoff 17 行补登 → check-delegation stats verdict=ok/violations=[]/rate 0.600（白名单豁免：①git/worktree 编排+①②）
+  - check-complete 首跑 exit 1（scope 未提交）→ 本簿记提交后复跑
 - Files created/modified:
-  -
+  - plans/task-v164-pointer-worktree-local/{task_plan,progress,verification,delivery-summary,ledger-main}.md(+)；plans/INDEX.md（v164 行）；CHANGELOG.md（v164 条目）
+  - 仓根 .gitignore（+3/-0，:15 plans/.active_plan）；skills/task-planner/ 14 文件（两指针脚本+critical-rules+SKILL+README+INSTALL+8 hook/selftest）
+  - plans/.active_plan（git rm --cached，索引态删除；工作区瞬态文件保留语义）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
-  |------|-------|----------|--------|        |
+  |------|-------|----------|--------|--------|
+  | S11-r2 合并后态 | 75 脚本逐跑 | 零增量+并入新增绿 | 75 段 rc=0、FAIL 行=0（主进程亲验） | ☑ PASS |
+  | smart-merge-back | V1-V6+deploy | 合并+IDENTICAL | a849947 在册；三部署位 post-verify 零差异 | ☑ PASS |
+  | 瞬态终态 | ls-files/check-ignore/ls | 不再跟踪+ignore 命中 | exit1；.gitignore:15；主仓无工作区文件（按需再生） | ☑ PASS |
+  | 委派统计 | check-delegation stats | verdict=ok | ok；violations=[]；17 派发全登记 | ☑ PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
@@ -163,7 +172,7 @@
 | G2（指针瞬态化） | （待 Phase 2 complete：VC-1 命令判定+diff 注释区） | |
 | G3（级联完成） | 全域旧语义扫描 ZERO-RESIDUE（7 残余均为注记引文）+锁步 selftest 10/10+findings 28 行清单 | 2026-10-10 16:4x |
 | G4（独立验证） | S11 回归 72/72 主进程亲验+S12 行为 log 原文亲验+S13 CR APPROVED（7/7） | 2026-10-10 17:4x |
-| G5（交付合并） | （待 Phase 5 complete：merge 对账+INDEX/ledger/CHANGELOG） | |
+| G5（交付合并） | merge a849947+三部署位 IDENTICAL+stats verdict=ok+check-complete 复跑 PASS | 2026-10-11 |
 
 ---
 <!-- 📋 plan-resume 报告检查点:Phase complete 后 <cwd>/.zcode/plans/plan-resume-report.md 应已更新;未更新记 [plan-resume 跳过原因] -->

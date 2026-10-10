@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+### 变更
+
+- **活跃计划全局指针瞬态化（task-v164）** — 2026-10-10/11：`plans/.active_plan` 由 git 跟踪文件改为工作树内瞬态状态文件（`git rm --cached`+仓根 `.gitignore:15`，与 `.active_plan_side/`/`.plan_required_side/`/`.drift-rhythm/` 同族归一）——指针路径本就随 `$PWD` 工作树本地化（set-active-plan.sh:41,109/resolve-plan-dir.sh 实证），瞬态化后跨树零共享、合并零冲突、历史 8 次 chore 移交噪音止息；正常路径=side 会话私有指针（2026-10-07 后权威层），全局层降级为 sid-less/cron fallback；28 文件引用面措辞级联（退役"移交/legacy"旧语义，全域 grep 零残留）+selftest PL-07 断言锁步（指针移交→指针清理）+critical-rules 新增「瞬态状态文件合并规则」登记段；check-complete 终验提醒文案「完成后请移交」→「完成后无需移交、请清理」；merge a849947 回 master，三部署位 IDENTICAL，合并后态 selftest 75/75 rc=0
+
 ### 新增
 
 - **Rule 67 上下文压力主动评估与会话交接纪律（task-v152）** — 2026-10-09/10：67.1 三档主动评估触发（posttooluse drift-rhythm 同行 `[context-pressure]` 注入；事件档=连续失败≥2/DRIFT/compaction 恢复点；高危信号档=periodic-review CONTRADICTION 等）/67.2 三态裁决 HEALTHY/PRESSURE/CONFUSED+`[assess]` 留痕（无痕迹=未评估）/67.3 PRESSURE 即压缩（复用 29.2/29.3 SOP，不等 Phase complete）/67.4 CONFUSED 会话交接兜底（新模板 templates/session-handoff.md 五段+session-catchup→四文件读序→plan-resume 恢复链）/67.5 hook 单 emit 双行承载（F9 单轮单 JSON 约束下 `${_cp}` 后缀拼接，三键与 F10 零改动）/67.6 零新 config 键（env `TASK_PLANNER_CONTEXT_PRESSURE` on/off + `_N` 降频）+守卫 scripts/selftest-context-pressure.sh（CP-01..09）并登记 registry；SKILL.md 计数 1-65→1-67 三处+Rule 67 摘要 bullet+合规清单 C46（v151 已占 C45=goal 自查，避让重编号）+skill-split 钉 510→518；与并行已落地 v151 Rule 66 的合并并集解（critical-rules 文尾 66→67 顺序、SKILL C45(goal)+C46(压力) 并存、8 守卫标签演进并集取 1-67、RC-15 `^66=6` 正钉保留、goal-unit selftest G-07「末行假设」→并集全表口径）；交付事实=基线 63→65 脚本全绿+hook 冒烟双态 PASS+CR round1(3 MAJOR)→fix-wave 六修→round2 APPROVED

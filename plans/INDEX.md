@@ -116,7 +116,7 @@
 | task-v161-subagent-return-format | complete | 5/5 | 修复子代理返回格式污染：让 task-planner 体系所有派发子代理的返回消息与检查点「最终结论 | none |  | skills/task-planner/templates/subagent_dispatch.md, skills/task-planner/references/critical-rules.md, skills/task-planner/references/dispatch-examples.md, skills/task-planner/SKILL.md,skills/task-planner/scripts/check-subagent-return.sh（新）, skills/task-planner/scripts/selftest-subagent-return.sh（新）, skills/task-planner/scripts/selftest-registry.tsv（仅追加登记行）,无（零新 config 键——如需 enforce 档位复用既有 `config.json#dispatch_contract_enforce` 或 warn 档，不改 config.json）,config.json 结构改动,plans/task-v161-subagent-return-format/**（计划四文件+delivery-summary.md）,~/.zcode/agents/** 与 ~/.agents/**（内置 agent 定义=污染主源但属越界未授权，只登记不修改）、其他 worktree、其他 plans/* 目录 | 2026-10-10 | ✓ |
 | task-v162-change-absorption-safety | complete | 8/8 | 在 task-planner 技能内建立 Rule 74 变更吸收三判纪律：吸收用户指令/修订时增量 | task-v162-20261010-de2c5bba |  | `skills/task-planner/references/critical-rules.md`、`skills/task-planner/SKILL.md`、`skills/task-planner/templates/task_plan.md`、`skills/task-planner/templates/subagent_dispatch.md`、`skills/task-planner/scripts/selftest-absorption-discipline.sh`（新建）、`skills/task-planner/scripts/selftest-registry.tsv`、Phase 6 级联清账触达的 pinning selftest 脚本（执行期登记清单）,其他技能文件、其他 .sh 文件、config.json（零新键）,`plans/.rule-reservations.jsonl`（attest/rule-reserve.sh 自动写入，非手改）,`skills/task-planner/config.json` 任何写入 | 2026-10-10 | ✓ |
 | task-v163-proactive-research | in_progress | 6/7 | (no goal) | none |  | `references/critical-rules.md`（EOF 追加 Rule 75 块）,config.json **零新键**（Rule 75 定性规则面，同 63.6/58.7 范式）,`scripts/check-plan-dispatch.sh`（advisory 段追加）+ 新建 `scripts/selftest-proactive-research.sh` + `scripts/selftest-registry.tsv`（+1 行）,`templates/task_plan.md`（纯增量区块）+ 4 个 variant（纯增量行）+ `skills/plan-template-kit/references/{template-guide,template-mapping}.md`,`SKILL.md`（净增 ≤10 行：摘要 bullet+索引行位替换+C51 行，行位替换优先）,`CHANGELOG.md`（条目）+ README/CLAUDE.md/README_zh.md 计数标签（grep 命中才动）,plans/task-v163-proactive-research/**（四文件+delivery-summary）+ INDEX.md + .rule-reservations.jsonl + ledger | 2026-10-10 | ⚠ 续 |
-| task-v164-pointer-worktree-local | pending | 0/5 | 将 `plans/.active_plan` 全局指针从 git 跟踪文件改为工作树内瞬态状态文件（ | none |  | `plans/.active_plan`（仅 `git rm --cached`，工作区文件保留为瞬态文件）、仓根 `.gitignore`（追加 1 行）,删除工作区文件本身；动 .gitignore 其他规则,`skills/task-planner/scripts/set-active-plan.sh`、`resolve-plan-dir.sh`（头注释区语义改述）,`references/critical-rules.md`（指针相关段+合并规则登记）、`SKILL.md`、`README.md`、`INSTALL.md`、`CHANGELOG.md`（仅追加 v164 条目）,`selftest-active-plan.sh`、`selftest-pointer-lifecycle.sh`（断言适配）+ 全量回归,`plans/task-v164-pointer-worktree-local/**`、`plans/INDEX.md` | 2026-10-10 | ⚠ 未开始 |
+| task-v164-pointer-worktree-local | complete | 5/5 | 将 `plans/.active_plan` 全局指针从 git 跟踪文件改为工作树内瞬态状态文件（ | none |  | `plans/.active_plan`（仅 `git rm --cached`，工作区文件保留为瞬态文件）、仓根 `.gitignore`（追加 1 行）,删除工作区文件本身；动 .gitignore 其他规则,`skills/task-planner/scripts/set-active-plan.sh`、`resolve-plan-dir.sh`（头注释区语义改述）,`references/critical-rules.md`（指针相关段+合并规则登记）、`SKILL.md`、`README.md`、`INSTALL.md`、`CHANGELOG.md`（仅追加 v164 条目）,`selftest-active-plan.sh`、`selftest-pointer-lifecycle.sh`（断言适配）+ 全量回归,`plans/task-v164-pointer-worktree-local/**`、`plans/INDEX.md` | 2026-10-11 | ✓ |
 
 ## 待处理（需关注）
 - **task-v133** — in_progress, Phase 3/4（中断恢复首选）
@@ -127,7 +127,6 @@
 - **task-v144** — in_progress, Phase 2/5（中断恢复首选）
 - **task-v146-drift-check-subagent** — pending, 未开始 (0/5)
 - **task-v163-proactive-research** — in_progress, Phase 6/7（中断恢复首选）
-- **task-v164-pointer-worktree-local** — pending, 未开始 (0/5)
 
 ## 已完成
 - fix-pointer-race-20261007 ✓ (5/5) — 2026-10-07
@@ -231,6 +230,7 @@
 - task-v160-decision-grading ✓ (8/8) — 2026-10-10
 - task-v161-subagent-return-format ✓ (5/5) — 2026-10-10
 - task-v162-change-absorption-safety ✓ (8/8) — 2026-10-10
+- task-v164-pointer-worktree-local ✓ (5/5) — 2026-10-11
 
 ## 汇总
-- in_progress: 7 | pending: 2 | complete: 101
+- in_progress: 7 | pending: 1 | complete: 102
