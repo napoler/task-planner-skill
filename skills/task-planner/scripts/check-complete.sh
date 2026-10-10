@@ -1322,6 +1322,25 @@ END {print n+0}'
         printf '[goal-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 66.5)\n' >&2
     fi
 
+    # [2026-10-10 task-v156] Rule 73.4 [judge-gate] 强制评判点终验对照段
+    # WHAT: standard/full 档计划对照 progress.md [judge]/[align] 留痕行数—— Phase complete 前
+    #       强制评判（73.4②）未留痕=评判未执行；warn 默认提示，env TASK_PLANNER_DECISION_JUDGE=enforce 升 exit 1。
+    # WHY: 用户 R3「周期性评判数据、及时发现错误」+R4「每次做出决定/更改前对齐设定」的机器承载面。
+    # 档位: env TASK_PLANNER_DECISION_JUDGE = off(跳过)/enforce(缺失 exit 1)/默认 warn(提示不阻断)
+    case "${TASK_PLANNER_DECISION_JUDGE:-warn}" in
+      off) printf '[judge-gate] SKIPPED (env TASK_PLANNER_DECISION_JUDGE=off)\n' >&2 ;;
+      enforce|warn)
+        _jl="$(grep -c '\[judge\]\|\[align\]' "$PLAN_DIR_GUESS/progress.md" 2>/dev/null || true)"
+        case "$_jl" in ''|*[!0-9]*) _jl=0 ;; esac
+        if [ "$_jl" -eq 0 ]; then
+          printf '[judge-gate] ✗ progress.md 无 [judge]/[align] 留痕行 (Rule 73.4: 变更决策后/Phase complete 前/合并回前各一次评判)\n' >&2
+          [ "${TASK_PLANNER_DECISION_JUDGE:-warn}" = enforce ] && exit 1
+        else
+          printf '[judge-gate] OK ([judge]/[align] 留痕 %s 行, Rule 73.4)\n' "$_jl" >&2
+        fi
+        ;;
+    esac
+
     # 顺带输出 warn 档触发计数(/tmp/task-planner-warn-*.count) — 提醒终验关注 M-1
     warn_count_files="$(ls /tmp/task-planner-warn-*.count 2>/dev/null || true)"
     if [ -n "$warn_count_files" ]; then
