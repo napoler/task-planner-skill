@@ -337,14 +337,18 @@ Phase 8（全部 complete）
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | 2026-10-10 | explore | S0 决策分级归因 | done | 5 Whys 根因+修法方向落盘 | findings.md#决策分级归因 | Research Findings/决策分级归因 | （探索类无检查点，结论已回填 findings） | - / 0 / ☑ |
-| 2 | | | S1 Rule 72 条文 | queued | | | | plans/task-v160-decision-grading/subagent-state/1-executor.md | - / 0 / ☐ |
-| 3 | | | S2 SKILL 接线 | queued | | | | plans/task-v160-decision-grading/subagent-state/2-executor.md | - / 0 / ☐ |
-| 4 | | | S3-S4 引用面触点 | queued | | | | plans/task-v160-decision-grading/subagent-state/3-code-assistant.md | - / 0 / ☐ |
-| 5 | | | S5-S6 模板管线触点 | queued | | | | plans/task-v160-decision-grading/subagent-state/5-code-assistant.md | - / 0 / ☐ |
-| 6 | | | S7-S8 机器守护 | queued | | | | plans/task-v160-decision-grading/subagent-state/7-executor.md | - / 0 / ☐ |
-| 7 | | | S9 全量回归 | queued | | | | plans/task-v160-decision-grading/subagent-state/9-code-runner.md | - / 0 / ☐ |
-| 8 | | | S11/S12 双审查 | queued | | | | plans/task-v160-decision-grading/subagent-state/11-code-reviewer.md | - / 0 / ☐ |
+| 1 | 2026-10-10 | explore | S0 决策分级归因 | done | 5 Whys 根因+三级修法方向 | findings.md#决策分级归因 | Research Findings/决策分级归因 | （探索类无检查点，结论已回填 findings） | - / 0 / ☑ |
+| 2 | 2026-10-10 | executor | S1 Rule 72 条文 | done | 条文 24 行逐字落位（72.1-72.6） | critical-rules.md Rule 72 段 | #### [sub:1-executor] | plans/task-v160-decision-grading/subagent-state/1-executor.md | - / 0 / ☑ |
+| 3 | 2026-10-10 | executor | S2/S2a/S2b/S2c SKILL 接线 | done | 五处接线（索引 1-72×3/终验段/C51/摘要行） | SKILL.md:9/:298/:382/:356/:231 | #### [sub:2a/2b/2c-executor] | plans/task-v160-decision-grading/subagent-state/{2,2a,2b,2c}-executor.md | - / 0 / ☑ |
+| 4 | 2026-10-10 | code-assistant | S3/S4 引用面触点 | done | 28.3/41.2/41.3/44.2/44.5 五处分级引用 | critical-rules.md:286/:447/:482/:486 | #### [sub:3/4-code-assistant] | plans/task-v160-decision-grading/subagent-state/{3,4}-code-assistant.md | - / 0 / ☑ |
+| 5 | 2026-10-10 | code-assistant | S5/S6 模板管线触点 | done | 送审质检硬门×2+companion×2 | image-type.md:89 等 | #### [sub:5/6-code-assistant] | plans/task-v160-decision-grading/subagent-state/{5,6}-code-assistant.md | - / 0 / ☑ |
+| 6 | 2026-10-10 | executor | S7/S8 机器守护 | done | DG-01..12+registry 登记+翻硬档 | selftest-decision-grading.sh | #### [sub:7/8-executor] | plans/task-v160-decision-grading/subagent-state/{7,8}-executor.md | - / 0 / ☑ |
+| 7 | 2026-10-10 | code-runner-agent | S9 全量回归+S10a/b 修复 | done | Round1 65/69→12 处级联→Round4 69/69 | progress.md#Phase6 | #### [sub:9/10a/10b-code-runner] | plans/task-v160-decision-grading/subagent-state/{9,10a,10b}-*.md | - / 0 / ☑ |
+| 8 | 2026-10-10 | code-reviewer | S11 代码面审查 | done | APPROVED（P0/P1=0；P2+3Nit） | 11-code-reviewer.md | #### [sub:11-code-reviewer] | plans/task-v160-decision-grading/subagent-state/11-code-reviewer.md | - / 0 / ☑ |
+| 9 | 2026-10-10 | general-purpose | S12 对齐审查（22.3①改派载体） | done | APPROVED（索引残留 P2→S13c） | 12-align-reviewer.md | #### [sub:12-align-reviewer] | plans/task-v160-decision-grading/subagent-state/12-align-reviewer.md | 22.3①改派 / 0 / ☑ |
+| 10 | 2026-10-10 | executor | S13a-d 审查 CHANGES 修复 | done | P-05 并集化/DG 内容锚/索引残留/RF-07/8 处 7x 级联 | scripts/12 个 selftest | #### [sub:13a-d-executor] | plans/task-v160-decision-grading/subagent-state/13*-executor.md | - / 0 / ☑ |
+| 11 | 2026-10-10 | executor | UA-UG 合并冲突并集解+UZ 交叉修复 | done | 13 文件并集解+2 交叉修复；Round6/7 72/72 | git merge 37968de/85cb31b | #### [sub:ua-uz-executor] | plans/task-v160-decision-grading/subagent-state/u*.md | - / 0 / ☑ |
+| 12 | 2026-10-10 | general-purpose | drift-phase2..7 偏移检查（drift-checker 档位拒→22.3①改派） | done | P2-P7 全程 ALIGNED 零越界 | subagent-state/drift-phase*.md | Research Findings | plans/task-v160-decision-grading/subagent-state/drift-phase2..7.md | 22.3①改派 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置
 不适用（chain_mode: single，单 skill 任务，区块删除合规）。
