@@ -205,11 +205,11 @@
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-3（in_progress：S4 分级 done，S5 critical-rules+SKILL 改述派发中）
+3（in_progress：S4-S10 改述全落地，selftest 锁步同步派发中）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-派发 S6（executor，sonnet-1）：README.md（:100-101）+INSTALL.md（:189）旧语义按 findings.md [sub:4] 清单改述（材料 subagent-state/6-prompt-material.md，checkpoint 6-executor.md）
+派发 selftest 锁步单元（executor，sonnet-1）：PL-07 断言锚随 SKILL 新措辞「指针清理」同步（PL-06 经实测保留 label 无需动），材料 subagent-state/14-prompt-material.md，checkpoint 14-executor.md
 
 ## Decisions
 | 时间 | 决策 | 理由 |
@@ -219,6 +219,7 @@
 | 2026-10-10 11:3x | 路径本地化纠正：用户"指针存工作数内"的路径诉求是既成事实（ROOT=$PWD），真缺陷=git 跟踪态+移交叙事 → 方案聚焦瞬态化而非路径改造 | set-active-plan.sh:69,84-85 + resolve-plan-dir.sh:30 一手实证；避免不必要的大改 |
 | 2026-10-10 16:0x | 计划重构：S4 实测措辞更新目标=12 个（文档 4+脚本注释 8）远超原 S5-S7 预估 → 按 step_max_files=2 拆为 S5-S10 六派发；原 S7 selftest 适配目的经主进程实测（瞬态化后 active-plan 29/19、pointer-lifecycle 10/10 全绿）证明无事可做→撤销 | S4 findings 清单为界（禁扩范围）；实测命令原文见 progress.md Phase 3 |
 | 2026-10-10 16:2x | S5 实测回归发现 PL-07 字面依赖：selftest-pointer-lifecycle.sh:44 断言 `grep '指针移交' SKILL.md`、PL-06 断言 `grep '移交提醒' check-complete.sh`——selftest 是旧措辞的机器契约，退役叙事必须断言锁步同步 → 新增 S14（置 S5-S10 全部改述落地后执行，以终态措辞为准）；暂留 PL-07 FAIL 态至 S14（S11 前须清零） | 主进程亲验：PL-07 FAIL（SKILL.md 移交纪律行缺失）、PL-06 当前 PASS（check-complete 未改）；S10 落地后 PL-06 亦需复核 |
+| 2026-10-10 16:4x | S10 偏离仲裁（子代理自报+主进程裁量）：check-complete.sh:1346 warn 消息字符串由「完成后请移交」改「完成后无需移交、请清理」——接受。理由：该 printf 字符串=用户可见文案，"请移交"推荐本身即 R2/R4 要退役的对象（VC-3 口径）；逻辑/触发条件/warn 形态/stderr 通道/退出码零变化（PL-06 实测 PASS，label「移交提醒」保留作废弃警示锚）；"代码区零改动"验收口径本意为禁逻辑改动，display-only 字符串改述不违其本意 → 记账接受，S10 验收 A2 口径按"逻辑零改动+display 字符串 1 处"结案 | 主进程亲验 diff：非注释行仅该 printf 一行；bash -n 双过；PL-06 PASS/PL-07 FAIL（S14 处置中） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |

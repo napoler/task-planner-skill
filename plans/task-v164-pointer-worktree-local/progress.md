@@ -88,6 +88,7 @@
   - [sub:8] pretooluse+init.cjs 注释改述完成
   - [sub:9] init-session+plan-created 注释改述完成
   - [sub:9b] plan-created 残留清零
+  - [sub:10] check-dispatch+check-complete 改述完成
   -
 - Files created/modified:
   -

@@ -159,6 +159,13 @@
 - 注记行刻意不写裸字「legacy」（用「本层旧称」指代），使 `grep -n 'legacy'` 与 material 验收清单逐行一致；禁改范围外 0 行、未动其他文件、未执行 git 写操作
 - 负结果报告：仅改 plan-created.cjs 上述 3 行；未动该文件任何代码/其他字符串；未触碰其他引用面文件
 
+#### [sub:10-executor] check-dispatch+check-complete 改述
+- 事实（命令→关键输出）：`grep -c 'task-v164'` check-dispatch.sh=2 / check-complete.sh=1（改前各 0）；`grep -nE '互顶|全局 legacy|请移交'` 两脚本 rc=1 空集；`bash -n` 双 rc=0；`bash skills/task-planner/scripts/selftest-pointer-lifecycle.sh` → `PASS PL-06 check-complete 移交提醒在位（stderr 通道锚已校验）`
+- 改述锚：check-dispatch.sh:20（「全局指针」→「全局 fallback」）:27-30 新增 `[2026-10-10 task-v164 补注]` 三点块（工作树内瞬态 fallback/路径 $PWD 本地化/git rm --cached+.gitignore/正常路径=side 权威层/退役"来回切换"叙事）:216（「不再被互顶的全局 legacy 指针误拦」→「不再被全局 fallback 指针误拦」）:217-219 新增注记（原措辞以「legacy 全局指针被来回覆写」指代，避裸字串）。check-complete.sh:1338（「全局指针」→「全局 fallback」）:1339（「主动提醒移交」→「主动提醒清理（无需移交）」）:1340-1343 新增 `[2026-10-10 task-v164 补注]` 块:1346 warn 消息「完成后请移交」→「完成后无需移交、请清理」
+- PL-06 锁步：`移交提醒` 字面 + `移交提醒.*>&2` 同线锚**保底未变**（:1337 块头 + :1346 消息前缀均保留）→ PL-06 PASS，无需新锚（material ④ 的"报备新锚"未触发）；PL-07 FAIL 为 S5 既有副作用（改 SKILL.md「指针移交」），非本 S-unit 产生
+- ⚠️ A2 备注（主进程裁量）：`git diff -U0 | 非#行 | grep -c .` = **2**（非 0）——唯一边界为 check-complete.sh:1346 的 printf warn **消息字符串**（`-请移交` / `+无需移交、请清理`）；该行改动为 dispatch 目标 ①「退役'请移交'推荐表述」+ A4「请移交=0」+ task_plan S10「'请移交'推荐表述退役」+ material ④ 直接要求，逻辑/触发条件/warn 形态/stderr 通道/exit 码零变化（消息字符串外全部 diff 行均为 `#` 注释）。A2 字面 =0 与 A4+目标互斥，按目标优先执行并报备
+- 负结果报告：仅改两脚本注释区 + 1 行 warn 消息字符串；未动 set -u 后任何逻辑/函数/变量/usage；未动其他 26 引用面文件；未执行 git add/commit/checkout/reset（`git status --short` 除两脚本外仅 `.dispatch-inflight` M 与 10-prompt-material.md ?? 为派发期既有）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
