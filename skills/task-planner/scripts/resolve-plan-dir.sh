@@ -6,7 +6,7 @@
 #
 # [2026-10-10 task-v164] 头注释改述(原措辞"全局 legacy 指针"误导为跨树共享/需移交,实为
 #   工作树内瞬态 fallback,改述之;解析链逻辑/参数/函数体零改动):
-#   ① 路径本地化既成事实:全局指针路径 = $PWD/plans/.active_plan,随工作树各自一份(resolve-plan-dir.sh:30),
+#   ① 路径本地化既成事实:全局指针路径 = $PWD/plans/.active_plan,随工作树各自一份(resolve-plan-dir.sh:41,109)[2026-10-10 task-v164 CR-nit 修正：原锚因头注释新增漂移],
 #      非跨树共享文件;旧叙事"全局"易被误读为全局单例。
 #   ② 瞬态化(2026-10-10 task-v164):git rm --cached + .gitignore,与 .active_plan_side/ / .plan_required_side/ /
 #      .drift-rhythm/ 同族(即写即弃运行态不入库)→ 跨树零共享、合并零冲突、git churn 止息(历史 8 次 chore 移交/收尾噪音)。

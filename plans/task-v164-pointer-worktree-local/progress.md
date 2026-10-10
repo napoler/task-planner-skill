@@ -110,6 +110,8 @@
   -
   - [sub:11] 回归 72 脚本 rc/Total 落 regression-worktree.log
   - [sub:12] 双树行为验证完成
+  - [sub:13] CR 结论：APPROVED（七项必查全 PASS；3 项文档/注释 nit 非阻断）
+  - [sub:13-nit] 锚漂移修正完成
 - Files created/modified:
   -
 - Test Results:

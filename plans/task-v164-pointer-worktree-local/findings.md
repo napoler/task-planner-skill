@@ -187,6 +187,12 @@
 - 清理：`:18-20 git worktree list` 仅 3 行（master/v163/v164），无 /tmp/v164- 残留；终端复核 /tmp/v164-btree、/tmp/v164-ctree 均已删除
 - 负结果报告：log 无 fatal/command-not-found；唯一 `No such file`（:12）= C 树无全局指针的预期探测输出；未探测 C 树 set 是否同时写全局（树已清理，不采信推测，标注未验证）；未执行 git 写操作；未探索命令集外路径
 
+#### [sub:13-nit-executor] 锚漂移修正
+- 事实：CR nit 两项自指锚修正完成——resolve-plan-dir.sh:9 `(resolve-plan-dir.sh:30)`→`(resolve-plan-dir.sh:41,109)`；set-active-plan.sh:11 `(set-active-plan.sh:69,84-85)`→`(set-active-plan.sh:97)`；两锚后各加 `[2026-10-10 task-v164 CR-nit 修正：原锚因头注释新增漂移]` 注记。
+- 实测行号（`grep -n 'ROOT=\|ACTIVE_FILE='`）：resolve-plan-dir.sh:41 ROOT、:109 ACTIVE_FILE；set-active-plan.sh:97 ACTIVE_FILE。
+- 验证：`git diff -U0 -- 两脚本 | 非#行 | grep -c .` = 0（仅 `#` 注释区改动，代码零改动）；`bash -n` 双脚本 rc=0。
+- 来源锚：findings.md:229-230（CR nit 原文，:41/:109 与 :97 修法）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
@@ -215,3 +221,18 @@
 
 ---
 <!-- ⚠️ [plan-compass] 提醒 = 本文件陈旧 → 立即回填再继续(Rule 19.7);二次未响应触发升级警告(Rule 26.3 处置) -->
+
+#### [sub:13-code-reviewer] CR 结论
+- 审查对象：worktree HEAD=67ed84a 相对 master 全量 diff（55 文件，+1935/-94）；只读，零代码修改。
+- **① 删除基线 PASS**：`git diff master...HEAD --diff-filter=D` 唯一删除=`plans/.active_plan`（git 索引态移除，工作区文件保留：`ls -la plans/.active_plan` 33B 在位，内容=`task-v164-pointer-worktree-local`）。skill/文档侧删除行（`--numstat`）经逐文件核对全为旧措辞改写（每处均在改述行旁保留 `[2026-10-10 task-v164]` 原措辞注记，Rule 45 双层齐备），无内容净删。
+- **② Scope 符合性 PASS**：`git diff master...HEAD --name-only` 非 plans/task-v164 文件集 = `.gitignore`、`plans/.active_plan`、`skills/task-planner/{INSTALL.md,README.md,SKILL.md,references/critical-rules.md,scripts/*.sh,scripts/*.cjs}`，全部 ⊆ 执行范围限制表（.gitignore/两指针脚本/critical-rules/SKILL/README/INSTALL/8 hook 脚本/2 selftest/plans/task-v164）∘ 注：`.plan-attestation` 在 plans/task-v164/** 内；无越界文件。
+- **③ 行为零改动 PASS（材料口径需更正，见 nit）**：`git diff master...HEAD -U0 -- '*.sh' '*.cjs' | 非注释行` = **3 处**，非材料所述 1 处——(a) `check-complete.sh:1350` printf warn 消息（已在 Decisions 仲裁登记）；(b) `plan-created.cjs:175` label 字符串 `'legacy 指针 .active_plan'`→`'全局 fallback 指针 .active_plan'`（S9b 计划行登记，display-only）；(c) `selftest-pointer-lifecycle.sh:44` PL-07 断言行 `cnt '指针移交'`→`cnt '指针清理'`（S14 计划行登记=契约锁步）。三处均=display/断言字符串，逻辑/触发条件/退出码零变化；`bash -n` 全部 shell rc=0、`node --check` 两 cjs rc=0；无脚本耦合被改 label/消息字面（`grep` 无 selftest 断言该字面；PL-06 锚 `移交提醒`+`移交提醒.*>&2` 保留→PASS）。
+- **④ 瞬态化正确性 PASS**：`.gitignore:15` = `plans/.active_plan`（附 Why 注释 :12-14，与 .active_plan_side//.plan_required_side//.drift-rhythm 同族）；`git check-ignore -v plans/.active_plan` = `.gitignore:15`；`git ls-files --error-unmatch plans/.active_plan` → `did not match any file(s)`（untracked 确认），`git status --short` 无该文件 `M`/`??` 条目；`git rm --cached` 工作区保留（上①）。critical-rules.md:198-201 新增「瞬态状态文件合并规则」段四要素齐（范围/合并纪律/依据+R4 锚）：合并取删除/忽略态、禁抢救指针值、各会话 set 再生。
+- **⑤ 解析链语义冻结 PASS**：`resolve-plan-dir.sh`/`set-active-plan.sh` 的 `git diff -U0 | 非#行` = 0（仅 `#` 头注释区改动）；`set -u` 之后函数体/变量/usage 命令形态/解析链①②③④ 逐行未变（resolve-plan-dir.sh:41 ROOT、:109 ACTIVE_FILE 与 master 逐字一致）；`selftest-pointer-lifecycle.sh` 仅 PL-07 两行锁步（:43 注释 + :44 断言，Total 计数仍 10），PL-06 双锚未动。
+- **⑥ selftest 证据 PASS**：`grep -cE '^=== selftest.*sh rc='` → baseline=71（rc≠0 段=0）、regression=72（rc≠0 段=0）；段名差集唯一=`selftest-decision-grading.sh rc=0`（新增）；两 log `FAIL=[1-9]` 搜索 0 真 FAIL（唯一 `FAIL=0`/`✗` 命中为 PASS 描述行）。behavior-verification.log：双树各自 resolve 正解（:7/:8）+ B 写不扰 A（:4/:5）+ 无全局指针树 mtime 兜底（:14）
+- **⑦ 防幻觉抽查 PASS**：随机核对 findings [sub:2]/[sub:5]/[sub:9b]/[sub:14]/[sub:1] 五节锚点——sub:2 `.gitignore` 15 行=实测 `wc -l`=15、`ls-files --error-unmatch` 报错一致；sub:5 critical-rules.md:196 Rule22.9 + :198 合并段在位；sub:9b plan-created.cjs:175 label 改述在位；sub:14 selftest :43/:44 改述在位；sub:1 baseline 71 段一致。五节锚点均真实无篡改。
+- **Nits（非阻断）**：
+  - 💬 `skills/task-planner/scripts/resolve-plan-dir.sh:9` 注释内自指锚 `(resolve-plan-dir.sh:30)` 在改后文件中=注释行（该锚对应 master 态 :30，本编辑新增头注释使行号下移后过期）。修法：改锚为 :41/:109 或删行号。
+  - 💬 `skills/task-planner/scripts/set-active-plan.sh:11` 注释内自指锚 `(set-active-plan.sh:69,84-85)` 与改后文件实际路径写入行 `:97 ACTIVE_FILE` 不符（:69=case 分支、:84-85=dirname 逻辑）。修法：改锚为 :97。
+  - 💬 `plans/task-v164-pointer-worktree-local/task_plan.md:172-173` S-unit 表 S11/S12 Status 列仍=`pending`，而 progress.md Phase 4「Actions taken」记 S11/S12 已执行、commits 67ed84a/a592863 已落。修法：Phase 4 收口时同步表列。
+- 结论：**APPROVED**（三项 nit 均文档/注释准确性级，不影响瞬态化正确性、行为零改动与 scope；合并前建议顺手修 :9/:11 两处自指锚）。

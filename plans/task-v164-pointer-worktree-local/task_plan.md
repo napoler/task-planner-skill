@@ -169,9 +169,10 @@
 ### Phase 4: 全量回归 + 行为验证 + CR
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|---------|
-| S11 | 变更后态全量 selftest（现 72 个）回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S10 已落）② baseline-selftest.log 对照（71 段；decision-grading 为新脚本对照 master 态） | 主进程求和：新增 FAIL=0（既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | pending | S5-S10 后 |
-| S12 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | pending | S11 后 |
-| S13 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | pending | S11/S12 后 |
+| S11 | 变更后态全量 selftest（现 72 个）回归跑批，逐脚本 rc/Total 落 regression-worktree.log | code-runner-agent（mini） | ① worktree（S2-S10 已落）② baseline-selftest.log 对照（71 段；decision-grading 为新脚本对照 master 态） | 主进程求和：新增 FAIL=0（既有 FAIL 清单分类） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：72/72 rc=0 零 FAIL，主进程亲验+CR 证据项⑥ PASS） | S5-S10 后 |
+| S12 | 双 worktree 并行行为验证（VC-2）：两树分别 set 指针互不感知 + 新树无全局指针时 side→mtime 链 exit 0 | code-runner-agent（mini） | ① 主进程给定验证命令原文（worktree add ×2 + set/resolve 对比）② worktree | 行为验证输出（两树 resolve 各自正确 slug + 新树链正常） | 10min | 0f/0l/10min | 无 | done（2026-10-10 17:3x：双树隔离+新树兜底+零残留全 PASS，主进程亲验 log 原文） | S11 后 |
+| S13 | code-reviewer 全量 CR：worktree 变更 diff 审查（scope 符合性+删除基线 36.3） | code-reviewer（sonnet-1） | ① worktree `git diff master...HEAD` ② 执行范围限制表 | CR 结论=APPROVED（或意见闭环后复验通过） | 12min | 0f/0l/12min | 无 | done（2026-10-10 17:3x：APPROVED 7/7+3 NIT 已处置登记） | S11/S12 后 |
+| S13-nit | CR NIT 收尾：两指针脚本头注释自指行号锚漂移修正（resolve-plan-dir.sh:9 的 :30→实测；set-active-plan.sh:11 的 :69,84-85→实测） | executor（sonnet-1） | ① CR NIT 清单（findings [sub:13] 段）② `grep -n 'ROOT=\|ACTIVE_FILE=' 两脚本` 实测 | 锚=实施日实测行号+[task-v164 CR-nit] 注记；diff 仅注释行；`bash -n` 双过 | 8min | 2f/2l/8min | 无 | pending | S13 后 |
 
 - **Executor:** code-runner-agent（mini）+ code-reviewer（sonnet-1）
 
