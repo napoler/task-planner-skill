@@ -1074,6 +1074,32 @@ f && /^\|/ {
     }
     run_report_lint
 
+    # [2026-10-11 task-v167 波次4 Rule 42.7] CR-GATE — CR 风险信号触发制机器消费面（report-lint 后、LEARNING-GATE 前）
+    # 基线 ref 三级 fallback（plan「## Diff 基线」区 baseline_ref: → git log --grep <task-id> 末条~1 → HEAD~1）+
+    # diff（pathspec "."=本 plan 目录防串扰）→ 风险信号（代码文件>3 或合计>50 行）且 progress.md 无
+    # CR APPROVED/审查 APPROVED 留痕 → exit 1；未命中=PASS（Decisions 登记=等价防线）；基线不可解析=从严 FAIL，
+    # 非 git=SKIPPED；L0 lane（38.7）跳过。不降质量——免除的只是无信号场景的 2-4 轮 CR 惯例。
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        printf '[lane-L0] skip CR-GATE（38.7 非适用项: L0 单 Phase 微变更无 CR 轮次面）\n' >&2
+    elif ! grep -qE 'CR APPROVED|审查 APPROVED' "$PLAN_DIR_GUESS/progress.md" 2>/dev/null; then
+        cr_task_id="$(basename "$(dirname "$PLAN_FILE")")"
+        # 基线 ref 三级 fallback：plan「## Diff 基线」区 baseline_ref: 行 → git log --grep <task-id> 末条~1 → HEAD~1
+        CR_BASE_REF="$(awk '/^##[[:space:]]*Diff 基线/{f=1;next} f&&/^## /{exit} f{print}' "$PLAN_FILE" 2>/dev/null | grep -m1 -oE 'baseline_ref:[[:space:]]*[^[:space:]]+' | awk '{print $2}')"
+        if [ -z "$CR_BASE_REF" ]; then cr_last="$(git -C "$PLAN_DIR_GUESS" log --oneline --grep "$cr_task_id" 2>/dev/null | tail -1 | awk '{print $1}')"; if [ -n "${cr_last:-}" ]; then git -C "$PLAN_DIR_GUESS" rev-parse --verify "${cr_last}~1^{commit}" >/dev/null 2>&1 && CR_BASE_REF="${cr_last}~1" || CR_BASE_REF="$cr_last"; elif git -C "$PLAN_DIR_GUESS" rev-parse --verify 'HEAD~1^{commit}' >/dev/null 2>&1; then CR_BASE_REF="HEAD~1"; fi; fi
+        if git -C "$PLAN_DIR_GUESS" rev-parse --git-dir >/dev/null 2>&1; then
+            { [ -n "$CR_BASE_REF" ] && git -C "$PLAN_DIR_GUESS" rev-parse --verify "${CR_BASE_REF}^{commit}" >/dev/null 2>&1; } || { printf '[CR-GATE] FAILED: 风险信号命中（基线 ref 不可解析, 从严）但无 CR APPROVED 记录 — 补 progress.md CR 留痕或计划「## Diff 基线」区 baseline_ref 行后重跑\n' >&2; exit 1; }
+            cr_nfiles="$(git -C "$PLAN_DIR_GUESS" diff "$CR_BASE_REF" --name-only -- . 2>/dev/null | grep -cE '\.(py|sh|ts|tsx|js|jsx|go|rs|java|c|cpp|h|hpp)$' || true)"
+            cr_tlines="$(git -C "$PLAN_DIR_GUESS" diff --shortstat "$CR_BASE_REF" -- . 2>/dev/null | grep -oE '[0-9]+ (insertions|deletions)' | awk '{s+=$1} END{print s+0}')"  # 单值=插入+删除合计（awk 替代 bc）
+            # 风险信号判据=42.7 轻/重 diff 分级同口径（代码文件>3 或合计>50 行）；if 包裹防 || && 短路吞判
+            if [ "${cr_nfiles:-0}" -gt 3 ] || [ "${cr_tlines:-0}" -gt 50 ]; then
+                printf '[CR-GATE] FAILED: 风险信号命中（代码文件=%s, diff 合计=%s 行）但无 CR APPROVED 记录 — 按 42.7 触发 CR 并在 progress.md 留 CR APPROVED 行后重跑\n' "${cr_nfiles:-0}" "${cr_tlines:-0}" >&2; exit 1
+            fi
+        else
+            printf '[CR-GATE] SKIPPED（非 git 目录无 diff 面，CR 惯例不变）\n' >&2
+        fi
+    fi
+    printf '[CR-GATE] PASS（无风险信号命中/已豁免·Decisions 登记, 或 CR APPROVED 留痕在案）\n' >&2
+
     # [2026-09-14 task-v072 Rule 31] 终验 Learning Gate — 错误学习闭环:
     # progress.md 若含数据行(非模板占位)的「Root Cause」/「Prevention」列,则各行 Root Cause 非空
     # (<待沉淀> 占位/空 均 FAIL)。列识别:表头含 "Root Cause" 列;无表头/无该列/无 Error Log → PASS 静默(存量计划兼容)。
