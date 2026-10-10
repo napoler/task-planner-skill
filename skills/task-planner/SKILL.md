@@ -56,7 +56,7 @@ model: opus
   - SessionStart hook 自动写入本会话私有哨兵（标记"本会话尚未创建计划"；resume 判定：本会话 side 指针已指向有效计划则哨兵不启用）
   - 运行 `bun scripts/session-catchup.ts` 检测中断恢复点
   - 创建 `plans/{task-id}/` 目录，运行 `bash scripts/init-session.sh`（trivial 判定：预估 ≤15min ∧ scope ≤2 文件 ∧ 单模块 ∧ 非④排除（保护区/Rule 36/D6 高危）→ 前置 env `TASK_AUTO_TIER=1 TASK_EST_MINUTES/TASK_SCOPE_FILES/TASK_SCOPE_MODULES` 提交体量事实，脚本四条件闸门自动降 mini 并打 `auto_tier: mini` 标记供终验复核，Rule 38.6；显式 tier 恒优先）
-  - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 legacy `plans/.active_plan`（兜底），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
+  - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 fallback `plans/.active_plan`（[2026-10-10 task-v164] 原措辞以 legacy 描述该层，改述为全局 fallback：工作树内瞬态兜底，路径随 $PWD 本地化，untracked+gitignore 与 .active_plan_side/ 同族），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
   - **模板优先级**（由 init-session.sh 自动处理，无需手动干预）：
     - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
     - 兜底：`{platform-home}/skills/task-planner/templates/{filename}`（`~/.zcode` 或 `~/.claude`，内置 5 模板）
@@ -109,7 +109,7 @@ model: opus
   - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
   - `drift-checker` 为只读检测执行体，发现 BLOCKED 时必须等用户明确决策后再继续
   - 呈报规格（Rule 70）：阻塞报告必须含①阻塞项清单+一句话简介②对象文件绝对路径③看点（哪条证据/哪个偏差）④动作选项+默认项（轻呈报≥②③）
-  - **指针移交（25 完成项）**：任务完成或移交时检查全局指针 plans/.active_plan 不再指向本计划（置空或指向在途任务；显式移交优先于 gc 兜底清理）；`check-complete.sh` 终验成功时若指针仍指向本任务会输出移交提醒 warn（恒 exit 0 不阻断）<!-- [2026-10-10 task-v159 pointer-lifecycle F1/D1] 机制化位: D1 孤儿指针根因=任务完成后全局指针仍指向已完成任务无人提示, 终验 warn 提醒 + 本纪律行双点承载; 纯增量零删除, 不新增 Rule 编号（当时 master 1-69 不变）, Rule 45 注释双层级齐备 -->
+  - **指针清理（25 完成项）**：任务完成时检查全局 fallback plans/.active_plan 不再指向本计划（置空或指向在途任务；显式改写优先于 gc 兜底清理）；`check-complete.sh` 终验成功时若指针仍指向本任务会输出提醒 warn（恒 exit 0 不阻断）[2026-10-10 task-v164 补注:原措辞以"移交"表述本纪律,退役该叙事(并行可见漂移来源),语义不变]<!-- [2026-10-10 task-v159 pointer-lifecycle F1/D1] 机制化位: D1 孤儿指针根因=任务完成后全局指针仍指向已完成任务无人提示, 终验 warn 提醒 + 本纪律行双点承载; 纯增量零删除, 不新增 Rule 编号（当时 master 1-69 不变）, Rule 45 注释双层级齐备 -->
 
 ### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
 

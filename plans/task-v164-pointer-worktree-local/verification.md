@@ -33,16 +33,16 @@
 **Depends on**: 用户批准本计划
 
 **Done when**:
-- [ ] worktree `wt/v164-pointer-worktree-local` 建立且与主仓 HEAD 对账一致
-- [ ] 全量 selftest 基线求和数字落 progress.md
-- [ ] 28 文件引用面分级清单（只读/措辞更新）落盘
-- [ ] plans/fix-pointer-race-20261007/ 复读结论入 findings
+- [x] worktree `wt/v164-pointer-worktree-local` 建立且与主仓对账一致（建时对账 7317455 → FF master 79cd10a）
+- [x] 全量 selftest 基线数字落 progress.md（71/71 rc=0 FAIL=0，主进程复核负用例文本非段头）
+- [ ] 28 文件引用面分级清单（只读/措辞更新）落盘 —— 按计划重构移交 S4（Phase 3）执行，Phase 1 不阻塞
+- [x] plans/fix-pointer-race-20261007/ 复读结论入 findings（既有 FAIL 时点清单已修复=零增量干净起点）
 
 **Verification** (run before moving on):
-- [ ] V-1.1: worktree HEAD=主仓 HEAD（git rev-parse 对比）→ mapped VC-1 前置
-- [ ] V-1.2: selftest 基线 Total 求和=主进程独立重算值 → mapped VC-4 前置
+- [x] V-1.1: worktree HEAD 与主仓对齐（7317455→FF 79cd10a）→ mapped VC-1 前置
+- [x] V-1.2: selftest 基线 71 段 rc=0 经主进程独立复核（`grep -cE '^=== selftest-.*\.sh rc=0$'`=71）→ mapped VC-4 前置
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 15:2x
 
 ---
 
@@ -53,53 +53,53 @@ Status: `pending` Last verified: —
 **Depends on**: Phase 1
 
 **Done when**:
-- [ ] S2: `git rm --cached plans/.active_plan` 完成 + `.gitignore` 追加条目 + 工作区文件保留
-- [ ] S3: 两脚本头注释改述完成，diff 只见注释区（逻辑零改动）
+- [x] S2: `git rm --cached plans/.active_plan` 完成 + `.gitignore`:15 追加条目 + 工作区文件保留
+- [x] S3: 两脚本头注释改述完成，diff 只见注释区（逻辑零改动）
 
 **Verification**:
-- [ ] V-2.1: VC-1 命令级判定全过（ls-files 空/ignore 命中/实 set 后 status 无 M）
-- [ ] V-2.2: diff 验证解析链逻辑零改动（git diff 只含注释区）
+- [x] V-2.1: VC-1 命令级判定全过（ls-files exit1/ignore 命中/legacy set 后仅 D 态无 ??）
+- [x] V-2.2: diff 验证解析链逻辑零改动（`git diff -U0` 非注释行=0；bash -n 双过）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 15:5x
 
 ---
 
 ### Phase 3: 引用面措辞级联
 
-**Goal**: 28 文件引用面逐个判定（S4）后按 ≤2 文件/次完成措辞改述（S5 critical-rules+合并规则登记 / S6 README+INSTALL / S7 两 selftest）
+**Goal**: 28 文件引用面逐个判定（S4）后按 ≤2 文件/次完成措辞改述（S5 critical-rules+SKILL / S6 README+INSTALL / S7-S10 八脚本注释）
 
 **Depends on**: Phase 2
 
 **Done when**:
-- [ ] S4: findings.md 级联清单=28 文件逐个判定
-- [ ] S5-S7: critical-rules 指针段+合并规则登记段/SKILL/README/INSTALL/selftest 按清单改述完成 + 只读消费方登记不改
+- [x] S4: findings.md 级联清单=28 文件逐个判定（只读14/措辞更新12/已改述2，主进程复核）
+- [x] S5-S10+9b+锁步: 12 个措辞更新目标+S9b 两处残留+PL-07 锁步全部落地 + 只读消费方登记不改
 
 **Verification**:
-- [ ] V-3.1: VC-3 grep 无旧语义残留
-- [ ] V-3.2: findings.md 级联清单含 28 文件逐个判定
-- [ ] V-3.3: 合并规则段在位（critical-rules，RPN=90 FMEA 兜底）
+- [x] V-3.1: VC-3 grep 无旧语义残留（全域扫描 ZERO-RESIDUE，残余 7 处=注记引文）
+- [x] V-3.2: findings.md 级联清单含 28 文件逐个判定
+- [x] V-3.3: 合并规则段在位（critical-rules:198-201，RPN=90 FMEA 兜底）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 16:4x
 
 ---
 
 ### Phase 4: 全量回归 + 行为验证 + CR
 
-**Goal**: selftest 回归零新增 FAIL（S8）+ 并行行为验证（S9）+ code-reviewer 全量 CR（S10）
+**Goal**: selftest 回归零新增 FAIL（S11，现 72 脚本）+ 并行行为验证（S12）+ code-reviewer 全量 CR（S13）
 
 **Depends on**: Phase 3
 
 **Done when**:
-- [ ] S8: 全量 selftest 主进程逐 Total 求和，对照基线新增 FAIL=0
-- [ ] S9: 双 worktree 行为验证通过（VC-2）
-- [ ] S10: code-reviewer CR APPROVED
+- [x] S11: 全量 selftest 主进程逐 Total 求和，对照基线新增 FAIL=0（72 段 rc=0，差集=decision-grading 新增且过）
+- [x] S12: 双 worktree 行为验证通过（VC-2，主进程亲验 log 原文）
+- [x] S13: code-reviewer CR APPROVED（7/7，3 NIT 已处置：2 锚修正+1 口径更正）
 
 **Verification**:
-- [ ] V-4.1: selftest Total 求和=0 新增 FAIL → mapped VC-4
-- [ ] V-4.2: 行为验证命令+输出落 progress.md → mapped VC-2
-- [ ] V-4.3: CR 结论（APPROVED/意见闭环）落 subagent-state → mapped VC-4 质量面
+- [x] V-4.1: selftest Total 求和=0 新增 FAIL → mapped VC-4
+- [x] V-4.2: 行为验证命令+输出落 progress.md → mapped VC-2
+- [x] V-4.3: CR 结论（APPROVED+nit 清单）落 subagent-state → mapped VC-4 质量面
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 17:4x
 
 ---
 

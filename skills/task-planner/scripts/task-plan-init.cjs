@@ -119,9 +119,12 @@ try {
 
 // [2026-09-10 task-planrequired-race · CR P0 修正后] resume 判定：仅当本会话 side 指针
 // （由 set-active-plan --sid / init-session 等显式为本会话写入）指向存在 task_plan.md 的
-// 有效计划时，视为"带计划恢复"，撤掉刚写的哨兵。【不读全局 legacy、不做盲 adoption】——
-// 否则活跃仓里全局指针恒有效 → 任何新会话启动即撤哨兵（VC-2 保护回归，Code Review 2026-09-10）。
-// 指针缺失 → 哨兵保留；解除路径 = 创建计划后 init-session 置全局指针（D10' 解析命中）或 plan-created。
+// 有效计划时，视为"带计划恢复"，撤掉刚写的哨兵。【不读全局 fallback、不做盲 adoption】——
+// 否则活跃仓里全局 fallback 恒有效 → 任何新会话启动即撤哨兵（VC-2 保护回归，Code Review 2026-09-10）。
+// 指针缺失 → 哨兵保留；解除路径 = 创建计划后 init-session 置全局 fallback（D10' 解析命中）或 plan-created。
+// [2026-10-10 task-v164] 退役原"全局单例指针"叙事：plans/.active_plan 现为工作树内瞬态 fallback
+//   （路径随 $PWD 本地化；git rm --cached + .gitignore 同族瞬态，非入库单例）；
+//   正常路径 = side 会话私有指针（权威层）。
 try {
   // [2026-10-07 fix-pointer-race RC-1] resume 判定双命名空间读(剥前缀 miss 回查 sess<sidkey> 形态,
   // 对齐 resolve-plan-dir.sh 兼容读;历史写入方曾以裸 sid 落盘,单读会误判"无计划"→哨兵误启用)

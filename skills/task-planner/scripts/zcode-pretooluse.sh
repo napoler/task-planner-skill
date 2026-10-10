@@ -70,7 +70,10 @@ case "$tool" in
     pf="$(mktemp "${TMPDIR:-/tmp}/task-planner-dispatch-XXXXXX" 2>/dev/null)" || exit 0
     printf '%s' "$input" | jq -r '.tool_input.prompt // empty' > "$pf" 2>/dev/null || { rm -f "$pf"; exit 0; }
     # [2026-09-10 active-plan-race] 传会话 sid 给 check-dispatch → 其 resolve 走 .active_plan_side/<sid>.active_plan,
-    # 并行会话的派发守卫各查各的计划,不再被互顶的全局指针误拦
+    # 并行会话的派发守卫各查各的计划,不再被并发覆写的全局层误拦
+    # [2026-10-10 task-v164] 原措辞"并发翻转全局指针误拦"叙事退役:plans/.active_plan 现为工作树内
+    #   瞬态 fallback(路径随 $PWD 本地化;git rm --cached + .gitignore 同族瞬态,非入库单例);
+    #   正常路径 = side 会话私有指针(权威层),旧"单例全局指针"框架不再适用。
     TASK_PLANNER_SID="$sid" bash "$SKILL_ROOT/check-dispatch.sh" pretool "$pf" "$sid"
     rc=$?
     rm -f "$pf"

@@ -186,7 +186,7 @@ export TASK_PLANNER_ROOT="$HOME/dev/task-planner"
 
 `~/.zcode/cli/config.json` → `hooks.events.PreToolUse[].matcher` 必须为 `"Write|Edit|Agent"`（旧值 `"Write|Edit"` 不会检查 Agent() 派发）。命令仍为 `bash ~/.zcode/skills/task-planner/scripts/zcode-pretooluse.sh`；Agent 分支调用 `scripts/check-dispatch.sh` 检查 prompt 含计划三文件绝对路径 + 8 字段返回 key + `subagent-state/` 检查点路径，档位见 `config.json#dispatch_contract_enforce`（enforce/warn/off）。自测：`bash scripts/selftest-dispatch.sh`（12 用例）。Claude Code 侧对应工具名为 `Task`，如需同等守卫在 `register-hooks-cj.ts` 的 PreToolUse matcher 加 `Task`（后续任务，本期未改）。
 **计划批准门控（task-v058，Rule 22.6/25.1）**：`attest-plan.sh` 锁定前自动跑 `scripts/check-plan-dispatch.sh` 校验派发型 Phase 已带执行体的 S-unit 表（缺失拒绝锁定，`--skip-dispatch-check` 逃生）；`check-complete.sh` 终验同校验。自测：`bash scripts/selftest-plan-dispatch.sh`（6 用例）。
-**会话 sid 隔离（task-v059 active-plan-race，Rule 22.9）**：4 个 `zcode-*.sh` hook 从 hook 输入 `.session_id` 解析 sid 并传给 `resolve-plan-dir.sh` 第 2 参——活跃计划解析走会话私有指针 `plans/.active_plan_side/<sid>.active_plan`（优先），全局 legacy `plans/.active_plan` 仅兜底；并行会话不再互顶（残留由 SessionStart 钩子顺带 `gc` 清扫 >24h 指针）。
+**会话 sid 隔离（task-v059 active-plan-race，Rule 22.9）**：4 个 `zcode-*.sh` hook 从 hook 输入 `.session_id` 解析 sid 并传给 `resolve-plan-dir.sh` 第 2 参——活跃计划解析走会话私有指针 `plans/.active_plan_side/<sid>.active_plan`（优先），全局 fallback `plans/.active_plan` 仅兜底（工作树内瞬态兜底，路径随 `$PWD` 本地化）[2026-10-10 task-v164 补注：原措辞以 legacy 描述该层，改述为「全局 fallback」——实为工作树内瞬态运行态，`git rm --cached`+`.gitignore` 与 `.active_plan_side/` 同族；正常路径=side 会话私有指针（权威层）；退役「legacy/移交」叙事]；并行会话不再互顶（残留由 SessionStart 钩子顺带 `gc` 清扫 >24h 指针）。
 
 ### 5.2 Claude Code hook 不触发
 

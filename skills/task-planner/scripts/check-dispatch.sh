@@ -17,13 +17,17 @@
 # [2026-09-10 task-planrequired-race] 修改说明(仅 cmd_pretool 的计划目录解析与违规处置语义;
 # 其余函数/subcommand 字节不变):
 #   原行为 = pd 仅按「env TASK_PLANNER_PLAN_DIR → resolve-plan-dir.sh 链」解析,缺项一律 exit 2;
-#   全局指针 .active_plan 被并发会话/cron 频繁翻转指向他会话计划目录时,任何合规 prompt
+#   全局 fallback .active_plan 被并发会话/cron 频繁翻转指向他会话计划目录时,任何合规 prompt
 #   (含本会话计划路径) 都被误判"缺项"而 exit 2 阻断派发(当日实锤 4 次,见 findings.md B5/B5a)。
 #   现改三级解析: ① TASK_PLANNER_PLAN_DIR env 显式 → enforce(显式指定维持强校验);
 #   ② prompt 自声明(三文件路径同目录三件齐 且 task_plan.md 真实存在,兼容 /home 与 /mnt/data
 #   双视图拼写) → enforce; ③ resolve 链(sid 指针/global/mtime)兜底未命中 → 降级 warn:
 #   打印一行 [dispatch-guard] ⚠ 到 stderr 后 exit 0(fail-open,根治 B5 跨会话误拦)。
 #   TASK_PLANNER_DISPATCH_ENFORCE=off 全程放行 与 =warn 既有分支语义保持不变;成功路径(无缺项)保持静默 exit 0。
+#   [2026-10-10 task-v164 补注] 上段「全局指针」改述为「全局 fallback」:该指针实为工作树内
+#   瞬态 fallback(路径随 $PWD 本地化;git rm --cached+.gitignore,与 .active_plan_side/ 同族瞬态
+#   运行态),非跨树共享单例;正常路径=side 会话私有指针(2026-10-07 fix-pointer-race 后权威层);
+#   退役"来回切换/互相覆写"叙事(该叙事即并行可见漂移来源)。
 #
 # [2026-09-10 task-path-identity] 身份判定改造记录(仅 scan_missing 三文件分支;档位分档不变):
 #   现象 = 混拼写 prompt(task_plan 行 /home、findings 行 /mnt/data、progress 行 /home)在 enforce 档
@@ -238,7 +242,10 @@ get_mode() {
 # 计划目录解析: 环境变量 TASK_PLANNER_PLAN_DIR 优先,否则 resolve-plan-dir.sh 输出(= task_plan.md 路径)取 dirname
 # [2026-09-10 active-plan-race] resolver 二参带会话 sid(zcode-pretooluse.sh Agent 分支 export TASK_PLANNER_SID
 # 传入;未设则回 env CLAUDE_CODE_SESSION_ID/resolver 内置 default) → .active_plan_side/<sid>.active_plan
-# 会话私有指针优先,并行会话的派发守卫各查各的计划,不再被互顶的全局 legacy 指针误拦
+# 会话私有指针优先,并行会话的派发守卫各查各的计划,不再被全局 fallback 指针误拦
+# [2026-10-10 task-v164 补注] 上段原以「legacy 全局指针被来回覆写」描述本行,改述为「全局 fallback
+#   指针」:该层实为工作树内瞬态 fallback(路径随 $PWD 本地化;git rm --cached+.gitignore,与
+#   .active_plan_side/ 同族),非跨树共享单例;正常路径=side 会话私有指针(权威层);退役"来回切换"叙事。
 resolve_plan_dir() {
     local pd="${TASK_PLANNER_PLAN_DIR:-}" pfile
     if [ -n "$pd" ]; then
