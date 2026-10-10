@@ -56,6 +56,13 @@
 - `plans/task-v161-subagent-return-format/subagent-state/.dispatch-inflight` 被 git 跟踪（status=M），而同目录 subagent-state/*.md 未跟踪也未 ignore → 22.8 检查点瞬态文件治理不完全；本任务不处理，待后续裁决
 - `plans/INDEX.md:101` task-v146 行状态=pending/"⚠ 未开始"，但该任务 10-08 已 COMPLETE（merge e54973d，计划目录 task_plan.md 已归档）→ INDEX 陈旧行（本轮写 task_plan.md 时被 conflict hook 误报的来源）；本任务不处理，待后续清理
 
+#### [sub:1-code-runner-agent] S1 基线结论
+- 事实：v164 worktree（HEAD 7317455，wt/v164-pointer-worktree-local）全量 71 个 `selftest-*.sh` 逐脚本真实退出码 **全部 rc=0**（rc≠0 集合=空）；逐段关键行落 `plans/task-v164-pointer-worktree-local/baseline-selftest.log`（71 个 `=== selftest-*.sh rc=` 段，`grep -cE '^=== selftest-.*\.sh rc=0$'`=71，rc≠0 段=0）。rc 捕获法自证：/tmp 故意 exit 3 脚本经同款 `out="$(bash f)"; rc=$?` 得 rc=3；抽样独立复跑 agent-coverage/periodic-review/registry 均 rc=0 且 FAIL=0；全 log 无非零 FAIL 计数（`grep -nE 'FAIL[=: ]+[1-9]'` 空）
+- 与材料预期差异（主进程注意）：材料引先例 fix-pointer-race「既有 FAIL ~15」在本基线**不复现**——15 嫌疑脚本在 log 内逐段 rc=0 且 FAIL=0（agent-coverage `Total: 9 PASS=9 FAIL=0`、workflow-orchestration `Total: 16 PASS=16 FAIL=0`、registry `Total: 5 PASS=5 FAIL=0 (registry rows=71, actual selftest=71)` 等，15 项逐一提取均 FAIL=0）。归因锚：先例清单出自 `plans/fix-pointer-race-20261007/subagent-state/4-code-assistant.md:34`（2026-10-07 时点，已过时）；14/15 脚本自 10-07 起被修复提交触及（`git log --since=2026-10-07 -- <脚本>`，如 0cea211「合并态全量 70/70 PASS」2026-10-10、f3ff1b8 2026-10-08），registry 本身 0 提交但动态断言随数据更新通过
+- 边界事实：worktree HEAD 7317455 是 master 的**祖先**，master 领先 16 提交（`git rev-list --count HEAD..master`=16、`master..HEAD`=0；master tip 79cd10a=task-v161 Phase 3）→ 本基线=worktree 态基线，≠当前 master tip 态；knowledge-brief「worktree 根（=master HEAD 态）」措辞与现状不符，S8 对照口径需按此校准（是否需 rebase/重基线由主进程裁决）
+- 两段特殊格式（无 Total 字样但含 PASS/FAIL 关键行原文）：selftest-final-gate-hash.sh 段 log:155-161 结行 `==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====`；selftest-user-instruction-priority.sh 段 log:468-469 输出 `=== ALL PASS ===`（脚本自带格式，无 Total 行）
+- 负结果报告：未发现任何 rc≠0 脚本；未发现 log 中非零 FAIL 计数；未修改 worktree 内除 baseline-selftest.log / subagent-state/1-code-runner-agent.md / 本 findings 段 / progress.md 单行外的任何文件；未执行 git 写操作（git status 复核：M progress.md、?? baseline-selftest.log、?? subagent-state/）
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

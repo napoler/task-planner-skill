@@ -33,16 +33,16 @@
 **Depends on**: 用户批准本计划
 
 **Done when**:
-- [ ] worktree `wt/v164-pointer-worktree-local` 建立且与主仓 HEAD 对账一致
-- [ ] 全量 selftest 基线求和数字落 progress.md
-- [ ] 28 文件引用面分级清单（只读/措辞更新）落盘
-- [ ] plans/fix-pointer-race-20261007/ 复读结论入 findings
+- [x] worktree `wt/v164-pointer-worktree-local` 建立且与主仓对账一致（建时对账 7317455 → FF master 79cd10a）
+- [x] 全量 selftest 基线数字落 progress.md（71/71 rc=0 FAIL=0，主进程复核负用例文本非段头）
+- [ ] 28 文件引用面分级清单（只读/措辞更新）落盘 —— 按计划重构移交 S4（Phase 3）执行，Phase 1 不阻塞
+- [x] plans/fix-pointer-race-20261007/ 复读结论入 findings（既有 FAIL 时点清单已修复=零增量干净起点）
 
 **Verification** (run before moving on):
-- [ ] V-1.1: worktree HEAD=主仓 HEAD（git rev-parse 对比）→ mapped VC-1 前置
-- [ ] V-1.2: selftest 基线 Total 求和=主进程独立重算值 → mapped VC-4 前置
+- [x] V-1.1: worktree HEAD 与主仓对齐（7317455→FF 79cd10a）→ mapped VC-1 前置
+- [x] V-1.2: selftest 基线 71 段 rc=0 经主进程独立复核（`grep -cE '^=== selftest-.*\.sh rc=0$'`=71）→ mapped VC-4 前置
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-10 15:2x
 
 ---
 

@@ -86,7 +86,7 @@
 ## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard/full 必填，mini 档豁免）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | pending |
+| G1 | 隔离基线 | worktree 建立+变更前 selftest 基线+先例复读 | baseline-selftest.log 逐脚本 rc/Total 在主进程求和记录 + `git worktree list` 含 wt/v164-pointer-worktree-local | Phase 1/S1 | complete（2026-10-10 15:2x：71/71 rc=0+FF master 79cd10a） |
 | G2 | 指针瞬态化 | .active_plan untracked+gitignore+头注释退役移交叙事 | VC-1 命令级判定（ls-files 空/ignore 命中/status 无 M）+ diff 只见注释区 | Phase 2/S2-S3 | pending |
 | G3 | 级联完成 | 28 文件引用面旧语义零残留 | VC-3：grep 无旧语义 + findings 级联清单 28 行判定 | Phase 3/S4-S7 | pending |
 | G4 | 独立验证 | 回归零新增 FAIL+双树行为验证+CR APPROVED | VC-2 行为输出 + VC-4 主进程求和=0 新增 + CR 结论行 | Phase 4/S8-S10 | pending |
@@ -129,6 +129,9 @@
 ### Phase 1: 隔离与基线
 - 按宪法 §十一 建 worktree（`wt/v164-pointer-worktree-local`，集中目录 /mnt/data/dev/task-planner-skill-worktrees/ 下）+ **worktree 初建即对账主仓 HEAD**（worktree-branch-desync 教训）
 - 复读 plans/fix-pointer-race-20261007/（上一轮修复先例，禁重复设计）
+- master 16 提交快进合并（79cd10a，S5 scope 重叠面预防：v160 Rule 72 改过 SKILL/critical-rules）
+- **Status:** complete（2026-10-10 15:2x；S1 基线 71/71 rc=0 FAIL=0 经主进程复核）
+- **V-N:** VC-4 前置（基线=零增量对照锚）+ VC-2 前置（双树验证的树 A）
 - **Executor:** 主进程（白名单① git/worktree 编排）+ code-runner-agent（S1 基线跑批）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 状态 | 前置依赖 |
@@ -189,15 +192,15 @@
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |          |        |      |
+| 2026-10-10 15:2x | Phase 1 收口自检（drift-rhythm due=0 未到 hook 提醒阈值，按 64.2 主动自检）：原目标=.active_plan 瞬态化全链 vs 当前步=Phase 1 隔离基线全部达成； master 快进=防 S5 撞车的预防动作不改目标；R1-R5 范围零蔓延 | 全 VC | ALIGNED |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->
-1（in_progress：用户已批准"彻底解决164"，worktree+S1 基线進行中）
+2（in_progress：Phase 1 complete，S2 索引瞬态化派发中）
 
 ## Next Step
 <!-- WHAT: 单一下一步动作。WHEN: Phase 状态每次变更时同步刷新。 -->
-Phase 1：建 worktree（wt/v164-pointer-worktree-local，对账 master HEAD）→ S1 selftest 基线跑批 → 复读 fix-pointer-race-20261007 先例
+派发 S2（executor，sonnet-1）：git rm --cached plans/.active_plan + .gitignore 追加瞬态条目（材料 subagent-state/2-prompt-material.md，checkpoint 2-executor.md）
 
 ## Decisions
 | 时间 | 决策 | 理由 |

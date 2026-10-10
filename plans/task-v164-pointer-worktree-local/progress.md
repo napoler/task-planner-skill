@@ -35,16 +35,25 @@
   | attest 合规回炉 | `attest-plan.sh` 首跑 | 锁定成功 | exit 1：Phase 4 缺 S-unit 表/缺 Goal 单元表/缺前置依赖列/粒度三值未填 → 按 v152 范式补 10 列 S-unit 表（S1-S10）+Goal 单元表（G1-G5）+FMEA 预演段 | ☑ 已修待复跑 |
 
 ### Phase 1: 隔离与基线
-- **Status:** pending
-- **Started:**（待用户批准后填真实时间=check-3file-gate mtime 锚点）
+- **Status:** complete（2026-10-10 15:2x；基线 71/71 全绿+master 快进对账；drift 自检 ALIGNED 见 task_plan Drift Log 首行）
+- **Started:** 2026-10-10 12:07
 - Actions taken:
-  -
+  - 计划合规回炉后 attest 锁定（SHA 0745106a）→ commit 7317455 落 master
+  - worktree 建立：/mnt/data/dev/task-planner-skill-worktrees/v164-pointer-worktree-local（HEAD 对账一致；critical-rules/.gitignore/两指针脚本 md5 全 OK；71 selftest；工作区干净）
+  - 复读 plans/fix-pointer-race-20261007/findings.md：既有 FAIL ~15 个为 2026-10-07 时点清单（10-07→10-10 间已修复，本基线不复现=零增量口径干净起点）+ sidmap/side 权威先例禁重复设计
+  - S1 基线跑批派发 code-runner-agent（材料 subagent-state/1-prompt-material.md）→ 71/71 rc=0 FAIL=0（主进程复核：11 处 rc≠0 行均为 selftest 内部负用例文本、段头 71 全 rc=0、全日志 FAIL[1-9]=0）
+  - master 16 提交快进合并（79cd10a：v160 Rule 72 落地+v161 簿记；触及 SKILL.md/critical-rules.md=S5 scope → 先合并防冲突；selftest 71→72 新增 decision-grading）
 - Files created/modified:
-  -
+  - plans/task-v164-pointer-worktree-local/baseline-selftest.log（+490）
+  - plans/task-v164-pointer-worktree-local/subagent-state/1-prompt-material.md、1-code-runner-agent.md
+  - plans/task-v164-pointer-worktree-local/findings.md（[sub:1] 小节追加）、progress.md（本段）
+  - task_plan.md（执行期簿记：G1 翻格/Phase 1 Status+V-N/Drift Log 首行/Current Phase→2/Next Step，按 51.7 登记后重锁）+ verification.md（Phase 1 门 complete）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  | S1 基线（71 脚本） | 逐脚本 `bash $f` 取真 rc+Total 段落 log | 逐脚本 rc+Total 落 log | 71 段全 rc=0；`grep -cE '^=== selftest-.*\.sh rc=0$'`=71；FAIL[1-9]=0 | ☑ PASS |
+  | 基线内容复核 | `grep -n 'rc=[^0]' baseline-selftest.log` | 无非零段头 | 11 行均为负用例文本（CC-03/CD-04/SM-15a 等 PASS 行），段头无 | ☑ PASS |
+  | worktree 对账 | `git rev-parse HEAD` vs master | 一致或快进后可对齐 | 7317455→FF 至 79cd10a，scope 重叠仅 SKILL/critical-rules | ☑ PASS |
 
 ### Phase 2: 指针瞬态化（git 索引 + 头注释）
 - **Status:** pending
