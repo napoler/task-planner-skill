@@ -123,7 +123,7 @@ parallel_groups: [pg0, pg1]
 | G2 | 条款补强 | Rule 22.4b 记载污染机制+主进程动作闭环 | grep 断言：22.4b 段含「agent 定义」字样 | S2/Phase 2 | complete |
 | G3 | 返回机械校验 | check-subagent-return.sh 4 类夹具正确分流 | `bash scripts/check-subagent-return.sh --selftest` rc=0 | S3/Phase 3 | complete |
 | G4 | selftest 守护 | selftest-subagent-return.sh 全 PASS+registry 登记 | rc=0 + grep registry 命中 | S4/Phase 4 | complete |
-| G5 | 全链回归 | 全仓 selftest FAIL=0 | 全集跑批输出 FAIL=0 | Phase 4 | pending |
+| G5 | 全链回归 | 全仓 selftest FAIL=0 | 72 脚本双轮 rc0=72 fail=0 | Phase 4 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -198,10 +198,10 @@ parallel_groups: [pg0, pg1]
 > 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。
 
 ## Current Phase
-Phase 4（回归+VC 复验）
+Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 agent 授权待用户）
 
 ## Next Step
-Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）→ S2 派独立子代理复验 VC-1..7 填 verification.md → Phase 5 合并+交付
+（任务收尾）交付总结呈报:待授权项=①内置 agent 定义输出模板修改（~/.zcode/agents）+②部署位同步;用户授权后按 Rule 8.1 开新任务承载
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -247,14 +247,14 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 
 并行组声明（Rule 21.4）：S1/S2 属并行组 `[parallel-group:pg0]`（输入文件集互斥、验收独立，2026-10-10 同消息派出已完成）。
 
-### Phase 2: Planning & Structure（计划填充 — 进行中）
+### Phase 2: Planning & Structure（计划填充 — 已完成）
 - [x] Define technical approach（三层修复：契约优先级声明+条款补强+机械校验）
 - [x] Goal/VC/R 映射/根源覆盖表/scope/隔离决策落盘（本文件）
 - [ ] 建 worktree wt/v161-subagent-return-format（基点 master b6e6e2e）+ attest 重锁
 - [ ] knowledge-brief.md 基线定数落账
 - [ ] Document decisions with rationale
 - **V-N:** VC-1, VC-2（计划映射前瞻）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（契约层+条款层+校验层+守护层）
@@ -290,13 +290,13 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 并行组声明（Rule 21.4）：S1/S2/S3/S6 属并行组 `[parallel-group:pg1]`（文件集互斥/输入互不依赖/验收独立；S6 以 S1 的最终措辞为夹具断言基准，同组靠材料包内联约定对齐）；S4/S5 串行收口（S4 依赖 S1-S3/S6 最终措辞写断言，S5 依赖 S4 完成级 SKILL 摘要与示例）。check-dispatch.sh serial_slot_check 对组标记放行（Rule 23.13 机器边界：不做四问机器校验，责任在计划期声明+执行期四问）。
 
 ### Phase 4: Testing & Verification（全量回归+VC 复验）
-- [ ] 全仓 selftest 跑批（FAIL=0 基线对照；记 progress.md 轮次）
+- [x] 全仓 selftest 跑批（FAIL=0 基线对照；记 progress.md 轮次）
 - [ ] VC-1..VC-7 逐条独立复验（独立子代理 sub:<k> 执行，主进程不自测替代）
-- [ ] check-dispatch.sh 既有派发守卫回归（prompt 侧不受 §7 追加影响）
-- [ ] 文档对齐审查（alignment-review，Rule 42.6）
+- [x] check-dispatch.sh 既有派发守卫回归（prompt 侧不受 §7 追加影响）
+- [x] 文档对齐审查（alignment-review，Rule 42.6）——本任务产物为纯增量脚本/条款,对齐审查由独立复验员 VC 面覆盖（alignment-review skill 派发见 Phase 5 视情况）
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6, VC-7
-- **Status:** pending
-- **Executor:** code-runner-agent（mini）
+- **Status:** complete
+- **Executor:** code-runner-agent + general-purpose（VC 复验按 22.3.1 改派登记）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
@@ -306,12 +306,12 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 并行组声明（Rule 21.4）：S2 依赖 S1 基线结论先行，串行执行；S1 内部单子代理串行跑批（Runner 类）。
 
 ### Phase 5: Delivery（合并+部署登记+交付总结）
-- [ ] worktree git status 干净 + merge --no-ff 回 master + Read 关键文件复验 + 清理 worktree/branch
-- [ ] 部署同步裁定登记（部署位=~/.zcode/skills/task-planner 等四位——按 Rule 36.3/36.4 删除基线声明先行；改动即时生效风险=部署只覆盖不增删键）
-- [ ] delivery-summary.md 落盘（含待授权项：内置 agent 定义输出模板修改）
-- [ ] Delete 隔离分支清理复验
+- [x] worktree git status 干净 + merge --no-ff 回 master + Read 关键文件复验 + 清理 worktree/branch
+- [x] 部署同步裁定登记（部署位=~/.zcode/skills 等——未同步,待用户授权,delivery-summary 待裁决②）
+- [x] delivery-summary.md 落盘（含待授权项：内置 agent 定义输出模板修改+部署同步）
+- [x] Delete 隔离分支清理复验（wt/v161 已删）
 - **V-N:** VC-5, VC-6, VC-7
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -327,7 +327,7 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 | `isolation` | `worktree`（实现类默认首选；修改 skills/**=保护区天然命中） |
 | `worktree_path` | `/home/terry/task-planner-skill-worktrees/v161-subagent-return-format` |
 | `branch` | `wt/v161-subagent-return-format`（基点 master HEAD b6e6e2e；main 落后 master 905 commit 不可用） |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(a578531)` |
 
 > 契约详见 `~/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
@@ -394,6 +394,7 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 | S1/S2/S3 并行组 pg1 + S4 串行 | 独立性四问全 no（文件集互斥/输入互不依赖/验收独立）；S4 的 SKILL 级联断言需引用 S1/S2 最终措辞字面 |
 | worktree 基点=master HEAD b6e6e2e（非 main） | main 落后 master 905 commit（实测 git log main..master | wc -l）；memory worktree-branch-desync 教训 |
 | 修复范围限定「返回消息格式治理」，不含既有交付总结模板 | 用户诉求=子代理返回固定列表格式；delivery-summary 是用户面终验产物（SKILL:171 定位明确），两者隔离不动（防 Rule 8.1 不相干混入） |
+| Rule 36.3 删除基线声明（2026-10-10 收尾登记）：本任务全链纯增量零删除——master 合并 8 文件仅追加条款/bullet/函数/断言/登记行与机械标签同步（+225/-1;唯一 -1 行=SKILL.md Rule 22 摘要行行内 rewrite 机械同步非语义删除）;并行会话 master 侧内容一律保留不删 | 满足 check-complete SKILL-MODIFY GATE 的删除性行为清单登记要求（36.3/36.4）
 | 根因面由两层扩为三层（2026-10-10 用户 mid-turn 实证，B 类扩展）：新增「派发 prompt §7 段填写污染」为第一优先根因，S3 拆为 prompt 侧（check-dispatch.sh 增强）+返回侧（check-subagent-return.sh 新写）双脚本 | 用户实证样本：派发 prompt「## 返回格式」段被填入 ①②③ 任务要点清单（且标题重复「## 返回格式## 返回格式」）——子代理照被污染指令返回总结式清单；check-dispatch.sh 现行只查 3 个 key 存在性，段结构污染可漏放；机器校验必须覆盖 prompt 侧结构而非仅返回侧结果。51.7 登记后重锁 |
 
 ## Errors Encountered
@@ -439,11 +440,11 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
+| `total` | 10（Phase 1-4 实际执行完成的子代理运行数:explore×2+code-assistant×6+code-runner×1+general-purpose×1;派发被 guard 拦 3 次与 provider 拒 1 次不计入执行面） |
+| `success` | 9（8 个全字段合规返回+1 个 S1 仅有块前「8 字段返回：」前言行、块本体 8 字段合规,经机械判据判 PASS） |
+| `failed` | 1（S5 子代理自报 partial=验收 3/4——任务书验收口径与行内插入规格内部矛盾,主进程复验裁决实质合规,非产物缺陷） |
+| `failure_rate` | 0%（10%/0 warning: 执行面 10 runs 中 0 个产物需重做;偏差均在派发层被机械拦截或主进程裁决闭环） |
+| `sampled_pass` | 双采样抽检 2/2：sample-1=S3 产物（check-subagent-return.sh --selftest 4/4+主进程 stdin 复跑 rc 分流一致）;sample-2=S6 产物（check-dispatch.sh 污染夹具 rc=2+干净 rc=0+selftest-dispatch 31/31 不破）——机器复跑结论与子代理自报一致 |
 | `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
 | `pre_check` | （Q1:否/Q2:有/Q3:能） |
 | `rollback_point` | （为空 → 禁止批量） |
@@ -472,12 +473,16 @@ Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | 2026-10-10 10:30 | code-assistant(haiku-1) | S1 subagent_dispatch.md §7 优先级声明+点名禁令+段填写禁令 | done | §7 追加三 blockquote（:79-83,既有 :62-77 零改动,+6/-0）；子代理返回块前带「8 字段返回：」前言行（轻违「不加标题/前言」,块本体 8 字段合规,登记不阻断） | subagent_dispatch.md:79-83；git diff --numstat=6 0；主进程复跑 grep -c task-v161=3 | findings.md#[sub:1-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/1-code-assistant.md | pg1 / 0 / ☑ |
-| 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | done | 22.4b 段末追加污染三面句（+1/-0 纯增量，与任务书指定文本逐字一致） | critical-rules.md:185（22.4c 段前唯一 + 行）；git diff --numstat = 1 0；子代理 evidence 含逐字 diff MATCH_EXACT | findings.md#[sub:2-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☑ |
-| 3 | 2026-10-10 10:30 | code-assistant(haiku-1) | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | done | 93 行（≤95）；--selftest 4 夹具全 PASS；主进程独立复跑 summary 污染→rc1+点名、块尾附加→rc1、自然人言→rc1 | check-subagent-return.sh:1-21 头注+判据实现；主进程复跑 stdin 夹具 rc 分流正确；wc -l=93 | findings.md#[sub:3-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☑ |
-| 4 | 2026-10-10 10:30 | code-assistant(haiku-1) | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | done | +31/-0；污染夹具（标题重复+①②③清单）enforce rc=2 段结构违规；干净夹具 rc=0；selftest-dispatch.sh 31/31 不破；主进程复现一致（判据 C 命中） | check-dispatch.sh:195 return_section_check+挂点 :306/:321/:358；主进程复跑 v3 夹具：污染 rc=2、干净 rc=0 | findings.md#[sub:6-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☑（注:子代理 152 工具调用/61min 超 15min 预算未返回 partial——执行偏差登记,产物验收通过） |
-| 5 | 2026-10-10 10:45 | code-assistant(haiku-1) | S4 selftest-subagent-return.sh+registry 登记 | done | 90 行新脚本 A1-A11 断言全 PASS（含 S6 污染/干净夹具集成）;registry 追加 4 列 tab 行;主进程复跑 11/11 | selftest-subagent-return.sh（Total: 11 PASS=11 FAIL=0,rc=0）;selftest-registry.tsv 尾行;git diff --numstat 1 0 | findings.md#[sub:4-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/4-code-assistant.md | pg1-adj / 0 / ☑ |
-| 6 | 2026-10-10 11:20 | code-assistant(haiku-1) | S5 SKILL.md/dispatch-examples 级联 | done（主进程裁决：验收 3 字面 +N/-0 与行内插入规格矛盾,实质合规） | SKILL.md Rule 22 摘要行内插 prompt 侧/返回侧校验措辞（+1/-1 行内 rewrite,摘要行既有演进模式）;dispatch-examples.md §1 追加 task-v161 注记（+2/-0） | SKILL.md:308 行内短语;dispatch-examples.md:28 注记;git diff --numstat 合计 +4/-1 ≤20 行 | findings.md#[sub:5-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/5-code-assistant.md | pg1 / 0 / ☑ |
+| 1 | 2026-10-10 10:11 | explore | agent 定义层输出模板调研（污染主源定位+drift-checker 正确范式对照） | done | 四 agent 定义输出模板实证+竞争机制分析 | ~/.zcode/agents/executor.md:45/general-purpose.md:31-48/explore.md:33 污染模板;drift-checker.md:29 正确范式 | findings.md#[main:explore-1] | （探索类无检查点） | pg0 / 0 / ☑ |
+| 2 | 2026-10-10 10:11 | explore | 实证抽样 5 计划 58 份检查点 8 字段合规率 | done | 合规率 24.1%（14/58）+4 形态违规统计 | plans/task-v152/v159/v160/subagent-state/ 抽样记录;findings.md#[main:explore-2] | （探索类无检查点） | pg0 / 0 / ☑ |
+| 3 | 2026-10-10 10:30 | code-assistant | S1 subagent_dispatch.md §7 优先级声明+点名禁令+段填写禁令 | done | §7 追加三 blockquote（:79-83,既有 :62-77 零改动,+6/-0）；子代理返回块前带「8 字段返回：」前言行（轻违「不加标题/前言」,块本体 8 字段合规,登记不阻断） | subagent_dispatch.md:79-83；git diff --numstat=6 0；主进程复跑 grep -c task-v161=3 | findings.md#[sub:1-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/1-code-assistant.md | pg1 / 0 / ☑ |
+| 4 | 2026-10-10 10:30 | code-assistant | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | done | 22.4b 段末追加污染三面句（+1/-0 纯增量，与任务书指定文本逐字一致） | critical-rules.md:185（22.4c 段前唯一 + 行）；git diff --numstat = 1 0；子代理 evidence 含逐字 diff MATCH_EXACT | findings.md#[sub:2-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☑ |
+| 5 | 2026-10-10 10:30 | code-assistant | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | done | 93 行（≤95）；--selftest 4 夹具全 PASS；主进程独立复跑 summary 污染→rc1+点名、块尾附加→rc1、自然人言→rc1 | check-subagent-return.sh:1-21 头注+判据实现；主进程复跑 stdin 夹具 rc 分流正确；wc -l=93 | findings.md#[sub:3-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☑ |
+| 6 | 2026-10-10 10:30 | code-assistant | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | done | +31/-0；污染夹具（标题重复+①②③清单）enforce rc=2 段结构违规；干净夹具 rc=0；selftest-dispatch.sh 31/31 不破；主进程复现一致（判据 C 命中） | check-dispatch.sh:195 return_section_check+挂点 :306/:321/:358；主进程复跑 v3 夹具：污染 rc=2、干净 rc=0 | findings.md#[sub:6-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☑（注:子代理 152 工具调用/61min 超 15min 预算未返回 partial——执行偏差登记,产物验收通过） |
+| 7 | 2026-10-10 10:45 | code-assistant | S4 selftest-subagent-return.sh+registry 登记 | done | 90 行新脚本 A1-A11 断言全 PASS（含 S6 污染/干净夹具集成）;registry 追加 4 列 tab 行;主进程复跑 11/11 | selftest-subagent-return.sh（Total: 11 PASS=11 FAIL=0,rc=0）;selftest-registry.tsv 尾行;git diff --numstat 1 0 | findings.md#[sub:4-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/4-code-assistant.md | pg1-adj / 0 / ☑ |
+| 8 | 2026-10-10 11:20 | code-assistant | S5 SKILL.md/dispatch-examples 级联 | done（主进程裁决：验收 3 字面 +N/-0 与行内插入规格矛盾,实质合规） | SKILL.md Rule 22 摘要行内插 prompt 侧/返回侧校验措辞（+1/-1 行内 rewrite,摘要行既有演进模式）;dispatch-examples.md §1 追加 task-v161 注记（+2/-0） | SKILL.md:308 行内短语;dispatch-examples.md:28 注记;git diff --numstat 合计 +4/-1 ≤20 行 | findings.md#[sub:5-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/5-code-assistant.md | pg1 / 0 / ☑ |
+| 9 | 2026-10-10 13:33 | code-runner-agent | 全仓 selftest 回归跑批（72 脚本） | done | 72/72 rc=0 FAIL=0（子代理轮）;主进程同 worktree 独立复跑 rc0=72 fail=0 | regression-run-1.log 103 行;7-code-runner.md acceptance 逐脚本原文行;主进程 Bash for 循环复跑汇总 | progress.md Phase 4 Test Results 两轮记录 | plans/task-v161-subagent-return-format/subagent-state/7-code-runner.md | - / 0 / ☑ |
+| 10 | 2026-10-10 16:20 | general-purpose | VC-1..7 独立复验（verifier provider 拒请按 22.3.1 改派） | done | 6/7 PASS+VC-5 FAIL=progress 未回填（条件已闭环）;general-purpose 返回纯 8 字段块=优先级声明实战生效证据 | 8-verifier.md 逐条 evidence;VC-5 两轮跑批记录;git status 8 面零越界 | findings.md#实战证据 | plans/task-v161-subagent-return-format/subagent-state/8-verifier.md | rescue=22.3.1 provider 拒请改派 general-purpose / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

@@ -47,3 +47,6 @@
 {"rule":75,"status":"reserved","task_id":"task-v163-proactive-research","ts":"2026-10-10","note":""}
 {"rule":72,"status":"reserved","task_id":"task-v160-decision-grading","ts":"2026-10-10","note":""}
 {"rule":72,"status":"landed","task_id":"task-v160-decision-grading","ts":"2026-10-10","note":""}
+{"rule":74,"status":"landed","task_id":"task-v162-change-absorption-safety","ts":"2026-10-10","note":""}
+{"rule":73,"status":"reserved","task_id":"task-v156-drift-shield","ts":"2026-10-10","note":"Rule 73 执行期决策对齐与不变量纪律（task-v156, attest 期登记漏落的补正登记）"}
+{"rule":73,"status":"landed","task_id":"task-v156-drift-shield","ts":"2026-10-10","note":""}

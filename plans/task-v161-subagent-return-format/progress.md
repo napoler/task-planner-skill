@@ -66,11 +66,24 @@
   - [goal:G2] 条款补强——22.4b 污染三面句 critical-rules.md:185（+1/-0 逐字 MATCH 复验）
   - [goal:G3] 返回机械校验——check-subagent-return.sh 93 行,四夹具分流+值域负例复验通过
   - [goal:G4] selftest 守护——selftest-subagent-return.sh 11/11 rc=0+registry 4 列 tab 登记复验通过
-  - 待填（Phase 4 回归跑批+VC 复验结果）
+  - 回归跑批两轮独立:①子代理 code-runner-agent 跑 72 脚本全 rc=0/FAIL=0(证据 subagent-state/7-code-runner.md+regression-run-1.log)②主进程同一 worktree 独立复跑 72 脚本 rc0=72 fail=0(本机 Bash 跑批,输出见下 Test Results)
+  - [goal:G5] 全链回归双轮独立——①子代理 code-runner-agent 跑批 72/72 rc=0 FAIL=0(7-code-runner.md+regression-run-1.log)②主进程同 worktree 独立复跑 selftest total=72 rc0=72 fail=0;两轮均含新增 selftest-subagent-return.sh 11/11,FAIL 计数=0 达成
+  - VC-1..7 独立复验(general-purpose 改派,verifier provider 拒请按 22.3.1 换道):6/7 PASS;VC-5 FAIL=progress 未回填(本行即回填,条件闭环);复验员 /tmp 夹具残留 4 个已由主进程清理
+  - 实战证据登记:general-purpose agent 定义内置「任务交付报告」输出模板,但在任务书 §7 优先级声明下返回纯 8 字段块(零模板形态)——S1 条款在冲突 agent 上生效的首例实证
 - Files created/modified:
-  -
+  - plans/task-v161-subagent-return-format/subagent-state/:7-code-runner.md、regression-run-1.log、8-verifier.md、8-prompt-material.md 新增;/tmp/vc3*.txt 4 夹具残留清理
 - Test Results:
-  |
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 回归跑批(子代理轮) | worktree 72 selftest | 全 rc=0 FAIL=0 | 72/72 rc=0;子代理 acceptance 逐脚本原文行+regression-run-1.log「rc!=0 脚本:无」「FAIL>0 脚本:无」 | PASS |
+  | 回归跑批(主进程轮) | 同上同一 worktree | 独立复跑一致 | selftest total=72 rc0=72 fail=0(主进程 Bash for 循环逐脚本 timeout 120 实跑) | PASS |
+  | VC-1 契约条款 | subagent_dispatch.md | 三 task-v161 条款+优先级句 | :79/81/83 命中;8 字段块 grep -c=2 | PASS |
+  | VC-2 22.4b 补强 | critical-rules.md | 污染三面+check-subagent-return | awk 段内截取两处命中 | PASS |
+  | VC-3 双夹具 | 两脚本 | 4 夹具+段结构 rc 分流 | --selftest 4/4;summary→rc1 点名;污染 pretool rc=2 段结构违规;干净 rc=0 | PASS |
+  | VC-4 守护 | selftest+registry | 11/11+登记 | Total: 11 PASS=11 FAIL=0;registry 尾行 NF=4 | PASS |
+  | VC-5 全仓回归 | 72 脚本 | FAIL=0 双轮独立 | 子代理轮+主进程轮 rc0=72 fail=0(见上两行) | PASS(本轮回填后) |
+  | VC-6 级联 | SKILL+examples | 两处措辞 | SKILL.md:308 双短语;dispatch-examples.md:28 注记 | PASS |
+  | VC-7 越界登记 | Decisions+scope | 登记+零越界 | task_plan.md:392+:142;git status 8 面全 scope 内 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
@@ -85,6 +98,9 @@
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
 |       |           |                     |
+
+## 删除性行为清单登记（Rule 36.3/36.6 — task-v161 收尾声明）
+无删除声明：本任务全链纯增量零删除——master 合并 8 文件仅追加条款/bullet/函数/断言/登记行与机械标签同步（合计 +225/-1;唯一 -1 行=SKILL.md Rule 22 摘要行行内 rewrite,属该仓摘要行既有机械同步演进,非语义删除）;并行会话 master 侧内容一律保留不删（纠-3 口径,对照 36.3 基线逐项确认）
 
 ## Error Log
 <!-- [task-v072 Rule 31] 加 Root Cause / Prevention 两列（错误学习闭环：先析后修 + 防复现沉淀）
@@ -109,3 +125,21 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+### Phase 5: Delivery（合并+部署登记+交付总结）
+- **Status:** complete
+- **Started:** 2026-10-10 17:0x
+- Actions taken:
+  - worktree 内 commit f454a51（8 面 +225/-1,零删除性变更——删除 1 行=SKILL.md 摘要行内 rewrite 非语义删除）
+  - 合并前对账:主仓 skills 面无未提交变更（plans 面 M 属并行会话指针/INDEX,不重叠,§11.3③  satisfied）
+  - 主仓 merge --no-ff → a578531;Read 关键文件复验（三条款+两新脚本+master 复跑 selftest 11/11）
+  - worktree remove+branch -d wt/v161-subagent-return-format 完成（§11.3⑤;其余 wt/* 属并行会话在飞未动）
+  - delivery-summary.md 落盘（五要素+2 待授权项:内置 agent 定义修改+部署位同步）
+- Files created/modified:
+  - 主仓 master:a578531（merge f454a51）;worktree 已清理
+  - plans/task-v161-subagent-return-format/delivery-summary.md 新增
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | master 复验 | merge 后 master | 产物在位 | grep task-v161=3/1;两新脚本存在;selftest 11/11 | PASS |
+  | worktree 清理 | git worktree list | 零 v161 残留 | wt/v161 已删,branch -d done | PASS |

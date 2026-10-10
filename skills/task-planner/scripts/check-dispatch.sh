@@ -85,6 +85,8 @@
 #      无剔除特例保持单一判据）, 任务书分支同步提取; 逐路径 -f 校验, 不存在 → fail-closed
 #      计违规（提示串含「Rule 59.2 伴飞路径不存在」）; 无伴飞声明 → 跳过不误报.
 #
+# [2026-10-10 task-v161 S6] 返回格式段结构校验(Rule 22.4b 反污染, 判据明细见 return_section_check 注释; 挂 pretool
+# 两条成功路径 fine_grain_checks 后 + cmd_check 尾; 违规 enforce exit 2/warn 告警, 无段 fail-open)
 # [2026-10-08 task-v145 S-1] 契约收窄 lint（Rule 60.2 不可收窄禁令; 挂既有 get_mode() 档位:
 # enforce=exit 2 阻断 / warn=stderr 告警 + 计数落盘(复用本文件 fine_grain_checks 的
 # task-planner-dispatch-warn-<sid> 计数文件范式) / off=跳过; 只增不改既有分支,
@@ -192,6 +194,29 @@ scan_contract_narrowing() {
     printf '[dispatch-contract] 🚫 派发 prompt 契约收窄违规(Rule 60.2 不可收窄禁令): 检出收窄措辞(「只写检查点」/「主进程回填」+否定性续文)且缺 findings append 锚点(「#### [sub:」或「可写=仅追加」) — 收窄=把 22.4a 子代理必做自写降级为禁写/主进程代劳; 检查点(22.8)与 findings 自写(22.4a)是叠加义务非二选一, 请补 findings 可写契约\n'
 }
 
+# [2026-10-10 task-v161 S6] return_section_check <prompt-file> <mode> — 返回格式段结构校验(Rule 22.4b 反污染):
+# 违规→stderr 一行 ✗(enforce=exit 2 / warn 告警放行); 合规/无「## 返回格式」段→静默 0(fail-open, 与 ⑤⑥ 同口径); 只读判定
+return_section_check() {
+    local f="$1" mode="$2" n ln seg k v miss lst
+    # A: 标题唯一——双形态行首计（模板「## 7. 返回格式」/判例「## 返回格式」; 判例拼接态「## 返回格式## 返回格式」按 1 行计）
+    n="$(grep -cE '^## ([0-9][.] )?返回格式' "$f" 2>/dev/null || true)"
+    ln="$(grep -nE '^## ([0-9][.] )?返回格式' "$f" 2>/dev/null | head -1 | cut -d: -f1)"
+    [ -n "$ln" ] || return 0
+    # 段界(用户 2026-10-10 裁定): 「## 返回格式」标题行至下一个 '^## ' 标题行(含)或文件尾; B: 段内四 key 齐(缺任一=段被替换成任务清单)
+    seg="$(awk -v s="$ln" 'NR>=s{print; if(NR>s && /^## /) exit}' "$f" 2>/dev/null)"
+    v="" miss=""
+    for k in status: acceptance: checkpoint: confidence:; do printf '%s\n' "$seg" | grep -qF -- "$k" || miss="$miss $k"; done
+    [ "$n" -gt 1 ] && v="A: 标题重复(共 $n 处, 拼接污染形态)"
+    if [ -n "$miss" ]; then
+        # C: 段内序号清单行(①-⑥ 行首 或 数字+[.、] 行首)≥3 且四 key 有缺=段被任务清单替换实证; 否则记 B
+        lst="$(printf '%s\n' "$seg" | grep -cE '^([①②③④⑤⑥]|[0-9]+[.、])' || true)"
+        if [ "${lst:-0}" -ge 3 ]; then v="${v:+$v; }C: 段内序号清单行 ${lst} 行且缺 key($miss) — 段被任务清单污染"; else [ -z "$v" ] && v="B: 段缺 key($miss)"; fi
+    fi
+    [ -z "$v" ] && return 0
+    echo "[dispatch-guard] ✗ 返回格式段结构违规: $v" >&2
+    [ "$mode" = "enforce" ] && exit 2
+}
+
 # 档位解析: 环境变量优先;未设 → jq 读 .properties.dispatch_contract_enforce.default // "enforce"
 # (config 缺失/jq 解析失败 → enforce;jq 二进制缺失 → "nojq" sentinel,调用方 fail-open)
 # Why（task-v115 线C）: 双轨 fail 方向取舍——config 缺失/解析失败属项目侧问题（守卫应生效却没配置），
@@ -285,6 +310,7 @@ cmd_pretool() {
             missing="$(scan_missing "$pf" "$pd")"
             # [task-v075 P3-S1] 兜底命中且无缺项 → 三项增量检测(warn 档计数观察)+ 串行槽检查
             [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0 pg=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; # [2026-10-02 task-v110] 并行组放行: 计划 frontmatter 声明 parallel_groups: ∧ prompt 含 [parallel-group:<组名>] 标记 → pg=1(独立性四问责任在计划期声明, 守卫信任标记不做文件集比对); 无标记路径零改动
+            return_section_check "$pf" "$mode"   # [2026-10-10 task-v161 S6] 返回格式段结构门(挂两条成功路径 fine_grain 后/串行槽前, 与下方 enforce 路径同语义): 违规 enforce exit 2 / warn 告警放行, 无段 fail-open
             grep -qm1 'parallel_groups:' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[parallel-group:' "$pf" 2>/dev/null && pg=1; serial_slot_check "$pd" "$mode" "$sid" "$ro" "$pg"; exit 0; }
             names="$(join_missing "$missing")"
         else
@@ -299,6 +325,7 @@ cmd_pretool() {
     missing="$(scan_missing "$pf" "$pd")"
     # [task-v061-serial-dispatch] 契约校验通过(无缺项), 即将放行前执行串行槽检查; 缺项 exit 2 路径不写锁不检查
     [ -n "$missing" ] || { fine_grain_checks "$pf" "$pd" "$mode" "$sid"; local ro=0 pg=0; if grep -qm1 'parallel_readonly: true' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[readonly-parallel\]' "$pf" 2>/dev/null; then ro=1; fi; # [2026-10-02 task-v110] 并行组放行(与 warn 兜底路径同语义): 声明 parallel_groups: ∧ 组标记 → pg=1
+    return_section_check "$pf" "$mode"   # [2026-10-10 task-v161 S6] 返回格式段结构门(挂两条成功路径 fine_grain 后/串行槽前, 独立行插入原行零改动): 违规 enforce exit 2 / warn 告警放行, 无段 fail-open
     grep -qm1 'parallel_groups:' "$pd/task_plan.md" 2>/dev/null && grep -qm1 '\[parallel-group:' "$pf" 2>/dev/null && pg=1; serial_slot_check "$pd" "$mode" "$sid" "$ro" "$pg"; exit 0; }
     names="$(join_missing "$missing")"
     if [ "$mode" = "warn" ]; then
@@ -335,6 +362,10 @@ cmd_check() {
         printf '%s\n' "$cn"
         exit 1
     fi
+    # [2026-10-10 task-v161 S6] 返回格式段结构门(check 模式: 违规 exit 1 / 合规·无段 exit 0, 与档位无关——check 是纯检查语义)。
+    # 违规路径 exit 2 会终止所在 shell → 子 shell 承接(子 shell rc=2 即违规 → 主流程 exit 1); 违规提示行经子 shell stderr 原样透传
+    ( return_section_check "$pf" "enforce" )
+    [ $? -eq 2 ] && exit 1
     exit 0
 }
 

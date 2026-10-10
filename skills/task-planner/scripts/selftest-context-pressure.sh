@@ -98,15 +98,16 @@ fi
 # CP-07: SKILL 短串 1-69=3 ∧ 整串 Critical Rules 1-69>=2 ∧ C48>=1（v155 Rule 70 行）∧ C49>=1（本任务 Rule 67 行，2026-10-10 三方并集后本任务行由 C46→C48→C49）
 # [2026-10-10 task-v158 合并演进] 全集 1-69→1-71（Rule 71 落地）：计数锚宽容化 1-(69|71)；C50≥1（Rule 71 行）
 # [2026-10-10 task-v160 合并级联] 全集 1-72 纪元：c2 锚宽容化 1-(69|71|72)
-c1=$(grep -cE '1-(69|71)' "$SKILL_MD")
-c2=$(grep -cE 'Critical Rules 1-(69|71|72)' "$SKILL_MD")
+# [2026-10-10 task-v162 合并演进] 全集 1-71→1-74（Rule 74 落地）：计数锚再扩 1-(69|71|74)（B 类宽容锚演进，覆盖 74；C48/C49/C50 不变）
+c1=$(grep -cE '1-(69|71|74)' "$SKILL_MD")
+c2=$(grep -cE 'Critical Rules 1-(69|71|74)' "$SKILL_MD")
 c3=$(grep -c 'C48' "$SKILL_MD")
 c4=$(grep -c 'C49' "$SKILL_MD")
 c5=$(grep -c 'C50' "$SKILL_MD")
 if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ] && [ "$c5" -ge 1 ]; then
-  ok "CP-07" "1-(69|71)=$c1≥2 ∧ CR1-(69|71)=$c2≥1 ∧ C48=$c3≥1 ∧ C49=$c4≥1 ∧ C50=$c5≥1"
+  ok "CP-07" "1-(69|71|74)=$c1≥2 ∧ CR1-(69|71|74)=$c2≥1 ∧ C48=$c3≥1 ∧ C49=$c4≥1 ∧ C50=$c5≥1"
 else
-  bad "CP-07" "1-(69|71)=$c1 CR=$c2 C48=$c3 C49=$c4 C50=$c5"
+  bad "CP-07" "1-(69|71|74)=$c1 CR=$c2 C48=$c3 C49=$c4 C50=$c5"
 fi
 
 # CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列
