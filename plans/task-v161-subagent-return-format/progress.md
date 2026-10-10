@@ -42,20 +42,24 @@
 - **Status:** in_progress
 - **Started:** 2026-10-10 10:30
 - Actions taken:
-  - 并行组 pg1 首派 4 个（S1/S2/S3/S6 同消息）：S2 成功（8 字段合规返回+检查点 8 字段最终结论块）；S1/S3/S6 被 dispatch guard 拦（S1=串行槽抢占并发竞态/S3=KQ3 缺 knowledge-brief 引用/S6=prompt 3049>3000+步骤枚举 6>4）
+  - 并行组 pg1 首派 4 个（S1/S2/S3/S6 同消息）：S2 成功；S1/S3/S6 被 dispatch guard 拦（S1=串行槽抢占并发竞态/S3=KQ3 缺 knowledge-brief 引用/S6=prompt 3049>3000+步骤枚举 6>4）
   - 根因登记：并行组放行需 task_plan.md 含 parallel_groups: 字面+grep 标记双条件（check-dispatch.sh:281/295）——计划漏 frontmatter 声明致 S1 被拦；已在计划头部补 parallel_groups: [pg0, pg1]（51.7 登记重锁）
   - S2 产物主进程复核通过（diff +1/-0 逐字 MATCH）；findings 兜底回填 [sub:2-code-assistant] 小节
-  - 待办：S1/S3/S6 修正任务书后随 pg1 标记重派
+  - pg1 重派 S1/S3/S6（规格按 Rule 35.3 落盘材料包 subagent-state/{3,6}-prompt-material.md,prompt 只放路径）全部成功
+  - 主进程独立复验（22.5）：S3 --selftest 4/4 PASS+stdin 夹具 rc 分流正确；S6 污染夹具（重复标题+①②③清单+全套必需 key）enforce rc=2 段结构违规、干净夹具 rc=0、selftest-dispatch.sh 31/31 不破
+  - 偏差登记：S6 子代理 152 工具调用/61min 远超 15min 预算（产物验收通过,不阻断）；S1 返回带前言行（块本体合规,不阻断）
 - Files created/modified:
-  - worktree: skills/task-planner/references/critical-rules.md +1/-0（S2）
-  - plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md（检查点）
-  - plans/task-v161-subagent-return-format/findings.md（+回填小节）
-  - plans/task-v161-subagent-return-format/task_plan.md（parallel_groups 声明+Handoff S2 回填）
+  - worktree: critical-rules.md +1/-0（S2）、subagent_dispatch.md +6/-0（S1）、check-dispatch.sh +31/-0（S6）、check-subagent-return.sh 新写 +93/-0（S3）
+  - plans/task-v161-subagent-return-format/subagent-state/：2/1/3/6-code-assistant.md 四检查点+3/6-prompt-material.md 两材料包
+  - plans/task-v161-subagent-return-format/findings.md（三个回填小节）、task_plan.md（parallel_groups+Handoff 回填）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | S2 diff 纯度 | critical-rules.md | 仅 +1/-0 | git diff --numstat = 1 0；追加句与任务书指定文本逐字一致 | PASS |
-  | S2 检查点规范 | 2-code-assistant.md | 8 字段最终结论块 | 8 字段齐全无契约外字段，checkpoint 路径与实际一致 | PASS |
+  | S1 diff 纯度 | subagent_dispatch.md | 仅 +6/-0 | 三 blockquote 逐字插入 :79-83,既有 :62-77 零改动 | PASS |
+  | S3 夹具分流 | check-subagent-return.sh | 4 夹具 rc0/1/1/1 | --selftest 4/4 PASS;主进程 stdin 复跑一致 | PASS |
+  | S6 段结构拦截 | check-dispatch.sh | 污染 rc2 干净 rc0 | 主进程完整夹具复现：污染 rc=2（C 判据点名）、干净 rc=0 | PASS |
+  | 既有回归 | selftest-dispatch.sh | 31/31 | Total: 31 PASS=31 FAIL=0 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
