@@ -87,12 +87,14 @@ session_id: de2c5bba-v159
 
 ### Phase 1: 设计定稿
 - [x] design-pointer-fix.md：F1-F5 逐点函数定位+行区间+夹具设计+SKILL 行落点
+- **V-N:** VC-1, VC-5
 - **Status:** complete（2026-10-10 06:0x；design-pointer-fix.md 已落盘含 F1-F5 定点+PL-01..10）
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——design-pointer-fix.md 落 plans/——Rule 25.3 白名单②）
 
 ### Phase 2: worktree+基线
 - [x] worktree `wt/v159-pointer-lifecycle`（从 fetch 后最新 master 创建；v152 Rule 67 或已 land，创建后 git log 复核）
 - [x] 基线 selftest 跑批（脚本数/FAIL 数存证）
+- **V-N:** VC-6
 - **Status:** complete（2026-10-10 06:1x；worktree=merge 时 master，66/66 基线；后随合并态再验 5 轮）
 - **Executor:** 主进程（例外理由:① git/worktree 编排 +③ 机械验证跑批——Rule 25.3 白名单①③）
 
@@ -100,6 +102,7 @@ session_id: de2c5bba-v159
 - p3-core={S1 set-active-plan四修点; S2 init-session同语义; S3 check-complete+SKILL移交纪律}（文件集不相交，共同输入=design 稿；执行体：executor sonnet-1 + code-assistant haiku-1 混）
 - p3-guard={S4 smart-merge-back deploy staging 化; S5 selftest-pointer-lifecycle+registry}（文件集不相交；executor sonnet-1 + code-assistant haiku-1 混）
 - S7 串行尾：合并预检（master 实态 grep）
+- **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5
 - **Status:** complete（2026-10-10 07:0x；S1-S5 全验收+git adfd8d7+R3/R4 69/69）
 - **Executor:** 主进程（例外理由:① 派发编排（21.4 调度管理器职责）+② 计划三文件簿记——Rule 25.3 白名单①②）
 
@@ -118,6 +121,7 @@ session_id: de2c5bba-v159
 ### Phase 4: 验证
 - [x] V1 全量回归（FAIL=0）+新 selftest 8-10 断言全 PASS
 - [x] V2 Code Reviewer 全量 CR（五处改点+新 selftest）
+- **V-N:** VC-6, VC-7
 - **Status:** complete（2026-10-10 07:1x；CR3 APPROVED+R5 71/71）
 - **Executor:** code-runner-agent（mini）+code-reviewer（sonnet-1）
 
@@ -131,6 +135,7 @@ session_id: de2c5bba-v159
 - [x] smart-merge-back（**合并后部署必须跑三 slot 存在性+diff 后验——D4 直接回归项**）
 - [x] 部署后实弹：新 sid 会话解析演练（只读巡检）
 - [x] delivery-summary+ledger
+- **V-N:** VC-8
 - **Status:** complete（2026-10-10 07:2x；merge b6e6e2e+F5 实弹+D4 后验+worktree 清理）
 - **Executor:** 主进程（例外理由:① git/worktree 编排（合并/清理/部署）+② 计划系统文件簿记——Rule 25.3 白名单①②）
 
