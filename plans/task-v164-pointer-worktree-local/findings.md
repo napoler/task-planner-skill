@@ -144,6 +144,21 @@
 - 验收复核：`grep -c 'task-v164'`→1/1；`grep -nE '互顶|全局 legacy'`→rc=1 空；`bash -n zcode-pretooluse.sh` rc=0；`node --check task-plan-init.cjs` rc=0；`git diff --stat`→仅 zcode-pretooluse.sh(+4/-1)+task-plan-init.cjs(+6/-3)（`.dispatch-inflight`/`8-prompt-material.md` 为派发期既有，非本次产生）
 - 负结果报告：仅改清单内两文件注释区；未动其他引用面文件、未动任何代码行/字符串字面量；未执行 git add/commit/checkout/reset
 
+#### [sub:9-executor] S9 init-session+plan-created 注释改述
+- 事实（命令→关键输出）：基线 `grep -nE '全局 legacy|legacy 全局指针' init-session.sh plan-created.cjs` = 3 hits（init-session.sh:719/720/727）；改述后 = 0（rc=1 空集）；`grep -c 'task-v164'` init-session.sh=2 / plan-created.cjs=1（改述前各 0）
+- 改述锚：init-session.sh:719（原「不碰全局 legacy」→「不碰全局 fallback 指针」）；:720（原「写全局 legacy」→「写全局 fallback 指针」）；:721-723 新增 `[2026-10-10 task-v164]` 三点块（原措辞以「legacy」描述全局层；实为工作树内瞬态兜底：路径随 $PWD 本地化 + git rm --cached+.gitignore 与 .active_plan_side/ 同族瞬态；正常路径=side 会话私有指针权威层；退役「legacy/移交」旧叙事）；:727（原「legacy 全局指针」→「全局 fallback 指针」）；:729 新增 `[2026-10-10 task-v164]` 补注行。plan-created.cjs:134（原「③ legacy plans/.active_plan 指针」→「③ 全局 fallback plans/.active_plan 指针」）；:135-136 新增 `[2026-10-10 task-v164]` 三点块
+- 保留纪律核验：2026-09-10 active-plan-race / 2026-09-16 task-v074 P10 历史勘误段逐字保留未删，仅改述旧语义词+追加 `[task-v164]` 注记；注记仿 S5/S6 用「原措辞以「legacy」描述/框定该层」避开字面「全局 legacy」/「legacy 全局指针」连写（防 grep 误伤，A3=0 与保留原措辞说明兼得）；usage/解析链/`set -u` 之后代码零改动
+- 验收复核：`grep -c 'task-v164'`→2/1；`grep -nE '全局 legacy|legacy 全局指针'`→rc=1 空；`bash -n init-session.sh` rc=0；`node --check plan-created.cjs` rc=0；`.sh git diff -U0 | 非#行 | grep -c .` = 0；`.cjs git diff | 非//行 | grep -c .` = 0；`git diff --stat`→仅 init-session.sh(+7/-3)+plan-created.cjs(+3/-1)（`.dispatch-inflight` 为派发期既有 M，非本次产生）
+- 边界事实（登记不改，S4 清单仅列 :134）：plan-created.cjs:151 注释「②③ 会话指针 → legacy 指针」亦含「legacy」修饰全局层语义，但不在 S4 清单（:134）内且不命中验收 grep 模式 → 本 S-unit 未改（禁扩范围）
+- 负结果报告：仅改清单内两文件注释区（.sh 4 处、.cjs 1 处目标 + 各新增注记行）；未动其他 26 个引用面文件、未动任何代码行/字符串字面量/usage；未执行 git add/commit/checkout/reset
+
+#### [sub:9b-executor] plan-created 残留清零
+- 事实（命令→关键输出）：改前 `grep -n 'legacy 指针' plan-created.cjs` 命中 2 行（:153 注释「②③ 会话指针 → legacy 指针」、:174 label `'legacy 指针 .active_plan'`）；改后 `grep -n 'legacy 指针'` = rc=1 空集；`grep -n 'legacy'` 剩余仅 :11/:16（哨兵迁移史）+ :135-136（S4 [task-v164] 注记引文）+ :222-223/:238/:240/:302（legacy 哨兵）——指针层语义=0
+- 改述锚：plan-created.cjs:153（原「②③ 会话指针 → legacy 指针」→「②③ 会话指针 → 全局 fallback 指针」）；:154 新增 `[2026-10-10 task-v164]` 注记行（原措辞说明：本层旧称已改述为「全局 fallback 指针」，同上方 ③ 层口径）；:175（原 label `'legacy 指针 .active_plan'` → `'全局 fallback 指针 .active_plan'`；display label 仅此一处字符串，无 selftest/脚本耦合该字面）
+- 验收复核：`node --check plan-created.cjs` rc=0；`grep -c 'task-v164'` = 2（:135 + :154）；本 S9b 增量 `git diff` = 1 注释行(:153) + 1 字符串行(:175) + 1 注记行(:154)（同文件另含 S4 既有未提交改动 :134/:135-136，非本 S-unit 产生）
+- 注记行刻意不写裸字「legacy」（用「本层旧称」指代），使 `grep -n 'legacy'` 与 material 验收清单逐行一致；禁改范围外 0 行、未动其他文件、未执行 git 写操作
+- 负结果报告：仅改 plan-created.cjs 上述 3 行；未动该文件任何代码/其他字符串；未触碰其他引用面文件
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

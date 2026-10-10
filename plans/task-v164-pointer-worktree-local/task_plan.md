@@ -157,7 +157,8 @@
 | S7 | zcode-userpromptsubmit.sh + zcode-posttooluse.sh 注释改述（按 S4 清单 :23/:43-44） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零+[task-v164] 锚各 ≥1；`bash -n` 双过 | 10min | 2f/12l/10min | 无 | pending | S6 后 |
 | S8 | zcode-pretooluse.sh + task-plan-init.cjs 注释改述（按 S4 清单 :72-73/:122-124） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check` 验语法） | 10min | 2f/12l/10min | 无 | pending | S7 后 |
 | S9 | init-session.sh + plan-created.cjs 注释改述（按 S4 清单 :719-727/:134） | executor（sonnet-1） | ① S4 级联清单 ② 两文件注释区 | 同上（cjs 用 `node --check`） | 10min | 2f/12l/10min | 无 | pending | S8 后 |
-| S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | pending | S9 后 |
+| S9b | S9 收尾补充：plan-created.cjs :153 注释「legacy 指针」+:174 label 字符串 `'legacy 指针 .active_plan'` 两处残留清零（S9 自报边界事实；无 selftest 耦合） | executor（sonnet-1） | ① findings [sub:9] 段边界事实行 ② plan-created.cjs:150-176 | 两处改述+[task-v164] 注记；`node --check` 过；diff 仅注释行+该 1 处 label 字符串 | 8min | 1f/4l/8min | 无 | pending | S9 后 |
+| S10 | check-dispatch.sh + check-complete.sh 注释改述（按 S4 清单 :20/:216/:1338/:1346，退役"移交提醒"叙事） | executor（sonnet-1） | ① S4 级联清单 ② 两脚本注释区 | 旧语义词清零；"请移交"推荐表述退役；`bash -n` 双过 | 12min | 2f/15l/12min | 无 | pending | S9b 后 |
 | S14 | selftest-pointer-lifecycle.sh 契约锁步同步：PL-07 锚随 SKILL 新措辞（"指针清理"）、PL-06 锚随 check-complete 新措辞（如保留"移交提醒"废弃标签则不动，以实测为准）；禁删其他断言 | executor（sonnet-1） | ① S5/S10 改述后实测措辞 ② selftest-pointer-lifecycle.sh:40-46 | PL-06/PL-07 PASS 且断言锚=新措辞；`bash -n` 过 | 10min | 1f/10l/10min | 无 | pending | S5-S10 后 |
 
 - **Executor:** executor（sonnet-1）

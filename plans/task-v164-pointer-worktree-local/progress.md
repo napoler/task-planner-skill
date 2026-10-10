@@ -86,6 +86,8 @@
   - [sub:6] README+INSTALL 改述完成
   - [sub:7] 两 hook 注释改述完成
   - [sub:8] pretooluse+init.cjs 注释改述完成
+  - [sub:9] init-session+plan-created 注释改述完成
+  - [sub:9b] plan-created 残留清零
   -
 - Files created/modified:
   -
