@@ -119,10 +119,10 @@ parallel_groups: [pg0, pg1]
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 契约优先级声明 | subagent_dispatch.md §7 显式声明返回模板优先于 agent 定义输出模板+点名禁令 | grep 断言：`grep -c "优先于.*输出模板\|输出模板.*优先" templates/subagent_dispatch.md` ≥1 | S1/Phase 2 | pending |
-| G2 | 条款补强 | Rule 22.4b 记载污染机制+主进程动作闭环 | grep 断言：22.4b 段含「agent 定义」字样 | S2/Phase 2 | pending |
-| G3 | 返回机械校验 | check-subagent-return.sh 4 类夹具正确分流 | `bash scripts/check-subagent-return.sh --selftest` rc=0 | S3/Phase 3 | pending |
-| G4 | selftest 守护 | selftest-subagent-return.sh 全 PASS+registry 登记 | rc=0 + grep registry 命中 | S4/Phase 4 | pending |
+| G1 | 契约优先级声明 | subagent_dispatch.md §7 显式声明返回模板优先于 agent 定义输出模板+点名禁令 | grep 断言：`grep -c "优先于.*输出模板\|输出模板.*优先" templates/subagent_dispatch.md` ≥1 | S1/Phase 2 | complete |
+| G2 | 条款补强 | Rule 22.4b 记载污染机制+主进程动作闭环 | grep 断言：22.4b 段含「agent 定义」字样 | S2/Phase 2 | complete |
+| G3 | 返回机械校验 | check-subagent-return.sh 4 类夹具正确分流 | `bash scripts/check-subagent-return.sh --selftest` rc=0 | S3/Phase 3 | complete |
+| G4 | selftest 守护 | selftest-subagent-return.sh 全 PASS+registry 登记 | rc=0 + grep registry 命中 | S4/Phase 4 | complete |
 | G5 | 全链回归 | 全仓 selftest FAIL=0 | 全集跑批输出 FAIL=0 | Phase 4 | pending |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
@@ -198,10 +198,10 @@ parallel_groups: [pg0, pg1]
 > 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。
 
 ## Current Phase
-Phase 3 待派发（计划已 attest 重锁并 commit eae1c1c 后 B 类扩展更新：根因三层化+S6 新 S-unit）
+Phase 4（回归+VC 复验）
 
 ## Next Step
-Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1（四任务书同消息派出，checkpoint 落 plans/task-v161-subagent-return-format/subagent-state/）
+Phase 4 S1 派 code-runner-agent 跑 worktree 全量 selftest（FAIL=0 基线）→ S2 派独立子代理复验 VC-1..7 填 verification.md → Phase 5 合并+交付
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -258,14 +258,14 @@ Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1�
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（契约层+条款层+校验层+守护层）
-- [ ] S1 契约层：subagent_dispatch.md §7 加优先级声明+点名禁令+段填写禁令
-- [ ] S2 条款层：critical-rules.md Rule 22.4b 污染机制补强+主进程动作闭环
-- [ ] S3 校验层：新 check-subagent-return.sh（返回侧 4 类夹具分流）
-- [ ] S6 校验层：check-dispatch.sh prompt 侧「返回格式」段结构校验
-- [ ] S4 守护层：selftest-subagent-return.sh + registry 登记
-- [ ] S5 守护层：SKILL/dispatch-examples 级联
+- [x] S1 契约层：subagent_dispatch.md §7 加优先级声明+点名禁令+段填写禁令
+- [x] S2 条款层：critical-rules.md Rule 22.4b 污染机制补强+主进程动作闭环
+- [x] S3 校验层：新 check-subagent-return.sh（返回侧 4 类夹具分流）
+- [x] S6 校验层：check-dispatch.sh prompt 侧「返回格式」段结构校验
+- [x] S4 守护层：selftest-subagent-return.sh + registry 登记
+- [x] S5 守护层：SKILL/dispatch-examples 级联
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
@@ -280,12 +280,12 @@ Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1�
 -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | subagent_dispatch.md §7 段末追加优先级声明句+点名禁令锚点（不改既有 8 字段定义） | 继承 | skills/task-planner/templates/subagent_dispatch.md（§7 段 :62-77，追加于禁令牌句后） | grep 优先级句+点名禁令 4 格式族字样均在位 | 10min | 1f/8l/10min | 无（纯机械单元） | - | pending |
-| S2 | critical-rules.md Rule 22.4b 追加污染机制子句（agent 定义层竞争+主进程动作闭环引用 22.4c 新脚本） | 继承 | skills/task-planner/references/critical-rules.md（22.4b 段 :184 内追加） | grep 22.4b 段含「agent 定义」+「check-subagent-return」 | 10min | 1f/8l/10min | 无（纯机械单元） | - | pending |
-| S3 | 新写 check-subagent-return.sh：stdin/文件输入→8 字段结构校验（字段齐全/顺序/契约外字段/块后内容），--selftest 内置 4 夹具，rc 分流 | 继承 | skills/task-planner/scripts/check-dispatch.sh（参照既有脚本风格与 selftest 夹具写法） | 4 夹具 rc 判定正确（3 VIOLATION+1 PASS） | 15min | 1f/95l/15min | 无（纯机械单元） | - | pending |
-| S4 | 新写 selftest-subagent-return.sh（守护 S1/S2/S3/S6 断言）+ selftest-registry.tsv 追加登记行 | 继承 | skills/task-planner/scripts/selftest-registry.tsv（登记格式参照）、skills/task-planner/scripts/selftest-dispatch.sh（断言风格参照） | selftest rc=0；registry grep 命中 | 15min | 2f/90l/15min | 无（纯机械单元） | S1、S2、S3、S6 | pending |
-| S5 | SKILL.md Rule 22 摘要行级联含优先级措辞 + dispatch-examples.md §1 示例补点名禁令 | 继承 | skills/task-planner/SKILL.md（Rule 22 摘要 :307）、skills/task-planner/references/dispatch-examples.md（§1 :16-26） | grep 两文件级联措辞在位 | 10min | 2f/10l/10min | 无（纯机械单元） | S4 | pending |
-| S6 | check-dispatch.sh 增强：prompt 侧「返回格式」段结构校验（标题唯一+其后 8 字段块齐全+段内禁混任务清单特征 ①②③），复用既有 dispatch_contract_enforce 档位 | 继承 | skills/task-planner/scripts/check-dispatch.sh（既有 prompt 校验段扩展）、skills/task-planner/templates/subagent_dispatch.md（§7 模板） | 对污染样本夹具（用户实证的 ①②③ 版返回格式段）rc=1 阻断；干净模板 rc=0 | 15min | 1f/35l/15min | 无（纯机械单元） | S1 | pending |
+| S1 | subagent_dispatch.md §7 段末追加优先级声明句+点名禁令锚点（不改既有 8 字段定义） | 继承 | skills/task-planner/templates/subagent_dispatch.md（§7 段 :62-77，追加于禁令牌句后） | grep 优先级句+点名禁令 4 格式族字样均在位 | 10min | 1f/8l/10min | 无（纯机械单元） | - | done |
+| S2 | critical-rules.md Rule 22.4b 追加污染机制子句（agent 定义层竞争+主进程动作闭环引用 22.4c 新脚本） | 继承 | skills/task-planner/references/critical-rules.md（22.4b 段 :184 内追加） | grep 22.4b 段含「agent 定义」+「check-subagent-return」 | 10min | 1f/8l/10min | 无（纯机械单元） | - | done |
+| S3 | 新写 check-subagent-return.sh：stdin/文件输入→8 字段结构校验（字段齐全/顺序/契约外字段/块后内容），--selftest 内置 4 夹具，rc 分流 | 继承 | skills/task-planner/scripts/check-dispatch.sh（参照既有脚本风格与 selftest 夹具写法） | 4 夹具 rc 判定正确（3 VIOLATION+1 PASS） | 15min | 1f/95l/15min | 无（纯机械单元） | - | done |
+| S4 | 新写 selftest-subagent-return.sh（守护 S1/S2/S3/S6 断言）+ selftest-registry.tsv 追加登记行 | 继承 | skills/task-planner/scripts/selftest-registry.tsv（登记格式参照）、skills/task-planner/scripts/selftest-dispatch.sh（断言风格参照） | selftest rc=0；registry grep 命中 | 15min | 2f/90l/15min | 无（纯机械单元） | S1、S2、S3、S6 | done |
+| S5 | SKILL.md Rule 22 摘要行级联含优先级措辞 + dispatch-examples.md §1 示例补点名禁令 | 继承 | skills/task-planner/SKILL.md（Rule 22 摘要 :307）、skills/task-planner/references/dispatch-examples.md（§1 :16-26） | grep 两文件级联措辞在位 | 10min | 2f/10l/10min | 无（纯机械单元） | S4 | done |
+| S6 | check-dispatch.sh 增强：prompt 侧「返回格式」段结构校验（标题唯一+其后 8 字段块齐全+段内禁混任务清单特征 ①②③），复用既有 dispatch_contract_enforce 档位 | 继承 | skills/task-planner/scripts/check-dispatch.sh（既有 prompt 校验段扩展）、skills/task-planner/templates/subagent_dispatch.md（§7 模板） | 对污染样本夹具（用户实证的 ①②③ 版返回格式段）rc=1 阻断；干净模板 rc=0 | 15min | 1f/35l/15min | 无（纯机械单元） | S1 | done |
 
 并行组声明（Rule 21.4）：S1/S2/S3/S6 属并行组 `[parallel-group:pg1]`（文件集互斥/输入互不依赖/验收独立；S6 以 S1 的最终措辞为夹具断言基准，同组靠材料包内联约定对齐）；S4/S5 串行收口（S4 依赖 S1-S3/S6 最终措辞写断言，S5 依赖 S4 完成级 SKILL 摘要与示例）。check-dispatch.sh serial_slot_check 对组标记放行（Rule 23.13 机器边界：不做四问机器校验，责任在计划期声明+执行期四问）。
 
@@ -476,6 +476,8 @@ Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1�
 | 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | done | 22.4b 段末追加污染三面句（+1/-0 纯增量，与任务书指定文本逐字一致） | critical-rules.md:185（22.4c 段前唯一 + 行）；git diff --numstat = 1 0；子代理 evidence 含逐字 diff MATCH_EXACT | findings.md#[sub:2-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☑ |
 | 3 | 2026-10-10 10:30 | code-assistant(haiku-1) | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | done | 93 行（≤95）；--selftest 4 夹具全 PASS；主进程独立复跑 summary 污染→rc1+点名、块尾附加→rc1、自然人言→rc1 | check-subagent-return.sh:1-21 头注+判据实现；主进程复跑 stdin 夹具 rc 分流正确；wc -l=93 | findings.md#[sub:3-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☑ |
 | 4 | 2026-10-10 10:30 | code-assistant(haiku-1) | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | done | +31/-0；污染夹具（标题重复+①②③清单）enforce rc=2 段结构违规；干净夹具 rc=0；selftest-dispatch.sh 31/31 不破；主进程复现一致（判据 C 命中） | check-dispatch.sh:195 return_section_check+挂点 :306/:321/:358；主进程复跑 v3 夹具：污染 rc=2、干净 rc=0 | findings.md#[sub:6-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☑（注:子代理 152 工具调用/61min 超 15min 预算未返回 partial——执行偏差登记,产物验收通过） |
+| 5 | 2026-10-10 10:45 | code-assistant(haiku-1) | S4 selftest-subagent-return.sh+registry 登记 | done | 90 行新脚本 A1-A11 断言全 PASS（含 S6 污染/干净夹具集成）;registry 追加 4 列 tab 行;主进程复跑 11/11 | selftest-subagent-return.sh（Total: 11 PASS=11 FAIL=0,rc=0）;selftest-registry.tsv 尾行;git diff --numstat 1 0 | findings.md#[sub:4-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/4-code-assistant.md | pg1-adj / 0 / ☑ |
+| 6 | 2026-10-10 11:20 | code-assistant(haiku-1) | S5 SKILL.md/dispatch-examples 级联 | done（主进程裁决：验收 3 字面 +N/-0 与行内插入规格矛盾,实质合规） | SKILL.md Rule 22 摘要行内插 prompt 侧/返回侧校验措辞（+1/-1 行内 rewrite,摘要行既有演进模式）;dispatch-examples.md §1 追加 task-v161 注记（+2/-0） | SKILL.md:308 行内短语;dispatch-examples.md:28 注记;git diff --numstat 合计 +4/-1 ≤20 行 | findings.md#[sub:5-code-assistant] | plans/task-v161-subagent-return-format/subagent-state/5-code-assistant.md | pg1 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

@@ -39,27 +39,38 @@
   | attest 粒度硬门 | S-unit 表 | 0 拒锁 | 初版 4 项拒锁（Phase1/4 缺表+S3 120l+S4 3f+时长>15min）逐项修复后通过 | PASS |
 
 ### Phase 3: Implementation（契约+条款+校验+守护四层）
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-10 10:30
 - Actions taken:
-  - 并行组 pg1 首派 4 个（S1/S2/S3/S6 同消息）：S2 成功；S1/S3/S6 被 dispatch guard 拦（S1=串行槽抢占并发竞态/S3=KQ3 缺 knowledge-brief 引用/S6=prompt 3049>3000+步骤枚举 6>4）
-  - 根因登记：并行组放行需 task_plan.md 含 parallel_groups: 字面+grep 标记双条件（check-dispatch.sh:281/295）——计划漏 frontmatter 声明致 S1 被拦；已在计划头部补 parallel_groups: [pg0, pg1]（51.7 登记重锁）
-  - S2 产物主进程复核通过（diff +1/-0 逐字 MATCH）；findings 兜底回填 [sub:2-code-assistant] 小节
-  - pg1 重派 S1/S3/S6（规格按 Rule 35.3 落盘材料包 subagent-state/{3,6}-prompt-material.md,prompt 只放路径）全部成功
-  - 主进程独立复验（22.5）：S3 --selftest 4/4 PASS+stdin 夹具 rc 分流正确；S6 污染夹具（重复标题+①②③清单+全套必需 key）enforce rc=2 段结构违规、干净夹具 rc=0、selftest-dispatch.sh 31/31 不破
-  - 偏差登记：S6 子代理 152 工具调用/61min 远超 15min 预算（产物验收通过,不阻断）；S1 返回带前言行（块本体合规,不阻断）
+  - pg1 组 S1/S2/S3/S6 四件产物全部完成（细则见上方 Phase 3 in_progress 期记录）;S4（selftest 11 断言+registry 登记）、S5（SKILL 摘要行内短语+dispatch-examples 注记）串行收口完成
+  - 全部主进程独立复验通过：S4 selftest 11/11 rc=0;S5 两文件 diff 逐行核过;S3--selftest 4/4;S6 污染/干净夹具 rc=2/0;selftest-dispatch.sh 31/31 不破
+  - S5 裁决登记：任务书验收 3（+N/-0）与规格（行内插入）内部矛盾,子代理如实报 FAIL+blockers,主进程判实质合规（语义零删,摘要行既有演进模式）
 - Files created/modified:
-  - worktree: critical-rules.md +1/-0（S2）、subagent_dispatch.md +6/-0（S1）、check-dispatch.sh +31/-0（S6）、check-subagent-return.sh 新写 +93/-0（S3）
-  - plans/task-v161-subagent-return-format/subagent-state/：2/1/3/6-code-assistant.md 四检查点+3/6-prompt-material.md 两材料包
-  - plans/task-v161-subagent-return-format/findings.md（三个回填小节）、task_plan.md（parallel_groups+Handoff 回填）
+  - worktree 六件：critical-rules.md(+1)、subagent_dispatch.md(+6)、check-dispatch.sh(+31)、check-subagent-return.sh(新+93)、selftest-subagent-return.sh(新+90)、selftest-registry.tsv(+1)、SKILL.md(+1/-1)、dispatch-examples.md(+2)
+  - plans/task-v161/.../subagent-state/: 1/2/3/6/4/5-code-assistant.md 六检查点 + 3/6/4-prompt-material.md 三材料包
+  - findings.md 五个 sub 回填小节;task_plan.md Handoff 6 行回填
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  | S2 diff 纯度 | critical-rules.md | 仅 +1/-0 | git diff --numstat = 1 0；追加句与任务书指定文本逐字一致 | PASS |
-  | S1 diff 纯度 | subagent_dispatch.md | 仅 +6/-0 | 三 blockquote 逐字插入 :79-83,既有 :62-77 零改动 | PASS |
-  | S3 夹具分流 | check-subagent-return.sh | 4 夹具 rc0/1/1/1 | --selftest 4/4 PASS;主进程 stdin 复跑一致 | PASS |
-  | S6 段结构拦截 | check-dispatch.sh | 污染 rc2 干净 rc0 | 主进程完整夹具复现：污染 rc=2（C 判据点名）、干净 rc=0 | PASS |
-  | 既有回归 | selftest-dispatch.sh | 31/31 | Total: 31 PASS=31 FAIL=0 | PASS |
+  | selftest-subagent-return | worktree scripts | rc=0 | Total: 11 PASS=11 FAIL=0（主进程复跑） | PASS |
+  | registry 登记 | selftest-registry.tsv | 4 列 tab 行在位 | 尾行 awk NF=4,首列 selftest-subagent-return.sh | PASS |
+  | SKILL 级联 | SKILL.md:308 | return_section_check+check-subagent-return 两短语 | 均在 Rule 22 摘要行内 | PASS |
+  | examples 注记 | dispatch-examples.md:28 | task-v161 注记 | 逐字在位 | PASS |
+  | worktree 净变更 | git status | 六件+两新文件无意外 | 4 修改+2 新+1 registry 共 7 面,与计划一致 | PASS |
+
+### Phase 4: Testing & Verification（全量回归+VC 复验）
+- **Status:** in_progress
+- **Started:** 2026-10-10 11:30
+- Actions taken:
+  - [goal:G1] 契约优先级声明——三 blockquote 落盘 subagent_dispatch.md:79-83（+6/-0 主进程复验,既有 :62-77 零改动）
+  - [goal:G2] 条款补强——22.4b 污染三面句 critical-rules.md:185（+1/-0 逐字 MATCH 复验）
+  - [goal:G3] 返回机械校验——check-subagent-return.sh 93 行,四夹具分流+值域负例复验通过
+  - [goal:G4] selftest 守护——selftest-subagent-return.sh 11/11 rc=0+registry 4 列 tab 登记复验通过
+  - 待填（Phase 4 回归跑批+VC 复验结果）
+- Files created/modified:
+  -
+- Test Results:
+  |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

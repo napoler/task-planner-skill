@@ -62,6 +62,16 @@
 - 边界登记：return_section_check 挂 fine_grain_checks 之后——prompt 同时违 KQ3（brief 未引用）时报 KQ3 exit 2,段结构违规不展示（双违规任一拦,防御不塌）;判据 A 双标题形态由 S6 自测夹具直接覆盖
 - 附带发现（S6 执行偏差）：152 工具调用/61min 远超 15min 预算未返 partial——产物验收通过,偏差登记 Handoff,不阻断
 
+#### [sub:4-code-assistant] selftest-subagent-return.sh 守护（2026-10-10，主进程兜底回填）
+- 操作：新写 scripts/selftest-subagent-return.sh（90 行,A1-A11 断言：脚本存在+n/--selftest/3 个 stdin 夹具/§7 三条款/22.4b 污染三面/return_section_check/污染夹具 rc 非 0/干净夹具 rc 0/registry 行）;registry.tsv 追加 4 列 tab 登记行
+- 主进程复跑：Total: 11 PASS=11 FAIL=0 rc=0;registry 尾行 4 列在位;无 .dispatch-inflight 锁残留
+- 证据：selftest-subagent-return.sh（Total 输出行）;selftest-registry.tsv 尾行;git diff --numstat（registry 1 0）
+
+#### [sub:5-code-assistant] SKILL/dispatch-examples 级联（2026-10-10，主进程兜底回填）
+- 操作：SKILL.md Rule 22 摘要行内插入「prompt 侧返回格式段结构校验 22.4b 补(return_section_check)、返回侧 check-subagent-return.sh 四判据 22.4b 补」(+1/-1 行内 rewrite,该仓摘要行既有演进模式);dispatch-examples.md §1 示例后追加 task-v161 注记（+2/-0）
+- 主进程裁决：子代理验收 3 报 FAIL 是因任务书内部矛盾（验收要 +N/-0 而规格是行内插入）——语义零删,判实质合规
+- 证据：SKILL.md:308 行内短语;dispatch-examples.md:28 注记
+
 ## Technical Decisions
 
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
