@@ -39,6 +39,11 @@
 - **与 agent 定义层竞争的关系**：两个独立污染面正交——段填写污染=指令本身就是错的（主进程填模板错误）；agent 定义竞争=指令对但角色模板抢赢（LLM 优先级）。修复需两侧同时设防（S6+S1/S3/S1）
 - **内容溯源备注**：用户示例的「v3.1/style_exempt/合图锚」等词汇属 article 管线侧任务要点（非本仓产物），作为跨项目判例收录；本仓 v152/v159/v160 实证样本已在上节
 
+#### [sub:2-code-assistant] Rule 22.4b 污染三面+主进程动作闭环（2026-10-10，主进程兜底回填）
+- 操作：worktree critical-rules.md Rule 22.4b 段末（:184 长行后）追加任务书指定逐字句，git diff --numstat = 1 0
+- 结论：污染三面（派发 prompt 段填写污染/agent 定义层输出模板竞争/返回回收零机械校验）已成文；主进程动作闭环显式化=收到返回先过 check-subagent-return.sh 四判据，VIOLATION 按 22.8.5 视为 partial+打回+检查点兜底+Handoff 记违规形态
+- 证据：critical-rules.md:185；checkpoint subagent-state/2-code-assistant.md（8 字段最终结论块合规，status done）
+
 #### 用户原话转译核对（Rule 51.1 反造谣自检）
 - 用户反馈「现在返回了和正常执行任务返回一样的格式」= 子代理返回被总结式/步骤进度式自然语言格式替代固定列表格式，与上述三层根因完全对应（实证 75.9% 违规率 + 用户 §7 段污染样本）
 

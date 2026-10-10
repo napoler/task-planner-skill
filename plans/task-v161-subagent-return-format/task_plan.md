@@ -1,4 +1,6 @@
 # Task Plan: 子代理返回 8 字段格式纪律修复（消除 agent 定义输出模板污染）
+<!-- frontmatter 声明面（Rule 21.4/23.9）：parallel_groups: [pg0（Phase 1 只读调研并行组，已完成）、pg1（Phase 3 实施并行组 S1/S2/S3/S6，文件集互斥/输入互不依赖/验收独立）] -->
+parallel_groups: [pg0, pg1]
 <!-- 
   WHAT: This is your roadmap for the entire task. Think of it as your "working memory on disk."
   WHY: After 50+ tool calls, your original goals can get forgotten. This file keeps them fresh.
@@ -471,7 +473,7 @@ Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1�
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-10 10:30 | code-assistant(haiku-1) | S1 subagent_dispatch.md §7 优先级声明+点名禁令+段填写禁令 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/1-code-assistant.md | pg1 / 0 / ☐ |
-| 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☐ |
+| 2 | 2026-10-10 10:30 | code-assistant(haiku-1) | S2 critical-rules.md Rule 22.4b 污染三面+主进程闭环 | done | 22.4b 段末追加污染三面句（+1/-0 纯增量，与任务书指定文本逐字一致） | critical-rules.md:186（22.4c 段前唯一 + 行）；git diff --numstat = 1 0；子代理 evidence 含逐字 diff MATCH_EXACT | findings.md#主进程侧动作闭环（S2 写入） | plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md | pg1 / 0 / ☑ |
 | 3 | 2026-10-10 10:30 | code-assistant(haiku-1) | S3 新写 check-subagent-return.sh 返回侧 4 夹具 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/3-code-assistant.md | pg1 / 0 / ☐ |
 | 4 | 2026-10-10 10:30 | code-assistant(haiku-1) | S6 check-dispatch.sh prompt 侧返回格式段结构校验 | queued | | | | plans/task-v161-subagent-return-format/subagent-state/6-code-assistant.md | pg1 / 0 / ☐ |
 

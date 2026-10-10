@@ -42,11 +42,20 @@
 - **Status:** in_progress
 - **Started:** 2026-10-10 10:30
 - Actions taken:
-  - 待填（S1-S6 派发结果）
+  - 并行组 pg1 首派 4 个（S1/S2/S3/S6 同消息）：S2 成功（8 字段合规返回+检查点 8 字段最终结论块）；S1/S3/S6 被 dispatch guard 拦（S1=串行槽抢占并发竞态/S3=KQ3 缺 knowledge-brief 引用/S6=prompt 3049>3000+步骤枚举 6>4）
+  - 根因登记：并行组放行需 task_plan.md 含 parallel_groups: 字面+grep 标记双条件（check-dispatch.sh:281/295）——计划漏 frontmatter 声明致 S1 被拦；已在计划头部补 parallel_groups: [pg0, pg1]（51.7 登记重锁）
+  - S2 产物主进程复核通过（diff +1/-0 逐字 MATCH）；findings 兜底回填 [sub:2-code-assistant] 小节
+  - 待办：S1/S3/S6 修正任务书后随 pg1 标记重派
 - Files created/modified:
-  -
+  - worktree: skills/task-planner/references/critical-rules.md +1/-0（S2）
+  - plans/task-v161-subagent-return-format/subagent-state/2-code-assistant.md（检查点）
+  - plans/task-v161-subagent-return-format/findings.md（+回填小节）
+  - plans/task-v161-subagent-return-format/task_plan.md（parallel_groups 声明+Handoff S2 回填）
 - Test Results:
-  |
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | S2 diff 纯度 | critical-rules.md | 仅 +1/-0 | git diff --numstat = 1 0；追加句与任务书指定文本逐字一致 | PASS |
+  | S2 检查点规范 | 2-code-assistant.md | 8 字段最终结论块 | 8 字段齐全无契约外字段，checkpoint 路径与实际一致 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
