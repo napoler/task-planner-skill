@@ -136,6 +136,8 @@ cost_estimate:
 | **问题解构四问** | 计划创建时按 `references/methodology.md` §思维方法论 T2 完成四级解构：问题是什么/本质是什么（5 Whys ≥5 层，同法不同时见 Rule 31.2）/解决方案是什么（候选+取舍理由）/执行方案是什么（步骤化+门控点），答案落 task_plan.md「核心问题定义」段与 knowledge-brief.md §1；禁缺答定稿（task-v084） |
 | **s_unit_id** | S-unit 表 ID 列一律纯数字（S1、S2…全局或每 Phase 内唯一均可，禁字母后缀如 S2a——check-plan-dispatch.sh 数据行正则 S[0-9]+ 边界不认字母后缀，attest 会以「缺 S-unit 表或数据行」拒锁；task-v076 实证教训） |
 
+- **调研需求区块（Rule 75.1）**：standard/full 档计划必须含「🔍 调研需求与检索计划」区块——逐 S-unit/子目标标注三态（LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT），NET-* 条目登记检索关键词（≥2）+渠道+预期产出形态；mini 档豁免
+
 调用方还需:
 - **不在主进程** Edit task_plan.md — 由 plan-writer 通过本 agent 在隔离 context 写入
 - **不调用子代理** — plan-writer 已是最底层执行体

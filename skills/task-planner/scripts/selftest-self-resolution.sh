@@ -80,9 +80,10 @@ if [ "$n" -ge 3 ] && [ "$c" -eq 1 ]; then ok 06 "SKILL.md Rule 41 锚 $n ≥3 �
 # [2026-10-10 task-v154 合并并集演进] '1-68'→'1-69'：task-v153 Rule 68 与 task-v154 Rule 69 合流落地，SKILL 章节引言行最终态 1-69
 # [2026-10-10 task-v160 S14d 新纪元锚扩] 字面 '1-69'→宽容 '1-(6[0-9]|7[0-2])'：SKILL 索引现状三处「1-72」(:9/:295/:380)，Rule 72 已落地；判据不减，仅主锚扩 6x-7x 纪元
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
-a="$(grep -cE 'Critical Rules 1-(6[0-9]|7[0-2])' "$SKILLMD" || true)"
+# [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 网络调研主动激活落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
+a="$(grep -cE 'Critical Rules 1-(6[0-9]|7[0-5])' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 宽容锚 Critical Rules 1-(6[0-9]|7[0-2])≥1 且 1-39=0"; else bad 07 "SKILL.md 字面锚漂移（Critical Rules 1-(6[0-9]|7[0-2])=$a 应 ≥1 / 1-39=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 宽容锚 Critical Rules 1-(6[0-9]|7[0-5])≥1 且 1-39=0"; else bad 07 "SKILL.md 字面锚漂移（Critical Rules 1-(6[0-9]|7[0-5])=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # SR-08 Rule 40/41 共存零损伤
 # [2026-10-05 task-v131 CR P1-2 级联: 锚「含 Rule 40/41」→「含 Rule 40-53」(SKILL.md:266 括注演进), ^40\.=6 子条断言保留]
 # [2026-10-08 task-v149 Rule 65 落地演进: 括注演进→「含 Rule 40-65 全集」, 宽容正则 5[3-9]|6[0-9] 已覆盖 65, 锚同步演进]

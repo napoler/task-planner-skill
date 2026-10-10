@@ -61,6 +61,8 @@
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
 
+- **官方文档/现成方案优先（Rule 75.3）**：部署配置前必须先查官方文档（Doc Search Agent）+社区成熟方案（Docker/nginx/k8s 官方示例）——禁凭记忆直接写配置
+
 ## Current Phase
 Phase 1
 

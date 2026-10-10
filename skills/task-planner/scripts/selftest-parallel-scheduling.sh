@@ -107,6 +107,7 @@ r68="$(grep -cE 'Rule 68' "$SKILLMD" || true)"
 #   仅命中 2 行（Rule 70/72），Rules 1-69 的 `### N` 形态退出采样面（P-05 采样收窄，CR P2 修）；
 #   并集两形态 `^(## Rule|###) N` 后覆盖全量 1-72，判据=SKILL 上界须 == critical-rules 全量实测最大编号
 #   （纯机械对齐，不改判据强度；Rule 72 落地后上界对齐）。
+# [2026-10-10 task-v163 级联: SKILL 上界 1-72→1-75（Rule 75 落地），动态断言 skill_max==crit_max 自动随动=75，无需改正则；判据强度不变]
 crit_max="$(grep -oE '^(## Rule|###) [0-9]+' "$CRIT" | grep -oE '[0-9]+' | sort -n | tail -1)"
 skill_max="$(grep -oE 'Critical Rules 1-[0-9]+' "$SKILLMD" | grep -oE '[0-9]+' | sort -n | tail -1)"
 if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ -n "$crit_max" ] && [ -n "$skill_max" ] && [ "$skill_max" -eq "$crit_max" ]; then

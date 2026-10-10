@@ -132,11 +132,12 @@ fi
 #   task-v160 Rule 70/72 落地后 SKILL.md 主锚演进为 'Critical Rules 1-72'（:9/:295/:380 三处），旧钉值 '1-69' 命中 0 → 误报漂移；
 #   改为覆盖 1-69/1-72 的宽容 regex（保留「1-39 变体=0」负向检查不动），与 selftest-lane-advancement.sh LA-12 同口径。
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
-n="$(grep -cE 'Critical Rules 1-(6[0-9]|7[0-2])' "$SKILLMD" || true)"
+# [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
+n="$(grep -cE 'Critical Rules 1-(6[0-9]|7[0-5])' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$(grep -c '1-39' "$SKILLMD" || true)" -eq 0 ]; then
-  ok 11 "SKILL.md 主锚 'Critical Rules 1-(60-72)' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
+  ok 11 "SKILL.md 主锚 'Critical Rules 1-(60-75)' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
 else
-  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-(60-72)=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
+  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-(60-75)=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
 fi
 
 # RC-12 delivery-summary.md 需求覆盖区块锚 `grep -q '需求覆盖核对'` 且 `^## [1-5].` 区块数 =5

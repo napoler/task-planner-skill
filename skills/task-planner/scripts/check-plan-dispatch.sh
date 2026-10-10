@@ -650,6 +650,19 @@ if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null
     fi
 fi
 
+# ── [2026-10-10 task-v163 S8] Rule 75.1 调研需求区块 advisory 校验段 ──────────
+#   WHY: Rule 75.1 要求 standard/full 档计划含「🔍 调研需求与检索计划」区块
+#        （逐 S-unit/子目标三态标注 + NET-* 检索关键词（≥2）+渠道+预期产出形态登记）；
+#        机器面=纯 advisory 提示，缺失不拒锁，由 LLM 行为面（计划期三态自评）兜底。
+#   档位口径: 显式 plan_tier: mini 豁免（Rule 38.3 区块白名单同口径）；其余（含无标记
+#        legacy/合成夹具）走 advisory——echo WARN 不 add_violation、不改 exit（不拒锁）。
+#   零新 config 键；判定写法对齐脚本内既有 PLAN_TIER_MINI 变量与 grep -qm1 范式。
+if [ "$PLAN_TIER_MINI" != 1 ]; then
+    if ! grep -qm1 -F '## 🔍 调研需求与检索计划' "$PLAN_FILE" 2>/dev/null; then
+        echo "[plan-dispatch] WARN Rule 75.1: 非 mini 计划缺「🔍 调研需求与检索计划」区块（advisory，不拒锁）— standard/full 档应逐 S-unit/子目标标注调研三态（LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT）并登记 NET-* 检索关键词（≥2）+渠道+预期产出形态"
+    fi
+fi
+
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 if [ -n "$violation_list" ]; then
     printf '%s' "$violation_list"
