@@ -112,7 +112,19 @@ check_scope_porcelain "$PLAN_FILE" || {
     # [2026-09-13 task-v065 T-3 V-9] VC-GATE 档位解析共用 config 路径
     CONFIG_JSON="$SKILL_ROOT/config.json"
 
-# [2026-09-07 task-v055 task-v055/Phase 3] 终验委派率接线(Rule 25.4)
+    # [2026-10-11 task-v167 Rule 38.7] 执行通道（lane）消费: 计划头解析 execution_lane: L0|L1|L2（缺省 L1=
+    # 逐行执行现状，零行为变化）。lane=执行通道，与 plan_tier=模板轻重正交（同计划可并存）。
+    # L0=微变更通道（38.7）: 跳过的是重复验证项（thin），保留的是完成性底线（porcelain/report-lint/
+    # goal-gate/pointer-lifecycle/SKILL-MODIFY + LANE-L0 GATE 三件校验绝不跳）。
+    LANE_L0=0
+    grep -qm1 -E 'execution_lane:[[:space:]]*L0' "$PLAN_FILE" 2>/dev/null && LANE_L0=1
+    # [task-v167] L0 门入口守卫: L0 → return 0（门体可跳, skip 行在 stderr）; L1/L2 → return 1
+    # （门体须执行, 逐行执行现状零变化）。调用范式: if ! l0_gate_open "..."; then <门体>; fi
+    # （!取反: L0→!0=1→门体不执行=skip; L1→!1=0→门体执行——CR 修正 2026-10-11: 原 return 方向
+    # 与调用方取反语义不匹配致 L0 误执行 DELEGATION 门体, 本处对齐「成功=可跳」语义）
+    l0_gate_open() { [ "${LANE_L0:-0}" = 1 ] && { printf '[lane-L0] skip %s（38.7 非适用项, thin=跳重复验证项, 保留完成性底线）\n' "$1" >&2; return 0; }; return 1; }
+
+    # [2026-09-07 task-v055 task-v055/Phase 3] 终验委派率接线(Rule 25.4)
 # 行为:全 Phase complete 判定通过前,调 check-delegation.sh stats 输出 JSON。
 # - verdict==violation  或  全 complete 且 delegation_rate < floor  或  main_direct 含 violations
 #   → 摘要输出到 stderr + exit 1(禁止 COMPLETE 交付)
@@ -129,11 +141,15 @@ if grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
     DELEGATION_RATE_FLOOR="0.0"
 fi
 
-python3 - "$PLAN_FILE" "$SKILL_ROOT" << 'PYEOF'
+python3 - "$PLAN_FILE" "$SKILL_ROOT" "${LANE_L0:-0}" << 'PYEOF'
 import sys, re
 
 plan_file = sys.argv[1]
 skill_root = sys.argv[2]
+# [2026-10-11 task-v167 Rule 38.7] argv[3]=LANE_L0（1=L0 微变更通道）：L0 时 Batch Report 门与
+# 3-File Gate 判定跳（38.7 thin：微变更无批量生成单元/无三文件簿记面），改由 LANE-L0 GATE
+# 三段校验承载完成性；Phase 完成性判定本体零改动（L0 也必须全 Phase complete）。
+LANE_L0 = (sys.argv[3] == "1") if len(sys.argv) > 3 else False
 with open(plan_file, "r", encoding="utf-8") as f:
     lines = f.readlines()
 
@@ -239,7 +255,10 @@ if not logical_blocks and block_config_segs:
 # Required 8 fields must be non-empty; empty value => treated as incomplete.
 BATCH_FIELDS = ["total", "success", "failed", "failure_rate",
                 "sampled_pass", "sampled_fail", "pre_check", "rollback_point"]
-batch_required = chain_mode == "fan-out" or "Batch Report" in content
+# [2026-10-11 task-v167] L0 时 Batch Report 门跳（微变更无批量生成单元, 38.7 thin）:
+# 触发条件收紧为「非 L0 且 (fan-out 或 内容含 Batch Report)」——L0 计划即使内容提及
+# 「Batch Report」字样也不强制 8 字段（提及字样常出现在规则引用中, 非真批量任务）。
+batch_required = (chain_mode == "fan-out" or "Batch Report" in content) and not LANE_L0
 batch_missing = []
 if batch_required:
     bm = re.search(r'^##\s+.*Batch Report.*$', content, re.MULTILINE)
@@ -308,7 +327,10 @@ if chain_mode == "fan-out":
 import os
 plan_dir = os.path.dirname(os.path.abspath(plan_file))
 three_file_gate_active = (total > 0) or bool(block_statuses)
-if three_file_gate_active:
+# [2026-10-11 task-v167 Rule 38.7] L0 thin: 3-File Gate 判据不要求 findings/progress 非 stub——
+# 微变更通道簿记精简（38.7「单 commit+薄 verification」），findings/progress 允许模板 stub 原样；
+# L1/L2 判定零改动（LANE_L0=False 时 active 语义与原版逐字节等价）。
+if three_file_gate_active and not LANE_L0:
     for name in ("findings.md", "progress.md"):
         target = os.path.join(plan_dir, name)
         if not os.path.isfile(target):
@@ -394,6 +416,9 @@ python_rc=$?
 # 亲做却报 done」的委派纪律违背（Rule 25.4 去口供化）；stats 输出不可用时 fail-open 但留 stderr 痕迹，
 # 门控自身故障不得锁死正常终验（fail-open 方向=放行，错误必须曝光）。
 if [ "$python_rc" -eq 0 ]; then
+    # l0_gate_open: L0 → 打 skip 行并 return 1（拦门）; L1/L2 → return 0（原样执行门体）
+    # 调用范式: if ! l0_gate_open "..."; then <门体>; fi（L0 跳门体, L1/L2 逐行执行现状）
+    if ! l0_gate_open "DELEGATION GATE (Rule 25.4 委派率终验——L0 主进程直做单 Phase, 无委派统计面, 38.7 thin)"; then
     # 委托率统计(fail-open:脚本异常不阻断,但 stderr 记警告)
     stats_output=""
     if [ -x "$SKILL_ROOT/scripts/check-delegation.sh" ]; then
@@ -468,6 +493,8 @@ if [ "$python_rc" -eq 0 ]; then
     else
         printf '[plan] DELEGATION GATE SKIPPED — check-delegation.sh stats produced no output (fail-open, see warning above)\n' >&2
     fi
+    fi
+    # [2026-10-11 task-v167] L0 跳过后 stats_output 为空 → 既有条款按 fail-open SKIPPED 处理, 不 exit 1
 
     # ── [2026-09-27 task-v091 C-2] 终验重复门四元内容键 SKIP-BY-HASH(提案 §三 C-2 v3, efficiency-proposal.md:139-146)──
     # 现象=同一计划终验 2-3 轮反复全量重跑两道重复门(PLAN-DISPATCH/FMEA,27 脚本 65.7s/轮);
@@ -531,6 +558,9 @@ if [ "$python_rc" -eq 0 ]; then
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
     FMEA_TIER="$(resolve_fmea_tier)"
+    # [2026-10-11 task-v167 Rule 38.7] L0 skip FMEA GATE（Why: FMEA=子代理派发预演门, L0 单 Phase
+    # 主进程直做无派发面, 38.7 非适用项; 保留线=LANE-L0 GATE 全量终验锚不跳）
+    [ "${LANE_L0:-0}" = 1 ] && { printf '[lane-L0] skip FMEA GATE（38.7 非适用项: L0 主进程直做无派发面）\n' >&2; FMEA_TIER="off"; }
     # [2026-09-27 task-v091 C-2] 四元键一致 → SKIP-BY-HASH 引用 attest 锁定结果(键④已含 fmea_enforce 生效值)
     if [ "$FG_SKIP" -eq 1 ]; then
         printf '[fmea-gate] SKIP-BY-HASH (task-v091 C-2: 四元内容键一致, 引用 attest 锁定结果, fmea_enforce=%s)\n' "$FMEA_TIER" >&2
@@ -638,6 +668,13 @@ if [ "$python_rc" -eq 0 ]; then
     grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null && PLAN_TIER_MINI=1
     vc_min=5; [ "$PLAN_TIER_MINI" = 1 ] && vc_min=2
     vn_thresh_base=2; [ "$PLAN_TIER_MINI" = 1 ] && vn_thresh_base=1
+    # [2026-10-11 task-v167 Rule 38.7] L0 薄化 VC-GATE: 只校验「VC 表存在(≥1) + 每 Phase V-N
+    # 映射存在(≥1) + 映射目标 ∈ 已定义 VC」——跳过 ≥5/≥2 计数（38.7 薄 verification 三段之
+    # 「VC 表」即存在性校验, 不降 fail-closed 判定逻辑; L1/L2 零改动）
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        vc_min=1; vn_thresh_base=1
+        printf '[lane-L0] skip VC-GATE 计数阈值(≥5/≥2→≥1/≥1, 38.7 薄化=只校验 VC 表存在且 Phase V-N 映射存在)\n' >&2
+    fi
     if [ "$VC_GATE_TIER" != "off" ]; then
         vc_gate_section="$(mktemp)" || vc_gate_section="$(pwd)/.vc-gate-section.$$"
         # Phase 段 = `### Phase` 标题到下一 Phase/二级标题/--- 段边界（与 python 段切同口径）
@@ -791,7 +828,50 @@ if [ "$python_rc" -eq 0 ]; then
     #   违规时 warn 档输出 WARNING / enforce 档 exit 1; 已登记让步的 uncovered/partial 两档均不阻断, 只给 PARTIAL 语义提示。
     # delivery-summary.md 不存在 → fail-open INFO(既有计划豁免口径, FMEA F1 兜底); 无🎯区块/mini 豁免/无 R 行 → SKIPPED INFO。
     # 插入位=VC-GATE 块后(Requirement 51.1a 字面「VC-GATE 外增」), C-2 四元键③哈希锚区间(至 :502 行)之外=键哈希零扰动。
-    if [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
+    # [2026-10-11 task-v167 Rule 38.7] L0 改抽查: 只校验 delivery-summary 需求覆盖核对表存在 + 前 3 数据行
+    # 有证据路径（38.7 薄 verification=抽查表段；不降完成性判定——enforce 档缺口仍 exit 1 口径不变）。
+    if [ "${LANE_L0:-0}" = 1 ] && [ "$VC_GATE_TIER" != "off" ]; then
+        rcov_l0_file="$PLAN_DIR_GUESS/delivery-summary.md"
+        if [ ! -f "$rcov_l0_file" ]; then
+            printf '[lane-L0] skip R-COVERAGE GATE（38.7 非适用项: delivery-summary 无=抽查面缺失, 不阻断, 口径同既有 fail-open F1）\n' >&2
+        else
+            # 抽查=核对表存在 + 前 3 数据行证据路径非空（awk 口径同主门: 首列 R<n> 行, 状态列后单元格为证据区）
+            rcov_l0_bad="$(awk '
+                /需求覆盖核对/ {f=1; next}
+                f && /^##[[:space:]]/ {f=0}
+                f && /^\|/ {
+                    n = split($0, a, "|")
+                    if (n < 3) next
+                    r = ""
+                    for (i = 1; i <= n; i++) {
+                        t = a[i]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); gsub(/\*/, "", t)
+                        if (t ~ /^R[0-9]+$/) { r = t; break }
+                    }
+                    if (r == "") next
+                    data++
+                    if (data > 3) next
+                    ev = ""
+                    for (j = 2; j <= n; j++) {
+                        t = a[j]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", t); gsub(/\*/, "", t)
+                        if (index(t, "covered") || index(t, "partial") || index(t, "uncovered")) { ev = ev " " t; continue }
+                        if (ev != "") ev = ev " " t
+                    }
+                    gsub(/^[[:space:]]+/, "", ev)
+                    if (ev == "" || ev == " " || ev == "无" || ev == "—" || ev == "N/A") printf "%s(证据路径缺失) ", r
+                }
+                END { }' "$rcov_l0_file" 2>/dev/null)"
+            rcov_l0_nodata="$(awk '/需求覆盖核对/ {f=1} f && /^##[[:space:]]/ {f=0} f && /^\|[[:space:]]*R[0-9]+/ {n++} END {print n+0}' "$rcov_l0_file" 2>/dev/null)"
+            if [ -z "${rcov_l0_bad:-}" ] && [ "${rcov_l0_nodata:-0}" -ge 1 ]; then
+                printf '[plan] R-COVERAGE L0 抽查 PASSED（38.7: 表存在 + 前 3 行证据路径在案, 数据行=%s）\n' "$rcov_l0_nodata" >&2
+            else
+                printf '[plan] R-COVERAGE L0 抽查 FAILED（38.7 薄化抽查: 缺表数据行/前 3 行缺证据路径: %s）\n' "${rcov_l0_bad:-<无数据行>}" >&2
+                case "$VC_GATE_TIER" in
+                    enforce) exit 1 ;;
+                    *) : ;;  # warn 档沿用主门 fail-open 口径, 仅提示
+                esac
+            fi
+        fi
+    elif [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
         # 计划 R 行集合: 「🎯 用户需求原文」区块内 `- **R<n>**: ...` 列表行(awk 状态机抽区块, 同 27.3 porcelain 预检范式;
         # 区块至下一个 ##/### 标题截止, 避免误吞 R→VC 映射表内的 R 编号)
         # [2026-10-05 task-v132/Phase4 CR-P1] R 集合提取锚定: R 编号只从 R 行**行首编号**提取,
@@ -1011,6 +1091,12 @@ f && /^\|/ {
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
     ERROR_LOOP_TIER="$(resolve_error_loop_tier)"
+    # [2026-10-11 task-v167 Rule 38.7] L0 skip LEARNING-GATE（Why: Error Log 四问归因=多轮执行
+    # 学习闭环面, L0 单 Phase 微变更无错误堆/多轮修复面; 保留线=全量终验锚不跳）
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        printf '[lane-L0] skip LEARNING-GATE（38.7 非适用项: L0 单 Phase 无多轮错误闭环面）\n' >&2
+        ERROR_LOOP_TIER="off"
+    fi
     if [ "$ERROR_LOOP_TIER" != "off" ]; then
         progress_file="$(dirname "$PLAN_FILE")/progress.md"
         if [ -f "$progress_file" ]; then
@@ -1113,6 +1199,12 @@ END {print n+0}'
         case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'warn' ;; esac
     }
     REFLECT_VERIFY_TIER="$(resolve_reflect_verify_tier)"
+    # [2026-10-11 task-v167 Rule 38.7] L0 skip REFLECT-GATE（Why: 反思-验证迭代循环=多轮执行面,
+    # L0 单 Phase 微变更不产生反思迭代需求; 保留线=LANE-L0 GATE 三段终验锚不跳）
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        printf '[lane-L0] skip REFLECT-GATE（38.7 非适用项: L0 单 Phase 无反思迭代面）\n' >&2
+        REFLECT_VERIFY_TIER="off"
+    fi
     if [ "$REFLECT_VERIFY_TIER" != "off" ]; then
         if ! grep -q 'reflect_verify: required' "$PLAN_FILE" 2>/dev/null; then
             printf '[plan] REFLECT-GATE SKIPPED (task_plan.md 未声明 reflect_verify: required)\n' >&2
@@ -1181,9 +1273,15 @@ END {print n+0}'
     # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
     case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="$(jq -r '.mechanism_profile_enforce // .properties.mechanism_profile_enforce.default // "warn"' "$CONFIG_JSON" 2>/dev/null)" || mp_tier=""; case "$mp_tier" in enforce|warn|off) ;; *) mp_tier="warn" ;; esac ;; esac
     if [ "$mp_tier" != "off" ]; then
+        # [2026-10-11 task-v167 Rule 38.7] L0 skip mechanism-profile（Why: 机制画像抽查=内容组
+        # 派发面, L0 无派发; 保留线=SKILL-MODIFY GATE 与 LANE-L0 GATE 不跳）
+        if [ "${LANE_L0:-0}" = 1 ]; then
+            printf '[lane-L0] skip mechanism-profile（38.7 非适用项: L0 无派发面）\n' >&2
+        else
         mp_tt="$(grep -m1 '^template_type:' "$PLAN_FILE" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"; mp_tt="${mp_tt%%[[:space:]（]*}"
         [ -z "$mp_tt" ] && mp_tt="$(grep -m1 'template_type' "$PLAN_FILE" 2>/dev/null | awk -F'|' '{for(i=1;i<=NF;i++){t=$i;gsub(/[[:space:]`]/,"",t);if(t=="template_type"){v=$(i+1);gsub(/[[:space:]`]/,"",v);print v;exit}}}' | head -1 | sed 's/（.*//')"
         case "$mp_tt" in writing|research|publish) grep -qE 'code_review: required|^[[:space:]]*\|[[:space:]]*`?code_review`?[[:space:]]*\|[[:space:]]*`?required`?[[:space:]]*\|' "$PLAN_FILE" 2>/dev/null && case "$mp_tier" in enforce) echo "[mechanism-profile] ✗ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；enforce 档 exit 1 — 显式例外须在计划 Decisions 登记理由或改 n/a）" >&2; exit 1 ;; *) echo "[mechanism-profile] ⚠ 内容组计划声明 code_review: required（Rule 37 画像默认不适用；如属显式例外请登记理由）" >&2 ;; esac ;; esac
+        fi
     fi
 
     # [2026-09-27 task-v091 S23 A-1 Rule 38.6] 终验 AUTO-TIER 复核段（提案 A-1 误判闭环，S22 风险①）:
@@ -1216,6 +1314,11 @@ END {print n+0}'
     # S20/S23 既有块语义零改动（仅紧邻插入）；本段不消费新 config 键 → 键④五键枚举零扰动。
     compliance_missing=""
     cc_plan_dir="$(dirname "$PLAN_FILE")"
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        # [2026-10-11 task-v167 Rule 38.7] L0 skip COMPLIANCE-CHECK（Why: 抽查段=委派统计/S-unit
+        # 表/Handoff 登记等派发型产物面, L0 无派发无统计段; L0 簿记面由 LANE-L0 GATE 三段独立承载）
+        printf '[lane-L0] skip COMPLIANCE-CHECK（38.7 非适用项: 派发型抽查面无, L0 簿记面由 LANE-L0 GATE 承载）\n' >&2
+    else
     # ① 3-File 抽查（Rule 19.5/C16 承载声称）: mini/standard 同域（mini 38.3 区块白名单要求三文件，降档=19.2 非豁免）
     for cf in findings.md progress.md; do
         [ -f "$cc_plan_dir/$cf" ] || compliance_missing="${compliance_missing} 3-File ${cf} missing(C16/Rule 19.5) "
@@ -1266,6 +1369,7 @@ END {print n+0}'
             "$([ "$comp_tier_label" = mini ] && printf 降档阈值 || printf 全量)" \
             "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" \
             "$([ "$comp_tier_label" = mini ] && printf 豁免跳过 || printf 已检)" >&2
+    fi
     fi
 
     # [2026-10-09 task-v151 S3] Rule 66.3 Goal 单元表终验对照段
@@ -1320,6 +1424,42 @@ END {print n+0}'
         fi
     else
         printf '[goal-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 66.5)\n' >&2
+    fi
+
+    # [2026-10-11 task-v167 Rule 38.7] LANE-L0 GATE — L0 微变更通道专属三段校验（插于 goal-gate 后、judge-gate 前）
+    # 定位=38.7「L0 薄 verification」的机器化保留线: 跳过的门（Batch/3File/FMEA/DELEGATION/VC计数/
+    # R-COVERAGE/LEARNING/REFLECT/COMPLIANCE 等）都不降完成性底线——本段三件校验缺一即 exit 1:
+    #   ① verification.md 存在且含「全量终验」字样 + Total 行（run=N 且 PASS=N=总脚本数——
+    #      交付前单波 fresh 全量终验锚; 缺=fail-closed, 38.7「相关 selftest 子集 + 交付前全量终验」的机器承载）
+    #   ② task_plan.md Phase 状态真实翻转: 至少 1 行 `- **Status:** complete`（防状态机假完成）
+    #   ③ 单 commit 惯性: 计划 scope 内 git log feat 提交数=1, 或计划 Decisions Made 区块声明
+    #      「单 commit」惯性偏差理由（38.7 簿记精简=单 commit, 多 commit 须显式声明机理由）
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        l0_fail=""
+        l0_vf="$PLAN_DIR_GUESS/verification.md"
+        if [ ! -f "$l0_vf" ] || ! grep -q '全量终验' "$l0_vf" 2>/dev/null || ! grep -qE 'Total:' "$l0_vf" 2>/dev/null; then
+            l0_fail="${l0_fail}①verification.md 缺「全量终验」+Total 行（run=N/PASS=N 锚） "
+        fi
+        l0_ph_n="$(grep -cE '\*\*Status:\*\*[[:space:]]*complete' "$PLAN_FILE" 2>/dev/null || true)"
+        l0_ph_n="${l0_ph_n:-0}"
+        [ "$l0_ph_n" -ge 1 ] || l0_fail="${l0_fail}②task_plan.md 无 complete Phase 行（状态未真实翻转） "
+        # ③ 单 commit 惯性: 在 git 仓内对计划 scope（执行范围限制表允许文件列）数 feat 提交;
+        # 非 git 仓/无 git = fail-open（L0 定义在 git 体系内, 非 git 场景由人工兜底）
+        repo_root="$(cd "$(dirname "$PLAN_FILE")" && git rev-parse --show-toplevel 2>/dev/null || true)"
+        if [ -n "$repo_root" ]; then
+            l0_ncommits="$(git -C "$repo_root" log --oneline --grep='feat' --since='30 days ago' 2>/dev/null | grep -c . || true)"
+            if [ "${l0_ncommits:-0}" -ne 1 ] \
+               && ! grep -qE '单[[:space:]]*commit|单commit' "$PLAN_FILE" 2>/dev/null; then
+                # Decisions 声明口径: 计划内任意位置含「单 commit」声明视为机理由登记（38.7 簿记精简口径）
+                [ -n "$(awk '/^##[[:space:]]*Decisions Made/{f=1; next} f && /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null | grep -E 'commit')" ] \
+                    || l0_fail="${l0_fail}③单 commit 惯性缺口（feat 提交数=${l0_ncommits:-0}≠1 且 Decisions 无机理由声明） "
+            fi
+        fi
+        if [ -n "$l0_fail" ]; then
+            printf '[lane-L0] LANE-L0 GATE FAILED（38.7 L0 保留线: %s — 补 fresh 全量终验/状态翻转/commit 声明后重跑）\n' "${l0_fail% }" >&2
+            exit 1
+        fi
+        printf '[lane-L0] LANE-L0 GATE PASS（①verification 全量终验+Total 锚在案 ②Phase complete 翻转在案 ③单 commit 惯性合规/声明在案）\n' >&2
     fi
 
     # [2026-10-10 task-v156] Rule 73.4 [judge-gate] 强制评判点终验对照段
