@@ -1,0 +1,101 @@
+# task-v159 全量 selftest 回归日志（V1）— 回归单元
+# 生成时间: 2026-10-10（跑批会话）
+# worktree: /mnt/data/dev/task-planner-skill-worktrees/v159-pointer-lifecycle (HEAD 2f27fcb, git status clean)
+# 技能根: skills/task-planner（脚本执行 cwd）
+# 口径: 逐个 `bash scripts/selftest-*.sh`；行格式 = `脚本路径 rc=N | 结果行原文`；每脚本超时 90s
+# 基线: /tmp/v159-baseline.tmp（66 脚本全 rc=0, worktree 5280cb3 态）
+# 逐脚本结果（原文）:
+scripts/selftest-active-plan.sh rc=0 | Total: 29 PASS=29 FAIL=0
+scripts/selftest-agent-coverage.sh rc=0 | Total: 9 PASS=9 FAIL=0 SKIPPED=0
+scripts/selftest-ask-default-timeout.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-batch-pilot.sh rc=0 | Total: 10 PASS=10 FAIL=0
+scripts/selftest-capability-persistence.sh rc=0 | Total: 20 PASS=20 FAIL=0
+scripts/selftest-check-conflicts.sh rc=0 | Total: 7 PASS=7 FAIL=0
+scripts/selftest-check-drift.sh rc=0 | Total: 6 PASS=6 FAIL=0
+scripts/selftest-conclusion-discipline.sh rc=0 | Total: 24 PASS=24 FAIL=0
+scripts/selftest-context-hygiene.sh rc=0 | Total: 12 PASS=12 FAIL=0
+scripts/selftest-decision-arbiter.sh rc=0 | Total: 16 PASS=16 FAIL=0
+scripts/selftest-delegation.sh rc=0 | Total: 38    PASS=38  FAIL=0
+scripts/selftest-dispatch-grain.sh rc=0 | Total: 10 PASS=10 FAIL=0
+scripts/selftest-dispatch.sh rc=0 | Total: 31 PASS=31 FAIL=0
+scripts/selftest-drift-check-subagent.sh rc=0 | Total: 20 PASS=20 FAIL=0
+scripts/selftest-drift-enforcement.sh rc=0 | Total: 23 PASS=23 FAIL=0
+scripts/selftest-error-fix-prompt-forge.sh rc=0 | Total: 8 PASS=8 FAIL=0
+scripts/selftest-error-loop.sh rc=0 | Total: 16 PASS=16 FAIL=0
+scripts/selftest-evidence-goal-gate.sh rc=0 | Total: 21 PASS=21 FAIL=0
+scripts/selftest-execution-honesty.sh rc=0 | Total: 14 PASS=14 FAIL=0
+scripts/selftest-execution-stability.sh rc=0 | Total: 19  PASS=19  FAIL=0
+scripts/selftest-fallback.sh rc=0 | Total: 31  PASS=31  FAIL=0
+scripts/selftest-final-gate-hash.sh rc=0 | ==== selftest-final-gate-hash 结果: PASS=22 FAIL=0 ====
+scripts/selftest-fine-grain-steps.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-four-file-dataflow.sh rc=0 | Total: 18 PASS=18 FAIL=0
+scripts/selftest-goal-unit-goal-mode.sh rc=0 | Total: 9 PASS=9 FAIL=0
+scripts/selftest-interaction.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-iteration-persistence.sh rc=0 | Total: 18 PASS=18 FAIL=0
+scripts/selftest-iterative-optimizer.sh rc=0 | Total: 8 PASS=8 FAIL=0
+scripts/selftest-knowledge-brief.sh rc=0 | Total: 16  PASS=16  FAIL=0
+scripts/selftest-lane-advancement.sh rc=0 | Total: 14 PASS=14 FAIL=0
+scripts/selftest-mechanism-profile.sh rc=0 | Total: 19 PASS=19 FAIL=0
+scripts/selftest-media-agents.sh rc=0 | Total: 10 PASS=10 FAIL=0
+scripts/selftest-media-dispatch.sh rc=0 | Total: 9 PASS=9 FAIL=0
+scripts/selftest-methodology.sh rc=0 | Total: 16 PASS=16 FAIL=0
+scripts/selftest-parallel-scheduling.sh rc=0 | Total: 9 PASS=9 FAIL=0
+scripts/selftest-periodic-review.sh rc=0 | Total: 10 PASS=10 FAIL=0
+scripts/selftest-plan-dispatch.sh rc=0 | Total: 12 PASS=12 FAIL=0
+scripts/selftest-plan-tier.sh rc=0 | Total: 32 PASS=32 FAIL=0
+scripts/selftest-pointer-lifecycle.sh rc=0 | Total: 10 PASS=10 FAIL=0
+scripts/selftest-reflect-verify.sh rc=0 | Total: 12 PASS=12 FAIL=0
+scripts/selftest-registry.sh rc=0 | Total: 5 PASS=5 FAIL=0 (registry rows=69, actual selftest=69)
+scripts/selftest-reliability-institution.sh rc=0 | Total: 16 PASS=16 FAIL=0
+scripts/selftest-report-reviewability.sh rc=0 | Total: PASS=13 FAIL=0 WARN=0
+scripts/selftest-requirement-coverage.sh rc=0 | Total: 23 PASS=23 FAIL=0
+scripts/selftest-requirement-grading.sh rc=0 | Total: 7 PASS=7 FAIL=0
+scripts/selftest-rescue-chain.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-research-first.sh rc=0 | Total: 12 PASS=12 FAIL=0
+scripts/selftest-review-library.sh rc=0 | Total: 15 PASS=15 FAIL=0
+scripts/selftest-root-resolution.sh rc=0 | Total: 17 PASS=17 FAIL=0
+scripts/selftest-rule23-conflict-scan.sh rc=0 | Total: 3 PASS=3 FAIL=0
+scripts/selftest-rule-reserve.sh rc=0 | Total: 10 PASS=10 FAIL=0
+scripts/selftest-self-resolution.sh rc=0 | Total: 13 PASS=13 FAIL=0
+scripts/selftest-shared-tracker.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-skill-collab.sh rc=0 | Total: 25  PASS=25  FAIL=0
+scripts/selftest-skill-modify.sh rc=0 | Total: 9 PASS=9 FAIL=0 (SKIP=0)
+scripts/selftest-skill-split.sh rc=0 | Total: 41  PASS=41  FAIL=0
+scripts/selftest-smart-merge.sh rc=1 | Total: 17 PASS=15 FAIL=2
+scripts/selftest-split-pattern-library.sh rc=0 | Total: 13 PASS=13 FAIL=0
+scripts/selftest-subagent-granularity-skill-escort.sh rc=0 | Total: 23 PASS=23 FAIL=0
+scripts/selftest-sync-index.sh rc=0 | Total: 13 PASS=13 FAIL=0
+scripts/selftest-task-boundary.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-template-lifecycle.sh rc=0 | Total: 24 PASS=24 FAIL=0
+scripts/selftest-template-sense.sh rc=0 | Total: 8 PASS=8 FAIL=0
+scripts/selftest-tier-b.sh rc=0 | Total: 18 PASS=18 FAIL=0
+scripts/selftest-tool-selection.sh rc=0 | Total: 12 PASS=12 FAIL=0
+scripts/selftest-user-instruction-priority.sh rc=0 | === ALL PASS ===
+scripts/selftest-vc-gate.sh rc=0 | Total: 11 PASS=11 FAIL=0
+scripts/selftest-veto.sh rc=0 | Total: 13 PASS=13 FAIL=0
+scripts/selftest-workflow-orchestration.sh rc=0 | Total: 16 PASS=16 FAIL=0
+
+# ----------------------------------------
+# 差异清单（vs /tmp/v159-baseline.tmp；基线=66 脚本全 rc=0 / ΣFAIL=0 @5280cb3）:
+#   REMOVED: 无
+#   NEW(3, 全部 rc=0):
+#     scripts/selftest-error-fix-prompt-forge.sh rc=0 | Total: 8 PASS=8 FAIL=0
+#     scripts/selftest-pointer-lifecycle.sh rc=0 | Total: 10 PASS=10 FAIL=0
+#     scripts/selftest-report-reviewability.sh rc=0 | Total: PASS=13 FAIL=0 WARN=0
+#   CHANGED(2):
+#     1) scripts/selftest-registry.sh: rc=0 FAIL=0 不变；计数演进 (registry rows=66, actual selftest=66) → (registry rows=69, actual selftest=69)（预期内）
+#     2) scripts/selftest-smart-merge.sh: rc 0→1；PASS 17→15；FAIL 0→2（唯一新增失败/硬差异）
+#        SM-06 FAIL rc=1(期望6) s1-IDENTICAL=缺 s2-DRIFT=缺
+#        SM-14 FAIL rc=0(期望0) IDENTICAL=缺 slotB-SKILL_MARKER=canonical-v077(期望canonical-v077非stale-content)
+#   rc≠0 清单（脚本级）: scripts/selftest-smart-merge.sh（唯一, rc=1）
+#   FAIL>0 清单（脚本级）: scripts/selftest-smart-merge.sh（唯一, FAIL=2）
+# 复现性: selftest-smart-merge.sh 独立复跑 1 次 rc=1, SM-06/SM-14 同款（确定性, 非抖动）
+# 根因锚（源码级, worktree 内行号）:
+#   smart-merge-back.sh :671 "[DEPLOY] IDENTICAL: $slotdir" 仅 legacy 分支打印;
+#   新 F5 默认路径 :770 只打印 "[DEPLOY] OK: 全部部署位 IDENTICAL(...)"; stage 失败 :700 STAGE-FAIL + :707 exit 1（旧契约 exit 6）
+#   selftest-smart-merge.sh 断言未同步（:237 rc期望6 / :238 IDENTICAL、:433 IDENTICAL）; 该脚本 5280cb3..HEAD 零提交（git log 口径 0）
+#   改动归属: 2f27fcb（task-v159 Phase3 F5 staging 化）改 smart-merge-back.sh
+# stderr 观察（非新增失败, 既存）: selftest-fallback.sh :108/:110 jq 单引号内 \" 转义致 jq 编译错 → h1/h2 空串,
+#   :113 T07c "meta hash 不变" 退化为 空=空（断言弱化）; 该脚本本区间零改动（与基线同文件, 同环境）
+# 总计: N=69 脚本 | rc=0 计数=68/69 | ΣFAIL=2（全部来自 selftest-smart-merge.sh）
+# 硬门判定（零新增失败）: 未过（基线 ΣFAIL=0 → 本态 ΣFAIL=2）

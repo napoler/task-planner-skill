@@ -848,7 +848,6 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 65.7 **与现有 Rule 的关系**：Rule 11（Phase 级漂移检测）= 粗粒度兜底；Rule 15（todo 级高频漂移纠正）= 细粒度主控；Rule 65（步骤级前后对照）= 周期性回顾 + 反向纠正。三者并存，形成完整的漂移检测体系。
 
 65.8 **反模式**：❌ 只在 Phase 完成时才回顾（问题累积数小时才暴露）；❌ 发现矛盾不纠正（错误结论继续影响后续）；❌ 自动纠正不报告用户（用户不知道发生了什么）；❌ 回顾时不重读关键文件（凭记忆回顾 = 不可靠）。
-
 ### 66 goal 单元固化与 /goal 驱动推进纪律（P0, 2026-10-09 task-v151，目标：规划获批后任务自动分解固化为 goal 单元（任务名+目标+完整验证方式），执行按 goal 逐个调度推进并与 ZCode 内置 /goal 目标模式对齐供料，确保后期执行可靠性；判定面=计划期区块+执行期门控，机器面=check-plan-dispatch/check-complete/selftest-goal-unit-goal-mode.sh，零新 config 键；Rule 40.3 /goal 既有口径不动）
 
 66.1 **goal 单元固化（goal-unit freezing）**：计划获批（attest）后，任务必须自动分解固化为「🎯 Goal 单元表」逐行 goal 单元——六列契约：goal-id（G1/G2… 纯数字递增）| 任务名（≤8 字）| 目标（≤1 句）| 完整验证方式（可复现：命令+判据 或 路径+关键行 或 diff/输出形态，三选一必具其一，禁「检查没问题」类无据表述）| 对应 S-unit/Phase | 状态（pending/complete）。standard/full 档必填（缺一列或验证方式列空白=计划无效回炉）；mini 档豁免（66.5）。
@@ -862,6 +861,22 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 66.5 **模板区块承载与 mini 豁免（template carriage）**：「🎯 Goal 单元表」=general 模板区块（插入位=「🎯 核心目标达成裁决」后、「⚠️ 执行范围限制」前）；mini-lite 模板按 38.3 区块白名单声明豁免（未加区块不构成违约）；check-plan-dispatch.sh attest 期对 standard/full 档做区块存在性+六列+验证方式列非空机械校验，缺失=拒锁（59.1 硬门同档；--skip-goal-check 逃生口对齐 --skip-dispatch-check 惯例，登记 Decisions）；档位判定：显式 plan_tier: standard/full 才执行硬拒锁；无标记计划=缺省档跳过（legacy/合成夹具兼容口径，主进程 2026-10-09 D2 裁决）；mini 豁免。
 
 66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。
+
+### 67 上下文压力主动评估与会话交接纪律（P0, 2026-10-09 task-v152，目标：执行期上下文过长/混乱从「被动等事件触发」升级为「主动三档评估→三态裁决→即压缩或交接」，根除长任务上下文膨胀与混乱累积；判定面=LLM 行为留痕+posttooluse 节奏提醒+selftest 静态守护、零新 config 键；衔接 Rule 19/22/24/29/61/62/64.3/65/66，既有条款原文零改动）
+
+本条源于用户 2026-10-09 反馈原话（逐字抄录于 plans/task-v152-proactive-context/task_plan.md「🎯 用户需求原文」，51.1 口径）：R1「在遇到上下文过长，或者说出现就是出现混乱的时候，我希望可以进行主动地进行压缩，或者说是整理优化」；R2「如果实在是解决不了，也可以撰写交接文档，要求在新的会话中开启」；R3「核心就是主动评估、主动优化」。归因（实证，findings.md Research Findings A/B/C/G）：Rule 29.1 触发仅三档事件驱动（Phase complete/会话恢复/用户显式）且 check-context-hygiene.sh 4 项全为行数代理指标——「上下文过长/混乱/重复失败」无任何信号触发；Rule 29.5 自述 hook 未接读取、Rule 65 周期回顾亦未接 hook——主动性能靠纯 LLM 自律不可靠；全仓无会话级交接文档模板/机制（grep 会话交接/交接文档零命中）——「解决不了转新会话」无载体。本条补齐「主动评估→主动优化→交接兜底」链路。
+
+67.1 **主动评估触发（三档，proactive triggers）**：① **节奏档**：`zcode-posttooluse.sh` 既有 drift-rhythm 节奏（64.3，每满 N=10 次工具调用）注入点同行追加评估提醒（67.5 承载，不新增计数器）；② **事件档**：同一子任务连续失败 ≥2 次（22.7 强制换档时点）、drift-checker 判 DRIFT、harness 上下文压缩（compaction）发生后的恢复点（19.3/62.1 四文件读序完成时）；③ **高危信号档**：periodic-review 判 CONTRADICTION（65.5 输出）、同一文件 ≥3 次往复修改、Todo 与计划状态失同步（S2 检出）。What=评估不依赖模型记忆，三档信号任一命中即当次评估；Why=Rule 29.1/65.1 事件驱动覆盖不到「长会话静默膨胀」，0% 执行率类缺陷（v148 判例）根因即触发靠自觉。
+
+67.2 **三态裁决（assessment contract）**：按四信号自评——① 距上次回顾的工具调用轮数；② 计划三文件行数与陈旧度（复用 `check-context-hygiene.sh` exit 码语义：0=clean / 1=建议 / 2=严重）；③ 同一目标重复失败次数（progress Error Log 计数）；④ 结论矛盾计数（periodic-review.sh 输出）——裁决三态：**HEALTHY**=继续执行，零动作；**PRESSURE**=上下文膨胀但方向清晰（信号② 严重档或信号① 超窗）→ 触发 67.3；**CONFUSED**=方向丢失（信号③ ≥2 或信号④ 非零且连续 2 次评估未收敛）→ 触发 67.4。**裁决必须留痕**：progress.md 当次记一行 `[assess] <verdict> — <一句话依据>`，无痕迹=未评估（64.1 同族：无证据链=未执行）。What=判定有输入、有输出、有痕迹；Why=可复核防幻觉式 HEALTHY（64.4 反空转判定同款约束）。
+
+67.3 **PRESSURE 主动压缩整理（compress-now，命中即执行）**：裁决 PRESSURE 后**不等 Phase complete**（29.1 事件驱动通道原文不变，本条为「主动」增量通道）当次执行——a) 跑 29.2 退场 SOP 三类动作（superseded 标记/≥5 条同主题折叠入 `## 压缩归档`/progress 已完成 Phase 段折叠）；b) 跑 29.3 压缩 SOP（findings >500 行强制压缩）；c) 增补蒸馏动作：本 Phase 高频结论按 62.3 蒸馏入 knowledge-brief §2/§4（已在 kb 的更新证据锚，不在 findings 重复展开）；d) 执行后 progress 记一行 `[compress] <动作> <三文件行数变化>`。原则沿用 29.2：被验证无关紧要的才退场，拿不准保留标「待复核」。What=主动、即时、可追溯的压缩；Why=R1「主动进行压缩/整理优化」的直接落地——既有 29.2 能力在，缺的只是「不等事件、命中就做」的触发语义。
+
+67.4 **CONFUSED 会话交接兜底（session handoff，解决不了→新会话）**：触发条件（任一）——① 22.3 五档兜底（改派/拆细/升档/接管/AskUser）穷尽后同一问题仍失败 ≥2 轮；② 连续 2 次评估裁决 CONFUSED。动作：按 `templates/session-handoff.md` 五段模板写 `<plan-dir>/session-handoff.md`（**目标锚 / 已完成与证据 / 当前断点 / 未决问题 / 新会话恢复指令**）→ Decisions Made 登记交接行 + progress 记 `[handoff] <文档路径>+<触发原因>` → 深水区执行动作停止（轻量簿记/只读验证可继续），向用户呈报文档路径与新会话启动指令。新会话恢复链（模板第 5 段固化）：`session-catchup.ts` 中断点检测 → 四文件读序（62.1：task_plan→progress→findings→knowledge-brief）→ `Skill("plan-resume")` 自主续推 Top 1（24.5）→ 从「当前断点」续做，**禁止重复已完成步骤**。What=结构化交接产物+可复制启动指令；Why=R2 落地载体；交接≠任务终止，是把易失上下文换新（RAM→Disk→新 RAM）。
+
+67.5 **hook 节奏承载（rhythm nudge 接线）**：`scripts/zcode-posttooluse.sh` 在 64.3 drift-rhythm 注入点（grep 锚=注入文案 `[drift-rhythm]`，实施日重验行号）经同一 additionalContext 通道追加单行：`[context-pressure] 主动评估（Rule 67.2）：四信号自评 → HEALTHY 继续 / PRESSURE 即压缩(67.3) / CONFUSED 写会话交接文档(67.4)`——前置判定 env `TASK_PLANNER_CONTEXT_PRESSURE != off` 才注入；**既有 drift-rhythm 三键计数（count/last_inject/due）与注入文案零改动**（64.3 性能约束同款：O(1) 三键读写，禁止全仓扫描）。注入=软提醒不拦截（PostToolUse 平台事实，64.3 同款），拦截力由 67.2 留痕与 Phase complete 门控承载。只改技能侧脚本，**不动 `/home/terry/.zcode/cli/config.json`**（hooks.events 挂载表零改动）。
+
+67.6 **机制守护（mechanism guard）**：零新 config 键（64.6 同范式，键膨胀=配置面失控面）——开关与调参全走 env：`TASK_PLANNER_CONTEXT_PRESSURE`（on/off，默认 on）/ `TASK_PLANNER_CONTEXT_PRESSURE_N`（提醒间隔倍数，默认 1=随 64.3 每次同触发；≥2 隔次注入降频）。静态守卫 `scripts/selftest-context-pressure.sh` 断言面：六子条文本锚（`^67\.[1-6] `=6）/ 三态 verdict 词（HEALTHY|PRESSURE|CONFUSED ≥3）/「主动评估」「主动优化」关键词 /「不等 Phase complete」语义锚 / 交接模板五段在位与恢复链锚 / hook env 锚与 drift-rhythm 零改动负锚 / SKILL「Critical Rules 1-69」三处（v150 期 1-65 → v151 期 1-66 → 本任务 1-67 → 并行合流 v153 期 1-68 → v154 期 1-69，锚演进并集终态）/ C49 在位 / registry 新行——并入 `selftest-registry.tsv`（4 列表头+N 行，SR-12 动态行数断言自动跟随）。SKILL.md 接线三处：Rule 67 摘要 bullet、「Critical Rules 1-69」计数三处级联、合规清单 C49（v151 占 C45=goal、v153 占 C46、v154 占 C47、v155 占 C48=用户呈报可审批性，五方合流后本任务行避让至 C49）。关系：Rule 29.1/29.2/29.3/29.5、Rule 65.1 触发时机与全部既有条款**原文零改动**——67 只追加「主动」通道与交接兜底，29 管「多→退场」SOP 本体，65 管结论一致性，66 管 goal 单元推进，61/64 管漂移，分工正交。
 
 ### 68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律（2026-10-09 task-v153，目标：计划初期显式分析依赖→推导并行分组→组内异构 agent/模型分摊→组内更新防错乱，可并行者并行加速、有依赖者串行逐个击破）
 
@@ -914,6 +929,21 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 
 ### 70.6 机制
 零新 config 键。机器面 = scripts/selftest-report-reviewability.sh（RRV 断言：条款锚+触点锚静态守护）+ check-complete.sh report-lint（fail-open warn，不改 exit 语义）。呈报违规按 Rule 26 降质处置：回炉补齐四要素后方可呈报。
+### 71 无源不写·空段占位·写必带锚纪律（P0，2026-10-10 task-v158，目标：把 2026-10-09 task-v153 无来源虚构事故（编写 findings.md 时 Visual/Browser Findings 模板空段被填入本会话无任何来源的内容，当次自查发现并删除）的修复机制制度化——写入前五问自检+模板空段显式占位合法化+溯源审计三态判定+派发防幻觉契约四位一体，根治「模板空段=幻觉温床」与「合理推测的具体化冒充事实」两类宪法 §三 反造谣铁律违反）
+
+71.1 **事实单元与三态判定（fact-unit tri-state）**：溯源审计时把目标文件切成「事实单元」（每条含具体事实的句子/表格单元格；具体事实=时间/数字/人名/事件描述/文件内容描述/截图照片描述等），逐单元三态判定——①有源=附 file:line / URL / 命令输出原文 / 本会话工具调用记录四者之一；②无源含事实=无上述来源却含具体事实（含「合理推测的具体化」「替调用方补细节」）=违规；③显式占位=「（本任务暂无…）」「未验证」类形态=合法。不确定一律从严判②。机械占位（`<待沉淀>`、`[DATE]` 类不含事实的模板槽）不属事实单元，不受本审计影响。
+
+71.2 **写入前五问自检（pre-write 5Q gate）**：任何文档段落（计划三文件/findings/knowledge-brief/delivery-summary/派发任务书/审计报告）落盘前逐段过五问——①这段每个具体事实我在本会话有第一手来源吗（工具调用记录/Read 过的文件/子代理返回）；②我是否正在填模板空段；③读者能按我写的锚点复核吗（file:line 可定位/命令可复现）；④会话此刻中断明天重启，这段还能从磁盘证据重建吗；⑤我写的是「我记得/我读到过」还是「我觉得应该有」。任一问不过=改写为显式占位后方可写入。最小可执行版口诀=「无源不写，空段占位，写必带锚」。
+
+71.3 **模板空段显式占位合法化（placeholder legality）**：模板空段（findings 的 Visual/Browser Findings、progress 的空表、各 variant 模板空槽）无对应事实时，合法交付形态=显式占位「（本任务暂无…）」或「未验证」+一句缺什么，**不再视为「未填完」违约**；禁止以「合理推测的具体化」填充空段（v153 事故根因=空段补位）。init 模板的机械占位槽不受影响（同 71.1 末句）。
+
+71.4 **溯源审计 SOP（source-trace audit）**：只审计不改写——只读目标文件，输出审计表（单元位置|事实摘要|三态判定|源锚或「无」|处置建议）+总计行（有源/无源含事实/显式占位三计数），写入调用方指定输出路径；违规单元处置=删除或降级为显式占位，由调用方执行；**禁止「补一个源」蒙混**（补源=二次造谣，Rule 26 Q3 最高档违规）。派发子代理执行时复用八字段任务书形态（素材锚=plans/task-v153-parallel-scheduling/fix-prompts.md:9-29 提示词 A）；统计类汇总禁自报，逐行原文供调用方复算（对齐 Rule 54.5）。
+
+71.5 **派发防幻觉契约行（dispatch anti-hallucination clause）**：templates/subagent_dispatch.md 必填契约段——子代理全部事实性输出必须带来源锚（file:line/命令原文/URL/已读区段行号四者之一）；禁止无来源具体化（推测写成事实/替调用方补细节/填模板空段）；信息缺失一律显式「未验证」或「暂无」并说明缺什么；结论区必须「事实+锚点」成对，无锚点行=违规退回；禁止以「合理推断」为由省略锚点。主进程派发时该段禁删（check-dispatch 契约门消费，Rule 63.6 同款先例）。
+
+71.6 **与既有 Rule 的关系**：宪法 §三 反造谣铁律=总纲；Rule 26（质量优先）/43.1（证据先行）/51（完成声称门）/54（执行诚实）/63.3（检索禁编造）=各面既有禁令——本条=「写入动作」面执行细则（事前五问+事中空段+事后审计+传播契约），与上述规则构成「总纲→禁令→细则」三层，不替代不回退；fix-prompts.md 素材保留为活文档（71.4 引用锚），后续演进以本规则条为权威源。
+
+71.7 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4/66.6/68.7 零新键纪律）；机器面=scripts/selftest-source-anchor-discipline.sh 静态守护（71.1-71.7 子条文本锚/模板占位注释锚/dispatch 契约段锚/SKILL 登记行+计数 1-71/C48 合规行/registry 登记行/零新键负断言/fix-prompts 素材锚）+selftest-registry.tsv 登记；合规清单 C50（SKILL.md 消费侧；C48=v155/C49=v152 已占用，2026-10-10 合并撞号修正）。**机器边界如实披露**：71.1 三态判定的语义面（事实单元识别/有无来源）不可静态机检——守护只锚定规则条/模板注释/契约段/级联计数存在性，运行时审计由 71.4 SOP（人工或审计子代理）执行，本机制不声称自动判幻觉。
 
 ## Rule 72（决策分级与用户打断纪律 — task-v160）
 

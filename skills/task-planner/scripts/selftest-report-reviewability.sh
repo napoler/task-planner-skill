@@ -93,7 +93,7 @@ else
 fi
 
 # ── RRV-03: Rule 70 段无行号引用形态（防级联漂移，v148 判例）──
-BLOCK70="$(sed -n '/^## Rule 70（/,$p' "$CR" 2>/dev/null || true)"
+BLOCK70="$(sed -n '/^## Rule 70（/,/^### 71 无源不写/p' "$CR" 2>/dev/null || true)"  # 2026-10-10 task-v158 合并收窄：排除其后 Rule 71 段（71 段内 file:line 锚不属本断言范围）
 RRV03_HITS=$(printf '%s' "$BLOCK70" | grep -cE ':\s?[0-9]+' 2>/dev/null || true)
 if [ "$RRV03_HITS" -eq 0 ]; then
     ok "RRV-03" "Rule 70 段无行号引用形态"

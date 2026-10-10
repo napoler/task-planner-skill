@@ -11,7 +11,7 @@
 #   SR-04     trivial 自主裁定措辞锚：「直接做」≥1 且「留用户裁决」≥1
 #   SR-05     41.6 行内锚：「零新 config 键」≥1 且「selftest-self-resolution.sh」≥1
 #   SR-06     SKILL.md `grep -c 'Rule 41'` ≥3 且 `grep -c '| C29 |'` = 1（合规清单 C29 项）
-#   SR-07     SKILL.md `grep -c 'Critical Rules 1-65'` ≥1 且 `grep -c '1-39'` = 0（字面锚——关键负断言）
+#   SR-07     SKILL.md `grep -c 'Critical Rules 1-67'` ≥1 且 `grep -c '1-39'` = 0（字面锚——关键负断言）
 #             [2026-10-08 task-v144 合并级联: References 表行 label 演进为「Critical Rules 1-62」,锚断言同步演进,旧 'Rules 1-39'=2 变体改为负断言 1-39=0]
 #             [2026-10-08 task-v147 合并级联: '1-62'→'1-63'，Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进]
 #   SR-08     SKILL.md 含「含 Rule 40-(5[3-9]|6[0-9])」≥1 且 critical-rules.md `grep -c '^40\.'` = 6（Rule 40/41 共存零损伤）
@@ -75,9 +75,11 @@ if [ "$n" -ge 3 ] && [ "$c" -eq 1 ]; then ok 06 "SKILL.md Rule 41 锚 $n ≥3 �
 # [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
 # [2026-10-08 task-v149 Rule 65 落地演进] '1-64'→'1-65'：Rule 65 已由 task-v149 落地（65.1-65.8 实测八子条），锚同步演进
 # [2026-10-09 task-v151 S4 钉值级联] '1-65'→'1-66'：Rule 66 已由 task-v151 落地（66.1-66.6），锚同步演进
+# [2026-10-09 task-v152 Rule 67 落地] '1-65'→'1-67'：Rule 67 已由 task-v152 落地，锚同步演进
 # [2026-10-09 task-v153 级联单元] '1-66'→'1-68'：Rule 68 已由 task-v153 落地（68.1-68.7 计划期并行调度），SKILL.md 计数锚级联 1-68，锚同步演进
 # [2026-10-10 task-v154 合并并集演进] '1-68'→'1-69'：task-v153 Rule 68 与 task-v154 Rule 69 合流落地，SKILL 章节引言行最终态 1-69
 # [2026-10-10 task-v160 S14d 新纪元锚扩] 字面 '1-69'→宽容 '1-(6[0-9]|7[0-2])'：SKILL 索引现状三处「1-72」(:9/:295/:380)，Rule 72 已落地；判据不减，仅主锚扩 6x-7x 纪元
+# [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 a="$(grep -cE 'Critical Rules 1-(6[0-9]|7[0-2])' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
 if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 宽容锚 Critical Rules 1-(6[0-9]|7[0-2])≥1 且 1-39=0"; else bad 07 "SKILL.md 字面锚漂移（Critical Rules 1-(6[0-9]|7[0-2])=$a 应 ≥1 / 1-39=$b 应 0）"; fi
@@ -86,10 +88,11 @@ if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 宽容锚 Critical Rul
 # [2026-10-08 task-v149 Rule 65 落地演进: 括注演进→「含 Rule 40-65 全集」, 宽容正则 5[3-9]|6[0-9] 已覆盖 65, 锚同步演进]
 # [2026-10-05 task-v136 S2 级联: 括注演进「40-54 全集」, 锚宽容化 40-5[3-9]（宽容正则优先）, ^40\.=6 子条断言保留]
 # [2026-10-05 task-v138 合并级联: 括注演进「40-55 全集」（Rule 55 落地），宽容正则 40-5[3-9] 仍覆盖 40-55，保持宽容锚不重新钉死（v136「宽容正则优先」先例；v138 侧 40-55 固定锚在合并面让位于宽容锚，命中 40-53/54/55 任一纪元即通过，语义强度不降）]
-if [ "$(grep -cE '含 Rule 40-(5[3-9]|6[0-9])' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
+# [2026-10-10 task-v158 source-anchor-discipline: SKILL.md:288 实态=「含 Rule 40-71 全集」, 宽容正则扩 7x 纪元 5[3-9]|6[0-9]|7[0-1], ^40\. 子条数断言保留不动]
+if [ "$(grep -cE '含 Rule 40-(5[3-9]|6[0-9]|7[0-1])' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT" || true)" -eq 6 ]; then
   ok 08 "SKILL.md「含 Rule 40-5x」宽容锚 + critical-rules.md Rule 40 六子条 = 6（共存零损伤）"
 else
-  bad 08 "Rule 40/41 共存锚损伤（含 Rule 40-5[3-9] 缺失或 ^40\. 子条数 ≠6）"
+  bad 08 "Rule 40/41 共存锚损伤（含 Rule 40-(5[3-9]|6[0-9]|7[0-1]) 缺失或 ^40\. 子条数 ≠6）"
 fi
 # SR-09 零新 config 键——properties 键数 = 42（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 已合法加 2 键,FF 守护断言 42 为准]
 if command -v jq >/dev/null 2>&1; then

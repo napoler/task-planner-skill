@@ -1,0 +1,13 @@
+#### [sub:CR] Code Review — verdict CHANGES_REQUESTED（2026-10-10）
+- 基准：design-pointer-fix.md（施工权威）+ task_plan 需求/VC 区；范围=worktree 相对 master 的 5 修复+新 selftest+SM 契约（7 文件提交 + 1 未提交）
+- 客观证据：`bash -n` 6 脚本全 OK；selftest-pointer-lifecycle 10/10 PASS；selftest-registry 5/5（rows=69）；selftest-smart-merge 17/17 PASS
+- 🔴 Blocker-1 F1 completed-ttl 误删面：`grep -qi 'Status.*complete'` 无行首/整体锚，命中多阶段 in_progress 计划的已完成阶段行（且 "incomplete" 含子串 complete）。实测复现：活跃计划（阶段一 complete+阶段二 in_progress，指针 mtime 25h）跑 gc → 指针被静默置空。位置 set-active-plan.sh:175-179，置信度 HIGH。
+- 🟡 Major-2 F3 归属匹配不对称：`grep -q "^sess${SID}"` 仅匹配带 sess 前缀 owner；裸 uuid owner 会话（无 sess 前缀）被漏判。实测：owner 无前缀 → 守卫失效直接写入（trample）。set-active-plan.sh:218 / init-session.sh 同段，置信度 MEDIUM。
+- 🟡 Major-3 新 selftest 静态断言可腐化：PL-01/02/03/06/07 用 `grep -c` 计脚本整文件命中（含注释），删码留注释仍 PASS。证据 'dead-ref' 命中 2 行（1 行是注释）、'session-owner' 注释行亦命中。selftest-pointer-lifecycle.sh:26-45，置信度 HIGH。
+- 🟡 Major-4 PL-05 自愈式 SKIP 使 F5 守护不可失败：`.stage` 缺失仅 `diff -r` 在位即 SKIP 计 PASS，F5 回退后本断言仍 PASS。selftest-pointer-lifecycle.sh:35-41，置信度 HIGH。
+- 🟡 Major-5 VC-3 措辞与实现分叉：task_plan VC-3 期望撞键时"只写 env-sid 键"，实现为"不写该键"（与设计稿一致、与 VC 措辞不一致）——验收口径需澄清。置信度 MEDIUM。
+- 💬 Minor-6 F5 存在性/差异失败时仍打印 `[DEPLOY] OK: 全部部署位 post-verify 零差异`（随后 exit 6），成功文案误导。smart-merge-back.sh:764，置信度 MEDIUM。
+- 💬 Minor-7 F2 缺口巡检仅查剥前缀 `<sidkey>.active_plan`，而 resolve 双命名空间兼容读 `sess<sidkey>.active_plan`（历史写入方）→ 遗留 sess 形态可能误报缺口（advisory 只读，无写入）。set-active-plan.sh:193，置信度 MEDIUM。
+- 💬 Minor-8 F4 旧位置参数模式（无 set 关键字）在计划目录内仍 exit 2（既有行为，设计仅scope set 模式，非回归）。set-active-plan.sh:81，置信度 HIGH。
+- 覆盖且未发现问题：F2 隔离性（gc 仅 echo 不代写，守住）／--force 可达（实测生效）／F4 set 模式与 --show/gc 不受影响／F5 --legacy 保留 exit 6 与 EXIT trap stage/bak 清理完备、部分失败=exit 1 不伪成功／check-complete 提醒位于 python_rc==0 分支且不改退出码／check 技能树无软链故 diff -r 后验无假阳性源。
+- 基线代差澄清（非本任务缺陷）：worktree 基座 62b8b4b 落后 master 8fd9d92 达 24 提交，`git diff master` 中 SKILL.md 的 Rule 67/71 行与 C49/C50 行、critical-rules 与模板等 60+ 文件属"落后即删除"的假象；本任务作者改动经 `git show` 证实仅 SKILL.md :109 单行（+1）。合并须防误删这些已落地条款。

@@ -1,0 +1,12 @@
+#### [sub:selftest单元]（code-assistant，pointer-lifecycle selftest 单元）
+- 落位: worktree skills/task-planner/scripts/selftest-pointer-lifecycle.sh（新建，PL-01..10 全实现）+ scripts/selftest-registry.tsv 追加 1 行（4 列 tab，rows 66→67，与 selftest 脚本数 67 同步）
+- 断言形态对齐邻族 selftest-drift-enforcement.sh（assert/ok/bad 计数 + 末行 Total + exit 语义；静态 7 条 + 行为 3 条，行为夹具全部 mktemp /tmp 隔离仓，禁触真实 plans/ 与真实 side 键）
+- PL-01..04/06/07 静态锚实测在位；PL-05 采自愈式 SKIP 设计：'diff -r' 在位但 '.stage' 未入 worktree（F5 staging 重构由并行单元施工），落位前 SKIP 计 PASS 并显式标注，落地后同一断言自动转硬断言，无需改本脚本
+- PL-08: 计划目录内 `set demo-task` exit 0（F4 ROOT 回归）；PL-09: stale 夹具 gc 双场景 dead-ref + completed-ttl（25h mtime），输出含 stale 且 .active_plan 置空（原子语义=空串不删文件）；PL-10: 假 claimant（.session-owner 声明 sess<SID> 且 in_progress）→ skip 写入 + WARN 含 claimant 键名 + --force 覆盖写入
+- PL-06 按验收提醒以 2>&1 等价口径断言：grep 校验 check-complete.sh 内「移交提醒」行含 `>&2` stderr 通道锚（S3 实现走 stderr 已确认）
+- 验收原文:
+  - `bash scripts/selftest-pointer-lifecycle.sh` → `Total: 10 PASS=10 FAIL=0`，exit 0（PL-01..PL-10 十行 PASS 全贴回）
+  - `bash scripts/selftest-registry.sh` → `Total: 5 PASS=5 FAIL=0 (registry rows=67, actual selftest=67)`
+  - `tail -1 scripts/selftest-registry.tsv`: `selftest-pointer-lifecycle.sh	task-v159 指针与部署生命周期守护面 PL-01..10（task-v159）	gc 全局指针生命周期(死引用/completed-TTL) / 哨兵-side 缺口巡检 / set 所有权守卫 / set ROOT fallback / deploy staging+post-verify(F5 未落地时 SKIP) / check-complete 移交提醒 / SKILL 指针移交纪律行 改动	set-active-plan.sh;smart-merge-back.sh;check-complete.sh;SKILL.md`（cols=4 awk 实测）
+- 组域边界核对: `git status --short scripts/` 本单元净增量 = `?? selftest-pointer-lifecycle.sh` + registry.tsv 的 M（append 1 行）；`git diff --stat master -- scripts/` 中 check-complete/init-session/set-active-plan 的 M 与两脚本删除行=基线代差 + 并行单元产物，本单元未触碰（与前置单元负结果口径一致：净增量以 git status 未跟踪+本行 append 为准）
+- 负结果: 已核对 TSV 4 列 tab 对齐（awk NF=4）、registry T01-T05 全 PASS；未改真实 plans/ 与真实 slot，/tmp 夹具随 trap 清理

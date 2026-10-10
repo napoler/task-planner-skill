@@ -95,9 +95,9 @@ fi
 # （覆盖 40-53/54/55 各纪元，v136 R-09/SR-08/RR-16「宽容正则优先」先例；防止下次全集演进再钉死；C38 唯一性断言不变）。
 x="$(grep -cF 'Rule 54' "$SKILLMD" || true)"
 y="$(grep -cF 'C38' "$SKILLMD" || true)"
-z="$(grep -cE 'Rule 40-(5[3-9]|6[0-9])' "$SKILLMD" || true)"
+z="$(grep -cE 'Rule 40-(5[3-9]|6[0-9]|7[0-1])' "$SKILLMD" || true)"
 if [ "$x" -ge 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
-  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引全集括注「Rule 40-(5[3-9]|6[0-9])」宽容锚≥1（现状 40-62）"
+  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引全集括注「Rule 40-(5[3-9]|6[0-9]|7[0-1])」宽容锚≥1（现状 40-71）"
 else
   bad 09 "SKILL.md Rule 54=$x（应 ≥1）或 C38=$y（应 =1）或「Rule 40-(5[3-9]|6[0-9])」=$z（应 ≥1，级联漏改）"
 fi

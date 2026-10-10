@@ -793,8 +793,37 @@ if [ -n "$SIDSRC" ]; then
             fi
         fi
     fi
+    # [2026-10-10 task-v159] F3 init 侧: side 写入所有权守卫(与 set-active-plan.sh set 分支同语义)
+    # Why: 写 ${SIDKEY}.active_plan 前须确认该 sid 键未被"在途"的他计划沿袭占用——
+    #   D3 缺陷=v156/v157 owner=sesscbab959f 共享 SessionStart key,init 误写他会话指针空间。
+    #   扫 plans/*/.session-owner: claimant=声明 sess<${SIDKEY}> 的计划目录;
+    #   ①claimant≠本计划(当前 PWD)且其 task_plan.md Status=in_progress→skip 本键写入防互踩;
+    #   ②claimant 不存在或已 complete→fail-open 正常写(只 INFO/WARN, 不拦)。
+    #   sidmap 映射逻辑(:759-794)保留不动——映射值撞车由本守卫兜底。
+    # 基线行为: init 直接写 side 键, 无所有权检查。
+    SKIP_SIDE_WRITE=0
+    _claimant=""
+    for _ownfile in "${PLAN_ROOT}"/*/.session-owner; do
+        [ -f "$_ownfile" ] || continue
+        # [2026-10-10 CR修复 MAJOR-F3] owner 匹配兼容双形态 ^(sess)?${SIDKEY}$
+        # Why: 同 set-active-plan.sh set 分支 F3 修复——裸 uuid owner 会话(无 sess 前缀)被漏判,
+        #   守卫失效直接写入(trample)。修法=兼容双形态, 整行锚定($)实现 norm 后比较。
+        if grep -qE "^(sess)?${SIDKEY}$" "$_ownfile" 2>/dev/null; then
+            _claimant="$(basename "$(dirname "$_ownfile")")"
+            break
+        fi
+    done
+    if [ -n "$_claimant" ] && [ "$_claimant" != "$(basename "$PWD")" ]; then
+        if [ -f "${PLAN_ROOT}/${_claimant}/task_plan.md" ] \
+           && grep -qi 'Status.*in_progress' "${PLAN_ROOT}/${_claimant}/task_plan.md" 2>/dev/null; then
+            echo "[init] WARN: side 键 sid=${SIDKEY} 已被在途计划 ${_claimant} 声明，skip 写入防沿袭互踩" >&2
+            SKIP_SIDE_WRITE=1
+        else
+            echo "[init] INFO: side 键 sid=${SIDKEY} 曾被计划 ${_claimant} 声明（已 complete/不存在），fail-open 继续写入"
+        fi
+    fi
     SIDE_DIR="${PLAN_ROOT}/.active_plan_side"
-    if [ -n "$SIDKEY" ] && mkdir -p "$SIDE_DIR" 2>/dev/null; then
+    if [ -n "$SIDKEY" ] && [ "$SKIP_SIDE_WRITE" = "0" ] && mkdir -p "$SIDE_DIR" 2>/dev/null; then
         side_tmp="$(mktemp "${SIDE_DIR}/.tmp.XXXXXX" 2>/dev/null)" || side_tmp=""
         if [ -n "$side_tmp" ]; then
             printf '%s\n' "$(basename "$PWD")" > "$side_tmp" 2>/dev/null \
