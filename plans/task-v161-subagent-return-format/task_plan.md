@@ -247,7 +247,7 @@ Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 age
 
 并行组声明（Rule 21.4）：S1/S2 属并行组 `[parallel-group:pg0]`（输入文件集互斥、验收独立，2026-10-10 同消息派出已完成）。
 
-### Phase 2: Planning & Structure（计划填充 — 进行中）
+### Phase 2: Planning & Structure（计划填充 — 已完成）
 - [x] Define technical approach（三层修复：契约优先级声明+条款补强+机械校验）
 - [x] Goal/VC/R 映射/根源覆盖表/scope/隔离决策落盘（本文件）
 - [ ] 建 worktree wt/v161-subagent-return-format（基点 master b6e6e2e）+ attest 重锁
@@ -309,7 +309,7 @@ Phase 5 complete（合并 a578531+worktree 清理+delivery-summary;部署与 age
 - [x] worktree git status 干净 + merge --no-ff 回 master + Read 关键文件复验 + 清理 worktree/branch
 - [x] 部署同步裁定登记（部署位=~/.zcode/skills 等——未同步,待用户授权,delivery-summary 待裁决②）
 - [x] delivery-summary.md 落盘（含待授权项：内置 agent 定义输出模板修改+部署同步）
-- [ ] Delete 隔离分支清理复验
+- [x] Delete 隔离分支清理复验（wt/v161 已删）
 - **V-N:** VC-5, VC-6, VC-7
 - **Status:** pending
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
