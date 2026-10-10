@@ -27,6 +27,7 @@
 
 | 工序 | 缺陷面 | 修复点 | VC |
 |------|--------|--------|----|
+| 派发 prompt §7 段填写（第一优先根因） | 段填写污染实证（用户 mid-turn 样本）：「## 返回格式」段被填入 ①②③ 任务要点清单而非 8 字段模板块（标题重复「## 返回格式## 返回格式」为拼接痕迹）；check-dispatch.sh 只查 status:/acceptance:/checkpoint: 三 key 存在性，段结构污染可漏放 | S6 check-dispatch.sh prompt 侧段结构校验 + S1 段填写禁令 | VC-1, VC-3 |
 | 契约定义（派发 prompt §7） | 8 字段禁令已存在但无优先级声明——agent 定义层输出模板（executor 步骤进度/general-purpose 任务交付报告/Explore 发现列表）与契约在子代理上下文竞争，LLM 常优先遵循 agent 定义模板（实证：58 份检查点严格合规仅 14=24%） | S1 subagent_dispatch.md §7 加优先级声明+点名禁令 | VC-1 |
 | 条款层（Rule 22.4b） | 污染机制未成文——「总结式返回违规」仅一句「不加标题/前言/总结」，未点名污染源与主进程动作闭环 | S2 critical-rules.md 22.4b 补强 | VC-2 |
 | 执行校验（返回回收） | 主进程侧零机械校验——22.8.5「收到自由文本→视为 partial」靠自觉；check-dispatch.sh 只查 prompt 不查返回 | S3 check-subagent-return.sh 新脚本 | VC-3 |
@@ -36,7 +37,7 @@
 
 <!-- plan_tier: standard -->
 ## Goal
-修复子代理返回格式污染：让 task-planner 体系所有派发子代理的返回消息与检查点「最终结论」段严格遵循 8 字段固定列表格式（status/acceptance/files/evidence/checkpoint/findings_written/blockers/confidence），消除 agent 定义层输出模板竞争导致的总结式返回——落地三层：派发契约优先级声明（S1）+ Rule 22.4b 条款补强（S2）+ 主进程侧机械校验 check-subagent-return.sh（S3）+ selftest 守护与级联（S4）。
+修复子代理返回格式污染：让 task-planner 体系所有派发子代理的返回消息与检查点「最终结论」段严格遵循 8 字段固定列表格式（status/acceptance/files/evidence/checkpoint/findings_written/blockers/confidence）。根因三层分治：派发 prompt §7 段填写污染（S6 prompt 侧结构校验+S1 段填写禁令）+ agent 定义层输出模板竞争（S1 优先级声明+S2 条款补强）+ 返回回收零校验（S3 返回侧机械校验）+ selftest 守护级联（S4/S5）。
 
 ## 🔍 Code Review 配置
 
@@ -76,7 +77,7 @@
 |---|----------|----------|---------------|
 | VC-1 | 派发契约 §7 含返回格式优先级声明（显式声明本模板优先于子代理 agent 定义中的任何输出模板/报告格式）+ 点名禁令（禁步骤进度/发现列表/任务交付报告/BOOKKEEPING 等非本模板格式） | grep 断言 | `grep -c "优先于" skills/task-planner/templates/subagent_dispatch.md` ≥1 且含点名格式字样 |
 | VC-2 | Rule 22.4b 含污染机制条款（agent 定义层输出模板竞争）+ 主进程动作闭环（收到非 8 字段返回→打回/兜底动作显式化） | grep 断言 | `grep -c "agent 定义" skills/task-planner/references/critical-rules.md` 22.4b 段内 ≥1 |
-| VC-3 | check-subagent-return.sh 对 4 类输入正确分流：①合规 8 字段→PASS(rc=0) ②混入 summary 等契约外字段→VIOLATION(rc=1) ③8 字段块后附加自然语言→VIOLATION ④缺字段/纯自然语言→VIOLATION | 对夹具逐个跑脚本看 rc | `bash skills/task-planner/scripts/check-subagent-return.sh --selftest` rc=0（内含 4 夹具断言） |
+| VC-3 | 双脚本夹具分流覆盖两个污染面：①check-subagent-return.sh 对 4 类返回输入正确分流（合规 8 字段→PASS rc=0；混入 summary 等契约外字段/块后附加自然语言/缺字段或纯自然语言→VIOLATION rc=1）②check-dispatch.sh prompt 侧对「返回格式」段污染样本（标题重复+段内 ①②③ 任务清单）rc 非 0（enforce 阻断/warn 告警），对干净模板 rc=0 | 对夹具逐个跑脚本看 rc | `bash skills/task-planner/scripts/check-subagent-return.sh --selftest` rc=0；`bash skills/task-planner/scripts/check-dispatch.sh <污染 prompt 夹具>` 阻断；干净模板 rc=0 |
 | VC-4 | selftest-subagent-return.sh 全 PASS 且 selftest-registry.tsv 已登记 | 跑脚本+查登记 | `bash skills/task-planner/scripts/selftest-subagent-return.sh` rc=0；`grep selftest-subagent-return skills/task-planner/scripts/selftest-registry.tsv` 命中 |
 | VC-5 | 全仓 selftest 回归 FAIL=0（与改前基线对照，新增断言不破坏既有） | 全集跑批 | 跑仓内全部 selftest-*.sh，FAIL 计数=0 |
 | VC-6 | SKILL.md Rule 22 摘要与 dispatch-examples 示例同步含优先级声明；级联无遗漏 | grep+独立 VC 复验 | SKILL.md Rule 22 段含优先级相关字样；dispatch-examples.md §1 含点名禁令 |
@@ -195,10 +196,10 @@
 > 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。
 
 ## Current Phase
-Phase 2（计划填充收尾 → worktree+attest → Phase 3 派发）
+Phase 3 待派发（计划已 attest 重锁并 commit eae1c1c 后 B 类扩展更新：根因三层化+S6 新 S-unit）
 
 ## Next Step
-落 findings.md 调研结论归档 → 建 worktree wt/v161-subagent-return-format（基点 master HEAD b6e6e2e）→ attest → Phase 3 派 S1/S2/S3 并行组
+Decisions 登记+attest 重锁完成后→Phase 3 派 S1/S2/S3/S6 并行组 pg1（四任务书同消息派出，checkpoint 落 plans/task-v161-subagent-return-format/subagent-state/）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -255,10 +256,12 @@ Phase 2（计划填充收尾 → worktree+attest → Phase 3 派发）
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（契约层+条款层+校验层+守护层）
-- [ ] S1 契约层：subagent_dispatch.md §7 加优先级声明+点名禁令
+- [ ] S1 契约层：subagent_dispatch.md §7 加优先级声明+点名禁令+段填写禁令
 - [ ] S2 条款层：critical-rules.md Rule 22.4b 污染机制补强+主进程动作闭环
-- [ ] S3 校验层：新 check-subagent-return.sh（4 类夹具分流）
-- [ ] S4 守护层：selftest-subagent-return.sh + registry 登记 + SKILL/dispatch-examples 级联
+- [ ] S3 校验层：新 check-subagent-return.sh（返回侧 4 类夹具分流）
+- [ ] S6 校验层：check-dispatch.sh prompt 侧「返回格式」段结构校验
+- [ ] S4 守护层：selftest-subagent-return.sh + registry 登记
+- [ ] S5 守护层：SKILL/dispatch-examples 级联
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-6
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
@@ -278,10 +281,11 @@ Phase 2（计划填充收尾 → worktree+attest → Phase 3 派发）
 | S1 | subagent_dispatch.md §7 段末追加优先级声明句+点名禁令锚点（不改既有 8 字段定义） | 继承 | skills/task-planner/templates/subagent_dispatch.md（§7 段 :62-77，追加于禁令牌句后） | grep 优先级句+点名禁令 4 格式族字样均在位 | 10min | 1f/8l/10min | 无（纯机械单元） | - | pending |
 | S2 | critical-rules.md Rule 22.4b 追加污染机制子句（agent 定义层竞争+主进程动作闭环引用 22.4c 新脚本） | 继承 | skills/task-planner/references/critical-rules.md（22.4b 段 :184 内追加） | grep 22.4b 段含「agent 定义」+「check-subagent-return」 | 10min | 1f/8l/10min | 无（纯机械单元） | - | pending |
 | S3 | 新写 check-subagent-return.sh：stdin/文件输入→8 字段结构校验（字段齐全/顺序/契约外字段/块后内容），--selftest 内置 4 夹具，rc 分流 | 继承 | skills/task-planner/scripts/check-dispatch.sh（参照既有脚本风格与 selftest 夹具写法） | 4 夹具 rc 判定正确（3 VIOLATION+1 PASS） | 15min | 1f/95l/15min | 无（纯机械单元） | - | pending |
-| S4 | 新写 selftest-subagent-return.sh（守护 S1/S2/S3 断言）+ selftest-registry.tsv 追加登记行 | 继承 | skills/task-planner/scripts/selftest-registry.tsv（登记格式参照）、skills/task-planner/scripts/selftest-dispatch.sh（断言风格参照） | selftest rc=0；registry grep 命中 | 15min | 2f/90l/15min | 无（纯机械单元） | S1、S2、S3 | pending |
+| S4 | 新写 selftest-subagent-return.sh（守护 S1/S2/S3/S6 断言）+ selftest-registry.tsv 追加登记行 | 继承 | skills/task-planner/scripts/selftest-registry.tsv（登记格式参照）、skills/task-planner/scripts/selftest-dispatch.sh（断言风格参照） | selftest rc=0；registry grep 命中 | 15min | 2f/90l/15min | 无（纯机械单元） | S1、S2、S3、S6 | pending |
 | S5 | SKILL.md Rule 22 摘要行级联含优先级措辞 + dispatch-examples.md §1 示例补点名禁令 | 继承 | skills/task-planner/SKILL.md（Rule 22 摘要 :307）、skills/task-planner/references/dispatch-examples.md（§1 :16-26） | grep 两文件级联措辞在位 | 10min | 2f/10l/10min | 无（纯机械单元） | S4 | pending |
+| S6 | check-dispatch.sh 增强：prompt 侧「返回格式」段结构校验（标题唯一+其后 8 字段块齐全+段内禁混任务清单特征 ①②③），复用既有 dispatch_contract_enforce 档位 | 继承 | skills/task-planner/scripts/check-dispatch.sh（既有 prompt 校验段扩展）、skills/task-planner/templates/subagent_dispatch.md（§7 模板） | 对污染样本夹具（用户实证的 ①②③ 版返回格式段）rc=1 阻断；干净模板 rc=0 | 15min | 1f/35l/15min | 无（纯机械单元） | S1 | pending |
 
-并行组声明（Rule 21.4）：S1/S2/S3 属并行组 `[parallel-group:pg1]`（文件集互斥/输入互不依赖/验收独立）；S4/S5 串行收口（S4 依赖 S1-S3 最终措辞写断言，S5 依赖 S4 完成级 SKILL 摘要与示例）。check-dispatch.sh serial_slot_check 对组标记放行（Rule 23.13 机器边界：不做四问机器校验，责任在计划期声明+执行期四问）。
+并行组声明（Rule 21.4）：S1/S2/S3/S6 属并行组 `[parallel-group:pg1]`（文件集互斥/输入互不依赖/验收独立；S6 以 S1 的最终措辞为夹具断言基准，同组靠材料包内联约定对齐）；S4/S5 串行收口（S4 依赖 S1-S3/S6 最终措辞写断言，S5 依赖 S4 完成级 SKILL 摘要与示例）。check-dispatch.sh serial_slot_check 对组标记放行（Rule 23.13 机器边界：不做四问机器校验，责任在计划期声明+执行期四问）。
 
 ### Phase 4: Testing & Verification（全量回归+VC 复验）
 - [ ] 全仓 selftest 跑批（FAIL=0 基线对照；记 progress.md 轮次）
@@ -388,6 +392,7 @@ Phase 2（计划填充收尾 → worktree+attest → Phase 3 派发）
 | S1/S2/S3 并行组 pg1 + S4 串行 | 独立性四问全 no（文件集互斥/输入互不依赖/验收独立）；S4 的 SKILL 级联断言需引用 S1/S2 最终措辞字面 |
 | worktree 基点=master HEAD b6e6e2e（非 main） | main 落后 master 905 commit（实测 git log main..master | wc -l）；memory worktree-branch-desync 教训 |
 | 修复范围限定「返回消息格式治理」，不含既有交付总结模板 | 用户诉求=子代理返回固定列表格式；delivery-summary 是用户面终验产物（SKILL:171 定位明确），两者隔离不动（防 Rule 8.1 不相干混入） |
+| 根因面由两层扩为三层（2026-10-10 用户 mid-turn 实证，B 类扩展）：新增「派发 prompt §7 段填写污染」为第一优先根因，S3 拆为 prompt 侧（check-dispatch.sh 增强）+返回侧（check-subagent-return.sh 新写）双脚本 | 用户实证样本：派发 prompt「## 返回格式」段被填入 ①②③ 任务要点清单（且标题重复「## 返回格式## 返回格式」）——子代理照被污染指令返回总结式清单；check-dispatch.sh 现行只查 3 个 key 存在性，段结构污染可漏放；机器校验必须覆盖 prompt 侧结构而非仅返回侧结果。51.7 登记后重锁 |
 
 ## Errors Encountered
 <!-- 
