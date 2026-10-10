@@ -137,6 +137,13 @@
 - 验收复核：`grep -c 'task-v164'`→1/1；`grep -nE '互顶全局|全局 legacy'`→rc=1 空；`bash -n` 双脚本 rc=0；`git diff --stat`→仅 zcode-userpromptsubmit.sh(+5/-1)+zcode-posttooluse.sh(+6/-2)（`.dispatch-inflight`/`7-prompt-material.md` 为派发期既有，非本次产生）
 - 负结果报告：仅改清单内两脚本注释区；未动其他 26 个引用面文件、未动任何代码行；未执行 git add/commit/checkout/reset
 
+#### [sub:8-executor] S8 pretooluse+init.cjs 注释改述
+- 事实（命令→关键输出）：基线 `grep -nE '互顶|全局 legacy' zcode-pretooluse.sh task-plan-init.cjs` = 2 hits（pretooluse.sh:73、task-plan-init.cjs:122）；改述后 = 0（rc=1 空集）；`grep -c 'task-v164'` 两文件各=1（改述前各 0）
+- 改述锚：zcode-pretooluse.sh:73（原「不再被互顶的全局指针误拦」→「不再被并发覆写的全局层误拦」+ `[2026-10-10 task-v164]` 三点块：plans/.active_plan 现为工作树内瞬态 fallback（路径随 $PWD 本地化；git rm --cached+.gitignore 同族瞬态，非入库单例）；正常路径=side 会话私有指针（权威层）；退役旧"单例全局指针"框架）。task-plan-init.cjs:122-124（原「不读全局 legacy」「全局指针恒有效」「置全局指针」→ 三处改「全局 fallback」+ `[2026-10-10 task-v164]` 三点块，退役原"全局单例指针"叙事）。注记仿 S5/S6/S7 用「原措辞"并发翻转全局指针误拦"/"全局单例指针"」避开字面「互顶」「全局 legacy」连写，防 grep 误伤（保留原措辞说明与验收清零兼得）
+- 保留纪律核验：.sh 仅增 `#` 行（历史勘误注释 [2026-09-10 active-plan-race] 逐字保留未删），`git diff -U0 | 非#行 | grep -c .` = 0；.cjs 9 条变更行全为 `//` 注释（`grep -vE '^[+-][[:space:]]*//' | grep -c .` = 0），JS 逻辑/字符串字面量/usage 零改动
+- 验收复核：`grep -c 'task-v164'`→1/1；`grep -nE '互顶|全局 legacy'`→rc=1 空；`bash -n zcode-pretooluse.sh` rc=0；`node --check task-plan-init.cjs` rc=0；`git diff --stat`→仅 zcode-pretooluse.sh(+4/-1)+task-plan-init.cjs(+6/-3)（`.dispatch-inflight`/`8-prompt-material.md` 为派发期既有，非本次产生）
+- 负结果报告：仅改清单内两文件注释区；未动其他引用面文件、未动任何代码行/字符串字面量；未执行 git add/commit/checkout/reset
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
