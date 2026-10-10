@@ -49,6 +49,6 @@
 - **回滚方式**: `cd /mnt/data/dev/task-planner-skill && git revert -m 1 a7b1619`（若需整体回退本任务主仓合并；注意将同时回退已在其后落盘的 v158 演进→建议改按文件级 `git checkout a7b1619~1 -- skills/task-planner/` 后重新部署）
 
 ## 5. 下一步建议（按推荐排序）
-1. **[推荐]** 对象: `/mnt/data/dev/task-planner-skill/plans/task-v156-drift-shield/task_plan.md`（待产出）｜ 看点: 「🎯 用户需求原文」R1-R6 与 D1-D5 决策点 ｜ 动作: 审阅后回复 D1-D5 选项（默认项=批准+新 Rule+本期全做），超时 5min 按默认执行
+1. **[推荐]** 对象: `/mnt/data/dev/task-planner-skill/plans/task-v156-drift-shield/`（计划目录，task_plan.md 待本回合后段产出）｜ 看点: 「🎯 用户需求原文」R1-R6（防漂移三连发）与 D1-D5 决策点 ｜ 动作: 审阅后回复 D1-D5 选项（默认项=批准+新 Rule 形态+本期全做），超时 5min 按默认执行
 2. 对象: `/mnt/data/dev/task-planner-skill/skills/task-planner/scripts/zcode-posttooluse.sh` ｜ 看点: `[context-pressure]` 注入块（grep `TASK_PLANNER_CONTEXT_PRESSURE`）｜ 动作: 下次长任务中观察每 10 次工具调用是否出现该提醒行验证主动性
 3. 对象: `plans/task-v152-proactive-context/subagent-state/1c-drift-checker.md` ｜ 看点: 六轮 verdict 链（5 ALIGNED+1 DRIFT 收尾缺口）｜ 动作: 可选复核 DRIFT 轮的放行条件是否已逐项闭环

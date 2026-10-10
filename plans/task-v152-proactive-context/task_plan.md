@@ -113,7 +113,7 @@ task-planner 技能新增 Rule 67「上下文压力主动评估与会话交接�
 | G2 | 基线隔离 | worktree 隔离区建立+零回归基线快照 | baseline-selftest.log `grep -c 'FAIL=0'`=63 + git worktree list 含 wt/v152 | Phase 2 | complete |
 | G3 | 单元实施 | 13+4 单元落地产物=17 文件恰=scope | worktree `git status --short`=17 行且全在范围表 + 九脚本单跑全绿 | Phase 3 | complete |
 | G4 | 独立验证 | 全量回归零新增+hook 冒烟双态 | regression-worktree.log `grep -cE 'rc=[1-9]'`=0 + run1/run2.out 双 PASS | Phase 4 | complete |
-| G5 | 审查闭环 | CR round2 APPROVED（fix-wave 后） | subagent-state/8-code-reviewer-S7-round2.md 首行=APPROVED | Phase 5 | pending |
+| G5 | 审查闭环 | CR round2 APPROVED（fix-wave 后） | subagent-state/8-code-reviewer-S7-round2.md 首行=APPROVED（990 PASS 实测） | Phase 5 | complete |
 | G6 | 交付合并 | 合并回 master+部署对账+Rule 67 land | smart-merge-back no-ff 对账+三部署位 IDENTICAL+账本 landed=67+check-complete exit 0 | Phase 6 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
@@ -352,7 +352,8 @@ task-planner 技能新增 Rule 67「上下文压力主动评估与会话交接�
 | **fix-wave（2026-10-10 02:40）**：CR round1 CHANGES_REQUESTED → 追加 S14-S17 四修复单元（posttooluse 除零+钳位 / selftest 去 git 依赖+交叉断言+C46 断言 / SKILL+条款 C45→C46 / README 模板计数）；**Phase 6 合并预案升级**＝先 `git merge master` 入 worktree 并集解（9 重叠文件标签并集取 1-67、skill-split 钉取 518、RC-15 `^66=6` 正钉保留、goal-unit 新 selftest 若钉 1-66 则随并集演进）再全量回归，然后 smart-merge-back --deploy | CR 实测证据（MAJOR-1 复现 division-by-0/MAJOR-2 部署位无 master/MAJOR-3 master C45=goal Rule 66）+ master 现实态核对（dbc635a..master 9 commit，v151 Rule 66 六子条+RC-15 `^66=6`+skill-split 钉 515+registry 64 selftest）——原「v151 在途」假设已失效，按已落地事实重订合并面 |
 | attest 新门适配（2026-10-10 02:45）：补录「🎯 Goal 单元表」（66.1 六列，G1-G4 complete+G5/G6 pending）+ progress 四条 [goal:Gn] 证据行 + S16 单元格 `\|` 管道转义清除 | v151 已把 Rule 66.5（Goal 单元表硬门）与新版 check-plan-dispatch 部署到位（部署位=master 态）→ 旧计划 attest 被拒；S16 管道字符拆列=v149 S20 同款判例（单元格禁裸管道） |
 | 重锁登记-1（2026-10-10 03:2x）：Phase 5 收尾期对 task_plan 的执行期簿记编辑（checklist 勾选/Status complete/S7 行 done/Drift Log 行/Current Phase→6 前状态）——非内容重规划，按 51.7 登记后重锁 | hook PLAN TAMPERED 触发=锁后编辑；执行期状态簿记为流程既定动作，登记编号备查 |
-| 用户新指令判定（2026-10-10 03:3x）：用户三条 mid-turn 反馈（漂移愤怒案例+消歧义+废弃隔离）→ **D 类新任务**（Rule 8.1：与 v152 Goal 无关联）→ 开新计划独立承载，R1-R5 逐字归档于新计划「🎯 用户需求原文」；v152 原样保留不收编 | 用户原话三连发（调研 6 分钟假完成/视频剪纸风变 3D/正确错误混放混淆）；判定落 notepad；v152 继续 Phase 6 不留半成品 |
+| 用户新指令判定（2026-10-10 03:3x）：用户三条 mid-turn 反馈（漂移愤怒案例+消歧义+废弃隔离）→ **D 类新任务**（Rule 8.1：与 v152 Goal 无关联）→ 开新计划独立承载，R1-R6 逐字归档于新计划「🎯 用户需求原文」；v152 原样保留不收编 | 用户原话三连发（调研 6 分钟假完成/视频剪纸风变 3D/正确错误混放混淆）；判定落 notepad；v152 继续 Phase 6 不留半成品 |
+| Rule 36.3 删除基线声明（2026-10-10 07:6x）：本任务全链纯增量零删除——17+4 文件仅追加条款/bullet/C 行/模板/hook 行/selftest 断言与机械标签同步（1-65→1-67 编号改写=机械同步非语义删除，纠-3 口径）；并行并集中的 master 侧内容一律保留不删 | 满足 check-complete SKILL-MODIFY GATE 的删除性行为清单登记要求（36.3/36.4） |
 
 ## Errors Encountered
 <!-- WHAT: Every error you encounter, attempt number, and resolution. WHEN: Add immediately when an error occurs. -->

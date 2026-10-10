@@ -141,7 +141,8 @@
      Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 2026-10-09 19:36 | init WARN 哨兵 sidkey 与 env sid 分裂（会话侧写 4ec328f/Bash 侧 de2c5bba） | 1 | set-active-plan 双侧 side 指针均指 v152；plan-created 确认可写 | RC-1 命名空间分裂家族复发：SessionStart hook 与 Bash env 的 sid 源不同（sidmap 未覆盖新 sid 写入链） | 指针异常先 `set-active-plan.sh --show --sid <各自sid>` 双核验；sidmap 修复归 pointer-race 专项 |
+| 2026-10-09 20:13 | 时间戳估填致 check-3file-gate 假阴性（Phase 1 Started 填了未来值 20:20） | 1 | 按 attested_at/ledger tick 实锚改正（20:05/20:09/20:12） | 未核钟即填未来时间戳=门控锚点失效（宁误报设计下全信号假阴性） | 时间戳一律取实锚（date/attestation/ledger），禁估填（Rule 33 教训已入 Decisions 纠正-2） |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
