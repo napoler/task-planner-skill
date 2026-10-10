@@ -13,7 +13,7 @@
 #         P-04 Rule 68 校验段锚 + hard 串（依赖-同组，锚 add_violation 可执行行）+ advisory 串
 #              （组内全同，锚 echo WARN 可执行行）各 ≥1；任一缺失=FAIL（2026-10-09 CR 收敛硬断言）
 #     · SKILL.md（执行期入口联动，P-05，动态求值禁硬编码）:
-#         P-05 C46 合规行 =1 + `Rule 68` 摘要引用 ≥1 + SKILL 内 `Critical Rules 1-NN` 上界
+#         P-05 C46 合规行 =1 + `Rule 68` 摘要引用 ≥1 + SKILL 内 `Critical Rules 1-NN(+N)` 上界
 #              与 critical-rules.md 实测最大编号动态一致
 #     · scripts/selftest-registry.tsv（登记行，P-06）:
 #         P-06 含 selftest-parallel-scheduling.sh 行 ≥1
@@ -97,10 +97,11 @@ else
 fi
 
 # P-05 SKILL.md C46 行 + Rule 68 摘要行 + 上界动态对照（施工图 T5，动态求值禁硬编码）
-# What：断言 ① C46 合规行 =1 ② `Rule 68` 引用 ≥1 ③ SKILL 内 `Critical Rules 1-NN` 上界
+# What：断言 ① C46 合规行 =1 ② `Rule 68` 引用 ≥1 ③ SKILL 内 `Critical Rules 1-NN(+N)` 上界
 #      与 critical-rules.md 实测最大章节编号一致（awk 动态求值，v152/v153 级联漂移自吸收）。
 # Why：C46 是 68 消费侧合规清单唯一落点；上界若滞后于条款实际最大编号=SKILL 枚举面与
 #      条款面漂移（v150 计数钉值教训）——动态对照消除钉值腐化。
+# [2026-10-10 task-v156 CR/M 级联] 锚随 SKILL 计数「1-71+73」插入形态宽容化:DCS-11/R-09/RF-07/RR-09/P-05 正则加 `(\+[0-9]+)?` 族（K9）,负断言保留
 c46="$(grep -cE '^\| C46 ' "$SKILLMD" || true)"
 r68="$(grep -cE 'Rule 68' "$SKILLMD" || true)"
 crit_max="$(grep -oE '^### [0-9]+ ' "$CRIT" | awk '{print $2}' | sort -n | tail -1)"
