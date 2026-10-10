@@ -297,6 +297,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 > - image（不适用：Code Review Gate；code-assistant/debugger/code-reviewer 路由；content_quality Q3/Q4——图像域按成图三检 QC 门控）
 > - videotpl 工序 11 类（script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly——不适用同 image 行，另按各自域 QC/判定层门控）
 > 媒体族专用执行体 `image-generation-executor`/`video-generation-executor` 在位时优先（task-v124）；缺位时兜底路由 = 路由组列引用的项目专属资产（tools/gen.py·qc.py / script-writer / videop1 SOP 等）在当前环境缺位时，通用兜底路由 = executor(sonnet-1) + 对应工序 variant 模板 SOP + 生成技能（如 agnes-ai-generation-skill，派发 prompt 点名）；质检工序 = QC/审查类子代理；禁止 general-purpose 无登记默认兜底。
+> **Rule 75 注记（task-v163）**：新 variant 模板生成时必须按 template-guide.md §2.6 判定调研需求（必需/可选/不需要）并写入模板；research/code-edit/script-dev/deployment 四类型已内置调研触点行（Rule 75.6）。
 
 ## §十 工具选择映射（Rule 40.1/40.2 权威消费点 — task-v097）
 
