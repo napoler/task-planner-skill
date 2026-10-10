@@ -216,6 +216,7 @@
 | 2026-10-10 17:4x | Phase 4 收口自检：S11/S12/S13 均独立执行体产出+主进程亲验（回归日志逐段、行为 log 原文、CR 七项）；NIT 3 条全部处置（2 锚修正+1 口径更正）；VC-1~4 证据齐 | VC-1~4 | ALIGNED |
 | 2026-10-10 17:5x | Phase 5 合并前置：master 已前进 26 提交（v156 Rule 73 等），与分支 5 文件交集 → 先在分支内 merge master 解冲突（仅 SKILL.md:111 一处，取本方改述+v156 注释精度修正，merge commit 40a72f7）；主仓脏指针 v163 值按已登记瞬态合并规则 stash 不抢救 → 增设 S11-r2 对合并后态复跑全量后方可 merge-back | VC-4 | ALIGNED（防“S11 绿的是合并前态”证据断链） |
 | 2026-10-10 深夜 | Phase 5 收口：smart-merge-back --deploy 过 V1-V6（a849947 no-ff 在册）+三部署位 post-verify 零差异 IDENTICAL；.active_plan 瞬态终态亲验（主仓无文件/ls-files exit1/ignore:15）；Handoff 17 行补登后 stats verdict=ok；委派率 0.600 经白名单豁免（①git/worktree 编排+①②）；check-complete 首跑因 scope 未提交 exit 1→簿记提交后复跑 | VC-5 | ALIGNED |
+| 2026-10-11 | fix-wave 2（check-complete 终验自暴露）：①[judge-gate] Rule 73.4 留痕缺失→progress 补六类 [judge]+[align] 行；②S4 分级盲区（check-complete:1375 裸读瞬态指针漏 shell 错误行）→S16 [ -f ] 守卫修复+/tmp 夹具 OLD/NEW 实证；③SKILL-MODIFY 门声明补登 progress（`[skill-modify] 删除清单:`）；④Error Log 三条实质归因（PL-07 跨文件字面断言/守卫双 sid 误拦/裸读漏行）→learning-gate 占位清零；二轮 merge ea640d6+部署 IDENTICAL（V3 曾因 .dispatch-inflight 瞬态标记被跟踪撞车→restore 最小处置，登记第三笔卫生债） | VC-5, Rule 73.4/36.6/31 | ALIGNED |
 
 ## Current Phase
 <!-- WHAT: Which phase you're currently working on. WHY: Quick reference. -->

@@ -35,7 +35,22 @@
   | attest 合规回炉 | `attest-plan.sh` 首跑 | 锁定成功 | exit 1：Phase 4 缺 S-unit 表/缺 Goal 单元表/缺前置依赖列/粒度三值未填 → 按 v152 范式补 10 列 S-unit 表（S1-S10）+Goal 单元表（G1-G5）+FMEA 预演段 | ☑ 已修待复跑 |
 
 ### 交付后修复轮（fix-wave 2）
-  - [sub:16] check-complete 守卫修复完成
+- [sub:16] check-complete 守卫修复完成
+- 主进程：终验 check-complete 暴露两类问题——①[judge-gate] Rule 73.4 留痕缺失（v163 并行会话当日落地新规，本任务正好撞门）②shell 重定向错误漏行（S4 分级盲区：check-complete:1375 读取全局指针未做存在性守卫，"代码读取方=只读消费方"判据漏掉"假设文件必存在"）→ S16 executor 修复（/tmp 夹具 OLD/NEW 对照实证）+ 二轮 merge ea640d6 + 部署 IDENTICAL
+- `[skill-modify] 删除清单: 全链唯一删除=plans/.active_plan 的 git rm --cached 索引态变更（工作区瞬态文件保留为运行态，非内容删除）；16 文件技能侧均为注释/措辞改述（[task-v164] 原措辞注记保真，Rule 45）；selftest 仅 PL-07 断言锚锁步（指针移交→指针清理）无断言净删——逐项对照 36.3 基线确认`
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | S16 守卫修复 | /tmp 夹具 OLD/NEW 对照 | 无漏行+warn 逻辑不变 | OLD 漏 `No such file or directory`/NEW stderr 空+CASE B warn 仍触发 | ☑ PASS |
+  | 二轮合并 | smart-merge-back V1-V6+deploy | 合并+IDENTICAL | ea640d6 在册；三部署位零差异 | ☑ PASS |
+
+## ⚖️ [judge] 评判留痕（Rule 73.4 — 变更决策后/Phase complete 前/合并回前）
+- `[judge]` 2026-10-10 15:4x（变更型决策-索引瞬态化+S3 注释退役）：守住——三问：R1-R4 执行是；不变量（瞬态不入库/解析链冻结/side 权威）守住；[align] 行齐备（Drift Log 15:2x/15:5x）
+- `[judge]` 2026-10-10 16:1x（变更型决策-S5 措辞级联）：守住——级联清单内 12 目标零越界；[align] 行齐备（Drift Log 16:0x）
+- `[judge]` 2026-10-10 16:4x（变更型裁决-S10 display 字符串偏离）：接受并登记（目标优先于机械口径，行为零变化 PL-06 实证）；不变量守住（提醒 stderr 通道与 warn 形态不变）
+- `[judge]` 2026-10-10 17:4x（Phase 2/3/4 complete 前×3 逐次）：均守住——各 Phase 主进程独立复验（diff/语法/grep 三件套）；[align] 行齐备（Drift Log 四行）
+- `[judge]` 2026-10-11（合并回前×2 轮：a849947/ea640d6）：守住——合并后态全量回归 72→75/75 rc=0 复验后才合；瞬态文件按已登记规则处置（stash 不抢救/restore 后合）；[align] 行齐备（Drift Log 17:5x/深夜行）
+- `[align]` 全链对应行：task_plan.md Drift Log 六行全部 ALIGNED，无 BLOCKED
 
 ### Phase 1: 隔离与基线
 - **Status:** complete（2026-10-10 15:2x；基线 71/71 全绿+master 快进对账；drift 自检 ALIGNED 见 task_plan Drift Log 首行）
@@ -156,7 +171,9 @@
 ## Error Log
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
 |-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+| 2026-10-10 16:2x | check-complete 改述后 selftest-pointer-lifecycle PL-07 FAIL（rc=1，SKILL.md 移交纪律行缺失） | 1（S5 executor 自报） | 新增锁步单元将 PL-07 锚同步为 SKILL 新措辞「指针清理」；10/10 恢复 PASS | 信息缺失类：S4 引用面分级按 active_plan 字面 grep，漏掉 selftest 对 SKILL.md 旧措辞的跨文件字面断言（selftest=旧语义的机器契约） | 措辞退役类任务必须同步排查 selftest 对目标字面的断言（grep 旧词×selftest 全集）；锁步单元置于全部改述落地后执行 |
+| 2026-10-10 17:5x | 写守卫误拦主进程 Edit worktree/SKILL.md（.plan-required 哨兵判定失败） | 1 | 查证=守卫按 $PWD（主仓）解析 ROOT+hook sid（3c76a06c）与 env sid（de2c5bba）双命名空间，主仓无 hook-sid side 指针→解析落陈旧全局 v152→D10 仲裁失败；补设 hook-sid side 指针→v164 后放行 | 规则缺位类：worktree 执行期主进程写入时，守卫的 ROOT 推导（$PWD）与文件路径（worktree）错位，双 sid 命名空间无映射 | 长任务 worktree 执行期，主进程首次写 worktree 文件前先 `set-active-plan.sh set <task> --sid <hook-sid>` 锚定；该坑已登记 delivery-summary 风险节 |
+| 2026-10-10 深夜 | check-complete:1375 裸读 plans/../.active_plan 漏 shell 重定向错误行（终验输出污染） | 1（check-complete 复跑自暴露） | S16 executor 加 [ -f ] 存在性前置守卫；/tmp 夹具 OLD/NEW 对照实证；二轮 merge ea640d6 | 假设未验类：S4 分级把"代码读取方"一律判只读消费方，漏掉"读取处假设文件必存在"的隐式前提；瞬态化后文件按需不存在=正常态 | 引用面分级判据增加第三维：读取方是否假设文件存在（裸重定向/< 操作无 -f 守卫=瞬态化高风险点）；grep 模式补 `plans/../.active_plan` 族 |
 
 ## 5-Question Reboot Check
 | Question | Answer |

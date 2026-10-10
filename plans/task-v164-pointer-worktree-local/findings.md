@@ -55,6 +55,8 @@
 ### F. 相邻观察（登记不扩大范围，Rule 8.1 防 scope 蔓延）
 - `plans/task-v161-subagent-return-format/subagent-state/.dispatch-inflight` 被 git 跟踪（status=M），而同目录 subagent-state/*.md 未跟踪也未 ignore → 22.8 检查点瞬态文件治理不完全；本任务不处理，待后续裁决
 - `plans/INDEX.md:101` task-v146 行状态=pending/"⚠ 未开始"，但该任务 10-08 已 COMPLETE（merge e54973d，计划目录 task_plan.md 已归档）→ INDEX 陈旧行（本轮写 task_plan.md 时被 conflict hook 误报的来源）；本任务不处理，待后续清理
+- **S4 分级盲区（交付后 fix-wave 2 实证补登）**：S4 判据把"hit 落代码逻辑"一律归只读消费方，漏掉第三维=读取处是否**假设文件必存在**——check-complete.sh:1375 裸重定向读 `plans/../.active_plan`（`tr ... < file 2>/dev/null` 捕不住 shell 重定向失败信息），瞬态化后文件按需不存在=正常态，每次终验漏一行 `No such file or directory`；已由 S16 加 `[ -f ]` 前置守卫修复（/tmp 夹具 OLD/NEW 对照实证）+二轮 merge ea640d6。教训：引用面分级判据须含存在性假设维（裸 `<`/重定向无 `-f` 守卫=瞬态化高风险点）
+- **第三笔卫生债（fix-wave 2 实证）**：`plans/task-v164-pointer-worktree-local/subagent-state/.dispatch-inflight` 派发机制瞬态标记被 git 跟踪且会被派发基建增删——二轮 smart-merge-back V3 即因主仓该文件被删（unstaged D）与分支改动撞车；按最小处置 restore 后合并（分支版本胜出）。与 v161 同文件同类 → 建议后续任务统一 untrack+gitignore（判据同 .active_plan：即写即弃运行态不入库）
 
 #### [sub:1-code-runner-agent] S1 基线结论
 - 事实：v164 worktree（HEAD 7317455，wt/v164-pointer-worktree-local）全量 71 个 `selftest-*.sh` 逐脚本真实退出码 **全部 rc=0**（rc≠0 集合=空）；逐段关键行落 `plans/task-v164-pointer-worktree-local/baseline-selftest.log`（71 个 `=== selftest-*.sh rc=` 段，`grep -cE '^=== selftest-.*\.sh rc=0$'`=71，rc≠0 段=0）。rc 捕获法自证：/tmp 故意 exit 3 脚本经同款 `out="$(bash f)"; rc=$?` 得 rc=3；抽样独立复跑 agent-coverage/periodic-review/registry 均 rc=0 且 FAIL=0；全 log 无非零 FAIL 计数（`grep -nE 'FAIL[=: ]+[1-9]'` 空）
