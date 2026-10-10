@@ -56,6 +56,7 @@ if grep -q '| C19 |' "$SKILLMD" && grep 'C19' "$SKILLMD" | grep -q 'Rule 31'; th
 # EL-10
 if grep -q '错误指出特判' "$SKILLMD"; then ok 10 "SKILL.md 用户新指令处理指针"; else bad 10 "SKILL.md 缺错误指出特判"; fi
 # EL-11 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
+# [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9])' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x..7x 宽容范围（task-v144 扩 6x 纪元）"; else bad 11 "SKILL.md 缺 Rules 1-3x..7x 宽容锚"; fi
 # EL-12
 if grep -q '"error_loop_enforce"' "$CONFIG" && python3 -c "
