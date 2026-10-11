@@ -1153,20 +1153,31 @@ in_sec {
             rc_col="$(awk -f "$_lg_rc_awk_file" "$progress_file" 2>/dev/null)" || rc_col=""
             rm -f "$_lg_rc_awk_file" 2>/dev/null
             if [ -n "$rc_col" ]; then
-                # 数据行校验:非表头/非分隔行,Root Cause 列 strip 后非空且 != <待沉淀>
+                # 数据行校验:非表头/非分隔行,Root Cause=a[c] 与 Prevention=a[c+1] 两列 strip 后均须非空且 != <待沉淀>
+                # [2026-10-11 task-v168 CR F3] 修改原因: ① off-by-one——原 c+1 单列只读 Prevention,
+                # 而 FAIL 消息文案写「Root Cause/Prevention」, 原 Root Cause=a[c] 列实际未校验; 现两列均校验(与文案一致)。
+                # ② 模板行误挡——pristine 模板占位行(|  |  | 1 |...| <待沉淀> |)原会被判 bad → enforce 档硬挡纯净模板;
+                # 现按 lg_tpl_awk 同款模式跳过模板行。
                 lg_bad_awk='
 /^## Error Log/ {in_sec=1; next}
 in_sec && /^## / {in_sec=0}
 in_sec {
     if ($0 !~ /^\|/) next
+    # 模板占位行豁免(与 lg_tpl_awk 同款模式: 序号列为 1 的空行)
+    if ($0 ~ /^\|[[:space:]]*\|[[:space:]]*\|[[:space:]]*1[[:space:]]*\|/) next
     v = $0
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
     if (v ~ /Root[[:space:]]+Cause/ || v ~ /^-/) next
     n = split($0, a, "|")
     if (c < 2 || c > n - 1) next
-    cell = a[c + 1]
+    badflag = 0
+    cell = a[c]
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", cell)
-    if (cell == "" || cell == "<待沉淀>" || cell == "待沉淀") print NR
+    if (cell == "" || cell == "<待沉淀>" || cell == "待沉淀") badflag = 1
+    cell2 = a[c + 1]
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", cell2)
+    if (cell2 == "" || cell2 == "<待沉淀>" || cell2 == "待沉淀") badflag = 1
+    if (badflag) print NR
 }'
                 # 同上:程序存临时文件走 awk -f,免内联被截断
                 _lg_bad_awk_file="$(mktemp "${TMPDIR:-/tmp}/lg-bad.XXXXXX" 2>/dev/null)" || _lg_bad_awk_file="$(pwd)/.lg-bad.$$"

@@ -12,7 +12,7 @@
 #   EL-09 SKILL.md 含 C19 合规检查项（Rule 31 联动）
 #   EL-10 SKILL.md 用户新指令处理含「错误指出特判」指针
 #   EL-11 SKILL.md frontmatter/References 含 Rules 1-3[1-6]（宽容锚: P4 时为 1-32, P5 加 Rule 33/34 后改 1-34, S4 加 Rule 35 后改 1-35, [2026-09-17 task-v079] Rule 36 级联后扩至 1-36 仍命中）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[1-9]|[4-6][0-9])
-#   EL-12 config.json 含 error_loop_enforce 键（默认 warn，enum 三档）
+#   EL-12 config.json 含 error_loop_enforce 键（默认 enforce，enum 三档）
 #   EL-13 templates/progress.md Error Log 含 Root Cause / Prevention 列
 #   EL-14 templates/task_plan.md Errors 表含 Prevention 指针列
 #   EL-15 templates/notepad-learnings.md 含 Rule 31.4/31.5 消费侧契约注释
@@ -58,15 +58,16 @@ if grep -q '错误指出特判' "$SKILLMD"; then ok 10 "SKILL.md 用户新指令
 # EL-11 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9])' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x..7x 宽容范围（task-v144 扩 6x 纪元）"; else bad 11 "SKILL.md 缺 Rules 1-3x..7x 宽容锚"; fi
-# EL-12
+# EL-12 [2026-10-11 task-v168 设置层] error_loop_enforce 默认值 warn→enforce（用户 piv⊙ 设置修复），本钉同步演进；禁回退 warn。
+# 原文（修前）: sys.exit(0 if k.get('default')=='warn' ...)，ok 消息「warn 默认+三档」，bad 消息「默认非 warn」
 if grep -q '"error_loop_enforce"' "$CONFIG" && python3 -c "
 import json,sys
 d=json.load(open('$CONFIG'))
 k=d['properties']['error_loop_enforce']
-sys.exit(0 if k.get('default')=='warn' and k.get('enum')==['enforce','warn','off'] else 1)" 2>/dev/null; then
-  ok 12 "config.json error_loop_enforce（warn 默认+三档）"
+sys.exit(0 if k.get('default')=='enforce' and k.get('enum')==['enforce','warn','off'] else 1)" 2>/dev/null; then
+  ok 12 "config.json error_loop_enforce（enforce 默认+三档）"
 else
-  bad 12 "config.json error_loop_enforce 缺失/默认非 warn"
+  bad 12 "config.json error_loop_enforce 缺失/默认非 enforce"
 fi
 # EL-13
 if grep -q 'Root Cause' "$TPL_PROGRESS" && grep -q 'Prevention' "$TPL_PROGRESS" && grep -q '<待沉淀>' "$TPL_PROGRESS"; then
