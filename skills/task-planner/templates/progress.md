@@ -41,10 +41,12 @@
 
 ## Error Log
 <!-- [task-v072 Rule 31] 加 Root Cause / Prevention 两列（错误学习闭环：先析后修 + 防复现沉淀）
-     Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位） -->
-| Timestamp | Error | Attempt | Resolution | Root Cause | Prevention |
-|-----------|-------|---------|------------|------------|------------|
-|           |       | 1       |            |            | <待沉淀>    |
+     Root Cause = 31.2 四问归因压缩版（直接原因→根因一句话 + 类别标签）；Prevention = 31.4 沉淀后实际措施（初写 <待沉淀> 占位，回填后终验 Learning Gate 校验非占位）
+     [2026-10-11 task-v168 逻辑层] 表尾增「触发命令/工具」列：记录引发该错误的命令/工具，便于 31.2 根因定位（31.1⑤ 执行期机器可观察错误信号）；
+     纯增量表尾增列，既有列序与语义不变——Learning Gate（check-complete.sh）按表头列名「Root Cause」动态定位列号，表尾增列不破坏既有校验 -->
+| Timestamp | Error | Attempt | Resolution | Root Cause | Prevention | 触发命令/工具 |
+|-----------|-------|---------|------------|------------|------------|--------------|
+|           |       | 1       |            |            | <待沉淀>    |              |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
