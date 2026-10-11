@@ -28,8 +28,9 @@ chk "AD-01" "critical-rules.md 含 '### 74 变更吸收三判纪律' 标题且 7
 chk "AD-02" "Rule 74 条文含三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））与判据句「先问是补充还是替代」" "grep -qF '增量（默认且优先）' \"\$RULES\" && grep -qF '四条件全满足才可' \"\$RULES\" && grep -qF '删除（最高门槛）' \"\$RULES\" && grep -qF '先问是补充还是替代' \"\$RULES\""
 # AD-03 条文内禁硬编码行号锚（:[0-9] 引用形态=FAIL）——仅审视 Rule 74 条文段（标题行至 EOF）
 chk "AD-03" "Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）" "sec=\$(sed -n '/^### 74 变更吸收三判纪律/,\$p' \"\$RULES\"); test -n \"\$sec\" && ! grep -qE ':[0-9]' <<<\"\$sec\""
-# AD-04 SKILL.md 接线锚 ≥5：全集行/索引段/References 表三处 '1-7[4-9]' + 用户新指令处理段 '变更吸收三判门（Rule 74' + 合规清单 C51 行
-chk "AD-04" "SKILL.md 接线锚 ≥5：'1-7[4-9]' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74' + C51 行" "test \$(grep -cE '1-7[4-9]' \"\$SKILL\") -ge 3 && grep -qF '变更吸收三判门（Rule 74' \"\$SKILL\" && grep -qF '| C51 |' \"\$SKILL\""
+# AD-04 SKILL.md 接线锚 ≥5：全集行/索引段/References 表三处 1-(7[4-9]|8[01]) + 用户新指令处理段 '变更吸收三判门（Rule 74' + 合规清单 C51 行
+# [2026-10-11 task-v170 S10h 纪元扩围（Rule 45 注释）] '1-7[4-9]'→'1-(7[4-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md 三处接线锚实态演进为「Critical Rules 1-81」（L9 全集行/L314 索引段/L406 References 表，grep -nE '1-(7[4-9]|8[01])' 实测三处命中、逐行 1 次共 3 处，≥3 不变）；8x 纪元精化 8[01] 覆盖 80/81 两号、不放开越界值（负样本 '1-82'/'1-90' 实测不命中），判据不减（Rule 45：修改既有断言注明修改时间+原行为：原 grep -cE '1-7[4-9]'=2 失配 FAIL=AD-04）
+chk "AD-04" "SKILL.md 接线锚 ≥5：'1-(7[4-9]|8[01])' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74' + C51 行" "test \$(grep -cE '1-(7[4-9]|8[01])' \"\$SKILL\") -ge 3 && grep -qF '变更吸收三判门（Rule 74' \"\$SKILL\" && grep -qF '| C51 |' \"\$SKILL\""
 # AD-05 触点锚：critical-rules 8.1/36.5/56.1 段 grep 'Rule 74' 命中 ≥3 + SKILL B 类行含 'Rule 74' + B/C 类新段含「可行性判别门」
 chk "AD-05" "触点锚：critical-rules 8.1/36.5/56.1 段 'Rule 74' 命中 ≥3 + SKILL B 类行 'Rule 74' + B/C 类新段含「可行性判别门」" "test \$(grep -E '^(8\.1|36\.5|56\.1) ' \"\$RULES\" | grep -cF 'Rule 74') -ge 3 && grep -E '\| B 扩展 \|' \"\$SKILL\" | grep -qF 'Rule 74' && grep -F 'B/C 类' \"\$SKILL\" | grep -qF '可行性判别门'"
 # AD-06 templates/task_plan.md 含「📋 变更标注表」且六列关键词齐备（编号/对象/类型/吸收判定/依据/执行动作）+四类型串「新增·修改·删除·更新」+吸收判定三态串「增量·替代·删除」
