@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-76（67-72/73-76 均经并行任务合流落地）(1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行、57 迭代测试轮次落盘纪律、58 调研分析证据纪律与核心目标达成门控、59 子代理拆分粒度硬门与技能伴飞纪律、60 主动解决问题泛化行为原则、61 偏移检查子代理化、62 四文件罗盘数据流转与调研知识沉淀纪律、63 检索优先与反推诿纪律、64 偏移检查留痕强制与节奏化触发纪律、65 周期性回顾与前后对照、66 goal 单元固化与 /goal 驱动推进纪律、67 上下文压力主动评估与会话交接纪律、68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律、69 判断裁决子代理化与驳回打回纪律、70 用户呈报可审批性纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 71 无源不写·空段占位·写必带锚纪律、Rule 72 决策分级与用户打断纪律、Rule 73 执行期决策对齐与不变量纪律、Rule 74 变更吸收三判纪律（task-v162,1-74 纪元落地）、Rule 75 网络调研主动激活与外部数据依赖纪律、Rule 76 总结阶段格式可读性与审查清单实体化纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 全集 1-80（67-72/73-76 均经并行任务合流落地）(1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行、57 迭代测试轮次落盘纪律、58 调研分析证据纪律与核心目标达成门控、59 子代理拆分粒度硬门与技能伴飞纪律、60 主动解决问题泛化行为原则、61 偏移检查子代理化、62 四文件罗盘数据流转与调研知识沉淀纪律、63 检索优先与反推诿纪律、64 偏移检查留痕强制与节奏化触发纪律、65 周期性回顾与前后对照、66 goal 单元固化与 /goal 驱动推进纪律、67 上下文压力主动评估与会话交接纪律、68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律、69 判断裁决子代理化与驳回打回纪律、70 用户呈报可审批性纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 71 无源不写·空段占位·写必带锚纪律、Rule 72 决策分级与用户打断纪律、Rule 73 执行期决策对齐与不变量纪律、Rule 74 变更吸收三判纪律（task-v162,1-74 纪元落地）、Rule 75 网络调研主动激活与外部数据依赖纪律、Rule 76 总结阶段格式可读性与审查清单实体化纪律、Rule 80 用户会话逐字记录与只写不改纪律、Rule 36 技能修改保守化与功能删除防护）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
@@ -61,7 +61,7 @@ model: opus
     - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
     - 兜底：`{platform-home}/skills/task-planner/templates/{filename}`（`~/.zcode` 或 `~/.claude`，内置 5 模板）
     - 定制入口：在项目中创建 `.claude/plan-templates/`（Claude Code）或 `.zcode/plan-templates/`（ZCode）目录，替换任意子文件即可覆盖内置模板
-  - **验证**：确认创建了 6 个文件（task_plan.md / findings.md / progress.md / notepad-learnings.md / verification.md / knowledge-brief.md）（task-v116：v067 起第 6 文件，v107 R-01 清账）
+  - **验证**：确认创建了 7 个文件（task_plan.md / findings.md / progress.md / notepad-learnings.md / verification.md / knowledge-brief.md / user-session-log.md）（task-v116：v067 起第 6 文件，v107 R-01 清账；user-session-log.md=第 7 文件，task-v169 Rule 80）
   - **冲突分析（隔离决策）**：运行 `bash scripts/check-conflicts.sh` → 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块（实现类任务默认首选 worktree，用户可否决）
   - **S1 同步（原生 Todo 建立映射）**：运行 `bash scripts/sync-todos.sh --json` → 用 `TodoWrite`（跨会话/多任务用 `TaskCreate`）为每个 Phase 建一条 todo（subject=`{task-id}/Phase N: title`，当前 Phase=in_progress，其余 pending）；**禁止只建计划不建 Todo**
   - **清除哨兵**：计划创建完成后立即运行 `node ~/.zcode/skills/task-planner/scripts/plan-created.cjs`（带计划存在性验证，无计划仍 exit 1；双清除：本会话 side 哨兵 + legacy 残留）
@@ -243,6 +243,7 @@ model: opus
 | C53 | 执行期决策对齐自查（Rule 73）：变更型决策点已过 73.1 分类判定+73.2 对齐三问并留 [align] 行；Phase complete 前/合并回前已留 [judge] 评判行；🔒 不变量声明区块在位且三态分明；改动前已查 deprecated.md+notepad 双源（机器面=selftest-decision-drift.sh 静态断言+check-complete [judge-gate]，对齐过程人工核查；mini 档豁免） | ☐ |
 | C54 | 网络调研主动激活自查（Rule 75）：计划期已做调研需求三态分析（75.1，NET-* 条目含关键词+渠道+产出形态）；执行期遇阻已评估网络检索而非死磕（75.2，死磕判定式=同思路≥2 次无外部输入→转检索）；实现类任务动手前已检索现成方案（75.3/75.4，gh CLI 必用）；外部工具缺失已登记+安装建议（75.5，禁默默降级纯本地路径）；本任务无网络调研场景时登记豁免一行（机器面=selftest-proactive-research.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
 | C55 | 总结格式可读性与审查清单自查（Rule 76）：用户面总结/呈报列表一律编号列表 1. 2. 3.（禁①②③圆圈枚举混用，规则子条引用除外）；待审文件/图片/数据已表格化（文件名/路径/简单描述）；总结含五要素（执行总结+产出清单+待审数据清单+建议+风险）（机器面=selftest-summary-readability.sh 静态断言+check-complete report-lint，格式内容人工核查；mini 档豁免） | ☐ |
+| C56 | 用户会话逐字记录与只写不改自查（Rule 80）：本任务每次用户发言已逐字落盘 user-session-log.md（80.1）；写入=append-only，历史条目零改写零删除零重排（80.2）；会话恢复先读专档再读 task_plan.md（80.4）（机器面=selftest-session-log.sh 静态断言+check-complete SESSION-LOG GATE，记录内容人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -309,7 +310,7 @@ model: opus
 
 ## Critical Rules
 
-详见 `references/critical-rules.md`（Critical Rules 1-76（含 Rule 40-76 全集，Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 66 goal 单元固化与 /goal 驱动推进 / Rule 69 判断裁决子代理化与驳回打回 / Rule 71 无源不写·空段占位·写必带锚纪律、73 执行期决策对齐与不变量纪律 / Rule 72 决策分级与用户打断纪律 / Rule 74 变更吸收三判纪律 / Rule 75 网络调研主动激活与外部数据依赖纪律 / Rule 76 总结阶段格式可读性与审查清单实体化纪律））：
+详见 `references/critical-rules.md`（Critical Rules 1-80（含 Rule 40-80 全集，Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 66 goal 单元固化与 /goal 驱动推进 / Rule 69 判断裁决子代理化与驳回打回 / Rule 71 无源不写·空段占位·写必带锚纪律、73 执行期决策对齐与不变量纪律 / Rule 72 决策分级与用户打断纪律 / Rule 74 变更吸收三判纪律 / Rule 75 网络调研主动激活与外部数据依赖纪律 / Rule 76 总结阶段格式可读性与审查清单实体化纪律 / Rule 80 用户会话逐字记录与只写不改纪律））：
 - Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
 - **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
 - **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
@@ -400,7 +401,7 @@ model: opus
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-76（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律 / Rule 55 可复用能力落盘纪律 / Rule 56 用户指令优先与自动执行 / Rule 57 迭代测试轮次落盘 / Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 59 子代理拆分粒度硬门与技能伴飞纪律 / Rule 60 主动解决问题泛化行为原则 / Rule 61 偏移检查子代理化 / Rule 62 四文件罗盘数据流转与调研知识沉淀纪律 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 73 执行期决策对齐与不变量纪律（task-v156）/ Rule 70 用户呈报可审批性纪律（task-v155）/ Rule 72 决策分级与用户打断纪律（task-v160）/ Rule 74 变更吸收三判纪律（task-v162,1-74 纪元）/ Rule 75 网络调研主动激活与外部数据依赖纪律（task-v163）/ Rule 76 总结阶段格式可读性与审查清单实体化纪律（task-v166）） |
+| `references/critical-rules.md` | Critical Rules 1-80（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律 / Rule 55 可复用能力落盘纪律 / Rule 56 用户指令优先与自动执行 / Rule 57 迭代测试轮次落盘 / Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 59 子代理拆分粒度硬门与技能伴飞纪律 / Rule 60 主动解决问题泛化行为原则 / Rule 61 偏移检查子代理化 / Rule 62 四文件罗盘数据流转与调研知识沉淀纪律 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 73 执行期决策对齐与不变量纪律（task-v156）/ Rule 70 用户呈报可审批性纪律（task-v155）/ Rule 72 决策分级与用户打断纪律（task-v160）/ Rule 74 变更吸收三判纪律（task-v162,1-74 纪元）/ Rule 75 网络调研主动激活与外部数据依赖纪律（task-v163）/ Rule 76 总结阶段格式可读性与审查清单实体化纪律（task-v166） / Rule 80 用户会话逐字记录与只写不改纪律（task-v169）） |
 | `references/split-pattern-library.md` | 拆分模式库（Rule 21.6）：11 模式+伴飞映射表，计划期拆分 S-unit 前必读 |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
@@ -411,6 +412,7 @@ model: opus
 | `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
 | `templates/knowledge-brief.md` | 任务知识简略要点模板（init-session 第 6 文件；五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引） |
+| `templates/user-session-log.md` | 用户会话逐字记录专档模板（init-session 第 7 文件；append-only 只写不改，条目格式+恢复协议，Rule 80） |
 | `templates/shared-tracker.md` | 共享内容认领追踪区块模板（Rule 30；task_plan 引用，账本权威源=progress-tracker 技能） |
 | `templates/delivery-summary.md` | 终验交付总结五要素模板（终验交付段消费；数据源=verification/progress/report 引用不重写；非计划模板不入 25 口径） |
 | `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
