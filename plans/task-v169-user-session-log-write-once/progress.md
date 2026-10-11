@@ -100,6 +100,7 @@
 - [judge] 2026-10-11 Phase 5 CR 三 nit 处置评判：N1 编号缺口以注释入档（不补落地 77/78/79=守 v168 用户否决方向）；N2 模板示例条目改 #N（保门控判别力，代价=新计划零条目时 warn 提醒=设计行为）；N3 簿记订正 80→78（以实测为准）
 - [align] 2026-10-11 合并回前：diff 26 文件 100% 在 skills/task-planner/ 声明面、CA-1..CA-10 逐条对齐无表外文件；master 未提交变更仅 plans/ 面零重叠；Rule 80 编号 80 由 rule-reserve 台账顺位取得（77/78/79 预留未落地），索引口径 1-80 与实测最大编号一致
 - [judge] 2026-10-11 合并回后：87b3a77 merge + 78/78 回归 + 部署 zcode/claude diff=0 + cursor 26 文件一致 + CR APPROVED 留痕 + INDEX 登记 + check-complete 全门 PASS（SKILL-MODIFY warn 已登记无功能性删除）= Goal 达成，遗留项均为范围外存量（已在 delivery-summary 风险段登记），outcome=COMPLETE
+- [align] 2026-10-12 COMPLETE 后收口簿记（Rule 15 自查）：本轮仅两处计划内文档写入——user-session-log.md 追加 #4/#5「继续」条目（Rule 80.3 即时落盘 dogfood，#4 为前次压缩边界漏记条目的诚实补记）、progress.md plan-resume 检查点单元格回填跳过原因；原目标 R1-R5 零改动、零范围外文件触碰（INDEX/预留账本/并行会话目录按属主纪律未动）；前次 drift-check verdict=aligned 在案（subagent-state/19-drift-checker.md），簿记级变更按 §一 委派纪律⑤不重复派发，Rule 64.1 留痕以本行+提交+门控复跑承载
 
 ## [skill-modify] 删除性行为清单登记（Rule 36.3/36.6 终验）
 
@@ -109,4 +110,4 @@
 <!-- 📋 plan-resume 报告检查点:Phase complete 后 <cwd>/.zcode/plans/plan-resume-report.md 应已更新;未更新记 [plan-resume 跳过原因] -->
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
-| `~/.zcode/plans/plan-resume-report.md` |  |
+| `~/.zcode/plans/plan-resume-report.md` | [plan-resume 跳过原因] 全量 resume/archive 扫描由并行任务 task-v170-archive-completed-plans（Rule 81 归档机制，10-11 起在途）承接；本任务已 COMPLETE 不外扩扫描、不写共享报告，避免并行踩踏 |
