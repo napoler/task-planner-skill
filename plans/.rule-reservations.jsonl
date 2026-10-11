@@ -51,3 +51,7 @@
 {"rule":73,"status":"reserved","task_id":"task-v156-drift-shield","ts":"2026-10-10","note":"Rule 73 执行期决策对齐与不变量纪律（task-v156, attest 期登记漏落的补正登记）"}
 {"rule":73,"status":"landed","task_id":"task-v156-drift-shield","ts":"2026-10-10","note":""}
 {"rule":76,"status":"reserved","task_id":"task-v166-summary-readability","ts":"2026-10-11","note":""}
+{"rule":77,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 波次1: 会话锚定与周期接地"}
+{"rule":78,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 波次2: 辅助技能主动激活"}
+{"rule":79,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 波次3: 执行错误即时纠正"}
+{"rule":76,"status":"landed","task_id":"task-v166-summary-readability","ts":"2026-10-11","note":""}
