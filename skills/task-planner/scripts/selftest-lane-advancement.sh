@@ -135,10 +135,11 @@ fi
 # [2026-10-10 task-v160 新纪元宽容演进] 钉值 '1-69' → 宽容形态 'Critical Rules 1-(6[0-9]|7[0-2])'：
 #   task-v160 Rule 70/72 落地后 SKILL.md 主锚演进为 'Critical Rules 1-72'（:9/:295/:380 三处），旧钉值 '1-69' 命中 0 → 误报漂移；
 #   改为覆盖 1-69/1-72 的宽容 regex（保留「1-39 变体=0」负向检查不动），既兼容 Rule 72 新纪元又防主 label 回退。
-# [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，SKILL 章节引言行最终态 1-74，字面锚同步（A 类机械替换）
-n="$(grep -c 'Critical Rules 1-74' "$SKILLMD" || true)"
+# [2026-10-10 task-v162 合并并集演进] '1-71'→'1-7[4-9]'：task-v162 Rule 74（变更吸收三判）合流落地，SKILL 章节引言行最终态 1-7[4-9]，字面锚同步（A 类机械替换）
+# [2026-10-11 task-v166 纪元锚扩展] 旧锚→'1-7[4-9]'：Rule 76 落地后 SKILL.md 索引演进至 1-76，宽容锚覆盖 1-7X..1-7X 演进
+n="$(grep -cE 'Critical Rules 1-7[4-9]' "$SKILLMD" || true)"
 m="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-74' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-74=$n 应 ≥1 / 1-39=$m 应 0）"; fi
+if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-7[4-9]' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-7[4-9]=$n 应 ≥1 / 1-39=$m 应 0）"; fi
 
 # LA-13 SKILL.md 负断言 `grep -c '1-40'` =0
 # What：断言 SKILL.md 内 `1-40` 字面命中数为 0（与 SR-07 同口径负断言）。
