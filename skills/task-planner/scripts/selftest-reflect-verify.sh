@@ -8,7 +8,7 @@
 #   RV-05 含 33.4 迭代边界条款（语义锚点: ≤3 轮 + Rule 22.3 升档）
 #   RV-06 含 33.5 沉淀联动条款（语义锚点: notepad「What Worked」联动）
 #   RV-07 含 33.6 机制条款（语义锚点: reflect_verify_enforce + REFLECT-GATE + selftest-reflect-verify）
-#   RV-08 config.json reflect_verify_enforce 键（默认 warn, enum 三档 enforce/warn/off）
+#   RV-08 config.json reflect_verify_enforce 键（默认 enforce, enum 三档 enforce/warn/off）
 #   RV-09 check-complete.sh 含 REFLECT-GATE 锚点（REFLECT-GATE / TASK_PLANNER_REFLECT_VERIFY_ENFORCE / - [reflect] 行计数 / SKIPPED 分支）
 #   RV-10 SKILL.md 含 'Rules 1-3[56]' 宽容锚索引行（Rule 33/34/35/36/37 联动；[2026-09-17 task-v079] 严格 '1-35'→宽容 1-3[56]；[2026-09-20 task-v085] Rule 37 级联 1-3[56]→1-3[5-7]）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[5-9]|[4-6][0-9])][2026-10-10 task-v158 扩 7x 纪元 1-(3[5-9]|[4-7][0-9])]
 #   RV-11 SKILL.md 检查清单含 C21 行（Rule 33 [reflect] 反思+验证两行）
@@ -42,11 +42,12 @@ if grep '^33\.4 ' "$CRIT" | grep -q '≤3 轮' && grep '^33\.4 ' "$CRIT" | grep 
 if grep '^33\.5 ' "$CRIT" | grep -q 'What Worked' && grep '^33\.5 ' "$CRIT" | grep -q 'notepad'; then ok 06 "33.5 notepad What Worked 联动"; else bad 06 "33.5 沉淀联动缺失"; fi
 # RV-07
 if grep '^33\.6 ' "$CRIT" | grep -q 'reflect_verify_enforce' && grep '^33\.6 ' "$CRIT" | grep -q 'REFLECT-GATE' && grep '^33\.6 ' "$CRIT" | grep -q 'selftest-reflect-verify'; then ok 07 "33.6 机制（开关键+REFLECT-GATE+selftest）"; else bad 07 "33.6 机制缺失"; fi
-# RV-08
-if jq -e '.properties.reflect_verify_enforce | .default=="warn" and ((.enum|sort)|. == ["enforce","off","warn"])' "$CONFIG" >/dev/null 2>&1; then
-  ok 08 "config.json reflect_verify_enforce（warn 默认+三档）"
+# RV-08 [2026-10-11 task-v168 设置层] reflect_verify_enforce 默认值 warn→enforce（用户 piv⊙ 设置修复），本钉同步演进；禁回退 warn。
+# 原文（修前）: .default=="warn"，ok 消息「warn 默认+三档」，bad 消息「默认非 warn/enum 非三档」
+if jq -e '.properties.reflect_verify_enforce | .default=="enforce" and ((.enum|sort)|. == ["enforce","off","warn"])' "$CONFIG" >/dev/null 2>&1; then
+  ok 08 "config.json reflect_verify_enforce（enforce 默认+三档）"
 else
-  bad 08 "config.json reflect_verify_enforce 缺失/默认非 warn/enum 非三档"
+  bad 08 "config.json reflect_verify_enforce 缺失/默认非 enforce/enum 非三档"
 fi
 # RV-09
 if grep -q 'REFLECT-GATE' "$CHK" && grep -q 'TASK_PLANNER_REFLECT_VERIFY_ENFORCE' "$CHK" \
