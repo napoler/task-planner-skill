@@ -120,8 +120,9 @@ else
   bad 11 "SKILL.md References 表「Rule 49 单元线多路并行推进」缺失（文档表未联动）"
 fi
 
-# LA-12 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-65'` ≥1 且 `grep -c '1-39'` = 0
-# What：断言 SKILL.md 内 `Critical Rules 1-65` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
+# LA-12 SKILL.md 主锚守护 `grep -cE 'Critical Rules 1-(7[4-9]|8[01])'` ≥1 且 `grep -c '1-39'` = 0
+# What：断言 SKILL.md 内 `Critical Rules 1-(7[4-9]|8[01])` 宽容形态命中数 ≥1（主 label 覆盖 1-74..1-81 各纪元），
+#      且旧 `1-39` 变体命中数为 0（关键负断言保留）。
 # Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——SKILL.md L273 References 行 label 已由前序级联单元演进为
 #      「Critical Rules 1-65」（含 Rule 40-65 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
 #      演进为 TS-05 范式（≥1 新 label + 旧变体负断言），防主 label 回退/新旧双 label 漂移。
@@ -137,9 +138,13 @@ fi
 #   改为覆盖 1-69/1-72 的宽容 regex（保留「1-39 变体=0」负向检查不动），既兼容 Rule 72 新纪元又防主 label 回退。
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-7[4-9]'：task-v162 Rule 74（变更吸收三判）合流落地，SKILL 章节引言行最终态 1-7[4-9]，字面锚同步（A 类机械替换）
 # [2026-10-11 task-v166 纪元锚扩展] 旧锚→'1-7[4-9]'：Rule 76 落地后 SKILL.md 索引演进至 1-76，宽容锚覆盖 1-7X..1-7X 演进
-n="$(grep -cE 'Critical Rules 1-7[4-9]' "$SKILLMD" || true)"
+# [2026-10-11 task-v170 纪元扩围 S10k] 'Critical Rules 1-7[4-9]'→'Critical Rules 1-(7[4-9]|8[01])'：
+#   Why=task-v170 落地 Rule 81（计划完成后归档纪律）使 SKILL.md L314/L406 主 label 演进为 '1-81'，旧正则 1-7[4-9] 命中 0 → LA-12 FAIL
+#   （020 失败证据 #8）；交替族形态对齐范式先例 selftest-research-first.sh RF-06 '1-(7[0-9]|81)'，
+#   8[01] 覆盖 80/81 两纪元且不放开越界值（'1-82' 不命中）；'1-39'=0 负断言保留不动。
+n="$(grep -cE 'Critical Rules 1-(7[4-9]|8[01])' "$SKILLMD" || true)"
 m="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-7[4-9]' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-7[4-9]=$n 应 ≥1 / 1-39=$m 应 0）"; fi
+if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-(7[4-9]|8[01])' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-(7[4-9]|8[01])=$n 应 ≥1 / 1-39=$m 应 0）"; fi
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，SKILL 章节引言行最终态 1-74，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
