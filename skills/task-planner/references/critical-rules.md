@@ -1044,3 +1044,18 @@ C 级问题必须自动修复+登记（Decisions Made `auto:` 行或 progress.md
 76.5 **边界（parallel 分治）**：派发/子代理返回格式污染（subagent_dispatch.md §7 ①②③）归 Rule 22.4b + task-v161-subagent-return-format；本规则不越界改派发模板字段结构，只在 v161 修正后对用户面引用。
 
 76.6 **守护机制**：selftest-summary-readability.sh（SRV 断言）+ check-complete.sh report-lint 扩展（审查清单表头在位数/占位符残留/圈号混用负断言三查）；selftest-registry.tsv 登记；fail-open warn 档，enforce 由 config 收编。
+
+<!-- [2026-10-12 task-v170 S4 追加] 新增 Rule 81；原因=用户判定 plans/ 堆积为严重缺陷（R2 需求锚「这是严重缺陷，必须添加归档」），完成流程末段缺一环归档步骤需制度化为机器可守的纪律；原行为=完成流程止于 check-complete.sh，无任何归档动作，plans/ 根持续堆积已完成目录 -->
+## Rule 81（计划完成后归档纪律 — task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C56，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）
+
+81.1 **触发点（completion trigger，P0）**：任务终验 `check-complete.sh` exit 0 后、会话退出前，必须对当前任务目录执行归档（`scripts/archive-plan.sh <task-id>`）——完成流程末段闭环从「check-complete 通过即结束」修正为「check-complete 通过 → 归档 → 会话退出」。跳过=违规；会话因故障中断未归档的，由 [ARCHIVE-GATE] warn 在下一次终验时提醒补档（存量收敛通道）。
+
+81.2 **命令形态（command form）**：`bash scripts/archive-plan.sh <task-id>`——单任务将 `plans/<task-id>/` 经 `git mv` 移入 `plans/archive/<task-id>/`（git 跟踪目录用 git mv 保可 revert，未跟踪目录 mv 兜底，脚本内 `git ls-files --error-unmatch` 判定，004-code-assistant-s2 实证形态）；目录内部文件不动；已在 `plans/archive/` 目标位 → `ALREADY_ARCHIVED` exit 0，重复执行无副作用（幂等）；支持 `--batch [--dry-run]` 与 `--root DIR` 覆盖 plans 根。
+
+81.3 **安全守卫（fail-closed，误归档在途=数据面事故）**：三类拒绝（exit 1 且源目录零变更）：① active 指针命中——`plans/.active_plan`（全局）或 `plans/.active_plan_side/*.active_plan`（side）任一内容等于该 task-id；② 活会话标记——`plans/<task-id>/.session-owner` 在场且 mtime<24h（与 side 指针 24h TTL 惯例一致；陈旧 owner 视为历史残留不拦，否则 53 个历史完成任务永久无法归档，findings §6 实证）；③ Status 未全 complete——`task_plan.md` 中全部 `- **Status:**` 行非全 complete（计数相等且总数>0；**含 0 行=异常**，fail-closed 拒绝，禁把无 Status 行目录当完成）。唯一放行特例：已在 archive（81.2 幂等路径）。
+
+81.4 **联动（index/pointer coherence）**：归档后必须重跑 `sync-todos.sh --index` 重生 INDEX——archive 任务退出 INDEX 与 forward_sync 活跃解析面（forward_sync 扫面已加 archive 排除，set-active-plan.sh/resolve-plan-dir.sh 扫描面同适配），目录形态收敛为「根=在途、archive/=历史」；INDEX 只列在根任务，archive/ 目录+git 历史为完整索引（R2/R3 口径）。
+
+81.5 **存量治理（Rule 18 批门四步）**：批量清退存量已完成目录按 `dry-run → 试点（单目录实跑+幂等复核）→ 双采样（批前抽 2 预检，>0 即整批熔断）→ 批量实做（显式 `--root`，禁止依赖缺省推导）` 顺序执行；失败率>5% → STOP 并回滚（git revert 数据面）。
+
+81.6 **机制（零新 config 键）**：`scripts/selftest-archive-plan.sh` 静态守护（81.1-81.5 子条文本锚 + archive-plan.sh 守卫断言 + SKILL.md 终验交付段归档步骤锚 + 计数级联锚 + registry 自登记，S8 产物）；`check-complete.sh` [ARCHIVE-GATE] 段 warn 输出「complete 未归档」计数提醒（恒 exit 0，不阻断既有终验语义）；合规清单 C56 行（S9 产物）；三者均只断言新增锚、不触碰既有脚本断言（防锚级联，与 63.6/58.7/75.7 同范式）。
