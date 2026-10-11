@@ -54,5 +54,5 @@
 
 ## 5. 风险点（必须列举）
 - **已知遗留**: 1. ~/.cursor 部署位 63 行存量漂移（24 缺+38 差异+.backup）：缺 lane-detect.sh/run-selftests.sh/check-subagent-return.sh/auto-finalize.sh 等本任务之前已合入 master 的文件——属历史欠账，追平需单独任务（不建议在当前任务扩范围），且 .backup 目录禁动；2. 部署位 5 个 selftest 存量环境性失败（selftest-media-agents MA-08 / proactive-research PR-13 / source-anchor-discipline SA-10 / summary-readability SRV-12 连带 / workflow-orchestration WF-10）：master 基线副本上同样复现，根因=部署位 `../..` 上跳的仓根文档缺失（task-v090 已登记的 WF-10 已知项）等，与本任务无关。
-- **待裁决**: 1. cursor 部署位是否安排全量追平（涉及 ~90 文件其他任务产物的推送，需用户明确授权）；2. 门控默认档当前为 warn（不阻断 COMPLETE），如需强制挡卡请设 `TASK_PLANNER_SESSION_LOG_ENFORCE=enforce`（可写入 config.json 需新增键=另一裁决）。
+- **待裁决**: 1. cursor 部署位 `/home/terry/.cursor/skills/task-planner` 是否安排全量追平（涉及 ~90 文件其他任务产物的推送，需用户明确授权）；2. 门控默认档当前为 warn（不阻断 COMPLETE），如需强制挡卡请设 env `TASK_PLANNER_SESSION_LOG_ENFORCE=enforce`（文档锚 `/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md` Rule 80.6；写入 `/mnt/data/dev/task-planner-skill/skills/task-planner/config.json` 需新增键=另一裁决）。
 - **行为面注意**: 新计划 init 后专档仅有模板占位（`## #N` 示例行不计入条目），首条真实用户发言需主进程按 Rule 80.3 立即追加；若某计划零条目，GATE 会 ⚠ 提醒（enforce 档会阻断 COMPLETE）——这是设计行为不是缺陷。

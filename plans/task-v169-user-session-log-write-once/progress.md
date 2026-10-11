@@ -52,6 +52,7 @@
   - [main:merge] Phase 6 合并回：worktree 提交 3eff362（26 文件，git add skills/task-planner 范围）→ 主仓 `git merge --no-ff` = 87b3a77（26 files changed, 298 insertions(+), 79 deletions(-)）→ `git worktree remove` + `git branch -d` 已清理（worktree list 仅余他会会话 task-v170 位未触碰）；主仓未提交变更仅 plans/ 面与本次 skills 范围零重叠
   - [main:deploy] 三部署位同步对账：~/.zcode diff=0（cp -a+chmod +x，部署位实跑 selftest-session-log.sh Total: 10 PASS=10）；~/.claude diff=0（含补齐 3 存量落后文件 config.json/selftest-goal-unit-goal-mode.sh/templates/progress.md）；~/.cursor 本任务 26 文件全部一致（identical=26 differ=0），余 63 行存量漂移（24 缺+38 差异+.backup）为历史欠账未追平（范围外+禁动 .backup）
   - [main:regression-final] 主仓全量回归冷跑（空缓存）`bash skills/task-planner/scripts/run-selftests.sh` → `Total: 78 PASS=78 FAIL=0 (run=78 reused=0)`；部署位对照实证：master 基线副本（618df79）上同样 5 个 selftest（media-agents/proactive-research/source-anchor-discipline/summary-readability/workflow-orchestration）FAIL → 部署位环境性存量失败（WF-10=部署位 ../.. 上跳缺失的 task-v090 已知遗留），与本任务无关
+  - [main:CR-record] CR APPROVED（Rule 42.7 机器门留痕）: code-reviewer 全量 diff 审查 verdict=APPROVED-WITH-NITS（D1-D4 PASS；三 nit=N1 编号缺口入档/N2 模板占位条目改 #N/N3 簿记 80→78，均已当轮修复并复验）——审查记录 checkpoint=subagent-state/18-code-reviewer-gate.md，findings 落点=findings.md [sub:18] 节
   - [main:final] Phase 7 终验：VC-1..VC-6 全部 PASS（verification.md Outcome=COMPLETE）；check-delegation.sh stats verdict=ok violations=[] rate=0.667（主进程直做 2 Phase 理由全在 Rule 25.3 白名单①②，25.4 豁免）；委派率/CR/漂移/回归四证齐；delivery-summary.md + INDEX 登记已补
 - Files created/modified:
   -
