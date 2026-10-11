@@ -1017,14 +1017,16 @@ f && /^\|/ {
 
     # [2026-10-10 task-v155 S14 (Rule 48/70)] 交付总结呈报可审批性轻量守护 — report-lint 段
     # WHAT: 对同目录 delivery-summary.md 做三项轻量 lint——①「## 2. 产出清单」区表格数据行路径形态
-    #       （Rule 48.2/70② 可定位性）②「## 5. 下一步建议」区看点/动作三要素（Rule 48.4/70④）
+    #       （Rule 48.2/70② 可定位性）②「## 5./6. 下一步建议」区看点/动作三要素（Rule 48.4/70④）
     #       ③「待裁决」行对象定位（Rule 70②）；命中即 printf '[report-lint] ⚠ ...' 到 stderr。
     # WHY : 消费方=check-complete 终验（交付总结呈报前的最后一道软提示）；fail-open 理由=exit 语义是
     #       交付门控承重墙——本段只增 warn 提示，绝不改 exit code / 写 FAIL 计数 / return 非 0 传播；
     #       delivery-summary.md 不存在则 SKIPPED 直接返回。依据=task-v155（Rule 48/70 呈报契约机器面）。
     # 插入位=rcov-gate 段结束之后、同层级（4 空格缩进）；风格对齐 rcov-gate（printf stderr / fail-open）。
-    # 区块锚容忍模板阿拉伯数字式（`## 2.`/`## 5.`，金标准 templates/delivery-summary.md）与历史
-    # 中文数字式（`## 二、`/`## 五、`）两种写法，定位语义不变、不弱化判定。
+    # 区块锚容忍模板阿拉伯数字式（`## 2.`/`## 5./6.`，金标准 templates/delivery-summary.md）
+    # 与历史中文数字式（`## 二、`/`## 五、`）两种写法，定位语义不变、不弱化判定。
+    # [2026-10-11 task-v166] 「下一步建议」段由 `## 5.` 顺延为 `## 6.`（新增 §3 审查清单级联），
+    # 锚保留 (5.|6.|五、|六、) 双形态兼容新旧模板产物。
     run_report_lint() {
         local ds_file="$PLAN_DIR_GUESS/delivery-summary.md"
         # 1. 定位 delivery-summary.md；不存在 → fail-open SKIPPED 直接返回（不影响终验 exit 语义）
@@ -1047,12 +1049,14 @@ f && /^\|/ {
         if [ "${rl_nopath:-0}" -ge 2 ]; then
             printf '[report-lint] ⚠ 产出清单存在无路径行 (Rule 48.2/70② 可定位性)\n' >&2
         fi
-        # 3. 检查② 下一步建议三要素：「## 5. 下一步建议」区（至文件尾/下一 ^##）须同时含「看点」与「动作」，
+        # 3. 检查② 下一步建议三要素：「## 5./6. 下一步建议」区（至文件尾/下一 ^##）须同时含「看点」与「动作」，
         #    缺任一 → warn（Rule 48.4/70④）；区块不存在则跳过（不误报）。
-        if grep -qE '^##[[:space:]]*(5\.|五、)[[:space:]]*下一步建议' "$ds_file" 2>/dev/null; then
+        #    [2026-10-11 task-v166] 锚漂移修复：模板段号由 `## 5.` 顺延为 `## 6.`（新增 §3 审查清单级联），
+        #    正则扩为 (5.|6.|五、|六、) 双形态兼容新旧模板，避免三要素 lint 静默失效。
+        if grep -qE '^##[[:space:]]*(5\.|6\.|五、|六、)[[:space:]]*下一步建议' "$ds_file" 2>/dev/null; then
             local rl_sec5
             rl_sec5="$(awk '
-                /^##[[:space:]]*(5\.|五、)[[:space:]]*下一步建议/ {f=1; next}
+                /^##[[:space:]]*(5\.|6\.|五、|六、)[[:space:]]*下一步建议/ {f=1; next}
                 f && /^##[[:space:]]/ {f=0}
                 f' "$ds_file" 2>/dev/null)" || rl_sec5=""
             if ! printf '%s\n' "$rl_sec5" | grep -q '看点' || ! printf '%s\n' "$rl_sec5" | grep -q '动作'; then
@@ -1069,7 +1073,50 @@ f && /^\|/ {
         if [ "${rl_pending_n:-0}" -gt 0 ] && grep -n '待裁决' "$ds_file" 2>/dev/null | grep -vqE '/|http'; then
             printf '[report-lint] ⚠ 待裁决项缺对象定位 (Rule 70②)\n' >&2
         fi
-        # 5. 全部检查只 printf warn 到 stderr；不改 exit code / 不写 FAIL 计数 / return 恒 0（fail-open）。
+        # 5. 检查④ Rule 76.2 审查清单表格段在位（task-v166 S8 / SRV-10，需求锚 R1「需要审查的内容列给我」）：
+        #    delivery-summary.md 须含「## 3. 审查清单」标题（容忍模板阿拉伯/中文数字式）且其表头行同含
+        #    「文件名」「路径」「描述」三列（Rule 76.2 可定位表格）；缺标题或三列任一 → warn。
+        if ! grep -qE '^##[[:space:]]*(3\.|三、)[[:space:]]*审查清单' "$ds_file" 2>/dev/null; then
+            printf '[report-lint] ⚠ 缺「审查清单」表格段标题 (Rule 76.2)\n' >&2
+        else
+            local rl_rc_hdr
+            rl_rc_hdr="$(awk '
+                /^##[[:space:]]*(3\.|三、)[[:space:]]*审查清单/ {f=1; next}
+                f && /^##[[:space:]]/ {f=0}
+                f && /^[[:space:]]*\|/ { if (!hdr) { hdr=1; print; next } }' "$ds_file" 2>/dev/null)" || rl_rc_hdr=""
+            for col in 文件名 路径 描述; do
+                if ! printf '%s\n' "$rl_rc_hdr" | grep -q "$col"; then
+                    printf '[report-lint] ⚠ 审查清单表头缺「%s」列 (Rule 76.2)\n' "$col" >&2
+                fi
+            done
+        fi
+        # 6. 检查⑤ 占位符残留查（Rule 76.4 五要素完整，需求锚 R1）：delivery-summary.md（plans 产物，
+        #    非模板）含「待补」/「TODO」/「<待...>」未解析占位符 → warn；模板文件含占位符合法故只查产物。
+        #    显式取命中行数再判（与检查③同惯用，规避 ugrep 空输入 grep -v 退出码不一致陷阱）。
+        local rl_ph_n
+        rl_ph_n=$(grep -cE '待补|TODO|<待' "$ds_file" 2>/dev/null || true)
+        if [ "${rl_ph_n:-0}" -gt 0 ]; then
+            printf '[report-lint] ⚠ 总结残留未解析占位符 (Rule 76.4 五要素)\n' >&2
+        fi
+        # 7. 检查⑥ 用户面圈号负断言（Rule 76.1，需求锚 R3「圈1、圈2、圈3混在一起非常头疼」）：
+        #    variant 两文件（image-type / multiview-ref-type，task-v166 S7 清除对象）中 Phase 标题行
+        #    残留装饰圈号（「### Phase 1: ① ...」形态，G5 判据）→ warn。
+        #    [修正] 首版单式 `grep -cE 'Phase[[:space:]]*[0-9]+[^①-⑨]*[①-⑨]'` 会误报：命中注释/正文里
+        #    「Phase 7 批次末…②」等合法引用（image-type.md:5 注释行即命中）。限定 ^#{1,6} 标题行
+        #    前缀（S7 后 Phase 标题全为「### Phase N. xxx」形态，无装饰圈号=0 命中）；两段 grep 管道：
+        #    先抽 Phase 标题行再判行内圈号（两段式规避 ugrep 单 -E 多模式/区间组合差异，且显式锚定行首
+        #    标题）。只判标题行，正文合法编号列表不受影响；模板文件不可达则跳过（fail-open 不误报）。
+        #    [2026-10-11 task-v166 F-4] 清理冗余声明：原 `local vf rl_ph_n rl_circ` 中 rl_circ 从未使用
+        #    （已删）；rl_ph_n 为跨检查⑤/⑥ 复用的循环内计数器（与 :1012 检查⑤ 同名，有意复用不新造变量）。
+        local vf rl_ph_n
+        for vf in "$SKILL_ROOT/templates/variant/image-type.md" "$SKILL_ROOT/templates/variant/multiview-ref-type.md"; do
+            [ -f "$vf" ] || continue
+            rl_ph_n="$(grep -E '^#{1,6}[[:space:]]*Phase[[:space:]]*[0-9]+' "$vf" 2>/dev/null | grep -cE '①|②|③|④|⑤|⑥|⑦|⑧|⑨' || true)"
+            if [ "${rl_ph_n:-0}" -gt 0 ]; then
+                printf '[report-lint] ⚠ variant 用户面残留 Phase 装饰圈号 (Rule 76.1): %s\n' "$(basename "$vf")" >&2
+            fi
+        done
+        # 8. 全部检查只 printf warn 到 stderr；不改 exit code / 不写 FAIL 计数 / return 恒 0（fail-open）。
         return 0
     }
     run_report_lint
