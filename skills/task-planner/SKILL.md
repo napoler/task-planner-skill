@@ -182,6 +182,7 @@ model: opus
   - **退出前**：运行 `bash scripts/check-complete.sh` 验证所有 Phase 已 complete
     - exit 0 → 正常结束
     - exit 1 → STOP，报告未完成任务，不结束会话
+  - **计划归档（Rule 81.1）**：check-complete exit 0 后运行 `bash scripts/archive-plan.sh <task-id>` 将完成任务目录移入 plans/archive/——target 已存在=幂等报 `ALREADY_ARCHIVED` 视为通过；守卫拒绝（active 指针 / .session-owner 活跃 / Status 未全 complete，fail-closed）→ 保持原位并登记拒绝理由，禁止强移。Why：「在途在根、历史在 archive/」是 plans/ 存量唯一健康形态，防无限堆积致索引失真（task-v170；详见 references/critical-rules.md Rule 81）
 
 ### 合规检查清单（每 Phase 开始前逐项确认）
 
@@ -377,6 +378,7 @@ model: opus
 - **Rule 72（决策分级与用户打断纪律 — task-v160）**：决策三级=A 必须询问（推翻已确认计划要素/不可逆/对外）/B 默认项+超时/C 禁问自动消解（72.1）；A 级变更呈报禁令（72.2）；琐碎上抛禁令（72.3）；基础质检硬门（72.4）；机器面=selftest-decision-grading.sh，零新 config 键（72.6）（详见 references/critical-rules.md Rule 72）
 - **Rule 75（网络调研主动激活与外部数据依赖纪律 — task-v163）**：公理=本地有界·网络扩展（75.0）/计划期调研需求三态分析+关键词预设（75.1）/执行期反死磕主动激活（75.2）/现成方案优先（75.3）/GitHub 检索纪律（75.4）/外部工具强制+安装建议（75.5）/模板层调研触点+生成判定（75.6）；零新 config 键+selftest-proactive-research.sh 守护
 - **Rule 76（总结阶段格式可读性与审查清单实体化纪律 — task-v166）**：用户面总结/呈报列表一律编号列表 1. 2. 3.（禁①②③圆圈枚举与数字列表混用，76.2）；待审文件/图片/数据须表格化（文件名/路径/简单描述，76.3）；总结五要素=执行总结+产出清单+待审数据清单+建议+风险（76.4）；机器面=selftest-summary-readability.sh，零新 config 键（76.6）（详见 references/critical-rules.md Rule 76）
+- **Rule 81（计划完成后归档纪律 — task-v170）**：check-complete exit 0 后必须运行 `archive-plan.sh <task-id>` 完成任务归档（81.1，终验交付段承载）；守卫三拒绝 fail-closed=active 指针 / .session-owner 活跃(mtime<24h) / task_plan.md Status 未全 complete（81.2）；幂等=目标已存在报 ALREADY_ARCHIVED 放行（81.3）；存量批量走 `--batch` 先 dry-run 再实做（81.4）；Why：「在途在根、历史在 archive/」维持 plans/ 健康形态防堆积索引失真（详见 references/critical-rules.md Rule 81）
 
 ## Completion Gate
 
