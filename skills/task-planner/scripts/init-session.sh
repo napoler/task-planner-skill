@@ -559,6 +559,22 @@ else
     fi
 fi
 
+# [2026-10-11 task-v169 Rule 80.1] user-session-log.md（第 7 计划文件）独立建档：
+# What: 六文件创建完成、task_plan.md 单独处理块结束之后，独立创建 user-session-log.md
+#       （用户会话逐字记录专档）；故意**不并入上方六文件 for 循环**——六件套语义、
+#       「六件套全量 verified」字面回显与六文件复核循环一字不动（selftest T3b/T10b 断言依赖）。
+# Why: task_plan.md 受 attest 哈希锁禁追加，用户需求逐字记录须外置专档（需求锚 R1 全部
+#       记录、R3 防会话异常丢失）；专档内容 append-only 只写不改（R5），复制模板即冻结
+#       初始载体，后续只追加条目。
+# 幂等: 文件已存在（重复 init）→ 打 already exists, skipping 后跳过，不覆写既有条目。
+if [ -f "user-session-log.md" ]; then
+    echo "user-session-log.md already exists, skipping"
+else
+    if copy_template "user-session-log.md"; then
+        echo "    Created user-session-log.md (task-v169 Rule 80.1 第 7 计划文件, append-only 逐字记录专档)"
+    fi
+fi
+
 # [2026-10-11 task-v167 Rule 38.7] 执行通道（lane）定级接线：计划文件创建后调 lane-detect.sh 对
 # 当前 git 状态判定（BASE=env TASK_LANE_BASE, 默认 HEAD；非 git 仓/判不定 → lane-detect 兜底 L1,
 # fail-safe 向重侧）。lane=执行通道, 与 plan_tier=模板轻重正交（两者并存写入计划头）。
@@ -667,6 +683,14 @@ if [ ${#missing_files[@]} -gt 0 ]; then
     exit 1
 fi
 echo "[init] 6/6 planning files verified"
+# [2026-10-11 task-v169 Rule 80.1] 第 7 文件 user-session-log.md 独立存在性复核：
+# 六文件复核循环与「六件套全量 verified」回显行保持原样，第 7 文件单独成段——缺失或空 → ERROR + exit 1
+# （错误必须曝光，禁静默放行；既有条目 append-only，本处只做存在/非空校验不改内容）
+if [ ! -s "user-session-log.md" ]; then
+    echo "[init] ERROR: user-session-log.md missing or empty — 第 7 计划文件未建档（task-v169 Rule 80.1）" >&2
+    exit 1
+fi
+echo "[init] user-session-log.md verified (7th planning file, task-v169 Rule 80.1)"
 # [2026-10-05 task-v132 G3 R3] silent 路径锚哈希即时落盘（G3：防窗口期篡改）：
 # 原因: silent/自动档交互模式（Rule 28 唯一权威解析口径, 层级见下方 ALIGN-P1b 注）下
 #       计划生成后即直接执行、无用户批准环节——原行为哈希锁定（attest-plan.sh）延后到执行中

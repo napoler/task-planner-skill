@@ -1044,3 +1044,20 @@ C 级问题必须自动修复+登记（Decisions Made `auto:` 行或 progress.md
 76.5 **边界（parallel 分治）**：派发/子代理返回格式污染（subagent_dispatch.md §7 ①②③）归 Rule 22.4b + task-v161-subagent-return-format；本规则不越界改派发模板字段结构，只在 v161 修正后对用户面引用。
 
 76.6 **守护机制**：selftest-summary-readability.sh（SRV 断言）+ check-complete.sh report-lint 扩展（审查清单表头在位数/占位符残留/圈号混用负断言三查）；selftest-registry.tsv 登记；fail-open warn 档，enforce 由 config 收编。
+
+## Rule 80（用户会话逐字记录与只写不改纪律 — task-v169）
+<!-- 编号说明（task-v169 CR-N1）：Rule 77/78/79 为 task-v168 经 plans/.rule-reservations.jsonl 预留但未落地的编号（其方向经用户否决、工作 parked 未合并主仓）；本规则编号 80 由预留台账顺位取得，序号非连续是「预留未落地」的既成事实，非跳号错误——落地 77/78/79 前 SKILL.md 全集索引口径维持 1-80。 -->
+
+> 用户需求与对话内容逐字落盘第 7 计划文件 user-session-log.md，append-only 只写不改（需求锚 R1/R4/R5）；与 Rule 51.1 逐字口径、Rule 74.3 变更标注表、attest 哈希锁（Rule 20/51.7）联动。
+
+80.1 **建档与记录范围**：每个计划目录必须有 user-session-log.md（init-session.sh 六文件 verified 之后独立建档块 + 独立存在性复核，幂等跳过重复 init（机制本体见 init-session.sh 建档块与存在性复核两段））；记录范围=用户提交的任务需求与对话内容（含纠正/否决/追加/「继续」类短消息，R1「全部都记录」），逐字口径同 Rule 51.1（禁转译/缩写/合并）；条目格式 `## #N | 日期 | 来源` 与恢复协议以 templates/user-session-log.md 为口径源。
+
+80.2 **只写不改（append-only）**：历史条目禁修改/禁删除/禁重排，唯一合法写操作=文件尾追加（R5「这些文档只写入不修改，记录性内容只记录不修改」）；发现历史条目有误→末尾追加「更正说明」新条目（引用原条目号），禁回头改旧条目任何一字。
+
+80.3 **写入时机与写入者**：用户发言到达后立即追加（宪法 §八 即时落盘纪律「到达即落盘」），禁止攒批/deferred；写入者=主进程单写（与计划文件罗盘单写者纪律同构），子代理对该文件只读不改（派发契约中声明只读，同 Rule 22.4a task_plan 只读契约写法）。
+
+80.4 **恢复协议**：会话中断/压缩/重启恢复时 user-session-log.md=用户意图权威源，先读本文件再读 task_plan.md；两者冲突时以本文件为「用户原话」事实源，task_plan.md 侧按 Rule 74.3 变更标注表对齐，禁反向改写本文件。
+
+80.5 **与 attest 哈希锁的边界**：task_plan.md 受 Rule 20/51.7 哈希锁（改即 [PLAN TAMPERED]），故用户会话记录禁入 task_plan.md 正文，外置本专档；task_plan.md 的「🗣️ 用户会话逐字记录」指针区块为纯静态（仅专档路径+铁律+恢复协议），禁条目计数/首末条目标记类可变内容（可变内容破坏指针区块静态性与 append-only 载体一致性）。
+
+80.6 **守护机制（零新 config 键，71.7/64.6 同范式）**：① init 建档+存在性复核（缺/空即 ERROR，禁静默放行）；② check-complete.sh SESSION-LOG GATE 指针区块门控——有指针且专档缺失/空=FAIL，无指针=存量计划 SKIP，env-only 档位降级 `TASK_PLANNER_SESSION_LOG_ENFORCE`（enforce=FAIL 阻断 / warn=告警不阻断（默认）/ off=整门跳过；无 config.json 键，档位解析写法对齐 Rule 34.6 env 开关先例）；③ selftest-session-log.sh 静态断言（Rule 80 子条文本锚 + 模板锚 + 指针区块纯静态负断言）；**零新 config 键**——本规则不引入任何 config.json 键（properties 键数恒 42，env-only 开关）。
