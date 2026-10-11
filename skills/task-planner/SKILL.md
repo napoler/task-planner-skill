@@ -244,6 +244,7 @@ model: opus
 | C53 | 执行期决策对齐自查（Rule 73）：变更型决策点已过 73.1 分类判定+73.2 对齐三问并留 [align] 行；Phase complete 前/合并回前已留 [judge] 评判行；🔒 不变量声明区块在位且三态分明；改动前已查 deprecated.md+notepad 双源（机器面=selftest-decision-drift.sh 静态断言+check-complete [judge-gate]，对齐过程人工核查；mini 档豁免） | ☐ |
 | C54 | 网络调研主动激活自查（Rule 75）：计划期已做调研需求三态分析（75.1，NET-* 条目含关键词+渠道+产出形态）；执行期遇阻已评估网络检索而非死磕（75.2，死磕判定式=同思路≥2 次无外部输入→转检索）；实现类任务动手前已检索现成方案（75.3/75.4，gh CLI 必用）；外部工具缺失已登记+安装建议（75.5，禁默默降级纯本地路径）；本任务无网络调研场景时登记豁免一行（机器面=selftest-proactive-research.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
 | C55 | 总结格式可读性与审查清单自查（Rule 76）：用户面总结/呈报列表一律编号列表 1. 2. 3.（禁①②③圆圈枚举混用，规则子条引用除外）；待审文件/图片/数据已表格化（文件名/路径/简单描述）；总结含五要素（执行总结+产出清单+待审数据清单+建议+风险）（机器面=selftest-summary-readability.sh 静态断言+check-complete report-lint，格式内容人工核查；mini 档豁免） | ☐ |
+| C56 | 计划完成后归档自查（Rule 81）：check-complete exit 0 后已对当前任务目录执行归档 `bash scripts/archive-plan.sh <task-id>`（81.1 完成流程末段归档步骤已执行，guard/ALREADY_ARCHIVED 幂等路径走通）；守卫拒绝（active 指针/活会话标记/Status 未全 complete，81.3）时保持原位不归档并登记拒绝理由，禁强移；存量清退按 81.5 四步执行且 dry-run 清单已对账（试点→双采样→批量，失败率>5% STOP 回滚）；归档后已重跑 `sync-todos.sh --index`（81.4）（机器面=selftest-archive-plan.sh 静态断言+check-complete [ARCHIVE-GATE] warn，归档动作与拒绝登记人工核查；mini 档豁免） | ☐ |
 
 ### 🔁 原生 Todo 同步（强制）
 
