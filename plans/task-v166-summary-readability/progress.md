@@ -121,6 +121,31 @@
   | rule land | rule-reserve.sh land 76 | landed | landed（was reserved） | PASS |
   | P-05 动态上界 | selftest-parallel-scheduling.sh | skill_max==crit_max | 1-76==76 PASS | PASS |
 
+## [goal:Gn] 证据行（Rule 66.3 — goal 翻格前三要素：验证命令+PASS 结果+产物路径）
+
+- [goal:G1] complete — 证据: 命令 `grep -cE 'Phase [0-9]+: [①-⑨]' image-type.md multiview-ref-type.md` = 7/5（主进程独立复核）；产物 findings.md §sub:1-explore+§sub:2-explore（45+30 行审计）
+- [goal:G2] complete — 证据: 命令 `grep -cE '^76\.[1-6] ' critical-rules.md` = 6 + 标题锚 :1003；产物 critical-rules.md:1003-1027（Rule 76 六子条）
+- [goal:G3] complete — 证据: 命令 `grep -c '1-76' SKILL.md` = 3且`grep -c 'Rule 76' SKILL.md` = 6+C55 行`grep -c '^| C55 | .*Rule 76'` = 1；产物 SKILL.md:9/308/399/241+bullet+终验联动句
+- [goal:G4] complete — 证据: 命令 `grep -n '^## [0-9]' delivery-summary.md` = §1-6 连续+表头三列 grep '文件名 | 路径 | 简单描述' = 1；产物 delivery-summary.md:51-55
+- [goal:G5] complete — 证据: 命令 `grep -cE 'Phase [0-9]+: [①-⑨]'` 两文件 = 0/0（原 7/5）+`grep -c 'Rule 76'` 各 1；产物 image-type.md:43-86/multiview-ref-type.md:32-56
+- [goal:G6] complete — 证据: 命令 `bash selftest-summary-readability.sh` = `Total: PASS=13 FAIL=0 WARN=0` rc=0+SRV-12 9/9+report-lint 四态 RC=0；产物 selftest-summary-readability.sh（13 断言）+check-complete.sh report-lint 扩展+12 脚本 epoch 锚扩展
+- [goal:G7] complete — 证据: subagent-state/19+20 双 verdict（CHANGES_REQUESTED×2）→ findings §[sub:main-23d] 闭合台账 12/12 → subagent-state/29 终跑 77/77 rc=0 断言合计 726 PASS/0 FAIL
+- [goal:G8] complete — 证据: master merge 0d57483（`git log --oneline -1`）+smart-merge-back --deploy 输出「全部部署位 IDENTICAL」+`rule-reserve.sh land 76` 输出 landed+plans/INDEX.md v166 complete 5/5 行+delivery-summary.md 在档+check-complete.sh 全门 PASS（除 Rule 75.1 advisory 与 SKILL-MODIFY warn，均已登记）
+
+## [judge]/[align] 留痕行（Rule 73.4 — 变更决策后/Phase complete 前/合并回前）
+
+- [align] 2026-10-11 Phase 2 完成后：Rule 76 六子条与用户 R1-R6 逐条对齐（R→VC 映射 7 条全覆盖）；不变量三态核查=用户需求原文/VC 判定/编号归属未动，执行细节可变量已登记
+- [align] 2026-10-11 Phase 3 完成后：模板改造与 Rule 48 五要素/定位三要素不变量核对（§6 定位三要素保留、Rule 54.1③ 子条引用未动）；编号顺延为演进非删除（Rule 74 增量默认）
+- [align] 2026-10-11 Phase 4 完成后：级联锚扩展与「零删除」纪律核对（断言条数不减：DG 12/RF 12/TS 12/LA 14/RC 23/SR 13/CP 9/RR 17/AD 14/DCS 20/EH 14/P 9/SS 13+SS-新 13）
+- [judge] 2026-10-11 Phase 5 双审后：fix-wave1/2 逐条修复的取舍评判——12 条问题全修（2 黄=守卫有效性缺陷必修；1 P0=机器守护静默失效必修；3 P1=叙述同步；P2-a/c 修为格式一致；P2-b 判注释范围外豁免登记）；未越界改 v161 的 subagent_dispatch.md §7
+- [align] 2026-10-11 合并回前：与 master 并集解对齐（Rule 75+76 共存=Rule 74 增量默认；索引上界以 critical-rules 实测最大编号 76 为准；C54=Rule75/C55=Rule76 编号让位为并集新增非删除；v163 里程碑注释全部保留为历史）
+- [judge] 2026-10-11 合并回后：77/77 终跑+部署位 IDENTICAL+rule 76 land+INDEX 登记+CR 留痕完成=Goal 达成，无遗留阻塞项，outcome=COMPLETE
+
+## [skill-modify] 删除性行为清单登记（Rule 36.3/36.6 终验）
+
+- 本任务涉及技能文件修改（skills/task-planner/ 下 12 文件），删除性行为清单：**[skill-modify] 无功能性删除**。
+- 逐项确认：零文件删除/零条款删除；SKILL 索引口径演进（1-74→1-76，并集后与 Rule 75 共态）、C 行编号让位（C54 归 Rule 75、Rule 76 行=C55）均为并集新增非删除；delivery-summary 段落编号顺延（§3-§5→§4-§6）为演进非删除（原内容全文保留仅标题编号+1）；selftest 改造全部为锚扩展（断言条数不减，逐脚本 Total 见 progress Phase 4 段）；master 并集解遵守增量默认（Rule 75/76 条文互不删减、历史演进注释全保留）。
+
 ## CR 留痕（Rule 42.7 — 代码审查门控记录）
 
 **[CR] 代码审查轮次 1（code_review: required，触发原因=12 个 .sh 改动+1 新建脚本）**

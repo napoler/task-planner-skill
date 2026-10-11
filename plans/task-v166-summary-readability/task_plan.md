@@ -101,25 +101,25 @@
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1, R2, R3, R5 |
-| **裁决** | （终验时填写） |
-| **解决证据锚** | （终验时填写） |
-| **未解决面+原因** | （终验时填写） |
-| **已排除路径** | （终验时填写） |
-| **下一步建议** | （终验时填写） |
+| **裁决** | `solved` |
+| **解决证据锚** | /mnt/data/dev/task-planner-skill/skills/task-planner/templates/delivery-summary.md:51-55（§3 审查清单三列表= R1/R4 解决形态）；critical-rules.md:1019（76.2 编号列表规范=R3）+variant 两文件 grep -cE 'Phase [0-9]+: [①-⑨]'=0（主进程实测，原 7/5）；delivery-summary.md:76（§6 编号列表=R5）+subagent-state/29（77/77 726 断言 0 FAIL 复验） |
+| **未解决面+原因** | 无（目标型需求全覆盖；遗留均为 P2 非目标面：其余 variant 模板圈号=后续轮次范围外扩、注释区圈号=76.1 注释范围） |
+| **已排除路径** | 无（未走 not-solved 路径） |
+| **下一步建议** | 后续轮次：清理其余 variant 模板 Phase 装饰圈号（对象 /mnt/data/dev/task-planner-skill/skills/task-planner/templates/variant/{character-design,storyboard,video-type}.md ｜ 看点 Phase 标题圈号形态 ｜ 动作 按 S7 同法+SRV-13 扩围） |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
 ## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard/full 必填，mini 档豁免）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 格式现状审计 | 摸清用户面载体圈号分布与审查清单缺失面 | findings.md §格式现状审计段落 + 载体清单表 | S1/S2/Phase 1 | pending |
-| G2 | 条文落盘 | Rule 76 六子条入 critical-rules.md | `grep -cE '^76\.[1-6] ' references/critical-rules.md` ≥6 | S3/Phase 2 | pending |
-| G3 | SKILL 接线 | 索引 1-76 三处 + bullet + C54 + 终验段联动句 | `grep -c 'Rule 76' SKILL.md` ≥5 | S4/S5/Phase 2 | pending |
-| G4 | 模板表格化 | delivery-summary 审查清单表格段 | grep 表头三列 | S6/Phase 3 | pending |
-| G5 | variant 编号列表化 | 媒体审查模板装饰圈号清零 | grep -cE 'Phase [0-9]+: [①-⑨]' =0（两文件） | S7/Phase 3 | pending |
-| G6 | 机器守护 | selftest 新脚本 + report-lint 扩展 + 级联锚扩 | 两轮回归 ΣFAIL=0 | S8-S15/Phase 4 | pending |
-| G7 | 双审通过 | alignment + code-quality APPROVED | 两 checkpoint verdict | S19/S20/Phase 5 | pending |
-| G8 | 交付合并 | merge-back + land + INDEX + 部署对账 | git log + rule-reserve land | S21/Phase 5 | pending |
+| G1 | 格式现状审计 | 摸清用户面载体圈号分布与审查清单缺失面 | findings.md §格式现状审计段落 + 载体清单表 | S1/S2/Phase 1 | complete |
+| G2 | 条文落盘 | Rule 76 六子条入 critical-rules.md | `grep -cE '^76\.[1-6] ' references/critical-rules.md` ≥6 | S3/Phase 2 | complete |
+| G3 | SKILL 接线 | 索引 1-76 三处 + bullet + C54 + 终验段联动句 | `grep -c 'Rule 76' SKILL.md` ≥5 | S4/S5/Phase 2 | complete |
+| G4 | 模板表格化 | delivery-summary 审查清单表格段 | grep 表头三列 | S6/Phase 3 | complete |
+| G5 | variant 编号列表化 | 媒体审查模板装饰圈号清零 | grep -cE 'Phase [0-9]+: [①-⑨]' =0（两文件） | S7/Phase 3 | complete |
+| G6 | 机器守护 | selftest 新脚本 + report-lint 扩展 + 级联锚扩 | 两轮回归 ΣFAIL=0 | S8-S15/Phase 4 | complete |
+| G7 | 双审通过 | alignment + code-quality APPROVED | 两 checkpoint verdict | S19/S20/Phase 5 | complete |
+| G8 | 交付合并 | merge-back + land + INDEX + 部署对账 | git log + rule-reserve land | S21/Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
