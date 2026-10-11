@@ -10,7 +10,7 @@
 #   VT-07 SKILL.md 摘要行含 Rule 32（防摘要漏联动）
 #   VT-08 SKILL.md 含 C20 检查项
 #   VT-09 SKILL.md 含「用户否决登记」指针
-#   VT-10 SKILL.md 含 Rules 1-3[1-7]（宽容锚: [2026-09-17 task-v079] 扩至 1-36；[2026-09-20 task-v085] Rule 37 级联 1-3[1-7]）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[1-9]|[4-6][0-9])][2026-10-10 task-v158 扩 7x 纪元 1-(3[1-9]|[4-7][0-9])][2026-10-11 task-v070 S10o 扩 81 纪元 1-(3[1-9]|[4-7][0-9]|8[01]([^0-9]|$))（Rule 45 注释: Why=task-v170 落地 Rule 81, SKILL.md 实态 Critical Rules 1-81, epoch 上界 76→81; 8x 精化 8[01] 尾边界断言, 负样本 82 不命中）]
+#   VT-10 SKILL.md 含 Rules 1-3[1-7]（宽容锚: [2026-09-17 task-v079] 扩至 1-36；[2026-09-20 task-v085] Rule 37 级联 1-3[1-7]）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[1-9]|[4-6][0-9])][2026-10-10 task-v158 扩 7x 纪元 1-(3[1-9]|[4-7][0-9])][2026-10-11 task-v169 Rule 80 落地 1-80 纪元, 末段字符类 4-7x→4-8x][2026-10-11 task-v070 S10o 扩 81 纪元 1-(3[1-9]|[4-7][0-9]|8[01]([^0-9]|$))（Rule 45 注释: Why=task-v170 落地 Rule 81, SKILL.md 实态 Critical Rules 1-81, epoch 上界 80→81; 8x 精化 8[01] 尾边界断言, 负样本 82 不命中）]
 #   VT-11 config.json 含 veto_enforce 键（默认 warn，enum 三档）
 #   VT-12 templates/notepad-learnings.md 含「被否决方案」段
 #   VT-13 SKILL.md D 询问/特判段无「禁令项作 Recommended」矛盾表述（32.3 语义抽查）
@@ -47,9 +47,10 @@ if grep -q 'Rule 32' "$SKILLMD" && grep 'Rule 32' "$SKILLMD" | grep -q '用户�
 if grep -q '| C20 |' "$SKILLMD" && grep 'C20' "$SKILLMD" | grep -q '32.2'; then ok 08 "SKILL.md C20 检查项"; else bad 08 "SKILL.md 缺 C20"; fi
 # VT-09
 if grep -q '用户否决登记（Rule 32' "$SKILLMD"; then ok 09 "SKILL.md 用户否决登记指针"; else bad 09 "SKILL.md 缺否决登记指针"; fi
-# VT-10 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元][2026-10-10 task-v158 扩 7x 纪元 1-(3[1-9]|[4-7][0-9])]
+# VT-10 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元][2026-10-10 task-v158 扩 7x 纪元 1-(3[1-9]|[4-7]x)]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
-# [2026-10-11 task-v070 S10o 扩 81 纪元（Rule 45 注释）] '1-(3[1-9]|[4-7][0-9])'→'1-(3[1-9]|[4-7][0-9]|8[01]([^0-9]|$))'：Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md 实态「Critical Rules 1-81」（L314/L406），epoch 上界 76→81；8x 精化 8[01] 带尾边界断言（后随非数字或行尾），负样本 82/89/90 不得命中（不放开越界值），EL-11 同族宽容锚不重新钉死
+# [2026-10-11 task-v169 合并级联: Rule 80 落地 1-80 纪元, 末段字符类 4-7x→4-8x（后由 task-v170 精化为 8[01] 尾边界，禁越界放开 82-89）]
+# [2026-10-11 task-v070 S10o 扩 81 纪元（Rule 45 注释）] '1-(3[1-9]|[4-7][0-9])'→'1-(3[1-9]|[4-7][0-9]|8[01]([^0-9]|$))'：Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md 实态「Critical Rules 1-81」（L314/L406），epoch 上界 80→81；8x 精化 8[01] 带尾边界断言（后随非数字或行尾），负样本 82/89/90 不得命中（不放开越界值），EL-11 同族宽容锚不重新钉死
 if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9]|8[01]([^0-9]|$))' "$SKILLMD"; then ok 10 "SKILL.md Rules 1-3x..81 宽容范围（task-v144 扩 6x 纪元, task-v158 扩 7x 纪元, task-v070 扩 81 纪元）"; else bad 10 "SKILL.md 缺 Rules 1-3x..81 宽容锚"; fi
 # VT-11
 if grep -q '"veto_enforce"' "$CONFIG" && python3 -c "

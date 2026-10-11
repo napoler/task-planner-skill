@@ -28,6 +28,7 @@ chk "AD-01" "critical-rules.md 含 '### 74 变更吸收三判纪律' 标题且 7
 chk "AD-02" "Rule 74 条文含三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））与判据句「先问是补充还是替代」" "grep -qF '增量（默认且优先）' \"\$RULES\" && grep -qF '四条件全满足才可' \"\$RULES\" && grep -qF '删除（最高门槛）' \"\$RULES\" && grep -qF '先问是补充还是替代' \"\$RULES\""
 # AD-03 条文内禁硬编码行号锚（:[0-9] 引用形态=FAIL）——仅审视 Rule 74 条文段（标题行至 EOF）
 chk "AD-03" "Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）" "sec=\$(sed -n '/^### 74 变更吸收三判纪律/,\$p' \"\$RULES\"); test -n \"\$sec\" && ! grep -qE ':[0-9]' <<<\"\$sec\""
+# [2026-10-11 task-v169 Rule 80 纪元扩展] Rule 80 落地后 SKILL.md 全集索引演进 1-76→1-80：AD-04 旧 7x 纪元锚 → '1-[7-8][0-9]'（覆盖 1-70..1-89，含 1-74..1-79 历史纪元与 1-80，阈值 ≥3 不变）；AD-12 的 4 个 'Critical Rules' pin 同步改 '1-[7-8][0-9]'，source-anchor pin 因该脚本本体未随批演进保持原样
 # AD-04 SKILL.md 接线锚 ≥5：全集行/索引段/References 表三处 1-(7[4-9]|8[01]) + 用户新指令处理段 '变更吸收三判门（Rule 74' + 合规清单 C51 行
 # [2026-10-11 task-v170 S10h 纪元扩围（Rule 45 注释）] '1-7[4-9]'→'1-(7[4-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md 三处接线锚实态演进为「Critical Rules 1-81」（L9 全集行/L314 索引段/L406 References 表，grep -nE '1-(7[4-9]|8[01])' 实测三处命中、逐行 1 次共 3 处，≥3 不变）；8x 纪元精化 8[01] 覆盖 80/81 两号、不放开越界值（负样本 '1-82'/'1-90' 实测不命中），判据不减（Rule 45：修改既有断言注明修改时间+原行为：原 grep -cE '1-7[4-9]'=2 失配 FAIL=AD-04）
 chk "AD-04" "SKILL.md 接线锚 ≥5：'1-(7[4-9]|8[01])' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74' + C51 行" "test \$(grep -cE '1-(7[4-9]|8[01])' \"\$SKILL\") -ge 3 && grep -qF '变更吸收三判门（Rule 74' \"\$SKILL\" && grep -qF '| C51 |' \"\$SKILL\""
@@ -55,13 +56,13 @@ chk "AD-08" "Rule 74.4 分工与豁免锚：「69.1」引用 +「mini 档」豁�
 chk "AD-09" "registry.tsv 含 selftest-absorption-discipline.sh 登记行（脚本名+守护面描述串）" "row=\$(grep '^selftest-absorption-discipline\.sh' \"\$REGISTRY\" || true); test -n \"\$row\" && grep -qF 'Rule 74' <<<\"\$row\" && grep -qF '变更吸收' <<<\"\$row\""
 # AD-10 config.json 零新键（Rule 74.6：禁新增 absorption 类配置键）
 chk "AD-10" "config.json 零新键（grep「absorption」=0）" "n=\$(grep -c 'absorption' \"\$CONFIG\" 2>/dev/null); test \"\${n:-0}\" -eq 0"
-# AD-11 SKILL.md『1-71』字面残留=0（全集行/索引段/References 表三处已演进 1-7[4-9]）
-chk "AD-11" "SKILL.md『1-71』字面残留=0（三处已演进 1-7[4-9]）" "n=\$(grep -c '1-71' \"\$SKILL\" 2>/dev/null); test \"\${n:-0}\" -eq 0"
+# AD-11 SKILL.md『1-71』字面残留=0（全集行/索引段/References 表三处已演进 1-[7-8][0-9]）
+chk "AD-11" "SKILL.md『1-71』字面残留=0（三处已演进 1-[7-8][0-9]）" "n=\$(grep -c '1-71' \"\$SKILL\" 2>/dev/null); test \"\${n:-0}\" -eq 0"
 # AD-12 pinning selftest 锚 11 处逐个断言（S0 findings A3：精确 5 + 宽容/变体 6）
 #   精确 5（_pin_lit）：断言各文件 live 锚字面在位——4 文件 'Critical Rules 1-(7[4-9]|8[01])'（断言行+消息串）+ SA-07 "grep -cE '1-7[4-9]'"（源锚未扩围保持原样）；
 #     live 锚被静默回退/删除（如退回 1-71）即 FAIL（旧实现 grep '1-71' 仅命中迁移注释=判别力弱，S12 收紧）
-#   宽容 6（_pin_tol）：断言各文件宽容正则族字面在位（覆盖 7x 纪元 1-7[4-9]）；用 -F 匹配文件内字面正则串，免 ERE 歧义
-_pin_lit() { grep -qF "$2" "$1" 2>/dev/null; }             # 精确 pin：文件内 live 锚字面（如 'Critical Rules 1-7[4-9]'）在位
+#   宽容 6（_pin_tol）：断言各文件宽容正则族字面在位（task-v169 本批随纪元演进的三脚本 research-first/context-pressure/skill-split 的 pin 已同步为新 live 锚 '1-[7-8][0-9]'/'1-(69|71|7[4-9]|80)'/'Rules 1-(3[0-9]|[4-8][0-9])'，其余三项未随批演进保持原样）；用 -F 匹配文件内字面正则串，免 ERE 歧义
+_pin_lit() { grep -qF "$2" "$1" 2>/dev/null; }             # 精确 pin：文件内 live 锚字面（如 'Critical Rules 1-[7-8][0-9]'）在位
 _pin_tol() { grep -qF "$2" "$1" 2>/dev/null; }             # 宽容 pin：文件内字面正则族串在位
 ad12=0
 _pin_lit "$SCRIPTS/selftest-tool-selection.sh" 'Critical Rules 1-(7[4-9]|8[01])' || ad12=1
@@ -72,8 +73,8 @@ _pin_lit "$SCRIPTS/selftest-lane-advancement.sh" 'Critical Rules 1-(7[4-9]|8[01]
 #   本行 pin 该文件现态两臂字面（失位即 FAIL）；若该文件日后统一改形，pin 须再同步（cascade 信号）
 _pin_lit "$SCRIPTS/selftest-self-resolution.sh" 'Critical Rules 1-7[4-9]|Critical Rules 1-8[01]([^0-9]|$)' || ad12=1
 _pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-7[4-9]'" || ad12=1
-_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-[67][0-9]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-(69|71|7[4-9])' || ad12=1
+_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-[7-8][0-9]' || ad12=1
+_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-(69|71|7[4-9]|80)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-workflow-orchestration.sh" '1-(68|69|71)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-conclusion-discipline.sh" '1-[4-7][0-9]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-7][0-9]|81)' || ad12=1

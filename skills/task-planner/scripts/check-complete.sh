@@ -1121,6 +1121,43 @@ f && /^\|/ {
     }
     run_report_lint
 
+    # [2026-10-11 task-v169 Rule 80.6] SESSION-LOG GATE — 用户会话逐字记录专档门控面（需求锚 R4 任务需求/对话内容
+    # 逐字入 task_plan 记录系 / R5 记录性文档只写不改）。指针区块判定：task_plan.md 含「🗣️ 用户会话逐字记录」
+    # 标题=新模板计划，强制 $PLAN_DIR_GUESS/user-session-log.md 存在、非空（-s）且含 ≥1 条 `## #N` 记录条目（条目格式见 Rule 80.2）；
+    # 标题缺失=存量计划（无指针区块），输出 SKIPPED INFO 后放行（存量豁免口径，同 R-COVERAGE GATE 无🎯区块 SKIP）。
+    # 档位 env-only 零新 config 键（properties 恒 42，DD-20 不回归）：TASK_PLANNER_SESSION_LOG_ENFORCE 取值
+    # enforce / warn（默认）/ off（其他值与空值回落 warn；本门不读 config.json，对齐 Rule 34.6 env 开关先例）。
+    # 行为矩阵：enforce+违规=stderr `[session-log-gate] ✗` 后 exit 1 阻断 complete；warn+违规=stderr ⚠ 不阻断；
+    # off=整门 SKIP；L0 lane（Rule 38.7）打印 skip 后跳过（[lane-L0] 前缀同款）；合规=stderr OK 带条目数。
+    if [ "${LANE_L0:-0}" = 1 ]; then
+        printf '[lane-L0] skip SESSION-LOG GATE（38.7 非适用项: L0 单 Phase 微变更无会话记录面）\n' >&2
+    else
+        sl_tier="${TASK_PLANNER_SESSION_LOG_ENFORCE:-}"
+        case "$sl_tier" in enforce|warn|off) : ;; *) sl_tier="warn" ;; esac
+        if [ "$sl_tier" != "off" ] && grep -q '🗣️ 用户会话逐字记录' "$PLAN_FILE" 2>/dev/null; then
+            sl_log="$PLAN_DIR_GUESS/user-session-log.md"
+            sl_entries=0
+            if [ -s "$sl_log" ]; then
+                sl_entries="$(grep -cE '^## #[0-9]' "$sl_log" 2>/dev/null || true)"
+            fi
+            if [ -s "$sl_log" ] && [ "${sl_entries:-0}" -ge 1 ]; then
+                printf '[session-log-gate] OK user-session-log.md 在案（%s 条记录条目）\n' "$sl_entries" >&2
+            else
+                if [ "$sl_tier" = "enforce" ]; then
+                    printf '[session-log-gate] ✗ 指针区块在案但 user-session-log.md 缺失/空/无「## #N」记录条目 — Rule 80.6 门控 enforce 档阻断 complete: 先 append-only 补写专档（templates/user-session-log.md）后重跑\n' >&2
+                    exit 1
+                else
+                    printf '[session-log-gate] ⚠ 指针区块在案但 user-session-log.md 缺失/空/无记录条目（warn 档不阻断; 设 TASK_PLANNER_SESSION_LOG_ENFORCE=enforce 升级为阻断档）\n' >&2
+                fi
+            fi
+        elif grep -q '🗣️ 用户会话逐字记录' "$PLAN_FILE" 2>/dev/null; then
+            # off 档：指针区块虽在案但整门 SKIP（off 语义=不校验会话记录）
+            printf '[session-log-gate] SKIPPED (TASK_PLANNER_SESSION_LOG_ENFORCE=off 档整门跳过, 零新 config 键 env-only)\n' >&2
+        elif [ "$sl_tier" != "off" ]; then
+            printf '[session-log-gate] SKIPPED (task_plan.md 无「🗣️ 用户会话逐字记录」指针区块=存量计划, 门控触发条件不满足, 放行)\n' >&2
+        fi
+    fi
+
     # [2026-10-11 task-v167 波次4 Rule 42.7] CR-GATE — CR 风险信号触发制机器消费面（report-lint 后、LEARNING-GATE 前）
     # 基线 ref 三级 fallback（plan「## Diff 基线」区 baseline_ref: → git log --grep <task-id> 末条~1 → HEAD~1）+
     # diff（pathspec "."=本 plan 目录防串扰）→ 风险信号（代码文件>3 或合计>50 行）且 progress.md 无
