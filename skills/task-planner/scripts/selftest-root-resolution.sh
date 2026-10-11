@@ -175,16 +175,17 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 # [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 # [2026-10-10 task-v158 source-anchor-discipline: SKILL.md:288 实态=「含 Rule 40-71 全集」, 宽容正则扩 7x 纪元 5[3-9]|6[0-9]|7[0-1]（同 SR-08 范式）]
 # [2026-10-10 task-v162 合并并集演进: 实态=「含 Rule 40-74 全集」, 7x 纪元上界 7[0-1]→7[0-4]（B 类宽容锚演进，覆盖 74；兜底判定保留）]  # [2026-10-11 task-v166 纪元演进] 7x 上界 7[0-4]→7[0-6]（覆盖 40-53..40-76）
+# [2026-10-12 task-v170 纪元演进] 7x 上界 7[0-6]→7[0-9] 且追加 8[01] 交替（Why=task-v170 落地 Rule 81 计划完成后归档纪律，SKILL.md 全集声明 1-76→1-81；8[01] 保留 80/81 两纪元形态，同 RF-06/RF-07 扩 81 范式；负样本 40-82 不命中）
 # 定位面同步：:273 索引行括注已演进「含 Rule 40-62 全集」（'（Rules 1-39' 定位失配→'详见 `references/critical-rules.md`' 定位，=1）；
 # 主断言 40-5[3-9]→40-(5[3-9]|6[0-9]|7[0-6])（同 SR-08/RR-09 范式，覆盖 40-53/54/55/62/71/74 各纪元）；兜底判定保留。
 idxn="$(grep -cF '详见 `references/critical-rules.md`（Critical Rules' "$SKILLMD" || true)"
 idxline="$(grep -F '详见 `references/critical-rules.md`（Critical Rules' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE 'Rule 40-(5[3-9]|6[0-9]|7[0-6])'; then
-  ok 16 "SKILL.md 索引行「详见 critical-rules.md（Critical Rules」=1 且含「Rule 40-(5[3-9]|6[0-9]|7[0-6])」全集宽容括注（CR P1-2 防级联漏改）"
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE 'Rule 40-(5[3-9]|6[0-9]|7[0-9]|8[01])'; then
+  ok 16 "SKILL.md 索引行「详见 critical-rules.md（Critical Rules」=1 且含「Rule 40-(5[3-9]|6[0-9]|7[0-9]|8[01])」全集宽容括注（CR P1-2 防级联漏改）"
 elif [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -q '50' && printf '%s' "$idxline" | grep -q '53'; then
   ok 16 "SKILL.md 索引行「详见 critical-rules.md（Critical Rules」=1 且逐号式括注含 50 与 53（兜底判定）"
 else
-  bad 16 "SKILL.md 索引行命中=$idxn（应 =1）或索引行未含「Rule 40-(5[3-9]|6[0-9]|7[0-6])」（亦未同时含 50 与 53——级联漏改，CR P1-2 复发）"
+  bad 16 "SKILL.md 索引行命中=$idxn（应 =1）或索引行未含「Rule 40-(5[3-9]|6[0-9]|7[0-9]|8[01])」（亦未同时含 50 与 53——级联漏改，CR P1-2 复发）"
 fi
 
 # RR-17 critical-rules.md 侧 Rule 53 区块锚 `grep -c '^### 53 '` =1

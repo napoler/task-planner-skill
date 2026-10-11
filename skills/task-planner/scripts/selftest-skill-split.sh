@@ -79,7 +79,8 @@ t "T-锚 C26 行在位" grep -q '| C26 |' "$SKILL"
 # 原固定字面 'Rules 1-3' 计数锚在 1-62 纪元 SKILL.md 已零命中（级联漏改面）→ 宽容正则 1-(3[0-9]|[4-6][0-9]) 覆盖旧 1-3x..新 6x 纪元, 合计语义零改动
 # [2026-10-10 task-v158 S-unit: 7x 纪元再扩——SKILL.md 索引锚演进至 1-71（Rule 69/71 落地）, 宽容正则扩 7x 纪元 1-(3[0-9]|[4-7][0-9]), 历史纪元 3x/4x/5x/6x 覆盖不变]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
-t "T-锚 Rules 1-3..7 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-7][0-9])' '$SKILL')\" -ge 1 ]"
+# [2026-10-12 task-v170 纪元演进] 宽容正则扩 81：'1-(3[0-9]|[4-7][0-9])'→'1-(3[0-9]|[4-7][0-9]|81)'（Why=task-v170 落地 Rule 81 计划完成后归档纪律，SKILL.md 索引/References 行全集 1-76→1-81，81 以字面交替入锚（同 RF-06/RF-07 扩 81 范式；负样本 1-82 不命中，8[01] 之外的越界值仍被排除））；历史纪元 3x/4x/5x/6x/7x 覆盖不变
+t "T-锚 Rules 1-3..81 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-7][0-9]|81)' '$SKILL')\" -ge 1 ]"
 
 # T6 守卫 + registry 联动
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do
