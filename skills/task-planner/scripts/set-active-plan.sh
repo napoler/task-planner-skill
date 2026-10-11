@@ -234,11 +234,19 @@ case "$ACTION" in
         #   ①claimant 存在且!=本计划且其 Status=in_progress→拒绝 trample,不写该键,WARN 含 claimant;
         #   ②claimant complete/不存在→fail-open 正常写仅提示。--force 显式覆盖。
         # 基线行为: set 无所有权检查,直接写 side 键。
+        # [2026-10-11 task-v170 CA-6] archive 跳过: 加 -not -path archive/* 过滤
+        # Why: 归档形态=git mv plans/<id> → plans/archive/<id>(task-v170 archive-plan.sh S2),
+        #   archive/ 子目录内残留的历史会话 .session-owner / task_plan.md 不得被 set 所有权
+        #   守卫误读(陈旧 claimant 会误判在途→错误 skip 写入或误放行)。
+        # 基线行为: glob 直接枚举, archive 子目录若含 .session-owner 将参与匹配。
         SKIP_SIDE_WRITE=0
         claimant=""
         if [ -d "$PLAN_ROOT" ]; then
             for ownfile in "$PLAN_ROOT"/*/.session-owner; do
                 [ -f "$ownfile" ] || continue
+                case "$ownfile" in
+                    *"$PLAN_ROOT"/archive/*) continue ;;  # [task-v170 CA-6] 归档面零命中
+                esac
                 # [2026-10-10 CR修复 MAJOR-F3] owner 匹配兼容双形态 ^(sess)?${SID}$
                 # Why: 原 `^sess${SID}` 仅匹配带 sess 前缀 owner; 裸 uuid owner 会话(无 sess 前缀)被漏判,
                 #   守卫失效直接写入(trample)。修法=兼容双形态, 整行锚定($)实现 norm 后比较。
