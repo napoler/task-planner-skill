@@ -1618,6 +1618,12 @@ if [ -n "$PLAN_DIR_GUESS" ] && [ -d "$PLAN_DIR_GUESS/.." ]; then
     if [ -n "$_ag_plans_root" ] && [ -d "$_ag_plans_root" ]; then
         _ag_candidate_count=0
         while IFS= read -r _ag_name; do
+            # 2026-10-11 CR-fix (034-code-reviewer-s14 MAJOR-1): 现象=侧指针命中某任务后,
+            # 其后 sort 序候选目录均因 _ag_ptr_hit 残留被 continue 丢弃, 计数假阴性
+            # (复现: 1 active 指针任务 + 2 complete 候选 → count=0, 期望 2);
+            # 根因=while 体在当前 shell 执行, 变量跨迭代不自动清零, 标志一旦置 1 永不复位;
+            # 修法=每轮目录判定前复位, 语义收窄为「当前目录是否被 active 指针指向」
+            _ag_ptr_hit=""
             # 与 archive-plan.sh:166-189 同枚举口径：直接子目录仅 task-* 且含 task_plan.md，
             # archive 目标目录与圆点目录天然排除（glob 跳 dot 目录，无归类面）
             [ -n "$_ag_name" ] || continue
