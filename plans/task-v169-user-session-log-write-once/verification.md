@@ -28,3 +28,14 @@
 - VC-1..VC-6 全部 PASS；CR Gate APPROVED-WITH-NITS 三 nit 已当轮修复并复验；drift-checker 判定 aligned
 - 委派率 0.667（check-delegation.sh verdict=ok，violations=[]；主进程直做理由全在 Rule 25.3 白名单内，25.4 豁免）
 - 已知遗留（非本任务范围，均已登记）：~/.cursor 部署位 63 行存量漂移（24 缺+38 差异+.backup）；部署位 5 个 selftest 存量环境性失败（MA-08/PR-13/SA-10/WF-10 等，master 基线上同样复现，与本任务无关）
+
+## 委派统计复验（Rule 25.4）
+
+```bash
+bash /home/terry/.zcode/skills/task-planner/scripts/check-delegation.sh stats /mnt/data/dev/task-planner-skill/plans/task-v169-user-session-log-write-once
+```
+
+JSON 输出：
+```json
+{"phases_total":6,"phases_delegated":4,"main_direct_count":2,"delegation_rate":0.667,"main_direct":[{"phase":"1 Requirements & Discovery","reason":"例外理由:② 计划系统文件维护——Rule 25.3 白名单"},{"phase":"6 合并、部署与终验收口","reason":"例外理由:① git 编排+② 簿记——Rule 25.3 白名单"}],"violations":[],"verdict":"ok"}
+```

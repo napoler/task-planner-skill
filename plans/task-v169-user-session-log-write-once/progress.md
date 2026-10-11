@@ -82,6 +82,29 @@
 | What have I done? | 见上方 Phase 段 |
 | What am I about to do? | 见 task_plan.md Next Step |
 
+## [goal:Gn] 证据行（Rule 66.3 — goal 翻格前三要素：验证命令+PASS 结果+产物路径）
+
+- [goal:G1] complete — 证据: 命令 `test -f skills/task-planner/templates/user-session-log.md` + `grep -c 'user-session-log' templates/task_plan.md` = 2（SL-01/02/03/08 PASS）；产物 templates/user-session-log.md:1-24 + templates/task_plan.md:19-24 指针区块
+- [goal:G2] complete — 证据: /tmp/v169-e2e e2e 首跑 7 文件含 user-session-log.md exit 0 + 二跑 skip 幂等 exit 0 + `grep -c '6/6' init-session.sh` = 1（SL-07）；产物 init-session.sh:562-575 建档块 + :686-693 复核段
+- [goal:G3] complete — 证据: `grep -cE '^80\.[1-6] ' references/critical-rules.md` = 6 + `grep -c '1-80' SKILL.md` = 3且`1-76` = 0 + `grep -c '| C56 |'` = 1 + `wc -l SKILL.md` = 558≤581（SL-04/05）；产物 critical-rules.md:1048-1063 + SKILL.md:9/64/246/313/404/415
+- [goal:G4] complete — 证据: SESSION-LOG GATE 五 fixture 实跑（enforce 违规 exit 1/合规 OK/warn 不阻断/off SKIP/无指针 SKIP）+ `bash selftest-session-log.sh` = `Total: 10 PASS=10 FAIL=0` rc=0 + registry 行 `grep -c 'selftest-session-log.sh'` = 1且 NF=4（SL-06/09/10）；产物 check-complete.sh:1123-1161 + selftest-session-log.sh:1-93 + registry.tsv +1 行
+- [goal:G5] complete — 证据: 18 个 epoch 级联脚本逐脚本独立实跑 FAIL=0（TS 12/RC 23/LA 14/SR 13/AD 14/SRV 12/RF 12/CP 9/RR 17/CP cap 20/IP 18/RI 16/EH 14/DCS 20/EL 16/VT 13/RV 12/SS 41）+ 主仓冷跑 `Total: 78 PASS=78 FAIL=0 (run=78 reused=0)` + 独立子代理 sub:17 复跑 78/78；产物 18 脚本锚扩展（6 锚族）
+- [goal:G6] complete — 证据: CR verdict=APPROVED-WITH-NITS（subagent-state/18-code-reviewer-gate.md，D1-D4 PASS，三 nit 当轮修复复验）+ drift-checker 判定 aligned（subagent-state/19-drift-checker.md）+ 部署位 diff -rq：~/.zcode=0/~/.claude=0/~/.cursor 本任务 26 文件 identical=26
+- [goal:G7] complete — 证据: master merge 87b3a77（`git log --oneline -2`）+ plans 提交 651c55d/0d7d9d2 两颗 + check-complete.sh 全门 PASS（VC-GATE/DELEGATION/session-log-gate/CR-GATE/LEARNING-GATE 均 PASS，SKILL-MODIFY warn 已登记）+ INDEX.md task-v169 complete 行 + 本 verification.md Outcome=COMPLETE
+
+## [judge]/[align] 留痕行（Rule 73.4 — 变更决策后/Phase complete 前/合并回前）
+
+- [align] 2026-10-11 Phase 2 完成后：Rule 80 六子条与用户 R1-R6 逐条对齐（R→VC 映射 6 条全覆盖）；不变量三态核查=INV-1 只写不改/INV-2 逐字口径/INV-3 6-6 字面/INV-4 行数上限/INV-5 零新键/INV-6 v168 零触碰均未被破坏
+- [align] 2026-10-11 Phase 3 完成后：GATE 三态与模板指针静态性核对（指针区块零可变计数，SL-08 负断言 PASS）；env-only 降级未引入 config.json 键（properties 恒 42，SL-09）
+- [judge] 2026-10-11 Phase 4 完成后：dry-run 19 FAIL 的归因评判——10 个非预案失败逐一在 master 基线副本复跑确认全部由本次编号演进触发（先复测再归因），decision-grading DG-03 判定为本任务 Rule 80 正文含行号引用违反 v148 铁律（改规则文本）而非改测试（改测试=掩盖缺陷），其余 18 走锚扩展（断言阈值语义零改）
+- [judge] 2026-10-11 Phase 5 CR 三 nit 处置评判：N1 编号缺口以注释入档（不补落地 77/78/79=守 v168 用户否决方向）；N2 模板示例条目改 #N（保门控判别力，代价=新计划零条目时 warn 提醒=设计行为）；N3 簿记订正 80→78（以实测为准）
+- [align] 2026-10-11 合并回前：diff 26 文件 100% 在 skills/task-planner/ 声明面、CA-1..CA-10 逐条对齐无表外文件；master 未提交变更仅 plans/ 面零重叠；Rule 80 编号 80 由 rule-reserve 台账顺位取得（77/78/79 预留未落地），索引口径 1-80 与实测最大编号一致
+- [judge] 2026-10-11 合并回后：87b3a77 merge + 78/78 回归 + 部署 zcode/claude diff=0 + cursor 26 文件一致 + CR APPROVED 留痕 + INDEX 登记 + check-complete 全门 PASS（SKILL-MODIFY warn 已登记无功能性删除）= Goal 达成，遗留项均为范围外存量（已在 delivery-summary 风险段登记），outcome=COMPLETE
+
+## [skill-modify] 删除性行为清单登记（Rule 36.3/36.6 终验）
+
+- 本任务涉及技能文件修改（skills/task-planner/ 下 26 文件：新增 2 + 修改 24），删除性行为清单：**[skill-modify] 无功能性删除**。
+- 逐项确认：零文件删除/零条款删除/零 config.json 键（properties 恒 42）；SKILL 索引口径演进 1-76→1-80、第 6 文件→第 7 文件、C55→C56 行新增均为增量（Rule 74 增量默认）；18 个 selftest 改造全部为 epoch 锚扩展（断言条数不减，逐脚本 Total 见 [goal:G5] 证据行）；init-session.sh 六文件循环与 6/6 回显行逐字未改（INV-3）；Rule 80 为纯追加新规则。
 ---
 <!-- 📋 plan-resume 报告检查点:Phase complete 后 <cwd>/.zcode/plans/plan-resume-report.md 应已更新;未更新记 [plan-resume 跳过原因] -->
 | plan-resume 报告路径 | 上次更新 |

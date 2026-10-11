@@ -111,13 +111,13 @@ execution_lane: L2
 
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 专档模板与指针 | templates/user-session-log.md 与 task_plan.md 指针区块在位 | `test -f skills/task-planner/templates/user-session-log.md` 且 `grep -c 'user-session-log' skills/task-planner/templates/task_plan.md ≥1` | S1/Phase 2 | pending |
-| G2 | init 自动建档 | init 为新计划建专档且不破坏 6/6 与 6 文件创建 | temp-dir e2e 7 文件断言 + `grep -c '6/6' scripts/init-session.sh ≥1` | S2/Phase 2 | pending |
-| G3 | Rule 80 与索引级联 | Rule 80 六子条+SKILL.md 三处 1-80+第 7 文件行+C56 行 | `grep -cE '^80\.[1-6] ' references/critical-rules.md =6` 且 `grep -c '1-80' SKILL.md =3` | S3, S4/Phase 2 | pending |
-| G4 | 门控与 selftest 守护 | SESSION-LOG GATE 三态正确+SL-01..10 全 PASS+registry 登记 | fixture 三态输出比对 + `bash scripts/selftest-session-log.sh` exit=0 | S1, S2/Phase 3 | pending |
-| G5 | epoch 级联与全量回归 | 11 selftest 锚级联后全量 FAIL=0 | `bash scripts/run-selftests.sh` FAIL=0 | S1-S5/Phase 4 | pending |
-| G6 | CR 与部署一致 | CR Gate 通过+三部署位 diff=0 | code-reviewer 结论 + `diff -r` 三部署位输出为空 | Phase 5 | pending |
-| G7 | 终验收口 | VC-1..VC-6 逐条复核+delivery-summary+INDEX 登记 | findings.md VC 段 + plans/INDEX.md 行 | Phase 6 | pending |
+| G1 | 专档模板与指针 | templates/user-session-log.md 与 task_plan.md 指针区块在位 | `test -f skills/task-planner/templates/user-session-log.md` 且 `grep -c 'user-session-log' skills/task-planner/templates/task_plan.md ≥1` | S1/Phase 2 | complete |
+| G2 | init 自动建档 | init 为新计划建专档且不破坏 6/6 与 6 文件创建 | temp-dir e2e 7 文件断言 + `grep -c '6/6' scripts/init-session.sh ≥1` | S2/Phase 2 | complete |
+| G3 | Rule 80 与索引级联 | Rule 80 六子条+SKILL.md 三处 1-80+第 7 文件行+C56 行 | `grep -cE '^80\.[1-6] ' references/critical-rules.md =6` 且 `grep -c '1-80' SKILL.md =3` | S3, S4/Phase 2 | complete |
+| G4 | 门控与 selftest 守护 | SESSION-LOG GATE 三态正确+SL-01..10 全 PASS+registry 登记 | fixture 三态输出比对 + `bash scripts/selftest-session-log.sh` exit=0 | S1, S2/Phase 3 | complete |
+| G5 | epoch 级联与全量回归 | 11 selftest 锚级联后全量 FAIL=0 | `bash scripts/run-selftests.sh` FAIL=0 | S1-S5/Phase 4 | complete |
+| G6 | CR 与部署一致 | CR Gate 通过+三部署位 diff=0 | code-reviewer 结论 + `diff -r` 三部署位输出为空 | Phase 5 | complete |
+| G7 | 终验收口 | VC-1..VC-6 逐条复核+delivery-summary+INDEX 登记 | findings.md VC 段 + plans/INDEX.md 行 | Phase 6 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
