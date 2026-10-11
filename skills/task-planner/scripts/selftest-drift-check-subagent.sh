@@ -84,9 +84,10 @@ if grep -q 'drift-checker' "$AGENT_COV"; then ok 17 "agent-coverage.md 含 drift
 # DCS-18: zcode-userpromptsubmit.sh 含 drift-checker 且 task-drift-guard 计数=0（负断言）
 if grep -q 'drift-checker' "$HOOK" && [ "$(grep -c 'task-drift-guard' "$HOOK")" -eq 0 ]; then ok 18 "hook 含 drift-checker 无 task-drift-guard"; else bad 18 "hook 条件不满足"; fi
 
-# DCS-19: SKILL.md wc -l <=558 + critical-rules.md 61.4 防自触发锚（清零）+ 61.5 降级锚（check-drift.sh）
+# DCS-19: SKILL.md wc -l <=584 + critical-rules.md 61.4 防自触发锚（清零）+ 61.5 降级锚（check-drift.sh）
+# [2026-10-11 task-v170 S10a] 上限 558→584: Why=task-v170 Rule 81 归档步骤+C56 行使 SKILL.md 实值 559（原钉 558 贴线即破）, 先例实值+25 边距 559→584
 SKILL_LINES=$(wc -l < "$SKILLMD")
-if [ "$SKILL_LINES" -le 558 ] && grep -q '清零' "$CRIT" && grep -q 'check-drift.sh' "$CRIT"; then ok 19 "SKILL.md 行数<=558+61.4 清零+61.5 check-drift.sh"; else bad 19 "DCS-19 条件缺失"; fi
+if [ "$SKILL_LINES" -le 584 ] && grep -q '清零' "$CRIT" && grep -q 'check-drift.sh' "$CRIT"; then ok 19 "SKILL.md 行数<=584+61.4 清零+61.5 check-drift.sh"; else bad 19 "DCS-19 条件缺失"; fi
 
 # DCS-20: 本技能目录 Skill("task-drift-guard") 精确串计数=0（负断言，排除自身）
 # [2026-10-08 task-v149 D24] 扫描根从 SKILLS_ROOT（全 skills 树）收窄到 SKILL_ROOT（本技能目录）：
