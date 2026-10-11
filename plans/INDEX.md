@@ -233,6 +233,7 @@
 - task-v161-subagent-return-format ✓ (5/5) — 2026-10-10
 - task-v162-change-absorption-safety ✓ (8/8) — 2026-10-10
 - task-v164-pointer-worktree-local ✓ (5/5) — 2026-10-11
+- task-v163-proactive-research ✓ (6/6) — 2026-10-11 ｜ Rule 75 网络调研主动激活与外部数据依赖纪律（75.0-75.7 七子条+计划期三态分析+反死磕主动检索+GitHub/浏览器强制+模板调研触点+selftest 15 断言+级联 1-75+C54 合规行；CR APPROVED+回归 76/76 PASS+三部署位 IDENTICAL）
 
 ## 汇总
 - in_progress: 7 | pending: 1 | complete: 102

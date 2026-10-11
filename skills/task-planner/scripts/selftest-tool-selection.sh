@@ -67,6 +67,9 @@ if [ "$n" -ge 3 ]; then ok 04 "SKILL.md Rule 40 锚命中 $n ≥3"; else bad 04 
 a="$(grep -cE 'Critical Rules 1-7[4-9]' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
 if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-7[4-9]≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-7[4-9]=$a 应 ≥1 / 1-39=$b 应 0）"; fi
+# [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
+# [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
+# [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
 # TS-06 SKILL.md 三个既有锚子串各 ≥1（WF-07/08/09 锚保全）
 if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD" \
    && grep -qF '| C27 |' "$SKILLMD" \

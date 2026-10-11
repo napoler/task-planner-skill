@@ -8,7 +8,7 @@
 #         SRV-01 `Rule 76（总结阶段格式可读性与审查清单实体化纪律 — task-v166）` 标题=1
 #         SRV-02 `^76\.[1-6] ` 六子条≥6
 #     · SKILL.md（消费侧联动，SRV-03..SRV-06）:
-#         SRV-03 `1-76` ≥3；SRV-04 `Rule 76` ≥5；SRV-05 C54 行在位；SRV-06 终验段 Rule 76 联动句在位
+#         SRV-03 `1-7[4-9]` ≥3；SRV-04 `Rule 76` ≥5；SRV-05 C55 行在位且含「Rule 76」+「总结格式可读性」；SRV-06 终验段 Rule 76 联动句在位
 #     · templates/delivery-summary.md（SRV-07）:
 #         SRV-07 审查清单表格段表头含「文件名」「路径」「描述」
 #     · SRV-08..SRV-13（消费侧联动+负断言守护）:
@@ -68,12 +68,12 @@ else
     bad "SRV-02" "Rule 76 六子条锚(got subs=$SRV02_SUBS expect>=6)"
 fi
 
-# ── SRV-03: SKILL 接线锚（1-76≥3）──
-SRV03_176=$(cnt '1-76' "$SKILL")
-if [ "$SRV03_176" -ge 3 ]; then
-    ok "SRV-03" "SKILL 接线锚(1-76≥3)"
+# ── SRV-03: SKILL 接线锚（1-7[4-9]≥3，容 1-74..1-79 演进，防下次 epoch 再漂移）──
+SRV03_EPOCH=$(cntE '1-7[4-9]' "$SKILL")
+if [ "$SRV03_EPOCH" -ge 3 ]; then
+    ok "SRV-03" "SKILL 接线锚(1-7[4-9]≥3)"
 else
-    bad "SRV-03" "SKILL 接线锚(got 1-76=$SRV03_176 expect>=3)"
+    bad "SRV-03" "SKILL 接线锚(got 1-7[4-9]=$SRV03_EPOCH expect>=3)"
 fi
 
 # ── SRV-04: SKILL 接线锚（Rule 76≥5）──
@@ -84,12 +84,15 @@ else
     bad "SRV-04" "SKILL 接线锚(got Rule76=$SRV04_RULE76 expect>=5)"
 fi
 
-# ── SRV-05: SKILL C54 合规行在位 ──
-SRV05_C54=$(cnt '| C54 |' "$SKILL")
-if [ "$SRV05_C54" -ge 1 ]; then
-    ok "SRV-05" "SKILL C54 合规行在位"
+# ── SRV-05: SKILL C55 合规行在位（Rule 76 总结格式可读性锚；C54 已归 Rule 75 网络调研）──
+# pinning 语义=「Rule 76 的合规行」，实现方式=同时断言 C55 行含「Rule 76」与「总结格式可读性」关键词，防串行。
+SRV05_C55=$(cntE '^\| C55 \| ' "$SKILL")
+SRV05_K1=$(awk '/^\| C55 \|/{print}' "$SKILL" | grep -c 'Rule 76' || true)
+SRV05_K2=$(awk '/^\| C55 \|/{print}' "$SKILL" | grep -c '总结格式可读性' || true)
+if [ "$SRV05_C55" -ge 1 ] && [ "$SRV05_K1" -ge 1 ] && [ "$SRV05_K2" -ge 1 ]; then
+    ok "SRV-05" "SKILL C55 合规行在位且含 Rule 76 + 总结格式可读性 关键词"
 else
-    bad "SRV-05" "SKILL C54 合规行缺失(got C54=$SRV05_C54 expect>=1)"
+    bad "SRV-05" "SKILL C55 合规行缺失或关键词不全(got C55=$SRV05_C55 k1(Rule76)=$SRV05_K1 k2(总结格式可读性)=$SRV05_K2 expect all>=1)"
 fi
 
 # ── SRV-06: SKILL 终验段 Rule 76 联动句在位 ──

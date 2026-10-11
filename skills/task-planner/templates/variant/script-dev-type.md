@@ -77,6 +77,8 @@
 | 风格 | style.md token 块+语言锁基线 | docs/style.md | 必读 | ☐ |
 | 对话基线 | 对话守则+分剧语料路由 | 系列内 dialogue-rules 件；docs/corpus-styles/index.md | 参考 | ☐ |
 
+- **GitHub 现成实现检索（Rule 75.3/75.4）**：脚本开发前必须先 GitHub 检索现成实现（gh search repos/code）+官方示例——评估借鉴/适配后落地，未检索就自研=违规
+
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|

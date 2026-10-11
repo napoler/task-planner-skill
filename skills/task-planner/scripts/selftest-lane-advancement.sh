@@ -140,6 +140,9 @@ fi
 n="$(grep -cE 'Critical Rules 1-7[4-9]' "$SKILLMD" || true)"
 m="$(grep -c '1-39' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-7[4-9]' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-7[4-9]=$n 应 ≥1 / 1-39=$m 应 0）"; fi
+# [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
+# [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
+# [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，SKILL 章节引言行最终态 1-74，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
 
 # LA-13 SKILL.md 负断言 `grep -c '1-40'` =0
 # What：断言 SKILL.md 内 `1-40` 字面命中数为 0（与 SR-07 同口径负断言）。
