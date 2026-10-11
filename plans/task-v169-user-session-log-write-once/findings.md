@@ -173,3 +173,10 @@ CR 裁决：**APPROVED-WITH-NITS**（Rule 42.2 CR Gate；审查范围=worktree v
 #### [main:2026-10-11] 终验门全过结论（check-complete.sh 末跑）
 - `bash check-complete.sh plans/task-v169-user-session-log-write-once/task_plan.md` 末跑全门放行：DELEGATION GATE PASSED（rate=0.667，白名单豁免判定成立）+ VC-GATE PASSED（VC 表=6，6 Phase 各 ≥2 条 V-N）+ session-log-gate OK（3 条记录条目）+ CR-GATE PASS（CR APPROVED 留痕在案）+ LEARNING-GATE PASSED + SKILL-MODIFY GATE PASSED（无功能性删除登记）+ compliance OK + judge-gate OK（7 行留痕）+ `[plan] ALL PHASES COMPLETE (6/6)`。
 - 提交链：87b3a77（skills merge --no-ff）→ 651c55d（plans 终验收口）→ ed932b7（Rule 70②/42.7 补痕）→ 521f1d6（Goal 翻格+judge/align+skill-modify+委派统计段）。主仓剩余未提交项（.rule-reservations.jsonl/INDEX.md/两份 .plan-attestation/task-v162,v168,v170,v171 目录）均为其他并行会话产物，本任务零触碰。
+
+#### [main:2026-10-12] 压缩后续跑收口簿记结论
+- 用户消息入档核查（git 提交史实证）：user-session-log.md 由 651c55d（10-12 04:13）引入 3 条真实条目（#1 发起原话 + #2/#3 继续），此后历次提交未再触碰；本次续跑前逐字比对已知用户消息序列，确认压缩边界有 1 条续跑「继续」未入档 + 本次 1 条，按 Rule 80.3 追加 #4（压缩边界诚实补记）/ #5（本次即时落盘），历史条目零改动（append-only 纪律自证）。
+- 活跃指针已由并行会话移交 task-v171-skill-specialization（plans/.active_plan），终验改用 check-complete.sh 显式传参范式（$1=计划路径；该脚本 pointer-lifecycle 段对指针只读，显式传参无共享态副作用），全门复跑 EXIT=0：session-log-gate OK（5 条记录条目）+ DELEGATION/VC/CR/LEARNING/SKILL-MODIFY/compliance/judge-gate 全过 + ALL PHASES COMPLETE (6/6)。
+- plan-resume 检查点单元格回填跳过原因：全量 resume/archive 扫描职责归并行任务 task-v170-archive-completed-plans（Rule 81，在途），本任务不外扩扫描、不写共享报告；模板表内 `~/.zcode/plans/` 路径文本与同行注释 `<cwd>/.zcode/plans/` 不一致（v164 起随 $PWD 本地化）登记为模板小遗留（另案范围）。
+- 并行安全：冲突钩子报 v168 会话可能触碰本方 progress.md——git diff 实证仅本任务 3 处预期 hunk（+10/-1），钩警为跨计划同名文件误报；INDEX.md/.rule-reservations.jsonl 含本任务行但混写并行会话状态，按属主纪律留待其归属提交，未代为提交。
+- 收口提交：0d4c144（user-session-log #4/#5 + progress.md 检查点回填与 [align] 行）；本 findings 段为收口第二条提交。
