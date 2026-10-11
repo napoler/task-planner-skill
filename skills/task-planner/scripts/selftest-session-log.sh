@@ -54,9 +54,16 @@ t "SL-03 task_plan.md 指针区块('🗣️ 用户会话逐字记录'≥1 ∧ 'u
 t "SL-04 critical-rules.md '^80.[1-6] ' = 6" bash -c "
     [ \"\$(grep -cE '^80\.[1-6] ' '$CRULES')\" -eq 6 ]"
 
-# SL-05: SKILL.md Rule 80 索引接线 '1-80' = 3（行计数口径，任务书 §2 表）
-t "SL-05 SKILL.md '1-80' = 3" bash -c "
-    [ \"\$(grep -c '1-80' '$SKILL')\" -eq 3 ]"
+# SL-05: SKILL.md Rule 80/81 索引接线纪元断言（行计数口径，任务书 §2 表）
+# [2026-10-11 task-v169 原钉: '1-80' = 3]
+# [2026-10-11 task-v170 Rule 45 纪元扩围: Why=task-v170 落地 Rule 81（计划完成后归档纪律），
+#  SKILL.md 字面 '1-80' 演进为 '1-81'（L9/L315/L407），epoch 上界 80→81；
+#  扩围正则 1-8[01]([^0-9]|$)（尾边界写法参照 selftest-veto.sh VT-10 task-v070 S10o 范式）:
+#  覆盖现值 '1-81'（grep -c ≥3）且兼容 '1-80' 历史态；负样本 '1-82'/'1-89' 不得命中——禁越界放开]
+t "SL-05 SKILL.md 纪元锚 '1-8[01]' ≥3（覆盖 1-80/1-81, 尾边界 82/89 负样本不命中）" bash -c "
+    [ \"\$(grep -cE '1-8[01]([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
+    [ \"\$(echo '1-82' | grep -cE '1-8[01]([^0-9]|$)')\" -eq 0 ] &&
+    [ \"\$(echo '1-89' | grep -cE '1-8[01]([^0-9]|$)')\" -eq 0 ]"
 
 # SL-06: check-complete.sh SESSION-LOG GATE 三件套（[session-log-gate] 前缀 + env 开关名 + 零新 config 键/env-only 注释）
 t "SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_SESSION_LOG_ENFORCE∧零新 config 键|env-only)" bash -c "
