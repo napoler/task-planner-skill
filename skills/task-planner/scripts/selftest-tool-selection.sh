@@ -6,7 +6,8 @@
 #   TS-02     40.3 /goal 披露措辞「不可代调」≥1
 #   TS-03     40.4 行含「显式点名」≥1 且 40.6 行含「零新 config 键」≥1
 #   TS-04     SKILL.md `grep -c 'Rule 40'` ≥3（四锚：协同路由行/C28/摘要行/References 括注）
-#   TS-05     SKILL.md `grep -c 'Critical Rules 1-67'` ≥1 且 `grep -c '1-39'` = 0（对策 b 字面锚——关键负断言）
+#   TS-05     SKILL.md `grep -cE 'Critical Rules 1-(7[4-9]|8[01])'` ≥1 且 `grep -c '1-39'` = 0（对策 b 字面锚——关键负断言；
+#             [2026-10-12 task-v170 S10n 纪元扩围: '1-7[4-9]'→'1-(7[4-9]|8[01])'，Rule 81 落地 1-81 纪元，负样本 1-82 不命中]）
 #             [2026-10-08 task-v144 合并级联: References 表行 label 演进为「Critical Rules 1-62」,锚断言同步演进,旧 'Rules 1-39'=2 变体改为负断言 1-39=0]
 #             [2026-10-08 task-v147 合并级联: '1-62'→'1-63'，Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进]
 #   TS-06     SKILL.md 三个既有锚子串各 ≥1：「Rule 39（动态工作流编排」「| C27 |」「dynamic-workflows（用户显式点名」
@@ -64,9 +65,10 @@ if [ "$n" -ge 3 ]; then ok 04 "SKILL.md Rule 40 锚命中 $n ≥3"; else bad 04 
 # [2026-10-10 task-v160 合并并集演进] '1-69'→宽容形态 '1-(6[0-9]|7[0-2])'：task-v160 Rule 72 决策分级与用户打断纪律已落地，SKILL 章节引言行最终态 1-72；主锚由固定字面改宽容正则（覆盖 60-72 纪元，判据 ≥1 不减），负向检查 1-39=0 保留
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-7[4-9]'：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）
 # [2026-10-11 task-v166 纪元锚扩展] 旧锚→'1-7[4-9]'：Rule 76 落地后 SKILL.md 索引演进至 1-76，宽容锚覆盖 1-7X..1-7X 演进
-a="$(grep -cE 'Critical Rules 1-7[4-9]' "$SKILLMD" || true)"
+# [2026-10-12 task-v170 S10n 纪元扩围] '1-7[4-9]'→ERE '1-(7[4-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律）使 SKILL.md 编号纪元 1-76→1-81，主锚同步扩 8[01]（8[01] 交替形态先例=selftest-research-first.sh RF-06/RF-07）；负样本 '1-82' 不命中（越界值不放开），负向检查 1-39=0 保留（Rule 45 注释：What=TS-05 主锚扩围 81；Why=Rule 81 落地纪元漂移）
+a="$(grep -cE 'Critical Rules 1-(7[4-9]|8[01])' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-7[4-9]≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-7[4-9]=$a 应 ≥1 / 1-39=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 Critical Rules 1-(7[4-9]|8[01])≥1 且 1-39=0"; else bad 05 "SKILL.md 字面锚漂移（Critical Rules 1-(7[4-9]|8[01])=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
