@@ -121,6 +121,19 @@
   | rule land | rule-reserve.sh land 76 | landed | landed（was reserved） | PASS |
   | P-05 动态上界 | selftest-parallel-scheduling.sh | skill_max==crit_max | 1-76==76 PASS | PASS |
 
+## CR 留痕（Rule 42.7 — 代码审查门控记录）
+
+**[CR] 代码审查轮次 1（code_review: required，触发原因=12 个 .sh 改动+1 新建脚本）**
+- 代码面（sub:19-code-reviewer，agent_type=code-reviewer）：verdict=CHANGES_REQUESTED，5 条（F-1 SRV-07 弱守卫 / F-2 SRV-08/09/13 BRE 死守卫 / F-3 头注陈旧 / F-4 未用变量 / F-5 簿记口径）；检查点 /mnt/data/dev/task-planner-skill/plans/task-v166-summary-readability/subagent-state/19-code-reviewer.md
+- 对齐面（sub:20-general-purpose，按 review-library/alignment-review/SKILL.md）：verdict=CHANGES_REQUESTED，7 条（P0 段号锚漂移 / P1×3 演进注陈旧 / P2×3 残留）；检查点 .../subagent-state/20-general-purpose.md
+
+**[CR] 修复与复验（fix-wave1 四批 21a-21d + fix-wave2 三批 23a-c + master 并集解 25-28）**
+- 12 条问题逐条闭合，闭合台账见 findings.md §[sub:main-23d]（每条带实测证据）
+- 主进程独立实锤：BRE 死守卫复现（printf 'Phase 1: ①' → grep -c BRE=0 / -cE=1）、夹具 FAIL×3、§6 段号锚 warn 触发
+- 复验回归：round3 暴露第二轮级联（6 FAIL）→ 修复 → round4 76/76 → master 并集解后 round5 → 合并前终跑（sub:29）77/77 rc=0、断言合计 726 PASS/0 FAIL
+
+**CR APPROVED**（2026-10-11）：双审 CHANGES_REQUESTED 全部 12 条修复并经最终全量回归+部署位 IDENTICAL 复验后放行；验证独立性=8 个全新独立子代理（sub:16/18/19/20/22/24/27/29），主进程零自测替代验收。证据链：subagent-state/19+20（verdict+问题清单）→ findings §[sub:main-23d]（闭合台账）→ subagent-state/29（终跑 77/77）→ verification.md VC-6 PASS。
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

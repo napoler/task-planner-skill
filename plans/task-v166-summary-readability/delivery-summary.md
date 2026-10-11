@@ -58,7 +58,7 @@
 
 ## 5. 风险点（必须列举；无则逐项写「无」，禁止整块省略）
 - **已知遗留**: 三条 P2 级非阻断项——① 其余 variant 模板（character-design/storyboard/video-* 等）Phase 标题装饰圈号同形态存在，本任务按白名单三载体收口，列入后续轮次；② variant HTML 头注释内步骤映射圈号（76.1 注释范围外，豁免登记在 findings §[sub:main-23d]）；③ 派发 prompt 圈号字面会触发 dispatch-guard 步骤枚举门（本任务 3 次被拦后改文字描述）——提示词模板化改进可作后续。
-- **待裁决**: 无（计划层无悬挂事项；`.plan-attestation` 已 re-attest 含 parallel_groups 声明）
+- **待裁决**: 无（计划层无悬挂事项；re-attest 记录见 /mnt/data/dev/task-planner-skill/plans/task-v166-summary-readability/.plan-attestation，SHA-256 4cb51d45，含 parallel_groups: [G-review] 声明）
 - **失效条件**: 本任务结论在以下情况过时——① 任一新增/删除 selftest 脚本（registry rows 不变量变）；② SKILL 索引再演进（epoch 锚族 1-7[4-9] 覆盖 1-74..1-79，Rule 77+ 落地时若超 79 需再扩）；③ delivery-summary 模板再改段落编号（report-lint 段号锚需同步）。重验: `cd /mnt/data/dev/task-planner-skill && bash skills/task-planner/scripts/selftest-summary-readability.sh && bash skills/task-planner/scripts/selftest-registry.sh`
 - **回滚方式**: `cd /mnt/data/dev/task-planner-skill && git revert 0d57483`（merge commit；若 revert 产生冲突可按 Rule 74 三判处置）。部署位已同步，回滚后需重跑 `bash skills/task-planner/scripts/smart-merge-back.sh` 或手动对账三部署位。
 
