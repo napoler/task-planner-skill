@@ -58,24 +58,27 @@ chk "AD-10" "config.json 零新键（grep「absorption」=0）" "n=\$(grep -c 'a
 # AD-11 SKILL.md『1-71』字面残留=0（全集行/索引段/References 表三处已演进 1-7[4-9]）
 chk "AD-11" "SKILL.md『1-71』字面残留=0（三处已演进 1-7[4-9]）" "n=\$(grep -c '1-71' \"\$SKILL\" 2>/dev/null); test \"\${n:-0}\" -eq 0"
 # AD-12 pinning selftest 锚 11 处逐个断言（S0 findings A3：精确 5 + 宽容/变体 6）
-#   精确 5（_pin_lit）：断言各文件 live 锚字面在位——4 文件 'Critical Rules 1-7[4-9]'（断言行+消息串）+ SA-07 "grep -cE '1-7[4-9]'"；
+#   精确 5（_pin_lit）：断言各文件 live 锚字面在位——4 文件 'Critical Rules 1-(7[4-9]|8[01])'（断言行+消息串）+ SA-07 "grep -cE '1-7[4-9]'"（源锚未扩围保持原样）；
 #     live 锚被静默回退/删除（如退回 1-71）即 FAIL（旧实现 grep '1-71' 仅命中迁移注释=判别力弱，S12 收紧）
 #   宽容 6（_pin_tol）：断言各文件宽容正则族字面在位（覆盖 7x 纪元 1-7[4-9]）；用 -F 匹配文件内字面正则串，免 ERE 歧义
 _pin_lit() { grep -qF "$2" "$1" 2>/dev/null; }             # 精确 pin：文件内 live 锚字面（如 'Critical Rules 1-7[4-9]'）在位
 _pin_tol() { grep -qF "$2" "$1" 2>/dev/null; }             # 宽容 pin：文件内字面正则族串在位
 ad12=0
-_pin_lit "$SCRIPTS/selftest-tool-selection.sh" 'Critical Rules 1-7[4-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" 'Critical Rules 1-7[4-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" 'Critical Rules 1-7[4-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-self-resolution.sh" 'Critical Rules 1-7[4-9]' || ad12=1
+_pin_lit "$SCRIPTS/selftest-tool-selection.sh" 'Critical Rules 1-(7[4-9]|8[01])' || ad12=1
+_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" 'Critical Rules 1-(7[4-9]|8[01])' || ad12=1
+_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" 'Critical Rules 1-(7[4-9]|8[01])' || ad12=1
+# [2026-10-12 task-v170 S10p 级联同步] self-resolution 未统一改形：该文件 live 锚=两臂字面 'Critical Rules 1-7[4-9]|Critical Rules 1-8[01]([^0-9]|$)'
+#   （grep -cF 统一新字面=0 实测；统一字面 1-(7[4-9]|8[01]) 仅 tool-selection/requirement-coverage/lane-advancement 三文件在位），
+#   本行 pin 该文件现态两臂字面（失位即 FAIL）；若该文件日后统一改形，pin 须再同步（cascade 信号）
+_pin_lit "$SCRIPTS/selftest-self-resolution.sh" 'Critical Rules 1-7[4-9]|Critical Rules 1-8[01]([^0-9]|$)' || ad12=1
 _pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-7[4-9]'" || ad12=1
 _pin_tol "$SCRIPTS/selftest-research-first.sh" '1-[67][0-9]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-(69|71|7[4-9])' || ad12=1
 _pin_tol "$SCRIPTS/selftest-workflow-orchestration.sh" '1-(68|69|71)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-conclusion-discipline.sh" '1-[4-7][0-9]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-7][0-9])' || ad12=1
+_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-7][0-9]|81)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-source-anchor-discipline.sh" '^71\.[1-7] ' || ad12=1
-if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：Critical Rules 1-7[4-9] / 1-7[4-9] 计数）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
+if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：Critical Rules 1-(7[4-9]|8[01]) / 1-7[4-9] 计数）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
 # AD-13 自举消费：本计划 task_plan.md 变更标注表 ≥10 行 CA-n 条目（Rule 74.3 dogfood，本计划=首批 consumer）
 #   候选（无机器相关硬编码，S12 收紧）：① env 注入 TASK_PLANNER_ABSORB_PLAN ② 主仓根（git-common-dir 推导，worktree 内可解析到主仓）
 #     ③ repo 相对 $SKILL_ROOT/../../plans/…（部署位/主仓直跑）；均缺=SKIP 中性态（sk 不计 pass/fail，防静默转绿）
