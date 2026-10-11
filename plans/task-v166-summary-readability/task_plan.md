@@ -344,14 +344,14 @@ Phase 5（complete — 全部 VC PASS，outcome: COMPLETE）
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 | 字段 | 值 |
 |------|-----|
-| `total` | n/a（本任务非批量 fan-out，双审 2 单元为并行组非批量门控对象） |
-| `success` | |
-| `failed` | |
-| `failure_rate` | |
-| `sampled_pass` | |
-| `sampled_fail` | |
-| `pre_check` | Q1:否 Q2:有 Q3:能 |
-| `rollback_point` | |
+| `total` | n/a（chain_mode=single 非批量 fan-out；双审 2 单元为 Rule 21.4 并行组非 Rule 18.6 批量门控对象） |
+| `success` | n/a |
+| `failed` | n/a |
+| `failure_rate` | n/a（非批量任务无批量失败率口径） |
+| `sampled_pass` | n/a（无 10% 抽样面；等价覆盖=全量 77/77 脚本两轮独立回归） |
+| `sampled_fail` | n/a（无 ground-truth 抽检面；等价替代=726 断言 0 FAIL） |
+| `pre_check` | Q1:否（无逐单元独立判断批量面）Q2:有（grep/夹具/rc 客观验收）Q3:能（git revert 0d57483+部署位重对账） |
+| `rollback_point` | merge 前基线 master 39c41fa；部署位快照=smart-merge-back --deploy staging 机制 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
