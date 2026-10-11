@@ -137,11 +137,12 @@ fi
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
-n="$(grep -c 'Critical Rules 1-[7-8][0-9]' "$SKILLMD" || true)"
+# [2026-10-12 task-v170 S10l 纪元演进] 'Critical Rules 1-7[4-9]'→ERE 'Critical Rules 1-(7[4-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律，SKILL 终验段插入归档步骤），SKILL.md L314/L406 主锚实态='Critical Rules 1-81'，旧 7[4-9] 字面命中=0（RC-11 级联漏改 FAIL 020-code-runner-s11 明细 #10），计数锚加 8[01] 交替项（覆盖 80/81 两纪元，与 selftest-research-first.sh S10c 扩围范式同形；负样本 1-82 不命中，越界值不放开；「1-39 变体=0」负断言原样保留）。Rule 45 注释：本断言语义=「SKILL 主 label 仍为 74..81 区间内某纪元全集 label + 旧 1-39 变体已清零」，历史 74..79 字面均命中 7[4-9] 臂，现状 1-81 由 8[01] 臂命中
+n="$(grep -cE 'Critical Rules 1-(7[4-9]|8[01])' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$(grep -c '1-39' "$SKILLMD" || true)" -eq 0 ]; then
-  ok 11 "SKILL.md 主锚 'Critical Rules 1-[7-8][0-9]' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
+  ok 11 "SKILL.md 主锚 'Critical Rules 1-(7[4-9]|8[01])' ≥1 且 '1-39' 变体 0（SR-07 同步演进, 8x 纪元）"
 else
-  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-[7-8][0-9]=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
+  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-(7[4-9]|8[01])=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
 fi
 
 # RC-12 delivery-summary.md 需求覆盖区块锚 `grep -q '需求覆盖核对'` 且 `^## [1-5].` 区块数 =5

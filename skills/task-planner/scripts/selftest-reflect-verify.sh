@@ -10,7 +10,7 @@
 #   RV-07 含 33.6 机制条款（语义锚点: reflect_verify_enforce + REFLECT-GATE + selftest-reflect-verify）
 #   RV-08 config.json reflect_verify_enforce 键（默认 enforce, enum 三档 enforce/warn/off）
 #   RV-09 check-complete.sh 含 REFLECT-GATE 锚点（REFLECT-GATE / TASK_PLANNER_REFLECT_VERIFY_ENFORCE / - [reflect] 行计数 / SKIPPED 分支）
-#   RV-10 SKILL.md 含 'Rules 1-3[56]' 宽容锚索引行（Rule 33/34/35/36/37 联动；[2026-09-17 task-v079] 严格 '1-35'→宽容 1-3[56]；[2026-09-20 task-v085] Rule 37 级联 1-3[56]→1-3[5-7]）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[5-9]|[4-6][0-9])][2026-10-10 task-v158 扩 7x 纪元 1-(3[5-9]|[4-7]x)][2026-10-11 task-v169 扩 8x 纪元 1-(3[5-9]|[4-8][0-9])（Rule 80 落地, SKILL.md 索引锚演进 1-80）]
+#   RV-10 SKILL.md 含 'Rules 1-3[56]' 宽容锚索引行（Rule 33/34/35/36/37 联动；[2026-09-17 task-v079] 严格 '1-35'→宽容 1-3[56]；[2026-09-20 task-v085] Rule 37 级联 1-3[56]→1-3[5-7]）[2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元 1-(3[5-9]|[4-6][0-9])][2026-10-10 task-v158 扩 7x 纪元 1-(3[5-9]|[4-7]x)][2026-10-11 task-v169 扩 8x 纪元 1-(3[5-9]|[4-8][0-9])（Rule 80 落地, SKILL.md 索引锚演进 1-80）][2026-10-12 task-v170 S10l 扩 8x 纪元 1-(3[5-9]|[4-7][0-9]|8[01])]
 #   RV-11 SKILL.md 检查清单含 C21 行（Rule 33 [reflect] 反思+验证两行）
 #   RV-12 SKILL.md 含「解决后反思-验证循环」联动段
 # 12 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
@@ -59,7 +59,8 @@ else
 fi
 # RV-10 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元][2026-10-10 task-v158 扩 7x 纪元 1-(3[5-9]|[4-7]x)][2026-10-11 task-v169 扩 8x 纪元 1-(3[5-9]|[4-8][0-9])（Rule 80 落地, SKILL.md 索引锚演进 1-80）]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
-if grep -qE 'Rules 1-(3[5-9]|[4-8][0-9])' "$SKILL"; then ok 10 "SKILL.md 'Rules 1-(3[5-9]|[4-8][0-9])' 宽容锚索引行（兼容 1-35..1-80 各纪元过渡, 8x 纪元）"; else bad 10 "SKILL.md 缺 'Rules 1-(3[5-9]|[4-8][0-9])' 宽容锚"; fi
+# [2026-10-12 task-v170 S10l 纪元演进] '1-(3[5-9]|[4-7][0-9])'→'1-(3[5-9]|[4-7][0-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律，SKILL 终验段插入归档步骤），SKILL.md L314/L406 索引行实态=「Critical Rules 1-81」，旧 7x 纪元锚 1-76..1-79 已非字面（grep -c 旧锚=0，RV-10 级联漏改 FAIL 020-code-runner-s11 明细 #9），宽容锚加 8[01] 交替项（覆盖 80/81 两纪元，与 selftest-research-first.sh RF-06/RF-07 S10c 扩围范式同形；负样本 1-82 不命中，越界值不放开）。Rule 45 注释：本断言语义=「SKILL 索引行主 label 仍指向 35..81 区间内某纪元全集」，历史 1-35..1-79 各纪元字面均命中，现状 1-81 由 8[01] 臂命中
+if grep -qE 'Rules 1-(3[5-9]|[4-7][0-9]|8[01])' "$SKILL"; then ok 10 "SKILL.md 'Rules 1-(3[5-9]|[4-7][0-9]|8[01])' 宽容锚索引行（兼容 1-35..1-81 各纪元过渡, 8x 纪元）"; else bad 10 "SKILL.md 缺 'Rules 1-(3[5-9]|[4-7][0-9]|8[01])' 宽容锚"; fi
 # RV-11
 if grep -q '^| C21 ' "$SKILL"; then ok 11 "SKILL.md 检查清单 C21 行"; else bad 11 "SKILL.md 缺 C21 行"; fi
 # RV-12

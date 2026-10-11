@@ -62,7 +62,8 @@ if grep '偏移比对' "$SKILLMD" | grep -q 'Rule 61'; then ok 10 "反模式偏�
 # [2026-10-10 task-v162 合并并集演进] 'Rule 40-(69|71) 全集'→'Rule 40-(69|71|74) 全集'：Rule 74（变更吸收三判）落地，头注全集括注 40-74，宽容交替集扩 74（C 类条件修复）
 # [2026-10-11 task-v166 纪元演进] 'Rule 40-(69|71|73|74) 全集'→'Rule 40-(69|71|73|7[4-9]) 全集'：Rule 76（总结阶段格式可读性与审查清单实体化纪律）落地，头注全集括注 40-76，宽容交替集扩 7[4-9]（覆盖 74..79）
 # [2026-10-11 task-v169 Rule 80 纪元演进] 'Rule 40-(69|71|73|7[4-9]) 全集'→'Rule 40-(69|71|73|7[4-9]|80) 全集'：Rule 80（用户会话逐字记录与只写不改纪律）已落地，头注全集括注 40-80（SKILL.md 实态 `Rule 40-80 全集`），宽容交替集末尾追加成员 80（DCS-11）
-if grep -qE 'Rule 40-(69|71|73|7[4-9]|80)(\+[0-9]+)? 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-(69|71|73|7[4-9]|80) 全集（±+NN 形态）+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失（需 40-(69|71|73|7[4-9]|80) 全集（±+NN 形态） + Rule 61 偏移检查子代理化 + Rule 61 摘要 bullet）"; fi
+# [2026-10-11 task-v170 纪元扩围（Rule 45 注释）] 'Rule 40-(69|71|73|7[4-9]) 全集'→'Rule 40-(69|71|73|7[4-9]|8[01]) 全集'：Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md L314 实态「Critical Rules 1-81（含 Rule 40-81 全集」，头注全集括注 40-81，宽容交替集扩 8[01]（覆盖 80/81；先例范式=selftest-research-first.sh:75-79 RF-07 交替集扩 8[01]，纯机械扩围，负样本 40-82 不得命中，不放开越界值）；±+NN 形态族（K9）与 Rule 61 两条件原样保留
+if grep -qE 'Rule 40-(69|71|73|7[4-9]|8[01])(\+[0-9]+)? 全集' "$SKILLMD" && grep -q 'Rule 61 偏移检查子代理化' "$SKILLMD" && grep -q '\*\*Rule 61（偏移检查子代理化' "$SKILLMD"; then ok 11 "索引括注 40-(69|71|73|7[4-9]|8[01]) 全集（±+NN 形态）+Rule 61 偏移检查子代理化 保全+Rule 61 摘要 bullet"; else bad 11 "DCS-11 条件缺失（需 40-(69|71|73|7[4-9]|8[01]) 全集（±+NN 形态） + Rule 61 偏移检查子代理化 + Rule 61 摘要 bullet）"; fi
 
 # DCS-12: critical-rules.md 含 ### 61 标题 + **61.1..**61.6 六锚各 >=1
 if grep -q '^### 61 ' "$CRIT" && grep -q '\*\*61\.1' "$CRIT" && grep -q '\*\*61\.2' "$CRIT" && grep -q '\*\*61\.3' "$CRIT" && grep -q '\*\*61\.4' "$CRIT" && grep -q '\*\*61\.5' "$CRIT" && grep -q '\*\*61\.6' "$CRIT"; then ok 12 "Rule 61 标题+六锚齐全"; else bad 12 "Rule 61 锚缺失"; fi
@@ -85,9 +86,10 @@ if grep -q 'drift-checker' "$AGENT_COV"; then ok 17 "agent-coverage.md 含 drift
 # DCS-18: zcode-userpromptsubmit.sh 含 drift-checker 且 task-drift-guard 计数=0（负断言）
 if grep -q 'drift-checker' "$HOOK" && [ "$(grep -c 'task-drift-guard' "$HOOK")" -eq 0 ]; then ok 18 "hook 含 drift-checker 无 task-drift-guard"; else bad 18 "hook 条件不满足"; fi
 
-# DCS-19: SKILL.md wc -l <=558 + critical-rules.md 61.4 防自触发锚（清零）+ 61.5 降级锚（check-drift.sh）
+# DCS-19: SKILL.md wc -l <=584 + critical-rules.md 61.4 防自触发锚（清零）+ 61.5 降级锚（check-drift.sh）
+# [2026-10-11 task-v170 S10a] 上限 558→584: Why=task-v170 Rule 81 归档步骤+C56 行使 SKILL.md 实值 559（原钉 558 贴线即破）, 先例实值+25 边距 559→584
 SKILL_LINES=$(wc -l < "$SKILLMD")
-if [ "$SKILL_LINES" -le 558 ] && grep -q '清零' "$CRIT" && grep -q 'check-drift.sh' "$CRIT"; then ok 19 "SKILL.md 行数<=558+61.4 清零+61.5 check-drift.sh"; else bad 19 "DCS-19 条件缺失"; fi
+if [ "$SKILL_LINES" -le 584 ] && grep -q '清零' "$CRIT" && grep -q 'check-drift.sh' "$CRIT"; then ok 19 "SKILL.md 行数<=584+61.4 清零+61.5 check-drift.sh"; else bad 19 "DCS-19 条件缺失"; fi
 
 # DCS-20: 本技能目录 Skill("task-drift-guard") 精确串计数=0（负断言，排除自身）
 # [2026-10-08 task-v149 D24] 扫描根从 SKILLS_ROOT（全 skills 树）收窄到 SKILL_ROOT（本技能目录）：

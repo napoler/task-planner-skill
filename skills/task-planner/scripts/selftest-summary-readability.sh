@@ -8,7 +8,7 @@
 #         SRV-01 `Rule 76（总结阶段格式可读性与审查清单实体化纪律 — task-v166）` 标题=1
 #         SRV-02 `^76\.[1-6] ` 六子条≥6
 #     · SKILL.md（消费侧联动，SRV-03..SRV-06）:
-#         SRV-03 `1-[7-8][0-9]` ≥3；SRV-04 `Rule 76` ≥5；SRV-05 C55 行在位且含「Rule 76」+「总结格式可读性」；SRV-06 终验段 Rule 76 联动句在位
+#         SRV-03 `1-(7[4-9]|8[01])` ≥3（2026-10-12 task-v170 S10n 纪元扩围：Rule 81 落地 1-81，锚扩 8[01]，负样本 1-82 不命中）；SRV-04 `Rule 76` ≥5；SRV-05 C55 行在位且含「Rule 76」+「总结格式可读性」；SRV-06 终验段 Rule 76 联动句在位
 #     · templates/delivery-summary.md（SRV-07）:
 #         SRV-07 审查清单表格段表头含「文件名」「路径」「描述」
 #     · SRV-08..SRV-13（消费侧联动+负断言守护）:
@@ -68,13 +68,14 @@ else
     bad "SRV-02" "Rule 76 六子条锚(got subs=$SRV02_SUBS expect>=6)"
 fi
 
-# ── SRV-03: SKILL 接线锚（1-[7-8][0-9]≥3，容 1-70..1-89 演进，防下次 epoch 再漂移）──
 # [2026-10-11 task-v169 纪元再扩] '1-7[4-9]'→'1-[7-8][0-9]'：Rule 80 落地 1-80 纪元，锚扩覆盖 70..89（阈值 ≥3 不变）
-SRV03_EPOCH=$(cntE '1-[7-8][0-9]' "$SKILL")
+# ── SRV-03: SKILL 接线锚（1-(7[4-9]|8[01])≥3，容 1-74..1-79/1-80/1-81 演进，防下次 epoch 再漂移）──
+# [2026-10-12 task-v170 S10n 纪元扩围] '1-7[4-9]'→'1-(7[4-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律）使 SKILL.md 编号纪元 1-76→1-81，接线锚同步扩 8[01]（8[01] 形态先例=selftest-research-first.sh RF-06/RF-07 交替集）；负样本 '1-82' 不命中（越界值不放开，Rule 45 注释：What=扩围 81；Why=Rule 81 落地纪元漂移）
+SRV03_EPOCH=$(cntE '1-(7[4-9]|8[01])' "$SKILL")
 if [ "$SRV03_EPOCH" -ge 3 ]; then
-    ok "SRV-03" "SKILL 接线锚(1-[7-8][0-9]≥3)"
+    ok "SRV-03" "SKILL 接线锚(1-(7[4-9]|8[01])≥3)"
 else
-    bad "SRV-03" "SKILL 接线锚(got 1-[7-8][0-9]=$SRV03_EPOCH expect>=3)"
+    bad "SRV-03" "SKILL 接线锚(got 1-(7[4-9]|8[01])=$SRV03_EPOCH expect>=3)"
 fi
 
 # ── SRV-04: SKILL 接线锚（Rule 76≥5）──
