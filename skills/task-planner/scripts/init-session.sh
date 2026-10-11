@@ -378,6 +378,8 @@ EOF
 
 # [2026-09-15 task-v074 P4-S1] 1) TEMPLATE_TYPE 位置参数为空时兜底 env TASK_TEMPLATE_TYPE
 #    (消 SKILL.md:505 "自动路由"语义漂移——SKILL 描述与实现一致化) # 2026-10-08 task-v149 行号锚对齐实态（D10）
+#    2026-10-11 task-v170 S10f Rule 45 锚校准: 原锚 :505 已失真（"自动路由" 字样在当前 SKILL.md 全文 0 命中）；
+#    该注释想指向的「模板类型选取由 init-session.sh 自动处理」描述现值 = SKILL.md:60（「模板优先级（由 init-session.sh 自动处理，无需手动干预）」），锚 :505→:60
 #    2) VALID_TYPES 改为从 $BUILTIN_TEMPLATES/variant/*-type.md 动态派生 + general 兜底
 #    (Rule 34.1 单一事实源=模板目录, 与 check-template-type.sh 同源原则; 原行为保留:
 #     未知/缺失类型 WARNING 回退 generic task_plan.md)
