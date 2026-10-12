@@ -120,7 +120,7 @@ fi
 # TS-12 零新 config 键——properties 键数 = 42（与 WF-12 同口径；jq 缺失打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 已合法加 2 键,FF 守护断言 42 为准]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 12 "config.json properties 键数 42（v145 已合法加 2 键）"; else bad 12 "config.json properties 键数=$keys（应 42）"; fi
+  if [ "$keys" = "44" ]; then ok 12 "config.json properties 键数 44（v145 已合法加 2 键）"; else bad 12 "config.json properties 键数=$keys（应 44）"; fi
 else
   printf 'TS-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

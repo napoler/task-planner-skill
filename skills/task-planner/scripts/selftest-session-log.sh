@@ -4,7 +4,7 @@
 #      模板存在性/三关键词/条目格式/恢复协议（SL-01/02）→ task_plan.md 指针区块在案（SL-03）
 #      → critical-rules 80.1-80.6 六子条（SL-04）→ SKILL.md 1-80 索引接线（SL-05）
 #      → check-complete.sh SESSION-LOG GATE 三件套（SL-06）→ init-session.sh 建档块+6/6 字面（SL-07）
-#      → 指针区块纯静态负断言（SL-08）→ 零新 config 键 properties=42（SL-09, 对齐 DD-20）
+#      → 指针区块纯静态负断言（SL-08）→ 零新 config 键 properties=44（SL-09, 对齐 DD-20; task-perf-opt 合法新增 2 键 42→44）
 #      → registry 自登记（SL-10）。10 组断言全 PASS exit 0, 任一 FAIL exit 1。纯 grep/awk/jq 静态断言, 无 fixture。
 # WHY: 需求锚 R4（用户任务需求与对话内容逐字记录进 Task Plan 文档）+ R5（记录性文档只写入不修改）
 #      是用户原话铁律；Rule 80.6③ 要求 selftest 静态断言守护全链落点，防模板/规则/门控被后续改动静默移除。
@@ -80,10 +80,10 @@ t "SL-07 init-session.sh 'copy_template \"user-session-log.md\"'≥1 ∧ '6/6'=1
 t "SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'=0, 纯静态)" bash -c "
     [ \"\$(grep -cE '当前条目数|最近一条' '$TPL')\" -eq 0 ]"
 
-# SL-09: 零新 config 键（properties 键数恒 42）；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
+# SL-09: 零新 config 键（properties 键数恒 44; task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键, 42→44）；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
 if command -v jq >/dev/null 2>&1; then
-    t "SL-09 config.json properties 键数 = 42（零新 config 键, jq）" bash -c "
-        [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 42 ]"
+    t "SL-09 config.json properties 键数 = 44（零新 config 键, jq; task-perf-opt 合法新增 2 键 42→44）" bash -c "
+        [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 44 ]"
 else
     echo "[SKIP] SL-09 jq 不可用, 降级 SKIP 计 PASS（对齐 DD-20 先例）"
     PASS=$((PASS+1))

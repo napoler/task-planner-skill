@@ -8,7 +8,7 @@
 #     CP-07/08/09 references/capability-registry.md：文件在、表头 8 列、agnes-quota 行 8 字段全非空
 #     CP-10..13 scripts/capabilities/agnes-quota.sh：存在、`bash -n` 通过、无硬编码密钥、头注释含 Rule 55
 #     CP-14/15 companion/agents/{video,image}-generation-executor.md：各含 `capability-registry` ≥1
-#     CP-16 config.json：.properties 键数=42（零新 config 键声明锚，沿用 tsv 末列既有口径）[2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+#     CP-16 config.json：.properties 键数=44（零新 config 键声明锚，沿用 tsv 末列既有口径）[2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 #     CP-17/18 脚本自身：SCRIPT_DIR 自定位行在位（仓库/worktree/部署位三处可跑）、头注释 What+Why 齐备
 #     CP-19/20 scripts/capabilities/agnes-quota.sh 运行时判定（本地 mock 实跑，F1 修复回归钉）：
 #              CP-19 404 模式 → exit≠0 + 失败语义且禁含成功 verdict；CP-20 200 模式 → exit 0 + verdict 含「未填充」
@@ -158,17 +158,17 @@ if [ "$n" -ge 1 ]; then ok 14 "video-generation-executor.md 接线 capability-re
 n="$(grep -c 'capability-registry' "$AGENT_IMAGE" 2>/dev/null || true)"
 if [ "$n" -ge 1 ]; then ok 15 "image-generation-executor.md 接线 capability-registry（$n）"; else bad 15 "image-generation-executor.md 缺 capability-registry 接线"; fi
 
-# CP-16 config.json .properties 键数=42（零新 config 键声明锚）
+# CP-16 config.json .properties 键数=44（零新 config 键声明锚）
 # [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 # What：断言 config.json 顶层 properties 键数保持 42。
 # Why：55.6 承诺「零新 config 键」（与 43.4/44.4/47.4/52.4 同范式）——键数膨胀 = 有人给 Rule 55 加了机器门控键，
 #      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=42`。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 16 "config.json properties 键数 42（零新增）"; else bad 16 "config.json properties 键数=$keys（应 42，零新键被破坏）"; fi
+  if [ "$keys" = "44" ]; then ok 16 "config.json properties 键数 44（零新增）"; else bad 16 "config.json properties 键数=$keys（应 44，零新键被破坏）"; fi
 elif command -v python3 >/dev/null 2>&1; then
   keys="$(python3 -c "import json;print(len(json.load(open('$CONFIG'))['properties']))" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 16 "config.json properties 键数 42（python3 校验）"; else bad 16 "config.json properties 键数=$keys（应 42）"; fi
+  if [ "$keys" = "44" ]; then ok 16 "config.json properties 键数 44（python3 校验）"; else bad 16 "config.json properties 键数=$keys（应 44）"; fi
 else
   printf 'CP-16 SKIPPED jq/python3 均缺失，无法校验 config.json 键数（安装任一后重跑）\n'
 fi

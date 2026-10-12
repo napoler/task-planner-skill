@@ -189,7 +189,7 @@ fi
 #      选型加了机器门控键，属机制漂移（需走 Rule 36 条款流程）；jq 缺失=环境降级非内容漂移（MA-10 先例）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 07 "config.json properties 键数 42（零新增）"; else bad 07 "config.json properties 键数=$keys（应 42，零新键承诺被破坏）"; fi
+  if [ "$keys" = "44" ]; then ok 07 "config.json properties 键数 44（零新增）"; else bad 07 "config.json properties 键数=$keys（应 44，零新键承诺被破坏）"; fi
 else
   skip 07 "jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）"
 fi

@@ -1,6 +1,10 @@
 #!/bin/bash
 # [2026-09-04] 新增 5 文件存在性复核（Rule 19.5 配套），缺失/空文件 exit 1
 # [2026-09-13 task-v067] 第 6 文件 knowledge-brief.md 纳入建立/复核（5 文件→6 文件）
+# [task-perf-opt 2026-10-13 Change #1/#7] trivial 代码修复档：TASK_AUTO_TIER=1 ∧ TASK_SCOPE_FILES=1 ∧
+#   TASK_SCOPE_MODULES=1 ∧ TASK_EST_MINUTES≤15 ∧ TASK_EST_LINES≤3 ∧ TASK_SCOPE_FILE_LIST 唯 1 个代码文件
+#   （.sh/.ts/.cjs/.js/.py/.json）→ auto-tier 第四条件命中 mini+L0（TRIVIAL_CODE_TIER=1），
+#   且 7 计划文件缩减为 3（task_plan/progress/verification），user-session-log.md 改按需创建。
 # Initialize planning files for a new session
 # Usage: ./init-session.sh [project-name] [template-type] [plan-tier]  (tier: mini, env TASK_PLAN_TIER 亦可, task-v086 Rule 38.2)
 #        bash init-session.sh --list [--project]  列出可用模板(内置 14 variant+项目目录 *-type.md+当前默认项), 不创建文件
@@ -403,10 +407,41 @@ PROJECT_TPL_USED=0
 #   ④排除语义：目标命中保护区（§六 skills/agents/commands/AGENTS.md）、Rule 36 技能修改类、
 #   D6 高危类（schema/基础设施/破坏性操作）→ 禁止自动降 mini（显式指定 mini 仍可）。
 AUTO_TIER_FIRED=0
+# [task-perf-opt 2026-10-13 Change #1] TRIVIAL_CODE_TIER：trivial 代码修复档标记（第四条件分支命中时置 1）。
+# 与既有 AUTO_TIER_FIRED 正交：AUTO_TIER_FIRED 记「自动降 mini」事实（终验 AUTO-TIER 复核段消费锚），
+# TRIVIAL_CODE_TIER 记「trivial 代码修复」子类（Change #7 三文件缩减 + L0 通道强制共用同一条件，
+# 条件口径与本块第四分支逐字一致，避免两处判定漂移）。
+TRIVIAL_CODE_TIER=0
 _s22_uint() { case "$1" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
+# trivial 代码修复判定（Change #1 第四条件）：TASK_SCOPE_FILE_LIST 逗号分隔文件名列表中
+# 唯 1 个文件 ∧ 该文件匹配代码扩展名（.sh/.ts/.cjs/.js/.py/.json）。
+# 主进程在调用 init-session.sh 前以 env 提交 TASK_SCOPE_FILE_LIST（从用户指令解析的 scope 文件列表）
+# 与 TASK_EST_LINES（预估变更行数）；未设置/非法 → 本判定=0，fail-safe 落既有四条件/缺省档。
+_trivial_code=0
+if [ "${TASK_SCOPE_FILES:-}" = "1" ] && [ "${TASK_SCOPE_MODULES:-}" = "1" ] \
+   && _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
+   && _s22_uint "${TASK_EST_LINES:-}" && [ "${TASK_EST_LINES}" -le 3 ] \
+   && [ -n "${TASK_SCOPE_FILE_LIST:-}" ]; then
+    _t_nfiles="$(printf '%s' "${TASK_SCOPE_FILE_LIST}" | awk -F',' '{print NF}')"
+    if [ "${_t_nfiles:-0}" = "1" ]; then
+        _t_fname="$(printf '%s' "${TASK_SCOPE_FILE_LIST}" | tr -d '[:space:]')"
+        case "$_t_fname" in
+            *.sh|*.ts|*.cjs|*.js|*.py|*.json) _trivial_code=1 ;;
+        esac
+    fi
+fi
 if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
     if [ "${TASK_TIER_EXCLUDE:-}" = "1" ]; then
         echo "[init] auto-tier: 命中④排除条件（保护区/Rule 36 技能修改/D6 高危），不自动降 mini（Rule 38.6；显式指定 mini 仍可）"
+    elif [ "$_trivial_code" = "1" ]; then
+        # [task-perf-opt Change #1] 第四条件分支：trivial 代码修复（单文件代码 ∧ ≤3 行 ∧ ≤15min ∧ 单模块
+        # ∧ ④排除未命中）→ mini 档 + L0 微变更通道。Why：L0 通道存在但 lane-detect 禁滥用条款将代码文件
+        # 改动一律排除（lane-detect.sh:85 实测），trivial 单文件 ≤3 行修复被误落 L1 重档；本分支为
+        # 既有 mini 通道补 trivial 代码子类，复用 mini 豁免（多波验证/推演自证/委派仪式）+ L0 薄验证。
+        PLAN_TIER="mini"
+        AUTO_TIER_FIRED=1
+        TRIVIAL_CODE_TIER=1
+        echo "[init] auto-tier: trivial 代码修复命中（scope=单文件代码 ${TASK_SCOPE_FILE_LIST} ∧ 预估 ${TASK_EST_LINES} 行 ≤3 ∧ ${TASK_EST_MINUTES}min ≤15 ∧ 单模块 ∧ ④排除未命中）→ mini+L0（Rule 38.6 第四条件, task-perf-opt）"
     elif _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
        && _s22_uint "${TASK_SCOPE_FILES:-}" && [ "${TASK_SCOPE_FILES}" -ge 1 ] && [ "${TASK_SCOPE_FILES}" -le 2 ] \
        && _s22_uint "${TASK_SCOPE_MODULES:-}" && [ "${TASK_SCOPE_MODULES}" -eq 1 ]; then
@@ -498,7 +533,16 @@ fi
 echo ""
 
 # Initialize each template file (only if it doesn't exist)
-for file in findings.md progress.md notepad-learnings.md verification.md knowledge-brief.md; do
+# [task-perf-opt Change #7] trivial 代码修复档（TRIVIAL_CODE_TIER=1，条件与 Change #1 第四分支统一）
+# 缩减为 3 文件（task_plan.md + progress.md + verification.md），跳过 findings/notepad-learnings/knowledge-brief
+# （trivial 单文件 ≤3 行修复无调研/知识沉淀需求）；verification.md 仍创建（LANE-L0 GATE ① 全量终验锚依赖）。
+# 非 trivial 档（含既有 mini 档）保持 5 文件全量，行为逐字节不变。
+if [ "${TRIVIAL_CODE_TIER:-0}" = "1" ]; then
+    _init_files="progress.md verification.md"
+else
+    _init_files="findings.md progress.md notepad-learnings.md verification.md knowledge-brief.md"
+fi
+for file in $_init_files; do
     if [ -f "$file" ]; then
         echo "$file already exists, skipping"
     else
@@ -569,11 +613,15 @@ fi
 #       记录、R3 防会话异常丢失）；专档内容 append-only 只写不改（R5），复制模板即冻结
 #       初始载体，后续只追加条目。
 # 幂等: 文件已存在（重复 init）→ 打 already exists, skipping 后跳过，不覆写既有条目。
-if [ -f "user-session-log.md" ]; then
-    echo "user-session-log.md already exists, skipping"
-else
-    if copy_template "user-session-log.md"; then
-        echo "    Created user-session-log.md (task-v169 Rule 80.1 第 7 计划文件, append-only 逐字记录专档)"
+# [task-perf-opt Change #7] trivial 代码修复档（TRIVIAL_CODE_TIER=1）：user-session-log.md 改按需创建
+# （mini 档 Rule 80 豁免口径，首次写入才建档），init 不预建；非 trivial 档保持强制建档原行为不变。
+if [ "${TRIVIAL_CODE_TIER:-0}" != "1" ]; then
+    if [ -f "user-session-log.md" ]; then
+        echo "user-session-log.md already exists, skipping"
+    else
+        if copy_template "user-session-log.md"; then
+            echo "    Created user-session-log.md (task-v169 Rule 80.1 第 7 计划文件, append-only 逐字记录专档)"
+        fi
     fi
 fi
 
@@ -586,6 +634,10 @@ if [ -f "task_plan.md" ] && [ -f "${SCRIPT_DIR}/lane-detect.sh" ]; then
     #（lane-detect 已兜底 stdout 输出 L1, 此处取不到合法值时同样兜底 L1——fail-safe 向重侧）
     _lane="$(bash "${SCRIPT_DIR}/lane-detect.sh" --diff "${TASK_LANE_BASE:-HEAD}" 2>/dev/null)" || true
     _lane="${_lane#execution_lane: }"; case "${_lane}" in L0|L1|L2) ;; *) _lane=L1 ;; esac
+    # [task-perf-opt Change #1] trivial 代码修复档强制 L0 微变更通道：lane-detect 对代码文件默认落 L1
+    # （禁滥用条款），但 trivial 单文件 ≤3 行修复走 L0 薄验证（LANE-L0 GATE 保留 ①全量终验+②Phase翻转+③单commit），
+    # 与 Change #1 第四条件同一判定（TRIVIAL_CODE_TIER=1）显式覆写为 L0。
+    [ "${TRIVIAL_CODE_TIER:-0}" = "1" ] && _lane="L0"
     # 2i 而非 1i: 保持文件首行语义不变（自造模板 frontmatter 插入落在首行, 既有 selftest
     # plan-tier PT-24/27 断言 head -1；lane 行居第 2 行不位移任何既有首行锚）
     grep -qE '^[[:space:]]*execution_lane:' "task_plan.md" 2>/dev/null || sed -i "2i execution_lane: ${_lane}" "task_plan.md"
@@ -672,8 +724,15 @@ inject_evidence_goal_block
 echo ""
 # [2026-09-04 Rule 19.5 配套] 文件存在性复核：缺失或空 → exit 1
 # [2026-09-13 task-v067] 5 文件→6 文件（+knowledge-brief.md）
+# [task-perf-opt Change #7] trivial 代码修复档（TRIVIAL_CODE_TIER=1）按需创建 3 文件 + user-session-log 改按需
+# （首次写入才建档，mini 档 Rule 80 豁免口径），复核面=实际创建的文件集；非 trivial 档复核面保持 6+1 不变。
+if [ "${TRIVIAL_CODE_TIER:-0}" = "1" ]; then
+    _req_files="task_plan.md progress.md verification.md"
+else
+    _req_files="task_plan.md findings.md progress.md notepad-learnings.md verification.md knowledge-brief.md"
+fi
 missing_files=()
-for f in task_plan.md findings.md progress.md notepad-learnings.md verification.md knowledge-brief.md; do
+for f in $_req_files; do
     if [ ! -s "$f" ]; then
         missing_files+=("$f")
     fi
@@ -684,15 +743,27 @@ if [ ${#missing_files[@]} -gt 0 ]; then
     done
     exit 1
 fi
-echo "[init] 6/6 planning files verified"
+# [task-perf-opt Change #7] 非 trivial 档保持「六文件全量 verified」字面回显（selftest-knowledge-brief T3b + session-log SL-07 断言锚依赖）；
+# trivial 档按实际创建文件数回显（3/3，诚实不粉饰）。
+if [ "${TRIVIAL_CODE_TIER:-0}" = "1" ]; then
+    echo "[init] 3/3 planning files verified (trivial 代码修复档, Change #7: 缩减 3 文件)"
+else
+    echo "[init] 6/6 planning files verified"
+fi
 # [2026-10-11 task-v169 Rule 80.1] 第 7 文件 user-session-log.md 独立存在性复核：
 # 六文件复核循环与「六件套全量 verified」回显行保持原样，第 7 文件单独成段——缺失或空 → ERROR + exit 1
 # （错误必须曝光，禁静默放行；既有条目 append-only，本处只做存在/非空校验不改内容）
-if [ ! -s "user-session-log.md" ]; then
-    echo "[init] ERROR: user-session-log.md missing or empty — 第 7 计划文件未建档（task-v169 Rule 80.1）" >&2
-    exit 1
+# [task-perf-opt Change #7] trivial 代码修复档：user-session-log.md 改按需创建（mini 档 Rule 80 豁免口径），
+# init 不强制建档——首次由主进程/追加动作创建；非 trivial 档保持强制建档复核不变。
+if [ "${TRIVIAL_CODE_TIER:-0}" != "1" ]; then
+    if [ ! -s "user-session-log.md" ]; then
+        echo "[init] ERROR: user-session-log.md missing or empty — 第 7 计划文件未建档（task-v169 Rule 80.1）" >&2
+        exit 1
+    fi
+    echo "[init] user-session-log.md verified (7th planning file, task-v169 Rule 80.1)"
+else
+    echo "[init] user-session-log.md on-demand (trivial 代码修复档, Change #7; mini 档 Rule 80 豁免, 首次写入时建档)"
 fi
-echo "[init] user-session-log.md verified (7th planning file, task-v169 Rule 80.1)"
 # [2026-10-05 task-v132 G3 R3] silent 路径锚哈希即时落盘（G3：防窗口期篡改）：
 # 原因: silent/自动档交互模式（Rule 28 唯一权威解析口径, 层级见下方 ALIGN-P1b 注）下
 #       计划生成后即直接执行、无用户批准环节——原行为哈希锁定（attest-plan.sh）延后到执行中

@@ -24,7 +24,7 @@
 #         63=首个全未占用号；负断言对象 59.x→63.x（保持「首个全未占用号」防顺手创建语义，口径扩展非回退）
 #         [2026-10-08 task-v147 第二代级联] 63.x→64.x→65.x：Rule 63 已由 task-v147 落地、Rule 64 已由 task-v148 落地（64.1-64.6），防线前移至 65
 #     · config.json（零新键声明，IP-15/IP-16）:
-#         IP-15 .properties 键数=42（沿用 tsv 末列既有口径，零新 config 键）
+#         IP-15 .properties 键数=44（沿用 tsv 末列既有口径，零新 config 键）
 #         IP-16 `iteration_persistence` / `iteration-persistence` 键字面 =0（57.4 零新键声明的机器佐证）
 #     · 脚本自身（IP-17/IP-18）:
 #         IP-17 SCRIPT_DIR 自定位行在位（仓库/worktree/三宿主部署位三处可跑结构锚）
@@ -195,7 +195,7 @@ else
   if [ "$n" -eq 0 ]; then ok 14 "critical-rules.md 57 块范围内「66.x」=0（57 块无 66 入侵；task-v151 钉值级联 D2 同法）"; else bad 14 "critical-rules.md 57 块范围内「66.x」=$n（应 =0，57 块被 66 入侵）"; fi
 fi
 
-# IP-15 config.json .properties 键数=42（零新 config 键声明锚）
+# IP-15 config.json .properties 键数=44（零新 config 键声明锚）
 # What：断言 config.json 顶层 properties 键数保持 42。
 # Why：57.4 承诺「零新 config 键」（与 43.4/54.6/55.6/56.5 同范式）——键数膨胀 = 有人给 Rule 57 加了机器门控键，
 #      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=42`。
@@ -203,10 +203,10 @@ fi
 #      见 selftest-four-file-dataflow.sh），Rule 57 自身仍零新键（IP-16 负断言锁），本条仅随全局基线演进，非 57 扩键。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 15 "config.json properties 键数 42（Rule 57 零新增，v145 基线演进）"; else bad 15 "config.json properties 键数=$keys（应 42，零新键基线被破坏）"; fi
+  if [ "$keys" = "44" ]; then ok 15 "config.json properties 键数 44（Rule 57 零新增，v145 基线演进）"; else bad 15 "config.json properties 键数=$keys（应 44，零新键基线被破坏）"; fi
 elif command -v python3 >/dev/null 2>&1; then
   keys="$(python3 -c "import json;print(len(json.load(open('$CONFIG'))['properties']))" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 15 "config.json properties 键数 42（python3 校验）"; else bad 15 "config.json properties 键数=$keys（应 42）"; fi
+  if [ "$keys" = "44" ]; then ok 15 "config.json properties 键数 44（python3 校验）"; else bad 15 "config.json properties 键数=$keys（应 44）"; fi
 else
   printf 'IP-15 SKIPPED jq/python3 均缺失，无法校验 config.json 键数（安装任一后重跑）\n'
 fi

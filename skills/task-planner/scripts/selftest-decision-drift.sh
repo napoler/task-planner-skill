@@ -104,10 +104,10 @@ else
   ok "DD-19 本计划 🔒 区块（SKIP：部署/仓级布局无 task-v156 计划文件）"
 fi
 
-# ── DD-20 config.json properties 键数=42（零新键；jq 缺失打 SKIP 计 PASS） ──
+# ── DD-20 config.json properties 键数=44（零新键；jq 缺失打 SKIP 计 PASS） ──
 if command -v jq >/dev/null 2>&1; then
   _KEYS="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  [ "$_KEYS" = "42" ] && ok "DD-20 config.json properties 键数=42（零新键）" || bad "DD-20" "got=$_KEYS expect=42"
+  [ "$_KEYS" = "44" ] && ok "DD-20 config.json properties 键数=44（零新键）" || bad "DD-20" "got=$_KEYS expect=44"
 else
   ok "DD-20 config.json properties=42（SKIP：无 jq）"
 fi

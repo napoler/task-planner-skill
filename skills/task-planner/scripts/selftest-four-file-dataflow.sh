@@ -22,7 +22,7 @@
 #         FF-13 映射表蒸馏行「主进程单写者蒸馏，Rule 62.3 双落盘」=1；FF-14 `Rule 62` 全文 ≥3（C41/摘要/映射三落点联动）
 #     · config.json（零新键声明，FF-15）:
 #         FF-15 `four_file`/`kb_distill`/`contract_narrow`/`require_kb` 键字面=0 且 .properties 键数=42
-#         （42=task-v145 时点基线，v141/v142 演进后值；本任务零新 config 键的机器佐证）
+#         （44=task-perf-opt 时点基线，v145 42 基线 + task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键；本任务零新 config 键的机器佐证）
 #     · 负断言（FF-16）:
 #         FF-16 critical-rules.md 62 块尾上下文（末条 62.6 行起至文件尾）`^66\.[0-9] ` =0（RC-15 前向防线：
 #               61 号未被顺手创建；语境锚定负断言，v127/RR-09 第 5 变体判例范式）
@@ -106,10 +106,10 @@ ge   "FF-14 SKILL Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule
 PROPS="$(jq '.properties | length' "$CONFIG" 2>/dev/null || echo -1)"
 NEWKEY="$(jq -r '.properties | keys[]' "$CONFIG" 2>/dev/null | grep -c -e 'four_file' -e 'kb_distill' -e 'contract_narrow' -e 'require_kb')"
 NEWKEY="${NEWKEY:-0}"
-if [ "$NEWKEY" -eq 0 ] && [ "$PROPS" -eq 42 ]; then
-    ok "FF-15 config 零新键(相关字面=0 ∧ properties=42 时点基线)"
+if [ "$NEWKEY" -eq 0 ] && [ "$PROPS" -eq 44 ]; then
+    ok "FF-15 config 零新键(相关字面=0 ∧ properties=44 时点基线; task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键, 42→44)"
 else
-    bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,42)"
+    bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,44)"
 fi
 
 # ── 负断言：Rule 62 块范围内无 66.x（语境锚定，防裸全文误触）──

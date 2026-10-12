@@ -259,8 +259,18 @@ install_satellite_skills() {
       continue
     fi
     [ "$src" -ef "$dst" ] && continue   # 源与目标同目录(部署副本重跑)幂等跳过
-    rsync -a "$src/" "$dst/" 2>/dev/null
-    echo "[install-stub] satellite $sat → $dst"
+    # [task-perf-opt Change #12] 同步改为 rsync -a --delete（确保安装位与源仓完全一致，删除源仓已移除的文件，
+    # 消除安装副本与源仓漂移——链路诊断 finding 13 diff -rq 实测 SKILL.md differ + 5 个仅安装位存在的脚本）；
+    # 缓解：同步前先 dry-run（--itemize-changes）记录差异范围，再实做；记录同步时间戳+文件数便于审计（install.log）。
+    if command -v rsync >/dev/null 2>&1; then
+      _rsync_dry="$(rsync -a --delete --itemize-changes --dry-run "$src/" "$dst/" 2>/dev/null || true)"
+      [ -n "$_rsync_dry" ] && echo "[install-stub] satellite $sat dry-run 差异: $(printf '%s\n' "$_rsync_dry" | grep -c .) 项（删除/更新）"
+      rsync -a --delete "$src/" "$dst/" 2>/dev/null
+      _ds_n="$(find "$dst" -type f 2>/dev/null | wc -l | tr -d ' ')"
+      echo "[install-stub] satellite $sat → $dst (rsync -a --delete @ $(date +%s), ${_ds_n:-?} 文件)"
+    else
+      echo "[install-stub] rsync 缺失 — satellite $sat 同步跳过"
+    fi
   done
 }
 
@@ -278,8 +288,18 @@ install_stub_for_tool() {
   # 实盘=全量副本同步: 安装源=${TASK_PLANNER_ROOT}(本仓 skills/task-planner/) 全量 rsync 到
   # 四位宿主位 (~/.zcode / ~/.claude / ~/.config/opencode / ~/.cursor 的 skills/task-planner/),
   # 宿主位是完整副本而非指向 canonical 的指针薄壳; 下方 sed 重写只是副本内的路径本地化。
-  rsync -a --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
-    "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null
+  # [task-perf-opt Change #12] 主副本同步改为 rsync -a --delete（确保安装位与源仓完全一致，删除源仓已移除的文件）；
+  # dry-run 先行记录差异范围，实做后记录同步时间戳+文件数（install.log 审计面）
+  if command -v rsync >/dev/null 2>&1; then
+    _rsync_dry="$(rsync -a --delete --itemize-changes --dry-run --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null || true)"
+    [ -n "$_rsync_dry" ] && echo "[install-stub] $tool_name dry-run 差异: $(printf '%s\n' "$_rsync_dry" | grep -c .) 项（删除/更新）"
+    rsync -a --delete --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
+      "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null
+    _ds_n="$(find "$stub_dir" -type f 2>/dev/null | wc -l | tr -d ' ')"
+    echo "[install-stub] $tool_name synced (rsync -a --delete @ $(date +%s), ${_ds_n:-?} 文件)"
+  else
+    echo "[install-stub] rsync 缺失 — $tool_name 同步跳过"
+  fi
 
   # [task-v095 P7] 7 卫星技能（task-v171 S39 起 4→7）整目录安装到工具位同级 skills/ 目录
   install_satellite_skills "$stub_dir"

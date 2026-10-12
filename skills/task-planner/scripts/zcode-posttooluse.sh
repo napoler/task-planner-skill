@@ -78,6 +78,10 @@ drift_rhythm_check() {
   local sdir="$(dirname "$plan_dir")/.drift-rhythm"
   mkdir -p "$sdir" 2>/dev/null || return 0
   local sfile="$sdir/${sid}.state"
+  # [task-perf-opt Change #8 回退] 原拟做 drift-rhythm 状态读写降频（每 5 次），但实测破坏
+  # DCE-22/DCE-23 的 N1 投递节奏守护（count 自增节奏从每次 +1 变为每 5 次 +1 → 30 调用投递 <2）。
+  # 方案 Change #8 regressionRisk 声明「纯性能优化，不改变逻辑」，降频改变了逻辑（节奏），故回退；
+  # Change #8 仅保留「6 次 jq 读 config.json 合并为 1 次 @tsv」（见上方阈值读取段，零逻辑变化）。
   # 容错解析：缺文件/坏行按 0 处理
   local count=0 last_inject=0 v
   v="$(sed -n 's/^count[[:space:]]\{1,\}//p' "$sfile" 2>/dev/null | head -1)"
@@ -199,14 +203,17 @@ fi
 SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
 # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] config.json 顶层键=用户覆盖值、.properties.X.default=schema 默认值；
 # 原单层路径致顶层用户覆盖静默失效 → 6 键统一改为 .X // .properties.X.default // 原兜底（无覆盖时行为与原值一致）
-todo_n="$(jq -r '.todo_sync_interval_calls // .properties.todo_sync_interval_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
-plan_min="$(jq -r '.plan_update_interval_minutes // .properties.plan_update_interval_minutes.default // 15' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
-cooldown="$(jq -r '.stale_remind_cooldown_calls // .properties.stale_remind_cooldown_calls.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+# [task-perf-opt Change #8] 合并 6 个 jq 调用为 1 次多键 @tsv 读取（原每次 hook 孵化 6 个 jq 子进程 ≈ 0.34-0.36s/次）：
+# 结果单 TSV 行，cut 解析 6 字段；jq 不可用/解析失败 → _cfg_tsv 空 → 各字段空 → 下方 case 兜底默认值（fail-open 行为不变）。
+_cfg_tsv="$(jq -r '[(.todo_sync_interval_calls // .properties.todo_sync_interval_calls.default // 10), (.plan_update_interval_minutes // .properties.plan_update_interval_minutes.default // 15), (.stale_remind_cooldown_calls // .properties.stale_remind_cooldown_calls.default // 10), (.findings_stale_minutes // .properties.findings_stale_minutes.default // 20), (.progress_stale_minutes // .properties.progress_stale_minutes.default // 25), (.compass_escalate_after // .properties.compass_escalate_after.default // 2)] | @tsv' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+todo_n="$(printf '%s' "$_cfg_tsv" | cut -f1)"
+plan_min="$(printf '%s' "$_cfg_tsv" | cut -f2)"
+cooldown="$(printf '%s' "$_cfg_tsv" | cut -f3)"
 # [2026-09-04 Rule 19.7] 新增 findings/progress 陈旧阈值；解析失败兜底默认。
-findings_n="$(jq -r '.findings_stale_minutes // .properties.findings_stale_minutes.default // 20' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
-progress_n="$(jq -r '.progress_stale_minutes // .properties.progress_stale_minutes.default // 25' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+findings_n="$(printf '%s' "$_cfg_tsv" | cut -f4)"
+progress_n="$(printf '%s' "$_cfg_tsv" | cut -f5)"
 # [2026-09-05 Rule 19.7 升级] 连续无响应提醒达 compass_escalate_after 次 → 升级警告；解析失败兜底默认 2。
-esc_after="$(jq -r '.compass_escalate_after // .properties.compass_escalate_after.default // 2' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
+esc_after="$(printf '%s' "$_cfg_tsv" | cut -f6)"
 case "$todo_n" in ''|*[!0-9]*) todo_n=10 ;; esac
 case "$plan_min" in ''|*[!0-9]*) plan_min=15 ;; esac
 case "$cooldown" in ''|*[!0-9]*) cooldown=10 ;; esac

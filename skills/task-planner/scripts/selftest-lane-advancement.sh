@@ -139,13 +139,13 @@ if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 '1-8[01]' 全�
 n="$(grep -c '1-40' "$SKILLMD" || true)"
 if [ "$n" -eq 0 ]; then ok 13 "SKILL.md '1-40' 变体命中 0（负断言成立）"; else bad 13 "SKILL.md '1-40' 变体命中=$n（应 =0，主锚漂移）"; fi
 
-# LA-14 零新 config 键——properties 键数 = 42（[2026-10-08 task-v144 合并级联] 40→42：v145 已合法新增 2 键，基线键数同步；同 TS-12 口径；jq 缺失打 SKIPPED 不 FAIL）
-# What：断言 config.json .properties 顶层键数保持 42（Rule 49 判定面纯 LLM 行为 + 静态守护，零机器触发面，故 Rule 49 自身不得新增 config 键；基线含 v145 合法新增的 2 键）。
-# Why：49.5 承诺"零新 config 键"——键数偏离 42 = 有人给单元线推进加了机器门控键，突破 43.4/44.4/47.4 既定零新键范式，属机制漂移（需走 36 条款流程）。
+# LA-14 零新 config 键——properties 键数 = 44（[2026-10-08 task-v144 合并级联] 40→42；[task-perf-opt] 42→44：v145 合法新增 2 键 + task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键；同 TS-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# What：断言 config.json .properties 顶层键数保持 44（Rule 49 判定面纯 LLM 行为 + 静态守护，零机器触发面，故 Rule 49 自身不得新增 config 键；基线含 v145 合法新增的 2 键 + task-perf-opt 合法新增的 smart_inject_type_gate+selftest_parallel_mode 2 键）。
+# Why：49.5 承诺"零新 config 键"——键数偏离 44 = 有人给单元线推进加了机器门控键，突破 43.4/44.4/47.4 既定零新键范式，属机制漂移（需走 36 条款流程）。task-perf-opt 的 2 键为合法 opt-in 性能开关（Change #5/#11 明确新增）。
 #      jq 缺失 fail-open 打 SKIPPED（沿用 MD-08/R-12 先例：无 jq 属环境降级非内容漂移，不误报 FAIL；打印提示行非静默）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 14 "config.json properties 键数 42（零新增，基线含 v145 2 键）"; else bad 14 "config.json properties 键数=$keys（应 42，Rule 49 零新键被破坏）"; fi
+  if [ "$keys" = "44" ]; then ok 14 "config.json properties 键数 44（零新增，基线含 v145 2 键 + task-perf-opt 2 键）"; else bad 14 "config.json properties 键数=$keys（应 44，Rule 49 零新键被破坏）"; fi
 else
   printf 'LA-14 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

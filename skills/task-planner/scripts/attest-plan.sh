@@ -14,6 +14,10 @@
 # 说明: Rule 51.1 需求原文区块门(缺区块/无 R 行/无 R→VC 映射/无 🧮 根源覆盖表 → 拒锁)为 fail-closed 硬门, 无 --skip 逃生口;
 #       mini 档(plan_tier: mini)整块豁免(与 FMEA mini 豁免同先例), 非 mini 计划必含四锚(51.1 三锚 + 53.1 第 4 锚)方可锁定。
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
+# [task-perf-opt Change #9] 门结果缓存：attest 模式门链通过且 plan_file 未变更时，门链输出写入
+#   /tmp/attest-cache-<cksum>.result（cksum=plan_file SHA-256 + 门控配置）；下次 attest 同 plan_file
+#   直接回放缓存跳过完整门链（9.287s→~0s）。plan_file 变更（hash 变）或门控配置变（cksum 变）→
+#   缓存失效重跑。仅 rc=0 写缓存，失败不缓存。--verify 模式不受影响（仅 sha256 比对，无门链）。
 set -uo pipefail
 
 plan_file=""
@@ -68,6 +72,30 @@ attest_file="$plan_dir/.plan-attestation"
 
 case "$mode" in
   attest)
+    # [task-perf-opt Change #9] 门结果缓存：复用下方 :342 的 SHA-256 作为缓存键主分量（+门控配置，
+    # 防 enforce 档与 warn 档缓存串扰），门链通过且 plan_file 未变更 → 下次 attest 直接回放缓存结果，
+    # 跳过完整门链（计时诊断实测 9.287s/任务）。覆盖范围说明：键主分量=task_plan.md 的 SHA-256
+    # （复用现有计算，不新增指纹逻辑）；门链主要校验 task_plan.md 内容，其他计划文件变更不触发
+    # 失效——重 attest（plan 变更后 hash 变）为常规失效路径。
+    _attest_hash="$(sha256sum "$plan_file" | awk '{print $1}')"
+    _attest_cksum="$(printf '%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}" | sha256sum | cut -d' ' -f1)"
+    _attest_cache="/tmp/attest-cache-${_attest_cksum}.result"
+    if [ -f "$_attest_cache" ] && [ ! "$plan_file" -nt "$_attest_cache" ]; then
+      # plan_file 未变更（mtime 不新于缓存）→ 回放缓存结果，跳过完整门链
+      cat "$_attest_cache"
+      # [task-perf-opt Change #9] 重放当前 skip flags 对应的门链 stderr WARN（保持 stream 语义：
+      # selftest T06 断言 --skip-dispatch-check 的 WARN 在 stderr；缓存命中不跑门链 → 须手动重放）。
+      # 文案与门链 :109/:150 逐字一致（改动任一处须同步另一处，防漂移）。
+      [ -n "$skip_dispatch" ] && echo "[attest] WARN: --skip-dispatch-check 跳过 S-unit 执行体校验" >&2
+      [ -n "$skip_template" ] && echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
+      echo "[attest] 门结果缓存命中（Change #9：跳过完整门链，回放缓存结果；键含门控配置防 enforce 漂移）" >&2
+      exit 0
+    fi
+    _attest_out="$(mktemp)"
+    # [task-perf-opt Change #9 fix] 子 shell 包裹门链主体（原命令组 { } 内 exit 1 会终止整个脚本、
+    # 跳过下方 cat log → enforce 档失败时无输出, selftest methodology M-09/M-10 断言「fmea-gate ✗」失配）；
+    # 子 shell ( ) 内 exit 1 只 exit 子 shell（rc=1），主 shell 继续 cat log（回放门链输出）+ rc=0 才写缓存 + exit rc。
+    (
     # [2026-09-09 task-v058] 计划期 S-unit 执行体校验(Rule 22.6/25.1 机制化);--skip-dispatch-check 可跳过
     cpl="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-plan-dispatch.sh"
     if [ -z "$skip_dispatch" ]; then
@@ -351,6 +379,20 @@ case "$mode" in
     echo "[attest] ✅ 计划已锁定: $plan_file"
     echo "[attest]   SHA-256: $hash"
     echo "[attest]   存储于: $attest_file(计划重规划并重新获批后重跑本命令更新锁定)"
+    # [task-perf-opt Change #9] 子 shell 仅捕获 stdout（> log，不加 2>&1）：门链的 stderr（如
+    # [fmea-gate] ✗ / WARN 行）实时透传到本脚本 stderr（保持既有 stream 语义——selftest-plan-dispatch
+    # T06 断言 WARN 在 stderr、methodology M-09/M-10 grep fmea-gate 经 2>&1 捕获）；缓存只存 stdout
+    # （门链成功消息），回放时 cat stdout + 命中提示走 stderr。失败（rc=1）不写缓存，stderr 已实时输出。
+    ) > "$_attest_out"
+    _attest_rc=$?
+    cat "$_attest_out"
+    # 仅门链成功（rc=0）写缓存；失败不缓存（下轮必须实跑重验）
+    if [ "$_attest_rc" = "0" ]; then
+      cp "$_attest_out" "$_attest_cache" 2>/dev/null || true
+      echo "[attest] 门链结果已缓存: $_attest_cache (Change #9)" >&2
+    fi
+    rm -f "$_attest_out"
+    exit "$_attest_rc"
     ;;
   show)
     if [ -f "$attest_file" ]; then cat "$attest_file"; else echo "[attest] 未锁定: $attest_file 不存在"; exit 2; fi
