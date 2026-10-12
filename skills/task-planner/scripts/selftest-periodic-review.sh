@@ -12,6 +12,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 65（周期性回顾与前后对照）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   PR-01..PR-05 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 CONFIG="$SKILL_ROOT/config.json"
 REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
 SKILL_MD="$SKILL_ROOT/SKILL.md"
@@ -31,35 +35,35 @@ bad() {
 }
 
 # PR-01: Rule 65 条款存在
-if grep -q '^### 65 ' "$CRIT"; then
+if grep -q '^### 65 ' "$CRIT_D"; then
   ok "PR-01" "Rule 65 条款存在"
 else
   bad "PR-01" "Rule 65 条款缺失"
 fi
 
 # PR-02: Rule 65 含触发时机
-if grep -q '触发时机' "$CRIT"; then
+if grep -q '触发时机' "$CRIT_D"; then
   ok "PR-02" "Rule 65 含触发时机"
 else
   bad "PR-02" "Rule 65 触发时机缺失"
 fi
 
 # PR-03: Rule 65 含前后对照检查维度
-if grep -q '前后对照' "$CRIT"; then
+if grep -q '前后对照' "$CRIT_D"; then
   ok "PR-03" "Rule 65 含前后对照检查维度"
 else
   bad "PR-03" "Rule 65 前后对照检查维度缺失"
 fi
 
 # PR-04: Rule 65 含自动纠正机制
-if grep -q '自动纠正' "$CRIT"; then
+if grep -q '自动纠正' "$CRIT_D"; then
   ok "PR-04" "Rule 65 含自动纠正机制"
 else
   bad "PR-04" "Rule 65 自动纠正机制缺失"
 fi
 
 # PR-05: Rule 65 含开关键
-if grep -q 'periodic_review_enforce' "$CRIT"; then
+if grep -q 'periodic_review_enforce' "$CRIT_D"; then
   ok "PR-05" "Rule 65 含开关键"
 else
   bad "PR-05" "Rule 65 开关键缺失"
@@ -93,11 +97,14 @@ else
   bad "PR-09" "selftest-registry.tsv 注册缺失"
 fi
 
-# PR-10: SKILL.md 有 C39 引用
-if grep -q 'C39' "$SKILL_MD"; then
-  ok "PR-10" "SKILL.md 有 C39 引用"
+# PR-10 [task-v171 核心瘦身] SKILL.md Rule 65 消费面：C39 合规行随瘦身移除 → 3f 周期性三文件对照行 Rule 65.4 锚
+#   现象：SKILL.md 瘦身后合规清单 C39 行（Rule 65 周期性回顾合规项）随清单表退役，'C39' 命中=0，PR-10 恒 FAIL。
+#   根因：Rule 65 属纪律域；瘦身后 SKILL 侧消费点=Phase 执行循环 3f「周期性三文件对照」行（含 Rule 65.4 corrected 回错误步引措）。
+#   修法：改断言 SKILL.md 含 'Rule 65' ≥1（3f 行为锚），合规面语义由该执行循环行承载。
+if grep -q 'Rule 65' "$SKILL_MD"; then
+  ok "PR-10" "SKILL.md 含 Rule 65 消费面（3f 周期性三文件对照行；C39 合规行瘦身后由执行循环行承载）"
 else
-  bad "PR-10" "SKILL.md C39 引用缺失"
+  bad "PR-10" "SKILL.md Rule 65 消费面缺失"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"

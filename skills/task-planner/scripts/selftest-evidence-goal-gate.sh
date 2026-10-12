@@ -62,7 +62,12 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 调研域搬迁] 现象: EG-01..09/16 共 11 条 CRIT 断言恒 FAIL（'### 58 ' 计数=0）｜
+# 根因: Rule 58（调研分析证据纪律与核心目标达成门控）属 plan-research-router 域，原文已迁至
+#   skills/plan-research-router/references/critical-rules-research.md，核心 critical-rules.md 已删 Rule 58 全文｜
+# 修法: CRIT 改指 CRIT_R 目标文件；本脚本 CRIT 全部 21 处用法（L78-L235）均为 Rule 58 断言、
+#   无核心域用途（已逐行核实），重定向后全部断言语义零改动。
+CRIT="$SKILL_ROOT/../plan-research-router/references/critical-rules-research.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TPL="$SKILL_ROOT/templates/task_plan.md"
 CONFIG="$SKILL_ROOT/config.json"
@@ -200,25 +205,23 @@ fi
 n="$(grep -cF '[手段]/[目标]' "$TPL" || true)"
 if [ "$n" -ge 1 ]; then ok 12 "模板需求区 [手段]/[目标] 标注引导=$n（≥1）"; else bad 12 "模板 [手段]/[目标] 引导=$n（应 ≥1，58.4 载体缺失）"; fi
 
-# EG-13 SKILL.md `Rule 58` 计数 ≥2（Critical Rules 摘要行 / C41 合规行）
-# What：断言 SKILL.md 中 `Rule 58` 出现 ≥2 次。
-# Why：SKILL.md 是执行期入口；58.7 声明的 SKILL 消费侧=Critical Rules 摘要行 + 合规清单 C41 两处
-#      （第三载体=计划模板双区块，位于 templates/task_plan.md 由 EG-10/11 锁定，不在 SKILL.md 计数面）——
-#      条款只在 critical-rules.md 而 SKILL 无联动 = 消费侧不可发现（53.2 条款死文反例）；≥2 与声明口径对齐。
-n="$(grep -c 'Rule 58' "$SKILLMD" || true)"
-if [ "$n" -ge 2 ]; then ok 13 "SKILL.md 'Rule 58' 计数 $n ≥2"; else bad 13 "SKILL.md 'Rule 58' 计数=$n（应 ≥2，联动面缺）"; fi
+# EG-13 [task-v171 核心瘦身] SKILL.md `Rule 58` 联动面：卫星路由表 plan-research-router 行枚举 Rule 58
+#   现象：SKILL.md 瘦身后 'Rule 58' 计数 2→1（仅存卫星路由表 plan-research-router 行），旧断言 ≥2 恒 FAIL。
+#   根因：Rule 58 属调研域；SKILL 侧摘要 bullet+合规 C41 行随瘦身移除，唯一联动载体=卫星路由表行。
+#   修法：改断言路由表 plan-research-router 行含 Rule 58 枚举（≥1）；58.7 声明的 SKILL 消费侧改由路由表+CRIT_R 58.7 机制行承载。
+n="$(grep -E '^\| plan-research-router \|' "$SKILLMD" | grep -cF 'Rule 58' || true)"
+if [ "$n" -ge 1 ]; then ok 13 "SKILL.md 卫星路由表 plan-research-router 行含 Rule 58（n=$n；摘要/C41 行瘦身后由路由表承载）"; else bad 13 "SKILL.md 卫星路由表 plan-research-router 行 Rule 58 n=$n（应 ≥1，联动面缺）"; fi
 
-# EG-14 SKILL.md `^\| C41 ` 合规行 =1
-# What：断言合规清单 C41 行恰 1 处。
-# Why：58.7 声明消费侧=合规清单 C41（调研分析证据与目标裁决自查项）；丢行=合规面与 58 子条脱钩；=1 锁唯一落点。
-n="$(grep -cE '^\| C41 ' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 14 "SKILL.md 合规行 C41 =1"; else bad 14 "SKILL.md C41 行命中=$n（应 =1）"; fi
+# EG-14 [task-v171 核心瘦身] 合规行 C41 → 卫星路由表 plan-research-router 行（C41 消费面瘦身后由路由表承载，Rule 82 禁回潮）
+n="$(grep -cE '^\| plan-research-router \|' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 14 "SKILL.md 卫星路由表 plan-research-router 行 =1（C41 合规面瘦身后由路由表承载）"; else bad 14 "SKILL.md 路由表 plan-research-router 行命中=$n（应 =1）"; fi
 
-# EG-15 SKILL.md 摘要行含机器面指称 selftest-evidence-goal-gate.sh
-# What：断言 SKILL.md 含 `selftest-evidence-goal-gate.sh` ≥1。
-# Why：SKILL 侧机器面可发现性——摘要/C41 声明的守卫脚本名必须在 SKILL.md 可检索（守卫三件套联动面）。
-n="$(grep -cF 'selftest-evidence-goal-gate.sh' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ]; then ok 15 "SKILL.md 机器面指称 selftest-evidence-goal-gate.sh=$n（≥1）"; else bad 15 "SKILL.md 机器面指称=$n（应 ≥1）"; fi
+# EG-15 [task-v171 核心瘦身] 机器面指称 selftest-evidence-goal-gate.sh → CRIT_R 58.7 机制行（机器面可发现性改由规则文件机制行承载）
+#   现象：SKILL.md 瘦身后不再含 selftest 脚本名（摘要/C 行移除），EG-15 恒 FAIL。
+#   根因：58.7 机制行已迁 CRIT_R 且仍声明 机器面=`scripts/selftest-evidence-goal-gate.sh`（实测命中=1）。
+#   修法：改断言 CRIT_R 含机器面指称（守卫可发现性不丢；SKILL 侧经路由表→规则文件链路可达）。
+n="$(grep -cF 'selftest-evidence-goal-gate.sh' "$CRIT" || true)"
+if [ "$n" -ge 1 ]; then ok 15 "CRIT_R 58.7 机制行含机器面指称 selftest-evidence-goal-gate.sh=$n（≥1；SKILL 侧经路由表可达）"; else bad 15 "CRIT_R 机器面指称=$n（应 ≥1）"; fi
 
 # EG-16 负断言（语境锚定）：critical-rules.md 58 块范围内（### 58 标题至下一 ### 标题）`^66\.[0-9] ` =0
 # What：断言 Rule 58 区块内不存在 66.x 子条行。

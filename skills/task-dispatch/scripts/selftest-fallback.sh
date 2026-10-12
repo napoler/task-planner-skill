@@ -4,8 +4,12 @@
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="$SCRIPT_DIR/subagent-fallback.sh"
-WORKTREE_ROOT="$SCRIPT_DIR/../../.."   # <repo-root>/skills/task-planner/scripts → 上三级
-CONFIG_JSON="$SCRIPT_DIR/../config.json"
+WORKTREE_ROOT="$SCRIPT_DIR/../../.."   # <repo-root>/skills/task-dispatch/scripts → 上三级
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: T08 FAIL(jq compile error, config.json 读不到)｜
+# 根因: 本 selftest 随 subagent-fallback.sh 迁至 skills/task-dispatch/scripts, config.json 仍归核心
+#   task-planner 所有(provider_fallback 键登记在其中), 旧写法 $SCRIPT_DIR/../config.json 解析到
+#   task-dispatch/config.json(不存在)｜修法: 改锚 $SCRIPT_DIR/../../task-planner/config.json
+CONFIG_JSON="$SCRIPT_DIR/../../task-planner/config.json"
 FAKE="$(mktemp -d /tmp/fb-selftest.XXXXXX)"
 trap 'rm -rf "$FAKE"' EXIT
 

@@ -136,8 +136,10 @@ assert_mode 10 silent
 
 # TI-11 (task-v070): 28.2.1 静态守护 — critical-rules.md 含 28.2.1 条款且带「思路复述」语义
 # (复述是 LLM 行为,无脚本可测行为面;守护=条款存在性 + 关键语义锚点, 防未来误删/改写丢失语义)
-CRIT_RULES="$(cd "$SCRIPT_DIR/.." && pwd)/references/critical-rules.md"
-if grep -q "28\.2\.1" "$CRIT_RULES" && grep -q "思路复述" "$CRIT_RULES" && grep -q "28\.2\.1" "$SCRIPT_DIR/../SKILL.md"; then
+# [task-v171 纪律域搬迁 2026-10-12] Rule 28（交互模式与询问门控）属纪律域，28.2.1 原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md，RULES 部分改指 CRIT_D；SKILL.md 联动锚不变。
+CRIT_D="$SCRIPT_DIR/../../task-discipline/references/critical-rules-discipline.md"
+if grep -q "28\.2\.1" "$CRIT_D" && grep -q "思路复述" "$CRIT_D" && grep -q "28\.2\.1" "$SCRIPT_DIR/../SKILL.md"; then
   PASS=$((PASS+1)); printf 'TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)\n'
 else
   FAIL=$((FAIL+1)); printf 'TI-11 FAIL 28.2.1 static guard (critical-rules.md/SKILL.md 缺 28.2.1 或 思路复述 锚点)\n'

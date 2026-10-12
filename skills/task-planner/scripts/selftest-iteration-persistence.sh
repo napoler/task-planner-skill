@@ -12,7 +12,7 @@
 #         IP-09 执行循环 3e 锚「迭代落盘检查点（Rule 57」=1（57.4 声明的消费侧，防条款死文 53.2 反例）
 #         IP-10 `Rule 57` ≥3（3e 行 / C40 行 / References 摘要行三落点联动）
 #         IP-11 `^\| C40 ` 合规行 =1（57.4 声明的合规清单消费侧）
-#         IP-12 全集声明宽容锚 `Rule 40-(5[0-9]|6[0-9]|7[0-9]|8[01])` ≥1（纪元演进防钉死，task-v136 EH-09 先例）
+#         IP-12 全集声明宽容锚 `Rule 40-[5-8][0-9]` ≥1（纪元演进防钉死，task-v136 EH-09 先例）
 #     · templates/progress.md（落盘载体，IP-13）:
 #         IP-13 文件在位且含「Test Results」段（迭代轮次结果的落盘载体出口）；
 #               四要素 schema 的权威定义在 critical-rules.md 57.2（由 IP-08 锁定文本），progress.md 为其消费载体——
@@ -51,6 +51,11 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 57（迭代测试轮次落盘纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   IP-01..IP-08/IP-14 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动（含 IP-14 的
+#   57 区块语境负断言，discipline 文件中 57 块内 66.x=0 口径不变）。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 PROG="$SKILL_ROOT/templates/progress.md"
 CONFIG="$SKILL_ROOT/config.json"
@@ -63,20 +68,20 @@ bad() { FAIL=$((FAIL+1)); printf 'IP-%s FAIL %s\n' "$1" "$2"; }
 # IP-01 critical-rules.md `^### 57 ` 标题行计数=1
 # What：断言 Rule 57 章节标题唯一（`### 57 迭代测试轮次落盘纪律…`）。
 # Why：标题行是章节识别锚；=1 保证未被重复插入（多次追加=文件尾脏写）也未被误删（条款失主）。
-n="$(grep -cE '^### 57 ' "$CRIT" || true)"
+n="$(grep -cE '^### 57 ' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 01 "critical-rules.md '### 57 ' 标题锚 =1"; else bad 01 "critical-rules.md '### 57 ' 计数=$n（应 =1）"; fi
 
 # IP-02 critical-rules.md `^57\.[1-4] ` 四子条计数=4
 # What：断言 57.1-57.4 四条子条主体行（行首 `57.N `）全在位。
 # Why：四子条是 57.1 每轮必落盘/57.2 落盘四要素/57.3 即时落盘防上下文分散/57.4 机制的唯一文本落点；
 #      缺任一条 = Rule 57 条款本体被裁剪（防后续改写 critical-rules.md 时误删 57.x 段）。
-n="$(grep -cE '^57\.[1-4] ' "$CRIT" || true)"
+n="$(grep -cE '^57\.[1-4] ' "$CRIT_D" || true)"
 if [ "$n" -eq 4 ]; then ok 02 "critical-rules.md '57.x ' 四子条锚 =4"; else bad 02 "critical-rules.md '57.x ' 计数=$n（应 =4）"; fi
 
 # IP-03 Rule 57 块首说明行含 task-v141（来源任务锚）
 # What：断言 `### 57 ` 标题行正文含来源任务代号 `task-v141`。
 # Why：条款需可溯源（Rule 20.6 编号账本/任务代号可追溯）；缺 task 代号 = 条款失去来源登记，回归期无法对账。
-if grep -E '^### 57 ' "$CRIT" | grep -q 'task-v141'; then
+if grep -E '^### 57 ' "$CRIT_D" | grep -q 'task-v141'; then
   ok 03 "Rule 57 块首说明行含 task-v141"
 else
   bad 03 "Rule 57 块首说明行缺 task-v141 来源锚"
@@ -85,64 +90,67 @@ fi
 # IP-04 57.1 子条锚 =1（每轮结果必落盘）
 # What：断言 `57.1 **每轮结果必落盘（per-round persistence）**` 字面锚恰 1 处。
 # Why：57.1 是用户 R1-R4「每轮测试/迭代结果当次落盘」的核心禁令载体——锚丢=每轮落盘义务无条款依据。
-n="$(grep -cF '57.1 **每轮结果必落盘（per-round persistence）**' "$CRIT" || true)"
+n="$(grep -cF '57.1 **每轮结果必落盘（per-round persistence）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 04 "critical-rules.md 57.1「每轮结果必落盘」=1"; else bad 04 "critical-rules.md 57.1 锚命中=$n（应 =1）"; fi
 
 # IP-05 57.2 子条锚 =1（落盘四要素）
 # What：断言 `57.2 **落盘四要素（round record schema）**` 字面锚恰 1 处。
 # Why：57.2 是四要素 schema 的权威定义点（IP-08 的语义根）——锚丢=四要素失去上位定义（体系脱根探测）。
-n="$(grep -cF '57.2 **落盘四要素（round record schema）**' "$CRIT" || true)"
+n="$(grep -cF '57.2 **落盘四要素（round record schema）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 05 "critical-rules.md 57.2「落盘四要素」=1"; else bad 05 "critical-rules.md 57.2 锚命中=$n（应 =1）"; fi
 
 # IP-06 57.3 子条锚 =1（即时落盘防上下文分散）
 # What：断言 `57.3 **即时落盘防上下文分散（timely persistence）**` 字面锚恰 1 处。
 # Why：57.3 是用户 R3「迭代中及时落盘才可救回」的直接载体（下一轮基于文件事实而非会话记忆）——锚丢=R3 诉求无落点。
-n="$(grep -cF '57.3 **即时落盘防上下文分散（timely persistence）**' "$CRIT" || true)"
+n="$(grep -cF '57.3 **即时落盘防上下文分散（timely persistence）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 06 "critical-rules.md 57.3「即时落盘防上下文分散」=1"; else bad 06 "critical-rules.md 57.3 锚命中=$n（应 =1）"; fi
 
 # IP-07 57.4 子条锚 =1（机制，标题前缀锚：标题尾部含 Why 说明故锁前缀不锁全行）
 # What：断言 `57.4 **机制（零新 config 键` 字面锚恰 1 处。
 # Why：57.4 机制条是本脚本自身存在的条款依据（机器面=selftest 静态守护声明）——锚丢=脚本与条款双向引用断裂（守卫自引用失效）。
-n="$(grep -cF '57.4 **机制（零新 config 键' "$CRIT" || true)"
+n="$(grep -cF '57.4 **机制（零新 config 键' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 07 "critical-rules.md 57.4「机制（零新 config 键」=1"; else bad 07 "critical-rules.md 57.4 锚命中=$n（应 =1）"; fi
 
 # IP-08 落盘四要素锚：轮次编号 / 测试命令 / PASS/FAIL / 关键输出摘要 各 ≥1（57.2 schema 语义内核）
 # What：断言四要素关键短语在 critical-rules.md 中各自出现 ≥1（57.2 正文）。
 # Why：子条标题锚（IP-04..07）只锁编号+标题字面，四要素短语是 57.2 的语义内核——
 #      防「标题还在但正文被裁空壳」的语义漂移（死文变体探测）；四要素是落盘事实可回溯的最小充分集。
-a="$(grep -cF '轮次编号' "$CRIT" || true)"
-b="$(grep -cF '测试命令' "$CRIT" || true)"
-c="$(grep -cF 'PASS/FAIL' "$CRIT" || true)"
-d="$(grep -cF '关键输出摘要' "$CRIT" || true)"
+a="$(grep -cF '轮次编号' "$CRIT_D" || true)"
+b="$(grep -cF '测试命令' "$CRIT_D" || true)"
+c="$(grep -cF 'PASS/FAIL' "$CRIT_D" || true)"
+d="$(grep -cF '关键输出摘要' "$CRIT_D" || true)"
 if [ "$a" -ge 1 ] && [ "$b" -ge 1 ] && [ "$c" -ge 1 ] && [ "$d" -ge 1 ]; then
   ok 08 "critical-rules.md 四要素锚 轮次编号=$a / 测试命令=$b / PASS-FAIL=$c / 关键输出摘要=$d（各 ≥1）"
 else
   bad 08 "critical-rules.md 四要素锚 轮次编号=$a / 测试命令=$b / PASS-FAIL=$c / 关键输出摘要=$d（各应 ≥1，schema 内核被裁）"
 fi
 
-# IP-09 SKILL.md 执行循环 3e 锚「迭代落盘检查点（Rule 57」=1
-# What：断言 SKILL.md 执行循环含 3e 迭代落盘检查点标题字面锚恰 1 处。
-# Why：57.4 声明的消费侧=SKILL.md 执行循环「迭代落盘检查点（Rule 57）」；缺 = 条款只在 critical-rules 而执行期不可发现
-#      （条款死文，53.2 反例 task-v131 判例）；=1 锁唯一落点（多落点=段落复制漂移）。
-n="$(grep -cF '迭代落盘检查点（Rule 57' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 09 "SKILL.md 执行循环「迭代落盘检查点（Rule 57」锚=1"; else bad 09 "SKILL.md 3e 锚命中=$n（应 =1，条款死文或重复落点）"; fi
+# IP-09 [task-v171 核心瘦身] 执行循环消费侧锚：「迭代落盘检查点（Rule 57」3e 标题随瘦身移除 → 回写计划步 progress 落盘载体锚
+#   现象：SKILL.md 瘦身后执行循环 3e「迭代落盘检查点（Rule 57）」标题行不存在（3e 现为上下文卫生），字面命中=0，IP-09 恒 FAIL。
+#   根因：Rule 57 属纪律域；执行循环瘦身后迭代落盘的 SKILL 侧落点=步 4「回写计划」行内含 progress Phase 段
+#     回填（Actions/Files/Test Results）——即 57「每轮结果落盘」在执行循环的现存载体。
+#   修法：改断言 'Actions/Files/Test Results' 落盘载体行 =1（§57 消费面语义等价）；Rule 57 全文锚由 IP-01..08 在 CRIT_D 守护。
+n="$(grep -cF 'Actions/Files/Test Results' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 09 "SKILL.md 回写计划行含 progress 落盘载体 Actions/Files/Test Results=1（原 3e「迭代落盘检查点」瘦身后由步 4 承载）"; else bad 09 "SKILL.md 落盘载体锚命中=$n（应 =1）"; fi
 
-# IP-10 SKILL.md `Rule 57` 计数 ≥3（3e 行 / C40 行 / References 摘要行三处联动）
-# What：断言 SKILL.md 中 `Rule 57` 出现 ≥3 次。
-# Why：SKILL.md 是执行期入口；条款只在 critical-rules.md 而 SKILL 无联动 = 消费侧不可发现（53.2 条款死文反例）；
-#      ≥3 与 3e/C40/摘要三处联动承诺对齐（防后续只改一处造成索引面失守）。
-n="$(grep -c 'Rule 57' "$SKILLMD" || true)"
-if [ "$n" -ge 3 ]; then ok 10 "SKILL.md 'Rule 57' 计数 $n ≥3"; else bad 10 "SKILL.md 'Rule 57' 计数=$n（应 ≥3，联动面缺）"; fi
+# IP-10 [task-v171 核心瘦身] `Rule 57` SKILL 侧联动面 ≥3 → 卫星路由表 discipline 行（区间 53-57 覆盖 Rule 57）≥1 + CRIT_D 57.4 机制行机器面指称
+#   现象：SKILL.md 瘦身后 'Rule 57' 计数 3→0（3e 行/C40 行/References 摘要行三处全随瘦身移除），IP-10 恒 FAIL。
+#   根因：Rule 57 属纪律域已迁 CRIT_D；SKILL 侧编号联动仅剩卫星路由表 discipline 行（Rule 57 以区间 53-57 形态覆盖，无整串）。
+#   修法：改断言路由表 discipline 行 =1 + CRIT_D 57.4 机制行含本 selftest 机器面指称（守护可发现性，双载体不丢）。
+n="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+m="$(grep -cF 'selftest-iteration-persistence.sh' "$CRIT_D" || true)"
+if [ "$n" -ge 1 ] && [ "$m" -ge 1 ]; then ok 10 "SKILL.md 卫星路由表 discipline 行=$n（区间 53-57 覆盖 Rule 57）+ CRIT_D 57.4 机器面指称=$m"; else bad 10 "路由表 discipline 行=$n（应 ≥1）/ CRIT_D 机器面指称=$m（应 ≥1，联动面缺）"; fi
 
-# IP-11 SKILL.md `^\| C40 ` 合规行 =1
-# What：断言 SKILL.md 合规清单 C40 行恰 1 处（行首 `| C40 `）。
-# Why：57.4 声明消费侧=合规清单 C40（迭代落盘自查项）；丢行 = 合规面与 57 子条脱钩；=1 锁唯一落点（重复落点=段落复制漂移）。
-n="$(grep -cE '^\| C40 ' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 11 "SKILL.md 合规行 C40 =1"; else bad 11 "SKILL.md C40 行命中=$n（应 =1）"; fi
+# IP-11 [task-v171 核心瘦身] 合规行 C40 → G 表 progress 回填合规行（G6：complete 前 progress 回填门控）
+#   现象：合规清单 C40 行随瘦身移除（清单表→G1-G8 核心域表），命中=0，IP-11 恒 FAIL。
+#   根因：Rule 57 属纪律域；core-domain 合规表中与「迭代落盘/进度回填」对应的现存合规行=G6（progress 回填+findings 增量门控）。
+#   修法：改断言 G6 compliance 行 =1（合规消费点语义由 G6 承载）。
+n="$(grep -cE '^\| G6 ' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 11 "SKILL.md G6 合规行（progress 回填门控）=1（C40 迭代落盘合规面瘦身后由 G6 承载）"; else bad 11 "SKILL.md G6 行命中=$n（应 =1）"; fi
 
-# IP-12 SKILL.md 全集声明宽容锚 `Rule 40-(5[0-9]|6[0-9]|7[0-9]|8[01])` ≥1
-# What：断言 SKILL.md 出现 Rules 40-81 全集声明（宽容正则覆盖 40-50..40-81 各纪元）。
-# Why：全集声明随 Rule 号演进（当前 40-81，后续合法扩号仍不触发本锚）；固定字面会随纪元漂移误报，
+# IP-12 SKILL.md 全集声明宽容锚 `Rule 40-[5-8][0-9]` ≥1
+# What：断言 SKILL.md 出现 Rules 40-8x 全集声明（宽容正则覆盖 40-50..40-89 各纪元）。
+# Why：全集声明随 Rule 号演进（当前 40-80，后续合法扩号仍不触发本锚）；固定字面会随纪元漂移误报，
 #      故用宽容正则（task-v136 EH-09 / RR-16 先例：宽容正则优先，防下次全集演进再钉死）。
 #      [2026-10-08 task-v144 合并级联] 宽容范围 5x→5x+6x：v142/v145 落地 Rule 60/62 后 SKILL.md 全集声明演进为
 #      「Rule 40-62」，旧正则 `40-5[5-9]` 不再命中（级联漏改）；扩展为 `40-[56][0-9]` 同范式再演进。
@@ -150,12 +158,10 @@ if [ "$n" -eq 1 ]; then ok 11 "SKILL.md 合规行 C40 =1"; else bad 11 "SKILL.md
 #      （级联漏改）；随动 40-[56][0-9]→40-[567][0-9]（覆盖 40-50..40-79）同范式再演进，≥1 计数语义不变。
 #      [2026-10-11 task-v169 级联] Rule 80 落地后 SKILL.md 全集声明演进为「Rule 40-80 全集」(L313)，`40-[567][0-9]`
 #      （覆盖 40-50..40-79）不再命中（级联漏改）；随动 40-[567][0-9]→40-[5-8][0-9]（覆盖 40-50..40-89）同范式再演进，≥1 计数语义不变。
-#      [2026-10-11 task-v170 纪元扩围 S10k] 40-[567][0-9]→40-(5[0-9]|6[0-9]|7[0-9]|8[01])：
-#      Why=task-v170 落地 Rule 81（计划完成后归档纪律）使 SKILL.md 全集声明 L314 演进为「Rule 40-81」，
-#      旧正则不命中 81（级联漏改，020 失败证据 #7 IP-12 FAIL）；交替族形态对齐范式先例
-#      selftest-research-first.sh RF-07 '40-(65|69|71|7[4-9]|8[01])'，8[01] 覆盖 80/81 且不放开越界值（40-82 不命中）。
-n="$(grep -cE 'Rule 40-(5[0-9]|6[0-9]|7[0-9]|8[01])' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ]; then ok 12 "SKILL.md 全集声明「Rule 40-(5[0-9]|6[0-9]|7[0-9]|8[01])」宽容锚 ≥1（$n）"; else bad 12 "SKILL.md 全集声明「Rule 40-(5[0-9]|6[0-9]|7[0-9]|8[01])」=$n（应 ≥1，级联漏改）"; fi
+#      [2026-10-12 task-v171 分层口径切换] SKILL.md 重写瘦身后全集声明演进为「Rules 1-80 全集索引」（核心 12 条+10 卫星），
+#      `40-[5-8][0-9]` 不再命中（级联漏改）；随动演进为 `1-8[01]` 全集口径锚（task-v170 并集 max 口径覆盖 1-81）（覆盖 1-80 全集，宽容正则优先范式保持，≥1 计数语义不变）。
+n="$(grep -cE '1-8[01]' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ]; then ok 12 "SKILL.md 全集声明「1-8[01]」口径锚 ≥1（$n，v171 分层架构口径）"; else bad 12 "SKILL.md 全集声明「1-80」=$n（应 ≥1，级联漏改）"; fi
 
 # IP-13 templates/progress.md 在位且含「Test Results」段（落盘载体出口）
 # What：断言 progress.md 模板存在且含 `Test Results` 段（迭代轮次结果的落盘载体）。
@@ -181,7 +187,7 @@ fi
 # [2026-10-09 task-v151 S4 钉值级联/D2 同法] 语境锚定由「末条 57.x 行起至文件尾」收窄为「Rule 57 区块」
 #   （awk: ### 57 起至下一 ### 止）——Rule 66 已合法落地于 57 块之后，tail-to-EOF 口径必红；收窄后保留
 #   「57 块内无 66 入侵」负断言（编辑越界探测），全文件面 ^66.x 计数由 selftest-goal-unit-goal-mode.sh G-02（=6）承载。
-block57="$(awk '/^### 57 /{f=1;next} /^### /{f=0} f' "$CRIT" 2>/dev/null)"
+block57="$(awk '/^### 57 /{f=1;next} /^### /{f=0} f' "$CRIT_D" 2>/dev/null)"
 if [ -z "$block57" ]; then
   bad 14 "critical-rules.md 未找到 Rule 57 区块（### 57 标题行，负断言无法语境锚定）"
 else

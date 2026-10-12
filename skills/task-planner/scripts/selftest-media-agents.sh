@@ -2,7 +2,8 @@
 # selftest-media-agents.sh — task-v124 S6: Rule 47.2 媒体双专业执行体（image/video-generation-executor）静态守护
 # 范式对齐 selftest-media-dispatch.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构）。
 # 用途：静态断言 companion/agents 双媒体 agent 产物在位、frontmatter 格式规范（name/触发/MUST BE USED/model）、
-#      SKILL.md 路由表媒体两行联动、template-mapping.md §九注+§十行联动、README_zh/INSTALL_zh 7 个计数口径、
+#      SKILL 路由面联动（[task-v171 2026-10-12 锚修复] 原核心 SKILL.md 媒体两行 → 核心卫星路由表 media-planner 行 + task-dispatch agent-coverage.md 覆盖矩阵）、
+#      template-mapping.md §九注+§十行联动、README_zh/INSTALL_zh 7 个计数口径、
 #      INSTALL.md 双 agent 表行、install.sh 注释 6 名清单，并确认零新 config 键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]，与 43.4/44.4/47 同口径）。
 # 输入：task-planner/companion/agents/{image,video}-generation-executor.md、task-planner/SKILL.md、task-planner/config.json、
 #      task-planner/install.sh、README_zh.md、INSTALL_zh.md、INSTALL.md、../plan-template-kit/references/template-mapping.md（只读，grep/test/jq，零写入）。
@@ -23,6 +24,15 @@ READMEZH="$SKILL_ROOT/../../README_zh.md"
 INSTALLZH="$SKILL_ROOT/../../INSTALL_zh.md"
 INSTALLMD="$SKILL_ROOT/INSTALL.md"
 TMAP="$SKILL_ROOT/../plan-template-kit/references/template-mapping.md"
+# [task-v171 媒体域收编 2026-10-12 锚修复] Rule 47.2 随媒体域收编入 media-planner（S22/S23）。
+#   本脚本守护面=companion/agents 产物+SKILL 路由面+template-mapping 联动，不断言 Rule 47 条款文本，
+#   故不引入 CRIT_M 锚（条款文本 target=../media-planner/references/critical-rules-media.md，
+#   由 MA-07 的 template-mapping §九媒体族行间接覆盖 + selftest-media-dispatch.sh 47.x 条款锚承载）。
+# [task-v171 2026-10-12 锚修复] MA-06 原行为=核心 SKILL.md「媒体生成工序」/「剧集创作管线」两路由行含双 agent 名；
+#   S33 核心瘦身后两行删除（非核心域展开禁入核心 SKILL，Rule 82），后继权威面二合一：
+#   核心 SKILL.md 卫星路由表 media-planner 行（Rule 47,49,50 落位）+ task-dispatch references/agent-coverage.md
+#   执行体覆盖矩阵双 agent 名（原 SKILL 路由表点名面的矩阵后继）。断言语义零改动（LLM 具名路由消费面在位）。
+COV="$SKILL_ROOT/../task-dispatch/references/agent-coverage.md"
 
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'MA-%s PASS %s\n' "$1" "$2"; }
@@ -83,16 +93,20 @@ else
   bad 05 "video frontmatter 格式漂移（触发:=$n / MUST BE USED=$m / model 行=$mdl，应各 ≥1）"
 fi
 
-# MA-06 SKILL.md 路由表两媒体行含双 agent 名
-# What：断言 SKILL.md「媒体生成工序」行与「剧集创作管线」行（:356/:357 区）各含 image/video-generation-executor。
-# Why：SKILL.md 路由表是 Rule 47.2 具名路由的 LLM 消费面——S3 行内替换（在位优先/缺位回退）的落点，双行任一丢 agent 名
-#      = 路由表回退到缺位时代措辞（防"文档重构还原旧行"的逆向漂移；与既有 media-dispatch MD-03/04 行数锚互补，本锚查 agent 名本身）。
-a="$(grep '媒体生成工序' "$SKILLMD" | grep -c 'image-generation-executor' || true)"
-b="$(grep '剧集创作管线' "$SKILLMD" | grep -c 'video-generation-executor' || true)"
-if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then
-  ok 06 "SKILL.md 媒体两行 agent 名联动 媒体生成工序行 image=$a ≥1 / 剧集创作管线行 video=$b ≥1"
+# MA-06 SKILL 路由面+覆盖矩阵面含双 agent 名
+# What：断言核心 SKILL.md 卫星路由表 media-planner 行含媒体轴拆分与执行体路由措辞（Rule 47,49,50），
+#       且 task-dispatch references/agent-coverage.md 执行体覆盖矩阵含 image/video 双 agent 名各 ≥1。
+# Why：核心 SKILL.md 原「媒体生成工序」/「剧集创作管线」两路由行是 Rule 47.2 具名路由的 LLM 消费面；task-v171 媒体域收编后
+#      两行随核心瘦身删除，LLM 消费面二合一为「核心 SKILL 卫星路由表 media-planner 行（路由入口）+ agent-coverage.md
+#      覆盖矩阵（agent 名本体，原 SKILL 路由表点名面的矩阵后继）」——任一丢失 = 路由入口与具名资产再次脱节
+#      （防文档重构还原旧行/删行的双向漂移；与 MA-07 template-mapping §九媒体族行互补，本锚查 agent 名本体）。
+a="$(grep 'media-planner' "$SKILLMD" | grep -c '执行体路由' || true)"
+i="$(grep -c 'image-generation-executor' "$COV" || true)"
+v="$(grep -c 'video-generation-executor' "$COV" || true)"
+if [ "$a" -ge 1 ] && [ "$i" -ge 1 ] && [ "$v" -ge 1 ]; then
+  ok 06 "SKILL 路由面 media-planner 行='$a' ≥1 且 agent-coverage 双 agent 名 image=$i/video=$v 各 ≥1"
 else
-  bad 06 "SKILL.md 媒体两行 agent 名缺失（媒体生成工序行 image 名=$a / 剧集创作管线行 video 名=$b，应各 ≥1）"
+  bad 06 "媒体路由面缺位（SKILL 路由行=$a / image 名=$i / video 名=$v，应各 ≥1）"
 fi
 
 # MA-07 template-mapping.md §九兜底注+§十媒体制作族行含双 agent 名

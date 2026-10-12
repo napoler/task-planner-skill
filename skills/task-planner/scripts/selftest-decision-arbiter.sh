@@ -13,9 +13,16 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ARBITER="$SKILL_ROOT/companion/agents/decision-arbiter.md"
-CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: DA-09/10/16 FAIL(Rule 69 六子条/[arbiter-reject]/69 段在核心已不存在)｜
+# 根因: P7 核心瘦身后 Rule 69 归属 task-discipline, 断言锚仍指核心 critical-rules.md｜
+# 修法: CRIT 改指 CRIT_D(task-discipline/references/critical-rules-discipline.md); DA-11/12/13 的 SKILL.md
+#   面锚(路由表行/触发点标记/C47 合规行)随 S33 瘦身移除, 分别改指新载体(References 入口/69.1 段六触发点/69.6 登记)
+CRIT="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
-AGENT_COV="$SKILL_ROOT/references/agent-coverage.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: DA-14 FAIL(覆盖矩阵判断裁决行缺失)｜
+# 根因: agent-coverage.md 随派发域迁至 skills/task-dispatch/references, 旧路径 $SKILL_ROOT/references 为空｜
+# 修法: 改锚 $SKILL_ROOT/../task-dispatch/references/agent-coverage.md
+AGENT_COV="$SKILL_ROOT/../task-dispatch/references/agent-coverage.md"
 REGISTRY="$SKILL_ROOT/scripts/selftest-registry.tsv"
 CONFIG="$SKILL_ROOT/config.json"
 
@@ -51,30 +58,34 @@ if grep -q '驳回单五要素' "$ARBITER" && [ "$(grep -c 'T[1-6] ' "$ARBITER")
 # Why: 69.1 管辖二分=防双跑与越权（偏移检测/产物挑刺/自我纠偏/规划升级各归其体）——缺邻=管辖边界模糊。
 if grep -q 'drift-checker' "$ARBITER" && grep -q 'critic' "$ARBITER" && grep -q 'meta-corrector' "$ARBITER" && grep -q 'complex-planner' "$ARBITER"; then ok 08 "管辖二分四邻齐全"; else bad 08 "管辖二分四邻缺失"; fi
 
-# DA-09 critical-rules.md Rule 69 六子条锚
-# What: critical-rules.md 含 **69.1..**69.6 六个子条锚各 ≥1。
+# DA-09 critical-rules-discipline.md Rule 69 六子条锚（[task-v171 2026-10-12] Rule 69 归属 task-discipline）
+# What: critical-rules-discipline.md 含 **69.1..**69.6 六个子条锚各 ≥1。
 # Why: 六子条=条款语义本体（触发/契约/消费/五要素/强档/机制），缺子条=条款部分语义缺失。
 if grep -q '\*\*69\.1' "$CRIT" && grep -q '\*\*69\.2' "$CRIT" && grep -q '\*\*69\.3' "$CRIT" && grep -q '\*\*69\.4' "$CRIT" && grep -q '\*\*69\.5' "$CRIT" && grep -q '\*\*69\.6' "$CRIT"; then ok 09 "Rule 69 六子条齐全"; else bad 09 "Rule 69 子条缺失"; fi
 
 # DA-10 [arbiter-reject] 留痕协议字面
-# What: critical-rules.md 含 [arbiter-reject] 留痕串。
+# What: critical-rules-discipline.md 含 [arbiter-reject] 留痕串。
 # Why: 69.3 REJECT-REWORK 强制返工靠 [arbiter-reject] 行留痕——串丢=静默继续原方向无机器面证据。
 if grep -qF '[arbiter-reject]' "$CRIT"; then ok 10 "[arbiter-reject] 留痕协议在位"; else bad 10 "[arbiter-reject] 留痕协议缺失"; fi
 
-# DA-11 SKILL.md 路由表「判断/裁决」行
-# What: SKILL.md 含路由表「判断/裁决（低频）」行锚。
-# Why: 路由行=判断类问题「找得到执行体」的路由面（R4 派发消费入口）——行丢=有体不用退回硬决。
-if grep -q '判断/裁决（低频）' "$SKILLMD"; then ok 11 "路由表判断/裁决行在位"; else bad 11 "路由表判断/裁决行缺失"; fi
+# DA-11 SKILL.md decision-arbiter 执行体入口（[task-v171 2026-10-12] S33 瘦身后路由表整表移除）
+# What: SKILL.md References 外部 agent 行含「decision-arbiter`（Rule 69）」入口锚。
+# Why: 入口行=判断类问题「找得到执行体」的路由面（R4 派发消费入口）——S33 后权威执行体路由改由
+#      「Rule 69.1 触发点标记 + References 外部 agent 行」承载，入口丢=有体不用退回硬决。
+if grep -qF 'decision-arbiter`（Rule 69）' "$SKILLMD"; then ok 11 "References decision-arbiter 入口在位"; else bad 11 "SKILL.md decision-arbiter 入口缺失"; fi
 
-# DA-12 SKILL.md 触发点标记 ≥5
-# What: SKILL.md 执行流程「Rule 69.1 T[1-6]」标记计数 ≥5。
-# Why: 触发点标记=六触发点在执行流程的可消费落点（69.6 消费面），<5=触发点未接线到流程。
-if [ "$(grep -c 'Rule 69.1 T[1-6]' "$SKILLMD")" -ge 5 ]; then ok 12 "SKILL 触发点标记 ≥5"; else bad 12 "SKILL 触发点标记 <5"; fi
+# DA-12 Rule 69.1 段六触发点标记 ≥5（[task-v171 2026-10-12] 权威=Rule 69.1 段本体）
+# What: critical-rules-discipline.md 69.1 段「T[1-6]」唯一标记计数 ≥5。
+# Why: 触发点=六触发点矩阵的本体落点（69.1 管辖入口）——S33 后 SKILL.md 执行流程标记精简为 3 处
+#      （保留 T1/T4/T6 三主消费点），六触发点全集权威=69.1 段；<5=触发点矩阵被裁剪。
+t12="$(awk '/69\.1 触发场景与管辖二分/{f=1} f&&/69\.6 机制/{exit} f' "$CRIT" 2>/dev/null | grep -oE 'T[1-6] ' | sort -u | wc -l | tr -d ' ')"
+if [ "$t12" -ge 5 ]; then ok 12 "69.1 段六触发点标记=$t12 ≥5"; else bad 12 "69.1 段触发点标记=$t12 <5"; fi
 
-# DA-13 SKILL.md 合规清单 C47 行
-# What: SKILL.md 含合规清单 C47 行锚。
-# Why: C47=判断裁决委派自查清单项（69.6），行丢=合规检查面缺判断裁决自查。
-if grep -q '| C47 |' "$SKILLMD"; then ok 13 "合规清单 C47 行在位"; else bad 13 "合规清单 C47 行缺失"; fi
+# DA-13 69.6 合规清单 C47 登记（[task-v171 2026-10-12] SKILL.md 合规清单整表随 S33 移除）
+# What: critical-rules-discipline.md 69.6 段含「合规清单 C47」登记字面。
+# Why: C47=判断裁决委派自查清单项（69.6）——S33 后 C 编号检查清单不再在 SKILL.md 展开，
+#      契约登记面=69.6 机制段的 C47 字面；登记丢=合规检查面缺判断裁决自查。
+if grep -qF '合规清单 C47' "$CRIT"; then ok 13 "69.6 合规清单 C47 登记在位"; else bad 13 "合规清单 C47 登记缺失"; fi
 
 # DA-14 agent-coverage.md 28 行判断裁决行
 # What: agent-coverage.md 含「判断/裁决 | decision-arbiter」行（编号 28）。

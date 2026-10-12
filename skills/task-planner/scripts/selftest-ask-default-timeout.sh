@@ -20,6 +20,10 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 44（用户选择点默认项与自动超时）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   RT-01/02/03/08/10/11 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 TPL="$SKILL_ROOT/templates/task_plan.md"
@@ -31,10 +35,10 @@ ok()  { PASS=$((PASS+1)); printf 'RT-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'RT-%s FAIL %s\n' "$1" "$2"; }
 
 # RT-01 Rule 44 五子条锚（44.1-44.5,task-v134 增 44.5 阻塞点展示限制;原行为=应 4,现级联 4→5）
-n="$(grep -c '^44\.' "$CRIT" || true)"
+n="$(grep -c '^44\.' "$CRIT_D" || true)"
 if [ "$n" -eq 5 ]; then ok 01 "critical-rules.md Rule 44 子条锚 = 5"; else bad 01 "critical-rules.md Rule 44 子条数 $n（应 5）"; fi
 # RT-02 CRIT 44 节内用户原话锚（仅 44 节内,防全文件锚误判）
-S44="$(grep '^44\.' "$CRIT")"
+S44="$(grep '^44\.' "$CRIT_D")"
 a="$(printf '%s\n' "$S44" | grep -c '默认选项' || true)"
 b="$(printf '%s\n' "$S44" | grep -c '自动超时' || true)"
 c="$(printf '%s\n' "$S44" | grep -c '5 分钟' || true)"
@@ -44,11 +48,17 @@ else
   bad 02 "CRIT 44 节原话锚缺失（默认选项=$a 自动超时=$b 5 分钟=$c,均应 ≥1）"
 fi
 # RT-03 44.2 行内 41.3 衔接锚
-n="$(grep '^44\.2' "$CRIT" | grep -c '41\.3' || true)"
+n="$(grep '^44\.2' "$CRIT_D" | grep -c '41\.3' || true)"
 if [ "$n" -ge 1 ]; then ok 03 "44.2 行内「41.3」衔接引用 $n ≥1"; else bad 03 "44.2 行内「41.3」衔接引用缺失（$n 应 ≥1）"; fi
-# RT-04 SKILL.md C33 合规清单消费行 = 1
-n="$(grep -c '| C33 |' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 04 "SKILL.md C33 合规清单项 = 1"; else bad 04 "SKILL.md C33 项 $n（应 1）"; fi
+# RT-04 [task-v171 核心瘦身] SKILL.md C33 消费面行（瘦身后由卫星路由表承载）
+#   现象：SKILL.md 556→214 行瘦身后合规清单表（`| C33 |` 形态）被替换为 G1-G8 核心域表，
+#     C33 行物理删除，RT-04 按原锚恒 FAIL=0 命中。
+#   根因：断言锚定旧「合规检查清单」表结构；新 SKILL.md 已声明非核心域合规项经
+#     「卫星路由表」+卫星 critical-rules-*.md 全文承载（SKILL.md 合规表下注+路由表）。
+#   修法：改断言 SKILL.md 卫星路由表 task-discipline 路由行 =1（Rule 44 消费面新载体，
+#     Rule 44 全文锚由 RT-01/RT-02 在 CRIT_D 断 assertion，语义等价不弱化）。
+n="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 04 "SKILL.md 卫星路由表 task-discipline 行 = 1（Rule 44/C33 消费面瘦身后由路由表承载）"; else bad 04 "SKILL.md 卫星路由表 task-discipline 行 $n（应 1）"; fi
 # RT-05 模板 task_plan.md 自动超时默认项行锚
 n="$(grep -c '自动超时默认项' "$TPL" || true)"
 if [ "$n" -ge 1 ]; then ok 05 "模板 task_plan.md「自动超时默认项」行 $n ≥1"; else bad 05 "模板「自动超时默认项」行缺失（$n 应 ≥1）"; fi
@@ -78,12 +88,12 @@ else
   printf 'RT-09 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
 # RT-10 44.5 条款在位锚（task-v134 新增：`^44.5` 行级计数=1 防重复行 + 行内容断言「阻塞点展示限制」，防 44.5 行被截断/改题）
-n="$(grep -c '^44\.5' "$CRIT" || true)"
-m="$(grep '^44\.5' "$CRIT" | grep -c '阻塞点展示限制' || true)"
+n="$(grep -c '^44\.5' "$CRIT_D" || true)"
+m="$(grep '^44\.5' "$CRIT_D" | grep -c '阻塞点展示限制' || true)"
 if [ "$n" -eq 1 ] && [ "$m" -eq 1 ]; then ok 10 "critical-rules.md 44.5 阻塞点展示限制条款行 = 1 且行内容锚在位"; else bad 10 "critical-rules.md 44.5 条款行数 $n（应 1）/ 行内容锚 $m（应 1）"; fi
 # RT-11 44.5 关键词守护锚——「阻塞点展示限制」全文命中 ≥1（守护面=44.4 机制行+44.5 条款行+SKILL 摘要面；
 # 与 RT-10 非双保险——二者同测 critical-rules.md 单文件，RT-11 是全文命中面，防 44.4/44.5 两行同时误删）
-n="$(grep -c '阻塞点展示限制' "$CRIT" || true)"
+n="$(grep -c '阻塞点展示限制' "$CRIT_D" || true)"
 if [ "$n" -ge 1 ]; then ok 11 "critical-rules.md「阻塞点展示限制」关键词命中 $n ≥1"; else bad 11 "critical-rules.md「阻塞点展示限制」关键词缺失（$n 应 ≥1）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # selftest-plan-tier.sh — task-v086 P3-S4: Rule 38 任务难度分级与轻量档静态+行为守护
+# [task-v171 2026-10-12 锚修复] Rule 38 随模板域收编入 plan-template-kit：条款断言（PT-01..06）target=CRIT_T
+#   （../plan-template-kit/references/critical-rules-template.md）；SKILL 联动 target=核心 SKILL.md frontmatter 全集索引
+#   （PT-08）+ plan-template-kit SKILL.md（PT-09/10）。守护面语义零改动，详见锚定义处注释。
 # 守护（条款+键+SKILL 联动+模板契约+init 分流+4 锚点豁免行为）:
-#   PT-01 critical-rules.md 含 Rule 38 头（### 38 任务难度分级与轻量档）
+#   PT-01 critical-rules-template.md 含 Rule 38 头（### 38 任务难度分级与轻量档）
 #   PT-02 含 38.1 判定锚（机器可测 + MISMATCH）
 #   PT-03 含 38.2 档位矩阵锚（mini-lite-type + standard 13 variant + full general）
 #   PT-04 含 38.3 轻量模板契约锚（区块白名单）
@@ -41,6 +44,17 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 模板域收编 2026-10-12 锚修复] 现象: PT-01..06/08/09/10 FAIL（grep 目标核心 critical-rules.md/SKILL.md 已无 Rule 38 文本）｜
+# 根因: Rule 38（任务难度分级与轻量档）随模板域收编入 plan-template-kit（S25），全文已逐字迁至
+#   skills/plan-template-kit/references/critical-rules-template.md；核心 SKILL.md 瘦身（S33）删除 C26 合规行、
+#   frontmatter「Critical Rules 全集 1-4x/1-5x」旧索引与 Critical Rules 列表 Rule 38 摘要行（Rule 82）｜
+# 修法（只改断言 target，断言语义零改动——守护面=Rule 38 条款层+SKILL 消费层在位）:
+#   PT-01..06 条款断言改指 CRIT_T（逐字文本 verified: critical-rules-template.md:35-44）；
+#   PT-08 改指核心 SKILL.md frontmatter「Critical Rules 核心域——Rules 1-80 全集索引」（原 1-4x 纪元锚后继面）；
+#   PT-09 改指 plan-template-kit SKILL.md 调用条件段「（Rule 38）」（原 C26 合规检查行后继面）；
+#   PT-10 改指 plan-template-kit SKILL.md 卫星路由段「Rule 38 任务难度分级与轻量档」（原核心摘要行后继面）。
+CRIT_T="$SKILL_ROOT/../plan-template-kit/references/critical-rules-template.md"
+TPL_SKILL="$SKILL_ROOT/../plan-template-kit/SKILL.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 MINI_TPL="$SKILL_ROOT/templates/variant/mini-lite-type.md"
@@ -54,17 +68,17 @@ ok()  { PASS=$((PASS+1)); printf 'PT-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'PT-%s FAIL %s\n' "$1" "$2"; }
 
 # PT-01
-if grep -q '^### 38 ' "$CRIT" && grep '^### 38 ' "$CRIT" | grep -q '任务难度分级与轻量档'; then ok 01 "Rule 38 头"; else bad 01 "Rule 38 头缺失"; fi
+if grep -q '^### 38 ' "$CRIT_T" && grep '^### 38 ' "$CRIT_T" | grep -q '任务难度分级与轻量档'; then ok 01 "Rule 38 头"; else bad 01 "Rule 38 头缺失"; fi
 # PT-02
-if grep '^38\.1 ' "$CRIT" | grep -q '机器可测' && grep '^38\.1 ' "$CRIT" | grep -q 'MISMATCH'; then ok 02 "38.1 判定锚"; else bad 02 "38.1 判定锚缺失"; fi
+if grep '^38\.1 ' "$CRIT_T" | grep -q '机器可测' && grep '^38\.1 ' "$CRIT_T" | grep -q 'MISMATCH'; then ok 02 "38.1 判定锚"; else bad 02 "38.1 判定锚缺失"; fi
 # PT-03
-if grep '^38\.2 ' "$CRIT" | grep -q 'mini-lite-type' && grep '^38\.2 ' "$CRIT" | grep -q 'standard' && grep '^38\.2 ' "$CRIT" | grep -q 'full'; then ok 03 "38.2 档位矩阵锚"; else bad 03 "38.2 档位矩阵锚缺失"; fi
+if grep '^38\.2 ' "$CRIT_T" | grep -q 'mini-lite-type' && grep '^38\.2 ' "$CRIT_T" | grep -q 'standard' && grep '^38\.2 ' "$CRIT_T" | grep -q 'full'; then ok 03 "38.2 档位矩阵锚"; else bad 03 "38.2 档位矩阵锚缺失"; fi
 # PT-04
-if grep '^38\.3 ' "$CRIT" | grep -q '区块白名单'; then ok 04 "38.3 轻量模板契约锚"; else bad 04 "38.3 区块白名单锚缺失"; fi
+if grep '^38\.3 ' "$CRIT_T" | grep -q '区块白名单'; then ok 04 "38.3 轻量模板契约锚"; else bad 04 "38.3 区块白名单锚缺失"; fi
 # PT-05
-if grep '^38\.4 ' "$CRIT" | grep -q '零影响铁律' && grep '^38\.4 ' "$CRIT" | grep -q 'VC 最低要求 5→2'; then ok 05 "38.4 豁免清单锚（铁律+VC 降档）"; else bad 05 "38.4 豁免清单锚缺失"; fi
+if grep '^38\.4 ' "$CRIT_T" | grep -q '零影响铁律' && grep '^38\.4 ' "$CRIT_T" | grep -q 'VC 最低要求 5→2'; then ok 05 "38.4 豁免清单锚（铁律+VC 降档）"; else bad 05 "38.4 豁免清单锚缺失"; fi
 # PT-06
-if grep '^38\.5 ' "$CRIT" | grep -q 'plan_tier_enforce' && grep '^38\.5 ' "$CRIT" | grep -q 'selftest-plan-tier'; then ok 06 "38.5 机制锚（开关键+守护）"; else bad 06 "38.5 机制锚缺失"; fi
+if grep '^38\.5 ' "$CRIT_T" | grep -q 'plan_tier_enforce' && grep '^38\.5 ' "$CRIT_T" | grep -q 'selftest-plan-tier'; then ok 06 "38.5 机制锚（开关键+守护）"; else bad 06 "38.5 机制锚缺失"; fi
 # PT-07
 if jq -e '.properties.plan_tier_enforce | .default=="warn" and ((.enum|sort)|. == ["enforce","off","warn"])' "$CONFIG" >/dev/null 2>&1; then
   ok 07 "config.json plan_tier_enforce（warn 默认+三档）"
@@ -76,11 +90,18 @@ fi
 # 守护 frontmatter 索引面存在性，断言语义不变。修改时间 2026-10-03，原行为=固定字面 grep -q 'Critical Rules 全集 1-45'）
 # [task-v121 预扩] 1-4[56]→1-4[5-9]（消除 Rule 47-49 级联，2026-10-03）
 # [task-v127 口径演进] 1-4[5-9]→1-4[5-9]|1-50（Rule 50 落体 SKILL.md 现值「全集 1-50」，只扩匹配窗，断言语义=「全集行存在且覆盖至 1-4x 段」不反转，2026-10-04）；[S12 合流重锚] 1-50→1-5[0-9]（v129 并入全集 1-51，匹配窗再扩一档，语义不反转）
-if grep -qE 'Critical Rules 全集 1-4[5-9]|1-5[0-9]' "$SKILLMD"; then ok 08 "SKILL.md frontmatter 索引 1-4[5-9]|1-5[0-9]（task-v127 S12 合流重锚：v129 并入全集 1-51，1-50→1-5[0-9]）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 全集 1-4[5-9]|1-5[0-9]」（task-v127 S12 合流重锚后宽容字面锚）"; fi
+# [task-v171 2026-10-12 锚修复] PT-08 原行为=核心 SKILL.md frontmatter grep「Critical Rules 全集 1-4[5-9]|1-5[0-9]」；
+# S33 重写后 frontmatter 索引演进为「Critical Rules 核心域——Rules 1-80 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80 + Rule 82…）」，
+# 全集覆盖语义由 1-80 全集索引承载（核心 12 条全文+66 条卫星归属路由表）。守护语义不变（frontmatter 全集索引存在且覆盖核心域在位）。
+if grep -qE 'Critical Rules 核心域.*Rules 1-8[01]' "$SKILLMD"; then ok 08 "SKILL.md frontmatter「Critical Rules 核心域 Rules 1-80 全集索引」（原 1-4x 纪元锚后继面）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 核心域 Rules 1-80」全集索引"; fi
 # PT-09
-if grep -q '^| C26 ' "$SKILLMD" && grep '^| C26 ' "$SKILLMD" | grep -q 'Rule 38'; then ok 09 "SKILL.md C26 检查项"; else bad 09 "SKILL.md 缺 C26 行"; fi
+# [task-v171 2026-10-12 锚修复] 原行为=核心 SKILL.md grep「| C26 |」合规检查行含 Rule 38；C 清单随 S33 瘦身删除，
+# 后继权威面=plan-template-kit SKILL.md 调用条件段「轻量档 mini 判定与门控豁免（Rule 38）」。语义不变（SKILL 层 Rule 38 消费提示在位）。
+if grep -q '（Rule 38）' "$TPL_SKILL"; then ok 09 "plan-template-kit SKILL.md（Rule 38）调用条件"; else bad 09 "plan-template-kit SKILL.md 缺（Rule 38）调用条件"; fi
 # PT-10
-if grep '^## Critical Rules' -A 40 "$SKILLMD" | grep -q 'Rule 38'; then ok 10 "SKILL.md Critical Rules 列表 Rule 38 摘要行"; else bad 10 "SKILL.md 摘要行缺 Rule 38"; fi
+# [task-v171 2026-10-12 锚修复] 原行为=核心 SKILL.md「## Critical Rules」列表 grep Rule 38 摘要行；非核心域规则已不在核心列表（Rule 82），
+# 后继权威面=plan-template-kit SKILL.md 卫星路由段「Rule 38 任务难度分级与轻量档」摘要。语义不变（Rule 38 摘要行在归属域 SKILL 在位）。
+if grep -q 'Rule 38 任务难度分级与轻量档' "$TPL_SKILL"; then ok 10 "plan-template-kit SKILL.md 卫星路由段 Rule 38 摘要"; else bad 10 "plan-template-kit SKILL.md 卫星路由段缺 Rule 38 摘要"; fi
 # PT-11
 if [ -f "$MINI_TPL" ]; then
   mlines="$(wc -l < "$MINI_TPL")"

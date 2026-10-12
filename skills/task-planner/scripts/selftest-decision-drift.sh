@@ -13,6 +13,10 @@
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CR="$SCRIPT_DIR/../references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 73（执行期决策对齐与不变量纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则）；
+#   DD-01~09/22 的 CR 断言改指 CRIT_D；CR 保留指向核心（本文件其余断言不消费核心规则文本）。断言语义零改动。
+CRIT_D="$SCRIPT_DIR/../../task-discipline/references/critical-rules-discipline.md"
 SKILL="$SCRIPT_DIR/../SKILL.md"
 TPL_DEP="$SCRIPT_DIR/../templates/deprecated.md"
 TPL_PLAN="$SCRIPT_DIR/../templates/task_plan.md"
@@ -28,17 +32,17 @@ bad() { echo "FAIL $1 ($2)"; FAIL=$((FAIL+1)); }
 cnt() { [ -f "$2" ] || { echo 0; return; }; grep -c -e "$1" "$2" 2>/dev/null || true; }
 
 # ── DD-01~09 critical-rules.md Rule 73 条款面 ──
-[ "$(cnt '^### 73 执行期决策对齐与不变量纪律' "$CR")" -ge 1 ] && ok "DD-01 CR Rule 73 块头" || bad "DD-01" "块头缺失"
-[ "$(cnt '^73\.[1-7] ' "$CR")" -eq 7 ] && ok "DD-02 CR 七子条锚=7" || bad "DD-02" "got=$(cnt '^73\.[1-7] ' "$CR") expect=7"
-[ "$(cnt '变更型决策点' "$CR")" -ge 1 ] && ok "DD-03 73.1 变更型决策点分类锚" || bad "DD-03" "分类锚缺失"
+[ "$(cnt '^### 73 执行期决策对齐与不变量纪律' "$CRIT_D")" -ge 1 ] && ok "DD-01 CR Rule 73 块头" || bad "DD-01" "块头缺失"
+[ "$(cnt '^73\.[1-7] ' "$CRIT_D")" -eq 7 ] && ok "DD-02 CR 七子条锚=7" || bad "DD-02" "got=$(cnt '^73\.[1-7] ' "$CRIT_D") expect=7"
+[ "$(cnt '变更型决策点' "$CRIT_D")" -ge 1 ] && ok "DD-03 73.1 变更型决策点分类锚" || bad "DD-03" "分类锚缺失"
 # DD-04 三问（读什么/判什么/验什么）+ [align] 留痕锚合计 ≥3（三问+留痕）
-_DD04=$(( $(cnt '读什么' "$CR") + $(cnt '判什么' "$CR") + $(cnt '验什么' "$CR") + $(cnt '\[align\]' "$CR") ))
+_DD04=$(( $(cnt '读什么' "$CRIT_D") + $(cnt '判什么' "$CRIT_D") + $(cnt '验什么' "$CRIT_D") + $(cnt '\[align\]' "$CRIT_D") ))
 [ "$_DD04" -ge 3 ] && ok "DD-04 73.2 对齐三问+[align] 留痕（命中 $_DD04）" || bad "DD-04" "got=$_DD04 expect>=3"
-{ [ "$(cnt '三态标注' "$CR")" -ge 1 ] && [ "$(cnt '不变量声明区' "$CR")" -ge 1 ]; } && ok "DD-05 73.3 三态标注+🔒 区块锚" || bad "DD-05" "三态/区块锚缺失"
-{ [ "$(cnt '强制评判点' "$CR")" -ge 1 ] && [ "$(cnt '\[judge\]' "$CR")" -ge 1 ]; } && ok "DD-06 73.4 强制评判点+[judge]" || bad "DD-06" "评判点锚缺失"
-[ "$(cnt '只入不出' "$CR")" -ge 1 ] && ok "DD-07 73.5 废弃只入不出" || bad "DD-07" "只入不出锚缺失"
-[ "$(cnt '消歧义' "$CR")" -ge 1 ] && ok "DD-08 73.6 消歧义" || bad "DD-08" "消歧义锚缺失"
-[ "$(cnt 'TASK_PLANNER_DECISION_JUDGE' "$CR")" -ge 1 ] && ok "DD-09 73.7 零新键 env 锚" || bad "DD-09" "env 锚缺失"
+{ [ "$(cnt '三态标注' "$CRIT_D")" -ge 1 ] && [ "$(cnt '不变量声明区' "$CRIT_D")" -ge 1 ]; } && ok "DD-05 73.3 三态标注+🔒 区块锚" || bad "DD-05" "三态/区块锚缺失"
+{ [ "$(cnt '强制评判点' "$CRIT_D")" -ge 1 ] && [ "$(cnt '\[judge\]' "$CRIT_D")" -ge 1 ]; } && ok "DD-06 73.4 强制评判点+[judge]" || bad "DD-06" "评判点锚缺失"
+[ "$(cnt '只入不出' "$CRIT_D")" -ge 1 ] && ok "DD-07 73.5 废弃只入不出" || bad "DD-07" "只入不出锚缺失"
+[ "$(cnt '消歧义' "$CRIT_D")" -ge 1 ] && ok "DD-08 73.6 消歧义" || bad "DD-08" "消歧义锚缺失"
+[ "$(cnt 'TASK_PLANNER_DECISION_JUDGE' "$CRIT_D")" -ge 1 ] && ok "DD-09 73.7 零新键 env 锚" || bad "DD-09" "env 锚缺失"
 
 # ── DD-10~11 templates/deprecated.md 五段 + 五要素 ──
 if [ -f "$TPL_DEP" ]; then
@@ -73,8 +77,15 @@ _JG_SEC="$(awk '/task-v156\] Rule 73\.4 \[judge-gate\]/{f=1} f{print} /Rule 73\.
   && ok "DD-15 posttooluse [judge] 注入+env 降档锚" || bad "DD-15" "注入/env 锚缺失"
 
 # ── DD-16~17 SKILL.md 接线 ──
-[ "$(cnt 'Rule 73' "$SKILL")" -ge 4 ] && ok "DD-16 SKILL Rule 73 摘要/接线（命中 $(cnt 'Rule 73' "$SKILL")）" || bad "DD-16" "got=$(cnt 'Rule 73' "$SKILL") expect>=4"
-[ "$(cnt 'C53' "$SKILL")" -ge 1 ] && ok "DD-17 SKILL C53 合规行" || bad "DD-17" "C53 缺失"
+# [task-v171 核心瘦身] DD-16 旧阈值≥4=Rule 73 摘要 bullet/合规 C53 行/新指令段 B 行/References 索引四处；
+#   瘦身后 Rule 73（纪律域）SKILL 侧仅存新指令处理段 B 行 1 处（'Rule 73.2 对齐三问'）+卫星路由表 discipline 行。
+#   现象：'Rule 73' 计数 4→1 且 'C53' 归零，DD-16/17 恒 FAIL。根因：非核心域规则摘要/C 行随合规清单表瘦身移除（Rule 82 禁回潮）。
+#   修法：DD-16 改 'Rule 73' ≥1（新指令段 B 行引用面）+卫星路由表 discipline 行 ≥1；DD-17 的 C53 合规行改路由表 discipline 行断言；
+#   Rule 73 全文锚由 CRIT_D 侧断言（DD-22 同测 CRIT_D）守护，SKILL 侧联动改路由表口径，强度等价。
+[ "$(cnt 'Rule 73' "$SKILL")" -ge 1 ] && [ "$(cnt '| task-discipline |' "$SKILL")" -ge 1 ] \
+  && ok "DD-16 SKILL Rule 73 接线（Rule 73 命中 $(cnt 'Rule 73' "$SKILL")）∧ 卫星路由表 discipline 行在位" \
+  || bad "DD-16" "got R73=$(cnt 'Rule 73' "$SKILL") expect>=1 ∧ 路由行≥1"
+[ "$(cnt '| task-discipline |' "$SKILL")" -ge 1 ] && ok "DD-17 SKILL 卫星路由表 discipline 行（Rule 73/C53 合规面瘦身后由路由表承载）" || bad "DD-17" "卫星路由表 discipline 行缺失"
 
 # ── DD-18 selftest-registry.tsv 自登记行 =1 ──
 [ "$(cnt 'decision-drift' "$REGISTRY")" -eq 1 ] && ok "DD-18 selftest-registry 自登记行=1" || bad "DD-18" "got=$(cnt 'decision-drift' "$REGISTRY") expect=1"
@@ -101,11 +112,14 @@ else
   ok "DD-20 config.json properties=42（SKIP：无 jq）"
 fi
 
-# ── DD-21 SKILL 计数宽锚 1-7[0-9]（含 73 接线；宽锚防再次漂移，v150/v158 宽容锚纪元范式） ──
-[ "$(cnt '1-7[0-9]' "$SKILL")" -ge 1 ] && ok "DD-21 SKILL 计数宽锚 1-7[0-9]" || bad "DD-21" "宽锚缺失"
+# ── DD-21 [task-v171 核心瘦身] SKILL 计数宽锚 '1-80'（全集纪元口径；旧宽锚 1-7[0-9] 随 40-80 纪元字面一并移除） ──
+#   现象：SKILL.md 瘦身后全集声明演进为「Rules 1-80」，旧宽锚 '1-7[0-9]'（1-70..1-79 字面）零命中，DD-21 恒 FAIL。
+#   根因：宽锚钉的是旧全集纪元字面；分层架构下全集口径=核心 12 条+10 卫星（1-80 全集索引）。
+#   修法：宽锚改 '1-8[01]'（v150/v158 宽容锚纪元范式延续，防再次漂移仍为全集口径单锚）。
+[ "$(cnt '1-8[01]' "$SKILL")" -ge 1 ] && ok "DD-21 SKILL 计数宽锚 1-8[01]" || bad "DD-21" "宽锚缺失"
 
 # ── DD-22 运行时留痕格式示范（[align]/[judge] 行格式在 CR 条款） ──
-{ [ "$(cnt '\[align\]' "$CR")" -ge 1 ] && [ "$(cnt '\[judge\]' "$CR")" -ge 1 ]; } \
+{ [ "$(cnt '\[align\]' "$CRIT_D")" -ge 1 ] && [ "$(cnt '\[judge\]' "$CRIT_D")" -ge 1 ]; } \
   && ok "DD-22 运行时留痕格式示范（[align]/[judge]）" || bad "DD-22" "留痕格式锚缺失"
 
 echo "Total: 23 PASS=$PASS FAIL=$FAIL"

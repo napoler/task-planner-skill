@@ -191,3 +191,9 @@ TodoWrite 或 TaskCreate：
 | `task-planner` | 单次任务计划（plans/task-xxx/progress.md） | progress-tracker 跨任务累积，按主题归类 |
 | ~~plan-bookkeeper~~（已移除，task-v116 v107 C-P5 清账：仓内无此技能）→ task-planner 主进程簿记职能（ledger-append.sh+plan-bookkeeper 职责并入三文件回填） | task-planner 三文件机械回填 | progress-tracker 独立于 task-planner，直接追加 JSONL |
 | `todo-skill` | 单任务步骤拆解 + TaskCreate 推进 | progress-tracker 记录历史进度，不管当前任务拆解 |
+
+## 卫星路由：progress-tracker — 域=共享内容认领（Rule 30）
+
+规则全文见 `references/critical-rules-progress.md`（Rule 30）。
+
+调用条件：涉及共享内容认领/跨任务进度复用/认领防冲突/共享追踪账本登记时 Read 该文件。

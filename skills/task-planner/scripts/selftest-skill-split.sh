@@ -70,17 +70,22 @@ for old in references/research-routing.md references/template-guide.md reference
     t "T-死 $old 零残留(plan- 过滤后, N=$N)" test "$N" -eq 0
 done
 
-# T5 锚点抽验
-t "T-锚 Rule 17 成本控制" grep -q 'Rule 17 成本控制' "$SKILL"
-t "T-锚 C19 行在位" grep -q '| C19 |' "$SKILL"
-t "T-锚 C25 行在位" grep -q '| C25 |' "$SKILL"
-t "T-锚 C26 行在位" grep -q '| C26 |' "$SKILL"
+# T5 锚点抽验 [task-v171 核心瘦身]——合规 C 行体系与跨域摘要字面随瘦身退役，按各域新载体重锚：
+#   现象：'Rule 17 成本控制'/'| C19 |'/'| C25 |'/'| C26 |' 四字面在瘦身后 SKILL.md 全部零命中，四锚恒 FAIL。
+#   根因：Rule 17 属 plan-cost-guard 域、Rule 25 属 task-dispatch 域、Rule 31 属 task-discipline 域（摘要/C 行退役）；
+#     Rule 26 属核心在位（指针 bullet 措辞演进无括号）。
+#   修法：① Rule 17→卫星路由表 plan-cost-guard 行含 Rule 17 枚举；② C19→卫星路由表 task-discipline 行；
+#     ③ C25→卫星路由表 task-dispatch 行；④ C26→SKILL 指针段 'Rule 26 质量优先' bullet ≥1。四域锚点抽验覆盖面不变。
+t "T-锚 卫星路由表 plan-cost-guard 行含 Rule 17" grep -E '^\| plan-cost-guard \|' "$SKILL" | grep -qE 'Rule [0-9,]*17'
+t "T-锚 卫星路由表 task-discipline 行（原 C19 面载体）" grep -qE '^\| task-discipline \|' "$SKILL"
+t "T-锚 卫星路由表 task-dispatch 行（原 C25 面载体）" grep -qE '^\| task-dispatch \|' "$SKILL"
+t "T-锚 SKILL 指针段 Rule 26 质量优先 bullet（原 C26 面载体）" grep -q 'Rule 26 质量优先' "$SKILL"
 # [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 # 原固定字面 'Rules 1-3' 计数锚在 1-62 纪元 SKILL.md 已零命中（级联漏改面）→ 宽容正则 1-(3[0-9]|[4-6][0-9]) 覆盖旧 1-3x..新 6x 纪元, 合计语义零改动
 # [2026-10-10 task-v158 S-unit: 7x 纪元再扩——SKILL.md 索引锚演进至 1-71（Rule 69/71 落地）, 宽容正则扩 7x 纪元 1-(3[0-9]|[4-7]x), 历史纪元 3x/4x/5x/6x 覆盖不变]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 # [2026-10-11 task-v169 扩 8x 纪元——Rule 80 落地, SKILL.md 索引锚演进至 1-80, 宽容正则扩 8x 纪元 1-(3[0-9]|[4-8][0-9]), 历史纪元 3x/4x/5x/6x/7x 覆盖不变]
-# [2026-10-12 task-v170 纪元演进] 宽容正则扩 81：'1-(3[0-9]|[4-7][0-9])'→'1-(3[0-9]|[4-7][0-9]|81)'（Why=task-v170 落地 Rule 81 计划完成后归档纪律，SKILL.md 索引/References 行全集 1-76→1-81，81 以字面交替入锚（同 RF-06/RF-07 扩 81 范式；负样本 1-82 不命中，8[01] 之外的越界值仍被排除））；历史纪元 3x/4x/5x/6x/7x 覆盖不变
+# [2026-10-12 task-v170 纪元演进并集] 宽容正则扩 81：'1-(3[0-9]|[4-8][0-9])'→'1-(3[0-9]|[4-7][0-9]|81)'（Why=task-v170 落地 Rule 81 计划完成后归档纪律，81 以字面交替入锚，同 master 版本行；负样本 1-82 不命中，历史纪元覆盖不变）——本任务（task-v171）merge 前并集解采纳
 t "T-锚 Rules 1-3..81 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-7][0-9]|81)' '$SKILL')\" -ge 1 ]"
 
 # T6 守卫 + registry 联动

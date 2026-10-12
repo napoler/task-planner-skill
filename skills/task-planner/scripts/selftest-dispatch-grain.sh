@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # selftest-dispatch-grain.sh — task-v118: Rule 46 子代理单任务专注度守护（单会话单 S-unit / 守卫豁免收窄 / 任务书口径）
 # 校验面（静态锚 + check-dispatch.sh 守卫②④收窄行为 fixture；只读技能文件, 临时产物在 mktemp 目录内自清理）:
-#   GR-01 critical-rules.md 46.1..46.5 五子条款在位（grep -c '^46.' = 5）
-#   GR-02 critical-rules.md 含「### 46 子代理单任务专注度」条款头
-#   GR-03 SKILL.md 委派检查点 2.5 含「单会话单 S-unit（Rule 46.1」措辞
+#   GR-01 critical-rules-dispatch.md 46.1..46.5 五子条款在位（grep -c '^46.' = 5；[task-v171 2026-10-12] Rule 46 归属 task-dispatch）
+#   GR-02 critical-rules-dispatch.md 含「### 46 子代理单任务专注度」条款头
+#   GR-03 46.1 单会话单 S-unit 双锚（CRIT_DP 条款本体 + task-dispatch SKILL.md 路由行；原核心 SKILL.md 2.5 措辞随 S33 落卫星）
 #   GR-04 templates/subagent_dispatch.md Rule 46.1 引导行 ≥ 2（§1 目标段 + 检查点段两处）
 #   GR-05 check-dispatch.sh 守卫②任务书收窄标记「任务书检出」在位
 #   GR-06 check-dispatch.sh 守卫④任务书分支 tb 模式调用 `count_step_markers "$tb" tb` 在位
@@ -13,7 +13,7 @@
 #   GR-10 [fixture] 全角形态引用「执行（任务书：TB 路径）」（全角括号+全角冒号）+ 任务书含 2 个不同 S-id → enforce exit 2 且 stderr 含「任务书检出」
 # 档位: 行为 fixture 实跑 check-dispatch.sh pretool, TASK_PLANNER_DISPATCH_ENFORCE=enforce + TASK_PLANNER_PLAN_DIR=<tmp 最小计划目录>
 # 依据（字面锚, 不用行号——check-dispatch.sh 持续演进, 行号必漂移）:
-#   critical-rules.md Rule 46 条款块（「### 46 子代理单任务专注度」及其 46.1..46.5 子条）
+#   critical-rules-dispatch.md Rule 46 条款块（「### 46 子代理单任务专注度」及其 46.1..46.5 子条；task-v171 分层后 Rule 46 归 task-dispatch）
 #   check-dispatch.sh 守卫②收窄注释（「任务书豁免收窄(Rule 46.2)」注释块）; ②实现=「任务书检出」分支
 #     （双条件命中后 cat 合并任务书计 distinct S-id, ≥2 →「任务书检出 N 个 S-unit ID」计入 hits）;
 #   ④=count_step_markers "$tb" tb 模式调用（fine_grain_checks ④ 任务书分支）;
@@ -28,6 +28,13 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 GUARD="$SKILL_ROOT/scripts/check-dispatch.sh"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: GR-01/02 FAIL(^46. 计数 0、条款头缺失)、GR-03 FAIL(单会话单 S-unit 措辞缺)｜
+# 根因: P7 核心瘦身后 Rule 46 归属 task-dispatch, 旧锚 $SKILL_ROOT/references/critical-rules.md 已无该规则;
+#   S33 SKILL.md 瘦身后委派检查点 2.5 整段落盘卫星 task-dispatch, 核心 SKILL.md 不再含该措辞｜
+# 修法: GR-01/02 改锚 CRIT_DP(task-dispatch references); GR-03 改双锚=46.1 条款本体(CRIT_DP)+
+#   task-dispatch SKILL.md 规则索引 Rule 46 行(卫星 authoritative 路由面, 替代原 SKILL.md 2.5 检查点措辞)
+CRIT_DP="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
+DP_SKILL="$SKILL_ROOT/../task-dispatch/SKILL.md"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TMPL="$SKILL_ROOT/templates/subagent_dispatch.md"
@@ -76,13 +83,13 @@ run_guard() {
     printf '%s\t%s' "$rc" "$err"
 }
 
-# GR-01 critical-rules.md 46.x 子条款 5 条
-n46="$(grep -c '^46\.' "$CRIT" 2>/dev/null || true)"
-if [ "$n46" = "5" ]; then ok 01 "critical-rules.md 46.1..46.5 共 5 条"; else bad 01 "^46. 行数=$n46 (期望 5)"; fi
+# GR-01 critical-rules-dispatch.md 46.x 子条款 5 条
+n46="$(grep -c '^46\.' "$CRIT_DP" 2>/dev/null || true)"
+if [ "$n46" = "5" ]; then ok 01 "critical-rules-dispatch.md 46.1..46.5 共 5 条"; else bad 01 "^46. 行数=$n46 (期望 5)"; fi
 # GR-02 条款头锚
-if grep -q '^### 46 子代理单任务专注度' "$CRIT"; then ok 02 "条款头「### 46 子代理单任务专注度」"; else bad 02 "条款头缺失: 缺「### 46 子代理单任务专注度」"; fi
-# GR-03 SKILL.md 2.5 委派检查点单会话单 S-unit 措辞
-if grep -qF '单会话单 S-unit（Rule 46.1' "$SKILLMD"; then ok 03 "SKILL.md 2.5 单会话单 S-unit"; else bad 03 "SKILL.md 缺「单会话单 S-unit（Rule 46.1」措辞"; fi
+if grep -q '^### 46 子代理单任务专注度' "$CRIT_DP"; then ok 02 "条款头「### 46 子代理单任务专注度」"; else bad 02 "条款头缺失: 缺「### 46 子代理单任务专注度」"; fi
+# GR-03 单会话单 S-unit 双锚（Rule 46.1 本体 + task-dispatch 卫星路由行；替代原核心 SKILL.md 2.5 检查点措辞）
+if grep -qF '46.1 **单会话单 S-unit' "$CRIT_DP" && grep -qF '专注度（Rule 46）' "$DP_SKILL"; then ok 03 "46.1 本体+task-dispatch 路由双锚"; else bad 03 "单会话单 S-unit 双锚缺失（CRIT_DP 46.1 或 task-dispatch SKILL.md 路由行）"; fi
 # GR-04 派发模板 Rule 46.1 引导行 ≥2
 n146="$(grep -c 'Rule 46.1' "$TMPL" 2>/dev/null || true)"
 if [ "${n146:-0}" -ge 2 ]; then ok 04 "subagent_dispatch.md Rule 46.1 引导行 x${n146}"; else bad 04 "Rule 46.1 行数=${n146:-0} (期望 ≥2)"; fi

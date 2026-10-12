@@ -28,6 +28,11 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 RLIB="$SKILL_ROOT/review-library"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 42（质量审查技能主动检测与补充）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   RL-09/RL-13 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动（RL-09 的「三级检测顺序=0」
+#   负断言在 discipline 文件同样 0 命中，口径不变）。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SMB="$SKILL_ROOT/scripts/smart-merge-back.sh"
 ICOMP="$SKILL_ROOT/lib/install-companion.sh"
 
@@ -86,14 +91,18 @@ for d in $DIRS; do
   fi
 done
 if [ -z "$misst" ]; then ok 07 "11 个 SKILL.md 四要素标题全在位"; else bad 07 "四要素标题缺失:$misst"; fi
-# RL-08 C30 四级化同步锚（主 SKILL.md）
-c="$(grep -c '| C30 |' "$SKILLMD" || true)"
-q="$(grep -c '四级顺序' "$SKILLMD" || true)"
-if [ "$c" -eq 1 ] && [ "$q" -ge 1 ]; then ok 08 "SKILL.md C30 项 =1 且「四级顺序」$q ≥1"; else bad 08 "SKILL.md C30 项 $c（应 1）或 四级顺序 $q（应 ≥1）"; fi
+# RL-08 [task-v171 核心瘦身] C30 四级化同步锚：C30 合规行随清单表退役 → 卫星路由表 task-discipline 行 + CRIT_D「四级检测顺序」主体锚
+#   现象：SKILL.md 瘦身后 C30 合规行与「四级顺序」字面双双归零（Rule 42 属纪律域，四级化主体措辞在 CRIT_D 42.2），
+#     RL-08 恒 FAIL。
+#   根因：非核心域合规项经卫星路由表行承载（Rule 82 禁回潮）；「四级检测顺序」条款本体在 CRIT_D 42.2（RL-09 同测池主体锚）。
+#   修法：c=路由表 discipline 行 =1（C30 消费面载体）；q=CRIT_D '四级检测顺序' ≥1（四级化主体锚）。
+c="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+q="$(grep -c '四级检测顺序' "$CRIT_D" || true)"
+if [ "$c" -eq 1 ] && [ "$q" -ge 1 ]; then ok 08 "SKILL.md 卫星路由表 discipline 行=1（C30 载体）∧ CRIT_D「四级检测顺序」$q ≥1"; else bad 08 "SKILL.md 路由表 discipline 行 $c（应 1）或 CRIT_D 四级检测顺序 $q（应 ≥1）"; fi
 # RL-09 CRIT 42.2 四级化主体锚 + 三级残留负断言
-pool="$(grep -c 'task-planner 内置 review-library 兜底池' "$CRIT" || true)"
-gap="$(grep '^42\.2' "$CRIT" | grep -c '均未命中=缺口' || true)"
-old="$(grep -c '三级检测顺序' "$CRIT" || true)"
+pool="$(grep -c 'task-planner 内置 review-library 兜底池' "$CRIT_D" || true)"
+gap="$(grep '^42\.2' "$CRIT_D" | grep -c '均未命中=缺口' || true)"
+old="$(grep -c '三级检测顺序' "$CRIT_D" || true)"
 if [ "$pool" -ge 1 ] && [ "$gap" -ge 1 ] && [ "$old" -eq 0 ]; then
   ok 09 "CRIT 42.2 池主体锚 ≥1 / 均未命中=缺口 ≥1 / 三级检测顺序 =0"
 else
@@ -121,13 +130,16 @@ if [ "$s" -ge 1 ] && [ "$u" -ge 1 ] && [ "$v" -ge 1 ]; then
 else
   bad 12 "alignment-review 闸门深化锚漂移（全文扫描 $s 应 ≥1 / 删除或归档 $u 应 ≥1 / 变更范围 $v 应 ≥1）"
 fi
-# RL-13 42.6.3 三要素升级锚（task-v104）
-p="$(grep '^42\.6\.3' "$CRIT" | grep -c '三要素' || true)"
-m="$(grep '^| C32 |' "$SKILLMD" | grep -c '三要素' || true)"
+# RL-13 [task-v171 核心瘦身] 42.6.3 三要素升级锚：C32 合规行随清单表退役 → SKILL Code Review Gate 段（审查消费面现存载体）
+#   现象：SKILL.md 瘦身后 C32 行（三要素消费行）归零，RL-13 恒 FAIL；CRIT_D 42.6.3 行三要素在位（p=1 不变）。
+#   根因：Rule 42 属纪律域；SKILL 侧审查消费面=Code Review Gate 段（Skill("code-review") APPROVED 才可终验交付）。
+#   修法：m=SKILL.md 'Code Review Gate' ≥1（审查消费面载体）；p=CRIT_D 42.6.3 行三要素锚不变。
+p="$(grep '^42\.6\.3' "$CRIT_D" | grep -c '三要素' || true)"
+m="$(grep -c 'Code Review Gate' "$SKILLMD" || true)"
 if [ "$p" -ge 1 ] && [ "$m" -ge 1 ]; then
-  ok 13 "42.6.3 三要素升级锚：CRIT 42.6.3 行三要素 $p ≥1 / SKILL.md C32 行三要素 $m ≥1"
+  ok 13 "42.6.3 三要素升级锚：CRIT 42.6.3 行三要素 $p ≥1 / SKILL.md Code Review Gate 段 $m ≥1（C32 消费行瘦身后由 CR Gate 承载）"
 else
-  bad 13 "42.6.3 三要素升级锚漂移（CRIT 42.6.3 行三要素 $p 应 ≥1 / SKILL.md C32 行三要素 $m 应 ≥1）"
+  bad 13 "42.6.3 三要素升级锚漂移（CRIT 42.6.3 行三要素 $p 应 ≥1 / SKILL.md Code Review Gate $m 应 ≥1）"
 fi
 # RL-14 池成员宿主枚举挂载锚（task-v105）
 a="$(grep -c 'install_pool_links' "$SMB" || true)"

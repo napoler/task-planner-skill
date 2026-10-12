@@ -21,6 +21,11 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 32（用户否决与禁令追踪）与 VT-06 涉及的 Rule 31.5（错误学习闭环
+#   消费侧）均属纪律域，原文已迁至 skills/task-discipline/references/critical-rules-discipline.md
+#   （核心 critical-rules.md 只剩 11 条核心规则）；VT-01..VT-06 的 CRIT 断言改指 CRIT_D，CRIT 保留指向核心。
+#   断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 TPL_NOTEPAD="$SKILL_ROOT/templates/notepad-learnings.md"
@@ -30,23 +35,27 @@ ok()  { PASS=$((PASS+1)); printf 'VT-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'VT-%s FAIL %s\n' "$1" "$2"; }
 
 # VT-01
-if grep -q '^32\.1 ' "$CRIT" && grep '32\.1' "$CRIT" | grep -q '被否决方案'; then ok 01 "32.1 禁令登记"; else bad 01 "32.1 登记缺失"; fi
+if grep -q '^32\.1 ' "$CRIT_D" && grep '32\.1' "$CRIT_D" | grep -q '被否决方案'; then ok 01 "32.1 禁令登记"; else bad 01 "32.1 登记缺失"; fi
 # VT-02
-if grep -q '^32\.2 ' "$CRIT" && grep '32\.2' "$CRIT" | grep -q '禁止进入候选'; then ok 02 "32.2 计划期必查"; else bad 02 "32.2 必查缺失"; fi
+if grep -q '^32\.2 ' "$CRIT_D" && grep '32\.2' "$CRIT_D" | grep -q '禁止进入候选'; then ok 02 "32.2 计划期必查"; else bad 02 "32.2 必查缺失"; fi
 # VT-03
-if grep -q '^32\.3 ' "$CRIT" && grep '32\.3' "$CRIT" | grep -q 'Recommended'; then ok 03 "32.3 执行期消费"; else bad 03 "32.3 消费缺失"; fi
+if grep -q '^32\.3 ' "$CRIT_D" && grep '32\.3' "$CRIT_D" | grep -q 'Recommended'; then ok 03 "32.3 执行期消费"; else bad 03 "32.3 消费缺失"; fi
 # VT-04
-if grep -q '^32\.4 ' "$CRIT" && grep '32\.4' "$CRIT" | grep -q 'veto-lift' && grep '32\.4' "$CRIT" | grep -q '静默改回'; then ok 04 "32.4 解禁条件（两条）"; else bad 04 "32.4 解禁缺失"; fi
+if grep -q '^32\.4 ' "$CRIT_D" && grep '32\.4' "$CRIT_D" | grep -q 'veto-lift' && grep '32\.4' "$CRIT_D" | grep -q '静默改回'; then ok 04 "32.4 解禁条件（两条）"; else bad 04 "32.4 解禁缺失"; fi
 # VT-05
-if grep -q '^32\.5 ' "$CRIT" && grep '32\.5' "$CRIT" | grep -q 'veto_enforce'; then ok 05 "32.5 机制（开关键）"; else bad 05 "32.5 机制缺失"; fi
+if grep -q '^32\.5 ' "$CRIT_D" && grep '32\.5' "$CRIT_D" | grep -q 'veto_enforce'; then ok 05 "32.5 机制（开关键）"; else bad 05 "32.5 机制缺失"; fi
 # VT-06
-if grep '^31\.5 ' "$CRIT" | grep -q '被否决方案'; then ok 06 "31.5 消费侧联动 Rule 32"; else bad 06 "31.5 缺被否决方案联动"; fi
-# VT-07
-if grep -q 'Rule 32' "$SKILLMD" && grep 'Rule 32' "$SKILLMD" | grep -q '用户否决与禁令追踪'; then ok 07 "SKILL.md 摘要行 Rule 32"; else bad 07 "SKILL.md 摘要缺 Rule 32"; fi
-# VT-08
-if grep -q '| C20 |' "$SKILLMD" && grep 'C20' "$SKILLMD" | grep -q '32.2'; then ok 08 "SKILL.md C20 检查项"; else bad 08 "SKILL.md 缺 C20"; fi
-# VT-09
-if grep -q '用户否决登记（Rule 32' "$SKILLMD"; then ok 09 "SKILL.md 用户否决登记指针"; else bad 09 "SKILL.md 缺否决登记指针"; fi
+if grep '^31\.5 ' "$CRIT_D" | grep -q '被否决方案'; then ok 06 "31.5 消费侧联动 Rule 32"; else bad 06 "31.5 缺被否决方案联动"; fi
+# VT-07 [task-v171 核心瘦身] SKILL 摘要行 Rule 32 → 指针段「用户否决」措辞 + CRIT_D Rule 32 标题锚
+#   现象：SKILL.md 瘦身后 Rule 32 摘要 bullet（'Rule 32 用户否决与禁令追踪'）与合规 C20 行移除，VT-07/08 恒 FAIL。
+#   根因：Rule 32 属纪律域；SKILL 侧现存联动=「派发与执行纪律指针」段「用户否决」措辞行（L191）；
+#     条文本体（用户否决与禁令追踪）在 CRIT_D。
+#   修法：VT-07=SKILL 含 '用户否决' ∧ CRIT_D '^### 32 ' 标题含「用户否决」；VT-08=卫星路由表 discipline 行（C20 载体）。
+if grep -q '用户否决' "$SKILLMD" && grep '^### 32 ' "$CRIT_D" | grep -q '用户否决'; then ok 07 "SKILL.md 指针段用户否决措辞 ∧ CRIT_D Rule 32 标题（摘要行瘦身后由指针行+条文承载）"; else bad 07 "SKILL.md 摘要缺 Rule 32 联动面"; fi
+# VT-08 [task-v171 核心瘦身] C20 检查项 → 卫星路由表 task-discipline 行
+if grep -qE '^\| task-discipline \|' "$SKILLMD"; then ok 08 "SKILL.md 卫星路由表 discipline 行（C20 合规面载体）"; else bad 08 "SKILL.md 缺 C20 现载体"; fi
+# VT-09 [task-v171 核心瘦身] 否决登记指针 → SKILL「用户否决」指针 + notepad 模板「🚫 被否决方案」消费段
+if grep -q '用户否决' "$SKILLMD" && grep -q '被否决方案' "$TPL_NOTEPAD"; then ok 09 "SKILL.md 用户否决指针 ∧ notepad 模板被否决方案段（登记链双载体）"; else bad 09 "SKILL.md 缺否决登记指针"; fi
 # VT-10 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元][2026-10-10 task-v158 扩 7x 纪元 1-(3[1-9]|[4-7]x)]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 # [2026-10-11 task-v169 合并级联: Rule 80 落地 1-80 纪元, 末段字符类 4-7x→4-8x（后由 task-v170 精化为 8[01] 尾边界，禁越界放开 82-89）]

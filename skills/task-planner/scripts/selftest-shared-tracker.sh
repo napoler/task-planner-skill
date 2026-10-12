@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-shared-tracker.sh — task-v071: Rule 30 共享内容认领追踪静态守护
 # 守护（与 v063/v068 门控+指针范式一致，复述/追踪为 LLM 行为面无脚本可测，仅防条款误删）:
-#   ST-01 critical-rules.md 含 30.1 识别条件条款（语义锚点: 识别 + 只认领一部分）
+#   ST-01 critical-rules-progress.md 含 30.1 识别条件条款（语义锚点: 识别 + 只认领一部分；[task-v171 2026-10-12] Rule 30 归属 progress-tracker）
 #   ST-02 含 30.2 创建/复用条款（语义锚点: 先查后写 / 不另造文件 / progress-tracker 权威源）
 #   ST-03 含 30.3 认领登记条款（语义锚点: in_progress + done + effect + 禁悬挂）
 #   ST-04 含 30.4 防冲突条款（语义锚点: 重复认领 / D4 询问）
@@ -18,7 +18,11 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: ST-01..05 FAIL(30.1-30.5 子条在核心 critical-rules.md 已不存在)｜
+# 根因: P7 核心瘦身后 Rule 30 归属 progress-tracker, 断言锚仍指核心｜
+# 修法: CRIT 改指 CRIT_PG(progress-tracker/references/critical-rules-progress.md); ST-06..11 目标未动
+#   (SKILL.md 摘要行/检查点/config/模板/协同矩阵/技能探针均不随 Rule 30 文本搬迁)
+CRIT="$SKILL_ROOT/../progress-tracker/references/critical-rules-progress.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 TPL="$SKILL_ROOT/templates/shared-tracker.md"

@@ -35,3 +35,9 @@ description: 成本控制与计费知识库——Rule 17 嵌套 opus Skill 节�
 2. 直接触发：用户说「技能成本」「计费规则」「opus 成本控制」「这次会烧多少 opus」时加载本技能
 
 铁律：只承载知识/模板，不执行节流判定（判定留守主技能与 hook）；不复制 critical-rules.md 条款正文，防止双份漂移。
+
+## 卫星路由：plan-cost-guard — 域=成本控制（Rule 17）
+
+域=成本控制。规则全文见 `references/critical-rules-cost.md`（Rule 17）。
+
+调用条件：涉及 opus 嵌套 Skill 节流/单会话 opus 累计门控/cost_log 记账/成本估算时 Read 该文件。

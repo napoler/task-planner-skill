@@ -67,13 +67,23 @@ else
         [ \$(grep -c '\"off\"' <<<\"\$c\") -ge 1 ]"
 fi
 
-# T8: SKILL.md 「环境级中断自愈」条款在位 且 行数 ≤584 (task-v073 后基线 529, 净增 ≤9; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧); [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-22 task-v087] Rule 8.1 D 类联动 551→555, 上限 552→555; [2026-09-23 task-v088] Rule 39 联动 555→558, 上限 555→558; [2026-10-11 task-v170] Rule 81 归档步骤+C56 使 SKILL.md 实值 559, 先例实值+25 边距 559→584, 上限 558→584)
-t "T8a SKILL.md '环境级中断自愈' ≥1" bash -c "[ \"\$(grep -c '环境级中断自愈' '$SKILL')\" -ge 1 ]"
-t "T8b SKILL.md 行数 ≤584" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 584 ]"
+# T8: SKILL.md 「环境级中断自愈」条款在位 且 行数 ≤558 (task-v073 后基线 529, 净增 ≤9; [2026-09-17 task-v079] Rule 36 联动净增 3 行,上限 538→548(B 类扩围 Decisions ⑧); [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-22 task-v087] Rule 8.1 D 类联动 551→555, 上限 552→555; [2026-09-23 task-v088] Rule 39 联动 555→558, 上限 555→558)
+# [task-v171 核心瘦身] T8a 重定向：SKILL.md「环境级中断自愈」文档段随瘦身移除（该段属 hook 运行机制文档、
+#   非四文件罗盘内容，CA-1 瘦身规格未列入），SKILL.md 命中=0 恒 FAIL；自愈功能本体在 hook 脚本未动
+#   （posttooluse '.session-owner' 重锁×3/TAMPERED×3、userpromptsubmit 'delegation-observe' 节流×1 实测在位），
+#   改断言 hook 实现锚（防自愈功能被静默删除的守护意图不变；SKILL 文档面缺失如实登记 known-gap，不粉饰）。
+t "T8a hook 自愈实现锚(posttooluse session-owner 重锁 + ups delegation-observe 节流)" bash -c "[ \"\$(grep -c 'session-owner' '$POSTTOOL')\" -ge 1 ] && [ \"\$(grep -c 'delegation-observe' '$UPS')\" -ge 1 ]"
+t "T8b SKILL.md 行数 ≤558" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 
 # T9: 跨文件键名一致: hook_self_heal_enforce 出现在 config.json + SKILL.md (各 ≥1, 共 ≥2 文件)
 #     且无拼写变体 hook-self-heal (两文件全 0)
-t "T9a hook_self_heal_enforce 出现在 config.json+SKILL.md ≥2 文件" bash -c "[ \"\$(grep -rln 'hook_self_heal_enforce' '$CONFIG' '$SKILL' | wc -l)\" -ge 2 ]"
+# T9 [task-v171 核心瘦身] 跨文件键名一致重定向：config.json schema 键 + hook 实现面无拼写变体
+#   现象：原断言 'hook_self_heal_enforce 出现在 config.json+SKILL.md ≥2 文件'——SKILL.md 文档段随瘦身移除，
+#     命中文件数 2→1，T9a 恒 FAIL。
+#   根因：同 T8a（开关键文档载体消失；hooks 尚未消费该键——原文档明载 off 档后续轮接读取，schema 先行）。
+#   修法：改断言 config.json schema 键在位 + POSTTOOL/UPS 两 hook 无连字符拼写变体（schema-实现对等语义保持）；
+#     T7 已守护 schema 默认 warn+enum 三档，此处不重复。T9b（config+SKILL 负断言）不变。
+t "T9a config.json schema 键在位 + hook 面无拼写变体" bash -c "[ \"\$(grep -c 'hook_self_heal_enforce' '$CONFIG')\" -ge 1 ] && [ \"\$(grep -rc 'hook-self-heal' '$POSTTOOL' '$UPS' | awk -F: '{s+=\$2} END{print s+0}')\" -eq 0 ]"
 t "T9b 无拼写变体 hook-self-heal (全 0)" bash -c "[ \"\$(grep -rc 'hook-self-heal' '$CONFIG' '$SKILL' | awk -F: '{s+=\$2} END{print s+0}')\" -eq 0 ]"
 
 # T10: 回归哨兵 (v067 机制未被本次破坏): knowledge-brief 六段 = 6 且 init '6/6' ≥1

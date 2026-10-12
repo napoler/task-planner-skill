@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # selftest-template-lifecycle.sh — task-v074 P4-S2: Rule 34 模板生命周期静态守护
+# [task-v171 2026-10-12 锚修复] Rule 34/37 随模板域收编入 plan-template-kit（条款断言 target=CRIT_T）；Rule 48 随纪律域
+#   收编入 task-discipline（TL-24 target=CRIT_D）；SKILL 联动断言 target=核心卫星路由表行（TL-14）+ plan-template-kit
+#   SKILL.md（TL-15）+ task-discipline SKILL.md（TL-23）。守护面语义零改动，详见锚定义处注释。
 # 守护（门控+指针范式, 34.3/34.4 沉淀执行为 LLM 行为面无脚本可测, 仅防条款误删+2 条行为级）:
-#   TL-01 critical-rules.md 含 Rule 34 头（### 34 模板生命周期）
+#   TL-01 critical-rules-template.md 含 Rule 34 头（### 34 模板生命周期）
 #   TL-02 含 34.1 选取门控（check-template-type.sh + 白名单动态派生 + general）
 #   TL-03 含 34.2 四点同步（template-mapping/plan-writer/SKILL/template-guide 四落点）
 #   TL-04 含 34.3 沉淀触发三条件（INDEX+ledger / 类型空缺 / 用户点名）
@@ -23,8 +26,8 @@
 #   TL-20 [task-v112] SKILL.md 含 delivery-summary 指针行 ≥2 处（终验交付段指针 + References 表行）
 #   TL-21 [task-v112] plan-template-kit/references/template-guide.md 口径句含 delivery-summary.md（不入口径表述在位）
 #   TL-22 [task-v123] templates/delivery-summary.md 可定位性硬规则三锚在位（Rule 48.5: 可定位性硬规则/反模式/定位三要素）
-#   TL-23 [task-v123] SKILL.md 终验段含「可定位性（Rule 48）」括注锚（Rule 48.5 机制）
-#   TL-24 [task-v123] critical-rules.md Rule 48 子条 ≥5 且 48.5「零新 config 键」声明在位（Rule 48.5 机制）
+#   TL-23 [task-v123] [task-v171 锚修复] task-discipline SKILL.md 规则索引含 Rule 48 可定位性行（Rule 48.5 机制）
+#   TL-24 [task-v123] [task-v171 锚修复] task-discipline critical-rules Rule 48 子条 ≥5 且 48.5「零新 config 键」声明在位（Rule 48.5 机制）
 # 24 断言全 PASS exit 0; 任一 FAIL exit 1。行为级 2 条测试产物在 mktemp 目录, 用完即清理。
 
 set -u
@@ -32,6 +35,19 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 分层收编 2026-10-12 锚修复] 现象: TL-01..07/14/15/23/24 FAIL（grep 目标核心 critical-rules.md/SKILL.md 已无目标文本）｜
+# 根因: Rule 34/37 随模板域收编入 plan-template-kit（S25）；Rule 48 随纪律域收编入 task-discipline（S18）；
+#   核心 SKILL.md 瘦身（S33）删除 C22 合规行、「模板选取门控与沉淀」段、「可定位性（Rule 48）」括注（Rule 82）｜
+# 修法（只改断言 target，断言语义零改动——守护面=规则条款层+SKILL 消费层在位）:
+#   TL-01..07 条款断言改指 CRIT_T（critical-rules-template.md:11-21，逐字 verified）；
+#   TL-24 Rule 48 子条+零新键声明改指 CRIT_D（critical-rules-discipline.md:208/216，verified）；
+#   TL-14 改指核心 SKILL.md 卫星路由表 plan-template-kit 行（原 C22 合规行后继面）；
+#   TL-15 改指 plan-template-kit SKILL.md「沉淀指针（Rule 34）」段（原核心「模板选取门控与沉淀」段后继面）；
+#   TL-23 改指 task-discipline SKILL.md 规则索引「| 48 | 交付总结可定位性…」行（原核心 SKILL 可定位性括注后继面）。
+CRIT_T="$SKILL_ROOT/../plan-template-kit/references/critical-rules-template.md"
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
+TPL_SKILL="$SKILL_ROOT/../plan-template-kit/SKILL.md"
+DISC_SKILL="$SKILL_ROOT/../task-discipline/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 CTT="$SKILL_ROOT/scripts/check-template-type.sh"
 ATTEST="$SKILL_ROOT/scripts/attest-plan.sh"
@@ -44,20 +60,20 @@ ok()  { PASS=$((PASS+1)); printf 'TL-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'TL-%s FAIL %s\n' "$1" "$2"; }
 
 # TL-01
-if grep -q '^### 34 模板生命周期' "$CRIT"; then ok 01 "Rule 34 头"; else bad 01 "Rule 34 头缺失"; fi
+if grep -q '^### 34 模板生命周期' "$CRIT_T"; then ok 01 "Rule 34 头"; else bad 01 "Rule 34 头缺失"; fi
 # TL-02
-if grep '^34\.1 ' "$CRIT" | grep -q 'check-template-type' && grep '^34\.1 ' "$CRIT" | grep -q 'general'; then ok 02 "34.1 选取门控"; else bad 02 "34.1 门控缺失"; fi
+if grep '^34\.1 ' "$CRIT_T" | grep -q 'check-template-type' && grep '^34\.1 ' "$CRIT_T" | grep -q 'general'; then ok 02 "34.1 选取门控"; else bad 02 "34.1 门控缺失"; fi
 # TL-03
-if grep '^34\.2 ' "$CRIT" | grep -q '四点同步' && grep '^34\.2 ' "$CRIT" | grep -q 'template-mapping' && grep '^34\.2 ' "$CRIT" | grep -q 'plan-writer' && grep '^34\.2 ' "$CRIT" | grep -q 'template-guide'; then ok 03 "34.2 四点同步"; else bad 03 "34.2 同步纪律缺失"; fi
+if grep '^34\.2 ' "$CRIT_T" | grep -q '四点同步' && grep '^34\.2 ' "$CRIT_T" | grep -q 'template-mapping' && grep '^34\.2 ' "$CRIT_T" | grep -q 'plan-writer' && grep '^34\.2 ' "$CRIT_T" | grep -q 'template-guide'; then ok 03 "34.2 四点同步"; else bad 03 "34.2 同步纪律缺失"; fi
 # TL-04
-r343="$(grep '^34\.3 ' "$CRIT")"
+r343="$(grep '^34\.3 ' "$CRIT_T")"
 if printf '%s' "$r343" | grep -q 'INDEX.md' && printf '%s' "$r343" | grep -q 'ledger' && printf '%s' "$r343" | grep -q '点名'; then ok 04 "34.3 沉淀触发三条件"; else bad 04 "34.3 触发条件缺失"; fi
 # TL-05
-if grep '^34\.4 ' "$CRIT" | grep -q '≤100 行' && grep '^34\.4 ' "$CRIT" | grep -q 'Decisions Made'; then ok 05 "34.4 沉淀流程（≤100 行+登记）"; else bad 05 "34.4 沉淀流程缺失"; fi
+if grep '^34\.4 ' "$CRIT_T" | grep -q '≤100 行' && grep '^34\.4 ' "$CRIT_T" | grep -q 'Decisions Made'; then ok 05 "34.4 沉淀流程（≤100 行+登记）"; else bad 05 "34.4 沉淀流程缺失"; fi
 # TL-06
-if grep '^34\.5 ' "$CRIT" | grep -q '查重' && grep '^34\.5 ' "$CRIT" | grep -q '禁重复沉淀'; then ok 06 "34.5 防滥用（查重）"; else bad 06 "34.5 防滥用缺失"; fi
+if grep '^34\.5 ' "$CRIT_T" | grep -q '查重' && grep '^34\.5 ' "$CRIT_T" | grep -q '禁重复沉淀'; then ok 06 "34.5 防滥用（查重）"; else bad 06 "34.5 防滥用缺失"; fi
 # TL-07
-if grep '^34\.6 ' "$CRIT" | grep -q 'template_gate_enforce' && grep '^34\.6 ' "$CRIT" | grep -q 'check-template-type' && grep '^34\.6 ' "$CRIT" | grep -q 'selftest-template-lifecycle'; then ok 07 "34.6 机制（开关键+门控+selftest）"; else bad 07 "34.6 机制缺失"; fi
+if grep '^34\.6 ' "$CRIT_T" | grep -q 'template_gate_enforce' && grep '^34\.6 ' "$CRIT_T" | grep -q 'check-template-type' && grep '^34\.6 ' "$CRIT_T" | grep -q 'selftest-template-lifecycle'; then ok 07 "34.6 机制（开关键+门控+selftest）"; else bad 07 "34.6 机制缺失"; fi
 # TL-08
 if jq -e '.properties.template_gate_enforce | .default=="warn" and ((.enum|sort)|. == ["enforce","off","warn"])' "$CONFIG" >/dev/null 2>&1; then
   ok 08 "config.json template_gate_enforce（warn 默认+三档）"
@@ -79,9 +95,14 @@ if bash "$CTT" "$T/plan-bugfix.md" >/dev/null 2>&1; then ok 12 "行为: bugfix �
 if bash "$CTT" "$T/plan-bad.md" >/dev/null 2>&1; then bad 13 "行为: nonexistent 计划应 exit 1 却 exit 0"; else ok 13 "行为: nonexistent 计划 exit 1"; fi
 rm -rf "$T"
 # TL-14
-if grep -q '^| C22 ' "$SKILL"; then ok 14 "SKILL.md 检查清单 C22 行"; else bad 14 "SKILL.md 缺 C22 行"; fi
+# [task-v171 2026-10-12 锚修复] 原行为=核心 SKILL.md grep「| C22 |」检查清单行；C 清单随 S33 瘦身删除，
+# 后继权威面=核心 SKILL.md 卫星路由表 plan-template-kit 行（「模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38）」）。
+# 语义不变（核心 SKILL 对 Rule 34 模板生命周期的路由落位在位）。
+if grep -q '模板选取/沉淀入库' "$SKILL"; then ok 14 "核心 SKILL.md 卫星路由表 plan-template-kit 行（Rule 34 落位）"; else bad 14 "核心 SKILL.md 卫星路由表缺 plan-template-kit 行（Rule 34 落位）"; fi
 # TL-15
-if grep -q '模板选取门控与沉淀' "$SKILL"; then ok 15 "SKILL.md「模板选取门控与沉淀」段"; else bad 15 "SKILL.md 缺「模板选取门控与沉淀」段"; fi
+# [task-v171 2026-10-12 锚修复] 原行为=核心 SKILL.md grep「模板选取门控与沉淀」联动段；S33 瘦身后非核心域展开禁入核心（Rule 82），
+# 后继权威面=plan-template-kit SKILL.md「沉淀指针（Rule 34）」段（模板生命周期域的 SKILL 消费面）。语义不变（模板门控与沉淀联动段在位）。
+if grep -q '沉淀指针（Rule 34）' "$TPL_SKILL"; then ok 15 "plan-template-kit SKILL.md「沉淀指针（Rule 34）」段"; else bad 15 "plan-template-kit SKILL.md 缺「沉淀指针（Rule 34）」段"; fi
 # TL-16
 if grep -q 'check-template-type' "$TMAP" && grep -q 'Rule 34' "$TMAP"; then ok 16 "template-mapping.md Rule 34 门控提示"; else bad 16 "template-mapping.md 缺 Rule 34 门控提示"; fi
 # TL-17
@@ -100,9 +121,14 @@ if grep -q 'delivery-summary.md' "$TGUIDE"; then ok 21 "template-guide.md 口径
 # TL-22 [task-v123] delivery-summary.md 可定位性硬规则三锚（Rule 48.5）
 if [ -f "$TDEL" ] && grep -q '可定位性硬规则' "$TDEL" && grep -q '反模式' "$TDEL" && grep -q '定位三要素' "$TDEL"; then ok 22 "delivery-summary.md 三锚（硬规则/反模式/定位三要素）在位"; else bad 22 "delivery-summary.md 缺可定位性锚（硬规则/反模式/定位三要素）"; fi
 # TL-23 [task-v123] SKILL.md 终验段可定位性括注锚
-if grep -q '可定位性（Rule 48）' "$SKILL"; then ok 23 "SKILL.md 含可定位性（Rule 48）括注"; else bad 23 "SKILL.md 缺可定位性（Rule 48）括注"; fi
+# [task-v171 2026-10-12 锚修复] 原行为=核心 SKILL.md grep「可定位性（Rule 48）」括注；Rule 48 随纪律域收编入 task-discipline，
+# S33 后该括注不在核心 SKILL（Rule 82），后继权威面=task-discipline SKILL.md 规则索引「| 48 | 交付总结可定位性与实用性」行。
+# 语义不变（Rule 48 可定位性机制在归属域 SKILL 的索引落位在位）。
+if grep -E '^\| 48 ' "$DISC_SKILL" | grep -q '可定位性'; then ok 23 "task-discipline SKILL.md 规则索引「| 48 | 交付总结可定位性」行"; else bad 23 "task-discipline SKILL.md 规则索引缺 Rule 48 可定位性行"; fi
 # TL-24 [task-v123] critical-rules.md Rule 48 子条 ≥5 + 零新键声明
-if [ "$(grep -cE '^48\.[1-5]' "$CRIT")" -ge 5 ] && grep -q '48\.5.*零新 config 键' "$CRIT"; then ok 24 "Rule 48 子条≥5 且 48.5 零新键声明在位"; else bad 24 "Rule 48 子条不足或零新键声明缺失"; fi
+# [task-v171 2026-10-12 锚修复] 原行为=核心 critical-rules.md grep Rule 48 子条/零新键声明；Rule 48 随纪律域收编入
+#   task-discipline（critical-rules-discipline.md:208），条款断言改指 CRIT_D。语义零改动（48.1-48.5 五子条+零新键声明在位）。
+if [ "$(grep -cE '^48\.[1-5]' "$CRIT_D")" -ge 5 ] && grep -q '48\.5.*零新 config 键' "$CRIT_D"; then ok 24 "Rule 48 子条≥5 且 48.5 零新键声明在位（task-discipline 域）"; else bad 24 "Rule 48 子条不足或零新键声明缺失"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

@@ -18,7 +18,10 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 媒体域搬迁] Rule 50（内容要求权重分级与评级）属 media-planner 域，原文已迁至
+#   skills/media-planner/references/critical-rules-media.md；本脚本 CRIT 全部用法（L34 标题/L44 子条/L51 泪痣例）
+#   均为 Rule 50 断言、无核心域用途（已逐行核实），CRIT 改指媒体域文件，断言语义零改动。
+CRIT="$SKILL_ROOT/../media-planner/references/critical-rules-media.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 GATE="$SKILL_ROOT/references/goal-gate.md"
 TPL="$SKILL_ROOT/templates/variant"
@@ -83,15 +86,16 @@ else
   bad 05 "goal-gate.md '分级'∧'Rule 50' 双锚缺失（验收门控未联动 Rule 50）"
 fi
 
-# RG-06 SKILL.md 路由面锚 `grep -q '1-50'` ∧ `grep -c 'Rule 50'` ≥2
-# What：断言 SKILL.md 含全集行 '1-50'（Critical Rules 全集扩号到 50）且 'Rule 50' 命中 ≥2 处（摘要 bullet + 路由/正文消费点）。
-# Why：'1-50' 缺失 = 全集行未扩号（LLM 读到 1-49 全集即认为 50 不存在）；'Rule 50' 命中 <2 = 摘要与消费点至少一处脱钩
-#      （防 49 范式同类级联断链：条款扩到 50 但 SKILL.md 面停摆）。
-if grep -q '1-5[0-9]' "$SKILLMD" && [ "$(grep -c 'Rule 50' "$SKILLMD" || true)" -ge 2 ]; then
-  ok 06 "SKILL.md '1-5[0-9]' 在位 ∧ 'Rule 50' 命中 ≥2"
+# RG-06 [task-v171 核心瘦身+task-v170 纪元并集] SKILL.md 路由面锚：全集 '1-8[01]' ≥1 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter 卫星行+卫星路由表行）
+#   现象：SKILL.md 瘦身后全集行 '1-5x' 演进为 '1-80'、'Rule 50' 整串引用归零（Rule 50 属媒体域，SKILL 侧仅存
+#     frontmatter 卫星技能行与卫星路由表行的 'Rule 47,49,50' 枚举，实测各 1 处合计 2），RG-06 恒 FAIL。
+#   根因：非核心域规则摘要 bullet 随瘦身移除；SKILL 侧路由面=frontmatter+路由表双载体。
+#   修法：全集锚改 '1-80'；路由面锚改 'Rule 47,49,50' 枚举 ≥2（双载体缺一即 FAIL，守护语义不降）。
+if grep -q '1-8[01]' "$SKILLMD" && [ "$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)" -ge 2 ]; then
+  ok 06 "SKILL.md 全集 '1-8[01]' 在位 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter+路由表双载体）"
 else
-  n="$(grep -c 'Rule 50' "$SKILLMD" || true)"
-  bad 06 "SKILL.md 路由面锚缺失（'1-5[0-9]' 或 'Rule 50' 命中=$n <2）"
+  n="$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)"
+  bad 06 "SKILL.md 路由面锚缺失（'1-8[01]' 或 'Rule 47,49,50' 命中=$n <2）"
 fi
 
 # RG-07 零新 config 键——properties 键数 = 42（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）

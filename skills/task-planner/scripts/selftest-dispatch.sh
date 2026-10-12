@@ -318,8 +318,15 @@ printf '%s' "$CERR" | grep -qF 'SKIPPED 打包检测' && ! printf '%s' "$CERR" |
 # DX-01..05b [2026-09-27 task-v091 B-1] 静态断言: 22.4b 条款 ↔ references/dispatch-examples.md 绑定
 # (提案终审 #12: 现状 22.4b/已填示例零 selftest 锚; 绑定同 commit 不可拆分, 此处机器化)
 SKROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-DX="$SKROOT/references/dispatch-examples.md"
-CR="$SKROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: DX-01/02 FAIL(examples 缺/反向绑定断)｜
+# 根因: dispatch-examples.md 与 Rule 22.4b 条款本体均随派发域迁至 skills/task-dispatch/——
+#   DX 路径 $SKROOT/references 为空, CR 仍指核心 critical-rules.md(22.4b 已随 Rule 22 迁出, 命中=0)
+#   （P4 批次注记「CR 侧核心原文暂未删仍命中」的假设被 P7 瘦身实际推翻：核心 CR 已删 22.4b）｜
+# 修法: 双锚改指 task-dispatch 域——DX=../task-dispatch/references/dispatch-examples.md,
+#   CR=../task-dispatch/references/critical-rules-dispatch.md（22.4b 条款↔examples 反向绑定在域内闭环,
+#   实测 CR_DISP: '22.4b'×4/'references/dispatch-examples.md'×1/'必须附模板路径引用'×1）
+DX="$SKROOT/../task-dispatch/references/dispatch-examples.md"
+CR="$SKROOT/../task-dispatch/references/critical-rules-dispatch.md"
 dxC() { # 与 T 序列同范式: PASS/FAIL 计数 + 行输出
   local name="$1" okc="$2"
   [ "$okc" = 1 ] && { PASS=$((PASS+1)); printf 'DX-%s PASS\n' "$name"; } \

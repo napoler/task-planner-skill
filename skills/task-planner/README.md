@@ -1,6 +1,7 @@
 # task-planner — 任务规划与漂移检测技能
 
-> **多工具架构 v2（2026-08-29）**：canonical source + per-tool stub 适配，零内容重复，env-var 路径解析。
+> **多工具架构 v2（2026-08-29）**：canonical source + per-tool 部署位同步，env-var 路径解析。
+> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 214 行）；76 条既有规则按域分层至 10 卫星技能（3 新域 + 7 收编），卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）。
 
 ## 快速链接
 
@@ -13,14 +14,71 @@
 
 ## 概述
 
-结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测。
+结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测；2026-10-12 起为「核心 + 10 卫星」技能家族形态。
 
 **核心特性**：
 - **5 个生命周期 hook**：SessionStart（哨兵）/ PreToolUse（范围阻断 + 委派门控 + Agent 派发契约守卫，matcher 须含 Agent）/ PostToolUse（计划陈旧检测）/ UserPromptSubmit（新指令影响判定）/ Stop（完成检测）
 - **原生 Todo 双向同步**：S1-S5 强制同步时机（计划文档 ↔ TodoWrite/Task 系统）
-- **漂移检测**：每 phase 完成后自动派发 `drift-checker` 子代理（Rule 61 载体；task-drift-guard skill 保留交互场景）
+- **漂移检测**：每 phase 完成后自动派发 `drift-checker` 子代理（Rule 61 载体，规则全文在卫星 `task-drift-guard`）
 - **工作树隔离**：实现类任务默认首选 worktree（防改坏运行中基础设施）
-- **场景化模板**：29 个 variant 模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration + mini-lite/rule-enhancement/video/video-fix/memory-hygiene + image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly；task-v115 videop1 回流 12 类；不匹配时回退通用 task_plan.md）按 `template_type` 字段自动分发；除 knowledge-brief/shared-tracker/mini-lite 外统一含「📚 必要知识储备」章节（任务知识库对齐，grep 锚实测 35/39）
+- **场景化模板**：13 个主模板 + 29 个 variant（2026-10-12 实测；variant 28/29 含「📚 必要知识储备」章节）按 `template_type` 字段自动分发
+- **技能家族分层**：核心 = 四文件罗盘唯一管理域；派发/纪律/媒体/模板/调研/协同等域规则按卫星分流，见下方分层图与路由表
+
+---
+
+## 技能分层图：核心 + 10 卫星技能
+
+> 10 技能分层图 = 核心 task-planner + 3 新域卫星（task-dispatch / task-discipline / media-planner）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard），共 11 个技能节点（核心 1 + 卫星 10）。
+
+```
+                    ┌───────────────────────────────────────────────┐
+                    │ 核心 task-planner = 四文件罗盘唯一管理域         │
+                    │ Rules 1-80 全集索引：核心在位 12 条             │
+                    │（1,2,3,5,19,20,26,51,62,66,80,82）              │
+                    └──────────────┬────────────────────────────────┘
+                                   │ SKILL.md 文末「卫星路由表」按需 Read 规则全文
+        ┌──────────────────────────┼───────────────────────────┐
+        ▼ 新域卫星 ×3（task-v171 新建）                            ▼ 收编卫星 ×7（既有 skill 收编规则全文）
+┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+│ task-dispatch      │ │ task-discipline    │ │ media-planner      │
+│ 子代理派发与拆分调度 │ │ 执行纪律与工作      │ │ 媒体制作任务派发    │
+│ Rule 12,13,14,21,  │ │ Rule 4,6,7,8,9,10, │ │ Rule 47,49,50      │
+│ 22,23,25,46,52,    │ │ 18,27-36,41-45,48, │ │                    │
+│ 59,68（11 条）      │ │ 53-57,60,65,67,    │ │                    │
+│                    │ │ 69-76（36 条）       │ │                    │
+└────────────────────┘ └────────────────────┘ └────────────────────┘
+┌──────────────┐┌──────────────┐┌──────────────┐┌──────────────┐┌──────────────┐
+│plan-research ││plan-template ││plan-collab   ││plan-cost     ││plan-resume   │
+│-router       ││-kit          ││-router       ││-guard        ││              │
+│Rule 58,63,75 ││Rule 16,34,   ││Rule 39,40    ││Rule 17       ││Rule 24       │
+│              ││37,38         ││              ││              ││              │
+└──────────────┘└──────────────┘└──────────────┘└──────────────┘└──────────────┘
+┌──────────────┐┌──────────────┐
+│progress-     ││task-drift-   │
+│tracker       ││guard         │
+│Rule 30       ││Rule 11,15,   │
+│              ││61,64         │
+└──────────────┘└──────────────┘
+```
+
+## 卫星路由表（10 卫星 — 非核心域规则全文按需 Read）
+
+| 卫星 | 域 | 规则全文路径 | 调用条件 |
+|------|----|------------|---------|
+| task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
+| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31-36,41-45,48,53-57,60,65,67,69-76） |
+| media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
+| plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
+| plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
+| plan-collab-router | 技能协同与工具面选择 | `../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40） |
+| plan-cost-guard | 成本控制 | `../plan-cost-guard/references/critical-rules-cost.md` | opus 频次/嵌套成本/成本门控（Rule 17） |
+| plan-resume | 计划续推 | `../plan-resume/references/critical-rules-resume.md` | 交付终态/会话恢复触发点扫描与自主续推（Rule 24） |
+| progress-tracker | 共享内容认领 | `../progress-tracker/references/critical-rules-progress.md` | 跨任务共享内容认领追踪/进度复用（Rule 30） |
+| task-drift-guard | 漂移检测与偏移留痕 | `../task-drift-guard/references/critical-rules-drift.md` | 漂移检测/偏移检查子代理化/周期回顾节奏（Rule 11,15,61,64） |
+
+## Critical Rules 指针
+
+Rules 1-80 全集索引：**核心在位 12 条**（1,2,3,5,19,20,26,51,62,66,80,82）全文见 `references/critical-rules.md`（165 行，2026-10-12 实测；含分层架构说明+卫星路由索引）；其余 66 条已按域迁至上表 10 卫星——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 
 ---
 
@@ -29,13 +87,13 @@
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ canonical source: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                    │
-│   (独立 git 仓库, 18 顶层条目)                           │
-│   - SKILL.md (剥除 hooks)                                │
-│   - references/  (10 篇规则)                             │
-│   - templates/   (11 核心 + 29 variant)                  │
-│   - scripts/     (96 个 .sh 含 62 selftest)              │
+│   (独立 git 仓库, 17 顶层条目)                           │
+│   - SKILL.md (214 行, hooks 字段已剥除)                   │
+│   - references/  (6 篇规则)                              │
+│   - templates/   (13 主模板 + 29 variant)                │
+│   - scripts/     (119 条目 = 110 .sh 含 76 selftest)     │
 │   - lib/         (6 个 installer 脚本)                   │
-│   - tests/       (smoke.sh 17/17 pass)                   │
+│   - tests/       (smoke.sh)                             │
 │   - install.sh / uninstall.sh                            │
 └──────────────────┬───────────────────────────────────────┘
                    │  rsync + sed-rewrite
@@ -45,19 +103,12 @@
   /skills/    /skills/   opencode/    /skills/    /skills/
   task-planner/          skills/
                           task-planner/
-  (thin shell + content rsync)
+  (部署位 SKILL.md = 生成的 hook 薄壳 + 内容引用表; 其余为全量副本)
 ```
 
-> [2026-10-05 task-v131 审计 L-5 修正] opencode 物理部署位 = `~/.config/opencode/skills/task-planner`；
-> `~/.opencode` 为其 symlink 兼容入口（实测 `~/.opencode -> ~/.config/opencode`）。
-> 原行为=上图仅写 `~/.opencode` symlink 路径，未标注物理路径。
+> [2026-10-05 task-v131 审计 L-5 修正] opencode 物理部署位 = `~/.config/opencode/skills/task-planner`；`~/.opencode` 为其 symlink 兼容入口（实测 `~/.opencode -> ~/.config/opencode`）。
 
-每个工具的 stub：
-- **SKILL.md** 薄壳（< 4KB）— 仅声明该平台 hook 格式
-- **scripts/** rsync 副本 + 路径改写为 `${TASK_PLANNER_ROOT:-...}`
-- **references/ + templates/** 直接 rsync（与 canonical 一致）
-
-升级流程：`cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && git pull` → 所有 stub 自动生效。
+**卫星技能随装**（2026-10-12 task-v171 S39 起）：`lib/install-stub.sh:41` `SATELLITE_SKILLS` 数组登记 7 个卫星（4 既有 + 3 新域），安装时整目录 rsync 到各宿主位同级 `skills/<sat>/`；另 3 个收编卫星经 `lib/install-companion.sh` 顶层 `skills/*/` 自动发现机制分发。
 
 ---
 
@@ -65,60 +116,48 @@
 
 ```
 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
-├── SKILL.md                                 ← 工具无关主文档（hooks 字段已剥除）
-├── config.json                              ← 阈值配置（42 键）
+├── SKILL.md                                 ← 工具无关主文档（214 行; hooks 字段为空, 文末含 10 卫星路由表）
+├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
-├── references/                              ← 10 篇规则文档（实测 10：13 篇基线中 template-mapping/template-guide/billing 等 3 篇已迁出至卫星） <!-- 2026-10-08 task-v149 对齐实态 -->
-│   ├── critical-rules.md                    # Rules 1-69（1-12 核心执行约束 + 13-35 P0/P1 扩展门控与学习/防倒退/结论纪律闭环 + 36-39 技能修改保守化/任务类型画像/难度分级/动态工作流 + 40-43 工具面/问题消解/质量审查/执行可靠性 + 44-45 用户选择点/注释规范 + 46-50 子代理专注/媒体派发/交付总结/并行推进/内容分级 + 51-58 需求覆盖/执行体专业化/根源解决/执行诚实/可复用能力/用户指令/迭代测试/调研证据 + 59-62 拆分粒度/主动解决/偏移检查/四文件罗盘 + 63-65 检索优先/偏移留痕/周期性回顾 + 66 goal 单元固化与 /goal 驱动推进纪律 + 67 上下文压力主动评估与会话交接 + 68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性 + 69 判断裁决子代理化与驳回打回） <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态（CR F6/F7 级联：计数 1-65→1-68，括注尾段同步） --> <!-- 2026-10-10 task-v154 合并并集演进 1-68→1-69 -->
+├── references/                              ← 6 篇规则文档（2026-10-12 task-v171 拆分后实测; 纪律/派发/媒体域规则已迁至卫星）
+│   ├── critical-rules.md                    # 核心域 12 条规则全文+Rules 1-80 全集索引+分层架构说明
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
-│   ├── [template-mapping.md → ../plan-template-kit/references/template-mapping.md]
-│   ├── [template-guide.md → ../plan-template-kit/references/template-guide.md]
-│   ├── goal-gate.md / completion-gate.md
-│   └── [billing.md → ../plan-cost-guard/references/billing.md]
-├── templates/                               ← 11 核心 + 29 个 variant <!-- 2026-10-10 task-v152 对齐实态 -->
+│   ├── goal-gate.md / completion-gate.md / methodology.md
+│   └── [critical-rules-discipline 等 66 条规则 → 各卫星 references/critical-rules-*.md]
+├── templates/                               ← 13 主模板 + 29 个 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
-│   └── variant/
-│       ├── research-type.md                 # 调研任务
-│       ├── writing-type.md                  # 写作任务
-│       ├── diagnostic-type.md               # 诊断/修复
-│       └── publish-type.md                  # 发布/集成
-├── scripts/                                 ← 96 个 .sh（含 62 selftest）
+│   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md
+│   └── variant/                             ← 场景化变体（28/29 含「📚 必要知识储备」章节）
+├── scripts/                                 ← 119 条目（110 .sh 含 76 个 selftest-*.sh + .ps1/.cjs/.ts/.tsv + lib//capabilities/ 子目录）
+│   ├── run-selftests.sh                     # 全量 selftest 回归统一入口（--fresh 忽略缓存全量重跑）
 │   ├── check-complete.sh / .ps1             # Stop hook 完成检测
 │   ├── check-conflicts.sh                   # git 冲突分析
 │   ├── check-doc-sync.sh                    # 计划陈旧度检测
 │   ├── check-drift.sh                       # 漂移检测
 │   ├── check-scope.sh                       # PreToolUse 范围阻断
 │   ├── init-session.sh / .ps1               # 计划初始化
-│   ├── plan-created.cjs                     # 哨兵清除（本会话 side + legacy 双清除，含计划存在性验证）
+│   ├── plan-created.cjs                     # 哨兵清除（side + legacy 双清除, 含存在性验证）
 │   ├── session-catchup.ts                   # 中断恢复
-│   ├── sync-ide-folders.ts                  # IDE 折叠区同步
 │   ├── sync-todos.sh                        # Phase ↔ Todo 同步
 │   ├── task-plan-init.cjs                   # SessionStart 会话私有哨兵（plans/.plan_required_side/<sidkey>.plan_required）
-│   ├── zcode-{sessionstart,pretooluse,posttooluse,userpromptsubmit}.sh  # ZCode 适配器
-│   ├── plan-doctor.sh                       # 计划机制一键自检（移植自 planning-with-files v3）
-│   ├── resolve-plan-dir.sh                  # 解析活跃计划 task_plan.md 路径（可选第 2 参 sid：.active_plan_side/<sid>.active_plan 会话层指针 TTL 24h → 全局 fallback .active_plan（工作树内瞬态兜底）→ mtime 最新；slug 校验）
-│   ├── set-active-plan.sh                   # 会话私有指针 .active_plan_side/<sid>.active_plan + 全局 fallback .active_plan (set/gc/--show)
-│   # [2026-10-10 task-v164] 上两行原措辞以 legacy 描述该层，改述为「全局 fallback」：实为工作树内瞬态兜底（路径随 $PWD 本地化；git rm --cached+.gitignore，与 .active_plan_side/ 同族瞬态运行态）；正常路径=side 会话私有指针（权威层）；退役「legacy/移交」叙事
-│   ├── zcode-sessionstart.sh                # ZCode SessionStart 适配器（写会话私有 side 哨兵 + additionalContext 注入；sid 缺失不写哨兵 fail-open）
-│
-│   # [2026-09-10 task-planrequired-race] 哨兵会话私有化：位置 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core，剥 sess 前缀）；清除=plan-created.cjs（存在性验证）/ D10 check-time 自动仲裁 / resume 判定（启动即有有效计划则哨兵不启用）；gc 扩展清扫 side 哨兵（24h TTL）；legacy `<root>/.plan-required` 不再写入、仅作兼容读取
-│   # [2026-09-10 task-path-identity] 派发契约路径已身份判定化（stat inode / realpath -m），单拼写即可，混拼写兼容
-├── lib/                                     ← Installer 库（v2 新增）
-│   ├── detect-tools.sh                      # 探测已部署工具
-│   ├── backup.sh                            # 备份现有 stub
-│   ├── install-stub.sh                      # 每工具 stub 安装
-│   ├── migrate-refs.sh                      # external refs 迁移
-│   └── verify.sh                            # 7 项安装验证
+│   ├── resolve-plan-dir.sh / set-active-plan.sh  # 活跃计划指针（side 会话私有优先 → 全局 fallback → mtime）
+│   ├── attest-plan.sh / check-plan-dispatch.sh / rule-reserve.sh / ledger-append.sh / smart-merge-back.sh  # 守卫与簿记
+│   └── selftest-*.sh ×76 + selftest-registry.tsv  # 自测守护族（不逐列）
+├── lib/                                     ← Installer 库（6 个）
+│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 7 卫星）
+│   ├── install-companion.sh                 # 顶层 skills/*/ 自动发现分发（含另 3 个收编卫星）
+│   ├── detect-tools.sh / backup.sh / migrate-refs.sh / verify.sh
 ├── tests/
-│   └── smoke.sh                             # 16 项单元测试（全部通过）
+│   └── smoke.sh                             # 单元测试
 ├── docs/
-│   └── ARCHITECTURE.md                      # 架构设计详细文档
-├── install.sh                               ← 主入口（v2 新增）
-├── uninstall.sh                             ← 卸载（v2 新增）
+│   └── ARCHITECTURE.md                      # 架构设计详细文档（含 10 技能分层图+路由表+回归命令）
+├── install.sh                               ← 主入口（Phase 5.6 companion 分发 + Phase 5.7 provider fallback bind）
+├── uninstall.sh                             ← 卸载
 ├── INSTALL.md / MIGRATION.md                ← 用户文档
-├── .gitignore                               # 排除 .backup/
-├── companion/                               — 伴生 agents（plan-writer / article-batch-publisher / article-field-fixer / complex-planner / image-generation-executor / video-generation-executor / drift-checker，跨平台部署用） <!-- 2026-10-08 task-v149 对齐实态 -->
+├── companion/                               — 伴生 agents（drift-checker 等，跨平台部署用）
+├── review-library/                          ← 审查模式库（池成员宿主可枚举分发）
+└── .gitignore                               # 排除 .backup/
 ```
 
 ---
@@ -148,10 +187,10 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 | `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | ../plan-template-kit/references/template-mapping.md |
 | `subagent` | (见 config) | 子代理超时档位（explore/editor/debugger/executor） | Rule 22.3 |
 | `interaction_mode` | `ask` | 交互双模式（Rule 28）：ask=关键决策点询问用户；silent=自主决策+静默决策清单登记；解析优先级 env > 计划配置表 > 本键 > 默认 ask | Rule 28.1 |
-| `fmea_enforce` | `warn` | v063 规划期 FMEA 预演档位（enforce/warn/off），RPN>100 Phase 须登记兜底动作（methodology.md R2） | v063 |
-| `content_quality_enforce` | `warn` | v063 内容质量门控档位（enforce/warn/off），内容型任务过去 AI 化清单+五维评分卡（methodology.md Q3/Q4） | v063 |
+| `fmea_enforce` | `warn` | 规划期 FMEA 预演档位（enforce/warn/off），RPN>100 Phase 须登记兜底动作（methodology.md R2） | methodology.md |
+| `content_quality_enforce` | `warn` | 内容质量门控档位（enforce/warn/off），内容型任务过去 AI 化清单+五维评分卡（methodology.md Q3/Q4） | methodology.md |
 
-> config.json **无 `version` 字段**——版本信息以 `git log` + `版本历史`段为准。
+> config.json **无 `version` 字段**——版本信息以 `git log` + 版本历史段为准。
 
 ---
 
@@ -195,10 +234,11 @@ git pull
 - 新增工具类型
 - SKILL.md frontmatter 字段变更
 - hook 配置变更
+- **新增卫星技能**（须先在 `lib/install-stub.sh:41` `SATELLITE_SKILLS` 登记 + SKILL.md 卫星路由表追加路由行，见 docs/ARCHITECTURE.md §升级与同步）
 
 ---
 
-## 验证
+## 验证与回归
 
 ```bash
 # 单元测试
@@ -206,21 +246,23 @@ bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/
 
 # 安装验证
 bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/lib/verify.sh
+
+# 全量 selftest 回归（忽略缓存全量重跑; 新基线/发布前用）
+bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/run-selftests.sh --fresh
 ```
 
-期望输出：
-- smoke: `16 pass / 0 fail`
-- verify: 至少 7 pass / 0 fail（zcode stub 未迁移时会有 4 fail）
+回归期望输出：末行 `Total: N PASS=x FAIL=y` 且 **FAIL=0**（缓存版省 CPU 不省正确性：`--fresh` 无视输入指纹缓存全量重跑；卫星 selftest 随各卫星落盘，如 `../task-dispatch/scripts/selftest-*.sh`，按需同口径跑批）。
 
 ---
 
 ## 关键约束
 
-1. **hooks 必须在 stub 内声明**：canonical SKILL.md 已剥除 hooks 字段。每工具的 stub SKILL.md 才声明平台特定的 hook 格式。
+1. **hooks 不在 canonical SKILL.md 声明**：canonical SKILL.md 的 hooks 字段为空（`# hooks: <TOOL-ADAPTED>` 注释）；每工具部署位 SKILL.md 由 `lib/install-stub.sh` 的 `generate_stub_skill_md` 生成，才声明平台特定的 hook 格式。
 2. **路径契约统一**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}` 形式，一级 env-var，二级 fallback。
 3. **内容零重复**：references/templates 全部从 canonical rsync；scripts rsync + sed 路径改写。
-4. **备份默认开启**：现有 stub 自动备份到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<ts>/`。
-5. **stub 薄壳**：SKILL.md 必须 < 15KB（canonical 全文 20KB；stub 仅声明 hook + 引用表）。
+4. **备份默认开启**：现有部署位自动备份到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<ts>/`。
+5. **规则分层唯一副本（Rule 82）**：每条规则全文只在一个载体（核心或唯一卫星）；非核心域规则勿在核心技能展开，卫星侧改动经「落盘+删除+索引」原子配对。
+6. **卫星注册三处联动**：新增卫星 = `lib/install-stub.sh` SATELLITE_SKILLS（显式 rsync 族）+ SKILL.md 卫星路由表行 + `lib/install-companion.sh` 顶层发现（收编既有 skill 时）；只改一处 = 部署残缺。
 
 ---
 
@@ -228,11 +270,12 @@ bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/
 
 | 问题 | 原因 | 解决 |
 |------|------|------|
-| hook 不触发 | settings.local.json 未注册 | `bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts` |
-| `TASK_PLANNER_ROOT` 未设 | shell 环境未 export | `.bashrc` 加 `export TASK_PLANNER_ROOT=$HOME/dev/task-planner` |
-| 旧 stub 与新 stub 冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
-| 升级后行为异常 | stub 仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && git pull` 后重启 agent |
-| check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` line 30 的 `for _c in` 列表 |
+| hook 不触发 | 宿主配置未注册 | `bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts`（claude 位） |
+| `TASK_PLANNER_ROOT` 未设 | shell 环境未 export | `.bashrc` 加 `export TASK_PLANNER_ROOT=$HOME/dev/task-planner-skill/skills/task-planner` |
+| 旧部署位与新部署位冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
+| 升级后行为异常 | 部署位仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && git pull` 后重启 agent |
+| check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` 的 `for _c in` 列表 |
+| 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 7 个显式 rsync 卫星 |
 
 详见 [INSTALL.md §5 故障排查](INSTALL.md)。
 
@@ -240,12 +283,17 @@ bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/
 
 ## 版本历史
 
+- **v2.1（2026-10-12）**：技能专业化拆分（task-v171）
+  - 核心只负责四文件罗盘管理：SKILL.md 558→214 行瘦身，行数钉演进 558→275（≤250+25 边距）
+  - 76 条既有规则按域分层至 10 卫星（3 新域 task-dispatch/task-discipline/media-planner + 7 收编），Rule 82 分层纪律新增（禁回潮禁镜像副本）
+  - `lib/install-stub.sh` SATELLITE_SKILLS 4→7；本文档与 docs/ARCHITECTURE.md 重写反映分层架构+路由表+回归命令
 - **v2.0（2026-08-29）**：多工具架构重构
-  - 单一 canonical 仓（独立 git 项目）+ per-tool stub
+  - 单一 canonical 仓（独立 git 项目）+ per-tool 部署
   - env-var 路径解析（`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}`）
-  - 完整 installer 套件（install.sh + 5 lib + smoke test + 4 docs）
+  - 完整 installer 套件（install.sh + 6 lib + smoke test + 4 docs）
   - 5 hook 链路全部启用
   - GitHub: [napoler/task-planner-skill](https://github.com/napoler/task-planner-skill)
+- **v2.0.3（2026-10-09 ~ 10）**：Critical Rules 计数多轮对齐（task-v149 对齐 Rules 1-65；task-v154 合并并集演进至 Rules 1-69；后续纪元由 selftest 宽容正则锚守护随动）
 - **v1.2（2026-08-26）**：新增 todo-sync.md、worktree-isolation.md、4 个 variant 模板、check-conflicts.sh
 - **v1.1（2026-08-19）**：新增 task-plan-init.cjs SessionStart hook、task-drift-guard 集成
 - **v1.0（2026-08-12）**：初始版本，Manus context engineering 原则实现

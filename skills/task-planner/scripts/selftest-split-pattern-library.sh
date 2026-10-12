@@ -2,14 +2,24 @@
 # selftest-split-pattern-library.sh — task-v150 S6: Rule 21.6 拆分模式库机器面静态守护
 # 用法：bash scripts/selftest-split-pattern-library.sh（只读零写入，幂等可重复运行；SP-01..13 逐行 PASS/FAIL，
 # 末行 Total，全 PASS exit 0 / 任一 FAIL exit 1）。范式对齐 selftest-media-dispatch.sh（同构骨架）。
-# 守护面：库文件 11 模式/来源锚/低档贡献行/消费契约/未吸收登记/伴飞表路径 + critical-rules 21.6.1-21.6.6 六子条 +
-# 既有 21.1b/21.4/`### 22` 锚未破坏（36.5 纯增量）+ SKILL.md 接线 ≥3 处 + dispatch 模板 No-Placeholder 契约行。
+# 守护面：库文件 11 模式/来源锚/低档贡献行/消费契约/未吸收登记/伴飞表路径 + critical-rules-dispatch 21.6.1-21.6.6 六子条 +
+# 既有 21.1b/21.4/`### 22` 锚未破坏（36.5 纯增量）+ SKILL.md 接线（双文件各 ≥1）+ dispatch 模板 No-Placeholder 契约行。
+# （[task-v171 2026-10-12] Rule 21/22 分层后归属 task-dispatch，critical-rules 断言目标=critical-rules-dispatch.md）
 
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-LIB="$SKILL_ROOT/references/split-pattern-library.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: SP-01..SP-13 中 7 条 FAIL(库文件缺失连带计数全 0)｜
+# 根因: split-pattern-library.md 随派发域迁至 skills/task-dispatch/references, 旧路径 $SKILL_ROOT/references 为空｜
+# 修法: 改锚 $SKILL_ROOT/../task-dispatch/references/split-pattern-library.md(git 纯改名, P1-P12/伴飞表/来源锚原样)
+LIB="$SKILL_ROOT/../task-dispatch/references/split-pattern-library.md"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: SP-04..07 FAIL(21.6 子条/### 22 头/21.1b/21.4 关键句在核心已不存在)｜
+# 根因: P7 核心瘦身后 Rule 21/22 归属 task-dispatch, 断言锚仍指核心 critical-rules.md｜
+# 修法: CRIT 改指 CRIT_DP(task-dispatch/references/critical-rules-dispatch.md); SP-08 的 SKILL.md ≥3 接线随
+#   S33 瘦身合并为单入口, 改双 SKILL.md 各 ≥1(task-planner 派发纪律指针行 + task-dispatch 卫星展开面)
+CRIT_DP="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
+DP_SKILL="$SKILL_ROOT/../task-dispatch/SKILL.md"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 DISP="$SKILL_ROOT/templates/subagent_dispatch.md"
@@ -40,22 +50,25 @@ else
   bad 03 "伴飞表数据行 $rows（应 ≥6）或路径缺失 $miss/$tot 条"
 fi
 
-# SP-04 21.6.1-21.6.6 六子条锚 ≥6（条款本体；缺任一=拆分质量条款失守）
-n="$(grep -cE '21\.6\.[1-6]' "$CRIT" 2>/dev/null || true)"
+# SP-04 21.6.1-21.6.6 六子条锚 ≥6（条款本体；缺任一=拆分质量条款失守；[task-v171 2026-10-12] 目标=CRIT_DP）
+n="$(grep -cE '21\.6\.[1-6]' "$CRIT_DP" 2>/dev/null || true)"
 if [ "$n" -ge 6 ]; then ok 04 "21.6 子条锚(1-6) $n ≥6"; else bad 04 "21.6 子条锚(1-6) $n（应 ≥6）"; fi
 
-# SP-05 `### 22` 结构锚仍在（21/22 分界；被误删=53.3 二分管辖失去边界依据）
-if grep -q '^### 22 子代理规模限制' "$CRIT"; then ok 05 "结构锚 '### 22 子代理规模限制' 在位"; else bad 05 "结构锚 '### 22' 缺失（分界被破坏）"; fi
+# SP-05 `### 22` 结构锚仍在（21/22 分界；被误删=53.3 二分管辖失去边界依据；目标=CRIT_DP）
+if grep -q '^### 22 子代理规模限制' "$CRIT_DP"; then ok 05 "结构锚 '### 22 子代理规模限制' 在位"; else bad 05 "结构锚 '### 22' 缺失（分界被破坏）"; fi
 
-# SP-06 负断言：21.1b 关键句仍在（21.6 纯增量禁改 21.1-21.5 既有文本，锁步级三值上限条款本体）
-if grep -q '步级(S-unit)派发粒度上限' "$CRIT"; then ok 06 "21.1b 关键句 '步级(S-unit)派发粒度上限' 在位"; else bad 06 "21.1b 关键句缺失（存量条款被破坏）"; fi
+# SP-06 负断言：21.1b 关键句仍在（21.6 纯增量禁改 21.1-21.5 既有文本，锁步级三值上限条款本体；目标=CRIT_DP）
+if grep -q '步级(S-unit)派发粒度上限' "$CRIT_DP"; then ok 06 "21.1b 关键句 '步级(S-unit)派发粒度上限' 在位"; else bad 06 "21.1b 关键句缺失（存量条款被破坏）"; fi
 
-# SP-07 负断言：21.4 调度铁律关键句仍在（P0 铁律与 21.6 拆分面相邻，锁句防调度面非对称修改）
-if grep -q '子代理调度铁律' "$CRIT"; then ok 07 "21.4 关键句 '子代理调度铁律' 在位"; else bad 07 "21.4 关键句缺失（调度铁律被破坏）"; fi
+# SP-07 负断言：21.4 调度铁律关键句仍在（P0 铁律与 21.6 拆分面相邻，锁句防调度面非对称修改；目标=CRIT_DP）
+if grep -q '子代理调度铁律' "$CRIT_DP"; then ok 07 "21.4 关键句 '子代理调度铁律' 在位"; else bad 07 "21.4 关键句缺失（调度铁律被破坏）"; fi
 
-# SP-08 SKILL.md 库引用 ≥3（S4 接线四锚；<3=部分接线丢失，SKILL.md 查不到库入口）
-n="$(grep -c 'split-pattern-library' "$SKILLMD" 2>/dev/null || true)"
-if [ "$n" -ge 3 ]; then ok 08 "SKILL.md 库引用 $n ≥3"; else bad 08 "SKILL.md 库引用 $n（应 ≥3，S4 接线断锚）"; fi
+# SP-08 库引用双 SKILL.md 各 ≥1（[task-v171 2026-10-12] 原 ≥3 单文件四锚随 S33 瘦身合并）
+# 旧形态: SKILL.md 内 ≥3 处 split-pattern-library 引用(S4 接线四锚)。S33 后核心 SKILL.md 仅留派发纪律指针 1 处
+# 入口, 库的权威展开面归卫星 task-dispatch SKILL.md——等价守护=两文件各 ≥1(入口仍在+卫星有展开), <1 即断锚
+n1="$(grep -c 'split-pattern-library' "$SKILLMD" 2>/dev/null || true)"
+n2="$(grep -c 'split-pattern-library' "$DP_SKILL" 2>/dev/null || true)"
+if [ "$n1" -ge 1 ] && [ "$n2" -ge 1 ]; then ok 08 "库引用 task-planner=$n1 + task-dispatch=$n2 各 ≥1"; else bad 08 "库引用断裂（task-planner=$n1 task-dispatch=$n2，应各 ≥1，S4 接线断锚）"; fi
 
 # SP-09 dispatch 模板 No-Placeholder 契约行在位（21.6.4 任务书侧载体；被删=模板与 Rule 脱钩）
 if grep -q 'No-Placeholder 契约' "$DISP"; then ok 09 "dispatch 模板 No-Placeholder 契约行在位"; else bad 09 "dispatch 模板 No-Placeholder 契约行缺失"; fi

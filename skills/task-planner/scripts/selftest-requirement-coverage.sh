@@ -96,23 +96,24 @@ else
   bad 08 "critical-rules.md「零新 config 键」缺失（机制承诺失守）"
 fi
 
-# RC-09 SKILL.md 摘要 bullet 锚 `grep -q 'Rule 51（需求覆盖与完成声称门控'`
-# What：断言 SKILL.md Critical Rules 摘要段含 Rule 51 bullet。
-# Why：摘要是 SKILL.md 内 Rule 51 的入口索引（LLM 读 SKILL.md 时先见摘要后查 critical-rules.md）——丢 bullet = 摘要与条款脱钩
-#      （防"条款扩到 51 但摘要停摆 49"的级联断链）。
-if grep -q 'Rule 51（需求覆盖与完成声称门控' "$SKILLMD"; then
-  ok 09 "SKILL.md Rule 51 摘要 bullet 在位"
+# RC-09 [task-v171 核心瘦身] SKILL.md 摘要 bullet 锚（措辞演进：「Rule 51（需求覆盖与完成声称门控」→「Rule 51 需求覆盖与完成声称」指针 bullet）
+#   现象：SKILL.md 瘦身后 Critical Rules 指针段 bullet 去全角括号措辞（'**Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；
+#     自缩水禁令；未测试禁声称完成'），旧字面零命中，RC-09 恒 FAIL。Rule 51 属核心在位规则（SKILL 侧 bullet 保留）。
+#   修法：锚随现措辞演进为 'Rule 51 需求覆盖与完成声称'（≥1），入口索引语义不变。
+if grep -q 'Rule 51 需求覆盖与完成声称' "$SKILLMD"; then
+  ok 09 "SKILL.md Rule 51 指针 bullet 在位（措辞演进后锚）"
 else
-  bad 09 "SKILL.md Rule 51 摘要 bullet 缺失（Critical Rules 列表未联动）"
+  bad 09 "SKILL.md Rule 51 指针 bullet 缺失（Critical Rules 列表未联动）"
 fi
 
-# RC-10 SKILL.md 合规清单行锚 `grep -q '^| C35 |'`
-# What：断言合规清单 C35 行（行首 '| C35 |'）在位。
-# Why：C35 是 Rule 51 的合规清单消费点（完成声称前必须过需求覆盖核对）——丢 C35 行 = 合规检查面与条款脱钩（防 C34 后行被误删/插入错位）。
-if grep -q '^| C35 |' "$SKILLMD"; then
-  ok 10 "SKILL.md 合规清单 C35 行在位"
+# RC-10 [task-v171 核心瘦身] 合规清单 C35 行 → 终验交付段「逐条复验 VC」行（Rule 51 完成声称核对消费面现存载体）
+#   现象：合规清单 C35 行随清单表退役（表→G1-G8 核心域表，G 表未单列需求覆盖行），命中=0，RC-10 恒 FAIL。
+#   根因：Rule 51 完成声称核对在瘦身后由终验交付段「Read verification.md，逐条复验 VC（每条带证据路径）」承载。
+#   修法：改断言终验交付段含 '逐条复验 VC' ≥1（消费点语义由终验行承接）。
+if grep -q '逐条复验 VC' "$SKILLMD"; then
+  ok 10 "SKILL.md 终验交付段含逐条复验 VC 行（C35 合规面瘦身后由终验行承载）"
 else
-  bad 10 "SKILL.md 合规清单 C35 行缺失（Rule 51 消费点未联动）"
+  bad 10 "SKILL.md Rule 51 消费点未联动（逐条复验 VC 行缺失）"
 fi
 
 # RC-11 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-65'` ≥1 且 `grep -c '1-39'` = 0
@@ -137,12 +138,14 @@ fi
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
-# [2026-10-12 task-v170 S10l 纪元演进] 'Critical Rules 1-7[4-9]'→ERE 'Critical Rules 1-(7[4-9]|8[01])'：Why=task-v170 落地 Rule 81（计划完成后归档纪律，SKILL 终验段插入归档步骤），SKILL.md L314/L406 主锚实态='Critical Rules 1-81'，旧 7[4-9] 字面命中=0（RC-11 级联漏改 FAIL 020-code-runner-s11 明细 #10），计数锚加 8[01] 交替项（覆盖 80/81 两纪元，与 selftest-research-first.sh S10c 扩围范式同形；负样本 1-82 不命中，越界值不放开；「1-39 变体=0」负断言原样保留）。Rule 45 注释：本断言语义=「SKILL 主 label 仍为 74..81 区间内某纪元全集 label + 旧 1-39 变体已清零」，历史 74..79 字面均命中 7[4-9] 臂，现状 1-81 由 8[01] 臂命中
-n="$(grep -cE 'Critical Rules 1-(7[4-9]|8[01])' "$SKILLMD" || true)"
+# [2026-10-12 task-v171 分层口径切换] SKILL.md 瘦身后全集声明演进为「Rules 1-80 全集索引」（核心 12 条+10 卫星），
+#   旧主锚 'Critical Rules 1-[7-8][0-9]'（区间字面）零命中；随动演进为 '1-8[01]' 全集口径锚（SR-07/TS-05/LA-12 同批切换；task-v170 并集 max 口径覆盖 1-81，
+#   grep -cE 口径与四脚本统一——AD-12 pinning 机制钉 live 锚形态，防部分演进漂移），1-39 负断言保留。
+n="$(grep -cE '1-8[01]' "$SKILLMD" || true)"
 if [ "$n" -ge 1 ] && [ "$(grep -c '1-39' "$SKILLMD" || true)" -eq 0 ]; then
-  ok 11 "SKILL.md 主锚 'Critical Rules 1-(7[4-9]|8[01])' ≥1 且 '1-39' 变体 0（SR-07 同步演进, 8x 纪元）"
+  ok 11 "SKILL.md 主锚 '1-8[01]' 全集口径 ≥1 且 '1-39' 变体 0（SR-07 同步演进）"
 else
-  bad 11 "SKILL.md 主锚漂移（Critical Rules 1-(7[4-9]|8[01])=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
+  bad 11 "SKILL.md 主锚漂移（'1-80'=$n 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）"
 fi
 
 # RC-12 delivery-summary.md 需求覆盖区块锚 `grep -q '需求覆盖核对'` 且 `^## [1-5].` 区块数 =5
@@ -522,9 +525,11 @@ fi
 #      RC-01（≥7）与 RC-15（'^66.'=0，[2026-10-08 task-v149 Rule 65 落地演进] 前移，原 '^65.'=0 task-v147 第二代级联）不受 51.8 影响（51.8 不产生 54/55/56 号、≥7 阈值向下兼容 9 计数）。
 _rc23_a="$(grep -c '^51\.8 ' "$CRIT" || true)"
 _rc23_b="$(grep '^51\.8 ' "$CRIT" | grep -c '未测试就声称完成' || true)"
-_rc23_c="$(grep -c '51\.8' "$SKILLMD" || true)"
+# [task-v171 核心瘦身] SKILL 联动锚：'51.8' 字面（旧摘要 bullet M5.4/C37 行）随瘦身移除 → 指针段 51 bullet 的
+#   「未测试禁声称完成」语义措辞（51.8 在 SKILL 侧的现存承载，SKILL.md L165）
+_rc23_c="$(grep -c '未测试禁声称完成' "$SKILLMD" || true)"
 if [ "$_rc23_a" -eq 1 ] && [ "$_rc23_b" -eq 1 ] && [ "$_rc23_c" -ge 1 ]; then
-  ok 23 "critical-rules.md 51.8 行锚=1 且语义锚「未测试就声称完成」在位 且 SKILL.md '51.8' 联动 $_rc23_c ≥1"
+  ok 23 "critical-rules.md 51.8 行锚=1 且语义锚「未测试就声称完成」在位 且 SKILL.md「未测试禁声称完成」联动 $_rc23_c ≥1"
 else
   bad 23 "51.8 守护异常: 行锚=$_rc23_a(应1) 语义锚=$_rc23_b(应1) SKILL联动=$_rc23_c(应≥1)"
 fi

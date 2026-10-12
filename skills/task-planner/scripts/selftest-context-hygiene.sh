@@ -24,7 +24,11 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # <root>/skills/task-planner/scripts
 REAL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"                     # <root>/skills/task-planner
 CHECK="$SCRIPT_DIR/check-context-hygiene.sh"
-HYG="$SCRIPT_DIR/plan-hygiene.sh"
+# [task-v171 回归修复 2026-10-12 纪律域搬迁] 现象: T07/T08/T09 FAIL(plan-hygiene.sh 找不到)｜
+# 根因: plan-hygiene.sh 归属纪律域将迁至 skills/task-discipline/scripts, 旧写法 $SCRIPT_DIR/../task-discipline
+#   少一级, 解析到 skills/task-planner/task-discipline(不存在)｜修法: 改锚 $REAL_ROOT/../task-discipline/scripts;
+#   目标文件待「纪律技能建设」阶段搬迁到位后本组自然转绿, 本轮先把路径改对
+HYG="$REAL_ROOT/../task-discipline/scripts/plan-hygiene.sh"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT INT TERM
@@ -74,21 +78,27 @@ touch -d "10 days ago" "$T_DONE/task_plan.md"   # 模拟超龄 (≥ 默认 7 天
 touch "$T_OPEN/task_plan.md"
 
 # T01: critical-rules.md "### 29" 标题 + 29.1-29.6 六子条款
+# [task-v171 纪律域搬迁 2026-10-12] Rule 29（上下文与工作文件主动维护）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md，T01 断言改指 CRIT_D；断言语义零改动。
 T01_RC=1
-CR="$REAL_ROOT/references/critical-rules.md"
-if [ "$(grep -c '^### 29' "$CR" 2>/dev/null)" -ge 1 ]; then
+CRIT_D="$REAL_ROOT/../task-discipline/references/critical-rules-discipline.md"
+if [ "$(grep -c '^### 29' "$CRIT_D" 2>/dev/null)" -ge 1 ]; then
   T01_RC=0
   for s in 29.1 29.2 29.3 29.4 29.5 29.6; do
-    grep -q "^${s} " "$CR" 2>/dev/null || { T01_RC=1; break; }
+    grep -q "^${s} " "$CRIT_D" 2>/dev/null || { T01_RC=1; break; }
   done
 fi
 assert 01 "critical-rules.md '### 29' 标题 + 29.1-29.6 六子条款" "$T01_RC"
 
-# T02: SKILL.md "Rule 29" 指针 ≥2
+# T02 [task-v171 核心瘦身]: SKILL.md "Rule 29" 入口指针 ≥1 + 卫星路由表 task-discipline 行枚举 Rule 29
+#   现象：SKILL.md 瘦身后 Rule 29（纪律域）仅在 3e 行保留 1 处指针（原 ≥2：摘要 bullet+合规 C 行+3e 三处），旧断言 ≥2 恒 FAIL。
+#   根因：非核心域规则摘要/C 行随瘦身移除；SKILL 侧入口面=3e 执行循环指针 + 卫星路由表枚举编号。
+#   修法：阈值改 ≥1（3e 指针）+ 新增路由表行枚举 Rule 29 锚（联动面不丢，Rule 29 全文锚由 T01 在 CRIT_D 守护）。
 T02_RC=1
 N_R29="$(grep -c "Rule 29" "$REAL_ROOT/SKILL.md" 2>/dev/null)"
-[ "${N_R29:-0}" -ge 2 ] && T02_RC=0
-assert 02 "SKILL.md 'Rule 29' 指针 ≥2 (实测 ${N_R29:-0})" "$T02_RC"
+N_ROUTE29="$(grep -E '^\| task-discipline \|' "$REAL_ROOT/SKILL.md" 2>/dev/null | grep -cE 'Rule [0-9,]*29' || true)"
+if [ "${N_R29:-0}" -ge 1 ] && [ "${N_ROUTE29:-0}" -ge 1 ]; then T02_RC=0; fi
+assert 02 "SKILL.md 'Rule 29' 指针 ≥1（实测 ${N_R29:-0}）+ 卫星路由表枚举 Rule 29（实测 ${N_ROUTE29:-0}）" "$T02_RC"
 
 # T03: check-context-hygiene.sh 对 clean fixture exit 0
 P_CLEAN="$TMP/plans-clean"

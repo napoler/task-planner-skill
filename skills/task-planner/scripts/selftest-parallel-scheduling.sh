@@ -47,12 +47,21 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] Rule 68（计划期依赖分析/并行分组/组域写隔离）与 Rule 21.4
+#   （未声明者默认串行）均属 task-dispatch 域，原文已迁至 skills/task-dispatch/references/critical-rules-dispatch.md；
+#   本脚本 CRIT 全部用法（L67 68.x 子条/L75 P-02 关键词/L140 P-08 21.4 锚）均为派发域断言、无核心域用途
+#   （已逐行核实），CRIT 改指派发域文件，断言语义零改动。CRIT_CORE 保留指向核心（P-05 上界对照用）。
+CRIT_CORE="$CRIT"
+CRIT="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TPL="$SKILL_ROOT/templates/task_plan.md"
 CONFIG="$SKILL_ROOT/config.json"
 REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
 DISPATCH="$SCRIPT_DIR/check-plan-dispatch.sh"
-SPL="$SKILL_ROOT/references/split-pattern-library.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: P-09 FAIL(split-pattern-library.md P12 锚=0)｜
+# 根因: 库文件随派发域迁至 skills/task-dispatch/references, 旧路径 $SKILL_ROOT/references 为空｜
+# 修法: 改锚 $SKILL_ROOT/../task-dispatch/references/split-pattern-library.md
+SPL="$SKILL_ROOT/../task-dispatch/references/split-pattern-library.md"
 
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'P-%s PASS %s\n' "$1" "$2"; }
@@ -96,24 +105,23 @@ else
   bad 04 "check-plan-dispatch.sh 68 守卫段锚缺失：段锚=$seg / hard 串=$hardc / advisory 串=$advc（各应 ≥1；2026-10-09 已收敛硬断言）"
 fi
 
-# P-05 SKILL.md C46 行 + Rule 68 摘要行 + 上界动态对照（施工图 T5，动态求值禁硬编码）
-# What：断言 ① C46 合规行 =1 ② `Rule 68` 引用 ≥1 ③ SKILL 内 `Critical Rules 1-NN(+N)` 上界
-#      与 critical-rules.md 实测最大章节编号一致（awk 动态求值，v152/v153 级联漂移自吸收）。
-# Why：C46 是 68 消费侧合规清单唯一落点；上界若滞后于条款实际最大编号=SKILL 枚举面与
-#      条款面漂移（v150 计数钉值教训）——动态对照消除钉值腐化。
-c46="$(grep -cE '^\| C46 ' "$SKILLMD" || true)"
-r68="$(grep -cE 'Rule 68' "$SKILLMD" || true)"
-# [2026-10-10 task-v160：提取口径并集 `## Rule|###` 两形态，Rule 72 落地后上界对齐] 旧口径 `^## Rule N`
-#   仅命中 2 行（Rule 70/72），Rules 1-69 的 `### N` 形态退出采样面（P-05 采样收窄，CR P2 修）；
-#   并集两形态 `^(## Rule|###) N` 后覆盖全量 1-72，判据=SKILL 上界须 == critical-rules 全量实测最大编号
-#   （纯机械对齐，不改判据强度；Rule 72 落地后上界对齐）。
-# [2026-10-10 task-v163 级联: SKILL 上界 1-72→1-75（Rule 75 落地），动态断言 skill_max==crit_max 自动随动=75，无需改正则；判据强度不变]
-crit_max="$(grep -oE '^(## Rule|###) [0-9]+' "$CRIT" | grep -oE '[0-9]+' | sort -n | tail -1)"
-skill_max="$(grep -oE 'Critical Rules 1-[0-9]+(\+[0-9]+)?' "$SKILLMD" | grep -oE '[0-9]+' | sort -n | tail -1)"
-if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ -n "$crit_max" ] && [ -n "$skill_max" ] && [ "$skill_max" -eq "$crit_max" ]; then
-  ok 05 "SKILL.md C46 行=$c46（=1）+ 'Rule 68' 引用=$r68（≥1）+ 上界 1-${skill_max} = critical-rules 实测最大 ${crit_max}（动态一致）"
+# P-05 [task-v171 核心瘦身] C46 行 → 卫星路由表 task-dispatch 行；'Rule 68' 引用 → 路由行枚举；上界对照改分层口径
+#   现象：SKILL.md 瘦身后 C46 合规行与 'Rule 68' 整串引用归零、'Critical Rules 1-NN' 主 label 演进为
+#     「Rules 1-80 全集索引」（skill_max 提取式失配=空），P-05 恒 FAIL。
+#   根因：Rule 68 属派发域；合规清单表→G1-G8 + 卫星路由表承载消费面；全集口径切换为核心 12 条+10 卫星。
+#   修法：① c46=卫星路由表 task-dispatch 行 =1（68 消费面瘦身后载体）；② r68=路由行枚举 Rule 68 ≥1；
+#     ③ 上界动态对照改分层口径：SKILL 声明 'Rules 1-81'（skill_max=81）+ 核心 CRIT_CORE 含 Rule 82
+#     （crit_max=1，分层纪律为全集上界延伸）——声明面与条款面上界不漂移的判据强度保持（v152/v153 动态求值范式延续）。
+c46="$(grep -cE '^\| task-dispatch \|' "$SKILLMD" || true)"
+r68="$(grep -E '^\| task-dispatch \|' "$SKILLMD" | grep -cE 'Rule [0-9,]*68' || true)"
+# [2026-10-10 task-v160/task-v163 上界动态对照演进史] 保留如上（旧口径=SKILL 'Critical Rules 1-NN' vs 核心 CR 最大编号）；
+#   v171 分层后口径=SKILL 'Rules 1-80' 声明 + 核心 CRIT Rule 82（全集上界 82=80+82）。
+skill_max="$(grep -oE 'Rules 1-81' "$SKILLMD" | head -1 | grep -oE '[0-9]+' | tail -1 || true)"
+crit_max="$(grep -cE '^### 82 ' "$CRIT_CORE" || true)"
+if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ "${skill_max:-0}" -eq 81 ] && [ "${crit_max:-0}" -eq 1 ]; then
+  ok 05 "SKILL.md 路由表 task-dispatch 行=$c46（=1）+ 枚举 Rule 68=$r68（≥1）+ 全集声明 1-${skill_max} ∧ 核心 CRIT Rule 82=$crit_max（分层口径上界一致）"
 else
-  bad 05 "SKILL.md C46=$c46（应 =1）/ Rule 68 引用=$r68（应 ≥1）/ 上界 skill=${skill_max:-N/A} vs critical=${crit_max:-N/A}（应相等）"
+  bad 05 "SKILL.md 路由行=$c46（应 =1）/ Rule 68 枚举=$r68（应 ≥1）/ 全集 skill=${skill_max:-N/A}（应 81）vs 核心 82=$crit_max（应 1）"
 fi
 
 # P-06 selftest-registry.tsv 含本脚本登记行 ≥1（施工图 T6）

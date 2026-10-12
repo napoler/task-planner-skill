@@ -228,9 +228,14 @@ N_9="$(grep -c "9 条" "$FIX/references/methodology.md" 2>/dev/null)"
 M14_RC=$?
 assert 14 "机械联动 14 条≥1 且 9 条=0 (实测 ${N_14:-0}/${N_9:-0})" "$M14_RC"
 
-# M-15: SKILL.md 思维方法论指针 (解构 bullet + Poka-Yoke 行内)
-N_B="$(grep -c "思维方法论问题解构" "$FIX/SKILL.md" 2>/dev/null)"
-N_P="$(grep -c "§R1/R2/§思维方法论" "$FIX/SKILL.md" 2>/dev/null)"
+# M-15 [task-v171 核心瘦身] SKILL.md 思维方法论指针 (解构 bullet + Poka-Yoke 行内)——措辞演进重锚
+#   现象：SKILL.md 瘦身后计划制作循环 bullet 重写，旧字面「思维方法论问题解构」与「§R1/R2/§思维方法论」组合串
+#     双双零命中（新措辞=「**思维方法论解构**（`references/methodology.md` T1-T5，指针）」+「**Poka-Yoke 前置检查**
+#     （`references/methodology.md` §R1/R2）」），M-15 恒 FAIL。
+#   根因：断言钉旧 bullet 标题字面；瘦身后方法论仍是计划期指针 bullet（在位），仅措辞简化。
+#   修法：N_B 锚改「思维方法论解构」=1；N_P 锚改「§R1/R2」=1（Poka-Yoke 行内指针），语义（两指针在位）不变。
+N_B="$(grep -c "思维方法论解构" "$FIX/SKILL.md" 2>/dev/null)"
+N_P="$(grep -c "§R1/R2" "$FIX/SKILL.md" 2>/dev/null)"
 [ "${N_B:-0}" -ge 1 ] && [ "${N_P:-0}" -ge 1 ]
 M15_RC=$?
 assert 15 "SKILL.md 解构 bullet≥1 且 Poka-Yoke 指针≥1 (实测 ${N_B:-0}/${N_P:-0})" "$M15_RC"

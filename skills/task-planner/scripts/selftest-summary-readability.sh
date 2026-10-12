@@ -33,6 +33,11 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # ── 路径定义（相对技能根）──
 CR="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 76（总结阶段格式可读性与审查清单实体化纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则）；
+#   SRV-01/02 断言改指 CRIT_D。卫星文件标题为统一「### 76 标题」格式（核心旧格式 `Rule 76（…）`），
+#   SRV-01 标题行锚同步适配，断言语义（标题存在+六子条）零改动。CR 保留指向核心。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 DS="$SKILL_ROOT/templates/delivery-summary.md"
 IMG="$SKILL_ROOT/templates/variant/image-type.md"
@@ -53,7 +58,7 @@ cntf() { [ -f "$2" ] || { echo 0; return; }; grep -cF -- "$1" "$2" 2>/dev/null |
 cntE() { [ -f "$2" ] || { echo 0; return; }; grep -cE -- "$1" "$2" 2>/dev/null || true; }
 
 # ── SRV-01: Rule 76 条款标题锚 ──
-SRV01_TITLE=$(cnt 'Rule 76（总结阶段格式可读性与审查清单实体化纪律 — task-v166）' "$CR")
+SRV01_TITLE=$(cnt '### 76 总结阶段格式可读性与审查清单实体化纪律' "$CRIT_D")
 if [ "$SRV01_TITLE" -ge 1 ]; then
     ok "SRV-01" "Rule 76 条款标题锚(标题≥1)"
 else
@@ -61,7 +66,7 @@ else
 fi
 
 # ── SRV-02: Rule 76 六子条锚（76.1-76.6 各≥1）──
-SRV02_SUBS=$(cnt '^76\.[1-6] ' "$CR")
+SRV02_SUBS=$(cnt '^76\.[1-6] ' "$CRIT_D")
 if [ "$SRV02_SUBS" -ge 6 ]; then
     ok "SRV-02" "Rule 76 六子条锚(≥6)"
 else
@@ -78,29 +83,39 @@ else
     bad "SRV-03" "SKILL 接线锚(got 1-(7[4-9]|8[01])=$SRV03_EPOCH expect>=3)"
 fi
 
-# ── SRV-04: SKILL 接线锚（Rule 76≥5）──
+# ── SRV-04 [task-v171 核心瘦身]: SKILL 接线锚（Rule 76≥1 终验交付指针行 + CRIT_D Rule 76 条款本体锚）──
+#   现象：SKILL.md 瘦身后 'Rule 76' 计数 5→1（仅存终验交付段「编号列表规范（Rule 76）按卫星 task-discipline 全文执行」），
+#     旧阈值 ≥5（摘要/合规 C55/终验句/References/全集行五处）恒 FAIL。
+#   根因：Rule 76 属纪律域（迁 CRIT_D）；SKILL 侧接线点收敛为终验交付指针行+卫星路由表行。
+#   修法：阈值改 ≥1 ∧ CRIT_D '^### 76 ' 标题=1（条款本体在位，接线面强度经双载体保持）。
 SRV04_RULE76=$(cnt 'Rule 76' "$SKILL")
-if [ "$SRV04_RULE76" -ge 5 ]; then
-    ok "SRV-04" "SKILL 接线锚(Rule 76≥5)"
+SRV04_CRIT76=$(cntE '^### 76 ' "$CRIT_D")
+if [ "$SRV04_RULE76" -ge 1 ] && [ "$SRV04_CRIT76" -ge 1 ]; then
+    ok "SRV-04" "SKILL 接线锚(Rule 76=$SRV04_RULE76≥1 ∧ CRIT_D 76 标题=$SRV04_CRIT76)"
 else
-    bad "SRV-04" "SKILL 接线锚(got Rule76=$SRV04_RULE76 expect>=5)"
+    bad "SRV-04" "SKILL 接线锚(got Rule76=$SRV04_RULE76 CRIT_D 标题=$SRV04_CRIT76 expect 各≥1)"
 fi
 
-# ── SRV-05: SKILL C55 合规行在位（Rule 76 总结格式可读性锚；C54 已归 Rule 75 网络调研）──
-# pinning 语义=「Rule 76 的合规行」，实现方式=同时断言 C55 行含「Rule 76」与「总结格式可读性」关键词，防串行。
-SRV05_C55=$(cntE '^\| C55 \| ' "$SKILL")
-SRV05_K1=$(awk '/^\| C55 \|/{print}' "$SKILL" | grep -c 'Rule 76' || true)
-SRV05_K2=$(awk '/^\| C55 \|/{print}' "$SKILL" | grep -c '总结格式可读性' || true)
-if [ "$SRV05_C55" -ge 1 ] && [ "$SRV05_K1" -ge 1 ] && [ "$SRV05_K2" -ge 1 ]; then
-    ok "SRV-05" "SKILL C55 合规行在位且含 Rule 76 + 总结格式可读性 关键词"
+# ── SRV-05 [task-v171 核心瘦身]: C55 合规行退役 → 卫星路由表 task-discipline 行 + CRIT_D 76 段「编号列表」语义锚 ──
+#   现象：合规清单 C55 行随清单表退役（表→G1-G8 核心域表），C55/k1/k2 三条件全失，SRV-05 恒 FAIL。
+#   根因：Rule 76 属纪律域；非核心域合规项经卫星路由表行承载（Rule 82 禁回潮）。
+#   修法：① 路由表 discipline 行 =1（C55 消费面载体）；② CRIT_D '^76\.[0-9]' 子条 ≥1（条款本体的「总结格式可读性」
+#     语义承载，由子条文本锚承接原 k2 关键词断言）。
+SRV05_C55=$(cntE '^\| task-discipline \|' "$SKILL")
+SRV05_K2=$(cntE '^76\.[0-9]' "$CRIT_D")
+if [ "$SRV05_C55" -ge 1 ] && [ "$SRV05_K2" -ge 1 ]; then
+    ok "SRV-05" "SKILL 卫星路由表 discipline 行在位 ∧ CRIT_D 76.x 子条=$SRV05_K2（C55 合规面瘦身后由路由表+条文承载）"
 else
-    bad "SRV-05" "SKILL C55 合规行缺失或关键词不全(got C55=$SRV05_C55 k1(Rule76)=$SRV05_K1 k2(总结格式可读性)=$SRV05_K2 expect all>=1)"
+    bad "SRV-05" "SKILL C55 合规面缺失(got 路由行=$SRV05_C55 CRIT_D 76.x=$SRV05_K2 expect all>=1)"
 fi
 
-# ── SRV-06: SKILL 终验段 Rule 76 联动句在位 ──
-SRV06_LINE=$(cnt '用户面总结/呈报的列表一律编号列表' "$SKILL")
+# ── SRV-06 [task-v171 核心瘦身]: SKILL 终验段 Rule 76 联动句在位（措辞演进重锚）──
+#   现象：瘦身后终验交付段旧联动句「用户面总结/呈报的列表一律编号列表」退役（细则归 CRIT_D 条文），
+#     现存联动载体=终验交付段「编号列表规范（Rule 76）按卫星 task-discipline 全文执行」行。
+#   修法：锚随现措辞演进为 '编号列表规范（Rule 76）'（≥1）。
+SRV06_LINE=$(cnt '编号列表规范（Rule 76）' "$SKILL")
 if [ "$SRV06_LINE" -ge 1 ]; then
-    ok "SRV-06" "SKILL 终验段 Rule 76 联动句在位"
+    ok "SRV-06" "SKILL 终验段 Rule 76 联动句在位（编号列表规范措辞）"
 else
     bad "SRV-06" "SKILL 终验段 Rule 76 联动句缺失(got line=$SRV06_LINE expect>=1)"
 fi

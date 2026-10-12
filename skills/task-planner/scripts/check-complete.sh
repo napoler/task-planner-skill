@@ -629,7 +629,7 @@ if [ "$python_rc" -eq 0 ]; then
     # 档位由 check-rescue-chain.sh 自解析(config.json rescue_chain_enforce, 默认 warn):
     #   enforce 档存在违规 → 该脚本 exit 1 → 本门阻断 complete;warn/off 档恒 exit 0(仅提示)。
     # exit 2(参数错误)不阻断(避免门控自身配置问题锁死终验)。
-    crc="$SKILL_ROOT/scripts/check-rescue-chain.sh"
+    crc="$SKILL_ROOT/../task-dispatch/scripts/check-rescue-chain.sh"
     if [ -f "$crc" ]; then
         bash "$crc" "$PLAN_DIR_GUESS"
         crc_rc=$?

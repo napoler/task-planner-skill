@@ -39,3 +39,7 @@ description: 面向计划/执行期的网络调研与 github 调研路由 SOP。
 本卫星已完成 task-v095 P2-S2 迁移：完整路由 SOP（细粒度判定表、降级链、双路并行策略）在 references/research-routing.md，为该 SOP 唯一正文；「路由速记」表仅作速查。被调用时以 references/research-routing.md 为准。
 
 铁律：只读路由决策，不代替调研工具执行；调研结论必须附来源；不再复制 task-planner 正文，防止双份漂移。
+
+## 卫星路由：plan-research-router — 域=调研分析与证据纪律（Rule 58,63,75）
+
+规则全文见 `references/critical-rules-research.md`（Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 63 检索优先与反推诿纪律 / Rule 75 网络调研主动激活与外部数据依赖纪律，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及调研/分析/评估/归因类任务的证据面清单编制与对标取证强制（Rule 58）、遇知识缺口/报错/工具用法不确定时的检索优先与反推诿（Rule 63）、计划期调研需求三态标注与执行期反死磕主动激活及外部工具强制（Rule 75）时 Read 该文件。
