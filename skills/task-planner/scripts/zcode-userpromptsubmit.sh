@@ -81,6 +81,35 @@ if [ -f "$attest_file" ]; then
   fi
 fi
 
+# ─── [task-perf-opt Change #5] smart 注入 prompt 类型门控 ─────────────────
+# 目的：闲聊/短追问（prompt 长度 <50 字符 ∧ 不含计划 Goal 关键 token）跳过 smart 注入块，
+#       仅保留 [plan-note] 节流注入——降低每轮 smart 注入的 token 开销（根因 #5）。
+# 评审简化：用「Goal 关键 token 匹配」替代 100+ 中文停用词词袋交集（维护成本低、误判后果
+# 仅为跳过一次 smart 注入，用户下次提问 Goal 变更会触发注入）。
+# 配置：config.json smart_inject_type_gate.default=off（opt-in，需显式 on 才启用门控）。
+# fail-open：prompt 字段缺失 / config 解析失败 / 长度或 token 判定异常 → _smart_skip=0（不跳过）。
+_smart_skip=0
+_gate_cfg="$(jq -r '.properties.smart_inject_type_gate.default // "off"' "$SKILL_ROOT/config.json" 2>/dev/null || echo off)"
+if [ "$_gate_cfg" = "on" ]; then
+  _ups_prompt="$(printf '%s' "$input" | jq -r '.prompt // .user_prompt // .message // empty' 2>/dev/null || true)"
+  if [ -n "$_ups_prompt" ]; then
+    _pl_len="${#_ups_prompt}"
+    # Goal 行 = task_plan.md「## Goal」节首个非空行（同 smart 注入 awk 提取口径，sed 剥离 <!-- --> 注释区间）
+    _goal_line="$(awk '/^## Goal/{f=1;next} /^## /{f=0} f' "$plan" 2>/dev/null | sed 's/<!--[^>]*//g;-->/d' | grep -v '^[[:space:]]*$' | head -1)"
+    if [ "$_pl_len" -lt 50 ] && [ -n "$_goal_line" ]; then
+      # 提取 Goal 关键 token（≥2 字英文 / ≥2 字中文，去重前 20 个，避免 Goal 行过长撑爆循环）
+      _has_tok=0
+      for _tok in $(printf '%s' "$_goal_line" | grep -oE '[A-Za-z]{2,}|[一-龥]{2,}' 2>/dev/null | sort -u | head -20); do
+        case "$_ups_prompt" in
+          *"${_tok}"*) _has_tok=1; break ;;
+        esac
+      done
+      [ "$_has_tok" = "0" ] && _smart_skip=1
+    fi
+  fi
+  [ "$_smart_skip" = "1" ] && echo "[ups] smart 注入跳过（Change #5 prompt 类型门控：短 prompt 不含 Goal 关键 token; [plan-note] 节流注入不受影响）" >&2
+fi
+
 # ─── smart 注入块(Rule 20.4 — 结构感知,字段级提取)──────────────────────────
 inject=""
 # [2026-09-27 task-v091 C-1e] 原实现为 6 组独立字段提取(1 sed 剥注释 + 3 个单行字段 awk +
@@ -156,7 +185,7 @@ tmpf="$(mktemp)"
   [ -n "$prog_tail" ] && { echo "progress 尾5:"; echo "$prog_tail"; }
 } > "$tmpf" 2>/dev/null
 
-if [ -s "$tmpf" ]; then
+if [ -s "$tmpf" ] && [ "${_smart_skip:-0}" != "1" ]; then
   inject="$(cat "$tmpf")"
 fi
 rm -f "$tmpf"
@@ -198,7 +227,20 @@ n=$(( n + 1 ))
 echo "$n" > "$ups_state"
 note=""
 if [ "$n" -eq 1 ] || [ $(( n % interval )) -eq 0 ]; then
-  note="[plan-note] 新指令到达 — 先做影响判定: D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧计划原样保留; A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘;不相干内容禁止混入当前计划(Rule 8.1)。"
+  # [task-perf-opt Change #6] 同文件邻近行追豁免：D 类文案前增加邻近引用例外说明。
+  # 邻近引用词检测：prompt 含「第 N 行 / 上一句 / 刚才那个 / 继续 / 接着」→ 归为 B 类（扩展）而非 D 类（新计划）。
+  _near_ref=0
+  _ups_prompt_np="$(printf '%s' "$input" | jq -r '.prompt // .user_prompt // .message // empty' 2>/dev/null || true)"
+  if [ -n "$_ups_prompt_np" ]; then
+    case "$_ups_prompt_np" in
+      *第*[[:space:]]*[0-9]*[[:space:]]*行*|*上一句*|*上一行*|*刚才那个*|*刚才那句*|*继续*|*接着*|*下面那*|*那一行*) _near_ref=1 ;;
+    esac
+  fi
+  if [ "$_near_ref" = "1" ]; then
+    note="[邻近引用→B 类] [plan-note] 新指令到达 — 先做影响判定: 检测到同文件邻近行引用词(第 N 行/上一句/继续/接着等),归为 B 类(扩展)而非 D 类(新计划); D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧计划原样保留; A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘;不相干内容禁止混入当前计划(Rule 8.1)。"
+  else
+    note="[plan-note] 新指令到达 — 先做影响判定: D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧计划原样保留; A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘;不相干内容禁止混入当前计划(Rule 8.1)。"
+  fi
 fi
 
 # ─── 并发冲突检测(Rule 23)────────────────────────────────────────────────

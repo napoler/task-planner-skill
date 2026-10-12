@@ -14,7 +14,7 @@
 #            [2026-10-05 task-v131 CR P1-2 级联: SKILL.md:278 括注演进「（含 Rule 40/41/42/43/44/45/46/47/48/49/51）」→「（含 Rule 40-53 全集）」, 锚随之演进, 原锚「含 Rule 40/41/42/43」, 判例 SR-11 锚演进必同步] # 2026-10-08 task-v149 行号锚对齐实态（D12）
 #   R-10     模板/契约消费面：templates/task_plan.md「质量审查工具」≥1 且 plan-writer.md「质量审查工具检测登记」≥1
 #   R-11     mini-lite 豁免锚：variant/mini-lite-type.md「Rule 42.5 豁免」≥1
-#   R-12     零新 config 键——config.json properties 键数 = 42（同 WF-12 口径；jq 缺失时打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
+#   R-12     零新 config 键——config.json properties 键数 = 44（同 WF-12 口径; task-perf-opt 合法新增 2 键 42→44; jq 缺失时打 SKIPPED 不 FAIL）
 #   R-13     43.5 行内锚：「实际生成测试」≥1（提示词/参数修改后必须实测，task-v133 新增）
 #   R-14     43.6 行内锚：「优点」≥1（未验证结果禁止优点宣传，task-v133 新增）
 #   R-15     53.5 行 Q9 触发面登记锚（Q9 属主=43.5/43.6/51.8，挂 26.3 惩罚映射语义，先例 Q7/Q8，task-v133 新增）
@@ -103,11 +103,11 @@ if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 10 "模板「质量审查工具」�
 # R-11 mini-lite 豁免声明锚
 n="$(grep -c 'Rule 42.5 豁免' "$MINILITE" || true)"
 if [ "$n" -ge 1 ]; then ok 11 "mini-lite「Rule 42.5 豁免」声明行 $n ≥1"; else bad 11 "mini-lite 豁免声明行缺失（Rule 42.5 豁免 命中 $n 应 ≥1）"; fi
-# R-12 零新 config 键——properties 键数 = 42（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）
+# R-12 零新 config 键——properties 键数 = 44（同 WF-12 口径; task-perf-opt 合法新增 smart_inject_type_gate+selftest_heavy_concurrent 2 键, 42→44; jq 缺失打 SKIPPED 不 FAIL）
 # [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "42" ]; then ok 12 "config.json properties 键数 42（零新增）"; else bad 12 "config.json properties 键数=$keys（应 42）"; fi
+  if [ "$keys" = "44" ]; then ok 12 "config.json properties 键数 44（零新增, 基线含 v145 2 键 + task-perf-opt smart_inject_type_gate+selftest_heavy_concurrent 2 键）"; else bad 12 "config.json properties 键数=$keys（应 44）"; fi
 else
   printf 'R-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

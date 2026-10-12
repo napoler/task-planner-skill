@@ -18,7 +18,7 @@ sid_scope="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | t
 TASK_PLANNER_SID="$sid_scope" bash "$SKILL_ROOT/check-scope.sh" "$tool" "$file"
 rc=$?
 if [ "$rc" -eq 1 ]; then
-  echo 'task-planner: 检测到 .plan-required 哨兵——本会话尚无有效计划，禁止写入 plans/ 之外路径。请先调用 Skill(skill="task-planner") 创建计划。' >&2
+  echo 'task-planner: 检测到 .plan-required 哨兵——本会话尚无有效计划，禁止写入 plans/ 之外路径。请先调用 Skill(skill="task-planner") 创建计划。若为简单修复，可在指令中加「简单修复」或「就改一行」跳过计划创建（task-perf-opt Change #2）。' >&2
   exit 2
 fi
 

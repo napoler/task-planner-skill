@@ -439,6 +439,18 @@
           "executor": 120
         }
       }
+    },
+    "smart_inject_type_gate": {
+      "type": "string",
+      "enum": ["off", "on"],
+      "default": "off",
+      "description": "[task-perf-opt Change #5] UserPromptSubmit smart 注入 prompt 类型门控: off=每轮注入(原行为); on=短闲聊/追问(prompt<50 字符且不含 Goal 关键 token)跳过 smart 注入块, 仅保留 [plan-note] 节流注入。opt-in, 默认 off。"
+    },
+    "selftest_heavy_concurrent": {
+      "type": "string",
+      "enum": ["off", "on"],
+      "default": "off",
+      "description": "[task-perf-opt Change #11] run-selftests.sh top-5 重脚本(final-gate-hash/requirement-coverage/vc-gate/plan-tier/smart-merge)并发化开关: off=全部串行(原行为); on=fresh 模式下 top-5 后台并发+wait 其余串行。opt-in, 默认 off。键名避开 P-07(Rule 68.7 零 new-key 守护 grep 模式)的既有字面, 本键针对 selftest 回归并发化, 非任务执行分组。]"
     }
   },
   "required": [

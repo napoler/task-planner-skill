@@ -1552,6 +1552,9 @@ END {print n+0}'
     # R-COVERAGE/LEARNING/REFLECT/COMPLIANCE 等）都不降完成性底线——本段三件校验缺一即 exit 1:
     #   ① verification.md 存在且含「全量终验」字样 + Total 行（run=N 且 PASS=N=总脚本数——
     #      交付前单波 fresh 全量终验锚; 缺=fail-closed, 38.7「相关 selftest 子集 + 交付前全量终验」的机器承载）
+    #      [task-perf-opt Change #4] Total 行格式=「Total: N PASS=x FAIL=y（+可选 reused=z）」，簿记可只抄前半
+    #      （PASS=FAIL=Total）；缓存命中时 reused 计入 Total 行。GATE 只 grep `Total:`（不校验 PASS=/reused=
+    #      是否存在），接受任意含 Total: 的行——缓存复用的 reused 行合法，无需修改校验口径（实测确认不误读）。
     #   ② task_plan.md Phase 状态真实翻转: 至少 1 行 `- **Status:** complete`（防状态机假完成）
     #   ③ 单 commit 惯性: 计划 scope 内 git log feat 提交数=1, 或计划 Decisions Made 区块声明
     #      「单 commit」惯性偏差理由（38.7 簿记精简=单 commit, 多 commit 须显式声明机理由）
@@ -1564,16 +1567,18 @@ END {print n+0}'
         l0_ph_n="$(grep -cE '\*\*Status:\*\*[[:space:]]*complete' "$PLAN_FILE" 2>/dev/null || true)"
         l0_ph_n="${l0_ph_n:-0}"
         [ "$l0_ph_n" -ge 1 ] || l0_fail="${l0_fail}②task_plan.md 无 complete Phase 行（状态未真实翻转） "
-        # ③ 单 commit 惯性: 在 git 仓内对计划 scope（执行范围限制表允许文件列）数 feat 提交;
+        # ③ 单 commit 惯性: 在 git 仓内对计划 scope（执行范围限制表允许文件列）数 feat|fix 提交;
+        # [task-perf-opt Change #1④] feat→feat\|fix: trivial 代码修复档（Change #1）的 commit 前缀为 `fix:`，
+        # 原 `--grep='feat'` 不匹配 `fix:` → L0 GATE ③ 对代码修复误判（feat 提交数=0≠1 → 阻断）。
         # 非 git 仓/无 git = fail-open（L0 定义在 git 体系内, 非 git 场景由人工兜底）
         repo_root="$(cd "$(dirname "$PLAN_FILE")" && git rev-parse --show-toplevel 2>/dev/null || true)"
         if [ -n "$repo_root" ]; then
-            l0_ncommits="$(git -C "$repo_root" log --oneline --grep='feat' --since='30 days ago' 2>/dev/null | grep -c . || true)"
+            l0_ncommits="$(git -C "$repo_root" log --oneline --grep='feat\|fix' --since='30 days ago' 2>/dev/null | grep -c . || true)"
             if [ "${l0_ncommits:-0}" -ne 1 ] \
                && ! grep -qE '单[[:space:]]*commit|单commit' "$PLAN_FILE" 2>/dev/null; then
                 # Decisions 声明口径: 计划内任意位置含「单 commit」声明视为机理由登记（38.7 簿记精简口径）
                 [ -n "$(awk '/^##[[:space:]]*Decisions Made/{f=1; next} f && /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null | grep -E 'commit')" ] \
-                    || l0_fail="${l0_fail}③单 commit 惯性缺口（feat 提交数=${l0_ncommits:-0}≠1 且 Decisions 无机理由声明） "
+                    || l0_fail="${l0_fail}③单 commit 惯性缺口（feat|fix 提交数=${l0_ncommits:-0}≠1 且 Decisions 无机理由声明） "
             fi
         fi
         if [ -n "$l0_fail" ]; then

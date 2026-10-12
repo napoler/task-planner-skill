@@ -20,6 +20,14 @@ const path = require('path');
 // [2026-09-10 task-planrequired-race] session_id 提取：stdin JSON `.session_id`（zcode 保证 SessionStart 携带，
 // S1 取证 zcode.cjs:2702），env TASK_PLANNER_SID 降级（zcode-sessionstart.sh 由 stdin 提取后透传）。
 // 手工运行无 stdin / JSON 损坏 → fail-open，sid 缺失不写任何哨兵。
+// [task-perf-opt Change #2] 轻量档关键词检测：SessionStart hook 的 stdin 是否含 prompt 字段
+//   无法从技能仓代码确认（取决于 ZCode 平台 hook 输入格式）。本处对多种可能字段名尽力提取
+//   （.prompt / .user_prompt / .message / .content），命中轻量档关键词（简单/简单修复/就改一行/
+//   改一下/fix/typo）→ 输出「用户已声明轻量档」提示行；读不到 prompt（SessionStart 早于首条用户
+//   消息，或平台不携带）→ fail-open 留空，不误判、不阻断。跨 hook 通信替代机制（UserPromptSubmit
+//   写标记 → PreToolUse 读）见 Change #5 注释；本处仅做「读得到才用」的无副作用前置检测。
+const LIGHTWEIGHT_KW = ['简单修复', '就改一行', '改一下', '简单', 'fix', 'typo'];
+let promptText = '';
 let sid = '';
 try {
   let raw = '';
@@ -31,12 +39,17 @@ try {
   try {
     const j = JSON.parse(raw);
     if (j && typeof j.session_id === 'string' && j.session_id) sid = j.session_id;
+    // 多字段名尽力提取 prompt（平台 hook 输入格式未定，读得到才用；全缺 → promptText 留空 fail-open）
+    const cand = [j && j.prompt, j && j.user_prompt, j && j.message, j && j.content];
+    promptText = cand.find((x) => typeof x === 'string' && x.length > 0) || '';
   } catch (e) {
     // 非 JSON（手工运行、空输入）→ 降级 env
   }
 } catch (e) {
   // fail-open
 }
+// 轻量档命中判定：promptText 非空且含任一关键词（「简单修复」等变体亦命中，修复「简单修复≠简单」触发倒置）
+const lightweightHit = promptText !== '' && LIGHTWEIGHT_KW.some((kw) => promptText.includes(kw));
 if (!sid) sid = process.env.TASK_PLANNER_SID || '';
 
 // [2026-09-10 task-planrequired-race] normSidkey（D8）：剥非字母数字取前 40；`sess` 前缀剥掉，
@@ -89,7 +102,13 @@ try {
   console.log('[task-plan]   - 修改 ≥3 个文件');
   console.log('[task-plan]   - 跨多阶段流程');
   console.log('[task-plan]   - 预计耗时 > 10 分钟');
-  console.log('[task-plan]   - 边界模糊 / 高风险 / 用户未说"简单"');
+  // [task-perf-opt Change #2] 触发条件④从「用户未说『简单』」扩展为「用户未声明轻量档」——
+  // 命中变体「简单修复 / 就改一行 / 改一下 / fix / typo」亦不触发 task-planner（修复「简单修复≠简单」触发倒置根因 #2）
+  console.log('[task-plan]   - 边界模糊 / 高风险 / 用户未声明轻量档（"简单"/"简单修复"/"就改一行"/"改一下"/"fix"/"typo"）');
+  if (lightweightHit) {
+    // [task-perf-opt Change #2③] 用户已声明轻量档 → 跳过 task-planner 触发提示（fail-open：promptText 非空才可能命中）
+    console.log('[task-plan] ✅ 用户已声明轻量档（检测到「' + LIGHTWEIGHT_KW.find((kw) => promptText.includes(kw)) + '」），跳过 task-planner 触发提示');
+  }
   console.log('[task-plan] 初始化命令:');
   // [2026-08-28] 修复:提示语路径改指本 skill 的 zcode 副本(原为 ~/.claude,与 ZCode 实际加载路径不一致)
   console.log('[task-plan]   mkdir -p plans/task-{id}/ && cd $_ && bash ~/.zcode/skills/task-planner/scripts/init-session.sh');

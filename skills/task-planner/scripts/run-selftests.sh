@@ -74,6 +74,42 @@ fi
 TOTAL=0; PASSN=0; FAILN=0; RUNN=0; REUSEDN=0; FAILED_LIST=""
 mkdir -p "$CACHE_DIR"
 
+# [task-perf-opt Change #11] top-5 重脚本并行化（config selftest_heavy_concurrent=on 启用，default off）：
+# 计时诊断实测 top-5（final-gate-hash/requirement-coverage/vc-gate/plan-tier/smart-merge）合计 86.2s=42% 全量。
+# on + fresh 模式下 top-5 后台并行（& + wait）执行，其余 72 脚本串行；总 Total 行汇总逻辑不变（PASS/FAIL 照算）。
+# 各 top-5 脚本独立写自己的输出文件（无共享状态），并行安全。off（默认）/非 fresh/带 --only → 全串行（原行为）。
+_PARALLEL_MODE="$(jq -r '.properties.selftest_heavy_concurrent.default // "off"' "$SKILL_ROOT/config.json" 2>/dev/null || echo off)"
+case "$_PARALLEL_MODE" in ''|off|on) ;; *) _PARALLEL_MODE=off ;; esac
+_PARALLEL_ACTIVE=0
+if [ "$_PARALLEL_MODE" = "on" ] && [ "$FRESH" = "1" ] && [ -z "$ONLY" ]; then _PARALLEL_ACTIVE=1; fi
+_TOP5_RE='final-gate-hash|requirement-coverage|vc-gate|plan-tier|smart-merge'
+# 单脚本执行封装：写独立结果文件 <res_file>（4 字段：rc p f mode），供并行/串行统一汇总
+exec_one() {
+  local script="$1" base="$2" cache_key="$3" cache_file="$4" res_file="$5" log_file="$6"
+  local rc p f
+  if [ "$FRESH" = "0" ] && [ -f "$cache_file" ]; then
+    rc=0; p=0; f=0; read -r rc p f < "$cache_file" 2>/dev/null || true
+    printf '%s %s %s reused\n' "${rc:-0}" "${p:-0}" "${f:-0}" > "$res_file"
+    printf '[reused] %s (rc=%s PASS=%s FAIL=%s)\n' "$base" "${rc:-0}" "${p:-0}" "${f:-0}" >> "$log_file"
+    return 0
+  fi
+  out="$(bash "$script" 2>&1)"; rc=$?
+  p="$(printf '%s\n' "$out" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2)"
+  f="$(printf '%s\n' "$out" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)"
+  [ -z "$p" ] && p=0; [ -z "$f" ] && f=0
+  if [ "$rc" = "0" ]; then printf '%s %s %s\n' "$rc" "$p" "$f" > "$cache_file"; fi
+  if [ "$rc" = "0" ]; then
+    printf '0 %s %s run\n' "$p" "$f" > "$res_file"
+    printf '[run]    %s (rc=0 PASS=%s FAIL=%s)\n' "$base" "$p" "$f" >> "$log_file"
+  else
+    printf '%s %s %s fail\n' "$rc" "$p" "$f" > "$res_file"
+    printf '[FAIL]   %s (rc=%s)\n' "$base" "$rc" >> "$log_file"
+  fi
+  return 0
+}
+_RUN_DIR="$(mktemp -d "${TMPDIR:-/tmp}/task-planner-run-XXXXXX")"
+trap 'rm -rf "$_RUN_DIR"' EXIT
+
 for script in "$SCRIPT_DIR"/selftest-*.sh; do
   # 防御性兜底（2026-10-11）：显式排除自身——即使未来本目录再出现 selftest- 前缀的非断言脚本，
   # 也不会被枚举命中导致递归
@@ -84,6 +120,16 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
   cache_key="$(printf '%s' "$FP$base" | sha256sum | cut -d' ' -f1)"
   cache_file="$CACHE_DIR/$cache_key"
 
+  if [ "$_PARALLEL_ACTIVE" = "1" ] && printf '%s' "$base" | grep -qE "^${_TOP5_RE}\$"; then
+    # top-5 重脚本 → 后台并行（各写独立 res/log，无共享状态，竞态安全）
+    res_file="$_RUN_DIR/$base.res"; log_file="$_RUN_DIR/$base.log"
+    ( exec_one "$script" "$base" "$cache_key" "$cache_file" "$res_file" "$log_file" ) &
+    _PAR_PIDS="$_PAR_PIDS $!"
+    continue
+  fi
+
+  # 串行执行（非 top-5，或并行未启用）
+  RUNN=$((RUNN+1))
   if [ "$FRESH" = "0" ] && [ -f "$cache_file" ]; then
     rc=0; p=0; f=0; read -r rc p f < "$cache_file" 2>/dev/null || true
     REUSEDN=$((REUSEDN+1))
@@ -91,16 +137,31 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
     echo "[reused] $base (rc=${rc:-0} PASS=${p:-0} FAIL=${f:-0})"
     continue
   fi
-
-  RUNN=$((RUNN+1))
   out="$(bash "$script" 2>&1)"; rc=$?
   p="$(printf '%s\n' "$out" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2)"
   f="$(printf '%s\n' "$out" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)"
   [ -z "$p" ] && p=0; [ -z "$f" ] && f=0
-  # 仅 rc=0 才写缓存；rc≠0 的半途结果不缓存，下轮必须实跑重验
   if [ "$rc" = "0" ]; then printf '%s %s %s\n' "$rc" "$p" "$f" > "$cache_file"; fi
   if [ "$rc" = "0" ]; then PASSN=$((PASSN+1)); echo "[run]    $base (rc=0 PASS=$p FAIL=$f)"; else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; echo "[FAIL]   $base (rc=$rc)"; fi
 done
+
+# [task-perf-opt Change #11] 并行 top-5 汇总：wait 后台 + 读各 res_file 更新统计 + 打印各 log
+if [ -n "${_PAR_PIDS:-}" ]; then
+  for _pp in $_PAR_PIDS; do wait "$_pp" 2>/dev/null || true; done
+  for _res in "$_RUN_DIR"/*.res; do
+    [ -f "$_res" ] || continue
+    _b="$(basename "$_res" .res)"
+    read -r _rc _p _f _m < "$_res" 2>/dev/null || true
+    _log="$_RUN_DIR/${_b}.log"
+    [ -f "$_log" ] && cat "$_log"
+    case "$_m" in
+      reused) REUSEDN=$((REUSEDN+1));;
+      run) RUNN=$((RUNN+1));;
+      *) RUNN=$((RUNN+1));;
+    esac
+    if [ "${_rc:-0}" = "0" ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $_b"; fi
+  done
+fi
 
 echo "Total: $TOTAL PASS=$PASSN FAIL=$FAILN (run=$RUNN reused=$REUSEDN)"
 [ -n "$FAILED_LIST" ] && echo "Failed:$FAILED_LIST"

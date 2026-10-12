@@ -133,10 +133,10 @@ fi
 
 # CP-09: jq '.properties|length' config.json =42
 props=$(jq '.properties|length' "$CONFIG" 2>/dev/null)
-if [ "$props" -eq 42 ]; then
-  ok "CP-09" "config properties=$props=42"
+if [ "$props" -eq 44 ]; then
+  ok "CP-09" "config properties=$props=44"
 else
-  bad "CP-09" "config properties=$props≠42"
+  bad "CP-09" "config properties=$props≠44"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
