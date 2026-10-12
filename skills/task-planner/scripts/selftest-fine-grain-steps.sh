@@ -21,6 +21,9 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 GUARD="$SKILL_ROOT/scripts/check-dispatch.sh"
 PGATE="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 派发域搬迁 2026-10-12] Rule 21.1b/22.4/22.6（步骤枚举门条款）属 task-dispatch 域，已迁至
+#   skills/task-dispatch/references/critical-rules-dispatch.md；SG-10 的条文侧断言改指 DISP_RULES，CRIT 保留指向核心。
+DISP_RULES="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TMPL="$SKILL_ROOT/templates/subagent_dispatch.md"
 CONFIG="$SKILL_ROOT/config.json"
@@ -150,9 +153,16 @@ cat > "$PB" <<'EOF'
 EOF
 out="$(bash "$PGATE" "$PB" 2>&1)"; rc=$?
 if [ "$rc" -eq 0 ] && ! printf '%s' "$out" | grep -q '步骤枚举'; then ok 09 "对照无枚举 → 静默 exit 0"; else bad 09 "rc=$rc out=$out"; fi
-# SG-10 静态锚
-if grep -q 'step_max_steps' "$CRIT" && grep -q 'step_max_steps' "$SKILLMD" && grep -q '步骤枚举约束' "$TMPL" \
-   && [ "$(grep -c 'task-v081' "$CRIT")" -ge 3 ]; then ok 10 "条款/SKILL/模板 静态锚齐"; else bad 10 "静态锚缺失"; fi
+# SG-10 [task-v171 派发域搬迁+核心瘦身] 静态锚：条文侧 CRIT→DISP_RULES（Rule 21.1b/22.4/22.6 迁 task-dispatch）；
+#   SKILL 侧 'step_max_steps' 字面→卫星路由表 task-dispatch 行「粒度校验」载体（SKILL 瘦身后不展开派发域条文）
+#   现象：核心 critical-rules.md 已无 step_max_steps/task-v081（Rule 21.1b/22.4/22.6 随派发域迁出），SKILL.md 亦无
+#     step_max_steps 字面（0 命中），SG-10 恒 FAIL。
+#   根因：步骤枚举门属派发域（task-dispatch）；CRIT/SKILLMD 断言目标未随迁重定向。
+#   修法：CRIT 两个断言改指 DISP_RULES（实测 step_max_steps×4/task-v081×3）；SKILL 侧改断言卫星路由表 task-dispatch 行
+#     含「粒度校验」（步骤枚举增量的 SKILL 侧入口面=路由表→DISP_RULES 链路）；模板侧 '步骤枚举约束' 锚不变（在位=1）。
+if grep -q 'step_max_steps' "$DISP_RULES" && grep -q '步骤枚举约束' "$TMPL" \
+   && [ "$(grep -c 'task-v081' "$DISP_RULES")" -ge 3 ] \
+   && grep -E '^\| task-dispatch \|' "$SKILLMD" | grep -q '粒度校验'; then ok 10 "条文(DISP_RULES)/SKILL 路由表粒度校验行/模板 静态锚齐"; else bad 10 "静态锚缺失"; fi
 # SG-11 口径双侧一致性
 c1="$( { extract_counter "$GUARD"; echo 'count_step_markers "'"$fmix"'"'; } | bash )"
 c2="$( { extract_counter "$PGATE"; echo 'count_step_markers "'"$fmix"'"'; } | bash )"

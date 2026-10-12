@@ -30,7 +30,10 @@
 
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CR="$SCRIPT_DIR/../references/critical-rules.md"          # Rule 75 条款本体
+# [task-v171 回归修复 2026-10-12 调研域搬迁] Rule 75（网络调研主动激活与外部数据依赖纪律）属 plan-research-router 域，
+#   原文已迁至 skills/plan-research-router/references/critical-rules-research.md；本脚本 CR 全部用法
+#   （PR-01..PR-09，L50 起）均为 Rule 75 断言、无核心域用途（已逐行核实），CR 改指调研域文件，断言语义零改动。
+CR="$SCRIPT_DIR/../../plan-research-router/references/critical-rules-research.md"  # Rule 75 条款本体（v171 迁移后归属）
 TPL="$SCRIPT_DIR/../templates/task_plan.md"               # 计划期调研区块载体
 PW="$SCRIPT_DIR/../companion/agents/plan-writer.md"       # plan-writer 产出契约
 CPD="$SCRIPT_DIR/check-plan-dispatch.sh"                  # dispatch advisory 段

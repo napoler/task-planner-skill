@@ -237,10 +237,10 @@ verify_installation() {
   done
 
   # 10. task-v055-fallback provider 探测脚本(2026-09-08):网络/400 类失败后主动 Scaling 改派
-  if [ -x "$TASK_PLANNER_ROOT/scripts/subagent-fallback.sh" ]; then
+  if [ -x "$TASK_PLANNER_ROOT/../task-dispatch/scripts/subagent-fallback.sh" ]; then
     pass "subagent-fallback.sh exists and is executable"
   else
-    fail "subagent-fallback.sh missing or not executable at $TASK_PLANNER_ROOT/scripts/"
+    fail "subagent-fallback.sh missing or not executable at $TASK_PLANNER_ROOT/../task-dispatch/scripts/"
   fi
   if jq -e '.properties.provider_fallback // empty' "$TASK_PLANNER_ROOT/config.json" >/dev/null 2>&1; then
     pass "config.json provider_fallback key present"

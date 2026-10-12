@@ -46,13 +46,21 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # ── 路径定义（相对技能根）──
 CR="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 72（决策分级与用户打断纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   DG-01/02/03/05/08 断言改指 CRIT_D；CR 保留指向核心。卫星文件标题为统一「### 72 标题」格式
+#   （核心旧格式 `## Rule 72`），标题行锚同步适配，断言语义（标题唯一+六子条+关键词+零行号引用）零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
 CONFIG="$SKILL_ROOT/config.json"
 
 # ── DG-05 触点文件清单（相对技能根）+ 逐文件 Rule 72 命中阈值 ──
+# [task-v171 纪律域搬迁 2026-10-12] Rule 72 条款本体已迁至 ../task-discipline/references/critical-rules-discipline.md，
+#   触点清单第 1 项由 references/critical-rules.md 改指该文件（同 report-reviewability 的 batch-quality-gate 先例）；
+#   阈值 5 不变（discipline 文件内 'Rule 72' 引用面实测 6 ≥5），断言语义零改动。
 TOUCH_FILES=(
-  "references/critical-rules.md"
+  "../task-discipline/references/critical-rules-discipline.md"
   "templates/variant/image-type.md"
   "templates/variant/multiview-ref-type.md"
   "companion/agents/article-batch-publisher.md"
@@ -76,8 +84,8 @@ cnt()  { [ -f "$2" ] || { echo 0; return; }; local n; n="$(grep -c -e "$1" "$2")
 cntE() { [ -f "$2" ] || { echo 0; return; }; local n; n="$(grep -cE -- "$1" "$2")"; printf '%s' "${n:-0}"; }
 
 # ── DG-01: Rule 72 条款锚（标题=1 六子条>=6）──
-DG01_TITLE=$(cnt '^## Rule 72' "$CR")
-DG01_SUBS=$(cnt '^### 72\.[1-6]' "$CR")
+DG01_TITLE=$(cnt '^### 72 ' "$CRIT_D")
+DG01_SUBS=$(cnt '^### 72\.[1-6]' "$CRIT_D")
 if [ "$DG01_TITLE" -eq 1 ] && [ "$DG01_SUBS" -ge 6 ]; then
     ok "DG-01" "Rule 72 条款锚(标题=1 子条>=6)"
 else
@@ -87,9 +95,9 @@ fi
 # ── DG-02: 三级关键词齐备（A 级必须询问 / C 级禁止询问 / 基础质检硬门）──
 # What: 容错全角括号（`（?`）匹配 A/C 级「必须/禁止询问」关键词。
 # Why: 见文件头 Why 段——材料字面串与条文全角括号形态差异，容错后两形态均命中，语义不变。
-DG02_A=$(cntE 'A 级（?必须询问' "$CR")
-DG02_C=$(cntE 'C 级（?禁止询问' "$CR")
-DG02_G=$(cnt '基础质检硬门' "$CR")
+DG02_A=$(cntE 'A 级（?必须询问' "$CRIT_D")
+DG02_C=$(cntE 'C 级（?禁止询问' "$CRIT_D")
+DG02_G=$(cnt '基础质检硬门' "$CRIT_D")
 if [ "$DG02_A" -ge 1 ] && [ "$DG02_C" -ge 1 ] && [ "$DG02_G" -ge 1 ]; then
     ok "DG-02" "三级关键词齐备(A 级必须询问/C 级禁止询问/基础质检硬门)"
 else
@@ -99,7 +107,7 @@ fi
 # ── DG-03: Rule 72 段无行号引用形态（防级联漂移，v148 判例）──
 # What: 截取 `^## Rule 72` 起至文件尾的片段，片段内 ASCII 冒号紧邻数字=FAIL。
 # Why: 条文引用行号会随文件增删级联漂移，v148 判例已证实；文本锚替代行号锚是本仓硬纪律。
-BLOCK72="$(sed -n '/^## Rule 72/,$p' "$CR" 2>/dev/null || true)"
+BLOCK72="$(sed -n '/^### 72 /,$p' "$CRIT_D" 2>/dev/null || true)"
 DG03_HITS=$(printf '%s' "$BLOCK72" | grep -cE ':\s?[0-9]+' 2>/dev/null || true)
 if [ "$DG03_HITS" -eq 0 ]; then
     ok "DG-03" "Rule 72 段无行号引用形态"
@@ -107,21 +115,22 @@ else
     bad "DG-03" "Rule 72 段行号引用形态命中=$DG03_HITS"
 fi
 
-# ── DG-04: SKILL 接线锚（Rule 72>=5 + 合规清单行内容锚含 A 级/C 级字样）──
-# What: 断言 SKILL.md 中 `Rule 72` 命中数>=5（Rules 全集行/References 表/终验段/索引段/合规清单），
-#       并以内容定位合规清单行（`^| C<N> | ...决策分级与用户打断...`），断言其含「A 级」「C 级」字样。
-# Why: 内容锚（而非绝对编号）——合规行编号是并集易位资源（历史 C46→C48→C49），编号让位不级联
-#      （v155 RRV-04 同款教训：编号锚级联 false-positive；文本锚替代行号锚是本仓硬纪律，见 DG-03）；
-#      同时锁分级语义（A 级必须询问/C 级禁问）未被裁剪。
+# ── DG-04 [task-v171 核心瘦身]: SKILL 接线锚（Rule 72>=1 终验段 + 卫星路由表 discipline 行 + CRIT_D 72 块 A 级/C 级锚）──
+# What: 断言 SKILL.md 中 `Rule 72` 命中数>=1（瘦身后 SKILL 侧唯一接线点=终验交付段「决策分级（Rule 72）…按卫星
+#       task-discipline 全文执行」行；原 >=5=Rules 全集行/References 表/终验段/索引段/合规清单五处，随瘦身合并为终验段+
+#       卫星路由表两载体），并以卫星路由表 discipline 行为路由内容锚，以 CRIT_D Rule 72 段为分级语义锚（A 级/C 级）。
+# Why: Rule 72 属纪律域已迁 CRIT_D；SKILL 侧不展开非核心规则条文（Rule 82 禁回潮），合规清单行（`^| C<N> | ...决策分级与用户打断...`）
+#      随合规清单表瘦身移除。内容锚（行号锚替代纪律）保持：语义锚改钉 CRIT_D 72 段原文（DG-02 同测 CRIT_D 三级关键词，双保险）。
+#      本处修法=现象（R72 5→1、合规行=0 致 DG-04 恒 FAIL）+根因（瘦身移除非核心域摘要/C 行）+修法（终验段+路由表+CRIT_D 语义锚三锚重定向）。
 DG04_R72=$(cnt "Rule 72" "$SKILL")
-DG04_ROWCNT=$(cnt '^| C[0-9]* | .*决策分级与用户打断' "$SKILL")
-DG04_ROWLINE="$(grep -e '^| C[0-9]* | .*决策分级与用户打断' "$SKILL")"
-DG04_A=$(printf '%s' "$DG04_ROWLINE" | grep -c "A 级")
-DG04_C=$(printf '%s' "$DG04_ROWLINE" | grep -c "C 级")
-if [ "$DG04_R72" -ge 5 ] && [ "$DG04_ROWCNT" -ge 1 ] && [ "$DG04_A" -ge 1 ] && [ "$DG04_C" -ge 1 ]; then
-    ok "DG-04" "SKILL 接线锚(Rule 72>=5 合规行内容锚含 A 级/C 级)"
+DG04_ROWCNT=$(cnt '| task-discipline |' "$SKILL")
+DG04_BLOCK72="$(sed -n '/^### 72 /,$p' "$CRIT_D" 2>/dev/null || true)"
+DG04_A=$(printf '%s' "$DG04_BLOCK72" | grep -c "A 级")
+DG04_C=$(printf '%s' "$DG04_BLOCK72" | grep -c "C 级")
+if [ "$DG04_R72" -ge 1 ] && [ "$DG04_ROWCNT" -ge 1 ] && [ "$DG04_A" -ge 1 ] && [ "$DG04_C" -ge 1 ]; then
+    ok "DG-04" "SKILL 接线锚(终验段 Rule 72>=1 ∧ 路由表 discipline 行>=1 ∧ CRIT_D 72 段语义锚含 A 级/C 级)"
 else
-    bad "DG-04" "SKILL 接线锚(got R72=$DG04_R72 ROW=$DG04_ROWCNT A=$DG04_A C=$DG04_C expect R72>=5,ROW>=1,A>=1,C>=1)"
+    bad "DG-04" "SKILL 接线锚(got R72=$DG04_R72 ROW=$DG04_ROWCNT A=$DG04_A C=$DG04_C expect R72>=1,ROW>=1,A>=1,C>=1)"
 fi
 
 # ── DG-05: 触点文件清单 Rule 72 锚齐备（逐文件阈值断言）──
@@ -171,8 +180,8 @@ fi
 # Why: 分组锚使失败定位更精确（哪一面被裁剪一眼可见），阈值与 DG-04/DG-05 同源（单一权威口径，
 #      防口径漂移）；行为面（LLM 决策分级实际行为）无法静态断言，留 TODO(DG-13) 占位待执行期启用。
 
-# ── DG-08: 引用面组（critical-rules.md Rule 72 引用锚>=5）──
-DG08_CR=$(cnt "Rule 72" "$CR")
+# ── DG-08: 引用面组（critical-rules-discipline.md Rule 72 引用锚>=5，纪律域搬迁后改指 CRIT_D）──
+DG08_CR=$(cnt "Rule 72" "$CRIT_D")
 if [ "$DG08_CR" -ge 5 ]; then
     ok "DG-08" "引用面组(critical-rules.md Rule 72>=5 got=$DG08_CR)"
 else
@@ -197,18 +206,20 @@ else
     bad "DG-10" "管线面组缺失(batch-publisher=$DG10_PUB expect>=2, field-fixer=$DG10_FIX expect>=1)"
 fi
 
-# ── DG-11: SKILL 接线组（SKILL.md Rule 72>=5 且合规行内容锚含「A 级」「C 级」）──
-# What: 与 DG-04 同口径（同一内容锚 `^| C<N> | ...决策分级与用户打断...`）的触点分组再组织（SKILL 接线面单列一组）。
-# Why: 分组锚定位「接线面」被裁剪（Rules 全集行/References 表/终验段/索引段/合规清单任一丢失）；
-#      与 DG-04 共用内容锚（非绝对编号），合规行编号让位不级联。
+# ── DG-11 [task-v171 核心瘦身]: SKILL 接线组（终验段 Rule 72>=1 + 路由表 discipline 行 + CRIT_D 72 段 A 级/C 级）──
+# What: 与 DG-04 同口径重定向后的触点分组再组织（SKILL 接线面单列一组）：SKILL.md `Rule 72`>=1（终验交付段唯一接线点），
+#       路由内容锚=卫星路由表 discipline 行，分级语义锚=CRIT_D Rule 72 段（A 级必须询问/C 级禁止询问原文）。
+# Why: 同 DG-04——Rule 72 迁纪律域后 SKILL 侧合规清单行随瘦身移除，>=5 五处接线合并为「终验段+路由表」两载体；
+#      分组锚定位「接线面」被裁剪的能力保持（终验段 Rule 72 或路由表 discipline 行任一丢失即 FAIL）。
 DG11_R72=$(cnt "Rule 72" "$SKILL")
-DG11_ROWLINE="$(grep -e '^| C[0-9]* | .*决策分级与用户打断' "$SKILL")"
+DG11_ROWCNT=$(cnt '| task-discipline |' "$SKILL")
+DG11_ROWLINE="$(sed -n '/^### 72 /,$p' "$CRIT_D" 2>/dev/null || true)"
 DG11_A=$(printf '%s' "$DG11_ROWLINE" | grep -c "A 级")
 DG11_C=$(printf '%s' "$DG11_ROWLINE" | grep -c "C 级")
-if [ "$DG11_R72" -ge 5 ] && [ "$DG11_A" -ge 1 ] && [ "$DG11_C" -ge 1 ]; then
-    ok "DG-11" "SKILL 接线组(Rule 72>=5 合规行内容锚含 A 级/C 级)"
+if [ "$DG11_R72" -ge 1 ] && [ "$DG11_ROWCNT" -ge 1 ] && [ "$DG11_A" -ge 1 ] && [ "$DG11_C" -ge 1 ]; then
+    ok "DG-11" "SKILL 接线组(终验段 Rule 72>=1 路由表 discipline 行>=1 CRIT_D 72 段含 A 级/C 级)"
 else
-    bad "DG-11" "SKILL 接线组缺失(R72=$DG11_R72 A=$DG11_A C=$DG11_C expect R72>=5,A>=1,C>=1)"
+    bad "DG-11" "SKILL 接线组缺失(R72=$DG11_R72 ROW=$DG11_ROWCNT A=$DG11_A C=$DG11_C expect R72>=1,ROW>=1,A>=1,C>=1)"
 fi
 
 # ── DG-12: 行为面 fixture 回归预留骨架（占位断言：TODO(DG-13) 注释行在位即 PASS）──

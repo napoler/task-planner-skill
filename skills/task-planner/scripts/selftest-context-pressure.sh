@@ -12,6 +12,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 67（上下文压力主动评估与会话交接纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   CP-01/02/03/04 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 CONFIG="$SKILL_ROOT/config.json"
 REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
 SKILL_MD="$SKILL_ROOT/SKILL.md"
@@ -32,7 +36,7 @@ bad() {
 }
 
 # CP-01: 六子条锚 critical-rules ^67.[1-6] =6
-count=$(grep -cE '^67\.[1-6] ' "$CRIT")
+count=$(grep -cE '^67\.[1-6] ' "$CRIT_D")
 if [ "$count" -eq 6 ]; then
   ok "CP-01" "六子条锚=6"
 else
@@ -40,8 +44,8 @@ else
 fi
 
 # CP-02: 主动评估>=2 ∧ 主动优化>=1 于 critical-rules
-c1=$(grep -c '主动评估' "$CRIT")
-c2=$(grep -c '主动优化' "$CRIT")
+c1=$(grep -c '主动评估' "$CRIT_D")
+c2=$(grep -c '主动优化' "$CRIT_D")
 if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ]; then
   ok "CP-02" "主动评估=$c1≥2 ∧ 主动优化=$c2≥1"
 else
@@ -49,9 +53,9 @@ else
 fi
 
 # CP-03: HEALTHY/PRESSURE/CONFUSED 各>=1 于 critical-rules ∧ hook 文件交叉断言>=1
-c1=$(grep -c 'HEALTHY' "$CRIT")
-c2=$(grep -c 'PRESSURE' "$CRIT")
-c3=$(grep -c 'CONFUSED' "$CRIT")
+c1=$(grep -c 'HEALTHY' "$CRIT_D")
+c2=$(grep -c 'PRESSURE' "$CRIT_D")
+c3=$(grep -c 'CONFUSED' "$CRIT_D")
 c4=$(grep -cE 'HEALTHY|PRESSURE|CONFUSED' "$POSTTOOLUSE")
 if [ "$c1" -ge 1 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ]; then
   ok "CP-03" "HEALTHY=$c1 PRESSURE=$c2 CONFUSED=$c3 hook=$c4≥1"
@@ -60,7 +64,7 @@ else
 fi
 
 # CP-04: 「不等 Phase complete」语义锚 ∈ critical-rules
-if grep -q '不等 Phase complete' "$CRIT"; then
+if grep -q '不等 Phase complete' "$CRIT_D"; then
   ok "CP-04" "「不等 Phase complete」语义锚存在"
 else
   bad "CP-04" "「不等 Phase complete」语义锚缺失"
@@ -95,22 +99,22 @@ else
   bad "CP-06" "bn=$bn_ok env=$c1 cp=$c2 emit=$emit_now/expect=$emit_expect"
 fi
 
-# CP-07: SKILL 短串 1-69=3 ∧ 整串 Critical Rules 1-69>=2 ∧ C48>=1（v155 Rule 70 行）∧ C49>=1（本任务 Rule 67 行，2026-10-10 三方并集后本任务行由 C46→C48→C49）
-# [2026-10-10 task-v158 合并演进] 全集 1-69→1-71（Rule 71 落地）：计数锚宽容化 1-(69|71)；C50≥1（Rule 71 行）
-# [2026-10-10 task-v160 合并级联] 全集 1-72 纪元：c2 锚宽容化 1-(69|71|72)
-# [2026-10-10 task-v162 合并演进] 全集 1-71→1-7[4-9]（Rule 74 落地）：计数锚再扩 1-(69|71|7[4-9])（B 类宽容锚演进，覆盖 74；C48/C49/C50 不变）
-# [2026-10-11 task-v169 纪元演进] 全集 1-80 纪元（Rule 80 落地）：计数锚竖线并列集末尾追加成员 80 → 1-(69|71|7[4-9]|80)（B 类宽容锚演进，覆盖 80；阈值 c1≥2 ∧ c2≥1 ∧ C48/C49/C50 各≥1 不变）
-c1=$(grep -cE '1-(69|71|7[4-9]|80)' "$SKILL_MD")
-c2=$(grep -cE 'Critical Rules 1-(69|71|7[4-9]|80)' "$SKILL_MD")
-# [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, c1 扩 1-(69|71|75)、c2 扩 1-(69|71|72|75)，判据 c1≥2/c2≥1 不减]
-# [2026-10-10 task-v162 合并演进] 全集 1-71→1-74（Rule 74 落地）：计数锚再扩 1-(69|71|74)（B 类宽容锚演进，覆盖 74；C48/C49/C50 不变）——v163 主断言演进为 1-(69|71|75) 后保留本注释（AD-12 _pin_tol '1-(69|71|74)' 历史字面在位）
-c3=$(grep -c 'C48' "$SKILL_MD")
-c4=$(grep -c 'C49' "$SKILL_MD")
-c5=$(grep -c 'C50' "$SKILL_MD")
+# CP-07 [task-v171 核心瘦身+task-v170 纪元并集] SKILL 全集纪元锚 '1-8[01]' ≥2 ∧ 'Rules 1-80 全集' ≥1 ∧ Rule 67/69/70/71 消费面=卫星路由表 discipline 行 ∧ Rule 69 ≥1 ∧ Rule 80 ≥1
+#   现象：SKILL.md 瘦身（556→214 行）后旧纪元锚 '1-(69|71|7[4-9]|80)' 与合规清单 C48/C49/C50 行（Rule 70/67/71 消费行）双双零命中，CP-07 恒 FAIL。
+#   根因：① 全集声明口径演进为「Rules 1-80 全集索引」（分层架构：核心 12 条+10 卫星）；② Rule 67/69/70/71 均属纪律域，其 SKILL 侧消费点（合规 C 行）随合规清单表瘦身移除，仅存卫星路由表 discipline 行（区间 67,69-76 四规则全覆盖）。
+#   修法：纪元锚改 '1-80'（c1≥2 实测 3 处）+ 整串改 'Rules 1-80 全集'（c2≥1）；C48/C49/C50 三子项改断言——
+#     c3=卫星路由表 discipline 行（Rule 67/69/70/71 路由载体）/ c4='Rule 69'（T1 decision-arbiter 引用面，实测 4）/
+#     c5='Rule 80'（核心域规则仍在 SKILL 正文，实测 4）。断言语义（四条规则 SKILL 侧消费面在位）经新载体保持。
+# 历史纪元演进（v158/v160/v162/v163/v169 各级宽容扩）保留如上；本轮为 v171 分层架构口径切换。
+c1=$(grep -cE '1-8[01]' "$SKILL_MD")
+c2=$(grep -cE 'Rules 1-8[01] 全集|1-8[01] 全集' "$SKILL_MD")
+c3=$(grep -cE '^\| task-discipline \|' "$SKILL_MD")
+c4=$(grep -c 'Rule 69' "$SKILL_MD")
+c5=$(grep -c 'Rule 80' "$SKILL_MD")
 if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ] && [ "$c5" -ge 1 ]; then
-  ok "CP-07" "1-(69|71|7[4-9]|80)=$c1≥2 ∧ CR1-(69|71|7[4-9]|80)=$c2≥1 ∧ C48=$c3≥1 ∧ C49=$c4≥1 ∧ C50=$c5≥1"
+  ok "CP-07" "'1-8[01]'=$c1≥2 ∧ 'Rules 1-8[01] 全集'=$c2≥1 ∧ 路由表 discipline 行=$c3≥1 ∧ Rule 69=$c4≥1 ∧ Rule 80=$c5≥1"
 else
-  bad "CP-07" "1-(69|71|7[4-9]|80)=$c1 CR=$c2 C48=$c3 C49=$c4 C50=$c5"
+  bad "CP-07" "'1-8[01]'=$c1 全集串=$c2 路由行=$c3 R69=$c4 R80=$c5"
 fi
 
 # CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列

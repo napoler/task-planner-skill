@@ -9,6 +9,10 @@ set -u
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RULES="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 71（无源不写·空段占位·写必带锚）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则）；
+#   SA-01..SA-06 的 RULES 断言改指 CRIT_D，RULES 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 DISPATCH_TPL="$SKILL_ROOT/templates/subagent_dispatch.md"
 FINDINGS_TPL="$SKILL_ROOT/templates/findings.md"
@@ -24,20 +28,25 @@ ng() { fail=$((fail+1)); printf '%s FAIL %s\n' "$1" "$2"; }
 chk() { local tag="$1" label="$2" cmd="$3"; if eval "$cmd" 2>/dev/null; then ok "$tag" "$label"; else ng "$tag" "$label"; fi; }
 
 # SA-01 条款标题 + 71.1-71.7 七子条号锚
-chk "SA-01" "critical-rules.md 含 '### 71 无源不写' 标题且 71.1-71.7 七子条锚全在" "grep -qF '### 71 无源不写' \"\$RULES\" && test \$(grep -cE '^71\.[1-7] ' \"\$RULES\") -eq 7"
+chk "SA-01" "critical-rules.md 含 '### 71 无源不写' 标题且 71.1-71.7 七子条锚全在" "grep -qF '### 71 无源不写' \"\$CRIT_D\" && test \$(grep -cE '^71\.[1-7] ' \"\$CRIT_D\") -eq 7"
 # SA-02 71.1 四来源枚举 + 从严
-chk "SA-02" "71.1 行含四来源（file:line/URL/命令输出原文/工具调用记录）与「从严」" "line=\$(grep '^71\.1 ' \"\$RULES\"); test -n \"\$line\" && grep -qF 'file:line' <<<\"\$line\" && grep -qF 'URL' <<<\"\$line\" && grep -qF '命令输出原文' <<<\"\$line\" && grep -qF '工具调用记录' <<<\"\$line\" && grep -qF '从严' <<<\"\$line\""
+chk "SA-02" "71.1 行含四来源（file:line/URL/命令输出原文/工具调用记录）与「从严」" "line=\$(grep '^71\.1 ' \"\$CRIT_D\"); test -n \"\$line\" && grep -qF 'file:line' <<<\"\$line\" && grep -qF 'URL' <<<\"\$line\" && grep -qF '命令输出原文' <<<\"\$line\" && grep -qF '工具调用记录' <<<\"\$line\" && grep -qF '从严' <<<\"\$line\""
 # SA-03 71.2 五问要素 + 口诀
-chk "SA-03" "71.2 行含五问要素与口诀「无源不写，空段占位，写必带锚」" "line=\$(grep '^71\.2 ' \"\$RULES\"); test -n \"\$line\" && grep -q '①' <<<\"\$line\" && grep -q '⑤' <<<\"\$line\" && grep -qF '无源不写，空段占位，写必带锚' <<<\"\$line\""
+chk "SA-03" "71.2 行含五问要素与口诀「无源不写，空段占位，写必带锚」" "line=\$(grep '^71\.2 ' \"\$CRIT_D\"); test -n \"\$line\" && grep -q '①' <<<\"\$line\" && grep -q '⑤' <<<\"\$line\" && grep -qF '无源不写，空段占位，写必带锚' <<<\"\$line\""
 # SA-04 71.4 审计表五列头 + 「补一个源」禁令
-chk "SA-04" "71.4 行含审计表五列头（单元位置/事实摘要/三态判定/源锚或/处置建议）与「补一个源」禁令" "line=\$(grep '^71\.4 ' \"\$RULES\"); test -n \"\$line\" && grep -qF '单元位置' <<<\"\$line\" && grep -qF '事实摘要' <<<\"\$line\" && grep -qF '三态判定' <<<\"\$line\" && grep -qF '源锚或' <<<\"\$line\" && grep -qF '处置建议' <<<\"\$line\" && grep -qF '补一个源' <<<\"\$line\""
+chk "SA-04" "71.4 行含审计表五列头（单元位置/事实摘要/三态判定/源锚或/处置建议）与「补一个源」禁令" "line=\$(grep '^71\.4 ' \"\$CRIT_D\"); test -n \"\$line\" && grep -qF '单元位置' <<<\"\$line\" && grep -qF '事实摘要' <<<\"\$line\" && grep -qF '三态判定' <<<\"\$line\" && grep -qF '源锚或' <<<\"\$line\" && grep -qF '处置建议' <<<\"\$line\" && grep -qF '补一个源' <<<\"\$line\""
 # SA-05 71.5 无锚点行=违规退回
-chk "SA-05" "71.5 行含「无锚点行=违规退回」" "line=\$(grep '^71\.5 ' \"\$RULES\"); test -n \"\$line\" && grep -qF '无锚点行=违规退回' <<<\"\$line\""
+chk "SA-05" "71.5 行含「无锚点行=违规退回」" "line=\$(grep '^71\.5 ' \"\$CRIT_D\"); test -n \"\$line\" && grep -qF '无锚点行=违规退回' <<<\"\$line\""
 # SA-06 71.7 零新 config 键 + 机器边界披露
-chk "SA-06" "71.7 行含「零新 config 键」与「机器边界如实披露」" "line=\$(grep '^71\.7 ' \"\$RULES\"); test -n \"\$line\" && grep -qF '零新 config 键' <<<\"\$line\" && grep -qF '机器边界如实披露' <<<\"\$line\""
-# SA-07 SKILL.md Rule 71 bullet + C50 行 + 1-74 计数 [2026-10-10 task-v162 合并并集演进: 全集锚 1-71→1-74（Rule 74 落地），字面锚同步（A 类机械替换）]
-# [2026-10-11 task-v166 级联演进] '1-74'→'1-7[4-9]'：SKILL.md 索引已演进 1-76（Rule 76 总结格式可读性），宽容正则覆盖 1-74..1-79；-cF 字面匹配正则串恒=0，必须 -cE；AD-12 pin 期望此目标形态
-chk "SA-07" "SKILL.md 含 'Rule 71（无源不写' bullet + '| C50 |' 行 + '1-7[4-9]' 计数 ≥2" "grep -qF 'Rule 71（无源不写' \"\$SKILL\" && grep -qF '| C50 |' \"\$SKILL\" && test \$(grep -cE '1-7[4-9]' \"\$SKILL\") -ge 2"
+chk "SA-06" "71.7 行含「零新 config 键」与「机器边界如实披露」" "line=\$(grep '^71\.7 ' \"\$CRIT_D\"); test -n \"\$line\" && grep -qF '零新 config 键' <<<\"\$line\" && grep -qF '机器边界如实披露' <<<\"\$line\""
+# SA-07 [task-v171 核心瘦身] SKILL.md Rule 71 bullet + C50 行 + 全集计数 —— 三锚随瘦身退役，按现载体重锚
+#   现象：SKILL.md 瘦身后 'Rule 71（无源不写' bullet 与 '| C50 |' 合规行移除（Rule 71 属纪律域），'1-7[4-9]'
+#     区间字面亦随全集口径演进为 '1-80' 归零，三条件全失，SA-07 恒 FAIL。
+#   根因：非核心域规则 bullet/C 行退役（Rule 82 禁回潮）；全集声明口径切换为核心 12 条+10 卫星。
+#   修法：① SKILL 侧 Rule 71 载体=卫星路由表 task-discipline 行（71 以区间 69-76 形态覆盖）；
+#     ② C50 合规面=CRIT_D 71.1 条款本体锚（无源不写语义在条文）；③ 全集计数锚 '1-7[4-9]'→'1-8[01]'（≥2；task-v170 并集 max 口径覆盖 1-80/1-81，实测 3 处）。
+# [2026-10-10 task-v163/v162/v166 级联演进史] 保留如上；本轮为 v171 分层口径切换。
+chk "SA-07" "SKILL.md 卫星路由表 task-discipline 行 + CRIT_D 71.1 条款本体 + '1-8[01]' 全集计数 ≥2" "grep -qE '^\| task-discipline \|' \"\$SKILL\" && grep -qE '^71\.1 ' \"\$CRIT_D\" && test \$(grep -cE '1-8[01]' \"\$SKILL\") -ge 2"
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 计数锚 1-7[12]→1-7[125]（容忍 71/72/75 纪元），判据 ≥2 不减]
 # [2026-10-10 task-v162 合并并集演进] 钉值锚形态 grep -cF '1-74'（Rule 74 落地）保留为历史记录字面（AD-12 _pin_lit 兼容），主断言由 v163 级联扩为 1-7[125] 宽容族]
 # SA-08 dispatch 模板防幻觉契约段 + 五问回溯行

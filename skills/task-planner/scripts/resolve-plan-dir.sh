@@ -122,6 +122,12 @@ for d in "${PLAN_ROOT}"/*/; do
     [ -f "${d}task_plan.md" ] || continue
     name="$(basename "${d}")"
     case "$name" in .*) continue ;; esac
+    # task-v170/S5 [2026-10-11] 防御性跳过 archive/: 本 glob 仅匹配 plans/ 直接子目录,
+    # archive 内任务(task_plan.md 位于 archive/<id>/, 深度 3)天然不被解析; 此处加显式
+    # 判据防未来形态变化(如 glob 放宽深度/在 archive 旁建指向性目录)时误把已归档计划
+    # 解析为活跃计划。Why=归档目录仅为历史记录, 活跃解析面只认根目录在途任务
+    # (口径同 sync-todos.sh INDEX/findings Technical Decisions)。
+    [ "$name" = "archive" ] && continue
     slug_is_valid "$name" || continue
     mt="$(stat -c %Y "${d}" 2>/dev/null || echo 0)"
     if [ "${mt}" -gt "${latest_mt}" ]; then

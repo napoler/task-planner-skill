@@ -80,12 +80,16 @@ else
   bad 03 "templates/task_plan.md 区块=$n（应 =1）/ 表头=$header_row（应 =1）/ 插入位语义（裁决=${verdict_line:-N/A} goal=${goal_line:-N/A} 限制=${limit_line:-N/A}）"
 fi
 
-# G-04 SKILL.md `Rule 66` 计数 ≥2 + `^\| C45 ` 合规行 =1
-# What：断言 SKILL.md 中 Rule 66 引用 ≥2 且 C45 合规行恰 1 处。
-# Why：Rule 66.6 声明的 SKILL 消费侧=摘要行+References 描述行+C45 合规行；C45 是合规清单消费侧唯一落点。
+# G-04 [task-v171 核心瘦身] SKILL.md `Rule 66` ≥1（指针 bullet）+ 'Goal 单元表' 契约措辞 ≥1（C45 合规行瘦身后由指针段承载）
+#   现象：SKILL.md 瘦身后 Rule 66 引用 3→1（仅存 Critical Rules 指针段 '**Rule 66 goal 单元固化**' bullet）、
+#     C45 合规行归零，旧断言 ≥2/=1 恒 FAIL。
+#   根因：Rule 66 属核心在位规则仍在 SKILL 正文；但摘要行+References 描述行+C45 合规行三处联动面中后两处
+#     随瘦身移除（合规清单表→G1-G8 核心域表，G 表未单列 goal 单元行）。
+#   修法：x='Rule 66' 阈值 ≥2→≥1（指针 bullet 为唯一 SKILL 侧落点）；y=C45 行='Goal 单元表' 契约措辞 ≥1
+#     （指针 bullet 内含 'Goal 单元表六列契约'，合规消费点语义由该措辞锚承接）。
 n="$(grep -cE 'Rule 66' "$SKILLMD" || true)"
-c45="$(grep -cE '^\| C45 ' "$SKILLMD" || true)"
-if [ "$n" -ge 2 ] && [ "$c45" -eq 1 ]; then ok 04 "SKILL.md 'Rule 66' 计数=$n（≥2）+ C45 合规行=$c45（=1）"; else bad 04 "SKILL.md 'Rule 66' 计数=$n（应 ≥2）/ C45 合规行=$c45（应 =1）"; fi
+c45="$(grep -cE 'Goal 单元表' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ] && [ "$c45" -ge 1 ]; then ok 04 "SKILL.md 'Rule 66' 计数=$n（≥1，指针 bullet）+ 'Goal 单元表' 契约措辞=$c45（≥1，C45 合规面瘦身后由指针段承载）"; else bad 04 "SKILL.md 'Rule 66' 计数=$n（应 ≥1）/ 'Goal 单元表' 契约措辞=$c45（应 ≥1）"; fi
 
 # G-05 check-plan-dispatch.sh `Goal 单元表` 锚 ≥1 + `--skip-goal-check` 锚 ≥1
 # What：断言 check-plan-dispatch.sh 中 Goal 单元表校验逻辑与 --skip-goal-check 逃生口均在位。

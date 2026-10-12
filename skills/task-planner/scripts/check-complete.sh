@@ -629,7 +629,7 @@ if [ "$python_rc" -eq 0 ]; then
     # 档位由 check-rescue-chain.sh 自解析(config.json rescue_chain_enforce, 默认 warn):
     #   enforce 档存在违规 → 该脚本 exit 1 → 本门阻断 complete;warn/off 档恒 exit 0(仅提示)。
     # exit 2(参数错误)不阻断(避免门控自身配置问题锁死终验)。
-    crc="$SKILL_ROOT/scripts/check-rescue-chain.sh"
+    crc="$SKILL_ROOT/../task-dispatch/scripts/check-rescue-chain.sh"
     if [ -f "$crc" ]; then
         bash "$crc" "$PLAN_DIR_GUESS"
         crc_rc=$?
@@ -1637,6 +1637,70 @@ END {print n+0}'
     _cp_active_ptr=""; [ -f "$PLAN_DIR_GUESS/../.active_plan" ] && _cp_active_ptr="$(tr -d ' \r\n\t' < "$PLAN_DIR_GUESS/../.active_plan" 2>/dev/null || true)"
     if [ -n "$_cp_active_ptr" ] && [ "$_cp_active_ptr" = "$(basename "$PLAN_DIR_GUESS")" ]; then
         printf '[plan] 移交提醒( pointer-lifecycle ): 全局指针仍指向本任务，完成后无需移交、请清理（置空或指向在途任务；gc 亦会清理 stale）\n' >&2
+    fi
+fi
+
+# [2026-10-11 task-v170 Phase 4 S7] ARCHIVE-GATE — 终验后「已完成计划未归档」提醒（Rule 81 机制件）
+# What: 枚举 plans 根（PLAN_DIR_GUESS 的上级目录）直接子目录，按 archive-plan.sh guard_reason 同口径
+#   （archive-plan.sh:88-123）逐目录判定「- **Status:** 行全 complete（总数>0）∧ 无 .active_plan /
+#   .active_plan_side 指针指向该任务 ∧ .session-owner 新鲜窗口（mtime<1440min）外 ∧ 不在
+#   plans/archive/」，对合格目录计数；N>0 → WARN 行提醒跑 archive-plan.sh --batch --dry-run，
+#   N=0 → OK 行。
+# Why: 「任务完成却不归档」是历史复发面——完成计划残留 plans/ 根目录使归档器无提醒入口、
+#   active 指针/会话标记漂移无兜底可见性（R2「必须添加归档」）。warn 形态=不阻断既有
+#   门控 exit 语义（本段恒不改退出码，插入点=全部既有门控段之后、脚本尾部 exit 汇合点前；
+#   fail-open：plans 根不可解析/无目录 → SKIPPED 静默，终验不受影响）。
+if [ -n "$PLAN_DIR_GUESS" ] && [ -d "$PLAN_DIR_GUESS/.." ]; then
+    _ag_plans_root="$(cd "$PLAN_DIR_GUESS/.." && pwd 2>/dev/null)" || _ag_plans_root=""
+    if [ -n "$_ag_plans_root" ] && [ -d "$_ag_plans_root" ]; then
+        _ag_candidate_count=0
+        while IFS= read -r _ag_name; do
+            # 2026-10-11 CR-fix (034-code-reviewer-s14 MAJOR-1): 现象=侧指针命中某任务后,
+            # 其后 sort 序候选目录均因 _ag_ptr_hit 残留被 continue 丢弃, 计数假阴性
+            # (复现: 1 active 指针任务 + 2 complete 候选 → count=0, 期望 2);
+            # 根因=while 体在当前 shell 执行, 变量跨迭代不自动清零, 标志一旦置 1 永不复位;
+            # 修法=每轮目录判定前复位, 语义收窄为「当前目录是否被 active 指针指向」
+            _ag_ptr_hit=""
+            # 与 archive-plan.sh:166-189 同枚举口径：直接子目录仅 task-* 且含 task_plan.md，
+            # archive 目标目录与圆点目录天然排除（glob 跳 dot 目录，无归类面）
+            [ -n "$_ag_name" ] || continue
+            case "$_ag_name" in
+                task-*) : ;;
+                *) continue ;;
+            esac
+            _ag_dir="$_ag_plans_root/$_ag_name"
+            [ -f "$_ag_dir/task_plan.md" ] || continue
+            # 幂等：目标已存在 = 已归档（archive-plan.sh:186 同判据），不计
+            [ -e "$_ag_plans_root/archive/$_ag_name" ] && continue
+            # 守卫① Status 全 complete（archive-plan.sh:109-121 同口径：总数>0 且全行 complete）
+            _ag_status_total="$(grep -cE '^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*' "$_ag_dir/task_plan.md" 2>/dev/null)"
+            _ag_status_ok="$(grep -c 'Status:\*\* complete' "$_ag_dir/task_plan.md" 2>/dev/null)"
+            { [ -n "${_ag_status_total:-}" ] && [ "${_ag_status_total}" -ge 1 ] && [ "${_ag_status_total}" = "${_ag_status_ok:-0}" ]; } || continue
+            # 守卫② active 指针（全局 .active_plan 或 .active_plan_side/*.active_plan 内容 == 任务 id）→ 在途，不计
+            # （archive-plan.sh:92-100 同口径；指针缺失时 [ -f ] 前置使 glob 字面残留不产生误判）
+            if [ -f "$_ag_plans_root/.active_plan" ] && [ "$(cat "$_ag_plans_root/.active_plan" 2>/dev/null)" = "$_ag_name" ]; then
+                continue
+            fi
+            for _ag_ptr in "$_ag_plans_root/.active_plan_side/"*.active_plan; do
+                [ -f "$_ag_ptr" ] || continue
+                if [ "$(cat "$_ag_ptr" 2>/dev/null)" = "$_ag_name" ]; then
+                    _ag_ptr_hit=1
+                    break
+                fi
+            done
+            [ -z "${_ag_ptr_hit:-}" ] || continue
+            # 守卫③ 新鲜 .session-owner（mtime<1440min=24h 活会话窗口，archive-plan.sh:101-108 同口径）→ 活会话，不计
+            if [ -f "$_ag_dir/.session-owner" ]; then
+                _ag_fresh="$(find "$_ag_dir/.session-owner" -mmin -1440 2>/dev/null | wc -l | tr -d '[:space:]')"
+                [ "${_ag_fresh:-0}" -ge 1 ] && continue
+            fi
+            _ag_candidate_count=$((_ag_candidate_count + 1))
+        done < <(find "$_ag_plans_root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | xargs -n 1 basename 2>/dev/null | sort)
+        if [ "$_ag_candidate_count" -gt 0 ]; then
+            printf '[ARCHIVE-GATE] WARN: %s 个已完成计划未归档，运行 bash scripts/archive-plan.sh --batch --dry-run 查看\n' "$_ag_candidate_count"
+        else
+            printf '[ARCHIVE-GATE] OK: 0 个待归档\n'
+        fi
     fi
 fi
 

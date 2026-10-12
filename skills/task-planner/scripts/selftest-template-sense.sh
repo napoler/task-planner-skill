@@ -4,7 +4,7 @@
 #   case-1 T1 正例: init-session 类型空缺（general 兜底）→ 输出含 [template-sense] 且生成的 task_plan.md 末尾含「🔁 模板感知」区块
 #   case-2 T1 正例: 未知类型 foobar → 输出含 [template-sense] 与「🔁 模板感知」
 #   case-3 T1 负例: 已知类型 bugfix → [template-sense] 计 0（known-type 路径零触发）
-#   case-4 条款锚: critical-rules.md 首列 34.7 恰 1 条且含「全自动生成合约」；SKILL.md C22 行含「34.7 全自动生成」
+#   case-4 条款锚: [task-v171 2026-10-12 锚修复] critical-rules-template.md 首列 34.7 恰 1 条且含「全自动生成合约」；plan-template-kit SKILL.md 含「全自动生成合约（34.7）」段
 #   case-5 T3 warn: 计划含「🔁 模板感知」区块且无处置登记 → check-complete 输出含 [template-sense]；无区块计划零输出
 #   case-6 registry 自检: selftest-registry.tsv 含本脚本登记行（含本 S-unit 写入的 dep_anchors）
 #   case-7 T1 CR-fix 负例: mini 档（tier=mini + 空类型）→ 产物 mini-lite 带标记, 无「🔁 模板感知」区块、无 general 注释（无标记守卫消除 P1-1）
@@ -16,6 +16,14 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 模板域收编 2026-10-12 锚修复] 现象: case-4 FAIL（34.7 条数=0）｜
+# 根因: Rule 34.7 随 Rule 34 模板域收编入 plan-template-kit（S25），全文已逐字迁至
+#   skills/plan-template-kit/references/critical-rules-template.md（:21，34.7 恰 1 条+「全自动生成合约」verified）；
+#   同时核心 SKILL.md C22 行随 S33 瘦身删除，「34.7 全自动生成」后继权威面=plan-template-kit SKILL.md
+#   「**全自动生成合约（34.7）**」段（:25，verified）｜
+# 修法（只改断言 target，断言语义零改动——守护面=34.7 条款层+SKILL 消费层在位）。
+CRIT_T="$SKILL_ROOT/../plan-template-kit/references/critical-rules-template.md"
+TPL_SKILL="$SKILL_ROOT/../plan-template-kit/SKILL.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 INIT="$SCRIPT_DIR/init-session.sh"
 CHECK="$SCRIPT_DIR/check-complete.sh"
@@ -80,12 +88,15 @@ else
 fi
 
 # case-4 条款锚（T2 静态守护）
-r347="$(grep -c '^34\.7 ' "$CRIT" 2>/dev/null || echo 0)"
-if [ "$r347" = 1 ] && grep '^34\.7 ' "$CRIT" | grep -q '全自动生成合约' \
-   && grep '^| C22 ' "$SKILL" | grep -q '34\.7 全自动生成'; then
-    ok 4 "critical-rules 34.7 恰 1 条且含「全自动生成合约」; SKILL.md C22 行含「34.7 全自动生成」"
+# [task-v171 2026-10-12 锚修复] 原行为=核心 critical-rules.md grep 34.7 条数/「全自动生成合约」+ 核心 SKILL.md C22 行
+#   grep「34.7 全自动生成」；Rule 34 随模板域收编（条款 target=CRIT_T），C22 行随 S33 瘦身删除（SKILL 消费面
+#   target=plan-template-kit SKILL.md「全自动生成合约（34.7）」段）。守护语义零改动。
+r347="$(grep -c '^34\.7 ' "$CRIT_T" 2>/dev/null || echo 0)"
+if [ "$r347" = 1 ] && grep '^34\.7 ' "$CRIT_T" | grep -q '全自动生成合约' \
+   && grep -q '全自动生成合约（34.7）' "$TPL_SKILL"; then
+    ok 4 "critical-rules-template 34.7 恰 1 条且含「全自动生成合约」; plan-template-kit SKILL.md 含「全自动生成合约（34.7）」"
 else
-    bad 4 "条款锚缺失/漂移: 34.7 条数=$r347, C22 行: $(grep '^| C22 ' "$SKILL" | head -1)"
+    bad 4 "条款锚缺失/漂移: 34.7 条数=$r347, TPL SKILL 段: $(grep '全自动生成合约（34.7）' "$TPL_SKILL" | head -1)"
 fi
 
 # case-5 T3 check-complete warn 行为

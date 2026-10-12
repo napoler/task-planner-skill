@@ -11,6 +11,13 @@ T="$(mktemp -d /tmp/selftest-tier-b.XXXXXX)"
 trap 'rm -rf "$T"' EXIT
 CKD="$SCRIPT_DIR/check-delegation.sh"; CKDIS="$SCRIPT_DIR/check-dispatch.sh"
 RIM="$SCRIPT_DIR/resolve-interaction-mode.sh"; CR="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] TB 组断言按规则归属多锚拆分:
+#   TB-04(Rule 14 ④ 通道)/TB-10(Rule 22.8.2 T5 豁免句)/TB-18(Rule 21.4 豁免子条) → task-dispatch(CRIT_DP);
+#   TB-09(Rule 38.3 mini 单 Phase 契约) → plan-template-kit(CRIT_T);
+#   TB-11(Rule 19.2 一行声明句) 留守核心(CR, 未迁);
+#   TB-12/13(CR 分级/合并句) → 新 SKILL.md Code Review Gate 行(S33 瘦身后原 [task-v094 T-B6] 标记句并入该行)
+CRIT_DP="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
+CRIT_T="$SKILL_ROOT/../plan-template-kit/references/critical-rules-template.md"
 
 # ── T-B4 直做通道 ──
 mkdir -p "$T/mini/plans/tm" "$T/std/plans/ts"
@@ -20,7 +27,7 @@ printf 'x=1\n' > "$T/app.py"
 ( cd "$T/mini" && bash "$CKD" pretool "$T/app.py" default 5 ) 2>/dev/null; [ $? -eq 0 ] && ok 01 "mini 业务文件直做放行" || bad 01 "mini 业务文件未放行"
 ( cd "$T/mini" && bash "$CKD" pretool "/home/terry/.zcode/skills/task-planner/SKILL.md" default 5 ) 2>/dev/null; [ $? -eq 2 ] && ok 02 "mini 保护区仍拦截" || bad 02 "mini 保护区被放行(红线失守)"
 ( cd "$T/std" && bash "$CKD" pretool "$T/app.py" default 5 ) 2>/dev/null; [ $? -eq 2 ] && ok 03 "非 mini 不受通道影响" || bad 03 "非 mini 误放行"
-grep -q '④ mini 直做通道' "$CR" && ok 04 "Rule 14 ④ 通道条款在位" || bad 04 "Rule 14 ④ 缺失"
+grep -q '④ mini 直做通道' "$CRIT_DP" && ok 04 "Rule 14 ④ 通道条款在位" || bad 04 "Rule 14 ④ 缺失"
 
 # ── T-B3 mini silent ──
 printf '# t\n<!-- plan_tier: mini -->\n' > "$T/m1.md"
@@ -32,13 +39,13 @@ printf '# t\n' > "$T/s1.md"
 
 # ── T-B2 单 Phase 模板 ──
 grep -q '固定 1：实施+验收合一' "$SKILL_ROOT/templates/variant/mini-lite-type.md" && ok 08 "mini-lite 单 Phase 锚" || bad 08 "模板仍 2 Phase"
-grep -q '单 Phase 化（\[task-v094 T-B2\]）\|单 Phase（实施+验收合一' "$CR" && ok 09 "38.3 契约同步" || bad 09 "38.3 未同步"
+grep -q '单 Phase 化（\[task-v094 T-B2\]）\|单 Phase（实施+验收合一' "$CRIT_T" && ok 09 "38.3 契约同步" || bad 09 "38.3 未同步"
 
 # ── T-B5 / T-B7 / T-B6 文本锚 ──
-grep -q '短任务豁免（\[task-v094 T-B5\]）' "$CR" && ok 10 "22.8.2 T5 豁免句" || bad 10 "T5 豁免句缺失"
+grep -q '短任务豁免（\[task-v094 T-B5\]）' "$CRIT_DP" && ok 10 "22.8.2 T5 豁免句" || bad 10 "T5 豁免句缺失"
 grep -q '纯实施 Phase 一行声明豁免（\[task-v094 T-B7\]）' "$CR" && ok 11 "19.2 一行声明句" || bad 11 "T-B7 句缺失"
-grep -q 'diff 分级（\[task-v094 T-B6\]）' "$SKILL_ROOT/SKILL.md" && ok 12 "SKILL CR 分级句" || bad 12 "T-B6 分级句缺失"
-grep -q '轻 diff 合并（\[task-v094 T-B6\]）' "$SKILL_ROOT/SKILL.md" && ok 13 "验证流程合并句" || bad 13 "合并句缺失"
+grep -q '轻 diff' "$SKILL_ROOT/SKILL.md" && ok 12 "SKILL CR 分级句" || bad 12 "T-B6 分级句缺失"
+grep -q '重 diff' "$SKILL_ROOT/SKILL.md" && ok 13 "验证流程合并句" || bad 13 "合并句缺失"
 
 # ── T-B1 分槽并行 ──
 mkdir -p "$T/p1/plans/pk/subagent-state"
@@ -68,7 +75,7 @@ sed -i '/parallel_readonly: true/d' "$T/p1/plans/pk/task_plan.md"
 TASK_PLANNER_PLAN_DIR="$T/p1/plans/pk" bash "$CKDIS" pretool "$T/pr.txt" sid-c >/dev/null 2>&1; [ $? -eq 2 ] && ok 16 "双条件缺声明仍拦" || bad 16 "单标记误放行"
 rm -f "$T/p1/plans/pk/subagent-state/.dispatch-inflight"
 TASK_PLANNER_PLAN_DIR="$T/p1/plans/pk" bash "$CKDIS" pretool "$T/pw.txt" sid-d >/dev/null 2>&1; [ $? -eq 0 ] && ok 17 "槽空闲写类正常" || bad 17 "槽空闲误拦"
-grep -q '只读分槽豁免（\[task-v094 T-B1\]' "$CR" && ok 18 "21.4 豁免子条在位" || bad 18 "21.4 子条缺失"
+grep -q '只读分槽豁免（\[task-v094 T-B1\]' "$CRIT_DP" && ok 18 "21.4 豁免子条在位" || bad 18 "21.4 子条缺失"
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

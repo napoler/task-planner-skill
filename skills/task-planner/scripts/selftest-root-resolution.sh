@@ -31,6 +31,11 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 53（根源解决与决策管辖）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则）；
+#   RR-01..RR-05/RR-15/RR-17 的 CRIT 断言改指 CRIT_D；RR-06 的 51.1a 属核心域（Rule 51 在核心保留），
+#   仍指 CRIT（跨 home 按断言 target 拆多锚）。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TPL="$SKILL_ROOT/templates/task_plan.md"
 VAR="$SKILL_ROOT/templates/variant/rule-enhancement-type.md"
@@ -44,34 +49,34 @@ bad() { FAIL=$((FAIL+1)); printf 'RR-%s FAIL %s\n' "$1" "$2"; }
 
 # RR-01 53.1 子条锚 `grep -cF '53.1 **结果级需求全链工序审计'` =1
 # 口径：53.1 行首标题字面（子条范式对齐 51/52，行首编号+加粗标题）；=1 锁唯一落点防段落复制漂移。
-n="$(grep -cF '53.1 **结果级需求全链工序审计' "$CRIT" || true)"
+n="$(grep -cF '53.1 **结果级需求全链工序审计' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 01 "critical-rules.md 53.1「结果级需求全链工序审计」=1"; else bad 01 "critical-rules.md 53.1 锚命中=$n（应 =1）"; fi
 
 # RR-02 53.2 子条锚 `grep -cF '53.2 **根治判据'` =1
 # 口径：53.2 行首标题字面；根治判据=机制/守卫/载体三选一是本脚本自身存在的依据条款，锚丢=守卫自引用断裂。
-n="$(grep -cF '53.2 **根治判据' "$CRIT" || true)"
+n="$(grep -cF '53.2 **根治判据' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 02 "critical-rules.md 53.2「根治判据」=1"; else bad 02 "critical-rules.md 53.2 锚命中=$n（应 =1）"; fi
 
 # RR-03 53.3 子条锚 =1 且 收口锚「唯一权威边界」=1
 # 口径：「唯一权威边界」是 critic P0 修复的 41.2 四门槛收口字面（原并行判别体系被废除）——53.3 标题在位但收口锚丢
 # = 决策管辖二分退回旧并行面（惰性推诿出口），必须同时锁死。
-n="$(grep -cF '53.3 **决策管辖二分' "$CRIT" || true)"
-m="$(grep -cF '唯一权威边界' "$CRIT" || true)"
+n="$(grep -cF '53.3 **决策管辖二分' "$CRIT_D" || true)"
+m="$(grep -cF '唯一权威边界' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ] && [ "$m" -eq 1 ]; then ok 03 "critical-rules.md 53.3「决策管辖二分」=1 且「唯一权威边界」=1"; else bad 03 "critical-rules.md 53.3 锚=$n（应 1）或「唯一权威边界」=$m（应 1）"; fi
 
 # RR-04 53.4 子条锚 =1 且 量化锚「三元组」=1
 # 口径：「三元组」（彻底路径增量成本/浅路径返工概率及依据/返工成本）是 53.4 返工核算的量化口径字面——
 # 丢三元组 = 返工核算退化为「凭感觉选浅路径」，53.4 失去可陈述判据。
-n="$(grep -cF '53.4 **返工成本核算' "$CRIT" || true)"
-m="$(grep -cF '三元组' "$CRIT" || true)"
+n="$(grep -cF '53.4 **返工成本核算' "$CRIT_D" || true)"
+m="$(grep -cF '三元组' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ] && [ "$m" -eq 1 ]; then ok 04 "critical-rules.md 53.4「返工成本核算」=1 且「三元组」=1"; else bad 04 "critical-rules.md 53.4 锚=$n（应 1）或「三元组」=$m（应 1）"; fi
 
 # RR-05 53.5 子条锚 =1 且 触发面锚「Q7 惰性推诿」≥1 且「Q8 无根治判据」≥1
 # 口径：Q7/Q8 是 53.3/53.2 触发面在 26.3 惩罚映射的消费登记字面（登记于 53.5；不扩 26.1 既有 Q1-Q6 枚举）——
 # ≥1 而非 =1：Q7/Q8 在 53.3/53.4/53.5 多处合法复现（触发面引用），锁存在性不锁唯一性（防多落点口径误报）。
-n="$(grep -cF '53.5 **机制' "$CRIT" || true)"
-m="$(grep -cF 'Q7 惰性推诿' "$CRIT" || true)"
-p="$(grep -cF 'Q8 无根治判据' "$CRIT" || true)"
+n="$(grep -cF '53.5 **机制' "$CRIT_D" || true)"
+m="$(grep -cF 'Q7 惰性推诿' "$CRIT_D" || true)"
+p="$(grep -cF 'Q8 无根治判据' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ] && [ "$m" -ge 1 ] && [ "$p" -ge 1 ]; then ok 05 "critical-rules.md 53.5「机制」=1 且 Q7 惰性推诿=$m≥1 且 Q8 无根治判据=$p≥1"; else bad 05 "critical-rules.md 53.5 锚=$n（应 1）或 Q7=$m（应 ≥1）或 Q8=$p（应 ≥1）"; fi
 
 # RR-06 51.1a 载体子句锚 `grep -cF '51.1a **载体双机制'` =1
@@ -80,20 +85,24 @@ if [ "$n" -eq 1 ] && [ "$m" -ge 1 ] && [ "$p" -ge 1 ]; then ok 05 "critical-rule
 n="$(grep -cF '51.1a **载体双机制' "$CRIT" || true)"
 if [ "$n" -eq 1 ]; then ok 06 "critical-rules.md 51.1a「载体双机制」=1"; else bad 06 "critical-rules.md 51.1a 锚命中=$n（应 =1）"; fi
 
-# RR-07 SKILL.md Rule 53 摘要 bullet 锚 `grep -cF 'Rule 53（根源解决与决策管辖'` =1
-# 口径：SKILL.md Critical Rules 摘要段的 Rule 53 bullet 是 LLM 读 SKILL 时的条款入口索引（RC-09 同范式）——
-# 丢 bullet = 摘要与条款脱钩（防「条款扩到 53 但摘要停摆 51」级联断链，锚级联 §4 判例）。
-n="$(grep -cF 'Rule 53（根源解决与决策管辖' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 07 "SKILL.md Rule 53 摘要 bullet =1"; else bad 07 "SKILL.md Rule 53 摘要 bullet 命中=$n（应 =1）"; fi
+# RR-07 [task-v171 核心瘦身] SKILL.md Rule 53 摘要 bullet → 卫星路由表 task-discipline 行（Rule 53 消费面瘦身后载体）
+#   现象：SKILL.md 瘦身后 Critical Rules 摘要 bullet（'Rule 53（根源解决与决策管辖'）移除（Rule 53 属纪律域），命中=0，RR-07 恒 FAIL。
+#   根因：非核心域规则摘要 bullet 随瘦身退役；SKILL 侧入口索引=卫星路由表 discipline 行（Rule 53 以区间 53-57 形态覆盖）。
+#   修法：改断言路由表 discipline 行 =1（入口索引语义由路由表承载）；Rule 53 条文本体锚由 CRIT_D 侧（RR-20 等）守护。
+n="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+if [ "$n" -eq 1 ]; then ok 07 "SKILL.md 卫星路由表 task-discipline 行 =1（Rule 53 摘要 bullet 瘦身后由路由表承载）"; else bad 07 "SKILL.md 路由表 discipline 行命中=$n（应 =1）"; fi
 
-# RR-08 SKILL.md 合规清单 C36 行锚 `grep -cF 'C36'` =1 且 C36 行含「根源覆盖表」
-# 口径：C36 是 Rule 53 的合规清单消费点（RC-10 C35 同范式，行内 | C36 | 唯一）；行内必含「根源覆盖表」——
-# C36 若只剩空壳（消费词被裁）= 合规面与 53.1 载体脱钩（防 C36 行被误删/改写为无锚泛文）。
-n="$(grep -cF 'C36' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ] && grep -F 'C36' "$SKILLMD" | grep -qF '根源覆盖表'; then
-  ok 08 "SKILL.md 合规清单 C36 行 =1 且含「根源覆盖表」"
+# RR-08 [task-v171 核心瘦身] 合规清单 C36 行 → 计划模板「根源覆盖表」区块（53.1 载体）+ 卫星路由表 discipline 行
+#   现象：C36 合规行随清单表退役，'C36' 命中=0，RR-08 恒 FAIL。
+#   根因：Rule 53 消费点（根源覆盖表）的权威载体=templates/task_plan.md「🧮 根源覆盖表」区块（53.1 计划侧载体，
+#     task-v131 落地后每计划强制携带）；合规清单表已退役为 G1-G8 核心域表。
+#   修法：改断言 templates/task_plan.md 含「根源覆盖表」≥1（载体在位）∧ SKILL.md 路由表 discipline 行 =1（消费面路由）。
+n="$(grep -cF '根源覆盖表' "$SKILL_ROOT/templates/task_plan.md" || true)"
+r="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ] && [ "$r" -eq 1 ]; then
+  ok 08 "计划模板「根源覆盖表」区块=$n ∧ SKILL.md 路由表 discipline 行=$r（C36 消费点瘦身后由模板载体+路由表承载）"
 else
-  bad 08 "SKILL.md C36 命中=$n（应 =1）或 C36 行未含「根源覆盖表」（消费点脱钩）"
+  bad 08 "计划模板根源覆盖表=$n（应 ≥1）或路由表 discipline 行=$r（应 =1）（消费点脱钩）"
 fi
 
 # RR-09 全集声明演进锚 `grep -cE 'Critical Rules 全集 1-[0-9]+(\+[0-9]+)?'` =1（负断言：'1-51' 残留 =0）
@@ -111,12 +120,15 @@ fi
 # [2026-10-10 task-v162 合并并集演进: 实态=「Critical Rules 全集 1-7[4-9]」, 主断言宽容正则扩 7x 纪元 1-(5[3-9]|6[0-9]|7[0-4])（B 类宽容锚演进，覆盖 74）；负断言清单 {51,53,55} 强度不变]
 # [2026-10-10 task-v156 CR/M 级联] 锚随 SKILL 计数「1-71+73」插入形态宽容化:DCS-11/R-09/RF-07/RR-09/P-05 正则加 `(\+[0-9]+)?` 族（K9）,负断言保留
 # [2026-10-10 task-v163 级联: SKILL 全集声明演进 1-75（Rule 75 落地）, 宽容正则 7[0-2]→7[0-5]（覆盖 1-70/72/75 各纪元），判据 =1 不减]
-n="$(grep -cE 'Critical Rules 全集 1-[0-9]+(\+[0-9]+)?' "$SKILLMD" || true)"
+# [2026-10-12 task-v171 分层口径切换] SKILL.md 瘦身后全集声明演进为「Rules 1-80 全集索引」（核心 12 条+10 卫星），
+#   旧形态 'Critical Rules 全集 1-NN(+N)' 失配=0；主断言随动演进为 'Rules 1-80 全集索引：' 唯一声明行（=1 语义保持），
+#   旧纪元负断言 {51,53,55} 清单保留（宽容正则优先范式延续，演进史注释保留如上）。
+n="$(grep -cE 'Rules 1-8[01] 全集索引：' "$SKILLMD" || true)"
 m="$(grep -cE '(全集|Rules) 1-(51|53|55)' "$SKILLMD" || true)"  # [2026-10-05 task-v132] 裸 '1-51' 固定匹配被 SKILL:304「51.1-51.7」子串误触（级联第 5 变体：负断言须语境锚定防子串误伤）; [2026-10-05 task-v138] 负断言并入 53（1-53→1-55 演进后旧纪元清单={51,53}，强度不减弱，先例 v127 RC-15 ^50→^52）; [2026-10-08 task-v144] 负断言再并入 55（1-55→1-62 演进后旧纪元清单={51,53,55}，强度不减弱）
 if [ "$n" -eq 1 ] && [ "$m" -eq 0 ]; then
-  ok 09 "SKILL.md 全集声明「Critical Rules 全集 1-[0-9]+(+N)」（现状 1-7[4-9]）=1 且旧「1-51/53/55」残留=0"
+  ok 09 "SKILL.md 全集声明「Rules 1-8[01] 全集索引：」=1（v171 分层口径）且旧「1-51/53/55」残留=0"
 else
-  bad 09 "SKILL.md 全集 1-[0-9]+(+N) 命中=$n（应 =1）或旧 1-51 残留=$m（应 =0，级联漏改）"
+  bad 09 "SKILL.md 全集 'Rules 1-8[01] 全集索引：' 命中=$n（应 =1）或旧 1-51 残留=$m（应 =0，级联漏改）"
 fi
 
 # RR-10 主模板双区块锚 `grep -cF '🎯 用户需求原文'` =1 且 `grep -cF '🧮 根源覆盖表'` =1
@@ -162,7 +174,7 @@ if [ "$n" -ge 1 ] && [ "$m" -ge 2 ]; then ok 14 "attest-plan.sh「第 4 锚」=$
 # 口径：53.3 定稿已将决策管辖判别面从「代理可判四项 OR 无客观判据的真实偏好二选」收口为
 # 41.2 G1-G4 四门槛唯一权威边界（真实偏好二选归 G4 语义级目标分叉，不再作并行出口）——
 # 旧字面复现 = 判别面被偷改回并行体系（防自设出口的回归探测，命中即 P0 漂移 FAIL）。
-n="$(grep -cF '或无客观判据的真实偏好二选' "$CRIT" || true)"
+n="$(grep -cF '或无客观判据的真实偏好二选' "$CRIT_D" || true)"
 if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客观判据的真实偏好二选」=0（critic P0 收口钉住）"; else bad 15 "critical-rules.md 旧判别面字面命中=$n（应 =0，53.3 唯一权威边界被破——P0 漂移）"; fi
 
 # RR-16 SKILL.md 索引行全集括注锚（防级联漏改，CR P1-2）
@@ -178,20 +190,22 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 # [2026-10-11 task-v169 纪元演进] 全集 1-80 纪元（Rule 80 落地）：主断言 ERE 并列集 40-(5[3-9]|6[0-9]|7[0-6]) 末尾追加成员 80 → 40-(5[3-9]|6[0-9]|7[0-6]|80)（兜底判定「同时含 50 与 53」保留不变）
 # 定位面同步：:273 索引行括注已演进「含 Rule 40-62 全集」（'（Rules 1-39' 定位失配→'详见 `references/critical-rules.md`' 定位，=1）；
 # 主断言 40-5[3-9]→40-(5[3-9]|6[0-9]|7[0-6])（同 SR-08/RR-09 范式，覆盖 40-53/54/55/62/71/74 各纪元）；兜底判定保留。
-idxn="$(grep -cF '详见 `references/critical-rules.md`（Critical Rules' "$SKILLMD" || true)"
-idxline="$(grep -F '详见 `references/critical-rules.md`（Critical Rules' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE 'Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)'; then
-  ok 16 "SKILL.md 索引行「详见 critical-rules.md（Critical Rules」=1 且含「Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)」全集宽容括注（CR P1-2 防级联漏改）"
-elif [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -q '50' && printf '%s' "$idxline" | grep -q '53'; then
-  ok 16 "SKILL.md 索引行「详见 critical-rules.md（Critical Rules」=1 且逐号式括注含 50 与 53（兜底判定）"
+# [2026-10-12 task-v171 核心瘦身] 索引行锚重定向：References 表 critical-rules.md 行措辞演进——
+#   旧「详见 `references/critical-rules.md`（Critical Rules …（含 Rule 40-NN 全集）」随瘦身重写退役；
+#   现存载体=References 表行「| `references/critical-rules.md` | Critical Rules 核心域 1-80 全集索引（12 条核心全文+分层架构说明+卫星路由索引） |」。
+#   修法：idxn 锚改 'critical-rules.md` | Critical Rules 核心域'（=1）+ 行内含 '1-8[01]'（全集括注演进口径，防级联漏改语义保持）。
+idxn="$(grep -cF 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
+idxline="$(grep -F 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE '1-8[01]'; then
+  ok 16 "SKILL.md References 表 critical-rules.md 行=1 且含「1-80」全集括注（v171 分层口径，CR P1-2 防级联漏改）"
 else
-  bad 16 "SKILL.md 索引行命中=$idxn（应 =1）或索引行未含「Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)」（亦未同时含 50 与 53——级联漏改，CR P1-2 复发）"
+  bad 16 "SKILL.md References 表 critical-rules.md 行命中=$idxn（应 =1）或行内未含 1-80 全集括注（级联漏改，CR P1-2 复发）"
 fi
 
 # RR-17 critical-rules.md 侧 Rule 53 区块锚 `grep -c '^### 53 '` =1
 # 口径：条款侧区块标题锚（与 RR-07 SKILL 侧摘要 bullet 对称）——SKILL 索引行声明「Rule 40-54 全集」但条款侧
 # 无 53 区块 = 索引指向虚空（挂空锚）；=1 锁唯一落点（与 RR-01..05 子条锚同口径，防 53 段复制漂移）。
-n="$(grep -c '^### 53 ' "$CRIT" || true)"
+n="$(grep -c '^### 53 ' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 17 "critical-rules.md 区块锚「^### 53 」=1（索引行 40-54 全集的条款侧落点在位）"; else bad 17 "critical-rules.md 区块锚「^### 53 」命中=$n（应 =1，索引行挂空锚/条款侧缺失）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

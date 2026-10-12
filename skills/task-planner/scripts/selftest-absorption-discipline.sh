@@ -10,6 +10,10 @@ set -u
 # SKILL_ROOT 由脚本自身位置推导（绝对路径，worktree 内），CWD 无关
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RULES="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 74 及其触点 8.1/36.5/56.1 均属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   AD-01/02/03/05/08 断言改指 CRIT_D；RULES 保留指向核心（未来核心域断言用）。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 PLAN_TPL="$SKILL_ROOT/templates/task_plan.md"
 DISPATCH_TPL="$SKILL_ROOT/templates/subagent_dispatch.md"
@@ -23,16 +27,23 @@ sk() { skip=$((skip+1)); printf '%s SKIP %s\n' "$1" "$2"; }
 chk() { local tag="$1" label="$2" cmd="$3"; if eval "$cmd" 2>/dev/null; then ok "$tag" "$label"; else ng "$tag" "$label"; fi; }
 
 # AD-01 critical-rules.md 含 '### 74 变更吸收三判纪律' 标题行，且 74.1-74.6 六子条锚各 ≥1
-chk "AD-01" "critical-rules.md 含 '### 74 变更吸收三判纪律' 标题且 74.1-74.6 六子条锚全在" "grep -qF '### 74 变更吸收三判纪律' \"\$RULES\" && grep -qE '^74\.1 ' \"\$RULES\" && grep -qE '^74\.2 ' \"\$RULES\" && grep -qE '^74\.3 ' \"\$RULES\" && grep -qE '^74\.4 ' \"\$RULES\" && grep -qE '^74\.5 ' \"\$RULES\" && grep -qE '^74\.6 ' \"\$RULES\""
+chk "AD-01" "critical-rules.md 含 '### 74 变更吸收三判纪律' 标题且 74.1-74.6 六子条锚全在" "grep -qF '### 74 变更吸收三判纪律' \"\$CRIT_D\" && grep -qE '^74\.1 ' \"\$CRIT_D\" && grep -qE '^74\.2 ' \"\$CRIT_D\" && grep -qE '^74\.3 ' \"\$CRIT_D\" && grep -qE '^74\.4 ' \"\$CRIT_D\" && grep -qE '^74\.5 ' \"\$CRIT_D\" && grep -qE '^74\.6 ' \"\$CRIT_D\""
 # AD-02 条文三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））+判据句「先问是补充还是替代」各 ≥1
-chk "AD-02" "Rule 74 条文含三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））与判据句「先问是补充还是替代」" "grep -qF '增量（默认且优先）' \"\$RULES\" && grep -qF '四条件全满足才可' \"\$RULES\" && grep -qF '删除（最高门槛）' \"\$RULES\" && grep -qF '先问是补充还是替代' \"\$RULES\""
+chk "AD-02" "Rule 74 条文含三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））与判据句「先问是补充还是替代」" "grep -qF '增量（默认且优先）' \"\$CRIT_D\" && grep -qF '四条件全满足才可' \"\$CRIT_D\" && grep -qF '删除（最高门槛）' \"\$CRIT_D\" && grep -qF '先问是补充还是替代' \"\$CRIT_D\""
 # AD-03 条文内禁硬编码行号锚（:[0-9] 引用形态=FAIL）——仅审视 Rule 74 条文段（标题行至 EOF）
-chk "AD-03" "Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）" "sec=\$(sed -n '/^### 74 变更吸收三判纪律/,\$p' \"\$RULES\"); test -n \"\$sec\" && ! grep -qE ':[0-9]' <<<\"\$sec\""
-# AD-04 SKILL.md 接线锚 ≥5：全集行/索引段/References 表三处 '1-[7-8][0-9]' + 用户新指令处理段 '变更吸收三判门（Rule 74' + 合规清单 C51 行
-# [2026-10-11 task-v169 Rule 80 纪元扩展] Rule 80 落地后 SKILL.md 全集索引演进 1-76→1-80：AD-04 旧 7x 纪元锚 → '1-[7-8][0-9]'（覆盖 1-70..1-89，含 1-74..1-79 历史纪元与 1-80，阈值 ≥3 不变）；AD-12 的 4 个 'Critical Rules' pin 同步改 '1-[7-8][0-9]'，source-anchor pin 因该脚本本体未随批演进保持原样
-chk "AD-04" "SKILL.md 接线锚 ≥5：'1-[7-8][0-9]' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74' + C51 行" "test \$(grep -cE '1-[7-8][0-9]' \"\$SKILL\") -ge 3 && grep -qF '变更吸收三判门（Rule 74' \"\$SKILL\" && grep -qF '| C51 |' \"\$SKILL\""
-# AD-05 触点锚：critical-rules 8.1/36.5/56.1 段 grep 'Rule 74' 命中 ≥3 + SKILL B 类行含 'Rule 74' + B/C 类新段含「可行性判别门」
-chk "AD-05" "触点锚：critical-rules 8.1/36.5/56.1 段 'Rule 74' 命中 ≥3 + SKILL B 类行 'Rule 74' + B/C 类新段含「可行性判别门」" "test \$(grep -E '^(8\.1|36\.5|56\.1) ' \"\$RULES\" | grep -cF 'Rule 74') -ge 3 && grep -E '\| B 扩展 \|' \"\$SKILL\" | grep -qF 'Rule 74' && grep -F 'B/C 类' \"\$SKILL\" | grep -qF '可行性判别门'"
+chk "AD-03" "Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）" "sec=\$(sed -n '/^### 74 变更吸收三判纪律/,\$p' \"\$CRIT_D\"); test -n \"\$sec\" && ! grep -qE ':[0-9]' <<<\"\$sec\""
+# AD-04 [task-v171 核心瘦身] SKILL.md 接线锚：全集 '1-[7-8][0-9]' 三处 + 新指令处理段 'Rule 74 三判门'行 + 卫星路由表 task-discipline 行
+#   现象：SKILL.md 瘦身（556→214 行，合规清单表替换为 G1-G8 核心域表）后，旧锚 '变更吸收三判门（Rule 74' 与 '| C51 |' 双双零命中，AD-04 恒 FAIL。
+#   根因：断言锚定旧「合规检查清单 C51 行」与旧新指令段措辞；Rule 74 属非核心域规则，瘦身后 SKILL.md 仅经
+#     「用户新指令处理 B 扩展行（Rule 74 三判门）」+「卫星路由表」承载联动面（Rule 82 禁回潮，C 行不回填）。
+#   修法：'变更吸收三判门（Rule 74'→B 行现措辞 'Rule 74 三判门'；'| C51 |'→卫星路由表 task-discipline 行；
+#     Rule 74 全文与子条锚由 AD-01/02/03 在 CRIT_D 断 assertion，断言强度不弱化。
+# [2026-10-11 task-v169 Rule 80 纪元扩展] 保留：全集索引 1-80 三处锚阈值 ≥3 不变（前端子条件实测=3 通过）。
+chk "AD-04" "SKILL.md 接线锚 ≥3：'1-[7-8][0-9]' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74 三判门' + 卫星路由表 task-discipline 行" "test \$(grep -cE '1-[7-8][0-9]' \"\$SKILL\") -ge 3 && grep -qF 'Rule 74 三判门' \"\$SKILL\" && grep -qE '^\| task-discipline \|' \"\$SKILL\""
+# AD-05 触点锚：critical-rules 8.1/36.5/56.1 段 grep 'Rule 74' 命中 ≥3 + SKILL B 类行含 'Rule 74' + CRIT_D 含「可行性判别门」
+# [task-v171 核心瘦身] 末子项原锚=SKILL 'B/C 类' 段含「可行性判别门」——瘦身后 SKILL.md 不再展开非核心规则条文，
+#   「可行性判别门」唯一载体=CRIT_D Rule 74 条文段（实测 2 处）。修法：SKILL 侧保留 B 行 'Rule 74' 触点断言，条文侧锚改指 CRIT_D。
+chk "AD-05" "触点锚：critical-rules 8.1/36.5/56.1 段 'Rule 74' 命中 ≥3 + SKILL B 类行 'Rule 74' + CRIT_D 含「可行性判别门」" "test \$(grep -E '^(8\.1|36\.5|56\.1) ' \"\$CRIT_D\" | grep -cF 'Rule 74') -ge 3 && grep -E '\| B 扩展 \|' \"\$SKILL\" | grep -qF 'Rule 74' && grep -qF '可行性判别门' \"\$CRIT_D\""
 # AD-06 templates/task_plan.md 含「📋 变更标注表」且六列关键词齐备（编号/对象/类型/吸收判定/依据/执行动作）+四类型串「新增·修改·删除·更新」+吸收判定三态串「增量·替代·删除」
 chk "AD-06" "templates/task_plan.md 含「📋 变更标注表」且六列（编号/对象/类型/吸收判定/依据/执行动作）+四类型串+吸收判定三态串齐备" "hdr=\$(grep -F '吸收判定' \"\$PLAN_TPL\" || true); test -n \"\$hdr\" && grep -qF '📋 变更标注表' \"\$PLAN_TPL\" && grep -qF '编号' <<<\"\$hdr\" && grep -qF '对象' <<<\"\$hdr\" && grep -qF '类型' <<<\"\$hdr\" && grep -qF '依据' <<<\"\$hdr\" && grep -qF '执行动作' <<<\"\$hdr\" && grep -qF '新增·修改·删除·更新' <<<\"\$hdr\" && grep -qF '增量·替代·删除' <<<\"\$hdr\""
 # AD-07 templates/subagent_dispatch.md 含「定稿可行性判别模式」+三维关键词（可执行性/相容性/风险性）+三态串（PASS-WITH-RISKS）
@@ -50,7 +61,7 @@ CONFIG="$SKILL_ROOT/config.json"
 SELF="$SCRIPTS/selftest-absorption-discipline.sh"
 
 # AD-08 Rule 74.4 分工与豁免锚在位：与 Rule 69.1 T1 的分工句（「69.1」引用）+ 74.4(f)「mini 档」豁免措辞各 ≥1
-chk "AD-08" "Rule 74.4 分工与豁免锚：「69.1」引用 +「mini 档」豁免措辞各 ≥1" "sec=\$(sed -n '/^### 74 /,\$p' \"\$RULES\"); test -n \"\$sec\" && grep -qF '69.1' <<<\"\$sec\" && grep -qF 'mini 档' <<<\"\$sec\""
+chk "AD-08" "Rule 74.4 分工与豁免锚：「69.1」引用 +「mini 档」豁免措辞各 ≥1" "sec=\$(sed -n '/^### 74 /,\$p' \"\$CRIT_D\"); test -n \"\$sec\" && grep -qF '69.1' <<<\"\$sec\" && grep -qF 'mini 档' <<<\"\$sec\""
 # AD-09 registry.tsv 含本脚本登记行（脚本名 + 守护面描述串「Rule 74」/「变更吸收」）
 chk "AD-09" "registry.tsv 含 selftest-absorption-discipline.sh 登记行（脚本名+守护面描述串）" "row=\$(grep '^selftest-absorption-discipline\.sh' \"\$REGISTRY\" || true); test -n \"\$row\" && grep -qF 'Rule 74' <<<\"\$row\" && grep -qF '变更吸收' <<<\"\$row\""
 # AD-10 config.json 零新键（Rule 74.6：禁新增 absorption 类配置键）
@@ -64,18 +75,25 @@ chk "AD-11" "SKILL.md『1-71』字面残留=0（三处已演进 1-[7-8][0-9]）"
 _pin_lit() { grep -qF "$2" "$1" 2>/dev/null; }             # 精确 pin：文件内 live 锚字面（如 'Critical Rules 1-[7-8][0-9]'）在位
 _pin_tol() { grep -qF "$2" "$1" 2>/dev/null; }             # 宽容 pin：文件内字面正则族串在位
 ad12=0
-_pin_lit "$SCRIPTS/selftest-tool-selection.sh" 'Critical Rules 1-[7-8][0-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" 'Critical Rules 1-[7-8][0-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" 'Critical Rules 1-[7-8][0-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-self-resolution.sh" 'Critical Rules 1-[7-8][0-9]' || ad12=1
-_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-7[4-9]'" || ad12=1
-_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-[7-8][0-9]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-(69|71|7[4-9]|80)' || ad12=1
+# [2026-10-12 task-v171 纪元切换同步] SKILL.md 全集口径 40-8x→'1-80'（分层架构：核心 12 条+10 卫星），
+#   4 个主锚 selftest 的纪元锚随动演进（'Critical Rules 1-[7-8][0-9]'→"grep -cE '1-80'"），pin 清单同步演进
+#   （pin 机制语义不变：钉住兄弟 selftest 的 live 纪元锚形态，防部分演进漂移；与 v169 '1-74'→'1-[7-8][0-9]' 同范式）。
+# [2026-10-12 task-v170 纪元并集 max(1-81)] SKILL.md 全集口径 '1-80'→'1-81'（Rule 81 落地，VC-2 口径 78 条），
+#   5 个主锚 selftest 的纪元锚再随动 '1-80'→'1-8[01]'（覆盖 80/81，负样本 1-82 不命中，同 master 版
+#   selftest-session-log.sh SL-05 已立形态），pin 清单二次同步；research-first/context-pressure/skill-split
+#   三个 _pin_tol 目标字面随各自 live 锚演进而同步。
+_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-8[01]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-8[01]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-8[01]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-8[01]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-8[01]'" || ad12=1
+_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-8[01]' || ad12=1
+_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-8[01]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-workflow-orchestration.sh" '1-(68|69|71)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-conclusion-discipline.sh" '1-[4-7][0-9]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-8][0-9])' || ad12=1
+_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-7][0-9]|81)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-source-anchor-discipline.sh" '^71\.[1-7] ' || ad12=1
-if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：Critical Rules 1-[7-8][0-9] ×4 + source-anchor 计数 pin）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
+if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：'1-8[01]' 纪元 grep ×5）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
 # AD-13 自举消费：本计划 task_plan.md 变更标注表 ≥10 行 CA-n 条目（Rule 74.3 dogfood，本计划=首批 consumer）
 #   候选（无机器相关硬编码，S12 收紧）：① env 注入 TASK_PLANNER_ABSORB_PLAN ② 主仓根（git-common-dir 推导，worktree 内可解析到主仓）
 #     ③ repo 相对 $SKILL_ROOT/../../plans/…（部署位/主仓直跑）；均缺=SKIP 中性态（sk 不计 pass/fail，防静默转绿）

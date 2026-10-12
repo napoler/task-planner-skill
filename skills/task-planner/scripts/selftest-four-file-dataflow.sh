@@ -91,8 +91,14 @@ ge   "FF-09 ledger-append VALID_EVENTS 行含 kb_distill"   "$(cnt 'VALID_EVENTS
 pair "FF-10 dispatch 模板 kb 行+findings 可写行双在位"      "$(cnt 'knowledge-brief: {plan_dir}' "$TPL")" "$(cnt '可写=仅追加' "$TPL")"
 
 # ── SKILL.md 消费侧 ──
-eq   "FF-11 SKILL C42 合规行=1"                           "$(cnt '^| C42 |' "$SKILL")" 1
-eq   "FF-12 SKILL Rule 62 摘要行=1"                        "$(cnt 'Rule 62（四文件罗盘' "$SKILL")" 1
+# [task-v171 核心瘦身] FF-11/12 重定向：合规清单表（C41/C42 行）随瘦身替换为 G1-G8 核心域合规表，Rule 62 摘要行
+#   措辞演进为 '**Rule 62 四文件罗盘数据流转**' 指针 bullet（Rule 62 属核心在位规则，瘦身后仍在 SKILL 正文三处）。
+#   现象：'^| C42 |' 与旧摘要行字面 'Rule 62（四文件罗盘' 均零命中，FF-11/12 恒 FAIL。
+#   根因：合规清单 C 行体系整体退役（G 表仅核心域）；摘要 bullet 去掉全角括号措辞。
+#   修法：FF-11 合规消费点→G 表四文件相关行（G5 findings 落盘+G6 回填门控，=2，Rule 62 消费面的现存合规载体）；
+#     FF-12 摘要行→Critical Rules 指针段 'Rule 62 四文件罗盘数据流转' bullet =1；FF-13/14 不变（实测在位）。
+eq   "FF-11 SKILL G 表四文件合规行=2(G5+G6)"                  "$(cnt '^| G[56] ' "$SKILL")" 2
+eq   "FF-12 SKILL Rule 62 指针 bullet=1"                      "$(cnt 'Rule 62 四文件罗盘数据流转' "$SKILL")" 1
 eq   "FF-13 SKILL 映射表蒸馏行=1"                          "$(cnt '主进程单写者蒸馏，Rule 62.3 双落盘' "$SKILL")" 1
 ge   "FF-14 SKILL Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule 62' "$SKILL")" 3
 

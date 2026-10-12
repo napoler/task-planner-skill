@@ -4,6 +4,13 @@
 # Why: 防「守措辞不守行为」错位复发（53.2/59.6 范式）；用户 2026-10-08「需要进行时刻记得纠正」
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: DCE-01/02 FAIL(Rule 64 块头/六子条在核心已不存在)、
+#   DCE-06/07 FAIL(SKILL.md '64.1 留痕三件套'/'留痕三件套已落实' 字面随 S33 瘦身改写)｜
+# 根因: P7 核心瘦身后 Rule 64 归属 task-drift-guard, 旧锚指核心 critical-rules.md; S33 后 SKILL.md 留痕三件套
+#   接线并入 DRIFT CHECK 行/Completion Gate G4 行(去掉 64.1 前缀与"已落实"措辞)｜
+# 修法: DCE-01/02 改锚 CRIT_DR(task-drift-guard/references/critical-rules-drift.md); DCE-06 改指 SKILL.md
+#   '留痕三件套'(DRIFT CHECK 执行流程接线); DCE-07 改指 SKILL.md '留痕三件套齐'(G4 门控行)
+CRIT_DR="$SCRIPT_DIR/../../task-drift-guard/references/critical-rules-drift.md"
 CR="$SCRIPT_DIR/../references/critical-rules.md"
 SKILL="$SCRIPT_DIR/../SKILL.md"
 GATE="$SCRIPT_DIR/check-3file-gate.sh"
@@ -17,13 +24,13 @@ ok()  { echo "PASS $1"; PASS=$((PASS+1)); }
 bad() { echo "FAIL $1 ($2)"; FAIL=$((FAIL+1)); }
 cnt() { [ -f "$2" ] || { echo 0; return; }; grep -c -e "$1" "$2" 2>/dev/null || true; }
 # ── 静态断言 DCE-01~10 ──
-[ "$(cnt '^### 64 偏移检查留痕强制与节奏化触发纪律' "$CR")" -ge 1 ] && ok "DCE-01 critical-rules Rule 64 块头" || bad "DCE-01" "块头缺失"
-[ "$(cnt '^64\.[1-6] \*\*' "$CR")" -eq 6 ] && ok "DCE-02 六子条锚=6" || bad "DCE-02" "got=$(cnt '^64\.[1-6] \*\*' "$CR") expect=6"
+[ "$(cnt '^### 64 偏移检查留痕强制与节奏化触发纪律' "$CRIT_DR")" -ge 1 ] && ok "DCE-01 critical-rules-drift Rule 64 块头" || bad "DCE-01" "块头缺失"
+[ "$(cnt '^64\.[1-6] \*\*' "$CRIT_DR")" -eq 6 ] && ok "DCE-02 六子条锚=6" || bad "DCE-02" "got=$(cnt '^64\.[1-6] \*\*' "$CRIT_DR") expect=6"
 [ "$(cnt 'VALID_EVENTS=.*drift_check' "$LEDGER")" -ge 1 ] && ok "DCE-03 ledger VALID_EVENTS 含 drift_check" || bad "DCE-03" "枚举缺失"
 [ "$(cnt 'Rule 64.2' "$GATE")" -ge 1 ] && ok "DCE-04 gate 含 Rule 64.2 条件段" || bad "DCE-04" "条件段缺失"
 [ "$(cnt 'drift-rhythm' "$HOOK")" -ge 1 ] && ok "DCE-05 posttooluse 含 drift-rhythm" || bad "DCE-05" "注入段缺失"
-[ "$(cnt '64.1 留痕三件套' "$SKILL")" -ge 1 ] && ok "DCE-06 SKILL.md 含 64.1 留痕三件套" || bad "DCE-06" "接线缺失"
-[ "$(cnt '留痕三件套已落实' "$SKILL")" -ge 1 ] && ok "DCE-07 SKILL C4 行含留痕三件套已落实" || bad "DCE-07" "C4 追加缺失"
+[ "$(cnt '留痕三件套' "$SKILL")" -ge 1 ] && ok "DCE-06 SKILL.md 含留痕三件套接线（DRIFT CHECK 行）" || bad "DCE-06" "接线缺失"
+[ "$(cnt '留痕三件套齐' "$SKILL")" -ge 1 ] && ok "DCE-07 SKILL G4 行含留痕三件套齐" || bad "DCE-07" "C4 追加缺失"
 [ "$(cnt '判定输入' "$AGENT")" -ge 1 ] && ok "DCE-08 drift-checker.md 含判定输入锚" || bad "DCE-08" "判定输入缺失"
 [ "$(cnt 'drift_enforce' "$CONFIG")" -eq 0 ] && ok "DCE-09 config.json 不含 drift_enforce（零新键）" || bad "DCE-09" "got=$(cnt 'drift_enforce' "$CONFIG") expect=0"
 # [2026-10-08 task-v148] DCE-10 部署布局自适应：CHANGELOG 为仓级文件，部署位不存在——缺失时 SKIP 计 PASS（What=部署位跑 selftest 不因仓级文件缺席而红；Why=selftest 权威运行位是仓源，部署位布局差异 FAIL 会污染真实回归信号）

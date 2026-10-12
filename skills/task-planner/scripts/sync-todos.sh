@@ -134,6 +134,12 @@ forward_sync() {
     local json_entries=""
 
     # Find all task_plan.md files under plans/
+    # task-v170/S5 [2026-10-11] 排除 archive/ 子树: 归档后 plans/archive/<id>/task_plan.md 深度≥3,
+    # 原递归 find 无深度限制会把已归档任务扫入 sync 报告(findings §6 记录 L152 形态)。
+    # Why=归档目录仅为历史记录, 不得再进入活跃同步面; 与 write_index(maxdepth 2, 天然不命中
+    # archive 下 task_plan.md)的口径对齐——INDEX 只列根目录在途任务(见 findings Technical Decisions)。
+    # -not -path 对 find 起始路径本身也做匹配, "*/archive/*" 不含起始路径(其自身非 archive 子项),
+    # 根目录在途任务不受影响; 不破坏 L201 write_index 的 maxdepth 2 行为(此处仅动 forward_sync)。
     while IFS= read -r task_plan; do
         [[ -z "$task_plan" ]] && continue
 
@@ -149,7 +155,7 @@ forward_sync() {
             ((count++)) || true
         done < <(parse_task_plan "$task_plan")
 
-    done < <(find "$plans_dir" -name "task_plan.md" -type f 2>/dev/null | sort)
+    done < <(find "$plans_dir" -name "task_plan.md" -type f -not -path "*/archive/*" 2>/dev/null | sort)
 
     if $JSON_OUTPUT; then
         echo "[$json_entries]"

@@ -34,9 +34,16 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 55（可复用能力落盘纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   CP-01/02/03 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
-REG="$SKILL_ROOT/references/capability-registry.md"
-CAP="$SKILL_ROOT/scripts/capabilities/agnes-quota.sh"
+# [task-v171 纪律域搬迁 2026-10-12] capability-registry.md 与 scripts/capabilities/ 归属纪律域，
+#   迁至 skills/task-discipline（与 task-planner 平级），路径改锚；下方 $REG/$CAP 仅换路径字面，
+#   CP-07/08/09/10..13/19/20 断言语义零改动（Rule 36.5 纯增量）
+REG="$SKILL_ROOT/../task-discipline/references/capability-registry.md"
+CAP="$SKILL_ROOT/../task-discipline/scripts/capabilities/agnes-quota.sh"
 AGENT_VIDEO="$SKILL_ROOT/companion/agents/video-generation-executor.md"
 AGENT_IMAGE="$SKILL_ROOT/companion/agents/image-generation-executor.md"
 CONFIG="$SKILL_ROOT/config.json"
@@ -49,39 +56,43 @@ bad() { FAIL=$((FAIL+1)); printf 'CP-%s FAIL %s\n' "$1" "$2"; }
 # CP-01 critical-rules.md `^### 55 ` 标题行计数=1
 # What：断言 Rule 55 章节标题唯一（`### 55 可复用能力落盘纪律…`）。
 # Why：标题行是章节识别锚；=1 保证未被重复插入（多次追加=文件尾脏写）也未被误删（条款失主）。
-n="$(grep -cE '^### 55 ' "$CRIT" || true)"
+n="$(grep -cE '^### 55 ' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 01 "critical-rules.md '### 55 ' 标题锚 =1"; else bad 01 "critical-rules.md '### 55 ' 计数=$n（应 =1）"; fi
 
 # CP-02 critical-rules.md `^55\.[1-6] ` 六子条计数=6
 # What：断言 55.1-55.6 六条子条主体行（行首 `55.N `）全在位。
 # Why：六子条是 55.1 复用前置检查/55.2 权威来源优先/55.3 首次成功落盘/55.4 固定位置格式/55.5 执行体接线/
 #      55.6 机制的唯一文本落点；缺任一条 = Rule 55 条款本体被裁剪（防后续改写 critical-rules.md 时误删 55.x 段）。
-n="$(grep -cE '^55\.[1-6] ' "$CRIT" || true)"
+n="$(grep -cE '^55\.[1-6] ' "$CRIT_D" || true)"
 if [ "$n" -eq 6 ]; then ok 02 "critical-rules.md '55.x ' 六子条锚 =6"; else bad 02 "critical-rules.md '55.x ' 计数=$n（应 =6）"; fi
 
 # CP-03 Rule 55 块首说明行含 task-v138（来源任务锚）
 # What：断言 `### 55 ` 标题行正文含来源任务代号 `task-v138`。
 # Why：条款需可溯源（Rule 20.6 编号账本/任务代号可追溯）；缺 task 代号 = 条款失去来源登记，回归期无法对账。
-if grep -E '^### 55 ' "$CRIT" | grep -q 'task-v138'; then
+if grep -E '^### 55 ' "$CRIT_D" | grep -q 'task-v138'; then
   ok 03 "Rule 55 块首说明行含 task-v138"
 else
   bad 03 "Rule 55 块首说明行缺 task-v138 来源锚"
 fi
 
-# CP-04 SKILL.md `Rule 55` 计数 ≥3（摘要行/C 检查项/References 索引三处联动）
-# What：断言 SKILL.md 中 `Rule 55` 出现 ≥3 次（Rules 索引 bullet + References 表行 + 全集/摘要锚）。
-# Why：SKILL.md 是执行期入口；条款只在 critical-rules.md 而 SKILL 无联动 = 消费侧不可发现（53.2 条款死文反例）。
-#      ≥3 与 P2-S2 三处联动承诺对齐（防后续只改一处造成索引面失守）。
-n="$(grep -c 'Rule 55' "$SKILLMD" || true)"
-if [ "$n" -ge 3 ]; then ok 04 "SKILL.md 'Rule 55' 计数 $n ≥3"; else bad 04 "SKILL.md 'Rule 55' 计数=$n（应 ≥3）"; fi
+# CP-04 [task-v171 核心瘦身] SKILL.md Rule 55 联动面（瘦身后由卫星路由表 task-discipline 行承载）
+#   现象：SKILL.md 瘦身后非核心域规则摘要 bullet/合规 C 行/References 索引三处联动全部移除，'Rule 55' 计数=0，CP-04 恒 FAIL。
+#   根因：断言锚定旧 SKILL.md 三处联动（Rules 索引 bullet + References 表 + 合规清单 C 行）；Rule 55 属纪律域，瘦身后 SKILL 侧唯一联动载体=卫星路由表 task-discipline 行（Rule 82 禁回潮）。
+#   修法：改断言卫星路由表 task-discipline 行在位（≥1；该行以区间形态 53-57 覆盖 Rule 55，逐编号匹配不适用于区间路由表）
+#     + CRIT_D Rule 55 标题锚在位（=1）；Rule 55 全文/子条锚由 CP-01/02/03（CRIT_D）守护，SKILL 侧联动改路由表口径，强度等价。
+n="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+m="$(grep -cF '### 55 可复用能力落盘纪律' "$CRIT_D" || true)"
+if [ "$n" -ge 1 ] && [ "$m" -eq 1 ]; then ok 04 "SKILL.md 卫星路由表 task-discipline 行在位（n=$n，区间 53-57 覆盖 Rule 55）+ CRIT_D 55 标题锚=1"; else bad 04 "SKILL.md 卫星路由表 task-discipline 行 n=$n（应 ≥1）/ CRIT_D 标题锚 m=$m（应 1）"; fi
 
-# CP-05 SKILL.md `40-[5-8][0-9]` 计数=1（新纪元全集声明, 宽容正则）
-# [2026-10-10 task-v158 S-unit 级联: SKILL.md 全集声明已演进为 `40-71`(L288), 旧宽容锚 40-[56][0-9]（覆盖 40-50..40-69）失配=0, 随动 40-[56][0-9]→40-[567][0-9]（覆盖 40-50..40-79, 后续合法扩号不触发本锚, 语义强度不降）, =1 计数语义不变]
-# [2026-10-11 task-v169 级联: Rule 80 落地后 SKILL.md 全集声明演进为 `40-80 全集`(L313), 40-[567][0-9]（覆盖 40-50..40-79）失配=0, 随动 40-[567][0-9]→40-[5-8][0-9]（覆盖 40-50..40-89, 后续合法扩号不触发本锚, 语义强度不降）, =1 计数语义不变]
-# What：断言 SKILL.md `40-[5-8][0-9]` 出现恰 1 次（Rules 全集声明行, 当前声明=`40-80 全集`）。
-# Why：纪元演进后全集声明必须指向最新区间；=1 防漏改（仍写旧区间）或重复声明（多处不一致）。
-n="$(grep -cE '40-[5-8][0-9]' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 05 "SKILL.md '40-5x/6x/7x/8x' 全集声明（宽容 40-[5-8][0-9]）=1"; else bad 05 "SKILL.md '40-[5-8][0-9]' 计数=$n（应 =1）"; fi
+# CP-05 [task-v171 核心瘦身+task-v170 纪元并集] SKILL.md 全集声明纪元锚：`1-8[01]` ≥1（覆盖 1-80/1-81） 且旧 `40-[5-8][0-9]` 字面 =0
+#   现象：SKILL.md 瘦身后全集声明从「40-80 全集」演进为「Rules 1-80 全集索引」（frontmatter/Critical Rules 指针段/References 表三处），旧宽容锚 `40-[5-8][0-9]` 命中=0，CP-05 恒 FAIL。
+#   根因：全集声明口径随分层架构演进——核心 12 条+10 卫星路由表取代旧 40-80 单文件全集；旧锚只覆盖 40-xx 纪元。
+#   修法：正断言改 `1-8[01]`（全集口径 1-81，task-v170 并集 max 口径，实测 3 处：frontmatter 引用行/指针段/References 表，阈值 ≥1 防漏改），
+#     负断言保留旧纪元零残留（与 CP-06 配对语义不变）。
+# [2026-10-10 task-v158] / [2026-10-11 task-v169] 两级纪元演进史保留如上；本轮 40-8x→1-80 为第三次演进。
+n="$(grep -cE '1-8[01]' "$SKILLMD" || true)"
+o="$(grep -cE '40-[5-8][0-9]' "$SKILLMD" || true)"
+if [ "$n" -ge 1 ] && [ "$o" -eq 0 ]; then ok 05 "SKILL.md '1-8[01]' 全集声明 $n 处 ≥1 且旧 '40-[5-8][0-9]' 字面 =0"; else bad 05 "SKILL.md '1-80' 计数=$n（应 ≥1）/ 旧 '40-[5-8][0-9]' 残留=$o（应 =0）"; fi
 
 # CP-06 SKILL.md `40-5[3-9]` 计数=0（旧纪元字面零残留, 演进完成断言）
 # [2026-10-08 task-v144 合并级联（附带, 同 IP-12）: SKILL.md 声明演进 40-55→40-62, CP-05/06 配对随动——CP-05 固定锚 40-55→宽容 40-[56][0-9]; CP-06 负断言对象 40-53→40-5[3-9]（覆盖 40-53/54/55 全部旧纪元, 语义=旧纪元字面零残留）]

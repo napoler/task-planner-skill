@@ -30,7 +30,7 @@
 #   运行方式：`bash scripts/selftest-subagent-granularity-skill-escort.sh`（只读 grep/test，零写入）；
 #   逐行打印 `SG-NN PASS/FAIL <说明>`，末行 `Total: N PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。
 #   被检文件路径全部相对 SCRIPT_DIR 解析（`$SKILL_ROOT/references/...`、`$SKILL_ROOT/templates/...`、
-#   `$SCRIPT_DIR/check-dispatch.sh`、`$SCRIPT_DIR/analyze-splits.sh`、`$SKILL_ROOT/config.json`），
+#   `$SCRIPT_DIR/check-dispatch.sh`、`$SKILL_ROOT/../task-dispatch/scripts/analyze-splits.sh`、`$SKILL_ROOT/config.json`），
 #   保证仓库/worktree/三宿主部署位三处均可直接跑。
 #
 # Why（Rule 59.6 机制锚，task-v144 2026-10-08）:
@@ -47,12 +47,19 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # SKILL_ROOT 支持 env 覆盖（SG_SKILL_ROOT）：负断言自测时指向临时破坏副本目录，worktree 本体零触碰；默认=脚本上级目录
 SKILL_ROOT="${SG_SKILL_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] Rule 59（子代理拆分粒度硬门与技能伴飞纪律）属 task-dispatch 域，
+#   原文已迁至 skills/task-dispatch/references/critical-rules-dispatch.md；本脚本 CRIT 全部 9 处用法
+#   （SG-01..SG-11 条款本体断言）均为 Rule 59 断言、无核心域用途（已逐行核实），CRIT 改指派发域文件，断言语义零改动。
+CRIT="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
 TPLAN="$SKILL_ROOT/templates/task_plan.md"
 KBRIEF="$SKILL_ROOT/templates/knowledge-brief.md"
 DISP="$SKILL_ROOT/templates/subagent_dispatch.md"
 CHK="$SCRIPT_DIR/check-dispatch.sh"
-ASPL="$SCRIPT_DIR/analyze-splits.sh"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: SG-20 FAIL(scripts/analyze-splits.sh 缺失或不可执行)｜
+# 根因: analyze-splits.sh 随派发域迁至 skills/task-dispatch/scripts, 旧写法 $SCRIPT_DIR/../task-dispatch
+#   少一级, 解析到 skills/task-planner/task-dispatch(不存在)｜修法: 改锚 $SKILL_ROOT/../task-dispatch/scripts
+#   (SKILL_ROOT=skills/task-planner, 上溯一级到 skills/ 后进 task-dispatch; SG_SKILL_ROOT 覆盖语义不变)
+ASPL="$SKILL_ROOT/../task-dispatch/scripts/analyze-splits.sh"
 CONFIG="$SKILL_ROOT/config.json"
 SELF="$SCRIPT_DIR/selftest-subagent-granularity-skill-escort.sh"
 

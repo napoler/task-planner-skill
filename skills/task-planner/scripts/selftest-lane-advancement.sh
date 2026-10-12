@@ -14,6 +14,11 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 媒体域搬迁] Rule 49（单元线多路并行推进）属 media-planner 域，原文已迁至
+#   skills/media-planner/references/critical-rules-media.md；本脚本 CRIT 全部用法（L28-L79）均为 Rule 49 断言、
+#   无核心域用途（已逐行核实），CRIT 改指媒体域文件，断言语义零改动。CRIT_CORE 保留指向核心备查。
+CRIT_CORE="$CRIT"
+CRIT="$SKILL_ROOT/../media-planner/references/critical-rules-media.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 
@@ -82,64 +87,48 @@ else
   bad 07 "critical-rules.md「Phase complete 翻转语义不变」缺失（门控不弱化承诺失守）"
 fi
 
-# LA-08 SKILL.md 摘要 bullet 锚 `grep -q 'Rule 49（单元线多路并行推进'`
-# What：断言 SKILL.md Critical Rules 摘要段含 Rule 49 bullet。
-# Why：摘要是 SKILL.md 内 Rule 49 的入口索引（LLM 读 SKILL.md 时先见摘要后查 critical-rules.md）——丢 bullet = 摘要与条款脱钩
-#      （防"条款扩到 49 但摘要停摆 48"的级联断链；v121 1-4[5-9] 预扩位追加 49 名不触发）。
-if grep -q 'Rule 49（单元线多路并行推进' "$SKILLMD"; then
-  ok 08 "SKILL.md Rule 49 摘要 bullet 在位"
+# LA-08 [task-v171 核心瘦身] 摘要 bullet → frontmatter 卫星技能 media-planner 行 Rule 47,49,50 枚举
+#   现象：SKILL.md 瘦身后 Critical Rules 摘要 bullet（'Rule 49（单元线多路并行推进'）与 References 表追加名均移除，命中=0，LA-08/11 恒 FAIL。
+#   根因：Rule 49 属媒体域；SKILL 侧入口索引=frontmatter 卫星技能行 +「卫星路由表」media-planner 行（Rule 82 禁回潮）。
+#   修法：LA-08 改断言 frontmatter 'Rule 47,49,50' 枚举 =1（摘要面瘦身后由 frontmatter 卫星行承载）。
+if grep -qF 'Rule 47,49,50' "$SKILLMD"; then
+  ok 08 "SKILL.md frontmatter media-planner 行 Rule 47,49,50 枚举在位（摘要 bullet 瘦身后由 frontmatter 卫星行承载）"
 else
-  bad 08 "SKILL.md Rule 49 摘要 bullet 缺失（Critical Rules 列表未联动）"
+  bad 08 "SKILL.md frontmatter Rule 47,49,50 枚举缺失（Critical Rules 列表未联动）"
 fi
 
-# LA-09 SKILL.md 合规清单行锚 `grep -q '^| C34 |'`
-# What：断言合规清单 C34 行（行首 '| C34 |'）在位。
-# Why：C34 是 Rule 49 的合规清单消费点（多单元线任务跨 Phase 前移必须过推进三条件并双登记）——丢 C34 行 = 合规检查面与条款脱钩（防 C33 后行被误删）。
-if grep -q '^| C34 |' "$SKILLMD"; then
-  ok 09 "SKILL.md 合规清单 C34 行在位"
+# LA-09 [task-v171 核心瘦身] 合规清单 C34 行 → 卫星路由表 media-planner 行（C34 消费点瘦身后由路由表承载）
+if grep -qE '^\| media-planner \|' "$SKILLMD"; then
+  ok 09 "SKILL.md 卫星路由表 media-planner 行在位（C34 合规面瘦身后由路由表承载）"
 else
-  bad 09 "SKILL.md 合规清单 C34 行缺失（Rule 49 消费点未联动）"
+  bad 09 "SKILL.md 卫星路由表 media-planner 行缺失（Rule 49 消费点未联动）"
 fi
 
-# LA-10 SKILL.md 执行循环锚 `grep -q '验收后推进检查（Rule 49）'`
-# What：断言执行循环步骤 2.5 行尾括注「验收后推进检查（Rule 49）」在位。
-# Why：步骤 2.5 是委派检查点的执行落点（每 S-unit 验收后立即核对推进三条件、满足即派发不等批）——括注缺失 = 推进检查失去执行循环入口（防步骤 2.5 行被重构裁掉括注）。
-if grep -q '验收后推进检查（Rule 49）' "$SKILLMD"; then
-  ok 10 "SKILL.md 执行循环步骤 2.5 推进检查括注在位"
+# LA-10 [task-v171 核心瘦身] 执行循环 2.5 括注 → 卫星路由表 media-planner 行调用条件列（媒体轴拆分路由载体）
+#   现象：执行循环步骤 2.5 行尾括注「验收后推进检查（Rule 49）」随瘦身移除（步骤 2.5 重写为委派检查点总述），命中=0，LA-10 恒 FAIL。
+#   根因：执行循环瘦身后不再逐规则挂括注；推进检查入口=路由表 media-planner 行调用条件「视频/图片/剧集创作媒体轴拆分与执行体路由」。
+#   修法：改断言路由表 media-planner 行调用条件列含「媒体轴拆分」=1。
+if grep -E '^\| media-planner \|' "$SKILLMD" | grep -q '媒体轴拆分'; then
+  ok 10 "SKILL.md 卫星路由表 media-planner 行含媒体轴拆分路由（执行循环入口瘦身后由路由表调用条件承载）"
 else
-  bad 10 "SKILL.md「验收后推进检查（Rule 49）」缺失（执行循环入口失守）"
+  bad 10 "SKILL.md「媒体轴拆分」路由缺失（执行循环入口失守）"
 fi
 
-# LA-11 SKILL.md References 表括号追加锚 `grep -q 'Rule 49 单元线多路并行推进）'`
-# What：断言 References 表 critical-rules.md 行的括号追加「/ Rule 49 单元线多路并行推进）」在位。
-# Why：References 表是 SKILL.md 引用面索引——括号追加缺失 = 文档表与条款脱钩（防 References 行重写时 49 名被丢；以追加尾字符「）」为锚锁括号完整闭合）。
-# [task-v127 S12 合流重锚] 锚尾字符「）」在 v129 合流后被 50/51 追加顶出末位，宽容化去尾字符只锁 49 名在位，语义不反转，2026-10-04
-if grep -q 'Rule 49 单元线多路并行推进' "$SKILLMD"; then
-  ok 11 "SKILL.md References 表 Rule 49 名在位"
+# LA-11 [task-v171 核心瘦身] References 表 Rule 49 名 → 卫星路由表 media-planner 行含规则全文路径
+if grep -E '^\| media-planner \|' "$SKILLMD" | grep -q 'critical-rules-media.md'; then
+  ok 11 "SKILL.md 卫星路由表 media-planner 行含 critical-rules-media.md 路径（References 表瘦身后由路由表承载）"
 else
-  bad 11 "SKILL.md References 表「Rule 49 单元线多路并行推进」缺失（文档表未联动）"
+  bad 11 "SKILL.md 卫星路由表 media-planner 行缺规则全文路径（文档表未联动）"
 fi
 
-# LA-12 SKILL.md 主锚守护 `grep -c 'Critical Rules 1-65'` ≥1 且 `grep -c '1-39'` = 0
-# What：断言 SKILL.md 内 `Critical Rules 1-65` 字面命中数 ≥1（新主 label），且旧 `1-39` 变体命中数为 0（关键负断言）。
-# Why：主锚字面是 selftest-self-resolution.sh SR-07 的断言对象——SKILL.md L273 References 行 label 已由前序级联单元演进为
-#      「Critical Rules 1-65」（含 Rule 40-65 全集），旧 'Rules 1-39'=2 锚对象已不存在（实测命中 0）；
-#      演进为 TS-05 范式（≥1 新 label + 旧变体负断言），防主 label 回退/新旧双 label 漂移。
-# [2026-10-08 task-v144 合并级联] 'Rules 1-39'=2 → 'Critical Rules 1-62'≥1 + '1-39'=0：SKILL.md L273 锚已演进为 Critical Rules 1-62（SR-07/TS-05 同批演进），本锚同步
-# [2026-10-08 task-v147 合并级联] '1-62'→'1-63'：Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进
-# [2026-10-08 task-v147 第二代级联] '1-63'→'1-64'：Rule 64 已由 task-v148 落地（64.1-64.6），锚同步演进
-# 2026-10-08 task-v149 Rule 65 落地演进（1-64→1-65）：Rule 65 已由 task-v149 落地（65.1-65.8），锚同步演进
-# [2026-10-09 task-v151 S4 钉值级联] '1-65'→'1-66'：Rule 66 已由 task-v151 落地（66.1-66.6），SKILL.md 三处 1-65 计数级联为 1-66，锚同步演进
-# [2026-10-09 task-v153 级联单元] '1-66'→'1-68'：Rule 68 已由 task-v153 落地（68.1-68.7 计划期并行调度），SKILL.md 计数锚级联 1-68，锚同步演进
-# [2026-10-10 task-v154 合并并集演进] '1-68'→'1-71'：task-v153 Rule 68 与 task-v154 Rule 69 合流落地，SKILL 章节引言行最终态 1-71
-# [2026-10-10 task-v160 新纪元宽容演进] 钉值 '1-69' → 宽容形态 'Critical Rules 1-(6[0-9]|7[0-2])'：
-#   task-v160 Rule 70/72 落地后 SKILL.md 主锚演进为 'Critical Rules 1-72'（:9/:295/:380 三处），旧钉值 '1-69' 命中 0 → 误报漂移；
-#   改为覆盖 1-69/1-72 的宽容 regex（保留「1-39 变体=0」负向检查不动），既兼容 Rule 72 新纪元又防主 label 回退。
-# [2026-10-10 task-v162 合并并集演进] '1-71'→宽容 7[4-9] 纪元：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）；v166/v169 再扩至覆盖 1-80（见下行）
-# [2026-10-11 task-v166→task-v169 纪元锚扩展] v166：Rule 76 落地后 SKILL.md 索引演进至 1-76（宽容 7[4-9] 纪元）；v169：Rule 80 落地后 SKILL.md 全集索引演进至 1-80，宽容正则扩为 'Critical Rules 1-[7-8][0-9]'（覆盖 1-70..1-89 含 1-74..1-79 历史纪元与 1-80），阈值语义不变（≥1；1-39=0 负断言不动）
-n="$(grep -cE 'Critical Rules 1-[7-8][0-9]' "$SKILLMD" || true)"
+# LA-12 [task-v171 核心瘦身] 主锚守护 'Critical Rules 1-[7-8][0-9]' → '1-80' 全集口径（v171 分层架构演进）
+#   现象：SKILL.md 瘦身后全集声明演进为「Rules 1-80 全集索引」，旧主锚 'Critical Rules 1-[7-8][0-9]'（1-70..1-89 区间字面）零命中，LA-12 恒 FAIL。
+#   根因：主 label 口径随分层架构切换（核心 12 条+10 卫星）；纪元演进链 v144→v166→v169→v171 的第四次切换。
+#   修法：主锚改 '1-8[01]'（≥1；task-v170 并集 max 口径）；'1-39'/'1-40' 负断言保持不动（旧主 label 变体仍须零残留）。
+# [2026-10-10 task-v160-v169 纪元演进史] 保留如上（1-65→1-72→宽容 7[4-9]→1-80 各阶段）；本轮为主 label 口径切换。
+n="$(grep -cE '1-8[01]' "$SKILLMD" || true)"
 m="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 'Critical Rules 1-[7-8][0-9]' ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（Critical Rules 1-[7-8][0-9]=$n 应 ≥1 / 1-39=$m 应 0）"; fi
+if [ "$n" -ge 1 ] && [ "$m" -eq 0 ]; then ok 12 "SKILL.md 主锚 '1-8[01]' 全集口径 ≥1 且 '1-39' 变体 0（SR-07 同步演进）"; else bad 12 "SKILL.md 主锚漂移（'1-80'=$n 应 ≥1 / 1-39=$m 应 0）"; fi
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，SKILL 章节引言行最终态 1-74，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）

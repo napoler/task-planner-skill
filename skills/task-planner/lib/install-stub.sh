@@ -18,9 +18,9 @@
 #   [task-v131 M-1, 2026-10-05] 口径注: 上述 rsync 即全量副本同步 (安装源=本仓
 #   skills/task-planner/, 四位宿主位均为完整副本, 非指针引用薄壳);
 #   「stub_dir」为脚本命名历史术语, 保留。
-#   - rsync 4 satellite skills (plan-research-router/plan-template-kit/
-#     plan-cost-guard/plan-collab-router) whole-dir → stub 位同级 skills/<sat>/
-#     [task-v095 P7 扩展; 卫星无 scripts/config 无需 sed 重写; 源缺失则跳过]
+#   - rsync satellite skills (plan-research-router/plan-template-kit/plan-cost-guard/
+#     plan-collab-router/task-dispatch/task-discipline/media-planner 共 7 个) whole-dir → stub 位同级 skills/<sat>/
+#     [task-v095 P7 扩展 4 个; 2026-10-12 task-v171 S39 追加 3 个新域卫星——技能专业化拆分后随 task-planner 家族一并部署到各宿主位同级位置; 卫星无 scripts/config 无需 sed 重写; 源缺失则跳过]
 #   - Write stub SKILL.md (template) with tool-specific frontmatter
 #   - chmod +x scripts
 #
@@ -30,10 +30,15 @@ set -u
 
 : "${TASK_PLANNER_ROOT:?TASK_PLANNER_ROOT must be set}"
 
-# [task-v095 P7] 卫星技能: 仓库顶层 skills/ 下 4 个卫星目录(零 config 零 hook 零硬编码路径),
+# [task-v095 P7] 卫星技能: 仓库顶层 skills/ 下卫星目录(零 config 零 hook 零硬编码路径),
 # 随 task-planner 安装到各工具位同级位置(<tool_root>/skills/<sat>/); 卫星无 scripts/config,
 # sed 重写不适用, 整目录 rsync 全量复制即最小 diff 方案(找不到目录则跳过, 向后兼容不阻塞)
-SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router)
+# [2026-10-12 task-v171 S39] 追加 task-dispatch/task-discipline/media-planner (4→7):
+#   Why=技能专业化拆分(task-v171)后三新域卫星须随 task-planner 家族一并部署到 4 宿主位同级位置
+#   (设计文档 §6「install-stub.sh 注册」: :36 数组追加 3 新卫星, install_satellite_skills() 自动 rsync);
+#   另 3 个收编卫星(plan-resume/progress-tracker/task-drift-guard)不在本数组——经 lib/install-companion.sh
+#   顶层 skills/*/ 自动发现机制分发(2026-09-04 布局统一口径), 本行只登记 install-stub 显式 rsync 的 7 个
+SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router task-dispatch task-discipline media-planner)
 
 # Per-tool SKILL.md frontmatter template generator
 generate_stub_skill_md() {
@@ -238,8 +243,8 @@ rewrite_paths_in_scripts() {
     done
 }
 
-# [task-v095 P7] 卫星技能整目录安装: 仓库顶层 skills/ 下 4 个卫星(零 scripts/config/hook,
-# 无硬编码路径)随 task-planner 同步到各工具位同级 skills/<sat>/; 全量 rsync 即最小 diff 方案
+# [task-v095 P7] 卫星技能整目录安装: 仓库顶层 skills/ 下 7 个卫星(4 既有+task-v171 S39 追加 3 新域,
+# 零 scripts/config/hook, 无硬编码路径)随 task-planner 同步到各工具位同级 skills/<sat>/; 全量 rsync 即最小 diff 方案
 # (无需 sed 重写); 源目录缺失(如非 canonical 运行)则跳过, 不阻塞主安装
 install_satellite_skills() {
   local stub_dir="$1"
@@ -276,7 +281,7 @@ install_stub_for_tool() {
   rsync -a --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
     "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null
 
-  # [task-v095 P7] 4 卫星技能整目录安装到工具位同级 skills/ 目录
+  # [task-v095 P7] 7 卫星技能（task-v171 S39 起 4→7）整目录安装到工具位同级 skills/ 目录
   install_satellite_skills "$stub_dir"
 
   # Generate tool-specific SKILL.md (overwrites canonical's stripped version)

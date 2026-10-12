@@ -1,15 +1,32 @@
 #!/usr/bin/env bash
 # selftest-subagent-return.sh — Rule 22.4b 返回格式污染三面守护 (task-v161 S4, 登记 selftest-registry.tsv)
-# What: 静态+行为断言四件上游产物: check-subagent-return.sh(返回侧四判据) / check-dispatch.sh return_section_check(prompt 侧段结构) / subagent_dispatch.md §7 三反污染条款 / critical-rules.md 22.4b 污染三面句; 任一 FAIL → rc 1, 全 PASS → rc 0(末行 Total/PASS/FAIL 摘要)
+# What: 静态+行为断言四件上游产物: check-subagent-return.sh(返回侧四判据) / check-dispatch.sh return_section_check(prompt 侧段结构) / subagent_dispatch.md §7 三反污染条款 / critical-rules-dispatch.md 22.4b 污染三面句（[task-v171 2026-10-12] Rule 22 归属 task-dispatch，随迁）; 任一 FAIL → rc 1, 全 PASS → rc 0(末行 Total/PASS/FAIL 摘要)
 # Why: task-v152 实证 summary: 契约外字段混入 + §7 段被 ①②③ 任务清单替换——上游产物是漂移载体, 本脚本机器化防回退; 纯读断言(零 VCS 命令/禁写被断言文件)
 # Usage: bash selftest-subagent-return.sh(A3-A5 stdin 喂合规块/契约外 summary/块尾「## 附」段; A9 heredoc 污染夹具重复标题+①②③ → pretool rc≠0 且 stderr「返回格式段结构违规」; A10 干净夹具 §7 模板块+三文件+brief 引用+subagent-state/ → pretool rc=0)
 # A9/A10 子 shell export TASK_PLANNER_PLAN_DIR 指真实计划目录(三文件在位使缺项扫描通过, 只测段结构门), 父 shell 无泄漏+显式 unset; 锁 .dispatch-inflight 运行前备份、尾回写, 零残留
+# [task-v171 回归修复 2026-10-12] 该计划目录已被主仓批归档, PLAN 现指 plans/archive/ 归档位(见 :16 注记); 残留脆弱点: 主仓绝对路径硬编码, 部署位/worktree 外运行时 A9/A10 会 fail-open 空转, 后续可改 $TMP hermetic 夹具(同 selftest-dispatch.sh:17 / selftest-interaction.sh:64 范式)——本轮不做设计级重构, 仅修路径
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RS="$SCRIPT_DIR/check-subagent-return.sh"; D="$SCRIPT_DIR/check-dispatch.sh"
-TPL="$SCRIPT_DIR/../templates/subagent_dispatch.md"; CR="$SCRIPT_DIR/../references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: A1-A5 FAIL(check-subagent-return.sh 不存在, rc=127)｜
+# 根因: 该脚本随派发域迁至 skills/task-dispatch/scripts, 旧写法 $SCRIPT_DIR/../task-dispatch 少一级,
+#   解析到 skills/task-planner/task-dispatch(不存在)｜修法: 改锚 $SCRIPT_DIR/../../task-dispatch/scripts
+#   (scripts 目录上两级=skills/, 同行 D 指向本目录 check-dispatch.sh 不受影响)
+RS="$SCRIPT_DIR/../../task-dispatch/scripts/check-subagent-return.sh"; D="$SCRIPT_DIR/check-dispatch.sh"
+TPL="$SCRIPT_DIR/../templates/subagent_dispatch.md"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: A7 FAIL(22.4b 段三面句/脚本名在核心已不存在)｜
+# 根因: P7 核心瘦身后 Rule 22 归属 task-dispatch, 22.4b 段随迁 critical-rules-dispatch.md｜
+# 修法: CR 改锚 $SCRIPT_DIR/../../task-dispatch/references/critical-rules-dispatch.md(git 纯改名内容原样,
+#   与同行 RS 锚同一相对层级模式)
+CR="$SCRIPT_DIR/../../task-dispatch/references/critical-rules-dispatch.md"
 REG="$SCRIPT_DIR/selftest-registry.tsv"
-PLAN="/mnt/data/dev/task-planner-skill/plans/task-v161-subagent-return-format"
+# [task-v171 回归修复 2026-10-12 纪律域轮] 现象: A9 FAIL(污染夹具 rc=0, 无 stderr 输出)｜
+# 根因: PLAN 硬编码主仓 plans/task-v161-subagent-return-format, 该计划 2026-10-12 07:23 被主仓
+#   task-v170 收口批归档(d229faa)mv 入 plans/archive/, 旧路径不存在 → check-dispatch.sh pretool
+#   命中 enforce 档目录不存在 fail-open(check-dispatch.sh:323 [ -d "$pd" ] || exit 0)静默 exit 0,
+#   返回格式段结构门(return_section_check)根本没跑到, A9 收不到「返回格式段结构违规」; A10 同因
+#    trivial PASS(放行语义被 fail-open 满足, 断言力已空转)｜修法: PLAN 改锚 archive/ 归档位
+#   (归档为终态, batch archive 不会再移动; 语义与第 1 轮转绿时完全一致——同目录同内容, 仅路径更新)
+PLAN="/mnt/data/dev/task-planner-skill/plans/archive/task-v161-subagent-return-format"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 PASS=0; FAIL=0
 ok() { PASS=$((PASS+1)); echo "A$1 PASS $2"; }

@@ -30,7 +30,10 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 回归修复 2026-10-12 协同域搬迁] Rule 39（动态工作流编排）属 plan-collab-router 域，原文已迁至
+#   skills/plan-collab-router/references/critical-rules-collab.md；本脚本 CRIT 全部 11 处用法（WF-01..06/WF-13
+#   条文本体）均为 Rule 39 断言、无核心域用途（已逐行核实），CRIT 改指协同域文件，断言语义零改动。
+CRIT="$SKILL_ROOT/../plan-collab-router/references/critical-rules-collab.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 CLAUDE="$SKILL_ROOT/../../CLAUDE.md"
@@ -53,12 +56,12 @@ if grep -q '^39\.4 \*\*并行豁免' "$CRIT"; then ok 04 "39.4 并行豁免锚";
 if grep -q '^39\.5 \*\*机器校验边界' "$CRIT"; then ok 05 "39.5 机器校验边界锚"; else bad 05 "39.5 机器校验边界锚缺失"; fi
 # WF-06 39.6 机制锚 + 零新 config 键
 if grep -q '^39\.6 \*\*机制' "$CRIT" && grep -q '零新 config 键' "$CRIT"; then ok 06 "39.6 机制锚（零新 config 键）"; else bad 06 "39.6 机制锚缺失"; fi
-# WF-07 SKILL.md Rule 39 摘要行
-if grep -qF 'Rule 39（动态工作流编排' "$SKILLMD"; then ok 07 "SKILL.md Rule 39 摘要行"; else bad 07 "SKILL.md 缺 Rule 39 摘要行"; fi
-# WF-08 SKILL.md C27 合规清单项
-if grep -qF '| C27 |' "$SKILLMD"; then ok 08 "SKILL.md C27 清单项"; else bad 08 "SKILL.md 缺 C27 行"; fi
-# WF-09 SKILL.md 协同路由 dynamic-workflows 行
-if grep -qF 'dynamic-workflows（用户显式点名' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
+# WF-07 [task-v171 核心瘦身] SKILL.md Rule 39 摘要行 → 卫星路由表 collab 行（Rule 39,40 枚举；摘要 bullet 随瘦身退役）
+if grep -E '^\| plan-collab-router \|' "$SKILLMD" | grep -qE 'Rule [0-9,-]*39'; then ok 07 "SKILL.md 卫星路由表 collab 行枚举 Rule 39（摘要行瘦身后由路由表承载）"; else bad 07 "SKILL.md 缺 Rule 39 摘要行现载体"; fi
+# WF-08 [task-v171 核心瘦身] C27 合规清单项 → 卫星路由表 collab 行（C27 合规面载体）
+if grep -qE '^\| plan-collab-router \|' "$SKILLMD"; then ok 08 "SKILL.md 卫星路由表 collab 行（C27 清单项现载体）"; else bad 08 "SKILL.md 缺 C27 现载体"; fi
+# WF-09 [task-v171 核心瘦身] 协同路由 dynamic-workflows 行（措辞演进：'（用户显式点名'→'仅用户显式点名'，L191 新指令段+协同行）
+if grep -qF 'dynamic-workflows 仅用户显式点名' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行（现措辞：仅用户显式点名）"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
 # WF-10 4 索引文档 新锚 1-68 族（'Critical Rules 1-68' + '1-68' 变体）命中总和 ≥3
 #       且 SKILL.md 旧 'Rules 1-39'/'Rules 1-45' 变体残留 =0（文件缺失计 0 不 FAIL，仅对存在文件求和）
 # [2026-10-08 task-v144 合并级联] 旧口径 'Rules 1-39+1-45 总和 ≥6' 随 SKILL.md 锚演进 1-62 同步（LA-12 范式）

@@ -25,6 +25,10 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 31（错误学习闭环）与 Rule 8（新请求强制重新规划）均属纪律域，
+#   原文已迁至 skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   EL-01..EL-07 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 TPL_PROGRESS="$SKILL_ROOT/templates/progress.md"
@@ -37,25 +41,30 @@ ok()  { PASS=$((PASS+1)); printf 'EL-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'EL-%s FAIL %s\n' "$1" "$2"; }
 
 # EL-01
-if grep -q '^31\.1 ' "$CRIT" && grep '31\.1' "$CRIT" | grep -q '重复反馈'; then ok 01 "31.1 触发条件"; else bad 01 "31.1 触发条件缺失"; fi
+if grep -q '^31\.1 ' "$CRIT_D" && grep '31\.1' "$CRIT_D" | grep -q '重复反馈'; then ok 01 "31.1 触发条件"; else bad 01 "31.1 触发条件缺失"; fi
 # EL-02
-if grep -q '^31\.2 ' "$CRIT" && grep '31\.2' "$CRIT" | grep -q '5 Whys'; then ok 02 "31.2 根因分析（5 Whys）"; else bad 02 "31.2 根因分析缺失"; fi
+if grep -q '^31\.2 ' "$CRIT_D" && grep '31\.2' "$CRIT_D" | grep -q '5 Whys'; then ok 02 "31.2 根因分析（5 Whys）"; else bad 02 "31.2 根因分析缺失"; fi
 # EL-03
-if grep -q '^31\.3 ' "$CRIT" && grep '31\.3' "$CRIT" | grep -q '盲目'; then ok 03 "31.3 修正路由（禁盲目）"; else bad 03 "31.3 修正路由缺失"; fi
+if grep -q '^31\.3 ' "$CRIT_D" && grep '31\.3' "$CRIT_D" | grep -q '盲目'; then ok 03 "31.3 修正路由（禁盲目）"; else bad 03 "31.3 修正路由缺失"; fi
 # EL-04
-if grep -q '^31\.4 ' "$CRIT" && grep '31\.4' "$CRIT" | grep -q "What Didn't Work"; then ok 04 "31.4 沉淀（notepad 两段）"; else bad 04 "31.4 沉淀缺失"; fi
+if grep -q '^31\.4 ' "$CRIT_D" && grep '31\.4' "$CRIT_D" | grep -q "What Didn't Work"; then ok 04 "31.4 沉淀（notepad 两段）"; else bad 04 "31.4 沉淀缺失"; fi
 # EL-05
-if grep -q '^31\.5 ' "$CRIT" && grep '31\.5' "$CRIT" | grep -q 'Learning Gate'; then ok 05 "31.5 消费侧（Learning Gate）"; else bad 05 "31.5 消费侧缺失"; fi
+if grep -q '^31\.5 ' "$CRIT_D" && grep '31\.5' "$CRIT_D" | grep -q 'Learning Gate'; then ok 05 "31.5 消费侧（Learning Gate）"; else bad 05 "31.5 消费侧缺失"; fi
 # EL-06
-if grep -q '^31\.6 ' "$CRIT" && grep '31\.6' "$CRIT" | grep -q 'error_loop_enforce'; then ok 06 "31.6 机制（开关键）"; else bad 06 "31.6 机制缺失"; fi
+if grep -q '^31\.6 ' "$CRIT_D" && grep '31\.6' "$CRIT_D" | grep -q 'error_loop_enforce'; then ok 06 "31.6 机制（开关键）"; else bad 06 "31.6 机制缺失"; fi
 # EL-07
-if grep '^### 8 ' "$CRIT" -A2 | grep -q 'Rule 31'; then ok 07 "Rule 8 联动 Rule 31"; else bad 07 "Rule 8 缺 Rule 31 引用"; fi
-# EL-08
-if grep -q 'Rule 31' "$SKILLMD" && grep 'Rule 31' "$SKILLMD" | grep -q '错误学习闭环'; then ok 08 "SKILL.md 摘要行 Rule 31"; else bad 08 "SKILL.md 摘要行缺 Rule 31"; fi
-# EL-09
-if grep -q '| C19 |' "$SKILLMD" && grep 'C19' "$SKILLMD" | grep -q 'Rule 31'; then ok 09 "SKILL.md C19 检查项"; else bad 09 "SKILL.md 缺 C19"; fi
-# EL-10
-if grep -q '错误指出特判' "$SKILLMD"; then ok 10 "SKILL.md 用户新指令处理指针"; else bad 10 "SKILL.md 缺错误指出特判"; fi
+if grep '^### 8 ' "$CRIT_D" -A2 | grep -q 'Rule 31'; then ok 07 "Rule 8 联动 Rule 31"; else bad 07 "Rule 8 缺 Rule 31 引用"; fi
+# EL-08 [task-v171 核心瘦身] SKILL.md Rule 31 摘要/联动面（纪律域摘要行瘦身后由 3c+新指令段两处引措承载）
+#   现象：SKILL.md 瘦身后 Critical Rules 摘要 bullet（'Rule 31 错误学习闭环' 行）与合规 C19 行移除，EL-08/09 恒 FAIL。
+#   根因：Rule 31 属纪律域；SKILL 侧现存联动=3c 动作留痕行（Rule 31.2 四问根因）+ 新指令处理段末行
+#     （'用户指出错误（Rule 31）→先 STOP 走 31.2 四维归因再修（完整闭环见 task-discipline Rule 31/32/33/74）'）。
+#   修法：EL-08 改断言 'Rule 31' 在位 ∧ 某命中行含 'task-discipline'（闭环全文指针）；EL-09 的 C19 合规行改断言
+#     卫星路由表 discipline 行枚举 Rule 31（Rule 82 禁回潮，C 行不回填）。
+if grep -q 'Rule 31' "$SKILLMD" && grep 'Rule 31' "$SKILLMD" | grep -q 'task-discipline'; then ok 08 "SKILL.md Rule 31 联动（新指令段含 task-discipline Rule 31/32/33/74 全文指针）"; else bad 08 "SKILL.md Rule 31 联动缺失"; fi
+# EL-09 [task-v171 核心瘦身] C19 合规行 → 卫星路由表 task-discipline 行枚举 31
+if grep -E '^\| task-discipline \|' "$SKILLMD" | grep -qE 'Rule [0-9,]*31'; then ok 09 "SKILL.md 卫星路由表 task-discipline 行枚举 Rule 31（C19 合规面瘦身后由路由表承载）"; else bad 09 "SKILL.md 卫星路由表缺 Rule 31 枚举"; fi
+# EL-10 [task-v171 核心瘦身] 错误指出特判指针（措辞演进：'错误指出特判'→'用户指出错误（Rule 31）→先 STOP 走 31.2 四维归因'，锚随现措辞更新）
+if grep -q '指出错误' "$SKILLMD" && grep '指出错误' "$SKILLMD" | grep -q 'Rule 31'; then ok 10 "SKILL.md 用户新指令处理含错误指出特判指针（Rule 31）"; else bad 10 "SKILL.md 缺错误指出特判"; fi
 # EL-11 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 # [2026-10-11 task-v169 合并级联: Rule 80 落地 1-80 纪元, 末段字符类 4-7x→4-8x]

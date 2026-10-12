@@ -37,17 +37,24 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # ── 路径定义（相对技能根）──
 CR="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 70（用户呈报可审批性纪律）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则）；
+#   RRV-01/02/03 断言改指 CRIT_D。卫星文件标题为统一「### 70 标题」格式（核心旧格式 `## Rule 70（`），
+#   RRV-01 标题行锚与 RRV-03 段首 sed 锚同步适配（子条 `### 70.N` 与段尾 `### 71` 锚形态不变），
+#   断言语义（标题唯一+六子条+四要素+段内零行号引用）零改动。CR 保留指向核心。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
 CONFIG="$SKILL_ROOT/config.json"
 CHECKCOMPLETE="$SCRIPT_DIR/check-complete.sh"
 
-# ── 13 触点文件清单（相对技能根）──
+# ── 13 触点文件清单（相对技能根；[task-v171 纪律域搬迁 2026-10-12] batch-quality-gate.md 迁至
+#    ../task-discipline/references，即 skills/task-discipline 与 task-planner 平级）──
 TOUCH_FILES=(
   "SKILL.md"
   "reference.md"
   "references/worktree-isolation.md"
-  "references/batch-quality-gate.md"
+  "../task-discipline/references/batch-quality-gate.md"
   "templates/task_plan.md"
   "templates/batch_report.md"
   "templates/variant/image-type.md"
@@ -70,8 +77,8 @@ cnt()  { [ -f "$2" ] || { echo 0; return; }; grep -c -e "$1" "$2" 2>/dev/null ||
 cntf() { [ -f "$2" ] || { echo 0; return; }; grep -cF -- "$1" "$2" 2>/dev/null || true; }
 
 # ── RRV-01: Rule 70 条款锚（标题=1 六子条≥6）──
-RRV01_TITLE=$(cnt '^## Rule 70（' "$CR")
-RRV01_SUBS=$(cnt '^### 70\.[1-6]' "$CR")
+RRV01_TITLE=$(cnt '^### 70 ' "$CRIT_D")
+RRV01_SUBS=$(cnt '^### 70\.[1-6]' "$CRIT_D")
 if [ "$RRV01_TITLE" -eq 1 ] && [ "$RRV01_SUBS" -ge 6 ]; then
     ok "RRV-01" "Rule 70 条款锚(标题=1 子条≥6)"
 else
@@ -82,7 +89,7 @@ fi
 RRV02_WORDS=("待审项清单" "可定位地址" "看点" "动作")
 RRV02_MISSING=0
 for w in "${RRV02_WORDS[@]}"; do
-    if [ "$(cnt "$w" "$CR")" -lt 1 ]; then
+    if [ "$(cnt "$w" "$CRIT_D")" -lt 1 ]; then
         RRV02_MISSING=$((RRV02_MISSING+1))
     fi
 done
@@ -93,7 +100,7 @@ else
 fi
 
 # ── RRV-03: Rule 70 段无行号引用形态（防级联漂移，v148 判例）──
-BLOCK70="$(sed -n '/^## Rule 70（/,/^### 71 无源不写/p' "$CR" 2>/dev/null || true)"  # 2026-10-10 task-v158 合并收窄：排除其后 Rule 71 段（71 段内 file:line 锚不属本断言范围）
+BLOCK70="$(sed -n '/^### 70 /,/^### 71 无源不写/p' "$CRIT_D" 2>/dev/null || true)"  # 2026-10-10 task-v158 合并收窄：排除其后 Rule 71 段（71 段内 file:line 锚不属本断言范围）
 RRV03_HITS=$(printf '%s' "$BLOCK70" | grep -cE ':\s?[0-9]+' 2>/dev/null || true)
 if [ "$RRV03_HITS" -eq 0 ]; then
     ok "RRV-03" "Rule 70 段无行号引用形态"
@@ -101,19 +108,17 @@ else
     bad "RRV-03" "Rule 70 段行号引用形态命中=$RRV03_HITS"
 fi
 
-# ── RRV-04: SKILL 接线锚（Rule 70≥4 + 合规行内容锚「用户呈报可审批性」含四要素）──
-# What: 原以绝对编号定位 Rule 70 合规行（绝对编号锚），现改为内容锚——取 `^| C<digits> |`
-#       合规行中含「用户呈报可审批性」的那行作为 Rule 70 合规行锚，再在该行断言四要素词。
-# Why（合规行内容锚（用户呈报可审批性），未来编号让位不再级联——2026-10-10 task-v155 合并并集 cardinality 教训）:
-#   根因：合并并集后 Rule 70 合规行的绝对编号位被并行任务（Rule 68/69）占用，合规行整体让位（现为 C48 行）；
-#   绝对编号锚随编号后移必级联误报，故改内容锚（用户呈报可审批性），编号让位不再级联。
+# ── RRV-04 [task-v171 核心瘦身]: SKILL 接线锚（Rule 70≥1 + 计划确认行内容锚含「待审项清单」+ CRIT_D 70 段四要素）──
+# What: Rule 70 合规行（'用户呈报可审批性' C 行）随瘦身退役——C 行体系整体退役，合规清单表→G1-G8 核心域表；
+#       SKILL 侧现存认领点=「计划确认」行（附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素））
+#       与「终验交付」行（呈报四要素（Rule 70）），'Rule 70' 计数 4→2。
+# Why: Rule 70 属纪律域（迁 CRIT_D）；四要素条款本体在 CRIT_D（RRV-02 已锁四要素词），SKILL 侧保留接线点+内容锚。
+#       内容锚（非编号）纪律保持：改钉「计划确认」行的 '待审项清单' 字样 + CRIT_D 70 段 '可定位地址' 字样，编号让位不再级联。
 RRV04_RULE70=$(cnt "Rule 70" "$SKILL")
-# 内容锚：取所有 `^| C<digits> |` 合规行中含「用户呈报可审批性」的那行作为 Rule 70 合规行锚
-RRV04_LINE=$(grep -e '^| C[0-9]* |' "$SKILL" 2>/dev/null | grep "用户呈报可审批性" 2>/dev/null || true)
-RRV04_LIST=$(printf '%s' "$RRV04_LINE" | grep -c "待审项清单" 2>/dev/null || true)
-RRV04_ADDR=$(printf '%s' "$RRV04_LINE" | grep -c "可定位地址" 2>/dev/null || true)
-if [ "$RRV04_RULE70" -ge 4 ] && [ "$RRV04_LIST" -ge 1 ] && [ "$RRV04_ADDR" -ge 1 ]; then
-    ok "RRV-04" "SKILL 接线锚(Rule 70≥4 合规行内容锚含四要素)"
+RRV04_LIST=$(grep -F '待审项清单' "$SKILL" 2>/dev/null | grep -cF 'Rule 70' 2>/dev/null || true)
+RRV04_ADDR=$(sed -n '/^### 70 /,/^### 71 /p' "$CRIT_D" 2>/dev/null | grep -c "可定位地址" 2>/dev/null || true)
+if [ "$RRV04_RULE70" -ge 1 ] && [ "$RRV04_LIST" -ge 1 ] && [ "$RRV04_ADDR" -ge 1 ]; then
+    ok "RRV-04" "SKILL 接线锚(Rule 70≥1 计划确认行内容锚含待审项清单 ∧ CRIT_D 70 段含可定位地址)"
 else
     bad "RRV-04" "SKILL 接线锚(got Rule70=$RRV04_RULE70 list=$RRV04_LIST addr=$RRV04_ADDR)"
 fi
@@ -201,14 +206,16 @@ else
     bad "RRV-11" "主链面组(got ref=$RRV11_REF wt=$RRV11_WT expect ref>=1 wt>=4)"
 fi
 
-# ── RRV-12: SKILL 触点组（FAIL 档）──
-# SKILL.md grep -c "呈报规格（Rule 70）" =4 且终验段句「会话内一切其他呈报」=1
-RRV12_SPEC=$(cnt "呈报规格（Rule 70）" "$SKILL")
-RRV12_FINAL=$(cnt "会话内一切其他呈报" "$SKILL")
-if [ "$RRV12_SPEC" -eq 4 ] && [ "$RRV12_FINAL" -eq 1 ]; then
-    ok "RRV-12" "SKILL 触点组(呈报规格=4 终验句=1)"
+# ── RRV-12 [task-v171 核心瘦身]: SKILL 触点组（'Rule 70' 计数≥1 + 终验交付段「呈报四要素」句=1）──
+# SKILL.md 瘦身后旧触点（呈报规格（Rule 70）×4 / 会话内一切其他呈报 终验句）随 556→214 行重写移除；
+# 现存触点='Rule 70'×2（计划确认四要素行+终验交付指针行）+ 终验交付段「呈报四要素（Rule 70）按卫星 task-discipline 全文执行」句。
+# 触点组守护语义保持（SKILL 侧呈报面接线在位），锚随现措辞演进。
+RRV12_SPEC=$(cnt "Rule 70" "$SKILL")
+RRV12_FINAL=$(cnt "呈报四要素" "$SKILL")
+if [ "$RRV12_SPEC" -ge 1 ] && [ "$RRV12_FINAL" -eq 1 ]; then
+    ok "RRV-12" "SKILL 触点组(Rule 70≥1 呈报四要素终验句=1)"
 else
-    bad "RRV-12" "SKILL 触点组(got spec=$RRV12_SPEC final=$RRV12_FINAL expect spec=4 final=1)"
+    bad "RRV-12" "SKILL 触点组(got spec=$RRV12_SPEC final=$RRV12_FINAL expect spec>=1 final=1)"
 fi
 
 # ── RRV-13: 预留骨架（占位断言，PASS 档）──

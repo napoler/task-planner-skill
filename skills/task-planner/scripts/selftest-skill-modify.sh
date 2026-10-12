@@ -19,6 +19,10 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 36（技能修改保守化与功能删除防护）属纪律域，原文已迁至
+#   skills/task-discipline/references/critical-rules-discipline.md（核心 critical-rules.md 只剩 11 条核心规则），
+#   SM-01..SM-03 的 CRIT 断言改指 CRIT_D；CRIT 保留指向核心。断言语义零改动。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 CONFIG="$SKILL_ROOT/config.json"
 GUARD="$SKILL_ROOT/scripts/check-skill-modify.sh"
@@ -31,11 +35,11 @@ bad() { FAIL=$((FAIL+1)); printf 'SM-%s FAIL %s\n' "$1" "$2"; }
 skip(){ SKIP=$((SKIP+1)); printf 'SM-%s SKIP %s\n' "$1" "$2"; }
 
 # SM-01
-if grep -q '^### 36 ' "$CRIT" && grep '^### 36 ' "$CRIT" | grep -q '技能修改保守化与功能删除防护'; then ok 01 "36 标题"; else bad 01 "36 标题缺失"; fi
+if grep -q '^### 36 ' "$CRIT_D" && grep '^### 36 ' "$CRIT_D" | grep -q '技能修改保守化与功能删除防护'; then ok 01 "36 标题"; else bad 01 "36 标题缺失"; fi
 # SM-02
-N=$(grep -cE '^36\.[1-7] ' "$CRIT"); if [ "$N" -eq 7 ]; then ok 02 "36.1-36.7 七子条锚齐全"; else bad 02 "子条锚计数=$N (期望 7)"; fi
+N=$(grep -cE '^36\.[1-7] ' "$CRIT_D"); if [ "$N" -eq 7 ]; then ok 02 "36.1-36.7 七子条锚齐全"; else bad 02 "子条锚计数=$N (期望 7)"; fi
 # SM-03
-if grep '^36\.2 ' "$CRIT" | grep -q '31.3' && grep '^36\.4 ' "$CRIT" | grep -q 'D6'; then ok 03 "36.2 衔接 31.3 + 36.4 引 D6"; else bad 03 "36.2/36.4 衔接锚缺失"; fi
+if grep '^36\.2 ' "$CRIT_D" | grep -q '31.3' && grep '^36\.4 ' "$CRIT_D" | grep -q 'D6'; then ok 03 "36.2 衔接 31.3 + 36.4 引 D6"; else bad 03 "36.2/36.4 衔接锚缺失"; fi
 # SM-04
 if grep -q '"skill_modify_enforce"' "$CONFIG" && python3 -c "
 import json,sys

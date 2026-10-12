@@ -6,15 +6,16 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 全集 1-80（67-72/73-76 均经并行任务合流落地）(1-12 核心执行约束 + 13-28 高级门控 + 29-35 维护/追踪/学习/防倒退/反思/模板生命周期门控/执行结论纪律 + 36 技能修改保守化、37 任务类型机制画像、38 任务难度分级与轻量档、39 动态工作流编排、40 harness 工具面主动选择、41 问题自主消解与升级纪律、42 质量审查技能主动检测与补充、43 执行可靠性制度化、44 用户选择点默认项与自动超时裁决、45 注释完整性规范、46 子代理单任务专注度、47 媒体制作任务派发纪律、48 交付总结可定位性与实用性、49 单元线多路并行推进、50 内容要求权重分级与评级、51 需求覆盖与完成声称门控、52 执行体专业化优先与覆盖矩阵维护、53 根源解决与决策管辖、54 执行诚实性与即时执行纪律、55 可复用能力落盘纪律、56 用户指令优先与自动执行、57 迭代测试轮次落盘纪律、58 调研分析证据纪律与核心目标达成门控、59 子代理拆分粒度硬门与技能伴飞纪律、60 主动解决问题泛化行为原则、61 偏移检查子代理化、62 四文件罗盘数据流转与调研知识沉淀纪律、63 检索优先与反推诿纪律、64 偏移检查留痕强制与节奏化触发纪律、65 周期性回顾与前后对照、66 goal 单元固化与 /goal 驱动推进纪律、67 上下文压力主动评估与会话交接纪律、68 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律、69 判断裁决子代理化与驳回打回纪律、70 用户呈报可审批性纪律，含 Rule 27 git 提交强制、Rule 28 交互模式与询问门控、Rule 31 错误学习闭环、Rule 32 用户否决与禁令追踪、Rule 33 解决→反思→验证迭代循环、Rule 34 模板生命周期门控、Rule 35 执行结论纪律、Rule 71 无源不写·空段占位·写必带锚纪律、Rule 72 决策分级与用户打断纪律、Rule 73 执行期决策对齐与不变量纪律、Rule 74 变更吸收三判纪律（task-v162,1-74 纪元落地）、Rule 75 网络调研主动激活与外部数据依赖纪律、Rule 76 总结阶段格式可读性与审查清单实体化纪律、Rule 80 用户会话逐字记录与只写不改纪律、Rule 36 技能修改保守化与功能删除防护）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-81 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81 + Rule 82 分层纪律；其余 65 条按域归 10 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证 + 串行同步
 - references/goal-gate.md: Goal Gate + VC 规则 + 退出标准
 - references/todo-sync.md: 原生 Todo 同步契约（S1-S5 强制同步时机 + 映射规则 + hook 提醒响应协议）
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
-- 卫星技能 plan-cost-guard: 成本控制与计费知识库（cost-control/billing/cost_log 已迁至其 references/，Rule 17 场景经 Skill() 调用）
-- references/batch-quality-gate.md: 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report）
-- 卫星技能 plan-template-kit: 模板选型/定制/沉淀知识库（template-mapping/template-guide 已迁至其 references/，Rule 16/34 经 Skill() 调用）
+- references/methodology.md: 思维方法论 T1-T5 指针 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke
+- 卫星技能 task-dispatch: 子代理派发/拆分/调度/超时兜底/返回校验/代码编辑隔离（`../task-dispatch/`，Rule 12,13,14,21,22,23,25,46,52,59,68）
+- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27-36,41-45,48,53-57,60,65,67,69-76）
+- 卫星技能 media-planner: 媒体制作派发/单元线并行/内容分级（`../media-planner/`，Rule 47,49,50）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
 # See: ~/.claude/skills/task-planner/SKILL.md (Claude Code) / ~/.zcode/skills/task-planner/SKILL.md (ZCode)
 model: opus
@@ -24,360 +25,152 @@ model: opus
 
 **Goal**：产出结构化 `task_plan.md`（含 Phases/VC/V-N），按 phase 推进，全 phase complete 后逐条复验 VC，交付 COMPLETE/PARTIAL/BLOCKED。
 
-## 主进程=调度管理器（最关键定位，三条铁律）
+## 定位：核心 = 四文件罗盘管理（task-v171 分层后）
 
-> **核心定位**：主进程 = **调度管理器（scheduler/orchestrator）**——只做规划、拆分、派发、验收、簿记；任务执行一律下沉子代理。**降低主进程亲自执行是本技能的第一设计目标，新场景默认派子代理。**
+> **核心定位**：本技能 = **四文件罗盘的唯一管理域**——`task_plan.md`（目标维：状态与指针）/ `findings.md`（决策维：调研结论与证据）/ `progress.md`（进度维：动作与测试）/ `knowledge-brief.md`（知识维：可复用知识底座）四文件 = 主代理↔子代理数据流转**唯一协议介质**（Rule 62.1）；`verification.md`（终验维）与 `user-session-log.md`（用户原话维，append-only 只写不改，Rule 80）同属记录文档域。子代理上下文=RAM，四文件=Disk。
+> **非核心域已分层至卫星**：派发/拆分/调度→`task-dispatch`；执行纪律/错误闭环→`task-discipline`；媒体制作→`media-planner`；其余见文末「卫星路由表」。分层纪律=Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）。
 
-**三条铁律（执行期硬约束 — task-v055 已机制化）**：
-1. **白名单外 Write/Edit 被 PreToolUse hook `check-delegation.sh` 拦截**（enforce 档 = `exit 2`；warn 档 = 注入警告并计数）
-2. **任务执行一律 `Agent()` 派发**（Executor≠主进程时立即按 Rule 22.4 九字段模板逐 S-unit 派发 + Handoff 登记；prompt 必含计划三文件绝对路径(22.4a)与 8 字段严格返回模板(22.4b)，Agent 调用受 check-dispatch.sh 守卫(22.4c)）
-3. **bypass 仅来自显式 `allow-direct.sh on --confirm-user-requested`**（30 分钟窗口 + ledger 记录 + 终验展示；同 sid 仅一次 `/tmp/task-planner-bypass-<sid>`；同 plan-dir 二次 bypass 需 `--force`）
+**四文件写入分流铁律**：状态与指针→task_plan.md（控制面板：只放目标/Phase 状态/VC/范围/一行摘要，Rule 19.6）；调研与结论→findings.md；动作与测试→progress.md；可复用知识→knowledge-brief.md。外部内容只进 findings.md（Rule 20.2）；结论禁只留会话记忆（Rule 19.1）。
 
-**六项白名单（精简版，权威源 `references/critical-rules.md` Rule 25.3）**：① 纯 git/worktree 编排 ② 计划系统文件维护（三件套/INDEX/ledger/attest/plan 模板） ③ 机械验证命令（只读，输出可控） ④ 用户显式要求主进程亲为 ⑤ Rule 22.3 兜底接管（单文件 ≤300 行） ⑥ 单文件 ≤3 行 trivial 修改（非保护区）。
-
-**[CONTEXT]** 上游：用户任务描述 / CWD / 已有 plan 目录。下游：`plans/{task-id}/task_plan.md` + findings.md/progress.md/verification.md。
-
-**工具**：`Read`/`Write`/`Edit`（计划文件）、`Bash`（脚本）、`Glob`/`Grep`（搜索）、`Agent()`（子代理）、`Skill()`（外部 skill）、`TodoWrite`/`TaskCreate/Update/List`（原生 Todo 同步，契约见 references/todo-sync.md）。
-
-**Code Review 工具**：当 `task_plan.md` 声明 `code_review: required` 时，启用 `Skill("code-review")` 上下文隔离审查（在终验交付前触发）。详见 [Code Review Gate](#code-review-gate代码审查门控)。
-
-### 🤝 专业技能协同路由（comet / OpenSpec / superpowers / dynamic-workflows — 权威源 ../plan-collab-router/references/skill-collaboration.md）
-
-主路由 = `Skill("plan-collab-router")`（知识库→`../plan-collab-router/references/skill-collaboration.md`）。**判定顺序敏感先命中先用**：comet → OpenSpec → superpowers（多族命中=叠加协同；comet 移交=任意 3 项命中（Phase ≥5 / 跨模块 / 需架构选型 / 需三件套归档 / 跨会话续做）即建议移交 `/comet`）；**CLI 探针前置** `command -v comet` / `command -v openspec` 缺失则该族不可接管，开关键 `config.json#skill_collab_enforce`（默认 warn）；**22.3.3 卡壳接管**：④ 主进程接管不可行/仍失败 → 先评估更适配专业族接管（comet / openspec-propose / superpowers），失败才落 ⑤ AskUser/STOP。
-- **dynamic-workflows（用户显式点名 /workflow 才路由，Rule 39）**：用户显式调用 `/workflow` 或明确措辞要求 workflow 编排 → 先 `Skill("dynamic-workflows")` 加载再 `CreateWorkflow` 编排；未点名一律按既有 Rule 21.4 调度铁律 Agent 派发（独立性守门：声明并行组内可并行、未声明组=串行，10-02；Rule 39.1 触发纪律；四机制映射见 `references/critical-rules.md` Rule 39）。
-- **Rule 40 计划期工具面主动选择（harness 工具面清单+🧰 区块+/goal 对齐，Rule 40）**：计划期在「🧰 工具选择与编排」区块逐 Phase 登记执行工具面与选择理由（六类工具面清单见 critical-rules.md Rule 40.1）；分析命中编排条件（独立并行子任务/fan-out/长链复用）时按 Rule 39.4 登记建议 CreateWorkflow（Rule 39.1 显式点名红线不变）；/goal 对齐仅做映射指引（用户侧 harness 命令技能不可代调，40.3 如实披露）；mini 档豁免（Rule 38.3）。
-
-> 路径约定：本文件中 scripts/…、references/…、templates/… 等相对路径均相对技能根目录（本 SKILL.md 所在目录）。
-
-## 执行流程图
+## 计划制作循环
 
 - [ ] **初始化（哨兵机制）**
-  > `[2026-09-10 task-planrequired-race] 哨兵会话私有化`：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core，剥 sess 前缀；写入位置=向上解析的 plans/ 祖先项目根，无 plans/ 祖先不写；sid 缺失不写任何哨兵，fail-open）；legacy `<root>/.plan-required` 不再写入、仅作兼容读取
-  - SessionStart hook 自动写入本会话私有哨兵（标记"本会话尚未创建计划"；resume 判定：本会话 side 指针已指向有效计划则哨兵不启用）
-  - 运行 `bun scripts/session-catchup.ts` 检测中断恢复点
-  - 创建 `plans/{task-id}/` 目录，运行 `bash scripts/init-session.sh`（trivial 判定：预估 ≤15min ∧ scope ≤2 文件 ∧ 单模块 ∧ 非④排除（保护区/Rule 36/D6 高危）→ 前置 env `TASK_AUTO_TIER=1 TASK_EST_MINUTES/TASK_SCOPE_FILES/TASK_SCOPE_MODULES` 提交体量事实，脚本四条件闸门自动降 mini 并打 `auto_tier: mini` 标记供终验复核，Rule 38.6；显式 tier 恒优先）
-  - **会话隔离指针（active-plan-race）**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析——会话层 `plans/.active_plan_side/<sid>.active_plan`（UserPromptSubmit hook 按 sid 自动认领，TTL 24h）优先于全局 fallback `plans/.active_plan`（[2026-10-10 task-v164] 原措辞以 legacy 描述该层，改述为全局 fallback：工作树内瞬态兜底，路径随 $PWD 本地化，untracked+gitignore 与 .active_plan_side/ 同族），并行会话不再互顶；残留由 `set-active-plan.sh gc` 清扫（详见 `references/critical-rules.md` Rule 22.9）
-  - **模板优先级**（由 init-session.sh 自动处理，无需手动干预）：
-    - 优先：`{project}/.claude/plan-templates/{filename}`（项目级覆盖）
-    - 兜底：`{platform-home}/skills/task-planner/templates/{filename}`（`~/.zcode` 或 `~/.claude`，内置 5 模板）
-    - 定制入口：在项目中创建 `.claude/plan-templates/`（Claude Code）或 `.zcode/plan-templates/`（ZCode）目录，替换任意子文件即可覆盖内置模板
-  - **验证**：确认创建了 7 个文件（task_plan.md / findings.md / progress.md / notepad-learnings.md / verification.md / knowledge-brief.md / user-session-log.md）（task-v116：v067 起第 6 文件，v107 R-01 清账；user-session-log.md=第 7 文件，task-v169 Rule 80）
-  - **冲突分析（隔离决策）**：运行 `bash scripts/check-conflicts.sh` → 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块（实现类任务默认首选 worktree，用户可否决）
-  - **S1 同步（原生 Todo 建立映射）**：运行 `bash scripts/sync-todos.sh --json` → 用 `TodoWrite`（跨会话/多任务用 `TaskCreate`）为每个 Phase 建一条 todo（subject=`{task-id}/Phase N: title`，当前 Phase=in_progress，其余 pending）；**禁止只建计划不建 Todo**
-  - **清除哨兵**：计划创建完成后立即运行 `node ~/.zcode/skills/task-planner/scripts/plan-created.cjs`（带计划存在性验证，无计划仍 exit 1；双清除：本会话 side 哨兵 + legacy 残留）
-  - **门控**：本会话哨兵存在期间，PreToolUse hook 自动拦截所有非 plans/ 路径的 Write/Edit 操作（exit 2 阻断；ZCode 约定 PreToolUse exit 2 = block）；check-time 自动仲裁（D10）：项目内存在 created 时间戳晚于本会话哨兵的有效 task_plan.md 即放行
-  - `[2026-09-10 task-path-identity]` 派发契约路径已身份判定化（stat inode / realpath -m），单拼写即可，混拼写兼容
+  > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
+  - 运行 `bun scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh`（trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）
+  - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）
+  - **模板优先级**（init-session.sh 自动处理）：项目级 `.claude/plan-templates/` 或 `.zcode/plan-templates/` 覆盖 → 兜底 `<platform-home>/skills/task-planner/templates/`（选型权威源=卫星 `plan-template-kit`，Rule 16/34）
+  - **验证**：7 文件在位（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief/user-session-log，Rule 80）
+  - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree）
+  - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
+  - **清除哨兵**：`node ~/.zcode/skills/task-planner/scripts/plan-created.cjs`（双清除 side+legacy）；哨兵存在期间 PreToolUse hook 拦截非 plans/ 路径 Write/Edit（exit 2）
 
 - [ ] **计划确认**
-  - 展示 `task_plan.md`（含 Phase 列表 + Verification Contract 表）给用户
-  - 呈报规格（Rule 70）：展示计划时必须附计划文件绝对路径+待审项清单（Phase 序列即清单，逐项一句话目标）+看点（VC 表与隔离决策）+动作（批准/驳回/修改）
-  - **门控**：等待用户显式 `"yes"` — 无授权禁止执行；确认后立即 `bash scripts/attest-plan.sh` 锁定，其内置 `check-plan-dispatch.sh` 校验派发型 Phase 是否已规划子代理（S-unit 执行体列，Rule 22.6/25.1；缺失拒绝锁定，`--skip-dispatch-check` 逃生）
-  - **交互模式（Rule 28）**：ask 模式保持本门控，且按 **28.2.1** 在计划全文之后口头复述「大体执行思路」（≤5 行：Phase 序列与一句话目标 / 执行体与模型档位 / 关键门控 D2-D6 与失败兜底路径 / 隔离与合并策略 / 交付节奏与终验方式），使不查计划文档也知大体工作流程——复述是补充，不替代等待显式 yes，复述完成登记 Decisions Made（`思路复述已呈示,<时间>`）；silent 模式本门控自动通过——计划照常 `bash scripts/attest-plan.sh` 锁定后直接执行，无需等待确认；计划全文落盘可查，交付报告须附「静默决策清单」（Decisions Made 表 `silent:` 前缀行）供用户复核；模式解析优先级 env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > config.json > 默认 ask，用户会话中口头切换优先于一切
-  - **规则编号预留（Rule 20.6）**：新增 Rule 编号时在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`），冲突时按 `next` 建议改号。
+  - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）
+  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
+  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask
+  - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
 
-- [ ] **Poka-Yoke 前置条件检查（v063 方法论引入，指针 references/methodology.md §R1/R2/§思维方法论）**：Phase 执行前核对本 Phase 前置条件（依赖文件存在/上 Phase 产物非空/必要配置在位）+ 高风险 Phase（FMEA RPN>100，见 task_plan.md「📊 FMEA 预演」段）是否已登记预设兜底动作；不满足 → 先修前置再继续；开关键 config.json#fmea_enforce（默认 warn）
+- [ ] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
 
-- [ ] **思维方法论问题解构（task-v084，指针 references/methodology.md §思维方法论 T1-T5）**：计划创建/展示时已按 T1 问题先行三问与 T2 四问完成解构（问题是什么/本质是什么——5 Whys ≥5 层/解决方案是什么/执行方案是什么），答案落 task_plan.md「核心问题定义」+ findings.md；方案候选与 D2 选项按 T3 结论先行并附 T4 推导链；失败侧归因仍走 Rule 31.2（同法不同时）。行为纪律零新开关键，selftest-methodology 守护文本在位
-- **方案终裁（Rule 69.1 T1）**：候选对比 ≥2 方案主进程仍难决时 → 委派 decision-arbiter 终裁（Rule 69），不硬决亦不直接 AskUser（G 门槛场景除外）
+- [ ] **思维方法论解构**（`references/methodology.md` T1-T5，指针）：计划期已按问题先行三问+5 Whys+结论先行附推导链完成解构，答案落 task_plan「核心问题定义」+findings.md；方案终裁（Rule 69.1 T1）≥2 候选难决→委派 decision-arbiter，不硬决不直接 AskUser
 
-- [ ] **共享内容追踪检查点（Rule 30 — task-v071，设计期 D1 批准后、Phase 执行前）**：核对本任务是否命中 30.1 识别条件（目标资源可枚举且只认领一部分 / 同类任务 ≥3 次）→ 命中则按 30.2 创建/复用项目级共享追踪账本（`Skill("progress-tracker")`，账本位置=项目根平台配置目录 `.zcode/ledger/` 或 `.claude/ledger/` 跟随既有），按 30.3 逐 target 登记认领（in_progress + 认领 task-id + 收尾 Todo），完成时翻 done + effect；30.4 防冲突（他 task 已认领 in_progress → D4 询问）；未命中 → Decisions Made 记 `共享追踪不适用,<理由>`。开关键 `config.json#shared_tracker_enforce`（默认 warn）
+- [ ] **共享内容追踪检查点（Rule 30）**：命中 30.1 识别条件（可枚举共享资源只认领一部分/同类任务 ≥3 次）→ `Skill("progress-tracker")` 建/用项目级账本（`.zcode/ledger/`），逐 target 认领登记+收尾 Todo；未命中 → Decisions Made 记不适用理由
 
-- [ ] **Phase 执行循环**（每个 Phase 独立闭环，6 步顺序执行）
-  1. **开启 Phase**：`Edit task_plan.md` 当前 Phase 状态 → `in_progress`（Current Phase 同步更新）
-    1.1 **R 锚定复诵（漂移防护第一动作）**：[task-v168 2026-10-11 逻辑层锚点] Why：长会话执行期 Goal/R 条目无回注通道（01-explore §4/§5 P0-3），每 Phase 开头强制把用户原话拉回上下文，防"忘记最初指令"漂移。Read task_plan.md「🎯 用户需求原文」区 → 在本 Phase progress 段首行写 `- **R 锚定**：本 Phase 服务 R<n>「<一句话复述」`（多 R 取交集一句）；复诵与 Goal 或当前动作不符 = 先修计划再开工（Rule 8.1 不混入不相干内容）。
-  2. **同步 Todo（S2）**：`TodoWrite`/`TaskUpdate` 该 Phase 对应 todo → `in_progress`；步骤 1/2 必须紧邻执行，禁止只做其一
-  2.5 **委派检查点（强制 — Rule 25）**：开始实际工作前必查本 Phase `**Executor:**` 字段 → 非"主进程"则**立即按九字段模板（Rule 22.4）逐 S-unit（22.6 表每行一次；单会话单 S-unit（Rule 46.1：一次执行会话只领一行，禁批次追加）；按 Rule 21.4 调度铁律：声明并行组内成员可并行（独立性四问通过）、未声明组=一次验收一组成员再派下一组成员（10-02）；执行体选型先查覆盖矩阵与三登记面（Rule 52.1））`Agent()` 派发**并在 Subagent Handoff 登记表登记，主进程只保留派发/回填三文件/验收 Read；Executor=主进程的 Phase 须已带例外理由，无理由 = 先回炉补记再动；**无 Executor 字段 = 计划无效**，先补字段并重跑 attest（Rule 20.1）。禁止"先自己干，干不动再派"。**hook 已机制化**：主进程白名单外 Write/Edit 被 check-delegation.sh 拦截（enforce=exit 2；warn 档注入警告并计数）；**验收后推进检查（Rule 49）**：每完成一个 S-unit 验收（22.5 三证据），立即核对该单元线下一工序是否满足推进三条件（49.2 已验收+前置在位+独立性四问），满足即派发不等批（跨 Phase 前移按 49.3 双登记，汇合点按 49.4① 等齐）；**派发前粒度三值与伴飞自查（Rule 59）**：S-unit 表 `Nf/Nl/Nmin` 三值列超限先回炉重拆（59.1，attest 期 check-plan-dispatch.sh enforce 拒锁）、伴飞技能列注入任务书 §2（59.2）、复杂度预估超档先拆细再派（59.4）
-  - 拆分前已查拆分模式库 split-pattern-library（Rule 21.6.1），S-unit 过边界三判据（21.6.2）
-  - 变更型决策点（改风格/范围/新需求/推翻结论/收口声称）按 Rule 73.1 判定、73.2 对齐三问后再派发
-  2.5c **动作相关性三问（每动作前默念）**：[task-v168 2026-10-11 逻辑层锚点] Why：执行期新增文件/命令/S-unit 是漂移主路径（R4 用户原话「及时纠正执行过程中的错误」前移为事前过滤），动手前强制相关性判定防不相干内容混入。新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase 的 R 锚定？② 在 task_plan scope_files 内？③ 用户原话要求过？任一 No → 记 findings/notepad 不执行；三问全 Yes 才动手。
-  2.5b **技能激活确认（防「第三方技能从未激活」）**：[task-v168 2026-10-11 逻辑层锚点] Why：用户 R5 实证「第三方技能实际从未激活」（计划列了技能但执行期只挂不跑），派发前强制确认激活方式与登记。派发前 Read knowledge-brief.md §6「可用强化技能清单」→ model-invocable 匹配项择优激活（S-unit 伴飞技能列挂载该技能 SKILL.md 绝对路径 / 主进程 Skill() 调用）；frontmatter 声明 `disable-model-invocation: true` 的技能（用户触发型）仅提示用户可手动激活，禁止自动代激活；激活记录进 Subagent Handoff 登记表（技能名+激活方式）。
-  2.6 **上下文卫生检查点（Rule 29.1①，每 2 个 Phase complete 触发一次）**：运行 `bash scripts/check-context-hygiene.sh <plan-dir>`（findings/progress 退场扫描，exit 1=有建议）→ 有建议按 29.2 处置（superseded 标记/压缩/progress 折叠，拿不准保留标"待复核"）；工作文件侧（`bash scripts/plan-hygiene.sh <plans-dir>`）在会话恢复时（29.1②）或用户显式指令（29.1③）时运行，--execute 前须先登记 dry-run 清单。开关键 `config.json#context_hygiene_enforce` / `plan_hygiene_enforce`（默认 warn，详见 `references/critical-rules.md` Rule 29）
-  3. **执行 Phase 工作**（内嵌 3-File 落盘强制点，Rule 19）：
-     - **3a. 子代理产出回填（19.1）**：每次子代理（Explore / research / debugger / codebase-analyzer 等）或调研类 Skill 返回后，**紧邻一次 `Edit findings.md`** 写入结论摘要 + 证据路径（映射见下方「产出落盘映射」）——禁止让结论只留在会话记忆（context reset 即丢失）；回填完成才可勾 Handoff 登记表 `verify_done`（Read 产出 + findings 回填双条件，见 22.5）
-     - **验收争议仲裁（Rule 69.1 T4）**：验收证据与子代理自报 done 冲突、主进程难判时 → 委派 decision-arbiter 独立仲裁（Rule 69），仲裁前不勾 verify_done
-     - **3b. 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 操作后写 findings.md；多模态内容（截图/网页）必须立即转文字落盘
-     - **3c. 动作留痕**：关键动作（文件创建/修改、命令执行、测试）随做随记 progress.md 对应 Phase 段；错误发生 → **立即**写 progress.md Error Log（不等 Phase 结束，19.4）。**错误同轮四步（Rule 31.1⑤ 执行期信号）**：[task-v168 2026-10-11 逻辑层锚点] Why：01-explore §5 P0-2——执行期可机器观察的错误信号（工具报错/测试 FAIL）原无强制根因+纠正条款（Rule 31.1 四触发全为用户侧信号），用户 R4「及时纠正执行过程中的错误」要求同轮闭环、禁迟纠。执行期任一错误信号（工具 exit code 非零/测试 FAIL/hook 拦截/子代理返回 failed·partial）必须同轮完成——① progress Error Log 记错误原文+触发命令/工具 → ② Rule 31.2 四问根因（现象/直接原因/根因/类别） → ③ 纠正动作 → ④ 复验结果回填同行；四步未完禁止进入下一动作（禁攒到 Phase 末=迟纠）。关键动作同步追加工作账本：`bash <skill>/scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N]`（event 枚举：Phase 翻转=`phase_complete`/子代理回填=`progress`/错误=`error`/门控拦截=`gate_block`/锁定=`attest`/其他=`note`）——ledger 行是 check-3file-gate.sh 的语义工作信号（19.2），无 ledger 时门控退回 mtime 判定
-     - **3d. hook 响应**：期间收到 `[plan-sync]` hook 提醒 → 立即执行 references/todo-sync.md §4 响应协议（回写计划 + 同步 Todo）；每 `todo_sync_interval_calls`（默认 10）次工具调用内保持计划文档未腐化；收到 `[plan-compass]` 提醒（findings/progress 陈旧，Rule 19.7）→ 立即回填对应文件再继续；回写内容按三文件分流——状态与指针进 task_plan.md，调研与结论进 findings.md，动作与测试进 progress.md，禁止把 findings 类细节塞进 task_plan.md（Rule 19.6）
-     - **3e. 迭代落盘检查点（Rule 57 — 每轮测试/迭代结束强制）**：每一次测试/迭代轮次（回归测试/迭代更新/复测/重跑）结束后，**当次**把本轮结果写入 progress.md 对应 Phase 段（禁止攒批、禁止留待 Phase 末、禁止只留会话记忆）——落盘四要素齐备：① 轮次编号（Round N，Phase 内自增）② 测试命令（可复现完整命令）③ 测试结果（PASS/FAIL 显式标注）④ 关键输出摘要（FAIL 含错误原文/堆栈关键行，PASS 含断言计数或产物路径）；四要素缺一视为未落盘。**未落盘即进入下一轮 = 违规**，禁止基于会话记忆的轮次数据做下一轮判断（防多轮迭代错误累积/上下文分散）；迭代密集期逐轮触发。机器面=`scripts/selftest-iteration-persistence.sh` 静态守护。详见 `references/critical-rules.md` Rule 57
-     - **3f. 周期性三文件对照（R3 行为面）**：[task-v168 2026-10-11 逻辑层锚点] Why：用户 R3 原话「时常回顾执行的上下文……每隔一段时间检查一次」——执行期周期回顾无载体（01-explore §5 P0-1：Rule 65 每 8 次调用无人计数、无人触发），本条给行为面一个明确的周期动作锚点。每完成一个 S-unit（或每 10 次工具调用）执行一次：Read task_plan.md 的 Goal+当前 Phase 状态 与 progress.md 尾部动作对照——仍在服务 Goal？是→继续；否→按 Rule 65.4 标 `[corrected]`（原结论+新结论+原因）并回错误步重执行；对照结果一句话记 progress 对应 Phase 段。
-  4. **回写计划**：`Edit task_plan.md` Phase 状态 → `complete` + 勾选 checkbox + 记录证据路径；错误记 Errors 表
-     - **⚠️ 3-File 回填门控（19.2 — 执行中硬门控）**：标记 complete 前必须满足双条件——① progress.md 对应 Phase 段已回填（Actions taken / Files created-modified / Test Results）；② findings.md 在本 Phase 期间有实质增量。运行 `bash <skill>/scripts/check-3file-gate.sh <plan-dir>` 校验：信号优先级 = ledger 工作账本（`ledger-*.jsonl` 含锚点后的行 = 语义工作证据）> mtime 判定（无 ledger 时兜底）；exit 1 → 禁止翻转 complete，先回填再重跑直至 exit 0
-  4.5 **提交工作产物（Rule 27 — git 管理强制）**：实现类 Phase 在标记 complete 前，必须把本 Phase 产物 commit 到当前工作分支（worktree 隔离场景提交在 worktree 内分支；direct 场景提交在主仓当前分支）——**禁止跨 Phase 攒批、禁止留到终验才提交**，丢弃上限收敛为单 Phase 增量。范围 = 本 Phase 实际产出文件（以 scope_files / progress.md「Files created-modified」清单为准），**禁止 `git add -A` / `git add .` 盲扫**（防卷入 plans/、.env、临时文件与并行任务产物；plans/ 按仓约定不入库）。message：`<type>(<scope>): task-<id>/Phase N — <一句话产物摘要>`。提交后 `git status --porcelain -- <scope 文件>` 必须为空；非 git 目录 → progress.md 记一行 `[git-commit] 跳过:非 git 仓库` 不阻塞；豁免（计划声明 `git_commit: deferred` 或用户显式"先不提交"）须已写入计划并登记 verification.md。详见 `references/critical-rules.md` Rule 27
-  5. **同步 Todo + 索引（S2/S4）**：该 Phase todo → `completed`；运行 `bash scripts/sync-todos.sh --index` 刷新 INDEX.md
-  6. **[DRIFT CHECK]** 派发 `drift-checker` 子代理偏移检查（本触发点唯一检测载体=Rule 61 子代理化载体——`check-drift.sh` 仅作 61.5 降级佐证，不双跑；C4）
-    - ✅ ALIGNED → 继续下一 Phase
-    - ⚠️ DRIFT → 记录 progress.md，警觉继续
-    - DRIFT 后「警觉继续 vs 立即返工」拿不准 → 委派 decision-arbiter 处置裁决（Rule 69.1 T5；检测本体仍=drift-checker，不双跑）
-    - 🔴 BLOCKED → **STOP**，报告用户，等决策
-  - 64.1 留痕三件套（Rule 64）：返回 30s 内 ① 检查点（61.2 既有）② `ledger-append.sh <plan-dir> drift_check "<verdict>+一句话" --phase N` ③ task_plan.md Drift Log 表一行——缺任一=未执行，64.2 门控按未执行拦截
-  - **DRIFT CHECK 触发时机（强制）**：Phase 标记 complete 后立即 / 连续 ≥3 次工具调用后 / 切换文件/模块前 / 用户发出新指令时（先按下方「🆕 用户新指令处理」判定）
-  - `drift-checker` 为只读检测执行体，发现 BLOCKED 时必须等用户明确决策后再继续
-  - 呈报规格（Rule 70）：阻塞报告必须含①阻塞项清单+一句话简介②对象文件绝对路径③看点（哪条证据/哪个偏差）④动作选项+默认项（轻呈报≥②③）
-  - **指针清理（25 完成项）**：任务完成时检查全局 fallback plans/.active_plan 不再指向本计划（置空或指向在途任务；显式改写优先于 gc 兜底清理）；`check-complete.sh` 终验成功时若指针仍指向本任务会输出提醒 warn（恒 exit 0 不阻断）[2026-10-10 task-v164 补注:原措辞以"移交"表述本纪律,退役该叙事(并行可见漂移来源),语义不变]<!-- [2026-10-10 task-v159 pointer-lifecycle F1/D1] 机制化位: D1 孤儿指针根因=任务完成后全局指针仍指向已完成任务无人提示, 终验 warn 提醒 + 本纪律行双点承载; 纯增量零删除, 不新增 Rule 编号（当时 master 1-69 不变）, Rule 45 注释双层级齐备 -->
+- [ ] **Phase 执行循环**（每 Phase 独立闭环）
+  1. **开启 Phase**：`Edit task_plan.md` 状态→`in_progress`；**R 锚定复诵**（v168）：Read「🎯 用户需求原文」→ progress 段首行写 `- **R 锚定**：本 Phase 服务 R<n>「<一句话复述>」`；与 Goal 或当前动作不符=先修计划再开工
+  2. **同步 Todo（S2）**：对应 todo→in_progress；步骤 1/2 必须紧邻执行
+  2.5 **委派检查点（Rule 25）**：Phase Executor≠主进程 → 立即按九字段模板逐 S-unit 派发子代理（路由表/粒度门/伴飞/返回校验/兜底详见卫星 `task-dispatch`）；主进程只保留派发/回填三文件/验收 Read；无 Executor 字段=计划无效先回炉；禁止"先自己干再派"
+  2.5b **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）
+  2.5c **动作相关性三问**（v168）：新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase R 锚定？② 在 scope_files 内？③ 用户原话要求过？任一 No→记录不执行
+  3. **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
+     - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `Edit findings.md`**（结论摘要+证据路径）；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁
+     - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
+     - **3c 动作留痕**：关键动作随做随记 progress.md；错误**立即**写 Error Log（19.4）并同轮完成四步（v168：记错误原文→Rule 31.2 四问根因→纠正→复验回填，未完禁下一动作）；关键动作同步 `bash <skill>/scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N]`
+     - **3d hook 响应**：`[plan-sync]`→按 `references/todo-sync.md` §4 协议回写；`[plan-compass]`（findings/progress 陈旧，Rule 19.7）→立即回填再继续
+     - **3e 上下文卫生（Rule 29，细则→task-discipline）**：每 2 个 Phase 跑 `bash scripts/check-context-hygiene.sh`；工作文件整理在会话恢复/用户指令时运行
+     - **3f 周期性三文件对照**（v168/R3）：每完成一个 S-unit（或每 10 次工具调用），Read task_plan Goal+Phase 状态与 progress 尾部对照；不符按 Rule 65.4 标 `[corrected]` 回错误步并一句话记 progress
+  4. **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）
+  4.5 **提交工作产物（Rule 27）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；非 git 记行跳过；deferred/用户显式豁免须写入计划
+  5. **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
+  6. **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
 
-### 📄 产出落盘映射（3-File Pattern — 子代理/调研结论 → findings.md）
+- [ ] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
 
-> 原则：**Context Window = RAM（易失），Filesystem = Disk（持久）**——任何重要产出必须落盘，会话恢复时靠三文件重建上下文（恢复顺序：task_plan.md 在哪/去哪 → progress.md 做过什么 → findings.md 已知什么）。
+- [ ] **终验交付**
+  - Read `verification.md`，逐条复验 VC（每条带证据路径）
+  - **3-File Gate（19.5）**：check-complete.sh 内置校验 findings/progress 非 stub，缺失/stub→exit 1→STOP 回填禁交付
+  - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
+  - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉
+  - **隔离任务合并回**：worktree 内全 VC 复验且无未提交变更→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（合约见 `references/worktree-isolation.md`）
+  - **git 提交核验+编号账本**：scope 文件无未提交变更（或已按 Rule 27 逐 Phase 提交）；新增编号 `bash scripts/rule-reserve.sh land <NN> <task-id>`
+  - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
+  - 交付结论 COMPLETE/PARTIAL/BLOCKED；**交付总结五要素**（Rule 48：全体指针绝对路径/可执行命令）按 `templates/delivery-summary.md` 输出
+  - 决策分级（Rule 72）/呈报四要素（Rule 70）/变更吸收三判（Rule 74）/编号列表规范（Rule 76）按卫星 `task-discipline` 全文执行
+  - **退出前**：`bash scripts/check-complete.sh`——exit 0 正常结束；exit 1→STOP 报告未完成任务
+  - **计划归档（Rule 81.1）**：check-complete exit 0 后运行 `bash scripts/archive-plan.sh <task-id>` 将完成任务目录移入 plans/archive/——target 已存在=幂等报 `ALREADY_ARCHIVED` 视为通过；守卫拒绝（active 指针 / .session-owner 活跃 / Status 未全 complete，fail-closed）→ 保持原位并登记拒绝理由，禁止强移。Why：「在途在根、历史在 archive/」是 plans/ 存量唯一健康形态，防无限堆积致索引失真（task-v170；详见 references/critical-rules.md Rule 81）
+
+### 📄 产出落盘映射（3-File Pattern）
+
+> 原则：**Context Window = RAM（易失），Filesystem = Disk（持久）**；恢复读序：task_plan（在哪/去哪）→ progress（做过什么）→ findings（已知什么）→ knowledge-brief（可复用什么）。
 
 | 产出类型 | 写入 findings.md 段落 | 写入时机 |
 |---------|---------------------|---------|
-| 调研结论 / 搜索结果摘要（web-search / explore / doc-search / research-assistant 返回） | `## Research Findings` | 子代理返回后**紧邻** |
-| 根因分析 / 排查结论（debugger / systematic-debugging） | `## Issues Encountered`（Issue + Resolution） | 根因定位后 |
-| 技术选型 / 方案决策 | `## Technical Decisions`（+ task_plan.md Decisions Made 双写） | 决策时 |
-| 有用的 URL / 文件路径 / API 引用 | `## Resources` | 发现时 |
-| 截图 / 网页等多模态信息 | `## Visual/Browser Findings`（转文字） | **立即**（多模态不持久） |
+| 调研结论/搜索结果摘要 | `## Research Findings` | 子代理返回后**紧邻** |
+| 根因分析/排查结论 | `## Issues Encountered`（Issue+Resolution） | 根因定位后 |
+| 技术选型/方案决策 | `## Technical Decisions`（+task_plan Decisions Made 双写） | 决策时 |
+| URL/文件路径/API 引用 | `## Resources` | 发现时 |
+| 截图/网页等多模态信息 | `## Visual/Browser Findings`（转文字） | **立即**（多模态不持久） |
 | 用户需求拆解 | `## Requirements` | Phase 1 期间 |
-| 调研蒸馏知识（可复用事实/文件锚点/易错点） | `knowledge-brief.md` §2/§3/§4（主进程单写者蒸馏，Rule 62.3 双落盘） | 22.5 复核时（调研类子代理返回后 30s，Handoff 落点列记双锚 `findings锚\|kb:§N`） |
+| 调研蒸馏知识（可复用事实/锚点/易错点） | `knowledge-brief.md` §2/§3/§4（主进程单写者蒸馏，Rule 62.3 双落盘） | 22.5 复核时，Handoff 记双锚 `findings锚\|kb:§N` |
 
-### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token 判定）
+### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token）
 
-> 权威源 = `references/critical-rules.md` Rule 20.5（判定矩阵表 + 五场景）。场景速查：刚写完一个文件 → **不要再 Read**（内容还在上下文里）；看过的图/PDF/网页/浏览器/搜索返回 → 立即写 findings.md；开新 Phase → 读 plan+findings；出错 → 读相关文件；中断/压缩恢复 → 读全部三文件（Rule 19.3）。
+> 权威源=`references/critical-rules.md` Rule 20.5。场景速查：刚写完的文件→**不要再 Read**（内容还在上下文）；看过的图/PDF/网页/搜索返回→立即写 findings；开新 Phase→读 plan+findings；出错→读相关文件；中断/压缩恢复→读全部三文件（Rule 19.3）。
 
-- [ ] **Chain 区块交接（仅 linked/fan-out 模式）**
-  - 当前 Block 所有 Phase complete 后：
-    1. 更新 Handoff 追踪表对应行（状态=complete + 完成时间）
-    2. 验证交接产物存在：`Read` 检查目标文件
-    3. 更新下游 Block `depends_on` 状态为 `in_progress`
-    4. 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）
-    5. 恢复触发点（交付终态/会话恢复）按 Rule 24.5 自主续推（per-block 扫描已收敛）
-  - **handoff 合约**（每次交接前必须满足）：
-    ```
-    [BLOCK-N COMPLETE] 产物: {path} 大小:{size} 内容确认:{Read 结果摘要}
-    → BLOCK-N+1 开始  依赖: {path}
-    ```
-  - fan-out 模式：多个下游 Block 同时 pending → 按 Rule 21.4 声明组并行（成员通过独立性四问即组内并行；10-02），全部完成才汇合
-
-- [ ] **Code Review Gate**（仅 `code_review: required` 的任务）
-  - 触发条件：`task_plan.md` frontmatter 含 `code_review: required`；**diff 分级（[task-v094 T-B6]）**：轻 diff（代码文件 ≤3 个且合计 ≤50 行）→ 单轮轻量审查（code-review 单轮或主进程逐 hunk 自查+抽验登记），重 diff → 全量多轮 CR 原流程不变；**CR 触发制（Rule 42.7，task-v167 波次4/5）**：无风险信号（纯文档/注释/文案/配置 tautology）→ 免除 CR、Decisions 登记一行理由（42.7 等价防线=留痕不降质量）；命中风险信号（逻辑变更/跨文件影响/公共 API/安全/性能敏感/diff>3 文件或>50 行）→ 必须 CR 且 progress.md 留 CR APPROVED 行，边界争议按 69.1 T6 委派 decision-arbiter；机器面=`check-complete.sh` [CR-GATE]（L0 lane 跳过），收尾一次跑完清单=`scripts/auto-finalize.sh`
-  - 触发时机：全部 Phase `complete` 之后、终验交付之前
-  - 审查范围：本次任务 Write/Edit 修改过的文件，过滤为代码文件（`.py/.sh/.ts/.tsx/.js/.jsx/.go/.rs/.java/.c/.cpp/.h/.hpp`），排除 `.md/.json/.yaml/.yml/.txt/.toml/.cfg`
-  - 执行步骤：
-    1. 收集改动文件清单（从 progress.md / git diff 提取）
-    2. 过滤非代码文件 → 待审查列表
-    3. 调用 `Skill("code-review")` 上下文隔离审查
-    4. 输出 `APPROVED` → 进入终验交付
-    5. 输出 `CHANGES_REQUESTED` → 自动追加 fix-phase → 回到执行循环
-  - **门控**：`code-review` 输出 `APPROVED` 才允许进入终验交付；否则阻断
-  - **CR 分歧与终验边界（Rule 69.1 T6）**：CHANGES_REQUESTED 意见接受度 / PARTIAL-COMPLETE 边界主进程难判时 → 委派 decision-arbiter 裁决（Rule 69）
-  - **失败处理**：`fix-phase` 失败 3 次 → `AskUserQuestion` 决策（继续/停止/降级）；交互模式语义见 Rule 28（ask=选项化询问并回填 Decisions；silent=按推荐项自主处置并登记 `silent:` 决策行，D6 硬停点除外）
-  - 呈报规格（Rule 70）：审查结果面向用户呈报时必须附①审查对象文件清单（绝对路径）③看点（verdict+关键发现行号）④动作（修复/放行+默认项）
-
-- [ ] **终验交付**
-  - Read `verification.md`
-  - 逐条复验 VC（每条带证据路径）
-  - **委派率统计（Rule 25）**：从各 Phase Executor 字段 + Subagent Handoff 登记表统计「子代理执行 Phase 数 / 总 Phase 数」及主进程直做清单（含理由），写入 verification.md「委派统计」段；委派率 < `config.json#delegation_rate_floor`（默认 0.7）或主进程直做清单含白名单外理由（白名单见 Rule 25.3）或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,模型需按 violation 清单回炉补 plan 或转 PARTIAL 重跑；**白名单豁免**：rate<floor 但全部直做理由均命中 Rule 25.3 六项白名单 → 不降级（WHITELIST-EXEMPT 放行；jq 缺失 fail-closed，见 Rule 25.4）
-  - **3-File Gate（Rule 19.5）**：确认 findings.md/progress.md 存在且非模板 stub——check-complete.sh 已内置校验，缺失/stub → exit 1 → STOP 回填，禁止交付
-  - **质量门控统计（Rule 26）**：按 verification.md「质量门控统计」段核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；存在未处置违规 → 按 Rule 26.3 降级 outcome；Q3 → outcome 判 BLOCKED 并 STOP
-  - **内容质量门控（v063，template_type=writing/research/publish 任务）**：终验前按 references/methodology.md §内容质量 Q3（去 AI 化 10 条清单）+ Q4（五维评分卡：准确性 25/相关 20/可读 20/原创 20/SEO 15，加权 ≥4.0 放行）核查；不达标 → 回炉精修（Rule 26 惩罚映射）；开关键 config.json#content_quality_enforce（默认 warn）
-  - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
-  - **隔离任务合并回**（isolation=worktree 时，按 references/worktree-isolation.md 合约）：worktree 内全 VC 复验且无未提交变更 → **`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`**（智能门：预检+已合并检测+--no-ff 合并+可选部署对账；ALREADY_MERGED=另一会话已合并→跳过合并补簿记）→ 按 [CLEANUP] 提示行 `git worktree remove` + `git branch -d` → 主仓 Read 关键文件复验
-  - **git 提交核验（Rule 27 终验联动）**：确认任务 scope 文件无未提交变更（`git status --porcelain -- <scope>` 为空，或各 Phase 已按 27.1 逐 Phase 提交）；遗留未提交 → 先补提交（注明"终验补提交"）再交付，防修改被丢弃
-  - **编号账本**：任务合并后运行 `bash scripts/rule-reserve.sh land <NN> <task-id>`（无新增编号则跳过）。
-  - 交付结论：`COMPLETE` / `PARTIAL` / `BLOCKED`
-  - **交付总结（五要素）**：按 `templates/delivery-summary.md` 向用户输出任务交付总结（任务说明/产出清单/审查信息/风险点/下一步建议；数据引 verification.md/progress.md/subagent-state/ 指针不重写；风险点区块必须列举，无则逐项写「无」；需存证时落 plans/<task-id>/delivery-summary.md；**可定位性（Rule 48）**：全体指针必须为绝对路径/URL/可执行命令（禁裸文件名、模糊指代、未解析占位符）；下一步建议与待裁决项逐条带「对象路径/URL+看点+动作」，审查类条目必须含审查对象路径或网址）
-  - **变更吸收三判（Rule 74）**：会话内一切吸收动作（补充条目/计划修订/合并冲突/子代理产出并入）按 Rule 74 三判门处置：增量默认、替代四条件、删除授权；定稿方案过 74.4 可行性判别门
-  - 会话内一切决策点（选项/升级/熔断/质检送审）按 Rule 72 分级：A 级必须询问、C 级禁问自动消解
-  - 会话内一切其他呈报（审批/审查/确认/升级/熔断报告）按 Rule 70 四要素输出
-  - 用户面总结/呈报的列表一律编号列表 1. 2. 3.（禁①②③圆圈枚举与数字列表混用，Rule 70/72 规则子条编号引用除外）；待审文件/图片/数据须表格化（文件名/路径/简单描述，Rule 76）
-  - **退出前**：运行 `bash scripts/check-complete.sh` 验证所有 Phase 已 complete
-    - exit 0 → 正常结束
-    - exit 1 → STOP，报告未完成任务，不结束会话
-
-### 合规检查清单（每 Phase 开始前逐项确认）
+### 合规检查清单（核心域，每 Phase 开始前逐项确认）
 
 | # | 检查项 | 状态 |
 |---|--------|------|
-| C1 | 用户任务已复述，目标无歧义 | ☐ |
-| C2 | `task_plan.md` 存在且含 Phase + VC 表 | ☐ |
-| C3 | 计划已展示并获得用户显式授权 | ☐ |
-| C4 | 每个 Phase 完成后已派发 `drift-checker` 子代理偏移检查（Rule 61 载体，同点唯一检测载体，ALIGNED/DRIFT/BLOCKED 三态，BLOCKED→STOP；`check-drift.sh` 仅作 61.5 降级佐证，不与子代理双跑）；留痕三件套已落实（Rule 64.1，缺一=未执行） | ☐ |
-| C5 | subagent 返回后已 Read 实际产出文件（check-complete 终验抽查承载） | ☐ |
-| C6 | 全部 VC 逐条复验，有可查证据（check-complete 逐条校验承载） | ☐ |
-| C7 | 交付结论为 COMPLETE/PARTIAL/BLOCKED 之一（check-complete 终态判定承载） | ☐ |
-| C8 | `code_review: required` 任务已完成 Code Review Gate 且输出 APPROVED（APPROVED 为门控前置条件，终验人工确认） | ☐ |
-| C9 | Code Review Gate 的 fix-phase（如有）已 complete（check-complete 全 Phase complete 判定承载） | ☐ |
-| C10 | 计划创建后已按 S1 建立原生 Todo 映射（TodoWrite 或 Task；原生 Todo 无机器门，人工） | ☐ |
-| C11 | 每个 Phase 状态变更后已同步 Todo（S2）；`[plan-sync]` 提醒均已响应（S3，hook 提醒响应为人工动作） | ☐ |
-| C12 | 用户新指令已做 D/A/B/C 影响判定（D 新任务边界先判，8.1）；D 类已开新计划目录且旧计划原样保留；B/C 类已完成计划 + Todo 同步更新（S5，判定为人工动作） | ☐ |
-| C13 | 计划交付终态/会话恢复触发点已按 Rule 24.5 调 `Skill("plan-resume")` 自主续推 Top 1（不再每 Phase 被动扫描；24.7 豁免场景登记跳过） | ☐ |
-| C14 | 本 Phase 执行体与计划 Executor 字段一致；主进程直做已在计划登记例外理由（check-delegation stats 终验承载） | ☐ |
-| C15 | 本 Phase 无未处置质量违规：V-N 全勾且 Evidence 非空、Handoff verify_done 已勾、无 Rule 26 触发项（或已豁免登记）（Rule 26 人工核查；无机器门承载，人工保留不收敛） | ☐ |
-| C16 | 三文件罗盘可验证：Phase complete 前 `check-3file-gate.sh` exit 0（findings 本 Phase 有增量 + progress Phase 段已回填，Rule 19.2 机器门承载）；Handoff 表各行「findings 落点」已填且 verify_done 已勾（Rule 22.5 人工）；终验前两文件非 stub（check-complete 3-File Gate 机器门承载） | ☐ |
-| C17 | 本 Phase 产物已按 Rule 27 提交：scope 文件 `git status --porcelain` 为空（或已登记非 git 跳过 / `git_commit: deferred` 豁免 / 无仓内产物）（check-complete porcelain 终验预检承载） | ☐ |
-| C18 | ask 模式计划批准前已按 28.2.1 口头复述大体执行思路（≤5 行，内容可对照计划）且已登记 Decisions Made（silent 模式不适用；复述为人工动作） | ☐ |
-| C19 | 用户指出错误场景（31.1 触发①②③任一）已按 Rule 31 走 31.2 根因分析：progress.md Error Log 对应行 Root Cause/Prevention 列非空（`<待沉淀>` 占位不算）且 notepad 沉淀两段已写（check-complete Learning Gate 机器门承载；未命中错误指出则不触发，无需记行） | ☐ |
-| C20 | 本任务全部方案候选/建议/D2 选项已过 32.2 禁令检查（禁令源=当前+历史 notepad「被否决方案」段+memory）；命中项已剔除或按 32.4 标注否决出处+新证据交用户裁决（veto 核查无机器门，人工保留不收敛；无禁令命中则无需记行） | ☐ |
-| C21 | 每个问题解决动作后已按 Rule 33 落 [reflect] 反思+验证两行（progress.md 可查；check-complete REFLECT-GATE 机器门承载，声明 reflect_verify: required 时） | ☐ |
-| C22 | attest 前 template_type 已过 check-template-type.sh 门控（逃生须披露，机器门承载）；命中 34.3 沉淀触发时已按 34.7 全自动生成（34.5 双闸门内置生成侧）沉淀或登记不沉淀理由（check-complete warn 兜底） | ☐ |
-| C23 | 准备以否定结论（无法查看/不存在/不支持）结束任务或上报 prompt 过大失败前：能力否定已过 Rule 35.2 三关（完整接口面/CRUD 推断/替代路径，查证动作按 35.6 最小探针原则）并附证据，或已按 35.3 落盘引用补救（内容写文件+prompt 只放路径与 Read 指令）；违规按 Rule 26 回炉（三关查证人工，结论证据随交付报告留痕） | ☐ |
-| C24 | 本任务涉及技能文件修改时（Rule 36.1 范围）：已按 36.2 完成归因（指向技能本体才可提案）+ 36.3 删除基线与删除性行为清单已落 findings/progress；功能性删除/语义改写已逐项获用户确认（36.4，D6 级；check-skill-modify 机器门承载写操作，确认动作人工） | ☐ |
-| C25 | 本任务已按 Rule 37 套用机制画像：template_type 对应的代码组/内容组机制适用性已核对（Code Review Gate、code-assistant 路由等按画像取捨）；画像不适用或未命中登记一行理由（机制画像核对人工） | ☐ |
-| C26 | 本任务已按 Rule 38 判定计划档位：轻量任务声明 plan_tier: mini 时已套用 mini-lite 模板+豁免清单（5 锚点），非轻量任务未误用 mini 档；MISMATCH 提示已处置（check-template-type/plan-tier 机器门承载 MISMATCH 检测，套用人工） | ☐ |
-| C27 | 用户显式点名 /workflow 编排时已按 Rule 39 路由：Skill("dynamic-workflows") 已加载、CreateWorkflow 三来源其一提交、21.4 并行豁免已登记 Decisions Made+progress（39.4，未点名则按 21.4 独立性守门调度执行，无需记行） | ☐ |
-| C28 | standard/full 档计划含「🧰 工具选择与编排」区块且逐 Phase 登记工具面与理由、workflow 编排判定与 /goal 对齐两判定行已填（Rule 40.2/40.3/40.4；Executor 字段仍是委派门控机器事实源,区块不替代；mini 档豁免无需记行）；命中建议 CreateWorkflow 时已按 39.4 登记并行豁免（机器面=selftest-tool-selection 静态断言,区块完整性人工核查） | ☐ |
-| C29 | 本任务执行中出现失败/阻塞/升级冲动时已按 Rule 41 过消解链与升级四门槛：升级用户仅限 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记禁呈报（41.2/41.3）；任何 AskUserQuestion/STOP 前已过 41.4 消解清单并在上报附「已尝试清单」；多待决项打包呈报附推荐（41.5）（机器面=selftest-self-resolution 静态断言,消解过程人工核查） | ☐ |
-| C30 | 质量审查工具检测与登记（Rule 42）：本任务涉及质量审查面（内容组=发布前质量审计/代码组=Code Review）时已按 42.2 四级顺序检测（项目级→用户级→环境既有 agents→内置 review-library 兜底池），检测结论（技能名/既有 agent 名/待补充 S-unit 指针）已登记计划「质量审查工具」行；缺口已按 42.3 补充合约处置（补建动作作为 S-unit 登记进计划，禁无登记私建技能）；执行期质量审查动作已用登记工具（未检测=违规，Rule 26 降质面）（机器面=selftest-reliability-institution 静态断言，检测过程人工核查；mini 档 42.5 豁免） | ☐ |
-| C31 | 执行可靠性制度化（Rule 43）：交付物重要声称（已完成/正确/通过）已附机器可复现验证证据（命令+关键输出/Read 路径+关键行/diff 行号），未验证内容已以「未验证」显式登记（43.1）；S-unit 表逐行标注建议档位且取最小可承载档（43.2，失败先 22.3 升档非默认大模型）；推荐/选项化呈报前已枚举 ≥2 候选并过最轻验证后按候选对比表选已验证最优（43.3），验证成本过高时降级假设清单+验证顺序；提示词/参数修改类产出已过实际生成测试且未验证结果未作优点呈现（43.5/43.6，task-v133）（机器面=selftest-reliability-institution 静态断言，证据核查人工） | ☐ |
-| C32 | 对齐审查标准流程（Rule 42.6）：文档/文件更新前已按 42.6.1 跑版本一致性校验（未经校验未直接追加）；任务完成前已按 42.6.2 对全部产出与更新文档跑 alignment-review 对齐审查（标准收尾流程）；对齐整理已输出变更记录（42.6.3 三要素）；本任务无文档更新或纯新增无联动时登记豁免理由（机器面=selftest-review-library RL-11..13 静态断言，校验过程人工核查；mini 档豁免） | ☐ |
-| C33 | 用户选择点默认项与自动超时（Rule 44）：向用户提供 2+ 选项的每个询问点已指定默认选项（推荐项排第 1 位标注默认/推荐）+自动超时时长（默认 5 分钟,询问点可声明覆盖值,登记于「自动超时默认项」行）;低区分度选项（产出一致仅步骤/耗时差异）已按 41.3 直接裁决并登记理由而非打扰用户;用户超时未答复已按默认选项自动执行且登记自动裁决记录五要素（超时值/推荐项/触发时间/理由/被覆盖选项）;非选项类确认/决策阻塞点已按 44.5 展示限制（标记「阻塞」+状态信息展示 ≤1 次,禁循环重展）;本任务无 2+ 选项询问点时登记豁免理由（机器面=selftest-ask-default-timeout RT 静态断言,消费过程人工核查;mini 档豁免） | ☐ |
-| C34 | 单元线推进检查（Rule 49）：多单元线任务每个跨 Phase 前移已过推进三条件（已验收/前置在位/独立性四问）并双登记（Lane 表或 progress [advance] 行）；汇合点工序已等齐上游验收；单单元线任务登记豁免理由（机器面=selftest-lane-advancement 静态断言，推进核查人工；mini 档豁免） | ☐ |
-| C35 | 需求覆盖门控（Rule 51）：计划含「🎯 用户需求原文」区块且 R→VC 映射完整（51.1/51.2）；交付终态出「需求覆盖核对表」且核心需求全 covered 或有用户让步登记（51.3/51.4）；生成类动作前有盘点记录（51.5）（机器面=selftest-requirement-coverage.sh 静态断言，核对过程人工核查；mini 档豁免） | ☐ |
-| C36 | 根源解决纪律（Rule 53）：计划含「根源覆盖表」区块（结果级需求全链审计，53.1）；解决类条目附根治判据（53.2）；决策点过管辖二分（53.3）；浅快路径过返工核算（53.4）（机器面=selftest-root-resolution.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
-| C37 | 未验证优点宣传核查（Rule 43.5/43.6 + Rule 51.8 + 53.5-Q9）：提示词/参数优化类修改的产出已附实际生成测试证据（生成回执 + 产物质检，43.5 三件套）；未经验证的结果（含零消耗/零成本类统计）未以优点口吻呈现，缺证据项已降级「未验证」登记（43.1/43.6）；需求条目覆盖判据属实测形态的，无实测证据未声称 covered（51.8）（机器面=selftest-reliability-institution R-13..R-16 + selftest-requirement-coverage RC-23 静态断言，测试证据人工核查；mini 档豁免） | ☐ |
-| C38 | 执行诚实性与即时执行自查（Rule 54）：对外声称（状态/资源/阻塞/里程碑/完成/统计）已附第一手证据锚（54.0）；「就绪」仅用于交付物、资源状态类声称有第一手查询记录否则显式「未验证」（54.1）；阻塞已逐项出阻塞/未阻塞矩阵、未阻塞项不被连带推迟（54.2）；准备类仪式动作未作为里程碑呈报（54.3）；推迟决策四要素（阻塞证据/未阻塞子集/立即可执行项记录/恢复触发器）齐备（54.4）；决策引用数据走落盘锚（findings/knowledge-brief）而非裸会话数据（54.5）（机器面=selftest-execution-honesty.sh 静态断言，声称可回溯/矩阵/举证人工核查；mini 档豁免） | ☐ |
-| C39 | 周期性回顾与前后对照（Rule 65）：每 N 次工具调用（默认 8）触发回顾；重读 task_plan/findings/progress 关键部分；前后对照检查结论一致性；发现矛盾自动纠正+报告用户（机器面=periodic-review.sh 检测+selftest-periodic-review.sh 静态守护，回顾过程人工核查；mini 档豁免） | ☐ |
-| C40 | 迭代测试轮次落盘自查（Rule 57）：每一次测试/迭代轮次结束已**当次**将本轮结果写入 progress.md 对应 Phase 段（未落盘即进入下一轮=违规，57.1）；落盘四要素齐备——轮次编号 Round N / 可复现测试命令 / PASS-FAIL 显式结果 / 关键输出摘要（FAIL 含错误原文/堆栈，PASS 含断言计数或产物路径）（57.2）；迭代更新数据及时落盘、下一轮基于文件事实而非会话记忆判断（57.3）（机器面=selftest-iteration-persistence.sh 静态断言，逐轮落盘事实人工核查；mini 档豁免） | ☐ |
-| C41 | 调研分析证据与目标裁决自查（Rule 58）：调研/分析/评估/归因类任务计划期已编证据面清单（自身/对标/外部约束三基线面齐备，58.1）；归因结论前对标面已第一手取证（≥1 可指名对标对象，无对标取证禁下结论，58.2）；每个结论已引证据锚+过反证检查、无据判断标注「推测」（58.3）；需求区 R 行已标注 [手段]/[目标]、[目标] 行已映射问题解决判据 VC（58.4）；终验已出三态裁决（solved/partial/not-solved+证据锚，not-solved/partial 禁 COMPLETE、禁交付物冒充问题解决，58.5）；实质活动已挂靠目标型需求（绕弯活动禁执行，58.6）（机器面=selftest-evidence-goal-gate.sh 静态断言；mini 档豁免） | ☐ |
-| C42 | 四文件罗盘数据流转自查（Rule 62）：派发 prompt 四文件读写契约与 22.4a 同语义且无收窄措辞（62.2，机器面=check-dispatch.sh 契约措辞 lint）；调研类子代理结论双落盘——findings 自写小节（22.4a 既有）+主进程 22.5 复核时蒸馏 knowledge-brief 对应节（62.3，Handoff「findings 落点」列双锚 `findings锚\|kb:§N`）；调研型 Phase complete 前 knowledge-brief 有增量或登记豁免（62.5，机器面=check-3file-gate.sh --require-kb + selftest-four-file-dataflow.sh 静态断言；62.2 复核动作与 62.3 蒸馏质量人工核查；纯机械 S-unit 豁免登记一行；mini 档豁免） | ☐ |
-| C43 | 子代理拆分粒度与技能伴飞自查（Rule 59）：S-unit 表粒度三值 `Nf/Nl/Nmin` 逐行强制填报（59.1，机器面=check-plan-dispatch.sh attest 时 $8 粒度列超限 enforce 拒锁 + check-dispatch.sh 派发侧 token 检测）；S-unit 表伴飞技能列已填（59.2，派发任务书 §2 注入 SKILL.md 绝对路径，子代理首动作 Read）；任务画像期已扫描可用强化技能写入 knowledge-brief（59.3）；复杂度预估超档时先拆细再派（59.4）；多段任务=多 S-unit 多派发+检查点链（59.5）；超限回炉重拆而非升档换模型 | ☐ |
-| C43a | 拆分模式库消费自查（Rule 21.6）：拆分前已查模式库（21.6.1）、S-unit 过边界三判据（21.6.2）（机器面=selftest-split-pattern-library.sh 静态断言，消费过程人工核查；mini 档豁免） | ☐ |
-| C44 | 检索优先与反推诿自查（Rule 63）：任务中出现「不知道/不清楚/无法确定」类判断前已按 63.2 四步检索链（本地→帮助面→官方文档/网络→社区）穷尽检索并附来源锚（63.2/63.4）；「不知道/未解决」类上报已取「已检索清单+证据锚+下一步建议」合法形态（63.3）；无来源断言/虚构检索结果零容忍（63.4，Rule 26 Q3 最高档）；本任务无知识缺口场景时登记豁免一行（机器面=selftest-research-first.sh 静态断言，检索过程人工核查；mini 档豁免） | ☐ |
-| C45 | goal 单元自查（Rule 66）：66.1 六列填写 / 66.3 [goal:Gn] 证据行逐落 / 66.4 G 序推进 / 66.2 禁 /goal 代调声称；机器面=check-plan-dispatch 硬门+check-complete 对照+selftest-goal-unit-goal-mode.sh 静态守护；mini 档豁免 | ☐ |
-| C46 | 计划期依赖与并行分组自查（Rule 68）：68.1 前置依赖列 / 68.2 组由依赖推导 / 68.3 组内异构 / 68.4 组域写隔离；机器面=check-plan-dispatch 两档+selftest-parallel-scheduling.sh 静态守护；mini 档豁免 | ☐ |
-| C47 | 判断裁决委派自查（Rule 69）：判断类场景（T1 方案终裁/T3 失败定级/T4 验收争议/T5 DRIFT 处置/T6 CR 分歧）主进程拿不准时已委派 decision-arbiter 而非硬决或直接 AskUser（G1-G4 门槛场景除外，69.1 豁免）；REJECT-REWORK 裁决已按驳回单五要素返工且 progress.md 有 [arbiter-reject] 行（69.3 禁静默继续）；ESCALATE-USER 仅限四门槛；本任务无判断争议场景时登记豁免一行（机器面=selftest-decision-arbiter.sh 静态断言，委派与消费动作人工核查；mini 档豁免） | ☐ |
-| C48 | 用户呈报可审批性（Rule 70）：一切审批/审查/确认/升级/熔断呈报已含四要素（①待审项清单+逐项简介②可定位地址③看点④动作+默认项；轻呈报≥②③）；交付总结按 Rule 48 权威源（机器面=selftest-report-reviewability.sh 静态断言+check-complete report-lint，呈报内容人工核查；mini 档豁免） | ☐ |
-| C49 | 上下文压力主动评估自查（Rule 67）：三档触发（节奏/事件/高危信号）已响应；[assess] 留痕已落 progress.md；CONFUSED 已写会话交接文档或登记豁免（机器面=selftest-context-pressure.sh 静态断言，评估过程人工核查；mini 档豁免） | ☐ |
-| C50 | 无源不写与空段占位自查（Rule 71）：文档段落落盘前过写入前五问（71.2）；模板空段=显式占位「（本任务暂无…）」/「未验证」+缺什么，无推测填充（71.3）；事实性结论全部带源锚（file:line/命令原文/URL/已读区段行号，71.1/71.5）；缺信息显式「未验证/暂无」不补细节（71.5）（机器面=selftest-source-anchor-discipline.sh 静态断言，五问执行过程人工核查；mini 档豁免） | ☐ |
-| C51 | 变更吸收三判自查（Rule 74）：吸收用户指令/修订前已过三判门且答案登记变更标注表（74.2）；修订方案含「📋 变更标注表」逐条标注（74.3）；定稿方案已过可行性判别门或登记豁免（74.4）（机器面=selftest-absorption-discipline.sh 静态断言，判别过程人工核查；mini 档豁免） | ☐ |
-| C52 | 决策分级与用户打断（Rule 72）：一切决策点已按三级分类——A 级（推翻已确认计划要素/不可逆/对外）必须询问禁擅自执行、B 级默认项+自动超时、C 级（明确对错局部修复/质检结果）禁问自动消解；基础质检硬门（物理常识错误禁上抛代审）（机器面=selftest-decision-grading.sh 静态断言，决策分级内容人工核查；mini 档豁免） | ☐ |
-| C53 | 执行期决策对齐自查（Rule 73）：变更型决策点已过 73.1 分类判定+73.2 对齐三问并留 [align] 行；Phase complete 前/合并回前已留 [judge] 评判行；🔒 不变量声明区块在位且三态分明；改动前已查 deprecated.md+notepad 双源（机器面=selftest-decision-drift.sh 静态断言+check-complete [judge-gate]，对齐过程人工核查；mini 档豁免） | ☐ |
-| C54 | 网络调研主动激活自查（Rule 75）：计划期已做调研需求三态分析（75.1，NET-* 条目含关键词+渠道+产出形态）；执行期遇阻已评估网络检索而非死磕（75.2，死磕判定式=同思路≥2 次无外部输入→转检索）；实现类任务动手前已检索现成方案（75.3/75.4，gh CLI 必用）；外部工具缺失已登记+安装建议（75.5，禁默默降级纯本地路径）；本任务无网络调研场景时登记豁免一行（机器面=selftest-proactive-research.sh 静态断言，核查过程人工；mini 档豁免） | ☐ |
-| C55 | 总结格式可读性与审查清单自查（Rule 76）：用户面总结/呈报列表一律编号列表 1. 2. 3.（禁①②③圆圈枚举混用，规则子条引用除外）；待审文件/图片/数据已表格化（文件名/路径/简单描述）；总结含五要素（执行总结+产出清单+待审数据清单+建议+风险）（机器面=selftest-summary-readability.sh 静态断言+check-complete report-lint，格式内容人工核查；mini 档豁免） | ☐ |
-| C56 | 用户会话逐字记录与只写不改自查（Rule 80）：本任务每次用户发言已逐字落盘 user-session-log.md（80.1）；写入=append-only，历史条目零改写零删除零重排（80.2）；会话恢复先读专档再读 task_plan.md（80.4）（机器面=selftest-session-log.sh 静态断言+check-complete SESSION-LOG GATE，记录内容人工核查；mini 档豁免） | ☐ |
+| G1 | 用户任务已复述目标无歧义；task_plan.md 存在且含 Phase+VC 表；计划已展示并获用户显式授权 | ☐ |
+| G2 | 本 Phase R 锚定复诵已写；动作相关性三问已过（v168 两锚点） | ☐ |
+| G3 | Phase 委派检查点已过：Executor 字段在位非主进程已派发；白名单直做已登记例外理由 | ☐ |
+| G4 | DRIFT CHECK 已派+留痕三件套齐（检查点/ledger drift_check/Drift Log 行） | ☐ |
+| G5 | 子代理结论已落 findings（含多模态转文字）；ledger 关键动作已追加 | ☐ |
+| G6 | complete 前 `check-3file-gate.sh` exit 0（progress 回填+findings 增量，19.2）；Handoff verify_done 已勾（Read+回填双条件） | ☐ |
+| G7 | 本 Phase 无未处置质量违规（Rule 26 Q1-Q6 或已豁免登记）；产物已 commit（Rule 27） | ☐ |
+| G8 | 原生 Todo 已同步（S2）；用户新指令已过 D/A/B/C 判定（如有） | ☐ |
+| G9 | 用户会话逐字记录自查（Rule 80，原 C56 并集承载）：每次用户发言已逐字落盘 user-session-log.md（80.1）；写入=append-only 历史条目零改写零删除零重排（80.2）；会话恢复先读专档再读 task_plan.md（80.4）（机器面=selftest-session-log.sh+check-complete SESSION-LOG GATE，记录内容人工核查；mini 档豁免） | ☐ |
+| G10 | 计划完成后归档自查（Rule 81，原 C57 并集承载）：check-complete exit 0 后已执行 `bash scripts/archive-plan.sh <task-id>`（81.1，guard/ALREADY_ARCHIVED 幂等路径走通）；守卫拒绝（active 指针/活会话标记/Status 未全 complete，81.3）时保持原位不归档并登记拒绝理由，禁强移；归档后已重跑 `sync-todos.sh --index`（81.4）（机器面=selftest-archive-plan.sh+check-complete [ARCHIVE-GATE] warn，归档动作与拒绝登记人工核查；mini 档豁免） | ☐ |
+> 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
 
 ### 🔁 原生 Todo 同步（强制）
 
-计划文档 = 唯一事实源，原生 Todo（ZCode/Claude 内置 `TodoWrite` / Task 系统）= 执行视图。五个强制同步时机：**S1** 计划创建后建映射 → **S2** Phase 状态变更后紧邻同步 → **S3** 收到 `[plan-sync]` hook 提醒立即回写 → **S4** 会话结束前终态同步 + `sync-todos.sh --index` → **S5** 用户新指令影响计划后先改计划再重映射 Todo。映射规则、工具选择与响应协议详见 `references/todo-sync.md`；阈值在 `config.json#todo_sync_interval_calls` / `config.json#plan_update_interval_minutes`。
+计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。
 
 ### 🆕 用户新指令处理（计划影响判定 — 强制）
 
-会话中用户发出任何新指令/修正/补充时，**执行该指令前**先完成三分类判定：
-
 | 类 | 判定 | 强制动作 |
 |----|------|----------|
-| D 新任务边界 | 与当前计划 Goal/范围/交付物均无关联（用户要的是独立新任务，详见 8.1） | **开新计划**：为该指令建 `plans/{new-task-id}/`（init-session 全流程）；旧计划原样保留（不标 superseded）；判定落 notepad 一行 + Decisions Made；**禁止**在当前计划上下文里照做（A）或扩进当前计划范围（B）= 不相干内容混入 |
+| D 新任务边界 | 与当前计划 Goal/范围/交付物均无关联（Rule 8.1） | **开新计划** `plans/{new-task-id}/`（init 全流程）；旧计划原样保留（不标 superseded）；判定落 notepad+Decisions；禁混入当前计划 |
 | A 无影响 | 闲聊/追问/与当前计划无关 | 正常执行，不改计划 |
-| B 扩展 | 新需求/加范围/改交付物 | **先重规划再执行**（变更吸收按 Rule 74 三判门+变更标注表）：`Edit task_plan.md`（新增/修改 Phase、VC、执行范围表，注明来源指令与时间）→ 紧邻同步原生 Todo（S5：新增/调整对应条目）→ 向用户复述计划变更 → 再执行 |
-| C 矛盾 | 与已确认计划/VC/用户先前决策冲突 | 停止当前写入：更新计划中被推翻部分（标注 superseded + 新内容）→ 同步 Todo（改/删对应条目）→ 展示新旧对比获确认后执行；与用户此前关键决策冲突时必须 STOP 等决策 |
+| B 扩展 | 新需求/加范围/改交付物 | 先重规划（Rule 74 三判门+变更标注表）→ S5 同步 Todo→复述变更→再执行 |
+| C 矛盾 | 与已确认计划/VC/用户先前决策冲突 | 停止写入：更新计划中被推翻部分（标 superseded）→同步 Todo→展示新旧对比获确认后执行 |
 
-- B/C 类变更执行前按 Rule 73.2 对齐三问（回读 🔒 不变量声明区+用户需求原文）并留 [align] 行
-
-**判定顺序**：先 D（任务边界）再 A/B/C——指令与当前目标有关联时回退 A/B/C 正常判定；仅当存在进行中的活跃计划时 D 类适用。
-
-**稳定性铁律**：禁止"口头接受新指令、计划文档与 Todo 不动"——计划外执行是后期执行不稳定与漂移的首要来源。
-**错误指出特判（Rule 31 — task-v072）**：用户指出的若是「已产出/结论/执行有误」、或对同一问题重复反馈 ≥2 次、或执行中打断补充新数据推翻既有结论 → 先 STOP 当前写入，按 31.2 完成 4 维归因表（现象/直接原因/根因 5 Whys/类别）并落 progress.md Error Log（Root Cause 列）+ findings.md Issues 段，再按 31.3 修正路由定向修、31.4 同步沉淀 notepad 两段；**禁止跳过归因直接改症状处**。完整条款见 `references/critical-rules.md` Rule 31。
-**用户否决登记（Rule 32 — task-v073）**：用户说「不允许 X / 禁止 X / X 是错的 / 不要再做 X」或否决某方案 → 当次动作内按 32.1 双写登记（Decisions Made `veto:` 行 + notepad「🚫 被否决方案」段）；此后任何方案候选/D2 选项/重规划建议提出前按 32.2 先查禁令源，命中的方案禁止进入候选与推荐；解禁仅按 32.4 两条路（用户显式 veto-lift / 可引用新证据+标注否决出处交裁决），**禁止静默改回**。完整条款见 `references/critical-rules.md` Rule 32。
-**解决后反思-验证循环（Rule 33 — task-v074）**：每个问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后、标记完成前，走「反思四问（33.2）→独立验证（33.3）」微循环，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；≤3 轮（33.4），超限按 Rule 22.3 升级。完整条款见 `references/critical-rules.md` Rule 33。
-**模板选取门控与沉淀（Rule 34 — task-v074）**：attest 锁定前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；终验时命中 34.3 沉淀触发（同类第 2 次/类型空缺可泛化/用户点名）→ 按 34.4 提炼新 variant 模板入库+四点同步，防滥用见 34.5。完整条款见 `references/critical-rules.md` Rule 34。
-**模板感知（task-v096）**：遇新类型任务时三时点主动激活（init-session [template-sense] 提示+计划区块预登记 → 终验全自动生成，34.7 全自动合约+34.5 闸门内置生成侧）；卫星 SOP 见 plan-template-kit。
-**技能文件修改保守化（Rule 36 — task-v079）**：任何技能文件写操作（36.1 范围）先过 36.2 归因前置门——执行期失败/异常禁止拿「改技能」当第一补救，归因指向技能本体且用户显式要求才可提案；修改前按 36.3 建删除基线产出删除性行为清单，功能性删除/语义改写按 36.4 交用户逐项确认（D6 级，silent 亦不可跳过），默认 36.5 纯增量；新守卫 check-skill-modify.sh 挂 pretooluse 对主进程与子代理一致生效（skill_modify_enforce 默认 warn）。完整条款见 `references/critical-rules.md` Rule 36。
-**新增任务边界判定（Rule 8.1 — task-v087）**：用户新指令与当前计划 Goal/范围/交付物均无关联 = **D 类新任务**——先判 D 再判 A/B/C：开新计划目录（init-session 全流程），旧计划原样保留（不标 superseded，区别于 C 类）；禁止把不相干指令在当前计划上下文照做（A）或扩进当前计划范围（B）——不相干内容混入既有 task_plan.md 是三文件污染与终验失焦的首要来源。判定依据 = 当前 task_plan.md 三要素（Goal + scope_files/执行范围 + 交付物）；指令与当前目标有关联（哪怕影响小）回退 A 类；无活跃计划时 D 类 N/A（天然开新计划）。判定落 notepad-learnings.md 一行 + Decisions Made。完整条款见 `references/critical-rules.md` 8.1。
-- 每次 B/C 类变更 → `Decisions Made` 表记一行（指令→变更）+ progress.md 记录
-- 呈报规格（Rule 70）：变更确认必须逐项列变更文件绝对路径+变更一句话简介+看点（新旧对比锚点）+动作（确认/回退+默认项）
-- B/C 类处理完必须再派发 `drift-checker` 偏移检查（Rule 61 载体）
-**变更吸收三判门（Rule 74 — task-v162）**：B/C 类重规划时，对既有计划/规则/模板/清单的每一处吸收先过三判（增量默认/替代四条件/删除授权）并逐条登记 task_plan.md「📋 变更标注表」；修订方案无标注表=无效，禁入执行；attest 锁定后按 74.4 派独立子代理过定稿可行性判别门（PASS/PASS-WITH-RISKS/FAIL，FAIL 禁执行）。完整条款见 references/critical-rules.md Rule 74。
-- 配套提醒：UserPromptSubmit hook 在指令到达时注入 `[plan-note]` 判定提示（有活跃计划时）
+**判定顺序**：先 D 再 A/B/C（指令与目标有关联哪怕小→回退 A/B/C）；仅存在活跃计划时 D 类适用。B/C 变更前过 Rule 73.2 对齐三问+[align] 行，处理完再派 drift-checker。**稳定性铁律**：禁止"口头接受新指令、计划与 Todo 不动"。用户指出错误（Rule 31）→先 STOP 走 31.2 四维归因再修（完整闭环见 task-discipline Rule 31/32/33/74）。
 
 ### 🔀 冲突分析与工作树隔离（默认首选）
 
-**默认策略：实现类任务一律首选 git worktree 隔离开发**——本仓多为运行中的基础设施（skills/hooks/config 被所有会话实时使用），直接改动可能使功能在工作期间半残；隔离后改动发生在副本，验证后原子合并回原分支。仅**纯文档/调研类任务**（只写 plans/ 与 .md）允许直接开发；用户显式否决时才直接开发。
+**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险；仅纯文档/调研类（只写 plans/ 与 .md）可直接开发；用户显式否决才直接开发。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」随计划展示；隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验。合约详见 `references/worktree-isolation.md`。
 
-**初始化时强制执行**：
-1. 运行 `bash scripts/check-conflicts.sh` → 输出五类冲突信号（①未提交变更 ②额外 worktree ③遗留 wt 分支 ④待处理任务在册 ⑤运行中基础设施改动）
-2. 结果 + 隔离决策写入 task_plan.md「🔀 隔离决策」区块，随计划一并展示给用户（默认建议 worktree，用户可否决）
-3. 隔离开发期间 **CWD 不迁移**，所有文件操作用 worktree 绝对路径；计划文档留在主仓 plans/（会话级状态不进 worktree）
+## 卫星路由表（10 卫星 — 非核心域规则全文按需 Read）
 
-**完成后主动合并回**（合约见 `references/worktree-isolation.md`）：worktree 内全 VC 复验 → **`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`**（智能门：预检+已合并检测+合并+可选部署对账）→ 按 [CLEANUP] 提示行清理 worktree/分支 → 主仓 Read 关键文件复验合并结果。复杂场景可配合 `Skill("using-git-worktrees")`。
+| 卫星 | 域 | 规则全文路径 | 调用条件 |
+|------|----|------------|---------|
+| task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
+| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31-36,41-45,48,53-57,60,65,67,69-76） |
+| media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
+| plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
+| plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
+| plan-collab-router | 技能协同与工具面选择 | `../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40） |
+| plan-cost-guard | 成本控制 | `../plan-cost-guard/references/critical-rules-cost.md` | opus 频次/嵌套成本/成本门控（Rule 17） |
+| plan-resume | 计划续推 | `../plan-resume/references/critical-rules-resume.md` | 交付终态/会话恢复触发点扫描与自主续推（Rule 24） |
+| progress-tracker | 共享内容认领 | `../progress-tracker/references/critical-rules-progress.md` | 跨任务共享内容认领追踪/进度复用（Rule 30） |
+| task-drift-guard | 漂移检测与偏移留痕 | `../task-drift-guard/references/critical-rules-drift.md` | 漂移检测/偏移检查子代理化/周期回顾节奏（Rule 11,15,61,64） |
 
-## Chain 模式详解（已内敛 → reference.md）
+## Critical Rules 指针（核心域）
 
-`chain_mode` 默认 `single`（单 block，无 chain 区块）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，fan-out 成员按 Rule 21.4 声明组并行——组内独立性四问通过即可并行，未声明组=串行，10-02）的值语义、示意图与执行规则权威源 = `reference.md § Chain 模式详解`；block 交接字段表/6 条件/重规划触发见 `reference.md § Chain Handoff Contract`。
-
-## 🧵 并行创作组（Unit × Lane — Rule 21.4 / 23.9-23.13 / 47 / 49）
-
-> **核心模型**：把「场景段落 / 关键帧批 / 资产批」抽象为 **创作单元 Unit**；每个 Unit 一条 **工序链 lane**（写词→生成→质检→放行→组装）。**并行单位 = Unit（lane）；Unit 内工序强串行**（Rule 47.1 阶段×生产单元轴 + Rule 49.1 单元线模型，不造新机制）。冲突检测/引用管理规则本体见 `references/critical-rules.md` Rule 23.9-23.13。
-
-**① 声明格式（task_plan.md 三层声明）**：**(a) frontmatter** `parallel_groups: [u-seg01, u-seg02, ...]`（组名=创作单元 id）∧ `lanes: [u-seg01, ...]`（单元线名册，Rule 49）——必须**一次性声明全部 lane**（frontmatter 受 SHA-256 attest 锁定 Rule 20，执行期追加触发重锁）；只读并行组沿用 `parallel_readonly: true` + `[readonly-parallel]`。**(b) S-unit 表（22.6）增「单元/并行组」列**，每行填 `[parallel-group:<unit-id>]`（Rule 21.4 机器可消费组标记，check-dispatch.sh 消费；check-plan-dispatch.sh 只硬校验「执行体」列，加列安全）。**(c) 「📐 创作单元并行表（Lane 状态表）」区块**（Rule 49.1，主进程单写者）：列 = 单元 id | 工序链 | 当前工序 | 前置 S-unit | 前置验收证据 | 组标记 | 共享引用集 | 预估烧秒 | 状态 | 最后推进时间；推进双登记（49.3）= Lane 表翻格 + progress.md `[advance]` 行。
-<!-- Rule 59 (task-v144): S-unit 表新增粒度三值(Nf/Nl/Nmin)与伴飞技能列,契约见 critical-rules 59.1/59.2,超限 enforce 拒锁 -->
-
-**② fan-out / Aggregator（与既有 chain_mode 一致）**：`fan-out` = 上游 complete → 下游 Block 按 Rule 21.4 声明组**并行**派发（未声明组仍串行）→ 等齐；`chain_mode: fan-out` 计划**必须**预置 Aggregator Phase（Rule 23.6 / 18.7，check-complete.sh 硬校验正则 `Phase \d+:.*Aggregator|聚合`），模板预置 `### Phase N: Aggregator（汇合：整片组装 / 成片 QC / 台账收口）`；`linked` 语义不变（同上游产物多下游依次消费 = 四问③串行）。
-
-**③ 冲突检测清单（哪些情况不能并行）**：两 Unit 可并行 ⇔ 独立性四问全 **no**：① 写集相交？② 资源相争（同 worktree/分支、同交付物、同计划文件锚点、同预算 piece_id、同 NAS/VERSIONS.md、同额度窗口）？③ 输入依赖他者产物？④ 验收依赖他者结果？**项目专属冲突类（强串行）**：锚件换代（换装/装备变体/母图重抽）；同场景组连续成片（同场景组镜头=同一 lane 内串行）；同单元内生成→质检→放行→视频工序链；人工门（草稿门/试水门/G1）=lane 内屏障不可并行越过（跨 lane 可同批呈示）；生成额度=全局共享资源（Σ 在飞 lane 预算 ≤ 当日剩余额度）。三检测时机（计划期静态 / 派发期对全部在飞过四问 / 验收后三证据）与 RefSet 见 Rule 23.10-23.12。
-
-**④ 引用管理（共享资源处理）**：① 只读共享+版本冻结（共享锚件 `id+版本+sha256` 冻结，子代理只读，派发 prompt §4 Scope 禁改）；② 单写者（masters-registry/upload-map/master-prompt-store/VERSIONS.md/Lane 表/计划三文件由主进程单写，子代理只追加自己锚点，22.4a/49.4②）；③ 共享引用登记表（task_plan.md 区块：资源 id|类型|路径|sha256|引用单元清单|状态(现役/frozen/stale)）；④ 产出命名空间隔离（每单元 `output/<ep>/<unit>/` 与 `tmp/<task>/<unit>/`，汇合件由 Aggregator 单写）；⑤ 锚件换代协议（G1 人工门+单写者登记+stale 广播+冻结锁，换代后按 sha 差集重跑，grep 旧 sha 0 命中方可 complete）；⑥ 预算账本隔离（每单元独立 piece_id 命名空间）。
-
-**⑤ 子代理拆分模板（Unit × 工序 = S-unit）**：单 S-unit = 单创作单元 × 单工序（禁「整集生成/整批关键帧」粗粒度，Rule 47.1）；派发纪律 = 单会话单 S-unit（46.1）+ 每 lane 至多 1 个在飞 + 跨 lane 在飞 ≤ 并发上限（建议 2-4）+ 推进三条件（49.2）满足即派不等批（跨 Phase 前移 49.3）+ 失败 lane 冻结不阻塞其它 lane（Rule 49 核心收益）。**派发 prompt 增补字段**（在 `templates/subagent_dispatch.md` 并行组声明行基础上）：单元 id + `[parallel-group:<unit>]` + 引用集 sha 清单 + Scope 禁改（共享锚/registry/VERSIONS.md/Lane 表/三文件既有内容）+ 前置验收证据指针 + checkpoint `subagent-state/{seq}-{agent}-<unit>.md`。**执行体路由**：视频生成=`video-generation-executor`（缺位回退 executor(sonnet-1)+videop1-tools skill）；图片/关键帧=`image-generation-executor`；质检=对应 review-*；放行=用户（主进程 STOP，子代理无权代放行，约束 14/15）；禁因路由表无匹配行默认落 general-purpose（Rule 47.2/52.1）。**机器守卫边界（如实披露）**：check-dispatch.sh `serial_slot_check` 只有全局锁 `subagent-state/.dispatch-inflight`（120s age），组标记命中即放行、不区分组名、不做四问机器校验——责任在计划期声明+执行期四问（Rule 23.13）。
-
-## Critical Rules
-
-详见 `references/critical-rules.md`（Critical Rules 1-80（含 Rule 40-80 全集，Rule 55 可复用能力落盘纪律 / Rule 61 偏移检查子代理化 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 66 goal 单元固化与 /goal 驱动推进 / Rule 69 判断裁决子代理化与驳回打回 / Rule 71 无源不写·空段占位·写必带锚纪律、73 执行期决策对齐与不变量纪律 / Rule 72 决策分级与用户打断纪律 / Rule 74 变更吸收三判纪律 / Rule 75 网络调研主动激活与外部数据依赖纪律 / Rule 76 总结阶段格式可读性与审查清单实体化纪律 / Rule 80 用户会话逐字记录与只写不改纪律））：
-- Rules 1-12：先规划再执行/PreToolUse 阻断/双操作后保存/决策前重读/Phase 更新/记全部错误/永不重复失败/新请求重规划/错误暴露/Scope 变更重规划/漂移检测/冲突隔离
-- **Rule 13（P0）子代理隔离强制**：调研/搜索/大文件读取/Read 大文件 必须派子代理（详见下方 §子代理路由与模型分级）
-- **Rule 14（P0）代码编辑必须派子代理**：主进程禁止 Edit/Write 业务代码（详见下方 §代码编辑强制隔离）
-- **Rule 15 高频漂移纠正强制**：每 2-3 个原生 todo 后必须派发 `drift-checker` 偏移检查（Rule 61 载体，详见下方 §高频漂移纠正）
-- **Rule 16 任务开启期选模板**：禁止用通用 task_plan.md 套所有任务，必须按类型选模板（详见 `../plan-template-kit/references/template-mapping.md`，模板分流单一权威源）
-- **Rule 17 成本控制 — 降低 Opus 使用频率**：嵌套 opus Skill 节流 + 单会话 opus 累计门控 + cost_log 记录（详见 `../plan-cost-guard/references/cost-control.md`）
-- **Rule 18 批量处理质量门控**：批量操作禁止以牺牲质量/准确性为代价；试点先行硬门（18.9-18.11：单件未验证禁批量、单件失败即投毒红线、宁慢勿错，task-v083）+ 前置 3 问评估 + 双采样抽检 + 失败率熔断 + Batch Report 八字段（详见 `references/batch-quality-gate.md`）
-- **Rule 19（P0）3-File 落盘强制**：三文件（task_plan/findings/progress）= Context Window 是 RAM、Filesystem 是 Disk 的落地——子代理结论必落盘 findings.md（与 Handoff `verify_done` 双条件绑定，22.5）、**3-File 回填门控（19.2）= Phase complete 前置硬门控**（progress 回填 + findings 本 Phase 增量，`check-3file-gate.sh` 校验 exit 1 禁止翻转）、恢复会话先读三文件、终验 3-File Gate 硬校验（19.5）、task_plan.md 瘦身指针制（19.6）、[plan-compass] 及时性提醒链路含二次未响应升级警告（19.7）（详见上方 §产出落盘映射）
-- **Rule 20 计划注入与防篡改**：turn-start smart 注入（Goal/Next Step/in_progress Phase 复诵）+ SHA-256 attestation 锁定（篡改即 [PLAN TAMPERED] 拒绝注入）+ 外部内容只进 findings.md（详见 `references/critical-rules.md` Rule 20）
-- **Rule 21 子任务拆分与模型分工**：大模型拆分、低档模型执行，单 Phase ≤3 文件 ≤300 行，步级 S-unit ≤2 文件/≤100 行/≤15min 且派发型 Phase 计划期必填 S-unit 表（21.1b/22.6），派发按 21.4 调度铁律——声明并行组内成员可并行（独立性四问通过）、未声明组一次验收一组成员再派下一组成员（21.4 子代理调度铁律，10-02）（21.1b 数值门控机器校验已生效：check-plan-dispatch.sh；步骤枚举维度=check-dispatch.sh ④+step_max_steps，task-v081）（详见 `references/critical-rules.md` Rule 21）
-- **Rule 21.6 拆分模式库与定性判据（task-v150）**：计划期拆分前必读 references/split-pattern-library.md（21.6.1），S-unit 过边界三判据（21.6.2）
-- **Rule 22（P0）子代理规模限制与交接文件**：派发上限/超时档位/九字段 prompt(含上下文预算、三文件读写契约 22.4a、8 字段严格返回 22.4b、派发守卫 22.4c)、prompt 侧返回格式段结构校验 22.4b 补(return_section_check)、返回侧 check-subagent-return.sh 四判据 22.4b 补/兜底拆细先于升档/Handoff 登记表（详见 `references/critical-rules.md` Rule 22）
-- **Rule 23 并行任务检测与冲突规避**：--runtime 四级冲突 + fan-out Aggregator 硬校验 + 并行创作组单元级冲突检测/引用管理（Rule 23.9-23.13，衔接 Rule 21.4/47/49）（详见 `references/critical-rules.md` Rule 23）
-- **Rule 24（P1）plan-resume 被动扫描与自主续推**：交付终态/会话恢复触发点扫中断任务（task-v091 A-3 收敛，不再每 Phase 扫）；执行中只报告，恢复触发点自主续推 Top 1（v0.5，config `autonomous_resume`；详见 `references/critical-rules.md` Rule 24）
-- **Rule 25（P0）子代理委派门控**：Phase 必须声明 Executor 执行体，开启先过委派检查点，主进程直做须登记白名单内例外理由（25.3 六项白名单），终验统计委派率（阈值 `config.json#delegation_rate_floor` 默认 0.7；详见 `references/critical-rules.md` Rule 25）；**计划批准时 attest 内置 `check-plan-dispatch.sh` 校验派发型 Phase 的 S-unit 执行体列（22.6 机制化，缺失拒绝锁定）**（fmea_enforce 消费机器校验已生效：attest+check-complete）
-- **Rule 26（P0）质量优先于速度门控**：6 类降质行为可观察触发式 + 确定性惩罚映射（回炉→PARTIAL→BLOCKED），伪造证据无豁免（详见 references/critical-rules.md Rule 26）
-- **Rule 27（P0）工作产物及时提交**：实现类 Phase 翻转 complete 前产物必须 commit 到当前工作分支（worktree 逐 Phase 提交 / direct 主仓分支），禁攒批到终验；只 add scope 产物禁盲扫；非 git 目录记行跳过；deferred/用户显式豁免须写入计划（详见 `references/critical-rules.md` Rule 27）
-- **Methodology 指针（v063）可靠性 4 条/内容质量 5 条/思维方法论 5 条（T1-T5：问题先行/解构四问/金字塔原理/逐步推导/消费点，零新键，task-v084）方法论，门控+指针范式，不改 Rule 1-28 既有语义（详见 references/methodology.md，开关键 fmea_enforce/content_quality_enforce 默认 warn）**（机器校验已生效：attest-plan.sh FMEA 门控段 + check-complete.sh 终验双点，三档 warn/enforce/off）
-- **Rule 28（P0）交互模式与询问门控**：ask（默认：D1-D6 关键决策点给选项供用户选，D1 批准前按 28.2.1 口头复述大体执行思路供用户不读计划文档预知流程）| silent（静默：自主决策+登记静默决策清单）；解析优先级 env > 计划配置表 > config.json > 默认 ask；D6 硬停点（连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认）两模式一致不可豁免（详见 references/critical-rules.md Rule 28）
-- **Rule 29（P0）上下文与工作文件主动维护**：触发时机(29.1)/退场 SOP(29.2)/压缩 SOP(29.3)/工作文件整理 SOP(29.4)/配置键语义(29.5)/反模式(29.6)——主动维护"多→删"链路，与 Rule 19"缺→补"链路对称（详见 references/critical-rules.md Rule 29）
-- **Rule 30（P0）共享内容认领追踪**：识别条件(30.1)/创建复用(30.2)/认领登记(30.3)/防冲突(30.4)/机制(30.5)——"共→认领"链路，可枚举共享资源（页面/内容/功能/部署位）的部分认领任务须登记项目级共享追踪账本（progress-tracker `.zcode/ledger/` 多平台跟随），后续任务先查后做，杜绝重复混乱；开关键 `config.json#shared_tracker_enforce`（默认 warn，详见 references/critical-rules.md Rule 30 与 ../plan-collab-router/references/skill-collaboration.md progress-tracker 协同行）
-- **Rule 31（P0）错误学习闭环**：触发(31.1)/根因分析(31.2)/修正路由(31.3)/沉淀(31.4)/消费侧(31.5)/机制(31.6)——“错→析→修→防”链路，用户指出错误/重复反馈/打断补充数据时先 4 维归因（现象/直接原因/根因 5 Whys ≤5 层/类别）并落 progress.md Error Log（Root Cause 列）+ findings.md Issues 段，禁止盲目改症状处；防复现措施沉淀 notepad-learnings 并被下一 Phase/新任务消费（31.5 消费侧）；普及化抽象（31.7）将具体案例抽象为通用规则；终验 Learning Gate（check-complete.sh 校验 Error Log Root Cause 非空）；开关键 `config.json#error_loop_enforce`（默认 warn，详见 references/critical-rules.md Rule 31）
-- **Rule 32（P0）用户否决与禁令追踪**：登记(32.1)/计划期必查(32.2)/执行期消费(32.3)/解禁条件(32.4)/机制(32.5)——"否决→登记→提方案前必查→无证据禁重提"链路：用户裁决「不允许/禁止/X 是错的」即时落盘 notepad「🚫 被否决方案」段+Decisions Made（veto: 行）；提出任何方案候选/D2 选项/B 类重规划建议前必查禁令源（当前+历史 notepad+memory），命中的方案禁止进入候选、禁止推荐、禁止作为默认项；解禁仅限用户显式撤销（veto-lift）或可引用新证据且标注否决出处交用户裁决——**禁止静默改回（倒退式改法=循环开发）**；开关键 `config.json#veto_enforce`（默认 warn，详见 references/critical-rules.md Rule 32）
-- **Rule 33（P0）解决→反思→验证迭代循环**：触发(33.1)/反思四问(33.2)/独立验证(33.3)/迭代边界≤3 轮(33.4)/沉淀联动(33.5)/机制(33.6)——问题解决动作（bug 修复/失败重试成功/错误修正/关键实现完成）后标记完成前，progress.md 落 `- [reflect] 反思:` 与 `- [reflect] 验证:` 两行；REFLECT-GATE（check-complete.sh，声明 reflect_verify: required 时校验，默认 warn）；开关键 `config.json#reflect_verify_enforce`（详见 references/critical-rules.md Rule 33）
-- **Rule 34（P0）模板生命周期门控与沉淀**：选取门控(34.1)/四点同步(34.2)/沉淀触发(34.3)/沉淀流程(34.4)/防滥用(34.5)/机制(34.6)/模板感知(34.7 三时点激活+全自动生成)——attest 前 check-template-type.sh 校验 template_type ∈ 白名单（variant/ 动态派生+general）；命中沉淀触发→提炼新 variant 模板+四点同步；开关键 `config.json#template_gate_enforce`（默认 warn，详见 references/critical-rules.md Rule 34）
-- **Rule 35（P0）执行结论纪律**：能力否定三关查证（35.2 通读完整接口面/CRUD 一致性推断/替代路径）+ 大输入落盘引用补救（35.3 prompt 超限→内容写文件+Read 指令）——「没找到」禁写成「不存在」收场、prompt 过大禁失败收场；+ 最小探针原则（35.6 验证动作最小化：echo ok 类单条最小输出测试，禁一上来复杂化）；check-dispatch 超限提示+selftest-conclusion-discipline 守护，无新 config 键（详见 references/critical-rules.md Rule 35）
-- **Rule 36（P0）技能修改保守化与功能删除防护**：适用范围(36.1)/归因前置门(36.2)/修改前基线(36.3)/删除=高危确认门(36.4)/纯增量纪律(36.5)/回归验证(36.6)/机制(36.7)——"归因→基线→确认→增量→回归"链路：技能文件写操作先按 31.2 归因且归因指向本体才可提案，功能性删除/语义改写须用户逐项确认（D6 级硬停点），默认纯增量，杜绝偷渡式修改与功能静默丢失；开键 `config.json#skill_modify_enforce`（默认 warn，详见 references/critical-rules.md Rule 36）
-- **Rule 37（P0）任务类型机制画像**：画像表(37.1 权威源=template-mapping.md §九)/判定时点(37.2 计划创建期)/三类机制组(37.3)/消费侧(37.4 委派检查点+Code Review Gate 触发条件)/机制(37.5 mechanism_profile_enforce+selftest)——「按类型裁剪机制适用性」链路：仅裁剪类型组机制，3-File/委派率/漂移检测等通用守卫全类型不变（详见 references/critical-rules.md Rule 37）
-- **Rule 38（P0）任务难度分级与轻量档**：判定(38.1 plan_tier: mini ∧ ≤2 文件 ∧ ≤15min ∧ 单模块, 三条件机器可测+MISMATCH 提示)/档位矩阵(38.2 mini-lite 模板+standard 29 variant+full general)/轻量模板契约(38.3 区块白名单)/门控豁免清单(38.4 5 锚点 if 前置, 非 mini 路径零改动)/机制(38.5 plan_tier_enforce 三档默认 warn+init-session tier 分流+selftest-plan-tier.sh)/执行通道分级(38.7 L0 微变更轻量通道·比例原则——流程开销与变更体量成比例)——轻任务走精简仪式消除慢源，未声明档位计划零影响（详见 references/critical-rules.md Rule 38）
-- **Rule 39（动态工作流编排 — task-v088）**：用户显式点名 `/workflow` 才路由 dynamic-workflows 编排（未点名=按 21.4 独立性守门调度，声明组并行/未声明串行，10-02）；skill 加载前置门槛（39.2）；四机制映射 失败/断点/升级/沉淀→AmendWorkflow/ResumeWorkflowRun/ResolveWorkflowQuestion/SaveWorkflow（39.3 表）；21.4 并行豁免登记（39.4）；机器校验边界=官方文档未提及 check-dispatch 覆盖 workflow 内部（39.5）；零新 config 键，selftest-workflow-orchestration.sh 守护（39.6）
-- **Rule 40（harness 工具面主动选择 — task-v097）**：工具面六类清单（/workflow、/goal、Agent 子代理、卫星技能、MCP、机械守卫脚本）（40.1）；计划期「🧰 工具选择与编排」区块=Executor 上游分析记录,不替代委派门控机器事实源（40.2）；/goal 对齐映射指引+用户侧命令如实披露（40.3）；workflow 编排建议登记制、39.1 显式点名红线不变（40.4）；机器校验边界如实披露（40.5）；零新 config 键+selftest-tool-selection.sh 守护（40.6）
-- **Rule 41（问题自主消解与升级纪律 — task-v098）**：消解优先链=重读计划→22.3 ①-④ 兜底→最小探针→拆细→替代路径(含 22.3.0 官方文档/网络现成方案),升级用户是最后手段非默认出口（41.1）；升级四门槛 G1 破坏性不可逆/G2 范围越界/G3 对外不可撤回发布/G4 语义级目标分叉,门槛外自动消解+登记（41.2）；trivial 小修直接做+登记,禁「留用户裁决」推诿（41.3）；升级前必过消解清单并附「已尝试清单」,D6 硬停点语义保留不弱化（41.4）；多待决项打包呈报附推荐（41.5）；零新 config 键+selftest-self-resolution.sh 守护（41.6）
-- **Rule 42（质量审查技能主动检测与补充 — task-v099）**：任务涉及质量审查面时按四级顺序检测（42.1/42.2 项目级→用户级→环境 agents→内置 review-library 兜底池，均未命中=缺口）；缺口按补充合约处置——该任务项目级补建专用质量审查技能且补建动作作为 S-unit 登记进计划，禁无登记私建技能（42.3）；计划「质量审查工具」行登记检测结论，执行期必须用登记工具（42.4）；零新 config 键+mini 档豁免（42.5）；对齐审查前置与收尾消费——写入前版本一致性校验闸门（42.6.1 未经校验不追加）+任务完成前对齐标准流程（42.6.2 全文档过 alignment-review）+变更记录输出（42.6.3）+零新键机制（42.6.4,task-v102）
-- **Rule 43（执行可靠性制度化 — task-v099）**：证据先行反幻觉——重要声称必附机器可复现验证证据，未验证内容只能以「未验证」显式登记，子代理 8 字段 evidence 无证据=该项未完成（43.1）；模型档位经济性路由——S-unit 逐行标注建议档位，取最小可承载档，失败先 22.3 升档（43.2）；方案预验证与最优选择——呈报前枚举 ≥2 候选各过最轻验证，候选对比表裁决，验证成本过高降级假设清单（43.3）；C30/C31 消费+零新 config 键+selftest-reliability-institution.sh 守护（43.4）；提示词/参数优化必须实际生成测试+未验证结果禁止优点宣传（43.5/43.6，task-v133）
-- **Rule 44（用户选择点默认项与自动超时裁决 — task-v103）**：给用户的所有选择点必设默认选项+自动超时（44.1 默认 5 分钟,询问点可声明覆盖值）;产出一致仅步骤/耗时差异的低区分度选项优先按 41.3 直接裁决登记而非打扰用户（44.2）;用户超时未答复→按推荐默认项自动执行+登记自动裁决记录五要素（44.3,不打断≠不留痕）;零新 config 键+C33 消费+RT 静态守护（44.4）;非选项类阻塞点展示限制（44.5，task-v134）
-- **Rule 45（注释完整性规范 — task-v111）**：所有产出含完整 What+Why 双层注释，设计思路入注释，禁止为美观删减（机器面=selftest 静态锚）
-- **Rule 46（子代理单任务专注度 — task-v118）**：单会话单 S-unit、批次连做禁止——保证子代理单任务专注度与执行可靠性（机器面=check-dispatch.sh）
-- **Rule 47（媒体制作任务派发纪律 — task-v122）**：媒体拆分轴=制作阶段×生产单元，单 S-unit=单单元×单阶段（47.1）；具名执行体路由=executor+工序模板 SOP+生成技能，general-purpose 默认兜底禁止、例外登记理由（47.2）；批量生成试点先行联动 Rule 18.9 硬门（47.3）；零新 config 键+selftest-media-dispatch.sh 守护（47.4）
-- **Rule 48（交付总结可定位性与实用性 — task-v123）**：交付总结每一条指针与行动项用户可直接打开或执行，消除「让人审查不知道去哪看」
-- **Rule 49（单元线多路并行推进 — task-v126）**：可枚举生产单元×序贯工序任务族启用 lane 模型（49.1）；推进三条件=已验收+前置在位+独立性四问（49.2）；满足即派发不等批、跨 Phase 前移双登记、Phase 翻转语义不变（49.3）；汇合点强串行+单写者/单 S-unit 不变（49.4）；零新 config 键+selftest-lane-advancement.sh 守护（49.5）
-- **Rule 50（内容要求权重分级与评级 — task-v127）**：复合需求拆原子验收条目表（存在性 P/程度 E × 硬约束 H/评分项 S，50.1）；程度约束词显式成条且未标注默认 H（50.2）；逐条评级 PASS/PARTIAL/FAIL、程度条目双向判（过显眼 FAIL/不可见亦 FAIL，50.3）；加权判定=全 H 过+S 加权≥阈值（50.4）；条目表随任务书派发供 QC 链消费（50.5）；零新 config 键+selftest-requirement-grading.sh 守护（50.6）
-- **Rule 51（需求覆盖与完成声称门控 — task-v129）**：自缩水禁令+生成前置盘点+未测试就声称完成禁令八子条（51.1-51.8，含 51.7 纠正=回锚重译/窗口口径 lint 增补 task-v132；51.8 未测试就声称完成禁令 task-v133）；零新 config 键+selftest-requirement-coverage.sh 守护（51.6）
-- **Rule 52（执行体专业化优先与覆盖矩阵维护 — task-v125）**：派发选型专用体优先——先查覆盖矩阵 `references/agent-coverage.md` 与三登记面（52.1）；三类缺口（A 无具名映射/B 登记指向不存在或名不符实体/C 实体未登记）禁新增，B 类零容忍实体存在性（52.2）；agent 增删改名或登记面改动→矩阵与登记面同任务同步（52.3）；零新 config 键+selftest-agent-coverage.sh 静态守护（52.4）
-- **Rule 53（根源解决与决策管辖 — task-v131）**：结果级需求全链工序审计+根源覆盖表（53.1）/根治判据=机制·守卫·载体三选一防复发（53.2）/决策管辖二分反推诿（53.3）/返工成本核算质量优先（53.4）；零新 config 键+selftest-root-resolution.sh 守护（53.5）
-- **Rule 54（执行诚实性与即时执行纪律 — task-v136）**：54.0 有依据原则总则 / 54.1 就绪语义+资源状态第一手 / 54.2 阻塞影响矩阵 / 54.3 仪式性进展禁令 / 54.4 推迟举证四要素 / 54.5 决策依据落盘与引用义务 / 54.6 机制=零新 config 键+selftest-execution-honesty.sh 守护（54.6）
-- **Rule 55（可复用能力落盘纪律 — task-v138）**：复用前置检查(55.1)/权威来源优先禁令(55.2)/首次成功即落盘(55.3)/固定位置与注册表(55.4)/执行体接线(55.5)/机制(55.6)——「首成即落盘→注册可发现→复用不再发明」链路，scripts/capabilities/ + references/capability-registry.md，零新 config 键（详见 references/critical-rules.md Rule 55）
-- **Rule 56（用户指令优先与自动执行 — task-v140）**：技能默认自动执行，质量保障通过自动化手段完成，不添加人工审查步骤
-- **Rule 57（迭代测试轮次落盘纪律 — task-v141）**：每轮测试/迭代结果必落盘(57.1)/落盘四要素=轮次编号·测试命令·PASS-FAIL·关键输出摘要(57.2)/迭代更新即时落盘防上下文分散(57.3)/机制=零新 config 键+selftest-iteration-persistence.sh 守护+合规清单 C40(57.4)——「每轮落盘→下轮基于文件事实→根除多轮错误累积」链路（详见 references/critical-rules.md Rule 57）
-- **Rule 58（调研分析证据纪律与核心目标达成门控 — task-v143）**：证据面清单=自身/对标/外部约束三基线面(58.1)/对标取证强制·无对标取证禁归因结论(58.2)/结论-证据锚定+反证检查(58.3)/手段/目标二分+[目标]行必映射问题解决判据(58.4)/完成裁决门 solved-partial-not-solved·交付物冒充问题解决禁令·not-solved 禁 COMPLETE(58.5)/手段-目标因果链·绕弯活动禁令(58.6)/机制=零新 config 键+selftest-evidence-goal-gate.sh 守护+计划模板双区块注入(58.7)——「先取证后结论+以问题解决状态裁决完成」双链路（详见 references/critical-rules.md Rule 58）
-- **Rule 59（子代理拆分粒度硬门与技能伴飞纪律 — task-v144）**：粒度三值硬门=S-unit 表 Nf/Nl/Nmin 强制填报+超限 enforce 拒锁回炉重拆(59.1)/技能伴飞=伴飞技能列+派发任务书 §2 注入 SKILL.md 绝对路径·子代理首动作 Read·重型技能主进程提炼要点内联(59.2)/执行前技能扫描入 knowledge-brief 可用强化技能区块(59.3)/能力预防判据=预估超档先拆细再派(59.4)/分段执行锚=多段多 S-unit 多派发+检查点链·任务书豁免收窄(59.5)/机制=零新 config 键+analyze-splits.sh+selftest-subagent-granularity-skill-escort.sh 守护+合规清单 C43+委派检查点 2.5 对照(59.6/59.7)——「计划期硬门拒巨量 S-unit+技能随任务书伴飞」双链路（详见 references/critical-rules.md Rule 59）
-- **Rule 60（主动解决问题泛化行为原则 — task-v142）**：遇到任何障碍时禁止直接停止，必须主动枚举替代方案并按质量损失排序执行
-- **Rule 61（偏移检查子代理化 — task-v146）**：15.1 触发点检查由 `drift-checker` 伴随 agent 承载，主进程只消费单行判定+检查点（详见 references/critical-rules.md Rule 61）
-- **Rule 62（四文件罗盘数据流转与调研知识沉淀纪律 — task-v145）**：四文件定位=主子代理数据流转唯一协议介质，恢复读序 4 文件化(62.1)/派发读写契约不可收窄禁令+check-dispatch 措辞 lint，收窄词∧缺 append 锚点双条件(62.2)/调研产出双落盘=findings 自写小节(22.4a 既有)+主进程 22.5 复核时蒸馏 knowledge-brief §2/§3/§4，Handoff 双锚(62.3)/调研型派发强制引用 kb §锚先查后调，联动 55.1(62.4)/kb 增量门控 gate --require-kb+ledger kb_distill(62.5)/机制=零新 config 键+selftest-four-file-dataflow.sh 守护+合规清单 C42(62.6)——「四文件=协议介质→调研双落盘→知识可消费」链路（详见 references/critical-rules.md Rule 62）
-- **Rule 63（检索优先与反推诿纪律 — task-v147）**：目标公理=解决问题是唯一不变目标，推诿/不作为=违规（63.1）；检索优先=遇到不知道第一反应主动检索，四步链（本地→帮助面→官方文档/网络→社区），联网检索=首要信息源（网络权限→信息面基本无限制，用户私人数据除外）（63.2）；反推诿禁令=「不知道」穷尽检索链并附证据前禁止作答，合法形态=已检索清单+证据锚+下一步（63.3）；有理有据边界=结论附来源锚、禁编造（Q3 最高档）、查证无解按 58.5 三态诚实收场（63.4）；与 Rule 60/22.3.0/35/41/58 触发面互补（63.5）；机制=零新 config 键+selftest-research-first.sh 守护+派发模板契约行（63.6）（详见 references/critical-rules.md Rule 63）
-- **Rule 64（偏移检查留痕强制与节奏化触发纪律 — task-v148）**：留痕三件套=检查点+ledger drift_check+Drift Log 行（64.1）；Phase complete 第三条件门控=check-3file-gate 追加 drift_check 痕迹必查（64.2）；节奏提醒=posttooluse 每 ≥10 次工具调用注入单行提醒（64.3）；判定输入三锚=Goal 原文+近期动作+scope 文件集，无锚 ALIGNED 无效（64.4）；机制=selftest-drift-enforcement.sh+零新 config 键（env 降档，64.5/64.6）（详见 references/critical-rules.md Rule 64）
-- **Rule 65（周期性回顾与前后对照 — task-v142）**：每 N 次工具调用触发回顾，前后对照检查结论一致性，发现矛盾自动纠正+报告用户（机器面=periodic-review.sh 检测+selftest-periodic-review.sh 静态守护）
-- **Rule 66（goal 单元固化与 /goal 驱动推进纪律 — task-v151）**：goal 单元固化六列契约（66.1）+/goal 内置命令映射供料口径（66.2，40.3 延伸）+逐 goal 验证通过门（66.3）+分解→调度→逐个解决推进序（66.4）；机器面=check-plan-dispatch/check-complete+selftest-goal-unit-goal-mode.sh，零新 config 键
-- **Rule 67（上下文压力主动评估与会话交接纪律 — task-v152）**：三档主动触发（节奏/事件/高危信号）→ 四信号自评 → 三态裁决（HEALTHY/PRESSURE/CONFUSED）→ PRESSURE 即压缩整理 / CONFUSED 写会话交接文档转新会话；零新 config 键 env 降档+selftest-context-pressure.sh 守护
-- **Rule 68（计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律 — task-v153）**：计划期强制依赖分析=S-unit 表定稿后过独立性四问静态版、结论显式落「前置依赖」列，空白=计划无效回炉（68.1）；并行分组推导=parallel_groups 必须由依赖分析推导、依赖者与被依赖者禁同组、组间拓扑串行不变（68.2）；组内异构分摊=同组执行体 subagent_type 或 model 档位至少一项不同、最小可承载档位优先（68.3）；组域写隔离=成员只写检查点/findings 追加小节/自己 scope 文件，计划三文件由主进程按组串行回写（68.4）；机器面=check-plan-dispatch.sh 计划期两档校验（hard 拒锁+advisory 提示）+selftest-parallel-scheduling.sh 静态守护+合规清单 C46，零新 config 键
-- **Rule 71（无源不写·空段占位·写必带锚纪律 — task-v158）**：事实单元三态判定=有源（file:line/URL/命令输出原文/工具调用记录四者之一）/无源含事实=违规/显式占位=合法，不确定从严（71.1）；写入前五问自检=一手来源/模板空段/锚点可复核/中断可重建/「我记得」vs「我觉得应该有」，任一不过=改写占位（71.2）；模板空段显式占位=合法交付形态、禁推测填充（71.3）；溯源审计只读不改写、违规删或降级占位、禁补源蒙混（71.4）；派发契约段=全事实输出带锚、结论区事实+锚点成对（71.5）；机器面=selftest-source-anchor-discipline.sh 静态守护+合规清单 C48，零新 config 键
-- **Rule 73（执行期决策对齐与不变量纪律 — task-v156）**：变更型决策点定义=改风格/范围/新需求/推翻结论/收口声称五类动手前必过对齐三问（73.1/73.2，[align] 留痕 progress.md）；三态标注=🔒不变量/🔀可变量/📈学得量+计划模板「🔒 不变量声明区」（73.3）；强制评判点=变更决策后/Phase complete 前/合并回前各一次 [judge] 留痕（73.4，check-complete [judge-gate]+posttooluse 节奏注入承载）；废弃只入不出=deprecated.md 隔离区+正常四文件禁混放（73.5）；消歧义=歧义词带解释层（73.6）；零新 config 键（env TASK_PLANNER_DECISION_JUDGE 降档）+selftest-decision-drift.sh 守护+C51 合规行（73.7）
-- **Rule 74（变更吸收三判纪律 — task-v162）**：吸收用户指令/修订先过三判门——增量默认（"补充/再加"措辞强制增量）/替代四条件全满足/删除逐项授权（74.2）；修订方案逐条变更标注无表禁执行（74.3）；定稿方案经隔离子代理可行性判别门三态放行（74.4）；机器面=selftest-absorption-discipline.sh，零新 config 键（74.6）（详见 references/critical-rules.md Rule 74）
-- **Rule 69（判断裁决子代理化与驳回打回纪律 — task-v154）**：六触发点矩阵 T1-T6+豁免清单与管辖二分（69.1）/委派契约=22.4 九字段+arbiter 专用字段·检查点 22.8 沿用（69.2）/裁决消费协议=四态+REJECT-REWORK 强制返工+[arbiter-reject] 留痕·禁静默继续（69.3）/驳回单五要素（69.4）/强模型档 GLM-5.3 与经济性边界=低频单派（69.5）；机器面=selftest-decision-arbiter.sh+selftest-registry.tsv，零新 config 键
-- **Rule 70（用户呈报可审批性纪律 — task-v155）**：呈报触点四要素=待审项清单+可定位地址+看点+动作（70.2）；重/轻呈报分级（70.3）；单一权威源（70.4）；机器面=selftest-report-reviewability.sh+check-complete report-lint，零新 config 键（70.6）（详见 references/critical-rules.md Rule 70）
-- **Rule 72（决策分级与用户打断纪律 — task-v160）**：决策三级=A 必须询问（推翻已确认计划要素/不可逆/对外）/B 默认项+超时/C 禁问自动消解（72.1）；A 级变更呈报禁令（72.2）；琐碎上抛禁令（72.3）；基础质检硬门（72.4）；机器面=selftest-decision-grading.sh，零新 config 键（72.6）（详见 references/critical-rules.md Rule 72）
-- **Rule 75（网络调研主动激活与外部数据依赖纪律 — task-v163）**：公理=本地有界·网络扩展（75.0）/计划期调研需求三态分析+关键词预设（75.1）/执行期反死磕主动激活（75.2）/现成方案优先（75.3）/GitHub 检索纪律（75.4）/外部工具强制+安装建议（75.5）/模板层调研触点+生成判定（75.6）；零新 config 键+selftest-proactive-research.sh 守护
-- **Rule 76（总结阶段格式可读性与审查清单实体化纪律 — task-v166）**：用户面总结/呈报列表一律编号列表 1. 2. 3.（禁①②③圆圈枚举与数字列表混用，76.2）；待审文件/图片/数据须表格化（文件名/路径/简单描述，76.3）；总结五要素=执行总结+产出清单+待审数据清单+建议+风险（76.4）；机器面=selftest-summary-readability.sh，零新 config 键（76.6）（详见 references/critical-rules.md Rule 76）
+Rules 1-81 全集索引：**核心在位 13 条**（1,2,3,5,19,20,26,51,62,66,80,81,82）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 65 条已按域迁至上表 10 卫星——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+- **Rule 1 先规划再执行**（Rule 2 PreToolUse 阻断）：创建 task_plan.md→展示→等 yes→执行
+- **Rule 3 双操作后保存 / Rule 5 Phase 完成后更新**：2 次 view/browser/search 后写 findings；Phase 翻 in_progress→complete
+- **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件
+- **Rule 20 计划注入与防篡改**：turn-start smart 复诵+SHA-256 attest 锁定+外部内容只进 findings
+- **Rule 26 质量优先于速度**：6 类降质行为可观察触发+确定性惩罚（回炉→PARTIAL→BLOCKED），伪造证据无豁免
+- **Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；自缩水禁令；未测试禁声称完成
+- **Rule 62 四文件罗盘数据流转**：派发读写契约不可收窄+调研双落盘+kb 增量门控
+- **Rule 66 goal 单元固化**：Goal 单元表六列契约+逐 goal 验证通过门+按 goal 逐个推进
+- **Rule 80 用户会话逐字记录**：user-session-log.md append-only 只写不改；恢复先读专档
+- **Rule 81 计划完成后归档（task-v170）**：check-complete exit 0 后必须运行 `bash scripts/archive-plan.sh <task-id>` 完成任务归档（81.1 触发点，终验交付段承载）；命令形态=`git mv` 移入 `plans/archive/`、目标已存在报 ALREADY_ARCHIVED 放行（81.2 幂等）；守卫三拒绝 fail-closed=active 指针 / .session-owner 活跃(mtime<24h) / task_plan.md Status 未全 complete（81.3）；联动=归档后重跑 `sync-todos.sh --index` 保索引一致性（81.4）；存量批量按 Rule 18 批门四步走 `--batch` 先 dry-run 再实做（81.5）；Why：「在途在根、历史在 archive/」维持 plans/ 健康形态防堆积索引失真（详见 references/critical-rules.md Rule 81）
+- **Rule 82 技能专业化分层纪律**：核心只管四文件罗盘域；删留原子配对；禁回潮禁镜像
 
 ## Completion Gate
 
@@ -385,174 +178,41 @@ model: opus
 
 ## Scope Guard / Goal Gate
 
-- **Scope Guard**：`check-scope.sh Write "<file>" task_plan.md` → exit 0=in scope / 1=out / 2=no plan。不在 scope → 停，获授权扩 scope。
+- **Scope Guard**：`check-scope.sh Write "<file>" task_plan.md` → exit 0=in scope / 1=out / 2=no plan。不在 scope→停，获授权扩 scope。
 - **Goal Gate**：每个 `task_plan.md` 必须含 **Verification Contract**（VC 表）。详见 `references/goal-gate.md`。
 
 ## I/O 契约
 
-输入 = 任务描述 / CWD / 已有 plan（恢复时用）；输出 = 规划→plan+思路复述（28.2.1，ask 模式）+确认（silent 模式按 Rule 28 自动通过）/ 执行→checkbox+错误 / 完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败 → AskUserQuestion（交互模式语义见 Rule 28）。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh`。
+输入=任务描述/CWD/已有 plan（恢复时用）；输出=规划→plan+思路复述（28.2.1，ask 模式）/执行→checkbox+错误/完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败→AskUserQuestion（交互模式语义见 Rule 28）。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh`。
 
-## Chain Handoff Contract（链式交接合约）
+## Chain 模式与协同路由（指针）
 
-`chain_mode: linked` / `fan-out` 的 block 交接合约（字段表 + 交接前 6 条件 + 重规划触发条件）**唯一权威源**：`reference.md § Chain Handoff Contract`。执行循环内的交接操作步骤见上方「Chain 区块交接」；`next_skill: general-purpose`。
+`chain_mode` 默认 `single`（单 block）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，成员按 Rule 21.4 声明组并行）的值语义与 block 交接合约权威源=`reference.md § Chain Handoff Contract`。专业技能协同（comet/OpenSpec/superpowers/dynamic-workflows）权威源=`../plan-collab-router/references/skill-collaboration.md`，主路由 `Skill("plan-collab-router")`；dynamic-workflows 仅用户显式点名 `/workflow` 时路由（Rule 39）。调研 SOP=卫星 `plan-research-router`（`references/research-routing.md`）；模板库=卫星 `plan-template-kit`（本技能 `templates/` 机械层留守）。
+
+## 派发与执行纪律指针（卫星 authoritative）
+
+- **子代理派发/路由表/模型档位/超时兜底/返回校验/代码编辑隔离/provider 故障 scaling/hook 自愈** → 卫星 `task-dispatch`（SKILL.md+`references/agent-coverage.md` 覆盖矩阵+`references/split-pattern-library.md` 模式库；五档兜底=改派→拆细→降档→接管→AskUser）
+- **执行纪律/错误闭环/批量质量门控（batch-quality-gate.md）/反思验证/注释规范/可靠性/能力落盘/上下文压力/用户否决/决策分级/变更吸收** → 卫星 `task-discipline`
+- **媒体制作/单元线并行/内容权重分级** → 卫星 `media-planner`
+- 主进程铁律摘要：任务执行一律 `Agent()` 派发（白名单外 Write/Edit 被 `check-delegation.sh` 拦截，enforce=exit 2）；bypass 仅显式 `allow-direct.sh on --confirm-user-requested`；六项白名单全文见 task-dispatch Rule 25.3
 
 ## References
 
 | 文档 | 用途 |
 |------|------|
-| `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件 |
-| `references/critical-rules.md` | Critical Rules 1-80（含 Rule 13-18/21-23/25-28 关键条款 + 29-32 维护/追踪/学习/防倒退门控 + Rule 33 反思-验证循环 / Rule 34 模板生命周期门控 / Rule 35 执行结论纪律 / Rule 36 技能修改保守化 / Rule 37 任务类型机制画像 / Rule 38 任务难度分级与轻量档 / Rule 39 动态工作流编排 / Rule 40 harness 工具面主动选择 / Rule 41 问题自主消解与升级纪律 / Rule 42 质量审查技能主动检测与补充 / Rule 43 执行可靠性制度化 / Rule 44 用户选择点默认项与自动超时裁决 / Rule 45 注释完整性规范 / Rule 46 子代理单任务专注度 / Rule 47 媒体制作任务派发纪律 / Rule 48 交付总结可定位性与实用性 / Rule 49 单元线多路并行推进 / Rule 50 内容要求权重分级与评级 / Rule 51 需求覆盖与完成声称门控 / Rule 52 执行体专业化优先与覆盖矩阵维护 / Rule 53 根源解决与决策管辖 / Rule 54 执行诚实性与即时执行纪律 / Rule 55 可复用能力落盘纪律 / Rule 56 用户指令优先与自动执行 / Rule 57 迭代测试轮次落盘 / Rule 58 调研分析证据纪律与核心目标达成门控 / Rule 59 子代理拆分粒度硬门与技能伴飞纪律 / Rule 60 主动解决问题泛化行为原则 / Rule 61 偏移检查子代理化 / Rule 62 四文件罗盘数据流转与调研知识沉淀纪律 / Rule 63 检索优先与反推诿纪律 / Rule 64 偏移检查留痕强制与节奏化触发纪律 / Rule 65 周期性回顾与前后对照 / Rule 73 执行期决策对齐与不变量纪律（task-v156）/ Rule 70 用户呈报可审批性纪律（task-v155）/ Rule 72 决策分级与用户打断纪律（task-v160）/ Rule 74 变更吸收三判纪律（task-v162,1-74 纪元）/ Rule 75 网络调研主动激活与外部数据依赖纪律（task-v163）/ Rule 76 总结阶段格式可读性与审查清单实体化纪律（task-v166） / Rule 80 用户会话逐字记录与只写不改纪律（task-v169）） |
-| `references/split-pattern-library.md` | 拆分模式库（Rule 21.6）：11 模式+伴飞映射表，计划期拆分 S-unit 前必读 |
+| `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 |
+| `references/critical-rules.md` | Critical Rules 核心域 1-81 全集索引（13 条核心全文+分层架构说明+卫星路由索引） |
+| `references/methodology.md` | 思维方法论 T1-T5 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
-| `../plan-cost-guard/references/billing.md` | 计费模式 + 子代理成本估算表（Rule 17） |
-| `../plan-cost-guard/references/cost-control.md` | 成本控制策略详解（Rule 17 详解） |
-| `references/batch-quality-gate.md` | 批量处理质量门控详解（Rule 18 详解：前置 3 问 + 双采样 + Batch Report） |
-| `examples.md` | 实际示例 |
-| `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源（三族画像/触发矩阵/22.3.3 卡壳接管/移交合约） |
 | `references/todo-sync.md` | 原生 Todo 同步契约（S1-S5/映射/hook 响应） |
-| `templates/knowledge-brief.md` | 任务知识简略要点模板（init-session 第 6 文件；五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引） |
-| `templates/user-session-log.md` | 用户会话逐字记录专档模板（init-session 第 7 文件；append-only 只写不改，条目格式+恢复协议，Rule 80） |
-| `templates/shared-tracker.md` | 共享内容认领追踪区块模板（Rule 30；task_plan 引用，账本权威源=progress-tracker 技能） |
-| `templates/delivery-summary.md` | 终验交付总结五要素模板（终验交付段消费；数据源=verification/progress/report 引用不重写；非计划模板不入 25 口径） |
-| `code-review` skill | 代码质量审查（Code Review Gate 调用入口） |
-| 外部 skill | `drift-checker` agent 偏移检查执行载体（Rule 61；`task-drift-guard` skill=交互/独立场景载体） / `Skill("plan-resume")` 中断扫描（Rule 15/24 调用入口） / `Skill("progress-tracker")` 共享内容认领追踪（Rule 30 调用入口，协同契约见 ../plan-collab-router/references/skill-collaboration.md） |
- / decision-arbiter agent 判断裁决执行载体（Rule 69；companion/agents/decision-arbiter.md）
-
----
-
-## 🎯 子代理路由与模型分级（强制 — P0）
-
-**目的**：主进程 = 调度器,所有实际工作派子代理。避免上下文过长质量降低,避免主进程被代码细节/搜索结果/调试日志污染丢失全局视野。
-
-**强制约束**（P0）：执行任何任务时,**先按本表选择 subagent,再开始工作**。违反 = 反模式。
-
-### 路由表（按任务类型）
-
-> **类型适配（Rule 37）**：下表为代码组画像的默认路由；内容类任务（writing/research/publish）按 ../plan-template-kit/references/template-mapping.md §九 机制画像路由到内容类执行体（article-writer 等），不适用 code-assistant/debugger/code-reviewer 行。仅裁剪代码组机制，通用守卫不变。
-
-| 任务类型 | 推荐 subagent | model 档位 | 主进程直接做? | 规模上限 | 超限动作 |
-| --- | --- | --- | --- | --- | --- |
-| **计划撰写** | `plan-writer` | **sonnet-1** | ❌ | ≤1 plan, ≤500行 | askUser 重拆 |
-| **代码编辑（单文件 ≤300 行,≤3 文件）** | `code-assistant` | **haiku-1** | ❌ | ≤3 文件, ≤300行 | 升级 executor |
-| **代码编辑（>3 文件 或 >300 行）** | `executor` | **sonnet-1** | ❌ | ≤3 文件, ≤300行 | 升级 executor |
-| **代码编辑（重构/瘦身）** | `code-simplifier` | 继承主会话 | ❌ | ≤1 模块, ≤500行 | 升级 executor |
-| **构建/编译错** | `build-error-resolver` | **sonnet-1** | ❌ | ≤1 构建错误 | 升级 debugger |
-| **修 bug / 根因分析** | `debugger` + `Skill("systematic-debugging")` | **sonnet-1** | ❌ | ≤1 bug, ≤3 文件 | 升级 complex-problem-solver |
-| **跑测试/构建** | `code-runner-agent` | mini | ❌ | ≤1 测试套件 | 拆多个命令 |
-| **代码库深度分析/体检** | `codebase-analyzer` | **sonnet-1** | ❌ | ≤1 子系统, ≤5 文件 | 拆 Phase |
-| **关键词搜索/抓静态页** | `web-search-agent` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
-| **github 调研（issue/PR/release/源码）** | `web-search-agent` + `gh CLI` | mini | ❌ | ≤1 主题, ≤3 query | 改用 research-assistant |
-| **网页访问（JS 渲染/登录态/交互页）** | Browser Automation（browser-use:control-browser / mcp__node_repl__js） | mini | ❌ | ≤1 批 URL, 单次 ≤120s | 超时降级 web_reader/splash 链 |
-| **跨文件搜索定位** | `explore` | mini | ❌ | ≤1 子系统 | 拆多 explore |
-| **文档/规范搜索** | `doc-search-agent` | mini | ❌ | ≤1 规范文件 | 拆 doc-search-agent |
-| **综合调研（API + 选型 + 风险）** | `Skill("research-assistant")` / `web-search-agent（agent）` | **sonnet-1** | ❌ | ≤1 选型, ≤3 API | 升级 codebase-analyzer |
-| **多文件重构 / 跨模块实现** | `executor` | **sonnet-1** | ❌ | ≤1 模块, ≤3 文件 | 拆多 executor |
-| **规划 / 架构 / 编排** | `architect` / `planner` / `task-orchestrator` | 继承主会话 | ❌ | ≤1 模块 | 升级 complex-problem-solver 或升级 complex-planner（高复杂度规划备用，GLM5.3/Opus 级） |
-| **Code Review / 批判** | `code-reviewer` / `critic` | **sonnet-1** | ❌ | ≤1 PR, ≤3 文件 | 拆评论任务 |
-| **漂移检测（高频）** | `drift-checker`（伴随 agent，Rule 61 载体） | haiku-1 | ❌ | 高频(≤3次/phase) | 无需(已节流) |
-| **判断/裁决（低频）** | `decision-arbiter`（伴随 agent，Rule 69 载体） | **GLM-5.3 强档**（`account:zai-individual-coding-plan/GLM-5.3`） | ❌ | 低频(每争议 1 次单派，禁驻留循环，Rule 69.5) | 无需(单次独立) |
-| **计划系统文件（plans/** 三件套、plan 模板、INDEX/ledger）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
-| **原生 Todo 同步（TodoWrite/Task 状态更新）** | （主进程） | 主会话 | ✅ 允许 | n/a(主进程) | n/a |
-| **业务文档/配置/技能文件（.md/.json/.yaml）** | `code-assistant` / `executor` | haiku-1 / sonnet-1 | ❌ | ≤3 文件, ≤300 行 | 升级 executor |
-| **质量审查族（质量校验/审查/QC 实体）** | `quality-auditor` / `quality-check-agent` / `quality-control-agent` / `content-origin-verify-agent` / `doc-sync-verify-agent` | haiku-1 / sonnet-1 | ❌ | ≤1 审查对象 | 拆审查项 |
-| **Git 运维族（Git/worktree/记忆运维）** | `git-master` / `git-security-expert` / `worktree-janitor` / `cron-patrol` / `memory-librarian` | mini / haiku-1 / sonnet-1 | ❌ | ≤1 运维项 | 拆多项运维 |
-| **营销 SEO 族（营销内容/SEO/有机增长）** | `marketing-content-creator` / `marketing-seo-specialist` / `organic-content-strategist` / `seo-specialist` | haiku-1 / mini | ❌ | ≤1 主题 | 拆 S-unit |
-| **数据研究族（数据/API/研究分析）** | `api-tester` / `scientist` / `data-consolidation-agent` / `search-query-analyst` / `log-distiller` | sonnet-1 / haiku-1 | ❌ | ≤1 数据集/主题 | 拆多研究 |
-| **文档 UI 族（技术文档/UI/前端）** | `technical-writer` / `ui-designer` / `frontend-developer` | sonnet-1 | ❌ | ≤1 模块 | 拆 S-unit |
-| **文章管线补充族（article-* 未登记 10 实体）** | `article-content-editor` / `article-data-fetcher` / `article-field-fixer` / `article-publish-phase-agent` / `article-research-heavy-agent` / `article-research-phase-agent` / `article-reviewer` / `article-site-router` / `article-synthesis-phase-agent` / `article-batch-publisher`（逐行登记与豁免理由见 `references/agent-coverage.md`，Rule 52.1） | 按 agent frontmatter 声明档 | ❌ | ≤1 篇 × 1 相位 | 拆 S-unit |
-| **媒体生成工序（视频/图片单体：写词/生成/QC/修正）** | `image-generation-executor` / `video-generation-executor`（在位优先）；缺位回退 `executor` + 工序 variant 模板 SOP + 生成技能（Rule 47.2）+评级契约（Rule 50） | **sonnet-1** | ❌ | ≤1 生产单元 × 1 工序 | 拆 S-unit（Rule 47.1 媒体轴） |
-| **剧集创作管线（多集/多镜整链）** | `video-generation-executor` 按集→场→镜逐级拆 Phase/S-unit（Rule 47.1）；组合工序缺位回退 executor | **sonnet-1** | ❌ | ≤1 集 × 1 工序 per S-unit | 拆 Phase |
-
-### 模型档位依据
-
-复用 `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` 既有约定：
-- **mini**：机械 IO（CLI 执行、搜索、抓取、簿记）
-- **haiku-1**：机械/轻量（验证、格式化、批量 I/O、单文件 ≤3 文件小改）
-- **sonnet-1**：判断型（编辑、调试、重构、综合调研、复杂分析）
-- **opus**：复杂判断（架构、跨会话编排、spec/plan 起草）
-- **继承主会话**：无 model 字段的规划/编排型 agent
-
-### 反模式（主进程禁止）
-
-- ❌ 主进程 `Edit`/`Write` 业务代码（`.ts/.tsx/.js/.jsx/.py/.go/.rs/.java/.c/.cpp/.h/.hpp`）
-- ❌ 主进程 `Edit`/`Write` 白名单外文档/配置/技能文件（`.md`/`.json`/`.yaml`——例外仅计划系统文件/原生 Todo/≤3 行 trivial，见 Rule 14）
-- ❌ 主进程 `Read` >500 行业务文件后直接改
-- ❌ 主进程跑 `npm test` / `cargo build` / `pytest` / `bun test`
-- ❌ 全仓 `grep` + `sed` 批量替换
-- ❌ 主进程直接接收 `Skill("research-assistant")` 长文（必须 spawn 子代理消化）
-- ❌ 主进程直接接收 `Skill("code-review")` / `Skill("systematic-debugging")` 长输出
-- ❌ 主进程直接接收 `Agent(subagent_type=codebase-analyzer)` 的体检报告全文
-- ❌ Phase 无 `**Executor:**` 字段即开始执行（违反 Rule 25，计划视为无效，须补字段并重跑 attest）
-- ❌ 主进程为偏移比对 Read task_plan.md 全文或收集 git diff 大输出（偏移检查=drift-checker 子代理载体，Rule 61）
-
----
-
-## ⏱️ 超时与失败兜底 — Rule 22 落地
-
-派发子代理时必须先看这一节:**执行可能超时/失败,主进程必须有兜底动作**,不是被动等（22.4 上下文预算=prompt 长度/打包检测/步骤枚举计数已机器化：check-dispatch.sh 校验 prompt 字符数 vs prompt_max_chars、多 S-unit 打包与步骤枚举数 vs step_max_steps(task-v081)，挂 dispatch_contract_enforce 档位）。
-
-**步骤 0 — 先查检查点(Rule 22.8.4)**:任何兜底动作执行前,主进程必须先 Read 该子代理的检查点文件(`<plan-dir>/subagent-state/{seq}-{agent_type}.md`,路径见 Handoff 登记表「checkpoint 路径」列)——有实质进度 → 重试 prompt 注入 resume_from 段从断点续做(模板见 `templates/subagent_dispatch.md` 附录);无进度 → 按下表兜底。
-
-**五档兜底(优先级顺序,Rule 22.3 — 拆细先于升档;任一档连续失败 ≥2 次先走 22.3.0 资料先行前置评估——help/man/官方文档→research-assistant/Doc Search Agent/web-search 现成方案,换道义务 22.3.0b,task-v113 演进,五机械档 ①-⑤ 序号不变)**:
-
-| 序 | 兜底动作 | 何时用 | 执行者 |
-|---|---------|-------|-------|
-| 1 | **改派** | 失败原因是 subagent 类型不匹配(如 explore 接到写代码任务) | 主进程 |
-| 2 | **拆细** | 子任务触及 21.1b 步级上限(>2 文件/>100 行/预估 >15min)或超时——第一假设是任务太大而非模型弱;回计划层拆成更小 S-unit 重派,不改模型档位;每子任务限 1 次 | 主进程 |
-| 3 | **降档** | 类型对、已拆细仍失败(能力不足)→ 升一档 model(haiku→sonnet→opus) | 主进程 |
-| 4 | **主进程接管** | 单文件 ≤300 行、目标明确、可独立验收；接管后须按 Rule 25.3 登记例外理由（白名单⑤） | 主进程 Edit/Read |
-| 5 | **AskUserQuestion** | 改派/拆细/降档/接管都失败,或问题需用户决策；交互模式见 Rule 28（ask=选项化询问并回填 Decisions；silent=按推荐项自主处置并登记 silent 决策行；D6 触发时按 28.4.1 降级交付(推荐项=拆细后主进程接管 ≤300 行子集,剩余登记未完成清单)，禁静默空等） | AskUserQuestion 工具 |
-> 「prompt 过大/context_exceeded」类失败 → 先走 Rule 35.3 大输入落盘引用（内容写文件+prompt 只放绝对路径与 Read 指令）再考虑 ②拆细，禁止直接失败收场（Rule 35.5 消费侧）。
-> 兜底档位（改派/拆细/降档/接管）选择拿不准时 → 委派 decision-arbiter 换道裁决（Rule 69.1 T2），五档序不变仅裁决出口增强
-
-**触发条件**(任一):
-- 子代理返回 `status: failed` 或 `partial` 但关键产出缺失
-- 派发超 `config.json#subagent.timeout_by_type[type]`(explore 30min / editor 60min / debugger 60min / executor 120min)
-- 子代理返回 `permission_denied` / `context_exceeded` 等不可重试错误
-- 同一子任务**连续失败 ≥2 次**(Rule 22.7)→ **强制换档**重试(穷尽 ①-④ 前禁止 STOP);穷尽后仍失败 → **强制 STOP** 报告用户,不进入 Chain block 交接
-- 失败是真缺陷还是误报难判 / 返工路径拿不准 → 委派 decision-arbiter 复核定级（Rule 69.1 T3），按裁决态消费（69.3）
-
-**登记**(Rule 22.5):
-派发前在 task_plan.md `## 🔗 Subagent Handoff 登记表` 填一行(时间/subagent_type/目标/状态);子代理返回 30s 内主进程必须 Read 实际产出 **并紧邻 `Edit findings.md` 回填结论**（「findings 落点」列记段落锚点），两动作完成才勾 `verify_done`;未 Read → findings.md 记"未验证"。Handoff 登记表含 checkpoint 路径列,failed/timeout 行必填。
-
-**反模式(禁止)**:
-- ❌ 失败后静默重试同法(违反 Rule 7 三击协议 + Rule 22.3)；同法失败 ≥2 次第 3 次仍同法且不登记换道理由(违反 22.3.0b 换道义务,task-v113)
-- ❌ 改派/拆细/降档时无登记(违反 Rule 22.5 流程追溯)
-- ❌ 主进程亲自重写 >300 行内容(违反 Rule 14 + Rule 22.1)
-- ❌ 失败时直接 `outcome: BLOCKED` 不留证据(违反 Rule 6 错误留痕)
-
-**Provider 失败主动 Scaling(task-v055-fallback)**:网络/400/超时类失败(`model.network.failed`)→ `scripts/subagent-fallback.sh`(probe 预检 / next 决策 / bind 生成 `<type>-fb` 变体 agent 指定 fallback 模型),零消耗改派不计 retry_limit;细则 critical-rules Rule 22.3.1。边界(如实):变体 agent 新会话才对 Agent 工具可见(类型列表会话启动固化);当前会话内兑现 = 新开会话派发或主进程接管。provider 全灭且任务超 ④ 接管上限(单文件 ≤300 行)时禁直接 STOP:先回计划层拆细到每片 ≤300 行单文件再逐片 ④ 接管(22.3.2)。
-
-### 🛡️ 环境级中断自愈(task-v068)
-hook 链路对以下中断自动自愈或降噪,sid 护栏下无需人工兜底:①memory 写入哨兵误拦(check-scope 白名单豁免)②无 sid 时 plan-created 兜底清除无认领/过期哨兵 ③本会话(.session-owner 认领者)编辑 task_plan.md 后 PostToolUse 自动重锁 attestation(他会话编辑仍 TAMPERED)④delegation-observe 注入会话级节流 ⑤env sid 兜底链(stdin 缺失时 CLAUDE_CODE_SESSION_ID 承接)。开关键 `config.json#hook_self_heal_enforce`(默认 warn,off 档后续轮接读取,enforce 预留);护栏=sid 匹配,外部篡改仍拒绝。E4 慢注入(Rule 23 O(N))未修,登记 deferred。
-
-## 💻 代码编辑强制隔离
-
-代码编辑派发规则与白名单的**权威源** = 上方 §子代理路由表「代码编辑」三行（322-324）+ ✅ 行白名单；本节只补路由表未覆盖的「修改后验证流程」与 Rule 14 的执行要点指针。
-
-### 修改后验证流程（每个代码修改完成）
-
-1. `Agent(subagent_type: code-runner-agent)` 跑编译/lint/测试；**轻 diff 合并（[task-v094 T-B6]）**：改动 ≤3 文件且 ≤50 行时编译/lint/测试合并单代理一次跑完（不再拆 code-runner/build-error 两轮派发）
-2. 测试失败 → `Agent(subagent_type: build-error-resolver)` 修复（轻 diff 场景由同一合并代理内联修复）
-3. 通过 → `Skill("code-review")` 上下文隔离审查（Code Review Gate）
-4. APPROVED → commit；CHANGES_REQUESTED → 回到子代理修复
-
-**禁止重复**：路由表已说"单文件 ≤300 行派 `code-assistant`"，本节不再列同表，避免双权威源漂移。
-
----
-
-## 🔍 调研类操作（已外迁 → plan-research-router）
-
-调研路由 SOP 已拆分至卫星技能 `plan-research-router`（正文 = 其 `references/research-routing.md`：路径 1 WebSearch 降级链 / 路径 2 github 调研 / 强制引用格式 / 禁止清单）。主路由 = 调研环节显式 `Skill("plan-research-router")`；github 调研仍可用 gh CLI（上方子代理路由表「github 调研」行不变）。
-
----
-
-## 🔁 高频漂移纠正（每 2-3 轮 todo，已内敛 → critical-rules.md §15）
-
-> 权威源 = `references/critical-rules.md` Rule 15（触发时机表 15.1 / 纠正条目自动入 Todo 15.2 / 与 Rule 11 的关系 15.3）。摘要：任一触发条件命中立即派发 `drift-checker` 子代理（载体=Rule 61；含「用户发出新指令时：A/B/C 判定后做漂移检查」）；⚠️ DRIFT 自动入 todo、🔴 BLOCKED 立即 STOP。
-
----
-
-## 📚 任务模板库（任务开启期必选）
-权威源 = 卫星技能 `plan-template-kit`（`../plan-template-kit/references/` template-mapping.md 决策树/模板清单/互斥 + template-guide.md 定制指南，经 `Skill("plan-template-kit")` 调用或按需 Read）。要点：① 任务开启期按 Rule 16 选模板 → frontmatter `template_type`（`init-session.sh` 自动从 `templates/variant/` 复制；禁止通用 task_plan 套用所有任务）；② 命中 Rule 34.3 沉淀触发 → 按 34.4 提炼新 variant 模板+四点同步（防滥用 34.5）；③ `knowledge-brief`（五段）= `init-session` 第 6 文件，由 `plan-writer` 写入 `<plan-dir>/knowledge-brief.md`，执行期材料包引用其 §1-§5（开关键 `config.json#knowledge_brief_enforce`，默认 warn）；模板选型/定制/沉淀主路由一律 `Skill("plan-template-kit")`，本技能 `templates/variant/` 机械层留守，映射源=卫星 template-mapping §六
+| `references/worktree-isolation.md` | 工作树隔离契约（实现类默认首选+合并回合约） |
+| `templates/knowledge-brief.md` | 知识底座模板（init 第 6 文件；五段） |
+| `templates/user-session-log.md` | 用户会话逐字记录专档模板（第 7 文件；append-only，Rule 80） |
+| `templates/delivery-summary.md` | 终验交付总结五要素模板 |
+| `templates/shared-tracker.md` | 共享内容认领追踪区块模板（Rule 30） |
+| `examples.md` | 实际示例 |
+| `../task-dispatch/references/agent-coverage.md` | 执行体覆盖矩阵（Rule 52.1） |
+| `../task-discipline/references/batch-quality-gate.md` | 批量处理质量门控详解（Rule 18） |
+| `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源 |
+| 外部 skill/agent | `drift-checker`（Rule 61）/`decision-arbiter`（Rule 69）/`Skill("plan-resume")`（Rule 24）/`Skill("progress-tracker")`（Rule 30）/`code-review` skill |

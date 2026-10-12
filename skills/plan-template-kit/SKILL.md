@@ -34,3 +34,7 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 
 - 执行期创建/初始化计划 = task-planner 职责，本技能不承接
 - 只读路由与知识描述，不修改 task-planner 侧文件；发现两份 reference 与机械层漂移 → 报告，不在本技能内修
+
+## 卫星路由：plan-template-kit — 域=模板生命周期与难度分级（Rule 16,34,37,38）
+
+规则全文见 skills/plan-template-kit/references/critical-rules-template.md（Rule 16 任务开启期选模板、Rule 34 模板生命周期：选取门控 + 沉淀入库、Rule 37 任务类型机制画像、Rule 38 任务难度分级与轻量档，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及选模板与「📚 必要知识储备」章节（Rule 16）/模板沉淀入库与四点同步（Rule 34）/按 template_type 裁剪机制画像（Rule 37）/轻量档 mini 判定与门控豁免（Rule 38）时 Read 该文件。

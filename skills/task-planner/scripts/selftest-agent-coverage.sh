@@ -15,11 +15,21 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-MATRIX="$SKILL_ROOT/references/agent-coverage.md"
+# [task-v171 回归修复 2026-10-12 派发域搬迁] 现象: AC-01/AC-05/AC-09 FAIL(矩阵文件缺失/空, C 表行数=0)｜
+# 根因: agent-coverage.md 随派发域迁至 skills/task-dispatch/references, 旧路径 $SKILL_ROOT/references 不再有该文件｜
+# 修法: 改锚 $SKILL_ROOT/../task-dispatch/references/agent-coverage.md(文件为 git 纯改名, 内容 41 行 C 表原样)
+MATRIX="$SKILL_ROOT/../task-dispatch/references/agent-coverage.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TMAP="$SKILL_ROOT/../plan-template-kit/references/template-mapping.md"
 COMPANION="$SKILL_ROOT/companion/agents"
 TEMPLATES="$SKILL_ROOT/templates"
+# [task-v171 回归修复 2026-10-12 规则分层搬迁] 现象: AC-02/AC-03 FAIL(SKILL.md 六族行/正面锚全 0)、AC-06 FAIL(Rule 52 子条=0)、
+#    AC-08 FAIL(21.1b=0/47.=0)｜根因: P7 核心瘦身后 Rule 52/21 归属 task-dispatch、Rule 47 归属 media-planner,
+#    核心 critical-rules.md 已无这些规则; S33 SKILL.md 瘦身后六族行/正面锚展开面随矩阵移居 task-dispatch｜
+# 修法: AC-02/AC-03 面锚改指 MATRIX(task-dispatch/references/agent-coverage.md); AC-06 改锚 CRIT_DP;
+#    AC-08 按规则归属拆双锚(21→CRIT_DP, 47→CRIT_M)
+CRIT_DP="$SKILL_ROOT/../task-dispatch/references/critical-rules-dispatch.md"
+CRIT_M="$SKILL_ROOT/../media-planner/references/critical-rules-media.md"
 CRITRULES="$SKILL_ROOT/references/critical-rules.md"
 CONFIG="$SKILL_ROOT/config.json"
 AGENTS_DIR="$HOME/.zcode/agents"
@@ -46,19 +56,20 @@ else
   bad 01 "矩阵文件缺失/空: $MATRIX"
 fi
 
-# AC-02 SKILL.md 六族行锚各 ≥1
-# What：断言 SKILL.md 六族行（质量审查族/Git 运维族/营销 SEO 族/数据研究族/文档 UI 族/文章管线补充族）各 ≥1。
+# AC-02 覆盖矩阵六族行锚各 ≥1
+# What：断言 agent-coverage.md 六族行（质量审查族/Git 运维族/营销 SEO 族/数据研究族/文档 UI 族/文章管线补充族）各 ≥1。
 # Why：六族行是 C 类 41 实体「找得到」的路由面（S3 产出）——任一族行被裁 = 该族实体退回「有体不用」（族行缺失即回退到
 #      general-purpose 默认兜底的用户原投诉面；行数=1 的逐族计数使 FAIL 定位到具体族而非笼统"族行丢失"）。
+#      [task-v171 2026-10-12] 面锚从 SKILL.md 改指 MATRIX：S33 瘦身后 SKILL.md 不再展开族行，权威面=矩阵本体。
 famres=""
 for fam in "质量审查族" "Git 运维族" "营销 SEO 族" "数据研究族" "文档 UI 族" "文章管线补充族"; do
-  n="$(grep -c "$fam" "$SKILLMD" 2>/dev/null || true)"
+  n="$(grep -c "$fam" "$MATRIX" 2>/dev/null || true)"
   if [ "${n:-0}" -ge 1 ]; then famres="$famres $fam=$n"; else famres="$famres $fam=0(缺)"; fi
 done
 if [ "$(printf '%s' "$famres" | grep -c '缺' || true)" -eq 0 ]; then
-  ok 02 "SKILL.md 六族行锚${famres} 各 ≥1"
+  ok 02 "矩阵六族行锚${famres} 各 ≥1"
 else
-  bad 02 "SKILL.md 六族行锚缺失:${famres}（应各 ≥1）"
+  bad 02 "矩阵六族行锚缺失:${famres}（应各 ≥1）"
 fi
 
 # AC-03 B 类反证（旧字面零残留 + 新字面在位，双侧）
@@ -68,10 +79,11 @@ fi
 # Why：B 类=登记名指向不存在/名不符实体，Rule 52.2 零容忍——S3/S4 已做行内修正（B4 改名/B5 改小写/B1B2 兜底化），
 #      本断言防"文档重构还原旧字面"的逆向漂移。扫描面刻意排除矩阵 agent-coverage.md 本身（其 §二 B 表按 52.3 口径
 #      合法记载旧字面 B4/B5 条目与 AC-03 守护口径说明行，属文档记录面非登记面，纳入扫描会自证 FAIL）。
+#      [task-v171 2026-10-12] 正面锚从 SKILL.md 改指 MATRIX：S33 瘦身后 SKILL.md 不再登记正面实体名，权威面=矩阵。
 x="$(grep -rPc 'article-batch-publish(?!er)' "$SKILLMD" "$TMAP" "$COMPANION" "$TEMPLATES" 2>/dev/null | grep -v ':0$' || true)"
 cpv="$(grep -rl 'ComplexProblemSolver' "$SKILLMD" "$TMAP" "$COMPANION" "$TEMPLATES" 2>/dev/null || true)"
 sw="$(grep -E '^\|[[:space:]]*script-dev[[:space:]]*\|' "$TMAP" 2>/dev/null | grep -c 'script-writer\|script-auditor' || true)"
-pos="$(grep -c 'complex-problem-solver' "$SKILLMD" 2>/dev/null || true)"
+pos="$(grep -c 'complex-problem-solver' "$MATRIX" 2>/dev/null || true)"
 if [ -z "$x" ] && [ -z "$cpv" ] && [ "$sw" -eq 0 ] && [ "$pos" -ge 1 ]; then
   ok 03 "B 类反证通过: publish(无er)=0 ComplexProblemSolver=0 script-dev 行裸名=0；正面锚 complex-problem-solver=$pos ≥1"
 else
@@ -159,11 +171,11 @@ else
 fi
 
 # AC-06 Rule 52 四子条 + 标题
-# What：断言 critical-rules.md `^52\.` 子条数=4 且 `^### 52 ` 标题锚 ≥1。
+# What：断言 critical-rules-dispatch.md（Rule 52 归属 task-dispatch）`^52\.` 子条数=4 且 `^### 52 ` 标题锚 ≥1。
 # Why：Rule 52 是 S2 产出条款本体——子条 52.1-52.4 各 1 条被删/被并 = 条款语义部分缺失（4 精确计数 vs ≥4：
 #      多出的 ^52 行=异常拆分，同样需暴露；标题锚防"子条在但标题被裁"的结构性漂移）。
-s52="$(grep -c '^52\.' "$CRITRULES" 2>/dev/null || true)"
-t52="$(grep -c '^### 52 ' "$CRITRULES" 2>/dev/null || true)"
+s52="$(grep -c '^52\.' "$CRIT_DP" 2>/dev/null || true)"
+t52="$(grep -c '^### 52 ' "$CRIT_DP" 2>/dev/null || true)"
 if [ "$s52" -eq 4 ] && [ "$t52" -ge 1 ]; then
   ok 06 "Rule 52 子条=4 标题=1 在位"
 else
@@ -182,14 +194,16 @@ else
   skip 07 "jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）"
 fi
 
-# AC-08 既有锚守护（^21.1b 与 ^47. ≥4 在位）
-# What：断言 critical-rules.md 既有 Rule 21.1b 子条与 Rule 47 四子条（47.1-47.4）原锚未漂移。
+# AC-08 既有锚守护（^21.1b 与 ^47. ≥4 在位；双锚按规则归属拆分）
+# What：断言 Rule 21.1b 子条（task-dispatch 域）与 Rule 47 四子条（47.1-47.4，media-planner 域）原锚未漂移。
 # Why：Rule 52 声明「既有 21/25/37/47 原文零改动（Rule 36.5 纯增量）」——^21.1b 是拆分轴条款、^47 四子条是
 #      媒体派发纪律（52 直接衔接的上位条款）；锚被改/被删=既有规则语义漂移（本条=纯增量承诺的机器面反证）。
-a21="$(grep -c '^21\.1b' "$CRITRULES" 2>/dev/null || true)"
-a47="$(grep -c '^47\.' "$CRITRULES" 2>/dev/null || true)"
+#      [task-v171 2026-10-12] P7 分层后 21 归 task-dispatch、47 归 media-planner，单锚 core 必 FAIL，
+#      按归属拆双锚（语义不变：仍验「既有 Rules 原文零改动」）。
+a21="$(grep -c '^21\.1b' "$CRIT_DP" 2>/dev/null || true)"
+a47="$(grep -c '^47\.' "$CRIT_M" 2>/dev/null || true)"
 if [ "$a21" -ge 1 ] && [ "$a47" -ge 4 ]; then
-  ok 08 "既有锚在位 ^21.1b=$a21 ≥1 / ^47.=$a47 ≥4"
+  ok 08 "既有锚在位 ^21.1b=$a21 ≥1(dispatch) / ^47.=$a47 ≥4(media)"
 else
   bad 08 "既有锚漂移（^21.1b=$a21 应 ≥1 / ^47.=$a47 应 ≥4，既有 Rules 原文零改动被破坏）"
 fi

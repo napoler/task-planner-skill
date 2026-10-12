@@ -31,6 +31,11 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CRIT="$SKILL_ROOT/references/critical-rules.md"
+# [task-v171 纪律域搬迁 2026-10-12] Rule 54（执行诚实性与即时执行纪律）与 EH-13 语境负断言涉及的
+#   Rule 55（可复用能力落盘纪律）均属纪律域，原文已迁至 skills/task-discipline/references/critical-rules-discipline.md
+#   （核心 critical-rules.md 只剩 11 条核心规则）；EH-01..EH-13 的 CRIT 断言改指 CRIT_D，CRIT 保留指向核心。
+#   断言语义零改动（含 EH-13 的 54 块尾→55 合法块语境负断言，discipline 文件中 54 后即 55 块，口径不变）。
+CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
 TPL="$SKILL_ROOT/templates/delivery-summary.md"
 IMG="$SKILL_ROOT/companion/agents/image-generation-executor.md"
@@ -43,63 +48,64 @@ bad() { FAIL=$((FAIL+1)); printf 'EH-%s FAIL %s\n' "$1" "$2"; }
 
 # EH-01 54.0 子条锚 `grep -cF '54.0 **有依据原则（evidence-first reporting）**'` =1
 # Why: 54.0 有依据原则总则（R4 需求锚）是整条 Rule 54 的语义根——总则锚丢=子条 54.1-54.5 失去上位条款依据（体系脱根探测）。
-n="$(grep -cF '54.0 **有依据原则（evidence-first reporting）**' "$CRIT" || true)"
+n="$(grep -cF '54.0 **有依据原则（evidence-first reporting）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 01 "critical-rules.md 54.0「有依据原则」=1"; else bad 01 "critical-rules.md 54.0 锚命中=$n（应 =1）"; fi
 
 # EH-02 54.1 子条锚 `grep -cF '54.1 **就绪语义（ready-state honesty）**'` =1
 # Why: 54.1 是 F1 就绪语义越界 + F4 资源状态无验证断言的唯一新载体（knowledge-brief §2 差异面定稿）——锚丢=两缺陷面重回无条款状态。
-n="$(grep -cF '54.1 **就绪语义（ready-state honesty）**' "$CRIT" || true)"
+n="$(grep -cF '54.1 **就绪语义（ready-state honesty）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 02 "critical-rules.md 54.1「就绪语义」=1"; else bad 02 "critical-rules.md 54.1 锚命中=$n（应 =1）"; fi
 
 # EH-03 54.2 子条锚 `grep -cF '54.2 **阻塞影响矩阵（blocker impact matrix）**'` =1
 # Why: 54.2 阻塞传播纪律是 F2 连带推迟的直接拦截面（与 49.2 lane 推进互补非替代）——锚丢=「单资源阻塞推全量」禁令消失。
-n="$(grep -cF '54.2 **阻塞影响矩阵（blocker impact matrix）**' "$CRIT" || true)"
+n="$(grep -cF '54.2 **阻塞影响矩阵（blocker impact matrix）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 03 "critical-rules.md 54.2「阻塞影响矩阵」=1"; else bad 03 "critical-rules.md 54.2 锚命中=$n（应 =1）"; fi
 
 # EH-04 54.3 子条锚 `grep -cF '54.3 **仪式性进展禁令（ceremonial progress ban）**'` =1
 # Why: 54.3 是 F3 仪式动作冒充里程碑的唯一禁令载体（差异面=动作包装 vs 43.6 声称面）——锚丢=仪式进展重新可被呈报为里程碑。
-n="$(grep -cF '54.3 **仪式性进展禁令（ceremonial progress ban）**' "$CRIT" || true)"
+n="$(grep -cF '54.3 **仪式性进展禁令（ceremonial progress ban）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 04 "critical-rules.md 54.3「仪式性进展禁令」=1"; else bad 04 "critical-rules.md 54.3 锚命中=$n（应 =1）"; fi
 
 # EH-05 54.4 子条锚 `grep -cF '54.4 **推迟举证四要素（deferral evidence）**'` =1
 # Why: 54.4 推迟举证是 F2「无举证整体押后」的决策面拦截（四要素缺一禁推迟）——锚丢=推迟决策退回无举证放行。
-n="$(grep -cF '54.4 **推迟举证四要素（deferral evidence）**' "$CRIT" || true)"
+n="$(grep -cF '54.4 **推迟举证四要素（deferral evidence）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 05 "critical-rules.md 54.4「推迟举证四要素」=1"; else bad 05 "critical-rules.md 54.4 锚命中=$n（应 =1）"; fi
 
 # EH-06 54.5 子条锚 `grep -cF '54.5 **决策依据落盘与引用义务（decision-basis persistence）**'` =1
 # Why: 54.5 是用户 R5「数据及时落盘」的直接载体（查询数据先落盘后引用落盘锚，F5 前置使能面）——锚丢=R5 决策依据审计链断裂。
-n="$(grep -cF '54.5 **决策依据落盘与引用义务（decision-basis persistence）**' "$CRIT" || true)"
+n="$(grep -cF '54.5 **决策依据落盘与引用义务（decision-basis persistence）**' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 06 "critical-rules.md 54.5「决策依据落盘」=1"; else bad 06 "critical-rules.md 54.5 锚命中=$n（应 =1）"; fi
 
 # EH-07 54.6 子条锚 `grep -cF '54.6 **机制（零新 config 键'` =1（标题前缀锚，标题尾部含 Why 说明故锁前缀不锁全行）
 # Why: 54.6 机制条是本脚本自身存在的条款依据（机器面=selftest 静态守护声明）——锚丢=脚本与条款双向引用断裂（守卫自引用失效）。
-n="$(grep -cF '54.6 **机制（零新 config 键' "$CRIT" || true)"
+n="$(grep -cF '54.6 **机制（零新 config 键' "$CRIT_D" || true)"
 if [ "$n" -eq 1 ]; then ok 07 "critical-rules.md 54.6「机制（零新 config 键」=1"; else bad 07 "critical-rules.md 54.6 锚命中=$n（应 =1）"; fi
 
 # EH-08 三关键短语锚：54.0 有依据原则「evidence-first reporting」≥1 / 54.5 落盘义务「decision-basis persistence」≥1 / 54.6 零新键「零新 config 键」≥1
 # Why: 子条标题锚（EH-01..07）只锁编号+标题字面，关键短语是各子条语义内核——防「标题还在但正文被裁空壳」的语义漂移（死文变体探测）。
-a="$(grep -cF 'evidence-first reporting' "$CRIT" || true)"
-b="$(grep -cF 'decision-basis persistence' "$CRIT" || true)"
-c="$(grep -cF '零新 config 键' "$CRIT" || true)"
+a="$(grep -cF 'evidence-first reporting' "$CRIT_D" || true)"
+b="$(grep -cF 'decision-basis persistence' "$CRIT_D" || true)"
+c="$(grep -cF '零新 config 键' "$CRIT_D" || true)"
 if [ "$a" -ge 1 ] && [ "$b" -ge 1 ] && [ "$c" -ge 1 ]; then
   ok 08 "critical-rules.md 关键短语 evidence-first=$a≥1 / decision-basis=$b≥1 / 零新 config 键=$c≥1"
 else
   bad 08 "critical-rules.md 关键短语 evidence-first=$a / decision-basis=$b / 零新 config 键=$c（各应 ≥1，语义内核被裁）"
 fi
 
-# EH-09 SKILL.md 联动面：「Rule 54」≥1（C38 行/摘要 bullet/References 行三落点）且「C38」=1 且索引全集括注宽容锚 40-(5[3-9]|6[0-9]|7[0-6]|80) ≥1 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元] [2026-10-10 task-v162 合并并集演进: 实态「含 Rule 40-74 全集」, 7x 上界演进至覆盖 74（B 类宽容锚演进）] [2026-10-11 task-v166 纪元演进: 实态「含 Rule 40-76 全集」, 7x 上界演进至覆盖 76（B 类宽容锚演进）] [2026-10-11 task-v169 纪元演进: Rule 80 落地 SKILL.md, 实态「含 Rule 40-80 全集」, ERE 并列集合末尾追加成员 80（B 类宽容锚演进先例）]
-# Why: SKILL.md 是 LLM 读条款的入口索引（RC-09/RR-07 同范式）——「Rule 54」漏联动=摘要与条款脱钩（条款扩到 54 但索引停摆）；
-# C38 行=Rule 54 的合规清单消费点（丢行=合规面与 54 子条脱钩）；索引行全集括注（RR-16 同先例，级联漏改面）；
-# C38 =1 锁唯一落点（重复落点=段落复制漂移）。
-# [2026-10-05 task-v138 合并级联] 全集括注 40-54→40-55（Rule 55 合法落地）——锚由固定 'Rule 40-54'=1 改宽容正则 40-5[3-9]≥1
-# （覆盖 40-53/54/55 各纪元，v136 R-09/SR-08/RR-16「宽容正则优先」先例；防止下次全集演进再钉死；C38 唯一性断言不变）。
-x="$(grep -cF 'Rule 54' "$SKILLMD" || true)"
-y="$(grep -cF 'C38' "$SKILLMD" || true)"
-z="$(grep -cE 'Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)' "$SKILLMD" || true)"
-if [ "$x" -ge 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
-  ok 09 "SKILL.md Rule 54=$x≥1 且 C38 行=1 且索引全集括注「Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)」宽容锚≥1（现状 40-80）"
+# EH-09 [task-v171 核心瘦身] SKILL.md 联动面：卫星路由表 task-discipline 行（Rule 54 联动）+ CRIT_D Rule 54 标题锚（C38 合规面对应点）+ 全集 '1-80' 宽容锚
+#   现象：SKILL.md 瘦身后 'Rule 54'×3（C38 行/摘要 bullet/References 行）与 'C38' 归零、旧全集括注
+#     'Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)' 演进为 '1-80'，x/y/z 三条件全失，EH-09 恒 FAIL。
+#   根因：Rule 54 属纪律域；SKILL 侧摘要/C 行随瘦身移除（Rule 82 禁回潮），联动载体=卫星路由表 discipline 行
+#     （该行 Rule 54 以区间 53-57 形态覆盖、无 'Rule 54' 整串，故用「路由行存在=1 + CRIT_D 标题锚=1」双保险）。
+#   修法：x=卫星路由表 discipline 行 =1；y=CRIT_D '### 54 ' 标题 =1（C38 合规消费点语义由 Rule 54 全文标题锚承接）；
+#     z=全集锚改 '1-8[01]' ≥1（v138/v144/v162/v166/v169 宽容锚演进链的 v171 分层口径切换，演进史保留如上）。
+x="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
+y="$(grep -cE '^### 54 ' "$CRIT_D" || true)"
+z="$(grep -cE '1-8[01]' "$SKILLMD" || true)"
+if [ "$x" -eq 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
+  ok 09 "SKILL.md 卫星路由表 discipline 行=1 ∧ CRIT_D Rule 54 标题=1 ∧ 全集 '1-8[01]'=$z≥1（C38/Rule54 摘要面瘦身后由路由表+标题锚承载）"
 else
-  bad 09 "SKILL.md Rule 54=$x（应 ≥1）或 C38=$y（应 =1）或「Rule 40-(5[3-9]|6[0-9]|7[0-6]|80)」=$z（应 ≥1，级联漏改）"
+  bad 09 "SKILL.md 路由表 discipline 行=$x（应 =1）或 CRIT_D 54 标题=$y（应 =1）或 '1-80'=$z（应 ≥1，级联漏改）"
 fi
 
 # EH-10 模板面：delivery-summary.md「54.1」≥1 且「54.4」≥1（真实进展对照行双锚）
@@ -129,11 +135,11 @@ if [ "$n" -eq 1 ]; then ok 12 "video-generation-executor.md「Rule 54」指针�
 # [2026-10-05 task-v138 合并级联] 55 号已被 task-v138 Rule 55 合法创建（55.1-55.6，判定面 55.6 机器面=selftest-capability-persistence.sh）——
 # 本条 RC-15 呼应面语义相应演进：54 块尾后「未经 task-v138 合法创建的 55.x」=违规。实现=54 块尾上下文中「^### 55 标题行含 task-v138」
 # 至多 1 处，且「55.x 子条行」若出现必须与该标题行同块（=合法 Rule 55 块，非顺手写入）；无标题行时 55.x 仍 =0 即 PASS（原语义不变，向下兼容 55 未落地态）。
-last54line="$(grep -nE '^54\.[0-6] ' "$CRIT" | tail -1 | cut -d: -f1 || true)"
+last54line="$(grep -nE '^54\.[0-6] ' "$CRIT_D" | tail -1 | cut -d: -f1 || true)"
 if [ -z "$last54line" ]; then
   bad 13 "critical-rules.md 未找到 54.x 末条行（块缺失，负断言无法语境锚定）"
 else
-  tailctx="$(tail -n +"$last54line" "$CRIT")"
+  tailctx="$(tail -n +"$last54line" "$CRIT_D")"
   rule55_hdr="$(printf '%s\n' "$tailctx" | grep -cE '^### 55 .*task-v138' || true)"
   rule55_sub="$(printf '%s\n' "$tailctx" | grep -cE '^55\.[0-9] ' || true)"
   if [ "$rule55_hdr" -eq 0 ] && [ "$rule55_sub" -eq 0 ]; then
