@@ -33,7 +33,7 @@ ok() { PASS=$((PASS+1)); echo "A$1 PASS $2"; }
 bad() { FAIL=$((FAIL+1)); echo "A$1 FAIL $2${3:+ ($3)}"; }
 # ① check-subagent-return.sh 存在且 bash -n 通过(缺脚本 = 上游 S3 未交付, 后续行为断言全跳)
 [ -f "$RS" ] && bash -n "$RS" && ok 1 'check-subagent-return.sh 存在+bash -n' || bad 1 '脚本缺或语法错'
-# ② 内置 4 夹具自检全 PASS(rc=0; 非 0 = 自检 FAILCNT 置位)
+# ② 内置 5 夹具自检全 PASS(rc=0; 非 0 = 自检 FAILCNT 置位; [task-v172 CA-4] 第 5 夹具=checkpoint 值带「（待主进程代建）」注记 → PASS)
 rc=1; bash "$RS" --selftest >/dev/null 2>&1 && rc=0
 [ "$rc" = 0 ] && ok 2 '--selftest rc=0' || bad 2 "--selftest rc=$rc exp=0"
 # ③ stdin 喂合规 8 字段块 → rc=0 且 stdout 含 [return-guard] PASS
@@ -103,5 +103,11 @@ fi
 # 锁零残留: A10 放行使 serial_slot_check 重写瞬态锁 .dispatch-inflight; 回写运行前形态(有备份→cp 回写, 本无锁→删新锁), 守护脚本不留机制文件脏 diff(纯 cp/rm, 零 VCS 写操作)
 if [ -f "$TMP/lock.bak" ]; then cp -f "$TMP/lock.bak" "$LOCK" 2>/dev/null || true
 elif [ -f "$LOCK" ]; then rm -f "$LOCK"; fi
+# ⑫ CA-4 [task-v172]: critical-rules-dispatch.md 含 22.8.6 只读型 checkpoint 主进程代建豁免（四锚字面全在位; 条款被删 = 豁免回归）
+if grep -q '22.8.6' "$CR" && grep -q '主进程代建' "$CR" && grep -q '待主进程代建' "$CR" && grep -q 'tools 不含 Write' "$CR"; then
+  ok 12 "CA-4: critical-rules-dispatch.md 含 22.8.6 只读型 checkpoint 主进程代建豁免（四锚全在位）"
+else
+  bad 12 "CA-4: critical-rules-dispatch.md 缺 22.8.6 代建豁免（grep 命中不足）"
+fi
 echo "Total: $((PASS+FAIL)) PASS=$PASS FAIL=$FAIL"
 exit $(( FAIL > 0 ))

@@ -13,10 +13,11 @@
 # Usage:
 #   check-subagent-return.sh <file>      # 校验文件内容
 #   check-subagent-return.sh             # 无参 → 读 stdin
-#   check-subagent-return.sh --selftest  # 内置 4 夹具自检(内存构造, 不写临时文件; 任一夹具 FAIL → exit 1)
+#   check-subagent-return.sh --selftest  # 内置 5 夹具自检(内存构造, 不写临时文件; 任一夹具 FAIL → exit 1)
 #   check-subagent-return.sh --help
-# 4 夹具: ① 合规 8 字段块 → rc0; ② status 后紧跟 summary: 契约外字段(v152 实证形态) → rc1 点名 summary;
-#   ③ 合规块后追加「## 附:验收细节」+两行说明 → rc1; ④ 无任何 8 字段的自然语言段落 → rc1。
+# 5 夹具: ① 合规 8 字段块 → rc0; ② status 后紧跟 summary: 契约外字段(v152 实证形态) → rc1 点名 summary;
+#   ③ 合规块后追加「## 附:验收细节」+两行说明 → rc1; ④ 无任何 8 字段的自然语言段落 → rc1;
+#   ⑤ CA-4 [task-v172]: checkpoint 值带「（待主进程代建）」注记(22.8.6 返回侧形态) → rc0(注记不触发判据二)。
 set -u
 export LC_ALL=C   # 字节级正则: [a-z_] / [:space:] 字符类不受多字节 locale 干扰
 
@@ -55,7 +56,7 @@ run() {
     echo "[return-guard] PASS"
 }
 
-# selftest — 内置 4 夹具(printf 内存构造, 不写临时文件); 逐夹具断言, 任一 FAIL 置 FAILCNT → 退出码 1
+# selftest — 内置 5 夹具(printf 内存构造, 不写临时文件); 逐夹具断言, 任一 FAIL 置 FAILCNT → 退出码 1
 # 夹具口径与头部注释一致: ①合规 rc0; ②summary: 契约外字段 rc1 且输出点名 summary; ③块尾附加 rc1; ④纯自然语言 rc1
 selftest() {
     local f
@@ -67,6 +68,10 @@ selftest() {
     check_fixture 3 "$f" 1
     f="$(printf '%s\n' '子代理已完成任务, 向模块 x 新增三个函数, 测试全部通过, 无阻塞项。' '总体结论: 交付质量好, 自评估置信度高。')"
     check_fixture 4 "$f" 1
+    # ⑤ CA-4 [task-v172]: checkpoint 值带「（待主进程代建）」中文注记(22.8.6 返回侧形态) → 仍判 PASS,
+    #   证明注记不触发判据二 VIOLATION(注记在行内值域, 非 ^[a-z_]+: 形态契约外字段, 也不属 8 字段值域检查对象)
+    f="$(printf '%s\n' 'status: done' 'acceptance: 1/1 pass — [1:PASS]' 'files: none' 'evidence: e' 'checkpoint: /p/3.md（待主进程代建）' 'findings_written: none' 'blockers: none' 'confidence: HIGH')"
+    check_fixture 5 "$f" 0
     return "$FAILCNT"
 }
 
