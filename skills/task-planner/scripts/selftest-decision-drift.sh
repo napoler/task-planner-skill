@@ -107,7 +107,7 @@ fi
 # ── DD-20 config.json properties 键数=44（零新键；jq 缺失打 SKIP 计 PASS） ──
 if command -v jq >/dev/null 2>&1; then
   _KEYS="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  [ "$_KEYS" = "44" ] && ok "DD-20 config.json properties 键数=44（零新键）" || bad "DD-20" "got=$_KEYS expect=44"
+  [ "$_KEYS" = "46" ] && ok "DD-20 config.json properties 键数=46（task-v172 合法新增 2 键 44→46）" || bad "DD-20" "got=$_KEYS expect=46"
 else
   ok "DD-20 config.json properties=42（SKIP：无 jq）"
 fi

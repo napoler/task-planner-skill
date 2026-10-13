@@ -83,11 +83,12 @@ drift_rhythm_check() {
   # 方案 Change #8 regressionRisk 声明「纯性能优化，不改变逻辑」，降频改变了逻辑（节奏），故回退；
   # Change #8 仅保留「6 次 jq 读 config.json 合并为 1 次 @tsv」（见上方阈值读取段，零逻辑变化）。
   # 容错解析：缺文件/坏行按 0 处理
-  local count=0 last_inject=0 v
-  v="$(sed -n 's/^count[[:space:]]\{1,\}//p' "$sfile" 2>/dev/null | head -1)"
-  case "$v" in ''|*[!0-9]*) ;; *) count="$v" ;; esac
-  v="$(sed -n 's/^last_inject[[:space:]]\{1,\}//p' "$sfile" 2>/dev/null | head -1)"
-  case "$v" in ''|*[!0-9]*) ;; *) last_inject="$v" ;; esac
+  local count=0 last_inject=0 _dr_c _dr_l
+  # [task-v172 CA-3] 2×sed → 1×awk 单次读(纯进程孵化优化,零逻辑变化)。容错语义不变:
+  #   缺文件/坏行 awk 无输出 → _dr_c/_dr_l 空 → 下方 case 兜底 0(fail-open 同原行为)。
+  read -r _dr_c _dr_l < <(awk '/^count[[:space:]]/{c=$2} /^last_inject[[:space:]]/{l=$2} END{if(c!="")printf "%s %s\n",c,(l==""?0:l)}' "$sfile" 2>/dev/null)
+  case "${_dr_c:-}" in ''|*[!0-9]*) ;; *) count="$_dr_c" ;; esac
+  case "${_dr_l:-}" in ''|*[!0-9]*) ;; *) last_inject="$_dr_l" ;; esac
   # [task-v148 Rule 64.3 N1 修复] 读回既有 due 位（读-改-写，防 clobber）
   # What: 早调用写 state 前先读回上一轮遗留的 due 位；阈值命中轮置 1，未命中轮原样保留。
   # Why: N1 投递饥饿——优先级 1-4 命中即 exit 0，永远到不了主流程末尾 end-emit，该轮
@@ -212,6 +213,18 @@ cooldown="$(printf '%s' "$_cfg_tsv" | cut -f3)"
 # [2026-09-04 Rule 19.7] 新增 findings/progress 陈旧阈值；解析失败兜底默认。
 findings_n="$(printf '%s' "$_cfg_tsv" | cut -f4)"
 progress_n="$(printf '%s' "$_cfg_tsv" | cut -f5)"
+# [task-v172 CA-2] tier-aware 提醒周期(轻档 ×mult): plan_tier=mini ∨ execution_lane=L0 计划
+#   的 task_plan/progress/findings 陈旧阈值 15/20/25min → ×mult(默认 2=30/40/50min)。
+#   WHY(R3): 原阈值全 tier 统一,低复杂度任务被 [plan-sync]/[plan-compass] 反复打回写
+#   计划文件=「来回读写 task_plan」体感来源之一。fail-open: mult 非数字/0 → 1(不放大);
+#   计划档位读取失败 → grep 未命中 → 不放大(保持原阈值,todo/calls 类阈值不动)。
+_TIER_MULT="$(jq -r '.properties.light_tier_interval_multiplier.default // 2' "$SKILL_ROOT/config.json" 2>/dev/null || echo 2)"
+case "$_TIER_MULT" in ''|*[!0-9]*|0) _TIER_MULT=1 ;; esac
+if [ "$_TIER_MULT" -gt 1 ] && grep -qE '(plan_tier:[[:space:]]*mini|execution_lane:[[:space:]]*L0)' "$plan" 2>/dev/null; then
+  plan_min=$(( plan_min * _TIER_MULT ))
+  findings_n=$(( findings_n * _TIER_MULT ))
+  progress_n=$(( progress_n * _TIER_MULT ))
+fi
 # [2026-09-05 Rule 19.7 升级] 连续无响应提醒达 compass_escalate_after 次 → 升级警告；解析失败兜底默认 2。
 esc_after="$(printf '%s' "$_cfg_tsv" | cut -f6)"
 case "$todo_n" in ''|*[!0-9]*) todo_n=10 ;; esac
@@ -228,14 +241,9 @@ case "$esc_after" in ''|*[!0-9]*) esc_after=2 ;; esac
 #   f_miss / p_miss = findings/progress 连续"提醒后无回填"次数
 # 旧 5 字段文件第 6-9 字段缺失兜底 0（向后兼容）。
 state="/tmp/task-planner-hook-${SID}.state"
-count="$(cut -d' ' -f1 "$state" 2>/dev/null || true)"
-cd_left="$(cut -d' ' -f3 "$state" 2>/dev/null || true)"
-cd_findings="$(cut -d' ' -f4 "$state" 2>/dev/null || true)"
-cd_progress="$(cut -d' ' -f5 "$state" 2>/dev/null || true)"
-f_last="$(cut -d' ' -f6 "$state" 2>/dev/null || true)"
-p_last="$(cut -d' ' -f7 "$state" 2>/dev/null || true)"
-f_miss="$(cut -d' ' -f8 "$state" 2>/dev/null || true)"
-p_miss="$(cut -d' ' -f9 "$state" 2>/dev/null || true)"
+# [task-v172 CA-3] 8×cut → 1×awk 单次读(纯进程孵化优化,零逻辑变化;字段序 $1,$3..$9 不变,
+# 缺字段/缺文件 → 变量空 → 紧随的 case 兜底 0,fail-open 同原行为;旧 5 字段文件兼容不变)。
+read -r count cd_left cd_findings cd_progress f_last p_last f_miss p_miss < <(awk '{print $1,$3,$4,$5,$6,$7,$8,$9}' "$state" 2>/dev/null || true)
 case "$count" in ''|*[!0-9]*) count=0 ;; esac
 case "$cd_left" in ''|*[!0-9]*) cd_left=0 ;; esac
 case "$cd_findings" in ''|*[!0-9]*) cd_findings=0 ;; esac

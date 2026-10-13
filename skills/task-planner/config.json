@@ -443,8 +443,20 @@
     "smart_inject_type_gate": {
       "type": "string",
       "enum": ["off", "on"],
-      "default": "off",
-      "description": "[task-perf-opt Change #5] UserPromptSubmit smart 注入 prompt 类型门控: off=每轮注入(原行为); on=短闲聊/追问(prompt<50 字符且不含 Goal 关键 token)跳过 smart 注入块, 仅保留 [plan-note] 节流注入。opt-in, 默认 off。"
+      "default": "on",
+      "description": "[task-perf-opt Change #5] UserPromptSubmit smart 注入 prompt 类型门控: off=每轮注入(原行为); on=短闲聊/追问(prompt<50 字符且不含 Goal 关键 token)跳过 smart 注入块, 仅保留 [plan-note] 节流注入。opt-in, 默认 off。[task-v172 CA-1] default off→on: 每轮无条件注入 0.22-0.26s+1-1.5KB 复利开销实测, 与内容限频双闸启用。"
+    },
+    "smart_inject_interval": {
+      "type": "integer",
+      "default": 20,
+      "minimum": 0,
+      "description": "[task-v172 CA-1 / R3] smart 注入限频周期: 计划文件 mtime 未变时每 N 轮兜底刷新一次(N=0 恢复每轮注入); 计划文件被编辑(mtime 变)立即注入不计数。状态 /tmp/task-planner-ups-inject-<sid>.state; attest --verify 每轮不变(防篡改不降载)。"
+    },
+    "light_tier_interval_multiplier": {
+      "type": "integer",
+      "default": 2,
+      "minimum": 1,
+      "description": "[task-v172 CA-2 / R3] 轻档(plan_tier=mini ∨ execution_lane=L0)陈旧提醒周期倍率: task_plan/progress/findings 的 15/20/25min 阈值乘 N(默认 2=30/40/50)。fail-open: 非数字或计划档位读取失败=不放大。"
     },
     "selftest_heavy_concurrent": {
       "type": "string",
