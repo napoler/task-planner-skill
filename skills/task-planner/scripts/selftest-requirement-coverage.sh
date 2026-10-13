@@ -164,7 +164,7 @@ fi
 #      jq 缺失 fail-open 打 SKIPPED（沿用 LA-14/R-12 先例：无 jq 属环境降级非内容漂移，不误报 FAIL；打印提示行非静默）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "44" ]; then ok 13 "config.json properties 键数 44（零新增，基线含 v145 2 键）"; else bad 13 "config.json properties 键数=$keys（应 44，Rule 51 零新键被破坏）"; fi
+  if [ "$keys" = "46" ]; then ok 13 "config.json properties 键数 46（基线含 v145 2 键 + task-v172 合法新增 2 键）"; else bad 13 "config.json properties 键数=$keys（应 46，未授权新键）"; fi
 else
   printf 'RC-13 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

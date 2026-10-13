@@ -4,7 +4,7 @@
 #       drift-checker.md agent 定义/卫星 task-drift-guard/SKILL.md 双载体说明/hook 文案/全仓负断言）
 # Why: 防未来改回主上下文执行（R2 需求：偏移检查放入子代理保持上下文干净规避上下文爆炸），
 #       防双源漂移（skill 载体与子代理载体措辞不一致），task-v146 成果锁住。
-# 20 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
+# 21 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
 
 set -u
 
@@ -122,6 +122,9 @@ if [ "$SKILL_LINES" -le 558 ] && grep -q '清零' "$CRIT_G" && grep -q 'check-dr
 # 原扫描根过宽致环境敏感伪失败——部署位 skills/ 含 skill-fix/plan-cost-guard 等其他技能合法旧文案引用，
 # 非本技能部署位残留。收窄后保持意图不变：防本技能部署位残留旧载体文案。
 if [ "$(grep -rn 'Skill("task-drift-guard")' "$SKILL_ROOT" 2>/dev/null | grep -v 'selftest-drift-check-subagent.sh' | wc -l)" -eq 0 ]; then ok 20 "本技能目录 Skill(task-drift-guard) 精确串=0"; else bad 20 "本技能目录存在 Skill(task-drift-guard) 残留"; fi
+
+# DCS-21 [task-v172 CA-7] drift-checker.md 用户原话锚（复合审查输入 user-session-log.md 在位）
+if grep -q 'user-session-log' "$DRIFT_CHECKER"; then ok 21 "CA-7: drift-checker.md 含 user-session-log 用户原话锚（复合审查输入在位）"; else bad 21 "CA-7: drift-checker.md 缺 user-session-log 用户原话锚"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

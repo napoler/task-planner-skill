@@ -203,10 +203,10 @@ fi
 #      见 selftest-four-file-dataflow.sh），Rule 57 自身仍零新键（IP-16 负断言锁），本条仅随全局基线演进，非 57 扩键。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "44" ]; then ok 15 "config.json properties 键数 44（Rule 57 零新增，v145 基线演进）"; else bad 15 "config.json properties 键数=$keys（应 44，零新键基线被破坏）"; fi
+  if [ "$keys" = "46" ]; then ok 15 "config.json properties 键数 46（v145 基线演进 + task-v172 合法新增 2 键）"; else bad 15 "config.json properties 键数=$keys（应 46，未授权新键）"; fi
 elif command -v python3 >/dev/null 2>&1; then
   keys="$(python3 -c "import json;print(len(json.load(open('$CONFIG'))['properties']))" 2>/dev/null || true)"
-  if [ "$keys" = "44" ]; then ok 15 "config.json properties 键数 44（python3 校验）"; else bad 15 "config.json properties 键数=$keys（应 44）"; fi
+  if [ "$keys" = "46" ]; then ok 15 "config.json properties 键数 46（python3 校验; task-v172 合法新增 2 键）"; else bad 15 "config.json properties 键数=$keys（应 46）"; fi
 else
   printf 'IP-15 SKIPPED jq/python3 均缺失，无法校验 config.json 键数（安装任一后重跑）\n'
 fi

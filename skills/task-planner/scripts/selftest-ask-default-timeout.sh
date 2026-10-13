@@ -83,7 +83,7 @@ if [ "$a" -eq 0 ] && [ "$b" -eq 0 ]; then ok 08 "越界 1-4x 字面零命中（C
 # [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "44" ]; then ok 09 "config.json properties 键数 44（零新增）"; else bad 09 "config.json properties 键数=$keys（应 44）"; fi
+  if [ "$keys" = "46" ]; then ok 09 "config.json properties 键数 46（task-v172 合法新增 2 键 44→46）"; else bad 09 "config.json properties 键数=$keys（应 46）"; fi
 else
   printf 'RT-09 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

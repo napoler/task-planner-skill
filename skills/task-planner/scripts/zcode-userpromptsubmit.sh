@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # [2026-08-28] zcode-userpromptsubmit.sh — UserPromptSubmit hook(task-planner)
-# 职责 1(smart 注入,Rule 20.4,2026-09-02):活跃计划存在时,每轮注入"结构感知计划复诵块"——
+# 职责 1(smart 注入,Rule 20.4,2026-09-02):活跃计划存在时注入"结构感知计划复诵块"——
 #       Goal / Next Step / Current Phase / in_progress Phase 全文 / Decisions 末 3 行 + progress 尾 5 行,
 #       以 ===BEGIN-PLAN-DATA=== / ===END-PLAN-DATA=== 包裹,标记为数据非指令(20.3)。
-#       证据:turn-start 注入是防漂移最有效手段;per-tool-call 注入省略(v3 autonomous 结论)。
+#       [task-v172 CA-1,2026-10-13] 限频: 计划文件 mtime 变更(被编辑)立即注入;未变更时每
+#       config.smart_inject_interval 轮(默认 20,0=每轮)兜底刷新——根因=R3: 原每轮无条件注入
+#       复利型开销(0.22-0.26s/轮+1-1.5KB/轮,50 轮≈55KB,perf-diagnosis report.md:177-178),
+#       且驱使主会话反复重读任务计划文件。Change #5 类型门控 default=on(config 双闸)。
+#       per-tool-call 注入省略(v3 autonomous 结论)。
 # 职责 2(attestation 校验,Rule 20.1,2026-09-02):计划目录存在 .plan-attestation 时先校验 SHA-256;
 #       不匹配 → 只注入 [PLAN TAMPERED] 警告,拒绝注入计划内容(防篡改计划继续当事实源)。
 # 职责 3(原有,[2026-08-28]):[plan-note] D/A/B/C 影响判定提醒(D=新任务边界,task-v087 Rule 8.1),
@@ -110,6 +114,34 @@ if [ "$_gate_cfg" = "on" ]; then
   [ "$_smart_skip" = "1" ] && echo "[ups] smart 注入跳过（Change #5 prompt 类型门控：短 prompt 不含 Goal 关键 token; [plan-note] 节流注入不受影响）" >&2
 fi
 
+# ─── [task-v172 CA-1] smart 注入内容限频(变更触发 + 周期兜底)──────────────────
+# WHY(R3,2026-10-13): 用户实测「就这么点工作,来回折腾多次读取 Task 文件……当前这种更新频率
+#   是否会导致效率急剧降低?」。根因=smart 注入每轮无条件重扫 task_plan.md 双遍 awk+progress
+#   tail-5 并注入 1-1.5KB(0.22-0.26s/轮;50 轮≈55KB 复利,report.md:177-178),主会话被每轮
+#   复诵块驱使重读计划文件。改为: ① plan mtime 变化(计划被编辑)立即注入(内容变了才复诵);
+#   ② 未变化则每 config.smart_inject_interval 轮兜底刷新(防长对话失锚,默认 20 轮,0=每轮);
+#   ③ fail-open: 状态读写异常→照常注入(不跳);attest --verify 每轮不变(防篡改不降载)。
+# 状态文件独立于 [plan-note] 节流的 ups_state(零语义干扰,可各自清零/失效)。
+inject_state="/tmp/task-planner-ups-inject-${UPS_SID}.state"
+inject_interval="$(jq -r '.properties.smart_inject_interval.default // 20' "$SKILL_ROOT/config.json" 2>/dev/null || echo 20)"
+case "$inject_interval" in ''|*[!0-9]*) inject_interval=20 ;; esac
+if [ "$inject_interval" != "0" ]; then
+  plan_mt="$(stat -c %Y "$plan" 2>/dev/null || echo 0)"
+  last_mt=""; last_rnd=0
+  [ -f "$inject_state" ] && { last_mt="$(sed -n '1p' "$inject_state" 2>/dev/null || true)"; last_rnd="$(sed -n '2p' "$inject_state" 2>/dev/null || true)"; }
+  case "$last_rnd" in ''|*[!0-9]*) last_rnd=0 ;; esac
+  last_rnd=$(( last_rnd + 1 ))
+  if [ "$plan_mt" != "$last_mt" ]; then
+    last_rnd=0
+  elif [ $(( last_rnd % inject_interval )) -eq 0 ]; then
+    last_rnd=0
+  else
+    _smart_skip=1
+  fi
+  printf '%s\n%s\n' "$plan_mt" "$last_rnd" > "$inject_state" 2>/dev/null || true
+  [ "$_smart_skip" = "1" ] && echo "[ups] smart 注入跳过（CA-1 限频：计划未变更且未到第 ${inject_interval} 轮兜底刷新; [plan-note]/conflict 不受影响）" >&2
+fi
+
 # ─── smart 注入块(Rule 20.4 — 结构感知,字段级提取)──────────────────────────
 inject=""
 # [2026-09-27 task-v091 C-1e] 原实现为 6 组独立字段提取(1 sed 剥注释 + 3 个单行字段 awk +
@@ -190,7 +222,7 @@ if [ -s "$tmpf" ] && [ "${_smart_skip:-0}" != "1" ]; then
 fi
 rm -f "$tmpf"
 
-# ─── 会话级节流(仅 [plan-note];smart 注入每轮进行)──────────────────────────
+# ─── 会话级节流(仅 [plan-note];smart 注入走 CA-1 内容限频,变更触发+周期兜底)────
 interval="$(jq -r '.properties.prompt_note_interval.default // 10' "$SKILL_ROOT/config.json" 2>/dev/null || true)"
 case "$interval" in ''|*[!0-9]*|0) interval=10 ;; esac
 ups_state="/tmp/task-planner-ups-${UPS_SID}.state"

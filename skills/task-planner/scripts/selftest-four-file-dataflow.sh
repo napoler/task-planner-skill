@@ -106,10 +106,10 @@ ge   "FF-14 SKILL Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule
 PROPS="$(jq '.properties | length' "$CONFIG" 2>/dev/null || echo -1)"
 NEWKEY="$(jq -r '.properties | keys[]' "$CONFIG" 2>/dev/null | grep -c -e 'four_file' -e 'kb_distill' -e 'contract_narrow' -e 'require_kb')"
 NEWKEY="${NEWKEY:-0}"
-if [ "$NEWKEY" -eq 0 ] && [ "$PROPS" -eq 44 ]; then
-    ok "FF-15 config 零新键(相关字面=0 ∧ properties=44 时点基线; task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键, 42→44)"
+if [ "$NEWKEY" -eq 0 ] && [ "$PROPS" -eq 46 ]; then
+    ok "FF-15 config 零新键(相关字面=0 ∧ properties=46 时点基线; task-v171 40→42、task-perf-opt 42→44、task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46)"
 else
-    bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,44)"
+    bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,46)"
 fi
 
 # ── 负断言：Rule 62 块范围内无 66.x（语境锚定，防裸全文误触）──

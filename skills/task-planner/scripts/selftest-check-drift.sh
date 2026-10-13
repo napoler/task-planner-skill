@@ -151,5 +151,11 @@ else
   diag "rc=$RC; BREACH 行: $BREACH6"; printf '%s\n' "$OUT" | sed 's/^/  out| /'
 fi
 
+# CD-07 [task-v172 CA-8] check-complete.sh 含 DRIFT-GATE 字面 ∧ TASK_PLANNER_DRIFT_GATE_ENFORCE env 开关锚
+#   （纠偏子代理执行率机器可观测守护; 该脚本无既有指向 check-complete.sh 的变量, 按 TARGET 同款写法新增
+#    CHECK_COMPLETE 指向同目录 check-complete.sh——与被测脚本 check-drift.sh 相互独立, 只读 grep 断言）
+CHECK_COMPLETE="$SCRIPT_DIR/check-complete.sh"
+if grep -q 'DRIFT-GATE' "$CHECK_COMPLETE" && grep -q 'TASK_PLANNER_DRIFT_GATE_ENFORCE' "$CHECK_COMPLETE"; then ok 07 "CA-8: check-complete 含 DRIFT-GATE + env 开关（纠偏执行率机器可观测）"; else bad 07 "CA-8: check-complete DRIFT-GATE 缺失"; fi
+
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

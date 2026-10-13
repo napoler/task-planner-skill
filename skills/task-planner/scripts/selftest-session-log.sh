@@ -82,8 +82,8 @@ t "SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'
 
 # SL-09: 零新 config 键（properties 键数恒 44; task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键, 42→44）；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
 if command -v jq >/dev/null 2>&1; then
-    t "SL-09 config.json properties 键数 = 44（零新 config 键, jq; task-perf-opt 合法新增 2 键 42→44）" bash -c "
-        [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 44 ]"
+    t "SL-09 config.json properties 键数 = 46（零新 config 键, jq; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46）" bash -c "
+        [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 46 ]"
 else
     echo "[SKIP] SL-09 jq 不可用, 降级 SKIP 计 PASS（对齐 DD-20 先例）"
     PASS=$((PASS+1))
