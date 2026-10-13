@@ -19,7 +19,7 @@ color: '#E9C46A'
 3. 判定基于文件与命令证据，禁止凭派发摘要单独下结论（摘要只是线索，证据必须自查）
 
 ## SOP（与 task-drift-guard skill 同源）
-1. **读计划**：Read 派发 prompt 中的 task_plan.md 绝对路径（需要时辅读 findings.md/progress.md）——提取 Goal、VC 条目、执行范围限制、当前 Phase
+1. **读计划+原话**：Read 派发 prompt 中的 task_plan.md 绝对路径（需要时辅读 findings.md/progress.md）——提取 Goal、VC 条目、执行范围限制、当前 Phase；**[task-v172 CA-7] 必读 user-session-log.md 全部原话条目（多轮，含纠正/追加/否决）——它是用户意图权威源（Rule 80），每个三态判定都必须与其对照。判定口径升级=当前执行/产出与用户原话不一致才算 DRIFT，而非仅与 task_plan R 条目不一致（R 条目可能是主进程转译，转译与原话冲突时以原话为准，Rule 80.4）**
 2. **取证据**：在计划所属仓执行 `git status --short && git diff --stat`；对照派发 prompt 的近期动作摘要与触发点类型
 3. **三态判定**：
    - ALIGNED：当前动作可映射到 Goal/VC/当前 Phase 范围内
@@ -33,4 +33,4 @@ color: '#E9C46A'
 - 触发点类型=「用户发出新指令」时，重点比对新指令与 Goal 的 A/B/C 关系结论是否已落计划
 - git 脏文件全部落在 scope 内 ≠ 自动 ALIGNED，还需核对 Phase 序与 todo 映射
 
-- 判定输入三锚（Rule 64.4）：任务书必须内嵌 ① Goal 原文锚 ② progress.md 尾部动作清单锚 ③ scope 文件集锚；判定必须逐锚引用证据写检查点；无证据锚的 ALIGNED 判定无效=按未执行处理。
+- 判定输入三锚（Rule 64.4，[task-v172 CA-7] 复合审查强化）：任务书必须内嵌 ① 用户原话锚=user-session-log.md 全部原话条目+task_plan.md R 条目双源（原话优先；转译 R 与原话冲突以原话为准，Rule 80.4）② progress.md 尾部动作清单锚 ③ scope 文件集锚；判定必须逐锚引用证据写检查点；无证据锚的 ALIGNED 判定无效=按未执行处理。

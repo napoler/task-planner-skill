@@ -375,7 +375,7 @@ if [ "$due" -eq 1 ]; then
     if [ "${TASK_PLANNER_DECISION_JUDGE:-on}" != "off" ]; then
       _jr="$(printf '\n%s' '[judge] 变更型决策点评判（Rule 73.1/73.4）：凡改风格/范围/采信可疑结论/收口声称前过对齐三问（73.2）并留 [align]/[judge] 行')"
     fi
-    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套${_cp}${_jr}"
+    emit "[drift-rhythm] 距上次偏移检查已 ≥${rhythm_n} 次工具调用：活跃执行期按 Rule 15 派发 drift-checker（Rule 61 载体）并按 Rule 64.1 留痕三件套（复合审查=读 user-session-log.md 全原话对照当前执行，偏移→打回重做/修正，Rule 80.4/61）${_cp}${_jr}"
     printf 'count %s\nlast_inject %s\ndue 0\n' "$rhythm_count" "$rhythm_last" > "$rhythm_sfile" 2>/dev/null || true
   fi
 fi

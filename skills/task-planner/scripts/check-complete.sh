@@ -496,6 +496,36 @@ if [ "$python_rc" -eq 0 ]; then
     fi
     # [2026-10-11 task-v167] L0 跳过后 stats_output 为空 → 既有条款按 fail-open SKIPPED 处理, 不 exit 1
 
+    # ── [task-v172 CA-8] DRIFT-GATE: 纠偏子代理执行率机器可观测（默认 warn 不拦, 保持 77/77 回归基线）──
+    # What: 全 complete 的多 Phase（≥2 个 `### Phase` 段 `**Status:** complete`）计划, subagent-state/ 下应
+    #       存在 drift-checker 纠偏检查点（*drift* 文件）；缺失 → stderr 一行 warn；
+    #       TASK_PLANNER_DRIFT_GATE_ENFORCE=enforce 且 outcome 非 BLOCKED → 追加升级文案行（仍不改 exit 码）。
+    # Why: R5 实证 drift-checker 检查点 v160 后 10 任务零执行——执行率无人机器可观测；本块只增 stderr 痕迹,
+    #      enforce 默认 off 由用户 env 收紧, 永不 hard-fail（避免破坏既有 77/77 基线）。
+    # 约束: 不新增 config.json 键（env var 方案, 避免 17 文件键数锚级联）; L0（l0_gate_open 命中）/
+    #       plan_tier=mini 跳过本块; fail-open（变量缺失/目录不可读/grep 异常 → 静默跳过）。
+    # 位置: DELEGATION GATE 段之后（仍处 python_rc==0 全 complete 域内）, 零改动既有门序。
+    if ! l0_gate_open "DRIFT GATE (task-v172 CA-8 纠偏执行率观测——L0 thin, 无纠偏统计面)" \
+       && ! grep -qm1 'plan_tier: mini' "$PLAN_FILE" 2>/dev/null; then
+      _dg_complete_phases="$(grep -cE '^\-?[[:space:]]*\*\*Status:\*\*[[:space:]]*complete' "$PLAN_FILE" 2>/dev/null || true)"
+      case "${_dg_complete_phases:-}" in ''|*[!0-9]*) _dg_complete_phases=0 ;; esac
+      _dg_drift_found=0
+      [ -n "${PLAN_DIR_GUESS:-}" ] && [ -d "${PLAN_DIR_GUESS}/subagent-state" ] && ls "${PLAN_DIR_GUESS}/subagent-state/" 2>/dev/null | grep -q 'drift' && _dg_drift_found=1
+      # 触发=≥2 个 Phase complete ∧ subagent-state/ 无任何 *drift* 检查点（目录缺失同判无检查点）
+      if [ "$_dg_complete_phases" -ge 2 ] && [ "$_dg_drift_found" -eq 0 ]; then
+        printf '[DRIFT-GATE] ⚠️ 已完成多 Phase 但无 drift-checker 纠偏检查点（v146 Rule 61 载体；建议复盘是否漏派，Rule 64.1 留痕三件套）\n' >&2
+        # enforce 档: outcome 非 BLOCKED 时升级措辞（BLOCKED 计划纠偏复盘不适用, 保持 warn 行）; 仍不 hard-fail
+        if [ "${TASK_PLANNER_DRIFT_GATE_ENFORCE:-}" = "enforce" ]; then
+          _dg_blocked=0
+          grep -qiE 'outcome:[[:space:]]*BLOCKED' "$PLAN_FILE" 2>/dev/null && _dg_blocked=1
+          [ -f "${PLAN_DIR_GUESS:-}/verification.md" ] && grep -qiE 'outcome:[[:space:]]*BLOCKED' "${PLAN_DIR_GUESS:-}/verification.md" 2>/dev/null && _dg_blocked=1
+          if [ "$_dg_blocked" -eq 0 ]; then
+            printf '[DRIFT-GATE] ⛔ 应返工补派 drift-checker（TASK_PLANNER_DRIFT_GATE_ENFORCE=enforce；仅升级措辞，不改 exit 码）\n' >&2
+          fi
+        fi
+      fi
+    fi
+
     # ── [2026-09-27 task-v091 C-2] 终验重复门四元内容键 SKIP-BY-HASH(提案 §三 C-2 v3, efficiency-proposal.md:139-146)──
     # 现象=同一计划终验 2-3 轮反复全量重跑两道重复门(PLAN-DISPATCH/FMEA,27 脚本 65.7s/轮);
     # 原行为=两门每轮无条件必跑; 新行为=四元内容键全一致→两门 SKIP-BY-HASH 引用 attest 结果,余门照跑。
