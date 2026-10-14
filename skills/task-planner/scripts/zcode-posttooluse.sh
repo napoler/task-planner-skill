@@ -159,7 +159,7 @@ case "$tool" in Write|Edit|MultiEdit)
       # [2026-09-13 task-v068 fix-B P1-2] 同步执行(attest 仅一次 sha256+写文件,极快),
       # 消除孤儿后台进程与 stderr fd 丢失; 外层已有 ZCODE_SESSION_ID 时尊重外层值
       # (更权威, 防静默覆盖污染 attested_by_sid 审计), 否则回落到本会话 SID
-      [ -f "$ATTEST" ] && { env ZCODE_SESSION_ID="${ZCODE_SESSION_ID:-$SID}" bash "$ATTEST" "$plan" --skip-dispatch-check >/dev/null 2>/dev/null || echo "[attest] auto-relock failed: $plan" >&2; }
+      [ -f "$ATTEST" ] && { env ZCODE_SESSION_ID="${ZCODE_SESSION_ID:-$SID}" bash "$ATTEST" "$plan" --skip-dispatch-check --skip-vc-check >/dev/null 2>/dev/null || echo "[attest] auto-relock failed: $plan" >&2; }
     fi
   fi
   ;;

@@ -1,7 +1,7 @@
 # task-planner 多工具架构设计
 
 > **目标**：一份 canonical source，多工具部署位同步，零内容重复，env-var 解析路径。
-> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；76 条既有规则按域分层至 10 卫星技能（3 新域 + 7 收编）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）。
+> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；76 条既有规则按域分层至 11 卫星技能（3 新域 + 7 收编）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）。
 
 ---
 
@@ -10,7 +10,7 @@
 ### 1.1 单一事实源（Single Source of Truth）
 
 canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源（2026-10-12 task-v171 拆分后实测）：
-- `SKILL.md`（214 行，hooks 字段为空；文末含 10 卫星路由表 + Rules 1-80 全集索引）
+- `SKILL.md`（214 行，hooks 字段为空；文末含 11 卫星路由表 + Rules 1-84 全集索引）
 - `references/`（6 篇规则文档：critical-rules/todo-sync/worktree-isolation/goal-gate/completion-gate/methodology；纪律/派发/媒体域规则已迁至各卫星 `references/critical-rules-*.md`）
 - `templates/`（13 个主模板 + 29 个 variant，`find templates -maxdepth 1 -type f -name '*.md' | wc -l` → 13，`templates/variant/*.md` → 29；variant 28/29 含「📚 必要知识储备」章节）
 - `scripts/`（119 条目 = 110 个 .sh（含 76 个 selftest-*.sh）+ .ps1/.cjs/.ts/.tsv + lib//capabilities/ 两个子目录）
@@ -32,7 +32,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 
 ---
 
-## 2. 技能家族分层：核心 + 10 卫星技能
+## 2. 技能家族分层：核心 + 11 卫星技能
 
 > 10 技能分层图 = 核心 task-planner + 3 新域卫星（task-dispatch / task-discipline / media-planner）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard），共 11 个技能节点（核心 1 + 卫星 10）。
 
@@ -112,7 +112,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 
 **Rules 1-80 全集索引**（2026-10-12 task-v171 拆分后口径）：
 - **核心在位 12 条**（1,2,3,5,19,20,26,51,62,66,80,82）全文见 `references/critical-rules.md`（165 行，含分层架构说明 + 卫星路由索引）
-- **其余 66 条**按域迁至上表 10 卫星（3 新域 50 条 + 7 收编 16 条）
+- **其余 70 条**按域迁至上表 11 卫星（3 新域 50 条 + 7 收编 16 条）
 - Rule 82（技能专业化分层纪律）为本次新增：建制/边界/回归防线三款，禁回潮、禁镜像副本
 
 **纪元演进史**（selftest 宽容正则锚守护随动，防回退误报）：
@@ -131,7 +131,7 @@ ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/     
 ├── references/                              ← 6 篇规则文档（2026-10-12 实测）
 │   ├── critical-rules.md                    # 核心域 12 条全文 + Rules 1-80 全集索引 + 分层架构说明
 │   ├── todo-sync.md / worktree-isolation.md / goal-gate.md / completion-gate.md / methodology.md
-│   └── [66 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
+│   └── [70 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
 ├── templates/                               ← 13 主模板 + 29 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md

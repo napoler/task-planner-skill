@@ -1,7 +1,7 @@
 # task-planner — 任务规划与漂移检测技能
 
 > **多工具架构 v2（2026-08-29）**：canonical source + per-tool 部署位同步，env-var 路径解析。
-> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 214 行）；76 条既有规则按域分层至 10 卫星技能（3 新域 + 7 收编），卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）。
+> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 214 行）；76 条既有规则按域分层至 11 卫星技能（3 新域 + 7 收编），卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）。
 
 ## 快速链接
 
@@ -14,7 +14,7 @@
 
 ## 概述
 
-结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测；2026-10-12 起为「核心 + 10 卫星」技能家族形态。
+结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测；2026-10-12 起为「核心 + 11 卫星」技能家族形态。
 
 **核心特性**：
 - **5 个生命周期 hook**：SessionStart（哨兵）/ PreToolUse（范围阻断 + 委派门控 + Agent 派发契约守卫，matcher 须含 Agent）/ PostToolUse（计划陈旧检测）/ UserPromptSubmit（新指令影响判定）/ Stop（完成检测）
@@ -26,14 +26,14 @@
 
 ---
 
-## 技能分层图：核心 + 10 卫星技能
+## 技能分层图：核心 + 11 卫星技能
 
 > 10 技能分层图 = 核心 task-planner + 3 新域卫星（task-dispatch / task-discipline / media-planner）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard），共 11 个技能节点（核心 1 + 卫星 10）。
 
 ```
                     ┌───────────────────────────────────────────────┐
                     │ 核心 task-planner = 四文件罗盘唯一管理域         │
-                    │ Rules 1-83 全集索引：核心在位 14 条             │
+                    │ Rules 1-84 全集索引：核心在位 14 条             │
                     │（1,2,3,5,19,20,26,51,62,66,80,81,82,83）       │
                     └──────────────┬────────────────────────────────┘
                                    │ SKILL.md 文末「卫星路由表」按需 Read 规则全文
@@ -61,7 +61,7 @@
 └──────────────┘└──────────────┘
 ```
 
-## 卫星路由表（10 卫星 — 非核心域规则全文按需 Read）
+## 卫星路由表（11 卫星 — 非核心域规则全文按需 Read）
 
 | 卫星 | 域 | 规则全文路径 | 调用条件 |
 |------|----|------------|---------|
@@ -78,7 +78,7 @@
 
 ## Critical Rules 指针
 
-Rules 1-83 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（190 行，2026-10-14 实测；含分层架构说明+卫星路由索引）；其余 66 条已按域迁至上表 10 卫星——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-84 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（190 行，2026-10-14 实测；含分层架构说明+卫星路由索引）；其余 70 条已按域迁至上表 11 卫星——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 
 ---
 
@@ -116,15 +116,15 @@ Rules 1-83 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ```
 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
-├── SKILL.md                                 ← 工具无关主文档（214 行; hooks 字段为空, 文末含 10 卫星路由表）
+├── SKILL.md                                 ← 工具无关主文档（214 行; hooks 字段为空, 文末含 11 卫星路由表）
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 6 篇规则文档（2026-10-12 task-v171 拆分后实测; 纪律/派发/媒体域规则已迁至卫星）
-│   ├── critical-rules.md                    # 核心域 14 条规则全文+Rules 1-83 全集索引+分层架构说明
+│   ├── critical-rules.md                    # 核心域 14 条规则全文+Rules 1-84 全集索引+分层架构说明
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── goal-gate.md / completion-gate.md / methodology.md
-│   └── [critical-rules-discipline 等 66 条规则 → 各卫星 references/critical-rules-*.md]
+│   └── [critical-rules-discipline 等 70 条规则 → 各卫星 references/critical-rules-*.md]
 ├── templates/                               ← 13 主模板 + 29 个 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md

@@ -137,7 +137,7 @@ cat > "$PLAN_T" <<EOF
 $ANCHORS
 EOF
 ATT="$TMP/.plan-attestation"
-ATTARGS=(--skip-dispatch-check --skip-template-check "$PLAN_T")
+ATTARGS=(--skip-dispatch-check --skip-template-check --skip-vc-check "$PLAN_T")
 M08_RC=1
 out_w="$(TASK_PLANNER_FMEA_ENFORCE=warn bash "$FIX/scripts/attest-plan.sh" "${ATTARGS[@]}" 2>&1)"; rc_w=$?
 if [ "$rc_w" -eq 0 ] && [ -f "$ATT" ] && printf '%s' "$out_w" | grep -q 'fmea-gate.*⚠'; then

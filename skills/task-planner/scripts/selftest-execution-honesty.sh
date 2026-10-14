@@ -98,12 +98,12 @@ fi
 #   根因：Rule 54 属纪律域；SKILL 侧摘要/C 行随瘦身移除（Rule 82 禁回潮），联动载体=卫星路由表 discipline 行
 #     （该行 Rule 54 以区间 53-57 形态覆盖、无 'Rule 54' 整串，故用「路由行存在=1 + CRIT_D 标题锚=1」双保险）。
 #   修法：x=卫星路由表 discipline 行 =1；y=CRIT_D '### 54 ' 标题 =1（C38 合规消费点语义由 Rule 54 全文标题锚承接）；
-#     z=全集锚改 '1-8[013]' ≥1（v138/v144/v162/v166/v169 宽容锚演进链的 v171 分层口径切换，演进史保留如上）。
+#     z=全集锚改 '1-8[0134]' ≥1（v138/v144/v162/v166/v169 宽容锚演进链的 v171 分层口径切换，演进史保留如上）。
 x="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
 y="$(grep -cE '^### 54 ' "$CRIT_D" || true)"
-z="$(grep -cE '1-8[013]' "$SKILLMD" || true)"
+z="$(grep -cE '1-8[0134]' "$SKILLMD" || true)"
 if [ "$x" -eq 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
-  ok 09 "SKILL.md 卫星路由表 discipline 行=1 ∧ CRIT_D Rule 54 标题=1 ∧ 全集 '1-8[013]'=$z≥1（C38/Rule54 摘要面瘦身后由路由表+标题锚承载）"
+  ok 09 "SKILL.md 卫星路由表 discipline 行=1 ∧ CRIT_D Rule 54 标题=1 ∧ 全集 '1-8[0134]'=$z≥1（C38/Rule54 摘要面瘦身后由路由表+标题锚承载）"
 else
   bad 09 "SKILL.md 路由表 discipline 行=$x（应 =1）或 CRIT_D 54 标题=$y（应 =1）或 '1-80'=$z（应 ≥1，级联漏改）"
 fi

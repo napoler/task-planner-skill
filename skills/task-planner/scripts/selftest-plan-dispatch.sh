@@ -162,7 +162,7 @@ COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"; assert 05 "$RC" 0 - -
 # T06 attest 集成(T02 夹具目录): 正常跑 exit 1; --skip-dispatch-check 锁定成功且 stderr 含 WARN
 bash "$ATTEST" "$P6" > "$TMP/out" 2> "$TMP/err"; RC=$?
 [ "$RC" = 1 ] || { printf 'T06 FAIL attest 应 exit 1 (rc=%s): %s\n' "$RC" "$COUT"; FAIL=$((FAIL+1)); }
-bash "$ATTEST" --skip-dispatch-check "$P6" > "$TMP/out" 2> "$TMP/err"; RC=$?
+bash "$ATTEST" --skip-dispatch-check --skip-vc-check "$P6" > "$TMP/out" 2> "$TMP/err"; RC=$?
 COUT="$(cat "$TMP/out")"; CERR="$(cat "$TMP/err")"
 if [ "$RC" = 0 ] && [ -f "$TMP/attest/.plan-attestation" ] && printf '%s\n' "$CERR" | grep -qF 'WARN'; then
   PASS=$((PASS+1)); printf 'T06 PASS attest 集成\n'

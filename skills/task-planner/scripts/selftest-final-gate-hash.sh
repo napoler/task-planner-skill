@@ -128,7 +128,7 @@ EOF
 - 夹具进度 2: 全量基线跑通并写入四元键状态
 - 夹具进度 3: 六夹具顺序执行并各自恢复现场
 EOF
-    bash "$SKL/scripts/attest-plan.sh" "$PLAN" > "$SB/attest-setup.out" 2>&1
+    bash "$SKL/scripts/attest-plan.sh" "$PLAN" --skip-vc-check > "$SB/attest-setup.out" 2>&1
 }
 
 echo "==== selftest-final-gate-hash (task-v091/S20 C-2) ===="
@@ -204,7 +204,7 @@ fi
 # ④-a 键①: 计划内容变 + re-attest(attest 层已绿) → 状态层仍拦
 cp "$PLAN" "$SB/plan.bak"
 printf '\n<!-- key1-probe -->\n' >> "$PLAN"
-bash "$SKL/scripts/attest-plan.sh" "$PLAN" > /dev/null 2>&1
+bash "$SKL/scripts/attest-plan.sh" "$PLAN" --skip-vc-check > /dev/null 2>&1
 rc="$(run_cc)"
 if [ "$(skip_lines)" = "0" ] && grep -q '\[plan-dispatch\]' "$SB/cc.out"; then
     ok "④a(键①): 内容变+re-attest 后不 SKIP(attest 层绿,状态层键①拦截)"
@@ -212,7 +212,7 @@ else
     bad "④a(键①): skip=$(skip_lines) — re-attest 后不应 SKIP"
 fi
 mv "$SB/plan.bak" "$PLAN"
-bash "$SKL/scripts/attest-plan.sh" "$PLAN" > /dev/null 2>&1
+bash "$SKL/scripts/attest-plan.sh" "$PLAN" --skip-vc-check > /dev/null 2>&1
 
 # ④-b 键②: cpd 文件加一行
 printf '# selftest-key2-probe\n' >> "$SKL/scripts/check-plan-dispatch.sh"
