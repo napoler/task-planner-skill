@@ -23,13 +23,21 @@ if [ -f "$idx" ]; then
   pending_all="$(sed -n '/^## 待处理/,/^## 已完成/p' "$idx" | grep -E '^- \*\*')"
   if [ -n "$pending_all" ]; then
     n="$(printf '%s\n' "$pending_all" | grep -c '^- \*\*')"
-    # [CA-5] 检查是否有任何任务在 7 天内有更新(读 INDEX.md 第 8 列「最后更新」)
-    has_fresh="$(printf '%s\n' "$pending_all" | awk -F'|' -v now="$(date +%s)" '
-      BEGIN { found = 0 }
-      {
-        gsub(/^[ \t]+|[ \t]+$/, "", $8)
-        if (match($8, /[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
-          date_str = substr($8, RSTART, RLENGTH)
+    # [CA-5] 检查是否有任意 in_progress 任务在 7 天内有更新
+    # 日期源=INDEX.md 表格区(非 list 区)；用整行正则找日期(不依赖列号——scope_files
+    # 列含逗号内容导致 awk -F'|' 字段位移不可靠，2026-10-14 实弹验证);
+    # 对表格区所有含 in_progress 状态的行取其日期,全部 >7 天=stale 折叠
+    has_fresh="$(awk -v now="$(date +%s)" '
+      # 表格数据行:以 | 开头,且第 2 个管道字段为 in_progress 或 pending
+      /^\|/ && $0 ~ /in_progress|pending/ {
+        # 取该行最后一个 YYYY-MM-DD(=「最后更新」列,近行尾)
+        if (match($0, /[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+          # 逐段找所有日期,取最后一个
+          s = $0
+          while (match(s, /[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+            date_str = substr(s, RSTART, RLENGTH)
+            s = substr(s, RSTART + RLENGTH)
+          }
           cmd = "date -d \"" date_str "\" +%s 2>/dev/null"
           if ((cmd | getline epoch) > 0) {
             close(cmd)
@@ -40,7 +48,9 @@ if [ -f "$idx" ]; then
         }
       }
       END { print (found ? "fresh" : "stale") }
-    ')"
+    ' "$idx" 2>/dev/null)"
+    # 容错:若 INDEX.md 无表格区或 awk 取不到值,回退 fresh(保持既有注入行为)
+    [ -z "$has_fresh" ] && has_fresh="fresh"
     if [ "$has_fresh" = "stale" ]; then
       # [CA-5] 全部 >7 天未更新,折叠为单行(噪音抑制)
       out="${out}
