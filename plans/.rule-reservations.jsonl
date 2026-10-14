@@ -63,3 +63,4 @@
 {"rule":82,"status":"reserved","task_id":"task-v171-skill-specialization","ts":"2026-10-12","note":""}
 {"rule":81,"status":"landed","task_id":"task-v170-archive-completed-plans","ts":"2026-10-12","note":""}
 {"rule":84,"status":"reserved","task_id":"task-v173","ts":"2026-10-14","note":"验证技能独立化（verification-gate 卫星，VC 可执行性纪律）"}
+{"rule":84,"status":"landed","task_id":"task-v173","ts":"2026-10-14","note":""}
