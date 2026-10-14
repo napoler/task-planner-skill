@@ -428,7 +428,7 @@ Phase 4
 -->
 | Decision | Rationale |
 |----------|-----------|
-|          |           |
+| 2026-10-14 完成收口：Phase 3/4/5 标 complete + CA-5/6 勾选 + Next Step 更新（master 5cd68ae） | CA-5 SessionStart 折叠 + CA-6 Rule 83 全部落地并 merge+push+四部署位；Phase 4 回归 78 中唯 1 FAIL=RG-04 归因并行会话模板扫荡与本任务零相关；属任务推进非计划内容篡改，故登记后重 attest 重锁 |
 
 ## Errors Encountered
 <!-- 
