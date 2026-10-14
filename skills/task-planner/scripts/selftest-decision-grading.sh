@@ -38,7 +38,7 @@
 #
 # 消费方: 终验（VC-3 机器守护在位）与 CI 回归（全量 selftest 跑批）
 # 断言面: Rule 72 决策分级静态锚（条款/接线/触点/registry/config 五面配对）
-# 依据: plans/task-v160-decision-grading/task_plan.md（守护断言清单 S7/S8 材料包）
+# 依据: plans/archive/task-v160-decision-grading/task_plan.md（守护断言清单 S7/S8 材料包；task-v160 已按 Rule 81 归档至 plans/archive/，2026-10-14）
 
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
