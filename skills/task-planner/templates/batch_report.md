@@ -2,7 +2,7 @@
 <!-- 使用方式:批量任务(chain_mode: fan-out 或 批量操作 ≥5 单元)时,复制本区块到 task_plan.md 末尾并填写八字段 -->
 <!-- 零单元任务可整段声明一行：`不适用（无批量生成单元）`，跳过 8 字段校验（check-complete.sh Rule 18.6 逃生，2026-09-16） -->
 <!-- 字段校验:failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败 -->
-<!-- 详见:references/batch-quality-gate.md §三/§四 -->
+<!-- 详见:${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-discipline/references/batch-quality-gate.md §三/§四 -->
 <!-- 面向用户呈报时按 Rule 70 四要素：失败/跳过单元逐项清单（编号+简介）+产物绝对路径+看点（失败原因列）+动作（重试/放弃+默认项）。 -->
 
 ## 📚 必要知识储备依据（规范对齐）

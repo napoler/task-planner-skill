@@ -1,9 +1,7 @@
 # Task Plan: [视频创作任务]
 <!-- template_type: video -->
-<!-- 视频创作任务（Agnes API 链路：母图/资产生成、分镜提示词、镜头/整集视频生产、修正重生成、成片质检、台账登记） -->
-<!-- 触发词：视频生成/母图/定妆/场景母图/分镜/提示词/重生成/成片质检/视频资产/整集生产 -->
+<!-- 视频创作任务（Agnes API 链路：母图/资产生成、分镜提示词、镜头/整集视频生产、修正重生成、成片质检、台账登记）；触发词：视频生成/母图/定妆/分镜/提示词/重生成/成片质检/视频资产/整集生产 -->
 <!-- 人工门：草稿（关键帧/参考稿）未过 AGENTS.md 关键约束 14 用户定稿，任何 video 调用 STOP（判例 videop1 lineart-storyboard 段一 7 段作废；Rule 32.2 禁令：无第一人工确认就发起 video） -->
-
 <!-- plan_tier: standard -->
 ## Goal
 [一句话：本视频任务产出什么（N 段视频/一批资产/修正重出），达成标准（QC 全 PASS + 台账登记 + 草稿经人工门放行）]
@@ -26,83 +24,70 @@
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 | 证据路径 |
 |---|----------|----------|---------|
-| VC-1 | 成图 QC 闭环：所有图片产物（母图/关键帧/成片帧）先 analyze 机器质检过，未 QC 不得 complete、不得入台账 | analyze_image/analyze_video 报告 + progress 记录 | tmp/qc-*.json |
-| VC-2 | 风格一致：提示词携带 style.md §2 token 块 + §4 负向基线（行驶镜强化负向） | grep 提示词档案 token 块 | epNN-prompts.md / 提示词存档 |
-| VC-3 | 角色一致：出场角色提示词逐字抄角色卡；登记角色禁纯文生视频（须带母图走 reference/keyframe） | grep 角色串=角色卡原文 | 角色卡对照 |
-| VC-4 | 安全合规：骑行全员头盔（含后座）/水域救生装备/无危险驾驶动作——发起 video 前逐镜头自检过 | 自检清单（镜位×装备×结论） | progress.md 自检行 |
-| VC-5 | 台账登记：生成物 URL/seed/参数落 output/ 台账；可复现任务 seed 记录 | 台账行 grep URL | output/*.md |
-| VC-6 | 成本警示：video 调用前已向用户提示配额/计费；逐 case 测试走 smoke-test 不裸调 video | progress.md 警示行 | progress.md |
-| VC-7 | **草稿人工审查门（AGENTS.md 关键约束 14）**：任一 video 调用前，草稿图已 tmp/ 呈示+用户定稿放行；放行/跳过/否决三登记齐全（镜位×草稿版本×判定×日期）；跳过仅当用户显式指令且 `[gate-skip]` 逐字登记 progress.md+Decisions；无登记=违规，产出按"未经门"作废重走门 | grep progress.md 放行/gate-skip 行 | progress.md + task_plan Decisions |
+| VC-1 | QC 闭环+台账：所有图片产物（母图/关键帧/成片帧）先 analyze 机器质检过，未 QC 不得 complete、不得入台账；生成物 URL/seed/参数落 output/ 台账，可复现任务记 seed | analyze_image/analyze_video 报告 + 台账行 grep URL | tmp/qc-*.json + output/*.md |
+| VC-2 | 风格+角色一致：提示词携带 style.md §2 token 块 + §4 负向基线（行驶镜强化负向）；出场角色逐字抄角色卡，登记角色禁纯文生视频（须带母图走 reference/keyframe） | grep 提示词 token 块 + 角色串=角色卡原文 | epNN-prompts.md / 角色卡对照 |
+| VC-3 | 安全合规：骑行全员头盔（含后座）/水域救生装备/无危险驾驶动作——发起 video 前逐镜头自检过 | 自检清单（镜位×装备×结论） | progress.md 自检行 |
+| VC-4 | 成本警示：video 调用前已向用户提示配额/计费；逐 case 测试走 smoke-test 不裸调 video | progress.md 警示行 | progress.md |
+| VC-5 | **草稿人工审查门（AGENTS.md 关键约束 14）**：任一 video 调用前，草稿图已 tmp/ 呈示+用户定稿放行；放行/跳过/否决三登记齐全（镜位×草稿版本×判定×日期）；跳过仅当用户显式指令且 `[gate-skip]` 逐字登记 progress.md+Decisions；无登记=违规，产出按"未经门"作废重走门 | grep progress.md 放行/gate-skip 行 | progress.md + task_plan Decisions |
+
+## ⚠️ 执行范围限制
+| 类别 | 允许的文件 | 禁止 |
+|-------|------------|------|
+| 分镜/提示词 | plans/{task-id}/ 下 epNN-prompts.md、分镜/配图稿 | 其他 ep 计划目录 |
+| 素材产物 | output/<series>/（母图/关键帧/视频 URL/seed/参数） | 仓内无关目录 |
+| 临时文件 | tmp/（草稿呈示、QC 报告） | 根目录散落文件 |
+| 计划文件 | plans/{task-id}/* | 其他 plan 目录 |
+| 代码/配置 | plans/{task-id}/ 下一次性生成脚本 | 改仓内既有代码/配置 |
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
 | Phase | 命中工具面 | 选择理由 |
 |-------|----------|---------|
-| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases（A 型示例；B/C 型按上表骨架裁剪）
 
 ### Phase 1: 基线核验（铆钉前置门）
-- [ ] 剧本三表（出场角色/骑行装备/道具状态）逐行取现役锚点，缺锚点=STOP 先走 B 型补资产
-- [ ] 风格/角色卡/场景卡/绑定表/continuity 核验（N1-N7 铆钉）
+- [ ] 剧本三表（出场角色/骑行装备/道具状态）逐行取现役锚点，缺锚点=STOP 先走 B 型补资产；风格/角色卡/场景卡/绑定表/continuity 核验（N1-N7 铆钉）
 - **Status:** pending
 - **Executor:** 主进程/executor
 
 ### Phase 2: 草稿产出 + 机器 QC（子代理 A 任务——完成态=STOP，不衔接视频）
-- [ ] 元素清单+合图（PIL 等比禁裁剪，人物格大道具格小；合图仅辅助参考，分离图仍单独进 reference）
-- [ ] 关键帧 i2i（多图官方模板逐张点名）/线稿定稿页
-- [ ] analyze_image 逐图机器 QC（事实性/解剖双硬错误；不过=回改重出，不过的草稿不送审）
-- [ ] 草稿全部下载到 tmp/ 供呈示
+- [ ] 元素清单+合图（PIL 等比禁裁剪，人物格大道具格小；合图仅辅助参考，分离图仍单独进 reference）；关键帧 i2i（多图官方模板逐张点名）/线稿定稿页
+- [ ] analyze_image 逐图机器 QC（事实性/解剖双硬错误；不过=回改重出，不送审）；草稿全部下载到 tmp/ 供呈示
 - **Status:** pending
 - **Executor:** 子代理 A（executor 或对应生成 agent；**草稿任务内禁止任何 video 调用**）
 
 ### Phase 3: G1 人工审查门（STOP 等用户裁决）
-- [ ] 草稿逐张 Read 呈示 + 对照行（镜位×出场角色×头盔×座驾×道具状态×时段）
-- [ ] 用户逐张/逐段定稿放行（或否决/或显式指令跳过）
-- [ ] 三登记：放行/跳过/否决各一行（镜位×草稿版本×判定×日期）入 progress.md；跳过须 `[gate-skip]` 逐字录用户原话 + task_plan Decisions；否决镜草稿当日归档（-failed/-superseded）
-- **门控语义**：本 Phase complete 条件=放行登记行存在（progress.md 可 grep）；未获放行=本 Phase 停留 in_progress 呈用户，**禁止进入 Phase 4**
+- [ ] 草稿逐张 Read 呈示+对照行（镜位×出场角色×头盔×座驾×道具状态×时段）；用户逐张/逐段定稿放行（或否决/或显式跳过）；三登记入 progress.md（镜位×草稿版本×判定×日期），跳过须 `[gate-skip]` 逐字录用户原话+task_plan Decisions，否决镜草稿当日归档（-failed/-superseded）；**门控语义：complete=放行登记行可 grep，未获放行=停留 in_progress 呈用户，禁止进入 Phase 4**
 - **Status:** pending
 - **Executor:** 用户裁决（主进程 STOP 呈示，子代理无权代放行）
 
 ### Phase 4: 视频生成（子代理 B 任务——与 Phase 2 分派不同子代理）
-- [ ] 启动前置检查：Phase 3 放行登记行 grep 可查（缺=STOP 回 G1）
-- [ ] reference 模式混交 4-5 张（关键帧+角色母图+道具+场景）发起 video；批次级成本警示（VC-6）已在前置完成
+- [ ] 启动前置：Phase 3 放行登记行 grep 可查（缺=STOP 回 G1）；reference 模式混交 4-5 张（关键帧+角色母图+道具+场景）发起 video，批次级成本警示（VC-4）已在前置完成
 - [ ] 轮询完成、逐段 analyze_video 机器质检
 - **Status:** pending
 - **Executor:** 子代理 B（与子代理 A 独立任务；派发 prompt 含 Rule 32.2 禁令行）
 
 ### Phase 5: 成片 QC + 台账 + 归档
-- [ ] FAIL 段：回 Phase 2 重出草稿重走 ③④（修正型 C 的 r2 不豁免人工门）
-- [ ] 全 PASS：URL/seed/参数入 output/ 台账；否决/废弃件按归档规程当日归档
-- [ ] 展示规则：成片 tmp/ 下载后 Read 呈示（批量逐条）
+- [ ] FAIL 段：回 Phase 2 重出草稿重走 ③④（修正型 C 的 r2 不豁免人工门）；全 PASS：URL/seed/参数入 output/ 台账、成片 tmp/ 下载后 Read 呈示（批量逐条）、否决/废弃件当日归档
 - **Status:** pending
 - **Executor:** 子代理 B → 主进程验收
 
 ## 🔗 子代理隔离铁律（AGENTS.md 约束 15 执行序）
-- ③ 草稿产出+④ 机器 QC = **子代理 A**；⑥ 视频生成 = **子代理 B**；同任务/同 Phase 自动衔接=违规
-- 派发 B 的 prompt 必含：「前置=草稿放行登记存在（progress.md grep 可查，缺=STOP 不得发起 video）」+ Rule 32.2 禁令原文
-- A 的任务 prompt 必含：「本任务止于草稿+机器 QC+呈示，完成态=STOP 呈用户；禁止调用 AGNES_API video 子命令」
-- 子代理只能产出草稿与机器 QC 结论；**人工放行判定只有用户能做**
+- ③ 草稿产出+④ 机器 QC = **子代理 A**；⑥ 视频生成 = **子代理 B**；同任务/同 Phase 自动衔接=违规；A 的任务 prompt 必含「止于草稿+机器 QC+呈示，完成态=STOP，禁止调用 AGNES_API video」；派发 B 的 prompt 必含「前置=Phase 3 放行登记存在（progress.md grep 可查，缺=STOP 不得发起 video）」+ Rule 32.2 禁令原文；子代理只能产出草稿与机器 QC 结论，**人工放行判定只有用户能做**
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 | 类别 | 名称/主题 | 定位 | 必读级别 | 已确认 |
 |------|----------|------|---------|--------|
-| 风格规范 | style.md token 块+负向基线 | docs/style.md §2/§4 | 必读 | ☐ |
-| 角色卡 | 出场角色全字段（含音色/声线） | assets/<series>/cards/characters/ | 必读 | ☐ |
-| 项目指令 | AGENTS.md 关键约束 4/8/9/13/14/15 + SOP 七阶段 | AGENTS.md | 必读 | ☐ |
-| 台账约定 | output/ 台账格式+tmp/ 命名 | AGENTS.md 文件命名规则 | 必读 | ☐ |
+| 风格+角色 | style.md token 块+负向基线；出场角色全字段（含音色/声线） | docs/style.md §2/§4 + assets/<series>/cards/characters/ | 必读 | ☐ |
+| 项目指令+台账 | AGENTS.md 关键约束 4/8/9/13/14/15 + SOP 七阶段；output/ 台账格式+tmp/ 命名 | AGENTS.md | 必读 | ☐ |
+- **调研需求三态（Rule 75.1）**：本模板任务默认 **可选**——视频创作主要依赖项目内部规范（style.md/角色卡/AGENTS.md），若遇 Agnes API 新参数/报错或工具链用法不确定则按 Rule 75.1 启用网络调研，调研 Phase 登记检索关键词+渠道+预期产出
 
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |          |        |      |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
-<!-- 
-  WHAT: 本计划子代理 vs 主进程的执行分布统计。
-  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
-  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
--->
 | 字段 | 值 |
 |------|-----|
 | 子代理执行 Phase 数 / 总 Phase 数 |  /  |
@@ -113,4 +98,3 @@
 每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
 |---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
-| 1 |  |  |  | queued |  |  |  |  |

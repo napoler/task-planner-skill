@@ -61,14 +61,29 @@ PLAN_FILE="$PLAN_DIR/task_plan.md"
 FINDINGS="$PLAN_DIR/findings.md"
 PROGRESS="$PLAN_DIR/progress.md"
 
-for f in "$PLAN_FILE" "$FINDINGS" "$PROGRESS"; do
+# [H1-fix 2026-10-14] L0/trivial 档（Rule 38.7 + Change #7）三文件缩减豁免：
+# init-session.sh 在 L0 档只创建 progress.md + verification.md（跳过 findings.md），
+# 原 3-File Gate 要求 3 文件全存在 → L0 计划 Phase 永远无法翻转 complete（功能性 bug）。
+# 修法：检测 task_plan.md 中 execution_lane: L0，L0 计划豁免 findings.md 存在性 + mtime 检查。
+# 判定源：init-session.sh:643 在 L0 档写入 task_plan.md `execution_lane: L0` 行。
+_l0_exempt=0
+grep -qE '^[[:space:]]*execution_lane:[[:space:]]*L0' "$PLAN_FILE" 2>/dev/null && _l0_exempt=1
+
+# 必查（全档位）：task_plan.md + progress.md
+for f in "$PLAN_FILE" "$PROGRESS"; do
     if [ ! -f "$f" ]; then
         echo "[3file-gate] FAIL (Rule 19.2) — missing $f"
-        # [2026-09-13 task-v067] 5→6（init-session 现建 6 文件，含 knowledge-brief.md）
-        echo "[3file-gate] Fix: run init-session.sh to initialize the 6 planning files."
+        echo "[3file-gate] Fix: run init-session.sh to initialize the planning files."
         exit 1
     fi
 done
+# findings.md 存在性：L0 档豁免（init-session.sh Change #7 三文件缩减不创建）
+if [ "${_l0_exempt}" -ne 1 ] && [ ! -f "$FINDINGS" ]; then
+    echo "[3file-gate] FAIL (Rule 19.2) — missing $FINDINGS"
+    # [2026-09-13 task-v067] 5→6（init-session 现建 6 文件，含 knowledge-brief.md）
+    echo "[3file-gate] Fix: run init-session.sh to initialize the 6 planning files."
+    exit 1
+fi
 
 # 当前 in_progress Phase 编号（取第一个 in_progress 块的 "### Phase N:" 编号）
 CURRENT_PHASE="$(awk '
@@ -212,7 +227,10 @@ check_file() {
     fi
 }
 
-check_file "$FINDINGS" "findings.md" "$F_STALE"
+# findings.md mtime 检查：L0 档豁免（Change #7 不创建 findings.md，mtime 无从谈起）
+if [ "${_l0_exempt}" -ne 1 ]; then
+    check_file "$FINDINGS" "findings.md" "$F_STALE"
+fi
 check_file "$PROGRESS" "progress.md" "$P_STALE"
 
 if [ "${#VIOLATIONS[@]}" -gt 0 ]; then
@@ -281,5 +299,9 @@ if [ "$DRIFT_OK" -ne 1 ]; then
     esac
 fi
 
-echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定$( [ "$ANCHORED" -eq 1 ] && echo ":锚点 $STARTED_RAW" || echo ":stale 阈值模式" )）" )"
+if [ "${_l0_exempt}" -eq 1 ]; then
+    echo "[3file-gate] PASS（L0 豁免）— progress.md 在 Phase $CURRENT_PHASE 期间已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定）" )"
+else
+    echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定$( [ "$ANCHORED" -eq 1 ] && echo ":锚点 $STARTED_RAW" || echo ":stale 阈值模式" )）" )"
+fi
 exit 0

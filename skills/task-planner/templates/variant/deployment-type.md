@@ -1,21 +1,14 @@
 <!-- template_type: deployment -->
 <!-- 适用场景: CI/CD 配置、Docker 镜像、k8s 部署、nginx 配置、cron 任务、环境变量、基础设施即代码 -->
 <!-- 触发关键词: 部署/CI/CD/Docker/k8s/nginx/cron/基础设施/terraform/ansible -->
-<!-- 推荐 subagent: executor (sonnet-1) + general-purpose (无专门 devops agent) -->
+<!-- 隔离: 涉及运行中基础设施 = §十一 P0 必 worktree(<repo-parent>/<repo>-worktrees/<task-id>) -->
+<!-- 推荐 subagent: executor (sonnet-1) + code-runner-agent;无专门 devops agent 时 general-purpose -->
 
 # Task Plan: [部署任务名称]
 
 <!-- plan_tier: standard -->
 ## Goal
 [一句话:部署/配置什么(应用版本/服务/中间件/配置),达成什么状态(健康/可访问/可回滚)]
-
-## 🔍 Code Review 配置
-| 字段 | 值 |
-|------|-----|
-| `code_review` | `required` |
-| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
-| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
-| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
 
 ## ✅ Verification Contract
 
@@ -55,22 +48,14 @@
 | 规范/标准 |  |  | 必读/参考 | ☐ |
 | 官方文档 |  |  | 必读/参考 | ☐ |
 | 项目内部文档/知识库 |  |  | 参考 | ☐ |
-| 文献/论文 |  |  | 参考 | ☐ |
-| 图书/教程 |  |  | 参考 | ☐ |
 | 运维 runbook/配置规范 | 部署环境基线与回滚规范 | 内部路径/URL | 必读 | ☐ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
 
-- **官方文档/现成方案优先（Rule 75.3）**：部署配置前必须先查官方文档（Doc Search Agent）+社区成熟方案（Docker/nginx/k8s 官方示例）——禁凭记忆直接写配置
+- **调研需求三态判定（Rule 75.1/75.3）**：本模板任务默认`必需`（NET-RESEARCH）——部署/配置类任务必须先查官方文档（Docker/k8s/nginx/CI 官方示例）与社区成熟方案,禁凭记忆直接写配置;检索关键词+渠道+预期产出登记到计划「🔍 调研需求与检索计划」区块
 
 ## Current Phase
 Phase 1
-
-## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
-逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
-| Phase | 命中工具面 | 选择理由 |
-|-------|----------|---------|
-| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases
 
@@ -110,75 +95,3 @@ Phase 1
 - [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
-
-## 🔀 隔离决策
-
-| 字段 | 值 |
-|------|-----|
-| `conflict_scan` | `safe` / `risk` |
-| `isolation` | `worktree`(默认 — 涉及运行中基础设施,§十一 P0) |
-| `worktree_path` | `<repo-parent>/<repo>-worktrees/<task-id>` |
-| `branch` | `wt/<task-id>` |
-| `merge_back` | `pending` → `merged(<commit>)` |
-
-## 🔁 原生 Todo 同步
-
-| Phase | Todo 已建 | 最近同步时间 | 备注 |
-|-------|-----------|--------------|------|
-| Phase 1 | ☐ |  | staging 准备 |
-| Phase 2 | ☐ |  | 配置变更 |
-| Phase 3 | ☐ |  | staging 验证 |
-| Phase 4 | ☐ |  | 生产部署 |
-| Phase 5 | ☐ |  | 监控收尾 |
-
-## Key Questions
-
-1. 部署策略(蓝绿 / 灰度 / 直接替换)?
-2. 回滚 SLA(目标 <5min)?
-3. 配置变更是否需 DBA/运维审批?
-4. 是否需要变更窗口(非高峰)?
-
-## Decisions Made
-
-| Decision | Rationale |
-|----------|-----------|
-| 部署策略 | ... |
-| 镜像 tag 策略 | ... |
-| 回滚 SLA | ... |
-
-## Errors Encountered
-
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-|       | 1       |            |
-
-## Notes
-
-- **铁律**:无 staging 验证 → 禁止生产部署(VC-1 门控)
-- 无回滚预案 → 禁止生产部署(VC-3 门控)
-- 部署相关配置主进程不直接 Edit — 派子代理
-- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
-- 部署属 §十一 P0 必 worktree 范围
-
-## 🚨 Drift Log（漂移检测记录）
-| 时间 | 检测结果 | 涉及VC | 结论 |
-|------|---------|--------|------|
-|      |          |        |      |
-
-## 📊 委派统计（Rule 25.4 — 终验前必填）
-<!-- 
-  WHAT: 本计划子代理 vs 主进程的执行分布统计。
-  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
-  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
--->
-| 字段 | 值 |
-|------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
-
-## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
-| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
-|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
-| 1 |  |  |  | queued |  |  |  |  |

@@ -123,12 +123,12 @@ fi
 # [2026-10-12 task-v171 分层口径切换] SKILL.md 瘦身后全集声明演进为「Rules 1-80 全集索引」（核心 12 条+10 卫星），
 #   旧形态 'Critical Rules 全集 1-NN(+N)' 失配=0；主断言随动演进为 'Rules 1-80 全集索引：' 唯一声明行（=1 语义保持），
 #   旧纪元负断言 {51,53,55} 清单保留（宽容正则优先范式延续，演进史注释保留如上）。
-n="$(grep -cE 'Rules 1-8[01] 全集索引：' "$SKILLMD" || true)"
+n="$(grep -cE 'Rules 1-8[013] 全集索引：' "$SKILLMD" || true)"
 m="$(grep -cE '(全集|Rules) 1-(51|53|55)' "$SKILLMD" || true)"  # [2026-10-05 task-v132] 裸 '1-51' 固定匹配被 SKILL:304「51.1-51.7」子串误触（级联第 5 变体：负断言须语境锚定防子串误伤）; [2026-10-05 task-v138] 负断言并入 53（1-53→1-55 演进后旧纪元清单={51,53}，强度不减弱，先例 v127 RC-15 ^50→^52）; [2026-10-08 task-v144] 负断言再并入 55（1-55→1-62 演进后旧纪元清单={51,53,55}，强度不减弱）
 if [ "$n" -eq 1 ] && [ "$m" -eq 0 ]; then
-  ok 09 "SKILL.md 全集声明「Rules 1-8[01] 全集索引：」=1（v171 分层口径）且旧「1-51/53/55」残留=0"
+  ok 09 "SKILL.md 全集声明「Rules 1-8[013] 全集索引：」=1（v171 分层口径）且旧「1-51/53/55」残留=0"
 else
-  bad 09 "SKILL.md 全集 'Rules 1-8[01] 全集索引：' 命中=$n（应 =1）或旧 1-51 残留=$m（应 =0，级联漏改）"
+  bad 09 "SKILL.md 全集 'Rules 1-8[013] 全集索引：' 命中=$n（应 =1）或旧 1-51 残留=$m（应 =0，级联漏改）"
 fi
 
 # RR-10 主模板双区块锚 `grep -cF '🎯 用户需求原文'` =1 且 `grep -cF '🧮 根源覆盖表'` =1
@@ -193,10 +193,10 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 # [2026-10-12 task-v171 核心瘦身] 索引行锚重定向：References 表 critical-rules.md 行措辞演进——
 #   旧「详见 `references/critical-rules.md`（Critical Rules …（含 Rule 40-NN 全集）」随瘦身重写退役；
 #   现存载体=References 表行「| `references/critical-rules.md` | Critical Rules 核心域 1-80 全集索引（12 条核心全文+分层架构说明+卫星路由索引） |」。
-#   修法：idxn 锚改 'critical-rules.md` | Critical Rules 核心域'（=1）+ 行内含 '1-8[01]'（全集括注演进口径，防级联漏改语义保持）。
+#   修法：idxn 锚改 'critical-rules.md` | Critical Rules 核心域'（=1）+ 行内含 '1-8[013]'（全集括注演进口径，防级联漏改语义保持）。
 idxn="$(grep -cF 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
 idxline="$(grep -F 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE '1-8[01]'; then
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE '1-8[013]'; then
   ok 16 "SKILL.md References 表 critical-rules.md 行=1 且含「1-80」全集括注（v171 分层口径，CR P1-2 防级联漏改）"
 else
   bad 16 "SKILL.md References 表 critical-rules.md 行命中=$idxn（应 =1）或行内未含 1-80 全集括注（级联漏改，CR P1-2 复发）"

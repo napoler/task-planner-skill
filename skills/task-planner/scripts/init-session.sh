@@ -429,6 +429,25 @@ if [ "${TASK_SCOPE_FILES:-}" = "1" ] && [ "${TASK_SCOPE_MODULES:-}" = "1" ] \
             *.sh|*.ts|*.cjs|*.js|*.py|*.json) _trivial_code=1 ;;
         esac
     fi
+    # [H2-fix 2026-10-14] 保护区路径检查：扩展名命中 ≠ trivial 可放行。
+    # 宪法 §11.5 条件4 明确要求「非保护区文件」，此处机器化该前提：
+    # 镜像 check-delegation.sh:332-345 保护区 case 列表，保护区路径命中则强制 _trivial_code=0，
+    # 防止 trivial 档将保护区文件（~/.zcode/skills/ 下脚本、package.json 等基础设施）路由到 L0 薄验证通道。
+    if [ "${_trivial_code:-0}" = "1" ]; then
+        case "$_t_fname" in
+            */.zcode/skills/*|*/.zcode/agents/*|*/.zcode/commands/*|*/.zcode/AGENTS.md|*/.zcode/cli/*)
+                _trivial_code=0 ;;
+            */.claude/skills/*|*/.agents/skills/*|*/.agents/AGENTS.md|*/.agents/agents/*|*/.agents/commands/*|*/.config/opencode/*)
+                _trivial_code=0 ;;
+            skills/*|*/skills/*|agents/*|*/agents/*)
+                _trivial_code=0 ;;
+            *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*)
+                _trivial_code=0 ;;
+            *docker-compose*|*/.env*|*Dockerfile|*nginx.conf)
+                _trivial_code=0 ;;
+        esac
+        [ "${_trivial_code}" = "0" ] && echo "[init] trivial 代码修复档：文件 ${_t_fname} 命中保护区（§六/§11.5 条件4），强制不降档"
+    fi
 fi
 if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
     if [ "${TASK_TIER_EXCLUDE:-}" = "1" ]; then
@@ -632,12 +651,15 @@ fi
 if [ -f "task_plan.md" ] && [ -f "${SCRIPT_DIR}/lane-detect.sh" ]; then
     # 2>/dev/null + || true: 判不定 rc=2（非 git 仓/BASE 无效）不得经 set -e 传播中断 init 主流程
     #（lane-detect 已兜底 stdout 输出 L1, 此处取不到合法值时同样兜底 L1——fail-safe 向重侧）
-    _lane="$(bash "${SCRIPT_DIR}/lane-detect.sh" --diff "${TASK_LANE_BASE:-HEAD}" 2>/dev/null)" || true
+    # [M1/M5-fix 2026-10-14] TRIVIAL_CODE_TIER=1 时传 --trivial，使 lane-detect 统一判定面内
+    # 可审计「代码文件改动可进 L0」的 trivial 例外（取代原 L640 覆写：lane-detect L1 → init-session 强制 L0
+    # 的分离判定逻辑，使 Rule 38.7 禁令与 trivial 例外在同一判定点内显式调和）。
+    if [ "${TRIVIAL_CODE_TIER:-0}" = "1" ]; then
+        _lane="$(bash "${SCRIPT_DIR}/lane-detect.sh" --diff "${TASK_LANE_BASE:-HEAD}" --trivial 2>/dev/null)" || true
+    else
+        _lane="$(bash "${SCRIPT_DIR}/lane-detect.sh" --diff "${TASK_LANE_BASE:-HEAD}" 2>/dev/null)" || true
+    fi
     _lane="${_lane#execution_lane: }"; case "${_lane}" in L0|L1|L2) ;; *) _lane=L1 ;; esac
-    # [task-perf-opt Change #1] trivial 代码修复档强制 L0 微变更通道：lane-detect 对代码文件默认落 L1
-    # （禁滥用条款），但 trivial 单文件 ≤3 行修复走 L0 薄验证（LANE-L0 GATE 保留 ①全量终验+②Phase翻转+③单commit），
-    # 与 Change #1 第四条件同一判定（TRIVIAL_CODE_TIER=1）显式覆写为 L0。
-    [ "${TRIVIAL_CODE_TIER:-0}" = "1" ] && _lane="L0"
     # 2i 而非 1i: 保持文件首行语义不变（自造模板 frontmatter 插入落在首行, 既有 selftest
     # plan-tier PT-24/27 断言 head -1；lane 行居第 2 行不位移任何既有首行锚）
     grep -qE '^[[:space:]]*execution_lane:' "task_plan.md" 2>/dev/null || sed -i "2i execution_lane: ${_lane}" "task_plan.md"
@@ -655,11 +677,23 @@ fi
 # 正交性（§4 条 10）：本调用点在 tier 分流/复制之后，mini 档只改 tier 不碰 sense；
 # unknown 类型分支（L183-186 区段）本 S-unit 不动（P2-S2）。
 # 幂等保护：同任务目录重复运行 init（task_plan.md 已存在=skip 分支）不重复追加。
-# [task-v096 CR-fix] 仅无 template_type 标记的产物才追加（防 mini/known-type 产物被二次标记）:
-# 新鲜 general 兜底副本（templates/task_plan.md）无 template_type: 标记 → 触发；
-# bugfix 等 known-type / mini-lite 产物首行带 <!-- template_type: X --> 标记 → 不触发。
+# [task-v096 CR-fix] 仅非 general 的 known-type 标记产物才抑制（防 mini/known-type 产物被二次标记）:
+# 新鲜 general 兜底副本（templates/task_plan.md）→ 触发；
+# bugfix 等 known-type / mini-lite 产物带 template_type: <非 general 类型> 标记 → 不触发。
+# [H3-fix 2026-10-14] 无标记守卫精确化：built-in task_plan.md 的 frontmatter 头本次已自带
+# 行首 `template_type: general`（task_plan 模板 frontmatter 化引入，见 git diff L6），
+# 原守卫 `! grep -q 'template_type:'` 恒命中 general 兜底产物 → [template-sense] 永不触发
+# （selftest-template-sense case-1/case-2 FAIL 根因：general 空缺/unknown 均无法触发感知）。
+# 根因=general 是兜底语义而非 known-variant，原守卫把 general 也算作"已标记"收窄过严；
+# 修法=仅当产物带"非 general 的行首 template_type 值"（真正的 known-variant 标记）时才抑制，
+# general 兜底产物与无标记产物一律照常触发。守卫覆盖三形态（行首 / HTML 注释 `<!-- template_type: X -->` /
+# 表格行），与 check-template-type 三形态对齐；frontmatter 注释文档行（"行首 `^template_type:`（本块）"）
+# 不匹配行首正则故不干扰。幂等保护（下方 模板感知 grep）不变。
+_tt_val="$(grep -m1 -E '^[[:space:]]*(<!--[[:space:]]*)?template_type:[[:space:]]*[^[:space:]|)]+' "task_plan.md" 2>/dev/null | sed -E 's/^[[:space:]]*(<!--[[:space:]]*)?template_type:[[:space:]]*//' || true)"
+_has_known_tt=0
+[ -n "${_tt_val:-}" ] && [ "${_tt_val}" != "general" ] && _has_known_tt=1
 if [ -z "$TEMPLATE_TYPE" ] && [ -f "task_plan.md" ] \
-   && ! grep -q 'template_type:' "task_plan.md" 2>/dev/null; then
+   && [ "${_has_known_tt}" -eq 0 ]; then
     echo "[template-sense] ⚠ 任务类型空缺（general 兜底）——按 Rule 34.3②/34.7 评估沉淀，终验必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<'EOF'
@@ -692,7 +726,7 @@ fi
 # 既有 TASK_PLAN_SRC 来源守卫保留, 与无标记守卫双条件同时成立才追加）。
 if [ -n "$TEMPLATE_TYPE" ] && ! echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE " \
    && [ "$TASK_PLAN_SRC" = "task_plan.md" ] && [ -f "task_plan.md" ] \
-   && ! grep -q 'template_type:' "task_plan.md" 2>/dev/null; then
+   && [ "${_has_known_tt:-0}" -eq 0 ]; then
     echo "[template-sense] ⚠ 任务类型未知（$TEMPLATE_TYPE 不在白名单）——将落 general 兜底，按 Rule 34.3②/34.7 评估沉淀，终验必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<EOF

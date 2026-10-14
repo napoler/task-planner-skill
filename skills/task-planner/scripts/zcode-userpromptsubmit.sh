@@ -93,6 +93,8 @@ fi
 # 配置：config.json smart_inject_type_gate.default=off（opt-in，需显式 on 才启用门控）。
 # fail-open：prompt 字段缺失 / config 解析失败 / 长度或 token 判定异常 → _smart_skip=0（不跳过）。
 _smart_skip=0
+# [M7-fix 2026-10-14] 标记 type_gate 触发的跳过（区别于 CA-1 限频），用于最小复诵注入
+_type_gate_skip=0
 _gate_cfg="$(jq -r '.properties.smart_inject_type_gate.default // "off"' "$SKILL_ROOT/config.json" 2>/dev/null || echo off)"
 if [ "$_gate_cfg" = "on" ]; then
   _ups_prompt="$(printf '%s' "$input" | jq -r '.prompt // .user_prompt // .message // empty' 2>/dev/null || true)"
@@ -108,7 +110,8 @@ if [ "$_gate_cfg" = "on" ]; then
           *"${_tok}"*) _has_tok=1; break ;;
         esac
       done
-      [ "$_has_tok" = "0" ] && _smart_skip=1
+      # [M7-fix] 短 prompt 无 Goal token → 跳过完整 smart 注入，但保留最小复诵（Goal+Next Step）
+      [ "$_has_tok" = "0" ] && _smart_skip=1 && _type_gate_skip=1
     fi
   fi
   [ "$_smart_skip" = "1" ] && echo "[ups] smart 注入跳过（Change #5 prompt 类型门控：短 prompt 不含 Goal 关键 token; [plan-note] 节流注入不受影响）" >&2
@@ -219,6 +222,10 @@ tmpf="$(mktemp)"
 
 if [ -s "$tmpf" ] && [ "${_smart_skip:-0}" != "1" ]; then
   inject="$(cat "$tmpf")"
+elif [ "${_type_gate_skip:-0}" = "1" ] && [ -s "$tmpf" ]; then
+  # [M7-fix 2026-10-14] type_gate skip（短 prompt 无 Goal token）→ 注入最小复诵（Goal+Next Step 前 4 行），
+  # 避免短 prompt 轮完全失锚（防漂移底线）；完整 smart 注入块（Decisions/progress 尾）仍跳过以省 token。
+  inject="$(head -4 "$tmpf" 2>/dev/null)"
 fi
 rm -f "$tmpf"
 

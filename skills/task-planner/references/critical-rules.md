@@ -141,7 +141,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 80.5 **与 attest 哈希锁的边界**：task_plan.md 受 Rule 20/51.7 哈希锁（改即 [PLAN TAMPERED]），故用户会话记录禁入 task_plan.md 正文，外置本专档；task_plan.md 的「🗣️ 用户会话逐字记录」指针区块为纯静态（仅专档路径+铁律+恢复协议），禁条目计数/首末条目标记类可变内容（可变内容破坏指针区块静态性与 append-only 载体一致性）。
 
-80.6 **守护机制（零新 config 键，71.7/64.6 同范式）**：① init 建档+存在性复核（缺/空即 ERROR，禁静默放行）；② check-complete.sh SESSION-LOG GATE 指针区块门控——有指针且专档缺失/空=FAIL，无指针=存量计划 SKIP，env-only 档位降级 `TASK_PLANNER_SESSION_LOG_ENFORCE`（enforce=FAIL 阻断 / warn=告警不阻断（默认）/ off=整门跳过；无 config.json 键，档位解析写法对齐 Rule 34.6 env 开关先例）；③ selftest-session-log.sh 静态断言（Rule 80 子条文本锚 + 模板锚 + 指针区块纯静态负断言）；**零新 config 键**——本规则不引入任何 config.json 键（properties 键数恒 42，env-only 开关）。
+80.6 **守护机制（零新 config 键，71.7/64.6 同范式）**：① init 建档+存在性复核（缺/空即 ERROR，禁静默放行）；② check-complete.sh SESSION-LOG GATE 指针区块门控——有指针且专档缺失/空=FAIL，无指针=存量计划 SKIP，env-only 档位降级 `TASK_PLANNER_SESSION_LOG_ENFORCE`（enforce=FAIL 阻断 / warn=告警不阻断（默认）/ off=整门跳过；无 config.json 键，档位解析写法对齐 Rule 34.6 env 开关先例）；③ selftest-session-log.sh 静态断言（Rule 80 子条文本锚 + 模板锚 + 指针区块纯静态负断言）；**零新 config 键**——本规则不引入任何 config.json 键（properties 键数恒 46，env-only 开关；task-v172 CA-1/CA-2 新增 smart_inject_interval+light_tier_interval_multiplier 2 键，44→46）。
 
 <!-- [2026-10-12 task-v170 S4 追加] 新增 Rule 81；原因=用户判定 plans/ 堆积为严重缺陷（R2 需求锚「这是严重缺陷，必须添加归档」），完成流程末段缺一环归档步骤需制度化为机器可守的纪律；原行为=完成流程止于 check-complete.sh，无任何归档动作，plans/ 根持续堆积已完成目录 -->
 ### 81 计划完成后归档纪律（task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C56，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）

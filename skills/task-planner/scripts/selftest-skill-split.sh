@@ -86,7 +86,8 @@ t "T-锚 SKILL 指针段 Rule 26 质量优先 bullet（原 C26 面载体）" gre
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 # [2026-10-11 task-v169 扩 8x 纪元——Rule 80 落地, SKILL.md 索引锚演进至 1-80, 宽容正则扩 8x 纪元 1-(3[0-9]|[4-8][0-9]), 历史纪元 3x/4x/5x/6x/7x 覆盖不变]
 # [2026-10-12 task-v170 纪元演进并集] 宽容正则扩 81：'1-(3[0-9]|[4-8][0-9])'→'1-(3[0-9]|[4-7][0-9]|81)'（Why=task-v170 落地 Rule 81 计划完成后归档纪律，81 以字面交替入锚，同 master 版本行；负样本 1-82 不命中，历史纪元覆盖不变）——本任务（task-v171）merge 前并集解采纳
-t "T-锚 Rules 1-3..81 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-7][0-9]|81)' '$SKILL')\" -ge 1 ]"
+# [2026-10-14 task-v172 对齐 1-83] Rule 83（通道不可用快速失败）落地 + SKILL/README/CLAUDE/README_zh 全集索引统一演进至 1-83，宽容正则放宽至 8x 纪元 1-(3[0-9]|[4-8][0-9])（覆盖 80-89，含 83；历史纪元 3x-7x 覆盖不变）
+t "T-锚 Rules 1-3..83 宽容计数锚 ≥1" bash -c "[ \"\$(grep -cE 'Rules 1-(3[0-9]|[4-8][0-9])' '$SKILL')\" -ge 1 ]"
 
 # T6 守卫 + registry 联动
 for sat in plan-research-router plan-template-kit plan-cost-guard plan-collab-router; do

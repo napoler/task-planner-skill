@@ -33,6 +33,10 @@
 ├─ 质量审查与缺陷检测（机检+亲检+最小范围处置）→ qc-defect-type.md
 ├─ 音频配音对齐（音色/语言锁/TTS 声线，零生成）→ audio-voice-type.md
 ├─ 终剪组装验证（组装/seam/成片判定/NAS 备份）→ final-assembly-type.md
+├─ 视频生产（母图/分镜/镜头/成片 QC，Agnes 视频链路）→ video-type.md
+├─ 视频修正/局部重生成/QC FAIL 处置 → video-fix-type.md
+├─ 技能规则增强/新增 Rule/门控/selftest 守护（沉淀类）→ rule-enhancement-type.md
+├─ 轻量任务（≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非排除，Rule 38 自动降 mini）→ mini-lite-type.md
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
@@ -238,7 +242,7 @@ grep -c "\*\*Status:\*\*" task_plan.md  # 应 = Phase 数
 
 # 检查文件名白名单
 ls *.md | sort
-# 应包含: findings.md, notepad-learnings.md, progress.md, task_plan.md, verification.md
+# 应包含: findings.md, notepad-learnings.md, progress.md, task_plan.md, verification.md, knowledge-brief.md（第 6）, user-session-log.md（第 7）
 
 # 运行完成检测
 bash ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts/check-complete.sh

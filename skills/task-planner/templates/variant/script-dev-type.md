@@ -1,7 +1,6 @@
 # Task Plan: [剧本开发与合规审查任务]
 <!-- template_type: script-dev -->
 <!-- 剧本工序专用（M0 大纲→M1 展开→M2 审查→M3 静默修正；判定层=script-craft 全集）。边界：本模板止于定稿剧本与登记，零生成调用；全流程视频生产入 video-type。触发词：写剧本/大纲/台词修正/剧本审查/合规审查 -->
-<!-- 五要素：①编号原子步骤+显式状态定义（每 Phase 产出物形态+剧本头部五声明块）+合规检（V16 八红线/V8 语言锁/V34 大纲一致）+静默迭代（M3 修正环 0 打断）+验收判据（VC 表） -->
 <!-- 交互：默认 interaction_mode: silent——M1→M2→M3 修订环静默跑；唯一合法人工停点=M0 大纲放行门（大纲先行门，约束级）与 Rule 28 D6；放行/否决登记双落 progress+Decisions -->
 
 <!-- plan_tier: standard -->
@@ -9,11 +8,9 @@
 [一句话：产出哪一集/哪个剧本件（M0 大纲或 M1 定稿本），达成标准（M2 判定层 PASS 或 PASS_WITH_NOTES+八红线自检齐+登记收口）]
 
 ## 任务分型（三选一）
-| 型 | 场景 | Phase 骨架 |
-|----|------|-----------|
-| A 新集 | 新一集从零创作 | 全六相（M0 放行门在 P2） |
-| B 存量重写 | 既有集推倒重写 | P1 并入旧件归因复盘；旧件当日归档 |
-| C 局部修正 | 台词/结构修正 | P1 核验→P4 快审→P5 M3 闭环→P6 |
+- A 新集: 新一集从零创作, 全六相（M0 放行门在 P2）
+- B 存量重写: 既有集推倒重写, P1 并入旧件归因复盘；旧件当日归档
+- C 局部修正: 台词/结构修正, P1 核验→P4 快审→P5 M3 闭环→P6
 
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 | 证据路径 |
@@ -64,9 +61,17 @@
 - **Executor:** 主进程（验收+登记）
 
 ## 🔗 隔离与静默纪律
-- M2 审查（script-auditor，只读）与 M1/M3 落刀（script-writer）分属不同执行体，防自我背书
-- 静默环：M3 不呈送中间态；用户可见态仅两个=M0 大纲、定稿本
-- `[gate-skip]` 仅限用户显式原话逐字登记且双落 progress+Decisions；范围外批次另行授权
+- M2 审查(script-auditor,只读)与 M1/M3 落刀(script-writer)分属不同执行体,防自我背书;静默环:M3 不呈送中间态,用户可见态仅 M0 大纲+定稿本
+- `[gate-skip]` 仅限用户显式原话逐字登记且双落 progress+Decisions;范围外批次另行授权
+
+## ⚠️ 执行范围限制
+
+| 类别 | 允许的文件 | 禁止 |
+|-------|------------|------|
+| 剧本件 | docs/series/<id>/（epNN-script.md） | 视频/音频/图像生成调用 |
+| 审查报告 | docs/series/<id>/（review-report.md） | 无关文件 |
+
+**强制约束**: 止于定稿剧本与登记,零生成调用;全流程视频生产入 video-type
 
 ## 📚 必要知识储备（开工前必填，均仓相对路径或技能名）
 | 类别 | 名称/主题 | 定位 | 必读级别 | 已确认 |
@@ -77,38 +82,19 @@
 | 风格 | style.md token 块+语言锁基线 | docs/style.md | 必读 | ☐ |
 | 对话基线 | 对话守则+分剧语料路由 | 系列内 dialogue-rules 件；docs/corpus-styles/index.md | 参考 | ☐ |
 
-- **GitHub 现成实现检索（Rule 75.3/75.4）**：脚本开发前必须先 GitHub 检索现成实现（gh search repos/code）+官方示例——评估借鉴/适配后落地，未检索就自研=违规
-
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |          |        |      |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
-<!-- 
-  WHAT: 本计划子代理 vs 主进程的执行分布统计。
-  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
-  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
--->
+<!-- WHAT: 子代理 vs 主进程执行分布统计。WHY: 委派率 < floor(0.7) → outcome 最高 PARTIAL(Rule 25.3)。WHEN: Phase complete 后更新,终验前完整。 -->
 | 字段 | 值 |
 |------|-----|
 | 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-<!--
-  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才在「备注」列勾 verify_done;failed/timeout 行必须回填 checkpoint 路径列(Rule 22.8.4)
-  WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
-  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
-  列说明: 备注列 = 低频列折叠单列(rescue 换档挽救记录 档位/结果/时间,failed|timeout 行必填,Rule 22.7;retry_count = 22.3 retry_limit 计数,初值 0,每次重试 +1;verify_done☐ = Read 产出 + findings 复核/回填双条件,Rule 22.5)——字段内容不删,仅列位折叠;verify_done 无机器消费(grep 实证 scripts/*.sh 除 selftest 零命中),为人工义务,不声称机器门
-  派发 prompt 八字段模板: templates/subagent_dispatch.md
-  # [2026-09-27 task-v091 B-2] 单写者澄清+Handoff 低频列折叠（verify_done 无机器消费如实披露）
--->
+<!-- WHEN: 每次 Agent() 派发前填一行,返回 30s 内 Read 产出+回填 findings(Rule 22.5)。状态: queued/done/partial/timeout/failed/blocked。八字段模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/subagent_dispatch.md -->
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
-

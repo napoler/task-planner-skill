@@ -2,6 +2,7 @@
 <!-- 适用场景: Python→TS/Bun 迁移、框架升级、CLI 重写、单语言→多语言、Shebang 切换、API 协议迁移 -->
 <!-- 触发关键词: 迁移/升级/重写/切换/转换/兼容 -->
 <!-- 推荐 subagent: executor (sonnet-1,跨步骤协调) + code-assistant -->
+<!-- execution_lane: L1（默认 standard 全流程；迁移=功能性代码变更+跨文件级联，Rule 38.7 禁 L0；跨系统级大迁移由 init-session.sh/lane-detect.sh 机器升 L2） -->
 
 # Task Plan: [迁移任务名称]
 
@@ -9,23 +10,15 @@
 ## Goal
 [一句话:从哪种实现迁移到哪种实现,达成什么效果(行为等价/性能提升)]
 
-## 🔍 Code Review 配置
-| 字段 | 值 |
-|------|-----|
-| `code_review` | `required` |
-| `对齐审查` | `[登记]` | Rule 42.6 消费：完成前跑 alignment-review;变更记录随交付落盘;mini 豁免 |
-| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：默认项+超时 5 分钟;低区分度 44.2 直接裁决;mini 豁免 |
-| `质量审查工具` | `[检测结论]` | Rule 42 消费：42.2 四级检测登记;执行期用登记工具;mini 豁免 |
-
 ## ✅ Verification Contract
 
 | # | 判定标准 | 验证方式 | 证据路径 |
 |---|----------|----------|----------|
-| VC-1 | 旧实现已备份/锁定(不能丢) | `git tag` 基线 tag + 旧代码归档路径 | `git tag --list "migration-baseline-*"` + 归档目录 |
-| VC-2 | 新实现功能等价(逐 case 对照) | diff 行为对照表(≥90% 用例等价) | `tmp/migration-parity.md` |
-| VC-3 | 双跑回归结果一致 | 新旧版本并行跑同一输入,输出 diff ≤X% | `tmp/dual-run-diff.txt` |
-| VC-4 | 旧入口已下线/路由切换 | 旧脚本加 deprecation warning 或删除 | `grep -r "deprecated" 旧路径` |
-| VC-5 | 文档/RUNBOOK 已更新 | `README.md` / `INSTALL.md` 指向新入口 | git diff 文档 |
+| VC-1 | 旧实现已备份/锁定 | git tag 基线 tag + 归档路径 | `git tag --list "migration-baseline-*"` + 归档目录 |
+| VC-2 | 新实现功能等价 | diff 行为对照表(≥90% 用例等价) | `tmp/migration-parity.md` |
+| VC-3 | 双跑回归一致 | 新旧并行跑,输出 diff ≤5% | `tmp/dual-run-diff.txt` |
+| VC-4 | 旧入口已下线/路由切换 | deprecation warning 或删除 | `grep -r "deprecated" 旧路径` |
+| VC-5 | 文档已更新 | README/INSTALL 指向新入口 | git diff 文档 |
 
 **终验规则**:
 - 全部 VC 通过 → COMPLETE
@@ -45,29 +38,23 @@
 - 旧实现归档后才能进入切流阶段
 - 旧入口下线必须含 deprecation 过渡期(除非用户显式说直接删除)
 
-## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
+## 📚 必要知识储备
 
-> 目的：对齐任务知识库。列出本任务依赖的规范/文档/文献/图书等知识源，Phase 1 开工前逐项确认可获取；`必读` 项无法获取 → STOP 记入 findings.md Errors，禁止凭记忆硬写。
+> 目的：对齐任务知识库。Phase 1 开工前逐项确认；`必读` 项无法获取 → STOP 记入 Errors。
 
-| 类别 | 名称/主题 | 定位（路径/URL/版本/commit SHA） | 必读级别 | 已确认 |
-|------|-----------|--------------------------------|---------|--------|
-| 规范/标准 |  |  | 必读/参考 | ☐ |
+| 类别 | 名称/主题 | 定位（路径/URL/版本） | 必读级别 | 已确认 |
+|------|-----------|----------------------|---------|--------|
+| 官方迁移指南 | 框架/语言官方升级文档 | URL + 版本号 | 必读 | ☐ |
 | 官方文档 |  |  | 必读/参考 | ☐ |
 | 项目内部文档/知识库 |  |  | 参考 | ☐ |
-| 文献/论文 |  |  | 参考 | ☐ |
-| 图书/教程 |  |  | 参考 | ☐ |
-| 官方迁移指南 | 框架/语言官方升级文档 | URL + 版本号 | 必读 | ☐ |
 
-**填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
+**填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并登记 Errors。
+
+- **调研需求三态（Rule 75.1）**：本模板任务默认 NET-RESEARCH——涉及框架/语言迁移，需检索官方迁移指南与现成方案；调研策略 Phase 必须登记检索关键词+渠道+预期产出到计划「🔍 调研需求与检索计划」区块
+- **现成方案优先（Rule 75.3）**：迁移动手前必须先检索现成迁移方案（官方文档/GitHub 同类迁移）——评估适配后落地，禁重复造轮子
 
 ## Current Phase
 Phase 1
-
-## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
-逐 Phase 登记工具面与理由;Executor 字段仍是委派门控机器事实源;mini 豁免
-| Phase | 命中工具面 | 选择理由 |
-|-------|----------|---------|
-| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |
 
 ## Phases
 
@@ -76,106 +63,29 @@ Phase 1
 - [ ] 创建 `git tag migration-baseline-<commit>`
 - [ ] 旧代码归档到 `archive/legacy-<date>/`
 - [ ] 记录基线行为快照(测试输出/接口签名)到 `tmp/baseline-snapshot.json`
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- [ ] 知识储备必读项已确认(勾选「必要知识储备」表"已确认"列)
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 
-### Phase 2: 新实现开发
+### Phase 2: 新实现开发 + 双跑回归
 - [ ] 派 `Agent(subagent_type: code-assistant)` 单文件改写
-- [ ] 派 `Agent(subagent_type: executor)` 跨文件协调(>3 文件时)
 - [ ] 每步保持基线行为不漂移(对照 snapshot)
+- [ ] 写双跑脚本 `tmp/dual-run.sh` 并行执行新旧实现
+- [ ] diff ≤5% → 进入切流;否则修复新实现直到等价
 - [ ] 记录新实现决策到 Decisions Made
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 
-### Phase 3: 双跑回归对照
-- [ ] 写双跑脚本 `tmp/dual-run.sh` 并行执行新旧实现
-- [ ] 派 `code-runner-agent` 输出 `tmp/dual-run-diff.txt`
-- [ ] diff ≤5% → 进入切流;否则修复新实现直到等价
-- **Status:** pending
-- **Executor:** executor（sonnet-1）
-
-### Phase 4: 切流/路由切换
+### Phase 3: 切流/路由切换
 - [ ] 新实现主路径生效(默认调用新入口)
 - [ ] 旧入口加 deprecation warning(过渡期)
-- [ ] 派 `**主进程** `Skill("cli-tool-builder")`（子代理无 Skill() 工具）` 检查 CLI 入口(若 CLI 迁移)
+- [ ] 检查 CLI 入口(若 CLI 迁移)
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
 
-### Phase 5: 文档更新 + 旧入口归档
+### Phase 4: 文档更新 + 旧入口归档
 - [ ] 更新 README.md / INSTALL.md / MIGRATION.md
-- [ ] 记录迁移决策到 Decisions Made + commit 引用
-- [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
+- [ ] 记录迁移决策 + commit 引用
+- [ ] 派 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending
 - **Executor:** executor（sonnet-1）
-
-## 🔀 隔离决策
-
-| 字段 | 值 |
-|------|-----|
-| `conflict_scan` | `safe` / `risk` |
-| `isolation` | `worktree`(默认 — 涉及多文件实现) |
-| `worktree_path` | `<repo-parent>/<repo>-worktrees/<task-id>` |
-| `branch` | `wt/<task-id>` |
-| `merge_back` | `pending` → `merged(<commit>)` |
-
-## 🔁 原生 Todo 同步
-
-| Phase | Todo 已建 | 最近同步时间 | 备注 |
-|-------|-----------|--------------|------|
-| Phase 1 | ☐ |  | 基线锁定 |
-| Phase 2 | ☐ |  | 新实现开发 |
-| Phase 3 | ☐ |  | 双跑回归 |
-| Phase 4 | ☐ |  | 切流 |
-| Phase 5 | ☐ |  | 文档归档 |
-
-## Key Questions
-
-1. 旧实现的"行为快照"如何采样才能覆盖关键路径?
-2. 双跑 diff 阈值定多少(X%)(建议 5%)?
-3. deprecation 过渡期多长(建议 ≥1 个 release)?
-4. 是否需要保留旧入口作为紧急回退?
-
-## Decisions Made
-
-| Decision | Rationale |
-|----------|-----------|
-| 新实现语言/框架 | ... |
-| 行为等价性度量 | ... |
-| 双跑策略 | ... |
-
-## Errors Encountered
-
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-|       | 1       |            |
-
-## Notes
-
-- **铁律**:旧实现必须先归档,否则禁止切流(防丢代码)
-- 双跑 diff >5% → 修复新实现,不允许"凑合切流"
-- 修改必须派子代理,主进程不直接 Edit
-- 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
-
-## 🚨 Drift Log（漂移检测记录）
-| 时间 | 检测结果 | 涉及VC | 结论 |
-|------|---------|--------|------|
-|      |          |        |      |
-
-## 📊 委派统计（Rule 25.4 — 终验前必填）
-<!-- 
-  WHAT: 本计划子代理 vs 主进程的执行分布统计。
-  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
-  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
--->
-| 字段 | 值 |
-|------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
-
-## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-每次 Agent() 派发前填一行;子代理返回后 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5)
-| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |
-|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|
-| 1 |  |  |  | queued |  |  |  |  |

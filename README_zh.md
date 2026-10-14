@@ -133,7 +133,7 @@ task-planner-skill/
     │   ├── progress.md            ← 会话进度日志
     │   └── notepad-learnings.md
     └── references/
-        ├── critical-rules.md      ← Rules 1-75 核心执行约束 <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态 --> <!-- 2026-10-10 task-v158 演进 1-69→1-71（Rule 71 落地） --> <!-- 2026-10-10 task-v163 级联 1-72→1-75（Rule 75 网络调研主动激活落地） -->
+        ├── critical-rules.md      ← Rules 1-83 核心执行约束 <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态 --> <!-- 2026-10-10 task-v158 演进 1-69→1-71（Rule 71 落地） --> <!-- 2026-10-10 task-v163 级联 1-72→1-75（Rule 75 网络调研主动激活落地） --> <!-- 2026-10-14 对齐 1-75→1-83（Rule 81/82/83 落地，核心 14 条） -->
         ├── completion-gate.md     ← 子代理验证协议
         ├── goal-gate.md           ← COMPLETE / PARTIAL / BLOCKED 判定标准
         └── [billing.md → ../plan-cost-guard/references/billing.md] ← 计费模式说明（已迁出至卫星 skill plan-cost-guard）
@@ -226,7 +226,7 @@ Skill 包内英文文档：`skills/task-planner/INSTALL.md`（英文安装说明
 | `examples/full-workflow.md` | 端到端演示：从用户请求到 COMPLETE |
 | `skills/task-planner/examples.md` | Skill 包内实战示例 |
 | `skills/task-planner/reference.md` | Manus Context Engineering 原则 + 决策矩阵 |
-| `skills/task-planner/references/critical-rules.md` | Rules 1-75 —— 自定义前必读 <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态 --> <!-- 2026-10-10 task-v158 演进 1-69→1-71（Rule 71 落地） --> <!-- 2026-10-10 task-v163 级联 1-72→1-75（Rule 75 网络调研主动激活落地） --> |
+| `skills/task-planner/references/critical-rules.md` | Rules 1-83 —— 自定义前必读 <!-- 2026-10-09 task-v152 对齐实态 --> <!-- 2026-10-09 task-v153 对齐实态 --> <!-- 2026-10-10 task-v158 演进 1-69→1-71（Rule 71 落地） --> <!-- 2026-10-10 task-v163 级联 1-72→1-75（Rule 75 网络调研主动激活落地） --> <!-- 2026-10-14 对齐 1-75→1-83（Rule 81/82/83 落地，核心 14 条） --> |
 | `skills/task-planner/references/goal-gate.md` | VC 门控工作原理、COMPLETE/PARTIAL/BLOCKED 规则 |
 | `skills/task-planner/references/completion-gate.md` | 子代理验证协议 |
 | `CONTRIBUTING.md` / `CONTRIBUTING_zh.md` | 开发流程、脚本规范、PR 检查清单 |

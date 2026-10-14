@@ -444,7 +444,7 @@
       "type": "string",
       "enum": ["off", "on"],
       "default": "on",
-      "description": "[task-perf-opt Change #5] UserPromptSubmit smart 注入 prompt 类型门控: off=每轮注入(原行为); on=短闲聊/追问(prompt<50 字符且不含 Goal 关键 token)跳过 smart 注入块, 仅保留 [plan-note] 节流注入。opt-in, 默认 off。[task-v172 CA-1] default off→on: 每轮无条件注入 0.22-0.26s+1-1.5KB 复利开销实测, 与内容限频双闸启用。"
+      "description": "[task-perf-opt Change #5] UserPromptSubmit smart 注入 prompt 类型门控: off=每轮注入(原行为); on=短闲聊/追问(prompt<50 字符且不含 Goal 关键 token)跳过 smart 注入块, 仅保留 [plan-note] 节流注入。[task-v172 CA-1] 默认 on（原 opt-in 默认 off→CA-1 改为默认 on）: 每轮无条件注入 0.22-0.26s+1-1.5KB 复利开销实测, 与内容限频双闸启用。"
     },
     "smart_inject_interval": {
       "type": "integer",

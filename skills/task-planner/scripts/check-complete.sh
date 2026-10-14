@@ -1593,6 +1593,13 @@ END {print n+0}'
         l0_vf="$PLAN_DIR_GUESS/verification.md"
         if [ ! -f "$l0_vf" ] || ! grep -q '全量终验' "$l0_vf" 2>/dev/null || ! grep -qE 'Total:' "$l0_vf" 2>/dev/null; then
             l0_fail="${l0_fail}①verification.md 缺「全量终验」+Total 行（run=N/PASS=N 锚） "
+        else
+            # [M2-fix 2026-10-14] 结果性校验：Total 行 FAIL=N（N>0）→ ①不通过
+            # 原 GATE 只验存在性（Total: 行有值即可放行），升级：FAIL>0 须补 fresh 全量重跑
+            _l0_fail_n="$(grep -oE 'FAIL=[0-9]+' "$l0_vf" 2>/dev/null | head -1 | grep -oE '[0-9]+' || true)"
+            if [ -n "${_l0_fail_n:-}" ] && [ "$_l0_fail_n" -gt 0 ]; then
+                l0_fail="${l0_fail}①全量终验 FAIL=${_l0_fail_n}>0（L0 底线=0 FAIL；FAIL>0 须补 fresh 全量重跑） "
+            fi
         fi
         l0_ph_n="$(grep -cE '\*\*Status:\*\*[[:space:]]*complete' "$PLAN_FILE" 2>/dev/null || true)"
         l0_ph_n="${l0_ph_n:-0}"

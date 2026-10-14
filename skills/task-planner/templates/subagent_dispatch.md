@@ -1,5 +1,5 @@
 <!-- subagent_dispatch.md — Agent() 派发 prompt 模板(Rule 22.4)
-使用方式:主进程读本模板填九字段作 Agent() prompt | 已填示例与主进程参考段(例/Resume/STOP)外置 references/dispatch-examples.md 按需 Read [2026-09-27 task-v091 B-1] | 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
+使用方式:主进程读本模板填九字段作 Agent() prompt | 已填示例与主进程参考段(例/Resume/STOP)外置 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-dispatch/references/dispatch-examples.md 按需 Read [2026-09-27 task-v091 B-1] | 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
 <!-- 填写指引 Why（task-v115 线C 补强，Rule 45.2/45.4）:
   ① 何时用: 每次 Agent() 派发子代理前，主进程以本模板为 prompt 骨架逐项替换占位符；
      子代理无会话记忆，prompt 必须自包含（22.4a 自包含原则）——缺字段=子代理无据判断。
@@ -19,7 +19,7 @@
 - **需求锚（Rule 51.1a，task-v131）**: {requirement_anchor} — 需求相关 S-unit 必填；格式=治理 R 条目逐字引用 `R<n>:「<用户原话>」`；禁转译/缩写/换算（判例：用户「一个月」被两次改写为「前 72 小时」）；需求无关的纯机械 S-unit 可写「不适用（纯机械单元）」
 <!-- 2026-10-05 task-v131: 派发侧锚（Rule 51.1a 追加子句 / 53.5 载体清单）——子代理无会话记忆，转述后的目标易被上游改写漂移（判例见上字段行）；逐字引用 task_plan.md「🎯 用户需求原文」区块的 R 条目作本 S-unit 目标锚，让子代理对齐用户原话而非转译版；纯机械单元（记账/搬运类）写「不适用（纯机械单元）」即可，不强行挂 R -->
 
-## 2. 输入(计划三文件必传,绝对路径 — Rule 22.4a 读写契约)
+## 2. 输入(计划四文件必传,绝对路径 — Rule 22.4a 读写契约)
 - task_plan: {plan_dir}/task_plan.md — 只读(状态由主进程翻转,禁止修改)
 - findings:  {plan_dir}/findings.md — 可读;可写=仅追加 `#### [sub:{seq}-{type}] <标题>` 到 `## Research Findings` 段末(`## Technical Decisions` 前),禁改既有内容
 - progress:  {plan_dir}/progress.md — 可读;可写=仅在当前 Phase 段「Actions taken」下追加 `  - [sub:{seq}] <摘要>`,禁改 Status/Started
@@ -37,8 +37,8 @@
 - 注入格式: 伴飞技能 SKILL.md 绝对路径:{escort_skill_path}；子代理首动作：Read 该路径对齐方法论后再执行本任务。
 - 重型技能规则: 若该技能 SKILL.md 全文 >300 行（或含多 variant 文档）,本节另附主进程提炼的 ≤20 行要点 + 全文路径供子代理按需回读,禁止要求子代理通读全文——防上下文叠加（Rule 59.2 / R3）。
 
-## 📚 必要知识储备上下文包(随 prompt 注入 — prompt 自包含)
-<!-- WHAT: 派发时必须注入的知识源;全文摘录或路径引用,保证子代理无会话记忆也能对齐知识库 -->
+## 📚 必要知识储备
+<!-- WHAT: 派发时必须注入的知识源(随 prompt 注入 — prompt 自包含);全文摘录或路径引用,保证子代理无会话记忆也能对齐知识库 -->
 <!-- Why 台账供料纪律(2026-10-05 task-v137 S2, 收窄提案落点 2): 基线定数(行数/Rule 编号/实体清单/selftest 基线)已由台账承载;prompt 逐项内联重建(v116 A2 变体)无时效戳,锚漂移后即成谣言源——一律经 brief §2/§3 台账路径锚供料(21.2.1 台账供料优先),禁既贴台账原文又给路径(22.4 §9 既有纪律) -->
 | 知识源 | 定位 | 注入方式 |
 |--------|------|---------|
@@ -73,7 +73,7 @@ blockers: none | <一句话>
 confidence: HIGH | MED | LOW
 ```
 > 步骤枚举约束(task-v081):prompt 内显式步骤枚举(StepN/步骤N/第N步/①-⑮,按序号去重)≤ config `step_max_steps`(默认 4);超限=回炉拆 S-unit 再派,check-dispatch.sh fine_grain_checks ④ enforce 档硬拦(任务书豁免场景对任务书文件同步计数)。
-已填示例(照此逐字段,不加标题/前言/总结):见 references/dispatch-examples.md §1 [2026-09-27 task-v091 B-1 外置]
+已填示例(照此逐字段,不加标题/前言/总结):见 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §1 [2026-09-27 task-v091 B-1 外置]
 主进程侧:收到缺字段/自由文本 → 视为 partial,以第 8 节检查点「最终结论」段(同一 8 字段块)为准(Rule 22.8.5)
 **返回前必做**:1. Read 实际产出文件确认变更落盘 2. `files:` 列所有修改的绝对路径(含 §2 契约追加的 findings/progress) 3. failed 时 `blockers:` 写原因+检查点「错误与受阻」段写已尝试方案 4. 同一 8 字段块写入第 8 节检查点「最终结论」段并置 status(Rule 22.8.2 T5)
 
@@ -97,7 +97,7 @@ confidence: HIGH | MED | LOW
 【防幻觉契约】你的全部事实性输出必须带来源锚（file:line / 命令原文 / URL / 已读区段行号）四者之一；禁止无来源的具体化（包括把推测写成事实、替调用方补细节、填模板空段）；信息缺失一律显式写「未验证」或「暂无」并说明缺什么；结论区必须「事实+锚点」成对，无锚点行=违规退回；禁止以「合理推断」为由省略锚点。
 > 写入前五问（Rule 71.2）：①每个具体事实有第一手来源吗 ②是否在填模板空段 ③读者能按锚点复核吗 ④中断重启后能从磁盘证据重建吗 ⑤写的是「我记得/我读到过」还是「我觉得应该有」——任一不过=改写为显式占位再写入。
 
-<!-- resume_from / STOP 上报模板(主进程专用,Rule 22.8.4 / 22.7.1)已外置 references/dispatch-examples.md §2/§3 [2026-09-27 task-v091 B-1] -->
+<!-- resume_from / STOP 上报模板(主进程专用,Rule 22.8.4 / 22.7.1)已外置 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §2/§3 [2026-09-27 task-v091 B-1] -->
 
 ## 定稿可行性判别模式（Rule 74.4 — 计划定稿后/重大修订后/合并回前派发）
 派发独立子代理（上下文与主会话隔离，材料包=计划全文+涉及规则/模板原文完整传入，禁只传摘要）；判别三维：可执行性（每 Phase/S-unit 有明确输入/验收/边界，无空段占位）/相容性（与既有规则/模板/守护无冲突，引用锚真实存在）/风险性（爆炸半径=触及文件数×运行中基础设施权重；回滚路径存在）；三态结论：PASS（放行）/PASS-WITH-RISKS（登记风险项+缓解后放行）/FAIL（禁执行，回炉修订后重判）；结果 30 秒内落盘 findings.md+progress.md；档位按 Rule 43.2 min 档即可；豁免=mini 档或单文件 ≤3 行 trivial（登记一行理由）。

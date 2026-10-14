@@ -58,12 +58,12 @@ t "SL-04 critical-rules.md '^80.[1-6] ' = 6" bash -c "
 # [2026-10-11 task-v169 原钉: '1-80' = 3]
 # [2026-10-11 task-v170 Rule 45 纪元扩围: Why=task-v170 落地 Rule 81（计划完成后归档纪律），
 #  SKILL.md 字面 '1-80' 演进为 '1-81'（L9/L315/L407），epoch 上界 80→81；
-#  扩围正则 1-8[01]([^0-9]|$)（尾边界写法参照 selftest-veto.sh VT-10 task-v070 S10o 范式）:
+#  扩围正则 1-8[013]([^0-9]|$)（尾边界写法参照 selftest-veto.sh VT-10 task-v070 S10o 范式）:
 #  覆盖现值 '1-81'（grep -c ≥3）且兼容 '1-80' 历史态；负样本 '1-82'/'1-89' 不得命中——禁越界放开]
-t "SL-05 SKILL.md 纪元锚 '1-8[01]' ≥3（覆盖 1-80/1-81, 尾边界 82/89 负样本不命中）" bash -c "
-    [ \"\$(grep -cE '1-8[01]([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
-    [ \"\$(echo '1-82' | grep -cE '1-8[01]([^0-9]|$)')\" -eq 0 ] &&
-    [ \"\$(echo '1-89' | grep -cE '1-8[01]([^0-9]|$)')\" -eq 0 ]"
+t "SL-05 SKILL.md 纪元锚 '1-8[013]' ≥3（覆盖 1-80/1-81, 尾边界 82/89 负样本不命中）" bash -c "
+    [ \"\$(grep -cE '1-8[013]([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
+    [ \"\$(echo '1-82' | grep -cE '1-8[013]([^0-9]|$)')\" -eq 0 ] &&
+    [ \"\$(echo '1-89' | grep -cE '1-8[013]([^0-9]|$)')\" -eq 0 ]"
 
 # SL-06: check-complete.sh SESSION-LOG GATE 三件套（[session-log-gate] 前缀 + env 开关名 + 零新 config 键/env-only 注释）
 t "SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_SESSION_LOG_ENFORCE∧零新 config 键|env-only)" bash -c "
@@ -80,7 +80,7 @@ t "SL-07 init-session.sh 'copy_template \"user-session-log.md\"'≥1 ∧ '6/6'=1
 t "SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'=0, 纯静态)" bash -c "
     [ \"\$(grep -cE '当前条目数|最近一条' '$TPL')\" -eq 0 ]"
 
-# SL-09: 零新 config 键（properties 键数恒 44; task-perf-opt 合法新增 smart_inject_type_gate+selftest_parallel_mode 2 键, 42→44）；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
+# SL-09: 零新 config 键（properties 键数恒 46; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46）；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
 if command -v jq >/dev/null 2>&1; then
     t "SL-09 config.json properties 键数 = 46（零新 config 键, jq; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46）" bash -c "
         [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 46 ]"

@@ -79,21 +79,21 @@ ad12=0
 #   4 个主锚 selftest 的纪元锚随动演进（'Critical Rules 1-[7-8][0-9]'→"grep -cE '1-80'"），pin 清单同步演进
 #   （pin 机制语义不变：钉住兄弟 selftest 的 live 纪元锚形态，防部分演进漂移；与 v169 '1-74'→'1-[7-8][0-9]' 同范式）。
 # [2026-10-12 task-v170 纪元并集 max(1-81)] SKILL.md 全集口径 '1-80'→'1-81'（Rule 81 落地，VC-2 口径 78 条），
-#   5 个主锚 selftest 的纪元锚再随动 '1-80'→'1-8[01]'（覆盖 80/81，负样本 1-82 不命中，同 master 版
+#   5 个主锚 selftest 的纪元锚再随动 '1-80'→'1-8[013]'（覆盖 80/81，负样本 1-82 不命中，同 master 版
 #   selftest-session-log.sh SL-05 已立形态），pin 清单二次同步；research-first/context-pressure/skill-split
 #   三个 _pin_tol 目标字面随各自 live 锚演进而同步。
-_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-8[01]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-8[01]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-8[01]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-8[01]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-8[01]'" || ad12=1
-_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-8[01]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-8[01]' || ad12=1
+_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-8[013]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-8[013]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-8[013]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-8[013]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-8[013]'" || ad12=1
+_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-8[013]' || ad12=1
+_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-8[013]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-workflow-orchestration.sh" '1-(68|69|71)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-conclusion-discipline.sh" '1-[4-7][0-9]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-7][0-9]|81)' || ad12=1
+_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-8][0-9])' || ad12=1
 _pin_tol "$SCRIPTS/selftest-source-anchor-discipline.sh" '^71\.[1-7] ' || ad12=1
-if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：'1-8[01]' 纪元 grep ×5）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
+if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：'1-8[013]' 纪元 grep ×5）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
 # AD-13 自举消费：本计划 task_plan.md 变更标注表 ≥10 行 CA-n 条目（Rule 74.3 dogfood，本计划=首批 consumer）
 #   候选（无机器相关硬编码，S12 收紧）：① env 注入 TASK_PLANNER_ABSORB_PLAN ② 主仓根（git-common-dir 推导，worktree 内可解析到主仓）
 #     ③ repo 相对 $SKILL_ROOT/../../plans/…（部署位/主仓直跑）；均缺=SKIP 中性态（sk 不计 pass/fail，防静默转绿）

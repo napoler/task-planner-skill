@@ -12,7 +12,7 @@
 
 set -u
 
-usage() { echo "usage: lane-detect.sh [--diff BASE] | [--plan FILE]" >&2; exit 2; }
+usage() { echo "usage: lane-detect.sh [--diff BASE] [--trivial] | [--plan FILE]" >&2; exit 2; }
 fallback_l1() { # 无法判定兜底：stdout 给 L1（fail-safe 向重侧）+ stderr 说明，exit 2
     echo "execution_lane: L1"
     echo "[lane-detect] 无法判定: $1（兜底 L1=现行默认全流程）" >&2
@@ -21,9 +21,14 @@ fallback_l1() { # 无法判定兜底：stdout 给 L1（fail-safe 向重侧）+ s
 
 PLAN_FILE=""
 BASE=""
+# [M1/M5-fix 2026-10-14] --trivial 模式：init-session.sh 在 TRIVIAL_CODE_TIER=1 时传入，
+# 使「代码文件改动可进 L0」的 trivial 例外在 lane-detect 统一判定面内可审计（M5 消除两处分离），
+# 同时 Rule 38.7 的 trivial 例外在 lane-detect.sh 内显式声明，消除与 critical-rules-template.md:49 禁令的矛盾（M1）。
+TRIVIAL_MODE=0
 while [ $# -gt 0 ]; do case "$1" in
     --plan) PLAN_FILE="${2:-}"; [ -n "$PLAN_FILE" ] || usage; shift 2 ;;
     --diff) BASE="${2:-}"; [ -n "$BASE" ] || usage; shift 2 ;;
+    --trivial) TRIVIAL_MODE=1; shift ;;
     *) usage ;;
 esac; done
 # ── --plan 模式: 计划文件头读已有 execution_lane: 行原样透传校验（init-session 写入消费闭环）──
@@ -82,8 +87,29 @@ NSKILLS="$(printf '%s\n' "$FILES" | grep -oE '^skills/[^/]+' | sort -u | grep -c
 abuse=""
 [ -n "$NEW_HIT" ] && abuse="${abuse}新增文件($(printf '%s\n' "$NEW_HIT" | tr '\n' ' ')等) "
 [ "${RULE_NEW:-0}" = 1 ] && abuse="${abuse}critical-rules.md 新增 Rule 条目段 "
-[ -n "$CODE_HIT" ] && abuse="${abuse}代码文件改动($(printf '%s\n' "$CODE_HIT" | tr '\n' ' ')等) "
-if [ -z "$l2_hits" ] && [ -z "$abuse" ] && [ "$NFILES" -le 3 ] && [ "$LINES_TOTAL" -le 20 ] \
+# [M1-fix 2026-10-14] CODE_HIT 在 --trivial 模式下不触发禁滥用③（trivial 代码修复是本模式前提）；
+# 非 trivial 模式保持原行为（代码文件改动→禁滥用③→L1）
+if [ -n "$CODE_HIT" ] && [ "${TRIVIAL_MODE}" -eq 0 ]; then
+    abuse="${abuse}代码文件改动($(printf '%s\n' "$CODE_HIT" | tr '\n' ' ')等) "
+fi
+# [M1/M5-fix] trivial 代码修复 L0 判定（--trivial 模式专用）：
+# 单文件 ∧ ≤3 行 ∧ 非新增 ∧ 无新 Rule 段 → L0；CODE_HIT 豁免（禁滥用③不生效）
+# Rule 38.7 条文（critical-rules-template.md:49）显式开出「≤3 行 trivial 代码修复」例外，
+# L0 仍保留 ①全量终验+②Phase翻转+③单commit 三道底线门。
+if [ "${TRIVIAL_MODE}" -eq 1 ]; then
+    if [ -z "$l2_hits" ] && [ -z "$abuse" ] && [ "$NFILES" -le 1 ] && [ "$LINES_TOTAL" -le 3 ]; then
+        lane=L0
+        reason="L0 trivial 代码修复（--trivial：单文件 ∧ ≤3行 ∧ 非新增 ∧ 无新 Rule 段，CODE_HIT 豁免禁滥用③）"
+    elif [ -n "$l2_hits" ]; then
+        [ -n "$abuse" ] && reason="${reason:-} | L2 命中: ${l2_hits% }"
+        lane=L2
+        [ -z "${reason:-}" ] && reason="L2 命中: ${l2_hits% }（--trivial 模式亦不可进 L0）"
+    elif [ -n "$abuse" ]; then
+        reason="L1: 禁滥用命中 — ${abuse% }（--trivial 模式：新增文件/新 Rule 段仍 L1，CODE_HIT 豁免）"
+    else
+        reason="L1: --trivial 模式 L0 条件未全命中（文件数=${NFILES}, 行数=${LINES_TOTAL}；须单文件 ∧ ≤3行）"
+    fi
+elif [ -z "$l2_hits" ] && [ -z "$abuse" ] && [ "$NFILES" -le 3 ] && [ "$LINES_TOTAL" -le 20 ] \
    && ! printf '%s\n' "$FILES" | grep -qvE '\.md$'; then
     lane=L0
     reason="L0 三条件全命中: 文件数=${NFILES}≤3 ∧ 增删行总数=${LINES_TOTAL}≤20 ∧ 全为 .md 且无禁滥用命中（38.7 微变更通道）"

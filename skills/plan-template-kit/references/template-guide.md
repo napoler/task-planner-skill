@@ -69,25 +69,26 @@ task-planner 提供 **双层优先级** 的模板机制：
 
 | 文件名 | 用途 |
 |--------|------|
-| `cost_log.md` | opus 调用成本日志（Rule 17 配套） |
 | `batch_report.md` | 批量处理质量门控八字段报告（Rule 18.6 配套） |
 | `subagent_dispatch.md` | 子代理派发 prompt 九字段模板(含计划三文件必传 + 8 字段严格返回)(Rule 22.4 配套) |
 
-**总文件数**:5 核心 + 3 辅助 + 29 variant = **37 个模板**；另有 knowledge-brief.md（第 6 计划文件）/shared-tracker.md（Rule 30 区块模板）/delivery-summary.md（交付总结模板）不入此口径，templates/ 实际 38 个 .md（2026-09-28 task-v093 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093；+image task-videop1-planimage-001；+视频工序 11 类 task-videop1-videotpl-001）。
+> 注：`cost_log.md`（原 v2.1 入清单第 3 辅助，Rule 17 配套）已随后续版本移除——templates/ 现存 `ls` 无此文件（2026-10-13 同步员核销），入清单辅助计数由 3 减为 2。
 
-### 2.4 标准章节：「📚 必要知识储备」（35/38 个模板文件统一含 — mini-lite/knowledge-brief/shared-tracker 三者例外；v2.3 新增，v093 +video-fix，planimage +image，videotpl +11）
+**总文件数**:5 核心 + 2 辅助 + 29 variant = **36 个入清单模板**；另有 6 个现存顶层文件不入此口径——knowledge-brief.md（第 6 计划文件）/user-session-log.md（第 7 计划文件）/shared-tracker.md（Rule 30 区块模板）/delivery-summary.md（交付总结模板）/deprecated.md（Rule 73.5 废弃内容隔离区）/session-handoff.md（Rule 67.4 会话交接文档）。templates/ 实际 **42 个 .md**（2026-10-13 同步员 `ls` 实测;历史漂移=v086/v085 两批新增+video-fix 收录未回写——mini-lite-type d6a0f76、video-type 51ca883、video-fix task-v093；+image task-videop1-planimage-001；+视频工序 11 类 task-videop1-videotpl-001；+deprecated/session-handoff/user-session-log 三文件在途新增未回写口径——本行 2026-10-13 同步员补登记）。
+
+### 2.4 标准章节：「📚 必要知识储备」（35/42 个模板文件统一含 — 7 个例外：variant/mini-lite-type、knowledge-brief、shared-tracker、delivery-summary、deprecated、session-handoff、user-session-log；v2.3 新增，v093 +video-fix，planimage +image，videotpl +11）
 
 **目的**：任务知识库对齐——计划创建时列出本任务依赖的知识源（规范/标准、官方文档、项目内部文档/知识库、文献/论文、图书/教程），Phase 1 开工前逐项确认「必读」项可获取；缺失 → STOP 记入 Errors，禁止凭记忆硬写。
 
-- **统一标题**：`## 📚 必要知识储备`（副标题按模板适配）——全库唯一 grep 锚，可用 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 验收（应为 35；例外：knowledge-brief、shared-tracker、variant/mini-lite-type；task-v115 videop1 回流 12 类全含锚，实测 35）
+- **统一标题**：`## 📚 必要知识储备`（副标题按模板适配）——全库唯一 grep 锚，可用 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 验收（应为 35；例外 7 个：knowledge-brief、shared-tracker、variant/mini-lite-type、delivery-summary、deprecated、session-handoff、user-session-log——deprecated/session-handoff 经 2026-10-13 审计修复已移除非统一形式锚、改独立编号标题不计入；task-v115 videop1 回流 12 类全含锚，实测 35）
 - **task_plan 系（主模板 + 29 variant，含锚 28——mini-lite 除外）**：完整五类知识源表 + 填写规则，插入于「⚠️ 执行范围限制」之后；variant 另含 1 行类型示例行（如 bugfix=官方 Issue/changelog、schema-migration=DB 官方 DDL 文档）；Phase 1 追加确认 checkbox
-- **辅助模板**：轻量适配版——findings=对齐记录、progress=使用记录、verification=符合性核验、batch_report=知识依据、cost_log=计费知识依据、notepad-learnings=储备备注、subagent_dispatch=知识上下文包（随 prompt 注入子代理）
+- **辅助模板**：轻量适配版——findings=对齐记录、progress=使用记录、verification=符合性核验、batch_report=知识依据、notepad-learnings=储备备注、subagent_dispatch=知识上下文包（随 prompt 注入子代理）
 - **契约安全**：该章节属可定制结构区（见 §四）。内容不含 `### Phase N:`、`- **Status:**`、行首 `---`，标题避开 `Batch Report` 字样（防误触 Rule 18.6 正则）；插入位置必须在「⚠️ 执行范围限制」区块**完整结束之后**——该区块被 check-conflicts.sh / check-drift.sh 经统一库 lib/plan-parse.sh 的 `plan_parse_scope` 提取（check-conflicts 默认形态、check-drift 列限形态，语义权威源见库头注），任何 `##` 级标题插入区块中间都会截断 scope 提取
 
 ### 2.5 knowledge-brief.md（第 6 计划文件 — task-v067 新增）
 
 - 定位：五段结构（任务速览/已验证事实/关键文件锚点表/易错点清单/S-unit 材料包索引）；计划期由 plan-writer 产出，执行期各 S-unit 完成后回填 §2/§3
-- 差异：本模板不含 2.4 所述「📚 必要知识储备」章节（头部注释已声明），故 §2.4「统一标题」条的 grep 锚计数 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 现为 35（task-v115 回流后 29 variant 中 28 含锚+顶层 7 含锚，= 39 − 3 无锚例外：knowledge-brief/shared-tracker/variant/mini-lite-type）；由 init-session.sh 建档并计入白名单（模板白名单 5→6，见 template-mapping.md §七）
+- 差异：本模板不含 2.4 所述「📚 必要知识储备」章节（头部注释已声明），故 §2.4「统一标题」条的 grep 锚计数 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 现为 35（29 variant 中 28 含锚+顶层 7 含锚=35；= 42 总 − 7 无锚例外：knowledge-brief/shared-tracker/variant/mini-lite-type/delivery-summary/deprecated/session-handoff/user-session-log）；由 init-session.sh 建档并计入白名单（模板白名单 5→6，见 template-mapping.md §七）
 
 ### 2.6 新模板调研需求判定条目（Rule 75.6 — task-v163）
 

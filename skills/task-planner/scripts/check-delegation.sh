@@ -296,34 +296,10 @@ mode_pretool() {
         esac
     fi
 
-    # ④a [task-perf-opt Change #3] 无活跃计划 trivial 修复前置分支: 无活跃计划（resolve_plan_dir 返回空）
-    #   ∧ tool=Edit ∧ new_string 行数 ≤3 ∧ 单文件 ∧ file 不在保护区 → exit 0 放行。
-    #   注：本分支与 ① 的「无活跃计划 → exit 0」语义重叠（① 已无条件放行无活跃计划），作为显式补充
-    #   防止 ① 的 resolve_plan_dir_any 在 mtime 兜底/legacy 指针边界情况下返回非空时漏拦；
-    #   复用既有 mini 通道的保护区排除逻辑（:301-312 的 case 分支），不新增 trivial 阈值配置键。
-    if [ -z "$plan_dir" ] && [ "$lines_arg" != "-" ]; then
-        case "$lines_arg" in
-            ''|*[!0-9]*) ;;
-            *)
-                if [ "$lines_arg" -ge 1 ] && [ "$lines_arg" -le 3 ]; then
-                    case "$file_path" in
-                        */.zcode/skills/*) ;;
-                        */.claude/skills/*) ;;
-                        */.config/opencode/skills/*) ;;
-                        */.agents/skills/*) ;;
-                        */.zcode/agents/*) ;;
-                        */.zcode/commands/*) ;;
-                        */.zcode/AGENTS.md) ;;
-                        */.agents/AGENTS.md) ;;
-                        */.zcode/cli/config.json) ;;
-                        *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) ;;
-                        *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*) ;;
-                        *) exit 0 ;;  # 非保护区 trivial 修复 → 放行
-                    esac
-                fi
-                ;;
-        esac
-    fi
+    # ④a [removed M4-fix 2026-10-14] 无活跃计划 trivial 修复前置分支（原 L304-326 死代码）
+    # 根因：L252 在 plan_dir 为空时已 exit 0，到达 L304 时 plan_dir 必然非空，
+    # 原条件 [ -z "$plan_dir" ] 永远为 false → 分支体永不可达（工作流审计 dwfrun-6e7dca7b M4 确认）
+    # ① 的 resolve_plan_dir_any 边界防护由 ① 自身负责，无需下游不可达分支兜底。
 
     # ④b [2026-09-28 task-v094 T-B4] mini 直做通道: 活跃计划 plan_tier=mini(显式或 auto-tier) ∧ 目标非保护区 → 放行
     #    纪律口径(≤30 行/≤2 文件/单模块/≤15min)由计划 Executor 字段登记(25.3 白名单⑥)+终验 stats 抽查承载;
@@ -341,7 +317,15 @@ mode_pretool() {
             */.zcode/cli/config.json) ;;
             *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) ;;
             *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*) ;;
-            *) exit 0 ;;  # 非保护区 mini 直做 → 放行
+            *)
+                # [M3-fix 2026-10-14] new_string 行数上限：mini 纪律口径 ≤30 行（与 ④b 注释声明对齐）
+                # 不可校验（Write 工具 lines_arg="-" 或非数字）→ 保守放行（保持原行为）
+                # >30 行 → 不放行，落到 ⑤⑥ 原链（超 mini 纪律口径须走委派或 allow-direct）
+                case "$lines_arg" in
+                    ''|-*|*[!0-9]*) exit 0 ;;
+                    *) [ "$lines_arg" -le 30 ] && exit 0 ;;
+                esac
+                ;;
         esac
         # 保护区命中 → 落到 ⑤⑥ 原链
     fi

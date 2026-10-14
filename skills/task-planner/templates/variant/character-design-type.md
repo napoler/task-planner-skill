@@ -1,19 +1,13 @@
 # Task Plan: [角色设计与一致性锁定任务]
 <!-- template_type: character-design -->
 <!-- 角色资产工序专用：设定卡→根图→QC→G1 定稿→multiview→MCD+四登记→一致性锁传播。边界：新角色/角色包；既有根锚派生补制入 multiview-ref-type；场景/道具件入 image-type。触发词：新角色/定妆/角色卡/母图/一致性锁定 -->
-<!-- 五要素：①编号原子步骤+显式状态定义（角色卡全字段+状态卡）+合规检（中式审美基线/双硬错误/安全）+静默迭代（修词重抽环）+验收判据（VC 表） -->
 <!-- 交互：默认 interaction_mode: silent——生成/QC/重抽环静默；唯一合法人工停点=G1 定妆终审（现役锚定门）与预算冻结 STOP（≤20 抽/件）、Rule 28 D6 -->
 
 <!-- plan_tier: standard -->
 ## Goal
 [一句话：N 个角色资产包（定妆根图+multiview 合版+角色卡含音色）定稿入库，达成标准（G1 放行+双硬 QC 全过+四登记齐）]
 
-## 任务分型（三选一）
-| 型 | 场景 | 差异 |
-|----|------|------|
-| A 常驻新角色 | 有台词/特写的正式角色 | 全六相+五件包全量 |
-| B 一次性角色 | 单集功能性出场 | 简化包产线（自动工单）；有台词/特写默认升级 multiview |
-| C 存量升级 | 旧三视角件升 multiview | P1 直入根锚确认，P4 重补制 |
+## 任务分型（三选一：A 常驻新角色=全六相+五件包全量；B 一次性角色=简化包产线、有台词/特写默认升 multiview；C 存量升级=P1 直入根锚确认、P4 重补制）
 
 ## ✅ Verification Contract
 | # | 判定标准 | 验证方式 | 证据路径 |
@@ -44,33 +38,26 @@
 - **V-N:** VC-2, VC-3
 - **Status:** pending
 - **Executor:** 主进程（设定层判断需 bible 上下文）
-
 ### Phase 2: ② 根图生成（t2i 多抽择优）
-- [ ] 风格 token 块+负向基线+全身构图词；批量多抽 N 候选；机器 QC（双硬错误）后主进程 Read 亲检择优；账本闸门全程生效
-- [ ] 产出=根图候选（状态：待 G1）
+- [ ] 风格 token 块+负向基线+全身构图词；批量多抽 N 候选；机器 QC（双硬错误）后主进程 Read 亲检择优；账本闸门全程生效；产出=根图候选（状态：待 G1）
 - **V-N:** VC-3, VC-4
 - **Status:** pending
 - **Executor:** 子代理 A（生成+机检）→主进程亲检
-
 ### Phase 3: ③ G1 定妆终审（唯一人工停点）
 - [ ] 择优件 tmp/ 下载 Read 呈示+审查地址清单+对照行（角色×特征×服装×状态）；放行=根锚确立（登记行）；否决=归档回 P2 改词
 - **V-N:** VC-5, VC-1
 - **Status:** pending
 - **Executor:** 用户裁决（主进程 STOP 呈示）
-
 ### Phase 4: ④ multiview 补制
-- [ ] i2i 锚定根图派生多视角（正/侧/背+细节格，视角清单逐行）；禁跳根；逐格双硬 QC；缺陷回修词重抽环
-- [ ] 产出=multiview 合版候选（状态：待合版）
+- [ ] i2i 锚定根图派生多视角（正/侧/背+细节格，视角清单逐行）；禁跳根；逐格双硬 QC；缺陷回修词重抽环；产出=multiview 合版候选（状态：待合版）
 - **V-N:** VC-1, VC-3
 - **Status:** pending
 - **Executor:** 子代理 B（与子代理 A 分派）
-
 ### Phase 5: ⑤ MCD 定稿+四登记
 - [ ] MCD 精准描述逐字段定稿；角色卡全字段回填；登记册/upload-map/产出台账四登记；状态=现役
 - **V-N:** VC-2, VC-6
 - **Status:** pending
 - **Executor:** 主进程
-
 ### Phase 6: ⑥ 一致性锁传播
 - [ ] 下游引用纪律登记（提示词逐字抄 MCD/换装走变体登记表/改声=换声通知在途任务）；基线更新（绑定表/大纲常驻名单）
 - **V-N:** VC-6, VC-2
@@ -82,6 +69,16 @@
 - 静默环：P2/P4 重抽不呈送中间态；用户可见态=G1 呈审包、入库收尾报告（逐件+审查地址清单）
 - 预算冻结（≤20 抽/件耗尽）=STOP 呈用户，冻结期禁对该件任何续抽
 
+## ⚠️ 执行范围限制
+
+| 类别 | 允许的文件 | 禁止 |
+|-------|-----------|------|
+| 角色资产 | assets/<series>/{cards,root,multiview}/* | 其他角色/非本系列资产 |
+| 登记台账 | docs/bible*.md + 登记册 + upload-map.md + 产出台账 | 未列入台账的其他 docs 改动 |
+| 临时产物 | tmp/_gen-budget/ledger.json + tmp/qc/ + tmp/ 落选归档 | 根目录散落临时文件 |
+| 计划文件 | plans/<task-id>/* | 其他 plan 目录 |
+**强制约束**：根图未 G1 定稿禁派生（根图先行）；multiview 合版定稿前禁下游引用（一致性锁）；落选件当日归档、禁残留 tmp/
+
 ## 📚 必要知识储备（均仓相对路径或技能名）
 | 类别 | 名称/主题 | 定位 | 必读级别 | 已确认 |
 |------|----------|------|---------|--------|
@@ -91,17 +88,14 @@
 | 项目指令 | AGENTS.md 约束 7/8/9/19 | AGENTS.md | 必读 | ☐ |
 | 工具 | gen.py 预算账本/compose.py 合版 | tools/README.md | 必读 | ☐ |
 
+- **调研需求三态（Rule 75.1/75.6）**：本模板任务默认 NET-NONE（不需要）——角色设计为仓内资产工序，知识源=角色规范/风格 token/master-asset 产线 SOP（仓内已固化），逐图 QC 与 G1 终审替代网络调研；例外：新角色需外部参考（竞品人设/公开角色库）→ 升 NET-OPTIONAL，动手前先检索现成资料（Rule 75.3）
+
 ## 🚨 Drift Log
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |          |        |      |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
-<!-- 
-  WHAT: 本计划子代理 vs 主进程的执行分布统计。
-  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。
-  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。
--->
+<!-- 子代理 vs 主进程执行分布统计;委派率 < delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3);每个 Phase complete 后更新,终验交付前必须完整 -->
 | 字段 | 值 |
 |------|-----|
 | 子代理执行 Phase 数 / 总 Phase 数 |  /  |
@@ -109,18 +103,9 @@
 | 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-<!--
-  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才在「备注」列勾 verify_done;failed/timeout 行必须回填 checkpoint 路径列(Rule 22.8.4)
-  WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
-  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
-  列说明: 备注列 = 低频列折叠单列(rescue 换档挽救记录 档位/结果/时间,failed|timeout 行必填,Rule 22.7;retry_count = 22.3 retry_limit 计数,初值 0,每次重试 +1;verify_done☐ = Read 产出 + findings 复核/回填双条件,Rule 22.5)——字段内容不删,仅列位折叠;verify_done 无机器消费(grep 实证 scripts/*.sh 除 selftest 零命中),为人工义务,不声称机器门
-  派发 prompt 八字段模板: templates/subagent_dispatch.md
-  # [2026-09-27 task-v091 B-2] 单写者澄清+Handoff 低频列折叠（verify_done 无机器消费如实披露）
--->
+<!-- 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5);failed/timeout 行必填 checkpoint 路径(Rule 22.8.4);状态枚举 queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch;备注列=低频折叠列(rescue/retry_count/verify_done,Rule 22.7);派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/subagent_dispatch.md -->
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
 

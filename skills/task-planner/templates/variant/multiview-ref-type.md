@@ -29,31 +29,31 @@
 
 ## Phases（五原子步骤）
 
-### Phase 1. 根锚确认
+### Phase 1: 根锚确认
 - [ ] 目标件现役根锚核验（定稿态/登记态）；缺根锚=STOP 转 character-design-type 补制（本模板不产根图）；产出=根锚清单（件×根锚×状态）
 - **V-N:** VC-1, VC-2
 - **Status:** pending
 - **Executor:** 主进程（登记层判断）
 
-### Phase 2. i2i 派生生成
+### Phase 2: i2i 派生生成
 - [ ] 视角清单逐格派生（锚定根图+视角子句+负向基线）；装备变体同步登记；账本闸门生效；产出=候选格（状态：待 QC）
 - **V-N:** VC-2, VC-4
 - **Status:** pending
 - **Executor:** 子代理 A（生成执行体）
 
-### Phase 3. 质量审查与归因
+### Phase 3: 质量审查与归因
 - [ ] 机检（≤4 图/批）+主进程 Read 亲检；缺陷四维归因（提示词/随机/参考带入/规格）；FAIL 回 P2 修词重抽环（静默）
 - **V-N:** VC-3, VC-4
 - **Status:** pending
 - **Executor:** QC 执行体+主进程亲检
 
-### Phase 4. 合版定稿
+### Phase 4: 合版定稿
 - [ ] 合图（columns 护栏，件数>3 必带；宽高比 ≤2.5）+命名归属标注（label 逐件）；合版亲检（格位×视角对照）；状态=待登记
 - **V-N:** VC-5, VC-2
 - **Status:** pending
 - **Executor:** 子代理 B（合图）+主进程亲检
 
-### Phase 5. 登记替换与收尾
+### Phase 5: 登记替换与收尾
 - [ ] 现役替换登记；被替换件当日归档+引用同步（grep 旧路径 0 残留）；单份收尾报告（逐件验收行+归档清单+账本对账+审查地址清单）
 - **V-N:** VC-6, VC-5
 - **Status:** pending
@@ -63,6 +63,21 @@
 - 生成（P2）/QC（P3）/合图（P4）分属不同执行体；主进程 Read 亲检=验收前置，机判=参考项
 - 静默环：重抽不呈送中间态；用户可见=批次末单份收尾报告
 - 根锚换代=派生件连锁重派生（登记链）；冻结 STOP 期间禁对冻结件任何续抽
+
+## ⚠️ 执行范围限制
+
+| 类别 | 允许的文件 | 禁止 |
+|------|------------|------|
+| 根锚/登记 | assets/registry.md、assets/upload-map.md | 其他资产台账 |
+| 计划文件 | plans/task-{id}/* | 其他 plan 目录 |
+| 临时文件 | tmp/qc/*、tmp/_gen-budget/ledger.json | 根目录临时文件 |
+| 知识文档 | docs/CHARACTER.md、docs/style.md、prompts/reference-slots-v2.md、tools/README.md | 其他无关文档 |
+| 技能文件 | 仅 .zcode/skills/videop1-master-asset/ | 其他 skill/agent 文件 |
+
+**强制约束**:
+- 缺根锚 → STOP 转 character-design-type 补制；本模板不产根图，禁跳根直出
+- multiview 合版=唯一入生产参考组件；单视角/三视角定稿件归档禁入参考组
+- 被替换件 -superseded 当日归档+引用同步 grep 0 残留
 
 ## 📚 必要知识储备（均仓相对路径或技能名）
 | 类别 | 名称/主题 | 定位 | 必读级别 | 已确认 |
