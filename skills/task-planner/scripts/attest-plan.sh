@@ -11,6 +11,7 @@
 #   attest-plan.sh --skip-template-check [plan_file]  # 跳过模板门控(Rule 34.1, 须在交付报告披露)
 #   attest-plan.sh --skip-fmea-check [plan_file]      # 跳过 FMEA 门控(v075 P4, 与 --skip-dispatch-check 同构, 须在交付报告披露)
 #   attest-plan.sh --skip-goal-check [plan_file]      # 跳过 Rule 66.5 Goal 单元表门(2026-10-09 CR F1 接线; 透传 check-plan-dispatch.sh, 须在交付报告披露)
+#   attest-plan.sh --skip-vc-check [plan_file]        # 跳过 Rule 84.1 VC 可执行性门(task-v173 验证技能独立化; 校验 verification.md 每条 VC 含可执行命令, 须在交付报告披露)
 # 说明: Rule 51.1 需求原文区块门(缺区块/无 R 行/无 R→VC 映射/无 🧮 根源覆盖表 → 拒锁)为 fail-closed 硬门, 无 --skip 逃生口;
 #       mini 档(plan_tier: mini)整块豁免(与 FMEA mini 豁免同先例), 非 mini 计划必含四锚(51.1 三锚 + 53.1 第 4 锚)方可锁定。
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
@@ -26,6 +27,8 @@ skip_dispatch=""
 skip_template=""
 skip_fmea=""
 skip_goal=""
+# [task-v173] Rule 84.1 VC 可执行性门开关（--skip-vc-check）
+skip_vc=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
@@ -35,6 +38,7 @@ for arg in "$@"; do
     --skip-template-check) skip_template=1 ;;
     --skip-fmea-check) skip_fmea=1 ;;
     --skip-goal-check) skip_goal=1 ;;
+    --skip-vc-check) skip_vc=1 ;;
     -h|--help) sed -n '2,15p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
@@ -78,7 +82,7 @@ case "$mode" in
     # （复用现有计算，不新增指纹逻辑）；门链主要校验 task_plan.md 内容，其他计划文件变更不触发
     # 失效——重 attest（plan 变更后 hash 变）为常规失效路径。
     _attest_hash="$(sha256sum "$plan_file" | awk '{print $1}')"
-    _attest_cksum="$(printf '%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}" | sha256sum | cut -d' ' -f1)"
+    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" | sha256sum | cut -d' ' -f1)"
     _attest_cache="/tmp/attest-cache-${_attest_cksum}.result"
     if [ -f "$_attest_cache" ] && [ ! "$plan_file" -nt "$_attest_cache" ]; then
       # plan_file 未变更（mtime 不新于缓存）→ 回放缓存结果，跳过完整门链
@@ -197,6 +201,55 @@ case "$mode" in
         exit 1
       fi
       echo "[attest] [requirement-gate] OK (Rule 51.1 三锚 + 第 4 锚「🧮 根源覆盖表」(Rule 53.1) 共四锚在位)"
+    fi
+    # [2026-10-14 task-v173] Rule 84.1 VC 可执行性门（attest 前置硬门；创建任务时须写好验证规则与脚本）:
+    # 校验 plan_dir/verification.md 的 VC 条目每条含可执行验证命令（非占位）。
+    # What: ①verification.md 存在 ②VC 条目数≥1 ③每条 VC 对应非占位 Verify command 行。
+    # Why : 用户 2026-10-14 裁决「创建任务时须写验证规则和脚本」——计划期拒锁可执行性缺口的 VC，
+    #        堵「描述性 VC 占位通过计划确认」的入口（与 51.1 需求锚、66.5 goal 门同 fail-closed 档）。
+    # 档位: env TASK_PLANNER_VC_ENFORCE > config.json vc_gate_enforce.default > enforce（默认 fail-closed，
+    #        与 51.1/66.5 同档；存量计划 attest 前须补 VC 命令或 --skip-vc-check 逃生）；mini 档降 warn。
+    if [ -z "$skip_vc" ]; then
+      resolve_vc_tier() {
+        local m="${TASK_PLANNER_VC_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        # env-only 开关（Rule 84.6 零新 config 键，对齐 64.6/80.6 env-only 先例）：
+        # 禁读 config.json 的 vc_gate_enforce——该键属终验 VC-GATE（task-v065），复用会两门档位串扰。
+        # 默认 enforce（fail-closed，与 51.1/66.5 同档）。
+        printf 'enforce'
+      }
+      VCTIER="$(resolve_vc_tier)"
+      [ "$tier_flag" = "mini" ] && [ "$VCTIER" = "enforce" ] && VCTIER="warn"
+      if [ "$VCTIER" != "off" ]; then
+        vfile="$plan_dir/verification.md"
+        if [ ! -f "$vfile" ]; then
+          if [ "$VCTIER" = "enforce" ]; then
+            echo "[attest] ✗ verification.md 缺失,拒绝锁定(Rule 84.1 创建任务须写验证规则);补 verification.md(VC 表含可执行命令)后重 attest 或紧急 --skip-vc-check(须在交付报告披露)" >&2
+            exit 1
+          else
+            echo "[attest] [vc-gate] WARNING: verification.md 缺失(warn 档不阻断; TASK_PLANNER_VC_ENFORCE=enforce 可升级)" >&2
+          fi
+        else
+          # VC 条目数(行首允许缩进的 - [ ] VC-N / - [x] VC-N)
+          vc_total="$(grep -cE '^[[:space:]]*- \[[ xX]\] VC-[0-9]+' "$vfile" || true)"
+          # 非占位 Verify command 数(排除模板占位串: must be runnable/runnable command/path+key-line 等)
+          vc_cmd_ok="$(grep -E '^[[:space:]]*\*\*Verify command\*\*:[[:space:]]*[^[:space:]]' "$vfile" | grep -cvE 'must be runnable|runnable command|path\+key-line|diff/evidence|bash command OR' || true)"
+          if [ "${vc_total:-0}" -eq 0 ]; then
+            echo "[attest] [vc-gate] ⚠ verification.md 无 VC 条目(Rule 84.3: standard≥5/mini≥2);按档位处置" >&2
+          elif [ "${vc_cmd_ok:-0}" -lt "${vc_total}" ]; then
+            if [ "$VCTIER" = "enforce" ]; then
+              echo "[attest] ✗ $vc_total 条 VC 中仅 $vc_cmd_ok 条含可执行验证命令,拒绝锁定(Rule 84.1);补齐 Verify command 字段后重 attest 或紧急 --skip-vc-check(须在交付报告披露)" >&2
+              exit 1
+            else
+              echo "[attest] [vc-gate] WARNING: $vc_total 条 VC 中仅 $vc_cmd_ok 条含可执行验证命令(warn 档不阻断)" >&2
+            fi
+          else
+            echo "[attest] [vc-gate] OK: $vc_total 条 VC 全部含可执行验证命令(Rule 84.1)"
+          fi
+        fi
+      fi
+    else
+      echo "[attest] WARN: --skip-vc-check 跳过 VC 可执行性门(Rule 84.1, 须在交付报告披露)" >&2
     fi
     # [2026-09-16 task-v075 P4 B1] FMEA 门控(v063 fmea_enforce 首次消费; 与 check-complete.sh 终验双点):
     # 档位解析(挂载范式照抄上方 resolve_template_tier 段 :77-100):

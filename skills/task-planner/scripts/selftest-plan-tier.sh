@@ -93,7 +93,7 @@ fi
 # [task-v171 2026-10-12 锚修复] PT-08 原行为=核心 SKILL.md frontmatter grep「Critical Rules 全集 1-4[5-9]|1-5[0-9]」；
 # S33 重写后 frontmatter 索引演进为「Critical Rules 核心域——Rules 1-80 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80 + Rule 82…）」，
 # 全集覆盖语义由 1-80 全集索引承载（核心 12 条全文+66 条卫星归属路由表）。守护语义不变（frontmatter 全集索引存在且覆盖核心域在位）。
-if grep -qE 'Critical Rules 核心域.*Rules 1-8[013]' "$SKILLMD"; then ok 08 "SKILL.md frontmatter「Critical Rules 核心域 Rules 1-80 全集索引」（原 1-4x 纪元锚后继面）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 核心域 Rules 1-80」全集索引"; fi
+if grep -qE 'Critical Rules 核心域.*Rules 1-8[0134]' "$SKILLMD"; then ok 08 "SKILL.md frontmatter「Critical Rules 核心域 Rules 1-80 全集索引」（原 1-4x 纪元锚后继面）"; else bad 08 "SKILL.md frontmatter 缺「Critical Rules 核心域 Rules 1-80」全集索引"; fi
 # PT-09
 # [task-v171 2026-10-12 锚修复] 原行为=核心 SKILL.md grep「| C26 |」合规检查行含 Rule 38；C 清单随 S33 瘦身删除，
 # 后继权威面=plan-template-kit SKILL.md 调用条件段「轻量档 mini 判定与门控豁免（Rule 38）」。语义不变（SKILL 层 Rule 38 消费提示在位）。

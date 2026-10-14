@@ -23,7 +23,9 @@ SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 #   均为 Rule 50 断言、无核心域用途（已逐行核实），CRIT 改指媒体域文件，断言语义零改动。
 CRIT="$SKILL_ROOT/../media-planner/references/critical-rules-media.md"
 SKILLMD="$SKILL_ROOT/SKILL.md"
-GATE="$SKILL_ROOT/references/goal-gate.md"
+# [task-v173 验证技能独立化] goal-gate.md 内容已迁至卫星 verification-gate Rule 84.3（VC 规则），
+#   GATE 改指卫星规则文件——RG-05 分级联动锚断言目标随迁（卫星 84.3 含"VC 分级语义（Rule 50）"锚）。
+GATE="$SKILL_ROOT/../verification-gate/references/critical-rules-verification.md"
 TPL="$SKILL_ROOT/templates/variant"
 CONFIG="$SKILL_ROOT/config.json"
 
@@ -86,16 +88,16 @@ else
   bad 05 "goal-gate.md '分级'∧'Rule 50' 双锚缺失（验收门控未联动 Rule 50）"
 fi
 
-# RG-06 [task-v171 核心瘦身+task-v170 纪元并集] SKILL.md 路由面锚：全集 '1-8[013]' ≥1 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter 卫星行+卫星路由表行）
+# RG-06 [task-v171 核心瘦身+task-v170 纪元并集] SKILL.md 路由面锚：全集 '1-8[0134]' ≥1 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter 卫星行+卫星路由表行）
 #   现象：SKILL.md 瘦身后全集行 '1-5x' 演进为 '1-80'、'Rule 50' 整串引用归零（Rule 50 属媒体域，SKILL 侧仅存
 #     frontmatter 卫星技能行与卫星路由表行的 'Rule 47,49,50' 枚举，实测各 1 处合计 2），RG-06 恒 FAIL。
 #   根因：非核心域规则摘要 bullet 随瘦身移除；SKILL 侧路由面=frontmatter+路由表双载体。
 #   修法：全集锚改 '1-80'；路由面锚改 'Rule 47,49,50' 枚举 ≥2（双载体缺一即 FAIL，守护语义不降）。
-if grep -q '1-8[013]' "$SKILLMD" && [ "$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)" -ge 2 ]; then
-  ok 06 "SKILL.md 全集 '1-8[013]' 在位 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter+路由表双载体）"
+if grep -q '1-8[0134]' "$SKILLMD" && [ "$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)" -ge 2 ]; then  # [task-v173] 1-8[0134]→1-8[0134]（Rule 84 加入，纪元扩展覆盖 1-84）
+  ok 06 "SKILL.md 全集 '1-8[0134]' 在位 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter+路由表双载体）"
 else
   n="$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)"
-  bad 06 "SKILL.md 路由面锚缺失（'1-8[013]' 或 'Rule 47,49,50' 命中=$n <2）"
+  bad 06 "SKILL.md 路由面锚缺失（'1-8[0134]' 或 'Rule 47,49,50' 命中=$n <2）"
 fi
 
 # RG-07 零新 config 键——properties 键数 = 42（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）

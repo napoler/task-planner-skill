@@ -117,12 +117,13 @@ r68="$(grep -E '^\| task-dispatch \|' "$SKILLMD" | grep -cE 'Rule [0-9,]*68' || 
 # [2026-10-10 task-v160/task-v163 上界动态对照演进史] 保留如上（旧口径=SKILL 'Critical Rules 1-NN' vs 核心 CR 最大编号）；
 #   v171 分层后口径=SKILL 'Rules 1-80' 声明 + 核心 CRIT Rule 82（全集上界 82=80+82）。
 #   [2026-10-14 task-v172 对齐 1-83] SKILL 全集声明演进为 'Rules 1-83'，skill_max=83（Rule 83 落地）。
-skill_max="$(grep -oE 'Rules 1-83' "$SKILLMD" | head -1 | grep -oE '[0-9]+' | tail -1 || true)"
+#   [2026-10-14 task-v173 对齐 1-84] Rule 84（验证技能独立化）落地，skill_max=84。
+skill_max="$(grep -oE 'Rules 1-84' "$SKILLMD" | head -1 | grep -oE '[0-9]+' | tail -1 || true)"
 crit_max="$(grep -cE '^### 82 ' "$CRIT_CORE" || true)"
-if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ "${skill_max:-0}" -eq 83 ] && [ "${crit_max:-0}" -eq 1 ]; then
+if [ "$c46" -eq 1 ] && [ "$r68" -ge 1 ] && [ "${skill_max:-0}" -eq 84 ] && [ "${crit_max:-0}" -eq 1 ]; then
   ok 05 "SKILL.md 路由表 task-dispatch 行=$c46（=1）+ 枚举 Rule 68=$r68（≥1）+ 全集声明 1-${skill_max} ∧ 核心 CRIT Rule 82=$crit_max（分层口径上界一致）"
 else
-  bad 05 "SKILL.md 路由行=$c46（应 =1）/ Rule 68 枚举=$r68（应 ≥1）/ 全集 skill=${skill_max:-N/A}（应 83）vs 核心 82=$crit_max（应 1）"
+  bad 05 "SKILL.md 路由行=$c46（应 =1）/ Rule 68 枚举=$r68（应 ≥1）/ 全集 skill=${skill_max:-N/A}（应 84）vs 核心 82=$crit_max（应 1）"
 fi
 
 # P-06 selftest-registry.tsv 含本脚本登记行 ≥1（施工图 T6）

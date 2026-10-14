@@ -176,7 +176,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 - **83.3 禁 ≥2 次同法重试**：同一通道请求失败后，禁 ≥2 次同法重试（Rule 22.3 同法失败 ≥2 次强制换道）；第 1 次失败后即进入 83.2 快速失败路径。
 - **83.4 机制（零新 config 键）**：`scripts/selftest-channel-fast-fail.sh` 静态守护（83.1-83.3 子条文本锚 + SKILL.md 投诉响应协议段锚 + 零新键负断言）；合规清单 C57 行；SKILL.md 投诉响应协议段「通道不可用快速失败（Rule 83）」条目锚。
 
-## 卫星路由索引（10 卫星 — 非核心域规则全文按需 Read；路径相对仓根）
+## 卫星路由索引（11 卫星 — 非核心域规则全文按需 Read；路径相对仓根）
 
 - **task-dispatch**（域=子代理派发与拆分调度）：规则全文见 `skills/task-dispatch/references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68）；调用条件=涉及子代理拆分/派发/并行调度/粒度校验/执行体选型/冲突隔离时。
 - **task-discipline**（域=执行纪律与工作产物维护）：规则全文见 `skills/task-discipline/references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76）；调用条件=执行期纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物相关时。
@@ -188,3 +188,4 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 - **plan-resume**（域=计划续推）：规则全文见 `skills/plan-resume/references/critical-rules-resume.md`（Rule 24）；调用条件=交付终态/会话恢复触发点的计划扫描与自主续推时。
 - **progress-tracker**（域=共享内容认领）：规则全文见 `skills/progress-tracker/references/critical-rules-progress.md`（Rule 30）；调用条件=跨任务共享内容认领追踪/进度复用时。
 - **task-drift-guard**（域=漂移检测与偏移留痕）：规则全文见 `skills/task-drift-guard/references/critical-rules-drift.md`（Rule 11,15,61,64）；调用条件=漂移检测/偏移检查子代理化/周期回顾节奏触发时。
+- **verification-gate**（域=任务验证全链路）：规则全文见 `skills/verification-gate/references/critical-rules-verification.md`（Rule 84）；调用条件=VC 可执行化设计/执行期 V-N 校验/终验 VC 复验/子代理验证/统一验证入口触发时（2026-10-14 task-v173 建制，VC 规则由主技能 goal-gate.md + 子代理验证由 completion-gate.md 迁入）。

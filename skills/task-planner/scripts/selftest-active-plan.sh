@@ -156,7 +156,7 @@ printf '%s\n' \
 bash "$SET" aa "$R11" > /dev/null 2>&1
 bash "$SET" set bb --sid s11 "$R11" > /dev/null 2>&1
 touch "$R11/plans/aa/task_plan.md"
-( cd "$R11" && env CLAUDE_CODE_SESSION_ID=s11 bash "$ATTEST" --skip-dispatch-check > /dev/null 2>&1 )
+( cd "$R11" && env CLAUDE_CODE_SESSION_ID=s11 bash "$ATTEST" --skip-dispatch-check --skip-vc-check > /dev/null 2>&1 )
 RC=$?
 [ "$RC" = 0 ] && [ -f "$R11/plans/bb/.plan-attestation" ] && \
   grep -q '^plan_file=.*bb/task_plan.md$' "$R11/plans/bb/.plan-attestation" && \

@@ -99,22 +99,22 @@ else
   bad "CP-06" "bn=$bn_ok env=$c1 cp=$c2 emit=$emit_now/expect=$emit_expect"
 fi
 
-# CP-07 [task-v171 核心瘦身+task-v170 纪元并集] SKILL 全集纪元锚 '1-8[013]' ≥2 ∧ 'Rules 1-80 全集' ≥1 ∧ Rule 67/69/70/71 消费面=卫星路由表 discipline 行 ∧ Rule 69 ≥1 ∧ Rule 80 ≥1
+# CP-07 [task-v171 核心瘦身+task-v170 纪元并集] SKILL 全集纪元锚 '1-8[0134]' ≥2 ∧ 'Rules 1-80 全集' ≥1 ∧ Rule 67/69/70/71 消费面=卫星路由表 discipline 行 ∧ Rule 69 ≥1 ∧ Rule 80 ≥1
 #   现象：SKILL.md 瘦身（556→214 行）后旧纪元锚 '1-(69|71|7[4-9]|80)' 与合规清单 C48/C49/C50 行（Rule 70/67/71 消费行）双双零命中，CP-07 恒 FAIL。
 #   根因：① 全集声明口径演进为「Rules 1-80 全集索引」（分层架构：核心 12 条+10 卫星）；② Rule 67/69/70/71 均属纪律域，其 SKILL 侧消费点（合规 C 行）随合规清单表瘦身移除，仅存卫星路由表 discipline 行（区间 67,69-76 四规则全覆盖）。
 #   修法：纪元锚改 '1-80'（c1≥2 实测 3 处）+ 整串改 'Rules 1-80 全集'（c2≥1）；C48/C49/C50 三子项改断言——
 #     c3=卫星路由表 discipline 行（Rule 67/69/70/71 路由载体）/ c4='Rule 69'（T1 decision-arbiter 引用面，实测 4）/
 #     c5='Rule 80'（核心域规则仍在 SKILL 正文，实测 4）。断言语义（四条规则 SKILL 侧消费面在位）经新载体保持。
 # 历史纪元演进（v158/v160/v162/v163/v169 各级宽容扩）保留如上；本轮为 v171 分层架构口径切换。
-c1=$(grep -cE '1-8[013]' "$SKILL_MD")
-c2=$(grep -cE 'Rules 1-8[013] 全集|1-8[013] 全集' "$SKILL_MD")
+c1=$(grep -cE '1-8[0134]' "$SKILL_MD")
+c2=$(grep -cE 'Rules 1-8[0134] 全集|1-8[0134] 全集' "$SKILL_MD")
 c3=$(grep -cE '^\| task-discipline \|' "$SKILL_MD")
 c4=$(grep -c 'Rule 69' "$SKILL_MD")
 c5=$(grep -c 'Rule 80' "$SKILL_MD")
 if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ] && [ "$c5" -ge 1 ]; then
-  ok "CP-07" "'1-8[013]'=$c1≥2 ∧ 'Rules 1-8[013] 全集'=$c2≥1 ∧ 路由表 discipline 行=$c3≥1 ∧ Rule 69=$c4≥1 ∧ Rule 80=$c5≥1"
+  ok "CP-07" "'1-8[0134]'=$c1≥2 ∧ 'Rules 1-8[0134] 全集'=$c2≥1 ∧ 路由表 discipline 行=$c3≥1 ∧ Rule 69=$c4≥1 ∧ Rule 80=$c5≥1"
 else
-  bad "CP-07" "'1-8[013]'=$c1 全集串=$c2 路由行=$c3 R69=$c4 R80=$c5"
+  bad "CP-07" "'1-8[0134]'=$c1 全集串=$c2 路由行=$c3 R69=$c4 R80=$c5"
 fi
 
 # CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列

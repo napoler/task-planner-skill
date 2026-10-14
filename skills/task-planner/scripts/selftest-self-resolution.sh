@@ -95,9 +95,9 @@ if [ "$n" -ge 1 ] && [ "$c" -eq 1 ]; then ok 06 "SKILL.md 路由表 discipline �
 # [2026-10-11 task-v166→task-v169 纪元锚扩展] v166：SKILL.md 索引演进至 1-76（宽容 7[4-9] 纪元，AD-12 pin 目标形态）；v169：Rule 80 落地后 SKILL.md 全集索引演进至 1-80，宽容正则扩为 'Critical Rules 1-[7-8][0-9]'（覆盖 1-70..1-89 含 1-74..1-79 历史纪元与 1-80），判据 ≥1 不减、1-39=0 负断言不动
 # [2026-10-12 task-v171 分层口径切换] SKILL.md 瘦身后全集声明演进为「Rules 1-80 全集索引」，旧主锚
 #   'Critical Rules 1-[7-8][0-9]'（区间字面）零命中；随动演进为 '1-80' 全集口径锚（SR-07/TS-05/LA-12/RC-11 同批切换），1-39=0 负断言不动。
-a="$(grep -cE '1-8[013]' "$SKILLMD" || true)"
+a="$(grep -cE '1-8[0134]' "$SKILLMD" || true)"
 b="$(grep -c '1-39' "$SKILLMD" || true)"
-if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 '1-8[013]' 全集口径≥1 且 1-39=0"; else bad 07 "SKILL.md 字面锚漂移（'1-80'=$a 应 ≥1 / 1-39=$b 应 0）"; fi
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 '1-8[0134]' 全集口径≥1 且 1-39=0"; else bad 07 "SKILL.md 字面锚漂移（'1-80'=$a 应 ≥1 / 1-39=$b 应 0）"; fi
 # [2026-10-10 task-v160 合并并集: 取 v160 宽容锚，Rule 72 落地 1-72 纪元]
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 网络调研主动激活落地）, 主锚宽容正则扩 7[0-5] 纪元，判据 ≥1 不减]
 # [2026-10-10 task-v162 合并并集演进] '1-71'→'1-74'：task-v162 Rule 74（变更吸收三判）合流落地，字面锚同步（A 类机械替换）——v163 主断言演进为宽容正则后保留本注释（AD-12 _pin_lit 'Critical Rules 1-74' 历史字面在位）
@@ -112,10 +112,10 @@ if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 07 "SKILL.md 字面锚 '1-8[013]' �
 # [2026-10-11 task-v169 纪元锚扩展: 实态=「含 Rule 40-80 全集」, 交替集末段 7[0-6]→7[0-6]|80（Rule 80 落地, 宽容交替集补 80 成员, 判据 ≥1 不减；^40\. 子条数断言保留不动）]
 # [2026-10-12 task-v171 双迁移执行] SKILL 侧 '含 Rule 40-NN 全集' 括注随瘦身演进为 '1-80' 全集口径；
 #   ^40\. 六子条本体随 Rule 40 迁 plan-collab-router（CRIT→CRIT_C）。宽容锚演进史（v131..v169）保留如上。
-if [ "$(grep -cE '1-8[013]' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT_C" || true)" -eq 6 ]; then
-  ok 08 "SKILL.md '1-8[013]' 全集口径锚 + CRIT_C Rule 40 六子条 = 6（共存零损伤）"
+if [ "$(grep -cE '1-8[0134]' "$SKILLMD" || true)" -ge 1 ] && [ "$(grep -c '^40\.' "$CRIT_C" || true)" -eq 6 ]; then
+  ok 08 "SKILL.md '1-8[0134]' 全集口径锚 + CRIT_C Rule 40 六子条 = 6（共存零损伤）"
 else
-  bad 08 "Rule 40/41 共存锚损伤（'1-8[013]' 缺失或 CRIT_C ^40\. 子条数 ≠6）"
+  bad 08 "Rule 40/41 共存锚损伤（'1-8[0134]' 缺失或 CRIT_C ^40\. 子条数 ≠6）"
 fi
 # SR-09 零新 config 键——properties 键数 = 42（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 已合法加 2 键,FF 守护断言 42 为准]
 if command -v jq >/dev/null 2>&1; then

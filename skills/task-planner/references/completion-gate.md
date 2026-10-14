@@ -1,35 +1,7 @@
-# Completion Gate — 子代理验证
+# Completion Gate — 子代理验证（指针）
 
-> 与 critical-rules.md Rule 5/6 互补。核心：subagent "done" ≠ 完成，必须 Read 验证。
+> 本文件内容已于 2026-10-14 task-v173 迁移至卫星 `../verification-gate/references/critical-rules-verification.md` Rule 84.4（子代理验证协议）。本文件保留为指针（Rule 82 分层纪律：主技能不留镜像副本，避免双份正文漂移）。
 
-## 验证协议
+**全文权威位置**：`skills/verification-gate/references/critical-rules-verification.md` Rule 84.4
 
-1. **等通知** — 不轮询，等系统 notification
-2. **Read 实际文件** — 验证声称的变更确实存在（路径+行号+内容）
-3. **标记 complete** — 仅验证通过后，Edit plan checkbox `- [ ]` → `- [x]`
-4. **验证失败** — 不标记 complete，派 subagent 修复
-
-## 证据要求
-
-Claims of "done" without evidence = FAILED。必须有：
-- 文件路径 + 行号
-- 验证输出（命令结果/文件内容）
-- Before/after 对比（适用时）
-
-## 多任务同步（按 21.4 调度：声明组并行/未声明串行，10-02）
-
-```
-未声明组（串行）：S-unit 1 → [验证 complete] → S-unit 2 → [验证 complete] → …
-声明并行组（[P] 组）：S-unit 1 [P:G1] ∥ S-unit 2 [P:G1]（同组成员，独立性四问通过）→ 各自 [验证 complete] → 下一组
-（Rule 21.4 子代理调度铁律，10-02 并行默认+独立性守门）
-```
-
-- 启动前存 session_id
-- 未声明组=一次验收一组成员再派下一组成员；声明并行组内成员可并行，但互不影响、互不依赖为前提（独立性四问任一 yes=不同组转串行）（Rule 21.4，10-02）
-- 每条结果单独验证
-- 任一失败 → 停止派发，按 Rule 22.3 兜底（拆细先于升档）
-
-## 失败处理
-
-- 验证失败 → 不标 complete，派 subagent 修复
-- 同一 V-N 重试 3 次 FAIL → AskUserQuestion（escalation_threshold）
+调用时机：子代理返回 "done" 需 Read 实际产出复核时 → Read 卫星规则全文 + 卫星 SKILL.md Step 2 SOP。

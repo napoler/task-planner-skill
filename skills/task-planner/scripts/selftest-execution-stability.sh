@@ -121,7 +121,7 @@ b1_pos() {
     } > "$P/task_plan.md"
     printf 'sessabc123' > "$P/.session-owner"
     rm -f "/tmp/task-planner-hook-sessabc123.state"
-    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check >/dev/null 2>&1
+    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check --skip-vc-check >/dev/null 2>&1
     local h1
     h1="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
     # 正例: 改内容 + 相对含 slash file_path 触发 posttooluse 自动重锁
@@ -157,7 +157,7 @@ b1_neg() {
     } > "$P/task_plan.md"
     printf 'sessabc123' > "$P/.session-owner"
     rm -f "/tmp/task-planner-hook-sessabc123.state"
-    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check >/dev/null 2>&1
+    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check --skip-vc-check >/dev/null 2>&1
     local h1
     h1="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
     # 负例: 先改内容, 再把 owner 换成他会话 → 同 stdin 重跑, 重锁必须不命中(归属护栏, P0-1 防洗白):
