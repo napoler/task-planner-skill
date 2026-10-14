@@ -15,15 +15,44 @@ rc=$?
 
 # [2026-08-28] 未完成任务恢复提醒:读 CWD/plans/INDEX.md 待处理区,有欠账则追加 [task-resume] 段
 # (每会话仅此一次;仅提示,未经用户确认不得自动拉起执行——防新会话意图被旧任务劫持)
+# [2026-10-14 task-v172 CA-5] 陈旧任务折叠:in_progress 任务全部 >7 天未更新时,折叠为单行噪音抑制
+# (根因:7 个 stale in_progress 制造噪音,每会话注入 top-3 陈旧任务无实际推进价值)
 idx="$PWD/plans/INDEX.md"
 if [ -f "$idx" ]; then
-  pending="$(sed -n '/^## 待处理/,/^## 已完成/p' "$idx" | grep -E '^- \*\*' | head -3)"
-  if [ -n "$pending" ]; then
-    n="$(printf '%s\n' "$pending" | grep -c '^- \*\*')"
-    out="${out}
+  # [CA-5] 提取待处理区所有未完成任务行(不限 top-3,用于新鲜度判定)
+  pending_all="$(sed -n '/^## 待处理/,/^## 已完成/p' "$idx" | grep -E '^- \*\*')"
+  if [ -n "$pending_all" ]; then
+    n="$(printf '%s\n' "$pending_all" | grep -c '^- \*\*')"
+    # [CA-5] 检查是否有任何任务在 7 天内有更新(读 INDEX.md 第 8 列「最后更新」)
+    has_fresh="$(printf '%s\n' "$pending_all" | awk -F'|' -v now="$(date +%s)" '
+      BEGIN { found = 0 }
+      {
+        gsub(/^[ \t]+|[ \t]+$/, "", $8)
+        if (match($8, /[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+          date_str = substr($8, RSTART, RLENGTH)
+          cmd = "date -d \"" date_str "\" +%s 2>/dev/null"
+          if ((cmd | getline epoch) > 0) {
+            close(cmd)
+            days = int((now - epoch) / 86400)
+            if (days <= 7) { found = 1; exit }
+          }
+          close(cmd)
+        }
+      }
+      END { print (found ? "fresh" : "stale") }
+    ')"
+    if [ "$has_fresh" = "stale" ]; then
+      # [CA-5] 全部 >7 天未更新,折叠为单行(噪音抑制)
+      out="${out}
+[task-resume] 📋 ${n} 项历史任务(未更新>7 天),按需 plan-resume。"
+    else
+      # 有新鲜任务,保持 top-3 注入(既有行为)
+      pending="$(printf '%s\n' "$pending_all" | head -3)"
+      out="${out}
 [task-resume] 📋 检测到 ${n} 个未完成任务(plans/INDEX.md 待处理区):
 ${pending}
 开场时向用户提议是否继续;未经用户确认勿自动执行。"
+    fi
   fi
 fi
 
