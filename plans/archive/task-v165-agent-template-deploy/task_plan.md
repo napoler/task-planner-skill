@@ -255,11 +255,11 @@ Phase 1
 -->
 - [x] 授权边界确认（用户 mid-turn「1，2」=delivery-summary 待裁决①②）
 - [x] 三 agent 定义输出模板段现状 Read（executor.md:45/general-purpose.md:31-48/explore.md:33）
-- [ ] 仓外备份（移出 ~/.zcode/agents 扫描路径）+三文件输出模板段改 8 字段范式
-- [ ] 备份原内容征录+Read 复核
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** in_progress
+- [x] 仓外备份（移出 ~/.zcode/agents 扫描路径）+三文件输出模板段改 8 字段范式
+- [x] 备份原内容征录+Read 复核
+- [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- **V-N:** VC-1, VC-2
+- **Status:** complete
 - **Executor:** 主进程（例外理由:仓外保护区文件精确小编辑,§六 已获用户显式授权+全量备份,~/.zcode/agents 不在 git 仓内无 worktree 可行路径——登记 bypass 理由）
 <!-- 
   STATUS VALUES:
@@ -273,11 +273,11 @@ Phase 1
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
 -->
-- [ ] 对账 master vs 部署位 8 面 diff 清单
-- [ ] 同步 master a578531 八面→~/.zcode/skills/task-planner（覆盖式,禁增删键）
-- [ ] diff=0 复验+部署位跑 selftest-subagent-return.sh
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] 对账 master vs 部署位 8 面 diff 清单
+- [x] 同步 master a578531 八面→~/.zcode/skills/task-planner（覆盖式,禁增删键）
+- [x] diff=0 复验+部署位跑 selftest-subagent-return.sh
+- **V-N:** VC-3, VC-4
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 部署薄记+机械对账——Rule 25.3 白名单）
 
 ### Phase 3: 验证与交付
@@ -285,11 +285,11 @@ Phase 1
   WHAT: Actually build/create/write the solution.
   WHY: This is where the work happens. Break into smaller sub-tasks if needed.
 -->
-- [ ] VC-1..4 逐条验证（三模板字样+备份在+部署 diff=0+部署位 selftest rc=0）
-- [ ] 行为面生效边界登记（agent 定义改动=新会话生效;本会话不实测）
-- [ ] 简短交付报告（对用户）
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] VC-1..4 逐条验证（三模板字样+备份在+部署 diff=0+部署位 selftest rc=0）
+- [x] 行为面生效边界登记（agent 定义改动=新会话生效;本会话不实测）
+- [x] 简短交付报告（对用户）
+- **V-N:** VC-1, VC-2, VC-3, VC-4
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 簿记+验收——Rule 25.3 白名单）
 （示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）
 

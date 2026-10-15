@@ -134,14 +134,14 @@ Phase 5（全部 complete，outcome COMPLETE）
 - [ ] 「🎯 核心目标达成裁决」区块（手段/目标标注+solved/partial/not-solved 三态+证据锚列）
 - [ ] 不破坏既有区块（check-3file-gate 兼容）
 - **V-N:** VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 同上）
 
 ### Phase 3: SKILL.md 摘要行+合规清单项
 - [ ] Critical Rules 摘要区追加 Rule 58 一行（对齐 Rule 57 行格式）
 - [ ] 合规检查清单追加 C 项（编号接现行最大值，Phase 3 查证）
 - **V-N:** VC-9
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 同上）
 
 ### Phase 4: selftest 守护脚本+全量回归

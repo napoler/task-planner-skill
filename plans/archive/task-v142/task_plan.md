@@ -97,39 +97,39 @@ Phase 1
 ## Phases
 
 ### Phase 1: 新增 Rule 57 到 critical-rules.md
-- [ ] 在 Rule 56 之后追加 Rule 57 完整条款
-- [ ] 确认条款含触发时机、执行步骤、前后对照检查维度、自动纠正机制、开关键
+- [x] 在 Rule 56 之后追加 Rule 57 完整条款
+- [x] 确认条款含触发时机、执行步骤、前后对照检查维度、自动纠正机制、开关键
 - **V-N:** VC-1, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 ### Phase 2: 新增 periodic-review.sh 脚本
-- [ ] 创建脚本，实现结论一致性检测
-- [ ] 输出结构化报告（JSON）
+- [x] 创建脚本，实现结论一致性检测
+- [x] 输出结构化报告（JSON）
 - **V-N:** VC-2, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 ### Phase 3: 新增 selftest-periodic-review.sh 守护脚本
-- [ ] 创建守护脚本，断言 Rule 57 条款完整性
-- [ ] 注册到 selftest-registry.tsv
+- [x] 创建守护脚本，断言 Rule 57 条款完整性
+- [x] 注册到 selftest-registry.tsv
 - **V-N:** VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 ### Phase 4: 修改 config.json 和 SKILL.md
-- [ ] config.json 新增 periodic_review_enforce 和 periodic_review_interval_calls
-- [ ] SKILL.md 新增 C39 引用
+- [x] config.json 新增 periodic_review_enforce 和 periodic_review_interval_calls
+- [x] SKILL.md 新增 C39 引用
 - **V-N:** VC-3, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 ### Phase 5: 验证与交付
-- [ ] 运行 selftest-periodic-review.sh 确认所有断言通过
-- [ ] 运行 check-complete.sh 确认无回归
-- [ ] 交付总结
+- [x] 运行 selftest-periodic-review.sh 确认所有断言通过
+- [x] 运行 check-complete.sh 确认无回归
+- [x] 交付总结
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策

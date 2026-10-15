@@ -123,28 +123,28 @@ Phase 1
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation
-- [ ] 新增 Rule 21.1c 定义智能拆分分析（critical-rules.md）
-- [ ] 修改 SKILL.md 插入 Phase 2.5 描述
-- [ ] 新增 analyze-splits.sh 脚本（子代理+脚本配合）
-- [ ] 修改 check-dispatch.sh 增加内容创作类任务校验
-- [ ] 更新 dispatch-examples.md 补充内容创作任务派发示例
+- [x] 新增 Rule 21.1c 定义智能拆分分析（critical-rules.md）
+- [x] 修改 SKILL.md 插入 Phase 2.5 描述
+- [x] 新增 analyze-splits.sh 脚本（子代理+脚本配合）
+- [x] 修改 check-dispatch.sh 增加内容创作类任务校验
+- [x] 更新 dispatch-examples.md 补充内容创作任务派发示例
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6, VC-7, VC-8, VC-9
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 ### Phase 4: Testing & Verification
-- [ ] 运行 selftest 验证修改无回归
-- [ ] 验证所有 VC 通过
+- [x] 运行 selftest 验证修改无回归
+- [x] 验证所有 VC 通过
 - **V-N:** VC-10
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）
 
 ### Phase 5: Delivery
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
+- [x] Review all output files
+- [x] Ensure deliverables are complete
+- [x] Deliver to user
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6, VC-7, VC-8, VC-9, VC-10
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）

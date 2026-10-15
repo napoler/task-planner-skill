@@ -237,7 +237,7 @@ Phase 1
 - [ ] Write code to files before executing
 - [ ] Test incrementally（每 S-unit 返回后主进程 Read 复核+翻状态）
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6, VC-7
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** S-unit 逐个派发（见下表；条文撰写=sonnet-1 判断档，模板/脚本编辑=haiku-1~sonnet-1）
 （技能系统文件维护组画像；执行体按 SKILL.md 路由表+43.2 档位：判断型=sonnet-1、轻量编辑=haiku-1）
 
@@ -272,7 +272,7 @@ Phase 1
 - [ ] Document test results in progress.md（每轮回归结果落盘，Rule 57）
 - [ ] Fix any issues found
 - **V-N:** VC-5, VC-7, VC-8
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）
 
 <!-- Phase 4 S-unit 表(Rule 22.6) -->
@@ -289,7 +289,7 @@ Phase 1
 - [ ] Ensure deliverables are complete（交付总结含指针可定位，Rule 48）
 - [ ] Deliver to user（部署位同步 IDENTICAL + merge --no-ff + worktree 清理 + rule-reserve land + INDEX 归档）
 - **V-N:** VC-8, VC-9
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）

@@ -305,7 +305,7 @@ Phase 4
 - [ ] 主进程设计优化方案（含 R3 限频机制），填变更标注表
 - [ ] 用户裁决点（如有）
 - **V-N:** VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: 落地（改 SKILL/rules/scripts/templates + selftest 守护）

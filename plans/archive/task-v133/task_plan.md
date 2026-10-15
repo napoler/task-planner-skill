@@ -147,10 +147,10 @@ Phase 4 交付：git commit（worktree 内）→ merge-back → 用户确认（V
 | S3 | 运行 selftest 验证 | 继承 | 4 目标 selftest 脚本 | 全量 51 个 selftest-*.sh 0 FAIL | 10min | done |
 
 ### Phase 4: 交付
-- [ ] 用户确认
-- [ ] 交付总结
+- [x] 用户确认
+- [x] 交付总结
 - **V-N:** VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）

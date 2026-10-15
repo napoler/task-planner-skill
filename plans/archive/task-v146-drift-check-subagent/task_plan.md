@@ -100,43 +100,43 @@ workflow 编排判定：未命中（无 fan-out/长链复用，S-unit 串行依�
 ## Phases
 
 ### Phase 1: 隔离、基线与精确锚扫描
-- **状态:** complete（2026-10-08；证据=findings §4 基线分类 + subagent-state/1-code-runner-agent.md + KB §5.4 锚表；无仓内产物故无 commit 项）
+- **Status:** complete（2026-10-08；证据=findings §4 基线分类 + subagent-state/1-code-runner-agent.md + KB §5.4 锚表；无仓内产物故无 commit 项）
 - worktree 建立（命令见隔离决策）+ 全量 selftest 基线 + 断言锚精确清单落 findings
 - **Executor:** 主进程（白名单① git 编排 + ③ 机械只读命令）+ code-runner-agent（基线回归）
 - 验收：worktree 在位且 `git status` 干净；基线 Total 求和落 progress.md；锚清单（`grep -n 'task-drift-guard\|Skill("task-drift' scripts/*.sh` + check-complete/attest/check-plan-dispatch 中 C4/漂移断言行 + agent-coverage 断言面）落 findings.md
 
 ### Phase 2: Rule 61 条款 + drift-checker agent 定义 + 覆盖矩阵行
-- **状态:** complete（2026-10-08；证据=S1/S2 checkpoint + 主进程独立复验 grep + diff --stat 四文件）
+- **Status:** complete（2026-10-08；证据=S1/S2 checkpoint + 主进程独立复验 grep + diff --stat 四文件）
 - **Executor:** executor（sonnet-1），串行（S2 引用 S1 编号语义）
 <!-- 派发型 Phase 必附 S-unit 7 列表 -->
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|-------------|---------|------|------|
-| S1 | critical-rules.md：Rule 15 块内 4 处载体措辞切换+追加 15.4（knowledge-brief §5.2）+ 文末追加 Rule 61（§5.1 全文）+ 索引括注扩展 40-61 | executor(sonnet-1) | worktree 内 references/critical-rules.md（Rule 15 在 :57 附近；尾部 Rule 60.8 后插入 61）+ knowledge-brief §5.1/§5.2 草案 | grep 61.1-61.6 六锚+15.4 锚命中；`Skill("task-drift-guard")` 全文 0 命中；头部 `Rules 1-39` 未动 | 15min | pending |
-| S2 | 新建 companion/agents/drift-checker.md（全文草案=knowledge-brief §5）+ agent-coverage.md 追加登记行 | executor(sonnet-1) | knowledge-brief §5 agent 草案 + agent-coverage.md 既有行范式 | frontmatter 四字段在位（name/description/tools/model=haiku 档）；coverage 行含实体名与路由说明 | 12min | pending |
+| S1 | critical-rules.md：Rule 15 块内 4 处载体措辞切换+追加 15.4（knowledge-brief §5.2）+ 文末追加 Rule 61（§5.1 全文）+ 索引括注扩展 40-61 | executor(sonnet-1) | worktree 内 references/critical-rules.md（Rule 15 在 :57 附近；尾部 Rule 60.8 后插入 61）+ knowledge-brief §5.1/§5.2 草案 | grep 61.1-61.6 六锚+15.4 锚命中；`Skill("task-drift-guard")` 全文 0 命中；头部 `Rules 1-39` 未动 | 15min | done |
+| S2 | 新建 companion/agents/drift-checker.md（全文草案=knowledge-brief §5）+ agent-coverage.md 追加登记行 | executor(sonnet-1) | knowledge-brief §5 agent 草案 + agent-coverage.md 既有行范式 | frontmatter 四字段在位（name/description/tools/model=haiku 档）；coverage 行含实体名与路由说明 | 12min | done |
 
 ### Phase 3: 载体切换全链（SKILL + 卫星 + hook + 模板联动 + 文档联动）
-- **状态:** complete（2026-10-08；证据=全 skills/ 树 `Skill("task-drift-guard")`=0 + commit dd71178 19 文件 + 各 S-unit checkpoint 4/5/6/9）
+- **Status:** complete（2026-10-08；证据=全 skills/ 树 `Skill("task-drift-guard")`=0 + commit dd71178 19 文件 + 各 S-unit checkpoint 4/5/6/9）
 - **Executor:** executor（sonnet-1），串行（S3 依赖 Phase 2 编号语义落地；S4b/S4c 文件集与 S3/S4 不相交但沿用同一措辞表，保持串行免组声明复杂度）
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|-------------|---------|------|------|
-| S3 | SKILL.md 六处触发点载体切换+路由表行+反模式+C4+References+索引括注（逐处锚=Phase 1 锚清单） | executor(sonnet-1) | worktree 内 SKILL.md + findings.md 锚清单 + knowledge-brief §5 措辞表 | `Skill("task-drift-guard")` 全文 0 命中；六处新锚命中；wc -l ≤558 | 18min | pending |
-| S4 | task-drift-guard/SKILL.md 增补「子代理消费模式」节 + zcode-userpromptsubmit.sh:220 载体文案切换 | executor(sonnet-1) | 卫星 SKILL.md（82 行）+ knowledge-brief §5.5/§5.6 草案 | 卫星增量 ≤10 行纯追加；hook 新串命中旧串 0；其余行零改动 | 8min | pending |
-| S4b | 模板联动切换：9 个 variant 模板 drift 行 + templates/task_plan.md:391（措辞=KB §5.9） | executor(sonnet-1) | KB §5.9 逐文件锚清单 + grep 定位 | 全部目标行切换；`grep -rc 'Skill("task-drift-guard")' templates/` = 0；其余区块零改动 | 12min | pending |
-| S4c | 文档联动切换：plan-cost-guard 3 refs + README:21 + INSTALL:221-232 + ARCHITECTURE:115（措辞=KB §5.9） | executor(sonnet-1) | KB §5.9 逐文件锚清单 | 目标行切换；history/deploy 注释行保留；`grep -rn 'Skill("task-drift-guard")' ../plan-cost-guard/` = 0 | 12min | pending |
+| S3 | SKILL.md 六处触发点载体切换+路由表行+反模式+C4+References+索引括注（逐处锚=Phase 1 锚清单） | executor(sonnet-1) | worktree 内 SKILL.md + findings.md 锚清单 + knowledge-brief §5 措辞表 | `Skill("task-drift-guard")` 全文 0 命中；六处新锚命中；wc -l ≤558 | 18min | done |
+| S4 | task-drift-guard/SKILL.md 增补「子代理消费模式」节 + zcode-userpromptsubmit.sh:220 载体文案切换 | executor(sonnet-1) | 卫星 SKILL.md（82 行）+ knowledge-brief §5.5/§5.6 草案 | 卫星增量 ≤10 行纯追加；hook 新串命中旧串 0；其余行零改动 | 8min | done |
+| S4b | 模板联动切换：9 个 variant 模板 drift 行 + templates/task_plan.md:391（措辞=KB §5.9） | executor(sonnet-1) | KB §5.9 逐文件锚清单 + grep 定位 | 全部目标行切换；`grep -rc 'Skill("task-drift-guard")' templates/` = 0；其余区块零改动 | 12min | done |
+| S4c | 文档联动切换：plan-cost-guard 3 refs + README:21 + INSTALL:221-232 + ARCHITECTURE:115（措辞=KB §5.9） | executor(sonnet-1) | KB §5.9 逐文件锚清单 | 目标行切换；history/deploy 注释行保留；`grep -rn 'Skill("task-drift-guard")' ../plan-cost-guard/` = 0 | 12min | done |
 
 ### Phase 4: selftest 守护 + registry + 全量回归
-- **状态:** complete（2026-10-08；证据=检查点 7/8/10/11/12 + S7-S9 六锚宽容化 commit + 回归差值账：58 脚本 ΣFAIL 28-6=22=基线 21+AC-04 暂态）
+- **Status:** complete（2026-10-08；证据=检查点 7/8/10/11/12 + S7-S9 六锚宽容化 commit + 回归差值账：58 脚本 ΣFAIL 28-6=22=基线 21+AC-04 暂态）
 - **Executor:** executor（sonnet-1）+ code-runner-agent
 | ID | 目标(≤1 句) | 执行体 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 状态 |
 |----|------------|--------|-------------|---------|------|------|
-| S5 | 新建 selftest-drift-check-subagent.sh（DCS-01..18 断言清单=knowledge-brief §5）+ registry.tsv 追加行 | executor(sonnet-1) | knowledge-brief §5 断言清单 + selftest-veto.sh 范式 | 新脚本自跑 PASS=18 FAIL=0；registry.sh 一致性通过 | 15min | pending |
+| S5 | 新建 selftest-drift-check-subagent.sh（DCS-01..18 断言清单=knowledge-brief §5）+ registry.tsv 追加行 | executor(sonnet-1) | knowledge-brief §5 断言清单 + selftest-veto.sh 范式 | 新脚本自跑 PASS=18 FAIL=0；registry.sh 一致性通过 | 15min | done |
 | S6 | 全量回归（58 脚本逐个跑）+ 主进程逐 Total 行求和 | code-runner-agent | worktree scripts/ 全量 | 求和 FAIL 集合=基线 21 + AC-04 暂态；结果见检查点 8 | 10min | done |
-| S7 | 守卫锚宽容化①：capability-persistence CP-05（字面 40-55→40-(5[3-9]\|6[0-9])）+ reliability-institution R-09 | executor(sonnet-1) | 回归检查点 8 的 6 条级联 FAIL 原文 + 各脚本锚行 | 两脚本自跑对应断言 PASS；其余断言不受影响 | 6min | pending |
-| S8 | 守卫锚宽容化②：iteration-persistence IP-12 + root-resolution RR-16 | executor(sonnet-1) | 同上 | 同上 | 6min | pending |
-| S9 | 守卫锚宽容化③：self-resolution SR-08 + execution-honesty EH-09 | executor(sonnet-1) | 同上 | 同上 | 6min | pending |
+| S7 | 守卫锚宽容化①：capability-persistence CP-05（字面 40-55→40-(5[3-9]\|6[0-9])）+ reliability-institution R-09 | executor(sonnet-1) | 回归检查点 8 的 6 条级联 FAIL 原文 + 各脚本锚行 | 两脚本自跑对应断言 PASS；其余断言不受影响 | 6min | done |
+| S8 | 守卫锚宽容化②：iteration-persistence IP-12 + root-resolution RR-16 | executor(sonnet-1) | 同上 | 同上 | 6min | done |
+| S9 | 守卫锚宽容化③：self-resolution SR-08 + execution-honesty EH-09 | executor(sonnet-1) | 同上 | 同上 | 6min | done |
 
 ### Phase 5: 合并回 + 部署 + 审查 + 簿记 + 交付
-- **状态:** complete（2026-10-08；证据=master e54973d + 三位部署对账 + CR APPROVED + align 修复闭环 + rule-reserve land 61 + worktree/分支清理完成 + 终态回归 60 脚本 ΣPASS=934/ΣFAIL=4 全预存）
+- **Status:** complete（2026-10-08；证据=master e54973d + 三位部署对账 + CR APPROVED + align 修复闭环 + rule-reserve land 61 + worktree/分支清理完成 + 终态回归 60 脚本 ΣPASS=934/ΣFAIL=4 全预存）
 - **Executor:** 主进程（白名单① git 编排 + ② 计划系统文件）
 - CR Gate（code-review，重 diff 全量）→ alignment-review → smart-merge-back --deploy（3 实体位对账+agents 位验证）→ `rule-reserve.sh land 61 task-v146` → INDEX/ledger 簿记 → worktree 清理 → delivery-summary 落盘+呈报（含静默决策清单）
 
