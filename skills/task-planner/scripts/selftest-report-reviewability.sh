@@ -18,7 +18,9 @@
 #               config 零新键=0（恒 FAIL 档）
 #     · check-complete.sh（RRV-07，常驻 FAIL 档）:
 #         RRV-07 report-lint 段≥1（登记行与 lint 段已落位（S14/S15），2026-10-10 翻硬档）
-#     · RRV-08..RRV-13: 预留骨架（下一单元 S13 实现）
+#     · RRV-08..RRV-12: 已落位真实断言（模板/管线/审查工具/主链/SKILL 触点面组）；
+#       RRV-13: 占位跳过 WARN 档（不计 PASS）——部署位对账依赖 smart-merge-back.sh --deploy
+#       （部署位同步待授权，TODO(RRVV-14)），2026-10-16 修虚假覆盖
 #   运行方式：`bash scripts/selftest-report-reviewability.sh`（只读 grep，零写入）；
 #   逐行打印 `RRV-NN PASS/FAIL/WARN: <说明>`，末行 `Total: PASS=N FAIL=N WARN=N`；
 #   FAIL>0 → exit 1，否则 exit 0。
@@ -218,15 +220,16 @@ else
     bad "RRV-12" "SKILL 触点组(got spec=$RRV12_SPEC final=$RRV12_FINAL expect spec>=1 final=1)"
 fi
 
-# ── RRV-13: 预留骨架（占位断言，PASS 档）──
-# TODO(RRVV-14): 部署位对账断言（合并回后启用）
-# 部署位对账需 smart-merge-back.sh --deploy 完成后才有意义，当前阶段仅验证占位注释在位
-RRV13_PLACEHOLDER=$(cnt "TODO(RRVV-14)" "$SCRIPT_DIR/selftest-report-reviewability.sh")
-if [ "$RRV13_PLACEHOLDER" -ge 1 ]; then
-    ok "RRV-13" "预留骨架(TODO RRVV-14 占位注释在位)"
-else
-    bad "RRV-13" "预留骨架(got placeholder=$RRV13_PLACEHOLDER expect>=1)"
-fi
+# ── RRV-13: 占位跳过（诚实 WARN 档，不计 PASS）──
+# What: 部署位对账断言（RRVV-14 原语义=对账仓库与部署位文件差异）的真实校验依赖部署位已同步——smart-merge-back.sh --deploy
+#       逐位 [DEPLOY] 对账（L1 文件集合差/L2 内容定向 diff，基准=主仓 skills/task-planner，smart-merge-back.sh:52/545）；
+#       部署位同步当前待用户授权（task-v178/v179 遗留），前置条件未成立，静态无可校验面。
+# Why: 2026-10-16 修虚假覆盖——原断言「grep 自身文件 TODO(RRVV-14) 注释行在位即 PASS」为自指恒真，
+#      对部署位对账零校验却计入 PASS 总数，回归门对该面给出错误绿灯。改为诚实 WARN 档：
+#      被检面未启用时明确标注跳过+原因+启用条件，PASS/WARN/FAIL 档位语义与 Total 格式不变（exit 仍只看 FAIL）。
+#      部署位同步授权并完成 --deploy 后，将 TODO(RRVV-14) 升级为真实对账断言并翻 ok 档（届时 PASS 回到 13）。
+# TODO(RRVV-14): 部署位对账断言（合并回后启用；当前为 WARN 跳过档）
+warn "RRV-13" "占位跳过：部署位对账未启用（部署位同步待授权，TODO RRVV-14），不计 PASS"
 
 echo "Total: PASS=$PASS FAIL=$FAIL WARN=$WARN"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1

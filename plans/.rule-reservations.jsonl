@@ -55,9 +55,9 @@
 {"rule":78,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 波次2: 辅助技能主动激活"}
 {"rule":79,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 波次3: 执行错误即时纠正"}
 {"rule":76,"status":"landed","task_id":"task-v166-summary-readability","ts":"2026-10-11","note":""}
-{"rule":77,"status":"landed","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":""}
-{"rule":78,"status":"landed","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":""}
-{"rule":79,"status":"landed","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":""}
+{"rule":77,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 封存未合并主仓，本规则无正文落地；原 status=landed 为封存分支残留误标（2026-10-16 更正为 reserved，全集口径 86-14=72）"}
+{"rule":78,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 封存未合并主仓，本规则无正文落地；原 status=landed 为封存分支残留误标（2026-10-16 更正为 reserved，全集口径 86-14=72）"}
+{"rule":79,"status":"reserved","task_id":"task-v168-session-anchor-skill-activation","ts":"2026-10-11","note":"task-v168 封存未合并主仓，本规则无正文落地；原 status=landed 为封存分支残留误标（2026-10-16 更正为 reserved，全集口径 86-14=72）"}
 {"rule":80,"status":"reserved","task_id":"task-v169-user-session-log-write-once","ts":"2026-10-11","note":""}
 {"rule":81,"status":"reserved","task_id":"task-v170-archive-completed-plans","ts":"2026-10-11","note":""}
 {"rule":82,"status":"reserved","task_id":"task-v171-skill-specialization","ts":"2026-10-12","note":""}

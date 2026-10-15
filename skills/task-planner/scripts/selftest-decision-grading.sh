@@ -19,8 +19,8 @@
 #     · registry + config（DG-06/DG-07）:
 #         DG-06 registry 登记行>=1（常驻 FAIL 档，S8 翻档；env DG_REGISTRY_STRICT=0 可降档排查）
 #         DG-07 config 零新键=0（恒 FAIL 档）
-#     · 行为面预留（DG-12）:
-#         DG-12 行为面决策分级 fixture 回归预留骨架（TODO(DG-13) 注释行在位即 PASS，执行期启用）
+#     · 行为面（DG-12）: 占位跳过 WARN 档（不计 PASS）——行为面（LLM 决策分级实际行为）无静态可校验面，
+#         fixture 回归执行期启用（TODO(DG-13)）；2026-10-16 修虚假覆盖：原「注释行在位即 PASS」自指断言废除
 #   运行方式: `bash scripts/selftest-decision-grading.sh`（只读 grep，零写入）；
 #   逐行打印 `DG-NN PASS/FAIL/WARN: <说明>`，末行 `Total: PASS=N FAIL=N WARN=N`；
 #   FAIL>0 -> exit 1，否则 exit 0。
@@ -222,17 +222,16 @@ else
     bad "DG-11" "SKILL 接线组缺失(R72=$DG11_R72 ROW=$DG11_ROWCNT A=$DG11_A C=$DG11_C expect R72>=1,ROW>=1,A>=1,C>=1)"
 fi
 
-# ── DG-12: 行为面 fixture 回归预留骨架（占位断言：TODO(DG-13) 注释行在位即 PASS）──
-# What: 断言本脚本内含行为面决策分级 fixture 回归的预留注释行（^# 锚定注释行，避免自匹配赋值行）。
-# Why: 行为面（LLM 决策分级实际行为）无法静态断言，留 TODO(DG-13) 占位标记执行期启用；
-#      占位行被误删即报警（保持预留可见性，防静默丢失，Rule 53.2 零载体判例延伸）。
-# TODO(DG-13): 行为面决策分级 fixture 回归（执行期启用）
-DG12_TODO=$(cnt '^# TODO(DG-13): 行为面决策分级 fixture 回归（执行期启用）' "$0")
-if [ "$DG12_TODO" -ge 1 ]; then
-    ok "DG-12" "行为面 fixture 回归预留骨架在位(TODO(DG-13))"
-else
-    bad "DG-12" "行为面预留骨架缺失(TODO(DG-13) 注释行未在位)"
-fi
+# ── DG-12: 占位跳过（诚实 WARN 档，不计 PASS）──
+# What: 行为面决策分级 fixture 回归（DG-13 原语义=对 LLM 决策分级实际行为跑 fixture 集并核对分级结果）；
+#       判定面=LLM 实际决策行为，无脚本/文本载体可静态断言（53.2 零载体判例），真实校验只能执行期（fixture 设施就位后）启用。
+# Why: 2026-10-16 修虚假覆盖——原断言「用 $0 对自身 grep TODO(DG-13) 注释行在位即 PASS」为自指恒真，
+#      对行为面回归零校验却计入 PASS 总数，回归门对该面给出错误绿灯。改为诚实 WARN 档：
+#      被检面未启用时明确标注跳过+原因+启用条件，PASS/WARN/FAIL 档位语义与 Total 格式不变（exit 仍只看 FAIL）；
+#      warn 行本身即占位可见性锚点（Total 行 WARN=1 自证，预留不再静默，Rule 53.2 零载体判例延伸语义保持）。
+#      执行期 fixture 回归启用后，将 TODO(DG-13) 升级为真实断言并翻 ok 档（届时 PASS 回到 12）。
+# TODO(DG-13): 行为面决策分级 fixture 回归（执行期启用；当前为 WARN 跳过档）
+warn "DG-12" "占位跳过：行为面决策分级无静态可校验面（TODO DG-13，执行期启用），不计 PASS"
 
 echo "Total: PASS=$PASS FAIL=$FAIL WARN=$WARN"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
