@@ -3,7 +3,7 @@
 #
 # What（守护对象 + 运行方式）:
 #   对 archive-plan.sh（S2 产物，契约=task_plan Decisions「archive-plan.sh CLI 契约」）的动态行为断言，
-#   共 16 条编号断言 AP-01..AP-16（断言编号/逐行 PASS-FAIL/Total 汇总/exit 0|1 约定同 selftest-iteration-persistence.sh）：
+#   共 20 条编号断言 AP-01..AP-20（断言编号/逐行 PASS-FAIL/Total 汇总/exit 0|1 约定同 selftest-iteration-persistence.sh）：
 #     · CLI 面（AP-01..AP-04）: --help exit 0 / 无参 usage exit 1 / 未知参数 exit 1 / task-id 与 --batch 互斥 exit 1
 #     · 守卫五类拒绝（AP-05..AP-10）: missing-src / active-pointer(全局 .active_plan) / active-pointer(side 指针) /
 #         live-owner（.session-owner mtime<1440min）/ status-incomplete（非全 complete）/ status-none（0 行 Status，fail-closed）
@@ -11,6 +11,10 @@
 #     · 执行双路径（AP-12/AP-13）: git 跟踪目录→git mv（git status rename 实证）/ 未跟踪→mv 兜底（含陈旧 owner 随目录迁移）
 #     · 批量 dry-run（AP-14..AP-16）: 零移动（6 子目录全在 + archive 未创建）/ 汇总计数 total=6 ok=0 skip=6 fail=0 /
 #         六类 SKIP 归类理由逐行命中（圆点隐藏/非 task- 前缀/无 task_plan.md/active-pointer/status-incomplete/candidate/none）
+#     · 同口径回归（AP-17..AP-19, task-v176 D2）: 假 PASS（游离样例行不补数）/ 假 FAIL（正文引用行不拒真完成）/
+#         Phase 覆盖校验（缺 Status 行拒绝 + stderr 明示）
+#     · 注记同梯（AP-20, task-v176 CR 修复 MAJOR-1）: 带（...）注记的 complete 列表行判可归档
+#       （ok 侧剥注记后全词判定，与 sync-todos parse_status 同梯，与 AP-18 互补锁「合法注记不得假 FAIL」）
 #   运行方式：`bash scripts/selftest-archive-plan.sh`；fixture 全部 mktemp -d 建于 /tmp（trap EXIT 统一清理），
 #   逐行打印 `AP-NN PASS/FAIL <说明>`，末行 `Total: N PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。
 #
@@ -308,6 +312,23 @@ if [ $rc -eq 1 ] && printf '%s\n' "$out" | grep -q 'REJECT task-ph: phase-uncove
     ok 19 "Phase 覆盖夹具（2 Phase 仅 1 Status 行）拒绝 + stderr 含「Phase 覆盖不完整」"
 else
     bad 19 "Phase 覆盖夹具 rc=$rc（应 1 + REJECT phase-uncovered + stderr「Phase 覆盖不完整」）"
+fi
+
+# AP-20 注记同梯回归（task-v176 CR 修复 MAJOR-1 实证形态）：带（...）注记的 complete 列表行 → 判可归档
+# What：task_plan.md 1 个 `### Phase` 标题 + `- **Status:** complete（2026-10-15 完成）`（存量 archive
+#      plans/archive/task-v146 实证形态）→ total=1，ok 须=1（ok 侧先 sed 剥 `（[^）]*）`/`([^)]*)` 注记
+#      再全词判定 complete，与 sync-todos parse_status 同梯）→ 走 mv 兜底路径 ARCHIVED exit 0。
+# Why：CR MAJOR-1 实证——旧 ok 正则 `complete([[:space:]]|$)` 未剥注记，该形态 total=1≠ok=0 假 FAIL
+#      （真完成任务被 status-incomplete 永久卡死），而 sync-todos 同输入判 complete=两侧口径分裂；
+#      本断言锁「合法注记不得假 FAIL」（与 AP-18「正文引用不得假 FAIL」互补：AP-18 锁无列表符行不计数，
+#      本条锁列表行带注记仍判 complete）。
+mkdir -p "$R1/task-nt"
+printf -- '### Phase 1: p1\n- **Status:** complete（2026-10-15 完成）\n' > "$R1/task-nt/task_plan.md"
+out="$(bash "$ARCHIVE" task-nt --root "$R1" 2>&1)"; rc=$?
+if [ $rc -eq 0 ] && printf '%s\n' "$out" | grep -q 'ARCHIVED task-nt' && [ -d "$R1/archive/task-nt" ]; then
+    ok 20 "注记形态（complete（2026-10-15 完成））判可归档（ARCHIVED exit 0, 与 parse_status 同梯）"
+else
+    bad 20 "注记形态 rc=$rc（应 0 + ARCHIVED；合法注记不得假 FAIL，MAJOR-1 口径）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
