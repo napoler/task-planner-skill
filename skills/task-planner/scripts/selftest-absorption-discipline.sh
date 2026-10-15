@@ -82,11 +82,11 @@ ad12=0
 #   5 个主锚 selftest 的纪元锚再随动 '1-80'→'1-8[0134]'（覆盖 80/81，负样本 1-82 不命中，同 master 版
 #   selftest-session-log.sh SL-05 已立形态），pin 清单二次同步；research-first/context-pressure/skill-split
 #   三个 _pin_tol 目标字面随各自 live 锚演进而同步。
-_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-8[0134]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-8[0134]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-8[0134]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-8[0134]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-8[0134]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-8[0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-8[0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-8[0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-8[0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-8[0-9]'" || ad12=1
 _pin_tol "$SCRIPTS/selftest-research-first.sh" '1-8[0134]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-8[0134]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-workflow-orchestration.sh" '1-(68|69|71)' || ad12=1

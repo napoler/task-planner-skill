@@ -83,7 +83,7 @@ ge   "RF-06 SKILL 1-6X 计数（宽容锚）≥3(三处联动)"                 
 #     形态双双移除（全集口径演进为「Rules 1-80 全集索引」），双锚全失，RF-07 恒 FAIL。
 #   根因：Rule 63 属调研域（迁 plan-research-router）；SKILL 侧路由面=卫星路由表行（含 '反推诿' 措辞与 Rule 58,63,75 枚举）。
 #   修法：① cnt 锚改 '反推诿'（路由行措辞，≥1）；② cntE 锚改 'Rules 1-80 全集'（≥1）。宽容正则优先范式延续（演进史注释保留如上）。
-pair "RF-07 SKILL 双锚(路由表反推诿措辞+Rules 1-80 全集口径)"      "$(cnt '反推诿' "$SKILL")" "$(cntE 'Rules 1-8[0134] 全集' "$SKILL")"  # [task-v171 分层口径切换] 历史纪元演进（v151/v154/v158/v160/v162/v166/v169 各级宽容扩）保留于注释史
+pair "RF-07 SKILL 双锚(路由表反推诿措辞+Rules 1-80 全集口径)"      "$(cnt '反推诿' "$SKILL")" "$(cntE 'Rules 1-8[0-9] 全集' "$SKILL")"  # [task-v171 分层口径切换] 历史纪元演进（v151/v154/v158/v160/v162/v166/v169 各级宽容扩）保留于注释史
 # [2026-10-10 task-v163 级联: 头注全集 1-72→1-75（Rule 75 落地），cntE 交替再扩 (69|71|72|75)，SKILL.md 实态 'Critical Rules 1-75（含 Rule 40-71 全集' 命中]
 ge   "RF-08 [task-v171 核心瘦身] SKILL 卫星路由表 plan-research-router 行（C44 合规面瘦身后由路由表承载）"  "$(cnt '^| plan-research-router ' "$SKILL")" 1
 

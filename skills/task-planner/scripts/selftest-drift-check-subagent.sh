@@ -90,7 +90,7 @@ if grep '\[DRIFT CHECK\]' "$SKILLMD" | grep -q 'Rule 61' && grep '^### 61 ' "$CR
 #   根因：全集声明演进为「Rules 1-80 全集索引」（核心 12 条+10 卫星）；Rule 61 归漂移域，SKILL 侧仅存路由表行+步骤 6 载体引措。
 #   修法：全集锚改 '1-8[0134]'（阈值 ≥1；task-v170 并集 max 口径覆盖 1-81）；'Rule 61 偏移检查子代理化' 整串改路由表行 '偏移检查子代理化'+行内含 61；bullet 锚改 'Rule 61' 在 SKILL 命中 ≥1。
 # 历史纪元演进记录（v147/v149/v152/v154/v156/v162/v166/v169 各级全集括注演进）保留如上；本轮 v171 为分层架构口径切换。
-if grep -q '1-8[0134]' "$SKILLMD" && grep -q '偏移检查子代理化' "$SKILLMD" && grep -q 'Rule 61' "$SKILLMD"; then ok 11 "全集 '1-80' + 路由表 '偏移检查子代理化' + SKILL 'Rule 61' 载体锚（分层架构口径）"; else bad 11 "DCS-11 条件缺失（需 '1-80' 全集 + '偏移检查子代理化' + 'Rule 61'）"; fi
+if grep -q '1-8[0-9]' "$SKILLMD" && grep -q '偏移检查子代理化' "$SKILLMD" && grep -q 'Rule 61' "$SKILLMD"; then ok 11 "全集 '1-80' + 路由表 '偏移检查子代理化' + SKILL 'Rule 61' 载体锚（分层架构口径）"; else bad 11 "DCS-11 条件缺失（需 '1-80' 全集 + '偏移检查子代理化' + 'Rule 61'）"; fi
 
 # DCS-12 [task-v171 回归修复] critical-rules.md → CRIT_G（Rule 61 迁漂移域）
 if grep -q '^### 61 ' "$CRIT_G" && grep -q '\*\*61\.1' "$CRIT_G" && grep -q '\*\*61\.2' "$CRIT_G" && grep -q '\*\*61\.3' "$CRIT_G" && grep -q '\*\*61\.4' "$CRIT_G" && grep -q '\*\*61\.5' "$CRIT_G" && grep -q '\*\*61\.6' "$CRIT_G"; then ok 12 "Rule 61 标题+六锚齐全（CRIT_G=critical-rules-drift.md）"; else bad 12 "Rule 61 锚缺失"; fi

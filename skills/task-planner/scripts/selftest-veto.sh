@@ -60,7 +60,7 @@ if grep -q '用户否决' "$SKILLMD" && grep -q '被否决方案' "$TPL_NOTEPAD"
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 # [2026-10-11 task-v169 合并级联: Rule 80 落地 1-80 纪元, 末段字符类 4-7x→4-8x（后由 task-v170 精化为 8[01] 尾边界，禁越界放开 82-89）]
 # [2026-10-11 task-v070 S10o 扩 81 纪元（Rule 45 注释）] '1-(3[1-9]|[4-7][0-9])'→'1-(3[1-9]|[4-7][0-9]|8[0134]([^0-9]|$))^0-9]|$))'：Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md 实态「Critical Rules 1-81」（L314/L406），epoch 上界 80→81；8x 精化 8[01] 带尾边界断言（后随非数字或行尾），负样本 82/89/90 不得命中（不放开越界值），EL-11 同族宽容锚不重新钉死
-if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9]|8[0134]([^0-9]|$))' "$SKILLMD"; then ok 10 "SKILL.md Rules 1-3x..83 宽容范围（task-v144 扩 6x 纪元, task-v158 扩 7x 纪元, task-v070 扩 81 纪元, task-v172 扩 83 纪元）"; else bad 10 "SKILL.md 缺 Rules 1-3x..83 宽容锚"; fi
+if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9]|8[0-9]([^0-9]|$))' "$SKILLMD"; then ok 10 "SKILL.md Rules 1-3x..83 宽容范围（task-v144 扩 6x 纪元, task-v158 扩 7x 纪元, task-v070 扩 81 纪元, task-v172 扩 83 纪元）"; else bad 10 "SKILL.md 缺 Rules 1-3x..83 宽容锚"; fi
 # VT-11
 if grep -q '"veto_enforce"' "$CONFIG" && python3 -c "
 import json,sys

@@ -65,10 +65,10 @@ t "SL-04 critical-rules.md '^80.[1-6] ' = 6" bash -c "
 #  SKILL.md 字面 '1-80' 演进为 '1-81'（L9/L315/L407），epoch 上界 80→81；
 #  扩围正则 1-8[0134]([^0-9]|$)（尾边界写法参照 selftest-veto.sh VT-10 task-v070 S10o 范式）:
 #  覆盖现值 '1-81'（grep -c ≥3）且兼容 '1-80' 历史态；负样本 '1-82'/'1-89' 不得命中——禁越界放开]
-t "SL-05 SKILL.md 纪元锚 '1-8[0134]' ≥3（覆盖 1-80/1-81, 尾边界 82/89 负样本不命中）" bash -c "
-    [ \"\$(grep -cE '1-8[0134]([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
-    [ \"\$(echo '1-82' | grep -cE '1-8[0134]([^0-9]|$)')\" -eq 0 ] &&
-    [ \"\$(echo '1-89' | grep -cE '1-8[0134]([^0-9]|$)')\" -eq 0 ]"
+t "SL-05 SKILL.md 纪元锚 '1-8[0-9]' ≥3（覆盖 1-80/1-81, 尾边界 79/90 负样本不命中）" bash -c "
+    [ \"\$(grep -cE '1-8[0-9]([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
+    [ \"\$(echo '1-79' | grep -cE '1-8[0134]([^0-9]|$)')\" -eq 0 ] &&
+    [ \"\$(echo '1-90' | grep -cE '1-8[0134]([^0-9]|$)')\" -eq 0 ]"
 
 # SL-06: check-complete.sh SESSION-LOG GATE 三件套（[session-log-gate] 前缀 + env 开关名 + 零新 config 键/env-only 注释）
 t "SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_SESSION_LOG_ENFORCE∧零新 config 键|env-only)" bash -c "

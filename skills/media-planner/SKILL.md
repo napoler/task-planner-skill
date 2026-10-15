@@ -40,6 +40,7 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 | Rule 21.1b/21.4 | 核心 / task-dispatch | 拆分轴预估主判据、并行组独立性四问 |
 | Rule 18.9-18.11 | task-discipline | 批量生成试点先行与失败率熔断（47.3 联动） |
 | Rule 33/38 | 核心 | 验证与 QC 链（50 评级衔接） |
+| Rule 86 | task-discipline | 可测问题禁问/无推荐禁上抛（47.5 自主迭代环本体） |
 
 ## 参考文档
 

@@ -66,3 +66,5 @@
 {"rule":84,"status":"landed","task_id":"task-v173","ts":"2026-10-14","note":""}
 {"rule":85,"status":"reserved","task_id":"task-v175","ts":"2026-10-15","note":"用户输入一致性纪律（反投毒）"}
 {"rule":85,"status":"landed","task_id":"task-v175","ts":"2026-10-15","note":""}
+{"rule":86,"status":"reserved","task_id":"task-v177","ts":"2026-10-15","note":""}
+{"rule":86,"status":"landed","task_id":"task-v177","ts":"2026-10-16","note":"文本优先 L0-T 档纯文本落地"}
