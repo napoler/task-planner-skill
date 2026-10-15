@@ -3,7 +3,7 @@
 #
 # What（守护对象 + 运行方式）:
 #   静态断言 task-v143 全链落点在位（对齐 selftest-iteration-persistence.sh / selftest-execution-honesty.sh 范式），
-#   共 21 条编号断言 EG-01..EG-21：
+#   共 23 条编号断言 EG-01..EG-23：
 #     · critical-rules.md（Rule 58 条款本体，EG-01..EG-09）:
 #         EG-01 `^### 58 ` 标题=1 且含 task-v143（来源任务锚）
 #         EG-02 `^58\.[1-7] ` 七子条=7（58.1-58.7 主体行全在位）
@@ -25,6 +25,10 @@
 #         EG-15 摘要行含 `selftest-evidence-goal-gate.sh` 机器面指称（SKILL 侧机器面可发现性）
 #     · scripts/init-session.sh（variant 路由兜底注入，EG-21 — CR F-1 修复载体）:
 #         EG-21 `inject_evidence_goal_block()` 定义 =1 且主流程调用行 =1（variant 产物缺锚时兜底注入双区块，镜像 51.1 注入范式）
+#     · check-complete.sh goal-gate 证据行三要素窗口（行为级双向断言 EG-22/EG-23 — task-v176 CR 二轮 MINOR-3 守护）:
+#         EG-22 证据行窗口仅含 `bun run x`（命令词单信号）→ check-complete 终验 PASS（rc=0，无 [goal-gate] ✗）
+#         EG-23 证据行窗口仅含 `node_modules 清理`（描述性词代偿面）→ goal-gate 三要素 ✗ FAIL（rc=1）
+#               （词界 \b 有效：「node」作 node_modules 内嵌子串不算命令词信号；EG-22 命令词单信号放行）
 #     · 负断言（EG-16）:
 #         EG-16 critical-rules.md 58 块尾上下文（末条 58.7 行起至文件尾）`^66\.[0-9] ` =0
 #               （RC-15 前向防线语境锚定变体：63 号未合法登记不得顺手创建；随下一编号落地时同步演进锚——
@@ -297,6 +301,84 @@ if [ "$n" -eq 1 ] && [ "$c" -eq 1 ]; then
   ok 21 "init-session.sh inject_evidence_goal_block 定义=1 + 调用=1（variant 兜底在位）"
 else
   bad 21 "init-session.sh inject_evidence_goal_block 定义=$n（应 =1）/ 调用=$c（应 =1，兜底缺失或假接线）"
+fi
+
+# EG-22/EG-23 check-complete.sh goal-gate 证据行三要素窗口·行为级双向断言
+# [2026-10-15 task-v176 CR 二轮 MINOR-3 守护] 首轮修复把 :1648 词界写成源码双反斜杠 \\b（ERE 中=
+#   字面「反斜杠+b」，命令词分支恒不命中，接受面比修复前更窄）；二轮回修为单反斜杠 \b 后须双向
+#   行为锁定：① 命令词单信号（bun）放行——否则回退成「命令词分支恒死、仅结果信号有效」；
+#   ② 描述性词（node_modules）不代偿——否则回退成裸子串误过（原 MINOR-3 病灶复发面）。
+# 夹具形态（对齐 selftest-mechanism-profile.sh MP-17..19 fake-plan 范式，mktemp 用完即清理）：
+#   最小 standard 档计划=Goal 单元表（六列表头含「对应 S-unit」+G1 complete）+ S-unit 表（含
+#   前置依赖列，过 66.5/68.1 硬门）+ 派发型 Executor（Handoff 登记 executor，过委派率门）+
+#   progress.md 含 [judge] 行（过 judge-gate 默认 warn 档零影响）。FMEA/VC 等门默认 warn 档
+#   不阻断，rc 判定面唯一归因到 goal-gate 三要素窗口（证据行 ±2 行窗口）。
+CC="$SCRIPT_DIR/check-complete.sh"
+EG_T="$(mktemp -d /tmp/eg-gate-selftest.XXXXXX)"
+trap 'rm -rf "$EG_T"' EXIT
+mkdir -p "$EG_T/task-x"
+cat > "$EG_T/task-x/task_plan.md" <<'EGFAKE_EOF'
+# 任务计划（selftest fake plan — 非真实任务）
+plan_tier: standard
+
+## 🎯 Goal 单元表
+
+| goal-id | 任务名 | 目标 | 完整验证方式 | 对应 S-unit | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| G1 | 探针 | 验证 | 实跑命令词证据 | S1 | complete |
+
+### Phase 1: 实施
+- **Status:** complete
+- **Executor:** executor
+- **V-N:** VC-1
+
+| ID | 目标 | 执行体 | 输入 | 前置依赖 | 验收 | 预估时长 | 状态 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| S1 | 探针执行 | executor | task_plan.md | - | 证据落盘 | 5min | complete |
+
+## Verification
+
+| ID | 验证项 |
+| --- | --- |
+| VC-1 | 证据行在案 |
+
+## Handoff
+
+| 子代理类型 | 职责 |
+| --- | --- |
+| executor | 执行体 |
+EGFAKE_EOF
+cat > "$EG_T/task-x/findings.md" <<'EGEOF'
+# Findings（selftest fake）
+- F1: 探针发现 1
+- F2: 探针发现 2
+- F3: 探针发现 3
+EGEOF
+# EG-22 正向：证据行窗口仅含命令词单信号 `bun run x`（±2 行窗口内无 PASS/✅ 结果信号）
+#   → goal-gate 命令词分支命中即放行，check-complete 终验 rc=0（全门链在位时 rc=0=gate 未 exit 1）
+printf '%s\n' \
+  '# Progress（selftest fake）' \
+  '- 2026-10-15 探针任务启动' \
+  '- [goal:G1] 实跑：bun run x' \
+  '- [judge] 评判通过' > "$EG_T/task-x/progress.md"
+out="$(bash "$CC" "$EG_T/task-x/task_plan.md" 2>&1)"; rc=$?
+if [ "$rc" -eq 0 ] && ! printf '%s\n' "$out" | grep -q '^\[goal-gate\] ✗'; then
+  ok 22 "goal-gate 证据行窗口仅含 'bun run x'（命令词单信号）→ 终验 PASS rc=0（MINOR-3 词界分支有效）"
+else
+  bad 22 "goal-gate 证据行 'bun run x' 未放行（rc=$rc；命令词分支死=双反斜杠 \\b 病灶或回退）"
+fi
+# EG-23 反向：证据行窗口仅含描述性词 `node_modules 清理`（无命令词独立单词、无结果信号）
+#   → 词界 \b 有效（node_modules 内嵌 node 子串≠命令词）→ goal-gate 三要素 ✗，check-complete rc=1
+printf '%s\n' \
+  '# Progress（selftest fake）' \
+  '- 2026-10-15 探针任务启动' \
+  '- [goal:G1] node_modules 清理' \
+  '- [judge] 评判通过' > "$EG_T/task-x/progress.md"
+out="$(bash "$CC" "$EG_T/task-x/task_plan.md" 2>&1)"; rc=$?
+if [ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q '^\[goal-gate\] ✗ G1 \[goal:G1\] 证据行缺三要素信号'; then
+  ok 23 "goal-gate 证据行仅含 'node_modules 清理' → 三要素 ✗ FAIL rc=1（词界有效，描述性词不代偿命令词）"
+else
+  bad 23 "goal-gate 证据行 'node_modules 清理' 未阻断（rc=$rc；裸子串误过=MINOR-3 原病灶复发）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
