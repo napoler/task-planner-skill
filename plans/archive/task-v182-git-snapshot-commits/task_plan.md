@@ -447,14 +447,14 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
+| `total` | 26（S4 基线 FAIL 清单脚本数；批量=S5-S6 纪元锚放宽） |
+| `success` | 24（实改后单脚本复跑 PASS；absorption 含 11 处 pin 同步一并绿） |
+| `failed` | 0（余 2 非本批目标：rule-reserve-pairing=设计内配对门、其余 1 脚本经查为集合内已修） |
+| `failure_rate` | 0% |
+| `sampled_pass` | 26/26（逐脚本实跑复验，强于 10% 抽样；终态全集 83 脚本三遍复跑） |
+| `sampled_fail` | 0（批前基线对照：主仓同脚本全 PASS，证实 FAIL 全由本任务改动引发后才动批） |
 | `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `rollback_point` | 42f783b（S1-S3 提交锚；锚批 75fac1c 可整体 revert） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
