@@ -1,2 +1,3 @@
 {"tick":1,"ts":"2026-10-15T22:05:49Z","agent":"main","phase":"1","event":"note","summary":"首锚提交 4fc87a2（计划入库+Rule 90 预留）+worktree 建立 wt/task-v182-git-snapshot-commits","files":[]}
 {"tick":2,"ts":"2026-10-15T22:53:58Z","agent":"main","phase":"1","event":"note","summary":"S8 合并回排队：对端 dwfdwfrun0f76 缺陷修复运行 06:49 活跃，未提交改动重叠 SKILL.md/ledger——§6.2 三件套已登记 progress.md；分支 cedb834 就绪待并","files":[]}
+{"tick":3,"ts":"2026-10-15T23:42:32Z","agent":"main","phase":"1","event":"drift_check","summary":"drift-checker 判定 ALIGNED（Phase complete 前强制触发；检查点 subagent-state/61-drift-check.md）","files":[]}

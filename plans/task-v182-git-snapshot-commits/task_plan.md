@@ -295,14 +295,15 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 
 ### Phase 1: 实施+验收合一（L0-T 纯文本档 · worktree 隔离）
 <!-- 单 Phase 合一（v181 先例 188050b）：条款文本+索引级联+锚回归+收口全部在一个 Phase 内串行闭环，S-unit 间强依赖无并行面 -->
-- [ ] S1 Rule 90 条款文本落地（discipline 文件末段追加 90.1-90.6）
-- [ ] S2-S3 索引级联（三载体 8 处索引行同步含 90）
-- [ ] S4-S7 纪元锚：基线跑→FAIL 清单→批式放宽→全集复跑绿
-- [ ] S8-S9 台账 land 90 + 合并回 master + 归档 + INDEX 刷新 + 收口提交
-- [ ] S10 Verifier 子代理独立终验（VC-1..VC-6 全量复核）
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- [x] S1 Rule 90 条款文本落地（discipline 文件末段追加 90.1-90.6）
+- [x] S2-S3 索引级联（三载体 8 处索引行同步含 90）
+- [x] S4-S7 纪元锚：基线跑→FAIL 清单→批式放宽→全集复跑绿
+- [x] S8 台账 land 90 + 合并回 master（含排队解除+对端接管+并集解两轮）
+- [x] S9 归档 + INDEX 刷新 + 收口提交
+- [ ] S10 Verifier 子代理独立终验（VC-1..VC-6 全量复核）（收口提交后派发，结果回填）
+- [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由: Rule 25.3 白名单② 计划系统文件维护——本任务域=task-planner 技能自身规则文本+级联锚精修，多文件级联需逐处 grep 验证，v181 先例同判；S5 独立终验派发 Verifier 子代理保证验证独立性）
 <!-- 
   STATUS VALUES:
@@ -435,7 +436,7 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-10-16 07:2x | **ALIGNED**（drift-checker 子代理，Rule 61 载体） | 全部 VC | 动作全映射 Goal/VC；5f7634b 接管=用户授权例外合规；三处偏离均有留痕；worktree 清理=收尾待办非漂移。检查点=subagent-state/61-drift-check.md |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 
@@ -463,9 +464,9 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 0 / 1（Phase 内 S-unit 级委派 1 次：Code Assistant×1；待派 drift-checker+Verifier×2） |
+| 主进程直做 Phase 清单 | Phase 1 全部 S-unit（例外理由=Rule 25.3 白名单②计划系统文件维护+①git 编排；S1-S7 多文件级联精修需逐处 grep 验证，v181 同判；S8 续 CD-12 编辑被委派门拦截后已改派子代理闭环） |
+| 委派率 | Phase 级 0%（白名单②豁免登记）；S-unit 级含计划内 Verifier/drift-checker 两派发 ≥3 次（Handoff 表）——按 25.4 白名单内口径登记，v181 先例同判 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -479,9 +480,9 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-16 07:1x | Code Assistant | CD-12 锚 9x 纪元扩展（两处精准替换） | done | 24 PASS/0 FAIL；grep 9[0-9] 三处命中 | selftest-conclusion-discipline.sh:80,90-92 | findings 执行期判例节 | 无（回复内验证输出） | 主进程直改被委派门拦→改派 / 0 / ☑ |
+| 2 | 2026-10-16 07:2x（待派） | drift-checker | Phase complete 前偏移检查 | queued | | | | | - / 0 / ☐ |
+| 3 | 2026-10-16 07:3x（待派） | Verifier | VC-1..VC-6 独立终验 | queued | | | | | - / 0 / ☐ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

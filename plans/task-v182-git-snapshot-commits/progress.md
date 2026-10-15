@@ -47,6 +47,20 @@
   2. **恢复条件**（可观察信号）：对端改动以 commit 形式出现在 master（`git log` 出现 task-defect-rrv13 相关提交）或对端文件转为干净态（`git status` 不再列 SKILL.md/ledger 为 M）。
   3. **续跑步骤**：恢复后第一动作=重跑 §6.1 三查→`git merge --no-ff wt/task-v182-git-snapshot-commits`（SKILL.md 索引行预期冲突→**并集解**：取对端精确枚举+去重计数基准∪本任务 Rule 90/1-90 追加，计数按对端去重口径+90 重算）→ledger 若行级冲突则并集解→S9 归档+INDEX 刷新+收口提交→S10 独立终验。对端疑似工作中，**禁碰其未提交文件、禁 stash/reset 手术（Rule 88.4）**；本任务全量产出已安全在分支 cedb834（含 land 90），无丢失风险。
 
+- **▶️ S8 解阻塞与收口（2026-10-16 07:1x，用户「继续」指令授权）**：
+  - 对端 21 分钟零动静（06:49:05 冻结）+双 selftest PASS（其改动完好态实证）→ 按预告执行**保真接管**：其 6 文件（SKILL.md/INDEX.md/台账/2 selftest/registry.tsv）原样独立提交=**5f7634b**（注明来源运行 dwfdwfrun0f76 与授权语），其运行续跑时以此为准
+  - `git merge --no-ff` → 台账自动合并 ✓（对端 77/78 误标更正行∪本任务 90 landed 行双保全）；SKILL.md 4 块冲突并集解：精确枚举∪Rule 90、计数 72+1=**73（脚本实测唯一规则数=73 精确复核）**→ **007600f**
+  - 合并后二轮精修 **c43dc15**：①discipline 路由两行 69-76 段保留区间形式（与对端枚举集合等价，免伤 CD-12 incidental 锚）②CD-12 锚 9x 纪元扩展（对端「31-36」枚举化使字面「1-36」消失，任何保序写法无法两全→按 v117/v118 口径扩展范式改锚；**委派门拦截主进程直改主仓 scripts/ → 改派 Code Assistant 执行**，产出已 Read 复核）
+  - delegation 脚本合并提交后首跑 FAIL=瞬态竞态（git 操作窗口），复跑 38/38 PASS 两轮稳定
+  - master 终态全集：**83 脚本仅剩 1 FAIL=rule-reserve-pairing PR-02（悬空编号 77/78/79）**——对端批次引入（其把 77/78/79 误标 landed 更正为 reserved 后暴露；本任务 land 90 不在悬空列）；按 Rule 88.2③ 登记不代修，留对端运行续跑收口或用户仲裁 release
+- Files created/modified（S8 续）: skills/task-planner/SKILL.md（并集解+69-76 段）、skills/task-planner/scripts/selftest-conclusion-discipline.sh（CD-12 锚，code-assistant 代执行）
+- Test Results（S8 续）:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 对端双 selftest 接管前 | decision-grading/report-reviewability | PASS（完好态） | 双 PASS | PASS |
+  | 唯一规则计数复核 | 路由表 11 行去重计数 | =73 | 73 | PASS |
+  | master 终态全集 | 83 脚本遍历 | 仅 pairing 域内 FAIL | 仅 PR-02（77/78/79 对端域） | PASS（本任务面） |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

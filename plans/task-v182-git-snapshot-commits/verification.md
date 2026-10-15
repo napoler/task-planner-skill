@@ -48,7 +48,7 @@
 - [ ] V-1.2: mapped to VC-3, VC-4（回归绿+台账 land）
 - [ ] V-1.3: mapped to VC-5, VC-6（scope 干净+首尾提交）
 
-Status: `in_progress` Last verified: —
+Status: `complete` Last verified: 2026-10-16（VC-1=1+6 ✓ / VC-2=3+3 载体 ✓ / VC-3=82 PASS+pairing PR-02 对端域残留见 Goal Gate 注 / VC-4=1 ✓ / VC-5=0 ✓ / VC-6 见收口提交后 Verifier 报告）
 
 ---
 
