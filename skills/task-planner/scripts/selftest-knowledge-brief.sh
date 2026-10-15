@@ -39,7 +39,7 @@ t "T1c 行数 ≤150" bash -c "[ \"\$(wc -l < '$BRIEF')\" -le 150 ]"
 
 # T2: SKILL.md 引用 knowledge-brief ≥2 且行数 ≤540
 t "T2a SKILL.md grep 'knowledge-brief' ≥2" bash -c "[ \"\$(grep -c 'knowledge-brief' '$SKILL')\" -ge 2 ]"
-# [2026-10-11 task-v170] master 侧演进注记并入：Rule 81 归档步骤+C56 使 master 版 SKILL.md 实值 559，master 将本钉放宽 558→584；task-v171 重写瘦身后 SKILL.md=222 行，保留更紧的 558 上界（对合并树恒真且判据更强，非回退——放宽动因在合并树不存在）
+# [2026-10-11 task-v170] master 侧演进注记并入：Rule 81 归档步骤+C57（2026-10-15 task-v176 D8：C56→C57，统一 SKILL.md:124/125 口径）使 master 版 SKILL.md 实值 559，master 将本钉放宽 558→584；task-v171 重写瘦身后 SKILL.md=222 行，保留更紧的 558 上界（对合并树恒真且判据更强，非回退——放宽动因在合并树不存在）
 t "T2b SKILL.md 行数 ≤558（task-v076 扩充 545; [2026-09-17 task-v080] 调研路由增补 545→548; [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-20 task-v086] Rule 38 联动 549→551, 上限 549→552; [2026-09-22 task-v087] Rule 8.1 D 类联动 551→555, 上限 552→555; [2026-09-23 task-v088] Rule 39 联动 555→558, 上限 555→558; [2026-10-11 task-v170 master 注记] 558→584（master 版 SKILL 559 行所需，合并树不适用）)" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 558 ]"
 
 # T3: init-session.sh grep 'knowledge-brief.md' ≥2 (建立循环 + 复核循环) 且 '6/6' 校验行 ≥1

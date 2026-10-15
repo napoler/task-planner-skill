@@ -644,6 +644,30 @@ if [ "${TRIVIAL_CODE_TIER:-0}" != "1" ]; then
     fi
 fi
 
+# [2026-10-15 task-v176 D4] user-session-log append-only 完整性基线 .session-log-baseline（Rule 80.2 机器承载）
+# What: user-session-log.md 存在且基线未建时，写 `.session-log-baseline` =
+#       「<首条目行 sha256> <条目数>」单行（首条目=首个 `## #[0-9]` 行；无条目时记 `- 0`——
+#       模板占位行 `## #N` 因 N 非数字不计入条目，沿用 SESSION-LOG GATE 既有口径）。
+# Why: 专档「append-only 只写不改」（Rule 80.2）此前无完整性载体——历史改写/删条机器不可检测，
+#      而 task_plan.md 有 SHA-256 锁=记录强度倒挂（S1-7：用户原话权威源反成最弱载体）。
+#      check-complete.sh SESSION-LOG GATE enforce 档据此校验「现存条目数 ≥ 基线条目数 ∧ 现存首条目
+#      sha == 基线 sha」（禁删条/禁改首条；append 新条目合法——条目数只增不减、首条冻结不变）。
+# 幂等: 基线已存在（重复 init）→ 不重建（重生成会重置完整性锚=让篡改后重跑 init 洗白，须保冻结语义）。
+# 档位: 非 trivial 档强制建档路径生成；trivial 档 user-session-log 按需创建（Change #7），
+#       文件缺席时本块自然跳过——首次建档由后续 append 触发场景兜底（基线缺失时 GATE fail-open）。
+if [ -f "user-session-log.md" ] && [ ! -f ".session-log-baseline" ]; then
+    _sl_first_line="$(grep -m1 -E '^## #[0-9]' "user-session-log.md" 2>/dev/null || true)"
+    if [ -n "$_sl_first_line" ]; then
+        _sl_first_rec="$(printf '%s\n' "$_sl_first_line" | sha256sum | awk '{print $1}')"
+    else
+        _sl_first_rec="-"
+    fi
+    _sl_entry_n="$(grep -cE '^## #[0-9]' "user-session-log.md" 2>/dev/null || true)"
+    case "${_sl_entry_n:-}" in ''|*[!0-9]*) _sl_entry_n=0 ;; esac
+    printf '%s %s\n' "$_sl_first_rec" "$_sl_entry_n" > ".session-log-baseline"
+    echo "    [init] .session-log-baseline created (task-v176 D4: first-entry-sha=${_sl_first_rec:0:12}… entries=${_sl_entry_n}, append-only 完整性基线)"
+fi
+
 # [2026-10-11 task-v167 Rule 38.7] 执行通道（lane）定级接线：计划文件创建后调 lane-detect.sh 对
 # 当前 git 状态判定（BASE=env TASK_LANE_BASE, 默认 HEAD；非 git 仓/判不定 → lane-detect 兜底 L1,
 # fail-safe 向重侧）。lane=执行通道, 与 plan_tier=模板轻重正交（两者并存写入计划头）。

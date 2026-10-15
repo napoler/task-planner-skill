@@ -307,9 +307,15 @@ if chain_mode in ("linked", "fan-out"):
             print(f"  Block: {lc}/{lt} phases ({st})")
 
 # Exit code
+# [2026-10-15 task-v176 D3] total==0（无任何 `### Phase N` 命中）改为 fail-closed exit 1：
+# Why: Phase 标题变体（`## Phase 1:` 二级标题等，S2 缺陷5 fixture 实证 /tmp/s2-cc）使 :181 正则
+#      不匹配 → total==0 → 原 fail-open exit 0 令 3-File/VC/goal-gate 全门链静默跳过 = 终验假 PASS
+#      （最恶劣通道）。计划无效=先回炉，禁放行；报错走 stderr（对齐其他门 ✗ 行出口；stdout 保留
+#      原 "No phases found" 行供 hook 既有解析零变动）。仅改此 fail-open 点，其余门逻辑不动。
 if total == 0 and not block_statuses:
     print("[plan] No phases found in task_plan.md.")
-    sys.exit(0)
+    print("[plan] ✗ Phase 标题格式不匹配（要求 `### Phase N`）；计划无效先回炉，禁放行 (task-v176 D3: fail-closed, 原 exit 0=终验假 PASS 通道已封)", file=sys.stderr)
+    sys.exit(1)
 
 # Batch Report gate (Rule 18.6): incomplete fields block completion reporting
 
@@ -1180,6 +1186,45 @@ f && /^\|/ {
                     printf '[session-log-gate] ⚠ 指针区块在案但 user-session-log.md 缺失/空/无记录条目（warn 档不阻断; 设 TASK_PLANNER_SESSION_LOG_ENFORCE=enforce 升级为阻断档）\n' >&2
                 fi
             fi
+            # [2026-10-15 task-v176 D4] append-only 完整性基线校验（.session-log-baseline，init-session.sh 建档时生成）
+            # What: 基线在案时校验 ① 现存条目数 ≥ 基线条目数（禁删条）∧ ② 现存首条目行 sha256 == 基线首条
+            #       sha（禁改首条；基线记 `-` = 建档时无条目，仅约束「不可回退为有旧首条」——删条/改首条面）。
+            #       违规：enforce 档 → stderr `[session-log-gate] ✗ baseline-drift` 后 exit 1 阻断；
+            #       warn 档 → stderr ⚠ WARNING 不阻断（保持既有默认档语义）。
+            # Why: Rule 80.2「append-only 只写不改」此前无完整性载体——历史改写/删条机器不可检测，
+            #      而 task_plan.md 有 SHA-256 锁=记录强度倒挂（S1-7）。基线=首条 sha+条目数最小锚：
+            #      append 新条合法（条目数只增、首条冻结），删条/改首条=篡改面。
+            # 幂等/兼容: 基线缺失（存量计划/重复 init 前手工建档）→ 静默跳过（fail-open，不溯及历史）；
+            #       基线文件首行形如 `<sha|-> <count>`，解析失败 → 跳过（不阻断，与 SL 门体既有
+            #       门控故障 fail-open 惯例一致，错误留 stderr 痕迹）。
+            sl_baseline="$PLAN_DIR_GUESS/.session-log-baseline"
+            if [ -s "$sl_baseline" ]; then
+                sl_bl_sha="$(head -n1 "$sl_baseline" 2>/dev/null | awk '{print $1}')"
+                sl_bl_cnt="$(head -n1 "$sl_baseline" 2>/dev/null | awk '{print $2}')"
+                case "${sl_bl_cnt:-}" in ''|*[!0-9]*) sl_bl_cnt="" ;; esac
+                sl_cur_first_sha="$(grep -m1 -E '^## #[0-9]' "$sl_log" 2>/dev/null | sha256sum 2>/dev/null | awk '{print $1}')"
+                # 无 `## #[0-9]` 条目时 grep 输出空 → sha256sum 算的是空输入哈希（64 位非 `-`）→ 归一为 `-`
+                if [ -z "$(grep -m1 -E '^## #[0-9]' "$sl_log" 2>/dev/null || true)" ]; then
+                    sl_cur_first_sha="-"
+                fi
+                sl_drift=""
+                if [ -n "${sl_bl_cnt:-}" ] && [ "${sl_entries:-0}" -lt "$sl_bl_cnt" ]; then
+                    sl_drift="${sl_drift}条目数回退（现存 ${sl_entries:-0} < 基线 ${sl_bl_cnt}，删条=append-only 违背） "
+                fi
+                if [ -n "$sl_bl_sha" ] && [ "$sl_cur_first_sha" != "$sl_bl_sha" ]; then
+                    sl_drift="${sl_drift}首条目 sha 漂移（基线 ${sl_bl_sha:0:12}… → 现存 ${sl_cur_first_sha:0:12}…，改首条=append-only 违背） "
+                fi
+                if [ -n "$sl_drift" ]; then
+                    if [ "$sl_tier" = "enforce" ]; then
+                        printf '[session-log-gate] ✗ user-session-log.md baseline-drift (task-v176 D4, .session-log-baseline 在案): %s — append-only（Rule 80.2）篡改面, enforce 档阻断 complete: 恢复被删/被改条目（或重建基线仅当可证明基线生成早于合法 append 且经用户授权）后重跑\n' "${sl_drift% }" >&2
+                        exit 1
+                    else
+                        printf '[session-log-gate] ⚠ user-session-log.md baseline-drift WARNING (task-v176 D4, warn 档不阻断): %s — 设 TASK_PLANNER_SESSION_LOG_ENFORCE=enforce 升级为阻断档\n' "${sl_drift% }" >&2
+                    fi
+                else
+                    printf '[session-log-gate] OK append-only 基线一致（.session-log-baseline: entries≥%s ∧ 首条 sha 未变, task-v176 D4）\n' "${sl_bl_cnt:-?}" >&2
+                fi
+            fi
         elif grep -q '🗣️ 用户会话逐字记录' "$PLAN_FILE" 2>/dev/null; then
             # off 档：指针区块虽在案但整门 SKIP（off 语义=不校验会话记录）
             printf '[session-log-gate] SKIPPED (TASK_PLANNER_SESSION_LOG_ENFORCE=off 档整门跳过, 零新 config 键 env-only)\n' >&2
@@ -1561,10 +1606,34 @@ END {print n+0}'
             done < <(printf '%s\n' "$goal_gate_sec" | grep -E '^\|[[:space:]]*G[0-9]+[[:space:]]*\|' || true)
 
             # ② status=complete 的 goal 行 → progress.md grep [goal:Gn] 证据行，缺 → exit 1
+            # [2026-10-15 task-v176 D5] 证据行三要素强化校验（What）：存在性 grep 之后追加窗口校验——
+            # [goal:Gn] 证据行同行或相邻 2 行内须命中三要素信号正则 (bash|bun|node|python|PASS|✅|FAIL=0|exit 0)
+            # 至少其一，否则 fail-closed exit 1（与 66.3 禁翻格同档）。
+            # Why: 原 `grep -q "[goal:Gn]"` 仅验存在性——一条 `- [goal:G1]` 空行即放行（S1-9 实证），
+            # 66.3「实跑通过」退化为「写了行」。三要素=验证命令词(bash/bun/node/python)∨PASS 结果(✅/PASS/
+            # FAIL=0/exit 0)∨产物路径（路径自由文本不可机器断言，取命令词+结果信号两族兜底）；窗口=±2 行，
+            # 覆盖「命令在上、PASS 在下」的同段证据形态。fail-closed 方向=阻断（记录失真面，非门控故障面）。
             goal_gate_fail=0
             for gid in $goal_gate_complete; do
                 if ! grep -q "\[goal:${gid}\]" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null; then
                     printf '[goal-gate] ✗ %s complete 无 [goal:%s] 证据行 (Rule 66.3: 补 progress.md 证据行后重跑)\n' "$gid" "$gid" >&2
+                    goal_gate_fail=1
+                    continue
+                fi
+                # [2026-10-15 task-v176 D5] 窗口抽取：awk 两遍式（先存全量行再扫 marker），输出每个
+                # [goal:Gn] 命中行的 ±2 行窗口文本（首尾截断）；空窗口或窗口内无信号 → fail。
+                _g_ev_window="$(awk -v m="[goal:${gid}]" '
+                    { arr[NR] = $0 }
+                    END {
+                        for (i = 1; i <= NR; i++) {
+                            if (index(arr[i], m)) {
+                                s = (i > 2 ? i - 2 : 1); e = (i + 2 <= NR ? i + 2 : NR)
+                                for (j = s; j <= e; j++) print arr[j]
+                            }
+                        }
+                    }' "$PLAN_DIR_GUESS/progress.md" 2>/dev/null || true)"
+                if [ -z "$_g_ev_window" ] || ! printf '%s\n' "$_g_ev_window" | grep -qE '(bash|bun|node|python|PASS|✅|FAIL=0|exit 0)'; then
+                    printf '[goal-gate] ✗ %s [goal:%s] 证据行缺三要素信号（同行或 ±2 行窗口内未命中 (bash|bun|node|python|PASS|✅|FAIL=0|exit 0)；Rule 66.3 三要素=验证命令+PASS 结果+产物路径, 空行/纯叙述行不构成证据; task-v176 D5）— 补实跑证据后重跑\n' "$gid" "$gid" >&2
                     goal_gate_fail=1
                 fi
             done
@@ -1572,6 +1641,40 @@ END {print n+0}'
 
             # ③ 存在 status=pending 的 goal 行 → 降级 PARTIAL 提示（不单独 exit 1，58.5 三态语义对齐）
             [ -n "$goal_gate_pending" ] && printf '[goal-gate] ⚠ 有 goal 未 complete (%s), 终态最高 PARTIAL (Rule 66.3/58.5)\n' "${goal_gate_pending# }" >&2
+
+            # [2026-10-15 task-v176 D12] R 锚定复诵机器断言（goal-gate 同区段新增断言，非新门段——
+            # 与 66.3 goal-gate 共享 plan_tier: standard|full 门控，故挂本条件块内）：
+            # What: progress.md 每个 `### Phase` 标题段须含 `- **R 锚定**：` 行（逐段判定+计数对齐口径：
+            #       awk 状态机逐段扫描，任一 Phase 段 0 命中 → fail-closed exit 1，并点名缺失段标题；
+            #       逐段判定同时覆盖「全文件行数对齐但分布错位」的计数对齐漏洞——游离 R 锚定行
+            #       不得为缺段段代偿）。
+            # Why: v168「R 锚定复诵」（SKILL.md 流程 1「progress 段首行写 - **R 锚定**：本 Phase 服务 R<n>」）
+            #       此前 0 脚本断言（S1 审计 A 类①「声称无承载」）——纪律退化无机器检测面，记录失真不可复验；
+            #       本断言为其最小机器承载（只验存在性+计数对齐，不验复述内容语义，避免越权判「复述是否准确」）。
+            # 口径: 段=标题行后至下一个 `### Phase` 标题前；progress.md 缺失或零 `### Phase` 段 → 静默跳过
+            #       （存量计划/未开 Phase 面，fail-open 不误伤；L0/mini 由本块 plan_tier 门控天然豁免）。
+            _ra_prog="$PLAN_DIR_GUESS/progress.md"
+            if [ -f "$_ra_prog" ]; then
+                _ra_total_phases="$(grep -cE '^###[[:space:]]+Phase' "$_ra_prog" 2>/dev/null || true)"
+                case "${_ra_total_phases:-}" in ''|*[!0-9]*) _ra_total_phases=0 ;; esac
+                if [ "$_ra_total_phases" -ge 1 ]; then
+                    _ra_anchor_n="$(grep -cF -- '- **R 锚定**：' "$_ra_prog" 2>/dev/null || true)"
+                    case "${_ra_anchor_n:-}" in ''|*[!0-9]*) _ra_anchor_n=0 ;; esac
+                    # awk 状态机定位首个缺 R 锚定的 Phase 段标题（遇下一 Phase 标题时回溯判上一段
+                    # cnt==0；END 判末段）；missing 只在首次命中时写入=「首个缺失段」而非末个；全在案→空
+                    _ra_missing_ph="$(awk '
+                        /^###[[:space:]]+Phase/ { if (missing == "" && started && cnt == 0) missing = title; started = 1; title = $0; cnt = 0; next }
+                        /- \*\*R 锚定\*\*：/ { if (started) cnt++ }
+                        END { if (missing == "" && started && cnt == 0) missing = title; print missing }' "$_ra_prog" 2>/dev/null || true)"
+                    # 判定面=逐段 awk（grep 全文件计数仅作展示——计数对齐是必要非充分条件：
+                    # Phase 外游离 R 锚定行 + 某段缺行时总数仍对齐，逐段判定才不漏）
+                    if [ -n "$_ra_missing_ph" ]; then
+                        printf '[goal-gate] ✗ progress.md R 锚定复诵缺失（v168 逻辑层, task-v176 D12）: 段「%s」无「- **R 锚定**：」行（### Phase 段 %s 个 / 全文件 R 锚定行 %s，须逐段在案且计数对齐）— 补该段段首 R 锚定行后重跑\n' \
+                            "$_ra_missing_ph" "$_ra_total_phases" "$_ra_anchor_n" >&2
+                        exit 1
+                    fi
+                fi
+            fi
         fi
     else
         printf '[goal-gate] SKIPPED (mini 档豁免或计划无 plan_tier: standard|full 标记, Rule 66.5)\n' >&2

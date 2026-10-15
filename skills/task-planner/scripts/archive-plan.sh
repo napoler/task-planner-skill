@@ -10,7 +10,9 @@
 #   - 源目录不存在 → REJECT exit 1
 #   - active 指针（plans/.active_plan 或 .active_plan_side/*.active_plan 内容 == task-id）→ 拒绝
 #   - .session-owner 在场且 mtime<24h（活会话标记）→ 拒绝；陈旧 owner 不拦（TTL 与 side 指针 24h 惯例一致）
-#   - task_plan.md 全部 `- **Status:**` 行非全 complete（含 0 行=异常）→ 拒绝
+#   - task_plan.md Status 列表行（行首列表符 `**Status:**` 锚）非全 complete 全词（含 0 行=异常）→ 拒绝
+#     （status-incomplete / status-none；total 与 ok 共用同一列表锚行集，无锚正文行不参与两侧计数 — task-v176 D2 同口径修正）
+#   - `### Phase` 标题数 ≠ Status 列表行数（Phase 覆盖不完整，翻转流程未走完）→ 拒绝 phase-uncovered，stderr 明示原因
 #   - 目标 archive/<id> 已存在 → ALREADY_ARCHIVED exit 0（幂等，唯一放行特例）
 #
 # 执行: 目录被 git 跟踪（git ls-files 验证）→ git mv（可 revert）；未跟踪（如 v162 先例）→ mv 兜底。
@@ -106,18 +108,37 @@ guard_reason() {
             echo "live-owner"; return
         fi
     fi
-    # Status 全量判定：全部 `- **Status:**` 行均 complete 且总数>0；
-    # 禁 grep -m1（早期 Phase 已 complete 会误放行）；0 行=异常文件，fail-closed 拒绝
+    # Status 全量判定（task-v176 D2 同口径修正）：
+    # What: total 与 ok 共用同一行首列表锚 `^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*` 行集——
+    #      total=列表 Status 行数，ok=其中值以完整词 complete 开头的行数；无列表符的游离文字行
+    #      （如正文引用「完成态格式为 **Status:** complete」样例行）两侧均不参与计数。
+    # Why: 原实现 total（列表锚 grep -cE）与 ok（无锚全文 `Status:\*\* complete` grep -c）口径不对称，
+    #      双向失真实证（task-v176 findings D2：假 PASS=非 complete 列表行被补数放行；假 FAIL=正文引用
+    #      多计使真完成任务被拒 status-incomplete）。本脚本是 Rule 81 归档唯一执行体，计数失真=在途任务
+    #      被误归档（数据面事故）或完成任务被永久卡死，故 fail-closed 统一收口为「同一行集上判全词」。
     local tp="$src/task_plan.md" total ok
     [ -f "$tp" ] || { echo "no-task-plan"; return; }
     total="$(grep -cE '^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*' "$tp" 2>/dev/null)"
-    ok="$(grep -c 'Status:\*\* complete' "$tp" 2>/dev/null)"
+    ok="$(grep -E '^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*' "$tp" 2>/dev/null | grep -cE '\*\*Status:\*\*[[:space:]]+complete([[:space:]]|$)')"
     total="${total:-0}"; ok="${ok:-0}"
     if [ "$total" -lt 1 ]; then
         echo "status-none"; return
     fi
     if [ "$total" != "$ok" ]; then
         echo "status-incomplete"; return
+    fi
+    # Phase 覆盖校验（task-v176 D2 缺陷4 修正）：
+    # What: `### Phase` 标题数必须与 Status 列表行数相等；不等即拒绝（缺状态行=有 Phase 未走完翻转流程），
+    #      stderr 明示缺失数量（原因码 phase-uncovered 供批量 SKIP 行对账）。
+    # Why: 原实现只统计"已存在的 Status 行"——中途追加 Phase 忘写 Status 行时被整体忽略，照样判可归档，
+    #      与 check-complete（按 Phase 条目判定 in_progress）结论分裂。覆盖校验把「每 Phase 必有 Status 行」
+    #      设为归档前置条件，消除漏写放行通道（fail-closed）。
+    local phases
+    phases="$(grep -cE '^### Phase' "$tp" 2>/dev/null)"
+    phases="${phases:-0}"
+    if [ "$phases" -ne "$total" ]; then
+        echo "${PFX} 拒绝归档 $id: Phase 覆盖不完整：$phases 个 Phase 仅 $total 个有 Status 行，缺状态行=计划未走完翻转流程" >&2
+        echo "phase-uncovered"; return
     fi
     echo "candidate"
 }

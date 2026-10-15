@@ -33,12 +33,14 @@ PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'AP-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'AP-%s FAIL %s\n' "$1" "$2"; }
 
-# mk_plan <plans根> <task-id>: 建 fixture 任务目录，task_plan.md 恰 1 行 `- **Status:** complete`
-# （Status 行形态与被测脚本 guard_reason 的两条 grep 口径对齐：行首 `**Status:**` + 行内 `Status:** complete`）
+# mk_plan <plans根> <task-id>: 建 fixture 任务目录，task_plan.md = 1 个 `### Phase` 标题 + 恰 1 行 `- **Status:** complete`
+# （Status 行形态与被测脚本 guard_reason 的列表锚口径对齐：行首列表符 + `**Status:**`；
+#   Phase 标题数须与 Status 行数相等——task-v176 D2 新增 Phase 覆盖校验后，缺 Phase 标题的旧形态会被
+#   phase-uncovered 拒绝，故 fixture 模板同步带 1 个 Phase 标题维持"覆盖完整"前提）
 mk_plan() {
     local root="$1" id="$2"
     mkdir -p "$root/$id"
-    printf -- '- **Status:** complete\n' > "$root/$id/task_plan.md"
+    printf -- '### Phase 1: fixture\n- **Status:** complete\n' > "$root/$id/task_plan.md"
 }
 
 if [ ! -f "$ARCHIVE" ]; then
@@ -138,12 +140,13 @@ else
     bad 08 "live-owner rc=$rc（应 1 + REJECT live-owner）"
 fi
 
-# AP-09 守卫 status-incomplete：含非 complete 的 Status 行 → 拒绝
-# What：task_plan.md 两行 Status（complete + in_progress）→ total≠ok → REJECT status-incomplete（L113-121 全量判定）。
+# AP-09 守卫 status-incomplete：含非 complete 的 Status 列表行 → 拒绝
+# What：task_plan.md 2 个 `### Phase` 标题 + 两行 Status（complete + in_progress）→ total=2≠ok=1 → REJECT status-incomplete。
 # Why：mid-task（早期 Phase complete、后续 in_progress）若用 grep -m1 会误放行；全量 equal 判定是定案口径，
 #      此处锁「非全 complete 一律拒绝」行为（禁把部分完成当完成）。
+# 夹具须 Phase 数==Status 行数（2:2 覆盖完整），否则先被 phase-uncovered 拦到、断言打不到 status-incomplete 分支。
 mkdir -p "$R1/task-e"
-printf -- '- **Status:** complete\n- **Status:** in_progress\n' > "$R1/task-e/task_plan.md"
+printf -- '### Phase 1: p1\n- **Status:** complete\n### Phase 2: p2\n- **Status:** in_progress\n' > "$R1/task-e/task_plan.md"
 out="$(bash "$ARCHIVE" task-e --root "$R1" 2>&1)"; rc=$?
 if [ $rc -eq 1 ] && printf '%s\n' "$out" | grep -q 'REJECT task-e: status-incomplete'; then
     ok 09 "status-incomplete 拒绝（REJECT exit 1）"
@@ -263,6 +266,49 @@ for pat in 'SKIP .active_plan_side (not-a-plan-dir: hidden)' \
     fi
 done
 [ $n_hit -eq 6 ] && ok 16 "批量 SKIP 归类 6 类理由行全命中"
+
+# AP-17 假 PASS 回归（task-v176 D2 缺陷3 实证形态）：非 complete 列表行 + 无列表符样例行 → 判不可归档
+# What：task_plan.md 1 个 `### Phase` 标题 + `- **Status:** in_progress`（唯一列表行）+ 一行无列表符
+#      `**Status:** complete（样例行）` → total=1，ok 须=0（样例行无列表符不参与计数）→ REJECT status-incomplete。
+# Why：旧口径（total=列表锚行 vs ok=无锚全文子串）下 total=1=ok=1 假放行，in_progress 任务被归档（数据面事故）；
+#      本断言锁「游离文字行两侧均不计数」的同口径语义，防回归到假 PASS。
+mkdir -p "$R1/task-fp"
+printf -- '### Phase 1: p1\n- **Status:** in_progress\n**Status:** complete（样例行）\n' > "$R1/task-fp/task_plan.md"
+out="$(bash "$ARCHIVE" task-fp --root "$R1" 2>&1)"; rc=$?
+if [ $rc -eq 1 ] && printf '%s\n' "$out" | grep -q 'REJECT task-fp: status-incomplete'; then
+    ok 17 "假 PASS 夹具（in_progress 列表行+无列表符样例行）判不可归档（status-incomplete）"
+else
+    bad 17 "假 PASS 夹具 rc=$rc（应 1 + REJECT status-incomplete；不得被样例行补数放行）"
+fi
+
+# AP-18 假 FAIL 回归（task-v176 D2 缺陷3 实证形态）：2 个 complete 列表行 + 正文引用格式行 → 判可归档
+# What：2 个 `### Phase` 标题 + 2 行 `- **Status:** complete` 列表行 + 正文行「完成态格式为 **Status:** complete」
+#      → total=2，ok 须=2（正文引用行无列表符不计数）→ 走 mv 兜底路径 ARCHIVED exit 0。
+# Why：旧口径下正文引用行使 ok=3≠total=2 假拒绝，真完成任务永久卡死（与 check-complete 结论分裂）；
+#      本断言锁「引用文字行不计入 ok」，防回归到假 FAIL。
+mkdir -p "$R1/task-ff"
+printf -- '### Phase 1: p1\n- **Status:** complete\n### Phase 2: p2\n- **Status:** complete\n完成态格式为 **Status:** complete\n' > "$R1/task-ff/task_plan.md"
+out="$(bash "$ARCHIVE" task-ff --root "$R1" 2>&1)"; rc=$?
+if [ $rc -eq 0 ] && printf '%s\n' "$out" | grep -q 'ARCHIVED task-ff' && [ -d "$R1/archive/task-ff" ]; then
+    ok 18 "假 FAIL 夹具（2 complete 列表行+正文引用行）判可归档（ARCHIVED exit 0）"
+else
+    bad 18 "假 FAIL 夹具 rc=$rc（应 0 + ARCHIVED；正文引用行不得使真完成任务被拒）"
+fi
+
+# AP-19 Phase 覆盖校验（task-v176 D2 缺陷4 实证形态）：2 个 `### Phase` 仅 1 个 Status 行 → 拒绝 + stderr 明示
+# What：2 个 `### Phase` 标题 + 仅 1 行 `- **Status:** complete`（Phase 2 漏写 Status 行）→ phases=2≠total=1
+#      → REJECT phase-uncovered exit 1，且 stderr 含「Phase 覆盖不完整」（fail-closed，缺状态行=翻转流程未走完）。
+# Why：旧实现只统计"已存在的 Status 行"，漏写 Status 的 Phase 被整体忽略照样放行，与 check-complete 判定分裂；
+#      本断言锁「每 Phase 必有 Status 行」前置条件 + stderr 可观测文案，供批量 SKIP 对账（原因码 phase-uncovered）。
+mkdir -p "$R1/task-ph"
+printf -- '### Phase 1: p1\n- **Status:** complete\n### Phase 2: p2\n' > "$R1/task-ph/task_plan.md"
+out="$(bash "$ARCHIVE" task-ph --root "$R1" 2>&1)"; rc=$?
+if [ $rc -eq 1 ] && printf '%s\n' "$out" | grep -q 'REJECT task-ph: phase-uncovered' \
+   && printf '%s\n' "$out" | grep -q 'Phase 覆盖不完整'; then
+    ok 19 "Phase 覆盖夹具（2 Phase 仅 1 Status 行）拒绝 + stderr 含「Phase 覆盖不完整」"
+else
+    bad 19 "Phase 覆盖夹具 rc=$rc（应 1 + REJECT phase-uncovered + stderr「Phase 覆盖不完整」）"
+fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
