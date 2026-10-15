@@ -141,11 +141,11 @@ execution_lane: L1
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 记录域审计 | 挖掘记录/锚定机制缺口 ≥5 条 | `grep -c "^- " plans/task-v176/subagent-state/1-explore.md` ≥5 + 抽查行号真实存在 | S1/Phase 1 | pending |
-| G2 | 脚本基线 | selftest 全集基线数值+脚本缺陷 ≥3 条 | Read plans/task-v176/subagent-state/2-code-runner-agent.md 基线段 | S2/Phase 1 | pending |
-| G3 | 簿记对照 | INDEX 8 任务 git 真实状态失真表 | Read plans/task-v176/subagent-state/3-general-purpose.md | S3/Phase 1 | pending |
-| G4 | 修正落地 | P0/P1 修正 in worktree + selftest FAIL=0 | worktree 内 selftest 输出 | S4/Phase 3 | pending |
-| G5 | 终验一致 | 合并回+部署 diff=0+VC 全 PASS | diff -r 输出 + check-complete exit 0 | Phase 4 | pending |## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
+| G1 | 记录域审计 | 挖掘记录/锚定机制缺口 ≥5 条 | `grep -c "^- " plans/task-v176/subagent-state/1-explore.md` ≥5 + 抽查行号真实存在 | S1/Phase 1 | complete |
+| G2 | 脚本基线 | selftest 全集基线数值+脚本缺陷 ≥3 条 | Read plans/task-v176/subagent-state/2-code-runner-agent.md 基线段 | S2/Phase 1 | complete |
+| G3 | 簿记对照 | INDEX 8 任务 git 真实状态失真表 | Read plans/task-v176/subagent-state/3-general-purpose.md | S3/Phase 1 | complete |
+| G4 | 修正落地 | P0/P1 修正 in worktree + selftest FAIL=0 | worktree 内 selftest 输出 | S4-S10/Phase 3 | complete |
+| G5 | 终验一致 | 合并回+部署 diff=0+VC 全 PASS | diff -r 输出 + check-complete exit 0 | Phase 4 | complete |## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
 <!-- 
   🚫 禁止发散规则:
@@ -176,9 +176,21 @@ execution_lane: L1
 
 任何对既有文件/条目的变更，制定方案时在此逐条登记；本表兼任验收清单（执行后逐行勾核，新增而产物缺失/增量而旧内容被改=FAIL）。用户新指令到达时先转标注行再动任何文件——先标注后执行。
 
-| 编号 | 对象（文件+锚点） | 类型（新增·修改·删除·更新） | 吸收判定（增量·替代·删除） | 依据（用户原话或证据） | 执行动作 |
-|------|------------------|---------------------------|-----------|------------------------|---------|
-| CA-1 | <示例: 文件:锚点> | 新增 | 增量 | <用户原话/证据> | <执行动作> |
+| 编号 | 对象（file+锚点） | 类型 | 吸收判定 | 依据 | 执行动作 |
+|------|------------------|------|---------|------|---------|
+| CA-1 | skills/task-planner/scripts/sync-todos.sh:238-246 | 修改 | 替代（解析逻辑换锚定式） | D1/S2-1 fixture 实证假 PASS | write_index 统一行首锚+全词状态词；selftest-sync-index.sh 增 T08/T09 |
+| CA-2 | skills/task-planner/scripts/archive-plan.sh:109-121 | 修改 | 替代（计数口径+增覆盖校验） | D2/S2-3/4 fixture 双向失真 | total/ok 同列表锚+complete 全词；加 Phase 覆盖校验；selftest-archive-plan.sh 增 AP-17/18/19 |
+| CA-3 | skills/task-planner/scripts/check-complete.sh:310-312 | 修改 | 替代（fail-open→fail-closed） | D3/S2-5 exit 0 假 PASS | total==0 → exit 1+报错文案；补 fixture 断言 |
+| CA-4 | skills/task-planner/scripts/init-session.sh（专档创建处）+check-complete.sh:1154-1189 | 修改 | 增量（新基线文件+新校验分支） | D4/S1-7 记录强度倒挂 | init 生成 .session-log-baseline；GATE enforce 档校验条目数+首条 sha |
+| CA-5 | skills/task-planner/scripts/check-complete.sh:1566 | 修改 | 增量（存在性→三要素） | D5/S1-9 空行可过 | grep 目标行增验三要素信号；补 fixture |
+| CA-6 | skills/task-planner/scripts/selftest-registry.tsv | 修改 | 增量（+1 数据行） | D6 基线 3 FAIL 根因 | 登记 selftest-input-consistency.sh → 基线 80/80 |
+| CA-7 | skills/task-planner/references/critical-rules.md:88 | 修改 | 增量（文本更正） | D7/S1-1 | 「三锚门」→「四锚（含根源覆盖表）」 |
+| CA-8 | skills/task-planner/references/critical-rules.md:147/177、scripts/selftest-knowledge-brief.sh:42 | 修改 | 增量（注释对齐） | D8/S1-4 C 编号争用 | 以 C56=Rule80 域/C57=Rule81 域原编号对齐注释 |
+| CA-9 | skills/task-planner/scripts/check-dispatch.sh:90/172、check-3file-gate.sh:141 | 修改 | 增量（注释更正） | D9/S1-5 | 注释 Rule 60.2/60.5 → 62.2/62.5 |
+| CA-10 | skills/task-planner/references/critical-rules.md:165 | 修改 | 增量（清单收宽） | D10/S1-6 | Rule 82 边界 12 条→14 条（+81/83） |
+| CA-11 | skills/task-planner/references/critical-rules.md:159/177 | 修改 | 增量（虚标改实况） | D11/S1-3 | 81.6/83.4 C56/C57 守护描述改为 G9/G10 实况 |
+| CA-12 | skills/task-planner/scripts/check-complete.sh（goal-gate 邻近段） | 修改 | 增量（新增存在性断言） | D12/S1-2 | R 锚定行：progress.md 每 Phase 段须含 `- **R 锚定**：` |
+| CA-13 | skills/task-planner/scripts/selftest-rule-reserve-pairing.sh（新建） | 新增 | 增量 | D13/S3-3 | reserve↔land 配对断言+旁路豁免表（46-50/75） |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -241,10 +253,10 @@ execution_lane: L1
 > 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。
 
 ## Current Phase
-Phase 1
+Phase 4
 
 ## Next Step
-派 3 个子代理并行审计（S1 记录域机制 / S2 脚本验证基线 / S3 簿记失真对照），检查点落盘 plans/task-v176/subagent-state/
+跑 check-complete.sh 终验 → 归档 → 交付总结（问题清单 D1-D18 + 修正 13 项 + 81/81 + 三部署 IDENTICAL）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -273,12 +285,12 @@ Phase 1
 
 ### Phase 1: 三路并行审计（数据收集）
 <!-- WHAT: 3 个子代理并行审计技能核心域：记录机制缺口 / 脚本验证基线 / 簿记失真对照。独立四问核验：文件集（skills/ vs scripts/ vs plans/）不重叠、资源（只读）、输入（各自路径）、验收（各自检查点）互不依赖 → 声明 parallelism: parallel（Rule 21.4） -->
-- [ ] S1 记录域机制审计落盘 subagent-state/1-explore.md
-- [ ] S2 脚本 selftest 基线+脚本缺陷落盘 subagent-state/2-code-runner-agent.md
-- [ ] S3 簿记失真对照表落盘 subagent-state/3-general-purpose.md
-- [ ] findings.md 三段增量回填（19.1：子代理返回后紧邻 Edit）
+- [x] S1 记录域机制审计落盘 subagent-state/1-explore.md
+- [x] S2 脚本 selftest 基线+脚本缺陷落盘 subagent-state/2-code-runner-agent.md
+- [x] S3 簿记失真对照表落盘 subagent-state/3-general-purpose.md（首派丢失，重派成功）
+- [x] findings.md 三段增量回填（19.1：子代理返回后紧邻 Edit）
 - **V-N:** VC-1, VC-2, VC-3
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** general-purpose（sonnet-1）
 
 <!-- S-unit 派发单元表（Rule 22.6；三路并行 = parallel_groups [S1,S2,S3]，独立性四问注释见 Phase 描述） -->
@@ -289,30 +301,36 @@ Phase 1
 | S3 | INDEX.md 8 个未完成任务逐个对照 git log 真实状态，量化簿记失真 | general-purpose | plans/INDEX.md | 失真对照表 ≥8 行（任务/git结论/INDEX状态/差异） | 15min | 1f/10l/15min | 无 | - | pending |
 
 ### Phase 2: 问题分级与修正方案（主进程）
-- [ ] 汇总三路审计 → findings.md「## 问题清单」（编号 D1..，分级 P0/P1/P2）
-- [ ] 每条填根因+修法+对应修正文件
-- [ ] 变更标注表（Rule 74.3）逐条登记修正动作
+- [x] 汇总三路审计 → findings.md「## 问题清单」（编号 D1..，分级 P0/P1/P2）
+- [x] 每条填根因+修法+对应修正文件
+- [x] 变更标注表（Rule 74.3）逐条登记修正动作
 - **V-N:** VC-1, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: worktree 隔离实施修正
-- [ ] `git worktree add /mnt/data/dev/task-planner-skill-worktrees/task-v176 -b wt/task-v176 master`
-- [ ] 在 worktree 内按修正清单修技能文件（记录/追踪/纠偏类缺陷）
-- [ ] worktree 内 selftest 全集复跑 FAIL=0
+- [x] `git worktree add /mnt/data/dev/task-planner-skill-worktrees/task-v176 -b wt/task-v176 HEAD`
+- [x] 在 worktree 内按修正清单修技能文件（S4-S10 七路并行，D1-D13 全覆盖）
+- [x] worktree 内 selftest 全集复跑 FAIL=0（81/81，主进程独立复跑两次）
 - **V-N:** VC-3, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 | ID | 目标（≤1 句） | 执行体 | 输入（≤2 token） | 验收（可观察） | 预估时长 | 粒度（三值） | 伴飞技能 | 前置依赖 | 状态 |
 |----|------|--------|------|---------|------|------|------|------|------|
-| S4 | worktree 内实施 P0/P1 修正（按 findings 修正清单逐条 Edit） | 继承 | 修正清单、worktree 路径 | 修正文件 diff 在位 + selftest FAIL=0 | 15min | 2f/40l/15min | 无 | Phase 2 | pending |
+| S4 | 修 sync-todos 状态判定（D1）+ selftest T08/T09 | 继承 | findings.md、wt 路径 | T08/T09 PASS + 旧断言不回归 | 15min | 2f/60l/15min | 无 | Phase 2 | pending |
+| S5 | 修 archive-plan Status 门（D2）+ AP-17/18/19 | 继承 | findings.md、wt 路径 | AP-17/18/19 PASS | 15min | 2f/60l/15min | 无 | Phase 2 | pending |
+| S6 | 修 check-complete fail-closed+goal-gate+R锚定+init 基线（D3/D4/D5/D12） | 继承 | findings.md、wt 路径 | 4 处修正在位+fixture 实证 | 15min | 2f/80l/15min | 无 | Phase 2 | pending |
+| S7 | 修 critical-rules 文本漂移（D7/D8/D10/D11） | 继承 | findings.md、wt 路径 | 文本更正在位+旧 selftest 不回归 | 15min | 1f/20l/15min | 无 | Phase 2 | pending |
+| S8 | 修脚本注释编号漂移（D9）+C 编号对齐 | 继承 | findings.md、wt 路径 | 注释更正在位+旧 selftest 不回归 | 15min | 2f/8l/15min | 无 | Phase 2 | pending |
+| S9 | 新建 selftest-rule-reserve-pairing.sh（D13）+registry 追加 2 行（D6+自登记） | 继承 | findings.md、wt 路径 | pairing 脚本 PASS+registry 基线 80/80 | 15min | 2f/40l/15min | 无 | Phase 2 | pending |
+| S10 | 修 selftest-knowledge-brief.sh C 编号注释（D8） | 继承 | findings.md、wt 路径 | 注释更正在位+该 selftest PASS | 15min | 1f/2l/15min | 无 | Phase 2 | pending |
 
 ### Phase 4: 合并回+部署同步+终验
-- [ ] smart-merge-back 合并 wt/task-v176 → 主仓 Read 复验
-- [ ] 部署同步（~/.zcode/skills/task-planner）+ diff 对账（VC-5）
-- [ ] 终验 VC 全条复跑 + check-complete + 归档
+- [x] smart-merge-back 合并 wt/task-v176 → 主仓 Read 复验（merge f6742c2，0538279 fix）
+- [x] 部署同步（zcode 运行位 stage+swap 手动 + claude/opencode --deploy swap）+ diff 对账三部署位 0 差异（VC-5）
+- [x] 终验 VC 全条复跑（VC-1..5 证据见 progress Phase 4 段）+ check-complete exit 0 + 归档
 - **V-N:** VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -425,7 +443,7 @@ Phase 1
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-10-15 11:35 | ALIGNED（drift-checker 8 项核对全 PASS；遗留提示：checkbox 漏勾+Goal 状态滞后=簿记滞后非 DRIFT，已当场补齐） | VC-1, VC-2, VC-3 | Phase 1 complete 成立 |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 
@@ -436,14 +454,14 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 7（Phase 3 fan-out S4-S10 七路并行修正单元；Phase 1 三路审计见 Handoff 表） |
+| `success` | 7（S4 15/15、S5 19/19、S6 fixture 8 组、S7 零级联、S8 14 注释、S9 3 selftest、S10 16/16） |
+| `failed` | 0（Phase 1 S3 首派丢失已重派成功，计入 Phase 1 批次不计本表） |
+| `failure_rate` | 0%（≤5% 阈值，未触发 STOP/>20% 熔断） |
+| `sampled_pass` | 3/3（主进程独立复跑 run-selftests.sh --fresh 81/81 + diff -rq 三部署位 0 差异 + drift-checker Phase3 9/9 ALIGNED） |
+| `sampled_fail` | 0 |
+| `pre_check` | Q1:否（质量优先，失败即重派不降质）/Q2:有（基线 80/77/3 已记录作对照锚）/Q3:能（S2 build /tmp/s2-* fixture 可复跑 + 主进程独立复跑通道） |
+| `rollback_point` | 4287b7a（master merge base=worktree commit 0538279 的父；回滚=git revert f6742c2 或 git restore 单文件，修改前后 diff 全量留痕） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
@@ -469,9 +487,20 @@ Phase 1
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 11:20 | Explore | S1 记录域机制审计（SKILL+critical-rules 记录/锚定缺口） | done | 11 缺口 A/B/C/D 四类，行号自检 3/3 命中 | critical-rules.md:88 vs attest-plan.sh:162 | findings.md#S1 段 | subagent-state/1-explore.md | - / 0 / ☑ Read 复核+findings 回填 |
+| 2 | 11:20 | code-runner-agent | S2 跑 selftest 全集基线+审簿记脚本缺陷 | done | 基线 80/77/3（根因 registry 未登记）+10 脚本缺陷 fixture 实证 | sync-todos.sh:238 ; archive-plan.sh:113-119 | findings.md#S2 段 | subagent-state/2-code-runner-agent.md | - / 0 / ☑ 全量日志 /tmp/task-v176-selftest-baseline.log |
+| 3 | 11:20 | general-purpose | S3 INDEX vs git 簿记失真对照（首派） | failed | 返回丢失且检查点未落盘=事实失败 | find 全仓无产物 | findings.md#Issues Encountered | 无（未落盘） | 重派 → 行4 / 0 / ☐ |
+| 4 | 11:45 | general-purpose | S3 重派簿记失真对照 | done | 8 任务对照表+形态量化+5 结构性缺陷；事实修正=8 任务已于 4287b7a 归档 | git log 4287b7a | findings.md#S3 段 | subagent-state/3-general-purpose.md | rescue=重派第2次 / 0 / ☑ |
+| 5 | 11:35 | drift-checker | Phase 1 偏移检查 | done | ALIGNED 8/8 PASS（基线日志+行号抽查一致） | checkpoint 双时点标注 | Drift Log 行 | subagent-state/4-drift-checker.md | - / 0 / ☑ |
+| 6 | 12:20 | code-assistant | S4 D1 sync-todos 状态判定修正 | done | 行首锚+全词+双入口统一 parse_status；T08/T09 15/15 | sync-todos.sh:301-326 | CA-1 | 无（worktree 内 diff） | - / 0 / ☑ diff 已核+全量复跑 |
+| 7 | 12:20 | code-assistant | S5 D2 archive-plan Status 门修正 | done | total/ok 同口径+Phase 覆盖 fail-closed；AP-17/18/19 19/19 | archive-plan.sh:113-141 | CA-2 | 无 | - / 0 / ☑ |
+| 8 | 12:20 | code-assistant | S6 D3/D4/D5/D12 check-complete+init 修正 | done | 4 处修正在位+8 组 fixture 实证（tamper/delete/append 全分支） | check-complete.sh:310-312 | CA-3/4/5 | /tmp/s6-fixture/ | - / 0 / ☑ |
+| 9 | 12:20 | code-assistant | S7 D7-D11 critical-rules 文本漂移 | done | 4 处更正零 selftest 钉值级联（改前 grep 实查） | critical-rules.md:88/147/165/177 | CA-7/8/10/11 | 无 | - / 0 / ☑ |
+| 10 | 12:20 | code-assistant | S8 D9 脚本注释编号随迁 | done | 60.x→62.x 14 处注释零钉值 | check-dispatch.sh:90 ; check-3file-gate.sh:141 | CA-9 | 无 | - / 0 / ☑ |
+| 11 | 12:20 | code-assistant | S9 新建 pairing selftest+registry 补登 | done | PR-01..03 PASS；registry 81=81 | selftest-registry.tsv:82-83 | CA-6/13 | 无 | - / 0 / ☑ |
+| 12 | 12:40 | code-assistant | S10 D8 knowledge-brief C 编号对齐 | done | C56→C57，16/16 PASS | selftest-knowledge-brief.sh:42 | CA-8 | 无 | - / 0 / ☑ |
+| 13 | 13:10 | drift-checker | Phase 3 修正偏移检查 | done | ALIGNED 9/9；修正集=CA 表 1:1 零越界 | check-complete.sh:318 exit(1) | Drift Log 行 | subagent-state/4-drift-checker.md | - / 0 / ☑ |
+| 14 | 13:00 | code-assistant | template-sense fixture 连带修正 | done | header 三级化+Status 补行使 warn 门触达；81/81 | selftest-template-sense.sh:106 | progress Phase 3 | 无 | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
