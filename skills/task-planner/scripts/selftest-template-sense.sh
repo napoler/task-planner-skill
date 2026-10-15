@@ -103,7 +103,10 @@ fi
 make_fake_plan() { # $1=dir $2=0|1(含区块与否)
     local d="$1" with="$2"
     mkdir -p "$d"
-    printf '%s\n' "# demo fake plan" "" "## Phase 1: 执行" "- [ ] V-1.1: 示例验收行（占位）" > "$d/task_plan.md"
+    # 2026-10-15 task-v176 D3 连带修正: fixture header 二级→三级（check-complete D3 fail-closed 要求 ### Phase）;
+    #   且 T3 warn 门只在全 Phase complete（python_rc=0 后段）才输出 → fixture 补 `- **Status:** complete`
+    #   与 `[x]` 勾选行（原 pending/未勾选使 python 段 exit 1, [template-sense] warn 永不触达）
+    printf '%s\n' "# demo fake plan" "" "### Phase 1: 执行" "- **Status:** complete" "- [x] V-1.1: 示例验收行（占位）" > "$d/task_plan.md"
     if [ "$with" = 1 ]; then
         cat >> "$d/task_plan.md" <<'EOF'
 

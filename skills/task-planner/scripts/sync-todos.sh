@@ -62,8 +62,14 @@ PLANS_DIR="${PLANS_DIR:-$(resolve_plans_dir)}"
 
 # ─── Phase parser ───────────────────────────────────────────────────────────
 # Parses task_plan.md for Phase blocks.
-# Output (one line per non-pending Phase):
-#   TASK_ID|PHASE_NUM|STATUS|PHASE_TITLE|SUBJECT
+# Output records (pipe-delimited, one line per emitted record):
+#   TASK|TASK_ID|PHASE_NUM|STATUS|SUBJECT  非 pending 的 phase(STATUS 已归一)
+#   S|RAW_STATUS                            锚定 Status 行的剥前缀原始值(与 TASK 记录
+#                                           同序, 供调用方经共享 parse_status 二次校验)
+# 2026-10-15 task-v176/D1 锚定口径: 只认行首列表锚 '- **Status:**'/'* **Status:**'
+# (关键词大小写不限, 游离 Status 行=正文引用/表格单元格, 不参与捕获)——与 write_index
+# 的计数锚完全一致; 归一口径也同一套(剥 ** 与括号注记→全词判定, 注记含 complete 不翻
+# complete, 全词未中回落前缀, 仍不中→pending; 双入口不口径分裂, 见 parse_status 注释)。
 parse_task_plan() {
     local task_plan="$1"
 
@@ -71,11 +77,11 @@ parse_task_plan() {
     local task_id
     task_id=$(dirname "$task_plan" | xargs basename)
 
-    # Find all Phase blocks and their Status
-    # State machine: capture phase info on header, capture status on **Status:**
+    # State machine: capture phase info on header, capture status on line-anchored
+    # list Status line ('- ' / '* ' 列表符, 原仅 '- ' 形态——2026-10-15 task-v176/D1
+    # 扩为 '- /* 双形态, 与 write_index 同一锚)。
     awk -v tid="$task_id" '
     /^### Phase [0-9]+:/ {
-        # Extract phase number
         if (match($0, /^### Phase ([0-9]+):/, arr)) {
             phase_num = arr[1]
         }
@@ -83,26 +89,42 @@ parse_task_plan() {
         phase_title = $0
         sub(/^### Phase [0-9]+: */, "", phase_title)
     }
-    /^- \*\*Status:\*\*/ && phase_num {
-        # Extract status: "- **Status:** value" → "value"
-        status = $0
-        sub(/^- \*\*Status:\*\* */, "", status)
-        gsub(/^\*\*|\*\*$/, "", status)
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", status)
-
-        # task-v065/V-4 [2026-09-13] 归一化: 去括号注释(如 in_progress(2026-09-13, ...)),
-        # 前缀匹配 pending|in_progress|complete, 均不命中 → pending
-        sub(/[（(].*$/, "", status)
-        gsub(/[[:space:]]+$/, "", status)
-        if (status ~ /^in_progress/) status = "in_progress"
-        else if (status ~ /^complete/) status = "complete"
-        else if (status !~ /^pending/) status = "pending"
+    /^[-*] +\*\*[Ss]tatus:\*\*/ && phase_num {
+        st = $0
+        sub(/^[-*] +\*\*[Ss]tatus:\*\*/, "", st)
+        # 2026-10-15 task-v176/D1: 行首列表锚(只认 "- " / "* " 列表符形态, 与
+        # write_index 计数块同一锚; 游离 Status 行不捕获)。判定梯与 bash 共享
+        # parse_status() 及 write_index 逐字同步(三处一改全改):
+        # ① 剥 ** 与 (）/() 括号注记 → ② 全词判定(注记含 complete 字样不得翻
+        # complete, D1 fixture 实证) → ③ 全词未中回落前缀匹配(task-v065/V-4 旧
+        # 口径, 未知词不静默归 pending) → 仍不中 → pending。
+        v = st
+        gsub(/\*\*/, "", v)
+        sub(/^[[:space:]]+/, "", v)
+        # ② 剥括号注记: 首个(全角（/半角(至行尾整段剥除
+        #    (与 parse_status 的 v%%（* / v%%(* 同语义;
+        #     awk 单遍正则: 首个任意括号命中即截断)
+        p = match(v, /（|\(/)
+        if (p > 0) v = substr(v, 1, p - 1)
+        sub(/[[:space:]]+$/, "", v)
+        # ③ 全词判定 + ④ 前缀回落(与 write_index 计数块/parse_status 逐字同梯,
+        # 三处一改全改; 注记含 complete 字样不得翻 complete——D1 失真根因)
+        if (v == "complete") st = "complete"
+        else if (v == "in_progress") st = "in_progress"
+        else if (v == "pending") st = "pending"
+        else if (v ~ /^in_progress/) st = "in_progress"
+        else if (v ~ /^complete/) st = "complete"
+        else st = "pending"
 
         # Skip pending (no Todo needed for phases not started)
-        if (status == "pending") {
+        if (st == "pending") {
             phase_num = 0
             next
         }
+
+        # S 标记行: 携带本 Status 锚定行判定后的归一值, 由调用方 forward_sync 送共享
+        # parse_status() 二次归一(幂等校验通道——两入口收敛同一语义函数, task-v176/D1)
+        print "S|" st
 
         # Build subject (max 60 chars for Claude Code limit)
         # task-v065/V-4 [2026-09-13] subject 补 phase title(原为死变量): 截断 40 字符加 …
@@ -114,8 +136,8 @@ parse_task_plan() {
             subject = substr(subject, 1, 57) "..."
         }
 
-        # Output: TASK_ID|PHASE_NUM|STATUS|SUBJECT
-        printf "%s|%s|%s|%s\n", tid, phase_num, status, subject
+        # Output: TASK|TASK_ID|PHASE_NUM|STATUS|SUBJECT
+        printf "TASK|%s|%s|%s|%s\n", tid, phase_num, st, subject
         phase_num = 0
     }
     ' "$task_plan"
@@ -143,16 +165,33 @@ forward_sync() {
     while IFS= read -r task_plan; do
         [[ -z "$task_plan" ]] && continue
 
-        while IFS='|' read -r tid pnum status subject; do
-            [[ -z "$tid" ]] && continue
-
-            if $JSON_OUTPUT; then
-                [[ -n "$json_entries" ]] && json_entries="${json_entries},"
-                json_entries="${json_entries}{\"task_id\":\"$tid\",\"phase\":$pnum,\"status\":\"$status\",\"subject\":\"$subject\"}"
-            else
-                echo "[sync-todos] $tid | Phase $pnum | $status | $subject"
-            fi
-            ((count++)) || true
+        # 2026-10-15 task-v176/D1: 记录现为带行首标签的 pipe 输出——
+        #   TASK|<tid>|<pnum>|<STATUS>|<subject>  非 pending 的 phase(主记录)
+        #   S|<raw>                               STATUS 原始值标记(与所属 TASK 记录同序,
+        #                                           经共享 parse_status 二次归一校验)
+        # 主记录 STATUS 由 awk 按与 write_index 同一套判定梯产出, 再经 bash 共享
+        # parse_status 归一兜底——两入口同一解析语义, 消除口径分裂(findings D1)。
+        while IFS='|' read -r kind f2 f3 status subject; do
+            [[ -z "$kind" ]] && continue
+            case "$kind" in
+                TASK)
+                    tid="$f2"; pnum="$f3"
+                    status="$(parse_status "$status")"   # 共享归一锚点(与 --index 同一判定梯)
+                    if $JSON_OUTPUT; then
+                        [[ -n "$json_entries" ]] && json_entries="${json_entries},"
+                        json_entries="${json_entries}{\"task_id\":\"$tid\",\"phase\":$pnum,\"status\":\"$status\",\"subject\":\"$subject\"}"
+                    else
+                        echo "[sync-todos] $tid | Phase $pnum | $status | $subject"
+                    fi
+                    ((count++)) || true
+                    ;;
+                S)
+                    # S|<normalized>: parse_status 归一(统一语义锚; 与所属 TASK 记录
+                    # STATUS 同一梯判定 → 幂等, 结果不改变输出形态, 纯校验通道,
+                    # 消费方契约不变——task-v176/D1 两入口收敛同一判定函数)。
+                    parse_status "$f2" >/dev/null
+                    ;;
+            esac
         done < <(parse_task_plan "$task_plan")
 
     done < <(find "$plans_dir" -name "task_plan.md" -type f -not -path "*/archive/*" 2>/dev/null | sort)
@@ -161,6 +200,42 @@ forward_sync() {
         echo "[$json_entries]"
     else
         echo "[sync-todos] Total: $count phases to sync"
+    fi
+}
+
+# task-v176/D1 [2026-10-15] 共享状态解析(唯一判定实现): forward_sync 的 TASK 记录 STATUS
+# 经本函数归一; write_index 内联 awk 按本函数判定梯逐字镜像(三处一改全改, 语义以本注释为准)。
+# ① 锚定: 只认行首列表锚 '- **Status:**' / '* **Status:**'(关键词大小写不限),
+#    游离 Status 行(正文引用/表格单元格)不参与 Phase 计数
+# ② 剥除: 去 ** 加粗残留 + 行尾 (）/() 括号注记
+# ③ 全词判定: 剥除后剩余值须 == complete|in_progress|pending(注记含 complete 字样
+#    不得翻 complete——D1 fixture 实证: 'in_progress（前一轮 complete 判定已撤回）'
+#    原 contains 匹配被 write_index 误计 complete, 进行中→已完成失真)
+# ④ 前缀回落: 全词未中才按 ^in_progress/^complete 前缀归一(保留 task-v065/V-4 旧
+#    口径, 未知词如 'done' 不静默归 pending); 仍不中 → pending。
+# 输入=剥列表符与关键词前缀后的原始值; 输出=complete|in_progress|pending
+parse_status() {
+    local v="${1-}"
+    # ② 剥 Markdown 加粗残留(全部 ** 出现, 与 awk 侧 gsub(/\*\*/) 同语义)
+    v="${v//\*\*/}"
+    # ② 剥括号注记: 全角（与半角(各自"首个出现至行尾"整段剥除, 顺序执行
+    #    (v 中无对应括号时 %% 模式不命中→原样保留, 天然幂等)
+    v="${v%%（*}"
+    v="${v%%(*}"
+    # ② 剥首尾空白
+    v="${v#"${v%%[![:space:]]*}"}"
+    # 行尾: 先取"首个非空白到行尾"再剥(若行尾无空白, ## 取回原值, % 剥自身→原样, 幂等)
+    v="${v%"${v##*[![:space:]]}"}"
+    # ③ 全词判定(注记含 complete 字样不得翻 complete——D1 失真根因)
+    if [[ "$v" == complete || "$v" == in_progress || "$v" == pending ]]; then
+        printf '%s' "$v"
+    elif [[ "$v" == in_progress* ]]; then
+        # ④ 前缀回落(保留 task-v065/V-4 旧口径, 未知词不静默归 pending)
+        printf 'in_progress'
+    elif [[ "$v" == complete* ]]; then
+        printf 'complete'
+    else
+        printf 'pending'
     fi
 }
 
@@ -233,16 +308,33 @@ write_index() {
                         sub(/^[[:space:]]*/, "", t)
                         if (t != "" && goal == "") goal = t
                     }
-                    # —— Phase/状态计数: 任一 Status:** 行均计(含括号注记, 整词归一) ——
                     if (line ~ /^### Phase [0-9]+:/) total++
-                    if (line ~ /[Ss]tatus:\*\*/) {
+                    # 2026-10-15 task-v176/D1: 锚定+全词判定, 判定梯与 bash 共享
+                    # parse_status()(上方, 唯一判定实现)逐字镜像——三处一改全改:
+                    # ① 行首列表锚 "- **Status:**"/"* **Status:**"(游离 Status 行不计),
+                    # ② 剥 ** 加粗残留 + 行首/行尾 (）/() 注记 → ③ 全词判定(注记含
+                    # complete 字样不得翻 complete, D1 fixture 实证) → ④ 前缀回落
+                    # (保留 task-v065/V-4 旧口径, 未知词→pending)。
+                    # 原 "s ~ /complete/" 含注记 contains 匹配+无行首锚, 是失真根因。
+                    if (line ~ /^[-*] +\*\*[Ss]tatus:\*\*/) {
                         s = line
-                        sub(/.*[Ss]tatus:\*\*[[:space:]]*/, "", s)
-                        gsub(/\*\*/, "", s)
-                        gsub(/[[:space:]]/, "", s)
-                        if (s ~ /complete/) comp++
-                        else if (s ~ /in_progress/) inp++
-                        else if (s ~ /pending/) pend++
+                        sub(/^[-*] +\*\*[Ss]tatus:\*\*/, "", s)   # 剥列表符与关键词前缀
+                        gsub(/\*\*/, "", s)                          # ② 剥加粗残留
+                        sub(/^[[:space:]]+/, "", s)                 # ② 剥行首空白
+                        # ② 剥括号注记: 首个(全角（/半角(至行尾整段剥除
+                        #    (与 parse_status 的 v%%（* / v%%(* 同语义;
+                        #     awk 单遍正则: 首个任意括号命中即截断)
+                        p = match(s, /（|\(/)
+                        if (p > 0) s = substr(s, 1, p - 1)
+                        sub(/[[:space:]]+$/, "", s)                # ② 剥行尾空白
+                        # ③ 全词判定(与 parse_status 逐字同梯; 注记含 complete 字样
+                        # 被误计 complete) → ④ 前缀回落 → pending
+                        if (s == "complete") comp++
+                        else if (s == "in_progress") inp++
+                        else if (s == "pending") pend++
+                        else if (s ~ /^in_progress/) inp++
+                        else if (s ~ /^complete/) comp++
+                        else pend++
                     }
                     # —— frontmatter 首个命中(原独立 awk …exit 的首行语义) ——
                     if (!sid_seen && line ~ /^session_id:/) { split(line, f, " "); sid = f[2]; sid_seen = 1 }

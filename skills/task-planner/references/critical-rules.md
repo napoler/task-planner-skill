@@ -85,7 +85,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 > 判例源：videop1 mvlock 虚假执行（2026-10-04）——声称"停线完成"但核心需求仅 2/18+自挂起+17 次零需求生成；用户定性「流程失控/缺失，非能力问题」。
 
 51.1 需求原文锚定（目标先行）：计划创建与重规划时必须设「🎯 用户需求原文」区块，逐条编号抄录用户原话（R1..Rn；禁转译/缩写/合并——转译即漂移入口）；每条核心需求映射 ≥1 条 VC（R→VC 映射）。缺该区块或核心需求零 VC 映射=计划无效，先回炉再 attest（判例：videop1 S15 被改写为"无替代件不归档，挂起"后全链绿灯；判例：一个月→72小时两次改写、四环绿灯，2026-10-05（取证与修复全程见 plans/incident-reports/2026-10-05-72h-instruction-mutation.md；本判例锚=task-v132 G4））。
-51.1a **载体双机制（task-v131 清账）**: 区块载体=① scripts/init-session.sh 生成时注入（无载体模板自动插脚手架；mini 档豁免；fail-open）② scripts/attest-plan.sh 锁定三锚门（标题/R 行/R→VC 映射缺一拒锁；fail-closed）③ 模板可见区块（主模板+variant 随维护逐个补齐）。**派发侧锚**=templates/subagent_dispatch.md 需求锚字段：需求相关 S-unit 的派发 prompt 必须逐字引用治理 R 条目（禁转译；判例：用户「一个月」被两次改写为「前 72 小时」）。
+51.1a **载体双机制（task-v131 清账）**: 区块载体=① scripts/init-session.sh 生成时注入（无载体模板自动插脚手架；mini 档豁免；fail-open）② scripts/attest-plan.sh 锁定四锚门（标题「🎯 用户需求原文」/ R 需求行 / R→VC 映射标题行 / 第 4 锚「🧮 根源覆盖表」（Rule 53.1 载体，task-v132 引入）缺一拒锁；fail-closed；（2026-10-15 task-v176 D7 更正：原为「锁定三锚门（标题/R 行/R→VC 映射缺一拒锁）」，attest-plan.sh 实际为四锚——第 4 锚「🧮 根源覆盖表」为 critic P1-3 对称性修复引入，与三锚同 fail-closed 门控））③ 模板可见区块（主模板+variant 随维护逐个补齐）。**派发侧锚**=templates/subagent_dispatch.md 需求锚字段：需求相关 S-unit 的派发 prompt 必须逐字引用治理 R 条目（禁转译；判例：用户「一个月」被两次改写为「前 72 小时」）。
 
 51.2 验证机制先行：每条核心需求在计划期预登记「覆盖判据」——covered 的可观察证据形态（计数=0/文件在位+绝对路径/命令输出形态）；VC 验证方式必须引用判据。先设计验证后执行，禁止"先做完再想怎么算完成"。
 51.3 完成声称对照门：交付终态逐需求条目出「需求覆盖核对表」（covered/partial/uncovered+证据路径）；任一用户显式核心需求 uncovered/partial 且无用户显式让步（Decisions Made 登记）→ 终态禁 COMPLETE，只可 PARTIAL 并显式列未覆盖项与原因；交付总结按 templates/delivery-summary.md「需求覆盖核对」区块输出（缺区块=交付不完整）。
@@ -144,7 +144,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 80.6 **守护机制（零新 config 键，71.7/64.6 同范式）**：① init 建档+存在性复核（缺/空即 ERROR，禁静默放行）；② check-complete.sh SESSION-LOG GATE 指针区块门控——有指针且专档缺失/空=FAIL，无指针=存量计划 SKIP，env-only 档位降级 `TASK_PLANNER_SESSION_LOG_ENFORCE`（enforce=FAIL 阻断 / warn=告警不阻断（默认）/ off=整门跳过；无 config.json 键，档位解析写法对齐 Rule 34.6 env 开关先例）；③ selftest-session-log.sh 静态断言（Rule 80 子条文本锚 + 模板锚 + 指针区块纯静态负断言）；**零新 config 键**——本规则不引入任何 config.json 键（properties 键数恒 46，env-only 开关；task-v172 CA-1/CA-2 新增 smart_inject_interval+light_tier_interval_multiplier 2 键，44→46）。
 
 <!-- [2026-10-12 task-v170 S4 追加] 新增 Rule 81；原因=用户判定 plans/ 堆积为严重缺陷（R2 需求锚「这是严重缺陷，必须添加归档」），完成流程末段缺一环归档步骤需制度化为机器可守的纪律；原行为=完成流程止于 check-complete.sh，无任何归档动作，plans/ 根持续堆积已完成目录 -->
-### 81 计划完成后归档纪律（task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C56，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）
+### 81 计划完成后归档纪律（task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C57，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）
 
 81.1 **触发点（completion trigger，P0）**：任务终验 `check-complete.sh` exit 0 后、会话退出前，必须对当前任务目录执行归档（`scripts/archive-plan.sh <task-id>`）——完成流程末段闭环从「check-complete 通过即结束」修正为「check-complete 通过 → 归档 → 会话退出」。跳过=违规；会话因故障中断未归档的，由 [ARCHIVE-GATE] warn 在下一次终验时提醒补档（存量收敛通道）。
 
@@ -156,13 +156,13 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 81.5 **存量治理（Rule 18 批门四步）**：批量清退存量已完成目录按 `dry-run → 试点（单目录实跑+幂等复核）→ 双采样（批前抽 2 预检，>0 即整批熔断）→ 批量实做（显式 `--root`，禁止依赖缺省推导）` 顺序执行；失败率>5% → STOP 并回滚（git revert 数据面）。
 
-81.6 **机制（零新 config 键）**：`scripts/selftest-archive-plan.sh` 静态守护（81.1-81.5 子条文本锚 + archive-plan.sh 守卫断言 + SKILL.md 终验交付段归档步骤锚 + 计数级联锚 + registry 自登记，S8 产物）；`check-complete.sh` [ARCHIVE-GATE] 段 warn 输出「complete 未归档」计数提醒（恒 exit 0，不阻断既有终验语义）；合规清单 C56 行（S9 产物）；三者均只断言新增锚、不触碰既有脚本断言（防锚级联，与 63.6/58.7/75.7 同范式）。
+81.6 **机制（零新 config 键）**：`scripts/selftest-archive-plan.sh` 静态守护（81.1-81.5 子条文本锚 + archive-plan.sh 守卫断言 + SKILL.md 终验交付段归档步骤锚 + 计数级联锚 + registry 自登记，S8 产物）；`check-complete.sh` [ARCHIVE-GATE] 段 warn 输出「complete 未归档」计数提醒（恒 exit 0，不阻断既有终验语义）；SKILL.md 合规面实况：v171 瘦身后 SKILL.md 合规清单只剩 G1-G10、C 行已物理不存在——Rule 81 自查由 **G10**（计划完成后归档自查，SKILL.md:125，原 C57 并集承载）承载，selftest-archive-plan.sh AP-01..16 / check-complete.sh [ARCHIVE-GATE] 为行为断言（2026-10-15 task-v176 D11/D8 实况更正：原写「合规清单 C56 行（S9 产物）」——S9 产物行早已随 v171 清单表→G1-G10 表迁移移除，C56 且已被 SKILL.md:124 划为 Rule 80 域原编号；三组件断言对象不变：selftest-archive-plan.sh 仍只断言新增锚，不触碰既有脚本断言，防锚级联（与 63.6/58.7/75.7 同范式））
 
 ### 82 技能专业化分层纪律（P0 — task-v171，目标：核心技能唯一性制度化——核心只管四文件罗盘域（计划制作+记录文档管理），非核心域规则/脚本/目录分层归属卫星，删除与落盘原子配对，分层架构防回潮；判定面=LLM 行为+selftest 静态守护、零新 config 键；衔接 Rule 36.5（保守化）/20.6（编号预留），既有条款原文零改动）
 
 **建制（为什么有这条）**：task-planner 曾把 77 条既有规则（1-76+80）与全流程脚本堆在单一核心，SKILL.md 556 行什么都讲——产出边界混乱（用户定性「什么都负责导致产出边界混乱」，R1-R5 见 plans/task-v171-skill-specialization/task_plan.md）。task-v171 起按域分层：核心=四文件罗盘（`task_plan.md`/`findings.md`/`progress.md`/`knowledge-brief.md`，Rule 19/20/62）+用户会话逐字记录专档（Rule 80）；子代理派发与拆分调度→task-dispatch；通用执行纪律与工作产物→task-discipline；媒体制作→media-planner；其余规则归 7 个既有卫星（plan-research-router/plan-template-kit/plan-collab-router/plan-cost-guard/plan-resume/progress-tracker/task-drift-guard）。归属判定=「主题⟷四文件/计划生命周期门→核心；否则按域归卫星」。
 
-**边界（管什么/不管什么）**：核心 `references/critical-rules.md` 只保留核心域规则全文（1,2,3,5,19,20,26,51,62,66,80,82）；非核心域规则的唯一权威全文在其归属卫星的 `references/critical-rules-<域>.md`——核心文件只留末尾「卫星路由索引」（路径+规则编号集+调用条件），**禁止在核心文件留存非核心域规则正文或镜像副本**（双份正文=漂移源，改一份漏一份=规则分叉）；卫星之间不互相收编（域间争议按「先例归属→用户裁决」收敛，禁静默改嫁）；新规则先过 Rule 20.6 rule-reserve.sh 查重，再入其归属域文件，禁直接写入核心。
+**边界（管什么/不管什么）**：核心 `references/critical-rules.md` 只保留核心域规则全文（14 条：1,2,3,5,19,20,26,51,62,66,80,81,82,83）（2026-10-15 task-v176 D10 更正：原列 12 条（1,2,3,5,19,20,26,51,62,66,80,82），实际 Rule 81/83 已先后落核心（task-v170/task-v172），本清单未同步；以 SKILL.md:9/175「核心在位 14 条」口径为准）；非核心域规则的唯一权威全文在其归属卫星的 `references/critical-rules-<域>.md`——核心文件只留末尾「卫星路由索引」（路径+规则编号集+调用条件），**禁止在核心文件留存非核心域规则正文或镜像副本**（双份正文=漂移源，改一份漏一份=规则分叉）；卫星之间不互相收编（域间争议按「先例归属→用户裁决」收敛，禁静默改嫁）；新规则先过 Rule 20.6 rule-reserve.sh 查重，再入其归属域文件，禁直接写入核心。
 
 **回归防线（怎么防回潮）**：① **删除与落盘原子配对**——从核心删除某规则前，其全文（含溯源注释）必须已在归属卫星逐字在位（配对前逐字核验脚本比对，零差异才可删），拆开执行=规则悬空/丢失（task-v171 实例：66 条迁移中 4 条溯源注释漂移即被配对前核验拦截并补挂）；② **空壳与预留号纪律**——Rule 77/78/79 为 task-v168 预留未落地号；Rule 80 曾被 design-architecture §5 D-01 按空壳登记删除，本次 S31 实测其正文已由 task-v169 实落（commit 3eff362d，80.1-80.6 完整且 selftest-session-log.sh SL-04 锚定核心文件）而保留于核心——预留号落地/废弃按 Rule 20.6 台账 land/release，删除任何规则前必须实测当前正文而非凭历史登记；③ **机器守护三重钉**——SKILL.md 行数钉（≤250+边距，selftest-batch-pilot.sh BP-08）+ 核心 critical-rules `^### ` 规则计数 + 迁移后 selftest 断言指向归属 home（原核心锚改指卫星路径）——任一钉子回归即挡；④ **SKILL.md 瘦身口径**——核心 SKILL.md 只写四文件罗盘定位段+计划制作循环+卫星路由表+核心规则指针；非核心域细节段随迁删除（与四文件罗盘/计划制作主循环直接相关的保留，拿不准的段保留并登记）。
 
@@ -174,7 +174,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 - **83.1 前置探测**：`/workflow` 请求发起前，先探测当前环境 Skill 工具面（`Skill(skill="dynamic-workflows")` 是否可用）——可用则正常发起；不可用即进入 83.2 快速失败路径，禁直接重试。
 - **83.2 快速失败三选项**：通道不可用时，登记环境缺口（findings.md 或 progress.md）+ 给三选项：① 换环境（用户切换到有 Skill 工具的环境）② Agent 替代授权（用户授权用 Agent 子代理替代 /workflow）③ 主进程直执行授权（用户授权主进程直接执行，不经 /workflow）。
 - **83.3 禁 ≥2 次同法重试**：同一通道请求失败后，禁 ≥2 次同法重试（Rule 22.3 同法失败 ≥2 次强制换道）；第 1 次失败后即进入 83.2 快速失败路径。
-- **83.4 机制（零新 config 键）**：`scripts/selftest-channel-fast-fail.sh` 静态守护（83.1-83.3 子条文本锚 + SKILL.md 投诉响应协议段锚 + 零新键负断言）；合规清单 C57 行；SKILL.md 投诉响应协议段「通道不可用快速失败（Rule 83）」条目锚。
+- **83.4 机制（零新 config 键）**：`scripts/selftest-channel-fast-fail.sh` 静态守护（83.1-83.3 子条文本锚 + SKILL.md 投诉响应协议段锚 + 零新键负断言）；合规自查载体=SKILL.md G10 域（原 C57 编号已被 Rule 81 归档自查占用——v171 瘦身后合规清单只剩 G1-G10、C 行物理不存在，G10/G9 承载 Rule 81/83 自查，本脚本 CF-01..06 为行为断言）（2026-10-15 task-v176 D8/D11 更正：原写「合规清单 C57 行」——C57 与 SKILL.md:125 口径（C57=Rule 81 域原编号）冲突，且 v171 后 C 行不存在、selftest-channel-fast-fail.sh 无此断言，改实况表述）；SKILL.md 投诉响应协议段「通道不可用快速失败（Rule 83）」条目锚。
 
 ## 卫星路由索引（11 卫星 — 非核心域规则全文按需 Read；路径相对仓根）
 
