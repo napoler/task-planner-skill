@@ -68,3 +68,6 @@
 {"rule":85,"status":"landed","task_id":"task-v175","ts":"2026-10-15","note":""}
 {"rule":86,"status":"reserved","task_id":"task-v177","ts":"2026-10-15","note":""}
 {"rule":86,"status":"landed","task_id":"task-v177","ts":"2026-10-16","note":"文本优先 L0-T 档纯文本落地"}
+{"rule":87,"status":"reserved","task_id":"task-v179","ts":"2026-10-16","note":""}
+{"rule":88,"status":"reserved","task_id":"task-v180-scope-contract","ts":"2026-10-16","note":"Rule 88 任务射程契约（漂移缺陷：动作域/呈报域收敛+并行 git 手术禁）"}
+{"rule":89,"status":"reserved","task_id":"task-v181","ts":"2026-10-16","note":"Rule 89 前后逻辑一致性与已确立事实禁反言（根治「思路混乱」自相矛盾缺陷，L0-T 纯文本档）"}
