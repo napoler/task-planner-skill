@@ -108,18 +108,25 @@ guard_reason() {
             echo "live-owner"; return
         fi
     fi
-    # Status 全量判定（task-v176 D2 同口径修正）：
+    # Status 全量判定（task-v176 D2 同口径修正 + 2026-10-15 task-v176 CR 修复 MAJOR-1 注记同梯）：
     # What: total 与 ok 共用同一行首列表锚 `^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*` 行集——
-    #      total=列表 Status 行数，ok=其中值以完整词 complete 开头的行数；无列表符的游离文字行
-    #      （如正文引用「完成态格式为 **Status:** complete」样例行）两侧均不参与计数。
+    #      total=列表 Status 行数（计数行本身，不剥注记）；ok=其中「剥（...）/(...) 括号注记后」
+    #      值以完整词 complete 开头的行数（sed 先剥全角（...）与半角(...)注记，再全词判定，
+    #      与 sync-todos.sh parse_status 的归一梯同口径：剥 ** 与括号注记→全词判定）；
+    #      无列表符的游离文字行（如正文引用「完成态格式为 **Status:** complete」样例行）两侧均不参与计数。
     # Why: 原实现 total（列表锚 grep -cE）与 ok（无锚全文 `Status:\*\* complete` grep -c）口径不对称，
     #      双向失真实证（task-v176 findings D2：假 PASS=非 complete 列表行被补数放行；假 FAIL=正文引用
     #      多计使真完成任务被拒 status-incomplete）。本脚本是 Rule 81 归档唯一执行体，计数失真=在途任务
     #      被误归档（数据面事故）或完成任务被永久卡死，故 fail-closed 统一收口为「同一行集上判全词」。
+    #      CR MAJOR-1（2026-10-15）：ok 侧旧正则 `complete([[:space:]]|$)` 未剥注记——存量 archive 中
+    #      `- **Status:** complete（2026-10-15 完成）` 带注记形态（plans/archive/task-v146 实证）使
+    #      total=1 但 ok=0 → status-incomplete 假 FAIL；而 sync-todos parse_status 对同输入判 complete，
+    #      两侧口径分裂。故 ok 侧先剥 `（[^）]*）`/`([^)]*)` 注记再全词判定（sed 管道加一层）；
+    #      total 侧口径不变（列表锚计数行本身，注记不影响行计数）。
     local tp="$src/task_plan.md" total ok
     [ -f "$tp" ] || { echo "no-task-plan"; return; }
     total="$(grep -cE '^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*' "$tp" 2>/dev/null)"
-    ok="$(grep -E '^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*' "$tp" 2>/dev/null | grep -cE '\*\*Status:\*\*[[:space:]]+complete([[:space:]]|$)')"
+    ok="$(grep -E '^[[:space:]]*[-*][[:space:]]+\*\*Status:\*\*' "$tp" 2>/dev/null | sed 's/（[^）]*）//g; s/([^)]*)//g' | grep -cE '\*\*Status:\*\*[[:space:]]+complete([[:space:]]|$)')"
     total="${total:-0}"; ok="${ok:-0}"
     if [ "$total" -lt 1 ]; then
         echo "status-none"; return

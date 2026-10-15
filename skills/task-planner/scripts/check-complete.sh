@@ -1191,6 +1191,12 @@ f && /^\|/ {
             #       sha（禁改首条；基线记 `-` = 建档时无条目，仅约束「不可回退为有旧首条」——删条/改首条面）。
             #       违规：enforce 档 → stderr `[session-log-gate] ✗ baseline-drift` 后 exit 1 阻断；
             #       warn 档 → stderr ⚠ WARNING 不阻断（保持既有默认档语义）。
+            # [2026-10-15 task-v176 CR 修复 MAJOR-2] 空锚豁免（What+Why）：基线 sha 字段为 `-`（init 建档
+            #       时无条目，D4a 设计的归一形态）→ 跳过 ② sha 比对，仅保留 ① 条目数回退校验。
+            #       原行为：sl_cur_first_sha 非 `-`（append 首条后）≠ sl_bl_sha=`-` 恒成立 → enforce 档误判
+            #       baseline-drift 阻断、warn 档每次新会话首条合法 append 都产生告警噪音。
+            #       豁免语义=基线 `-` 只锚定「建档时无旧首条」——此后合法 append 首条/后续条目均不得判漂移；
+            #       删条回退（条目数 < 基线条目数）仍由 ① 拦截，append-only 篡改面不放开。
             # Why: Rule 80.2「append-only 只写不改」此前无完整性载体——历史改写/删条机器不可检测，
             #      而 task_plan.md 有 SHA-256 锁=记录强度倒挂（S1-7）。基线=首条 sha+条目数最小锚：
             #      append 新条合法（条目数只增、首条冻结），删条/改首条=篡改面。
@@ -1211,7 +1217,10 @@ f && /^\|/ {
                 if [ -n "${sl_bl_cnt:-}" ] && [ "${sl_entries:-0}" -lt "$sl_bl_cnt" ]; then
                     sl_drift="${sl_drift}条目数回退（现存 ${sl_entries:-0} < 基线 ${sl_bl_cnt}，删条=append-only 违背） "
                 fi
-                if [ -n "$sl_bl_sha" ] && [ "$sl_cur_first_sha" != "$sl_bl_sha" ]; then
+                # [2026-10-15 task-v176 CR 修复 MAJOR-2] 空锚豁免：sl_bl_sha=`-`（建档时无条目）→
+                # 跳过 ② sha 比对（合法 append 首条后 cur_sha 恒非 `-`，原逻辑每次必报漂移）；
+                # 条目数回退校验 ① 保留（删条/回退面仍拦截）。原行为见上方「原行为」注释。
+                if [ -n "$sl_bl_sha" ] && [ "$sl_bl_sha" != "-" ] && [ "$sl_cur_first_sha" != "$sl_bl_sha" ]; then
                     sl_drift="${sl_drift}首条目 sha 漂移（基线 ${sl_bl_sha:0:12}… → 现存 ${sl_cur_first_sha:0:12}…，改首条=append-only 违背） "
                 fi
                 if [ -n "$sl_drift" ]; then
@@ -1613,6 +1622,10 @@ END {print n+0}'
             # 66.3「实跑通过」退化为「写了行」。三要素=验证命令词(bash/bun/node/python)∨PASS 结果(✅/PASS/
             # FAIL=0/exit 0)∨产物路径（路径自由文本不可机器断言，取命令词+结果信号两族兜底）；窗口=±2 行，
             # 覆盖「命令在上、PASS 在下」的同段证据形态。fail-closed 方向=阻断（记录失真面，非门控故障面）。
+            # [2026-10-15 task-v176 CR 修复 MINOR-3] 命令词类加词界 \b(bash|bun|node|python)\b：
+            # 原裸子串匹配使叙述文本含 "node"（如「node_modules 目录清理」）即误过三要素校验——
+            # 命令词信号须为独立单词才算「验证命令」语义；PASS/✅/FAIL=0/exit 0 为结果信号
+            # （FAIL=0 本身含词界语义、exit 0 带空格定界），保持原样不加强。
             goal_gate_fail=0
             for gid in $goal_gate_complete; do
                 if ! grep -q "\[goal:${gid}\]" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null; then
@@ -1632,8 +1645,8 @@ END {print n+0}'
                             }
                         }
                     }' "$PLAN_DIR_GUESS/progress.md" 2>/dev/null || true)"
-                if [ -z "$_g_ev_window" ] || ! printf '%s\n' "$_g_ev_window" | grep -qE '(bash|bun|node|python|PASS|✅|FAIL=0|exit 0)'; then
-                    printf '[goal-gate] ✗ %s [goal:%s] 证据行缺三要素信号（同行或 ±2 行窗口内未命中 (bash|bun|node|python|PASS|✅|FAIL=0|exit 0)；Rule 66.3 三要素=验证命令+PASS 结果+产物路径, 空行/纯叙述行不构成证据; task-v176 D5）— 补实跑证据后重跑\n' "$gid" "$gid" >&2
+                if [ -z "$_g_ev_window" ] || ! printf '%s\n' "$_g_ev_window" | grep -qE '(\\b(bash|bun|node|python)\\b|PASS|✅|FAIL=0|exit 0)'; then
+                    printf '[goal-gate] ✗ %s [goal:%s] 证据行缺三要素信号（同行或 ±2 行窗口内未命中 (\b(bash|bun|node|python)\b 命令词 | PASS|✅|FAIL=0|exit 0 结果信号)；Rule 66.3 三要素=验证命令+PASS 结果+产物路径, 空行/纯叙述行不构成证据; task-v176 D5 + CR MINOR-3 命令词词界）— 补实跑证据后重跑\n' "$gid" "$gid" >&2
                     goal_gate_fail=1
                 fi
             done
@@ -1653,18 +1666,22 @@ END {print n+0}'
             #       本断言为其最小机器承载（只验存在性+计数对齐，不验复述内容语义，避免越权判「复述是否准确」）。
             # 口径: 段=标题行后至下一个 `### Phase` 标题前；progress.md 缺失或零 `### Phase` 段 → 静默跳过
             #       （存量计划/未开 Phase 面，fail-open 不误伤；L0/mini 由本块 plan_tier 门控天然豁免）。
+            # [2026-10-15 task-v176 CR 修复 MINOR-4] R 锚定行匹配加行首锚（允许前导空白）：
+            # 原裸子串匹配使段内描述性文字含「- **R 锚定**：」字样即可代偿缺行——与 write 侧
+            # SKILL.md 流程 1「progress 段首行写 - **R 锚定**：本 Phase 服务 R<n>」契约对齐，
+            # 判定面收紧为「列表行形态（行首/前导空白后以 `- **R 锚定**：` 起行）」，描述性内嵌引用不再代偿。
             _ra_prog="$PLAN_DIR_GUESS/progress.md"
             if [ -f "$_ra_prog" ]; then
                 _ra_total_phases="$(grep -cE '^###[[:space:]]+Phase' "$_ra_prog" 2>/dev/null || true)"
                 case "${_ra_total_phases:-}" in ''|*[!0-9]*) _ra_total_phases=0 ;; esac
                 if [ "$_ra_total_phases" -ge 1 ]; then
-                    _ra_anchor_n="$(grep -cF -- '- **R 锚定**：' "$_ra_prog" 2>/dev/null || true)"
+                    _ra_anchor_n="$(grep -cE '^[[:space:]]*- \*\*R 锚定\*\*：' "$_ra_prog" 2>/dev/null || true)"
                     case "${_ra_anchor_n:-}" in ''|*[!0-9]*) _ra_anchor_n=0 ;; esac
                     # awk 状态机定位首个缺 R 锚定的 Phase 段标题（遇下一 Phase 标题时回溯判上一段
                     # cnt==0；END 判末段）；missing 只在首次命中时写入=「首个缺失段」而非末个；全在案→空
                     _ra_missing_ph="$(awk '
                         /^###[[:space:]]+Phase/ { if (missing == "" && started && cnt == 0) missing = title; started = 1; title = $0; cnt = 0; next }
-                        /- \*\*R 锚定\*\*：/ { if (started) cnt++ }
+                        /^[[:space:]]*- \*\*R 锚定\*\*：/ { if (started) cnt++ }
                         END { if (missing == "" && started && cnt == 0) missing = title; print missing }' "$_ra_prog" 2>/dev/null || true)"
                     # 判定面=逐段 awk（grep 全文件计数仅作展示——计数对齐是必要非充分条件：
                     # Phase 外游离 R 锚定行 + 某段缺行时总数仍对齐，逐段判定才不漏）
