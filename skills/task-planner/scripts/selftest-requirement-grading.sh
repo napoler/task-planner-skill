@@ -93,11 +93,11 @@ fi
 #     frontmatter 卫星技能行与卫星路由表行的 'Rule 47,49,50' 枚举，实测各 1 处合计 2），RG-06 恒 FAIL。
 #   根因：非核心域规则摘要 bullet 随瘦身移除；SKILL 侧路由面=frontmatter+路由表双载体。
 #   修法：全集锚改 '1-80'；路由面锚改 'Rule 47,49,50' 枚举 ≥2（双载体缺一即 FAIL，守护语义不降）。
-if grep -q '1-8[0-9]' "$SKILLMD" && [ "$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)" -ge 2 ]; then  # [task-v173] 1-8[0-9]→1-8[0-9]（Rule 84 加入，纪元扩展覆盖 1-84）
-  ok 06 "SKILL.md 全集 '1-8[0-9]' 在位 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter+路由表双载体）"
+if grep -q '1-[89][0-9]' "$SKILLMD" && [ "$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)" -ge 2 ]; then  # [task-v173] 1-[89][0-9]→1-[89][0-9]（Rule 84 加入，纪元扩展覆盖 1-84）
+  ok 06 "SKILL.md 全集 '1-[89][0-9]' 在位 ∧ 'Rule 47,49,50' 枚举 ≥2（frontmatter+路由表双载体）"
 else
   n="$(grep -cF 'Rule 47,49,50' "$SKILLMD" || true)"
-  bad 06 "SKILL.md 路由面锚缺失（'1-8[0-9]' 或 'Rule 47,49,50' 命中=$n <2）"
+  bad 06 "SKILL.md 路由面锚缺失（'1-[89][0-9]' 或 'Rule 47,49,50' 命中=$n <2）"
 fi
 
 # RG-07 零新 config 键——properties 键数 = 42（同 43.4/44.4/47.4 口径；jq 缺失打 SKIPPED 不 FAIL）
