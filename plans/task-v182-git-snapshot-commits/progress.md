@@ -18,15 +18,34 @@
 - Actions taken:
   - 计划期侦察：落点/范式/级联面/纪元锚分布/在途协调/Rule 90 空闲六项查证（结论见 findings.md Research Findings）
   - init-session.sh 建 7 计划文件+check-conflicts.sh（risk：他域 3 未提交文件零交集）
-  - task_plan.md 全区块填写（R1-R5/VC-1..6/S1-S5/隔离决策/FMEA/CA-1..9）+ new_rule: 90
+  - task_plan.md 全区块填写（R1-R5/VC-1..6/S1-S10/隔离决策/FMEA/CA-1..9）+ new_rule: 90；attest 锁定（SHA df3a26b2，vc-gate/dispatch 门链全过）
+  - **首锚提交 4fc87a2**（Rule 90.1 首次实践：计划 9 文件+预留台账入库；他域 3 未提交文件按 Rule 88.2① 留置）
+  - worktree 建立 wt/task-v182-git-snapshot-commits
+  - S1：Rule 90 条款（90.1-90.6）追加 discipline 文件末段（worktree）
+  - S2/S3：三载体索引级联（核心 SKILL.md×5 行+卫星 SKILL.md×2 行+critical-rules.md×1 行）→ 提交 42f783b
+  - S4：全集基线跑=83 脚本 26 FAIL（对照主仓同脚本 PASS → 证实全由「1-89→1-90」引发）
+  - S5/S6：26 脚本锚批式放宽（24 脚本实改+absorption 自身锚+11 处 pin 同步+PR-02 设计内不动）→ 见下方 Test Results
+  - S7：全集复跑=83 中 82 PASS，唯一 FAIL=rule-reserve-pairing PR-02（90 预留未 land 的设计内配对门，land 后自绿）
 - Files created/modified:
-  - plans/task-v182-git-snapshot-commits/（7 计划文件）
+  - plans/task-v182-git-snapshot-commits/（7 计划文件，主仓）
+  - skills/task-discipline/references/critical-rules-discipline.md（+22 行 Rule 90）
+  - skills/task-planner/SKILL.md、skills/task-discipline/SKILL.md、skills/task-planner/references/critical-rules.md（索引级联）
+  - skills/task-planner/scripts/selftest-*.sh（24 脚本纪元锚放宽，FAIL 清单驱动）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | rule-reserve check 90 | `bash skills/task-planner/scripts/rule-reserve.sh check 90` | free | free | PASS |
   | 纪元锚在途交集 | grep 3 个他域未提交文件 | 0 命中 | 0 命中 | PASS |
-  | S3 基线（改动前全集） | selftest 遍历 | FAIL 清单 | 待 S3 执行时先跑基线 | pending |
+  | S4 基线全集 | worktree 83 脚本遍历 | FAIL 清单 | 26 FAIL（absorption/capability/context-pressure/decision-drift/drift-check-subagent/error-loop/execution-honesty/iteration-persistence/lane-advancement/parallel-scheduling/plan-tier/reflect-verify/reliability-institution/requirement-coverage/requirement-grading/research-first/root-resolution/rule-reserve-pairing/session-log/self-resolution/skill-split/source-anchor-discipline/summary-readability/tool-selection/verification-gate/veto） | PASS（清单产出） |
+  | S7 复跑全集 | worktree 83 脚本遍历 | 仅 PR-02 | 82 PASS+PR-02（设计内） | PASS |
+  | VC-1 条款锚 | grep `^### 90`/`90.[1-6]` | =1/=6 | 1/6 | PASS |
+  | VC-2 索引锚 | grep 1-90/三载体含 90 | ≥2/≥3 | 3/3 | PASS |
+  | S8 合并回 | git merge --no-ff wt/... | 并入 master | **被 git 拒绝**：对端在途未提交改动重叠（plans/.rule-reservations.jsonl + skills/task-planner/SKILL.md） | **QUEUED（排队续跑）** |
+
+- **⏸️ §6.2 排队等待态登记（2026-10-16 06:52）**：
+  1. **阻塞对象**：对端 dynamic-workflow 缺陷修复运行（计划=plans/task-defect-rrv13-dg12-false-pass/，工作流 id=dwfdwfrun0f76fcdd…，**06:49 仍有批量写入=会话活跃**）——其在途未提交文件与本任务合并路径重叠：`skills/task-planner/SKILL.md`（对端做索引计数修正 75→72 条+规则列表枚举化；与本任务同行级冲突）、`plans/.rule-reservations.jsonl`（对端做 77/78 行整备）、`plans/INDEX.md`、`selftest-{decision-grading,report-reviewability}.sh+registry.tsv`（与其 2+1 文件 scope 一致，与本任务 25 脚本零交集）。
+  2. **恢复条件**（可观察信号）：对端改动以 commit 形式出现在 master（`git log` 出现 task-defect-rrv13 相关提交）或对端文件转为干净态（`git status` 不再列 SKILL.md/ledger 为 M）。
+  3. **续跑步骤**：恢复后第一动作=重跑 §6.1 三查→`git merge --no-ff wt/task-v182-git-snapshot-commits`（SKILL.md 索引行预期冲突→**并集解**：取对端精确枚举+去重计数基准∪本任务 Rule 90/1-90 追加，计数按对端去重口径+90 重算）→ledger 若行级冲突则并集解→S9 归档+INDEX 刷新+收口提交→S10 独立终验。对端疑似工作中，**禁碰其未提交文件、禁 stash/reset 手术（Rule 88.4）**；本任务全量产出已安全在分支 cedb834（含 land 90），无丢失风险。
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

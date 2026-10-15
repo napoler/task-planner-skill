@@ -342,7 +342,7 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 | `isolation` | `worktree`（技能文件=运行中基础设施；v180 D6 用户裁决先例：技能改动走 worktree） |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-v182-git-snapshot-commits` |
 | `branch` | `wt/task-v182-git-snapshot-commits` |
-| `merge_back` | `pending` |
+| `merge_back` | `queued`（对端 dynamic-workflow 缺陷修复运行 06:49 活跃、其在途未提交改动与合并路径重叠——§6.2 排队续跑，恢复条件与续跑步骤见 progress.md 等待态登记；分支 cedb834 全量产出就绪待并） |
 | `排队/协调前置` | 在途 task-defect-rrv13（今晨 05:44 后无动作，progress 缺失疑似中断）：持有 selftest-decision-grading/registry.tsv/report-reviewability 未提交改动——与本任务落点零交集（锚族 grep=0）；若其收口提交触碰本任务 scope 文件→合并时并集解；禁代管/禁代提交他域未提交改动（Rule 88.2①） |
 
 > 契约详见 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。

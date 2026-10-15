@@ -27,7 +27,9 @@
 - **[计划期侦察] 纪元锚分布**：`1-8[0-9]`×52、`1-8[0134]`×21、`'1-89'`×1，分布 20 个 selftest 脚本（grep 实证清单见 task_plan S3 行）；SKILL.md "1-89"→"1-90" 后这些锚将失配——记忆判例「1-90 会再炸一次」成立，须实跑→按 FAIL 清单放宽→复跑（selftest-absorption-discipline.sh:78-85 演进注释=放宽范式先例）。
 - **[计划期侦察] 在途任务协调（§6.1 三查）**：在途 task-defect-rrv13-dg12-false-pass 持有 3 个未提交 selftest 文件（decision-grading/registry.tsv/report-reviewability，今晨 05:44 mtime，progress 缺失疑似中断）；**落点零交集**实证=3 文件 grep 纪元锚族=0 命中；处置=知悉不碰不排队不代管（Rule 88.2①）。遗留 wt/task-v168-machine-parked 分支=他域遗留知悉不碰。
 - **[计划期侦察] Rule 90 空闲**：`rule-reserve.sh check 90`→free；台账尾部 87/88/89 均 landed（plans/.rule-reservations.jsonl tail 实证）。
-- **[计划期侦察] 分工面**：Rule 27=Phase 级提交门控（:200-209）；worktree-isolation §6.3=协调态（预留行/簿记）收口随行提交；新 Rule 90=任务级首尾两端快照——三分工不重叠，90.5 衔接句按此写。plans/ 目录 git 跟踪态=已入库（git ls-files plans/ | wc -l=2715，仅运行态 .gitignore），首提交把计划入库有先例可循（v181 .plan-attestation/findings/progress 均跟踪）。
+- **[执行期] 纪元锚放宽实录（S5-S6）**：26 FAIL 脚本中 24 实改+1 设计内（PR-02 配对门）+1 吸收（absorption 兼自身锚+pin 枢纽）。锚形态族五类：①`1-8[0-9]` 计数锚（主流，sed→`1-[89][0-9]`）②`1-[7-8][0-9]`（→`1-[7-9][0-9]`）③区间族 `Rules 1-(3x|[4-8][0-9])`（→`[4-9][0-9]`）④尾边界型 `8[0-9]([^0-9]|$)`（补 `|9[0-9]([^0-9]|$)` 分支，负样本语义保留）⑤动态上界提取 `grep -oE 'Rules 1-8[0-9]'|tail`（P-05 防漂锚，sed 同型即愈）。**pin 网络=单向**：仅 absorption-discipline 外钉 11 处（5×_pin_lit `grep -cE '1-8[0-9]'` 字面+6×_pin_tol），改被钉脚本锚必须同步 pin 字面——已同步后 absorption 12/12 PASS。
+- **[执行期] 负样本契约保全**：session-log SL-05 的负断言（'1-79'/'1-90' 不命中 `1-8[0134]`）零改动即兼容——只放宽正断言行 69；error-loop/veto 的尾边界负样本以追加 9x 分支保序。教训（复验 v166 判例）：锚演进必逐 site 读上下文，禁全局盲替（FMEA RPN140 兜底路线按预案走完，零回退）。
+- **[执行期] S7/S8 顺序修正**：计划原序 S7 全集复跑→S8 land；实际 PR-02（90 预留未 land 配对检查）使 S7 无法先达零 FAIL——按 Rule 27.6/57 精神修正执行序为 land→全集复跑（登记 [corrected]，非计划范围变更）。
 
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
