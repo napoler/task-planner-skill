@@ -47,7 +47,7 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 | 发生错误 | 读相关文件 | 需要当前真实状态才能修 |
 | 中断/压缩后恢复 | 读全部三文件 | Rule 19.3 顺序重建状态 |
 
-20.6 规则编号预留登记（编号所有权凭证，task-v128）：新增 Rule 编号的任务在计划中声明 new_rule: <NN>；attest-plan.sh 锁定前调用 scripts/rule-reserve.sh 查重——空闲自动登记（账本 plans/.rule-reservations.jsonl），被持有/contested 时 WARN + next 建议（默认不阻断；TASK_PLANNER_RULE_RESERVE_STRICT=1 阻断）；合并后 land、废弃 release。零新 config 键；selftest-rule-reserve.sh 守护。Why: 编号竞态两轮复现（47: v122/v123；49: v125/v126），事后仲裁成本=全量重编号。
+20.6 规则编号预留登记（编号所有权凭证，task-v128）：新增 Rule 编号的任务在计划中声明 new_rule: <NN>；attest-plan.sh 锁定前调用 scripts/rule-reserve.sh 查重——空闲自动登记（账本 plans/.rule-reservations.jsonl），被持有/contested 时 WARN + next 建议（默认不阻断；TASK_PLANNER_RULE_RESERVE_STRICT=1 阻断）；合并后 land、废弃 release。零新 config 键；selftest-rule-reserve.sh 守护。Why: 编号竞态两轮复现（47: v122/v123；49: v125/v126），事后仲裁成本=全量重编号。**协调态提交与同落点盘点（2026-10-16 增补，判例=v179/v180/v181 同日竞写同文件）**：台账预留行与计划簿记随任务收口（land/commit）一并提交，禁止长期 uncommitted（已提交台账 = 跨会话唯一共见事实源）；任何任务动笔前先跑 `references/worktree-isolation.md` §6.1 同落点三查（在途计划落点交集/台账 reserved/主仓未提交改动），命中重叠 → 计划登记排队/殿后前置，禁并行双写同一追加锚点（细则=SOP 层 worktree-isolation.md §6，本处只留指针防双源漂移）。
 
 **Next Step 字段(Rule 20 配套)**:task_plan.md 的 `## Next Step` 存单一下一步动作,Phase 状态变更时同步刷新——恢复/压缩后无需推断"接下来干嘛",smart 注入每轮携带。
 

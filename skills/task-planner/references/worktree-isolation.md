@@ -94,3 +94,31 @@ git worktree remove ${REPO_PARENT}/<repo>-worktrees/<task-id> && git branch -d w
 - ❌ merge 冲突自动乱解不报告
 - ❌ 合并后不清理 worktree/分支(遗留 wt/* 是下次冲突信号③)
 - ❌ 切换会话 CWD 到 worktree(破坏哨兵与 hook 相对路径约定)
+
+## 6. 并行任务同落点冲突与排队续跑（2026-10-16 立）
+
+> 判例：task-v179（worktree 内 Rule 87）/task-v181（主仓直改 Rule 89）/task-v180（排队殿后 Rule 88）三任务同日竞写 `critical-rules-discipline.md` 末段与 SKILL.md 索引行——目录隔离各自合规仍发生冲突。**目录不冲突 ≠ 落点不冲突**；隔离必须从目录级升级到落点级。工作树隔离防的是「工作中互相覆盖」，防不了「汇合时抢同一追加锚点」与「协调态各会话各见一个世界」。
+
+### 6.1 同落点盘点（开工前强制；L0-T 直改主仓前同样适用）
+
+动笔前三查（任一命中 → 先排队再动笔）：
+
+1. 在途计划落点交集：`ls plans/ | grep -v archive` 列在途任务，对照各自 task_plan.md 的 scope_files/落点文件，与本次落点取交集；
+2. 台账在途占用：`plans/.rule-reservations.jsonl` 尾部（或 `rule-reserve.sh list`）reserved 未 land 行，指向同文件同锚点的在途任务；
+3. 主仓未提交改动交集：`git status --short` 中被修改文件，与本次落点取交集（L0-T 直改任务尤其必查——主仓工作区就是并行会话的共同写入面）。
+
+命中处置：在本任务计划「隔离决策/Decisions」登记**排队/殿后前置**（写明：对端任务 ID + 恢复条件 + 追加锚=届时文件实际最大编号段/实际末段），禁两任务并行双写同一追加锚点。
+
+### 6.2 STOP 排队续跑语义（替代死停）
+
+执行中才发现与在途任务重叠时，STOP 本身正确（不停 = 两会话互写同文件）；但 STOP 报告必须携带三件套，把「死停」变「排队」：
+
+1. **阻塞对象**：在途任务 ID + 其落点文件/锚点；
+2. **恢复条件**：可观察信号（对端 land 行出现在台账 / 对端 commit 出现于 master / worktree 已删）；
+3. **续跑步骤**：恢复后第一动作（重跑 6.1 盘点 → 按届时实际末段落笔 → 原计划 Phase 继续）。
+
+等待态落盘 progress.md（同 Rule 57 留痕口径）；对端收口后按续跑步骤无损继续，禁止死停等待用户人工重踢。
+
+### 6.3 协调态提交纪律
+
+台账预留行（`plans/.rule-reservations.jsonl`）与计划簿记是**跨会话共享事实**：任务收口（land/commit）时随行提交，禁止长期停留 uncommitted 态——uncommitted 的协调态 = 各会话各见一个世界，是误判「干净/无冲突」的第一根源（判例：worktree 内台账视图无 87 预留行，主仓工作区实际已预留，定号 `next=87` 因此撞号）。
