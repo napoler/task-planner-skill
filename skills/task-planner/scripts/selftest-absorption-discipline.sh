@@ -32,14 +32,14 @@ chk "AD-01" "critical-rules.md 含 '### 74 变更吸收三判纪律' 标题且 7
 chk "AD-02" "Rule 74 条文含三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））与判据句「先问是补充还是替代」" "grep -qF '增量（默认且优先）' \"\$CRIT_D\" && grep -qF '四条件全满足才可' \"\$CRIT_D\" && grep -qF '删除（最高门槛）' \"\$CRIT_D\" && grep -qF '先问是补充还是替代' \"\$CRIT_D\""
 # AD-03 条文内禁硬编码行号锚（:[0-9] 引用形态=FAIL）——仅审视 Rule 74 条文段（标题行至 EOF）
 chk "AD-03" "Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）" "sec=\$(sed -n '/^### 74 变更吸收三判纪律/,\$p' \"\$CRIT_D\"); test -n \"\$sec\" && ! grep -qE ':[0-9]' <<<\"\$sec\""
-# AD-04 [task-v171 核心瘦身] SKILL.md 接线锚：全集 '1-[7-8][0-9]' 三处 + 新指令处理段 'Rule 74 三判门'行 + 卫星路由表 task-discipline 行
+# AD-04 [task-v171 核心瘦身] SKILL.md 接线锚：全集 '1-[7-9][0-9]' 三处 + 新指令处理段 'Rule 74 三判门'行 + 卫星路由表 task-discipline 行
 #   现象：SKILL.md 瘦身（556→214 行，合规清单表替换为 G1-G8 核心域表）后，旧锚 '变更吸收三判门（Rule 74' 与 '| C51 |' 双双零命中，AD-04 恒 FAIL。
 #   根因：断言锚定旧「合规检查清单 C51 行」与旧新指令段措辞；Rule 74 属非核心域规则，瘦身后 SKILL.md 仅经
 #     「用户新指令处理 B 扩展行（Rule 74 三判门）」+「卫星路由表」承载联动面（Rule 82 禁回潮，C 行不回填）。
 #   修法：'变更吸收三判门（Rule 74'→B 行现措辞 'Rule 74 三判门'；'| C51 |'→卫星路由表 task-discipline 行；
 #     Rule 74 全文与子条锚由 AD-01/02/03 在 CRIT_D 断 assertion，断言强度不弱化。
 # [2026-10-11 task-v169 Rule 80 纪元扩展] 保留：全集索引 1-80 三处锚阈值 ≥3 不变（前端子条件实测=3 通过）。
-chk "AD-04" "SKILL.md 接线锚 ≥3：'1-[7-8][0-9]' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74 三判门' + 卫星路由表 task-discipline 行" "test \$(grep -cE '1-[7-8][0-9]' \"\$SKILL\") -ge 3 && grep -qF 'Rule 74 三判门' \"\$SKILL\" && grep -qE '^\| task-discipline \|' \"\$SKILL\""
+chk "AD-04" "SKILL.md 接线锚 ≥3：'1-[7-9][0-9]' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74 三判门' + 卫星路由表 task-discipline 行" "test \$(grep -cE '1-[7-9][0-9]' \"\$SKILL\") -ge 3 && grep -qF 'Rule 74 三判门' \"\$SKILL\" && grep -qE '^\| task-discipline \|' \"\$SKILL\""
 # AD-05 触点锚：critical-rules 8.1/36.5/56.1 段 grep 'Rule 74' 命中 ≥3 + SKILL B 类行含 'Rule 74' + CRIT_D 含「可行性判别门」
 # [task-v171 核心瘦身] 末子项原锚=SKILL 'B/C 类' 段含「可行性判别门」——瘦身后 SKILL.md 不再展开非核心规则条文，
 #   「可行性判别门」唯一载体=CRIT_D Rule 74 条文段（实测 2 处）。修法：SKILL 侧保留 B 行 'Rule 74' 触点断言，条文侧锚改指 CRIT_D。
@@ -82,18 +82,18 @@ ad12=0
 #   5 个主锚 selftest 的纪元锚再随动 '1-80'→'1-8[0134]'（覆盖 80/81，负样本 1-82 不命中，同 master 版
 #   selftest-session-log.sh SL-05 已立形态），pin 清单二次同步；research-first/context-pressure/skill-split
 #   三个 _pin_tol 目标字面随各自 live 锚演进而同步。
-_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-8[0-9]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-8[0-9]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-8[0-9]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-8[0-9]'" || ad12=1
-_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-8[0-9]'" || ad12=1
-_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-8[0134]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-8[0134]' || ad12=1
+_pin_lit "$SCRIPTS/selftest-tool-selection.sh" "grep -cE '1-[89][0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-requirement-coverage.sh" "grep -cE '1-[89][0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-lane-advancement.sh" "grep -cE '1-[89][0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-self-resolution.sh" "grep -cE '1-[89][0-9]'" || ad12=1
+_pin_lit "$SCRIPTS/selftest-source-anchor-discipline.sh" "grep -cE '1-[89][0-9]'" || ad12=1
+_pin_tol "$SCRIPTS/selftest-research-first.sh" '1-[89][0-9]' || ad12=1
+_pin_tol "$SCRIPTS/selftest-context-pressure.sh" '1-[89][0-9]' || ad12=1
 _pin_tol "$SCRIPTS/selftest-workflow-orchestration.sh" '1-(68|69|71)' || ad12=1
 _pin_tol "$SCRIPTS/selftest-conclusion-discipline.sh" '1-[4-7][0-9]' || ad12=1
-_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-8][0-9])' || ad12=1
+_pin_tol "$SCRIPTS/selftest-skill-split.sh" 'Rules 1-(3[0-9]|[4-9][0-9])' || ad12=1
 _pin_tol "$SCRIPTS/selftest-source-anchor-discipline.sh" '^71\.[1-7] ' || ad12=1
-if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：'1-8[0134]' 纪元 grep ×5）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
+if [ "$ad12" -eq 0 ]; then ok "AD-12" "pinning 锚 11 处逐个断言：live 锚字面（精确 5：'1-[89][0-9]' 纪元 grep ×5）或宽容正则族（6）二者居一"; else ng "AD-12" "pinning 锚形态漂移（live 锚字面或宽容正则族缺失）"; fi
 # AD-13 自举消费：本计划 task_plan.md 变更标注表 ≥10 行 CA-n 条目（Rule 74.3 dogfood，本计划=首批 consumer）
 #   候选（无机器相关硬编码，S12 收紧）：① env 注入 TASK_PLANNER_ABSORB_PLAN ② 主仓根（git-common-dir 推导，worktree 内可解析到主仓）
 #     ③ repo 相对 $SKILL_ROOT/../../plans/…（部署位/主仓直跑）；均缺=SKIP 中性态（sk 不计 pass/fail，防静默转绿）

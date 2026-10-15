@@ -79,10 +79,10 @@ fi
 # VG-06 主 SKILL.md 三处步骤引用（frontmatter/计划期/终验）+ 全集 1-84 纪元
 # What：断言主 SKILL.md 含 '1-84' 全集纪元 + '11 卫星' 计数 + verification-gate frontmatter 卫星行。
 # Why：验证独立化后主技能须在 frontmatter/全集纪元/卫星计数三面同步（task-v173 纪元级联）。
-if grep -q 'Rules 1-8[0-9]' "$TP_SKILL" && grep -q '11 卫星' "$TP_SKILL" && grep -q '卫星技能 verification-gate' "$TP_SKILL"; then
-  ok 06 "主 SKILL.md 全集 1-8[0-9] + 11 卫星 + frontmatter satellite 行三锚在位"
+if grep -q 'Rules 1-[89][0-9]' "$TP_SKILL" && grep -q '11 卫星' "$TP_SKILL" && grep -q '卫星技能 verification-gate' "$TP_SKILL"; then
+  ok 06 "主 SKILL.md 全集 1-[89][0-9] + 11 卫星 + frontmatter satellite 行三锚在位"
 else
-  bad 06 "主 SKILL.md 全集 1-8[0-9]/11 卫星/frontmatter satellite 行三锚缺失"
+  bad 06 "主 SKILL.md 全集 1-[89][0-9]/11 卫星/frontmatter satellite 行三锚缺失"
 fi
 
 # VG-07 attest-plan.sh VC 可执行性门锚（resolve_vc_tier + env + skip + 拒锁消息）

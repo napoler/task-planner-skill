@@ -106,15 +106,15 @@ fi
 #     c3=卫星路由表 discipline 行（Rule 67/69/70/71 路由载体）/ c4='Rule 69'（T1 decision-arbiter 引用面，实测 4）/
 #     c5='Rule 80'（核心域规则仍在 SKILL 正文，实测 4）。断言语义（四条规则 SKILL 侧消费面在位）经新载体保持。
 # 历史纪元演进（v158/v160/v162/v163/v169 各级宽容扩）保留如上；本轮为 v171 分层架构口径切换。
-c1=$(grep -cE '1-8[0-9]' "$SKILL_MD")
-c2=$(grep -cE 'Rules 1-8[0-9] 全集|1-8[0-9] 全集' "$SKILL_MD")
+c1=$(grep -cE '1-[89][0-9]' "$SKILL_MD")
+c2=$(grep -cE 'Rules 1-[89][0-9] 全集|1-[89][0-9] 全集' "$SKILL_MD")
 c3=$(grep -cE '^\| task-discipline \|' "$SKILL_MD")
 c4=$(grep -c 'Rule 69' "$SKILL_MD")
 c5=$(grep -c 'Rule 80' "$SKILL_MD")
 if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ] && [ "$c5" -ge 1 ]; then
-  ok "CP-07" "'1-8[0-9]'=$c1≥2 ∧ 'Rules 1-8[0-9] 全集'=$c2≥1 ∧ 路由表 discipline 行=$c3≥1 ∧ Rule 69=$c4≥1 ∧ Rule 80=$c5≥1"
+  ok "CP-07" "'1-[89][0-9]'=$c1≥2 ∧ 'Rules 1-[89][0-9] 全集'=$c2≥1 ∧ 路由表 discipline 行=$c3≥1 ∧ Rule 69=$c4≥1 ∧ Rule 80=$c5≥1"
 else
-  bad "CP-07" "'1-8[0-9]'=$c1 全集串=$c2 路由行=$c3 R69=$c4 R80=$c5"
+  bad "CP-07" "'1-[89][0-9]'=$c1 全集串=$c2 路由行=$c3 R69=$c4 R80=$c5"
 fi
 
 # CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列
