@@ -73,3 +73,4 @@
 {"rule":89,"status":"reserved","task_id":"task-v181","ts":"2026-10-16","note":"Rule 89 前后逻辑一致性与已确立事实禁反言（根治「思路混乱」自相矛盾缺陷，L0-T 纯文本档）"}
 {"rule":87,"status":"landed","task_id":"task-v179","ts":"2026-10-16","note":""}
 {"rule":89,"status":"landed","task_id":"task-v181","ts":"2026-10-16","note":""}
+{"rule":88,"status":"landed","task_id":"task-v180-scope-contract","ts":"2026-10-16","note":""}
