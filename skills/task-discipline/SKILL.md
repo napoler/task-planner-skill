@@ -21,7 +21,7 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 
 ## 卫星路由：task-discipline
 
-域=执行过程纪律与工作产物维护。规则全文见 `references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89）。
+域=执行过程纪律与工作产物维护。规则全文见 `references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90）。
 
 调用条件：涉及执行纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物时 Read 该文件。
 
@@ -77,6 +77,6 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 
 ## 参考文档
 
-- `references/critical-rules-discipline.md` — 41 条规则全文（含后补落盘的 Rule 85/86/87/88/89）
+- `references/critical-rules-discipline.md` — 42 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90）
 - `references/batch-quality-gate.md` — 批量质量门控细则（Rule 18 正文引用）
 - `references/capability-registry.md` — 能力沉淀登记台账（随 S21 资产迁入）
