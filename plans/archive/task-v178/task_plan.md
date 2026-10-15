@@ -45,7 +45,7 @@ L0-T 纯文本单文件追加 → 按 task-v177 先例（4bbc1f6，纯文本改�
 - 跑 selftest-error-loop.sh + run-selftests.sh fresh 全量，对照基线零新增 FAIL
 - commit（单 commit，Rule 27）+ check-complete + 归档
 - **V-N:** VC-1, VC-2, VC-3（总计 ≥2，允许集中映射）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（白名单②⑥登记——L0-T 单文件纯文本，无强制派发）
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5）
