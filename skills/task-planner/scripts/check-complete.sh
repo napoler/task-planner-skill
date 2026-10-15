@@ -1626,6 +1626,11 @@ END {print n+0}'
             # 原裸子串匹配使叙述文本含 "node"（如「node_modules 目录清理」）即误过三要素校验——
             # 命令词信号须为独立单词才算「验证命令」语义；PASS/✅/FAIL=0/exit 0 为结果信号
             # （FAIL=0 本身含词界语义、exit 0 带空格定界），保持原样不加强。
+            # [2026-10-15 task-v176 CR 二轮回修] 首轮修复把词界写成源码双反斜杠 \\b——ERE 中双反斜杠=
+            # 字面「反斜杠+b」而非词界断言，命令词分支恒不匹配（实测 bash/bun/node/python 四词全不命中，
+            # 接受面比修复前更窄）；本轮回修为源码单反斜杠 \b（ERE 词界断言）。stderr 消息串同步去掉
+            # \b 字面（printf 格式串中 \b 被解释为退格符）改文字描述。实测判据：`bash x.sh` 命中、
+            # `node_modules 清理` 不命中（词界有效，描述性词不代偿命令词信号）。
             goal_gate_fail=0
             for gid in $goal_gate_complete; do
                 if ! grep -q "\[goal:${gid}\]" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null; then
@@ -1645,8 +1650,8 @@ END {print n+0}'
                             }
                         }
                     }' "$PLAN_DIR_GUESS/progress.md" 2>/dev/null || true)"
-                if [ -z "$_g_ev_window" ] || ! printf '%s\n' "$_g_ev_window" | grep -qE '(\\b(bash|bun|node|python)\\b|PASS|✅|FAIL=0|exit 0)'; then
-                    printf '[goal-gate] ✗ %s [goal:%s] 证据行缺三要素信号（同行或 ±2 行窗口内未命中 (\b(bash|bun|node|python)\b 命令词 | PASS|✅|FAIL=0|exit 0 结果信号)；Rule 66.3 三要素=验证命令+PASS 结果+产物路径, 空行/纯叙述行不构成证据; task-v176 D5 + CR MINOR-3 命令词词界）— 补实跑证据后重跑\n' "$gid" "$gid" >&2
+                if [ -z "$_g_ev_window" ] || ! printf '%s\n' "$_g_ev_window" | grep -qE '(\b(bash|bun|node|python)\b|PASS|✅|FAIL=0|exit 0)'; then
+                    printf '[goal-gate] ✗ %s [goal:%s] 证据行缺三要素信号（同行或 ±2 行窗口内未命中 (命令词 bash/bun/node/python 独立单词 | PASS|✅|FAIL=0|exit 0 结果信号)；Rule 66.3 三要素=验证命令+PASS 结果+产物路径, 空行/纯叙述行不构成证据; task-v176 D5 + CR MINOR-3 命令词词界（CR 二轮单反斜杠回修））— 补实跑证据后重跑\n' "$gid" "$gid" >&2
                     goal_gate_fail=1
                 fi
             done
