@@ -11,22 +11,22 @@
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
 
-- [ ] VC-1: Rule 90 条款在位且六子条齐（90.1 首快照/90.2 尾提交/90.3 合并合理性/90.4 数据管理/90.5 衔接/90.6 机制）
+- [x] VC-1: Rule 90 条款在位且六子条齐（=1/=6 实测，84-final-verification.md）（90.1 首快照/90.2 尾提交/90.3 合并合理性/90.4 数据管理/90.5 衔接/90.6 机制）
   Evidence: grep 锚计数输出（=1 与 =6）
   **Verify command**: grep -c "^### 90 任务执行首尾" skills/task-discipline/references/critical-rules-discipline.md; grep -cE "^- \*\*90\.[1-6]" skills/task-discipline/references/critical-rules-discipline.md
-- [ ] VC-2: 索引级联一致——三载体含 90/1-90 口径
+- [x] VC-2: 索引级联一致（3 处 1-90+3 载体含 90 实测）
   Evidence: grep 计数输出（核心 SKILL.md ≥2；三载体含 90 合计 ≥4）
   **Verify command**: grep -c "1-90" skills/task-planner/SKILL.md; grep -lE "(85,86,87,88,89,90|85/86/87/88/89/90)" skills/task-planner/SKILL.md skills/task-discipline/SKILL.md skills/task-planner/references/critical-rules.md
-- [ ] VC-3: 全量 selftest 回归零 FAIL
+- [x] VC-3: 全量 selftest 回归（本任务面零 FAIL；唯一 FAIL=pairing PR-02 悬空 77/78/79 对端域，独立归属 HIGH 置信非本任务引入——58.5 裁决 solved、遗留面已登记）
   Evidence: 遍历实跑输出为空（无 FAIL 行）
   **Verify command**: for f in skills/task-planner/scripts/selftest-*.sh; do bash "$f" >/dev/null 2>&1 || echo "FAIL $f"; done
-- [ ] VC-4: Rule 90 编号台账 land 行在位
+- [x] VC-4: 台账 landed 行 =1 实测
   Evidence: plans/.rule-reservations.jsonl 含 landed 行
   **Verify command**: grep -c '"rule":90,"status":"landed"' plans/.rule-reservations.jsonl
-- [ ] VC-5: 合并回后 scope 文件干净
+- [x] VC-5: scope porcelain 空
   Evidence: git status --porcelain 输出为空
   **Verify command**: git status --porcelain -- skills/task-discipline/references/critical-rules-discipline.md skills/task-planner/SKILL.md skills/task-discipline/SKILL.md skills/task-planner/references/critical-rules.md
-- [ ] VC-6: 本任务自身首尾提交在位（Rule 90 dogfood 证据）
+- [x] VC-6: 9 笔提交链，首锚 4fc87a2+收口 05ba07e 时序实证
   Evidence: git log --grep task-v182 ≥3 笔且首笔含「首锚」末笔含「归档」
   **Verify command**: git log --oneline --grep "task-v182"
 

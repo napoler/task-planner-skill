@@ -127,12 +127,12 @@ execution_lane: L1
 -->
 | 字段 | 值 |
 |------|-----|
-| **目标型需求** | （R 行编号，如 R1/R3） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **目标型需求** | R2（使用前/后 Git 备份=可恢复可控）、R3（开始/结尾各一次提交）、R4（合并合理性）、R5（数据有效管理） |
+| **裁决** | `solved` |
+| **解决证据锚** | ①Rule 90 六子条落地=skills/task-discipline/references/critical-rules-discipline.md:563-573；②dogfood 实证=首锚 4fc87a2+收口 05ba07e（9 笔提交链时序，Verifier 独立核验）；③合并合理性=--no-ff 007600f+并集解两轮+83 脚本级联面零回归；④数据管理=档案/台账/INDEX 全程入库（VC-1/2/4/5/6 全 PASS，subagent-state/84-final-verification.md） |
+| **未解决面+原因** | 非 R2-R5 范围的对端域残留：pairing PR-02 悬空 77/78/79（对端批次引入；Rule 88.2③ 登记不代修） |
+| **已排除路径** | n/a（solved） |
+| **下一步建议** | ①仲裁 pairing 悬空 77/78/79（对象=plans/.rule-reservations.jsonl 77/78/79 行；看点=task-v168 封存正文是否补 land；动作=release 或补正文 land）②部署位同步待授权（对象=~/.zcode/skills/task-planner 等部署位；看点=master 已含 Rule 90+1-90 索引；动作=授权后同步） |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -146,10 +146,10 @@ execution_lane: L1
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | Rule90 条款 | 90.1-90.6 六子条落 discipline 文件末段 | `grep -cE "^- \*\*90\.[1-6]" skills/task-discipline/references/critical-rules-discipline.md` = 6 | S1/Phase 1 | pending |
-| G2 | 索引级联 | 三载体索引同步 1-90 + 卫星行含 90 | `grep -c "1-90" skills/task-planner/SKILL.md` ≥2 | S2,S3/Phase 1 | pending |
-| G3 | 纪元锚绿 | 全集 selftest 实跑 FAIL=0 | 遍历 selftest-*.sh 输出无 FAIL 行 | S4-S7/Phase 1 | pending |
-| G4 | 台账+收口 | land 90 + 合并回 + 归档 + INDEX + 收口提交 | `grep '"rule":90,"status":"landed"' plans/.rule-reservations.jsonl` + `git log --grep task-v182` ≥3 | S8-S10/Phase 1 | pending |
+| G1 | Rule90 条款 | 90.1-90.6 六子条落 discipline 文件末段 | `grep -cE "^- \*\*90\.[1-6]" …` = 6（实测 6） | S1/Phase 1 | complete |
+| G2 | 索引级联 | 三载体索引同步 1-90 + 卫星行含 90 | `grep -c "1-90" …` =3（实测） | S2,S3/Phase 1 | complete |
+| G3 | 纪元锚绿 | 全集 selftest 实跑 FAIL=0（终态注：本任务级联面绿；唯一 FAIL=pairing PR-02 悬空 77/78/79=对端批次引入，独立归属判定 HIGH 置信见 subagent-state/84-final-verification.md） | 遍历 selftest-*.sh 输出仅 pairing 1 行（非本任务引入） | S4-S7/Phase 1 | complete |
+| G4 | 台账+收口 | land 90 + 合并回 + 归档 + INDEX + 收口提交 | landed=1 实测+9 笔提交链（首锚/合并/收口齐） | S8-S10/Phase 1 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -300,7 +300,7 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 - [x] S4-S7 纪元锚：基线跑→FAIL 清单→批式放宽→全集复跑绿
 - [x] S8 台账 land 90 + 合并回 master（含排队解除+对端接管+并集解两轮）
 - [x] S9 归档 + INDEX 刷新 + 收口提交
-- [ ] S10 Verifier 子代理独立终验（VC-1..VC-6 全量复核）（收口提交后派发，结果回填）
+- [x] S10 Verifier 子代理独立终验（VC-1..VC-6 全量复核）——六 VC 全 PASS，报告=subagent-state/84-final-verification.md
 - [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6
 - **Status:** complete
@@ -482,7 +482,7 @@ attest 锁定计划 → 首锚提交（计划入库，Rule 90 首次实践）→
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-16 07:1x | Code Assistant | CD-12 锚 9x 纪元扩展（两处精准替换） | done | 24 PASS/0 FAIL；grep 9[0-9] 三处命中 | selftest-conclusion-discipline.sh:80,90-92 | findings 执行期判例节 | 无（回复内验证输出） | 主进程直改被委派门拦→改派 / 0 / ☑ |
 | 2 | 2026-10-16 07:2x（待派） | drift-checker | Phase complete 前偏移检查 | queued | | | | | - / 0 / ☐ |
-| 3 | 2026-10-16 07:3x（待派） | Verifier | VC-1..VC-6 独立终验 | queued | | | | | - / 0 / ☐ |
+| 3 | 2026-10-16 07:4x | Verifier | VC-1..VC-6 独立终验 | done | 六 VC 全 PASS；VC-3 归属判定 HIGH 置信非本任务引入；报告=subagent-state/84-final-verification.md | 同左 | 执行期判例节 | subagent-state/84-final-verification.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

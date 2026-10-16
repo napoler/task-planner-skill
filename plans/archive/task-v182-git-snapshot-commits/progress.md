@@ -57,6 +57,7 @@
 - Test Results（S8 续）:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
+  | S10 独立终验 | Verifier 全新上下文复跑六 VC | 全 PASS+归属判定 | 六 VC 全 PASS；VC-3 归属 HIGH 置信非本任务引入；报告=subagent-state/84-final-verification.md | PASS |
   | 对端双 selftest 接管前 | decision-grading/report-reviewability | PASS（完好态） | 双 PASS | PASS |
   | 唯一规则计数复核 | 路由表 11 行去重计数 | =73 | 73 | PASS |
   | master 终态全集 | 83 脚本遍历 | 仅 pairing 域内 FAIL | 仅 PR-02（77/78/79 对端域） | PASS（本任务面） |
@@ -73,6 +74,7 @@
      纯增量表尾增列，既有列序与语义不变——Learning Gate（check-complete.sh）按表头列名「Root Cause」动态定位列号，表尾增列不破坏既有校验 -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention | 触发命令/工具 |
 |-----------|-------|---------|------------|------------|------------|--------------|
+| 2026-10-16 07:4x | 收口提交误用 `git add -A plans/`（违反 Rule 27.2 禁盲扫字面），卷入对端 plan 文件入库+一个运行态删除标记 | 1 | 勘误登记不回写历史（卷入物均为簿记性质且符合 §6.3 协调态入库精神，损害为零） | 直接原因=贪图一步全加；根因=收口时多目录混合态下图省事（类别=提交卫生） | 收口提交只 add 显式路径清单；混合态先分域暂存（→ progress.md Error Log 沉淀） | `git add -A plans/` |
 |           |       | 1       |            |            | <待沉淀>    |              |
 
 ## 5-Question Reboot Check
