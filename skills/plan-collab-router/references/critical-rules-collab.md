@@ -33,3 +33,45 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 40.5 **机器校验边界（如实披露）**：「🧰」区块为 LLM 行为面，check-dispatch/check-complete **不机器校验其存在性**（缺区块 = 无违规，不做门控阻断）；守护 = `scripts/selftest-tool-selection.sh` 静态断言（模板区块锚 / mini-lite 豁免锚 / plan-writer 契约锚 / 零新 config 键，selftest-workflow-orchestration.sh WF 断言范式）；/goal 运行态不可从技能层读取，对齐证据 = 计划 VC 证据链（40.3）。
 40.6 **机制（零新 config 键 — 与 task-v087/v088 同范式）**：判定面 = LLM 行为（计划期分析，非机器触发，无需开关键；config.json properties=42 维持，WF-12 断言全绿）；机器面 = `selftest-tool-selection.sh` 静态断言；消费侧 = plan-writer 契约（companion/agents/plan-writer.md 工具选择区块撰写义务行）+ general 模板「🧰」区块 + template-mapping 工具选择映射节。[2026-10-09 task-v149 对齐修复] 本文件 40.6/41.6/42.5/43.4/44.4 五处 config 键数锚 40 统一改为 42（实态 42，base 即 42；本任务 registry 10 行及多脚本注释已改 42，口径同步声明即为真）。
 
+
+### 91 workflow 脚本内 per-subagent 模型分档纪律（workflow script per-subagent model tiering — 收编 workflow-model-tiers 用户级技能为 task-planner Rule 体系正式条款；目标：workflow 编排型任务在 CreateWorkflow 脚本编写期按子代理职责力度显式声明模型档位，重任务用好模型、轻任务用轻模型，避免全流统一档位资源浪费；同时如实披露官方文档与用户级技能在 per-subagent model 机制上的矛盾，设验证前置门；判定面=LLM 行为+本条款文本锚、零新 config 键、守护=selftest-workflow-orchestration.sh WF-17..22 静态断言；衔接 Rule 39（编排触发/机制）/68.3（组内异构分摊）/22.3（失败兜底——禁悄悄降档）/43.2（最小可承载档位），既有规则条目原文零改动）
+
+用户级技能 workflow-model-tiers（`~/.zcode/skills/workflow-model-tiers/`）提供了 CCR 四档力度映射与两种脚本写法，但长期游离于 task-planner Rule 体系之外——无 selftest 守护、无路由表登记、无规则编号，脚本作者用不用全凭自觉。本条将其核心机制（四档映射表+编译期约束+跨机器迁移）收编为正式 Rule，并补入机器校验面（WF-17..22）与路由表消费侧。关键实证：官方 dynamic-workflows SKILL.md 明确声明「there is no per-subagent tool profile or model choice」（官方 SKILL.md:112），而 workflow-model-tiers 声称其机制为官方支持（引用「SKILL.md §2 Per-subagent model」与「patterns.md #13」）——经核实官方 SKILL.md 无此节（§2=persistent reviewer）、patterns.md 仅 10 模式无 #13，该声称不成立。Rule 91 如实披露此矛盾，设 EvalWorkflowSnippet 验证前置门，不盲信用户级技能声明。
+
+91.1 **四档映射表（CCR 端口 — 本机字面量）**：
+
+| 力度 | CCR 模型（完整字面量） | 典型子代理 | 判据 |
+|------|------|------|------|
+| heavy（重） | `9e221f47-3040-4ea7-b742-20b813fb79aa/opus-1` | 规划员、架构分析、综合写作、深度分析、最终报告 | 跨模块推理/架构决策/长篇正文/安全审查/最终交付质量兜底 |
+| medium（中） | `9e221f47-3040-4ea7-b742-20b813fb79aa/sonnet-1` | 开发/调试/评审/测试修复、内容撰写、质量审查 | 标准开发/调试/评审/测试、常规内容撰写 |
+| light（轻） | `9e221f47-3040-4ea7-b742-20b813fb79aa/fast` | 查找、数据提取、格式化、简单汇总、模板填充 | 查找/提取/重排/模板填充/确定性步骤执行 |
+| minimal（最轻） | `9e221f47-3040-4ea7-b742-20b813fb79aa/haiku-1` | 分诊/路由、二元判断、关键词提取、格式校验 | 路由分诊/二元裁类型问题/关键词/格式校验 |
+
+91.2 **官方文档矛盾披露（P0 防虚构 — Rule 35.2 配套）**：workflow-model-tiers SKILL.md 声称 `model()` + `agent(name, { model })` 为「dynamic-workflows 官方支持的机制（SKILL.md §2 Per-subagent model 与 patterns.md #13）」。经核实（本任务调研）：官方 SKILL.md:112 明确写「there is no per-subagent tool profile or model choice」；官方 SKILL.md 无「§2 Per-subagent model」节（§2=persistent reviewer for continuity）；官方 patterns.md 仅 10 个模式、无 #13。**结论：该声称不成立，Rule 91 不背书其为官方机制**。Rule 91 将 workflow-model-tiers 定位为「用户级脚本编写约定」，其机制有效性须经 91.5 验证门确认后方可在脚本中使用。
+
+91.3 **用法 A — 固定映射（拓扑已知时）**：子代理职责在写脚本时确定，直接在 `agent(name, { model: "完整字面量" })` 中贴档位。示例：规划员→opus-1、开发员→sonnet-1、格式整理员→fast。优点=零运行时开销、拓扑一眼可读；缺点=改档需逐行 Edit。适用=子代理数量≤5 且职责在编排期已确定。
+
+91.4 **用法 B — MODELS 表 + 分诊路由（多子代理/力度不定时）**：
+- **B.1** 脚本顶部声明一次 MODELS 常量（四档各调 `model()` 一次）；AmendWorkflow 改档只动 MODELS 表一行。
+- **B.2** 分诊器自身永远用最轻档（minimal/haiku-1），对每个任务输出 typed key（heavy/medium/light/minimal）。
+- **B.3** 脚本内 `MODELS[route.tier]` 映射到模型；分诊与执行 1:1 时在 fan-out 回调内链式执行。
+- **B.4** 分诊器永不写模型名，只能选用户已批准的档位。
+- **B.5** 每个 fan-out 子代理禁止新建 `model()` 调用——声明一次 MODELS 表复用。
+
+91.5 **验证前置门（EvalWorkflowSnippet — 91.2 矛盾披露的配套强制）**：脚本作者首次使用 `model()` 或 `agent(name, { model })` 语法前，须以 `EvalWorkflowSnippet` 验证当前 harness 版本 facade 确实接受该语法（typecheck 通过 + ModelRef 解析正常）。验证不通过=禁止在脚本中使用 per-subagent model 语法，退化为 91.3 的 `subagent_model` run 级字段方案（全 run 统一档位）。验证通过后须在脚本注释或 plan progress.md 记录验证结果（日期+snippet 摘要）。
+
+91.6 **编译期约束**：`model()` 参数是编译期 string literal，不能用变量拼接（`model(PREFIX + "/opus-1")` 会编译失败）——必须写死完整 id。
+
+91.7 **运行中模型不可用禁悄悄降档**：运行中模型不可用时不许 try/catch 悄悄降档 fallback——按 Rule 22.3/model-routing 重试报告，保持用户批准的拓扑。
+
+91.8 **禁止全流统一强档**：不设档位也不设 `subagent_model` 属违规——分诊/格式化与架构同价=用户原始痛点；禁止分诊/格式化上 opus——反向浪费：慢且贵，质量溢出。
+
+91.9 **与既有规则衔接**：
+- **Rule 39（编排触发/机制）**：91 是 39 的 per-subagent 模型分档深化——39 管编排触发与机制（显式点名才路由/加载门槛/四机制映射），91 管脚本内每 subagent 用什么档位。39.5 机器校验边界原文不变：workflow 内部 subagent 非 hook 强制，91 守护=selftest 静态断言非 hook 阻断。
+- **Rule 68.3（组内异构分摊）**：68.3 的 model 档位在 Agent() 派发侧靠 frontmatter 实现；workflow 侧 91 通过 `model()` + `agent(name, { model })` 实现。两者共享 Rule 43.2 最小可承载档位原则和「同档可承载时优先 agent 类型差异」优先级。68.3 原文不改。
+- **Rule 22.3（失败兜底）**：91.7 引用 22.3 的升档机制——运行中模型不可用按 22.3 链处理，禁悄悄降档。
+- **Rule 43.2（最小可承载档位）**：91 四档判据对齐 43.2 的最小可承载档位原则——取可承载该子代理职责的最小档位。
+
+91.10 **跨机器迁移**：CCR 前缀 `9e221f47-3040-4ea7-b742-20b813fb79aa` 是本机特定。跨机器迁移三步：① 目标机 `ListModels` 找本地 ccr 端口下的 opus-1/sonnet-1/fast/haiku-1；② 把脚本 MODELS 表里的前缀换成本机前缀（若该机支持 bare id 可直接写 `model("opus-1")`）；③ 用 EvalWorkflowSnippet 或一次小规模 AmendWorkflow 确认档位解析正常再跑大流。
+
+91.11 **机制（零新 config 键 — 与 Rule 39/40/90 同范式）**：判定面=LLM 行为（脚本作者按本条款编写，非机器触发）；机器面=`scripts/selftest-workflow-orchestration.sh` 静态断言（WF-17..22：Rule 91 头锚/四档映射表锚/官方文档矛盾披露锚/编译期约束锚/验证前置门锚/与 39/68.3 衔接锚 + SKILL.md 路由表 collab 行枚举 Rule 91）；守护零新 config 键（config.json properties 键数维持现状，本任务零新增键；WF-12 断言不变）。消费侧=SKILL.md 卫星路由表 plan-collab-router 行 + plan-collab-router/SKILL.md 域标题行。

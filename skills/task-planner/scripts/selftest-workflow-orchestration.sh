@@ -73,9 +73,10 @@ if grep -qF 'dynamic-workflows 仅用户显式点名' "$SKILLMD"; then ok 09 "SK
 # [2026-10-10 task-v158 合并并集（宽容锚随动，含 v154 的 1-69 纪元变体）] '1-68'→'1-71' 变体族：SKILL.md 已演进 Critical Rules 1-71（:288 References 行 + :372 表行 2 处 + :225 C48 行引用），计数族扩为 'Critical Rules 1-68'|'1-71'|'1-68'|'1-71' 变体族（保持 ≥3 语义；旧纪元哨兵 1-68 保留于族内不降级）
 # [2026-10-10 task-v163 级联: SKILL 计数演进 1-72→1-75（Rule 75 落地）, 变体族再扩 75（'Critical Rules 1-(68|69|71|75)'|'1-(68|69|71|75)'），保持 ≥3 语义]
 # [2026-10-10 task-v163 合并并集解] AD-12 _pin_tol 旧纪元钉值 '1-(68|69|71)' 保留为历史字面（v163 主断言演进为 '1-(68|69|71|75)' 变体族，本注释承载 master 侧旧 pin 在位，防并集合流后 pin 断言误报漂移）
+# [2026-10-16 task-v183 Rule 91 落地] 变体族扩 91：Rule 91 已由 task-v183 收编落地（91.1-91.11），四索引文档计数行同步 1-91；L78 grep 模式 1-(68|69|71|75)→1-(68|69|71|75|91)（本行注释承载 v183 演进，旧纪元 pin 字面 1-(68|69|71) 不变）
 cnt=0
 for f in "$SKILLMD" "$CLAUDE" "$README_ZH" "$SKILLS_README"; do
-  if [ -f "$f" ]; then c="$(grep -cE 'Critical Rules 1-(68|69|71|75)' "$f" || true)"; c2="$(grep -cE '1-(68|69|71|75)' "$f" || true)"; cnt=$((cnt + c + c2)); fi
+  if [ -f "$f" ]; then c="$(grep -cE 'Critical Rules 1-(68|69|71|75|91)' "$f" || true)"; c2="$(grep -cE '1-(68|69|71|75|91)' "$f" || true)"; cnt=$((cnt + c + c2)); fi
 done
 oldres="$(grep -c 'Rules 1-39' "$SKILLMD" || true)"; oldres2="$(grep -c 'Rules 1-45' "$SKILLMD" || true)"; oldres=$((oldres + oldres2))
 if [ "$cnt" -ge 3 ] && [ "$oldres" -eq 0 ]; then ok 10 "4 索引文档 'Critical Rules 1-68/1-71/1-75' 变体族命中总和 $cnt ≥3 且 SKILL.md 旧 1-39/1-45 变体 0"; else bad 10 "1-68/1-71/1-75 族命中总和 $cnt <3 或 SKILL.md 旧 1-39/1-45 残留 $oldres（应 0）"; fi
@@ -130,6 +131,19 @@ if grep -q 'CreateWorkflow|AmendWorkflow|SaveWorkflow|EvalWorkflowSnippet' "$REG
 else
   bad 16 "register-hooks-cj.ts matcher 未扩围（缺 workflow 四工具）"
 fi
+
+# WF-17 [task-v183 Rule 91 落地] Rule 91 头锚（'### 91 ' + '模型分档'）
+if grep -q '^### 91 ' "$CRIT" && grep -q '模型分档' "$CRIT"; then ok 17 "Rule 91 头锚（### 91 + 模型分档）"; else bad 17 "critical-rules-collab.md 缺 Rule 91 头锚"; fi
+# WF-18 [task-v183] 四档映射表锚（heavy/medium/light/minimal 四力度行）
+if grep -q 'heavy（重）' "$CRIT" && grep -q 'medium（中）' "$CRIT" && grep -q 'light（轻）' "$CRIT" && grep -q 'minimal（最轻）' "$CRIT"; then ok 18 "Rule 91 四档映射表锚（heavy/medium/light/minimal）"; else bad 18 "critical-rules-collab.md 缺 Rule 91 四档映射表锚"; fi
+# WF-19 [task-v183] 官方文档矛盾披露锚（91.2 + 官方原文引述）
+if grep -q '官方文档矛盾披露' "$CRIT" && grep -q 'there is no per-subagent tool profile or model choice' "$CRIT"; then ok 19 "Rule 91 官方文档矛盾披露锚（91.2 + 官方原文）"; else bad 19 "critical-rules-collab.md 缺 Rule 91 官方文档矛盾披露锚"; fi
+# WF-20 [task-v183] 编译期约束+验证前置门锚（91.5/91.6）
+if grep -q '编译期约束' "$CRIT" && grep -q 'EvalWorkflowSnippet' "$CRIT"; then ok 20 "Rule 91 编译期约束+验证前置门锚（91.5/91.6）"; else bad 20 "critical-rules-collab.md 缺 Rule 91 编译期约束/验证门锚"; fi
+# WF-21 [task-v183] 与 Rule 39/68.3/43.2 衔接锚（91.9）
+if grep -q 'Rule 39' "$CRIT" && grep -q 'Rule 68.3' "$CRIT" && grep -q 'Rule 43.2' "$CRIT"; then ok 21 "Rule 91 与 Rule 39/68.3/43.2 衔接锚（91.9）"; else bad 21 "critical-rules-collab.md 缺 Rule 91 衔接锚"; fi
+# WF-22 [task-v183] SKILL.md 卫星路由表 collab 行枚举 Rule 91（WF-07 同构：行内 Rule 逗号枚举经 [0-9,-]* 匹配 91）
+if grep -E '^\| plan-collab-router \|' "$SKILLMD" | grep -qE 'Rule [0-9,-]*91'; then ok 22 "SKILL.md 卫星路由表 collab 行枚举 Rule 91"; else bad 22 "SKILL.md 卫星路由表 collab 行未枚举 Rule 91"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
