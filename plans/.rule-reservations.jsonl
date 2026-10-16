@@ -76,3 +76,5 @@
 {"rule":88,"status":"landed","task_id":"task-v180-scope-contract","ts":"2026-10-16","note":""}
 {"rule":90,"status":"reserved","task_id":"task-v182-git-snapshot-commits","ts":"2026-10-16","note":""}
 {"rule":90,"status":"landed","task_id":"task-v182-git-snapshot-commits","ts":"2026-10-16","note":""}
+{"rule":91,"status":"reserved","task_id":"task-v183-rule-91-model-tiering","ts":"2026-10-16","note":""}
+{"rule":91,"status":"landed","task_id":"task-v183-rule-91-model-tiering","ts":"2026-10-16","note":""}
