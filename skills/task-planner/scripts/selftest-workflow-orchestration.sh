@@ -61,7 +61,8 @@ if grep -E '^\| plan-collab-router \|' "$SKILLMD" | grep -qE 'Rule [0-9,-]*39'; 
 # WF-08 [task-v171 核心瘦身] C27 合规清单项 → 卫星路由表 collab 行（C27 合规面载体）
 if grep -qE '^\| plan-collab-router \|' "$SKILLMD"; then ok 08 "SKILL.md 卫星路由表 collab 行（C27 清单项现载体）"; else bad 08 "SKILL.md 缺 C27 现载体"; fi
 # WF-09 [task-v171 核心瘦身] 协同路由 dynamic-workflows 行（措辞演进：'（用户显式点名'→'仅用户显式点名'，L191 新指令段+协同行）
-if grep -qF 'dynamic-workflows 仅用户显式点名' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行（现措辞：仅用户显式点名）"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
+# [2026-10-18 task-v187 S6 级联] WF-09 期望措辞演进：'dynamic-workflows 仅用户显式点名'→'于用户点名 /workflow 或命中 Rule 39.8 编排条件（常设授权）时主动路由'（39.1 常设授权+39.8 主动路由，SKILL.md:207 新句；仅改既有锚期望措辞，39.x 机制锚 WF-01..06 不动）
+if grep -qF '于用户点名 /workflow 或命中 Rule 39.8 编排条件（常设授权）时主动路由' "$SKILLMD"; then ok 09 "SKILL.md 协同路由 dynamic-workflows 行（现措辞：于点名 /workflow 或命中 39.8 编排条件时主动路由）"; else bad 09 "SKILL.md 协同路由缺 dynamic-workflows 行"; fi
 # WF-10 4 索引文档 新锚 1-68 族（'Critical Rules 1-68' + '1-68' 变体）命中总和 ≥3
 #       且 SKILL.md 旧 'Rules 1-39'/'Rules 1-45' 变体残留 =0（文件缺失计 0 不 FAIL，仅对存在文件求和）
 # [2026-10-08 task-v144 合并级联] 旧口径 'Rules 1-39+1-45 总和 ≥6' 随 SKILL.md 锚演进 1-62 同步（LA-12 范式）
