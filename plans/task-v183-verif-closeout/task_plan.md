@@ -552,9 +552,13 @@ All complete（已交付——2026-10-17 由 task-v184 Phase 1 代行收口：�
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-16 | code-assistant | P-02 落地 check-vc-nonvacuous+selftest | done | 真空命令判定器+selftest 13/13 PASS | skills/task-planner/scripts/check-vc-nonvacuous.sh | Research Findings P-02 段 | subagent-state/（会话内返回） | - / 0 / ☑ |
+| 2 | 2026-10-16 | code-assistant | P-03 落地 check-step-placeholders+selftest | done | 占位/模糊步骤判定器+selftest 10/10 PASS | skills/task-planner/scripts/check-step-placeholders.sh | Research Findings P-03 段 | subagent-state/（会话内返回） | - / 0 / ☑ |
+| 3 | 2026-10-16 | code-assistant | P-06 落地 check-goal-cjk+selftest | done | CJK 字节态机分词+selftest 11/11 PASS；本计划 Goal 抽 15 词 | skills/task-planner/scripts/check-goal-cjk.sh | Research Findings P-06 段 | subagent-state/（会话内返回） | - / 0 / ☑ |
+| 4 | 2026-10-16 | code-assistant | P-07 落地 check-gate-degraded+selftest | done | [gate-degraded] 留痕判定器+selftest 16/16 PASS | skills/task-planner/scripts/check-gate-degraded.sh | Research Findings P-07 段 | subagent-state/（会话内返回） | - / 0 / ☑ |
+| 5 | 2026-10-16 | code-assistant | P-08 落地 check-rvc-coverage+selftest | done | R↔VC 双向覆盖判定器+selftest 9/9 PASS；task-v146 真阳性 | skills/task-planner/scripts/check-rvc-coverage.sh | Research Findings P-08 段 | subagent-state/（会话内返回） | - / 0 / ☑ |
+| 6 | 2026-10-16 | code-assistant | P-09 落地 check-tier-consistency+selftest | done | 档位外部复核判定器+selftest 8/8 PASS | skills/task-planner/scripts/check-tier-consistency.sh | Research Findings P-09 段 | subagent-state/（会话内返回） | - / 0 / ☑ |
+| 7 | 2026-10-16 | code-runner-agent | Phase 4 全量回归终验 | done | --fresh Total: 90 PASS=90 FAIL=0（基线 84→90 零新增失败） | plans/task-v183-verif-closeout/progress.md Phase 4 段 | progress.md Test Results | -（命令类无检查点） | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
