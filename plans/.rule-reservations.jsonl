@@ -75,3 +75,5 @@
 {"rule":90,"status":"landed","task_id":"task-v182-git-snapshot-commits","ts":"2026-10-16","note":""}
 {"rule":91,"status":"reserved","task_id":"task-v183-rule-91-model-tiering","ts":"2026-10-16","note":""}
 {"rule":91,"status":"landed","task_id":"task-v183-rule-91-model-tiering","ts":"2026-10-16","note":""}
+{"rule":92,"status":"reserved","task_id":"task-v185-file-split-discipline","ts":"2026-10-17","note":""}
+{"rule":92,"status":"landed","task_id":"task-v185-file-split-discipline","ts":"2026-10-17","note":""}
