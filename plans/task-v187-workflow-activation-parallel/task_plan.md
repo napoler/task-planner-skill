@@ -509,14 +509,14 @@ pg-w3 收 S6∥S8 → S7 全量回归（code-runner-agent）→ 四形态族清�
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 11（S-unit 终态口径：S0-S11 共 11 个交付单元；S10 首派 provider 失败+重派成功按终态计 1，失败细节载 Handoff #8/#10 与 progress） |
+| `success` | 11 |
+| `failed` | 0 |
+| `failure_rate` | 0%（>5% → STOP;>20% → 熔断回滚） |
+| `sampled_pass` | 11（每单元主进程 Read 复核=100% 抽验） |
+| `sampled_fail` | 0 |
+| `pre_check` | Q1:否（任务拆分派发非批量产品操作）/Q2:有（逐单元 Read 复核+grep 断言）/Q3:能（git revert 55fa43ca） |
+| `rollback_point` | master merge commit 55fa43ca（revert 即回滚；部署位可用主仓旧版重新 cp） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
