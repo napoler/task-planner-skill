@@ -88,6 +88,7 @@
   - 03:00 smart-merge-back V1-V5 全过 → master **55fa43ca**；worktree/分支清理完成
   - 03:02 主仓复验：VC-1..4 断言（常设授权=6/显式点名才路由=0/39.8=5/21.4.2=1/SKILL 旧措辞=0）+全量复跑 91/91 红=0（VC-5 双跑达成）
   - 03:05 部署同步（Rule 44 默认项授权）：9 文件×3 部署位（zcode/claude/cursor）精准 cp+对账 0/9 全 IDENTICAL；.drift-rhythm 运行态保留；cursor 位历史漂移（35 项，非本次范围）已报告不动
+  - 03:30 **CR APPROVED**（critic 复评终裁，检查点 subagent-state/16-critic.md 复评段；七项 ①-⑦ 全 PASS+M-1 修复闭环——cr-fix commit 059b65c；NIT×3 降级可选后续任务）
 - Files created/modified:
   - 主仓 master（merge 55fa43ca）：9 个 skills 文件；3 部署位同步副本
 - Test Results:
