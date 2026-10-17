@@ -143,6 +143,8 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 80.6 **守护机制（零新 config 键，71.7/64.6 同范式）**：① init 建档+存在性复核（缺/空即 ERROR，禁静默放行）；② check-complete.sh SESSION-LOG GATE 指针区块门控——有指针且专档缺失/空=FAIL，无指针=存量计划 SKIP，env-only 档位降级 `TASK_PLANNER_SESSION_LOG_ENFORCE`（enforce=FAIL 阻断 / warn=告警不阻断（默认）/ off=整门跳过；无 config.json 键，档位解析写法对齐 Rule 34.6 env 开关先例）；③ selftest-session-log.sh 静态断言（Rule 80 子条文本锚 + 模板锚 + 指针区块纯静态负断言）；**零新 config 键**——本规则不引入任何 config.json 键（properties 键数恒 46，env-only 开关；task-v172 CA-1/CA-2 新增 smart_inject_interval+light_tier_interval_multiplier 2 键，44→46）。
 
+80.7 **理解镜像（模型理解同步记录，task-v186）**：主进程在每条逐字条目落盘的同一动作中，紧随其后追加一条同号配对的「理解镜像」块（格式 `### #N 理解镜像 | 日期`，口径源=templates/user-session-log.md）——内容=模型当时对该条用户请求的整理理解，要点化 ≤10 行（任务对象/范围边界/验收期望/约束假设择要有；琐碎消息可一行）。**定位与约束（四条）**：① 镜像=非权威对照面，唯一用途=回溯时与逐字原文对照、定位错误是否源于理解偏差（判例锚=plans/task-v186-understanding-mirror/user-session-log.md #1）；与逐字原文冲突一律以逐字原文为准（80.4 权威序延伸），禁以镜像改写需求、禁替代 R 行逐字锚（Rule 51.1 不受影响）；② append-only 同 80.2——理解事后演进时追加「### #N 理解镜像更正 | 日期」新块（注明改判要点与依据），禁改旧镜像一字；③ 写入者=主进程单写（80.3 同面），子代理只读；④ 逐字条目与镜像块一对一配对（同编号），禁只录其一。**机制（文本优先 L0-T——对齐 86.7/89.6/90.6/92.7 范式）**：判定面=LLM 行为+模板格式锚，零新增守护脚本/零新 config 键（selftest-session-log.sh SL 断言面不扩——机器化 opt-in，仅用户显式要求才建）；首例 dogfood=task-v186 自身专档。
+
 <!-- [2026-10-12 task-v170 S4 追加] 新增 Rule 81；原因=用户判定 plans/ 堆积为严重缺陷（R2 需求锚「这是严重缺陷，必须添加归档」），完成流程末段缺一环归档步骤需制度化为机器可守的纪律；原行为=完成流程止于 check-complete.sh，无任何归档动作，plans/ 根持续堆积已完成目录 -->
 ### 81 计划完成后归档纪律（task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C57，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）
 
