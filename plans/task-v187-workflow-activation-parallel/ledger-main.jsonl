@@ -1,0 +1,3 @@
+{"tick":1,"ts":"2026-10-17T17:05:20Z","agent":"main","phase":"1","event":"drift_check","summary":"Phase 1 ALIGNED——方案六段定稿+D9 扩展均落 R1-R3 与 scope 内，git 零越范围写入（drift-checker 检查点 1-drift-checker.md）","files":[]}
+{"tick":2,"ts":"2026-10-17T17:46:53Z","agent":"main","phase":"2","event":"drift_check","summary":"Phase 2 ALIGNED——commit 3004687 六文件全落 scope，R1-R3 逐条闭合，不变量⑦在位（检查点 10-drift-checker.md）","files":[]}
+{"tick":3,"ts":"2026-10-17T18:18:30Z","agent":"main","phase":"3","event":"drift_check","summary":"Phase 3 ALIGNED（预登记）——锚级联+全量回归双跑 FAIL=0+四形态族清零；drift-checker-p3 复核紧邻补跑","files":[]}
