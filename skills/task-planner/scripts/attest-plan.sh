@@ -279,6 +279,39 @@ case "$mode" in
               echo "[attest] [gate-degraded] check-vc-nonvacuous.sh 缺失，P-02 门 fail-open 放行" >&2
             fi
           fi
+          # [2026-10-17 task-v184-S2/P-08] R→VC 双向覆盖接线。
+          # What: shell-out check-rvc-coverage.sh 补判 R 行与「R→VC 映射」表双向覆盖——上方 VC-GATE
+          #       只管 VC 自身质量，映射完整性靠模型自觉=审计漏检类②（report §5 P-08）。
+          # Why:  R1 主动发现+report §5 P-08 落地方式——v183 只落判定器未接线，本批接线=使其在
+          #       计划锁定期自动生效。档位: env TASK_PLANNER_RVC_COVERAGE_ENFORCE > config.json
+          #       rvc_coverage_enforce > enforce（结构类门 enforce 起步=task-v184 [align] 分档裁决：
+          #       warn 档实证挡不住交付声称）。off=跳过；判定器缺失 fail-open 放行；rc=2 输入异常
+          #       fail-open；mini 档不降档（结构判定与体量无关，判定器对无判定面自身 SKIP）。
+          rvc_tier="${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}"
+          case "$rvc_tier" in enforce|warn|off) ;; *)
+            rvc_tier="$(jq -r '.rvc_coverage_enforce // .properties.rvc_coverage_enforce.default // "enforce"' \
+              "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json" 2>/dev/null)" || rvc_tier="enforce"
+            case "$rvc_tier" in enforce|warn|off) ;; *) rvc_tier="enforce" ;; esac
+          esac
+          if [ "$rvc_tier" != "off" ]; then
+            rvc_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-rvc-coverage.sh"
+            if [ -f "$rvc_script" ]; then
+              bash "$rvc_script" "$plan_dir"
+              rvc_rc=$?
+              if [ "$rvc_rc" -eq 2 ]; then
+                echo "[attest] [rvc-coverage] ⚠ 判定器输入异常 rc=2（fail-open 不阻断）" >&2
+              elif [ "$rvc_rc" -eq 1 ]; then
+                if [ "$rvc_tier" = "enforce" ]; then
+                  echo "[attest] ✗ [rvc-coverage] R→VC 映射缺口（存在未被任何 VC 覆盖的 R 行或 VC 无 R 溯源），拒绝锁定(P-08/task-v184；降档 env TASK_PLANNER_RVC_COVERAGE_ENFORCE=warn)" >&2
+                  exit 1
+                else
+                  echo "[attest] [rvc-coverage] ⚠ R→VC 映射缺口（warn 档不阻断）" >&2
+                fi
+              fi
+            else
+              echo "[attest] [gate-degraded] check-rvc-coverage.sh 缺失，P-08 门 fail-open 放行" >&2
+            fi
+          fi
         fi
       fi
     else

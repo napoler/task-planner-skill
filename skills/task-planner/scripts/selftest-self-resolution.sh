@@ -120,7 +120,7 @@ fi
 # SR-09 零新 config 键——properties 键数 = 42（同 WF-12 口径；jq 缺失打 SKIPPED 不 FAIL）[2026-10-08 task-v144 合并级联: v145 已合法加 2 键,FF 守护断言 42 为准]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "48" ]; then ok 09 "config.json properties 键数 48（v145 2 键 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 09 "config.json properties 键数=$keys（应 48）"; fi
+  if [ "$keys" = "53" ]; then ok 09 "config.json properties 键数 53（v145 2 键 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 09 "config.json properties 键数=$keys（应 53）"; fi
 else
   printf 'SR-09 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

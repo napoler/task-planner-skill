@@ -148,6 +148,56 @@
       "default": "enforce",
       "description": "VC 非真空命令门控档位（P-02/task-v184，scripts/check-vc-nonvacuous.sh，v183 落地判定器+本批接线）：校验 verification.md 每条 VC 的 Verify command 是否真实引用本 VC 声称的产出物——拦截 true/echo ok 类真空命令（正向锚收紧=命令必须引用产出物，report §5.1 修订 10）；enforce=存在真空阻断锁定/complete(exit 1) / warn=仅告警 / off=关闭。接线=attest-plan.sh VC 门段+check-complete.sh VC-GATE 段尾双点。档位解析优先级: env TASK_PLANNER_VC_NONVACUOUS_ENFORCE > 本键 > enforce（jq/config 缺失回落 enforce）。结构类门 enforce 起步=task-v184 [align] 分档裁决（warn 实证挡不住交付声称）"
     },
+    "rvc_coverage_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "R→VC 双向覆盖门控档位（P-08/task-v184，scripts/check-rvc-coverage.sh，v183 落地判定器+本批接线）：校验 task_plan.md R 行（「🎯 用户需求原文」区）与「R→VC 映射」表双向覆盖——每条 R ≥1 VC 且每 VC 溯源 ≥1 R，缺映射=FAIL（R 孤儿/VC 孤儿，exit 1）；enforce=缺映射阻断锁定/complete(exit 1) / warn=仅告警 / off=关闭。接线=attest-plan.sh VC 链+check-complete.sh VC-GATE 段尾双点。档位解析优先级: env TASK_PLANNER_RVC_COVERAGE_ENFORCE > 本键 > enforce（jq/config 缺失回落 enforce）。结构类门 enforce 起步=task-v184 [align] 分档裁决（warn 实证挡不住交付声称）"
+    },
+    "step_placeholder_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "步骤占位符门控档位（P-03/task-v184，scripts/check-step-placeholders.sh）：硬占位符（TBD/待定/占位类）enforce 拒锁、软模糊词（「优化一下」类）warn 留痕，分档在判定器内；enforce=检出硬占位符阻断锁定(exit 1) / warn=仅告警留痕 / off=关闭。接线=attest-plan.sh 锁定门。档位解析优先级: env TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE > 本键 > enforce（jq/config 缺失回落 enforce）。结构类门 enforce 起步=task-v184 [align] 分档裁决（warn 实证挡不住交付声称）"
+    },
+    "tier_consistency_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "档位一致性门控档位（P-09/task-v184，scripts/check-tier-consistency.sh）：plan_tier 声明与 Rule 38.1 体量判据（scope 文件数/预计耗时/模块数）外部复核，声明与判据不符=FAIL；enforce=不符阻断锁定(exit 1) / warn=仅告警 / off=关闭。接线=attest-plan.sh 档位段。档位解析优先级: env TASK_PLANNER_TIER_CONSISTENCY_ENFORCE > 本键 > enforce（jq/config 缺失回落 enforce）。结构类门 enforce 起步=task-v184 [align] 分档裁决（warn 实证挡不住交付声称）"
+    },
+    "goal_cjk_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "纯中文 Goal CJK 分词漂移门控档位（P-06/task-v184，scripts/check-goal-cjk.sh）：检测 Goal 纯中文表述的分词漂移（同义改写致语义偏移）；enforce=检出漂移阻断(exit 1) / warn=仅告警 / off=关闭。默认 warn=阈值类门语料校准先行（task-v184 [align] 分档裁决：阈值/语义类门 warn 起步，语料实证校准后再升 enforce）。接线=check-3file-gate.sh 第 6 条件（S5 执行）。档位解析优先级: env TASK_PLANNER_GOAL_CJK_ENFORCE > 本键 > warn（jq/config 缺失回落 warn）"
+    },
+    "claim_match_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "warn",
+      "description": "证据声明内容核对门控档位（task-v184 S6，check-evidence-anchor.sh CLAIM_MATCH 内容核对层）：证据格声明串↔证据文件内容核对（P-01 路径锚层之上的内容级核对，拦截张冠李戴）；enforce=内容不符阻断(exit 1) / warn=仅告警 / off=关闭。默认 warn=146 存量误报基线先行（观察期校准，误报收敛后再升 enforce）。档位解析优先级: env TASK_PLANNER_CLAIM_MATCH_ENFORCE > 本键 > warn（jq/config 缺失回落 warn）"
+    },
     "rescue_chain_enforce": {
       "type": "string",
       "enum": [

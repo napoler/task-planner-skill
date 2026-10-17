@@ -189,7 +189,7 @@ fi
 #      选型加了机器门控键，属机制漂移（需走 Rule 36 条款流程）；jq 缺失=环境降级非内容漂移（MA-10 先例）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "48" ]; then ok 07 "config.json properties 键数 48（task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 07 "config.json properties 键数=$keys（应 48，未授权新键）"; fi
+  if [ "$keys" = "53" ]; then ok 07 "config.json properties 键数 53（task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 07 "config.json properties 键数=$keys（应 53，未授权新键）"; fi
 else
   skip 07 "jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）"
 fi

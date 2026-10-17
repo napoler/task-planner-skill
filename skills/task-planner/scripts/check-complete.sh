@@ -827,6 +827,50 @@ if [ "$python_rc" -eq 0 ]; then
         return 0
     }
 
+    # [2026-10-17 task-v184-S2/P-08] R→VC 双向覆盖门（终验期消费面；与 attest-plan.sh 锁定期接线同源双点）。
+    # What: run_rvc_coverage() 克隆 run_vc_nonvacuous 范式——档位解析 env > config > enforce、
+    #       判定器缺失/输入异常 fail-open、PASS 走 stdout / FAIL 明细走 stderr、enforce=exit 1。
+    # Why:  R 行无 VC 覆盖（R 孤儿）或 VC 无 R 溯源（VC 孤儿）使 Goal 验证形同虚设（审计漏检类②）；
+    #       接线后终验期自动拦截（用户 R1）。结构类门 enforce 起步=task-v184 [align] 分档裁决。
+    resolve_rvc_coverage_tier() {
+        local m="${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        m="$(jq -r '.rvc_coverage_enforce // .properties.rvc_coverage_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        printf 'enforce'
+    }
+    RVC_COVERAGE_TIER="$(resolve_rvc_coverage_tier)"
+    run_rvc_coverage() {
+        local rvc_out rvc_rc
+        [ "$RVC_COVERAGE_TIER" = "off" ] && return 0
+        if [ ! -f "$SKILL_ROOT/scripts/check-rvc-coverage.sh" ]; then
+            printf '[rvc-coverage] ⚠ 门脚本缺失（fail-open 不阻断）: %s\n' \
+                "$SKILL_ROOT/scripts/check-rvc-coverage.sh" >&2
+            return 0
+        fi
+        rvc_out="$(bash "$SKILL_ROOT/scripts/check-rvc-coverage.sh" "$PLAN_DIR_GUESS")"
+        rvc_rc=$?
+        if [ "$rvc_rc" -eq 2 ]; then
+            printf '[rvc-coverage] ⚠ 输入异常 rc=2（fail-open 不阻断：plan-dir/task_plan.md 缺失）\n' >&2
+            return 0
+        fi
+        if [ "$rvc_rc" -eq 0 ]; then
+            printf '%s\n' "$rvc_out"
+            return 0
+        fi
+        printf '%s\n' "$rvc_out" >&2
+        case "$RVC_COVERAGE_TIER" in
+            enforce)
+                printf '[rvc-coverage] ✗ RVC-COVERAGE FAILED (P-08/task-v184, rvc_coverage_enforce=enforce): R→VC 映射缺口（R 行无 VC 覆盖或 VC 无 R 溯源）— 拒 COMPLETE: 补「R→VC 映射」表/VC 行 R 引用后重跑（降档 env TASK_PLANNER_RVC_COVERAGE_ENFORCE=warn）\n' >&2
+                exit 1
+                ;;
+            *)
+                printf '[rvc-coverage] ⚠ RVC-COVERAGE WARNING (P-08, warn 档不阻断: TASK_PLANNER_RVC_COVERAGE_ENFORCE=enforce 可升级)\n' >&2
+                ;;
+        esac
+        return 0
+    }
+
     # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 档降档: 判定前置 grep 计划文件(init 复制产物)
     # 「plan_tier: mini」(standard 模板标记 plan_tier: standard 天然不命中);
     # mini: VC 最低 5→2 / 每 Phase V-N 阈值 2→1 / 无 V-N 映射行不阻断; 非 mini 变量取原值=零改动
@@ -984,6 +1028,8 @@ if [ "$python_rc" -eq 0 ]; then
         # [2026-10-17 task-v184-S1/P-02] VC 非真空门接线：VC-GATE 计数通过≠命令真实——补判真空命令
         # （调用点在 VC-GATE 段尾：计数 FAIL 且 enforce 时已 exit 1 到不了这里；warn 档继续往下仍补判）
         run_vc_nonvacuous
+        # [2026-10-17 task-v184-S2/P-08] 同点位接线
+        run_rvc_coverage
     fi
 
     # [2026-10-05 task-v132 G1 (Rule 51.1a) R-COVERAGE 门 — 72h 事故修复: 完成声称对照(51.3)的机器化]
