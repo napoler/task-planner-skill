@@ -91,6 +91,7 @@
   - 03:20 [judge] 变更决策后评判：D9/D10/D12 三次扩展均过 Rule 73.2 对齐三问（对象锚在位/语义同向/纯增量或替代有据）——扩展合法，无范围漂移
   - 03:30 **CR APPROVED**（critic 复评终裁，检查点 subagent-state/16-critic.md 复评段；七项 ①-⑦ 全 PASS+M-1 修复闭环——cr-fix commit 059b65c；NIT×3 降级可选后续任务）
   - 03:40 [align] Phase complete 前对齐评判：三 Phase 产出与 R1-R3 逐条闭合（drift-checker×3 ALIGNED+critic 七项 PASS 承载），VC-1..VC6 断言全过
+  - 03:55 [archive] 归档守卫拒绝登记（Rule 81.3）：active-pointer/session 活跃（本会话进行中）——按 81.3 保持原位不强移，归档由会话结束后下次触达或 gc 承接；check-complete exit 0 已达成（81.1 条件满足）
   - 03:45 [judge] 合并回前评判：worktree 4 commits 全落 scope（D12 扩展面补录后）、master 无前进无冲突、全量回归双绿——合并条件满足（smart-merge-back V1-V5 全过佐证）
 - Files created/modified:
   - 主仓 master（merge 55fa43ca）：9 个 skills 文件；3 部署位同步副本
