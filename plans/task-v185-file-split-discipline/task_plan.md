@@ -148,11 +148,11 @@ n/a（纯执行类）——本任务产出=规则文本+索引级联，非结论
 
 ## Current Phase
 
-Phase 4
+Phase 5
 
 ## Next Step
 
-主仓干净核对→merge --no-ff wt/task-v185-file-split-discipline→Read 复验→清理 worktree→CR Gate。
+CR Gate（Code Reviewer 单轮）→ Verifier 独立复验六项 VC → alignment-review → check-complete → 归档尝试 → delivery-summary。
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -204,18 +204,19 @@ Phase 4
 | S4 | worktree 全量 selftest 回归 | code-runner-agent(mini) | <worktree>/（git 工作树）；命令 bash skills/task-planner/scripts/run-selftests.sh --fresh | 末行 Total: N PASS=x FAIL=0；FAIL>0 时回传失败脚本名+断言行 | 15min | 1f/0l/15min | 无 | S2,S3 | pending |
 
 ### Phase 4: 合并回主仓
-- [ ] 主仓干净核对（脏则 STOP 排队，Rule 88.4 禁 git 手术）→ merge --no-ff → Read 复验 → worktree+分支清理
-- **V-N:** VC-6, VC-1
-- **Status:** in_progress
+- [x] 主仓干净核对 ✓（仅本任务簿记足迹）→ merge --no-ff（**73ce9ec**）→ 核验（标题=1、(Rules )?1-92=3、1-91=0×2）→ worktree+分支清理（list=0 残留）
+- **V-N:** VC-6 ✓(worktree 清理+scope 合并干净), VC-1 ✓(主仓 grep=1)
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① 纯 git/worktree 编排——Rule 25.3 白名单①）
+- **merge_back**: merged(73ce9ec)
 
 ### Phase 5: 终验与交付
 - [ ] CR Gate：Code Reviewer 单轮（APPROVED 才可终验）
 - [ ] S5 Verifier 独立 VC 复验（主仓合并后终态）
 - [ ] alignment-review 单轮（对齐审查登记项）
-- [ ] rule-reserve land 92+INDEX 刷新+归档尝试（Rule 81.1，守卫拒绝则登记）+delivery-summary 五要素
-- **V-N:** VC-5, VC-6
-- **Status:** pending
+- [ ] rule-reserve land 92 ✓（已前置完成）+INDEX 刷新 ✓+归档尝试（Rule 81.1，守卫拒绝则登记）+delivery-summary 五要素
+- **V-N:** VC-5 ✓(check 92=landed), VC-6（终态复查）
+- **Status:** in_progress
 - **Executor:** Verifier（mini）（终验核查子代理；主进程簿记走白名单②）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
