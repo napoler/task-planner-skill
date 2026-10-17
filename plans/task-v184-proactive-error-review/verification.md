@@ -2,7 +2,7 @@
 
 ## Goal (1 sentence)
 
-将 5 个未接线判定器（P-02/03/06/08/09）接进 attest/check-3file-gate/check-complete 自动门链实现规划期/翻转期/终验期三时点主动拦截，并补齐内容错误审查层（证据声明↔内容机器核对 + Rule 84.6 内容审查门 + 注入式行为回归），全量回归 0 新增失败。
+将 5 个未接线判定器（P-02/03/06/08/09）接进 attest/check-3file-gate/check-complete 自动门链实现规划期/翻转期/终验期三时点主动拦截，并补齐内容错误审查层（证据声明↔内容机器核对 + Rule 84.7 内容审查门 + 注入式行为回归），全量回归 0 新增失败。
 
 ---
 
@@ -20,7 +20,7 @@
 - [ ] VC-3: 内容核对层——证据格声明串与证据文件实际内容不符→FAIL，相符→PASS，存量误报率量化
   **Verify command**: `bash skills/task-planner/scripts/check-evidence-anchor.sh /tmp/claim-mismatch-fixture; echo rc_mismatch=$?; bash skills/task-planner/scripts/check-evidence-anchor.sh /tmp/claim-match-fixture; echo rc_match=$?; bash skills/task-planner/scripts/selftest-evidence-anchor.sh | tail -3`
   Evidence: rc_mismatch≠0 / rc_match=0 / selftest FAIL=0；146 存量误报清单入 findings.md Research Findings
-- [ ] VC-4: Rule 84.6 内容审查门条款落地两载体+静态锚
+- [ ] VC-4: Rule 84.7 内容审查门条款落地两载体+静态锚
   **Verify command**: `grep -c '84\.6' skills/verification-gate/references/critical-rules-verification.md; grep -c '84\.6' skills/verification-gate/SKILL.md`
   Evidence: 两计数各 ≥1；selftest 静态锚 PASS；alignment-review 结论 APPROVED 入 findings
 - [ ] VC-5: 无回归破坏——全量 selftest 0 新增失败，registry 双向一致
@@ -72,14 +72,14 @@ Status: `pending` Last verified: —
 
 ### Phase 3: 内容错误审查层（核心——R3）
 
-**Goal**: check-evidence-anchor 增 CLAIM_MATCH 内容核对层 + Rule 84.6 内容审查门条款两载体 + selftest 断言。
+**Goal**: check-evidence-anchor 增 CLAIM_MATCH 内容核对层 + Rule 84.7 内容审查门条款两载体 + selftest 断言。
 
 **Depends on**: Phase 1（S6-S8 与 Phase 2 无文件交集，可交错但按 Phase 序）
 
 **Done when**:
 - [ ] S6 内容核对层落地（warn 起步）+ 146 存量误报基线量化入 findings
 - [ ] S7 selftest-evidence-anchor 扩断言 + registry 一致
-- [ ] S8 84.6 条款两载体 + alignment-review APPROVED
+- [ ] S8 84.7 条款两载体 + alignment-review APPROVED
 
 **Verification**:
 - [ ] V-3.1: 内容不符夹具 exit≠0 + 相符夹具 exit=0（mapped to VC-3）
@@ -133,7 +133,7 @@ Status: `pending` Last verified: —
 | plans/verification-upgrade-2026-10-16/report.md §5/§5.1/§7 | 接线点对照「落地方式」列原文逐条一致 | ☐ |
 | plans/task-v183-verif-closeout/delivery-summary.md | 5 风险与本计划 CA 表逐条对应 | ☐ |
 | check-complete.sh:431 shell-out 先例 | S1-S4 接线形态对照先例 | ☐ |
-| critical-rules-verification.md Rule 84 现行文 | 84.6 子条不与 84.1-84.5 冲突 | ☐ |
+| critical-rules-verification.md Rule 84 现行文 | 84.7 子条不与 84.1-84.5 冲突 | ☐ |
 
 ## 委派统计复验（Rule 25.4）
 

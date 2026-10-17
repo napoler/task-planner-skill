@@ -27,7 +27,7 @@ execution_lane: L1
 | R0 | VC-2 | 审查判据=三类漏检→接线面映射（report §5 落地方式列逐条对齐）；「主动拦截生效」即审查结论的可观察落地（R0 为手段行，映射 VC-2 收口） |
 | R1 | VC-2 | 5 判定器接线后：注入缺陷计划走真实门链（attest/check-3file-gate/check-complete）exit≠0 且留痕；此前=手动调用不主动（v183 风险①） |
 | R2 | VC-2, VC-5 | 偏差/偏移类（P-06 CJK 漂移/P-08 R→VC 缺映射）在翻转期+终验期自动拦截；纠正走既有 Rule 31/64 SOP 不新建 |
-| R3 | VC-3, VC-4 | 内容级核对层（声明串↔证据文件内容不符→FAIL）+ 内容审查门规则条款（84.6）落地；语义级零机器检查缺口（report §7.3 high）收窄 |
+| R3 | VC-3, VC-4 | 内容级核对层（声明串↔证据文件内容不符→FAIL）+ 内容审查门规则条款（84.7）落地；语义级零机器检查缺口（report §7.3 high）收窄 |
 
 ### 🗣️ 用户会话逐字记录（Rule 80 — 只写不改专档指针）
 <!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/<task-id>/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->
@@ -47,7 +47,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | 规划期（attest 锁定门） | 真空 VC 命令/模糊占位步骤/R→VC 缺映射/档位自声明——四类全无自动拦截（report §7.1 P-02/03/08/09） | Phase 2 S1-S4 接线 attest-plan.sh | VC-2 |
 | 翻转期（Phase complete 门） | 纯中文 Goal CJK 分词空转→漂移静默跳过（P-06；check-3file-gate 无第 6 条件消费面） | Phase 2 S5 接线 check-3file-gate.sh+语料校准 | VC-2 |
 | 终验期（check-complete 门） | 6 新判定器未被任何门链调用=「检测器发货即死」（v183 风险①；report §5.1 修订 3 诊断的失效模式） | Phase 2 S1/S2 接线 VC-GATE 段 | VC-2 |
-| 内容层（证据↔内容一致性） | 全部机器检查止于格式/计数/存在性/词法/路径归属——文件真存在但内容与声明无关=零检查（report §7.3 high，v183 风险③） | Phase 3 S6/S7 内容核对层 + S8 84.6 条款 | VC-3, VC-4 |
+| 内容层（证据↔内容一致性） | 全部机器检查止于格式/计数/存在性/词法/路径归属——文件真存在但内容与声明无关=零检查（report §7.3 high，v183 风险③） | Phase 3 S6/S7 内容核对层 + S8 84.7 条款 | VC-3, VC-4 |
 | 检查器自身可靠性 | selftest 主体是静态文本锚，门控判定逻辑无行为级回归（report §7.3） | Phase 2 各 S-unit 注入式验收（§5.1 修订 3 标准） | VC-2, VC-5 |
 | 纠正闭环（及时纠偏） | 门 fired 后纠正 SOP 已在位（Rule 31 错误四步/Rule 61 drift 三态/Rule 64 留痕）——缺陷在「门不自动 fired」而非「纠正缺位」 | 不新建，由接线激活 | VC-2 |
 
@@ -58,13 +58,13 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
      WHY: 用户 R2「强化四文件，确保哪些不变/哪些可变/哪些学得」；无声明=执行期风格/范围漂移无对照物（R1 实证）。 -->
 | 三态 | 条目 | 来源锚 |
 |------|------|--------|
-| 🔒 不变量 | Goal 一句话/R1-R3 原文/VC-1..5 判定标准/全量回归 0 新增失败/§5.1 修订 3 注入式验收标准/84.6 子条承载不新增 Rule 编号 | 本文件 Goal/VC 表/Decisions Made |
+| 🔒 不变量 | Goal 一句话/R1-R3 原文/VC-1..5 判定标准/全量回归 0 新增失败/§5.1 修订 3 注入式验收标准/84.7 子条承载不新增 Rule 编号 | 本文件 Goal/VC 表/Decisions Made |
 | 🔒 不变量 | 既有门行为不回退：check-complete 既有门链（R-COVERAGE/VC-GATE/STATE-CONSISTENCY/EVIDENCE-ANCHOR 等）当前语义保持 | skills/task-planner/scripts/check-complete.sh 现状 |
 | 🔀 可变量 | 接线实现细节（shell-out 位置/输出前缀格式）/注入夹具设计/内容核对层声明串提取范围/各门档位键默认值（warn 起步） | Phase 内自主调+登记 Decisions |
 | 📈 学得量 | 各判定器对存量 146 计划的误报率数据/语料校准阈值/内容核对层误报样本 | findings.md |
 
 ## Goal
-将 task-planner 的错误发现能力从「被动记录/手动调用」升级为「主动拦截」：v183 落地的 5 个未接线判定器（P-02/03/06/08/09）接进 attest/check-3file-gate/check-complete 自动门链使规划期/翻转期/终验期三时点自动跑，并补齐内容错误审查层（证据声明↔文件内容机器核对 + Rule 84.6 内容审查门 + 注入式行为回归），全量回归 0 新增失败。
+将 task-planner 的错误发现能力从「被动记录/手动调用」升级为「主动拦截」：v183 落地的 5 个未接线判定器（P-02/03/06/08/09）接进 attest/check-3file-gate/check-complete 自动门链使规划期/翻转期/终验期三时点自动跑，并补齐内容错误审查层（证据声明↔文件内容机器核对 + Rule 84.7 内容审查门 + 注入式行为回归），全量回归 0 新增失败。
 
 ## 🔍 Code Review 配置
 
@@ -80,9 +80,9 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | `worktree_path` | `n/a（isolation=direct，见隔离决策）` | §十一 隔离决策已有字段 |
 | `scope_files` | `[skills/task-planner/scripts/attest-plan.sh, skills/task-planner/scripts/check-complete.sh, skills/task-planner/scripts/check-3file-gate.sh, skills/task-planner/scripts/check-evidence-anchor.sh, skills/task-planner/scripts/selftest-evidence-anchor.sh, skills/task-planner/scripts/selftest-registry.tsv, skills/task-planner/scripts/selftest-gate-injection.sh(新), skills/task-planner/config.json, skills/verification-gate/SKILL.md, skills/verification-gate/references/critical-rules-verification.md, plans/task-v184-proactive-error-review/**, plans/task-v183-verif-closeout/**]` | 从「执行范围限制」解析,并发检测基础 |
 | `interaction_mode` | `ask` | Rule 28 交互模式：ask=关键决策点给选项；silent=静默+静默决策清单登记 |
-| `对齐审查` | `[登记] 84.6 条款与 SKILL.md/verification-gate 消费面引用在完成前跑 alignment-review 对齐审查` | Rule 42.6 消费：任务产出或更新的文档在完成前跑 alignment-review 对齐审查（标准收尾流程）;文档更新前跑版本一致性校验（未经校验不追加）;变更记录随交付物落盘;mini 档豁免（42.6.4） |
+| `对齐审查` | `[登记] 84.7 条款与 SKILL.md/verification-gate 消费面引用在完成前跑 alignment-review 对齐审查` | Rule 42.6 消费：任务产出或更新的文档在完成前跑 alignment-review 对齐审查（标准收尾流程）;文档更新前跑版本一致性校验（未经校验不追加）;变更记录随交付物落盘;mini 档豁免（42.6.4） |
 | `自动超时默认项` | `[① v183 git 收口提交=执行(计划内授权,超时 5min 默认执行)；② 部署位同步=否(默认不部署,登记遗留)；③ 内容核对层档位=warn(默认,存量零误报基线后再议 enforce)；④ P-06 校准语料=取 plans/archive 存量(默认)]` | Rule 44 消费：本任务所有 2+ 选项询问点逐个登记默认选项（推荐项）与自动超时时长（默认 5 分钟,可覆盖）;低区分度选项（产出一致仅步骤/耗时差异）不询问、直接裁决并登记理由（44.2）;用户超时未答复按默认选项自动执行+登记自动裁决记录五要素（44.3）;mini 档豁免（44.4） |
-| `new_rule` | 留空（内容审查门以 Rule 84.6 子条承载于 verification-gate 域，不新增编号——避免 1-91→1-92 纪元锚级联，判例见 task-v178/v183） | Rule 20.6：本任务新增 Rule 编号时填写（attest 自动预留+查重；无则留空） |
+| `new_rule` | 留空（内容审查门以 Rule 84.7 子条承载于 verification-gate 域，不新增编号——避免 1-91→1-92 纪元锚级联，判例见 task-v178/v183） | Rule 20.6：本任务新增 Rule 编号时填写（attest 自动预留+查重；无则留空） |
 | `质量审查工具` | `[Verifier（Phase 4 独立验证+注入夹具复核）+ alignment-review（S8 文档对齐收尾）+ Code Reviewer（CR Gate）]` | Rule 42 消费登记（42.4）：任务涉及质量审查面时按 42.2 四级检测（含内置 review-library 兜底池）,填 技能名/既有 agent 名/待补充 S-unit 指针;缺口按 42.3 补建并登记 S-unit;执行期必须用登记工具;mini 档豁免（42.5） |
 
 ## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
@@ -105,7 +105,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | VC-1 | v183 收口完成：check-complete exit 0、计划归档、Rule 90 首尾双锚 git 提交落库、基线取证 | 运行 check-complete.sh + archive-plan.sh + git log 对照 + 全量回归 | `bash skills/task-planner/scripts/check-complete.sh plans/task-v183-verif-closeout/task_plan.md`（exit 0）；`ls plans/archive/ | grep v183`；`git log --oneline -3`；`bash skills/task-planner/scripts/run-selftests.sh --fresh`（Total=90 FAIL=0） |
 | VC-2 | 主动拦截生效：5 判定器接线后，逐门注入缺陷计划走**真实门链**被拦（exit≠0+留痕）；干净夹具+活计划全量零误报 | 每判定器一组注入夹具跑 attest-plan.sh / check-3file-gate.sh / check-complete.sh | `bash skills/task-planner/scripts/selftest-gate-injection.sh`（新，断言 ≥5 门注入全 exit≠0 且留痕行在位 + 干净夹具 exit=0）；`for p in plans/task-v18*/; do bash <各 check> $p; done` 零误报 |
 | VC-3 | 内容核对层落地：证据格声明串（Total/exit=/ PASS=/FAIL= 形态）与证据文件实际内容不符→FAIL；相符→PASS；存量计划误报率量化登记 | 注入内容不符夹具 + 存量基线扫描 | `bash skills/task-planner/scripts/check-evidence-anchor.sh <内容不符夹具目录>`（exit≠0）；`bash skills/task-planner/scripts/selftest-evidence-anchor.sh`（新断言 PASS）；146 存量误报清单入 findings.md |
-| VC-4 | 内容审查门规则条款落地：verification-gate 域 Rule 84.6 子条（内容型交付物终验前独立内容审查+结论落盘）+ SKILL.md 消费面引用 + 静态锚 | grep 锚核对 + alignment-review | `grep -c '84\.6' skills/verification-gate/references/critical-rules-verification.md`（≥1）；`grep -c '84\.6' skills/verification-gate/SKILL.md`（≥1）；selftest 静态锚 PASS |
+| VC-4 | 内容审查门规则条款落地：verification-gate 域 Rule 84.7 子条（内容型交付物终验前独立内容审查+结论落盘）+ SKILL.md 消费面引用 + 静态锚 | grep 锚核对 + alignment-review | `grep -c '84\.6' skills/verification-gate/references/critical-rules-verification.md`（≥1）；`grep -c '84\.6' skills/verification-gate/SKILL.md`（≥1）；selftest 静态锚 PASS |
 | VC-5 | 无回归破坏：全量 selftest 0 新增失败，registry 双向一致 | 全量回归 + registry 校验 | `bash skills/task-planner/scripts/run-selftests.sh --fresh`（FAIL=0 且 Total ≥ 90）；`bash skills/task-planner/scripts/selftest-registry.sh`（rows=actual） |
 
 **终验规则**：
@@ -145,7 +145,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | G1 | v183 收口 | 未提交基座落库+基线取证 | check-complete exit 0 + git log 首锚 + 90/90 全绿 | Phase 1 | pending |
 | G2 | 五门接线 | 规划/翻转/终验三时点自动拦截 | selftest-gate-injection.sh 全 PASS（≥5 门注入 exit≠0+干净 exit=0） | S1-S5 | pending |
 | G3 | 内容核对层 | 声明串↔证据内容不符可检出 | 内容不符夹具 exit≠0 + 存量误报率入 findings | S6-S7 | pending |
-| G4 | 审查门条款 | 84.6 内容审查门制度化 | grep 锚 ≥1×2 载体 + selftest 静态锚 PASS | S8 | pending |
+| G4 | 审查门条款 | 84.7 内容审查门制度化 | grep 锚 ≥1×2 载体 + selftest 静态锚 PASS | S8 | pending |
 | G5 | 零回归收尾 | 全量回归+终验+交付 | run-selftests --fresh FAIL=0 + registry rows=actual | S9-S10 | pending |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
@@ -162,7 +162,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | 判定器（只读消费+档位键） | skills/task-planner/scripts/{check-vc-nonvacuous.sh, check-step-placeholders.sh, check-goal-cjk.sh, check-rvc-coverage.sh, check-tier-consistency.sh, check-evidence-anchor.sh}（后 6 者仅当接线需要输出/接口微调时改，逐项登记 CA 表） | 判定器判定逻辑重构 |
 | selftest | skills/task-planner/scripts/{selftest-gate-injection.sh(新), selftest-evidence-anchor.sh, selftest-registry.tsv} | 其他既有 selftest（键数断言级联所需的最小同步除外，逐处登记） |
 | 配置 | skills/task-planner/config.json（仅档位键新增/调整） | 其他配置 |
-| 规则文档 | skills/verification-gate/{SKILL.md, references/critical-rules-verification.md}（84.6 子条+消费面引用） | 其他卫星/核心 critical-rules（纪元锚级联所需最小同步除外，逐处登记） |
+| 规则文档 | skills/verification-gate/{SKILL.md, references/critical-rules-verification.md}（84.7 子条+消费面引用） | 其他卫星/核心 critical-rules（纪元锚级联所需最小同步除外，逐处登记） |
 | 计划簿记 | plans/task-v184-proactive-error-review/**, plans/task-v183-verif-closeout/**（收口簿记+归档）, plans/INDEX.md（归档刷新） | 其他 plans/* |
 
 **执行前自我检查:**
@@ -187,8 +187,8 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | CA-2 | skills/task-planner/scripts/check-complete.sh（VC-GATE 段） | 修改 | 增量 | report §5 P-02/P-08 落地方式列 | S1/S2 接线 vc-nonvacuous + rvc-coverage |
 | CA-3 | skills/task-planner/scripts/check-3file-gate.sh（条件链） | 修改 | 增量 | report §5 P-06「接线第 6 条件消费面」 | S5 接线 goal-cjk（阈值经语料校准） |
 | CA-4 | skills/task-planner/scripts/check-evidence-anchor.sh（内容核对层） | 修改 | 增量 | R3 核心+report §7.3 语义级缺口收窄第一层 | S6 新增声明串↔证据文件内容核对（Total/exit=/PASS=/FAIL= 形态，warn 起步） |
-| CA-5 | skills/verification-gate/references/critical-rules-verification.md（Rule 84 段尾） | 修改 | 增量 | R3 核心；§四.6 文本条款优先 | S8 新增 84.6 内容审查门子条 |
-| CA-6 | skills/verification-gate/SKILL.md（终验 SOP 段） | 修改 | 增量 | 84.6 消费面引用 | S8 增引用行 |
+| CA-5 | skills/verification-gate/references/critical-rules-verification.md（Rule 84 段尾） | 修改 | 增量 | R3 核心；§四.6 文本条款优先 | S8 新增 84.7 内容审查门子条 |
+| CA-6 | skills/verification-gate/SKILL.md（终验 SOP 段） | 修改 | 增量 | 84.7 消费面引用 | S8 增引用行 |
 | CA-7 | skills/task-planner/scripts/selftest-gate-injection.sh | 新增 | 增量 | report §5.1 修订 3 注入式验收标准 | S1-S5 验收载体：每门注入夹具→真实链 exit≠0 断言 |
 | CA-8 | skills/task-planner/scripts/selftest-evidence-anchor.sh | 修改 | 增量 | CA-4 行为断言 | S7 扩内容核对断言 |
 | CA-9 | skills/task-planner/config.json | 修改 | 增量 | 档位键 | 结构类（vc_nonvacuous/step_placeholder/rvc_coverage/tier_consistency）=enforce；阈值类（goal_cjk/claim_match）=warn；键数断言级联逐处同步 |
@@ -210,7 +210,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | 项目内部文档/知识库 | 验证机制升级审计报告（提案 P-01..P-10+终审修订 10 条+§7.3 缺口） | plans/verification-upgrade-2026-10-16/report.md（§5/§5.1/§7） | 必读 | ☑ |
 | 项目内部文档/知识库 | v183 交付总结（7 判定器落地态+5 风险） | plans/task-v183-verif-closeout/delivery-summary.md | 必读 | ☑ |
 | 项目内部文档/知识库 | 接线范式先例（shell-out 前置块+fail-open+档位键） | skills/task-planner/scripts/check-complete.sh:431（DELEGATION shell-out）+ check-evidence-anchor 接线段 | 必读 | ☑ |
-| 项目内部文档/知识库 | Rule 84 现行全文（84.6 子条落点） | skills/verification-gate/references/critical-rules-verification.md | 必读 | ☐ |
+| 项目内部文档/知识库 | Rule 84 现行全文（84.7 子条落点） | skills/verification-gate/references/critical-rules-verification.md | 必读 | ☐ |
 | 官方文档 | bash/awk/grep 行为（tr 尾连字符/locale 判例已内化） | 本仓实证（findings P-05/P-06 判例） | 参考 | ☑ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
@@ -226,7 +226,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 **核心问题**: 判定器已存在但不被自动调用（主动发现缺失），且内容级错误零机器检查（内容审查缺失）——两个缺口使技能止于「记录/收集」而达不到用户要的「主动发现+内容审查」。
 
 **核心问题判断**:
-- [x] 核心问题解决后，产品/结果能交付吗？（三时点自动拦截+内容核对层+84.6 条款=可观察的发现能力提升）
+- [x] 核心问题解决后，产品/结果能交付吗？（三时点自动拦截+内容核对层+84.7 条款=可观察的发现能力提升）
 - [x] 核心问题不解决，其他工作都白费吗？（不接线=复刻 P-05 诊断的「检测器发货即死」失效模式）
 - [x] 核心问题的解决方法是清晰的、可执行的？（接线点=report §5 各提案「落地方式」列原文；内容层=CA-4/S8）
 
@@ -241,7 +241,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | S1-S5 五门接线 | LOCAL-ONLY | - | -（仓内范式：check-complete.sh:431 shell-out 先例） | 代码接线+注入夹具 | 不适用 |
 | S6 内容核对层 | LOCAL-ONLY | - | -（仓内范式：check-evidence-anchor.sh PATH_TOKEN_RULES 词表调优判例） | 核对层+误报基线 | 不适用 |
 | S7 selftest 扩展 | LOCAL-ONLY | - | - | 断言+registry | 不适用 |
-| S8 84.6 条款 | LOCAL-ONLY | - | -（Rule 84 现行文+卫星条款范式） | 规则文本+静态锚 | 不适用 |
+| S8 84.7 条款 | LOCAL-ONLY | - | -（Rule 84 现行文+卫星条款范式） | 规则文本+静态锚 | 不适用 |
 
 > 三态判定：LOCAL-ONLY=本地数据可完全解决（纯机械/簿记/既定步骤）；NET-RESEARCH=需网络调研补充知识/方案/报错解法；NET-DATA-DEPENDENT=必须接入网络数据（实时信息/外部 API/媒体参考/现成实现）。无 NET-* 条目且无豁免声明=计划不完整（check-plan-dispatch 机器校验）。
 
@@ -359,7 +359,7 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
 -->
 - [ ] S6-S8 按 S-unit 表派发（S6→S7 串行；S8 独立）
 - [ ] 146 存量误报基线扫描（内容核对层）→ findings 落盘
-- [ ] alignment-review 对 84.6 条款跑对齐审查
+- [ ] alignment-review 对 84.7 条款跑对齐审查
 - **V-N:** VC-3, VC-4, VC-5
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
@@ -369,7 +369,7 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S6 | 内容核对层：check-evidence-anchor 增声明串↔证据文件内容核对 | 继承 | skills/task-planner/scripts/check-evidence-anchor.sh（PATH_TOKEN_RULES 词表后追加 CLAIM_MATCH 层：Total/exit=/PASS=/FAIL= 形态声明串 grep 证据文件） | 内容不符夹具 exit≠0；相符夹具 exit=0；146 存量误报率量化 | 15min | 1f/100l/15min | 无 | - | pending |
 | S7 | 内容核对层 selftest：selftest-evidence-anchor 扩内容断言+registry 登记 | 继承 | skills/task-planner/scripts/selftest-evidence-anchor.sh（EA 断言族后追加 CLAIM-01..N：内容不符/相符/无声明串三态夹具） | selftest 新断言全 PASS；registry rows=actual | 12min | 2f/60l/12min | 无 | S6 | pending |
-| S8 | Rule 84.6 内容审查门条款落 verification-gate+SKILL 消费面+静态锚 | 继承 | skills/verification-gate/references/critical-rules-verification.md（Rule 84 段尾增 84.6 子条：内容型交付物终验前独立内容审查子代理+结论落盘；SKILL.md 终验 SOP 段增引用行） | grep 84.6 两载体 ≥1；静态锚 selftest PASS；alignment-review APPROVED | 14min | 2f/80l/14min | 无 | - | pending |
+| S8 | Rule 84.7 内容审查门条款落 verification-gate+SKILL 消费面+静态锚 | 继承 | skills/verification-gate/references/critical-rules-verification.md（Rule 84 段尾增 84.7 子条：内容型交付物终验前独立内容审查子代理+结论落盘；SKILL.md 终验 SOP 段增引用行） | grep 84.7 两载体 ≥1；静态锚 selftest PASS；alignment-review APPROVED | 14min | 2f/80l/14min | 无 | - | pending |
 
 ### Phase 4: Testing & Verification
 <!-- 
@@ -463,7 +463,7 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
     2. What format for storing files? (JSON)
 -->
 1. 内容核对层声明串提取范围：Total/exit=/PASS=/FAIL= 四形态起步是否覆盖绝大多数终验证据？（Phase 3 由 146 存量语料实测决定，误报>5% 收窄）
-2. Rule 84.6「内容型交付物」触发面怎么划？（默认=VC 证据含非脚本产出物[文档/报告/数据]的计划；执行期由 S8 起草+alignment-review 校订）
+2. Rule 84.7「内容型交付物」触发面怎么划？（默认=VC 证据含非脚本产出物[文档/报告/数据]的计划；执行期由 S8 起草+alignment-review 校订）
 3. P-06 校准阈值在 ≥30 中文 Goal 语料上的误报率？（S5 实测固化，数据入 findings）
 
 ## Decisions Made
@@ -478,9 +478,9 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
 |----------|-----------|
 | 判定 D 类新任务（非 B 扩展） | v183 四 Phase 全 complete+delivery-summary 已交付其 Goal；接线/语义层被其显式登记为「后续批次」——新计划消费前序产物，旧计划原样收口归档（Rule 8.1） |
 | isolation=direct（不 worktree） | 接线对象=19 个未跟踪新脚本+5 个未提交门链改动——worktree from HEAD 缺这些文件；Phase 1 首动作提交收口化解。同 v183 判例（已呈报未否决） |
-| 不新增 Rule 编号，84.6 子条承载 | 1-91→1-92 纪元锚级联会炸 ~23 个脚本断言（execution-lane 记忆判例：每纪元必炸）；84.6 落管辖域 verification-gate，语义上本就是 Rule 84 验证域延伸 |
+| 不新增 Rule 编号，84.7 子条承载 | 1-91→1-92 纪元锚级联会炸 ~23 个脚本断言（execution-lane 记忆判例：每纪元必炸）；84.7 落管辖域 verification-gate，语义上本就是 Rule 84 验证域延伸 |
 | 档位分两档起步（[align] 2026-10-17 Phase 1 实证修订） | **结构类门 enforce 起步**（P-02/03/08/09 的 attest+check-complete 接线：判定面客观+v183 活计划 smoke 全绿+archive 不受门控+--skip 逃生阀在）；**阈值/内容类门 warn 起步**（P-06/CLAIM_MATCH：语料校准与 146 误报基线先行再翻）。原「全部门 warn」被 Phase 1 六轮拦截链证伪——warn 档门（Batch/judge/rcov）从未拦住 v183 的交付声称，R1 要的是拦截 |
-| 机器层+规则层双轨收窄语义缺口 | 机器可判面（声明串↔内容核对）用脚本；纯语义面（内容相关性）机器不可靠——按 §四.6 文本优先落 84.6 规则条款（独立内容审查子代理门），不擅自扩机器基建 |
+| 机器层+规则层双轨收窄语义缺口 | 机器可判面（声明串↔内容核对）用脚本；纯语义面（内容相关性）机器不可靠——按 §四.6 文本优先落 84.7 规则条款（独立内容审查子代理门），不擅自扩机器基建 |
 | 注入式验收为统一标准 | report §5.1 修订 3：验收=注入缺陷计划→真实 hook/终验链 exit 1，非仅脚本自带夹具——selftest-gate-injection.sh 汇聚承载 |
 | 部署位同步不在本任务范围 | 需独立授权（v183 风险④同款）；Phase 5 呈报默认不部署 |
 | P-05/P-07/P-04 不入本任务 | P-05 已修（v183）；P-07 可见化已落（check-gate-degraded.sh 在位），翻档凭降级率数据后置；P-04=warn 已裁决（v183 findings） |
@@ -564,7 +564,7 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
 | 1 | 2026-10-17 | drift-checker | Phase 1 完成后偏移检查（Rule 61/64 三态判定） | done | ✅ALIGNED；警觉 c1 计划旧措辞已修/c2 Todo 表已同步/c3 归档 10-18 重试窗 | subagent-state/drift-phase1.md | findings Research Findings | subagent-state/drift-phase1.md | - / 0 / ☑ |
 | 2 | 2026-10-17 | general-purpose | S1 P-02 接线 attest VC 门+check-complete VC-GATE | done | 真实链拦截实证（夹具 A rc=1 含 ✗×5/B rc=0）；级联 16 处 48 | findings Research Findings（续） | subagent-state/S1-code-assistant.md | subagent-state/S1-code-assistant.md | rescue: code-assistant ×2 停摆→general-purpose 三投成 / 0 / ☑ |
 | 3 | 2026-10-17 | code-assistant | S5 P-06 接线 3file-gate 第 6 条件+语料校准（排队：config.json 串行链 S1→S2→S3→S4→S5） | pending | | | | subagent-state/S5-code-assistant.md | - / 0 / ☐ |
-| 4 | 2026-10-17 | code-assistant | S8 84.7 内容审查门条款两载体+VG-13 锚（编号撞车 84.6→84.7 裁决） | done | grep 84.7=7/1 两载体；VG-13 13/13 PASS | findings Research Findings（续） | subagent-state/S8-code-assistant.md | subagent-state/S8-code-assistant.md | 编号裁决 84.6→84.7 / 0 / ☑ |
+| 4 | 2026-10-17 | code-assistant | S8 84.7 内容审查门条款两载体+VG-13 锚（编号撞车 84.7→84.7 裁决） | done | grep 84.7=7/1 两载体；VG-13 13/13 PASS | findings Research Findings（续） | subagent-state/S8-code-assistant.md | subagent-state/S8-code-assistant.md | 编号裁决 84.7→84.7 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
