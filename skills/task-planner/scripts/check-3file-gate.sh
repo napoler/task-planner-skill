@@ -304,4 +304,22 @@ if [ "${_l0_exempt}" -eq 1 ]; then
 else
     echo "[3file-gate] PASS — findings.md/progress.md 在 Phase $CURRENT_PHASE 期间均已回填$( ledger_activity && echo "（ledger 语义信号）" || echo "（mtime 判定$( [ "$ANCHORED" -eq 1 ] && echo ":锚点 $STARTED_RAW" || echo ":stale 阈值模式" )）" )"
 fi
+
+# ── [2026-10-16 P-04] STATE-CONSISTENCY GATE — 计划状态三源一致性翻转前置 shell-out（默认 enforce）──
+# 仿 check-complete.sh 先例: shell-out check-state-consistency.sh, 诊断走 stdout, exit 1 阻断翻转。
+# 拦截「某已 complete Phase 的 checkbox 未勾 / progress 段仍 in_progress」的假 COMPLETE 翻转。
+# 约束: 纯计划内三源文本交叉(无外部路径/词表依赖); L0 微变更通道豁免(38.7 thin); 脚本缺失 fail-open。
+_sc_gate="$SKILL_ROOT/scripts/check-state-consistency.sh"
+if [ -f "$_sc_gate" ] && [ "${_l0_exempt}" -ne 1 ]; then
+    _sc_rc=0
+    _sc_out="$(bash "$_sc_gate" "$PLAN_FILE" 2>/dev/null)" || _sc_rc=$?
+    if [ -n "$_sc_out" ]; then
+        printf '%s\n' "$_sc_out"
+    fi
+    if [ "$_sc_rc" -eq 1 ]; then
+        echo "[state-consistency] ✗ 计划状态三源不一致(详见上方 [state-mismatch] 逐条) — 补勾 checkbox / 回填 progress 完成证据后重跑"
+        exit 1
+    fi
+fi
+
 exit 0

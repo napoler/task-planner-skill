@@ -88,7 +88,7 @@ if [ "$n" -ge 1 ]; then ok 07 "template-mapping.md §十「媒体制作族」特
 #      jq 缺失 fail-open 打 SKIPPED（沿用 R-12 先例：无 jq 属环境降级非内容漂移，不误报 FAIL）。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "46" ]; then ok 08 "config.json properties 键数 46（task-v172 合法新增 2 键 44→46）"; else bad 08 "config.json properties 键数=$keys（应 46，未授权新键）"; fi
+  if [ "$keys" = "47" ]; then ok 08 "config.json properties 键数 47（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 08 "config.json properties 键数=$keys（应 47，未授权新键）"; fi
 else
   printf 'MD-08 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

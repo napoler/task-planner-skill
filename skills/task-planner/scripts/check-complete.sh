@@ -124,6 +124,29 @@ check_scope_porcelain "$PLAN_FILE" || {
     # 与调用方取反语义不匹配致 L0 误执行 DELEGATION 门体, 本处对齐「成功=可跳」语义）
     l0_gate_open() { [ "${LANE_L0:-0}" = 1 ] && { printf '[lane-L0] skip %s（38.7 非适用项, thin=跳重复验证项, 保留完成性底线）\n' "$1" >&2; return 0; }; return 1; }
 
+    # ── [2026-10-16 P-04] STATE-CONSISTENCY GATE — 计划状态三源一致性前置 shell-out（仿 :431 DELEGATION 先例）──
+    # What: 总门前置调用 check-state-consistency.sh（checkbox↔Status↔progress 交叉），拦截 caseB-textonly
+    #       型「纸面证据链完整但现实未完成」假 COMPLETE（Phase **Status:** complete 但 checkbox 未勾 /
+    #       progress 同名段仍 in_progress 且无 [goal:G 完成证据行）。诊断行走 stdout 中继；默认 enforce=exit 1。
+    # Why: 既有解析器(:181-213)只读 `**Status:**` 行, 无 checkbox↔Status、plan↔progress 交叉比对——
+    #      未勾却称 complete 的 Phase 可静默放行（探测·完成声称 caseB-textonly 全门 EXIT=0 根因）。
+    # 约束: 纯计划内三源文本交叉(无外部路径/词表依赖); L0 微变更通道 skip(38.7 thin, l0_gate_open 守卫);
+    #       脚本缺失 fail-open(不阻断终验)。
+    if ! l0_gate_open "STATE-CONSISTENCY GATE (P-04 三源一致性——L0 thin 无 checkbox↔Status 簿记面)"; then
+        sc_gate="$SKILL_ROOT/scripts/check-state-consistency.sh"
+        if [ -f "$sc_gate" ]; then
+            sc_out="$(bash "$sc_gate" "$PLAN_FILE" 2>/dev/null)"
+            sc_rc=$?
+            [ -n "$sc_out" ] && printf '%s\n' "$sc_out"
+            if [ "$sc_rc" -eq 1 ]; then
+                printf '[plan] STATE-CONSISTENCY GATE FAILED (P-04: 计划状态三源不一致 checkbox↔Status↔progress, 详见上方 [state-mismatch] 逐条)\n' >&2
+                exit 1
+            fi
+        else
+            printf '[state-consistency] ⚠ 门脚本缺失（fail-open 不阻断终验）: %s\n' "$sc_gate" >&2
+        fi
+    fi
+
     # [2026-09-07 task-v055 task-v055/Phase 3] 终验委派率接线(Rule 25.4)
 # 行为:全 Phase complete 判定通过前,调 check-delegation.sh stats 输出 JSON。
 # - verdict==violation  或  全 complete 且 delegation_rate < floor  或  main_direct 含 violations
@@ -697,6 +720,69 @@ if [ "$python_rc" -eq 0 ]; then
     }
 
     VC_GATE_TIER="$(resolve_vc_gate_tier)"
+
+    # ── [2026-10-16 P-01 (终审意见 7)] EVIDENCE-ANCHOR GATE 档位解析 + shell-out 封装 ──────────
+    # What: 前置调用 check-evidence-anchor.sh（证据锚真实性检查：存在性+行界+否定 trim+provenance 三层），
+    #       两个调用点=R-COVERAGE 段前置（--source=coverage, 校 delivery-summary 证据格）
+    #       + goal-gate 段前置（--source=goal, 校 progress.md [goal:Gn] 证据行）。
+    # Why（接线不得挂起 / 终审意见 3）: 新门若只交付脚本不接线 = 复刻 periodic-review「发货即死」模式
+    #       （脚本在位而无人调用，痛点照旧）。故本提案把接线与脚本同批交付，仿 :431 check-delegation.sh
+    #       先例（shell-out + fail-open），**唯一差异点=诊断不裹 2>/dev/null**：原 stats 调用
+    #       `2>/dev/null` 会把门控自身故障吞成静默（错误必须曝光 §五），且诊断丢失=门控变哑巴。
+    #       本封装：脚本 stdout（[evidence-anchor] 明细）捕获后中继（PASS 走 stdout / FAIL 走 stderr，
+    #       即「shell-out 诊断走 stdout」+ 终验 FAIL 归 stderr 双满足）；脚本 stderr 直通不抑制。
+    # 档位: env TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE > config.json 顶层 > .properties 默认 > enforce
+    #       （与 vc_gate_enforce 双层路径解析同范式；jq/config 缺失 → 回落 enforce，不静默降级为 warn）。
+    # fail-open 方向: 脚本缺失 / rc=2 输入异常 → 一行 stderr 痕迹 + 放行（门控自身故障不得锁死正常终验）。
+    resolve_evidence_anchor_tier() {
+        local m="${TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if ! command -v jq >/dev/null 2>&1 || [ ! -f "$CONFIG_JSON" ]; then
+            printf 'enforce'
+            return 0
+        fi
+        m="$(jq -r '.evidence_anchor_enforce // .properties.evidence_anchor_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'enforce' ;; esac
+    }
+    EVIDENCE_ANCHOR_TIER="$(resolve_evidence_anchor_tier)"
+
+    # run_evidence_anchor <coverage|goal> — shell-out 本门并按档位裁决（enforce=exit 1 / warn=仅告警）
+    run_evidence_anchor() {
+        local src="$1" ea_out ea_rc
+        [ "$EVIDENCE_ANCHOR_TIER" = "off" ] && return 0
+        if [ ! -f "$SKILL_ROOT/scripts/check-evidence-anchor.sh" ]; then
+            printf '[evidence-anchor] ⚠ 门脚本缺失（fail-open 不阻断）: %s\n' \
+                "$SKILL_ROOT/scripts/check-evidence-anchor.sh" >&2
+            return 0
+        fi
+        ea_out="$(bash "$SKILL_ROOT/scripts/check-evidence-anchor.sh" "$PLAN_DIR_GUESS" "--source=$src")"
+        ea_rc=$?
+        if [ "$ea_rc" -eq 2 ]; then
+            printf '[evidence-anchor] ⚠ 输入异常 rc=2（fail-open 不阻断，source=%s）\n' "$src" >&2
+            return 0
+        fi
+        if [ "$ea_rc" -eq 0 ]; then
+            # PASS 走 stdout（shell-out 诊断走 stdout；终验可读「证据锚条数」作为交付证据）
+            printf '%s\n' "$ea_out"
+            return 0
+        fi
+        # FAIL: 明细中继到 stderr（终验 FAIL 归 stderr 是本仓门控惯例；P-01 verify ① 以
+        # 「stderr 含 [evidence-anchor]」为验收面，此行为其机器锚点）
+        printf '%s\n' "$ea_out" >&2
+        case "$EVIDENCE_ANCHOR_TIER" in
+            enforce)
+                printf '[evidence-anchor] ✗ EVIDENCE-ANCHOR FAILED (P-01 终审意见 7, evidence_anchor_enforce=enforce, source=%s): 证据锚不真实或不归属本任务产出物（系统路径/死路径/行号越界/域外/机器落盘头缺失）— 拒 COMPLETE: 把证据格与 [goal:Gn] 证据行改为真实可定位路径（或补 run-verification.sh 落盘 evidence/VC-N.out）后重跑\n' \
+                    "$src" >&2
+                exit 1
+                ;;
+            *)
+                printf '[evidence-anchor] ⚠ EVIDENCE-ANCHOR WARNING (P-01, warn 档不阻断: TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=enforce 或 config.json evidence_anchor_enforce=enforce 可升级, source=%s)\n' \
+                    "$src" >&2
+                ;;
+        esac
+        return 0
+    }
+
     # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 档降档: 判定前置 grep 计划文件(init 复制产物)
     # 「plan_tier: mini」(standard 模板标记 plan_tier: standard 天然不命中);
     # mini: VC 最低 5→2 / 每 Phase V-N 阈值 2→1 / 无 V-N 映射行不阻断; 非 mini 变量取原值=零改动
@@ -866,6 +952,14 @@ if [ "$python_rc" -eq 0 ]; then
     # 插入位=VC-GATE 块后(Requirement 51.1a 字面「VC-GATE 外增」), C-2 四元键③哈希锚区间(至 :502 行)之外=键哈希零扰动。
     # [2026-10-11 task-v167 Rule 38.7] L0 改抽查: 只校验 delivery-summary 需求覆盖核对表存在 + 前 3 数据行
     # 有证据路径（38.7 薄 verification=抽查表段；不降完成性判定——enforce 档缺口仍 exit 1 口径不变）。
+    # [2026-10-16 P-01 (终审意见 7)] EVIDENCE-ANCHOR GATE — R-COVERAGE 段前置 shell-out（--source=coverage）
+    # 判定面 = delivery-summary「需求覆盖核对」证据格：路径存在 / 行号 ≤ 文件行数 / 否定字面 trim 后判定 /
+    # provenance（系统前缀·域外·机器落盘 evidence/ 头）。门控范围与 R-COVERAGE 自身对齐（mini 档豁免
+    # Rule 38.4；L0 保留——38.7 的 L0 抽查面本就含证据列，证据真实性属完成性底线非重复验证项）。
+    if [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ]; then
+        run_evidence_anchor coverage
+    fi
+
     if [ "${LANE_L0:-0}" = 1 ] && [ "$VC_GATE_TIER" != "off" ]; then
         rcov_l0_file="$PLAN_DIR_GUESS/delivery-summary.md"
         if [ ! -f "$rcov_l0_file" ]; then
@@ -1595,6 +1689,11 @@ END {print n+0}'
     #         才进入；无标记（legacy/合成夹具）与显式 mini 均跳过（66.5 mini 豁免 + 缺省档兼容）。
     #   原行为：`[ "${PLAN_TIER_MINI:-0}" != 1 ]`（无标记亦进入，与 attest 门分叉）。
     if grep -qm1 -E 'plan_tier:[[:space:]]*(standard|full)' "$PLAN_FILE" 2>/dev/null; then
+        # [2026-10-16 P-01 (终审意见 7)] EVIDENCE-ANCHOR GATE — goal-gate 段前置 shell-out（--source=goal）
+        # 判定面 = progress.md 含 [goal:Gn] 的证据行（整行视为证据文本）：路径存在 / 行号 ≤ 文件行数 /
+        # provenance 三层。门控范围与 goal-gate 自身对齐（同受 plan_tier: standard|full 门控，
+        # mini 档 66.5 豁免 + 无标记 legacy 跳过 = 零行为变化）。
+        run_evidence_anchor goal
         # awk 状态机抽「^## 🎯 Goal 单元表」区块（参照脚本行 92-94 既有状态机写法，禁区间 next 坍缩范式）
         goal_gate_sec="$(awk '/^##[[:space:]]*🎯[[:space:]]*Goal[[:space:]]*单元表/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
         if [ -z "$goal_gate_sec" ]; then

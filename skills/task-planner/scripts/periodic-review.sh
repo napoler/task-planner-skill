@@ -2,6 +2,9 @@
 # periodic-review.sh — Rule 65 周期性回顾与前后对照检测
 # 2026-10-08 task-v149 重编号 57→65 补漏（CR M-1）
 # task-v142 P2-S1
+# 2026-10-16 task-v183 P-05 修复: 关键词清洗改用 tr -d '*#-'（尾连字符=字面删除 * / # / - 三字符）。
+#   根因: 原写法把三字符写成「星 连字符 井号」顺序, 被 tr 解析为反向区间(星=0x2A > 井=0x23),
+#   多数 locale 下 tr 报错→关键词恒空→Rule 65 矛盾检测器静默失效(完成声称/结论矛盾漏检)。
 # 用途：检测 findings.md 与 progress.md 中的结论一致性，输出结构化报告（JSON）
 # 退出码：0=无矛盾 / 1=发现矛盾 / 2=参数错误或文件缺失
 # 只读，不修改任何文件
@@ -86,7 +89,7 @@ check_conclusion_consistency() {
     content=$(echo "$line" | cut -d: -f2-)
     
     local keyword
-    keyword=$(echo "$content" | tr -d '*-#' | sed 's/^[[:space:]]*//' | cut -c1-20)
+    keyword=$(echo "$content" | tr -d '*#-' | sed 's/^[[:space:]]*//' | cut -c1-20)
     
     if [ -z "$keyword" ]; then
       continue
@@ -119,7 +122,7 @@ check_assumption_consistency() {
     content=$(echo "$line" | cut -d: -f2-)
     
     local keyword
-    keyword=$(echo "$content" | tr -d '*-#' | sed 's/^[[:space:]]*//' | cut -c1-20)
+    keyword=$(echo "$content" | tr -d '*#-' | sed 's/^[[:space:]]*//' | cut -c1-20)
     
     if [ -z "$keyword" ]; then
       continue
@@ -144,7 +147,7 @@ check_goal_consistency() {
   fi
   
   local goal_keywords
-  goal_keywords=$(echo "$goal" | tr -d '*-#' | sed 's/^[[:space:]]*//' | tr ' ' '\n' | head -5 || true)
+  goal_keywords=$(echo "$goal" | tr -d '*#-' | sed 's/^[[:space:]]*//' | tr ' ' '\n' | head -5 || true)
   
   while IFS= read -r keyword; do
     if [ -z "$keyword" ]; then

@@ -51,8 +51,8 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 | `scripts/subagent-fallback.sh` | provider 失败主动 fallback |
 | `scripts/selftest-rescue-chain.sh` | 兜底链 selftest |
 | `scripts/selftest-fallback.sh` | fallback selftest |
-| `scripts/selftest-subagent-granularity-skill-escort.sh` | 粒度门+伴飞 selftest（随迁） |
-| `scripts/selftest-subagent-return.sh` | 返回校验 selftest（随迁） |
+| `../task-planner/scripts/selftest-subagent-granularity-skill-escort.sh` | 粒度门+伴飞 selftest（机械层留守主技能，Rule 82） |
+| `../task-planner/scripts/selftest-subagent-return.sh` | 返回校验 selftest（机械层留守主技能，Rule 82） |
 
 ## 参考文档
 

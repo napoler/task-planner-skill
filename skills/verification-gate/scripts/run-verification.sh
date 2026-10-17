@@ -37,6 +37,13 @@ current_vc=""
 declare -a RESULT_LINES
 declare -a FAIL_DETAIL
 
+# [2026-10-16 P-01 伴生 c] 机器落盘目录：<plan-dir>/evidence/（每条 VC 一个 VC-<N>.out）
+# What: EVID_DIR 是「机器产出证据」的固定落点——check-evidence-anchor.sh 的 provenance 层 c 认此目录，
+#       并校验文件头（VC 编号 + ISO8601 时间戳）以防手写伪造。
+# Why: 终审意见 7「证据锚必须指向落盘文件而非模型手写文本」；目录名是跨脚本契约，改名须同步
+#       task-planner/scripts/check-evidence-anchor.sh 的 `"$PLAN_DIR"/evidence/*` 判定分支。
+EVID_DIR="$PLAN_DIR/evidence"
+
 # ─── 状态机式逐行扫描：VC 条目行（- [ ] VC-N / - [x] VC-N）设置 current_vc；───
 # ─── "**Verify command**:" 行提取命令并关联 current_vc 执行；同一 VC 只取其首个命令（幂等）───
 while IFS= read -r line; do
@@ -63,14 +70,34 @@ while IFS= read -r line; do
       ;;
   esac
 
-  # 执行命令（隔离子 shell，stdout/stderr 丢弃只取退出码；命令自身副作用由计划作者负责）
-  if bash -c "$cmd" >/dev/null 2>&1; then
-    RESULT_LINES+=("PASS  $current_vc  exit=0  :: $cmd")
+  # 执行命令（隔离子 shell；[2026-10-16 P-01 伴生 c] 起 stdout/stderr 不再丢弃，改为落盘
+  # <plan-dir>/evidence/VC-N.out——机器产出证据；命令自身副作用由计划作者负责）
+  # 落盘契约（供 check-evidence-anchor.sh provenance 层 c 校验）：
+  #   第 1 行 `# [run-verification] VC-N | <ISO8601 UTC> | cmd: <命令>`（VC 编号 + 时间戳）
+  #   第 2 行 `# ---- stdout/stderr ----`；其后为命令原始输出；末行 `# exit=<rc>`
+  # fail-open: mkdir/重定向失败（目录不可写）→ 退回原「丢弃输出」行为，不因落盘失败改判定。
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo 1970-01-01T00:00:00Z)"
+  ev_file="$EVID_DIR/${current_vc}.out"
+  ev_ok=0
+  if mkdir -p "$EVID_DIR" 2>/dev/null && printf '# [run-verification] %s | %s | cmd: %s\n# ---- stdout/stderr ----\n' \
+        "$current_vc" "$ts" "$cmd" > "$ev_file" 2>/dev/null; then
+    ev_ok=1
+  fi
+  rc=0
+  if [ "$ev_ok" = 1 ]; then
+    bash -c "$cmd" >>"$ev_file" 2>&1 || rc=$?
+    printf '\n# exit=%s\n' "$rc" >>"$ev_file" 2>/dev/null
+  else
+    bash -c "$cmd" >/dev/null 2>&1 || rc=$?
+  fi
+  ev_note=""
+  [ "$ev_ok" = 1 ] && ev_note="  [evidence=$ev_file]"
+  if [ "$rc" -eq 0 ]; then
+    RESULT_LINES+=("PASS  $current_vc  exit=0  :: $cmd$ev_note")
     pass=$((pass + 1))
   else
-    rc=$?
-    RESULT_LINES+=("FAIL  $current_vc  exit=$rc  :: $cmd")
-    FAIL_DETAIL+=("$current_vc (exit=$rc): $cmd")
+    RESULT_LINES+=("FAIL  $current_vc  exit=$rc  :: $cmd$ev_note")
+    FAIL_DETAIL+=("$current_vc (exit=$rc): $cmd$ev_note")
     fail=$((fail + 1))
   fi
   # 同一 VC 只取其首个 Verify command（防 VC 下多命令行重复计数）

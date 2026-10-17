@@ -131,12 +131,12 @@ else
   bad "CP-08" "registry 不含 selftest-context-pressure"
 fi
 
-# CP-09: jq '.properties|length' config.json =42
+# CP-09: jq '.properties|length' config.json =47（P-01 新增 evidence_anchor_enforce 46→47）
 props=$(jq '.properties|length' "$CONFIG" 2>/dev/null)
-if [ "$props" -eq 46 ]; then
-  ok "CP-09" "config properties=$props=46"
+if [ "$props" -eq 47 ]; then
+  ok "CP-09" "config properties=$props=47"
 else
-  bad "CP-09" "config properties=$props≠46"
+  bad "CP-09" "config properties=$props≠47"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"

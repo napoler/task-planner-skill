@@ -47,7 +47,7 @@ model: haiku
 2. 逐项执行验证命令，确认 PASS
 3. V-N 未全 PASS → 禁止 Phase 翻 complete（goal-gate 规则 3）
 4. 子代理产出：Read 实际文件复核（不信任 "done" 自报）后才勾 Handoff verify_done
-5. 回填门控：`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转
+5. 回填门控：`bash ../task-planner/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转
 
 ### Step 3: VC 复验（终验期，交付前）
 
@@ -56,7 +56,7 @@ model: haiku
 3. 可用统一入口：`bash <skill>/scripts/run-verification.sh <plan-dir>`（解析 VC 命令自动执行汇总）
 4. 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
 5. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户
-6. 终验前跑 `bash <skill>/scripts/check-complete.sh`（21 门总门，exit 0 才可交付）
+6. 终验前跑 `bash ../task-planner/scripts/check-complete.sh`（21 门总门，exit 0 才可交付）
 
 ## 脚本引用索引（机械层留守主技能 scripts/）
 
@@ -64,12 +64,12 @@ model: haiku
 
 | 脚本 | 功能 | 调用阶段 | 路径 |
 |------|------|---------|------|
-| `check-3file-gate.sh` | 执行中回填门（Phase 翻 complete 前） | 执行期 | `<skill>/scripts/` |
-| `attest-plan.sh` | 计划锁定聚合门（含 VC 可执行性门） | 计划期 | `<skill>/scripts/` |
-| `check-complete.sh` | 终验总门（21 门：VC-GATE/R-COVERAGE/goal-gate 等） | 终验期 | `<skill>/scripts/` |
-| `check-plan-dispatch.sh` | 计划期派发型 Phase S-unit 校验 | 计划期 | `<skill>/scripts/` |
+| `check-3file-gate.sh` | 执行中回填门（Phase 翻 complete 前） | 执行期 | `../task-planner/scripts/` |
+| `attest-plan.sh` | 计划锁定聚合门（含 VC 可执行性门） | 计划期 | `../task-planner/scripts/` |
+| `check-complete.sh` | 终验总门（21 门：VC-GATE/R-COVERAGE/goal-gate 等） | 终验期 | `../task-planner/scripts/` |
+| `check-plan-dispatch.sh` | 计划期派发型 Phase S-unit 校验 | 计划期 | `../task-planner/scripts/` |
 | `run-verification.sh` | **本卫星**统一验证执行入口（逐条跑 VC 命令） | 终验期 | `./scripts/`（本卫星） |
-| `selftest-verification-gate.sh` | **本卫星**静态守护（Rule 84 锚） | 回归 | `./scripts/`（本卫星） |
+| `selftest-verification-gate.sh` | 静态守护（Rule 84 锚，机械层留守主技能） | 回归 | `../task-planner/scripts/` |
 
 ## References
 
