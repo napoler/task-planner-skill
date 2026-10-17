@@ -89,3 +89,27 @@
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` | （Phase 1 未更新——本会话连续在席无中断恢复场景，[plan-resume 跳过原因]=无中断） |
 - [align] 2026-10-17 档位策略修订（Rule 73.2/73.4）：原「全部门 warn 起步」→「结构类 enforce/阈值类 warn 分档」。触发=Phase 1 六轮拦截链实证 warn 档门（Batch/judge/rcov）未拦住 v183 交付声称，与 R1「主动发现」冲突；三问=①增量否（Decisions 行替换，语义修订非新门）②与 Goal/VC-2 一致性增强（exit≠0 验收成立）③波及面=Decisions/FMEA/CA-9 三行同步已做。
+
+### Phase 3: 内容错误审查层（核心——R3）
+- **Status:** complete
+- **Started:** 2026-10-17
+- **R 锚定**：本 Phase 服务 R3「对内容的错误及时审查出来…提高内容错误的审查能力才是最核心的」——机器层（CLAIM_MATCH）+规则层（84.7 审查门）双落地。
+- Actions taken:
+  - **S6**：check-evidence-anchor.sh 增 CLAIM_MATCH 层（四形态声明串↔证据文件内容核对；独立档位 claim_match_enforce=warn；既有路径层语义零改动）+60 存量基线（2 计划 5 旗标=1 真阳性 v157+4 边界阳性 v176）
+  - **S7**：selftest-evidence-anchor 扩 CLAIM-01..06（Total 26/26）+selftest-verification-gate 头注文案 84.7
+  - **S8**（提前并行完成）：Rule 84.7 内容审查门子条两载体+VG-13 静态锚（13/13）
+- Files: skills/task-planner/scripts/{check-evidence-anchor.sh(+145/-5), selftest-evidence-anchor.sh(+87), selftest-verification-gate.sh(1 行)} + skills/verification-gate/{references/critical-rules-verification.md(+8), SKILL.md(+1)}
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | CLAIM 不符+warn | 判定器×夹具（声明 90/文件 80） | rc=0+⚠ 留痕 | rc=0 含 [claim-mismatch] ⚠ | PASS |
+  | CLAIM 不符+enforce | env=enforce 同夹具 | rc=1 | rc=1 含 [claim-mismatch] ✗ | PASS |
+  | EA 扩展 | selftest-evidence-anchor.sh | 26/26 | Total: PASS=26 FAIL=0 | PASS |
+  | VG 扩展 | selftest-verification-gate.sh | 13/13 | 13/13（VG-02/VG-13 含 84.7 锚） | PASS |
+
+## Goal 证据行（Rule 66.3）
+- [goal:G1] v183 收口——check-complete exit 0（六轮补账后）/首锚 b83ad92+四笔补录/基线 Total: 90 PASS=90 FAIL=0（progress Phase 1 段）
+- [goal:G2] 五门接线——selftest-gate-injection.sh Total: PASS=11 FAIL=0（GI-01..11 注入全拦+干净全放）；registry rows=91=actual（progress Phase 2 段）
+- [goal:G3] 内容核对层——不符夹具 warn 留痕/enforce rc=1（CLAIM-01/02）；60 存量基线 2 计划 5 旗标量化入 findings（本段）
+- [goal:G4] 审查门条款——grep '84\.7' 两载体=7/1；VG-13 静态锚 13/13（S8 返回+本段）
+- [goal:G5] （Phase 4/5 交付时回填）
