@@ -313,7 +313,7 @@ All complete（已交付——2026-10-17 由 task-v184 Phase 1 代行收口：�
 - [x] 知识储备必读项已确认可获取（本地 check-* 脚本族 + report.md §5/§7 提案清单，全部在仓）
 - **V-N:** VC-1, VC-4（基线取证 + 回归零新增的取证前提）
 - **Status:** complete
-- **Executor:** 主进程（例外理由：① 只读取证 + ② 簿记——Rule 25.3 白名单）
+- **Executor:** 主进程（例外理由：① 只读取证 + ② 计划系统文件簿记维护——Rule 25.3 白名单②）
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
