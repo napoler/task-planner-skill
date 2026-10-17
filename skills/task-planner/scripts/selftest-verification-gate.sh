@@ -40,13 +40,13 @@ else
   bad 01 "卫星 SKILL.md frontmatter 三锚缺失（name: verification-gate / description 含'验证' / model:）"
 fi
 
-# VG-02 rule file Rule 84 节 + 84.1-84.6 六子条锚
-# What：断言 critical-rules-verification.md 含 '### 84' 章节标题 + 84.1-84.6 六个子条主体行（grep -c '^84\\.'）。
+# VG-02 rule file Rule 84 节 + 84.1-84.7 七子条锚
+# What：断言 critical-rules-verification.md 含 '### 84' 章节标题 + 84.1-84.7 七个子条主体行（grep -c '^84\\.'）。
 # Why：84.1 VC 可执行性纪律/84.6 机制是核心新条款，子条缺一=验证域规则本体被裁剪。
 if grep -q '### 84 ' "$SAT_CRIT" && [ "$(grep -cE '^84\.[0-9]' "$SAT_CRIT" || true)" -ge 6 ]; then
-  ok 02 "规则文件 Rule 84 节 + 84.1-84.6 子条锚≥6 在位"
+  ok 02 "规则文件 Rule 84 节 + 84.1-84.7 子条锚≥6 在位"
 else
-  bad 02 "规则文件 Rule 84 节或 84.x 子条缺失（'### 84' 标题 + 84.1-84.6 六子条）"
+  bad 02 "规则文件 Rule 84 节或 84.x 子条缺失（'### 84' 标题 + 84.1-84.7 七子条）"
 fi
 
 # VG-03 verification.md 模板"Verify command"字段锚
