@@ -566,8 +566,12 @@ Phase 4
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-17 | drift-checker | Phase 1 完成后偏移检查（Rule 61/64 三态判定） | done | ✅ALIGNED；警觉 c1 计划旧措辞已修/c2 Todo 表已同步/c3 归档 10-18 重试窗 | subagent-state/drift-phase1.md | findings Research Findings | subagent-state/drift-phase1.md | - / 0 / ☑ |
 | 2 | 2026-10-17 | general-purpose | S1 P-02 接线 attest VC 门+check-complete VC-GATE | done | 真实链拦截实证（夹具 A rc=1 含 ✗×5/B rc=0）；级联 16 处 48 | findings Research Findings（续） | subagent-state/S1-code-assistant.md | subagent-state/S1-code-assistant.md | rescue: code-assistant ×2 停摆→general-purpose 三投成 / 0 / ☑ |
-| 3 | 2026-10-17 | code-assistant | S5 P-06 接线 3file-gate 第 6 条件+语料校准（已完成） | done | | | | subagent-state/S5-code-assistant.md | - / 0 / ☐ |
-| 4 | 2026-10-17 | code-assistant | S8 84.7 内容审查门条款两载体+VG-13 锚（编号撞车 84.7→84.7 裁决） | done | grep 84.7=7/1 两载体；VG-13 13/13 PASS | findings Research Findings（续） | subagent-state/S8-code-assistant.md | subagent-state/S8-code-assistant.md | 编号裁决 84.7→84.7 / 0 / ☑ |
+| 3 | 2026-10-17 | general-purpose | P-06 接线 3file-gate 第 6 条件+148 语料校准+数据翻 enforce | done | 跑题夹具 [drift-gate] 拦截；drift 门重编号 7；148 项 0 误报 | findings Research Findings（续） | subagent-state/S5-general-purpose.md | - / 0 / ☑ |
+| 4 | 2026-10-17 | code-assistant | S8 84.7 内容审查门条款两载体+VG-13 锚（编号撞车 84.6 已被占→改 84.7 裁决） | done | grep 84.7=7/1 两载体；VG-13 13/13 PASS | findings Research Findings（续） | subagent-state/S8-code-assistant.md | subagent-state/S8-code-assistant.md | 编号裁决 84.6→84.7 / 0 / ☑ |
+| 5 | 2026-10-17 | code-runner-agent | 全量回归+registry 双向一致（S9） | done | Total: 91 PASS=91 FAIL=0；rows=91=actual | findings 审查结论段 | subagent-state/final-regression.md | - / 0 / ☑ |
+| 6 | 2026-10-17 | Verifier | VC-1..4 独立复验+84.7 对齐四点+注入抽验（S10） | done | 全 PASS；抽验 rc=1 含 [vc-nonvacuous] ✗ | findings 审查结论段 | subagent-state/final-verify.md | - / 0 / ☑ |
+| 7 | 2026-10-17 | Code Reviewer | CR Gate 全任务 diff 审查 | done | APPROVED（0 P1/P2；P3×5 留档） | findings 审查结论段 | subagent-state/cr-gate.md | - / 0 / ☑ |
+| 8 | 2026-10-17 | general-purpose | S2b 八红清理+S3/S4 双接线+S5c 汇聚+S6 CLAIM_MATCH+S7 断言（五件合并行） | done | 各检查点 M 段全录；全量 90/90→91/91 | findings Research Findings（续） | subagent-state/ 各检查点 | rescue 判例族（S1/S2 同） / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
