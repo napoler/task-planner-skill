@@ -185,8 +185,8 @@
         "warn",
         "off"
       ],
-      "default": "warn",
-      "description": "纯中文 Goal CJK 分词漂移门控档位（P-06/task-v184，scripts/check-goal-cjk.sh）：检测 Goal 纯中文表述的分词漂移（同义改写致语义偏移）；enforce=检出漂移阻断(exit 1) / warn=仅告警 / off=关闭。默认 warn=阈值类门语料校准先行（task-v184 [align] 分档裁决：阈值/语义类门 warn 起步，语料实证校准后再升 enforce）。接线=check-3file-gate.sh 第 6 条件（S5 执行）。档位解析优先级: env TASK_PLANNER_GOAL_CJK_ENFORCE > 本键 > warn（jq/config 缺失回落 warn）"
+      "default": "enforce",
+      "description": "纯中文 Goal CJK 分词漂移门控档位（P-06/task-v184，scripts/check-goal-cjk.sh）：检测 Goal 纯中文表述的分词漂移（同义改写致语义偏移）；enforce=检出漂移阻断(exit 1) / warn=仅告警 / off=关闭。默认 enforce=语料校准后固化（task-v184-S5：plans/archive 143 条中文 Goal 语料+活计划 task-v184+5 抽样 误报=0，[align] 分档裁决升 enforce）。接线=check-3file-gate.sh 第 6 条件（S5 执行）。档位解析优先级: env TASK_PLANNER_GOAL_CJK_ENFORCE > 本键 > warn（jq/config 缺失回落 warn）"
     },
     "claim_match_enforce": {
       "type": "string",

@@ -63,3 +63,10 @@
 
 ---
 <!-- ⚠️ [plan-compass] 提醒 = 本文件陈旧 → 立即回填再继续(Rule 19.7);二次未响应触发升级警告(Rule 26.3 处置) -->
+
+## Research Findings（Phase 2 续）
+- **S2/P-08+五键批**：rvc 双点接线（夹具 A `[rvc-coverage] ✗ R1/R2/R3 无 VC 覆盖` rc=1）；config 一次 +5 键（rvc/step_placeholder/tier_consistency=enforce，goal_cjk/claim_match=warn）级联 48→53 一轮 16 处——后续单元零级联（[align] 排程优化）。
+- **S2b 八红清零**：3 个 RVC 交互回归（requirement-coverage/evidence-anchor/final-gate-hash 的旧夹具被新门先拦）以**单元隔离 env off** 修（各 selftest 测自身门）；4 个 stale-47 非引号形态断言升 53（S1 引号形态级联漏网教训=级联 grep 必须多形态）；summary-readability 元检为下游自愈。全量 90/90 绿。
+- **S3+S4**：attest P-03 块（step-placeholder，plan-dir 契约）+P-09 块（tier-consistency，插 template-tier 解析段尾）；占位夹具「优化一下性能」rc=1、档位漂移夹具 rc=1/干净 rc=0。零 config 零级联。
+- **S5/P-06**：148 项语料（143 archive+活计划+5 抽样）**0 误报**→数据驱动翻 enforce（goal_cjk_enforce warn→enforce）；3file-gate 第 6 条件接线（drift 门 6→7 重编号，全仓无外部引用）；门分支矩阵四态实证（enforce/warn/off/fail-open）。
+- **登记债**：①门结果缓存 cksum 未纳新 5 env（warn→enforce 方向可能回放陈旧 PASS——S7 顺手补）②check-goal-cjk is_cjk E5 分支缺口（U+5F64-5FFF 含心得德律等常用字未判 CJK=潜伏保护缺口，一行修法已备查，需判定器授权面→独立任务）③S8 报的 VG-02 文案「84.1-84.6 六子条」措辞漂移（S7 顺手修）。

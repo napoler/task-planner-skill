@@ -12,8 +12,13 @@
 #      #progress_stale_minutes,默认 20/25 分钟）: mtime 距今必须小于阈值
 #   4. findings.md 与 progress.md 的 mtime 必须晚于锚点,任一不满足 → exit 1
 #   5. [--require-kb] knowledge-brief.md 存在 且（mtime 晚于锚点 或 ledger-*.jsonl
-#      含锚点后 event="kb_distill" 的行）; 否则 exit 1（Rule 62.5 知识增量门控）
-#   6. [Rule 64.2] drift 痕迹门控: ledger 含锚点后 event="drift_check" 行 或
+#      含锚点后 event="kb_distill" 行）; 否则 exit 1（Rule 62.5 知识增量门控）
+#   6. [P-06] 纯中文 Goal CJK 分词补检: shell-out check-goal-cjk.sh 对 task_plan.md 的
+#      ## Goal 段做 locale 鲁棒 CJK 分词; Goal 无 CJK（无判定面）或抽出 ≥1 词 → 放行;
+#      Goal 含 CJK 但抽出 0 词（分词失败,漂移检测将静默跳过）→ 按 env
+#      TASK_PLANNER_GOAL_CJK_ENFORCE 降档 (off=跳过/warn=stderr 提示不阻断/默认 exit 1);
+#      判定器缺失/输入异常 rc=2 fail-open 不阻断
+#   7. [Rule 64.2] drift 痕迹门控: ledger 含锚点后 event="drift_check" 行 或
 #      subagent-state/*-drift-checker.md mtime 晚于锚点 或 task_plan.md 含 drift_exempt:
 #      声明且当前 Phase 命中豁免清单 或 plan_tier: mini 整体豁免; 否则按 env
 #      TASK_PLANNER_DRIFT_ENFORCE 降档 (off=跳过/warn=stderr 提示不阻断/默认 exit 1)
@@ -28,6 +33,19 @@
 #         「知识增量」纳入完成门控: 调研型 Phase 翻转 complete 前必须已有 kb 蒸馏动作。
 #   兼容: 参数解析纯增量（--require-kb 剥离后再定位置参数,不传时 PLAN_ARG=$1 与改动前
 #         逐字节一致; 既有 findings/progress 判定分支零改动）。
+
+# [2026-10-17 task-v184-S5 P-06] 修改说明:
+#   What: 新增第 6 条件——纯中文 Goal CJK 分词补检门控（shell-out check-goal-cjk.sh,克隆
+#         check-complete.sh run_vc_nonvacuous 的「档位解析 env>config>默认 + fail-open +
+#         PASS stdout/FAIL stderr」范式）; drift 痕迹门控编号 6→7（P-06 按计划占第 6 条件,
+#         全仓 grep 确认无他处引用 drift 的「第 6 条件」编号）。
+#   Why:  P-06 提案「接线 check-3file-gate 第 6 条件消费面」: 纯中文 Goal 下 check-drift 的
+#         grep -oP '\w+' 抽词为空→GOAL-DRIFT 检对中文 Goal 静默永不触发（探测二 3-miss 根因）;
+#         翻转前保证「CJK Goal 可抽词」。档位经语料校准固化: plans/archive 143 条中文 Goal +
+#         活计划 task-v184 + 5 抽样 误报=0（task-v184-S5 [align] 分档裁决）→ config
+#         goal_cjk_enforce 由 warn 升 enforce。
+#   兼容: 纯增量——1-5 条件与 drift 门控行为零变化（仅编号改 6→7）; 判定器缺失/rc=2
+#         fail-open 不阻断; 既有调用面（不传 --require-kb）与改动前行为一致。
 
 set -euo pipefail
 
@@ -266,7 +284,49 @@ if [ "$REQUIRE_KB" -eq 1 ]; then
     fi
 fi
 
-# [2026-10-08 task-v148 S-2 Rule 64.2] drift 痕迹门控（第 6 条件）。
+# [2026-10-17 task-v184-S5 P-06] 纯中文 Goal CJK 分词补检门控（第 6 条件）。
+# 通过判据 = shell-out check-goal-cjk.sh: Goal 无 CJK（无判定面）或抽出 ≥1 CJK 词 → 放行;
+# Goal 含 CJK 但抽出 0 词（分词失败,漂移检测将静默跳过）→ 按档位 off=跳过 / warn=stderr ⚠
+# 不阻断 / 默认 enforce exit 1（阻断翻转）。判定器缺失/输入异常 rc=2 fail-open 不阻断。
+# 档位解析: env TASK_PLANNER_GOAL_CJK_ENFORCE > config goal_cjk_enforce > warn（jq/config
+# 缺失回落 warn,同 config.json 该键 description 声明的优先级）。
+resolve_goal_cjk_tier() {
+    local m="${TASK_PLANNER_GOAL_CJK_ENFORCE:-}"
+    case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+    m="$(jq -r '.goal_cjk_enforce // .properties.goal_cjk_enforce.default // "warn"' "$CONFIG" 2>/dev/null)" || m=""
+    case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+    printf 'warn'
+}
+GOAL_CJK_TIER="$(resolve_goal_cjk_tier)"
+if [ "$GOAL_CJK_TIER" = "off" ]; then
+    echo "[3file-gate] TASK_PLANNER_GOAL_CJK_ENFORCE=off — 跳过 P-06 纯中文 Goal CJK 分词补检门控"
+else
+    _gcj_gate="$SKILL_ROOT/scripts/check-goal-cjk.sh"
+    if [ ! -f "$_gcj_gate" ]; then
+        echo "[goal-cjk] ⚠ 门脚本缺失（fail-open 不阻断）: $_gcj_gate" >&2
+    else
+        # set -e 安全取 rc: 判定器 rc=1（FAIL）时不让赋值触发 set -e 退出（同 :315 state-consistency 先例）
+        _gcj_out="$(bash "$_gcj_gate" "$PLAN_DIR" 2>/dev/null)" && _gcj_rc=0 || _gcj_rc=$?
+        if [ "$_gcj_rc" -eq 2 ]; then
+            echo "[goal-cjk] ⚠ 输入异常 rc=2（fail-open 不阻断：plan-dir/task_plan.md 缺失或无判定面）" >&2
+        elif [ "$_gcj_rc" -eq 0 ]; then
+            printf '%s\n' "$_gcj_out"
+        else
+            printf '%s\n' "$_gcj_out" >&2
+            case "$GOAL_CJK_TIER" in
+                enforce)
+                    echo "[goal-cjk] ✗ GOAL-CJK FAILED (P-06/task-v184-S5, goal_cjk_enforce=enforce): Goal 含 CJK 但分词抽出 0 词——漂移检测将静默跳过 — 拒 COMPLETE: 检查 Goal 表述（纯中文 Goal 需可被 CJK 分词器抽词）后重跑（降档 env TASK_PLANNER_GOAL_CJK_ENFORCE=warn）" >&2
+                    exit 1
+                    ;;
+                *)
+                    echo "[goal-cjk] ⚠ GOAL-CJK WARNING (P-06, warn 档不阻断: TASK_PLANNER_GOAL_CJK_ENFORCE=enforce 可升级)" >&2
+                    ;;
+            esac
+        fi
+    fi
+fi
+
+# [2026-10-08 task-v148 S-2 Rule 64.2] drift 痕迹门控（第 7 条件；2026-10-17 task-v184-S5 P-06 接线占用第 6 条件后编号 6→7,行为不变）。
 # 通过判据 = ledger 含锚点后 drift_check 行 或 subagent-state/*-drift-checker.md mtime 晚于锚点
 # 或 task_plan.md 含 drift_exempt: 声明且当前 Phase 命中豁免清单。
 # 无 Started 锚点时退化到 stale 阈值（复用 findings_stale_minutes,与 check_file 同范式）。
