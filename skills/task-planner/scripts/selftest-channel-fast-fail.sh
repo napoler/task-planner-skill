@@ -2,7 +2,7 @@
 # [2026-10-14 task-v172 CA-6] selftest-channel-fast-fail.sh — Rule 83 通道不可用快速失败全链落点静态断言套件（CF-01..06）
 # WHAT: 机械断言 Rule 83「通道不可用快速失败」全链守护面 6 组落点：
 #      critical-rules 83.1-83.4 四子条（CF-01）→ SKILL.md 投诉响应协议段「通道不可用快速失败（Rule 83）」条目锚（CF-02）
-#      → 零新 config 键 properties=47（CF-03）→ registry 自登记（CF-04）
+#      → 零新 config 键 properties=53（CF-03；[task-v184-S2b] 键数 47→53 S1 引号形态级联漏网补齐）→ registry 自登记（CF-04）
 #      → 83.3 禁 ≥2 次同法重试锚（CF-05）→ 83.2 快速失败三选项锚（CF-06）。
 #      6 组断言全 PASS exit 0, 任一 FAIL exit 1。纯 grep/awk/jq 静态断言, 无 fixture。
 # WHY: videop1 D6 判例（CreateWorkflow 无 Skill 工具 3 次重试全拦）+ R2 质量诉求；
@@ -41,10 +41,10 @@ t "CF-02 SKILL.md 通道不可用快速失败(Rule 83)条目锚" bash -c "
     [ \"\$(grep -c '通道不可用快速失败（Rule 83）' '$SKILL')\" -ge 1 ]
 "
 
-# CF-03: 零新 config 键 properties=47（task-v172 CA-1/CA-2 后键数；P-01 新增 evidence_anchor_enforce 46→47）
-t "CF-03 零新 config 键 properties=47" bash -c "
-    [ \"\$(jq '.properties | keys | length' '$CONFIG' 2>/dev/null)\" = '47' ]
-"
+# CF-03: 零新 config 键 properties=53（task-v172 CA-1/CA-2 后键数；P-01 新增 evidence_anchor_enforce 46→47；[task-v184-S2b] S1 引号形态级联漏网补齐 47→53）
+t "CF-03 零新 config 键 properties=53" bash -c "
+    [ \"\$(jq '.properties | keys | length' '$CONFIG' 2>/dev/null)\" = '53' ]
+"  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）
 
 # CF-04: registry 自登记
 t "CF-04 registry 自登记 selftest-channel-fast-fail.sh" bash -c "

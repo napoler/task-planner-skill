@@ -316,8 +316,8 @@ fi
 # VC_GATE 档位置 warn（本组只验 evidence-anchor 的贡献，不让别的门抢先 exit 1）。
 F16="$(mktemp -d "${TMPDIR:-/tmp}/ea16.XXXXXX")"
 make_fixture "$F16" '/etc/hostname'
-env TASK_PLANNER_VC_GATE_ENFORCE=warn TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=enforce \
-    bash "$CC" "$F16/task_plan.md" < /dev/null > "$F16/cc.out" 2> "$F16/cc.err"
+env TASK_PLANNER_VC_GATE_ENFORCE=warn TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=enforce TASK_PLANNER_RVC_COVERAGE_ENFORCE=off \
+    bash "$CC" "$F16/task_plan.md" < /dev/null > "$F16/cc.out" 2> "$F16/cc.err"  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 _rc16=$?
 if [ "$_rc16" -ne 0 ] && grep -q '\[evidence-anchor\]' "$F16/cc.err" && grep -q 'EVIDENCE-ANCHOR FAILED' "$F16/cc.err"; then
     ok 16 "端到端负例（R-COVERAGE 证据格=/etc/hostname）enforce 档 exit=$_rc16≠0 且 stderr 含 [evidence-anchor]"
@@ -327,16 +327,16 @@ fi
 # EA-17 干净夹具（证据=夹具内真实文件 + 合法行号）→ 本门不得报 FAILED
 F17="$(mktemp -d "${TMPDIR:-/tmp}/ea17.XXXXXX")"
 make_fixture "$F17" 'artifact.md:2'
-env TASK_PLANNER_VC_GATE_ENFORCE=warn TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=enforce \
-    bash "$CC" "$F17/task_plan.md" < /dev/null > "$F17/cc.out" 2> "$F17/cc.err"
+env TASK_PLANNER_VC_GATE_ENFORCE=warn TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=enforce TASK_PLANNER_RVC_COVERAGE_ENFORCE=off \
+    bash "$CC" "$F17/task_plan.md" < /dev/null > "$F17/cc.out" 2> "$F17/cc.err"  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 if ! grep -q 'EVIDENCE-ANCHOR FAILED' "$F17/cc.err"; then
     ok 17 "端到端正例（证据锚全真实）→ 本门无 FAILED 行（不误拦合法交付）"
 else
     bad 17 "端到端正例被本门误拦: $(grep 'EVIDENCE-ANCHOR FAILED' "$F17/cc.err" | head -1)"
 fi
 # EA-19 warn 档不阻断（同 EA-16 缺陷夹具，档位降 warn）
-env TASK_PLANNER_VC_GATE_ENFORCE=warn TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=warn \
-    bash "$CC" "$F16/task_plan.md" < /dev/null > "$F16/ccw.out" 2> "$F16/ccw.err"
+env TASK_PLANNER_VC_GATE_ENFORCE=warn TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE=warn TASK_PLANNER_RVC_COVERAGE_ENFORCE=off \
+    bash "$CC" "$F16/task_plan.md" < /dev/null > "$F16/ccw.out" 2> "$F16/ccw.err"  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 if grep -q 'EVIDENCE-ANCHOR WARNING' "$F16/ccw.err" && ! grep -q 'EVIDENCE-ANCHOR FAILED' "$F16/ccw.err"; then
     ok 19 "warn 档不阻断：stderr 含 EVIDENCE-ANCHOR WARNING 且无 FAILED（三档语义在位）"
 else

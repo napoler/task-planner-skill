@@ -158,6 +158,41 @@ case "$mode" in
     else
       echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
     fi
+    # [2026-10-17 task-v184-S4/P-09] 档位声明外部复核接线。
+    # What: shell-out check-tier-consistency.sh 复核 plan_tier: standard/mini 自声明与 Rule 38.1
+    #       体量判据（Phase 数/VC 数/S-unit 数/行数/scope 文件数，机器近似；含 execution_lane
+    #       L0/L0-T 轻量通道复核）——自声明降档无外部复核=L0/mini 滥用入口（report §5 P-09）。
+    # Why:  R1+report §5 P-09「复用 Rule 38.1 判据为单一 truth source 不新造阈值」——判定器
+    #       内机器近似 38.1 四条件，本接线层 enforce=enforce 时 rc=1 即拒锁。档位: env
+    #       TASK_PLANNER_TIER_CONSISTENCY_ENFORCE > config.json tier_consistency_enforce
+    #       > enforce（结构类门 enforce 起步=task-v184 [align] 分档裁决：warn 档实证挡不住
+    #       交付声称）。off=跳过；判定器缺失 fail-open 放行；rc=2 输入异常 fail-open；
+    #       standard 声明不触发（无降档行为=无判定面，判定器自身 SKIP）。
+    tc_tier="${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}"
+    case "$tc_tier" in enforce|warn|off) ;; *)
+      tc_tier="$(jq -r '.tier_consistency_enforce // .properties.tier_consistency_enforce.default // "enforce"' \
+        "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json" 2>/dev/null)" || tc_tier="enforce"
+      case "$tc_tier" in enforce|warn|off) ;; *) tc_tier="enforce" ;; esac
+    esac
+    if [ "$tc_tier" != "off" ]; then
+      tc_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-tier-consistency.sh"
+      if [ -f "$tc_script" ]; then
+        bash "$tc_script" "$plan_dir"
+        tc_rc=$?
+        if [ "$tc_rc" -eq 2 ]; then
+          echo "[attest] [tier-consistency] ⚠ 判定器输入异常 rc=2（fail-open 不阻断）" >&2
+        elif [ "$tc_rc" -eq 1 ]; then
+          if [ "$tc_tier" = "enforce" ]; then
+            echo "[attest] ✗ [tier-consistency] 档位声明与体量不符（plan_tier 降档但体量达 standard 级），拒绝锁定(P-09/task-v184；降档 env TASK_PLANNER_TIER_CONSISTENCY_ENFORCE=warn)" >&2
+            exit 1
+          else
+            echo "[attest] [tier-consistency] ⚠ 档位声明与体量不符（warn 档不阻断）" >&2
+          fi
+        fi
+      else
+        echo "[attest] [gate-degraded] check-tier-consistency.sh 缺失，P-09 门 fail-open 放行" >&2
+      fi
+    fi
     # [2026-10-05 task-v131 S-unit P2-S3] Rule 51.1 需求原文区块门(审计 H-3 清账, 锁定面载体):
     # ① What: 非 mini 计划锁定前必含四锚——51.1 三锚(标题「## 🎯 用户需求原文」+ R 需求行 ≥1
     #   (正则 ^[[:space:]]*[-*][[:space:]]+\*\*R[0-9] 覆盖行首/缩进、- 或 * 号列表项的
@@ -310,6 +345,41 @@ case "$mode" in
               fi
             else
               echo "[attest] [gate-degraded] check-rvc-coverage.sh 缺失，P-08 门 fail-open 放行" >&2
+            fi
+          fi
+          # [2026-10-17 task-v184-S3/P-03] 计划步骤占位符接线。
+          # What: shell-out check-step-placeholders.sh 补判 Phases 段步骤行的硬占位符（TBD/待定类）
+          #       与软模糊词（「优化一下」类）——上方门链只看结构不看步骤可执行性=审计漏检类③
+          #       （report §5 P-03）。
+          # Why:  R1+report §5 P-03「接线 attest-plan.sh 锁定门链+硬占位 enforce/软模糊 warn
+          #       分档」——判定器内分档，本接线层 enforce=enforce 时 rc=1 即拒锁。档位: env
+          #       TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE > config.json step_placeholder_enforce
+          #       > enforce（结构类门 enforce 起步=task-v184 [align] 分档裁决：warn 档实证挡不住
+          #       交付声称）。off=跳过；判定器缺失 fail-open 放行；rc=2 输入异常 fail-open；
+          #       mini 档不降档（结构判定与体量无关，判定器对无判定面自身 SKIP）。
+          sp_tier="${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}"
+          case "$sp_tier" in enforce|warn|off) ;; *)
+            sp_tier="$(jq -r '.step_placeholder_enforce // .properties.step_placeholder_enforce.default // "enforce"' \
+              "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json" 2>/dev/null)" || sp_tier="enforce"
+            case "$sp_tier" in enforce|warn|off) ;; *) sp_tier="enforce" ;; esac
+          esac
+          if [ "$sp_tier" != "off" ]; then
+            sp_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-step-placeholders.sh"
+            if [ -f "$sp_script" ]; then
+              bash "$sp_script" "$plan_dir"
+              sp_rc=$?
+              if [ "$sp_rc" -eq 2 ]; then
+                echo "[attest] [step-placeholder] ⚠ 判定器输入异常 rc=2（fail-open 不阻断）" >&2
+              elif [ "$sp_rc" -eq 1 ]; then
+                if [ "$sp_tier" = "enforce" ]; then
+                  echo "[attest] ✗ [step-placeholder] 存在不可执行步骤（硬占位符 TBD/待定类或软模糊词无锚），拒绝锁定(P-03/task-v184；降档 env TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE=warn)" >&2
+                  exit 1
+                else
+                  echo "[attest] [step-placeholder] ⚠ 存在不可执行步骤（warn 档不阻断）" >&2
+                fi
+              fi
+            else
+              echo "[attest] [gate-degraded] check-step-placeholders.sh 缺失，P-03 门 fail-open 放行" >&2
             fi
           fi
         fi

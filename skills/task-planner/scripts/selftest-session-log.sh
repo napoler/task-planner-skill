@@ -85,10 +85,10 @@ t "SL-07 init-session.sh 'copy_template \"user-session-log.md\"'≥1 ∧ '6/6'=1
 t "SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'=0, 纯静态)" bash -c "
     [ \"\$(grep -cE '当前条目数|最近一条' '$TPL')\" -eq 0 ]"
 
-# SL-09: 零新 config 键（properties 键数恒 47; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46, P-01 新增 evidence_anchor_enforce 46→47）；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
+# SL-09: 零新 config 键（properties 键数恒 53; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46, P-01 新增 evidence_anchor_enforce 46→47, task-v172/v174/v184 合法新增至 53；[task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐））；jq 缺失 = SKIP 计 PASS（对齐 DD-20 先例）
 if command -v jq >/dev/null 2>&1; then
-    t "SL-09 config.json properties 键数 = 47（零新 config 键, jq; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46, P-01 1 键 46→47）" bash -c "
-        [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 47 ]"
+    t "SL-09 config.json properties 键数 = 53（零新 config 键, jq; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46, P-01 1 键 46→47, [task-v184-S2b] 47→53）" bash -c "
+        [ \"\$(jq '.properties|keys|length' '$CONFIG')\" -eq 53 ]"  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）
 else
     echo "[SKIP] SL-09 jq 不可用, 降级 SKIP 计 PASS（对齐 DD-20 先例）"
     PASS=$((PASS+1))

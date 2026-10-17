@@ -351,8 +351,8 @@ RCOV_FIX="$(mktemp -d "${TMPDIR:-/tmp}/rcov-selftest.XXXXXX")"
 } > "$RCOV_FIX/progress.md"
 # 跑 enforce 档终验（env 覆盖档位，零新 config 键承诺不变；R 锚「缺行→不得 COMPLETE」）。
 # env VAR=x bash 写法：env 前置于命令=单命令原子传参，重定向顺序无歧义（stderr 落夹具内 rcov.err 留证）。
-env TASK_PLANNER_VC_GATE_ENFORCE=enforce bash "$CC_SCRIPT" "$RCOV_FIX/task_plan.md" \
-  < /dev/null > "$RCOV_FIX/rcov.out" 2> "$RCOV_FIX/rcov.err"
+env TASK_PLANNER_VC_GATE_ENFORCE=enforce TASK_PLANNER_RVC_COVERAGE_ENFORCE=off bash "$CC_SCRIPT" "$RCOV_FIX/task_plan.md" \
+  < /dev/null > "$RCOV_FIX/rcov.out" 2> "$RCOV_FIX/rcov.err"  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 RCOV_RC=$?
 _rcov_err="$RCOV_FIX/rcov.err"
 if [ "$RCOV_RC" -ne 0 ] && grep -q 'rcov-gate' "$_rcov_err" && grep -q '拒 COMPLETE 只可 PARTIAL' "$_rcov_err"; then
@@ -466,11 +466,11 @@ for _d in "$_RC20_FIX" "$_RC20_POS"; do
   } > "$_d/progress.md"
 done
 # 负例/正例双跑（env 前置传 enforce 档位，同 RC-19 口径；stderr 落各夹具 rcov.err 留证）
-env TASK_PLANNER_VC_GATE_ENFORCE=enforce bash "$CC_SCRIPT" "$_RC20_FIX/task_plan.md" \
-  < /dev/null > "$_RC20_FIX/rcov.out" 2> "$_RC20_FIX/rcov.err"
+env TASK_PLANNER_VC_GATE_ENFORCE=enforce TASK_PLANNER_RVC_COVERAGE_ENFORCE=off bash "$CC_SCRIPT" "$_RC20_FIX/task_plan.md" \
+  < /dev/null > "$_RC20_FIX/rcov.out" 2> "$_RC20_FIX/rcov.err"  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 rc20_neg_rc=$?
-env TASK_PLANNER_VC_GATE_ENFORCE=enforce bash "$CC_SCRIPT" "$_RC20_POS/task_plan.md" \
-  < /dev/null > "$_RC20_POS/rcov.out" 2> "$_RC20_POS/rcov.err"
+env TASK_PLANNER_VC_GATE_ENFORCE=enforce TASK_PLANNER_RVC_COVERAGE_ENFORCE=off bash "$CC_SCRIPT" "$_RC20_POS/task_plan.md" \
+  < /dev/null > "$_RC20_POS/rcov.out" 2> "$_RC20_POS/rcov.err"  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 rc20_pos_rc=$?
 _rc20_neg_err="$_RC20_FIX/rcov.err"
 _rc20_pos_err="$_RC20_POS/rcov.err"

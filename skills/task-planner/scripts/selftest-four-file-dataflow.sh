@@ -106,10 +106,10 @@ ge   "FF-14 SKILL Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule
 PROPS="$(jq '.properties | length' "$CONFIG" 2>/dev/null || echo -1)"
 NEWKEY="$(jq -r '.properties | keys[]' "$CONFIG" 2>/dev/null | grep -c -e 'four_file' -e 'kb_distill' -e 'contract_narrow' -e 'require_kb')"
 NEWKEY="${NEWKEY:-0}"
-if [ "$NEWKEY" -eq 0 ] && [ "$PROPS" -eq 47 ]; then
-    ok "FF-15 config 零新键(相关字面=0 ∧ properties=47 时点基线; task-v171 40→42、task-perf-opt 42→44、task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46、P-01 合法新增 evidence_anchor_enforce 1 键 46→47)"
+if [ "$NEWKEY" -eq 0 ] && [ "$PROPS" -eq 53 ]; then  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）
+    ok "FF-15 config 零新键(相关字面=0 ∧ properties=53 时点基线; task-v171 40→42、task-perf-opt 42→44、task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46、P-01 合法新增 evidence_anchor_enforce 1 键 46→47、[task-v184-S2b] 47→53)"
 else
-    bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,47)"
+    bad "FF-15 config 零新键" "got=(newkey=$NEWKEY,props=$PROPS) expect=(0,53)"
 fi
 
 # ── 负断言：Rule 62 块范围内无 66.x（语境锚定，防裸全文误触）──

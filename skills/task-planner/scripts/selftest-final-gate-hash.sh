@@ -34,7 +34,7 @@ STATE_FILE="${TMPDIR:-/tmp}/task-planner-final-gate-$(printf '%s' "$PLAN_DIR" | 
 trap 'rm -rf "$SB"; rm -f "$STATE_FILE" 2>/dev/null' EXIT
 
 # run_cc — 跑沙箱副本 check-complete, 输出落 $SB/cc.out, echo rc
-run_cc() { bash "$SKL/scripts/check-complete.sh" "$PLAN" > "$SB/cc.out" 2>&1; echo $?; }
+run_cc() { TASK_PLANNER_RVC_COVERAGE_ENFORCE=off bash "$SKL/scripts/check-complete.sh" "$PLAN" > "$SB/cc.out" 2>&1; echo $?; }  # [task-v184-S2b] RVC 单元隔离：本 selftest 测自身门，RVC 交互面由 check-rvc-coverage 注入夹具覆盖
 
 # skip_lines — $SB/cc.out 中 SKIP-BY-HASH 行数(两门各一行)
 skip_lines() { grep -c 'SKIP-BY-HASH' "$SB/cc.out" 2>/dev/null || true; }
