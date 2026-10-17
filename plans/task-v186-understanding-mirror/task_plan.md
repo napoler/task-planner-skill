@@ -81,10 +81,10 @@ n/a（纯手段型任务）——R1-R5 全 [手段]（交付物=记录机制条�
 
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式 | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|-------------|------------------|------|
-| G1 | 条款落地 | 80.7 入核心规则文件 | grep ^80.7 理解镜像=1 | S1/Phase 2 | pending |
-| G2 | 配对格式 | 专档模板+指针区块+SKILL 指针更新 | grep 理解镜像 三文件命中 | S2/Phase 2 | pending |
-| G3 | 回归绿 | selftest FAIL=0 | run-selftests --fresh FAIL=0 | S3/Phase 3 | pending |
-| G4 | 合并收口 | --no-ff 合并+清理+归档簿记 | merge 在 log ∧ worktree=0 | Phase 4-5 | pending |
+| G1 | 条款落地 | 80.7 入核心规则文件 | grep ^80.7 理解镜像=1 | S1/Phase 2 | complete |
+| G2 | 配对格式 | 专档模板+指针区块+SKILL 指针更新 | grep 理解镜像 三文件命中 | S2/Phase 2 | complete |
+| G3 | 回归绿 | selftest FAIL=0 | run-selftests --fresh FAIL=0 | S3/Phase 3 | complete |
+| G4 | 合并收口 | --no-ff 合并+清理+归档簿记 | merge 在 log ∧ worktree=0 | Phase 4-5 | complete |
 
 ## ⚠️ 执行范围限制
 
@@ -136,11 +136,11 @@ n/a（纯执行类）。
 
 ## Current Phase
 
-Phase 5
+终态（全 5 Phase complete，outcome=COMPLETE）
 
 ## Next Step
 
-CR→Verifier→align 三门→check-complete→归档→尾提交。
+尾提交（Rule 90.2 收口锚）+会话收尾。
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -197,10 +197,12 @@ CR→Verifier→align 三门→check-complete→归档→尾提交。
 - **merge_back**: merged（见 git log merge(task-v186)）
 
 ### Phase 5: 终验与交付
-- [ ] CR Gate 单轮+S4 Verifier 独立复验+alignment-review 单轮
-- [ ] INDEX 刷新+归档尝试+delivery-summary 五要素
-- **V-N:** VC-5, VC-6
-- **Status:** in_progress
+- [x] CR Gate：**APPROVED**（3💬 Nit：①②已续修 34fa8b9、③dogfood 历史标注保留；报告 5-code-reviewer.md）
+- [x] S4 Verifier 独立复验：**PASS 6/6**（5-s4-verifier.md，VC-4 双跑稳定 FAIL=0）
+- [x] alignment-review：**APPROVED**（5/5 项 PASS；2 条 P2 观察不阻断——findings 草稿快照为 Nit 前态/镜像「草案格式」历史标注，均以 critical-rules.md:146 为权威口径）
+- [x] INDEX 刷新+归档尝试+delivery-summary 五要素
+- **V-N:** VC-5 ✓(=1), VC-6 ✓(Verifier 复验)
+- **Status:** complete
 - **Executor:** Verifier（mini）（核查子代理；主进程簿记走白名单②）
 
 ### Phase 5: 终验与交付
@@ -247,7 +249,8 @@ CR→Verifier→align 三门→check-complete→归档→尾提交。
 
 | Decision | Rationale |
 |----------|-----------|
-| 计划推进重锁 #N | （状态翻转时随翻转登记，Rule 20.1 授权路径） |
+| 计划推进重锁 #2 | Phase 3/4/5→complete 终态翻转+Goal 单元表翻格；CR Nit 续修（34fa8b9）为 APPROVED 内微修随 Decisions 登记 |
+| 计划推进重锁 #1 | Phase 1→complete、Phase 2→in_progress 状态翻转（16:35 前后），Rule 20.1 授权路径 |
 | silent: 落点=Rule 80 子条 80.7 | 辖域一致+零编号级联+零新键；对齐 19.8 增补判例 |
 | silent: 镜像=同文件配对块（非独立第 8 文件） | 机械面 blast radius 最小（init/门控/selftest 零改动）；80.4 权威序天然保持（同文件内逐字面>镜像面）；回溯同屏对照 |
 | silent: 镜像=非权威对照面+append-only 更正块 | 用户目的=回溯对照定位偏差（非改写需求）；理解演进留痕对齐 80.2 只写不改精神 |

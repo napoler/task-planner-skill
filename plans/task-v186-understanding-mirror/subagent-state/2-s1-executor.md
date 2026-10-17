@@ -50,3 +50,9 @@
 - critical-rules.md：1 处（80.7 插入）
 - SKILL.md：2 处（Rule 80 指针行 + G9 合规行）
 - 合计 3 处，全部成功。
+
+## CR Nit 续修（master 仓 critical-rules.md :146，2026-10-17）
+- ① `约束假设择要有；` → `约束假设择要包含；`（Edit 唯一命中）
+- ② `判定面=LLM 行为+模板格式锚，` → `判定面=LLM 行为+本子条文本锚+templates/user-session-log.md 格式锚，`（Edit 唯一命中）
+- master 根验证：`grep -c "择要包含"`=1；`grep -c "本子条文本锚"`=1
+- 仅改 80.7 行此两处，未动其他任何字符。

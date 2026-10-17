@@ -47,24 +47,37 @@
   | 重点项 | selftest-session-log | FAIL=0 | PASS=12 FAIL=0 | PASS |
 
 ### Phase 4: 合并回主仓
-- **Status:** pending
-- **Started:**
+- **Status:** complete
+- **Started:** 2026-10-17 16:50
+- **R 锚定**：本 Phase 服务 R2——合并使配对机制进入 master 主线。
 - Actions taken:
-  -
+  - 主仓干净核对 ✓→merge --no-ff（d6a63a6）→核验（80.7=1）→worktree 清理（list=0）→簿记提交 2693431
 - Files created/modified:
-  -
+  - master 4 个 scope 文件（merge d6a63a6）
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 合并核验 | grep ^80.7 | =1 | 1 | PASS |
+  | worktree 残留 | list grep | =0 | 0 | PASS |
 
 ### Phase 5: 终验与交付
-- **Status:** pending
-- **Started:**
+- **Status:** complete
+- **Started:** 2026-10-17 17:05
+- **R 锚定**：本 Phase 服务 R4-R5——三重审查门确认配对机制可靠承载回溯纠偏诉求。
 - Actions taken:
-  -
+  - CR Gate：APPROVED（3💬 Nit；①②续修=34fa8b9，③dogfood 历史标注保留）
+  - Verifier 独立复验：PASS 6/6（5-s4-verifier.md）
+  - alignment-review：APPROVED 5/5（2 条 P2 观察不阻断；5-alignment-review.md）
+  - 派发契约 lint 三连拦实测与适配登记（findings §派发契约实测）
 - Files created/modified:
-  -
+  - skills/task-planner/references/critical-rules.md:146（Nit 续修，34fa8b9）
+  - subagent-state/{5-code-reviewer,5-s4-verifier,5-alignment-review}.md
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | CR Gate | 五维审查 | APPROVED | APPROVED | PASS |
+  | Verifier | 六项 VC 实跑 | 6/6 | PASS 6/6 | PASS |
+  | alignment | 五项清单 | APPROVED | APPROVED 5/5 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
