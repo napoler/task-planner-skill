@@ -160,10 +160,10 @@ n/a（纯执行类）。
 - [x] init 7 文件+指针指向本计划
 - [x] 侦察（Rule 80 现文/SL 断言面/模板位置，落 findings）
 - [x] 专档 dogfood：#1 逐字+#1 理解镜像配对落盘
-- [ ] attest 锁定+哨兵清除
-- [ ] worktree 创建（基线=主仓 HEAD）+resolve 复验
+- [x] attest 锁定（5c3dfd4e）+哨兵清除
+- [x] worktree 创建（基线=主仓 HEAD 6b3378f）+resolve 复验
 - **V-N:** VC-4, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① 纯 git/worktree 编排 ② 计划系统文件维护——Rule 25.3 白名单①②）
 
 ### Phase 2: 80.7 条款与配对格式落地（worktree）
@@ -176,8 +176,8 @@ n/a（纯执行类）。
 
 | ID | 目标 | 执行体 | 输入 | 验收 | 预估时长 | 粒度 | 伴飞技能 | 前置依赖 | 状态 |
 |----|------|--------|------|------|---------|------|---------|---------|------|
-| S1 | 80.7 条款+SKILL 指针落地 | executor(sonnet-1) | <plan>/s1-brief.md（80.7 草稿与精确编辑点）；<worktree>/skills/task-planner/references/critical-rules.md 与 SKILL.md | grep ^80.7=1 ∧ SKILL 理解镜像≥1 | 15min | 2f/20l/15min | 无 | - | pending |
-| S2 | 两模板配对格式 | executor(sonnet-1) | <plan>/s2-brief.md（镜像块格式与插入位）；<worktree>/skills/task-planner/templates/user-session-log.md 与 task_plan.md | 两文件 grep 理解镜像命中 | 15min | 2f/15l/15min | 无 | S1 | pending |
+| S1 | 80.7 条款+SKILL 指针落地 | executor(sonnet-1) | <plan>/s1-brief.md（80.7 草稿与精确编辑点）；<worktree>/skills/task-planner/references/critical-rules.md 与 SKILL.md | grep ^80.7=1 ∧ SKILL 理解镜像≥1 | 15min | 2f/20l/15min | 无 | - | done |
+| S2 | 两模板配对格式 | executor(sonnet-1) | <plan>/s2-brief.md（镜像块格式与插入位）；<worktree>/skills/task-planner/templates/user-session-log.md 与 task_plan.md | 两文件 grep 理解镜像命中 | 15min | 2f/15l/15min | 无 | S1 | done |
 
 ### Phase 3: 全量回归（worktree）
 - [x] run-selftests --fresh：**Total: 91 PASS=91 FAIL=0**（selftest-session-log 12/12 过）
@@ -187,7 +187,7 @@ n/a（纯执行类）。
 
 | ID | 目标 | 执行体 | 输入 | 验收 | 预估时长 | 粒度 | 伴飞技能 | 前置依赖 | 状态 |
 |----|------|--------|------|------|---------|------|---------|---------|------|
-| S3 | worktree 全量回归 | code-runner-agent(mini) | <worktree>/；命令 run-selftests.sh --fresh | 末行 FAIL=0 | 15min | 1f/0l/15min | 无 | S1,S2 | pending |
+| S3 | worktree 全量回归 | code-runner-agent(mini) | <worktree>/；命令 run-selftests.sh --fresh | 末行 FAIL=0 | 15min | 1f/0l/15min | 无 | S1,S2 | done |
 
 ### Phase 4: 合并回主仓
 - [x] 主仓干净核对 ✓→merge --no-ff→核验（80.7=1）→worktree 清理（list=0）
@@ -205,16 +205,9 @@ n/a（纯执行类）。
 - **Status:** complete
 - **Executor:** Verifier（mini）（核查子代理；主进程簿记走白名单②）
 
-### Phase 5: 终验与交付
-- [ ] CR Gate 单轮+S4 Verifier 独立复验+alignment-review 单轮
-- [ ] INDEX 刷新+归档尝试+delivery-summary 五要素
-- **V-N:** VC-5, VC-6
-- **Status:** pending
-- **Executor:** Verifier（mini）（核查子代理；主进程簿记走白名单②）
-
 | ID | 目标 | 执行体 | 输入 | 验收 | 预估时长 | 粒度 | 伴飞技能 | 前置依赖 | 状态 |
 |----|------|--------|------|------|---------|------|---------|---------|------|
-| S4 | 独立复验六项 VC | Verifier(mini) | <plan>/verification.md；主仓根 | 六项 PASS 表 | 15min | 1f/0l/15min | 无 | Phase 4 | pending |
+| S4 | 独立复验六项 VC | Verifier(mini) | <plan>/verification.md；主仓根 | 六项 PASS 表 | 15min | 1f/0l/15min | 无 | Phase 4 | done |
 
 ## 🔀 隔离决策
 
@@ -249,6 +242,7 @@ n/a（纯执行类）。
 
 | Decision | Rationale |
 |----------|-----------|
+| 计划推进重锁 #3（缺陷自纠登记） | 收口段守卫抓出两处本计划 Write 缺陷：Phase 1 漏做 complete 翻转（:166 残留 in_progress）+Phases 尾部残留重复 Phase 5 骨架块（6 条 Status 行致 archive status-incomplete 拒绝）——本次修正：补翻转+删残留块+S-unit 状态列 pending→done；上一提交 43f2367 信息误称「已归档」同步 amend 修正（归档实为被拒，修复后由后续提交承载） |
 | 计划推进重锁 #2 | Phase 3/4/5→complete 终态翻转+Goal 单元表翻格；CR Nit 续修（34fa8b9）为 APPROVED 内微修随 Decisions 登记 |
 | 计划推进重锁 #1 | Phase 1→complete、Phase 2→in_progress 状态翻转（16:35 前后），Rule 20.1 授权路径 |
 | silent: 落点=Rule 80 子条 80.7 | 辖域一致+零编号级联+零新键；对齐 19.8 增补判例 |
