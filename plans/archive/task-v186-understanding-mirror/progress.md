@@ -9,28 +9,38 @@
 ## Session: 2026-10-17
 
 ### Phase 1: 计划与隔离基线
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-17 16:21
 - **R 锚定**：本 Phase 服务 R2-R3「模型理解同步存储、与逐字记录配对」——计划簿记+专档配对格式首例 dogfood。
 - Actions taken:
   - init 7 文件；专档 #1 逐字+#1 理解镜像配对落盘（新格式首例 dogfood，16:21）
   - 侦察：Rule 80=80.1-80.6（核心 :129-144）；SL-01..11 断言面正向锚不受增量影响（SL-08 负断言安全）；指针区块模板唯一载体=templates/task_plan.md
+  - attest 5c3dfd4e 锁定+哨兵清除+worktree 创建（基线 6b3378f）
 - Files created/modified:
-  - plans/task-v186-understanding-mirror/ 七件套
+  - plans/task-v186-understanding-mirror/ 七件套+s1/s2-brief
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | 专档配对 | grep "#1 理解镜像" | =1 | 1 | PASS |
 
 ### Phase 2: 80.7 条款与配对格式落地
-- **Status:** pending
-- **Started:**
+- **Status:** complete
+- **Started:** 2026-10-17 16:45
+- **R 锚定**：本 Phase 服务 R2-R3——条款与配对格式落地是机制本体。
 - Actions taken:
-  -
+  - S1 executor：80.7 入核心 critical-rules.md:146+SKILL 两处指针（3/3 自验+主进程 8 项亲验）
+  - S2 executor：专档模板配对块+格式范式 ④+计划模板指针静态行（SL-08 grep=0）
+  - drift-checker：ALIGNED（2-drift-checker.md）
+  - Rule 27 提交：worktree commit 9c560d2（4 文件 +10/-3）
 - Files created/modified:
-  -
+  - worktree 4 个 scope 文件（后随 merge d6a63a6 入 master）
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-1/2/3 | 8 项 grep | 全达标 | 1 / 3,1,2 / 1,1,1 | PASS |
+  | drift | 三态 | ALIGNED | ALIGNED | PASS |
+- [goal:G1] grep -c "^80.7 \*\*理解镜像"=1@critical-rules.md:146（9c560d2，主进程亲验）
+- [goal:G2] grep 理解镜像=3/1/2（模板×2+SKILL，9c560d2，Verifier 复验一致）
 
 ### Phase 3: 全量回归
 - **Status:** complete
@@ -45,6 +55,7 @@
   |------|-------|----------|--------|--------|
   | 全量回归 | run-selftests --fresh | FAIL=0 | Total: 91 PASS=91 FAIL=0 | PASS |
   | 重点项 | selftest-session-log | FAIL=0 | PASS=12 FAIL=0 | PASS |
+- [goal:G3] run-selftests --fresh 末行 FAIL=0（3-s3-code-runner-agent.md 检查点+Verifier 双跑一致）
 
 ### Phase 4: 合并回主仓
 - **Status:** complete
@@ -78,6 +89,7 @@
   | CR Gate | 五维审查 | APPROVED | APPROVED | PASS |
   | Verifier | 六项 VC 实跑 | 6/6 | PASS 6/6 | PASS |
   | alignment | 五项清单 | APPROVED | APPROVED 5/5 | PASS |
+- [goal:G4] merge(task-v186)=d6a63a6 在 log ∧ worktree list=0 ∧ 归档入库 plans/archive/（Verifier VC-6 复验+本提交承载）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
