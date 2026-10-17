@@ -114,11 +114,11 @@
 | 2026-10-18 01:08 | findings.md 追加时误将「### 诊断证据」标题替换为「## Issues Encountered」（Edit old_string 选锚错误，导致节结构破坏+重复标题） | 1 | 立即用上下文锚恢复原标题（前后句锚定唯一替换），复核节结构完整 | 直接原因=追加插入时误把目标锚当替换对；根因=大段 Edit 前未先确认 old_string 语义=「定位点」而非「替换对象」（类别=操作失误/锚选择） | 追加式写入一律用「锚定前插」模式（old_string=插入点紧邻标记+new_string=原标记+新内容），禁止裸标题作 old_string；本次已按此修复 | Edit(findings.md) |
 
 ## Goal 完成证据行（Rule 66.3）
-- [goal:G1] complete — VC-1/VC-2 断言过（collab 常设授权=6/SKILL 旧措辞=0；progress Phase 4 段 Test Results 表）
-- [goal:G2] complete — VC-3 断言过（39.8=5/subagent_model≥1；91.12 落位 collab.md:79）
-- [goal:G3] complete — VC-4 断言过（21.4.2=1/惰性=1；dispatch.md:34/:165）
-- [goal:G4] complete — VC-5 双跑（worktree ΣPASS=1304 ΣFAIL=0 + 主仓 91/91 红=0）
-- [goal:G5] complete — VC-6（merge 55fa43ca+3 部署位 0/9×3 对账 IDENTICAL）
+- [goal:G1] complete — bash grep -c 常设授权 /mnt/data/dev/task-planner-skill/skills/plan-collab-router/references/critical-rules-collab.md → 6 PASS（≥2 判据过；产物=该文件 :5/:24/:33）
+- [goal:G2] complete — bash grep -c 39.8 /mnt/data/dev/task-planner-skill/skills/plan-collab-router/references/critical-rules-collab.md → 5 PASS（≥2 判据过；91.12 落位 :79 含 subagent_model 选档）
+- [goal:G3] complete — bash grep -c 21.4.2 /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md → 1 PASS（惰性全串行论证义务=1 同过；产物 :34/:165）
+- [goal:G4] complete — bash skills/task-planner/scripts/selftest-*.sh 全量 91 脚本双跑 → 红=0 PASS（worktree ΣPASS=1304 ΣFAIL=0 + 主仓复跑；progress Phase 3/4 段）
+- [goal:G5] complete — bash diff -rq 主仓 vs 3 部署位 9 文件 → 0/9×3 差异 PASS（IDENTICAL；merge 55fa43ca；progress Phase 4 段）
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
