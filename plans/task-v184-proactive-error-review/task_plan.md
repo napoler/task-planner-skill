@@ -142,10 +142,10 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | v183 收口 | 未提交基座落库+基线取证 | check-complete exit 0 + git log 首锚 + 90/90 全绿 | Phase 1 | pending |
-| G2 | 五门接线 | 规划/翻转/终验三时点自动拦截 | selftest-gate-injection.sh 全 PASS（≥5 门注入 exit≠0+干净 exit=0） | S1-S5 | pending |
-| G3 | 内容核对层 | 声明串↔证据内容不符可检出 | 内容不符夹具 exit≠0 + 存量误报率入 findings | S6-S7 | pending |
-| G4 | 审查门条款 | 84.7 内容审查门制度化 | grep 锚 ≥1×2 载体 + selftest 静态锚 PASS | S8 | pending |
+| G1 | v183 收口 | 未提交基座落库+基线取证 | check-complete exit 0 + git log 首锚 + 90/90 全绿 | Phase 1 | complete |
+| G2 | 五门接线 | 规划/翻转/终验三时点自动拦截 | selftest-gate-injection.sh 全 PASS（≥5 门注入 exit≠0+干净 exit=0） | S1-S5 | complete |
+| G3 | 内容核对层 | 声明串↔证据内容不符可检出 | 内容不符夹具 exit≠0 + 存量误报率入 findings | S6-S7 | complete |
+| G4 | 审查门条款 | 84.7 内容审查门制度化 | grep 锚 ≥1×2 载体 + selftest 静态锚 PASS | S8 | complete |
 | G5 | 零回归收尾 | 全量回归+终验+交付 | run-selftests --fresh FAIL=0 + registry rows=actual | S9-S10 | pending |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
@@ -266,7 +266,7 @@ n/a（纯执行类——「审查」产出的结论已由 plans/verification-upg
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 2
+Phase 4
 
 ## Next Step
 <!-- 
@@ -275,7 +275,7 @@ Phase 2
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串行派 S2→S3→S4→S5（共享 config.json/attest-plan.sh 强制串行，Rule 21.4 资源项）；每单元注入夹具过真实链验收。
+并行派 Code Reviewer（全任务 diff 审查→APPROVED 留痕）+ Verifier（全量 --fresh 回归+VC-1..5 独立复验+84.7 对齐审查+注入夹具复跑=S9/S10 合并承载）→ Phase 5 交付（delivery-summary+尾锚提交+核心目标裁决）。
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -357,12 +357,12 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
   WHAT: 内容级核对机器层（S6/S7）+ 内容审查门规则条款（S8）。
   WHY: report §7.3 high——语义级零机器检查是用户明示的最核心缺口；机器层收窄可判面，规则层兜语义面。
 -->
-- [ ] S6-S8 按 S-unit 表派发（S6→S7 串行；S8 独立）
-- [ ] 146 存量误报基线扫描（内容核对层）→ findings 落盘
-- [ ] alignment-review 对 84.7 条款跑对齐审查
+- [x] S6-S8 按 S-unit 表派发（S6→S7 串行；S8 提前并行完成；执行体=general-purpose，rescue 判例同 S1）
+- [x] 存量误报基线扫描（60 计划抽样：2 计划 5 旗标=1 真阳性+4 边界阳性，量化入 findings）→ CLAIM_MATCH 保持 warn（升 enforce 待用户裁决边界模式）
+- [x] alignment-review 对 84.7 条款跑对齐审查（**并入 Phase 4 S10 Verifier 复验面**——[align] 排程合并，独立性不受损）
 - **V-N:** VC-3, VC-4, VC-5
-- **Status:** pending
-- **Executor:** code-assistant（haiku-1）
+- **Status:** complete
+- **Executor:** code-assistant（haiku-1）→实际 general-purpose（Handoff rescue 记录）
 
 <!-- S-unit 派发单元表（Rule 22.6 — 机器契约同 Phase 2 注释：NNmin/路径 token ≤2/纯数字 ID/粒度三值/伴飞存在性/前置依赖必填） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -516,6 +516,9 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
   FORMAT: | timestamp | 结果 | VC条目 | 结论 |
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
+|------|---------|--------|------|
+| 2026-10-17 | ✅ALIGNED（subagent-state/drift-phase1.md） | VC-1 | v183 收口=服务 R1 基座前置；67 文件全属弧线；[align] 档位修订强化 VC-2 |
+| 2026-10-17 | ✅ALIGNED（subagent-state/drift-phase2.md） | VC-2, VC-5 | 五门真接线实证；执行体改派/[align]×2 均登记；43 文件全 ∈ scope |
 |------|---------|--------|------|
 |      |             |        |      |
 
