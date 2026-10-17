@@ -107,7 +107,7 @@ if [ "$n" -ge 1 ]; then ok 11 "mini-lite「Rule 42.5 豁免」声明行 $n ≥1"
 # [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "47" ]; then ok 12 "config.json properties 键数 47（基线含 v145 2 键 + task-perf-opt 2 键 + task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 12 "config.json properties 键数=$keys（应 47）"; fi
+  if [ "$keys" = "48" ]; then ok 12 "config.json properties 键数 48（基线含 v145 2 键 + task-perf-opt 2 键 + task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 12 "config.json properties 键数=$keys（应 48）"; fi
 else
   printf 'R-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

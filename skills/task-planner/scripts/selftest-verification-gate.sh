@@ -9,7 +9,7 @@
 # 输入：skills/verification-gate/{SKILL.md,references/critical-rules-verification.md,templates/verification.md,
 #      scripts/run-verification.sh}、skills/task-planner/{SKILL.md,references/critical-rules.md,scripts/attest-plan.sh,
 #      config.json}（只读，grep/test，零写入）。
-# 输出：VG-01..VG-12 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1。
+# 输出：VG-01..VG-13 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1。
 # 依赖：bash + grep + test；无 jq 依赖（config 键数用 grep -cE 计数，无 jq 降级路径）。
 set -u
 
@@ -141,6 +141,17 @@ if grep -q 'selftest-verification-gate.sh' "$TP_ROOT/scripts/selftest-registry.t
   ok 12 "selftest-registry.tsv 含本脚本登记行"
 else
   bad 12 "selftest-registry.tsv 缺 selftest-verification-gate.sh 登记行（回归不运行本守护）"
+fi
+
+# VG-13 [task-v184-S8] Rule 84.7 内容审查门静态锚（规则正文 + 消费面引用）
+# What：断言 critical-rules-verification.md 与卫星 SKILL.md 各含 '84.7' ≥1（grep -c '84\.7' ≥1）。
+# Why：84.7 内容审查门（task-v184 R3 载体）——规则正文被删=语义面审查门失效；SKILL.md 消费面引用缺失=终验 SOP 不触达 84.7。
+V13_CRIT="$(grep -c '84\.7' "$SAT_CRIT" || true)"
+V13_SKILL="$(grep -c '84\.7' "$SAT_SKILL" || true)"
+if [ "$V13_CRIT" -ge 1 ] && [ "$V13_SKILL" -ge 1 ]; then
+  ok 13 "Rule 84.7 内容审查门静态锚在位（规则文件 ${V13_CRIT} + 卫星 SKILL.md ${V13_SKILL}，各≥1）"
+else
+  bad 13 "Rule 84.7 内容审查门锚缺失（规则文件=${V13_CRIT}/卫星 SKILL.md=${V13_SKILL}，各需≥1，task-v184-S8）"
 fi
 
 echo "----------------------------------------------------------------"

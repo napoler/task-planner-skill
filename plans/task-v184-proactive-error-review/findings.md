@@ -30,6 +30,11 @@
 - **归档守卫拒绝（Rule 81.3 fail-closed 合规路径）**：archive-plan.sh 两次拒绝 v183——active-pointer（死会话 ff9004a side 指针残留，已用 set-active-plan --clear --sid 清除）→ live-owner（.session-owner mtime 01:46<24h）。处置=保持原位+拒绝理由登记（commit 88284d7 message + 本行）；重试窗口=2026-10-18 01:46 后或 --batch。
 - **p05 判例细节**（findings v183 传承）：`tr -d '*#-'` 尾连字符=字面删除；`*-#` 为反向区间（`*`=0x2A>`#`=0x23）tr 报错→keyword 恒空→检测器死。
 
+## Research Findings（续）
+- **S1/P-02 接线完成（三投）**：attest-plan.sh VC 门段（:250-285 锁定期）+ check-complete.sh（resolve_vc_nonvacuous_tier/run_vc_nonvacuous :786-872 + VC-GATE 段尾调用）+ config `vc_nonvacuous_enforce=enforce`（47→48 键）+ 14 文件 16 处级联断言 48。**真实链拦截实证**：夹具 A（5 条 `Verify command: true`）check-complete rc=1 输出 `[vc-nonvacuous] ✗ VC-1 真空命令 ×5+VC-NONVACUOUS FAILED`；夹具 B（真实引用）rc=0；--only vc-gate/state-consistency/ask-default-timeout 全 PASS。checkpoint=subagent-state/S1-code-assistant.md（M1-M4）。
+- **S8/Rule 84.7 内容审查门落地**：critical-rules-verification.md:45-53（84.7.1 触发面/84.7.2 独立性/84.7.3 审查输入与维度/84.7.4 结论落盘/84.7.5 与机器层分工+Why 用户原话）+ SKILL.md:60 消费行 + VG-13 静态锚（selftest 13/13 PASS）。**编号撞车判例**：84.6 已被 task-v173 占用（「84.6 机制·零新 config 键」+VG-02 ≥6 下界断言）→ 改 84.7（下界断言天然兼容 7 子条）。已知瑕疵=VG-02 文案仍写「84.1-84.6 六子条」（断言逻辑不受影响，S7 顺手修）。
+- **执行体通道判例（重要）**：①Code Assistant 两投停摆（读后 narrate 即止，零落盘，1.23M/142K token 烧尽型）②委派守卫只拦主进程 Write/Edit（探针实证子代理双通道畅通）③第三投 general-purpose 收逐字编辑块任务书=84 工具调用全链完成且自愈一次 Edit 超时双插（dedup+grep 复核）。**结论=大编辑块任务书+general-purpose 是本仓 wiring 类任务可靠通道**；P-10 的「Bash+python 绕行」判例不需要（子代理 Write 本就畅通）。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |

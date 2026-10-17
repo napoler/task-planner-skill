@@ -165,10 +165,10 @@ if [ "$n" -ge 1 ]; then ok 15 "image-generation-executor.md 接线 capability-re
 #      突破既定零新键范式（机制漂移，需走 Rule 36 流程）。沿用 tsv 末列既有口径 `config properties=42`。
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "47" ]; then ok 16 "config.json properties 键数 47（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 16 "config.json properties 键数=$keys（应 47，未授权新键）"; fi
+  if [ "$keys" = "48" ]; then ok 16 "config.json properties 键数 48（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 16 "config.json properties 键数=$keys（应 48，未授权新键）"; fi
 elif command -v python3 >/dev/null 2>&1; then
   keys="$(python3 -c "import json;print(len(json.load(open('$CONFIG'))['properties']))" 2>/dev/null || true)"
-  if [ "$keys" = "47" ]; then ok 16 "config.json properties 键数 47（python3 校验; task-v172 合法新增 2 键 + P-01 1 键）"; else bad 16 "config.json properties 键数=$keys（应 47）"; fi
+  if [ "$keys" = "48" ]; then ok 16 "config.json properties 键数 48（python3 校验; task-v172 合法新增 2 键 + P-01 1 键）"; else bad 16 "config.json properties 键数=$keys（应 48）"; fi
 else
   printf 'CP-16 SKIPPED jq/python3 均缺失，无法校验 config.json 键数（安装任一后重跑）\n'
 fi

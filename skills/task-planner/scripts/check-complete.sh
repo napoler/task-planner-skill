@@ -783,6 +783,50 @@ if [ "$python_rc" -eq 0 ]; then
         return 0
     }
 
+    # [2026-10-17 task-v184-S1/P-02] VC 非真空门（终验期消费面；与 attest-plan.sh 锁定期接线同源双点）。
+    # What: run_vc_nonvacuous() 克隆 run_evidence_anchor 范式——档位解析 env > config > enforce、
+    #       判定器缺失/输入异常 fail-open、PASS 走 stdout / FAIL 明细走 stderr、enforce=exit 1。
+    # Why:  真空 Verify command（true/echo ok）使终验 VC 复验形同虚设（审计漏检类①）；接线后终验期
+    #       自动拦截（用户 R1）。结构类门 enforce 起步=task-v184 [align] 分档裁决。
+    resolve_vc_nonvacuous_tier() {
+        local m="${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        m="$(jq -r '.vc_nonvacuous_enforce // .properties.vc_nonvacuous_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        printf 'enforce'
+    }
+    VC_NONVACUOUS_TIER="$(resolve_vc_nonvacuous_tier)"
+    run_vc_nonvacuous() {
+        local vnv_out vnv_rc
+        [ "$VC_NONVACUOUS_TIER" = "off" ] && return 0
+        if [ ! -f "$SKILL_ROOT/scripts/check-vc-nonvacuous.sh" ]; then
+            printf '[vc-nonvacuous] ⚠ 门脚本缺失（fail-open 不阻断）: %s\n' \
+                "$SKILL_ROOT/scripts/check-vc-nonvacuous.sh" >&2
+            return 0
+        fi
+        vnv_out="$(bash "$SKILL_ROOT/scripts/check-vc-nonvacuous.sh" "$PLAN_DIR_GUESS")"
+        vnv_rc=$?
+        if [ "$vnv_rc" -eq 2 ]; then
+            printf '[vc-nonvacuous] ⚠ 输入异常 rc=2（fail-open 不阻断：plan-dir/verification.md 缺失或无判定面）\n' >&2
+            return 0
+        fi
+        if [ "$vnv_rc" -eq 0 ]; then
+            printf '%s\n' "$vnv_out"
+            return 0
+        fi
+        printf '%s\n' "$vnv_out" >&2
+        case "$VC_NONVACUOUS_TIER" in
+            enforce)
+                printf '[vc-nonvacuous] ✗ VC-NONVACUOUS FAILED (P-02/task-v184, vc_nonvacuous_enforce=enforce): 存在真空 Verify command（未引用本 VC 产出物）— 拒 COMPLETE: 每条 VC 的 Verify command 改为真实引用产出物/输出物的可执行命令后重跑（降档 env TASK_PLANNER_VC_NONVACUOUS_ENFORCE=warn）\n' >&2
+                exit 1
+                ;;
+            *)
+                printf '[vc-nonvacuous] ⚠ VC-NONVACUOUS WARNING (P-02, warn 档不阻断: TASK_PLANNER_VC_NONVACUOUS_ENFORCE=enforce 可升级)\n' >&2
+                ;;
+        esac
+        return 0
+    }
+
     # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 档降档: 判定前置 grep 计划文件(init 复制产物)
     # 「plan_tier: mini」(standard 模板标记 plan_tier: standard 天然不命中);
     # mini: VC 最低 5→2 / 每 Phase V-N 阈值 2→1 / 无 V-N 映射行不阻断; 非 mini 变量取原值=零改动
@@ -937,6 +981,9 @@ if [ "$python_rc" -eq 0 ]; then
             # [2026-09-20 task-v086 P2-S3 Rule 38.4②] 回显按档位: standard=≥2, mini=≥1(原措辞固定 2 对 mini 不准)
             printf '[plan] VC-GATE PASSED (VC 表=%s, %s 个 Phase 各 ≥%s 条 V-N 映射)\n' "$vc_count" "$p_no" "$vn_thresh_base" >&2
         fi
+        # [2026-10-17 task-v184-S1/P-02] VC 非真空门接线：VC-GATE 计数通过≠命令真实——补判真空命令
+        # （调用点在 VC-GATE 段尾：计数 FAIL 且 enforce 时已 exit 1 到不了这里；warn 档继续往下仍补判）
+        run_vc_nonvacuous
     fi
 
     # [2026-10-05 task-v132 G1 (Rule 51.1a) R-COVERAGE 门 — 72h 事故修复: 完成声称对照(51.3)的机器化]

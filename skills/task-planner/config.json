@@ -138,6 +138,16 @@
       "default": "enforce",
       "description": "证据锚真实性门控档位（P-01，终审意见 7，scripts/check-evidence-anchor.sh）：校验 delivery-summary「需求覆盖核对」证据格与 progress.md [goal:Gn] 证据行的路径锚是否真实且归属本任务产出物——三层判定=① 存在性+行界（路径可解析、path:line 行号 ≤ 文件行数、否定字面 trim 后判定，修「无 」尾随空格击穿）② provenance 系统路径前缀（/etc /usr /bin …）→ 直接 FAIL ③ 域外路径（plan-dir 外且不在「执行范围限制」表内）→ FAIL ④ 机器落盘 evidence/ 引用须有 VC 编号+时间戳头；enforce=不中阻断 complete(exit 1) / warn=仅 stderr 告警 / off=关闭。接线=check-complete.sh R-COVERAGE 段与 goal-gate 段前置 shell-out（门控范围与两段自身对齐：mini 档 38.4/66.5 豁免）。档位解析优先级: env TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE > 本键 > .properties 默认 > enforce（jq/config 缺失回落 enforce，不静默降级）。诚实边界=只到路径归属层，内容级张冠李戴靠 run-verification.sh 落盘 evidence/VC-N.out 收敛"
     },
+    "vc_nonvacuous_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "VC 非真空命令门控档位（P-02/task-v184，scripts/check-vc-nonvacuous.sh，v183 落地判定器+本批接线）：校验 verification.md 每条 VC 的 Verify command 是否真实引用本 VC 声称的产出物——拦截 true/echo ok 类真空命令（正向锚收紧=命令必须引用产出物，report §5.1 修订 10）；enforce=存在真空阻断锁定/complete(exit 1) / warn=仅告警 / off=关闭。接线=attest-plan.sh VC 门段+check-complete.sh VC-GATE 段尾双点。档位解析优先级: env TASK_PLANNER_VC_NONVACUOUS_ENFORCE > 本键 > enforce（jq/config 缺失回落 enforce）。结构类门 enforce 起步=task-v184 [align] 分档裁决（warn 实证挡不住交付声称）"
+    },
     "rescue_chain_enforce": {
       "type": "string",
       "enum": [

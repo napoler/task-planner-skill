@@ -57,6 +57,7 @@ model: haiku
 4. 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
 5. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户
 6. 终验前跑 `bash ../task-planner/scripts/check-complete.sh`（21 门总门，exit 0 才可交付）
+7. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）
 
 ## 脚本引用索引（机械层留守主技能 scripts/）
 

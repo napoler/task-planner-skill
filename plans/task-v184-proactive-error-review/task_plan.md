@@ -265,7 +265,7 @@ n/a（纯执行类——「审查」产出的结论已由 plans/verification-upg
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 1
+Phase 2
 
 ## Next Step
 <!-- 
@@ -274,7 +274,7 @@ Phase 1
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-等待用户对计划的显式 "yes" 授权 → attest-plan.sh 锁定 → Phase 1：跑 check-complete 收口 v183 → 簿记修正 → archive → Rule 90 首锚 git 提交 → 全量回归基线取证。
+S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串行派 S2→S3→S4→S5（共享 config.json/attest-plan.sh 强制串行，Rule 21.4 资源项）；每单元注入夹具过真实链验收。
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -560,9 +560,10 @@ Phase 1
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-17 | drift-checker | Phase 1 完成后偏移检查（Rule 61/64 三态判定） | done | ✅ALIGNED；警觉 c1 计划旧措辞已修/c2 Todo 表已同步/c3 归档 10-18 重试窗 | subagent-state/drift-phase1.md | findings Research Findings | subagent-state/drift-phase1.md | - / 0 / ☑ |
+| 2 | 2026-10-17 | general-purpose | S1 P-02 接线 attest VC 门+check-complete VC-GATE | done | 真实链拦截实证（夹具 A rc=1 含 ✗×5/B rc=0）；级联 16 处 48 | findings Research Findings（续） | subagent-state/S1-code-assistant.md | subagent-state/S1-code-assistant.md | rescue: code-assistant ×2 停摆→general-purpose 三投成 / 0 / ☑ |
+| 3 | 2026-10-17 | code-assistant | S5 P-06 接线 3file-gate 第 6 条件+语料校准（排队：config.json 串行链 S1→S2→S3→S4→S5） | pending | | | | subagent-state/S5-code-assistant.md | - / 0 / ☐ |
+| 4 | 2026-10-17 | code-assistant | S8 84.7 内容审查门条款两载体+VG-13 锚（编号撞车 84.6→84.7 裁决） | done | grep 84.7=7/1 两载体；VG-13 13/13 PASS | findings Research Findings（续） | subagent-state/S8-code-assistant.md | subagent-state/S8-code-assistant.md | 编号裁决 84.6→84.7 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

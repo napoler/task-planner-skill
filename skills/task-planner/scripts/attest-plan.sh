@@ -246,6 +246,39 @@ case "$mode" in
           else
             echo "[attest] [vc-gate] OK: $vc_total 条 VC 全部含可执行验证命令(Rule 84.1)"
           fi
+          # [2026-10-17 task-v184-S1/P-02] VC 非真空接线（general-purpose 三投执行；code-assistant 两投停摆判例）。
+          # What: shell-out check-vc-nonvacuous.sh 补判「命令是否真空」（true/echo ok 类未引用产出物）——
+          #       上方 VC-GATE 计数只判「有命令」，真空命令全链通过=审计确认漏检类①（report §3.1/§5 P-02）。
+          # Why:  检测器发货即死教训（report §5.1 修订 3）——v183 只落判定器未接线，本批接线=使其在
+          #       计划锁定期自动生效（用户 R1「主动发现」）。档位: env TASK_PLANNER_VC_NONVACUOUS_ENFORCE
+          #       > config.json vc_nonvacuous_enforce > enforce（结构类门 enforce 起步=task-v184 [align] 分档
+          #       裁决：warn 档实证挡不住交付声称）。off=跳过；判定器缺失 fail-open 放行；rc=2 输入异常
+          #       fail-open；mini 档不降档（结构判定与体量无关，判定器对无判定面自身 SKIP）。
+          vnv_tier="${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}"
+          case "$vnv_tier" in enforce|warn|off) ;; *)
+            vnv_tier="$(jq -r '.vc_nonvacuous_enforce // .properties.vc_nonvacuous_enforce.default // "enforce"' \
+              "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config.json" 2>/dev/null)" || vnv_tier="enforce"
+            case "$vnv_tier" in enforce|warn|off) ;; *) vnv_tier="enforce" ;; esac
+          esac
+          if [ "$vnv_tier" != "off" ]; then
+            vnv_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-vc-nonvacuous.sh"
+            if [ -f "$vnv_script" ]; then
+              bash "$vnv_script" "$plan_dir"
+              vnv_rc=$?
+              if [ "$vnv_rc" -eq 2 ]; then
+                echo "[attest] [vc-nonvacuous] ⚠ 判定器输入异常 rc=2（fail-open 不阻断）" >&2
+              elif [ "$vnv_rc" -eq 1 ]; then
+                if [ "$vnv_tier" = "enforce" ]; then
+                  echo "[attest] ✗ [vc-nonvacuous] 存在真空 Verify command（true/echo ok 类未引用本 VC 产出物），拒绝锁定(P-02/task-v184；降档 env TASK_PLANNER_VC_NONVACUOUS_ENFORCE=warn)" >&2
+                  exit 1
+                else
+                  echo "[attest] [vc-nonvacuous] ⚠ 存在真空 Verify command（warn 档不阻断）" >&2
+                fi
+              fi
+            else
+              echo "[attest] [gate-degraded] check-vc-nonvacuous.sh 缺失，P-02 门 fail-open 放行" >&2
+            fi
+          fi
         fi
       fi
     else
