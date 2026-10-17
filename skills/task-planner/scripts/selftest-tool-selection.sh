@@ -4,12 +4,14 @@
 # 本脚本仅做静态断言（grep/wc 为主），TS-01..12 全 PASS exit 0；任一 FAIL exit 1。
 #   TS-01     critical-rules.md Rule 40 六子条锚 `grep -c '^40\.'` = 6
 #   TS-02     40.3 /goal 披露措辞「不可代调」≥1
-#   TS-03     40.4 行含「显式点名」≥1 且 40.6 行含「零新 config 键」≥1
+#   TS-03     40.4 行含「39.8 激活三条件」≥1 且 40.6 行含「零新 config 键」≥1
+#             [2026-10-18 task-v187 S8 级联: 40.4 演进「建议登记面→主动路由义务」，旧「显式点名」锚退役，期望措辞改 39.8 新语义锚（以 collab.md 40.4 行实际措辞为准）]
 #   TS-04     SKILL.md `grep -c 'Rule 40'` ≥3（四锚：协同路由行/C28/摘要行/References 括注）
 #   TS-05     SKILL.md `grep -c 'Critical Rules 1-67'` ≥1 且 `grep -c '1-39'` = 0（对策 b 字面锚——关键负断言）
 #             [2026-10-08 task-v144 合并级联: References 表行 label 演进为「Critical Rules 1-62」,锚断言同步演进,旧 'Rules 1-39'=2 变体改为负断言 1-39=0]
 #             [2026-10-08 task-v147 合并级联: '1-62'→'1-63'，Rule 63 已由 task-v147 合法落地（63.1-63.6 实测六子条），锚同步演进]
-#   TS-06     SKILL.md 三个既有锚子串各 ≥1：「Rule 39（动态工作流编排」「| C27 |」「dynamic-workflows（用户显式点名」
+#   TS-06     SKILL.md 三个既有锚子串各 ≥1：「dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8」「（Rule 39,40,91）」「卫星路由表 collab 行」
+#             [2026-10-18 task-v187 S8 级联: SKILL.md:207 演进 39.8 主动路由句，旧「dynamic-workflows 仅用户显式点名」「（Rule 39）」锚退役]
 #   TS-07     SKILL.md 含「| C28 |」≥1
 #   TS-08     templates/task_plan.md 含「🧰 工具选择与编排」≥1 且含「上游分析记录」≥1
 #   TS-09     templates/variant/mini-lite-type.md 含「Rule 40.2 豁免声明」=1 且 wc -l ≤80
@@ -47,11 +49,14 @@ if [ "$n" -eq 6 ]; then ok 01 "critical-rules.md 六子条锚 = 6"; else bad 01 
 # TS-02 40.3 /goal 披露措辞「不可代调」≥1
 n="$(grep -c '不可代调' "$CRIT" || true)"
 if [ "$n" -ge 1 ]; then ok 02 "40.3 披露措辞「不可代调」命中 $n"; else bad 02 "40.3 披露措辞「不可代调」缺失"; fi
-# TS-03 40.4 行「显式点名」+ 40.6 行「零新 config 键」
-if grep '^40\.4' "$CRIT" | grep -q '显式点名' && grep '^40\.6' "$CRIT" | grep -q '零新 config 键'; then
-  ok 03 "40.4 显式点名 + 40.6 零新 config 键 行内锚在位"
+# TS-03 40.4 行「39.8 激活三条件」（新语义锚）+ 40.6 行「零新 config 键」
+#   [2026-10-18 task-v187 S8 级联] 原行为：锚 40.4 行旧措辞「显式点名」（建议登记/点名才路由语义）。
+#   现行为：40.4 演进为「命中 39.8 → 登记 CreateWorkflow 路由并主动创建」新语义，「显式点名」字样已不在 40.4 行，
+#   期望措辞改锚「39.8 激活三条件」（collab.md:33 新 40.4 行内唯一出现=新语义稳定字面，40.6 锚不动）。
+if grep '^40\.4' "$CRIT" | grep -q '39\.8 激活三条件' && grep '^40\.6' "$CRIT" | grep -q '零新 config 键'; then
+  ok 03 "40.4 39.8 激活三条件（新语义） + 40.6 零新 config 键 行内锚在位"
 else
-  bad 03 "40.4/40.6 行内锚缺失（显式点名 / 零新 config 键）"
+  bad 03 "40.4/40.6 行内锚缺失（39.8 激活三条件 / 零新 config 键）"
 fi
 # TS-04 [task-v171 核心瘦身] SKILL.md Rule 40 锚 ≥1（卫星路由表 collab 行枚举 40）+ CRIT_C 40 标题锚
 #   现象：SKILL.md 瘦身后 'Rule 40' 整串计数 3→0（摘要/C28/References 括注随瘦身退役；协同路由面仅存
@@ -86,12 +91,16 @@ if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 '1-[89][0-9]
 #     随瘦身全部退役（Rule 39/40 属协同域；SKILL 现存协同面=新指令段 L191 dynamic-workflows 行+卫星路由表 collab 行）。
 #   修法：① Rule 39 载体=L191 行 '（Rule 39）' 引措；② C27 消费面=卫星路由表 collab 行；
 #     ③ dynamic-workflows 措辞演进为 'dynamic-workflows 仅用户显式点名'。
-if grep -qF 'dynamic-workflows 仅用户显式点名' "$SKILLMD" \
-   && grep -qF '（Rule 39）' "$SKILLMD" \
+#   [2026-10-18 task-v187 S8 级联] SKILL.md:207 演进为 39.8 主动路由句（用户点名 /workflow 或命中 Rule 39.8
+#     编排条件（常设授权）时主动路由——激活按 39.8 三件套）：① 'dynamic-workflows 仅用户显式点名'→
+#     'dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8'（新语义锚，以 :207 实际句为准）；
+#   ② '（Rule 39）'→'（Rule 39,40,91）' 枚举引措（:207/:170 现载体，旧 '（Rule 39）' 字面零命中）；③ 卫星路由表 collab 行锚不动。
+if grep -qF 'dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8' "$SKILLMD" \
+   && grep -qF '（Rule 39,40,91）' "$SKILLMD" \
    && grep -qE '^\| plan-collab-router \|' "$SKILLMD"; then
-  ok 06 "SKILL.md 既有三锚现载体（dynamic-workflows 点名行/Rule 39 引措/卫星路由表 collab 行）保全"
+  ok 06 "SKILL.md 既有三锚现载体（dynamic-workflows 39.8 主动路由行/(Rule 39,40,91) 引措/卫星路由表 collab 行）保全"
 else
-  bad 06 "SKILL.md 既有锚子串断裂（dynamic-workflows 点名行 / (Rule 39) 引措 / 卫星路由表 collab 行）"
+  bad 06 "SKILL.md 既有锚子串断裂（dynamic-workflows 39.8 主动路由行 / (Rule 39,40,91) 引措 / 卫星路由表 collab 行）"
 fi
 # TS-07 [task-v171 核心瘦身] C28 清单项 → 卫星路由表 collab 行（C28 合规面瘦身后由路由表承载）
 n="$(grep -cE '^\| plan-collab-router \|' "$SKILLMD" || true)"
