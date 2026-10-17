@@ -70,3 +70,8 @@
 - **S3+S4**：attest P-03 块（step-placeholder，plan-dir 契约）+P-09 块（tier-consistency，插 template-tier 解析段尾）；占位夹具「优化一下性能」rc=1、档位漂移夹具 rc=1/干净 rc=0。零 config 零级联。
 - **S5/P-06**：148 项语料（143 archive+活计划+5 抽样）**0 误报**→数据驱动翻 enforce（goal_cjk_enforce warn→enforce）；3file-gate 第 6 条件接线（drift 门 6→7 重编号，全仓无外部引用）；门分支矩阵四态实证（enforce/warn/off/fail-open）。
 - **登记债**：①门结果缓存 cksum 未纳新 5 env（warn→enforce 方向可能回放陈旧 PASS——S7 顺手补）②check-goal-cjk is_cjk E5 分支缺口（U+5F64-5FFF 含心得德律等常用字未判 CJK=潜伏保护缺口，一行修法已备查，需判定器授权面→独立任务）③S8 报的 VG-02 文案「84.1-84.6 六子条」措辞漂移（S7 顺手修）。
+
+## 审查结论（Phase 4）
+- **CR Gate**：Code Reviewer 裁决 **APPROVED**（0 P1/P2；P3×5 建议留档：GI-05/07 attest 侧 grep 锚可被注释残留骗过/PASS= 空格不归一/attest 三接线块同构重复可抽函数）——检查点 subagent-state/cr-gate.md
+- **独立回归**：code-runner 执行体复现 **Total=91 PASS=91 FAIL=0**（run=91）+registry rows=91=actual——检查点 subagent-state/final-regression.md
+- **独立复验**：Verifier VC-1..4 全 PASS+84.7 对齐四点 PASS+注入抽验 rc=1——检查点 subagent-state/final-verify.md；披露 D-1（task_plan VC-4 命令列反斜杠形态 84\.6 残留，已修）/D-2（cksum env+E5 缺口两登记债维持独立面）/D-3（knowledge-brief 占位→本批蒸馏回填）

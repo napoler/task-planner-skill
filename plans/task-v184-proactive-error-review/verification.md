@@ -21,7 +21,7 @@
   **Verify command**: `bash skills/task-planner/scripts/check-evidence-anchor.sh /tmp/claim-mismatch-fixture; echo rc_mismatch=$?; bash skills/task-planner/scripts/check-evidence-anchor.sh /tmp/claim-match-fixture; echo rc_match=$?; bash skills/task-planner/scripts/selftest-evidence-anchor.sh | tail -3`
   Evidence: rc_mismatch≠0 / rc_match=0 / selftest FAIL=0；146 存量误报清单入 findings.md Research Findings
 - [ ] VC-4: Rule 84.7 内容审查门条款落地两载体+静态锚
-  **Verify command**: `grep -c '84\.6' skills/verification-gate/references/critical-rules-verification.md; grep -c '84\.6' skills/verification-gate/SKILL.md`
+  **Verify command**: `grep -c '84\.7' skills/verification-gate/references/critical-rules-verification.md; grep -c '84\.7' skills/verification-gate/SKILL.md`
   Evidence: 两计数各 ≥1；selftest 静态锚 PASS；alignment-review 结论 APPROVED 入 findings
 - [ ] VC-5: 无回归破坏——全量 selftest 0 新增失败，registry 双向一致
   **Verify command**: `bash skills/task-planner/scripts/run-selftests.sh --fresh | tail -3; bash skills/task-planner/scripts/selftest-registry.sh | tail -3`
@@ -83,7 +83,7 @@ Status: `pending` Last verified: —
 
 **Verification**:
 - [ ] V-3.1: 内容不符夹具 exit≠0 + 相符夹具 exit=0（mapped to VC-3）
-- [ ] V-3.2: `grep -c '84\.6' skills/verification-gate/references/critical-rules-verification.md` ≥1 且 `grep -c '84\.6' skills/verification-gate/SKILL.md` ≥1（mapped to VC-4）
+- [ ] V-3.2: `grep -c '84\.7' skills/verification-gate/references/critical-rules-verification.md` ≥1 且 `grep -c '84\.7' skills/verification-gate/SKILL.md` ≥1（mapped to VC-4）
 
 Status: `pending` Last verified: —
 

@@ -113,3 +113,4 @@
 - [goal:G3] 内容核对层——不符夹具 warn 留痕/enforce rc=1（CLAIM-01/02）；60 存量基线 2 计划 5 旗标量化入 findings（本段）
 - [goal:G4] 审查门条款——grep '84\.7' 两载体=7/1；VG-13 静态锚 13/13（S8 返回+本段）
 - [goal:G5] （Phase 4/5 交付时回填）
+- [goal:G5] 零回归收尾——独立回归执行体复现 Total: 91 PASS=91 FAIL=0（run=91）+registry rows=91=actual（subagent-state/final-regression.md）；CR APPROVED（cr-gate.md）；VC-1..4 复验全 PASS（final-verify.md）；尾锚提交见 git log。

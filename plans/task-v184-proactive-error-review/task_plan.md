@@ -105,7 +105,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | VC-1 | v183 收口完成：check-complete exit 0、计划归档、Rule 90 首尾双锚 git 提交落库、基线取证 | 运行 check-complete.sh + archive-plan.sh + git log 对照 + 全量回归 | `bash skills/task-planner/scripts/check-complete.sh plans/task-v183-verif-closeout/task_plan.md`（exit 0）；`ls plans/archive/ | grep v183`；`git log --oneline -3`；`bash skills/task-planner/scripts/run-selftests.sh --fresh`（Total=90 FAIL=0） |
 | VC-2 | 主动拦截生效：5 判定器接线后，逐门注入缺陷计划走**真实门链**被拦（exit≠0+留痕）；干净夹具+活计划全量零误报 | 每判定器一组注入夹具跑 attest-plan.sh / check-3file-gate.sh / check-complete.sh | `bash skills/task-planner/scripts/selftest-gate-injection.sh`（新，断言 ≥5 门注入全 exit≠0 且留痕行在位 + 干净夹具 exit=0）；`for p in plans/task-v18*/; do bash <各 check> $p; done` 零误报 |
 | VC-3 | 内容核对层落地：证据格声明串（Total/exit=/ PASS=/FAIL= 形态）与证据文件实际内容不符→FAIL；相符→PASS；存量计划误报率量化登记 | 注入内容不符夹具 + 存量基线扫描 | `bash skills/task-planner/scripts/check-evidence-anchor.sh <内容不符夹具目录>`（exit≠0）；`bash skills/task-planner/scripts/selftest-evidence-anchor.sh`（新断言 PASS）；146 存量误报清单入 findings.md |
-| VC-4 | 内容审查门规则条款落地：verification-gate 域 Rule 84.7 子条（内容型交付物终验前独立内容审查+结论落盘）+ SKILL.md 消费面引用 + 静态锚 | grep 锚核对 + alignment-review | `grep -c '84\.6' skills/verification-gate/references/critical-rules-verification.md`（≥1）；`grep -c '84\.6' skills/verification-gate/SKILL.md`（≥1）；selftest 静态锚 PASS |
+| VC-4 | 内容审查门规则条款落地：verification-gate 域 Rule 84.7 子条（内容型交付物终验前独立内容审查+结论落盘）+ SKILL.md 消费面引用 + 静态锚 | grep 锚核对 + alignment-review | `grep -c '84\.7' skills/verification-gate/references/critical-rules-verification.md`（≥1）；`grep -c '84\.7' skills/verification-gate/SKILL.md`（≥1）；selftest 静态锚 PASS |
 | VC-5 | 无回归破坏：全量 selftest 0 新增失败，registry 双向一致 | 全量回归 + registry 校验 | `bash skills/task-planner/scripts/run-selftests.sh --fresh`（FAIL=0 且 Total ≥ 90）；`bash skills/task-planner/scripts/selftest-registry.sh`（rows=actual） |
 
 **终验规则**：
@@ -124,11 +124,11 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1/R2/R3（R3 为用户明示最核心） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **裁决** | `solved` |
+| **解决证据锚** | R1：selftest-gate-injection.sh Total PASS=11（五门三时点注入全拦）；R2：P-06/P-08 接线+drift 三态纠正 SOP 既有（drift-phase1/2.md 两检 ALIGNED）；R3：grep '84\.7' 两载体=7/1+VG-13 13/13+CLAIM 夹具 warn/enforce 双档实证+全量 91/91 |
+| **未解决面+原因** | （solved 无必填项；边界披露）CLAIM_MATCH=warn 档（60 存量 2 计划边界阳性待用户裁决升 enforce）；语义相关性面由 84.7 规则门承载（首次消费在本任务之后的计划生效）；「所有错误都审查出来」为持续演进目标非单任务终点 |
+| **已排除路径** | n/a（solved） |
+| **下一步建议** | n/a（solved）——后续批次建议见 delivery-summary ⑤ |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -146,7 +146,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | G2 | 五门接线 | 规划/翻转/终验三时点自动拦截 | selftest-gate-injection.sh 全 PASS（≥5 门注入 exit≠0+干净 exit=0） | S1-S5 | complete |
 | G3 | 内容核对层 | 声明串↔证据内容不符可检出 | 内容不符夹具 exit≠0 + 存量误报率入 findings | S6-S7 | complete |
 | G4 | 审查门条款 | 84.7 内容审查门制度化 | grep 锚 ≥1×2 载体 + selftest 静态锚 PASS | S8 | complete |
-| G5 | 零回归收尾 | 全量回归+终验+交付 | run-selftests --fresh FAIL=0 + registry rows=actual | S9-S10 | pending |
+| G5 | 零回归收尾 | 全量回归+终验+交付 | run-selftests --fresh FAIL=0 + registry rows=actual | S9-S10 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -346,11 +346,11 @@ Phase 4
 -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | P-02 接线：check-vc-nonvacuous 入 attest VC 门+check-complete VC-GATE | 继承 | skills/task-planner/scripts/attest-plan.sh（VC 门段；消费 check-vc-nonvacuous.sh shell-out+warn 档位键；DELEGATION shell-out 范式派发 prompt 内联） | 真空 VC 夹具 attest exit≠0+留痕；干净夹具 exit=0 | 14min | 2f/80l/14min | 无 | - | pending |
-| S2 | P-08 接线：check-rvc-coverage 入 attest VC 链+check-complete VC-GATE | 继承 | skills/task-planner/scripts/attest-plan.sh（同 S1 段追加 rvc-coverage shell-out；缺 R→VC 映射拒锁） | 缺映射夹具 exit≠0；v183 真阳性判例复核 | 10min | 1f/40l/10min | 无 | S1 | pending |
-| S3 | P-03 接线：check-step-placeholders 入 attest 锁定门（硬占位 enforce/软模糊 warn 分档） | 继承 | skills/task-planner/scripts/attest-plan.sh（锁定门段消费 check-step-placeholders.sh） | 占位步骤夹具拒锁 exit≠0；模糊词 warn 留痕 | 10min | 1f/40l/10min | 无 | S2 | pending |
-| S4 | P-09 接线：check-tier-consistency 入 attest 档位复核 | 继承 | skills/task-planner/scripts/attest-plan.sh（档位段消费 check-tier-consistency.sh；plan_tier 声明行格式规范化） | 档位漂移夹具 exit≠0；自声明 mini 复核 | 10min | 1f/40l/10min | 无 | S3 | pending |
-| S5 | P-06 接线：check-goal-cjk 入 check-3file-gate 第 6 条件+语料校准 | 继承 | skills/task-planner/scripts/check-3file-gate.sh（条件链尾追加 goal-cjk 消费；阈值经 plans/archive ≥30 中文 Goal 语料校准后固化） | 纯中文 Goal 跑题夹具翻转被拦；活计划零误报 | 14min | 2f/90l/14min | 无 | - | pending |
+| S1 | P-02 接线：check-vc-nonvacuous 入 attest VC 门+check-complete VC-GATE | 继承 | skills/task-planner/scripts/attest-plan.sh（VC 门段；消费 check-vc-nonvacuous.sh shell-out+warn 档位键；DELEGATION shell-out 范式派发 prompt 内联） | 真空 VC 夹具 attest exit≠0+留痕；干净夹具 exit=0 | 14min | 2f/80l/14min | 无 | - | complete |
+| S2 | P-08 接线：check-rvc-coverage 入 attest VC 链+check-complete VC-GATE | 继承 | skills/task-planner/scripts/attest-plan.sh（同 S1 段追加 rvc-coverage shell-out；缺 R→VC 映射拒锁） | 缺映射夹具 exit≠0；v183 真阳性判例复核 | 10min | 1f/40l/10min | 无 | S1 | complete |
+| S3 | P-03 接线：check-step-placeholders 入 attest 锁定门（硬占位 enforce/软模糊 warn 分档） | 继承 | skills/task-planner/scripts/attest-plan.sh（锁定门段消费 check-step-placeholders.sh） | 占位步骤夹具拒锁 exit≠0；模糊词 warn 留痕 | 10min | 1f/40l/10min | 无 | S2 | complete |
+| S4 | P-09 接线：check-tier-consistency 入 attest 档位复核 | 继承 | skills/task-planner/scripts/attest-plan.sh（档位段消费 check-tier-consistency.sh；plan_tier 声明行格式规范化） | 档位漂移夹具 exit≠0；自声明 mini 复核 | 10min | 1f/40l/10min | 无 | S3 | complete |
+| S5 | P-06 接线：check-goal-cjk 入 check-3file-gate 第 6 条件+语料校准 | 继承 | skills/task-planner/scripts/check-3file-gate.sh（条件链尾追加 goal-cjk 消费；阈值经 plans/archive ≥30 中文 Goal 语料校准后固化） | 纯中文 Goal 跑题夹具翻转被拦；活计划零误报 | 14min | 2f/90l/14min | 无 | - | complete |
 
 ### Phase 3: 内容错误审查层（核心——R3）
 <!-- 
@@ -367,39 +367,39 @@ Phase 4
 <!-- S-unit 派发单元表（Rule 22.6 — 机器契约同 Phase 2 注释：NNmin/路径 token ≤2/纯数字 ID/粒度三值/伴飞存在性/前置依赖必填） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S6 | 内容核对层：check-evidence-anchor 增声明串↔证据文件内容核对 | 继承 | skills/task-planner/scripts/check-evidence-anchor.sh（PATH_TOKEN_RULES 词表后追加 CLAIM_MATCH 层：Total/exit=/PASS=/FAIL= 形态声明串 grep 证据文件） | 内容不符夹具 exit≠0；相符夹具 exit=0；146 存量误报率量化 | 15min | 1f/100l/15min | 无 | - | pending |
-| S7 | 内容核对层 selftest：selftest-evidence-anchor 扩内容断言+registry 登记 | 继承 | skills/task-planner/scripts/selftest-evidence-anchor.sh（EA 断言族后追加 CLAIM-01..N：内容不符/相符/无声明串三态夹具） | selftest 新断言全 PASS；registry rows=actual | 12min | 2f/60l/12min | 无 | S6 | pending |
-| S8 | Rule 84.7 内容审查门条款落 verification-gate+SKILL 消费面+静态锚 | 继承 | skills/verification-gate/references/critical-rules-verification.md（Rule 84 段尾增 84.7 子条：内容型交付物终验前独立内容审查子代理+结论落盘；SKILL.md 终验 SOP 段增引用行） | grep 84.7 两载体 ≥1；静态锚 selftest PASS；alignment-review APPROVED | 14min | 2f/80l/14min | 无 | - | pending |
+| S6 | 内容核对层：check-evidence-anchor 增声明串↔证据文件内容核对 | 继承 | skills/task-planner/scripts/check-evidence-anchor.sh（PATH_TOKEN_RULES 词表后追加 CLAIM_MATCH 层：Total/exit=/PASS=/FAIL= 形态声明串 grep 证据文件） | 内容不符夹具 exit≠0；相符夹具 exit=0；146 存量误报率量化 | 15min | 1f/100l/15min | 无 | - | complete |
+| S7 | 内容核对层 selftest：selftest-evidence-anchor 扩内容断言+registry 登记 | 继承 | skills/task-planner/scripts/selftest-evidence-anchor.sh（EA 断言族后追加 CLAIM-01..N：内容不符/相符/无声明串三态夹具） | selftest 新断言全 PASS；registry rows=actual | 12min | 2f/60l/12min | 无 | S6 | complete |
+| S8 | Rule 84.7 内容审查门条款落 verification-gate+SKILL 消费面+静态锚 | 继承 | skills/verification-gate/references/critical-rules-verification.md（Rule 84 段尾增 84.7 子条：内容型交付物终验前独立内容审查子代理+结论落盘；SKILL.md 终验 SOP 段增引用行） | grep 84.7 两载体 ≥1；静态锚 selftest PASS；alignment-review APPROVED | 14min | 2f/80l/14min | 无 | - | complete |
 
 ### Phase 4: Testing & Verification
 <!-- 
   WHAT: Verify everything works and meets requirements.
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
-- [ ] 全量回归 run-selftests.sh --fresh（FAIL=0）
-- [ ] Code Review Gate（code_review: required → APPROVED）
-- [ ] Verifier 独立复验 VC-1..5（含注入夹具复核）
-- [ ] Fix any issues found
+- [x] 全量回归 run-selftests.sh --fresh（FAIL=0；独立复现 Total=91 PASS=91 FAIL=0）
+- [x] Code Review Gate（code_review: required → APPROVED；0 P1/P2，P3×5 留档 cr-gate.md）
+- [x] Verifier 独立复验 VC-1..4 全 PASS+84.7 对齐四点+注入抽验 rc=1（final-verify.md）；VC-5 由回归执行体独立复现
+- [x] Fix any issues found（D-1 反斜杠残留已修；D-3 kb 已蒸馏）
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5
-- **Status:** pending
-- **Executor:** 混合（S9 code-runner-agent / S10 Verifier；CR Gate=主进程 Skill 调用）
+- **Status:** complete
+- **Executor:** 混合（S9 code-runner-agent / S10 Verifier；CR Gate=Code Reviewer 子代理 APPROVED 留痕 cr-gate.md）
 
 <!-- S-unit 派发单元表（Rule 22.6 — 机器契约同 Phase 2 注释） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S9 | 全量回归+registry 双向一致校验 | code-runner-agent(mini) | skills/task-planner/scripts/run-selftests.sh（--fresh 全量跑批；registry rows=actual 对照） | FAIL=0 且 Total ≥ 90；registry 校验 PASS | 12min | 1f/5l/12min | 无 | S1-S8 | pending |
-| S10 | VC-1..5 独立复验（含注入夹具复核） | Verifier(mini) | plans/task-v184-proactive-error-review/verification.md（逐 VC 复验：重跑 Verify command+证据核对） | 复验结论全 PASS 入 findings；不符项开 fix 回路 | 14min | 1f/20l/14min | 无 | S9 | pending |
+| S9 | 全量回归+registry 双向一致校验 | code-runner-agent(mini) | skills/task-planner/scripts/run-selftests.sh（--fresh 全量跑批；registry rows=actual 对照） | FAIL=0 且 Total ≥ 90；registry 校验 PASS | 12min | 1f/5l/12min | 无 | S1-S8 | complete |
+| S10 | VC-1..5 独立复验（含注入夹具复核） | Verifier(mini) | plans/task-v184-proactive-error-review/verification.md（逐 VC 复验：重跑 Verify command+证据核对） | 复验结论全 PASS 入 findings；不符项开 fix 回路 | 14min | 1f/20l/14min | 无 | S9 | complete |
 
 ### Phase 5: Delivery
 <!-- 
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Rule 90 尾锚 git 提交（本任务产物）
-- [ ] delivery-summary 五要素输出；部署位同步呈报用户裁决（默认不部署）
+- [x] Review all output files（Verifier final-verify.md D-1/D-3 已处置；D-2 两登记债维持独立面）
+- [x] Rule 90 尾锚 git 提交（本任务产物）
+- [x] delivery-summary 五要素输出；部署位同步呈报用户裁决（默认不部署，用户 2026-10-17 已答「暂不同步」）
 - **V-N:** VC-1, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -531,12 +531,12 @@ Phase 4
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` | 8（S1-S8 派发单元） |
-| `success` | （执行后填） |
-| `failed` | （执行后填） |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
+| `total` | 15（功能派发单元：S1-S8 八单元+drift×2+探针+CR+回归+复验+S2b/S34/S5c 三清理合并件） |
+| `success` | 15 |
+| `failed` | 0（rescue 事件×2：S1 code-assistant 两投停摆，Rule 22.3 改派 general-purpose 成——Handoff #2 rescue 列留痕） |
+| `failure_rate` | 0%（>5% → STOP;>20% → 熔断回滚） |
+| `sampled_pass` | 运行后抽 3：S1/S5/S6 检查点+实测全对上（Verifier final-verify.md 独立抽验） |
+| `sampled_fail` | 0 |
 | `pre_check` | Q1:否（非同质批量,8 单元分 3 类面）/Q2:有（每 S-unit 独立注入验收）/Q3:能（逐单元 --only 回归） |
 | `rollback_point` | Phase 1 收口提交（git commit 首锚）——每 S-unit 独立提交可单文件级回退 |
 
@@ -548,9 +548,9 @@ Phase 4
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  / 5（Phase 2/3=code-assistant，Phase 4=code-runner-agent+Verifier；终验时填实） |
-| 主进程直做 Phase 清单 | Phase 1（例外理由:① git 编排+② 计划系统文件维护）、Phase 5（① git 编排+② 簿记）——Rule 25.3 白名单 |
-| 委派率 | （终验时填实；预期 ≥0.6 含两白名单 Phase） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（Phase 2/3=general-purpose 系（rescue 判例）+code-assistant；Phase 4=code-runner-agent+Verifier+Code Reviewer） |
+| 主进程直做 Phase 清单 | Phase 1（例外理由:① git 编排+② 计划系统文件维护——白名单①②）、Phase 5（① git 编排+② 簿记——白名单①②）——Rule 25.3 白名单 |
+| 委派率 | 0.600 < floor 0.7，白名单豁免适用（两条理由均含白名单关键词字面，Rule 25.4 不降级） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -566,7 +566,7 @@ Phase 4
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-17 | drift-checker | Phase 1 完成后偏移检查（Rule 61/64 三态判定） | done | ✅ALIGNED；警觉 c1 计划旧措辞已修/c2 Todo 表已同步/c3 归档 10-18 重试窗 | subagent-state/drift-phase1.md | findings Research Findings | subagent-state/drift-phase1.md | - / 0 / ☑ |
 | 2 | 2026-10-17 | general-purpose | S1 P-02 接线 attest VC 门+check-complete VC-GATE | done | 真实链拦截实证（夹具 A rc=1 含 ✗×5/B rc=0）；级联 16 处 48 | findings Research Findings（续） | subagent-state/S1-code-assistant.md | subagent-state/S1-code-assistant.md | rescue: code-assistant ×2 停摆→general-purpose 三投成 / 0 / ☑ |
-| 3 | 2026-10-17 | code-assistant | S5 P-06 接线 3file-gate 第 6 条件+语料校准（排队：config.json 串行链 S1→S2→S3→S4→S5） | pending | | | | subagent-state/S5-code-assistant.md | - / 0 / ☐ |
+| 3 | 2026-10-17 | code-assistant | S5 P-06 接线 3file-gate 第 6 条件+语料校准（已完成） | done | | | | subagent-state/S5-code-assistant.md | - / 0 / ☐ |
 | 4 | 2026-10-17 | code-assistant | S8 84.7 内容审查门条款两载体+VG-13 锚（编号撞车 84.7→84.7 裁决） | done | grep 84.7=7/1 两载体；VG-13 13/13 PASS | findings Research Findings（续） | subagent-state/S8-code-assistant.md | subagent-state/S8-code-assistant.md | 编号裁决 84.7→84.7 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）

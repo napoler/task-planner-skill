@@ -75,3 +75,11 @@
 | {示例：brainstorming} | ~/.agents/skills/brainstorming/SKILL.md | {本任务画像中哪一点命中该技能} | 子代理 prompt 挂载 / 主进程 Skill 调用 |
 | {示例：comet} | ~/.zcode/skills/comet/SKILL.md | {匹配点} | 用户手动触发（仅提示） |
 | {技能名} | {SKILL.md 绝对路径} | {匹配点} | {激活方式} |
+
+## §2 本任务蒸馏（task-v184 增量，2026-10-17）
+- **接线范式三件套**：tier 解析（env>config>默认）+fail-open（脚本缺失/rc=2 放行+[gate-degraded] 留痕）+输出约定（PASS stdout/FAIL stderr/enforce exit 1）——克隆模板=check-complete.sh run_evidence_anchor/run_vc_nonvacuous
+- **执行体通道判例**：Code Assistant 对「多文件逐字编辑」类任务停摆（读后 narrate 即止）；可靠通道=general-purpose+任务书内联逐字编辑块（S1 三投实证）；派发守卫只拦主进程 Write/Edit，子代理双通道畅通（探针实证）
+- **派发 prompt 机器契约**（22.4a/b/KQ3）：禁圈号①-⑮（计为步骤枚举>4 拦截）/禁 S\d+ 字面（含路径，计为多 S-unit 打包）/须含计划三文件路径+brief §引用+需求锚+status:/acceptance:/checkpoint:/confidence: 四 key 返回段
+- **级联多形态教训**：config 键数断言存在引号/`-eq`/`expect=`/`应 ` 多形态，级联 grep 必须逐形态扫（S1 引号形态漏 4 文件→S2b 补）
+- **键批前置优化**：多单元共改 config 时一次加齐全部键+一轮级联，后续单元零级联（[align] 判例）
+- **吃狗粮验收法**：新门上线即扫自身计划（rvc 抓到本计划 R0 缺映射真阳性）
