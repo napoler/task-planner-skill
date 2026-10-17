@@ -519,14 +519,14 @@ All complete（已交付——2026-10-17 由 task-v184 Phase 1 代行收口：�
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 6（G2-G7 六个 code-assistant 派发单元） |
+| `success` | 6 |
+| `failed` | 0 |
+| `failure_rate` | 0%（>5% → STOP;>20% → 熔断回滚） |
+| `sampled_pass` | 运行后抽 1（check-goal-cjk）主进程 Read 复核：脚本在位+selftest 11/11 PASS |
+| `sampled_fail` | 0（运行前抽 2：registry 行登记前 6 新 selftest 报 FAIL，属登记时序非单元缺陷，登记后全转正——findings Issues 已记） |
+| `pre_check` | Q1:否/Q2:有/Q3:能 |
+| `rollback_point` | Rule 90 首锚 b83ad92（2026-10-17，含全部 6 单元产物；单元级回退=git 单文件 checkout） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
