@@ -32,9 +32,29 @@
   | 计划锁定 | attest-plan.sh | 锁定+SHA | debb124d…（三轮拒锁后过） | PASS |
 
 ### Phase 2: 接线批次（主动发现——R1/R2）
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-17
 - **R 锚定**：本 Phase 服务 R1「提高主动发现问题能力」+R2「主动发现偏差、偏移以及错误」——五判定器接线后三时点自动拦截。
+- Actions taken:
+  - **S1/P-02**（三投）：attest VC 门+check-complete VC-GATE 双点接线 vc-nonvacuous；config +键（47→48）+14 文件 16 处级联。前两投 Code Assistant 停摆（读后 narrate 即止零落盘），探针实证子代理 Write 畅通（守卫只拦主进程），第三投 general-purpose 收逐字编辑块任务书全链完成
+  - **S2/P-08+五键批**：rvc-coverage 双点接线；config 一次 +5 键级联 48→53 一轮（[align] 排程优化：后续单元零级联）
+  - **S2b 八红清零**：3 RVC 交互回归（单元隔离 env off）+4 stale-47 非引号形态（S1 级联漏网教训：级联 grep 必须多形态）
+  - **S3+S4**：attest 接线 step-placeholder（P-03）+tier-consistency（P-09，插 template-tier 段尾）
+  - **S5/P-06**：3file-gate 第 6 条件接线+148 项语料校准 0 误报→数据驱动翻 enforce；drift 门 6→7 重编号
+  - **S5c**：selftest-gate-injection.sh（11 断言）+registry 91 行+cksum 纳 5 env+VG-02 文案修
+  - **吃狗粮**：五判定器扫自身计划——rvc 抓到 R0 缺映射（真阳性已修）+step-placeholder 抓锚形态边界（已修）；P01 休眠计划 5 缺口登记债
+- Files created/modified: skills/task-planner/scripts/{attest-plan.sh, check-complete.sh, check-3file-gate.sh, selftest-gate-injection.sh(新), selftest-registry.tsv, 14+ selftest 级联, selftest-verification-gate.sh(VG-02)} + skills/task-planner/config.json
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 汇聚注入回归 | selftest-gate-injection.sh | 11/11 | Total: PASS=11 FAIL=0（重跑×2 稳定） | PASS |
+  | 全量回归 | run-selftests.sh --fresh（S2b 时点） | FAIL=0 | Total: 90 PASS=90 FAIL=0 | PASS |
+  | 真空 VC 拦截 | check-complete × 夹具A | rc≠0 | rc=1 含 [vc-nonvacuous] ✗×5 | PASS |
+  | 缺映射拦截 | check-complete × 夹具 | rc≠0 | rc=1 含 [rvc-coverage] ✗ | PASS |
+  | 占位步骤 | 判定器×夹具 | rc≠0 | rc=1「优化一下性能」 | PASS |
+  | 档位漂移 | 判定器×mini+3Phase | rc≠0/干净 0 | rc=1 / rc=0 | PASS |
+  | 跑题 Goal | 3file-gate×夹具 | 拦截/留痕 | rc=1 含 [drift-gate] ✗ | PASS |
+  | 活计划零误报 | 五判定器×v184+P01 | 甄别后 0 误报 | v184 两真阳性修后全 rc=0；P01 5 缺口=休眠债登记 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

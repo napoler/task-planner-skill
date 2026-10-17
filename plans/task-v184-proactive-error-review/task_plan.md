@@ -24,6 +24,7 @@ execution_lane: L1
 ### R→VC 映射（Rule 51.2 验证机制先行）
 | R | 映射 VC | 覆盖判据（可观察证据形态） |
 |---|---------|---------------------------|
+| R0 | VC-2 | 审查判据=三类漏检→接线面映射（report §5 落地方式列逐条对齐）；「主动拦截生效」即审查结论的可观察落地（R0 为手段行，映射 VC-2 收口） |
 | R1 | VC-2 | 5 判定器接线后：注入缺陷计划走真实门链（attest/check-3file-gate/check-complete）exit≠0 且留痕；此前=手动调用不主动（v183 风险①） |
 | R2 | VC-2, VC-5 | 偏差/偏移类（P-06 CJK 漂移/P-08 R→VC 缺映射）在翻转期+终验期自动拦截；纠正走既有 Rule 31/64 SOP 不新建 |
 | R3 | VC-3, VC-4 | 内容级核对层（声明串↔证据文件内容不符→FAIL）+ 内容审查门规则条款（84.6）落地；语义级零机器检查缺口（report §7.3 high）收窄 |
@@ -309,7 +310,7 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
 -->
 - [x] check-complete 收口 v183（簿记修正 Next Step/Current Phase 陈旧指针）
 - [x] archive-plan.sh 归档 v183 + INDEX 刷新（**Rule 81.3 合规拒绝路径**：live-owner 守卫拒绝→保持原位+理由登记，重试窗口 2026-10-18 01:46 后；INDEX 无 v183 活跃行无需刷新）
-- [x] Rule 90 首锚 git 提交（b83ad92，67 文件逐目录 add 禁 -A；簿记补录四笔：88284d7 等）
+- [x] Rule 90 首锚 git 提交（b83ad92，67 文件逐目录 add 禁 -A 含 plans/task-v183-verif-closeout/ 全套；簿记补录四笔：88284d7 等）
 - [x] 全量回归基线取证（Total: 90 PASS=90 FAIL=0）
 - **V-N:** VC-1, VC-5
 - **Status:** complete
@@ -326,12 +327,12 @@ S1（P-02 接线 attest+check-complete+config 键+级联）返回验收后，串
   WHAT: 5 判定器接进三时点自动门链，每门带注入式行为验收。
   WHY: report §5.1 修订 3：只交付脚本+registry+selftest=「检测器发货即死」；验收必须是注入缺陷计划→真实链 exit 1。
 -->
-- [ ] S1-S5 按 S-unit 表派发落地（同文件串行、S5 可并行）
-- [ ] selftest-gate-injection.sh 汇聚各门注入断言（CA-7）
-- [ ] 档位键 warn 起步 + config 键数断言级联最小同步（逐处登记）
+- [x] S1-S5 按 S-unit 表派发落地（实际执行链：S1 三投 general-purpose 成/S2/S2b 清理/S3+S4 合并/S5——见 Handoff rescue 记录）
+- [x] selftest-gate-injection.sh 汇聚各门注入断言（CA-7，11 断言全 PASS + registry 91 行）
+- [x] 档位分档落地（[align] 修订：结构类 enforce/阈值类 warn；P-06 经 148 语料 0 误报数据翻 enforce）+ 键批前置 48→53 一轮级联
 - **V-N:** VC-2, VC-5
-- **Status:** pending
-- **Executor:** code-assistant（haiku-1）
+- **Status:** complete
+- **Executor:** code-assistant（haiku-1）→实际主体 general-purpose（rescue 记录：code-assistant 两投停摆，Rule 22.3.1 改派；Handoff 表 #2/#5/#6）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
   机器契约(check-plan-dispatch.sh attest 校验):
