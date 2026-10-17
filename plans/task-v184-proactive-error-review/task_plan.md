@@ -382,7 +382,7 @@ Phase 4
 - [x] Fix any issues found（D-1 反斜杠残留已修；D-3 kb 已蒸馏）
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5
 - **Status:** complete
-- **Executor:** 混合（S9 code-runner-agent / S10 Verifier；CR Gate=Code Reviewer 子代理 APPROVED 留痕 cr-gate.md）
+- **Executor:** code-runner-agent（mini）+Verifier（S9 回归/S10 复验；CR Gate=Code Reviewer 子代理 APPROVED 留痕 cr-gate.md）
 
 <!-- S-unit 派发单元表（Rule 22.6 — 机器契约同 Phase 2 注释） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
