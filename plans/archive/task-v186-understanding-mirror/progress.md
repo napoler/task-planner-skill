@@ -91,6 +91,11 @@
   | alignment | 五项清单 | APPROVED | APPROVED 5/5 | PASS |
 - [goal:G4] merge(task-v186)=d6a63a6 在 log ∧ worktree list=0 ∧ 归档入库 plans/archive/（Verifier VC-6 复验+本提交承载）
 
+## Judge/Align 留痕（Rule 73.4）
+- [align] 16:30 落点三问：① 与用户诉求一致？是——机制辖域即 Rule 80，子条 80.7 增补（零编号级联，19.8 判例）；② 基于证据？是——核心 critical-rules.md:129-144 实文+SL-01..11 断言面 grep 实证；③ 换既有决策会怎样？独立第 8 计划文件方案机械面改动大、违背 L0-T 比例——维持子条+同文件配对方案（Decisions Made 同源）
+- [judge] 16:52 合并回前评判：diff 4 文件全在射程+drift ALIGNED+回归 91/91 FAIL=0 → 放行 merge --no-ff
+- [judge] 17:25 归档前评判：CR APPROVED+Verifier 6/6+align APPROVED 5/5+计划缺陷自纠（重锁 #3，Phase 1 漏翻/重复骨架块已修）→ 放行归档
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
