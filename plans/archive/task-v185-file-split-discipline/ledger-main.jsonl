@@ -1,3 +1,5 @@
 {"tick":1,"ts":"2026-10-17T06:44:44Z","agent":"main","phase":"1","event":"phase_complete","summary":"Phase 1 计划与隔离基线 complete：attest SHA=194e4889 六门绿+92 预留；worktree=/mnt/data/dev/task-planner-skill-worktrees/task-v185-file-split-discipline 基线 HEAD=16951ff","files":[]}
 {"tick":2,"ts":"2026-10-17T07:33:19Z","agent":"main","phase":"2","event":"drift_check","summary":"Phase 2 偏移检查=ALIGNED（5 文件全在射程 CA-1..5；R1-R7 语义对齐；检查点 2-drift-checker.md）","files":[]}
 {"tick":3,"ts":"2026-10-17T07:33:19Z","agent":"main","phase":"2","event":"progress","summary":"S1-S3 完成：Rule 92 落位(588行)+级联 6 处；worktree commit 282fd42","files":[]}
+{"tick":4,"ts":"2026-10-17T08:16:14Z","agent":"main","phase":"5","event":"drift_check","summary":"收口段偏移检查=ALIGNED（Phase 3-5 逐锚命中；39bf476=射程内自纠；检查点 5-drift-checker-final.md）","files":[]}
+{"tick":5,"ts":"2026-10-17T08:16:14Z","agent":"main","phase":"5","event":"phase_complete","summary":"Phase 5 终验与交付 complete：CR APPROVED+Verifier 6/6+align 复验 APPROVED+check-complete exit 0","files":[]}

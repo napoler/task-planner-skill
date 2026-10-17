@@ -67,6 +67,44 @@
   | 全量回归 | run-selftests --fresh | FAIL=0 | Total: 91 PASS=91 FAIL=0 (run=91 reused=0) | PASS |
   | 抽查×4 | 四脚本单跑 | rc=0 | rc=0×4 | PASS |
 
+### Phase 4: 合并回主仓
+- **Status:** complete
+- **Started:** 2026-10-17 15:50
+- **R 锚定**：本 Phase 服务 R7——合并收口使规范条目进入 master 主线（VC-6）。
+- Actions taken:
+  - 主仓干净核对 ✓（仅本任务簿记足迹，scope 五文件零占用）→ merge --no-ff（73ce9ec）→ 三项核验绿（标题=1、(Rules )?1-92=3、1-91=0×2）→ worktree remove+branch -d（list=0）
+  - rule-reserve land 92（landed by task-v185-file-split-discipline）+ sync-todos --index + 中途簿记提交
+- Files created/modified:
+  - master 5 个 scope 文件（merge 73ce9ec）；plans/INDEX.md、plans/.rule-reservations.jsonl
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 合并核验 | grep ×3 | 1 / ≥3 / 0 | 1 / 3 / 0 | PASS |
+  | worktree 残留 | git worktree list grep | =0 | 0 | PASS |
+  | 台账 | check 92 | landed | landed by task-v185-… | PASS |
+
+### Phase 5: 终验与交付
+- **Status:** in_progress
+- **Started:** 2026-10-17 16:05
+- **R 锚定**：本 Phase 服务 R7「添加相关条目（规范要求）」的终态验收——CR+独立复验+对齐审查三重门后交付。
+- Actions taken:
+  - CR Gate：Code Reviewer 单轮 VERDICT: APPROVED（5 维度全过；2🟡+1💬 登记不阻断，报告 subagent-state/5-code-reviewer.md）（16:00 前后）
+  - S5 Verifier 独立复验：ALL PASS 6/6（检查点 5-s5-verifier.md）（16:05）
+  - alignment-review：CHANGES_REQUESTED——P1×1=92.6 引用 87.4③ 语义错位（③=匹配既有风格非禁顺手拆）；修正为 87.4② 同面语义（fix commit 39bf476），复验中（16:15）
+- Files created/modified:
+  - skills/task-discipline/references/critical-rules-discipline.md:587（92.6 引用修正，39bf476）
+  - subagent-state/{5-code-reviewer,5-s5-verifier,5-alignment-review}.md（审查检查点）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | CR Gate | 全量 diff 五维审查 | APPROVED | APPROVED | PASS |
+  | S5 独立复验 | 六项 VC 实跑 | 6/6 PASS | ALL PASS 6/6 | PASS |
+  | alignment-review | 五项对齐清单 | APPROVED | CHANGES_REQUESTED→39bf476 修正→RE-VERDICT APPROVED | PASS |
+  | 委派统计 | check-delegation stats | verdict=ok | ok（violations=[]） | PASS |
+  | drift check #2 | 收口段三态 | ALIGNED | ALIGNED | PASS |
+  | check-complete | 终验门 | exit 0 | exit 0（16:20） | PASS |
+  | 归档尝试 | archive-plan.sh | 通过或守卫拒绝登记 | REJECT active-pointer（16:20，side 指针未清；clear 后重试） | 登记处置 |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

@@ -84,10 +84,10 @@ n/a（纯手段型任务）——R1-R7 全部标注 [手段]（用户只要「�
 
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 规则落地 | Rule 92 全文入 discipline 规则文件 | `grep -c "^### 92 产出文件尺寸纪律" skills/task-discipline/references/critical-rules-discipline.md`=1 且 92.1-92.7=7 | S1/Phase 2 | pending |
-| G2 | 级联完成 | 全集索引口径升 1-92 且旧字面零残留 | `grep -c "1-92" skills/task-planner/SKILL.md`≥3 ∧ `grep -rc "1-91" SKILL.md README.md`=0 | S2,S3/Phase 2 | pending |
-| G3 | 回归绿 | 全量 selftest FAIL=0 | worktree 内 `run-selftests.sh --fresh` 末行 FAIL=0 | S4/Phase 3 | pending |
-| G4 | 合并收口 | --no-ff 合并回 master+worktree 清理+台账 land | `git log --oneline -3` 含 merge commit ∧ `git worktree list` 无本任务 ∧ check 92=landed | Phase 4-5 | pending |
+| G1 | 规则落地 | Rule 92 全文入 discipline 规则文件 | `grep -c "^### 92 产出文件尺寸" skills/task-discipline/references/critical-rules-discipline.md`=1 且 92.1-92.7=7 | S1/Phase 2 | complete |
+| G2 | 级联完成 | 全集索引口径升 1-92 且旧字面零残留 | `grep -cE "(Rules )?1-92" skills/task-planner/SKILL.md`≥3 ∧ `grep -c "1-91" SKILL.md README.md`=0 | S2,S3/Phase 2 | complete |
+| G3 | 回归绿 | 全量 selftest FAIL=0 | worktree 内 `run-selftests.sh --fresh` 末行 FAIL=0 | S4/Phase 3 | complete |
+| G4 | 合并收口 | --no-ff 合并回 master+worktree 清理+台账 land | `git log --oneline -3` 含 merge commit ∧ `git worktree list` 无本任务 ∧ check 92=landed | Phase 4-5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -148,11 +148,11 @@ n/a（纯执行类）——本任务产出=规则文本+索引级联，非结论
 
 ## Current Phase
 
-Phase 5
+终态（全 5 Phase complete，outcome=COMPLETE）
 
 ## Next Step
 
-CR Gate（Code Reviewer 单轮）→ Verifier 独立复验六项 VC → alignment-review → check-complete → 归档尝试 → delivery-summary。
+尾提交（Rule 90.2 收口锚）→归档重试→会话收尾。
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -211,12 +211,13 @@ CR Gate（Code Reviewer 单轮）→ Verifier 独立复验六项 VC → alignmen
 - **merge_back**: merged(73ce9ec)
 
 ### Phase 5: 终验与交付
-- [ ] CR Gate：Code Reviewer 单轮（APPROVED 才可终验）
-- [ ] S5 Verifier 独立 VC 复验（主仓合并后终态）
-- [ ] alignment-review 单轮（对齐审查登记项）
-- [ ] rule-reserve land 92 ✓（已前置完成）+INDEX 刷新 ✓+归档尝试（Rule 81.1，守卫拒绝则登记）+delivery-summary 五要素
-- **V-N:** VC-5 ✓(check 92=landed), VC-6（终态复查）
-- **Status:** in_progress
+- [x] CR Gate：Code Reviewer 单轮 **APPROVED**（2🟡+1💬 登记不阻断，报告 5-code-reviewer.md）
+- [x] S5 Verifier 独立 VC 复验：**ALL PASS 6/6**（5-s5-verifier.md）
+- [x] alignment-review：CHANGES_REQUESTED（92.6 引 87.4③ 错位）→ 修正 39bf476 → **RE-VERDICT APPROVED**（5-alignment-review.md）
+- [x] rule-reserve land 92 ✓+INDEX 刷新 ✓+归档尝试（**REJECT active-pointer，16:20；clear 指针后重试**）+delivery-summary 五要素 ✓
+- [x] 收口段 drift-checker：**ALIGNED**（5-drift-checker-final.md）
+- **V-N:** VC-5 ✓(landed), VC-6 ✓(S5 复验)
+- **Status:** complete
 - **Executor:** Verifier（mini）（终验核查子代理；主进程簿记走白名单②）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -262,6 +263,8 @@ CR Gate（Code Reviewer 单轮）→ Verifier 独立复验六项 VC → alignmen
 
 | Decision | Rationale |
 |----------|-----------|
+| 计划推进重锁 #3 | Phase 5→complete 终态翻转+Goal 单元表翻格+委派统计终值；align P1 修正（39bf476）随 Decisions #4 登记 |
+| Decision #4（align 修正） | 92.6 引用 87.4③→87.4②（③=匹配既有风格非同面；②=不重构没有坏掉的模块为同面）——alignment-review P1，射程内自纠，复验 APPROVED |
 | 计划推进重锁 #2（纠正登记） | VC-3 可执行命令校准：「Rules 1-92」→「(Rules )?1-92」——SKILL.md:221 字面为「核心域 1-92」无 Rules 前缀，原模式物理上限 2 处（S2 上报+主进程 8 项 grep 亲验全过）；覆盖语义不变非缩水（Rule 51.7 纠正=回锚） |
 | 计划推进重锁 #1 | Phase 1→complete、Phase 2→in_progress 状态翻转，重跑 attest 更新锁定（Rule 20.1 授权路径；非纠正/让步） |
 | silent: 编号取 92 | rule-reserve.sh next=92、check 92=free；91 已被 Rule 91（workflow 模型分档，plan-collab-router）占用 |
@@ -290,14 +293,15 @@ CR Gate（Code Reviewer 单轮）→ Verifier 独立复验六项 VC → alignmen
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-17 15:32 | ALIGNED（drift-checker，检查点 2-drift-checker.md+ledger tick2） | VC-1/2/3 | 5 文件全在射程 CA-1..5；既有规则正文零改；R1-R7 语义全承载 |
+| 2026-10-17 16:25 | ALIGNED（drift-checker 收口段，检查点 5-drift-checker-final.md+ledger） | VC-4/5/6 | Phase 3-5 动作逐锚命中；39bf476=射程内自纠；无表外改动 |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（Phase 2 executor、Phase 3 code-runner-agent、Phase 5 Verifier） |
-| 主进程直做 Phase 清单 | Phase 1（① git/worktree 编排+② 计划系统文件维护）、Phase 4（① git 编排）——Rule 25.3 白名单内，v184 判例同口径豁免 |
-| 委派率 | 0.6（<0.7；主进程直做两项均白名单①②内，机器 stats=事实源，终验粘贴 JSON 复核） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 2（直接执行）/ 5（另有 7 次质量门派发：executor×3、code-runner×1、drift-checker×2、Code Reviewer×1、Verifier×1、alignment×1） |
+| 主进程直做 Phase 清单 | Phase 1（① git/worktree 编排+② 计划系统文件维护）、Phase 4（① git 编排）、Phase 5 簿记部分（② 计划系统文件维护）——Rule 25.3 白名单内 |
+| 委派率 | stats 实跑 delegation_rate=0.400，**verdict=ok，violations=[]**（机器事实源 16:05；主进程直做均白名单①②，v184 判例同口径豁免） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 

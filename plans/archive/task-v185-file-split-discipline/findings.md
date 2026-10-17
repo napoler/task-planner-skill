@@ -30,6 +30,25 @@
 ### Drift check #1 回执（15:32，drift-checker）
 - 判定 **ALIGNED**：diff 5 文件全在射程（CA-1..CA-5），既有规则正文零改动，R1-R7 语义全承载（92.1 尽量避免/92.3 按引用拆/92.4 其他文件/92.5 垂直化/建制段负担/92.6 例外）。风险登记：Current Phase 指针滞后（本批翻转已修）。检查点 2-drift-checker.md。
 - Phase 2 V-N 证据：VC-1（1/7）✓；VC-2（优先拆分 3/引用 4/垂直 6/92.4=1）✓；VC-3（worktree 8 grep）✓；worktree 产物 commit 282fd42。
+
+### CR Gate 回执（Code Reviewer 单轮，VERDICT: APPROVED，15:58 前后）
+- 5 维度全过：正确性（R1-R7 全承载/无冲突）、级联完备性（9 编辑点一致、1-91 零残留）、风格（与 88-90 范式对齐、与 Rule 91 无冲突）、范围纪律（严格 5 文件、既有正文零改）、回归面（WF-10 实跑 PASS）。报告=subagent-state/5-code-reviewer.md。
+- **登记项（不阻断，待用户裁决）**：
+  - 🟡 WF-10 锚族滞后：`selftest-workflow-orchestration.sh:79` grep 族 `1-(68|69|71|75|91)` 未纳入 92；本 diff 使技能文件对 WF-10 贡献 7→1（cnt 10→4，仍过 ≥3 线）。按 CA-6 口径（仅断裂锚修）不属断裂——登记待后续任务/用户裁决补 92 进族（两处 grep+注释一行）。memory「纪元锚每纪元必炸」形态的下一处候选。
+  - 🟡 discipline/SKILL.md 计数行滞后：加 92 后 :70/:81 的「41/42 条」真值为 42/43——既有漂移 D-A 延续，真值在此登记不改文件。
+  - 💬 92.7 未写裁决日期字样（与 90.6 一致；判例锚内含 2026-10-17 日期），可选补强不改。
+
+### Verifier 独立复验回执（S5，ALL PASS 6/6）
+- 主仓 master 终态逐条实跑：VC-1（1/7）✓；VC-2（3/4/6/1）✓；VC-3（3、0+0、2/1/1）✓；VC-4（S4 检查点 91/91+两 selftest 抽查 rc=0）✓；VC-5（check 92=landed by task-v185-file-split-discipline）✓；VC-6（skills/ 零未提交+worktree=0+merge 73ce9ec 在 log）✓。
+- 检查点=subagent-state/5-s5-verifier.md；验证独立性满足（Rule 33.3，全新子代理实跑）。
+
+### Alignment-review 回执（CHANGES_REQUESTED → 修正 → RE-VERDICT APPROVED）
+- 首轮 4/5 PASS+P1×1：92.6 引「Rule 87.4③ 同面语义」错位（③=匹配项目既有风格，与「禁顺手拆」不同面；正确同面=87.4② 不重构没有坏掉的模块，:534 实存核验）。
+- 修正=fix commit 39bf476（单行）；复验=RE-VERDICT APPROVED（引用面匹配+无新引入问题，残留冲突=0）。检查点=5-alignment-review.md。
+- 教训：新规则文本的「衔接条款引用号」必须逐一对照被引条款原文，不能凭印象写编号——本次凭印象写 ③ 被独立审查抓出。
+
+### 收口段 drift check 回执（#2，ALIGNED）
+- skills/ diff 16951ff..39bf476 恰 5 文件=scope 全量；39bf476 可追溯 align 发现（射程内自纠）；R1-R7 承载无退损。检查点=5-drift-checker-final.md。
 ### 编号考证（2026-10-17 实跑）
 - `rule-reserve.sh next` = **92**；`check 92`=free、`check 93`=free。
 - Rule 91 已被占用：`skills/plan-collab-router/references/critical-rules-collab.md:50`（workflow per-subagent 模型分档纪律）。
