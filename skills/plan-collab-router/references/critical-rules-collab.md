@@ -25,7 +25,7 @@ task-planner 执行模型长期只有「串行 Agent() 逐 S-unit 派发」一�
 
 ### 40 harness 工具面主动选择（proactive harness tooling selection — task-v097，目标：计划期按任务类型主动分析并登记各 Phase 命中的执行工具面（六类），与 /goal 会话目标对齐、按 Rule 39 纪律衔接 workflow 编排；判定面=LLM 行为、机器面=selftest 静态守护、零新 config 键；Rule 39 原文零改动）
 
-Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、四机制映射、并行豁免登记、机器校验边界），本条 40 管「计划期主动选哪个工具面」（工具面清单 + 计划期分析区块 + /goal 对齐 + workflow 编排计划期路径），二者为上下游关系：39 是机制与红线，40 是计划期的主动分析面；**40.4 只增计划期建议登记面，不改 39.1「显式点名才路由」的触发纪律原文**（Rule 36.5 纯增量）。
+Rule 39 管「编排机制与纪律」（显式点名∨常设授权命中才路由、加载门槛、四机制映射、并行豁免登记、机器校验边界），本条 40 管「计划期主动选哪个工具面」（工具面清单 + 计划期分析区块 + /goal 对齐 + workflow 编排计划期路径），二者为上下游关系：39 是机制与红线，40 是计划期的主动分析面；**40.4 只增计划期建议登记面，不改 39.1「显式点名∨常设授权命中才路由」的触发纪律原文**（Rule 36.5 纯增量）。
 
 40.1 **工具面清单（六类 harness 执行工具面）**：① /workflow 动态工作流（= CreateWorkflow 族：CreateWorkflow/AmendWorkflow/ResumeWorkflowRun/ResolveWorkflowQuestion/SaveWorkflow，触发纪律见 39.1、40.4，加载门槛见 39.2）；② /goal 会话目标（用户侧 harness 命令：目标锚定 + 完成审计，技能层仅做 40.3 映射指引，不可代调）；③ Agent 子代理（默认执行体；路由表 = SKILL「子代理路由与模型分级」，纪律 = Rule 21/22/25；Phase 的 Executor 字段是委派门控机器事实源）；④ 卫星技能（plan-collab-router/plan-research-router/plan-template-kit/plan-cost-guard，主路由见各自 SKILL 与 🤝 协同路由矩阵）；⑤ MCP/平台工具（web_reader 网页转 markdown、node_repl 浏览器控制、documents 图像搜索等；环境事实以用户级 AGENTS.md §十 为准，禁止假设不存在的工具）；⑥ 机械守卫脚本（scripts/check-*.sh 与 selftest-*.sh 的只读验证与门控，Executor 理由面 = Rule 25.3 白名单③「机械验证」）。
 40.2 **计划期主动分析（「🧰 工具选择与编排」区块）**：standard/full 档计划须含「🧰 工具选择与编排」区块（general 模板承载）：逐 Phase 标注命中工具面与选择理由，且「workflow 编排判定」（40.4）与「/goal 对齐」（40.3）两判定行必填。区块定位声明：该区块是 Executor 字段的**上游分析记录，不替代**其委派门控机器事实源地位（check-delegation/check-plan-dispatch 消费面不变；区块内不得出现 `### Phase N:` / `**Status:**` / `**Executor:**` 三形态伪行，防状态机误读）。mini 档豁免该区块（Rule 38.3 区块白名单，mini-lite-type.md 以声明行明确豁免，未加区块不构成违约）。
@@ -68,7 +68,7 @@ Rule 39 管「编排机制与纪律」（显式点名才路由、加载门槛、
 91.8 **禁止全流统一强档**：不设档位也不设 `subagent_model` 属违规——分诊/格式化与架构同价=用户原始痛点；禁止分诊/格式化上 opus——反向浪费：慢且贵，质量溢出。
 
 91.9 **与既有规则衔接**：
-- **Rule 39（编排触发/机制）**：91 是 39 的 per-subagent 模型分档深化——39 管编排触发与机制（显式点名才路由/加载门槛/四机制映射），91 管脚本内每 subagent 用什么档位。39.5 机器校验边界原文不变：workflow 内部 subagent 非 hook 强制，91 守护=selftest 静态断言非 hook 阻断。
+- **Rule 39（编排触发/机制）**：91 是 39 的 per-subagent 模型分档深化——39 管编排触发与机制（显式点名∨常设授权命中才路由/加载门槛/四机制映射），91 管脚本内每 subagent 用什么档位。39.5 机器校验边界原文不变：workflow 内部 subagent 非 hook 强制，91 守护=selftest 静态断言非 hook 阻断。
 - **Rule 68.3（组内异构分摊）**：68.3 的 model 档位在 Agent() 派发侧靠 frontmatter 实现；workflow 侧 91 通过 `model()` + `agent(name, { model })` 实现。两者共享 Rule 43.2 最小可承载档位原则和「同档可承载时优先 agent 类型差异」优先级。68.3 原文不改。
 - **Rule 22.3（失败兜底）**：91.7 引用 22.3 的升档机制——运行中模型不可用按 22.3 链处理，禁悄悄降档。
 - **Rule 43.2（最小可承载档位）**：91 四档判据对齐 43.2 的最小可承载档位原则——取可承载该子代理职责的最小档位。
