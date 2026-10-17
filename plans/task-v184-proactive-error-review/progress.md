@@ -114,3 +114,13 @@
 - [goal:G4] 审查门条款——grep '84\.7' 两载体=7/1；VG-13 静态锚 13/13（S8 返回+本段）
 - [goal:G5] （Phase 4/5 交付时回填）
 - [goal:G5] 零回归收尾——独立回归执行体复现 Total: 91 PASS=91 FAIL=0（run=91）+registry rows=91=actual（subagent-state/final-regression.md）；CR APPROVED（cr-gate.md）；VC-1..4 复验全 PASS（final-verify.md）；尾锚提交见 git log。
+
+### 追加批次：部署位同步（2026-10-17 用户「同步部署」授权，B 类扩展）
+- **R 锚定**：本批次服务 R1「主动发现」的生效面——部署位不同步则新门只存在于开发仓，运行会话用不到。
+- Actions taken: 盘点四部署位（agents 位不含本仓技能跳过）→ 五目录（含 v183 改动的 3 卫星）× 3 位 rsync（exclude .drift-rhythm 运行态）→ 复核零残留+84.7/新文件在位
+- [align] B 类扩展登记：CA-13 标注行（Rule 74.3 先标注后执行）；范围=delivery-summary ⑤ 登记项的授权执行，无新增开发面
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 同步收敛 | diff -rq 五目录×三位 | 0 差异（除 drift-rhythm） | 零 RESIDUAL | PASS |
+  | 新门生效面 | 84.7 条款+selftest-gate-injection 在位检查 | 三处全在 | zcode=7 锚；新文件 OK | PASS |

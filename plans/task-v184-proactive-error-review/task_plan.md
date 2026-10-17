@@ -195,6 +195,7 @@ R1-R3 为结果级需求（提高发现/审查能力），按错误检查发生�
 | CA-10 | skills/task-planner/scripts/selftest-registry.tsv | 修改 | 增量 | registry 双向一致 | +1 行（selftest-gate-injection） |
 | CA-11 | plans/task-v183-verif-closeout/{task_plan.md(Next Step/Current Phase 簿记), 全套}（归档移动） | 更新 | 增量 | Rule 81/90 | Phase 1 check-complete→簿记修正→archive→git 提交 |
 | CA-12 | plans/INDEX.md | 修改 | 增量 | Rule 81.4 | 归档后索引刷新 |
+| CA-13 | ~/.{zcode,claude,opencode}/skills/{task-planner,verification-gate,task-discipline,task-dispatch,task-drift-guard} | 更新（部署位 rsync，exclude .drift-rhythm） | 增量 | 用户 2026-10-17「同步部署」显式授权（delivery-summary ⑤ 登记项） | 主仓→三位同步+零残留复核+运行态保留 |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 

@@ -45,7 +45,7 @@
 ## ④ 风险（必须列举）
 
 1. **CLAIM_MATCH=warn 档**：60 存量抽样出 2 计划「边界阳性」（引用产出脚本而非输出日志——结果串合法不在脚本里）；升 enforce 前需你裁决此边界（修存量引用 or 保留 warn）
-2. **部署位未同步**（你已裁决暂不同步）：新门对 `~/.zcode/skills` 运行位的新会话暂不生效；主仓=开发源
+2. ~~部署位未同步~~ **已清账（2026-10-17 用户「同步部署」授权后执行）**：五技能目录（task-planner/verification-gate/task-discipline/task-dispatch/task-drift-guard，覆盖 v183+v184 全改动面）rsync 同步 ~/.zcode + ~/.claude + ~/.opencode 三位，diff 零残留、.drift-rhythm 运行态保留、84.7 条款+新门文件三处在位——新门对新会话即时生效
 3. **登记债两笔**（独立任务面）：①check-goal-cjk E5 区间缺口（U+5F64-5FFF 常用字未判 CJK，一行修法备查）②attest 门缓存 cksum 历史键陈旧（首跑必 miss 重跑，方向安全）
 4. **CR P3 建议×5**（非阻断）：GI-05/07 attest 侧为 grep 锚/attest 三接线块同构可抽函数等
 5. **v183 归档被 live-owner 守卫合规拒绝**（10-18 01:46 后可重试；P01 休眠计划 5 映射缺口同批处理）
@@ -54,6 +54,6 @@
 ## ⑤ 下一步建议
 
 - **可选·CLAIM_MATCH 升档**：裁决边界阳性处理方案后将 claim_match_enforce 翻 enforce（对象 `skills/task-planner/config.json`，看点=warn→enforce + 存量 2 计划引用修正）
-- **可选·部署同步**：`--deploy` 到 ~/.zcode/skills 等（需授权；verification-gate 16 处悬空引用同批补齐）
+- ~~可选·部署同步~~ **已执行（2026-10-17 用户授权）**：三位五目录零残留收敛
 - **可选·归档批次**：2026-10-18 后 `archive-plan.sh --batch`（v183+P01）
 - **登记债**：E5 区间一行修 / attest 接线块抽函数（CR P3）
