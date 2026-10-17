@@ -95,3 +95,15 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+## Goal 证据行（Rule 66.3 收口补录 — 2026-10-17 task-v184 Phase 1 代行，证据源=本文件 Phase 3/4 Test Results + delivery-summary ③）
+<!-- [2026-10-17] Why: v183 翻格时漏写 [goal:Gn] 证据行，goal-gate 拦截终验；按既有实测证据补录，非新造证据 -->
+- [goal:G1] P-05 修复——periodic-review.sh 三处 `tr -d '*#-'`（全仓 grep=3）；矛盾夹具 exit=1 / 干净夹具 exit=0（本文件 Phase 3 Test Results 行 1-2）
+- [goal:G2] check-vc-nonvacuous.sh 落地——selftest 13/13 PASS（delivery-summary ③ 逐 selftest 段）
+- [goal:G3] check-step-placeholders.sh 落地——selftest 10/10 PASS（同上）
+- [goal:G4] check-goal-cjk.sh 落地——selftest 11/11 PASS；本计划 Goal 抽出 15 CJK 词（旧 grep -oP '\w+' 抽出 0，同上）
+- [goal:G5] check-gate-degraded.sh 落地——selftest 16/16 PASS；[gate-degraded] 留痕在位（同上）
+- [goal:G6] check-rvc-coverage.sh 落地——selftest 9/9 PASS；对 task-v146 报真阳性（VC-5 无 R 映射，delivery-summary ③ 真实数据 smoke 段）
+- [goal:G7] check-tier-consistency.sh 落地——selftest 8/8 PASS；本计划 standard/L1 复核一致（Goal 单元表 G7 行）
+- [goal:G8] P-04 裁决=warn——config vc_gate_enforce 默认已=warn 无需改（findings.md Technical Decisions P-04 行）
+- [goal:G9] 全量回归——run-selftests.sh --fresh Total: 90 PASS=90 FAIL=0（基线 84→90 零新增失败，本文件 Phase 4 Test Results）
