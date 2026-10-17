@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-verification-gate.sh — task-v173 Rule 84 验证技能独立化静态守护（84.6 机器面落地物）
 # What：静态断言 verification-gate 卫星全链落点在位——卫星 SKILL.md/规则文件/template/游戏脚本四文件、
-#      Rule 84.1-84.6 子条文本锚、verification.md 模板"Verify command"字段锚、主技能路由表/三处步骤引用/
+#      Rule 84.1-84.7 子条文本锚、verification.md 模板"Verify command"字段锚、主技能路由表/三处步骤引用/
 #      attest-plan.sh VC 可执行性门锚、以及零新 config 键承诺（properties 键数不变）。
 # Why：验证技能独立化（用户 2026-10-14 裁决 R1-R4）后，任何后续任务改写卫星/主技能/脚本时误删 Rule 84
 #      子条、VC 可执行性门或路由引用，selftest 立即 FAIL 暴露（Rule 36.5 纯增量回归防护）。

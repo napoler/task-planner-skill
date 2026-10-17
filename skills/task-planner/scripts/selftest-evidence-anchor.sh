@@ -2,7 +2,7 @@
 # selftest-evidence-anchor.sh — P-01「证据锚真实性检查」行为级 + 静态守护（EA-01..EA-20）
 #
 # What（守护对象 + 运行方式）:
-#   守护 P-01 全链落点，20 条编号断言，分四组：
+#   守护 P-01 全链落点，26 条编号断言，分五组：
 #     · 静态锚（EA-01..EA-04）: check-evidence-anchor.sh 在位/可执行/bash -n 通过 + 头注 What/Why 双层
 #       （Rule 45）+ `[evidence-anchor]` 输出前缀与 exit 语义锚 + registry 自登记 =1。
 #     · 判定器行为级（EA-05..EA-14，mktemp 自建夹具，零外部依赖）:
@@ -28,7 +28,14 @@
 #               config.json evidence_anchor_enforce 在位且 default=enforce
 #         EA-19 warn 档不阻断（同缺陷夹具 warn → stderr 含 EVIDENCE-ANCHOR WARNING，且无 FAILED 行）
 #         EA-20 负断言: 判定器零 python 依赖（`python3` 字面 =0，纯 bash 实现承诺）
-#   运行方式: `bash scripts/selftest-evidence-anchor.sh`；逐行打印 `EA-NN PASS/FAIL <说明>`，
+#     · CLAIM_MATCH 内容核对层（CLAIM-01..CLAIM-06，task-v184-S7，mktemp 夹具）:
+#         CLAIM-01 不符+默认 warn 档（声明 Total:90 PASS=90 vs 文件 Total:80 PASS=80）→ rc=0 + ⚠
+#         CLAIM-02 同夹具 enforce 档 → rc=1 + ✗（✗ 计入 FAIL）
+#         CLAIM-03 相符（声明与文件一致）→ 无 mismatch 行 rc=0
+#         CLAIM-04 有声明串无路径 token → SKIP 不算误报 rc=0
+#         CLAIM-05 off 档 → 整层跳过无 CLAIM 输出
+#         CLAIM-06 零声明面夹具 → 输出与 CLAIM_MATCH 加入前等价（无新增行）
+#   运行方式: `bash scripts/selftest-evidence-anchor.sh`；逐行打印 `EA-NN/CLAIM-NN PASS/FAIL <说明>`，
 #   末行 `Total: N PASS=x FAIL=y`；全 PASS exit 0，任一 FAIL exit 1。夹具全部 mktemp 于 /tmp 并跑毕即删。
 #
 # Why（机制锚）:
@@ -367,6 +374,82 @@ if [ "${_np:-0}" -eq 0 ]; then
 else
     bad 20 "判定器含 python3 字面 n=$_np（违背纯 bash 实现承诺）"
 fi
+
+# ── CLAIM-01..06 CLAIM_MATCH 内容核对层行为级（task-v184-S7）────────────────────
+# S6 在 check-evidence-anchor.sh 落地的 CLAIM_MATCH 层（声明串四形态 ↔ 被引证据文件内容核对）
+# 在 selftest 侧补行为断言。夹具 /tmp 自建自清理：make_fixture 造 delivery-summary（R1 证据格=
+# 声明串+路径 token），追加 ea.md（≥5 行）作被引文件；档位走 env -u（默认）/enforce/off
+# （config claim_match_enforce.default=warn 已在 config.json 固化）。逐条期望对照 S6 M3。
+okc()  { PASS=$((PASS+1)); printf 'CLAIM-%s PASS %s\n' "$1" "$2"; }
+badc() { FAIL=$((FAIL+1)); printf 'CLAIM-%s FAIL %s\n' "$1" "$2"; }
+
+# CLAIM-01 不符+默认 warn 档：R1 证据格声明 Total:90 PASS=90，被引 ea.md 内容为 Total:80 PASS=80
+#   → 默认档（env -u，config default=warn）rc=0 且输出含 [claim-mismatch] ⚠
+C01="$(mktemp -d "${TMPDIR:-/tmp}/c01.XXXXXX")"
+make_fixture "$C01" 'ea.md:5 Total: 90 PASS=90'
+printf '%s\n' '# ea fixture' 'line2' 'line3' 'line4' 'Total: 80 PASS=80' > "$C01/ea.md"
+_o="$(env -u TASK_PLANNER_CLAIM_MATCH_ENFORCE bash "$EA" "$C01" 2>&1)"; _rc=$?
+if [ "$_rc" -eq 0 ] && printf '%s' "$_o" | grep -qF '[claim-mismatch] ⚠'; then
+    okc 01 "不符+默认 warn 档：rc=0 且输出含 [claim-mismatch] ⚠（声明 90 vs 文件 80）"
+else
+    badc 01 "异常: rc=$_rc（应 0）/ 缺 [claim-mismatch] ⚠（输出: $(printf '%s' "$_o" | grep 'claim-mismatch' || echo 无)）"
+fi
+
+# CLAIM-02 不符+enforce 档：同夹具 env=enforce → rc=1 且含 [claim-mismatch] ✗（✗ 计入 FAIL）
+_o="$(env TASK_PLANNER_CLAIM_MATCH_ENFORCE=enforce bash "$EA" "$C01" 2>&1)"; _rc=$?
+if [ "$_rc" -eq 1 ] && printf '%s' "$_o" | grep -qF '[claim-mismatch] ✗'; then
+    okc 02 "不符+enforce 档：rc=1 且输出含 [claim-mismatch] ✗（✗ 计入 FAIL）"
+else
+    badc 02 "异常: rc=$_rc（应 1）/ 缺 [claim-mismatch] ✗（输出: $(printf '%s' "$_o" | grep 'claim-mismatch' || echo 无)）"
+fi
+rm -rf "$C01"
+
+# CLAIM-03 相符：声明 Total:80 PASS=80 与 ea.md 内容一致 → 无 mismatch 行 rc=0
+C03="$(mktemp -d "${TMPDIR:-/tmp}/c03.XXXXXX")"
+make_fixture "$C03" 'ea.md:5 Total: 80 PASS=80'
+printf '%s\n' '# ea fixture' 'line2' 'line3' 'line4' 'Total: 80 PASS=80' > "$C03/ea.md"
+_o="$(env -u TASK_PLANNER_CLAIM_MATCH_ENFORCE bash "$EA" "$C03" 2>&1)"; _rc=$?
+if [ "$_rc" -eq 0 ] && ! printf '%s' "$_o" | grep -q 'claim-mismatch'; then
+    okc 03 "相符：声明与文件一致 → 无 mismatch 行 rc=0"
+else
+    badc 03 "异常: rc=$_rc（应 0）/ 出现 claim-mismatch（输出: $(printf '%s' "$_o" | grep 'claim-mismatch' || echo 无)）"
+fi
+rm -rf "$C03"
+
+# CLAIM-04 SKIP：R1 证据格有声明串但无路径 token → SKIP 不算误报 rc=0
+C04="$(mktemp -d "${TMPDIR:-/tmp}/c04.XXXXXX")"
+make_fixture "$C04" 'Total: 90 PASS=90'
+_o="$(env -u TASK_PLANNER_CLAIM_MATCH_ENFORCE bash "$EA" "$C04" 2>&1)"; _rc=$?
+if [ "$_rc" -eq 0 ] && ! printf '%s' "$_o" | grep -q 'claim-mismatch'; then
+    okc 04 "SKIP：有声明串无路径 token → 无 mismatch 行 rc=0（不算误报）"
+else
+    badc 04 "异常: rc=$_rc（应 0）/ 出现 claim-mismatch（输出: $(printf '%s' "$_o" | grep 'claim-mismatch' || echo 无)）"
+fi
+rm -rf "$C04"
+
+# CLAIM-05 off 档：同 CLAIM-01 不符夹具 env=off → 整层跳过，无 CLAIM 输出 rc=0
+C05="$(mktemp -d "${TMPDIR:-/tmp}/c05.XXXXXX")"
+make_fixture "$C05" 'ea.md:5 Total: 90 PASS=90'
+printf '%s\n' '# ea fixture' 'line2' 'line3' 'line4' 'Total: 80 PASS=80' > "$C05/ea.md"
+_o="$(env TASK_PLANNER_CLAIM_MATCH_ENFORCE=off bash "$EA" "$C05" 2>&1)"; _rc=$?
+if [ "$_rc" -eq 0 ] && ! printf '%s' "$_o" | grep -q 'claim-mismatch'; then
+    okc 05 "off 档：整层跳过 → 无 claim-mismatch 输出 rc=0"
+else
+    badc 05 "异常: rc=$_rc（应 0）/ 出现 claim-mismatch（输出: $(printf '%s' "$_o" | grep 'claim-mismatch' || echo 无)）"
+fi
+rm -rf "$C05"
+
+# CLAIM-06 既有层零干扰：无声明串的干净夹具 → 输出与 CLAIM_MATCH 加入前等价（无新增行）
+C06="$(mktemp -d "${TMPDIR:-/tmp}/c06.XXXXXX")"
+make_fixture "$C06" 'artifact.md:2'
+_o="$(env -u TASK_PLANNER_CLAIM_MATCH_ENFORCE bash "$EA" "$C06" 2>&1)"; _rc=$?
+if [ "$_rc" -eq 0 ] && ! printf '%s' "$_o" | grep -q 'claim-mismatch' \
+   && printf '%s' "$_o" | grep -q '证据锚全过'; then
+    okc 06 "零声明面夹具：无 claim-mismatch 且 ✓ 证据锚全过（输出与 CLAIM_MATCH 加入前等价）"
+else
+    badc 06 "异常: rc=$_rc（应 0）/ 输出漂移（claim-mismatch: $(printf '%s' "$_o" | grep -c 'claim-mismatch' || true) 条; 全过行: $(printf '%s' "$_o" | grep -c '证据锚全过' || true)）"
+fi
+rm -rf "$C06"
 
 echo "----------------------------------------------------------------"
 echo "[selftest-evidence-anchor] Total: PASS=$PASS FAIL=$FAIL"

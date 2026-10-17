@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# check-evidence-anchor.sh — 证据锚真实性检查（存在性 + 行界 + 否定 trim + provenance 三层）
+# check-evidence-anchor.sh — 证据锚真实性检查（存在性 + 行界 + 否定 trim + provenance 三层 + CLAIM_MATCH 内容核对）
+# [2026-10-17 task-v184-S6] CLAIM_MATCH 层落地：R3「对内容的错误及时审查出来」的机器层第一载体——
+#   证据格/证据行声明的结果串（Total:/PASS=/FAIL=/exit=/rc=）与引用证据文件实际内容交叉核对，
+#   收窄 report §7.3 语义级缺口第一层（路径层全过但内容张冠李戴）。
 # [2026-10-16 P-01 实施] 本仓痛点根因（终审意见 7）：check-complete.sh:971 的 R-COVERAGE 证据格判定
 #   仅「字符串非空 ∧ ∉{无,—,N/A}」，goal-gate 三要素可叙述代偿 —— 证据格写 `/etc/hostname` 或
 #   死路径 `/tmp/不存在的文件.md` 仍 exit=0。本脚本把「证据锚」从「非空文本」升级为「可定位、可归属、
@@ -24,6 +27,11 @@
 #           → 本层跳过（fail-open，同 check-complete.sh porcelain 预检「缺表头即跳过」范式）；
 #        c) 解析结果落在 <plan-dir>/evidence/ 下（run-verification.sh 机器落盘产出，见伴生 c）→
 #           文件头（前 3 行）须含 VC 编号（VC-N）与 ISO8601 时间戳，缺 = FAIL（机器产出不可伪造面）。
+#     ④ CLAIM_MATCH 内容核对（task-v184 S6）—— 证据格/证据行里声明的结果串（四形态：`Total: N PASS=N` /
+#        `PASS=N` / `FAIL=N` / `exit=N` / `rc=N`，词表 CLAIM_PATTERNS 可扩）与**同格引用**的证据文件实际
+#        内容交叉核对：文件存在（路径层已过）但声明与内容不符 = 内容级错误检出——收窄「路径层全过但
+#        张冠李戴」的语义级缺口第一层（report §7.3）。档位 env TASK_PLANNER_CLAIM_MATCH_ENFORCE >
+#        config claim_match_enforce > warn：warn=⚠ 行不影响 rc；enforce=✗ 计入 FAIL 使 rc=1；off=跳过。
 #
 # Why（设计取舍，逐条给理由）：
 #   · 为什么先 trim 再判否定：原判定 `ev != "无"` 是字面比较，尾随空格使「无 」≠「无」→ 空证据假过；
@@ -41,23 +49,36 @@
 #     plans/.rule-reservations.jsonl 是 Rule 20.6 跨任务账本（任何落规则的任务都写它，不可能逐任务入
 #     scope 表）——二者都属「本任务产出面」，拦它们纯属误伤；系统前缀与仓内无关文件才是「张冠李戴」
 #     的真实风险面。
+#   · 为什么 CLAIM_MATCH 独立档位且默认 warn：内容核对误报面比路径层宽（声明写法差异/多文件引用/
+#     数字子串），默认 enforce 会把「写法不同」误判成「内容不符」——warn 起步让 R3 的及时审查先以
+#     可见告警落地，误报率量化（存量基线）后交用户裁决升 enforce（分档裁决范式，同 evidence_anchor）。
+#   · 为什么声明串抽不出/证据文件不可读算 SKIP：无声明串的格子本无内容声明面；文件不可读时核对无从
+#     进行——两者 fail-open，与路径层「抽不出 token 放行」同口径，不算误报。
 #
 # 用法: bash check-evidence-anchor.sh <plan-dir> [--source=coverage|goal|all]
 # 输出（**stdout**，供 caller 中继；caller 不得裹 2>/dev/null —— 见伴生 a）:
 #   命中: `[evidence-anchor] ✗ <file>:<行号> <token> — <reason> ｜ 原文: <摘录>`
+#   内容: `[claim-mismatch] ⚠|✗ <file>:<行号> 声明串与证据文件 <path> 内容不符（缺失: K=V ...）`
 #   跳过: `[evidence-anchor] SKIP (...)`
 #   通过: `[evidence-anchor] ✓ <n> 证据锚通过（coverage=<a> goal=<b>）`
-# 退出码: 0=全过（或无判定面）；1=任一 token 不中；2=输入异常（plan-dir 缺失/未知参数）
-# 依赖: bash + awk + grep/sed + wc（无 jq / 无 python，纯 bash 实现，同 check-delegation.sh 口径）
-# 档位: 本脚本自身不读档位（纯判定器）；enforce|warn|off 由 caller（check-complete.sh）按
-#       config.json#evidence_anchor_enforce / env TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE 裁决。
+# 退出码: 0=全过（或无判定面；CLAIM_MATCH warn 档不符也不改 rc）；1=任一 token 不中或 CLAIM_MATCH
+#        enforce 档声明串不符；2=输入异常（plan-dir 缺失/未知参数）
+# 依赖: bash + awk + grep/sed / wc（无 jq / 无 python，纯 bash 实现，同 check-delegation.sh 口径；
+#       jq 仅 CLAIM_MATCH 档位读 config 时可选使用，缺失降级 warn）
+# 档位: 路径层（存在性/行界/provenance）本脚本自身不读档位（纯判定器）；enforce|warn|off 由 caller
+#       （check-complete.sh）按 config.json#evidence_anchor_enforce / env TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE
+#       裁决。CLAIM_MATCH 层（④）自持独立档位 env TASK_PLANNER_CLAIM_MATCH_ENFORCE > config
+#       claim_match_enforce > warn（默认 warn 不影响 rc；off=跳过该层）——两层分属两个判定面，互不代偿。
 #
 # 【诚实边界】（终审意见 7 的收敛面与未收敛面，如实披露）：
 #   · 已收敛：路径**归属层**（存在 / 行界 / 系统前缀 / 域外 / 机器落盘头）——把「发现不了」变成「无法伪造」。
 #   · 未收敛：**内容级**张冠李戴（文件真实存在但与需求无关）不在本门判定面；该面靠伴生 c 的
 #     run-verification.sh 落盘（<plan-dir>/evidence/VC-N.out）+ P-02 产出物引用锚收敛。
+#     （CLAIM_MATCH 层收窄该缺口的**第一层**：声明串与文件内容的机器可判不符；纯语义相关性不在此层。）
 #   · 未收敛：非路径形态证据（「同 R3」式引用 / 纯叙述）抽不出 token → 本门放行（fail-open，
 #     与 R-COVERAGE 既有「放宽为实质证据引用」口径一致，见 check-complete.sh rcov_cov_awk 注释）。
+#   · 未收敛：CLAIM_MATCH 四形态外的声明串（「全部通过」自然语言 / 其他键名如 `passed=90`）不在
+#     该层判定面；一格引用多个证据文件时只核对首个可解析可读文件（多文件逐一核对留后续演进）。
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -75,6 +96,16 @@ NEG_RE='^(无|—|–|-|N/A|n/a|NA|none|None|待补|待填)$'
 # 机器落盘证据（run-verification.sh 产出）头部要求：VC 编号 + ISO8601 时间戳
 EVID_VC_RE='VC-[0-9]+'
 EVID_TS_RE='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z'
+# CLAIM_PATTERNS — 声明串正则族（CLAIM_MATCH 层词表；新增声明形态在此加行，注释注明可扩）
+#   四形态起步：`Total: N`（常与 PASS= 同行）/ `PASS=N` / `FAIL=N` / `exit=N` / `rc=N`
+#   每行一个「键值声明」形态；grep -oE 命中后归一为 (键, 值) 对，与证据文件内容逐对核对
+CLAIM_PATTERNS=(
+    'Total:[[:space:]]+[0-9]+'
+    'PASS=[0-9]+'
+    'FAIL=[0-9]+'
+    'exit=[0-9]+'
+    'rc=[0-9]+'
+)
 
 PLAN_DIR="${1:-}"
 SOURCE="all"
@@ -98,6 +129,11 @@ if [ -z "$PLAN_DIR" ] || [ ! -d "$PLAN_DIR" ]; then
 fi
 PLAN_DIR="$(cd "$PLAN_DIR" && pwd)"
 PLAN_FILE="$PLAN_DIR/task_plan.md"
+
+# CLAIM_MATCH 层输入：run_source 累积的证据格/证据行原文（mode \t file \t ln \t ev），主流程末尾统一核对；
+# 每次跑批独立 mktemp，EXIT 即清理（夹具/跑批不留痕）
+CLAIM_INPUT="$(mktemp "${TMPDIR:-/tmp}/claim-input.XXXXXX")"
+trap 'rm -f "$CLAIM_INPUT"' EXIT
 
 # ── 词表/解析辅助 ───────────────────────────────────────────────────────────────
 
@@ -226,6 +262,12 @@ extract_tokens() {
             printf "TOK\t%d\t%s\t%s\n", line_no, t, lnno
         }
     }
+    mode == "claim" {
+        # CLAIM_MATCH 层（task-v184-S6）：任意行视为证据文本直接抽路径 token（声明串与路径同格；
+        # 声明串无白名单扩展名/不含斜杠，不会被抽成 token）
+        emit_tokens($0, NR)
+        next
+    }
     mode == "coverage" {
         if ($0 ~ /需求覆盖核对/) { inb = 1; next }
         if (inb && $0 ~ /^##[[:space:]]/) { inb = 0 }
@@ -265,6 +307,7 @@ extract_tokens() {
 
 # ── 主判定 ──────────────────────────────────────────────────────────────────────
 FAILS=0
+CLAIM_FAILS=0
 TOK_N=0
 COV_N=0
 GOAL_N=0
@@ -323,6 +366,94 @@ judge_token() {
     fi
 }
 
+# ── CLAIM_MATCH 内容核对层（task-v184-S6, 2026-10-17）──────────────────────────
+# resolve_claim_match_tier — CLAIM_MATCH 独立档位: env > config claim_match_enforce > warn
+# Why 自持档位: 内容核对误报面比路径层宽（声明写法差异/多文件引用/数字子串），默认 warn 让 R3
+#   「对内容的错误及时审查出来」先以可见告警落地；路径层档位仍由 caller 裁决（evidence_anchor_enforce），
+#   两层互不代偿。jq 仅作可选 config 读取器（缺失/无配置 → warn，fail-safe 不阻断；核心判定纯 bash）。
+resolve_claim_match_tier() {
+    local m="${TASK_PLANNER_CLAIM_MATCH_ENFORCE:-}"
+    case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+    if command -v jq >/dev/null 2>&1 && [ -f "$SKILL_ROOT/config.json" ]; then
+        m="$(jq -r '.claim_match_enforce // .properties.claim_match_enforce.default // "warn"' "$SKILL_ROOT/config.json" 2>/dev/null)" || m=""
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+    fi
+    printf 'warn'
+}
+
+# claim_pairs_from_ev — 从证据文本抽 (键,值) 声明对，每行 `键<TAB>值`（空白已归一）
+# 只认 CLAIM_PATTERNS 四形态；抽不出 = 无内容声明面（调用方 SKIP，不算误报）
+claim_pairs_from_ev() {
+    local ev="$1" pat m key val
+    for pat in "${CLAIM_PATTERNS[@]}"; do
+        while IFS= read -r m; do
+            [ -n "$m" ] || continue
+            m="$(printf '%s' "$m" | tr -s '[:space:]' ' ')"   # `Total:  90` → `Total: 90`
+            case "$m" in
+                *:[[:space:]]*) key="${m%%:*}"; val="${m#*:}"; val="${val# }" ;;
+                *=*)           key="${m%%=*}"; val="${m#*=}" ;;
+                *) continue ;;
+            esac
+            printf '%s\t%s\n' "$key" "$val"
+        done < <(printf '%s' "$ev" | grep -oE "$pat" 2>/dev/null || true)
+    done
+}
+
+# claim_match_check <tsv> <tier> — 声明串 × 证据文件内容交叉核对
+# 输入 tsv 行: mode \t file \t ln \t ev（run_source 累积）。逐行处置：
+#   ① 抽声明对（四形态）→ 无则 SKIP；② 复用 PATH_TOKEN 提取（claim 模式）+ resolve_anchor 定位
+#      首个可解析可读证据文件 → 无则 SKIP；③ 逐对核对（数值右边界防子串误判；冒号形态允许多空白）；
+#   ④ 任一缺失 = 该格内容不符：warn=⚠ 行不影响 rc；enforce=✗ 行 + FAILS++（rc=1）；off=整层跳过。
+claim_match_check() {
+    local tsv="$1" tier="$2"
+    local mode file ln ev evf res kind pln ptok plineno key val pairs missing
+    [ "$tier" = "off" ] && return 0
+    [ -s "$tsv" ] || return 0
+    while IFS=$'\t' read -r mode file ln ev; do
+        [ -n "$mode" ] || continue
+        pairs="$(claim_pairs_from_ev "$ev")"
+        [ -n "$pairs" ] || continue                     # ① 无声明串 → SKIP（不算误报）
+        # ② 证据文件定位：把证据原文写临时文件走既有 extract_tokens(claim)+resolve_anchor 解析链
+        evf="$(mktemp "${TMPDIR:-/tmp}/claim-ev.XXXXXX")"
+        printf '%s\n' "$ev" > "$evf"
+        res=""
+        while IFS=$'\t' read -r kind pln ptok plineno; do
+            { [ "$kind" = "TOK" ] || [ "$kind" = "BARE" ]; } || continue
+            if [ "$kind" = "BARE" ] && [ ! -e "$PLAN_DIR/$ptok" ]; then continue; fi
+            res="$(resolve_anchor "$ptok" 2>/dev/null)" || res=""
+            [ -n "$res" ] && [ -r "$res" ] && break
+            res=""
+        done < <(extract_tokens "$evf" claim 2>/dev/null || true)
+        rm -f "$evf"
+        [ -n "$res" ] || continue                        # ③ 无可读证据文件 → SKIP（不算误报）
+        # ③ 逐对核对：声明 (键,值) 须命中证据文件内容
+        # Total 用冒号形态（`Total: 90`，允许多空白）；PASS/FAIL/exit/rc 用等号形态（`PASS=90`）
+        missing=""
+        while IFS=$'\t' read -r key val; do
+            [ -n "$key" ] || continue
+            case "$key" in
+                Total)
+                    grep -qE "(^|[^0-9A-Za-z_.-])Total:[[:space:]]*${val}([^0-9]|$)" "$res" 2>/dev/null \
+                        || missing="${missing}${key}=${val} " ;;
+                PASS|FAIL|exit|rc)
+                    grep -qE "(^|[^0-9A-Za-z_.-])${key}=${val}([^0-9]|$)" "$res" 2>/dev/null \
+                        || missing="${missing}${key}=${val} " ;;
+            esac
+        done <<< "$pairs"
+        [ -n "$missing" ] || continue
+        # ④ 不符处置
+        if [ "$tier" = "enforce" ]; then
+            FAILS=$((FAILS + 1))
+            CLAIM_FAILS=$((CLAIM_FAILS + 1))
+            printf '[claim-mismatch] ✗ %s:%s 声明串与证据文件 %s 内容不符（缺失: %s）\n' \
+                "$file" "$ln" "$res" "${missing% }"
+        else
+            printf '[claim-mismatch] ⚠ %s:%s 声明串与证据文件 %s 内容不符（缺失: %s）\n' \
+                "$file" "$ln" "$res" "${missing% }"
+        fi
+    done < "$tsv"
+}
+
 # run_source <mode> <file> — 逐源扫描并判定
 run_source() {
     local mode="$1" file="$2" rows kind ln payload lineno excerpt ev
@@ -341,6 +472,8 @@ run_source() {
             __EVAL__*)
                 # 证据原文回传：否定字面判定（trim 已在 awk 侧完成）
                 ev="${payload#__EVAL__}"
+                # [CLAIM_MATCH] 累积证据原文供内容核对层（tab 归一为空格防 tsv 断列；原文单行无换行）
+                printf '%s\t%s\t%s\t%s\n' "$mode" "$file" "$ln" "${ev//$'\t'/ }" >> "$CLAIM_INPUT"
                 if [ "$mode" = "coverage" ]; then
                     if printf '%s' "$ev" | grep -qE "$NEG_RE"; then
                         FAILS=$((FAILS + 1))
@@ -381,9 +514,16 @@ esac
 
 [ -n "$SKIPPED" ] && printf '[evidence-anchor] SKIP (%s )\n' "${SKIPPED# }"
 
+# ── CLAIM_MATCH 内容核对层接线（既有判定完成后、rc 返回前）────────────────────────
+if [ -s "$CLAIM_INPUT" ]; then
+    claim_match_check "$CLAIM_INPUT" "$(resolve_claim_match_tier)"
+fi
+
 if [ "$FAILS" -gt 0 ]; then
     printf '[evidence-anchor] ✗ %d 项证据锚不中（token 判定 %d 条; coverage 行 %d / goal 行 %d）— 修证据锚或补实跑落盘后重跑\n' \
         "$FAILS" "$TOK_N" "$COV_N" "$GOAL_N"
+    # CLAIM_MATCH enforce 档的 FAIL 在总数内但成因不同，单独披露便于 caller/用户区分
+    [ "$CLAIM_FAILS" -gt 0 ] && printf '[claim-mismatch] ✗ %d 条声明串与证据文件内容不符（enforce 档计入 FAIL）\n' "$CLAIM_FAILS"
     exit 1
 fi
 printf '[evidence-anchor] ✓ 证据锚全过（token %d 条; coverage 行 %d / goal 行 %d）\n' "$TOK_N" "$COV_N" "$GOAL_N"
