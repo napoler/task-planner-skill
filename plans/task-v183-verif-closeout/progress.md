@@ -11,6 +11,7 @@
 ### Phase 1: Requirements & Discovery
 - **Status:** complete
 - **Started:** 2026-10-16
+- **R 锚定**：本 Phase 服务 R1「以上发现的问题是否都已经解决? 确保所有发现问题都解决了」——全量回归基线取证（84/84 绿）+ P-10 残留自愈确认。
 - Actions taken:
   - 真值全量回归 `run-selftests.sh --fresh` → Total: 84 PASS=84 FAIL=0（基线取证）
   - 确认 P-10 残留 selftest-vc-gate FAIL 为工作流并行期瞬态（--fresh 已自愈，84/84 绿）
@@ -25,6 +26,7 @@
 ### Phase 2: Planning & Structure
 - **Status:** complete
 - **Started:** 2026-10-16
+- **R 锚定**：本 Phase 服务 R3「（范围界定）关闭审计遗留的 7 条未落地提案 + P-10 残留 + P-04 裁决」——范围锁定与计划锁定（attest SHA-256 810b64…）。
 - Actions taken:
   - 填 task_plan.md（根源覆盖表/不变量/核心问题/调研三态/证据面/隔离决策/FMEA/VC/Goal 单元表/变更标注表/工具选择）
   - 填 verification.md（VC-1..5 含可执行 Verify command + Phase Gates）
@@ -38,6 +40,7 @@
 ### Phase 3: Implementation
 - **Status:** complete
 - **Started:** 2026-10-16
+- **R 锚定**：本 Phase 服务 R2「提高验证/主动发现错误能力」——7 判定器落地使 3 类已确认漏检有机器检查兜底。
 - Actions taken:
   - **G1/P-05**：periodic-review.sh 三处 `tr -d '*-#'`→`tr -d '*#-'`（尾连字符字面）+ 头注；矛盾夹具 exit=1、干净夹具 exit=0
   - **G2-G7**：委派 6 code-assistant 子代理并行落地 P-02/03/06/07/08/09（每体 check-*.sh + selftest-*.sh，零 python/jq，参照 check-evidence-anchor 范式）
@@ -58,6 +61,7 @@
 ### Phase 4: Testing & Verification
 - **Status:** complete
 - **Started:** 2026-10-16
+- **R 锚定**：本 Phase 服务 R1「确保所有发现问题都解决了」——全量回归 90/90 零新增失败 + registry 双向一致终验。
 - Actions taken:
   - 全量回归 `run-selftests.sh --fresh` → Total: 90 PASS=90 FAIL=0（基线 84→90，0 新增失败）
 - Test Results:
