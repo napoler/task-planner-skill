@@ -308,6 +308,7 @@ mode_pretool() {
         case "$file_path" in
             */.zcode/skills/*) ;;
             */.claude/skills/*) ;;
+            */skills/*) ;;
             */.config/opencode/skills/*) ;;
             */.agents/skills/*) ;;
             */.zcode/agents/*) ;;

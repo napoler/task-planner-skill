@@ -18,7 +18,7 @@
  * If --settings is omitted, defaults to ~/.claude/settings.local.json.
  * If --canonical is omitted, defaults to $HOME/dev/task-planner.
  */
-import { readFileSync, writeFileSync, mkdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, statSync, existsSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 
@@ -95,7 +95,7 @@ function dumpSettings(path: string, obj: Record<string, unknown>, dryRun: boolea
   writeFileSync(tmp, JSON.stringify(obj, null, 2) + '\n', 'utf8');
   try {
     writeFileSync(path, readFileSync(tmp));
-    process.unlinkSync(tmp);
+    unlinkSync(tmp);
   } catch {
     // atomic-fallback: direct write
     writeFileSync(path, JSON.stringify(obj, null, 2) + '\n', 'utf8');
