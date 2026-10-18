@@ -375,7 +375,7 @@ Phase 1
 | `isolation` | `worktree`（§十一 11.1.4 改 scripts/ 运行中基础设施 + 4 项均运行时/基础设施层） |
 | `worktree_path` | `/home/terry/task-planner-skill-worktrees/task-v189-skill-audit-deferred-fix`（§十一 11.2 命名 <repo>-worktrees/<task-id>） |
 | `branch` | `wt/task-v189` |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(3fa1e02)` |
 
 > 契约详见 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
