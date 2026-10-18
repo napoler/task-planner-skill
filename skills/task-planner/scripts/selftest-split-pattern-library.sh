@@ -43,7 +43,7 @@ rows="$(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -c 
 miss=0; tot=0
 while IFS= read -r p; do
   tot=$((tot+1)); [ -f "$p" ] || { miss=$((miss+1)); printf 'SP-03      路径缺失 %s\n' "$p"; }
-done < <(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -o '/[^ |)]*SKILL\.md' | sort -u)
+done < <(awk '/^## 伴飞映射表/{f=1} f && /^\|/ && !/^\|-/' "$LIB" | grep -o '/[^ |)]*SKILL\.md' | sort -u | sed "s|^|$HOME|")
 if [ "$rows" -ge 6 ] && [ "$miss" = "0" ]; then
   ok 03 "伴飞表数据行 $rows ≥6 且路径 $tot 条全部存在（0 缺失）"
 else
