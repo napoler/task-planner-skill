@@ -156,14 +156,14 @@ for tool in "${TOOLS_DETECTED[@]}"; do
   case "$tool" in
     claude-code)
       log "  Claude Code: patching ~/.claude/settings.local.json via register-hooks-cj.ts"
-      dry "bun run $HOME/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
+      dry "node --experimental-strip-types $HOME/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
       if [ "$DRY_RUN" -eq 0 ]; then
-        if command -v bun >/dev/null 2>&1; then
-          (cd "$HOME/.claude/skills/task-planner/scripts" && bun run register-hooks-cj.ts) 2>&1 | head -10
+        if command -v node >/dev/null 2>&1; then
+          (cd "$HOME/.claude/skills/task-planner/scripts" && node --experimental-strip-types register-hooks-cj.ts) 2>&1 | head -10
         else
-          log "  WARNING: bun not found, skipping Claude Code hook registration"
-          log "           install bun: curl -fsSL https://bun.sh/install | bash"
-          log "           then: bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
+          log "  WARNING: node not found, skipping Claude Code hook registration"
+          log "           install node: https://nodejs.org (v22.6+ for --experimental-strip-types)"
+          log "           then: node --experimental-strip-types ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
         fi
       fi
       ;;

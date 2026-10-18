@@ -29,6 +29,7 @@ if [ "$LIST_TEMPLATES" = 1 ]; then
     _d="$(pwd)"
     while [ "$_d" != "/" ]; do
         if [ -d "$_d/.claude/plan-templates" ]; then _list_pdir="$_d/.claude/plan-templates"; break; fi
+        if [ -d "$_d/.zcode/plan-templates" ]; then _list_pdir="$_d/.zcode/plan-templates"; break; fi
         _d="$(dirname "$_d")"
     done
     _def=""
@@ -58,14 +59,18 @@ if [ "$(basename "$(dirname "$(pwd)")")" != "plans" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BUILTIN_TEMPLATES="${SCRIPT_DIR}/../templates"  # ~/.zcode/skills/task-planner/templates/
+BUILTIN_TEMPLATES="${SCRIPT_DIR}/../templates"  # <platform-home>/skills/task-planner/templates/ (由安装位置派生, 平台无关)
 
-# Find project-level templates: traverse upward from CWD to find .claude/plan-templates/
+# Find project-level templates: traverse upward from CWD to find .claude/ or .zcode/plan-templates/
 find_project_templates() {
     local dir="$(pwd)"
     while [ "$dir" != "/" ]; do
         if [ -d "$dir/.claude/plan-templates" ]; then
             echo "$dir/.claude/plan-templates"
+            return 0
+        fi
+        if [ -d "$dir/.zcode/plan-templates" ]; then
+            echo "$dir/.zcode/plan-templates"
             return 0
         fi
         dir="$(dirname "$dir")"

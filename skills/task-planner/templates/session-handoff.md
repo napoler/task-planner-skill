@@ -27,7 +27,7 @@
 - 禁令核对: notepad-learnings.md「🚫 被否决方案」段（Rule 32.2，提方案前必查）
 
 ## 5. 新会话恢复指令（逐条照做）
-1. `cd <repo> && bun ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/session-catchup.ts`（中断点检测）
+1. `cd <repo> && node --experimental-strip-types ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/session-catchup.ts`（中断点检测）
 2. 按四文件读序恢复（Rule 62.1，绝对路径）：
    Read <abs>/task_plan.md → <abs>/progress.md → <abs>/findings.md → <abs>/knowledge-brief.md
 3. `Skill("plan-resume")` 自主续推 Top 1（Rule 24.5；config autonomous_resume=true）

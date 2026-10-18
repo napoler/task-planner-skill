@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node --experimental-strip-types
 /**
  * @configurable
  * CONFIG 区（可变参数与默认值，迁移时只改此处或对应 env）:
@@ -10,7 +10,7 @@
 /**
  * session-catchup.ts — 跨会话规划文件更新检测
  *
- * 用法: bun session-catchup.ts [project-path]
+ * 用法: node --experimental-strip-types session-catchup.ts [project-path]
  *
  * 找到最新规划文件更新，收集所有未同步消息并输出摘要。
  */
@@ -173,7 +173,7 @@ function extractMessages(sessionFile: string, afterLine = -1): Array<Record<stri
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 function main(): void {
-  const args = Bun.argv.slice(2);
+  const args = process.argv.slice(2);
   const projectPath = args[0] || process.cwd();
   const ide = detectIDE();
 

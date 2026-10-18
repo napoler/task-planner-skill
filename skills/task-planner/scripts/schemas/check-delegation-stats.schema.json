@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "check-delegation stats JSON 契约（F11 修复，task-v189）",
+  "description": "scripts/check-delegation.sh stats 模式的单行 JSON 输出契约。消费方=check-complete.sh:453-524（jq 解析 + grep fallback）。verdict 枚举从 check-delegation.sh:571-572 实证（local verdict=\"ok\" / 违规置 violation）。",
+  "type": "object",
+  "required": [
+    "phases_total",
+    "phases_delegated",
+    "main_direct_count",
+    "delegation_rate",
+    "main_direct",
+    "violations",
+    "verdict"
+  ],
+  "properties": {
+    "phases_total": { "type": "integer", "minimum": 0 },
+    "phases_delegated": { "type": "integer", "minimum": 0 },
+    "main_direct_count": { "type": "integer", "minimum": 0 },
+    "delegation_rate": { "type": "number" },
+    "main_direct": { "type": "array", "items": { "type": "object" } },
+    "violations": { "type": "array", "items": { "type": "object" } },
+    "verdict": { "enum": ["ok", "violation"] }
+  },
+  "additionalProperties": false
+}
