@@ -62,14 +62,14 @@ TOTAL=$((TOTAL + 1))
 if "$SCAN" --help 2>&1 | grep -q 'only'; then echo "[OK] --only 帮助"; else echo "[FAIL] --only 帮助"; FAIL=$((FAIL+1)); fi
 
 # ─── task-planner 后端 ─────────────────────────────────────────────────────────
-sc_check "scan-plans /home/terry/.zcode 产 >=1" /home/terry/.zcode '^/home'
-sc_check "--only ts-migration 过滤生效" /home/terry/.zcode '^/home.*ts-migration'
+sc_check "scan-plans $HOME/.zcode 产 >=1" $HOME/.zcode '^/home'
+sc_check "--only ts-migration 过滤生效" $HOME/.zcode '^/home.*ts-migration'
 # 注意: --only NONEXISTENT 会输出 "[scan-plans] 过滤后无匹配" 到 stderr,stdout 为空
 # 所以用 sed 过滤 stderr 后验证: grep -q 找不到匹配即 FAIL
 # 但 sc_check 已把 grep -q 作为判断条件,stdout 为空时 grep 返回 1 → FAIL
 # 修正:改为检查 stdout 为空(无 /home 开头行)
 TOTAL=$((TOTAL + 1))
-LOCAL_OUT="$("$SCAN" /home/terry/.zcode --only 'NONEXISTENT_PATTERN_42' 2>/dev/null)"
+LOCAL_OUT="$("$SCAN" $HOME/.zcode --only 'NONEXISTENT_PATTERN_42' 2>/dev/null)"
 if echo "$LOCAL_OUT" | grep -q '^/home'; then
   echo "[FAIL] --only NONEXISTENT 过滤到 0 (got: $LOCAL_OUT)"
   FAIL=$((FAIL+1))
@@ -77,16 +77,16 @@ else
   echo "[OK] --only NONEXISTENT 过滤到 0"
 fi
 
-em_check "extract-meta task-planner task_id" /home/terry/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^task_id=task-skillfix-bun-finish$'
+em_check "extract-meta task-planner task_id" $HOME/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^task_id=task-skillfix-bun-finish$'
 # 2026-09-05: extract-meta.sh v0.4 起不再输出 format= 字段(原断言过时,改前即红),
 # 改为校验 v0.4 实际输出的 all_complete 字段
-em_check "extract-meta task-planner all_complete 字段" /home/terry/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^all_complete=[01]$'
+em_check "extract-meta task-planner all_complete 字段" $HOME/.zcode/plans/task-skillfix-bun-finish/task_plan.md '^all_complete=[01]$'
 
-# ─── openspec 后端(本机已验证: /home/terry/openspec/) ─────────────────────────
+# ─── openspec 后端(本机已验证: $HOME/openspec/) ─────────────────────────
 # 2026-09-05: scan-plans.sh v0.4 起只扫 task_plan.md / plan-sess_*.md,openspec 的
 # changes/*/tasks.md 不再入扫(原断言"扫出 tasks.md"过时,改前即红),改为锁定新行为
 TOTAL=$((TOTAL + 1))
-OPENSPEC_OUT="$("$SCAN" /home/terry/openspec 2>/dev/null | sed '/^\[scan-plans\]/d')"
+OPENSPEC_OUT="$("$SCAN" $HOME/openspec 2>/dev/null | sed '/^\[scan-plans\]/d')"
 if echo "$OPENSPEC_OUT" | grep -q 'tasks\.md'; then
   echo "[FAIL] scan-plans 对 openspec 根不扫 tasks.md (got: $(echo "$OPENSPEC_OUT" | head -3))"
   FAIL=$((FAIL+1))
@@ -94,13 +94,13 @@ else
   echo "[OK] scan-plans 对 openspec 根不扫 tasks.md(v0.4+ 仅 task_plan.md/plan-sess)"
 fi
 # 2026-09-05: format= 字段已移除(原断言过时),改为校验 v0.4 实际输出的 real_age_days 字段
-em_check "extract-meta openspec real_age_days 字段" /home/terry/openspec/changes/strengthen-execution-guidelines/tasks.md '^real_age_days=[0-9]+$'
-em_check "extract-meta openspec task_id" /home/terry/openspec/changes/strengthen-execution-guidelines/tasks.md '^task_id=strengthen-execution-guidelines$'
+em_check "extract-meta openspec real_age_days 字段" $HOME/openspec/changes/strengthen-execution-guidelines/tasks.md '^real_age_days=[0-9]+$'
+em_check "extract-meta openspec task_id" $HOME/openspec/changes/strengthen-execution-guidelines/tasks.md '^task_id=strengthen-execution-guidelines$'
 
 # ─── spec-kit 后端(用 fake 测试结构 + 真实模板) ────────────────────────────────
 TEST_DIR="/tmp/.plan-resume-test-spec-kit"
 mkdir -p "$TEST_DIR/specs/f001-feature-x"
-cp /home/terry/.local/share/uv/tools/specify-cli/lib/python3.13/site-packages/specify_cli/core_pack/templates/spec-template.md "$TEST_DIR/specs/f001-feature-x/spec.md"
+cp $HOME/.local/share/uv/tools/specify-cli/lib/python3.13/site-packages/specify_cli/core_pack/templates/spec-template.md "$TEST_DIR/specs/f001-feature-x/spec.md"
 # 给 spec.md 注入实际 Status 字段(sed 替换 placeholder)
 sed -i 's|\[FEATURE NAME\]|My Feature 101|' "$TEST_DIR/specs/f001-feature-x/spec.md"
 sed -i 's|\*\*Status\*\*: Draft|**Status**: In Progress|' "$TEST_DIR/specs/f001-feature-x/spec.md"

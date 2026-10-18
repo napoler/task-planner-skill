@@ -1,6 +1,6 @@
 # Task Plan: [视频修正/重生成任务]
 <!-- template_type: video-fix -->
-<!-- 家族=video 专模板 C 修正分支展开（EP6 四根因→机械门+门禁升级）；A/B 型任务回 video-type.md；用法：bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/init-session.sh <任务名> video-fix -->
+<!-- 家族=video 专模板 C 修正分支展开（EP6 四根因→机械门+门禁升级）；A/B 型任务回 video-type.md；用法：bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/init-session.sh <任务名> video-fix -->
 <!-- 触发词：视频修正/局部重生成/缺陷段重生成/QC FAIL 处置/成片修复/user-fix/full-regen 全量重试/换代集重生成 -->
 <!-- 配套：处置 SOP=/mnt/data/dev/videop1/.zcode/skills/videop1-video-fix/SKILL.md；八类 QC=/mnt/data/dev/videop1/tools/specs/qc-items-video-8cat.json；常识子句=/mnt/data/dev/videop1/prompts/common-sense-clauses.md；机械门=tools/gen.py video_ref_gate（refs 1-5+宽高比 0.4-2.5）+ spec kind=fix|regen 必填 disposition_ref -->
 <!-- 人工门：替换件/回拼件/试水件未过 AGENTS.md 关键约束 14 用户定稿任何 video 调用 STOP；[full-regen] 仅 d 级且用户显式批准（约束 17④） -->

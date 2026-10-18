@@ -1,7 +1,7 @@
 ---
 name: task-dispatch
-description: 子代理派发与拆分调度（子代理派发/拆分/并行调度/粒度门/伴飞/返回校验/执行体选型）
-tools: [Read, Write, Edit, Bash, Grep, Glob]
+description: 子代理派发与拆分调度（子代理派发/拆分/并行调度/粒度门/伴飞/返回格式校验/执行体选型；返回格式与段结构归本技能，返回内容正确性与 Read 复核归 verification-gate）
+allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ---
 
 # task-dispatch — 子代理派发与拆分调度

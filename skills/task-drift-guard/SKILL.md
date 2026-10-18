@@ -87,5 +87,5 @@ TaskList  # 如有
 - 范围最小化：只检查当前任务的 VC 条目，不扫描全项目
 
 ## 子代理消费模式（task-v146 — 双载体说明）
-- task-planner 管理的执行流程中，本技能的检测动作由 `drift-checker` 伴随 agent 承载（SOP 同源：计划源→Goal/VC 提取→状态证据→三态判定），派发契约与处置链见 task-planner `references/critical-rules.md` Rule 61
-- 本 skill 保留为交互/独立场景直用载体（无 task-planner 计划管理上下文时）；三态判定（ALIGNED/DRIFT/BLOCKED）与处置链两载体语义一致，一致性由 `selftest-drift-check-subagent.sh` 守护
+- task-planner 管理的执行流程中，本技能的检测动作由 `drift-checker` 伴随 agent 承载（SOP 同源：计划源→Goal/VC 提取→状态证据→三态判定），派发契约与处置链见 task-planner `../task-planner/references/critical-rules.md` Rule 61
+- 本 skill 保留为交互/独立场景直用载体（无 task-planner 计划管理上下文时）；三态判定（ALIGNED/DRIFT/BLOCKED）与处置链两载体语义一致，一致性由 `../task-planner/scripts/selftest-drift-check-subagent.sh` 守护

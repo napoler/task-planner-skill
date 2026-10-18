@@ -27,12 +27,12 @@
 - 禁令核对: notepad-learnings.md「🚫 被否决方案」段（Rule 32.2，提方案前必查）
 
 ## 5. 新会话恢复指令（逐条照做）
-1. `cd <repo> && bun ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/session-catchup.ts`（中断点检测）
+1. `cd <repo> && bun ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/session-catchup.ts`（中断点检测）
 2. 按四文件读序恢复（Rule 62.1，绝对路径）：
    Read <abs>/task_plan.md → <abs>/progress.md → <abs>/findings.md → <abs>/knowledge-brief.md
 3. `Skill("plan-resume")` 自主续推 Top 1（Rule 24.5；config autonomous_resume=true）
 4. 从 §3「当前断点」继续；**禁止重复 §2 已完成步骤**（防重做）
-5. 恢复后首动作: 运行 `bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/check-context-hygiene.sh <plan-dir>` 确认上下文基线
+5. 恢复后首动作: 运行 `bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-context-hygiene.sh <plan-dir>` 确认上下文基线
 ---
 交接登记（写回）: task_plan.md Decisions Made 加一行 `session-handoff: <路径>+<触发原因>, <时间>`；
 progress.md 加 `[handoff]` 行；新会话恢复后在该行尾追加 `→ resumed by <新会话>`。

@@ -86,7 +86,7 @@ Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ canonical source: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                    │
+│ canonical source: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                    │
 │   (独立 git 仓库, 17 顶层条目)                           │
 │   - SKILL.md (214 行, hooks 字段已剥除)                   │
 │   - references/  (6 篇规则)                              │
@@ -115,7 +115,7 @@ Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 ## 文件结构（canonical 仓）
 
 ```
-${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
+${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（214 行; hooks 字段为空, 文末含 11 卫星路由表）
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
@@ -205,7 +205,7 @@ bash <(curl -sSL https://raw.githubusercontent.com/napoler/task-planner-skill/ma
 ### 本地开发
 
 ```bash
-cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
+cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}
 bash install.sh
 ```
 
@@ -226,7 +226,7 @@ bash install.sh --no-verify                      # 跳过自检
 ## 升级
 
 ```bash
-cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
+cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}
 git pull
 ```
 
@@ -242,13 +242,13 @@ git pull
 
 ```bash
 # 单元测试
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/tests/smoke.sh
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/tests/smoke.sh
 
 # 安装验证
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/lib/verify.sh
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/lib/verify.sh
 
 # 全量 selftest 回归（忽略缓存全量重跑; 新基线/发布前用）
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/run-selftests.sh --fresh
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftests.sh --fresh
 ```
 
 回归期望输出：末行 `Total: N PASS=x FAIL=y` 且 **FAIL=0**（缓存版省 CPU 不省正确性：`--fresh` 无视输入指纹缓存全量重跑；卫星 selftest 随各卫星落盘，如 `../task-dispatch/scripts/selftest-*.sh`，按需同口径跑批）。
@@ -260,7 +260,7 @@ bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/
 1. **hooks 不在 canonical SKILL.md 声明**：canonical SKILL.md 的 hooks 字段为空（`# hooks: <TOOL-ADAPTED>` 注释）；每工具部署位 SKILL.md 由 `lib/install-stub.sh` 的 `generate_stub_skill_md` 生成，才声明平台特定的 hook 格式。
 2. **路径契约统一**：`${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}` 形式，一级 env-var，二级 fallback。
 3. **内容零重复**：references/templates 全部从 canonical rsync；scripts rsync + sed 路径改写。
-4. **备份默认开启**：现有部署位自动备份到 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/.backup/<ts>/`。
+4. **备份默认开启**：现有部署位自动备份到 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/.backup/<ts>/`。
 5. **规则分层唯一副本（Rule 82）**：每条规则全文只在一个载体（核心或唯一卫星）；非核心域规则勿在核心技能展开，卫星侧改动经「落盘+删除+索引」原子配对。
 6. **卫星注册三处联动**：新增卫星 = `lib/install-stub.sh` SATELLITE_SKILLS（显式 rsync 族）+ SKILL.md 卫星路由表行 + `lib/install-companion.sh` 顶层发现（收编既有 skill 时）；只改一处 = 部署残缺。
 
@@ -273,7 +273,7 @@ bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/
 | hook 不触发 | 宿主配置未注册 | `bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts`（claude 位） |
 | `TASK_PLANNER_ROOT` 未设 | shell 环境未 export | `.bashrc` 加 `export TASK_PLANNER_ROOT=$HOME/dev/task-planner-skill/skills/task-planner` |
 | 旧部署位与新部署位冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
-| 升级后行为异常 | 部署位仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} && git pull` 后重启 agent |
+| 升级后行为异常 | 部署位仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner} && git pull` 后重启 agent |
 | check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` 的 `for _c in` 列表 |
 | 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 7 个显式 rsync 卫星 |
 

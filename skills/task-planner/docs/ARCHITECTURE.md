@@ -9,7 +9,7 @@
 
 ### 1.1 单一事实源（Single Source of Truth）
 
-canonical 仓 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源（2026-10-12 task-v171 拆分后实测）：
+canonical 仓 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源（2026-10-12 task-v171 拆分后实测）：
 - `SKILL.md`（214 行，hooks 字段为空；文末含 11 卫星路由表 + Rules 1-84 全集索引）
 - `references/`（6 篇规则文档：critical-rules/todo-sync/worktree-isolation/goal-gate/completion-gate/methodology；纪律/派发/媒体域规则已迁至各卫星 `references/critical-rules-*.md`）
 - `templates/`（13 个主模板 + 29 个 variant，`find templates -maxdepth 1 -type f -name '*.md' | wc -l` → 13，`templates/variant/*.md` → 29；variant 28/29 含「📚 必要知识储备」章节）
@@ -124,7 +124,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 ## 5. 目录结构
 
 ```
-${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/                          ← canonical source (git 仓库)
+${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                          ← canonical source (git 仓库)
 ├── SKILL.md                                 ← 工具无关主文档（214 行, hooks 字段为空）
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
@@ -228,7 +228,7 @@ caller/文档引用卫星资产统一 `../<归属>/...` 相对路径（先例：
 ### 9.1 更新 canonical
 
 ```bash
-cd ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}
+cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}
 git pull
 ```
 
@@ -250,14 +250,14 @@ git pull
 
 ```bash
 # 全量 selftest 回归——忽略输入指纹缓存，76 个 selftest-*.sh 全量重跑（新基线/发布前用）
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/run-selftests.sh --fresh
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftests.sh --fresh
 
 # 缓存版（日常）：命中缓存脚本输出 [reused] 跳过重跑
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/run-selftests.sh
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftests.sh
 
 # 只跑子集 / 只读查指纹与缓存
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/run-selftests.sh --only dispatch
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/run-selftests.sh --status
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftests.sh --only dispatch
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftests.sh --status
 ```
 
 - 期望末行 `Total: N PASS=x FAIL=y` 且 **FAIL=0**（指纹 = 全部 selftest 内容 + 技能源目录 git 状态；缓存仅省 CPU 不省正确性）

@@ -115,9 +115,9 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/research-type.
 **使用方式**：
 ```bash
 # 文章管线项目级覆盖
-mkdir -p /mnt/data/dev/article-generation/.claude/plan-templates/
+mkdir -p <project-root>/.claude/plan-templates/
 cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/writing-type.md \
-   /mnt/data/dev/article-generation/.claude/plan-templates/task_plan.md  # （示例路径，仅作格式示意）
+   <project-root>/.claude/plan-templates/task_plan.md  # （示例路径，仅作格式示意）
 ```
 
 ---

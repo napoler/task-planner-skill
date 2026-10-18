@@ -43,7 +43,7 @@ description: 排查结果→修正提示词锻造(error-fix prompt forge)——�
 - [ ] **Step 0 输入校验**: 逐项核契约;根因结论无证据锚 → 只可入「未验证假设区」并显式标注,禁入提示词主体;根因未定位 → BLOCKED 不出稿
 - [ ] **Step 1 结构化抽取**: 排查结果映射槽位表: 问题陈述 / 根因+证据 / 影响面 / 复现 / 禁改区 / 验证判据 / 回滚 / 参考材料
 - [ ] **Step 2 缺口分析**: 逐槽位问「执行体拿到这个能干活吗」;阻断级缺口(缺机器可检查验收/缺复现路径/缺范围定义) → 禁出稿 + 列缺口清单交用户补;非阻断 → 登记「未验证假设区」
-- [ ] **Step 3 渲染**: 按 `skills/error-fix-prompt-forge/templates/fix-prompt-template.md` 产出 fix-prompt.md;遵守派发纪律: 绝对路径 / 单 S-unit 范围 / ≤3000 字符 / 禁花括号缩写 / 步骤枚举 ≤4
+- [ ] **Step 3 渲染**: 按 `templates/fix-prompt-template.md` 产出 fix-prompt.md;遵守派发纪律: 绝对路径 / 单 S-unit 范围 / ≤3000 字符 / 禁花括号缩写 / 步骤枚举 ≤4
 - [ ] **Step 4 自检交付**: QC-FP-1..6 逐条核验,机检项跑命令附输出;全 PASS → READY
 
 ## QC-FP 自检表

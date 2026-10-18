@@ -5,7 +5,7 @@
 > 本批次（task-v171 S25）落盘 4 条：Rule 16（源行区间 76-79）、Rule 34（源行区间 351-362）、Rule 37（源行区间 386-397）、Rule 38（源行区间 398-410）。
 > 源文件核心 critical-rules.md 原文在本批次不删（删除由后续「核心瘦身」阶段统一执行）。
 ### 16 任务开启期选模板（P0）
-禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement/mini-lite/video/video-fix/image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly/memory-hygiene 共 29 类，task-v115 videop1 回流 17→29；general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `../plan-template-kit/references/template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（白名单模板标配（38.3 豁免 4 类不计入）,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 35/39 且 scope 区块提取非空,39=templates/ 现行全量模板数（主模板+variant）,35/39=含知识储备区块的白名单模板数,豁免 4 类（delivery-summary/knowledge-brief/shared-tracker/variant/mini-lite-type,38.3 白名单或共享载体,不计入标配口径）,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
+禁止用通用 `task_plan.md` 套用所有任务。任务开启期必须先选模板（research/diagnostic/writing/publish/code-edit/refactor/bugfix/migration/test-writing/deployment/performance-tuning/schema-migration/rule-enhancement/mini-lite/video/video-fix/image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly/memory-hygiene 共 29 类，task-v115 videop1 回流 17→29；general 为通用回退）,写进 task_plan.md frontmatter `template_type` 字段。`plan-writer` agent 自动按类型选模板填充。决策树见 `template-mapping.md`（模板分流单一权威源）。选模板时同步填写「📚 必要知识储备」章节（白名单模板标配（38.3 豁免 4 类不计入）,验收:`grep -rl "## 📚 必要知识储备" templates/ | wc -l` = 35/39 且 scope 区块提取非空,39=templates/ 现行全量模板数（主模板+variant）,35/39=含知识储备区块的白名单模板数,豁免 4 类（delivery-summary/knowledge-brief/shared-tracker/variant/mini-lite-type,38.3 白名单或共享载体,不计入标配口径）,见 template-mapping.md §八）：必读知识源开工前确认可获取,缺失 → STOP。
 > [2026-10-05 task-v131] 修改原因：「全部模板标配」措辞与实况不符——templates/ 现行 39 文件中仅 35 含「📚 必要知识储备」区块（豁免 4 类：delivery-summary.md/knowledge-brief.md/shared-tracker.md/variant/mini-lite-type.md,38.3 白名单或共享载体）；时间：2026-10-05；原行为：写「全部模板标配...= 35」隐含 35/35 全标配口径,与 39 全量分母矛盾（findings L-2）；修法：措辞改「白名单模板标配（38.3 豁免 4 类不计入）」,验收口径补 35/39 如实分母。
 
 ### 34 模板生命周期：选取门控 + 沉淀入库（task-v074，目标：模板矩阵选取有机器门控、代表性任务可沉淀新类型模板复用）
@@ -13,7 +13,7 @@
 模板矩阵已有 variant（v074 时点 13, 现行 29）但选取纯靠自觉（Rule 16 无机器校验），代表性任务的做法沉淀无入库通道。本条把「选取→校验→沉淀→复用」闭环机制化。
 
 34.1 **选取门控**：task_plan.md 的 template_type 必填且 ∈ 白名单（白名单源=`templates/variant/*-type.md` 动态派生 + `general` 恒合法，禁第三处硬编码副本）；`scripts/check-template-type.sh <task_plan.md>` 在 attest-plan.sh 锁定前校验，缺失/非法按 34.6 档位处置（enforce=拒绝锁定，warn=告警放行）；`--skip-template-check` 逃生（对齐 --skip-dispatch-check 先例，逃生须在交付报告披露）。
-34.2 **同步纪律**：新增/沉淀模板类型时四点同步——../plan-template-kit/references/template-mapping.md 决策树与清单、companion/agents/plan-writer.md 映射表、SKILL.md 模板节、../plan-template-kit/references/template-guide.md 变体表与计数；init-session.sh 白名单已动态派生免同步；`scripts/selftest-template-lifecycle.sh` 守护一致性（Phase 4 建）。
+34.2 **同步纪律**：新增/沉淀模板类型时四点同步——template-mapping.md 决策树与清单、companion/agents/plan-writer.md 映射表、SKILL.md 模板节、template-guide.md 变体表与计数；init-session.sh 白名单已动态派生免同步；`scripts/selftest-template-lifecycle.sh` 守护一致性（Phase 4 建）。
 34.3 **沉淀触发（终验时判定，任一命中即启动沉淀评估）**：①同类任务第 2 次出现（plans/INDEX.md 与 ledger 可查）；②任务类型不在既有类型覆盖内且做法可泛化；③用户点名「这类任务以后还有」。
 34.4 **沉淀流程**：从已完成任务提炼 → 新建 `templates/variant/<new-type>-type.md`（须含 Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备最小结构，≤100 行）→ 完成 34.2 四点登记 → selftest 断言通过 → 沉淀动作登记计划 Decisions Made 表。
 34.5 **防滥用**：已有类型禁重复沉淀（先 ls variant/ 目录查重）；一次性任务、泛化性不足的禁沉淀；沉淀模板质量对齐既有 29 个 variant（含 frontmatter 字段说明与类型适用边界）。
@@ -24,7 +24,7 @@
 
 机制配置（Code Review Gate、执行体路由、修改后验证等）长期按「代码任务默认」写死在 SKILL 路由表与计划模板中，内容类任务（writing/research/publish）被迫套用不相关的代码组机制，计划内容失真、门控空转。本条建立机制画像：按 template_type 裁剪**类型组机制**的适用性，通用守卫不变。
 
-37.1 **画像表权威源**：机制适用性的单一权威源 = `../plan-template-kit/references/template-mapping.md` §九「机制适用性矩阵」（30 行：29 variant + general × 列=类型/默认适用机制/不适用机制/执行体路由组）。本条只放判定规则与指针，**禁止在 critical-rules.md 复制矩阵内容**（防双源漂移）；新增任务类型时只改矩阵，本条不改。
+37.1 **画像表权威源**：机制适用性的单一权威源 = `template-mapping.md` §九「机制适用性矩阵」（30 行：29 variant + general × 列=类型/默认适用机制/不适用机制/执行体路由组）。本条只放判定规则与指针，**禁止在 critical-rules.md 复制矩阵内容**（防双源漂移）；新增任务类型时只改矩阵，本条不改。
 37.2 **判定时点**：计划创建期按 template-mapping.md §一决策树选定 template_type 后，**立即**按 §九 对应行套用机制画像：计划内容（Code Review 配置节取值、各 Phase Executor 字段建议）须与画像一致；通用兜底模板（general）的 Code Review 配置默认按画像自动判定，不再留空要求人工补。
 37.3 **三类机制组**（示例性分组，矩阵为准）：① **代码组**（code-edit/refactor/bugfix/migration/schema-migration/test-writing/deployment/performance-tuning/rule-enhancement/diagnostic）= Code Review Gate + code-assistant/debugger/code-reviewer 路由 + 修改后验证流程；② **内容组**（writing/research/publish）= content_quality 门控 + article-writer 等内容类执行体路由，**不适用 Code Review Gate 与 code-assistant/debugger/code-reviewer 路由**；③ **通用组**（general 及全类型兜底）= 画像未覆盖的机制按通用守卫执行。
 37.4 **消费侧**：① Phase 执行循环步骤 2.5 委派检查点**先查画像再定执行体**——Executor 字段须与画像路由组一致，例外须在计划登记理由；② Code Review Gate 仅当 template_type ∈ 代码组 **或** 计划显式 `code_review: required` 时触发；③ 内容组任务终验走 content_quality 门控（既有 v063 条款），不走 Code Review Gate。

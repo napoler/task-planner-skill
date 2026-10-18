@@ -1,7 +1,8 @@
 ---
 name: verification-gate
-description: 任务验证全链路唯一权威域——创建任务时把 VC（Verification Contract）设计成可执行验证命令、执行期 V-N 逐项校验、终验 VC 逐条复验。当创建/更新 task_plan.md 的 VC 表、Phase 标记 complete 前校验 V-N、执行终验交付复验、子代理返回 done 需 Read 复核时触发。也适用于：用户要求"验证规则/验证脚本/可验证性/所有产出都要验证"、VC 条目缺可执行命令需回炉、需要机器强制验证覆盖的场景。task-planner 第 11 卫星（Rule 82 分层）。
+description: 任务验证全链路唯一权威域——创建任务时把 VC（Verification Contract）设计成可执行验证命令、执行期 V-N 逐项校验、终验 VC 逐条复验。当创建/更新 task_plan.md 的 VC 表、Phase 标记 complete 前校验 V-N、执行终验交付复验、子代理返回 done 需 Read 复核时触发。也适用于：用户要求"验证规则/验证脚本/可验证性/所有产出都要验证"、VC 条目缺可执行命令需回炉、需要机器强制验证覆盖的场景。task-planner 第 11 卫星（Rule 82 分层；子代理返回内容复核归本技能，返回格式/段结构校验归 task-dispatch）。
 model: haiku
+allowed-tools: "Read, Bash, Grep, Glob"
 ---
 
 # Verification Gate — 任务验证全链路卫星

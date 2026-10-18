@@ -44,7 +44,7 @@
 
 | 类别 | 名称/主题 | 定位（路径/URL/版本/commit SHA） | 必读级别 | 已确认 |
 |------|-----------|--------------------------------|---------|--------|
-| 规范/标准 | critical-rules.md Rule 73.5/73.6 | ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/critical-rules.md | 必读 | ☐ |
-| 项目内部文档/知识库 | template-mapping.md | ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../plan-template-kit/references/template-mapping.md | 参考 | ☐ |
+| 规范/标准 | critical-rules.md Rule 73.5/73.6 | ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/critical-rules.md | 必读 | ☐ |
+| 项目内部文档/知识库 | template-mapping.md | ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../plan-template-kit/references/template-mapping.md | 参考 | ☐ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并补充知识源后再判定废弃。

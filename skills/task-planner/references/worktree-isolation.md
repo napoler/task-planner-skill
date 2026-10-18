@@ -34,7 +34,7 @@
 <repo-parent>/<repo>-worktrees/<task-id>/
 ```
 
-例如 `~/.zcode` 仓 → `/home/terry/.zcode-worktrees/<task-id>/`。
+例如 `~/.zcode` 仓 → `~/.zcode-worktrees/<task-id>/`。
 
 **为什么**:旧约定 `../<repo>-wt-<task-id>` 把每个 worktree 散落在仓库旁,父目录被一堆 `-wt-xxx` 子目录污染,无法统一扫描/清理;集中目录把同一仓的所有 worktree 收拢到一处,`git worktree list` + `ls <repo>-worktrees/` 即可全量盘点,清理时按子目录逐个处理,不再遗漏。
 

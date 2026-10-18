@@ -10,7 +10,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 
 ```
 优先级 1（最高）: {project}/.claude/plan-templates/{filename}（Claude Code）/ {project}/.zcode/plan-templates/{filename}（ZCode）
-优先级 2（兜底）: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/{filename}
+优先级 2（兜底）: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/{filename}
 ```
 
 **初始化脚本** `init-session.sh` 自动按优先级查找并复制模板到 plan 目录。
@@ -114,7 +114,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 mkdir -p /path/to/project/.claude/plan-templates/
 
 # 复制并修改需要的模板
-cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md /path/to/project/.claude/plan-templates/
+cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md /path/to/project/.claude/plan-templates/
 
 # 编辑内容，适配本项目的 phase 结构
 vi /path/to/project/.claude/plan-templates/task_plan.md
@@ -127,7 +127,7 @@ vi /path/to/project/.claude/plan-templates/task_plan.md
 
 ```markdown
 <!-- 在 SKILL.md 中引用 -->
-执行前读取模板：`Read ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md`
+执行前读取模板：`Read ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md`
 ```
 
 **优势**：skill 自有模板定义，不依赖项目配置。
@@ -136,11 +136,11 @@ vi /path/to/project/.claude/plan-templates/task_plan.md
 
 ```bash
 # 项目级放变体文件（ZCode 平台目录为 .zcode/plan-templates/，Claude Code 为 .claude/plan-templates/，以下以 .claude 为例）
-cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md \
+cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md \
    .claude/plan-templates/task_plan.md
 
 # skill 内 cp 后改名使用
-cp ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md \
+cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md \
    plans/{task-id}/task_plan.md
 ```
 
@@ -262,7 +262,7 @@ Phase 对齐管线 Phase 0→6，范围限制表列 `data/{site}/{id}/`：
 
 ```bash
 # 1. 格式完整性
-bash ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/check-complete.sh
+bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-complete.sh
 # 应返回 exit 0
 
 # 2. Phase 解析数
@@ -292,8 +292,8 @@ ls *.md | sort
 **必须使用绝对路径**：
 
 ```markdown
-✅ 正确：Read ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md
-✅ 正确：Read "${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md"
+✅ 正确：Read ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md
+✅ 正确：Read "${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md"
 ```
 
 **配置层外置**（`config.json`）：
@@ -310,8 +310,8 @@ ls *.md | sort
 
 | 文件 | 路径 |
 |------|------|
-| 主模板 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/task_plan.md` |
-| 初始化脚本 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/init-session.sh` |
-| 完成检测 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/check-complete.sh` |
-| 范围检查 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/check-scope.sh` |
-| Todo 同步 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/scripts/sync-todos.sh` |
+| 主模板 | `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md` |
+| 初始化脚本 | `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/init-session.sh` |
+| 完成检测 | `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-complete.sh` |
+| 范围检查 | `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-scope.sh` |
+| Todo 同步 | `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/sync-todos.sh` |

@@ -435,4 +435,4 @@ importance_score(plan) =
 
 ## 卫星路由：plan-resume — 域=计划续推（Rule 24）
 
-规则全文见 skills/plan-resume/references/critical-rules-resume.md（Rule 24 plan-resume 被动扫描与自主续推，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及计划中断扫描触发时机（Phase complete 派发 drift-checker 前/交付终态/会话恢复）或续推行为契约（执行中只报告、恢复点自主续推 Top 1、守卫与降级例外）时 Read 该文件。
+规则全文见 references/critical-rules-resume.md（Rule 24 plan-resume 被动扫描与自主续推，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及计划中断扫描触发时机（Phase complete 派发 drift-checker 前/交付终态/会话恢复）或续推行为契约（执行中只报告、恢复点自主续推 Top 1、守卫与降级例外）时 Read 该文件。

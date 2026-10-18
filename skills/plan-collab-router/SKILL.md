@@ -41,4 +41,4 @@ CLI 探针前置（禁假设已装）；移交与嵌入互斥（嵌入不得升�
 
 ## 卫星路由：plan-collab-router — 域=技能协同与工具面选择（Rule 39,40,91）
 
-规则全文见 skills/plan-collab-router/references/critical-rules-collab.md（Rule 39 动态工作流编排、Rule 40 harness 工具面主动选择，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及 /workflow 动态工作流编排路由（Rule 39）、计划期 harness 执行工具面主动分析（Rule 40）或 workflow 脚本内 per-subagent 模型分档纪律（Rule 91）时 Read 该文件。
+规则全文见 references/critical-rules-collab.md（Rule 39 动态工作流编排、Rule 40 harness 工具面主动选择，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及 /workflow 动态工作流编排路由（Rule 39）、计划期 harness 执行工具面主动分析（Rule 40）或 workflow 脚本内 per-subagent 模型分档纪律（Rule 91）时 Read 该文件。

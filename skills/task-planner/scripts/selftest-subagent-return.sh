@@ -26,7 +26,7 @@ REG="$SCRIPT_DIR/selftest-registry.tsv"
 #   返回格式段结构门(return_section_check)根本没跑到, A9 收不到「返回格式段结构违规」; A10 同因
 #    trivial PASS(放行语义被 fail-open 满足, 断言力已空转)｜修法: PLAN 改锚 archive/ 归档位
 #   (归档为终态, batch archive 不会再移动; 语义与第 1 轮转绿时完全一致——同目录同内容, 仅路径更新)
-PLAN="/mnt/data/dev/task-planner-skill/plans/archive/task-v161-subagent-return-format"
+PLAN="$SCRIPT_DIR/../../../plans/archive/task-v161-subagent-return-format"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 PASS=0; FAIL=0
 ok() { PASS=$((PASS+1)); echo "A$1 PASS $2"; }

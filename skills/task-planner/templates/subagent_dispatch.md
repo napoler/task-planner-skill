@@ -1,5 +1,5 @@
 <!-- subagent_dispatch.md — Agent() 派发 prompt 模板(Rule 22.4)
-使用方式:主进程读本模板填九字段作 Agent() prompt | 已填示例与主进程参考段(例/Resume/STOP)外置 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-dispatch/references/dispatch-examples.md 按需 Read [2026-09-27 task-v091 B-1] | 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
+使用方式:主进程读本模板填九字段作 Agent() prompt | 已填示例与主进程参考段(例/Resume/STOP)外置 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../task-dispatch/references/dispatch-examples.md 按需 Read [2026-09-27 task-v091 B-1] | 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
 <!-- 填写指引 Why（task-v115 线C 补强，Rule 45.2/45.4）:
   ① 何时用: 每次 Agent() 派发子代理前，主进程以本模板为 prompt 骨架逐项替换占位符；
      子代理无会话记忆，prompt 必须自包含（22.4a 自包含原则）——缺字段=子代理无据判断。
@@ -74,7 +74,7 @@ blockers: none | <一句话>
 confidence: HIGH | MED | LOW
 ```
 > 步骤枚举约束(task-v081):prompt 内显式步骤枚举(StepN/步骤N/第N步/①-⑮,按序号去重)≤ config `step_max_steps`(默认 4);超限=回炉拆 S-unit 再派,check-dispatch.sh fine_grain_checks ④ enforce 档硬拦(任务书豁免场景对任务书文件同步计数)。
-已填示例(照此逐字段,不加标题/前言/总结):见 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §1 [2026-09-27 task-v091 B-1 外置]
+已填示例(照此逐字段,不加标题/前言/总结):见 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §1 [2026-09-27 task-v091 B-1 外置]
 主进程侧:收到缺字段/自由文本 → 视为 partial,以第 8 节检查点「最终结论」段(同一 8 字段块)为准(Rule 22.8.5)
 **返回前必做**:1. Read 实际产出文件确认变更落盘 2. `files:` 列所有修改的绝对路径(含 §2 契约追加的 findings/progress) 3. failed 时 `blockers:` 写原因+检查点「错误与受阻」段写已尝试方案 4. 同一 8 字段块写入第 8 节检查点「最终结论」段并置 status(Rule 22.8.2 T5)
 
@@ -98,7 +98,7 @@ confidence: HIGH | MED | LOW
 【防幻觉契约】你的全部事实性输出必须带来源锚（file:line / 命令原文 / URL / 已读区段行号）四者之一；禁止无来源的具体化（包括把推测写成事实、替调用方补细节、填模板空段）；信息缺失一律显式写「未验证」或「暂无」并说明缺什么；结论区必须「事实+锚点」成对，无锚点行=违规退回；禁止以「合理推断」为由省略锚点。
 > 写入前五问（Rule 71.2）：①每个具体事实有第一手来源吗 ②是否在填模板空段 ③读者能按锚点复核吗 ④中断重启后能从磁盘证据重建吗 ⑤写的是「我记得/我读到过」还是「我觉得应该有」——任一不过=改写为显式占位再写入。
 
-<!-- resume_from / STOP 上报模板(主进程专用,Rule 22.8.4 / 22.7.1)已外置 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §2/§3 [2026-09-27 task-v091 B-1] -->
+<!-- resume_from / STOP 上报模板(主进程专用,Rule 22.8.4 / 22.7.1)已外置 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §2/§3 [2026-09-27 task-v091 B-1] -->
 
 ## 定稿可行性判别模式（Rule 74.4 — 计划定稿后/重大修订后/合并回前派发）
 派发独立子代理（上下文与主会话隔离，材料包=计划全文+涉及规则/模板原文完整传入，禁只传摘要）；判别三维：可执行性（每 Phase/S-unit 有明确输入/验收/边界，无空段占位）/相容性（与既有规则/模板/守护无冲突，引用锚真实存在）/风险性（爆炸半径=触及文件数×运行中基础设施权重；回滚路径存在）；三态结论：PASS（放行）/PASS-WITH-RISKS（登记风险项+缓解后放行）/FAIL（禁执行，回炉修订后重判）；结果 30 秒内落盘 findings.md+progress.md；档位按 Rule 43.2 min 档即可；豁免=mini 档或单文件 ≤3 行 trivial（登记一行理由）。

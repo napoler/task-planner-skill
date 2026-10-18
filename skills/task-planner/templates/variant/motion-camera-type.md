@@ -68,7 +68,7 @@
 - POV 例外逐镜显式声明且登记（默认客观视角纪律，s 条）
 
 ## 📚 必要知识储备
-> 定位路径约定：`<项目根>/` = 目标执行仓（视频生产仓）相对路径；skill 内引用一律用 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner} 绝对路径（R-17）。
+> 定位路径约定：`<项目根>/` = 目标执行仓（视频生产仓）相对路径；skill 内引用一律用 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner} 绝对路径（R-17）。
 | 类别 | 名称/主题 | 定位 | 必读级别 | 已确认 |
 |------|----------|------|---------|--------|
 | 词库 | 运镜词汇库 10 词+快切禁 slow | <项目根>/docs/style.md §2.4 | 必读 | ☐ |
@@ -91,7 +91,7 @@
 | 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-<!-- WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论,两动作完成才勾 verify_done;failed/timeout 行必填 checkpoint 路径(Rule 22.8.4)。WHY: 防结论只留会话记忆(Rule 19.1/22.5)。状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch;备注列=低频列折叠单列(rescue 档位/结果/时间,retry_count 初值 0 每次重试 +1,verify_done☐=Read 产出+findings 复核双条件——人工义务,无机器消费)。派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/subagent_dispatch.md -->
+<!-- WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论,两动作完成才勾 verify_done;failed/timeout 行必填 checkpoint 路径(Rule 22.8.4)。WHY: 防结论只留会话记忆(Rule 19.1/22.5)。状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch;备注列=低频列折叠单列(rescue 档位/结果/时间,retry_count 初值 0 每次重试 +1,verify_done☐=Read 产出+findings 复核双条件——人工义务,无机器消费)。派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/subagent_dispatch.md -->
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|

@@ -25,7 +25,7 @@ printf '# t\n<!-- plan_tier: mini -->\n' > "$T/mini/plans/tm/task_plan.md"
 printf '# t\n<!-- plan_tier: standard -->\n' > "$T/std/plans/ts/task_plan.md"
 printf 'x=1\n' > "$T/app.py"
 ( cd "$T/mini" && bash "$CKD" pretool "$T/app.py" default 5 ) 2>/dev/null; [ $? -eq 0 ] && ok 01 "mini 业务文件直做放行" || bad 01 "mini 业务文件未放行"
-( cd "$T/mini" && bash "$CKD" pretool "/home/terry/.zcode/skills/task-planner/SKILL.md" default 5 ) 2>/dev/null; [ $? -eq 2 ] && ok 02 "mini 保护区仍拦截" || bad 02 "mini 保护区被放行(红线失守)"
+( cd "$T/mini" && bash "$CKD" pretool "$SKILL_ROOT/SKILL.md" default 5 ) 2>/dev/null; [ $? -eq 2 ] && ok 02 "mini 保护区仍拦截" || bad 02 "mini 保护区被放行(红线失守)"
 ( cd "$T/std" && bash "$CKD" pretool "$T/app.py" default 5 ) 2>/dev/null; [ $? -eq 2 ] && ok 03 "非 mini 不受通道影响" || bad 03 "非 mini 误放行"
 grep -q '④ mini 直做通道' "$CRIT_DP" && ok 04 "Rule 14 ④ 通道条款在位" || bad 04 "Rule 14 ④ 缺失"
 

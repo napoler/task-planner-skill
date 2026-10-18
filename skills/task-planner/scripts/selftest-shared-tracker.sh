@@ -28,7 +28,7 @@ CONFIG="$SKILL_ROOT/config.json"
 TPL="$SKILL_ROOT/templates/shared-tracker.md"
 # [task-v095 P5] skill-collaboration.md 迁至卫星 plan-collab-router，COLLAB 路径跟随迁移
 COLLAB="$SKILL_ROOT/../plan-collab-router/references/skill-collaboration.md"
-PT="/home/terry/.zcode/skills/progress-tracker/SKILL.md"
+PT="$HOME/.zcode/skills/progress-tracker/SKILL.md"
 
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'ST-%s PASS %s\n' "$1" "$2"; }

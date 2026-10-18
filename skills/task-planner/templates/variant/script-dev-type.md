@@ -93,7 +93,7 @@
 | 子代理执行 Phase 数 / 总 Phase 数 |  /  |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-<!-- WHEN: 每次 Agent() 派发前填一行,返回 30s 内 Read 产出+回填 findings(Rule 22.5)。状态: queued/done/partial/timeout/failed/blocked。八字段模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/subagent_dispatch.md -->
+<!-- WHEN: 每次 Agent() 派发前填一行,返回 30s 内 Read 产出+回填 findings(Rule 22.5)。状态: queued/done/partial/timeout/failed/blocked。八字段模板: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/subagent_dispatch.md -->
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|

@@ -12,7 +12,7 @@
 | **Name** | todo-skill |
 | **Description** | 将用户大目标拆解为结构化步骤，通过混合模式（Agent 拆解 + 原生 Task 执行 + 持久化同步）逐项推进完成。 |
 | **Model** | mini |
-| **SKILL.md** | `/home/terry/.claude/skills/todo-skill/SKILL.md` |
+| **SKILL.md** | `~/.claude/skills/todo-skill/SKILL.md` |
 
 ## 2. Tool Inventory
 

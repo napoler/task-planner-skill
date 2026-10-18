@@ -91,12 +91,10 @@ _JG_SEC="$(awk '/task-v156\] Rule 73\.4 \[judge-gate\]/{f=1} f{print} /Rule 73\.
 [ "$(cnt 'decision-drift' "$REGISTRY")" -eq 1 ] && ok "DD-18 selftest-registry 自登记行=1" || bad "DD-18" "got=$(cnt 'decision-drift' "$REGISTRY") expect=1"
 
 # ── DD-19 本计划 dogfood 🔒 区块（部署/仓级布局无该计划文件时按 SKIP 计 PASS，DCE-10 范式） ──
-# 解析链：worktree/主仓仓根相对路径优先，其次本仓权威计划绝对路径；均缺失=部署位 SKIP。
+# 解析链：worktree/主仓仓根相对路径（$REPO_ROOT）；缺失=部署位 SKIP。
 PLAN_V156=""
 if [ -f "$REPO_ROOT/plans/task-v156-drift-shield/task_plan.md" ]; then
   PLAN_V156="$REPO_ROOT/plans/task-v156-drift-shield/task_plan.md"
-elif [ -f /mnt/data/dev/task-planner-skill/plans/task-v156-drift-shield/task_plan.md ]; then
-  PLAN_V156=/mnt/data/dev/task-planner-skill/plans/task-v156-drift-shield/task_plan.md
 fi
 if [ -n "$PLAN_V156" ]; then
   [ "$(cnt '不变量声明区' "$PLAN_V156")" -ge 1 ] && ok "DD-19 本计划 🔒 区块在位（dogfood）" || bad "DD-19" "🔒 区块缺失"

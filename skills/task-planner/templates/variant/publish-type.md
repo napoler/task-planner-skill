@@ -1,7 +1,7 @@
 # Task Plan: [发布任务名称]
 <!-- template_type: publish -->
 <!-- 发布型模板 — 适用于 API 发布/批量部署/数据同步 -->
-<!-- 批量发布(≥5 单元)时必须遵守 Rule 18 批量处理质量门控(${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/batch-quality-gate.md) + 填写 Batch Report 区块 -->
+<!-- 批量发布(≥5 单元)时必须遵守 Rule 18 批量处理质量门控(${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/batch-quality-gate.md) + 填写 Batch Report 区块 -->
 
 <!-- plan_tier: standard -->
 ## Goal
@@ -110,7 +110,7 @@
 5. 批量任务:填写 Batch Report `rollback_point` + 失败清单
 
 ## 📦 Batch Report（批量发布必填 — Rule 18.6）
-<!-- 批量 ≥5 单元时必填;完整模板见 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/batch_report.md -->
+<!-- 批量 ≥5 单元时必填;完整模板见 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/batch_report.md -->
 | 字段 | 值 |
 |------|-----|
 | `total` |  |

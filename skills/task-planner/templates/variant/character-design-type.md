@@ -103,7 +103,7 @@
 | 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
-<!-- 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5);failed/timeout 行必填 checkpoint 路径(Rule 22.8.4);状态枚举 queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch;备注列=低频折叠列(rescue/retry_count/verify_done,Rule 22.7);派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/subagent_dispatch.md -->
+<!-- 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 产出+findings 回填双条件才勾 verify_done(Rule 22.5);failed/timeout 行必填 checkpoint 路径(Rule 22.8.4);状态枚举 queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch;备注列=低频折叠列(rescue/retry_count/verify_done,Rule 22.7);派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/subagent_dispatch.md -->
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|

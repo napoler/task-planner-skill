@@ -12,7 +12,7 @@
 
 **建制（为什么有这条）**：task-planner 此前把验证能力散落在主技能三处——`references/goal-gate.md`（VC 规则）、`references/completion-gate.md`（子代理验证）、`templates/verification.md`（VC 模板），三者都在核心罗盘管理域内，导致「验证」没有独立权威、VC 长期停留在描述性占位（`[What to check / test command / file to inspect]`，无强制可执行性）。用户 2026-10-14 裁决（R1-R4）：创建任务时必须把验证规则和脚本写到位，验证须独立于主技能之外并在执行步骤中引用，所有产出与执行都要有验证。本条把验证域建制为独立卫星并强制 VC 可执行化。
 
-84.1 **VC 可执行性纪律（no-descriptive-only VC，P0）**：每条 VC（Verification Contract 条目）必须含**可运行验证命令**，三选一必具其一（Rule 66.1 同范式）——① 可运行的 bash 命令（如 `bash scripts/check-complete.sh <plan-dir>`、`grep -c 'Rule 84' file.md`）；② 文件路径+关键行（如 `skills/verification-gate/SKILL.md:5` 含 "Verification Gate"）；③ diff/输出形态判据。**禁止**「检查没问题」「验证通过」类无据表述。计划期 attest-plan.sh 的 VC 可执行性门（84.6 机制）对 standard/full 档硬校验：VC 条目缺可执行命令字段 = 拒锁回炉（fail-closed，与 66.5/59.1 同档）。mini/L0 档豁免（VC 条数降为 ≥2/≥1，但每条仍须有可执行命令）。
+84.1 **VC 可执行性纪律（no-descriptive-only VC，P0）**：每条 VC（Verification Contract 条目）必须含**可运行验证命令**，三选一必具其一（Rule 66.1 同范式）——① 可运行的 bash 命令（如 `bash scripts/check-complete.sh <plan-dir>`、`grep -c 'Rule 84' file.md`）；② 文件路径+关键行（如 `../SKILL.md:5` 含 "Verification Gate"）；③ diff/输出形态判据。**禁止**「检查没问题」「验证通过」类无据表述。计划期 attest-plan.sh 的 VC 可执行性门（84.6 机制）对 standard/full 档硬校验：VC 条目缺可执行命令字段 = 拒锁回炉（fail-closed，与 66.5/59.1 同档）。mini/L0 档豁免（VC 条数降为 ≥2/≥1，但每条仍须有可执行命令）。
 
 84.2 **验证域权威唯一性（satellite ownership）**：verification-gate 卫星 = 任务验证全链路唯一权威（VC 设计规则 84.3 + 子代理验证 84.4 + 终验复验 84.5）；主技能 task-planner 只管四文件罗盘管理，verification.md 契约的设计规则与终验 SOP 全文在本卫星，主技能 SKILL.md 只留指针（计划期/执行期/终验三处步骤引用 `Skill("verification-gate")`）。双份正文=漂移源（Rule 82），迁移后主技能 `goal-gate.md`/`completion-gate.md` 改为本文件指针，原正文删除。
 
@@ -41,7 +41,7 @@
 - ⑥ 终验前跑 `check-complete.sh`（21 门总门）exit 0 才可交付
 - **验证独立性（Rule 33.3，指针）**：终验核查动作（回归/抽查/对齐审查）由全新独立子代理执行，主进程仅编排与簿记——禁止以主进程既有上下文自测替代验收（Rule 33 全文在 task-discipline 卫星）
 
-84.6 **机制（零新 config 键）**：`run-verification.sh`（本卫星 scripts/，统一验证执行入口：解析 verification.md 的 VC 命令字段→逐条 bash 执行→输出 PASS/FAIL 汇总+未通过项清单）；`attest-plan.sh` 新增 **VC 可执行性门**（计划锁定前校验 standard/full 档 VC 条目每条含可执行命令字段，缺失拒锁，与 66.5/59.1 硬门同档，`--skip-vc-check` 逃生口对齐 `--skip-goal-check` 惯例，登记 Decisions）；`selftest-verification-gate.sh`（本卫星 scripts/）静态守护（84.1-84.6 子条文本锚 + 模板"验证命令"字段锚 + 主技能路由表/三处引用锚 + run-verification.sh/attest VC 门存在性 + 零新键负断言）；合规清单（主技能 SKILL.md 消费侧）。零新 config.json 键（properties 键数不变，env-only 开关 `TASK_PLANNER_VC_ENFORCE` 控 VC 可执行性门档位，对齐 64.6/80.6 env 开关先例）。
+84.6 **机制（零新 config 键）**：`run-verification.sh`（本卫星 scripts/，统一验证执行入口：解析 verification.md 的 VC 命令字段→逐条 bash 执行→输出 PASS/FAIL 汇总+未通过项清单）；`attest-plan.sh` 新增 **VC 可执行性门**（计划锁定前校验 standard/full 档 VC 条目每条含可执行命令字段，缺失拒锁，与 66.5/59.1 硬门同档，`--skip-vc-check` 逃生口对齐 `--skip-goal-check` 惯例，登记 Decisions）；`selftest-verification-gate.sh`（task-planner/scripts/，机械层留守主技能）静态守护（84.1-84.6 子条文本锚 + 模板"验证命令"字段锚 + 主技能路由表/三处引用锚 + run-verification.sh/attest VC 门存在性 + 零新键负断言）；合规清单（主技能 SKILL.md 消费侧）。零新 config.json 键（properties 键数不变，env-only 开关 `TASK_PLANNER_VC_ENFORCE` 控 VC 可执行性门档位，对齐 64.6/80.6 env 开关先例）。
 
 84.7 **内容审查门（task-v184，2026-10-17，R3 载体；P0）**：既有机器检查（84.6 机制面）止于格式/计数/存在性/词法/路径层，「语义级产出质量」零检查——文件真实但内容与声明无关、数字张冠李戴均无任何门拦截。84.7 在验证链路加一道独立内容审查门，管机器判不了的语义面：
 - 84.7.1 **触发面**：VC 证据或交付物含非脚本产出（文档/报告/数据/配置/内容类）的计划 = 内容型交付；终验翻 COMPLETE 前必须完成一次独立内容审查（非内容型纯脚本交付不触发）

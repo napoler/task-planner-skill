@@ -10,14 +10,14 @@
 
 | 技能名 | SKILL.md 绝对路径 |
 |--------|------------------|
-| writing-plans | /home/terry/.zcode/skills/writing-plans/SKILL.md |
-| subagent-driven-development | /home/terry/.agents/skills/subagent-driven-development/SKILL.md |
-| dispatching-parallel-agents | /home/terry/.agents/skills/dispatching-parallel-agents/SKILL.md |
-| brainstorming | /home/terry/.zcode/skills/brainstorming/SKILL.md |
-| sub-agent-protocol | /home/terry/.zcode/skills/sub-agent-protocol/SKILL.md |
-| task-drift-guard | /home/terry/.zcode/skills/task-drift-guard/SKILL.md |
-| skill-handoff | /home/terry/.zcode/skills/skill-handoff/SKILL.md |
-| skill-skill-tool | /home/terry/.zcode/skills/skill-skill-tool/SKILL.md |
+| writing-plans | ~/.zcode/skills/writing-plans/SKILL.md |
+| subagent-driven-development | ~/.agents/skills/subagent-driven-development/SKILL.md |
+| dispatching-parallel-agents | ~/.agents/skills/dispatching-parallel-agents/SKILL.md |
+| brainstorming | ~/.zcode/skills/brainstorming/SKILL.md |
+| sub-agent-protocol | ~/.zcode/skills/sub-agent-protocol/SKILL.md |
+| task-drift-guard | ~/.zcode/skills/task-drift-guard/SKILL.md |
+| skill-handoff | ~/.zcode/skills/skill-handoff/SKILL.md |
+| skill-skill-tool | ~/.zcode/skills/skill-skill-tool/SKILL.md |
 
 ### P1 任务边界三判据（Right-Sizing）
 
@@ -121,13 +121,13 @@
 
 | 任务画像 | 伴飞技能 | SKILL.md 绝对路径 | 消费说明 |
 |---------|---------|------------------|---------|
-| 实现类计划 | writing-plans | /home/terry/.zcode/skills/writing-plans/SKILL.md | 计划撰写参考，任务书结构消费 |
-| 并行编排计划 | dispatching-parallel-agents | /home/terry/.agents/skills/dispatching-parallel-agents/SKILL.md | 并行任务派发，独立性判定消费 |
-| 新系统设计拆分 | brainstorming | /home/terry/.zcode/skills/brainstorming/SKILL.md | 系统设计拆分，子系统边界消费 |
-| 子代理管线设计 | subagent-driven-development | /home/terry/.agents/skills/subagent-driven-development/SKILL.md | 子代理管线设计，模型选择消费 |
-| 嵌套/长时派发 | sub-agent-protocol | /home/terry/.zcode/skills/sub-agent-protocol/SKILL.md | 嵌套与超时控制，派发约束消费 |
-| 技能本体修改 | writing-skills | /home/terry/.agents/skills/writing-skills/SKILL.md | 技能文件撰写/改进，文档规范消费 |
-| 对齐审查收尾 | alignment-review | /home/terry/.zcode/skills/alignment-review/SKILL.md | 对齐审查收尾，跨载体一致性消费 |
+| 实现类计划 | writing-plans | ~/.zcode/skills/writing-plans/SKILL.md | 计划撰写参考，任务书结构消费 |
+| 并行编排计划 | dispatching-parallel-agents | ~/.agents/skills/dispatching-parallel-agents/SKILL.md | 并行任务派发，独立性判定消费 |
+| 新系统设计拆分 | brainstorming | ~/.zcode/skills/brainstorming/SKILL.md | 系统设计拆分，子系统边界消费 |
+| 子代理管线设计 | subagent-driven-development | ~/.agents/skills/subagent-driven-development/SKILL.md | 子代理管线设计，模型选择消费 |
+| 嵌套/长时派发 | sub-agent-protocol | ~/.zcode/skills/sub-agent-protocol/SKILL.md | 嵌套与超时控制，派发约束消费 |
+| 技能本体修改 | writing-skills | ~/.agents/skills/writing-skills/SKILL.md | 技能文件撰写/改进，文档规范消费 |
+| 对齐审查收尾 | alignment-review | ~/.zcode/skills/alignment-review/SKILL.md | 对齐审查收尾，跨载体一致性消费 |
 
 ## 未吸收登记（管辖边界说明）
 

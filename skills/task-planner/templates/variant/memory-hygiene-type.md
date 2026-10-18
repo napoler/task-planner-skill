@@ -43,7 +43,7 @@
 | 类别 | 名称/主题 | 定位（路径/URL/版本/commit SHA） | 必读级别 | 已确认 |
 |------|-----------|--------------------------------|---------|--------|
 | 记忆目录 | MEMORY.md + topic .md 全量 | `~/.zcode/cli/memories/projects/<project>/memory/` | 必读 | ☐ |
-| 项目内部文档 | task-planner critical-rules 相关条款 | `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/critical-rules.md` | 参考 | ☐ |
+| 项目内部文档 | task-planner critical-rules 相关条款 | `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/critical-rules.md` | 参考 | ☐ |
 | 历史任务产物 | 被引用锚点的 plans/verification 文件 | `plans/<task-id>/*.md` | 参考 | ☐ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
