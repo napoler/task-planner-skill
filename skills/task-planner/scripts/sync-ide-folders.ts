@@ -1,4 +1,4 @@
-#!/usr/bin/env npx ts-node
+#!/usr/bin/env node --experimental-strip-types
 /**
  * @configurable
  * CONFIG 区（可变参数与默认值，迁移时只改此处或对应 env）:

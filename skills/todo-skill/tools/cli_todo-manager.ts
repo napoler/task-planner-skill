@@ -194,34 +194,127 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-/** 对应 python 版 _load：读取 store.json，缺 tasks 键时补空数组，文件不存在返回默认结构 */
+/** 对应 python 版 _load：读取 store.json，缺 tasks 键时补空数组，文件不存在返回默认结构。
+ * [task-v189 S76 修复] 去 existsSync TOCTOU（检查后文件消失会抛未分类错）→ 直接 readFileSync catch ENOENT。 */
 function loadStore(logger: Logger): Store {
-  if (fs.existsSync(STORE_FILE)) {
-    const raw = fs.readFileSync(STORE_FILE, "utf-8");
-    let data: Store;
-    try {
-      data = JSON.parse(raw) as Store;
-    } catch (e) {
-      throw new Error(`store.json 解析失败: ${e instanceof Error ? e.message : String(e)}`);
+  let raw: string;
+  try {
+    raw = fs.readFileSync(STORE_FILE, "utf-8");
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") {
+      logger.debug(`store 不存在，使用默认结构: ${STORE_FILE}`);
+      return JSON.parse(JSON.stringify(DEFAULT_STORE)) as Store;
     }
-    if (!Array.isArray(data.tasks)) {
-      data.tasks = [];
-    }
-    logger.debug(`已加载 ${STORE_FILE}（${data.tasks.length} 个任务）`);
-    return data;
+    throw e;
   }
-  logger.debug(`store 不存在，使用默认结构: ${STORE_FILE}`);
-  return JSON.parse(JSON.stringify(DEFAULT_STORE)) as Store;
+  let data: Store;
+  try {
+    data = JSON.parse(raw) as Store;
+  } catch (e) {
+    throw new Error(`store.json 解析失败: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  if (!Array.isArray(data.tasks)) {
+    data.tasks = [];
+  }
+  logger.debug(`已加载 ${STORE_FILE}（${data.tasks.length} 个任务）`);
+  return data;
 }
 
-/** 对应 python 版 _save：回写 updated_at（首写补 created_at），indent=2 与 python 版一致 */
+/** 对应 python 版 _save：回写 updated_at（首写补 created_at），indent=2 与 python 版一致。
+ * [task-v189 S76 修复] 原子写=write→tmp+fsync+rename（POSIX 同目录 rename 原子），
+ * 根除 ENOSPC/kill 致 store.json 截断为 0 字节（2026-10-03 ENOSPC 实证）+ 读者任意时刻只见旧/新完整内容。
+ * tmp 用 pid 后缀避免并行写者互踩；fsync 保证崩溃后 rename 前不丢完整版本。
+ * 保留 main() exit 1 语义：失败即 throw（不吞错，§三 错误曝光）。 */
 function saveStore(data: Store, logger: Logger): void {
   data.updated_at = nowIso();
   if (data.created_at === null) {
     data.created_at = data.updated_at;
   }
-  fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
+  const tmpPath = `${STORE_FILE}.${process.pid}.tmp`;
+  try {
+    const fd = fs.openSync(tmpPath, "w", 0o600);
+    try {
+      fs.writeSync(fd, JSON.stringify(data, null, 2));
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+    fs.renameSync(tmpPath, STORE_FILE);
+  } catch (e) {
+    try { fs.unlinkSync(tmpPath); } catch { /* 尽力清理 tmp，不掩盖原错误 */ }
+    throw e;
+  }
   logger.debug(`已写回 ${STORE_FILE}`);
+}
+
+// [task-v189 S76 修复] O_EXCL lockfile 互斥——Node 无原生 flock API，
+// 引入 proper-lockfile/flock 子进程破坏「无外部依赖」契约（META_DEPS L47-48），
+// O_EXCL 是零依赖最简互斥。读命令免锁（原子写已保证读一致性）。
+const LOCK_FILE = `${STORE_FILE}.lock`;
+const LOCK_TIMEOUT_MS = 5000;
+const LOCK_POLL_MS = 50;
+
+function sleepMs(ms: number): void {
+  // 同步 sleep：Atomics.wait（Node 无同步 sleep 原语；Int32Array+SharedArrayBuffer 跨 Atomics.wait）
+  const buf = new Int32Array(new SharedArrayBuffer(4));
+  Atomics.wait(buf, 0, 0, ms);
+}
+
+/** 取锁：O_EXCL 创建 lockfile 写 pid；EEXIST 时探活锁内 pid——
+ * 不存活/不可读=陈旧锁 → unlink 回收重试；存活则轮询至 LOCK_TIMEOUT_MS 后 throw。 */
+function acquireLock(): void {
+  const deadline = Date.now() + LOCK_TIMEOUT_MS;
+  for (;;) {
+    try {
+      const fd = fs.openSync(LOCK_FILE, "wx", 0o600); // O_CREAT|O_EXCL
+      fs.writeSync(fd, String(process.pid));
+      fs.closeSync(fd);
+      return;
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
+      if (maybeStaleLock()) {
+        try { fs.unlinkSync(LOCK_FILE); } catch { /* 竞争回收，下一轮重试 */ }
+        continue;
+      }
+      if (Date.now() >= deadline) {
+        throw new Error(`获取 store.json 锁超时（${LOCK_TIMEOUT_MS}ms，另一写者持有 ${LOCK_FILE}）`);
+      }
+      sleepMs(LOCK_POLL_MS);
+    }
+  }
+}
+
+/** 锁是否陈旧可回收——双判据防 kill(pid,0) 边界误判（A 临界区即将退出时误回收致丢写）：
+ * ① 锁 mtime 超 2×LOCK_TIMEOUT_MS（锁本身陈旧，持有者早已放弃）；
+ * ② pid 不存活 且 锁 mtime 超 LOCK_TIMEOUT_MS（进程已退出 + 锁残留，非临界区中）。
+ * 持锁进程临界区内：mtime 新（刚创建）+ pid 存活 → 两判据均 false → 不回收（防丢写）。 */
+function maybeStaleLock(): boolean {
+  let pidRaw = "";
+  let lockMtime = 0;
+  try {
+    lockMtime = fs.statSync(LOCK_FILE).mtimeMs;
+    pidRaw = fs.readFileSync(LOCK_FILE, "utf-8").trim();
+  } catch {
+    return true; // 锁已消失=可重试
+  }
+  const age = Date.now() - lockMtime;
+  if (age > LOCK_TIMEOUT_MS * 2) return true; // ① 锁本身陈旧
+  const pid = parseInt(pidRaw, 10);
+  let alive = false;
+  if (!Number.isNaN(pid)) {
+    try { process.kill(pid, 0); alive = true; } catch { alive = false; }
+  }
+  return !alive && age > LOCK_TIMEOUT_MS; // ② 进程退出 + 锁残留超 TIMEOUT
+}
+
+/** 释放锁（unlink 前校验锁内 pid==本进程，防误删他人的锁） */
+function releaseLock(): void {
+  try {
+    const pidRaw = fs.readFileSync(LOCK_FILE, "utf-8").trim();
+    if (parseInt(pidRaw, 10) === process.pid) {
+      fs.unlinkSync(LOCK_FILE);
+    }
+  } catch { /* 锁已被回收/不存在=无需清理 */ }
 }
 
 // ================================================================================
@@ -511,6 +604,10 @@ function main(): number {
     fail("错误: plan 需要 --goal", logger);
   }
 
+  // [task-v189 S76] 写命令（create/update/clear/plan）取 O_EXCL 锁，只读命令免锁（原子写已保证读一致性）
+  const WRITE_COMMANDS = ["create", "update", "clear", "plan"] as const;
+  const needsLock = (WRITE_COMMANDS as readonly string[]).includes(args.command);
+  if (needsLock) acquireLock();
   try {
     switch (args.command) {
       case "create":
@@ -540,6 +637,8 @@ function main(): number {
   } catch (e) {
     logger.error(`运行失败: ${e instanceof Error ? e.message : String(e)}`);
     return 1;
+  } finally {
+    if (needsLock) releaseLock();
   }
 }
 

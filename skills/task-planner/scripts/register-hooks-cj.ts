@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node --experimental-strip-types
 /**
  * @configurable
  * CONFIG 区（可变参数与默认值，迁移时只改此处或对应 env）:
@@ -13,12 +13,12 @@
  * has the 5 task-planner hooks, then writes back atomically.
  *
  * Usage:
- *   bun run register-hooks-cj.ts [--dry-run] [--settings <path>] [--canonical <path>]
+ *   node --experimental-strip-types register-hooks-cj.ts [--dry-run] [--settings <path>] [--canonical <path>]
  *
  * If --settings is omitted, defaults to ~/.claude/settings.local.json.
  * If --canonical is omitted, defaults to $HOME/dev/task-planner.
  */
-import { readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, statSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 
@@ -204,7 +204,7 @@ function main(): void {
     process.exit(2);
   }
 
-  if (!dryRun && !require('node:fs').existsSync(canonicalPath)) {
+  if (!dryRun && !existsSync(canonicalPath)) {
     console.error(`[task-planner] canonical not found at ${canonicalPath}. Install via git clone first.`);
     process.exit(1);
   }

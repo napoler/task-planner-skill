@@ -69,7 +69,7 @@ user-invocable: true
 
 复制到 \`~/.claude/settings.local.json\` 的 \`hooks\` 字段，或运行：
 \`\`\`bash
-bun run \$TASK_PLANNER_ROOT/scripts/register-hooks-cj.ts
+node --experimental-strip-types \$TASK_PLANNER_ROOT/scripts/register-hooks-cj.ts
 \`\`\`
 
 \`\`\`json
