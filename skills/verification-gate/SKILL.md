@@ -32,7 +32,7 @@ allowed-tools: "Read, Bash, Grep, Glob"
 
 ## 执行步骤
 
-### Step 1: VC 设计（计划期）
+### Step 1: VC 设计（计划期） [A]
 
 1. 打开/编辑 `templates/verification.md`（本卫星模板），填写 VC 表
 2. **每条 VC 必填三要素**（Rule 84.1 可执行性纪律）：
@@ -42,7 +42,11 @@ allowed-tools: "Read, Bash, Grep, Glob"
 3. VC 条数：standard ≥5 / mini ≥2 / L0 ≥1（沿用 goal-gate 规则）
 4. VC 设计完成 → attest-plan.sh 的 VC 可执行性门自动校验（缺命令=拒锁回炉）
 
-### Step 2: V-N 校验（执行期，Phase complete 前）
+**可选思路**：
+1. 思路 A：逐条产出反推——从交付物/Phase 产出逐项反推「应验证什么」，再落成命令（适用场景：产出明确、需保证覆盖无遗漏时）
+2. 思路 B：按验收维度分类设计——按功能/边界/回归/安全等维度分组各出 VC，再合并去重（适用场景：交付面广、需系统性覆盖多维度时）
+
+### Step 2: V-N 校验（执行期，Phase complete 前） [M]
 
 1. Read verification.md 当前 Phase 段的 V-N 项
 2. 逐项执行验证命令，确认 PASS
@@ -50,15 +54,22 @@ allowed-tools: "Read, Bash, Grep, Glob"
 4. 子代理产出：Read 实际文件复核（不信任 "done" 自报）后才勾 Handoff verify_done
 5. 回填门控：`bash ../task-planner/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转
 
-### Step 3: VC 复验（终验期，交付前）
+### Step 3a: VC 复验（终验期，交付前）— 机械子动作 [M]
 
 1. Read verification.md 的 Goal Gate 段
-2. 逐条 VC 执行验证命令，对照判据出 PASS/FAIL
-3. 可用统一入口：`bash <skill>/scripts/run-verification.sh <plan-dir>`（解析 VC 命令自动执行汇总）
-4. 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
-5. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户
-6. 终验前跑 `bash ../task-planner/scripts/check-complete.sh`（21 门总门，exit 0 才可交付）
-7. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）
+2. 逐条 VC 执行验证命令（可用统一入口：`bash <skill>/scripts/run-verification.sh <plan-dir>`，解析 VC 命令自动执行汇总）
+3. 终验前跑 `bash ../task-planner/scripts/check-complete.sh`（21 门总门，exit 0 才可交付）
+
+### Step 3b: VC 复验（终验期，交付前）— 智能子动作 [A]
+
+1. 逐条 VC 对照判据出 PASS/FAIL
+2. 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
+3. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户
+4. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）
+
+**可选思路**：
+1. 思路 A：逐条对照判据机械判定 PASS/FAIL，失败项按 3 次重试后升级 BLOCKED（适用场景：VC 判据客观、命令输出可直接比对时）
+2. 思路 B：先归因再定态——对失败 VC 先定位是产出缺陷还是 VC 设计缺陷，再决定 PARTIAL/BLOCKED（适用场景：失败原因不明、可能为 VC 本身不可执行时）
 
 ## 脚本引用索引（机械层留守主技能 scripts/）
 

@@ -35,41 +35,42 @@ model: opus
 
 ## 计划制作循环
 
-- [ ] **初始化（哨兵机制）**
+- [ ] [M] **初始化（哨兵机制）— 机械子动作**：跑脚本建目录/设 env/校验在位/清哨兵
   > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
   - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh`（trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
   - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）
   - **模板优先级**（init-session.sh 自动处理）：项目级 `.claude/plan-templates/` 或 `.zcode/plan-templates/` 覆盖 → 兜底 `<platform-home>/skills/task-planner/templates/`（选型权威源=卫星 `plan-template-kit`，Rule 16/34）
   - **验证**：7 文件在位（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief/user-session-log，Rule 80）
-  - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree）
   - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
   - **清除哨兵**：`node scripts/plan-created.cjs`（双清除 side+legacy）；哨兵存在期间 PreToolUse hook 拦截非 plans/ 路径 Write/Edit（exit 2）
 
-- [ ] **计划确认**
+- [ ] [A] **初始化（哨兵机制）— 智能子动作**：体量分级判定与隔离决策
+  - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree）
+  **可选思路**：
+  1. 思路 A：按 §十一 硬条款判定——命中保护区/基础设施/并行开发任一条 → 选 worktree 隔离（适用场景：实现类任务、改运行行为、用户并行开发时）
+  2. 思路 B：命中 §11.5 例外（纯文档/纯调研/单文件 ≤3 行 trivial）→ 直接在主工作树进行（适用场景：不产生运行行为变更、无并行冲突风险时）
+
+- [ ] [A] **计划确认**
   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）
   - **门控**：等待用户显式 `"yes"`——无授权禁止执行；确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
   - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
   - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
 
-- [ ] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
+- [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
 
-- [ ] **思维方法论解构**（`references/methodology.md` T1-T5，指针）：计划期已按问题先行三问+5 Whys+结论先行附推导链完成解构，答案落 task_plan「核心问题定义」+findings.md；方案终裁（Rule 69.1 T1）≥2 候选难决→委派 decision-arbiter，不硬决不直接 AskUser
+- [ ] [A] **思维方法论解构**（`references/methodology.md` T1-T5，指针）：计划期已按问题先行三问+5 Whys+结论先行附推导链完成解构，答案落 task_plan「核心问题定义」+findings.md；方案终裁（Rule 69.1 T1）≥2 候选难决→委派 decision-arbiter，不硬决不直接 AskUser
 
-- [ ] **共享内容追踪检查点（Rule 30）**：命中 30.1 识别条件（可枚举共享资源只认领一部分/同类任务 ≥3 次）→ `Skill("progress-tracker")` 建/用项目级账本（`.zcode/ledger/`），逐 target 认领登记+收尾 Todo；未命中 → Decisions Made 记不适用理由
+- [ ] [M] **共享内容追踪检查点（Rule 30）— 机械子动作**：命中则 `Skill("progress-tracker")` 建/用项目级账本（`.zcode/ledger/`），逐 target 认领登记+收尾 Todo；未命中 → Decisions Made 记不适用理由
+- [ ] [A] **共享内容追踪检查点（Rule 30）— 智能子动作**：判定是否命中 30.1 识别条件（可枚举共享资源只认领一部分 / 同类任务 ≥3 次）
+  **可选思路**：
+  1. 思路 A：从 scope_files 反查共享资源——多 Phase 触碰同一文件/目录/资源 → 判命中（适用场景：改动集中在少数文件、资源易枚举时）
+  2. 思路 B：从任务类型判定——同类任务重复 ≥3 次（批量站点/批量文档等）→ 判命中（适用场景：批量同类操作、资源分散难枚举时）
 
-- [ ] **Phase 执行循环**（每 Phase 独立闭环）
+- [ ] [M] **Phase 执行循环（每 Phase 独立闭环）— 机械子动作**：固定 SOP（开 Phase→同步→落盘→回写→提交）
   1. **开启 Phase**：`Edit task_plan.md` 状态→`in_progress`；**R 锚定复诵**（v168）：Read「🎯 用户需求原文」→ progress 段首行写 `- **R 锚定**：本 Phase 服务 R<n>「<一句话复述>」`；与 Goal 或当前动作不符=先修计划再开工
   2. **同步 Todo（S2）**：对应 todo→in_progress；步骤 1/2 必须紧邻执行
-  2.5 **委派检查点（Rule 25）**：Phase Executor≠主进程 → 立即按九字段模板逐 S-unit 派发子代理（路由表/粒度门/伴飞/返回校验/兜底详见卫星 `task-dispatch`）；主进程只保留派发/回填三文件/验收 Read；无 Executor 字段=计划无效先回炉；禁止"先自己干再派"
-  2.5b **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）
-  2.5c **动作相关性三问**（v168）：新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase R 锚定？② 在 scope_files 内？③ 用户原话要求过？任一 No→记录不执行
-  2.5d **变更类型判定（Rule 74 三判门，P0）**：对既有文件/条目的每处变更，执行前必须判定变更类型（增量/替代/删除），答案登记 task_plan.md「📋 变更标注表」：
-     - **增量（默认且优先）**：用户措辞含"补充/再加/还有/另外/同时"或语义为新增条目 → 只追加、既有条目逐字保留不动；"补充一些条目"类指令永远走本档，禁以"整合/去重/顺手重构/格式化"名义回写既有条目
-     - **替代（禁默认，四条件全满足才可）**：① 既有内容被新证据或回归测试证伪，或已被用户明示否决/作废；② 替代范围完整覆盖旧场景；③ 替代前已 Read 旧内容全文；④ 替代后既有守护/selftest 全绿。缺任一 → 回落增量
-     - **删除（最高门槛）**：必须取得用户逐项授权；未授权只可停用/标记，禁物理删除
-     - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
   3. **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
      - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `Edit findings.md`**（结论摘要+证据路径）；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁
      - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
@@ -80,22 +81,40 @@ model: opus
   4. **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转
   4.5 **提交工作产物（Rule 27）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；非 git 记行跳过；deferred/用户显式豁免须写入计划
   5. **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
+
+- [ ] [A] **Phase 执行循环（每 Phase 独立闭环）— 智能子动作**：委派/技能激活/动作相关性/DRIFT 判定
+  2.5 **委派检查点（Rule 25）**：Phase Executor≠主进程 → 立即按九字段模板逐 S-unit 派发子代理（路由表/粒度门/伴飞/返回校验/兜底详见卫星 `task-dispatch`）；主进程只保留派发/回填三文件/验收 Read；无 Executor 字段=计划无效先回炉；禁止"先自己干再派"
+  2.5b **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）
+  2.5c **动作相关性三问**（v168）：新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase R 锚定？② 在 scope_files 内？③ 用户原话要求过？任一 No→记录不执行
+  2.5d **变更类型判定（Rule 74 三判门，P0）**：对既有文件/条目的每处变更，执行前必须判定变更类型（增量/替代/删除），答案登记 task_plan.md「📋 变更标注表」：
+     - **增量（默认且优先）**：用户措辞含"补充/再加/还有/另外/同时"或语义为新增条目 → 只追加、既有条目逐字保留不动；"补充一些条目"类指令永远走本档，禁以"整合/去重/顺手重构/格式化"名义回写既有条目
+     - **替代（禁默认，四条件全满足才可）**：① 既有内容被新证据或回归测试证伪，或已被用户明示否决/作废；② 替代范围完整覆盖旧场景；③ 替代前已 Read 旧内容全文；④ 替代后既有守护/selftest 全绿。缺任一 → 回落增量
+     - **删除（最高门槛）**：必须取得用户逐项授权；未授权只可停用/标记，禁物理删除
+     - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
   6. **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
+  **可选思路**：
+  1. 思路 A：按 Executor 字段机械派发——Phase 有 Executor 字段即派子代理，主进程只回填三文件+验收 Read（适用场景：派发型 Phase、S-unit 边界清晰时）
+  2. 思路 B：主进程直做——命中直做白名单（trivial/单文件小改）或 Executor=主进程时自执行（适用场景：改动小、派发开销大于收益时）
 
-- [ ] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
+- [ ] [A] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
 
-- [ ] **终验交付**
-  - **按卫星 `verification-gate` 终验 SOP 执行（Rule 84.5 Step 3）**：Read `verification.md`，逐条复验 VC（每条带证据路径+可执行命令）；统一入口 `bash <verification-gate>/scripts/run-verification.sh <plan-dir>` 自动执行 VC 命令并汇总 PASS/FAIL
+- [ ] [M] **终验交付 — 机械子动作**：跑终验门脚本/合并回/提交核验/Read 产出/归档
   - **3-File Gate（19.5）**：check-complete.sh 内置校验 findings/progress 非 stub，缺失/stub→exit 1→STOP 回填禁交付
-  - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
-  - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉
   - **隔离任务合并回**：worktree 内全 VC 复验且无未提交变更→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（合约见 `references/worktree-isolation.md`）
   - **git 提交核验+编号账本**：scope 文件无未提交变更（或已按 Rule 27 逐 Phase 提交）；新增编号 `bash scripts/rule-reserve.sh land <NN> <task-id>`
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
-  - 交付结论 COMPLETE/PARTIAL/BLOCKED；**交付总结五要素**（Rule 48：全体指针绝对路径/可执行命令）按 `templates/delivery-summary.md` 输出
-  - 决策分级（Rule 72）/呈报四要素（Rule 70）/变更吸收三判（Rule 74）/编号列表规范（Rule 76）按卫星 `task-discipline` 全文执行
   - **退出前**：`bash scripts/check-complete.sh`——exit 0 正常结束；exit 1→STOP 报告未完成任务
   - **计划归档（Rule 81.1）**：check-complete exit 0 后运行 `bash scripts/archive-plan.sh <task-id>` 将完成任务目录移入 plans/archive/——target 已存在=幂等报 `ALREADY_ARCHIVED` 视为通过；守卫拒绝（active 指针 / .session-owner 活跃 / Status 未全 complete，fail-closed）→ 保持原位并登记拒绝理由，禁止强移。Why：「在途在根、历史在 archive/」是 plans/ 存量唯一健康形态，防无限堆积致索引失真（task-v170；详见 references/critical-rules.md Rule 81）
+
+- [ ] [A] **终验交付 — 智能子动作**：VC 复验判定、质量门控与委派率核查、outcome 判定
+  - **按卫星 `verification-gate` 终验 SOP 执行（Rule 84.5 Step 3）**：Read `verification.md`，逐条复验 VC（每条带证据路径+可执行命令）；统一入口 `bash <verification-gate>/scripts/run-verification.sh <plan-dir>` 自动执行 VC 命令并汇总 PASS/FAIL
+  - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
+  - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉
+  - 交付结论 COMPLETE/PARTIAL/BLOCKED；**交付总结五要素**（Rule 48：全体指针绝对路径/可执行命令）按 `templates/delivery-summary.md` 输出
+  - 决策分级（Rule 72）/呈报四要素（Rule 70）/变更吸收三判（Rule 74）/编号列表规范（Rule 76）按卫星 `task-discipline` 全文执行
+  **可选思路**：
+  1. 思路 A：严格按门脚本 exit code 判定——全门 exit 0 → COMPLETE，任一门非 0 → 回炉修复（适用场景：门覆盖充分、产出可机器校验时）
+  2. 思路 B：门通过后加人工复核——对关键 Evidence 抽样复现，发现门未覆盖的缺陷即降级 outcome（适用场景：交付面广、门可能漏检内容型缺陷时）
 
 ### 📄 产出落盘映射（3-File Pattern）
 

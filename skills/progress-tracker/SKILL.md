@@ -68,7 +68,7 @@ model: haiku
 
 ## 执行流程
 
-### Step 0：解析项目根目录 + 平台配置目录
+### Step 0：解析项目根目录 + 平台配置目录 [M]
 
 ```bash
 # 有 git 仓库时
@@ -86,12 +86,12 @@ mkdir -p "$LEDGER_DIR/<topic>"
 
 无项目上下文且用户显式要求用户级时：`PROJECT_ROOT="$HOME/.zcode"`，`LEDGER_DIR="$PROJECT_ROOT/ledger"`。
 
-### Step 1：识别或创建主题
+### Step 1：识别或创建主题 [A]
 
 根据任务性质选主题名（kebab-case）。不确定时问用户。
 若 `$LEDGER_DIR/INDEX.md` 不存在，创建它（格式见 references/ledger-format.md）。
 
-### Step 2：先查后写
+### Step 2：先查后写 [M]
 
 ```bash
 LEDGER_FILE="$LEDGER_DIR/<topic>/<topic>.jsonl"
@@ -101,7 +101,7 @@ grep -F "<target>" "$LEDGER_FILE" 2>/dev/null | tail -5
 
 若已有相同 `target` + `action` 的 `done` 记录，提示用户"该进度已记录，是否仍要追加？"（防止重复）
 
-### Step 3：追加条目
+### Step 3：追加条目 [M]
 
 **含 `changed` 数组的条目必须用 `jq -n`（推荐，安全可靠）：**
 
@@ -130,7 +130,7 @@ echo '{"ts":"'"$TS"'","topic":"<topic>","target":"<target>","action":"<action>",
 
 写入后 Read 该文件最后 3 行，确认写入成功。
 
-### Step 4：更新 INDEX.md
+### Step 4：更新 INDEX.md [M]
 
 若该主题在 INDEX.md 中无条目，追加一行；若已有条目，更新记录数：
 
@@ -165,9 +165,9 @@ grep -F "<action关键词>" "$LEDGER_DIR/<topic>/<topic>.jsonl" | grep -F '"stat
 
 ### 执行步骤
 
-**Step A：追加账本条目**（status=`in_progress`，effect 字段写"完成后需更新为 done + 实际效果"）
+**Step A：追加账本条目**（status=`in_progress`，effect 字段写"完成后需更新为 done + 实际效果"） [M]
 
-**Step B：创建 Todo**（同一轮内完成，不可跳过）
+**Step B：创建 Todo**（同一轮内完成，不可跳过） [M]
 
 ```
 TodoWrite 或 TaskCreate：
@@ -176,7 +176,7 @@ TodoWrite 或 TaskCreate：
 - description: 完成后执行 progress-tracker 更新（Step 3，status=done + 实际 effect）
 ```
 
-**Step C（任务完成后回来时）**：
+**Step C（任务完成后回来时）**： [M]
 
 1. 按 SKILL.md Step 2-4 更新账本：追加新条目（status=`done`，effect=实际验证结果）
 2. 完成 Todo

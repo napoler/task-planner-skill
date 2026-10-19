@@ -24,7 +24,7 @@ model: haiku
 
 ## 执行步骤
 
-### Step 1: 找计划源
+### Step 1: 找计划源 [M]
 
 | 线索 | 计划源 |
 |------|--------|
@@ -36,13 +36,13 @@ model: haiku
 
 **无计划源 → 输出 WARNING 后 STOP。**
 
-### Step 2: 读取计划，提取信息
+### Step 2: 读取计划，提取信息 [M]
 
 只读。提取：目标（Goal）、VC 条目、执行范围限制、当前 Phase。
 
 **批量任务附加提取（Rule 18.3/18.6）**：计划含「📦 Batch Report」区块或 `chain_mode: fan-out` 时，额外提取八字段（total/success/failed/failure_rate/sampled_pass/sampled_fail/pre_check/rollback_point）。`failure_rate` 缺失或未填 → 视为批量质量不可见，报告提示补填。
 
-### Step 3: 获取当前状态证据
+### Step 3: 获取当前状态证据 [M]
 
 ```bash
 git status --short && git diff --stat
@@ -51,7 +51,7 @@ TaskList  # 如有
 
 结合会话上下文回顾已做操作。
 
-### Step 4: 比对，判态
+### Step 4: 比对，判态 [A]
 
 | 状态 | 含义 | 动作 |
 |------|------|------|
@@ -70,11 +70,11 @@ TaskList  # 如有
 | `sampled_fail` >0 | 🔴 BLOCKED — ground truth 失败 = 整批未验证(Rule 18.2) |
 | 八字段缺项 | ⚠️ DRIFT — 批量不可见,要求补填 Batch Report |
 
-### Step 5: 输出报告（不写文件）
+### Step 5: 输出报告（不写文件） [M]
 
 模板见 EXAMPLES.md。用 markdown 直接输出，不做任何写入。批量任务附报：Batch Report 八字段快照 + failure_rate 走向（与上次检测对比升/降）。
 
-### Step 6: 按结果行动
+### Step 6: 按结果行动 [A]
 
 - ✅ → 继续
 - ⚠️ → 问用户：纠正/继续/STOP
