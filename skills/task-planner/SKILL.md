@@ -61,6 +61,12 @@ model: opus
 - [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
 
 - [ ] [A] **思维方法论解构**（`references/methodology.md` T1-T5，指针）：计划期已按问题先行三问+5 Whys+结论先行附推导链完成解构，答案落 task_plan「核心问题定义」+findings.md；方案终裁（Rule 69.1 T1）≥2 候选难决→委派 decision-arbiter，不硬决不直接 AskUser
+  **就地触发条件摘要**（全文→`references/methodology.md` §思维方法论 T1-T5）：
+  - **T1 问题先行**：新任务 T0 规划时 / 任何方案提出前 / 任何修复动手前 → 三问自检（①问题是什么 ②解决到什么程度算好 ③不解决/解决错的代价）
+  - **T2 解构四问**：计划创建（task_plan「核心问题定义」段）/ 复杂问题动手前 → 四问逐级作答（问题→本质[连问≥5 为什么]→解决方案[≥1 候选+取舍]→执行方案[S-unit 化+可验证]）
+  - **T3 金字塔**：方案陈述 / 选项呈现 / 报告组织 → 结论先行 / 以上统下 / MECE / 逻辑递进
+  - **T4 逐步推导**：T2②③作答 / FMEA 推演 / Rule 31.2 根因 / 复杂调试 → 推导链显式化落 findings，断点标「未验证」
+  - **T5 消费点**：①规划先行的 T1 ②计划创建的 T2 ③方案候选的 T3 ④Phase 执行前的 Poka-Yoke ⑤失败纠偏的 T4
 
 - [ ] [M] **共享内容追踪检查点（Rule 30）— 机械子动作**：命中则 `Skill("progress-tracker")` 建/用项目级账本（`.zcode/ledger/`），逐 target 认领登记+收尾 Todo；未命中 → Decisions Made 记不适用理由
 - [ ] [A] **共享内容追踪检查点（Rule 30）— 智能子动作**：判定是否命中 30.1 识别条件（可枚举共享资源只认领一部分 / 同类任务 ≥3 次）
