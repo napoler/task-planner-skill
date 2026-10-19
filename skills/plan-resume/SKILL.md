@@ -39,7 +39,7 @@ description: Scan for interrupted or stuck task-planner plans across a workspace
 
 ## 工作流(六步)
 
-### 1. 定位所有计划目录
+### 1. 定位所有计划目录 [M]
 
 按用户当前工作目录(`pwd`)的 git 仓根扫描。优先用 `scripts/scan-plans.sh <repo-root>`(已写好并发扫描),或主进程直接:
 
@@ -69,7 +69,7 @@ skill 接收用户在 prompt 中以自然语言声明的过滤/阈值条件,主�
 
 > **报告里必含「实际生效阈值」段**(见 §5.1),避免用户事后忘记自己声明过什么。
 
-### 2. 提取每份计划的元数据
+### 2. 提取每份计划的元数据 [M]
 
 每个 task_plan.md 用 `Read` 提取以下五字段(grep 模式,见 `scripts/extract-meta.sh`):
 
@@ -84,7 +84,7 @@ skill 接收用户在 prompt 中以自然语言声明的过滤/阈值条件,主�
 
 **主进程自己不要逐文件 Read 大段**(>500 行派 `Explore`;实际计划文件多在 5-12KB,可主进程 Read 头 100 行)。
 
-### 3. 判断完成度(决定要不要进过期判定)
+### 3. 判断完成度(决定要不要进过期判定) [M]
 
 ```
 所有 phase.status == "complete"  → 已完成,跳过(只列汇总)
@@ -93,7 +93,7 @@ phase 含 pending 且 ≥1 个         → 中断/未开始,过期判定(核心�
 Goal 缺失 / Next Step 缺失        → 损坏,直接标 [corrupt]
 ```
 
-### 4. 三维过期判定(只对未完成项)
+### 4. 三维过期判定(只对未完成项) [A]
 
 每个未完成项跑三维度,**任一命中 = 触发过期推荐**:
 
@@ -139,7 +139,7 @@ git log --since="<last_update>" --oneline | grep -iE "<goal_keywords>"
 
 > 维度③ 实现成本最高,**前两个维度已能覆盖 80% 场景**;第三维度若 grep 出 0 命中,直接跳过不深入。
 
-### 5. 输出报告
+### 5. 输出报告 [M]
 
 #### 5.1 报告格式(强制)
 
@@ -209,7 +209,7 @@ git log --since="<last_update>" --oneline | grep -iE "<goal_keywords>"
 要不要继续?(仅 dry-run 模式输出此问句;自主推进模式不问——按 §7 直接续推至交付)
 ```
 
-### 6. 决策路由(v0.5:默认自主推进,不再等用户抉择)
+### 6. 决策路由(v0.5:默认自主推进,不再等用户抉择) [A]
 
 报告输出后,按当前生效模式路由:
 
@@ -266,7 +266,7 @@ git log --since="<last_update>" --oneline | grep -iE "<goal_keywords>"
 
 ---
 
-## §7 自主推进模式(2026-09-05 v0.5;由 v0.4 smart-resume 升级)
+## §7 自主推进模式(2026-09-05 v0.5;由 v0.4 smart-resume 升级) [A]
 
 > **核心变更**: v0.4 旧契约"只扫描不执行,smart-resume 需显式 opt-in"在恢复场景下升级为**默认自主**: 恢复触发点命中即自动选 1 个最值得推进的计划 + 写 `[auto-pushed-by-cron]` 标记 + 调用方立即续推。授权来源从"每次调用方 prompt 显式声明"改为 **config.json `autonomous_resume`(默认 true)+ 会话级逃生**。
 > **v0.6 增补(2026-09-06)**: 自主续推途中遇到计划内决策点(待你决策/二选一/`[awaiting-user]`)不再停车——按 §7.10 自主决策框架四项测试裁决并记录后继续,直至交付;仅"宪法 P0 / Goal 重定义 / circuit-break / 用户喊停"四类合法停点除外(§7.10)。

@@ -39,25 +39,35 @@ loop-based iterative mode: 固定五步 + 状态文件,轮次执行 stable repea
 
 ## 执行流程(每轮五步,门控推进)
 
-- [ ] **Step 0 初始化**: 建状态文件 `plans/loop-<task-id>-state.md`, 内容:
+- [ ] [M] **Step 0 初始化**: 建状态文件 `plans/loop-<task-id>-state.md`, 内容:
   - 轮次表: 轮次 / 动作 / 证据 / 门控结果
   - QC-1..N 登记,标注机器可检查项及其检查命令
   - 已有状态文件 → Read 断点续跑(接上轮次,不重头)
-- [ ] **Step 1 评估 (evaluate)**: 当前产出逐条核验 QC-1..N
+- [ ] [M] **Step 1 评估 (evaluate)**: 当前产出逐条核验 QC-1..N
   - 机器可检查项必须实际跑检查命令并附输出,禁止替代性推断
   - 每条记 PASS/FAIL + 证据;全 PASS → 跳至 Step 4 情形①
-- [ ] **Step 2 诊断弱点 (diagnose · identify weaknesses)**:
+- [ ] [A] **Step 2 诊断弱点 (diagnose · identify weaknesses)**:
   - 列全部 FAIL 项,按影响排序
   - 选定本轮最弱项 1-2 个(单 focus: 每轮只治最弱项,禁止一次全改——多改致归因失效)
-- [ ] **Step 3 定向改进 (improve · apply targeted improvements)**:
+  **可选思路**:
+  1. 思路 A: 按严重度排序(阻塞度/影响面),优先选定阻塞级或影响面最大的 FAIL 项(适用场景: FAIL 项之间严重度差异显著、存在阻塞级项时)
+  2. 思路 B: 按修复成本排序(预估工时/改动面),优先选定低成本高收益项(适用场景: 多项严重度相当、轮次预算紧张或追求快速收敛时)
+- [ ] [A] **Step 3 定向改进 (improve · apply targeted improvements)**:
   - 对选定弱点做最小定向修改;改前 Read 现文,改后附 diff/命令证据
   - 禁止顺带修改未诊断项(Scope Lock)
   - 若改动可能影响已 PASS 项 → Step 1 全量重跑(回归面)
-- [ ] **Step 4 门控判定 (gate · decide whether another round)**,三态:
+  **可选思路**:
+  1. 思路 A: 就地最小编辑(精确定位替换目标片段),仅动弱点相关文本(适用场景: 产出为文件、弱点局部可控、改动面小时)
+  2. 思路 B: 先留存当前版本再改(复制/备份),便于失败回滚与改动前后 A/B 对比(适用场景: 改动风险高、可能波及已 PASS 项时)
+- [ ] [M] **Step 4a 门控判定 (gate · decide whether another round) — 机械子动作**,按三态规则路由并回写状态文件,三态:
   - ① QC 全 PASS → 收敛,输出摘要,结论 RESOLVED
   - ② 有 FAIL 且轮次 < max_iterations → 回 Step 1
   - ③ 轮次 ≥ max_iterations → 停止,输出摘要 + 遗留 FAIL 清单,结论 PARTIAL
   - 补充出口: 同一 FAIL 连续 2 轮无改善(门控铁律 P1)→ 随时停止,结论 BLOCKED
+- [ ] [A] **Step 4b 门控判定 (gate · decide whether another round) — 智能子动作**,判定是否再开一轮的权衡:
+  **可选思路**:
+  1. 思路 A: 严格按 QC 证据机械判定——QC 全 PASS 即收敛,否则按轮次阈值决定去留(适用场景: QC 项客观可测、无主观残余时)
+  2. 思路 B: 引入收敛趋势判断——除 QC 状态外看连续轮次 FAIL 改善幅度,趋平即提前停止(适用场景: QC 部分主观、存在边际收益递减时)
 
 每轮执行纪律:
 - 每轮结束必须回写状态文件(轮次表 + QC 证据 + 门控结果)

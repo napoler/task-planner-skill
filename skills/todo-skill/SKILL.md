@@ -47,7 +47,7 @@ model: haiku
 
 ## 工作流
 
-### Step 1: 创建计划骨架
+### Step 1: 创建计划骨架 [M]
 
 ```bash
 tools/cli_todo-manager.ts plan --goal "<用户目标>" --max_steps 10
@@ -55,7 +55,7 @@ tools/cli_todo-manager.ts plan --goal "<用户目标>" --max_steps 10
 
 记录返回的 JSON，确认 `steps` 数组为空（后续由 Agent 填充）。
 
-### Step 2: 任务拆解（Agent）
+### Step 2: 任务拆解（Agent） [A]
 
 启动 Agent 子代理，传入用户目标和计划骨架，要求输出结构化 JSON：
 
@@ -74,7 +74,11 @@ tools/cli_todo-manager.ts plan --goal "<用户目标>" --max_steps 10
 - 每个步骤的 `description` 必须包含可操作的指令，禁止模糊描述
 - 步骤总数不超过 `max_steps`
 
-### Step 3: 存储计划
+**可选思路**：
+1. 思路 A：单 Agent 一次性拆解全量步骤，直接输出完整 `steps` 数组（适用场景：步骤数少（≤10）、依赖关系简单、无需分层细化时）
+2. 思路 B：分阶段拆解——先由 Agent 输出高层里程碑，再逐个里程碑展开为可执行步骤（适用场景：任务庞大或边界模糊、单次拆解易遗漏或粒度失当时）
+
+### Step 3: 存储计划 [M]
 
 将 Agent 返回的完整 JSON 通过 session-kv 存储：
 
@@ -82,7 +86,7 @@ tools/cli_todo-manager.ts plan --goal "<用户目标>" --max_steps 10
 session-kv set todo-plan '{"steps": [...], "goal": "..."}'
 ```
 
-### Step 4: 创建 Todo 列表
+### Step 4: 创建 Todo 列表 [M]
 
 对每个步骤，用 TaskCreate 创建带 `[todo-skill]` 前缀的 Todo：
 
@@ -90,21 +94,28 @@ session-kv set todo-plan '{"steps": [...], "goal": "..."}'
 TaskCreate(subject="[todo-skill] 步骤N: <title>", description="<description>")
 ```
 
-### Step 5: 逐个执行
+### Step 5a: 逐个执行（状态翻转与持久化） [M]
 
-对每个 pending 的 Todo 依次执行：
+对每个 pending 的 Todo 依次执行状态翻转与持久化：
 
 1. `TaskUpdate(taskId=<id>, status="in_progress")`
-2. 根据 `description` 执行对应操作
-3. `TaskUpdate(taskId=<id>, status="completed")`
-4. 同步到持久化管理器：`tools/cli_todo-manager.ts update --index N --status completed`
+2. `TaskUpdate(taskId=<id>, status="completed")`
+3. 同步到持久化管理器：`tools/cli_todo-manager.ts update --index N --status completed`
 
 如果某步骤执行失败：
 - 保持 Todo 状态为 `in_progress`
 - 记录错误到 session-kv：`session-kv set todo-error-<N> "<错误信息>"`
 - 尝试重试一次，仍失败则跳过并标记 completed
 
-### Step 6: 清理
+### Step 5b: 逐个执行（执行步骤操作） [A]
+
+按每个步骤的 `description` 执行对应操作（执行策略需按步骤性质判断）。
+
+**可选思路**：
+1. 思路 A：直接顺序执行——按 description 逐条完成操作，不调整顺序（适用场景：步骤独立、顺序确定、无需协调时）
+2. 思路 B：先评估依赖再执行——识别步骤间依赖/可并行项，调整执行顺序或合并执行（适用场景：步骤存在前后依赖或可合并执行时）
+
+### Step 6: 清理 [M]
 
 将所有 `[todo-skill]` 前缀的 Todo 标记 completed。
 
