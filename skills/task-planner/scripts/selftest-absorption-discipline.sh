@@ -117,5 +117,14 @@ fi
 # AD-14 脚本自身 chmod+x（可执行位）且 bash -n 语法通过（自跑 exit 0 由尾部退出码覆盖）
 chk "AD-14" "脚本自身 chmod+x（可执行位）且 bash -n 语法通过" "test -x \"\$SELF\" && bash -n \"\$SELF\""
 
+# AD-15 SKILL.md 含变更类型判定强制步骤（2.5d 步骤 + Rule 74 三判门关键词）
+chk "AD-15" "SKILL.md 含变更类型判定强制步骤（2.5d + Rule 74 三判门关键词）" "grep -qF '变更类型判定（Rule 74 三判门，P0）' \"\$SKILL\" && grep -qF '增量（默认且优先）' \"\$SKILL\" && grep -qF '替代（禁默认，四条件全满足才可）' \"\$SKILL\" && grep -qF '删除（最高门槛）' \"\$SKILL\""
+
+# AD-16 templates/task_plan.md 变更标注表含「用户原话（逐字）」列
+chk "AD-16" "templates/task_plan.md 变更标注表含「用户原话（逐字）」列" "grep -qF '用户原话（逐字）' \"\$PLAN_TPL\""
+
+# AD-17 templates/subagent_dispatch.md 含变更类型约束段（Rule 74 三判门 + 执行要求）
+chk "AD-17" "templates/subagent_dispatch.md 含变更类型约束段（Rule 74 三判门 + 执行要求）" "grep -qF '变更类型约束（Rule 74 三判门，P0）' \"\$DISPATCH_TPL\" && grep -qF '执行要求' \"\$DISPATCH_TPL\""
+
 printf 'Total: %d pass, %d fail, %d skip\n' "$pass" "$fail" "$skip"
 exit $((fail > 0))
