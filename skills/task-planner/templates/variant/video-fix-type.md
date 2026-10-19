@@ -1,4 +1,5 @@
 # Task Plan: [视频修正/重生成任务]
+<!-- S75 D1 豁免：videop1 专属伴飞路径，属部署者项目实态，非可移植硬编码；如需移植请替换为 <repo-root>/.zcode/skills/videop1-video-fix/ 占位 -->
 <!-- template_type: video-fix -->
 <!-- 家族=video 专模板 C 修正分支展开（EP6 四根因→机械门+门禁升级）；A/B 型任务回 video-type.md；用法：bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/init-session.sh <任务名> video-fix -->
 <!-- 触发词：视频修正/局部重生成/缺陷段重生成/QC FAIL 处置/成片修复/user-fix/full-regen 全量重试/换代集重生成 -->

@@ -29,8 +29,7 @@
  *   输出: 同步统计到 stdout
  *   返回码: 0=成功, 1=发现漂移
  * META_DEPS: |
- *   Node.js >= 18
- *   ts-node
+ *   Node.js >= 18（node --experimental-strip-types 运行）
  *   无外部依赖
  * ================================================================================
  */
@@ -178,7 +177,7 @@ function main(): void {
   if (verify) {
     if (stats.drift > 0) {
       console.log(`DRIFT DETECTED: ${stats.drift} file(s) out of sync.`);
-      console.log("Run 'ts-node sync-ide-folders.ts' to fix.");
+      console.log("Run 'node --experimental-strip-types sync-ide-folders.ts' to fix.");
       process.exit(1);
     } else {
       console.log("All IDE folders are in sync.");

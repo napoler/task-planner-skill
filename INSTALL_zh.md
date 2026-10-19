@@ -58,7 +58,7 @@ bash skills/task-planner/lib/verify.sh
 | 工具 | 用途 | 检查命令 |
 |------|------|----------|
 | `bash` ≥ 4 | 所有安装脚本均为 bash 编写 | `bash --version` |
-| `bun` 或 `node` ≥ 18 | `session-catchup.ts` 等 .ts/.cjs 脚本运行 | `bun --version` 或 `node --version` |
+| `node` ≥ 18（`--experimental-strip-types`） | `session-catchup.ts` 等 .ts/.cjs 脚本运行 | `node --version` |
 | `jq` | 校验脚本（verify.sh 部分检查） | `jq --version` |
 | `git` | 克隆仓库 | `git --version` |
 | 对 `~/.claude/skills/` 的写权限 | 安装目标 | `mkdir -p ~/.claude/skills && test -w ~/.claude/skills` |
@@ -287,30 +287,30 @@ ls task_plan.md   # 应存在
 ```
 ~/.claude/skills/task-planner/   （软壳指向规范源 skills/task-planner/；下列以规范源为准）
 ├── SKILL.md                       (入口文件)
-├── config.json                    (JSON-Schema 阈值配置, 42 键)
+├── config.json                    (JSON-Schema 阈值配置, 53 键 properties <!-- 2026-10-19 task-v191 对齐实态（42→53） -->)
 ├── reference.md                   (Manus 原则 + Chain Handoff Contract)
 ├── examples.md                    (实战示例)
-├── scripts/                       (106 项: .sh 96 个（含 62 selftest）; <!-- 2026-10-08 task-v149 对齐实态 -->
+├── scripts/                       (146 项: .sh 137 个（含 92 selftest）; <!-- 2026-10-08 task-v149 对齐实态 --> <!-- 2026-10-19 task-v191 对齐实态（106/96/62→146/137/92） -->
 │   │                               另有 .ps1/.ts/.cjs 镜像与 lib/ 辅助)
-├── templates/                     (39 个模板: 顶层 10 个 md
+├── templates/                     (42 个模板: 顶层 13 个 md
 │   │                               （task_plan / verification / findings / progress /
 │   │                                notepad-learnings / knowledge-brief /
 │   │                                subagent_dispatch / shared-tracker / batch_report /
-│   │                                delivery-summary）
+│   │                                delivery-summary / user-session-log / session-handoff /
+│   │                                deprecated）
 │   │                               + variant/ 29 类 template_type 变体
 │   │                                （*-*-type.md，含 video/image 家族 12 类）)
-├── references/                    (10 个: critical-rules / completion-gate / goal-gate / <!-- 2026-10-08 task-v149 对齐实态 -->
-│   │                               dispatch-examples / methodology / todo-sync /
-│   │                               worktree-isolation / batch-quality-gate /
-│   │                               agent-coverage / capability-registry)
-└── companion/agents/              (7 个配套 agent: plan-writer / <!-- 2026-10-08 task-v149 对齐实态 -->
+├── references/                    (6 个: critical-rules / completion-gate / goal-gate / <!-- 2026-10-08 task-v149 对齐实态 --> <!-- 2026-10-19 task-v191 对齐实态（10→6：methodology/todo-sync/worktree-isolation 在位，dispatch-examples/batch-quality-gate/agent-coverage/capability-registry 已按域迁至 task-dispatch/task-discipline 卫星） -->
+│   │                               methodology / todo-sync / worktree-isolation)
+└── companion/agents/              (8 个配套 agent: plan-writer / <!-- 2026-10-08 task-v149 对齐实态 --> <!-- 2026-10-19 task-v191 对齐实态（7→8，+decision-arbiter） -->
                                      article-batch-publisher / article-field-fixer /
                                      complex-planner / image-generation-executor /
-                                     video-generation-executor / drift-checker,
+                                     video-generation-executor / drift-checker /
+                                     decision-arbiter,
                                      部署到 ~/.zcode/agents/ 等)
 ```
 
-> 实际清单以 `ls -R skills/task-planner/` 为准（2026-10-08 实测：39 个模板（顶层 10 个 md + variant 29 类）、106 项 scripts（含 62 selftest）、10 个 references、7 个 companion agent）；companion agent 变更后需重跑 `lib/install-companion.sh` 或定向 cp 到各平台 agents/ 目录。 <!-- 2026-10-08 task-v149 对齐实态 -->
+> 实际清单以 `ls -R skills/task-planner/` 为准（2026-10-19 task-v191 实测：42 个模板（顶层 13 个 md + variant 29 类）、146 项 scripts（137 .sh 含 92 selftest）、6 个 references、8 个 companion agent）；companion agent 变更后需重跑 `lib/install-companion.sh` 或定向 cp 到各平台 agents/ 目录。 <!-- 2026-10-08 task-v149 对齐实态 --> <!-- 2026-10-19 task-v191 对齐实态（39/10/106/62/10refs/7agent → 42/13/146/92/6refs/8agent） -->
 
 总大小约 2.0 MB（2026-10-02 `du -sh` 实测），安装过程不会在 Skill 目录外写入任何内容。
 

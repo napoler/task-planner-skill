@@ -29,7 +29,7 @@ const META: MetaInfo = {
   description: "Patch ~/.claude/settings.local.json 添加 task-planner hooks",
   keywords: ["hooks", "task-planner", "settings"],
   usage: "register_hooks_cj.ts [--dry-run] [--settings <path>] [--canonical <path>]",
-  examples: "$ bun scripts/register_hooks_cj.ts\n$ bun scripts/register_hooks_cj.ts --dry-run\n$ bun scripts/register_hooks_cj.ts --canonical ~/dev/task-planner",
+  examples: "$ node --experimental-strip-types scripts/register_hooks_cj.ts\n$ node --experimental-strip-types scripts/register_hooks_cj.ts --dry-run\n$ node --experimental-strip-types scripts/register_hooks_cj.ts --canonical ~/dev/task-planner",
   output: "stdout: hook registration status | exit: 0=success, 1=error",
 };
 function handleHelpFlags(argv: string[]): void {

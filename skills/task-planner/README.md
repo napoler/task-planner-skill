@@ -1,7 +1,7 @@
 # task-planner — 任务规划与漂移检测技能
 
 > **多工具架构 v2（2026-08-29）**：canonical source + per-tool 部署位同步，env-var 路径解析。
-> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 214 行）；76 条既有规则按域分层至 11 卫星技能（3 新域 + 7 收编），卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）。
+> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；73 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） -->。
 
 ## 快速链接
 
@@ -78,7 +78,7 @@
 
 ## Critical Rules 指针
 
-Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（190 行，2026-10-14 实测；含分层架构说明+卫星路由索引）；其余 71 条已按域迁至上表 11 卫星——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（193 行，2026-10-19 task-v191 实测；含分层架构说明+卫星路由索引）；其余 73 条已按域迁至上表 11 卫星——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 
 ---
 
@@ -88,10 +88,10 @@ Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 ┌──────────────────────────────────────────────────────────┐
 │ canonical source: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                    │
 │   (独立 git 仓库, 17 顶层条目)                           │
-│   - SKILL.md (214 行, hooks 字段已剥除)                   │
+│   - SKILL.md (237 行, hooks 字段已剥除)                   │
 │   - references/  (6 篇规则)                              │
 │   - templates/   (13 主模板 + 29 variant)                │
-│   - scripts/     (119 条目 = 110 .sh 含 76 selftest)     │
+│   - scripts/     (146 条目 = 137 .sh 含 92 selftest)      │
 │   - lib/         (6 个 installer 脚本)                   │
 │   - tests/       (smoke.sh)                             │
 │   - install.sh / uninstall.sh                            │
@@ -116,7 +116,7 @@ Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ```
 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                          ← canonical source (git 仓库)
-├── SKILL.md                                 ← 工具无关主文档（214 行; hooks 字段为空, 文末含 11 卫星路由表）
+├── SKILL.md                                 ← 工具无关主文档（237 行; hooks 字段为空, 文末含 11 卫星路由表）
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 6 篇规则文档（2026-10-12 task-v171 拆分后实测; 纪律/派发/媒体域规则已迁至卫星）
@@ -124,12 +124,12 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── goal-gate.md / completion-gate.md / methodology.md
-│   └── [critical-rules-discipline 等 70 条规则 → 各卫星 references/critical-rules-*.md]
+│   └── [critical-rules-discipline 等 73 条非核心规则 → 各卫星 references/critical-rules-*.md]
 ├── templates/                               ← 13 主模板 + 29 个 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md
 │   └── variant/                             ← 场景化变体（28/29 含「📚 必要知识储备」章节）
-├── scripts/                                 ← 119 条目（110 .sh 含 76 个 selftest-*.sh + .ps1/.cjs/.ts/.tsv + lib//capabilities/ 子目录）
+├── scripts/                                 ← 146 条目（137 .sh 含 92 个 selftest-*.sh + .ps1/.cjs/.ts/.tsv + lib//capabilities/ 子目录，2026-10-19 task-v191 对齐实态）
 │   ├── run-selftests.sh                     # 全量 selftest 回归统一入口（--fresh 忽略缓存全量重跑）
 │   ├── check-complete.sh / .ps1             # Stop hook 完成检测
 │   ├── check-conflicts.sh                   # git 冲突分析
@@ -143,7 +143,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 │   ├── task-plan-init.cjs                   # SessionStart 会话私有哨兵（plans/.plan_required_side/<sidkey>.plan_required）
 │   ├── resolve-plan-dir.sh / set-active-plan.sh  # 活跃计划指针（side 会话私有优先 → 全局 fallback → mtime）
 │   ├── attest-plan.sh / check-plan-dispatch.sh / rule-reserve.sh / ledger-append.sh / smart-merge-back.sh  # 守卫与簿记
-│   └── selftest-*.sh ×76 + selftest-registry.tsv  # 自测守护族（不逐列）
+│   └── selftest-*.sh ×92 + selftest-registry.tsv  # 自测守护族（不逐列）
 ├── lib/                                     ← Installer 库（6 个）
 │   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 7 卫星）
 │   ├── install-companion.sh                 # 顶层 skills/*/ 自动发现分发（含另 3 个收编卫星）
@@ -155,7 +155,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 ├── install.sh                               ← 主入口（Phase 5.6 companion 分发 + Phase 5.7 provider fallback bind）
 ├── uninstall.sh                             ← 卸载
 ├── INSTALL.md / MIGRATION.md                ← 用户文档
-├── companion/                               — 伴生 agents（drift-checker 等，跨平台部署用）
+├── companion/                               — 8 个伴生 agent（drift-checker / decision-arbiter 等，跨平台部署用；2026-10-19 task-v191 对齐实态 7→8）
 ├── review-library/                          ← 审查模式库（池成员宿主可枚举分发）
 └── .gitignore                               # 排除 .backup/
 ```
@@ -270,7 +270,7 @@ bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftest
 
 | 问题 | 原因 | 解决 |
 |------|------|------|
-| hook 不触发 | 宿主配置未注册 | `bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts`（claude 位） |
+| hook 不触发 | 宿主配置未注册 | `node --experimental-strip-types ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts`（claude 位） |
 | `TASK_PLANNER_ROOT` 未设 | shell 环境未 export | `.bashrc` 加 `export TASK_PLANNER_ROOT=$HOME/dev/task-planner-skill/skills/task-planner` |
 | 旧部署位与新部署位冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
 | 升级后行为异常 | 部署位仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner} && git pull` 后重启 agent |

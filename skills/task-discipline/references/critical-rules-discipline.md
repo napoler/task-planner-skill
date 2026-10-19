@@ -18,7 +18,7 @@
 ### 8 新请求强制重新规划（三分类判定）
 新请求 = 重规划触发器：停 → 记 `notepad-learnings.md` → A/B/C 影响判定（A 无影响照常执行 / B 扩展 / C 矛盾，详见 SKILL.md § 用户新指令处理）→ **凡影响计划（B/C）：先更新 task_plan.md 对应 Phase/VC/范围，并紧邻同步原生 Todo（todo-sync.md S5），再执行** → 确认 → 继续。禁止口头接受新指令而计划与 Todo 不动。**用户指出错误（A/B/C 判定命中「已产出/结论有误」）时先走 Rule 31 根因分析闭环（31.2 分析 → 31.3 定向修 → 31.4 沉淀），禁止跳过归因直接改**。
 
-8.1 **新任务边界判定（D 类，task-v087）**:新指令到达时先做**任务边界判定（D 先于 A/B/C）**——对照当前活跃 task_plan.md 三要素（`## Goal` + `scope_files`/执行范围 + 交付物），若该指令与三要素**均无主题/范围/交付物关联**（用户要的是一个独立新任务，而非对当前任务的追问/扩展/纠正），判定 **D 类「新任务」**，处置：①**禁止**把该指令当 A 类「照常执行」在当前计划上下文里做（= 不相干内容混入当前计划），**禁止**当 B 类扩进当前计划范围；②为新任务开**新计划目录** `plans/{new-task-id}/`（init-session.sh 全流程：三文件 + 初始化 + 哨兵清除 + S1 Todo 映射）；③旧计划**原样保留**（其 Phase/VC/Todo 映射继续有效，不标 superseded——区别于 C 类）；④判定落一行 `notepad-learnings.md`（指令摘要 → D 判定 → 新计划目录路径）+ Decisions Made。仅当**存在进行中的活跃计划**时本条适用；无活跃计划（或旧计划已 COMPLETE/BLOCKED）时新指令天然开新计划，本条 N/A。指令与当前目标**有关联**（哪怕影响小）则回退 A 类。机制侧守护：SKILL.md §用户新指令处理 D 行+特判段、UPS hook [plan-note] D 类指引（../../task-planner/scripts/zcode-userpromptsubmit.sh）、todo-sync.md S5 D 类分支、selftest-task-boundary.sh 静态锚（防条款误删）。变更吸收语义门（Rule 74）：指令并入既有计划（B/C 类）时，对既有计划/规则/模板的每一处变更先过 74.2 三判门——增量默认、替代四条件、删除授权；答案登记 task_plan.md 变更标注表（74.3），无标注表禁入执行。
+8.1 **新任务边界判定（D 类，task-v087）**:新指令到达时先做**任务边界判定（D 先于 A/B/C）**——对照当前活跃 task_plan.md 三要素（`## Goal` + `scope_files`/执行范围 + 交付物），若该指令与三要素**均无主题/范围/交付物关联**（用户要的是一个独立新任务，而非对当前任务的追问/扩展/纠正），判定 **D 类「新任务」**，处置：①**禁止**把该指令当 A 类「照常执行」在当前计划上下文里做（= 不相干内容混入当前计划），**禁止**当 B 类扩进当前计划范围；②为新任务开**新计划目录** `plans/{new-task-id}/`（init-session.sh 全流程：三文件 + 初始化 + 哨兵清除 + S1 Todo 映射）；③旧计划**原样保留**（其 Phase/VC/Todo 映射继续有效，不标 superseded——区别于 C 类）；④判定落一行 `notepad-learnings.md`（指令摘要 → D 判定 → 新计划目录路径）+ Decisions Made。仅当**存在进行中的活跃计划**时本条适用；无活跃计划（或旧计划已 COMPLETE/BLOCKED）时新指令天然开新计划，本条 N/A。指令与当前目标**有关联**（哪怕影响小）则回退 A 类。机制侧守护：SKILL.md §用户新指令处理 D 行+特判段、UPS hook [plan-note] D 类指引（../../task-planner/scripts/zcode-userpromptsubmit.sh）、todo-sync.md S5 D 类分支、../../task-planner/scripts/selftest-task-boundary.sh 静态锚（防条款误删）。变更吸收语义门（Rule 74）：指令并入既有计划（B/C 类）时，对既有计划/规则/模板的每一处变更先过 74.2 三判门——增量默认、替代四条件、删除授权；答案登记 task_plan.md 变更标注表（74.3），无标注表禁入执行。
 
 8.1.1 **目标切换可判定触发（P0 — 防含糊指令擅自换目标）**：D 类判定前必须先过目标切换三判——① 指令含新站点/域名/平台名词且与当前计划 Goal 零交集？② 指令含指示词（「其他」「另外」「换个」「别的」）+新对象词且与 Goal 零交集？③ 指令宾语从 Goal 宾语变为另一宾语？任一命中 = 目标切换 = scope 扩张 → **禁止**自行归类 D 类开新计划，必须先复述解读+等用户显式 yes。Why: RCA 缺失环节 1——8.1 D 类判定是 LLM 行为门，含糊指令「继续推进其他内容的优化修改上线」被宽泛归类为 D 类后 agent 直接自建计划执行 89 篇；本条把「目标切换」从 D 类的模糊判定中抽出，给出可判定触发条件，在「新建计划」前强制停下确认。
 
@@ -77,7 +77,7 @@ Rule 6/19.4 管错误「记账」、Rule 7 管「不重复同法」、Rule 8 管
 31.4 **沉淀（强制，与 31.3 同一动作内完成）**：notepad-learnings.md 两段各写一行——`What Didn't Work`（错误描述 + 类别标签）/ `Notes for Next Time`（触发条件 + 防线一句话）；progress.md Error Log 行 `Prevention` 列由 `<待沉淀>` 占位翻成实际措施（措施 + 落点指针）。
 31.7 **普及化抽象（强制，与 31.4 同一动作内完成）**：将具体案例抽象为通用规则，写入 notepad-learnings.md「通用规则」段落。通用规则格式：规则名称 | 适用条件 | 具体措施。抽象要求：① 规则名称：简洁描述规则目的（≤10 字）；② 适用条件：描述规则适用的场景特征（非具体案例）；③ 具体措施：描述应采取的行动（可操作）。禁止：只记录具体案例而不抽象为通用规则。验证：抽象后的通用规则应能覆盖原案例及类似场景。
 31.5 **消费侧（防"写了没人读"）**：① 下一 Phase 开工前 Read notepad「Notes for Next Time」未消费项 + 「🚫 被否决方案」段（Rule 32）+ 「通用规则」段（Rule 31.7），命中同类场景 → 按注记执行并在 progress.md 记一行 `[learn-apply]`——**「通用规则」段优先匹配**（抽象级规则覆盖面 > 具体案例条目）；② 新任务 init-session 后 Read 上一 completed 任务 notepad 同三段作风险预演输入（指针引用，无脚本，流程层）；③ 终验 Learning Gate（check-complete.sh 静态校验）：Error Log 各行 Root Cause 列非空（`<待沉淀>` 占位不算）→ 缺失 = exit 1 计入，回填后再交付。
-31.6 **机制**：开关键 `../../task-planner/config.json#error_loop_enforce`（默认 warn：漏 31.2 分析在 progress.md 记一行 `[error-loop] 已跳过根因分析:<指令时间>`；off 不触发；enforce 预留硬校验）；同法反复失败（31.2 完成后同类错误第 2 次）→ 升级 `Skill("meta-corrector")` 结构化复盘（Rule 18.8 批量侧泛化到单点错误侧）；`../../task-planner/scripts/selftest-error-loop.sh` 静态守护（31.x 条款 + 模板列 + config 键 + SKILL 联动 + C19 + Learning Gate 锚点）；模板 `templates/progress.md` Error Log 加列（Root Cause / Prevention）+ `templates/notepad-learnings.md` 消费侧契约注释。
+31.6 **机制**：开关键 `../../task-planner/config.json#error_loop_enforce`（默认 warn：漏 31.2 分析在 progress.md 记一行 `[error-loop] 已跳过根因分析:<指令时间>`；off 不触发；enforce 预留硬校验）；同法反复失败（31.2 完成后同类错误第 2 次）→ 升级 `Skill("meta-corrector")` 结构化复盘（Rule 18.8 批量侧泛化到单点错误侧）；`../../task-planner/scripts/selftest-error-loop.sh` 静态守护（31.x 条款 + 模板列 + config 键 + SKILL 联动 + C19 + Learning Gate 锚点）；模板 `../../task-planner/templates/progress.md` Error Log 加列（Root Cause / Prevention）+ `../../task-planner/templates/notepad-learnings.md` 消费侧契约注释。
 
 31.8 **诉求层级契约（制度层诉求禁降维为实例修复 — 2026-10-16 用户裁决）**：用户指令中动词的宾语层级决定交付物层级，交付层级错位 = Rule 51 完成声称对照必 FAIL（做了用户没要的事，没做用户要的事）。① **制度层诉求**（宾语 = skill/规则/流程/防线，或诉求含「确保不再出现/防复发/根治/制度化/不再发生」类防复现限定词）：交付物 = 规则文本变更，落入最贴近该问题的指令载体（.md 条款/规则子条/模板/检查项，L0-T 档按 Rule 38.7），验收 = 文本条款在位且覆盖该问题模式；**禁止偏差为修复引发问题的具体实例**（修具体 bug 现场/业务代码/一次性数据补救）——实例修复不产出防线，同类问题复发即用户诉求未满足。② **实例层诉求**（宾语 = 具体 bug/具体文件/具体数据）：交付物 = 修复该实例；禁止擅自升级为改规则/技能本体（Rule 36.5 技能修改保守化同理，宪法 §六 保护区）。③ **双层同时要求**（用户既要条款又要修现场）：先落制度层条款，再按用户显式范围处理实例，禁止只做其一却声称覆盖两层。④ **判定存疑**（诉求层级拿不准）→ Rule 28 询问门控确认，禁止默认降维。⑤ **与 31.3 衔接**：31.3「技能规则本体缺口 → 登记 Decisions + 提案写 notepad、本体修改走后续任务」管的是 agent 自主归因路由；当用户指令**显式**要求修正 skill 时，该指令本身就是授权，本任务直接按 Rule 38.7 L0-T 落文本条款，不经 31.3 间接提案路径。（判例 = 2026-10-16 用户投诉：指令「修正 skill 确保 bug 不再出现」被执行偏差为「去修具体 bug 出现的场景」——实例层动作替代了制度层交付物。）
 
@@ -89,7 +89,7 @@ Rule 28.3 只把用户选择记进当前计划的 Decisions Made 表——任务
 32.2 **计划期消费（提出任何方案/建议前必查，P0）**：主进程产出方案候选、plan-writer 产出计划、D2 方案分叉选项、B/C 类重规划建议**之前**，必须先查禁令源——① 当前计划 notepad「被否决方案」段；② `plans/*/notepad-learnings.md` 历史段（grep 方案关键词）；③ 用户 memory 禁令类条目。命中的方案**禁止进入候选清单、禁止推荐、禁止作为默认项**——无例外；每个呈现给用户的方案候选须可追溯"已过禁令检查"。静默模式（28.4）同样适用：推荐项命中禁令 → 不得自主选择，按 32.4 走。
 32.3 **执行期消费**：D2/D5 询问的选项列表排除禁令项（禁令项不得作为选项出现，更不得作为 Recommended）；子代理派发 prompt 材料包含相关禁令行（防低档模型子代理复推已否决方案）；B/C 类变更不得推翻用户否决——用户要求的方向与禁令冲突时 = C 类 STOP 等用户显式裁决，禁止自行裁量。
 32.4 **解禁条件（仅两条，禁止静默改回）**：① 用户**显式撤销**禁令（登记 Decisions Made `veto-lift:` 行 + 时间）；② 出现**可引用的新验证证据**（URL+版本/commit SHA/实测输出），重提时必须标注「此前被否决于 <日期/出处>，现因 <新证据> 申请重议」交用户裁决。两条皆无而重提已否决方案 = 32 违规：立即撤回 + progress.md Error Log 记 `[veto-violation]` 行（Root Cause 列按 31.2 归因）+ 该方案从候选剔除；终验 outcome 最高 PARTIAL（Rule 26.3 处置）。
-32.5 **机制**：开关键 `../../task-planner/config.json#veto_enforce`（默认 warn：漏 32.1 登记/32.2 未查在 progress.md 记 `[veto]` 提醒行；off 不触发；enforce 预留硬校验）；`../../task-planner/scripts/selftest-veto.sh` 静态守护（32.x 条款 + notepad 模板段 + config 键 + SKILL 联动 + C20）；「被否决方案」段并入 31.5 消费侧阅读清单（下一 Phase/新任务消费 notepad 时**必读**该段）；templates/notepad-learnings.md 含该段模板。
+32.5 **机制**：开关键 `../../task-planner/config.json#veto_enforce`（默认 warn：漏 32.1 登记/32.2 未查在 progress.md 记 `[veto]` 提醒行；off 不触发；enforce 预留硬校验）；`../../task-planner/scripts/selftest-veto.sh` 静态守护（32.x 条款 + notepad 模板段 + config 键 + SKILL 联动 + C20）；「被否决方案」段并入 31.5 消费侧阅读清单（下一 Phase/新任务消费 notepad 时**必读**该段）；../../task-planner/templates/notepad-learnings.md 含该段模板。
 
 ### 33 解决→反思→验证迭代循环（P0 — task-v074，目标：问题解决动作后强制「反思四问→独立验证」微循环，闭环保障解决得对而非只解决）
 
@@ -210,7 +210,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 27.5 **终验联动**:终验交付前核验任务 scope 无未提交变更(`git status --porcelain -- <scope>`);遗留 → 补提交(注明"终验补提交")再交付。worktree 场景由合并回合约兜底,本条把"干净"要求从合并前一次性检查前移为逐 Phase 检查。
 27.6 **恢复补提交**:会话中断/压缩后恢复(session-catchup / plan-resume / 5Q)时,若 `git status` 显示 scope 内存在未提交变更而 progress.md 已记录对应动作 → 先补提交(注明"跨会话补提交")再继续,防带病推进。
 
-### 48 交付总结可定位性与实用性（P0,2026-10-03 task-v123，目标：交付总结每一条指针与行动项用户可直接打开或执行，消除「让人审查不知道去哪看」；判定面=撰写自查+模板/SKILL 静态锚，零新 config 键；衔接 38.7 交付总结消费与 templates/delivery-summary.md，既有 Rules 原文零改动）
+### 48 交付总结可定位性与实用性（P0,2026-10-03 task-v123，目标：交付总结每一条指针与行动项用户可直接打开或执行，消除「让人审查不知道去哪看」；判定面=撰写自查+模板/SKILL 静态锚，零新 config 键；衔接 38.7 交付总结消费与 ../../task-planner/templates/delivery-summary.md，既有 Rules 原文零改动）
 
 本条源于用户 2026-10-03 指令原话：「当前的完成任务后的展示总结存在严重的缺陷 比如 让人审查接下来做什么时候 竟然不包含 审查内容路径或者网址 让人完全不知道到哪里审查 类似 的缺陷不一一列举 我希望的是完成总结可以更加实用」。
 
@@ -218,7 +218,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 48.2 **指针形态硬规则（可定位性）**：指向文件/对象/结论的一切指针必须为以下之一——绝对路径；仓内路径且全文已给出仓库根绝对路径（定位栏）；完整 URL；可直接执行的完整命令（含工作目录/前置 cd）。**禁止**：裸文件名（「见 verification.md」）、模糊指代（「相关文件」「上文」「另行确认」）、未解析占位符（`<merge-hash>` 原样输出）、缺路径不可执行命令（`bash xxx.sh`）。
 48.3 **行动项定位三要素**：下一步建议 / 待裁决 / 审查类条目逐条含 ① 对象=要打开或审查的东西（绝对路径 或 URL）② 看点=具体位置/锚点/段落 ③ 动作=用户做什么+期望反馈形态。**审查类条目必须含审查对象路径或网址**（本条用户原例落点）；操作类必须含可执行命令；禁止「持续关注/观察一段时间/后续跟进」类无对象空泛动词。
 48.4 **复核、回滚与失效可执行**：§3 快速复核入口 ≥1 条可直接执行的最轻复核命令（含前置 cd）；回滚方式=具体命令+仓库路径/分支/具体 commit（禁占位符）；失效条件逐条附验证方式（命令或明确动作）。
-48.5 **机制（零新 config 键）**：硬规则与反模式对照全文写入 templates/delivery-summary.md（头部指引+区块要求）；SKILL.md 终验交付段引用（可定位性括注）；selftest-template-lifecycle.sh TL-22/23/24 静态守护（模板三锚 / SKILL 括注锚 / 本条子条锚+零新键声明）；消费侧=终验交付撰写自查 + 全新独立子代理样例审计（验证独立性按 43.1，task-v123 首实证）。
+48.5 **机制（零新 config 键）**：硬规则与反模式对照全文写入 ../../task-planner/templates/delivery-summary.md（头部指引+区块要求）；SKILL.md 终验交付段引用（可定位性括注）；selftest-template-lifecycle.sh TL-22/23/24 静态守护（模板三锚 / SKILL 括注锚 / 本条子条锚+零新键声明）；消费侧=终验交付撰写自查 + 全新独立子代理样例审计（验证独立性按 43.1，task-v123 首实证）。
 
 ### 53 根源解决与决策管辖（P0, 2026-10-05 task-v131）
 
@@ -372,7 +372,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 
 67.3 **PRESSURE 主动压缩整理（compress-now，命中即执行）**：裁决 PRESSURE 后**不等 Phase complete**（29.1 事件驱动通道原文不变，本条为「主动」增量通道）当次执行——a) 跑 29.2 退场 SOP 三类动作（superseded 标记/≥5 条同主题折叠入 `## 压缩归档`/progress 已完成 Phase 段折叠）；b) 跑 29.3 压缩 SOP（findings >500 行强制压缩）；c) 增补蒸馏动作：本 Phase 高频结论按 62.3 蒸馏入 knowledge-brief §2/§4（已在 kb 的更新证据锚，不在 findings 重复展开）；d) 执行后 progress 记一行 `[compress] <动作> <三文件行数变化>`。原则沿用 29.2：被验证无关紧要的才退场，拿不准保留标「待复核」。What=主动、即时、可追溯的压缩；Why=R1「主动进行压缩/整理优化」的直接落地——既有 29.2 能力在，缺的只是「不等事件、命中就做」的触发语义。
 
-67.4 **CONFUSED 会话交接兜底（session handoff，解决不了→新会话）**：触发条件（任一）——① 22.3 五档兜底（改派/拆细/升档/接管/AskUser）穷尽后同一问题仍失败 ≥2 轮；② 连续 2 次评估裁决 CONFUSED。动作：按 `templates/session-handoff.md` 五段模板写 `<plan-dir>/session-handoff.md`（**目标锚 / 已完成与证据 / 当前断点 / 未决问题 / 新会话恢复指令**）→ Decisions Made 登记交接行 + progress 记 `[handoff] <文档路径>+<触发原因>` → 深水区执行动作停止（轻量簿记/只读验证可继续），向用户呈报文档路径与新会话启动指令。新会话恢复链（模板第 5 段固化）：`session-catchup.ts` 中断点检测 → 四文件读序（62.1：task_plan→progress→findings→knowledge-brief）→ `Skill("plan-resume")` 自主续推 Top 1（24.5）→ 从「当前断点」续做，**禁止重复已完成步骤**。What=结构化交接产物+可复制启动指令；Why=R2 落地载体；交接≠任务终止，是把易失上下文换新（RAM→Disk→新 RAM）。
+67.4 **CONFUSED 会话交接兜底（session handoff，解决不了→新会话）**：触发条件（任一）——① 22.3 五档兜底（改派/拆细/升档/接管/AskUser）穷尽后同一问题仍失败 ≥2 轮；② 连续 2 次评估裁决 CONFUSED。动作：按 `../../task-planner/templates/session-handoff.md` 五段模板写 `<plan-dir>/session-handoff.md`（**目标锚 / 已完成与证据 / 当前断点 / 未决问题 / 新会话恢复指令**）→ Decisions Made 登记交接行 + progress 记 `[handoff] <文档路径>+<触发原因>` → 深水区执行动作停止（轻量簿记/只读验证可继续），向用户呈报文档路径与新会话启动指令。新会话恢复链（模板第 5 段固化）：`session-catchup.ts` 中断点检测 → 四文件读序（62.1：task_plan→progress→findings→knowledge-brief）→ `Skill("plan-resume")` 自主续推 Top 1（24.5）→ 从「当前断点」续做，**禁止重复已完成步骤**。What=结构化交接产物+可复制启动指令；Why=R2 落地载体；交接≠任务终止，是把易失上下文换新（RAM→Disk→新 RAM）。
 
 67.5 **hook 节奏承载（rhythm nudge 接线）**：`../../task-planner/scripts/zcode-posttooluse.sh` 在 64.3 drift-rhythm 注入点（grep 锚=注入文案 `[drift-rhythm]`，实施日重验行号）经同一 additionalContext 通道追加单行：`[context-pressure] 主动评估（Rule 67.2）：四信号自评 → HEALTHY 继续 / PRESSURE 即压缩(67.3) / CONFUSED 写会话交接文档(67.4)`——前置判定 env `TASK_PLANNER_CONTEXT_PRESSURE != off` 才注入；**既有 drift-rhythm 三键计数（count/last_inject/due）与注入文案零改动**（64.3 性能约束同款：O(1) 三键读写，禁止全仓扫描）。注入=软提醒不拦截（PostToolUse 平台事实，64.3 同款），拦截力由 67.2 留痕与 Phase complete 门控承载。只改技能侧脚本，**不动 `~/.zcode/cli/config.json`**（hooks.events 挂载表零改动）。
 
@@ -391,7 +391,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 
 ### 70 用户呈报可审批性纪律 — task-v155
 
-> **呈报** = 工作流中一切请求用户审批/审查/确认/复核或向用户知情通报的输出点。本条全工作流适用；交付总结（最重呈报形态）契约仍以 Rule 48 + templates/delivery-summary.md 为权威源，本条不重复定义。
+> **呈报** = 工作流中一切请求用户审批/审查/确认/复核或向用户知情通报的输出点。本条全工作流适用；交付总结（最重呈报形态）契约仍以 Rule 48 + ../../task-planner/templates/delivery-summary.md 为权威源，本条不重复定义。
 
 ### 70.1 适用范围（呈报触点族）
 以下场景一律属呈报触点，受 70.2 最小信息集约束：D1 计划批准展示 / D2-D6 选项呈报（28.3）/ B-C 类变更确认 / drift BLOCKED 与子代理失败升级呈报 / worktree 冲突与合并回 STOP / 批量熔断与跳过率呈报（Rule 18）/ 否定结论上报（35.4）/ 代码审查与对齐审查结果面向用户呈报 / 媒体送审清单 / 静默决策清单呈现 / 非选项类阻塞点展示（44.5）/ 周期回顾矛盾报告（65.4）/ 技能修改 diff 逐项确认（36.4）/ 交付总结（Rule 48）。
@@ -427,7 +427,7 @@ Phase 产物只存在于工作区/worktree 而未提交 = 会话中断、误操�
 
 71.4 **溯源审计 SOP（source-trace audit）**：只审计不改写——只读目标文件，输出审计表（单元位置|事实摘要|三态判定|源锚或「无」|处置建议）+总计行（有源/无源含事实/显式占位三计数），写入调用方指定输出路径；违规单元处置=删除或降级为显式占位，由调用方执行；**禁止「补一个源」蒙混**（补源=二次造谣，Rule 26 Q3 最高档违规）。派发子代理执行时复用八字段任务书形态（素材锚=plans/task-v153-parallel-scheduling/fix-prompts.md:9-29 提示词 A）；统计类汇总禁自报，逐行原文供调用方复算（对齐 Rule 54.5）。
 
-71.5 **派发防幻觉契约行（dispatch anti-hallucination clause）**：templates/subagent_dispatch.md 必填契约段——子代理全部事实性输出必须带来源锚（file:line/命令原文/URL/已读区段行号四者之一）；禁止无来源具体化（推测写成事实/替调用方补细节/填模板空段）；信息缺失一律显式「未验证」或「暂无」并说明缺什么；结论区必须「事实+锚点」成对，无锚点行=违规退回；禁止以「合理推断」为由省略锚点。主进程派发时该段禁删（check-dispatch 契约门消费，Rule 63.6 同款先例）。
+71.5 **派发防幻觉契约行（dispatch anti-hallucination clause）**：../../task-planner/templates/subagent_dispatch.md 必填契约段——子代理全部事实性输出必须带来源锚（file:line/命令原文/URL/已读区段行号四者之一）；禁止无来源具体化（推测写成事实/替调用方补细节/填模板空段）；信息缺失一律显式「未验证」或「暂无」并说明缺什么；结论区必须「事实+锚点」成对，无锚点行=违规退回；禁止以「合理推断」为由省略锚点。主进程派发时该段禁删（check-dispatch 契约门消费，Rule 63.6 同款先例）。
 
 71.6 **与既有 Rule 的关系**：宪法 §三 反造谣铁律=总纲；Rule 26（质量优先）/43.1（证据先行）/51（完成声称门）/54（执行诚实）/63.3（检索禁编造）=各面既有禁令——本条=「写入动作」面执行细则（事前五问+事中空段+事后审计+传播契约），与上述规则构成「总纲→禁令→细则」三层，不替代不回退；fix-prompts.md 素材保留为活文档（71.4 引用锚），后续演进以本规则条为权威源。
 
@@ -465,11 +465,11 @@ C 级问题必须自动修复+登记（Decisions Made `auto:` 行或 progress.md
 
 73.2 **对齐三问与 [align] 留痕（alignment three questions）**：变更型决策点按下述三问逐项作答，并立即落盘 progress.md `[align]` 行（三问答案+依据锚点，缺一问=对齐未完成，禁止进入实施）——① **读什么**：回读 task_plan.md「🔒 不变量声明区」（73.3）+对应用户需求原文（Rule 51.1 R 条目）+相关 findings.md 结论+notepad「🚫 被否决方案」段（Rule 32.2），列出本决策可能触碰的不变量清单；② **判什么**：逐条判定=不变量内执行（可变量调整=直接做+登记）还是触碰不变量（STOP：按 Rule 28 选项化呈报用户，或按 Rule 72 分级判断归属——Rule 72 由 task-v160 在途落地，未落地前一律按 Rule 28 呈报，禁静默修改）；③ **验什么**：实施后对照不变量声明复验（grep/Read/diff 至少一种），确认未违反并在同一 [align] 行附证据锚（54.0 有依据原则）。用户显式指令（宪法 P0-1）要求变更时=走「不变量更新流程」（更新声明区+登记指令来源与时间），不是跳过三问的理由；指令与禁令冲突→Rule 32.4 处置或 Rule 28 D6 硬停。
 
-73.3 **三态标注与🔒不变量声明区（tri-state annotation）**：每份 task_plan.md 必须含「🔒 不变量声明区」区块，把任务要素显式分为三态——🔒 **不变量**（Goal/VC 表/用户需求原文 R 条目/风格与质量约束/已确认的技术选型；声明后任何改动必须走 73.2 全流程）；🔀 **可变量**（执行细节/工序排期/工具选型/S-unit 拆分；主进程可自主调整+progress.md 登记）；📈 **学得量**（执行期新发现的事实/教训/锚点；只入 findings.md 与 notepad-learnings.md，禁止反向改写不变量——改写=73.2 触发）。区块在 templates/task_plan.md 预置（新建计划 init 时带入），存量计划在下次重规划/编辑时补建（warn 档适配，防 legacy 误伤）。三态词条口径=消歧义示范（73.6）。
+73.3 **三态标注与🔒不变量声明区（tri-state annotation）**：每份 task_plan.md 必须含「🔒 不变量声明区」区块，把任务要素显式分为三态——🔒 **不变量**（Goal/VC 表/用户需求原文 R 条目/风格与质量约束/已确认的技术选型；声明后任何改动必须走 73.2 全流程）；🔀 **可变量**（执行细节/工序排期/工具选型/S-unit 拆分；主进程可自主调整+progress.md 登记）；📈 **学得量**（执行期新发现的事实/教训/锚点；只入 findings.md 与 notepad-learnings.md，禁止反向改写不变量——改写=73.2 触发）。区块在 ../../task-planner/templates/task_plan.md 预置（新建计划 init 时带入），存量计划在下次重规划/编辑时补建（warn 档适配，防 legacy 误伤）。三态词条口径=消歧义示范（73.6）。
 
 73.4 **强制评判点与 [judge] 留痕（mandatory judge points）**：Rule 65 周期回顾管「节奏面」（每 N 次调用），本条补「事件面」强制评判——① 每个变更型决策点实施完成后立即一次 [judge] 评判（三问是否执行+不变量是否守住+[align] 行是否齐备）；② 每个 Phase 标记 complete 前一次（与 64.2 门同层）；③ worktree 合并回前一次（防漂移产物合进主干）。评判结论（守住/违反+违反项+处置）落 progress.md `[judge]` 行；发现违反→STOP 按 65.4 自动纠正+报告用户，禁带病推进。机器承载=../../task-planner/scripts/check-complete.sh [judge-gate]（standard/full 档，warn 默认，env `TASK_PLANNER_DECISION_JUDGE=enforce` 升级为 exit 1 阻断、`=off` 跳过）+../../task-planner/scripts/zcode-posttooluse.sh 单行节奏注入（随 drift-rhythm due 同发，单行 JSON 双段约束同 Rule 67.5）。
 
-73.5 **废弃内容只入不出（deprecated quarantine）**：被否决/被推翻/旧版内容（过期锚点、失效结论、旧版方案文本、废弃产物指针）唯一存放点=计划目录 `deprecated.md`（模板=templates/deprecated.md 五段结构）。登记条目五要素=原内容指针（file:line/URL）+废弃类型（否决/推翻/旧版）+废弃原因+日期+替代锚（新结论或新路径，无则显式写「无」）；只入不出=禁止删除/改写既有废弃条目（留痕可追溯，29.2a superseded 语义延伸到产物面）；正常四文件罗盘（task_plan/findings/progress/notepad）正文禁止混放废弃内容——发现残留=迁移入 deprecated.md 并在原位置留指针。分账口径：notepad「🚫 被否决方案」段（Rule 32）=veto 决策登记处（方案+否决原文+适用范围）；deprecated.md=被推翻的产物/旧版结论/过期锚的隔离区；两者互补不重叠。消费侧=提方案/写条款/改文件前必查 deprecated.md+notepad 双源（同 Rule 32.2 禁令源扫描面）。
+73.5 **废弃内容只入不出（deprecated quarantine）**：被否决/被推翻/旧版内容（过期锚点、失效结论、旧版方案文本、废弃产物指针）唯一存放点=计划目录 `deprecated.md`（模板=../../task-planner/templates/deprecated.md 五段结构）。登记条目五要素=原内容指针（file:line/URL）+废弃类型（否决/推翻/旧版）+废弃原因+日期+替代锚（新结论或新路径，无则显式写「无」）；只入不出=禁止删除/改写既有废弃条目（留痕可追溯，29.2a superseded 语义延伸到产物面）；正常四文件罗盘（task_plan/findings/progress/notepad）正文禁止混放废弃内容——发现残留=迁移入 deprecated.md 并在原位置留指针。分账口径：notepad「🚫 被否决方案」段（Rule 32）=veto 决策登记处（方案+否决原文+适用范围）；deprecated.md=被推翻的产物/旧版结论/过期锚的隔离区；两者互补不重叠。消费侧=提方案/写条款/改文件前必查 deprecated.md+notepad 双源（同 Rule 32.2 禁令源扫描面）。
 
 73.6 **消歧义表述纪律（disambiguation）**：产生歧义的表述=禁止裸奔——歧义词后必须带解释层（同义词/判据/反例三者至少其一，示例：「不变量（invariant，指 Goal/VC/用户原话类声明后改动须走 73.2 的条目；反例=可变量）」）；新建条款/模板/派发任务书中的术语默认首现带解释；验收标准禁「确保质量/基本可用」类不可测表述（可观察判据口径同 Rule 66.1 验证方式列）；对齐与废弃两模板词条均按本条示范带解释（防下游理解分叉=用户 R5「为犯错堵住漏洞」）。
 
@@ -482,7 +482,7 @@ C 级问题必须自动修复+登记（Decisions Made `auto:` 行或 progress.md
 74.3 **逐条变更标注（修订方案无标注=无效，禁入执行）**：(a) 任何对既有文件/条目的变更，制定方案时必须在 task_plan.md「📋 变更标注表」逐条登记：编号/对象（文件+锚点）/类型（新增·修改·删除·更新）/吸收判定（增量·替代·删除）/依据（用户原话或证据）/执行动作。(b) 无变更标注表的修订方案=无效方案，禁入执行（attest 锁定与派发前由计划自检+selftest-absorption-discipline.sh 静态守护）。(c) 标注表兼任验收清单：执行后逐行勾核，类型=新增而产物缺失、类型=增量而旧内容被改，均判 FAIL。(d) 用户新指令到达时先把指令逐条转成标注表行，再动任何文件——**先标注后执行**（Rule 8 判定为 B/C 类后）。
 74.4 **定稿可行性判别门（子代理隔离上下文，执行前硬门）**：(a) 时机三拍：① 新建计划 attest 锁定后、Phase 1 首次派发前；② 计划重大修订后（影响 >2 Phase 或 scope_files 扩容）；③ 合并回 master 前的最终把关。(b) 载体：派发独立子代理——推理上下文与主会话隔离（避免主上下文累积污染传入判别），但材料包完整传入（计划全文+涉及规则/模板原文）；模型档位按 Rule 43.2 min 档即可，判别质量由三维判据保障而非模型规模（用户 2026-10-10 明示）。(c) 判别三维：**可执行性**（每 Phase/S-unit 有明确输入/验收/边界，无空段占位——Rule 71.1）、**相容性**（与既有规则/模板/守护无冲突，引用锚真实存在）、**风险性**（爆炸半径=触及文件数×运行中基础设施权重；回滚路径存在且可执行）。(d) 三态结论：PASS（放行）/ PASS-WITH-RISKS（登记风险项+缓解措施后放行）/ FAIL（禁执行，回炉修订后重判）。(e) 结果 30 秒内落盘 findings.md+progress.md（Rule 22.5 绑定）；与 Rule 69.1 T1 的分工：T1 判多个候选方案孰优，本门判单个定稿方案能否安全落地，互补不重复。(f) 豁免：mini 档任务（Rule 38.3）或单文件 ≤3 行 trivial 修改，可登记一行理由跳过。
 74.5 **与既有规则关系（入口与语义分层，互补不重叠）**：Rule 8.1 判「新建计划 vs 改当前计划」（入口层），本规则管「一旦确定要改，怎么改才不污染」（语义层）；Rule 51.1 需求原文逐条抄录本身就是增量纪律（新需求只追加 R 行）；合并冲突裁决先试并集解（增量），并集不可行才逐 hunk 判替代（v149/v155 判例上升为条例）；Rule 56「用户指令优先」与本规则 (b) 替代门不冲突——用户明示的替代指令本身就是 (b)① 的授权形态。
-74.6 **机制与守护（零新 config 键）**：① ../../task-planner/scripts/selftest-absorption-discipline.sh（AD 断言：74.x 条款锚/变更标注表模板锚/触点引用锚/可行性契约锚/SKILL 接线 pin/registry 自登记/零新键）；② templates/task_plan.md「📋 变更标注表」区块；③ templates/subagent_dispatch.md 可行性判别契约段；④ SKILL.md Rules 全集演进至 1-76+合规清单 C51/C54+用户新指令处理段三判门指引。违规按 Rule 26 降质处置。
+74.6 **机制与守护（零新 config 键）**：① ../../task-planner/scripts/selftest-absorption-discipline.sh（AD 断言：74.x 条款锚/变更标注表模板锚/触点引用锚/可行性契约锚/SKILL 接线 pin/registry 自登记/零新键）；② ../../task-planner/templates/task_plan.md「📋 变更标注表」区块；③ ../../task-planner/templates/subagent_dispatch.md 可行性判别契约段；④ SKILL.md Rules 全集演进至 1-76+合规清单 C51/C54+用户新指令处理段三判门指引。违规按 Rule 26 降质处置。
 
 ### 76 总结阶段格式可读性与审查清单实体化纪律 — task-v166
 

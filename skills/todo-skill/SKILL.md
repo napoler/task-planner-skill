@@ -38,6 +38,8 @@ model: haiku
 | 工具 | 用途 |
 |------|------|
 | `tools/cli_todo-manager.ts <cmd> [args]` | 持久化任务管理（node 原生 TS，无需编译） |
+
+> 路径说明：工具表中 `tools/...` 为技能目录相对路径；已安装时解析基准 = `~/.zcode/skills/todo-skill/tools/`（cwd≠技能目录时需带全路径调用）。
 | `session-kv set/get/del` | 存储/读取/删除计划 |
 | `Agent(description=..., prompt=..., subagent_type="general-purpose")` | 任务拆解 |
 | `TaskCreate(subject=..., description=...)` | 创建原生 Todo |
