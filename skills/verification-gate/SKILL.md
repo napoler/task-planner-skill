@@ -36,7 +36,7 @@ allowed-tools: "Read, Bash, Grep, Glob"
 
 1. 打开/编辑 `templates/verification.md`（本卫星模板），填写 VC 表
 2. **每条 VC 必填三要素**（Rule 84.1 可执行性纪律）：
-   - 验证命令：可运行的 bash 命令（如 `bash scripts/check-x.sh <plan>`）或路径+关键行（如 `grep -c 'Rule 84' file.md`）
+   - 验证命令：可运行的 bash 命令（如 `bash scripts/check-x.sh <plan>`）或路径+关键行（如 `grep -c 'Rule 84' file.md`）<!-- 示例占位 -->
    - 判据：命令输出的 PASS/FAIL 判定标准
    - 证据落点：verification.md 对应 VC 的 Evidence 字段
 3. VC 条数：standard ≥5 / mini ≥2 / L0 ≥1（沿用 goal-gate 规则）

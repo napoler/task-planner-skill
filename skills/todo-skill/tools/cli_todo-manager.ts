@@ -61,7 +61,7 @@
  *   由 python 版 tools/todo_manager.py 迁移（AGENTS.md §九 Bun+TS 优先级 +
  *   cli-tool-builder DoD）。运行时降级决策：bun 本机不可用（command -v bun exit 1，
  *   用户确认），按 cli-tool-builder DoD-1 显式降级 node 原生 TS。
- *   迁移对等对照表见 plans/task-todo-skill-ts/progress.md。
+ *   进度账本已随 task 归档，见 git log（2026-08-29 迁移）。
  *
  * ================================================================================
  */

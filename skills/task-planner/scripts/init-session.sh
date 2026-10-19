@@ -460,7 +460,7 @@ if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
     elif [ "$_trivial_code" = "1" ]; then
         # [task-perf-opt Change #1] 第四条件分支：trivial 代码修复（单文件代码 ∧ ≤3 行 ∧ ≤15min ∧ 单模块
         # ∧ ④排除未命中）→ mini 档 + L0 微变更通道。Why：L0 通道存在但 lane-detect 禁滥用条款将代码文件
-        # 改动一律排除（lane-detect.sh:85 实测），trivial 单文件 ≤3 行修复被误落 L1 重档；本分支为
+        # 改动一律排除（lane-detect.sh:86 实测），trivial 单文件 ≤3 行修复被误落 L1 重档；本分支为
         # 既有 mini 通道补 trivial 代码子类，复用 mini 豁免（多波验证/推演自证/委派仪式）+ L0 薄验证。
         PLAN_TIER="mini"
         AUTO_TIER_FIRED=1

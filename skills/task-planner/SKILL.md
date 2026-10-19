@@ -154,8 +154,8 @@ model: opus
 
 - **投诉响应协议**：每次用户投诉「慢 / 好几个小时解决一个最简单的问题」时——① 复述用户原话 → ② 检查既有通道（L0 微变更 / mini 轻量档 / trivial 代码修复档）是否覆盖该场景 → ③ 未覆盖则扩展既有通道边界（如 Change #1 的 trivial 代码修复第四条件），而非叠加新的门控/仪式。
 - **通道不可用快速失败（Rule 83）**：`/workflow` 请求先探测当前环境 Skill 工具面（`Skill(skill="dynamic-workflows")` 是否可用），缺失即登记环境缺口 + 给三选项（换环境 / Agent 替代授权 / 主进程直执行授权），禁 ≥2 次同法重试（videop1 D6 判例：CreateWorkflow 无 Skill 工具 3 次重试全拦）。
-- **L0 通道定期边界审查触发**：每 10 个任务或每月，检查「最常见的简单场景」是否被既有通道排除（如代码文件改动被 lane-detect.sh:85 禁滥用条款排除 → 已补 trivial 第四条件）。审查留痕于 findings.md。
-- **验证锚新位置（Rule 38.7 执行通道分级）**：原核心 `references/critical-rules.md` 锚已失效（task-v171 专业化拆分后 0 命中）。现权威位置=`../plan-template-kit/references/critical-rules-template.md:45` + `../task-discipline/references/critical-rules-discipline.md:191`（逐字双载，域归属=模板域+执行纪律域）。后续 grep 检查 Rule 38.7 应命中这两处，勿再 grep 核心 critical-rules.md。
+- **L0 通道定期边界审查触发**：每 10 个任务或每月，检查「最常见的简单场景」是否被既有通道排除（如代码文件改动被 lane-detect.sh:86 禁滥用条款排除 → 已补 trivial 第四条件）。审查留痕于 findings.md。
+- **验证锚新位置（Rule 38.7 执行通道分级）**：原核心 `references/critical-rules.md` 锚已失效（task-v171 专业化拆分后 0 命中）。现权威位置=`../plan-template-kit/references/critical-rules-template.md:45` + `../task-discipline/references/critical-rules-discipline.md:195`（逐字双载，域归属=模板域+执行纪律域）。后续 grep 检查 Rule 38.7 应命中这两处，勿再 grep 核心 critical-rules.md。
 - **§六 保护区约束**：本技能 SKILL.md 是技能文件，修改须走 §十一 worktree 铁律（git worktree add → 修改 → selftest → 合并回 master）；不修改 `~/.zcode/` 下的记忆文件（§六 保护区）。
 
 ## 卫星路由表（11 卫星 — 非核心域规则全文按需 Read）

@@ -1,7 +1,7 @@
 ---
 name: media-planner
 description: 媒体制作任务派发（媒体制作/视频生成/图片生成/剧集创作/单元线并行/内容要求分级）
-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ---
 
 # media-planner — 媒体制作任务派发
