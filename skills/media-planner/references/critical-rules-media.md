@@ -9,6 +9,7 @@
 本条源于用户 2026-10-03 反馈：媒体制作任务在 task-planner 治理下子代理拆分粗、总是落 general-purpose 默认代理。归因（5 Whys 收敛）：模板/画像层已有媒体 14 类（template-mapping.md §九 video/image/script-dev+工序 11 类），但其「执行体路由组」列引用项目专属资产（tools/gen.py·qc.py、script-writer 等）在通用环境缺位；SKILL.md 路由表无媒体制作行；Rule 21.1b 拆分轴纯代码导向（文件/行）——三层脱节使执行会话落回 general-purpose 兜底（skill-agent-router 定位其=最后兜底非默认）。
 
 47.1 **媒体拆分轴（阶段 × 生产单元）**：template_type ∈ 媒体族（video/video-fix/image/script-dev/character-design/multiview-ref/storyboard/prompt-struct/video-prompt/motion-camera/physics-compliance/qc-defect/audio-voice/final-assembly）的派发型 Phase，S-unit 拆分轴 = 制作阶段（写词→生成→质检→处置→组装）× 生产单元（集/场/分镜/镜头/张/音频条）；单 S-unit = 单生产单元 × 单阶段（例：「E3S2 镜头视频生成」），禁止「整集生成」式粗粒度派发。21.1b 的文件/行上限对媒体任务按生产单元等效换算——预估时长仍是拆分主判据（生成 API 等待时长计入预估），预估 >15min 或单元数 >1 批 → 拆分为多 S-unit 而非整体派出。
+**数值上限（2026-10-21 task-v194）**：单次派发生成 ≤1 个生产单元（镜头/片段/分镜/张/音频条；集/场等大单元按其所含镜头数计，不做折算豁免）；多单元 = 多 S-unit 拆行 + 多次独立派发（可按 Rule 21.4 并行），禁止「19 个片段一个子代理」式整批生成——与 task-dispatch Rule 46.6 同源同值。
 
 47.2 **具名执行体路由（general-purpose 默认兜底禁止）**：画像 §九执行体路由组引用的项目专属资产在当前环境缺位时，媒体族通用兜底路由 = `executor(sonnet-1)` + 对应工序 variant 模板 SOP + 生成技能（如 Skill("agnes-ai-generation-skill") 或项目侧生成工具，派发 prompt 必须点名技能与生成参数契约）；质检工序 = QC/审查类子代理；写词/剧本/判定类零生成工序 = executor(sonnet-1) 判断档。general-purpose 仅限跨领域复合/无法归类场景且须在 Handoff 登记表登记理由（对齐用户宪法 §一 与 skill-agent-router「最后兜底非默认」定位）；禁止因「路由表无匹配行」而默认落 general-purpose。
 

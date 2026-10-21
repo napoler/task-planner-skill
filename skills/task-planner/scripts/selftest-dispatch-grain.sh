@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-dispatch-grain.sh — task-v118: Rule 46 子代理单任务专注度守护（单会话单 S-unit / 守卫豁免收窄 / 任务书口径）
 # 校验面（静态锚 + check-dispatch.sh 守卫②④收窄行为 fixture；只读技能文件, 临时产物在 mktemp 目录内自清理）:
-#   GR-01 critical-rules-dispatch.md 46.1..46.5 五子条款在位（grep -c '^46.' = 5；[task-v171 2026-10-12] Rule 46 归属 task-dispatch）
+#   GR-01 critical-rules-dispatch.md 46.1..46.6 六子条款在位（grep -c '^46.' = 6；[task-v171 2026-10-12] Rule 46 归属 task-dispatch；[task-v194 2026-10-21] 新增 46.6 计数阈值 5→6）
 #   GR-02 critical-rules-dispatch.md 含「### 46 子代理单任务专注度」条款头
 #   GR-03 46.1 单会话单 S-unit 双锚（CRIT_DP 条款本体 + task-dispatch SKILL.md 路由行；原核心 SKILL.md 2.5 措辞随 S33 落卫星）
 #   GR-04 templates/subagent_dispatch.md Rule 46.1 引导行 ≥ 2（§1 目标段 + 检查点段两处）
@@ -13,7 +13,7 @@
 #   GR-10 [fixture] 全角形态引用「执行（任务书：TB 路径）」（全角括号+全角冒号）+ 任务书含 2 个不同 S-id → enforce exit 2 且 stderr 含「任务书检出」
 # 档位: 行为 fixture 实跑 check-dispatch.sh pretool, TASK_PLANNER_DISPATCH_ENFORCE=enforce + TASK_PLANNER_PLAN_DIR=<tmp 最小计划目录>
 # 依据（字面锚, 不用行号——check-dispatch.sh 持续演进, 行号必漂移）:
-#   critical-rules-dispatch.md Rule 46 条款块（「### 46 子代理单任务专注度」及其 46.1..46.5 子条；task-v171 分层后 Rule 46 归 task-dispatch）
+#   critical-rules-dispatch.md Rule 46 条款块（「### 46 子代理单任务专注度」及其 46.1..46.6 子条；task-v171 分层后 Rule 46 归 task-dispatch；task-v194 新增 46.6）
 #   check-dispatch.sh 守卫②收窄注释（「任务书豁免收窄(Rule 46.2)」注释块）; ②实现=「任务书检出」分支
 #     （双条件命中后 cat 合并任务书计 distinct S-id, ≥2 →「任务书检出 N 个 S-unit ID」计入 hits）;
 #   ④=count_step_markers "$tb" tb 模式调用（fine_grain_checks ④ 任务书分支）;
@@ -83,9 +83,9 @@ run_guard() {
     printf '%s\t%s' "$rc" "$err"
 }
 
-# GR-01 critical-rules-dispatch.md 46.x 子条款 5 条
+# GR-01 critical-rules-dispatch.md 46.x 子条款 6 条（46.1..46.6；2026-10-21 task-v194 新增 46.6 生产单元上限表，计数阈值 5→6）
 n46="$(grep -c '^46\.' "$CRIT_DP" 2>/dev/null || true)"
-if [ "$n46" = "5" ]; then ok 01 "critical-rules-dispatch.md 46.1..46.5 共 5 条"; else bad 01 "^46. 行数=$n46 (期望 5)"; fi
+if [ "$n46" = "6" ]; then ok 01 "critical-rules-dispatch.md 46.1..46.6 共 6 条"; else bad 01 "^46. 行数=$n46 (期望 6)"; fi
 # GR-02 条款头锚
 if grep -q '^### 46 子代理单任务专注度' "$CRIT_DP"; then ok 02 "条款头「### 46 子代理单任务专注度」"; else bad 02 "条款头缺失: 缺「### 46 子代理单任务专注度」"; fi
 # GR-03 单会话单 S-unit 双锚（Rule 46.1 本体 + task-dispatch 卫星路由行；替代原核心 SKILL.md 2.5 检查点措辞）
