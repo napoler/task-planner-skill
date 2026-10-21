@@ -1,0 +1,15 @@
+# 域 A：子代理派发/拆分/并行/粒度/执行体路由
+- task-v056-fine-grained-dispatch | 无kb | findings:83行
+- task-v057-subagent-io-contract | 无kb | findings:158行
+- task-v058-plan-dispatch-gate | 无kb | findings:95行
+- task-v061-serial-dispatch | 无kb | findings:132行
+- task-v064-smart-merge-back | 无kb | findings:83行
+- task-v065-subagent-failure-rescue | 无kb | findings:70行
+- task-v088-workflow-orchestration | 占位52行 | findings:145行
+- task-v095-skill-split | ★实质99行 | findings:102行
+- task-v146-drift-check-subagent | ★实质180行 | findings:64行
+- task-v150-split-skill-integration | ★实质109行 | findings:134行
+- task-v153-parallel-scheduling | 占位71行 | findings:105行
+- task-v161-subagent-return-format | ★实质77行 | findings:98行
+- task-v185-file-split-discipline | ★实质77行 | findings:109行
+- task-v194-subagent-unit-cap | ★实质77行 | findings:90行

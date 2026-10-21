@@ -1,0 +1,18 @@
+# 域 E：调研证据/执行纪律/能力沉淀/可靠性
+- task-batch-report-tmpl-fix | 无kb | findings:0行
+- task-dedup-core-md | 无kb | findings:90行
+- task-pwf-reuse | 无kb | findings:53行
+- task-quality-over-speed | 无kb | findings:226行
+- task-v067-knowledge-brief | 无kb | findings:118行
+- task-v072-error-loop | 无kb | findings:0行
+- task-v076-conclusion-discipline | ★实质84行 | findings:51行
+- task-v080-web-research-routing | 占位62行 | findings:60行
+- task-v082-minimal-probe | 占位63行 | findings:28行
+- task-v083-batch-pilot-first | 占位60行 | findings:166行
+- task-v084-thinking-methodology | 占位60行 | findings:174行
+- task-v087-task-boundary | 占位45行 | findings:61行
+- task-v090-workflow-auto-activation | 占位52行 | findings:53行
+- task-v099-reliability-institution | 占位72行 | findings:50行
+- task-v147-research-first | 占位69行 | findings:301行
+- task-v157-error-fix-prompt-forge | ★实质97行 | findings:135行
+- task-v163-proactive-research | ★实质77行 | findings:503行

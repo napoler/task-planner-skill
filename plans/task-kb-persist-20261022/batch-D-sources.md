@@ -1,0 +1,22 @@
+# 域 D：计划流程/模板/验证契约/归档/上下文
+- task-active-plan | 无kb | findings:48行
+- task-plan-resume-v05 | 无kb | findings:125行
+- task-template-knowledge-reserve | 无kb | findings:137行
+- task-v060-drift-collect | 无kb | findings:57行
+- task-v069-context-hygiene | 占位60行 | findings:61行
+- task-v074-template-matrix-reflect-loop | 占位74行 | findings:127行
+- task-v081-fine-grain-step-gate | 占位66行 | findings:47行
+- task-v093-video-fix-template-collect | 占位52行 | findings:43行
+- task-v096-template-auto-record | ★实质95行 | findings:58行
+- task-v100-review-library | 占位46行 | findings:47行
+- task-v101-alignment-review | 占位31行 | findings:28行
+- task-v102-alignment-upgrade | 占位34行 | findings:25行
+- task-v104-align-gate-upgrade | 占位34行 | findings:27行
+- task-v106-iterative-optimizer | 占位28行 | findings:28行
+- task-v141-iteration-persistence | 占位68行 | findings:60行
+- task-v151-goal-mode | ★实质77行 | findings:47行
+- task-v152-proactive-context | ★实质82行 | findings:147行
+- task-v156-drift-shield | ★实质77行 | findings:162行
+- task-v160-decision-grading | 占位58行 | findings:258行
+- task-v166-summary-readability | ★实质77行 | findings:182行
+- task-v170-archive-completed-plans | 占位67行 | findings:121行

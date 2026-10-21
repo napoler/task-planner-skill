@@ -1,0 +1,12 @@
+# 域 C：worktree/合并回/部署位/并行会话隔离
+- fix-pointer-race-20261007 | 占位68行 | findings:50行
+- task-deploy-9b167fe | 无kb | findings:50行
+- task-deploy-all-symlink | 无kb | findings:106行
+- task-deploy-master-20260905 | 无kb | findings:39行
+- task-git-timely-commit | 无kb | findings:71行
+- task-v053-skillfix-deploy | 无kb | findings:57行
+- task-v059-active-plan-race | 无kb | findings:118行
+- task-v159-pointer-lifecycle | ★实质77行 | findings:24行
+- task-v164-pointer-worktree-local | ★实质87行 | findings:253行
+- task-v165-agent-template-deploy | ★实质77行 | findings:45行
+- task-v182-git-snapshot-commits | ★实质77行 | findings:60行

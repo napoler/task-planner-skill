@@ -1,0 +1,20 @@
+# 域 B：锚点/守卫/selftest 回归/完成门/attest
+- task-3file-enforce | 无kb | findings:134行
+- task-del-skill-baks | 无kb | findings:18行
+- task-full-sync-audit | 无kb | findings:120行
+- task-planner-skill-review | 无kb | findings:0行
+- task-skill-audit-20261021 | ★实质77行 | findings:165行
+- task-symlink-skill-deploy | 无kb | findings:28行
+- task-v055-scheduler-enforce | 无kb | findings:230行
+- task-v066-skill-collab-routing | 无kb | findings:136行
+- task-v078-guard-fp-fixes | 占位69行 | findings:48行
+- task-v079-skill-modify-conservatism | ★实质76行 | findings:56行
+- task-v089-skill-review | 占位52行 | findings:54行
+- task-v092-guard-quirk-fixes | ★实质83行 | findings:386行
+- task-v148-drift-enforce | ★实质89行 | findings:221行
+- task-v149-skill-alignment-audit | ★实质125行 | findings:134行
+- task-v158-source-anchor-discipline | ★实质77行 | findings:114行
+- task-v168-session-anchor-skill-activation | ★实质77行 | findings:115行
+- task-v171-skill-specialization | ★实质77行 | findings:96行
+- task-v172-skill-efficiency-opt | ★实质77行 | findings:174行
+- task-videop1-ep03-rollback-guard | ★实质77行 | findings:59行
