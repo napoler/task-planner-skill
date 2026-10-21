@@ -90,6 +90,23 @@
   | VC-5 写面范围 | git status --short | 仅本计划目录为新增 | `?? plans/task-skill-audit-20261021/`（仓内既有 4 个 M 为他人/在途，未触碰） | PASS |
   | 敏感信息扫描 | grep -Ei 'token\|password\|api_key\|secret' 两份交付物 | 0 命中 | 0 命中 | PASS |
 
+## 🔍 CR 记录（Rule 42.7 — 终验 CR-GATE 消费面）
+**CR APPROVED**（审查轮次 1 轮独立对抗审查 + 1 轮复扫，闭环无阻断项）
+
+| 轮次 | 审查者 | 对象 | 发现 | 修正 | 复验 |
+|------|--------|------|------|------|------|
+| 1 | align-critic（独立只读，与 S1-S9 及报告撰写者分离） | `audit-report.md` + `revision-proposals.md` | 24（CRITICAL 4 / HIGH 12 / MEDIUM 4 / NIT 4）+ 3 负结果，逐条复现率 100% | 子代理 docfix 落实 14/14（`subagent-state/DOCFIX-critic.md`）+ 主进程补齐 ALIGN 未列入的 5 项（findings.md 旧锚 :497→:502 与 :196→:195、D-F4/D-F5 同号异义、「V-C5 面实测」→「S4-runner.md 实测」、progress.md 空区块回填） | ALIGN 甲/乙/丙/丁 四面逐条 grep/Read 复核，14/14 + 5/5 已闭环 |
+| 2 | drift-checker（Rule 61 载体，只读） | 计划三文件 + git 证据 | ⚠️DRIFT 6 项（Phase 4 勾选与 Status、G4/G2 判据、VC-3/VC-5 待回填表述、RP-31 越权改 append-only 文件、报告基线 HEAD、派发计数 9→11） | 6/6 修正（含 RP-31 移除 `user-session-log.md`——Rule 80.2 append-only 不可回改） | 复扫 0 项残留 |
+
+**未闭环但已明确排除项**：RP-30 / RP-31 为跨项目（`videop1`）措辞裁决，须用户显式授权，非本次交付范围，已在方案 §六 单列「需用户裁决」。
+
+**[judge]（Rule 73.4 收口声称前对齐三问）**
+1. 原目标（R1/R2/R3）= 六维系统性审计 + 独立复核分级 + 审计报告 + 逐条可执行修改方案 —— 交付物：audit-report.md（9 章）+ revision-proposals.md（RP-01~RP-31）+ findings.md（8 节）+ verification.md（VC-1~VC-6）✓
+2. 当前步 = 终验门复跑 → 归档 → 交付总结；未偏离审计/修正目标 ✓
+3. 偏离项 = 0；范围外写入 = 0（写面仅 `plans/task-skill-audit-20261021/`，仓库在途 4 文件全程未触碰）✓
+
+**[align]（交付物 ↔ 事实源一致性）**：报告与方案的事实源 = `subagent-state/S7-verifier.md`（22 条 = verified 17 / partial 3 / fp 2）+ findings.md；CR 轮次 1/2 均以一手锚点复现为准，无「合理推断」式结论。
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
@@ -110,6 +127,10 @@
 | 2026-10-22 02:00 | Edit 一次 30s 超时（补 task_plan.md S8 行） | 1 | 重试成功并用 grep 核对写入，防半写 | 工具层瞬时超时 | 写后必 grep 复核 | Edit |
 | 2026-10-22 02:20 | 对齐审查发现 14 处文档缺陷（含我自己写的 2 处锚点错、1 处已被推翻表述残留） | 1 | 全部按清单修正并复核 | 主进程撰写时未逐处回查一手行号 | 交付前必跑独立对齐审查；报告内锚点以 grep 实测为准 | Agent(critic, ALIGN-review) |
 | 2026-10-22 02:30 | 文档修正子代理改动 findings.md 后，主进程 Edit 遭「文件已被修改」拒绝 | 1 | 重新 Read 后再改 | 并行写同一文件导致读态失效 | 并行写者与主进程错开同文件 | Edit |
+| 2026-10-22 03:30 | check-complete STATE-CONSISTENCY 门 FAIL（S-1a Phase 1/2/3 有未勾选项但 Status=complete；S-2 Phase 4 progress 段 in_progress 且缺 goal 证据行） | 1 | 勾选 15 项已真完成条目 + Phase 4 翻 complete + 补 `[goal:G1]`~`[goal:G5]` 证据行 | 阶段内动作真完成但勾选/进度状态源未同步（三源一致性门首次拦下） | 每 Phase 收尾三源同改：checkbox ↔ Status ↔ progress（goal 证据行） | check-complete.sh |
+| 2026-10-22 03:40 | check-complete PLAN-DISPATCH 门 FAIL（Phase 1 / Phase 3 缺 S-unit 表或数据行） | 1 | 把全局 S-unit 表按 Phase 拆成 3 张（Phase1=S1/S2/S8、Phase2=S3/S4/S5/S6/S9、Phase3=S7），无内容增删 | Rule 22.6 要求**每个派发型 Phase 段内**自带带执行体的 S-unit 表，单张全局表不满足逐 Phase 判定 | 派发型 Phase 段内各挂一张 S-unit 表；表头含「执行体」+「前置依赖」列 | check-plan-dispatch.sh |
+| 2026-10-22 03:45 | check-complete RVC-COVERAGE 门 FAIL（R1/R2 无 VC 覆盖，映射行=0） | 1 | 映射表行改机器可读形态：cell2=纯 `R<n>`、cell3=VC 列表，原描述文字逐字移入 cell3 | 映射表把描述文字塞在 R 编号列内（`| R1（…） |`），机器判定要求 cell2 严格等于 R 编号 | R→VC 映射表按机器格式写（`\| R<n> \| VC 列表 \| 判据 \|`），描述入判据列 | check-rvc-coverage.sh |
+| 2026-10-22 03:50 | check-complete CR-GATE FAIL（diff 4055 行触发风险信号，但 progress.md 无 CR APPROVED 留痕） | 1 | 补「CR 记录」段（2 轮审查明细 + CR APPROVED + [judge]/[align] 三问） | 审查已实质执行（ALIGN 24 发现 + drift 复扫 6 项）但未按门控要求的字面留痕 | 终验前把已执行的对抗审查按 CR 记录段落落盘（含轮次/发现数/修正/复验四列） | check-complete.sh |
 
 ## 5-Question Reboot Check
 | Question | Answer |
