@@ -95,8 +95,8 @@
 
 - [goal:G4] 独立复审闭环（S5 CHANGES→S6 回炉 42a09f3→S5b 复核 APPROVED；Handoff 行 7-9）
 
-- **R 锚定**：本 Phase 服务 R3+R4「合并回 master、VC 全过并归档交付」
 ### Phase 5: 合并回 + 终验交付
+- **R 锚定**：本 Phase 服务 R3+R4「合并回 master、VC 全过并归档交付」
 - **Status:** complete
 - **Started:** 2026-10-21
 - Actions taken:
