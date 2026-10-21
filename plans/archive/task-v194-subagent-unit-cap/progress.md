@@ -23,6 +23,8 @@
   |------|-------|----------|--------|--------|
   | grep 调研域方向约束 | grep -n "并行\|单方向\|方向数\|一次调研" skills/plan-research-router/references/critical-rules-research.md | 命中=0（零约束实证） | 0 命中 | PASS |
 
+- [goal:G1] 证据缺口固化完成（findings §1/§2/§2.1 含 sess_f74fc164 锚 msg51-62 与四缺口 file:line；2026-10-21）
+
 ### Phase 2: 条款设计
 - **Status:** complete
 - **Started:** 2026-10-21（attest 锁定后；锁定 SHA-256 ced3fa51ec20f70f5355359872c404895344b84a2df9f7d81bce4ff1081fce0d）
@@ -39,6 +41,8 @@
   | attest 锁定 | ZCODE_SESSION_ID=… attest-plan.sh | exit 0 锁定 | ✅ 锁定 SHA ced3fa51… | PASS |
   | V-2.1 clauses 对照 VC 判据 | Read clauses.md 核对 VC-1 五要素/VC-2 数值句/VC-7 三要素 | 三条款要素齐 | 齐（CLAUSE-1 六要点含五要素；CLAUSE-2 含「1 个生产单元」；CLAUSE-3 三要素+判据） | PASS |
   | V-2.2 级联核对项在位 | Read clauses.md 尾部清单 | CA-3/CA-6 条件核对指令在位 | 在位（2 项 SKILL.md 核对+selftest 面） | PASS |
+
+- [goal:G2] 条款设计定稿（design/clauses.md 三条款+插入锚点+级联清单；attest ced3fa51 锁定）
 
 ### Phase 3: worktree 落地 + selftest 回归
 - **Status:** complete
@@ -85,6 +89,8 @@
   | 机器锚保持 | grep -c "^46\."/"75\.8" | 6 / ≥2 | 6 / 2 | PASS |
   | 全量 selftest（回炉后） | run-selftests.sh --fresh | exit=0 | Total 92 PASS=92 FAIL=0 | PASS |
 
+- [goal:G4] 独立复审闭环（S5 CHANGES→S6 回炉 42a09f3→S5b 复核 APPROVED；Handoff 行 7-9）
+
 ### Phase 5: 合并回 + 终验交付
 - **Status:** complete
 - **Started:** 2026-10-21
@@ -105,6 +111,8 @@
   | 主仓 VC grep 六连 | 各 VC Verify command | 见 VC 表判据 | 全达标 | PASS |
   | check-delegation stats | stats <plan-dir> | verdict=ok | ok, violations=[] | PASS |
   | check-complete | check-complete.sh <plan> | exit=0 | （见下轮实跑记录） | → |
+
+- [goal:G5] 合并回交付完成（b21b44ac 入 master+worktree/分支清理+VC 七条全 PASS+归档本目录）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
