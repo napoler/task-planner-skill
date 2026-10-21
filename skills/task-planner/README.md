@@ -1,7 +1,7 @@
 # task-planner — 任务规划与漂移检测技能
 
 > **多工具架构 v2（2026-08-29）**：canonical source + per-tool 部署位同步，env-var 路径解析。
-> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；73 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） -->。
+> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；74 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） --><!-- 2026-10-21 task-v195：Rule 93 规范再召回入纪律域，非核心 73→74 条 -->。
 
 ## 快速链接
 
@@ -124,7 +124,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── goal-gate.md / completion-gate.md / methodology.md
-│   └── [critical-rules-discipline 等 73 条非核心规则 → 各卫星 references/critical-rules-*.md]
+│   └── [critical-rules-discipline 等 74 条非核心规则 → 各卫星 references/critical-rules-*.md]
 ├── templates/                               ← 13 主模板 + 29 个 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md

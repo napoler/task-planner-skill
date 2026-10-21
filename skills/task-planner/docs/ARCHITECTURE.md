@@ -133,7 +133,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 ├── references/                              ← 6 篇规则文档（2026-10-12 实测）
 │   ├── critical-rules.md                    # 核心域 14 条全文 + Rules 1-93 全集索引 + 分层架构说明
 │   ├── todo-sync.md / worktree-isolation.md / goal-gate.md / completion-gate.md / methodology.md
-│   └── [73 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
+│   └── [74 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
 ├── templates/                               ← 13 主模板 + 29 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md
