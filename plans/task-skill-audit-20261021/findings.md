@@ -121,6 +121,19 @@
 | G-05(负结果) | Rule 54 并非缺失（是**位置**问题，任何「补写 Rule 54」都是重复劳动）；media 卫星 58 行通读确认**无**额度条款（是缺失非漏读）；`selftest-execution-honesty.sh` 如实披露「非机器触发」，属诚实边界非欺骗性守卫 | S9 checkpoint | 避免误判方向 |
 | S9-D-01~14 | 补强方向 14 条（S9 编号空间 D-01…D-14，与本表 G-xx 缺口编号互不混用：CRITICAL 5 / WARNING 5 / SUGGESTION 4；需机器门 4 条），均标目标文件+条款性质+增量/替代+依据 | S9 checkpoint | Phase 4 方案输入 |
 
+### §终验门同面性面（E-01~E-05，本计划终验阶段实测新增）
+> 与上表的区别：上表是「规则/守卫本身失效（假 PASS）」；本表是「门有效但模板/惯用写法与门不同面」——按本仓模板或惯用格式生成的**合法计划**会被终验门判违规。本计划在 Phase 4 收尾时被真实拦下 5 次（原始输出见 `progress.md` Error Log 03:30~03:50 各行）。
+
+| 编号 | 发现 | 证据锚 | 影响 |
+|------|------|--------|------|
+| E-01(P1) | **状态三源门拦下「Phase Status=complete 但 checkbox 未勾 / progress 同名段仍 in_progress 且无 `[goal:Gn]` 证据行」**——即「纸面完成、现实未完成」的假 COMPLETE 拦截面；**本计划是该门首次在生产计划上真实拦下缺陷的实例**（此前仅见 selftest 夹具） | `scripts/check-state-consistency.sh`（由 `check-complete.sh:135-148` 前置调用）；实测输出 `[state-mismatch] S-1a Phase 1/2/3` + `[state-mismatch] S-2 Phase 4` | 门有效且拦截面成立（正面证据），但模板未提示三源同改要求 |
+| E-02(P1) | **S-unit 表位置 vs 逐 Phase 判定不同面**：门要求「每个派发型 Phase 段内自带 S-unit 表」，模板 `templates/task_plan.md:328` 把 S-unit 表放在单个 Phase 段内（全局单表用法） | `scripts/check-plan-dispatch.sh:186-200`（settle_phase 逐段判定）+ `templates/task_plan.md:328`；实测「Phase 1 / Phase 3 缺 S-unit 表或数据行」 | 按模板生成的合法计划被判违规 → 对应 RP-32 |
+| E-03(P1) | **R→VC 映射表行式 vs 门判定不同面**：门要求 cell2 严格等于 `R<n>`，本仓惯用写法把描述并入 R 列 → 映射行整体丢弃 → 报「R1/R2 无 VC 覆盖」 | `scripts/check-rvc-coverage.sh:66-75`；实测 `[rvc-coverage] ✗ R1 无 VC 覆盖（映射行=0）` | 误报为「缺映射」，实为行式不符 → 对应 RP-33 |
+| E-04(P1) | **goal 证据行双门叠加**：goal-gate 要求证据行 ±2 行窗口命中命令词/结果信号；evidence-anchor 要求路径可解析且在「执行范围限制」表内（否则判「域外路径」） | `check-complete.sh:1810-1846` + `scripts/check-evidence-anchor.sh`（resolve_anchor 6 层链 + in_scope）；实测两轮拦截 | 模板无达标示例 → 新计划易连续踩两次 → 对应 RP-34 |
+| E-05(P1) | **CR-GATE 对纯文档计划同样触发**（diff 合计 >50 行即触发，代码文件数可为 0），流程/模板未提示文档计划也须留 CR 痕迹 | `check-complete.sh:1432-1456`；实测「代码文件=0, diff 合计=4055 行」被拦 | 纯文档计划收尾突遭拦截 → 对应 RP-35 |
+
+> 另有一条同类：progress.md 缺 `- **R 锚定**：` 逐段行会被 goal-gate 的 v168 断言 fail-closed 拦下（`check-complete.sh:1855-1891`）→ 对应 RP-36。
+
 ### §历史线索（MEMORY.md 判例，与本次发现互证）
 - 既往已记「锚点失效」事故（SKILL.md:187）——本次 `.backup` 污染属其未根治的复发面
 - 既往已记「部署位同步待授权」长期遗留（多任务复现）——本次实测 4 站落后 19~59 提交，遗留已升级为**现行加载位缺 Rule 93** 的实运行风险

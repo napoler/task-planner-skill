@@ -107,4 +107,17 @@
 
 ---
 
-**方案统计**：提案 31 条 = P0 15 条（生效通道 4 + 守卫 7 + 部署 3 + 跨项目裁决 RP-30 1）+ P1 15 条（簿记索引 6 + 契约文本 8 + 跨项目裁决 RP-31 1）+ P2 1 条（RP-29），其中「替代」类 3 条、「删除」类 2 条（均标注需授权）、其余为「增量」。所有 P0/P1 条目均含：对象文件+锚点、变更类型、优先级、可执行动作、依据证据锚。
+**方案统计**：提案 36 条 = P0 15 条（生效通道 4 + 守卫 7 + 部署 3 + 跨项目裁决 RP-30 1）+ P1 20 条（簿记索引 6 + 契约文本 8 + 终验门同面性 5 + 跨项目裁决 RP-31 1）+ P2 1 条（RP-29），其中「替代」类 3 条、「删除」类 2 条（均标注需授权）、其余为「增量」。所有 P0/P1 条目均含：对象文件+锚点、变更类型、优先级、可执行动作、依据证据锚。
+
+---
+
+## 九、P1 终验门同面性补强（RP-32~RP-36，5 条）
+> 来源：本计划在终验阶段被终验门真实拦下 5 次（见 `progress.md` Error Log 03:30~03:50 各行 + CR 记录段），每次暴露「门与模板/惯用格式不同面」——门本身有效，但按本仓模板或惯用写法生成的合法计划会被判违规。这 5 条属「稳定性」的第二层：不是缺规则，而是模板与门不同面。
+
+| 编号 | 对象（文件+锚点） | 变更类型 | 优先级 | 执行动作 | 依据 |
+|------|------------------|---------|--------|---------|------|
+| RP-32 | `skills/task-planner/templates/task_plan.md:328`（S-unit 表位置）↔ `skills/task-planner/scripts/check-plan-dispatch.sh:186-200`（逐 Phase 判定） | 增量 | P1 | 模板改为「每个派发型 Phase 段内各挂一张 S-unit 表」（行随 Phase 走，非全局单表）；或在门内放宽为「全文档任一 Phase 内存在覆盖本 Phase 的 S 行即算该 Phase 合规」——二选一由落地任务决定（模板改法成本更低） | 本计划实跑：`check-plan-dispatch.sh` 判「Phase 1 / Phase 3 缺 S-unit 表或数据行」；成因=全局单表只挂在一个 Phase 段内 |
+| RP-33 | `skills/task-planner/templates/task_plan.md` 的 R→VC 映射表行式 ↔ `skills/task-planner/scripts/check-rvc-coverage.sh:66-75`（cell2 须严格等于 `R<n>`） | 增量 | P1 | 模板映射表改为机器可读行式 `\| R<n> \| VC 列表 \| 判据 \|`（描述文字入判据列），并在模板处加一句「R 列只放编号」 | 本计划实跑：`[rvc-coverage] ✗ R1/R2 无 VC 覆盖（映射行=0）`；成因=惯用写法把描述文字并入 R 列 |
+| RP-34 | `skills/task-planner/templates/progress.md`（goal 证据行无示例）↔ `skills/task-planner/scripts/check-complete.sh:1810-1846`（三要素信号）+ `scripts/check-evidence-anchor.sh`（路径须可解析且在执行范围表内） | 增量 | P1 | 模板补一条达标示例行：`[goal:Gn] complete — 证据：bash <可复跑命令> → <结果>（PASS）；产物落盘 <plan-dir 内相对路径>`，并注明「路径必须 plan-dir 相对或已登记进执行范围限制表」 | 本计划实跑：goal-gate 判「G1/G2 证据行缺三要素信号」+ evidence-anchor 判「域外路径 / 路径不存在」两轮拦截 |
+| RP-35 | `skills/task-planner/templates/progress.md`（无 CR 留痕行式）↔ `skills/task-planner/scripts/check-complete.sh:1432-1456`（CR-GATE 以 diff >50 行为风险信号） | 增量 | P1 | 模板补「CR 记录」段行式（轮次/审查者/对象/发现数/修正/复验四列 + `CR APPROVED` 字面），并在流程说明写明「纯文档计划同样触发 CR-GATE」 | 本计划实跑：`[CR-GATE] FAILED: 风险信号命中（代码文件=0, diff 合计=4055 行）但无 CR APPROVED 记录` |
+| RP-36 | `skills/task-planner/templates/progress.md`（无 R 锚定复诵行式）↔ `skills/task-planner/scripts/check-complete.sh:1855-1891`（v168 逐段判定） | 增量 | P1 | 模板的每个 `### Phase` 段首补 `- **R 锚定**：本 Phase 服务 R<n>` 行式，并说明该行是 goal-gate 的硬前置 | 本计划实跑：goal-gate 的 R 锚定复诵断言（每段必须 ≥1 行，缺段即 fail-closed） |

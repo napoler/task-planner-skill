@@ -12,7 +12,7 @@
   - Evidence: 实测 9（§0 结论摘要 + §0.1 VC 映射 + §1~§6 六维 + §7 复核裁决 + §8 总体裁决）；文件 `plans/task-skill-audit-20261021/audit-report.md`
 - [x] VC-2: 修改方案在位，每条=对象（文件+锚点）+变更类型（增量/替代/删除）+优先级+执行动作+依据四要素齐备
   - 验证命令：`grep -c '^| RP-' .../revision-proposals.md` 与 `grep -c '^| RP-.*|.*|.*|.*|.*|$' .../revision-proposals.md`（两数相等=四要素齐备）
-  - Evidence: 实测均为 31；替代类 RP-05/07/12 均标 Rule 74 四条件核对状态；删除类 RP-18/25 均标「需用户逐项授权」
+  - Evidence: 实测均为 36；替代类 RP-05/07/12 均标 Rule 74 四条件核对状态；删除类 RP-18/25 均标「需用户逐项授权」；RP-30/RP-31 为用户裁决项（§六），RP-32~RP-36 为终验阶段新增的终验门同面性补强（§九）
 - [x] VC-3: 全量 selftest 回归执行记录在案（命令 + PASS/FAIL 数字），审计动作本身零新增 FAIL
   - 验证命令：活树回归口径 `find skills/task-planner -path '*/.backup' -prune -o -name 'selftest-*.sh' -print`（92 个）；逐个 `timeout 60 bash <script>`
   - Evidence: `subagent-state/S4-runner.md`——92/92 exit 0、1315 PASS / 0 FAIL / 0 超时、bash -n 0 语法错、registry 92=92；在途变更未致任何 FAIL（HEAD 镜像 23 PASS/0 FAIL vs 工作树 27 PASS/0 FAIL）

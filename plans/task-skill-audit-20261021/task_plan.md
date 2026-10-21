@@ -267,6 +267,7 @@ Phase 4
 | 本任务只读+plans/ 写文档，不改 skills/** | 修改属 §六保护区+§十一 worktree 面；用户交付物=报告+方案（R2），执行修改另开任务逐项授权 |
 | 审计基线=工作树（未提交面标 [in-flight]） | 部署现状即工作树态；纯 HEAD 态审计会漏在途漂移 |
 | 修改方案落地=独立后续任务（走 worktree+§六 逐项授权） | 宪法 P0：技能文件修改逐项授权；本任务不预置执行 |
+| R3 修正执行推迟 = 显式让步 | R3 的取证链与守护条款方案已 covered（VC-6 PASS，报告 §1 + 方案 RP-01~RP-04/RP-30/RP-31），但「修正落地」按本次任务边界（只读审计 + 出方案，不改 skills/**）**显式让步**给后续独立任务（worktree + 用户逐项授权）执行；故 R3 终态 = partial（非 uncovered），终验结论相应为 PARTIAL |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
