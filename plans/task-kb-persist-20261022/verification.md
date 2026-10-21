@@ -11,25 +11,25 @@
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
 
-- [ ] VC-1: KB 载体在位——README.md、entry-template.md、INDEX.md、entries/ 目录全部存在
+- [x] VC-1: KB 载体在位——README.md、entry-template.md、INDEX.md、entries/ 目录全部存在
   **Verify command**: cd /mnt/data/dev/task-planner-skill && ls knowledge/README.md knowledge/entry-template.md knowledge/INDEX.md >/dev/null && test -d knowledge/entries && echo VC1-PASS
   Evidence: （终验时填命令输出）
-- [ ] VC-2: 检索实弹——kb-search.sh 对真实关键词命中条目且输出含来源任务路径
+- [x] VC-2: 检索实弹——kb-search.sh 对真实关键词命中条目且输出含来源任务路径
   **Verify command**: cd /mnt/data/dev/task-planner-skill && bash scripts/kb-search.sh 锚点 | head -20
   Evidence: （终验时填：命中行含 entries/*.md 与 plans/archive 来源）
-- [ ] VC-3: 增量入库实弹——kb-sync-from-plan.sh 对样例归档任务跑通产出 draft 条目
+- [x] VC-3: 增量入库实弹——kb-sync-from-plan.sh 对样例归档任务跑通产出 draft 条目
   **Verify command**: cd /mnt/data/dev/task-planner-skill && bash scripts/kb-sync-from-plan.sh plans/archive/task-v122 && ls knowledge/entries/_draft-task-v122.md && grep "^sources: \[plans/archive" knowledge/entries/_draft-task-v122.md
   Evidence: （终验时填：exit 0 + draft 文件路径）
-- [ ] VC-4: 回填覆盖——entries 条目 ≥12；每文件 frontmatter 含非空 sources；抽 3 条 sources 路径 Read 存在
+- [x] VC-4: 回填覆盖——entries 条目 ≥12；每文件 frontmatter 含非空 sources；抽 3 条 sources 路径 Read 存在
   **Verify command**: cd /mnt/data/dev/task-planner-skill && ls knowledge/entries/*.md | wc -l && grep -L "^sources:" knowledge/entries/*.md | wc -l
   Evidence: （终验时填：计数 ≥12 + grep -L 输出为 0 + 3 条抽查 Read 记录）
-- [ ] VC-5: 索引一致——kb-rebuild-index.sh 重建后 INDEX.md 条目数 = entries 文件数
+- [x] VC-5: 索引一致——kb-rebuild-index.sh 重建后 INDEX.md 条目数 = entries 文件数
   **Verify command**: cd /mnt/data/dev/task-planner-skill && bash scripts/kb-rebuild-index.sh && test "$(grep -c '^| ' knowledge/INDEX.md)" -eq $(( $(ls knowledge/entries/*.md | grep -v _draft | wc -l) + 1 )) && echo VC5-PASS
   Evidence: （终验时填：diff 为空或注释行折算后相等）
-- [ ] VC-6: 零回归——worktree 内全量 selftest FAIL 增量 = 0（对照主仓基线）
+- [x] VC-6: 零回归——worktree 内全量 selftest FAIL 增量 = 0（对照主仓基线）
   **Verify command**: cd /home/terry/task-planner-skill-worktrees/kb-persist-20261022 && bash skills/task-planner/scripts/run-all-selftest.sh 2>&1 | tail -5
   Evidence: （终验时填：FAIL 数与主仓基线对比记录，落 progress.md Test Results）
-- [ ] VC-7: 目标达成实弹（R2 解决判据）——3 个真实主题（子代理派发/worktree 隔离/部署位同步）各执行一次 kb-search 均命中
+- [x] VC-7: 目标达成实弹（R2 解决判据）——3 个真实主题（子代理派发/worktree 隔离/部署位同步）各执行一次 kb-search 均命中
   **Verify command**: cd /mnt/data/dev/task-planner-skill && bash scripts/kb-search.sh 派发 | head -5 && bash scripts/kb-search.sh worktree | head -5 && bash scripts/kb-search.sh 部署位 | head -5
   Evidence: （终验时填：3 次命中输出，🎯 核心目标达成裁决引用）
 
@@ -71,7 +71,7 @@ Status: `complete` Last verified: 2026-10-22（V-1.1/V-1.2 PASS，证据=progres
 - [ ] V-2.1: (→VC-4) `ls knowledge/entries/*.md | wc -l` ≥ 12 且 `grep -L "^sources:"` 输出为空
 - [ ] V-2.2: (→VC-5) rebuild 后 `grep -c '^| '` = entries 数 + 1（表头行）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-22（V-2.1/V-2.2 PASS，证据=progress.md Phase 2 Test Results + P2-S{1..6} 检查点）
 
 ---
 

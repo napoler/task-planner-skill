@@ -21,7 +21,7 @@
 | 索引重建 | /mnt/data/dev/task-planner-skill/scripts/kb-rebuild-index.sh | `bash scripts/kb-rebuild-index.sh`（扫描 frontmatter 重建 INDEX） |
 | 入库脚本 | /mnt/data/dev/task-planner-skill/scripts/kb-sync-from-plan.sh | `bash scripts/kb-sync-from-plan.sh plans/archive/<task-id>` 生成 draft |
 | 模板覆盖 | /mnt/data/dev/task-planner-skill/.zcode/plan-templates/knowledge-brief.md | 部署模板 77 行逐字保留+§7 入库回链段 |
-| 审计档案 | /mnt/data/dev/task-planner-skill/plans/archive/task-kb-persist-20261022/ | 计划七文件+16 份子代理检查点 |
+| 审计档案 | /mnt/data/dev/task-planner-skill/plans/task-kb-persist-20261022/（check-complete 后归档至 plans/archive/task-kb-persist-20261022/） | 计划七文件+18 份子代理检查点 |
 
 ## 3. 审查详细（谁审的、结论）
 

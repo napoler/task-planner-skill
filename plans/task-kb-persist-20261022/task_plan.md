@@ -167,10 +167,10 @@ check-complete → 写 delivery-summary.md → commit 计划目录 → archive-p
 ## Phases
 
 ### Phase 1: KB 载体与检索工具建设（worktree 内）
-- [ ] 创建 worktree（隔离决策见下）
-- [ ] scripts/kb-search.sh、kb-rebuild-index.sh、kb-sync-from-plan.sh 建成
-- [ ] knowledge/README.md、entry-template.md 建成
-- [ ] 主进程实弹冒烟（kb-search/kb-rebuild-index 对空库跑通）
+- [x] 创建 worktree（隔离决策见下）
+- [x] scripts/kb-search.sh、kb-rebuild-index.sh、kb-sync-from-plan.sh 建成
+- [x] knowledge/README.md、entry-template.md 建成
+- [x] 主进程实弹冒烟（kb-search/kb-rebuild-index 对空库跑通）
 - **V-N:** VC-1, VC-2（本 Phase 验收映射：载体在位+检索命令可运行——V-1.1/V-1.2 已 PASS，证据=progress.md Phase 1 Test Results 表）
 - **Status:** complete
 - **Executor:** code-assistant（sonnet-1）×3 + executor（sonnet-1）×1
@@ -183,9 +183,9 @@ check-complete → 写 delivery-summary.md → commit 计划目录 → archive-p
 | S4 | 建 knowledge/README.md（定位/写入约定/查询/条目格式）+ entry-template.md（frontmatter+四段结构） | executor（sonnet-1） | -（规格内联：六段 kb 模板结构为参照，条目四段=结论/证据锚/易错点/适用场景） | 两文件在位且含规定章节标题 | 15min | 2f/90l/15min | 无 | - | done |
 
 ### Phase 2: 存量知识回填（152 归档任务 → 6 域蒸馏入库）
-- [ ] 主进程机械预分组：扫描 archive 各任务 kb/findings 实质性与域归属 → 生成 batch-{A..F}-sources.md 六份清单
-- [ ] 六批次并行蒸馏：每批产出 2 个主题条目文件（含来源锚）
-- [ ] 主进程抽检 10%（Rule 18 双采样）+ kb-rebuild-index 重建索引
+- [x] 主进程机械预分组：扫描 archive 各任务 kb/findings 实质性与域归属 → 生成 batch-{A..F}-sources.md 六份清单
+- [x] 六批次并行蒸馏：每批产出 2 个主题条目文件（含来源锚）
+- [x] 主进程抽检 10%（Rule 18 双采样）+ kb-rebuild-index 重建索引
 - **V-N:** VC-4, VC-5（回填覆盖+索引一致——已 PASS：12 条目+索引 13 行，证据=progress.md Phase 2 Test Results）
 - **Status:** complete
 - **Executor:** executor（sonnet-1）×6 并行
@@ -200,10 +200,10 @@ check-complete → 写 delivery-summary.md → commit 计划目录 → archive-p
 | S6 | 域 F（上下文/成本/媒体/其他杂项）蒸馏 2 条目 | executor（sonnet-1） | plans/task-kb-persist-20261022/batch-F-sources.md | 同上 | 15min | 2f/100l/15min | 无 | P1-S4 | done |
 
 ### Phase 3: 闭环接线与实弹验证
-- [ ] .zcode/plan-templates/knowledge-brief.md 项目级覆盖建成（复制部署模板+追加 §7 项目 KB 回链段：kb-sync 命令+入库触发点）
-- [ ] kb-sync-from-plan.sh 对样例归档任务实弹（VC-3）
-- [ ] 3 个真实主题实弹查询（VC-7，verifier 独立执行）
-- [ ] 主进程：guard 复核（.zcode/plan-templates 为新增文件零守护面）+ INDEX rebuild（机械白名单）
+- [x] .zcode/plan-templates/knowledge-brief.md 项目级覆盖建成（复制部署模板+追加 §7 项目 KB 回链段：kb-sync 命令+入库触发点）
+- [x] kb-sync-from-plan.sh 对样例归档任务实弹（VC-3）
+- [x] 3 个真实主题实弹查询（VC-7，verifier 独立执行）
+- [x] 主进程：guard 复核（.zcode/plan-templates 为新增文件零守护面）+ INDEX rebuild（机械白名单）
 - **V-N:** VC-3, VC-7（增量入库+实弹复用——独立 verifier 5/5 PASS，证据=subagent-state/P3-S2-verifier.md）
 - **Status:** complete
 - **Executor:** executor（haiku-1）+ verifier（sonnet-1）
@@ -286,6 +286,7 @@ check-complete → 写 delivery-summary.md → commit 计划目录 → archive-p
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-22 | ⚠️DRIFT | VC-5, V-1.2 | 三项全处置：progress Phase1 状态翻转 complete / VC-5 口径统一（+1 表头，verification.md 命令同步）/ sync 脚本行数 84l→90l 更正；V-1.2「无命中」系口径时效（draft 含 selftest 子串属预期命中），exit-0 空库分支已独立复验——不返工，登记继续 |
+| 2026-10-22 | ⚠️DRIFT | 全部（收口前复合检查） | 7 项簿记级偏离全处置：verification Phase2 状态翻转+VC 主契约 7 项勾选 / task_plan Phase1 四框勾选 / findings Issues+Resources 回填 / delivery-summary 归档路径措辞订正（progress「84l」两处为更正记录行属正当历史留痕，不改）； attest 重锁+check-complete 实跑落证后收口 |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6，Phase 2 批量必填）
 | 字段 | 值 |
