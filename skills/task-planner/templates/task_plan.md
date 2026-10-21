@@ -309,6 +309,7 @@ Phase 1
 - [ ] Execute the plan step by step
 - [ ] Write code to files before executing
 - [ ] Test incrementally
+- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
