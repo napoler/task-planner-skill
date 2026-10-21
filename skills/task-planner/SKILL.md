@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-92 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83，含 Rule 82 分层纪律 + Rule 83 通道快速失败；其余 73 条按域归 11 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-93 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83，含 Rule 82 分层纪律 + Rule 83 通道快速失败；其余 74 条按域归 11 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -14,7 +14,7 @@ references:
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
 - references/methodology.md: 思维方法论 T1-T5 指针 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke
 - 卫星技能 task-dispatch: 子代理派发/拆分/调度/超时兜底/返回校验/代码编辑隔离（`../task-dispatch/`，Rule 12,13,14,21,22,23,25,46,52,59,68）
-- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-76,85,86,87,88,89,90,92）
+- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-76,85,86,87,88,89,90,92,93）
 - 卫星技能 media-planner: 媒体制作派发/单元线并行/内容分级（`../media-planner/`，Rule 47,49,50）
 - 卫星技能 verification-gate: 任务验证全链路——VC 可执行化设计/执行期 V-N 校验/终验 VC 复验/子代理验证/统一验证入口（`../verification-gate/`，Rule 84）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
@@ -74,30 +74,29 @@ model: opus
   1. 思路 A：从 scope_files 反查共享资源——多 Phase 触碰同一文件/目录/资源 → 判命中（适用场景：改动集中在少数文件、资源易枚举时）
   2. 思路 B：从任务类型判定——同类任务重复 ≥3 次（批量站点/批量文档等）→ 判命中（适用场景：批量同类操作、资源分散难枚举时）
 
-- [ ] [M] **Phase 执行循环（每 Phase 独立闭环）— 机械子动作**：固定 SOP（开 Phase→同步→落盘→回写→提交）
-  1. **开启 Phase**：`Edit task_plan.md` 状态→`in_progress`；**R 锚定复诵**（v168）：Read「🎯 用户需求原文」→ progress 段首行写 `- **R 锚定**：本 Phase 服务 R<n>「<一句话复述>」`；与 Goal 或当前动作不符=先修计划再开工
-  2. **同步 Todo（S2）**：对应 todo→in_progress；步骤 1/2 必须紧邻执行
-  3. **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
+- [ ] **Phase 执行循环（每 Phase 独立闭环）**
+  1. [M] **开启 Phase**：`Edit task_plan.md` 状态→`in_progress`；**R 锚定复诵**（v168）：Read「🎯 用户需求原文」→ progress 段首行写 `- **R 锚定**：本 Phase 服务 R<n>「<一句话复述>」`；与 Goal 或当前动作不符=先修计划再开工
+  2. [M] **同步 Todo（S2）**：对应 todo→in_progress；步骤 1/2 必须紧邻执行
+  2.5 [A] **委派检查点（Rule 25）**：Phase Executor≠主进程 → 立即按九字段模板逐 S-unit 派发子代理（路由表/粒度门/伴飞/返回校验/兜底详见卫星 `task-dispatch`）；主进程只保留派发/回填三文件/验收 Read；无 Executor 字段=计划无效先回炉；禁止"先自己干再派"
+  2.5b [A] **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）
+  2.5c [A] **动作相关性三问**（v168）：新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase R 锚定？② 在 scope_files 内？③ 用户原话要求过？任一 No→记录不执行
+  2.5d [A] **变更类型判定（Rule 74 三判门，P0）**：对既有文件/条目的每处变更，执行前必须判定变更类型（增量/替代/删除），答案登记 task_plan.md「📋 变更标注表」：
+     - **增量（默认且优先）**：用户措辞含"补充/再加/还有/另外/同时"或语义为新增条目 → 只追加、既有条目逐字保留不动；"补充一些条目"类指令永远走本档，禁以"整合/去重/顺手重构/格式化"名义回写既有条目
+     - **替代（禁默认，四条件全满足才可）**：① 既有内容被新证据或回归测试证伪，或已被用户明示否决/作废；② 替代范围完整覆盖旧场景；③ 替代前已 Read 旧内容全文；④ 替代后既有守护/selftest 全绿。缺任一 → 回落增量
+     - **删除（最高门槛）**：必须取得用户逐项授权；未授权只可停用/标记，禁物理删除
+     - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
+  3. [M] **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
      - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `Edit findings.md`**（结论摘要+证据路径）；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁
      - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
      - **3c 动作留痕**：关键动作随做随记 progress.md；错误**立即**写 Error Log（19.4）并同轮完成四步（v168：记错误原文→Rule 31.2 四问根因→纠正→复验回填，未完禁下一动作）；关键动作同步 `bash <skill>/scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N]`
      - **3d hook 响应**：`[plan-sync]`→按 `references/todo-sync.md` §4 协议回写；`[plan-compass]`（findings/progress 陈旧，Rule 19.7）→立即回填再继续
      - **3e 上下文卫生（Rule 29，细则→task-discipline）**：每 2 个 Phase 跑 `bash scripts/check-context-hygiene.sh`；工作文件整理在会话恢复/用户指令时运行
      - **3f 周期性三文件对照**（v168/R3）：每完成一个 S-unit（或每 10 次工具调用），Read task_plan Goal+Phase 状态与 progress 尾部对照；不符按 Rule 65.4 标 `[corrected]` 回错误步并一句话记 progress
-  4. **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转
-  4.5 **提交工作产物（Rule 27）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；非 git 记行跳过；deferred/用户显式豁免须写入计划
-  5. **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
-
-- [ ] [A] **Phase 执行循环（每 Phase 独立闭环）— 智能子动作**：委派/技能激活/动作相关性/DRIFT 判定
-  2.5 **委派检查点（Rule 25）**：Phase Executor≠主进程 → 立即按九字段模板逐 S-unit 派发子代理（路由表/粒度门/伴飞/返回校验/兜底详见卫星 `task-dispatch`）；主进程只保留派发/回填三文件/验收 Read；无 Executor 字段=计划无效先回炉；禁止"先自己干再派"
-  2.5b **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）
-  2.5c **动作相关性三问**（v168）：新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase R 锚定？② 在 scope_files 内？③ 用户原话要求过？任一 No→记录不执行
-  2.5d **变更类型判定（Rule 74 三判门，P0）**：对既有文件/条目的每处变更，执行前必须判定变更类型（增量/替代/删除），答案登记 task_plan.md「📋 变更标注表」：
-     - **增量（默认且优先）**：用户措辞含"补充/再加/还有/另外/同时"或语义为新增条目 → 只追加、既有条目逐字保留不动；"补充一些条目"类指令永远走本档，禁以"整合/去重/顺手重构/格式化"名义回写既有条目
-     - **替代（禁默认，四条件全满足才可）**：① 既有内容被新证据或回归测试证伪，或已被用户明示否决/作废；② 替代范围完整覆盖旧场景；③ 替代前已 Read 旧内容全文；④ 替代后既有守护/selftest 全绿。缺任一 → 回落增量
-     - **删除（最高门槛）**：必须取得用户逐项授权；未授权只可停用/标记，禁物理删除
-     - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
-  6. **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
+     - **3g 规范召回（Rule 93）**：每完成 3 个 S-unit 或 Phase 翻转 complete（先到者），主进程亲自 Read `../task-discipline/references/execution-recall-card.md` 并 progress 留 `[recall]` 行（可与 3f 同拍执行）；compaction 恢复/会话恢复/[assess]≥PRESSURE 后第一动作先读召回卡（93.3）；mini/L0 档豁免
+  4. [M] **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转
+  4.5 [M] **提交工作产物（Rule 27）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；非 git 记行跳过；deferred/用户显式豁免须写入计划
+  5. [M] **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
+  6. [A] **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
   **可选思路**：
   1. 思路 A：按 Executor 字段机械派发——Phase 有 Executor 字段即派子代理，主进程只回填三文件+验收 Read（适用场景：派发型 Phase、S-unit 边界清晰时）
   2. 思路 B：主进程直做——命中直做白名单（trivial/单文件小改）或 Executor=主进程时自执行（适用场景：改动小、派发开销大于收益时）
@@ -138,7 +137,7 @@ model: opus
 
 ### 📖 Read vs Write 决策矩阵（Rule 20.5 — 省 token）
 
-> 权威源=`references/critical-rules.md` Rule 20.5。场景速查：刚写完的文件→**不要再 Read**（内容还在上下文）；看过的图/PDF/网页/搜索返回→立即写 findings；开新 Phase→读 plan+findings；出错→读相关文件；中断/压缩恢复→读全部三文件（Rule 19.3）。
+> 权威源=`references/critical-rules.md` Rule 20.5。场景速查：刚写完的文件→**不要再 Read**（内容还在上下文）；看过的图/PDF/网页/搜索返回→立即写 findings；开新 Phase→读 plan+findings；出错→读相关文件；中断/压缩恢复→读全部三文件（Rule 19.3）＋执行规范召回卡（Rule 93.3）。
 
 ### 合规检查清单（核心域，每 Phase 开始前逐项确认）
 
@@ -193,7 +192,7 @@ model: opus
 | 卫星 | 域 | 规则全文路径 | 调用条件 |
 |------|----|------------|---------|
 | task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
-| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-76,85,86,87,88,89,90,92） |
+| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-76,85,86,87,88,89,90,92,93） |
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
 | plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
@@ -206,7 +205,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 73 条已按域迁至上表 11 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92 纪律域）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-93 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 74 条已按域迁至上表 11 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93 纪律域）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 - **Rule 1 先规划再执行**（Rule 2 PreToolUse 阻断）：创建 task_plan.md→展示→等 yes→执行
 - **Rule 3 双操作后保存 / Rule 5 Phase 完成后更新**：2 次 view/browser/search 后写 findings；Phase 翻 in_progress→complete
 - **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件
@@ -248,7 +247,7 @@ Rules 1-92 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 |
-| `references/critical-rules.md` | Critical Rules 核心域 1-92 全集索引（14 条核心全文+分层架构说明+卫星路由索引） |
+| `references/critical-rules.md` | Critical Rules 核心域 1-93 全集索引（14 条核心全文+分层架构说明+卫星路由索引） |
 | `references/methodology.md` | 思维方法论 T1-T5 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
