@@ -104,7 +104,7 @@ execution_lane: L1
 |-------|------------|------|
 | 只读（全仓） | 本仓任意文件只读 | 对 skills/**、scripts/** 的任何写 |
 | 文档（写） | `plans/task-skill-audit-20261021/` 下全部文件（报告/方案/findings/progress/checkpoint） | plans/ 其他任务目录 |
-| 脚本（只读执行） | 运行 selftest/守卫脚本（不落写） | 修改任何 .sh |
+| 脚本（只读执行） | 运行 selftest/守卫脚本/check-complete.sh/archive-plan.sh/sync-todos.sh（不落写） | 修改任何 .sh |
 
 **执行前自我检查**: 文件在列表内？修改对任务必要？用户要求过？全 Yes → 执行；任一 No → 先问用户。
 

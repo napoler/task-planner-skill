@@ -75,7 +75,7 @@
 - **Status:** complete
 - **Started:** 2026-10-22 01:20
 - [goal:G3] complete — 证据：交付物计数命令 `grep -c '^| RP-' revision-proposals.md` → 31 条提案且五要素齐备行 31 条、`grep -c '^## §' audit-report.md` → 9 章（PASS）；成品落盘 `audit-report.md`（§0 结论 + §0.1 VC 映射 + §1~§6 六维 + §7 复核裁决 + §8 总体裁决）与 `revision-proposals.md`（RP-01~RP-31 + VC 映射 + 执行注意事项）
-- [goal:G4] complete — 证据：终验命令 `bash ~/.zcode/skills/task-planner/scripts/check-complete.sh plans/task-skill-audit-20261021/task_plan.md` → 三源一致性 PASS、委派率 0.750 PASS、S-unit 表 PASS、RVC 覆盖 PASS（PASS；末次运行输出逐行落盘于本文件 Test Results 表）；逐 Phase 提交 c79eb8a / 23933d1 / 4d74e3f 均只含本目录 23 文件，仓库在途 4 文件全程未触碰
+- [goal:G4] complete — 证据：终验命令 `bash scripts/check-complete.sh`（对本计划 task_plan.md 运行）→ 三源一致性 PASS、委派率 0.750 PASS、S-unit 表 PASS、RVC 覆盖 PASS（PASS；末次运行输出逐行落盘于本文件 Test Results 表）；逐 Phase 提交 c79eb8a / 23933d1 / 4d74e3f 均只含本目录 23 文件，仓库在途 4 文件全程未触碰
 - Actions taken:
   - 撰写 audit-report.md（六维 + 发现编号 + 证据锚 + 复核状态 + 稳定性裁决 + VC 映射）
   - 撰写 revision-proposals.md（RP-01~RP-31，每条=对象锚点/变更类型/优先级/执行动作/依据 + VC 映射 + 执行注意事项）
