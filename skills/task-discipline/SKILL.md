@@ -21,7 +21,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 卫星路由：task-discipline
 
-域=执行过程纪律与工作产物维护。规则全文见 `references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92）。
+域=执行过程纪律与工作产物维护。规则全文见 `references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92,93）。
 
 调用条件：涉及执行纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物/产出文件尺寸与拆分时 Read 该文件。
 
@@ -73,7 +73,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 | 90 | 任务执行首尾 Git 双提交纪律 | 同上 |
 | 92 | 产出文件尺寸纪律与优先拆分 | 同上 |
 
-**落盘状态（task-v171 批次进度）**：Rule 4,6,7,8,9,10,18,28,29,31,32,33,35,36,41,42,43,44,45 共 19 条已由 S15-S17 迁移落盘（源行区间与迁移注记见 `references/critical-rules-discipline.md` 头部）；Rule 27,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76 属 v171 后续批次（S18+，均已落盘）；Rule 85（task-v175 用户输入一致性）、Rule 86（task-v177 可测问题禁问）与 Rule 87（task-v179 精准执行与极简改动）、Rule 88（task-v180 任务射程契约）与 Rule 89（task-v181 前后逻辑一致性禁反言）已后补落盘——本索引现共 43 条全文可消费。
+**落盘状态（task-v171 批次进度）**：Rule 4,6,7,8,9,10,18,28,29,31,32,33,35,36,41,42,43,44,45 共 19 条已由 S15-S17 迁移落盘（源行区间与迁移注记见 `references/critical-rules-discipline.md` 头部）；Rule 27,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76 属 v171 后续批次（S18+，均已落盘）；Rule 85（task-v175 用户输入一致性）、Rule 86（task-v177 可测问题禁问）与 Rule 87（task-v179 精准执行与极简改动）、Rule 88（task-v180 任务射程契约）与 Rule 89（task-v181 前后逻辑一致性禁反言）已后补落盘——本索引现共 44 条全文可消费。
 
 ## 脚本
 
@@ -84,6 +84,6 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 参考文档
 
-- `references/critical-rules-discipline.md` — 43 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90/92）
+- `references/critical-rules-discipline.md` — 44 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90/92/93）
 - `references/batch-quality-gate.md` — 批量质量门控细则（Rule 18 正文引用）
 - `references/capability-registry.md` — 能力沉淀登记台账（随 S21 资产迁入）
