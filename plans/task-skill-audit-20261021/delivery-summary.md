@@ -56,7 +56,7 @@
 ## 5. 风险点（必须列举）
 
 - **已知遗留**：RP-01~RP-36 全部未落地（`/mnt/data/dev/task-planner-skill/plans/task-skill-audit-20261021/revision-proposals.md`）。其中 RP-12/RP-13（部署位同步 + 阻断门）与 RP-14（在途改动固化）必须先行——现行加载位 `~/.zcode/skills/task-planner/` 落后主仓 19 提交且缺失 Rule 93 全条，其余修复即便落地也不在真实会话生效。另有 `videop1` 业务事实一项未验证（用户当夜是否真实发起过生成），已在报告 §1.1 标注为「未验证」。
-- **待裁决**：
+- **待裁决**（每项对象定位见本行以下各条）：
   - `RP-30`——对象 `/mnt/data/dev/videop1/AGENTS.md:84` 判例行（把用户事后定性「谎称没有额度」写成宪法级定论，而一手原文实为「约束 4 禁今晚发起新创建 → 重抽只能明日」）：待你选 ①撤回该判例行 ②改写为「把可选策略读成唯一出路」的准确表述 ③保留并加「定性措辞以一手原文为准」限定。**跨项目写入，须你显式授权。**
   - `RP-31`——对象 `/mnt/data/dev/videop1/plans/task-videop1-quotafact-001/` 与 `/mnt/data/dev/videop1/docs/experience/quotafact-20261021.md` 的措辞统一 + 补「真事实早于断言」时序事实。**跨项目写入，须你显式授权。**
   - 落地授权——是否开立独立实现任务（worktree `/home/terry/task-planner-skill-worktrees/<task-id>`，分支 `wt/<task-id>`）把 RP-01~RP-36 落地；技能文件属宪法 §六 保护区，须逐项授权。
