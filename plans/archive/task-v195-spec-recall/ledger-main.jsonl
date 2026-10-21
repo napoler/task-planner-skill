@@ -1,0 +1,1 @@
+{"tick":1,"ts":"2026-10-21T01:19:54Z","agent":"main","phase":"1","event":"note","summary":"worktree 半成品检出恢复：TaskStop 误杀慢 checkout 致 index.lock 残留，清锁后 checkout -f 自身分支重检（主仓 plans/ 不受影响）","files":[]}
