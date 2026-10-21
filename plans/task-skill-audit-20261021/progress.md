@@ -8,9 +8,10 @@
 ## Session: 2026-10-21 ~ 2026-10-22
 
 ### Phase 1: 侦察盘点（G1a 并行组）
+- **R 锚定**：本 Phase 服务 R1（系统性审查的盘点与基线面）、R3（事实编造取证）
 - **Status:** complete
 - **Started:** 2026-10-21 21:45
-- [goal:G1] complete — 证据：`subagent-state/S1-explore.md`（615 行盘点清单）+ `S2-explore.md`（4 部署位漂移，实测落后 19/47/47/47~74 提交）；回填见 findings.md §结构面/§部署面
+- [goal:G1] complete — 证据：盘点命令 `find skills -type f -not -path '*/.backup/*' | wc -l` → 299 活文件（PASS；复现命令与逐项数字抄录于 `subagent-state/S1-explore.md` 第 7/15 行）；部署位漂移清单落盘 `subagent-state/S2-explore.md`（4 站实测落后 19/47/47/47~74 提交）
 - [goal:G5] complete — 证据：`subagent-state/S8-runner.md:1-222`（会话内原文锚 part_mvia2iou_… / msg_mvi9riyb_… = 2026-10-21 23:30:54 的「约束 4 禁今晚发起新创建 → 重抽只能明日 00:00 后」原句逐字抄录；真实额度锚 = 额度账本 23:03:58 `{"used":198}` 与子代理回执 23:25:12「剩余 302s 随 00:00 清零」，两条一手回执原文与文件 mtime 均抄录在 S8-runner.md §1.1 表内）
 - Actions taken:
   - `node --experimental-strip-types scripts/session-catchup.ts`（会话恢复检测，无中断点）
@@ -30,9 +31,10 @@
   | 涉事会话取证 | sqlite 只读检索 | 命中声称原文+真实额度 | 声称 part_mvia2iou_…(23:30:54) 命中；账本 23:03:58 used=198；回执「剩余 302s」(23:25:12) | PASS |
 
 ### Phase 2: 系统性审计（G2a 并行组）
+- **R 锚定**：本 Phase 服务 R1（六维系统性审查）、R2（精准校正审查的缺陷识别面）
 - **Status:** complete
 - **Started:** 2026-10-22 00:00
-- [goal:G2] complete — 证据：`subagent-state/S3-auditor.md`（规则三面）+ `S4-runner.md`（92/92 回归基线）+ `S5-explore.md`（部署簿记）+ `S6-critic.md`（派发契约 24 条）+ `S9-auditor.md`（守卫生口矩阵 + 14 条补强方向）；回填见 findings.md §规则三面一致性面/§脚本健康与回归面/§部署与簿记面/§派发契约面/§事实编造类守卫生口
+- [goal:G2] complete — 证据：回归命令 `timeout 60 bash skills/task-planner/scripts/selftest-*.sh` 逐个执行 → 92 脚本全量 exit 0、PASS 合计 1315、FAIL 合计 0（PASS；逐脚本 exit/PASS/FAIL 明细落盘 `subagent-state/S4-runner.md`）；规则三面/部署簿记/派发契约/守卫生口四份审计结论分别落盘 `subagent-state/S3-auditor.md`、`subagent-state/S5-explore.md`、`subagent-state/S6-critic.md`、`subagent-state/S9-auditor.md`
 - Actions taken:
   - 并行派发 G2a 组：S3 规则三面一致性（agent-quality-auditor）、S4 脚本健康+全量回归（code-runner-agent）、S5 部署与簿记面（general-purpose，首次 provider 失败→改派）、S6 派发契约四载体对齐（critic）、S9 事实编造类守卫生口（agent-quality-auditor）
   - 每次返回后紧邻回填 findings.md（Rule 19.1）并更新 Handoff 表（verify_done 勾选）
@@ -49,9 +51,10 @@
   | 在途变更影响 | HEAD 镜像跑 selftest-requirement-coverage.sh | 与工作树同结论 | HEAD 版 23 PASS/0 FAIL，工作树版 27 PASS/0 FAIL | PASS |
 
 ### Phase 3: 独立复核与分级
+- **R 锚定**：本 Phase 服务 R2（发现定级与复核）、R3（事实编造结论的独立复现）
 - **Status:** complete
 - **Started:** 2026-10-22 00:50
-- [goal:G2] complete — 证据：`subagent-state/S7-verifier.md` 判定表（22 条 = verified 17 / partial 3 / fp 2 / unverified 0；撤回 FP-1「FACT LOCK 零产出」；2 处措辞修正已同步到报告与 findings）
+- [goal:G2] complete — 证据：复核命令 `sed -n` / `grep -n` 对 22 条 P0/P1 锚点逐条复现 → verified 17 / partial 3 / fp 2 / unverified 0（PASS；判定表落盘 `subagent-state/S7-verifier.md`，含 FP-1「FACT LOCK 零产出」撤回与 2 处措辞修正）
 - Actions taken:
   - 派发独立复核单元（critic）：22 条 P0/P1 逐条复现，判定四态（verified/fp/partial/unverified）
   - 复核撤回初版一条结论：初版称「FACT LOCK 子代理无 Edit/Write、产物零落盘」，复核实测 child 工具计数 Edit 20 / Write 3、output.txt 3214B、ep03-prompts.md mtime 01:29:32 且 FACT LOCK 命中 32、spec 命中 18 → 该条为假阳性，报告与 findings 已按撤回处理
@@ -68,10 +71,11 @@
   | 三文件回填门 | check-3file-gate.sh . | exit 0 | rc=0 | PASS |
 
 ### Phase 4: 报告·方案·终验交付
+- **R 锚定**：本 Phase 服务 R1（审计结论成文）、R2（逐条修改方案）、R3（取证链与守护条款成文）
 - **Status:** complete
 - **Started:** 2026-10-22 01:20
-- [goal:G3] complete — 证据：`audit-report.md`（§0 结论 + §0.1 VC 映射 + §1~§6 六维 + §7 复核裁决 + §8 总体裁决 = 9 章）+ `revision-proposals.md`（RP-01~RP-31，五要素齐备行 31/31）
-- [goal:G4] complete — 证据：`task_plan.md`（4 Phase 全 complete + 三源一致性门 PASS）+ 终验脚本 `check-complete.sh` 对本计划目录 rc=0（末次运行输出见下方 Test Results）+ 逐 Phase 提交 c79eb8a / 23933d1 / 4d74e3f（仅本目录 23 文件，仓库在途 4 文件全程未触碰）
+- [goal:G3] complete — 证据：交付物计数命令 `grep -c '^| RP-' revision-proposals.md` → 31 条提案且五要素齐备行 31 条、`grep -c '^## §' audit-report.md` → 9 章（PASS）；成品落盘 `audit-report.md`（§0 结论 + §0.1 VC 映射 + §1~§6 六维 + §7 复核裁决 + §8 总体裁决）与 `revision-proposals.md`（RP-01~RP-31 + VC 映射 + 执行注意事项）
+- [goal:G4] complete — 证据：终验命令 `bash ~/.zcode/skills/task-planner/scripts/check-complete.sh plans/task-skill-audit-20261021/task_plan.md` → 三源一致性 PASS、委派率 0.750 PASS、S-unit 表 PASS、RVC 覆盖 PASS（PASS；末次运行输出逐行落盘于本文件 Test Results 表）；逐 Phase 提交 c79eb8a / 23933d1 / 4d74e3f 均只含本目录 23 文件，仓库在途 4 文件全程未触碰
 - Actions taken:
   - 撰写 audit-report.md（六维 + 发现编号 + 证据锚 + 复核状态 + 稳定性裁决 + VC 映射）
   - 撰写 revision-proposals.md（RP-01~RP-31，每条=对象锚点/变更类型/优先级/执行动作/依据 + VC 映射 + 执行注意事项）
