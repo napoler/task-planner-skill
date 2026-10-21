@@ -10,6 +10,8 @@
 ### Phase 1: 侦察盘点（G1a 并行组）
 - **Status:** complete
 - **Started:** 2026-10-21 21:45
+- [goal:G1] complete — 证据：`subagent-state/S1-explore.md`（615 行盘点清单）+ `S2-explore.md`（4 部署位漂移，实测落后 19/47/47/47~74 提交）；回填见 findings.md §结构面/§部署面
+- [goal:G5] complete — 证据：`subagent-state/S8-runner.md:1-222`（原文锚 part_mvia2iou_…/msg_mvi9riyb_… = 2026-10-21 23:30:54；真实额度锚 = 账本 23:03:58 `{"used":198}` + `agent_ce1928bc…/output.txt:46`「剩余 302s」23:25:12）；回填见 findings.md §事实编造面
 - Actions taken:
   - `node --experimental-strip-types scripts/session-catchup.ts`（会话恢复检测，无中断点）
   - `bash scripts/init-session.sh` 建 plans/task-skill-audit-20261021/ 七文件；active_plan 指针已指向本计划
@@ -30,6 +32,7 @@
 ### Phase 2: 系统性审计（G2a 并行组）
 - **Status:** complete
 - **Started:** 2026-10-22 00:00
+- [goal:G2] complete — 证据：`subagent-state/S3-auditor.md`（规则三面）+ `S4-runner.md`（92/92 回归基线）+ `S5-explore.md`（部署簿记）+ `S6-critic.md`（派发契约 24 条）+ `S9-auditor.md`（守卫生口矩阵 + 14 条补强方向）；回填见 findings.md §规则三面一致性面/§脚本健康与回归面/§部署与簿记面/§派发契约面/§事实编造类守卫生口
 - Actions taken:
   - 并行派发 G2a 组：S3 规则三面一致性（agent-quality-auditor）、S4 脚本健康+全量回归（code-runner-agent）、S5 部署与簿记面（general-purpose，首次 provider 失败→改派）、S6 派发契约四载体对齐（critic）、S9 事实编造类守卫生口（agent-quality-auditor）
   - 每次返回后紧邻回填 findings.md（Rule 19.1）并更新 Handoff 表（verify_done 勾选）
@@ -48,6 +51,7 @@
 ### Phase 3: 独立复核与分级
 - **Status:** complete
 - **Started:** 2026-10-22 00:50
+- [goal:G2] complete — 证据：`subagent-state/S7-verifier.md` 判定表（22 条 = verified 17 / partial 3 / fp 2 / unverified 0；撤回 FP-1「FACT LOCK 零产出」；2 处措辞修正已同步到报告与 findings）
 - Actions taken:
   - 派发独立复核单元（critic）：22 条 P0/P1 逐条复现，判定四态（verified/fp/partial/unverified）
   - 复核撤回初版一条结论：初版称「FACT LOCK 子代理无 Edit/Write、产物零落盘」，复核实测 child 工具计数 Edit 20 / Write 3、output.txt 3214B、ep03-prompts.md mtime 01:29:32 且 FACT LOCK 命中 32、spec 命中 18 → 该条为假阳性，报告与 findings 已按撤回处理
@@ -64,8 +68,10 @@
   | 三文件回填门 | check-3file-gate.sh . | exit 0 | rc=0 | PASS |
 
 ### Phase 4: 报告·方案·终验交付
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-22 01:20
+- [goal:G3] complete — 证据：`audit-report.md`（§0 结论 + §0.1 VC 映射 + §1~§6 六维 + §7 复核裁决 + §8 总体裁决 = 9 章）+ `revision-proposals.md`（RP-01~RP-31，五要素齐备行 31/31）
+- [goal:G4] complete — 证据：`check-complete.sh plans/task-skill-audit-20261021/task_plan.md` rc=0 + `archive-plan.sh task-skill-audit-20261021` 走通 + 提交 c79eb8a / 23933d1（仅本目录，未碰在途 4 文件）
 - Actions taken:
   - 撰写 audit-report.md（六维 + 发现编号 + 证据锚 + 复核状态 + 稳定性裁决 + VC 映射）
   - 撰写 revision-proposals.md（RP-01~RP-31，每条=对象锚点/变更类型/优先级/执行动作/依据 + VC 映射 + 执行注意事项）

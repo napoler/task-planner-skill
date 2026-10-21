@@ -161,23 +161,23 @@ Phase 4
 ## Phases
 
 ### Phase 1: 侦察盘点（结构/部署位基线）
-- [ ] S1 技能全树盘点：skills/task-planner 主+11 卫星文件清单、scripts/*.sh 清单、selftest registry 状态、plans/ 簿记形态（INDEX/在途/archive 健康）
-- [ ] S2 部署位漂移侦察：主仓 vs 各部署位（MEMORY.md 登记的 zcode/claude/cursor 位）diff 概览
-- [ ] S8 会话取证（R3 最高优先级）：定位 session_a40eae17265b5414c27e8c45d2c27b5c 中「无额度/等明天」声称原文、真实额度证据（198/500）、虚构物理约束与 FACT LOCK 固化的发生点
-- [ ] 双基线留档：git HEAD（2448e01）+ 工作树（uncommitted 13 文件清单+ [in-flight] 标注）记 findings
-- [ ] 知识储备必读项确认
+- [x] S1 技能全树盘点：skills/task-planner 主+11 卫星文件清单、scripts/*.sh 清单、selftest registry 状态、plans/ 簿记形态（INDEX/在途/archive 健康）
+- [x] S2 部署位漂移侦察：主仓 vs 各部署位（MEMORY.md 登记的 zcode/claude/cursor 位）diff 概览
+- [x] S8 会话取证（R3 最高优先级）：定位 session_a40eae17265b5414c27e8c45d2c27b5c 中「无额度/等明天」声称原文、真实额度证据（198/500）、虚构物理约束与 FACT LOCK 固化的发生点
+- [x] 双基线留档：git HEAD（2448e01）+ 工作树（uncommitted 13 文件清单+ [in-flight] 标注）记 findings
+- [x] 知识储备必读项确认
 - **V-N:** VC-1, VC-5
 - **Status:** complete
 - **Executor:** general-purpose + code-runner-agent
 
 ### Phase 2: 系统性审计（四维并行组 G2a）
-- [ ] S3 规则一致性审计：SKILL.md ↔ references/critical-rules*.md ↔ selftest 断言三面对齐（核心域 14 条+卫星路由表）
-- [ ] S4 脚本健康+全量回归：scripts/*.sh 语法扫描 + 全量 selftest 回归（baseline 数字留档）
-- [ ] S5 部署簿记面审计：部署位漂移清单、INDEX 失真、rule-reservations 竞态、archive 健康、在途计划账
-- [ ] S6 派发契约审计：subagent_dispatch 八字段模板 ↔ 守卫（check-dispatch/check-subagent-return）↔ 四文件罗盘契约措辞对齐
-- [ ] S9 事实编造类缺口审计：媒体执行体（video-generation-executor 等）+ media-planner/task-discipline 规则中「额度/时间/物理约束类事实必须先实测再断言」的守卫生口盘点（R3）
-- [ ] 各 S-unit 返回后紧邻回填 findings.md（19.1）+ Handoff verify_done
-- [ ] parallel_groups: G2a = S3,S4,S5,S6,S9（独立性四问全 no）
+- [x] S3 规则一致性审计：SKILL.md ↔ references/critical-rules*.md ↔ selftest 断言三面对齐（核心域 14 条+卫星路由表）
+- [x] S4 脚本健康+全量回归：scripts/*.sh 语法扫描 + 全量 selftest 回归（baseline 数字留档）
+- [x] S5 部署簿记面审计：部署位漂移清单、INDEX 失真、rule-reservations 竞态、archive 健康、在途计划账
+- [x] S6 派发契约审计：subagent_dispatch 八字段模板 ↔ 守卫（check-dispatch/check-subagent-return）↔ 四文件罗盘契约措辞对齐
+- [x] S9 事实编造类缺口审计：媒体执行体（video-generation-executor 等）+ media-planner/task-discipline 规则中「额度/时间/物理约束类事实必须先实测再断言」的守卫生口盘点（R3）
+- [x] 各 S-unit 返回后紧邻回填 findings.md（19.1）+ Handoff verify_done
+- [x] parallel_groups: G2a = S3,S4,S5,S6,S9（独立性四问全 no）
 - **V-N:** VC-1, VC-3, VC-4
 - **Status:** complete
 - **Executor:** agent-quality-auditor + code-runner-agent + general-purpose + critic
@@ -196,9 +196,9 @@ Phase 4
 | S9 | 事实编造类缺陷的规则/agent 缺口定位 | agent-quality-auditor(sonnet-1) | /home/terry/.zcode/agents（video-generation-executor.md 等媒体执行体+摘要：找额度核验/事实断言/物理约束类守卫生口） | 缺口清单写入 <plan-dir>/subagent-state/S9-auditor.md（每条 file:line+缺口性质） | 15min | 1f/100l/15min | 无 | S8 | done |
 
 ### Phase 3: 独立复核与分级
-- [ ] 派 S7 独立复核 S3-S6 全部 P0/P1 证据锚（抽检复现 ≥3 条）
-- [ ] 主进程综合定级：P0/P1/P2 三档 + [in-flight] 标注（未提交面发现的处置口径）
-- [ ] findings.md 综合区回填+Handoff verify_done
+- [x] 派 S7 独立复核 S3-S6 全部 P0/P1 证据锚（抽检复现 ≥3 条）
+- [x] 主进程综合定级：P0/P1/P2 三档 + [in-flight] 标注（未提交面发现的处置口径）
+- [x] findings.md 综合区回填+Handoff verify_done
 - **V-N:** VC-4, VC-1
 - **Status:** complete
 - **Executor:** critic
