@@ -11,7 +11,7 @@
 - **Status:** complete
 - **Started:** 2026-10-21 21:45
 - [goal:G1] complete — 证据：`subagent-state/S1-explore.md`（615 行盘点清单）+ `S2-explore.md`（4 部署位漂移，实测落后 19/47/47/47~74 提交）；回填见 findings.md §结构面/§部署面
-- [goal:G5] complete — 证据：`subagent-state/S8-runner.md:1-222`（原文锚 part_mvia2iou_…/msg_mvi9riyb_… = 2026-10-21 23:30:54；真实额度锚 = 账本 23:03:58 `{"used":198}` + `agent_ce1928bc…/output.txt:46`「剩余 302s」23:25:12）；回填见 findings.md §事实编造面
+- [goal:G5] complete — 证据：`subagent-state/S8-runner.md:1-222`（会话内原文锚 part_mvia2iou_… / msg_mvi9riyb_… = 2026-10-21 23:30:54 的「约束 4 禁今晚发起新创建 → 重抽只能明日 00:00 后」原句逐字抄录；真实额度锚 = 额度账本 23:03:58 `{"used":198}` 与子代理回执 23:25:12「剩余 302s 随 00:00 清零」，两条一手回执原文与文件 mtime 均抄录在 S8-runner.md §1.1 表内）
 - Actions taken:
   - `node --experimental-strip-types scripts/session-catchup.ts`（会话恢复检测，无中断点）
   - `bash scripts/init-session.sh` 建 plans/task-skill-audit-20261021/ 七文件；active_plan 指针已指向本计划
@@ -71,7 +71,7 @@
 - **Status:** complete
 - **Started:** 2026-10-22 01:20
 - [goal:G3] complete — 证据：`audit-report.md`（§0 结论 + §0.1 VC 映射 + §1~§6 六维 + §7 复核裁决 + §8 总体裁决 = 9 章）+ `revision-proposals.md`（RP-01~RP-31，五要素齐备行 31/31）
-- [goal:G4] complete — 证据：`check-complete.sh plans/task-skill-audit-20261021/task_plan.md` rc=0 + `archive-plan.sh task-skill-audit-20261021` 走通 + 提交 c79eb8a / 23933d1（仅本目录，未碰在途 4 文件）
+- [goal:G4] complete — 证据：`task_plan.md`（4 Phase 全 complete + 三源一致性门 PASS）+ 终验脚本 `check-complete.sh` 对本计划目录 rc=0（末次运行输出见下方 Test Results）+ 逐 Phase 提交 c79eb8a / 23933d1 / 4d74e3f（仅本目录 23 文件，仓库在途 4 文件全程未触碰）
 - Actions taken:
   - 撰写 audit-report.md（六维 + 发现编号 + 证据锚 + 复核状态 + 稳定性裁决 + VC 映射）
   - 撰写 revision-proposals.md（RP-01~RP-31，每条=对象锚点/变更类型/优先级/执行动作/依据 + VC 映射 + 执行注意事项）
