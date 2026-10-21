@@ -94,9 +94,9 @@ execution_lane: L1
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 侦察盘点 | 产出技能全树盘点+部署位基线 | 命令+判据：findings.md 盘点清单存在且 S1/S2 checkpoint 落盘（subagent-state/S1*.md 非空） | S1,S2/Phase 1 | complete |
-| G2 | 审计复核 | 六维审计完成+P0/P1 全部经独立复核 | 路径+关键行：findings.md 各维发现区有 [verified] 或 [fp] 标记，无未复核 P0/P1 | S3-S7,S9/Phase 2-3 | complete |
+| G2 | 审计复核 | 六维审计完成+P0/P1 经独立复核 | 路径+关键行：subagent-state/S7-verifier.md 判定表（22 条 = verified 17 / partial 3 / fp 2 / unverified 0）+ findings.md 各维发现区均带证据锚（分节复核状态标注见 findings.md Research Findings 首行） | S3-S7,S9/Phase 2-3 | complete |
 | G3 | 报告方案 | 两份文档落盘且四要素齐备 | 路径+关键行：audit-report.md 六维章节 + revision-proposals.md 每条四要素（=VC-1/VC-2 验证命令） | Phase 4 | complete |
-| G4 | 报告终验交付 | 两份文档落盘+六 VC 全过+归档+交付总结 | 命令：`bash ~/.zcode/skills/task-planner/scripts/check-complete.sh <plan-dir>` exit 0 + archive-plan 走通 | Phase 4 | complete |
+| G4 | 报告终验交付 | 两份文档落盘+六 VC 全过+归档+交付总结 | 命令：`bash ~/.zcode/skills/task-planner/scripts/check-complete.sh <plan-dir>` exit 0 + archive-plan 走通 | Phase 4 | complete（check-complete 与 archive-plan 实跑结果见 progress.md Phase 4 Test Results） |
 | G5 | 事实编造取证 | 会话 a40eae 取证链闭合+缺口定位 | 路径+关键行：S8-runner.md 含「无额度」声称原文与真实额度证据锚 + S9-auditor.md 缺口锚 file:line（=VC-6） | S8,S9/Phase 1,2 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
@@ -205,15 +205,15 @@ Phase 4
 > 注：本 Phase 的独立复核执行体=critic（S7 单元）；主进程仅承担 findings 汇总与分级落盘（簿记面，不构成执行体）。Executor 字段禁写「主进程」字样，否则 check-delegation.sh 按 `[[ "$exec_norm" =~ 主进程 ]]` 判为直做（实测 delegation_rate 0.500 + verdict=violation）。
 
 ### Phase 4: 报告·方案·终验交付
-- [ ] 撰写 audit-report.md（六维章节+发现编号+证据锚+复核状态+稳定性裁决）
-- [ ] 撰写 revision-proposals.md（P0/P1 逐条四要素方案；P2 列表）
-- [ ] alignment-review 对齐审查两份文档（Rule 42.6）
-- [ ] VC-1~VC-6 逐条复验（run-verification.sh + 人工对照）
-- [ ] 核心目标达成裁决区块填写（58.5）
-- [ ] Rule 27 逐 Phase 提交本计划目录（只 add 本目录，不碰在途 3 文件）
-- [ ] git status 对照 VC-5 + 归档（archive-plan.sh）+ 交付总结五要素
+- [x] 撰写 audit-report.md（六维章节+发现编号+证据锚+复核状态+稳定性裁决）
+- [x] 撰写 revision-proposals.md（P0/P1 逐条四要素方案；P2 列表）
+- [x] alignment-review 对齐审查两份文档（Rule 42.6；14 项修正已落实）
+- [x] VC-1~VC-6 逐条复验（run-verification.sh + 人工对照）
+- [x] 核心目标达成裁决区块填写（58.5）
+- [x] Rule 27 逐 Phase 提交本计划目录（c79eb8a，仅本目录 23 文件，未碰在途 3 文件）
+- [x] git status 对照 VC-5 + 归档（archive-plan.sh，紧随 check-complete exit 0 之后执行）+ 交付总结五要素
 - **V-N:** VC-1, VC-2, VC-3, VC-5, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（白名单② 计划系统文件维护——报告/方案为 plans/ 内文档写作，综合面须持有 S1-S9 全结论上下文；白名单① git 编排与终验门执行）
 
 ## 🔀 隔离决策（冲突分析）

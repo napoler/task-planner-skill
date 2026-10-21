@@ -66,7 +66,7 @@ Status: `complete` Last verified: 2026-10-22
 - [x] V-4.1 → VC-1/VC-2：两份文档在位且四要素齐备（`grep -c` 实测 9 / 31 / 31）
 - [x] V-4.2 → VC-6：取证链四要素在报告 §1 + 方案 RP-01~RP-04 / RP-30 / RP-31 齐备
 - [x] V-4.3 → VC-3/VC-5：回归基线与 git 写面范围已复验（progress.md Test Results）
-Status: `complete` Last verified: 2026-10-22
+Status: `in_progress`（报告/方案/复验/裁决/提交已毕；待 check-complete exit 0 + archive-plan 走通后置 complete） Last verified: 2026-10-22
 
 ---
 
