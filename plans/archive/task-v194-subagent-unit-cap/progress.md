@@ -106,6 +106,7 @@
   - 委派统计修复轮：Handoff 类型名带后缀→violation（裸名判例复发）+Phase 1/2 理由缺「计划系统文件」关键词→措辞修正；复验 verdict=ok（rate 0.4，WHITELIST-EXEMPT 路径）；重锁 attest SHA c09daeea
   - 终验前偏移检查：drift-checker 复合审查 **✅ALIGNED**（检查点 drift-check-final.md）
   - CR-GATE 闭环：S5 critic 复审 verdict=CHANGES（0B/5M/4N）→ S6 回炉 42a09f3 → S5b critic 复核 verdict=APPROVED（5 MAJOR 全 RESOLVED、2 NIT 落地、无新阻断；残留观察 1 项=「声明交付物粒度」窄缝（修订前既有，MEDIUM，登记 findings 待后续收口））→ **CR APPROVED**（2026-10-21，证据=S5b 复核报告逐项 RESOLVED 引句，子代理返回全文存 progress 会话档案）
+  - [judge] 2026-10-21 S5 复审 CHANGES 逐条裁决：5 MAJOR 全采纳（均直接服务 R3/R4，不放宽用户裁决）；NIT 采纳 2（集场口径/普查边界）保留 1（75.8 自锚=VC-7 grep≥2 承重件，删则破机器锚）——73.2 对齐三问：①用户原话对照 ✓ ②scope 未变 ✓ ③既有条款零删改 ✓
   - VC-4 口径说明：主仓 skills/ 有并行会话在途未提交改动（SKILL.md/critical-rules.md/selftest-requirement-coverage.sh，非本任务产物）——主仓不重跑 selftest 避免吞并行态噪音，以 worktree 合并树终轮 92/92 为准
 - Files created/modified:
   - skills/task-dispatch/references/critical-rules-dispatch.md、skills/media-planner/references/critical-rules-media.md、skills/plan-research-router/references/critical-rules-research.md、skills/task-planner/scripts/selftest-dispatch-grain.sh（经 b21b44ac 入 master）
