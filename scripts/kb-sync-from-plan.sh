@@ -70,6 +70,7 @@ rel_to_repo() { # What: 把绝对路径规约为仓相对路径; Why: sources �
 }
 KB_REL="$(rel_to_repo "$KB")"
 FIND_REL="$(rel_to_repo "$FIND")"
+SRC_DESC="${SRC_DESC#"$ROOT"/}"  # 修(2026-10-22 task-kb-fix-draft-path 遗留①)：正文标题行同步去 ROOT 前缀——原 SRC_DESC 用绝对路径使 draft 重跑时内嵌 /home/... 致 tracked 文件变脏
 
 # 生成 draft: frontmatter 五键 + 提取正文 + 末尾精炼指引 HTML 注释
 {

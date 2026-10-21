@@ -2,8 +2,8 @@
 # kb-search.sh — 项目知识库 (knowledge/) 统一检索入口 | 2026-10-22
 # What: 关键词检索 knowledge/ 下全部 .md（entries/、INDEX.md、README.md），按文件
 #      分组输出「== 相对路径」+ frontmatter 摘要（title/tags/sources 各一行，
-#      sources 列表项逐行）+ 命中行（rg -i -n --no-heading）；--tag 依据首个
-#      frontmatter 的 tags 段落过滤。
+#      sources 列表项逐行）+ 命中行（rg -i -n --no-heading）；--tag 按子串匹配过滤
+#      （固定串包含即命中，非精确相等——措辞精确化 2026-10-22），依据首个 frontmatter 的 tags 段落。
 # Why:  条目为 markdown+frontmatter，裸 grep 无法做 tag 过滤与结构化摘要；仓库根
 #      探测与 CWD 无关（仓内/CI/任意 CWD 均可运行）；rg 优先、缺失回落 grep -inr
 #      （检索环境未必装 rg，环境鲁棒性）。

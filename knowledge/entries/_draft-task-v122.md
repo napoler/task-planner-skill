@@ -6,7 +6,7 @@ sources: [plans/archive/task-v122/knowledge-brief.md, plans/archive/task-v122/fi
 updated: 2026-10-22
 ---
 
-# （draft）task-v122 知识蒸馏（来源: /home/terry/task-planner-skill-worktrees/kb-persist-20261022/plans/archive/task-v122/knowledge-brief.md）
+# （draft）task-v122 知识蒸馏（来源: plans/archive/task-v122/knowledge-brief.md）
 
 ## §2 已验证关键事实
 
