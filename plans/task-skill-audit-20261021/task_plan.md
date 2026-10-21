@@ -166,6 +166,14 @@ Phase 4
 - [x] S8 会话取证（R3 最高优先级）：定位 session_a40eae17265b5414c27e8c45d2c27b5c 中「无额度/等明天」声称原文、真实额度证据（198/500）、虚构物理约束与 FACT LOCK 固化的发生点
 - [x] 双基线留档：git HEAD（2448e01）+ 工作树（uncommitted 13 文件清单+ [in-flight] 标注）记 findings
 - [x] 知识储备必读项确认
+
+**S-unit 派发单元表（Rule 22.6 — Phase 1）**:
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S1 | 技能全树+脚本+簿记盘点清单 | general-purpose（计划登记 Explore；实际因 provider 失败改派，见 22.3） | /mnt/data/dev/task-planner-skill（仓根 find+清单摘要：skills/task-planner 全树、scripts/*.sh、plans/INDEX） | 盘点清单写入 <plan-dir>/subagent-state/S1-explore.md（checkpoint 非空） | 15min | 1f/90l/15min | 无 | - | done |
+| S2 | 部署位 diff 概览 | general-purpose（计划登记 Explore；实际改派） | /mnt/data/dev/task-planner-skill（仓 root；部署位清单自 MEMORY.md 节选注入 prompt） | 漂移清单写入 <plan-dir>/subagent-state/S2-explore.md | 15min | 1f/90l/15min | 无 | - | done |
+| S8 | 会话 a40eae 取证：找出「无额度/等明天」声称原文+真实额度证据+编造发生点 | code-runner-agent(sonnet-1) | /home/terry/.zcode/cli/db/db.sqlite（会话 session_a40eae17265b5414c27e8c45d2c27b5c；检索词：无额度/明日/物理约束/FACT LOCK/198 / 500） | 原文+证据+时间序写入 <plan-dir>/subagent-state/S8-runner.md（带会话内可定位锚） | 15min | 1f/100l/15min | 无 | - | done |
+
 - **V-N:** VC-1, VC-5
 - **Status:** complete
 - **Executor:** general-purpose + code-runner-agent
@@ -182,23 +190,25 @@ Phase 4
 - **Status:** complete
 - **Executor:** agent-quality-auditor + code-runner-agent + general-purpose + critic
 
-**S-unit 派发单元表（Rule 22.6）**:
+**S-unit 派发单元表（Rule 22.6 — Phase 2）**:
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | 技能全树+脚本+簿记盘点清单 | general-purpose（计划登记 Explore；实际因 provider 失败改派，见 22.3） | /mnt/data/dev/task-planner-skill（仓根 find+清单摘要：skills/task-planner 全树、scripts/*.sh、plans/INDEX） | 盘点清单写入 <plan-dir>/subagent-state/S1-explore.md（checkpoint 非空） | 15min | 1f/90l/15min | 无 | - | done |
-| S2 | 部署位 diff 概览 | general-purpose（计划登记 Explore；实际改派） | /mnt/data/dev/task-planner-skill（仓 root；部署位清单自 MEMORY.md 节选注入 prompt） | 漂移清单写入 <plan-dir>/subagent-state/S2-explore.md | 15min | 1f/90l/15min | 无 | - | done |
-| S8 | 会话 a40eae 取证：找出「无额度/等明天」声称原文+真实额度证据+编造发生点 | code-runner-agent(sonnet-1) | /home/terry/.zcode/cli/db/db.sqlite（会话 session_a40eae17265b5414c27e8c45d2c27b5c；检索词：无额度/明日/物理约束/FACT LOCK/198 / 500） | 原文+证据+时间序写入 <plan-dir>/subagent-state/S8-runner.md（带会话内可定位锚） | 15min | 1f/100l/15min | 无 | - | done |
 | S3 | 规则一致性审计三面对齐 | agent-quality-auditor(sonnet-1) | /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md（+摘要：对照 references/critical-rules.md 与 scripts/selftest-*.sh 断言） | P0/P1/P2 分级发现写入 <plan-dir>/subagent-state/S3-auditor.md（每条带 file:line 锚） | 15min | 1f/100l/15min | 无 | - | done |
 | S4 | 脚本语法+全量回归 baseline | code-runner-agent(sonnet-1) | /mnt/data/dev/task-planner-skill（仓 root；执行 scripts/selftest*.sh 全量+PASS/FAIL 计数） | 回归数字表写入 <plan-dir>/subagent-state/S4-runner.md | 15min | 1f/100l/15min | 无 | - | done |
 | S5 | 部署簿记面审计 | general-purpose（计划登记 Explore；实际改派） | /mnt/data/dev/task-planner-skill/plans（INDEX.md+.rule-reservations.jsonl+archive/ 形态） | 簿记债清单写入 <plan-dir>/subagent-state/S5-explore.md | 15min | 1f/90l/15min | 无 | - | done |
 | S6 | 派发契约措辞对齐审计 | critic(sonnet-1) | /mnt/data/dev/task-planner-skill/skills/task-planner（对照 templates/subagent_dispatch.md 与 scripts/check-dispatch.sh） | 契约漂移面写入 <plan-dir>/subagent-state/S6-critic.md（每条带锚） | 15min | 1f/100l/15min | 无 | - | done |
-| S7 | P0/P1 发现独立复核 | critic（计划登记 Verifier；实际因 provider 失败改派） | <plan-dir>/subagent-state/（S3-S6 checkpoint 汇总；抽检 ≥3 条 P0/P1 复现证据） | 复核裁决（verified/fp/downgrade）写入 <plan-dir>/subagent-state/S7-verifier.md | 15min | 1f/100l/15min | 无 | S3,S4,S5,S6 | done |
 | S9 | 事实编造类缺陷的规则/agent 缺口定位 | agent-quality-auditor(sonnet-1) | /home/terry/.zcode/agents（video-generation-executor.md 等媒体执行体+摘要：找额度核验/事实断言/物理约束类守卫生口） | 缺口清单写入 <plan-dir>/subagent-state/S9-auditor.md（每条 file:line+缺口性质） | 15min | 1f/100l/15min | 无 | S8 | done |
 
 ### Phase 3: 独立复核与分级
 - [x] 派 S7 独立复核 S3-S6 全部 P0/P1 证据锚（抽检复现 ≥3 条）
 - [x] 主进程综合定级：P0/P1/P2 三档 + [in-flight] 标注（未提交面发现的处置口径）
 - [x] findings.md 综合区回填+Handoff verify_done
+
+**S-unit 派发单元表（Rule 22.6 — Phase 3）**:
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S7 | P0/P1 发现独立复核 | critic（计划登记 Verifier；实际因 provider 失败改派） | <plan-dir>/subagent-state/（S3-S6 checkpoint 汇总；抽检 ≥3 条 P0/P1 复现证据） | 复核裁决（verified/fp/downgrade）写入 <plan-dir>/subagent-state/S7-verifier.md | 15min | 1f/100l/15min | 无 | S3,S4,S5,S6 | done |
+
 - **V-N:** VC-4, VC-1
 - **Status:** complete
 - **Executor:** critic
