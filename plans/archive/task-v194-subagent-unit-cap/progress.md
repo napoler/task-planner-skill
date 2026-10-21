@@ -9,6 +9,7 @@
 ## Session: 2026-10-21
 
 ### Phase 1: 证据固定与需求锚定
+- **R 锚定**：本 Phase 服务 R1-R3「两起实证与技能四缺口的第一手证据固定，支撑条款设计」
 - **Status:** complete
 - **Started:** 2026-10-21（计划期，attest 前）
 - Actions taken:
@@ -26,6 +27,7 @@
 - [goal:G1] 证据缺口固化完成（findings §1/§2/§2.1 含 sess_f74fc164 锚 msg51-62 与四缺口 file:line；2026-10-21）
 
 ### Phase 2: 条款设计
+- **R 锚定**：本 Phase 服务 R3+R4「为单子代理任务量与调研方向粒度起草数值化条款定稿」
 - **Status:** complete
 - **Started:** 2026-10-21（attest 锁定后；锁定 SHA-256 ced3fa51ec20f70f5355359872c404895344b84a2df9f7d81bce4ff1081fce0d）
 - Actions taken:
@@ -45,6 +47,7 @@
 - [goal:G2] 条款设计定稿（design/clauses.md 三条款+插入锚点+级联清单；attest ced3fa51 锁定）
 
 ### Phase 3: worktree 落地 + selftest 回归
+- **R 锚定**：本 Phase 服务 R3+R4「三条款在 worktree 纯增量落地且全量 selftest 零回归」
 - **Status:** complete
 - **Started:** 2026-10-21
 - Actions taken:
@@ -73,6 +76,7 @@
 - [goal:G3] 三条款落地 grep 达标（46.6=3、75.8=2）+ selftest 92/92（R3 终轮）+ 产物提交 14be073（证据：上方 Phase 3 Test Results 与 git log）
 
 ### Phase 4: 独立复审（换人挑刺）
+- **R 锚定**：本 Phase 服务 R1-R4「独立复审对照用户原话挑刺并回炉闭环」
 - **Status:** complete
 - **Started:** 2026-10-21
 - Actions taken:
@@ -91,6 +95,7 @@
 
 - [goal:G4] 独立复审闭环（S5 CHANGES→S6 回炉 42a09f3→S5b 复核 APPROVED；Handoff 行 7-9）
 
+- **R 锚定**：本 Phase 服务 R3+R4「合并回 master、VC 全过并归档交付」
 ### Phase 5: 合并回 + 终验交付
 - **Status:** complete
 - **Started:** 2026-10-21

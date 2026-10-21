@@ -147,7 +147,7 @@ execution_lane: L1
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 证据缺口固化 | 两起实证第一手证据+四结构性缺口落盘 findings | findings.md §Research Findings 含 sess_f74fc164 锚与 4 缺口（file:line） | Phase 1 | complete |
-| G2 | 条款设计 | 46.6+47.1+75.8 三草案+级联清单定稿 | `<plan-dir>/design/` 下草案文件存在且含三条款定稿文本 | Phase 2 | pending |
+| G2 | 条款设计 | 46.6+47.1+75.8 三草案+级联清单定稿 | `<plan-dir>/design/` 下草案文件存在且含三条款定稿文本 | Phase 2 | complete |
 | G3 | worktree 落地 | 三条款落盘+selftest 全绿 | worktree 内 `grep -c "46\.6"` ≥3、`grep -c "75\.8"` ≥2 且 run-selftests.sh exit=0 | S1-S4 | complete |
 | G4 | 独立复审 | critic 复审通过（复审闭环） | Handoff 表 S5 行 verdict 处置闭环（CHANGES 回炉 42a09f3+复跑绿） | S5/S6 | complete |
 | G5 | 合并回交付 | master 合并+VC 全过+归档 | git log 含 merge 提交 + run-verification.sh 全 PASS | Phase 5 | complete（归档执行中） |
