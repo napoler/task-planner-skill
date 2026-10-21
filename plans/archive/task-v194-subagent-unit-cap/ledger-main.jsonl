@@ -1,0 +1,2 @@
+{"tick":1,"ts":"2026-10-21T04:04:52Z","agent":"main","phase":"5","event":"drift_check","summary":"终验前复合偏移检查 ALIGNED（drift-checker 子代理，检查点 subagent-state/drift-check-final.md）","files":[]}
+{"tick":2,"ts":"2026-10-21T04:05:01Z","agent":"main","phase":"5","event":"note","summary":"merge_back=merged(b21b44ac) worktree/分支已清理","files":[]}
