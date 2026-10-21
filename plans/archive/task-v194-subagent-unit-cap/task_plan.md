@@ -316,11 +316,11 @@ execution_lane: L1
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose to.
 -->
-- [ ] Rule 46.6「单子代理生产单元上限表」定稿草案（五要素：内容类上限/媒体类上限/批量小操作上限/豁免两条件/判定口径与 S-ID 无关；判例锚引 sess_f74fc164）
-- [ ] Rule 47.1 数值化增量句草案（1 生产单元/派发，注明与 46.6 同源，既有句逐字保留）
-- [ ] Rule 75.8 调研方向粒度草案（单子代理 1 个方向；多方向=方向枚举多 S-unit + 并行多子代理（Rule 21.4 并行组+独立性四问）；每方向结论分档落 findings 独立小节防后期混乱；46.6 只读豁免措辞交叉引用 75.8 防定义漂移）
-- [ ] 级联影响清单核对（task-dispatch/SKILL.md Rule 46 索引行形态；selftest 锚排查清单；config 零新键确认）
-- [ ] 草案落盘 plans/task-v194-subagent-unit-cap/design/（clauses.md，供 S1/S2 材料包引用）
+- [x] Rule 46.6「单子代理生产单元上限表」定稿草案（五要素：内容类上限/媒体类上限/批量小操作上限/豁免两条件/判定口径与 S-ID 无关；判例锚引 sess_f74fc164）
+- [x] Rule 47.1 数值化增量句草案（1 生产单元/派发，注明与 46.6 同源，既有句逐字保留）
+- [x] Rule 75.8 调研方向粒度草案（单子代理 1 个方向；多方向=方向枚举多 S-unit + 并行多子代理（Rule 21.4 并行组+独立性四问）；每方向结论分档落 findings 独立小节防后期混乱；46.6 只读豁免措辞交叉引用 75.8 防定义漂移）
+- [x] 级联影响清单核对（task-dispatch/SKILL.md Rule 46 索引行形态；selftest 锚排查清单；config 零新键确认）
+- [x] 草案落盘 plans/task-v194-subagent-unit-cap/design/（clauses.md，供 S1/S2 材料包引用）
 - **V-N:** VC-1, VC-2, VC-7（草案含 VC-1 五要素、VC-2 数值句、VC-7 调研三要素的定稿文本）
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件条款设计——依赖 Phase 1 已回收证据的整体判断，拆派需整体材料包传递成本大于收益，Rule 25.3 白名单）
@@ -519,7 +519,8 @@ execution_lane: L1
 | 5 | | executor | S3 75.8 调研方向粒度落地 | done | +8/-0；CA-6 不适用；残留发现登记 | critical-rules-research.md:62-68（wt） | progress Phase 3 | plans/task-v194-subagent-unit-cap/subagent-state/S3-executor.md | sonnet-1 / 0 / ☑ |
 | 6 | | executor | S4 selftest 回归 | done | 3 轮→92/92 exit=0；GR-01 锚修复 +4/-4 | selftest-dispatch-grain.sh:88（wt） | progress Phase 3 | plans/task-v194-subagent-unit-cap/subagent-state/S4-executor.md | sonnet-1 / 0 / ☑ |
 | 7 | 2026-10-21 | critic | S5 条款复审挑刺 | done | verdict=CHANGES（0B/5M/4N）；主进程逐条裁决 | 复审报告（返回消息全文） | progress Phase 4 | plans/task-v194-subagent-unit-cap/subagent-state/S5-critic.md | sonnet-1 / 0 / ☑ |
-| 8 | 2026-10-21 | executor | S6 复审回炉修复 | done | 7 处修订 +7/-6；selftest 92/92 | dispatch:124,127,128,129;research:64,67;media:12 | progress Phase 4 | plans/task-v194-subagent-unit-cap/subagent-state/S6-executor.md | sonnet-1 / 0 / ☑ |
+| 8 | 2026-10-21 | executor | S6 复审回炉修复 | done | 7 处修订 +7/-6；selftest 92/92 | dispatch:124,127,128,129;research:64,67;media:12 | progress Phase 4 | plans/archive/task-v194-subagent-unit-cap/subagent-state/S6-executor.md | sonnet-1 / 0 / ☑ |
+| 9 | 2026-10-21 | critic | S5b 复审复核回炉修订 | done | verdict=APPROVED（5M+2N 全 RESOLVED；残留观察 1 登记） | 复核报告（返回消息全文） | progress Phase 5 | - | sonnet-1 / 0 / ☑ |
 
 ## 🔁 模板感知
 <!-- template_type: general -->

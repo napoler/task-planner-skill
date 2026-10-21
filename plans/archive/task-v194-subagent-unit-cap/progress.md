@@ -41,7 +41,7 @@
   | V-2.2 级联核对项在位 | Read clauses.md 尾部清单 | CA-3/CA-6 条件核对指令在位 | 在位（2 项 SKILL.md 核对+selftest 面） | PASS |
 
 ### Phase 3: worktree 落地 + selftest 回归
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-21
 - Actions taken:
   - worktree 创建（主进程白名单①）：`git worktree add /mnt/data/dev/task-planner-skill-worktrees/task-v194-subagent-unit-cap -b wt/task-v194-subagent-unit-cap master`；对账 HEAD=42d72b4 与 master 一致，三目标文件 `git diff master --stat` 零差异（防 worktree-branch-desync）
@@ -65,6 +65,8 @@
   | 纯增量 | git diff 全文件 `\|^[-]` 计数 | 0（selftest 修复除外） | 三条款文件 0 | PASS |
   | 全量 selftest（wt, R3 终轮） | run-selftests.sh --fresh | exit=0 FAIL=0 | Total 92 PASS=92 FAIL=0 | PASS |
   | 变更面 ⊆ 白名单 | git diff --name-only master...wt | ⊆4 白名单文件 | 恰 4 文件 | PASS |
+
+- [goal:G3] 三条款落地 grep 达标（46.6=3、75.8=2）+ selftest 92/92（R3 终轮）+ 产物提交 14be073（证据：上方 Phase 3 Test Results 与 git log）
 
 ### Phase 4: 独立复审（换人挑刺）
 - **Status:** complete
@@ -92,6 +94,7 @@
   - 主仓 VC 复验全 PASS：46.6=3 / 整集生成=1 / 1 个生产单元=1 / 单会话单 S-unit=6 / 59.1=8 / 75.8=2；`git show --name-only b21b44a` 归因恰 4 白名单文件
   - 委派统计修复轮：Handoff 类型名带后缀→violation（裸名判例复发）+Phase 1/2 理由缺「计划系统文件」关键词→措辞修正；复验 verdict=ok（rate 0.4，WHITELIST-EXEMPT 路径）；重锁 attest SHA c09daeea
   - 终验前偏移检查：drift-checker 复合审查 **✅ALIGNED**（检查点 drift-check-final.md）
+  - CR-GATE 闭环：S5 critic 复审 verdict=CHANGES（0B/5M/4N）→ S6 回炉 42a09f3 → S5b critic 复核 verdict=APPROVED（5 MAJOR 全 RESOLVED、2 NIT 落地、无新阻断；残留观察 1 项=「声明交付物粒度」窄缝（修订前既有，MEDIUM，登记 findings 待后续收口））→ **CR APPROVED**（2026-10-21，证据=S5b 复核报告逐项 RESOLVED 引句，子代理返回全文存 progress 会话档案）
   - VC-4 口径说明：主仓 skills/ 有并行会话在途未提交改动（SKILL.md/critical-rules.md/selftest-requirement-coverage.sh，非本任务产物）——主仓不重跑 selftest 避免吞并行态噪音，以 worktree 合并树终轮 92/92 为准
 - Files created/modified:
   - skills/task-dispatch/references/critical-rules-dispatch.md、skills/media-planner/references/critical-rules-media.md、skills/plan-research-router/references/critical-rules-research.md、skills/task-planner/scripts/selftest-dispatch-grain.sh（经 b21b44ac 入 master）
