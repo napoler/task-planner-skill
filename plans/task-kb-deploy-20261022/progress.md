@@ -73,6 +73,32 @@
 
   [goal:G3] 提交推送验证：bash git push origin master → 2448e01..9ec6fea；bash git rev-parse master origin/master → 9ec6fea897b2cd9f6337208d441852d4f0437f6b 双向相等 → PASS，产物路径 .gitignore、plans/task-kb-deploy-20261022/subagent-state/1-general-purpose.md
 
+### Phase 4: CR 门控闭环（修复 → 合并 → 重部署 → 复审）
+- **Status:** complete
+- **Started:** 2026-10-22 09:40
+- Actions taken:
+  - CR 首轮裁决 `CR CHANGES REQUIRED`（1 Blocker + 1 Suggestion）：Blocker = `check-scope.sh` 口径①（会话级轻量标记）对任意路径放行，与同文件 :99 边界声明及 L0-E 档契约矛盾；Suggestion = `templates/task_plan.md:355` 指向自带模板不存在的 knowledge-brief §7（悬空指针，本次部署方自有缺陷）。
+  - 按 §十一 建隔离 worktree `/home/terry/task-planner-skill-worktrees/task-kb-cr-fix-20261022`（分支 `wt/task-kb-cr-fix-20261022`，base=master@aaa01c6），修复两处（含 What/Why/How 注释层）。
+  - 修复提交 `14d6673` → `smart-merge-back.sh` 合并回 master = `eaa58af`（V1-V6 门全过）→ worktree 与 `wt/*` 分支已清理（§十一.3.5）。
+  - 修复后重新部署三位：`check-scope.sh` + `templates/task_plan.md` 同步至 `~/.zcode` / `~/.claude` / `~/.cursor`；差异复验 zcode=0、claude=9、cursor=9（纯平台 flavor）。
+  - Code Reviewer 复审（同一 agent id 续跑，含 6 项遗留项归类核对）→ **CR APPROVED WITH NITS**（0 Blocker）。
+- Files created/modified:
+  - skills/task-planner/scripts/check-scope.sh
+  - skills/task-planner/templates/task_plan.md
+  - plans/task-kb-deploy-20261022/subagent-state/2-code-reviewer.md
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 旁路封堵（哨兵+标记，受管文件） | check-scope.sh src/main.py | exit 1 拦截 | 修前 exit 0（旁路）→ 修后 exit 1 | PASS |
+  | 机械产物区不回归 | check-scope.sh tmp/a.json | exit 0 放行 | 修前修后均 exit 0 | PASS |
+  | 无标记受管文件 | check-scope.sh src/main.py | exit 1 | exit 1 | PASS |
+  | 语法 | bash -n check-scope.sh | 0 | 0 | PASS |
+  | 全量回归 | run-selftests.sh --fresh | 92 PASS / 0 FAIL | Total: 92 PASS=92 FAIL=0（run=92 reused=0） | PASS |
+  | 复审 | subagent-state/2-code-reviewer.md | 无 Blocker | VERDICT: CR APPROVED WITH NITS | PASS |
+  | 部署位差异 | diff -rq ×3 位 | zcode=0 / claude=9 / cursor=9 | 0 / 9 / 9（全为 node↔bun flavor） | PASS |
+
+  [goal:G1] CR 门控闭环：Code Reviewer 复审裁决 CR APPROVED WITH NITS（0 Blocker）→ PASS，产物路径 plans/task-kb-deploy-20261022/subagent-state/2-code-reviewer.md
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

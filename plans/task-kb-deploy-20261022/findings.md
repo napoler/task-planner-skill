@@ -43,6 +43,23 @@
 | SKILL.md 两处并集冲突（Rule 93 行 / P4 权重 0 行） | 按「内容互斥度低、双侧都要留」裁决：冲突1 留仓库 Rule 93 行，冲突2 留部署位 P4 长行 |
 | cursor 3 处冲突 | 取仓库侧（Rules 1-93 计数；卫星路径 `../../` 在 cursor 位下才正确；selftest registry 2 行缺失） |
 | attest 报「12 条 VC 中仅 6 条含可执行验证命令」 | Goal Gate 复选行与 VC 条目同形被重复计数 → 改前缀为「复验 VC-N：」 |
+| CR 首轮 Blocker：会话级轻量标记对任意路径放行 | 口径① 复用口径② 的机械产物区 + gitignore 判定；受管文件实测 exit 0→1；修复提交 14d6673，合并 eaa58af |
+| CR 首轮 Suggestion：模板 §7 悬空指针 | 改为条件式引用「项目级 knowledge-brief.md §7 入库回链段，若有」 |
+
+## 🔖 CR 复审遗留项登记（CR APPROVED WITH NITS，0 Blocker）
+> 来源：Code Reviewer 复审（第二轮）。以下均为**非阻断**，且经复审核实其中 4 项系本次部署（9ec6fea）引入/激活，
+> 非历史遗留。按 §四.6 文本优先 + L0-T 纯文本档登记为待修清单，本轮不实施（超出「部署 + 提交」射程）。
+
+| # | 位置 | 缺陷 | 级别 | 引入方 | 待修方向 |
+|---|------|------|------|--------|---------|
+| L-1 | `skills/task-planner/scripts/check-delegation.sh:251` vs `:351` | k8s 保护清单 `*/.k8s/*` 与 `*/k8s/*` 口径不一致（fail-closed，需同时命中 gitignore 区才可能放行） | 非 Blocker | 本次部署引入 | 统一为一套 glob 口径 |
+| L-2 | `skills/task-planner/scripts/check-tier-consistency.sh:61` | `execution_lane: L0-E` 被前缀解析为 L0（2-Phase 夹具实测 exit 1） | 非 Blocker | 本次部署引入 | 解析改精确匹配，避免 `L0-E` 与 `L0` 前缀碰撞 |
+| L-3 | `skills/task-planner/scripts/selftest-requirement-coverage.sh` | 51.13 无 selftest 守护（RC-24..27 仅覆盖 51.9-51.12） | 非 Blocker | 本次部署引入 | 补 RC 断言覆盖 51.13 |
+| L-4 | `skills/task-planner/scripts/selftest-requirement-coverage.sh:8` | 头注 `RC-01..RC-23` 与实际 RC-27 不符（实测 27 PASS=27） | 非 Blocker | 本次部署引入 | 同步头注计数 |
+| L-5 | `skills/task-planner/README.md:81` / `docs/ARCHITECTURE.md:4` | 规则计数写 74 条，实测 76 条（base 即如此） | 非 Blocker | 既有 | 口径同步 |
+| L-6 | `skills/task-planner/scripts/task-plan-init.cjs:103-115` | 口径① 限权后豁免归因文案失准（实测真实放行来源是「不写哨兵」而非 marker） | Suggestion | 本次部署引入 | 二择一：轻量会话仍写哨兵 / 或改文案为真语义并注明 `fix`/`简单` 子串匹配连带面 |
+| L-7 | `skills/task-planner/scripts/check-scope.sh:121-130` vs `:133-142` | 修复后 12 行同构判定重复，「机械产物区」定义分居两处易漂移 | Suggestion | 本次部署引入 | 抽 `_is_mechanical_artifact_path()` 复用 |
+| L-8 | `check-scope.sh:22-23` / `:123,128,131` / `check-delegation.sh:437` / `templates/task_plan.md:353,355` | 头注未列放行来源；留痕走 stdout 建议 `>&2`；日期 10-07/09-07 不一致；相邻两行路径基准混用 | Nit | 混合 | 择机一并清理 |
 
 ## Resources
 - 部署位：~/.zcode/skills/、~/.claude/skills/、~/.cursor/skills/（各含 15 个本仓卫星）
