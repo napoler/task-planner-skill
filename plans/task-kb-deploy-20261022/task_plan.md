@@ -148,9 +148,9 @@ Phase 3 全部 complete（待归档）。
 ## Phases
 
 ### Phase 1: 部署同步（三位）
-- [ ] rsync repo skills/task-planner → ~/.zcode 位，diff 校验
-- [ ] rsync → ~/.claude 位、~/.cursor 位，diff 校验
-- [ ] 三位模板含收尾两步（grep 实证）
+- [x] rsync repo skills/task-planner → ~/.zcode 位，diff 校验
+- [x] rsync → ~/.claude 位、~/.cursor 位，diff 校验
+- [x] 三位模板含收尾两步（grep 实证）
 - **V-N:** VC-1, VC-2
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② 机械同步/环境配置类操作，Rule 25.3 白名单）
@@ -162,9 +162,9 @@ Phase 3 全部 complete（待归档）。
 | S3 | 同步 ~/.cursor 位 | 主进程（白名单②） | 同上 | diff 归零 | 3min | 0f/0l/3min | 无 | S2 | done |
 
 ### Phase 2: 单源清理 + 冒烟 + 回归
-- [ ] 删除 .zcode/plan-templates/task_plan.md（部署位已同源）
-- [ ] init 冒烟：新计划仍含收尾两步 + knowledge-brief 带 §7
-- [ ] 全量 selftest 零回归
+- [x] 删除 .zcode/plan-templates/task_plan.md（部署位已同源）
+- [x] init 冒烟：新计划仍含收尾两步 + knowledge-brief 带 §7
+- [x] 全量 selftest 零回归
 - **V-N:** VC-3, VC-6
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② 机械校验类操作，Rule 25.3 白名单）
@@ -176,9 +176,9 @@ Phase 3 全部 complete（待归档）。
 | S6 | 全量 selftest 回归 | 主进程（后台批） | skills/task-planner/scripts | FAIL=0 | 15min | 0f/0l/15min | 无 | S5 | done |
 
 ### Phase 3: 提交推送 + 独立复核 + 归档
-- [ ] .gitignore 追加运行态忽略条目
-- [ ] git add/commit/push origin/master
-- [ ] 独立子代理复核部署位一致性
+- [x] .gitignore 追加运行态忽略条目
+- [x] git add/commit/push origin/master
+- [x] 独立子代理复核部署位一致性
 - **V-N:** VC-4, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:② git 编排类操作，Rule 25.3 白名单）
