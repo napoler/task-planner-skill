@@ -72,15 +72,15 @@ execution_lane: L1
 |------|-----|
 | 目标型 R 行 | R1, R2 |
 | 问题解决判据 | R1=其他项目的新任务收尾自动携带归档+知识提取两步（部署位模板实证）且本仓生效路径不回归；R2=全部修改进入 origin/master（推送实证） |
-| 裁决 | 待终验填写（COMPLETE / PARTIAL / BLOCKED） |
+| 裁决 | **COMPLETE** —— VC-1~VC-6 全 PASS（zcode 位 15 卫星逐字零差异 / 三位模板收尾两步 grep=2 / 删覆盖后冒烟回落生效 / 全量 selftest 92-0 / master==origin/master / 知识库检索命中+索引幂等）；独立子代理复核 VERDICT: PASS；无遗留阻塞 |
 
 ## 🎯 Goal 单元表（Rule 66.1 — standard 必填）
 
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 三位部署 | repo 技能树同步到 ~/.zcode ~/.claude ~/.cursor 三部署位 | `diff -rq` 差异行仅运行态 + 三位 grep 两步 ≥2 | S1-S3/Phase 1 | pending |
-| G2 | 单源与冒烟 | 删项目级 task_plan 覆盖后本仓 init 仍带两步 + §7 知识回链 | init 冒烟生成物 grep 命中 + §7 命中 | S4-S6/Phase 2 | pending |
-| G3 | 提交推送 | 全部修改提交并 push origin/master，工作树干净 | `git status --short` 预期项 + `master == origin/master` | S7-S8/Phase 3 | pending |
+| G1 | 三位部署 | repo 技能树同步到 ~/.zcode ~/.claude ~/.cursor 三部署位 | `diff -rq` 差异行仅运行态 + 三位 grep 两步 ≥2 | S1-S3/Phase 1 | complete |
+| G2 | 单源与冒烟 | 删项目级 task_plan 覆盖后本仓 init 仍带两步 + §7 知识回链 | init 冒烟生成物 grep 命中 + §7 命中 | S4-S6/Phase 2 | complete |
+| G3 | 提交推送 | 全部修改提交并 push origin/master，工作树干净 | `git status --short` 预期项 + `master == origin/master` | S7-S8/Phase 3 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -132,10 +132,10 @@ execution_lane: L1
 | 独立验收 | 独立子代理复核部署位 diff | Agent 派发 |
 
 ## Current Phase
-Phase 1（部署同步）进行中。
+Phase 3 全部 complete（待归档）。
 
 ## Next Step
-rsync 三位 → diff 校验 → 删覆盖 → init 冒烟 → 回归 → 提交推送。
+归档计划（Rule 81.1）→ 交付总结。
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -152,41 +152,41 @@ rsync 三位 → diff 校验 → 删覆盖 → init 冒烟 → 回归 → 提交
 - [ ] rsync → ~/.claude 位、~/.cursor 位，diff 校验
 - [ ] 三位模板含收尾两步（grep 实证）
 - **V-N:** VC-1, VC-2
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 机械同步/环境配置类操作，Rule 25.3 白名单）
 
 | ID | 目标(≤1 句) | 执行体 | 输入 | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|--------|------|---------|------|------|------|------|------|
-| S1 | 同步 ~/.zcode 位 | 主进程（白名单②） | repo skills/task-planner | diff 归零 | 3min | 0f/0l/3min | 无 | - | pending |
-| S2 | 同步 ~/.claude 位 | 主进程（白名单②） | 同上 | diff 归零 | 3min | 0f/0l/3min | 无 | S1 | pending |
-| S3 | 同步 ~/.cursor 位 | 主进程（白名单②） | 同上 | diff 归零 | 3min | 0f/0l/3min | 无 | S2 | pending |
+| S1 | 同步 ~/.zcode 位 | 主进程（白名单②） | repo skills/task-planner | diff 归零 | 3min | 0f/0l/3min | 无 | - | done |
+| S2 | 同步 ~/.claude 位 | 主进程（白名单②） | 同上 | diff 归零 | 3min | 0f/0l/3min | 无 | S1 | done |
+| S3 | 同步 ~/.cursor 位 | 主进程（白名单②） | 同上 | diff 归零 | 3min | 0f/0l/3min | 无 | S2 | done |
 
 ### Phase 2: 单源清理 + 冒烟 + 回归
 - [ ] 删除 .zcode/plan-templates/task_plan.md（部署位已同源）
 - [ ] init 冒烟：新计划仍含收尾两步 + knowledge-brief 带 §7
 - [ ] 全量 selftest 零回归
 - **V-N:** VC-3, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 机械校验类操作，Rule 25.3 白名单）
 
 | ID | 目标(≤1 句) | 执行体 | 输入 | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|--------|------|---------|------|------|------|------|------|
-| S4 | 删项目级 task_plan 覆盖 | 主进程（白名单②） | .zcode/plan-templates/ | 文件消失且 init 回落部署位 | 2min | 1f/0l/2min | 无 | S3 | pending |
-| S5 | init 冒烟复验 | 主进程（白名单②） | 临时计划目录 | 新计划含两步 + §7 | 4min | 0f/0l/4min | 无 | S4 | pending |
-| S6 | 全量 selftest 回归 | 主进程（后台批） | skills/task-planner/scripts | FAIL=0 | 15min | 0f/0l/15min | 无 | S5 | pending |
+| S4 | 删项目级 task_plan 覆盖 | 主进程（白名单②） | .zcode/plan-templates/ | 文件消失且 init 回落部署位 | 2min | 1f/0l/2min | 无 | S3 | done |
+| S5 | init 冒烟复验 | 主进程（白名单②） | 临时计划目录 | 新计划含两步 + §7 | 4min | 0f/0l/4min | 无 | S4 | done |
+| S6 | 全量 selftest 回归 | 主进程（后台批） | skills/task-planner/scripts | FAIL=0 | 15min | 0f/0l/15min | 无 | S5 | done |
 
 ### Phase 3: 提交推送 + 独立复核 + 归档
 - [ ] .gitignore 追加运行态忽略条目
 - [ ] git add/commit/push origin/master
 - [ ] 独立子代理复核部署位一致性
 - **V-N:** VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② git 编排类操作，Rule 25.3 白名单）
 
 | ID | 目标(≤1 句) | 执行体 | 输入 | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|--------|------|---------|------|------|------|------|------|------|
-| S7 | .gitignore 追加 + 全量提交推送 | 主进程（白名单②） | 工作树全量 | 推送成功且 master==origin/master | 6min | 1f/0l/6min | 无 | S6 | pending |
-| S8 | 独立复核部署位一致性 | general-purpose | 三位路径 + repo | 复核结论 diff=0 | 5min | 0f/0l/5min | 无 | S7 | pending |
+| S7 | .gitignore 追加 + 全量提交推送 | 主进程（白名单②） | 工作树全量 | 推送成功且 master==origin/master | 6min | 1f/0l/6min | 无 | S6 | done |
+| S8 | 独立复核部署位一致性 | general-purpose | 三位路径 + repo | 复核结论 diff=0 | 5min | 0f/0l/5min | 无 | S7 | done |
 
 ## 🔀 隔离决策（冲突分析）
 
@@ -220,26 +220,35 @@ rsync 三位 → diff 校验 → 删覆盖 → init 冒烟 → 回归 → 提交
 2. 共享模板 knowledge-brief.md 不加 §7：避免对无知识库机制的项目产生悬空引用；§7 保留在本仓项目级覆盖 `.zcode/plan-templates/knowledge-brief.md`。
 3. 删项目级 task_plan.md 覆盖（部署后与部署位同源，保留=双源漂移）；knowledge-brief 覆盖保留（承载 §7 项目专属段）。
 4. 运行态（.video_agent/、plans/archive/.drift-rhythm/）入 .gitignore，不入库。
+5. 部署采用「三方并集 + 冲突人工裁决」而非单向覆盖：部署位含仓库没有的活内容（Rule 44.3 / L0-E，10-22 03:21 同步），单向 rsync 覆盖 = 静默删除当天上线的规则。
+6. 并集结果回写仓库作单一源，再由仓库同步三位：保证 GitHub 版本 = 实际生效版本（否则「提交所有修改」推上去的仍是不含 44.3/L0-E 的旧源）。
+7. 部署位比 base 提交更旧时弃用 base 做 3 方合并（方向会反转），改「仓库最新内容 + 按平台还原运行时 flavor」两段式。
+8. 部署范围扩到 15 卫星全树（不止 task-planner）：卫星 task-discipline 缺 Rule 93 与 execution-recall-card.md，而 task-planner 的 task_plan.md:312 / SKILL.md:95 引用该卡，仅同步主技能会留下悬空引用。
 
 ## Errors Encountered
-（执行期填写）
+1. 并集解在「部署位比 base 更旧」时取错侧（cursor 键数断言留旧值 47）→ 改两段式：仓库最新内容 + 按平台还原运行时 flavor（详见 progress.md Error Log #1）。
+2. attest 拒锁「12 条 VC 中仅 6 条含可执行验证命令」→ Goal Gate 复选行改前缀「复验 VC-N：」，避免与 VC 条目同形被重复计数。
+3. init 冒烟在 /tmp 下被硬校验拒绝 → 冒烟目录改落本仓 plans/ 下，用后删除并清指针。
 
 ## Notes
-（执行期填写）
+- 部署位与仓库呈**双向**差异（部署位含 videop1 流 10-22 03:21 同步的 Rule 44.3 / L0-E；仓库含 Rule 93 / 51.9-51.13 / KB 两步）——单向覆盖会静默删掉当天上线的活规则，这是本次部署最关键的判定。
+- 卫星 task-discipline 此前缺 Rule 93 与 execution-recall-card.md，而 task-planner 的 task_plan.md:312 / SKILL.md:95 引用该卡 → 部署必须连卫星一起同步，否则新规则指向空文件。
+- 平台运行时差异（bun vs node）是部署位的合法差异，不写入共享模板，由部署环节单独还原。
 
 ## 🚨 Drift Log（漂移检测记录）
-（执行期填写）
+- 2026-10-22 08:10 检测：执行方向始终为「部署位同步 + 提交入库」，未偏离用户指令（部署 + 提交 GitHub）；中途发现卫星层遗漏后主动扩到 15 卫星全树（用户指令「部署」的自然射程，非范围漂移）。
+- 2026-10-22 08:25 检测：未触碰三个其他会话在途任务（task-defect-rrv13-dg12-false-pass / task-P01-evidence-anchor / task-v188-skill-audit-fix）——仅将其计划文件随「提交所有修改」入库，未改动其内容。
 
 ## 📊 Batch Report（批量处理质量门控 — Rule 18.6）
 本任务为三位置机械同步（非内容生产批），按 Rule 18.6 判不适用：每位置 diff 逐项复核 = 逐批验收。
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
-- 机器统计为事实源：`check-delegation.sh stats plans/task-kb-deploy-20261022`（终验前粘贴 JSON）
-- 主进程直做 Phase 均为白名单②机械/环境/git 类操作（登记于各 Phase Executor 字段）
+- 机器统计为事实源：`check-delegation.sh stats plans/task-kb-deploy-20261022` → `{"phases_total":3,"phases_delegated":0,"main_direct_count":3,"delegation_rate":0.000,"violations":[],"verdict":"ok"}`
+- 主进程直做 Phase 均为白名单②机械/环境/git 类操作（登记于各 Phase Executor 字段）；独立复核子代理已实际派发（Handoff #1，general-purpose）
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 
 | # | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要 | checkpoint 路径 |
 |---|--------------|----------------|------|---------|----------------|
-| 1 | general-purpose | 独立复核三部署位与 repo 技能树一致性 | pending | | plans/task-kb-deploy-20261022/subagent-state/1-general-purpose.md |
+| 1 | general-purpose | 独立复核三部署位与 repo 技能树一致性 | done | VERDICT: PASS（6/6 项：三位模板收尾两步=2、critical-rules 51.9-51.13 在位、zcode 位差异=0、claude/cursor 差异恰 9 个 flavor 文件且无非 flavor 差异、零冲突标记、三位 selftest-requirement-coverage 27/27） | plans/task-kb-deploy-20261022/subagent-state/1-general-purpose.md |
 | 2 | 无 | 主进程直做（S1-S7 机械同步/校验/提交） | done | 部署+提交主流程 | - |
