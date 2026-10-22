@@ -239,6 +239,37 @@ on 子命令需要 --confirm-user-requested 参数(同 sid 仅一次;若需同 p
     printf '{"additionalContext": %s}\n' "$(printf '%s' "$msg" | jq -Rs . 2>/dev/null || printf '"warn"')"
 }
 
+# 保护区路径判定（skills/agents/commands/AGENTS.md/cli config/基础设施）
+# [2026-10-22 task-videop1-protectfix-001 P4] 供 ④c L0-E 纯执行档直做通道复用；
+#   与 ④b mini 档的保护区清单同源（两份清单须同步维护——mini 分支原文不动，避免行为面回归）。
+is_protected_path() {
+    local fp="$1"
+    case "$fp" in
+        */.zcode/skills/*|*/.claude/skills/*|*/skills/*|*/.config/opencode/skills/*|*/.agents/skills/*) return 0 ;;
+        */.zcode/agents/*|*/.zcode/commands/*|*/.zcode/AGENTS.md|*/.agents/AGENTS.md|*/.zcode/cli/config.json) return 0 ;;
+        *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) return 0 ;;
+        *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/.k8s/*) return 0 ;;
+    esac
+    return 1
+}
+
+# 机械产物区判定（L0-E 纯执行档直做通道专用）
+# [2026-10-22 P4] 只放行「产物落 gitignore 区」的目标：项目根下的 tmp/ output/ .cache/ + git 忽略区。
+#   Why 收紧到产物区（而非任意非保护区路径）：L0-E 档的定义即「零仓库受管变更 ∧ 产物全落 gitignore 区」，
+#   业务代码写入本就不该出现在 L0-E 计划里（那是档位误标）→ 保持委派门对其 fail-closed，不被 L0-E 旁路。
+is_mechanical_artifact_path() {
+    local fp="$1"
+    local root="$2"
+    [ -n "$root" ] || return 1
+    case "$fp" in
+        "$root/tmp/"*|"$root/output/"*|"$root/.cache/"*) return 0 ;;
+    esac
+    if git -C "$root" check-ignore -q -- "$fp" 2>/dev/null; then
+        return 0
+    fi
+    return 1
+}
+
 # ── pretool 模式 ──────────────────────────────────────────────────────────────
 mode_pretool() {
     local file_path="${1:-}"
@@ -331,6 +362,21 @@ mode_pretool() {
         # 保护区命中 → 落到 ⑤⑥ 原链
     fi
 
+    # ④c [2026-10-22 task-videop1-protectfix-001 P4] L0-E 纯执行档直做通道
+    #   计划头声明 `execution_lane: L0-E`（零仓库受管文件变更 ∧ 仅调用既有 tools/*.py 等既有工具
+    #   ∧ 产物全落 gitignore 区 tmp//output/）→ 主进程直做机械产物放行，不强制派子代理
+    #   （审计判例 F10：写 tmp/ spec 字面命中 enforce 阻断 → 一条 compose 命令被迫派子代理）。
+    #   保护区（skills/agents/commands/AGENTS.md/cli config/基础设施）永不放行——L0-E 红线同 mini 档。
+    if [ -f "$plan_dir/task_plan.md" ] && grep -qE 'execution_lane: *L0-E' "$plan_dir/task_plan.md" 2>/dev/null; then
+        # 项目根 = <ROOT>/plans/<task-id> → <ROOT>（机械产物区判定用）
+        local _proj_root
+        _proj_root="$(dirname "$(dirname "$plan_dir")")"
+        if ! is_protected_path "$file_path" && is_mechanical_artifact_path "$file_path" "$_proj_root"; then
+            exit 0
+        fi
+        # 保护区命中 / 非机械产物区 → 落到 ⑤⑥ 原链（档位误标时保持 fail-closed）
+    fi
+
     # ⑤ .allow-direct 有效 → 放行 + ledger 记录
     if check_allow_direct "$plan_dir" "$sid" "pretool"; then
         exit 0
@@ -361,8 +407,8 @@ mode_pretool() {
 #     含白名单编号标识 → 已登记,不计 violation(删除旧「用户显式|规划|验收|编排|簿记」关键词
 #     字面匹配——该正则会误伤按 Rule 25.3 白名单规范措辞填写的理由,BLOCKER B-1)
 #   - 子代理:delegated++ + 复合 Executor 按 + 拆分逐个 Handoff 交叉校验
-#   动态作用域写回调用方(mode_stats)局部变量:total/delegated/main_direct_count/
-#   main_direct_json/violations_json;本函数不得再 local 这五个名字
+#   动态作用域写回调用方(mode_stats)局部变量:total/delegated/main_direct_count/pure_exec_count/
+#   main_direct_json/violations_json;本函数不得再 local 这六个名字
 #   用法: _flush_phase <executor> <reason> <phase_name> <plan_file>
 _flush_phase() {
     local exec_norm="$1"
@@ -370,17 +416,32 @@ _flush_phase() {
     local phase_name="$3"
     local plan_file="$4"
     total=$(( total + 1 ))
+    # [2026-10-22 task-videop1-protectfix-001 P4] 纯执行 S-unit 识别（L0-E 档/纯机械操作）：
+    #   Executor 行或其括注理由含 `L0-E` / `纯执行` 标记 → 该 S-unit 属「零仓库受管变更 ∧ 仅调用
+    #   既有工具 ∧ 产物落 gitignore 区」的纯执行单元 → 委派率统计权重 0（既不计入分子也不计入分母）。
+    #   Why（审计判例 F9/F10）：机械任务被 floor 0.7 回炉、被 enforce exit 2 阻断 → 畸形激励「为凑
+    #   委派率而派子代理执行一条命令」。标记载体=计划 Executor 行（主进程登记 L0-E 档）。
+    local pure_exec=0
+    if [[ "$exec_norm" =~ (L0-E|纯执行) ]] || [[ "$reason" =~ (L0-E|纯执行) ]]; then
+        pure_exec=1
+    fi
     if [[ "$exec_norm" =~ 主进程 ]]; then
         main_direct_count=$(( main_direct_count + 1 ))
+        if [ "$pure_exec" -eq 1 ]; then
+            pure_exec_count=$(( pure_exec_count + 1 ))
+        fi
         local needs_git=0
         if [[ "$reason" =~ (3行|trivial|≤3行|≤ 3行) ]]; then
             needs_git=1
         fi
-        # [2026-09-07 task-v055-fix-review] B-1/M-1:白名单编号标识判定
+        # [2026-10-07 task-v055-fix-review] B-1/M-1:白名单编号标识判定
         # 格式要求(与 SKILL.md 对齐):**Executor:** 主进程（白名单N：<说明>）或（N <说明>）
         local self_declared=0
         local violation_type=""
-        if [ -z "$reason" ]; then
+        if [ "$pure_exec" -eq 1 ]; then
+            # [2026-10-22 P4] 纯执行 S-unit：L0-E 标记本身即登记理由 → 免白名单编号要求、不计 violation
+            self_declared=0
+        elif [ -z "$reason" ]; then
             self_declared=1
             violation_type="missing_reason"
         elif [[ "$reason" =~ (①|②|③|④|⑤|⑥|白名单[1-6]) ]]; then
@@ -492,6 +553,8 @@ mode_stats() {
     local total=0
     local delegated=0
     local main_direct_count=0
+    # [2026-10-22 P4] 纯执行 S-unit 计数（委派率权重 0 的分母扣减项）
+    local pure_exec_count=0
     local violations_json="[]"
     local main_direct_json="[]"
 
@@ -561,12 +624,25 @@ mode_stats() {
         _flush_phase "$current_executor" "$current_reason" "$current_phase_name" "$plan_file"
     fi
 
-    # 委派率 = delegated / (delegated + 全部 main_direct_count)
+    # 委派率 = delegated / (delegated + main_direct_count - pure_exec_count)
     # 全部主进程直做均算入分母(含白名单内例外),与 Rule 25.4 一致
-    local denom=$(( delegated + main_direct_count ))
-    [ "$denom" -lt 1 ] && denom=1
+    # [2026-10-22 task-videop1-protectfix-001 P4] 纯执行 S-unit（L0-E 档）权重 0——既不计入分子也不计入分母。
+    #   Why 排除出分母（而非「计入分母不计入分子」）：后者会拉低委派率，与「机械操作免强制派子代理/
+    #   免终验回炉」的豁免意图方向相反（审计判例 F9）。分母为 0（整批皆纯执行 S-unit）→ 无委派义务
+    #   → rate=1.000 视为达标，避免 floor 误判回炉；无纯执行单元时行为与改前逐字节一致。
+    local denom=$(( delegated + main_direct_count - pure_exec_count ))
+    [ "$denom" -lt 0 ] && denom=0
     local rate
-    rate="$(awk -v d="$delegated" -v de="$denom" 'BEGIN{printf "%.3f", d/de}')"
+    if [ "$denom" -lt 1 ]; then
+        if [ "$pure_exec_count" -ge 1 ]; then
+            rate="1.000"
+        else
+            denom=1
+            rate="$(awk -v d="$delegated" -v de="$denom" 'BEGIN{printf "%.3f", d/de}')"
+        fi
+    else
+        rate="$(awk -v d="$delegated" -v de="$denom" 'BEGIN{printf "%.3f", d/de}')"
+    fi
 
     # verdict
     local verdict="ok"

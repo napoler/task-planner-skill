@@ -53,8 +53,8 @@ model: opus
 
 - [ ] [A] **计划确认**
   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）
-  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
-  - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
+  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
+  - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认（该确认等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
   - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
 
@@ -114,7 +114,7 @@ model: opus
 - [ ] [A] **终验交付 — 智能子动作**：VC 复验判定、质量门控与委派率核查、outcome 判定
   - **按卫星 `verification-gate` 终验 SOP 执行（Rule 84.5 Step 3）**：Read `verification.md`，逐条复验 VC（每条带证据路径+可执行命令）；统一入口 `bash <verification-gate>/scripts/run-verification.sh <plan-dir>` 自动执行 VC 命令并汇总 PASS/FAIL
   - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
-  - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉
+  - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉；**纯执行 S-unit 权重 0（P4，2026-10-22 用户授权）**：命中 L0-E 档（零仓库受管变更 ∧ 仅调用既有工具 ∧ 产物落 gitignore 区）的 S-unit **既不计入分子也不计入分母**——若计入分母会拉低委派率，方向与「机械操作免强制派子代理/免终验回炉」的豁免意图相反（审计判例 F9）；机器面=计划 Executor 行标 `L0-E`（或括注含「纯执行」）即识别，`check-delegation.sh stats` 已按此口径实现（分母扣减 + 该单元不判 violation + 整批皆纯执行时 rate=1.000 视为达标）
   - 交付结论 COMPLETE/PARTIAL/BLOCKED；**交付总结五要素**（Rule 48：全体指针绝对路径/可执行命令）按 `templates/delivery-summary.md` 输出
   - 决策分级（Rule 72）/呈报四要素（Rule 70）/变更吸收三判（Rule 74）/编号列表规范（Rule 76）按卫星 `task-discipline` 全文执行
   **可选思路**：
@@ -184,6 +184,7 @@ model: opus
 - **投诉响应协议**：每次用户投诉「慢 / 好几个小时解决一个最简单的问题」时——① 复述用户原话 → ② 检查既有通道（L0 微变更 / mini 轻量档 / trivial 代码修复档）是否覆盖该场景 → ③ 未覆盖则扩展既有通道边界（如 Change #1 的 trivial 代码修复第四条件），而非叠加新的门控/仪式。
 - **通道不可用快速失败（Rule 83）**：`/workflow` 请求先探测当前环境 Skill 工具面（`Skill(skill="dynamic-workflows")` 是否可用），缺失即登记环境缺口 + 给三选项（换环境 / Agent 替代授权 / 主进程直执行授权），禁 ≥2 次同法重试（videop1 D6 判例：CreateWorkflow 无 Skill 工具 3 次重试全拦）。
 - **L0 通道定期边界审查触发**：每 10 个任务或每月，检查「最常见的简单场景」是否被既有通道排除（如代码文件改动被 lane-detect.sh:86 禁滥用条款排除 → 已补 trivial 第四条件）。审查留痕于 findings.md。
+- **L0-E 纯执行档（2026-10-22 用户授权 task-videop1-protectfix-001 新增；Rule 38.7 通道族新增档，本处为 SKILL 侧摘要口径，全文锚=卫星 Rule 38.7「执行通道分级」段（plan-template-kit / task-discipline 逐字双载））**：判定三条件**全满足**=纯执行任务——① 零仓库受管文件变更（不新增/修改任何入库文件）∧ ② 仅调用既有工具（`tools/*.py` 等已存在脚本/API，无新代码、无新语义）∧ ③ 产物全落 gitignore 区（`tmp/` `output/` 等）；命中=**免计划免 attest**（不建 `task_plan.md`、不跑 attest-plan.sh），主进程直做，产物按「生成物展示规则」呈示 + progress 一行登记（`[L0-E] <动作>×<产物路径>×<日期>`）；已有计划目录的批次仅对该 S-unit 豁免委派率统计（P4 口径：权重 0，既不计入分子也不计入分母）。**禁滥用**：任一条件不满足（含功能性代码变更/新增脚本/产物落仓库受管区）即回落 L1 standard 通道；机器面=计划头 `execution_lane: L0-E` 声明（`check-delegation.sh` ④c 直做通道 + stats 权重 0 已接线）。Why（判例=videop1 机械合图停摆投诉 session_a40eae17265b5414c27e8c45d2c27b5c）：机械操作零仓库变更却被 L0/L1 全量仪式拦住——流程开销与变更体量严重失衡（Rule 38.7 比例原则）。
 - **验证锚新位置（Rule 38.7 执行通道分级）**：原核心 `references/critical-rules.md` 锚已失效（task-v171 专业化拆分后 0 命中）。现权威位置=`../plan-template-kit/references/critical-rules-template.md:45` + `../task-discipline/references/critical-rules-discipline.md:195`（逐字双载，域归属=模板域+执行纪律域）。后续 grep 检查 Rule 38.7 应命中这两处，勿再 grep 核心 critical-rules.md。
 - **§六 保护区约束**：本技能 SKILL.md 是技能文件，修改须走 §十一 worktree 铁律（git worktree add → 修改 → selftest → 合并回 master）；不修改 `~/.zcode/` 下的记忆文件（§六 保护区）。
 
@@ -211,7 +212,7 @@ Rules 1-93 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 - **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件
 - **Rule 20 计划注入与防篡改**：turn-start smart 复诵+SHA-256 attest 锁定+外部内容只进 findings
 - **Rule 26 质量优先于速度**：6 类降质行为可观察触发+确定性惩罚（回炉→PARTIAL→BLOCKED），伪造证据无豁免
-- **Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；自缩水禁令；未测试禁声称完成
+- **Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；自缩水禁令；未测试禁声称完成；**可计数交付物全 R 化 + 禁「0 产出」为 covered 判据 + 留口须逐字让步锚（51.9-51.12）**
 - **Rule 62 四文件罗盘数据流转**：派发读写契约不可收窄+调研双落盘+kb 增量门控
 - **Rule 66 goal 单元固化**：Goal 单元表六列契约+逐 goal 验证通过门+按 goal 逐个推进
 - **Rule 80 用户会话逐字记录**：user-session-log.md append-only 只写不改；恢复先读专档；每条逐字后同号配对理解镜像（80.7，非权威对照面）
@@ -224,7 +225,7 @@ Rules 1-93 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ## Scope Guard / Goal Gate
 
-- **Scope Guard**：`check-scope.sh Write "<file>" task_plan.md` → exit 0=in scope / 1=out / 2=no plan。不在 scope→停，获授权扩 scope。
+- **Scope Guard**：`check-scope.sh Write "<file>" task_plan.md` → exit 0=放行 / 1=拦截 / 2=no plan。**口径更正（P7，2026-10-22 用户授权）**：`scope_files` 约束**不由运行时停摆门承载**——实测 `check-scope.sh`/`check-delegation.sh` 均无 scope_files 运行时拦截逻辑（grep 零命中），原表述「不在 scope→停，获授权扩 scope」是死文，会诱导执行体按不存在的门停摆请示；实际约束由三处承载：① 主进程派发前的范围声明（Executor/scope_files 字段）② 收口审计 ③ `git show --stat` 越界自检。scope 越界的唯一合法出口=收口审计发现越界后按 Rule 74 变更标注表处理，不是执行期停下问用户。
 - **Goal Gate**：每个 `task_plan.md` 必须含 **Verification Contract**（VC 表），每项含可执行验证命令（Rule 84.1）。详见卫星 `verification-gate` `references/critical-rules-verification.md` Rule 84.3（2026-10-14 task-v173 从 goal-gate.md 迁移）。
 
 ## I/O 契约

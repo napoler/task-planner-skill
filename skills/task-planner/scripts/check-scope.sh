@@ -85,7 +85,51 @@ case "$_base" in
     exit 0 ;;
 esac
 
-# ─── ④ 会话 side 哨兵判定（TASK_PLANNER_SID 非空）────────────────────────────
+# ─── ④ 轻量/机械操作放行判定（P1，2026-10-22 用户授权 task-videop1-protectfix-001）──
+# Why（审计判例 F3 + videop1 机械合图停摆投诉 session_a40eae17265b5414c27e8c45d2c27b5c）：
+#   原拦截链对「轻量档」零豁免（全文 grep 轻量/LIGHTWEIGHT/简单 零命中）→ 机械操作
+#   （写 tmp/ spec 跑既有 tools/*.py，零生成零新语义）同样被「本会话计划哨兵未满足」拦截
+#   → 机械小任务在指令→完成链路上无零停摆通道。两个放行口径（任一命中即放行）：
+#   ① 会话级轻量标记：task-plan-init.cjs 检出轻量/机械词面（合图/compose/拼接/抽帧/下载…）时
+#      写 <sidkey>.plan_lightweight 并跳过哨兵写入；该 hook 拿不到 prompt 时本口径不触发。
+#   ② 路径级机械产物区：写入目标落在 gitignore 区（tmp/ output/ .cache/ 等）→ 属机械操作产物落盘，
+#      不构成仓库受管文件变更 → 免「无计划」拦截。
+# Why②必要（SessionStart 载荷实测无 prompt）：zcode-sessionstart.sh 读 stdin 后不再向 node 透传，
+#   task-plan-init.cjs 的 promptText 恒空 → 口径①在现行 hook 链下不可达；若只有①则 P1 形同死文。
+# 边界：两个口径均不放开「仓库受管文件」的写入拦截（非 tmp/output/.cache/gitignore 区的路径语义不变）。
+_lightweight_marker_path() {
+  [ -n "${TASK_PLANNER_SID:-}" ] || return 1
+  local _k
+  _k="$(printf '%s' "$TASK_PLANNER_SID" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+  case "$_k" in
+    sess*) _k="${_k#sess}" ;;
+  esac
+  [ -n "$_k" ] || return 1
+  printf '%s' "$ROOT/plans/.plan_required_side/$_k.plan_lightweight"
+}
+
+_lightweight_release() {
+  local _fp="$1"
+  local _lm
+  _lm="$(_lightweight_marker_path 2>/dev/null || true)"
+  if [ -n "$_lm" ] && [ -f "$_lm" ]; then
+    echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm")，机械操作免计划门控）"
+    return 0
+  fi
+  case "$_fp" in
+    "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*)
+      echo "[PLAN-GUARD] ✅ 机械产物区放行（$_fp 不构成仓库受管文件变更）"
+      return 0
+      ;;
+  esac
+  if git -C "$ROOT" check-ignore -q -- "$_fp" 2>/dev/null; then
+    echo "[PLAN-GUARD] ✅ gitignore 区放行（$_fp 不构成仓库受管文件变更）"
+    return 0
+  fi
+  return 1
+}
+
+# ─── ⑤ 会话 side 哨兵判定（TASK_PLANNER_SID 非空）────────────────────────────
 _side_sentinel=""
 if [ -n "${TASK_PLANNER_SID:-}" ]; then
   # sidkey 规范：剥非字母数字取前 40，再剥 sess 前缀（对齐 norm_sid / check-dispatch 侧）
@@ -156,6 +200,11 @@ if [ -n "$_side_sentinel" ] && [ -f "$_side_sentinel" ]; then
     fi
   fi
 
+  # [P1] 轻量/机械操作放行（优先于拦截：机械操作零停摆，见 ④ 口径说明）
+  if _lightweight_release "$abs_path"; then
+    exit 0
+  fi
+
   # 未满足 → 拦截
   echo "[PLAN-GUARD] 🚫 本会话计划哨兵未满足 (.plan_required_side active: $(basename "$_side_sentinel"))."
   echo "  Tool: $TOOL"
@@ -169,9 +218,13 @@ if [ -n "$_side_sentinel" ] && [ -f "$_side_sentinel" ]; then
   exit 1
 fi
 
-# ─── ⑤ legacy 降级（无 sid 或 side 未命中）：仅查 <ROOT>/.plan-required 固定位置 ─
+# ─── ⑥ legacy 降级（无 sid 或 side 未命中）：仅查 <ROOT>/.plan-required 固定位置 ─
 # [2026-09-10 task-planrequired-race] 原"向上 4 级盲搜"已删除；B2 根除后 legacy 只查项目根
 if [ -f "$ROOT/.plan-required" ]; then
+  # [P1] 轻量/机械操作放行（同 ④ 口径：机械操作不因「无计划」被拦）
+  if _lightweight_release "$abs_path"; then
+    exit 0
+  fi
   echo "[PLAN-GUARD] 🚫 No valid plan exists (.plan-required sentinel active)."
   echo "  Tool: $TOOL"
   echo "  File: $FILE_PATH"

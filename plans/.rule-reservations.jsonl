@@ -77,3 +77,5 @@
 {"rule":91,"status":"landed","task_id":"task-v183-rule-91-model-tiering","ts":"2026-10-16","note":""}
 {"rule":92,"status":"reserved","task_id":"task-v185-file-split-discipline","ts":"2026-10-17","note":""}
 {"rule":92,"status":"landed","task_id":"task-v185-file-split-discipline","ts":"2026-10-17","note":""}
+{"rule":93,"status":"reserved","task_id":"task-v195-spec-recall","ts":"2026-10-21","note":""}
+{"rule":93,"status":"landed","task_id":"task-v195-spec-recall","ts":"2026-10-21","note":""}

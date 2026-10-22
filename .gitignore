@@ -9,6 +9,11 @@ plans/**/.session-owner
 
 # 偏移节奏 hook 会话运行态(task-v148 Rule 64.3)不入库
 plans/.drift-rhythm/
+# 同族归一：归档目录下的偏移节奏运行态（同 plans/.drift-rhythm/ 性质）
+plans/archive/.drift-rhythm/
+
+# 视频插件运行态标记（video-agent-kit 写入的 plugin_root 指针）不入库
+.video_agent/
 # [2026-10-14 对齐] 同族归一：drift-checker 子代理在技能目录下的会话运行态
 # （count/last_inject/due 计数）与 plans/.drift-rhythm/ 同性质，不入库
 skills/task-planner/.drift-rhythm/

@@ -26,7 +26,14 @@ const path = require('path');
 //   改一下/fix/typo）→ 输出「用户已声明轻量档」提示行；读不到 prompt（SessionStart 早于首条用户
 //   消息，或平台不携带）→ fail-open 留空，不误判、不阻断。跨 hook 通信替代机制（UserPromptSubmit
 //   写标记 → PreToolUse 读）见 Change #5 注释；本处仅做「读得到才用」的无副作用前置检测。
-const LIGHTWEIGHT_KW = ['简单修复', '就改一行', '改一下', '简单', 'fix', 'typo'];
+// [2026-10-22 task-videop1-protectfix-001 P1] 轻量档词面扩充=机械操作词面。
+// Why（审计判例 F1，videop1 机械合图停摆投诉 session_a40eae17265b5414c27e8c45d2c27b5c）：
+//   原词面只认「简单修复/就改一行/改一下/简单/fix/typo」六词，机械操作类指令（「合并这两张图」
+//   「跑一下 compose」「抽帧」「下载」等）零命中 → 仍走按需规划 → 被哨兵 + PLAN-GUARD 拦截 →
+//   机械小任务零停摆通道缺失。词面扩充为「既有工具的机械操作动词」族，与 videop1 工作区层
+//   「机械操作排除」条款（workspace AGENTS.md 约束 14 增补，commit a28e2d5）同族对齐。
+const LIGHTWEIGHT_KW = ['简单修复', '就改一行', '改一下', '简单', 'fix', 'typo',
+  '合图', 'compose', '合并图片', '拼接', '抽帧', '下载', '格式转换', '转格式', 'QC 汇总'];
 let promptText = '';
 let sid = '';
 try {
@@ -89,6 +96,23 @@ if (!root) {
 const SIDE_DIR = path.join(root, 'plans', '.plan_required_side');
 const SENTINEL_PATH = path.join(SIDE_DIR, sidkey + '.plan_required');
 
+// [2026-10-22 task-videop1-protectfix-001 P1] 轻量档命中 → **不写哨兵文件**（原行为=无条件写入，
+// lightweightHit 只控制提示文案 → 轻量档形同虚设：哨兵在位 → check-scope.sh 仍走「未满足 → 拦截」，
+// videop1 机械合图停摆投诉的直接成因之一，审计判例 F2）。
+// 改为：条件跳过写哨兵 + 写会话私有轻量标记 `<sidkey>.plan_lightweight`（供 check-scope.sh 轻量放行分支消费）。
+if (lightweightHit) {
+  const lmKw = LIGHTWEIGHT_KW.find((kw) => promptText.includes(kw)) || '';
+  try {
+    fs.mkdirSync(SIDE_DIR, { recursive: true });
+    const lmPath = path.join(SIDE_DIR, sidkey + '.plan_lightweight');
+    const lmTmp = path.join(SIDE_DIR, `.${sidkey}.plan_lightweight.tmp`);
+    fs.writeFileSync(lmTmp, `lightweight\nkw: ${lmKw}\ncreated: ${new Date().toISOString()}\n`, { encoding: 'utf-8' });
+    fs.renameSync(lmTmp, lmPath);
+  } catch (e) {
+    console.log('[task-plan] ⚠ 写入轻量标记失败(fail-open): ' + e.message);
+  }
+  console.log('[task-plan] ✅ 轻量档命中（机械操作词面「' + lmKw + '」）→ 不写哨兵文件，跳过计划门控（check-scope.sh 轻量放行分支消费 .plan_lightweight 标记）');
+} else {
 // 幂等写入：内容带时间戳，始终刷新（原行为保留于会话私有维度）
 try {
   fs.mkdirSync(SIDE_DIR, { recursive: true });
@@ -104,11 +128,9 @@ try {
   console.log('[task-plan]   - 预计耗时 > 10 分钟');
   // [task-perf-opt Change #2] 触发条件④从「用户未说『简单』」扩展为「用户未声明轻量档」——
   // 命中变体「简单修复 / 就改一行 / 改一下 / fix / typo」亦不触发 task-planner（修复「简单修复≠简单」触发倒置根因 #2）
-  console.log('[task-plan]   - 边界模糊 / 高风险 / 用户未声明轻量档（"简单"/"简单修复"/"就改一行"/"改一下"/"fix"/"typo"）');
-  if (lightweightHit) {
-    // [task-perf-opt Change #2③] 用户已声明轻量档 → 跳过 task-planner 触发提示（fail-open：promptText 非空才可能命中）
-    console.log('[task-plan] ✅ 用户已声明轻量档（检测到「' + LIGHTWEIGHT_KW.find((kw) => promptText.includes(kw)) + '」），跳过 task-planner 触发提示');
-  }
+  console.log('[task-plan]   - 边界模糊 / 高风险 / 用户未声明轻量档（"简单"/"简单修复"/"就改一行"/"改一下"/"fix"/"typo"/机械操作词面：合图/compose/合并图片/拼接/抽帧/下载/格式转换/转格式/QC 汇总）');
+  // [2026-10-22 P1] 原内联「用户已声明轻量档→跳过 task-planner 触发提示」分支已上提至外层轻量分支
+  // （轻量命中即不写哨兵，本分支不再可达）→ 随之移除以免留死代码。
   console.log('[task-plan] 初始化命令:');
   // [2026-08-28] 修复:提示语路径改指本 skill 的 zcode 副本(原为 ~/.claude,与 ZCode 实际加载路径不一致)
   console.log('[task-plan]   mkdir -p plans/task-{id}/ && cd $_ && bash ~/.zcode/skills/task-planner/scripts/init-session.sh');
@@ -116,6 +138,7 @@ try {
   console.log('[task-plan] 哨兵位置: ' + SENTINEL_PATH + '（会话私有；legacy <CWD>/.plan-required 不再写入）');
 } catch (e) {
   console.log('[task-plan] ⚠ 写入哨兵失败: ' + e.message);
+}
 }
 
 // [2026-10-07 fix-pointer-race RC-2] sidmap 确定性映射落盘:env CLAUDE_CODE_SESSION_ID 与 hook sid

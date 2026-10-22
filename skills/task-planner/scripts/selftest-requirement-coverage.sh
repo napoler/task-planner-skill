@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # selftest-requirement-coverage.sh — task-v129 S5: Rule 51 需求覆盖与完成声称门控静态守护
 # 范式对齐 selftest-lane-advancement.sh（SCRIPT_DIR/SKILL_ROOT 定位、ok()/bad() 结构、Total 行、FAIL>0 exit 1 全同构），task-v129 S5 产出。
-# 用途：静态断言 Rule 51 八子条（51.1-51.8，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块 [2026-10-05 task-v133] 51.8 新增, 七→八子条（51.1-51.8；51.8 未测试就声称完成禁令，级联 43.5/43.6+53.5-Q9+SKILL C37）
+# 用途：静态断言 Rule 51 十三子条（51.1-51.13，critical-rules.md）+ SKILL.md 摘要 bullet/C35 合规行 + delivery-summary.md 需求覆盖核对区块 [2026-10-05 task-v133] 51.8 新增, 七→八子条（51.1-51.8；51.8 未测试就声称完成禁令，级联 43.5/43.6+53.5-Q9+SKILL C37）
 #      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=42，[2026-10-08 task-v144 合并级联] 40→42，v145 合法新增 2 键，与 43.4/44.4/47.4 口径同步）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/templates/delivery-summary.md、task-planner/config.json
 #      （只读，grep/jq，零写入）。
@@ -23,9 +23,9 @@ PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'RC-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'RC-%s FAIL %s\n' "$1" "$2"; }
 
-# RC-01 Rule 51 八子条（51.1-51.8）锚 `grep -c '^51\.'` ≥7
-# What：断言 51.1-51.8 八条子条主体行（行首 '51.N'）在位。
-# Why：锁 Rule 51 条款本体未被裁剪/重排——八子条（51.1-51.8，task-v132 增补 51.7 纠正=回锚重译；task-v133 增补 51.8 未测试就声称完成禁令）
+# RC-01 Rule 51 十三子条（51.1-51.13）锚 `grep -c '^51\.'` ≥7
+# What：断言 51.1-51.13 十三条子条主体行（行首 '51.N'）在位。
+# Why：锁 Rule 51 条款本体未被裁剪/重排——十三子条（51.1-51.13；task-v132 增补 51.7 纠正=回锚重译；task-v133 增补 51.8 未测试就声称完成禁令；本次事故判例 videop1 beka-trailer 增补 51.9-51.13 可计数交付物全 R 化/计数型交付禁 0 产出/留口逐字让步锚/媒体计数条目/机制）
 #      是需求原文锚定/覆盖判据/核对表/自缩水禁令/前置盘点的唯一文本落点，
 #      缺任一子条 = 需求覆盖门控条款失守（防后续任务改写 critical-rules.md 时误删 51.x 段）。
 # [2026-10-05 task-v132/Phase4 P2] 口径 6→7: 51.7 增量后「六子条」枚举过期（P2-ALIGN-3），
@@ -532,6 +532,58 @@ if [ "$_rc23_a" -eq 1 ] && [ "$_rc23_b" -eq 1 ] && [ "$_rc23_c" -ge 1 ]; then
   ok 23 "critical-rules.md 51.8 行锚=1 且语义锚「未测试就声称完成」在位 且 SKILL.md「未测试禁声称完成」联动 $_rc23_c ≥1"
 else
   bad 23 "51.8 守护异常: 行锚=$_rc23_a(应1) 语义锚=$_rc23_b(应1) SKILL联动=$_rc23_c(应≥1)"
+fi
+
+# RC-24 51.9 行锚 + 语义锚（事故判例 videop1 beka-trailer 0 母图即 COMPLETE：可计数交付物全 R 化）
+# What：断言 ① '^51\.9 ' 行锚恰好 1；② 该行含「可计数交付物」「非数字锚」语义锚；③ 事故判例锚「0 母图即 COMPLETE」在 51.9 行在位。
+# Why：51.9 = 可计数交付物全 R 化条款本体（堵非数字锚盲区）——行锚 scoped 到 51.9 行（非全局 grep，防他处同词空转）；
+#      判例锚成对守护防"条款在但事故证据没了"的脱锚（与 RC-16 三锚范式同构）。
+_rc24_line="$(grep -c '^51\.9 ' "$CRIT" || true)"
+_rc24_a="$(grep '^51\.9 ' "$CRIT" | grep -c '可计数交付物' || true)"
+_rc24_b="$(grep '^51\.9 ' "$CRIT" | grep -c '非数字锚' || true)"
+_rc24_c="$(grep '^51\.9 ' "$CRIT" | grep -c '0 母图即 COMPLETE' || true)"
+if [ "$_rc24_line" -eq 1 ] && [ "$_rc24_a" -eq 1 ] && [ "$_rc24_b" -eq 1 ] && [ "$_rc24_c" -eq 1 ]; then
+  ok 24 "critical-rules.md 51.9 行锚=1 且行内语义锚「可计数交付物」「非数字锚」+ 事故判例锚「0 母图即 COMPLETE」在位"
+else
+  bad 24 "51.9 守护异常: 行锚=$_rc24_line(应1) 可计数交付物=$_rc24_a 非数字锚=$_rc24_b 事故判例锚=$_rc24_c（应各 =1）"
+fi
+
+# RC-25 51.10 行锚 + 语义锚（计数型交付禁 0 产出为 covered 判据）
+# What：断言 ① '^51\.10 ' 行锚恰好 1；② 该行含「计数型交付禁」「0 产出」语义锚。
+# Why：51.10 = 计数型交付禁 0 产出 covered 条款本体（堵 51.2 计数=0 入口，事故 0 母图即 COMPLETE 的结构性堵口）。
+_rc25_line="$(grep -c '^51\.10 ' "$CRIT" || true)"
+_rc25_a="$(grep '^51\.10 ' "$CRIT" | grep -c '计数型交付禁' || true)"
+_rc25_b="$(grep '^51\.10 ' "$CRIT" | grep -c '0 产出' || true)"
+if [ "$_rc25_line" -eq 1 ] && [ "$_rc25_a" -eq 1 ] && [ "$_rc25_b" -eq 1 ]; then
+  ok 25 "critical-rules.md 51.10 行锚=1 且行内语义锚「计数型交付禁」「0 产出」在位"
+else
+  bad 25 "51.10 守护异常: 行锚=$_rc25_line(应1) 计数型交付禁=$_rc25_a 0产出=$_rc25_b（应各 =1）"
+fi
+
+# RC-26 51.11 行锚 + 语义锚（留口/挂起须有用户逐字让步锚；理解镜像 80.7 非权威负向锚）
+# What：断言 ① '^51\.11 ' 行锚恰好 1；② 该行含「逐字让步锚」「理解镜像」语义锚。
+# Why：51.11 = 留口/挂起逐字让步锚条款本体（堵 51.4 假确认——「用户裁决」字样只在理解镜像 80.7 非权威对照面不构成让步锚，
+#      理解镜像不可替代逐字原文 80.4 权威序）；行锚 scoped 到 51.11 行，「理解镜像」锚锁定本条款语义（非全局空转）。
+_rc26_line="$(grep -c '^51\.11 ' "$CRIT" || true)"
+_rc26_a="$(grep '^51\.11 ' "$CRIT" | grep -c '逐字让步锚' || true)"
+_rc26_b="$(grep '^51\.11 ' "$CRIT" | grep -c '理解镜像' || true)"
+if [ "$_rc26_line" -eq 1 ] && [ "$_rc26_a" -eq 1 ] && [ "$_rc26_b" -eq 1 ]; then
+  ok 26 "critical-rules.md 51.11 行锚=1 且行内语义锚「逐字让步锚」「理解镜像」在位"
+else
+  bad 26 "51.11 守护异常: 行锚=$_rc26_line(应1) 逐字让步锚=$_rc26_a 理解镜像=$_rc26_b（应各 =1）"
+fi
+
+# RC-27 51.12 行锚 + 语义锚（媒体类交付计数条目；media-planner Rule 50 计数指针）
+# What：断言 ① '^51\.12 ' 行锚恰好 1；② 该行含「数量型条目」「media-planner」语义锚。
+# Why：51.12 = 媒体类交付计数条目不变量条款本体（可计数交付必须可计数，媒体轴拆分仍走 Rule 47/50；
+#      计数指针指向 media-planner 卫星 Rule 50.1，本条只立不变量，不越界改 media-planner）。
+_rc27_line="$(grep -c '^51\.12 ' "$CRIT" || true)"
+_rc27_a="$(grep '^51\.12 ' "$CRIT" | grep -c '数量型条目' || true)"
+_rc27_b="$(grep '^51\.12 ' "$CRIT" | grep -c 'media-planner' || true)"
+if [ "$_rc27_line" -eq 1 ] && [ "$_rc27_a" -eq 1 ] && [ "$_rc27_b" -eq 1 ]; then
+  ok 27 "critical-rules.md 51.12 行锚=1 且行内语义锚「数量型条目」「media-planner」（Rule 50 计数指针）在位"
+else
+  bad 27 "51.12 守护异常: 行锚=$_rc27_line(应1) 数量型条目=$_rc27_a media-planner=$_rc27_b（应各 =1）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
