@@ -113,8 +113,22 @@ _lightweight_release() {
   local _lm
   _lm="$(_lightweight_marker_path 2>/dev/null || true)"
   if [ -n "$_lm" ] && [ -f "$_lm" ]; then
-    echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm")，机械操作免计划门控）"
-    return 0
+    # 口径① 会话级轻量标记：**仅免除「无计划」门控，不放开仓库受管文件写入**。
+    # Why（修 2026-10-22 task-kb-cr-fix-20261022 / CR blocker）：原实现对任意路径直接 return 0，
+    #   与本文件 :99 边界声明（「两个口径均不放开仓库受管文件的写入拦截」）相反，也与 L0-E 档
+    #   自身契约（条件①=零仓库受管文件变更）冲突——轻量会话写标记后可旁路受管源码写入。
+    # How：口径① 复用口径② 的机械产物区 + gitignore 区判定，两口径同边界。
+    case "$_fp" in
+      "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*)
+        echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm") + 机械产物区 $_fp）"
+        return 0
+        ;;
+    esac
+    if git -C "$ROOT" check-ignore -q -- "$_fp" 2>/dev/null; then
+      echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm") + gitignore 区 $_fp）"
+      return 0
+    fi
+    echo "[PLAN-GUARD] ⚠ 轻量档标记存在但目标非机械产物区（$_fp）→ 按仓库受管文件拦截"
   fi
   case "$_fp" in
     "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*)
