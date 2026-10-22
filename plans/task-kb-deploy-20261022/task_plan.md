@@ -240,7 +240,18 @@ Phase 3 全部 complete（待归档）。
 - 2026-10-22 08:25 检测：未触碰三个其他会话在途任务（task-defect-rrv13-dg12-false-pass / task-P01-evidence-anchor / task-v188-skill-audit-fix）——仅将其计划文件随「提交所有修改」入库，未改动其内容。
 
 ## 📊 Batch Report（批量处理质量门控 — Rule 18.6）
-本任务为三位置机械同步（非内容生产批），按 Rule 18.6 判不适用：每位置 diff 逐项复核 = 逐批验收。
+本任务含两批机械动作（① 三位部署位全树同步 = 15 卫星 × 3 位；② 并集解文件改写 = 13 文件 × 2 冲突侧），按 Rule 18.6 填 8 字段并逐位 diff 复核 = 逐批验收。
+
+| 字段 | 值 |
+|------|-----|
+| `total` | 3（部署位批次：zcode / claude / cursor，每批含 15 卫星全树） |
+| `success` | 3 |
+| `failed` | 0 |
+| `failure_rate` | 0%（>5% → STOP；>20% → 熔断回滚） |
+| `sampled_pass` | 3/3（逐位 diff -rq 校验：zcode 差异=0、claude/cursor 差异=9 且仅运行时 flavor 文件） |
+| `sampled_fail` | 0（运行前 ground truth 失败数=0） |
+| `pre_check` | Q1:否 / Q2:有 / Q3:能（部署前已盘点双向差异 9 文件 + 运行时 flavor 差异；备份点=git 历史 74a9188 / ecb5e54 + 提交 9ec6fea） |
+| `rollback_point` | `9ec6fea`（并集同步提交；回滚可用 `git revert 9ec6fea` 或 `git checkout 2448e01 -- skills/`） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 - 机器统计为事实源：`check-delegation.sh stats plans/task-kb-deploy-20261022` → `{"phases_total":3,"phases_delegated":0,"main_direct_count":3,"delegation_rate":0.000,"violations":[],"verdict":"ok"}`
