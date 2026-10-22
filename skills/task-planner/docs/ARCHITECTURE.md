@@ -1,7 +1,7 @@
 # task-planner 多工具架构设计
 
 > **目标**：一份 canonical source，多工具部署位同步，零内容重复，env-var 解析路径。
-> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；74 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate，Rule 84 task-v173 新增；其余 74 条中纪律域含 85/86/87/88/89/90/92/93，协同域含 91）；核心在位 14 条（1,2,3,5,19,20,26,51,62,66,80,81,82,83）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）<!-- 2026-10-19 task-v191 对齐实态：Rules 1-92 全集、核心 12→14 条、非核心 76→73 条、第 11 颗卫星 verification-gate 入分解 --><!-- 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集 1-92→1-93、非核心 73→74 条 -->。
+> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；76 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate，Rule 84 task-v173 新增；其余 76 条中纪律域含 85/86/87/88/89/90/92/93，协同域含 91）；核心在位 14 条（1,2,3,5,19,20,26,51,62,66,80,81,82,83）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76，全集 14+76=90（77/78/79 已废弃不计）] --><!-- 2026-10-19 task-v191 对齐实态：Rules 1-92 全集、核心 12→14 条、非核心 76→73 条、第 11 颗卫星 verification-gate 入分解 --><!-- 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集 1-92→1-93、非核心 73→74 条 -->。
 
 ---
 
@@ -111,8 +111,8 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 ## 4. 规则全集索引与纪元演进
 
 **Rules 1-93 全集索引**（2026-10-21 task-v195 更新；2026-10-19 task-v191 对齐）：
-- **核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（193 行，含分层架构说明 + 卫星路由索引）
-- **其余 74 条**按域迁至上表 11 卫星（3 新域 50 条 + 7 收编 16 条 + 验证域 1 条 Rule 84；纪律域含 85-90/92/93，协同域含 91）
+- **核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明 + 卫星路由索引）
+- **其余 76 条**按域迁至上表 11 卫星（3 新域 58 条 + 7 收编 17 条 + 验证域 1 条 Rule 84，合计 76；纪律域含 85/86/87/88/89/90/92/93 为 v171 后追加 8 条、协同域含 91 为追加 1 条）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：原拆分 50+16+1=67 与外层 74/76 均不自洽（50/16 为 v171 快照、未含后续追加），改为现值 58=dispatch 11+discipline 44+media 3、17=research 3+template 4+collab 3+cost 1+resume 1+progress 1+drift 4，58+17+1=76 与实测 dedup 一致] -->
 - Rule 82（技能专业化分层纪律）为 task-v171 新增：建制/边界/回归防线三款，禁回潮、禁镜像副本
 
 **纪元演进史**（selftest 宽容正则锚守护随动，防回退误报）：
@@ -133,7 +133,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 ├── references/                              ← 6 篇规则文档（2026-10-12 实测）
 │   ├── critical-rules.md                    # 核心域 14 条全文 + Rules 1-93 全集索引 + 分层架构说明
 │   ├── todo-sync.md / worktree-isolation.md / goal-gate.md / completion-gate.md / methodology.md
-│   └── [74 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
+│   └── [76 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
 ├── templates/                               ← 13 主模板 + 29 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md
