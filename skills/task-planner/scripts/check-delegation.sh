@@ -248,7 +248,7 @@ is_protected_path() {
         */.zcode/skills/*|*/.claude/skills/*|*/skills/*|*/.config/opencode/skills/*|*/.agents/skills/*) return 0 ;;
         */.zcode/agents/*|*/.zcode/commands/*|*/.zcode/AGENTS.md|*/.agents/AGENTS.md|*/.zcode/cli/config.json) return 0 ;;
         *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) return 0 ;;
-        *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/.k8s/*) return 0 ;;
+        *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/.k8s/*|*/k8s/*) return 0 ;;
     esac
     return 1
 }
@@ -348,7 +348,7 @@ mode_pretool() {
             */.agents/AGENTS.md) ;;
             */.zcode/cli/config.json) ;;
             *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) ;;
-            *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*) ;;
+            *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/.k8s/*|*/k8s/*) ;;
             *)
                 # [M3-fix 2026-10-14] new_string 行数上限：mini 纪律口径 ≤30 行（与 ④b 注释声明对齐）
                 # 不可校验（Write 工具 lines_arg="-" 或非数字）→ 保守放行（保持原行为）
@@ -434,7 +434,7 @@ _flush_phase() {
         if [[ "$reason" =~ (3行|trivial|≤3行|≤ 3行) ]]; then
             needs_git=1
         fi
-        # [2026-10-07 task-v055-fix-review] B-1/M-1:白名单编号标识判定
+        # [2026-09-07 task-v055-fix-review] B-1/M-1:白名单编号标识判定
         # 格式要求(与 SKILL.md 对齐):**Executor:** 主进程（白名单N：<说明>）或（N <说明>）
         local self_declared=0
         local violation_type=""

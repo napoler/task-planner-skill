@@ -5,7 +5,7 @@
 #      全部落点在位且既有主锚未破坏（36.5 纯增量守护），并确认零新 config 键（properties=42，[2026-10-08 task-v144 合并级联] 40→42，v145 合法新增 2 键，与 43.4/44.4/47.4 口径同步）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/templates/delivery-summary.md、task-planner/config.json
 #      （只读，grep/jq，零写入）。
-# 输出：RC-01..RC-23 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 RC-13 打 SKIPPED 不 FAIL，
+# 输出：RC-01..RC-28 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 RC-13 打 SKIPPED 不 FAIL，
 #      与 selftest-lane-advancement.sh LA-14 / reliability-institution R-12 先例一致）。
 # 依赖：bash + grep + awk；registry 自登记校验 RC-14；config.json 键数校验需 jq（缺失降级 SKIPPED，fail-open 非静默——打印提示行）。
 
@@ -584,6 +584,26 @@ if [ "$_rc27_line" -eq 1 ] && [ "$_rc27_a" -eq 1 ] && [ "$_rc27_b" -eq 1 ]; then
   ok 27 "critical-rules.md 51.12 行锚=1 且行内语义锚「数量型条目」「media-planner」（Rule 50 计数指针）在位"
 else
   bad 27 "51.12 守护异常: 行锚=$_rc27_line(应1) 数量型条目=$_rc27_a media-planner=$_rc27_b（应各 =1）"
+fi
+
+# RC-28 51.13 行锚 + 语义锚（机制段：零新 config 键 L0-T 范式；CR L-3 遗留——51.13 原无 selftest 守护）
+# What：断言 ① '^51\.13 ' 行锚恰好 1（实测 2026-10-23 critical-rules.md :106，行首 '51.13 ' 单点）；
+#      ② 该段 3 个语义锚 scoped 到 51.13 行（非全局 grep，同 RC-24..27 口径）：
+#        a. '51.9-51.13 子条文本锚'（机器面自描述锚=机制段自我声明的守护面，防机制描述被裁剪）；
+#        b. '0 母图即 COMPLETE'（事故判例锚；全局 critical-rules.md 命中 2（:98 51.9 标题 + :106 本段），
+#           故必须 scoped 到 51.13 行断言 =1，与 RC-24 判例锚成对——条款在但事故证据没了=脱锚）；
+#        c. '零新 config 键'（机制承诺锚，与 RC-08 全局锚同词但 scoped 到 51.13 机制段=零新键范式本段落点）。
+# Why：L-3=Rule 51.13 无 selftest 守护（RC-24..RC-27 仅覆盖 51.9-51.12）——51.13 是 51.9-51.13 事故修复族的
+#      机制收口条款（声明机器面=本脚本静态守护），其被裁剪/改写（如擅自加 config 键、删事故判例锚）
+#      将无任何守护报警；本锚补齐 L-3 缺口，锚范式与 RC-24..27 逐同构（行锚=1 + 行内语义锚=1）。
+_rc28_line="$(grep -c '^51\.13 ' "$CRIT" || true)"
+_rc28_a="$(grep '^51\.13 ' "$CRIT" | grep -c '51\.9-51\.13 子条文本锚' || true)"
+_rc28_b="$(grep '^51\.13 ' "$CRIT" | grep -c '0 母图即 COMPLETE' || true)"
+_rc28_c="$(grep '^51\.13 ' "$CRIT" | grep -c '零新 config 键' || true)"
+if [ "$_rc28_line" -eq 1 ] && [ "$_rc28_a" -eq 1 ] && [ "$_rc28_b" -eq 1 ] && [ "$_rc28_c" -eq 1 ]; then
+  ok 28 "critical-rules.md 51.13 行锚=1 且行内语义锚「51.9-51.13 子条文本锚」「0 母图即 COMPLETE」「零新 config 键」在位（机制段 L0-T 零新键范式）"
+else
+  bad 28 "51.13 守护异常: 行锚=$_rc28_line(应1) 子条文本锚=$_rc28_a 事故判例锚=$_rc28_b 零新键锚=$_rc28_c（应各 =1）"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

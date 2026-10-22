@@ -32,6 +32,10 @@ const path = require('path');
 //   「跑一下 compose」「抽帧」「下载」等）零命中 → 仍走按需规划 → 被哨兵 + PLAN-GUARD 拦截 →
 //   机械小任务零停摆通道缺失。词面扩充为「既有工具的机械操作动词」族，与 videop1 工作区层
 //   「机械操作排除」条款（workspace AGENTS.md 约束 14 增补，commit a28e2d5）同族对齐。
+// [2026-10-23 task-kb-cr-lits-20261023 L-6] 连带面注明（风险，照实描述勿夸大）：LIGHTWEIGHT_KW
+//   为 prompt 子串匹配（promptText.includes(kw)）——含上述词面但实际非轻量任务的提示词会误入
+//   轻量档（误入后果=不写哨兵仅写轻量标记；check-scope.sh 侧 10-22 收窄后放行面限机械产物区
+//   （tmp/ output/ .cache/）+ gitignore 区，仓库受管文件写入仍被拦截，故误入风险面有限）。
 const LIGHTWEIGHT_KW = ['简单修复', '就改一行', '改一下', '简单', 'fix', 'typo',
   '合图', 'compose', '合并图片', '拼接', '抽帧', '下载', '格式转换', '转格式', 'QC 汇总'];
 let promptText = '';
@@ -111,7 +115,12 @@ if (lightweightHit) {
   } catch (e) {
     console.log('[task-plan] ⚠ 写入轻量标记失败(fail-open): ' + e.message);
   }
-  console.log('[task-plan] ✅ 轻量档命中（机械操作词面「' + lmKw + '」）→ 不写哨兵文件，跳过计划门控（check-scope.sh 轻量放行分支消费 .plan_lightweight 标记）');
+  // [2026-10-23 task-kb-cr-lits-20261023 L-6] 文案改真语义（零行为变更，仅本行字符串）：
+  //   原 console.log 文案（「不写哨兵文件」+ 声称完全跳过门控，由 check-scope.sh 轻量放行分支
+  //   消费 .plan_lightweight 标记）失准——10-22 同日 check-scope.sh 口径①收紧（CR blocker 修复）后，
+  //   轻量标记不再等于「完全跳过门控」，实际=仅免除『无计划』门控 + 放行面收窄至机械产物区
+  //   （tmp/ output/ .cache/）+ gitignore 区，仓库受管文件写入仍被 check-scope.sh 拦截。本行改为真语义。
+  console.log('[task-plan] ✅ 轻量档命中（机械操作词面「' + lmKw + '」）→ 不写哨兵、写会话级轻量标记 .plan_lightweight：该标记仅免除「无计划」门控，且放行面收窄到机械产物区（tmp/ output/ .cache/）+ gitignore 区，仓库受管文件写入仍被 check-scope.sh 拦截');
 } else {
 // 幂等写入：内容带时间戳，始终刷新（原行为保留于会话私有维度）
 try {
