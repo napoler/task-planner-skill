@@ -20,7 +20,18 @@
 #   check-scope.sh Edit "/path/to/file"            （无 sid → legacy 降级）
 #
 # Exit codes:
-#   0 = ALLOWED (无项目根 / 哨兵不存在 / D10 仲裁放行 / 写 plans/ / 豁免文件名)
+#   0 = ALLOWED。放行来源（按实际代码逐条枚举；节号=代码内 ①-⑥ 标记）:
+#     · 空 FILE_PATH（部分工具调用不含路径，脚本入口即放行）
+#     · 无项目根（无 plans/ 祖先，≤6 级上溯；无 plans/ 项目不产生哨兵）
+#     · 写 plans/ 目录（创建计划本身豁免，节 ②）
+#     · 豁免文件名（memory 前缀 + 豁免表，节 ③）
+#     · D10 check-time 仲裁（task_plan.md mtime 晚于哨兵 created_epoch，节 ⑤）
+#     · D10'' attestation 仲裁（side 指针 + plan_sha256 一致，节 ⑤）
+#     · P1 会话级轻量标记 .plan_lightweight + 机械产物区/gitignore 区（节 ④ 口径①，
+#       由 task-plan-init.cjs 检出轻量/机械词面时写入；该标记仅免「无计划」门控，不放开受管文件写入）
+#     · P1 机械产物区（项目根下 tmp/ output/ .cache/）或 gitignore 区（git check-ignore 命中，节 ④ 口径②；
+#       legacy .plan-required 哨兵在位时亦经同入口放行，节 ⑥）
+#     · 无哨兵（会话 side 未命中且 legacy .plan-required 不存在，节 ⑥）
 #   1 = BLOCKED (哨兵存在且判定未满足，写入 plans/ 外非豁免路径)
 
 set -eu
@@ -108,36 +119,60 @@ _lightweight_marker_path() {
   printf '%s' "$ROOT/plans/.plan_required_side/$_k.plan_lightweight"
 }
 
+# 机械产物区 ∨ gitignore 区 统一判定（④ 口径①/② 共用）。
+# [task-kb-cr-lits-20261023 S3 L-7] 原代码在口径①与口径②各写一遍本判定（case 前缀匹配 + git check-ignore），
+#   同构重复 → 易漂移；抽为本函数，两口径调用同一判定。形态参照 check-delegation.sh
+#   is_mechanical_artifact_path，但 check-scope 侧含 gitignore 区，故判定 =「机械产物区 ∨ gitignore 区」。
+#   判定顺序与原版逐字一致：先 case 前缀（项目根 tmp/ output/ .cache/ 三目录），再 git check-ignore，
+#   两者同时命中仍返 0。纯判定（无 echo / 无副作用），文案子区标签由 _lightweight_release 选；行为零变化（纯重构）。
+_is_artifact_or_gitignored_path() {
+  local _fp="$1"
+  case "$_fp" in
+    "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*)
+      return 0 ;;
+  esac
+  if git -C "$ROOT" check-ignore -q -- "$_fp" 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
+# 文案子区标签选取（机械产物区 vs gitignore 区）：纯 case 前缀匹配，不调 git。
+# Why 需独立函数（L-7 配套）：原文案按「哪个命中」区分两子区（case 先、gitignore 后）；判定抽函数后，
+#   文案选取须复刻同一「case 优先」规则——否则同时命中两区的路径文案会从「机械产物区」漂移成
+#   「gitignore 区」（违反行为零变化契约）。本函数只做 case 前缀（不判定/不 git），判定面全归
+#   _is_artifact_or_gitignored_path，无逻辑漂移面。
+_artifact_zone_label() {
+  case "$1" in
+    "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*) printf '%s' "机械产物区" ;;
+    *) printf '%s' "gitignore 区" ;;
+  esac
+}
+
 _lightweight_release() {
   local _fp="$1"
-  local _lm
+  local _lm _zone
   _lm="$(_lightweight_marker_path 2>/dev/null || true)"
   if [ -n "$_lm" ] && [ -f "$_lm" ]; then
     # 口径① 会话级轻量标记：**仅免除「无计划」门控，不放开仓库受管文件写入**。
     # Why（修 2026-10-22 task-kb-cr-fix-20261022 / CR blocker）：原实现对任意路径直接 return 0，
-    #   与本文件 :99 边界声明（「两个口径均不放开仓库受管文件的写入拦截」）相反，也与 L0-E 档
+    #   与上方 ④ 边界声明（「两个口径均不放开仓库受管文件的写入拦截」）相反，也与 L0-E 档
     #   自身契约（条件①=零仓库受管文件变更）冲突——轻量会话写标记后可旁路受管源码写入。
     # How：口径① 复用口径② 的机械产物区 + gitignore 区判定，两口径同边界。
-    case "$_fp" in
-      "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*)
-        echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm") + 机械产物区 $_fp）"
-        return 0
-        ;;
-    esac
-    if git -C "$ROOT" check-ignore -q -- "$_fp" 2>/dev/null; then
-      echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm") + gitignore 区 $_fp）"
+    # [task-kb-cr-lits-20261023 S3 L-7/L-8②] case + check-ignore 的重复判定抽至
+    #   _is_artifact_or_gitignored_path，文案标签走 _artifact_zone_label（case 优先，行为同原版）；
+    #   放行留痕 echo 改 >&2（消费面核查无 stdout 展示证据，对齐阻断反馈走 stderr 惯例）。
+    if _is_artifact_or_gitignored_path "$_fp"; then
+      _zone="$(_artifact_zone_label "$_fp")"
+      echo "[PLAN-GUARD] ✅ 轻量档放行（会话级标记 $(basename "$_lm") + $_zone $_fp）" >&2
       return 0
     fi
-    echo "[PLAN-GUARD] ⚠ 轻量档标记存在但目标非机械产物区（$_fp）→ 按仓库受管文件拦截"
+    echo "[PLAN-GUARD] ⚠ 轻量档标记存在但目标非机械产物区（$_fp）→ 按仓库受管文件拦截" >&2
   fi
-  case "$_fp" in
-    "$ROOT/tmp/"*|"$ROOT/output/"*|"$ROOT/.cache/"*)
-      echo "[PLAN-GUARD] ✅ 机械产物区放行（$_fp 不构成仓库受管文件变更）"
-      return 0
-      ;;
-  esac
-  if git -C "$ROOT" check-ignore -q -- "$_fp" 2>/dev/null; then
-    echo "[PLAN-GUARD] ✅ gitignore 区放行（$_fp 不构成仓库受管文件变更）"
+  # 口径② 路径级机械产物区 / gitignore 区放行（无需会话标记；legacy .plan-required 哨兵在位时经同入口放行，见 ⑥）
+  if _is_artifact_or_gitignored_path "$_fp"; then
+    _zone="$(_artifact_zone_label "$_fp")"
+    echo "[PLAN-GUARD] ✅ $_zone放行（$_fp 不构成仓库受管文件变更）" >&2
     return 0
   fi
   return 1
@@ -209,7 +244,9 @@ if [ -n "$_side_sentinel" ] && [ -f "$_side_sentinel" ]; then
     _cur_hash="$(sha256sum "$ROOT/plans/$_d10pp_plan_dir/task_plan.md" 2>/dev/null | awk '{print $1}' | tr 'A-F' 'a-f')"
     if [ -n "$_ap_hash" ] && [ "$_ap_hash" = "$_cur_hash" ]; then
       # 三条件全满足：本会话 side 指针指向的 attested 计划未被篡改 → 放行（D10'' 仲裁）
-      echo "[PLAN-GUARD] ✅ D10'' attestation 仲裁放行: $ROOT/plans/$_d10pp_plan_dir/.plan-attestation (plan_sha256 一致)"
+      # [task-kb-cr-lits-20261023 S3 L-8②] 放行留痕 → >&2（消费面核查：zcode-pretooluse.sh 仅消费 rc，
+      #   无 stdout 展示为放行原因文本的证据；对齐 zcode-pretooluse.sh 阻断反馈走 stderr 惯例）
+      echo "[PLAN-GUARD] ✅ D10'' attestation 仲裁放行: $ROOT/plans/$_d10pp_plan_dir/.plan-attestation (plan_sha256 一致)" >&2
       exit 0
     fi
   fi
