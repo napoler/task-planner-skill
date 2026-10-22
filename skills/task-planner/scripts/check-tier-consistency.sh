@@ -58,7 +58,9 @@ fi
 
 # ── 声明抽取（行首锚定；排除 `<!-- plan_tier: standard -->` 注释伪声明与模板示例行）──
 TIER="$(grep -m1 -E '^plan_tier:' "$PLAN_FILE" | sed -E 's/^plan_tier:[[:space:]]*//' | tr -d '[:space:]' | tr 'A-Z' 'a-z')"
-LANE="$(grep -m1 -E '^execution_lane:' "$PLAN_FILE" | grep -oE 'L[012]' | head -n 1)"
+# [L-2 修复 2026-10-23] 原行为: `grep -oE 'L[012]'` 把 L0-E/L0-T 前缀截成 L0 → L0-E 计划误入 L0 复核 false FAIL。
+# 改为精确 token 解析（L0 / L0-T / L0-E / L1 / L2 原样；小写声明不命中 → LANE 空 = 无 lane 判定面, 走 SKIP fail-open）
+LANE="$(grep -m1 -E '^execution_lane:' "$PLAN_FILE" | grep -oE 'L[012]([_-][A-Za-z0-9]+)*' | head -n 1)"
 IS_L0T=0
 grep -q 'L0-T' "$PLAN_FILE" && IS_L0T=1
 
@@ -124,21 +126,23 @@ if [ "$TIER" = "mini" ]; then
 fi
 
 # ── L0 禁滥用复核（Rule 38.7: 多文件/多 Phase/重门控 → 不适用轻量通道）──
-if [ "$LANE" = "L0" ]; then
+# L0-E 豁免: 纯执行档（权重 0 口径: 零受管变更 ∧ 产物落 gitignore 区, SKILL.md:187）, 套 L0 单 Phase cap 与其定义冲突 → 不进入本复核块
+# L0-T 全量继承 L0 三项检查（单 Phase / cap 取 L0T_MAX_FILES / S-unit cap）; 仅 L0-E 整体豁免（修正轮 2026-10-23: L0-T 单 Phase cap 不回退, 主进程裁决）
+if [ "$LANE" = "L0" ] || [ "$LANE" = "L0-T" ]; then
     CAP=$L0_MAX_FILES
     [ "$IS_L0T" -eq 1 ] && CAP=$L0T_MAX_FILES
     if [ "$PHASES" -gt "$L0_MAX_PHASES" ]; then
         FAILS=$((FAILS + 1))
-        printf '[tier-consistency] ✗ 声明 execution_lane=L0 但形态超出轻量通道: 多 Phase（Phase 数=%s, L0 应单 Phase 执行）\n' "$PHASES"
+        printf '[tier-consistency] ✗ 声明 execution_lane=%s 但形态超出轻量通道: 多 Phase（Phase 数=%s, L0 应单 Phase 执行）\n' "$LANE" "$PHASES"
     fi
     if [ "$SCOPE_FOUND" -eq 1 ] && [ "$SCOPE" -gt "$CAP" ]; then
         FAILS=$((FAILS + 1))
-        printf '[tier-consistency] ✗ 声明 execution_lane=L0 但形态超出轻量通道: 多文件（scope 表文件数=%s > cap %s%s）\n' \
-            "$SCOPE" "$CAP" "$([ "$IS_L0T" -eq 1 ] && printf '（L0-T 纯文本档）' || true)"
+        printf '[tier-consistency] ✗ 声明 execution_lane=%s 但形态超出轻量通道: 多文件（scope 表文件数=%s > cap %s%s）\n' \
+            "$LANE" "$SCOPE" "$CAP" "$([ "$IS_L0T" -eq 1 ] && printf '（L0-T 纯文本档）' || true)"
     fi
     if [ "$SUNIT" -gt "$L0_MAX_SUNIT" ]; then
         FAILS=$((FAILS + 1))
-        printf '[tier-consistency] ✗ 声明 execution_lane=L0 但形态超出轻量通道: 重门控（S-unit 数=%s, 多单元派发超出轻量档形态）\n' "$SUNIT"
+        printf '[tier-consistency] ✗ 声明 execution_lane=%s 但形态超出轻量通道: 重门控（S-unit 数=%s, 多单元派发超出轻量档形态）\n' "$LANE" "$SUNIT"
     fi
 fi
 
