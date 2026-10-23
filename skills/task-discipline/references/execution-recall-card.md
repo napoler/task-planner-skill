@@ -37,6 +37,7 @@
 ## E. 上下文与节奏
 - 规范召回：每 3 个 S-unit/Phase 翻转主进程 Read 本卡留 [recall]；压缩/恢复/PRESSURE 后第一动作（Rule 93）
 - 专注隔离：目标重大偏差（A→B）不就地吸收——主动询问拆分新 Task Plan，单计划单垂直域防污染（Rule 94）
+- 执行优先：零报错+有直推路径=禁停等——额度不可查询即执行探测；按日重置额度禁空置；质检处置自主化；暂停前三问（Rule 95）
 - 偏移检查：Phase complete 后派 drift-checker+留痕三件套（Rule 61/64.2）
 - 上下文压力：[assess] 三态；PRESSURE→主动压缩；CONFUSED→session-handoff 转新会话（Rule 67）
 - 恢复读序：user-session-log→task_plan→progress→findings→knowledge-brief（Rule 19.3/80.4/62.1）
