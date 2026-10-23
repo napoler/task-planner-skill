@@ -193,8 +193,11 @@ execution_lane: L1
 | CA-6 | skills/task-planner/SKILL.md「目标切换判定（E 类）」段尾 | 新增 | 增量 | 「询问用户是否使用在新的就是Task中进行执行」 | 侦察第 4 项（L174 处置句后） | 追加 1 行 Rule 94 处置指针句（BP-08 ≤275 行边距内） |
 | CA-7 | CLAUDE.md L33 | 更新 | 替代（纪元字面） | 同上 | 判例同款 | 1-93→1-94 |
 | CA-8 | README_zh.md L136/L229 | 更新 | 替代（纪元字面） | 同上 | 判例同款 | 2 处 1-93→1-94 |
-| CA-9 | skills/task-planner/README.md L4/L81/L123/L127 | 更新 | 替代（纪元+计数口径现值+1） | 同上 | 侦察第 7 项（判例 4 文件面） | 逐处现值+1/+94 |
+| CA-9 | skills/task-planner/README.md L4/L36/L81/L123/L127 | 更新 | 替代（纪元+计数口径现值+1） | 同上 | 侦察第 7 项（判例 4 文件面）+CR P2-11 补登 L36 架构图行 | 逐处现值+1/+94 |
 | CA-10 | skills/task-planner/docs/ARCHITECTURE.md L4/L13/L42/L113/L122/L134/L136 | 更新 | 替代（纪元+计数+演进史行） | 同上 | 侦察第 7 项 | 逐处现值+1/+94；L122 演进史追加 94 行 |
+| CA-11 | skills/task-discipline/SKILL.md 规则索引表尾 + 「落盘状态」句 | 新增 | 增量 | 同 CA-3 | S3 执行期发现（检查点 04-impl-s3b：索引表 43 行止于 `| 92 |`，94 表行=本任务落地补齐） | 索引表追加 `| 94 | 任务专注性与计划隔离纪律 | 同上 |` 行；落盘状态句补「Rule 94（task-focus-plan-split-20261023 任务专注性与计划隔离）已后补落盘」；**93 表行缺口=task-v195 遗留，射程外只报告不修（Rule 88/87.4④）** |
+| CA-12 | plans/.rule-reservations.jsonl 追加 landed 行 | 新增 | 增量 | 同 CA-3 | S8 跑批 PR-02 FAIL（reserved 无 landed 配对） | worktree 内 `rule-reserve.sh land 94 task-focus-plan-split-20261023` + 提交——前置 land 使 landed 行与规则正文同一 merge 入 master（Phase 4 惯例「合并后 land」的等价前置，裁决见 Decisions Made） |
+| CA-13 | CR fix-phase（S10-S13）：规则文本七处+SKILL 77 口径×2+README/ARCH/CLAUDE/README_zh 注记与注释链+93 表行补登 | 更新/新增 | 增量为主（注记=同行内补增量；93 表行=1 行增量） | 同 CA-3 | S9 CR CHANGES_REQUESTED（检查点 12-cr-s9.md 15 项；P1-1 主进程复核 11 卫星合计=77 实证） | 逐项按 CR 修法闭环；93 表行=CR 修复门内的射程内闭环（计数级联完整性直接面），修订 CA-11 射程外判定 |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -258,11 +261,11 @@ execution_lane: L1
 
 ## Current Phase
 <!-- WHICH phase you're currently working on. Update as you progress. -->
-Phase 2
+Phase 4
 
 ## Next Step
 <!-- 单一下一步动作(一句话,可执行)。Phase 状态每次变更时同步刷新(Rule 20.4)。 -->
-创建 worktree → 串行派发 S2（Rule 94 正文+召回卡）→S3-S6（级联+指针句）→S7（提交）
+提交计划簿记→smart-merge-back 合并回 master→主仓全 VC 复验→check-complete→归档→交付总结
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -303,11 +306,11 @@ Phase 2
 | S1 | 扫描 Rule 94 级联面（判例 diff+破裂锚+归属判定） | general-purpose | 任务简报内联（7 项侦察清单）；检查点输出至 plans/task-focus-plan-split-20261023/subagent-state/ | 检查点含 1-7 编号结论+file:line 证据 | 15min | 0f/0l/15min | 无 | - | done |
 
 ### Phase 2: worktree 内实施（规则正文+级联锚+指针接线）
-- [ ] 创建 worktree（/mnt/data/dev/task-planner-skill-worktrees/task-focus-plan-split-20261023，分支 wt/task-focus-plan-split-20261023，自 master HEAD）
-- [ ] S2-S7 逐单元派发实施（材料包=本计划变更标注表 CA-1..CA-10 + 侦察 file:line）
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
-- **V-N:** VC-1, VC-2, VC-6
-- **Status:** in_progress
+- [x] 创建 worktree（/mnt/data/dev/task-planner-skill-worktrees/task-focus-plan-split-20261023，分支 wt/task-focus-plan-split-20261023，自 master HEAD；首锚 2d978e0）
+- [x] S2-S7 逐单元派发实施（S2/S3/S3b/S4/S5/S6 六次 executor 派发全 PASS；S7 主进程 git 白名单吸收——提交 3ea1dbc）
+- [x] 规范召回（Rule 93）：五单元后主进程 Read 召回卡 52 行，[recall] 行已落 progress
+- **V-N:** VC-1, VC-2, VC-6（worktree 侧全部实跑 PASS，见 progress Phase 2 Test Results）
+- **Status:** complete
 - **Executor:** executor
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -320,17 +323,24 @@ Phase 2
 | S7 | worktree 内 git 逐 Phase 提交（Rule 27） | 继承 | worktree 仓根 | git status 干净；提交信息含任务代号 | 5min | 0f/0l/5min | 无 | S2-S6 | pending |
 
 ### Phase 3: 回归验证与 Code Review
-- [ ] 全量 selftest 跑批（run-selftests.sh，worktree 内）
-- [ ] critic 独立审查 diff（规则文本质量+级联完整性+管辖衔接）
-- [ ] 缺陷回修（如有，追加 fix 提交）
-- **V-N:** VC-3, VC-2（复核）
-- **Status:** pending
+- [x] 全量 selftest 跑批（S8/S8b/S14/S16 四轮，终态 9021b43 fresh 92/92 FAIL=0 exit 0）
+- [x] critic 独立审查 diff（S9 首轮 CHANGES_REQUESTED 15 项→复审 APPROVED，检查点 12/18）
+- [x] 缺陷回修（fix-phase S10-S13+S15 全闭环：7d9a6e4 + 9021b43 两笔 fix 提交）
+- **V-N:** VC-3（S16 终证据）, VC-2（CR 复审独立复算 77 口径一致）
+- **Status:** complete
 - **Executor:** code-runner-agent（S8）；critic（S9）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S8 | 全量 selftest 跑批出报告 | code-runner-agent | worktree 仓根；命令 `bash skills/task-planner/scripts/run-selftests.sh` | FAIL=0（exit 0），输出落 progress | 15min | 0f/0l/15min | 无 | S7 | pending |
-| S9 | CR diff 审查出 verdict | critic | worktree 内 `git diff master...HEAD` 全量 | APPROVED/CHANGES_REQUESTED+逐项意见 | 15min | 0f/0l/15min | 无 | S8 | pending |
+| S8 | 全量 selftest 跑批出报告 | code-runner-agent | worktree 仓根；命令 `bash skills/task-planner/scripts/run-selftests.sh` | FAIL=0（exit 0），输出落 progress | 15min | 0f/0l/15min | 无 | S7 | done（91/92，唯一 FAIL=PR-02 账本时序，land 后闭环） |
+| S9 | CR diff 审查出 verdict | critic | worktree 内 `git diff master...HEAD` 全量 | APPROVED/CHANGES_REQUESTED+逐项意见 | 15min | 0f/0l/15min | 无 | S8 | done（CHANGES_REQUESTED：2 P1+11 P2+2 NIT→S10-S13 修复） |
+| S10 | CR 修复：Rule 94 正文七处（P1-2+P2-5..9+NIT-1） | executor | worktree critical-rules-discipline.md 94 段 | CR P1-2/P2-5..9/NIT-1 逐项闭环 | 15min | 1f/12l/15min | 无 | S9 | done（6/6，提交 7d9a6e4） |
+| S11 | CR 修复：SKILL 77 条口径×2+README 行内注记（P1-1+P2-1） | executor | worktree 主 SKILL.md+planner README.md | 75→77×2；注记 +Rule 94→77 | 10min | 2f/6l/10min | 无 | S9 | done（4/4，提交 7d9a6e4） |
+| S12 | CR 修复：ARCH 注记/措辞+CLAUDE 纪元注释（P2-1/2/3/10） | executor | worktree ARCHITECTURE.md+CLAUDE.md | 注记 77 一致；召回卡措辞；注释链 | 10min | 2f/8l/10min | 无 | S9 | done（3/3，提交 7d9a6e4） |
+| S13 | CR 修复：README_zh 纪元注释+93 表行补登（P2-4/10+NIT-2） | executor | worktree README_zh.md+discipline SKILL.md | 注释链；索引表 45 行=计数 | 10min | 2f/5l/10min | 无 | S9 | done（3/3，提交 7d9a6e4） |
+| S14 | 修复后全量 selftest --fresh 复跑 | code-runner-agent | worktree 仓根 | FAIL=0 exit 0 | 15min | 0f/0l/15min | 无 | S10-S13 | done（92/92，7d9a6e4） |
+| S15 | CR 复审 APPROVED→非阻断 5 项顺手收口（P2-A/B+NIT-1/2） | executor | worktree discipline 正文+README+ARCH | 5 处 1 行级修复 grep 锚 | 10min | 3f/5l/10min | 无 | S14 | done（3/3，提交 9021b43） |
+| S16 | 终态 HEAD 全量 --fresh 复跑（VC-3 终证据） | code-runner-agent | worktree 仓根 | 92/92 exit 0 | 15min | 0f/0l/15min | 无 | S15 | done（92/92，9021b43） |
 
 ### Phase 4: 合并回+收口交付
 - [ ] 全 VC 复验（verification-gate run-verification.sh）
@@ -392,6 +402,8 @@ Phase 2
 | 部署位同步 deferred | §六 保护区写入须显式授权；task-v195 等判例先例（交付时列入下一步建议） |
 | D1 计划确认走 Rule 44.3 自动通过 | 完成性指令（/goal）+自主执行模式；登记自动裁决记录五要素于 progress.md |
 | SKILL.md 指针句挂 E 类段尾 | 侦察 L174 处置句为最贴插入点；BP-08 边距 267/275 余量 8 行 |
+| S7 主进程吸收（git 白名单①） | 单次 git add scope+commit 为纯编排，派发开销>收益；登记例外理由（v141 先例） |
+| land 94 前置到 worktree（Phase 3 内） | S8 PR-02 实证 reserved 悬空即 FAIL；前置 land 使账本与正文同一 merge 入 master，消除「landed 无正文」窗口；语义与「合并后 land」等价（R20.6） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
@@ -408,6 +420,8 @@ Phase 2
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-10-23 Phase 1 翻转前 | ✅ALIGNED | VC-4/VC-1 | Goal↔用户原话零漂移；scope 零触碰；检查点 02-drift-check-p1.md+ledger 已留痕 |
+| 2026-10-23 Phase 2 翻转前 | ✅ALIGNED | VC-1/VC-2/VC-6 | 3ea1dbc 恰为 scope 9 文件零越界；CA-1..CA-11 逐项在位；检查点 09-drift-check-p2.md |
+| 2026-10-23 Phase 3 翻转前 | ✅ALIGNED | VC-3 | 提交序列 2d978e0→9021b43 零越界；CR APPROVED+92/92 fresh 互证；检查点 21-drift-check-p3.md |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
@@ -421,7 +435,14 @@ Phase 2
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-10-23 | Explore | Rule 94 级联面扫描 | failed | provider 首派失败 | - | - | - | 改派 / 0 / ☐ |
 | 2 | 2026-10-23 | general-purpose | Rule 94 级联面扫描（改派） | done | 判例 10 文件清单+锚全宽容+归属=discipline | 01-explore-cascade.md | §Research Findings | plans/task-focus-plan-split-20261023/subagent-state/01-explore-cascade.md | - / 1 / ☑ |
-| 3 | | | | queued | | | | | - / 0 / ☐ |
+| 3 | 2026-10-23 | general-purpose | Phase 1 偏移检查（改派） | done | ALIGNED：Goal↔原话零漂移 scope 零触碰 | 02-drift-check-p1.md | progress P1 | .../subagent-state/02-drift-check-p1.md | - / 0 / ☑ |
+| 4 | 2026-10-23 | executor | S2 Rule 94 正文+召回卡行 | done | 正文 L605-615+卡 L39；5/5 | 03-impl-s2.md | progress P2 | .../subagent-state/03-impl-s2.md | - / 0 / ☑ |
+| 5 | 2026-10-23 | executor | S3 卫星 SKILL 计数+核心枚举 | done | 5 处级联；发现 93 表行遗留 | 04-impl-s3.md | progress P2 | .../subagent-state/04-impl-s3.md | - / 0 / ☑ |
+| 6 | 2026-10-23 | executor | S3b 索引表 94 行（CA-11） | done | 表行 L75+落盘状态句；4/4 | 05-impl-s3b.md | progress P2 | .../subagent-state/05-impl-s3b.md | - / 0 / ☑ |
+| 7 | 2026-10-23 | executor | S4 CLAUDE/README_zh 纪元 | done | 3 处活跃字面；注释保留 | 06-impl-s4.md | progress P2 | .../subagent-state/06-impl-s4.md | - / 0 / ☑ |
+| 8 | 2026-10-23 | executor | S5 README/ARCHITECTURE 级联 | done | 13 处+演进史 94 行 | 07-impl-s5.md | progress P2 | .../subagent-state/07-impl-s5.md | - / 0 / ☑ |
+| 9 | 2026-10-23 | executor | S6 主 SKILL 级联+指针句 | done | 实质 6/6（AC-1a 措辞 artifact 裁决接受） | 08-impl-s6.md | progress P2 | .../subagent-state/08-impl-s6.md | - / 0 / ☑ |
+| 10 | 2026-10-23 | general-purpose | Phase 2 偏移检查（改派） | done | ALIGNED：scope 9 文件零越界 | 09-drift-check-p2.md | progress P2 | .../subagent-state/09-drift-check-p2.md | - / 0 / ☑ |
 
 ## 🔁 模板感知
 <!-- template_type: rule-enhancement -->
