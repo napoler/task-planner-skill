@@ -361,7 +361,7 @@ Phase 4
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）
 - **V-N:** VC-5, VC-7, VC-1, VC-2, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由: ② git 编排+簿记——Rule 25.3 白名单；回归/修复/终验由 S-unit 各自执行体承担）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
