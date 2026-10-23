@@ -1,7 +1,7 @@
 # task-planner — 任务规划与漂移检测技能
 
 > **多工具架构 v2（2026-08-29）**：canonical source + per-tool 部署位同步，env-var 路径解析。
-> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；77 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） --><!-- 2026-10-21 task-v195：Rule 93 规范再召回入纪律域，非核心 73→74 条 --><!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：卫星侧实体规则 dedup=76（+Rule 94 → 77）（全集 14+77=91，77/78/79 废弃不计），引言行同步实测值] -->。
+> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；79 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） --><!-- 2026-10-21 task-v195：Rule 93 规范再召回入纪律域，非核心 73→74 条 --><!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：卫星侧实体规则 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79）（全集 14+79=93，77/78/79 废弃不计），引言行同步实测值] -->。
 
 ## 快速链接
 
@@ -33,7 +33,7 @@
 ```
                     ┌───────────────────────────────────────────────┐
                     │ 核心 task-planner = 四文件罗盘唯一管理域         │
-                    │ Rules 1-94 全集索引：核心在位 14 条             │
+                    │ Rules 1-96 全集索引：核心在位 14 条             │
                     │（1,2,3,5,19,20,26,51,62,66,80,81,82,83）       │
                     └──────────────┬────────────────────────────────┘
                                    │ SKILL.md 文末「卫星路由表」按需 Read 规则全文
@@ -78,7 +78,7 @@
 
 ## Critical Rules 指针
 
-Rules 1-94 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明+卫星路由索引）；其余 77 条已按域迁至上表 11 卫星（2026-10-21 task-v195：Rule 93 规范再召回入纪律域）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77）] -->——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-96 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明+卫星路由索引）；其余 79 条已按域迁至上表 11 卫星（2026-10-21 task-v195：Rule 93 规范再召回入纪律域）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79）] -->——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 
 ---
 
@@ -120,11 +120,11 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 6 篇规则文档（2026-10-12 task-v171 拆分后实测; 纪律/派发/媒体域规则已迁至卫星）
-│   ├── critical-rules.md                    # 核心域 14 条规则全文+Rules 1-94 全集索引+分层架构说明
+│   ├── critical-rules.md                    # 核心域 14 条规则全文+Rules 1-96 全集索引+分层架构说明
 │   ├── todo-sync.md                         # S1-S5 同步契约
 │   ├── worktree-isolation.md                # 隔离合约
 │   ├── goal-gate.md / completion-gate.md / methodology.md
-│   └── [critical-rules-discipline 等 77 条非核心规则 → 各卫星 references/critical-rules-*.md]
+│   └── [critical-rules-discipline 等 79 条非核心规则 → 各卫星 references/critical-rules-*.md]
 ├── templates/                               ← 13 主模板 + 29 个 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md
