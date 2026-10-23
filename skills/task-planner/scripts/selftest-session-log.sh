@@ -11,6 +11,8 @@
 #      → check-complete.sh SESSION-LOG GATE 三件套（SL-06）→ init-session.sh 建档块+6/6 字面（SL-07）
 #      → 指针区块纯静态负断言（SL-08）→ 零新 config 键 properties=44（SL-09, 对齐 DD-20; task-perf-opt 合法新增 2 键 42→44）
 #      → registry 自登记（SL-10）。10 组断言全 PASS exit 0, 任一 FAIL exit 1。纯 grep/awk/jq 静态断言, 无 fixture。
+# [2026-10-24 task-tplrender CR-fix BLOCKER-1] 续增 SL-12 动态断言（二次 init 幂等：渲染接线只渲本轮
+#      新建文件，不触碰用户已 append 的 user-session-log.md——见断言处 Rule 45 注释）。原 11 组 → 12 组。
 # WHY: 需求锚 R4（用户任务需求与对话内容逐字记录进 Task Plan 文档）+ R5（记录性文档只写入不修改）
 #      是用户原话铁律；Rule 80.6③ 要求 selftest 静态断言守护全链落点，防模板/规则/门控被后续改动静默移除。
 # 口径: 任务书 task-v169 §2 十条断言判定口径表；结构/style 照抄 selftest-knowledge-brief.sh 范式
@@ -168,6 +170,32 @@ if [ "$RC" -eq 0 ] && ! grep -qF 'baseline-drift' "$SL11_TMP/e2.err" \
     t "SL-11b 回退校验保留（基线条目数 2→现存 1 = FAIL；基线=现存 1 = PASS, 篡改面不放开）" true
 else
     t "SL-11b 回退校验保留（基线条目数 2→现存 1 = FAIL；基线=现存 1 = PASS, 篡改面不放开）" false
+fi
+# SL-12 [2026-10-24 task-tplrender CR-fix BLOCKER-1] 二次 init 不改写既有条目（Rule 80.2 append-only）动态实证：
+#   fixture 复用 SL-11 的 mktemp 根（$SL11_TMP/plans/<task-id>，上方 trap EXIT 已覆盖清理）。
+#   a) 首次 init（rc=0）→ 向 user-session-log.md append 含字面 `[DATE]`/`<task-id>`/`{{TEST_KEEP}}`
+#      的假逐字条目 + 手改 task_plan.md 的 Goal 值；
+#   b) 二次 init（rc=0，不因记录内 {{TEST_KEEP}} 误触残留校验 fail-closed）→ 断言
+#      user-session-log.md **逐字节未变**（sha 一致）、假条目原文仍在、Goal 手改仍在。
+#   Why: 渲染接线原 `for *.md` 全目录遍历会对既有文件重跑旧形态映射（`[DATE]`→日期、
+#      `<task-id>`→目录名），静默改写用户逐字记录（违反 Rule 80.2）；本断言是该 BLOCKER
+#      的回归护栏（渲染面收窄为「本轮新建文件」后必须持续成立）。
+SL12_DIR="$SL11_TMP/plans/task-sl12"
+mkdir -p "$SL12_DIR"
+( cd "$SL12_DIR" && bash "$INIT" "SL12" >/dev/null 2>&1 ); SL12_RC1=$?
+printf '\n## #99 用户原话（逐字）\n- 含字面 [DATE] 与 <task-id> 与 {{TEST_KEEP}} 均应逐字保留\n' >> "$SL12_DIR/user-session-log.md"
+SL12_BEFORE="$(sha256sum "$SL12_DIR/user-session-log.md" | cut -d' ' -f1)"
+sed -i 's/^## Goal.*/## Goal — SL12手改哨兵ZZZ/' "$SL12_DIR/task_plan.md" 2>/dev/null || true
+( cd "$SL12_DIR" && bash "$INIT" "SL12" >/dev/null 2>&1 ); SL12_RC2=$?
+SL12_AFTER="$(sha256sum "$SL12_DIR/user-session-log.md" | cut -d' ' -f1)"
+SL12_NAME="SL-12 二次 init 不改写既有条目（user-session-log sha 不变 ∧ 假条目/Goal 手改保留 ∧ rc=0, Rule 80.2）"
+if [ "$SL12_RC1" -eq 0 ] && [ "$SL12_RC2" -eq 0 ] \
+   && [ "$SL12_BEFORE" = "$SL12_AFTER" ] \
+   && [ "$(grep -c '含字面 \[DATE\] 与 <task-id> 与 {{TEST_KEEP}} 均应逐字保留' "$SL12_DIR/user-session-log.md")" -eq 1 ] \
+   && [ "$(grep -c 'SL12手改哨兵ZZZ' "$SL12_DIR/task_plan.md")" -ge 1 ]; then
+    t "$SL12_NAME" true
+else
+    t "$SL12_NAME" false
 fi
 # ── 汇总（Total/exit 语义对齐 selftest-knowledge-brief.sh）──
 TOTAL=$((PASS + FAIL))

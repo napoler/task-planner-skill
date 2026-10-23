@@ -101,7 +101,9 @@ copy_template() {
 # Why: 值中的 `\`（转义引导）、`&`（sed 替换段 =「整个匹配」）、`|`（本渲染选定界符）
 #   三者任一未转义都会破坏替换（`&` 会展开为被匹配的 token 字面量、`|` 会提前闭合
 #   定界符、`\` 会吞掉后继字符）。`\` 必须**最先**处理，否则会二次转义后插入的 `\`。
-#   sed 用 GNU 版（脚本 L694 既有 `sed -i` 同款假设）。
+#   sed 用 GNU 版（与本脚本 lane 定级写入段的既有 `sed -i` 调用同款 GNU 假设；
+#   [2026-10-24 CR-fix NIT-2] 原注释硬编码「L694」行号已漂移（该 sed 现位于 lane 定级段），
+#   改为按调用点描述引用，避免后续插行再次漂移）。
 _sed_escape_repl() {
     local s="$1"
     s="${s//\\/\\\\}"   # \  -> \\   （先做：避免后续插入的反斜杠被再次转义）
@@ -116,6 +118,10 @@ _sed_escape_repl() {
 #   举例 token 名（如 `{{VAR}}`）是合法用法，不应触发 fail-closed。判例（2026-10-24 跨单元
 #   冲突）：模板「渲染契约」注释含字面 `{{VAR}}`，若不过滤会让每个 init 全量 rc=1。
 #   非注释行严格度不放松（真拼错照拦）。范围跨行注释亦正确（awk 区间模式）。
+#   已知局限（[2026-10-24 CR-fix NIT-1]）：awk 区间模式遇到**未闭合** `<!--` 会吞掉其后
+#   整个文件（区间永不结束）——此时该文件后半段的残留 token 逃过校验（漏拦，不会误拦）。
+#   现网 7 个模板的 HTML 注释均配平（起止成对），无实害；若后续模板出现未闭合注释，属
+#   模板缺陷，应在模板侧修复（本助手不做配平探测，避免引入括号配对状态机）。
 _strip_html_comments() {
     awk '/<!--/,/-->/ {next} {print}'
 }
@@ -152,7 +158,7 @@ _strip_html_comments() {
 #
 # 实现取舍（sed 单遍 vs bash 内建逐行）：
 #   选 sed 多 -e 单遍 in-place：① 无 bash 逐行读+重写的中间态与换行处理负担；
-#   ② 与脚本既有风格一致（L694 已用 GNU `sed -i`）；③ 值转义集中于 _sed_escape_repl。
+#   ② 与脚本既有风格一致（lane 定级写入段已用 GNU `sed -i`）；③ 值转义集中于 _sed_escape_repl。
 #   放弃 bash `${line//pat/rep}` 逐行法：需自行保换行、大文件逐行 fork 慢、替换值含
 #   换行时语义更复杂——收益不抵成本。
 #   定界符选 `|`（避开路径 `/`，无需转义斜杠）；token 字面量 `{{`/`}}` 在 BRE 中
@@ -162,9 +168,14 @@ _strip_html_comments() {
 #   会被同遍 sed 的后续表达式二次替换（sed 逐表达式顺序处理，无法天然避免）。
 #   真实取值域（任务名/绝对路径/日期）含此类字面量的概率可忽略；S4 残留校验捕获异常。
 #
-# 幂等：已渲染文件无 token 残留 → 再渲染为 no-op（sed 无匹配则内容不变）。
-# 接线（S4, 2026-10-24）：主流程在 7 计划文件就位后对计划目录 *.md 逐文件调用一次
-#   （非逐 cp 调用）；任一文件 rc≠0 → init exit 1（fail-closed，VC-4 验收依赖）。
+# 幂等（[2026-10-24 CR-fix BLOCKER-1] 语义收紧）: 调用侧只对本轮**新建**文件渲染，重复 init
+#   对既有文件零触碰（幂等由「不渲染」保证，而非依赖「渲染为 no-op」）；函数自身对已渲染
+#   文件仍为 no-op（无 token 匹配 → sed 不改内容），双保险。
+# 接线（S4, 2026-10-24；[CR-fix BLOCKER-1] 收窄遍历面）：主流程对**本轮 copy_template 新建**
+#   的计划文件（`_created_this_round` 列表）逐个调用一次；**不再** `for *.md` 全目录遍历——
+#   否则重复 init 会对用户已 append 的 user-session-log.md 重跑旧形态映射，静默改写逐字记录
+#   （违反 Rule 80.2 append-only），且记录中的 `{{FOO}}` 会误触残留校验阻断恢复。
+#   任一文件 rc≠0 → init exit 1（fail-closed，VC-4 验收依赖）。
 # rc 语义：0=成功（无 {{大写}} 残留）；2=残留未定义 token（stderr 列清单，fail-closed）；
 #   1=文件不存在 / sed 失败（stderr 明确报错）。（非静默，遵守 §五 错误曝光）
 # Usage: render_template <file-path>
@@ -212,8 +223,11 @@ render_template() {
     #      末条同时修 27 处 markdown 死串 bug：模板里该串位于 markdown 正文，不会像 shell
     #      那样展开，读者看到的是字面 `${...}`；渲染成技能根实际绝对路径后，正文引用
     #      （`/references/...` 后缀）直接可复制执行。替换只吃掉前缀串，后缀原样保留。
-    #    顺序约束: `<task-id>` 必须先于 `<task>`（否则 `<task>` 吃掉 `<task-id` 前缀，
-    #      残留 `-id>`）；`{{VAR}}` 与旧形态互不为前缀，其余相对顺序无关。
+#    顺序约束（[2026-10-24 CR-fix NIT-3] 修正原措辞）: 原注释称「`<task-id>` 必须先于 `<task>`，
+#      否则 `<task>` 吃掉 `<task-id` 前缀」，该理据**不成立**——两 pattern 各带闭合 `>`，
+#      `<task>` 不匹配 `<task-id>` 内的子串（CR 探针实证：反序执行亦无 `-id>` 残留）。
+#      故本序列中遗留替换表达式之间互不为前缀，顺序对结果无影响；下方仍按
+#      `{task-id}`/`<task-id>`/`<task>` 的书写顺序排列，仅为便于人工对照映射表，非正确性约束。
     #    pattern 转义: `[Brief Description]`/`[DATE]`/`[YYYY-MM-DD HH:MM]` 的 `[`/`]`
     #      在 BRE 是字符类定界符 → 必须 `\[`/`\]`；`${TASK...}` 串的 `$`→`\$`、`.`→`\.`
     #      （`{`/`}` 在 BRE 非元字符，保持字面；`:-` 无需转义）。定界符仍为 `|`。
@@ -724,6 +738,13 @@ fi
 echo ""
 
 # Initialize each template file (only if it doesn't exist)
+# [2026-10-24 CR-fix BLOCKER-1] `_created_this_round` = 本轮**新建**（原不存在、本次才 cp）的
+#   计划文件列表。渲染接线只遍历它（见下方 render 段），使重复 init 对既有文件零触碰：
+#   ① 保 Rule 80.2 append-only（用户 append 的 user-session-log.md 逐字记录不被旧形态映射改写）；
+#   ② 记录内 `{{FOO}}` 不再误触残留校验阻断会话恢复；③ `.session-log-baseline` sha 不失配。
+#   现状前提：三个 copy_template 调用点均有 `[ -f ] → skipping` 守卫（目标存在即跳过，不覆盖），
+#   故「本轮新建」= 进入 cp 分支的文件，与「目标原不存在」等价。
+_created_this_round=()
 # [task-perf-opt Change #7] trivial 代码修复档（TRIVIAL_CODE_TIER=1，条件与 Change #1 第四分支统一）
 # 缩减为 3 文件（task_plan.md + progress.md + verification.md），跳过 findings/notepad-learnings/knowledge-brief
 # （trivial 单文件 ≤3 行修复无调研/知识沉淀需求）；verification.md 仍创建（LANE-L0 GATE ① 全量终验锚依赖）。
@@ -738,6 +759,7 @@ for file in $_init_files; do
         echo "$file already exists, skipping"
     else
         if copy_template "$file"; then
+            _created_this_round+=("$file")
             echo "    Created $file"
         fi
     fi
@@ -764,6 +786,9 @@ else
                 fi
                 ;;
         esac
+        # [2026-10-24 CR-fix BLOCKER-1] 记入本轮新建列表（variant/通用两分支复制点已过；
+        # 供渲染接线只渲染本轮新建文件，重复 init 时既有 task_plan.md 零触碰）
+        _created_this_round+=("task_plan.md")
         # [2026-09-21 task-v086 S6] 自造模板 frontmatter 兜底: 复制产物无 template_type 标识行
         # (首行注释或表格行均无) 时头部插入一行, 保证 check-template-type 机器门控可识别
         if [ "$PROJECT_TPL_USED" = 1 ] && [ -n "$TEMPLATE_TYPE" ]; then
@@ -792,6 +817,8 @@ else
             echo "    Created task_plan.md"
         fi
     elif copy_template "task_plan.md"; then
+        # [2026-10-24 CR-fix BLOCKER-1] 通用模板（TASK_PLAN_SRC 即 task_plan.md）分支同样入列
+        _created_this_round+=("task_plan.md")
         echo "    Created task_plan.md"
     fi
 fi
@@ -811,6 +838,9 @@ if [ "${TRIVIAL_CODE_TIER:-0}" != "1" ]; then
         echo "user-session-log.md already exists, skipping"
     else
         if copy_template "user-session-log.md"; then
+            # [2026-10-24 CR-fix BLOCKER-1] 记入本轮新建列表；既有专档（重复 init 走上方
+            # skipping 分支）**不入列**→ 渲染接线不触碰用户已 append 的逐字记录（Rule 80.2）
+            _created_this_round+=("user-session-log.md")
             echo "    Created user-session-log.md (task-v169 Rule 80.1 第 7 计划文件, append-only 逐字记录专档)"
         fi
     fi
@@ -975,24 +1005,30 @@ if [ ${#missing_files[@]} -gt 0 ]; then
 fi
 # ============================================================================
 # [2026-10-24 task-tplrender S4] 模板渲染接线点 —
-# What: 7 计划文件全部复制/注入完成、存在性复核通过后，对计划目录内每个 *.md
-#   调用一次 render_template（单次批量调用，非逐 cp 调用）。任一文件 rc≠0 →
-#   stderr 打印 `[render] FAIL: <file> 残留未定义 token: <tokens>` 并置失败位，
-#   循环结束后 init 整体 exit 1（fail-closed）。
+# What: 本轮新建的计划文件（`_created_this_round`）逐个调用一次 render_template；
+#   任一文件 rc≠0 → stderr 打印 `[render] FAIL: <file> 残留未定义 token: <tokens>`
+#   并置失败位，循环结束后 init 整体 exit 1（fail-closed）。
 # Why: 见 render_template 函数头——脚本确定性替换替代模型生成后手工修正占位符
 #   （用户 2026-10-24 裁决的投诉点）。
+# [2026-10-24 CR-fix BLOCKER-1] 遍历面由「计划目录 *.md」收窄为「本轮新建列表」：
+#   原 `for _rf in *.md` 无新建过滤，重复 init（会话恢复/重跑）会对已存在文件重跑旧形态
+#   映射（`{task-id}`/`<task-id>`/`[DATE]` 等），把用户写入 user-session-log.md 的**逐字
+#   原话**静默改写 → 违反 Rule 80.2 append-only；记录里若含 `{{FOO_BAR}}` 还会触发残留
+#   校验 rc=1 误阻断恢复；`.session-log-baseline` sha 随之失配 → SESSION-LOG GATE 误报 tamper。
+#   收窄后重复 init 对既有文件零触碰，幂等语义真正成立。
 # 位置理由: ① 须在模板复制（copy_template）/tier 分流/区块注入（inject_*）全部完成
 #   之后——否则注入产物内的占位符不参与本轮渲染；② 须在 PROJECT_NAME 赋值（L395）
 #   之后——render_template 读 ${PROJECT_NAME}；③ 须在「6/6 verified」等最终 verify
 #   回显之前——残留即失败必须早于成功回显（VC-4）。
-# 幂等: 单次调用 + render_template 对已渲染文件 no-op（二次 init 零变化）。
 # 失败判定: render_template 自身已在 stderr 列出残留清单；调用方再用**同一**
 #   _strip_html_comments 口径 grep 一次（HTML 注释区间豁免，避免 FAIL 行误列注释 token），
 #   统一成「[render] FAIL」格式（便于日志 grep），并 fail-closed 终止 init。
 # ============================================================================
 _render_fail=0
-for _rf in *.md; do
-    [ -e "$_rf" ] || continue
+for _rf in "${_created_this_round[@]}"; do
+    # [2026-10-24 CR-fix NIT-4] -f（普通文件）而非 -e：列表项若因 copy 失败/被同名目录
+    # 占位而缺席，应静默跳过（-e 会把子目录当作待渲染文件 → render_template 报 rc=1 假失败）。
+    [ -f "$_rf" ] || continue
     if ! render_template "$_rf"; then
         _rf_tokens="$(_strip_html_comments < "$_rf" | grep -oE '\{\{[A-Z_][A-Z_0-9]*\}\}' 2>/dev/null | sort -u | tr '\n' ' ')"
         echo "[render] FAIL: $_rf 残留未定义 token: ${_rf_tokens}" >&2
