@@ -207,6 +207,7 @@ execution_lane: L1
 | CA-10 | skills/task-discipline/SKILL.md（:15/:76/:78/:89 四处） | 修改 | 增量（索引行追加+计数 45→46） | R4（泛化规则须可索引消费） | CR MAJOR-1（subagent-state/4c-cr.md：78 条分母实体缺位） | 索引表追加 \| 95 \| 行+四处计数/枚举改 46 |
 | CA-11 | skills/task-discipline/references/execution-recall-card.md（E 节 Rule 94 行后追加 1 行） | 新增 | 增量 | R4 | CR MINOR-8+卡片头 §维护同步义务（Rule 93.1） | 追加执行优先蒸馏行 |
 | CA-12 | CR 意见处置（MAJOR-2/MINOR-1/2/3 改 Rule 95 条款文本；MINOR-4/5/6/7 改 ARCH/README 注释算术） | 修改 | 增量/措辞精化 | R7 | CR 检查点 4c-cr.md 逐字修法 | 按检查点修法逐条落地；NIT-1/2/3 不采纳（NIT-1 措辞取舍、NIT-2 替换行=保留真守卫、NIT-3 就地改写为对称性刻意选择）——理由登记于此 |
+| CA-13 | 并集解（master e319ee3=并行会话 Rule 96 先落）：SKILL.md 五 hunk union+全文档 1-95/78→1-96/79 级联+CLAUDE/README_zh/ARCH 链尾并集行+rule-reserve land 95/96（96 代登记注明）+selftest-subagent-activation.sh SA-12 锚 78→79 随动 | 修改/新增 | 增量（两侧 landing 均全保留，并集取高宇宙） | R7（合并回合约 §11.3） | git show e319ee3；5a-selftest-final.md FAIL-1/FAIL-2 | merge commit b3f7c04+随动修复；96 land=并集收口代登记（e319ee3 已实际落 master） |
 
 > Scope 修正记录（2026-10-23，Phase 1 冻结）：原 scope 写「selftest 纪元锚行」——Explore 实证 selftest i 类=0（宽容锚 9[0-9] 已覆盖），真级联=上述 5 文档 22 行。本表即冻结清单；BP-09 锚 batch-quality-gate.md:138「隶属 Rules 1-36」明确勿动（7[0-7] 不含 78，误写即 FAIL）。
 
