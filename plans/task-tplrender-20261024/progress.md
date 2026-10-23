@@ -82,7 +82,8 @@
   | V-4.2 scope | 行数变化 | ≤+6/-3 | +3/-2 | PASS |
 
 ### Phase 5: 回归终验与合并部署
-- **Status:** in_progress
+- **Status:** complete
+- **[goal:G5] 完成证据**：run-selftests 93/93（da7a3a4）+S14 全 VC PASS+merge commit（git log --grep tplrender）+部署位 11 文件 diff=0+worktree/分支零残留
 - **Started:** 2026-10-24 05:5x
 - Actions taken:
   - S12 code-runner-agent：全量 selftest 回归 → **Total: 93 PASS=91 FAIL=2**（selftest-plan-tier PT-26+selftest-session-log SL-07，均为渲染新行为使旧断言语义过期；基线复现 b983b3b^ 确认非既有失败）；worktree git status 干净
