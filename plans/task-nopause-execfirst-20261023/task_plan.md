@@ -321,12 +321,12 @@ Phase 1
 | S1 | 只读映射：额度/停等措辞承载面+selftest 纪元锚行+部署位，结论落检查点 | Explore（haiku-1） | 检查点 plans/task-nopause-execfirst-20261023/subagent-state/1-explore.md；扫 skills/ 与 scripts/ | 检查点四节齐（执行体措辞面/规则锚面/纪元锚行清单/部署位映射），每节含路径+行号 | 15min | 0f/0l/15min | 无 | - | pending |
 
 ### Phase 2: Design（Rule 95 文本定稿+变更标注）
-- [ ] Read 两执行体全文+discipline 尾部（94 落地形态）
-- [ ] Rule 95 七子条全文定稿（写入 worktree 的 discipline 文件）
-- [ ] 两执行体改写精确 diff 定稿（登记变更标注表，材料包供 Phase 3 派发）
-- [ ] 创建 worktree（§十一：实现类默认首选）
+- [x] Read 两执行体全文+discipline 尾部（94 落地形态）
+- [x] Rule 95 七子条全文定稿（写入 worktree 的 discipline 文件，commit c359c55）
+- [x] 两执行体改写精确 diff 定稿（登记变更标注表 CA-2..CA-6，材料包供 Phase 3 派发）
+- [x] 创建 worktree（§十一：实现类默认首选）
 - **V-N:** VC-1（文本锚在位）, VC-2（改写方案冻结）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由：用户投诉原文仅存于本会话上下文，规则文本为宪法级敏感措辞，转译派发必然失真——语义保真；白名单外理由登记，终验委派率表复核）
 
 ### Phase 3: Implementation（执行体修正+纪元级联）

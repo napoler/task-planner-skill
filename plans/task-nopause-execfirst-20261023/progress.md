@@ -33,14 +33,21 @@
 
 ### Phase 2: Rule 95 文本定稿+变更标注
 <!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+- **Status:** complete（2026-10-23；V-2.1/V-2.2 PASS）
+- **Started:** 2026-10-23（Phase 1 翻转后）
 - Actions taken:
-  -
+  - worktree 创建：/mnt/data/dev/task-planner-skill-worktrees/task-nopause-execfirst-20261023（wt/…，基线 98032eb，集中目录合规）
+  - Read 三文件全文（discipline 尾部 595-615+video 70 行+image 69 行）——Rule 74 替代条件③满足
+  - Rule 95 七子条（95.0-95.6）写入 worktree discipline L616+（13 行追加，Rule 94 块逐字不动）
+  - 缺陷自纠：首写无字面 "Rule 95" 自引用致 VC-1 锚 grep=0 → 建制段补「本条（Rule 95）」→ grep=1 → amend（commit c359c55）
+  - 两执行体精确改写文本冻结（供 Phase 3 材料包）：video L19/L58 替代+L43 增量；image L42 增量+三检处置自主化增量（CA-2..CA-6）
 - Files created/modified:
-  -
+  - worktree: skills/task-discipline/references/critical-rules-discipline.md（+13 行 Rule 95）
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-2.1 | grep -c "Rule 95\|95\.4\|暂停前三问" <worktree discipline> | 各≥1 | Rule95=1 / 95.1=2 / 95.2=1 / 95.4=1 / 前三问=1 | PASS |
+  | V-2.2 | CA-1..CA-9 变更标注表 | 每行有精确对象+执行动作 | 9 行冻结（含替代四条件登记） | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

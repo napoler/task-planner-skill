@@ -66,7 +66,7 @@ Status: `complete` Last verified: 2026-10-23（V-1.1 检查点四节 PASS；V-1.
 - [ ] V-2.1: `grep -c "Rule 95" <worktree>/skills/task-discipline/references/critical-rules-discipline.md` ≥1（→ VC-1）
 - [ ] V-2.2: 变更标注表每行有精确替换文本（→ VC-2/VC-3 方案冻结）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-23（V-2.1 grep 锚全中 PASS；V-2.2 CA-1..CA-9 冻结 PASS；worktree commit c359c55）
 
 ---
 
