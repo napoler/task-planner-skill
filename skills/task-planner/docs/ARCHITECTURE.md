@@ -1,7 +1,7 @@
 # task-planner 多工具架构设计
 
 > **目标**：一份 canonical source，多工具部署位同步，零内容重复，env-var 解析路径。
-> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；78 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate，Rule 84 task-v173 新增；其余 78 条中纪律域含 85/86/87/88/89/90/92/93/94/95，协同域含 91）；核心在位 14 条（1,2,3,5,19,20,26,51,62,66,80,81,82,83）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78），全集 14+78=92（77/78/79 已废弃不计）] --><!-- 2026-10-19 task-v191 对齐实态：Rules 1-92 全集、核心 12→14 条、非核心 76→73 条、第 11 颗卫星 verification-gate 入分解 --><!-- 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集 1-92→1-93、非核心 73→74 条 -->。
+> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；79 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate，Rule 84 task-v173 新增；其余 79 条中纪律域含 85/86/87/88/89/90/92/93/94/95、dispatch 域含 96，协同域含 91）；核心在位 14 条（1,2,3,5,19,20,26,51,62,66,80,81,82,83）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79），全集 14+79=93（77/78/79 已废弃不计）] --><!-- 2026-10-19 task-v191 对齐实态：Rules 1-92 全集、核心 12→14 条、非核心 76→73 条、第 11 颗卫星 verification-gate 入分解 --><!-- 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集 1-92→1-93、非核心 73→74 条 -->。
 
 ---
 
@@ -10,7 +10,7 @@
 ### 1.1 单一事实源（Single Source of Truth）
 
 canonical 仓 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源（2026-10-12 task-v171 拆分后实测）：
-- `SKILL.md`（237 行，hooks 字段为空；文末含 11 卫星路由表 + Rules 1-95 全集索引）<!-- 2026-10-19 task-v191 对齐实态：214→237 行、1-84→1-92 -->
+- `SKILL.md`（237 行，hooks 字段为空；文末含 11 卫星路由表 + Rules 1-96 全集索引）<!-- 2026-10-19 task-v191 对齐实态：214→237 行、1-84→1-92 -->
 - `references/`（6 篇规则文档：critical-rules/todo-sync/worktree-isolation/goal-gate/completion-gate/methodology；纪律/派发/媒体域规则已迁至各卫星 `references/critical-rules-*.md`）
 - `templates/`（13 个主模板 + 29 个 variant，`find templates -maxdepth 1 -type f -name '*.md' | wc -l` → 13，`templates/variant/*.md` → 29；variant 28/29 含「📚 必要知识储备」章节）
 - `scripts/`（146 条目 = 137 个 .sh（含 92 个 selftest-*.sh）+ .ps1/.cjs/.ts/.tsv + lib//capabilities/ 两个子目录）<!-- 2026-10-19 task-v191 对齐实态：119/110/76 → 146/137/92 -->
@@ -39,7 +39,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 ```
                     ┌───────────────────────────────────────────────┐
                     │ 核心 task-planner = 四文件罗盘唯一管理域         │
-                    │ Rules 1-95 全集索引：核心在位 14 条             │
+                    │ Rules 1-96 全集索引：核心在位 14 条             │
                     │（1,2,3,5,19,20,26,51,62,66,80,81,82,83）       │
                     └──────────────┬────────────────────────────────┘
                                    │ SKILL.md 文末「卫星路由表」按需 Read 规则全文
@@ -110,9 +110,9 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 
 ## 4. 规则全集索引与纪元演进
 
-**Rules 1-95 全集索引**（2026-10-23 task-nopause-execfirst-20261023 更新：1-94→1-95；2026-10-23 task-focus-plan-split-20261023 更新；2026-10-21 task-v195 更新；2026-10-19 task-v191 对齐）：
+**Rules 1-96 全集索引**（2026-10-24 task-nopause-execfirst-20261023 并集解更新：1-94→1-95→1-96；2026-10-23 task-focus-plan-split-20261023 更新；2026-10-21 task-v195 更新；2026-10-19 task-v191 对齐）：
 - **核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明 + 卫星路由索引）
-- **其余 78 条**按域迁至上表 11 卫星（3 新域 60 条 + 7 收编 17 条 + 验证域 1 条 Rule 84，合计 78；纪律域含 85/86/87/88/89/90/92/93/94/95（85-90/92-94 为 v171 后追加 9 条，95 为 2026-10-23 追加 1 条）、协同域含 91 为追加 1 条）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：原拆分 50+16+1=67 与外层 74/76 均不自洽（50/16 为 v171 快照、未含后续追加），改为现值 58=dispatch 11+discipline 44+media 3、17=research 3+template 4+collab 3+cost 1+resume 1+progress 1+drift 4，58+17+1=76 与实测 dedup 一致（+Rule 94: 58→59、44→45 → 77；+Rule 95 → 78）] -->
+- **其余 79 条**按域迁至上表 11 卫星（3 新域 61 条 + 7 收编 17 条 + 验证域 1 条 Rule 84，合计 79；纪律域含 85/86/87/88/89/90/92/93/94/95（85-90/92-94 为 v171 后追加 9 条，95 为 2026-10-23 追加 1 条）、dispatch 域含 96（2026-10-24 task-subagent-boost-20261023 追加 1 条）、协同域含 91 为追加 1 条）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：原拆分 50+16+1=67 与外层 74/76 均不自洽（50/16 为 v171 快照、未含后续追加），改为现值 58=dispatch 11+discipline 44+media 3、17=research 3+template 4+collab 3+cost 1+resume 1+progress 1+drift 4，58+17+1=76 与实测 dedup 一致（+Rule 94: 58→59、44→45 → 77；+Rule 95 → 78、discipline 45→46；+Rule 96 → 79、dispatch 11→12）] -->
 - Rule 82（技能专业化分层纪律）为 task-v171 新增：建制/边界/回归防线三款，禁回潮、禁镜像副本
 
 **纪元演进史**（selftest 宽容正则锚守护随动，防回退误报）：
@@ -122,6 +122,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 - 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集演进为「Rules 1-93」（核心 14 条不变，卫星 73→74 条）；执行规范召回卡 execution-recall-card.md 同批落地
 - 2026-10-23 task-focus-plan-split-20261023：Rule 94（任务专注性与计划隔离纪律）入纪律域，全集演进为「Rules 1-94」（核心 14 条不变，卫星 76→77 条）；Rule 94 全文（94.1–94.6）与执行规范召回卡 execution-recall-card.md 之 Rule 94 蒸馏行（L39）同批落地
 - 2026-10-23 task-nopause-execfirst-20261023：Rules 1-94→1-95（Rule 95 非必要暂停禁令与执行优先纪律）
+- 2026-10-24 task-subagent-boost-20261023：Rules 1-95→1-96（Rule 96 子代理激活默认与并行推进强化，dispatch 域；本文档计数由 task-nopause-execfirst-20261023 合并时并集解补齐 79 条口径）
 
 ---
 
@@ -133,9 +134,9 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 6 篇规则文档（2026-10-12 实测）
-│   ├── critical-rules.md                    # 核心域 14 条全文 + Rules 1-95 全集索引 + 分层架构说明
+│   ├── critical-rules.md                    # 核心域 14 条全文 + Rules 1-96 全集索引 + 分层架构说明
 │   ├── todo-sync.md / worktree-isolation.md / goal-gate.md / completion-gate.md / methodology.md
-│   └── [78 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
+│   └── [79 条非核心规则 → 各卫星 references/critical-rules-*.md（见 §3 路由表）]
 ├── templates/                               ← 13 主模板 + 29 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md

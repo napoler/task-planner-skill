@@ -87,7 +87,7 @@ execution_lane: L1
 | `code_review` | `required`（宪法级行为规则文本，CR 用 general-reviewer 独立审查） |
 | `session_id` | `session15576471f77c9ca8d81d0d10f9894fe4` |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-nopause-execfirst-20261023` |
-| `scope_files` | `skills/task-discipline/references/critical-rules-discipline.md; skills/task-planner/SKILL.md; skills/task-planner/companion/agents/video-generation-executor.md; skills/task-planner/companion/agents/image-generation-executor.md; 文档纪元级联 22 行=README.md+docs/ARCHITECTURE.md+CLAUDE.md+README_zh.md+SKILL.md（CA-7/CA-8 冻结清单）; plans/task-nopause-execfirst-20261023/**; plans/INDEX.md` |
+| `scope_files` | `skills/task-discipline/references/critical-rules-discipline.md; skills/task-discipline/SKILL.md（CA-10）; skills/task-discipline/references/execution-recall-card.md（CA-11）; skills/task-planner/SKILL.md; skills/task-planner/companion/agents/video-generation-executor.md; skills/task-planner/companion/agents/image-generation-executor.md; 文档纪元级联 22 行=README.md+docs/ARCHITECTURE.md+CLAUDE.md+README_zh.md+SKILL.md（CA-7/CA-8 冻结清单）; plans/task-nopause-execfirst-20261023/**; plans/INDEX.md` |
 | `interaction_mode` | `ask`（自主会话下按 44.3 超时自动通过执行，见下方登记） |
 | `对齐审查` | `[登记]` 收尾跑 alignment-review 对齐审查（标准收尾流程） |
 | `自动超时默认项` | `[D1 计划确认: 默认=按本计划执行/超时立即]` **自动裁决记录五要素（Rule 44.3）**：①超时值=立即（自主 /goal 会话无实时等待对象，44.3 完成性指令前提命中）②推荐项=按本计划执行（规则文本+执行体修正+级联+部署）③触发时间=2026-10-23 计划展示时④裁决理由=用户指令为完成性指令（"必须得到修正/从根源彻底解决"）；且本任务目标即禁止不必要暂停，停下来等确认恰是投诉行为重演⑤被覆盖的未决选项=无真分叉（Rule 95 落 discipline 卫星+执行体修正为唯一合理路径；部署通道走 smart-merge-back --deploy 既有机制） |
@@ -204,6 +204,9 @@ execution_lane: L1
 | CA-7 | 文档纪元级联：SKILL.md:9/17/196/209/251、README.md:4/36/81/123/127、docs/ARCHITECTURE.md:4/13/42/113/114/115/135/137、CLAUDE.md:33、README_zh.md:136/229（22 行） | 修改 | 替代（纪元计数事实更新；各处只改计数/列表 token，语义不动） | R7「必须从根源上彻底解决」（生效面含部署链一致性） | 检查点②级联表（逐行原文+改法） | 1-94→1-95、77 条→78 条、纪律域列表补 95、:114 行数注与 :115 算式随动 |
 | CA-8 | docs/ARCHITECTURE.md:121-123 纪元注释链 | 新增 | 增量（链尾追加一行，旧行不动） | 同 CA-7 | 检查点②注 | 追加 2026-10-23 Rule 95 演进行 |
 | CA-9 | 部署位 zcode+cursor（~/.zcode/skills、~/.cursor/skills 的 task-planner+task-discipline） | 更新 | 增量（文件级 cp 覆盖 7 文件×2 位） | R7（运行位生效） | 检查点④映射+rule94 先例 | smart-merge-back --deploy + TASK_PLANNER_DEPLOY_SLOTS=zcode:cursor |
+| CA-10 | skills/task-discipline/SKILL.md（:15/:76/:78/:89 四处） | 修改 | 增量（索引行追加+计数 45→46） | R4（泛化规则须可索引消费） | CR MAJOR-1（subagent-state/4c-cr.md：78 条分母实体缺位） | 索引表追加 \| 95 \| 行+四处计数/枚举改 46 |
+| CA-11 | skills/task-discipline/references/execution-recall-card.md（E 节 Rule 94 行后追加 1 行） | 新增 | 增量 | R4 | CR MINOR-8+卡片头 §维护同步义务（Rule 93.1） | 追加执行优先蒸馏行 |
+| CA-12 | CR 意见处置（MAJOR-2/MINOR-1/2/3 改 Rule 95 条款文本；MINOR-4/5/6/7 改 ARCH/README 注释算术） | 修改 | 增量/措辞精化 | R7 | CR 检查点 4c-cr.md 逐字修法 | 按检查点修法逐条落地；NIT-1/2/3 不采纳（NIT-1 措辞取舍、NIT-2 替换行=保留真守卫、NIT-3 就地改写为对称性刻意选择）——理由登记于此 |
 
 > Scope 修正记录（2026-10-23，Phase 1 冻结）：原 scope 写「selftest 纪元锚行」——Explore 实证 selftest i 类=0（宽容锚 9[0-9] 已覆盖），真级联=上述 5 文档 22 行。本表即冻结清单；BP-09 锚 batch-quality-gate.md:138「隶属 Rules 1-36」明确勿动（7[0-7] 不含 78，误写即 FAIL）。
 
@@ -273,7 +276,7 @@ execution_lane: L1
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 1
+Phase 4（回归+CR；S4 drift=ALIGNED 留痕 d4-drift-phase3-4.md）
 
 ## Next Step
 <!-- 
@@ -282,7 +285,7 @@ Phase 1
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-派 Explore 子代理完成 Phase 1 只读映射（措辞承载面+纪元锚清单+部署位），检查点 plans/task-nopause-execfirst-20261023/subagent-state/1-explore.md
+S3 CR 审查（general-reviewer）→APPROVED 后 Phase 5：smart-merge-back --deploy（TASK_PLANNER_DEPLOY_SLOTS=zcode+cursor）→VC-5/6 终验→归档交付
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -321,20 +324,20 @@ Phase 1
 | S1 | 只读映射：额度/停等措辞承载面+selftest 纪元锚行+部署位，结论落检查点 | Explore（haiku-1） | 检查点 plans/task-nopause-execfirst-20261023/subagent-state/1-explore.md；扫 skills/ 与 scripts/ | 检查点四节齐（执行体措辞面/规则锚面/纪元锚行清单/部署位映射），每节含路径+行号 | 15min | 0f/0l/15min | 无 | - | pending |
 
 ### Phase 2: Design（Rule 95 文本定稿+变更标注）
-- [ ] Read 两执行体全文+discipline 尾部（94 落地形态）
-- [ ] Rule 95 七子条全文定稿（写入 worktree 的 discipline 文件）
-- [ ] 两执行体改写精确 diff 定稿（登记变更标注表，材料包供 Phase 3 派发）
-- [ ] 创建 worktree（§十一：实现类默认首选）
+- [x] Read 两执行体全文+discipline 尾部（94 落地形态）
+- [x] Rule 95 七子条全文定稿（写入 worktree 的 discipline 文件，commit c359c55）
+- [x] 两执行体改写精确 diff 定稿（登记变更标注表 CA-2..CA-6，材料包供 Phase 3 派发）
+- [x] 创建 worktree（§十一：实现类默认首选）
 - **V-N:** VC-1（文本锚在位）, VC-2（改写方案冻结）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由：用户投诉原文仅存于本会话上下文，规则文本为宪法级敏感措辞，转译派发必然失真——语义保真；白名单外理由登记，终验委派率表复核）
 
 ### Phase 3: Implementation（执行体修正+纪元级联）
-- [ ] 按冻结 diff 改写两执行体
-- [ ] 纪元锚行级联（Phase 1 冻结清单，仅 1-94→1-95 口径行）
-- [ ] 规范召回（Rule 93）：Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
+- [x] 按冻结 diff 改写两执行体（S1/S2 完成，主进程亲验 diff+grep）
+- [x] 文档纪元级联（S3/S4/S5：SKILL5+CLAUDE1+README5+README_zh2+ARCH9+链尾补登；commit 0ba3aa6）
+- [x] 规范召回（Rule 93）：Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
 - **V-N:** VC-2, VC-3（执行体锚）；VC-4（级联后套件可跑）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** general-coder（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -346,12 +349,12 @@ Phase 1
 | S5 | 文档纪元级联 1-95：docs/ARCHITECTURE.md（9 行改+注释链尾追加 1 行） | general-coder（sonnet-1） | 同上冻结清单 + CA-7/CA-8 | 9 行改毕+演进行追加+旧锚=0 | 10min | 1f/12l/10min | 无 | S4 | pending |
 
 ### Phase 4: Testing & Verification（回归+CR）
-- [ ] 全量 selftest 套件回归（ΣFAIL=0，轮次落盘 progress，Rule 57）
-- [ ] VC 逐条复验（run-verification.sh）
-- [ ] CR Gate：general-reviewer 独立审查（code_review: required），APPROVED 才放行
-- [ ] drift-checker 偏移检查派发（Phase complete 后）
+- [x] 全量 selftest 套件回归（两轮 92/92 FAIL=0，4a/4d 检查点）
+- [x] VC 逐条复验（worktree cwd 实跑，VC-1..4 PASS，4b 检查点）
+- [x] CR Gate：第 1 轮 CHANGES_REQUESTED→修复 a95de42→复审 APPROVED（4c/4e 检查点）
+- [x] drift-checker 偏移检查派发（ALIGNED，d4 检查点+ledger+Drift Log 三件套）
 - **V-N:** VC-4, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |

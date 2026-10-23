@@ -66,7 +66,7 @@ Status: `complete` Last verified: 2026-10-23（V-1.1 检查点四节 PASS；V-1.
 - [ ] V-2.1: `grep -c "Rule 95" <worktree>/skills/task-discipline/references/critical-rules-discipline.md` ≥1（→ VC-1）
 - [ ] V-2.2: 变更标注表每行有精确替换文本（→ VC-2/VC-3 方案冻结）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-23（V-2.1 grep 锚全中 PASS；V-2.2 CA-1..CA-9 冻结 PASS；worktree commit c359c55）
 
 ---
 
@@ -84,7 +84,7 @@ Status: `pending` Last verified: —
 - [ ] V-3.1: VC-2/VC-3 grep 命令在 worktree 内执行通过（命令于 Phase 2 定稿后冻结在此行）
 - [ ] V-3.2: `grep -rn "1-94" <worktree>/scripts/*.sh | grep -v "历史\|1-940\|1-94[0-9]"` 仅余登记豁免行（→ VC-4 输入）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-23（V-3.1 VC-2/VC-3 grep PASS；V-3.2 live 残留=0 仅历史链；worktree commit 0ba3aa6）
 
 ---
 
@@ -102,7 +102,7 @@ Status: `pending` Last verified: —
 - [ ] V-4.1: selftest 套件入口命令 exit 0（→ VC-4）
 - [ ] V-4.2: `grep '"rule":95' plans/.rule-reservations.jsonl`（→ VC-6）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-23（V-4.1 两轮 92/92 FAIL=0 PASS；V-4.2 账本 rule:95 held PASS；CR APPROVED 4e-cr-recheck.md）
 
 ---
 

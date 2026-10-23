@@ -8,7 +8,7 @@
 #   指纹未变的脚本命中缓存即跳过重跑（[reused]），rc/FAIL 数照缓存值入账。
 #
 # Why（病灶与移植来源）：
-#   task-planner 实测病灶=单任务固定开销含两轮全量回归（76 脚本 × 5-12s ≈ 6-15min/轮），
+#   task-planner 实测病灶=单任务固定开销含两轮全量回归（77 脚本 × 5-12s ≈ 6-15min/轮），
 #   而两轮之间技能源码常零变更仍全量重跑；且历史上无任何入口/缓存机制，主进程手工 for 循环逐跑。
 #   本脚本移植两处外部机制：
 #     ① comet 0.4.5 检查证据指纹复用（输入语义匹配即 reused，绝不因缓存粉饰失败）；
@@ -76,7 +76,7 @@ mkdir -p "$CACHE_DIR"
 
 # [task-perf-opt Change #11] top-5 重脚本并行化（config selftest_heavy_concurrent=on 启用，default off）：
 # 计时诊断实测 top-5（final-gate-hash/requirement-coverage/vc-gate/plan-tier/smart-merge）合计 86.2s=42% 全量。
-# on + fresh 模式下 top-5 后台并行（& + wait）执行，其余 72 脚本串行；总 Total 行汇总逻辑不变（PASS/FAIL 照算）。
+# on + fresh 模式下 top-5 后台并行（& + wait）执行，其余 73 脚本串行；总 Total 行汇总逻辑不变（PASS/FAIL 照算）。
 # 各 top-5 脚本独立写自己的输出文件（无共享状态），并行安全。off（默认）/非 fresh/带 --only → 全串行（原行为）。
 _PARALLEL_MODE="$(jq -r '.properties.selftest_heavy_concurrent.default // "off"' "$SKILL_ROOT/config.json" 2>/dev/null || echo off)"
 case "$_PARALLEL_MODE" in ''|off|on) ;; *) _PARALLEL_MODE=off ;; esac

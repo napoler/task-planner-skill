@@ -33,14 +33,62 @@
 
 ### Phase 2: Rule 95 文本定稿+变更标注
 <!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+- **Status:** complete（2026-10-23；V-2.1/V-2.2 PASS）
+- **Started:** 2026-10-23（Phase 1 翻转后）
 - Actions taken:
-  -
+  - worktree 创建：/mnt/data/dev/task-planner-skill-worktrees/task-nopause-execfirst-20261023（wt/…，基线 98032eb，集中目录合规）
+  - Read 三文件全文（discipline 尾部 595-615+video 70 行+image 69 行）——Rule 74 替代条件③满足
+  - Rule 95 七子条（95.0-95.6）写入 worktree discipline L616+（13 行追加，Rule 94 块逐字不动）
+  - 缺陷自纠：首写无字面 "Rule 95" 自引用致 VC-1 锚 grep=0 → 建制段补「本条（Rule 95）」→ grep=1 → amend（commit c359c55）
+  - 两执行体精确改写文本冻结（供 Phase 3 材料包）：video L19/L58 替代+L43 增量；image L42 增量+三检处置自主化增量（CA-2..CA-6）
 - Files created/modified:
-  -
+  - worktree: skills/task-discipline/references/critical-rules-discipline.md（+13 行 Rule 95）
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-2.1 | grep -c "Rule 95\|95\.4\|暂停前三问" <worktree discipline> | 各≥1 | Rule95=1 / 95.1=2 / 95.2=1 / 95.4=1 / 前三问=1 | PASS |
+  | V-2.2 | CA-1..CA-9 变更标注表 | 每行有精确对象+执行动作 | 9 行冻结（含替代四条件登记） | PASS |
+
+### Phase 3: 执行体修正+纪元级联
+- **Status:** complete（2026-10-23；V-3.1/V-3.2 PASS；worktree commit 0ba3aa6）
+- **Started:** 2026-10-23（Phase 2 翻转后）
+- Actions taken:
+  - S1（general-coder，video）：3 处编辑（L19 成本纪律替代/L58 禁令替代/L43 增量）
+  - S2（general-coder，image）：2 处编辑（L42 增量/WF 第 4 步质检处置自主化）
+  - 主进程亲验：git diff 逐 hunk 对照冻结文本+VC-2/VC-3 grep PASS（不信自报）
+  - S3（SKILL.md 5+CLAUDE.md 1）、S4（skills/task-planner/README.md 5+README_zh.md 2，路径勘误有据自纠）、S5（docs/ARCHITECTURE.md 9+链尾追加 1 行）：逐处 grep 定位+Edit，历史演进链零改动
+  - 主进程补登：CLAUDE.md:33/README_zh.md:136,229 纪元链尾追加（rule94 同型惯例）；README L81 dedup 注释对称补 78
+- Files created/modified（worktree，commit 0ba3aa6，7 文件 26+/25-）：
+  - companion/agents/video-generation-executor.md、image-generation-executor.md；SKILL.md；CLAUDE.md；skills/task-planner/README.md；README_zh.md；docs/ARCHITECTURE.md
+  - 检查点：subagent-state/3a-video.md、3b-image.md、3c-skill-claude.md、3d-readme.md、3e-arch.md
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-3.1=VC-2 | grep 负锚+执行即探测（video） | 负锚=0 且正锚≥1 | 负锚=0，执行即探测=2 | PASS |
+  | V-3.1=VC-3 | 处置自主+推给用户（image） | 两锚命中 | 双命中 | PASS |
+  | V-3.2 | 5 文档 live "1-94" 残留 | 仅历史链 | 仅 ARCH L123/L124 演进链 2 行（合法） | PASS |
+  | 范围对账 | git diff --stat | 恰 7 文件 | 7 文件 26+/25- 与 CA-2..CA-8 一致 | PASS |
+- [recall] 2026-10-23 读召回卡（../task-discipline/references/execution-recall-card.md Rule 93 节奏）：一行结论=无偏差，继续按冻结 CA 表推进
+
+### Phase 4: 回归+CR
+- **Status:** complete（2026-10-23；V-4.1/V-4.2 PASS；CR 复审 APPROVED）
+- **Started:** 2026-10-23（Phase 3 翻转后）
+- Actions taken:
+  - S1 回归第 1 轮（code-runner，worktree，--fresh）：Total: 92 PASS=92 FAIL=0（检查点 4a-selftest.md）
+  - S2 VC 逐条复验（code-runner，worktree cwd 实跑命令）：VC-1..4 全 PASS，VC-5/6 PENDING-MERGE（检查点 4b-vc-verify.md）
+  - S4 drift 正式派发（drift-checker）：**ALIGNED**（检查点 d4-drift-phase3-4.md；两备注=Current Phase 滞后已修+ARCH L4 尾注对称已补）
+  - S3 CR 第 1 轮（general-reviewer）：**CHANGES_REQUESTED**（2 MAJOR+8 MINOR+3 NIT，检查点 4c-cr.md）→ 主进程逐条修复（commit a95de42：MAJOR-1 纪律卫星 SKILL.md 索引 46 条+|95| 行=scope 扩张 CA-10；MAJOR-2 95.4 真门例外指针；MINOR-1..8 算术/召回卡=CA-11/CA-12；NIT-1/2/3 不采纳已登记）→ skill-modify 守卫提示→计划登记后放行
+  - CR 复审（general-reviewer）：**APPROVED**（11/11 CLOSED，检查点 4e-cr-recheck.md）
+  - 回归第 2 轮（a95de42 后确认轮）：Total: 92 PASS=92 FAIL=0（检查点 4d-selftest-rerun.md）
+- Files created/modified（worktree commit a95de42，5 文件 12+/10-）：
+  - skills/task-discipline/SKILL.md（46 条索引+|95| 行）；critical-rules-discipline.md（95.0/95.2/95.4/95.5 精化）；execution-recall-card.md（E 节+1 行）；README.md（全集 92）；docs/ARCHITECTURE.md（算术+归属）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-4.1 回归×2 轮 | run-selftests.sh --fresh（4a/4d） | FAIL=0 | 92/92 两轮一致 | PASS |
+  | V-4.2=VC-1..4 | 4b-vc-verify.md 逐条实跑 | 全 PASS | VC-1..4 PASS | PASS |
+  | CR Gate | 4c-cr.md→修复→4e-cr-recheck.md | APPROVED | 第 1 轮 CHANGES_REQUESTED→修复→APPROVED | PASS |
+  | Drift | d4-drift-phase3-4.md | ALIGNED | ALIGNED（备注 2 项已处置） | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
