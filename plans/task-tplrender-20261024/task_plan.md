@@ -354,9 +354,9 @@ Phase 4
 | S11 | SKILL.md 初始化段渲染契约更新 | code-assistant | worktree skills/task-planner/SKILL.md（:40 初始化机械子动作段；:233 附近 I/O 契约示例） | 初始化段含「机械占位符由 init 渲染层替换，模型禁手工修正，仅语义占位由模型填写」+命令形态带任务名参数；grep 渲染契约命中 | 15min | 1f/15l/15min | 无 | S1 | pending |
 
 ### Phase 5: 回归终验与合并部署
-- [ ] worktree 全量 selftest 回归（对照 Phase 1 基线）+ 级联修复
-- [ ] 独立终验（VC-1..7 全量复验，Verifier 派发）
-- [ ] smart-merge-back --deploy + worktree/分支清理 + 主仓 Read 复验
+- [x] worktree 全量 selftest 回归（对照 Phase 1 基线）+ 级联修复（93/93，da7a3a4）
+- [x] 独立终验（VC-1..7 全量复验，Verifier 派发；全 PASS）
+- [x] 合并回+部署位文件级同步+worktree/分支清理+主仓 Read 复验（merge commit+VC-7 diff=0）
 - [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh <task-id> --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）
