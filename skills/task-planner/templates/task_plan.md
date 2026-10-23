@@ -1,6 +1,7 @@
-# Task Plan: [Brief Description]
+# Task Plan: {{TASK_NAME}}
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} token 由 init-session.sh render_template() 脚本渲染（task-id/任务名/日期/路径）；尖括号中文占位=模型填写面，脚本禁碰 -->
 <!-- ===== frontmatter 头（Rule 16 选模板 + Rule 34.1 门控 + Rule 38.7 执行通道分级）=====
-  选定 variant 后 template_type 填所选类型名（白名单=${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
+  选定 variant 后 template_type 填所选类型名（白名单={{TASK_PLANNER_ROOT}}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
   plan_tier ∈ {standard, mini}（Rule 38.1，mini 四条件机器判定）；execution_lane ∈ {L0, L1, L2}（Rule 38.7，缺省 L1；L0 禁滥用见 38.7 末段）
   check-template-type.sh 三形态之一：行首 `^template_type:`（本块）/ 表格行 / HTML 注释；本块用行首形态 -->
 template_type: general
@@ -25,8 +26,8 @@ execution_lane: L1
 | R1 | VC-1 | <判据：计数=0/文件在位+绝对路径/命令输出形态> |
 
 ### 🗣️ 用户会话逐字记录（Rule 80 — 只写不改专档指针）
-<!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/<task-id>/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->
-- **专档路径**：`plans/<task-id>/user-session-log.md`（模板 = ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/user-session-log.md）
+<!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/{{TASK_ID}}/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->
+- **专档路径**：`plans/{{TASK_ID}}/user-session-log.md`（模板 = {{TASK_PLANNER_ROOT}}/templates/user-session-log.md）
 - **只写不改铁律**：条目 append-only；已写条目冻结，禁修订/删除/改写（Rule 80.2）
 - **恢复协议**：会话恢复/上下文压缩后先读专档（#1 至最新条目），再读 task_plan.md（目标/验收/下一步）
 - **理解镜像**：每条逐字条目后同号配对「理解镜像」块（Rule 80.7；非权威对照面，冲突以逐字原文为准）
@@ -87,7 +88,7 @@ execution_lane: L1
   V-N: goal-gate.md 规定「≥5 条 VC + 每 phase ≥2 条 V-N（映射到 VC 编号）」；
        在每个 Phase 段（`### Phase N` 的 - **Status:** 行前）补 `- **V-N:**` 占位行，
        填写本 Phase 验收映射的 VC 编号（≥2 条，如 `VC-1, VC-2`；对应逐条验收记录在
-       ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。
+       {{TASK_PLANNER_ROOT}}/templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。
        check-complete.sh 终验 VC-GATE 段机械校验（config.json vc_gate_enforce，默认 warn）。
 -->
 
@@ -351,7 +352,7 @@ Phase 1
 - [ ] Review all output files
 - [ ] Ensure deliverables are complete
 - [ ] Deliver to user
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh <task-id> --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh {{TASK_ID}} --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
@@ -369,13 +370,13 @@ Phase 1
 |------|-----|
 | `conflict_scan` | `safe` / `risk`（信号①-⑤ 摘要） |
 | `isolation` | `worktree`（实现类默认首选） / `direct`（纯文档/调研或用户否决） |
-| `worktree_path` | `<repo-parent>/<repo>-worktrees/<task-id>` 或 n/a |
-| `branch` | `wt/<task-id>` 或 n/a |
+| `worktree_path` | `<repo-parent>/<repo>-worktrees/{{TASK_ID}}` 或 n/a |
+| `branch` | `wt/{{TASK_ID}}` 或 n/a |
 | `merge_back` | `pending` / `merged(<commit>)` / n/a |
 
-> 契约详见 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
+> 契约详见 `{{TASK_PLANNER_ROOT}}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
-## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/methodology.md §R2）
+## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 {{TASK_PLANNER_ROOT}}/references/methodology.md §R2）
 
 <!--
   WHAT: 对每个 Phase 枚举失败模式，打 S(严重度)/O(频度)/D(探测难度) 各 1-10 分，RPN=S×O×D。
@@ -404,7 +405,7 @@ Phase 1
 | Phase 4 | ☐ |  |  |
 | Phase 5 | ☐ |  |  |
 
-> 契约详见 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
+> 契约详见 `{{TASK_PLANNER_ROOT}}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
 
 ## Key Questions
 <!-- 
@@ -468,7 +469,7 @@ Phase 1
   WHEN: chain_mode: fan-out 或 批量操作 ≥5 单元时必填;纯单次任务可删除整个区块
   WHY: 批量操作禁止以牺牲质量/准确性为代价(Rule 18);前置 3 问 + 双采样抽检 + 失败率熔断的落盘证据
   校验: failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败
-  完整模板: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/batch_report.md | 规则详解: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/batch-quality-gate.md
+  完整模板: {{TASK_PLANNER_ROOT}}/templates/batch_report.md | 规则详解: {{TASK_PLANNER_ROOT}}/references/batch-quality-gate.md
 -->
 | 字段 | 值 |
 |------|-----|
@@ -502,7 +503,7 @@ Phase 1
   WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
   状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
   列说明: 备注列 = 低频列折叠单列(rescue 换档挽救记录 档位/结果/时间,failed|timeout 行必填,Rule 22.7;retry_count = 22.3 retry_limit 计数,初值 0,每次重试 +1;verify_done☐ = Read 产出 + findings 复核/回填双条件,Rule 22.5)——字段内容不删,仅列位折叠;verify_done 无机器消费(grep 实证 scripts/*.sh 除 selftest 零命中),为人工义务,不声称机器门
-  派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/subagent_dispatch.md
+  派发 prompt 八字段模板: {{TASK_PLANNER_ROOT}}/templates/subagent_dispatch.md
   # [2026-09-27 task-v091 B-2] 单写者澄清+Handoff 低频列折叠（verify_done 无机器消费如实披露）
 -->
 

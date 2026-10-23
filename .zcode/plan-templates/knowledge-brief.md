@@ -1,4 +1,5 @@
-# Knowledge Brief — {task-id}（任务知识简略要点）
+# Knowledge Brief — {{TASK_ID}}（任务知识简略要点）
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；项目级双轨与内建 templates/knowledge-brief.md 同契约 -->
 <!--
   模板说明（复制后随正文保留至文件头部注释区，执行期可删除）:
   - 本模板由 scripts/init-session.sh 复制到 plans/<task-id>/knowledge-brief.md（第 6 计划文件）

@@ -1,10 +1,11 @@
-# 用户会话逐字记录 — {task-id}（append-only 只写不改 逐字记录专档）
+# 用户会话逐字记录 — {{TASK_ID}}（append-only 只写不改 逐字记录专档）
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；#N 序号与 YYYY-MM-DD 示例=模型填写面，脚本禁碰 -->
 <!--
   WHAT: 用户任务需求与对话内容的逐字抄录专档，每批需求/对话一个条目，只写不改（append-only）。
   WHY: 需求锚 R4「用户提交的任务需求以及对话内容都记录下来，确保后期无论如何」——原始需求逐字落盘，
        会话中断/压缩后可无损恢复；需求锚 R5「这些文档只写入不修改，记录性内容只记录不修改」。
   规则: 新条目只允许追加在文件末尾（append-only）；已写条目禁修订/删除/改写（只写不改铁律，R5）。
-  定位: 与 task_plan.md 同目录（plans/<task-id>/，第 7 计划文件）；会话恢复时先读本文件，再读 task_plan.md。
+  定位: 与 task_plan.md 同目录（plans/{{TASK_ID}}/，第 7 计划文件）；会话恢复时先读本文件，再读 task_plan.md。
 -->
 
 ## #N | YYYY-MM-DD | 来源：用户新需求（条目格式示例行——复制模板后把 #N 替换为 #1、#2 顺延；本行 N 非数字，不计入 SESSION-LOG GATE 的真实条目判定，防占位条目冒充记录）
