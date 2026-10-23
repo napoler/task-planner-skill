@@ -11,7 +11,8 @@
 
 ### Phase 1: 契约定稿与隔离建起
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
+- **[goal:G1] 完成证据**：findings.md §Research S1 段三清单（6 变量+8 映射+语义边界）+worktree@c722261+基线 93/93+3file 门 exit 0+commit a39398a
 - **Started:** 2026-10-24 04:47
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:

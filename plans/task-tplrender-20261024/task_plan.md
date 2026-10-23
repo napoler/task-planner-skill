@@ -330,7 +330,7 @@ Phase 4
 ### Phase 3: 模板 token 化（核心 7+项目级，S5-S8 并行组 tpl）
 - [x] 核心 7 模板机械占位符 → {{VAR}}；语义占位符逐字保留
 - [x] 项目级 .zcode/plan-templates/knowledge-brief.md 双轨对齐
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- [x] 规范召回（Rule 93）：10 S-unit 节点主进程亲读召回卡+progress [recall] 行+V-N 补跑全 PASS（2026-10-24）
 - **V-N:** VC-1, VC-3
 - **Status:** complete
 - **Executor:** general-coder
