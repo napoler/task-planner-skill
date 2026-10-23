@@ -102,7 +102,7 @@ Status: `complete` Last verified: 2026-10-23（V-3.1 VC-2/VC-3 grep PASS；V-3.2
 - [ ] V-4.1: selftest 套件入口命令 exit 0（→ VC-4）
 - [ ] V-4.2: `grep '"rule":95' plans/.rule-reservations.jsonl`（→ VC-6）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-23（V-4.1 两轮 92/92 FAIL=0 PASS；V-4.2 账本 rule:95 held PASS；CR APPROVED 4e-cr-recheck.md）
 
 ---
 

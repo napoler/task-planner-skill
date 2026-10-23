@@ -70,6 +70,26 @@
   | 范围对账 | git diff --stat | 恰 7 文件 | 7 文件 26+/25- 与 CA-2..CA-8 一致 | PASS |
 - [recall] 2026-10-23 读召回卡（../task-discipline/references/execution-recall-card.md Rule 93 节奏）：一行结论=无偏差，继续按冻结 CA 表推进
 
+### Phase 4: 回归+CR
+- **Status:** complete（2026-10-23；V-4.1/V-4.2 PASS；CR 复审 APPROVED）
+- **Started:** 2026-10-23（Phase 3 翻转后）
+- Actions taken:
+  - S1 回归第 1 轮（code-runner，worktree，--fresh）：Total: 92 PASS=92 FAIL=0（检查点 4a-selftest.md）
+  - S2 VC 逐条复验（code-runner，worktree cwd 实跑命令）：VC-1..4 全 PASS，VC-5/6 PENDING-MERGE（检查点 4b-vc-verify.md）
+  - S4 drift 正式派发（drift-checker）：**ALIGNED**（检查点 d4-drift-phase3-4.md；两备注=Current Phase 滞后已修+ARCH L4 尾注对称已补）
+  - S3 CR 第 1 轮（general-reviewer）：**CHANGES_REQUESTED**（2 MAJOR+8 MINOR+3 NIT，检查点 4c-cr.md）→ 主进程逐条修复（commit a95de42：MAJOR-1 纪律卫星 SKILL.md 索引 46 条+|95| 行=scope 扩张 CA-10；MAJOR-2 95.4 真门例外指针；MINOR-1..8 算术/召回卡=CA-11/CA-12；NIT-1/2/3 不采纳已登记）→ skill-modify 守卫提示→计划登记后放行
+  - CR 复审（general-reviewer）：**APPROVED**（11/11 CLOSED，检查点 4e-cr-recheck.md）
+  - 回归第 2 轮（a95de42 后确认轮）：Total: 92 PASS=92 FAIL=0（检查点 4d-selftest-rerun.md）
+- Files created/modified（worktree commit a95de42，5 文件 12+/10-）：
+  - skills/task-discipline/SKILL.md（46 条索引+|95| 行）；critical-rules-discipline.md（95.0/95.2/95.4/95.5 精化）；execution-recall-card.md（E 节+1 行）；README.md（全集 92）；docs/ARCHITECTURE.md（算术+归属）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-4.1 回归×2 轮 | run-selftests.sh --fresh（4a/4d） | FAIL=0 | 92/92 两轮一致 | PASS |
+  | V-4.2=VC-1..4 | 4b-vc-verify.md 逐条实跑 | 全 PASS | VC-1..4 PASS | PASS |
+  | CR Gate | 4c-cr.md→修复→4e-cr-recheck.md | APPROVED | 第 1 轮 CHANGES_REQUESTED→修复→APPROVED | PASS |
+  | Drift | d4-drift-phase3-4.md | ALIGNED | ALIGNED（备注 2 项已处置） | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
