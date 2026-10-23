@@ -96,6 +96,173 @@ copy_template() {
     fi
 }
 
+# sed 替换段转义助手（render_template 专用）
+# What: 把一段待嵌入 sed `s|pat|rep|` 替换段（rep）的值做转义，返回转义后字符串。
+# Why: 值中的 `\`（转义引导）、`&`（sed 替换段 =「整个匹配」）、`|`（本渲染选定界符）
+#   三者任一未转义都会破坏替换（`&` 会展开为被匹配的 token 字面量、`|` 会提前闭合
+#   定界符、`\` 会吞掉后继字符）。`\` 必须**最先**处理，否则会二次转义后插入的 `\`。
+#   sed 用 GNU 版（脚本 L694 既有 `sed -i` 同款假设）。
+_sed_escape_repl() {
+    local s="$1"
+    s="${s//\\/\\\\}"   # \  -> \\   （先做：避免后续插入的反斜杠被再次转义）
+    s="${s//&/\\&}"     # &  -> \&   （sed 替换段中 & 是「整个匹配」引用）
+    s="${s//|/\\|}"     # |  -> \|   （本函数选定界符）
+    printf '%s' "$s"
+}
+
+# HTML 注释区间剥离助手（残留校验专用）
+# What: 读取 stdin，丢弃 `<!--` 起始行至 `-->` 结束行之间的所有行（含边界行），其余原样输出。
+# Why: 残留校验的语义靶 = 待渲染**正文**里的未定义 token；HTML 注释是文档性内容，注释里
+#   举例 token 名（如 `{{VAR}}`）是合法用法，不应触发 fail-closed。判例（2026-10-24 跨单元
+#   冲突）：模板「渲染契约」注释含字面 `{{VAR}}`，若不过滤会让每个 init 全量 rc=1。
+#   非注释行严格度不放松（真拼错照拦）。范围跨行注释亦正确（awk 区间模式）。
+_strip_html_comments() {
+    awk '/<!--/,/-->/ {next} {print}'
+}
+
+# ============================================================================
+# [2026-10-24 task-tplrender S3] render_template — 模板占位符脚本侧确定性渲染
+#
+# What: 对传入的文件路径做**就地**（in-place）替换，把模板内的机械占位符
+#   {{VAR}}（主形态）换成 init 运行时的真实值；一次 sed 多 -e 表达式单遍完成。
+#   维护者变量表（6 变量 × 来源 × 用途）：
+#     {{TASK_ID}}           → basename "$PWD"
+#                             来源：init 脚本运行 CWD 即 plans/<task-id>/（L56 CWD 守卫已保证）
+#                             用途：计划目录名 = task-id（文件名/指针/日志的稳定标识）
+#     {{TASK_NAME}}         → ${PROJECT_NAME:-project}
+#                             来源：L395 第 1 位置参（缺省字面量 'project' 同源）
+#                             用途：人类可读任务名；注意与目录名 task-id 可能不同
+#     {{DATE}}              → ${DATE:-$(date +%Y-%m-%d)}
+#                             来源：复用 L479 既有 $DATE 全局（未定义时现算，防御性）
+#                             用途：计划日期（YYYY-MM-DD）
+#     {{DATETIME}}          → $(date '+%Y-%m-%d %H:%M')
+#                             来源：现算，分钟精度（无秒，避免逐次运行值漂移）
+#                             用途：生成时间戳（YYYY-MM-DD HH:MM）
+#     {{TASK_PLANNER_ROOT}} → $(cd "${SCRIPT_DIR}/.." && pwd)
+#                             来源：L61 $SCRIPT_DIR（= <home>/skills/task-planner/scripts）的父目录
+#                             用途：技能根绝对路径（引用模板/脚本/规则文档时的路径基）
+#     {{PLAN_DIR}}          → $PWD
+#                             来源：init 运行时的计划目录绝对路径
+#                             用途：计划文件内绝对路径引用（与 TASK_ID 同指一目录，一相对一绝对）
+#
+# Why: 模板复制（copy_template）原为纯 cp 零替换——模板内任务ID/日期/路径等机械
+#   占位符全靠模型生成后逐文件手工修正，易漏改/改错（用户 2026-10-24 投诉点）。
+#   脚本侧在 init 时直接替换为真实值 → 确定性、零遗漏、可复现，模型不再需要手工
+#   修占位符（用户 2026-10-24 裁决：渲染层落在 init 脚本内）。
+#
+# 实现取舍（sed 单遍 vs bash 内建逐行）：
+#   选 sed 多 -e 单遍 in-place：① 无 bash 逐行读+重写的中间态与换行处理负担；
+#   ② 与脚本既有风格一致（L694 已用 GNU `sed -i`）；③ 值转义集中于 _sed_escape_repl。
+#   放弃 bash `${line//pat/rep}` 逐行法：需自行保换行、大文件逐行 fork 慢、替换值含
+#   换行时语义更复杂——收益不抵成本。
+#   定界符选 `|`（避开路径 `/`，无需转义斜杠）；token 字面量 `{{`/`}}` 在 BRE 中
+#   无需转义（`{`/`}` 非 BRE 元字符），故 pattern 段直接写字面量。
+#
+# 已知局限（低风险，由 S4 残留校验兜底）：替换值若**自身**含 `{{OTHER_VAR}}` 字样，
+#   会被同遍 sed 的后续表达式二次替换（sed 逐表达式顺序处理，无法天然避免）。
+#   真实取值域（任务名/绝对路径/日期）含此类字面量的概率可忽略；S4 残留校验捕获异常。
+#
+# 幂等：已渲染文件无 token 残留 → 再渲染为 no-op（sed 无匹配则内容不变）。
+# 接线（S4, 2026-10-24）：主流程在 7 计划文件就位后对计划目录 *.md 逐文件调用一次
+#   （非逐 cp 调用）；任一文件 rc≠0 → init exit 1（fail-closed，VC-4 验收依赖）。
+# rc 语义：0=成功（无 {{大写}} 残留）；2=残留未定义 token（stderr 列清单，fail-closed）；
+#   1=文件不存在 / sed 失败（stderr 明确报错）。（非静默，遵守 §五 错误曝光）
+# Usage: render_template <file-path>
+# ============================================================================
+render_template() {
+    local file="$1"
+
+    if [ ! -f "$file" ]; then
+        echo "[init] WARN: render_template 跳过：文件不存在 ${file}" >&2
+        return 1
+    fi
+
+    # 真实值来源（变量表见函数头注释）
+    local task_id task_name date_val datetime_val skill_root plan_dir
+    task_id="$(basename "$PWD")"
+    task_name="${PROJECT_NAME:-project}"
+    date_val="${DATE:-$(date +%Y-%m-%d)}"
+    datetime_val="$(date '+%Y-%m-%d %H:%M')"
+    skill_root="$(cd "${SCRIPT_DIR}/.." && pwd)"
+    plan_dir="$PWD"
+
+    # 逐值转义后嵌入 sed 替换段（& / \ / | 三者）
+    local e_task_id e_task_name e_date e_datetime e_root e_plan
+    e_task_id="$(_sed_escape_repl "$task_id")"
+    e_task_name="$(_sed_escape_repl "$task_name")"
+    e_date="$(_sed_escape_repl "$date_val")"
+    e_datetime="$(_sed_escape_repl "$datetime_val")"
+    e_root="$(_sed_escape_repl "$skill_root")"
+    e_plan="$(_sed_escape_repl "$plan_dir")"
+
+    # ---- 替换序列区 ----
+    # A) 主形态 {{VAR}}（6 条，变量表见函数头）
+    # B) 兼容旧形态映射（S4 追加，8 条；替换值复用上方已转义变量 e_*）
+    #    兼容映射表（旧形态 → 映射目标）：
+    #      {task-id}            → e_task_id    （计划目录名 = task-id）
+    #      <task-id>            → e_task_id
+    #      <task>               → e_task_id    （完整 task-id，不做前缀剥离）
+    #      {task-name}          → e_task_name  （人类可读任务名）
+    #      [Brief Description]  → e_task_name
+    #      [DATE]               → e_date
+    #      [YYYY-MM-DD HH:MM]   → e_datetime
+    #      ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner} → e_root
+    #    Why: 29 个 variant 模板现存旧形态零文本迁移的兼容兜底（一次性改写全部模板
+    #      风险高、且项目级/自造模板不在仓内）——渲染层两种形态同时认，模板可渐进迁移。
+    #      末条同时修 27 处 markdown 死串 bug：模板里该串位于 markdown 正文，不会像 shell
+    #      那样展开，读者看到的是字面 `${...}`；渲染成技能根实际绝对路径后，正文引用
+    #      （`/references/...` 后缀）直接可复制执行。替换只吃掉前缀串，后缀原样保留。
+    #    顺序约束: `<task-id>` 必须先于 `<task>`（否则 `<task>` 吃掉 `<task-id` 前缀，
+    #      残留 `-id>`）；`{{VAR}}` 与旧形态互不为前缀，其余相对顺序无关。
+    #    pattern 转义: `[Brief Description]`/`[DATE]`/`[YYYY-MM-DD HH:MM]` 的 `[`/`]`
+    #      在 BRE 是字符类定界符 → 必须 `\[`/`\]`；`${TASK...}` 串的 `$`→`\$`、`.`→`\.`
+    #      （`{`/`}` 在 BRE 非元字符，保持字面；`:-` 无需转义）。定界符仍为 `|`。
+    if ! sed -i \
+        -e "s|{{TASK_ID}}|${e_task_id}|g" \
+        -e "s|{{TASK_NAME}}|${e_task_name}|g" \
+        -e "s|{{DATE}}|${e_date}|g" \
+        -e "s|{{DATETIME}}|${e_datetime}|g" \
+        -e "s|{{TASK_PLANNER_ROOT}}|${e_root}|g" \
+        -e "s|{{PLAN_DIR}}|${e_plan}|g" \
+        -e "s|{task-id}|${e_task_id}|g" \
+        -e "s|<task-id>|${e_task_id}|g" \
+        -e "s|<task>|${e_task_id}|g" \
+        -e "s|{task-name}|${e_task_name}|g" \
+        -e "s|\[Brief Description\]|${e_task_name}|g" \
+        -e "s|\[DATE\]|${e_date}|g" \
+        -e "s|\[YYYY-MM-DD HH:MM\]|${e_datetime}|g" \
+        -e "s|\${TASK_PLANNER_ROOT:-\$HOME/\.zcode/skills/task-planner}|${e_root}|g" \
+        "$file"; then
+        echo "[init] WARN: render_template 失败：sed 就地替换出错 ${file}" >&2
+        return 1
+    fi
+
+    # ---- 残留校验（fail-closed, S4 / VC-4）----
+    # What: 渲染后扫描未定义的 `{{全大写}}` 形态 token（ERE '\{\{[A-Z_][A-Z_0-9]*\}\}'），
+    #   命中 → stderr 列 token 清单 + return 2（由调用方判定 init 整体 exit 1）。
+    # Why: 渲染层契约是「渲染后无未定义 {{VAR}} 残留」。残留 = 模板新增了渲染表未覆盖的
+    #   token（或拼错），属渲染缺陷——静默放行会让模型再次陷入手工修正（本任务要消灭的
+    #   故障模式），故 fail-closed 阻断（§五 错误必须曝光）。
+    # 不误伤边界（有意收窄校验面）:
+    #   ① 只认 `{{`+大写/下划线+`}}`——语义占位如尖括号中文 `<用户原话>`、小写
+    #      `{placeholder}`、普通方括号文本 `[TODO]` 均不在校验面（它们是给规划者/读者的
+    #      人读占位，不是渲染变量）；② 旧形态 8 条已在上一段消费完毕，本轮不再校验其残留
+    #      （旧形态与普通 markdown 文本歧义大，如 `[DATE]` 可能是有意保留的字面示例）；
+    #   ③ grep 无匹配 rc=1 但处于管道末端 tr 之后，赋值语句整体 rc=0（set -e 安全）。
+    #   ④ [2026-10-24 裁决 B] **HTML 注释区间豁免**：先经 _strip_html_comments 丢弃
+    #      `<!-- ... -->` 区间再扫描——注释里的 token 名举例（如 `{{VAR}}`）是文档性内容，
+    #      非待渲染正文；不豁免会让模板「渲染契约」注释自触雷（跨单元冲突判例，见助手注释）。
+    #      非注释行严格度不放松。调用侧 gate 用同一过滤器（口径一致，避免 FAIL 行误列注释 token）。
+    local residual
+    residual="$(_strip_html_comments < "$file" | grep -oE '\{\{[A-Z_][A-Z_0-9]*\}\}' 2>/dev/null | sort -u | tr '\n' ' ')"
+    if [ -n "$residual" ]; then
+        echo "[render] 残留未定义 token: ${residual}（文件: ${file}，fail-closed）" >&2
+        return 2
+    fi
+
+    return 0
+}
+
 # ============================================================================
 # [2026-10-05 task-v131 Phase 2] inject_requirement_block —
 # Rule 51.1「🎯 用户需求原文」+ 第 4 锚「🧮 根源覆盖表」（Rule 53.1 载体）
@@ -804,6 +971,36 @@ if [ ${#missing_files[@]} -gt 0 ]; then
     for f in "${missing_files[@]}"; do
         echo "[init] ERROR: $f missing or empty — planning files incomplete"
     done
+    exit 1
+fi
+# ============================================================================
+# [2026-10-24 task-tplrender S4] 模板渲染接线点 —
+# What: 7 计划文件全部复制/注入完成、存在性复核通过后，对计划目录内每个 *.md
+#   调用一次 render_template（单次批量调用，非逐 cp 调用）。任一文件 rc≠0 →
+#   stderr 打印 `[render] FAIL: <file> 残留未定义 token: <tokens>` 并置失败位，
+#   循环结束后 init 整体 exit 1（fail-closed）。
+# Why: 见 render_template 函数头——脚本确定性替换替代模型生成后手工修正占位符
+#   （用户 2026-10-24 裁决的投诉点）。
+# 位置理由: ① 须在模板复制（copy_template）/tier 分流/区块注入（inject_*）全部完成
+#   之后——否则注入产物内的占位符不参与本轮渲染；② 须在 PROJECT_NAME 赋值（L395）
+#   之后——render_template 读 ${PROJECT_NAME}；③ 须在「6/6 verified」等最终 verify
+#   回显之前——残留即失败必须早于成功回显（VC-4）。
+# 幂等: 单次调用 + render_template 对已渲染文件 no-op（二次 init 零变化）。
+# 失败判定: render_template 自身已在 stderr 列出残留清单；调用方再用**同一**
+#   _strip_html_comments 口径 grep 一次（HTML 注释区间豁免，避免 FAIL 行误列注释 token），
+#   统一成「[render] FAIL」格式（便于日志 grep），并 fail-closed 终止 init。
+# ============================================================================
+_render_fail=0
+for _rf in *.md; do
+    [ -e "$_rf" ] || continue
+    if ! render_template "$_rf"; then
+        _rf_tokens="$(_strip_html_comments < "$_rf" | grep -oE '\{\{[A-Z_][A-Z_0-9]*\}\}' 2>/dev/null | sort -u | tr '\n' ' ')"
+        echo "[render] FAIL: $_rf 残留未定义 token: ${_rf_tokens}" >&2
+        _render_fail=1
+    fi
+done
+if [ "$_render_fail" = "1" ]; then
+    echo "[init] ERROR: 模板渲染未通过（残留未定义 token），init 终止（fail-closed, task-tplrender S4）" >&2
     exit 1
 fi
 # [task-perf-opt Change #7] 非 trivial 档保持「六文件全量 verified」字面回显（selftest-knowledge-brief T3b + session-log SL-07 断言锚依赖）；

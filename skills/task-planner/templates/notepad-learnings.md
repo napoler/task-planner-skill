@@ -1,4 +1,5 @@
-# Task Learnings: {task-name}
+# Task Learnings: {{TASK_NAME}}
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；#N 序号与 YYYY-MM-DD 示例=模型填写面，脚本禁碰 -->
 
 ## New Requests
 <!-- Log user-injected requests here. Each entry: timestamp + request + implied scope + plan impact. -->

@@ -1,4 +1,5 @@
 # Progress Log
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；[Title]/<待沉淀> 等语义占位=模型填写面 -->
 <!--
   动作日志:做过什么/改了什么文件/测试结果/错误。5Q Reboot 第 5 问答案源。
   Rule 19.2: Phase 标记 complete 前,对应 Phase 段必须已回填(check-3file-gate.sh 硬校验)。
@@ -6,13 +7,13 @@
   <!-- Rule 71（task-v158）：Actions/Test Results 空段=显式占位「（本任务暂无…）」合法；测试结果必附命令原文，禁自报无锚汇总 -->
 -->
 
-## Session: [DATE]
+## Session: {{DATE}}
 <!-- 本会话日期,如 2026-09-05 -->
 
 ### Phase 1: [Title]
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** in_progress
-- **Started:** [YYYY-MM-DD HH:MM]
+- **Started:** {{DATETIME}}
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   -

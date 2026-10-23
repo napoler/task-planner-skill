@@ -1,4 +1,5 @@
 # Verification Contract & Phase Gates
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；{语义占位}/<plan-dir>=模型/调用方填写面 -->
 
 ## Goal (1 sentence)
 
@@ -74,11 +75,11 @@ Status: `pending` Last verified: —
 
 ## 委派统计复验（Rule 25.4）
 
-**机器统计为事实源，人工仅复核**：运行 `bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
+**机器统计为事实源，人工仅复核**：运行 `bash {{TASK_PLANNER_ROOT}}/scripts/check-delegation.sh stats <plan-dir>`，粘贴 JSON 输出作为委派率依据（机器去口供化：占位检测 + Handoff 交叉校验，非信任 Executor 字段自报）。
 
 ```bash
 # 证据（粘贴以下 JSON 原文）
-bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-delegation.sh stats <plan-dir>
+bash {{TASK_PLANNER_ROOT}}/scripts/check-delegation.sh stats <plan-dir>
 ```
 
 JSON 输出：
