@@ -492,14 +492,14 @@ Phase 4
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 5（S6-S10 模板 token 化并行批，parallel-group:tpl） |
+| `success` | 5（各单元自检+主进程 git diff 复核全过；commit b983b3b） |
+| `failed` | 0 |
+| `failure_rate` | 0%（≤5% 放行） |
+| `sampled_pass` | 3/3（S6 task_plan 模板/S9 verification+S10 项目级——主进程 diff 抽查+worktree grep 断言复核） |
+| `sampled_fail` | 0（批前探针=S1 契约清单先行+task_plan 模板 S6 首发验收通过后才放行 S7-S10 并行） |
+| `pre_check` | Q1:否（单元间零重叠文件）/Q2:有（检查点 06-10 逐单元落盘）/Q3:能（worktree+commit b983b3b 可整体回退） |
+| `rollback_point` | commit c722261（批前 master tip；实测未触发回退） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
