@@ -21,13 +21,16 @@
 
 <!-- 填写说明：一句话说明本任务做什么 + 为什么做（≤2 行）；下方术语表每条 ≤1 行，只收录「不解释会读不懂后续 S-unit 材料包」的术语 -->
 ## §1 任务速览与核心概念
-- 任务一句话：{做什么 + 达成标准，一行}
-- 背景/动机：{为什么做，一行}
+- 任务一句话：init-session.sh 内建变量渲染层（render_template），init 产物机械占位符由脚本直接替换真实值，模型只填语义内容。
+- 背景/动机：用户投诉模板 ID/日期/路径靠模型自主识别修正——慢、不稳定、需路径检索；脚本传参最稳定准确高效。
 
 | 概念/术语 | 一句话解释 |
 |-----------|-----------|
-| {示例：worktree} | git 隔离开发区，实现类任务必须在其中开发（Rule §十一） |
-| {术语} | {≤1 行解释} |
+| {{VAR}} token | 渲染层主形态：{{TASK_ID}}/{{TASK_NAME}}/{{DATE}}/{{DATETIME}}/{{TASK_PLANNER_ROOT}}/{{PLAN_DIR}} 六变量，init 时 sed 替换 |
+| 兼容映射 | 8 种旧形态（{task-id}/<task-id>/<task>/{task-name}/[Brief Description]/[DATE]/[YYYY-MM-DD HH:MM]/${TASK_PLANNER_ROOT:-…}）由渲染层直接替换，variant 29 文件零文本迁移 |
+| 语义占位 | 模型填写面：尖括号中文（<用户原话>）/#N 序号/[Title]/<按需增行> 等——脚本禁碰，边界=ASCII token/日期形态/尖括号纯 ASCII=脚本渲染 |
+| fail-closed | 非注释行残留 {{大写}} token → init exit 1 列 token 名；HTML 注释区间豁免（契约注释 {{VAR}} 示例合法） |
+| _created_this_round | 本轮新建文件列表（BLOCKER-1 修复产物）：渲染只遍历新建文件，重复 init 对既有文件零触碰保 append-only |
 
 <!-- 填写说明：只录【已验证】事实，每条必须带证据锚点（file:line 或 URL）；未验证推测禁止入表，写进 progress.md「假设」区 -->
 <!-- 台账供料源（Rule 21.2.1 台账供料优先）：基线定数类事实（行数/Rule 编号/计数/selftest 基线）证据列优先填台账路径锚（如 plans/.rule-reservations.jsonl:10、plans/task-vXXX/subagent-state/…），并保留原文重验锚并列 -->
@@ -36,9 +39,11 @@
 
 | 事实 | 证据 file:line / URL | 影响（对本任务执行意味着什么） |
 |------|---------------------|-------------------------------|
-| {示例：init-session.sh 建 5 文件} | scripts/init-session.sh:120 | 新增第 6 文件须同步 :120 复核列表与 :131 文案 |
-| {台账供料源示例：Rule 53 已被 task-v131 占用} | plans/.rule-reservations.jsonl:10（台账锚）+ critical-rules.md:581（原文重验锚） | 新增条款走 21.2.1 子条款，禁新占 Rule 编号 |
-| {事实} | {file:line} | {影响} |
+| init 复制模板为纯 cp 零替换、$1 只进 echo、DATE 定义未用 | subagent-state/01-explore-init-mechanism.md（调查②，init-session.sh:83-97,395,479） | 渲染层动机与接线点选择的事实底座 |
+| 实际任务名变量=PROJECT_NAME 非 TASK_NAME | init-session.sh:395（S3 实测） | 渲染层取值来源；后续改脚本勿用错变量名 |
+| sed 转义顺序 \→&→\| | init-session.sh:99-112（_sed_escape_repl） | 值含特殊字符安全替换的关键 |
+| 渲染收窄=_created_this_round 列表 | init-session.sh:761-843 四入列点+渲染循环（CR-fix） | 重复 init 零触碰既有文件；新增创建点必须显式入列 |
+| selftest 全量基线 93 脚本 | run-selftests.sh 输出（2026-10-24 多轮） | 回归对照基线；suite 数=93 不因新增断言行变化 |
 
 <!-- 填写说明：执行期照此表定位文件，禁止凭记忆改文件；「≤10 行摘要」列指该路径关键区段不超过 10 行的内容摘要，非行数限制语 -->
 <!-- 设计插入点+范式锚（台账供料，Rule 21.2.1）：设计类 S-unit 行必含 ①目标文件插入点锚 ②最新范式块锚（来源=编号账本推最大 landed Rule → 文尾块行号）③时效戳（供料日期+快照来源）；锚区间会漂移且部署位在途写入，过期锚须重测不得盲用 -->
@@ -46,15 +51,19 @@
 
 | 路径 | 行号 | ≤10 行摘要（该区段做什么） |
 |------|------|---------------------------|
-| {示例：scripts/init-session.sh} | :90-98 | 4 文件循环建立（findings/progress/notepad-learnings/verification） |
-| {设计插入点示例：references/critical-rules.md} | :<起-止> | 最新范式块 ### <NN>（插入点=21.2 后；供料 <日期>，源=编号账本最大 landed 号；行号以实施日重验为准） |
-| {路径} | :{行号} | {摘要} |
+| skills/task-planner/scripts/init-session.sh | :99-260 | 渲染层：_sed_escape_repl/_strip_html_comments/render_template（6 变量+8 映射+残留校验） |
+| skills/task-planner/scripts/init-session.sh | :961-1032 | 接线段：_created_this_round 遍历渲染+fail-closed exit 1 |
+| skills/task-planner/templates/task_plan.md | 全文 | token 化范本（{{VAR}} ×12+契约注释+语义占位保留形态） |
+| skills/task-planner/SKILL.md | :40-41 | 初始化段渲染契约指示面 |
+| skills/task-planner/scripts/selftest-session-log.sh | SL-12 段 | 二次 init append-only 回归护栏断言 |
 
 <!-- 填写说明：编号清单；含历史教训/陷阱/禁止假设；末尾必须挂本任务 FMEA RPN>100 项的兜底动作指针（→ task_plan.md FMEA 表对应行） -->
 ## §4 易错点与禁止假设清单
-1. {示例：禁止改 22.4a 三文件契约原文（KQ2 轻量方案裁定，KQ2 波及面=check-dispatch 7 处+selftest 5 组）}
-2. {易错点/禁止假设}
-3. {易错点/禁止假设}
+1. 禁止模型手工修正产物中的机械占位符（渲染层已脚本化；手改=绕过 fail-closed 防线）——SKILL.md:41 契约
+2. 派发契约中的文档示例文本须与机器校验正则互斥设计（判例：契约注释 {{VAR}} 触发残留校验致 7 模板全 fail，三子代理独立上报；修复=注释区间豁免）
+3. 禁止硬编码行号进注释（判例：NIT-2 L694 漂移）——用函数名/段描述引用
+4. 渲染循环禁 `for *.md` 全目录遍历（BLOCKER-1 判例：重复 init 改写 append-only 记录）——只遍历 _created_this_round
+5. FMEA RPN>100 兜底指针：Phase 3「盘点遗漏」→ 残留校验 fail-closed 机器兜底+S1 边界清单（task_plan.md FMEA 表）；已按此走通（实测 S14 残留计数=0）
 - FMEA RPN>100 兜底指针：{→ task_plan.md FMEA 表「{Phase} {失败模式}」行}
 
 <!-- 填写说明：与 task_plan.md S-unit 表「输入」列互链；「应读本 brief 哪节」精确到 §x；额外材料路径必须是绝对路径或 plan 目录相对路径 -->

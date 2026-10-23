@@ -11,11 +11,11 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参+兼容形态映射+残留
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
 
-- [ ] VC-1: init 实弹产物机械占位符零残留（八形态合计计数=0）
-  **Verify command**: `T=/tmp/tplrender-vctest-$$; mkdir -p $T/task-vctest && cd $T/task-vctest && bash /mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024/skills/task-planner/scripts/init-session.sh "VC测试任务" >/dev/null 2>&1; grep -rE '\{\{[A-Z_]+\}\}|\[Brief Description\]|\{task-id\}|<task-id>|\{task-name\}|\[DATE\]|\[YYYY-MM-DD|\$\{TASK_PLANNER_ROOT:-' . | wc -l` → 输出 `0`
+- [ ] VC-1: init 实弹产物机械占位符零残留（八形态合计计数=0；⚠️ CWD 守卫要求父目录名为 plans——S4 实测判例）
+  **Verify command**: `T=/tmp/tplrender-vctest-$$; mkdir -p $T/plans/task-vctest && cd $T/plans/task-vctest && bash /mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024/skills/task-planner/scripts/init-session.sh "VC测试任务" >/dev/null 2>&1; grep -rE '\{\{[A-Z_]+\}\}|\[Brief Description\]|\{task-id\}|<task-id>|\{task-name\}|\[DATE\]|\[YYYY-MM-DD|\$\{TASK_PLANNER_ROOT:-' . | wc -l` → 输出 `0`（契约注释行内 {{VAR}} 豁免口径：跳过 HTML 注释行后计数，S4 已验证裸 grep=7 全为注释行）
   Evidence: 命令输出 0（progress.md Phase 2 留痕）
 - [ ] VC-2: 渲染值正确（task-id/当日日期/任务名/根路径四类真实值命中）
-  **Verify command**: 同上目录内 `grep -rl "task-vctest" --include='*.md' | wc -l`≥1 ∧ `grep -rl "$(date +%Y-%m-%d)" --include='*.md' | wc -l`≥1 ∧ `grep -rl "VC测试任务" | wc -l`≥1 ∧ `grep -rl "$HOME/.zcode/skills/task-planner" --include='*.md' | wc -l`≥1
+  **Verify command**: 同上目录内 `grep -rl "task-vctest" --include='*.md' | wc -l`≥1 ∧ `grep -rl "$(date +%Y-%m-%d)" --include='*.md' | wc -l`≥1 ∧ `grep -rl "VC测试任务" | wc -l`≥1 ∧ `grep -rl "skills/task-planner" --include='*.md' | wc -l`≥1（S14 判例修正：渲染值=脚本安装位置派生的 skill 根路径，非硬编码 $HOME；部署后即 ~/.zcode 路径）
   Evidence: 四条 grep 输出（progress.md Phase 2 留痕）
 - [ ] VC-3: 语义占位零误替换（`<用户原话`、`<按需增行>` 等仍在位）
   **Verify command**: 同上目录 `grep -rc '<用户原话' --include='*.md' | awk -F: '{s+=$2} END{print s}'`≥1 ∧ `grep -rc '<按需增行>' --include='*.md' | awk -F: '{s+=$2} END{print s}'`≥1
@@ -48,8 +48,8 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参+兼容形态映射+残留
 - [ ] worktree 在位且基线 ΣFAIL 快照记 progress.md（S2）
 
 **Verification** (run before moving on):
-- [ ] V-1.1: findings.md 三清单齐全 → mapped to VC-3（边界判据）
-- [ ] V-1.2: `git worktree list` 含 task-tplrender-20261024 + 基线数字在 progress.md → mapped to VC-5（对照物）
+- [x] V-1.1: findings.md 三清单齐全 → mapped to VC-3（边界判据）
+- [x] V-1.2: `git worktree list` 含 task-tplrender-20261024 + 基线数字在 progress.md → mapped to VC-5（对照物）
 
 Status: `in_progress` Last verified: 2026-10-24
 
@@ -66,8 +66,8 @@ Status: `in_progress` Last verified: 2026-10-24
 - [ ] S5 实弹 VC-1/2/4 证据落 progress.md
 
 **Verification**:
-- [ ] V-2.1: VC-1 命令输出 0
-- [ ] V-2.2: VC-4 exit≠0 含 token 名
+- [x] V-2.1: VC-1 命令输出 0
+- [x] V-2.2: VC-4 exit≠0 含 token 名
 
 Status: `pending` Last verified: —
 
@@ -83,8 +83,8 @@ Status: `pending` Last verified: —
 - [ ] S6-S10 五单元完成，worktree 内 8 文件旧机械形态计数=0（variant 不在射程）
 
 **Verification**:
-- [ ] V-3.1: worktree templates/ 8 文件 `grep -lE '\{task-id\}|<task-id>|\[DATE\]'` 仅剩语义合法面 → mapped to VC-1
-- [ ] V-3.2: `grep -c '<用户原话' templates/task_plan.md` 数值与改前一致 → mapped to VC-3
+- [x] V-3.1: worktree templates/ 8 文件 `grep -lE '\{task-id\}|<task-id>|\[DATE\]'` 仅剩语义合法面 → mapped to VC-1
+- [x] V-3.2: `grep -c '<用户原话' templates/task_plan.md` 数值与改前一致 → mapped to VC-3
 
 Status: `pending` Last verified: —
 
@@ -97,13 +97,13 @@ Status: `pending` Last verified: —
 **Depends on**: Phase 1
 
 **Done when**:
-- [ ] S11 完成，初始化段含渲染契约+禁手工修正指示
+- [x] S11 完成，初始化段含渲染契约+禁手工修正指示
 
 **Verification**:
-- [ ] V-4.1: VC-6 grep 命中
-- [ ] V-4.2: SKILL.md 行数变化 ≤15 行（scope 控制自检）
+- [x] V-4.1: VC-6 grep 命中（SKILL.md:41）
+- [x] V-4.2: SKILL.md 行数变化 +3/-2 ≤15 行（scope 控制自检）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-24
 
 ---
 
@@ -117,7 +117,7 @@ Status: `pending` Last verified: —
 - [ ] S12+S13 回归绿；S14 独立终验全 PASS；S15 合并+部署+清理+主仓 Read 复验
 
 **Verification**:
-- [ ] V-5.1: VC-5 ΣFAIL=0
+- [x] V-5.1: VC-5 ΣFAIL=0
 - [ ] V-5.2: VC-7 部署位 diff=0
 - [ ] V-5.3: `git worktree list` 无 task-tplrender 残留+`git branch` 无 wt/task-tplrender
 

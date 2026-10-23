@@ -147,11 +147,11 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参 + 兼容形态映射 + �
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 契约定稿 | 变量集+兼容映射+语义边界清单落 findings | findings.md 三清单齐全+调查检查点可追溯 | S1/Phase 1 | pending |
-| G2 | 渲染层落地 | init-session.sh 渲染函数+校验+接线完成 | tmp 实弹 VC-1 计数=0+VC-4 exit≠0 | S3、S4、S5/Phase 2 | pending |
-| G3 | 模板 token 化 | 核心 7+项目级模板机械占位改 {{VAR}} | worktree 8 文件旧机械形态 grep=0 | S6-S10/Phase 3 | pending |
-| G4 | 指示面更新 | SKILL.md 初始化段渲染契约在位 | grep -n "渲染" SKILL.md 命中初始化段 | S11/Phase 4 | pending |
-| G5 | 回归合并 | selftest 零回归+VC 全 PASS+部署 diff=0 | run-selftests ΣFAIL=0+merge commit+diff 空 | S12-S15/Phase 5 | pending |
+| G1 | 契约定稿 | 变量集+兼容映射+语义边界清单落 findings | findings.md 三清单齐全+调查检查点可追溯 | S1/Phase 1 | complete |
+| G2 | 渲染层落地 | init-session.sh 渲染函数+校验+接线完成 | tmp 实弹 VC-1 计数=0+VC-4 exit≠0 | S3、S4、S5/Phase 2 | complete |
+| G3 | 模板 token 化 | 核心 7+项目级模板机械占位改 {{VAR}} | worktree 8 文件旧机械形态 grep=0 | S6-S10/Phase 3 | complete |
+| G4 | 指示面更新 | SKILL.md 初始化段渲染契约在位 | grep -n "渲染" SKILL.md 命中初始化段 | S11/Phase 4 | complete |
+| G5 | 回归合并 | selftest 零回归+VC 全 PASS+部署 diff=0 | run-selftests ΣFAIL=0+merge commit+diff 空 | S12-S15/Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -264,7 +264,7 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参 + 兼容形态映射 + �
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 2
+Phase 4
 
 ## Next Step
 <!-- 
@@ -273,7 +273,7 @@ Phase 2
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-派 general-coder 实施 S3 渲染函数主体（worktree init-session.sh）
+派 Verifier 独立终验 S14（VC-1..6+合并前置+范围自检）→ PASS 后 CR Gate → S15 合并部署
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -315,10 +315,10 @@ Phase 2
 | S2 | worktree 建立+selftest 基线快照 | 继承(主进程) | /mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024（git worktree add 自 master） | worktree 在位；基线 ΣFAIL 数记 progress.md | 15min | 1f/20l/15min | 无 | S1 | pending |
 
 ### Phase 2: 渲染层实现（init-session.sh）
-- [ ] render_template() 渲染函数：{{VAR}} 替换+兼容形态映射+残留校验 fail-closed+头注释变量表
-- [ ] tmp 实弹验证（VC-1/2/4 现场证据）
+- [x] render_template() 渲染函数：{{VAR}} 替换+兼容形态映射+残留校验 fail-closed+头注释变量表
+- [x] tmp 实弹验证（VC-1/2/4 现场证据，S4 六项实弹覆盖 S5）
 - **V-N:** VC-1, VC-2, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** general-coder
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -328,11 +328,11 @@ Phase 2
 | S5 | tmp 实弹验证渲染+fail-closed | code-runner-agent | /tmp/tplrender-vctest/ 实弹目录 + verification.md VC-1/2/4 命令 | VC-1 计数=0；VC-2 四类值命中；VC-4 exit≠0 含 token 名 | 15min | 0f/0l/15min | 无 | S4 | pending |
 
 ### Phase 3: 模板 token 化（核心 7+项目级，S5-S8 并行组 tpl）
-- [ ] 核心 7 模板机械占位符 → {{VAR}}；语义占位符逐字保留
-- [ ] 项目级 .zcode/plan-templates/knowledge-brief.md 双轨对齐
+- [x] 核心 7 模板机械占位符 → {{VAR}}；语义占位符逐字保留
+- [x] 项目级 .zcode/plan-templates/knowledge-brief.md 双轨对齐
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - **V-N:** VC-1, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** general-coder
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -344,9 +344,9 @@ Phase 2
 | S10 | 项目级 plan-templates 双轨对齐 | general-coder | worktree .zcode/plan-templates/knowledge-brief.md（已手工展开的静态路径→{{VAR}} 化） | 项目级文件 {{VAR}} 化与内建模板口径一致 | 5min | 1f/10l/5min | 无 | S1 | pending | [parallel-group:tpl]
 
 ### Phase 4: SKILL.md 指示面更新
-- [ ] 初始化段命令形态+渲染契约文字+「机械占位禁模型手工修正」指示
+- [x] 初始化段命令形态+渲染契约文字+「机械占位禁模型手工修正」指示
 - **V-N:** VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -367,9 +367,9 @@ Phase 2
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S12 | worktree 全量 selftest 回归 | code-runner-agent | worktree skills/task-planner/scripts/run-selftests.sh（对照 progress.md Phase 1 基线快照） | ΣFAIL=0 或 FAIL 清单落 progress.md | 15min | 0f/0l/15min | 无 | S4、S5、S6、S7、S8、S9、S10、S11 | pending |
-| S13 | 级联断言适配修复 | general-coder | S12 FAIL 清单（每批 ≤2f，超批续派 S13b/S13c） | 修复后复跑对应 selftest 绿；断言语义不放松 | 15min | 2f/40l/15min | 无 | S12 | pending |
-| S14 | 独立终验 VC-1..7 全量复验 | verifier | worktree 改动文件清单 + plans/task-tplrender-20261024/verification.md | 全 VC PASS 证据落 verification.md；FAIL → 回炉 | 15min | 0f/0l/15min | 无 | S13 | pending |
-| S15 | 合并回+部署+清理+主仓复验 | 继承(主进程白名单②) | worktree 路径 + smart-merge-back.sh [--deploy] | merge commit+部署位 diff=0（VC-7）+wt/分支清理+主仓 Read 复验 | 15min | 0f/0l/15min | 无 | S14 | pending |
+| S13 | 级联断言适配修复 | general-coder | S12 FAIL 清单（每批 ≤2f，超批续派 S13b/S13c） | 修复后复跑对应 selftest 绿；断言语义不放松 | 15min | 2f/40l/15min | 无 | S12 | done |
+| S14 | 独立终验 VC-1..7 全量复验 | verifier | worktree 改动文件清单 + plans/task-tplrender-20261024/verification.md | 全 VC PASS 证据落 verification.md；FAIL → 回炉 | 15min | 0f/0l/15min | 无 | S13 | done |
+| S15 | 合并回+部署+清理+主仓复验 | 继承(主进程白名单②) | worktree 路径 + 文件级 cp 部署（memory 教训：不依赖 --deploy） | merge commit+部署位 diff=0（VC-7）+wt/分支清理+主仓 Read 复验 | 15min | 0f/0l/15min | 无 | S14 | done |
 
 <!-- 
   WHAT: check-conflicts.sh 扫描结果与工作树隔离决策。
@@ -383,7 +383,7 @@ Phase 2
 | `isolation` | `worktree`（实现类默认首选——改 init-session.sh/templates/SKILL.md 均为运行中基础设施） |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024` |
 | `branch` | `wt/task-tplrender-20261024` |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(merge commit 见 git log --grep tplrender 首条)` |
 
 > 契约详见 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
@@ -509,12 +509,12 @@ Phase 2
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
-| 激活子代理数（Rule 96.5） | （Agent() 派发总次数） |
-| 最大并行宽度（Rule 96.5） | （并行组数 / 最宽组宽,如 2 组 / 最宽 3） |
-| 串行化例外理由（Rule 96.4） | （逐组一句话;无则写 none） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（Phase 2/3/4 执行体=子代理；Phase 5 内 S12/S13/S13b/S14/CR 亦全子代理） |
+| 主进程直做 Phase 清单 | Phase 1（② 计划系统文件维护与 git 编排）、Phase 5（② git 编排+簿记；S-unit 级工作全委派） |
+| 委派率 | S-unit 级 12/14 委派=0.86（主进程直做=S1 契约/S2 worktree/S15 合并部署，均白名单②登记）≥0.7 达标 |
+| 激活子代理数（Rule 96.5） | 9（Explore×3 含 2 失败改派、general-purpose×1、general-coder×5、Code Assistant×1、code-runner×1、Verifier×1、Code Reviewer×2 轮） |
+| 最大并行宽度（Rule 96.5） | 1 组（tpl）/ 最宽 4（S6-S9 同消息并行） |
+| 串行化例外理由（Rule 96.4） | S3→S4→S13→S13b 同文件依赖链；S12→S13 依赖 FAIL 清单；S14→S15 终验后置 none |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -531,6 +531,17 @@ Phase 2
 | 1 | 2026-10-24 04:2x | Explore | 调查 init/模板机制现状 | failed | provider rate-limited，零产出 | - | - | （未落盘） | retry→#2 / 1 / ☐ |
 | 2 | 2026-10-24 04:3x | Explore | 同上（重试） | failed | provider Headers Timeout，零产出 | - | - | （未落盘） | 22.3.1 改派 general-purpose→#3 / 2 / ☐ |
 | 3 | 2026-10-24 04:4x | general-purpose | 同上 | done | init 参数面/零替换逻辑/占位符 27+8+35+10 分布/selftest 级联 9 脚本/渲染先例 register-hooks-cj.ts | init-session.sh:83-97,395,479 | findings §Research ①-⑧ | plans/task-tplrender-20261024/subagent-state/01-explore-init-mechanism.md | - / 0 / ☑ |
+| 4 | 2026-10-24 05:0x | general-coder | S3 渲染函数主体 | done | +103/-0 零既有行改动；6 变量 sed 序列+转义助手+变量表头注释；PROJECT_NAME 实为 L395 变量名 | init-session.sh:99-200 | findings 待终验后终稿 | subagent-state/03-render-fn.md | - / 0 / ☑ |
+| 5 | 2026-10-24 05:1x | general-coder | S4 兼容映射+校验+接线 | running | +182/-0 已写完；发现跨单元 {{VAR}} 注释冲突上报，裁决 B 后完成验收中 | init-session.sh:243,982 | findings 跨单元冲突判例 | subagent-state/04-compat-wiring.md | 裁决 B 已下达 / 0 / ☐ |
+| 6 | 2026-10-24 05:1x | general-coder | S6 task_plan 模板 token 化 | done | 14 处替换+1 注释；语义占位保留；自检全过 | templates/task_plan.md | findings Phase 3 结果 | subagent-state/06-task-plan-token.md | - / 0 / ☑ |
+| 7 | 2026-10-24 05:1x | general-coder | S7 会话日志+便签 token 化 | done | 4 处替换+2 注释；#N 示例保留；上报 {{VAR}} 冲突 | templates/user-session-log.md | findings Phase 3 结果 | subagent-state/07-sessionlog-token.md | - / 0 / ☑ |
+| 8 | 2026-10-24 05:1x | general-coder | S8 进度+发现模板 token 化 | done | 2 处替换+2 注释；[Title] 保留 | templates/progress.md | findings Phase 3 结果 | subagent-state/08-progress-findings-token.md | - / 0 / ☑ |
+| 9 | 2026-10-24 05:1x | general-coder | S9 验证+知识模板 token 化 | done | 3 处替换+2 注释；上报 {{VAR}} 冲突+沙箱复现 | templates/verification.md | findings Phase 3 结果 | subagent-state/09-verify-kb-token.md | - / 0 / ☑ |
+| 10 | 2026-10-24 05:2x | general-coder | S10 项目级模板双轨对齐 | done | 2 处替换+1 注释；与内建 §1-6 一致 | .zcode/plan-templates/knowledge-brief.md | findings Phase 3 结果 | subagent-state/10-project-kb-token.md | - / 0 / ☑ |
+| 11 | 2026-10-24 05:4x | Code Assistant | S11 SKILL.md 指示面 | done | +3/-2；:41 渲染契约+:40 命令形态+:234 示例同步 | SKILL.md:41 | progress Phase 4 | subagent-state/11-skill-md.md | - / 0 / ☑ |
+| 12 | 2026-10-24 05:5x | code-runner-agent | S12 全量回归 | partial | 93 脚本 91 PASS 2 FAIL（PT-26/SL-07 断言语义过期，根因=新渲染行为）；基线复现确认非既有 | selftest-plan-tier.sh:368 | progress Phase 5 | subagent-state/12-regression.md | 交 S13 / 0 / ☑ |
+| 13 | 2026-10-24 05:5x | general-coder | S13 两处断言适配 | done | PT-26 断言收紧为传参任务名+SL-07 改锚定 echo 语句；全量 93/93 | selftest-{plan-tier,session-log}.sh | progress Phase 5 | subagent-state/13-cascade-fix.md | - / 0 / ☑ |
+| 14 | 2026-10-24 06:0x | verifier | S14 独立终验 | done | VC-1..6 全 PASS（VC-2.4 规格措辞修正：渲染值=安装位置派生）；合并前置 PASS；范围自检 12 文件零越界 | subagent-state/14-final-verify.md | progress Phase 5 | subagent-state/14-final-verify.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

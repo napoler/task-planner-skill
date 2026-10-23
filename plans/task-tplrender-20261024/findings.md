@@ -22,6 +22,13 @@
 
 ## Research Findings
 <!-- 调研/搜索/文档/子代理结论:摘要 + 证据路径。子代理返回后紧邻写(Rule 19.1) -->
+- **[2026-10-24 Phase 3 五单元执行结果]**（检查点 subagent-state/06-10）：
+  - S6 task_plan.md：+1 注释+14 处替换（ROOT×9/标题×1/task-id×5）；语义占位全保留
+  - S7 user-session-log+notepad-learnings：+2 注释+4 处替换；#N/YYYY-MM-DD 示例逐字保留（计数 +1 偏差=新注释行自身含字样，内容级 diff IDENTICAL）
+  - S8 progress+findings：+4/-1；[DATE]/[DATETIME] 各 1 处；findings 无机械占位仅加注释
+  - S9 verification+knowledge-brief：+2 替换 ROOT×2+task-id×1；{Name}/{evidence}/<plan-dir> 语义面保留
+  - S10 项目级 knowledge-brief：+2/-1，{task-id}×1+注释；与内建版 §1-6 逐行一致仅注释文字差异
+- **[2026-10-24 跨单元冲突判例（重要教训）]**：主进程派发契约要求各模板加注释行含字面 `{{VAR}}` 示例，与 S4 残留校验正则 `\{\{[A-Z_][A-Z_0-9]*\}\}` 冲突 → init fail-closed exit 1，7 模板全中招（三个子代理独立发现上报）。**裁决=B 方案**：残留扫描跳过 HTML 注释区间（awk /<!--/,/-->/），非注释行严格度不放松。教训：**派发契约中的文档示例文本要与机器校验正则互斥设计**（示例词应选不匹配校验形态的写法，或校验器显式声明文档豁免边界）
 - **[2026-10-24 S1 变量契约定稿]（三清单，执行期唯一甄别依据）**：
   **① {{VAR}} 变量表（渲染层主形态，核心 7+项目级模板使用）**：
   | 变量 | 来源（脚本内确定性可得） | 说明 |
