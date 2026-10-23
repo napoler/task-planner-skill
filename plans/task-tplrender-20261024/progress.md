@@ -33,6 +33,7 @@
 
 ### Phase 2: 渲染层实现
 - **Status:** complete
+- **[goal:G2] 完成证据**：tmp 实弹 VC-1 计数=0+VC-2 四值命中+VC-4 fail-closed rc=1+幂等 7/7 md5（progress Phase 2 Test Results 表；S4 检查点 04-compat-wiring.md）
 - **Started:** 2026-10-24 05:0x
 - Actions taken:
   - S3 general-coder：render_template 函数主体（+103/-0 零既有行改动；6 变量 sed 序列+转义助手+变量表头注释）——主进程复核 diff/语句/语法三过
@@ -69,6 +70,7 @@
 
 ### Phase 4: SKILL.md 指示面更新
 - **Status:** complete
+- **[goal:G4] 完成证据**：SKILL.md:41 渲染契约 grep 命中（V-4.1 PASS；dc426c1）
 - **Started:** 2026-10-24 05:4x
 - Actions taken:
   - S11 Code Assistant：SKILL.md 初始化段命令形态带任务名参数+:41 渲染契约要点+:234 I/O 契约示例同步（+3/-2）——主进程 Read diff 复核过
