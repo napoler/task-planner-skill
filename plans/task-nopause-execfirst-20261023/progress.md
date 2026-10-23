@@ -90,6 +90,27 @@
   | CR Gate | 4c-cr.md→修复→4e-cr-recheck.md | APPROVED | 第 1 轮 CHANGES_REQUESTED→修复→APPROVED | PASS |
   | Drift | d4-drift-phase3-4.md | ALIGNED | ALIGNED（备注 2 项已处置） | PASS |
 
+### Phase 5: 合并部署与簿记
+- **Status:** complete（2026-10-24；VC-1..6 全 PASS；merge 35e0157+部署双位生效）
+- **Started:** 2026-10-24（Phase 4 翻转后）
+- Actions taken:
+  - §11.3 合并前复核：**命中编号竞态**——并行会话已落 Rule 96（e319ee3，dispatch 卫星）→ 并集解：worktree merge master（唯一冲突 SKILL.md 五 hunk union）+全文档级联 1-96/79 条（CA-13，commit b3f7c04/0c8b317）
+  - 并集收口双 FAIL 修复：rule-reserve land 95（本任务）+96（对方任务代登记，注明 e319ee3 已落 master）；selftest-subagent-activation.sh SA-12 锚 78→79 随动
+  - 终验回归：**Total: 93 PASS=93 FAIL=0**（5a FAIL=2→收口→5b 全绿，检查点齐）
+  - smart-merge-back --deploy：V1-V6 全过，**master merge=35e0157**；zcode 位 SWAPPED
+  - cursor 位 REJECTED（危险路径守卫）→ 按 rule94 先例文件级 cp 补齐；task-discipline 三文件（DEPLOY_SRC 只含 task-planner）双位文件级 cp 补齐；cursor 既有 6 漂移文件（install.sh 等，rule94 遗留另案）未碰
+  - worktree+分支清理：git worktree remove+branch -d（仅剩主仓）
+- Files created/modified: master 35e0157（合并 12 文件）；部署位 zcode/cursor（task-planner 6 文件+task-discipline 3 文件×2 位）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-5.1=VC-1 | 主仓 grep Rule 95/暂停前三问 | ≥1 | 1/1 | PASS |
+  | V-5.1=VC-2 | 主仓 video 负锚+执行即探测 | 0/≥1 | PASS | PASS |
+  | V-5.1=VC-3 | 主仓 image 处置自主+推给用户 | 双命中 | PASS | PASS |
+  | V-5.1=VC-4 | 终验轮 5b（93 套件） | FAIL=0 | 93/93 | PASS |
+  | V-5.2=VC-5 | 部署位 scope 文件 diff | 空 | 空（vc5-check-done 无 DRIFT 行） | PASS |
+  | V-5.2=VC-6 | jsonl rule:95 | landed | landed（96 亦 landed 代登记） | PASS |
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

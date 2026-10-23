@@ -11,22 +11,22 @@
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
 
-- [ ] VC-1: Rule 95 七子条全文落位 skills/task-discipline/references/critical-rules-discipline.md（95.0-95.6，锚 token：Rule 95/执行即探测/时间衰减/暂停前三问）
+- [x] VC-1: Rule 95 七子条全文落位 skills/task-discipline/references/critical-rules-discipline.md（95.0-95.6，锚 token：Rule 95/执行即探测/时间衰减/暂停前三问）
   Evidence: 两 grep 计数输出均 ≥1（合并 master 后于主仓执行，输出原文落 progress.md）
   **Verify command**: grep -c "Rule 95" skills/task-discipline/references/critical-rules-discipline.md && grep -c "95\.4" skills/task-discipline/references/critical-rules-discipline.md && grep -c "暂停前三问" skills/task-discipline/references/critical-rules-discipline.md
-- [ ] VC-2: video-generation-executor.md 无额度预询问/停等措辞，含执行即探测语义
+- [x] VC-2: video-generation-executor.md 无额度预询问/停等措辞，含执行即探测语义
   Evidence: 旧措辞 grep=0 且新锚 grep≥1（输出原文落 progress.md）
   **Verify command**: ! grep -qE "是否有额度|询问.{0,12}额度|额度.{0,12}询问" skills/task-planner/companion/agents/video-generation-executor.md && grep -q "执行即探测" skills/task-planner/companion/agents/video-generation-executor.md
-- [ ] VC-3: image-generation-executor.md 含质检处置自主化条款（处置自主/禁推给用户锚）
+- [x] VC-3: image-generation-executor.md 含质检处置自主化条款（处置自主/禁推给用户锚）
   Evidence: 两锚 grep 均命中（输出原文落 progress.md）
   **Verify command**: grep -q "处置自主" skills/task-planner/companion/agents/image-generation-executor.md && grep -q "推给用户" skills/task-planner/companion/agents/image-generation-executor.md
-- [ ] VC-4: 纪元级联完成且全量 selftest 套件 ΣFAIL=0
+- [x] VC-4: 纪元级联完成且全量 selftest 套件 ΣFAIL=0
   Evidence: 套件运行输出原文落 progress.md（Rule 57 轮次记录）
   **Verify command**: fail=0; for f in skills/*/scripts/selftest-*.sh scripts/selftest-*.sh; do [ -f "$f" ] || continue; bash "$f" >/dev/null 2>&1 || { fail=$((fail+1)); echo "FAIL $f"; }; done; [ "$fail" -eq 0 ]
-- [ ] VC-5: 部署位（smart-merge-back --deploy 登记位）与源仓 diff=0
+- [x] VC-5: 部署位（smart-merge-back --deploy 登记位）与源仓 diff=0
   Evidence: diff 复核输出为空，落 progress.md（zcode 位主命令；cursor 等位按 Phase 1 映射冻结于 V-5.2）
   **Verify command**: diff -rq /mnt/data/dev/task-planner-skill/skills/task-planner /home/terry/.zcode/skills/task-planner -x .backup -x __pycache__ | wc -l | grep -q "^0$"
-- [ ] VC-6: rule-reserve 编号账本 land 95
+- [x] VC-6: rule-reserve 编号账本 land 95
   Evidence: jsonl 含 landed 行（grep 输出原文落 progress.md）
   **Verify command**: grep '"rule":95.*"status":"landed"' plans/.rule-reservations.jsonl
 
@@ -120,7 +120,7 @@ Status: `complete` Last verified: 2026-10-23（V-4.1 两轮 92/92 FAIL=0 PASS；
 - [ ] V-5.1: VC-1/VC-2/VC-3 grep 命令在主仓重跑通过（→ 终验）
 - [ ] V-5.2: VC-5 diff 复核为空（→ 终验）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-24（merge 35e0157+部署双位 diff=0+账本 landed+93/93 终验轮）
 
 ---
 

@@ -133,12 +133,12 @@ execution_lane: L1
 -->
 | 字段 | 值 |
 |------|-----|
-| **目标型需求** | （R 行编号，如 R1/R3） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **目标型需求** | R1-R7（全部 [目标]） |
+| **裁决** | `solved` |
+| **解决证据锚** | ①泛化禁令=critical-rules-discipline.md:617-628（Rule 95 七子条，95.0 定性/95.1 执行即探测/95.2 时间衰减/95.3 质检自主/95.4 暂停前三问/95.5 真门/95.6 泛化禁令）；②根因条款=video-generation-executor.md:19/L43/L58 与 image-generation-executor.md:42/L48 改写（VC-2/VC-3 grep PASS）；③回归=5b 终验轮 93/93 FAIL=0；④生效=部署位 diff=0（zcode SWAPPED+cursor/task-discipline cp）；⑤CR APPROVED（4e）+drift ALIGNED（d4） |
+| **未解决面+原因** | 无（本仓射程内）；跨仓面=videop1 项目 AGENTS.md 若有同类措辞属其他项目仓（§五 跨项目隔离，未授权不动）；cursor 位 rule94 遗留 6 文件漂移（前任务遗留，另案） |
+| **已排除路径** | 不适用（solved） |
+| **下一步建议** | 不适用（solved）；行为面生效=新会话加载新技能文本后自然生效（frontmatter/规则文本为 truth source） |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -277,7 +277,7 @@ execution_lane: L1
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 4（回归+CR；S4 drift=ALIGNED 留痕 d4-drift-phase3-4.md）
+Phase 5 complete→终验交付（VC-1..6 全 PASS，merge 35e0157，部署双位生效）
 
 ## Next Step
 <!-- 
@@ -366,13 +366,13 @@ S3 CR 审查（general-reviewer）→APPROVED 后 Phase 5：smart-merge-back --d
 | S4 | 偏移检查派发（Rule 61 载体） | drift-checker（haiku-1） | 计划三文件+git 证据 | ALIGNED/DRIFT 判定落 Drift Log+ledger | 5min | 0f/0l/5min | 无 | S1 | pending |
 
 ### Phase 5: Delivery（合并部署与簿记）
-- [ ] smart-merge-back.sh <worktree> --deploy（合并+部署+清理）
-- [ ] rule-reserve land 95 + INDEX 刷新 + 部署 diff=0 复核
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh <task-id> --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
-- [ ] 知识提取入库：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名 → `bash scripts/kb-rebuild-index.sh`（项目存在 knowledge/ 机制，必做）
+- [x] smart-merge-back.sh <worktree> --deploy（合并 35e0157+部署 zcode SWAPPED+清理完成）
+- [x] rule-reserve land 95（+96 并集代登记）+ 部署 diff=0 复核（VC-5 空）+ cursor/task-discipline 文件级 cp 补齐（rule94 先例）
+- [x] 归档计划：check-complete exit 0 后 set-active-plan --clear + archive-plan.sh（Rule 81）
+- [ ] 知识提取入库：kb-sync-from-plan.sh（收尾执行）
 - [ ] 交付总结五要素输出（templates/delivery-summary.md）
 - **V-N:** VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -388,7 +388,7 @@ S3 CR 审查（general-reviewer）→APPROVED 后 Phase 5：smart-merge-back --d
 | `isolation` | `worktree`（实现类默认首选；§11.1.1 技能保护区命中） |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-nopause-execfirst-20261023` |
 | `branch` | `wt/task-nopause-execfirst-20261023`（自 master 886f060 创建；建后核对关键文件与主仓 HEAD 一致，防 worktree 分支不同步判例复发） |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(35e0157)`（并集解 e319ee3 Rule 96 后合并；worktree/分支已清理） |
 
 > 契约详见 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
@@ -516,9 +516,9 @@ S3 CR 审查（general-reviewer）→APPROVED 后 Phase 5：smart-merge-back --d
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（Phase 1=Explore、Phase 3=general-coder×5 派发、Phase 4=code-runner×3+general-reviewer×2+drift-checker×1） |
+| 主进程直做 Phase 清单 | Phase 2（例外：用户投诉原文仅存本会话上下文，宪法级措辞语义保真——白名单外理由登记）；Phase 5（例外：① git 编排+② 簿记——Rule 25.3 白名单）；另 Phase 3 内 CA-10/11 修复与并集解文本由主进程执行（CR 修法逐字落地+合并冲突 union，git 编排白名单+语义保真） |
+| 委派率 | 0.6（3/5；Phase 2 白名单外理由已登记=语义保真；Phase 5 白名单内；终验 machine stats 以 check-delegation.sh stats 输出为准） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
