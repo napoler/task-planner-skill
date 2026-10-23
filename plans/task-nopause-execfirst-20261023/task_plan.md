@@ -369,8 +369,8 @@ S3 CR 审查（general-reviewer）→APPROVED 后 Phase 5：smart-merge-back --d
 - [x] smart-merge-back.sh <worktree> --deploy（合并 35e0157+部署 zcode SWAPPED+清理完成）
 - [x] rule-reserve land 95（+96 并集代登记）+ 部署 diff=0 复核（VC-5 空）+ cursor/task-discipline 文件级 cp 补齐（rule94 先例）
 - [x] 归档计划：check-complete exit 0 后 set-active-plan --clear + archive-plan.sh（Rule 81）
-- [ ] 知识提取入库：kb-sync-from-plan.sh（收尾执行）
-- [ ] 交付总结五要素输出（templates/delivery-summary.md）
+- [x] 知识提取入库：knowledge/entries/rule95-nopause-execution-first-landing.md（draft 已精炼改名+索引重建）
+- [x] 交付总结五要素输出（delivery-summary.md 落盘计划目录）
 - **V-N:** VC-5, VC-6
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
