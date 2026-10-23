@@ -1,0 +1,1 @@
+{"tick":1,"ts":"2026-10-23T17:36:57Z","agent":"main","phase":"1","event":"drift_check","summary":"Phase1 EXEMPT: drift-checker 派发3连败(provider), 主进程自检 ALIGNED(仅簿记写入零源码变更), Phase4 补正式派发","files":[]}
