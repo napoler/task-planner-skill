@@ -83,3 +83,5 @@
 {"rule":94,"status":"landed","task_id":"task-focus-plan-split-20261023","ts":"2026-10-23","note":""}
 {"rule":95,"status":"reserved","task_id":"task-nopause-execfirst-20261023","ts":"2026-10-23","note":""}
 {"rule":96,"status":"reserved","task_id":"task-subagent-boost-20261023","ts":"2026-10-24","note":""}
+{"rule":95,"status":"landed","task_id":"task-nopause-execfirst-20261023","ts":"2026-10-24","note":""}
+{"rule":96,"status":"landed","task_id":"task-subagent-boost-20261023","ts":"2026-10-24","note":""}
