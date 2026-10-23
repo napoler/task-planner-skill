@@ -363,14 +363,23 @@ else
 fi
 
 # PT-26 全缺省零影响(无项目目录/无 default/无 env)
+# [2026-10-24 task-tplrender S13 级联适配]
+#   原因: task-tplrender 引入脚本侧渲染层（init-session.sh render_template），模板里的
+#     `[Brief Description]` 已被渲染为传入任务名 → 旧断言「首行=旧字面 `# Task Plan: [Brief Description]`」
+#     语义过期（S12 回归 PT-26 FAIL；基线复现确认非既有失败，属新契约行为导致的断言过期）。
+#   原行为: head -1 | grep -q 'Task Plan: \[Brief Description\]'（断言占位符原样保留）。
+#   新断言: 标题行**精确等于** `# Task Plan: pp`（传参任务名）+ 显式断言无 `[Brief Description]`
+#     残留 → 测试意图「标题被正确填充」不放松（旧断言只证占位符在，新断言证填充值正确，更严）。
 (cd "$T6/plain/plans/pp" && env -u TASK_TEMPLATE_DEFAULT bash "$INIT" pp > "$T6/plain/out.log" 2>&1)
+_pt26_title="$(head -1 "$T6/plain/plans/pp/task_plan.md" 2>/dev/null)"
 if [ -f "$T6/plain/plans/pp/task_plan.md" ] \
-   && head -1 "$T6/plain/plans/pp/task_plan.md" | grep -q 'Task Plan: \[Brief Description\]' \
+   && [ "$_pt26_title" = "# Task Plan: pp" ] \
+   && ! printf '%s' "$_pt26_title" | grep -qF '[Brief Description]' \
    && ! grep -q '未显式给 template_type' "$T6/plain/out.log" \
    && ! grep -q '已插入 frontmatter' "$T6/plain/out.log"; then
-  ok 26 "全缺省零影响: 产物=general 首行且无 S6 路由/插入行"
+  ok 26 "全缺省零影响: 产物标题已渲染为任务名(pp)且无占位残留, 无 S6 路由/插入行"
 else
-  bad 26 "全缺省路径行为漂移(出现 S6 路由行或产物非 general)"
+  bad 26 "全缺省路径行为漂移(首行=[${_pt26_title}] 期望='# Task Plan: pp' / 出现 S6 路由行或占位残留)"
 fi
 
 # PT-27 显式指定自造模板 type(无 template_type 行) → 复制 + frontmatter 插入

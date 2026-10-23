@@ -76,10 +76,17 @@ t "SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_
     [ \"\$(grep -c 'TASK_PLANNER_SESSION_LOG_ENFORCE' '$CHECK')\" -ge 1 ] &&
     [ \"\$(grep -cE '零新 config 键|env-only' '$CHECK')\" -ge 1 ]"
 
-# SL-07: init-session.sh 建档（copy_template 专档调用 ≥1 且 '6/6' 校验字面 =1）
-t "SL-07 init-session.sh 'copy_template \"user-session-log.md\"'≥1 ∧ '6/6'=1" bash -c "
+# SL-07: init-session.sh 建档（copy_template 专档调用 ≥1 且 verify 回显语句在位）
+# [2026-10-24 task-tplrender S13 级联适配]
+#   原因: task-tplrender 的渲染接线块注释（init-session.sh L986）含「6/6 verified」字样，
+#     全文 `grep -c '6/6'` 由 1 变 2 → 旧断言语义过期（S12 回归 SL-07 FAIL；基线复现确认
+#     非既有失败，属新注释撞词导致的断言过期，非真实行为回归）。
+#   原行为: [ "$(grep -c '6/6' '$INIT')" -eq 1 ]（全文计数，任何注释/文档撞词即误判）。
+#   新断言: 锚定 echo 语句字面 -F 固定串 'echo "[init] 6/6 planning files verified"' 计数=1
+#     → 测试意图「最终 verify 输出存在」不放松，且免疫注释撞词；仍为 -eq 1（防重复回显）。
+t "SL-07 init-session.sh 'copy_template \"user-session-log.md\"'≥1 ∧ verify 回显语句=1" bash -c "
     [ \"\$(grep -cF 'copy_template \"user-session-log.md\"' '$INIT')\" -ge 1 ] &&
-    [ \"\$(grep -c '6/6' '$INIT')\" -eq 1 ]"
+    [ \"\$(grep -cF 'echo \"[init] 6/6 planning files verified\"' '$INIT')\" -eq 1 ]"
 
 # SL-08（负断言）: task_plan.md 指针区块纯静态 —— 无「当前条目数/最近一条」类可变计数（=0）
 t "SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'=0, 纯静态)" bash -c "
