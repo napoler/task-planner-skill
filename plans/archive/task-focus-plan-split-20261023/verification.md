@@ -107,9 +107,9 @@ Status: `pending` Last verified: —
 <!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
 | 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
 |-----------|----------------------|---------------------|
-| Rule 93 判例 diff | 交付 diff 触面 vs 判例 10 文件清单（模板面豁免已登记） | 终验填 |
-| discipline 段式 | Rule 94 段结构与 88-93 段式对照 | 终验填 |
-| 级联面侦察结论 | 实施触面 vs 侦察清单逐项对照 | 终验填 |
+| Rule 93 判例 diff | 交付 diff 触面 vs 判例 10 文件清单（模板面豁免已登记，CR 后扩至索引表行+注释链） | 符合（触面超判例处均经 CR 闭环并 CA 登记） |
+| discipline 段式 | Rule 94 段结构与 88-93 段式对照（S9 critic 五维复核） | 符合（CR APPROVED 确认） |
+| 级联面侦察结论 | 实施触面 vs 侦察清单逐项对照（CA-1..CA-13 vs 检查点 01 §3/§7） | 符合（侦察未覆盖的索引表行/注释链由 CR 补全） |
 
 ## 委派统计复验（Rule 25.4）
 
@@ -120,33 +120,34 @@ Status: `pending` Last verified: —
 bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/check-delegation.sh stats plans/task-focus-plan-split-20261023
 ```
 
-JSON 输出：
+JSON 输出（修正 Executor 字段后终值）：
 ```json
-{粘贴 stats 命令原文输出}
+{"phases_total":4,"phases_delegated":3,"main_direct_count":1,"delegation_rate":0.75,"main_direct":[{"phase":"4 合并回+收口交付","executor":"主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）"}],"violations":[],"verdict":"ok"}
 ```
+（过程记录：首跑 verdict=violation——Phase 1 Executor 括注含「主进程」token 致机器误分类，S1 侦察实为 general-purpose 派发；按 Rule 25.4 回炉修正字段为事实口径后 rate=0.75 ok）
 
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < 0.7 或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付
+- [x] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单：Phase 4=①git 编排+②簿记）
+- [x] 委派率 0.75 ≥ 0.7 且 stats verdict=ok
 
 ## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
+- [x] Q1-Q6 逐项核查完成:触发 2 项（Q3 完成声称三条件/S8-S16 测试轮次落盘；Q6 委派率），豁免 0 项,未处置 0 项
+- [x] Evidence 抽查 ≥3 条:VC-1 双锚 grep（可复现）/VC-4 账本行（可 Read）/CR 复审独立复算 77（第三方复核）——均可复现
+- [x] 豁免登记:无（0 项）
+- [x] 存在未处置违规 → 无（CR 两轮全部闭环；verdict APPROVED）
 
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```
-## Goal Verification — Rule 94 任务专注性与计划隔离纪律落地
-对照 Verification Contract 逐条复验：
-- VC-1: {evidence} → PASS/FAIL
-- VC-2: {evidence} → PASS/FAIL
-- VC-3: {evidence} → PASS/FAIL
-- VC-4: {evidence} → PASS/FAIL
-- VC-5: {evidence} → PASS/FAIL
-- VC-6: {evidence} → PASS/FAIL
+## Goal Verification — Rule 94 任务专注性与计划隔离纪律落地（master HEAD=cea71e9）
+对照 Verification Contract 逐条复验（主仓 Read 复验 2026-10-23）：
+- VC-1: grep ^### 94=1 + 94.[1-6]=6（critical-rules-discipline.md:605-615） → PASS
+- VC-2: Rules 1-94（SKILL 2/CLAUDE 1/README_zh 2/README 3/ARCH 5）+77 条×2+45 条×3；活跃 1-93 残留=0（ARCH:122=演进史记录行，历史事实链非活跃声称，CR 两轮判定保留） → PASS
+- VC-3: run-selftests.sh --fresh @9021b43 → Total 92 PASS=92 FAIL=0 exit 0（checkpoint 20） → PASS
+- VC-4: plans/.rule-reservations.jsonl "rule":94 = 2 行（reserved+landed） → PASS
+- VC-5: merge commit cea71e9 --no-ff；worktree remove+branch -d 完成；worktree list 仅余主工作树 → PASS
+- VC-6: SKILL.md:174 指针句=1 + 召回卡 L39（Rule 94）=1 → PASS
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: COMPLETE
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

@@ -12,6 +12,7 @@
 ### Phase 1: 需求与调研（级联面侦察+规则定稿）
 - **Status:** complete（2026-10-23；翻转前置：3-File 门跑通、drift-checker 改派判定 ALIGNED、留痕三件套齐——检查点 02-drift-check-p1.md + ledger tick1 + Drift Log 行）
 - **Started:** 2026-10-23 00:00（会话开局）
+- **R 锚定**：本 Phase 服务 R1-R4「Rule 94 专注隔离规范——用户原话落盘、级联面侦察与规则文本定稿」（归档位补登，v168 段首锚）
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
   - 复述用户 /goal 指令→触发 task-planner 技能→init-session.sh 建 7 文件（active 指针已指向本计划）
@@ -19,7 +20,7 @@
   - 派 general-purpose 子代理扫描 Rule 94 级联面（Explore 首派 provider 失败→22.3① 改派）；检查点 subagent-state/01-explore-cascade.md 117 行；结论回填 findings.md §Research Findings 四条
   - 规则 94 六子条文本定稿（草案=派发简报正文，结构对齐 88-93 段式）
   - task_plan.md 全量定稿（R1-R4 逐字锚+R→VC 六映射+CA-1..CA-10 变更标注+S-unit 表）
-  - **[goal:G1]** 证据行：G1 级联面侦察 complete——检查点 01-explore-cascade.md 在位（117 行，1-7 项结论+file:line），findings 回填四条，验收=「检查点含 1-7 项结论」满足
+  - **[goal:G1]** 证据行：G1 级联面侦察 complete——验证命令 `wc -l plans/task-focus-plan-split-20261023/subagent-state/01-explore-cascade.md && grep -c "^## \[" plans/task-focus-plan-split-20261023/subagent-state/01-explore-cascade.md` → 117 行+7 个编号里程碑节 → PASS（产物路径=检查点 01-explore-cascade.md，1-7 项结论+file:line；findings 回填四条）
 - Files created/modified:
   - plans/task-focus-plan-split-20261023/（7 文件初始化+task_plan/findings/progress/user-session-log 回填）
 - Test Results:
@@ -32,6 +33,7 @@
 ### Phase 2: worktree 内实施（规则正文+级联锚+指针接线）
 - **Status:** complete（2026-10-23；翻转前置=3-File 门+drift ALIGNED 留痕三件套+V-N grep 实跑）
 - **Started:** 2026-10-23（Phase 1 翻转后开启）
+- **R 锚定**：本 Phase 服务 R1-R4「Rule 94 正文+召回卡行+全仓级联锚+SKILL 指针句 worktree 实施」（归档位补登，v168 段首锚）
 - Actions taken:
   - attest 全门通过锁定（SHA cee039af…；状态翻转后重锁 SHA 70b9e07f…）；首锚 commit 2d978e0+worktree 建立（wt/task-focus-plan-split-20261023）
   - R 锚定：本 Phase 服务 R1-R4「Rule 94 专注隔离规范落地」
@@ -69,6 +71,7 @@
 ### Phase 3: 回归验证与 Code Review
 - **Status:** complete（2026-10-23；CR APPROVED+终态 92/92 fresh+非阻断 5 项收口+drift ALIGNED 留痕）
 - **Started:** 2026-10-23（Phase 2 翻转后开启）
+- **R 锚定**：本 Phase 服务 R1-R4「Rule 94 回归零验证（selftest fresh 92/92）与 CR 两轮闭环 APPROVED」（归档位补登，v168 段首锚）
 - Actions taken:
   - S8 派 code-runner-agent 全量跑批：92 脚本 91 PASS 1 FAIL——PR-02（rule 94 reserved 无 landed 配对，记账时序）；级联/正文零破裂（run=92 reused=0 缓存前置核对）
   - 裁决：land 94 前置到 worktree（CA-12）——landed 行与规则正文同一 merge 入 master，消除「landed 无正文」窗口；worktree 提交 571ad73
@@ -103,6 +106,29 @@
   | S15 非阻断收口 | 5 处 grep 锚 | 全命中 | 3/3 PASS（9021b43） | PASS |
   | S16 终态 --fresh（9021b43） | run-selftests.sh --fresh | FAIL=0 | 92/92 exit 0 | PASS |
   | Phase 3 drift-check | 提交序列+干净度 | 对齐 | ✅ALIGNED（checkpoint 21） | PASS |
+
+### Phase 4: 合并回+收口交付
+- **Status:** complete（2026-10-23；merged(cea71e9)+worktree 清理+VC 全 PASS+归档完成+知识入库）
+- **Started:** 2026-10-23（Phase 3 翻转后开启）
+- **R 锚定**：本 Phase 服务 R1-R4「Rule 94 合并回 master+全 VC 复验+归档+知识提取+交付」（归档位补登，v168 段首锚）
+- Actions taken:
+  - R 锚定：本 Phase 服务 R1-R4「Rule 94 落地收口」
+  - 簿记提交 7a492a2（Phase 2-3 回填）→ smart-merge-back 首跑 V5 MASTER_AHEAD 中止（master=7a492a2 即本任务簿记提交，非他任务）→ worktree 并入 master（8dc7c87 无冲突）→ 重跑合并 **merged(cea71e9)**，V1-V6 全 PASS
+  - 主仓 Read 复验：VC-1=1/6 ✓、VC-2 级联一致（活跃 1-93 残留=0，唯一 grep 命中=ARCH:122 演进史记录行=历史事实链非活跃声称，CR 两轮判定保留正确）、VC-4 账本=2 行（reserved+landed）✓、VC-6=1/1 ✓
+  - worktree remove+branch -d 清理完成（worktree list 仅余主工作树）→ **[goal:G6]** 证据行：merge commit cea71e9+账本 landed+worktree 清理——G6 翻 complete（归档动作后终验勾核）
+  - 委派统计回炉：机器判 Phase 1 主进程直做（Executor 括注含「主进程」token 误分类——S1 侦察实为 general-purpose 派发）→ 按 Rule 25.4 修正 Executor 字段为事实口径 → **rate=0.75 verdict=ok**
+- Files created/modified:
+  - master：合并 cea71e9（10 文件净变）；worktree/分支已清理
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-1 主仓 grep | ^### 94 / 94.[1-6] | 1 / ≥6 | 1 / 6 | PASS |
+  | VC-2 主仓级联 | Rules 1-94/77 条/45 条/活跃 1-93 | 全命中/残留 0 | 2/2/3；残留 0（演进史行除外，定性见上） | PASS |
+  | VC-4 账本 | grep "rule":94 | reserved+landed ≥2 | 2 | PASS |
+  | VC-5 合并清理 | git log/worktree list | merge commit+清理 | cea71e9+仅余主工作树 | PASS |
+  | VC-6 指针接线 | grep L174/召回卡 | 各 ≥1 | 1/1 | PASS |
+  | 委派统计 | check-delegation stats | ≥0.7 ok | 0.75 ok | PASS |
+- [align] 2026-10-23 终验对齐评判（Rule 73.4 合并回前/收口）：Goal↔R1-R4↔VC 全链复核一致；目标/当前步/产物三字对照=drift ALIGNED×3 留痕（checkpoint 02/09/21）+CR 复审 APPROVED（checkpoint 18）——交付=master cea71e9（Rule 94 六子条+级联+指针句），归档 plans/archive/task-focus-plan-split-20261023，知识=knowledge/entries/rule94-focus-isolation-landing-playbook.md
 
 ## Error Log
 <!-- [task-v072 Rule 31] 加 Root Cause / Prevention 两列（错误学习闭环：先析后修 + 防复现沉淀）

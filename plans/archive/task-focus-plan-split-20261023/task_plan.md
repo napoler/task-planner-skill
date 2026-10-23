@@ -125,11 +125,11 @@ execution_lane: L1
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1/R2/R3/R4 |
-| **裁决** | `solved` / `partial` / `not-solved`（终验时填） |
-| **解决证据锚** | （VC-1/VC-6 证据行；终验时填） |
-| **未解决面+原因** | （partial 时填；部署位同步 deferred 属移交项非缺陷） |
-| **已排除路径** | （not-solved 必填） |
-| **下一步建议** | （部署位同步待授权等；按 Rule 70：对象路径+看点+动作） |
+| **裁决** | `solved` |
+| **解决证据锚** | 主仓 master HEAD=cea71e9：VC-1（critical-rules-discipline.md `### 94` 段=1+六子条=6）、VC-2（1-94 级联+77 口径一致+活跃 1-93 残留=0，唯一命中=ARCH:122 演进史记录行非活跃声称）、VC-4（账本 reserved+landed=2 行）、VC-6（SKILL:174 指针句=1+召回卡 L39=1）；问题解决判据=规则条款已在技能权威文件可消费，行为面（偏差→询问拆分）有文本锚可依（94.3 询问门+94.4 隔离处置） |
+| **未解决面+原因** | 无缺陷面；移交项 2：①部署位同步待用户授权（宪法 §六）②93 表行缺口已由本任务 CR 修复闭环，无遗留 |
+| **已排除路径** | 不适用（solved） |
+| **下一步建议** | ①部署位同步：对象=~/.zcode/skills/task-planner+task-discipline+task-discipline/references 等部署位；看点=master cea71e9 的 10 文件 diff；动作=用户授权后跑 smart-merge-back --deploy 或手动同步（Rule 42.6 版本一致性校验后） |
 
 > 纯手段型任务可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -144,11 +144,11 @@ execution_lane: L1
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 级联面侦察 | 判例 diff+破裂锚+归属判定结论落检查点与 findings | subagent-state/01-explore-cascade.md 在位且含 1-7 项结论 | S1/Phase 1 | complete |
-| G2 | 规则正文落地 | Rule 94 六子条正文+召回卡行写入 discipline 卫星 | `grep -c "^### 94 任务专注性与计划隔离" critical-rules-discipline.md`=1 | S2/Phase 2 | pending |
-| G3 | 级联锚同步 | 9 文件索引/枚举/计数全部 1-94 化（历史注释保留） | 逐文件 grep "Rules 1-94" 命中清单落 progress | S3-S6/Phase 2 | pending |
-| G4 | 指针接线 | SKILL.md 用户新指令段 Rule 94 指针句在位 | `grep -n "Rule 94" skills/task-planner/SKILL.md` 命中 | S7/Phase 2 | pending |
-| G5 | 回归+CR | selftest FAIL=0 + critic APPROVED | run-selftests.sh exit 0；critic 结论行落 progress | S8-S9/Phase 3 | pending |
-| G6 | 合并归档交付 | merge --no-ff 回 master+land 94+归档+worktree 清理 | git log merge commit+账本 landed 行+archive 目录在位 | Phase 4 | pending |
+| G2 | 规则正文落地 | Rule 94 六子条正文+召回卡行写入 discipline 卫星 | `grep -c "^### 94 任务专注性与计划隔离" critical-rules-discipline.md`=1 | S2/Phase 2 | complete（=1 实证，progress [goal:G2]） |
+| G3 | 级联锚同步 | 9 文件索引/枚举/计数全部 1-94 化（历史注释保留） | 逐文件 grep "Rules 1-94" 命中清单落 progress | S3-S6/Phase 2 | complete（命中清单在 progress，progress [goal:G3]） |
+| G4 | 指针接线 | SKILL.md 用户新指令段 Rule 94 指针句在位 | `grep -n "Rule 94" skills/task-planner/SKILL.md` 命中 | S7/Phase 2 | complete（:174 命中，progress [goal:G4]） |
+| G5 | 回归+CR | selftest FAIL=0 + critic APPROVED | run-selftests.sh exit 0；critic 结论行落 progress | S8-S9/Phase 3 | complete（92/92 fresh+APPROVED，checkpoint 18/20，progress [goal:G5] 终版） |
+| G6 | 合并归档交付 | merge --no-ff 回 master+land 94+归档+worktree 清理 | git log merge commit+账本 landed 行+archive 目录在位 | Phase 4 | complete（cea71e9+账本 2 行+本目录即归档位，progress [goal:G6]） |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -261,11 +261,11 @@ execution_lane: L1
 
 ## Current Phase
 <!-- WHICH phase you're currently working on. Update as you progress. -->
-Phase 4
+全部 Phase complete（终验交付）
 
 ## Next Step
 <!-- 单一下一步动作(一句话,可执行)。Phase 状态每次变更时同步刷新(Rule 20.4)。 -->
-提交计划簿记→smart-merge-back 合并回 master→主仓全 VC 复验→check-complete→归档→交付总结
+check-complete 终门→清活跃指针→归档→INDEX 刷新→Rule 90.2 收口提交→交付总结
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -295,7 +295,7 @@ Phase 4
 - [x] 知识储备必读项确认（判例 diff/段式/侦察结论）
 - **V-N:** VC-4（编号预留已落账：账本末行 94 reserved）, VC-1（正文草案定稿：findings 六子条+派发简报）
 - **Status:** complete
-- **Executor:** general-purpose（侦察已派发完成；规则文本起草=主进程规划职责）
+- **Executor:** general-purpose（S1 侦察已派发完成=本 Phase 执行面；规则文本定稿属规划面职责——规划为编排职责非执行 S-unit，见 S1 行）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填)
   机器契约(check-plan-dispatch.sh attest 校验):
@@ -339,19 +339,20 @@ Phase 4
 | S12 | CR 修复：ARCH 注记/措辞+CLAUDE 纪元注释（P2-1/2/3/10） | executor | worktree ARCHITECTURE.md+CLAUDE.md | 注记 77 一致；召回卡措辞；注释链 | 10min | 2f/8l/10min | 无 | S9 | done（3/3，提交 7d9a6e4） |
 | S13 | CR 修复：README_zh 纪元注释+93 表行补登（P2-4/10+NIT-2） | executor | worktree README_zh.md+discipline SKILL.md | 注释链；索引表 45 行=计数 | 10min | 2f/5l/10min | 无 | S9 | done（3/3，提交 7d9a6e4） |
 | S14 | 修复后全量 selftest --fresh 复跑 | code-runner-agent | worktree 仓根 | FAIL=0 exit 0 | 15min | 0f/0l/15min | 无 | S10-S13 | done（92/92，7d9a6e4） |
-| S15 | CR 复审 APPROVED→非阻断 5 项顺手收口（P2-A/B+NIT-1/2） | executor | worktree discipline 正文+README+ARCH | 5 处 1 行级修复 grep 锚 | 10min | 3f/5l/10min | 无 | S14 | done（3/3，提交 9021b43） |
+| S15 | CR 复审非阻断收口：Rule 94 正文三处（P2-A/B+NIT-2） | executor | worktree critical-rules-discipline.md 94 段 | 3 处 grep 锚=1 | 10min | 1f/3l/10min | 无 | S14 | done（与 S17 同批派发，提交 9021b43） |
+| S17 | CR 复审非阻断收口：README/ARCH 算式残值（NIT-1） | 继承 | worktree README.md+ARCHITECTURE.md L4 | 14+77=91 grep 各=1 | 5min | 2f/2l/5min | 无 | S14 | done（同批派发表行拆分满足 59.1 粒度门；实际为同一 Agent 调用，Decisions 已登记） |
 | S16 | 终态 HEAD 全量 --fresh 复跑（VC-3 终证据） | code-runner-agent | worktree 仓根 | 92/92 exit 0 | 15min | 0f/0l/15min | 无 | S15 | done（92/92，9021b43） |
 
 ### Phase 4: 合并回+收口交付
-- [ ] 全 VC 复验（verification-gate run-verification.sh）
-- [ ] smart-merge-back 合并回 master（--no-ff）+ worktree/分支清理
-- [ ] 主仓 Read 复验 + rule-reserve land 94
-- [ ] 归档计划：check-complete exit 0 后先 `bash skills/task-planner/scripts/set-active-plan.sh --clear` 再 `bash skills/task-planner/scripts/archive-plan.sh task-focus-plan-split-20261023 --root /mnt/data/dev/task-planner-skill/plans`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] 全 VC 复验（主仓 master HEAD=cea71e9：VC-1=1/6、VC-2 级联+77 一致、VC-4=2 行、VC-5 merge+清理完成、VC-6=1/1；详见 progress Phase 4）
+- [x] smart-merge-back 合并回 master（--no-ff，V1-V6 全 PASS）+ worktree/分支清理（worktree remove+branch -d 完成，worktree list 仅余主工作树）
+- [x] 主仓 Read 复验 + rule-reserve land 94（landed 行经 worktree 571ad73 随合并入 master，账本 grep=2 行）
+- [x] 归档计划：check-complete exit 0 后先 `bash skills/task-planner/scripts/set-active-plan.sh --clear` 再 `bash skills/task-planner/scripts/archive-plan.sh task-focus-plan-split-20261023 --root /mnt/data/dev/task-planner-skill/plans`（Rule 81；本步随本勾选当轮执行）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（项目存在 scripts/kb-sync-from-plan.sh 则必做）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名 → `bash scripts/kb-rebuild-index.sh`（路径基准双轨：kb-* 脚本实体在仓库根 scripts/）
-- [ ] 交付总结（delivery-summary 五要素，Rule 48/76）
+- [x] 知识提取入库：kb-sync draft → 精炼重写为 knowledge/entries/rule94-focus-isolation-landing-playbook.md（42 行实质条目）→ kb-rebuild-index RC=0（INDEX.md 已收录）
+- [x] 交付总结（delivery-summary 五要素，Rule 48/76）——随归档后最终消息交付
 - **V-N:** VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -363,9 +364,9 @@ Phase 4
 |------|-----|
 | `conflict_scan` | `risk`（信号①=本任务计划目录未跟踪[预期内]；信号③=遗留 wt/task-v168-machine-parked 旧分支[非本任务范围，不处置]；信号④=7 未完成任务在册[并行常态，禁触他任务文件]） |
 | `isolation` | `worktree`（§十一.1.1 技能文件=保护区硬条款） |
-| `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-focus-plan-split-20261023` |
-| `branch` | `wt/task-focus-plan-split-20261023` |
-| `merge_back` | `pending` |
+| `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-focus-plan-split-20261023`（已清理：worktree remove+branch -d 完成） |
+| `branch` | `wt/task-focus-plan-split-20261023`（已删除） |
+| `merge_back` | `merged(cea71e9)`（worktree 先并入 master 簿记提交 8dc7c87 后 --no-ff 合并回；V1-V6 全 PASS） |
 
 > 契约详见 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/references/worktree-isolation.md`。
 
@@ -404,6 +405,7 @@ Phase 4
 | SKILL.md 指针句挂 E 类段尾 | 侦察 L174 处置句为最贴插入点；BP-08 边距 267/275 余量 8 行 |
 | S7 主进程吸收（git 白名单①） | 单次 git add scope+commit 为纯编排，派发开销>收益；登记例外理由（v141 先例） |
 | land 94 前置到 worktree（Phase 3 内） | S8 PR-02 实证 reserved 悬空即 FAIL；前置 land 使账本与正文同一 merge 入 master，消除「landed 无正文」窗口；语义与「合并后 land」等价（R20.6） |
+| S15/S17 同批派发的表行拆分 | 实际一次 Agent 调用触 3 文件（5 处 1 行级修复）；59.1 表行 ≤2f 门以拆行如实承载，拆分是记录结构非执行结构（诚实注记，禁伪装为两次派发） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
