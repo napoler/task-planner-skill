@@ -110,6 +110,9 @@
   | V-5.1=VC-4 | 终验轮 5b（93 套件） | FAIL=0 | 93/93 | PASS |
   | V-5.2=VC-5 | 部署位 scope 文件 diff | 空 | 空（vc5-check-done 无 DRIFT 行） | PASS |
   | V-5.2=VC-6 | jsonl rule:95 | landed | landed（96 亦 landed 代登记） | PASS |
+  | 归档（Rule 81.1） | archive-plan.sh（--clear 全局+sid 指针+gc 后） | ARCHIVED | **REJECT: active-pointer**（第三方会话残留 side 指针 ione30d36…指向本计划+本会话 .session-owner 新鲜<24h 双重守卫） | 按拒绝登记 |
+
+> **归档拒绝登记（Rule 81.3 fail-closed）**：2026-10-24 archive-plan.sh 两次 REJECT（active-pointer）。处置=保持 plans/task-nopause-execfirst-20261023/ 原位（禁强移），Status 全 complete+check-complete exit 0 已达成；**补归档动作**=下个会话（或 24h 后本计划 .session-owner 陈旧+残留指针被 gc/对端清赱）重跑 `bash skills/task-planner/scripts/archive-plan.sh task-nopause-execfirst-20261023 --root plans`+`sync-todos.sh --index`。INDEX.md 已刷新（本计划计 complete）。
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
