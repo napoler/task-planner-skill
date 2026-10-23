@@ -49,6 +49,27 @@
   | V-2.1 | grep -c "Rule 95\|95\.4\|暂停前三问" <worktree discipline> | 各≥1 | Rule95=1 / 95.1=2 / 95.2=1 / 95.4=1 / 前三问=1 | PASS |
   | V-2.2 | CA-1..CA-9 变更标注表 | 每行有精确对象+执行动作 | 9 行冻结（含替代四条件登记） | PASS |
 
+### Phase 3: 执行体修正+纪元级联
+- **Status:** complete（2026-10-23；V-3.1/V-3.2 PASS；worktree commit 0ba3aa6）
+- **Started:** 2026-10-23（Phase 2 翻转后）
+- Actions taken:
+  - S1（general-coder，video）：3 处编辑（L19 成本纪律替代/L58 禁令替代/L43 增量）
+  - S2（general-coder，image）：2 处编辑（L42 增量/WF 第 4 步质检处置自主化）
+  - 主进程亲验：git diff 逐 hunk 对照冻结文本+VC-2/VC-3 grep PASS（不信自报）
+  - S3（SKILL.md 5+CLAUDE.md 1）、S4（skills/task-planner/README.md 5+README_zh.md 2，路径勘误有据自纠）、S5（docs/ARCHITECTURE.md 9+链尾追加 1 行）：逐处 grep 定位+Edit，历史演进链零改动
+  - 主进程补登：CLAUDE.md:33/README_zh.md:136,229 纪元链尾追加（rule94 同型惯例）；README L81 dedup 注释对称补 78
+- Files created/modified（worktree，commit 0ba3aa6，7 文件 26+/25-）：
+  - companion/agents/video-generation-executor.md、image-generation-executor.md；SKILL.md；CLAUDE.md；skills/task-planner/README.md；README_zh.md；docs/ARCHITECTURE.md
+  - 检查点：subagent-state/3a-video.md、3b-image.md、3c-skill-claude.md、3d-readme.md、3e-arch.md
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-3.1=VC-2 | grep 负锚+执行即探测（video） | 负锚=0 且正锚≥1 | 负锚=0，执行即探测=2 | PASS |
+  | V-3.1=VC-3 | 处置自主+推给用户（image） | 两锚命中 | 双命中 | PASS |
+  | V-3.2 | 5 文档 live "1-94" 残留 | 仅历史链 | 仅 ARCH L123/L124 演进链 2 行（合法） | PASS |
+  | 范围对账 | git diff --stat | 恰 7 文件 | 7 文件 26+/25- 与 CA-2..CA-8 一致 | PASS |
+- [recall] 2026-10-23 读召回卡（../task-discipline/references/execution-recall-card.md Rule 93 节奏）：一行结论=无偏差，继续按冻结 CA 表推进
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

@@ -330,11 +330,11 @@ Phase 1
 - **Executor:** 主进程（例外理由：用户投诉原文仅存于本会话上下文，规则文本为宪法级敏感措辞，转译派发必然失真——语义保真；白名单外理由登记，终验委派率表复核）
 
 ### Phase 3: Implementation（执行体修正+纪元级联）
-- [ ] 按冻结 diff 改写两执行体
-- [ ] 纪元锚行级联（Phase 1 冻结清单，仅 1-94→1-95 口径行）
-- [ ] 规范召回（Rule 93）：Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
+- [x] 按冻结 diff 改写两执行体（S1/S2 完成，主进程亲验 diff+grep）
+- [x] 文档纪元级联（S3/S4/S5：SKILL5+CLAUDE1+README5+README_zh2+ARCH9+链尾补登；commit 0ba3aa6）
+- [x] 规范召回（Rule 93）：Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
 - **V-N:** VC-2, VC-3（执行体锚）；VC-4（级联后套件可跑）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** general-coder（sonnet-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |

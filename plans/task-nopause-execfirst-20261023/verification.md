@@ -84,7 +84,7 @@ Status: `complete` Last verified: 2026-10-23（V-2.1 grep 锚全中 PASS；V-2.2
 - [ ] V-3.1: VC-2/VC-3 grep 命令在 worktree 内执行通过（命令于 Phase 2 定稿后冻结在此行）
 - [ ] V-3.2: `grep -rn "1-94" <worktree>/scripts/*.sh | grep -v "历史\|1-940\|1-94[0-9]"` 仅余登记豁免行（→ VC-4 输入）
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-10-23（V-3.1 VC-2/VC-3 grep PASS；V-3.2 live 残留=0 仅历史链；worktree commit 0ba3aa6）
 
 ---
 
