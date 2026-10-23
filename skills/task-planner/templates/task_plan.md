@@ -324,6 +324,7 @@ Phase 1
   - 粒度三值列 Nf/Nl/Nmin 格式逐行校验,任一超 step_max_files/step_max_lines/step_max_minutes → enforce 拒锁
   - 伴飞技能列非「无」→ 校验对应 SKILL.md 路径存在(Rule 59.2)
   - Rule 68.1 前置依赖列必填,无依赖填 -（多依赖顿号分隔）
+  - Rule 96.3 并行硬标注:前置依赖为 - 且独立性四问全 no 的 S-unit ≥2 个 → 必须声明并行组（frontmatter parallel_groups: 组名 + 行内注解 [parallel-group:<组名>];未声明且未按 Rule 68.2 登记全串行论证=计划缺陷,回炉补分析再 attest）
 -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
@@ -491,6 +492,9 @@ Phase 1
 | 子代理执行 Phase 数 / 总 Phase 数 |  /  |
 | 主进程直做 Phase 清单 | （含例外理由） |
 | 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+| 激活子代理数（Rule 96.5） | （Agent() 派发总次数） |
+| 最大并行宽度（Rule 96.5） | （并行组数 / 最宽组宽,如 2 组 / 最宽 3） |
+| 串行化例外理由（Rule 96.4） | （逐组一句话;无则写 none） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
