@@ -10,6 +10,7 @@
 <!-- 本会话日期,如 2026-09-05 -->
 
 ### Phase 1: 契约定稿与隔离建起
+- **R 锚定**：本 Phase 服务 R1「机械占位不再依赖模型自主修正」——契约三清单（脚本渲染面/语义保留面边界）是全部后续动作的甄别依据
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** complete
 - **[goal:G1] 完成证据**：三文件回填门 exit 0（plan 簿记收口轮实测留痕于 progress Phase 1 段）+findings.md §Research S1 段三清单（6 变量+8 映射+语义边界）+init 实弹 evidence/VC-1.out PASS+commit a39398a
@@ -32,6 +33,7 @@
   | V-1.2 worktree | git worktree list | task-tplrender 在位 | /mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024 @ c722261 | PASS |
 
 ### Phase 2: 渲染层实现
+- **R 锚定**：本 Phase 服务 R2「脚本阶段直接生成替换」+R3「变量传参直接适配产出」——render_template 落地即 R2/R3 的手段实现
 - **Status:** complete
 - **[goal:G2] 完成证据**：init 渲染实弹 evidence/VC-1.out（八形态计数=0）+evidence/VC-2.out（四类真实值命中）+evidence/VC-4.out（fail-closed 报 token）全 PASS，run-verification 统一入口 exit 0
 - **Started:** 2026-10-24 05:0x
@@ -52,6 +54,7 @@
   | worktree commit | 9 文件 | commit 干净 | b983b3b（+227/-22） | PASS |
 
 ### Phase 3: 模板 token 化
+- **R 锚定**：本 Phase 服务 R2「模板可用传参定义方式改进」+R4「减少无谓路径检索」——机械占位 token 化后由脚本展开为真实值
 - **[recall] 2026-10-24 Rule 93 规范召回**：10 个 S-unit 完成节点主进程亲读 execution-recall-card.md；对照发现 Phase 2/3 翻转前 V-N 未逐条实跑（S4 实弹为等价覆盖）→ 主进程亲手补跑 V-2.1/V-2.2/V-3.1/V-3.2 全 PASS（init rc=0；VC-1 裸计 7 全为契约注释行=豁免口径 0；VC-2 3/2/1 命中；语义 2+1 保留；模板侧 3 残留文件=射程外非核心模板由兼容映射兜底）；已勾 verification.md 6 项
 - **[goal:G3] 完成证据**：模板 token 化后语义占位保留 evidence/VC-3.out PASS（用户原话/按需增行计数≥1）+主进程 V-3.1/V-3.2 补跑 PASS（verification.md Phase 3 勾选记录）+commit b983b3b
 - **Status:** complete
@@ -70,6 +73,7 @@
   | 主进程 diff 抽查 | git diff --numstat | 与单元报告一致 | 9 文件 227/22 一致 | PASS |
 
 ### Phase 4: SKILL.md 指示面更新
+- **R 锚定**：本 Phase 服务 R3「脚本传参直接适配」的指示面落刀——机械占位禁模型手工修正写入 SKILL 契约
 - **Status:** complete
 - **[goal:G4] 完成证据**：渲染契约指示面 evidence/VC-6.out PASS（初始化段 :41 命中）+commit dc426c1+部署位同态
 - **Started:** 2026-10-24 05:4x
@@ -85,6 +89,7 @@
   | V-4.2 scope | 行数变化 | ≤+6/-3 | +3/-2 | PASS |
 
 ### Phase 5: 回归终验与合并部署
+- **R 锚定**：本 Phase 服务 R5「脚本传参最稳定准确高效」——全量回归+独立终验+部署同步兑现确定性收益
 - **Status:** complete
 - **[goal:G5] 完成证据**：全量 selftest 套件 93/93 exit 0 evidence/VC-5.out PASS+部署位 11 文件 diff=0 evidence/VC-7.out PASS+merge commit+worktree/分支零残留（S14 检查点 subagent-state/14-final-verify.md）
 - **Started:** 2026-10-24 05:5x
