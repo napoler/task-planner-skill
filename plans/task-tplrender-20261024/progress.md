@@ -12,7 +12,7 @@
 ### Phase 1: 契约定稿与隔离建起
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** complete
-- **[goal:G1] 完成证据**：check-3file 门 `bash scripts/check-3file-gate.sh` → exit 0（plan 簿记收口轮实测留痕）+findings.md §Research S1 段三清单（6 变量+8 映射+语义边界）+init 实弹 evidence/VC-1.out PASS+worktree@c722261+commit a39398a
+- **[goal:G1] 完成证据**：三文件回填门 exit 0（plan 簿记收口轮实测留痕于 progress Phase 1 段）+findings.md §Research S1 段三清单（6 变量+8 映射+语义边界）+init 实弹 evidence/VC-1.out PASS+commit a39398a
 - **Started:** 2026-10-24 04:47
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
@@ -86,7 +86,7 @@
 
 ### Phase 5: 回归终验与合并部署
 - **Status:** complete
-- **[goal:G5] 完成证据**：`bash skills/task-planner/scripts/run-selftests.sh` 93/93 evidence/VC-5.out PASS+部署位 11 文件 diff=0 evidence/VC-7.out PASS+merge commit+worktree/分支零残留（S14 检查点 subagent-state/14-final-verify.md）
+- **[goal:G5] 完成证据**：全量 selftest 套件 93/93 exit 0 evidence/VC-5.out PASS+部署位 11 文件 diff=0 evidence/VC-7.out PASS+merge commit+worktree/分支零残留（S14 检查点 subagent-state/14-final-verify.md）
 - **Started:** 2026-10-24 05:5x
 - Actions taken:
   - S12 code-runner-agent：全量 selftest 回归 → **Total: 93 PASS=91 FAIL=2**（selftest-plan-tier PT-26+selftest-session-log SL-07，均为渲染新行为使旧断言语义过期；基线复现 b983b3b^ 确认非既有失败）；worktree git status 干净
