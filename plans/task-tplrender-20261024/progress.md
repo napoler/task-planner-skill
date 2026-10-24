@@ -115,17 +115,6 @@
   | S13b 回炉 | 重复 init BLOCKER 复验 | 既有条目零触碰+rc=0 | sha 不变+逐字保留+rc=0 | PASS |
   | S13b 全量 | selftest | 93/93 | 93/93（SL-12 新增） | PASS |
 
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
-- Actions taken:
-  -
-- Files created/modified:
-  -
-- Test Results:
-  -
-
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
