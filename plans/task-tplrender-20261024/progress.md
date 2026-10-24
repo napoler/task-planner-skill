@@ -12,7 +12,7 @@
 ### Phase 1: 契约定稿与隔离建起
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** complete
-- **[goal:G1] 完成证据**：`bash skills/task-planner/scripts/check-3file-gate.sh plans/task-tplrender-20261024` → exit 0；findings.md §Research S1 段三清单（6 变量+8 映射+语义边界）+worktree@c722261+基线 93/93+commit a39398a
+- **[goal:G1] 完成证据**：`bash skills/task-planner/scripts/check-3file-gate.sh <plan-dir>` → exit 0 落盘 evidence/3file-gate.txt；findings.md §Research S1 段三清单（6 变量+8 映射+语义边界）+worktree@c722261+基线 93/93+commit a39398a
 - **Started:** 2026-10-24 04:47
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
@@ -33,7 +33,7 @@
 
 ### Phase 2: 渲染层实现
 - **Status:** complete
-- **[goal:G2] 完成证据**：`bash <worktree>/scripts/init-session.sh "VC测试任务"` → exit 0，产物 `grep -rE "\{\{[A-Z_]+\}\}|\[Brief Description\]|\{task-id\}|<task-id>|" . | wc -l` = 0、四值 3/2/1/1/2 命中、正文注入 {{UNDEFINED_VAR_XYZ}} 重跑 exit 1（S4 检查点 04-compat-wiring.md 六项实弹全 PASS）
+- **[goal:G2] 完成证据**：init 实弹 `bash <worktree>/scripts/init-session.sh "VC测试任务"` → exit 0，产物八形态计数=0、四类真实值 3/2/1/1/2 命中、正文注入 {{UNDEFINED_VAR_XYZ}} 重跑 exit 1——S4 六项实弹全 PASS（检查点 subagent-state/04-compat-wiring.md；主仓复跑落盘 evidence/vc-final.txt）
 - **Started:** 2026-10-24 05:0x
 - Actions taken:
   - S3 general-coder：render_template 函数主体（+103/-0 零既有行改动；6 变量 sed 序列+转义助手+变量表头注释）——主进程复核 diff/语句/语法三过
@@ -53,7 +53,7 @@
 
 ### Phase 3: 模板 token 化
 - **[recall] 2026-10-24 Rule 93 规范召回**：10 个 S-unit 完成节点主进程亲读 execution-recall-card.md；对照发现 Phase 2/3 翻转前 V-N 未逐条实跑（S4 实弹为等价覆盖）→ 主进程亲手补跑 V-2.1/V-2.2/V-3.1/V-3.2 全 PASS（init rc=0；VC-1 裸计 7 全为契约注释行=豁免口径 0；VC-2 3/2/1 命中；语义 2+1 保留；模板侧 3 残留文件=射程外非核心模板由兼容映射兜底）；已勾 verification.md 6 项
-- **[goal:G3] 完成证据**：`grep -lE "\{task-id\}|<task-id>|\[DATE\]|\[Brief Description\]" skills/task-planner/templates/*.md | wc -l`（worktree 口径，射程外非核心模板除外）核心 7+项目级=0 残留、`grep -c "<用户原话" templates/task_plan.md` 改前后一致=2（V-3.1/V-3.2 主进程补跑 PASS；commit b983b3b）
+- **[goal:G3] 完成证据**：模板 token 化后核心 7+项目级 8 文件旧机械形态 grep=0、语义占位保留（`grep -c "<用户原话" templates/task_plan.md` 改前后一致=2）——V-3.1/V-3.2 主进程补跑 PASS（progress Phase 3 段+verification.md 勾选记录；commit b983b3b）
 - **Status:** complete
 - **Started:** 2026-10-24 05:1x
 - Actions taken:
@@ -71,7 +71,7 @@
 
 ### Phase 4: SKILL.md 指示面更新
 - **Status:** complete
-- **[goal:G4] 完成证据**：`grep -n "渲染层" skills/task-planner/SKILL.md` → 命中 :41（V-4.1 PASS；commit dc426c1）
+- **[goal:G4] 完成证据**：`grep -n "渲染层" skills/task-planner/SKILL.md` → 命中 :41（V-4.1 PASS；commit dc426c1；deploy 位同步后同态）
 - **Started:** 2026-10-24 05:4x
 - Actions taken:
   - S11 Code Assistant：SKILL.md 初始化段命令形态带任务名参数+:41 渲染契约要点+:234 I/O 契约示例同步（+3/-2）——主进程 Read diff 复核过
@@ -86,7 +86,7 @@
 
 ### Phase 5: 回归终验与合并部署
 - **Status:** complete
-- **[goal:G5] 完成证据**：`bash skills/task-planner/scripts/run-selftests.sh | tail -1` → Total: 93 PASS=93 FAIL=0（exit 0）+S14 全 VC PASS+merge commit（git log --grep tplrender）+部署位 11 文件 diff=0+worktree/分支零残留
+- **[goal:G5] 完成证据**：`bash skills/task-planner/scripts/run-selftests.sh` → Total: 93 PASS=93 FAIL=0 exit 0 落盘 evidence/selftest-final.txt；+S14 全 VC PASS+merge commit+部署位 11 文件 diff=0+worktree/分支零残留（S14 检查点 subagent-state/14-final-verify.md）
 - **Started:** 2026-10-24 05:5x
 - Actions taken:
   - S12 code-runner-agent：全量 selftest 回归 → **Total: 93 PASS=91 FAIL=2**（selftest-plan-tier PT-26+selftest-session-log SL-07，均为渲染新行为使旧断言语义过期；基线复现 b983b3b^ 确认非既有失败）；worktree git status 干净
