@@ -447,6 +447,7 @@ Phase 4
 | silent: 渲染时机=init 内 copy_template 之后 attest 之前 | attest 锁定计划 SHA 前完成替换无冲突（调查⑥）；产物即开即用 |
 | silent: 不新增 Rule 编号、不新增守护脚本 | 机械层改造由既有 Rule 34/37 模板域管辖；渲染残留校验为脚本内建行为非守护；守卫机器化 opt-in（宪法 §四.6） |
 | silent: 27 处 ${TASK_PLANNER_ROOT:-…} markdown 死串顺带修复（展开为真实路径） | 属"减少路径检索"诉求直接命中面；永不展开=既存 bug（调查②③） |
+| silent: [纠正#1 2026-10-24 收口轮] VC-4 注入路径改项目级模板副本（BLOCKER-1 修复后重复 init 零新建=CR 复审确认设计语义，验收改走首次 init 真实渲染路径）| VC 判定标准语义不变（注入未定义 token → fail-closed）；VC 命令改主仓自包含形态+run-verification 7/7 PASS；goal 证据行改锚 evidence/VC-N.out 契约证据 |
 | 自动裁决: D1 计划确认按 Rule 44.3+Rule 95 执行优先推进（超时 5min，默认项=按本计划执行） | autonomous 会话用户不在场；Rule 95（2026-10-23 用户裁决）禁零报错停等；被覆盖选项=无限等待 yes |
 
 ## Errors Encountered
