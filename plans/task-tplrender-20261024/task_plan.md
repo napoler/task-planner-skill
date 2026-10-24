@@ -81,7 +81,7 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参 + 兼容形态映射 + �
 | `code_review` | `required`（shell 脚本+模板代码修改类，模板画像代码组默认） |
 | `session_id` | `sessiond427dc55b7e372b7367ad55488895e13` |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024` |
-| `scope_files` | `skills/task-planner/scripts/init-session.sh`; `skills/task-planner/templates/{task_plan,user-session-log,progress,findings,verification,knowledge-brief,notepad-learnings}.md`; `.zcode/plan-templates/knowledge-brief.md`; `skills/task-planner/SKILL.md`; 级联受影响 selftest（Phase 5 实测后定） |
+| `scope_files` | `skills/task-planner/scripts/init-session.sh`; `skills/task-planner/templates/task_plan.md`、`skills/task-planner/templates/user-session-log.md`、`skills/task-planner/templates/notepad-learnings.md`、`skills/task-planner/templates/progress.md`、`skills/task-planner/templates/findings.md`、`skills/task-planner/templates/verification.md`、`skills/task-planner/templates/knowledge-brief.md`; `.zcode/plan-templates/knowledge-brief.md`; `skills/task-planner/SKILL.md`; `skills/task-planner/scripts/selftest-plan-tier.sh`、`skills/task-planner/scripts/selftest-session-log.sh`（Phase 5 实测级联） |
 | `interaction_mode` | `silent`（autonomous 会话 + Rule 95 执行优先；静默决策清单随交付呈报） |
 | `对齐审查` | 终验前跑 alignment-review（标准收尾流程） |
 | `自动超时默认项` | 本计划唯一询问点=D1 计划确认：默认项=按本计划执行；超时 5min（Rule 44.1）；autonomous 会话按 44.3+Rule 95 登记「自动裁决记录」后推进 |
@@ -164,7 +164,7 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参 + 兼容形态映射 + �
 | 类别 | 允许的文件 | 禁止 |
 |-------|------------|------|
 | 脚本 | `skills/task-planner/scripts/init-session.sh` | 其他 scripts/*.sh（selftest 级联修复除外，Phase 5 实测定） |
-| 模板 | `skills/task-planner/templates/{task_plan,user-session-log,progress,findings,verification,knowledge-brief,notepad-learnings}.md` | `templates/variant/*.md` 29 文件零文本迁移（渲染层兼容映射覆盖）；`templates/{delivery-summary,session-handoff,subagent_dispatch,shared-tracker,batch_report,deprecated}.md` 不动 |
+| 模板 | `skills/task-planner/templates/task_plan.md`、`skills/task-planner/templates/user-session-log.md`、`skills/task-planner/templates/notepad-learnings.md`、`skills/task-planner/templates/progress.md`、`skills/task-planner/templates/findings.md`、`skills/task-planner/templates/verification.md`、`skills/task-planner/templates/knowledge-brief.md` | `templates/variant/*.md` 29 文件零文本迁移（渲染层兼容映射覆盖）；`templates/{delivery-summary,session-handoff,subagent_dispatch,shared-tracker,batch_report,deprecated}.md` 不动 |
 | 配置 | `.zcode/plan-templates/knowledge-brief.md`（项目级双轨对齐） | 其他 .zcode/ 配置 |
 | 文档 | `skills/task-planner/SKILL.md`（初始化段+I/O 契约段） | 其他文档 |
 | plans/ | 本计划目录 `plans/task-tplrender-20261024/**` | 其他计划目录 |

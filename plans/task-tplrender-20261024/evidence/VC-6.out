@@ -1,0 +1,4 @@
+# [run-verification] VC-6 | 2026-10-24T03:37:32Z | cmd: `L=$(grep -m1 -n "渲染层" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md | cut -d: -f1) && test "$L" -lt 60`
+# ---- stdout/stderr ----
+
+# exit=0

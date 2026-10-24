@@ -1,0 +1,4 @@
+# [run-verification] VC-1 | 2026-10-24T03:37:28Z | cmd: `T=/tmp/tplrender-v1-$$; mkdir -p $T/plans/task-v1test && cd $T/plans/task-v1test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC测试任务" >/dev/null 2>&1 && test "$(grep -rE '\{\{[A-Z_]+\}\}|\[Brief Description\]|\{task-id\}|<task-id>|\{task-name\}|\[DATE\]|\[YYYY-MM-DD|\$\{TASK_PLANNER_ROOT:-' . | grep -v '<!--' | wc -l)" -eq 0`
+# ---- stdout/stderr ----
+
+# exit=0

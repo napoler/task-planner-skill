@@ -1,0 +1,4 @@
+# [run-verification] VC-5 | 2026-10-24T03:37:31Z | cmd: `cd /mnt/data/dev/task-planner-skill && bash skills/task-planner/scripts/run-selftests.sh 2>&1 | tail -1 | grep -q "Total: 93 PASS=93 FAIL=0"`
+# ---- stdout/stderr ----
+
+# exit=0

@@ -1,0 +1,4 @@
+# [run-verification] VC-3 | 2026-10-24T03:37:29Z | cmd: `T=/tmp/tplrender-v3-$$; mkdir -p $T/plans/task-v3test && cd $T/plans/task-v3test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC3语义测试" >/dev/null 2>&1 && A=$(grep -rc '<用户原话' --include='*.md' . | awk -F: '{s+=$2} END{print s}') && B=$(grep -rc '<按需增行>' --include='*.md' . | awk -F: '{s+=$2} END{print s}') && test "$A" -ge 1 && test "$B" -ge 1`
+# ---- stdout/stderr ----
+
+# exit=0

@@ -1,0 +1,4 @@
+# [run-verification] VC-2 | 2026-10-24T03:37:29Z | cmd: `T=/tmp/tplrender-v2-$$; mkdir -p $T/plans/task-v2test && cd $T/plans/task-v2test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC2值测试" >/dev/null 2>&1 && n1=$(grep -rl task-v2test --include='*.md' . | wc -l) && n2=$(grep -rl "VC2值测试" . | wc -l) && n3=$(grep -rl "$(date +%Y-%m-%d)" --include='*.md' | wc -l) && n4=$(grep -rl "skills/task-planner" --include='*.md' | wc -l) && test "$n1" -ge 1 && test "$n2" -ge 1 && test "$n3" -ge 1 && test "$n4" -ge 1`
+# ---- stdout/stderr ----
+
+# exit=0

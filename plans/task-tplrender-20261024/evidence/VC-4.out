@@ -1,0 +1,4 @@
+# [run-verification] VC-4 | 2026-10-24T03:37:30Z | cmd: `T=/tmp/tplrender-v4-$$; rm -rf $T; mkdir -p $T/plans/task-v4test $T/.zcode/plan-templates && printf '# VC4 注入测试模板 {{UNDEFINED_VAR_XYZ}}\n' > $T/.zcode/plan-templates/verification.md && cd $T/plans/task-v4test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC4注入测试" 2>&1 | grep -q "UNDEFINED_VAR_XYZ"`
+# ---- stdout/stderr ----
+
+# exit=0

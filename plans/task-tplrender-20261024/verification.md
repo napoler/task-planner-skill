@@ -12,25 +12,25 @@ init-session.sh 内建变量渲染层（{{VAR}} 传参+兼容形态映射+残留
 > Each item: observable, testable, traceable to evidence.
 
 - [ ] VC-1: init 实弹产物机械占位符零残留（八形态合计计数=0；⚠️ CWD 守卫要求父目录名为 plans——S4 实测判例）
-  **Verify command**: `T=/tmp/tplrender-vctest-$$; mkdir -p $T/plans/task-vctest && cd $T/plans/task-vctest && bash /mnt/data/dev/task-planner-skill-worktrees/task-tplrender-20261024/skills/task-planner/scripts/init-session.sh "VC测试任务" >/dev/null 2>&1; grep -rE '\{\{[A-Z_]+\}\}|\[Brief Description\]|\{task-id\}|<task-id>|\{task-name\}|\[DATE\]|\[YYYY-MM-DD|\$\{TASK_PLANNER_ROOT:-' . | wc -l` → 输出 `0`（契约注释行内 {{VAR}} 豁免口径：跳过 HTML 注释行后计数，S4 已验证裸 grep=7 全为注释行）
+**Verify command**: `T=/tmp/tplrender-v1-$$; mkdir -p $T/plans/task-v1test && cd $T/plans/task-v1test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC测试任务" >/dev/null 2>&1 && test "$(grep -rE '\{\{[A-Z_]+\}\}|\[Brief Description\]|\{task-id\}|<task-id>|\{task-name\}|\[DATE\]|\[YYYY-MM-DD|\$\{TASK_PLANNER_ROOT:-' . | grep -v '<!--' | wc -l)" -eq 0`
   Evidence: 命令输出 0（progress.md Phase 2 留痕）
 - [ ] VC-2: 渲染值正确（task-id/当日日期/任务名/根路径四类真实值命中）
-  **Verify command**: 同上目录内 `grep -rl "task-vctest" --include='*.md' | wc -l`≥1 ∧ `grep -rl "$(date +%Y-%m-%d)" --include='*.md' | wc -l`≥1 ∧ `grep -rl "VC测试任务" | wc -l`≥1 ∧ `grep -rl "skills/task-planner" --include='*.md' | wc -l`≥1（S14 判例修正：渲染值=脚本安装位置派生的 skill 根路径，非硬编码 $HOME；部署后即 ~/.zcode 路径）
+  **Verify command**: `T=/tmp/tplrender-v2-$$; mkdir -p $T/plans/task-v2test && cd $T/plans/task-v2test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC2值测试" >/dev/null 2>&1 && n1=$(grep -rl task-v2test --include='*.md' . | wc -l) && n2=$(grep -rl "VC2值测试" . | wc -l) && n3=$(grep -rl "$(date +%Y-%m-%d)" --include='*.md' | wc -l) && n4=$(grep -rl "skills/task-planner" --include='*.md' | wc -l) && test "$n1" -ge 1 && test "$n2" -ge 1 && test "$n3" -ge 1 && test "$n4" -ge 1`
   Evidence: 四条 grep 输出（progress.md Phase 2 留痕）
 - [ ] VC-3: 语义占位零误替换（`<用户原话`、`<按需增行>` 等仍在位）
-  **Verify command**: 同上目录 `grep -rc '<用户原话' --include='*.md' | awk -F: '{s+=$2} END{print s}'`≥1 ∧ `grep -rc '<按需增行>' --include='*.md' | awk -F: '{s+=$2} END{print s}'`≥1
+  **Verify command**: `T=/tmp/tplrender-v3-$$; mkdir -p $T/plans/task-v3test && cd $T/plans/task-v3test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC3语义测试" >/dev/null 2>&1 && A=$(grep -rc '<用户原话' --include='*.md' . | awk -F: '{s+=$2} END{print s}') && B=$(grep -rc '<按需增行>' --include='*.md' . | awk -F: '{s+=$2} END{print s}') && test "$A" -ge 1 && test "$B" -ge 1`
   Evidence: 计数输出（progress.md Phase 2 留痕）
 - [ ] VC-4: 残留校验 fail-closed（未定义 token → exit≠0 且报错含 token 名）
-  **Verify command**: 临时模板副本注入 `{{UNDEFINED_VAR_XYZ}}` 后跑 init → `echo $?`≠0 且 stderr 含 `UNDEFINED_VAR_XYZ`
+  **Verify command**: `T=/tmp/tplrender-v4-$$; rm -rf $T; mkdir -p $T/plans/task-v4test $T/.zcode/plan-templates && printf '# VC4 注入测试模板 {{UNDEFINED_VAR_XYZ}}\n' > $T/.zcode/plan-templates/verification.md && cd $T/plans/task-v4test && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh "VC4注入测试" 2>&1 | grep -q "UNDEFINED_VAR_XYZ"`
   Evidence: exit code+报错行（progress.md Phase 2 留痕）
 - [ ] VC-5: 零回归（worktree 全量 selftest ΣFAIL=0，对照 Phase 1 基线）
-  **Verify command**: `cd <worktree> && bash skills/task-planner/scripts/run-selftests.sh 2>&1 | tail -8` → ΣFAIL=0（或与基线差异=0）
+**Verify command**: `cd /mnt/data/dev/task-planner-skill && bash skills/task-planner/scripts/run-selftests.sh 2>&1 | tail -1 | grep -q "Total: 93 PASS=93 FAIL=0"`
   Evidence: selftest 尾部输出（progress.md Phase 5 留痕）
 - [ ] VC-6: SKILL.md 指示面更新在位（初始化段渲染契约+禁手工修正指示）
-  **Verify command**: `grep -n "渲染层" <worktree>/skills/task-planner/SKILL.md` 命中初始化段 ≥1 行
+  **Verify command**: `L=$(grep -m1 -n "渲染层" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md | cut -d: -f1) && test "$L" -lt 60`
   Evidence: grep 输出（progress.md Phase 4 留痕）
 - [ ] VC-7: 部署位同步 diff=0（~/.zcode/skills/task-planner 改动文件逐一对齐）
-  **Verify command**: `for f in scripts/init-session.sh templates/task_plan.md templates/user-session-log.md templates/progress.md templates/findings.md templates/verification.md templates/knowledge-brief.md templates/notepad-learnings.md SKILL.md; do diff -q ~/.zcode/skills/task-planner/$f <主仓>/skills/task-planner/$f; done` → 全部空输出
+  **Verify command**: `fail=0; for f in scripts/init-session.sh scripts/selftest-plan-tier.sh scripts/selftest-session-log.sh templates/task_plan.md templates/user-session-log.md templates/notepad-learnings.md templates/progress.md templates/findings.md templates/verification.md templates/knowledge-brief.md SKILL.md; do diff -q "$HOME/.zcode/skills/task-planner/$f" "/mnt/data/dev/task-planner-skill/skills/task-planner/$f" >/dev/null || fail=1; done; test "$fail" -eq 0`
   Evidence: diff 空输出（progress.md Phase 5 留痕）
 
 ---

@@ -1,0 +1,4 @@
+# [run-verification] VC-7 | 2026-10-24T03:37:32Z | cmd: `fail=0; for f in scripts/init-session.sh scripts/selftest-plan-tier.sh scripts/selftest-session-log.sh templates/task_plan.md templates/user-session-log.md templates/notepad-learnings.md templates/progress.md templates/findings.md templates/verification.md templates/knowledge-brief.md SKILL.md; do diff -q "$HOME/.zcode/skills/task-planner/$f" "/mnt/data/dev/task-planner-skill/skills/task-planner/$f" >/dev/null || fail=1; done; test "$fail" -eq 0`
+# ---- stdout/stderr ----
+
+# exit=0
