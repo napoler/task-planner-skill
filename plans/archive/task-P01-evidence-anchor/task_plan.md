@@ -1,4 +1,7 @@
 # Task Plan: [Brief Description]
+
+> ⚠️ **SUPERSEDED / 封存（2026-10-26 用户授权「2,好的」）**：本计划（P-01 证据锚）从未执行（0/5 模板态，2026-10-16 创建）；P-01 已由 `plans/verification-upgrade-2026-10-16/` 工作流落地（3 项机械改进之一）——**活证据**=check-complete.sh `[evidence-anchor]` 门在位且 2026-10-26 实测通过（task-skill-audit-fix-20261026 终验输出「证据锚全过」）。处置=原样封存移入 archive/（Phases 保持模板原状作历史留档，**非完成声称**；archive 守卫「Status 未全 complete」拒绝路径因用户显式授权封存而按用户裁决处置，deviation 如实登记）。
+
 <!-- ===== frontmatter 头（Rule 16 选模板 + Rule 34.1 门控 + Rule 38.7 执行通道分级）=====
   选定 variant 后 template_type 填所选类型名（白名单=${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
   plan_tier ∈ {standard, mini}（Rule 38.1，mini 四条件机器判定）；execution_lane ∈ {L0, L1, L2}（Rule 38.7，缺省 L1；L0 禁滥用见 38.7 末段）

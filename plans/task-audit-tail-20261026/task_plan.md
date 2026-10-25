@@ -1,6 +1,7 @@
-# Task Plan: [Brief Description]
+# Task Plan: audit 收尾处置批（v190 删除/P01 封存/selftest 素材纠正）
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} token 由 init-session.sh render_template() 脚本渲染（task-id/任务名/日期/路径）；尖括号中文占位=模型填写面，脚本禁碰 -->
 <!-- ===== frontmatter 头（Rule 16 选模板 + Rule 34.1 门控 + Rule 38.7 执行通道分级）=====
-  选定 variant 后 template_type 填所选类型名（白名单=${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
+  选定 variant 后 template_type 填所选类型名（白名单=/home/terry/.zcode/skills/task-planner/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
   plan_tier ∈ {standard, mini}（Rule 38.1，mini 四条件机器判定）；execution_lane ∈ {L0, L1, L2}（Rule 38.7，缺省 L1；L0 禁滥用见 38.7 末段）
   check-template-type.sh 三形态之一：行首 `^template_type:`（本块）/ 表格行 / HTML 注释；本块用行首形态 -->
 template_type: general
@@ -16,23 +17,19 @@ execution_lane: L1
 <!-- 2026-10-05 task-v131：Rule 51.1 计划侧载体（审计 H-3 清账）。R 行=用户原话逐条编号抄录；映射=每条核心需求 ≥1 VC；缺区块或缺映射=计划无效先回炉（51.1/51.2） -->
 <!-- 2026-10-07 task-v143：Rule 58.4 手段/目标二分——每条 R 行末尾标注 [手段] 或 [目标]；[目标] 行必须映射 ≥1 条「问题解决判据」VC（核心问题的可观察解决证据，非手段产物完成）；目标型任务终验必填「🎯 核心目标达成裁决」区块（58.5） -->
 
-- **R1**: 修复 P0 bun（3 脚本 shebang 改 node --experimental-strip-types + Bun.argv→process.argv + 调用方措辞）<sub>（[手段]）</sub>
-- **R2**: 修复 F5 平台（init-session.sh 补 .zcode/plan-templates 探测 + SKILL.md:47 相对化）<sub>（[手段]）</sub>
-- **R3**: 修复 F11 I/O Schema（新建 check-delegation-stats.schema.json + verify_io.sh + selftest-verify-io.sh）<sub>（[手段]）</sub>
-- **R4**: 修复 S76 todo-skill（cli_todo-manager.ts 原子写 + O_EXCL lockfile 互斥）<sub>（[手段]）</sub>
+- **R1**: 「2,好的」（批准交付总结下一步建议第 2 项：v190 删除 + task-P01 封存——一句话授权）<sub>（[手段]）</sub>
+- **R2**: 「纠正 3」（执行第 3 项：selftest 素材 `bun run` 字符串纠正）<sub>（[手段]）</sub>
 
 ### R→VC 映射（Rule 51.2 验证机制先行）
 | R | 映射 VC | 覆盖判据（可观察证据形态） |
 |---|---------|---------------------------|
-| R1 | VC-1 | 3 脚本 shebang 改 node strip-types，node 实跑 exit 0 |
-| R2 | VC-2 | init-session.sh grep .zcode/plan-templates ≥2 + SKILL.md:47 无 ~/.zcode 绝对路径 |
-| R3 | VC-3 | schemas/check-delegation-stats.schema.json 在位 + verify_io.sh exit 0 + selftest-verify-io 4 PASS |
-| R4 | VC-4 | 20 路并行 create count=20 + store.json 非零 + 只读免锁 |
-| R1-R4 | VC-5 | selftest 套件 2 pre-existing FAIL 与 master 基线一致（零回归） |
+| R1 | VC-1, VC-2 | P01 archive 在位+SUPERSEDED 横幅；v190 archive 在位+收口记录 |
+| R2 | VC-3 | selftest-evidence-goal-gate.sh bun 计数=0 且 23/23 PASS |
+| （执行期纠偏 R1b）v190「删除」授权基于「幽灵副本」失实描述——实况=3 项 legacy 修复已落地（merge 3b50e02/delivery-summary e52b88d），处置改收口归档并向用户呈报纠正（§五 删除前看目标铁律） | VC-2 | v190 实况证据入档+交付总结含纠正报告 |
 
 ### 🗣️ 用户会话逐字记录（Rule 80 — 只写不改专档指针）
-<!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/<task-id>/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->
-- **专档路径**：`plans/<task-id>/user-session-log.md`（模板 = ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/user-session-log.md）
+<!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/task-audit-tail-20261026/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->
+- **专档路径**：`plans/task-audit-tail-20261026/user-session-log.md`（模板 = /home/terry/.zcode/skills/task-planner/templates/user-session-log.md）
 - **只写不改铁律**：条目 append-only；已写条目冻结，禁修订/删除/改写（Rule 80.2）
 - **恢复协议**：会话恢复/上下文压缩后先读专档（#1 至最新条目），再读 task_plan.md（目标/验收/下一步）
 - **理解镜像**：每条逐字条目后同号配对「理解镜像」块（Rule 80.7；非权威对照面，冲突以逐字原文为准）
@@ -63,7 +60,7 @@ execution_lane: L1
   WHY: This is your north star. Re-reading this keeps you focused on the end state.
   EXAMPLE: "Create a Python CLI todo app with add, list, and delete functionality."
 -->
-修复 task-v188 skill-fix 审计的 4 项 deferred 高风险项（P0 bun / F5 平台 / F11 I/O Schema / S76 原子写+锁），验证零回归后合并回 master。
+处置 2026-10-26 深度审查交付的下一步建议 2/3 两项：P01 封存归档 + v190 收口归档（纠正后实况）+ selftest 素材 `bun run`→node 纠正（6 处），零回归后提交归档。
 
 ## 🔍 Code Review 配置
 
@@ -93,7 +90,7 @@ execution_lane: L1
   V-N: goal-gate.md 规定「≥5 条 VC + 每 phase ≥2 条 V-N（映射到 VC 编号）」；
        在每个 Phase 段（`### Phase N` 的 - **Status:** 行前）补 `- **V-N:**` 占位行，
        填写本 Phase 验收映射的 VC 编号（≥2 条，如 `VC-1, VC-2`；对应逐条验收记录在
-       ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。
+       /home/terry/.zcode/skills/task-planner/templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。
        check-complete.sh 终验 VC-GATE 段机械校验（config.json vc_gate_enforce，默认 warn）。
 -->
 
@@ -101,11 +98,11 @@ execution_lane: L1
 
 | # | 判定标准 | 验证方式 | 证据路径/命令 |
 |---|----------|----------|---------------|
-| VC-1 | 3 脚本 node strip-types 可运行 | `node --experimental-strip-types scripts/session-catchup.ts` exit 0 | scripts/session-catchup.ts |
-| VC-2 | init-session 补 .zcode/plan-templates + SKILL.md:47 相对化 | `grep -c .zcode/plan-templates scripts/init-session.sh` ≥2 | scripts/init-session.sh |
-| VC-3 | 新建 schema + verify_io.sh + selftest | `ls scripts/schemas/check-delegation-stats.schema.json` + `bash scripts/verify_io.sh <plan-dir>` exit 0 | scripts/verify_io.sh |
-| VC-4 | cli_todo-manager.ts 原子写 + O_EXCL lockfile | 20 路并行 create count=20 + store.json 非零 | skills/todo-skill/tools/cli_todo-manager.ts |
-| VC-5 | 无回归（selftest 套件） | `bash scripts/run-selftests.sh` 2 pre-existing FAIL 与 master 一致 | scripts/run-selftests.sh |
+| VC-1 | P01 封存归档：SUPERSEDED 横幅+移入 archive | test -f + grep | `test -f plans/archive/task-P01-evidence-anchor/task_plan.md` ∧ `grep -c "SUPERSEDED" 同文件` ≥1 |
+| VC-2 | v190 收口归档：真实 Phase 映射+PARTIAL 决议+移入 archive | test -f + git log | `test -f plans/archive/task-v190-skill-audit-legacy-fix/task_plan.md`；实况锚=merge 3b50e02+e52b88d |
+| VC-3 | selftest 素材纠正：bun 清零且断言不破 | grep + 执行 | `grep -c "bun" skills/task-planner/scripts/selftest-evidence-goal-gate.sh` = 0；`bash 该脚本` = 23/23 PASS |
+| VC-4 | 零回归：全量套件 FAIL=0 | 套件 | `bash skills/task-planner/scripts/run-selftests.sh --fresh` = 93/93 |
+| VC-5 | 收口：INDEX 刷新+工作树 clean | git status | `git status --short` 空 ∧ INDEX 待处理区不含 P01/v190 |
 
 **终验规则**：
 - 全部 VC 通过 → outcome: **COMPLETE**
@@ -122,12 +119,12 @@ execution_lane: L1
 -->
 | 字段 | 值 |
 |------|-----|
-| **目标型需求** | （R 行编号，如 R1/R3） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **目标型需求** | n/a（纯手段型任务——R1/R2 均为手段行，无问题待解；v190 描述纠正已按 R1b 处置并在交付呈报） |
+| **裁决** | n/a（纯手段型任务） |
+| **解决证据锚** | VC-1..5 全过即达成（见 verification.md） |
+| **未解决面+原因** | 无（两项处置+纠正全闭环） |
+| **已排除路径** | n/a |
+| **下一步建议** | 部署同步（上轮建议 1，未授权未动） |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -141,10 +138,10 @@ execution_lane: L1
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | P0 bun | 3 脚本 node strip-types 可运行 | `node --experimental-strip-types scripts/session-catchup.ts` 不报 Bun 未定义 | S1/Phase 1 | pending |
-| G2 | F5 平台 | init-session 补 .zcode/plan-templates + SKILL.md:47 相对化 | `grep .zcode/plan-templates scripts/init-session.sh` ≥2 处 + SKILL.md:47 无 ~/.zcode 绝对路径 | S2/Phase 2 | pending |
-| G3 | F11 I/O Schema | 新建 schema + verify_io.sh + selftest-verify-io | `ls scripts/schemas/check-delegation-stats.schema.json` + `bash scripts/verify_io.sh <plan-dir>` exit 0 | S3/Phase 3 | pending |
-| G4 | S76 todo | cli_todo-manager.ts 原子写 + O_EXCL lockfile | 20 路并行 create 断言 count==20 + 无 0 字节 | S4/Phase 4 | pending |
+| G1 | P01 封存 | 移入 archive+SUPERSEDED 横幅 | VC-1 test -f+grep ≥1 | Phase 3 | complete |
+| G2 | v190 收口 | 真实映射回填+归档+纠正呈报 | VC-2 test -f+git log 锚 | Phase 3 | complete |
+| G3 | 素材纠正 | selftest bun 清零 6 处+断言不破 | VC-3 grep=0+23/23 | Phase 3 | complete |
+| G4 | 零回归收口 | 全量 93/93+INDEX+clean | VC-4/VC-5 | Phase 4/5 | pending |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -156,10 +153,10 @@ execution_lane: L1
 -->
 | 类别 | 允许的文件 | 禁止 |
 |-------|------------|------|
-| 源码 | [明确列出，如 src/a.ts, src/b.ts] | 其他 .ts 文件 |
-| 测试 | [明确列出，如 tests/*.test.ts] | 其他测试文件 |
-| 配置 | [明确列出，如 package.json] | 其他配置 |
-| 文档 | [明确列出，如 README.md] | 其他文档 |
+| 源码 | skills/task-planner/scripts/selftest-evidence-goal-gate.sh（素材 6 处字符串/注释纠正，R2 授权） | 其他 skills 文件 |
+| 测试 | n/a（仅执行既有套件验证） | 任何其他 selftest 改动 |
+| 配置 | n/a | config.json 等 |
+| 文档 | plans/task-P01-evidence-anchor/task_plan.md（封存横幅）、plans/task-v190-skill-audit-legacy-fix/{task_plan,progress,verification,findings}.md（收口回填）、plans/task-audit-tail-20261026/**、plans/INDEX.md（归档刷新） | 其他 plans |
 
 **执行前自我检查:**
 - [ ] 这个文件在上面的列表中吗？
@@ -177,9 +174,9 @@ execution_lane: L1
 
 任何对既有文件/条目的变更，制定方案时在此逐条登记；本表兼任验收清单（执行后逐行勾核，新增而产物缺失/增量而旧内容被改=FAIL）。用户新指令到达时先转标注行再动任何文件——先标注后执行。
 
-| 编号 | 对象（文件+锚点） | 类型（新增·修改·删除·更新） | 吸收判定（增量·替代·删除） | 依据（用户原话或证据） | 执行动作 |
-|------|------------------|---------------------------|-----------|------------------------|---------|
-| CA-1 | <示例: 文件:锚点> | 新增 | 增量 | <用户原话/证据> | <执行动作> |
+| 编号 | 对象（文件+锚点） | 类型（新增·修改·删除·更新） | 吸收判定（增量·替代·删除） | 用户原话（逐字） | 依据（证据） | 执行动作 |
+|------|------------------|---------------------------|-----------|----------------|------------------------|---------|
+| CA-1 | <示例: 文件:锚点> | 新增 | 增量 | <用户原话> | <证据> | <执行动作> |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -244,9 +241,9 @@ execution_lane: L1
 ## Current Phase
 <!-- 
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
-  WHY: Quick reference for where you are in the task. Update this as you progress.
+  WHY: Quick reference for where you are. Update this as you progress.
 -->
-Phase 1
+Phase 4（Testing：全量回归待跑）
 
 ## Next Step
 <!-- 
@@ -255,7 +252,7 @@ Phase 1
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-建 worktree（§十一 11.1.4 改 scripts 运行中基础设施）+ 项1 P0 bun 修复（方案 B：3 脚本 shebang 改 node --experimental-strip-types + Bun.argv→process.argv + register-hooks require→import existsSync + 调用方措辞），node 实跑验证
+v190 剩余簿记（Current/委派/Batch/progress/verification/findings）→ stats+check-complete（预期 PARTIAL）→ P01+v190 git mv archive → 全量回归 → 提交 → 尾批计划 check-complete → 归档 → INDEX → 交付（含 v190 纠正呈报）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -284,13 +281,13 @@ Phase 1
   WHAT: Understand what needs to be done and gather initial information.
   WHY: Starting without understanding leads to wasted effort. This phase prevents that.
 -->
-- [ ] Understand user intent
-- [ ] Identify constraints and requirements
-- [ ] Document findings in findings.md
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** in_progress
-- **Executor:** explore（mini）
+- [x] Understand user intent
+- [x] Identify constraints and requirements
+- [x] Document findings in findings.md
+- [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- **V-N:** VC-1, VC-2, VC-3（三项授权解析+v190/P01 实况核实——v190 误判纠正发生于本 Phase）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:② 计划系统文件维护——授权解析/实况核实/对比取证，Rule 25.3 白名单）
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
@@ -303,24 +300,25 @@ Phase 1
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
 -->
-- [ ] Define technical approach
-- [ ] Create project structure if needed
-- [ ] Document decisions with rationale
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
+- [x] Define technical approach
+- [x] Create project structure if needed
+- [x] Document decisions with rationale
+- **V-N:** VC-1, VC-2（处置方案：P01 横幅+git mv；v190 真实映射收口；素材换词=node 在命令词表实证）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:② 计划系统文件维护——处置方案成形，Rule 25.3 白名单）
 
 ### Phase 3: Implementation
 <!-- 
   WHAT: Actually build/create/write the solution.
   WHY: This is where the work happens. Break into smaller sub-tasks if needed.
 -->
-- [ ] Execute the plan step by step
-- [ ] Write code to files before executing
-- [ ] Test incrementally
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** code-assistant（haiku-1）
+- [x] Execute the plan step by step
+- [x] Write code to files before executing
+- [x] Test incrementally
+- [x] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- **V-N:** VC-1, VC-2, VC-3（P01 封存+v190 收口+素材 6 处纠正全执行）
+- **Status:** complete
+- **Executor:** Code Assistant（素材 5 处换词派发）+主进程（例外理由:① git 编排——P01/v190 git mv 与簿记；② 计划系统文件——v190 三文件回填；③ 单行 trivial——:309 注释残留，均 Rule 25.3 白名单）
 （示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
@@ -332,6 +330,7 @@ Phase 1
   - 粒度三值列 Nf/Nl/Nmin 格式逐行校验,任一超 step_max_files/step_max_lines/step_max_minutes → enforce 拒锁
   - 伴飞技能列非「无」→ 校验对应 SKILL.md 路径存在(Rule 59.2)
   - Rule 68.1 前置依赖列必填,无依赖填 -（多依赖顿号分隔）
+  - Rule 96.3 并行硬标注:前置依赖为 - 且独立性四问全 no 的 S-unit ≥2 个 → 必须声明并行组（frontmatter parallel_groups: 组名 + 行内注解 [parallel-group:<组名>];未声明且未按 Rule 68.2 登记全串行论证=计划缺陷,回炉补分析再 attest）
 -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
@@ -343,12 +342,12 @@ Phase 1
   WHAT: Verify everything works and meets requirements.
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
-- [ ] Verify all requirements met
-- [ ] Document test results in progress.md
-- [ ] Fix any issues found
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** code-runner-agent（mini）
+- [x] Verify all requirements met
+- [x] Document test results in progress.md
+- [x] Fix any issues found
+- **V-N:** VC-3, VC-4（selftest 23/23+全量 93/93）
+- **Status:** in_progress
+- **Executor:** 主进程（例外理由:③ 机械验证命令——套件执行只读输出可控，Rule 25.3 白名单）
 
 ### Phase 5: Delivery
 <!-- 
@@ -358,7 +357,10 @@ Phase 1
 - [ ] Review all output files
 - [ ] Ensure deliverables are complete
 - [ ] Deliver to user
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
+- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-audit-tail-20261026 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+      <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
+- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- **V-N:** VC-4, VC-5
 - **Status:** pending
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
@@ -371,15 +373,15 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| `conflict_scan` | `safe`（git status 干净，task-v188 已 commit 4722bb1 + task-v189 计划目录新增，无冲突信号①-⑤） |
-| `isolation` | `worktree`（§十一 11.1.4 改 scripts/ 运行中基础设施 + 4 项均运行时/基础设施层） |
-| `worktree_path` | `/home/terry/task-planner-skill-worktrees/task-v189-skill-audit-deferred-fix`（§十一 11.2 命名 <repo>-worktrees/<task-id>） |
-| `branch` | `wt/task-v189` |
-| `merge_back` | `merged(3fa1e02)` |
+| `conflict_scan` | `safe` / `risk`（信号①-⑤ 摘要） |
+| `isolation` | `worktree`（实现类默认首选） / `direct`（纯文档/调研或用户否决） |
+| `worktree_path` | `<repo-parent>/<repo>-worktrees/task-audit-tail-20261026` 或 n/a |
+| `branch` | `wt/task-audit-tail-20261026` 或 n/a |
+| `merge_back` | `pending` / `merged(<commit>)` / n/a |
 
-> 契约详见 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
+> 契约详见 `/home/terry/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
-## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/methodology.md §R2）
+## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 /home/terry/.zcode/skills/task-planner/references/methodology.md §R2）
 
 <!--
   WHAT: 对每个 Phase 枚举失败模式，打 S(严重度)/O(频度)/D(探测难度) 各 1-10 分，RPN=S×O×D。
@@ -408,7 +410,7 @@ Phase 1
 | Phase 4 | ☐ |  |  |
 | Phase 5 | ☐ |  |  |
 
-> 契约详见 `${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
+> 契约详见 `/home/terry/.zcode/skills/task-planner/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
 
 ## Key Questions
 <!-- 
@@ -472,18 +474,18 @@ Phase 1
   WHEN: chain_mode: fan-out 或 批量操作 ≥5 单元时必填;纯单次任务可删除整个区块
   WHY: 批量操作禁止以牺牲质量/准确性为代价(Rule 18);前置 3 问 + 双采样抽检 + 失败率熔断的落盘证据
   校验: failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败
-  完整模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/batch_report.md | 规则详解: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/references/batch-quality-gate.md
+  完整模板: /home/terry/.zcode/skills/task-planner/templates/batch_report.md | 规则详解: /home/terry/.zcode/skills/task-planner/references/batch-quality-gate.md
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 3（P01 封存 / v190 收口 / 素材纠正 6 处） |
+| `success` | 3 |
+| `failed` | 0 |
+| `failure_rate` | 0% |
+| `sampled_pass` | 3/3（v190 实况证据 git log 双 commit 锚复核；素材 23/23+grep 0；P01 test -f） |
+| `sampled_fail` | 0 |
+| `pre_check` | Q1:否（用户逐项授权）/Q2:有（git mv/rm 可逆，均为 git 受管）/Q3:能（VC 命令组） |
+| `rollback_point` | 提交前=工作树（git restore 可逆）；提交后=commit revert |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
@@ -493,9 +495,12 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 1 / 5（Phase 3 素材 5 处换词=Code Assistant 派发；:309 主进程③ trivial） |
+| 主进程直做 Phase 清单 | Phase 1（②）；Phase 2（②）；Phase 3（①②③ 混合，白名单）；Phase 4（③）；Phase 5（①②）——全白名单 |
+| 委派率 | 0.200（1/5）< floor 0.7，主进程直做理由全白名单 → Rule 25.4a WHITELIST-EXEMPT 预期放行；violations=0（Code Assistant 在 Handoff 表） |
+| 激活子代理数（Rule 96.5） | （Agent() 派发总次数） |
+| 最大并行宽度（Rule 96.5） | （并行组数 / 最宽组宽,如 2 组 / 最宽 3） |
+| 串行化例外理由（Rule 96.4） | （逐组一句话;无则写 none） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -503,15 +508,13 @@ Phase 1
   WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆
   状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)
   列说明: 备注列 = 低频列折叠单列(rescue 换档挽救记录 档位/结果/时间,failed|timeout 行必填,Rule 22.7;retry_count = 22.3 retry_limit 计数,初值 0,每次重试 +1;verify_done☐ = Read 产出 + findings 复核/回填双条件,Rule 22.5)——字段内容不删,仅列位折叠;verify_done 无机器消费(grep 实证 scripts/*.sh 除 selftest 零命中),为人工义务,不声称机器门
-  派发 prompt 八字段模板: ${TASK_PLANNER_ROOT:-/mnt/data/dev/task-planner-skill/skills/task-planner}/templates/subagent_dispatch.md
+  派发 prompt 八字段模板: /home/terry/.zcode/skills/task-planner/templates/subagent_dispatch.md
   # [2026-09-27 task-v091 B-2] 单写者澄清+Handoff 低频列折叠（verify_done 无机器消费如实披露）
 -->
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-26 | Code Assistant | selftest 素材 5 处 bun run→node 换词 | done | 5/5 完成+23/23 PASS；发现 :309 同性质残留（超出清单未动，主进程③处置） | skills/task-planner/scripts/selftest-evidence-goal-gate.sh:29,357,362,366,368 | findings.md | （返回消息为凭） | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

@@ -26,7 +26,7 @@
 #     · scripts/init-session.sh（variant 路由兜底注入，EG-21 — CR F-1 修复载体）:
 #         EG-21 `inject_evidence_goal_block()` 定义 =1 且主流程调用行 =1（variant 产物缺锚时兜底注入双区块，镜像 51.1 注入范式）
 #     · check-complete.sh goal-gate 证据行三要素窗口（行为级双向断言 EG-22/EG-23 — task-v176 CR 二轮 MINOR-3 守护）:
-#         EG-22 证据行窗口仅含 `bun run x`（命令词单信号）→ check-complete 终验 PASS（rc=0，无 [goal-gate] ✗）
+#         EG-22 证据行窗口仅含 `node x`（命令词单信号）→ check-complete 终验 PASS（rc=0，无 [goal-gate] ✗）
 #         EG-23 证据行窗口仅含 `node_modules 清理`（描述性词代偿面）→ goal-gate 三要素 ✗ FAIL（rc=1）
 #               （词界 \b 有效：「node」作 node_modules 内嵌子串不算命令词信号；EG-22 命令词单信号放行）
 #     · 负断言（EG-16）:
@@ -306,7 +306,7 @@ fi
 # EG-22/EG-23 check-complete.sh goal-gate 证据行三要素窗口·行为级双向断言
 # [2026-10-15 task-v176 CR 二轮 MINOR-3 守护] 首轮修复把 :1648 词界写成源码双反斜杠 \\b（ERE 中=
 #   字面「反斜杠+b」，命令词分支恒不命中，接受面比修复前更窄）；二轮回修为单反斜杠 \b 后须双向
-#   行为锁定：① 命令词单信号（bun）放行——否则回退成「命令词分支恒死、仅结果信号有效」；
+#   行为锁定：① 命令词单信号（node）放行——否则回退成「命令词分支恒死、仅结果信号有效」；
 #   ② 描述性词（node_modules）不代偿——否则回退成裸子串误过（原 MINOR-3 病灶复发面）。
 # 夹具形态（对齐 selftest-mechanism-profile.sh MP-17..19 fake-plan 范式，mktemp 用完即清理）：
 #   最小 standard 档计划=Goal 单元表（六列表头含「对应 S-unit」+G1 complete）+ S-unit 表（含
@@ -354,18 +354,18 @@ cat > "$EG_T/task-x/findings.md" <<'EGEOF'
 - F2: 探针发现 2
 - F3: 探针发现 3
 EGEOF
-# EG-22 正向：证据行窗口仅含命令词单信号 `bun run x`（±2 行窗口内无 PASS/✅ 结果信号）
+# EG-22 正向：证据行窗口仅含命令词单信号 `node x`（±2 行窗口内无 PASS/✅ 结果信号）
 #   → goal-gate 命令词分支命中即放行，check-complete 终验 rc=0（全门链在位时 rc=0=gate 未 exit 1）
 printf '%s\n' \
   '# Progress（selftest fake）' \
   '- 2026-10-15 探针任务启动' \
-  '- [goal:G1] 实跑：bun run x' \
+  '- [goal:G1] 实跑：node x' \
   '- [judge] 评判通过' > "$EG_T/task-x/progress.md"
 out="$(bash "$CC" "$EG_T/task-x/task_plan.md" 2>&1)"; rc=$?
 if [ "$rc" -eq 0 ] && ! printf '%s\n' "$out" | grep -q '^\[goal-gate\] ✗'; then
-  ok 22 "goal-gate 证据行窗口仅含 'bun run x'（命令词单信号）→ 终验 PASS rc=0（MINOR-3 词界分支有效）"
+  ok 22 "goal-gate 证据行窗口仅含 'node x'（命令词单信号）→ 终验 PASS rc=0（MINOR-3 词界分支有效）"
 else
-  bad 22 "goal-gate 证据行 'bun run x' 未放行（rc=$rc；命令词分支死=双反斜杠 \\b 病灶或回退）"
+  bad 22 "goal-gate 证据行 'node x' 未放行（rc=$rc；命令词分支死=双反斜杠 \\b 病灶或回退）"
 fi
 # EG-23 反向：证据行窗口仅含描述性词 `node_modules 清理`（无命令词独立单词、无结果信号）
 #   → 词界 \b 有效（node_modules 内嵌 node 子串≠命令词）→ goal-gate 三要素 ✗，check-complete rc=1

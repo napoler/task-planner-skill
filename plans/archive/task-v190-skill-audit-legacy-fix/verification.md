@@ -132,3 +132,21 @@ outcome: COMPLETE
 | 4 | What have I learned? | See findings.md |
 | 5 | What have I done? | See progress.md |
 | 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+
+---
+
+## 收口增补（2026-10-26）
+
+### Phase Gates 收口映射（替代上方模板 {Name} 段）
+- Phase 1 Discovery（v189 遗留 3 项清单）→ VC-1..3 — complete
+- Phase 2 Planning（3 项方案）→ VC-1..3 — complete
+- Phase 3 Implementation（worktree 修复+merge 3b50e02）→ VC-1..3 — complete
+- Phase 4 Testing（当期 92 PASS 零新增+2026-10-26 复验 93/93 含 split 13/13+tier-b 18/18）→ VC-4 — complete
+- Phase 5 Delivery（merge+清理+delivery-summary e52b88d+收口归档）→ VC-4 — complete
+
+### 委派统计复验（Rule 25.4）
+check-delegation stats（归档位复核）：delegated=0/5, violations=[Phase 3 self_declared_reason（历史直改，如实登记）], verdict=violation → check-complete exit 1 → **outcome=PARTIAL**。产品面 3 项修复全过（上方证据）。
+
+### Goal Gate（2026-10-26）
+- [x] 3 项 legacy 修复全部落地并复验（VC-1 register-hooks L98 / VC-2 SP-03 / VC-3 TB-02）
+- outcome: **PARTIAL**（产品 solved；流程遗留=Phase 3 历史直改委派纪律违规，如实留档）

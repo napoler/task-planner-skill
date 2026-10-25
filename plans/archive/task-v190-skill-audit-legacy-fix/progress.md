@@ -115,3 +115,23 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` | 未更新（worktree 会话内跳过） |
+
+---
+## Session: 2026-10-26（收口轮——含「幽灵副本」误判纠正）
+
+### Phase 5: Delivery（收口）
+- **R 锚定**：服务本计划 Goal（修 v189 遗留 3 项 legacy）——产品面已完成（merge 3b50e02），本轮为簿记收口
+- **Status:** complete
+- **误判纠正（重要）**：2026-10-26 早前会话曾据 progress.md 单文件比对误判本计划为「v189 逐字节副本、零独立工作」并向用户建议删除（用户已批「2,好的」）；**删除前实况核查推翻**：delivery-summary.md 标题「修 3 项 legacy（register-hooks L98 / SP-03 / TB-02）」+ git 提交链 f6593e8→3b50e02→e52b88d + 今日复验（unlinkSync :21/:98 实证、split-pattern-library 13/13、tier-b 18/18——v189 期 2 项 pre-existing FAIL 已清零）——本计划=真实完成的工作记录。处置由「删除」改为「收口归档」，已向用户呈报纠正。
+- Actions taken:
+  - 真实 Phase 映射回填 task_plan.md（5 Phase 全 complete；Executor 如实登记=主进程直做，Phase 3 无白名单=violation→PARTIAL）
+  - 委派统计/Batch Report 填实；findings.md 补建；verification.md 追加收口增补段
+  - [goal:G1] 证据行：3 项 legacy 修复全部落地实证（git log 3b50e02+grep unlinkSync+selftest 13/13+18/18）→ 产品目标 solved；outcome=PARTIAL（Rule 25.4，流程债如实留档）
+  - 归档执行：check-complete（预期 DELEGATION exit 1）→ git mv archive → sync-todos --index
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | unlinkSync 修正 | register-hooks-cj.ts | fs 侧调用 | :21 import+:98 unlinkSync(tmp) | PASS |
+  | SP-03 复验 | split-pattern-library | PASS | 13/13 PASS（/tmp/selftest-final2-20261026.log） | PASS |
+  | TB-02 复验 | tier-b | PASS | 18/18 PASS | PASS |
+  | 全量回归 | run-selftests --fresh | 93/93 | 93/93（本轮收口前基线） | PASS |
