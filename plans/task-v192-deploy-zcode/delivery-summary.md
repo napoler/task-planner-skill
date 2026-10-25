@@ -35,3 +35,10 @@
 | agents | `~/.agents`（非 git） | 仅 `plan-resume`（15 技能中唯一已布该位的共享位；余 14 个未布该位=范围外不扩） | diff=0；旧 `.bak` 备份保留 | 无需提交 |
 
 一手事实：claude 位差异全是「canonical 前进、位落后」（bun→node 迁移、Rules 1-96 口径、Rule 95/96 新增），无宿主适配内容会被覆盖；videop1 仓 `skills/` 为自有视频技能族（comet/craft/review-*），不在 15 技能集内，不同步。遗留：两个 config 仓与源仓的 push 均未执行（本次「本地平台」范围），按需另指令。
+
+## 10-26 推送收口（用户指令「推送修改到远程」）
+push 前三仓 `fetch` 复核 behind=0（无他机分叉），快进推送全部成功：
+- 源仓 task-planner-skill：`2e7976a..6246f25` → origin/master（71 个本地提交，含 10-23~10-26 簿记/Rule 落地）
+- zcode-config：`7a2c789..df22f48` → origin/main（部署提交 1）
+- claude-config：`c12273d..8ed938c` → origin/master（部署提交 1 + 既有本地提交 `e6485dd` Rule 21 同步）
+此后三仓 ahead=0，部署结果已持久化到远端；跨机 claw 按分支 pull 即得最新部署态。
