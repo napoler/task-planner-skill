@@ -19,7 +19,9 @@
 
 ## Research Findings
 <!-- 调研/搜索/文档/子代理结论:摘要 + 证据路径。子代理返回后紧邻写(Rule 19.1) -->
--
+- **v190 误判纠正（本轮核心发现）**：早前「v189 逐字节副本零独立工作」仅比对 progress.md 单文件所致失实；全目录 diff+delivery-summary 标题+git 链（f6593e8 修复/3b50e02 合并/e52b88d 交付）+复验（register-hooks-cj.ts:21,98 unlinkSync 实证；split-pattern-library 13/13+tier-b 18/18——v189 期 2 项 pre-existing FAIL 已清零）证实=真实完成工作 → 删除改收口归档（§五 删除前看目标铁律生效判例）
+- **P01 覆盖证据修正**：63c70ae 仅簿记引用；真覆盖源=plans/verification-upgrade-2026-10-16/ 工作流 P-01 落地，活证据=check-complete [evidence-anchor] 门在位且 2026-10-26 实测通过
+- **素材换词语义安全判据**：check-complete.sh:1845 命令词表 \b(bash|bun|node|python)\b 含 node → `bun run x`→`node x` 等价命令词单信号，EG-22/EG-23 断言语义不变（23/23+93/93 实证）
 
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
