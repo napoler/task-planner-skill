@@ -69,7 +69,24 @@
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | 第一轮全量 | run-selftests --fresh | 93/93 | 92 PASS / 1 FAIL（doc-script-paths） | FAIL→已修 |
-  | 定点复验 | selftest-doc-script-paths.sh | 3/3 | 待第二轮结果回填 | 待回填 |
+  | 定点复验 | selftest-doc-script-paths.sh | 3/3 | 3 PASS / 0 FAIL（修复后） | PASS |
+  | 第二轮全量 | run-selftests --fresh | 93/93 | **93 PASS / 0 FAIL**（/tmp/selftest-final-20261026.log） | PASS |
+  | 委派统计 | check-delegation.sh stats | verdict ok | rate=0.4, delegated=2, violations=[], verdict=**ok** | PASS |
+
+### Phase 5: Delivery（提交+归档+INDEX）
+- **R 锚定**：服务 R1——修复成果入库+收口
+- **Status:** complete
+- **Started:** 2026-10-26
+- Actions taken:
+  - [goal:G3] 证据行：第二轮全量回归 93 PASS / 0 FAIL（/tmp/selftest-final-20261026.log）→ G3 complete
+  - skills 修复 13 文件提交 253f8a0（Rule 27 Phase 3 产物，收口前补记）
+  - check-complete → set-active-plan --clear → archive-plan → sync-todos --index（本段后紧邻执行）
+  - kb-sync 条件检查（scripts/kb-sync-from-plan.sh 存在性，结果回填）
+- Files created/modified: 253f8a0（13 skills 文件）；本计划三文件
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | check-complete | 本计划 | exit 0 | 待执行回填 | 待回填 |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
