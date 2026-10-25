@@ -15,10 +15,25 @@
 ## Phases
 | Phase | 动作 | Executor | 状态 | 证据 |
 |-------|------|----------|------|------|
-| 1 | 全量同步 15 技能 canonical → `~/.zcode/skills/`（`rsync -a`，不 `--delete` 以保留运行时态） | 主进程(Bash) | pending | rsync 输出 + `diff -rq`=0 |
-| 2 | 验证部署位（diff=0 + 部署位跑 run-selftests.sh 子集） | 主进程(Bash) | pending | 命令输出 |
-| 3 | zcode-config 提交（**仅** 15 技能目录，不碰他域未提交变更）+ push origin main | 主进程(Bash) | pending | git log + push 输出 |
-| 4 | 确认 task-planner-skill 仓已推送（origin/master=5ccf308） | 主进程(Bash) | pending | git log origin/master |
+| 1 | 全量同步 15 技能 canonical → `~/.zcode/skills/`（`rsync -a`，不 `--delete` 以保留运行时态） | 主进程(Bash) | complete | 10-19 首轮 diff -rq=0；10-26 用户指令「完成本地平台部署」复同步 15/15，diff=0，zcode-config 提交 `df22f48`（16 文件） |
+| 2 | 验证部署位（diff=0 + 部署位跑 run-selftests.sh 子集） | 主进程(Bash) | complete | 10-26 四位（zcode/claude/cursor/agents-plan-resume）逐技能 `diff -rq` 内容差异=0；canonical 回归 93/93（task-audit-tail-20261026 check-complete 全门 exit 0） |
+| 3 | zcode-config 提交（**仅** 15 技能目录，不碰他域未提交变更）+ push origin main | 主进程(Bash) | complete | 10-19 `2c51f48` 已 push；10-26 复同步本地提交 `df22f48`（16 文件，他域 27 脏文件未纳入）；claude 位 10-26 本地提交 `8ed938c`（297 文件，仅 15 技能 pathspec）；cursor/agents 位非 git 无需提交。push 待用户指令（本地部署范围内） |
+| 4 | 确认 task-planner-skill 仓已推送（origin/master=5ccf308） | 主进程(Bash) | complete | 10-19 时点成立；10-26 复核：本地 HEAD `6324ce2` 领先 origin/master `2e7976a`，领先提交推送待用户指令 |
+
+## Phase 状态锚（sync-todos.sh 可解析形态：表格是人类可读面，下方列表锚=机器计数面，两者必须同步翻转）
+<!-- 形态约束：脚本只认 `### Phase N:` + 行首 `- **Status:**`（v176/D1 锚定口径）；本计划 Phase 表为表格形态，机器面在此镜像，防 INDEX 0/0 失真（task-v192 簿记缺口判例） -->
+
+### Phase 1: 全量同步 15 技能至 zcode 位
+- **Status:** complete
+
+### Phase 2: 验证部署位
+- **Status:** complete
+
+### Phase 3: 提交部署仓
+- **Status:** complete
+
+### Phase 4: 确认源仓已推送
+- **Status:** complete
 
 ## Verification Contract
 | VC | 命令 | 判据 |
