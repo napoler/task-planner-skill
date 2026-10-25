@@ -132,3 +132,22 @@ outcome: COMPLETE
 | 4 | What have I learned? | See findings.md |
 | 5 | What have I done? | See progress.md |
 | 6 | Which tasks need processing? | plans/INDEX.md 待处理区 |
+
+---
+
+## 收口增补（2026-10-26）
+
+### Phase Gates 收口映射（替代上方模板 {Name} 段）
+- Phase 1 Requirements & Discovery（4 项输入+用户「1,2,3,4」授权）→ V-1.1→VC-1..4 — complete
+- Phase 2 Planning & Structure（方案选型）→ V-2.1→VC-1..4 — complete
+- Phase 3 Implementation（worktree 执行+merge 3fa1e02）→ V-3.1→VC-1..4 — complete
+- Phase 4 Testing & Verification（套件对跑+竞态验证）→ V-4.1→VC-4, VC-5 — complete
+- Phase 5 Delivery（merge+清理+delivery-summary+归档）→ V-5.1→VC-5 — complete
+
+### 委派统计复验（Rule 25.4）
+机器口径：check-delegation.sh stats → delegated=0/5, main_direct=5, violations=[Phase 3 self_declared_reason（2026-10-19 worktree 会话历史直改，无派发留痕，如实登记）], verdict=violation → check-complete exit 1 → **outcome=PARTIAL**。
+2026-10-19 delivery-summary 的 COMPLETE=产品面口径（VC-1..5 全过、零回归、已合并）；本收口按委派纪律口径修正终态 PARTIAL——两者并存如实留档，非矛盾。
+
+### Goal Gate（2026-10-26）
+- [x] VC-1..VC-5 全 PASS（2026-10-26 Agent B 独立复核 4 项全 resolved + run-selftests --fresh 93/93）
+- outcome: **PARTIAL**（产品 solved；流程遗留=Phase 3 历史直改委派纪律违规；建议后续按 Rule 96 默认派发）

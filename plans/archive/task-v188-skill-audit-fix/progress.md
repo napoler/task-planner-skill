@@ -103,7 +103,7 @@
   | check-delegation stats | v188 plan | verdict ok | violation（Phase 3 self_declared_reason，如实登记） | 预期内→outcome=PARTIAL |
 - **outcome=PARTIAL 决议**：产品面 VC-1..5 全过（核心目标 R1=solved）；流程级遗留=Phase 3 批次执行为 2026-10-19 主进程直改（无白名单命中），按 Rule 25.4 outcome 封顶 PARTIAL，如实留档；check-complete 预期 DELEGATION GATE FAILED exit 1（输出附 verification.md 委派统计段），处置=转 PARTIAL 终态而非回炉重做已入库工作（Rule 38.7 比例原则）
 - 归档执行：archive-plan.sh task-v188-skill-audit-fix + sync-todos.sh --index（本段后紧邻执行，结果回填下行）
-- 归档结果：（待执行后回填）
+- 归档结果：✅ ARCHIVED（前置簿记 4f42988 + 归档提交；INDEX 刷新 in_progress=3）；drift-checker 独立判定=⚠️DRIFT（收口轮本体 ALIGNED；打回项①②=新修复批次缺载体/未派发——已处置：批次移交 plans/task-skill-audit-fix-20261026/ 正规计划载体+FIX-A(executor)/FIX-B(Code Assistant) 并行派发；打回项③④=本行回填+task_plan Drift Log 行按实际判定改写；检查点=subagent-state/2026-10-26-drift-checker.md）
 
 ---
 | plan-resume 报告路径 | 上次更新 |

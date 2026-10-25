@@ -244,9 +244,9 @@ execution_lane: L1
 ## Current Phase
 <!-- 
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
-  WHY: Quick reference for where you are in the task. Update this as you progress.
+  WHY: Quick reference for where you are. Update this as you progress.
 -->
-Phase 1
+全部 Phase complete（2026-10-26 收口；outcome=PARTIAL——Phase 3 历史直改无派发留痕如实登记，产品面 VC-1..5 全过，见 verification.md）
 
 ## Next Step
 <!-- 
@@ -255,7 +255,7 @@ Phase 1
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-建 worktree（§十一 11.1.4 改 scripts 运行中基础设施）+ 项1 P0 bun 修复（方案 B：3 脚本 shebang 改 node --experimental-strip-types + Bun.argv→process.argv + register-hooks require→import existsSync + 调用方措辞），node 实跑验证
+归档收口（2026-10-26）：check-complete（预期 DELEGATION exit 1→PARTIAL 已决议）→ archive-plan.sh → sync-todos --index；v190 幽灵副本处置待用户裁决（另见 skill-audit-fix-20261026 载体）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -284,13 +284,13 @@ Phase 1
   WHAT: Understand what needs to be done and gather initial information.
   WHY: Starting without understanding leads to wasted effort. This phase prevents that.
 -->
-- [ ] Understand user intent
-- [ ] Identify constraints and requirements
-- [ ] Document findings in findings.md
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** in_progress
-- **Executor:** explore（mini）
+- [x] Understand user intent
+- [x] Identify constraints and requirements
+- [x] Document findings in findings.md
+- [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- **V-N:** VC-1（输入=v188 register-deferred.md 4 项+用户「1,2,3,4」逐项授权）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:② 计划系统文件维护——登记确认与授权簿记，Rule 25.3 白名单）
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
@@ -303,11 +303,11 @@ Phase 1
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
 -->
-- [ ] Define technical approach
-- [ ] Create project structure if needed
-- [ ] Document decisions with rationale
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] Define technical approach
+- [x] Create project structure if needed
+- [x] Document decisions with rationale
+- **V-N:** VC-2, VC-3, VC-4（方案=node strip-types shebang/双平台探测/schema+verify_io/原子写+O_EXCL 锁）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation
@@ -315,12 +315,12 @@ Phase 1
   WHAT: Actually build/create/write the solution.
   WHY: This is where the work happens. Break into smaller sub-tasks if needed.
 -->
-- [ ] Execute the plan step by step
-- [ ] Write code to files before executing
-- [ ] Test incrementally
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** code-assistant（haiku-1）
+- [x] Execute the plan step by step
+- [x] Write code to files before executing
+- [x] Test incrementally
+- **V-N:** VC-1, VC-2, VC-3, VC-4（4 项修复 worktree 内完成，merge 3fa1e02 入 master）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:历史直改如实登记——2026-10-19 worktree 会话主进程执行 4 项修复，无子代理派发留痕，无白名单编号命中，按 Rule 25.4 处置 outcome=PARTIAL）
 （示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
@@ -343,23 +343,23 @@ Phase 1
   WHAT: Verify everything works and meets requirements.
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
-- [ ] Verify all requirements met
-- [ ] Document test results in progress.md
-- [ ] Fix any issues found
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** code-runner-agent（mini）
+- [x] Verify all requirements met
+- [x] Document test results in progress.md
+- [x] Fix any issues found
+- **V-N:** VC-4, VC-5（竞态 5 轮 20 路并行全 count=20；worktree/master 套件对跑 FAIL 清单一致零新增）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:③ 机械验证命令——套件对跑/竞态验证只读输出可控，Rule 25.3 白名单）
 
 ### Phase 5: Delivery
 <!-- 
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] Review all output files
+- [x] Ensure deliverables are complete
+- [x] Deliver to user
+- **V-N:** VC-5（merge 3fa1e02 + worktree 清理 + delivery-summary a9742c2；2026-10-26 收口归档）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -476,14 +476,14 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 4（项1 bun→node / 项2 F5 平台 / 项3 F11 Schema / 项4 S76 原子写） |
+| `success` | 4 |
+| `failed` | 0 |
+| `failure_rate` | 0%（≤5% 通过） |
+| `sampled_pass` | 4/4（2026-10-26 Agent B 独立复核全 resolved：session-catchup 实跑 EXIT=0/双平台探测齐/verify_io+schema 在位/原子写+O_EXCL 锁确认） |
+| `sampled_fail` | 0 |
+| `pre_check` | Q1:否（用户逐项授权 1,2,3,4）/Q2:有（worktree+merge 3fa1e02 可回滚）/Q3:能（shebang grep/实跑/套件） |
+| `rollback_point` | merge commit 3fa1e02（git revert 即回滚） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
@@ -493,9 +493,9 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 0 / 5（2026-10-19 worktree 会话主进程执行，无子代理派发留痕——如实登记） |
+| 主进程直做 Phase 清单 | Phase 1（②计划系统文件——白名单）；Phase 2（②——白名单）；Phase 3（历史直改，无白名单命中=violation→Rule 25.4 PARTIAL）；Phase 4（③机械验证命令——白名单）；Phase 5（①git 编排+②簿记——白名单） |
+| 委派率 | 0.000 < floor 0.7 且含白名单外理由（Phase 3）→ outcome=PARTIAL（产品面 VC 全过+已合并 3fa1e02；流程违规留档不虚构派发） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--

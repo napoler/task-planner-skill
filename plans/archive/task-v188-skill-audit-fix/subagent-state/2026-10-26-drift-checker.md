@@ -1,0 +1,11 @@
+# Drift Checkpoint — task-v188 收口轮（2026-10-26 00:42 +08）
+- 触发点类型：用户新指令（/goal「深度审查+挖掘+修正」）下的 v188 收口轮；判定=**⚠️DRIFT**（收口轮本体 ALIGNED，收口后新批次越 scope）
+- 锚①Goal 原文：task_plan.md:61（批次1-3 修复+P0/F5/F11/S76 登记）+ verification.md:5
+- 锚②progress 尾部动作：progress.md:83-106（Phase 5 收口段；:106「归档结果：（待执行后回填）」至今未回填）
+- 锚③scope 文件集：task_plan.md:150-155（源码/测试/配置/文档四行白名单，禁「其他 .sh/.ts/.cjs 逻辑」）
+- ALIGNED 证据：commit 4f42988（收口簿记 4 文件）、c8686e3（归档 archive/ + INDEX 刷新）；VC-1..5 Evidence=verification.md:15-24；委派率 0.400+violation→PARTIAL=verification.md:122-137，与 Rule 25.4（critical-rules-dispatch.md:106）/25.4a(:107) 一致
+- DRIFT 证据：git status 13 个 skills/** 改动，其中 7 个不在 scope 表——plan-collab-router/references/critical-rules-collab.md、plan-template-kit/references/template-guide.md、task-discipline/references/execution-recall-card.md、task-dispatch/references/agent-coverage.md、task-planner/{INSTALL.md,MIGRATION.md,install.sh}；mtime 00:30:05-08 晚于归档 commit 00:28:41（收口已终结后新增写入）
+- DRIFT 证据（载体缺失）：plans/skill-audit-20261026/ 仅有 subagent-state/{A-ref-integrity,B-runtime-hardcoded}.md，无 task_plan.md/scope/VC——新修复批次无计划载体（Rule 74.3d 先标注后执行）
+- 预判留痕：task_plan.md:461 在 checker 未返回前已填「✅ALIGNED（…drift-checker 子代理在途）」——结果未回即预填判定（Rule 35.2 防虚构）
+- 建议打回项：①为 skill-audit-20261026 建 task_plan（Goal/VC/scope_files/Executor）再继续 ②批量文本修按 Rule 96+25.3 派 code-assistant/executor，禁主进程直改 skills/** ③回填 progress.md:106 归档结果 ④Drift Log 按本检查点据实改写（勿保留预填 ALIGNED）
+- 说明：执行体（主进程/子代理）无法由 git 判定；上述 scope/载体缺失与执行体无关，均为事实

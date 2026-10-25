@@ -111,7 +111,28 @@
 | What am I about to do? | 重新 attest + commit worktree + 合并回 master |
 
 ---
+## Session: 2026-10-26（收口轮）
+
+### Phase 5: Delivery（收口——状态回填+复验+归档）
+- **R 锚定**：服务本计划 Goal（4 项 deferred 修复零回归合并）——产品面已于 2026-10-19 完成（merge 3fa1e02），本轮为簿记收口
+- **Status:** complete
+- Actions taken:
+  - 真实 Phase 映射回填 task_plan.md（模板占位 Executor→如实登记：全部主进程直做，Phase 3 无白名单命中=violation）
+  - 独立复验：general-reviewer B 路（2026-10-26）复核 4 项全 resolved；全仓 run-selftests --fresh=93/93 PASS
+  - verification.md 追加收口增补段（Phase Gates 映射+委派统计+Goal Gate）；findings.md 回填
+  - [goal:G1] 证据行：4 项修复全部 resolved（Agent B checkpoint）+ merge 3fa1e02 → 产品目标 solved
+  - **outcome=PARTIAL 决议**：产品面 VC-1..5 全过；流程级遗留=Phase 3 历史直改（无派发留痕）按 Rule 25.4 封顶 PARTIAL，如实留档
+  - 归档执行：check-complete（预期 DELEGATION exit 1，PARTIAL 已决议）→ archive-plan.sh → sync-todos --index
+- Files modified: 本计划 task_plan.md / verification.md / findings.md / progress.md
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | 复核 4 项 | Agent B checkpoint | 全 resolved | 全 resolved（bun 实跑 EXIT=0/双平台/schema/原子写） | PASS |
+  | 全量回归 | run-selftests --fresh | 全绿 | 93 PASS / 0 FAIL | PASS |
+  | check-delegation stats | v189 plan | — | delegated=0/5, violation（Phase 3，预期内） | →PARTIAL |
+
+---
 <!-- 📋 plan-resume 报告检查点:Phase complete 后 <cwd>/.zcode/plans/plan-resume-report.md 应已更新;未更新记 [plan-resume 跳过原因] -->
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
-| `~/.zcode/plans/plan-resume-report.md` | 未更新（worktree 会话内跳过） |
+| `~/.zcode/plans/plan-resume-report.md` | 未更新（worktree 会话内跳过；2026-10-26 收口轮沿用） |
