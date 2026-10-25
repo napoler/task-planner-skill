@@ -40,6 +40,8 @@
 - **R 锚定**：服务 R1「并修正」半边
 - **Status:** complete
 - **Started:** 2026-10-26
+- [goal:G1] 证据行：FIX-A 11/11 DONE（executor 返回+主进程 diff 复核）+ VC-1 grep 组全过（`69-76` 0 命中/裸形态正则 0 命中/95 与 91 索引补登实测在位）→ G1 complete
+- [goal:G2] 证据行：FIX-B 4/4 DONE + 微修 2/2 DONE + VC-2 grep 组全过（INSTALL bun 0 命中/`bash -n` exit 0/bun run 仅剩登记例外）→ G2 complete
 - Actions taken:
   - 并行派发 FIX-A（executor，11 项）+FIX-B（Code Assistant，4 项）——两组文件集独立（Rule 21.4）
   - 返回后主进程 git diff 复核：13 文件 +21/-22 全部目标行精准变动（关键行亲读：critical-rules.md 95/91 补登、INSTALL/MIGRATION bun run→node、SKILL.md 裸引用前缀化）
