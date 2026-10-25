@@ -80,6 +80,31 @@
 | What have I done? | 批次 1-4（见上 Phase 段） |
 | What am I about to do? | git add + commit 收口 |
 
+## Session: 2026-10-26（收口轮：/goal 深度审查任务之 v188 收口）
+
+### Phase 5: Delivery（收口——task_plan 真实映射回填+复验+归档）
+- **R 锚定**：本段服务 R1「修正以上发现的问题」——批次1-4 已于 2026-10-19 修复入库（commit 4722bb1），本轮为复核+簿记收口
+- **Status:** complete
+- Actions taken:
+  - 现势性复核：VC-1/2/3/5 grep 复跑（VC-1 实质 PASS 口径修正、VC-2 0 残留、VC-3 裸数字行格式演进确认、VC-5 登记在位）
+  - 独立复验派发（Rule 33.3）：general-reviewer 两路后台并行——B 路（运行时+硬编码+登记现势）已回：4 项登记全 resolved、硬编码残留 0、语法门全过、新发现 B-01..B-05 移交 plans/skill-audit-20261026/；A 路（引用完整性）结果后补
+  - 全量回归：run-selftests.sh --fresh = 93 PASS / 0 FAIL
+  - task_plan.md 真实 Phase 映射回填（模板占位 Executor→真实执行体；Phase 3 如实登记历史直改）；verification.md 全文收口；findings.md 回填
+  - [goal:G1] 证据行：VC-1/2/3 grep 复跑全过 + commit 4722bb1 → G1 complete
+  - [goal:G2] 证据行：register-deferred.md test -f exit 0 + 四类 grep 6 命中 + Agent B 复核全 resolved → G2 complete
+- Files modified: 本计划 task_plan.md / verification.md / findings.md / progress.md（本段）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-2 grep | split-pattern-library+template-mapping | 0 残留 | 0/0 | PASS |
+  | VC-3 grep | task-discipline SKILL 索引 | 85-95 行在位 | :68-77 全在位（裸数字行格式） | PASS |
+  | VC-5 grep | register-deferred.md | 4 类在位 | 6 命中 | PASS |
+  | 回归套件 | run-selftests.sh --fresh | 基线 93/93 | 93 PASS / 0 FAIL | PASS |
+  | check-delegation stats | v188 plan | verdict ok | violation（Phase 3 self_declared_reason，如实登记） | 预期内→outcome=PARTIAL |
+- **outcome=PARTIAL 决议**：产品面 VC-1..5 全过（核心目标 R1=solved）；流程级遗留=Phase 3 批次执行为 2026-10-19 主进程直改（无白名单命中），按 Rule 25.4 outcome 封顶 PARTIAL，如实留档；check-complete 预期 DELEGATION GATE FAILED exit 1（输出附 verification.md 委派统计段），处置=转 PARTIAL 终态而非回炉重做已入库工作（Rule 38.7 比例原则）
+- 归档执行：archive-plan.sh task-v188-skill-audit-fix + sync-todos.sh --index（本段后紧邻执行，结果回填下行）
+- 归档结果：（待执行后回填）
+
 ---
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|

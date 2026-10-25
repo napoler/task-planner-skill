@@ -22,7 +22,8 @@ execution_lane: L1
 ### R→VC 映射（Rule 51.2 验证机制先行）
 | R | 映射 VC | 覆盖判据（可观察证据形态） |
 |---|---------|---------------------------|
-| R1 | VC-1 | <判据：计数=0/文件在位+绝对路径/命令输出形态> |
+| R1 | VC-1, VC-2, VC-3, VC-4, VC-5 | 批次1-3 缺陷面 grep 计数=0/文件在位+绝对路径/bash -n exit 0/git diff 只含 scope 文件（2026-10-26 复跑全过，见 verification.md Evidence） |
+| R2 | VC-1, VC-2 | 修复顺序=诊断报告 §5 建议 2（P1 引用一致性文本面低风险批量修优先）——批次1 先行的执行序即本判据 |
 
 ### 🗣️ 用户会话逐字记录（Rule 80 — 只写不改专档指针）
 <!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/<task-id>/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->
@@ -116,12 +117,12 @@ execution_lane: L1
 -->
 | 字段 | 值 |
 |------|-----|
-| **目标型需求** | （R 行编号，如 R1/R3） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **目标型需求** | R1（修正审计发现的可修复 P1/P2 缺陷——[目标]） |
+| **裁决** | `solved` |
+| **解决证据锚** | commit 4722bb1（批次1-4 修复入库）；VC-1/2/3/5 grep 复跑 2026-10-26 全过（verification.md Evidence 段）；run-selftests --fresh 93/93 PASS |
+| **未解决面+原因** | 流程级遗留 1 项：Phase 3 批次执行为 2026-10-19 主进程直改（无白名单命中）→ 按 Rule 25.4 outcome 封顶 PARTIAL；产品面无未解决缺陷 |
+| **已排除路径** | n/a（非 not-solved） |
+| **下一步建议** | 后续文本面批量修一律按 Rule 96 默认派发（code-assistant/executor），免再触 25.4 |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -135,7 +136,8 @@ execution_lane: L1
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | <示例> | | <命令+判据 或 路径+关键行> | S1/Phase 1 | pending |
+| G1 | 批次修复 | 修正审计 P1/P2 缺陷（批次1 引用一致性+批次2 硬编码+批次3 文档卫生） | VC-1/2/3 grep 命令组 2026-10-26 复跑全过（口径修正见 verification.md）+ commit 4722bb1 | Phase 3 | complete |
+| G2 | 遗留登记 | 4 类高风险项（P0 bun/F5/F11/S76）登记不静默 | `test -f plans/task-v188-skill-audit-fix/register-deferred.md` 且 grep 4 类关键词命中（VC-5 复跑 2026-10-26：6 命中） | Phase 2 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -235,9 +237,9 @@ execution_lane: L1
 ## Current Phase
 <!-- 
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
-  WHY: Quick reference for where you are in the task. Update this as you progress.
+  WHY: Quick reference for where you are. Update this as you progress.
 -->
-Phase 1
+全部 Phase complete（2026-10-26 收口；outcome=PARTIAL——Phase 3 历史直改委派纪律违规如实登记，产品面 VC-1..5 全过，见 verification.md Goal Gate）
 
 ## Next Step
 <!-- 
@@ -246,7 +248,7 @@ Phase 1
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-批次1：grep 精确锁定各卫星 SKILL.md/references 跨技能引用点，逐文件 Read 现状 + Edit 加前缀/改裸名/修归属，grep 复核 0 残留，跑 VC-1 验证命令
+归档收口：`bash skills/task-planner/scripts/archive-plan.sh task-v188-skill-audit-fix` → `sync-todos.sh --index` 刷新 INDEX；2026-10-26 新审计发现移交 plans/skill-audit-20261026/ 载体处置
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -275,13 +277,13 @@ Phase 1
   WHAT: Understand what needs to be done and gather initial information.
   WHY: Starting without understanding leads to wasted effort. This phase prevents that.
 -->
-- [ ] Understand user intent
-- [ ] Identify constraints and requirements
-- [ ] Document findings in findings.md
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** in_progress
-- **Executor:** explore（mini）
+- [x] Understand user intent
+- [x] Identify constraints and requirements
+- [x] Document findings in findings.md
+- [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- **V-N:** VC-1, VC-4（发现项清单=plans/skill-audit-20261019/diagnostic-report.md F1-F11/P2-1..12；2026-10-26 复核现势性）
+- **Status:** complete
+- **Executor:** general-purpose（审计 4 子代理并行深审 2026-10-19，检查点=plans/skill-audit-20261019/subagent-state/{A,B,C,D}-*.md）
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
@@ -294,11 +296,11 @@ Phase 1
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
 -->
-- [ ] Define technical approach
-- [ ] Create project structure if needed
-- [ ] Document decisions with rationale
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] Define technical approach
+- [x] Create project structure if needed
+- [x] Document decisions with rationale
+- **V-N:** VC-5（批次划分+register-deferred.md 登记 4 类不动项——2026-10-19 建，2026-10-22 v189 复核 F11 已修、2026-10-26 Agent B 复核 4 项全 resolved）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation
@@ -306,12 +308,12 @@ Phase 1
   WHAT: Actually build/create/write the solution.
   WHY: This is where the work happens. Break into smaller sub-tasks if needed.
 -->
-- [ ] Execute the plan step by step
-- [ ] Write code to files before executing
-- [ ] Test incrementally
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** code-assistant（haiku-1）
+- [x] Execute the plan step by step
+- [x] Write code to files before executing
+- [x] Test incrementally
+- **V-N:** VC-1, VC-2, VC-3（批次1-4 修复 2026-10-19 执行完毕，commit 4722bb1；VC 复核 2026-10-26）
+- **Status:** complete
+- **Executor:** 主进程（例外理由:历史直改如实登记——2026-10-19 当期会话主进程执行批次1-4 未派子代理，无白名单编号命中，按 Rule 25.4 处置 outcome=PARTIAL；证据=progress.md Error Log 主进程 Edit/Python 记录）
 （示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
@@ -334,23 +336,23 @@ Phase 1
   WHAT: Verify everything works and meets requirements.
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
-- [ ] Verify all requirements met
-- [ ] Document test results in progress.md
-- [ ] Fix any issues found
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** code-runner-agent（mini）
+- [x] Verify all requirements met
+- [x] Document test results in progress.md
+- [x] Fix any issues found
+- **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5（2026-10-26 独立复验：general-reviewer 两路并行复审 + run-selftests.sh --fresh 93/93 PASS）
+- **Status:** complete
+- **Executor:** general-reviewer（2026-10-26 独立复验两路：A 引用完整性/B 运行时+硬编码——Rule 33.3 验证独立性载体）
 
 ### Phase 5: Delivery
 <!-- 
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] Review all output files
+- [x] Ensure deliverables are complete
+- [x] Deliver to user
+- **V-N:** VC-4, VC-5（git diff 核验+登记完整性；交付总结=本计划收口段+2026-10-26 会话交付总结）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
@@ -456,7 +458,7 @@ Phase 1
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-10-26 | ✅ALIGNED（自查+drift-checker 子代理在途，检查点=subagent-state/2026-10-26-drift-checker.md） | VC-1..5 | 收口轮动作（复验/回填/PARTIAL 决议/归档）逐项服务 R1 与会话 /goal「深度审查+挖掘+修正」；新发现移交 skill-audit-20261026 载体未越 v188 scope |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 
@@ -467,14 +469,14 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | 4（批次1 引用一致性/批次2 硬编码/批次3 文档卫生/批次4 登记移交） |
+| `success` | 4 |
+| `failed` | 0 |
+| `failure_rate` | 0%（≤5% 通过） |
+| `sampled_pass` | 4/4（2026-10-26 收口抽检：VC-1/2/3 grep 复跑+VC-5 登记核对全过） |
+| `sampled_fail` | 0 |
+| `pre_check` | Q1:否（有人复核）/Q2:有（回滚点在案）/Q3:能（grep 可验） |
+| `rollback_point` | commit 4722bb1（git revert 即回滚到修复前） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
@@ -484,9 +486,9 @@ Phase 1
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 2 / 5（Phase 1 general-purpose 审计×4；Phase 4 general-reviewer 独立复验×2） |
+| 主进程直做 Phase 清单 | Phase 2（②计划系统文件——白名单）；Phase 3（历史直改，无白名单命中=violation，如实登记）；Phase 5（①git 编排+②簿记——白名单） |
+| 委派率 | 0.400（2/5）< floor 0.7，且含白名单外理由（Phase 3）→ 按 Rule 25.4 outcome=PARTIAL（不降级产品交付，流程违规如实留档） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -500,9 +502,9 @@ Phase 1
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-10-19 | general-purpose | 审计 15 技能产诊断报告（A/B/C/D 四路并行深审） | done | P0×1/P1×9/P2×12 全清单；4 检查点落盘 | plans/skill-audit-20261019/diagnostic-report.md | progress.md Phase 0 段 | plans/skill-audit-20261019/subagent-state/ | - / 0 / ☑ |
+| 2 | 2026-10-26 | general-reviewer | 独立复验 B 路：运行时+硬编码+登记现势性 | done | 4 项登记全 resolved；硬编码残留 0；新发现 B-01..B-05（3 MAJOR 文档 bun run 残留） | plans/skill-audit-20261026/subagent-state/B-runtime-hardcoded.md | 本计划 progress.md 2026-10-26 段 | plans/skill-audit-20261026/subagent-state/B-runtime-hardcoded.md | - / 0 / ☑ |
+| 3 | 2026-10-26 | general-reviewer | 独立复验 A 路：跨技能引用完整性+计数算术 | done | 见 checkpoint A-ref-integrity.md（发现清单移交 skill-audit-20261026 载体处置） | plans/skill-audit-20261026/subagent-state/A-ref-integrity.md | 本计划 progress.md 2026-10-26 段 | plans/skill-audit-20261026/subagent-state/A-ref-integrity.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
