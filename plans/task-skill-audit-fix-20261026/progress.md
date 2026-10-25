@@ -57,8 +57,9 @@
 
 ### Phase 4: Testing & Verification（回归+回归失败修复）
 - **R 锚定**：服务 R1——修正后零回归证明
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-10-26
+- [goal:G3] 证据行：第二轮全量回归 run-selftests.sh --fresh = 93 PASS / 0 FAIL（/tmp/selftest-final-20261026.log；G1/G2 证据在 Phase 3 段 VC-1/2 grep 组与主进程 diff 复核）
 - Actions taken:
   - 第一轮全量回归：93 中 92 PASS/**FAIL=1（selftest-doc-script-paths T03）**
   - 根因定位：plan-cost-guard/SKILL.md:29（技能根文件）被改为 `../../task-planner/`——从技能根解析跳出 skills/；`../../` 仅适用 references/ 子目录文件（FIX-A 按派发单「同技能其他处已用 ../../」证据改写，但该「其他处」本身即待修的同族错形；微修沿用了同错形）
