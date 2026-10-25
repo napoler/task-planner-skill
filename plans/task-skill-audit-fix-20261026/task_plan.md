@@ -149,7 +149,7 @@ execution_lane: L1
 -->
 | 类别 | 允许的文件 | 禁止 |
 |-------|------------|------|
-| 源码 | skills/task-planner/{SKILL.md,references/critical-rules.md,INSTALL.md,MIGRATION.md,install.sh}、skills/task-dispatch/references/agent-coverage.md、skills/task-discipline/references/{critical-rules-discipline.md,execution-recall-card.md}、skills/plan-cost-guard/SKILL.md、skills/plan-collab-router/references/critical-rules-collab.md、skills/task-drift-guard/references/critical-rules-drift.md、skills/plan-template-kit/references/template-guide.md、skills/verification-gate/references/critical-rules-verification.md（13 文件=A/B 批+微修+回归修复点名） | 其他 skills 文件 |
+| 源码 | skills/task-planner/{SKILL.md,references/critical-rules.md,INSTALL.md,MIGRATION.md,install.sh,README.md,docs/ARCHITECTURE.md}、skills/task-dispatch/references/agent-coverage.md、skills/task-discipline/references/{critical-rules-discipline.md,execution-recall-card.md}、skills/plan-cost-guard/SKILL.md、skills/plan-collab-router/references/critical-rules-collab.md、skills/task-drift-guard/references/critical-rules-drift.md、skills/plan-template-kit/references/template-guide.md、skills/verification-gate/references/critical-rules-verification.md（13+3 文件=A/B 批+微修+回归修复+CR 观察镜像，CA-1/CA-2 登记） | 其他 skills 文件 |
 | 测试 | n/a（不新增/不改 selftest；仅执行既有套件） | 任何 selftest 脚本改动 |
 | 配置 | n/a | config.json 等 |
 | 文档 | plans/skill-audit-20261026/**、plans/task-skill-audit-fix-20261026/**、plans/archive/task-v188-skill-audit-fix/{progress,task_plan}.md（drift 打回项③④回填） | 其他 plans |
@@ -172,7 +172,8 @@ execution_lane: L1
 
 | 编号 | 对象（文件+锚点） | 类型（新增·修改·删除·更新） | 吸收判定（增量·替代·删除） | 用户原话（逐字） | 依据（证据） | 执行动作 |
 |------|------------------|---------------------------|-----------|----------------|------------------------|---------|
-| CA-1 | <示例: 文件:锚点> | 新增 | 增量 | <用户原话> | <证据> | <执行动作> |
+| CA-1 | skills/task-planner/{README.md:48,69, docs/ARCHITECTURE.md:54,101} | 更新 | 增量 | R1「并修正」 | CR APPROVED 非阻断观察①（2026-10-26）——同族 `69-76` 镜像同步 253f8a0 语义 | 微修派发 Code Assistant 完成（3 文件 5 行，grep 0 命中） |
+| CA-2 | skills/task-planner/INSTALL.md:16 | 更新 | 增量 | R1「并修正」 | CR 非阻断观察② node 22.6+ 注记 | 同上（同批完成） |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 

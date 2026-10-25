@@ -13,7 +13,7 @@
 | `git` 2.30+ | 克隆/拉取 canonical source | ✅ |
 | `bash` 4.0+ | 运行 install.sh | ✅ |
 | `jq` 1.6+ | check-doc-sync.sh 配置解析 | ✅ |
-| `node` 18+ | .cjs 脚本运行时 | ✅ |
+| `node` 18+ | .cjs 脚本运行时；.ts hook 注册需 Node 22.6+（--experimental-strip-types） | ✅ |
 
 ---
 

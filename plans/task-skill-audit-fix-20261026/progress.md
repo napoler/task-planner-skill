@@ -88,6 +88,7 @@
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | check-complete | 本计划 | exit 0 | 待执行回填 | 待回填 |
+- **CR APPROVED**（2026-10-26，Code Reviewer 轻量单轮）：「17 项与 A/B 审计清单一一对应，零超清单改动，12 条新相对路径全部 test -e 解析通过，bun run 命中 0，selftest-doc-script-paths.sh=3 PASS；未引入新缺陷」——抽查 A-03/A-07/B-01/B-03/A-01/A-02 全对照通过；2 条非阻断观察（README/ARCHITECTURE 的 69-76 镜像+INSTALL node 版本注记）→ 登记变更标注表后微修派发处置
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
