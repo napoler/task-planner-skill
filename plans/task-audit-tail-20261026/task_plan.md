@@ -346,8 +346,13 @@ v190 剩余簿记（Current/委派/Batch/progress/verification/findings）→ st
 - [x] Document test results in progress.md
 - [x] Fix any issues found
 - **V-N:** VC-3, VC-4（selftest 23/23+全量 93/93）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由:③ 机械验证命令——套件执行只读输出可控，Rule 25.3 白名单）
+
+<!-- S-unit 派发单元表(Rule 22.6 — Phase 3 派发部分补登) -->
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S1 | selftest 素材 5 处 bun run→node 换词 | Code Assistant | selftest-evidence-goal-gate.sh（EG-22 命令词单信号 fixture） | 5/5 DONE+23/23 PASS | 5min | 1f/10l/5min | 无 | - | complete |
 
 ### Phase 5: Delivery
 <!-- 
