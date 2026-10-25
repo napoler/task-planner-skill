@@ -14,7 +14,7 @@ references:
 - references/worktree-isolation.md: 冲突分析与工作树隔离契约（实现类默认首选 + 合并回合约）
 - references/methodology.md: 思维方法论 T1-T5 指针 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke
 - 卫星技能 task-dispatch: 子代理派发/拆分/调度/超时兜底/返回校验/代码编辑隔离（`../task-dispatch/`，Rule 12,13,14,21,22,23,25,46,52,59,68,96）
-- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-76,85,86,87,88,89,90,92,93,94,95）
+- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95）
 - 卫星技能 media-planner: 媒体制作派发/单元线并行/内容分级（`../media-planner/`，Rule 47,49,50）
 - 卫星技能 verification-gate: 任务验证全链路——VC 可执行化设计/执行期 V-N 校验/终验 VC 复验/子代理验证/统一验证入口（`../verification-gate/`，Rule 84）
 # hooks: <TOOL-ADAPTED — stub files per tool register hooks via platform-specific config>
@@ -194,7 +194,7 @@ model: opus
 | 卫星 | 域 | 规则全文路径 | 调用条件 |
 |------|----|------------|---------|
 | task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68,96） |
-| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-76,85,86,87,88,89,90,92,93,94,95） |
+| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95） |
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
 | plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
@@ -222,12 +222,12 @@ Rules 1-96 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ## Completion Gate
 
-详见卫星 `verification-gate` `references/critical-rules-verification.md` Rule 84.4（2026-10-14 task-v173 从 completion-gate.md 迁移）。subagent 返回 "done" 后必须 Read 实际文件验证变更，才能标记 complete。
+详见卫星 `verification-gate` `../verification-gate/references/critical-rules-verification.md` Rule 84.4（2026-10-14 task-v173 从 completion-gate.md 迁移）。subagent 返回 "done" 后必须 Read 实际文件验证变更，才能标记 complete。
 
 ## Scope Guard / Goal Gate
 
 - **Scope Guard**：`check-scope.sh Write "<file>" task_plan.md` → exit 0=放行 / 1=拦截 / 2=no plan。**口径更正（P7，2026-10-22 用户授权）**：`scope_files` 约束**不由运行时停摆门承载**——实测 `check-scope.sh`/`check-delegation.sh` 均无 scope_files 运行时拦截逻辑（grep 零命中），原表述「不在 scope→停，获授权扩 scope」是死文，会诱导执行体按不存在的门停摆请示；实际约束由三处承载：① 主进程派发前的范围声明（Executor/scope_files 字段）② 收口审计 ③ `git show --stat` 越界自检。scope 越界的唯一合法出口=收口审计发现越界后按 Rule 74 变更标注表处理，不是执行期停下问用户。
-- **Goal Gate**：每个 `task_plan.md` 必须含 **Verification Contract**（VC 表），每项含可执行验证命令（Rule 84.1）。详见卫星 `verification-gate` `references/critical-rules-verification.md` Rule 84.3（2026-10-14 task-v173 从 goal-gate.md 迁移）。
+- **Goal Gate**：每个 `task_plan.md` 必须含 **Verification Contract**（VC 表），每项含可执行验证命令（Rule 84.1）。详见卫星 `verification-gate` `../verification-gate/references/critical-rules-verification.md` Rule 84.3（2026-10-14 task-v173 从 goal-gate.md 迁移）。
 
 ## I/O 契约
 
@@ -235,11 +235,11 @@ Rules 1-96 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ## Chain 模式与协同路由（指针）
 
-`chain_mode` 默认 `single`（单 block）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，成员按 Rule 21.4 声明组并行）的值语义与 block 交接合约权威源=`reference.md § Chain Handoff Contract`。专业技能协同（comet/OpenSpec/superpowers/dynamic-workflows）权威源=`../plan-collab-router/references/skill-collaboration.md`，主路由 `Skill("plan-collab-router")`；dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8 编排条件（常设授权）时主动路由——激活按 39.8 三件套（留痕/91.12 分档/83 探测）（Rule 39,40,91）。调研 SOP=卫星 `plan-research-router`（`references/research-routing.md`）；模板库=卫星 `plan-template-kit`（本技能 `templates/` 机械层留守）。
+`chain_mode` 默认 `single`（单 block）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，成员按 Rule 21.4 声明组并行）的值语义与 block 交接合约权威源=`reference.md § Chain Handoff Contract`。专业技能协同（comet/OpenSpec/superpowers/dynamic-workflows）权威源=`../plan-collab-router/references/skill-collaboration.md`，主路由 `Skill("plan-collab-router")`；dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8 编排条件（常设授权）时主动路由——激活按 39.8 三件套（留痕/91.12 分档/83 探测）（Rule 39,40,91）。调研 SOP=卫星 `plan-research-router`（`../plan-research-router/references/research-routing.md`）；模板库=卫星 `plan-template-kit`（本技能 `templates/` 机械层留守）。
 
 ## 派发与执行纪律指针（卫星 authoritative）
 
-- **子代理派发/路由表/模型档位/超时兜底/返回校验/代码编辑隔离/provider 故障 scaling/hook 自愈** → 卫星 `task-dispatch`（SKILL.md+`references/agent-coverage.md` 覆盖矩阵+`references/split-pattern-library.md` 模式库；五档兜底=改派→拆细→降档→接管→AskUser）
+- **子代理派发/路由表/模型档位/超时兜底/返回校验/代码编辑隔离/provider 故障 scaling/hook 自愈** → 卫星 `task-dispatch`（SKILL.md+`../task-dispatch/references/agent-coverage.md` 覆盖矩阵+`../task-dispatch/references/split-pattern-library.md` 模式库；五档兜底=改派→拆细→降档→接管→AskUser）
 - **执行纪律/错误闭环/批量质量门控（batch-quality-gate.md）/反思验证/注释规范/可靠性/能力落盘/上下文压力/用户否决/决策分级/变更吸收** → 卫星 `task-discipline`
 - **媒体制作/单元线并行/内容权重分级** → 卫星 `media-planner`
 - 主进程铁律摘要：任务执行一律 `Agent()` 派发（白名单外 Write/Edit 被 `check-delegation.sh` 拦截，enforce=exit 2）；bypass 仅显式 `allow-direct.sh on --confirm-user-requested`；六项白名单全文见 task-dispatch Rule 25.3

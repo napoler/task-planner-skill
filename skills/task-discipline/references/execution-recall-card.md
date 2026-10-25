@@ -1,5 +1,5 @@
 # 执行规范召回卡（execution-recall-card）
-> **性质**：非权威摘要——一行级蒸馏+规则编号锚。权威原文=各 `critical-rules-*.md`（核心域=task-planner/references/critical-rules.md），冲突以原文为准；卡内禁新增规则正文（Rule 82 防镜像）。
+> **性质**：非权威摘要——一行级蒸馏+规则编号锚。权威原文=各 `critical-rules-*.md`（核心域=../../task-planner/references/critical-rules.md），冲突以原文为准；卡内禁新增规则正文（Rule 82 防镜像）。
 > **用法**：Rule 93.2——每完成 3 个 S-unit 或 Phase 翻转 complete，主进程亲自 Read 本卡，progress.md 留 `[recall]` 行；Rule 93.3——compaction 恢复/会话恢复/[assess]≥PRESSURE 后第一动作先读本卡。
 > **维护**：规则 landing/修订任务触及本卡已收条目时同步更新该行（Rule 93.1 同步义务）；本卡 ≤120 行。
 

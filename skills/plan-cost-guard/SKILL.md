@@ -26,7 +26,7 @@ description: 成本控制与计费知识库——Rule 17 嵌套 opus Skill 节�
 
 - 纯知识层：无 config、无 hook、无 scripts；本技能不读 config.json
 - Rule 17 摘要行与流程执行（hook 计数、节流提醒）留守 task-planner 的 SKILL.md 与 critical-rules.md；本技能只承载详解与模板
-- 本技能文档中的 `references/critical-rules.md` 指针指向主技能 task-planner/references/critical-rules.md（跨技能指针；主技能 P4-S2 完成指针化后仍以 grep 重定位）
+- 本技能文档中的 `../task-planner/references/critical-rules.md` 指针指向主技能 ../task-planner/references/critical-rules.md（跨技能指针；主技能 P4-S2 完成指针化后仍以 grep 重定位；技能根文件用 `../` 单级——`../../` 仅适用于 references/ 子目录文件，2026-10-26 修正）
 - 记账产物落 `plans/{task-id}/cost_log.md`（模板在本技能 references/cost_log.md）
 
 ## 使用入口（两种）

@@ -4,7 +4,7 @@
 >
 > **迁移注记（task-v173 验证技能独立化）**：VC 规则由主技能 `references/goal-gate.md` 迁移为本文件 Rule 84.3；子代理验证协议由主技能 `references/completion-gate.md` 迁移为 Rule 84.4。迁移后主技能 `goal-gate.md`/`completion-gate.md` 改为指针（指向本文件），避免双份正文漂移（Rule 82 禁镜像副本）。
 >
-> **边界（Rule 82 分层）**：本卫星收编「验证机制规则」（VC 设计/可执行性/子代理验证/终验复验 SOP）；核心执行面规则保留原位——Rule 26（质量门控惩罚映射）、Rule 51（需求覆盖与完成声称）、Rule 66（goal 单元逐 goal 验证）全文仍在核心 `task-planner/references/critical-rules.md`，本文件以指针引用其验证面，不复制正文。
+> **边界（Rule 82 分层）**：本卫星收编「验证机制规则」（VC 设计/可执行性/子代理验证/终验复验 SOP）；核心执行面规则保留原位——Rule 26（质量门控惩罚映射）、Rule 51（需求覆盖与完成声称）、Rule 66（goal 单元逐 goal 验证）全文仍在核心 `../../task-planner/references/critical-rules.md`，本文件以指针引用其验证面，不复制正文。
 
 ## 规则
 

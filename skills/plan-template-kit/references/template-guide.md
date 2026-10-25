@@ -83,7 +83,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 - **统一标题**：`## 📚 必要知识储备`（副标题按模板适配）——全库唯一 grep 锚，可用 `grep -rl "## 📚 必要知识储备" templates/ | wc -l` 验收（应为 35；例外 7 个：knowledge-brief、shared-tracker、variant/mini-lite-type、delivery-summary、deprecated、session-handoff、user-session-log——deprecated/session-handoff 经 2026-10-13 审计修复已移除非统一形式锚、改独立编号标题不计入；task-v115 videop1 回流 12 类全含锚，实测 35）
 - **task_plan 系（主模板 + 29 variant，含锚 28——mini-lite 除外）**：完整五类知识源表 + 填写规则，插入于「⚠️ 执行范围限制」之后；variant 另含 1 行类型示例行（如 bugfix=官方 Issue/changelog、schema-migration=DB 官方 DDL 文档）；Phase 1 追加确认 checkbox
 - **辅助模板**：轻量适配版——findings=对齐记录、progress=使用记录、verification=符合性核验、batch_report=知识依据、notepad-learnings=储备备注、subagent_dispatch=知识上下文包（随 prompt 注入子代理）
-- **契约安全**：该章节属可定制结构区（见 §四）。内容不含 `### Phase N:`、`- **Status:**`、行首 `---`，标题避开 `Batch Report` 字样（防误触 Rule 18.6 正则）；插入位置必须在「⚠️ 执行范围限制」区块**完整结束之后**——该区块被 check-conflicts.sh / check-drift.sh 经统一库 lib/plan-parse.sh 的 `plan_parse_scope` 提取（check-conflicts 默认形态、check-drift 列限形态，语义权威源见库头注），任何 `##` 级标题插入区块中间都会截断 scope 提取
+- **契约安全**：该章节属可定制结构区（见 §四）。内容不含 `### Phase N:`、`- **Status:**`、行首 `---`，标题避开 `Batch Report` 字样（防误触 Rule 18.6 正则）；插入位置必须在「⚠️ 执行范围限制」区块**完整结束之后**——该区块被 check-conflicts.sh / check-drift.sh 经统一库 scripts/lib/plan-parse.sh 的 `plan_parse_scope` 提取（check-conflicts 默认形态、check-drift 列限形态，语义权威源见库头注），任何 `##` 级标题插入区块中间都会截断 scope 提取
 
 ### 2.5 knowledge-brief.md（第 6 计划文件 — task-v067 新增）
 

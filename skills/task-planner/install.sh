@@ -5,7 +5,7 @@
 #   bash install.sh [--canonical <path>] [--tools claude,zcode,opencode,...] [--no-verify] [--no-backup] [--dry-run]
 #
 # What it does:
-#   1. Pre-flight: checks git/bun/jq availability
+#   1. Pre-flight: checks git/bash availability
 #   2. Clones canonical source (if not exists) or uses existing
 #   3. Detects installed agent tools
 #   4. Backs up existing per-tool stubs (if any)

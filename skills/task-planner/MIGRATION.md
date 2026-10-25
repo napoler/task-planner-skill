@@ -97,7 +97,7 @@ sed -i \
 # 写薄壳 SKILL.md（见 INSTALL.md §3 模板）
 
 # 注册 hooks
-bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
+node --experimental-strip-types ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
 ```
 
 ### 2.4 更新 external references

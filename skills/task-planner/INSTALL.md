@@ -12,7 +12,6 @@
 |------|------|------|
 | `git` 2.30+ | 克隆/拉取 canonical source | ✅ |
 | `bash` 4.0+ | 运行 install.sh | ✅ |
-| `bun` 1.0+ | Claude Code hook 注册（register-hooks-cj.ts） | 仅 Claude |
 | `jq` 1.6+ | check-doc-sync.sh 配置解析 | ✅ |
 | `node` 18+ | .cjs 脚本运行时 | ✅ |
 
@@ -197,7 +196,7 @@ cat ~/.claude/settings.local.json | grep -A20 hooks
 
 未注册则：
 ```bash
-bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
+node --experimental-strip-types ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
 ```
 
 ### 5.3 升级后 `install.sh` 行为异常
@@ -271,7 +270,7 @@ ls -la ~/.claude/skills/task-planner/
 cat ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/install.log | tail -20
 
 # Step 3: Claude Code hook 注册
-bun run ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
+node --experimental-strip-types ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
 
 # Step 4: 启动 Claude Code 新会话，测试 SessionStart hook
 # 应该看到：[task-plan] mkdir -p plans/task-{id}/ ...

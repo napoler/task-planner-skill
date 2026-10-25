@@ -191,11 +191,11 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 ## 卫星路由索引（11 卫星 — 非核心域规则全文按需 Read；路径相对仓根）
 
 - **task-dispatch**（域=子代理派发与拆分调度）：规则全文见 `../../task-dispatch/references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68,96）；调用条件=涉及子代理拆分/派发/并行调度/粒度校验/执行体选型/冲突隔离时。
-- **task-discipline**（域=执行纪律与工作产物维护）：规则全文见 `../../task-discipline/references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92,93,94）；调用条件=执行期纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物相关时。
+- **task-discipline**（域=执行纪律与工作产物维护）：规则全文见 `../../task-discipline/references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92,93,94,95）；调用条件=执行期纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物相关时。
 - **media-planner**（域=媒体制作任务派发）：规则全文见 `../../media-planner/references/critical-rules-media.md`（Rule 47,49,50）；调用条件=视频生成/图片生成/剧集创作类任务的媒体轴拆分与执行体路由时。
 - **plan-research-router**（域=调研分析与证据纪律）：规则全文见 `../../plan-research-router/references/critical-rules-research.md`（Rule 58,63,75）；调用条件=调研/分析/评估/归因类任务的证据面覆盖与反推诿时。
 - **plan-template-kit**（域=模板生命周期与难度分级）：规则全文见 `../../plan-template-kit/references/critical-rules-template.md`（Rule 16,34,37,38）；调用条件=模板选取/沉淀入库/难度分级/轻量档判定时。
-- **plan-collab-router**（域=技能协同与工具面选择）：规则全文见 `../../plan-collab-router/references/critical-rules-collab.md`（Rule 39,40）；调用条件=动态工作流编排/harness 工具面主动选择时。
+- **plan-collab-router**（域=技能协同与工具面选择）：规则全文见 `../../plan-collab-router/references/critical-rules-collab.md`（Rule 39,40,91）；调用条件=动态工作流编排/harness 工具面主动选择时。
 - **plan-cost-guard**（域=成本控制）：规则全文见 `../../plan-cost-guard/references/critical-rules-cost.md`（Rule 17）；调用条件=opus 调用频次/嵌套成本/成本门控相关时。
 - **plan-resume**（域=计划续推）：规则全文见 `../../plan-resume/references/critical-rules-resume.md`（Rule 24）；调用条件=交付终态/会话恢复触发点的计划扫描与自主续推时。
 - **progress-tracker**（域=共享内容认领）：规则全文见 `../../progress-tracker/references/critical-rules-progress.md`（Rule 30）；调用条件=跨任务共享内容认领追踪/进度复用时。
