@@ -284,6 +284,12 @@ Phase 4（Testing：全量回归在跑，/tmp/selftest-postfix-20261026.log）
 - **V-N:** VC-1, VC-2（两路审计发现清单=A/B 批次输入）
 - **Status:** complete
 - **Executor:** general-reviewer（两路并行审计 2026-10-26：A 引用完整性+计数算术 / B 运行时+硬编码+登记现势；另 drift-checker 对 v188 收口轮独立判定）
+
+<!-- S-unit 派发单元表(Rule 22.6/96.3——S1/S2 独立性四问全 no，声明并行组 audit26 同消息并发派发) -->
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S1 | [parallel-group:audit26] A 路引用完整性+计数算术审计 | general-reviewer | plans/skill-audit-20261026/subagent-state/（检查点落点） | 检查点落盘+P1×2/P2×7 清单返回 | 15min | 2f/60l/15min | 无 | - | complete |
+| S2 | [parallel-group:audit26] B 路运行时+硬编码+登记现势审计 | general-reviewer | 同上目录 | 检查点落盘+4 项 resolved+硬编码 0 | 15min | 2f/60l/15min | 无 | - | complete |
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
@@ -330,8 +336,9 @@ Phase 4（Testing：全量回归在跑，/tmp/selftest-postfix-20261026.log）
 -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
-| S2 | | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
+| S1 | [parallel-group:fix26] FIX-A：11 项引用/索引修复 | executor | A-ref-integrity.md（发现清单，A-01..A-12） | 11/11 DONE+grep 0 命中 | 15min | 2f/60l/15min | 无 | - | complete |
+| S2 | [parallel-group:fix26] FIX-B：4 项运行时文档修复 | Code Assistant | B-runtime-hardcoded.md（B-01..B-04） | 4/4 DONE+bun run 清零 | 15min | 1f/30l/15min | 无 | - | complete |
+| S3 | 微修 2 处同族残留裸引用 | Code Assistant | 同 B 检查点残留段 | 2/2 DONE+diff 证据 | 5min | 2f/10l/5min | 无 | S1,S2 | complete |
 
 ### Phase 4: Testing & Verification
 <!-- 
