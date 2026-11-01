@@ -343,6 +343,7 @@ else
         echo "[V6] MERGE_CONFLICT: STOP — 冲突不自动解决, 报告用户" >&2
         # [2026-09-12 S2 P2: 主仓可能残留 mid-merge 态, 重跑前须先 abort, 否则 V1 MERGE_HEAD 检测 exit 8 自锁]
         echo "[V6] 恢复: git -C $MAIN_REPO merge --abort (清除 mid-merge 态后重跑; 需保留合并结果则手工解冲突)" >&2
+        # [Rule 97.6 仲裁] 主进程消费本 [V6] MERGE_CONFLICT exit 7 时先走 41.1 尝试配额（手动解冲突+复验）再升级用户；本脚本 exit 7=机械 STOP 语义不变，仲裁在 LLM 行为层，不改脚本行为
         exit 7
     fi
     MERGE_COMMIT="$(git -C "$MAIN_REPO" rev-parse --verify HEAD 2>/dev/null)"

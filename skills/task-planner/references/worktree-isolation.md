@@ -83,7 +83,7 @@ git worktree remove ${REPO_PARENT}/<repo>-worktrees/<task-id> && git branch -d w
 5. 清理 worktree 与分支;task_plan.md「隔离决策」merge_back 更新为 merged(<commit>)
 ```
 
-**失败处理**：merge 冲突 → STOP 报告用户(不自动解决)；worktree 内验证失败 → 修到通过才合并，3 次失败升级用户。
+**失败处理**：merge 冲突 → STOP 报告用户(不自动解决)；worktree 内验证失败 → 修到通过才合并，3 次失败升级用户。〔Rule 97.6 仲裁〕主进程消费首冲突 STOP 前先走 41.1 消解链尝试配额（①git 三方合并/并集解 ②手动解冲突→复验 ③分叉重基），仍失败才升级用户；「不自动乱解/报告用户」语义保持（§5 反模式不变），配额仅许手动解+复验。
 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。
 
 ## 5. 反模式（禁止）
