@@ -139,3 +139,9 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+## 部署收口（用户授权 2026-11-03 追加）
+- [deploy] 3 技能位（~/.zcode/skills、~/.claude/skills、~/.cursor/skills）7 文件文件级 cp（agents 位仅 plan-resume 不含本族，不涉）；三处 `diff -q` 7/7=0
+- [commit] zcode 仓 adfbed7 / claude 仓 1c69495（`git add skills/` 捎带了仓内既有未提交面，zcode 捎 9 文件/claude 捎大面——判例登记：下次 pathspec 收窄到具体技能目录）；cursor 位非 git 仓仅落盘
+- [push] 源仓 task-planner-skill 4edfeff..438f685（10 ahead 快进）+ zcode-config 6ee82d6..adfbed7（main）+ claude-config 8ed938c..1c69495（master）三仓 ahead=0
+- P4「遗留：部署位同步待授权」→ 已清零
