@@ -18,7 +18,7 @@ sid_scope="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | t
 TASK_PLANNER_SID="$sid_scope" bash "$SKILL_ROOT/check-scope.sh" "$tool" "$file"
 rc=$?
 if [ "$rc" -eq 1 ]; then
-  echo 'task-planner: 检测到 .plan-required 哨兵——本会话尚无有效计划，禁止写入 plans/ 之外路径。请先调用 Skill(skill="task-planner") 创建计划。若为简单修复，可在指令中加「简单修复」或「就改一行」跳过计划创建（task-perf-opt Change #2）。' >&2
+  echo 'task-planner: 检测到 .plan-required 哨兵——本会话尚无有效计划，禁止写入 plans/ 之外路径。轻量/单文件小改（L0-T 纯文本档，≤2 文件 ∧ ≤15min）：写一个 ≤12 行极简 task_plan.md stub（mkdir -p plans/task-{id}/ 后填 Goal/一行 VC/一行 scope，含 `plan_tier: mini`，见 templates/variant/l0-lite-type.md）即解除本写入门并放行受管文件 ≤30 行（check-scope D10 mtime + check-delegation ④b mini 双门，零新脚本零 attest）；中/重任务请调用 Skill("task-planner") 建全量计划。' >&2
   exit 2
 fi
 

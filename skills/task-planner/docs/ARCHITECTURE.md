@@ -12,7 +12,7 @@
 canonical 仓 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源（2026-10-12 task-v171 拆分后实测）：
 - `SKILL.md`（237 行，hooks 字段为空；文末含 11 卫星路由表 + Rules 1-97 全集索引）<!-- 2026-10-19 task-v191 对齐实态：214→237 行、1-84→1-92 -->
 - `references/`（6 篇规则文档：critical-rules/todo-sync/worktree-isolation/goal-gate/completion-gate/methodology；纪律/派发/媒体域规则已迁至各卫星 `references/critical-rules-*.md`）
-- `templates/`（13 个主模板 + 29 个 variant，`find templates -maxdepth 1 -type f -name '*.md' | wc -l` → 13，`templates/variant/*.md` → 29；variant 28/29 含「📚 必要知识储备」章节）
+- `templates/`（13 个主模板 + 30 个 variant，`find templates -maxdepth 1 -type f -name '*.md' | wc -l` → 13，`templates/variant/*.md` → 30；variant 28/30 含「📚 必要知识储备」章节）
 - `scripts/`（148 条目 = 138 个 .sh（含 93 个 selftest-*.sh）+ .ps1/.cjs/.ts/.tsv + lib//capabilities/ 两个子目录）<!-- 2026-10-19 task-v191 对齐实态：119/110/76 → 146/137/92 --><!-- [2026-11-02 task-lazy-escalation-20261102 实测：新增 selftest-anti-deferral.sh，146/137/92 → 148/138/93] -->
 - `lib/`（6 个 installer 库脚本：detect-tools/backup/install-stub/install-companion/migrate-refs/verify）
 - `config.json`（阈值配置）
@@ -141,7 +141,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 ├── templates/                               ← 13 主模板 + 29 variant（2026-10-12 实测）
 │   ├── task_plan.md / progress.md / findings.md / verification.md / notepad-learnings.md
 │   ├── knowledge-brief.md / subagent_dispatch.md / delivery-summary.md / shared-tracker.md / user-session-log.md / batch_report.md / session-handoff.md / deprecated.md
-│   └── variant/                             ← 场景化变体 29 个（28/29 含「📚 必要知识储备」）
+│   └── variant/                             ← 场景化变体 30 个（28/30 含「📚 必要知识储备」）
 ├── scripts/                                 ← 148 条目（138 .sh 含 93 selftest，2026-11-02 task-lazy-escalation-20261102 对齐：新增 selftest-anti-deferral.sh；原 146/137/92 见 task-v191）
 │   ├── run-selftests.sh                     # 全量 selftest 回归统一入口（--fresh/--only/--status）
 │   ├── check-complete.sh / .ps1             # Stop hook 完成检测

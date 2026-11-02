@@ -108,7 +108,7 @@ if grep -q 'check-template-type' "$TMAP" && grep -q 'Rule 34' "$TMAP"; then ok 1
 # TL-17
 # [task-v095 P3] template-guide 迁至卫星 plan-template-kit，路径与计数断言跟随迁移
 TGUIDE="$SKILL_ROOT/../plan-template-kit/references/template-guide.md"
-if grep -q 'rule-enhancement' "$TGUIDE" && grep -q '29 个' "$TGUIDE"; then ok 17 "template-guide.md 含 rule-enhancement 且计数 29 个"; else bad 17 "template-guide.md 缺 rule-enhancement/计数 29 个（四点同步第 4 落点腐化）"; fi
+if grep -q 'rule-enhancement' "$TGUIDE" && grep -q '30 个' "$TGUIDE"; then ok 17 "template-guide.md 含 rule-enhancement 且计数 30 个"; else bad 17 "template-guide.md 缺 rule-enhancement/计数 30 个（四点同步第 4 落点腐化）"; fi
 # TL-18
 if grep -q '^## 九、' "$TMAP"; then ok 18 "template-mapping.md 含 §九 机制适用性矩阵"; else bad 18 "template-mapping.md 缺 §九 机制适用性矩阵（Rule 37 权威源误删）"; fi
 # TL-19 [task-v112] delivery-summary.md 存在且五要素区块齐备
