@@ -147,8 +147,8 @@ execution_lane: L1
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 缺口调研落盘 | 机制缺口矩阵+级联面清单落 findings.md | `grep -c '^## 机制缺口矩阵' <plan-dir>/findings.md`=1 且 `grep -c '级联面' <plan-dir>/findings.md`≥1 | S1,S2/Phase 1 | complete |
 | G2 | 技能体例定案 | context-corrector SKILL.md 定案（双触发源+SOP+边界互引） | Read 草案+frontmatter grep `name: context-corrector` 命中 | S3,S4/Phase 2 | complete |
-| G3 | 条款落地 | Rule 98 五子条+触发点接线+1-98 级联在 worktree 完成 | VC-2/VC-3 两条 grep 命令全命中（见 VC 表） | S5,S6/Phase 3 | pending |
-| G4 | 零回归收口 | selftest 全量 FAIL=0 且合并回 master+账本+归档 | VC-4/VC-5 命令输出（FAIL=0；无 worktree 残留；账本 ≥2 行） | S7,S8/Phase 4,5 | pending |
+| G3 | 条款落地 | Rule 98 五子条+触发点接线+1-98 级联在 worktree 完成 | VC-2/VC-3 两条 grep 命令全命中（见 VC 表） | S5,S6/Phase 3 | complete |
+| G4 | 零回归收口 | selftest 全量 FAIL=0 且合并回 master+账本+归档 | VC-4/VC-5 命令输出（FAIL=0；无 worktree 残留；账本 ≥2 行） | S7,S8/Phase 4,5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
