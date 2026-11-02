@@ -87,3 +87,5 @@
 {"rule":96,"status":"landed","task_id":"task-subagent-boost-20261023","ts":"2026-10-24","note":""}
 {"rule":97,"status":"reserved","task_id":"task-lazy-escalation-20261102","ts":"2026-11-02","note":"Rule 97 惰性上抛禁令与不可用判词证据门（纪律域 satellite）；用户 2026-11-02 投诉「惰性上抛/无证据判不可用」"}
 {"rule":97,"status":"landed","task_id":"task-lazy-escalation-20261102","ts":"2026-11-02","note":""}
+{"rule":98,"status":"reserved","task_id":"task-ctxcorrect-20261103","ts":"2026-11-03","note":""}
+{"rule":98,"status":"landed","task_id":"task-ctxcorrect-20261103","ts":"2026-11-03","note":""}
