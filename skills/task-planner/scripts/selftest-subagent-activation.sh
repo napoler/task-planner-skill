@@ -11,8 +11,8 @@
 #   SA-08 含 96.5 指标留痕（最大并行宽度）
 #   SA-09 含 96.6 管辖边界（执行强化层）
 #   SA-10 核心 critical-rules.md 卫星路由行枚举扩员（…,52,59,68,96）
-#   SA-11 SKILL.md 纪元字面 1-98 ≥3 处（宽容正则 1-98([^0-9]|$); 基线 0 见 draft-rule96 E23, 级联后=frontmatter/正文全集索引/References 表三处；[2026-11-02 task-lazy-escalation-20261102 纪元 1-96→1-97 随动][2026-11-03 task-ctxcorrect-20261103 纪元 1-97→1-98 随动]）
-#   SA-12 SKILL.md 卫星枚举 ,96 ≥2 处（frontmatter 卫星行+正文路由表 task-dispatch 行）∧ 其余 81 条 ≥2 处（79→80：2026-11-02 随动 task-lazy-escalation-20261102；78→79：2026-10-24 并集解，task-nopause-execfirst-20261023；80→81：2026-11-03 task-ctxcorrect-20261103 级联随动）
+#   SA-11 SKILL.md 纪元字面 1-99 ≥3 处（宽容正则 1-99([^0-9]|$); 基线 0 见 draft-rule96 E23, 级联后=frontmatter/正文全集索引/References 表三处；[2026-11-02 task-lazy-escalation-20261102 纪元 1-96→1-97 随动][2026-11-03 task-ctxcorrect-20261103 纪元 1-97→1-98 随动][2026-11-04 task-crossprojauth-20261104 纪元 1-98→1-99 随动]）
+#   SA-12 SKILL.md 卫星枚举 ,96 ≥2 处（frontmatter 卫星行+正文路由表 task-dispatch 行）∧ 其余 82 条 ≥2 处（79→80：2026-11-02 随动 task-lazy-escalation-20261102；78→79：2026-10-24 并集解，task-nopause-execfirst-20261023；80→81：2026-11-03 task-ctxcorrect-20261103 级联随动；81→82：2026-11-04 task-crossprojauth-20261104 Rule 99 并入纪律域）
 #   SA-13 模板承载: task_plan.md（96.3 并行硬标注注释+96.5 并行宽度指标行）∧ subagent_dispatch.md（96.4 同一消息并发句）
 #   SA-14 [负] 防改写/回删+旧纪元残留: 21.4「未声明者默认串行」≥1 ∧ 96.2 约束复述「超档拆细不升档」≥1 ∧ 59.4 原文「先拆细再派」≥1 ∧ SKILL.md「Rules 1-94」=0
 #         （[S6 实现注] 设计稿 SA-14 把「超档拆细不升档」记为 59.4 在位锚; 实测 59.4 原文措辞=「先拆细再派，禁止派出去等失败再兜底」
@@ -61,12 +61,12 @@ if grep -q '96\.5' "$DISPATCH" && grep -qF '并行宽度' "$DISPATCH"; then ok 0
 if grep -q '96\.6' "$DISPATCH" && grep -qF '执行强化层' "$DISPATCH"; then ok 09 "96.6 管辖边界（执行强化层）"; else bad 09 "96.6/执行强化层 缺失"; fi
 # SA-10 核心卫星路由行枚举扩员
 if grep -qF '52,59,68,96' "$CRIT_C"; then ok 10 "核心 critical-rules.md 卫星枚举扩员至 96"; else bad 10 "核心卫星枚举缺 96（task-dispatch 路由行）"; fi
-# SA-11 SKILL.md 纪元字面 1-98 ≥3
-sa11="$(cntE '1-98([^0-9]|$)' "$SKILLMD")"
-if [ "${sa11:-0}" -ge 3 ]; then ok 11 "SKILL.md 纪元字面 1-98=${sa11:-0} 处（≥3）"; else bad 11 "SKILL.md 纪元字面 1-98 仅 ${sa11:-0} 处（需 ≥3: frontmatter/正文/References）"; fi
-# SA-12 卫星枚举 ,96 + 其余 81 条（各 ≥2）[2026-11-02 task-lazy-escalation-20261102 纪元级联随动：79→80，Rule 97 并入纪律域后全集计数上移；2026-11-03 task-ctxcorrect-20261103 80→81]
-sa12a="$(cnt '52,59,68,96' "$SKILLMD")"; sa12b="$(cnt '其余 81 条' "$SKILLMD")"
-if [ "${sa12a:-0}" -ge 2 ] && [ "${sa12b:-0}" -ge 2 ]; then ok 12 "SKILL.md 卫星枚举 ,96=${sa12a:-0} ∧ 其余 81 条=${sa12b:-0}（各 ≥2）"; else bad 12 "SKILL.md 级联随动缺失（,96=${sa12a:-0}/81 条=${sa12b:-0}, 各需 ≥2）"; fi
+# SA-11 SKILL.md 纪元字面 1-99 ≥3
+sa11="$(cntE '1-99([^0-9]|$)' "$SKILLMD")"
+if [ "${sa11:-0}" -ge 3 ]; then ok 11 "SKILL.md 纪元字面 1-99=${sa11:-0} 处（≥3）"; else bad 11 "SKILL.md 纪元字面 1-99 仅 ${sa11:-0} 处（需 ≥3: frontmatter/正文/References）"; fi
+# SA-12 卫星枚举 ,96 + 其余 82 条（各 ≥2）[2026-11-02 task-lazy-escalation-20261102 纪元级联随动：79→80，Rule 97 并入纪律域后全集计数上移；2026-11-03 task-ctxcorrect-20261103 80→81；2026-11-04 task-crossprojauth-20261104 81→82，Rule 99 并入纪律域]
+sa12a="$(cnt '52,59,68,96' "$SKILLMD")"; sa12b="$(cnt '其余 82 条' "$SKILLMD")"
+if [ "${sa12a:-0}" -ge 2 ] && [ "${sa12b:-0}" -ge 2 ]; then ok 12 "SKILL.md 卫星枚举 ,96=${sa12a:-0} ∧ 其余 82 条=${sa12b:-0}（各 ≥2）"; else bad 12 "SKILL.md 级联随动缺失（,96=${sa12a:-0}/82 条=${sa12b:-0}, 各需 ≥2）"; fi
 # SA-13 两模板承载锚
 if grep -q '96\.3' "$TPL_PLAN" && grep -qF '并行组' "$TPL_PLAN" && grep -qF '并行宽度' "$TPL_PLAN" \
    && grep -q '96\.4' "$TPL_DISPATCH" && grep -qF '同一消息' "$TPL_DISPATCH"; then
