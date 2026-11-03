@@ -11,3 +11,5 @@ new_rule: 99
 **VC**：① `grep -c '^### 99' skills/task-discipline/references/critical-rules-discipline.md`=1；② `grep -c '1-99' skills/task-planner/SKILL.md`≥3 且 `grep -c '其余 82 条'`=2；③ `bash skills/task-planner/scripts/run-selftests.sh` 末行 Total FAIL=0 且 PASS 数=基线；④ 部署位对源仓 `diff -r` 6 文件=0；⑤ `rule-reserve.sh check 99` 末条=landed。
 **D1 自动裁决记录**（Rule 44.3）：超时值=5min（44.1 默认）；触发时间=2026-11-04 本会话；裁决理由=完成性指令+§四.6 文本优先铁律（L0-T 纯文本档，94.6/98 同范式，守护机器化 opt-in 未获授权不建）；推荐项=按本计划执行；被覆盖的未决选项=无（无真分叉/无 D6 破坏性动作）。
 **Decisions Made**：L0-T 主仓直改（无 worktree）=11-03 用户裁决 L0-lite 最小 stub 先例（零新脚本零 attest）；部署位同步=本任务「确保后期不会违反」的生效条件（技能加载位=部署位），属用户原话射程内闭环节点，非越权；新编号 99 经 rule-reserve 账本 reserve→land。
+**[81.3 归档拒绝登记]** 2026-11-04 `archive-plan.sh task-crossprojauth-20261104` REJECT reason=status-none（mini stub 无 Phase/Status 结构，fail-closed）→ 按 81.3 保持原位+登记本行，不强行归档；G10 mini 档豁免同步。
+**[收口证据]** 源仓 b935480（8 文件）→ 部署 zcode 8cf4b22/claude eeb91ed/cursor 落盘（各 6 文件 diff=0）→ 三仓 push ahead=0；selftest 94/94 零回归；rule-reserve 99=landed。
