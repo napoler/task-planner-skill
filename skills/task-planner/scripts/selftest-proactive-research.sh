@@ -2,7 +2,7 @@
 # selftest-proactive-research.sh — task-v163: Rule 75「网络调研主动激活与外部数据依赖纪律」静态守护（75.7 机制面）
 #
 # What（守护对象 + 运行方式）:
-#   静态断言 task-v163 全链落点在位（对齐 selftest-research-first.sh 范式），共 15 条编号断言 PR-01..PR-15：
+#   静态断言 task-v163 全链落点在位（对齐 selftest-research-first.sh 范式），共 15 条编号断言 PR-01..PR-15： [2026-11-04 task-crossprojauth-20261104-R6] 增 PR-16..PR-18（Rule 75.9/75.10/75.11 文本锚）
 #     · references/critical-rules.md（Rule 75 条款本体，PR-01..PR-09）:
 #         PR-01 `^### 75 ` 节头=1
 #         PR-02..PR-09 `^75\.0 `..`^75\.7 ` 八子条各≥1（防「节头在但子条被裁」死文变体）——
@@ -59,6 +59,9 @@ ge "PR-06 critical-rules 75.4 GitHub 检索纪律子条"           "$(cnt '^75\.
 ge "PR-07 critical-rules 75.5 外部工具强制子条"              "$(cnt '^75\.5 ' "$CR")" 1
 ge "PR-08 critical-rules 75.6 模板层定制子条"                "$(cnt '^75\.6 ' "$CR")" 1
 ge "PR-09 critical-rules 75.7 机制子条(零新键声明)"          "$(cnt '^75\.7 ' "$CR")" 1
+ge "PR-16 critical-rules 75.9 用户明示参考诉求 P0 触发面子条(R6)" "$(cnt '^75\.9 ' "$CR")" 1
+ge "PR-17 critical-rules 75.10 调研通道降级链子条(R6)"         "$(cnt '^75\.10 ' "$CR")" 1
+ge "PR-18 critical-rules 75.11 无证据禁脑补子条(R6)"            "$(cnt '^75\.11 ' "$CR")" 1
 
 # ── 计划期载体（模板区块 / plan-writer 契约 / dispatch advisory）──
 ge "PR-10 task_plan 模板调研区块锚(Rule 75.1)"              "$(cntF '## 🔍 调研需求与检索计划（Rule 75.1' "$TPL")" 1
@@ -80,5 +83,5 @@ else
     bad "PR-15 config 零新键" "got=(props=$PROP,newkey=$NEWKEY) expect=(4,0)"
 fi
 
-echo "Total: 15 PASS=$PASS FAIL=$FAIL"
+echo "Total: 18 PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1

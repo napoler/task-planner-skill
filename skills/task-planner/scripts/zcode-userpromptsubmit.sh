@@ -11,7 +11,7 @@
 # 职责 2(attestation 校验,Rule 20.1,2026-09-02):计划目录存在 .plan-attestation 时先校验 SHA-256;
 #       不匹配 → 只注入 [PLAN TAMPERED] 警告,拒绝注入计划内容(防篡改计划继续当事实源)。
 # 职责 3(原有,[2026-08-28]):[plan-note] D/A/B/C 影响判定提醒(D=新任务边界,task-v087 Rule 8.1),
-#       节流:第 1 条 + 每 prompt_note_interval 条一次;已完结计划(COMPLETE/BLOCKED)静默。
+#       note: 每 prompt 触发一次五类反思提示(2026-11-04 R5 Rule 102.4); prompt_note_interval 键失活(保留避免 config 面变动); 重注入块 CA-1 mtime+interval 限流不变; 已完结计划(COMPLETE/BLOCKED)静默。
 # 约束:fail-open —— 任何异常 exit 0 不阻塞指令;无活跃计划时零输出;
 #       注入块内不回显用户 prompt;外部内容只进 findings.md 不进 task_plan.md(20.2,防注入放大)。
 
@@ -265,7 +265,7 @@ case "$n" in ''|*[!0-9]*) n=0 ;; esac
 n=$(( n + 1 ))
 echo "$n" > "$ups_state"
 note=""
-if [ "$n" -eq 1 ] || [ $(( n % interval )) -eq 0 ]; then
+if [ "$n" -ge 1 ]; then  # [2026-11-04 R5 Rule 102.4] note 每 prompt 触发(与 10 计数限流解耦); interval/prompt_note_interval 键失活保留
   # [task-perf-opt Change #6] 同文件邻近行追豁免：D 类文案前增加邻近引用例外说明。
   # 邻近引用词检测：prompt 含「第 N 行 / 上一句 / 刚才那个 / 继续 / 接着」→ 归为 B 类（扩展）而非 D 类（新计划）。
   _near_ref=0
@@ -274,11 +274,17 @@ if [ "$n" -eq 1 ] || [ $(( n % interval )) -eq 0 ]; then
     case "$_ups_prompt_np" in
       *第*[[:space:]]*[0-9]*[[:space:]]*行*|*上一句*|*上一行*|*刚才那个*|*刚才那句*|*继续*|*接着*|*下面那*|*那一行*) _near_ref=1 ;;
     esac
+    _cancel_ref=0
+    case "$_ups_prompt_np" in
+      *取消*|*撤销*|*作废*|*不做了*|*不要了*|*放弃*|*停掉*|*不继续做*|*不开发这个*) _cancel_ref=1 ;;
+    esac
   fi
-  if [ "$_near_ref" = "1" ]; then
-    note="[邻近引用→B 类] [plan-note] 新指令到达 — 先做影响判定: 检测到同文件邻近行引用词(第 N 行/上一句/继续/接着等),归为 B 类(扩展)而非 D 类(新计划); D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧计划原样保留; A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘;不相干内容禁止混入当前计划(Rule 8.1)。"
+  if [ "$_cancel_ref" = "1" ]; then
+    note="[取消/E 类] [plan-note] 检测到取消/撤销指令 — 先同步文档再推进(Rule 102.1e): 单项取消=在 task_plan.md 对应 Phase/VC/需求行标 cancelled(不删条目,保留审计痕迹+一行理由); 整体取消=task_plan.md 头部 outcome: CANCELLED+全部未完成 VC 标 cancelled(理由); Decisions Made 必填(指令摘要→E 类判定→受影响文档→理由→时间戳); 既有产物/分支未明示清理=保留登记。口头取消不落盘=P0 违规(Rule 51.1/102.2)。"
+  elif [ "$_near_ref" = "1" ]; then
+    note="[邻近引用→B 类] [plan-note] 新指令到达 — 先做影响判定: 检测到同文件邻近行引用词(第 N 行/上一句/继续/接着等),归为 B 类(扩展)而非 D 类(新计划); 先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 落盘后再执行; D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧任务记录断点检查点; A 无影响→照常; E 取消/撤销→102.1e 文档同步。禁止口头接受不落盘(Rule 8.1/102.2)。 不相干内容禁止混入当前计划(Rule 8.1)。"
   else
-    note="[plan-note] 新指令到达 — 先做影响判定: D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧计划原样保留; A 无影响→照常; B 扩展/C 矛盾→先 Edit task_plan.md 更新 Phase/VC/范围 + 同步 Todo(S5) 再执行。禁止口头接受不落盘;不相干内容禁止混入当前计划(Rule 8.1)。"
+    note="[plan-note] 新指令到达 — 先做反思门(Rule 102.0): A 无影响→照常执行(登记一行); B 扩展/C 矛盾→先同步文档(task_plan.md Phase/VC/范围 + progress/需求锚 + Todo S5)落盘后再按文档执行; D 新任务边界→开新计划目录+旧任务断点检查点(打断接续: 在途单元做完或显式挂起登记); E 取消/撤销→标 cancelled 不删条目+Decisions Made 理由。B/C/D/E 先落盘后执行;口头接受不落盘=P0 违规(Rule 8.1/51.1/102.2)。 不相干内容禁止混入当前计划(Rule 8.1)。"
   fi
 fi
 
