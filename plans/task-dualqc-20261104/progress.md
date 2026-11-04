@@ -12,10 +12,11 @@
 
 ### Phase 1: 预留与隔离基线
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-04 20:46
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - **R 锚定**：本 Phase 服务 R1-R8 全集（前置基线：编号持有+隔离区+回归基线），Goal=双轮质检与同步完整性机制落地
+- **[goal:G 前置] 证据行**：worktree 建成+基线 94/94+103 持有（本段 Test Results；G 单元表前置单元）
 - Actions taken:
   - D1 显式 yes 确认（2026-11-04，用户原话"yes"；Goal 绑定复述已完成，attest SHA 2bd879cd… 锁定在案）
   - `plan-created.cjs` 清哨兵（side+legacy 双清除）
@@ -57,6 +58,7 @@
   | VC-11 等效 | 收口序列段含 user-session-log+103 | 命中 | 命中 | PASS |
   | AD/SA 单跑 | 两 selftest | rc=0 | rc=0/rc=0 | PASS |
 - **[recall]** Phase 2 翻转前主进程 Read execution-recall-card.md（2026-11-04 22:47 前后，Phase 1 翻转时已读，本 Phase 3 个 S-unit+翻转再读要点=翻转门控/逐 Phase commit/三判门）
+- **[goal:G1][goal:G2] 证据行**：commit 4371ac0+八子条/衔接/计数 grep 全过（本段 Test Results+findings §Rule103 设计稿）
 - **Completed:** 2026-11-04 22:50（V-N：VC-1/2/4/9 worktree 等效全 PASS）
 
 ### Phase 3: 模板双轮质检段落地
@@ -74,6 +76,7 @@
   | VC-3 等效 | 3b 段/声明区块 grep | 各=1 | 1/1 | PASS |
   | VC-10 等效 | 同步核对清单/同步完整性 | 双模板命中 | 命中 | PASS |
   | 八字段契约零动 | git diff §7 区 | 零改动 | 零改动 | PASS |
+- **[goal:G3][goal:G4] 证据行**：两模板段落盘+§7/schema 零动核验（本段 Test Results）
 - **Completed:** 2026-11-04 22:55（V-N：VC-3/VC-10 等效全 PASS）
 
 ### Phase 4: 守护脚本与全量回归
@@ -91,10 +94,11 @@
   | VC-5 | selftest-dual-qc.sh 单跑+TSV 计数 | exit 0/行=1 | rc=0 PASS=14 FAIL=0/1 | PASS |
   | VC-6（worktree 腿） | run-selftests.sh | ΣFAIL=0 | Total: 95 PASS=95 FAIL=0 (run=95 reused=0) | PASS |
   | SKILL.md 还原核验 | git diff | 零残留 | 零残留 | PASS |
+- **[goal:G5][goal:G6] 证据行**：DQ 14/14+registry=1+回归 95/95（本段 Test Results）
 - **Completed:** 2026-11-04 23:12（V-N：VC-5/VC-6 worktree 腿全 PASS）
 
 ### Phase 5: 双审查与意见闭环
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-04 23:15
 - **R 锚定**：本 Phase 服务 R1-R6 全集——独立双视角审查产出质量，MAJOR 意见闭环（本 Phase 自身即 103 机制的实战演练：两审查体=全新上下文独立复检）
 - Actions taken:
@@ -109,18 +113,28 @@
   | DQ 守护复跑 | selftest-dual-qc.sh | 14/14 | 14/14 PASS | PASS |
   | S11 复验全量回归 | run-selftests.sh | ΣFAIL=0 | Total: 95 PASS=95 FAIL=0 (run=95 reused=0) | PASS |
   | S11b 虚报拦截 | 盘上 grep 新句 | =1 | 首查=0（虚报）→主进程 Bash 补刀→=1+DQ 14/14 | PASS（拦截-修复闭环） |
+- **[goal:G7] 证据行**：S9 APPROVED+S10 7 项意见闭环+复验 95/95（本段 Test Results+检查点 11/12）
 - **Completed:** 2026-11-04 23:30（V-N：MAJOR 清零（critic 7 项闭环）+复跑 ΣFAIL=0；S9 APPROVED+10 双审查报告落盘）
 
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+### Phase 6: 合并部署簿记归档
+- **Status:** complete
+- **Started:** 2026-11-04 23:33
+- **R 锚定**：本 Phase 服务 R5「同步到这种模式」——合并回 master+三部署位生效+账本 land+归档
 - Actions taken:
-  -
+  - S12：merge --no-ff → master 1e705db（9 文件 +210/-11）；Read 复验 grep 全过；worktree remove+分支 delete
+  - S13：三部署位 9 文件 cp+diff=0 门（DEPLOY-GATE-DONE 零 DIFF）；zcode push 011435f/claude push 003b5c8（pathspec 锁定，skills/ 面 status=0）
+  - S14：rule 103 landed（账本 jsonl）+源仓 push 7d48161..1e705db+memory 记忆写入（task-dualqc-20261104.md+MEMORY.md 行）
+  - S15/S16：clear 指针→归档→索引刷新→交付总结（收尾序列）
 - Files created/modified:
-  -
+  - master merge 1e705db；部署位 9 文件×3；plans/ 簿记+账本+INDEX
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-6 主仓腿 | run-selftests.sh（master） | ΣFAIL=0 | Total: 95 PASS=95 FAIL=0 | PASS |
+  | VC 终验 | run-verification.sh | 11/11 | PASS=11 FAIL=0（反引号修复后） | PASS |
+  | 委派统计 | check-delegation stats | verdict ok | verdict=ok violations=0 rate=0.667 | PASS |
+- **[goal:G8] 证据行**：master 1e705db+三位置 diff=0+账本 landed+归档执行（本段+verification.md Goal Gate 表）
+- **Completed:** 2026-11-04 23:45（V-N：VC-7/VC-8 PASS）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
@@ -152,3 +166,8 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+## 对齐留痕（Rule 73.4 [align] 三拍）
+- **[align]** 2026-11-04 21:40 B 类扩展到达：对齐三问=①新诉求（同步完整性审查+一般档执行）与 Goal 零冲突、②在 scope 语义内（技能机制落地）、③与 R1-R5 互补（补漏改盲区非替代）→并入计划重规划，零推翻
+- **[align]** 2026-11-04 23:22 Phase 5 意见闭环对齐：critic 修复文本与既有条款（84.7/74.3/69.1）分工声明式衔接，零改写既有判定语义；对 84.7 重复面以「触发面分工+证据复用」吸收，不新增机器门
+- **[align]** 2026-11-04 23:33 合并回前对齐：worktree 变更集 7+2 文件全在 scope 清单、既有条款零删除（diff 删除行均为对齐表示）、Goal 单元 G1-G8 证据齐→merge --no-ff

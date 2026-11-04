@@ -221,10 +221,10 @@ S12 主仓 merge --no-ff + 主仓回归复验 → S13 三部署位同步 diff=0 
 
 ### Phase 2: 规则条款与双向接线
 <!-- S1-S3 派发 general-coder（主进程直写 skills 被 delegation 守卫拦截——2026-11-04 实测，白名单仅 plans/ 路径；改派亦符合 R7 一般档要求）；S4 注释链批量=主进程白名单①机械 Bash 批量（grep 清单驱动+逐文件 diff 复核+Batch Report 门控） -->
-- [ ] S1（general-coder 派发）：Rule 103 八子条落 task-dispatch 卫星尾部（103.1 定义与适用面/103.2 第一轮自审契约/103.3 第二轮独立复检契约/103.4 升档映射与封顶/103.5 复检任务书简洁直接四要素/103.6 同步完整性审查/103.7 豁免面与成本约束/103.8 FAIL 闭环与冲突仲裁）
-- [ ] S2（general-coder 派发）：96.2 后追加复检升档衔接行；verification-gate 84.7 块内追加 Rule 103 指针行
-- [ ] S3（general-coder 派发）：SKILL.md 计数随动（1-103/86 条/枚举+103）+ Phase 执行循环与终验段加 103 指针行 + 「🆕 用户新指令处理」段追加统一收口序列行
-- [ ] S4（主进程，白名单①机械 Bash 批量）：纪元注释链随动（grep 驱动清单→逐文件目标替换+diff 复核，Batch Report 门控，清单登记 progress 后才可动）
+- [x] S1（general-coder 派发）：Rule 103 八子条落 task-dispatch 卫星尾部（103.1 定义与适用面/103.2 第一轮自审契约/103.3 第二轮独立复检契约/103.4 升档映射与封顶/103.5 复检任务书简洁直接四要素/103.6 同步完整性审查/103.7 豁免面与成本约束/103.8 FAIL 闭环与冲突仲裁）
+- [x] S2（general-coder 派发）：96.2 后追加复检升档衔接行；verification-gate 84.7 块内追加 Rule 103 指针行
+- [x] S3（general-coder 派发）：SKILL.md 计数随动（1-103/86 条/枚举+103）+ Phase 执行循环与终验段加 103 指针行 + 「🆕 用户新指令处理」段追加统一收口序列行
+- [x] S4（主进程，白名单①机械 Bash 批量）：纪元注释链随动（grep 驱动清单→逐文件目标替换+diff 复核，Batch Report 门控，清单登记 progress 后才可动）
 - **V-N:** VC-1, VC-2, VC-4, VC-9
 - **Status:** complete
 - **Executor:** general-coder（sonnet-1）
