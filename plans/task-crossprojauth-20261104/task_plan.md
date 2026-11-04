@@ -75,13 +75,17 @@ new_rule: 99
 
 **[R7 执行状态]（2026-11-04 本会话，COMPLETE）**：材料包三件（clause28-r7/clause-media-r7/spec-G-r7-cascade）+G 组（general-purpose 后台，检查点 07-executor-r7.md，S6 自检 10/10）：28.6/28.7 逐字追加 discipline L58-59、47.6 追加 media L20、47.4「五→六子条」改字、critical-rules.md L194/L195 路由加词、selftest-interaction TI-12/13（Total 13/13 rc=0）、selftest-media-dispatch MD-10/11（Total 11/11 rc=0）；S5 判定=media-planner/SKILL.md 无 47.x 摘要 bullet 面零改动（登记）。主进程磁盘复验全过（VC①②③：`^28\.6 `=1/`^28\.7 `=1/`^47\.6 `=1/`^28\.5 `=1/`^47\.5 `=1/「五子条文本锚」=0；关键语义锚 P0 拖延违规/时间窗浪费违规/抽检未完成禁交付 各=1）；VC④ 并入收口见下行。
 
+**[R8 执行状态]（2026-11-04 本会话，COMPLETE）**：H 组（general-purpose 后台，检查点 08-executor-r8.md，S1-S7 全过 7/7）——**R8-a**：2 agent × 3 位 6 文件逐位 in-place 插入「## QC 强制抽检门（Rule 47.6）」条款块（负结果报告段前），frontmatter L1-8 三位零改动（zcode 引号+custom UUID/claude 无引号+model: sonnet/cursor 无引号逐位适配保留）；zcode **f12c044**/claude **bc5f2a6**（原 untracked=new-file 形态登记）pathspec 提交+cursor 落盘。**R8-b**：28 脚本顶锚 11x 窗口预放宽（ERE 裸族/BRE 并联/AD-04/n35/其余 8x 条→`[89][0-9]`/AD-12 pin L91-100 11 处逐字一致同改+注释 R8 短注；负断言族 1-39×7/1-40/1-51,53,55/40-[5-8][0-9] 原值零动），源仓 **008e680**（28 文件 +79/-79）→ 3 位 cp diff=0（zcode **32bb716**/claude **456fed0** pathspec+cursor 落盘）。主进程复验全过：6 文件 `^## QC 强制抽检门`=1 各、zcode 提交 stat=+7×2 纯条款块、11x 面 28 文件 44 有效行、live 残留 10-only=0、fresh 全量回归 **94/94**（run=94 reused=0 亲跑）；三仓 push ahead=0；簿记 **47caded**。VC(R8)①②③④ 全过。
+
+**[收口证据 R8（2026-11-04）]**：agent 部署面 3 位 6 文件条款在位+frontmatter 逐位适配零毁（判向=三位差异仅 frontmatter、正文 SOP 一致，in-place 插入非 cp）；R8-b 收口后纪元 1-110..1-119 窗口已预放宽（`1-(8x|9x|10x|11x)`），下次纪元落 1-110+ 不再炸顶锚（判据=fresh 94/94 持平）；遗留=1-120 起再炸面登记为下纪元已知待放项（session-log 负样本探针已随注说明 110 现属窗口内）。
+
 **[R8 扩展（B 类，用户 2026-11-04 第八指令逐字锚）]**：「修正未完成的事情，以及上面需要涉及的 SOP 相关的修改也需要。」
 **Goal(R8)**：双修正面——**R8-a agent 执行体 SOP 侧修订（§六 保护区授权面，用户本指令显式授权）**：image-generation-executor 与 video-generation-executor 的 agent 定义文件补「47.6 抽检门」条款：生成/质检执行体返回前必过生成产物常识缺陷抽检（视频=关键镜头抽帧 ≥3 帧 image-understand 判读，缺陷清单=运动方向矛盾/主体串戏/物理穿模；图片=解剖透视/文字乱码/主体错位），抽帧证据（帧路径+判读结论）入检查点，命中 H 级缺陷回 47.5 迭代环，抽检未完成禁交付（51.2 联动）——纯文本条款追加，不改 frontmatter/model/tools，不重写既有 SOP 章节；**R8-b 纪元顶锚 11[0-9] 窗口预放宽（memory 登记「1-110 窗口再炸面待放」遗留项）**：selftest-anti-deferral.sh AD-09/AD-10 与 selftest-subagent-activation.sh SA-11/SA-12b 的 `1-(8[0-9]|9[0-9]|10[0-9])` 窗口补 `|11[0-9]` 分支、「其余 8[0-9] 条」补 9x 位（判据=当前 1-102/85 条断言保持通过 + 未来 1-110..1-119 不炸），零语义变更纯锚面机械动作。
 **非修项登记（②③=不可修事实，R8 不碰）**：② 新条款行为面生效语义=新会话快照加载，本会话不重放（既有事实）；③ session_e1bebc00 ReadSessionContext 仍不可检索（检索未命中[2026-11-04]，判例锚保持 R7 原话行，未回填）。
 **scope_files(R8)**：agent 定义文件（`~/.zcode/agents/image-generation-executor.md`+`video-generation-executor.md` 及其源仓/claude 位对应文件，具体路径与部署面先 recon 定案）+ `skills/task-planner/scripts/selftest-anti-deferral.sh`（AD-09/AD-10）+ `skills/task-planner/scripts/selftest-subagent-activation.sh`（SA-11/SA-12b）。**VC(R8)**：① 两个 agent 文件各含「47.6」字面 ≥1 且抽检门条款在位（grep 抽检证据口径）；② AD-09/AD-10/SA-11/SA-12b 断言在 11[0-9] 窗口下 rc=0 且当前 live 值（1-102/其余 85 条）仍 PASS；③ fresh 全量回归 94/94；④ 并入收口链：源仓 pathspec commit（如 agent 文件源仓侧存在）+ 部署位 diff=0 + 三仓 ahead=0 + 簿记。
 **D7 登记**（R8 授权面）：§六 保护区 agent 定义文件修改=用户 2026-11-04 原话「SOP 相关的修改也需要」显式授权（P0-1 授权成立，授权射程=两个 executor agent 的 47.6 抽检条款追加，不含 frontmatter/model/tools 与既有 SOP 章节重写）；「未完成的事情」按本 stub Goal 登记项解释=R8-a+R8-b 两项可修遗留，②③ 不可修事实登记不修（13.1 取舍=不静默扩范围：若用户意指其他未完成项，本条登记即为对齐面）。
 
-**[R8 执行状态]（2026-11-04 本会话）**：（待执行后回填）
+**[R8 执行状态]（2026-11-04 本会话）**：见 L78 回填（COMPLETE，H 组 7/7 全过）
 
 **[收口证据 R7（2026-11-04）]**：fresh 全量回归 `Total: 94 PASS=94 FAIL=0 (run=94 reused=0)`；源仓 feat **6f6b849**（5 文件 +43/-5）+ 簿记 **1ddeda1**；3 位部署 5 文件 diff=0（zcode **b2c9a9c**/claude **adb9996** pathspec 提交+cursor 落盘，cmp 对账 drift_files=0）；三仓 push ahead=0（source/zcode/claude rev-list 各=0，1ddeda1 后二次归零复验）；遗留授权项=agent SOP 侧（image/video-generation-executor 定义文件补抽检门条款）属 §六 保护区待用户逐项授权。
 
