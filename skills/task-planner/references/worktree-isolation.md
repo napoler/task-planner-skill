@@ -1,6 +1,6 @@
 # 工作树隔离契约（Worktree Isolation Contract）
 
-> **强制策略（AGENTS.md §十一 P0，2026-08-29 升格）**：实现类任务（代码/配置/基础设施/技能）**必须**在 git worktree 隔离区开发，完成后合并回原分支并清理。完整 P0 条款、必命中范围、可绕过例外、并行开发期间的行为约束见 `AGENTS.md §十一`；本文件为操作 SOP 层。宪法条款与本节措辞漂移时，以 §十一 为准。原因：本仓多为运行中的基础设施（skills/hooks/config 被所有会话实时加载），直接改动可能使功能在工作期间半残；隔离让改动发生在副本，验证后原子合并回原分支。冲突扫描结果只是附加依据——干净仓库也首选隔离。
+> **强制策略（AGENTS.md §十一 P0，2026-08-29 升格）**：实现类任务（代码/配置/基础设施/技能）**必须**在 git worktree 隔离区开发，完成后合并回原分支并清理。完整 P0 条款、必命中范围、可绕过例外、并行开发期间的行为约束见 `AGENTS.md §十一`；本文件为操作 SOP 层。宪法条款与本节措辞漂移时，以 §十一 为准。**路径约定裁决（2026-11-04 用户，Rule 100）**：worktree 与一切临时产物统一放**当前项目** `tmp/`（worktree=`<项目根>/tmp/worktrees/<task-id>`）；本裁决与宪法 §十一.2「仓外集中目录」旧约定冲突时按 P0-1 用户当前指令优先，宪法本体对齐待授权（§六 保护区，本 SOP 不改 AGENTS.md）。原因：本仓多为运行中的基础设施（skills/hooks/config 被所有会话实时加载），直接改动可能使功能在工作期间半残；隔离让改动发生在副本，验证后原子合并回原分支。冲突扫描结果只是附加依据——干净仓库也首选隔离。
 
 ## 1. 冲突分析（计划创建时强制）
 
@@ -26,44 +26,44 @@
 | 信号⑤ 命中（基础设施有未提交改动） | worktree + 强烈建议 | 或先请用户处理未提交变更 |
 | 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。 | | |
 
-## 3. 路径规范（消除散落 — 2026-08-29 立）
+## 3. 路径规范（消除散落 — 2026-08-29 立；2026-11-04 修订为 Rule 100 内放）
 
-**强制**：所有 worktree 必须落在该仓专属的集中目录内,子目录 = `<task-id>`:
+**强制（用户裁决 2026-11-04，Rule 100）**：所有 worktree 与一切临时产物必须落在**当前项目**的临时目录内，子目录 = `<task-id>`：
 
 ```
-<repo-parent>/<repo>-worktrees/<task-id>/
+<project-root>/tmp/worktrees/<task-id>/
 ```
 
-例如 `~/.zcode` 仓 → `~/.zcode-worktrees/<task-id>/`。
+`${PROJECT_ROOT}` = 当前项目根目录的绝对路径(即任务所属 git 仓根,如 `/mnt/data/dev/task-planner-skill` 或 `~/.zcode`;按部署环境代入实际值),下文命令示例统一以 `${PROJECT_ROOT}` 书写。
 
-**为什么**:旧约定 `../<repo>-wt-<task-id>` 把每个 worktree 散落在仓库旁,父目录被一堆 `-wt-xxx` 子目录污染,无法统一扫描/清理;集中目录把同一仓的所有 worktree 收拢到一处,`git worktree list` + `ls <repo>-worktrees/` 即可全量盘点,清理时按子目录逐个处理,不再遗漏。
+**为什么**:原 2026-08-29 约定(仓外隐藏集中目录 `<repo>-worktrees/<task-id>`,置于该仓父目录)解决了仓库旁散落问题,但临时态仍散在各项目 home 目录、跨项目盘点/清理成本高,且临时文件本无统一落点规则。2026-11-04 裁决(Rule 100,task-crossprojauth-20261104 R2)收拢为:worktree+一切临时产物统一落**当前项目** `tmp/`——`.gitignore` 一条 `tmp/` 统一忽略(Rule 100.2),`git worktree list` + `ls <project-root>/tmp/worktrees/` 全量盘点,清理时按子目录逐个处理不再遗漏。旧仓外集中目录约定**废止(2026-11-04)**:存量旧路径 worktree 按 §4/§6 逐个清理,新任务禁用旧路径。
 
 **约束**:
 - 必须用**绝对路径**(相对路径会因当前 cwd 解析错位置,落进主仓内部 — 已在 2026-08-29 验证过一次)
-- 仓外、隐藏目录(以 `.` 起头,沿用现有约定)
-- 路径模板中的 `${REPO_PARENT}` = 仓库父目录(即该仓所在目录,如某用户的 home 目录;按部署环境代入实际值),下文命令示例统一以 `${REPO_PARENT}` 书写
-- 子目录名 = task-id,不要再带 `wt-` 前缀(父目录已限定仓库语义)
+- 前置:`<project-root>/.gitignore` 含 `tmp/`(Rule 100.2;验证点 `git check-ignore -q tmp/` exit 0;任务起点缺则追加一行并登记 Decisions Made)
+- `tmp/worktrees/` 位于主仓 gitignore 区 — 主仓忽略的是路径,worktree 内部 git 管理不受影响(其自身 HEAD 边界,worktree 内提交仍走 Rule 27)
+- 子目录名 = task-id,不带 `wt-` 前缀(basename 语义不变,smart-merge-back.sh/check-conflicts.sh 的 basename=task-id 兼容逻辑不受影响)
 - 分支名仍为 `wt/<task-id>`(与路径解耦)
 
 ## 4. 生命周期（最小命令集）
 
 ```bash
-# ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>)
-git worktree add ${REPO_PARENT}/<repo>-worktrees/<task-id> -b wt/<task-id> main
+# ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>;前置: ${PROJECT_ROOT}/.gitignore 含 tmp/ (Rule 100.2))
+git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
 
 # ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
 #    子代理派发时在 prompt 中写明 worktree 绝对路径
 
 # ③ worktree 内提交 — 每 Phase 完成即提交(Rule 27),禁止攒批到最后;禁止把未提交变更带回合并
 #    只 add 本 Phase 产物文件(禁用 add -A 盲扫,防卷入 plans/ 与并行任务产物)
-git -C ${REPO_PARENT}/<repo>-worktrees/<task-id> add <本 Phase 产物文件...>
-git -C ${REPO_PARENT}/<repo>-worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
+git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> add <本 Phase 产物文件...>
+git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
 
 # ④ worktree 内全 VC 复验通过后,回主仓合并
 git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"
 
 # ⑤ 清理
-git worktree remove ${REPO_PARENT}/<repo>-worktrees/<task-id> && git branch -d wt/<task-id>
+git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/<task-id>
 
 # ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>)
 ```
@@ -83,7 +83,7 @@ git worktree remove ${REPO_PARENT}/<repo>-worktrees/<task-id> && git branch -d w
 5. 清理 worktree 与分支;task_plan.md「隔离决策」merge_back 更新为 merged(<commit>)
 ```
 
-**失败处理**：merge 冲突 → STOP 报告用户(不自动解决)；worktree 内验证失败 → 修到通过才合并，3 次失败升级用户。〔Rule 97.6 仲裁〕主进程消费首冲突 STOP 前先走 41.1 消解链尝试配额（①git 三方合并/并集解 ②手动解冲突→复验 ③分叉重基），仍失败才升级用户；「不自动乱解/报告用户」语义保持（§5 反模式不变），配额仅许手动解+复验。
+**失败处理（2026-11-04 Rule 101.2 语义翻转）**：merge 冲突=收口义务（Rule 101.2）：逐条走 41.1 消解链配额（①git 三方合并/并集解 ②手动解冲突→复验 ③分叉重基）**解决所有冲突**，解后 VC 复验过才合并；仅**消解配额耗尽仍冲突**为真门（Rule 95.5）→ STOP 报告用户（Rule 70 四要素+冲突 hunk 看点）并在 progress 登记 `[conflict-unresolved]`；**不乱解守卫保留**：解冲突必带复验（VC/selftest/Read 对照），无复验的解=假收口（Rule 54），并集解仅限两侧增量场景、判为语义冲突处必须手动解+复验。worktree 内验证失败 → 修到通过才合并，3 次失败升级用户。
 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。
 
 ## 5. 反模式（禁止）
@@ -91,9 +91,10 @@ git worktree remove ${REPO_PARENT}/<repo>-worktrees/<task-id> && git branch -d w
 - ❌ 实现类任务未经用户否决就直接在原分支开发
 - ❌ 在 worktree 里创建计划文档(plans/ 属会话级状态，留主仓)
 - ❌ 合并带回未提交变更 / 跳过 worktree 内复验直接 merge
-- ❌ merge 冲突自动乱解不报告
+- ❌ 解冲突不复验/留冲突给用户（冲突=收口义务，Rule 101.2：主动解决所有冲突+复验门；「不乱解」守卫保留——仅配额耗尽才真门）
 - ❌ 合并后不清理 worktree/分支(遗留 wt/* 是下次冲突信号③)
 - ❌ 切换会话 CWD 到 worktree(破坏哨兵与 hook 相对路径约定)
+- ❌ 将 worktree/临时文件放在当前项目 tmp/ 之外(2026-11-04 Rule 100 内放;旧仓外集中目录路径已废止,见 §3)
 
 ## 6. 并行任务同落点冲突与排队续跑（2026-10-16 立）
 

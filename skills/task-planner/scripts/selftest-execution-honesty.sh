@@ -101,11 +101,12 @@ fi
 #     z=全集锚改 '1-8[0134]' ≥1（v138/v144/v162/v166/v169 宽容锚演进链的 v171 分层口径切换，演进史保留如上）。
 x="$(grep -cE '^\| task-discipline \|' "$SKILLMD" || true)"
 y="$(grep -cE '^### 54 ' "$CRIT_D" || true)"
-z="$(grep -cE '1-[89][0-9]' "$SKILLMD" || true)"
+# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口] 全集锚 1-[89][0-9]→1-(8[0-9]|9[0-9]|10[0-9])
+z="$(grep -cE '1-(8[0-9]|9[0-9]|10[0-9])' "$SKILLMD" || true)"
 if [ "$x" -eq 1 ] && [ "$y" -eq 1 ] && [ "$z" -ge 1 ]; then
-  ok 09 "SKILL.md 卫星路由表 discipline 行=1 ∧ CRIT_D Rule 54 标题=1 ∧ 全集 '1-[89][0-9]'=$z≥1（C38/Rule54 摘要面瘦身后由路由表+标题锚承载）"
+  ok 09 "SKILL.md 卫星路由表 discipline 行=1 ∧ CRIT_D Rule 54 标题=1 ∧ 全集 '1-(8x|9x|10x)'=$z≥1（1-80..101 宽窗；C38/Rule54 摘要面瘦身后由路由表+标题锚承载）"
 else
-  bad 09 "SKILL.md 路由表 discipline 行=$x（应 =1）或 CRIT_D 54 标题=$y（应 =1）或 '1-80'=$z（应 ≥1，级联漏改）"
+  bad 09 "SKILL.md 路由表 discipline 行=$x（应 =1）或 CRIT_D 54 标题=$y（应 =1）或 '1-101'全集锚=$z（应 ≥1，级联漏改）"
 fi
 
 # EH-10 模板面：delivery-summary.md「54.1」≥1 且「54.4」≥1（真实进展对照行双锚）

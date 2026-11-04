@@ -5,7 +5,7 @@
 > 标题格式统一 `### N 标题`，正文逐字复制。
 
 ### 12 冲突即隔离（工作树默认首选）
-任务启动前运行 `check-conflicts.sh`；**实现类任务默认建议工作树隔离**（`wt/<task-id>` 分支，`<repo-parent>/<repo>-worktrees/<task-id>` 目录），完成后验证并主动合并回原分支再清理（合约见 `../../task-planner/references/worktree-isolation.md`）。纯文档/调研类或用户显式否决时才直接开发。原因：本仓多为运行中基础设施，直接改动可能使功能在工作期间无法使用。
+任务启动前运行 `check-conflicts.sh`；**实现类任务默认建议工作树隔离**（`wt/<task-id>` 分支，`<project-root>/tmp/worktrees/<task-id>` 目录 — 临时产物统一当前项目 tmp/，Rule 100；tmp/ 须入 .gitignore），完成后验证并主动合并回原分支再清理（合约见 `../../task-planner/references/worktree-isolation.md`）。纯文档/调研类或用户显式否决时才直接开发。原因：本仓多为运行中基础设施，直接改动可能使功能在工作期间无法使用。
 
 ### 13 子代理隔离强制（P0）
 调研/搜索/大文件读取/跨文件 Read 必须派子代理。完整路由表见 SKILL.md §「子代理路由与模型分级」。主进程禁止直接 Read >500 行文件后改动、跑测试、接收 `Skill("research-assistant")` 长文。模型档位复用 `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` 既有约定。

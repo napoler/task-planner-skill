@@ -91,3 +91,7 @@
 {"rule":98,"status":"landed","task_id":"task-ctxcorrect-20261103","ts":"2026-11-03","note":""}
 {"rule":99,"status":"reserved","task_id":"task-crossprojauth-20261104","ts":"2026-11-04","note":"Rule 99 跨项目/跨目录操作授权纪律（纪律域）；用户 2026-11-04 指令：跨项目操作须询问用户授权才可推进，非授权严禁越权"}
 {"rule":99,"status":"landed","task_id":"task-crossprojauth-20261104","ts":"2026-11-04","note":""}
+{"rule":100,"status":"reserved","task_id":"task-crossprojauth-20261104","ts":"2026-11-04","note":"Rule 100 临时目录统一与工作树内放纪律（纪律域）；用户 2026-11-04 第二指令：worktree 与一切临时文件统一落当前项目 tmp/，tmp/ 入 .gitignore"}
+{"rule":101,"status":"reserved","task_id":"task-crossprojauth-20261104","ts":"2026-11-04","note":""}
+{"rule":100,"status":"landed","task_id":"task-crossprojauth-20261104","ts":"2026-11-04","note":""}
+{"rule":101,"status":"landed","task_id":"task-crossprojauth-20261104","ts":"2026-11-04","note":""}

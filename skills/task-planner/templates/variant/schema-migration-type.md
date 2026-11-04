@@ -118,7 +118,7 @@ Phase 1
 |------|-----|
 | `conflict_scan` | `safe` / `risk` |
 | `isolation` | `worktree`(默认 — 涉及数据库 schema,§十一 P0) |
-| `worktree_path` | `<repo-parent>/<repo>-worktrees/<task-id>` |
+| `worktree_path` | `<project-root>/tmp/worktrees/<task-id>`(Rule 100:临时产物统一当前项目 tmp/,tmp/ 入 .gitignore) |
 | `branch` | `wt/<task-id>` |
 | `merge_back` | `pending` → `merged(<commit>)` |
 

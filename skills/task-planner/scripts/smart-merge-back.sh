@@ -45,7 +45,7 @@
 #   V3 主仓未提交文件 ∩ 分支变更文件(merge-base..branch)     → 非空 exit 4 SCOPE_OVERLAP(列出交集)
 #   V4 已合并检测(merge-base --is-ancestor branch base)     → 真: [V4] ALREADY_MERGED, 跳过合并继续清理提示与 --deploy, 最终 exit 0
 #   V5 master 前进检测(base HEAD ≠ merge-base)               → exit 5 MASTER_AHEAD(--force 才继续; 冲突仍 exit 7)
-#   V6 合并执行(git -C <主仓> merge --no-ff branch)          → [V6] MERGED: <commit>; 冲突 exit 7 MERGE_CONFLICT(STOP 语义)
+#   V6 合并执行(git -C <主仓> merge --no-ff branch)          → [V6] MERGED: <commit>; 冲突 exit 7 MERGE_CONFLICT(收口义务语义, Rule 101.2)
 #
 # 后续输出:
 #   [CLEANUP] git worktree remove <path> && git branch -d <branch>   (只提示不执行 — 清理时机留主进程)
@@ -96,13 +96,13 @@
 #   4 = SCOPE_OVERLAP         (主仓未提交文件 ∩ 分支变更文件非空, 列出交集)
 #   5 = MASTER_AHEAD          (base 前进于 merge-base, 建议先 merge base 入分支再重跑; --force 才继续)
 #   6 = DEPLOY_DRIFT          (--deploy 任一位 DRIFT: 两级对账 L1 文件集合差/L2 内容定向 diff 有差异(基准=主仓 skills/task-planner) / cp 失败 / 部署源缺失 / slot 校验 REJECTED(危险路径))
-#   7 = MERGE_CONFLICT        (merge 冲突, STOP 语义 — 不自动解决, 报告用户; 主仓残留 mid-merge, 恢复: git -C <主仓> merge --abort)
+#   7 = MERGE_CONFLICT        (merge 冲突状态报告 — 冲突=调用方收口义务(2026-11-04 Rule 101.2: LLM 侧走 41.1 消解链解决所有冲突+复验后重跑本脚本; 仅消解配额耗尽才真门 STOP 报告用户); 主仓残留 mid-merge, 恢复: git -C <主仓> merge --abort)
 #   8 = MERGE_IN_PROGRESS     (V1 检测主仓存在未完成合并 MERGE_HEAD — 恢复: git -C <主仓> merge --abort 后重跑)
 #   2 = ARG_INVALID           (参数错误: 未知选项/缺参/多余位置参数 — 与文档对齐, 原 exit 1 矛盾已修)
 #   1 = 环境错误(缺参数已归 2; git 命令失败等未归类项)
 #
 # 已知偏差(记录在案): 目录名双校验为 "basename = task-id 或 *-$TASK_ID 后缀匹配" —
-#   兼容 task-id 尾缀变体命名(如集中目录 <repo>-worktrees/<task-id> 或旧式 <repo>-wt-<task-id>);
+#   兼容 task-id 尾缀变体命名(2026-11-04 Rule 100 = <project-root>/tmp/worktrees/<task-id>; 旧集中目录 <repo>-worktrees/<task-id> / 旧式 <repo>-wt-<task-id>);
 #   属有意放宽, 非实现误差。slot 校验拒绝含空格/空白/glob 字符路径(REJECTED exit 6)。
 # 2026-09-12 S2 修复轮(P0/P1/P2/P3 findings): --deploy 重写(IFS 解析 + validate_slot 守卫 + cp→rm→mv 原子替换)、
 #   MAIN_REPO 改 worktree list --porcelain、V3 NUL 安全、MERGE_CONFLICT 恢复指引 + V1 MERGE_IN_PROGRESS exit 8、ARG_INVALID exit 2。
@@ -169,7 +169,7 @@ BRANCH="$(git -C "$WT_PATH" branch --show-current 2>/dev/null)" || {
 }
 
 # 双校验: 分支名 = wt/<task-id> 且 目录名 = task-id
-# (worktree 目录名按 §11.2 新规范为 <repo>-worktrees/<task-id>, basename 即 task-id;
+# (worktree 目录名 basename 即 task-id: 2026-11-04 Rule 100 新规范 = <project-root>/tmp/worktrees/<task-id>, 旧 §11.2 集中目录 <repo>-worktrees/<task-id> 亦 basename=task-id;
 #  若用户以 wt-<task-id> 等带前缀形式命名, 取末尾 segment 匹配, 前缀可选)
 case "$BRANCH" in
 wt/*) TASK_ID="${BRANCH#wt/}" ;;
@@ -340,10 +340,10 @@ else
     if ! merge_out="$(git -C "$MAIN_REPO" merge --no-ff "$BRANCH" 2>&1)"; then
         echo "[V6] MERGE_CONFLICT: merge --no-ff $BRANCH 失败:"
         printf '%s\n' "$merge_out"
-        echo "[V6] MERGE_CONFLICT: STOP — 冲突不自动解决, 报告用户" >&2
+        echo "[V6] MERGE_CONFLICT — 冲突=收口义务(2026-11-04 Rule 101.2): 调用方走 41.1 消解链(并集/三方/手动解+复验)解决所有冲突后重跑本脚本; 仅消解配额耗尽才真门 STOP 报告用户" >&2
         # [2026-09-12 S2 P2: 主仓可能残留 mid-merge 态, 重跑前须先 abort, 否则 V1 MERGE_HEAD 检测 exit 8 自锁]
         echo "[V6] 恢复: git -C $MAIN_REPO merge --abort (清除 mid-merge 态后重跑; 需保留合并结果则手工解冲突)" >&2
-        # [Rule 97.6 仲裁] 主进程消费本 [V6] MERGE_CONFLICT exit 7 时先走 41.1 尝试配额（手动解冲突+复验）再升级用户；本脚本 exit 7=机械 STOP 语义不变，仲裁在 LLM 行为层，不改脚本行为
+        # [Rule 97.6 仲裁 / 2026-11-04 Rule 101.2] 主进程消费本 [V6] MERGE_CONFLICT exit 7 时先走 41.1 消解链配额（并集/三方/手动解冲突+复验）解决所有冲突后重跑本脚本；仅消解配额耗尽才真门（Rule 95.5）STOP 报告用户；本脚本 exit 7=机械状态报告不变，收口义务在 LLM 行为层（101.2），不改脚本行为
         exit 7
     fi
     MERGE_COMMIT="$(git -C "$MAIN_REPO" rev-parse --verify HEAD 2>/dev/null)"

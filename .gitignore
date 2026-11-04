@@ -21,3 +21,7 @@ skills/task-planner/.drift-rhythm/
 # 活跃计划全局指针瞬态化(task-v164 2026-10-10)：随工作树本地化的运行态，
 # 与 .active_plan_side/.plan_required_side/.drift-rhythm 同族，合并零冲突
 plans/.active_plan
+
+# 统一临时目录(2026-11-04 task-crossprojauth-20261104 R2, Rule 100)：
+# 一切临时产物与 git worktree(tmp/worktrees/<task-id>)统一落本项目 tmp/，整体忽略
+tmp/

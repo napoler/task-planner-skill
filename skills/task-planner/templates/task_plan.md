@@ -370,7 +370,7 @@ Phase 1
 |------|-----|
 | `conflict_scan` | `safe` / `risk`（信号①-⑤ 摘要） |
 | `isolation` | `worktree`（实现类默认首选） / `direct`（纯文档/调研或用户否决） |
-| `worktree_path` | `<repo-parent>/<repo>-worktrees/{{TASK_ID}}` 或 n/a |
+| `worktree_path` | `<project-root>/tmp/worktrees/{{TASK_ID}}` 或 n/a(Rule 100:tmp/ 入 .gitignore) |
 | `branch` | `wt/{{TASK_ID}}` 或 n/a |
 | `merge_back` | `pending` / `merged(<commit>)` / n/a |
 

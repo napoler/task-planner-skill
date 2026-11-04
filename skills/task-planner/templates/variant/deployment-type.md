@@ -1,7 +1,7 @@
 <!-- template_type: deployment -->
 <!-- 适用场景: CI/CD 配置、Docker 镜像、k8s 部署、nginx 配置、cron 任务、环境变量、基础设施即代码 -->
 <!-- 触发关键词: 部署/CI/CD/Docker/k8s/nginx/cron/基础设施/terraform/ansible -->
-<!-- 隔离: 涉及运行中基础设施 = §十一 P0 必 worktree(<repo-parent>/<repo>-worktrees/<task-id>) -->
+<!-- 隔离: 涉及运行中基础设施 = §十一 P0 必 worktree(路径=<project-root>/tmp/worktrees/<task-id>, Rule 100 临时目录统一;tmp/ 入 .gitignore) -->
 <!-- 推荐 subagent: executor (sonnet-1) + code-runner-agent;无专门 devops agent 时 general-purpose -->
 
 # Task Plan: [部署任务名称]

@@ -67,10 +67,11 @@ t "SL-04 critical-rules.md '^80.[1-6] ' = 6" bash -c "
 #  SKILL.md 字面 '1-80' 演进为 '1-81'（L9/L315/L407），epoch 上界 80→81；
 #  扩围正则 1-8[0134]([^0-9]|$)（尾边界写法参照 selftest-veto.sh VT-10 task-v070 S10o 范式）:
 #  覆盖现值 '1-81'（grep -c ≥3）且兼容 '1-80' 历史态；负样本 '1-82'/'1-89' 不得命中——禁越界放开]
-t "SL-05 SKILL.md 纪元锚 '1-8[0-9]' ≥3（覆盖 1-80/1-81, 尾边界 79/90 负样本不命中）" bash -c "
-    [ \"\$(grep -cE '1-[89][0-9]([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
-    [ \"\$(echo '1-79' | grep -cE '1-8[0134]([^0-9]|$)')\" -eq 0 ] &&
-    [ \"\$(echo '1-90' | grep -cE '1-8[0134]([^0-9]|$)')\" -eq 0 ]"
+# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口] 主锚 1-[89][0-9]→1-(8[0-9]|9[0-9]|10[0-9]) 尾边界同步 ([^0-9]|$)；负样本探针随窗更新为 1-79（下界外）/1-110（上界外）不得命中
+t "SL-05 SKILL.md 纪元锚 '1-(8x|9x|10x)' ≥3（覆盖 1-80..101 宽窗, 尾边界 79/110 负样本不命中）" bash -c "
+    [ \"\$(grep -cE '1-(8[0-9]|9[0-9]|10[0-9])([^0-9]|$)' '$SKILL')\" -ge 3 ] &&
+    [ \"\$(echo '1-79' | grep -cE '1-(8[0-9]|9[0-9]|10[0-9])([^0-9]|$)')\" -eq 0 ] &&
+    [ \"\$(echo '1-110' | grep -cE '1-(8[0-9]|9[0-9]|10[0-9])([^0-9]|$)')\" -eq 0 ]"
 
 # SL-06: check-complete.sh SESSION-LOG GATE 三件套（[session-log-gate] 前缀 + env 开关名 + 零新 config 键/env-only 注释）
 t "SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_SESSION_LOG_ENFORCE∧零新 config 键|env-only)" bash -c "
