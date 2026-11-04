@@ -1,0 +1,495 @@
+## absorption-discipline
+AD-01 PASS critical-rules.md 含 '### 74 变更吸收三判纪律' 标题且 74.1-74.6 六子条锚全在
+AD-02 PASS Rule 74 条文含三档关键词（增量（默认且优先）/四条件全满足才可/删除（最高门槛））与判据句「先问是补充还是替代」
+AD-03 PASS Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）
+AD-04 FAIL SKILL.md 接线锚 ≥3：'1-[7-9][0-9]' 三处（全集/索引段/References 表）+ 新指令处理段 'Rule 74 三判门' + 卫星路由表 task-discipline 行
+AD-05 PASS 触点锚：critical-rules 8.1/36.5/56.1 段 'Rule 74' 命中 ≥3 + SKILL B 类行 'Rule 74' + CRIT_D 含「可行性判别门」
+AD-06 PASS templates/task_plan.md 含「📋 变更标注表」且六列（编号/对象/类型/吸收判定/依据/执行动作）+四类型串+吸收判定三态串齐备
+AD-07 PASS templates/subagent_dispatch.md 含「定稿可行性判别模式」+三维（可执行性/相容性/风险性）+三态串（PASS-WITH-RISKS）
+AD-08 PASS Rule 74.4 分工与豁免锚：「69.1」引用 +「mini 档」豁免措辞各 ≥1
+AD-09 PASS registry.tsv 含 selftest-absorption-discipline.sh 登记行（脚本名+守护面描述串）
+AD-10 PASS config.json 零新键（grep「absorption」=0）
+AD-11 PASS SKILL.md『1-71』字面残留=0（三处已演进 1-[7-8][0-9]）
+AD-12 PASS pinning 锚 11 处逐个断言：live 锚字面（精确 5：'1-[89][0-9]' 纪元 grep ×5）或宽容正则族（6）二者居一
+AD-13 SKIP 自举消费 SKIPPED（候选均缺：env TASK_PLANNER_ABSORB_PLAN 未设 + 主仓根未解析 + repo 相对缺失；中性态不计 pass/fail）
+AD-14 PASS 脚本自身 chmod+x（可执行位）且 bash -n 语法通过
+AD-15 PASS SKILL.md 含变更类型判定强制步骤（2.5d + Rule 74 三判门关键词）
+AD-16 PASS templates/task_plan.md 变更标注表含「用户原话（逐字）」列
+AD-17 PASS templates/subagent_dispatch.md 含变更类型约束段（Rule 74 三判门 + 执行要求）
+Total: 15 pass, 1 fail, 1 skip
+## capability-persistence
+CP-01 PASS critical-rules.md '### 55 ' 标题锚 =1
+CP-02 PASS critical-rules.md '55.x ' 六子条锚 =6
+CP-03 PASS Rule 55 块首说明行含 task-v138
+CP-04 PASS SKILL.md 卫星路由表 task-discipline 行在位（n=1，区间 53-57 覆盖 Rule 55）+ CRIT_D 55 标题锚=1
+CP-05 FAIL SKILL.md '1-80' 计数=0（应 ≥1）/ 旧 '40-[5-8][0-9]' 残留=0（应 =0）
+CP-06 PASS SKILL.md '40-5[3-9]' 旧纪元字面 =0（演进收口）
+CP-07 PASS capability-registry.md 存在
+CP-08 PASS capability-registry.md 表头 8 列
+CP-09 PASS agnes-quota 登记行 8 字段全非空
+CP-10 PASS scripts/capabilities/agnes-quota.sh 存在
+CP-11 PASS agnes-quota.sh 'bash -n' 通过
+CP-12 PASS agnes-quota.sh 无硬编码密钥（grep=0）
+CP-13 PASS agnes-quota.sh 头注释含 Rule 55（5 处）
+CP-14 PASS video-generation-executor.md 接线 capability-registry（1）
+CP-15 PASS image-generation-executor.md 接线 capability-registry（1）
+CP-16 PASS config.json properties 键数 53（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+CP-17 PASS 脚本 SCRIPT_DIR 自定位行在位
+CP-18 PASS 脚本头注释 What+Why 齐备（Rule 45）
+CP-19 PASS agnes-quota.sh 404 模式 exit=5 + 失败语义（F1 回归钉：禁伪成功）
+CP-20 PASS agnes-quota.sh 200 模式 exit=0 + verdict 含未填充（成功路径未回归）
+Total: 20 PASS=19 FAIL=1
+## conclusion-discipline
+CD-01 PASS critical-rules.md 含 '### 35 执行结论纪律'
+CD-02 PASS 35.1 触发条款存在
+CD-03 PASS 35.2 能力否定三关条款存在
+CD-04 PASS 35.3 大输入落盘引用条款存在
+CD-05 PASS 35.4 结论上报措辞条款存在
+CD-06 PASS 35.5 消费侧条款存在
+CD-07 PASS 35.6 最小探针原则+35.7 机制条款存在（task-v082 重编号后双锚）
+CD-08 PASS CD-25 CRIT_D 含 '最小探针'（35.6 条款）+SKILL.md 卫星路由表 task-discipline 行（联动瘦身后由路由表承载）
+CD-09 PASS 22.4 行含 'Rule 35.3 大输入落盘引用'（DISP_RULES=critical-rules-dispatch.md）
+CD-10 PASS SKILL.md 含 Rule 35 联动面（卫星路由表 task-discipline 行；原 'Rule 35（P0）执行结论纪律' 列表行随瘦身移除）
+CD-11 PASS SKILL.md 含 Rule 35 合规消费点（卫星路由表 task-discipline 行；原 '| C23 |' 检查项行移除）
+CD-12 FAIL SKILL.md 宽容锚「1-(3[5-9]|9[0-9])」0 +「1-[4-7][0-9]」2 合计 ≥3（兼容 1-35-90 各纪元过渡，task-v144 合并级联: 全集演进 1-62 宽容扩 6x；task-v160 合并并集保留 7x n70 演进记录为历史；task-v182 扩 9x 纪元）
+CD-13 PASS SKILL.md 不含 '1-34'（防回退，当前=0）
+CD-14 PASS SKILL.md 委派检查点含 task-dispatch 兜底指针 + DISP_RULES 22.4 行含 'Rule 35.3 大输入落盘引用'
+CD-15 PASS check-dispatch.sh 含 '补救(Rule 35.3)'
+CD-16 PASS check-dispatch.sh 仍含 '⚠ prompt 长度'（selftest-dispatch FG 依赖）
+CD-17 PASS subagent_dispatch.md 含 '超限补救(Rule 35.3)'
+CD-18 PASS notepad-learnings.md 含 '🚫 被否决方案' 段
+CD-19 PASS README.md 含 1-6[0-9]|1-3[5-9] 宽容锚（task-v149 对齐 1-65，兼容 1-35/1-36 过渡）
+CD-20 PASS batch-quality-gate.md 含 1-3[5-8] 宽容锚（task-v086 级联 1-38）（兼容 1-35/1-36 过渡）
+CD-21 PASS plan-writer.md 含 '纯数字'（s_unit_id 契约行）
+CD-22 PASS task_plan.md 含 'ID 列一律纯数字'（④ 注释行）
+CD-23 PASS subagent_dispatch.md 含 '机械求和'（禁自报汇总行）
+CD-24 PASS smart-merge-back.sh 含 'DEPLOY_SRC' 且含 '禁回退 SKILL_ROOT'（fail-closed）
+Total: 24 PASS=23 FAIL=1
+## context-pressure
+CP-01 PASS 六子条锚=6
+CP-02 PASS 主动评估=5≥2 ∧ 主动优化=3≥1
+CP-03 PASS HEALTHY=3 PRESSURE=5 CONFUSED=4 hook=4≥1
+CP-04 PASS 「不等 Phase complete」语义锚存在
+CP-05 PASS 五段各=1 ∧ session-catchup=1 ∧ plan-resume=1 ∧ 62.1=1
+CP-06 PASS bash -n OK ∧ env=3≥2 ∧ [context-pressure]=2 ∧ emit=12==12
+CP-07 FAIL '1-[89][0-9]'=0 全集串=0 路由行=1 R69=4 R80=5
+CP-08 PASS registry 含 selftest-context-pressure ∧ 4 列
+CP-09 PASS config properties=53=53
+Total: 9 PASS=8 FAIL=1
+## decision-drift
+PASS DD-01 CR Rule 73 块头
+PASS DD-02 CR 七子条锚=7
+PASS DD-03 73.1 变更型决策点分类锚
+PASS DD-04 73.2 对齐三问+[align] 留痕（命中 8）
+PASS DD-05 73.3 三态标注+🔒 区块锚
+PASS DD-06 73.4 强制评判点+[judge]
+PASS DD-07 73.5 废弃只入不出
+PASS DD-08 73.6 消歧义
+PASS DD-09 73.7 零新键 env 锚
+PASS DD-10 deprecated.md 五段标题齐全
+PASS DD-11 deprecated 五要素齐全
+PASS DD-12 模板 🔒 不变量声明区块
+PASS DD-13 三态关键词（不变量/可变量/学得量）
+PASS DD-14 check-complete [judge-gate] 锚
+PASS DD-14b check-complete [judge-gate] 档位门控（plan_tier: standard|full）
+PASS DD-15 posttooluse [judge] 注入+env 降档锚
+PASS DD-16 SKILL Rule 73 接线（Rule 73 命中 2）∧ 卫星路由表 discipline 行在位
+PASS DD-17 SKILL 卫星路由表 discipline 行（Rule 73/C53 合规面瘦身后由路由表承载）
+PASS DD-18 selftest-registry 自登记行=1
+PASS DD-19 本计划 🔒 区块（SKIP：部署/仓级布局无 task-v156 计划文件）
+PASS DD-20 config.json properties 键数=53（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+FAIL DD-21 (宽锚缺失)
+PASS DD-22 运行时留痕格式示范（[align]/[judge]）
+Total: 23 PASS=22 FAIL=1
+## drift-check-subagent
+DCS-01 PASS [DRIFT CHECK] 步骤行含 drift-checker
+DCS-02 PASS 卫星路由表 task-drift-guard 行含编号 61（只读检测执行体面瘦身后由路由表承载）
+DCS-03 PASS Phase 循环步骤 6 [DRIFT CHECK] 含 派发 drift-checker（Chain 步骤 4 语义由步骤 6 承载）
+DCS-04 PASS 用户新指令处理 B/C 行含 drift-checker（C4 合规行瘦身后由 B/C 行承载）
+**判定顺序**：先 D 再 A/B/C（指令与目标有关联哪怕小→回退 A/B/C）；仅存在活跃计划时 D 类适用。B/C 变更前过 Rule 73.2 对齐三问+[align] 行，处理完再派 drift-checker。**稳定性铁律**：禁止"口头接受新指令、计划与 Todo 不动"。用户指出错误（Rule 31）→先 STOP 走 31.2 四维归因再修（完整闭环见 task-discipline Rule 31/32/33/74）。命中 Rule 98 触发面（用户否定 ∨ 自主前后文矛盾）→ 调用 `Skill("context-corrector")` 整理上下文与历史文档（记录面专职 SOP，98.3 组织先于继续）。
+DCS-05 PASS B/C 类处理完行含 drift-checker（现措辞:处理完再派）
+DCS-06 PASS 步骤 6 触发时机行含 drift-checker（Rule 15 bullet+高频摘要瘦身后由触发时机行承载）
+DCS-07 PASS 卫星路由表 task-drift-guard 行含 漂移检测（haiku-1 选型面迁 task-dispatch，DCS-17 承接）
+DCS-08 PASS SKILL.md Skill(task-drift-guard) 计数=0
+DCS-09 PASS 卫星路由表 task-drift-guard 行含 rules 路径（双载体说明瘦身后由路由表行承载）
+DCS-10 PASS 步骤 6 行含 Rule 61 载体锚 ∧ CRIT_G 61 标题含 偏移（反模式禁止行瘦身后由条文锚承接）
+DCS-11 FAIL DCS-11 条件缺失（需 '1-80' 全集 + '偏移检查子代理化' + 'Rule 61'）
+DCS-12 PASS Rule 61 标题+六锚齐全（CRIT_G=critical-rules-drift.md）
+DCS-13 PASS 15.4 锚+Skill(task-drift-guard) 计数=0（CRIT_G）
+DCS-14 PASS drift-checker.md 存在+tools Read/Write+model 非空
+DCS-15 PASS 双载体三态一致
+DCS-16 PASS subagent-state/ 检查点契约串
+DCS-17 PASS agent-coverage.md 含 drift-checker 行
+DCS-18 PASS hook 含 drift-checker 无 task-drift-guard
+DCS-19 PASS SKILL.md 行数<=558+CRIT_G 61.4 清零+61.5 check-drift.sh
+DCS-20 PASS 本技能目录 Skill(task-drift-guard) 精确串=0
+DCS-21 PASS CA-7: drift-checker.md 含 user-session-log 用户原话锚（复合审查输入在位）
+Total: 21 PASS=20 FAIL=1
+## error-loop
+EL-01 PASS 31.1 触发条件
+EL-02 PASS 31.2 根因分析（5 Whys）
+EL-03 PASS 31.3 修正路由（禁盲目）
+EL-04 PASS 31.4 沉淀（notepad 两段）
+EL-05 PASS 31.5 消费侧（Learning Gate）
+EL-06 PASS 31.6 机制（开关键）
+EL-07 PASS Rule 8 联动 Rule 31
+EL-08 PASS SKILL.md Rule 31 联动（新指令段含 task-discipline Rule 31/32/33/74 全文指针）
+EL-09 PASS SKILL.md 卫星路由表 task-discipline 行枚举 Rule 31（C19 合规面瘦身后由路由表承载）
+EL-10 PASS SKILL.md 用户新指令处理含错误指出特判指针（Rule 31）
+EL-11 FAIL SKILL.md 缺 Rules 1-3x..7x|8[01] 宽容锚
+EL-12 PASS config.json error_loop_enforce（enforce 默认+三档）
+EL-13 PASS progress.md 模板 Error Log 加列
+EL-14 PASS task_plan.md Errors 表 Prevention 指针
+EL-15 PASS notepad 模板消费侧契约
+EL-16 PASS check-complete.sh Learning Gate 锚点
+Total: 16 PASS=15 FAIL=1
+## execution-honesty
+EH-01 PASS critical-rules.md 54.0「有依据原则」=1
+EH-02 PASS critical-rules.md 54.1「就绪语义」=1
+EH-03 PASS critical-rules.md 54.2「阻塞影响矩阵」=1
+EH-04 PASS critical-rules.md 54.3「仪式性进展禁令」=1
+EH-05 PASS critical-rules.md 54.4「推迟举证四要素」=1
+EH-06 PASS critical-rules.md 54.5「决策依据落盘」=1
+EH-07 PASS critical-rules.md 54.6「机制（零新 config 键」=1
+EH-08 PASS critical-rules.md 关键短语 evidence-first=1≥1 / decision-basis=1≥1 / 零新 config 键=61≥1
+EH-09 FAIL SKILL.md 路由表 discipline 行=1（应 =1）或 CRIT_D 54 标题=1（应 =1）或 '1-80'=0（应 ≥1，级联漏改）
+EH-10 PASS delivery-summary.md「54.1」=1≥1 且「54.4」=1≥1（真实进展对照行双锚）
+EH-11 PASS image-generation-executor.md「Rule 54」指针行=1
+EH-12 PASS video-generation-executor.md「Rule 54」指针行=1
+EH-13 PASS critical-rules.md 54 块尾 55.x 属 task-v138 合法 Rule 55 块（^### 55 task-v138 标题=1，子条 6 ≤6）（task-v138 合并级联口径）
+EH-14 PASS config.json 零新键：「"execution_honesty」命中=0（54.6 零 config 键声明成立）
+Total: 14 PASS=13 FAIL=1
+## iteration-persistence
+IP-01 PASS critical-rules.md '### 57 ' 标题锚 =1
+IP-02 PASS critical-rules.md '57.x ' 四子条锚 =4
+IP-03 PASS Rule 57 块首说明行含 task-v141
+IP-04 PASS critical-rules.md 57.1「每轮结果必落盘」=1
+IP-05 PASS critical-rules.md 57.2「落盘四要素」=1
+IP-06 PASS critical-rules.md 57.3「即时落盘防上下文分散」=1
+IP-07 PASS critical-rules.md 57.4「机制（零新 config 键」=1
+IP-08 PASS critical-rules.md 四要素锚 轮次编号=2 / 测试命令=1 / PASS-FAIL=1 / 关键输出摘要=1（各 ≥1）
+IP-09 PASS SKILL.md 回写计划行含 progress 落盘载体 Actions/Files/Test Results=1（原 3e「迭代落盘检查点」瘦身后由步 4 承载）
+IP-10 PASS SKILL.md 卫星路由表 discipline 行=1（区间 53-57 覆盖 Rule 57）+ CRIT_D 57.4 机器面指称=1
+IP-11 PASS SKILL.md G6 合规行（progress 回填门控）=1（C40 迭代落盘合规面瘦身后由 G6 承载）
+IP-12 FAIL SKILL.md 全集声明「1-80」=0（应 ≥1，级联漏改）
+IP-13 PASS templates/progress.md 在位且含「Test Results」落盘段（3）
+IP-14 PASS critical-rules.md 57 块范围内「66.x」=0（57 块无 66 入侵；task-v151 钉值级联 D2 同法）
+IP-15 PASS config.json properties 键数 53（v145 基线演进 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+IP-16 PASS config.json 零新键：「iteration[_-]persistence」命中=0（57.4 零 config 键声明成立）
+IP-17 PASS 脚本 SCRIPT_DIR 自定位行在位
+IP-18 PASS 脚本头注释 What+Why 齐备（Rule 45）
+Total: 18 PASS=17 FAIL=1
+## lane-advancement
+LA-01 PASS critical-rules.md Rule 49 子条锚 5 ≥5
+LA-02 PASS critical-rules.md Rule 49 标题锚在位
+LA-03 PASS critical-rules.md「推进三条件」语义锚在位
+LA-04 PASS critical-rules.md「跨 Phase 前移合法」语义锚在位
+LA-05 PASS critical-rules.md「[advance]」登记锚在位
+LA-06 PASS critical-rules.md「汇合点强串行」边界锚在位
+LA-07 PASS critical-rules.md「Phase complete 翻转语义不变」门控锚在位
+LA-08 PASS SKILL.md frontmatter media-planner 行 Rule 47,49,50 枚举在位（摘要 bullet 瘦身后由 frontmatter 卫星行承载）
+LA-09 PASS SKILL.md 卫星路由表 media-planner 行在位（C34 合规面瘦身后由路由表承载）
+LA-10 PASS SKILL.md 卫星路由表 media-planner 行含媒体轴拆分路由（执行循环入口瘦身后由路由表调用条件承载）
+LA-11 PASS SKILL.md 卫星路由表 media-planner 行含 critical-rules-media.md 路径（References 表瘦身后由路由表承载）
+LA-12 FAIL SKILL.md 主锚漂移（'1-80'=0 应 ≥1 / 1-39=0 应 0）
+LA-13 PASS SKILL.md '1-40' 变体命中 0（负断言成立）
+LA-14 PASS config.json properties 键数 53（基线含 v145 2 键 + task-perf-opt 2 键 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+Total: 14 PASS=13 FAIL=1
+## parallel-scheduling
+P-01 PASS critical-rules.md '68.x ' 七子条锚 =7
+P-02 PASS critical-rules.md 四关键词串 依赖分析/并行分组/异构分摊/组域写隔离 各 ≥1
+P-03 PASS templates/task_plan.md S-unit 表头含「前置依赖」列 =1（≥1）
+P-04 PASS check-plan-dispatch.sh 68 守卫段在位：段锚=10 + hard 串(依赖-同组)=1 + advisory 串(组内全同)=2（均 ≥1）
+P-05 FAIL SKILL.md 路由行=1（应 =1）/ Rule 68 枚举=1（应 ≥1）/ 全集 skill=N/A（应 ≥84）vs 核心 82=1（应 1）
+P-06 PASS selftest-registry.tsv 含 selftest-parallel-scheduling.sh 行 =1（≥1）
+P-07 PASS config.json parallel/model-allocat 类键 =0（零新键）
+P-08 PASS critical-rules.md 21.4「未声明者默认串行」原文锚 =1（≥1，语义未回退）
+P-09 PASS split-pattern-library.md P12 锚=1 +「依赖分批并行」锚=1（均 ≥1）
+Total: 9 PASS=8 FAIL=1
+## plan-tier
+PT-01 PASS Rule 38 头
+PT-02 PASS 38.1 判定锚
+PT-03 PASS 38.2 档位矩阵锚
+PT-04 PASS 38.3 轻量模板契约锚
+PT-05 PASS 38.4 豁免清单锚（铁律+VC 降档）
+PT-06 PASS 38.5 机制锚（开关键+守护）
+PT-07 PASS config.json plan_tier_enforce（warn 默认+三档）
+PT-08 FAIL SKILL.md frontmatter 缺「Critical Rules 核心域 Rules 1-80」全集索引
+PT-09 PASS plan-template-kit SKILL.md（Rule 38）调用条件
+PT-10 PASS plan-template-kit SKILL.md 卫星路由段 Rule 38 摘要
+PT-11 PASS mini-lite 模板契约（48 行 ≤80 + plan_tier: mini 标记）
+PT-12 PASS mini-lite 无六仪式区块
+PT-13 PASS init-session.sh tier 分流锚（env+复制源+variant 忽略提示）
+PT-14 PASS 13 variant + general 含 plan_tier: standard 标记（实测 30 处）
+PT-15 PASS init 缺省场景=general 源（无 mini 标记）
+PT-16 PASS init TASK_PLAN_TIER=mini 复制 mini-lite
+PT-17 PASS mini+variant 定制优先+忽略提示
+planmini written
+PT-18 PASS 锚1: mini attest FMEA MINI-TIER SKIP + 锁定 rc=0
+PT-19 PASS 锚2: mini check-complete VC=2 降档 PASSED rc=0
+planbad written
+PT-20 PASS 锚4: MISMATCH warn 档提示 rc=0
+PT-21 PASS 锚4: MISMATCH enforce 档阻断 rc=1
+PT-22 PASS 非 mini 回归: standard rc=0 且无 plan-tier 输出
+PT-28 PASS mini 样例 enforce 档 attest 锁定(FMEA SKIP)+check-complete VC-GATE 均通过
+PT-29 PASS auto-tier 路径: 四条件 env 提交 → mini 产物含 auto_tier: mini 标记（Rule 38.6）
+PT-30 PASS 显式 mini 不打 auto_tier 标记（显式优先=不覆盖显式值）
+planautobad/planautook written
+PT-31 PASS AUTO-TIER 复核触发: 超限 → WARNING 点名 rc=0（warn 档不阻断）
+PT-32 PASS AUTO-TIER 复核合规态: REVIEW PASSED 且无 WARNING rc=0
+PT-23 PASS --list 输出内置 30 项+project 项+[default] 标记, 不创建文件
+PT-24 PASS 项目 default 文件生效: 未显式 type → my-custom + frontmatter 插入
+PT-25 PASS env TASK_TEMPLATE_DEFAULT=bugfix 生效(无项目 default 文件)
+PT-26 PASS 全缺省零影响: 产物标题已渲染为任务名(pp)且无占位残留, 无 S6 路由/插入行
+PT-27 PASS 自造模板无 template_type 行时显式指定 → 头部插入 frontmatter 行
+Total: 32 PASS=31 FAIL=1
+## reflect-verify
+RV-01 PASS Rule 33 头
+RV-02 PASS 33.1 触发
+RV-03 PASS 33.2 反思四问
+RV-04 PASS 33.3 逐字 [reflect] 锚
+RV-05 PASS 33.4 迭代边界（≤3 轮+升档）
+RV-06 PASS 33.5 notepad What Worked 联动
+RV-07 PASS 33.6 机制（开关键+REFLECT-GATE+selftest）
+RV-08 PASS config.json reflect_verify_enforce（enforce 默认+三档）
+RV-09 PASS check-complete.sh REFLECT-GATE 锚点（gate/env/[reflect] 计数/SKIPPED 双分支）
+RV-10 FAIL SKILL.md 缺 'Rules 1-(3[5-9]|[4-9][0-9])' 宽容锚
+RV-11 PASS SKILL.md 卫星路由表 task-discipline 行（C21 合规面瘦身后由路由表承载）
+RV-12 PASS SKILL.md 反思验证指针行 ∧ CRIT_D Rule 33 标题（原联动段瘦身后由指针行+条文锚承载）
+Total: 12 PASS=11 FAIL=1
+## reliability-institution
+R-01 PASS critical-rules.md Rule 42 子条锚 = 11
+R-02 PASS critical-rules.md Rule 43 六子条锚 = 6
+R-03 PASS 42.2 行内锚「均未命中=缺口」在位
+R-04 PASS 42.3 行内锚「S-unit 登记」在位
+R-05 PASS 43.1 行内锚「未验证」在位
+R-06 PASS 43.2 行内锚「最小档位」在位
+R-07 PASS 43.3 行内锚「候选对比表」在位
+R-08 PASS SKILL.md 卫星路由表 discipline 行=1（C30/C31 合规面载体）∧ CRIT_D Rule 42 标题=1
+R-09 FAIL SKILL.md 全集锚漂移（'1-80'=0 应 ≥1 / 1-40=0 应 0）
+R-10 PASS 模板「质量审查工具」行 1 ≥1 且 plan-writer「质量审查工具检测登记」义务行 1 ≥1
+R-11 PASS mini-lite「Rule 42.5 豁免」声明行 1 ≥1
+R-12 PASS config.json properties 键数 53（基线含 v145 2 键 + task-perf-opt 2 键 + task-v172 合法新增 smart_inject_interval+light_tier_interval_multiplier 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+R-13 PASS 43.5 行内锚「实际生成测试」在位
+R-14 PASS 43.6 行内锚「优点」在位
+R-15 PASS 53.5 行「Q9」触发面登记在位
+R-16 PASS SKILL.md 终验交付段 Rule 26.3 违规降级门=1（C37 合规面瘦身后由降级门承载）
+Total: 16 PASS=15 FAIL=1
+## requirement-coverage
+RC-01 PASS critical-rules.md Rule 51 子条锚 14 ≥7
+RC-02 PASS critical-rules.md Rule 51 标题锚在位
+RC-03 PASS critical-rules.md「需求原文锚定」语义锚在位
+RC-04 PASS critical-rules.md「覆盖判据」语义锚在位
+RC-05 PASS critical-rules.md「需求覆盖核对表」语义锚在位
+RC-06 PASS critical-rules.md「自缩水禁令」语义锚在位
+RC-07 PASS critical-rules.md「前置盘点」语义锚在位
+RC-08 PASS critical-rules.md「零新 config 键」承诺锚在位
+RC-09 PASS SKILL.md Rule 51 指针 bullet 在位（措辞演进后锚）
+RC-10 PASS SKILL.md 终验交付段含逐条复验 VC 行（C35 合规面瘦身后由终验行承载）
+RC-11 FAIL SKILL.md 主锚漂移（'1-80'=0 应 ≥1 / 1-39 变体非 0，SR-07 主锚被改动）
+RC-12 PASS delivery-summary.md「需求覆盖核对」区块在位且编号区块数 =5
+RC-13 PASS config.json properties 键数 53（基线含 v145 2 键 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+RC-14 PASS registry.tsv 已登记 selftest-requirement-coverage.sh
+RC-15 PASS critical-rules.md '66.' 子条命中 6（Rule 66 已合法落地 66.1-66.6，task-v151 钉值级联重锚）
+RC-16 PASS critical-rules.md 51.7「纠正=回锚重译」=1 且判例锚「一个月→72小时两次改写」=1 且事故报告路径 =1
+RC-17 PASS check-window-consistency.sh 在位可执行; 正例(锚=一个月 载荷=30天 同族) exit=0 无⚠; 负例(载荷=7天 无豁免) exit=1 有⚠
+RC-18 PASS check-complete.sh R-COVERAGE 门锚在位（R-COVERAGE=12 rcov-gate=6，均 ≥1）
+RC-19 PASS R-COVERAGE 负例（summary 缺行）enforce 档 exit=1≠0 且 stderr 含 rcov-gate 拒 COMPLETE 文案
+RC-20 PASS R-COVERAGE 双断: 裸 uncovered 无让步 enforce exit=1≠0 拒 COMPLETE 含「只可 PARTIAL」; uncovered+让步行 exit=0=0 PARTIAL 放行（rcov-gate 提示行在位）
+RC-21 PASS zcode-userpromptsubmit.sh TAMPERED 文案锚「无登记的重锁视为篡改信号」=1 且 Rule 51.7 引用 =1（G3 重锁前置收紧在位）
+RC-22 PASS init-session.sh silent 路径 INFO 锚双行各 =1（主锁+兜底锁，G3 即时落盘在位）
+RC-23 PASS critical-rules.md 51.8 行锚=1 且语义锚「未测试就声称完成」在位 且 SKILL.md「未测试禁声称完成」联动 1 ≥1
+RC-24 PASS critical-rules.md 51.9 行锚=1 且行内语义锚「可计数交付物」「非数字锚」+ 事故判例锚「0 母图即 COMPLETE」在位
+RC-25 PASS critical-rules.md 51.10 行锚=1 且行内语义锚「计数型交付禁」「0 产出」在位
+RC-26 PASS critical-rules.md 51.11 行锚=1 且行内语义锚「逐字让步锚」「理解镜像」在位
+RC-27 PASS critical-rules.md 51.12 行锚=1 且行内语义锚「数量型条目」「media-planner」（Rule 50 计数指针）在位
+RC-28 PASS critical-rules.md 51.13 行锚=1 且行内语义锚「51.9-51.13 子条文本锚」「0 母图即 COMPLETE」「零新 config 键」在位（机制段 L0-T 零新键范式）
+Total: 28 PASS=27 FAIL=1
+## requirement-grading
+RG-01 PASS critical-rules.md '### 50 内容要求权重分级与评级' 标题锚在位
+RG-02 PASS critical-rules.md Rule 50 子条锚 6 ≥6
+RG-03 PASS critical-rules.md 泪痣双条目锚（P+E 行 + '双向'）在位
+RG-04 PASS 三模板（image/character-design/qc-defect）'评级契约（Rule 50）'∧'原子验收条目'∧'双向' 全在位
+RG-05 PASS goal-gate.md '分级'∧'Rule 50' 双锚在位
+RG-06 FAIL SKILL.md 路由面锚缺失（'1-[89][0-9]' 或 'Rule 47,49,50' 命中=2 <2）
+RG-07 PASS config.json properties 键数 53（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+Total: 7 PASS=6 FAIL=1
+## research-first
+PASS RF-01 critical-rules ### 63 标题=1
+PASS RF-02 critical-rules 63.1-63.6 六子条=6
+PASS RF-03 63 块语义内核四词齐备(公理/检索/禁令/有据)
+PASS RF-04 63.2 四步检索链词齐备
+PASS RF-05 63.4 有理有据边界(编造+not-solved)
+FAIL RF-06 SKILL 1-6X 计数（宽容锚）≥3(三处联动) (got=0 expect>=3)
+FAIL RF-07 SKILL 双锚(路由表反推诿措辞+Rules 1-80 全集口径) (got=(1,0) expect=(>=1,>=1))
+PASS RF-08 [task-v171 核心瘦身] SKILL 卫星路由表 plan-research-router 行（C44 合规面瘦身后由路由表承载）
+PASS RF-09 dispatch 模板契约行(Rule 63+禁止编造)
+PASS RF-10 FF-16 宽容化在位(66.x≥2 ∧ 65.x 残留=0)
+PASS RF-11 registry 含本脚本登记行
+PASS RF-12 config 零新键(research 字面=0)
+Total: 12 PASS=10 FAIL=2
+## root-resolution
+RR-01 PASS critical-rules.md 53.1「结果级需求全链工序审计」=1
+RR-02 PASS critical-rules.md 53.2「根治判据」=1
+RR-03 PASS critical-rules.md 53.3「决策管辖二分」=1 且「唯一权威边界」=1
+RR-04 PASS critical-rules.md 53.4「返工成本核算」=1 且「三元组」=1
+RR-05 PASS critical-rules.md 53.5「机制」=1 且 Q7 惰性推诿=3≥1 且 Q8 无根治判据=2≥1
+RR-06 PASS critical-rules.md 51.1a「载体双机制」=1
+RR-07 PASS SKILL.md 卫星路由表 task-discipline 行 =1（Rule 53 摘要 bullet 瘦身后由路由表承载）
+RR-08 PASS 计划模板「根源覆盖表」区块=1 ∧ SKILL.md 路由表 discipline 行=1（C36 消费点瘦身后由模板载体+路由表承载）
+RR-09 FAIL SKILL.md 全集 'Rules 1-[89][0-9] 全集索引：' 命中=0（应 =1）或旧 1-51 残留=0（应 =0，级联漏改）
+RR-10 PASS task_plan.md「🎯 用户需求原文」=1 且「🧮 根源覆盖表」=1
+RR-11 PASS rule-enhancement-type.md「🎯 用户需求原文」=1
+RR-12 PASS subagent_dispatch.md「需求锚（Rule 51.1a」=1
+RR-13 PASS init-session.sh inject_requirement_block=7≥2（定义+调用）且「根源覆盖表」=13≥1
+RR-14 PASS attest-plan.sh「第 4 锚」=7≥1 且 [requirement-gate]=2≥2
+RR-15 PASS critical-rules.md 旧判别面字面「或无客观判据的真实偏好二选」=0（critic P0 收口钉住）
+RR-16 FAIL SKILL.md References 表 critical-rules.md 行命中=1（应 =1）或行内未含 1-80 全集括注（级联漏改，CR P1-2 复发）
+RR-17 PASS critical-rules.md 区块锚「^### 53 」=1（索引行 40-54 全集的条款侧落点在位）
+Total: 17 PASS=15 FAIL=2
+## self-resolution
+SR-01 PASS critical-rules.md 六子条锚 = 6
+SR-02 PASS critical-rules.md G1/G4 门槛锚各 ≥1
+SR-03 PASS 「已尝试清单」+「D6 硬停点语义保留不弱化」措辞锚在位
+SR-04 PASS trivial 裁定措辞「直接做」+「留用户裁决」在位
+SR-05 PASS 41.6 行内锚（零新 config 键 / selftest-self-resolution.sh）在位
+SR-06 PASS SKILL.md 路由表 discipline 行枚举 41=1 ≥1 ∧ CRIT_D Rule 41 标题=1
+SR-07 FAIL SKILL.md 字面锚漂移（'1-80'=0 应 ≥1 / 1-39=0 应 0）
+SR-08 FAIL Rule 40/41 共存锚损伤（'1-[89][0-9]' 缺失或 CRIT_C ^40\. 子条数 ≠6）
+SR-09 PASS config.json properties 键数 53（v145 2 键 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+SR-10 PASS SKILL.md 摘要行锚「升级四门槛」在位
+SR-11 PASS selftest-skill-split.sh task-v099/task-v1x label + -le 4/5 前缀断言行在位
+SR-12 PASS registry selftest-self-resolution 登记行 ≥1 且总行数 95=脚本数+表头（动态）
+SR-13 PASS 22.3.0 资料先行档行存在 + 资料先行/换道评估顺序/官方文档 关键词在位
+Total: 13 PASS=11 FAIL=2
+## session-log
+[PASS] SL-01 user-session-log.md 存在且三关键词(只写不改∧append-only∧逐字抄录)各≥1
+[PASS] SL-02 user-session-log.md '## #' 条目示例行 ∧ '^## 恢复协议' 标题段
+[PASS] SL-03 task_plan.md 指针区块('🗣️ 用户会话逐字记录'≥1 ∧ 'user-session-log'≥2)
+[PASS] SL-04 critical-rules.md '^80.[1-6] ' = 6
+[FAIL] SL-05 SKILL.md 纪元锚 '1-8[0-9]' ≥3（覆盖 1-80/1-81, 尾边界 79/90 负样本不命中）
+[PASS] SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_SESSION_LOG_ENFORCE∧零新 config 键|env-only)
+[PASS] SL-07 init-session.sh 'copy_template "user-session-log.md"'≥1 ∧ verify 回显语句=1
+[PASS] SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'=0, 纯静态)
+[PASS] SL-09 config.json properties 键数 = 53（零新 config 键, jq; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46, P-01 1 键 46→47, [task-v184-S2b] 47→53）
+[PASS] SL-10 registry 自登记('selftest-session-log.sh'=1 行 ∧ 该行 NF=4 且四列非空)
+[PASS] SL-11a 基线空锚（- 0）+ append 首条 enforce 档 PASS（无 baseline-drift, task-v176 CR MAJOR-2 豁免）
+[PASS] SL-11b 回退校验保留（基线条目数 2→现存 1 = FAIL；基线=现存 1 = PASS, 篡改面不放开）
+[PASS] SL-12 二次 init 不改写既有条目（user-session-log sha 不变 ∧ 假条目/Goal 手改保留 ∧ rc=0, Rule 80.2）
+Total: 13  PASS=12  FAIL=1
+## skill-split
+[PASS] T-plan-research-router 目录+SKILL.md 存在
+[PASS] T-plan-research-router name 与目录名一致
+[PASS] T-plan-research-router SKILL.md <100 行(薄正文)
+[PASS] T-plan-template-kit 目录+SKILL.md 存在
+[PASS] T-plan-template-kit name 与目录名一致
+[PASS] T-plan-template-kit SKILL.md <100 行(薄正文)
+[PASS] T-plan-cost-guard 目录+SKILL.md 存在
+[PASS] T-plan-cost-guard name 与目录名一致
+[PASS] T-plan-cost-guard SKILL.md <100 行(薄正文)
+[PASS] T-plan-collab-router 目录+SKILL.md 存在
+[PASS] T-plan-collab-router name 与目录名一致
+[PASS] T-plan-collab-router SKILL.md <100 行(薄正文)
+[PASS] T-主 行数 ≤581（task-v125 S3 净 +7（六族路由行插表尾 + Rule 52 摘要 bullet + 模板行尾联动；454→461）; task-v130 并行创作组节 +14（461→475）; task-v131 并行创作组回填 475 + Rule 53 六锚 477（475→477）; task-v133 C37 合规行 +1（477→478）; task-v136 S2 联动净增 +2（478→480）; task-v138 合并级联 Rule 54+55 并集净 +1（480→481，钉上调 480→490）; task-v144 合并级联 58/59/62 落地+C43/2.5/bullet 净 +11（481→492，钉上调 490→500）; task-v150 S10 合并级联 Rule 21.6 接线净 +4（498→502，钉上调 500→510）; task-v151 S4 合并级联 Rule 66 摘要+C45 净 +2（509→511，钉上调 510→515）; task-v154 接线级联净 +11-1 改（515→521，钉上调 515→526）; task-v155 合并并集 Rule 70 净 +7 与 v154 侧 521 并集 → 530，钉取并集后实值+25=555; task-v168 逻辑层五锚点净增 530→556，钉随实值+25 上调 555→581、总上限 558→584（先例同前）; 演进 440→442→444→447→449→452→454→461→475→477→478→480→481→492→502→511→521→530，先例 v112/v122/v126/v127/v125/v131/v133/v136/v138/v144/v150/v151/v154）且 ≤584 上限
+[PASS] T-主 路由指针在位 plan-research-router ≥1
+[PASS] T-主 路由指针在位 plan-template-kit ≥1
+[PASS] T-主 路由指针在位 plan-cost-guard ≥1
+[PASS] T-主 路由指针在位 plan-collab-router ≥1
+[PASS] T-迁 research-routing.md 含 强制引用格式
+[PASS] T-迁 template-guide.md 存在
+[PASS] T-迁 template-mapping.md 存在
+[PASS] T-迁 template-guide.md 含 29 个
+[PASS] T-迁 cost-control.md 存在
+[PASS] T-迁 billing.md 存在
+[PASS] T-迁 cost_log.md 存在
+[PASS] T-迁 skill-collaboration.md 存在
+[PASS] T-迁 skill-collaboration.md ≤300 行
+[PASS] T-死 references/research-routing.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/template-guide.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/template-mapping.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/cost-control.md 零残留(plan- 过滤后, N=0)
+[PASS] T-死 references/skill-collaboration.md 零残留(plan- 过滤后, N=0)
+[PASS] T-锚 卫星路由表 task-discipline 行（原 C19 面载体）
+[PASS] T-锚 卫星路由表 task-dispatch 行（原 C25 面载体）
+[PASS] T-锚 SKILL 指针段 Rule 26 质量优先 bullet（原 C26 面载体）
+[FAIL] T-锚 Rules 1-3..83 宽容计数锚 ≥1
+[PASS] T-守 check-skill-modify.sh 含 plan-research-router
+[PASS] T-守 check-skill-modify.sh 含 plan-template-kit
+[PASS] T-守 check-skill-modify.sh 含 plan-cost-guard
+[PASS] T-守 check-skill-modify.sh 含 plan-collab-router
+[PASS] T-reg registry.tsv 含 selftest-skill-split 行
+Total: 40  PASS=39  FAIL=1
+## source-anchor-discipline
+SA-01 PASS critical-rules.md 含 '### 71 无源不写' 标题且 71.1-71.7 七子条锚全在
+SA-02 PASS 71.1 行含四来源（file:line/URL/命令输出原文/工具调用记录）与「从严」
+SA-03 PASS 71.2 行含五问要素与口诀「无源不写，空段占位，写必带锚」
+SA-04 PASS 71.4 行含审计表五列头（单元位置/事实摘要/三态判定/源锚或/处置建议）与「补一个源」禁令
+SA-05 PASS 71.5 行含「无锚点行=违规退回」
+SA-06 PASS 71.7 行含「零新 config 键」与「机器边界如实披露」
+SA-07 FAIL SKILL.md 卫星路由表 task-discipline 行 + CRIT_D 71.1 条款本体 + '1-[89][0-9]' 全集计数 ≥2
+SA-08 PASS subagent_dispatch.md 含 '## 10. 防幻觉契约' 段与 '写入前五问' 回溯行
+SA-09 PASS findings.md/progress.md 各含 'Rule 71' 注释锚且合计 ≥3
+SA-10 PASS fix-prompts.md 含「提示词 A — 溯源审计」（素材锚活）
+SA-11 PASS selftest-registry.tsv 含 'selftest-source-anchor-discipline.sh' 登记行
+SA-12 PASS config.json 不含 source_anchor/anti_halluc/no_source 任一键名
+Total: 11 pass, 1 fail
+## summary-readability
+SRV-01 PASS: Rule 76 条款标题锚(标题≥1)
+SRV-02 PASS: Rule 76 六子条锚(≥6)
+SRV-03 FAIL: SKILL 接线锚(got 1-(7[4-9]|[89][0-9]|8[0-9])=0 expect>=3)
+SRV-04 PASS: SKILL 接线锚(Rule 76=1≥1 ∧ CRIT_D 76 标题=1)
+SRV-05 PASS: SKILL 卫星路由表 discipline 行在位 ∧ CRIT_D 76.x 子条=6（C55 合规面瘦身后由路由表+条文承载）
+SRV-06 PASS: SKILL 终验段 Rule 76 联动句在位（编号列表规范措辞）
+SRV-07 PASS: delivery-summary §3 审查清单表头行三列(文件名/路径/简单描述)
+SRV-08 PASS: image-type.md 装饰圈号=0
+SRV-09 PASS: multiview-ref-type.md 装饰圈号=0
+SRV-10 PASS: check-complete.sh run_report_lint Rule 76>=1
+SRV-11 PASS: registry 登记+registry.sh PASS
+SRV-12 FAIL: 9 级联脚本(pass=0 fail=9 expect 9/9)
+SRV-13 PASS: 负断言守护: 用户面白名单载体装饰圈号=0
+Total: PASS=11 FAIL=2 WARN=0
+## tool-selection
+TS-01 PASS critical-rules.md 六子条锚 = 6
+TS-02 PASS 40.3 披露措辞「不可代调」命中 2
+TS-03 PASS 40.4 39.8 激活三条件（新语义） + 40.6 零新 config 键 行内锚在位
+TS-04 PASS SKILL.md 路由表 collab 行枚举 40=1 ≥1 ∧ CRIT_C 40 标题=1
+TS-05 FAIL SKILL.md 字面锚漂移（'1-80'=0 应 ≥1 / 1-39=0 应 0）
+TS-06 PASS SKILL.md 既有三锚现载体（dynamic-workflows 39.8 主动路由行/(Rule 39,40,91) 引措/卫星路由表 collab 行）保全
+TS-07 PASS SKILL.md 卫星路由表 collab 行在位（C28 合规面载体）
+TS-08 PASS general 模板 🧰 区块与「上游分析记录」定位声明在位
+TS-09 PASS mini-lite 豁免声明 =1 且 48 行 ≤80
+TS-10 PASS subagent_dispatch 工具面提示行在位
+TS-11 PASS 卫星两文档 + plan-writer 契约锚在位
+TS-12 PASS config.json properties 键数 53（v145 2 键 + task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）
+Total: 12 PASS=11 FAIL=1
+## verification-gate
+VG-01 PASS 卫星 SKILL.md frontmatter 三锚在位（name/description/model）
+VG-02 PASS 规则文件 Rule 84 节 + 84.1-84.7 子条锚≥6 在位
+VG-03 PASS 卫星 verification.md 模板含 '**Verify command**:' 字段 + Rule 84.1 纪律锚
+VG-04 PASS run-verification.sh 存在 + 可执行 + bash 语法通过
+VG-05 PASS 主 SKILL.md 路由表 verification-gate 行 + Rule 84 枚举 ≥2 在位
+VG-06 FAIL 主 SKILL.md 全集 1-[89][0-9]/11 卫星/frontmatter satellite 行三锚缺失
+VG-07 PASS attest-plan.sh VC 可执行性门四锚在位（resolve_vc_tier/env/skip/output）
+VG-08 PASS 核心 critical-rules.md 卫星路由索引含 verification-gate + Rule 84
+VG-09 PASS 主 goal-gate.md/completion-gate.md 已改指针指向卫星（Rule 82 原子配对）
+VG-10 PASS 零新 config 键承诺在位（env-only TASK_PLANNER_VC_ENFORCE，禁引入 vc_executable 新键，properties=53）
+VG-11 PASS run-verification.sh 核心逻辑四锚在位（解析/汇总/占位跳过）
+VG-12 PASS selftest-registry.tsv 含本脚本登记行
+VG-13 PASS Rule 84.7 内容审查门静态锚在位（规则文件 7 + 卫星 SKILL.md 1，各≥1）
+----------------------------------------------------------------
+[selftest-verification-gate] Total: PASS=12 FAIL=1
+## veto
+VT-01 PASS 32.1 禁令登记
+VT-02 PASS 32.2 计划期必查
+VT-03 PASS 32.3 执行期消费
+VT-04 PASS 32.4 解禁条件（两条）
+VT-05 PASS 32.5 机制（开关键）
+VT-06 PASS 31.5 消费侧联动 Rule 32
+VT-07 PASS SKILL.md 指针段用户否决措辞 ∧ CRIT_D Rule 32 标题（摘要行瘦身后由指针行+条文承载）
+VT-08 PASS SKILL.md 卫星路由表 discipline 行（C20 合规面载体）
+VT-09 PASS SKILL.md 用户否决指针 ∧ notepad 模板被否决方案段（登记链双载体）
+VT-10 FAIL SKILL.md 缺 Rules 1-3x..99 宽容锚
+VT-11 PASS config.json veto_enforce（warn 默认+三档）
+VT-12 PASS notepad 模板被否决方案段
+VT-13 PASS 无禁令项作 Recommended 矛盾表述
+Total: 13 PASS=12 FAIL=1
