@@ -64,6 +64,7 @@ ge "PR-17 critical-rules 75.10 调研通道降级链子条(R6)"         "$(cnt '
 ge "PR-18 critical-rules 75.11 无证据禁脑补子条(R6)"            "$(cnt '^75\.11 ' "$CR")" 1
 ge "PR-19 critical-rules 75.13 概念自认知强制调研子条(2026-11-05 判例)" "$(cnt '^75\.13 ' "$CR")" 1
 ge "PR-20 critical-rules 75.14 解决不了即检索子条(2026-11-05 用户澄清)" "$(cnt '^75\.14 ' "$CR")" 1
+ge "PR-21 critical-rules 75.15 调研阶段强制网络评估步骤子条(2026-11-05 用户裁决)" "$(cnt '^75\.15 ' "$CR")" 1
 
 # ── 计划期载体（模板区块 / plan-writer 契约 / dispatch advisory）──
 ge "PR-10 task_plan 模板调研区块锚(Rule 75.1)"              "$(cntF '## 🔍 调研需求与检索计划（Rule 75.1' "$TPL")" 1
@@ -85,5 +86,5 @@ else
     bad "PR-15 config 零新键" "got=(props=$PROP,newkey=$NEWKEY) expect=(4,0)"
 fi
 
-echo "Total: 20 PASS=$PASS FAIL=$FAIL"
+echo "Total: 21 PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
