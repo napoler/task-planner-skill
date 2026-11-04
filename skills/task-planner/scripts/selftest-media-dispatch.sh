@@ -5,7 +5,7 @@
 #      全部在位且既有锚未破坏（Rule 36.5 纯增量守护），并确认零新 config 键（properties=42 [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]，与 43.4/44.4 同口径）。
 # 输入：task-planner/references/critical-rules.md、task-planner/SKILL.md、task-planner/config.json、
 #      ../plan-template-kit/references/template-mapping.md（只读，grep/jq，零写入）。
-# 输出：MD-01..MD-09 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 MD-08 打 SKIPPED 不 FAIL，
+# 输出：MD-01..MD-11 逐行 PASS/FAIL + 末行 Total；全 PASS exit 0，任一 FAIL exit 1（jq 缺失时 MD-08 打 SKIPPED 不 FAIL，
 #      与 selftest-reliability-institution.sh R-12 先例一致）。
 # 依赖：bash + grep；config.json 键数校验需 jq（缺失降级 SKIPPED，fail-open 非静默——打印提示行）。
 
@@ -100,6 +100,21 @@ fi
 a="$(grep -c '^21\.1b' "$CRIT_DP" || true)"
 b="$(grep -c '代码编辑隔离' "$SKILLMD" || true)"
 if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 09 "既有锚守护 21.1b=$a ≥1(dispatch) 且 SKILL.md 代码编辑隔离行 $b ≥1"; else bad 09 "既有锚漂移（critical-rules-dispatch 21.1b=$a 应 ≥1 / SKILL.md 代码编辑隔离行=$b 应 ≥1）"; fi
+
+# MD-10 47.6 抽检门条款锚（task-crossprojauth R7 2026-11-04 增补）
+# What：断言 critical-rules-media.md 行首 '^47.6 ' 子条（生成产物物理/时序常识缺陷强制抽检门）在位。
+# Why：47.6 判定面=LLM 行为（交付前常识缺陷抽检），机器面=条款行存在性锚防未来误删/改写丢失条款本体
+#      （判例=用户 R7 投诉「生成视频出现车辆倒着跑未被审查出来」，既有 50.5 需求条目级评级缺缺陷级闸口）。
+n="$(grep -c '^47\.6 ' "$CRIT_M" || true)"
+if [ "$n" -ge 1 ]; then ok 10 "critical-rules-media.md 47.6 抽检门锚 $n ≥1"; else bad 10 "critical-rules-media.md 47.6 锚缺失（行首 47.6 命中 $n 应 ≥1）"; fi
+
+# MD-11 47.4 六子条措辞随动锚（task-crossprojauth R7 2026-11-04 增补）
+# What：断言 47.4 机制行内「47.1-47.6 六子条文本锚」字面在位且旧「五子条文本锚」措辞清零。
+# Why：47.4 为 47 域自引用措辞，子条 47.5→47.6 增补后机器面自述须与实际子条数对齐（纪元/计数级联=无，改字不新增键）；
+#      负断言防旧措辞残留造成文本锚数与实际不一致。
+a="$(grep -c '六子条' "$CRIT_M" || true)"
+b="$(grep -c '五子条文本锚' "$CRIT_M" || true)"
+if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 11 "47.4 六子条措辞 $a ≥1 且五子条文本锚残留 $b =0"; else bad 11 "47.4 措辞级联未完成（六子条=$a 应 ≥1 / 五子条文本锚=$b 应 0）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

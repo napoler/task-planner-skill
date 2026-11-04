@@ -13,10 +13,12 @@
 #   TI-10 config.json 顶层 {"interaction_mode":"silent"} (非 .properties 嵌套) → silent
 #   TI-11 (task-v070) 静态守护: critical-rules.md 含 28.2.1「思路复述」条款
 #          (ask 模式 D1 批准前置,防未来误删)
+#   TI-12 (task-crossprojauth R7 2026-11-04) 静态守护: critical-rules-discipline.md 28.6 预算自动批准线锚在位
+#   TI-13 (task-crossprojauth R7 2026-11-04) 静态守护: critical-rules-discipline.md 28.7 停等止损锚在位
 # hermetic: mktemp 夹具 + trap 清理, 不触真实 plans/ 与真实 config.json;
 # 各 config 层用例独立 <root> 目录 (resolve 读 <script_dir>/../config.json,
 # 故 config.json 必须放 <root>/config.json 且 resolve copy 到 <root>/scripts/)。
-# 10 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
+# 13 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
 
 set -u
 
@@ -143,6 +145,24 @@ if grep -q "28\.2\.1" "$CRIT_D" && grep -q "思路复述" "$CRIT_D" && grep -q "
   PASS=$((PASS+1)); printf 'TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)\n'
 else
   FAIL=$((FAIL+1)); printf 'TI-11 FAIL 28.2.1 static guard (critical-rules.md/SKILL.md 缺 28.2.1 或 思路复述 锚点)\n'
+fi
+
+# TI-12 (task-crossprojauth R7 2026-11-04): 28.6 预算自动批准线静态守护 — 行首 '^28.6 ' 锚在位
+# [R7 2026-11-04] 修改原因:28.6 为 LLM 行为判定面(预算声明内消耗动作禁询),机器面=条款行存在性锚防误删;原行为:脚本止于 TI-11。
+n="$(grep -c '^28\.6 ' "$CRIT_D" || true)"
+if [ "$n" -ge 1 ]; then
+  PASS=$((PASS+1)); printf 'TI-12 PASS 28.6 static guard (critical-rules-discipline.md 行首 28.6 锚 $n ≥1)\n'
+else
+  FAIL=$((FAIL+1)); printf 'TI-12 FAIL 28.6 static guard (critical-rules-discipline.md 行首 28.6 锚缺失)\n'
+fi
+
+# TI-13 (task-crossprojauth R7 2026-11-04): 28.7 停等止损静态守护 — 行首 '^28.7 ' 锚在位
+# [R7 2026-11-04] 修改原因:28.7 为 LLM 行为判定面(批量执行期非 A 级门禁等待),机器面=条款行存在性锚防误删;原行为:无此断言。
+n="$(grep -c '^28\.7 ' "$CRIT_D" || true)"
+if [ "$n" -ge 1 ]; then
+  PASS=$((PASS+1)); printf 'TI-13 PASS 28.7 static guard (critical-rules-discipline.md 行首 28.7 锚 $n ≥1)\n'
+else
+  FAIL=$((FAIL+1)); printf 'TI-13 FAIL 28.7 static guard (critical-rules-discipline.md 行首 28.7 锚缺失)\n'
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
