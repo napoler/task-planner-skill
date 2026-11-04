@@ -1,6 +1,6 @@
 ---
 name: plan-resume
-model: haiku
+model: sonnet
 description: Scan for interrupted or stuck task-planner plans across a workspace, judge whether each is still actionable or has expired (by time decay / vanished code environment / already-superseded goal), and report candidates with actions. v0.6 (2026-09-06) 决策自主化: 在恢复触发点(会话启动无活跃计划/用户说"继续上次任务"类/当前计划交付终态后),模型自主分析打分选 1 个最值得推进的计划并立即续推至交付,途中执行级决策点(待你决策/二选一/[awaiting-user])按 §7.10 四项测试自主裁决并记录,不停车等用户(config.json autonomous_resume,会话级说"不要自动续推"可关);当前计划执行中的被动扫描仍只报告不动手。Use when the user mentions "继续上次任务" / "接着推进" / "看看还有哪些没做完的计划" / "扫一下计划" / "resume plan" / "stale plans" / "task-planner 恢复" — even if they don't explicitly say "resume".
 ---
 
