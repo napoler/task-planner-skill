@@ -10,8 +10,8 @@
 #   AD-07 97.6 三仲裁锚各 grep ≥1：『41.4 优先于 D3』『83 是 60 的特例』『资料先行档替代路径』
 #         （『22.3.0 替代路径』非连续串不作单锚，已弃）
 #   AD-08 SKILL.md task-discipline 路由枚举扩员 '94,95,97' ≥1（frontmatter 卫星行+正文路由表两行）
-#   AD-09 SKILL.md 纪元字面 '1-101' ≥3（line9 指针行/line210 全集索引/line253 References 表）[2026-11-04 task-crossprojauth-20261104-R5: 纪元 1-102, 顶锚放宽 10x/8x 窗]
-#   AD-10 SKILL.md '其余 84 条' ≥2（line9+line210；79→80 计数级联随动，Rule 97 并入后全集计数上移；80→81：2026-11-03 task-ctxcorrect-20261103 Rule 98 并入纪律域；81→82：2026-11-04 task-crossprojauth-20261104 Rule 99 并入纪律域；82→83：2026-11-04 task-crossprojauth-20261104-R2 Rule 100 并入纪律域；83→84：2026-11-04 task-crossprojauth-20261104-R3 Rule 101 并入纪律域）[2026-11-04 task-crossprojauth-20261104-R5: 纪元 1-102, 顶锚放宽 10x/8x 窗]
+#   AD-09 SKILL.md 纪元字面 '1-101' ≥3（line9 指针行/line210 全集索引/line253 References 表）[2026-11-04 task-crossprojauth-20261104-R5: 纪元 1-102, 顶锚放宽 10x/8x 窗][2026-11-04 task-dualqc-20261104: 纪元 1-103（Rule 103 落 task-dispatch 质检域），顶锚 11x 窗已覆盖零级联]
+#   AD-10 SKILL.md '其余 84 条' ≥2（line9+line210；79→80 计数级联随动，Rule 97 并入后全集计数上移；80→81：2026-11-03 task-ctxcorrect-20261103 Rule 98 并入纪律域；81→82：2026-11-04 task-crossprojauth-20261104 Rule 99 并入纪律域；82→83：2026-11-04 task-crossprojauth-20261104-R2 Rule 100 并入纪律域；83→84：2026-11-04 task-crossprojauth-20261104-R3 Rule 101 并入纪律域）[2026-11-04 task-crossprojauth-20261104-R5: 纪元 1-102, 顶锚放宽 10x/8x 窗][2026-11-04 task-dualqc-20261104: 计数 86 条（Rule 103 并入质检域；85 为 Rule 102 落地计数，链注漏记不回填）]
 #   AD-11 [负] config.json properties 键数=53（同 selftest-lane-advancement.sh LA-14 line148 口径；jq 缺失打 SKIPPED 不 FAIL——无 jq 属环境降级非内容漂移，沿用 LA-14 先例）
 #   AD-12 [负] 防越界+登记闭环: 规则文件 ^97.8 子条=0（八子条 97.0-97.7 上限）∧ selftest-registry.tsv 已登记本脚本（selftest-registry.sh T02 双向配对兜底）
 # 全 PASS exit 0; 任一 FAIL exit 1。只读，不修改任何文件。
