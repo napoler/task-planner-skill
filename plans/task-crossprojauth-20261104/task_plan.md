@@ -69,4 +69,4 @@ new_rule: 99
 - [x] F 组（general-purpose 后台，检查点 subagent-state/06-executor-rule75-r6.md，与 E 组文件集零交集并行）：S1 75.9-75.12 四子条逐字追加 critical-rules-research.md（VERBATIM-OK 空集验证，纯 +8 行）+ S2 selftest-proactive-research.sh 加 PR-16/17/18 断言+Total 15→18（18/18 PASS）+ S4 补发项 critical-rules.md L196 plan-research-router 行调用条件加词（75.9/75.10/75.11 触发词，唯一命中该一行）
 - [x] 判例锚 session_4906f3feaa579b867883b2e37f2422c6：ReadSessionContext 两种形态（session_/sess_）均 not found[2026-11-04]→按 §三 不虚构会话细节，判例锚改用 R6 用户原话行+登记检索失败（75.9 条款内已注）；VC(R6)①②③ 全过（^75.9/^75.10/^75.11/^75.12 各=1，^75.8 仍=1 原文零改动，proactive-research rc=0）
 
-**[收口证据 R5+R6（2026-11-04 回填）]**：fresh 回归 `Total: 94 PASS=94 FAIL=0 (run=94 reused=0)`（land 102 后）；源仓 feat commit=<回填>；部署 3 位 diff=0（zcode/claude pathspec 提交+cursor 落盘）+三仓 push ahead=0（待执行后回填）
+**[收口证据 R5+R6（2026-11-04 回填）]**：fresh 回归 `Total: 94 PASS=94 FAIL=0 (run=94 reused=0)`（land 102 后）；源仓 feat **2f4540d**（18 文件：9 技能文件+账本+stub+attest+6 subagent-state）；部署 3 位 9 文件 diff=0（zcode **2e6f03e** / claude **727b483** pathspec 提交+cursor 落盘）；三仓 push ahead=0（源仓 1105240..2f4540d / zcode 2f1eb87..2e6f03e / claude ce69956..727b483）；判向核验=3 位 31 行位侧独有全为 R4 态旧字面、零位侧本地适配（源仓权威）；簿记 commit=<本行后回填>
