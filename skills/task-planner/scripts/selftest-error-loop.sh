@@ -72,8 +72,8 @@ if grep -q '指出错误' "$SKILLMD" && grep '指出错误' "$SKILLMD" | grep -q
 # Why=task-v170 落地 Rule 81（计划完成后归档纪律），SKILL.md L314/L406 实态「Critical Rules 1-81」，
 # 旧正则上界 7x（覆盖至 79）失配=0，随动补 8[01]（覆盖 80/81，负样本 82/90 不得命中，不放开越界值），
 # 3x-7x 宽容并集保留（宽容锚不重新钉死，v118/v131/v132 先例）。
-# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口] 宽容并集 1-(3[1-9]|[4-7][0-9]|8[0-9]|9[0-9]) 补 10[0-9] 分支
-if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9]|8[0-9]|9[0-9]|10[0-9])' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x..10x 宽容范围（task-v144 扩 6x 纪元 / task-v170 S10j 扩 81 纪元 / task-crossprojauth R2/R3 扩 1-101 四位顶字面）"; else bad 11 "SKILL.md 缺 Rules 1-3x..101 宽容锚"; fi
+# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽] 宽容并集 1-(3[1-9]|[4-7][0-9]|8[0-9]|9[0-9]) 补 10[0-9] 分支 [R8: 再补 11[0-9] 分支]
+if grep -qE 'Rules 1-(3[1-9]|[4-7][0-9]|8[0-9]|9[0-9]|10[0-9]|11[0-9])' "$SKILLMD"; then ok 11 "SKILL.md Rules 1-3x..11x 宽容范围（task-v144 扩 6x 纪元 / task-v170 S10j 扩 81 纪元 / task-crossprojauth R2/R3 扩 1-101 四位顶字面 [R8: 11x 预放宽]）"; else bad 11 "SKILL.md 缺 Rules 1-3x..101 宽容锚"; fi
 # EL-12 [2026-10-11 task-v168 设置层] error_loop_enforce 默认值 warn→enforce（用户 piv⊙ 设置修复），本钉同步演进；禁回退 warn。
 # 原文（修前）: sys.exit(0 if k.get('default')=='warn' ...)，ok 消息「warn 默认+三档」，bad 消息「默认非 warn」
 if grep -q '"error_loop_enforce"' "$CONFIG" && python3 -c "

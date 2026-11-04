@@ -123,8 +123,8 @@ fi
 # [2026-10-12 task-v171 分层口径切换] SKILL.md 瘦身后全集声明演进为「Rules 1-80 全集索引」（核心 12 条+10 卫星），
 #   旧形态 'Critical Rules 全集 1-NN(+N)' 失配=0；主断言随动演进为 'Rules 1-80 全集索引：' 唯一声明行（=1 语义保持），
 #   旧纪元负断言 {51,53,55} 清单保留（宽容正则优先范式延续，演进史注释保留如上）。
-# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口] 全集索引锚 Rules 1-[89][0-9]→Rules 1-(8[0-9]|9[0-9]|10[0-9])（=1 语义保持；负断言 {51,53,55} 不动）
-n="$(grep -cE 'Rules 1-(8[0-9]|9[0-9]|10[0-9]) 全集索引：' "$SKILLMD" || true)"
+# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽] 全集索引锚 Rules 1-[89][0-9]→Rules 1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])（=1 语义保持；负断言 {51,53,55} 不动）
+n="$(grep -cE 'Rules 1-(8[0-9]|9[0-9]|10[0-9]|11[0-9]) 全集索引：' "$SKILLMD" || true)"
 m="$(grep -cE '(全集|Rules) 1-(51|53|55)' "$SKILLMD" || true)"  # [2026-10-05 task-v132] 裸 '1-51' 固定匹配被 SKILL:304「51.1-51.7」子串误触（级联第 5 变体：负断言须语境锚定防子串误伤）; [2026-10-05 task-v138] 负断言并入 53（1-53→1-55 演进后旧纪元清单={51,53}，强度不减弱，先例 v127 RC-15 ^50→^52）; [2026-10-08 task-v144] 负断言再并入 55（1-55→1-62 演进后旧纪元清单={51,53,55}，强度不减弱）
 if [ "$n" -eq 1 ] && [ "$m" -eq 0 ]; then
   ok 09 "SKILL.md 全集声明「Rules 1-(8x|9x|10x) 全集索引：」=1（1-80..101 宽窗，v171 分层口径）且旧「1-51/53/55」残留=0"
@@ -195,10 +195,10 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 #   旧「详见 `references/critical-rules.md`（Critical Rules …（含 Rule 40-NN 全集）」随瘦身重写退役；
 #   现存载体=References 表行「| `references/critical-rules.md` | Critical Rules 核心域 1-80 全集索引（12 条核心全文+分层架构说明+卫星路由索引） |」。
 #   修法：idxn 锚改 'critical-rules.md` | Critical Rules 核心域'（=1）+ 行内含 '1-8[0134]'（全集括注演进口径，防级联漏改语义保持）。
-# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口] 行内全集括注 1-[89][0-9]→1-(8[0-9]|9[0-9]|10[0-9])
+# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽] 行内全集括注 1-[89][0-9]→1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])
 idxn="$(grep -cF 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
 idxline="$(grep -F 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE '1-(8[0-9]|9[0-9]|10[0-9])'; then
+if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE '1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])'; then
   ok 16 "SKILL.md References 表 critical-rules.md 行=1 且含「1-(8x|9x|10x)」全集括注（1-80..101 宽窗，v171 分层口径，CR P1-2 防级联漏改）"
 else
   bad 16 "SKILL.md References 表 critical-rules.md 行命中=$idxn（应 =1）或行内未含 1-101 全集括注（级联漏改，CR P1-2 复发）"

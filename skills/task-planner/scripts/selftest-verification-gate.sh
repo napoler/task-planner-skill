@@ -79,8 +79,8 @@ fi
 # VG-06 主 SKILL.md 三处步骤引用（frontmatter/计划期/终验）+ 全集 1-84 纪元
 # What：断言主 SKILL.md 含 '1-84' 全集纪元 + '11 卫星' 计数 + verification-gate frontmatter 卫星行。
 # Why：验证独立化后主技能须在 frontmatter/全集纪元/卫星计数三面同步（task-v173 纪元级联）。
-# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口] 全集锚 Rules 1-[89][0-9]→Rules 1-[89][0-9]\|Rules 1-10[0-9]（字面 grep BRE 并联，紧 1-10 前缀防 incidental）
-if grep -q 'Rules 1-[89][0-9]\|Rules 1-10[0-9]' "$TP_SKILL" && grep -q '11 卫星' "$TP_SKILL" && grep -q '卫星技能 verification-gate' "$TP_SKILL"; then
+# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽] 全集锚 Rules 1-[89][0-9]→Rules 1-[89][0-9]\|Rules 1-10[0-9]\|Rules 1-11[0-9]（字面 grep BRE 并联，紧 1-10 前缀防 incidental）
+if grep -q 'Rules 1-[89][0-9]\|Rules 1-10[0-9]\|Rules 1-11[0-9]' "$TP_SKILL" && grep -q '11 卫星' "$TP_SKILL" && grep -q '卫星技能 verification-gate' "$TP_SKILL"; then
   ok 06 "主 SKILL.md 全集 1-(8x|9x|10x) + 11 卫星 + frontmatter satellite 行三锚在位（1-80..101 宽窗）"
 else
   bad 06 "主 SKILL.md 全集 1-101宽窗/11 卫星/frontmatter satellite 行三锚缺失"

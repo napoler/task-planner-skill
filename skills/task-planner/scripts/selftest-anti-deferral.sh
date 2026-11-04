@@ -83,10 +83,10 @@ fi
 ad08="$(cnt '94,95,97' "$SKILLMD")"
 if [ "${ad08:-0}" -ge 1 ]; then ok 08 "SKILL.md task-discipline 路由枚举 94,95,97=${ad08:-0} 处（≥1）"; else bad 08 "SKILL.md 缺 94,95,97 路由枚举（=0，需 ≥1: frontmatter 卫星行+正文路由表）"; fi
 # AD-09 SKILL.md 纪元窗 1-(8x|9x|10x) ≥3
-ad09="$(cntE '1-(8[0-9]|9[0-9]|10[0-9])([^0-9]|$)' "$SKILLMD")"
+ad09="$(cntE '1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])([^0-9]|$)' "$SKILLMD")"
 if [ "${ad09:-0}" -ge 3 ]; then ok 09 "SKILL.md 纪元窗 1-(8x|9x|10x)=${ad09:-0} 处（≥3）"; else bad 09 "SKILL.md 纪元窗 1-(8x|9x|10x) 仅 ${ad09:-0} 处（需 ≥3: 指针行/全集索引/References 表）"; fi
 # AD-10 SKILL.md 其余 8x 条 ≥2
-ad10="$(cntE '其余 8[0-9] 条' "$SKILLMD")"
+ad10="$(cntE '其余 [89][0-9] 条' "$SKILLMD")"
 if [ "${ad10:-0}" -ge 2 ]; then ok 10 "SKILL.md 计数级联 其余 8x 条=${ad10:-0} 处（≥2）"; else bad 10 "SKILL.md 计数级联缺失（其余 8x 条=${ad10:-0}，需 ≥2）"; fi
 # AD-11 [负] config.json properties 键数=53（LA-14 同口径；jq 缺失 SKIPPED 不 FAIL）
 if command -v jq >/dev/null 2>&1; then

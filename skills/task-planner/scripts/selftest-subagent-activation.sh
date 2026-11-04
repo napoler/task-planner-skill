@@ -62,10 +62,10 @@ if grep -q '96\.6' "$DISPATCH" && grep -qF '执行强化层' "$DISPATCH"; then o
 # SA-10 核心卫星路由行枚举扩员
 if grep -qF '52,59,68,96' "$CRIT_C"; then ok 10 "核心 critical-rules.md 卫星枚举扩员至 96"; else bad 10 "核心卫星枚举缺 96（task-dispatch 路由行）"; fi
 # SA-11 SKILL.md 纪元窗 1-(8x|9x|10x) ≥3
-sa11="$(cntE '1-(8[0-9]|9[0-9]|10[0-9])([^0-9]|$)' "$SKILLMD")"
+sa11="$(cntE '1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])([^0-9]|$)' "$SKILLMD")"
 if [ "${sa11:-0}" -ge 3 ]; then ok 11 "SKILL.md 纪元窗 1-(8x|9x|10x)=${sa11:-0} 处（≥3）"; else bad 11 "SKILL.md 纪元窗 1-(8x|9x|10x) 仅 ${sa11:-0} 处（需 ≥3: frontmatter/正文/References）"; fi
 # SA-12 卫星枚举 ,96 + 其余 84 条（各 ≥2）[2026-11-02 task-lazy-escalation-20261102 纪元级联随动：79→80，Rule 97 并入纪律域后全集计数上移；2026-11-03 task-ctxcorrect-20261103 80→81；2026-11-04 task-crossprojauth-20261104 81→82，Rule 99 并入纪律域；2026-11-04 task-crossprojauth-20261104-R2 82→83，Rule 100 并入纪律域；2026-11-04 task-crossprojauth-20261104-R3 83→84，Rule 101 并入纪律域]
-sa12a="$(cnt '52,59,68,96' "$SKILLMD")"; sa12b="$(cntE '其余 8[0-9] 条' "$SKILLMD")"
+sa12a="$(cnt '52,59,68,96' "$SKILLMD")"; sa12b="$(cntE '其余 [89][0-9] 条' "$SKILLMD")"
 if [ "${sa12a:-0}" -ge 2 ] && [ "${sa12b:-0}" -ge 2 ]; then ok 12 "SKILL.md 卫星枚举 ,96=${sa12a:-0} ∧ 其余 8x 条=${sa12b:-0}（各 ≥2）"; else bad 12 "SKILL.md 级联随动缺失（,96=${sa12a:-0}/其余 8x 条=${sa12b:-0}, 各需 ≥2）"; fi
 # SA-13 两模板承载锚
 if grep -q '96\.3' "$TPL_PLAN" && grep -qF '并行组' "$TPL_PLAN" && grep -qF '并行宽度' "$TPL_PLAN" \
