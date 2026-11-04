@@ -1,0 +1,4 @@
+# [run-verification] VC-9 | 2026-11-04T15:39:05Z | cmd: grep -q '103.6' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md && grep -q '关联面' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md
+# ---- stdout/stderr ----
+
+# exit=0

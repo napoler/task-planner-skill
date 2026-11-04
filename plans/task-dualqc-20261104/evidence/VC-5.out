@@ -1,0 +1,19 @@
+# [run-verification] VC-5 | 2026-11-04T15:39:03Z | cmd: bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-dual-qc.sh && test "$(grep -c 'selftest-dual-qc' /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-registry.tsv)" -eq 1
+# ---- stdout/stderr ----
+DQ-01 PASS ^103.[1-8] 计数=8
+DQ-02 PASS ### 103 段标题在位
+DQ-03 PASS 同步完整性=4/核对清单=2/关联面=1
+DQ-04 PASS 升一档=2/封顶=3/decision-arbiter=3
+DQ-05 PASS 只读不改=1/不重做=1/输出精简=1
+DQ-06 PASS 复检升档衔接（Rule 103.4）=1
+DQ-07 PASS 衔接（Rule 103）=1/84.7.2 为其先例面=1
+DQ-08 PASS 1-103=3/其余 86 条=2/Rule 103 双轮质检与同步完整性域=1
+DQ-09 PASS 3h 双轮质检（Rule 103）=1/103.6 同步核对清单=3
+DQ-10 PASS 统一收口序列=1/含 user-session-log
+DQ-11 PASS 双轮质检模板锚齐全/## 7. 返回格式在位
+DQ-12 PASS 双轮质检声明区块/多文件变更集预判
+DQ-13 PASS 22.4b 八字段契约保全（不得增删）=1
+DQ-14 PASS registry 已登记 selftest-dual-qc
+Total: 14 PASS=14 FAIL=0
+
+# exit=0

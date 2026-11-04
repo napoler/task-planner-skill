@@ -1,0 +1,4 @@
+# [run-verification] VC-1 | 2026-11-04T15:39:03Z | cmd: test "$(grep -c '^103\.[1-8]' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md)" -ge 8 && grep -q '同步完整性' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md && grep -q '核对清单' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md
+# ---- stdout/stderr ----
+
+# exit=0

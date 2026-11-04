@@ -1,0 +1,4 @@
+# [run-verification] VC-3 | 2026-11-04T15:39:03Z | cmd: grep -q '双轮质检' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/subagent_dispatch.md && grep -q '第一轮' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/subagent_dispatch.md && grep -q '第二轮' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/subagent_dispatch.md
+# ---- stdout/stderr ----
+
+# exit=0

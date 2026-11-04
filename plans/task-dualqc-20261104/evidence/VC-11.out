@@ -1,0 +1,4 @@
+# [run-verification] VC-11 | 2026-11-04T15:39:05Z | cmd: grep -q '统一收口序列' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -A6 '统一收口序列' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md | grep -q 'user-session-log' && grep -A6 '统一收口序列' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md | grep -q '103'
+# ---- stdout/stderr ----
+
+# exit=0

@@ -1,0 +1,4 @@
+# [run-verification] VC-10 | 2026-11-04T15:39:05Z | cmd: grep -q '同步核对清单' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/subagent_dispatch.md && grep -q '同步完整性' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/task_plan.md
+# ---- stdout/stderr ----
+
+# exit=0

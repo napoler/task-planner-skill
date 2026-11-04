@@ -1,0 +1,5 @@
+# [run-verification] VC-7 | 2026-11-04T15:39:05Z | cmd: git -C /mnt/data/dev/task-planner-skill diff --name-only 7d48161..HEAD -- skills/ | while read f; do for d in ~/.zcode ~/.claude ~/.cursor; do diff -q "$d/skills/${f#skills/}" "/mnt/data/dev/task-planner-skill/$f" || exit 1; done; done && echo DEPLOY-DIFF-ZERO
+# ---- stdout/stderr ----
+DEPLOY-DIFF-ZERO
+
+# exit=0

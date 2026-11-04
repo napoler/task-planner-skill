@@ -1,0 +1,4 @@
+# [run-verification] VC-4 | 2026-11-04T15:39:03Z | cmd: grep -q '1-103' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -q '其余 86 条' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+# ---- stdout/stderr ----
+
+# exit=0

@@ -1,0 +1,4 @@
+# [run-verification] VC-8 | 2026-11-04T15:39:05Z | cmd: git -C /mnt/data/dev/task-planner-skill log --oneline -5 | grep -qi 'task-dualqc' && test -z "$(git -C /mnt/data/dev/task-planner-skill worktree list | grep task-dualqc)" && grep -q '"rule":103.*"landed"' /mnt/data/dev/task-planner-skill/plans/.rule-reservations.jsonl
+# ---- stdout/stderr ----
+
+# exit=0

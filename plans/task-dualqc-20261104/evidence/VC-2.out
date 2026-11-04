@@ -1,0 +1,4 @@
+# [run-verification] VC-2 | 2026-11-04T15:39:03Z | cmd: grep -q 'Rule 103' /mnt/data/dev/task-planner-skill/skills/verification-gate/references/critical-rules-verification.md && grep -q 'Rule 103' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/critical-rules-dispatch.md
+# ---- stdout/stderr ----
+
+# exit=0

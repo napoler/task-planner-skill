@@ -1,0 +1,9 @@
+# [run-verification] VC-6 | 2026-11-04T15:39:04Z | cmd: cd /mnt/data/dev/task-planner-skill/skills/task-planner/scripts && bash run-selftests.sh 2>&1 | tail -5
+# ---- stdout/stderr ----
+[reused] selftest-verification-gate (rc=0 PASS=13 FAIL=0)
+[reused] selftest-verify-io (rc=0 PASS=0 FAIL=0)
+[reused] selftest-veto (rc=0 PASS=13 FAIL=0)
+[reused] selftest-workflow-orchestration (rc=0 PASS=22 FAIL=0)
+Total: 95 PASS=95 FAIL=0 (run=95 reused=95)
+
+# exit=0
