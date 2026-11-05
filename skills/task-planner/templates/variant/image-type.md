@@ -23,7 +23,7 @@
 | VC-3 | 提示词结构化：四段式+style.md §2 token 块+§4 负向基线+常识子句族+去标注剥离（线稿源）+行驶强化负向；五问自检过 | grep 提示词档案四段与 token 块 | prompts/ 提示词档案 |
 | VC-4 | 预算账本：批量走 tools/gen.py spec `budget{piece_id,limit}` 闸门（≤20 抽/件跨版本累计）；超限 exit 3 冻结——冻结件禁任何续抽（含换单），STOP 呈用户=合法打断 | tmp/_gen-budget/ledger.json 对账行 | 账本+spec |
 | VC-5 | 静默纪律：批次执行 0 用户打断（VC-4 冻结与 D6 除外）；子代理进度只落检查点文件不回传过程叙事；批次末单份收尾报告（逐件展示+审查地址清单 tmp/×URL+静默决策清单） | progress.md 打断计数（除登记项=0） | 收尾报告+progress.md |
-| VC-6 | 台账与归档收口：验收件 URL/seed/参数入 output/ 台账；落选/失败件当日归档（-failed/-superseded+归档登记簿一行）；A 型件同步 registry/upload-map | 台账行 grep URL+归档登记 | output/*.md+docs/archive/README.md |
+| VC-6 | 台账与归档收口：验收件 URL/seed/参数入 output/ 台账；落选/失败件当日判废移入 trash/（Rule 100.6 判废即移，`mv <file> trash/`，禁原地 -failed/-superseded 重命名堆放）+归档登记簿一行（docs/archive/README.md）；A 型件同步 registry/upload-map | 台账行 grep URL+归档登记 | output/*.md+docs/archive/README.md |
 | VC-7 | 多态与状态登记：换装/加装偏离走白名单登记（角色卡服装变体表/道具卡装备变体表+i2i 锚定根图）；状态链字段逐件登记（时段/天气/载具态/穿戴态） | grep 变体登记行+状态链表 | 角色/道具卡+progress.md |
 
 ## 📐 评级契约（Rule 50）

@@ -58,7 +58,7 @@
 - **Executor:** 子代理 A（executor 或对应生成 agent；**草稿任务内禁止任何 video 调用**）
 
 ### Phase 3: G1 人工审查门（STOP 等用户裁决）
-- [ ] 草稿逐张 Read 呈示+对照行（镜位×出场角色×头盔×座驾×道具状态×时段）；用户逐张/逐段定稿放行（或否决/或显式跳过）；三登记入 progress.md（镜位×草稿版本×判定×日期），跳过须 `[gate-skip]` 逐字录用户原话+task_plan Decisions，否决镜草稿当日归档（-failed/-superseded）；**门控语义：complete=放行登记行可 grep，未获放行=停留 in_progress 呈用户，禁止进入 Phase 4**
+- [ ] 草稿逐张 Read 呈示+对照行（镜位×出场角色×头盔×座驾×道具状态×时段）；用户逐张/逐段定稿放行（或否决/或显式跳过）；三登记入 progress.md（镜位×草稿版本×判定×日期），跳过须 `[gate-skip]` 逐字录用户原话+task_plan Decisions，否决镜草稿当日判废移入 trash/（Rule 100.6 判废即移，禁原地 -failed/-superseded 重命名堆放）；**门控语义：complete=放行登记行可 grep，未获放行=停留 in_progress 呈用户，禁止进入 Phase 4**
 - **Status:** pending
 - **Executor:** 用户裁决（主进程 STOP 呈示，子代理无权代放行）
 
@@ -69,7 +69,7 @@
 - **Executor:** 子代理 B（与子代理 A 独立任务；派发 prompt 含 Rule 32.2 禁令行）
 
 ### Phase 5: 成片 QC + 台账 + 归档
-- [ ] FAIL 段：回 Phase 2 重出草稿重走 ③④（修正型 C 的 r2 不豁免人工门）；全 PASS：URL/seed/参数入 output/ 台账、成片 tmp/ 下载后 Read 呈示（批量逐条）、否决/废弃件当日归档
+- [ ] FAIL 段：回 Phase 2 重出草稿重走 ③④（修正型 C 的 r2 不豁免人工门）；全 PASS：URL/seed/参数入 output/ 台账、成片 tmp/ 下载后 Read 呈示（批量逐条）、否决/废弃件当日判废移入 trash/（Rule 100.6 判废即移，禁原地 -failed/-superseded 重命名堆放）
 - **Status:** pending
 - **Executor:** 子代理 B → 主进程验收
 
