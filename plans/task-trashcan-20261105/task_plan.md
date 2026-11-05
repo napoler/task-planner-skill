@@ -511,7 +511,17 @@ Phase 3
 |------|---------|--------|------|
 |      |             |        |      |
 
-<!-- Batch Report 区块已删除：本任务为非批量单次任务（Rule 18.6 模板注释授权路径），无 fan-out/≥5 单元批量操作 -->
+## 📦 Batch Report（Rule 18.6 — 非批量单次任务按文件变更集口径如实填报；检测器要求区块在位，模板「可删除」注释与检测器不一致已登记 findings）
+| 字段 | 值 |
+|------|-----|
+| `total` | 8（本任务文件变更集口径：7 修改+1 新建） |
+| `success` | 8 |
+| `failed` | 0 |
+| `failure_rate` | 0%（≤5% 通过） |
+| `sampled_pass` | 8/8（全量主进程锚亲验+selftest FD-01..06 实跑，非抽样） |
+| `sampled_fail` | 0（运行前抽检：100.6 设计稿与 84/100 域既有条款比对 2 处，0 冲突） |
+| `pre_check` | Q1:否（非批量重复操作）/Q2:有（git worktree 隔离+attest 锁定）/Q3:能（git revert 可回滚） |
+| `rollback_point` | master b231d12（合并前基线，git revert a9babe7 可整体回退） |
 
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）

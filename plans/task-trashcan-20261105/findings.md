@@ -49,3 +49,6 @@
 **执行体**：Explore（239k tokens/25 调用），检查点=subagent-state/01-explore-trash.md（主进程代落复核）
 **核心结论**：Rule 100 至 100.5 无废弃处置面；tmp/ 随清理链被清→垃圾桶须独立 trash/（持久不清理）；deprecated.md/73.5=内容条目级与文件级垃圾桶互补；媒体现状=原地 -failed/-superseded 重命名堆放（缺陷本体，variant 模板 image-type VC-6/video-type L61/L72 承载）。
 **设计决策（低区分度自主裁决，44.2）**：目录定名 `<project-root>/trash/`（项目根/gitignore/不随任务清理——与 tmp 本质区别=废弃可找回 vs 临时可再生）。
+
+## 发现登记（Phase 5 终验期，另行任务）
+- check-complete Batch Report 检测器要求区块在位（missing: entire section 拦截），但模板 batch_report 注释称「纯单次任务可删除整个区块」——模板与检测器不一致（与 check-plan-dispatch 列位漂移同族：模板演进检测器未同步）；本计划按检测器口径恢复并如实填报
