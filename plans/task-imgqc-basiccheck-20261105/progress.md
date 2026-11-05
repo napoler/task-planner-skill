@@ -89,3 +89,4 @@
 - [goal:G2] 回归零破坏 complete：bash run-selftests.sh --fresh 实测 master PASS=94 FAIL=2 = worktree PASS=94 FAIL=2，零新增 —— PASS（产物 subagent-state/06-s4-regression.md）
 - [goal:G3] 部署收敛 complete：bash md5sum 15 位实测全等 SRC 基准 9e9eb2f8/16b56511/f582589d —— PASS（产物 subagent-state/07-deploy-audit.md）
 - [goal:G4] 独立复检通过 complete：general-reviewer 五维审查 VERDICT: APPROVED —— PASS 零 BLOCKER（产物 subagent-state/05-reviewer-verdict.md）
+- [judge] Rule 73.4 终局评判（2026-11-06）：变更全部落在计划 scope 三文件+部署位（增量吸收判定 CA-1~4 逐行兑现）；[align] 复核=R5 独立复检五维无矛盾+103.6 清单全绿；Goal 宾语（QC 门判据+部署收敛）与用户原话（优化技能文件+基础错误根治）对齐无漂移
