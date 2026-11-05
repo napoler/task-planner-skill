@@ -8,7 +8,7 @@
 #   DQ-05 critical-rules-dispatch.md 含 '只读不改'≥1 ∧ '不重做'≥1 ∧ '输出精简'≥1
 #   DQ-06 critical-rules-dispatch.md 含 '复检升档衔接（Rule 103.4）' =1
 #   DQ-07 verification-gate/references/critical-rules-verification.md 含 '衔接（Rule 103，task-dualqc-20261104）'=1 ∧ '84.7.2 为其先例面'=1
-#   DQ-08 task-planner/SKILL.md 含 '1-103'≥3 ∧ '其余 86 条'=2 ∧ 'Rule 103 双轮质检与同步完整性域'=1
+#   DQ-08 task-planner/SKILL.md 含纪元窗 '1-1[0-9][0-9]'≥3（宽容锚防纪元级联） ∧ '其余 8[0-9] 条'=2 ∧ 'Rule 103 双轮质检与同步完整性域'=1; [2026-11-05 task-subagent-markup-20261105] 演进注释追加在行 11 尾
 #   DQ-09 task-planner/SKILL.md 含 '3h 双轮质检（Rule 103）'=1 ∧ '同步核对清单'≥2
 #   DQ-10 task-planner/SKILL.md 含 '统一收口序列'=1 ∧ grep -A6 '统一收口序列' 输出含 'user-session-log'
 #   DQ-11 templates/subagent_dispatch.md 含 '### 3b. 双轮质检与同步完整性'=1 ∧ '第一轮·自审'=1 ∧ '同步核对清单（103.6）'=1 ∧ 行首 '## 7. 返回格式' 仍在
@@ -93,13 +93,13 @@ else
 fi
 
 # DQ-08 task-planner/SKILL.md
-dq08a="$(cntE '1-103' "$SKILLMD")"
-dq08b="$(cnt '其余 86 条' "$SKILLMD")"
+dq08a="$(cntE '1-1[0-9][0-9]' "$SKILLMD")"
+dq08b="$(cntE '其余 8[0-9] 条' "$SKILLMD")"
 dq08c="$(cnt 'Rule 103 双轮质检与同步完整性域' "$SKILLMD")"
 if [ "${dq08a:-0}" -ge 3 ] && [ "${dq08b:-0}" -ge 2 ] && [ "${dq08c:-0}" -ge 1 ]; then
-  ok 08 "1-103=${dq08a:-0}/其余 86 条=${dq08b:-0}/Rule 103 双轮质检与同步完整性域=${dq08c:-0}"
+  ok 08 "纪元窗=${dq08a:-0}/其余 8[0-9] 条=${dq08b:-0}/Rule 103 双轮质检与同步完整性域=${dq08c:-0}"
 else
-  bad 08 "锚缺失（1-103=${dq08a:-0}/其余 86 条=${dq08b:-0}/Rule 103 双轮质检与同步完整性域=${dq08c:-0}）"
+  bad 08 "锚缺失（纪元窗=${dq08a:-0}/其余 8[0-9] 条=${dq08b:-0}/Rule 103 双轮质检与同步完整性域=${dq08c:-0}）"
 fi
 
 # DQ-09 task-planner/SKILL.md
