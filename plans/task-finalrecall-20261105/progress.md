@@ -10,7 +10,7 @@
 ## Session: 2026-11-05
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1/2 骨架占位（已由尾部真实段承载）
+### 占位段（原 init 骨架 [Title]，已废弃——真实 Phase 1-5 见下方 Session 段）
 - **Status:** complete
 - 说明：init 渲染的 [Title] 占位骨架已废弃，真实 Phase 1-5 记录见下方「Session: 2026-11-05」段（P-04 三源一致性：占位段状态固定为 complete 防同名段误判）
 
