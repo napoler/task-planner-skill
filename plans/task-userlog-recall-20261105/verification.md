@@ -35,26 +35,26 @@
 
 ## Phase Gates
 
-### Phase 1: {Name}
+### Phase 1: 调研缺口定位
 
-**Goal**: [1 sentence, what this phase produces]
+**Goal**: user-session-log 读写面盘点+五决策点缺口清单
 
 **Depends on**: [previous phase or "none"]
 
 **Done when**:
-- [ ] {objective completion condition}
+- [x] 缺口清单落盘 findings+检查点复核
 
 **Verification** (run before moving on):
-- [ ] V-1.1: [mapped to VC-? or custom]
-- [ ] V-1.2: [mapped to VC-? or custom]
+- [x] V-1.1: VC-1（缺口清单即五决策点设计依据）
+- [x] V-1.2: VC-4（部署对齐设计依据）
 
 Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
 
 ---
 
-### Phase 2: {Name}
+### Phase 2: 设计定稿与计划审批
 
-**Goal**: ...
+**Goal**: 80.8 条款+三处扩展+变更标注表+attest 锁定
 
 **Depends on**: Phase 1
 
@@ -62,10 +62,10 @@ Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verifie
 - [ ] ...
 
 **Verification**:
-- [ ] V-2.1: ...
-- [ ] V-2.2: ...
+- [x] V-2.1: VC-1（attest 四锚+vc-gate 6/6）
+- [x] V-2.2: 变更标注表 CA-1..CA-7 登记
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-11-05
 
 ---
 
