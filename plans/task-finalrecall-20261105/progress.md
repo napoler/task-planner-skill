@@ -72,7 +72,7 @@
 - **Status:** complete
 - Actions taken: 全量基线对照（worktree 2 FAIL ⊆ master 14，差集 0）；CR APPROVED（MINOR-1 SL-19f 收紧）；84.14 首次 dogfood（第 1 轮零新发现收敛）；merge 472b9ac；worktree 已清；部署 3 位 21 对 diff=0
 - Test Results: [goal:G4] 证据行：基线对照差集空+部署 diff=0+git log 472b9ac
-- [goal:G4] 回归部署收口完成（命令 bash skills/task-planner/scripts/selftest-session-log.sh → Total: 31 PASS=31 FAIL=0 exit 0；基线对照 worktree 2 FAIL ⊆ master 14 差集 0；部署 diff -q 三位 21 对 0 DIFF；git log merge 472b9ac；worktree list CLEAN）——产物=master 472b9ac+三位部署
+- [goal:G4] 回归部署收口完成（命令 bash skills/task-planner/scripts/selftest-session-log.sh → 输出落盘 evidence/VC-4-selftest.out：Total: 31 PASS=31 FAIL=0 exit 0；基线对照 worktree 2 FAIL ⊆ master 14 差集 0；部署 diff -q 三位 21 对 0 DIFF；git log merge 472b9ac；worktree list CLEAN）——产物=master 472b9ac+三位部署
 - [goal:G4] 回归部署收口完成：selftest 31/31+基线差集空+部署 3 位 0 diff+merge 472b9ac+worktree 已清
 - CR APPROVED（2026-11-05）：general-reviewer 审查 commit 0f6c1c8（7 文件），0 BLOCKER/1 MINOR（SL-19f 弱锚已收紧）；检查点=07-cr-review.md
 
