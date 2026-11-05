@@ -12,22 +12,22 @@
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
 
-- [ ] VC-1: 47.6 条款扩容在位——media rules 含「硬约束逐条核验门」（清单提取+逐条 PASS/FAIL 留痕+任一 FAIL 禁入候选）与常识类目（空间布局/场景构成/物件功能），47.6a/b/c 三子条可 Read 复核
+- VC-1: 47.6 条款扩容在位——media rules 含「硬约束逐条核验门」（清单提取+逐条 PASS/FAIL 留痕+任一 FAIL 禁入候选）与常识类目（空间布局/场景构成/物件功能），47.6a/b/c 三子条可 Read 复核
   **Verify command**: grep -c "硬约束逐条核验门" skills/media-planner/references/critical-rules-media.md | grep -qv '^0$' && grep -oE "空间布局|场景构成|物件功能" skills/media-planner/references/critical-rules-media.md | wc -l
   Evidence: 命令输出（首个 grep ≥1，类目计数 ≥3）+ Read 47.6 段行号
-- [ ] VC-2: SRC 图/视频执行体 SOP 同族条款在位——两文件各含 47.6 块与「硬约束逐条核验门」
+- VC-2: SRC 图/视频执行体 SOP 同族条款在位——两文件各含 47.6 块与「硬约束逐条核验门」
   **Verify command**: for f in skills/task-planner/companion/agents/image-generation-executor.md skills/task-planner/companion/agents/video-generation-executor.md; do grep -c "硬约束逐条核验门" "$f"; done
   Evidence: 两文件计数均 ≥1 + Read 47.6 块在位
-- [ ] VC-3: 全量回归零新增 FAIL——worktree 内 selftest FAIL 数 ≤ master 预跑基线（基线值记录于 progress.md）
+- VC-3: 全量回归零新增 FAIL——worktree 内 selftest FAIL 数 ≤ master 预跑基线（基线值记录于 progress.md）
   **Verify command**: bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | tail -5
   Evidence: 套件输出 FAIL 计数与 progress.md 基线对照行
-- [ ] VC-4: 12 处部署位 diff=0——6 agents 位 body 对齐+3 companion 副本 md5 一致+3 media-planner 副本 md5 一致，frontmatter 逐位保留
+- VC-4: 12 处部署位 diff=0——6 agents 位 body 对齐+3 companion 副本 md5 一致+3 media-planner 副本 md5 一致，frontmatter 逐位保留
   **Verify command**: diff /home/terry/.zcode/agents/image-generation-executor.md <worktree>/skills/task-planner/companion/agents/image-generation-executor.md | head -3
   Evidence: subagent-state/07-deploy-audit.md 对账表 12 行全绿（逐位 diff 输出摘要）
-- [ ] VC-5: 条款质量独立复检无 BLOCKER——全新 general-reviewer 复检三文件条款 diff，两缺陷判据可拦截判定成立
+- VC-5: 条款质量独立复检无 BLOCKER——全新 general-reviewer 复检三文件条款 diff，两缺陷判据可拦截判定成立
   **Verify command**: cat <plan-dir>/subagent-state/05-reviewer-verdict.md | grep -c BLOCKER
   Evidence: 复检回执文件（verdict=APPROVED 且 BLOCKER 计数=0）
-- [ ] VC-6: master 合并后主仓复验在位——merge commit 存在且主仓文件含新条款
+- VC-6: master 合并后主仓复验在位——merge commit 存在且主仓文件含新条款
   **Verify command**: git log --oneline -3 && grep -c "硬约束逐条核验门" skills/media-planner/references/critical-rules-media.md
   Evidence: git log 显示 merge commit + 主仓 grep ≥1
 
@@ -155,12 +155,12 @@ JSON 输出：
 ```
 ## Goal Verification — 图片 QC 门条款扩容+12 位部署收敛
 对照 Verification Contract 逐条复验（VC-1 ~ VC-6 全量，2026-11-06 终验）：
-- [ ] VC-1: media rules 硬约束=1/类目词=3/47.6[abc]=3（grep 实测）→ PASS
-- [ ] VC-2: 双 agent SOP grep 各=1+47.6 块完整（S2/S3 复核）→ PASS
-- [ ] VC-3: worktree 94/96 vs master 94/96 零新增 FAIL（06-s4-regression.md）→ PASS
-- [ ] VC-4: 12+3 部署位 md5 全绿（07-deploy-audit.md）→ PASS
-- [ ] VC-5: 复检 VERDICT: APPROVED 零 BLOCKER（05-reviewer-verdict.md）→ PASS
-- [ ] VC-6: merge 0508586+主仓三文件 grep 各=1 → PASS
+- VC-1: media rules 硬约束=1/类目词=3/47.6[abc]=3（grep 实测）→ PASS
+- VC-2: 双 agent SOP grep 各=1+47.6 块完整（S2/S3 复核）→ PASS
+- VC-3: worktree 94/96 vs master 94/96 零新增 FAIL（06-s4-regression.md）→ PASS
+- VC-4: 12+3 部署位 md5 全绿（07-deploy-audit.md）→ PASS
+- VC-5: 复检 VERDICT: APPROVED 零 BLOCKER（05-reviewer-verdict.md）→ PASS
+- VC-6: merge 0508586+主仓三文件 grep 各=1 → PASS
 
  outcome: COMPLETE
 ```

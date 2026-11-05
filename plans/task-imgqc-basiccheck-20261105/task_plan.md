@@ -511,24 +511,6 @@ Phase 2 complete → Phase 3 派发中
 |------|---------|--------|------|
 |      |             |        |      |
 
-## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
-<!-- 
-  WHEN: chain_mode: fan-out 或 批量操作 ≥5 单元时必填;纯单次任务可删除整个区块
-  WHY: 批量操作禁止以牺牲质量/准确性为代价(Rule 18);前置 3 问 + 双采样抽检 + 失败率熔断的落盘证据
-  校验: failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败
-  完整模板: /home/terry/.zcode/skills/task-planner/templates/batch_report.md | 规则详解: /home/terry/.zcode/skills/task-planner/references/batch-quality-gate.md
--->
-| 字段 | 值 |
-|------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
-
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
   WHAT: 本计划子代理 vs 主进程的执行分布统计。
@@ -559,56 +541,6 @@ Phase 2 complete → Phase 3 派发中
 | 1 | 2026-11-05 | Explore | 盘点图片 QC 门条款载体+缺口分析 | done | 载体=media rules L21 47.6；SRC 无 47.6 块/部署 6 份有（双向漂移）；Q2/Q4 缺口实锤 | critical-rules-media.md:21 | Research Findings[cp-01] | subagent-state/01-explore-qc-carriers.md | - / 0 / ☑ |
 | 2 | 2026-11-05 | general-analyst | 事故会话取证两缺陷证据链+根因 | done | 双门误判 4/4 PASS 入候选；人物场景无 FAIL 挂待审核；根因三假设带锚 | Toonflow 母图状态板.md:46,56-59 | Research Findings[cp-02] | subagent-state/02-analyst-incident.md | - / 0 / ☑ |
 | 3 | | | | queued | | | | | - / 0 / ☐ |
-
-## 🔗 Chain 区块交接配置（可选）
-
-<!-- 仅多 skill 接力任务填写（如：调研→创作→发布）。单 skill 任务可删除此整个区块。 -->
-
-### Chain 模式
-
-| 字段 | 值 |
-|------|-----|
-| **chain_mode** | `single` / `linked`（串行接力）/ `fan-out`（一对多派发） |
-| **current_block** | Block 1 |
-| **handoff_on_complete** | ✅ 是 / ❌ 否 |
-
-### Block 1: [本块名称]（当前块）
-
-| 字段 | 值 |
-|------|-----|
-| **goal** | [本 block 独立目标] |
-| **depends_on** | none |
-| **passes_to** | Block 2: `[交接产物路径]` |
-| **status** | in_progress / pending / complete |
-
-### Block 2: [下游块名称]
-
-| 字段 | 值 |
-|------|-----|
-| **goal** | [下游 block 目标] |
-| **depends_on** | Block 1 → `[交接产物路径]` |
-| **passes_to** | Block 3: `[...]` |
-| **status** | pending |
-
-<!-- 追加 Block N 时使用相同结构 -->
-
-### 🔗 Handoff 追踪表
-
-| Block | 状态 | 交接产物路径 | 验证命令 | 实际完成时间 |
-|-------|------|------------|---------|-------------|
-| Block 1 | - | - | - | - |
-| Block 2 | - | - | - | - |
-
----
-<!-- ★ Block 分隔符：每个独立交接区块下方用 --- 分隔，格式如下 -->
-<!--
-### Block 2: [名称]
-## Goal
-...
-## Phases
-...
-（复制完整 task_plan 结构，仅包含本 block 的 Phase 和 VC）
--->
 
 ## 🔁 模板感知
 <!-- template_type: general -->
