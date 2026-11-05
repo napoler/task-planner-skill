@@ -511,23 +511,8 @@ Phase 3
 |------|---------|--------|------|
 |      |             |        |      |
 
-## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
-<!-- 
-  WHEN: chain_mode: fan-out 或 批量操作 ≥5 单元时必填;纯单次任务可删除整个区块
-  WHY: 批量操作禁止以牺牲质量/准确性为代价(Rule 18);前置 3 问 + 双采样抽检 + 失败率熔断的落盘证据
-  校验: failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败
-  完整模板: /home/terry/.zcode/skills/task-planner/templates/batch_report.md | 规则详解: /home/terry/.zcode/skills/task-planner/references/batch-quality-gate.md
--->
-| 字段 | 值 |
-|------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+<!-- Batch Report 区块已删除：本任务为非批量单次任务（Rule 18.6 模板注释授权路径），无 fan-out/≥5 单元批量操作 -->
+
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
