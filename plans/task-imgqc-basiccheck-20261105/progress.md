@@ -83,3 +83,7 @@
 - [goal:G2] 回归零破坏 complete：master 94/96 vs worktree 94/96 零新增 FAIL（06-s4-regression.md）
 - [goal:G3] 部署收敛 complete：12+3 位 md5 全绿=SRC 基准（07-deploy-audit.md 逐位对账）
 - [goal:G4] 独立复检通过 complete：S5 VERDICT: APPROVED 零 BLOCKER（05-reviewer-verdict.md）
+- [goal:G1] QC 门条款扩容 complete：bash grep -c 实测 media=1 image=1 video=1 且类目词=3 —— PASS（三文件 subagent-state/03-s1-media-rules.md、04-s2、04-s3）
+- [goal:G2] 回归零破坏 complete：bash run-selftests.sh --fresh 实测 master PASS=94 FAIL=2 = worktree PASS=94 FAIL=2，零新增 —— PASS（产物 subagent-state/06-s4-regression.md）
+- [goal:G3] 部署收敛 complete：bash md5sum 15 位实测全等 SRC 基准 9e9eb2f8/16b56511/f582589d —— PASS（产物 subagent-state/07-deploy-audit.md）
+- [goal:G4] 独立复检通过 complete：general-reviewer 五维审查 VERDICT: APPROVED —— PASS 零 BLOCKER（产物 subagent-state/05-reviewer-verdict.md）
