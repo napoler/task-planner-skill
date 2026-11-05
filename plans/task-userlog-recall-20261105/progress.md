@@ -10,30 +10,28 @@
 ## Session: 2026-11-05
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: [Title]
+### Phase 1: 调研缺口定位
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-05 15:11
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
-  -
+  - Explore 派发读写面盘点 → 检查点 subagent-state/01-explore-userlog.md（主进程 Read 复核）+ 缺口清单 5 项回填 findings §Research Findings（[goal:G0] 证据）
 - Files created/modified:
-  -
+  - plans/task-userlog-recall-20261105/subagent-state/01-explore-userlog.md（findings 回填）
 - Test Results:
-  | Test | Input | Expected | Actual | Status |
-  |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  - 五决策点全不读档结论获实盘佐证（20+ 份专档零主进程读取记录）；V-N=缺口清单为 VC-1 设计依据
 
-### Phase 2: [Title]
+### Phase 2: 设计定稿与计划审批
 <!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+- **Status:** complete
+- **Started:** 2026-11-05
 - Actions taken:
-  -
+  - 原文锚核对（95.4/102.0/86.1/51.3）+ 80.8 条款设计 + 变更标注表登记 + AskUserQuestion 用户批准+S6 纳入 + attest 锁定 SHA 722481ec（[goal:G0] 链）
 - Files created/modified:
-  -
+  - task_plan.md / verification.md / findings.md（设计稿段）
 - Test Results:
-  -
+  - attest 四锚+vc-gate 6/6+tier-consistency 全过（校验器列位漂移发现已登记）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
