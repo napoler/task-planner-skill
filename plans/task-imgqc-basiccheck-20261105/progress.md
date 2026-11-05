@@ -79,3 +79,7 @@
 - Phase 3 完成：S1（media rules L23-26 插 47.6a/b/c，4 行）+S2（image agent L68-77 graft 47.6 块+三子条，10 行）+S3（video agent L68-78 同构，10 行）——主进程逐一盘上复核（sed 实读+grep 三项+frontmatter 零改动确认），3 文件 24 行纯增量 0 删除；S4 回归改派 general-purpose（code-runner provider 拒，22.3① 判例通道）→ master 基线 94/96 vs worktree 94/96 完全一致（2 FAIL=active-plan/execution-stability 环境态存量）零新增 PASS；attest 重锁 SHA-256 4243ca8b（VC-1 命令口径修正：行计数→-oE 词计数 3）
 - Phase 4/5 收口：S5 复检 VERDICT: APPROVED（零 BLOCKER/MAJOR/MINOR，两缺陷均判定可拦截，检查点 05-reviewer-verdict.md）；S6 merge 0508586 落 master+VC-6 主仓复验过+worktree 清理（目录+分支 wt/task-imgqc-basiccheck-20261105 已删）；S7-S12 部署 12+3 位 md5 全绿（对账表 07-deploy-audit.md，zcode companion REJECTED 自保护→rm+cp 判例通道，agents 6 位 frontmatter 零差异预检后直接 cp）；task_plan Phase 5/5 complete+Goal 表 4/4 complete
 - CR-GATE 满足方式（如实留痕，非伪造 CR）：本计划 code_review=n/a（条款文本修订），独立审查由 S5 general-reviewer 承担（Rule 103.3 双轮质检第二轮，全新子代理独立视角，五维审查+裁决行）——**CR APPROVED**：S5 VERDICT: APPROVED 零 BLOCKER/MAJOR/MINOR（回执 plans/task-imgqc-basiccheck-20261105/subagent-state/05-reviewer-verdict.md，2026-11-06）
+- [goal:G1] QC 门条款扩容 complete：grep 硬约束逐条核验门 media rules=1/image=1/video=1+类目词=3（2026-11-06 主进程复核）——S1-S3 证据 subagent-state/03/04
+- [goal:G2] 回归零破坏 complete：master 94/96 vs worktree 94/96 零新增 FAIL（06-s4-regression.md）
+- [goal:G3] 部署收敛 complete：12+3 位 md5 全绿=SRC 基准（07-deploy-audit.md 逐位对账）
+- [goal:G4] 独立复检通过 complete：S5 VERDICT: APPROVED 零 BLOCKER（05-reviewer-verdict.md）
