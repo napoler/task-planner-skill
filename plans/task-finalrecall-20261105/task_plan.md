@@ -194,6 +194,9 @@ DONE（全 Phase complete 2026-11-05）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-11-05 | Explore | 终验链与回读缺口盘点 | done | 终验链无内容级回读；84.5 数据源仅 verification.md；五面分工互斥设计 | 01-explore-finalchain.md | §Research Findings | plans/task-finalrecall-20261105/subagent-state/01-explore-finalchain.md | - / 0 / ☑ |
+| 2 | 2026-11-05 | general-coder | PG1 并行组 S1/S2/S4（84.14 条款/SKILL 步骤/todo-sync 前置） | done | 84.14 定义+84.5 前置句/SKILL P0 迭代门行/S4 前置引用全落盘 | grep 84.14 锚 2/1/1 | §设计稿落地 | 02/03/04-s*.md | - / 0 / ☑ |
+| 3 | 2026-11-05 | general-coder | S3 三模板承载 | done | task_plan 区块+delivery 结论行+专档⑥行 | grep 锚 2/1/1 | 同上 | 05-s3-templates.md | - / 0 / ☑ |
+| 4 | 2026-11-05 | general-coder | S5 SL-19a..f 断言扩展 | done | 31/31 全绿（+6 断言） | selftest Total 31 | 同上 | 06-s5-sl19.md | - / 0 / ☑ |
 
 ## 🎯 Goal 单元表（Rule 66.1）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式 | 对应 S-unit/Phase | 状态 |
