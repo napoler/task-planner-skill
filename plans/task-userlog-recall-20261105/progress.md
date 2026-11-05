@@ -90,3 +90,6 @@
 - 部署：3 位 8 文件 cp + diff=0（24 对 0 diff）；cursor 位 2 文件预存漂移（Rule 103/104 时代旧版，273vs280 行）方向判定=落后无独有内容，cp 覆盖安全并顺带收编
 - 部署位 commit：zcode 8f（+110/-14）/claude（+123/-20 含既有小漂移收编）；cursor 纯落盘；**push 未执行**（源仓 ahead 15 跨任务累计，呈报用户裁决）
 - zcode 位部署后 selftest 复跑 25/25 实弹验证
+
+## CR 留痕（Rule 42.7 CR-GATE）
+- CR APPROVED（2026-11-05）：general-reviewer 独立审查 commit 4e2198c 全量 diff（8 文件），verdict=APPROVED（0 BLOCKER / 0 CONCERN / 1 MINOR）；MINOR=SL-17 弱锚已采纳收紧（commit d14808f，复跑 25/25）；审查检查点=subagent-state/09-cr-review.md（逐项 PASS 证据行号在案）
