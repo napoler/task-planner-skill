@@ -198,6 +198,87 @@ if [ "$SL12_RC1" -eq 0 ] && [ "$SL12_RC2" -eq 0 ] \
 else
     t "$SL12_NAME" false
 fi
+# ── 汇总（旧位置移除，见文件末尾统一汇总）──
+# ══════════════════════════════════════════════════════════════════════════════
+# SL-13..SL-18 [2026-11-05 task-userlog-recall-20261105 S5]
+# WHAT: Rule 80.8「决策前读取纪律」五决策点读取面机器守护 — 8 文件锚点 + 1 完整性负断言。
+# WHY: 80.8 落地后，写入面(80.1-80.7)由既有 SL 守护，但「先读专档再决策」的消费面锚点
+#      若被后续改动静默移除，决策纪律退化为纯文本无护栏；SL 断言扩展补齐读取面守护。
+# 纪律: 纯静态 grep 断言，零 fixture；沿用既有 $ROOT/$SCRIPT_DIR 路径推导，禁硬编码绝对路径；
+#      既有断言(SL-01..SL-12)一行未改（append-only）。
+# ══════════════════════════════════════════════════════════════════════════════
+# 路径推导（沿用既有风格；task-discipline 为 task-planner 同级兄弟目录）
+DISCIPLINE_CR="$ROOT/../task-discipline/references/critical-rules-discipline.md"
+DELIVERY_TPL="$ROOT/templates/delivery-summary.md"
+DISPATCH_TPL="$ROOT/templates/subagent_dispatch.md"
+UPSUBMIT="$SCRIPT_DIR/zcode-userpromptsubmit.sh"
+
+# td: 带诊断输出的断言（失败时打印缺失文件/锚，不吞 stderr；复用既有 PASS/FAIL 计数）
+td() { # td <name> <bash-expr-string> [diag-msg]
+    local name="$1" expr="$2" diag="${3:-}"
+    if bash -c "$expr" >/dev/null 2>&1; then
+        PASS=$((PASS+1)); echo "[PASS] $name"
+    else
+        FAIL=$((FAIL+1)); echo "[FAIL] $name"
+        [ -n "$diag" ] && echo "  [diag] $diag"
+    fi
+}
+
+# SL-13 (item 1,2): critical-rules.md 80.8 决策前读取纪律 + 51.3 双锚升级
+td "SL-13a critical-rules.md 含 '80.8 **决策前读取纪律' (80.8 header)" \
+   "[ -f '$CRULES' ] && grep -qF '80.8 **决策前读取纪律' '$CRULES'" \
+   "missing file=$CRULES OR anchor='80.8 **决策前读取纪律'"
+td "SL-13b critical-rules.md 含 51.3 双锚升级字面 (task-userlog-recall-20261105, Rule 80.8③)" \
+   "[ -f '$CRULES' ] && grep -qF '双锚升级（task-userlog-recall-20261105，Rule 80.8③）' '$CRULES'" \
+   "missing file=$CRULES OR anchor='双锚升级（task-userlog-recall-20261105，Rule 80.8③）'"
+
+# SL-14 (item 3,4,5): task-discipline 五决策点读取纪律锚
+td "SL-14a task-discipline 含 '暂停前四问' (Rule 80.8① 上抛裁决前读档)" \
+   "[ -f '$DISCIPLINE_CR' ] && grep -qF '暂停前四问' '$DISCIPLINE_CR'" \
+   "missing file=$DISCIPLINE_CR OR anchor='暂停前四问'"
+td "SL-14b task-discipline 含 '反思门**五问' (Rule 80.8② 新指令反思)" \
+   "[ -f '$DISCIPLINE_CR' ] && grep -qF '反思门**五问' '$DISCIPLINE_CR'" \
+   "missing file=$DISCIPLINE_CR OR anchor='反思门**五问'"
+td "SL-14c task-discipline 含 '前置读档门' (Rule 80.8① 86.1 前置)" \
+   "[ -f '$DISCIPLINE_CR' ] && grep -qF '前置读档门' '$DISCIPLINE_CR'" \
+   "missing file=$DISCIPLINE_CR OR anchor='前置读档门'"
+
+# SL-15 (item 6): SKILL.md G9/Rule80 索引读取纪律双锚
+td "SL-15a SKILL.md 含 '决策前读取已过' (G9 自查项)" \
+   "[ -f '$SKILL' ] && grep -qF '决策前读取已过' '$SKILL'" \
+   "missing file=$SKILL OR anchor='决策前读取已过'"
+td "SL-15b SKILL.md 含 '决策前读取纪律（80.8' (Rule 80 索引接线)" \
+   "[ -f '$SKILL' ] && grep -qF '决策前读取纪律（80.8' '$SKILL'" \
+   "missing file=$SKILL OR anchor='决策前读取纪律（80.8'"
+
+# SL-16 (item 7,8,9): 模板消费点/双锚列/派发双锚
+td "SL-16a user-session-log.md 模板含消费点区块 (Rule 80.8 五决策点)" \
+   "[ -f '$SLOG' ] && grep -qF '## 消费点（读取触发点 — Rule 80.8 五决策点）' '$SLOG'" \
+   "missing file=$SLOG OR anchor='## 消费点（读取触发点 — Rule 80.8 五决策点）'"
+td "SL-16b delivery-summary.md 含 '专档条目#' 列 (51.3 双锚交付面)" \
+   "[ -f '$DELIVERY_TPL' ] && grep -qF '专档条目#' '$DELIVERY_TPL'" \
+   "missing file=$DELIVERY_TPL OR anchor='专档条目#'"
+td "SL-16c subagent_dispatch.md 含 '双锚升级（Rule 80.8④）' (派发需求锚双锚)" \
+   "[ -f '$DISPATCH_TPL' ] && grep -qF '双锚升级（Rule 80.8④）' '$DISPATCH_TPL'" \
+   "missing file=$DISPATCH_TPL OR anchor='双锚升级（Rule 80.8④）'"
+
+# SL-17 (item 10): zcode-userpromptsubmit.sh 80.8 提示接线
+td "SL-17 zcode-userpromptsubmit.sh 含 '80.8' (反思提示/专档对照接线)" \
+   "[ -f '$UPSUBMIT' ] && grep -qF '80.8' '$UPSUBMIT'" \
+   "missing file=$UPSUBMIT OR anchor='80.8'"
+
+# SL-18 (item 11): 完整性负断言 — critical-rules.md '^80.[1-8] ' 计数 = 8（80.1-80.8 全在）
+# 与 SL-04（80.1-80.6=6）并存不冲突：SL-04 守护既有写入面未被破坏，SL-18 守护 80.7+80.8 扩展完整性。
+# 断言失败时输出实际计数，便于定位缺失子条。
+_sl18_n="$(grep -cE '^80\.[1-8] ' "$CRULES" 2>/dev/null || echo 0)"
+if [ "$_sl18_n" -eq 8 ]; then
+    PASS=$((PASS+1)); echo "[PASS] SL-18 critical-rules.md '^80.[1-8] ' = 8 (80.1-80.8 完整性, 写入面未被破坏)"
+else
+    FAIL=$((FAIL+1)); echo "[FAIL] SL-18 critical-rules.md '^80.[1-8] ' = 8 (got=$_sl18_n)"
+    echo "  [diag] expected 8 lines matching '^80.[1-8] ' in $CRULES; got=$_sl18_n"
+    grep -nE '^80\.[1-8] ' "$CRULES" 2>/dev/null | sed 's/^/  [diag] present: /' || true
+fi
+
 # ── 汇总（Total/exit 语义对齐 selftest-knowledge-brief.sh）──
 TOTAL=$((PASS + FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
