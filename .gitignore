@@ -25,3 +25,6 @@ plans/.active_plan
 # 统一临时目录(2026-11-04 task-crossprojauth-20261104 R2, Rule 100)：
 # 一切临时产物与 git worktree(tmp/worktrees/<task-id>)统一落本项目 tmp/，整体忽略
 tmp/
+
+# 垃圾桶：废弃数据/媒体落选稿判废移入目录（Rule 100.6，跨任务保留可找回，区别于 tmp/ 随任务清理）
+trash/
