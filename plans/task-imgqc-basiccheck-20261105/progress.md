@@ -10,9 +10,9 @@
 ## Session: 2026-11-05
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: [Title]
+### Phase 1: 取证收口（Requirements & Discovery）
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-05 23:01
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
@@ -24,14 +24,12 @@
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
 
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
-- Actions taken:
-  -
-- Files created/modified:
-  -
+### Phase 2-5: 隔离/修订/复检合并/部署收尾（动作流水见上方「会话动作留痕」逐条）
+- **Status:** complete
+- **Started:** 2026-11-06
+- Actions taken: worktree 建立+判向（Phase 2）；S1-S3 三文件 24 行纯增量+S4 回归 94/96 零新增（Phase 3）；S5 APPROVED+S6 merge 0508586（Phase 4）；S7-S12 部署 12+3 位 md5 全绿（Phase 5）
+- Files created/modified: skills/media-planner/references/critical-rules-media.md、companion 双 agent、12 部署位、subagent-state/01-07 检查点
+- Test Results: VC-1~6 全 PASS（grep/回归/对账/复检/主仓复验）
 - Test Results:
   -
 

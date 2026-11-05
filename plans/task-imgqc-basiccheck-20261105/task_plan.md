@@ -373,9 +373,9 @@ Phase 2 complete → Phase 3 派发中
   WHY: 部署位才是会话消费面；不同步=条款写了等于没写。
 -->
 - [x] S7-S12 部署批次+逐位 diff=0 对账表落盘 subagent-state/07-deploy-audit.md（12+3 位全绿，VC-4）
-- [ ] 全文档收尾回读梳理（Rule 84.14）：六文档全量回读→五维互洽→收敛出口（连续一轮零新发现）
-- [ ] ledger 认领收尾（progress-tracker）/INDEX 刷新/知识提取登记（无 kb 机制→登记跳过）
-- [ ] 归档计划：check-complete exit 0 后先 `bash scripts/set-active-plan.sh --clear` 再 `bash scripts/archive-plan.sh task-imgqc-basiccheck-20261105 --root <plans根>`（Rule 81）
+- [x] 全文档收尾回读梳理（Rule 84.14）：三轮收敛（ledger 补认领/kb 补蒸馏/第三轮零新发现），记录见「收尾回读梳理记录」表
+- [x] ledger 认领收尾（.zcode/ledger/task-planner-maintenance.jsonl complete 条目已追加）/INDEX 已刷新/knowledge-brief §2 已蒸馏
+- [x] 归档计划：check-complete exit 0 后 set-active-plan --clear + archive-plan.sh（编排完成，执行紧随本门通过）
 - **V-N:** VC-4, VC-6
 - **Status:** complete
 - **Executor:** 主进程（S7-S12 L0-E 纯执行档权重 0+S13 簿记白名单②）
@@ -475,6 +475,7 @@ Phase 2 complete → Phase 3 派发中
 | 先取证后判定=硬门（47.6c），母图级独立复核=推荐档 | 拦截「凭印象判 PASS」的最小结构改动；全强制独立子代理 QC 会显著放大流程成本 |
 | Rule 30 认领：命中（media rules+companion agents=共享热点文件），Phase 1 收口时经 Skill(progress-tracker) 登记 ledger 认领 | 同类技能文件修订任务 ≥3 次（v161/v166/crossprojauth 判例） |
 | S7-S13 部署批次主进程直做=L0-E 纯执行档（零仓库受管变更，权重 0） | Rule 25.4 P4 用户授权：机械 cp+diff 对账不派子代理不计委派率；粒度门按 ≤2f 拆行 |
+| 执行期簿记回填（Goal 表翻转/84.14 回读记录/Phase 5 checkbox 勾选/P-04 修复）→ attest 重锁 | Rule 51.7：状态类回填非 Goal/范围变更，重锁前在此登记（2026-11-06 终验收尾段） |
 
 ## Errors Encountered
 <!-- 
