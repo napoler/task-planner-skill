@@ -160,7 +160,7 @@ execution_lane: L1
 | G1 | 条款落地 | 100.6 四要素+media 指针在位 | grep 锚 | S1,S2 | complete |
 | G2 | 模板与范式落地 | variant 替代+deprecated 分工+gitignore 在位 | grep 锚 | S2,S3 | complete |
 | G3 | 机器守护落地 | selftest 全绿+registry 登记 | bash selftest | S4 | complete |
-| G4 | 回归部署收口 | 零回归+diff=0+合并回 | 基线对照+diff+git log | P4 | pending |
+| G4 | 回归部署收口 | 零回归+diff=0+合并回 | 基线对照+diff+git log | P4 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
