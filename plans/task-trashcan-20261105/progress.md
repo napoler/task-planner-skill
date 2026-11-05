@@ -24,7 +24,7 @@
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
 
-### Phase 2: [Title]
+### 占位段 B（原 init 骨架 [Title]，已废弃——真实段见下方 Session 段）
 <!-- Phase N 按上方 Phase 1 结构续加 -->
 - **Status:** complete
 - **Started:**
