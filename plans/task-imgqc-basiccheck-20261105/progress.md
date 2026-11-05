@@ -90,3 +90,4 @@
 - [goal:G3] 部署收敛 complete：bash md5sum 15 位实测全等 SRC 基准 9e9eb2f8/16b56511/f582589d —— PASS（产物 subagent-state/07-deploy-audit.md）
 - [goal:G4] 独立复检通过 complete：general-reviewer 五维审查 VERDICT: APPROVED —— PASS 零 BLOCKER（产物 subagent-state/05-reviewer-verdict.md）
 - [judge] Rule 73.4 终局评判（2026-11-06）：变更全部落在计划 scope 三文件+部署位（增量吸收判定 CA-1~4 逐行兑现）；[align] 复核=R5 独立复检五维无矛盾+103.6 清单全绿；Goal 宾语（QC 门判据+部署收敛）与用户原话（优化技能文件+基础错误根治）对齐无漂移
+- 归档处置（Rule 81.3）：archive-plan.sh REJECT=live-owner（.session-owner 本会话活跃，fail-closed 守卫拒绝）——按 81.3 保持原位登记理由禁强移；归档动作已编排完成（set-active-plan --clear 已执行），物理归档留待本会话关闭后由下会话或 batch 工具补做（ plans/INDEX.md 已标 complete）
