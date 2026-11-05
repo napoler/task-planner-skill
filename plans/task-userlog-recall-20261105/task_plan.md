@@ -162,8 +162,8 @@ check-complete→交付总结→归档
 - [x] 部署 3 位 diff=0（VC-4：zcode/claude/cursor 24 对文件 0 diff；zcode 位 selftest 复跑 25/25 实弹）
 - [x] smart-merge-back 合并回 master+清 worktree（VC-5：0774bba）
 - [x] 103.6 同步核对清单全绿（8 文件变更集：规则族/模板族/hook 族 selftest 25 断言机器核对）
-- **V-N:** VC-2, VC-3, VC-4, VC-5
-- **Status:** pending
+- **V-N:** VC-2, VC-3, VC-4, VC-5（全 PASS：selftest 基线对照差集空/CR APPROVED/部署 24 对 0 diff/0774bba）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① 回归/部署/git 编排——Rule 25.3 白名单;CR 子代理派发以 Handoff 表登记承载）
 
 ### Phase 5: 交付总结+归档

@@ -48,7 +48,7 @@
 - [x] V-1.1: VC-1（缺口清单即五决策点设计依据）
 - [x] V-1.2: VC-4（部署对齐设计依据）
 
-Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
+Status: `complete` Last verified: 2026-11-05（原枚举说明行，Phase 3 终态）
 
 ---
 
