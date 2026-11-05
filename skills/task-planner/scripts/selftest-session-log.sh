@@ -322,10 +322,12 @@ td "SL-19e user-session-log.md 含 '⑥ 收尾回读' (消费点触发)" \
    "[ -f '$SLOG' ] && grep -qF '⑥ 收尾回读' '$SLOG'" \
    "missing file=$SLOG OR anchor='⑥ 收尾回读'"
 
-# SL-19f: todo-sync.md 含 84.14
-td "SL-19f todo-sync.md 含 '84.14' (终态同步前置收尾回读纪律)" \
-   "[ -f '$TODO_SYNC' ] && grep -qF '84.14' '$TODO_SYNC'" \
-   "missing file=$TODO_SYNC OR anchor='84.14'"
+# SL-19f: todo-sync.md 含 S4 前置引用短语
+# [task-finalrecall-20261105 CR MINOR-1 收紧] 原断言仅 grep -qF '84.14' 特异性弱（CR 2026-11-05 建议）：
+# 收紧为 S4 行前置短语「前置=Rule 84.14 收尾回读梳理迭代已完成」
+td "SL-19f todo-sync.md 含 '前置=Rule 84.14 收尾回读梳理迭代已完成' (终态同步前置收尾回读纪律)" \
+   "[ -f '$TODO_SYNC' ] && grep -qF '前置=Rule 84.14 收尾回读梳理迭代已完成' '$TODO_SYNC'" \
+   "missing file=$TODO_SYNC OR anchor='前置=Rule 84.14 收尾回读梳理迭代已完成'"
 
 # ── 汇总（Total/exit 语义对齐 selftest-knowledge-brief.sh）──
 TOTAL=$((PASS + FAIL))
