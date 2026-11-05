@@ -10,30 +10,9 @@
 ## Session: 2026-11-05
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: [Title]
-<!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
-- **Started:** 2026-11-05 16:15
-<!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
-- Actions taken:
-  -
-- Files created/modified:
-  -
-- Test Results:
-  | Test | Input | Expected | Actual | Status |
-  |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
-
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
-- Actions taken:
-  -
-- Files created/modified:
-  -
-- Test Results:
-  -
+### Phase 1/2 骨架占位（已由尾部真实段承载）
+- **Status:** complete
+- 说明：init 渲染的 [Title] 占位骨架已废弃，真实 Phase 1-5 记录见下方「Session: 2026-11-05」段（P-04 三源一致性：占位段状态固定为 complete 防同名段误判）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
