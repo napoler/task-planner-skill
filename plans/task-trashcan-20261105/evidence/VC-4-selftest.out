@@ -1,0 +1,10 @@
+# VC-4 selftest-file-disposal.sh 实跑输出（worktree 亲跑）| 生成时间 2026-11-05T09:42:44Z | task-trashcan-20261105
+[PASS] FD-01 task-discipline critical-rules 含 '100.6 垃圾桶机制'
+[PASS] FD-02 task-discipline critical-rules 含 '判废即移' 且含 '唯一回取例外'
+[PASS] FD-03 media-planner critical-rules 含 'Rule 100.6'
+[PASS] FD-04a variant/image-type.md 含 'trash' (Rule 100.6 判废即移语境)
+[PASS] FD-04b variant/video-type.md 含 'trash' 计数 ≥2 (got=2)
+[PASS] FD-05a templates/deprecated.md 含 'Rule 100.6'
+[PASS] FD-05b worktree 根 .gitignore 含 '^trash/$' 规则行
+[PASS] FD-06 负断言: 三文件 '当日归档（-failed' 处置动作正向表述=0 (image=0 video=0 media=0)
+Total: 8  PASS=8  FAIL=0
