@@ -263,9 +263,11 @@ td "SL-16c subagent_dispatch.md 含 '双锚升级（Rule 80.8④）' (派发需�
    "missing file=$DISPATCH_TPL OR anchor='双锚升级（Rule 80.8④）'"
 
 # SL-17 (item 10): zcode-userpromptsubmit.sh 80.8 提示接线
-td "SL-17 zcode-userpromptsubmit.sh 含 '80.8' (反思提示/专档对照接线)" \
-   "[ -f '$UPSUBMIT' ] && grep -qF '80.8' '$UPSUBMIT'" \
-   "missing file=$UPSUBMIT OR anchor='80.8'"
+# [task-userlog-recall-20261105 CR MINOR-1 收紧] 原断言仅 grep -qF '80.8' 特异性弱（CR 2026-11-05 建议）：
+# 改为匹配 note 文案句尾关键片段「冲突以逐字原话为准（Rule 80.8②）」+ 计数 ≥3（三处 note 分支各 1）
+td "SL-17 zcode-userpromptsubmit.sh 含 '冲突以逐字原话为准（Rule 80.8②）' ×≥3 (反思提示/专档对照接线)" \
+   "[ -f '$UPSUBMIT' ] && [ \$(grep -cF '冲突以逐字原话为准（Rule 80.8②）' '$UPSUBMIT') -ge 3 ]" \
+   "missing file=$UPSUBMIT OR anchor count<3 (expected 3 note branches)"
 
 # SL-18 (item 11): 完整性负断言 — critical-rules.md '^80.[1-8] ' 计数 = 8（80.1-80.8 全在）
 # 与 SL-04（80.1-80.6=6）并存不冲突：SL-04 守护既有写入面未被破坏，SL-18 守护 80.7+80.8 扩展完整性。
