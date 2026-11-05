@@ -10,9 +10,9 @@
 ## Session: 2026-11-05
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: [Title]
+### 占位段（原 init 骨架 [Title]，已废弃——真实 Phase 1-5 见下方 Session 段）
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-05 17:18
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
@@ -26,7 +26,7 @@
 
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
+- **Status:** complete
 - **Started:**
 - Actions taken:
   -

@@ -390,9 +390,9 @@ Phase 3
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] delivery-summary 五要素+check-complete+归档
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-trashcan-20261105 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] delivery-summary 五要素+check-complete+归档（簿记后执行）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：第 1 轮零新发现收敛（见下方梳理记录区块）
+- [x] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-trashcan-20261105 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
@@ -559,6 +559,7 @@ Phase 3
 | 1 | 2026-11-05 | Explore | 废弃处置面盘点 | done | Rule 100 无废弃面/tmp 清理链证伪/媒体原地重命名=缺陷本体 | 01-explore-trash.md | §Research Findings | plans/task-trashcan-20261105/subagent-state/01-explore-trash.md | - / 0 / ☑ |
 | 2 | 2026-11-05 | general-coder | PG1 并行组 S1/S2/S3（100.6/media+variant/gitignore+deprecated） | done | 100.6 四要素/替代修改/分工声明全落盘 | 锚亲验 1/1/2/1 | §设计稿落地 | 02/03/04-s*.md | - / 0 / ☑ |
 | 3 | 2026-11-05 | general-coder | S4 selftest-file-disposal 新建+registry | done | FD-01..06 全绿 8/8 | selftest Total 8 | 同上 | 05-s4-selftest.md | - / 0 / ☑ |
+| 4 | 2026-11-05 | general-reviewer | CR 独立审查 8 文件变更集 | done | APPROVED 0 BLOCKER/1 MINOR+1 INFO 非阻断 | 06-cr-review.md | 同上 | 06-cr-review.md | - / 0 / ☑ |
 | 2 | | | | | | | | | - / 0 / ☐ |
 | 3 | | | | | | | | | - / 0 / ☐ |
 

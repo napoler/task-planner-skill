@@ -48,7 +48,7 @@
 - [ ] V-1.1: [mapped to VC-? or custom]
 - [ ] V-1.2: [mapped to VC-? or custom]
 
-Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
+Status: `complete` Last verified: 2026-11-05
 
 ---
 
@@ -65,7 +65,7 @@ Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verifie
 - [ ] V-2.1: ...
 - [ ] V-2.2: ...
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-11-05
 
 ---
 
