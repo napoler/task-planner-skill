@@ -93,3 +93,4 @@
 
 ## CR 留痕（Rule 42.7 CR-GATE）
 - CR APPROVED（2026-11-05）：general-reviewer 独立审查 commit 4e2198c 全量 diff（8 文件），verdict=APPROVED（0 BLOCKER / 0 CONCERN / 1 MINOR）；MINOR=SL-17 弱锚已采纳收紧（commit d14808f，复跑 25/25）；审查检查点=subagent-state/09-cr-review.md（逐项 PASS 证据行号在案）
+- [goal:G4] 回归部署收口完成：全量 selftest 基线对照差集空（worktree 14=master 14）+ 部署 3 位 24 对 diff=0 + zcode 位实弹 selftest 25/25 + merge 0774bba + worktree/分支已清（VC-2/3/4/5 全 PASS）
