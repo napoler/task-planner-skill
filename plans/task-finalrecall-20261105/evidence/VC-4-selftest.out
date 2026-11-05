@@ -1,1 +1,32 @@
-bash: /mnt/data/dev/task-planner-skill-worktrees/task-finalrecall-20261105/skills/task-planner/scripts/selftest-session-log.sh: No such file or directory
+[PASS] SL-01 user-session-log.md 存在且三关键词(只写不改∧append-only∧逐字抄录)各≥1
+[PASS] SL-02 user-session-log.md '## #' 条目示例行 ∧ '^## 恢复协议' 标题段
+[PASS] SL-03 task_plan.md 指针区块('🗣️ 用户会话逐字记录'≥1 ∧ 'user-session-log'≥2)
+[PASS] SL-04 critical-rules.md '^80.[1-6] ' = 6
+[PASS] SL-05 SKILL.md 纪元锚 '1-(8x|9x|10x)' ≥3（覆盖 1-80..101 宽窗, 尾边界 79/110 负样本不命中）
+[PASS] SL-06 check-complete.sh SESSION-LOG GATE('[session-log-gate]'∧TASK_PLANNER_SESSION_LOG_ENFORCE∧零新 config 键|env-only)
+[PASS] SL-07 init-session.sh 'copy_template "user-session-log.md"'≥1 ∧ verify 回显语句=1
+[PASS] SL-08 task_plan.md 指针区块无可变计数('当前条目数|最近一条'=0, 纯静态)
+[PASS] SL-09 config.json properties 键数 = 53（零新 config 键, jq; task-perf-opt 42→44, task-v172 合法新增 2 键 44→46, P-01 1 键 46→47, [task-v184-S2b] 47→53）
+[PASS] SL-10 registry 自登记('selftest-session-log.sh'=1 行 ∧ 该行 NF=4 且四列非空)
+[PASS] SL-11a 基线空锚（- 0）+ append 首条 enforce 档 PASS（无 baseline-drift, task-v176 CR MAJOR-2 豁免）
+[PASS] SL-11b 回退校验保留（基线条目数 2→现存 1 = FAIL；基线=现存 1 = PASS, 篡改面不放开）
+[PASS] SL-12 二次 init 不改写既有条目（user-session-log sha 不变 ∧ 假条目/Goal 手改保留 ∧ rc=0, Rule 80.2）
+[PASS] SL-13a critical-rules.md 含 '80.8 **决策前读取纪律' (80.8 header)
+[PASS] SL-13b critical-rules.md 含 51.3 双锚升级字面 (task-userlog-recall-20261105, Rule 80.8③)
+[PASS] SL-14a task-discipline 含 '暂停前四问' (Rule 80.8① 上抛裁决前读档)
+[PASS] SL-14b task-discipline 含 '反思门**五问' (Rule 80.8② 新指令反思)
+[PASS] SL-14c task-discipline 含 '前置读档门' (Rule 80.8① 86.1 前置)
+[PASS] SL-15a SKILL.md 含 '决策前读取已过' (G9 自查项)
+[PASS] SL-15b SKILL.md 含 '决策前读取纪律（80.8' (Rule 80 索引接线)
+[PASS] SL-16a user-session-log.md 模板含消费点区块 (Rule 80.8 五决策点)
+[PASS] SL-16b delivery-summary.md 含 '专档条目#' 列 (51.3 双锚交付面)
+[PASS] SL-16c subagent_dispatch.md 含 '双锚升级（Rule 80.8④）' (派发需求锚双锚)
+[PASS] SL-17 zcode-userpromptsubmit.sh 含 '冲突以逐字原话为准（Rule 80.8②）' ×≥3 (反思提示/专档对照接线)
+[PASS] SL-18 critical-rules.md '^80.[1-8] ' = 8 (80.1-80.8 完整性, 写入面未被破坏)
+[PASS] SL-19a verification-gate 含 '84.14 **收尾回读梳理与迭代' 且含 '收敛出口' (84.14 定义锚)
+[PASS] SL-19b SKILL.md 含 '全文档收尾回读梳理（Rule 84.14' (收尾回读流程接线)
+[PASS] SL-19c task_plan.md 模板含 '收尾回读梳理记录' ≥2 (got=2, checkbox+区块标题)
+[PASS] SL-19d delivery-summary.md 含 '回读梳理结论（Rule 84.14）' (交付面回读结论)
+[PASS] SL-19e user-session-log.md 含 '⑥ 收尾回读' (消费点触发)
+[PASS] SL-19f todo-sync.md 含 '前置=Rule 84.14 收尾回读梳理迭代已完成' (终态同步前置收尾回读纪律)
+Total: 31  PASS=31  FAIL=0
