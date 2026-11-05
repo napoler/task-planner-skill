@@ -66,6 +66,10 @@
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
 
+## Phase 1 收口（2026-11-05）
+- [goal:G0] 调研缺口定位完成：Explore 检查点 subagent-state/01-explore-userlog.md 落盘（主进程 Read 复核）；缺口清单 5 项回填 findings §Research Findings；V-N 锚定=缺口清单为 VC-1 五决策点设计依据
+- 状态：complete（Phase 2 设计即基于该清单，证据链连续）
+
 ## Phase 2 收口（2026-11-05）
 - 计划 attest 锁定 SHA 722481ec（四锚+vc-gate 6/6+tier-consistency 全过）；用户裁决：计划批准+S6 hook 文案纳入（AskUserQuestion 2026-11-05）
 - **发现登记（不在本任务射程，另行任务）**：check-plan-dispatch.sh 按 awk 固定列位取 col7=时长/col8=粒度，假设旧 10 列表格；模板现行 11 列（Rule 104.3 增「96 类别」列）后校验器未同步 → 列位错位，Rule 59.1 时长/粒度硬门被格式漂移静默绕过（SKIPPED fail-open 仅提示）。attest vc-gate 围栏内示例行计入 vc_total 教训二次复发（task-v179 判例）——本计划已绕开，校验器修复属独立任务
