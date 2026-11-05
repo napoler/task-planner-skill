@@ -281,6 +281,52 @@ else
     grep -nE '^80\.[1-8] ' "$CRULES" 2>/dev/null | sed 's/^/  [diag] present: /' || true
 fi
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SL-19a..SL-19f [2026-11-05 task-finalrecall-20261105 S5]
+# WHAT: Rule 84.14「收尾回读梳理与迭代」六载体落点机器守护（静态锚断言）。
+# WHY: 84.14 落地后，若六载体锚被后续改动静默移除，收尾回读梳理迭代门退化为无护栏；
+#      SL-19 系列补齐定义/流程/模板/纪律面守护，防回归。
+# 纪律: 纯静态 grep 断言，零 fixture；沿用既有 $ROOT 路径推导，禁硬编码绝对路径；
+#      既有断言(SL-01..SL-18)一行未改（append-only）。
+# ══════════════════════════════════════════════════════════════════════════════
+VG_CRULES="$ROOT/../verification-gate/references/critical-rules-verification.md"
+TODO_SYNC="$ROOT/references/todo-sync.md"
+
+# SL-19a: verification-gate 84.14 定义锚 + 收敛出口
+td "SL-19a verification-gate 含 '84.14 **收尾回读梳理与迭代' 且含 '收敛出口' (84.14 定义锚)" \
+   "[ -f '$VG_CRULES' ] && grep -qF '84.14 **收尾回读梳理与迭代' '$VG_CRULES' && grep -qF '收敛出口' '$VG_CRULES'" \
+   "missing file=$VG_CRULES OR anchor='84.14 **收尾回读梳理与迭代' / '收敛出口'"
+
+# SL-19b: task-planner SKILL.md 收尾回读梳理接线
+td "SL-19b SKILL.md 含 '全文档收尾回读梳理（Rule 84.14' (收尾回读流程接线)" \
+   "[ -f '$SKILL' ] && grep -qF '全文档收尾回读梳理（Rule 84.14' '$SKILL'" \
+   "missing file=$SKILL OR anchor='全文档收尾回读梳理（Rule 84.14'"
+
+# SL-19c: task_plan.md 模板含「收尾回读梳理记录」≥2（checkbox+区块标题）
+_sl19c_n="$(grep -c '收尾回读梳理记录' "$TPL" 2>/dev/null || echo 0)"
+if [ "$_sl19c_n" -ge 2 ]; then
+    PASS=$((PASS+1)); echo "[PASS] SL-19c task_plan.md 模板含 '收尾回读梳理记录' ≥2 (got=$_sl19c_n, checkbox+区块标题)"
+else
+    FAIL=$((FAIL+1)); echo "[FAIL] SL-19c task_plan.md 模板含 '收尾回读梳理记录' ≥2 (got=$_sl19c_n)"
+    echo "  [diag] expected count>=2 in $TPL (checkbox+区块标题)"
+    grep -n '收尾回读梳理记录' "$TPL" 2>/dev/null | sed 's/^/  [diag] present: /' || true
+fi
+
+# SL-19d: delivery-summary.md 模板含回读梳理结论
+td "SL-19d delivery-summary.md 含 '回读梳理结论（Rule 84.14）' (交付面回读结论)" \
+   "[ -f '$DELIVERY_TPL' ] && grep -qF '回读梳理结论（Rule 84.14）' '$DELIVERY_TPL'" \
+   "missing file=$DELIVERY_TPL OR anchor='回读梳理结论（Rule 84.14）'"
+
+# SL-19e: user-session-log.md 模板含 ⑥ 收尾回读
+td "SL-19e user-session-log.md 含 '⑥ 收尾回读' (消费点触发)" \
+   "[ -f '$SLOG' ] && grep -qF '⑥ 收尾回读' '$SLOG'" \
+   "missing file=$SLOG OR anchor='⑥ 收尾回读'"
+
+# SL-19f: todo-sync.md 含 84.14
+td "SL-19f todo-sync.md 含 '84.14' (终态同步前置收尾回读纪律)" \
+   "[ -f '$TODO_SYNC' ] && grep -qF '84.14' '$TODO_SYNC'" \
+   "missing file=$TODO_SYNC OR anchor='84.14'"
+
 # ── 汇总（Total/exit 语义对齐 selftest-knowledge-brief.sh）──
 TOTAL=$((PASS + FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
