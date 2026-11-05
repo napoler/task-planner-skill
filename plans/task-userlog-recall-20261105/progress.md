@@ -12,6 +12,7 @@
 
 ### Phase 1: 调研缺口定位
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
+- **R 锚定**：本 Phase 服务 R2「写入面已设计但用户没有去解决这个事情」——盘点专档读写面定位读取断链缺口，为 R4 有效利用补读取面
 - **Status:** complete
 - **Started:** 2026-11-05 15:11
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
@@ -24,6 +25,7 @@
 
 ### Phase 2: 设计定稿与计划审批
 <!-- Phase N 按上方 Phase 1 结构续加 -->
+- **R 锚定**：本 Phase 服务 R3「决策的时候去读取这个用户之前记录的用户交互内容」——设计五决策点读档条款与统一锚 80.8，经用户批准锁定
 - **Status:** complete
 - **Started:** 2026-11-05
 - Actions taken:
