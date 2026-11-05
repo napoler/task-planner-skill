@@ -11,6 +11,7 @@
 <!-- 本会话日期,如 2026-09-05 -->
 
 ### Phase 1: 取证收口（Requirements & Discovery）
+- **R 锚定**：本 Phase 服务 R1-R4——还原两起图片 QC 基础认知错误（房车双门/场景含人物）的放行经过并盘点 QC 门条款缺口，为条款修复提供取证链
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** complete
 - **Started:** 2026-11-05 23:01
@@ -25,6 +26,7 @@
   |      |       |          |        |        |
 
 ### Phase 2-5: 隔离/修订/复检合并/部署收尾（动作流水见上方「会话动作留痕」逐条）
+- **R 锚定**：本 Phase 服务 R3-R4——优化当前技能文件（47.6a/b/c 落三载体）并 12 位部署收敛，确保基础性错误在 QC 环被强制拦截、验证严格性落地
 - **Status:** complete
 - **Started:** 2026-11-06
 - Actions taken: worktree 建立+判向（Phase 2）；S1-S3 三文件 24 行纯增量+S4 回归 94/96 零新增（Phase 3）；S5 APPROVED+S6 merge 0508586（Phase 4）；S7-S12 部署 12+3 位 md5 全绿（Phase 5）
