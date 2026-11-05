@@ -85,6 +85,21 @@ fi
 # SA-15 [负] 子条越界 + registry 登记
 sa15a="$(cntE '^96\.7' "$DISPATCH")"; sa15b="$(cnt 'selftest-subagent-activation.sh' "$REGISTRY")"
 if [ "${sa15a:-0}" -eq 0 ] && [ "${sa15b:-0}" -ge 1 ]; then ok 15 "无 96.7 越界子条 ∧ registry 已登记本脚本"; else bad 15 "越界或漏登记（96.7=${sa15a:-0} 应 0 / registry 行=${sa15b:-0} 应 ≥1）"; fi
+# SA-16 Rule 104 新形态（三级标题）+旧二级标题零残留
+sa16a="$(cntE '^### 104 ' "$DISPATCH")"; sa16b="$(cntE '^## Rule 104' "$DISPATCH")"
+if [ "${sa16a:-0}" -eq 1 ] && [ "${sa16b:-0}" -eq 0 ]; then ok 16 "104 新形态三级标题在位（### 104）且旧二级标题（## Rule 104）零残留"; else bad 16 "104 标题形态不符（三级=${sa16a:-0} 应 1 / 二级=${sa16b:-0} 应 0）"; fi
+# SA-17 104.2 使用点标注总表 + 媒体批量生成锚
+sa17a="$(cntE '^104\.2 \*\*使用点标注总表' "$DISPATCH")"; sa17b="$(cnt '媒体批量生成' "$DISPATCH")"
+if [ "${sa17a:-0}" -ge 1 ] && [ "${sa17b:-0}" -ge 1 ]; then ok 17 "104.2 使用点标注总表在位且含 媒体批量生成 锚"; else bad 17 "104.2/媒体批量生成 缺失（104.2=${sa17a:-0} 应 ≥1 / 媒体批量生成=${sa17b:-0} 应 ≥1）"; fi
+# SA-18 SKILL.md 就地速查
+sa18="$(cnt '使用点标注速查' "$SKILLMD")"
+if [ "${sa18:-0}" -ge 1 ]; then ok 18 "SKILL.md 使用点标注速查在位"; else bad 18 "SKILL.md 缺失 使用点标注速查"; fi
+# SA-19 模板 96 类别列
+sa19="$(cnt '96 类别' "$TPL_PLAN")"
+if [ "${sa19:-0}" -ge 2 ]; then ok 19 "task_plan.md 含 96 类别 ≥2 处"; else bad 19 "task_plan.md 96 类别 仅 ${sa19:-0} 处（需 ≥2：表头+注释）"; fi
+# SA-20 markup-exempt 三处以上
+sa20="$(cnt 'markup-exempt' "$DISPATCH")"
+if [ "${sa20:-0}" -ge 3 ]; then ok 20 "dispatch 中 markup-exempt ≥3 处（104.1.2/104.6.1 等）"; else bad 20 "dispatch 中 markup-exempt 仅 ${sa20:-0} 处（需 ≥3）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))
