@@ -345,8 +345,8 @@ Phase 5（终验完成）
 | S6 | 全部 diff 独立审查 | Code Reviewer(sonnet-1) | worktree 路径+git diff 范围+审查四维 | APPROVED 结论 | 15min | 1f/0l/15min | 无 | S5 | pending |
 
 ### Phase 5: 收口合并与部署同步
-- [ ] worktree 全 VC 复验+status 干净 → smart-merge-back --deploy → 主仓 Read 复验
-- [ ] 部署位 diff=0 确认（VC-7）+ 簿记 commit + rule-reserve land 104
+- [x] worktree 全 VC 复验+status 干净 → smart-merge-back --deploy → 主仓 Read 复验（merge 3c32cae，Rule 104 主仓 grep=1）
+- [x] 部署位 diff=0 确认（VC-7 双位 PASS）+ 簿记 commit + rule-reserve land 104
 - [ ] 归档计划（archive-plan.sh，Rule 81）+ 交付总结
 - **V-N:** VC-5, VC-7
 - **Status:** complete
