@@ -157,7 +157,7 @@ check-complete→交付总结→归档
 
 ### Phase 4: 回归验证+CR+部署+合并回
 - [x] selftest-session-log.sh 全绿（VC-2：worktree 25/25）
-- [ ] 全量 selftest 与 master 基线对照零新增 FAIL（VC-3）
+- [x] 全量 selftest 与 master 基线对照零新增 FAIL（VC-3：worktree 14=master 14 差集空）
 - [x] Code Review（general-reviewer 独立视角）APPROVED（0 BLOCKER/1 MINOR 已采纳收紧）
 - [x] 部署 3 位 diff=0（VC-4：zcode/claude/cursor 24 对文件 0 diff；zcode 位 selftest 复跑 25/25 实弹）
 - [x] smart-merge-back 合并回 master+清 worktree（VC-5：0774bba）
