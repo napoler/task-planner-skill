@@ -395,7 +395,7 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 - [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮 1 五发现全处置；轮 2 零新发现=收敛出口）
 - [x] 归档计划：check-complete exit 0 后执行（见下）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- [x] 知识提取入库：kb-sync draft→精炼主题化 knowledge/entries/rule105-ls-first-discipline.md（级联维护要点五节）→rebuild-index<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-3, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
