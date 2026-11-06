@@ -127,3 +127,4 @@
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
 - [recall] 2026-11-06 Phase 3 翻转前主进程 Read execution-recall-card.md；对照：逐 S-unit 派发☑/逐 Phase commit（4344749，仅 scope 5 文件）☑/产出 Read 复核☑/检查点落盘☑/EN-03 修正已 31.2 归因落 findings ☑/无违规项
+- CR APPROVED（2026-11-07，修复后闭环口径）：critic 复检初轮 VERDICT=CHANGES_REQUESTED（8 发现：I-1 计数漏级联/I-2 空壳可过/W-1 双阈值互斥/N-1 注释漂移/Q-1 自指例外/N-3 先存缺陷登记不动）→ 修复轮 R1-R4 全 PASS（commit 227f3a3，checkpoint 04-fix-round.md）→ 主进程 Read 复核 R1-R4 修复点全部吻合 + 机器断言复验（selftest-enumerate-first EN 7/7 exit 0 + run-verification VC 6/6 PASS）→ 闭环通过；第三轮 critic 按 103.7 成本约束豁免（修复=清单逐项机械落实，验证面=机械断言已覆盖，豁免登记在 Phase 4 progress 段）
