@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-104 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83，含 Rule 82 分层纪律 + Rule 83 通道快速失败；其余 87 条按域归 11 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-105 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83，含 Rule 82 分层纪律 + Rule 83 通道快速失败；其余 88 条按域归 11 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -206,7 +206,7 @@ model: opus
 | 卫星 | 域 | 规则全文路径 | 调用条件 |
 |------|----|------------|---------|
 | task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离/使用点标注（Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104） |
-| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收/跨项目跨目录操作授权/临时目录统一与工作树内放/git 使用加强（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101） |
+| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收/跨项目跨目录操作授权/临时目录统一与工作树内放/git 使用加强（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,105） |
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
 | plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
@@ -219,7 +219,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-104 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 87 条已按域迁至上表 11 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-105 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 88 条已按域迁至上表 11 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域（task-discipline 卫星））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 - **Rule 1 先规划再执行**（Rule 2 PreToolUse 阻断）：创建 task_plan.md→展示→等 yes→执行
 - **Rule 3 双操作后保存 / Rule 5 Phase 完成后更新**：2 次 view/browser/search 后写 findings；Phase 翻 in_progress→complete
 - **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件
@@ -252,7 +252,7 @@ Rules 1-104 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,8
 ## 派发与执行纪律指针（卫星 authoritative）
 
 - **子代理派发/路由表/模型档位/超时兜底/返回校验/代码编辑隔离/provider 故障 scaling/hook 自愈** → 卫星 `task-dispatch`（SKILL.md+`../task-dispatch/references/agent-coverage.md` 覆盖矩阵+`../task-dispatch/references/split-pattern-library.md` 模式库；五档兜底=改派→拆细→降档→接管→AskUser）
-- **执行纪律/错误闭环/批量质量门控（batch-quality-gate.md）/反思验证/注释规范/可靠性/能力落盘/上下文压力/用户否决/决策分级/变更吸收/上下文记录整理触发（Rule 98）/跨项目跨目录操作授权（Rule 99）/临时目录统一与工作树内放（Rule 100）/git 使用加强（Rule 101）** → 卫星 `task-discipline`
+- **执行纪律/错误闭环/批量质量门控（batch-quality-gate.md）/反思验证/注释规范/可靠性/能力落盘/上下文压力/用户否决/决策分级/变更吸收/上下文记录整理触发（Rule 98）/跨项目跨目录操作授权（Rule 99）/临时目录统一与工作树内放（Rule 100）/git 使用加强（Rule 101）/可枚举集合全量枚举优先（Rule 105）** → 卫星 `task-discipline`
 - **媒体制作/单元线并行/内容权重分级** → 卫星 `media-planner`
 - 主进程铁律摘要：任务执行一律 `Agent()` 派发（白名单外 Write/Edit 被 `check-delegation.sh` 拦截，enforce=exit 2）；bypass 仅显式 `allow-direct.sh on --confirm-user-requested`；六项白名单全文见 task-dispatch Rule 25.3
 - **子代理激活默认档/模型分档/并行硬标注/同消息并发/指标留痕** → 卫星 task-dispatch Rule 96（七类触发类别默认派发；主进程直做=窄白名单登记例外；≥2 个无依赖 S-unit 必须声明并行组；并行组成员同消息并发派发；交付报告激活子代理数与最大并行宽度）
@@ -262,7 +262,7 @@ Rules 1-104 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,8
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 |
-| `references/critical-rules.md` | Critical Rules 核心域 1-104 全集索引（14 条核心全文+分层架构说明+卫星路由索引） |
+| `references/critical-rules.md` | Critical Rules 核心域 1-105 全集索引（14 条核心全文+分层架构说明+卫星路由索引） |
 | `references/methodology.md` | 思维方法论 T1-T5 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |
