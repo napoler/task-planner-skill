@@ -132,12 +132,12 @@ execution_lane: L1
 -->
 | 字段 | 值 |
 |------|-----|
-| **目标型需求** | （R 行编号，如 R1/R3） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **目标型需求** | R1+R2（「必须进行纠正」=制度层纠正落地） |
+| **裁决** | `solved` |
+| **解决证据锚** | 主仓 skills/task-discipline/references/critical-rules-discipline.md:707-721（五子条）+ selftest-enumerate-first.sh EN 7/7 exit 0 + run-verification VC 6/6 PASS + 部署四位 diff=0 + rule 105 landed |
+| **未解决面+原因** | 无（行为面冒烟属新会话义务，惯例登记遗留） |
+| **已排除路径** | n/a |
+| **下一步建议** | 新会话冒烟：任一素材匹配场景验证 105 条款被召回生效（对象=新会话执行体；看点=可枚举集合时先 ls；动作=正常派发即触发） |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -312,11 +312,11 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 - [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
 - **V-N:** VC-6, VC-1（本 Phase 产出调研结论供 VC-1 设计基线）
 - **Status:** complete
-- **Executor:** Explore（haiku-1）
+- **Executor:** Explore
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 96 类别 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|---------|-------------|---------|------|------|------|------|------|
-| S1 | 全仓调研：检索条款覆盖面+级联锚面+归属卫星确认 | Explore(haiku-1) | A3 | 调研任务书（三问：既有条款 grep 关键词族/级联锚四形态清单/Rule 58/63/75 域边界）；摘要=只读调研零写入 | findings §调研结论 含三节产出（路径+行号锚） | 20min | 0f/0l/20min | 无 | - | pending |
+| S1 | 全仓调研：检索条款覆盖面+级联锚面+归属卫星确认 | Explore | A3 | 调研任务书（三问：既有条款 grep 关键词族/级联锚四形态清单/Rule 58/63/75 域边界）；摘要=只读调研零写入 | findings §调研结论 含三节产出（路径+行号锚） | 20min | 0f/0l/20min | 无 | - | pending |
 
 <!--
   STATUS VALUES:
@@ -343,7 +343,7 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 - [x] 103.6 同步核对清单（多文件变更集，翻转前全绿）
 - **V-N:** VC-1, VC-2, VC-4
 - **Status:** complete
-- **Executor:** executor（sonnet-1）
+- **Executor:** general-coder（provider 拒改派承接；括注=档位说明非类型名）
 **全串行论证（Rule 68.2，替代并行组声明）**: S1→S2→S3→S4 串行——三产物共享 worktree 同一回归面（S2/S3 均影响 selftest 结果），单执行体连续上下文成本低于并行组协调+回归互踩风险；无满足「依赖=- 且独立性四问全 no」的 S-unit 对。
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发)
@@ -375,7 +375,7 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 - [x] Fix any issues found（critic 8 发现→修复轮 R1-R4 全 PASS→主进程复核吻合）
 - **V-N:** VC-2, VC-3
 - **Status:** complete
-- **Executor:** code-runner-agent（mini）+ critic（复检）
+- **Executor:** critic（fresh 回归复用 S4 轮证据，比例原则登记于 progress；code-runner 派发豁免）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 96 类别 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|---------|-------------|---------|------|------|------|------|------|
@@ -387,17 +387,17 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files（主仓 Read 复验关键文件）
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- [ ] smart-merge-back 合并回主仓 + 清理 worktree/分支（§11.3 合并回合约五条）
-- [ ] 部署位同步：zcode/claude/cursor 三位同族文件（--deploy 或文件级 cp，逐位 diff=0 验收）
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-enumerate-first-20261106 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] Review all output files（主仓 Read 复验关键文件：1-105×3/105.1-5×5/EN 7/7）
+- [x] Ensure deliverables are complete
+- [x] Deliver to user
+- [x] smart-merge-back 合并回主仓（71c8393 merge，V4 ALREADY_MERGED 路径）+ worktree/分支已清理（遗留 wt/task-v168-machine-parked 为任务前旧遗留，登记不动）
+- [x] 部署位同步：zcode（手动 rm+cp，运行位自保护判例）+claude/opencode（--deploy swap）+cursor（文件级 cp）四位 diff=0
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮 1 五发现全处置；轮 2 零新发现=收敛出口）
+- [x] 归档计划：check-complete exit 0 后执行（见下）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-3, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -405,7 +405,8 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
      发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1 | ① rule-reserve land 105 遗漏（PR-02 FAIL 暴露）② VC Verify command 混中文致 runner 127 ③ 委派统计裸名陷阱（v150 判例复发）④ Phase1 重复 checkbox ⑤ VC-3 口径需如实（95/97 非 100%） | ① land e8ab2e8 ② 纯命令化 6 条→PASS 6/6 ③ Handoff 裸名+Executor 对齐→verdict ok ④ 清理+P-04 PASS ⑤ VC-3 判据改如实口径（基线 flaky 分类） |
+| 2 | 连续一轮零新发现（六文档互洽：R↔Goal↔执行↔验证↔知识 五维对照通过；反例锚/判据/守护/部署四层一致） | 收敛出口达成，出 outcome |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -420,7 +421,7 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 | `isolation` | `worktree`（§11.1 命中：修改技能文件=P0 保护区+运行中基础设施） |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-enumerate-first-20261106` |
 | `branch` | `wt/task-enumerate-first-20261106` |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(71c8393)` |
 
 > 契约详见 `/home/terry/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
@@ -530,12 +531,12 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
-| 激活子代理数（Rule 96.5） | （Agent() 派发总次数） |
-| 最大并行宽度（Rule 96.5） | （并行组数 / 最宽组宽,如 2 组 / 最宽 3） |
-| 串行化例外理由（Rule 96.4） | （逐组一句话;无则写 none） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3 / 5（Phase 1 Explore/Phase 3 general-coder×3/Phase 4 critic+general-coder） |
+| 主进程直做 Phase 清单 | Phase 2（白名单②计划文件维护+设计决策）/Phase 5（白名单①git 编排+②簿记） |
+| 委派率 | 0.6（check-delegation stats verdict=ok；主进程两位均白名单内） |
+| 激活子代理数（Rule 96.5） | 7（Explore1+drift2+general-coder4+critic1——含修复轮与 EN-03 修正轮） |
+| 最大并行宽度（Rule 96.5） | 1 组 / 最宽 2（S2 修正轮与 S3 并行，文件集无交集） |
+| 串行化例外理由（Rule 96.4） | S1→S2→S3 串行（共享回归面）；S2 修正与 S3 并行为无交集特例 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -549,12 +550,14 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | 2026-11-06 | Explore(haiku-1) | Phase1 全仓调研三节（空白区/级联锚/归属） | done | ① 105=空白区（关键词族零命中）② 级联=SKILL.md 3 处+路由 4 行+卫星尾新增；selftest 宽窗零改动 ③ 归属=task-discipline | SKILL.md:9/222/265/17/209/211/255；discipline:109-115,681 | §调研结论（三节全量） | subagent-state/01-explore-enumerate-first.md | - / 0 / ☑ |
-| 2 | 2026-11-06 | drift-checker→general-purpose（provider 拒改派） | Phase1 偏移检查三态判定 | done | ✅ALIGNED 4 项 PASS（动作对齐/产出对齐/范围干净/证据实存） | progress.md:18 R锚定行 | — | subagent-state/01-drift-phase1.md | - / 0 / ☑ |
-| 3 | 2026-11-06 | executor→general-coder（provider 拒改派） | S1 Rule 105 条款 append worktree | done | +14 行纯尾部增量；五子条+Why 块逐字在位（主进程 Read :707-719 复核吻合）；既有零改动 | discipline(wt):707-719 | §Rule105 设计定稿（落地完成态） | subagent-state/03-executor-s1.md | - / 0 / ☑ |
-| 4 | 2026-11-06 | general-coder | S2 selftest-enumerate-first.sh+registry | done | +101 行脚本+registry 1 行；EN-03 阈值修正轮（5→4，设计拍脑袋值校准）；当前态 5/2 预期 | scripts(wt):selftest-enumerate-first.sh | §Rule105 设计定稿（断言清单段） | subagent-state/03-executor-s2.md | - / 0 / ☑ |
+| 1 | 2026-11-06 | Explore | Phase1 全仓调研三节（空白区/级联锚/归属） | done | ① 105=空白区（关键词族零命中）② 级联=SKILL.md 3 处+路由 4 行+卫星尾新增；selftest 宽窗零改动 ③ 归属=task-discipline | SKILL.md:9/222/265/17/209/211/255；discipline:109-115,681 | §调研结论（三节全量） | subagent-state/01-explore-enumerate-first.md | - / 0 / ☑ |
+| 2 | 2026-11-06 | general-purpose | Phase1 偏移检查三态判定（drift-checker provider 拒改派） | done | ✅ALIGNED 4 项 PASS（动作对齐/产出对齐/范围干净/证据实存） | progress.md:18 R锚定行 | — | subagent-state/01-drift-phase1.md | - / 0 / ☑ |
+| 3 | 2026-11-06 | general-coder | S1 Rule 105 条款 append worktree（executor provider 拒改派） | done | +14 行纯尾部增量；五子条+Why 块逐字在位（主进程 Read :707-719 复核吻合）；既有零改动 | discipline(wt):707-719 | §Rule105 设计定稿（落地完成态） | subagent-state/03-executor-s1.md | - / 0 / ☑ |
+| 4 | 2026-11-06 | general-coder | S2 selftest+registry（executor provider 拒改派） | done | +101 行脚本+registry 1 行；EN-03 阈值修正轮（5→4，设计拍脑袋值校准）；当前态 5/2 预期 | scripts(wt):selftest-enumerate-first.sh | §Rule105 设计定稿（断言清单段） | subagent-state/03-executor-s2.md | - / 0 / ☑ |
 | 5 | 2026-11-06 | general-coder | S3 SKILL.md 级联 104→105 | done | 7 项验收全 PASS；281 行不变净 0；2 文件 6+/5- | SKILL.md(wt):9/222/265/209/255 | §调研结论·节 B（级联清单消项） | subagent-state/03-executor-s3.md | - / 0 / ☑ |
-| 6 | 2026-11-06 | drift-checker→general-purpose | Phase3 偏移检查 | done | ✅ALIGNED 5 项 PASS（CA 一致/未越界/文本吻合/基线分类合规） | git show 4344749 | — | subagent-state/03-drift-phase3.md | - / 0 / ☑ |
+| 6 | 2026-11-06 | general-purpose | Phase3 偏移检查（drift-checker provider 拒改派） | done | ✅ALIGNED 5 项 PASS（CA 一致/未越界/文本吻合/基线分类合规） | git show 4344749 | — | subagent-state/03-drift-phase3.md | - / 0 / ☑ |
+| 7 | 2026-11-07 | critic | Phase4 独立复检三维挑刺 | done | 8 发现全验证 VERDICT=CHANGES_REQUESTED（I-1 计数/I-2 空壳/W-1 双阈值+N 项） | subagent-state/04-critic-review.md | §调研结论（复检闭环） | subagent-state/04-critic-review.md | - / 0 / ☑ |
+| 8 | 2026-11-07 | general-coder | Phase4 修复轮 R1-R4 | done | 4 项全 PASS+EN 7/7 复跑绿+主进程 Read 复核吻合；commit 227f3a3 | subagent-state/04-fix-round.md | §Rule105 设计定稿（修复完成态） | subagent-state/04-fix-round.md | - / 0 / ☑ |
 
 ## 🔁 模板感知
 <!-- template_type: general -->

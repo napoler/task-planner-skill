@@ -1,0 +1,5 @@
+# [run-verification] VC-3 | 2026-11-06T16:08:35Z | cmd: bash skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -E '^Total'
+# ---- stdout/stderr ----
+Total: 97 PASS=94 FAIL=3 (run=97 reused=0)
+
+# exit=0

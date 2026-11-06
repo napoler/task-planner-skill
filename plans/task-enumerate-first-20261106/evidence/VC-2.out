@@ -1,0 +1,12 @@
+# [run-verification] VC-2 | 2026-11-06T16:08:34Z | cmd: bash skills/task-planner/scripts/selftest-enumerate-first.sh
+# ---- stdout/stderr ----
+[PASS] EN-01 task-discipline critical-rules 含行首 '### 105 ' 段标题(SEC105)
+[PASS] EN-02 SEC105 '^105\.[1-5] ' 五子条行首锚计数=5 (got=5)
+[PASS] EN-03 SEC105 关键判据词计数 全量枚举≥4(4) 零命中≥1(1) 回退≥1(2) ls≥2(4)
+[PASS] EN-04 105.5 反例锚段含「装备车」与「命名族」(SEC105)
+[PASS] EN-05 交叉引 'Rule 35' 与 '100.6' 在位于SEC105
+[PASS] EN-06 SKILL.md 含 '1-105' ≥3 处(3) 且含 ',105' 路由
+[PASS] EN-07 负断言: SKILL.md '1-104' 字面残留=0
+Total: 7  PASS=7  FAIL=0
+
+# exit=0

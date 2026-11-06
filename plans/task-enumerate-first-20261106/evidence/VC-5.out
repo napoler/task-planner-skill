@@ -1,0 +1,5 @@
+# [run-verification] VC-5 | 2026-11-06T16:15:16Z | cmd: diff -r skills/task-planner /home/terry/.zcode/skills/task-planner > /dev/null 2>&1 && diff -q skills/task-discipline/SKILL.md /home/terry/.zcode/skills/task-discipline/SKILL.md > /dev/null && diff -q skills/task-discipline/references/critical-rules-discipline.md /home/terry/.zcode/skills/task-discipline/references/critical-rules-discipline.md > /dev/null && echo deploy-identical
+# ---- stdout/stderr ----
+deploy-identical
+
+# exit=0
