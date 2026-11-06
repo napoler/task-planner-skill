@@ -12,7 +12,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 域边界
 
-**管**：除四文件数据流转（核心 task-planner，Rule 62）与子代理拆分/派发/调度（task-dispatch）之外的所有执行期纪律——决策前重读（Rule 4）、错误记账（Rule 6）、失败不重复（Rule 7）、新请求重规划（Rule 8/10）、错误提前暴露（Rule 9）、批量质量门控（Rule 18）、工作产物提交（Rule 27）、交互与询问门控（Rule 28）、上下文与工作文件维护（Rule 29）、错误学习闭环（Rule 31）、否决禁令追踪（Rule 32）、反思验证循环（Rule 33）、执行结论纪律（Rule 35）、技能修改保守化（Rule 36）、问题自主消解（Rule 41）、质量审查检测补充（Rule 42）、执行可靠性制度化（Rule 43）、默认项与自动超时（Rule 44）、注释完整性（Rule 45），及交付总结、根源解决、执行诚实、能力沉淀、用户指令优先、迭代测试、主动解决、周期回顾、上下文压力、裁决子代理化、呈报审批、来源锚、决策分级、变更吸收、总结审查、用户输入一致性、可测问题禁问、精准执行与极简改动、任务射程契约、前后逻辑一致性禁反言、规范再召回、非必要暂停禁令、惰性上抛禁令与不可用判词证据门、否定矛盾触发与上下文记录整理触发纪律、跨项目/跨目录操作授权纪律、临时目录统一与工作树内放纪律、git 使用加强纪律、新请求计划同步与反思门纪律等共 52 条（全文见规则索引）。
+**管**：除四文件数据流转（核心 task-planner，Rule 62）与子代理拆分/派发/调度（task-dispatch）之外的所有执行期纪律——决策前重读（Rule 4）、错误记账（Rule 6）、失败不重复（Rule 7）、新请求重规划（Rule 8/10）、错误提前暴露（Rule 9）、批量质量门控（Rule 18）、工作产物提交（Rule 27）、交互与询问门控（Rule 28）、上下文与工作文件维护（Rule 29）、错误学习闭环（Rule 31）、否决禁令追踪（Rule 32）、反思验证循环（Rule 33）、执行结论纪律（Rule 35）、技能修改保守化（Rule 36）、问题自主消解（Rule 41）、质量审查检测补充（Rule 42）、执行可靠性制度化（Rule 43）、默认项与自动超时（Rule 44）、注释完整性（Rule 45），及交付总结、根源解决、执行诚实、能力沉淀、用户指令优先、迭代测试、主动解决、周期回顾、上下文压力、裁决子代理化、呈报审批、来源锚、决策分级、变更吸收、总结审查、用户输入一致性、可测问题禁问、精准执行与极简改动、任务射程契约、前后逻辑一致性禁反言、规范再召回、非必要暂停禁令、惰性上抛禁令与不可用判词证据门、否定矛盾触发与上下文记录整理触发纪律、跨项目/跨目录操作授权纪律、临时目录统一与工作树内放纪律、git 使用加强纪律、新请求计划同步与反思门纪律等共 53 条（全文见规则索引）。
 
 **不管**：
 - 四文件内容本身（核心 task-planner，Rule 62）
@@ -83,7 +83,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 | 102 | 新请求计划同步与反思门纪律 | `references/critical-rules-discipline.md` `### 102` 段 |
 | 105 | 可枚举集合全量枚举优先纪律（ls-first）·素材/资产等可枚举集合检索方式选择与零命中回退复核 | `references/critical-rules-discipline.md` `### 105` 段 |
 
-**落盘状态（task-v171 批次进度）**：Rule 4,6,7,8,9,10,18,28,29,31,32,33,35,36,41,42,43,44,45 共 19 条已由 S15-S17 迁移落盘（源行区间与迁移注记见 `references/critical-rules-discipline.md` 头部）；Rule 27,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76 属 v171 后续批次（S18+，均已落盘）；Rule 85（task-v175 用户输入一致性）、Rule 86（task-v177 可测问题禁问）与 Rule 87（task-v179 精准执行与极简改动）、Rule 88（task-v180 任务射程契约）与 Rule 89（task-v181 前后逻辑一致性禁反言）已后补落盘、Rule 90/92/93（task-v182/v185/v195）与 Rule 94（task-focus-plan-split-20261023 任务专注性与计划隔离）、Rule 95（task-nopause-execfirst-20261023 非必要暂停禁令与执行优先）与 Rule 97（task-lazy-escalation-20261102 惰性上抛禁令与不可用判词证据门）、Rule 98（task-ctxcorrect-20261103 否定矛盾触发与上下文记录整理触发纪律）与 Rule 99（task-crossprojauth-20261104 跨项目/跨目录操作授权纪律）与 Rule 100（task-crossprojauth-20261104-R2 临时目录统一与工作树内放纪律）与 Rule 101（task-crossprojauth-20261104-R3 git 使用加强纪律——起点原始数据固定提交+终点主动合并解冲突）已后补落盘、Rule 102（task-crossprojauth-20261104-R5 新请求计划同步与反思门纪律——五类判定+计划优先门+取消同步+痕迹累积）已后补落盘——本索引现共 52 条全文可消费。
+**落盘状态（task-v171 批次进度）**：Rule 4,6,7,8,9,10,18,28,29,31,32,33,35,36,41,42,43,44,45 共 19 条已由 S15-S17 迁移落盘（源行区间与迁移注记见 `references/critical-rules-discipline.md` 头部）；Rule 27,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76 属 v171 后续批次（S18+，均已落盘）；Rule 85（task-v175 用户输入一致性）、Rule 86（task-v177 可测问题禁问）与 Rule 87（task-v179 精准执行与极简改动）、Rule 88（task-v180 任务射程契约）与 Rule 89（task-v181 前后逻辑一致性禁反言）已后补落盘、Rule 90/92/93（task-v182/v185/v195）与 Rule 94（task-focus-plan-split-20261023 任务专注性与计划隔离）、Rule 95（task-nopause-execfirst-20261023 非必要暂停禁令与执行优先）与 Rule 97（task-lazy-escalation-20261102 惰性上抛禁令与不可用判词证据门）、Rule 98（task-ctxcorrect-20261103 否定矛盾触发与上下文记录整理触发纪律）与 Rule 99（task-crossprojauth-20261104 跨项目/跨目录操作授权纪律）与 Rule 100（task-crossprojauth-20261104-R2 临时目录统一与工作树内放纪律）与 Rule 101（task-crossprojauth-20261104-R3 git 使用加强纪律——起点原始数据固定提交+终点主动合并解冲突）已后补落盘、Rule 102（task-crossprojauth-20261104-R5 新请求计划同步与反思门纪律——五类判定+计划优先门+取消同步+痕迹累积）已后补落盘——本索引现共 53 条全文可消费。
 
 ## 脚本
 
@@ -94,6 +94,6 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 参考文档
 
-- `references/critical-rules-discipline.md` — 52 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102）
+- `references/critical-rules-discipline.md` — 53 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102）
 - `references/batch-quality-gate.md` — 批量质量门控细则（Rule 18 正文引用）
 - `references/capability-registry.md` — 能力沉淀登记台账（随 S21 资产迁入）
