@@ -305,10 +305,6 @@ Phase 2：主进程定稿 Rule 105 条款全文（五子条）+ selftest 断言�
 -->
 
 ### Phase 1: Requirements & Discovery
-- [ ] Understand user intent
-- [ ] Identify constraints and requirements
-- [ ] Document findings in findings.md
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
 - [x] Explore 子代理调研：① 既有检索相关条款覆盖面（grep 全量枚举/ls/检索 相关条款于 skills/*/references/*.md）② 级联锚面清单（'1-104' 字面+宽锚形态+SKILL.md 全集索引行+registry.tsv 现状+SKILL 钉值）③ Rule 105 归属卫星确认（discipline vs research 域边界比对）
 - [x] Understand user intent
 - [x] Identify constraints and requirements

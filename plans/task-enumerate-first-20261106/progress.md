@@ -48,8 +48,10 @@
   - （Phase 2 记录已完整，此段占位保留）
 
 ### Phase 3: Implementation（worktree 内）
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-06 23:05
+- [goal:G3] 证据行：三产物落盘=commit 4344749（5 文件 122+/5-）；验证=主仓 grep 1-105×3+105.1-5×5+EN selftest 7/7 exit 0（主进程亲跑）→ complete
+- [goal:G4] 证据行：全量回归 run-selftests.sh Total 97 PASS=95 FAIL=2（2 FAIL 主仓基线同现=漂移分类，progress 上文已登记）；S4 证据=/tmp/s4-full-regression.log + ledger tick2 → complete
 - **R 锚定**：本 Phase 服务 R2「必须进行纠正」——三产物（规则条款/selftest 守护/级联修正）落盘 worktree
 - Actions taken:
   - S1（general-coder 承接 executor，provider 拒改派）：Rule 105 条款 append discipline 文件尾，+14 行纯尾部增量；主进程 Read :707-719 复核五子条逐字吻合
