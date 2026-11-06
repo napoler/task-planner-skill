@@ -128,3 +128,8 @@
 | `~/.zcode/plans/plan-resume-report.md` |  |
 - [recall] 2026-11-06 Phase 3 翻转前主进程 Read execution-recall-card.md；对照：逐 S-unit 派发☑/逐 Phase commit（4344749，仅 scope 5 文件）☑/产出 Read 复核☑/检查点落盘☑/EN-03 修正已 31.2 归因落 findings ☑/无违规项
 - CR APPROVED（2026-11-07，修复后闭环口径）：critic 复检初轮 VERDICT=CHANGES_REQUESTED（8 发现：I-1 计数漏级联/I-2 空壳可过/W-1 双阈值互斥/N-1 注释漂移/Q-1 自指例外/N-3 先存缺陷登记不动）→ 修复轮 R1-R4 全 PASS（commit 227f3a3，checkpoint 04-fix-round.md）→ 主进程 Read 复核 R1-R4 修复点全部吻合 + 机器断言复验（selftest-enumerate-first EN 7/7 exit 0 + run-verification VC 6/6 PASS）→ 闭环通过；第三轮 critic 按 103.7 成本约束豁免（修复=清单逐项机械落实，验证面=机械断言已覆盖，豁免登记在 Phase 4 progress 段）
+- [goal:G1] 证据行：findings §调研结论 三节在位（空白区判定+级联锚清单+归属判定）→ complete
+- [goal:G2] 证据行：findings §Rule 105 设计定稿 段在位（条款蓝本+断言清单+级联清单）→ complete
+- [goal:G5] 证据行：merge 71c8393+四位部署 diff=0+归档执行（本轮）→ complete
+- [judge] 2026-11-07 Phase 5 合并回前三问评判：① 合并条件=worktree 干净+主仓无重叠未提交变更（V2/V3 PASS 实证）② 部署方向=主仓→部署位单向（抽样 diff 先行，四位 diff=0 验收）③ 回滚点=merge commit 71c8393 可 revert——判定可合并，执行
+- [judge] 2026-11-07 终验前变更决策评判：规则文本三判门全增量（CA-1..CA-6 无替代无删除）；critic 修复轮吸收判定=替代（W-1 措辞）但满足四条件（新证据=critic 复检+范围覆盖+已 Read 旧文+守护全绿）——登记合规

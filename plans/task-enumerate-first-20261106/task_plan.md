@@ -151,11 +151,11 @@ execution_lane: L1
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 调研定位 | 摸清现有检索相关条款与级联锚面清单 | findings.md §调研结论 含条款覆盖面+级联锚清单（路径+行号） | Phase 1 | pending |
-| G2 | 设计定稿 | Rule 105 条款结构+级联清单定稿入 findings | findings.md §Rule105 设计定稿 段在位 | Phase 2 | pending |
-| G3 | 落地实施 | 规则全文+selftest+级联修正三产物在 worktree 落盘 | grep Rule 105 关键行命中 + selftest exit 0 | Phase 3 S1-S3 | pending |
-| G4 | 回归验证 | worktree 内 fresh 全量回归 FAIL=0 | 套件输出 FAIL=0 计数 | Phase 3 S4+Phase 4 | pending |
-| G5 | 交付部署 | 合并回主仓+三位部署 diff=0+归档 | git log 含 scope 提交 + 部署位 diff=0 输出 | Phase 5 | pending |
+| G1 | 调研定位 | 摸清现有检索相关条款与级联锚面清单 | findings.md §调研结论 含条款覆盖面+级联锚清单（路径+行号） | Phase 1 | complete |
+| G2 | 设计定稿 | Rule 105 条款结构+级联清单定稿入 findings | findings.md §Rule105 设计定稿 段在位 | Phase 2 | complete |
+| G3 | 落地实施 | 规则全文+selftest+级联修正三产物在 worktree 落盘 | grep Rule 105 关键行命中 + selftest exit 0 | Phase 3 S1-S3 | complete |
+| G4 | 回归验证 | worktree 内 fresh 全量回归 FAIL=0 | 套件输出 FAIL=0 计数 | Phase 3 S4+Phase 4 | complete |
+| G5 | 交付部署 | 合并回主仓+三位部署 diff=0+归档 | git log 含 scope 提交 + 部署位 diff=0 输出 | Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
