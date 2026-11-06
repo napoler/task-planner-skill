@@ -81,6 +81,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 | 100 | 临时目录统一与工作树内放纪律 | `references/critical-rules-discipline.md` `### 100` 段 |
 | 101 | git 使用加强纪律 | `references/critical-rules-discipline.md` `### 101` 段 |
 | 102 | 新请求计划同步与反思门纪律 | `references/critical-rules-discipline.md` `### 102` 段 |
+| 105 | 可枚举集合全量枚举优先纪律（ls-first）·素材/资产等可枚举集合检索方式选择与零命中回退复核 | `references/critical-rules-discipline.md` `### 105` 段 |
 
 **落盘状态（task-v171 批次进度）**：Rule 4,6,7,8,9,10,18,28,29,31,32,33,35,36,41,42,43,44,45 共 19 条已由 S15-S17 迁移落盘（源行区间与迁移注记见 `references/critical-rules-discipline.md` 头部）；Rule 27,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76 属 v171 后续批次（S18+，均已落盘）；Rule 85（task-v175 用户输入一致性）、Rule 86（task-v177 可测问题禁问）与 Rule 87（task-v179 精准执行与极简改动）、Rule 88（task-v180 任务射程契约）与 Rule 89（task-v181 前后逻辑一致性禁反言）已后补落盘、Rule 90/92/93（task-v182/v185/v195）与 Rule 94（task-focus-plan-split-20261023 任务专注性与计划隔离）、Rule 95（task-nopause-execfirst-20261023 非必要暂停禁令与执行优先）与 Rule 97（task-lazy-escalation-20261102 惰性上抛禁令与不可用判词证据门）、Rule 98（task-ctxcorrect-20261103 否定矛盾触发与上下文记录整理触发纪律）与 Rule 99（task-crossprojauth-20261104 跨项目/跨目录操作授权纪律）与 Rule 100（task-crossprojauth-20261104-R2 临时目录统一与工作树内放纪律）与 Rule 101（task-crossprojauth-20261104-R3 git 使用加强纪律——起点原始数据固定提交+终点主动合并解冲突）已后补落盘、Rule 102（task-crossprojauth-20261104-R5 新请求计划同步与反思门纪律——五类判定+计划优先门+取消同步+痕迹累积）已后补落盘——本索引现共 52 条全文可消费。
 
