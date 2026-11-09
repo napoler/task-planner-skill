@@ -309,7 +309,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 
 | 任务类型族（对齐 §九） | 默认执行体（对齐 SKILL 路由表） | 计划期工具面建议（Rule 40.1 六类） | 编排判定倾向（Rule 40.4） |
 |----------------------|------------------------------|--------------------------------|------------------------|
-| 代码组（code-edit/bugfix/refactor/performance/test-writing） | code-assistant / executor / build-error-resolver 子代理 | Agent 子代理为主;机械守卫脚本（selftest/编译/lint）为验证面 | 串行为主;≥3 个独立同构单元或独立模块并行可分析 → 命中 39.8 条件登记 CreateWorkflow 路由并执行期主动创建（39.8 三件套），未命中走 Rule 21.4 声明制调度 |
+| 代码组（code-edit/bugfix/refactor/performance/test-writing） | code-assistant / executor / build-error-resolver 子代理 | Agent 子代理为主;机械守卫脚本（selftest/编译/lint）为验证面 | 串行为主;≥3 个独立同构单元或独立模块并行可分析 → 命中 39.8 条件登记 CreateWorkflow 路由并执行期主动创建（39.8 三件套）并按 **Rule 91** 定 run 级 `subagent_model` + 脚本内分档 + **91.5 可执行生效验证留痕**（EvalSnippet 不含 model/agent→per-agent 用 CreateWorkflow 最小 smoke；失败显式退化 run 级、禁悄悄降档 91.7），未命中走 Rule 21.4 声明制调度 |
 | 内容组（writing/research/publish/video/image+videotpl 工序 11 类） | 内容类执行体（article-writer 等）+plan-research-router 卫星 | 卫星技能+子代理;长任务建议用户 /goal 锚定会话目标（40.3 提示点） | 阶段链（研究→写作→审查）强串行;仅批量多文发布可 fan-out |
 | 媒体制作族（video/video-fix/image+工序 11 类，自内容组行特化拆出 — task-v122 Rule 47.2） | 首选 image/video-generation-executor（task-v124 在位优先）；缺位回退 executor(sonnet-1) + 工序 variant 模板 SOP + 生成技能；QC=审查类子代理 | 子代理+生成技能；机械 QC/机检脚本为验证面 | 同参批量单元可声明组并行；跨工序阶段链（母图/分镜/剧本依赖）强串行 |
 | 规则/模板组（rule-enhancement/schema-migration） | executor（worktree 隔离必须） | Agent 子代理+机械 selftest 面;主进程 git 编排（Rule 25.3 白名单①） | 串行;级联锚清单先行 |
@@ -319,3 +319,5 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | 判断/裁决 | decision-arbiter（Rule 69 载体） | Agent 子代理（低频单次独立派发，Rule 69.5） | 未命中编排条件（单点裁决，无 fan-out 需求） |
 
 **映射使用规则**: ① 本表是建议面非强制路由——Executor 字段仍是委派门控机器事实源（Rule 40.2,区块不替代）;② 编排判定倾向=命中 39.8 激活条件（独立并行可 fan-out / 长链接力可复用 / 用户点名）→ 在「🧰」区块登记"CreateWorkflow 路由（39.8 条件命中）"并执行期按 39.8 三件套主动创建;未命中走 Rule 21.4 声明制调度（并行默认+声明组，未声明=串行，10-02）;③ 类型不在表中 → 按最近似族套用并在区块理由列注明。
+
+> **Rule 91 workflow 多模型分档接线（v183收编+本次对齐）**：凡登记 `CreateWorkflow` 路由，须同步登记 ① run 级 `subagent_model`（91.1/91.12）② 脚本 per-agent 分档策略（A 固定/B MODELS+分诊，91.3/91.4）③ 91.5 可执行验证留痕（`EvalWorkflowSnippet` **不能**验 `model()/agent()`；per-agent 用 **CreateWorkflow 最小 smoke**：编译/启动+运行/可观测产出；失败→显式退化 run 级 `subagent_model`+留痕，**禁悄悄降档 91.7**）④ `model()` compile-time literal（91.6）⑤ 跨机先 `ListModels`（91.10）。权威：`plan-collab-router` Rule 91；用法：`workflow-model-tiers` 技能。

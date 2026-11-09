@@ -139,8 +139,8 @@ if grep -q '^### 91 ' "$CRIT" && grep -q '模型分档' "$CRIT"; then ok 17 "Rul
 if grep -q 'heavy（重）' "$CRIT" && grep -q 'medium（中）' "$CRIT" && grep -q 'light（轻）' "$CRIT" && grep -q 'minimal（最轻）' "$CRIT"; then ok 18 "Rule 91 四档映射表锚（heavy/medium/light/minimal）"; else bad 18 "critical-rules-collab.md 缺 Rule 91 四档映射表锚"; fi
 # WF-19 [task-v183] 官方文档矛盾披露锚（91.2 + 官方原文引述）
 if grep -q '官方文档矛盾披露' "$CRIT" && grep -q 'there is no per-subagent tool profile or model choice' "$CRIT"; then ok 19 "Rule 91 官方文档矛盾披露锚（91.2 + 官方原文）"; else bad 19 "critical-rules-collab.md 缺 Rule 91 官方文档矛盾披露锚"; fi
-# WF-20 [task-v183] 编译期约束+验证前置门锚（91.5/91.6）
-if grep -q '编译期约束' "$CRIT" && grep -q 'EvalWorkflowSnippet' "$CRIT"; then ok 20 "Rule 91 编译期约束+验证前置门锚（91.5/91.6）"; else bad 20 "critical-rules-collab.md 缺 Rule 91 编译期约束/验证门锚"; fi
+# WF-20 [task-v183/task-wf-multimodel-align-20261109] 编译期约束+验证前置门锚（91.5/91.6；91.5 修正：EvalWorkflowSnippet 不含 model/agent，per-agent 须 CreateWorkflow 烟雾）
+if grep -q '编译期约束' "$CRIT" && grep -q '91.5 \*\*验证前置门' "$CRIT" && grep -q 'EvalWorkflowSnippet' "$CRIT" && grep -q 'CreateWorkflow' "$CRIT" && grep -q '不含.*model()' "$CRIT"; then ok 20 "Rule 91 编译期约束+验证前置门锚（91.5/91.6，含 EvalSnippet 限制+CreateWorkflow 烟雾路径）"; else bad 20 "critical-rules-collab.md 缺 Rule 91 编译期约束/可执行验证门锚（须含 91.5+EvalSnippet 限制+CreateWorkflow 路径）"; fi
 # WF-21 [task-v183] 与 Rule 39/68.3/43.2 衔接锚（91.9）
 if grep -q 'Rule 39' "$CRIT" && grep -q 'Rule 68.3' "$CRIT" && grep -q 'Rule 43.2' "$CRIT"; then ok 21 "Rule 91 与 Rule 39/68.3/43.2 衔接锚（91.9）"; else bad 21 "critical-rules-collab.md 缺 Rule 91 衔接锚"; fi
 # WF-22 [task-v183] SKILL.md 卫星路由表 collab 行枚举 Rule 91（WF-07 同构：行内 Rule 逗号枚举经 [0-9,-]* 匹配 91）

@@ -59,7 +59,7 @@ Rule 39 管「编排机制与纪律」（显式点名∨常设授权命中才路
 - **B.4** 分诊器永不写模型名，只能选用户已批准的档位。
 - **B.5** 每个 fan-out 子代理禁止新建 `model()` 调用——声明一次 MODELS 表复用。
 
-91.5 **验证前置门（EvalWorkflowSnippet — 91.2 矛盾披露的配套强制）**：脚本作者首次使用 `model()` 或 `agent(name, { model })` 语法前，须以 `EvalWorkflowSnippet` 验证当前 harness 版本 facade 确实接受该语法（typecheck 通过 + ModelRef 解析正常）。验证不通过=禁止在脚本中使用 per-subagent model 语法，退化为 91.3 的 `subagent_model` run 级字段方案（全 run 统一档位）。验证通过后须在脚本注释或 plan progress.md 记录验证结果（日期+snippet 摘要）。
+91.5 **验证前置门（与 91.2 矛盾披露配套；分通道可执行）**：首次使用 per-subagent `model()` / `agent(name, { model })` 前，必须做**可执行验证并留痕**（日期 + 工具 + 结论 + 失败则退化动作），禁止无证据假定“官方支持即生效”。**通道约束（以 bundled dynamic-workflows SKILL.md §16.6 facade 为准）**：`EvalWorkflowSnippet` 的 snippet facade 含 `args/run/log/files/git/world.run/channel/future`，**不含** `agent()/report()/artifact.*/hole()/phase`，亦**不含 `model()`**——因此 **EvalWorkflowSnippet 不能用于** `model()`/`agent(...,{model})` 的 typecheck/运行验证（会报 `Cannot find name 'model'/'agent'`）；EvalWorkflowSnippet 仅可验证非 agent 逻辑/`world.run` 等 snippet 内能力。**per-subagent model 的生效验证**须走 `CreateWorkflow` 最小烟雾 run（`script` 内含 compile-time literal 的 `model()` + `agent(...,{model})` 最小调用；遵守 CreateWorkflow 确认/动态工作流契约），以“编译/启动通过 + 运行结果或可观测产出”作为生效证据；仅类型层接受≠运行期生效。验证不通过、harness 拒绝该语法、或运行期不生效 = **禁止悄悄降档/假装生效**（91.7），退化为 91.3 的 run 级 `subagent_model`（全 run 统一档位）并在 plan/progress.md 记录证据与退化决策。
 
 91.6 **编译期约束**：`model()` 参数是编译期 string literal，不能用变量拼接（`model(PREFIX + "/opus-1")` 会编译失败）——必须写死完整 id。
 
