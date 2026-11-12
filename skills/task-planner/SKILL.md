@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-106 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83，含 Rule 82 分层纪律 + Rule 83 通道快速失败；其余 88 条按域归 11 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-106 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83，含 Rule 82 分层纪律 + Rule 83 通道快速失败；其余 89 条按域归 11 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -102,7 +102,7 @@ model: opus
      - **3f 周期性三文件对照**（v168/R3）：每完成一个 S-unit（或每 10 次工具调用），Read task_plan Goal+Phase 状态与 progress 尾部对照；不符按 Rule 65.4 标 `[corrected]` 回错误步并一句话记 progress
      - **3g 规范召回（Rule 93）**：每完成 3 个 S-unit 或 Phase 翻转 complete（先到者），主进程亲自 Read `../task-discipline/references/execution-recall-card.md` 并 progress 留 `[recall]` 行（可与 3f 同拍执行）；compaction 恢复/会话恢复/[assess]≥PRESSURE 后第一动作先读召回卡（93.3）；mini/L0 档豁免
   - **3h 双轮质检（Rule 103）**：子代理返回→核 checkpoint 自审段（103.2）→Read 产出（84.4）→派全新复检体（103.3，升档 103.4/简洁四要素 103.5）→复检回执落 checkpoint；多文件变更集附同步核对清单（103.6）。
-  - **3i 修改后复检（Rule 106）**：受管文档每次修改后回读校验跨字段不变量（106.1）；同文件 ≥2 次修改后全量回归（106.3）——细则→task-discipline Rule 106
+  - **3i 修改后复检（Rule 106）**：受管文档每次修改后回读校验跨字段不变量（106.1-106.4）；同文件 ≥2 次修改后全量回归（106.3）——细则→task-discipline Rule 106
   4. [M] **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转；**多文件变更集（≥2 受管文件）翻转前先过 103.6 同步核对清单（清单全绿才可翻转，Rule 103.6）**
   4.5 [M] **提交工作产物（Rule 27）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；非 git 记行跳过；deferred/用户显式豁免须写入计划
   5. [M] **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
@@ -220,7 +220,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-106 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 88 条已按域迁至上表 11 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域（均 task-discipline 卫星））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-106 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 89 条已按域迁至上表 11 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域（均 task-discipline 卫星））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 - **Rule 1 先规划再执行**（Rule 2 PreToolUse 阻断）：创建 task_plan.md→展示→等 yes→执行
 - **Rule 3 双操作后保存 / Rule 5 Phase 完成后更新**：2 次 view/browser/search 后写 findings；Phase 翻 in_progress→complete
 - **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件
