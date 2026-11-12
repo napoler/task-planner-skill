@@ -174,12 +174,12 @@ Phase 1
 - **Executor:** 主进程（例外理由: ② 计划系统文件簿记——取证为本会话一手，无需再派）
 
 ### Phase 2: 修正模板 skill 与模板文件
-- [ ] 建 worktree
-- [ ] S1-S3 派发（S1∥S2→S3）
-- [ ] 规范召回（Rule 93，3 S-unit 后）
-- [ ] 103.6 同步核对清单
+- [x] 建 worktree（/mnt/data/dev/task-planner-skill-worktrees/task-tpl-verify-fix-20261113，自 master 4d269d1）
+- [x] S1-S3 派发（S1∥S2→S3 全 done：checkpoint 01/02/03）
+- [x] 规范召回（S-unit 3 个完成时点——上任务召回卡已读且本任务复用同卡纪律，[recall] 见 progress Phase 2 段）
+- [x] 103.6 同步核对清单（四族：同族字面/引用互恰/部署镜像=S5 承接/selftest 断言=CA-9~11）
 - **V-N:** VC-2, VC-3
-- **Status:** pending
+- **Status:** complete
 - **Executor:** general-coder
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -189,10 +189,10 @@ Phase 1
 | S3 | （A6）plan-template-kit SKILL+references：验证区块契约+10 列序条款（CA-6） | 继承 | worktree 路径 + findings §3 条款草案 | kit 内 Verify command 命中≥2；10 列口径在位 | 15min | 2f/40l/15min | 无 | S1,S2 | pending |
 
 ### Phase 3: 按修正后模板纠正他处
-- [ ] S4/S5 派发（S4→S5）
-- [ ] 103.6 清单
+- [x] 原 S4（SKILL 注释块）诚实 blocked→**无锚关闭**（CA-7）；亲验发现真传播面×2（SA-19 守卫+dispatch Rule 104）→CA-9/CA-10 派发纠正 done（checkpoint 05）
+- [x] 103.6 清单（残留分类=1 负向守卫字面；EA-19 实跑 20/20）
 - **V-N:** VC-4, VC-2
-- **Status:** pending
+- **Status:** complete
 - **Executor:** general-coder
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
