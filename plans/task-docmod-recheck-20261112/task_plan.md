@@ -135,11 +135,11 @@ execution_lane: L1
 | 字段 | 值 |
 |--------|-----|
 | **目标型需求** | R1, R2, R3, R4, R5（全部 [目标]） |
-| **裁决** | （终验填写） |
-| **解决证据锚** | （终验填写） |
-| **未解决面+原因** | （终验填写） |
-| **已排除路径** | （终验填写） |
-| **下一步建议** | （终验填写） |
+| **裁决** | `solved` |
+| **解决证据锚** | R1→findings §1/§5+VC-1；R2/R3→discipline:721-734（106.1/106.2/106.4）+SKILL 级联+VC-2/VC-3；R4→106.3（同文件二次修改全量回归，判例 v4→v6）+VC-2；R5→106.5+todo-sync:29-46 两组契约+本会话 dogfood（基线组 B1-B5 全程挂门禁）+VC-6；全部部署三位于 zcode c8b874d/claude cf28dd5/cursor 落盘（新会话生效） |
+| **未解决面+原因** | 无阻塞未解决。已登记遗留（非 R 范围）：① master 2 个预存 selftest FAIL（另立任务）；② G22-05a 文档本体未在盘上找到（两轮检索，用户如需修内容另行授权）；③ findings 折叠建议（hygiene 非严重） |
+| **已排除路径** | n/a（solved） |
+| **下一步建议** | ① 另立任务修 active-plan T11/execution-stability T11b 两预存 FAIL（锚=S5 检查点 06）；② 如需修 G22 分镜文档本体：请提供文档实际路径（跨项目授权） |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -158,7 +158,7 @@ execution_lane: L1
 | G3 | 级联同步 | 索引/路由/复检步/20.5 豁免/84 互指全落，无残留旧锚 | 命令：VC-3 三条 grep 全命中 | S2+S3/Phase 3 | pending |
 | G4 | todo对齐 | 两组 todo 契约落 todo-sync.md+SKILL 指针 | 命令：VC-6 三条 grep 全命中 | S4/Phase 3 | pending |
 | G5 | 回归全绿 | 既有 selftest 全量 FAIL=0 | 命令：S5 实测入口跑套件 FAIL=0 | S5/Phase 4 | pending |
-| G6 | 部署生效 | 三部署位 diff=0 + 推送收口 | diff 形态：逐对输出空 | Phase 5 | pending |
+| G6 | 部署生效 | 三部署位 diff=0 + 推送收口 | diff 形态：ALL-SYNCED 输出+三仓 push 区间 | Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -400,16 +400,16 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] smart-merge-back.sh 合并回 master（主仓 scope 文件无重叠未提交变更——已核实冲突扫描 2026-11-13）
-- [ ] 部署同步：scope 变更文件 × 三部署位（~/.zcode/skills、claude 位、cursor 位）文件级 cp，逐对 diff=0 核验（pathspec 锁定提交）
-- [ ] 源仓+配置仓 push（远端在位时）ahead=0；rule-reserve.sh land 106
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
+- [x] smart-merge-back.sh 合并回 master（stash 保护窗消解在途暂存阻断，merged=02d90e2）
+- [x] 部署同步：6 文件 × 三位 cp+逐对 diff=ALL-SYNCED（zcode c8b874d/claude cf28dd5 pathspec 提交；cursor 落盘）
+- [x] 源仓+配置仓 push：源 9126c3c..bdbcfc2 / zcode main 9f0164f..c8b874d / claude master 440570d..cf28dd5；rule-reserve.sh land 106 ✅
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：五维检查两轮收敛（轮 1 发现=3 项已登记遗留非新偏移；轮 2 零新发现）——见「收尾回读梳理记录」表
 - [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-docmod-recheck-20261112 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- [ ] 知识提取入库（kb-sync-from-plan.sh 在位已确认，归档后执行）
 - [ ] 交付总结五要素（含 D3 二次修改流程优化结论=106.3 设计依据 + R5 两组 todo 机制说明）；会话记忆落盘（G22-05a 判例）
-- **V-N:** VC-5, VC-3
-- **Status:** pending
+- **V-N:** VC-5, VC-3（主仓终验 PASS 2026-11-13）
+- **Status:** complete
 - **Executor:** 主进程（例外理由: ① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -417,7 +417,8 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
      发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1    | 五维检查：需求↔目标↔执行↔验证↔知识全对齐（R1-R5→VC-1~6 全 PASS）；发现 3 项均为**已登记遗留非新偏移**：①master 2 预存 selftest FAIL（findings §5 定性）②G22-05a 本体未验证（findings §1 兜底）③findings 折叠建议（hygiene 非严重，proportionality 不处置登记） | 三项分别以 findings §5/§1/progress 登记留痕，不阻塞 outcome |
+| 2    | 零新发现（复扫 R→VC 映射/CA-1~10 逐行勾核/三仓 push 区间/worktree 零残留/stash 恢复原样——终轮 drift ALIGNED 佐证） | 收敛出口达成，出 outcome=COMPLETE |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -432,7 +433,7 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 | `isolation` | `worktree` |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill-worktrees/task-docmod-recheck-20261112`（宪法 §11.2 集中目录形态；模板 tmp/worktrees 形态以宪法 §11.6 冲突裁决为准让位） |
 | `branch` | `wt/task-docmod-recheck-20261112` |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(02d90e2→簿记 bdbcfc2，worktree/分支已清理零遗留)` |
 
 > 契约详见 `/mnt/data/dev/task-planner-skill/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
@@ -539,6 +540,8 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-11-13 | drift-checker ✅ALIGNED（Phase 1/2 complete 后） | 全 VC | 执行方向与 R1-R5 对齐；继续 S2/S3/S4 并行 |
+| 2026-11-13 | drift-checker ✅ALIGNED（Phase 3 complete 后） | VC-2/3/6 | CA 射程核验无越界漏项（检查点 08） |
+| 2026-11-13 | drift-checker ✅ALIGNED（终轮 P4/P5+收尾） | 全 VC | 射程干净+stash 恢复原样+worktree 零残留（检查点 10；三 drift 全 ALIGNED） |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 
@@ -568,10 +571,10 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 |-------|------|
 | 子代理执行 Phase 数 / 总 Phase 数 | 2/5（Phase 3、4）+ Phase 1 调研主体已委派 Explore ×2 |
 | 主进程直做 Phase 清单 | Phase 1（白名单②簿记回填）、Phase 2（白名单②计划系统文件）、Phase 5（白名单①git 编排+②簿记） |
-| 委派率 | 2/5=0.4 <0.7，但直做 Phase 全部命中 Rule 25.3 白名单①②并逐项登记例外理由 |
-| 激活子代理数（Rule 96.5） | 已派 2（Explore×2）+ 计划 S1-S5 及复检 ≈8 |
-| 最大并行宽度（Rule 96.5） | 1（执行期 S2/S3/S4 同消息并发 → 3） |
-| 串行化例外理由（Rule 96.4） | S1→(S2∥S3∥S4)→S5 为真依赖链（S2/S3/S4 的锚位依赖 S1 规则体在位）非保守串行 |
+| 委派率 | 0.400（机器 stats verdict=ok，violations=[]，直做全白名单登记——JSON 原文贴 verification.md 委派统计复验段） |
+| 激活子代理数（Rule 96.5） | 12 次 Agent 派发（Explore×2+general-coder×4 含 S1 续轮+code-runner×2+drift-checker×3+general-reviewer×1，另 1 次 drift 重发因契约 token 改写非新任务） |
+| 最大并行宽度（Rule 96.5） | 3（S2∥S3∥S4 同消息） |
+| 串行化例外理由（Rule 96.4） | S1→(S2∥S3∥S4)→S5→(VC 复验)→(独立复检) 为真依赖链非保守串行 |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--

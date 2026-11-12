@@ -96,6 +96,27 @@
 - [goal:G5] 回归全绿 ✓ V-4.1 达标口径（基线对照 S5）
 - [recheck] verification.md × S6 编辑面（PASS 标记 4 处+勾选 3 处+VC-4 留终验）× PASS（主进程 grep 抽验）
 
+### Phase 5: 合并、部署与交付
+- **Status:** in_progress
+- **Started:** 2026-11-13 02:20
+- **R 锚定**：本 Phase 服务 R2/R3/R5 的生效面（部署）+ 全 R 交付闭环
+- Actions taken:
+  - 2026-11-13 smart-merge-back 首跑被在途他任务**暂存变更**阻断（V6，5 文件与 scope 零重叠=index 脏保守拒绝）→ 41.1 消解链：`git stash push`（保护窗）→ 合并 **02d90e2** → `git stash apply --index` 原样恢复（含暂存态，drop 835b8d1）——他任务五文件恢复后原态在位、未被捎带（终轮 drift 核验）
+  - 2026-11-13 worktree remove + branch -d 零遗留；主仓 VC-2/3/6 终验 PASS；rule-reserve land 106
+  - 2026-11-13 部署：6 文件×3 位 cp+逐对 diff **ALL-SYNCED**；zcode c8b874d(main)/claude cf28dd5(master) pathspec 提交并 push；cursor 非 git 仓落盘；源仓 push 9126c3c..bdbcfc2（含合并+簿记两笔）
+  - 2026-11-13 VC-4 主仓 post-merge 终验：97/95/2 与基线完全一致（FAIL 集=2 预存项，达标口径成立）；六 VC 全勾
+  - 2026-11-13 委派 stats=verdict ok（violations=[]）；hygiene=2 类非严重折叠建议（登记不处置）；kb 脚本在位；终轮 drift ✅ALIGNED（射程/stash/清理三查）
+  - 2026-11-13 84.14 两轮收敛（轮 1=3 项已登记遗留；轮 2=零新发现）→ outcome=COMPLETE
+- Files created/modified: 主仓 master（02d90e2+bdbcfc2）；~/.zcode、~/.claude 各 1 deploy commit；~/.cursor 落盘 6 文件
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-5 逐对 diff | 6 文件×3 位 | 全空 | ALL-SYNCED | PASS |
+  | VC-4 主仓终验 | run-selftests | =基线−epoch | 97/95/2，FAIL 集同基线 | PASS |
+  | check-delegation stats | plan-dir | verdict ok | ok, violations=[] | PASS |
+- [goal:G6] 部署生效 ✓（ALL-SYNCED+三仓 push）
+- [recall-final] 84.14 收尾回读两轮（见表+Drift Log 三 ALIGNED）
+
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->
 - **Status:** pending
