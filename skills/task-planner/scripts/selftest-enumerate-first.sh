@@ -6,13 +6,13 @@
 #      EN-03 关键判据词计数（SEC105 grep -c）：`全量枚举`≥4、`零命中`≥1、`回退`≥1、`ls`≥2
 #      EN-04 105.5 反例锚段含「装备车」与「命名族」（锚定 SEC105）
 #      EN-05 交叉引 `Rule 35` 与 `100.6` 在位于规则文档（锚定 SEC105）
-#      EN-06 SKILL.md 含 `1-105` ≥3 处 且 discipline 路由行含 `,105`（全文；S3 级联依赖，当前态预期 FAIL）
-#      EN-07 负断言：SKILL.md 内 `1-104` 字面残留=0（全文；S3 级联依赖，当前态预期 FAIL）
+#      EN-06 SKILL.md 含 `1-106` ≥3 处 且 discipline 路由行含 `,106`（全文）
+#      EN-07 负断言：SKILL.md 内 `1-104` 字面残留=0（全文）
 # WHY: 判例锚 task-enumerate-first-20261106 #1（用户裁决「因小失大」）——可枚举小集合上关键词盲搜致漏检/错误否定；
 #      防回归为 grep/find -name 替代 ls 全量枚举、零命中直接下否定结论。
 # R3 修复（2026-11-06）：EN-01..05 锚定 Rule 105 段局部文本（SEC105），消除全文 grep 空壳可过风险（I-2）；N-1 头注释与代码阈值对齐（≥4）。
 # 纪律: 本脚本只做只读静态断言，禁写配置/禁 git 写操作；路径全部用 SCRIPT_DIR 相对推导，禁硬编码绝对路径。
-#       全 PASS exit 0, 任一 FAIL exit 1。EN-06/EN-07 当前态 FAIL 为 S3 依赖预期，禁止弱化断言。
+#       全 PASS exit 0, 任一 FAIL exit 1。禁止弱化断言语义（仅允许纯纪元字面随规则号级联维护）。
 # VC-4 自指例外：本脚本 EN-07 负断言实现含 '1-104' 字面——grep 清零验收排除本脚本自身（verification.md R4 注）。
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -89,17 +89,17 @@ else
     echo "  [diag] missing SEC105 OR anchor='Rule 35'/'100.6'"
 fi
 
-# EN-06: SKILL.md 含 `1-105` ≥3 处 且 discipline 路由行含 `,105`（S3 级联依赖，当前态预期 FAIL）
-_en06_n="$(grep -c '1-105' "$SKILL_MD" 2>/dev/null)" || _en06_n=0
-if [ "$_en06_n" -ge 3 ] && grep -q ',105' "$SKILL_MD" 2>/dev/null; then
-    PASS=$((PASS+1)); echo "[PASS] EN-06 SKILL.md 含 '1-105' ≥3 处($_en06_n) 且含 ',105' 路由"
+# EN-06: SKILL.md 含 `1-106` ≥3 处 且 discipline 路由行含 `,106`
+_en06_n="$(grep -c '1-106' "$SKILL_MD" 2>/dev/null)" || _en06_n=0
+if [ "$_en06_n" -ge 3 ] && grep -q ',106' "$SKILL_MD" 2>/dev/null; then
+    PASS=$((PASS+1)); echo "[PASS] EN-06 SKILL.md 含 '1-106' ≥3 处($_en06_n) 且含 ',106' 路由"
 else
-    FAIL=$((FAIL+1)); echo "[FAIL] EN-06 SKILL.md 含 '1-105' ≥3 处($_en06_n) 且含 ',105' 路由 (S3 级联依赖，当前态预期 FAIL)"
+    FAIL=$((FAIL+1)); echo "[FAIL] EN-06 SKILL.md 含 '1-106' ≥3 处($_en06_n) 且含 ',106' 路由"
     echo "  [diag] file=$SKILL_MD"
-    grep -n ',105' "$SKILL_MD" 2>/dev/null | sed 's/^/  [diag] ,105 present: /' || echo "  [diag] ,105 not found"
+    grep -n ',106' "$SKILL_MD" 2>/dev/null | sed 's/^/  [diag] ,106 present: /' || echo "  [diag] ,106 not found"
 fi
 
-# EN-07: 负断言：SKILL.md 内 `1-104` 字面残留=0（S3 级联依赖，当前态预期 FAIL）
+# EN-07: 负断言：SKILL.md 内 `1-104` 字面残留=0
 _en07_n="$(grep -c '1-104' "$SKILL_MD" 2>/dev/null)" || _en07_n=0
 if [ "$_en07_n" -eq 0 ]; then
     PASS=$((PASS+1)); echo "[PASS] EN-07 负断言: SKILL.md '1-104' 字面残留=0"
