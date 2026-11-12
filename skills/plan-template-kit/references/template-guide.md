@@ -164,6 +164,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md
 - 范围限制表内容（根据 skill 实际操作文件定制）
 - 注释段（`<!-- ... -->`）
 - Key Questions / Decisions / Notes 等结构区
+- 模板契约补充指针（task-tpl-verify-fix-20261113 落地）：验证区块契约（VC 必含行首 `**Verify command**:`，判据源 attest-plan.sh:244-285）与 S-unit 10 列序契约（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态，check-plan-dispatch.sh:246-278）详见 `references/template-mapping.md` §7.1。
 
 ---
 

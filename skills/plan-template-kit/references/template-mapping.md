@@ -229,6 +229,13 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 - Key Questions / Decisions / Notes 等结构区
 - 「📚 必要知识储备」章节内容（全部模板标配,任务知识库对齐;按任务填充知识源,结构可按需增删行）
 
+### 7.1 模板契约补充（task-tpl-verify-fix-20261113 落地）
+
+1. **验证区块契约**：每个计划的 verification.md VC 条目必须含行首 `**Verify command**:` 纯命令行（判据源=attest-plan.sh:244-285 vc-gate）；task_plan/verification 模板必须预置该行格式——模板缺失验证区块=模板缺陷（判例 task-tpl-verify-fix-20261113）。
+   - S2 实际形态互证：`skills/task-planner/templates/verification.md:14,18,21,24,27,30`（VC 条目模板预置 `**Verify command**:` 行；头注 :14 声明判据面）。
+2. **S-unit 10 列序契约**：模板 S-unit 表固定 10 列（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态），与 check-plan-dispatch.sh:246-278 的 awk 定位一致；类别=目标列内（An）前缀（Rule 104.3 适配），禁「96 类别」独立列、禁单元格管道转义。
+   - S1 实际形态互证：`skills/task-planner/templates/task_plan.md:340,358`（10 列表头）+ `:338`（Rule 104.3 口径：类别以目标列内（An）前缀标注，禁增列/禁单元格管道转义）。
+
 ---
 
 ## 八、验证命令

@@ -140,7 +140,7 @@ execution_lane: L1
   WHEN: attest 获批后立即填写（自动分解：S-unit/Phase → goal 单元映射）
   WHY: 用户 2026-10-09 裁决——任务分解后逐格固定为「任务名+目标+完整验证方式」，
        执行按 goal 逐个推进（66.3），/goal 目标模式完成审计的证据源（66.2 映射供料）
-  列契约（66.1 六列）: goal-id(G1..) | 任务名(≤8字) | 目标(≤1句) | 完整验证方式(命令+判据/路径+关键行/diff形态,三选一必具其一) | 对应S-unit/Phase | 状态(pending/complete)
+  列契约（66.1 六列）: goal-id(G1..) | 任务名(≤8字) | 目标(≤1句) | 完整验证方式(命令+判据/路径+关键行/diff形态,三选一必具其一) | 对应 S-unit/Phase | 状态(pending/complete)
   状态机: pending → complete(仅 66.3 三证据齐备后翻格,同步 progress.md [goal:Gn] 证据行)
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
@@ -335,12 +335,12 @@ Phase 1
   - 伴飞技能列非「无」→ 校验对应 SKILL.md 路径存在(Rule 59.2)
   - Rule 68.1 前置依赖列必填,无依赖填 -（多依赖顿号分隔）
   - Rule 96.3 并行硬标注:前置依赖为 - 且独立性四问全 no 的 S-unit ≥2 个 → 必须声明并行组（frontmatter parallel_groups: 组名 + 行内注解 [parallel-group:<组名>];未声明且未按 Rule 68.2 登记全串行论证=计划缺陷,回炉补分析再 attest）
-  - Rule 104.3 计划期标注：「96 类别」列逐行填命中类别（A1-A7 / 47.2 具名 / LOCAL 纯执行），命中标注表（dispatch Rule 104.2）而执行体=主进程须例外理由或 [markup-exempt] token
+  - Rule 104.3 计划期标注：类别以目标列内（An）前缀标注（A1-A7 / 47.2 具名 / LOCAL 纯执行）——S-unit 表为 10 列固定列序（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态，check-plan-dispatch.sh $4/$5/$7/$8 定位），禁增列、禁单元格管道转义
 -->
-| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 96 类别 | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
-|----|------------|------------------------|---------|-------------|---------|------|------|------|------|------|
-| S1 | | 继承 | A6 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
-| S2 | | 继承 | A7 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S1 | (A6) | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
+| S2 | (A7) | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
 
 ### Phase 4: Testing & Verification
 <!-- 
@@ -353,6 +353,11 @@ Phase 1
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-runner-agent（mini）
+
+<!-- Executor≠主进程的 Phase 必附 S-unit 表（Rule 22.6；模板 CA-3 判例 task-tpl-verify-fix-20261113） -->
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|----|------------|------------------------|-------------|---------|------|------|------|------|------|
+| S1 | (A6) <示例> | 继承 | | | ≤15min | 1f/30l/15min | 无 | - | pending |
 
 ### Phase 5: Delivery
 <!-- 
@@ -488,17 +493,18 @@ Phase 1
   WHY: 批量操作禁止以牺牲质量/准确性为代价(Rule 18);前置 3 问 + 双采样抽检 + 失败率熔断的落盘证据
   校验: failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败
   完整模板: {{TASK_PLANNER_ROOT}}/templates/batch_report.md | 规则详解: {{TASK_PLANNER_ROOT}}/references/batch-quality-gate.md
+  留空会被 check-complete 18.6 门拦（判例同上）
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` |  |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` | （>5% → STOP;>20% → 熔断回滚） |
-| `sampled_pass` | （运行后抽 10%） |
-| `sampled_fail` | （运行前抽 2,>0 → 整批熔断） |
-| `pre_check` | （Q1:否/Q2:有/Q3:能） |
-| `rollback_point` | （为空 → 禁止批量） |
+| `total` | n/a（非批量任务或填写实际数量） |
+| `success` | n/a（非批量任务或填写实际数量） |
+| `failed` | n/a（非批量任务或填写实际数量） |
+| `failure_rate` | n/a（非批量任务；批量时填实际比率，>5% → STOP;>20% → 熔断回滚） |
+| `sampled_pass` | n/a（非批量任务；批量时填运行后抽 10% 结果） |
+| `sampled_fail` | n/a（非批量任务；批量时填运行前抽 2 结果，>0 → 整批熔断） |
+| `pre_check` | n/a（非批量任务；批量时填 Q1:否/Q2:有/Q3:能） |
+| `rollback_point` | n/a（非批量任务；批量时填回滚点，为空 → 禁止批量） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
