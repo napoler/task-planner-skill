@@ -1,0 +1,2 @@
+{"tick":1,"ts":"2026-11-12T16:35:04Z","agent":"main","phase":"2","event":"drift_check","summary":"Phase1/2 complete 后 drift-checker=ALIGNED(R1-R5 逐条对齐,检查点02)","files":[]}
+{"tick":2,"ts":"2026-11-12T17:07:09Z","agent":"main","phase":"3","event":"drift_check","summary":"Phase3 complete 后 drift-checker=ALIGNED(CA 射程核验无越界,检查点08)","files":[]}

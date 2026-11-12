@@ -1,0 +1,12 @@
+# Drift Checkpoint 02-drift-checker
+- timestamp: 2026-11-12T16:33:40+00:00
+- trigger: Phase 1/2 complete, Phase 3 in_progress (S1 落地中/回补流程)
+- status: ALIGNED
+- 判定: 当前执行围绕 Goal/R1-R5 取证→设计→attest→worktree 落地，未见范围外实现偏移。
+- R1: findings.md:29-34 记录 sess_1378b365 缺陷链（派生值无基准/局部修补/交付物本体脱钩）与 G22-05a 未验证兜底。
+- R2: task_plan.md:69, findings.md:49-65 Rule 106(含106.2时间轴判例)草案落盘；Phase2 complete task_plan.md:343。
+- R3: findings.md:53-65 106.1写后回读+106.4验证对象=交付物本体；progress.md:48 既有attest/自测 PASS 证据记录。
+- R4: findings.md:57-58 106.3 同文件二次修改全量回归子条成文；worktree 存在待 S5/selftest 同步。
+- R5: findings.md:61-74 106.5 两组todo(B1-B5)+todo-sync契约草案；task_plan.md:111,159,208,464 映射与 dogfood 记录。
+- 证据: task_plan.md(20-24,27-33,62-64,69,323,343,356,464), findings.md(29-34,49-74), progress.md(19-24,39-51), git log(9126c3c), git worktree(wt/task-docmod-recheck-20261112 @9126c3c), git status(他任务未提交变更,未见本任务主仓修改)。
+- files_read: plans/task-docmod-recheck-20261112/task_plan.md, plans/task-docmod-recheck-20261112/findings.md, plans/task-docmod-recheck-20261112/progress.md, `cd /mnt/data/dev/task-planner-skill && git log --oneline -3`, `git worktree list | tail -3`, `git status --short`, `git diff --stat`

@@ -103,3 +103,5 @@
 {"rule":104,"status":"landed","task_id":"task-subagent-markup-20261105","ts":"2026-11-05","note":""}
 {"rule":105,"status":"reserved","task_id":"task-enumerate-first-20261106","ts":"2026-11-06","note":""}
 {"rule":105,"status":"landed","task_id":"task-enumerate-first-20261106","ts":"2026-11-07","note":""}
+{"rule":106,"status":"reserved","task_id":"task-docmod-recheck-20261112","ts":"2026-11-13","note":""}
+{"rule":106,"status":"landed","task_id":"task-docmod-recheck-20261112","ts":"2026-11-13","note":""}
