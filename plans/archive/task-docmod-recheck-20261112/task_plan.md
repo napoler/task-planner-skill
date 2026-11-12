@@ -552,14 +552,14 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 -->
 | 字段 | 值 |
 |------|-----|
-| `total` | 不适用（5 个 S-unit 为异构编辑/验证单元非同构批量操作，不触发 Rule 18.6 阈值语义） |
-| `success` |  |
-| `failed` |  |
-| `failure_rate` |  |
-| `sampled_pass` |  |
-| `sampled_fail` |  |
-| `pre_check` |  |
-| `rollback_point` |  |
+| `total` | 5（S-unit 执行单元 S1-S5，异构编辑/验证单元——非同构批量操作，Rule 18.6 阈值语义不适用，字段按实值填报） |
+| `success` | 5/5（含 S1 续轮补插 106.4 与一次 drift 契约改写重发，均当轮闭环） |
+| `failed` | 0 |
+| `failure_rate` | 0%（≤5% 阈值内） |
+| `sampled_pass` | 7/7（S1-S7 执行体自检+主进程亲验 V-3.x/S6/VC-5 全 PASS） |
+| `sampled_fail` | 0 |
+| `pre_check` | Q1:否（非牺牲质量型批量） / Q2:无共享写冲突（S2/S3/S4 异文件并行） / Q3:能（单文件粒度可独立验证） |
+| `rollback_point` | worktree 分支 wt/task-docmod-recheck-20261112（合并 02d90e2 前可整枝弃置；合并后回滚点=git revert 02d90e2） |
 
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 <!-- 
