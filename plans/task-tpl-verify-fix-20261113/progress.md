@@ -95,6 +95,7 @@
   | VC-5 终验 | run-selftests 主仓 | FAIL=2 预存 | 97/95/2 | PASS |
 - [goal:G6] 部署生效 ✓（ALL-SYNCED+三仓 push）
 - [recall-final] 84.14 两轮收敛（task_plan 收尾回读表）
+- **CR APPROVED**（2026-11-13，裁决载体=S7 general-reviewer 独立复检 **APPROVED** 五维零 CHANGES，checkpoint 08——审查 scope 覆盖 42.7 CR 维度：正确性（CA-1~11 逐项）/渲染安全（{{VAR}} 零触碰）/断言正当性（SA-19/SG 随契约非弱化）/一致性（kit↔模板↔门三方互恰）/冒烟证据链；critic 独立派发曾被用户拒绝，故以既有独立复检裁决留痕并如实标注载体，未新派 critic、未虚构裁决）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
