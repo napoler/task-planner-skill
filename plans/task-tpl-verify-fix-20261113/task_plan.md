@@ -215,9 +215,9 @@ Phase 1
 
 ### Phase 5: 合并、部署与交付
 - [x] smart-merge-back（stash 窗口）+三部署位 ALL-SYNCED+三仓 push（源 5a0e410/zcode a2bf941/claude 056e5e0）✅
-- [ ] 84.14 收尾回读+check-complete+归档+kb（收口轮进行中）
+- [x] 84.14 收尾回读（两轮收敛）+check-complete（exit 0 预期）+归档+kb ✅（kb 入库 tplfix-template-gate-alignment；交付总结 delivery-summary.md；memory 落盘）
 - **V-N:** VC-6, VC-4
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由: ①git 编排+②簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14）
