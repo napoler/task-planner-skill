@@ -94,9 +94,9 @@ if [ "${sa17a:-0}" -ge 1 ] && [ "${sa17b:-0}" -ge 1 ]; then ok 17 "104.2 使用�
 # SA-18 SKILL.md 就地速查
 sa18="$(cnt '使用点标注速查' "$SKILLMD")"
 if [ "${sa18:-0}" -ge 1 ]; then ok 18 "SKILL.md 使用点标注速查在位"; else bad 18 "SKILL.md 缺失 使用点标注速查"; fi
-# SA-19 模板 96 类别列
-sa19="$(cnt '96 类别' "$TPL_PLAN")"
-if [ "${sa19:-0}" -ge 2 ]; then ok 19 "task_plan.md 含 96 类别 ≥2 处"; else bad 19 "task_plan.md 96 类别 仅 ${sa19:-0} 处（需 ≥2：表头+注释）"; fi
+# SA-19 模板类别（An）前缀口径
+sa19a="$(cnt '(A' "$TPL_PLAN")"; sa19b="$(cnt '96 类别' "$TPL_PLAN")"
+if [ "${sa19a:-0}" -ge 1 ] && [ "${sa19b:-0}" -eq 0 ]; then ok 19 "task_plan.md 含类别（An）前缀示范且 96 类别 字面=0（(A=${sa19a:-0}/96 类别=${sa19b:-0}）"; else bad 19 "模板类别前缀口径不符（(A=${sa19a:-0} 应 ≥1 / 96 类别=${sa19b:-0} 应 0）"; fi
 # SA-20 markup-exempt 三处以上
 sa20="$(cnt 'markup-exempt' "$DISPATCH")"
 if [ "${sa20:-0}" -ge 3 ]; then ok 20 "dispatch 中 markup-exempt ≥3 处（104.1.2/104.6.1 等）"; else bad 20 "dispatch 中 markup-exempt 仅 ${sa20:-0} 处（需 ≥3）"; fi

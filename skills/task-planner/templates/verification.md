@@ -11,17 +11,23 @@
 
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
+> 每条 VC 的 **Verify command** 行=attest vc-gate（attest-plan.sh:244-285）判据面——模板必须预置该行（缺失验证区块判例 task-tpl-verify-fix-20261113）。
 
-- [ ] VC-1: [What to check / test command / file to inspect]
-  Evidence: [file path / command output / screenshot]
-- [ ] VC-2: [What to check]
+- [ ] VC-1: [判定标准：可观察判据]
   Evidence: [file path / command output]
-- [ ] VC-3: [What to check]
+  **Verify command**: <可执行纯命令——禁占位（must be runnable 类模板串会被 attest vc-gate 拒）；禁真空（true/echo 类）；命令须引用本 VC 产出物；判据=退出码>
+- [ ] VC-2: [判定标准：可观察判据]
   Evidence: [file path / command output]
-- [ ] VC-4: [What to check]
+  **Verify command**: <可执行纯命令——禁占位（must be runnable 类模板串会被 attest vc-gate 拒）；禁真空（true/echo 类）；命令须引用本 VC 产出物；判据=退出码>
+- [ ] VC-3: [判定标准：可观察判据]
   Evidence: [file path / command output]
-- [ ] VC-5: [What to check]
+  **Verify command**: <可执行纯命令——禁占位（must be runnable 类模板串会被 attest vc-gate 拒）；禁真空（true/echo 类）；命令须引用本 VC 产出物；判据=退出码>
+- [ ] VC-4: [判定标准：可观察判据]
   Evidence: [file path / command output]
+  **Verify command**: <可执行纯命令——禁占位（must be runnable 类模板串会被 attest vc-gate 拒）；禁真空（true/echo 类）；命令须引用本 VC 产出物；判据=退出码>
+- [ ] VC-5: [判定标准：可观察判据]
+  Evidence: [file path / command output]
+  **Verify command**: <可执行纯命令——禁占位（must be runnable 类模板串会被 attest vc-gate 拒）；禁真空（true/echo 类）；命令须引用本 VC 产出物；判据=退出码>
 
 ---
 
@@ -38,7 +44,9 @@
 
 **Verification** (run before moving on):
 - [ ] V-1.1: [mapped to VC-? or custom]
+  **Verify command**: <命令>
 - [ ] V-1.2: [mapped to VC-? or custom]
+  **Verify command**: <命令>
 
 Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verified: [date]
 
@@ -55,7 +63,9 @@ Status: `pending` / `in_progress` / `complete` / `FAILED(3-strike)` Last verifie
 
 **Verification**:
 - [ ] V-2.1: ...
+  **Verify command**: <命令>
 - [ ] V-2.2: ...
+  **Verify command**: <命令>
 
 Status: `pending` Last verified: —
 

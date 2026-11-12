@@ -10,7 +10,7 @@
 #         SG-04..SG-10 八子条前七条字面锚各 =1（59.1 粒度三值硬门 / 59.2 技能伴飞 / 59.3 执行前技能扫描 / 59.4 能力预防判据 / 59.5 分段执行锚 / 59.6 机制守护 / 59.7 零新 config 键；59.8 关系澄清由 SG-02 行首计数锚覆盖, 与 58.8 同范式不加独立字面断言）
 #         SG-11 59.3 行双语义锚「可用强化技能」∧「仅提示用户可手动激活」各 ≥1（R5 用户触发型技能设计语义核心）
 #     · templates/task_plan.md（S-unit 表双列 + 契约注释，SG-12..SG-14）:
-#         SG-12 S-unit 表表头行「粒度(三值)」=1（行锚定，契约注释行另有同字面不误计数）；SG-13 表头行「伴飞技能」=1（同上，59.1/59.2 计划侧机器载体）
+#         SG-12 S-unit 表表头行「粒度(三值)」≥1（主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）；SG-13 表头行「伴飞技能」≥1（同上，59.1/59.2 计划侧机器载体）
 #         SG-14 `enforce` ≥2（契约注释 ①②③ 行 enforce 档语义锁定）
 #     · templates/knowledge-brief.md（技能扫描载体，SG-15）:
 #         SG-15 「§6 可用强化技能清单」段锚 =1（59.3 扫描结果的落盘出口）
@@ -145,17 +145,17 @@ a="$(line59 3 | grep -cF '可用强化技能' || true)"
 b="$(line59 3 | grep -cF '仅提示用户可手动激活' || true)"
 if [ "$a" -ge 1 ] && [ "$b" -ge 1 ]; then ok 11 "critical-rules.md 59.3 行含 '可用强化技能'($a) ∧ '仅提示用户可手动激活'($b)"; else bad 11 "critical-rules.md 59.3 行 可用强化技能=$a / 仅提示用户可手动激活=$b（各应 ≥1）"; fi
 
-# SG-12 templates/task_plan.md S-unit 表表头行「粒度(三值)」=1（59.1 计划侧机器载体）
-# What：断言 task_plan.md S-unit 表表头行（行首 `| ID `）含 `粒度(三值)` 恰 1 处（行锚定，防契约注释行同字面误计数）。
-# Why：三值列是 analyze-splits.sh / check-dispatch.sh enforce 门的机器输入列——表头丢列 = 硬门无数据源（守门形同虚设）。
+# SG-12 templates/task_plan.md S-unit 表表头行「粒度(三值)」≥1（59.1 计划侧机器载体；task-tpl-verify-fix-20261113）
+# What：断言 task_plan.md S-unit 表表头行（行首 `| ID `）含 `粒度(三值)` ≥1 处（行锚定，防契约注释行同字面误计数；主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）。
+# Why：三值列是 analyze-splits.sh / check-dispatch.sh enforce 门的机器输入列——表头丢列 = 硬门无数据源（守门形同虚设）；每派发 Phase 附表示例表使同表头合法重复。
 n="$(grep -cE '^\| ID .*\| 粒度\(三值\) \|' "$TPLAN" || true)"
-if [ "$n" -eq 1 ]; then ok 12 "templates/task_plan.md 表头行「粒度(三值)」=1"; else bad 12 "templates/task_plan.md 表头行「粒度(三值)」计数=$n（应 =1）"; fi
+if [ "$n" -ge 1 ]; then ok 12 "templates/task_plan.md 表头行「粒度(三值)」≥1（计数=$n，主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）"; else bad 12 "templates/task_plan.md 表头行「粒度(三值)」计数=$n（应 ≥1：主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）"; fi
 
-# SG-13 templates/task_plan.md S-unit 表表头行「伴飞技能」=1（59.2 计划侧机器载体）
-# What：断言 task_plan.md S-unit 表表头行（行首 `| ID `）含 `伴飞技能` 恰 1 处（行锚定：契约注释行另有同字面，全文裸计数=2 属预期）。
-# Why：伴飞列是任务书 §2 注入 + check-dispatch.sh ⑦ 路径校验的数据源列——表头丢列 = 伴飞注入链断头。
+# SG-13 templates/task_plan.md S-unit 表表头行「伴飞技能」≥1（59.2 计划侧机器载体；task-tpl-verify-fix-20261113）
+# What：断言 task_plan.md S-unit 表表头行（行首 `| ID `）含 `伴飞技能` ≥1 处（行锚定：契约注释行另有同字面；主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）。
+# Why：伴飞列是任务书 §2 注入 + check-dispatch.sh ⑦ 路径校验的数据源列——表头丢列 = 伴飞注入链断头；每派发 Phase 附表示例表使同表头合法重复。
 n="$(grep -cE '^\| ID .*粒度\(三值\) \| 伴飞技能 \|' "$TPLAN" || true)"
-if [ "$n" -eq 1 ]; then ok 13 "templates/task_plan.md 表头行「伴飞技能」（紧随粒度列）=1"; else bad 13 "templates/task_plan.md 表头行「伴飞技能」计数=$n（应 =1）"; fi
+if [ "$n" -ge 1 ]; then ok 13 "templates/task_plan.md 表头行「伴飞技能」（紧随粒度列）≥1（计数=$n，主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）"; else bad 13 "templates/task_plan.md 表头行「伴飞技能」计数=$n（应 ≥1：主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113）"; fi
 
 # SG-14 templates/task_plan.md `enforce` ≥2（契约注释档位语义）
 # What：断言 task_plan.md 中 `enforce` 出现 ≥2 次（契约注释 ①预估时长超限 / ②输入 token 超限 行）。
