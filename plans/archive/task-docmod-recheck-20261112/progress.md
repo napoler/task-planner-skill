@@ -120,17 +120,6 @@
 - [recheck] CRfix 变更集 × 六修复点逐项 grep SWEEP-PASS + EN-07 实测 7/7 + 三位 diff=0 × PASS
 - **CR APPROVED**（critic 复审 2026-11-13T01:58+08:00，检查点 12 复审段）：I-1~I-4/W-1/W-2/N-1/N-2/N-4 全部实测确认+无回归（Rules 1-105 残留=0/宽窗断言全绿/6 文件无越界）；N-3 登记接受；**遗留 NIT×2**（todo-sync:36 双标点「。；」、selftest EN-06 FAIL 分支过时文案——排版级，禁顺手改，登记待下次触达该文件的任务处置）
 
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
-- Actions taken:
-  -
-- Files created/modified:
-  -
-- Test Results:
-  -
-
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|

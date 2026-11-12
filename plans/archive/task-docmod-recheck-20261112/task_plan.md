@@ -153,11 +153,11 @@ execution_lane: L1
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 缺陷取证 | 会话缺陷链与 G22-05a 本体现状（含未验证兜底）均落 findings | 命令：grep findings.md 命中≥4 行（VC-1 判据） | Phase 1 | pending |
-| G2 | 规则落地 | Rule 106 五子条全文落 discipline 规则文件 | 命令：grep -c '106\.[1-5]' ≥5 且位置在 105 后 | S1/Phase 3 | pending |
-| G3 | 级联同步 | 索引/路由/复检步/20.5 豁免/84 互指全落，无残留旧锚 | 命令：VC-3 三条 grep 全命中 | S2+S3/Phase 3 | pending |
-| G4 | todo对齐 | 两组 todo 契约落 todo-sync.md+SKILL 指针 | 命令：VC-6 三条 grep 全命中 | S4/Phase 3 | pending |
-| G5 | 回归全绿 | 既有 selftest 全量 FAIL=0 | 命令：S5 实测入口跑套件 FAIL=0 | S5/Phase 4 | pending |
+| G1 | 缺陷取证 | 会话缺陷链与 G22-05a 本体现状（含未验证兜底）均落 findings | 命令：grep findings.md 命中≥4 行（VC-1 判据） | Phase 1 | complete |
+| G2 | 规则落地 | Rule 106 五子条全文落 discipline 规则文件 | 命令：grep -c '106\.[1-5]' ≥5 且位置在 105 后 | S1/Phase 3 | complete |
+| G3 | 级联同步 | 索引/路由/复检步/20.5 豁免/84 互指全落，无残留旧锚 | 命令：VC-3 三条 grep 全命中 | S2+S3/Phase 3 | complete |
+| G4 | todo对齐 | 两组 todo 契约落 todo-sync.md+SKILL 指针 | 命令：VC-6 三条 grep 全命中 | S4/Phase 3 | complete |
+| G5 | 回归全绿 | 既有 selftest 全量 FAIL=0 | 命令：S5 实测入口跑套件 FAIL=0 | S5/Phase 4 | complete |
 | G6 | 部署生效 | 三部署位 diff=0 + 推送收口 | diff 形态：ALL-SYNCED 输出+三仓 push 区间 | Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
