@@ -1,0 +1,21 @@
+# 07-general-coder-sgfix
+
+- task: CA-11 SG-12/SG-13 断言口径翻转（=1 → ≥1）
+- status: complete
+- time: 2026-11-13T00:00:00Z (session)
+- target: `skills/task-planner/scripts/selftest-subagent-granularity-skill-escort.sh`
+- changes:
+  - SG-12: 判据 `-eq 1` → `-ge 1`；What/Why/ok/bad 文案同步注明「主表+派发 Phase 示例表合法，task-tpl-verify-fix-20261113」
+  - SG-13: 同法翻转并注明判例
+  - 头部 SG-12/SG-13 摘要注释同步更新
+- selfcheck:
+  - `bash skills/task-planner/scripts/selftest-subagent-granularity-skill-escort.sh 2>&1 | tail -2`
+    - `SG-23 PASS 脚本头注释 What+Why 齐备（Rule 45）`
+    - `Total: 23 PASS=23 FAIL=0`
+  - `bash skills/task-planner/scripts/run-selftests.sh 2>&1 | tail -2` (log: `/tmp/zcode-bash-JQ5Nx1/sess_subagent_agent_a6063315-ac27-44f4-bca3-59dd4e14856c/4c8d8697-3f1c-4a7d-8736-9dbe3a1de004-stdout.log`)
+    - `FAIL:      2`
+    - `SKIP:      0`
+  - `git diff --stat -- skills/task-planner/scripts/selftest-subagent-granularity-skill-escort.sh`
+    - `1 file changed, 9 insertions(+), 9 deletions(-)`
+- acceptance: SG 全绿(23/23)+全量回归基线 FAIL=2 (active-plan/execution-stability 预存) ✓
+- notes/risks: worktree 内其他文件存在并行改动（非本任务触碰），本任务仅改 SG 自测脚本一处。

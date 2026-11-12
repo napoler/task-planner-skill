@@ -1,0 +1,22 @@
+# S4 checkpoint: SKILL.md S-unit 注释块口径修正 (CA-7)
+
+- **任务目标**: 在 worktree 的 `skills/task-planner/SKILL.md` 中，将 Phase 3 段内以「S-unit 派发单元表(Rule 22.6」开头的 HTML 注释块里 "96 类别" 列口径改为「目标列内（An）前缀+10 列固定列序」口径（对齐 `templates/task_plan.md:338`）。
+- **首动作(已执行)**: 
+  - `grep -n 'S-unit 派发单元表' skills/task-planner/SKILL.md` → 无命中
+  - `grep -n 'Rule 104.3' skills/task-planner/SKILL.md` → 无命中
+  - `grep -n 'Phase 3' skills/task-planner/SKILL.md` → 无命中（SKILL 为技能定义文档，无 "Phase 3" 小节标题）
+  - `grep -n '目标列内' skills/task-planner/SKILL.md` → 无命中
+  - `grep -n '96 类别' skills/task-planner/SKILL.md` → 无命中 (count=0)
+  - `grep -n '<!--' skills/task-planner/SKILL.md` → 无 HTML 注释命中
+  - 全仓 grep `Rule 104.3 计划期标注：「96 类别」` 在 worktree 中仅见于 `plans/archive/task-subagent-markup-20261105/*` 历史归档记录，不存在于 `skills/task-planner/SKILL.md`。
+- **定位结论**: 指定目标「Phase 3 段内以“S-unit 派发单元表(Rule 22.6”开头的 HTML 注释块」在当前 worktree 的 `skills/task-planner/SKILL.md` 中不存在；待替换的旧行 `Rule 104.3 计划期标注：「96 类别」列逐行填命中类别…` 亦不存在。无法在不猜测/不越界修改其他位置的前提下执行“整行替换”。`templates/task_plan.md:338`（只读核对）已为目标口径：`  - Rule 104.3 计划期标注：类别以目标列内（An）前缀标注...`。
+- **改动**: 无（未找到指定编辑目标，未修改文件；遵守"禁碰 templates/ 与 plan-template-kit/"与先读后改约束）。
+- **自检输出**:
+  - `grep -c '96 类别' skills/task-planner/SKILL.md` → `0`（无剩余行，含负面表述均不存在）
+  - `grep -n '96 类别' skills/task-planner/SKILL.md` → `(none)`
+  - `grep -n '（An）前缀' skills/task-planner/SKILL.md` → `(none)`（期望 ≥1 未满足，因目标注释块/目标行在 SKILL.md 中不存在）
+  - `git diff --stat -- skills/task-planner/SKILL.md` → (空)
+  - `git status --short -- skills/task-planner/SKILL.md` → (空，文件 clean)
+- **状态**: blocked（指定注释块与旧行在目标文件中不存在，无法按要求逐字替换；需确认 SKILL.md 当前应有的目标注释块位置/内容或该修正是否已在 SKILL.md 侧以其他方式完成）
+- **风险/备注**: 任务描述假设的源行与注释块定位与 worktree 现状不符；若强行在 SKILL.md 其他处插入新注释块将超出“仅 S-unit 派发单元表注释块”范围且缺乏明确插入点证据。建议主进程核对该 worktree 分支状态或提供 SKILL.md 中目标注释块的实际行号/上下文。
+- **时间戳**: 2026-11-13 (session)
