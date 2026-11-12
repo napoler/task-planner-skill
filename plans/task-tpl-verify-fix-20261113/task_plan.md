@@ -299,7 +299,15 @@ Phase 1
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注 |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-11-13 | general-coder | task_plan 模板四漂移修正 | done | 96 类别=0/列名在位/Phase4 表例/Batch 引导；diff 20+/14- | 模板 :143,338,340,357-360,496-507 | §3.1 消费 | subagent-state/01-general-coder-s1.md | - / 0 / ☑ |
+| 2 | 2026-11-13 | general-coder | verification 模板验证区块 | done | VC 三行结构+判据锚注释；Verify command=10 | 模板 :12-36,56-59,75-78 | §3.2 消费 | subagent-state/02-general-coder-s2.md | - / 0 / ☑ |
+| 3 | 2026-11-13 | general-coder | kit 双契约条款 | done | template-mapping:232-238+guide:167 指针 | kit 两文件 8+ | §3.3 消费 | subagent-state/03-general-coder-s3.md | - / 0 / ☑ |
+| 4 | 2026-11-13 | general-coder | SKILL 注释块口径（原 CA-7） | blocked | 诚实 blocked：SKILL.md 零命中→无锚关闭 | grep 实测 0 命中 | CA-7 处置 | subagent-state/04-general-coder-s4.md | - / 0 / ☑ |
+| 5 | 2026-11-13 | general-coder | 传播面纠正（dispatch+SA-19） | done | dispatch 三锚新口径+SA-19 翻转；selftest 20/20 | dispatch:244,256,278/selftest:97-99 | CA-9/10 | subagent-state/05-general-coder-propagation.md | - / 0 / ☑ |
+| 6 | 2026-11-13 | code-runner-agent | 冒烟+基线回归 | partial→闭环 | 渲染零泄漏/门 EXIT:0/清理干净；抓到 SG 第三 FAIL（第六漂移） | checkpoint 06 六步原文 | §4/CA-11 | subagent-state/06-code-runner-smoke.md | - / 0 / ☑ |
+| 7 | 2026-11-13 | general-coder | SG-12/13 断言翻转 | done | SG 23/23；全量 97/95/2=基线 | selftest:13,148-158 | CA-11 | subagent-state/07-general-coder-sgfix.md | - / 0 / ☑ |
+| 8 | 2026-11-13 | general-reviewer | 独立复检+对齐审查 | done | **APPROVED** 五维零 CHANGES | checkpoint 08 | 复检回执 | subagent-state/08-general-reviewer-s7.md | - / 0 / ☑ |
+| 9 | 2026-11-13 | Simple Agent | kb 条目精炼落库 | done | tplfix-template-gate-alignment.md 入库 INDEX:1 命中 | INDEX 命中行 | knowledge/ | subagent-state/10-simple-agent-kb.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 | 字段 | 值 |
