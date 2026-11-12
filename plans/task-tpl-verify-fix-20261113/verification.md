@@ -39,26 +39,26 @@
 Status: `complete` Last verified: 2026-11-13
 
 ### Phase 2: 修正模板 skill 与模板文件（worktree 路径 $WT）
-- [ ] V-2.1: VC-2 worktree 版
+- [x] V-2.1: VC-2 worktree 版（S1/S2 自检+主仓终验双证）
   **Verify command**: ! grep -q '96 类别' /mnt/data/dev/task-planner-skill-worktrees/task-tpl-verify-fix-20261113/skills/task-planner/templates/task_plan.md && test $(grep -c 'Verify command' /mnt/data/dev/task-planner-skill-worktrees/task-tpl-verify-fix-20261113/skills/task-planner/templates/verification.md) -ge 1
-- [ ] V-2.2: VC-3 worktree 版
+- [x] V-2.2: VC-3 worktree 版（S3 checkpoint 03）
   **Verify command**: test $(grep -rn 'Verify command' /mnt/data/dev/task-planner-skill-worktrees/task-tpl-verify-fix-20261113/skills/plan-template-kit/ | wc -l) -ge 2
-Status: `pending`
+Status: `complete` Last verified: 2026-11-13
 
 ### Phase 3: 按修正后模板纠正他处
-- [ ] V-3.1: VC-4 worktree 版残留=0
-  **Verify command**: test $(grep -rn '96 类别' /mnt/data/dev/task-planner-skill-worktrees/task-tpl-verify-fix-20261113/skills/ | grep -vE '（An）前缀|已废止|10 列|禁' | wc -l) -eq 0
-Status: `pending`
+- [x] V-3.1: VC-4 worktree 版残留=0（S5 checkpoint 05：dispatch 三锚+SA-19 翻转；CA-7 无锚关闭）
+  **Verify command**: test $(grep -rn '96 类别' /mnt/data/dev/task-planner-skill-worktrees/task-tpl-verify-fix-20261113/skills/ | grep -vE '（An）前缀|口径迁移|已废止|禁「96 类别」|cnt ' | wc -l) -eq 0
+Status: `complete` Last verified: 2026-11-13
 
 ### Phase 4: 冒烟与独立复检
-- [ ] V-4.1: 冒烟记录（smoke 计划过门）+ selftest 基线（S6 checkpoint+输出原文）
-  **Verify command**: grep -q 'PASS\|零拒锁' /mnt/data/dev/task-planner-skill/plans/task-tpl-verify-fix-20261113/subagent-state/S6-checkpoint
-Status: `pending`
+- [x] V-4.1: 冒烟 EXIT:0 零拒锁+基线回归（S6 checkpoint 06+SG 修复 checkpoint 07：97/95/2=基线；第六漂移 CA-11 闭环）+S7 APPROVED（checkpoint 08）
+  **Verify command**: grep -q 'EXIT:0\|PASS' /mnt/data/dev/task-planner-skill/plans/task-tpl-verify-fix-20261113/subagent-state/06-code-runner-smoke.md
+Status: `complete` Last verified: 2026-11-13
 
 ### Phase 5: 合并、部署与交付
-- [ ] V-5.1: 主仓 VC-2/3/4 全 PASS+三仓 push
+- [x] V-5.1: 主仓 VC-2/3/4 全 PASS+三仓 push（5a0e410/a2bf941/056e5e0）
   **Verify command**: git -C /mnt/data/dev/task-planner-skill log --oneline -1
-Status: `pending`
+Status: `complete` Last verified: 2026-11-13
 
 ---
 
