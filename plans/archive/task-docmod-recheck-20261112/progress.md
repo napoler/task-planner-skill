@@ -116,6 +116,9 @@
   | check-delegation stats | plan-dir | verdict ok | ok, violations=[] | PASS |
 - [goal:G6] 部署生效 ✓（ALL-SYNCED+三仓 push）
 - [recall-final] 84.14 收尾回读两轮（见表+Drift Log 三 ALIGNED）
+- 2026-11-13 **CR fix-phase**：check-complete CR-GATE（42.7 diff 体量风险）触发 critic 终审 → CHANGES_REQUESTED（I-1 in_progress 双占/I-2 域收窄/I-3 计数 88→89/I-4 卫星索引漏行/W-1 表拆/W-2 EN-07 滞后/N×4；S7 三处结论被升级——103.3 与 CR 双轮互补实证）→ 三路并行 CRfix（worktree docmod-crfix，六文件 21+/23-，SWEEP-PASS 亲验）→ merge **b61a656**（stash 窗口 2 消解同款阻断+原样恢复）→ 六文件×三位 ALL-SYNCED → 三仓 push（源 45e760c..b61a656 / zcode c8b874d..9c4c35c / claude cf28dd5..228d17b）→ re-CR 复审在途
+- [recheck] CRfix 变更集 × 六修复点逐项 grep SWEEP-PASS + EN-07 实测 7/7 + 三位 diff=0 × PASS
+- **CR APPROVED**（critic 复审 2026-11-13T01:58+08:00，检查点 12 复审段）：I-1~I-4/W-1/W-2/N-1/N-2/N-4 全部实测确认+无回归（Rules 1-105 残留=0/宽窗断言全绿/6 文件无越界）；N-3 登记接受；**遗留 NIT×2**（todo-sync:36 双标点「。；」、selftest EN-06 FAIL 分支过时文案——排版级，禁顺手改，登记待下次触达该文件的任务处置）
 
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->

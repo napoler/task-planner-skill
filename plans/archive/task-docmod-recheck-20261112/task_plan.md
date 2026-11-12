@@ -206,6 +206,12 @@ execution_lane: L1
 | CA-8 | critical-rules.md 核心域索引（若含上界/卫星清单） | 更新 | 增量 | 同上 | 同 CA-2 | 按实测锚位更新 |
 | CA-9 | todo-sync.md「S1 计划创建后建映射」小节 | 新增（小节内追加两组结构条款） | 增量（S1-S5 既有语义零改动） | 「使用todo来强制对齐 分为两部分 通用todo +针对性的任务步骤」（R5） | R5 指令+todo 丢弃面（根源覆盖表第 3 行） | 追加两组结构：基线组 B1-B5 固定清单+生命周期+门禁挂钩+S3 丢失重建+mini 豁免（findings §todo 契约草案逐字） |
 | CA-10 | SKILL.md「原生 Todo 同步（强制）」段尾 | 新增 | 增量 | 「todo一定要对齐同步到 系统的原始支持的todo来确保执行」（R5） | 同上 | 追加一句两组结构指针（详见 references/todo-sync.md + Rule 106.5） |
+| CA-11 | todo-sync.md 两组块第 2 条（CR I-1） | 更新 | 增量（行尾追加豁免句） | CR critic 闭环（Rule 42.7 触发） | B1 持续项与「同时只允许一条 in_progress」硬冲突（critic I-1 HIGH） | 追加基线组独立计数豁免（36b9e65） |
+| CA-12 | todo-sync.md 两组块位置（CR W-1） | 更新 | 增量（块整体移动，原文零改写） | 同上 | S1-S5 单表被拆两表 | 块移至表后（36b9e65） |
+| CA-13 | verification-gate:56 互指句（CR I-2） | 更新 | 替代（原句被证伪：错误收窄 84.x 域） | 同上 | 与 84.3③/84.4 过程期门自相矛盾 | 改「分工边界」全域周期表述（36b9e65） |
+| CA-14 | SKILL.md 两处计数 88→89 + 3i 括注（CR I-3/N-4） | 更新 | 替代/增量 | 同上 | 纪元计数漏级联+摘要漏子条 | 89×2+括注 106.1-106.4（36b9e65） |
+| CA-15 | **task-discipline/SKILL.md**（scope 扩展披露：CR I-4 卫星索引漏 106 行——Rule 105 级联前例含此位点，本计划 CA 清单漏列） | 更新 | 增量（索引+1 行+计数 53→54×3） | 同上 | critic I-4：卫星入口按编号检索 Rule 106 落空 | 索引行+计数（36b9e65）；scope_files 追加披露 |
+| CA-16 | selftest-enumerate-first.sh EN-07（CR W-2） | 更新 | 替代（纪元字面 1-104→1-105） | 同上 | 负断言滞后两代，1-105 残留无人拦 | 升代+自指注同步（36b9e65；实测 7/7 PASS） |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -599,6 +605,10 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 | 9 | 2026-11-13 | code-runner-agent | S6 VC-2/3/6 复验+证据落 verification.md | done | 三命令 PASS（6/3/5）；4 处证据行+3 勾选 | verification.md L18-31 | VC 证据闭环 | subagent-state/07-code-runner-s6.md | - / 0 / ☑ |
 | 10 | 2026-11-13 | drift-checker | Phase 3 完成后偏移检查 | done | ✅ALIGNED（CA 射程核验/无越界漏项） | 检查点 08 | Drift Log 行2+ledger tick2 | subagent-state/08-drift-checker-p3.md | - / 0 / ☑ |
 | 11 | 2026-11-13 | general-reviewer | S7 103.3 独立复检+对齐审查 | done | **APPROVED**（五维全绿；1 INFO 非阻塞） | 检查点 09 | 复检回执=V-4.2 | subagent-state/09-general-reviewer-s7.md | - / 0 / ☑ |
+| 12 | 2026-11-13 | Simple Agent | kb 条目精炼落库+索引重建 | done | rule106-docmod-recheck-discipline.md 入库 INDEX:17 | INDEX 命中 | knowledge/ | subagent-state/11-simple-agent-kb.md | - / 0 / ☑ |
+| 13 | 2026-11-13 | critic | CR Gate 终审（42.7 触发） | done | **CHANGES_REQUESTED**（I-1~I-4/W-1/W-2/N×4，四维 10 项；S7 三处结论被升级） | 检查点 12 | CR fix-phase 触发 | subagent-state/12-critic-cr.md | - / 0 / ☑ |
+| 14 | 2026-11-13 | general-coder ×3 | CRfix A/B/C 六文件微修（worktree docmod-crfix） | done | SWEEP-PASS 六修复全落；EN-07 7/7；commit 36b9e65→merge b61a656 | 检查点 13/14/15 | CA-11~CA-16 | subagent-state/13-15 | - / 0 / ☑（主进程 SWEEP 亲验） |
+| 15 | 2026-11-13 | critic（复审） | fix-phase 闭环终审 | done | **APPROVED**（I-1~I-4/W-1/W-2/N-1/2/4 实测确认+无回归；NIT×2 登记遗留；N-3 接受） | 检查点 12 复审段 | progress CR APPROVED 行 | subagent-state/12-critic-cr.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
