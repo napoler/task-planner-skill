@@ -12,7 +12,7 @@
 
 ### Phase 1: 缺陷取证与证据落盘
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-12 23:58
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - **R 锚定**：本 Phase 服务 R1「会话缺陷取证」+ R4 前半「同文件多次修改逻辑缺陷分析」
@@ -31,6 +31,7 @@
   |------|-------|----------|--------|--------|
   | 专档结构回读（Rule 106.1 dogfood） | grep -n '^## \|^### ' user-session-log.md | #1 条目+镜像+消费点+恢复协议结构完整 | 6 标题行齐全（:25/:41/:43/:55 等） | PASS |
 - [recheck] user-session-log.md × 标题-表格配对不变量 × PASS（2026-11-13，吞标题事故修复后回读验证）
+- [goal:G1] 缺陷取证落盘 ✓（findings §1-§5；V-1.1 PASS 2026-11-13）
 
 ### Phase 2: 规则文本设计与计划锁定
 - **Status:** complete
@@ -50,7 +51,7 @@
 - [recheck] task_plan.md × S-unit 表列序（awk $4/$5/$7/$8 对位）× PASS（attest 门链通过=机器复检）
 
 ### Phase 3: worktree 内条款落地与级联
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-13 00:30
 - **R 锚定**：本 Phase 服务 R2/R3/R5（五子条+级联+todo 契约落地）
 - Actions taken:
@@ -73,6 +74,9 @@
 - 103.6 同步核对清单（四族）：①同族字面：'Rules 1-105' worktree skills/=0 ✅ ②引用互指：SKILL↔todo-sync↔discipline（106.5/两组/3i）✅ ③部署镜像：Phase 5 待 ⏳ ④selftest 断言：S5 在途（EN-06 纪元语义翻转）⏳
 - [recall] 2026-11-13 S-unit 第 4/5 完成时点 Read 执行规范召回卡——重申：锚定结论/单任务专注/翻转门控三件（progress 回填+V-N 实跑+3file gate）
 - [recheck] worktree 变更集 × 四文件边界（无越界文件、S2 替代锚行可溯源 CA-2）× PASS
+- [goal:G2] 规则落地 ✓（五子条 discipline:721-734；V-3.1/VC-2 PASS）
+- [goal:G3] 级联同步 ✓（SKILL 六锚+互指+残留=0；V-3.3/VC-3 PASS）
+- [goal:G4] todo 对齐 ✓（todo-sync:29-46 两组契约；V-3.2/VC-6 PASS）
 
 ### Phase 4: 验证与独立复检
 - **Status:** complete
@@ -89,11 +93,7 @@
   |------|-------|----------|--------|--------|
   | V-4.1 | S5 fresh 全量 | FAIL=0 或=基线−epoch | 97/95/2，差集={enumerate-first}=epoch 项 | PASS（达标口径） |
   | V-4.2 | subagent-state 复检回执 | APPROVED 在位 | 09-general-reviewer-s7.md APPROVED | PASS |
-- [goal:G1] 取证落盘（findings §1-§5）✓ V-1.1 PASS
-- [goal:G2] 规则落地（五子条）✓ V-3.1/VC-2 PASS
-- [goal:G3] 级联同步 ✓ V-3.3/VC-3 PASS
-- [goal:G4] todo 对齐 ✓ V-3.2/VC-6 PASS
-- [goal:G5] 回归全绿 ✓ V-4.1 达标口径（基线对照 S5）
+- [goal:G5] 回归全绿 ✓ V-4.1 达标口径（基线对照 S5：B1⊆B0 差集=epoch；主仓终验 97/95/2 同基线）
 - [recheck] verification.md × S6 编辑面（PASS 标记 4 处+勾选 3 处+VC-4 留终验）× PASS（主进程 grep 抽验）
 
 ### Phase 5: 合并、部署与交付

@@ -338,7 +338,7 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 - [x] todo 两组结构契约草案定稿（findings.md §todo 契约草案，S4 逐字消费面）
 - [x] 级联锚位清单定稿（CA-2~CA-10 精确锚点位，9 项）
 - [x] 展示更新版计划 → 等用户 yes（D1+目标绑定确认）→ attest-plan.sh 锁定（new_rule=106 自动预留）✅ 2026-11-13 SHA 7821a72d
-- [ ] 本会话两组原生 todo dogfood（基线组 B1-B5 已随 B 扩展即时建立；持续至终验）
+- [x] 本会话两组原生 todo dogfood ✅（基线组 B1-B5 与任务组 P1-P5 全程挂门禁运行：B1 驱动全部 [recheck] 留痕、B2 驱动各 Phase V-N 实跑、B3/B4 由终验 VC 复验+84.14 承接、B5 收尾终态同步——dogfood 有效性实证=106.1 两次捕获主进程锚点事故）
 - **V-N:** VC-2, VC-6
 - **Status:** complete
 - **Executor:** 主进程（例外理由: ② 计划系统文件维护——Rule 25.3 白名单）
@@ -404,10 +404,10 @@ S6 VC 复验落证据 ∥ drift-checker(Phase3) → S7 general-reviewer 独立�
 - [x] 部署同步：6 文件 × 三位 cp+逐对 diff=ALL-SYNCED（zcode c8b874d/claude cf28dd5 pathspec 提交；cursor 落盘）
 - [x] 源仓+配置仓 push：源 9126c3c..bdbcfc2 / zcode main 9f0164f..c8b874d / claude master 440570d..cf28dd5；rule-reserve.sh land 106 ✅
 - [x] 全文档收尾回读梳理记录（Rule 84.14）：五维检查两轮收敛（轮 1 发现=3 项已登记遗留非新偏移；轮 2 零新发现）——见「收尾回读梳理记录」表
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-docmod-recheck-20261112 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-docmod-recheck-20261112 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）——执行于终验收口轮
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（kb-sync-from-plan.sh 在位已确认，归档后执行）
-- [ ] 交付总结五要素（含 D3 二次修改流程优化结论=106.3 设计依据 + R5 两组 todo 机制说明）；会话记忆落盘（G22-05a 判例）
+- [x] 知识提取入库 ✅：kb-sync 生成 draft → Simple Agent 精炼落 knowledge/entries/rule106-docmod-recheck-discipline.md（去 draft 前缀+锚点+主题化）→ kb-rebuild-index（INDEX:17 命中；检查点 11）
+- [x] 交付总结五要素 ✅：delivery-summary.md（计划目录内，含 D3 结论+R5 机制+复验命令）；会话记忆落盘 task-docmod-recheck-20261113
 - **V-N:** VC-5, VC-3（主仓终验 PASS 2026-11-13）
 - **Status:** complete
 - **Executor:** 主进程（例外理由: ① git 编排+② 簿记——Rule 25.3 白名单）
