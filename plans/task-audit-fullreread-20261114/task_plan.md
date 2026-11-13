@@ -149,9 +149,9 @@ execution_lane: L1
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
 | G1 | 审计结论固化 | 判定五要素现状并落盘 findings | `grep -c '五要素' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md` ≥1 且 findings.md §Research Findings 有审计段 | S1/Phase 1 | complete |
-| G2 | 条款修订落地 | CA-1~CA-4 增量落地且段结构无损 | 四锚位 grep '全文回读'/'106.1b' 全命中+段清单守恒 | S1-S2/Phase 2 | pending |
-| G3 | 回归零新增 FAIL | 全量 selftest 对照基线 | 回归输出 FAIL≤基线并落 progress.md | S1-S2/Phase 3 | pending |
-| G4 | 合并回+部署+归档 | 主仓 scope diff 仅预期+部署位同步 | git show --stat 仅 scope；部署位逐对 diff=0 | S1/Phase 4 | pending |
+| G2 | 条款修订落地 | CA-1~CA-7 增量落地且段结构无损 | 四锚位 grep '全文回读'/'106.1b' 全命中+段清单守恒（V-3.1~V-3.4 PASS，commit 83b3388） | S1-S4/Phase 3 | complete |
+| G3 | 回归零新增 FAIL | 全量 selftest 对照基线 | 回归 FAIL=105=基线（VC-6 PASS）+复检 APPROVED | S1-S2/Phase 4 | complete |
+| G4 | 合并回+部署+归档 | 主仓 scope diff 仅预期+部署位同步 | merge 5d52eb4 越=6 scope 文件（VC-7 PASS）；部署 12/12 SAME+三仓 push ahead=0 | S1/Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 

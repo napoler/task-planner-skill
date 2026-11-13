@@ -11,6 +11,7 @@
 <!-- 本会话日期,如 2026-09-05 -->
 
 ### Phase 1: 审计与基线固结
+- **R 锚定**：本 Phase 服务 R1「审计是否已有修改后重读完整文件+整体分析步骤」
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** complete
 - **Started:** 2026-11-14 01:43
@@ -21,6 +22,7 @@
 - Test Results: V-1.1 PASS、V-1.2 PASS
 
 ### Phase 2: worktree 创建与隔离基线
+- **R 锚定**：本 Phase 服务 R2「补齐审核阶段绑定条款」之实施前置（隔离区+级联面枚举）
 - **Status:** complete
 - **Started:** 2026-11-14
 - Actions taken:
@@ -29,6 +31,7 @@
 - Test Results: V-2.1 PASS、V-2.2 PASS
 
 ### Phase 3: 条款修订实施
+- **R 锚定**：本 Phase 服务 R2「如果没有的话，我希望可以修正…在审核阶段…单独的子代理中进行」条款落地
 - **Status:** complete
 - **Started:** 2026-11-14
 - Actions taken:
@@ -38,6 +41,7 @@
 - Test Results: V-3.1~V-3.4 全 PASS+级联残留=0
 
 ### Phase 4: 独立复检与全量回归
+- **R 锚定**：本 Phase 服务 R2 之落地验证（103.3a dogfood 复检+回归对照基线）
 - **Status:** complete
 - **Started:** 2026-11-14
 - Actions taken:
@@ -46,6 +50,7 @@
 - Test Results: V-4.1 PASS、V-4.2 PASS
 
 ### Phase 5: 合并回+部署+push+归档交付
+- **R 锚定**：本 Phase 服务 R2 之交付生效（合并回+双位部署+三仓 push）
 - **Status:** complete
 - **Started:** 2026-11-14
 - Actions taken:
