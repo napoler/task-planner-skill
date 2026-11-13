@@ -1,0 +1,12 @@
+DEPLOYED-SAME /home/terry/.zcode/skills/task-dispatch/references/critical-rules-dispatch.md
+DEPLOYED-SAME /home/terry/.zcode/skills/task-discipline/references/critical-rules-discipline.md
+DEPLOYED-SAME /home/terry/.zcode/skills/task-planner/SKILL.md
+DEPLOYED-SAME /home/terry/.zcode/skills/task-planner/templates/subagent_dispatch.md
+DEPLOYED-SAME /home/terry/.zcode/skills/task-planner/templates/task_plan.md
+DEPLOYED-SAME /home/terry/.zcode/skills/verification-gate/references/critical-rules-verification.md
+DEPLOYED-SAME /home/terry/.claude/skills/task-dispatch/references/critical-rules-dispatch.md
+DEPLOYED-SAME /home/terry/.claude/skills/task-discipline/references/critical-rules-discipline.md
+DEPLOYED-SAME /home/terry/.claude/skills/task-planner/SKILL.md
+DEPLOYED-SAME /home/terry/.claude/skills/task-planner/templates/subagent_dispatch.md
+DEPLOYED-SAME /home/terry/.claude/skills/task-planner/templates/task_plan.md
+DEPLOYED-SAME /home/terry/.claude/skills/verification-gate/references/critical-rules-verification.md

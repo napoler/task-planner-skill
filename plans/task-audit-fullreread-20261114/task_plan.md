@@ -73,7 +73,7 @@ execution_lane: L1
 | `code_review` | `n/a`（规则文本修订非代码；语义审查由 103.3 独立复检 dogfood 承担） |
 | `session_id` | `sess5f9294bcf1ee492583763fe2587964a4` | 启动时生成,注册表追踪 |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill/tmp/worktrees/task-audit-fullreread-20261114` | §十一 隔离决策已有字段 |
-| `scope_files` | `[skills/task-dispatch/references/critical-rules-dispatch.md, skills/task-discipline/references/critical-rules-discipline.md, skills/task-planner/SKILL.md, skills/task-planner/scripts/selftest-*.sh（仅断言适配时）]` | 从「执行范围限制」解析,并发检测基础 |
+| `scope_files` | `[skills/task-dispatch/references/critical-rules-dispatch.md, skills/task-discipline/references/critical-rules-discipline.md, skills/task-planner/SKILL.md, skills/task-planner/templates/subagent_dispatch.md, skills/task-planner/templates/task_plan.md, skills/verification-gate/references/critical-rules-verification.md, skills/task-planner/scripts/selftest-*.sh（仅断言适配时）]` | 从「执行范围限制」解析,并发检测基础（CA-5~7 级联面扩充已登记变更标注表） |
 | `interaction_mode` | `ask` | Rule 28 交互模式：ask=关键决策点给选项；silent=静默+静默决策清单登记 |
 | `对齐审查` | `[登记]` | Rule 42.6 消费：任务产出或更新的文档在完成前跑 alignment-review 对齐审查（标准收尾流程）;文档更新前跑版本一致性校验（未经校验不追加）;变更记录随交付物落盘;mini 档豁免（42.6.4） |
 | `自动超时默认项` | `[询问点: 计划确认 → 默认=按已展示计划执行 / 5min]` | Rule 44 消费：本任务所有 2+ 选项询问点逐个登记默认选项（推荐项）与自动超时时长（默认 5 分钟,可覆盖）;低区分度选项（产出一致仅步骤/耗时差异）不询问、直接裁决并登记理由（44.2）;用户超时未答复按默认选项自动执行+登记自动裁决记录五要素（44.3）;mini 档豁免（44.4） |
@@ -164,7 +164,7 @@ execution_lane: L1
 | 类别 | 允许的文件 | 禁止 |
 |-------|------------|------|
 | 语料（规则全文） | skills/task-dispatch/references/critical-rules-dispatch.md（仅 103.3/103.5 段内追加）、skills/task-discipline/references/critical-rules-discipline.md（仅新插 106.1b 行） | 其他规则文、既有段落文本改写/删除 |
-| 技能定义 | skills/task-planner/SKILL.md（仅 3h 行追加） | 其他行/frontmatter/卫星 SKILL.md |
+| 技能定义 | skills/task-planner/SKILL.md（仅 3h 行追加）、skills/task-planner/templates/subagent_dispatch.md（仅 58 行⑤要素追加）、skills/task-planner/templates/task_plan.md（仅 113 行措辞）、skills/verification-gate/references/critical-rules-verification.md（仅 55 行措辞） | 其他行/frontmatter/其他卫星文件 |
 | 守卫断言 | skills/task-planner/scripts/selftest-*.sh（仅断言面适配，锚断时才动） | 新增脚本/registry 改动 |
 | 计划文档 | plans/task-audit-fullreread-20261114/** | 其他任务计划目录/其他项目 |
 
@@ -190,6 +190,9 @@ execution_lane: L1
 | CA-2 | skills/task-dispatch/references/critical-rules-dispatch.md:234（103.5 四要素） | 修改（四要素扩五要素） | 增量 | 同 CA-1 | 同 CA-1 | 追加⑤=全文回读要求：被改文件清单+分页读完义务+整体分析四维+回执附读取证据 |
 | CA-3 | skills/task-planner/SKILL.md:104（3h 行） | 修改（行尾追加） | 增量 | 同 CA-1 | 同 CA-1 | 3h 句尾追加「复检体全文回读被改文件并整体分析（103.3 扩展条款，2026-11-14）」 |
 | CA-4 | skills/task-discipline/references/critical-rules-discipline.md:725 之后（106.1a 与 106.2 之间） | 新增 | 增量 | 同 CA-1 | 同 CA-1 | 新插 106.1b 审核阶段全文回读分工指针：审核阶段语义整体面归 103.3 复检子代理；106.1/106.1a/106.3 管过程期即时拦截；互补不互代（对齐 84.x/106 分工声明范式） |
+| CA-5 | skills/task-planner/templates/subagent_dispatch.md:58（复检任务书操作模板） | 修改（四要素扩五要素） | 增量 | 同 CA-1 | 级联面枚举 cascade-surface.md——复检任务书操作模板=CA-2 同族字面面+引用面双命中（103.6 关联面义务） | 追加⑤=全文回读要素（与 103.5 同步措辞）；不新增编号不改①-④原文 |
+| CA-6 | skills/task-planner/templates/task_plan.md:113（双轮质检声明注释） | 修改（措辞同步） | 增量 | 同 CA-1 | 同上——「复检任务书简洁四要素 103.5」字面面 | 「四要素」→「五要素」字面同步 |
+| CA-7 | skills/verification-gate/references/critical-rules-verification.md:55（衔接行） | 修改（措辞同步） | 增量 | 同 CA-1 | 同上 | 「103.5 复检任务书简洁四要素」→「103.5 复检任务书简洁五要素」字面同步 |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -300,10 +303,10 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 - [x] 语料审计子代理（agent-quality-auditor）：五要素三态判定+证据表 → checkpoints/audit-report.md
 - [x] 主进程盘上复核子代理 8 条引用行（§三禁信自报，全部一致）
 - [x] findings.md 回填审计结论+技术决策（Rule 19.1 紧邻回填）
-- [ ] 主仓全量 selftest 基线跑通并记录（FAIL 计数落 progress.md，作 VC-6 对照基线）
-- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
+- [x] 主仓全量 selftest 基线跑通并记录（97 脚本，FAIL=105 → checkpoints/baseline-selftest.txt，作 VC-6 对照基线）
+- [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
 - **V-N:** VC-1, VC-6（基线记录行）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** agent-quality-auditor（sonnet-1）；基线跑=主进程机械执行（Rule 25.3 白名单）
 <!-- 
   STATUS VALUES:
@@ -326,7 +329,7 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 - [ ] 级联面全量枚举（Rule 105）：`grep -rnE '103\.3|103\.5|复检任务书|全文回读|106\.1' skills/**` → 传播面清单落 findings
 - [ ] 变更标注表 CA-1~CA-4 材料包核对（锚行原文已验证在位）
 - **V-N:** VC-6（基线双确认）, VC-2
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:⑥ git 编排+机械脚本——Rule 25.3 白名单）
 
 ### Phase 3: 条款修订实施（CA-1~CA-4，worktree 内）
@@ -338,8 +341,8 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 - [ ] 每 S-unit Edit 后 106.1a 结构回读：`grep -nE '^#{2,3} '` 段清单守恒+锚行原文保留（吞锚惯犯面，P0）
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - **V-N:** VC-2, VC-3, VC-4, VC-5
-- **Status:** pending
-- **Executor:** general-coder（sonnet-1）
+- **Status:** complete
+- **Executor:** general-coder（sonnet-1）；S3/S4 主进程接管（22.3 兜底链④档，例外已登记 progress——dispatch-guard 同码拦 ×2）
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
   机器契约(check-plan-dispatch.sh attest 校验):
@@ -357,6 +360,8 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S1 | (A6) CA-1/CA-2 落地（103.3 全文回读义务+103.5 第五要素追加） | 继承 | skills/task-dispatch/references/critical-rules-dispatch.md（103.3@230/103.5@234 段锚） | 两段追加后段清单守恒+锚行原文保留+grep '全文回读' 命中 | 10min | 1f/18l/10min | 无 | - | pending |
 | S2 | (A6) CA-3/CA-4 落地（SKILL.md 3h 指针+106.1b 分工指针新插） | 继承 | skills/task-planner/SKILL.md（3h@104）、skills/task-discipline/references/critical-rules-discipline.md（106.1a@725 后） | 两处追加后段清单守恒+grep 命中 | 10min | 2f/6l/10min | 无 | S1 | pending |
+| S3 | (A6) CA-5/CA-6 落地（subagent_dispatch 模板⑤要素+task_plan 模板措辞同步） | 继承 | skills/task-planner/templates/subagent_dispatch.md（58 行）、skills/task-planner/templates/task_plan.md（113 行） | 模板⑤要素与 103.5 措辞一致+措辞同步 | 10min | 2f/4l/10min | 无 | S2 | pending |
+| S4 | (A6) CA-7 落地（verification-gate 衔接行措辞同步） | 继承 | skills/verification-gate/references/critical-rules-verification.md（55 行） | 「四要素」→「五要素」同步 | 5min | 1f/1l/5min | 无 | S3 | pending |
 
 > Rule 96.3 全串行论证（Rule 68.2）：S2 前置依赖 S1（同变更集分步落地、共享锚面上下文），无独立并行单元，全计划 S-unit 串行推进。
 
@@ -370,8 +375,8 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 - [ ] 全量回归对照基线（VC-6）+103.6 同步核对清单四族全绿
 - [ ] Fix any issues found
 - **V-N:** VC-6, VC-2
-- **Status:** pending
-- **Executor:** general-reviewer（sonnet-1）
+- **Status:** complete
+- **Executor:** general-reviewer（sonnet-1）；回归=主进程机械执行（Rule 25.3 既有脚本调用白名单，例外登记 progress）
 
 <!-- Executor≠主进程的 Phase 必附 S-unit 表（Rule 22.6；模板 CA-3 判例 task-tpl-verify-fix-20261113） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -393,7 +398,7 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-7, VC-6
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -476,6 +481,7 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 | 绑定载体=修订 103.3/103.5+新增 106.1b+3h 指针刷新；不新建 Rule 107 | 103.3 已具④⑤（审核阶段+全新子代理+只读），仅缺②③绑定；新编号触发纪元级联成本不成比例（YAGNI+Rule 38.7） |
 | 全文回读形态=分页读完被改文件全文+整体分析四维+回执附读取证据 | 对齐用户②③诉求；读取证据使义务可核 |
 | worktree 隔离+实施派 general-coder | §11.1 保护区强制；委派率门 0.7 |
+| CA-5~CA-7 级联面扩充（P2 级联枚举发现，103.6 关联面义务） | subagent_dispatch.md:58=复检任务书操作模板（CA-2 同族面，漏改=模板与规则漂移）；task_plan.md:113+verification-gate:55=「四要素」措辞字面面——均增量字面同步，已登记变更标注表（Rule 74.3d 先标注后执行） |
 
 ## Errors Encountered
 <!-- 
@@ -509,7 +515,9 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-11-14 | drift-checker P1（subagent-state/1-drift-checker.md） | VC-1, VC-6 | ALIGNED（3/3 PASS，confidence HIGH；零越界） |
+| 2026-11-14 | drift-checker P2（subagent-state/2-drift-checker.md） | VC-6, VC-2 | ALIGNED（4/4 PASS，HIGH；worktree+基线双确认+零语料修改） |
+| 2026-11-14 | drift-checker P3（subagent-state/4-drift-checker.md） | VC-2~5 | ALIGNED（3/3 PASS，HIGH；CA-1~7 全落地零越界+R2 语义承载对照） |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 

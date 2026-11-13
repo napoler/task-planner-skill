@@ -72,3 +72,21 @@
 - 主进程盘上复核子代理 8 条引用行（dispatch:230/234、discipline:723/725/729、verification:50/58、SKILL.md:104-106）——全部一致，无虚构
 - findings.md 回填审计结论+技术决策（绑定载体=103.3/103.5 修订+106.1b+3h 刷新；不新建 Rule 107）
 - task_plan.md 计划制作完成（5 Phase/7 VC/CA-1~4 变更标注），待用户 D1 确认门
+- [drift:ALIGNED] P1 偏移检查 drift-checker 3/3 PASS（检查点 subagent-state/1-drift-checker.md+ledger tick2+Drift Log 行=三件套齐）；P1 翻 complete（V-1.1/V-1.2 PASS，3file 门窗口痕齐）
+- P2 开启：worktree 已建（tmp/worktrees/task-audit-fullreread-20261114，wt/ 分支，HEAD 631af7a）
+- P2 完成：worktree 在位（631af7a/wt 分支）+基线双确认（主仓 105=worktree 105）+级联面枚举落盘（6 文件 13 行→CA-5~7 登记扩充+重 attest SHA 2becfcc0）
+- [drift:ALIGNED] P2 drift-checker 4/4 PASS（subagent-state/2-drift-checker.md+ledger+Drift Log 三件套齐）；P2 翻 complete
+
+### S1（CA-1/CA-2，general-coder）5/5 PASS
+- 落点: 103.3a 新段@dispatch:232+103.5 四→五要素@236；段清单守恒（15→15 标题，仅行移）
+- **Error Log #1**: 84.4 复核发现 103.3a 行首 `**` 被吞（材料为 **103.3a…，落盘缺开头）→ 主进程当轮 Edit 修复（new 含 old 子串）+盘上复核 ✓；PreToolUse hook 提示 Rule 36 技能写入 warn（该文件本在 scope_files 内=误报口径，登记备查）；教训=**材料包逐字文本也须落盘后逐字符比对，子代理对 Markdown 加粗符号的保真度不可信**（Rule 31 指针→Error Log）
+- [goal:G2 部分达成] CA-1/CA-2 落地（V-3.1/V-3.2 靶点已就位，待 S2-S4 后统一复验）
+
+### S2（CA-3/CA-4，general-coder）5/5 PASS
+- CA-3: SKILL.md:104 3h 行追加「复检体全文回读被改文件并整体分析（103.3a 义务，2026-11-14）」；CA-4: 106.1b 新段@discipline:727（** 前缀完整+独立复检正字，主进程盘上复核 ✓）
+- 段清单守恒: SKILL 17→17、discipline 66→66；锚行原文保留 ✓；diff 仅 3+/1-
+- [drift:ALIGNED] P3 drift-checker 3/3 PASS（subagent-state/4-drift-checker.md+ledger+Drift Log 三件套齐）——CA-1~7 与 R2 语义承载对照通过；P3 翻 complete（commit 83b3388）
+- P4 开启：独立复检（103.3a dogfood）+全量回归
+- P4 完成：独立复检 APPROVED（7/7 CA+四维 PASS，六文件全文回读证据在回执；subagent-state/5-general-reviewer-recheck.md）+全量回归 worktree FAIL=105=基线（VC-6 PASS，checkpoints/regression-selftest.txt）
+- worktree 内 plans/ 重复簿记恢复（主仓为正本；本会话 cwd 漂移误写）→ worktree git status 干净待合并
+- P4 翻 complete（V-4.1 APPROVED+V-4.2 回归=基线 双 PASS）；P5 开启

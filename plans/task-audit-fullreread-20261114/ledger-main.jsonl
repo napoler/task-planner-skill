@@ -1,1 +1,4 @@
 {"tick":1,"ts":"2026-11-13T18:03:32Z","agent":"main","phase":"1","event":"note","summary":"计划建立完成：审计 verdict B+CA-1~4 修订方案+worktree 隔离（conflict-scan 信号①⑤确认零重叠）——待用户 D1 确认","files":[]}
+{"tick":2,"ts":"2026-11-13T18:59:07Z","agent":"main","phase":"1","event":"drift_check","summary":"P1 drift-checker 三态=ALIGNED(3/3 PASS,HIGH) 检查点=subagent-state/1-drift-checker.md","files":[]}
+{"tick":3,"ts":"2026-11-13T19:12:35Z","agent":"main","phase":"2","event":"drift_check","summary":"P2 drift-checker 三态=ALIGNED(4/4,HIGH) worktree+基线双确认+级联面落盘","files":[]}
+{"tick":4,"ts":"2026-11-13T19:38:29Z","agent":"main","phase":"3","event":"drift_check","summary":"P3 drift-checker 三态=ALIGNED(3/3,HIGH) CA-1~7 全落地零越界","files":[]}

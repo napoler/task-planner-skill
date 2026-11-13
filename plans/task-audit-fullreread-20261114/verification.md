@@ -15,7 +15,7 @@
 
 - [ ] VC-1: 审计报告在位：verdict+五要素判定表+≥6 条证据+合理性分析
   Evidence: plans/task-audit-fullreread-20261114/checkpoints/audit-report.md
-  **Verify command**: test -s plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -q 'verdict' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -q '五要素' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md
+  **Verify command**: test -s plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -qi 'verdict' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -q '五要素' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md
 - [ ] VC-2: 103.3 含「复检体全文回读被改文件+整体分析」义务句
   Evidence: skills/task-dispatch/references/critical-rules-dispatch.md 103.3 段
   **Verify command**: sed -n '/^103\.3 /,/^103\.4/p' skills/task-dispatch/references/critical-rules-dispatch.md | grep -q '全文回读'
@@ -50,7 +50,7 @@
 
 **Verification** (run before moving on):
 - [ ] V-1.1: 审计报告在位（→VC-1）
-  **Verify command**: test -s plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -q 'verdict' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md
+  **Verify command**: test -s plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -qi 'verdict' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md
 - [ ] V-1.2: 基线记录落盘（→VC-6 前置）
   **Verify command**: test -s plans/task-audit-fullreread-20261114/checkpoints/baseline-selftest.txt
 
