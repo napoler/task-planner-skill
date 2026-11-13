@@ -324,10 +324,10 @@ execution_lane: L1
   WHAT: Decide how you'll approach the problem and what structure you'll use.
   WHY: Good planning prevents rework. Document decisions so you remember why you chose them.
 -->
-- [ ] 主进程建 worktree：`git worktree add tmp/worktrees/task-audit-fullreread-20261114 -b wt/task-audit-fullreread-20261114 master`（§11.2 集中目录规约）
-- [ ] worktree 内全量 selftest 基线跑通（与 P1 主仓基线对照一致）
-- [ ] 级联面全量枚举（Rule 105）：`grep -rnE '103\.3|103\.5|复检任务书|全文回读|106\.1' skills/**` → 传播面清单落 findings
-- [ ] 变更标注表 CA-1~CA-4 材料包核对（锚行原文已验证在位）
+- [x] 主进程建 worktree：`git worktree add tmp/worktrees/task-audit-fullreread-20261114 -b wt/task-audit-fullreread-20261114 master`（§11.2 集中目录规约，631af7a）
+- [x] worktree 内全量 selftest 基线跑通（与 P1 主仓基线对照一致=105/97）
+- [x] 级联面全量枚举（Rule 105）：13 行/6 文件 → 传播面清单落 checkpoints/cascade-surface.md+CA-5~7 登记扩充
+- [x] 变更标注表 CA-1~CA-7 材料包核对（锚行原文已验证在位；CA-5~7 随级联扩充补登）
 - **V-N:** VC-6（基线双确认）, VC-2
 - **Status:** complete
 - **Executor:** 主进程（例外理由:⑥ git 编排+机械脚本——Rule 25.3 白名单）
@@ -337,9 +337,9 @@ execution_lane: L1
   WHAT: Actually build/create/write the solution.
   WHY: This is where the work happens. Break into smaller sub-tasks if needed.
 -->
-- [ ] 派 general-coder 按 S-unit 表逐单元实施（每 S-unit 返回→核 checkpoint 自审段 103.2→Read 产出 84.4→findings 回填 19.1）
-- [ ] 每 S-unit Edit 后 106.1a 结构回读：`grep -nE '^#{2,3} '` 段清单守恒+锚行原文保留（吞锚惯犯面，P0）
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- [x] 派 general-coder 按 S-unit 表逐单元实施（每 S-unit 返回→核 checkpoint 自审段 103.2→Read 产出 84.4→findings 回填 19.1；后两单元主进程接管=22.3 兜底链④档，例外登记 progress）
+- [x] 每 S-unit Edit 后 106.1a 结构回读：段清单守恒（dispatch 15/SKILL 17/discipline 66 标题）+锚行原文保留 ✓（S1 `**` 吞字缺陷被 84.4 复核当轮修复）
+- [x] 规范召回（Rule 93）：召回卡已 Read+progress 留 [recall] 行（执行后补做，欠账如实登记）
 - **V-N:** VC-2, VC-3, VC-4, VC-5
 - **Status:** complete
 - **Executor:** general-coder（sonnet-1）
@@ -372,7 +372,7 @@ execution_lane: L1
   WHAT: Verify everything works and meets requirements.
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
-- [ ] 派全新 general-reviewer 独立复检（103.3 dogfood+103.5 五要素任务书）：分页读完三个被改文件全文+整体分析四维+对照变更标注表逐行勾核；任务书附执行体 checkpoint 自审段（103.2）
+- [x] 派全新 general-reviewer 独立复检（103.3 dogfood+103.5 五要素任务书）：分页读完六个被改文件全文（变更集扩至 6 文件）+整体分析四维+对照变更标注表逐行勾核；任务书附执行体 checkpoint 自审段（103.2）→ APPROVED 7/7
 - [x] selftest 断言面 grep（103.3/103.5/106 文本锚）→ 零锚断（P2 已核）零适配
 - [x] 全量回归对照基线（VC-6）=105 PASS + 103.6 同步核对清单四族全绿（checkpoints/sync-checklist.md；回归跑=机械脚本执行，Rule 25.3 白名单，登记 progress）
 - [x] Fix any issues found（无）

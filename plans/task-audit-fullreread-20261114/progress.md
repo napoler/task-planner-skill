@@ -10,30 +10,48 @@
 ## Session: 2026-11-14
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: [Title]
+### Phase 1: 审计与基线固结
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-14 01:43
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
-  -
-- Files created/modified:
-  -
-- Test Results:
-  | Test | Input | Expected | Actual | Status |
-  |------|-------|----------|--------|--------|
-  |      |       |          |        |        |
+  - [goal:G1] 语料审计 verdict B（五要素表+8 证据）落盘+主进程盘上复核 8 条引用一致；主仓基线 selftest FAIL=105/97 脚本记录（详细动作线见下方「Phase 1 动作线」段）
+- Files created/modified: checkpoints/audit-report.md、checkpoints/baseline-selftest.txt
+- Test Results: V-1.1 PASS、V-1.2 PASS
 
-### Phase 2: [Title]
-<!-- Phase N 按上方 Phase 1 结构续加 -->
-- **Status:** pending
-- **Started:**
+### Phase 2: worktree 创建与隔离基线
+- **Status:** complete
+- **Started:** 2026-11-14
 - Actions taken:
-  -
-- Files created/modified:
-  -
-- Test Results:
-  -
+  - [goal:G2 前置] worktree 631af7a 建成+worktree 基线 105 双确认+级联面 6 文件枚举→CA-5~7 登记扩充+重 attest（SHA 2becfcc0）
+- Files created/modified: checkpoints/cascade-surface.md、cascade-surface.raw、worktree-baseline.txt
+- Test Results: V-2.1 PASS、V-2.2 PASS
+
+### Phase 3: 条款修订实施
+- **Status:** complete
+- **Started:** 2026-11-14
+- Actions taken:
+  - [goal:G2] CA-1~CA-7 全落地（worktree commit 83b3388，6 文件 +10/-5）；两单元子代理 5/5+两单元主进程接管（22.3 兜底链④档，dispatch-guard 同码拦 ×2）
+  - [recall] Rule 93 召回卡已读（执行后补做，六维自检：A-E 过，欠账=[goal:G2~4] 行与 [recall] 行同期补齐）
+- Files created/modified: 6 scope 语料文件（worktree 内）
+- Test Results: V-3.1~V-3.4 全 PASS+级联残留=0
+
+### Phase 4: 独立复检与全量回归
+- **Status:** complete
+- **Started:** 2026-11-14
+- Actions taken:
+  - [goal:G3] 独立复检 APPROVED（7/7 CA+四维 PASS，六文件全文回读证据在回执）+全量回归 FAIL=105=基线
+- Files created/modified: subagent-state/5-general-reviewer-recheck.md、checkpoints/regression-selftest.txt
+- Test Results: V-4.1 PASS、V-4.2 PASS
+
+### Phase 5: 合并回+部署+push+归档交付
+- **Status:** complete
+- **Started:** 2026-11-14
+- Actions taken:
+  - [goal:G4] 合并 5d52eb4（stash 窗口法，他任务在途变更无损回填）+双位部署 12/12 SAME+三仓 push ahead=0×3+worktree/分支清理
+- Files created/modified: checkpoints/deploy-diff.txt
+- Test Results: run-verification PASS=8 FAIL=0；委派统计 verdict=ok
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
@@ -47,7 +65,10 @@
      纯增量表尾增列，既有列序与语义不变——Learning Gate（check-complete.sh）按表头列名「Root Cause」动态定位列号，表尾增列不破坏既有校验 -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention | 触发命令/工具 |
 |-----------|-------|---------|------------|------------|------------|--------------|
-|           |       | 1       |            |            | <待沉淀>    |              |
+| 2026-11-14 | 子代理落盘 103.3a 行首 `**` 被吞（材料 `**103.3a…` 产物缺开头粗体） | 1 | 主进程 84.4 盘上复核发现→当轮 Edit 修复→复验 ✓ | 直接=子代理对 Markdown 符号保真失手；根因=逐字文本未做落盘逐字符比对（类别：执行保真） | 关键字符落盘逐字比对入复检口径（103.3a 四维②）；S2 起材料包增「逐字校验点」 | Edit(subagent general-coder) |
+| 2026-11-14 | 主进程自写 S2 材料包出现异形字（「独立」→「狈立」） | 1 | 派发前自查 grep 拦下→改字后复核零罕见字 | 根因=长 CJK 文本手写易错字（类别：执行保真）——与子代理缺陷同族 | 错字防护双向适用：材料包派发前 grep 罕见字族 | Edit(material) |
+| 2026-11-14 | dispatch-guard KQ3 步骤枚举检测对 S3 派发同码拦 ×2（报 5>4，计数口径未定位） | 2 | 材料包扁平化重试 ×2 无效→按 22.3 兜底链④主进程接管 | 根因未定位（守卫脚本位置未找到=未验证）；触发面疑似枚举标记计数 | 同码拦 ≥2 即走 22.3 链，禁第三次盲试；先查守卫实现再重试（本轮未找到源码=记录在案） | Agent(general-coder) |
+| 2026-11-14 | VC-1 Verify command 大小写缺陷（报告用「Verdict」，`grep -q 'verdict'` 命中 0） | 1 | verification.md 命令改 `grep -qi`（VC-1/V-1.1 双处）重验 PASS | 根因=验证命令书写时未核对产出物实际字面（类别：验证设计） | Verify command 引用的字面串须先 grep 实物核对大小写 | run-verification |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->
