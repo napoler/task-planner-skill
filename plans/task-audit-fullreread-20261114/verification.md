@@ -155,7 +155,7 @@ bash /home/terry/.zcode/skills/task-planner/scripts/check-delegation.sh stats <p
 
 JSON 输出：
 ```json
-{粘贴 stats 命令原文输出}
+{"phases_total":5,"phases_delegated":3,"main_direct_count":2,"delegation_rate":0.6,"violations":[],"verdict":"ok"}（2026-11-14 check-delegation.sh stats 实测；main_direct=P2 git 编排白名单⑥+P5 git 编排/簿记白名单①②，理由已登记；违规=0）
 ```
 
 - [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
@@ -170,13 +170,17 @@ JSON 输出：
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```
-## Goal Verification — {Goal 语句}
-对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
+## Goal Verification — 审核阶段（独立复检）由全新子代理重读被修改文件全文并做整体分析——绑定落地为条款
+对照 Verification Contract 逐条复验（run-verification.sh 实测 PASS=8 FAIL=0，evidence/plans/task-audit-fullreread-20261114/evidence/）：
+- [x] VC-1: audit-report verdict B+五要素表 → PASS
+- [x] VC-2: 103.3a 义务句（dispatch:232）→ PASS
+- [x] VC-3: 103.5⑤（dispatch:236）→ PASS
+- [x] VC-4: 3h 指针（SKILL.md:104）→ PASS
+- [x] VC-5: 106.1b（discipline:727）→ PASS
+- [x] VC-6: 回归 FAIL=105=基线 → PASS
+- [x] VC-7: 合并越界自检（5d52eb4=6 scope 文件）→ PASS
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: COMPLETE
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

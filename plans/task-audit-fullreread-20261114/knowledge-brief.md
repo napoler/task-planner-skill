@@ -22,8 +22,8 @@
 
 <!-- 填写说明：一句话说明本任务做什么 + 为什么做（≤2 行）；下方术语表每条 ≤1 行，只收录「不解释会读不懂后续 S-unit 材料包」的术语 -->
 ## §1 任务速览与核心概念
-- 任务一句话：{做什么 + 达成标准，一行}
-- 背景/动机：{为什么做，一行}
+- 任务一句话：审计 task-planner 体系「修改后重读完整文件+整体分析」条款现状（verdict B）并落 CA-1~7 增量修订，使审核阶段独立复检绑定全文回读义务
+- 背景/动机：用户诉求=修改正确性依赖完整上下文；审核阶段+单独子代理为最强约束
 
 | 概念/术语 | 一句话解释 |
 |-----------|-----------|
@@ -85,3 +85,13 @@
 - **索引**：改名后 `bash scripts/kb-rebuild-index.sh` 重建 INDEX.md（勿手改）
 - **条目规范**：见 knowledge/README.md 与 knowledge/entry-template.md（主题级合成、Rule 71 无源不写、sources 仓相对路径）
 
+
+## §6 任务沉淀（执行期回填，84.14 知识维）
+| 教训/事实 | 锚点 | 复用场景 |
+|-----------|------|---------|
+| 子代理对 Markdown 加粗符号/汉字正字保真不可信（S1 吞 `**`；主进程材料包亦自生出异形字）→ 逐字文本必须落盘后逐字符比对 | progress Error Log #1；discipline:727 106.1b 即范本 | 任何逐字语料插段的实施与复检 |
+| dispatch-guard 步骤枚举计数对 ①-⑮/序号清单敏感（含材料包回显），同码拦 ×2 → 22.3 兜底链④主进程接管为合法出口 | progress S3/S4 例外登记 | 派发被 KQ3 拦时的处置路径 |
+| 他任务在途未提交变更阻断 merge --no-ff（git 拒 staged 态）→ stash 窗口合并法（push→merge→pop，零交集时无损） | merge commit 5d52eb4 | smart-merge-back V6 MERGE_CONFLICT 处置 |
+| attest 必须主仓根 cwd（worktree cwd 会解析到陈旧全局指针锁错计划） | attest SHA 2becfcc0 记录 | 任何 attest/指针类脚本调用 |
+| 派发 prompt 禁跨 S-unit ID 字面（S\d+ 触发 KQ3 多单元打包拦）| P3 drift 派发改写记录 | 一切子代理任务书撰写 |
+| 部署位=双 git 仓 ~/.zcode(main)+~/.claude(master)；.agents/.cursor 无本技能族；反向漂移判据=diff `<` 行 grep 新关键词=0 | checkpoints/deploy-diff.txt | 技能族部署同步 |

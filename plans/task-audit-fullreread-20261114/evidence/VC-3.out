@@ -1,0 +1,4 @@
+# [run-verification] VC-3 | 2026-11-13T19:58:57Z | cmd: sed -n '/^103\.5 /,/^103\.6/p' skills/task-dispatch/references/critical-rules-dispatch.md | grep -q '全文回读'
+# ---- stdout/stderr ----
+
+# exit=0

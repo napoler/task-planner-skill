@@ -1,0 +1,4 @@
+# [run-verification] VC-4 | 2026-11-13T19:58:58Z | cmd: sed -n '/3h 双轮质检/p' skills/task-planner/SKILL.md | grep -q '全文回读'
+# ---- stdout/stderr ----
+
+# exit=0

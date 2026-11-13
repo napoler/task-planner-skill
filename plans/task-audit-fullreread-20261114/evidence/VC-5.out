@@ -1,0 +1,4 @@
+# [run-verification] VC-5 | 2026-11-13T19:58:58Z | cmd: sed -n '/106\.1b/,/^106\.2/p' skills/task-discipline/references/critical-rules-discipline.md | grep -q '103.3'
+# ---- stdout/stderr ----
+
+# exit=0

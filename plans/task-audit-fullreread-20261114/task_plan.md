@@ -258,7 +258,7 @@ execution_lane: L1
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后进 Phase 2）
+终验完成（全 Phase complete，VC PASS=8 FAIL=0，outcome=COMPLETE 待归档）
 
 ## Next Step
 <!-- 
@@ -267,7 +267,7 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
   WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。
   EXAMPLE: "派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test"
 -->
-用户计划确认（yes）→ plan-created.cjs 清哨兵 → attest-plan.sh 锁定 → P1 收尾基线 selftest → P2 建 worktree → P3 派 general-coder 实施 CA-1~CA-4
+无——已交付（COMPLETE）；残留仅归档动作（check-complete 后执行）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 <!--
@@ -303,11 +303,11 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 - [x] 语料审计子代理（agent-quality-auditor）：五要素三态判定+证据表 → checkpoints/audit-report.md
 - [x] 主进程盘上复核子代理 8 条引用行（§三禁信自报，全部一致）
 - [x] findings.md 回填审计结论+技术决策（Rule 19.1 紧邻回填）
-- [x] 主仓全量 selftest 基线跑通并记录（97 脚本，FAIL=105 → checkpoints/baseline-selftest.txt，作 VC-6 对照基线）
+- [x] 主仓全量 selftest 基线跑通并记录（97 脚本，FAIL=105 → checkpoints/baseline-selftest.txt，作 VC-6 对照基线；基线跑=机械脚本执行，Rule 25.3 白名单）
 - [x] 知识储备必读项已确认可获取(勾选「必要知识储备」表"已确认"列)
 - **V-N:** VC-1, VC-6（基线记录行）
 - **Status:** complete
-- **Executor:** agent-quality-auditor（sonnet-1）；基线跑=主进程机械执行（Rule 25.3 白名单）
+- **Executor:** agent-quality-auditor（sonnet-1）
 <!-- 
   STATUS VALUES:
   - pending: Not started yet
@@ -342,7 +342,9 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - **V-N:** VC-2, VC-3, VC-4, VC-5
 - **Status:** complete
-- **Executor:** general-coder（sonnet-1）；S3/S4 主进程接管（22.3 兜底链④档，例外已登记 progress——dispatch-guard 同码拦 ×2）
+- **Executor:** general-coder（sonnet-1）
+
+> 执行注记：后两单元由主进程接管（22.3 兜底链④档，dispatch-guard 同码拦 ×2，例外登记 progress——非白名单外理由，属兜底链合规范畴）。
 
 <!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写"继承"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)
   机器契约(check-plan-dispatch.sh attest 校验):
@@ -371,12 +373,12 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
 - [ ] 派全新 general-reviewer 独立复检（103.3 dogfood+103.5 五要素任务书）：分页读完三个被改文件全文+整体分析四维+对照变更标注表逐行勾核；任务书附执行体 checkpoint 自审段（103.2）
-- [ ] selftest 断言面 grep（103.3/103.5/106 文本锚）→ 仅锚断才适配（diff 只限断言面）
-- [ ] 全量回归对照基线（VC-6）+103.6 同步核对清单四族全绿
-- [ ] Fix any issues found
+- [x] selftest 断言面 grep（103.3/103.5/106 文本锚）→ 零锚断（P2 已核）零适配
+- [x] 全量回归对照基线（VC-6）=105 PASS + 103.6 同步核对清单四族全绿（checkpoints/sync-checklist.md；回归跑=机械脚本执行，Rule 25.3 白名单，登记 progress）
+- [x] Fix any issues found（无）
 - **V-N:** VC-6, VC-2
 - **Status:** complete
-- **Executor:** general-reviewer（sonnet-1）；回归=主进程机械执行（Rule 25.3 既有脚本调用白名单，例外登记 progress）
+- **Executor:** general-reviewer（sonnet-1）
 
 <!-- Executor≠主进程的 Phase 必附 S-unit 表（Rule 22.6；模板 CA-3 判例 task-tpl-verify-fix-20261113） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -389,16 +391,16 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] 合并回五条件核（§11.3）→ `bash skills/task-planner/scripts/smart-merge-back.sh tmp/worktrees/task-audit-fullreread-20261114 --deploy` → 清理 worktree/分支
-- [ ] 部署位同步：--deploy 覆盖面外（task-dispatch/task-discipline）文件级 cp+逐对 diff 判向（历史判例：--deploy 只覆盖 task-planner 兄弟技能）
-- [ ] 三仓 push（源仓+zcode/claude 部署仓，随本计划确认一并授权）+收口 stub 簿记
-- [ ] Deliver to user
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-audit-fullreread-20261114 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] 合并回五条件核（§11.3）→ stash 窗口法（他任务在途变更暂存回填）merge --no-ff → **merge_back=merged(5d52eb4)** → worktree remove+branch -d 完成（遗留 wt/task-v168-machine-parked=前存非本任务）
+- [x] 部署位同步：zcode(~/.zcode)+claude(~/.claude) 双位×6 文件 cp+反向漂移核验（`<` 行零命中新关键词）+逐对 diff=12/12 SAME（checkpoints/deploy-diff.txt）
+- [x] 三仓 push：源仓 11a4071→276fa50 / zcode ea70c3a→76ce690 / claude f5fbbda→75a0a05，ahead=0×3
+- [x] Deliver to user（终验交付报告随本轮会话输出）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮迭代收敛（轮次 1 两发现已修复，轮次 2 零新发现→收敛出口达成，记录见「收尾回读梳理记录」区块）
+- [x] 归档计划：check-complete exit 0 后 `set-active-plan.sh --clear` + `archive-plan.sh`（本行随归档执行勾核）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- [x] 知识提取入库（跳过：项目根无 scripts/kb-sync-from-plan.sh 知识库机制；知识沉淀已入 knowledge-brief.md §6+用户级记忆）
 - **V-N:** VC-7, VC-6
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -406,7 +408,8 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
      发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1 | ① VC-1 Verify command 大小写缺陷（报告用「Verdict」，`grep -q 'verdict'` 命中 0）② worktree cwd 漂移致 progress/sync-checklist 误写 worktree plans/ 副本 | ① verification.md 命令改 `grep -qi`（VC-1/V-1.1 双处）重验 PASS ② `git restore`+`clean -f` 恢复正本优先（progress P4 段） |
+| 2 | 零新发现（五维互洽：需求 #1/#2↔Goal/R1R2↔CA-1~7 执行↔VC 全 PASS+复检 APPROVED↔知识 findings/kb 沉淀——五维逐维核对无偏移/遗漏/未利用） | 收敛出口达成（连续一轮零新发现）→ 出 outcome |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -421,7 +424,7 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 | `isolation` | `worktree`（命中 §11.1 ①保护区+⑥运行中基础设施：skills/** 被所有会话实时加载） |
 | `worktree_path` | `/mnt/data/dev/task-planner-skill/tmp/worktrees/task-audit-fullreread-20261114` |
 | `branch` | `wt/task-audit-fullreread-20261114` |
-| `merge_back` | `pending` |
+| `merge_back` | `merged(5d52eb4)`（stash 窗口法，他任务在途变更回填无损） |
 
 > 契约详见 `/home/terry/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
 
@@ -565,9 +568,15 @@ Phase 1（审计已完成；待用户计划确认→清哨兵→attest 锁定后
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | | | | queued | | | | | - / 0 / ☐ |
-| 2 | | | | | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-11-14 | agent-quality-auditor | 语料审计：五要素三态判定+证据表 | done | verdict B（部分满足），缺口=②③未绑定④⑤ | checkpoints/audit-report.md:10-56 | §Research Findings 审计段 | checkpoints/audit-report.md | - / 0 / ☑ |
+| 2 | 2026-11-14 | drift-checker | P1 偏移检查 | done | ALIGNED 3/3 PASS | subagent-state/1-drift-checker.md | §Research Findings（drift 不回填，三件套留痕） | subagent-state/1-drift-checker.md | - / 0 / ☑ |
+| 3 | 2026-11-14 | drift-checker | P2 偏移检查 | done | ALIGNED 4/4 PASS | subagent-state/2-drift-checker.md | 同上 | subagent-state/2-drift-checker.md | - / 0 / ☑ |
+| 4 | 2026-11-14 | general-coder | CA-1/CA-2 落地（103.3a+103.5⑤） | done | 5/5 PASS；`**` 缺陷经主进程 84.4 复核当轮修复 | dispatch.md:232/236 | §Research Findings S1/S2 回填段 | subagent-state/3-general-coder-s1.md | - / 0 / ☑ |
+| 5 | 2026-11-14 | general-coder | CA-3/CA-4 落地（3h+106.1b） | done | 5/5 PASS，锚行保留+正字核验 | SKILL.md:104、discipline.md:727 | §Research Findings S1/S2 回填段 | subagent-state/3-general-coder-s2.md | - / 0 / ☑ |
+| 6 | 2026-11-14 | drift-checker | P3 偏移检查 | done | ALIGNED 3/3 PASS（CA-1~7 零越界+R2 语义承载） | subagent-state/4-drift-checker.md | 同上 | subagent-state/4-drift-checker.md | - / 0 / ☑ |
+| 7 | 2026-11-14 | general-reviewer | P4 独立复检（103.3a dogfood，六文件全文回读） | done | APPROVED 7/7+四维 PASS | subagent-state/5-general-reviewer-recheck.md:1-30 | progress P4 段 | subagent-state/5-general-reviewer-recheck.md | - / 0 / ☑ |
+
+> S3/S4（模板级联 CA-5~7）=主进程接管（22.3 兜底链④档，dispatch-guard 同码拦 ×2），无派发行，例外登记 progress。
 
 ## 🔗 Chain 区块交接配置（可选）
 

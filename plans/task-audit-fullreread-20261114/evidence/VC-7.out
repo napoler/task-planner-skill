@@ -1,0 +1,4 @@
+# [run-verification] VC-7 | 2026-11-13T20:12:06Z | cmd: ! git show --name-only --format= HEAD | grep -vE '^skills/(task-dispatch/references/critical-rules-dispatch\.md|task-discipline/references/critical-rules-discipline\.md|task-planner/SKILL\.md)|^plans/' | grep -q .
+# ---- stdout/stderr ----
+
+# exit=0

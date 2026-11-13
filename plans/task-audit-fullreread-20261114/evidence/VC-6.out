@@ -1,0 +1,4 @@
+# [run-verification] VC-6 | 2026-11-13T19:58:58Z | cmd: test -s plans/task-audit-fullreread-20261114/checkpoints/baseline-selftest.txt && test "$(cat plans/task-audit-fullreread-20261114/checkpoints/baseline-selftest.txt)" -ge "$(for t in skills/task-planner/scripts/selftest-*.sh; do bash "$t" >/dev/null 2>&1; done; for t in skills/task-planner/scripts/selftest-*.sh; do bash "$t" 2>/dev/null; done | grep -c 'FAIL')"
+# ---- stdout/stderr ----
+
+# exit=0

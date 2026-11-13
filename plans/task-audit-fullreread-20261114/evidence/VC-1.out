@@ -1,0 +1,4 @@
+# [run-verification] VC-1 | 2026-11-13T19:58:57Z | cmd: test -s plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -qi 'verdict' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md && grep -q '五要素' plans/task-audit-fullreread-20261114/checkpoints/audit-report.md
+# ---- stdout/stderr ----
+
+# exit=0
