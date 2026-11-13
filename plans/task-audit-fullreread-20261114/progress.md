@@ -35,7 +35,7 @@
 - **Status:** complete
 - **Started:** 2026-11-14
 - Actions taken:
-  - [goal:G2] CA-1~CA-7 全落地（worktree commit 83b3388，6 文件 +10/-5）；两单元子代理 5/5+两单元主进程接管（22.3 兜底链④档，dispatch-guard 同码拦 ×2）
+  - [goal:G2] CA-1~CA-7 全落地：bash 段锚校验 sed V-3.1~V-3.4 全 PASS（grep '全文回读'×4 锚位命中）+段清单守恒；产物=worktree commit 83b3388（6 文件 +10/-5）；两单元子代理 5/5+两单元主进程接管（22.3 兜底链④档）
   - [recall] Rule 93 召回卡已读（执行后补做，六维自检：A-E 过，欠账=[goal:G2~4] 行与 [recall] 行同期补齐）
 - Files created/modified: 6 scope 语料文件（worktree 内）
 - Test Results: V-3.1~V-3.4 全 PASS+级联残留=0
