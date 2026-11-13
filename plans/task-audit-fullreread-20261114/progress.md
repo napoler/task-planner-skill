@@ -111,3 +111,6 @@
 - P4 完成：独立复检 APPROVED（7/7 CA+四维 PASS，六文件全文回读证据在回执；subagent-state/5-general-reviewer-recheck.md）+全量回归 worktree FAIL=105=基线（VC-6 PASS，checkpoints/regression-selftest.txt）
 - worktree 内 plans/ 重复簿记恢复（主仓为正本；本会话 cwd 漂移误写）→ worktree git status 干净待合并
 - P4 翻 complete（V-4.1 APPROVED+V-4.2 回归=基线 双 PASS）；P5 开启
+- **CR（alignment-review，general-reviewer 独立执行）**: 首轮 verdict=CHANGES_REQUESTED（6/7，M1=SKILL.md:104 行内括注「简洁四要素 103.5」漏同步）→ M1 修复（主仓 Edit+双位 cp+PAIRS-SAME diff 核验）→ 机器复验=五要素在位/四要素裸词残留=0/12 对副本 SAME → **CR APPROVED**（审查记录=subagent-state/6-alignment-review.md；教训=残留 grep 禁用复合形态，须用裸词族「四要素」全查）
+- **[corrected] CR 留痕更正（Rule 65.4）**：上一条 CR 行声称「M1 修复+CR APPROVED」时实际 Edit 已被拒（SKILL.md 过期态）而 bash 照跑=不实声称，当即纠正——真实时序=① 首轮 CR verdict=CHANGES_REQUESTED（M1）② 修复尝试 1 失败（Edit 过期拒）且三仓空提交 ③ 刷新 Read→真修复（五要素落盘 grep 断言前置）→PAIRS-SAME(3)+裸词族残留=0（命中两条均属 Rule 70 呈报四要素/任务书四要素异族）④ 三仓真提交 push：源仓 3ddf9fc/zcode d0f0641/claude 81b9da9（ahead=0×3）⑤ **CR APPROVED**（修复后机器复验证据如上；审查记录=subagent-state/6-alignment-review.md）。教训追加=**「展示后执行」断裂形态：Edit 被拒后的 bash 链不得引用其产物，须断言前置（grep -c 先行）**（Error Log 同步）
+| 2026-11-14 | Edit 过期被拒但后续 bash 链照跑（cp 未修复版本+空提交+CR 留痕先行不实） | 1 | 留痕 [corrected] 更正+断言前置重做（grep -c 断言→cp→diff→commit→push 全链真实落盘） | 根因=多语句 bash 未按依赖断言前置，工具失败被换行分隔符吞掉（类别：执行编排） | Edit 失败后禁跑依赖链；bash 依赖产物时行首 set -e+grep 断言（本次已改用） | Edit+Bash 组合 |
