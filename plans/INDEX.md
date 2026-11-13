@@ -11,7 +11,6 @@
 | skill-audit-s77-20261019 | complete | 4/4 | 对 task-planner-skill 仓 skills/ 下全部 28 个技能（17 核心 +  | none |  | skills/*/SKILL.md + skills/*/references/*.md（全部 28 技能）,修改任何 SKILL.md | 2026-10-20 | ✓ |
 | skill-audit-s77-fix-20261019 | complete | 5/5 | 在 worktree wt/s77-fix 内修复 26 技能 S77 审查发现的 4 类 P1 问 | none |  |  | 2026-10-20 | ✓ |
 | task-anchor-eread-20261113 | pending | 0/0 | 对已 land 的 Rule 106.1 追加 **106.1a 结构文件插段纪律**（判例=本会话 | none |  |  | 2026-11-13 | ⚠ 未开始 |
-| task-audit-fullreread-20261114 | complete | 5/5 | <!--  | none |  | skills/task-dispatch/references/critical-rules-dispatch.md（仅 103.3/103.5 段内追加）、skills/task-discipline/references/critical-rules-discipline.md（仅新插 106.1b 行）,skills/task-planner/SKILL.md（仅 3h 行追加）、skills/task-planner/templates/subagent_dispatch.md（仅 58 行⑤要素追加）、skills/task-planner/templates/task_plan.md（仅 113 行措辞）、skills/verification-gate/references/critical-rules-verification.md（仅 55 行措辞）,skills/task-planner/scripts/selftest-*.sh（仅断言面适配，锚断时才动） | 2026-11-14 | ✓ |
 | task-crossprojauth-20261104 | pending | 0/0 | (no goal) | none |  |  | 2026-11-04 | ⚠ 未开始 |
 | task-defect-rrv13-dg12-false-pass | pending | 0/0 | (no goal) | none |  |  | 2026-10-16 | ⚠ 未开始 |
 | task-kb-deploy-20261022 | complete | 3/3 | 把知识库机制（任务模板收尾「归档→知识提取入库」两步 + kb-*.sh 检索/入库脚本）同步到三个 | none |  | ~/.zcode/skills/task-planner/**、~/.claude/skills/task-planner/**、~/.cursor/skills/task-planner/**,部署位其他技能/配置；~/.zcode/AGENTS.md；~/.zcode/skills/task-planner/ 之外的一切,.gitignore、.zcode/plan-templates/task_plan.md（删除）、plans/**,~/.zcode/skills/** 非 task-planner 目录；~/.agents/**；主仓 SKILL.md/critical-rules.md/selftest 内容改写（仅提交既有改动） | 2026-10-22 | ✓ |
@@ -47,7 +46,6 @@
 - s77-p2-fix ✓ (4/4) — 2026-10-21
 - skill-audit-s77-20261019 ✓ (4/4) — 2026-10-20
 - skill-audit-s77-fix-20261019 ✓ (5/5) — 2026-10-20
-- task-audit-fullreread-20261114 ✓ (5/5) — 2026-11-14
 - task-kb-deploy-20261022 ✓ (3/3) — 2026-10-22
 - task-lazy-escalation-20261102 ✓ (1/1) — 2026-11-02
 - task-nopause-execfirst-20261023 ✓ (5/5) — 2026-10-24
@@ -59,4 +57,4 @@
 - task-v192-deploy-zcode ✓ (5/5) — 2026-10-26
 
 ## 汇总
-- in_progress: 0 | pending: 10 | complete: 13
+- in_progress: 0 | pending: 10 | complete: 12
