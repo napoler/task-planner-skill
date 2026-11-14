@@ -357,11 +357,11 @@ Phase 4（待用户 D1 yes 后启动）
   WHAT: 清哨兵→worktree→并行组派发三条款插段→回读复核→全量回归。
   WHY: 保护区+运行中基础设施（§六/§十一）；106.1a 插段纪律防吞锚。
 -->
-- [ ] 清哨兵（plan-created.cjs）后建 worktree（§十一.2 路径/分支名）
-- [ ] 并行组派发 S1-S3 三条款插段（106.1a 纪律：grep 锚清单/new_string 含锚行子串/插后结构回读）
-- [ ] 主仓合并回后 Read 复核三条款在位+既有条款零改动
-- [ ] 全量回归零增量（对照基线）
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- [x] 清哨兵（plan-created.cjs）后建 worktree（§十一.2 路径/分支名）
+- [x] 并行组派发 S1-S3 三条款插段（106.1a 纪律：grep 锚清单/new_string 含锚行子串/插后结构回读）
+- [x] 主仓合并回后 Read 复核三条款在位+既有条款零改动
+- [x] 全量回归零增量（对照基线）
+- [x] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - **V-N:** VC-3, VC-4
 - **Status:** complete
 - **Executor:** general-coder（默认档）
@@ -384,9 +384,9 @@ Phase 4（待用户 D1 yes 后启动）
 - [x] Ensure deliverables are complete
 - [x] Deliver to user
 - [x] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-drift-fakeqc-20261115 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-drift-fakeqc-20261115 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）
+- [x] 知识提取入库：`bash scripts/kb-sync-from-plan.sh plans/task-drift-fakeqc-20261115` 生成 draft → 精炼改名 knowledge/entries/task-drift-fakeqc-20261115.md → `bash scripts/kb-rebuild-index.sh` 重建 INDEX（已执行，grep 索引命中确认）
 - **V-N:** VC-3, VC-4, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
