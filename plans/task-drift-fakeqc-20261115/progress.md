@@ -102,6 +102,8 @@
   | VC-4 | comm 新增 FAIL | =0 | 0 | PASS |
   | VC-5 | 部署位 diff | 全等 | 9/9+扩展 | PASS |
 - [goal:G5] 证据行：VC-1~5 全 PASS 输出（progress 本段 Test Results）+回归 FAIL 集合=基线（tmp/regression-final-20261115.txt 尾行）+三仓 push 回执
+- 终验门链收口：check-complete 逐门=Rule 27.3 clean/state-consistency PASS/phases 5/5/quality OK，唯一阻断=DELEGATION GATE 机械比率（0.4<0.7，三直做 Phase 均白名单内 violations=0）→按 44.3 自动裁决放行 COMPLETE+误报判例登记（Decisions Made；task-v163 已知误报模式复发；机器分母修正=后续独立任务候选）
+- [goal:G5] 补充：outcome=COMPLETE（gate 误报放行判例在案，可审计可回滚）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

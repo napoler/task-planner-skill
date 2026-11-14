@@ -39,6 +39,11 @@
 - S3（drift:68 追加 64.7）内容逐字但**前缀格式漂移**：适配了 64.x 块无短横风格（`64.7 **用户…` vs 草案 `- **64.7 用户…`），执行体诚实上报偏差（grep 计数 0 信号=格式失配非造假）；已派返工规范化为草案逐字形态（验收 grep 依赖草案形态）
 - 判例沉淀：子代理插段「自报 grep=0 + 行存在」矛盾=格式失配信号（非造假），主进程 diff 草案逐字比对是终判（对照 [[subagent-verifier-fabricated-output-20261103]] 的造假形态区分）
 
+### F4 DELEGATION GATE 误报判例（task-v163 模式复发，2026-11-15）
+- 现象：check-complete DELEGATION GATE 以 delegation_rate=2/5=0.4<floor 0.7 阻断，但三直做 Phase 全部 Rule 25.3 白名单内（② 回填/② 起草/①② 编排簿记），check-delegation stats 自身 verdict=ok、violations=0。
+- 根因：分母=全部 Phase（含白名单强制直做 Phase），未按白名单剔除——粗粒度比率与白名单语义冲突；与 task-v163 登记的「DELEGATION GATE 误报模式」同型。
+- 处置：本轮按 44.3 自动裁决放行 COMPLETE+判例登记（未动门代码）；机器修正（分母剔除白名单直做 Phase 或引入加权）=后续独立任务候选，需用户另行授权。
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
