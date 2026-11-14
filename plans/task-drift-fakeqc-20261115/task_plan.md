@@ -276,7 +276,7 @@ Phase 4（待用户 D1 yes 后启动）
 | Phase | 命中工具面（40.1 六类） | 选择理由 |
 |-------|----------------------|---------|
 | Phase 1 | Agent 子代理 general-purpose（只读取证） | 大输出禁入主上下文（宪法 §一），子代理提炼+主进程复核 |
-| Phase 4 | Agent 子代理 general-coder（sonnet-1）×3 并行组 | 结构文件插段隔离执行；106.1a 插段纪律随派发内联 |
+| Phase 4 | Agent 子代理 general-coder（默认档）×3 并行组 | 结构文件插段隔离执行；106.1a 插段纪律随派发内联 |
 | Phase 5 | 主进程白名单（git 编排/簿记） | Rule 25.3 白名单动作 |
 
 **workflow 编排判定（Rule 40.4）**: 未命中 39.8（仅 3 个单文件插段 S-unit，无长链编排、用户未点名）→ Rule 21.4 独立性守门调度：S1-S3 声明并行组 clause-insert 同消息并发
@@ -323,7 +323,7 @@ Phase 4（待用户 D1 yes 后启动）
 - [x] 与既有规则管辖面核对（94.2① 同域判据不触发/51 措辞无门/61-64 无专档对照锚）
 - **V-N:** VC-1, VC-2
 - **Status:** complete
-- **Executor:** 主进程（例外理由: 分析结论回收与簿记——Rule 25.3 主进程职责白名单）
+- **Executor:** 主进程（例外理由:② 计划三文件回填与根因簿记——Rule 25.3 白名单）
 
 ### Phase 3: 修复条款起草
 <!-- 
@@ -364,14 +364,14 @@ Phase 4（待用户 D1 yes 后启动）
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - **V-N:** VC-3, VC-4
 - **Status:** complete
-- **Executor:** general-coder（sonnet-1）
+- **Executor:** general-coder（默认档）
 
 <!-- Executor≠主进程的 Phase 必附 S-unit 表（Rule 22.6；模板 CA-3 判例 task-tpl-verify-fix-20261113） -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A6) discipline 卫星追加 94.7 范围跳变确认门 | general-coder（sonnet-1） | tmp/worktrees/task-drift-fakeqc-20261115/skills/task-discipline/references/critical-rules-discipline.md（锚=94.6 行末；草案=plans/task-drift-fakeqc-20261115/clause-drafts.md §1） | grep 94.7 命中+94.6 行原文零改动+插后结构回读 | 10min | 1f/12l/10min | 无 | - | pending |
-| S2 | (A6) core 追加 51.14 完成声称操作类型与物理可行性门 | general-coder（sonnet-1） | tmp/worktrees/task-drift-fakeqc-20261115/skills/task-planner/references/critical-rules.md（锚=51.13 行末；草案=clause-drafts.md §2） | grep 51.14 命中+51.13 行原文零改动+插后结构回读 | 10min | 1f/10l/10min | 无 | - | pending |
-| S3 | (A6) drift 卫星追加 64.7 用户原话对照锚 | general-coder（sonnet-1） | tmp/worktrees/task-drift-fakeqc-20261115/skills/task-drift-guard/references/critical-rules-drift.md（锚=64.6 行末；草案=clause-drafts.md §3） | grep 64.7 命中+64.6 行原文零改动+插后结构回读 | 10min | 1f/10l/10min | 无 | - | pending |
+| S1 | (A6) discipline 卫星追加 94.7 范围跳变确认门 | general-coder | tmp/worktrees/task-drift-fakeqc-20261115/skills/task-discipline/references/critical-rules-discipline.md（锚=94.6 行末；草案=plans/task-drift-fakeqc-20261115/clause-drafts.md §1） | grep 94.7 命中+94.6 行原文零改动+插后结构回读 | 10min | 1f/12l/10min | 无 | - | pending |
+| S2 | (A6) core 追加 51.14 完成声称操作类型与物理可行性门 | general-coder | tmp/worktrees/task-drift-fakeqc-20261115/skills/task-planner/references/critical-rules.md（锚=51.13 行末；草案=clause-drafts.md §2） | grep 51.14 命中+51.13 行原文零改动+插后结构回读 | 10min | 1f/10l/10min | 无 | - | pending |
+| S3 | (A6) drift 卫星追加 64.7 用户原话对照锚 | general-coder | tmp/worktrees/task-drift-fakeqc-20261115/skills/task-drift-guard/references/critical-rules-drift.md（锚=64.6 行末；草案=clause-drafts.md §3） | grep 64.7 命中+64.6 行原文零改动+插后结构回读 | 10min | 1f/10l/10min | 无 | - | pending |
 
 [parallel-group:clause-insert] = S1, S2, S3
 
@@ -533,12 +533,12 @@ Phase 4（待用户 D1 yes 后启动）
 -->
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 |  /  |
-| 主进程直做 Phase 清单 | （含例外理由） |
-| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |
-| 激活子代理数（Rule 96.5） | （Agent() 派发总次数） |
-| 最大并行宽度（Rule 96.5） | （并行组数 / 最宽组宽,如 2 组 / 最宽 3） |
-| 串行化例外理由（Rule 96.4） | （逐组一句话;无则写 none） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 2 / 5（Phase 1 取证 + Phase 4 插段） |
+| 主进程直做 Phase 清单 | Phase 2（② 计划三文件回填与根因簿记）、Phase 3（② 条款起草）、Phase 5（① git 编排+② 簿记）——均 Rule 25.3 白名单 |
+| 委派率 | 0.4（机器 stats verdict=ok，violations=[]，直做均白名单内） |
+| 激活子代理数（Rule 96.5） | 6（取证 1 + 插段 3 + 独立复检 1 + drift-checker 1） |
+| 最大并行宽度（Rule 96.5） | 1 组 / 最宽 3（clause-insert） |
+| 串行化例外理由（Rule 96.4） | none |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 <!--
@@ -553,9 +553,9 @@ Phase 4（待用户 D1 yes 后启动）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-11-15 04:43 | general-purpose | 只读取证 sess_a7eb0603 四组证据 | done | 2378msg/56 用户发言；E1-E4 全找到；两逐字串 NOT FOUND（等价事实链在位） | plans/task-drift-fakeqc-20261115/evidence-session-extract.md | findings F1 | -（结论内联回复） | - / 0 / ☑ |
-| 2 | 2026-11-15 05:32 | general-coder（sonnet-1） | S1 discipline 卫星追加 94.7 | done | 锚 617 行唯一命中，618 新增；回读 grep=1；主进程 diff 草案=逐字一致 | subagent-state/1-general-coder-S1.md | findings F3 | subagent-state/1-general-coder-S1.md | - / 0 / ☑ |
-| 3 | 2026-11-15 05:32 | general-coder（sonnet-1） | S2 core 追加 51.14 | done | 锚 106 行唯一命中，107 新增；回读 grep=1；主进程 diff 草案=逐字一致 | subagent-state/1-general-coder-S2.md | findings F3 | subagent-state/1-general-coder-S2.md | - / 0 / ☑ |
-| 4 | 2026-11-15 05:32 | general-coder（sonnet-1） | S3 drift 卫星追加 64.7 | done | 返工后主进程盘上复核：68 行=草案逐字（S3-REWORK-VERBATIM-OK）；numstat 3×(+1/-0) | subagent-state/1-general-coder-S3.md | findings F3 | subagent-state/1-general-coder-S3.md | rescue=格式返工 1 次 / 0 / ☑ |
+| 2 | 2026-11-15 05:32 | general-coder | S1 discipline 卫星追加 94.7 | done | 锚 617 行唯一命中，618 新增；回读 grep=1；主进程 diff 草案=逐字一致 | subagent-state/1-general-coder-S1.md | findings F3 | subagent-state/1-general-coder-S1.md | - / 0 / ☑ |
+| 3 | 2026-11-15 05:32 | general-coder | S2 core 追加 51.14 | done | 锚 106 行唯一命中，107 新增；回读 grep=1；主进程 diff 草案=逐字一致 | subagent-state/1-general-coder-S2.md | findings F3 | subagent-state/1-general-coder-S2.md | - / 0 / ☑ |
+| 4 | 2026-11-15 05:32 | general-coder | S3 drift 卫星追加 64.7 | done | 返工后主进程盘上复核：68 行=草案逐字（S3-REWORK-VERBATIM-OK）；numstat 3×(+1/-0) | subagent-state/1-general-coder-S3.md | findings F3 | subagent-state/1-general-coder-S3.md | rescue=格式返工 1 次 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

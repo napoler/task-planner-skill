@@ -22,51 +22,55 @@
 
 <!-- 填写说明：一句话说明本任务做什么 + 为什么做（≤2 行）；下方术语表每条 ≤1 行，只收录「不解释会读不懂后续 S-unit 材料包」的术语 -->
 ## §1 任务速览与核心概念
-- 任务一句话：{做什么 + 达成标准，一行}
-- 背景/动机：{为什么做，一行}
+- 任务一句话：根治 skill 执行两缺陷（范围静默扩张+完成声称措辞升格），以 94.7/51.14/64.7 三条款增款落地+三部署位同步为可验证完成。
+- 背景/动机：判例 sess_a7eb0603——trash 全集审计 2306 篇偏移+224 篇 5min 机械扫描包装"审核完成"（用户投诉原话见专档 #1）。
 
 | 概念/术语 | 一句话解释 |
 |-----------|-----------|
-| {示例：worktree} | git 隔离开发区，实现类任务必须在其中开发（Rule §十一） |
-| {术语} | {≤1 行解释} |
+| 语料状态边界 | published/draft/trash/archive 等库存状态互跨=94.7 触发器①（同站点不豁免） |
+| 声称操作类型升格 | 低语义工作（正则扫描）用高语义词（审核/优化/审读）包装=51.14 封堵面 |
+| 专档对照锚 | drift 判定基线=计划 Goal ∩ user-session-log 最近原话双锚=64.7（缺失=禁 ALIGNED） |
 
-<!-- 填写说明：只录【已验证】事实，每条必须带证据锚点（file:line 或 URL）；未验证推测禁止入表，写进 progress.md「假设」区 -->
-<!-- 台账供料源（Rule 21.2.1 台账供料优先）：基线定数类事实（行数/Rule 编号/计数/selftest 基线）证据列优先填台账路径锚（如 plans/.rule-reservations.jsonl:10、plans/task-vXXX/subagent-state/…），并保留原文重验锚并列 -->
-<!-- 台账缺口维度（Rule 条款正文/模板区块结构/config 键语义）禁用台账行顶替，须如实填原文锚（file:line） -->
 ## §2 已验证关键事实
 
 | 事实 | 证据 file:line / URL | 影响（对本任务执行意味着什么） |
 |------|---------------------|-------------------------------|
-| {示例：init-session.sh 建 5 文件} | scripts/init-session.sh:120 | 新增第 6 文件须同步 :120 复核列表与 :131 文案 |
-| {台账供料源示例：Rule 53 已被 task-v131 占用} | plans/.rule-reservations.jsonl:10（台账锚）+ critical-rules.md:581（原文重验锚） | 新增条款走 21.2.1 子条款，禁新占 Rule 编号 |
-| {事实} | {file:line} | {影响} |
+| 94.7 落主仓 discipline 卫星 618 行（94.6 后紧随） | skills/task-discipline/references/critical-rules-discipline.md:618 + 6ff5cce | 后续插段禁动 617-618 |
+| 51.14 落 core 107 行 | skills/task-planner/references/critical-rules.md:107 | 同上 |
+| 64.7 落 drift 卫星 68 行 | skills/task-drift-guard/references/critical-rules-drift.md:68 | 同上 |
+| 判例事实链：trash 2306 篇审计（2308 文件/22.5h 跨度）+224 篇 ≈5min 机械扫描零语义审读 | /home/terry/dev/article-generation/plans/task-coffee-gate-repair-20261113/{task_plan.md:37-41,progress.md:370-413,remote/} | 语义审读实测 2-4.5min/篇（progress.md:409-413），物理可行性判据的实测来源 |
+| 部署 9 对 diff=0（zcode/claude/cursor×3 文件） | 本计划 progress Phase5 + cursor 位 CURSOR-OK | 三仓 push：源 78e5ca7/zcode 9175060/claude 11c9c0d |
+| 基线回归=97 脚本 PASS 88 FAIL 9（预存环境面） | tmp/regression-baseline-20261115.txt | VC-4 判据=FAIL 集合 ⊆ 基线集合 |
 
-<!-- 填写说明：执行期照此表定位文件，禁止凭记忆改文件；「≤10 行摘要」列指该路径关键区段不超过 10 行的内容摘要，非行数限制语 -->
-<!-- 设计插入点+范式锚（台账供料，Rule 21.2.1）：设计类 S-unit 行必含 ①目标文件插入点锚 ②最新范式块锚（来源=编号账本推最大 landed Rule → 文尾块行号）③时效戳（供料日期+快照来源）；锚区间会漂移且部署位在途写入，过期锚须重测不得盲用 -->
 ## §3 关键文件锚点表
 
 | 路径 | 行号 | ≤10 行摘要（该区段做什么） |
 |------|------|---------------------------|
-| {示例：scripts/init-session.sh} | :90-98 | 4 文件循环建立（findings/progress/notepad-learnings/verification） |
-| {设计插入点示例：references/critical-rules.md} | :<起-止> | 最新范式块 ### <NN>（插入点=21.2 后；供料 <日期>，源=编号账本最大 landed 号；行号以实施日重验为准） |
-| {路径} | :{行号} | {摘要} |
+| skills/task-discipline/references/critical-rules-discipline.md | :617-618 | 94.6 机制条款+新增 94.7 范围跳变确认门（插入点=94.6 行末） |
+| skills/task-planner/references/critical-rules.md | :106-107 | 51.13 机制条款+新增 51.14 声称操作类型与物理可行性门 |
+| skills/task-drift-guard/references/critical-rules-drift.md | :67-68 | 64.6 机制条款+新增 64.7 用户原话对照锚强制 |
+| plans/task-drift-fakeqc-20261115/clause-drafts.md | 全文 | 三条款批准草案（唯一逐字源） |
+| plans/task-drift-fakeqc-20261115/evidence-session-extract.md | 全文 | 判例取证报告（E1-E4 锚点） |
 
-<!-- 填写说明：编号清单；含历史教训/陷阱/禁止假设；末尾必须挂本任务 FMEA RPN>100 项的兜底动作指针（→ task_plan.md FMEA 表对应行） -->
 ## §4 易错点与禁止假设清单
-1. {示例：禁止改 22.4a 三文件契约原文（KQ2 轻量方案裁定，KQ2 波及面=check-dispatch 7 处+selftest 5 组）}
-2. {易错点/禁止假设}
-3. {易错点/禁止假设}
-- FMEA RPN>100 兜底指针：{→ task_plan.md FMEA 表「{Phase} {失败模式}」行}
+1. 禁止假设部署位结构=源仓结构：.agents 位无 task-planner 家族（仅 plan-resume）；claude 位=~/.claude/skills、cursor 位=~/.cursor/skills（非 git 仓仅落盘）。
+2. Handoff 表 subagent_type 单元格必须裸名（禁（sonnet-1）后缀粘连，否则 check-delegation unverified_delegation 误报）；主进程例外理由必须带 ①-⑥ 编号前缀。
+3. S-unit 时长列必须裸 NNmin（≤ 前缀不可解析）；并行组=frontmatter `parallel_groups: [组名]`+`[parallel-group:组名] = ID 列表` 注解形态。
+4. 插段派发书必须写明「风格冲突以草案为准禁自适配」——S3 判例（本轮 Error Log 第 1 行）。
+- FMEA RPN>100 兜底指针：→ task_plan.md FMEA 表「Phase 4 结构文件插段吞锚」行（106.1a 三步兜底，实际未触发——复检 APPROVED）。
 
-<!-- 填写说明：与 task_plan.md S-unit 表「输入」列互链；「应读本 brief 哪节」精确到 §x；额外材料路径必须是绝对路径或 plan 目录相对路径 -->
-<!-- 台账供料（Rule 21.2.1）：设计类 S-unit 行「额外材料路径」列直接填台账产物绝对路径（替代 prompt 内联），「应读本 brief 哪节」精确到 §2/§3 供料行 -->
 ## §5 S-unit 材料包索引
 
 | S-unit ID | 应读本 brief 哪节 | 额外材料路径 |
 |-----------|------------------|-------------|
-| {示例：S1} | §1 + §2 + §3 | /abs/path/to/material.md |
-| {示例：S2 设计任务} | §2(基线) + §3(锚点) | plans/.rule-reservations.jsonl + <审计台账 align-audit 路径>（台账产物路径，替代 prompt 内联基线） |
-| {S-unit ID} | {§x} | {路径} |
+| S1/S2/S3（Phase 4） | §2 + §3 | /mnt/data/dev/task-planner-skill/plans/task-drift-fakeqc-20261115/clause-drafts.md |
+
+## §6 可用强化技能清单（Rule 59.3 — 执行前技能扫描）
+
+| 技能名 | SKILL.md 绝对路径 | 匹配点 | 激活方式 |
+|--------|------------------|--------|---------|
+| task-drift-guard | /home/terry/.zcode/skills/task-drift-guard/SKILL.md | 偏移检查载体 SOP（Rule 61 双载体） | 子代理 drift-checker 派发（已用） |
+| verification-gate | /home/terry/.zcode/skills/verification-gate/SKILL.md | VC 验证命令设计+终验 SOP | 本计划 VC 已按其口径设计 |
 <!-- 填写说明：任务画像期扫描 ~/.zcode/skills 与 ~/.agents/skills 索引，把匹配本任务画像的强化技能（comet 族、superpowers 族、brainstorming 等）入表——What=执行前技能扫描先于派发；Why=技能库 200+ 若从不扫描匹配，强化执行能力（头脑风暴/流程强化）永远处于「从未激活」的闲置状态（Rule 59.3，对应用户 R5） -->
 <!-- 用户触发型判别（Rule 59.3 判别条款）：comet 族等 frontmatter 声明 disable-model-invocation（用户显式触发）设计的技能，「激活方式」列只准写「用户手动触发（仅提示）」，禁止主进程/子代理自动代激活——治理解法=显式可见性（扫描入表供用户与执行体择用），而非越权代触发 -->
 ## §6 可用强化技能清单（Rule 59.3 — 执行前技能扫描）
