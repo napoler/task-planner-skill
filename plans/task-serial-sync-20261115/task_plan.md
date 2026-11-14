@@ -645,3 +645,4 @@ Phase 5 合并回与收口：smart-merge-back --deploy 合并回主仓+部署位
 - Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
 - 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP
+- **处置登记（终验 2026-11-15）**：不沉淀——本任务=规范文本工程（往既有 general 骨架落条款），非新任务类型画像；template_type=general 恒合法（Rule 34.1），无新 variant 需求，禁为沉淀而沉淀（Rule 38.7 比例原则）

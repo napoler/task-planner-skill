@@ -113,3 +113,27 @@
   | 全量 selftest（DQ-08 修复后） | run-selftests.sh in worktree | 失败数 ≤2（基线） | Total 97 PASS=95 FAIL=2（两预存） | PASS |
   | V-4.1 | Total 行 FAIL 解析 vs 基线文件 | exit 0 | exit 0 | PASS |
   | selftest-dual-qc 直跑 | worktree | 14/14 | Total 14 PASS=14 FAIL=0 | PASS |
+
+### Phase 5: 合并回与收口
+- **R 锚定**：本 Phase 服务 R1——合并回主仓+三部署位同步+终验门+归档（① git 编排+② 簿记白名单）
+- **Status:** complete
+- **Started:** 2026-11-15 02:30
+- Actions taken:
+  - 2026-11-15 smart-merge-back --deploy 在 merge 步被主仓 staged 他人文件保守拦截（merge 不动该路径也拦）→41.1 消解链=stash 窗口合并法（stash push pathspec→merge --no-ff 2660f6f→stash pop 恢复在途 staged 态）
+  - 2026-11-15 主仓 Read 复验（Rule 107 :740/22.4d/47.7/1-107×3）+rule-reserve land 107
+  - 2026-11-15 主仓终验 selftest：Total 97 PASS=95 FAIL=2（两预存，107 land 后 rule-reserve-pairing 恢复 PASS）
+  - 2026-11-15 三部署位文件级 cp+diff=0：zcode 位 7 文件、claude 位 7 文件、cursor 位 7 文件；agents 位 task-planner=stub 安装跳过登记
+  - 2026-11-15 知识入库：kb-sync draft→精炼主题化→general-coder 落盘 knowledge/entries/serial-creation-knowledgesync-rule107.md+INDEX 重建（[sub:5]，INDEX 命中=1）
+  - 2026-11-15 [事故修复] 裸 commit 捎带他人 staged 文件（autonomous-resume-detail.md 入 2b468dc）→soft reset+pathspec 重提交修复，对方 staged 态复原；教训入 knowledge 条目易错点 3
+  - 2026-11-15 CR（Rule 42.7 收口触发，general-reviewer）：四维（正确性/一致性/风险/回归记录）全过零发现 → **CR APPROVED**（verdict: APPROVED，检查点=checkpoints/cr-final-20261115.md）
+  - 2026-11-15 check-complete 终验门：DELEGATION GATE PASSED（0.6 白名单豁免路径）+VC-GATE PASSED+session-log OK+CR-GATE APPROVED → exit 0 后归档
+  - [plan-resume 跳过原因] 本计划会话内已全程自管且 84.14 收敛，plan-resume 报告非本任务交付面
+- Files created/modified:
+  - 主仓 skills/ 7 文件（merge 2660f6f）；三部署位各 7 文件；knowledge/entries/serial-creation-knowledgesync-rule107.md+INDEX.md；plans/ 簿记
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | V-5.1 主仓状态 | git status --porcelain skills/ | 仅 3 在途文件 | 3 在途文件 | PASS |
+  | 主仓终验 selftest | run-selftests.sh | FAIL ≤2 | FAIL=2（预存） | PASS |
+  | 三部署位 diff | diff -q ×7 文件 ×3 位 | 全等 | 21/21 diff=0 | PASS |
+  | CR 收口 | general-reviewer 四维 | APPROVED | APPROVED 零发现 | PASS |
