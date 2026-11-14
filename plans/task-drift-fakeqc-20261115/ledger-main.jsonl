@@ -1,1 +1,2 @@
 {"tick":1,"ts":"2026-11-14T22:19:08Z","agent":"main","phase":"4","event":"drift_check","summary":"ALIGNED+Phase4三载体插段与Goal逐锚一致(检查点1-drift-checker.md)","files":[]}
+{"tick":2,"ts":"2026-11-14T22:36:45Z","agent":"main","phase":"5","event":"drift_check","summary":"ALIGNED+Phase5合并部署回归收口scope未越界(检查点2-drift-checker.md)","files":[]}

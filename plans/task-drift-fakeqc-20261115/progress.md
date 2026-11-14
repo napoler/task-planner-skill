@@ -82,6 +82,27 @@
 - 收口：S3 返工盘上复核 S3-REWORK-VERBATIM-OK→103.3 独立复检体 APPROVED（A-E 全过，检查点 2-recheck-clauses.md，即 103.6 多文件变更集同步核对清单全绿）→V-4.1/V-4.2 实跑双 PASS→drift-checker ALIGNED（留痕三件套齐）→worktree commit（pathspec 锁 3 载体）
 - [goal:G4] 证据行：worktree commit 后 grep 三条款命中+numstat 3×(+1/-0)+复检 APPROVED（2-recheck-clauses.md）
 
+### Phase 5: 合并回+部署同步+终验交付
+- **Status:** complete
+- **Started:** 2026-11-15 06:00
+- Actions taken:
+  - 合并回 6ff5cce（stash 窗口法；他任务 staged 文件还原核验）+worktree/分支清理（§11.3.5）
+  - 部署同步：三部署位（zcode/.claude/.cursor）×3 载体 cp，判向全 CLEAN→9 对 diff=0；cursor 位落盘核验 OK
+  - 三仓 push：源 78e5ca7→b3e671e、zcode 9175060→5c889a9、claude 11c9c0d→1fd2480（pathspec 锁定）
+  - 终验回归 --fresh：首跑暴露行号锚缺陷（新增 FAIL×2）→三载体+草案修复→终跑 FAIL 集合=基线 9 项零新增（VC-4 PASS）
+  - VC-1~VC-5 正式实跑全 PASS（含 claude/cursor 扩展核验）+Phase5 drift ALIGNED（2-drift-checker.md）
+- Files created/modified:
+  - 主仓 3 载体文件（b3e671e 终态）；tmp/regression-{baseline,final}-20261115.txt
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-1 | evidence E 锚计数 | ≥20 | 60+ | PASS |
+  | VC-2 | findings GA 计数 | ≥5 | 5 | PASS |
+  | VC-3 | 三载体 grep | 各=1 | 1/1/1 | PASS |
+  | VC-4 | comm 新增 FAIL | =0 | 0 | PASS |
+  | VC-5 | 部署位 diff | 全等 | 9/9+扩展 | PASS |
+- [goal:G5] 证据行：VC-1~5 全 PASS 输出（progress 本段 Test Results）+回归 FAIL 集合=基线（tmp/regression-final-20261115.txt 尾行）+三仓 push 回执
+
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
 |-------|-----------|---------------------|
@@ -97,6 +118,7 @@
 | 2026-11-15 05:40 | S3 插段前缀格式漂移（适配 64.x 块无短横风格，偏离已批准草案形态） | 1 | 返工规范化为草案逐字+主进程 diff 复核（S3-REWORK-VERBATIM-OK） | 直接原因=草案形态与目标文件局部风格冲突时执行体自行适配；根因=派发书未写明「风格冲突以草案为准并上报」类别=契约缺口 | Prevention=插段派发书补「风格冲突禁自适配」句（本轮口头补，条款面归 106.1a 既有三规约覆盖） | Agent(general-coder S3) |
 | 2026-11-15 05:50 | 主进程 findings 回填吞锚：F2 标题被 F3 块替换致 GA 清单失标题 | 1 | 106.1a 结构回读发现→两步 Edit 修复（还原 F2 标题+F3 移至 GA5 后） | 直接原因=Edit 以标题行作 old_string 整体替换未把标题含回 new_string；根因=同文件多点回填误用替换式；类别=吞锚惯犯（106.1a 本体） | Prevention=同文件多点回填一律追加式（new_string 必含既有锚行） | Edit(findings.md) |
 | 2026-11-15 05:58 | 委派统计误报×2（general-coder 未登记+Phase2 例外理由未匹配白名单形态） | 1 | Handoff 类型名独立单元格裸名化+Phase2 理由改 ② 编号形态→重 attest+stats verdict=ok | 根因=task-v149「Handoff 须独立类型名单元格」判例复发+白名单理由须带 ①-⑥ 编号前缀 | Prevention=Executor/Handoff 类型名一律裸名+白名单理由带编号前缀 | check-delegation.sh stats |
+| 2026-11-15 06:10 | 三条款判例锚含硬编码行号（:391/:409-413/:37-38）→ 终验回归新增 FAIL×2（AD-03/DG-03） | 1 | 三载体+草案同步去行号锚→两断言单跑转绿→重部署 9/9→三仓再 push（源 b3e671e/zcode 5c889a9/claude 1fd2480） | 根因=起草时引用判例会话落盘行号未过「条款禁硬编码行号锚」（task-v148 既有教训未召回）类别=教训未召回 | Prevention=条款判例锚一律用「文件+条目描述/E 锚」禁 ：行号；回归必须在部署后重跑（部署前基线漏检自产断言类缺陷） | selftest-absorption-discipline/selftest-decision-grading |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->

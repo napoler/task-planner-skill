@@ -57,6 +57,7 @@
 2. Handoff 表 subagent_type 单元格必须裸名（禁（sonnet-1）后缀粘连，否则 check-delegation unverified_delegation 误报）；主进程例外理由必须带 ①-⑥ 编号前缀。
 3. S-unit 时长列必须裸 NNmin（≤ 前缀不可解析）；并行组=frontmatter `parallel_groups: [组名]`+`[parallel-group:组名] = ID 列表` 注解形态。
 4. 插段派发书必须写明「风格冲突以草案为准禁自适配」——S3 判例（本轮 Error Log 第 1 行）。
+5. 条款判例锚禁 ：行号 形态（task-v148 既有教训，AD-03/DG-03 本轮实证）；且回归基线必须在部署后重跑，否则自产断言类缺陷漏检（本轮实证：基线跑在部署前→终跑才暴露）。
 - FMEA RPN>100 兜底指针：→ task_plan.md FMEA 表「Phase 4 结构文件插段吞锚」行（106.1a 三步兜底，实际未触发——复检 APPROVED）。
 
 ## §5 S-unit 材料包索引

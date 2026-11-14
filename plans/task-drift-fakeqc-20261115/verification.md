@@ -115,18 +115,21 @@ Status: `pending` Last verified: —
 - [ ] VC-1~VC-5 全 PASS
 
 **Verification**:
-- [ ] V-5.1: 主仓三条款命中（映射 VC-3）
+- [x] V-5.1: 主仓三条款命中（映射 VC-3）
   **Verify command**: test $(grep -c "94\.7 语料状态边界与规模跳变确认门" /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md) -ge 1
-- [ ] V-5.2: 部署位 diff=0（映射 VC-5）
+- [x] V-5.2: 部署位 diff=0（映射 VC-5）
   **Verify command**: diff -q /mnt/data/dev/task-planner-skill/skills/task-drift-guard/references/critical-rules-drift.md /home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md
 
-Status: `pending` Last verified: —
+Status: `complete` Last verified: 2026-11-15
 
 ## 📚 必要知识储备符合性核验（终验项）
 <!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
 | 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
 |-----------|----------------------|---------------------|
-|           |                      |                     |
+| task-discipline 规则全文（74/94 域） | 94.7 与 94.1-94.6 同范式衔接（94.6 后追加，L0-T 机制句内联）；74 B 类门引用一致 | 符合 |
+| core 规则全文（51/26/80 域） | 51.14 与 51.3/51.8 分工句显式内联；51.13 机制条款零改动 | 符合 |
+| task-drift-guard 规则全文（61/64 域） | 64.7 与 64.1/64.2.1/64.6 口径一致（未执行同口径引用）；64.6 零改动 | 符合 |
+| 取证报告（判例证据） | 三条款判例锚均指向取证报告 E 锚（无 ：行号 形态） | 符合 |
 
 ## 委派统计复验（Rule 25.4）
 
@@ -139,28 +142,30 @@ bash /home/terry/.zcode/skills/task-planner/scripts/check-delegation.sh stats <p
 
 JSON 输出：
 ```json
-{粘贴 stats 命令原文输出}
+{"phases_total":5,"phases_delegated":2,"main_direct_count":3,"delegation_rate":0.4,"main_direct":[{"phase":"2","executor":"主进程（例外理由:② 计划三文件回填与根因簿记——Rule 25.3 白名单）"},{"phase":"3","executor":"主进程（例外理由:② 计划系统条款起草——Rule 25.3 白名单）"},{"phase":"5","executor":"主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）"}],"violations":[],"verdict":"ok"}
 ```
 
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
+- [x] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
+- [x] 委派率 0.4 但全部直做 Phase 均白名单内且机器 verdict=ok（violations=[]）→ 不触发回炉
 
 ## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
+- [x] Q1-Q6 逐项核查完成:触发 0 项,豁免 0 项,未处置 0 项（S3 格式漂移/主进程吞锚/行号锚三错误均闭环于 Error Log 四步——Rule 31 链，非 Rule 26 Q1-Q6 降质面：无伪造/无跳验证/无范围外写入）
+- [x] Evidence 抽查 ≥3 条:①evidence-session-extract.md E4-02/E4-05（224 篇声称链，主进程 4/4 复核）②subagent-state/2-recheck-clauses.md（复检 A-E 命令输出）③主仓三载体 grep=1+numstat 3×(+1/-0)（Bash 实跑输出在 progress Phase 4/5）——路径可 Read、结论可复现
+- [x] 豁免登记:无（无用户显式豁免需求）
+- [x] 存在未处置违规 → 不适用（0 未处置）
 
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```
-## Goal Verification — {Goal 语句}
+## Goal Verification — 根治 skill 执行两缺陷：范围静默扩张与完成声称措辞升格——以 94.7/51.14/64.7 三条款增款落地为可验证完成。
 对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
+- [x] VC-1: evidence-session-extract.md E 锚 ≥20（实测 60+），主进程复核 4/4 一致 → PASS
+- [x] VC-2: findings F2 GA1-GA5 五条带条款级 file:line 锚 → PASS
+- [x] VC-3: 三条款主仓三载体在位（grep=1×3；既有 94.6/51.13/64.6 零改动=复检 APPROVED 2-recheck-clauses.md） → PASS
+- [x] VC-4: --fresh 终跑 FAIL 集合=基线 9 项零新增（Total 97 PASS=88；tmp/regression-final-20261115.txt） → PASS
+- [x] VC-5: 三部署位 diff=0（zcode 9 对对账+claude/cursor 扩展核验 CLAUDE-CURSOR-PASS） → PASS
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: COMPLETE
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

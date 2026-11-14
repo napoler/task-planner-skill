@@ -151,7 +151,7 @@ parallel_groups: [clause-insert]
 | G2 | 根因缺口 | GA1-GA5 带条款锚落 findings | Read findings F2 逐条核对 | Phase 2 | complete |
 | G3 | 条款草案 | 三条款草案+判例锚落盘 | clause-drafts.md 在位 | Phase 3 | complete |
 | G4 | 三载体落地 | 主仓 grep 94.7/51.14/64.7 命中+既有锚零改动 | grep + git diff 纯增量核验 | Phase 4 | pending |
-| G5 | 回归收口 | 回归零增量+合并回+部署 diff=0 | run-selftests+逐位 diff | Phase 5 | pending |
+| G5 | 回归收口 | 回归零增量+合并回+部署 diff=0 | run-selftests+逐位 diff | Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -380,15 +380,15 @@ Phase 4（待用户 D1 yes 后启动）
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
+- [x] Review all output files
+- [x] Ensure deliverables are complete
+- [x] Deliver to user
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
 - [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-drift-fakeqc-20261115 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）
+- **V-N:** VC-3, VC-4, VC-5
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -396,7 +396,8 @@ Phase 4（待用户 D1 yes 后启动）
      发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1 | ①三条款判例锚含硬编码行号→终验回归新增 FAIL×2（AD-03/DG-03，task-v148 教训未召回）②委派统计误报×2（Handoff 类型名粘连+白名单理由无编号形态）③知识未利用：基线须部署后重跑的时序教训 | ①三载体+草案同步去行号锚+两断言单跑转绿+重部署 9/9+三仓再 push（Error Log 行 4）②裸名化+编号形态+重 attest stats=ok（Error Log 行 3）③教训入 knowledge-brief §4.5+Error Log Prevention 列 |
+| 2 | 零新发现（需求↔目标↔执行↔验证↔知识五维互洽：R1 五项覆盖判据全 PASS；三条款=唯一交付物且与草案逐字一致；VC-1~5 全 PASS；kb §2-§5 已沉淀）——收敛出口达成 | 无需处置，出 outcome=COMPLETE |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -505,6 +506,7 @@ Phase 4（待用户 D1 yes 后启动）
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-11-15 05:55 | ALIGNED | VC-3, VC-4 | Phase4 三载体插段 scope 未越界（检查点 subagent-state/1-drift-checker.md；留痕三件套齐） |
+| 2026-11-15 06:30 | ALIGNED | VC-3, VC-4, VC-5 | Phase5 合并回+部署+回归 scope 未越界（检查点 subagent-state/2-drift-checker.md；留痕三件套齐） |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 
@@ -614,4 +616,4 @@ Phase 4（待用户 D1 yes 后启动）
 - 触发信号: 任务类型空缺 → 落 general 兜底（非 16 类已知类型之一）
 - Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
-- 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP
+- 处置登记处: 不沉淀理由——本任务=规则条款修复（一次性缺陷根治），无可泛化为 variant 的模板结构面；general 兜底符合 Rule 34.3② 评估口径（三条件不满足）
