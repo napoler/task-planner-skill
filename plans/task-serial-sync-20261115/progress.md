@@ -137,3 +137,8 @@
   | 主仓终验 selftest | run-selftests.sh | FAIL ≤2 | FAIL=2（预存） | PASS |
   | 三部署位 diff | diff -q ×7 文件 ×3 位 | 全等 | 21/21 diff=0 | PASS |
   | CR 收口 | general-reviewer 四维 | APPROVED | APPROVED 零发现 | PASS |
+- [goal:G1] 验证=findings.md §Research Findings 含命中清单（文件:行）+缺口判定；命令=V-1.1/V-1.2 grep → PASS（2026-11-15，progress Phase 1 Test Results）
+- [goal:G2] 验证=findings §Technical Decisions 条款终稿+用户 #3 yes 留痕；证据=user-session-log.md #3+变更标注表 CA-1~CA-6 → PASS
+- [goal:G3] 验证=VC-1/VC-2 grep 命令在 worktree 内 exit 0；证据=progress Phase 3 Test Results（V-3.1/V-3.2 PASS+commit c5300a0）→ PASS
+- [goal:G4] 验证=VC-3 Total 行 FAIL 值解析 ≤基线 2；证据=progress Phase 4 Test Results（FAIL=2=基线+DQ-08 锁步 2eded71）→ PASS
+- [goal:G5] 验证=VC-4/VC-5；证据=V-5.1 PASS+主仓终验 selftest FAIL=2+三部署位 21/21 diff=0+CR APPROVED（checkpoints/cr-final-20261115.md）+merge 2660f6f → PASS
