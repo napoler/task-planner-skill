@@ -1,0 +1,2 @@
+{"tick":1,"ts":"2026-11-14T17:20:30Z","agent":"main","phase":"1","event":"drift_check","summary":"Phase1 ALIGNED：R 锚定/Goal/VC/用户原话四维无漂移；检查点=checkpoints/drift-check-p1-20261115.md","files":[]}
+{"tick":2,"ts":"2026-11-14T18:18:39Z","agent":"main","phase":"3","event":"drift_check","summary":"Phase3 ALIGNED（实施保真/Scope/在途零触碰/三环完整四维全过；检查点=checkpoints/drift-check-p3-20261115.md）","files":[]}
