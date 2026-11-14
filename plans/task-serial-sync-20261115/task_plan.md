@@ -399,17 +399,17 @@ Phase 5 合并回与收口：smart-merge-back --deploy 合并回主仓+部署位
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] worktree 全 VC 复验+git status 干净 → `bash skills/task-planner/scripts/smart-merge-back.sh /mnt/data/dev/task-planner-skill/tmp/worktrees/task-serial-sync-20261115 --deploy` → 清理 worktree/分支 → 主仓 Read 复验（§十一 合约）
-- [ ] 部署位同步核对（--deploy 覆盖面外的卫星技能文件级 cp+diff=0，先例=task-trashcan/task-subagent-markup）
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-serial-sync-20261115 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] worktree 全 VC 复验+git status 干净 → smart-merge-back --deploy 在 merge 步被主仓 staged 他人文件保守拦截 → 41.1 消解链=stash 窗口合并法手动完成 merge --no-ff（2660f6f）+主仓 Read 复验+stash pop 恢复在途态；worktree 清理见收尾
+- [x] 部署位同步核对：三部署位文件级 cp+diff=0（zcode 位 7 文件、claude 位 7 文件、cursor 位 7 文件全 diff=0 2026-11-15；agents 位 task-planner=stub 安装无 SKILL.md，跳过登记）
+- [x] Review all output files
+- [x] Ensure deliverables are complete
+- [x] Deliver to user
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：五维互洽一轮零新发现→收敛出口（见「收尾回读梳理记录」表轮次 1）
+- [x] 归档计划：check-complete exit 0 后 set-active-plan --clear + archive-plan（本 bullet 执行紧随本表，见 progress Phase 5 终局行）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- [x] 知识提取入库：kb-sync-from-plan.sh 生成 draft→主进程精炼主题化（内容内联）→派 general-coder 落盘 knowledge/entries/serial-creation-knowledgesync-rule107.md+kb-rebuild-index.sh（INDEX 命中=1，[sub:5]）
 - **V-N:** VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）

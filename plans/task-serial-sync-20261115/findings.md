@@ -108,3 +108,7 @@
 - 修法：锁步替换目标文件 4 处 `其余 8[0-9] 条`→`其余 9[0-9] 条`（:11 注释/:97 模式/:100 ok/:102 bad），`≥3/≥2/≥1` 三条件与 dq08a/dq08c 不变。
 - 自验：`bash -n` exit 0；`bash skills/task-planner/scripts/selftest-dual-qc.sh` → `Total: 14 PASS=14 FAIL=0`；目标文件残留 `其余 8[0-9] 条`=0。
 - 证据：`skills/task-planner/scripts/selftest-dual-qc.sh:11,97,100,102`；DQ-08 输出 `纪元窗=4/其余 9[0-9] 条=2/Rule 103 双轮质检与同步完整性域=1`。
+
+#### [sub:5-general-coder] 知识入库
+- 条目：`knowledge/entries/serial-creation-knowledgesync-rule107.md`（Rule 107 序列创作知识同步三环闭环，含落点锚与级联易错点）。
+- INDEX：`bash scripts/kb-rebuild-index.sh` 已执行；`grep -c 'serial-creation-knowledgesync-rule107' knowledge/INDEX.md`=1（命中）。
