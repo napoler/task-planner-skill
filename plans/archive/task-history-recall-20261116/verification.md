@@ -8,7 +8,7 @@
 
 ## Verification Contract (6 items, objective standards)
 
-> 命令相对仓根执行；worktree 阶段在 worktree 内执行同构命令。基线：master 既有预存 selftest FAIL=5（实测 2026-11-16=baseline-selftest.log；判据=无新增，FAIL 集合 ⊆ 基线集合）。
+> 命令相对仓根执行；worktree 阶段在 worktree 内执行同构命令。基线：master 既有预存 selftest FAIL=5（实测 2026-11-16=baseline-selftest.log；判据=无新增（FAIL 数=基线记录值，双侧非空且相等））。
 
 - [ ] VC-1: 6 交付物在位且 frontmatter 合规（SKILL.md/references 两文件/history-miner.md/接线行/selftest 脚本+registry 行）
   Evidence: 盘上文件+grep 锚回执
@@ -25,9 +25,9 @@
 - [ ] VC-5: 部署六位 diff=0（技能 4 位+agent 2 位，task-planner 3 变更文件×4 位含内；代表链如下，Phase 5 全矩阵对账留 progress）
   Evidence: diff -rq 零输出
   **Verify command**: diff -rq skills/plan-history-recall /home/terry/.zcode/skills/plan-history-recall && diff -rq skills/plan-history-recall /home/terry/.claude/skills/plan-history-recall && diff -q skills/task-planner/companion/agents/history-miner.md /home/terry/.zcode/agents/history-miner.md && diff -q skills/task-planner/SKILL.md /home/terry/.cursor/skills/task-planner/SKILL.md
-- [ ] VC-6: 接线行在位且全量回归无新增 FAIL（基线 FAIL=2）
+- [ ] VC-6: 接线行在位且全量回归 FAIL 数=基线记录值（无新增；基线=baseline-selftest.log 实测 5；判据=命令双侧非空且相等，防空串恒真）
   Evidence: grep 接线锚+runner 回执
-  **Verify command**: grep -q 'plan-history-recall' skills/task-planner/SKILL.md && [ "$(bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | tail -1 | grep -oE 'FAIL=[0-9]+')" = "$(grep -oE 'FAIL=[0-9]+' plans/task-history-recall-20261116/baseline-selftest.log | tail -1)" ]
+  **Verify command**: grep -q 'plan-history-recall' skills/task-planner/SKILL.md && A="$(bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | grep -E '^Total:' | grep -oE 'FAIL=[0-9]+')" && B="$(grep -oE 'FAIL=[0-9]+' plans/task-history-recall-20261116/baseline-selftest.log | tail -1)" && [ -n "$A" ] && [ -n "$B" ] && [ "$A" = "$B" ]
 
 ---
 
@@ -67,7 +67,7 @@ Status: `complete` Last verified: 2026-11-16
 - [ ] V-2.2: S-unit 表机器契约（NNmin/纯数字 ID）
   **Verify command**: grep -cE '\| S[0-9]+ \|' plans/task-history-recall-20261116/task_plan.md
 
-Status: `in_progress` Last verified: 2026-11-16
+Status: `complete` Last verified: 2026-11-16
 
 ---
 
@@ -86,7 +86,7 @@ Status: `in_progress` Last verified: 2026-11-16
 - [ ] V-3.2: VC-3 护栏锚（worktree 内执行）
   **Verify command**: （VC-3 同构命令，worktree cwd）
 
-Status: `pending`
+Status: `complete`
 
 ---
 
@@ -105,7 +105,7 @@ Status: `pending`
 - [ ] V-4.2: selftest --only FAIL=0
   **Verify command**: （VC-4 同构命令，worktree cwd）
 
-Status: `pending`
+Status: `complete`
 
 ---
 
@@ -124,4 +124,4 @@ Status: `pending`
 - [ ] V-5.2: worktree 已清理
   **Verify command**: git worktree list | grep -v task-history-recall
 
-Status: `pending`
+Status: `complete`

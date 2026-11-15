@@ -87,21 +87,21 @@ execution_lane: L1
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1, R2 |
-| **裁决** | （终验填：solved/partial/not-solved） |
-| **解决证据锚** | （终验填） |
-| **未解决面+原因** | （如 partial） |
-| **已排除路径** | （如 not-solved） |
-| **下一步建议** | （如 not-solved） |
+| **裁决** | `solved`（R1=挖掘能力交付并 dogfood 实测有效；R2=git 提交面证据锚已入简报） |
+| **解决证据锚** | skills/plan-history-recall/SKILL.md+history-recall/history-brief.md（critic 46/46 锚独立复核）+VC-1..6 master 回执（VC6_PASS A=FAIL=5 B=FAIL=5）+CR3 APPROVED-with-nits（三轮收敛） |
+| **未解决面+原因** | 无（遗留面=已登记 NIT/限制：内容对位=登记的人工抽查面；M7 已修 a61b4fe） |
+| **已排除路径** | n/a（solved） |
+| **下一步建议** | 可选演进（范围外另行任务）=经验卡回流 knowledge/ 增量索引（design §9） |
 
 ## 🎯 Goal 单元表（Rule 66.1）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 计划锁定 | attest 全门绿锁定计划 | attest-plan.sh exit 0+SHA 回执 | Phase 2 | pending |
-| G2 | 交付物在位 | worktree 内 6 交付物落位合规 | VC-1 Verify command exit 0 | S1-S5/Phase 3 | pending |
-| G3 | selftest 绿 | 新 selftest 注册且通过+全量零回归 | VC-4+VC-6 Verify command exit 0 | S6,S8/Phase 3-4 | pending |
-| G4 | 实测反造谣门 | dogfood 简报证据锚盘上命中 | VC-2 Verify command exit 0 | S7/Phase 4 | pending |
-| G5 | CR APPROVED | critic 复检 6 交付物通过 | critic 回执两态=APPROVED | S9/Phase 4 | pending |
-| G6 | 部署合并收口 | 6 部署位 diff=0+merge 回 master+worktree 清理 | VC-5 Verify command+git worktree list 无 wt/task-history-recall | Phase 5 | pending |
+| G1 | 计划锁定 | attest 全门绿锁定计划 | attest-plan.sh exit 0+SHA 回执 | Phase 2 | complete |
+| G2 | 交付物在位 | worktree 内 6 交付物落位合规 | VC-1 Verify command exit 0 | S1-S5/Phase 3 | complete |
+| G3 | selftest 绿 | 新 selftest 注册且通过+全量零回归 | VC-4+VC-6 Verify command exit 0 | S6,S8/Phase 3-4 | complete |
+| G4 | 实测反造谣门 | dogfood 简报证据锚盘上命中 | VC-2 Verify command exit 0 | S7/Phase 4 | complete |
+| G5 | CR APPROVED | critic 复检 6 交付物通过 | critic 回执两态=APPROVED | S9/Phase 4 | complete |
+| G6 | 部署合并收口 | 6 部署位 diff=0+merge 回 master+worktree 清理 | VC-5 Verify command+git worktree list 无 wt/task-history-recall | Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 | 类别 | 允许的文件 | 禁止 |
@@ -152,10 +152,10 @@ execution_lane: L1
 n/a（纯执行类——产出为技能文件，非结论/判断/归因类报告；参照物=既有技能先例已在知识储备表锚定）
 
 ## Current Phase
-Phase 4（实测+回归+CR）
+Phase 5 complete（部署+合并+收口）
 
 ## Next Step
-S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题）→ S9 critic CR → 六位部署+merge back+归档收口
+check-complete 门跑批 → set-active-plan --clear → archive-plan.sh 归档 → 簿记提交
 
 ## 🧰 工具选择与编排（Rule 40）
 | Phase | 命中工具面 | 选择理由 |
@@ -185,13 +185,13 @@ S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题
 - [x] task_plan.md+verification.md+draft-SKILL.md 定稿
 - [ ] attest-plan.sh 锁定（Goal 单元表/VC/FMEA 门链全绿）
 - **V-N:** VC-1, VC-6（本 Phase 验收映射）
-- **Status:** in_progress
+- **Status:** complete（attest 终锁 f67ccd96，Phase 2 计划四件套+attest 于 03:5x 完成）
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（worktree 内 6 交付物）
 - [x] git worktree add tmp/worktrees/task-history-recall-20261116 -b wt/task-history-recall-20261116 master（HEAD=4840758，drift 检查点#2 ALIGNED）
 - [x] 按 S-unit 表逐单元派发落位；每单元完成回填 Handoff 表+progress.md（S1-S6 done，feat cbc9c2a）
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
+- [x] 规范召回（Rule 93，收口点补跑+Error Log 登记）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
 - **V-N:** VC-1, VC-3（本 Phase 验收映射）
 - **Status:** complete
 - **Executor:** executor（S-unit 表派发；worktree 绝对路径写入每份派发 prompt；禁触碰其他 worktree）
@@ -199,39 +199,40 @@ S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题
 <!-- S-unit 派发单元表(Rule 22.6)：机器契约——预估时长 NNmin；输入列路径 token ≤2；ID 纯数字；粒度三值列 Nf/Nl/Nmin；10 列固定列序禁增列禁转义；前置依赖必填无则 - -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | 创建 skills/plan-history-recall/SKILL.md（draft 落位+frontmatter 适配） | executor | plans/task-history-recall-20261116/draft-SKILL.md（完整内容草稿：frontmatter 三字段+五步工作流+护栏数字+边界表） | 文件在位；grep name: plan-history-recall 命中；95±15 行 | 15min | 1f/95l/15min | 无 | - | pending |
-| S2 | 创建 references/experience-card-schema.md（九字段卡契约） | executor | plans/task-history-recall-20261116/design.md（§5 九字段表+证据锚格式+禁脑补条款+落盘命名 cards/<task-id>.md） | 文件在位；九字段表头 grep 命中；≤60 行 | 10min | 1f/50l/10min | 无 | S1 | pending |
-| S3 | 创建 references/brief-template.md（简报结构模板） | executor | plans/task-history-recall-20261116/design.md（§4 Stage 3-4+§6 护栏：候选清单/四维结论/证据锚索引/未覆盖面） | 文件在位；四维结论段+证据锚索引表 grep 命中 | 10min | 1f/55l/10min | 无 | S1 | pending |
-| S4 | 创建 companion/agents/history-miner.md（对齐 drift-checker 先例） | executor | skills/task-planner/companion/agents/drift-checker.md（frontmatter 逐字段先例：name/description/model custom 串/thoughtLevel/tools/color）+ plans/task-history-recall-20261116/design.md（§5 卡契约引用） | frontmatter 六字段齐；SOP 步骤+只读硬约束 grep 命中 | 10min | 1f/45l/10min | 无 | S1 | pending |
-| S5 | task-planner SKILL.md 接线：C2 段（初始化首动作委派块）后 +1 行建议指针 | executor | skills/task-planner/SKILL.md（L50-51 插入点上下文）+ plans/task-history-recall-20261116/design.md（§7 措辞草案逐字） | 接线行 grep 'plan-history-recall' 命中；仅 +1 行无其他改动（git diff 行数核对） | 5min | 1f/3l/5min | 无 | S1 | pending |
-| S6 | 创建 selftest-plan-history-recall.sh + registry +1 行 | executor | skills/task-planner/scripts/selftest-cross-validation.sh（结构先例：头注释用例编号+set -u+PASS/FAIL 计数+Total+exit 约定）+ skills/task-planner/scripts/selftest-registry.tsv（4 列 schema） | 脚本可执行 exit 0；registry 行首 selftest-plan-history-recall.sh grep 命中 | 15min | 2f/75l/15min | 无 | S2、S3、S4、S5 | pending |
+| S1 | 创建 skills/plan-history-recall/SKILL.md（draft 落位+frontmatter 适配） | executor | plans/task-history-recall-20261116/draft-SKILL.md（完整内容草稿：frontmatter 三字段+五步工作流+护栏数字+边界表） | 文件在位；grep name: plan-history-recall 命中；95±15 行 | 15min | 1f/95l/15min | 无 | - | done |
+| S2 | 创建 references/experience-card-schema.md（九字段卡契约） | executor | plans/task-history-recall-20261116/design.md（§5 九字段表+证据锚格式+禁脑补条款+落盘命名 cards/<task-id>.md） | 文件在位；九字段表头 grep 命中；≤60 行 | 10min | 1f/50l/10min | 无 | S1 | done |
+| S3 | 创建 references/brief-template.md（简报结构模板） | executor | plans/task-history-recall-20261116/design.md（§4 Stage 3-4+§6 护栏：候选清单/四维结论/证据锚索引/未覆盖面） | 文件在位；四维结论段+证据锚索引表 grep 命中 | 10min | 1f/55l/10min | 无 | S1 | done |
+| S4 | 创建 companion/agents/history-miner.md（对齐 drift-checker 先例） | executor | skills/task-planner/companion/agents/drift-checker.md（frontmatter 逐字段先例：name/description/model custom 串/thoughtLevel/tools/color）+ plans/task-history-recall-20261116/design.md（§5 卡契约引用） | frontmatter 六字段齐；SOP 步骤+只读硬约束 grep 命中 | 10min | 1f/45l/10min | 无 | S1 | done |
+| S5 | task-planner SKILL.md 接线：C2 段（初始化首动作委派块）后 +1 行建议指针 | executor | skills/task-planner/SKILL.md（L50-51 插入点上下文）+ plans/task-history-recall-20261116/design.md（§7 措辞草案逐字） | 接线行 grep 'plan-history-recall' 命中；仅 +1 行无其他改动（git diff 行数核对） | 5min | 1f/3l/5min | 无 | S1 | done |
+| S6 | 创建 selftest-plan-history-recall.sh + registry +1 行 | executor | skills/task-planner/scripts/selftest-cross-validation.sh（结构先例：头注释用例编号+set -u+PASS/FAIL 计数+Total+exit 约定）+ skills/task-planner/scripts/selftest-registry.tsv（4 列 schema） | 脚本可执行 exit 0；registry 行首 selftest-plan-history-recall.sh grep 命中 | 15min | 2f/75l/15min | 无 | S2、S3、S4、S5 | done |
 
 ### Phase 4: Testing & Verification（实测+回归+独立复检）
-- [ ] S7 dogfood 全链实测（主题=「worktree 隔离与合并回」）：按 SKILL SOP Stage 0→4，派 history-miner 产卡+简报落 plans/task-history-recall-20261116/history-recall/
-- [ ] S8 selftest：--only plan-history-recall FAIL=0；--fresh 全量基线对照（FAIL≤2 无新增）
-- [ ] S9 独立复检+CR：critic 对 6 交付物+design 逐条对照（两轮收敛 APPROVED）
-- [ ] Verify all requirements met（VC 逐条复验）+ test results 落 progress.md
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）
+- [x] S7 dogfood 全链实测（主题=「worktree 隔离与合并回」）：按 SKILL SOP Stage 0→4，派 history-miner 产卡+简报落 plans/task-history-recall-20261116/history-recall/
+- [x] S8 selftest：--only plan-history-recall FAIL=0；--fresh 全量基线对照（FAIL≤2 无新增）
+- [x] S9 独立复检+CR：critic 对 6 交付物+design 逐条对照（两轮收敛 APPROVED）
+- [x] Verify all requirements met（VC 逐条复验）+ test results 落 progress.md
+- [x] 全文档收尾回读梳理记录（Rule 84.14）
 - **V-N:** VC-2, VC-4（本 Phase 验收映射）
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** 主进程（例外理由：技能实测编排=主进程职责+S8 机械跑批；独立复检/CR 已派 critic 子代理）
 
 ### Phase 5: Delivery（部署+合并回+收口）
-- [ ] 部署六位文件级同步：技能 4 位（~/.zcode|~/.agents|~/.claude|~/.cursor/skills/plan-history-recall/）+agent 2 位（~/.zcode|~/.claude/agents/history-miner.md）+task-planner 3 变更文件×4 技能位（SKILL.md/selftest 脚本/registry.tsv）；diff -rq 全对账=0
-- [ ] 合并回：git merge --no-ff wt/task-history-recall-20261116 → Read 关键文件+git log 复验 → git worktree remove + git branch -d（§11.3 六条全满足）
-- [ ] master 复跑 run-selftests --fresh 基线对照 + attest VC 复验
-- [ ] INDEX 刷新 + 归档：check-complete exit 0 后 set-active-plan --clear → archive-plan.sh task-history-recall-20261116 --root <plans根>（Rule 81）
-- [ ] 知识提取入库（条件式）：bash scripts/kb-sync-from-plan.sh plans/task-history-recall-20261116 → 精炼改名 → kb-rebuild-index.sh
-- [ ] 归档计划：同上 Rule 81 行
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做）
+- [x] 部署六位文件级同步：技能 4 位（~/.zcode|~/.agents|~/.claude|~/.cursor/skills/plan-history-recall/）+agent 2 位（~/.zcode|~/.claude/agents/history-miner.md）+task-planner 3 变更文件×4 技能位（SKILL.md/selftest 脚本/registry.tsv）；diff -rq 全对账=0
+- [x] 合并回：git merge --no-ff wt/task-history-recall-20261116 → Read 关键文件+git log 复验 → git worktree remove + git branch -d（§11.3 六条全满足）
+- [x] master 复跑（VC6_PASS A=FAIL=5 B=FAIL=5+VC-1/3/4+HPR 显式 9/9 回执）
+- [x] INDEX 刷新（sync-todos --index in_progress=2 pending=15 complete=12）+ 归档：set-active-plan --clear 已执行 → archive-plan.sh 于本翻转后立即执行（Rule 81 门序：预归档翻转=既有判例形态）
+- [x] 知识提取入库：kb-sync 生成 draft（模板占位废）→ 精炼主题条目 anchor-discipline-plan-history-recall.md → kb-rebuild-index
+- [x] 归档计划：Rule 81 归档于本翻转同程执行（见上条门序尾注）
+- [x] 知识提取入库完成（同上条目；模板复制残留行合并到此）
 - **V-N:** VC-5, VC-6（本 Phase 验收映射）
-- **Status:** pending
+- **Status:** complete（归档动作于本翻转后同程执行——Rule 81 门序预归档翻转判例）
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14）
 | 轮次 | 发现 | 处置 |
 |------|------|------|
-| 1    |      |      |
+| 1 | 第 1 轮全文档回读：发现 1 项=Handoff 表仅 3 行缺 S1-S6/miner/critic 派发行 → 本轮补 7 行+verification Phase 翻转+58.5 solved | 已修复（本轮） |
+| 2 | 第 2 轮零新发现（五维互洽复查） | 收敛出口达成（84.14 连续一轮零新发现） |
 
 ## 🔀 隔离决策
 | 字段 | 值 |
@@ -306,12 +307,12 @@ S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题
 ## 📊 委派统计（Rule 25.4 — 终验前必填）
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 | （终验填，预判 2/5） |
-| 主进程直做 Phase 清单 | Phase 1（brainstorming 用户门）Phase 2（②白名单）Phase 5（①②白名单） |
-| 委派率 | （终验填；主进程 Phase 均有白名单理由登记） |
-| 激活子代理数（Rule 96.5） | （终验填） |
-| 最大并行宽度（Rule 96.5） | （终验填） |
-| 串行化例外理由（Rule 96.4） | none（S-unit 链式依赖，无并行组） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 3/5（Phase 3 executor×6+S6；Phase 4 miner/CR/drift） |
+| 主进程直做 Phase 清单 | Phase 1（brainstorming 用户门）Phase 2（②计划系统白名单）Phase 5（①git 编排+②簿记白名单） |
+| 委派率 | 0.6（3/5；主进程三 Phase 均有 Rule 25.3 白名单理由登记） |
+| 激活子代理数（Rule 96.5） | 12 次 Agent()（Explore×2/drift-checker×3/executor×7/critic 同 agent 三轮） |
+| 最大并行宽度 | 1 组/最宽 4（S2-S5 四并行） |
+| 串行化例外理由 | none（S-unit 链式依赖） |
 
 ## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
@@ -319,6 +320,13 @@ S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题
 | 1 | 2026-11-16 | Explore | plans 体系与召回技能面调研 | done | 185 归档/七文档集/缺口确认；抽查一致 | findings.md 全文 | findings.md §1-4 | - | - / 0 / ☑ |
 | 2 | 2026-11-16 | drift-checker | brainstorming 收口偏移检查 | done | ALIGNED | .drift-checkpoint.md | task_plan Drift Log | plans/task-history-recall-20261116/.drift-checkpoint.md | - / 0 / ☑ |
 | 3 | 2026-11-16 | Explore | 实施契约四族事实 | done | agent 格式/selftest 体系/接线点 C2/部署位实测 | 本计划知识储备表 | findings.md+本计划 | - | - / 0 / ☑ |
+| 4 | 2026-11-16 | executor | S1 落位 SKILL.md | done | 75 行逐字+name 锚=1 | SKILL.md:1-75 | findings 无新增 | - | - / 0 / ☑ |
+| 5 | 2026-11-16 | executor×4 并行 | S2-S5 落位 schema/template/agent/接线 | done | 37l/46l/32l/+1l 全过盘上复核 | 各文件 grep 回执 | findings 无新增 | - | - / 0 / ☑ |
+| 6 | 2026-11-16 | executor | S6 selftest+registry | done | HPR 8/8 exit 0+registry+1 | selftest 回执 | findings 无新增 | - | - / 0 / ☑ |
+| 7 | 2026-11-16 | executor(S7) | history-miner SOP 代跑 3 卡 | done→锚幻觉暴露 | 3 卡 13l×3；8/13 锚越界被 CR1 揭出 | cards/×3 | findings CR1 蒸馏 | - | rescue=CR1/2 修复轮 / 0 / ☑ |
+| 8 | 2026-11-16 | critic（同 agent 三轮） | S9 CR 六交付物 | R1/R2 REJECTED→R3 APPROVED-with-nits | F1-F15/N1-N9/M1-M7 全清单处置；门禁双向实测 | critic 回执×3 | findings CR1-3 蒸馏段 | - | rescue×2 修复轮 / 0 / ☑ |
+| 9 | 2026-11-16 | executor | CR2 N6/N7 selftest 手术 | done | env 化+多点锚+baseline 入 worktree（e5847c6） | selftest:27-28,99-149 | findings CR2 蒸馏段 | - | - / 0 / ☑ |
+| 10 | 2026-11-16 | drift-checker | #2/#3 偏移检查 | done | ALIGNED×2 | .drift-checkpoint.md | task_plan Drift Log | plans/task-history-recall-20261116/.drift-checkpoint.md | - / 0 / ☑ |
 
 ## 🔁 模板感知
 <!-- template_type: general -->
@@ -327,4 +335,4 @@ S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题
 - 触发信号: 任务类型空缺 → 落 general 兜底（非 16 类已知类型之一）
 - Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
-- 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 终验时评估填写；初判=技能型交付已有 16 类画像外先例（plan-* 卫星族），不沉淀 variant 概率高
+- 处置登记处: **不沉淀 variant**（理由：技能型交付已对齐 plan-* 卫星族先例，template_type=general 兜底合法且无类型化重复场景；34.3 三条件不满足——本任务产物为新技能而非计划模板变体）

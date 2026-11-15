@@ -58,3 +58,17 @@
 - F5 registry dep_anchors 改兄弟技能 ../ 形态+补 references 两锚；F7 HPR-05 去模型串钉（HPR-06 独占）；F8 参考段去源仓硬路径；F9 五文档读=分段+定向 grep+行号≤wc-l
 - F6 卫星表 12→13 不做（count 钉族风险+design 批准范围外）→登记为独立技能非卫星族；F11 接线行加引号 Skill("...")；F13 sha 位数放宽 ≥7；F14 分轮合并落字；F15=HPR-09
 - dogfood 经验：miner 产锚幻觉→锚必须机器重取；子代理大输出回执的行号声称=第一造假信号（与 subagent-verifier-fabricated 判例同构）
+
+## CR2 修复蒸馏（2026-11-16，critic R2 N1-N9→处置）
+- N1 BLOCKER VC-6 恒真（tail -1 取 Failed 行+worktree 无 baseline 日志）→ 命令重写：grep '^Total:' 取行+双侧非空守卫+baseline 日志入 worktree（e5847c6）
+- N2 VC-6 标题基线 2→5 口径统一（集合→计数相等+非空守卫）
+- N3/N4 卡锚内容错位（:19→:14-15/:17-18→:13-14）→两卡+简报同步改
+- N5 卡内勘误噪声清除；N8 §6 实际行数 71 落字；N9 §1 排除行锚化+尾管
+- N6 HPR-09 env 化可移植（HPR_DIR/ANCHOR_ROOT 可覆盖+缺失 WARN 跳过）；N7 多点锚逐 token 校验
+- F6/F10 余项/F12 余项/内容对应性=登记遗留与限制（见 progress 遗留段）；内容对应性=人工抽查面（critic 两轮抽查为执行者），HPR-09 只保机械层
+- 经验：门命令自身要过「恒真/恒假」审查——两侧空串相等即过是 fail-open 教科书反例；写 Verify command 后先自跑一次正例+负例
+
+## CR3 收口（2026-11-16）
+- 判决=APPROVED-with-nits（三轮收敛，crossvalidate 先例=三轮满足 CR-GATE）；N1 门禁可信性双向实测闭环（worktree VC6_rc=0 A=FAIL=5 B=FAIL=5；主仓 pre-merge fail-closed）
+- M1-M6 一次性收口（锚位精度 5 处+判据口径统一 1 处）；M7=worktree nit 提交 a61b4fe（WARN 文案区分零锚/缺目录）
+- 登记限制：HPR-09=机械层门（存在+越界+多点），内容对位=人工/独立抽查面；HPR-09 默认态仅含产物树实检（缺产物树=WARN 跳过）
