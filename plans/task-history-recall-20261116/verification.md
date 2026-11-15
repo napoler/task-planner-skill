@@ -8,7 +8,7 @@
 
 ## Verification Contract (6 items, objective standards)
 
-> 命令相对仓根执行；worktree 阶段在 worktree 内执行同构命令。基线：master 既有预存 selftest FAIL=2（判据=无新增）。
+> 命令相对仓根执行；worktree 阶段在 worktree 内执行同构命令。基线：master 既有预存 selftest FAIL=5（实测 2026-11-16=baseline-selftest.log；判据=无新增，FAIL 集合 ⊆ 基线集合）。
 
 - [ ] VC-1: 6 交付物在位且 frontmatter 合规（SKILL.md/references 两文件/history-miner.md/接线行/selftest 脚本+registry 行）
   Evidence: 盘上文件+grep 锚回执
@@ -27,7 +27,7 @@
   **Verify command**: diff -rq skills/plan-history-recall /home/terry/.zcode/skills/plan-history-recall && diff -rq skills/plan-history-recall /home/terry/.claude/skills/plan-history-recall && diff -q skills/task-planner/companion/agents/history-miner.md /home/terry/.zcode/agents/history-miner.md && diff -q skills/task-planner/SKILL.md /home/terry/.cursor/skills/task-planner/SKILL.md
 - [ ] VC-6: 接线行在位且全量回归无新增 FAIL（基线 FAIL=2）
   Evidence: grep 接线锚+runner 回执
-  **Verify command**: grep -q 'plan-history-recall' skills/task-planner/SKILL.md && bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | tail -1 | grep -qE 'FAIL=(0|1|2)$'
+  **Verify command**: grep -q 'plan-history-recall' skills/task-planner/SKILL.md && [ "$(bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | tail -1 | grep -oE 'FAIL=[0-9]+')" = "$(grep -oE 'FAIL=[0-9]+' plans/task-history-recall-20261116/baseline-selftest.log | tail -1)" ]
 
 ---
 

@@ -9,4 +9,4 @@
 | 失败教训 | BP-08 行数钉回归→改行数前 grep 行数钉族+实值+5 边距+追加不改写；merge 阻断→stash 窗口法。 | plans/archive/task-specmode-integration-20261115/findings.md:49,69-70 |
 | 可复用资产 | worktree→commit→stash 窗口 merge→deploy→cleanup 全链实证；行数钉维护策略。 | plans/archive/task-specmode-integration-20261115/progress.md:60-62 |
 | 用户偏好信号 | 用户逐字裁决：调用/促进使用非复制；主动安装免用户决定；task-planner=忠实记录者+调度者。 | plans/archive/task-specmode-integration-20261115/user-session-log.md:42-44 |
-| 证据锚 | task_plan.md:1,24,34; progress.md:60-62,78; findings.md:49-52,69-70; usl:42-44; commit c5b891d/a349a89/6e9dcfc | 同左 |
+| 证据锚 | 各字段锚汇总=上表证据锚列全路径形态；另 commit c5b891d/a349a89/6e9dcfc | 同左 |
