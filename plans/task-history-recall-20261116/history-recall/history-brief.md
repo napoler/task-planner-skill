@@ -14,10 +14,10 @@
 | task-crossprojauth-20261104 | partial/未归档（mini stub） | 入选：Rule 100/101 worktree 规范本体任务（锚：plans/task-crossprojauth-20261104/task_plan.md:19） |
 | task-v186-understanding-mirror | complete（归档） | 入选：worktree 回合标准证据链（锚：plans/archive/task-v186-understanding-mirror/progress.md:65,72） |
 | task-specmode-integration-20261115 | complete（归档） | 入选：全链实践与失败教训（锚：plans/archive/task-specmode-integration-20261115/findings.md:49-52,69-70） |
-| task-v164-pointer-worktree-local | complete（归档） | 排除：worktree 仅手段非主题（路由通道 B 命中） |
-| task-v182-git-snapshot-commits | complete（归档） | 排除：双提交纪律主题（锚：plans/archive/task-v182-git-snapshot-commits/task_plan.md:1） |
-| s77-p2-fix / skill-audit-s77-fix | complete | 排除：worktree 仅手段（锚：plans/INDEX.md:10） |
-| task-v135 / task-v141 | complete（归档） | 排除：早期 desync 教训已沉淀于模板层（锚：plans/archive/task-v186-understanding-mirror/task_plan.md:1） |
+| task-v164-pointer-worktree-local | complete（归档） | 排除：worktree 仅手段非主题（锚：plans/archive/task-v164-pointer-worktree-local/task_plan.md:1） |
+| task-v182-git-snapshot-commits | complete（归档） | 排除：双提交纪律主题（锚：plans/archive/task-v182-git-snapshot-commits/task_plan.md:70） |
+| s77-p2-fix / skill-audit-s77-fix | complete | 排除：worktree 仅手段（锚：plans/INDEX.md:10,12） |
+| task-v135 / task-v141 | complete（归档） | 排除：早期 desync 教训已沉淀于模板层（锚：skills/task-planner/references/worktree-isolation.md:1） |
 
 §1 注：路由命中后必须 ls 验证目录实名存在性（本次两处假设落空，靠枚举实名修正）。
 
@@ -26,7 +26,7 @@
 - worktree 全链 SOP 成型且被复用：attest→隔离→回归→merge --no-ff→核验→清理（锚：plans/archive/task-v186-understanding-mirror/progress.md:65,72）
 - 制度层 Rule 100/101（锚：commit ec72683）
 - stash 窗口法过 plan-resume 遗留暂存态（锚：plans/archive/task-specmode-integration-20261115/progress.md:60；v195 判例二度实证锚=plans/archive/task-specmode-integration-20261115/findings.md:70）
-- 部署 diff=0+push ahead=0 收口模式（锚：plans/task-history-recall-20261116/history-recall/cards/task-crossprojauth-20261104.md:9）
+- 部署 diff=0+push ahead=0 收口模式（锚：plans/task-crossprojauth-20261104/task_plan.md:15）
 
 ### ②失败教训（频次+根因聚类）
 - [频次 2][聚类 管线环境阻断] merge 被遗留暂存态/对端活跃 workflow 阻断→stash 窗口法（锚：plans/archive/task-specmode-integration-20261115/findings.md:69-70）

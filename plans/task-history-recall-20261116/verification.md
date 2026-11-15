@@ -8,7 +8,7 @@
 
 ## Verification Contract (6 items, objective standards)
 
-> 命令相对仓根执行；worktree 阶段在 worktree 内执行同构命令。基线：master 既有预存 selftest FAIL=5（实测 2026-11-16=baseline-selftest.log；判据=无新增，FAIL 集合 ⊆ 基线集合）。
+> 命令相对仓根执行；worktree 阶段在 worktree 内执行同构命令。基线：master 既有预存 selftest FAIL=5（实测 2026-11-16=baseline-selftest.log；判据=无新增（FAIL 数=基线记录值，双侧非空且相等））。
 
 - [ ] VC-1: 6 交付物在位且 frontmatter 合规（SKILL.md/references 两文件/history-miner.md/接线行/selftest 脚本+registry 行）
   Evidence: 盘上文件+grep 锚回执

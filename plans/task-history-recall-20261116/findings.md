@@ -67,3 +67,8 @@
 - N6 HPR-09 env 化可移植（HPR_DIR/ANCHOR_ROOT 可覆盖+缺失 WARN 跳过）；N7 多点锚逐 token 校验
 - F6/F10 余项/F12 余项/内容对应性=登记遗留与限制（见 progress 遗留段）；内容对应性=人工抽查面（critic 两轮抽查为执行者），HPR-09 只保机械层
 - 经验：门命令自身要过「恒真/恒假」审查——两侧空串相等即过是 fail-open 教科书反例；写 Verify command 后先自跑一次正例+负例
+
+## CR3 收口（2026-11-16）
+- 判决=APPROVED-with-nits（三轮收敛，crossvalidate 先例=三轮满足 CR-GATE）；N1 门禁可信性双向实测闭环（worktree VC6_rc=0 A=FAIL=5 B=FAIL=5；主仓 pre-merge fail-closed）
+- M1-M6 一次性收口（锚位精度 5 处+判据口径统一 1 处）；M7=worktree nit 提交 a61b4fe（WARN 文案区分零锚/缺目录）
+- 登记限制：HPR-09=机械层门（存在+越界+多点），内容对位=人工/独立抽查面；HPR-09 默认态仅含产物树实检（缺产物树=WARN 跳过）
