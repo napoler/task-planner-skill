@@ -51,3 +51,10 @@
 - 通道 A（INDEX grep worktree）：仅 2 行命中（s77-p2-fix/skill-audit-s77-fix）；INDEX 主表 Goal 列文字命中面窄（worktree 信息在专列）。
 - 通道 B（git log --all --grep worktree）：命中丰富；**git subject 括号 task-id 惯例是更强路由信号**（旧结论实测再证）。
 - 路由裁决：候选 3 = task-crossprojauth-20261104（Rule 100/101 worktree 规范本体）/task-v186（worktree 回合教训）/task-specmode-integration-20261115（近期 worktree merge 实践）；排除留痕（s77-p2-fix 等=worktree 仅手段非主题）。
+
+## CR Round1 修复蒸馏（2026-11-16，critic S9 F1-F15→处置）
+- F1 BLOCKER 锚越界 8/13→全量机器重取（grep -n+行号≤wc-l）重写 2 卡+简报；HPR-09 锚可解析断言新增（机器门）
+- F3 基线口径三源不一→统一=5（基线对比式判据）；F4 简报路径三源统一 history-recall/history-brief.md
+- F5 registry dep_anchors 改兄弟技能 ../ 形态+补 references 两锚；F7 HPR-05 去模型串钉（HPR-06 独占）；F8 参考段去源仓硬路径；F9 五文档读=分段+定向 grep+行号≤wc-l
+- F6 卫星表 12→13 不做（count 钉族风险+design 批准范围外）→登记为独立技能非卫星族；F11 接线行加引号 Skill("...")；F13 sha 位数放宽 ≥7；F14 分轮合并落字；F15=HPR-09
+- dogfood 经验：miner 产锚幻觉→锚必须机器重取；子代理大输出回执的行号声称=第一造假信号（与 subagent-verifier-fabricated 判例同构）

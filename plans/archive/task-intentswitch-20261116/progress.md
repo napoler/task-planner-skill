@@ -111,3 +111,4 @@
 | 终验首跑 VC-3/VC-4 FAIL（5/7） | VC-3 三锚形态错配（SKILL.md 无 Rule 102 字面+discipline 裸编号）+VC-4 锚句字段名 [intent-switch] 与判据字面「切换登记」错配=均判据缺陷 | 同一四步第 2 批修正+重锁（c8d3a744→c55d166c），产物零改动 | 重跑 7/7 PASS |
 | check-complete 首跑 STATE-CONSISTENCY FAIL | Phase 2 checkbox 未勾+progress Phase 段状态行未随实质完成翻转（记录 append 在尾部未归位段内） | task_plan Phase 2 S1-S4 勾选+progress 全量重写四段实质回填 | 复跑见终验记录 |
 | Phase 1 S-unit 粒度回填偏差 | 实态=plan-writer 单执行体两轮（首轮 819s 超时暂停+续跑 1213s）产出约 900 行计划文档，超 S-unit 门（100l/15min）；门针对未来派发拆分，回填行取名义拆分值 2f/100l/15min 并在目标列注明实态（诚实保留偏差记录） | 复跑见 check-complete 终态 |
+- [judge] 73.4 收口评判（2026-11-16）：合并回 281e556 前置——drift-p1/p2 双 ALIGNED+CR APPROVED+终验 7/7+回归同集零增量；边界不破坏（64.x/drift-guard 语义未动，VC-5 实证）；变更决策链完整（S-A 采纳+判据两批四步修正均已 Decisions 登记）；风险披露=LLM 行为门强化非机器强制，行为面冒烟留待新会话自然场景

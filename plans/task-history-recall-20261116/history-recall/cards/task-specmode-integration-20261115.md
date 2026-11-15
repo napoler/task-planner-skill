@@ -1,13 +1,12 @@
 # 经验卡：task-specmode-integration-20261115
-
 | 字段 | 内容 | 证据锚 |
 |------|------|--------|
 | task_id | task-specmode-integration-20261115 | plans/archive/task-specmode-integration-20261115/task_plan.md:1 |
-| outcome | complete（归档至 plans/archive/，outcome=COMPLETE；merge+三位部署+worktree 清理收口） | plans/archive/task-specmode-integration-20261115/progress.md:117-133; commit 6e9dcfc; commit a349a89 |
-| goal_摘要 | 将 Superpowers 与 OpenSpec 以调用形态显性接入 task-planner 任务整理阶段（Spec 模式路由+自动安装引导），task-planner 定位为忠实记录者+调度者；在 worktree 隔离实现、复检回归后合并回主仓并三位部署。 | plans/archive/task-specmode-integration-20261115/task_plan.md:45-56; plans/archive/task-specmode-integration-20261115/findings.md:17-23 |
-| 关键决策 | 集成形态=调用非复制（R6）；spec 产物路径动态解析禁硬编码；brainstorming 后续让位 writing-plans；R5 免用户门仅限安装/初始化；merge 采用 stash 窗口合并法绕过 plan-resume 遗留暂存态阻断（判例 task-v195 同款）。 | plans/archive/task-specmode-integration-20261115/findings.md:98-112; plans/archive/task-specmode-integration-20261115/progress.md:67-77,123-124 |
-| 成功要素 | worktree wt/task-specmode-integration-20261115 隔离开发（4 文件变更集可控）→ S7 critic APPROVED-with-nits 且 11 发现一轮全修 → 终跑回归 97/95/2 与基线零增量 → commit c5b891d + merge --no-ff a349a89 → 三位 diff=0 部署 → 源仓 push + worktree/分支清零。 | plans/archive/task-specmode-integration-20261115/progress.md:45-77,117-133; plans/archive/task-specmode-integration-20261115/task_plan.md:1-20(VC映射); commit c5b891d; commit a349a89 |
-| 失败教训 | (1) BP-08 行数钉回归（SKILL.md 行数变更触发钉值失败）—先 grep 行数钉族并用实值+边距、追加新日期条目禁改历史；(2) plan-resume 遗留暂存态阻断 merge—用 stash 窗口合并法并核对 stash pop 后状态；(3) npm registry ECONNREFUSED—按降级链改官方 README web_reader 抓取。 | plans/archive/task-specmode-integration-20261115/findings.md:114-121; plans/archive/task-specmode-integration-20261115/progress.md:45-77,117-133 |
-| 可复用资产 | worktree→commit→stash 窗口 merge→deploy→cleanup 全链路实证；spec-mode 路由条款与安装引导（调用式集成）产物；复检-修复-再回归闭环；行数钉维护策略（实值+边距、追加不改写）。 | plans/archive/task-specmode-integration-20261115/progress.md:117-133; plans/archive/task-specmode-integration-20261115/findings.md:90-112; commit a349a89; commit c5b891d |
-| 用户偏好信号 | 用户要求 Superpowers/OpenSpec 显性引入但“调用/促进使用”非复制内容；未安装时主动安装补充、免用户决定；task-planner 做忠实记录者+调度者，避免目标梳理偏移。 | plans/archive/task-specmode-integration-20261115/user-session-log.md:37-46; plans/archive/task-specmode-integration-20261115/task_plan.md:16-36 |
-| 证据锚 | plans/archive/task-specmode-integration-20261115/task_plan.md:1-56; plans/archive/task-specmode-integration-20261115/progress.md:1-133; plans/archive/task-specmode-integration-20261115/findings.md:1-121; plans/archive/task-specmode-integration-20261115/user-session-log.md:37-46; plans/archive/task-specmode-integration-20261115/knowledge-brief.md:1-40; commit c5b891d; commit a349a89; commit 98c9208; commit 4690c61; commit d5c5a9b; commit 6e9dcfc。 | 同左 |
+| outcome | complete（归档；merge+三位部署+清理收口） | plans/archive/task-specmode-integration-20261115/progress.md:60-62 |
+| goal_摘要 | Superpowers/OpenSpec 以调用形态接入任务整理阶段；task-planner=忠实记录者+调度者；worktree 隔离实施后合并部署。 | plans/archive/task-specmode-integration-20261115/task_plan.md:24,34 |
+| 关键决策 | 调用非复制；stash 窗口法过 plan-resume 遗留暂存态（v195 判例二度实证）；BP-08 行数钉=实值+边距+追加不改写。 | plans/archive/task-specmode-integration-20261115/findings.md:49-52,70 |
+| 成功要素 | worktree commit c5b891d→stash 窗口法 merge --no-ff a349a89→三位部署 diff=0→push→worktree 清零；终跑回归与基线零增量。 | plans/archive/task-specmode-integration-20261115/progress.md:60-62,78 |
+| 失败教训 | BP-08 行数钉回归→改行数前 grep 行数钉族+实值+5 边距+追加不改写；merge 阻断→stash 窗口法。 | plans/archive/task-specmode-integration-20261115/findings.md:49,69-70 |
+| 可复用资产 | worktree→commit→stash 窗口 merge→deploy→cleanup 全链实证；行数钉维护策略。 | plans/archive/task-specmode-integration-20261115/progress.md:60-62 |
+| 用户偏好信号 | 用户逐字裁决：调用/促进使用非复制；主动安装免用户决定；task-planner=忠实记录者+调度者。 | plans/archive/task-specmode-integration-20261115/user-session-log.md:42-44 |
+| 证据锚 | task_plan.md:1,24,34; progress.md:60-62,78; findings.md:49-52,69-70; usl:42-44; commit c5b891d/a349a89/6e9dcfc | 同左 |
