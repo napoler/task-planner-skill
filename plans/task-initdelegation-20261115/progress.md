@@ -5,6 +5,7 @@
 
 ### Phase 0: 计划初始化与本次派发留痕（Plan Writing / dogfood）
 - **Status:** complete
+- **R 锚定**：服务 R1「初始化阶段全部委派子代理」——本次计划文档产出派发即新范式 dogfood 首实例（Plan Writer 首派失败降级 general-purpose 留痕）
 - **Started:** 2026-11-15 17:25
 - Actions taken:
   - [init] 主进程已创建计划目录骨架（7 文件）：`plans/task-initdelegation-20261115/{task_plan.md,findings.md,progress.md,notepad-learnings.md,verification.md,knowledge-brief.md,user-session-log.md}`（依据任务背景说明）。
@@ -26,10 +27,10 @@
 > Phase 1（S1+S2）已由后续执行体完成只读侦察与基线采集（见下方 Phase 1 段）；本 Phase 0 保留 plan-writing 派发留痕。
 
 ### Phase 1: 只读侦察 + 基线采集（S1+S2）
-- **[goal:G1] 完成证据**：S1 插入点 L48/L49 定稿（findings.md Technical Decisions「S1 锚点锁定」段）+ S2 基线 97 脚本 PASS=94/FAIL=3 改前既有（progress Phase1 段命令实测）+ rule-reserve next=109 只读留痕 + Q1 SKILL-only 定稿（Decisions Made）
+- **[goal:G1] 完成证据**：S1 插入点 L48/L49 定稿（锚点=清除哨兵行/智能子动作行）+ S2 基线 97 脚本 PASS=94/FAIL=3 改前既有 + rule-reserve next=109 只读留痕 + Q1 SKILL-only 定稿——证据=本文件 Phase 1 段 S1/S2 全部命令实测记录
 - **Status:** complete
 - **Started:** 2026-11-15（本会话 Phase 1 派发执行）
-- **R 锚定（记录）**：本 Phase 服务 R1/R3「初始化阶段委派条款固化的锚点锁定与改前基线采集」，为 Phase 2 条款实现与 Phase 3 零增量对账提供证据。
+- **R 锚定**：本 Phase 服务 R1/R3「初始化阶段委派条款固化的锚点锁定与改前基线采集」，为 Phase 2 条款实现与 Phase 3 零增量对账提供证据。
 - Actions taken:
   - **S1 锚点锁定（只读）**：`Read skills/task-planner/SKILL.md`；`nl -ba skills/task-planner/SKILL.md | sed -n '30,80p'` 定位「计划制作循环」`[M] 初始化（哨兵机制）— 机械子动作`（L38-48）/ `[A] 初始化（哨兵机制）— 智能子动作`（L49-54）/ `[A] 计划确认`（L55-61）与 L0/mini/trivial/L0-E 边界段（`sed -n '190,210p'`，L194-203 含 Rule 38.7/比例原则/豁免口径）；定稿首动作委派条款插入点（建议：L48 之后、L49 之前新增 `[A]` 子动作）与措辞要点，落盘至 `findings.md##Technical Decisions`「S1 锚点锁定」小节。
   - **S2 基线盘点 - 编号水位（只读）**：`bash skills/task-planner/scripts/rule-reserve.sh next 2>&1; echo "---EXIT:$?---"` → `109` / `EXIT:0`（Q1 定 SKILL-only 不占号，仅登记水位）。
@@ -53,7 +54,7 @@
 - **[goal:G2] 完成证据**：worktree 2bb24f4 SKILL.md +9 行条款落位 + 主进程盘上复核 V-N 直跑 VC-1..VC-5 全 PASS + CA-2 按 SKILL-only 关闭（progress Phase2 段）
 - **Status:** complete
 - **Started:** 2026-11-15
-- **R 锚定（记录）**：服务 R1/R3——在 worktree SKILL.md 计划制作循环插入 L1+ 初始化首动作委派条款并完成引用面只读核查。
+- **R 锚定**：服务 R1/R3——在 worktree SKILL.md 计划制作循环插入 L1+ 初始化首动作委派条款并完成引用面只读核查。
 - **主进程复核（84.4，2026-11-15）**：盘上 Read 插入块 L48-58 全文=条款七要素齐（触发/动作/职责收窄/收据契约/边界/豁免/动机含防误读注）；commit 2bb24f4 diff stat=9 insertions 实测；V-N 直跑：VC-1 锚词 grep=2 命中 / VC-2 files_created L53 / VC-3 豁免 L55+动机 L56 / VC-4 边界 L54 / VC-5 fallback 分支命中——**VC-1..VC-5 全 PASS**；CA-2（critical-rules.md）按 Q1 SKILL-only 定稿关闭=无操作（登记于 Decisions Made）；check-3file-gate EXIT:0
 - Actions taken:
   - **S0/前置复核（worktree）**：确认 `wt/task-initdelegation-20261115@a7f3faf` 基线，`git status --short` 干净；读取 `skills/task-planner/SKILL.md` L44-54，前锚 L47（`清除哨兵` 行）/后锚原 L49（`[A] 初始化（哨兵机制）— 智能子动作：体量分级判定与隔离决策`）与预期一致；读取主仓 `findings.md##Technical Decisions`「S1 锚点锁定」作为定稿输入。
