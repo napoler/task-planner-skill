@@ -1,0 +1,58 @@
+# [run-verification] VC-6 | 2026-11-15T11:41:02Z | cmd: cd /mnt/data/dev/task-planner-skill && test -f plans/task-initdelegation-20261115/progress.md && grep -nE "基线|零增量|FAIL|PASS" plans/task-initdelegation-20261115/progress.md
+# ---- stdout/stderr ----
+23:  | 文件在位核对 | Read 7 文件骨架 + 本次 Write | 5 个计划产物文件内容完整可读 | task_plan/findings/knowledge-brief/progress/verification 已写入 | PASS |
+24:  | 派发降级留痕 | 首派失败 reason | progress/findings 记录 Plan Writer 失败与 general-purpose 降级 | 已记录 `reasoning-level-missing` 与改派 | PASS |
+26:> Phase 1（S1+S2）已由后续执行体完成只读侦察与基线采集（见下方 Phase 1 段）；本 Phase 0 保留 plan-writing 派发留痕。
+28:### Phase 1: 只读侦察 + 基线采集（S1+S2）
+31:- **R 锚定（记录）**：本 Phase 服务 R1/R3「初始化阶段委派条款固化的锚点锁定与改前基线采集」，为 Phase 2 条款实现与 Phase 3 零增量对账提供证据。
+34:  - **S2 基线盘点 - 编号水位（只读）**：`bash skills/task-planner/scripts/rule-reserve.sh next 2>&1; echo "---EXIT:$?---"` → `109` / `EXIT:0`（Q1 定 SKILL-only 不占号，仅登记水位）。
+35:  - **S2 基线盘点 - selftest 清点**：`find skills/task-planner/scripts -maxdepth 1 -type f -name 'selftest*.sh' | sort | wc -l` → **97**；全量清单已枚举（见命令输出，含 97 个 `selftest*.sh`）。
+36:  - **S2 基线盘点 - SKILL.md 内容断言测试**：`grep -l 'SKILL\.md' skills/task-planner/scripts/selftest*.sh | sort` → **69** 个脚本引用/断言 SKILL.md（条款插入高敏感面，Phase 2 改 SKILL 后需重点回归）。
+37:  - **S2 基线盘点 - 回归入口确认**：`ls skills/task-planner/scripts/ | grep -E 'run|all|test'` 确认 `run-selftests.sh` 为全量回归入口；读取头部确认用法（支持 `--fresh`、`--only`、`--status`，指纹缓存机制）后执行全量基线。
+38:  - **S2 全量基线执行**：`cd /mnt/data/dev/task-planner-skill && bash skills/task-planner/scripts/run-selftests.sh 2>&1; echo "___RC:$?___"`（后台完成后收集输出）→ 总脚本 97，执行 97，复用 0；**PASS=94 / FAIL=3**；runner 退出码 `___RC:1___`。
+41:  - plans/task-initdelegation-20261115/progress.md（本段：S2 基线数据/命令/结果摘要）
+45:  | rule-reserve next（只读） | `bash skills/task-planner/scripts/rule-reserve.sh next` | 返回编号水位，exit 0 | `109`，`EXIT:0` | PASS（记录） |
+46:  | selftest 清点 | `find ... -name 'selftest*.sh' \| wc -l` + `sort` | 得到总数与清单 | 97 个 selftest*.sh（清单已枚举） | PASS |
+47:  | SKILL.md 断言测试识别 | `grep -l 'SKILL\.md' skills/task-planner/scripts/selftest*.sh` | 列出可能受条款插入影响的内容断言测试 | 69 个脚本（见收据清单） | PASS |
+48:  | 回归入口确认 | `ls scripts/ \| grep -E 'run\|all\|test'` + `sed run-selftests.sh` | 确认全量入口与用法 | `run-selftests.sh`（支持 --fresh/--only/--status） | PASS |
+49:  | 全量自测基线（改前快照） | `bash skills/task-planner/scripts/run-selftests.sh` | 记录总数/PASS/FAIL/FAIL 清单（零增量对比基线） | `Total: 97 PASS=94 FAIL=3 (run=97 reused=0)`；`Failed: selftest-active-plan selftest-execution-stability selftest-rule-reserve-pairing`；`___RC:1___` | **BASELINE FAIL=3（改前既有）** |
+55:- **主进程复核（84.4，2026-11-15）**：盘上 Read 插入块 L48-58 全文=条款七要素齐（触发/动作/职责收窄/收据契约/边界/豁免/动机含防误读注）；commit 2bb24f4 diff stat=9 insertions 实测；V-N 直跑：VC-1 锚词 grep=2 命中 / VC-2 files_created L53 / VC-3 豁免 L55+动机 L56 / VC-4 边界 L54 / VC-5 fallback 分支命中——**VC-1..VC-5 全 PASS**；CA-2（critical-rules.md）按 Q1 SKILL-only 定稿关闭=无操作（登记于 Decisions Made）；check-3file-gate EXIT:0
+57:  - **S0/前置复核（worktree）**：确认 `wt/task-initdelegation-20261115@a7f3faf` 基线，`git status --short` 干净；读取 `skills/task-planner/SKILL.md` L44-54，前锚 L47（`清除哨兵` 行）/后锚原 L49（`[A] 初始化（哨兵机制）— 智能子动作：体量分级判定与隔离决策`）与预期一致；读取主仓 `findings.md##Technical Decisions`「S1 锚点锁定」作为定稿输入。
+65:      3. **SKILL.md 内容引用面（需回归验证）**：`skills/task-planner/SKILL.md` 内 L38 机械子动作/L47 清除哨兵/L58 智能子动作/L73,L124 其他“智能子动作”块均保留原语义；Phase 1 基线识别 **69 个引用/断言 SKILL.md 的 selftest**（`grep -l 'SKILL\.md' scripts/selftest*.sh`）为结构/内容敏感面，Phase 3 应重点运行并与基线 PASS=94/FAIL=3（`selftest-active-plan`, `selftest-execution-stability`, `selftest-rule-reserve-pairing`）做零增量对账。
+74:  | Step 0 锚点复核 | Read worktree SKILL.md L44-54 / git 状态 | 前锚 L47 清除哨兵、后锚 L49 智能子动作与预期一致；HEAD a7f3faf | 符合预期，工作树干净 | PASS |
+75:  | S1 结构回读（Rule 106.1a） | Edit 后 `nl -ba ... \| sed -n '44,70p'` | 前锚 L47 保留、插入块 L49-L57、原智能子动作完整下移至 L58+，无吞块 | 结构完整，锚点/段落均在位 | PASS |
+76:  | S1 diff/提交 | `git diff --stat` + `git commit`（单文件 add） | 仅 SKILL.md 变更并成功提交 | `1 file changed, 9 insertions(+)`；commit `2bb24f4f8b63139cc2ed23245a99d07fd629b431`（short 2bb24f4） | PASS |
+77:  | S2 引用面 grep（只读） | `grep -rn` 锚串/副标题于 skills/task-planner 与 scripts/selftest*.sh | 输出引用/断言面供高危清单登记 | 无 selftest 直接命中精确锚/副标题；plan-created.cjs/task-plan-init.cjs 为文案引用；69 个 SKILL.md 相关 selftest 列为 Phase 3 回归重点 | PASS（核查完成，回归待 Phase 3） |
+79:  - **结构回读结论**：前锚（L47 清除哨兵）与后锚（L58 原智能子动作：体量分级判定与隔离决策）完整保留，新增条款位于 L49-L57，计划确认块（L64+）未受影响。**PASS**。
+95:| Where am I going? | Phase 1→5：锚定基线→条款实现→守护自测→部署对账→终验交付 |
+115:- **R 锚定**：服务 R3/VC-6/VC-7——在 worktree 内执行全量 `run-selftests.sh --fresh`，对比既有基线 PASS=94/FAIL=3（`selftest-active-plan`, `selftest-execution-stability`, `selftest-rule-reserve-pairing`）做零增量对账；归因并最小化修复“由本任务插入引起”的新增 FAIL；完成 S2 守护按需判定。
+116:- **主进程复核（84.4，2026-11-15）**：盘上 `git diff` 复核 BP-08 修复=既有钉演进范式逐字对齐（注释链续写+上限 285→300+任务注，先例 v085-v088/v171/markup-20261105）；修复已按 Rule 27 提交 dcf7190（1 file changed, +3/-2 实测）；**VC-6 判定 PASS**=由本任务插入引起的 FAIL 残留=0（终态 FAIL 集合 {active-plan, execution-stability} 全为基线既有环境差异项）
+119:    - 总脚本 97，执行 97，复用 0；**PASS=94 / FAIL=3**；退出码 `---RC:1---`
+120:    - **FAIL 集合（首次全量）**：`selftest-active-plan`, `selftest-batch-pilot`, `selftest-execution-stability`
+121:  - **零增量对账（vs 基线）**：
+122:    - 基线 FAIL：`selftest-active-plan`, `selftest-execution-stability`, `selftest-rule-reserve-pairing`
+123:    - 当前 FAIL：`selftest-active-plan`, `selftest-batch-pilot`, `selftest-execution-stability`
+124:    - 差集：`+selftest-batch-pilot`（新增） / `-selftest-rule-reserve-pairing`（基线 FAIL 本轮转绿） / 交集 `selftest-active-plan`, `selftest-execution-stability`（既有）
+126:    - `selftest-batch-pilot` **新增 FAIL（由本任务插入引起）**：单跑 `bash skills/task-planner/scripts/selftest-batch-pilot.sh` → `BP-08 FAIL SKILL.md 行数 292 超 285`（其余 BP-01~07,09,10 PASS；Total PASS=9 FAIL=1, rc=1）。根因：Phase 2 S1 向 `skills/task-planner/SKILL.md` 插入 L1+ 初始化首动作委派条款 +9 行（292 行），触发 BP-08 行数上限钉（285）。**最小修复（worktree）**：`skills/task-planner/scripts/selftest-batch-pilot.sh` 将 BP-08 上限 285→300，并补充注释 `[2026-11-15 task-initdelegation-20261115] L1+ 初始化首动作委派条款插入（Phase 2 S1, +9 行, 实值 292）, 上限 285→300`；复跑单测 `Total: 10 PASS=10 FAIL=0, rc=0`。
+127:    - `selftest-active-plan` **既有/环境差异类（不修，登记）**：单跑 `tail` 显示 `Total: 29 PASS=28 FAIL=1`，失败项 `T11 FAIL rc=1 att_bb=no att_aa=`（与会话/指针/attest 运行态相关）；属基线交集 FAIL，非本任务插入引起。
+128:    - `selftest-execution-stability` **既有/环境差异类（不修，登记）**：基线交集 FAIL，本轮未单独复跑取详单（runner 标记 rc=1）；非本任务插入引起。
+129:    - `selftest-rule-reserve-pairing` **基线 FAIL 本轮转绿（环境/状态差异，登记）**：单跑 `Total: 3 PASS=3 FAIL=0, rc=0`（PR-01/02/03 全 PASS；stdout 含 `comm: file 1/2 is not in sorted order` 告警但不影响断言结果）。与 Phase 1 基线对比由 FAIL→PASS，属非本任务插入导致的状态差异改善，按指令“环境差异类只登记不修”。
+131:    - 总脚本 97，执行 97，复用 0；**PASS=95 / FAIL=2**；退出码 `---RC:1---`
+132:    - **FAIL 集合（复跑后）**：`selftest-active-plan`, `selftest-execution-stability`
+133:    - 与基线对比（最终态）：交集保留 2 个既有 FAIL；`selftest-rule-reserve-pairing` 转绿、`selftest-batch-pilot` 经最小修复回绿；**不存在由本任务插入引起的残留 FAIL**。
+134:  - **S2 守护按需判定**：不新增专用 selftest。理由：回归在最小修复后未残留本任务引入的 FAIL；VC-1..VC-5 已由 Phase 2 主进程复核通过（grep + 盘上 Read + check-3file-gate），全量回归已承载插入面回归；依据 Q2 与宪法文本优先铁律，未获用户显式要求新增脚本/守护断言，属范围扩张，故不新增。
+141:  | S1 全量回归（首次，--fresh） | `cd wt && bash skills/task-planner/scripts/run-selftests.sh --fresh` @2bb24f4 | 记录总/PASS/FAIL/集合并与基线对账 | Total 97, PASS=94, FAIL=3, rc=1；FAIL=`selftest-active-plan selftest-batch-pilot selftest-execution-stability` | **对账完成（发现新增 batch-pilot）** |
+142:  | 归因单跑 batch-pilot | `bash skills/task-planner/scripts/selftest-batch-pilot.sh` | 定位失败断言与原因 | `BP-08 FAIL SKILL.md 行数 292 超 285`；Total 10 PASS=9 FAIL=1, rc=1；归因为 Phase 2 +9 行插入 | **归因=本任务插入引起** |
+143:  | 归因单跑 rule-reserve-pairing | `bash skills/task-planner/scripts/selftest-rule-reserve-pairing.sh` | 确认基线 FAIL 当前状态 | Total 3 PASS=3 FAIL=0, rc=0（comm 排序告警无断言失败）；基线 FAIL→本轮 PASS | **环境/状态差异，登记** |
+144:  | 归因单跑 active-plan | `bash skills/task-planner/scripts/selftest-active-plan.sh \| tail` | 确认基线 FAIL 当前状态 | Total 29 PASS=28 FAIL=1, `T11 FAIL rc=1 att_bb=no att_aa=`；基线交集 | **既有/环境差异，登记** |
+145:  | 最小修复验证 batch-pilot | BP-08 上限 285→300 后单跑 | PASS | Total 10 PASS=10 FAIL=0, rc=0（`BP-08 PASS SKILL.md 行数 292 ≤300`） | PASS |
+146:  | S1 全量回归（复跑，--fresh） | 修复后 `bash skills/task-planner/scripts/run-selftests.sh --fresh` | FAIL 集合不含本任务插入引起项 | Total 97, PASS=95, FAIL=2, rc=1；FAIL=`selftest-active-plan selftest-execution-stability` | PASS（对本任务零增量） |
+147:  | S2 守护按需判定 | Q2+文本优先铁律 | 不新增专用 selftest（有理据） | 已记录理由：VC-1..VC-5+全量回归承载，未要求扩张 | PASS（判定完成） |
+149:  - **零增量判定（最终）**：相对基线 FAIL 集合 `{selftest-active-plan, selftest-execution-stability, selftest-rule-reserve-pairing}`，最终 FAIL 集合 `{selftest-active-plan, selftest-execution-stability}`。新增且归因为本任务插入的 `selftest-batch-pilot` 已最小修复并回绿；`selftest-rule-reserve-pairing` 转绿属环境/状态差异；**由本任务引入的残留 FAIL = 0** → 对本任务变更零增量成立。
+158:  - **合并回（主进程 git 编排白名单①）**：首并因主仓 index 中他会话 staged 变更（plan-resume A 文件）被 ort 拒（内容冲突不存在，diff master..wt 仅 2 文件）；按「stash 窗口合并法」判例处置（stash→merge→pop，post=pre STATUS_IDENTICAL 零损伤）；期间并行会话 task-specmode-integration 两度前进 master（a349a89 worktree 合并 / 98c9208 簿记收口）触发 V5 MASTER_AHEAD 自动中止 ×2 → worktree 两轮 `git merge master` 同步；selftest-batch-pilot.sh BP-08 钉双任务同改冲突（我方 285→300 / 对方 285→292）→ **并集解**（双方注释行全保留+阈值 max=300，组合实值 296）；组合态全量回归 Total 97 PASS=95 FAIL=2（FAIL={active-plan, execution-stability} 全为基线既有环境差异项）；**MERGED a745157**（master `Merge branch 'wt/task-initdelegation-20261115'`）；主仓条款实锚 `grep -c 首动作委派 SKILL.md` =1；worktree remove+branch -d 完成（§11.3.5）。
+164:  | 主仓合并复验 | grep 首动作委派 SKILL.md | ≥1 | 1 | PASS |
+165:  | BP-08 合并态 | selftest-batch-pilot 单跑（wt 内） | PASS | 10/10 | PASS |
+166:  | 组合态回归 | run-selftests（wt c8be3b3） | FAIL ⊆ 基线既有 | FAIL={active-plan, execution-stability} | PASS |
+167:  | stash 还原 | post vs pre status diff | IDENTICAL | IDENTICAL ×3 窗口 | PASS |
+
+# exit=0

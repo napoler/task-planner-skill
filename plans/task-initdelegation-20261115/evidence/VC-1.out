@@ -1,0 +1,5 @@
+# [run-verification] VC-1 | 2026-11-15T11:41:04Z | cmd: cd /mnt/data/dev/task-planner-skill && grep -n "首动作委派" skills/task-planner/SKILL.md
+# ---- stdout/stderr ----
+50:- [ ] [A] **初始化首动作委派（L1+）— 需求分析与计划文档创建子代理隔离**：
+
+# exit=0
