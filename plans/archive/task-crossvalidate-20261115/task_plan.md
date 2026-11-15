@@ -203,9 +203,9 @@ P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge
 ## Phases
 
 ### Phase 1: 侦察与起草（Discovery & Drafting）
-- [ ] 侦察验证链插入点/守护面/级联族（F1-F6 落 findings）
-- [ ] 起草 Rule 108 条款草案+模板 CV 区块草案（clause-drafts.md）
-- [ ] 知识储备必读项确认（上表 ☑ 项已在位）
+- [x] 侦察验证链插入点/守护面/级联族（F1-F6 落 findings）
+- [x] 起草 Rule 108 条款草案+模板 CV 区块草案（clause-drafts.md）
+- [x] 知识储备必读项确认（上表 ☑ 项已在位）
 - **V-N:** VC-1, VC-2（侦察正确性支撑条款锚与级联落位）——V-1.1=6/6 PASS、V-1.2 五子条锚=11 处+§3 在位 PASS（progress 留痕）
 - **Status:** complete
 - **Executor:** Explore（默认档）/ general-purpose（默认档）
@@ -251,8 +251,8 @@ P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge
 - [x] 合并回：worktree 全 VC 复验+status 干净→smart-merge-back.sh（--deploy）→清理 worktree/分支→主仓 Read 复验
 - [x] 簿记：rule-reserve.sh land 108+三文件回填+Index 刷新+commit
 - [x] 部署位同步核验（--deploy 通道+diff=0）
-- [ ] 归档：set-active-plan.sh --clear→archive-plan.sh task-crossvalidate-20261115（守卫拒绝则登记理由）
-- [ ] 知识提取入库：scripts/kb-sync-from-plan.sh→精炼→kb-rebuild-index.sh
+- [x] 归档：set-active-plan.sh --clear→archive-plan.sh task-crossvalidate-20261115（守卫拒绝则登记理由）
+- [x] 知识提取入库：scripts/kb-sync-from-plan.sh→精炼→kb-rebuild-index.sh
 - **V-N:** VC-5, VC-6——run-verification 全 7 VC PASS（含 V-4.1 merge 44f7f43+清理/V-4.2 land 108/V-4.3 归档随收口）；合并回+部署 IDENTICAL+84.14 回读收敛（轮1 零新发现）
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记+⑤ 机械守卫脚本——Rule 25.3 白名单）

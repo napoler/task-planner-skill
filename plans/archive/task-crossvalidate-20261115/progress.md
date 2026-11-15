@@ -10,16 +10,17 @@
 ## Session: 2026-11-15
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: [Title]
-<!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+### Phase 1: 侦察与起草
+<!-- Status 与 task_plan.md 同步 -->
+- **Status:** complete
 - **Started:** 2026-11-15 17:17
-<!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
-  -
+  - Explore 侦察（35 工具调用）→findings F1-F6；general-purpose 起草 clause-drafts §1-§3；drift 1-drift-p1 ✅ALIGNED
 - Files created/modified:
-  -
+  - findings.md（F1-F6+Requirements）；clause-drafts.md（78 行）
 - Test Results:
+  - V-1.1=6/6 PASS；V-1.2 五子条锚 11 处+§3 在位 PASS
+  - [goal:G1] complete：findings F1-F6 六节全锚；[goal:G2] complete：clause-drafts 五子条+级联七项
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
