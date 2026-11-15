@@ -62,6 +62,8 @@
   | --fresh 基线对照 | worktree vs master | 零新增 FAIL | 双侧 93/5 同值 | ✅ |
   | 反造谣门抽查 | 简报/卡证据锚 | ≥3 锚盘上命中 | 4 锚命中（git×2+file:line×2） | ✅ |
   | 简报乱码扫描 | history-brief.md | 零乱码 | 扫描 exit 1（无命中） | ✅ |
+  | CR1 REJECTED→修复轮1+2 | critic F1-F15/N1-N9 | 全清单修复 | 锚机器重取 43/43（critic 独立解析器复核）；N1 VC-6 恒真→重写；worktree 真实执行点 VC6_PASS A=FAIL=5 B=FAIL=5 | ✅ |
+  | HPR 机门（N6/N7 后） | worktree 默认/显式/空目录三态 | 9/9 或规范 WARN 跳过 | 三回执齐（提交 e5847c6） | ✅ |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention | 触发命令/工具 |
