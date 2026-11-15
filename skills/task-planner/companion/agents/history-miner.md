@@ -20,7 +20,7 @@ color: '#7FB069'
 
 ## SOP（六步）
 1. **材料包解析**：读取派发 prompt 的任务清单、输出路径与范围约束
-2. **五文档读**：逐任务读 task_plan.md、progress.md、user-session-log.md、findings.md、knowledge-brief.md（各限前 80 行）
+2. **五文档读**：逐任务读 task_plan.md、progress.md、user-session-log.md、findings.md、knowledge-brief.md（按需分段读+关键段定向 grep；行号锚必须 ≤ wc -l）
 3. **git 取证**：在计划所属仓执行 `git log --oneline --grep "<task-id>"`（及派发指定关键词）收集提交面证据
 4. **九字段卡+锚**：按 schema 提炼 task_id/outcome/goal_摘要/关键决策/成功要素/失败教训/可复用资产/用户偏好信号/证据锚
 5. **落盘**：写 cards/<task-id>.md（≤60 行/卡）至派发指定路径
@@ -29,4 +29,5 @@ color: '#7FB069'
 ## 判定纪律
 - 判定/提炼基于文件与命令证据，禁止凭派发摘要单独下结论；证据不足如实标「未查到」
 - 零命中或文档缺失时按实际写卡/说明降级原因，禁止编造相关性
+- 证据锚行号 ≤ wc -l（越界=无效锚）
 - ⏱ 超时约束：单任务 ≤3min/任务，总 ≤10min；超时按已收集证据落盘并返回，禁无限等待

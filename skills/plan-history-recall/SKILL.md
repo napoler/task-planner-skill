@@ -32,9 +32,9 @@ description: 跨任务历史经验挖掘——从 plans/ 文档体系（含 arch
 - 两路并集 → 候选任务清单 **候选任务 ≤8**（按相关性排序；排除项留一句理由，禁盲搜漏合规件）。
 
 ### 3 并行挖掘派发（history-miner 伴飞子代理）
-- **≤3 并行**，**每代理 ≤3 任务**；超 8 个候选 → 分轮。
+- **≤3 并行**，**每代理 ≤3 任务**；超 8 个候选 → 分轮，按轮合并简报。
 - 派发材料包（Rule 35.3）：任务目录清单（绝对路径）+主题+卡片落盘路径+八字段返回要求。
-- 子代理逐任务读五文档（task_plan/findings/progress/user-session-log/knowledge-brief，限行数）+
+- 子代理逐任务读五文档（task_plan/findings/progress/user-session-log/knowledge-brief，按需分段读+关键段定向 grep（如 grep -n '^## \|Decisions' 定位证据段）；行号锚必须 ≤ wc -l）+
   `git log --grep "<task-id>"` 提交面 → 按 references/experience-card-schema.md 产卡落盘。
 
 ### 4 综合简报（主进程）
@@ -43,7 +43,7 @@ description: 跨任务历史经验挖掘——从 plans/ 文档体系（含 arch
 每条结论必须带证据锚（卡路径+源文件:行号）；无锚结论禁写，查不到的字段如实标「未查到」。
 
 ### 5 落盘
-- 任务上下文内（规划期）：`<plans>/<消费任务id>/history-recall/cards/<task-id>.md` + `<plans>/<消费任务id>/history-brief.md`
+- 任务上下文内（规划期）：`<plans>/<消费任务id>/history-recall/cards/<task-id>.md` + `<plans>/<消费任务id>/history-recall/history-brief.md`
 - 独立咨询：`plans/history-recall/<topic>-<date>/`（cards/ + brief.md）
 
 ## 失败兜底
@@ -70,6 +70,6 @@ description: 跨任务历史经验挖掘——从 plans/ 文档体系（含 arch
 
 ## 参考
 
-- 设计与调研：plans/task-history-recall-20261116/{design.md,findings.md}
+- 设计来源=源仓 plans/ 档案（非运行期依赖）
 - 卡契约：references/experience-card-schema.md；简报契约：references/brief-template.md
-- 派发执行体：skills/task-planner/companion/agents/history-miner.md（伴飞，只读+卡落盘）
+- 派发执行体：companion/agents/history-miner.md（伴飞，只读+卡落盘）

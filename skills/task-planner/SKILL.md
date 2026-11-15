@@ -56,7 +56,7 @@ model: opus
   - **边界**：会话绑定脚本（`init-session.sh`/`attest-plan.sh`/`set-active-plan.sh`/`plan-created.cjs`/哨兵清理）禁由子代理执行（会话态竞争）；D1/attest/收据回收归主进程
   - **豁免**：L0/mini/trivial/L0-E 轻量档不适用本条款（Rule 38.6/38.7 比例原则不变）
   - **动机**：隔离更好、提高子代理激活率、降低主代理上下文占用；禁止误读为“所有场景一律加仪式”
-  - **可选前置（历史经验）**：L1+ 新任务主题涉同类改造/既有机制扩展/曾犯错领域时，建议先 Skill(plan-history-recall) 产出 history-brief 再定方案；不强制，L0-T/mini 跳过
+  - **可选前置（历史经验）**：L1+ 新任务主题涉同类改造/既有机制扩展/曾犯错领域时，建议先 Skill("plan-history-recall") 产出 history-brief 再定方案；不强制，L0-T/mini 跳过
 
 - [ ] [A] **初始化（哨兵机制）— 智能子动作**：体量分级判定与隔离决策
   - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree；首动作委派子代理已起草时=复核/校正，不重写）

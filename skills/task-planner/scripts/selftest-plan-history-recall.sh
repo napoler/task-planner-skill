@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# selftest-plan-history-recall.sh — plan-history-recall 技能交付物完整性与护栏锚静态守护（HPR-01..HPR-08）
+# selftest-plan-history-recall.sh — plan-history-recall 技能交付物完整性与护栏锚静态守护（HPR-01..HPR-09）
 # 目的：验证 plan-history-recall skill、引用契约、伴飞执行体、task-planner 接线与 registry 自登记在位且关键护栏锚未漂移。
 # 依赖锚清单：
-#   - skills/plan-history-recall/SKILL.md: ^name: plan-history-recall / 候选任务 ≤8 / 每代理 ≤3 任务 / 简报 ≤150 行 / ≤60 行
-#   - skills/plan-history-recall/references/experience-card-schema.md: 未查到 / 证据锚格式
+#   - skills/plan-history-recall/SKILL.md: ^name: plan-history-recall / 候选任务 ≤8 / 每代理 ≤3 任务 / 简报 ≤150 行 / ≤60 行 / 分轮，按轮合并简报 / 行号锚必须 ≤ wc -l / Skill("plan-history-recall") 接线相关产物路径
+#   - skills/plan-history-recall/references/experience-card-schema.md: 未查到 / 证据锚格式 / 行号 ≤ wc -l（越界=无效锚）
 #   - skills/plan-history-recall/references/brief-template.md: 护栏自检 / 未覆盖面
-#   - skills/task-planner/companion/agents/history-miner.md: ^name: history-miner / custom:9e221f47-3040-4ea7-b742-20b813fb79aa:haiku-1 / tools: [Read, Write, Bash, Grep, Glob]
-#   - skills/task-planner/SKILL.md: plan-history-recall 接线行
+#   - skills/task-planner/companion/agents/history-miner.md: ^name: history-miner / tools: [Read, Write, Bash, Grep, Glob] / 行号 ≤ wc -l（越界=无效锚）（模型一致性由 HPR-06 动态校验独占）
+#   - skills/task-planner/SKILL.md: 可选前置（历史经验）**：L1+ 新任务主题涉同类改造 接线行
 #   - skills/task-planner/scripts/selftest-registry.tsv: 首列 selftest-plan-history-recall.sh 自登记行
 #   - skills/task-planner/companion/agents/{history-miner,drift-checker}.md: ^model: 行逐字相等（HPR-06）
+#   - HPR-09 目标产物(HPR_DIR, 默认主仓 plans/task-history-recall-20261116/history-recall/): cards/*.md 与 history-brief.md 锚 .md:行号 可解析且路径存在/行号 ≤ wc -l
+# 用例：HPR-01..HPR-09
 
 set -u
 
@@ -22,6 +24,7 @@ MINER="$ROOT/skills/task-planner/companion/agents/history-miner.md"
 DRIFT="$ROOT/skills/task-planner/companion/agents/drift-checker.md"
 TP_SKILL="$ROOT/skills/task-planner/SKILL.md"
 REG="$ROOT/skills/task-planner/scripts/selftest-registry.tsv"
+HPR_DIR="${HPR_DIR:-/mnt/data/dev/task-planner-skill/plans/task-history-recall-20261116/history-recall}"
 
 PASS=0
 FAIL=0
@@ -62,13 +65,12 @@ else
   bad 04 "brief-template 缺护栏自检或未覆盖面"
 fi
 
-# HPR-05 history-miner 执行体锚
+# HPR-05 history-miner 执行体锚（模型一致性由 HPR-06 动态校验独占）
 if grep -q '^name: history-miner' "$MINER" \
-  && grep -q 'custom:9e221f47-3040-4ea7-b742-20b813fb79aa:haiku-1' "$MINER" \
   && grep -q 'tools: \[Read, Write, Bash, Grep, Glob\]' "$MINER"; then
-  ok 05 "history-miner 含 name/model/tools 锚"
+  ok 05 "history-miner 含 name/tools 锚"
 else
-  bad 05 "history-miner 缺 name/model/tools 锚"
+  bad 05 "history-miner 缺 name/tools 锚"
 fi
 
 # HPR-06 history-miner 与 drift-checker ^model: 行逐字相等
@@ -80,11 +82,11 @@ else
   bad 06 "history-miner 与 drift-checker ^model: 行不一致或缺失"
 fi
 
-# HPR-07 task-planner 接线锚
-if grep -q 'plan-history-recall' "$TP_SKILL"; then
-  ok 07 "task-planner SKILL 含 plan-history-recall 接线"
+# HPR-07 task-planner 接线锚（收紧到可选前置接线行特征串）
+if grep -Fq '可选前置（历史经验）**：L1+ 新任务主题涉同类改造' "$TP_SKILL"; then
+  ok 07 "task-planner SKILL 含 plan-history-recall 可选前置接线"
 else
-  bad 07 "task-planner SKILL 缺 plan-history-recall 接线"
+  bad 07 "task-planner SKILL 缺 plan-history-recall 可选前置接线"
 fi
 
 # HPR-08 registry 自登记行锚
@@ -94,5 +96,55 @@ else
   bad 08 "registry 缺 selftest-plan-history-recall.sh 自登记行"
 fi
 
-echo "Total: 8 PASS=$PASS FAIL=$FAIL"
+# HPR-09 锚可解析断言：对 HPR_DIR 下 cards/*.md 与 history-brief.md 提取 .md:行号 锚，路径存在且行号 ≤ wc -l
+hpr09_ok=1
+hpr09_msg=""
+if [ ! -d "$HPR_DIR" ]; then
+  hpr09_ok=0
+  hpr09_msg="HPR_DIR 不存在: $HPR_DIR"
+else
+  ANCHOR_ROOT="/mnt/data/dev/task-planner-skill"
+  checked=0
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    # extract anchors like path/to/file.md:123 or path/to/file.md:10-20
+    while IFS= read -r anchor; do
+      [ -n "$anchor" ] || continue
+      apath="${anchor%%:*}"
+      range="${anchor#*:}"
+      start="${range%-*}"
+      end="${range#*-}"
+      # resolve path relative to anchor root if not absolute
+      if [[ "$apath" = /* ]]; then
+        rpath="$apath"
+      else
+        rpath="$ANCHOR_ROOT/$apath"
+      fi
+      if [ ! -f "$rpath" ]; then
+        hpr09_ok=0
+        hpr09_msg="锚路径不存在: $anchor (in $(basename "$f"))"
+        break 2
+      fi
+      total="$(wc -l < "$rpath")"
+      # empty file has 0 lines; treat 0 as 0
+      if [ "$start" -gt "$total" ] || [ "$end" -gt "$total" ]; then
+        hpr09_ok=0
+        hpr09_msg="锚行号越界(>${total}): $anchor (in $(basename "$f"))"
+        break 2
+      fi
+      checked=$((checked+1))
+    done < <(grep -oE '[A-Za-z0-9_./-]+\.md:[0-9]+(-[0-9]+)?' "$f" 2>/dev/null || true)
+  done < <(find "$HPR_DIR" -maxdepth 2 -type f \( -path "$HPR_DIR/cards/*.md" -o -name 'history-brief.md' \) 2>/dev/null | sort)
+  if [ "$hpr09_ok" -eq 1 ] && [ "$checked" -eq 0 ]; then
+    hpr09_ok=0
+    hpr09_msg="未在 HPR_DIR 找到可解析锚: $HPR_DIR"
+  fi
+fi
+if [ "$hpr09_ok" -eq 1 ]; then
+  ok 09 "HPR_DIR 锚可解析且路径存在/行号≤wc -l"
+else
+  bad 09 "$hpr09_msg"
+fi
+
+echo "Total: 9 PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
