@@ -91,6 +91,10 @@ allowed-tools: "Read, Bash, Grep, Glob"
 6. ❌ 严禁选择性执行——只跑预期能过的子集、跳过失败项；全量验证命令必须完整执行并全量留痕；
 7. ❌ 严禁旧证据冒充——复用上次/他任务的输出或缓存，时间戳/内容哈希与当前产物对不上；
 8. ❌ 严禁以实现者自测替代独立验收（Rule 33.3：主进程/实现者既有上下文自测不作数）。
+9. ❌ 严禁中途修改验证载体判据——task_plan.md 的 VC 表与 verification.md 的 Verify command/判据标准行自 attest 锁定即冻结；发现「判据达不成/任务解决不了」而修改判据=PLAN TAMPERED 级事件，唯一合法路径=STOP→用户显式授权→Decisions Made 登记理由→attest 重锁更新 SHA（私自改判据推进=交付作废）；
+10. ❌ 严禁修改验证机械层来让判据通过——改 selftest/attest/check 等守卫脚本、绕过 hook、降级 enforce 开关与篡改判据同罪；守卫本身有缺陷须另立任务修复并向用户披露，禁顺手改。
+
+**判据冻结协议（执行期篡改防线，2026-11-16 用户 /goal 增补）**：verification.md 的行分两类——①状态行（checkbox 勾选/Evidence/交叉验证记录回填）=合法回填，随执行推进；②判据行（Verify command/判定标准/期望值）=自 attest 锁定起冻结，执行期禁改。两类不得混写：判据行若在执行期被修改而未走「STOP→用户授权→Decisions 登记→attest 重锁」四步，视为对已批准契约的篡改，[PLAN TAMPERED] 机制拦截+交付作废；「这个判据达不成了」的正确动作是 BLOCKED 升级用户，而不是改判据。
 
 **评审动作（Step 3b 消费）**：逐条对照本段出判定；命中第 1/4/5/7 条作弊信号→升级 decision-arbiter 裁决并登记 Drift Log。
 
