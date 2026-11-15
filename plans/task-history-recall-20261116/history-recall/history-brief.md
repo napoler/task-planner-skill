@@ -15,9 +15,9 @@
 | task-v186-understanding-mirror | complete（归档） | 入选：worktree 回合标准证据链（锚：plans/archive/task-v186-understanding-mirror/progress.md:65,72） |
 | task-specmode-integration-20261115 | complete（归档） | 入选：全链实践与失败教训（锚：plans/archive/task-specmode-integration-20261115/findings.md:49-52,69-70） |
 | task-v164-pointer-worktree-local | complete（归档） | 排除：worktree 仅手段非主题（路由通道 B 命中） |
-| task-v182-git-snapshot-commits | complete（归档） | 排除：双提交纪律主题，worktree 仅承载面 |
-| s77-p2-fix / skill-audit-s77-fix | complete | 排除：worktree 仅手段 |
-| task-v135 / task-v141 | complete（归档） | 排除：早期 desync 教训已沉淀于 worktree-isolation.md 模板层
+| task-v182-git-snapshot-commits | complete（归档） | 排除：双提交纪律主题（锚：plans/archive/task-v182-git-snapshot-commits/task_plan.md:1） |
+| s77-p2-fix / skill-audit-s77-fix | complete | 排除：worktree 仅手段（锚：plans/INDEX.md:10） |
+| task-v135 / task-v141 | complete（归档） | 排除：早期 desync 教训已沉淀于模板层（锚：plans/archive/task-v186-understanding-mirror/task_plan.md:1） |
 
 §1 注：路由命中后必须 ls 验证目录实名存在性（本次两处假设落空，靠枚举实名修正）。
 
@@ -36,7 +36,7 @@
 ### ③用户偏好演变
 - 逐字记录专档（append-only 只写不改）（锚：plans/archive/task-v186-understanding-mirror/user-session-log.md:3-4）
 - 「调用非复制」+task-planner=忠实记录者+调度者（锚：plans/archive/task-specmode-integration-20261115/user-session-log.md:42-44）
-- L0-lite 最小 stub 轻量豁免先例（锚：plans/task-crossprojauth-20261104/task_plan.md:17-18）
+- L0-lite 最小 stub 轻量豁免先例（锚：plans/task-crossprojauth-20261104/task_plan.md:13-14）
 
 ### ④可复用资产
 - Rule 100/101 纪律条款族（锚：commit ec72683）
@@ -55,9 +55,9 @@
 ## §4 证据锚索引
 | task-id | 卡路径 | 关键源锚 |
 |---|---|---|
-| task-crossprojauth-20261104 | cards/task-crossprojauth-20261104.md | 锚集=见卡内证据锚列（task_plan 四源+commit 四枚） |
-| task-v186-understanding-mirror | cards/task-v186-understanding-mirror.md | 锚集=见卡内证据锚列（task_plan/progress/findings/usl 四源+commit 三枚） |
-| task-specmode-integration-20261115 | cards/task-specmode-integration-20261115.md | 锚集=卡内证据锚列（task_plan/progress/findings/usl 四源+commit 三枚） |
+| task-crossprojauth-20261104 | cards/task-crossprojauth-20261104.md | 锚集=卡内全路径锚列；commit 8db66b8/6583f14/ec72683/2f4540d |
+| task-v186-understanding-mirror | cards/task-v186-understanding-mirror.md | 全路径锚集见卡；commit bcfd507/8074969/c094530 |
+| task-specmode-integration-20261115 | cards/task-specmode-integration-20261115.md | 全路径锚集见卡；commit c5b891d/a349a89/6e9dcfc |
 
 ## §5 未覆盖面
 - 已查：INDEX 主表+git log --all --grep worktree（通道 A/B）+3 任务五文档（定向 grep 定位）+git 提交面
@@ -66,6 +66,6 @@
 ## §6 护栏自检
 - 候选任务：上限 8，实际 3 入选+4 排除
 - 子代理：1 个，每代理上限 3 任务
-- 简报行数：上限 150，实际=wc -l 机械取值
+- 简报行数：上限 150，实际 71
 
 > 无锚结论禁写；查不到如实标未查到。
