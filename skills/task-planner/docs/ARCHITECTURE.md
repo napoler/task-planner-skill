@@ -66,7 +66,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 │              ││61,64         │
 └──────────────┘└──────────────┘
 ```
-<!-- 2026-11-15 task-tpl-sediment-20261115: ASCII 图未重绘（第 4 新域卫星 plan-template-advisor 未增绘盒子），第 4 新域卫星 plan-template-advisor（项目模板适配与沉淀生产，Rule 34.8/34.9 消费面，task-tpl-sediment-20261115 新建，`../../plan-template-advisor/references/`）见下方 §2.1/§3 路由表 -->
+<!-- 2026-11-15 task-tpl-sediment-20261115: ASCII 图未重绘（第 4 新域卫星 plan-template-advisor 未增绘盒子），第 4 新域卫星 plan-template-advisor（项目模板适配与沉淀生产，Rule 34.8/34.9 消费面，task-tpl-sediment-20261115 新建，`../../plan-template-advisor/SKILL.md`）见下方 §2.1/§3 路由表 -->
 
 ### 2.1 新域卫星规格（task-v171 新建）
 
@@ -75,7 +75,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 | task-dispatch | 管「计划如何被拆分、派发、校验、调度」——子代理全生命周期的机器门控与执行纪律 | 不管四文件内容本身（核心）、通用执行纪律（task-discipline）、媒体制作（media-planner） | 11 | `../../task-dispatch/references/critical-rules-dispatch.md` |
 | task-discipline | 管「执行过程的纪律与工作产物」——错误闭环/证据/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收 | 不管四文件数据流转（核心 Rule 62）、派发机制（task-dispatch）、媒体制作 | 36 | `../../task-discipline/references/critical-rules-discipline.md` |
 | media-planner | 管「媒体制作类任务的拆分轴与执行体路由」——视频/图片/剧集创作媒体轴精细拆分 | 不管通用派发机制（task-dispatch）、通用纪律（task-discipline） | 3 | `../../media-planner/references/critical-rules-media.md` |
-| plan-template-advisor | 项目模板适配与沉淀生产 | 项目模板适配与沉淀生产（Rule 34.8/34.9 消费面） | 0 | `../../plan-template-advisor/references/` |
+| plan-template-advisor | 管「项目模板适配与沉淀生产」——激活后分析当前项目→预测执行问题→缺口映射→产出候选模板→审查→登记入库的轻量 SOP 执行体 | 不管官方模板选型/生命周期（归 plan-template-kit）、机械发现/模板校验脚本（归 task-planner 脚本层）；规则承载=Rule 34.8/34.9 随 SKILL 内联 | 0（内联） | `../../plan-template-advisor/SKILL.md` |
 
 新域卫星随迁资产：`task-dispatch` 收 6 个 scripts（analyze-splits/check-subagent-return/check-rescue-chain/subagent-fallback + selftest-rescue-chain/selftest-fallback）+ 3 篇 references；`task-discipline` 收 plan-hygiene.sh + capabilities/ + batch-quality-gate.md + capability-registry.md；`media-planner` 仅 SKILL.md + references；`plan-template-advisor` 为 task-tpl-sediment-20261115 新建（消费 Rule 34.8/34.9），详见 `../../plan-template-advisor/`。
 
@@ -102,7 +102,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 | task-dispatch | 子代理派发与拆分调度 | `../../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
 | task-discipline | 执行纪律与工作产物维护 | `../../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31-36,41-45,48,53-57,60,65,67,69-74,76） |
 | media-planner | 媒体制作任务派发 | `../../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
-| plan-template-advisor | 项目模板适配与沉淀生产 | `../../plan-template-advisor/references/` | 项目模板适配与沉淀生产（Rule 34.8/34.9 消费面） |
+| plan-template-advisor | 项目模板适配与沉淀生产 | `../../plan-template-advisor/SKILL.md` | 激活后分析项目→预测问题→缺口映射→产出候选模板→审查→登记（Rule 34.8/34.9 消费面） |
 | plan-research-router | 调研分析与证据纪律 | `../../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
 | plan-template-kit | 模板生命周期与难度分级 | `../../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
 | plan-collab-router | 技能协同与工具面选择 | `../../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40） |

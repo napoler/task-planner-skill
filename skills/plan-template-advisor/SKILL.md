@@ -57,4 +57,4 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 
 ## 卫星路由：plan-template-advisor — 域=项目模板适配与沉淀生产（Rule 34.8/34.9 消费面）
 
-本技能承接项目级模板「分析→预测→缺口→候选→审查→登记」SOP，为 Rule 34.8/34.9 的项目侧消费面；模板生命周期/选型与官方沉淀权威规则见 `plan-template-kit` `references/critical-rules-template.md`，机械发现与校验由 task-planner 脚本层负责（见 findings F2/F3/F9）。命中项目模板适配、沉淀评估或缺口映射时加载本技能；涉及官方 variant 入库与四点同步时回退 `plan-template-kit`/task-planner 主路由。
+本技能承接项目级模板「分析→预测→缺口→候选→审查→登记」SOP，为 Rule 34.8/34.9 的项目侧消费面；模板生命周期/选型与官方沉淀权威规则见 `plan-template-kit` `references/critical-rules-template.md`，机械发现与校验由 task-planner 脚本层负责（init-session.sh 项目级模板发现机制/check-template-type.sh 白名单校验/render_template fail-closed 契约）。命中项目模板适配、沉淀评估或缺口映射时加载本技能；涉及官方 variant 入库与四点同步时回退 `plan-template-kit`/task-planner 主路由。

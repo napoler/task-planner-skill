@@ -37,7 +37,7 @@ set -u
 #   Why=技能专业化拆分(task-v171)后三新域卫星须随 task-planner 家族一并部署到 4 宿主位同级位置
 #   (设计文档 §6「install-stub.sh 注册」: :36 数组追加 3 新卫星, install_satellite_skills() 自动 rsync);
 #   另 3 个收编卫星(plan-resume/progress-tracker/task-drift-guard)不在本数组——经 lib/install-companion.sh
-#   顶层 skills/*/ 自动发现机制分发(2026-09-04 布局统一口径), 本行只登记 install-stub 显式 rsync 的 7 个
+#   顶层 skills/*/ 自动发现机制分发(2026-09-04 布局统一口径), 本行只登记 install-stub 显式 rsync 的 8 个
 SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router task-dispatch task-discipline media-planner plan-template-advisor)
 
 # Per-tool SKILL.md frontmatter template generator
