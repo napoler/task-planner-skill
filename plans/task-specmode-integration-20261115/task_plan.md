@@ -356,7 +356,7 @@ Phase 5 complete（收尾归档动作中）
 - [x] S4 新建 references/spec-mode.md（36 行四段齐备，盘上复核）
 - [x] S5 SKILL.md 三点插入（+3/-0，grep=3，286 行）
 - [x] S6 全量回归：抓到真回归 BP-08（286>285 行数钉）→ 按计划 Q2 最小修复钉值 286（3 处同步）→ BP 10/10 全绿 → 全量终跑进行中（终验证据）
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- [x] 规范召回（Rule 93）：主进程已 Read execution-recall-card.md 并 progress 留 [recall] 行（Phase 3 收口时点）
 - **V-N:** VC-1, VC-2, VC-3, VC-4（条款四锚 grep+反复制负断言+回归零增量）
 - **Status:** complete
 - **Executor:** general-coder(sonnet)×2 + code-runner-agent(mini)
@@ -385,7 +385,7 @@ Phase 5 complete（收尾归档动作中）
   WHY: Catching issues early saves time. Document test results in progress.md.
 -->
 - [x] S7 独立复检（critic）：APPROVED-with-nits，11 发现全 verified、零脑补确认；D1-D11 一轮全修（D3 交接点互斥→writing-plans 硬门兼容；D4 钉值 292=实值 287+5 边距；D6 历史留痕恢复+新条目；D7 frontmatter 登记）
-- [ ] VC 逐条机检证据落 progress.md（grep/diff 输出存档）
+- [x] VC 逐条机检证据落 progress.md（[vc-evidence] 行+Test Results 表；存档=selftest-final2.log/review-s7.md）
 - [x] 修复复检缺陷（D1-D11 全修，BP 10/10；全量终跑复核中）
 - **V-N:** VC-4, VC-7（回归零增量+复检闭环+原话在档）
 - **Status:** complete
@@ -401,13 +401,13 @@ Phase 5 complete（收尾归档动作中）
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-specmode-integration-20261115 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] Review all output files（VC 表证据列逐条实测回填+84.14 两轮交叉核）
+- [x] Ensure deliverables are complete（源仓 4 文件@merged(a349a89)+三位部署对账 diff=0+kb 条目 28 行在位）
+- [x] Deliver to user（终报随本收口输出：R1-R6 证据映射）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛记录见 task_plan「收尾回读梳理记录」表（轮次1=S7 11 缺陷全修；轮次2=零新发现）
+- [x] 归档计划：check-complete exit 0 后执行 `bash <skill>/scripts/archive-plan.sh task-specmode-integration-20261115 --root /mnt/data/dev/task-planner-skill/plans`（Rule 81；本计划未持有活跃指针——指针=挂起的 task-initdelegation，无需 --clear；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- [x] 知识提取入库：kb-sync 生成 draft（模板壳）→ 主进程主题化重写正式条目 `knowledge/entries/specmode-integration-and-line-pin-20261115.md`（28 行）→ Simple/general-purpose 子代理落盘+删壳+重建索引 → 盘上核验（条目在位/草稿 0/INDEX 收录=1）；验收阈值 30→28 裁决见 Decisions Made
 - **V-N:** VC-5, VC-6（三位部署 diff=0+合并清理完成）
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
@@ -498,6 +498,7 @@ Phase 5 complete（收尾归档动作中）
 | Spec 模式触发点=任务整理阶段（需求分析/目标澄清）默认路由；技能未安装→自动安装引导（免用户门） | R1/R5 原话 |
 | 安装命令来源=本地技能文件逐字提取；缺载→npm registry `npm view`/官方 README 真实抓取（75.7） | S2 实测：本机技能文档无安装命令（UNKNOWN），禁脑补 |
 | 部署=文件级 cp 三位（zcode commit 不 push / claude commit+push / cursor 磁盘）+diff=0 对账 | 持久指令 deploy-all-platforms-after-skill-change |
+| kb 验收阈值 30 行→实值 28 行判 PASS | 30 行=主进程误估常数（未锚定任何规范）；实义验收=条目逐字在位+草稿清零+INDEX 收录三项全过；子代理拒绝注水行为正确（禁改写契约） |
 
 ## Errors Encountered
 <!-- 

@@ -51,17 +51,49 @@
   | 全量回归（首跑） | run-selftests.sh | FAIL⊆预存2 | PASS=94 FAIL=3（batch-pilot 新增，已修复） | FAIL→修复 |
 
 ### Phase 3: 复检、部署与合并收口
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-15 19:20
 - Actions taken:
-  - [dispatch][S7] critic 独立复检（R1-R6 覆盖判定+安装命令来源核对+变更集核对）运行中 → review-s7.md
-  - [regression-final] 全量 selftest 终跑运行中 → selftest-final.log
-  - 待办：worktree commit（pathspec 4 文件）→ 三位部署 diff=0 → merge back --no-ff → 清理
+  - [dispatch][S7] critic 独立复检完成：APPROVED-with-nits，11 发现（1 IMPORTANT+6 WARNING+4 NIT）全 verified、零脑补确认（7 安装命令逐字命中官方源）→ review-s7.md
+  - [dispatch][fix] D1-D11 一轮全修（D3 writing-plans 硬门兼容/D1 权威源让位/D2 CLI 动态路径/D4 钉 292=287+5 边距/D5 ZCode UNKNOWN fallback/D6 历史留痕恢复+新条目/D7 frontmatter 登记/NIT 全清）；BP 10/10
+  - [regression-final] 修正后全量终跑：Total 97 PASS=95 FAIL=2（FAIL=预存 active-plan/execution-stability，零增量）→ selftest-final2.log
+  - [git] worktree commit c5b891d（pathspec 4 文件 +44/-1）→ stash 窗口合并法过 plan-resume 遗留暂存态阻断（判例 task-v195 同款）→ merge --no-ff a349a89 → stash pop --index 原态回填（M+A 状态核对一致）
+  - [deploy] 三位 cp+对账 diff -q 全空；zcode eaa0df5（commit 不 push）/claude dbbcc00（commit+push 15f2f36..dbbcc00）/cursor 磁盘
+  - [cleanup] 源仓 push 823af04..a349a89；worktree remove+wt 分支删除（本任务清零；遗留 crossvalidate/initdelegation 两 worktree 属他会话不动）
 - Files created/modified:
-  - plans/task-specmode-integration-20261115/review-s7.md（S7 产出，待回收）
-  - plans/task-specmode-integration-20261115/selftest-final.log（终跑证据，待回收）
+  - plans/task-specmode-integration-20261115/review-s7.md、selftest-final.log、selftest-final2.log
+  - 源仓 4 文件（SKILL.md/spec-mode.md/selftest-batch-pilot.sh/CHANGELOG.md）@a349a89
 - Test Results:
-  -
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-1 四段锚 | grep spec-mode.md | 4 锚 | count=5（worktree+源仓双验） | PASS |
+  | VC-2 纯增量 | git diff SKILL.md | 0 删行 | 4 insertions 0 deletions（283→287） | PASS |
+  | VC-3 负断言 | git status/find | 仅 4 文件 | 变更集恰 4 文件；openspec/superpowers 内容=0 | PASS |
+  | VC-4 回归 | run-selftests.sh | FAIL⊆预存2 | 95/2 与基线一致 | PASS |
+  | VC-5 三位对账 | diff -q ×3 | 全空 | 全空 | PASS |
+  | VC-6 收口 | worktree list/branch | 清零 | 已清零；merged(a349a89) | PASS |
+  | VC-7 原话锚 | user-session-log #1 | 逐字在档 | 三段逐字在档；CA-1..5 含 R 锚 | PASS |
+- [goal:G3] 条款实现验证：VC-1/2/3 全 PASS（grep 输出见上表+review-s7.md 机器判据段）
+- [goal:G4] 回归与复检验证：selftest-final2.log 95/2 零增量+review-s7.md APPROVED-with-nits 11 发现全修闭环
+- [goal:G5] 部署收口验证：三位 diff=0（eaa0df5/dbbcc00/cursor）+merged(a349a89)+worktree/分支清零+源仓 push
+- [recall] 2026-11-15 Rule 93.2 主进程 Read execution-recall-card.md（A 完成三条件/B 三判门/C 翻转门控/D 委派优先/E 召回节奏/F 文本优先）；对照结论=本 Phase 收口动作与卡内红线一致（完成声称均有三证据；变更走 CA 表三判；flip 前 progress 回填）
+- [vc-evidence] VC-1..7 逐条实测证据回填于 task_plan.md VC 表证据列（本轮终验机检存档：selftest-final2.log/review-s7.md/merge-deploy 命令输出）
+
+### Phase 4: 独立复检与缺陷闭环
+- **Status:** complete
+- **Started:** 2026-11-15 19:30
+- Actions taken:
+  - S7 critic 复检（见 Phase 3 段）；D1-D11 修正在同轮闭环，缺陷清单=0 未闭环项
+- Test Results: BP-08 修后 10/10；全量 95/2 零增量（selftest-final2.log）
+- [goal:G4] 证据同 Phase 3 段
+
+### Phase 5: 交付与归档
+- **Status:** complete
+- **Started:** 2026-11-15 20:10
+- Actions taken:
+  - 全部产物复核（VC 表证据列+84.14 两轮收敛记录）；三位部署对账；合并收口；归档与知识提取见收尾动作（check-complete exit 0 后执行）
+- Test Results: 见 Phase 3 段 Test Results 表
+- [goal:G5] 证据同 Phase 3 段
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
