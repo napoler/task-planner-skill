@@ -236,8 +236,8 @@ P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge
 - [ ] 全量回归与 master 基线对照分账
 - [ ] critic 全文回读复检（103.3/103.3a）回执落 checkpoint
 - [ ] dogfood：按新 Rule 108 对产出本身执行双视角交叉验证
-- **V-N:** VC-3, VC-4, VC-5
-- **Status:** pending
+- **V-N:** VC-3, VC-4, VC-5——V-3.1 PASS（wt 全量 98 脚本 FAIL=2≤基线 3）/V-3.2 PASS（轮2 APPROVED）/V-3.3 PASS（报告判定行）；CR 链闭环+dogfood 报告双路径+drift ALIGNED 4/4（checkpoint 9-drift-p3.md）
+- **Status:** complete
 - **Executor:** code-runner-agent（默认档）/ critic（默认档）/ general-purpose（默认档）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
