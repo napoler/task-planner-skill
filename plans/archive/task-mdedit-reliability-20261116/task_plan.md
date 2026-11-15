@@ -531,6 +531,7 @@ Phase 1（计划已定稿，待 D1 确认后进入执行）
 | VC/verification 使用可执行命令 | 满足 Rule 84.1 与用户验收，终验可机械/人工复现 |
 | Rule 44.3 超时自动裁决（2026-11-16）：D1 计划展示后无异议自动通过，按已展示计划执行并 attest 锁定 | 五要素：①超时值=默认 5min（实际展示后约 49min goal-loop 续推时点触发）②推荐项=混合方案（JSON edit-ops+Bun+TS 执行器+技能接线，计划已展示）③触发时间=2026-11-16 计划展示后续推轮④裁决理由=/goal 完成性指令「必须纠正」+展示后用户无异议⑤被覆盖的未决选项=P2 遗留项（新建 md-edit-ops 技能 vs 扩展 markdown-editor，默认新建）与 P6 部署授权（计划待审项 2 已声明「批准计划即视为授权」，49min 无异议=授权生效；逐次确认要求未被提出） |
 | P2 裁决定稿：选方向② JSON edit-ops 指令单+本地执行器 **(Recommended)**；方向①现成工具（Aider/Codex）仅吸收契约经验不作主干（无原子回滚），方向③被②吸收（执行器即受控脚本），方向④外部 fast-apply 服务拒绝入主干（契约未公开+外部依赖）；技能形态=新建 `skills/md-edit-ops/`（markdown-editor 仅加指针行最小增量） | 评估矩阵+schema v1+七步流水线（load→staleness 门→预校验→模拟应用→回读断言→原子写盘→apply-report）+exit code 2/3/4/5/6 契约见 findings.md「edit-ops 设计定稿（P2/S1-S3）」段；四失败模式全覆盖：预校验→失配/静默失配，原子+回滚→部分提交，回读断言（标题守恒+锚行保活）→吞块，apply-report→状态混乱 |
+| Rule 27.3 豁免登记（2026-11-16）：check-complete 报 `M skills/task-planner/SKILL.md` 为**并行会话 task-superpowers-openspec-routing-20261116 在飞变更**（diff 内容=spec-mode §5 验证前置指针，其 54ec525 提交谱系；本任务全程未编辑该文件，仅计划 scope_files 预估列含名）——§11.4 禁代他任务提交，登记豁免不代清零 | 证据=git diff（新增行尾「2026-11-16 /goal 增补」§5 句）+git log 文件尾commit=54ec525（对方 feat）；本任务 scope 实际产物已全部提交（eeb55bc/bookkeeping+71e32dc merge）；除该并行文件外 check-complete 其余门全绿 |
 
 ## Errors Encountered
 <!-- 

@@ -177,3 +177,4 @@
 - [2026-11-16] 新用户指令到达：task-planner 引入 superpowers/openspec 按任务复杂度择一路由能力（/goal 原话已锚定新计划 user-session-log.md）。本任务显式挂起，新计划 `plans/task-superpowers-openspec-routing-20261116/` 已开启（active 指针已切换）。
 - **断点**：Phase 1（调研盘点）complete、Phase 2（方案裁决：edit-ops schema v1+七步流水线+新建 skills/md-edit-ops/ 定稿）complete，attest 已锁定（SHA 1a3a26fc…）；**Phase 3（Bun+TS 执行器实现）未启动**。
 - **恢复方式**：读本计划目录三文件+user-session-log.md，从 Phase 3 直接派发实现，无需重跑计划期与 P1/P2。
+- [2026-11-16 03:35] [judge] Rule 73.4 收口对齐三问（主进程，归档后 bookkeeping 批次）：①交付=计划列名产物（skills/md-edit-ops/+Rule 106.6/741+5 位部署），无风格/范围漂移；②关键声称全部主进程盘上复跑（A2/B/F 验收/selftest 52/52×2 运行时/部署 19 文件 diff IDENTICAL/部署副本运行位冒烟 exit 0）；③收口声称与证据齐平=run-verification 6/6 PASS+merge 71e32dc+ARCHIVED。附注：上方挂起 Handoff 块=并行会话 task-superpowers-openspec-routing-20261116 于本任务在飞期写入的历史记录（其时点「Phase 3 未启动」属实）；本会话此后已完成 P3-P6 并归档，该断点描述已被上方 P3-P6 complete 记录超越。
