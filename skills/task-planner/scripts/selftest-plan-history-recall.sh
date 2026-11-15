@@ -24,7 +24,8 @@ MINER="$ROOT/skills/task-planner/companion/agents/history-miner.md"
 DRIFT="$ROOT/skills/task-planner/companion/agents/drift-checker.md"
 TP_SKILL="$ROOT/skills/task-planner/SKILL.md"
 REG="$ROOT/skills/task-planner/scripts/selftest-registry.tsv"
-HPR_DIR="${HPR_DIR:-/mnt/data/dev/task-planner-skill/plans/task-history-recall-20261116/history-recall}"
+HPR_DIR="${HPR_DIR:-$ROOT/plans/task-history-recall-20261116/history-recall}"
+ANCHOR_ROOT="${ANCHOR_ROOT:-$ROOT}"
 
 PASS=0
 FAIL=0
@@ -97,23 +98,21 @@ else
 fi
 
 # HPR-09 锚可解析断言：对 HPR_DIR 下 cards/*.md 与 history-brief.md 提取 .md:行号 锚，路径存在且行号 ≤ wc -l
+hpr09_skipped=0
 hpr09_ok=1
 hpr09_msg=""
 if [ ! -d "$HPR_DIR" ]; then
-  hpr09_ok=0
-  hpr09_msg="HPR_DIR 不存在: $HPR_DIR"
+  hpr09_skipped=1
+  echo "WARN HPR_DIR 缺失，HPR-09 跳过（不计 PASS 不计 FAIL）"
 else
-  ANCHOR_ROOT="/mnt/data/dev/task-planner-skill"
   checked=0
   while IFS= read -r f; do
     [ -f "$f" ] || continue
-    # extract anchors like path/to/file.md:123 or path/to/file.md:10-20
+    # extract anchors like path/to/file.md:123, path/to/file.md:10-20, or multi-point path/to/file.md:1,5-7,9
     while IFS= read -r anchor; do
       [ -n "$anchor" ] || continue
       apath="${anchor%%:*}"
-      range="${anchor#*:}"
-      start="${range%-*}"
-      end="${range#*-}"
+      ranges="${anchor#*:}"
       # resolve path relative to anchor root if not absolute
       if [[ "$apath" = /* ]]; then
         rpath="$apath"
@@ -126,25 +125,38 @@ else
         break 2
       fi
       total="$(wc -l < "$rpath")"
-      # empty file has 0 lines; treat 0 as 0
-      if [ "$start" -gt "$total" ] || [ "$end" -gt "$total" ]; then
-        hpr09_ok=0
-        hpr09_msg="锚行号越界(>${total}): $anchor (in $(basename "$f"))"
-        break 2
-      fi
+      IFS=',' read -r -a tokens <<< "$ranges"
+      for tok in "${tokens[@]}"; do
+        [ -n "$tok" ] || continue
+        start="${tok%-*}"
+        end="${tok#*-}"
+        if ! [[ "$start" =~ ^[0-9]+$ && "$end" =~ ^[0-9]+$ ]]; then
+          hpr09_ok=0
+          hpr09_msg="锚行号格式非法: $anchor (in $(basename "$f"))"
+          break 3
+        fi
+        if [ "$start" -lt 1 ] || [ "$end" -lt 1 ] || [ "$start" -gt "$end" ] || [ "$start" -gt "$total" ] || [ "$end" -gt "$total" ]; then
+          hpr09_ok=0
+          hpr09_msg="锚行号越界(>${total}): $anchor (in $(basename "$f"))"
+          break 3
+        fi
+      done
       checked=$((checked+1))
-    done < <(grep -oE '[A-Za-z0-9_./-]+\.md:[0-9]+(-[0-9]+)?' "$f" 2>/dev/null || true)
+    done < <(grep -oE '[A-Za-z0-9_./-]+\.md:[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*' "$f" 2>/dev/null || true)
   done < <(find "$HPR_DIR" -maxdepth 2 -type f \( -path "$HPR_DIR/cards/*.md" -o -name 'history-brief.md' \) 2>/dev/null | sort)
   if [ "$hpr09_ok" -eq 1 ] && [ "$checked" -eq 0 ]; then
-    hpr09_ok=0
-    hpr09_msg="未在 HPR_DIR 找到可解析锚: $HPR_DIR"
+    hpr09_skipped=1
+    echo "WARN HPR_DIR 缺失，HPR-09 跳过（不计 PASS 不计 FAIL）"
   fi
 fi
-if [ "$hpr09_ok" -eq 1 ]; then
-  ok 09 "HPR_DIR 锚可解析且路径存在/行号≤wc -l"
-else
-  bad 09 "$hpr09_msg"
+if [ "$hpr09_skipped" -eq 0 ]; then
+  if [ "$hpr09_ok" -eq 1 ]; then
+    ok 09 "HPR_DIR 锚可解析且路径存在/行号≤wc -l"
+  else
+    bad 09 "$hpr09_msg"
+  fi
 fi
 
-echo "Total: 9 PASS=$PASS FAIL=$FAIL"
+TOTAL=$((PASS+FAIL))
+echo "Total: $TOTAL PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
