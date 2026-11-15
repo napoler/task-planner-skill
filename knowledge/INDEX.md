@@ -1,6 +1,6 @@
 # 知识库索引 (knowledge/INDEX.md)
 
-> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-15T20:22:25Z | 条目计数: 29
+> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-15T20:37:23Z | 条目计数: 29
 
 | id | title | tags | sources | file |
 | discipline-execution-honesty | 执行纪律与能力沉淀 | [执行诚实, 错误闭环, 能力沉淀, 验证优先, 知识管理] | plans/archive/task-v072-error-loop/task_plan.md<br>plans/archive/task-v157-error-fix-prompt-forge/knowledge-brief.md<br>plans/archive/task-v157-error-fix-prompt-forge/findings.md<br>plans/archive/task-v076-conclusion-discipline/findings.md<br>plans/archive/task-v099-reliability-institution/knowledge-brief.md<br>plans/archive/task-v067-knowledge-brief/findings.md<br>plans/archive/task-quality-over-speed/findings.md<br>plans/archive/task-v087-task-boundary/findings.md<br>plans/archive/task-v163-proactive-research/findings.md<br>plans/archive/task-pwf-reuse/findings.md | entries/discipline-execution-honesty.md |
