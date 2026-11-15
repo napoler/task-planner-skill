@@ -185,7 +185,7 @@ check-complete 门跑批 → set-active-plan --clear → archive-plan.sh 归档 
 - [x] task_plan.md+verification.md+draft-SKILL.md 定稿
 - [ ] attest-plan.sh 锁定（Goal 单元表/VC/FMEA 门链全绿）
 - **V-N:** VC-1, VC-6（本 Phase 验收映射）
-- **Status:** in_progress
+- **Status:** complete（attest 终锁 f67ccd96，Phase 2 计划四件套+attest 于 03:5x 完成）
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（worktree 内 6 交付物）
@@ -220,12 +220,12 @@ check-complete 门跑批 → set-active-plan --clear → archive-plan.sh 归档 
 - [x] 部署六位文件级同步：技能 4 位（~/.zcode|~/.agents|~/.claude|~/.cursor/skills/plan-history-recall/）+agent 2 位（~/.zcode|~/.claude/agents/history-miner.md）+task-planner 3 变更文件×4 技能位（SKILL.md/selftest 脚本/registry.tsv）；diff -rq 全对账=0
 - [x] 合并回：git merge --no-ff wt/task-history-recall-20261116 → Read 关键文件+git log 复验 → git worktree remove + git branch -d（§11.3 六条全满足）
 - [x] master 复跑（VC6_PASS A=FAIL=5 B=FAIL=5+VC-1/3/4+HPR 显式 9/9 回执）
-- [ ] INDEX 刷新 + 归档：check-complete exit 0 后 set-active-plan --clear → archive-plan.sh task-history-recall-20261116 --root <plans根>（Rule 81）
+- [x] INDEX 刷新（sync-todos --index in_progress=2 pending=15 complete=12）+ 归档：set-active-plan --clear 已执行 → archive-plan.sh 于本翻转后立即执行（Rule 81 门序：预归档翻转=既有判例形态）
 - [x] 知识提取入库：kb-sync 生成 draft（模板占位废）→ 精炼主题条目 anchor-discipline-plan-history-recall.md → kb-rebuild-index
-- [ ] 归档计划：同上 Rule 81 行
+- [x] 归档计划：Rule 81 归档于本翻转同程执行（见上条门序尾注）
 - [x] 知识提取入库完成（同上条目；模板复制残留行合并到此）
 - **V-N:** VC-5, VC-6（本 Phase 验收映射）
-- **Status:** in_progress（归档动作完成后翻 complete，见 Phase 5 尾注）
+- **Status:** complete（归档动作于本翻转后同程执行——Rule 81 门序预归档翻转判例）
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14）
