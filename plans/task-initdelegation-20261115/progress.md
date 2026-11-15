@@ -210,3 +210,12 @@
 - **CR R2 残留修复（commit 51e8631，SKILL.md md5 5bc3eb5a 297 行，4 位已再部署 diff=0）**：阻塞-1=Plan Writer 路径改 `companion/agents/plan-writer.md` 相对形态（盘上 test -f 实锚可解析）；残留-2=「冲突分析」bullet 补「首动作委派子代理已起草时=复核/校正，不重写」（22.4a 双写消歧）；残留-3=22.4a/b/c 派发全契约（22.4b 八字段返回）精度；阻塞-2=PASS=8 口径注记三处补齐（verification.md Phase 5 Status/Goal Gate+task_plan Phase 5 checkbox）；残留-4a=本表 5-Question 行更新；残留-4b=VC-3/VC-4 存在性检查标注+VC-7 另 2 位承载注记（verification.md）
 - **登记另行收口**（critic R2 要求保留）：① SKILL.md `:48`（blame 5516cf05 2026-10-19）与 `:69`（blame 9ec6fea8 2026-10-22）清哨兵前置矛盾=活矛盾非本任务引入；② run-verification VC 编号沿用解析怪癖（V-N 命令误标最近 VC 并覆盖同名 evidence）；③ agents 部署位骨架态（无 references/，SKILL.md 指针悬空）补齐
 - **全量回归自报口径披露**：97 脚本 FAIL⊆基线族为主进程/子代理实测（critic 只读约束未独立复跑）；BP-08 双侧独立实测一致（10/10）
+
+### CR R3 终局（2026-11-15）
+- **critic 独立三轮复批：APPROVED**（10/10 实测 PASS：阻塞双修/残留四修/部署 4 位 md5 同值 5bc3eb5a/BP-08 10/10/attest 5e762d8b 锁定有效；独立发现 4 项非阻塞通报全数复核为真）
+- **CR APPROVED 留痕（Rule 42.7）**：R1 CHANGES_REQUESTED（P1×3+P2×9）→ R1 修复 60004b6 → R2 CHANGES_REQUESTED（阻塞×2+残留×4）→ R2 修复 8b69a16/51e8631 → **R3 APPROVED**（reviewer=critic 独立上下文，两轮修复均经其独立实测确认）
+- **非阻塞通报承账**：① SKILL.md:53 计划期例外引用 22.4a/62.2 而真正对撞条文 62.3 未引未改（缓解=plan-writer 契约本身授权；下个条款维护窗口收口）② progress.md:186 历史留痕含旧 canonical 形态 ③ :52 嵌套括号措辞 ④ VC-3/VC-4 判别力弱（注记已披露）——均不构成本轮退回
+- **84.14 第 3 轮**：R3 独立全量复批替代主进程第三轮（10 项含六文档面/部署面/回归面），零新阻塞发现→收敛出口维持
+
+| CR-Receipt | 2026-11-15 | critic(R3) | CR 三轮复批收口 | done | APPROVED；10/10 PASS；4 项非阻塞通报承账 | progress.md 本段 | progress CR R3 段 | n/a | 独立实测 / 1 / ☑ |
+|---|---|---|---|---|---|---|---|---|---|
