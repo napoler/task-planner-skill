@@ -408,10 +408,10 @@ Phase 5
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation
-- [ ] Execute the plan step by step（按变更标注表 CA-1..CA-6 逐条落盘）
-- [ ] Write code to files before executing
-- [ ] Test incrementally（每文件落盘后 grep 自证）
-- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- [x] Execute the plan step by step（按变更标注表 CA-1..CA-6 逐条落盘——executor 落盘+主进程 diff 复核，证据 progress.md Phase 3 Test Results 全 PASS）
+- [x] Write code to files before executing
+- [x] Test incrementally（每文件落盘后 grep 自证——5 文件计数 2/3/5/1/1）
+- [x] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行——已读已留痕（progress.md Phase 5 段 [recall] 行）；压缩/恢复后第一动作
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6
 - **Status:** complete
 - **Executor:** executor（sonnet-1）
@@ -444,9 +444,9 @@ Phase 5
 | S2 | (A7) | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |
 
 ### Phase 4: Testing & Verification
-- [ ] Verify all requirements met（VC-1..6 逐条取证）
-- [ ] Document test results in progress.md
-- [ ] Fix any issues found
+- [x] Verify all requirements met（VC-1..6 逐条取证——Verifier 独立复核全 PASS+主进程交叉实测一致）
+- [x] Document test results in progress.md（Phase 4 段 Test Results+verification.md 终验回填）
+- [x] Fix any issues found（Executor 字段白名单编号修复 stats verdict=ok；无产出面缺陷）
 - **V-N:** VC-1, VC-2, VC-3, VC-4, VC-5, VC-6
 - **Status:** complete
 - **Executor:** Verifier（haiku-1）
@@ -461,11 +461,11 @@ Phase 5
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-finalread-20261116 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] Review all output files（五文件 diff 复核+新技能 Read 全文）
+- [x] Ensure deliverables are complete（VC-1..6 全 PASS）
+- [x] Deliver to user（交付总结随收尾回复）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮1 三文档漏写已补+占位段删；轮2 零新发现）——见收尾回读表
+- [ ] 归档计划：check-complete exit 0 后先 `bash /home/terry/.zcode/skills/task-planner/scripts/set-active-plan.sh --clear` 再 `bash /home/terry/.zcode/skills/task-planner/scripts/archive-plan.sh task-finalread-20261116 --root plans/`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
 - [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
