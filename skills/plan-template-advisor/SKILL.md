@@ -33,6 +33,7 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 - 候选先落当前任务计划目录 `template-candidate/`，便于审查与回溯。
 - 项目级落位 `<项目>/.zcode/plan-templates/<类型>-type.md`（或 `.claude/plan-templates/` 同名位）；task-planner `init-session.sh` 原生发现并入白名单，零接线。
 - 只写 `*-type.md` 后缀文件；单次激活产出 ≤3 个，防刷量与过度定制。
+- 类型标识=文件名去 `-type.md` 后缀（init-session.sh 派生口径）：机读头与 `template_type` 填该标识（如文件 `foo-type.md`→类型 `foo`），禁重复带 `-type` 后缀（判例=task-tpl-sediment-20261115 G2 首跑选型失败回退 generic）。
 - 模板须含机读头与最小结构骨架，适配项目实际验证命令与范围约束。
 
 ### ⑤ 审查
