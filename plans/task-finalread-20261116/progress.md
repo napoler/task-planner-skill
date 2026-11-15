@@ -92,7 +92,7 @@
   | scope porcelain | git status -- plans/task-finalread-20261116 knowledge/ | 空 | CLEAN | PASS |
   | check-complete | 终验门链 | exit 0 | 全绿（P-04 修复后） | PASS |
 - **goal 完成证据行**：
-  - [goal:G1] 制度设计=task_plan.md CA-1..6+设计文本块（commit fbd0132 可溯）；验证 `grep -c "CA-7" plans/task-finalread-20261116/task_plan.md` → 4 行命中 PASS → complete
+  - [goal:G1] 制度设计=task_plan.md CA-1..6+设计文本块（commit fbd0132 可溯）；验证 `grep -c "CA-7" /mnt/data/dev/task-planner-skill/plans/task-finalread-20261116/task_plan.md` → 4 行命中 PASS → complete
   - [goal:G2] 技能落盘=/home/terry/.agents/skills/final-readthrough/SKILL.md 七铁律；验证 `grep -c "整读" /home/terry/.agents/skills/final-readthrough/SKILL.md` → 4 行>0 PASS → complete
   - [goal:G3] 执行链接线=executing-plans:3 处/sdd:5 处；验证 `grep -c "final-readthrough" /home/terry/.agents/skills/executing-plans/SKILL.md /home/terry/.agents/skills/subagent-driven-development/SKILL.md` → 3/5 命中 PASS → complete
   - [goal:G4] 入口双位=using-superpowers :51 双位；验证 `diff /home/terry/.zcode/skills/using-superpowers/SKILL.md /home/terry/.agents/skills/using-superpowers/SKILL.md` → 空输出 TWIN-IDENTICAL PASS → complete
