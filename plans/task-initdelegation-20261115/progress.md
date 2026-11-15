@@ -26,6 +26,7 @@
 > Phase 1（S1+S2）已由后续执行体完成只读侦察与基线采集（见下方 Phase 1 段）；本 Phase 0 保留 plan-writing 派发留痕。
 
 ### Phase 1: 只读侦察 + 基线采集（S1+S2）
+- **[goal:G1] 完成证据**：S1 插入点 L48/L49 定稿（findings.md Technical Decisions「S1 锚点锁定」段）+ S2 基线 97 脚本 PASS=94/FAIL=3 改前既有（progress Phase1 段命令实测）+ rule-reserve next=109 只读留痕 + Q1 SKILL-only 定稿（Decisions Made）
 - **Status:** complete
 - **Started:** 2026-11-15（本会话 Phase 1 派发执行）
 - **R 锚定（记录）**：本 Phase 服务 R1/R3「初始化阶段委派条款固化的锚点锁定与改前基线采集」，为 Phase 2 条款实现与 Phase 3 零增量对账提供证据。
@@ -49,6 +50,7 @@
   | 全量自测基线（改前快照） | `bash skills/task-planner/scripts/run-selftests.sh` | 记录总数/PASS/FAIL/FAIL 清单（零增量对比基线） | `Total: 97 PASS=94 FAIL=3 (run=97 reused=0)`；`Failed: selftest-active-plan selftest-execution-stability selftest-rule-reserve-pairing`；`___RC:1___` | **BASELINE FAIL=3（改前既有）** |
 
 ### Phase 2: S1 条款实现 + S2 引用面一致性核查
+- **[goal:G2] 完成证据**：worktree 2bb24f4 SKILL.md +9 行条款落位 + 主进程盘上复核 V-N 直跑 VC-1..VC-5 全 PASS + CA-2 按 SKILL-only 关闭（progress Phase2 段）
 - **Status:** complete
 - **Started:** 2026-11-15
 - **R 锚定（记录）**：服务 R1/R3——在 worktree SKILL.md 计划制作循环插入 L1+ 初始化首动作委派条款并完成引用面只读核查。
@@ -112,6 +114,7 @@
 | 2026-11-15 18:10 | 用户「继续」恢复指令（user-session-log #2）→ 本计划恢复推进；计划粒度修正后 attest 重锁 EXIT:0（SHA e3b15947） | Phase 1 in_progress、S1/S2 派发中；positioning 计划 0/0 未启动保持隔离 | 已解除（本行即恢复登记） |
 
 ### Phase 3: S1 全量自测回归 + S2 守护按需判定
+- **[goal:G3] 完成证据**：全量回归终态 PASS=95/FAIL=2（FAIL⊆基线族）+ BP-08 插入致超限最小修复 dcf7190 + 本任务引起 FAIL=0 + Q2 不新增守护判定（progress Phase3 段）
 - **Status:** complete
 - **Started:** 2026-11-15（本会话 Phase 3 派发执行，worktree `wt/task-initdelegation-20261115@2bb24f4`）
 - **R 锚定**：服务 R3/VC-6/VC-7——在 worktree 内执行全量 `run-selftests.sh --fresh`，对比既有基线 PASS=94/FAIL=3（`selftest-active-plan`, `selftest-execution-stability`, `selftest-rule-reserve-pairing`）做零增量对账；归因并最小化修复“由本任务插入引起”的新增 FAIL；完成 S2 守护按需判定。
@@ -178,6 +181,7 @@
 
 **登记/说明（非 scope）**：除上述四位 `diff -rq` 报告外，其它未在本对账中列出的差异一律按“只登记不动”处理；**禁止**改动部署位除 scope 2 文件外任何文件；**未执行任何 git 操作**（git 仅在主仓合并阶段进行）。
 
+- **[goal:G5] 完成证据**：run-verification PASS=8 FAIL=0（统一入口）+ CR R3 critic 独立 APPROVED（10/10 实测）+ 委派率 0.80 verdict=ok + 4 部署位 md5 同值 5bc3eb5a + 84.14 三轮收敛（progress Phase5 段+CR R3 段）
 ### Phase 5: CR 修复（P1×3+P2-2）— 条款契约一致性与 BP-08 线性链恢复
 - **Status:** complete
 - **Started:** 2026-11-15（fix worktree `wt/task-initdelegation-fix-20261115` @ master c92d22b 基线）
