@@ -385,12 +385,12 @@ Phase 5（收尾：重锁定/check-complete/归档）
 - [x] 主仓无 scope 重叠未提交变更复查 → `git merge --no-ff wt/task-superpowers-openspec-routing-20261116`（42ab794）
 - [x] 4 部署位同步：逐对 diff 判向（位侧零独有内容）→ 覆盖（.agents 两位补建）→ VC-5 diff=0 全过
 - [x] worktree 清理（VC-6）：`git worktree remove` + `git branch -d`（WT/BR 清理完成）
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-superpowers-openspec-routing-20261116 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：回读完成——state-consistency 机器三源一致 PASS+收尾回读表登记（收敛出口=一轮零新发现）
+- [x] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-superpowers-openspec-routing-20261116 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
+- [x] 知识提取入库：kb-sync draft → 精炼主题化（superpowers-openspec-complexity-routing.md：§2 六事实/§3 四锚/§4 六易错点，源锚 findings-external-families.md+verify-report.md）→ kb-rebuild-index（回执见 progress Phase 5 段）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
 - **V-N:** VC-5, VC-6（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -398,7 +398,7 @@ Phase 5（收尾：重锁定/check-complete/归档）
      发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1 | 无新发现（五维互洽：需求 R1-R5↔Goal↔三文件条款↔VC-1..7 全 PASS↔findings/知识储备已用尽——check-complete state-consistency 三源一致 PASS；verify-report 语义三性 PASS；drift ALIGNED） | 收敛出口（连续一轮零新发现）；遗留仅 WARN 级：task_plan 596 行>500（Rule 19.6，计划期文档体量，归档承载不回炉） |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -578,7 +578,7 @@ Phase 5（收尾：重锁定/check-complete/归档）
 | **goal** | 见 Goal 段 |
 | **depends_on** | none |
 | **passes_to** | 无（单块任务） |
-| **status** | in_progress |
+| **status** | complete |
 
 ### 🔗 Handoff 追踪表
 

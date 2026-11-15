@@ -146,3 +146,8 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+## 交接登记（2026-11-16，Rule 102.0 D 新任务边界知会）
+- 本会话（db9eb46e，attest 快照时点 Phase 2）收到新 goal：新建「plans 文档体系+git 历史 → 过往任务经验挖掘」技能。核查发现**本任务已由并行会话收口**：54ec525 feat → 42ab794 merge → 4189ec6 plan(outcome COMPLETE)，G1-G4 全 complete（见上方 Goal 单元证据行）——无需挂起，本登记仅为新任务边界知会。
+- 本会话转向新任务：`plans/task-history-recall-20261116/`（brainstorming 设计先行，方法论载体 using-superpowers）。
+- 对本计划后续动作（如归档 archive(...) 提交、INDEX 刷新）仍归原收口会话职责面，本会话不代做。
