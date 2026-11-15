@@ -128,6 +128,7 @@ execution_lane: L1
 | CA-1 | skills/task-planner/SKILL.md:130-145（终验交付段，outcome 判定后/归档前插入锚） | 修改 | 增量 | 「…B执行完成之后，主动切换回来执行A…确保任务不会因为被暂时搁置而彻底的弄，就是被搁置掉。」(R1) | findings R-1,R-3,R-4；M1,M2,M6,M10；:136 归档顺序约束 | 新增「挂起计划回切检查（intent-switch 回切）」条款：查 `[intent-switch]` 登记链（`旧=<id>`）+`plans/INDEX.md`；命中则出【计划回切通告】询问是否切回；yes=释放指针+路由 `Skill("plan-resume")` 定向恢复；no=登记保持挂起并写 `回切状态`；声明 outcome 判定后、归档前执行且**不自动切** |
 | CA-2 | skills/task-planner/SKILL.md:202-204 邻近（显性通告模板区） | 修改 | 增量 | 同 R1 | findings R-2；M4,M5；:203 前向模板对称 | 补「回切通告模板」：【计划回切通告】含 B 已收口/检测到挂起链 A/是否切回，以及 yes/no 处置语义（与前向模板对称，不替代 :203） |
 | CA-3 | skills/task-discipline/references/critical-rules-discipline.md:619 之后（Rule 94 段末，:620 前） | 修改 | 增量 | 同 R1 | findings R-3；M7,M8；:615 94.4 封存待 resume；:619 既有前向交叉锚 | 追加 intent-switch 回切交叉锚：衔接 94.4 封存待 resume 与回切触发，指向 SKILL.md「终验交付」挂起计划回切检查/【计划回切通告】/`Skill("plan-resume")`，声明不自动切；保留 94.3/94.4 权威语义不改 |
+| CA-4 | skills/task-planner/scripts/selftest-batch-pilot.sh（BP-08 行数钉） | 修改（钉值 305→306+演进链注释） | 增量（回归修复连带——SKILL.md +2 行突破行数钉，守卫正常工作；Rule 74 判据=回归测试证伪旧钉值，scope 连带登记） | R1+回归零增量要求 | 钉值上调+注释演进链追加（历史先例 task-v086/v087/v088/initdelegation 同族） |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -207,7 +208,7 @@ Phase 1
 - [ ] S2：SKILL.md 显性通告区补「回切通告模板」（B 已收口/检测到挂起链/是否切回/yes-no 处置）
 - [ ] S3：discipline Rule 94 段末（:619 后）补 intent-switch 回切交叉锚，衔接 94.4 封存待 resume 与回切触发，保留权威语义
 - **V-N:** VC-2, VC-3, VC-4
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-assistant
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -217,11 +218,11 @@ Phase 1
 | S3 | Rule 94 段末增 intent-switch 回切交叉锚并保语义 | 继承 | skills/task-discipline/references/critical-rules-discipline.md:607,615,619（94.4 封存待 resume；既有前向交叉锚）；findings.md CA-3（token：intent-switch 回切/94.4/封存待 resume/回切触发/SKILL.md「终验交付」/挂起计划回切检查/【计划回切通告】/Skill("plan-resume")/不自动切） | VC-4 grep 全命中且 `^### 94`/`94.4` 仍在位 | 10min | 1f/20l/10min | 无 | - | pending |
 
 ### Phase 3: 回归验证与同步核验
-- [ ] 执行 VC-1~VC-6 命令并记录证据（含 git diff scope 与 plan-resume 未改校验）
-- [ ] 完成 103.6 多文件变更集同步核对清单（SKILL.md + discipline 两文件）并全绿
-- [ ] 修正锚点/措辞漂移（仅 CA-1~CA-3 范围内最小修补）
+- [x] 执行 VC-1~VC-6 命令并记录证据（含 git diff scope 与 plan-resume 未改校验）
+- [x] 完成 103.6 多文件变更集同步核对清单（SKILL.md + discipline 两文件）并全绿
+- [x] 修正锚点/措辞漂移（BP-08 钉值连带修复，CA-4 登记）
 - **V-N:** VC-1, VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:L0-E 纯执行——跑 VC 命令/grep/git diff 核对与簿记，零仓库受管变更零新语义，Rule 38.7）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -333,6 +334,8 @@ Phase 1
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-11-16 | plan-writer | 调研锚点与缺口并落盘回切闭环计划六文档 | done | 完成 M1-M12/R-1~R-4/S1-S3 诊断；产出 task_plan/verification/kb/findings/progress | findings.md 全文；task_plan.md:1-360；verification.md:1-120 | findings.md Research Findings/缺口诊断/方案 | n/a | - / 0 / ☑(主进程盘上复核 R/VC/CA/Phases/S-unit/锚点) |
+| 2 | 2026-11-16 | code-assistant | S1+S2 SKILL.md 回切检查条款+回切通告模板 | done | +2/0 纯增量；:145/:206 落位；token 全命中 | worktree diff；SKILL.md:145,206 | progress Phase 2 | n/a | - / 0 / ☑(主进程复核) |
+| 3 | 2026-11-16 | code-assistant | S3 Rule 94 回切交叉锚 | done | +1/0；:620 紧邻 :619；94.4 语义保留 | discipline.md:620 | progress Phase 2 | n/a | - / 0 / ☑(主进程复核) |
 | 2 | | code-assistant | Phase 2 S1 终验回切检查条款落地 | queued | | | | | - / 0 / ☐ |
 | 3 | | code-assistant | Phase 2 S2 回切通告模板落地 | queued | | | | | - / 0 / ☐ |
 | 4 | | code-assistant | Phase 2 S3 Rule 94 回切交叉锚落地 | queued | | | | | - / 0 / ☐ |

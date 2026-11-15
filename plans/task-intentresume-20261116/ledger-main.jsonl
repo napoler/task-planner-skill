@@ -1,0 +1,1 @@
+{"tick":1,"ts":"2026-11-15T21:40:44Z","agent":"main","phase":"2","event":"drift_check","summary":"Phase2 后检查 ALIGNED（主进程接管：2 文件 +3/-0 范围一致/语义衔接正确/服务 R1；provider 限流降级登记）","files":[]}

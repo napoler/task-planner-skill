@@ -34,6 +34,23 @@
 
 ### Phase 2: 回切闭环机制增强实现（worktree）
 - **R 锚定**：本 Phase 服务 R1「主动进来回来执行 A」——S1-S3 落地回切检查/回切通告/94 交叉锚
+- **Status:** complete
+- **Started:** 2026-11-16 05:05
+- Actions taken:
+  - S1+S2（Code Assistant，SKILL.md +2/0）：回切检查条款 :145（outcome 判定后/归档前/双源查询/【计划回切通告】/不自动切/回切状态）+回切通告模板 :206；主进程盘上复核✓
+  - S3（Code Assistant，discipline +1/0）：:620 回切交叉锚（紧邻 :619 前向锚，94.4 封存语义保留）；主进程 grep 复核✓
+  - worktree commit（两文件 pathspec 锁定）
+- Files created/modified:
+  - skills/task-planner/SKILL.md（+2：终验段回切检查条款+通告区回切模板）
+  - skills/task-discipline/references/critical-rules-discipline.md（+1：Rule 94 回切交叉锚）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-2 锚 | SKILL.md grep 回切条款 token 族 | 全命中 | 6 | PASS |
+  | VC-3 锚 | SKILL.md grep 通告模板 token 族 | 全命中 | 2 | PASS |
+  | VC-4 锚 | discipline grep 交叉锚 token 族 | 全命中 | 7 | PASS |
+  | 纯增量 | git diff --stat | 删除行=0 | 2 files +3/-0 | PASS |
+- 完成证据：[goal:G2] worktree 内两文件+3/-0 全 token 命中；VC-2~VC-4 worktree 版全 PASS
 - **Status:** pending
 - **Started:**
 - Actions taken:
@@ -93,3 +110,12 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+- [drift-check] Phase 2 后（主进程接管——drift-checker/general-purpose 双通道 provider rate-limited，§七降级穷尽）：✅ALIGNED（检查点=checkpoints/drift-p2.md）
+
+## Phase 3 回归记录（2026-11-16）
+- worktree 全量 selftest 首跑：Total 98 PASS=92 FAIL=6——预存 5 项+**新增 selftest-batch-pilot（BP-08 SKILL.md 行数 306>305）**
+- 归因：主仓 batch-pilot rc=0/worktree rc=1 对照=本改动引起（+2 行突破行数钉）——守卫正常工作，非环境漂移
+- 修复：BP-08 钉值 305→306+演进链注释追加（历史先例 task-v086/v087/v088/initdelegation 同族）；CA-4 登记（scope 连带增量）；单脚本复跑 rc=0
+- 全量重跑：Total 98 PASS=93 FAIL=5——预存集同集{active-plan,execution-stability,registry,self-resolution,summary-readability}，零增量 PASS
+- 103.6 关联面四族：①引用面（回切条款=新条款，intentswitch 前向条款引用链已核对无冲突）②守卫面（BP-08 已修；全量 selftest 零增量实证其余钉不涉）③部署面（selftest-batch-pilot.sh 一并入部署同步清单）④模板面无涉
+- V-N：V-3.x 命令 PASS（计划文件在位+锚点回归+scope diff）
