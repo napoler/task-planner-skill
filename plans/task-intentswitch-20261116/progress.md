@@ -96,6 +96,7 @@
   | run-verification | verification-gate/run-verification.sh plans/task-intentswitch-20261116 | 全 PASS | PASS=7 FAIL=0（c55d166c 锁定后） | PASS |
   | check-complete | check-complete.sh <plan>/task_plan.md | exit 0 | 见最终复跑（三源一致修复后） | PASS |
 - 完成证据：[goal:G4] merge 281e556+部署 IDENTICAL+终验 7/7+归档链执行
+- 完成证据：[goal:G5] 验收收口达成——run-verification PASS=7 FAIL=0（evidence/VC-1~6.out，c55d166c 锁定后终跑）+103.6 四族清单全绿（progress Phase 3 段）+CR APPROVED（Handoff #7，零 BLOCKER/MAJOR/MINOR）+边界不破坏（VC-5 drift 锚 3 处在位+64.x 未动=drift-p2 ALIGNED）
 
 ## Drift Log（Rule 64.1 三件套）
 - [drift-checker] Phase 1 后检查（agent_b845d374）：✅ALIGNED——Goal↔R1 覆盖有效、findings M1-M15/H1-H6/R-1~R-5/S-A 可审计、无范围漂移（检查点=checkpoints/drift-p1.md）
