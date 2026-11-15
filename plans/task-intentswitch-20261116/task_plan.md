@@ -194,7 +194,8 @@ Phase 1
 - [x] 落盘 findings/task_plan/verification/knowledge-brief/progress 核心内容并对齐 R1→VC
 - **V-N:** VC-1, VC-6
 - **Status:** complete
-- **Executor:** plan-writer（首动作委派实态=Handoff #1；主进程仅 skill 激活+init+派发+收据回收+user-session-log 逐字落盘+D1+attest——Rule 25.3 白名单编排面）
+- **Executor:** plan-writer
+<!-- 主进程白名单编排面（skill 激活+init+派发+收据回收+user-session-log 逐字落盘+D1+attest），首动作委派见 Handoff #1 -->
 
 ### Phase 2: 单入口与显性化增强实现（worktree）
 - [x] S1：在 SKILL.md「用户新指令处理」强化单入口（快速判定卡+显性通告模板+切换登记最小字段指引）
@@ -231,7 +232,8 @@ Phase 1
 - [x] 产出交付摘要（按 51.14 自证口径）并记录归档前置条件（执行期由主进程按 Rule 81 执行）
 - **V-N:** VC-1, VC-6
 - **Status:** complete
-- **Executor:** code-reviewer（CR Gate 派发实态=Handoff #7；主进程仅 git/归档编排+簿记与交付汇总——Rule 25.3 白名单①⑥）
+- **Executor:** code-reviewer
+<!-- CR Gate 派发见 Handoff #7；主进程白名单面=git/归档编排+簿记与交付汇总 -->
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
