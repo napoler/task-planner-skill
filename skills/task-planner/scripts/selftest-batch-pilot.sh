@@ -62,8 +62,9 @@ if [ "$tbl_ok" -eq 1 ]; then ok 06 "batch-quality-gate §二表 18.9-18.11 三�
 if grep -q '## 八、试点先行硬门详解' "$BGATE"; then ok 07 "§八 试点先行硬门详解"; else bad 07 "缺 §八 详解段"; fi
 # BP-08 [2026-10-12 task-v171 S38] 上限 558→275: Why=技能专业化拆分后 SKILL.md 重写瘦身（非核心 66 条规则分层至 10 卫星, 实值 214 行）, 原钉 558 贴线即破且失去回归意义; 新钉=目标 ≤250+25 边距（先例=task-v168 实值+25 口径, 设计文档 §6「BP-08 行数钉演进」: 558→275）
 # [2026-11-05 task-subagent-markup-20261105] Rule 104 就地速查表+7 行结构性增量（实值 280）, 上限 275→285
+# [2026-11-15 task-specmode-integration-20261115] Spec 模式路由 +3 行 & frontmatter 登记 +1 行（实值 287）, 上限 285→292（实值+5 边距，口径同 2026-11-05）
 lines=$(wc -l < "$SKILLMD")
-if [ "$lines" -le 285 ]; then ok 08 "SKILL.md 行数 $lines ≤285"; else bad 08 "SKILL.md 行数 $lines 超 285"; fi
+if [ "$lines" -le 292 ]; then ok 08 "SKILL.md 行数 $lines ≤292"; else bad 08 "SKILL.md 行数 $lines 超 292"; fi
 # BP-09 [2026-10-12 task-v171 S38] 纪元锚扩至覆盖 1-77 全集: 原字面 grep '隶属 Rules 1-36' → 宽容正则
 #   grep -qE '隶属 Rules 1-(3[6-9]|[4-6][0-9]|7[0-7])'（参照 selftest-conclusion-discipline.sh:101 CD-19「1-3[5-8]」宽容锚写法扩为含 77）;
 #   覆盖 1-36..1-77 全部纪元（当前 BGATE 在位字面 1-36 命中, 77 纪元前瞻命中）, 全集过渡不断钉
