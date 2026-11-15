@@ -75,15 +75,28 @@
   | 委派统计 | check-delegation stats | verdict=ok | ok（rate 0.4+白名单编号全命中） | PASS |
 
 ### Phase 5: Delivery
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-16 04:20
 - Actions taken:
   - task_plan.md/verification.md/progress.md 三文档终验回填
   - [recall] Rule 93.2：Phase 3→4 翻转后主进程 Read execution-recall-card.md（2026-11-16）——对照红线：完成三条件（执行+产出+验证证据齐）、逐 Phase commit（本 Phase 簿记 commit）、白名单编号（已修 Executor 字段 25.3 对齐）
+  - 簿记 commit fbd0132（计划七文件）→ P-04 勾选回填 → kb 条目精炼入库+索引重建（superpowers-delivery-readthrough-gate，INDEX 命中 1）→ commit 13d50e4
+  - 收尾回读 84.14 两轮收敛（轮1 三文档漏写已补；轮2 零新发现）
+  - 归档：check-complete exit 0 后 set-active-plan --clear + archive-plan（本段完成证据行下方序列执行）
 - Files created/modified:
-  - plans/task-finalread-20261116/*（本目录）
+  - plans/task-finalread-20261116/*（本目录）；knowledge/entries/superpowers-delivery-readthrough-gate.md；knowledge/INDEX.md
 - Test Results:
-  - 待簿记 commit 后补 scope porcelain 清空验证
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | scope porcelain | git status -- plans/task-finalread-20261116 knowledge/ | 空 | CLEAN | PASS |
+  | check-complete | 终验门链 | exit 0 | 全绿（P-04 修复后） | PASS |
+- **goal 完成证据行**：
+  - [goal:G1] 制度设计=task_plan.md CA-1..6+设计文本块（commit fbd0132 可溯）→ complete
+  - [goal:G2] 技能落盘=final-readthrough/SKILL.md 七铁律 grep 全≥1（Verifier 取证）→ complete
+  - [goal:G3] 执行链接线=executing-plans:3 处/sdd:5 处 grep 命中 → complete
+  - [goal:G4] 入口双位=using-superpowers :51 双位 TWIN-IDENTICAL → complete
+  - [goal:G5] 隔离合规=~/.zcode git log 5cd47a2/dd35940+worktree/branch 清零 → complete
+  - [goal:G6] 独立验收=Verifier agent_4294c53c status PASS（VC-1..6） → complete
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
