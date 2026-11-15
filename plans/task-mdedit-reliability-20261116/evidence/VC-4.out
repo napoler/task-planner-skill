@@ -1,0 +1,20 @@
+# [run-verification] VC-4 | 2026-11-15T19:11:09Z | cmd: test "$(grep -c "^- \*\*Executor:\*\*" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md)" -ge 6 && grep -n "^| S[0-9]" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md
+# ---- stdout/stderr ----
+347:| S1 | (A6) 本地资产盘点 | 继承 | `skills/task-discipline/references/critical-rules-discipline.md:722-760`(106/106.1a)；`/home/terry/.zcode/skills/markdown-editor/SKILL.md`(编辑原则/无事务机制)；`task_plan.md` R1-R6(痛点与四方向) | findings.md 新增本地现状与缺口小节，含 file:line 锚点 | 12min | 1f/40l/12min | 无 | - | pending |
+348:| S2 | (A6) 高级/已有工具调研 | 继承 | `task_plan.md` R2/R5；`findings.md` 模板段；关键词“markdown structured edit CLI/atomic patch” | findings.md 记录≥2 个候选工具/仓库，含 URL、能力、与四痛点匹配度 | 15min | 1f/60l/15min | research-assistant | - | pending |
+349:| S3 | (A6) JSON中间件与事务模式调研 | 继承 | `task_plan.md` R3；目标链路“预校验/原子应用/回读/回滚”；Bun+TS 约束 | findings.md 记录 edit-ops/schema/原子写与回滚模式参考及取舍 | 15min | 1f/60l/15min | research-assistant | - | pending |
+350:| S4 | (A6) 编辑脚本与静默失配防护调研 | 继承 | `task_plan.md` R4/R6；痛点④“python/sed 静默失配”；Rule 106.1/106.4 | findings.md 记录命中计数/失败退出/幂等与批量安全实践及证据 | 12min | 1f/50l/12min | research-assistant | - | pending |
+367:| S1 | (A2) 汇总 P1 证据并形成四方向对比 | 主进程（继承 Phase 例外） | `findings.md` P1 产出；`task_plan.md` R2-R5；证据面清单 | task_plan.md P2 表含四方向逐项评估与证据引用 | 12min | 1f/50l/12min | 无 | S1-S4(P1) | pending |
+368:| S2 | (A2) 裁决推荐项与设计草案定稿 | 主进程（继承；难决升级 decision-arbiter） | S1 对比结果；Goal/VC；Rule 106 约束 | 推荐项标注 `(Recommended)`、schema/流程/接线草案落盘 | 15min | 2f/60l/15min | decision-arbiter(备用) | S1(P2) | pending |
+386:| S1 | (A1) 落地 schema 与解析器骨架 | 继承 | P2 设计草案（task_plan/findings）；Bun+TS 约定；目标文件 `skills/task-planner/scripts/md-edit-ops.ts` | 脚本可解析最小 edit-ops JSON 并输出结构化错误码 | 15min | 1f/80l/15min | 无 | S2(P2) | pending |
+387:| S2 | (A1) 实现预校验与冲突检测 | 继承 | S1 产物；四类失败模式对策（存在性/唯一性/命中计数） | 失配/非唯一/0命中等场景返回 FAIL 且不改目标文件 | 15min | 1f/90l/15min | 无 | S1(P3) | pending |
+388:| S3 | (A1) 实现原子应用+备份回滚 | 继承 | S2 产物；“全过才写”要求；临时文件/备份路径策略 | 成功全量应用或失败回滚，目标文件与备份状态可验证 | 15min | 1f/90l/15min | 无 | S2(P3) | pending |
+389:| S4 | (A1) 实现回读验证与 apply-report | 继承 | S3 产物；Rule 106.1a 结构回读要点（段清单守恒） | 输出 report（step状态/matched/changed/hash/断言结果） | 15min | 1f/80l/15min | 无 | S3(P3) | pending |
+405:| S1 | (A1) 创建/更新 md-edit-ops 技能定义 | 继承 | P2 裁决；`/home/terry/.zcode/skills/markdown-editor/SKILL.md` 现状；P3 CLI 用法 | SKILL.md 含触发词、edit-ops JSON 流程、示例与约束 | 15min | 1f/90l/15min | 无 | S4(P3) | pending |
+406:| S2 | (A1) 接线 task-planner 侧触发/引用 | 继承 | `skills/task-planner/SKILL.md` 与相关 references；P2 接线草案 | 计划/执行指引中可发现 md-edit-ops 使用点与 Rule 106 协同说明 | 15min | 2f/80l/15min | 无 | S1(P4) | pending |
+407:| S3 | (A1) 接线 task-discipline/markdown-editor 协同 | 继承 | `skills/task-discipline/*` 相关引用点；markdown-editor 扩展策略 | 触发点一致、无冲突表述，避免双轨混乱 | 12min | 2f/60l/12min | 无 | S1(P4) | pending |
+423:| S1 | (A7) 实现/完善 selftest 脚本 | 继承 | P3 工具与 apply-report 约定；四类失败模式用例 | `selftest-md-edit-ops.sh` 可执行并覆盖关键失败路径 | 15min | 1f/80l/15min | 无 | S4(P3), S3(P4) | pending |
+424:| S2 | (A7) 运行 selftest 并收集证据 | 继承 | S1 脚本；测试样本路径 | 命令输出显示 PASS/FAIL 断言符合预期，失败被拦截 | 12min | 1f/30l/12min | 无 | S1(P5) | pending |
+425:| S3 | (A7) 真实 md 冒烟与回归记录 | 继承 | 真实 markdown 文件样本；P3 工具 | progress/verification 记录成功与失败用例证据 | 12min | 2f/40l/12min | 无 | S2(P5) | pending |
+
+# exit=0

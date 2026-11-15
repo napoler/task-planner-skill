@@ -1,0 +1,4 @@
+# [run-verification] VC-5 | 2026-11-15T19:11:09Z | cmd: test "$(grep -cE "^  \*\*Verify command\*\*:" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/verification.md)" -ge 6
+# ---- stdout/stderr ----
+
+# exit=0

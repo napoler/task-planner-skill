@@ -1,0 +1,55 @@
+# [run-verification] VC-2 | 2026-11-15T19:11:09Z | cmd: grep -n "原子应用" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "预校验" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回读验证" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回滚" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md
+# ---- stdout/stderr ----
+41:| R3 | VC-1, VC-2, VC-4 | P2/P3 评估并设计“JSON 作为中间件（edit-ops 指令单）”的校验/原子应用/回读/回滚链路 |
+61:| 变更应用 | ②new_string 误删相邻内容（吞块，历史判例三犯）：插段/替换时锚行被吞或边界错位 | P3：原子应用（全过才写）+ 结构回读断言（段清单/锚行守恒/预期 diff 形态）+ 应用前自动备份；P4：接线 Rule 106/106.1a 触发前置校验 | VC-2, VC-4, VC-5 |
+83:为 markdown 多次编辑高频出错建跨项目工具级防护：结构化 edit-ops JSON 编辑指令单 + 校验/原子应用/回读验证/回滚脚本 + 技能接线，使编辑错误被机制性拦截/检测/回滚
+122:| VC-2 | 设计覆盖四类失败模式（锚点失配/吞块/状态混乱/静默失配）并给出机制性对策：edit-ops JSON 指令单 + 预校验 + 原子应用(全过才写) + 回读验证 + 备份回滚 | 检查根源覆盖表与 P3 设计/S-unit 描述关键词齐备 | `grep -n "原子应用" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "预校验" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回读验证" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回滚" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+172:| G3 | 工具实现 | 实现 edit-ops JSON 解析/预校验/原子应用/回读/回滚 | 脚本存在且单测/selftest 通过（`test -f skills/task-planner/scripts/md-edit-ops.ts && bash skills/task-planner/scripts/selftest-md-edit-ops.sh`） | P3/S1-S4 | pending |
+245:**核心问题**: 跨项目场景下，AI 代理基于 `old_string/new_string` 锚点匹配编辑 markdown 时高频出现锚点失配、吞块、状态混乱与静默失配；仅靠人工纪律（Rule 106/106.1a）不足以稳定拦截。引入“结构化 edit-ops JSON 指令单 + 预校验/原子应用/回读验证/备份回滚 + 技能接线”的工具级机制后，能否将错误从过程依赖转为可被机制性拦截/检测/回滚，从而显著降低编辑失败率并可交付可复用方案？
+251:4. **执行方案是什么？（步骤化+门控）** P1 真实调研与盘点→P2 四方向裁决与 schema/流程设计→P3 Bun+TS 工具实现（预校验/原子应用/回读/回滚）→P4 技能与规则触发接线→P5 selftest 与真实 md 冒烟→P6 多环境部署；每 Phase 有 VC/V-N 门控与 S-unit 验收。
+349:| S3 | (A6) JSON中间件与事务模式调研 | 继承 | `task_plan.md` R3；目标链路“预校验/原子应用/回读/回滚”；Bun+TS 约束 | findings.md 记录 edit-ops/schema/原子写与回滚模式参考及取舍 | 15min | 1f/60l/15min | research-assistant | - | pending |
+359:- [x] 输出 edit-ops JSON schema 草案、执行流程（预校验→原子应用→回读→回滚）与接线草案
+377:- [x] 实现原子应用（全过才写）、备份与回滚
+388:| S3 | (A1) 实现原子应用+备份回滚 | 继承 | S2 产物；“全过才写”要求；临时文件/备份路径策略 | 成功全量应用或失败回滚，目标文件与备份状态可验证 | 15min | 1f/90l/15min | 无 | S2(P3) | pending |
+479:| Phase 3 | 原子应用/回滚实现缺陷造成误改或回滚失败 | 9 | 4 | 6 | 216 | 22.3②拆细到单机制 S-unit→强制备份与 dry-run 模式→22.3④主进程接管关键修复→失败则 22.3⑤ STOP 并回滚到备份 |
+513:3. “原子应用”在多文件/多 op 场景的事务边界如何定义（单文件原子优先，还是支持跨文件批次）？
+60:| 编辑意图表达 | ①锚点失配反复重试烧时间：old_string 依赖脆弱上下文、唯一性难保证 | P3：edit-ops JSON 指令单显式表达 op（replace/insert/delete/move）+ 目标锚点（heading/行范围/内容hash/前后文约束）+ 预校验（存在性/唯一性/冲突检测）失败即整单拒绝不落盘 | VC-2, VC-4 |
+122:| VC-2 | 设计覆盖四类失败模式（锚点失配/吞块/状态混乱/静默失配）并给出机制性对策：edit-ops JSON 指令单 + 预校验 + 原子应用(全过才写) + 回读验证 + 备份回滚 | 检查根源覆盖表与 P3 设计/S-unit 描述关键词齐备 | `grep -n "原子应用" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "预校验" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回读验证" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回滚" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+172:| G3 | 工具实现 | 实现 edit-ops JSON 解析/预校验/原子应用/回读/回滚 | 脚本存在且单测/selftest 通过（`test -f skills/task-planner/scripts/md-edit-ops.ts && bash skills/task-planner/scripts/selftest-md-edit-ops.sh`） | P3/S1-S4 | pending |
+245:**核心问题**: 跨项目场景下，AI 代理基于 `old_string/new_string` 锚点匹配编辑 markdown 时高频出现锚点失配、吞块、状态混乱与静默失配；仅靠人工纪律（Rule 106/106.1a）不足以稳定拦截。引入“结构化 edit-ops JSON 指令单 + 预校验/原子应用/回读验证/备份回滚 + 技能接线”的工具级机制后，能否将错误从过程依赖转为可被机制性拦截/检测/回滚，从而显著降低编辑失败率并可交付可复用方案？
+249:2. **本质是什么？（5 Whys ≥5 层）** Why1: Edit 依赖精确文本锚点易受上下文漂移/重复片段影响。Why2: 代理在多步编辑中缺少统一事务状态与可观测中间表示。Why3: 失败常在“写后”或“批量替换后”才暴露，缺少写前全量预校验与写后结构断言。Why4: 批量脚本替换未强制命中计数与失败退出，允许静默失配。Why5: 纪律条款存在但无强制执行器与标准化指令协议，跨项目复用与自动拦截能力不足（根因=缺少工具级、可机器校验的编辑事务层）。
+251:4. **执行方案是什么？（步骤化+门控）** P1 真实调研与盘点→P2 四方向裁决与 schema/流程设计→P3 Bun+TS 工具实现（预校验/原子应用/回读/回滚）→P4 技能与规则触发接线→P5 selftest 与真实 md 冒烟→P6 多环境部署；每 Phase 有 VC/V-N 门控与 S-unit 验收。
+349:| S3 | (A6) JSON中间件与事务模式调研 | 继承 | `task_plan.md` R3；目标链路“预校验/原子应用/回读/回滚”；Bun+TS 约束 | findings.md 记录 edit-ops/schema/原子写与回滚模式参考及取舍 | 15min | 1f/60l/15min | research-assistant | - | pending |
+359:- [x] 输出 edit-ops JSON schema 草案、执行流程（预校验→原子应用→回读→回滚）与接线草案
+376:- [x] 实现解析与预校验（锚点存在性、唯一性、命中计数、冲突检测）
+387:| S2 | (A1) 实现预校验与冲突检测 | 继承 | S1 产物；四类失败模式对策（存在性/唯一性/命中计数） | 失配/非唯一/0命中等场景返回 FAIL 且不改目标文件 | 15min | 1f/90l/15min | 无 | S1(P3) | pending |
+532:| P2 裁决定稿：选方向② JSON edit-ops 指令单+本地执行器 **(Recommended)**；方向①现成工具（Aider/Codex）仅吸收契约经验不作主干（无原子回滚），方向③被②吸收（执行器即受控脚本），方向④外部 fast-apply 服务拒绝入主干（契约未公开+外部依赖）；技能形态=新建 `skills/md-edit-ops/`（markdown-editor 仅加指针行最小增量） | 评估矩阵+schema v1+七步流水线（load→staleness 门→预校验→模拟应用→回读断言→原子写盘→apply-report）+exit code 2/3/4/5/6 契约见 findings.md「edit-ops 设计定稿（P2/S1-S3）」段；四失败模式全覆盖：预校验→失配/静默失配，原子+回滚→部分提交，回读断言（标题守恒+锚行保活）→吞块，apply-report→状态混乱 |
+62:| 多步编辑状态 | ③多次编辑后状态混乱（改了什么/还剩什么说不清） | P3：指令单含 step id/依赖/状态回执；执行产出 apply-report（已应用/跳过/失败+原因+前后hash）；回读验证生成可审计结果 | VC-2, VC-5 |
+83:为 markdown 多次编辑高频出错建跨项目工具级防护：结构化 edit-ops JSON 编辑指令单 + 校验/原子应用/回读验证/回滚脚本 + 技能接线，使编辑错误被机制性拦截/检测/回滚
+122:| VC-2 | 设计覆盖四类失败模式（锚点失配/吞块/状态混乱/静默失配）并给出机制性对策：edit-ops JSON 指令单 + 预校验 + 原子应用(全过才写) + 回读验证 + 备份回滚 | 检查根源覆盖表与 P3 设计/S-unit 描述关键词齐备 | `grep -n "原子应用" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "预校验" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回读验证" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回滚" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+153:| **解决证据锚** | 待终验：edit-ops 工具脚本+schema+apply-report+回滚/回读验证+selftest 通过+冒烟记录+接线/部署证据（file:line/命令输出） |
+245:**核心问题**: 跨项目场景下，AI 代理基于 `old_string/new_string` 锚点匹配编辑 markdown 时高频出现锚点失配、吞块、状态混乱与静默失配；仅靠人工纪律（Rule 106/106.1a）不足以稳定拦截。引入“结构化 edit-ops JSON 指令单 + 预校验/原子应用/回读验证/备份回滚 + 技能接线”的工具级机制后，能否将错误从过程依赖转为可被机制性拦截/检测/回滚，从而显著降低编辑失败率并可交付可复用方案？
+378:- [x] 实现回读验证与结构断言（段清单/守恒检查）及 apply-report 输出
+389:| S4 | (A1) 实现回读验证与 apply-report | 继承 | S3 产物；Rule 106.1a 结构回读要点（段清单守恒） | 输出 report（step状态/matched/changed/hash/断言结果） | 15min | 1f/80l/15min | 无 | S3(P3) | pending |
+41:| R3 | VC-1, VC-2, VC-4 | P2/P3 评估并设计“JSON 作为中间件（edit-ops 指令单）”的校验/原子应用/回读/回滚链路 |
+44:| R6 | VC-2, VC-5, VC-6 | 根源覆盖表+VC/验证命令覆盖拦截/检测/回滚机制与实弹冒烟/selftest 计划，目标为机制性降错 |
+83:为 markdown 多次编辑高频出错建跨项目工具级防护：结构化 edit-ops JSON 编辑指令单 + 校验/原子应用/回读验证/回滚脚本 + 技能接线，使编辑错误被机制性拦截/检测/回滚
+122:| VC-2 | 设计覆盖四类失败模式（锚点失配/吞块/状态混乱/静默失配）并给出机制性对策：edit-ops JSON 指令单 + 预校验 + 原子应用(全过才写) + 回读验证 + 备份回滚 | 检查根源覆盖表与 P3 设计/S-unit 描述关键词齐备 | `grep -n "原子应用" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "预校验" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回读验证" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "回滚" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+153:| **解决证据锚** | 待终验：edit-ops 工具脚本+schema+apply-report+回滚/回读验证+selftest 通过+冒烟记录+接线/部署证据（file:line/命令输出） |
+172:| G3 | 工具实现 | 实现 edit-ops JSON 解析/预校验/原子应用/回读/回滚 | 脚本存在且单测/selftest 通过（`test -f skills/task-planner/scripts/md-edit-ops.ts && bash skills/task-planner/scripts/selftest-md-edit-ops.sh`） | P3/S1-S4 | pending |
+233:| 图书/教程 | JSON 中间件/事务性文件更新/回滚模式实践（外部） | P1 调研产出 | 参考 | ☐ |
+245:**核心问题**: 跨项目场景下，AI 代理基于 `old_string/new_string` 锚点匹配编辑 markdown 时高频出现锚点失配、吞块、状态混乱与静默失配；仅靠人工纪律（Rule 106/106.1a）不足以稳定拦截。引入“结构化 edit-ops JSON 指令单 + 预校验/原子应用/回读验证/备份回滚 + 技能接线”的工具级机制后，能否将错误从过程依赖转为可被机制性拦截/检测/回滚，从而显著降低编辑失败率并可交付可复用方案？
+251:4. **执行方案是什么？（步骤化+门控）** P1 真实调研与盘点→P2 四方向裁决与 schema/流程设计→P3 Bun+TS 工具实现（预校验/原子应用/回读/回滚）→P4 技能与规则触发接线→P5 selftest 与真实 md 冒烟→P6 多环境部署；每 Phase 有 VC/V-N 门控与 S-unit 验收。
+349:| S3 | (A6) JSON中间件与事务模式调研 | 继承 | `task_plan.md` R3；目标链路“预校验/原子应用/回读/回滚”；Bun+TS 约束 | findings.md 记录 edit-ops/schema/原子写与回滚模式参考及取舍 | 15min | 1f/60l/15min | research-assistant | - | pending |
+359:- [x] 输出 edit-ops JSON schema 草案、执行流程（预校验→原子应用→回读→回滚）与接线草案
+377:- [x] 实现原子应用（全过才写）、备份与回滚
+388:| S3 | (A1) 实现原子应用+备份回滚 | 继承 | S2 产物；“全过才写”要求；临时文件/备份路径策略 | 成功全量应用或失败回滚，目标文件与备份状态可验证 | 15min | 1f/90l/15min | 无 | S2(P3) | pending |
+414:- [x] 编写 `selftest-md-edit-ops.sh` 覆盖成功/失败路径（失配、吞块风险、静默失配、回滚）
+416:- [x] 记录测试结果与证据，确认拦截/检测/回滚可观测
+479:| Phase 3 | 原子应用/回滚实现缺陷造成误改或回滚失败 | 9 | 4 | 6 | 216 | 22.3②拆细到单机制 S-unit→强制备份与 dry-run 模式→22.3④主进程接管关键修复→失败则 22.3⑤ STOP 并回滚到备份 |
+528:| 推荐混合方向：JSON edit-ops 指令单 + Bun+TS 原子执行器 + 技能接线（P2 定稿） | 同时回应 R2-R5：可吸收高级/已有工具能力、以 JSON 作为可校验中间件、以脚本落实原子与回滚、以技能/规则接线实现跨项目复用 |
+532:| P2 裁决定稿：选方向② JSON edit-ops 指令单+本地执行器 **(Recommended)**；方向①现成工具（Aider/Codex）仅吸收契约经验不作主干（无原子回滚），方向③被②吸收（执行器即受控脚本），方向④外部 fast-apply 服务拒绝入主干（契约未公开+外部依赖）；技能形态=新建 `skills/md-edit-ops/`（markdown-editor 仅加指针行最小增量） | 评估矩阵+schema v1+七步流水线（load→staleness 门→预校验→模拟应用→回读断言→原子写盘→apply-report）+exit code 2/3/4/5/6 契约见 findings.md「edit-ops 设计定稿（P2/S1-S3）」段；四失败模式全覆盖：预校验→失配/静默失配，原子+回滚→部分提交，回读断言（标题守恒+锚行保活）→吞块，apply-report→状态混乱 |
+581:| `failure_rate` | n/a（非批量任务；批量时填实际比率，>5% → STOP;>20% → 熔断回滚） |
+585:| `rollback_point` | n/a（非批量任务；批量时填回滚点，为空 → 禁止批量） |
+
+# exit=0

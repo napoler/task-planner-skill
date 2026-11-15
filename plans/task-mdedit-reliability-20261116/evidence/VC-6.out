@@ -1,0 +1,25 @@
+# [run-verification] VC-6 | 2026-11-15T19:11:09Z | cmd: grep -n "锚点失配" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/findings.md && grep -n "吞块" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/findings.md && grep -n "静默失配" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/findings.md && grep -n "106.1a" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/knowledge-brief.md && grep -n "markdown-editor" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/knowledge-brief.md
+# ---- stdout/stderr ----
+15:- 四类已知失败模式（用户输入/计划约束）: ①锚点失配反复重试烧时间 ②new_string 误删相邻内容（吞块，历史判例三犯）③多次编辑后状态混乱 ④python/sed 批量替换静默失配（判例 3 处）。
+44:- **与本任务关系**：106/106.1a 是行为与过程纪律，可降低部分插段/结构破坏风险，但依赖执行体自觉与人工/规则触发；无法系统性覆盖锚点失配重试、批量替换静默失配、多步状态机混乱等工具层问题。因此需工具级执行器补足“预校验+原子应用+命中计数+回读断言+回滚”。
+50:| 1 | 锚点失配反复重试烧时间 | old_string 不唯一或上下文漂移导致 Edit 失败/反复尝试 | edit-ops 显式定位（结构锚/范围/hash/前后文约束）+ 写前唯一性与存在性预校验，不通过整单拒绝 | user-session-log.md #1；Edit 工具锚点机制（用户输入） |
+15:- 四类已知失败模式（用户输入/计划约束）: ①锚点失配反复重试烧时间 ②new_string 误删相邻内容（吞块，历史判例三犯）③多次编辑后状态混乱 ④python/sed 批量替换静默失配（判例 3 处）。
+51:| 2 | new_string 误删相邻内容（吞块，历史判例三犯） | 插段/替换吞掉锚行或破坏邻接结构 | 原子应用前后结构回读断言（段清单/锚行守恒/diff 形态）+ 备份回滚；与 106.1a 互补 | user-session-log.md #1；106.1a 判例摘要（discipline:726） |
+15:- 四类已知失败模式（用户输入/计划约束）: ①锚点失配反复重试烧时间 ②new_string 误删相邻内容（吞块，历史判例三犯）③多次编辑后状态混乱 ④python/sed 批量替换静默失配（判例 3 处）。
+37:- **是否已有结构化编辑机制**：**无**。未见 edit-ops JSON 指令单、写前全量预校验（锚点存在性/唯一性/命中计数/冲突检测）、原子应用（全过才写）、回读验证断言输出、备份回滚执行器或静默失配强制失败机制的实现定义。
+44:- **与本任务关系**：106/106.1a 是行为与过程纪律，可降低部分插段/结构破坏风险，但依赖执行体自觉与人工/规则触发；无法系统性覆盖锚点失配重试、批量替换静默失配、多步状态机混乱等工具层问题。因此需工具级执行器补足“预校验+原子应用+命中计数+回读断言+回滚”。
+53:| 4 | python/sed 批量替换静默失配（判例 3 处） | 0 命中或非预期命中仍被视为成功 | 强制 matched_count/changed 校验，0 命中或计数异常即 FAIL 并阻断后续写入 | user-session-log.md #1 |
+59:- **候选方向3 编辑脚本（已验证）**：`git apply` 默认原子+`--check/--reject/--3way` 可控（防静默失配现成机制）；unified diff 灵活补丁可降错误。
+95:锚点语义：`exact`=逐字子串；`regex`=正则；`heading`=markdown 标题行（`^#{1,6} `精确匹配）。`expect_count` 缺省 1：命中数≠expect_count → 该 op FAIL（0 命中与多命中同等对待，根治静默失配）。
+35:| Rule 106/106.1a | task-discipline 文档修改复检与结构文件插段纪律（过程期门），与工具级执行器互补 |
+47:| Rule 106.1a 要求结构文件插段前 grep 段清单、new_string 含锚行子串、插段后强制段清单复检（段数守恒/无重复标题） | `skills/task-discipline/references/critical-rules-discipline.md:726` | P3 回读验证/P4 接线应吸收结构守恒断言，降低“吞块/吞锚”风险 |
+65:| `skills/task-discipline/references/critical-rules-discipline.md` | :722-760 | Rule 106/106.1a/106.2-106.5 纪律：写后回读、结构插段守恒、派生值与全量回归、交付物本体、todo 基线组 |
+75:3. 禁止吞锚插段：结构文件插入/替换必须保留锚行语义并做段清单/守恒回读（106.1a + P3 断言）。
+105:| task-discipline | `/home/terry/.zcode/skills/task-discipline/SKILL.md` | Rule 106/106.1a 与执行纪律、复检留痕 | 子代理 prompt 挂载 / 规则引用 |
+48:| 全局 markdown-editor 技能提供 Markdown 编辑原则与流程（读后改、最小修改、结构完整性）但未提供结构化 edit-ops/预校验/原子应用/回读断言/回滚执行器 | `/home/terry/.zcode/skills/markdown-editor/SKILL.md`（name/description、Editing Principles、Execution Workflow 等段） | 可复用其触发与原则，不足以单独解决四类失败模式；P2 需裁决新建 md-edit-ops 或扩展接线 |
+66:| `/home/terry/.zcode/skills/markdown-editor/SKILL.md` | :1-120 | markdown 编辑技能触发与原则、工作流；无结构化事务执行器，可作为复用基座 |
+87:| P1/S1 | §1, §2, §3, §4 | `skills/task-discipline/references/critical-rules-discipline.md:722-760`；`/home/terry/.zcode/skills/markdown-editor/SKILL.md` |
+94:| P4/S1-S3 | §1, §2, §3, §4 | `/home/terry/.zcode/skills/markdown-editor/SKILL.md`；`skills/task-discipline/references/critical-rules-discipline.md:722-760`；P2 裁决记录 |
+107:| markdown-editor | `/home/terry/.zcode/skills/markdown-editor/SKILL.md` | 现有 markdown 编辑原则与触发基座，P2/P4 评估复用 | 子代理 prompt 挂载 / 用户按需触发 |
+
+# exit=0

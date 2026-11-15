@@ -1,0 +1,21 @@
+# [run-verification] VC-1 | 2026-11-15T19:11:09Z | cmd: grep -n "候选方向" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "(Recommended)" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md
+# ---- stdout/stderr ----
+30:- **R2**: 「选择更加高级的工具」<sub>（[手段]；候选方向1，R1 原文子串）</sub>
+31:- **R3**: 「引入 json作为中间件 在编辑过程可以有效管理」<sub>（[手段]；候选方向2，R1 原文子串）</sub>
+32:- **R4**: 「编辑脚本等方案优化」<sub>（[手段]；候选方向3，R1 原文子串）</sub>
+33:- **R5**: 「编辑一个有效的工具 或者引入已有的工具来规避这种错误风险」<sub>（[手段]；候选方向4，R1 原文子串）</sub>
+64:| 方案与落地 | 跨项目“必须纠正”但方案碎片化、无统一工具与触发接线 | P1/P2：四候选方向真实调研+裁决推荐；P4/P6：技能与 task-planner/task-discipline 接线、多环境部署计划 | VC-1, VC-3, VC-6 |
+73:| 🔒 不变量 | Goal 原文不改；R1-R6 与 user-session-log.md #1 逐字锚定；VC 逐条可验证且带命令；四候选方向在 P2 裁决入口齐备并标注推荐项；计划期单写者仅改本计划目录 5 文件（task_plan/findings/knowledge-brief/progress/verification） | 本文件 Goal/R 区块/VC/Scope；user-session-log.md #1 |
+121:| VC-1 | P2 方案裁决入口齐备：四候选方向（高级工具/JSON中间件/编辑脚本/有效工具或引入已有工具）逐项评估且推荐项明确标注（Recommended）含取舍理由 | 检查 task_plan.md Phase 2 与 Decisions/裁决表包含四方向与推荐标记 | `grep -n "候选方向" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "(Recommended)" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+170:| G1 | 调研盘点 | 完成四候选方向真实调研与本地资产盘点 | findings.md 含外部/本地证据锚与 markdown-editor 摘要（`grep -n "Research Findings" plans/task-mdedit-reliability-20261116/findings.md`） | P1/S1-S3 | pending |
+270:| P2/S1-S2 方案裁决与设计 | LOCAL-ONLY | R2-R5, 四候选方向, VC-2 | 本地综合 P1 产出 | 裁决表+推荐方案+schema 草案 | 否 |
+303:主进程展示本计划与待审项（四候选方向推荐项、scope 预估），获 D1 确认后派 general-purpose 执行 P1/S1-S4 调研盘点并回填 findings.md。
+338:- [x] 真实调研四候选方向（高级工具/JSON中间件/编辑脚本/已有工具）并收集证据
+357:- [x] 建立四候选方向评估矩阵（能力/风险/跨项目复用/实现成本）
+121:| VC-1 | P2 方案裁决入口齐备：四候选方向（高级工具/JSON中间件/编辑脚本/有效工具或引入已有工具）逐项评估且推荐项明确标注（Recommended）含取舍理由 | 检查 task_plan.md Phase 2 与 Decisions/裁决表包含四方向与推荐标记 | `grep -n "候选方向" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "(Recommended)" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+171:| G2 | 方案裁决 | 四方向评估并产出推荐方案(Recommended)+设计草案 | task_plan.md P2 含四方向表与推荐标注+取舍理由（`grep -n "(Recommended)" task_plan.md`） | P2/S1-S2 | pending |
+358:- [x] 裁决推荐方案并标注 **(Recommended)**，给出取舍理由与备选
+368:| S2 | (A2) 裁决推荐项与设计草案定稿 | 主进程（继承；难决升级 decision-arbiter） | S1 对比结果；Goal/VC；Rule 106 约束 | 推荐项标注 `(Recommended)`、schema/流程/接线草案落盘 | 15min | 2f/60l/15min | decision-arbiter(备用) | S1(P2) | pending |
+532:| P2 裁决定稿：选方向② JSON edit-ops 指令单+本地执行器 **(Recommended)**；方向①现成工具（Aider/Codex）仅吸收契约经验不作主干（无原子回滚），方向③被②吸收（执行器即受控脚本），方向④外部 fast-apply 服务拒绝入主干（契约未公开+外部依赖）；技能形态=新建 `skills/md-edit-ops/`（markdown-editor 仅加指针行最小增量） | 评估矩阵+schema v1+七步流水线（load→staleness 门→预校验→模拟应用→回读断言→原子写盘→apply-report）+exit code 2/3/4/5/6 契约见 findings.md「edit-ops 设计定稿（P2/S1-S3）」段；四失败模式全覆盖：预校验→失配/静默失配，原子+回滚→部分提交，回读断言（标题守恒+锚行保活）→吞块，apply-report→状态混乱 |
+
+# exit=0

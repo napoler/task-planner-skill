@@ -1,0 +1,34 @@
+# [run-verification] VC-3 | 2026-11-15T19:11:09Z | cmd: grep -n "zcode" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "cursor" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "agents" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md
+# ---- stdout/stderr ----
+4:  选定 variant 后 template_type 填所选类型名（白名单=/home/terry/.zcode/skills/task-planner/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
+48:- **专档路径**：`/mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/user-session-log.md`（模板 = /home/terry/.zcode/skills/task-planner/templates/user-session-log.md）
+97:| `scope_files` | 计划期：`plans/task-mdedit-reliability-20261116/{task_plan,findings,knowledge-brief,progress,verification}.md`；实现期预估：`skills/md-edit-ops/SKILL.md`（或扩展 `/home/terry/.zcode/skills/markdown-editor/SKILL.md`，P2 裁决）+ `skills/task-planner/scripts/md-edit-ops.ts`（或等价路径）+ `skills/task-planner/scripts/selftest-md-edit-ops.sh` + 接线文件（task-planner/task-discipline/markdown-editor 相关 SKILL 与 references，P2/P4 定稿） | 从「执行范围限制」解析,并发检测基础 |
+113:       /home/terry/.zcode/skills/task-planner/templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。
+123:| VC-3 | 跨项目落地路径明确：技能接线点（md-edit-ops/markdown-editor/task-planner/task-discipline）与多环境部署（zcode/claude/cursor/agents）在 P4/P6 列出 | 检查 Scope/Phase 4/Phase 6 与 knowledge-brief 部署位族记录 | `grep -n "zcode" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "cursor" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "agents" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+175:| G6 | 多环境部署 | zcode/claude/cursor/agents 同步并终验 | 部署位 diff/存在性检查一致（按 repo deploy 脚本执行后 `diff -rq` 或等价证据） | P6/S1-S2 | pending |
+189:| 技能（实现期预估） | `skills/md-edit-ops/SKILL.md`（新建，P2 推荐）或 `/home/terry/.zcode/skills/markdown-editor/SKILL.md`（扩展，P2 备选）；`skills/task-planner/SKILL.md`、`skills/task-discipline/SKILL.md` 等接线必要文件（P4 白名单化） | 无关技能目录 |
+190:| 配置/部署 | 部署目标位镜像（zcode/claude/cursor/agents 对应已安装技能路径，P6 以 deploy 机制为准） | 无关配置、基础设施 |
+230:| 项目内部文档/知识库 | 既有 markdown-editor 全局技能现状 | `/home/terry/.zcode/skills/markdown-editor/SKILL.md` | 必读 | ☑（计划期已读） |
+266:| P1/S1 本地资产盘点 | LOCAL-ONLY | markdown-editor, Rule 106, edit tool | 本地 Read/Grep/ls（repo + ~/.zcode/skills） | findings.md 本地资产与差距小节 | 否 |
+283:| ① 自身样本 | 现有 Edit 工具约束、Rule 106/106.1a 文本、全局 `~/.zcode/skills/markdown-editor/SKILL.md`、本仓 task-planner 架构与脚本 | 本地 Read/Grep/ls，提取能力与缺口 | `findings.md#Research Findings` / `knowledge-brief.md#§2` | ☐（计划期已初读，P1 完整化） |
+285:| ③ 外部约束 | 编辑环境约束（Bun+TS 优先、无交互式 CLI 依赖前提、跨项目部署位 zcode/claude/cursor/agents）、失败模式判例（吞块/静默失配） | 本地规则/宪法/知识库阅读 + 用户原话锚 | `knowledge-brief.md#§4` / `task_plan.md#R1-R6` | ☐ |
+347:| S1 | (A6) 本地资产盘点 | 继承 | `skills/task-discipline/references/critical-rules-discipline.md:722-760`(106/106.1a)；`/home/terry/.zcode/skills/markdown-editor/SKILL.md`(编辑原则/无事务机制)；`task_plan.md` R1-R6(痛点与四方向) | findings.md 新增本地现状与缺口小节，含 file:line 锚点 | 12min | 1f/40l/12min | 无 | - | pending |
+405:| S1 | (A1) 创建/更新 md-edit-ops 技能定义 | 继承 | P2 裁决；`/home/terry/.zcode/skills/markdown-editor/SKILL.md` 现状；P3 CLI 用法 | SKILL.md 含触发词、edit-ops JSON 流程、示例与约束 | 15min | 1f/90l/15min | 无 | S4(P3) | pending |
+432:- [ ] 按 repo 机制同步到 zcode/claude/cursor/agents 对应部署位
+464:> 契约详见 `/home/terry/.zcode/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
+466:## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 /home/terry/.zcode/skills/task-planner/references/methodology.md §R2）
+501:> 契约详见 `/home/terry/.zcode/skills/task-planner/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
+573:  完整模板: /home/terry/.zcode/skills/task-planner/templates/batch_report.md | 规则详解: /home/terry/.zcode/skills/task-planner/references/batch-quality-gate.md
+608:  派发 prompt 八字段模板: /home/terry/.zcode/skills/task-planner/templates/subagent_dispatch.md
+123:| VC-3 | 跨项目落地路径明确：技能接线点（md-edit-ops/markdown-editor/task-planner/task-discipline）与多环境部署（zcode/claude/cursor/agents）在 P4/P6 列出 | 检查 Scope/Phase 4/Phase 6 与 knowledge-brief 部署位族记录 | `grep -n "zcode" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "cursor" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "agents" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+175:| G6 | 多环境部署 | zcode/claude/cursor/agents 同步并终验 | 部署位 diff/存在性检查一致（按 repo deploy 脚本执行后 `diff -rq` 或等价证据） | P6/S1-S2 | pending |
+190:| 配置/部署 | 部署目标位镜像（zcode/claude/cursor/agents 对应已安装技能路径，P6 以 deploy 机制为准） | 无关配置、基础设施 |
+285:| ③ 外部约束 | 编辑环境约束（Bun+TS 优先、无交互式 CLI 依赖前提、跨项目部署位 zcode/claude/cursor/agents）、失败模式判例（吞块/静默失配） | 本地规则/宪法/知识库阅读 + 用户原话锚 | `knowledge-brief.md#§4` / `task_plan.md#R1-R6` | ☐ |
+432:- [ ] 按 repo 机制同步到 zcode/claude/cursor/agents 对应部署位
+123:| VC-3 | 跨项目落地路径明确：技能接线点（md-edit-ops/markdown-editor/task-planner/task-discipline）与多环境部署（zcode/claude/cursor/agents）在 P4/P6 列出 | 检查 Scope/Phase 4/Phase 6 与 knowledge-brief 部署位族记录 | `grep -n "zcode" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "cursor" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md && grep -n "agents" /mnt/data/dev/task-planner-skill/plans/task-mdedit-reliability-20261116/task_plan.md` |
+175:| G6 | 多环境部署 | zcode/claude/cursor/agents 同步并终验 | 部署位 diff/存在性检查一致（按 repo deploy 脚本执行后 `diff -rq` 或等价证据） | P6/S1-S2 | pending |
+190:| 配置/部署 | 部署目标位镜像（zcode/claude/cursor/agents 对应已安装技能路径，P6 以 deploy 机制为准） | 无关配置、基础设施 |
+285:| ③ 外部约束 | 编辑环境约束（Bun+TS 优先、无交互式 CLI 依赖前提、跨项目部署位 zcode/claude/cursor/agents）、失败模式判例（吞块/静默失配） | 本地规则/宪法/知识库阅读 + 用户原话锚 | `knowledge-brief.md#§4` / `task_plan.md#R1-R6` | ☐ |
+432:- [ ] 按 repo 机制同步到 zcode/claude/cursor/agents 对应部署位
+
+# exit=0
