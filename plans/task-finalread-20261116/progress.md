@@ -93,7 +93,7 @@
   | check-complete | 终验门链 | exit 0 | 全绿（P-04 修复后） | PASS |
 - **goal 完成证据行**：
   - [goal:G1] 制度设计=task_plan.md CA-1..6+设计文本块（commit fbd0132 可溯）→ complete
-  - [goal:G2] 技能落盘=final-readthrough/SKILL.md 七铁律 grep 全≥1（Verifier 取证）→ complete
+  - [goal:G2] 技能落盘=/home/terry/.agents/skills/final-readthrough/SKILL.md 七铁律 grep 全≥1（Verifier 取证）→ complete
   - [goal:G3] 执行链接线=executing-plans:3 处/sdd:5 处 grep 命中 → complete
   - [goal:G4] 入口双位=using-superpowers :51 双位 TWIN-IDENTICAL → complete
   - [goal:G5] 隔离合规=~/.zcode git log 5cd47a2/dd35940+worktree/branch 清零 → complete
