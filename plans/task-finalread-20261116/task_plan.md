@@ -465,12 +465,12 @@ Phase 5
 - [x] Ensure deliverables are complete（VC-1..6 全 PASS）
 - [x] Deliver to user（交付总结随收尾回复）
 - [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮1 三文档漏写已补+占位段删；轮2 零新发现）——见收尾回读表
-- [ ] 归档计划：check-complete exit 0 后先 `bash /home/terry/.zcode/skills/task-planner/scripts/set-active-plan.sh --clear` 再 `bash /home/terry/.zcode/skills/task-planner/scripts/archive-plan.sh task-finalread-20261116 --root plans/`（Rule 81；守卫拒绝时登记理由不强移）
+- [x] 归档计划：check-complete exit 0 后先 `bash /home/terry/.zcode/skills/task-planner/scripts/set-active-plan.sh --clear` 再 `bash /home/terry/.zcode/skills/task-planner/scripts/archive-plan.sh task-finalread-20261116 --root plans/`（Rule 81；守卫拒绝时登记理由不强移）
       <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
-- **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
+- [x] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 则必做）：draft 生成→精炼改名 `knowledge/entries/superpowers-delivery-readthrough-gate.md`→`bash scripts/kb-rebuild-index.sh` 索引已重建（INDEX.md grep 命中 1）
+- **V-N:** VC-4, VC-5
+- **Status:** complete
+- **Executor:** 主进程（例外理由:① git 编排+② 计划系统文件维护——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
 <!-- 每轮一行：轮次/发现/处置；连续一轮零新发现才可出 outcome（收敛出口，轮次不设上限）；
