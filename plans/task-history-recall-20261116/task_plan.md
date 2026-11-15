@@ -71,7 +71,7 @@ execution_lane: L1
 | VC-3 | 成本护栏数字在 SKILL.md 落字可 grep（候选 ≤8/每代理 ≤3 任务/简报 ≤150 行/卡 ≤60 行） | grep 四锚 exit 0 | skills/plan-history-recall/SKILL.md |
 | VC-4 | selftest-plan-history-recall.sh 注册 registry 且 --only 跑批 FAIL=0 | runner 回执 | skills/task-planner/scripts/selftest-registry.tsv |
 | VC-5 | 部署同步：4 技能位+2 agent 位+task-planner 3 变更文件×4 位 diff=0 | diff -rq 全对账 | 部署位实测路径（§Phase 5） |
-| VC-6 | task-planner SKILL.md 接线行在位；--fresh 全量回归无新增 FAIL（基线 FAIL=2） | grep+runner 回执 | skills/task-planner/SKILL.md |
+| VC| VC-6 | task-planner SKILL.md 接线行在位；--fresh 全量回归无新增 FAIL（判据=FAIL 数等于基线记录值，基线实测 2026-11-16=5 见 baseline-selftest.log；「FAIL=2」系陈旧记忆值已废弃） | grep+runner+基线对比 | skills/task-planner/SKILL.md |
 
 **终验规则**：全部 VC 通过 → COMPLETE；有遗留 → PARTIAL 列明；3 次重试无效 → BLOCKED。
 > code_review: required → 终验前必须过 CR Gate（critic APPROVED，Phase 4 S9）。
@@ -152,10 +152,10 @@ execution_lane: L1
 n/a（纯执行类——产出为技能文件，非结论/判断/归因类报告；参照物=既有技能先例已在知识储备表锚定）
 
 ## Current Phase
-Phase 2（计划定稿+attest 锁定）
+Phase 4（实测+回归+CR）
 
 ## Next Step
-运行 attest-plan.sh 锁定本计划，随后 git worktree add tmp/worktrees/task-history-recall-20261116 -b wt/task-history-recall-20261116 master
+S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题）→ S9 critic CR → 六位部署+merge back+归档收口
 
 ## 🧰 工具选择与编排（Rule 40）
 | Phase | 命中工具面 | 选择理由 |
@@ -189,11 +189,11 @@ Phase 2（计划定稿+attest 锁定）
 - **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）
 
 ### Phase 3: Implementation（worktree 内 6 交付物）
-- [ ] git worktree add tmp/worktrees/task-history-recall-20261116 -b wt/task-history-recall-20261116 master
-- [ ] 按 S-unit 表逐单元派发落位；每单元完成回填 Handoff 表+progress.md
+- [x] git worktree add tmp/worktrees/task-history-recall-20261116 -b wt/task-history-recall-20261116 master（HEAD=4840758，drift 检查点#2 ALIGNED）
+- [x] 按 S-unit 表逐单元派发落位；每单元完成回填 Handoff 表+progress.md（S1-S6 done，feat cbc9c2a）
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行
 - **V-N:** VC-1, VC-3（本 Phase 验收映射）
-- **Status:** pending
+- **Status:** complete
 - **Executor:** executor（S-unit 表派发；worktree 绝对路径写入每份派发 prompt；禁触碰其他 worktree）
 
 <!-- S-unit 派发单元表(Rule 22.6)：机器契约——预估时长 NNmin；输入列路径 token ≤2；ID 纯数字；粒度三值列 Nf/Nl/Nmin；10 列固定列序禁增列禁转义；前置依赖必填无则 - -->
@@ -213,7 +213,7 @@ Phase 2（计划定稿+attest 锁定）
 - [ ] Verify all requirements met（VC 逐条复验）+ test results 落 progress.md
 - [ ] 全文档收尾回读梳理记录（Rule 84.14）
 - **V-N:** VC-2, VC-4（本 Phase 验收映射）
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** 主进程（例外理由：技能实测编排=主进程职责+S8 机械跑批；独立复检/CR 已派 critic 子代理）
 
 ### Phase 5: Delivery（部署+合并回+收口）
