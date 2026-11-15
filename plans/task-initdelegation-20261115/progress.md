@@ -151,9 +151,10 @@
 
 
 ### Phase 4: 合并回 + 部署对账
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-15
 - **R 锚定**：服务 R3——worktree 产物合并回主仓（§11.3 合约）后按 Q3 口径对部署位逐位 diff 摸底+文件级同步+复验对账。
+- **[goal:G4] 完成证据**：MERGED a745157（主仓 grep 首动作委派=1 实锚）+ 4 部署位 scope 2 文件 cp 后 diff=0（主进程逐位实锚复核）+ 组合态回归 PASS=95/FAIL=2（FAIL⊆基线既有）+ check-3file-gate EXIT:0
 - Actions taken:
   - **合并回（主进程 git 编排白名单①）**：首并因主仓 index 中他会话 staged 变更（plan-resume A 文件）被 ort 拒（内容冲突不存在，diff master..wt 仅 2 文件）；按「stash 窗口合并法」判例处置（stash→merge→pop，post=pre STATUS_IDENTICAL 零损伤）；期间并行会话 task-specmode-integration 两度前进 master（a349a89 worktree 合并 / 98c9208 簿记收口）触发 V5 MASTER_AHEAD 自动中止 ×2 → worktree 两轮 `git merge master` 同步；selftest-batch-pilot.sh BP-08 钉双任务同改冲突（我方 285→300 / 对方 285→292）→ **并集解**（双方注释行全保留+阈值 max=300，组合实值 296）；组合态全量回归 Total 97 PASS=95 FAIL=2（FAIL={active-plan, execution-stability} 全为基线既有环境差异项）；**MERGED a745157**（master `Merge branch 'wt/task-initdelegation-20261115'`）；主仓条款实锚 `grep -c 首动作委派 SKILL.md` =1；worktree remove+branch -d 完成（§11.3.5）。
   - **部署对账（Q3：主仓=/mnt/data/dev/task-planner-skill/skills/task-planner 为源，scope 仅 SKILL.md + scripts/selftest-batch-pilot.sh）**：先对 4 候选位逐位探测存在性并 `diff -rq` 摸底（登记差异文件数/样例），对 scope 2 文件记录 cp 前 md5；仅覆盖该 2 文件；cp 后 `diff <主仓> <位>`=0 复验；其余差异文件**只登记不动**（含 `.backup/`、`companion/agents/*`、`docs/`、`.drift-rhythm/`、`examples.md`、`.gitignore`、`install*.{log,md,sh}`、`lib/`、`MIGRATION.md`、`README.md`、`reference.md`、`references/`、`review-library/`、其它 `scripts/*` 等均未触碰）。
