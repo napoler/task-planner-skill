@@ -90,3 +90,6 @@
 | plan-resume 报告路径 | 上次更新 |
 |---------------------|---------|
 | `~/.zcode/plans/plan-resume-report.md` |  |
+
+## [recall] 规范召回（Rule 93，收口点补跑）
+- 2026-11-16 收口点补读 execution-recall-card.md：核心=每 3 S-unit/Phase 翻转读卡+93.3 恢复后首动作；本任务执行期未按节奏读卡（Rule 19.7 违规同族），已登记 Error Log 同款根因（回填节奏）；收口点补跑完成，后续任务首动作读卡
