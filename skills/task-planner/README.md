@@ -1,7 +1,7 @@
 # task-planner — 任务规划与漂移检测技能
 
 > **多工具架构 v2（2026-08-29）**：canonical source + per-tool 部署位同步，env-var 路径解析。
-> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；80 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） --><!-- 2026-10-21 task-v195：Rule 93 规范再召回入纪律域，非核心 73→74 条 --><!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：卫星侧实体规则 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79；+Rule 97 → 80，2026-11-02 task-lazy-escalation-20261102）（全集 14+80=94，77/78/79 废弃不计），引言行同步实测值] -->。
+> **家族分层 v2.1（2026-10-12 task-v171）**：核心只负责四文件罗盘管理（SKILL.md 237 行）；80 条非核心规则按域分层至 12 卫星技能（4 新域 + 7 收编 + 1 验证域 verification-gate），核心在位 14 条，卫星路由表按需 Read 规则全文，禁回潮禁镜像副本（Rule 82）<!-- 2026-10-19 task-v191 对齐实态：SKILL.md 214→237 行、非核心 76→73 条、第 11 颗卫星 verification-gate（Rule 84，task-v173 新增） --><!-- 2026-10-21 task-v195：Rule 93 规范再召回入纪律域，非核心 73→74 条 --><!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：卫星侧实体规则 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79；+Rule 97 → 80，2026-11-02 task-lazy-escalation-20261102）（全集 14+80=94，77/78/79 废弃不计），引言行同步实测值] -->。<!-- 2026-11-15 task-tpl-sediment-20261115: 11→12 卫星（+plan-template-advisor 第 4 新域卫星） -->
 
 ## 快速链接
 
@@ -14,7 +14,7 @@
 
 ## 概述
 
-结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测；2026-10-12 起为「核心 + 11 卫星」技能家族形态。
+结构化任务规划技能，支持多进程/多目录 plan 管理，内置周期性漂移检测；2026-10-12 起为「核心 + 12 卫星」技能家族形态。
 
 **核心特性**：
 - **5 个生命周期 hook**：SessionStart（哨兵）/ PreToolUse（范围阻断 + 委派门控 + Agent 派发契约守卫，matcher 须含 Agent）/ PostToolUse（计划陈旧检测）/ UserPromptSubmit（新指令影响判定）/ Stop（完成检测）
@@ -26,9 +26,9 @@
 
 ---
 
-## 技能分层图：核心 + 11 卫星技能
+## 技能分层图：核心 + 12 卫星技能
 
-> 10 技能分层图 = 核心 task-planner + 3 新域卫星（task-dispatch / task-discipline / media-planner）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard），共 11 个技能节点（核心 1 + 卫星 10）。
+> 12 技能分层图 = 核心 task-planner + 4 新域卫星（task-dispatch / task-discipline / media-planner / plan-template-advisor〔task-tpl-sediment-20261115 新建〕）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard），共 13 个技能节点（核心 1 + 卫星 12）。<!-- 2026-11-15 task-tpl-sediment-20261115: +plan-template-advisor 归入第 4 新域卫星，收编恢复 ×7 -->
 
 ```
                     ┌───────────────────────────────────────────────┐
@@ -38,7 +38,7 @@
                     └──────────────┬────────────────────────────────┘
                                    │ SKILL.md 文末「卫星路由表」按需 Read 规则全文
         ┌──────────────────────────┼───────────────────────────┐
-        ▼ 新域卫星 ×3（task-v171 新建）                            ▼ 收编卫星 ×7（既有 skill 收编规则全文）
+        ▼ 新域卫星 ×4（task-v171×3 + advisor）                       ▼ 收编卫星 ×7（既有 skill 收编规则全文）
 ┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
 │ task-dispatch      │ │ task-discipline    │ │ media-planner      │
 │ 子代理派发与拆分调度 │ │ 执行纪律与工作      │ │ 媒体制作任务派发    │
@@ -60,14 +60,16 @@
 │              ││61,64         │
 └──────────────┘└──────────────┘
 ```
+<!-- 2026-11-15 task-tpl-sediment-20261115: ASCII 图未重绘（第 4 新域卫星 plan-template-advisor 未增绘盒子），第 4 新域卫星 plan-template-advisor（项目模板适配与沉淀生产，Rule 34.8/34.9 消费面，task-tpl-sediment-20261115 新建）见下方卫星路由表 -->
 
-## 卫星路由表（11 卫星 — 非核心域规则全文按需 Read）
+## 卫星路由表（12 卫星 — 非核心域规则全文按需 Read）
 
 | 卫星 | 域 | 规则全文路径 | 调用条件 |
 |------|----|------------|---------|
 | task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
 | task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31-36,41-45,48,53-57,60,65,67,69-74,76） |
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
+| plan-template-advisor | 项目模板适配与沉淀生产 | `../plan-template-advisor/SKILL.md` | 激活后分析项目→预测问题→缺口映射→产出候选模板→审查→登记（Rule 34.8/34.9 消费面） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
 | plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
 | plan-collab-router | 技能协同与工具面选择 | `../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40） |
@@ -78,7 +80,7 @@
 
 ## Critical Rules 指针
 
-Rules 1-97 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明+卫星路由索引）；其余 80 条已按域迁至上表 11 卫星（2026-10-21 task-v195：Rule 93 规范再召回入纪律域；2026-11-02 task-lazy-escalation-20261102：Rule 97 惰性上抛禁令入纪律域）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79，+Rule 97 → 80）] -->——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-97 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明+卫星路由索引）；其余 80 条已按域迁至上表 12 卫星（2026-10-21 task-v195：Rule 93 规范再召回入纪律域；2026-11-02 task-lazy-escalation-20261102：Rule 97 惰性上抛禁令入纪律域）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79，+Rule 97 → 80）] --><!-- 2026-11-15 task-tpl-sediment-20261115: 11→12 卫星 -->——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 
 ---
 
@@ -108,7 +110,7 @@ Rules 1-97 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 > [2026-10-05 task-v131 审计 L-5 修正] opencode 物理部署位 = `~/.config/opencode/skills/task-planner`；`~/.opencode` 为其 symlink 兼容入口（实测 `~/.opencode -> ~/.config/opencode`）。
 
-**卫星技能随装**（2026-10-12 task-v171 S39 起）：`lib/install-stub.sh:41` `SATELLITE_SKILLS` 数组登记 7 个卫星（4 既有 + 3 新域），安装时整目录 rsync 到各宿主位同级 `skills/<sat>/`；另 3 个收编卫星经 `lib/install-companion.sh` 顶层 `skills/*/` 自动发现机制分发。
+**卫星技能随装**（2026-10-12 task-v171 S39 起）：`lib/install-stub.sh:41` `SATELLITE_SKILLS` 数组登记 8 个卫星（4 既有 + 4 新域），安装时整目录 rsync 到各宿主位同级 `skills/<sat>/`；另 3 个收编卫星经 `lib/install-companion.sh` 顶层 `skills/*/` 自动发现机制分发。
 
 ---
 
@@ -116,7 +118,7 @@ Rules 1-97 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 ```
 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                          ← canonical source (git 仓库)
-├── SKILL.md                                 ← 工具无关主文档（237 行; hooks 字段为空, 文末含 11 卫星路由表）
+├── SKILL.md                                 ← 工具无关主文档（237 行; hooks 字段为空, 文末含 12 卫星路由表）<!-- 2026-11-15 task-tpl-sediment-20261115: 11→12 卫星 -->
 ├── config.json                              ← 阈值配置
 ├── README.md / examples.md / reference.md
 ├── references/                              ← 6 篇规则文档（2026-10-12 task-v171 拆分后实测; 纪律/派发/媒体域规则已迁至卫星）
@@ -145,7 +147,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 │   ├── attest-plan.sh / check-plan-dispatch.sh / rule-reserve.sh / ledger-append.sh / smart-merge-back.sh  # 守卫与簿记
 │   └── selftest-*.sh ×92 + selftest-registry.tsv  # 自测守护族（不逐列）
 ├── lib/                                     ← Installer 库（6 个）
-│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 7 卫星）
+│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 8 卫星）
 │   ├── install-companion.sh                 # 顶层 skills/*/ 自动发现分发（含另 3 个收编卫星）
 │   ├── detect-tools.sh / backup.sh / migrate-refs.sh / verify.sh
 ├── tests/
@@ -275,7 +277,7 @@ bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftest
 | 旧部署位与新部署位冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
 | 升级后行为异常 | 部署位仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner} && git pull` 后重启 agent |
 | check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` 的 `for _c in` 列表 |
-| 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 7 个显式 rsync 卫星 |
+| 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 8 个显式 rsync 卫星 |
 
 详见 [INSTALL.md §5 故障排查](INSTALL.md)。
 

@@ -1,6 +1,6 @@
 # Critical Rules — 验证全链路域（Verification Gate 卫星）
 
-> 本文件 = task-planner 第 11 卫星 verification-gate 规则全集，管**任务验证全链路**：计划期 VC 可执行化设计（Rule 84.1/84.3）→ 执行期 V-N 逐项校验与子代理产出复核（Rule 84.4）→ 终验 VC 逐条复验（Rule 84.5）。
+> 本文件 = task-planner 第 12 卫星 verification-gate 规则全集，管**任务验证全链路**：计划期 VC 可执行化设计（Rule 84.1/84.3）→ 执行期 V-N 逐项校验与子代理产出复核（Rule 84.4）→ 终验 VC 逐条复验（Rule 84.5）。
 >
 > **迁移注记（task-v173 验证技能独立化）**：VC 规则由主技能 `references/goal-gate.md` 迁移为本文件 Rule 84.3；子代理验证协议由主技能 `references/completion-gate.md` 迁移为 Rule 84.4。迁移后主技能 `goal-gate.md`/`completion-gate.md` 改为指针（指向本文件），避免双份正文漂移（Rule 82 禁镜像副本）。
 >
