@@ -17,6 +17,7 @@
 - 注释：What+Why 双层；修改注明原因/时间/原行为；禁为美观删注释（Rule 45）
 - 技能/指令文件=保护区：先归因再动刀、默认纯增量、删除须授权（Rule 36）
 - 文件尺寸：产出前评估体量，优先沿内聚边界拆分（Rule 92）
+- 批量/结构化 markdown 修改优先走 md-edit-ops 指令单（Rule 106.6；apply-report 记 [recheck]）；裸 sed/python 0 命中即 FAIL
 
 ## C. 落盘与推进
 - 四文件=Disk：结论禁只留会话记忆；子代理返回后紧邻回填 findings（Rule 19.1/62.1）
