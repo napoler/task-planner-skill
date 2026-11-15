@@ -12,7 +12,8 @@
 
 ### Phase 1: 设计定稿与起草
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
-- **Status:** in_progress
+- **R 锚定**：本 Phase 服务 R1「主动进行任务路径沉淀…沉淀为…模板文件」+R3「添加…简单的子技能…分析当前项目…补充适配于当前项目的模板文件」——起草沉淀条款与 advisor SOP（R2 审查门设计随附）
+- **Status:** complete
 - **Started:** 2026-11-15 14:41
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
 - Actions taken:
@@ -36,6 +37,7 @@
 
 ### Phase 2: worktree 实现插改
 <!-- Phase N 按上方 Phase 1 结构续加 -->
+- **R 锚定**：本 Phase 服务 R1+R3——34.8/34.9 条款插入+advisor 技能落位+级联五落点+dogfood 候选（R2 门清单随附执行）
 - **Status:** complete
 - **Started:** 2026-11-15 15:15
 - Actions taken:
@@ -59,6 +61,7 @@
 
 ### Phase 3: 审查门+回归
 <!-- Phase N 按上方 Phase 1 结构续加 -->
+- **R 锚定**：本 Phase 服务 R2「沉淀出来的模板文件的可靠性…经过严格的审查以及验证」——两级审查门全项执行+独立复检三轮收敛+回归零增量
 - **Status:** complete
 - **Started:** 2026-11-15 15:52
 - Actions taken:
@@ -85,6 +88,7 @@
 
 ### Phase 4: 合并回+部署同步+终验交付
 <!-- Phase N 按上方 Phase 1 结构续加 -->
+- **R 锚定**：本 Phase 服务 R1-R3 交付——合并回+部署对账+部署后回归+push+kb/归档收尾（三条需求在此落地为可调用产物）
 - **Status:** complete
 - **Started:** 2026-11-15 17:00
 - Actions taken:
