@@ -52,7 +52,7 @@
 
 **计划期**（T0 计划确认前评估）。判定顺序敏感、先命中先用（重→轻）：**comet → OpenSpec → superpowers**；多族命中 = 叠加协同（comet classic 本身即 OpenSpec+superpowers 双星）。
 
-**复杂度主轴初筛（2026-11-16 用户 /goal 增补：按复杂度在 superpowers/OpenSpec 间择一）**：计划期先按体量分级走复杂度轴——L0/mini 直执行不路由；L1（中等）且无规格留存需求→superpowers 嵌入；L2+ 或规格留存需求→OpenSpec 移交；跨会话托管→comet。下表信号修正可覆盖复杂度初判（如触及已有 spec→OpenSpec）；分档细则与择一语义见 task-planner `references/spec-mode.md` §1b（同构互引，冲突以本表为准）。
+**复杂度主轴初筛（2026-11-16 用户 /goal 增补：按复杂度在 superpowers/OpenSpec 间择一）**：计划期先按体量分级走复杂度轴——L0/mini 直执行不路由；L1（中等）且无规格留存需求→superpowers 嵌入；L2+ 或规格留存需求→OpenSpec 移交；跨会话托管→comet。下表信号修正可覆盖复杂度初判（如触及已有 spec→OpenSpec）；分档细则与择一语义见 task-planner `references/spec-mode.md` §1b（同构互引，冲突以本表为准）。强验证依赖（可执行验收/规格留存类任务）按「验证前置定位」处理——优先 OpenSpec（verify 阶段前置收口）或 L1 嵌入 TDD；定位条款见 task-planner `references/spec-mode.md` §5（同构互引）。
 
 | 族 | 触发信号（命中任意） | 成本 | CLI 探针前置 |
 |----|---------------------|------|-------------|

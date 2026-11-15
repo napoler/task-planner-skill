@@ -48,3 +48,18 @@
 - Rule 51.1（需求锚定）：spec 产物路径必须回链 task_plan 需求原文区 / findings（记录者义务）
 - Markdown 批量/结构化编辑执行面：优先 `skills/md-edit-ops/` 指令单（task-discipline Rule 106.6 指针），与规格路由无冲突、纯增量协同
 - 产物路径由外部技能/CLI 自管（OpenSpec 用 planningHome/changeRoot/artifactPaths 动态解析，禁硬编码猜测）
+
+## 5. 验证前置定位（2026-11-16 用户 /goal 锚定：目标驱动/测试驱动）
+> **定位**：本项目所有任务按「目标驱动/测试驱动」运行——任务初期先定目标+边界+验证方案（验证脚本/验证规则规范前置），再持续实现；**禁止「先执行、任务偏移后再补验证」**（用户原话锚：后期补验证=「可能会存在严重的隐患」，plans/task-superpowers-openspec-routing-20261116/user-session-log.md#2）。
+
+**验证三载体映射（调用不复制，R6 铁律同源）**：
+
+| 阶段 | 验证载体 | 调用形态 |
+|------|---------|---------|
+| 计划面（目标+评审机制前置） | task-planner 自有：R 锚定（Rule 51.1）+VC/V-N 契约（51.2/84.1 可执行验证命令）+attest 锁定 | 本技能既有链路，无外部调用 |
+| 执行面（先测后写） | Superpowers `test-driven-development` / `verification-before-completion` | `Skill("test-driven-development")`（实现/修 bug 前）；`Skill("verification-before-completion")`（完成声称前，证据先于断言） |
+| 收口面（变更收口验证） | OpenSpec `openspec-verify-change` | `Skill("openspec-verify-change")`（变更归档前三维验证报告） |
+
+**与 §1b 路由的关系**：验证依赖强度=§1b 决策表的信号修正项——强验证依赖（可执行验收/规格留存）→ 优先 OpenSpec（verify 阶段前置收口）或 L1 嵌入 TDD；弱验证单点任务 → 本技能 VC 契约直执行，不外部路由。
+
+**反模式**：❌ 任务偏移后才补写验证脚本/验收标准（后期补验证）；❌ 以「先跑起来再说」跳过初期目标+评审评判机制设定；❌ 把验证载体内容复制/内联进本仓（R6 同源禁令）。

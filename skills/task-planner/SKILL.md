@@ -62,7 +62,7 @@ model: opus
   **可选思路**：
   1. 思路 A：按 §十一 硬条款判定——命中保护区/基础设施/并行开发任一条 → 选 worktree 隔离（适用场景：实现类任务、改运行行为、用户并行开发时）
   2. 思路 B：命中 §11.5 例外（纯文档/纯调研/单文件 ≤3 行 trivial）→ 直接在主工作树进行（适用场景：不产生运行行为变更、无并行冲突风险时）
-  - （独立检查项）Spec 模式触发判定（2026-11-15）：L1+ 且需求模糊/多方向/规格类 → 整理阶段路由专业执行体：`Skill("brainstorming")` 发散澄清 / `Skill("openspec-propose")` 规格化；技能或 CLI 未安装 → 按 `references/spec-mode.md` §2 安装引导直接安装（免用户门）；planner 只记录产物路径收据并调度，禁自拟规格（详见 `references/spec-mode.md`）；按复杂度在两族间择一路由见 `references/spec-mode.md` §1b（复杂度主轴+信号修正，2026-11-16 /goal 增补）
+  - （独立检查项）Spec 模式触发判定（2026-11-15）：L1+ 且需求模糊/多方向/规格类 → 整理阶段路由专业执行体：`Skill("brainstorming")` 发散澄清 / `Skill("openspec-propose")` 规格化；技能或 CLI 未安装 → 按 `references/spec-mode.md` §2 安装引导直接安装（免用户门）；planner 只记录产物路径收据并调度，禁自拟规格（详见 `references/spec-mode.md`）；按复杂度在两族间择一路由见 `references/spec-mode.md` §1b（复杂度主轴+信号修正，2026-11-16 /goal 增补）；验证前置定位见 `references/spec-mode.md` §5（验证三载体映射：计划面 VC 契约/执行面 TDD+verification-before-completion/收口面 openspec-verify-change，2026-11-16 /goal 增补）
 
 - [ ] [A] **计划确认**
   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）
