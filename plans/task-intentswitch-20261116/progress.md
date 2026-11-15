@@ -7,8 +7,8 @@
   本文件=进度维（动作与测试）；状态与指针→task_plan.md；调研结论→findings.md。
 -->
 
-- **R 锚定**：本 Phase 服务 R1「前说 A 现改说 B→主动切换新计划任务；功能存在但不明显；优化意图识别与切换显性度」（user-session-log #1）
 ### Phase 1: 诊断与增强计划定稿
+- **R 锚定**：本 Phase 服务 R1「前说 A 现改说 B→主动切换新计划任务；功能存在但不明显；优化意图识别与切换显性度」（user-session-log #1）
 - **Status:** complete
 - **Started:** 2026-11-16 03:27
 - Actions taken:
@@ -31,8 +31,8 @@
   | V-1.2 计划关键区块 | task_plan grep R→VC 映射/隔离决策 + verification grep **Verify command** | 退出码 0 | 全命中 | PASS |
 - 完成证据：[goal:G1] D1 批准+attest 3aca8202+drift-p1 ALIGNED+commit ee9ca3f（计划文档 11 文件）
 
-- **R 锚定**：本 Phase 服务 R1「主动激活切换新的计划任务……更好的隔离」——S1-S4 落地单入口判定卡/切换清单/显性通告/登记字段
 ### Phase 2: 单入口与显性化增强实现（worktree）
+- **R 锚定**：本 Phase 服务 R1「主动激活切换新的计划任务……更好的隔离」——S1-S4 落地单入口判定卡/切换清单/显性通告/登记字段
 - **Status:** complete
 - **Started:** 2026-11-16 04:07
 - Actions taken:
@@ -56,8 +56,8 @@
   | 语法校验 | bash -n zcode-userpromptsubmit.sh | exit 0 | 0（CR 复核二次确认） | PASS |
 - 完成证据：[goal:G2] commit 2c3bdf3+drift-p2 ALIGNED+CR APPROVED（agent_05668358 零 BLOCKER/MAJOR/MINOR）
 
-- **R 锚定**：本 Phase 服务 R1「帮我进行优化」的验证面——回归零增量+103.6 关联面核对保障优化不破坏既有机制
 ### Phase 3: 回归验证与一致性核验
+- **R 锚定**：本 Phase 服务 R1「帮我进行优化」的验证面——回归零增量+103.6 关联面核对保障优化不破坏既有机制
 - **Status:** complete
 - **Started:** 2026-11-16 04:15
 - Actions taken:
@@ -75,8 +75,8 @@
   | V-3.2 锚点回归 | ^### 94/^### 102/零交集 | exit 0 | 0（判据经第 1 批修正后） | PASS |
 - 完成证据：[goal:G3] 回归零增量+103.6 四族全绿
 
-- **R 锚定**：本 Phase 服务 R1 交付面——CR+终验 7/7+合并部署使优化对用户生效
 ### Phase 4: Code Review、终验与交付
+- **R 锚定**：本 Phase 服务 R1 交付面——CR+终验 7/7+合并部署使优化对用户生效
 - **Status:** complete
 - **Started:** 2026-11-16 04:20
 - Actions taken:
