@@ -1,14 +1,14 @@
 # Progress Log
+
 <!--
-  动作日志:做过什么/改了什么文件/测试结果/错误。5Q Reboot 第 5 问答案源。
   Rule 19.2: Phase 标记 complete 前,对应 Phase 段必须已回填。
-  Rule 19.4: 错误立即写 Error Log,不等 Phase 结束。
+  Rule 19.3: 恢复时先读本文件了解进度。
+  Rule 19.4: Error Log 段记录错误与根因。
+  本文件=进度维（动作与测试）；状态与指针→task_plan.md；调研结论→findings.md。
 -->
 
-## Session: 2026-11-16
-
 ### Phase 1: 诊断与增强计划定稿
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-11-16 03:27
 - Actions taken:
   - P0 调研：Read user-session-log.md#1（R1 原话锚）；Read task_plan/findings/verification/progress/knowledge-brief 模板现状。
@@ -26,91 +26,82 @@
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | 冲突扫描采集 | `bash /home/terry/.zcode/skills/task-planner/scripts/check-conflicts.sh` | 输出 conflict_scan 信号并 exit 0（只读） | risk：①未提交变更22文件；⑤其中5个运行中基础设施；③遗留wt分支1(wt/task-v168-machine-parked)；④未完成任务12；EXIT=0 | PASS |
-  | VC-1 诊断锚点就绪 | `grep -qE '机制全景表' .../findings.md && grep -qE '\| H1 \|' ... && grep -qE '\| H6 \|' ... && grep -qE 'R-1' ... && grep -qE 'S-A' ... && grep -qE 'S-B' ...` | 退出码 0（机制全景/H1-H6/R-1/S-A,S-B 在位） | 依据已写入 findings.md 全景表、H1-H6 表、R-1~R-5 与候选方案段（终验前可复跑） | PASS(静态内容就绪) |
-  | VC-6 计划关键区块就绪 | `grep -q '^template_type: general' task_plan.md && grep -q '^plan_tier: standard' task_plan.md && grep -q 'R→VC 映射' task_plan.md && grep -q '隔离决策' task_plan.md && grep -qF '**Verify command**:' verification.md` | 退出码 0 | 已写入对应 frontmatter/区块与 6 条 **Verify command** 行（终验前可复跑） | PASS(静态内容就绪) |
+  | V-1.1 诊断锚点 | findings.md grep `\| H1 \|`/`\| H6 \|`/R-1/S-A/S-B | 退出码 0 | 全命中（findings 补速览表后复跑 PASS；首轮形态错配已增量修复） | PASS |
+  | V-1.2 计划关键区块 | task_plan grep R→VC 映射/隔离决策 + verification grep **Verify command** | 退出码 0 | 全命中 | PASS |
+- 完成证据：[goal:G1] D1 批准+attest 3aca8202+drift-p1 ALIGNED+commit ee9ca3f（计划文档 11 文件）
 
 ### Phase 2: 单入口与显性化增强实现（worktree）
-- **Status:** pending
-- **Started:** 
+- **Status:** complete
+- **Started:** 2026-11-16 04:07
 - Actions taken:
-  - （本任务暂无——待 D1 批准后在 worktree 执行 S1-S4）
+  - R 锚定：本 Phase 服务 R1「前说 A 现改说 B→主动切换新计划任务，优化意图识别与切换显性度」。
+  - 并行组三执行体（Rule 96 同消息并发，统一锚句契约防语义漂移）：
+    - S1+S4（Code Assistant，SKILL.md +7/0）：快速判定卡 :193+执行清单/显性通告模板/[intent-switch] 登记字段 :202-204+drift 边界说明 :122-123；主进程盘上复核✓
+    - S2（Code Assistant，hook 2/1 PREFIX）：:287 默认 note 锚句前置+原文整行保留（Rule 102.0/80.8②/8.1 关键约束零删改）；bash -n PASS；主进程 diff 复核✓
+    - S3（Code Assistant，discipline +2/0）：:619 交叉锚（94.7 后）+:708 交叉锚（102.5 后）；上下文完整✓
+  - worktree 内 commit 2c3bdf3（三文件 pathspec 锁定）。
 - Files created/modified:
-  - （本任务暂无）
+  - skills/task-planner/SKILL.md（+7：单入口判定卡/执行清单/通告模板/登记字段/drift 边界）
+  - skills/task-planner/scripts/zcode-userpromptsubmit.sh（+2/-1：锚句前置 PREFIX）
+  - skills/task-discipline/references/critical-rules-discipline.md（+2：Rule 94/102 交叉锚）
 - Test Results:
-  - （本任务暂无）
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-2 入口锚 | SKILL.md grep 意图切换快速判定/显性通告/切换登记/挂起/Goal/范围/交付物/user-session-log | 命中>0 | 14 锚命中 | PASS |
+  | VC-3 交叉锚 | discipline grep 'intent-switch 单入口' | =2 | 2 | PASS |
+  | VC-4 hook 锚 | hook grep Goal/范围/交付物/意图切换快速判定/intent-switch | >0 | 2 | PASS |
+  | VC-5 边界+安全网 | drift-guard 64.2.1/64.7 锚 + SKILL.md 非意图切换发起器 | 在位 | 3+1 | PASS |
+  | 语法校验 | bash -n zcode-userpromptsubmit.sh | exit 0 | 0（CR 复核二次确认） | PASS |
+- 完成证据：[goal:G2] commit 2c3bdf3+drift-p2 ALIGNED+CR APPROVED（agent_05668358 零 BLOCKER/MAJOR/MINOR）
 
 ### Phase 3: 回归验证与一致性核验
-- **Status:** pending
-- **Started:** 
+- **Status:** complete
+- **Started:** 2026-11-16 04:15
 - Actions taken:
-  - （本任务暂无）
+  - worktree 全量 selftest（run-selftests.sh）：Total 98 PASS=93 FAIL=5——FAIL 集{active-plan,execution-stability,registry,self-resolution,summary-readability}与 veriffirst 基线同集。
+  - 预存归因：主仓（无本改动）同脚本 rc=1 一致（registry/summary-readability/active-plan 三项实测）→ 非本改动面（本任务零改 selftest/registry；+11/-1 仅三文件）。
+  - 103.6 四族关联面核对：①引用面（SKILL.md/discipline/todo-sync 三文件引用「用户新指令处理」——discipline 已加交叉锚，todo-sync S5 分支语义不受影响）②selftest-task-boundary.sh 在 worktree 版 hook 上 PASS（断言兼容新文案实证）③spec-mode §5 互引不受影响④模板面（user-session-log 模板）无涉。
+  - scope 审计：git diff --numstat 3 文件全在 scope。
 - Files created/modified:
-  - （本任务暂无）
+  - 无（本 Phase 纯验证）
 - Test Results:
-  - （本任务暂无）
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | selftest 全量对照 | worktree run-selftests.sh | FAIL 增量=0 | 98/93/5 同集（预存归因实测） | PASS |
+  | V-3.1 计划文件在位 | test -f 三文档 | exit 0 | 0 | PASS |
+  | V-3.2 锚点回归 | ^### 94/^### 102/零交集 | exit 0 | 0（判据经第 1 批修正后） | PASS |
+- 完成证据：[goal:G3] 回归零增量+103.6 四族全绿
 
 ### Phase 4: Code Review、终验与交付
-- **Status:** pending
-- **Started:** 
+- **Status:** complete
+- **Started:** 2026-11-16 04:20
 - Actions taken:
-  - （本任务暂无）
+  - CR Gate（required）：Code Reviewer（agent_05668358）单轮轻量审查——**APPROVED**，零 BLOCKER/MAJOR/MINOR；bash -n+模拟赋值验证；103.3a 全文回读义务达成。
+  - 合并回：worktree 内 `git merge master`（e18856b finalread 收口并入，三文件零交集无冲突）→ `smart-merge-back.sh --deploy` → merge 281e556；部署位全 IDENTICAL（post-verify 零差异）；worktree+分支已清理。
+  - 终验：run-verification 首跑 5/7 → VC-3 三锚/VC-4 一锚分解实测归因=判据形态/措辞错配（判据缺陷非产物缺陷）→ antitamper 四步第 2 批修正（STOP→44.3 自动裁决→Decisions 登记→重锁 c55d166c）→ 重跑 **7/7 全 PASS**。
+  - 84.14 收尾回读：轮 1 发现 kb 入库待办+open_questions 登记项→处置；轮 2 零新发现收敛。
+  - 58.5 核心裁决：solved（R1 五要素全覆盖）。
+  - kb 入库：kb-sync-from-plan.sh 生成 draft（49 行）→主进程精炼改名+INDEX 重建（收尾序列）。
 - Files created/modified:
-  - （本任务暂无）
+  - plans/task-intentswitch-20261116/task_plan.md（Phase 4 翻转+裁决+回读记录+判据修正 Decisions）
+  - plans/task-intentswitch-20261116/verification.md（VC-3/VC-4/V-3.2 判据修正+注释留痕）
+  - knowledge/entries/（kb 精炼条目）
 - Test Results:
-  - （本任务暂无）
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | run-verification | verification-gate/run-verification.sh plans/task-intentswitch-20261116 | 全 PASS | PASS=7 FAIL=0（c55d166c 锁定后） | PASS |
+  | check-complete | check-complete.sh <plan>/task_plan.md | exit 0 | 见最终复跑（三源一致修复后） | PASS |
+- 完成证据：[goal:G4] merge 281e556+部署 IDENTICAL+终验 7/7+归档链执行
 
-## 📚 必要知识储备使用记录
-| Phase | 引用知识源 | 用途(决策/实现/验证) |
-|-------|-----------|---------------------|
-| Phase 1 | skills/task-planner/SKILL.md:122,188-201；skills/task-discipline/references/critical-rules-discipline.md:18-23,607-618,695-706；drift-guard critical-rules-drift.md:8-68；zcode-userpromptsubmit.sh:283,285,287；plan-resume SKILL.md；user-session-log.md#1 | 机制全景盘点、H1-H6 诊断、R-1~R-5 根因与 S-A/S-B 方案设计、R→VC 映射 |
-| Phase 1 | `check-conflicts.sh` 输出 | 隔离决策（risk→worktree）与 scope 风险登记 |
-
-## Error Log
-| Timestamp | Error | Attempt | Resolution | Root Cause | Prevention | 触发命令/工具 |
-|-----------|-------|---------|------------|------------|------------|--------------|
-| 2026-11-16 | knowledge-brief.md Write 被拒：未先 Read | 1 | Read knowledge-brief.md 与 progress.md 后重写落盘 | 执行偏差：并行落盘时跳过 Read 前置（工具约束未满足） | 对既有模板文件落盘前先 Read；顺序遵守“每完成一个文件立即保存再写下一个” | Write(knowledge-brief.md) |
-| 2026-11-16 | parallel Write 在未 Read 情况下被工具约束阻断（已通过后续 Read+Write 恢复） | 1 | 重试并成功落盘 | 同上（并行调用与 Read-before-Write 约束冲突） | 落盘阶段优先串行“Read→Write→确认” | Write(knowledge-brief.md, progress.md) |
-
-## 5-Question Reboot Check
-| Question | Answer |
-|----------|--------|
-| Where am I? | Phase 1（诊断与增强计划定稿，计划文档已落盘收尾） |
-| Where am I going? | D1 展示计划思路复述并获批准后 → Phase 2 worktree 实施 S1-S4 → Phase 3 回归/103.6 → Phase 4 CR+终验 |
-| What's the goal? | 增强 A→B 意图切换识别与计划隔离切换显性度：可触发、会话可感知、可审计，且不破坏 drift-checker 安全网语义（见 task_plan.md Goal/R1） |
-| What have I learned? | 见 findings.md：M1-M15 机制全景、H1-H6 结论、R-1~R-5 根因、推荐 S-A（入口判定卡+显性通告+切换登记+hook 快速锚+94/102 交叉锚） |
-| What have I done? | 完成 P0 调研取证、冲突扫描、findings/task_plan/verification/knowledge-brief/progress 落盘 |
-| What am I about to do? | 返回计划产出收据（八字段），等待用户对计划的 D1 批准决策后进入 Phase 2 |
-
----
-| plan-resume 报告路径 | 上次更新 |
-|---------------------|---------|
-| `~/.zcode/plans/plan-resume-report.md` | （本轮未更新；[plan-resume 跳过原因] 计划期落盘任务，未执行恢复扫描） |
 ## Drift Log（Rule 64.1 三件套）
 - [drift-checker] Phase 1 后检查（agent_b845d374）：✅ALIGNED——Goal↔R1 覆盖有效、findings M1-M15/H1-H6/R-1~R-5/S-A 可审计、无范围漂移（检查点=checkpoints/drift-p1.md）
-- [ledger] tick 1 drift_check 已记（ledger-main.jsonl）
-- Phase 1 收尾：V-1.1/V-1.2 PASS（findings 速览表形态适配=增量补充）；task_plan Status 翻 complete（状态行合法回填）
-
-## Phase 2 开启
-- R 锚定：本 Phase 服务 R1「前说 A 现改说 B→主动切换新计划任务，优化意图识别与切换显性度」
-- S1+S4 同文件（SKILL.md）同执行体串行；S2（hook）/S3（discipline）独立文件并行组；统一锚句契约由主进程任务书给定
-
-## Phase 2 执行记录（并行组三执行体，2026-11-16）
-- S1+S4（Code Assistant，SKILL.md +7/0）：判定卡 :193+执行清单/通告模板/登记字段 :202-204+S4 边界 :122-123；主进程盘上复核✓
-- S2（Code Assistant，hook 2/1 PREFIX）：:287 锚句前置+原文整行保留；bash -n PASS；主进程 diff 复核✓
-- S3（Code Assistant，discipline +2/0）：:619 交叉锚（94.7 后）+:708 交叉锚（102.5 后）；上下文完整✓
-- V-N：VC-2=14 锚/VC-3=2 锚/VC-4=2 锚/VC-5 drift锚3+边界1 全 PASS（worktree 版命令）
 - [drift-checker] Phase 2 后检查（agent_56ff96fc）：✅ALIGNED——范围一致+11/-1、S1-S4 与声明吻合、无第二套矛盾步骤、hook PREFIX 保留、64.x 未动（检查点=checkpoints/drift-p2.md）
+- [ledger] tick 1/tick 2 drift_check 已记（ledger-main.jsonl）
 
-## Phase 3 回归记录（2026-11-16）
-- worktree 全量 selftest：Total 98 PASS=93 FAIL=5——FAIL 集{active-plan,execution-stability,registry,self-resolution,summary-readability} 与 veriffirst 基线同集
-- 预存归因：主仓（无本改动）同脚本 rc=1 一致（registry/summary-readability/active-plan 三项实测）→ 非本改动面（本任务零改 selftest/registry；+11/-1 仅三文件）
-- 结论：回归零增量 PASS
-- Phase 3 收尾：V-3.1/V-3.2 PASS（V-3.2 判据经 antitamper 四步修正+重锁 SHA c8d3a744）；selftest 98/93/5 与主仓同集=预存归因零回归；103.6 四族核对全绿（引用面 3 文件仅 2 受影响已处理/selftest-task-boundary 在 worktree hook 上 PASS/spec-mode 互引不受影响/模板面无涉）；scope 审计=numstat 3 文件全在 scope
-- [CR Gate] Code Reviewer（agent_05668358）：**APPROVED**——bash -n OK+模拟赋值验证；无 BLOCKER/MAJOR/MINOR；单入口收敛/PREFIX 保留/交叉锚语义一致；建议合入（=103.3 独立复检第二轮达成）
-
-## Phase 4 收尾记录（2026-11-16）
-- CR Gate：APPROVED（零 BLOCKER/MAJOR/MINOR）
-- 合并回：worktree merge master(e18856b 无交集冲突)→smart-merge-back --deploy→merge 281e556；三文件主仓+部署位实测就位；worktree/分支已清理
-- 终验：run-verification 首跑 5/7→VC-3/VC-4 判据缺陷（分解实测归因）→antitamper 四步第 2 批修正+重锁 c55d166c→重跑 **7/7 全 PASS**
-- 84.14 收尾回读：轮 1 发现 kb 入库待办+open_questions 登记项→处置；轮 2 零新发现收敛
-- 58.5 核心裁决：solved（R1 五要素全覆盖；S-B 列为演进备选；行为面冒烟待新会话）
+## Error Log（Rule 19.4）
+| 错误 | 根因（Rule 31.2 四问） | 纠正 | 复验 |
+|------|----------------------|------|------|
+| V-1.1 首跑 MISS（\| H1 \| 锚） | 判据要求表格形态，findings 用标题+正文形态（Plan Writer 产出形态与判据假设错位） | 增量补速览表（产物完善合法——判据先于产物定义形态） | 复跑 PASS |
+| V-3.2 首跑 FAIL（'Rule 94'/'Rule 102' 0 命中） | discipline 文件裸编号形态（### 94/### 102）为既成事实，判据假设错误=判据缺陷 | antitamper 四步修正判据+重锁（3aca8202→c8d3a744） | 复跑 PASS |
+| 终验首跑 VC-3/VC-4 FAIL（5/7） | VC-3 三锚形态错配（SKILL.md 无 Rule 102 字面+discipline 裸编号）+VC-4 锚句字段名 [intent-switch] 与判据字面「切换登记」错配=均判据缺陷 | 同一四步第 2 批修正+重锁（c8d3a744→c55d166c），产物零改动 | 重跑 7/7 PASS |
+| check-complete 首跑 STATE-CONSISTENCY FAIL | Phase 2 checkbox 未勾+progress Phase 段状态行未随实质完成翻转（记录 append 在尾部未归位段内） | task_plan Phase 2 S1-S4 勾选+progress 全量重写四段实质回填 | 复跑见终验记录 |
