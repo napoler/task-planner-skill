@@ -138,3 +138,4 @@
 - 全量重跑：Total 98 PASS=93 FAIL=5——预存集同集{active-plan,execution-stability,registry,self-resolution,summary-readability}，零增量 PASS
 - 103.6 关联面四族：①引用面（回切条款=新条款，intentswitch 前向条款引用链已核对无冲突）②守卫面（BP-08 已修；全量 selftest 零增量实证其余钉不涉）③部署面（selftest-batch-pilot.sh 一并入部署同步清单）④模板面无涉
 - V-N：V-3.x 命令 PASS（计划文件在位+锚点回归+scope diff）
+- [judge] 73.4 收口评判（2026-11-16）：合并回 1b214f9 前置——drift-p2 ALIGNED（主进程接管）+CR 两轮（5 项修复后 APPROVED）+终验 7/7+回归 98/93/5 预存同集；边界不破坏（94.4 封存语义零改动+plan-resume 零触碰）；过程披露=provider 限流 7 连→用户授权主进程直修（allow-direct 留痕）+判据反引号格式修复重锁；风险披露=回切为提示面条款（LLM 行为门），行为面冒烟待首次真实 B 收口场景
