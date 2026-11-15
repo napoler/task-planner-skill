@@ -49,16 +49,16 @@ model: opus
 
 - [ ] [A] **初始化首动作委派（L1+）— 需求分析与计划文档创建子代理隔离**：
   - **触发**：L1+（standard/full，非 L0/mini/trivial/L0-E）任务 `init-session.sh` 完成 7 文件后的首个智能子动作（机械子动作/清哨兵按既有契约先行）
-  - **动作**：派发计划子代理承接用户指令复述+需求分析+计划文档填写（`task_plan/findings/knowledge-brief/progress/verification`，以执行体产出契约为准）；**首选 Plan Writer**（canonical `../../task-planner/companion/agents/plan-writer.md`，各平台部署位同名 agent），provider/档位失败按判例降级 `general-purpose` 并留痕
+  - **动作**：派发计划子代理承接用户指令复述+需求分析+计划文档填写（`task_plan/findings/knowledge-brief/progress/verification`，以执行体产出契约为准）；**首选 Plan Writer**（`companion/agents/plan-writer.md`（仓库同级部署位同名 agent）），provider/档位失败按判例降级 `general-purpose` 并留痕
   - **计划期例外（22.4a/62.2）**：计划产出子代理=计划文档**计划期单写者**（隔离决策区块含 check-conflicts.sh 判读由其起草）；执行期子代理仍按 22.4a 只读；主进程对产物**盘上复核**（Rule 84.4）后展示/确认
   - **主代理职责收窄**：仅保留 skill 激活+init 机械子动作+派发+收据回收+user-session-log 逐字落盘（Rule 80.1）+计划展示+D1 确认+attest 锁定；需求分析与文档撰写细节不进主上下文
-  - **收据契约**：派发与返回仍走 22.4a/b/c 八字段全契约（机械守卫不变）；主进程回收的最小收据=从八字段返回+盘上复核提炼 `{task_id, files_created[], open_questions[], 摘要}`（≤20 行）
+  - **收据契约**：派发与返回仍走 22.4a/b/c 派发全契约（22.4b 八字段返回，机械守卫不变）；主进程回收的最小收据=从八字段返回+盘上复核提炼 `{task_id, files_created[], open_questions[], 摘要}`（≤20 行）
   - **边界**：会话绑定脚本（`init-session.sh`/`attest-plan.sh`/`set-active-plan.sh`/`plan-created.cjs`/哨兵清理）禁由子代理执行（会话态竞争）；D1/attest/收据回收归主进程
   - **豁免**：L0/mini/trivial/L0-E 轻量档不适用本条款（Rule 38.6/38.7 比例原则不变）
   - **动机**：隔离更好、提高子代理激活率、降低主代理上下文占用；禁止误读为“所有场景一律加仪式”
 
 - [ ] [A] **初始化（哨兵机制）— 智能子动作**：体量分级判定与隔离决策
-  - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree）
+  - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree；首动作委派子代理已起草时=复核/校正，不重写）
   **可选思路**：
   1. 思路 A：按 §十一 硬条款判定——命中保护区/基础设施/并行开发任一条 → 选 worktree 隔离（适用场景：实现类任务、改运行行为、用户并行开发时）
   2. 思路 B：命中 §11.5 例外（纯文档/纯调研/单文件 ≤3 行 trivial）→ 直接在主工作树进行（适用场景：不产生运行行为变更、无并行冲突风险时）
