@@ -29,7 +29,7 @@
 | 1 | `skills/plan-history-recall/SKILL.md` | SOP 载体：触发→路由→派发→综合→落盘全流程+成本护栏 |
 | 2 | `skills/plan-history-recall/references/experience-card-schema.md` | 经验卡 schema（单任务提炼契约，history-miner 产出物规范） |
 | 3 | `skills/plan-history-recall/references/brief-template.md` | 简报模板（跨任务综合产出契约，含占位符） |
-| 4 | `agents/history-miner.md` | 专职只读挖掘子代理（对齐 drift-checker 伴飞先例：轻档模型+只读纪律+结构化产出） |
+| 4 | `agents/history-miner.md` → **修订（2026-11-16，Explore 实测）**：仓库根无 `agents/`，伴飞 agent 先例（drift-checker）实际位于 `skills/task-planner/companion/agents/`，故落位 `skills/task-planner/companion/agents/history-miner.md`（部署位=双 agents 位 ~/.zcode/agents + ~/.claude/agents，drift-checker 实锚探测） | 专职只读挖掘子代理（对齐 drift-checker 伴飞先例：轻档模型+只读纪律+结构化产出） |
 | 5 | `skills/task-planner/SKILL.md` 轻接线 | 规划期指针 1 行（见 §7 措辞） |
 | 6 | selftest 断言脚本 + registry 登记 | frontmatter 合规/SOP 段完整性/schema 占位符/接线行存在性 |
 

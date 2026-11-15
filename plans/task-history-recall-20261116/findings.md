@@ -45,4 +45,4 @@
 - D5 与 kb 关系 → 不改 kb-search.sh；kb 体系保持 knowledge/ 域，本技能域=plans/+git（design.md §9）。
 
 ## Open Questions
-- 见 Technical Decisions D1-D3（用户裁决项），经澄清问题逐条上抛。
+- 无未决项——D1-D3 已裁决（Technical Decisions 表）+自裁 D6/D7+设计定稿（design.md）+实施契约事实（Implementation Facts 段）。
