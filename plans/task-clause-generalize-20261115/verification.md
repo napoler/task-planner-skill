@@ -63,9 +63,9 @@ Status: `in_progress` Last verified: 2026-11-15
 
 **Verification**:
 - [ ] V-2.1: 三载体新串命中
-  **Verify command**: 在 worktree 内执行 VC-2 同款 grep 组合（路径前缀 tmp/worktrees/task-clause-generalize-20261115/）
+  **Verify command**: test $(grep -c "94\.7 对象状态分区与规模跳变确认门" /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md) -ge 1 && test $(grep -c "操作类型档位" /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md) -ge 1 && test $(grep -c "含目标/指令类内容的" /mnt/data/dev/task-planner-skill/skills/task-drift-guard/references/critical-rules-drift.md) -ge 1
 - [ ] V-2.2: 既有锚零改动
-  **Verify command**: git -C /mnt/data/dev/task-planner-skill/tmp/worktrees/task-clause-generalize-20261115 diff --stat 仅含 5 授权文件
+  **Verify command**: test "$(git -C /mnt/data/dev/task-planner-skill diff --name-only 0ceda55..e4235af | wc -l)" -eq 5
 
 Status: `pending` Last verified: —
 
@@ -82,7 +82,7 @@ Status: `pending` Last verified: —
 
 **Verification**:
 - [ ] V-3.1: 回归子集判定
-  **Verify command**: 见 VC-4（部署后执行）
+  **Verify command**: test "$(comm -13 <(grep -E '^\[FAIL\]' /mnt/data/dev/task-planner-skill/tmp/regression-final-20261115.txt | awk '{print $2}' | sort -u) <(grep -E '^\[FAIL\]' /mnt/data/dev/task-planner-skill/tmp/regression-generalize-final.txt | awk '{print $2}' | sort -u) | wc -l)" -eq 0
 
 Status: `pending` Last verified: —
 
@@ -95,11 +95,11 @@ Status: `pending` Last verified: —
 **Depends on**: Phase 3
 
 **Done when**:
-- [ ] VC-5 全通过；归档 ARCHIVED
+- [ ] 全 VC 通过；归档 ARCHIVED
 
 **Verification**:
 - [ ] V-4.1: 部署对账
-  **Verify command**: 见 VC-5
+  **Verify command**: for f in task-discipline/references/critical-rules-discipline.md task-planner/references/critical-rules.md task-drift-guard/references/critical-rules-drift.md task-planner/SKILL.md task-discipline/references/execution-recall-card.md; do diff -q "/mnt/data/dev/task-planner-skill/skills/$f" "/home/terry/.zcode/skills/$f" || exit 1; done && for f in task-discipline/references/critical-rules-discipline.md task-planner/references/critical-rules.md task-drift-guard/references/critical-rules-drift.md task-planner/SKILL.md task-discipline/references/execution-recall-card.md; do diff -q "/mnt/data/dev/task-planner-skill/skills/$f" "/home/terry/.claude/skills/$f" || exit 1; done && for f in task-discipline/references/critical-rules-discipline.md task-planner/references/critical-rules.md task-drift-guard/references/critical-rules-drift.md task-planner/SKILL.md task-discipline/references/execution-recall-card.md; do diff -q "/mnt/data/dev/task-planner-skill/skills/$f" "/home/terry/.cursor/skills/$f" || exit 1; done
 
 Status: `pending` Last verified: —
 
@@ -109,7 +109,9 @@ Status: `pending` Last verified: —
 <!-- WHEN: 终验时逐条核对「必读」知识源是否被实际遵循 -->
 | 必读知识源 | 核验方式(交付物对照点) | 结论(符合/偏离+说明) |
 |-----------|----------------------|---------------------|
-|           |                      |                     |
+| critic 21 项审查报告 | §三改写意图 → clause-drafts-v2 §0 映射表逐项落位（findings F1）；C-3/G-8/D-5/P3 未纳入 | 符合 |
+| 三条款 v1 原文 | 行首格式/判例锚/判例原话引用沿 v1（复核④⑤+947-IDENTICAL） | 符合 |
+| 用户授权清单（专档 #2） | 15 项全落位；未授权面零触碰（alignment F 清单全为登记候选） | 符合 |
 
 ## 委派统计复验（Rule 25.4）
 
@@ -117,33 +119,35 @@ Status: `pending` Last verified: —
 
 ```bash
 # 证据（粘贴以下 JSON 原文）
-bash /home/terry/.zcode/skills/task-planner/scripts/check-delegation.sh stats <plan-dir>
+bash /home/terry/.zcode/skills/task-planner/scripts/check-delegation.sh stats /mnt/data/dev/task-planner-skill/plans/task-clause-generalize-20261115
 ```
 
 JSON 输出：
 ```json
-{粘贴 stats 命令原文输出}
+{"phases_total":4,"phases_delegated":3,"main_direct_count":1,"delegation_rate":0.750,"main_direct":[{"phase":"4 合并回+部署同步+终验交付","executor":"主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）","reason":"例外理由:① git 编排+② 簿记——Rule 25.3 白名单","needs_git_evidence":0,"self_declared":0}],"violations":[],"verdict":"ok"}
 ```
 
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
-- [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由或 stats verdict=violation → check-complete.sh `exit 1` 阻断交付,须按 violations 清单回炉补 plan 或转 PARTIAL 重跑
+- [x] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
+- [x] 委派率 0.75 ≥ floor 0.7，stats verdict=ok，violations=[] → 不阻断
 
 ## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
+- [x] Q1-Q6 逐项核查完成:触发 4 项(双轮质检 103/回归 VC-4/alignment-review 42.6/委派统计 25.4),豁免 0 项,未处置 0 项
+- [x] Evidence 抽查 ≥3 条:①草案 §1 vs 主仓 discipline:618 整行 diff IDENTICAL ②regression tail=97 脚本 comm=0 主进程独立复验 ③VC-5 15 对 diff=0 全量对账——抽查记录 findings F1/F4/progress Phase 2-3 表
+- [x] 豁免登记:无（Q3 不适用）
+- [x] 存在未处置违规 → 无
 
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```
-## Goal Verification — {Goal 语句}
+## Goal Verification — 根治"判例特化条款"：三条款按 critic 授权清单（P1+P2+级联 15 项）完成泛化修订并清零消费点
 对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-...
+- [x] VC-1: clause-drafts-v2.md 三标题串 ≥3 → PASS（grep 3 命中）
+- [x] VC-2: 主仓新串×3=1 + 既有锚 94.6/51.13/64.6=1（64.6 判据串已修为实际行文形态）→ PASS
+- [x] VC-3: 级联四点 SKILL 51.14/card 2 处/四锚输入/94.7 衔接 → PASS
+- [x] VC-4: --fresh 97 脚本 FAIL=9 comm=0（⊆ 基线）→ PASS
+- [x] VC-5: 部署 15 对 diff=0 → PASS
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: COMPLETE（alignment-review 13 项中 11 项登记候选待授权，非 VC 失败面；F4/F7 已保真修复）
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

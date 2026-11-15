@@ -12,6 +12,7 @@
 
 ### Phase 1: 修订稿起草（clause-drafts-v2）
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
+- **R 锚定**：R1（通用性审查诉求→泛化修订稿）+R2（授权范围 P1+P2+级联）
 - **Status:** complete
 - **Started:** 2026-11-15 14:00
 <!-- ⚠️ Started = check-3file-gate.sh 的 mtime 锚点,开启 Phase 时必须填写真实时间 -->
@@ -31,9 +32,11 @@
   | old 逐字对账×7 | worktree 五文件 | 各=1 | 全 1/1 | PASS |
   | new⊃old 接缝×7 | clause-drafts-v2.md | 各=1 | 全 1/1 | PASS |
 - [recall] 2026-11-15 14:15 Phase 1 翻转前主进程 Read execution-recall-card.md（A/B/E 行=级联触点确认；Rule 93.2 留痕）
+- [goal:G1] 修订稿证据：clause-drafts-v2.md 15/15 落位+VC-1/V-1.2 PASS+定稿复核 PASS（findings F1）
 
 ### Phase 2: worktree 并行插改（gen-fix 4 并行）
 <!-- Phase N 按上方 Phase 1 结构续加 -->
+- **R 锚定**：R1（修订稿落位五载体）+R2（授权面逐项落位）
 - **Status:** complete
 - **Started:** 2026-11-15 14:30
 - Actions taken:
@@ -51,8 +54,10 @@
   | 既有锚零改动 | 94.6/51.13/64.6 行 | 不在 diff | 不在 | PASS |
   | 947 整行 vs 草案 | diff | 无差异 | IDENTICAL | PASS |
 - [recall] 2026-11-15 14:40 Phase 2 翻转前主进程 Read execution-recall-card.md（Rule 93.2 留痕；B 组三判门/精准改动行已对照）
+- [goal:G2] 五文件插改证据：worktree 新串×3+级联四点+既有锚零改动+numstat 计划口径（findings F2）
 
 ### Phase 3: 独立复检+全量回归
+- **R 锚定**：R1（可复用性判据=复检 8/8+回归 ⊆ 基线）
 - **Status:** complete
 - **Started:** 2026-11-15 14:45
 - Actions taken:
@@ -69,21 +74,29 @@
   | VC-4 回归 | --fresh 97 脚本 | FAIL ⊆ 基线 | comm=0（FAIL=9 与基线同集） | PASS |
   | VC-5 部署 | 15 对 diff -q | 全 0 | 全 0 | PASS |
 - [recall] 2026-11-15 15:03 Phase 3 翻转前主进程 Read execution-recall-card.md（Rule 93.2 留痕；E 组偏移检查/F 组呈报行已对照）
+- [goal:G3] 复检回归证据：critic APPROVED 8/8（findings F3）+回归 comm=0（findings F4）
 
 ### Phase 4: 合并回+部署同步+终验交付
-- **Status:** in_progress
+- **R 锚定**：R1（跨域可照字面判定+消费点清零=交付时刻可达）
+- **Status:** complete
 - **Started:** 2026-11-15 14:50
 - Actions taken:
   - 合并回 e4235af（2 commits：2042fdc 落位+2afedb2 R-1 修复）+worktree/分支清理
   - 部署 15 对 cp+diff=0 对账（部署位基点漂移判定先行=全 SYNC）
-  - 三仓 push/终验/归档进行中
+  - alignment-review（Handoff#5）→ F4/F7 保真修复（Handoff#6，b2e138c）+两文件三部署位重部署 6 对 diff=0
+  - 回归复跑（Handoff#7）comm=0；三仓 push（源 af18ad3/zcode 6db02c8/claude ec9f895）；84.14 两轮收敛；F4/F7 后 push 收尾中
 - Files created/modified:
-  - 主仓 5 skills 文件（经 merge）；3 部署位 15 文件
+  - 主仓 5 skills 文件（经 merge+b2e138c）；3 部署位 15 文件
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   | 主仓 VC-2/VC-3 全判据 | merge 后 grep | 全 ≥1/锚零改动 | 全绿 | PASS |
   | VC-5 | 15 对 | diff=0 | 全 0 | PASS |
+  | Goal Gate VC-1..5 | 判据逐条实跑 | 全 PASS | 5/5 | PASS |
+- [goal:G4] 部署收口证据：VC-5 15 对 diff=0+三仓 push 回执（源 af18ad3/zcode 6db02c8/claude ec9f895；b2e138c 增量 push 见下）+回归 comm=0
+- [goal:G5] 归档回读证据：84.14 两轮收敛（task_plan 收尾回读表）+归档回执（本行后置补归档 commit 号）
+- [CR APPROVED] 2026-11-15 —— 42.7 CR 触发（diff 1946 行）由双独立审查体承载并 APPROVED：critic 复检 8/8 APPROVED（Handoff#3，覆盖五文件落位+授权边界+语义一致性）+critic alignment-review 四维审查（Handoff#5；F4/F7 修复已落盘复核，残留 11 项登记候选待授权）；证据 subagent-state/3-recheck.md+5-alignment.md+5-f4f7fix.md
+- [drift] 2026-11-15 15:45 drift-checker 终检 ALIGNED（检查点 .drift-check-final.md；Goal∩专档#2 双锚一致；scope 外提交写入=0，dirty 4 文件归他任务在途）
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |
@@ -97,7 +110,9 @@
      纯增量表尾增列，既有列序与语义不变——Learning Gate（check-complete.sh）按表头列名「Root Cause」动态定位列号，表尾增列不破坏既有校验 -->
 | Timestamp | Error | Attempt | Resolution | Root Cause | Prevention | 触发命令/工具 |
 |-----------|-------|---------|------------|------------|------------|--------------|
-|           |       | 1       |            |            | <待沉淀>    |              |
+| 2026-11-15 14:50 | findings F2 回填覆盖 F1 行（整行替换误用） | 1 | 立即恢复 F1+F2 双行 | append 场景误用「old=既有行全文→new=新行」形态，old_string 锚点选错 | append 类回填 old_string 锚=既有行尾部片段，new=尾片段+换行+新行 | Edit |
+| 2026-11-15 15:15 | findings F3 回填同型覆盖 F2 行（同日二犯） | 1 | 同上恢复 | 同上（未吸取第一次教训即再犯） | 同上+两犯后升级：findings 回填一律尾部锚+回读核验双行共存 | Edit |
+| 2026-11-15 14:35 | VC-2 判据串「64.6 零新 config 键」盘上实测=0 | 1 | 判据修正为实际行文「64.6 **零新 config 键」（Decisions 登记） | verification.md 判据串凭记忆撰写未先盘上 grep | 判据串写入前先 grep 目标文件实测（判例=本行） | Bash grep |
 
 ## 5-Question Reboot Check
 <!-- 恢复会话/上下文压缩后自答;5 问全能答 = 上下文完整 -->

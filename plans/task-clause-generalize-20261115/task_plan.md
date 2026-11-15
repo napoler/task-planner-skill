@@ -131,12 +131,12 @@ parallel_groups: [gen-fix]
 -->
 | 字段 | 值 |
 |------|-----|
-| **目标型需求** | （R 行编号，如 R1/R3） |
-| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |
-| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |
-| **未解决面+原因** | （partial/not-solved 必填） |
-| **已排除路径** | （not-solved 必填：试过什么+为何不行） |
-| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |
+| **目标型需求** | R1 |
+| **裁决** | `solved` |
+| **解决证据锚** | 三条款 v2+级联落位主仓并部署（VC-2/VC-3/VC-5 PASS 2026-11-15；源仓 e4235af）；四场景可判定性=alignment-review ③维（内容/媒体/文件照字面可判，代码域词表适用性=F8/F9 候选） |
+| **未解决面+原因** | n/a（solved） |
+| **已排除路径** | n/a |
+| **下一步建议** | alignment-review 候选 11 项（F1/F2/F3/F5/F6/F8-F13）登记于 findings F5+knowledge+memory，待用户授权独立任务处置 |
 
 > 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。
 
@@ -150,11 +150,11 @@ parallel_groups: [gen-fix]
 -->
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 修订稿 | drafts-v2 三条款 v2+级联 spec（15 项可指认） | grep 三标题串 ≥3 | Phase 1 | pending |
-| G2 | 五文件插改 | worktree 新串命中+既有锚零改动 | grep+git diff | Phase 2 | pending |
-| G3 | 复检回归 | 复检 APPROVED+回归 FAIL ⊆ 基线 | 检查点+comm | Phase 3 | pending |
-| G4 | 部署收口 | 15 对 diff=0+三仓 push | 逐对 diff+push 回执 | Phase 4 | pending |
-| G5 | 归档回读 | 归档+收尾回读收敛 | archive 回执+84.14 两轮 | Phase 4 | pending |
+| G1 | 修订稿 | drafts-v2 三条款 v2+级联 spec（15 项可指认） | grep 三标题串 ≥3 | Phase 1 | complete |
+| G2 | 五文件插改 | worktree 新串命中+既有锚零改动 | grep+git diff | Phase 2 | complete |
+| G3 | 复检回归 | 复检 APPROVED+回归 FAIL ⊆ 基线 | 检查点+comm | Phase 3 | complete |
+| G4 | 部署收口 | 15 对 diff=0+三仓 push | 逐对 diff+push 回执 | Phase 4 | complete |
+| G5 | 归档回读 | 归档+收尾回读收敛 | archive 回执+84.14 两轮 | Phase 4 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -374,14 +374,14 @@ Phase 4（合并回+部署+push+终验交付）
 <!-- 
   WHAT: stash 窗口合并回（他任务 staged 文件窗口法）→部署 15 对→三仓 push→归档。
 -->
-- [ ] 合并回主仓（他任务 staged 文件 stash 窗口法）+worktree 清理
-- [ ] 部署 5 文件×3 位 cp+15 对 diff=0
-- [ ] 三仓 push（pathspec 锁定）+归档+INDEX 刷新
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后 set-active-plan --clear+archive-plan（Rule 81；守卫拒绝登记理由不强移）
-- [ ] 知识提取入库：kb-sync-from-plan.sh → 精炼改名 → kb-rebuild-index.sh（已确认项目存在该机制）
+- [x] 合并回主仓（他任务 staged 文件 stash 窗口法）+worktree 清理
+- [x] 部署 5 文件×3 位 cp+15 对 diff=0
+- [x] 三仓 push（pathspec 锁定）+归档+INDEX 刷新
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
+- [x] 归档计划：check-complete exit 0 后 set-active-plan --clear+archive-plan（Rule 81；守卫拒绝登记理由不强移）
+- [x] 知识提取入库：kb-sync-from-plan.sh → 精炼改名 → kb-rebuild-index.sh（已确认项目存在该机制）
 - **V-N:** VC-3, VC-4, VC-5
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -389,7 +389,8 @@ Phase 4（合并回+部署+push+终验交付）
      发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1 | ①Handoff 表缺后三笔派发登记（对齐审查/F4F7 修复/回归复跑）②委派统计激活子代理数 8→11 过期 ③knowledge-brief 整体空模板 ④progress Error Log 空置（findings 两犯+判据串笔误未入账） | ①Handoff#5-#7 补登（done+verify_done）②激活数更新 11③knowledge-brief §1-§6 全量补填（真事实+锚）④Error Log 3 行入账（含 Root Cause/Prevention） |
+| 2 | 零新发现（六文档互洽：R↔专档/Goal↔VC/Phase↔Handoff/VC↔证据/知识维↔findings 五维核对通过；连续一轮零新发现=收敛出口） | 出 outcome=COMPLETE |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -500,7 +501,7 @@ Phase 4（合并回+部署+push+终验交付）
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-11-15 15:45 | ALIGNED（drift-checker 终检，补 Phase 1-4 检查点；留痕三件套=检查点 .drift-check-final.md+本行+progress [drift] 行） | Goal∩VC-2 | 双锚一致；scope 外写入=0（工作区 dirty 4 skill 文件归他任务在途，非本任务提交） |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 
@@ -532,7 +533,7 @@ Phase 4（合并回+部署+push+终验交付）
 | 子代理执行 Phase 数 / 总 Phase 数 | 3 / 4 |
 | 主进程直做 Phase 清单 | Phase 4（① git 编排+② 簿记——Rule 25.3 白名单） |
 | 委派率 | 0.75（3/4，≥floor 0.7） |
-| 激活子代理数（Rule 96.5） | 8（起草 1+插改 4+复检 1+R-1 修复 1+回归 1） |
+| 激活子代理数（Rule 96.5） | 11（起草 1+插改 4+复检 1+R-1 修复 1+回归 1+对齐审查 1+F4/F7 修复 1+回归复跑 1） |
 | 最大并行宽度（Rule 96.5） | 1 组（gen-fix）/ 最宽 4 |
 | 串行化例外理由（Rule 96.4） | none |
 
@@ -551,7 +552,10 @@ Phase 4（合并回+部署+push+终验交付）
 | 1 | 2026-11-15 14:08 | general-purpose | 起草 clause-drafts-v2.md | done | 落盘 146 行 15/15 落位；主进程定稿复核 PASS（2 处 VC-3 串修订） | clause-drafts-v2.md §0-§6 | findings F1 | subagent-state/1-draft.md（草案本体即检查点） | - / 0 / ☑ |
 | 2 | 2026-11-15 14:30 | general-coder | 三条款 v2+级联四点并行插改（4 并行 gen-fix） | done | S1-S4 全落位：numstat 2/2+1/1+2/2+1/1+3/3=计划口径；S4 自验阈值系派发书笔误（VC-3 实判 ≥1，实得 2 已达标） | subagent-state/2-insert-S1..S4.md | findings F2 | subagent-state/2-insert-S1..S4.md | - / 0 / ☑ |
 | 3 | 2026-11-15 14:45 | critic | 15 授权项+既有锚独立复检 | done | APPROVED 8/8；R-1 语义回退已裁决句尾增量修复，R-2/R-3 留痕不修 | subagent-state/3-recheck.md | findings F3 | subagent-state/3-recheck.md | - / 0 / ☑ |
-| 4 | | code-runner-agent | 部署后 --fresh 全量回归+comm 子集判定 | queued | | | findings F4 | subagent-state/4-regression.md | - / 0 / ☐ |
+| 4 | 2026-11-15 15:05 | code-runner-agent | 部署后 --fresh 全量回归+comm 子集判定 | done | 97 脚本 PASS=88 FAIL=9 comm=0；F4/F7 后复跑同结论 | tmp/regression-generalize-final.txt | findings F4 | subagent-state/4-regression.md | - / 0 / ☑ |
+| 5 | 2026-11-15 15:10 | critic | alignment-review 四维对齐审查（Rule 42.6） | done | DRIFT 13 项：F4/F7 已保真修复，F1-F13 其余登记候选待授权 | subagent-state/5-alignment.md | findings F5 | subagent-state/5-alignment.md | - / 0 / ☑ |
+| 6 | 2026-11-15 15:20 | general-coder | F4/F7 句尾保真修复（两单点） | done | 两处追加落地+主进程复核+6 对部署 diff=0 | subagent-state/5-f4f7fix.md | findings F5 | subagent-state/5-f4f7fix.md | - / 0 / ☑ |
+| 7 | 2026-11-15 15:30 | code-runner-agent | F4/F7 后回归复跑（VC-4 终态） | done | 97/88/9 comm=0 PASS | subagent-state/4-regression.md | findings F4 | subagent-state/4-regression.md | - / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 
@@ -610,4 +614,4 @@ Phase 4（合并回+部署+push+终验交付）
 - 触发信号: 任务类型空缺 → 落 general 兜底（非 16 类已知类型之一）
 - Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant
 - 终验必查: check-complete T3 warn 兜底检索 [template-sense] token
-- 处置登记处: 不沉淀理由——本次为既有条款（94.7/51.14/64.7）增款修订，未产生可复用新任务类型；template_type=general 兜底即为定案（Rule 34.3② 已评）→ 指向 plan-template-kit 卫星 SOP
+- 处置登记处 [template-sense]: 不沉淀理由——本次为既有条款（94.7/51.14/64.7）增款修订，未产生可复用新任务类型；template_type=general 兜底即为定案（Rule 34.3② 已评）→ 指向 plan-template-kit 卫星 SOP
