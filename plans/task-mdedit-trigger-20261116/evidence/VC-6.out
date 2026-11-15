@@ -1,0 +1,4 @@
+# [run-verification] VC-6 | 2026-11-15T20:31:01Z | cmd: `bash -lc 'H="$HOME/.zcode/skills/task-planner/scripts/zcode-pretooluse.sh"; test -x "$H" || test -f "$H"; p=$(printf "%s" "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/x.md\",\"old_string\":\"a\\nb\",\"new_string\":\"c\"}}" | bash "$H"); echo "$p"|grep -q "\[md-edit-ops\] 提醒:"; n=$(printf "%s" "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/plans/x.md\",\"old_string\":\"a\\nb\",\"new_string\":\"c\"}}" | bash "$H"); echo "$n"|grep -q "\[md-edit-ops\] 提醒:" && exit 1 || exit 0'`
+# ---- stdout/stderr ----
+
+# exit=0

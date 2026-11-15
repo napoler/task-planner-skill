@@ -1,0 +1,4 @@
+# [run-verification] VC-1 | 2026-11-15T20:30:59Z | cmd: `SRC=/mnt/data/dev/task-planner-skill; F="$SRC/skills/task-planner/scripts/zcode-pretooluse.sh"; grep -qF '[md-edit-ops] 提醒:' "$F" && grep -qF 'Rule 106.6' "$F" && grep -q 'Write|Edit|ApplyPatch' "$F" && grep -q '/plans/' "$F"`
+# ---- stdout/stderr ----
+
+# exit=0
