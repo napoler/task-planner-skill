@@ -38,7 +38,7 @@
 - 规范召回：每 3 个 S-unit/Phase 翻转主进程 Read 本卡留 [recall]；压缩/恢复/PRESSURE 后第一动作（Rule 93）
 - 专注隔离：目标重大偏差（A→B）不就地吸收——主动询问拆分新 Task Plan，单计划单垂直域防污染（Rule 94）
 - 执行优先：零报错+有直推路径=禁停等——额度不可查询即执行探测；按日重置额度禁空置；质检处置自主化；暂停前三问（Rule 95）
-- 偏移检查：Phase complete 后派 drift-checker+留痕三件套（Rule 61/64.2）；检查点须记 64.7 用户原话对照面（最近含目标/指令类内容条目号+摘要，51.3 双锚口径），专档缺失且 trivial 档记 `专档=未建档(tier)` 不判 BLOCKED，专档在位但空/零条目或 Goal∩原话零交集按 64.1+BLOCKED 处置（task-drift-fakeqc-20261115 判例锚）。
+- 偏移检查：Phase complete 后派 drift-checker+留痕三件套（Rule 61/64.2）；检查点须记 64.7 用户原话对照面（最近含目标/指令类内容条目号+摘要，51.3 双锚口径），专档缺失且 trivial 档记 `专档=未建档(tier)` 不判 BLOCKED，专档在位但空/零条目或 Goal∩原话零交集按 64.1+BLOCKED 处置（task-drift-fakeqc-20261115 判例锚）。非 trivial 档专档缺失同款 BLOCKED（与 64.7 R-1 补位句同步）。
 - 上下文压力：[assess] 三态；PRESSURE→主动压缩；CONFUSED→session-handoff 转新会话（Rule 67）
 - 恢复读序：user-session-log→task_plan→progress→findings→knowledge-brief（Rule 19.3/80.4/62.1）
 - 上下文卫生：每 2 Phase 跑 check-context-hygiene（Rule 29）
