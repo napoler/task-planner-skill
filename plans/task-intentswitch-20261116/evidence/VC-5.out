@@ -1,0 +1,4 @@
+# [run-verification] VC-5 | 2026-11-15T20:42:32Z | cmd: grep -q '64\.2\.1' /home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md && grep -q '64\.7' /home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md && grep -q '零交集' /home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md && grep -q 'drift-checker' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -q '意图切换' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+# ---- stdout/stderr ----
+
+# exit=0

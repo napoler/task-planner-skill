@@ -1,0 +1,4 @@
+# [run-verification] VC-2 | 2026-11-15T20:42:32Z | cmd: grep -qF 'user-session-log' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -qF 'Goal/范围/交付物' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -q '显性通告' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -q '切换登记' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -q '挂起' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -q '新指令统一收口序列' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+# ---- stdout/stderr ----
+
+# exit=0

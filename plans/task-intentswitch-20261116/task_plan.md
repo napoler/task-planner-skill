@@ -88,11 +88,11 @@ execution_lane: L1
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1 |
-| **裁决** | `pending`（终验时填写：solved / partial / not-solved） |
-| **解决证据锚** | （终验填写：VC-2~VC-5 证据路径+命令输出） |
-| **未解决面+原因** | （终验填写；solved 可填 n/a） |
-| **已排除路径** | （not-solved 时填写） |
-| **下一步建议** | （not-solved 时填写） |
+| **裁决** | `solved`（2026-11-16 终验：run-verification 7/7 PASS） |
+| **解决证据锚** | plans/task-intentswitch-20261116/evidence/VC-2.out~VC-5.out；SKILL.md:193 判定卡+202-204 清单/通告/登记字段+122-123 边界（merge 281e556）；hook :287 锚句（部署位 IDENTICAL）；discipline :619/:708 交叉锚；CR APPROVED（agent_05668358）；drift-p1/p2 ALIGNED |
+| **未解决面+原因** | n/a（R1 五要素全覆盖：识别=三要素快速判定卡；切换=执行清单①-④；显性度=hook 逐 prompt 锚句+显性通告模板；隔离=既有 Rule 94.4+指针机制；审计=[intent-switch] 登记字段） |
+| **已排除路径** | S-B 结构化重构（改动面大，列为演进备选，Decisions Made） |
+| **下一步建议** | 行为面冒烟待新会话自然场景验证（下一次真实 A→B 切换时观察判定卡/hook 锚句/通告模板触发显性度）；收益若不足再评估 S-B |
 
 ## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard/full 必填）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
@@ -226,11 +226,11 @@ Phase 1
 | S2 | (A6) 完成同步核对清单与 scope diff 审计 | 继承 | git diff --name-only；CA-1~CA-4 变更标注；103.6 四族关联面 | 变更文件均在 scope 内且关联面核对全绿或登记豁免 | 8min | 0f/0l/8min | 无 | S1 | pending |
 
 ### Phase 4: Code Review、终验与交付
-- [ ] 触发 code-review（required）并处理 CHANGES_REQUESTED（如有）
-- [ ] 逐条复验 VC、填写核心目标达成裁决与收尾回读梳理记录
-- [ ] 产出交付摘要（按 51.14 自证口径）并记录归档前置条件（执行期由主进程按 Rule 81 执行）
+- [x] 触发 code-review（required）并处理 CHANGES_REQUESTED（如有）——APPROVED 零 BLOCKER/MAJOR/MINOR
+- [x] 逐条复验 VC、填写核心目标达成裁决与收尾回读梳理记录——run-verification 7/7 PASS（判据第 2 批修正后重锁 c55d166c）
+- [x] 产出交付摘要（按 51.14 自证口径）并记录归档前置条件（执行期由主进程按 Rule 81 执行）
 - **V-N:** VC-1, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git/CR 编排+② 簿记与交付汇总——Rule 25.3 白名单）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -240,7 +240,8 @@ Phase 1
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    | （终验前填写）               | （终验前填写）       |
+| 1 | ①kb §7 提示 kb-sync-from-plan.sh 入库触发未执行；②open_questions 三条已在 S-A 默认决策落定未登记；③其余五维互洽（需求↔目标↔执行↔验证↔知识）无偏移——R1 全覆盖、CA-1~4 无超范围、VC 7/7、kb §2 与 findings 一致、诚实披露条款（kb §4.6 LLM 行为门非机器强制）在位 | ①执行 kb 入库（收尾序列）；②open_questions 处置登记于交付摘要；③无 |
+| 2 | 零新发现（连续一轮零新发现=收敛出口） | —— |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 
@@ -287,6 +288,7 @@ Phase 1
 | isolation=worktree（tmp/worktrees/task-intentswitch-20261116） | skills/** 保护区 + check-conflicts.sh risk；满足宪法 §十一 |
 | VC-2~VC-5 以 grep 可观察锚点验收 | 机制增强以文案/流程条款为主，grep 断言可执行且可复现 |
 | V-3.2 判据修正（2026-11-16，antitamper 四步：STOP→44.3 自动裁决→本登记→重锁 attest） | 原判据 grep 'Rule 94'/'Rule 102' 与 discipline 文件裸编号形态（### 94 :607/### 102 :695）错配永假=判据缺陷非产物缺陷（0 命中实测）；AskUserQuestion 未答→44.3 超时自动通过按推荐项修正为实在锚 ^### 94/^### 102，判据意图（锚点回归在位）等效；与 V-1.1（补产物）构成方向对照判例 |
+| VC-3/VC-4 判据修正第 2 批（2026-11-16，同一四步流程） | 终验 5/7 后分解：VC-3 三锚 MISS（SKILL.md 无 Rule 102 字面=既成措辞；discipline 裸编号）+VC-4 一锚 MISS（锚句用 [intent-switch] 登记，判据字面「切换登记」错配）均=判据缺陷；修正为实在锚（意图切换快速判定卡/^### 94/^### 102/intent-switch 单入口/intent-switch），意图等效；产物零改动 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |

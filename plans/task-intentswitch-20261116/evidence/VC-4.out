@@ -1,0 +1,4 @@
+# [run-verification] VC-4 | 2026-11-15T20:42:32Z | cmd: grep -qF 'Goal/范围/交付物' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh && grep -q '专档' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh && grep -q '显性通告' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh && grep -q 'intent-switch' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh && grep -q 'Rule 102.0' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh && grep -q '80.8' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh
+# ---- stdout/stderr ----
+
+# exit=0

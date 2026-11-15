@@ -1,0 +1,13 @@
+# Drift Checkpoint - Phase 2 (commit 2c3bdf3)
+- 时间: 2026-11-16
+- 触发点: Phase 2 S1-S4 改动复核 (worktree `/mnt/data/dev/task-planner-skill/tmp/worktrees/task-intentswitch-20261116`)
+- 判定: **ALIGNED**
+- 证据:
+  - `git show 2c3bdf3 --stat`: 仅改 3 文件 +11/-1 —— `skills/task-discipline/references/critical-rules-discipline.md`, `skills/task-planner/SKILL.md`, `skills/task-planner/scripts/zcode-userpromptsubmit.sh`；均在计划 CA-1~CA-4/执行范围内，无 scope 外文件；`git status --short` 空。
+  - SKILL.md `:189-209`: 新增“意图切换快速判定卡”(Goal/范围/交付物 vs 活跃 Goal+user-session-log 最新原话)、D 类切换执行清单①-④、显性通告模板、`[intent-switch]` 最小字段登记；保留原 D/A/B/C/E 表与收口序列语义，无第二套矛盾步骤。
+  - SKILL.md `:122-123`: 明确 drift-checker 为执行偏移/目标漂移安全网、**非意图切换发起器**，意图变更先过快速判定卡。
+  - critical-rules-discipline Rule94/102 追加交叉锚：指向 SKILL.md 单入口清单承载执行序列/显性通告/登记，声明“保留…权威语义/冲突以语义更严者为准”，未反转 94.3/94.4/102 处置。
+  - hook `zcode-userpromptsubmit.sh:287` 分支前置快速锚句（Goal/范围/交付物+最新专档+D/E 分流+显性通告/登记），并保留原 Rule 102.0/8.1/80.8② 文本行。
+- 语义冲突检查: 未发现与 D/A/B/C/E 表、Rule 94/102/64.x 既有判定语义冲突；未改 drift-checker 判定逻辑。
+- 结论: 改动服务 Goal（意图切换识别+隔离切换显性度+不破坏 drift 安全网语义）。
+- 建议: 进入后续 VC/回归验证（grep 锚点、hook 行为）并保持 scope 收敛。

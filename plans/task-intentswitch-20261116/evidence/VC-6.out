@@ -1,0 +1,4 @@
+# [run-verification] VC-6 | 2026-11-15T20:42:32Z | cmd: grep -q '^template_type: general' /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/task_plan.md && grep -q '^plan_tier: standard' /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/task_plan.md && grep -q 'R→VC 映射' /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/task_plan.md && grep -q '隔离决策' /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/task_plan.md && grep -qF '**Verify command**:' /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/verification.md && test -f /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/knowledge-brief.md && test -f /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/progress.md
+# ---- stdout/stderr ----
+
+# exit=0

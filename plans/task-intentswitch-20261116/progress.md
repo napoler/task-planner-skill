@@ -106,3 +106,11 @@
 - 预存归因：主仓（无本改动）同脚本 rc=1 一致（registry/summary-readability/active-plan 三项实测）→ 非本改动面（本任务零改 selftest/registry；+11/-1 仅三文件）
 - 结论：回归零增量 PASS
 - Phase 3 收尾：V-3.1/V-3.2 PASS（V-3.2 判据经 antitamper 四步修正+重锁 SHA c8d3a744）；selftest 98/93/5 与主仓同集=预存归因零回归；103.6 四族核对全绿（引用面 3 文件仅 2 受影响已处理/selftest-task-boundary 在 worktree hook 上 PASS/spec-mode 互引不受影响/模板面无涉）；scope 审计=numstat 3 文件全在 scope
+- [CR Gate] Code Reviewer（agent_05668358）：**APPROVED**——bash -n OK+模拟赋值验证；无 BLOCKER/MAJOR/MINOR；单入口收敛/PREFIX 保留/交叉锚语义一致；建议合入（=103.3 独立复检第二轮达成）
+
+## Phase 4 收尾记录（2026-11-16）
+- CR Gate：APPROVED（零 BLOCKER/MAJOR/MINOR）
+- 合并回：worktree merge master(e18856b 无交集冲突)→smart-merge-back --deploy→merge 281e556；三文件主仓+部署位实测就位；worktree/分支已清理
+- 终验：run-verification 首跑 5/7→VC-3/VC-4 判据缺陷（分解实测归因）→antitamper 四步第 2 批修正+重锁 c55d166c→重跑 **7/7 全 PASS**
+- 84.14 收尾回读：轮 1 发现 kb 入库待办+open_questions 登记项→处置；轮 2 零新发现收敛
+- 58.5 核心裁决：solved（R1 五要素全覆盖；S-B 列为演进备选；行为面冒烟待新会话）
