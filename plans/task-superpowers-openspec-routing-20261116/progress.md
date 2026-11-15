@@ -13,6 +13,7 @@
 **R 锚定行（Rule 51.1）**：R1 逐字锚=`plans/task-superpowers-openspec-routing-20261116/user-session-log.md#1`（2026-11-16，来源=用户新需求 /goal；内容=按任务复杂度在 superpowers/openspec 择一路由+最小引入难度+保持整洁）。R2-R4 为 R1 同条子串提炼+同轮 AskUserQuestion 裁决，见 task_plan.md 用户需求原文区。
 
 ### Phase 1: 调研与双裁决
+- **R 锚定**：R1「根据任务…复杂度…选择一个合适的技能进行执行」+R4「是否已经完成了…任务执行过程的中的集成」——逐字锚=user-session-log.md#1（本段=现状调研答 R4+双裁决定 R1 载体/判据）
 <!-- 每个 Phase 一段,随做随记;Status 与 task_plan.md 同步(pending/in_progress/complete) -->
 - **Status:** complete
 - **Started:** 2026-11-16 02:15
@@ -34,6 +35,7 @@
   | findings 落盘核验：`findings-external-families.md` 含 A-F 六段 | 子代理声称已落盘 | 文件在盘且结构完整 | 135 行六段全在（Read 全文核验） | PASS |
 
 ### Phase 2: 计划定稿与 attest 锁定
+- **R 锚定**：R3「尽量减少…引入难度…保持整理整洁」——逐字锚=user-session-log.md#1（计划期把 R3 固化为载体裁决=既有条款扩展零新文件零脚本）
 <!-- Phase N 按上方 Phase 1 结构续加 -->
 - **Status:** complete
 - **Started:** 2026-11-16（双裁决返回后）
@@ -50,6 +52,7 @@
   | attest 锁定 SHA | task_plan.md | SHA-256 落 .plan-attestation | dd1fa1970361ece424f1e4403b7f8036f4a6e11997ed8515bccbedc2f7c7afac | PASS |
 
 ### Phase 3: worktree 隔离与三文件条款实现
+- **R 锚定**：R1+R2「open SPEC以及super POWERED的对任务的解决能力…学习这个技能的方式…引入」——逐字锚=user-session-log.md#1（CA-1/2/3 三文件条款=R1/R2 交付面）
 - **Status:** complete
 - **Started:** 2026-11-16（attest 锁定后）
 - Actions taken:
@@ -72,6 +75,7 @@
   | worktree 提交 | 三文件 pathspec 锁定 add+commit | 单 commit 干净 | 54ec525（3 files, +15/-1） | PASS |
 
 ### Phase 4: 回归与独立复检
+- **R 锚定**：R3「保持整理整洁」的验证面——逐字锚=user-session-log.md#1（selftest 基线对照零新增+独立复检语义三性=整洁不改乱的证据）
 - **Status:** complete
 - **Started:** 2026-11-16（Phase 3 complete 后）
 - Actions taken:
@@ -88,6 +92,7 @@
   | 103.6 同步完整性 | 四族清单 | 全绿 | (a)(b)(c) 绿；(d) .agents 缺 2 文件→Phase 5 补齐 | PASS（含处置） |
 
 ### Phase 5: 合并回+部署同步+收尾
+- **R 锚定**：R1-R3 全量收口——逐字锚=user-session-log.md#1（merge 42ab794+四部署位 diff=0+清理=择一路由能力生效面）
 - **Status:** complete
 - **Started:** 2026-11-16（Phase 4 complete 后）
 - Actions taken:
