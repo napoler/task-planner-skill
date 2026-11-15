@@ -12,14 +12,14 @@
 
 - [ ] VC-1: R1 首动作委派条款落位（L1+ init 后第一动作委派计划子代理，产出需求分析+计划文档）
   Evidence: `skills/task-planner/SKILL.md` 初始化/计划确认相关段落 diff + 关键行
-  **Verify command**: cd /mnt/data/dev/task-planner-skill && grep -nE "首动作委派|计划子代理|需求分析.*计划文档|L1\+" skills/task-planner/SKILL.md
+  **Verify command**: cd /mnt/data/dev/task-planner-skill && grep -nE "初始化首动作委派" skills/task-planner/SKILL.md
 - [ ] VC-2: R1 收据契约与主代理最小回收落位（含 task_id/files_created/open_questions/摘要；主代理仅回收收据）
   Evidence: `skills/task-planner/SKILL.md` 或 `references/critical-rules.md` 收据契约文本
   **Verify command**: cd /mnt/data/dev/task-planner-skill && grep -nE "task_id|files_created|open_questions|收据|摘要" skills/task-planner/SKILL.md skills/task-planner/references/critical-rules.md
-- [ ] VC-3: R2 动机与轻量豁免明确（隔离/激活率/降上下文；L0/mini/trivial 豁免不变）
+- [ ] VC-3: R2 动机与轻量豁免明确（隔离/激活率/降上下文；L0/mini/trivial 豁免不变）——存在性检查定位；判别力由 VC-1/VC-5 独特锚+条款结构回读承载（CR 复批裁决口径）
   Evidence: 条款文本包含动机与豁免语句
   **Verify command**: cd /mnt/data/dev/task-planner-skill && grep -nE "隔离|激活率|上下文占用|L0/mini/trivial|豁免|比例原则" skills/task-planner/SKILL.md skills/task-planner/references/critical-rules.md
-- [ ] VC-4: 会话绑定脚本与确认流程归主进程边界清晰（init-session/attest/set-active/plan-created/哨兵/D1 不由计划子代理执行）
+- [ ] VC-4: 会话绑定脚本与确认流程归主进程边界清晰（init-session/attest/set-active/plan-created/哨兵/D1 不由计划子代理执行）——存在性检查定位；判别力由 VC-1/VC-5 独特锚+条款结构回读承载（CR 复批裁决口径）
   Evidence: 条款边界声明 + 与现有 D1/attest 描述一致
   **Verify command**: cd /mnt/data/dev/task-planner-skill && grep -nE "init-session.sh|attest-plan.sh|set-active-plan.sh|plan-created.cjs|哨兵|主进程|会话绑定" skills/task-planner/SKILL.md
 - [ ] VC-5: R3 固化为技能条款且编号/索引一致（若新增 Rule：已 reserve/land 且索引更新；若仅 SKILL 条款：有明确可审计条款块）
@@ -28,9 +28,9 @@
 - [ ] VC-6: 改前基线与改后自测零增量 FAIL（记录基线与回归结果）
   Evidence: progress.md 基线/回归表 + selftest 输出摘要文件或日志路径
   **Verify command**: cd /mnt/data/dev/task-planner-skill && test -f plans/task-initdelegation-20261115/progress.md && grep -nE "基线|零增量|FAIL|PASS" plans/task-initdelegation-20261115/progress.md
-- [ ] VC-7: 源仓与部署位对账完成（~/.zcode/skills/task-planner、~/.agents/skills/task-planner 关键文件一致或差异已登记）
+- [ ] VC-7: 源仓与部署位对账完成（~/.zcode/skills/task-planner、~/.agents/skills/task-planner 关键文件一致或差异已登记）；另 2 位（claude/cursor）由 progress P4 明细+复批 md5 实测承载
   Evidence: diff 输出/摘要记录于 progress.md
-  **Verify command**: cd /mnt/data/dev/task-planner-skill && diff -rq skills/task-planner ~/.zcode/skills/task-planner >/tmp/task-initdelegation-diff-zcode.txt; echo "zcode_diff_exit=$?"; diff -rq skills/task-planner ~/.agents/skills/task-planner >/tmp/task-initdelegation-diff-agents.txt 2>/tmp/task-initdelegation-diff-agents.err; echo "agents_diff_exit=$?"
+  **Verify command**: cd /mnt/data/dev/task-planner-skill && diff -q skills/task-planner/SKILL.md ~/.zcode/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.zcode/skills/task-planner/scripts/selftest-batch-pilot.sh && diff -q skills/task-planner/SKILL.md ~/.agents/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.agents/skills/task-planner/scripts/selftest-batch-pilot.sh
 
 ---
 
@@ -133,7 +133,7 @@ Status: `complete` Last verified: 2026-11-15（4 位同步：zcode/agents/claude
 - [x] V-5.2: [mapped to VC-6, VC-7] 回归与部署证据已登记
   **Verify command**: cd /mnt/data/dev/task-planner-skill && grep -nE "零增量|diff|部署" plans/task-initdelegation-20261115/progress.md
 
-Status: `complete` Last verified: 2026-11-15（run-verification PASS=8 FAIL=0 统一入口实测）
+Status: `complete` Last verified: 2026-11-15（run-verification PASS=8 FAIL=0 统一入口实测；**口径注记（CR 阻塞-2）**：8=7 VC+1 重复项——Phase2 V-2.1 命令被 runner 沿用最近 VC 编号解析误标为 VC-1 并覆盖 evidence/VC-1.out 末轮内容，VC 契约证据以 VC-1..VC-7 各自实跑 PASS 为准；runner 解析怪癖修正=另行任务）
 
 ---
 
@@ -175,15 +175,15 @@ JSON 输出：
 - [x] VC-6: evidence/VC-6.out（基线/零增量证据 grep exit=0）→ PASS
 - [x] VC-7: evidence/VC-7.out（部署位 diff 实跑 exit=0；zcode 既有差异 2 项已登记）→ PASS
 
- outcome: COMPLETE（2026-11-15，run-verification PASS=8 FAIL=0 统一入口实测）
+ outcome: COMPLETE（2026-11-15，run-verification PASS=8 FAIL=0；口径=7 VC+1 V-2.1 重复项误标，见 Phase 5 Status 注记）
 
 ## 5-Question Reboot Check
 
 | # | Question | Answer (fill on resume) |
 |---|----------|--------------------------|
-| 1 | Where am I? | Phase 1（计划已产出，待执行） |
-| 2 | Where am I going? | Phase 1-5 完成条款固化、回归、部署与终验 |
+| 1 | Where am I? | Phase 5 终验（全 Phase complete；CR 修复已合并 10eb4f7 并 4 位再部署；待 CR 复批+归档） |
+| 2 | Where am I going? | CR 复批 APPROVED→check-complete→归档→交付总结 |
 | 3 | What's the goal? | L1+ 初始化首动作委派子代理固化入 task-planner，主代理仅回收收据 |
-| 4 | What have I learned? | 见 findings.md / knowledge-brief.md |
-| 5 | What have I done? | 见 progress.md（含 dogfood 派发降级留痕） |
-| 6 | Which tasks need processing? | 本任务执行与终验；完成后按 Rule 81 归档 |
+| 4 | What have I learned? | 见 findings.md / knowledge-brief.md（含 CR P1×3 契约一致性修正） |
+| 5 | What have I done? | 见 progress.md（五 Phase+CR 修复+再部署，含仓根 progress 误写事故留痕） |
+| 6 | Which tasks need processing? | 归档（Rule 81）+kb 入库（§7）；部署位既有漂移（agents 位骨架态 175 项）另行授权任务 |

@@ -1,5 +1,6 @@
-# [run-verification] VC-1 | 2026-11-15T11:41:04Z | cmd: cd /mnt/data/dev/task-planner-skill && grep -n "首动作委派" skills/task-planner/SKILL.md
+# [run-verification] VC-1 | 2026-11-15T13:16:07Z | cmd: cd /mnt/data/dev/task-planner-skill && grep -n "首动作委派" skills/task-planner/SKILL.md
 # ---- stdout/stderr ----
 50:- [ ] [A] **初始化首动作委派（L1+）— 需求分析与计划文档创建子代理隔离**：
+61:  - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree；首动作委派子代理已起草时=复核/校正，不重写）
 
 # exit=0

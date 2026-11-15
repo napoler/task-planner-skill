@@ -1,6 +1,4 @@
-# [run-verification] VC-7 | 2026-11-15T11:41:03Z | cmd: cd /mnt/data/dev/task-planner-skill && diff -rq skills/task-planner ~/.zcode/skills/task-planner >/tmp/task-initdelegation-diff-zcode.txt; echo "zcode_diff_exit=$?"; diff -rq skills/task-planner ~/.agents/skills/task-planner >/tmp/task-initdelegation-diff-agents.txt 2>/tmp/task-initdelegation-diff-agents.err; echo "agents_diff_exit=$?"
+# [run-verification] VC-7 | 2026-11-15T13:16:05Z | cmd: cd /mnt/data/dev/task-planner-skill && diff -q skills/task-planner/SKILL.md ~/.zcode/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.zcode/skills/task-planner/scripts/selftest-batch-pilot.sh && diff -q skills/task-planner/SKILL.md ~/.agents/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.agents/skills/task-planner/scripts/selftest-batch-pilot.sh
 # ---- stdout/stderr ----
-zcode_diff_exit=1
-agents_diff_exit=1
 
 # exit=0

@@ -7,7 +7,7 @@ execution_lane: L1
 ## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）
 
 - **R1**: 「当前技能的，就是我发现即便在用户初期，他也会消耗大量的时间。就是，那上下文，或者说窗口来分析用户的需求以及等等，呃，我希望可以，嗯，第一步直接将用户所需求直接放分歧以及创建。嗯，技能就是创建当前的技能相关文件，这部直接放在子代理里中执行。   因为这些东西其实没有必要占用上下文。就是比如说用户需求分析，然后创建子代，创建这些相关的这些文档信息。这些直接放在子代理中可以更好地隔离，而且主代理中其实只需要拿到创建了哪些文件，或者说以及任务ID。就可以，别的东西其实就是都没有必要去具体的在主代理中执行这些的工具。 核心就是将用户的，嗯，就是将，嗯初始阶段的分析这些东西全部放到子代理里中执行」 <sub>（[目标]）</sub>
-- **R2**: 「来提高子代理里的激活率，嗯嗯嗯，这样的话也可以降低，嗯，主进程中，嗯，主，主代理中的上下文的占用。」 <sub>（[手段]）</sub>
+- **R2**: 「来提高子代理里的激活率，嗯嗯嗯，这样的话也可以降低，嗯，主进程中，嗯，主，主代理中的上下文的占用。」 <sub>（[手段]；承 #1 同句中段）</sub>
 - **R3**: 「为了，我希望可以继续优化当前技能。」 <sub>（[目标]）</sub>
 
 > 逐字锚权威源：`plans/task-initdelegation-20261115/user-session-log.md#1`（append-only）。R1 中口语“放分歧”按上下文理解为“放分析”（见同号理解镜像，镜像非权威，冲突以逐字原文为准）。
@@ -59,13 +59,13 @@ execution_lane: L1
 
 | # | 判定标准 | 验证方式 | 证据路径/命令 |
 |---|----------|----------|---------------|
-| VC-1 | L1+ 初始化首动作委派条款在 SKILL.md 计划制作循环锚面可检索，明确“需求分析+计划文档创建委派子代理” | grep 关键锚词 | `cd /mnt/data/dev/task-planner-skill && grep -nE "首动作委派|计划子代理|需求分析|计划文档创建|L1" skills/task-planner/SKILL.md` |
+| VC-1 | L1+ 初始化首动作委派条款在 SKILL.md 计划制作循环锚面可检索，明确“需求分析+计划文档创建委派子代理”（CR P2-5 修正：改用改前 0 命中的独特锚保证判别力） | grep 独特锚词 | `cd /mnt/data/dev/task-planner-skill && grep -nE "初始化首动作委派" skills/task-planner/SKILL.md` |
 | VC-2 | 收据契约 `{task_id, files_created[], open_questions[], 摘要}` 与主代理最小回收语义落位 | grep 契约字段与收据表述 | `cd /mnt/data/dev/task-planner-skill && grep -nE "task_id|files_created|open_questions|收据|摘要" skills/task-planner/SKILL.md skills/task-planner/references/critical-rules.md` |
 | VC-3 | R2 动机（隔离/激活率/降上下文）与 L0/mini/trivial 豁免不变明确 | grep 动机与豁免词 | `cd /mnt/data/dev/task-planner-skill && grep -nE "隔离|激活率|上下文占用|L0/mini/trivial|轻量|豁免" skills/task-planner/SKILL.md skills/task-planner/references/critical-rules.md` |
 | VC-4 | 会话绑定脚本与 D1/attest/收据回收归主进程边界明确，计划子代理不执行会话绑定脚本 | grep 边界关键词 | `cd /mnt/data/dev/task-planner-skill && grep -nE "init-session\.sh|attest-plan\.sh|set-active-plan\.sh|plan-created\.cjs|哨兵|主进程|会话绑定|D1" skills/task-planner/SKILL.md` |
 | VC-5 | R3 条款固化结果可审计（新增 Rule 已 reserve/land 且索引一致，或 SKILL-only 条款块完整且 Decisions 说明） | 条文/账本/索引检查 | `cd /mnt/data/dev/task-planner-skill && (grep -nE "^### 109 |Rule 109" skills/task-planner/references/critical-rules.md || grep -n "首动作委派" skills/task-planner/SKILL.md)` |
 | VC-6 | 自测基线与回归证据显示零增量 FAIL（相对改前基线） | progress.md 记录 + selftest 命令/日志 | `cd /mnt/data/dev/task-planner-skill && grep -nE "基线|回归|零增量 FAIL|FAIL" plans/task-initdelegation-20261115/progress.md` |
-| VC-7 | 源仓与部署位（~/.zcode、~/.agents）task-planner 关键文件对账完成，差异已登记或为零 | diff 命令与 progress 记录 | `cd /mnt/data/dev/task-planner-skill && diff -rq skills/task-planner ~/.zcode/skills/task-planner; echo "---"; diff -rq skills/task-planner ~/.agents/skills/task-planner; echo "---"` |
+| VC-7 | 源仓与部署位（~/.zcode、~/.agents）task-planner scope 文件一致（CR P2-3 修正：scope 级 diff 判别，全目录既有差异登记于 progress） | scope 文件 diff 链（全绿=exit 0） | `cd /mnt/data/dev/task-planner-skill && diff -q skills/task-planner/SKILL.md ~/.zcode/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.zcode/skills/task-planner/scripts/selftest-batch-pilot.sh && diff -q skills/task-planner/SKILL.md ~/.agents/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.agents/skills/task-planner/scripts/selftest-batch-pilot.sh` |
 
 **终验规则**：
 - 全部 VC 通过 → outcome: **COMPLETE**
@@ -92,11 +92,11 @@ execution_lane: L1
 ## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard 必填）
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 锚点与基线 | 锁定改动锚面、条款形态与自测基线并可复核 | progress.md 含锚点/基线记录 + `bash skills/task-planner/scripts/rule-reserve.sh next` 输出记录 | P1/Phase 1 | pending |
-| G2 | 条款落地 | L1+ 首动作委派与收据/边界条款在源仓落位 | VC-1..VC-5 grep/条文检查通过 | P2/Phase 2 | pending |
-| G3 | 回归守护 | 自测与守护证明零增量 FAIL | VC-6：基线对比记录 + 指定 selftest 命令 exit 0 | P3/Phase 3 | pending |
-| G4 | 部署对账 | 部署位同步且差异可解释 | VC-7：diff 命令结果 + progress 记录 | P4/Phase 4 | pending |
-| G5 | 终验交付 | VC 全绿并形成可追溯交付证据 | VC-1..VC-7 全 PASS + verification/progress 证据齐备 | P5/Phase 5 | pending |
+| G1 | 锚点与基线 | 锁定改动锚面、条款形态与自测基线并可复核 | progress.md 含锚点/基线记录 + `bash skills/task-planner/scripts/rule-reserve.sh next` 输出记录 | P1/Phase 1 | complete |
+| G2 | 条款落地 | L1+ 首动作委派与收据/边界条款在源仓落位 | VC-1..VC-5 grep/条文检查通过 | P2/Phase 2 | complete |
+| G3 | 回归守护 | 自测与守护证明零增量 FAIL | VC-6：基线对比记录 + 指定 selftest 命令 exit 0 | P3/Phase 3 | complete |
+| G4 | 部署对账 | 部署位同步且差异可解释 | VC-7：diff 命令结果 + progress 记录 | P4/Phase 4 | complete |
+| G5 | 终验交付 | VC 全绿并形成可追溯交付证据 | VC-1..VC-7 全 PASS + verification/progress 证据齐备 | P5/Phase 5 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -192,8 +192,8 @@ Phase 5
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A6) 锁定 SKILL.md 改动锚点与条款边界 | 继承 | `skills/task-planner/SKILL.md:36-80,194-202`（初始化/计划确认/L0边界） + `plans/task-initdelegation-20261115/findings.md`（需求拆解） | findings 记录精确插入点、会话绑定脚本边界、L1+/豁免判定 | 15min | 1f/80l/15min | task-planner, task-dispatch | - | pending |
-| S2 | (A6) 核对 Rule 候选与自测基线 | 继承 | `skills/task-planner/references/critical-rules.md`（编号/索引区）+ `skills/task-planner/scripts/rule-reserve.sh`（next 只读查询；selftest 盘点动作移入验收执行） | progress 记录 next 结果、候选策略（已定 SKILL-only）、selftest 清单与基线命令结果摘要 | 15min | 2f/60l/15min | verification-gate | - | pending |
+| S1 | (A6) 锁定 SKILL.md 改动锚点与条款边界 | 继承 | `skills/task-planner/SKILL.md:36-80,194-202`（初始化/计划确认/L0边界） + `plans/task-initdelegation-20261115/findings.md`（需求拆解） | findings 记录精确插入点、会话绑定脚本边界、L1+/豁免判定 | 15min | 1f/80l/15min | task-planner, task-dispatch | - | complete |
+| S2 | (A6) 核对 Rule 候选与自测基线 | 继承 | `skills/task-planner/references/critical-rules.md`（编号/索引区）+ `skills/task-planner/scripts/rule-reserve.sh`（next 只读查询；selftest 盘点动作移入验收执行） | progress 记录 next 结果、候选策略（已定 SKILL-only）、selftest 清单与基线命令结果摘要 | 15min | 2f/60l/15min | verification-gate | - | complete |
 
 ### Phase 2: 条款实现（worktree）
 - [x] 创建 worktree 并在其中实现 SKILL.md 首动作委派/收据契约/主进程边界/轻量豁免条款
@@ -205,8 +205,8 @@ Phase 5
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A7) 实现 SKILL.md 初始化首动作委派条款 | 继承 | Phase 1 定稿结论（findings/decisions）+ `skills/task-planner/SKILL.md:36-80`；worktree 路径 `tmp/worktrees/task-initdelegation-20261115` | SKILL.md 含首动作委派、执行体优先/降级、收据契约、主进程职责与 L1+ 豁免声明；git diff 可读 | 15min | 1f/60l/15min | task-planner, task-discipline | S1,S2(Phase1) | pending |
-| S2 | (A7) 实现 core 规则/索引一致性更新 | 继承 | `skills/task-planner/references/critical-rules.md`（编号/索引区）+ Phase 1 Rule 策略；`skills/task-planner/scripts/rule-reserve.sh` 用法 | 规则条文与索引一致（若新增 Rule 已 reserve 记录）；VC-5 命令可命中 | 15min | 1f/60l/15min | task-planner | S1 | pending |
+| S1 | (A7) 实现 SKILL.md 初始化首动作委派条款 | 继承 | Phase 1 定稿结论（findings/decisions）+ `skills/task-planner/SKILL.md:36-80`；worktree 路径 `tmp/worktrees/task-initdelegation-20261115` | SKILL.md 含首动作委派、执行体优先/降级、收据契约、主进程职责与 L1+ 豁免声明；git diff 可读 | 15min | 1f/60l/15min | task-planner, task-discipline | S1,S2(Phase1) | complete |
+| S2 | (A7) 实现 core 规则/索引一致性更新 | 继承 | `skills/task-planner/references/critical-rules.md`（编号/索引区）+ Phase 1 Rule 策略；`skills/task-planner/scripts/rule-reserve.sh` 用法 | 规则条文与索引一致（若新增 Rule 已 reserve 记录）；VC-5 命令可命中 | 15min | 1f/60l/15min | task-planner | S1 | complete |
 
 ### Phase 3: 守护与自测回归
 - [x] 建立改前基线快照（如未在 P1 完成则补齐）并执行受影响/必要 selftest
@@ -218,8 +218,8 @@ Phase 5
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A6) 采集/确认基线并运行回归自测 | 继承 | Phase 1 基线计划 + `skills/task-planner/scripts/run-selftests.sh` 及目标 selftest；worktree 改动后代码 | progress 记录基线与回归结果、失败清单对比、零增量 FAIL 结论 | 15min | 2f/80l/15min | verification-before-completion | S2(Phase2) | pending |
-| S2 | (A7) 补齐必要守护（按需） | 继承 | VC-1..VC-4 关键语义 + 现有 selftest 风格（`skills/task-planner/scripts/selftest-*.sh`） | 若新增守护：脚本存在且通过；若不新增：progress 明确理由与替代证据 | 15min | 2f/60l/15min | task-discipline | S1 | pending |
+| S1 | (A6) 采集/确认基线并运行回归自测 | 继承 | Phase 1 基线计划 + `skills/task-planner/scripts/run-selftests.sh` 及目标 selftest；worktree 改动后代码 | progress 记录基线与回归结果、失败清单对比、零增量 FAIL 结论 | 15min | 2f/80l/15min | verification-before-completion | S2(Phase2) | complete |
+| S2 | (A7) 补齐必要守护（按需） | 继承 | VC-1..VC-4 关键语义 + 现有 selftest 风格（`skills/task-planner/scripts/selftest-*.sh`） | 若新增守护：脚本存在且通过；若不新增：progress 明确理由与替代证据 | 15min | 2f/60l/15min | task-discipline | S1 | complete |
 
 ### Phase 4: 部署与对账
 - [x] 将源仓 `skills/task-planner/**` 同步至 `~/.zcode/skills/task-planner` 与 `~/.agents/skills/task-planner`（实作扩展探测并同步 4 位：zcode/agents/claude/cursor，claude 位原已一致；agents 位原缺 2 文件已补齐 mkdir+cp）
@@ -230,10 +230,10 @@ Phase 5
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A7) 同步部署位并执行 diff 对账 | 继承 | 源仓 `skills/task-planner/`（Phase 3 通过态）+ 目标 `~/.zcode/skills/task-planner/`、`~/.agents/skills/task-planner/` | 两处 diff 命令结果记录在 progress；无意外差异或差异有理由登记 | 15min | 2f/60l/15min | task-discipline | S2(Phase3) | pending |
+| S1 | (A7) 同步部署位并执行 diff 对账 | 继承 | 源仓 `skills/task-planner/`（Phase 3 通过态）+ 目标 `~/.zcode/skills/task-planner/`、`~/.agents/skills/task-planner/` | 两处 diff 命令结果记录在 progress；无意外差异或差异有理由登记 | 15min | 2f/60l/15min | task-discipline | S2(Phase3) | complete |
 
 ### Phase 5: 终验与交付
-- [x] 汇总 VC-1..VC-7 证据，完成收尾回读梳理与 outcome 判定（run-verification PASS=8 FAIL=0；84.14 两轮收敛；Goal Gate outcome=COMPLETE）
+- [x] 汇总 VC-1..VC-7 证据，完成收尾回读梳理与 outcome 判定（run-verification PASS=8 FAIL=0，口径=7 VC+1 V-2.1 重复项误标注记见 verification.md Phase 5 Status；84.14 两轮收敛；Goal Gate outcome=COMPLETE）
 - [x] 整理交付摘要（含 files_created/任务ID/关键设计/open questions）
 - **V-N:** VC-1, VC-6
 - **Status:** complete
