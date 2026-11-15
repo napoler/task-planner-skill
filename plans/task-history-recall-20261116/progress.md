@@ -70,6 +70,8 @@
 | 2026-11-16 | Edit 锚点凭记忆构造连犯 3 次（findings/progress old_string 与盘上实文不符） | 1 | 停手精确回读目标段→立即 Edit/整文件重写 | 未先精确回读就凭会话记忆构造 old_string（106.1a 纪律违犯） | 编辑骨架/受管文件前：先精确 Read 目标段→立即 Edit，或整文件重写；锚点=盘上实文非记忆 | Edit tool |
 | 2026-11-16 | progress 回填超时违规（plan-compass 两连催，Rule 19.7） | 1 | 立即回填 Phase 3/4 段+本行登记 | Phase 4 挖掘/综合耗时超回填节奏阈值 | 执行期每完成 S-unit/实测动作立即回填，不等 Phase 收口 | plan-compass hook |
 | 2026-11-16 | 简报两次写入损坏（生成瑕疵字符污染） | 2 | 分段 heredoc 追加+乱码扫描清零（70 行干净版） | 长中文表格+路径混排单次生成易字符污染 | 长中文产物分段写入+每段扫描；损坏须重写而非凑合交付 | Write/写文件 |
+| 2026-11-16 | S7 miner 产锚幻觉行号 8/13 锚越界（specmode findings 实 73 行引 :114-121 等）+主进程「4 锚验证」以偏概全（未验行号≤wc-l） | 1 | CR REJECTED 揭出→修复轮：锚全量机器重取（grep -n+行号≤wc-l）重写 3 卡+简报；主进程声称降级为「抽验过的 4 锚过，未验面如实标注」 | 子代理产锚未经机器校验直接采信+抽验过度泛化 | 锚必须机器验证（行号≤wc-l+路径存在）；抽验结论仅覆盖抽验面，禁泛化到未验面 | critic S9 |
+| 202026-11-16 | CR Round1 REJECTED（F1-F15：1 BLOCKER+3 MAJOR+6 MINOR+4 NIT） | 1 | 修复轮全清单执行（见下方 CR Round1 修复段） | 护栏无锚可解析断言（F15）+契约三源不一致（F3/F4） | 增 HPR-09 锚解析断言；路径契约三源同步 | critic S9 |
 
 ## 5-Question Reboot Check
 | Question | Answer |
