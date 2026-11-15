@@ -202,7 +202,7 @@ Phase 1
 - [ ] S3：在 Rule 94/102 邻近位置增加与 SKILL.md 单入口一致的交叉锚（不改权威语义、不复制步骤漂移）
 - [ ] S4：补充 drift-checker 边界显性说明（安全网而非切换发起器），确认 64.x 语义不变
 - **V-N:** VC-2, VC-3, VC-4, VC-5
-- **Status:** in_progress
+- **Status:** complete
 - **Executor:** code-assistant（haiku-1）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -213,11 +213,11 @@ Phase 1
 | S4 | (A6) 补 drift-checker 边界说明并核对 64.x 语义不变 | 继承 | skills/task-planner/SKILL.md:122（DRIFT CHECK 步骤）；/home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md:59,68（64.2.1/64.7 摘要锚）；findings.md R-4/H4 | SKILL.md 明确“安全网非发起器”；drift-guard 64.2.1/64.7 关键锚仍在（VC-5） | 8min | 1f/20l/8min | 无 | S1 | pending |
 
 ### Phase 3: 回归验证与一致性核验
-- [ ] 执行 VC-1~VC-6 对应命令并记录证据（含 git diff scope 核验）
-- [ ] 完成 103.6 多文件变更集同步核对清单（四族关联面推导）并全绿
-- [ ] 必要时修正措辞漂移（保持 CA-1~CA-4 范围内最小修补）
+- [x] 执行 VC-1~VC-6 对应命令并记录证据（含 git diff scope 核验）
+- [x] 完成 103.6 多文件变更集同步核对清单（四族关联面推导）并全绿
+- [x] 必要时修正措辞漂移（保持 CA-1~CA-4 范围内最小修补）
 - **V-N:** VC-3, VC-5, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-runner-agent（mini）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -286,6 +286,7 @@ Phase 1
 | drift-checker 判定语义保持不变，仅补边界说明 | 64.2.1/64.7 已是目标漂移安全网；H4 属职责边界显性问题，避免破坏既有拦截 |
 | isolation=worktree（tmp/worktrees/task-intentswitch-20261116） | skills/** 保护区 + check-conflicts.sh risk；满足宪法 §十一 |
 | VC-2~VC-5 以 grep 可观察锚点验收 | 机制增强以文案/流程条款为主，grep 断言可执行且可复现 |
+| V-3.2 判据修正（2026-11-16，antitamper 四步：STOP→44.3 自动裁决→本登记→重锁 attest） | 原判据 grep 'Rule 94'/'Rule 102' 与 discipline 文件裸编号形态（### 94 :607/### 102 :695）错配永假=判据缺陷非产物缺陷（0 命中实测）；AskUserQuestion 未答→44.3 超时自动通过按推荐项修正为实在锚 ^### 94/^### 102，判据意图（锚点回归在位）等效；与 V-1.1（补产物）构成方向对照判例 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |

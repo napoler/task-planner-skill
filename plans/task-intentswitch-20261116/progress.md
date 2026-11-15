@@ -93,3 +93,16 @@
 ## Phase 2 开启
 - R 锚定：本 Phase 服务 R1「前说 A 现改说 B→主动切换新计划任务，优化意图识别与切换显性度」
 - S1+S4 同文件（SKILL.md）同执行体串行；S2（hook）/S3（discipline）独立文件并行组；统一锚句契约由主进程任务书给定
+
+## Phase 2 执行记录（并行组三执行体，2026-11-16）
+- S1+S4（Code Assistant，SKILL.md +7/0）：判定卡 :193+执行清单/通告模板/登记字段 :202-204+S4 边界 :122-123；主进程盘上复核✓
+- S2（Code Assistant，hook 2/1 PREFIX）：:287 锚句前置+原文整行保留；bash -n PASS；主进程 diff 复核✓
+- S3（Code Assistant，discipline +2/0）：:619 交叉锚（94.7 后）+:708 交叉锚（102.5 后）；上下文完整✓
+- V-N：VC-2=14 锚/VC-3=2 锚/VC-4=2 锚/VC-5 drift锚3+边界1 全 PASS（worktree 版命令）
+- [drift-checker] Phase 2 后检查（agent_56ff96fc）：✅ALIGNED——范围一致+11/-1、S1-S4 与声明吻合、无第二套矛盾步骤、hook PREFIX 保留、64.x 未动（检查点=checkpoints/drift-p2.md）
+
+## Phase 3 回归记录（2026-11-16）
+- worktree 全量 selftest：Total 98 PASS=93 FAIL=5——FAIL 集{active-plan,execution-stability,registry,self-resolution,summary-readability} 与 veriffirst 基线同集
+- 预存归因：主仓（无本改动）同脚本 rc=1 一致（registry/summary-readability/active-plan 三项实测）→ 非本改动面（本任务零改 selftest/registry；+11/-1 仅三文件）
+- 结论：回归零增量 PASS
+- Phase 3 收尾：V-3.1/V-3.2 PASS（V-3.2 判据经 antitamper 四步修正+重锁 SHA c8d3a744）；selftest 98/93/5 与主仓同集=预存归因零回归；103.6 四族核对全绿（引用面 3 文件仅 2 受影响已处理/selftest-task-boundary 在 worktree hook 上 PASS/spec-mode 互引不受影响/模板面无涉）；scope 审计=numstat 3 文件全在 scope

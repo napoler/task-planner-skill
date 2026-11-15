@@ -83,6 +83,7 @@
   - 簿记 commit fbd0132（计划七文件）→ P-04 勾选回填 → kb 条目精炼入库+索引重建（superpowers-delivery-readthrough-gate，INDEX 命中 1）→ commit 13d50e4
   - 收尾回读 84.14 两轮收敛（轮1 三文档漏写已补；轮2 零新发现）
   - 归档：check-complete exit 0 后 set-active-plan --clear + archive-plan（本段完成证据行下方序列执行）
+  - **CR-GATE（Rule 42.7）**：首跑 FAILED（diff 1756 行无 CR 记录）→ 派 critic 轮 1（agent_9dc4b313）→ verdict REJECTED（10 findings：C-1 适用面自相矛盾 CRITICAL+M-1 媒体链未接线+M-2 上游 lock 覆盖风险 MAJOR+m-1..m-4 MINOR+n-1..n-3 NIT，全部带实测证据）→ 处置=七处修复（CA-7..CA-10）+M-1/M-2 登记已知遗留（task_plan.md 遗留块，范围裁决面上抛用户）→ executor 修订落盘+主进程实测复核（条件句/diamond/铁律 5-7 扩写/双位 TWIN-IDENTICAL 保持/末尾空格清理）→ critic 轮 2 复审中
 - Files created/modified:
   - plans/task-finalread-20261116/*（本目录）；knowledge/entries/superpowers-delivery-readthrough-gate.md；knowledge/INDEX.md
 - Test Results:

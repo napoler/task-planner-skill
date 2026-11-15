@@ -44,7 +44,7 @@ execution_lane: L1
 
 | 工序 | 缺陷面 | 修复点 | VC |
 |------|--------|--------|----|
-| 创作产出（剧本/分镜脚本分段编辑） | 逐任务审查只见局部 diff，无人读成品全文——跨段编辑积累的全局缺陷（要求未落实到每个分镜、编号断裂、术语漂移、残留占位）无门拦截 | 新增 final-readthrough 技能（整读+逐单元+全局一致+需求对照+留痕+反作弊六铁律） | VC-1 |
+| 创作产出（剧本/分镜脚本分段编辑） | 逐任务审查只见局部 diff，无人读成品全文——跨段编辑积累的全局缺陷（要求未落实到每个分镜、编号断裂、术语漂移、残留占位）无门拦截 | 新增 final-readthrough 技能（整读+逐单元+全局一致+需求对照+多文件逐一整读+留痕+反作弊七铁律） | VC-1 |
 | 执行链收尾（executing-plans Step 3） | Step 2 后直接进 finishing-a-development-branch，无成品通读步骤 | Step 3 前插入 REQUIRED SUB-SKILL 接线 | VC-2 |
 | 执行链收尾（subagent-driven-development） | 最终审查=code-reviewer（diff 向/代码向），内容型成品无人通读；逐任务 reviewer 见局部不见全局 | final code reviewer 后、finishing 前插入通读门步骤+Integration 列+Red Flags 行 | VC-3 |
 | 流程入口（using-superpowers） | 交付前"直接交付"念头无拦截条款 | Red Flags 表新增通读门行，双位同步 | VC-4 |
@@ -200,6 +200,14 @@ superpowers 创作执行链（executing-plans / subagent-driven-development / us
 | CA-4 | /home/terry/.zcode/skills/using-superpowers/SKILL.md（Red Flags 表） | 修改 | 增量 | R4「做全局审查，一个阅读审查、会读」 | 入口技能是流程唯一必经面，交付前绕行念头在此拦截 | Red Flags 表追加 1 行（worktree 内改→merge→镜像 cp 同步 agents 位） |
 | CA-5 | /home/terry/.agents/skills/using-superpowers/SKILL.md（Red Flags 表） | 修改 | 增量（CA-4 镜像同步） | 同 CA-4 | 双位同步铁律（发现顺序 zcode 先，agents 位兜底） | cp 同步+diff=0 验证 |
 | CA-6 | plans/task-finalread-20261116/backups/（3 文件备份） | 新增 | 增量 | —（可回滚保障，§五 安全底线） | agents 位非 git 无版本保护 | 改动前 cp 三文件+校验 md5 |
+| CA-7 | executing-plans/SKILL.md:35-36 | 修改 | 增量 | —（CR 轮1 C-1+n-3 修复） | CR: 适用面自相矛盾（技能:27 纯代码不适用 vs 接线无条件 REQUIRED）+announce 尾缀不一致 | :35 加内容型条件句（与 sdd:223 对称）；:36 尾缀补 before handoff |
+| CA-8 | final-readthrough/SKILL.md 铁律 5/6/7+Integration 两条+适用面行 | 修改 | 增量 | —（CR 轮1 m-2/m-3/n-1/n-2/C-1 对称修复） | CR: 留痕落点缺兜底/跨文件一致性无承接/反作弊证据留存未写明/verification-gate 裸名歧义 | 六处行文本按 CR 修订（详见 progress CR 留痕） |
+| CA-9 | subagent-driven-development/SKILL.md:66/:82 | 修改 | 增量 | —（CR 轮1 m-1 修复） | CR: 问句节点 shape=box 语义错位+冗余 label | :66 改 shape=diamond；:82 去 label |
+| CA-10 | task_plan.md 根源覆盖表 | 修改 | 增量 | —（CR 轮1 m-4 修复） | CR: 「六铁律」计数笔误（实为七铁律） | 改「七铁律」补「多文件逐一整读」 |
+
+### ⚠️ 已知遗留（CR 轮1 M-1/M-2 登记待用户裁决，不扩范围）
+- **M-1 媒体创作链未接线**：用户痛点现场（第 5 集剧本）实际走 media-planner/toonflow 媒体链（本仓 skills/media-planner），本任务仅按用户点名载体（[$using-superpowers]）接线 superpowers 开发链；媒体链交付前通读门=范围扩张需用户显式授权后另行任务。
+- **M-2 上游 lock 托管覆盖风险**：executing-plans/subagent-driven-development/using-superpowers 三文件为 obra/superpowers 上游 lock 托管项（~/.agents/.skill-lock.json 带 folderHash），上游重装/更新可能以原始版本覆盖接线；final-readthrough 为本地新增不在 lock。处置=不动 lock 文件（防 install 端漂移）；登记为运行期观察项，上游同步时须 diff 复检接线存活。
 
 ### 📐 设计文本定稿（CA-1..CA-5 落盘内容唯一真源）
 
@@ -637,6 +645,8 @@ Phase 5
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-11-16 04:06 | executor | 五文件通读门编辑（S2-S5） | done | 5/5 操作完成；grep 命中 2/1/3/5/1；TWIN-IDENTICAL | ~/.agents/skills/final-readthrough/SKILL.md 等 5 路径 | findings.md §实施 | 无 | 主进程 diff+Read 复核通过 / 0 / ☑ |
 | 2 | 2026-11-16 04:12 | Verifier | VC-1..6 独立取证 | done | VC-1..6 全 PASS；anomalies 2 项均为预期文本调整 | verification.md 终验段 | verification.md Goal Gate | 无 | 与主进程实测交叉一致 / 0 / ☑ |
+| 3 | 2026-11-16 04:30 | critic | CR 轮 1 对抗审查 | done | verdict REJECTED：10 findings（1C+2M+4m+3n）全带实测证据；实现保真 100% 但 C-1 矛盾+M-1/M-2 缺口 | task_plan.md 遗留块+progress CR 段 | progress.md CR-GATE 段 | 无 | REJECTED→七处修复+两遗留登记 / 0 / ☑ |
+| 4 | 2026-11-16 04:38 | executor | CR 轮 1 七处修订落盘 | done | 7/7 pass；主进程实测复核全对（diamond/条件句/铁律扩写/TWIN-IDENTICAL） | grep/sed 实测输出 | progress.md CR-GATE 段 | 无 | 轮 2 复审中 / 0 / ☑ |
 
 ## 🔗 Chain 区块交接配置（可选）
 

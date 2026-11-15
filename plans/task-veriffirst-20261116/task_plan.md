@@ -20,9 +20,22 @@ spec-mode.md 文末落「## 5. 验证前置定位」段（目标驱动/测试驱
 
 ## Phases
 - [x] P1 基线采集+锚点确认（基线 nohup 先于编辑启动；三载体锚已 Read：spec-mode §4 尾行/SKILL.md:65 行尾/collab:55 行尾）
-- [ ] P2 三载体条款落地（Executor=主进程，例外理由② 计划系统文件维护——本仓=task-planner 技能自身，条款措辞与既有锚强一致，Rule 25.3 白名单）
-- [ ] P3 回归对照（VC-4）+部署同步（VC-6）
-- [ ] P4 收尾簿记（本文件勾核+commit pathspec 锁定+memory 断点更新）
+- [x] P2 三载体条款落地（spec-mode §5 由 code-assistant 子代理落段[委派守卫拦主进程直写]，SKILL.md/collab 两处行尾追加主进程完成；落段后发现任务书字形损坏两处已派原代理修正并盘上复核）
+- [x] P3 回归对照（VC-4）+部署同步（VC-6）
+- [x] P4 收尾簿记（commit fc37133 + 4 位部署 diff=0 + memory 更新）
+
+## 📋 执行记录（2026-11-16 03:19-03:28 收口）
+| VC | 结果 | 证据 |
+|----|------|------|
+| VC-1 spec-mode §5 | PASS | grep 验证前置定位/后期补验证×2/test-driven-development/openspec-verify-change 全命中（子代理自验+主进程盘上复核双确认） |
+| VC-2 SKILL.md §5 指针 | PASS | grep 'spec-mode.md` §5' 命中（行尾 PREFIX-OK 追加） |
+| VC-3 collab 初筛段信号句 | PASS | grep 验证前置定位 命中（行尾 PREFIX-OK 追加） |
+| VC-4 回归 | PASS | 改动前基线 Total 98/93/5（/tmp/veriffirst-baseline.log）vs 改动后 Total 98/93/5（/tmp/veriffirst-post.log）——**FAIL 同集零增量** |
+| VC-5 纯增量 | PASS | numstat spec-mode 16/1（1 删=EOF 换行规范化，锚行文本同文成对）、SKILL 1/1、collab 1/1（均 PREFIX-OK） |
+| VC-6 部署同步 | PASS | commit fc37133 后 cp ×4 位，diff -q 12 对全绿 |
+| outcome | **COMPLETE** | 全 VC PASS；commit=fc37133；部署=4 位 diff=0 |
+
+**基线污染归因登记**：改动前基线 FAIL=5 多于对方 02:57 master 跑的 FAIL=2（多出 registry/self-resolution/summary-readability 三项）——采集窗口恰逢 mdedit merge 落盘（03:11:38-56）+本增量两处行尾追加落盘，属混合态样本；因改动后跑与基线**同集**，本增量零回归结论不受影响。该 3 项预存 FAIL 归因=mdedit 合并/环境漂移，非本增量改动面，登记观察不处置（scope 外）。
 
 ## 变更标注表（Rule 74.3 — 增量默认，无删除无替代）
 | 编号 | 对象（文件+锚点） | 类型 | 吸收判定 | 用户原话（节选） | 执行动作 |

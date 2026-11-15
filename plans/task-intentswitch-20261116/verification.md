@@ -87,7 +87,8 @@ Status: `pending` Last verified: —
 - [ ] V-3.1: VC-6 交付一致性与 scope 可审计
   **Verify command**: test -f /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/task_plan.md && test -f /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/verification.md && test -f /mnt/data/dev/task-planner-skill/plans/task-intentswitch-20261116/findings.md
 - [ ] V-3.2: VC-3/VC-5 关键锚点回归通过
-  **Verify command**: grep -q 'Rule 94' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -q 'Rule 102' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -q '零交集' /home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md
+  **Verify command**: grep -q '^### 94' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -q '^### 102' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -q '零交集' /home/terry/.zcode/skills/task-drift-guard/references/critical-rules-drift.md
+  <!-- [2026-11-16 判据修正 44.3 自动裁决] 原判据 'Rule 94'/'Rule 102' 与文件裸编号形态（### 94/### 102）错配永假=判据缺陷非产物缺陷；STOP→AskUserQuestion 未答→44.3 超时自动通过按推荐项修正为实在锚，意图（锚点回归在位）等效；Decisions Made 同步登记 -->
 
 Status: `pending` Last verified: —
 
