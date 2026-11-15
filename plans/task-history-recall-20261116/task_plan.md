@@ -289,6 +289,7 @@ S7 dogfood 实测（派 history-miner 挖「worktree 隔离与合并回」主题
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-11-16 | drift-checker ALIGNED（brainstorming 收口点） | 设计面 | 检查点 plans/task-history-recall-20261116/.drift-checkpoint.md（commit ece4419） |
+| 2026-11-16 | ALIGNED #2（Phase 2 收口）/#3（Phase 4 CR1 修复轮收口） | 设计面+执行面 | 同检查点追加条目；CR2 后台复检中 |
 
 ## 📦 Batch Report（Rule 18.6）
 | 字段 | 值 |
