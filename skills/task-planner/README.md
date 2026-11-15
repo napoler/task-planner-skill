@@ -110,7 +110,7 @@ Rules 1-97 全集索引：**核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80
 
 > [2026-10-05 task-v131 审计 L-5 修正] opencode 物理部署位 = `~/.config/opencode/skills/task-planner`；`~/.opencode` 为其 symlink 兼容入口（实测 `~/.opencode -> ~/.config/opencode`）。
 
-**卫星技能随装**（2026-10-12 task-v171 S39 起）：`lib/install-stub.sh:41` `SATELLITE_SKILLS` 数组登记 7 个卫星（4 既有 + 3 新域），安装时整目录 rsync 到各宿主位同级 `skills/<sat>/`；另 3 个收编卫星经 `lib/install-companion.sh` 顶层 `skills/*/` 自动发现机制分发。
+**卫星技能随装**（2026-10-12 task-v171 S39 起）：`lib/install-stub.sh:41` `SATELLITE_SKILLS` 数组登记 8 个卫星（4 既有 + 4 新域），安装时整目录 rsync 到各宿主位同级 `skills/<sat>/`；另 3 个收编卫星经 `lib/install-companion.sh` 顶层 `skills/*/` 自动发现机制分发。
 
 ---
 
@@ -147,7 +147,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 │   ├── attest-plan.sh / check-plan-dispatch.sh / rule-reserve.sh / ledger-append.sh / smart-merge-back.sh  # 守卫与簿记
 │   └── selftest-*.sh ×92 + selftest-registry.tsv  # 自测守护族（不逐列）
 ├── lib/                                     ← Installer 库（6 个）
-│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 7 卫星）
+│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 8 卫星）
 │   ├── install-companion.sh                 # 顶层 skills/*/ 自动发现分发（含另 3 个收编卫星）
 │   ├── detect-tools.sh / backup.sh / migrate-refs.sh / verify.sh
 ├── tests/
@@ -277,7 +277,7 @@ bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftest
 | 旧部署位与新部署位冲突 | `user-invocable: true` 双注册 | 删除旧 stub 后重启 agent |
 | 升级后行为异常 | 部署位仍指向旧版 | `cd ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner} && git pull` 后重启 agent |
 | check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` 的 `for _c in` 列表 |
-| 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 7 个显式 rsync 卫星 |
+| 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 8 个显式 rsync 卫星 |
 
 详见 [INSTALL.md §5 故障排查](INSTALL.md)。
 

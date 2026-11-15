@@ -157,7 +157,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 │   ├── attest-plan.sh / check-dispatch.sh / check-plan-dispatch.sh / rule-reserve.sh / ledger-append.sh / smart-merge-back.sh 等
 │   └── selftest-*.sh ×92 + selftest-registry.tsv
 ├── lib/                                     ← installer 库（6 脚本）
-│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 7 卫星显式 rsync）
+│   ├── install-stub.sh                      # 每工具部署位安装（:41 SATELLITE_SKILLS 登记 8 卫星显式 rsync）
 │   ├── install-companion.sh                 # 顶层 skills/*/ 自动发现分发（含另 3 个收编卫星）
 │   └── detect-tools.sh / backup.sh / migrate-refs.sh / verify.sh
 ├── tests/  └── smoke.sh
@@ -179,7 +179,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 - hooks 注册于各宿主配置：zcode 位 = `~/.zcode/cli/config.json`，claude 位 = `~/.claude/settings.local.json`（经 `scripts/register-hooks-cj.ts`），非 SKILL.md frontmatter
 
 **卫星技能随装**（两条链路并存）：
-1. `lib/install-stub.sh:41` `SATELLITE_SKILLS` 显式登记 7 个（4 既有 + task-v171 S39 追加 task-dispatch/task-discipline/media-planner）→ `install_satellite_skills()` 整目录 rsync 到宿主位同级 `skills/<sat>/`（源缺失则跳过，向后兼容不阻塞）
+1. `lib/install-stub.sh:41` `SATELLITE_SKILLS` 显式登记 8 个（4 既有 + task-v171 S39 追加 task-dispatch/task-discipline/media-planner、task-tpl-sediment-20261115 追加 plan-template-advisor）→ `install_satellite_skills()` 整目录 rsync 到宿主位同级 `skills/<sat>/`（源缺失则跳过，向后兼容不阻塞）
 2. `lib/install-companion.sh`（install.sh Phase 5.6）自动发现仓库顶层 `skills/*/`（排除 task-planner 本体）→ 覆盖另 3 个收编卫星（plan-resume/progress-tracker/task-drift-guard）
 
 ---
