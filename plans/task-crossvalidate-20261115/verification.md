@@ -92,8 +92,8 @@ Status: `pending` Last verified: —
 **Verification**:
 - [ ] V-3.1: 回归分账（ΣFAIL ≤ 基线）
   **Verify command**: test -f plans/task-crossvalidate-20261115/.regression-baseline && test "$(bash skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)" -le "$(cat plans/task-crossvalidate-20261115/.regression-baseline)"
-- [ ] V-3.2: critic 复检回执在位含结论行
-  **Verify command**: grep -q 'CR 结论' plans/task-crossvalidate-20261115/subagent-state/p3s2-critic-checkpoint.md
+- [ ] V-3.2: critic 复检回执在位含 CR APPROVED 结论行（轮2 闭环）
+  **Verify command**: grep -q 'APPROVED' plans/task-crossvalidate-20261115/subagent-state/8-critic-r2.md
 - [ ] V-3.3: dogfood 报告判定行在位
   **Verify command**: grep -q '交叉验证判定' plans/task-crossvalidate-20261115/cross-validation-report.md
 

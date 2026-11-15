@@ -182,11 +182,11 @@ n/a（纯执行类：交付物=条款文本+级联+守护脚本+实弹报告，�
 
 ## Current Phase
 
-Phase 3
+Phase 4
 
 ## Next Step
 
-派 code-runner-agent 执行 P3-S1 全量回归分账（主仓基线 vs worktree → .regression-baseline），随后串行 P3-S2 critic 复检、P3-S3 dogfood 实弹
+P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge-back --deploy→清理 worktree→land 108→部署 diff=0 核验→归档→kb 入库
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -307,6 +307,7 @@ Phase 3
 | code_review=n/a | 内容组画像；bash 断言脚本 ≤70 行由 critic+回归双检覆盖 |
 | D1 自动裁决记录（Rule 44.3 五要素）：超时值=5min（44.1 默认）；推荐项=按已展示计划执行；触发时间=2026-11-15 计划呈现后；裁决理由=/goal 完成性指令场景命中 44.3 自动通过口径；被覆盖的未决选项=无（无 D2/D5/D6 硬分叉，五子条措辞属可变量自主裁决项） | Goal 绑定确认：Goal 行原文+user-session-log.md #1 用户原话已复述（见呈现记录），attest 锁定含绑定 |
 | PLAN TAMPERED 重锁登记（Rule 51.7）：attest(df128c51) 后 task_plan.md 的变更均为流程操作性编辑——Phase 状态翻转/Drift Log 行/Current Phase/Next Step/S-unit 状态列/本登记行，无语义重规划；两条级联修订（EN-06 ',107' 保持不动/CV-03 收紧）已登记 findings Technical Decisions；处置=重跑 attest-plan.sh 重锁 | Rule 51.7 重锁前置=Decisions 已登记本行；重锁时间 2026-11-15（会话恢复续推） |
+| 二次重锁登记（Rule 51.7）：verification.md V-3.2 机器面路径修正——原写预想路径 p3s2-critic-checkpoint.md，实际 checkpoint=subagent-state/8-critic-r2.md（critic 轮2 APPROVED 回执）；属 Phase 内路径机械纠偏非 VC 语义变更 | 路径以实际 checkpoint 落盘为准（108.2 独立重推导：验证命令须引用真实产出物）；二次 attest SHA 见 .plan-attestation |
 
 ## Errors Encountered
 
@@ -326,6 +327,7 @@ Phase 3
 |------|---------|--------|------|
 | 2026-11-15 P1 翻转前 | ✅ALIGNED | VC-1/VC-2 前置 | checkpoint=subagent-state/1-drift-p1.md；ledger drift_check 已追加；仓库无关脏态已分账不属本任务 scope |
 | 2026-11-15 P2 翻转前 | ✅ALIGNED 4/4 | VC-1/VC-2/VC-3 | checkpoint=subagent-state/4-drift-p2.md；findings 仅追加 [sub:2-drift-p2]；test-gaming 排查过（enumerate-first 仅纪元字面）；主仓脏改无证据归属本任务 |
+| 2026-11-15 P3 翻转前 | ✅ALIGNED 4/4 | VC-3/VC-4/VC-5 | checkpoint=subagent-state/9-drift-p3.md；CR 链 CHANGES_REQUESTED→fix 2abe3ec→APPROVED 闭环；分歧 D1 追溯链完整（F7 勘误+草案+预留注释）；回归分账口径未操纵 |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6）
 
