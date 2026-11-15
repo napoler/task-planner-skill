@@ -83,7 +83,7 @@
   - 簿记 commit fbd0132（计划七文件）→ P-04 勾选回填 → kb 条目精炼入库+索引重建（superpowers-delivery-readthrough-gate，INDEX 命中 1）→ commit 13d50e4
   - 收尾回读 84.14 两轮收敛（轮1 三文档漏写已补；轮2 零新发现）
   - 归档：check-complete exit 0 后 set-active-plan --clear + archive-plan（本段完成证据行下方序列执行）
-  - **CR-GATE（Rule 42.7）**：首跑 FAILED（diff 1756 行无 CR 记录）→ 派 critic 轮 1（agent_9dc4b313）→ verdict REJECTED（10 findings：C-1 适用面自相矛盾 CRITICAL+M-1 媒体链未接线+M-2 上游 lock 覆盖风险 MAJOR+m-1..m-4 MINOR+n-1..n-3 NIT，全部带实测证据）→ 处置=七处修复（CA-7..CA-10）+M-1/M-2 登记已知遗留（task_plan.md 遗留块，范围裁决面上抛用户）→ executor 修订落盘+主进程实测复核（条件句/diamond/铁律 5-7 扩写/双位 TWIN-IDENTICAL 保持/末尾空格清理）→ critic 轮 2 复审中
+  - **CR-GATE（Rule 42.7）**：首跑 FAILED（diff 1756 行无 CR 记录）→ 派 critic 轮 1（agent_9dc4b313）→ verdict REJECTED（10 findings：C-1 适用面自相矛盾 CRITICAL+M-1 媒体链未接线+M-2 上游 lock 覆盖风险 MAJOR+m-1..m-4 MINOR+n-1..n-3 NIT，全部带实测证据）→ 处置=七处修复（CA-7..CA-10）+M-1/M-2 登记已知遗留（task_plan.md 遗留块，范围裁决面上抛用户）→ executor 修订落盘+主进程实测复核（条件句/diamond/铁律 5-7 扩写/双位 TWIN-IDENTICAL 保持/末尾空格清理）→ **critic 轮 2（同代理续会话）verdict=APPROVED**（8 findings 全 MINOR/NIT 无阻塞；C-1 判已解决；M-1/M-2 登记判充分）→ 轮 2 措辞共振五处修订（R2-1/2/3/7/8：条件独立成行+豁免挂 plan verifications 真实机制+sdd 节点回 box 动作化+铁律 6 兜底含行范围+verification-gate 引用不绑路径，executor agent_0af4a724 落盘 5/5+旧串清零）→ R2-4/5/6 主进程修复（设计块失效标注+裁决表引遗留块+整读计数 4→6）→ **CR APPROVED 留痕（轮 2 verdict=APPROVED，2026-11-16，critic agent_9dc4b313）**
 - Files created/modified:
   - plans/task-finalread-20261116/*（本目录）；knowledge/entries/superpowers-delivery-readthrough-gate.md；knowledge/INDEX.md
 - Test Results:

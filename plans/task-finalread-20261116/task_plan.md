@@ -137,8 +137,8 @@ superpowers 创作执行链（executing-plans / subagent-driven-development / us
 |------|-----|
 | **目标型需求** | R1、R2、R4（R3 为手段·背景） |
 | **裁决** | `solved` |
-| **解决证据锚** | ① /home/terry/.agents/skills/final-readthrough/SKILL.md（七铁律在位, Verifier 取证 整读:4/逐单元核对:1/全局一致性:1/需求对照:1/留痕裁决:1/反作弊:2）；② executing-plans SKILL.md:36-37（REQUIRED SUB-SKILL 接线）；③ subagent-driven-development SKILL.md:221-223+396+421（四锚点接线）；④ using-superpowers 双位 :51 同文本 TWIN-IDENTICAL；⑤ ~/.zcode git log 5cd47a2/dd35940——制度缺位问题（交付前无通读门）已通过制度落地解决；Verifier 独立复核 VC-1..6 全 PASS（2026-11-16） |
-| **未解决面+原因** | 无制度面遗留；行为面有效性（未来创作任务实际拦截率）属运行期观察项，非本任务可验证范围（登记至记忆跟踪） |
+| **解决证据锚** | ① /home/terry/.agents/skills/final-readthrough/SKILL.md（七铁律在位, Verifier 取证 整读:6/逐单元核对:1/全局一致性:1/需求对照:1/留痕裁决:1/反作弊:2）；② executing-plans Step 3 通读门（REQUIRED SUB-SKILL 接线）；③ subagent-driven-development 四锚点接线（:221-223/:396/:421）；④ using-superpowers 双位 :51 同文本 TWIN-IDENTICAL；⑤ ~/.zcode git log 5cd47a2/dd35940——制度缺位问题（交付前无通读门）已通过制度落地解决；Verifier 独立复核 VC-1..6 全 PASS+CR 轮 2 APPROVED（2026-11-16） |
+| **未解决面+原因** | 制度面遗留两项（见「⚠️ 已知遗留」块）：M-1 媒体创作链（media-planner/toonflow）未接线——用户点名载体为 superpowers 链，媒体链接线属范围扩张待用户授权；M-2 上游 lock 托管覆盖风险（登记观察项）。行为面有效性（未来创作任务实际拦截率）属运行期观察项 |
 | **已排除路径** | n/a（solved） |
 | **下一步建议** | n/a（solved）；后续可选增强=创作类计划模板（article/video 组）交付 Phase 显式引用 final-readthrough（另行授权） |
 
@@ -210,6 +210,8 @@ superpowers 创作执行链（executing-plans / subagent-driven-development / us
 - **M-2 上游 lock 托管覆盖风险**：executing-plans/subagent-driven-development/using-superpowers 三文件为 obra/superpowers 上游 lock 托管项（~/.agents/.skill-lock.json 带 folderHash），上游重装/更新可能以原始版本覆盖接线；final-readthrough 为本地新增不在 lock。处置=不动 lock 文件（防 install 端漂移）；登记为运行期观察项，上游同步时须 diff 复检接线存活。
 
 ### 📐 设计文本定稿（CA-1..CA-5 落盘内容唯一真源）
+
+> ⚠️ **失效标注（CR 轮2 R2-4，2026-11-16）**：本块为轮 1 初版设计文本；CA-7..CA-10 与 CR 轮 2 修订（R2-1..R2-3/R2-7/R2-8）已覆盖其中铁律 5/6/7、适用面行、Integration 两条、executing-plans 条件句、sdd 图节点——**以盘上文件为准，禁按本块重落盘**。修订轨迹见 progress.md CR-GATE 段。
 
 **CA-1 final-readthrough/SKILL.md 全文：**
 
