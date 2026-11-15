@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "description": "Demo: insert a note and update introduction text",
+  "ops": [
+    {
+      "id": "op1",
+      "op": "sub",
+      "file": "demo.md",
+      "anchor": { "type": "exact", "value": "This is the original introduction.", "expect_count": 1 },
+      "old": "This is the original introduction.",
+      "content": "This is the updated introduction.",
+      "expect": ["This is the updated introduction\\."]
+    },
+    {
+      "id": "op2",
+      "op": "insert_after",
+      "file": "demo.md",
+      "anchor": { "type": "heading", "value": "## Details", "expect_count": 1 },
+      "content": "\n> Note: inserted by md-edit-ops.\n",
+      "expect": ["> Note: inserted by md-edit-ops\\."]
+    }
+  ]
+}
