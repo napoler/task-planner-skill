@@ -499,6 +499,7 @@ Phase 5 complete（收尾归档动作中）
 | 安装命令来源=本地技能文件逐字提取；缺载→npm registry `npm view`/官方 README 真实抓取（75.7） | S2 实测：本机技能文档无安装命令（UNKNOWN），禁脑补 |
 | 部署=文件级 cp 三位（zcode commit 不 push / claude commit+push / cursor 磁盘）+diff=0 对账 | 持久指令 deploy-all-platforms-after-skill-change |
 | kb 验收阈值 30 行→实值 28 行判 PASS | 30 行=主进程误估常数（未锚定任何规范）；实义验收=条目逐字在位+草稿清零+INDEX 收录三项全过；子代理拒绝注水行为正确（禁改写契约） |
+| DELEGATION GATE violation 判误报放行（归档） | ①Phase1「unverified_delegation: research]）」=Executor 串内 [parallel-group:research] 注解被解析成假类型名（真实执行体 Explore 为注册类型，×3 已派发有 Handoff#1-3 实证）；②Phase4「self_declared」=主进程仅簿记半程，真实执行体=critic 子代理（Handoff#8-9）；真实委派统计见表（9 派发/委派率 0.6 两直做 Phase 均白名单）；误报族在案判例=task-v163 误报模式+task-drift-fakeqc「分母误报机器修正=待授权独立任务」，本任务不强改守卫 |
 
 ## Errors Encountered
 <!-- 
