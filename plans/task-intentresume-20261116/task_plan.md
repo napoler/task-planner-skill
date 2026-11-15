@@ -205,9 +205,9 @@ Phase 1
 | S1 | 调研锚点+诊断 R-1~R-4 并落盘六文档计划产物 | plan-writer | user-session-log.md#1（R1 原话）；archive/task-intentswitch-20261116/{task_plan,findings}.md；SKILL.md:130-145,193,202-204；discipline:607,615,619,708；/home/terry/.zcode/skills/plan-resume/SKILL.md:15,33,65-69（只读）；INDEX.md 待处理区 | findings 含 M1-M12/R-1~R-4/S1-S3；task_plan 含 R/VC/Phases/CA/隔离决策；verification 含 VC Verify command；kb §1-§5；progress Phase 1 回填 | 15min | 0f/0l/15min | 无 | - | complete |
 
 ### Phase 2: 回切闭环机制增强实现（worktree）
-- [ ] S1：SKILL.md 终验交付段新增「挂起计划回切检查（intent-switch 回切）」条款（outcome 判定后、归档前；查 `[intent-switch]` 旧=<id> + `plans/INDEX.md`；【计划回切通告】询问；yes=释放指针+路由 `Skill("plan-resume")` 定向恢复，no=登记保持挂起+`回切状态`；**不自动切**）
-- [ ] S2：SKILL.md 显性通告区补「回切通告模板」（B 已收口/检测到挂起链/是否切回/yes-no 处置）
-- [ ] S3：discipline Rule 94 段末（:619 后）补 intent-switch 回切交叉锚，衔接 94.4 封存待 resume 与回切触发，保留权威语义
+- [x] S1：SKILL.md 终验交付段新增「挂起计划回切检查（intent-switch 回切）」条款（outcome 判定后、归档前；查 `[intent-switch]` 旧=<id> + `plans/INDEX.md`；【计划回切通告】询问；yes=释放指针+路由 `Skill("plan-resume")` 定向恢复，no=登记保持挂起+`回切状态`；**不自动切**）
+- [x] S2：SKILL.md 显性通告区补「回切通告模板」（B 已收口/检测到挂起链/是否切回/yes-no 处置）
+- [x] S3：discipline Rule 94 段末（:619 后）补 intent-switch 回切交叉锚，衔接 94.4 封存待 resume 与回切触发，保留权威语义
 - **V-N:** VC-2, VC-3, VC-4
 - **Status:** complete
 - **Executor:** code-assistant
