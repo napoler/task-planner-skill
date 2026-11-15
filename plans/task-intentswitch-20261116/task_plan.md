@@ -331,9 +331,13 @@ Phase 1
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | 2026-11-16 | plan-writer(本轮) | P0 调研机制全景+H1-H6 诊断并落盘计划文档 | done | 完成 M1-M15 全景、H1-H6 与 R-1~R-5、S-A/S-B、task_plan/verification/kb/progress 初稿 | findings.md 全文；task_plan.md 全文 | findings.md Research Findings/Technical Decisions | n/a | - / 0 / ☐(主进程复核待 D1) |
-| 2 | | | | queued | | | | | - / 0 / ☐ |
-| 3 | | | | | | | | | - / 0 / ☐ |
+| 1 | 2026-11-16 | plan-writer(本轮) | P0 调研机制全景+H1-H6 诊断并落盘计划文档 | done | 完成 M1-M15 全景、H1-H6 与 R-1~R-5、S-A/S-B、task_plan/verification/kb/progress 初稿 | findings.md 全文；task_plan.md 全文 | findings.md Research Findings/Technical Decisions | n/a | - / 0 / ☑(主进程盘上复核 Goal/VC/Phases/findings) |
+| 2 | 2026-11-16 | drift-checker | Phase 1 目标对齐三态判定 | done | ✅ALIGNED：R1 覆盖有效/无范围漂移 | task_plan.md:43-44,13,15-18；findings.md:29-111 | drift-p1.md | checkpoints/drift-p1.md | - / 0 / ☑ |
+| 3 | 2026-11-16 | code-assistant | S1+S4 SKILL.md 单入口增强（判定卡+清单+通告+登记字段+边界） | done | +7/0 纯增量；:122-123/:193/:202-204 落位 | worktree diff stat；SKILL.md:122-123,193,202-204 | progress Phase 2 | n/a | - / 0 / ☑(主进程盘上复核) |
+| 4 | 2026-11-16 | code-assistant | S2 hook :287 快速锚句前置 | done | 2/1 PREFIX 原文保留；bash -n PASS | hook diff；zcode-userpromptsubmit.sh:287 | progress Phase 2 | n/a | - / 0 / ☑(主进程 diff 复核) |
+| 5 | 2026-11-16 | code-assistant | S3 Rule 94/102 交叉锚收敛 | done | +2/0；:619/:708 落位上下文完整 | discipline.md:619,708 | progress Phase 2 | n/a | - / 0 / ☑(主进程 sed 抽查) |
+| 6 | 2026-11-16 | drift-checker | Phase 2 改动对齐三态判定 | done | ✅ALIGNED：范围一致/无语义冲突/64.x 未动 | git show 2c3bdf3 --stat | drift-p2.md | checkpoints/drift-p2.md | - / 0 / ☑ |
+| 7 | 2026-11-16 | code-reviewer | CR Gate 单轮轻量审查（required） | done | **APPROVED** 零 BLOCKER/MAJOR/MINOR；bash -n+模拟赋值验证 | CR 报告（agent_05668358）；2c3bdf3 | progress Phase 4 | n/a | - / 0 / ☑(verdict 即证据) |
 
 ## 🔗 Chain 区块交接配置（可选）
 
@@ -358,7 +362,7 @@ Phase 1
 
 | Block | 状态 | 交接产物路径 | 验证命令 | 实际完成时间 |
 |-------|------|------------|---------|-------------|
-| Block 1 | in_progress | plans/task-intentswitch-20261116/* | 见 verification.md VC-1~VC-6 | - |
+| Block 1 | done | plans/task-intentswitch-20261116/* | run-verification 7/7 PASS（c55d166c） | 2026-11-16 |
 
 ## 🔁 模板感知
 <!-- template_type: general -->
