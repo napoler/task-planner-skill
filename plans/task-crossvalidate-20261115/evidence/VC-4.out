@@ -1,0 +1,4 @@
+# [run-verification] VC-4 | 2026-11-15T14:09:30Z | cmd: test -s plans/task-crossvalidate-20261115/cross-validation-report.md && grep -q '交叉验证判定' plans/task-crossvalidate-20261115/cross-validation-report.md && grep -q '双路径' plans/task-crossvalidate-20261115/cross-validation-report.md
+# ---- stdout/stderr ----
+
+# exit=0

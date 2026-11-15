@@ -1,0 +1,4 @@
+# [run-verification] VC-6 | 2026-11-15T14:13:03Z | cmd: git log --oneline -8 | grep -q 'task-crossvalidate-20261115' && ! test -d tmp/worktrees/task-crossvalidate-20261115 && grep -q '"rule":108,"status":"landed"' plans/.rule-reservations.jsonl
+# ---- stdout/stderr ----
+
+# exit=0

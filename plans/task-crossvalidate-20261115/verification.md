@@ -139,8 +139,9 @@ bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/check-delegati
 
 JSON 输出：
 ```json
-{终验时粘贴}
+{"phases_total":4,"phases_delegated":3,"main_direct_count":1,"delegation_rate":0.750,"main_direct":[{"phase":"4 收口（Delivery）","executor":"主进程（例外理由:① git 编排+② 簿记+⑤ 机械守卫脚本——Rule 25.3 白名单）","reason":"例外理由:① git 编排+② 簿记+⑤ 机械守卫脚本——Rule 25.3 白名单","needs_git_evidence":0,"self_declared":0}],"violations":[],"verdict":"ok"}
 ```
+- 委派率 0.750 ≥ 0.7 达标；verdict=ok 零违规（2026-11-15 实测）
 
 - [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3 六项白名单）
 - [ ] 委派率 < config.json#delegation_rate_floor(默认 0.7)或 stats verdict=violation → check-complete.sh exit 1 阻断交付
@@ -155,15 +156,16 @@ JSON 输出：
 
 ```
 ## Goal Verification — 交叉验证方法论固化
-对照 Verification Contract 逐条复验：
-- [ ] VC-1: {evidence} → PASS/FAIL
-- [ ] VC-2: {evidence} → PASS/FAIL
-- [ ] VC-3: {evidence} → PASS/FAIL
-- [ ] VC-4: {evidence} → PASS/FAIL
-- [ ] VC-5: {evidence} → PASS/FAIL
-- [ ] VC-6: {evidence} → PASS/FAIL
+对照 Verification Contract 逐条复验（run-verification.sh 2026-11-15 统一入口，evidence/VC-*.out）：
+- [x] VC-1: Rule 108 五子条锚=5+判例锚 → PASS
+- [x] VC-2: 双 SKILL 级联+模板 CV 区块锚 → PASS
+- [x] VC-3: selftest CV 6/6 exit0+registry 行 → PASS
+- [x] VC-4: dogfood 报告判定行+双路径 → PASS
+- [x] VC-5: 回归 FAIL=2 ≤ 基线 3 → PASS
+- [x] VC-6: merge 44f7f43+worktree 已清理+108 landed → PASS
+- [x] V-4.1/V-4.2/V-4.3 逐项 PASS（V-4.3 归档动作随本收口执行）
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: COMPLETE
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

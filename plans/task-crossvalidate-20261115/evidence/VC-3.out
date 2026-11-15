@@ -1,0 +1,11 @@
+# [run-verification] VC-3 | 2026-11-15T14:09:29Z | cmd: bash skills/task-planner/scripts/selftest-cross-validation.sh && grep -q 'selftest-cross-validation' skills/task-planner/scripts/selftest-registry.tsv
+# ---- stdout/stderr ----
+CV-01 PASS 规则文 ^### 108 块标题及 108.1-108.5 子条锚在位
+CV-02 PASS 判例锚 subagent-verifier-fabricated-output-20261103 在 ^### 108 块内
+CV-03 PASS verification-gate SKILL 调用时机段含 Rule 108
+CV-04 PASS task-planner SKILL 含 Rule 108 且路由行含 84,108
+CV-05 PASS verification 模板含 ^## 交叉验证记录（Rule 108）
+CV-06 PASS registry.tsv 含 selftest-cross-validation 行
+Total: 6  PASS=6  FAIL=0
+
+# exit=0

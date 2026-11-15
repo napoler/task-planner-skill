@@ -1,0 +1,4 @@
+# [run-verification] VC-2 | 2026-11-15T14:09:29Z | cmd: grep -q 'Rule 108' skills/verification-gate/SKILL.md && grep -q 'Rule 108' skills/task-planner/SKILL.md && grep -q '交叉验证记录' skills/task-planner/templates/verification.md
+# ---- stdout/stderr ----
+
+# exit=0

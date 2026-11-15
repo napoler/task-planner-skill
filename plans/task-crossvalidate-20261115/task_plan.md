@@ -104,11 +104,11 @@ execution_lane: L1
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1、R4 |
-| **裁决** | （终验时填写：solved/partial/not-solved） |
-| **解决证据锚** | （终验时填写） |
-| **未解决面+原因** | （如 partial/not-solved 必填） |
-| **已排除路径** | （如 not-solved 必填） |
-| **下一步建议** | （如 not-solved 必填） |
+| **裁决** | `solved` |
+| **解决证据锚** | ① skills/verification-gate/references/critical-rules-verification.md:61-70（Rule 108 五子条落地，108.2 反虚构第一原则+108.5 伪造识别=R4 载体）② plans/task-crossvalidate-20261115/cross-validation-report.md（实弹：分歧 D1 计数错误被双路径交叉验证捕获并按 108.4 处置——方法论有效性直接实证）③ run-verification 全 7 VC PASS（evidence/VC-*.out）④ critic 轮2 负向实测（删锚→CV FAIL，守护非真空） |
+| **未解决面+原因** | 无（R2/R3/R5 手段型载体同步落地：隔离上下文/双视角条款+CV 守护+模板步骤区块+级联） |
+| **已排除路径** | n/a（solved） |
+| **下一步建议** | 行为面冒烟待新会话（条款触发面在新会话实际派发中的执行观察）；MINOR m1/m3（SKILL 步骤承载段增强）已登记遗留可另行任务 |
 
 > 判据：R1/R4 的 [目标] 属性以 VC-1 条款锚 + VC-4 dogfood 实弹为可观察解决证据（非仅"文件写了"）。
 
@@ -253,15 +253,15 @@ P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge
 - [ ] 部署位同步核验（--deploy 通道+diff=0）
 - [ ] 归档：set-active-plan.sh --clear→archive-plan.sh task-crossvalidate-20261115（守卫拒绝则登记理由）
 - [ ] 知识提取入库：scripts/kb-sync-from-plan.sh→精炼→kb-rebuild-index.sh
-- **V-N:** VC-5, VC-6
-- **Status:** pending
+- **V-N:** VC-5, VC-6——run-verification 全 7 VC PASS（含 V-4.1 merge 44f7f43+清理/V-4.2 land 108/V-4.3 归档随收口）；合并回+部署 IDENTICAL+84.14 回读收敛（轮1 零新发现）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记+⑤ 机械守卫脚本——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14）
 
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    |                              |                      |
+| 1 | 五维互洽回读（2026-11-15）：①需求↔目标 R1-R5↔Goal↔VC 映射完整（rvc-coverage attest 过）②执行↔验证 4 Phase 全 complete+7 VC PASS ③知识维 knowledge-brief §2 空段=合法占位（Rule 71），D1 分歧教训归 kb-sync 收口动作非遗漏 ④D1 分歧已闭环（F7 勘误+fix 2abe3ec+轮2 APPROVED）⑤执行期 Phase3 in_progress 翻转遗漏已修正入账 | 零新偏移；两项待办属收口动作非偏移（归档 V-4.3+kb 入库）；**收敛出口达成（连续一轮零新发现）** → outcome=COMPLETE |
 
 ## 🔀 隔离决策（冲突分析）
 

@@ -1,0 +1,4 @@
+# [run-verification] VC-5 | 2026-11-15T14:09:30Z | cmd: test -f plans/task-crossvalidate-20261115/.regression-baseline && test "$(bash skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)" -le "$(cat plans/task-crossvalidate-20261115/.regression-baseline)"
+# ---- stdout/stderr ----
+
+# exit=0

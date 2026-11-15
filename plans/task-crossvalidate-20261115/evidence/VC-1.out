@@ -1,0 +1,4 @@
+# [run-verification] VC-1 | 2026-11-15T14:13:04Z | cmd: git log --oneline -8 | grep -q 'task-crossvalidate-20261115' && ! test -d tmp/worktrees/task-crossvalidate-20261115
+# ---- stdout/stderr ----
+
+# exit=0
