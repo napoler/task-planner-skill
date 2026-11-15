@@ -182,11 +182,11 @@ n/a（纯执行类：交付物=条款文本+级联+守护脚本+实弹报告，�
 
 ## Current Phase
 
-Phase 2
+Phase 3
 
 ## Next Step
 
-派 general-coder 执行 P2-S1（Rule 108 条款插入 worktree 规则文 EOF），完成后并行派 S2/S4/S5
+派 code-runner-agent 执行 P3-S1 全量回归分账（主仓基线 vs worktree → .regression-baseline），随后串行 P3-S2 critic 复检、P3-S3 dogfood 实弹
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -220,8 +220,8 @@ Phase 2
 - [ ] Rule 108 条款+SKILL 级联+模板区块+守护脚本+registry 全部落 worktree
 - [ ] 每 S-unit 106.1a 三规约（grep 段清单/锚行子串/结构回读）
 - [ ] 规范召回（Rule 93）：3 S-unit 后主进程 Read execution-recall-card.md 留 [recall] 行
-- **V-N:** VC-1, VC-2, VC-3
-- **Status:** in_progress
+- **V-N:** VC-1, VC-2, VC-3——V-2.1..V-2.4 全 PASS（worktree 实跑：108 锚=5/双 SKILL+模板锚齐/CV 6/6 exit0/EN 7/7）；103.6 清单六项全绿；worktree commit 8097063（7 文件 +59/-11）；drift ✅ALIGNED（checkpoint 4-drift-p2.md）
+- **Status:** complete
 - **Executor:** general-coder（默认档）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -242,8 +242,8 @@ Phase 2
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A6) 全量回归：worktree 跑 run-selftests.sh 全量+主仓 master 同命令基线对照分账（预存量 vs 新增） | code-runner-agent（默认档） | worktree skills/task-planner/scripts/run-selftests.sh + 主仓基线输出（tmp/ 基线文件） | ΣFAIL 增量=0+新增 selftest PASS 行在 progress | 15min | 1f/0l/15min | 无 | S1-S5(P2) | pending [parallel-group:verify] |
-| S2 | (A6) critic 独立复检：全文回读 5 个变更文件对照 R1-R5 逐条核验+103.3 五要素回执 | critic（默认档） | worktree skills/verification-gate/references/critical-rules-verification.md（Rule 108 段）+ plans/task-crossvalidate-20261115/user-session-log.md（R 锚） | 回执五要素齐+CR 结论行（APPROVED/CHANGES_REQUESTED） | 15min | 1f/0l/15min | 无 | S1-S5(P2) | pending [parallel-group:verify] |
+| S1 | (A6) 全量回归：worktree 跑 run-selftests.sh 全量+主仓 master 同命令基线对照分账（预存量 vs 新增） | code-runner-agent（默认档） | worktree skills/task-planner/scripts/run-selftests.sh + 主仓基线输出（tmp/ 基线文件） | ΣFAIL 增量=0+新增 selftest PASS 行在 progress | 15min | 1f/0l/15min | 无 | S1-S5(P2) | complete |
+| S2 | (A6) critic 独立复检：全文回读 5 个变更文件对照 R1-R5 逐条核验+103.3 五要素回执 | critic（默认档） | worktree skills/verification-gate/references/critical-rules-verification.md（Rule 108 段）+ plans/task-crossvalidate-20261115/user-session-log.md（R 锚） | 回执五要素齐+CR 结论行（APPROVED/CHANGES_REQUESTED） | 15min | 1f/0l/15min | 无 | S1-S5(P2) | complete |
 | S3 | (A6) dogfood：按 Rule 108 对 Phase 2 产出执行双视角交叉验证（机械面=VC-1/2/3 命令重推导；语义面=S2 回执）→cross-validation-report.md | general-purpose（默认档） | plans/task-crossvalidate-20261115/clause-drafts.md（验证对象清单 §1-§2）+ Phase 3-S2 checkpoint 回执（路径见 Handoff 表） | 报告含双路径结论段+一致/分歧判定行+108.4 协议留痕 | 15min | 1f/40l/15min | 无 | S1(P3)、S2(P3) | pending |
 
 ### Phase 4: 收口（Delivery）
@@ -325,6 +325,7 @@ Phase 2
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
 | 2026-11-15 P1 翻转前 | ✅ALIGNED | VC-1/VC-2 前置 | checkpoint=subagent-state/1-drift-p1.md；ledger drift_check 已追加；仓库无关脏态已分账不属本任务 scope |
+| 2026-11-15 P2 翻转前 | ✅ALIGNED 4/4 | VC-1/VC-2/VC-3 | checkpoint=subagent-state/4-drift-p2.md；findings 仅追加 [sub:2-drift-p2]；test-gaming 排查过（enumerate-first 仅纪元字面）；主仓脏改无证据归属本任务 |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6）
 

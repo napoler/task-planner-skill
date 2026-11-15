@@ -72,3 +72,4 @@
 - [2026-11-15] 哨兵清除+worktree 建立 tmp/worktrees/task-crossvalidate-20261115（branch wt/task-crossvalidate-20261115）
 - [2026-11-15 P2] 五单元落地回执全过（条款+12/级联A 双SKILL/脚本+registry/模板+7）；主进程盘上逐单元复核 PASS（findings F7）；PLAN TAMPERED 重锁完成（Decisions 登记行+attest 重跑）
 - [2026-11-15 P2] 待办：级联B（EN-06 纪元演进）→ Phase 2 门（V-2.1..2.4+103.6+drift+commit）→ Phase 3 验证
+- [2026-11-15 P2] [recall] Rule 93.2：Phase 2 过 3 S-unit（实为 5 单元全落）主进程 Read execution-recall-card.md；对照要点=62.2 契约不可收窄（drift prompt 补 findings 仅追加锚）/64.7 用户原话对照面/26 翻转门三件套——已按卡纠偏

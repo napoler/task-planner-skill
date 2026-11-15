@@ -82,3 +82,9 @@
 
 ---
 <!-- ⚠️ [plan-compass] 提醒 = 本文件陈旧 → 立即回填再继续(Rule 19.7);二次未响应触发升级警告(Rule 26.3 处置) -->
+
+#### [sub:2-drift-p2] Phase2 偏移检查
+- 判定：✅ALIGNED（P2 落地产出与计划 scope/Goal/R1-R5 一致，可翻转）
+- 证据1：worktree `8097063` `diff HEAD~1 --stat` 恰 7 文件（critical-rules-verification.md/SKILL×2/templates/verification.md/selftest-cross-validation.sh/selftest-registry.tsv/selftest-enumerate-first.sh），无 scope 外；`git status --short` 干净
+- 证据2：`grep -cE '^108\.[1-5]'`=5、`grep -c '1-107' skills/task-planner/SKILL.md`=0、`selftest-cross-validation.sh` EXIT_CODE=0；enumerate-first diff 仅纪元字面 1-107→1-108 且阈值`-ge 3`/`,107`断言未变（非 test-gaming）
+- 64.7：user-session-log.md #1（2026-11-15 /goal）R1-R5 原话在位，Goal∩原话交集成立；主仓 plans/ 外脏改（CLAUDE.md/README_zh.md/skills/plan-resume/SKILL.md）无证据归属本任务
