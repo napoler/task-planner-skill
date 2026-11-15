@@ -27,6 +27,36 @@ fi
 # Edit 的 new_string 行数:从 stdin JSON 截前 4KB(M-4)后 wc -l;字段缺失传 "-"
 case "$tool" in
   Write|Edit|ApplyPatch)
+    # [2026-11-16 task-mdedit-trigger-20261116] md-edit-ops advisory (What: Write/Edit 修改 .md 时按结构化/批量信号输出 md-edit-ops 提醒; Why: 封堵普通会话随手编辑 .md 不触发 md-edit-ops 的缺口，Rule 106.6 协同；fail-open 仅提醒不阻断)
+    if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
+      case "$file" in
+        *.md)
+          case "$file" in
+            */plans/*|plans/*) : ;;
+            *)
+              _md_hit=0
+              if [ "$tool" = "Edit" ]; then
+                _os="$(printf '%s' "$input" | jq -r '.tool_input.old_string // ""' 2>/dev/null || printf '')"
+                _ns="$(printf '%s' "$input" | jq -r '.tool_input.new_string // ""' 2>/dev/null || printf '')"
+                if [[ "$_os" == *$'\n'* || "$_ns" == *$'\n'* ]]; then
+                  _md_hit=1
+                elif [ $(( ${#_os} + ${#_ns} )) -ge 200 ] 2>/dev/null; then
+                  _md_hit=1
+                fi
+              elif [ "$tool" = "Write" ]; then
+                _ct="$(printf '%s' "$input" | jq -r '.tool_input.content // ""' 2>/dev/null || printf '')"
+                if [ "${#_ct}" -ge 600 ] 2>/dev/null; then
+                  _md_hit=1
+                fi
+              fi
+              if [ "$_md_hit" -eq 1 ] 2>/dev/null; then
+                printf '%s\n' "[md-edit-ops] 提醒: 批量/结构化 markdown 修改优先走 md-edit-ops 指令单（<技能位>/md-edit-ops/scripts/md-edit-ops.ts --order <单>.json；写前预校验/原子/回滚/apply-report；Rule 106.6）；单行小改可直接 Edit"
+              fi
+              ;;
+          esac
+          ;;
+      esac
+    fi
     sid="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
     sid="${sid:-default}"
     lines_arg="-"
