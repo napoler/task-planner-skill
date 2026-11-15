@@ -93,3 +93,5 @@
 - [Phase2 complete 证据] V-2 门四绿+103.6+drift 4-drift-p2 ✅ALIGNED 4/4
 - [Phase3 complete 证据] V-3 门三绿+CR 链闭环+drift 9-drift-p3 ✅ALIGNED 4/4
 - [Phase4 complete 证据] run-verification PASS=7 FAIL=0+委派 0.750 verdict=ok+84.14 轮1 收敛
+- [CR APPROVED] 42.7 留痕：critic 轮2 复检 APPROVED 4/4（checkpoint subagent-state/8-critic-r2.md；轮1 CHANGES_REQUESTED→fix 2abe3ec 闭环；负向实测断言非真空）——2026-11-15
+- [Error] git add plans/ 盲扫捎带并行会话未跟踪文件 plans/task-positioning-20261115/task_plan.md 入 0545712→归档提交（判例复发=task-userlog-recall 同款；处置=不改写历史（并行活跃）留原样+登记教训 pathspec 锁定本任务目录）
