@@ -142,6 +142,7 @@ model: opus
   - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
   - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉；**纯执行 S-unit 权重 0（P4，2026-10-22 用户授权）**：命中 L0-E 档（零仓库受管变更 ∧ 仅调用既有工具 ∧ 产物落 gitignore 区）的 S-unit **既不计入分子也不计入分母**——若计入分母会拉低委派率，方向与「机械操作免强制派子代理/免终验回炉」的豁免意图相反（审计判例 F9）；机器面=计划 Executor 行标 `L0-E`（或括注含「纯执行」）即识别，`check-delegation.sh stats` 已按此口径实现（分母扣减 + 该单元不判 violation + 整批皆纯执行时 rate=1.000 视为达标）
   - 交付结论 COMPLETE/PARTIAL/BLOCKED；**交付总结五要素**（Rule 48：全体指针绝对路径/可执行命令）按 `templates/delivery-summary.md` 输出
+  - **挂起计划回切检查（intent-switch 回切）**：outcome 判定后、归档前，检查本计划 progress.md/Decisions 的 [intent-switch] 登记链（旧=<id>）与 plans/INDEX.md 待处理区——存在挂起计划则会话面输出【计划回切通告】询问是否切回：用户 yes=释放活跃指针+路由 Skill("plan-resume") 定向恢复该计划续推；no=登记保持挂起（[intent-switch] 追加 回切状态=no|保持挂起）。不自动切——切回也是目标变更，须用户显式确认。多条挂起链按登记最近一条优先、逐条确认。
   - 决策分级（Rule 72）/呈报四要素（Rule 70）/变更吸收三判（Rule 74）/编号列表规范（Rule 76）按卫星 `task-discipline` 全文执行
   **可选思路**：
   1. 思路 A：严格按门脚本 exit code 判定——全门 exit 0 → COMPLETE，任一门非 0 → 回炉修复（适用场景：门覆盖充分、产出可机器校验时）
@@ -202,6 +203,7 @@ model: opus
 **意图切换执行清单（D 类定案后按序执行）**：① 旧计划挂起登记（其 progress.md 追加 [intent-switch] 行+在途单元断点检查点）→ ② 新计划 init（plans/{new-task-id}/ 全流程，指针自动切换）→ ③ 显性通告（会话面输出下方模板，用户可见）→ ④ 切换登记（新计划 progress.md [intent-switch] 行 + Decisions Made 一行）。
 **显性通告模板**：【计划切换通告】旧计划 <old-task-id> 已挂起（断点=其 progress.md [intent-switch] 行）→ 新计划 <new-task-id> 已激活（指针已切换）→ 触发原话=user-session-log #N → 后续在新计划推进，旧计划可用 plan-resume 恢复。
 **切换登记最小字段**：[intent-switch] 旧=<id> 新=<id> 触发=原话#N 判定=D/E 确认=yes|44.3自动 时间=<ISO8601>（复用既有载体，不新建文件）。
+**回切通告模板（B 收口时触发）**：【计划回切通告】B 已收口（<new-task-id>，outcome=<COMPLETE/PARTIAL>）→ 检测到挂起链 A（<old-task-id>，挂起于 user-session-log #N）→ 是否切回继续执行 A？yes=路由 plan-resume 定向恢复；no=保持挂起并登记 回切状态。
 
 **判定顺序**：先 D 再 A/B/C（指令与目标有关联哪怕小→回退 A/B/C）；仅存在活跃计划时 D 类适用。B/C 变更前过 Rule 73.2 对齐三问+[align] 行，处理完再派 drift-checker。**稳定性铁律**：禁止"口头接受新指令、计划与 Todo 不动"。用户指出错误（Rule 31）→先 STOP 走 31.2 四维归因再修（完整闭环见 task-discipline Rule 31/32/33/74）。命中 Rule 98 触发面（用户否定 ∨ 自主前后文矛盾）→ 调用 `Skill("context-corrector")` 整理上下文与历史文档（记录面专职 SOP，98.3 组织先于继续）。
 
