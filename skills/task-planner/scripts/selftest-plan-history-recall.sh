@@ -103,7 +103,7 @@ hpr09_ok=1
 hpr09_msg=""
 if [ ! -d "$HPR_DIR" ]; then
   hpr09_skipped=1
-  echo "WARN HPR_DIR 缺失，HPR-09 跳过（不计 PASS 不计 FAIL）"
+  echo "WARN HPR-09 无可解析锚或 HPR_DIR 缺失，跳过（不计 PASS 不计 FAIL）"
 else
   checked=0
   while IFS= read -r f; do
@@ -146,7 +146,7 @@ else
   done < <(find "$HPR_DIR" -maxdepth 2 -type f \( -path "$HPR_DIR/cards/*.md" -o -name 'history-brief.md' \) 2>/dev/null | sort)
   if [ "$hpr09_ok" -eq 1 ] && [ "$checked" -eq 0 ]; then
     hpr09_skipped=1
-    echo "WARN HPR_DIR 缺失，HPR-09 跳过（不计 PASS 不计 FAIL）"
+    echo "WARN HPR-09 无可解析锚或 HPR_DIR 缺失，跳过（不计 PASS 不计 FAIL）"
   fi
 fi
 if [ "$hpr09_skipped" -eq 0 ]; then
