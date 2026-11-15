@@ -64,9 +64,9 @@ if grep -q '## 八、试点先行硬门详解' "$BGATE"; then ok 07 "§八 试�
 # [2026-11-05 task-subagent-markup-20261105] Rule 104 就地速查表+7 行结构性增量（实值 280）, 上限 275→285
 # [2026-11-15 task-initdelegation-20261115] L1+ 初始化首动作委派条款插入（Phase 2 S1, +9 行, 实值 292）, 上限 285→300
 # [2026-11-15 task-specmode-integration-20261115] Spec 模式路由 +3 行 & frontmatter 登记 +1 行（实值 287）, 上限 285→292（实值+5 边距，口径同 2026-11-05）
-# [2026-11-15 task-initdelegation-20261115 并集解修正] 组合态实值 296=287(master)+9(本任务)（双分支注释各自基线如上）；条款契约修正版 +1 行实值 297, 上限 300→305（CR P2-2：线性链恢复+边距≥5 先例口径）
+# [2026-11-15 task-initdelegation-20261115 并集解修正] 组合态实值 296=287(master)+9(本任务)（双分支注释各自基线如上）；条款契约修正版 +1 行实值 297, 上限 300→305（CR P2-2：线性链恢复+边距≥5 先例口径）; [2026-11-16 task-intentresume-20261116] 回切检查条款+回切通告模板 +2 行（实值 306）, 上限 305→306
 lines=$(wc -l < "$SKILLMD")
-if [ "$lines" -le 305 ]; then ok 08 "SKILL.md 行数 $lines ≤305"; else bad 08 "SKILL.md 行数 $lines 超 305"; fi
+if [ "$lines" -le 306 ]; then ok 08 "SKILL.md 行数 $lines ≤306"; else bad 08 "SKILL.md 行数 $lines 超 306"; fi
 # BP-09 [2026-10-12 task-v171 S38] 纪元锚扩至覆盖 1-77 全集: 原字面 grep '隶属 Rules 1-36' → 宽容正则
 #   grep -qE '隶属 Rules 1-(3[6-9]|[4-6][0-9]|7[0-7])'（参照 selftest-conclusion-discipline.sh:101 CD-19「1-3[5-8]」宽容锚写法扩为含 77）;
 #   覆盖 1-36..1-77 全部纪元（当前 BGATE 在位字面 1-36 命中, 77 纪元前瞻命中）, 全集过渡不断钉
