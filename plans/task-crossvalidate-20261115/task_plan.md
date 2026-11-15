@@ -116,12 +116,12 @@ execution_lane: L1
 
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 插入点侦察 | 锁定验证链全部插入点与守护面 | findings.md F1-F6 六节齐且各含 file:line 锚 | S1/Phase 1 | pending |
-| G2 | 条款起草 | Rule 108 五子条草案+模板区块草案 | clause-drafts.md 在位且五子条锚齐 | S2/Phase 1 | pending |
-| G3 | 落地插改 | 条款+SKILL 级联+模板区块+守护脚本落 worktree | VC-1/VC-2/VC-3 命令全过 | S1-S5/Phase 2 | pending |
-| G4 | 回归+复检 | 全量回归零新增 FAIL+critic 复检回执 | VC-5 输出+checkpoint 回执五要素 | S1、S2/Phase 3 | pending |
-| G5 | dogfood 实弹 | 按 Rule 108 对产出执行双视角交叉验证 | VC-4 报告在位含判定行 | S3/Phase 3 | pending |
-| G6 | 合并收口 | 合并回+清理+land+部署+归档 | VC-6 三证据+归档 ARCHIVED | Phase 4 | pending |
+| G1 | 插入点侦察 | 锁定验证链全部插入点与守护面 | findings.md F1-F6 六节齐且各含 file:line 锚 | S1/Phase 1 | complete |
+| G2 | 条款起草 | Rule 108 五子条草案+模板区块草案 | clause-drafts.md 在位且五子条锚齐 | S2/Phase 1 | complete |
+| G3 | 落地插改 | 条款+SKILL 级联+模板区块+守护脚本落 worktree | VC-1/VC-2/VC-3 命令全过 | S1-S5/Phase 2 | complete |
+| G4 | 回归+复检 | 全量回归零新增 FAIL+critic 复检回执 | VC-5 输出+checkpoint 回执五要素 | S1、S2/Phase 3 | complete |
+| G5 | dogfood 实弹 | 按 Rule 108 对产出执行双视角交叉验证 | VC-4 报告在位含判定行 | S3/Phase 3 | complete |
+| G6 | 合并收口 | 合并回+清理+land+部署+归档 | VC-6 三证据+归档 ARCHIVED | Phase 4 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
@@ -214,28 +214,28 @@ P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S1 | (A6) 侦察验证链插入点与守护面：Rule 84 规则文末段锚/SKILL 触发面/task-planner 索引段「1-107」串族/selftest 注册机制/verification 模板结构/51.14+103 条款现状/判例锚格式先例 | Explore（默认档） | skills/verification-gate/references/critical-rules-verification.md（结构+末段锚）+ skills/task-planner/scripts/selftest-registry.tsv（行格式） | findings.md F1-F6 六节齐且各含 file:line 锚；级联族四形态枚举入 F3 | 15min | 1f/50l/15min | 无 | - | complete |
-| S2 | (A6) 起草 clause-drafts.md：Rule 108 五子条全文（108.1 定义与触发面/108.2 独立重推导/108.3 双视角交叉/108.4 分歧升级/108.5 伪造信号）+verification 模板 CV 区块草案+级联 spec（§1/§2/§3） | general-purpose（默认档） | plans/task-crossvalidate-20261115/findings.md（F1-F6 消费）+ plans/task-crossvalidate-20261115/user-session-log.md（R1-R5 锚） | 草案在位+五子条锚齐+判例锚句在位+级联 spec 三节 | 15min | 1f/90l/15min | 无 | S1(P1) | pending |
+| S2 | (A6) 起草 clause-drafts.md：Rule 108 五子条全文（108.1 定义与触发面/108.2 独立重推导/108.3 双视角交叉/108.4 分歧升级/108.5 伪造信号）+verification 模板 CV 区块草案+级联 spec（§1/§2/§3） | general-purpose（默认档） | plans/task-crossvalidate-20261115/findings.md（F1-F6 消费）+ plans/task-crossvalidate-20261115/user-session-log.md（R1-R5 锚） | 草案在位+五子条锚齐+判例锚句在位+级联 spec 三节 | 15min | 1f/90l/15min | 无 | S1(P1) | complete |
 
 ### Phase 2: 落地插改（worktree 内实施）
-- [ ] Rule 108 条款+SKILL 级联+模板区块+守护脚本+registry 全部落 worktree
-- [ ] 每 S-unit 106.1a 三规约（grep 段清单/锚行子串/结构回读）
-- [ ] 规范召回（Rule 93）：3 S-unit 后主进程 Read execution-recall-card.md 留 [recall] 行
+- [x] Rule 108 条款+SKILL 级联+模板区块+守护脚本+registry 全部落 worktree
+- [x] 每 S-unit 106.1a 三规约（grep 段清单/锚行子串/结构回读）
+- [x] 规范召回（Rule 93）：3 S-unit 后主进程 Read execution-recall-card.md 留 [recall] 行
 - **V-N:** VC-1, VC-2, VC-3——V-2.1..V-2.4 全 PASS（worktree 实跑：108 锚=5/双 SKILL+模板锚齐/CV 6/6 exit0/EN 7/7）；103.6 清单六项全绿；worktree commit 8097063（7 文件 +59/-11）；drift ✅ALIGNED（checkpoint 4-drift-p2.md）
 - **Status:** complete
 - **Executor:** general-coder（默认档）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| S1 | (A6) Rule 108 条款插入 worktree critical-rules-verification.md（Rule 84 域末段后 append，增量原则） | general-coder（默认档） | worktree skills/verification-gate/references/critical-rules-verification.md（锚=F1 末段行）+ plans/task-crossvalidate-20261115/clause-drafts.md §1 | grep '108\.[1-5]' 各 ≥1+既有 Rule 84 段零改动+回读段序完整 | 15min | 1f/85l/15min | 无 | S2(P1) | pending |
-| S2 | (A6) 级联 A：verification-gate/SKILL.md 触发面加 Rule 108 句+task-planner/SKILL.md 卫星路由表 verification-gate 行加 108+核心域索引段更新 | general-coder（默认档） | worktree skills/verification-gate/SKILL.md（触发面段）+ worktree skills/task-planner/SKILL.md（索引段+路由表行） | 两文件 grep 'Rule 108' 各 ≥1+邻行零改动+结构回读 | 10min | 2f/12l/10min | 无 | S1(P2) | pending |
-| S3 | (A6) 级联 B：按 F3 枚举处置「1-107」级联族（宽容锚演进或零动作登记，禁盲改） | general-coder（默认档） | worktree skills/task-planner/scripts/selftest-enumerate-first.sh（F3 指认行）+ plans/task-crossvalidate-20261115/findings.md（F3 结论） | 处置后该脚本本机 exit 0+处置登记 findings F3 段 | 10min | 1f/8l/10min | 无 | S2(P2) | pending |
-| S4 | (A6) 新建 worktree selftest-cross-validation.sh（断言 108 五子条+级联锚+判例锚）+registry.tsv 追加行 | general-coder（默认档） | worktree skills/task-planner/scripts/selftest-registry.tsv（F2 行格式+末行）+ plans/task-crossvalidate-20261115/clause-drafts.md §1 | 脚本 chmod+x 且本机 exit 0+registry 新行 grep=1 | 15min | 2f/70l/15min | 无 | S1(P2) | pending |
-| S5 | (A6) verification 模板段尾追加「交叉验证记录」区块（落点按 F1 侦察结论定） | general-coder（默认档） | worktree skills/task-planner/templates/verification.md（段尾）+ plans/task-crossvalidate-20261115/clause-drafts.md §2 | 区块锚 grep=1+selftest-v* 模板家族本机 exit 0 | 10min | 1f/15l/10min | 无 | S1(P2) | pending |
+| S1 | (A6) Rule 108 条款插入 worktree critical-rules-verification.md（Rule 84 域末段后 append，增量原则） | general-coder（默认档） | worktree skills/verification-gate/references/critical-rules-verification.md（锚=F1 末段行）+ plans/task-crossvalidate-20261115/clause-drafts.md §1 | grep '108\.[1-5]' 各 ≥1+既有 Rule 84 段零改动+回读段序完整 | 15min | 1f/85l/15min | 无 | S2(P1) | complete |
+| S2 | (A6) 级联 A：verification-gate/SKILL.md 触发面加 Rule 108 句+task-planner/SKILL.md 卫星路由表 verification-gate 行加 108+核心域索引段更新 | general-coder（默认档） | worktree skills/verification-gate/SKILL.md（触发面段）+ worktree skills/task-planner/SKILL.md（索引段+路由表行） | 两文件 grep 'Rule 108' 各 ≥1+邻行零改动+结构回读 | 10min | 2f/12l/10min | 无 | S1(P2) | complete |
+| S3 | (A6) 级联 B：按 F3 枚举处置「1-107」级联族（宽容锚演进或零动作登记，禁盲改） | general-coder（默认档） | worktree skills/task-planner/scripts/selftest-enumerate-first.sh（F3 指认行）+ plans/task-crossvalidate-20261115/findings.md（F3 结论） | 处置后该脚本本机 exit 0+处置登记 findings F3 段 | 10min | 1f/8l/10min | 无 | S2(P2) | complete |
+| S4 | (A6) 新建 worktree selftest-cross-validation.sh（断言 108 五子条+级联锚+判例锚）+registry.tsv 追加行 | general-coder（默认档） | worktree skills/task-planner/scripts/selftest-registry.tsv（F2 行格式+末行）+ plans/task-crossvalidate-20261115/clause-drafts.md §1 | 脚本 chmod+x 且本机 exit 0+registry 新行 grep=1 | 15min | 2f/70l/15min | 无 | S1(P2) | complete |
+| S5 | (A6) verification 模板段尾追加「交叉验证记录」区块（落点按 F1 侦察结论定） | general-coder（默认档） | worktree skills/task-planner/templates/verification.md（段尾）+ plans/task-crossvalidate-20261115/clause-drafts.md §2 | 区块锚 grep=1+selftest-v* 模板家族本机 exit 0 | 10min | 1f/15l/10min | 无 | S1(P2) | complete |
 
 ### Phase 3: 验证（回归+复检+dogfood 实弹）
-- [ ] 全量回归与 master 基线对照分账
-- [ ] critic 全文回读复检（103.3/103.3a）回执落 checkpoint
-- [ ] dogfood：按新 Rule 108 对产出本身执行双视角交叉验证
+- [x] 全量回归与 master 基线对照分账
+- [x] critic 全文回读复检（103.3/103.3a）回执落 checkpoint
+- [x] dogfood：按新 Rule 108 对产出本身执行双视角交叉验证
 - **V-N:** VC-3, VC-4, VC-5——V-3.1 PASS（wt 全量 98 脚本 FAIL=2≤基线 3）/V-3.2 PASS（轮2 APPROVED）/V-3.3 PASS（报告判定行）；CR 链闭环+dogfood 报告双路径+drift ALIGNED 4/4（checkpoint 9-drift-p3.md）
 - **Status:** complete
 - **Executor:** code-runner-agent（默认档）/ critic（默认档）/ general-purpose（默认档）
@@ -244,13 +244,13 @@ P4 收口：run-verification.sh 全 VC 复验→84.14 收尾回读→smart-merge
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S1 | (A6) 全量回归：worktree 跑 run-selftests.sh 全量+主仓 master 同命令基线对照分账（预存量 vs 新增） | code-runner-agent（默认档） | worktree skills/task-planner/scripts/run-selftests.sh + 主仓基线输出（tmp/ 基线文件） | ΣFAIL 增量=0+新增 selftest PASS 行在 progress | 15min | 1f/0l/15min | 无 | S1-S5(P2) | complete |
 | S2 | (A6) critic 独立复检：全文回读 5 个变更文件对照 R1-R5 逐条核验+103.3 五要素回执 | critic（默认档） | worktree skills/verification-gate/references/critical-rules-verification.md（Rule 108 段）+ plans/task-crossvalidate-20261115/user-session-log.md（R 锚） | 回执五要素齐+CR 结论行（APPROVED/CHANGES_REQUESTED） | 15min | 1f/0l/15min | 无 | S1-S5(P2) | complete |
-| S3 | (A6) dogfood：按 Rule 108 对 Phase 2 产出执行双视角交叉验证（机械面=VC-1/2/3 命令重推导；语义面=S2 回执）→cross-validation-report.md | general-purpose（默认档） | plans/task-crossvalidate-20261115/clause-drafts.md（验证对象清单 §1-§2）+ Phase 3-S2 checkpoint 回执（路径见 Handoff 表） | 报告含双路径结论段+一致/分歧判定行+108.4 协议留痕 | 15min | 1f/40l/15min | 无 | S1(P3)、S2(P3) | pending |
+| S3 | (A6) dogfood：按 Rule 108 对 Phase 2 产出执行双视角交叉验证（机械面=VC-1/2/3 命令重推导；语义面=S2 回执）→cross-validation-report.md | general-purpose（默认档） | plans/task-crossvalidate-20261115/clause-drafts.md（验证对象清单 §1-§2）+ Phase 3-S2 checkpoint 回执（路径见 Handoff 表） | 报告含双路径结论段+一致/分歧判定行+108.4 协议留痕 | 15min | 1f/40l/15min | 无 | S1(P3)、S2(P3) | complete |
 
 ### Phase 4: 收口（Delivery）
-- [ ] VC 全量复验（run-verification.sh 统一入口）+Rule 84.14 收尾回读梳理（连续一轮零新发现才出 outcome）
-- [ ] 合并回：worktree 全 VC 复验+status 干净→smart-merge-back.sh（--deploy）→清理 worktree/分支→主仓 Read 复验
-- [ ] 簿记：rule-reserve.sh land 108+三文件回填+Index 刷新+commit
-- [ ] 部署位同步核验（--deploy 通道+diff=0）
+- [x] VC 全量复验（run-verification.sh 统一入口）+Rule 84.14 收尾回读梳理（连续一轮零新发现才出 outcome）
+- [x] 合并回：worktree 全 VC 复验+status 干净→smart-merge-back.sh（--deploy）→清理 worktree/分支→主仓 Read 复验
+- [x] 簿记：rule-reserve.sh land 108+三文件回填+Index 刷新+commit
+- [x] 部署位同步核验（--deploy 通道+diff=0）
 - [ ] 归档：set-active-plan.sh --clear→archive-plan.sh task-crossvalidate-20261115（守卫拒绝则登记理由）
 - [ ] 知识提取入库：scripts/kb-sync-from-plan.sh→精炼→kb-rebuild-index.sh
 - **V-N:** VC-5, VC-6——run-verification 全 7 VC PASS（含 V-4.1 merge 44f7f43+清理/V-4.2 land 108/V-4.3 归档随收口）；合并回+部署 IDENTICAL+84.14 回读收敛（轮1 零新发现）

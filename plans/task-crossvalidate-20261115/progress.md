@@ -82,3 +82,13 @@
 - [P3-S3] dogfood 实弹：机械面主进程当日重跑 VC-1/2/3 全 PASS+修复项 grep（91×2/94×0/R2×1）；语义面=critic 轮1→轮2 链；分歧 D1（计数）经 108.4 处置（第一手重推导证实 critic 正确，主进程转译稿 94 为误判）→cross-validation-report.md 交叉验证判定=一致 PASS
 - [V-N] V-3.1 PASS（worktree 全量 `Total: 98 PASS=96 FAIL=2` ≤ 基线 3）；V-3.2 PASS（8-critic-r2.md 含 APPROVED）；V-3.3 PASS（报告含判定行）
 - Test Results: 全部门绿；已知遗留=MINOR m1/m3（SKILL 步骤承载段增强，登记 not 目标内）+NIT×3（critic 轮2 列）
+- [goal:G1] 插入点侦察 complete：findings F1-F6 六节全锚（Explore 侦察）+级联族枚举 F3——证据 findings.md ### F1-F6
+- [goal:G2] 条款起草 complete：clause-drafts.md §1 五子条+§2 模板区块+§3 级联七项（78 行）——证据 clause-drafts.md
+- [goal:G3] 落地插改 complete：worktree commit 8097063（7 文件 +59/-11）+fix 2abe3ec；V-2.1..2.4 全绿+103.6 六项——证据 progress P2 段+checkpoint 2/3a/3b/3c/3d
+- [goal:G4] 回归+复检 complete：回归 2≤基线 3+critic 轮1 CHANGES_REQUESTED→轮2 APPROVED 4/4——证据 checkpoint 5/6/7/8
+- [goal:G5] dogfood complete：cross-validation-report.md 双路径+判定=一致 PASS+分歧 D1 108.4 处置闭环——证据报告全文+机械面当日重跑
+- [goal:G6] 合并收口 complete：merge 44f7f43+部署 IDENTICAL+worktree/分支清理+land 108+run-verification 全 7 VC PASS——证据 evidence/VC-*.out
+- [Phase1 complete 证据] V-1.1=6/V-1.2 五子条锚 11+§3（progress P1 段）；drift 1-drift-p1 ✅ALIGNED
+- [Phase2 complete 证据] V-2 门四绿+103.6+drift 4-drift-p2 ✅ALIGNED 4/4
+- [Phase3 complete 证据] V-3 门三绿+CR 链闭环+drift 9-drift-p3 ✅ALIGNED 4/4
+- [Phase4 complete 证据] run-verification PASS=7 FAIL=0+委派 0.750 verdict=ok+84.14 轮1 收敛
