@@ -1,0 +1,4 @@
+# [run-verification] VC-4 | 2026-11-15T20:31:01Z | cmd: `bash -lc 'SRC=/mnt/data/dev/task-planner-skill; R="$SRC/skills/task-discipline/references/execution-recall-card.md"; S="$SRC/skills/task-discipline/SKILL.md"; test -f "$R" && test -f "$S" && grep -qF "批量/结构化 markdown 修改优先走 md-edit-ops 指令单（Rule 106.6；apply-report 记 [recheck]）；裸 sed/python 0 命中即 FAIL" "$R" && grep -q "## B. 变更与范围" "$R" && grep -q "md-edit-ops" "$S" && grep -q "Rule 106.6" "$S"'`
+# ---- stdout/stderr ----
+
+# exit=0

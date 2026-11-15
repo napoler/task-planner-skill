@@ -46,3 +46,8 @@
 
 ## Open Questions
 - 无未决项——D1-D3 已裁决（Technical Decisions 表）+自裁 D6/D7+设计定稿（design.md）+实施契约事实（Implementation Facts 段）。
+
+## Dogfood Routing（S7 Step 2 路由实测，2026-11-16 记录）
+- 通道 A（INDEX grep worktree）：仅 2 行命中（s77-p2-fix/skill-audit-s77-fix）；INDEX 主表 Goal 列文字命中面窄（worktree 信息在专列）。
+- 通道 B（git log --all --grep worktree）：命中丰富；**git subject 括号 task-id 惯例是更强路由信号**（旧结论实测再证）。
+- 路由裁决：候选 3 = task-crossprojauth-20261104（Rule 100/101 worktree 规范本体）/task-v186（worktree 回合教训）/task-specmode-integration-20261115（近期 worktree merge 实践）；排除留痕（s77-p2-fix 等=worktree 仅手段非主题）。

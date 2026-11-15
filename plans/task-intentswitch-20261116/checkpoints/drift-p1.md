@@ -1,0 +1,15 @@
+# Drift Checkpoint — Phase 1 (diagnosis & plan finalization)
+- time: 2026-11-16
+- trigger: Phase 1 intent-alignment 三态判定（诊断与增强计划定稿）
+- phase: Phase 1 / G1（status in_progress per task_plan.md:196）
+- anchors:
+  - Goal: task_plan.md:43-44（A→B 意图切换识别与计划隔离切换显性度；不破坏 drift-checker 语义）
+  - R1 原话: user-session-log.md#1:12, task_plan.md:13（A→B 主动切换新计划、隔离、功能不明显、优化识别与切换）
+  - scope: task_plan.md:106-115（SKILL.md, critical-rules-discipline 94/102/8.1 交叉锚, UPS hook, plans/task-intentswitch-20261116/*；禁改 Rule 64/drift-guard 判定语义）
+- evidence:
+  - findings.md:29-47 M1-M15 机制全景(含文件:行号), :67-87 H1-H6(verified/partially verified)+证据, :91-111 R-1~R-5 排序+S-A(推荐)/S-B 取舍 → 服务 Goal/覆盖 R1 痛点
+  - task_plan.md:15-18 R→VC 映射 R1→VC-1..VC-6 有效；:28-34 根源覆盖表；:123-129 CA-1~CA-4 增量/受控变更；:282-289 采用 S-A、drift 语义不改、worktree 隔离
+  - git: `plans/task-intentswitch-20261116/` untracked(??) 属计划文档 scope 内；`git diff --stat` 仅示仓库既存脏改(非本 Phase 1 产出) 未见对本任务 scope 受管 skills/hook 的本次修改
+- judgment: ALIGNED
+- note: 证据基于计划文档与 git 快照自查；Phase 1 仍 in_progress（待 D1 批准进 Phase 2），无 DRIFT/范围扩张迹象
+- suggestion: 批准后按 S-A 在 worktree 实施 Phase 2，逐 VC 复验并保持 CA 范围与 64.x 语义不变

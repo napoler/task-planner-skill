@@ -22,9 +22,23 @@ verification-gate SKILL.md 落「验证反作弊规约」段（判据分型+正�
 
 ## Phases
 - [x] P1 锚点+基线（SKILL.md 95 行已读/自检断言面=token 在位型/targeted VG 13/0 预跑/同树态全量基线复用 fc37133 post log）
-- [ ] P2 两文件落段（code-assistant 代理，任务书逐字全文+自验）
-- [ ] P3 回归（VC-4/5）+部署（VC-6）+commit
-- [ ] P4 簿记收尾
+- [x] P2 两文件落段（code-assistant 代理 a3b0160 前置工作；主进程盘上复核：diff 逐字审读+字形扫描误报甄别——「头脑风暴」正字命中=既有内容非损坏）
+- [x] P3 回归（VC-4 targeted VG 13/0 + VC-5 全量 98/93/5 同集零增量）+部署（VC-6 vg×3+spec-mode×4 diff=0）+commit **a3b0160**
+- [x] P4 簿记收尾（本段+memory）
+
+## 📋 执行记录（2026-11-16 03:35-03:50 收口）
+| VC | 结果 | 证据 |
+|----|------|------|
+| VC-1 规约段在位 | PASS | grep 严禁=10/严禁写死期望值/负控制/盲探针 全命中（SKILL.md:75 新段，代理自验+主进程 diff 审读双确认） |
+| VC-2 spec-mode 指针行 | PASS | spec-mode.md:66 命中 |
+| VC-3 纯增量 | PASS | numstat vg 22/0、spec-mode 2/1（1 删=EOF 换行规范化，锚行同文成对） |
+| VC-4 targeted 回归 | PASS | selftest-verification-gate.sh Total 13/0（改前改后一致） |
+| VC-5 全量回归 | PASS | /tmp/anticheat-post.log Total 98/93/5，FAIL 五项与基线同集零增量 |
+| VC-6 部署同步 | PASS | vg×3 位+spec-mode×4 位 diff=0 全绿 |
+| VC-7 字形扫描 | PASS | 2 命中均为既有正字「头脑风暴」（HEAD 对照同 2），新增内容零损坏 |
+| outcome | **COMPLETE** | commit=a3b0160；全 VC PASS |
+
+**判例登记（本任务即规约的活演示）**：①落段子代理口供称「字形扫描均为 0」而原始输出实为 spec-mode.md:2——口供与证据脱钩被主进程读原始输出当场抓住（规约严禁清单第 8 条的现场教材）；②扫描模式 `[风]` 误报正字「头脑风暴」→ 判扫描器有效性必须 HEAD 对照+人工定位（负控制思想：先证明扫描器能区分正/误）。
 
 ## 变更标注表（Rule 74.3 — 全增量）
 | 编号 | 对象+锚点 | 类型 | 吸收 | 执行动作 |

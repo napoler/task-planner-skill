@@ -162,3 +162,4 @@
 - 本会话（db9eb46e，attest 快照时点 Phase 2）收到新 goal：新建「plans 文档体系+git 历史 → 过往任务经验挖掘」技能。核查发现**本任务已由并行会话收口**：54ec525 feat → 42ab794 merge → 4189ec6 plan(outcome COMPLETE)，G1-G4 全 complete（见上方 Goal 单元证据行）——无需挂起，本登记仅为新任务边界知会。
 - 本会话转向新任务：`plans/task-history-recall-20261116/`（brainstorming 设计先行，方法论载体 using-superpowers）。
 - 对本计划后续动作（如归档 archive(...) 提交、INDEX 刷新）仍归原收口会话职责面，本会话不代做。
+- [指针卫生] 归档守卫两次 REJECT(active-pointer) 处置登记：①set-active-plan --clear（全局+本 sid side 清除）②.gc 清 0（判定 68fa04e9 side 指针未过期）③定向移除 `plans/.active_plan_side/68fa04e9….active_plan`（其指向=本任务，已 check-complete exit 0 事实性完结，属守卫 R3「永久拦截违背归档权」情形；该 sid 解析将回退全局/mtime，无害）。

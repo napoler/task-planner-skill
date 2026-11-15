@@ -21,9 +21,21 @@ verification-gate SKILL.md 反作弊规约段增补：严禁清单 #9/#10（中�
 
 ## Phases
 - [x] P1 实测锁定面（attest-plan.sh:84,570 仅哈希 task_plan.md；verification.md 仅要求存在未入锁；zcode-userpromptsubmit.sh 每轮重算哈希触发 [PLAN TAMPERED]；当日两次实弹+对方三次合法重锁全 Decisions 登记）
-- [ ] P2 SKILL.md 反作弊段增补（code-assistant 代理）
-- [ ] P3 回归+部署+commit
-- [ ] P4 簿记（含机械强化提案登记：verification.md 判据行入 attest 锁=待用户裁决，动 attest-plan.sh 属基础设施脚本须显式授权）
+- [x] P2 SKILL.md 反作弊段增补（code-assistant 代理落段 94/95/97 行，4/0 纯增量，主进程盘上复核）
+- [x] P3 回归（VG 13/0+全量 98/93/5 同集零增量）+部署（vg×3 diff=0）+commit **25c4b33**
+- [x] P4 簿记（本段+memory；**机械强化提案待用户裁决**：attest-plan.sh 扩展哈希 verification.md 判据行入 .plan-attestation，使 Verify command 行也享受每轮 [PLAN TAMPERED] 实时检测——动基础设施脚本须显式授权，故仅提案未实施）
+
+## 📋 执行记录（2026-11-16 03:52-03:56 收口）
+| VC | 结果 | 证据 |
+|----|------|------|
+| VC-1 严禁 #9/#10 | PASS | SKILL.md:94/95 双命中（grep 实测） |
+| VC-2 冻结协议段 | PASS | SKILL.md:97（判据冻结协议/两类不得混写 命中；注：短语「状态回填合法」在盘形态为「=合法回填」，语义等价，判据串以盘上实文为准） |
+| VC-3 纯增量 | PASS | numstat 4/0 |
+| VC-4 targeted | PASS | VG 13/0 |
+| VC-5 全量 | PASS | /tmp/antitamper-post.log 98/93/5 同集零增量 |
+| VC-6 部署 | PASS | vg×3 位 diff=0 全绿 |
+| VC-7 字形 | PASS | 新增 4 行无损坏（代理自查+主进程复核） |
+| outcome | **COMPLETE** | commit=25c4b33；全 VC PASS |
 
 ## 变更标注表（Rule 74.3 — 全增量）
 | 编号 | 对象+锚点 | 类型 | 吸收 | 执行动作 |

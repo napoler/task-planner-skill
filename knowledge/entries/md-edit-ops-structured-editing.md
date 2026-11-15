@@ -21,6 +21,7 @@ updated: 2026-11-16
 
 ## How（触发与部署）
 - **触发面**：Rule 106.6 纪律条款 + md-edit-ops SKILL.md 触发词（批量编辑 markdown/结构化编辑/edit-ops/多次编辑/防吞块/markdown 批量修改）；markdown-editor 保持原则基座（本执行器为执行面，非替代）。
+- **触发面封堵（2026-11-16 task-mdedit-trigger）**：①PreToolUse hook（`zcode-pretooluse.sh` Write/Edit/ApplyPatch 分支 +30 行 advisory，fail-open）：Edit/Write 目标 .md 且非 plans/ 且（多行∨old+new≥200∨Write≥600）→ stdout 注入 `[md-edit-ops] 提醒:` 一行——**每次结构性 md 写入必见**，单行小改静默（zcode 位 LIVE 现读现跑=改完即生效）；②语义接线：execution-recall-card §B + task-discipline SKILL 速查各 +1 行（task-planner 全流程阶段翻转必读面）。触发链=机械 hook（普通随手 Edit）→ 纪律条款（管控流）→ 技能触发词（显式批量任务）三层全覆盖。
 - **部署位**：zcode/claude/opencode/agents/cursor **5 位 19 文件 IDENTICAL**；smart-merge-back --deploy 覆盖 claude/opencode，zcode 运行位自保护 REJECTED 需手动 rm+cp（判例），新增技能与 discipline 位须文件级手动 cp（--deploy 只覆盖 task-planner 兄弟技能）。
 - **使用契约**：构造指令单→`--dry-run` 看全貌 matched→正式跑→apply-report 路径记 progress `[recheck]` 行（Rule 106.1/106.6 协同）；失败单零写入可安全重试。
 

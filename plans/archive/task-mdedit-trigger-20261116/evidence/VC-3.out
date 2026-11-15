@@ -1,0 +1,16 @@
+# [run-verification] VC-3 | 2026-11-15T20:30:59Z | cmd: `bash -lc 'H="/mnt/data/dev/task-planner-skill/skills/task-planner/scripts/zcode-pretooluse.sh"; p1=$(printf "%s" "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/x.md\",\"old_string\":\"a\nb\",\"new_string\":\"c\"}}" | bash "$H"); o=$(printf "a%.0s" {1..120}); p2=$(printf "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/y.md\",\"old_string\":\"x\",\"new_string\":\"%s\"}}" "$o$o" | bash "$H"); c=$(head -c 650 /dev/zero | tr "\0" "m"); p3=$(printf "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"/tmp/z.md\",\"content\":\"%s\"}}" "$c" | bash "$H"); n1=$(printf "%s" "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/plans/a.md\",\"old_string\":\"a\nb\",\"new_string\":\"c\"}}" | bash "$H"); n2=$(printf "%s" "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/tmp/a.md\",\"old_string\":\"hi\",\"new_string\":\"yo\"}}" | bash "$H"); n3=$(printf "%s" "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"/tmp/a.md\",\"content\":\"short\"}}" | bash "$H"); echo "$p1$p2$p3" | grep -q "md-edit-ops] 提醒:" && ! echo "$n1$n2$n3" | grep -q "md-edit-ops] 提醒:"'`
+# ---- stdout/stderr ----
+[delegation-block] 🚫 主进程直做拦截 — file=/tmp/z.md
+按 SKILL.md 路由表派子代理执行(Write/Edit/ApplyPatch 业务代码默认派 code-assistant/executor);
+若属误拦,确认文件路径是否应纳入 plans/ 白名单(.md/.json,见 check-delegation.sh);
+若用户明文要求主进程亲为,请**用户**在主对话确认后运行技能目录下 allow-direct.sh(路径见 scripts/):
+  提示语:on 子命令需要 --confirm-user-requested 参数;同时会校验当前 sid 是否已 bypass 过(同 sid 仅一次;若需同 plan-dir 二次 bypass,加 --force)
+(30 分钟窗口;会被 ledger 记录并在终验展示)
+[delegation-block] 🚫 主进程直做拦截 — file=/tmp/a.md
+按 SKILL.md 路由表派子代理执行(Write/Edit/ApplyPatch 业务代码默认派 code-assistant/executor);
+若属误拦,确认文件路径是否应纳入 plans/ 白名单(.md/.json,见 check-delegation.sh);
+若用户明文要求主进程亲为,请**用户**在主对话确认后运行技能目录下 allow-direct.sh(路径见 scripts/):
+  提示语:on 子命令需要 --confirm-user-requested 参数;同时会校验当前 sid 是否已 bypass 过(同 sid 仅一次;若需同 plan-dir 二次 bypass,加 --force)
+(30 分钟窗口;会被 ledger 记录并在终验展示)
+
+# exit=0

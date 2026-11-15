@@ -1,0 +1,4 @@
+# [run-verification] VC-5 | 2026-11-15T20:31:01Z | cmd: `bash -lc 'S=/mnt/data/dev/task-planner-skill/skills; h=0; d=0; for base in "$HOME/.zcode" "$HOME/.claude" "$HOME/.cursor" "$HOME/.agents" "$HOME/.config/opencode"; do cmp -s "$S/task-planner/scripts/zcode-pretooluse.sh" "$base/skills/task-planner/scripts/zcode-pretooluse.sh" && h=$((h+1)); if [ -d "$base/skills/task-discipline" ]; then cmp -s "$S/task-discipline/references/execution-recall-card.md" "$base/skills/task-discipline/references/execution-recall-card.md" && cmp -s "$S/task-discipline/SKILL.md" "$base/skills/task-discipline/SKILL.md" && d=$((d+1)); fi; done; test "$h" -eq 5 -a "$d" -eq 4'`
+# ---- stdout/stderr ----
+
+# exit=0
