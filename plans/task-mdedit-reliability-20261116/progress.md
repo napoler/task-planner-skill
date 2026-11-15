@@ -130,6 +130,11 @@
 - **R 锚定**：本 Phase 服务 R1/R5「跨项目复用落地」——合并回 master 并同步多环境部署位，使纠正跨项目生效
 - Actions taken:
   - [2026-11-16 03:10] P6 开启。103.6 同步核对清单（多文件变更集：worktree 6 文件=md-edit-ops 4+discipline 106.6+spec-mode 指针+registry 行）：P4 返回已逐文件 wc/diff 对照（754→760/36→37/84→85）、registry 尾行亲验、SKILL 互引 grep 亲验——清单全绿。
+  - [2026-11-16 03:12] worktree 提交（Rule 27 pathspec：md-edit-ops+discipline+spec-mode+registry）→ run-verification 首跑 VC-4/5 FAIL=验证契约命令锚缺陷（`^\*\*Executor` 缺 `- ` 前缀/Verify command 缺两空格缩进锚）→ 修正 verification.md V-4/V-5 与 task_plan VC-4/VC-5 命令 → re-attest（SHA 335e9311）→ 复跑 **6/6 PASS**。
+  - [2026-11-16 03:15] smart-merge-back --deploy 首跑 MASTER_AHEAD 中止（并行会话 4189ec6）→ master 合入 worktree（零重叠，selftest 合并后 52/52）→ 重跑 **MERGED 71e32dc**；部署：claude/opencode SWAPPED，zcode 位 REJECTED（运行位自保护=判例预期）→ 手动文件级部署补齐：md-edit-ops 新技能×5 位、discipline×4 位、task-planner 2 文件×5 位，**逐文件 diff=ALL IDENTICAL（19 文件各位）**；部署副本运行位冒烟=原始 fixture dry-run exit 0（已应用 fixture 被 staleness 守卫 exit 4 拦截=防护理应如此）；worktree+分支已清理。
+  - [2026-11-16 03:20] plans/ 簿记提交（eeb55bc，pathspec 锁定）；主仓复验=md-edit-ops 脚本在位+106.6 命中+合并 71e32dc 在史。
+  - [2026-11-16 03:22] [recall-final] Rule 84.14 收尾回读第 1 轮：全量回读六文档（task_plan/findings/progress/verification/knowledge-brief/user-session-log）五维互洽——需求↔目标（R1-R6 逐条↔Goal↔VC 6/6 PASS）、执行↔验证（P1-P6 证据链：调研落盘/设计矩阵/757 行实现主进程复核/selftest 52/52×2 运行时/部署 19 文件 IDENTICAL/运行位冒烟）、知识维（kb §2/§3 蒸馏已落）。过程缺陷 2 项均当轮闭环（VC-4/5 命令锚格式→修复+re-attest；CWD 漂移误写 worktree→清理+恢复+Error Log 登记）。**零未处置新发现=收敛出口**。
+  - **CWD 漂移事故登记（Rule 19.4）**：03:05 前后一次 Bash 因工作目录滞留 worktree 导致 gate/ledger/sync 误写 worktree 根（ledger-main.jsonl）与 worktree plans/INDEX.md——当轮发现当轮清理（rm 误写 ledger+git restore INDEX+正确目录重跑），主仓 ledger 无损；Prevention=计划目录脚本一律绝对路径或 cd 同程（既有判例复训）。
 - Files created/modified:
   - （暂无）
 - Test Results:
