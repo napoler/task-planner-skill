@@ -11,6 +11,7 @@
 <!-- 本会话日期,如 2026-09-05 -->
 
 ### Phase 1: Requirements & Discovery
+- **R 锚定**：R1（成品无通读草率交接）+R3（部分编辑无全局思考=根因）——本 Phase 定位缺口载体
 - **Status:** complete
 - **Started:** 2026-11-16 03:59
 - Actions taken:
@@ -26,6 +27,7 @@
   | git 归属 | git -C ~/.zcode / ~/.agents rev-parse | zcode=git 仓/agents=非 git | 同预期 | PASS |
 
 ### Phase 2: Planning & Structure
+- **R 锚定**：R1+R2（逐分镜落实类缺陷=逐单元铁律来源）+R3+R4（交付前全局通读审查=制度目标）
 - **Status:** complete
 - **Started:** 2026-11-16 04:00
 - Actions taken:
@@ -37,6 +39,7 @@
   - 文档自查：CA 表与设计文本唯一真源一致
 
 ### Phase 3: Implementation
+- **R 锚定**：R1+R2+R4——本 Phase 落地通读门制度（七铁律技能+三接线）
 - **Status:** complete
 - **Started:** 2026-11-16 04:03
 - Actions taken:
@@ -61,6 +64,7 @@
   | merge log | ~/.zcode log -3 | merge commit 在顶 | 5cd47a2/dd35940/eaa0df5 | PASS |
 
 ### Phase 4: Testing & Verification
+- **R 锚定**：R1+R2+R4——本 Phase 独立复核制度落地证据
 - **Status:** complete
 - **Started:** 2026-11-16 04:13
 - Actions taken:
@@ -75,6 +79,7 @@
   | 委派统计 | check-delegation stats | verdict=ok | ok（rate 0.4+白名单编号全命中） | PASS |
 
 ### Phase 5: Delivery
+- **R 锚定**：R1+R2+R4——本 Phase 收尾交付（CR 闭环+归档+记忆）
 - **Status:** complete
 - **Started:** 2026-11-16 04:20
 - Actions taken:
@@ -84,6 +89,8 @@
   - 收尾回读 84.14 两轮收敛（轮1 三文档漏写已补；轮2 零新发现）
   - 归档：check-complete exit 0 后 set-active-plan --clear + archive-plan（本段完成证据行下方序列执行）
   - **CR-GATE（Rule 42.7）**：首跑 FAILED（diff 1756 行无 CR 记录）→ 派 critic 轮 1（agent_9dc4b313）→ verdict REJECTED（10 findings：C-1 适用面自相矛盾 CRITICAL+M-1 媒体链未接线+M-2 上游 lock 覆盖风险 MAJOR+m-1..m-4 MINOR+n-1..n-3 NIT，全部带实测证据）→ 处置=七处修复（CA-7..CA-10）+M-1/M-2 登记已知遗留（task_plan.md 遗留块，范围裁决面上抛用户）→ executor 修订落盘+主进程实测复核（条件句/diamond/铁律 5-7 扩写/双位 TWIN-IDENTICAL 保持/末尾空格清理）→ **critic 轮 2（同代理续会话）verdict=APPROVED**（8 findings 全 MINOR/NIT 无阻塞；C-1 判已解决；M-1/M-2 登记判充分）→ 轮 2 措辞共振五处修订（R2-1/2/3/7/8：条件独立成行+豁免挂 plan verifications 真实机制+sdd 节点回 box 动作化+铁律 6 兜底含行范围+verification-gate 引用不绑路径，executor agent_0af4a724 落盘 5/5+旧串清零）→ R2-4/5/6 主进程修复（设计块失效标注+裁决表引遗留块+整读计数 4→6）→ **CR APPROVED 留痕（轮 2 verdict=APPROVED，2026-11-16，critic agent_9dc4b313）**
+  - [judge] Rule 73.4 三时点评判（2026-11-16 CR 两轮后）：🔒 不变量——R 逐字原文零改动 ✓、VC 表语义未动（R2-6 计数锚已同步实测值）✓、改动面未越界（critic 时间窗实测仅 3 文件）✓；🔀 可变量——接线措辞经 CR 两轮演化，CA-7..CA-10+设计块失效标注全部登记 ✓；📈 学得量→findings.md/Error Log（CR 修复互检教训）。合并回前评判：~/.zcode merge 5cd47a2 已落且 worktree 版与 agents 位一致（TWIN-IDENTICAL 实测）✓
+  - [SKILL-MODIFY 声明] Rule 36.6：本任务对技能文件的改动全为纯增量文本条款——critic 实证三份 diff 仅 2 处许可内重排（Step 3 标题顺延/sdd 图边替换），零实质删除、零删除性行为
 - Files created/modified:
   - plans/task-finalread-20261116/*（本目录）；knowledge/entries/superpowers-delivery-readthrough-gate.md；knowledge/INDEX.md
 - Test Results:
