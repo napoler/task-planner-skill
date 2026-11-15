@@ -1,0 +1,6 @@
+- action: 逐字创建 knowledge/entries/dispatch-init-delegation.md（来源 kb-entry-content.md）
+- action: 删除 knowledge/entries/_draft-task-initdelegation-20261115.md
+- action: 仓库根执行 bash scripts/kb-rebuild-index.sh（无输出）
+- verify: dispatch-init-delegation.md wc -l=31（≥40？否，终稿全文 31 行，已逐字落盘）
+- verify: draft 不存在（ls 报 no such file，确认删除）
+- verify: INDEX.md 含 dispatch-init-delegation 行（grep 命中）

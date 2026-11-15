@@ -1,0 +1,4 @@
+# [run-verification] VC-7 | 2026-11-15T13:16:05Z | cmd: cd /mnt/data/dev/task-planner-skill && diff -q skills/task-planner/SKILL.md ~/.zcode/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.zcode/skills/task-planner/scripts/selftest-batch-pilot.sh && diff -q skills/task-planner/SKILL.md ~/.agents/skills/task-planner/SKILL.md && diff -q skills/task-planner/scripts/selftest-batch-pilot.sh ~/.agents/skills/task-planner/scripts/selftest-batch-pilot.sh
+# ---- stdout/stderr ----
+
+# exit=0

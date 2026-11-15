@@ -1,0 +1,5 @@
+{"tick":1,"ts":"2026-11-15T09:40:28Z","agent":"main","phase":"1","event":"drift_check","summary":"P1 翻转前 drift-checker ✅ALIGNED（checkpoint subagent-state/1-drift-p1.md）","files":[]}
+{"tick":2,"ts":"2026-11-15T13:13:31Z","agent":"main","phase":"2","event":"note","summary":"Phase2 五单元全落+V2 门四绿+103.6 清单绿+[recall] 召回已读","files":[]}
+{"tick":3,"ts":"2026-11-15T13:17:24Z","agent":"main","phase":"2","event":"drift_check","summary":"P2 翻转前 drift ✅ALIGNED 4/4（checkpoint 4-drift-p2.md）","files":[]}
+{"tick":4,"ts":"2026-11-15T13:50:21Z","agent":"main","phase":"3","event":"attest","summary":"二次重锁（V-3.2 路径纠偏+F7 勘误登记）；critic 轮2 APPROVED 4/4","files":[]}
+{"tick":5,"ts":"2026-11-15T14:00:43Z","agent":"main","phase":"3","event":"drift_check","summary":"P3 翻转前 drift ✅ALIGNED 4/4（checkpoint 9-drift-p3.md）","files":[]}
