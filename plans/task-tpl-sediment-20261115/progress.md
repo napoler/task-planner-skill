@@ -24,6 +24,7 @@
   - 哨兵清除（plan-created.cjs，路径实测=skills/task-planner/scripts/）+会话指针绑定确认 → draft 组并行派发（P1-S1+P1-S2）
   - draft 组返回→双产物 Read 核验（36/60 行与自报一致）→ 主进程定稿复核修正 2 处（§3 init 形态、4 处 findings 指针换机制锚）
   - V-1.1/V-1.2 PASS → check-3file-gate → Phase 1 翻 complete（重 attest 更新锁定）
+- [goal:G1] 完成证据：V-1.1（clause-drafts 锚=2/门锚=7）+V-1.2（advisor name=1/步骤锚=21）双 PASS（本文件 Test Results）+定稿修正 2 处（findings F11/F12）+drafts 在位（clause-drafts.md 36 行/advisor-draft.md 60 行）
 - Files created/modified:
   - plans/task-tpl-sediment-20261115/*（7 计划文件填写）+ clause-drafts.md（36 行定稿）+ advisor-draft.md（60 行定稿）+ verification.md（7 VC+4 Phase Gates 填写）
 - Test Results:
@@ -54,6 +55,7 @@
   | 103.6 同步核对 | 全级联面 | 清单全绿 | 五落点+计数窗+TL-17+删除行审计=0 | PASS |
   | selftest-verification-gate（S5b 实跑） | worktree | exit 0 | PASS=13 FAIL=0 exit 0 | PASS |
   | Rule 27 commit | worktree | 产物入库 | 8bc8e86，10 文件，worktree 清洁 | PASS |
+- [goal:G2] 完成证据：V-2.1（34.8/34.9 锚=2）+V-2.2（九文件级联 grep 齐+旧串 0）+103.6 清单全绿+commit 8bc8e86（10 文件+96/-26，本文件 Test Results）
 
 ### Phase 3: 审查门+回归
 <!-- Phase N 按上方 Phase 1 结构续加 -->
@@ -72,12 +74,35 @@
   | 修复单元 ×5 | C-1..C-9 | 逐项 PASS | 5/5 PASS（grep/diff 实测） | PASS |
   | selftest-verification-gate 复跑 | worktree ff2d992 | exit 0 | PASS=13 FAIL=0 | PASS |
   | critic R2 复核 | ff2d992 | APPROVED | C-1..C-9 全 PASS；新捕获 C-10/C-11（CA-14 修复中）；全量套件 95/2（2 FAIL=预存漂移，另案） | →F4 批次 |
+- [goal:G3] 完成证据：候选过门三证据=G1（39 行五结构块）+G2 复跑 PASS（smoke-g2-r2.md：project-level 选中+零残留）+G3（critic R1-R3 E 项 APPROVED）+CA-8 落位（.zcode/plan-templates/ 1 文件+manifest）
+- [goal:G4] 完成证据：review-critic-r3.md verdict=APPROVED+回归 comm -13=空（新增 FAIL=0，regression-s3.md；预存 T11/T11b B1 两侧一致另案）
   - F4a/F4b 修复（C-10 路径深度+C-11 六点语义判定，F4b 捕获第 6 处 README:280）→ commit f2555a0
   - critic R3 终审 **APPROVED**（NIT-1 非阻断：README 路由表缺 verification-gate 行，pre-existing → follow-up 登记）
   - P3-S2 G2 冒烟首跑 **FAIL**（类型标识双后缀 vs init 派生口径）→ CA-15 修复（候选统一 rule-clause-cascade+VC-3 聚合口径+advisor SOP 补命名纪律）→ 复跑 **PASS**（commit 71c97ad）
   - P3-S3 回归：新增 FAIL=0（预存 T11/T11b B1 两侧一致）
   - CA-8 落位：.zcode/plan-templates/rule-clause-cascade-type.md+manifest（首个项目适配模板上线）
   - [recall] Rule 93 规范召回：Phase 3 翻转前主进程 Read execution-recall-card.md（召回卡在位；本 Phase 纪律面=双轮质检闭环/证据锚/收尾回读准备）
+
+### Phase 4: 合并回+部署同步+终验交付
+<!-- Phase N 按上方 Phase 1 结构续加 -->
+- **Status:** complete
+- **Started:** 2026-11-15 17:00
+- Actions taken:
+  - smart-merge-back 首跑 MASTER_AHEAD 中止→worktree merge master（60f2ff6，他任务 51.14/recall 改动自动并集）→重跑遇他任务 staged 归档移动阻塞→**stash 窗口法**合并成功（merge 7ea0a98，双向核验：34.8/34.9+路由在位+51.14 在位+staged 22 项还原）
+  - --deploy：task-planner 目录 3 槽位 IDENTICAL；卫星（advisor/kit/verification-gate）手工 cp 四宿主→20 对 diff=0
+  - 部署后回归：97 selftest 聚合 comm -13=空（VC-6 PASS）→worktree remove+branch 删
+  - 三仓 push：源仓 up-to-date（他会话顺带推送）/zcode-config 40b03bb/claude-config 15f2f36（pathspec 锁定 12 文件）→ahead=0
+  - kb 入库（kb-sync draft→精炼 template-sedimentation-mechanism.md→rebuild INDEX）
+  - 终验 VC-1..VC-7 全 PASS（本文件+verification.md 门记录）→Rule 27 补提交（cc09972）→state-mismatch 修复（本段+Phase 1-3 [goal:Gn] 行）
+- Files created/modified:
+  - master merge 7ea0a98；.zcode/plan-templates/{README.md,rule-clause-cascade-type.md}；knowledge/entries/template-sedimentation-mechanism.md；三部署仓 12 文件
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | VC-1..VC-7 终验 | 全量 | 全 PASS | 7/7 PASS | PASS |
+  | 部署对账 | 20 对+3 槽位 | diff=0 | 20 对+IDENTICAL | PASS |
+  | 三仓 push | 源/zcode/claude | ahead=0 | 0/0/0 | PASS |
+- [goal:G5] 完成证据：merge 7ea0a98（双向核验）+VC-7 20 对 diff=0+VC-6 comm=0+三仓 push 回执（zcode 40b03bb/claude 15f2f36）+worktree 清理回执
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

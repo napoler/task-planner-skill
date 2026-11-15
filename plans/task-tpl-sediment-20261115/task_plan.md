@@ -403,16 +403,15 @@ smart-merge-back 合并回主仓（worktree 全 VC+清洁）→ --deploy 对账 
 <!-- 
   WHAT: stash 窗口合并回（在途任务竞写预案）→部署对账→部署后回归→push→归档。
 -->
-- [ ] 合并回主仓（在途任务竞写预案：区域隔离+并集解/stash 窗口法，判例 task-docmod-recheck）+worktree 清理
-- [ ] 部署同步：--deploy（task-planner 目录 3 槽位，variant 随目录覆盖）+advisor 目录 cp 至宿主位（install-stub 清单）+cursor 位落盘核对
-- [ ] 部署后 --fresh 全量回归 FAIL ⊆ 基线（VC-6 复验）+部署位逐对 diff=0（VC-7）
-- [ ] 三仓 push（pathspec 锁定；询问点①默认「执行（11-05 先例）」/5min）+INDEX 刷新
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-tpl-sediment-20261115 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
-- [ ] 知识提取入库：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名 → `bash scripts/kb-rebuild-index.sh`（§7 回链）
-- [ ] 模板感知处置登记（Rule 34.3②：本任务类型是否沉淀新 variant→按 34.8 新门自评估登记）
-- **V-N:** VC-6, VC-7
-- **Status:** pending
+- [x] 合并回主仓（stash 窗口法：他任务 staged 归档移动阻塞→stash/merge/pop，双向核验并集保全）+worktree 清理（remove+branch 删）
+- [x] 部署同步：--deploy（task-planner 目录 3 槽位 IDENTICAL）+卫星（advisor/kit/verification-gate）cp 四宿主+20 对 diff=0
+- [x] 部署后回归 FAIL ⊆ 基线（comm -13=空，VC-6 PASS）
+- [x] 三仓 push（pathspec 锁定 12 文件；询问点①默认执行：源仓 up-to-date（他会话顺带推送）/zcode 40b03bb/claude 15f2f36，ahead=0）+INDEX 刷新（收尾段执行）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮 1 簿记补齐+follow-up 登记→轮 2 零新发现，见收尾回读表）
+- [x] 知识提取入库：kb-sync draft→精炼 template-sedimentation-mechanism.md→kb-rebuild-index（INDEX 命中 1）
+- [x] 模板感知处置登记（Rule 34.3② 终验定案=不沉淀官方 variant：类型已被 rule-enhancement-type 覆盖；dogfood 产出=项目级模板 rule-clause-cascade 已上线）
+- **V-N:** VC-6, VC-7（终验 7/7 PASS，progress Phase 4 Test Results）
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
