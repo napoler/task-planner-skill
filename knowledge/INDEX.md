@@ -1,6 +1,6 @@
 # 知识库索引 (knowledge/INDEX.md)
 
-> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-15T21:33:30Z | 条目计数: 31
+> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-15T23:05:49Z | 条目计数: 32
 
 | id | title | tags | sources | file |
 | anchor-discipline-plan-history-recall | "锚纪律与子代理产锚幻觉治理（plan-history-recall dogfood 判例）" | [kb, anchor-discipline, plan-history-recall, subagent-fabrication, vc6-vacuous-gate] | [plans/task-history-recall-20261116/design.md, plans/task-history-recall-20261116/findings.md, plans/task-history-recall-20261116/progress.md, skills/plan-history-recall/SKILL.md] | entries/anchor-discipline-plan-history-recall.md |
@@ -28,6 +28,7 @@
 | task-audit-tail-20261026 | "审计尾批处置判例：删除前实况核查推翻「幽灵副本」误判/P01 封存/素材换词语义安全判据" | [判例, 删除前核查, 僵尸计划, selftest素材] | [plans/archive/task-audit-tail-20261026/, plans/archive/task-v190-skill-audit-legacy-fix/] | entries/task-audit-tail-20261026.md |
 | task-clause-generalize-20261115 | "94.7/51.14/64.7 泛化修订与落位教训" | [rule-landing, clause-generalize, vc-gate, insert-discipline] | plans/archive/task-clause-generalize-20261115/findings.md<br>plans/archive/task-clause-generalize-20261115/task_plan.md<br>plans/archive/task-clause-generalize-20261115/clause-drafts-v2.md<br>plans/review-clause-generality-20261115.md<br>skills/task-discipline/references/critical-rules-discipline.md<br>skills/task-planner/references/critical-rules.md<br>skills/task-drift-guard/references/critical-rules-drift.md<br>skills/task-planner/SKILL.md<br>skills/task-discipline/references/execution-recall-card.md | entries/task-clause-generalize-20261115.md |
 | task-drift-fakeqc-20261115 | "执行偏移与虚假完成声称根治：94.7/51.14/64.7 三条款判例与插段坑" | [rule-landing, drift-guard, claim-honesty, clause-insert] | [plans/task-drift-fakeqc-20261115/knowledge-brief.md, plans/task-drift-fakeqc-20261115/clause-drafts.md, plans/task-drift-fakeqc-20261115/evidence-session-extract.md, plans/task-drift-fakeqc-20261115/progress.md] | entries/task-drift-fakeqc-20261115.md |
+| task-intentresume-20261116 | "意图切换回切闭环——B 收口后主动回切挂起计划 A（task-intentresume-20261116）" | [intent-switch, 回切, 计划隔离, Rule94, plan-resume, 显性通告] | [plans/archive/task-intentswitch-20261116/task_plan.md, plans/task-intentresume-20261116/findings.md] | entries/task-intentresume-20261116.md |
 | task-intentswitch-20261116 | "会话意图切换主动换计划——单入口判定卡+显性通告+切换登记（task-intentswitch-20261116）" | [intent-switch, 计划隔离, Rule94, Rule102, UPS-hook, 显性化] | [plans/task-intentswitch-20261116/task_plan.md, plans/task-intentswitch-20261116/findings.md] | entries/task-intentswitch-20261116.md |
 | task-skill-audit-fix-20261026 | "skill 深度审查缺陷修复：跨技能引用深度规则/索引级联漏号/僵尸计划收口范式" | [skill-audit, 跨技能引用, 委派门, 僵尸计划, 收口] | [plans/skill-audit-20261026/report.md, plans/task-skill-audit-fix-20261026/findings.md] | entries/task-skill-audit-fix-20261026.md |
 | template-sedimentation-mechanism | "任务路径沉淀机制：Rule 34.8/34.9 两级审查门与项目级模板位（task-tpl-sediment-20261115）" | [模板沉淀, rule-34, plan-template-advisor, 审查门, 项目级模板] | [skills/plan-template-kit/references/critical-rules-template.md, skills/plan-template-advisor/SKILL.md, plans/archive/task-tpl-sediment-20261115/findings.md] | entries/template-sedimentation-mechanism.md |
