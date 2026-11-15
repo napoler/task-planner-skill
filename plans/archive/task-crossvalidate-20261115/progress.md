@@ -100,3 +100,4 @@
 - [CR APPROVED] 42.7 留痕：critic 轮2 复检 APPROVED 4/4（checkpoint subagent-state/8-critic-r2.md；轮1 CHANGES_REQUESTED→fix 2abe3ec 闭环；负向实测断言非真空）——2026-11-15
 - [Error] git add plans/ 盲扫捎带并行会话未跟踪文件 plans/task-positioning-20261115/task_plan.md 入 0545712→归档提交（判例复发=task-userlog-recall 同款；处置=不改写历史（并行活跃）留原样+登记教训 pathspec 锁定本任务目录）
 - [judge] Rule 73.2 对齐三问（M1 修复裁决+归档动作，2026-11-15）：①问=修复 94→91 是否偏离用户原话？答=否——R5 固化正确性要求计数口径真实，critic 双路径证实草案 91 为正确值，修复方向与 R 锚一致 ②问=归档前状态与计划 VC 一致？答=是——7/7 VC PASS+合并 44f7f43+land 108 在账 ③问=有无未授权替代/删除？答=无——全程增量原则+并行会话暂存态落账系消解链并集解（归档副本在位核验）。结论=[align] 修复与归档动作对齐，继续收口
+- [2026-11-16 部署] 用户指令「部署到本地」→五部署位实测：--deploy 已覆盖 task-planner 五文件（zcode/claude/opencode OK），但 verification-gate 两文件三位 DIFF+cursor 位 6 DIFF+1 MISS+agents 位 SKILL 旧版（--deploy post-verify 基准只写 task-planner 的判例复发）；文件级 cp 全位同步→ALL-POSITIONS-IDENTICAL；部署位侧 CV 脚本自洽冒烟过
