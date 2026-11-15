@@ -38,7 +38,7 @@ set -u
 #   (设计文档 §6「install-stub.sh 注册」: :36 数组追加 3 新卫星, install_satellite_skills() 自动 rsync);
 #   另 3 个收编卫星(plan-resume/progress-tracker/task-drift-guard)不在本数组——经 lib/install-companion.sh
 #   顶层 skills/*/ 自动发现机制分发(2026-09-04 布局统一口径), 本行只登记 install-stub 显式 rsync 的 7 个
-SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router task-dispatch task-discipline media-planner)
+SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router task-dispatch task-discipline media-planner plan-template-advisor)
 
 # Per-tool SKILL.md frontmatter template generator
 generate_stub_skill_md() {

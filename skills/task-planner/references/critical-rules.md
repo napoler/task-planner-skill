@@ -175,7 +175,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 ### 82 技能专业化分层纪律（P0 — task-v171，目标：核心技能唯一性制度化——核心只管四文件罗盘域（计划制作+记录文档管理），非核心域规则/脚本/目录分层归属卫星，删除与落盘原子配对，分层架构防回潮；判定面=LLM 行为+selftest 静态守护、零新 config 键；衔接 Rule 36.5（保守化）/20.6（编号预留），既有条款原文零改动）
 
-**建制（为什么有这条）**：task-planner 曾把 77 条既有规则（1-76+80）与全流程脚本堆在单一核心，SKILL.md 556 行什么都讲——产出边界混乱（用户定性「什么都负责导致产出边界混乱」，R1-R5 见 plans/task-v171-skill-specialization/task_plan.md）。task-v171 起按域分层：核心=四文件罗盘（`task_plan.md`/`findings.md`/`progress.md`/`knowledge-brief.md`，Rule 19/20/62）+用户会话逐字记录专档（Rule 80）；子代理派发与拆分调度→task-dispatch；通用执行纪律与工作产物→task-discipline；媒体制作→media-planner；其余规则归 7 个既有卫星（plan-research-router/plan-template-kit/plan-collab-router/plan-cost-guard/plan-resume/progress-tracker/task-drift-guard）。归属判定=「主题⟷四文件/计划生命周期门→核心；否则按域归卫星」。
+**建制（为什么有这条）**：task-planner 曾把 77 条既有规则（1-76+80）与全流程脚本堆在单一核心，SKILL.md 556 行什么都讲——产出边界混乱（用户定性「什么都负责导致产出边界混乱」，R1-R5 见 plans/task-v171-skill-specialization/task_plan.md）。task-v171 起按域分层：核心=四文件罗盘（`task_plan.md`/`findings.md`/`progress.md`/`knowledge-brief.md`，Rule 19/20/62）+用户会话逐字记录专档（Rule 80）；子代理派发与拆分调度→task-dispatch；通用执行纪律与工作产物→task-discipline；媒体制作→media-planner；其余规则归 8 个既有卫星（plan-research-router/plan-template-kit/plan-template-advisor/plan-collab-router/plan-cost-guard/plan-resume/progress-tracker/task-drift-guard）。归属判定=「主题⟷四文件/计划生命周期门→核心；否则按域归卫星」。
 
 **边界（管什么/不管什么）**：核心 `references/critical-rules.md` 只保留核心域规则全文（14 条：1,2,3,5,19,20,26,51,62,66,80,81,82,83）（2026-10-15 task-v176 D10 更正：原列 12 条（1,2,3,5,19,20,26,51,62,66,80,82），实际 Rule 81/83 已先后落核心（task-v170/task-v172），本清单未同步；以 SKILL.md:9/175「核心在位 14 条」口径为准）；非核心域规则的唯一权威全文在其归属卫星的 `references/critical-rules-<域>.md`——核心文件只留末尾「卫星路由索引」（路径+规则编号集+调用条件），**禁止在核心文件留存非核心域规则正文或镜像副本**（双份正文=漂移源，改一份漏一份=规则分叉）；卫星之间不互相收编（域间争议按「先例归属→用户裁决」收敛，禁静默改嫁）；新规则先过 Rule 20.6 rule-reserve.sh 查重，再入其归属域文件，禁直接写入核心。
 
@@ -191,13 +191,14 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 - **83.3 禁 ≥2 次同法重试**：同一通道请求失败后，禁 ≥2 次同法重试（Rule 22.3 同法失败 ≥2 次强制换道）；第 1 次失败后即进入 83.2 快速失败路径。
 - **83.4 机制（零新 config 键）**：`scripts/selftest-channel-fast-fail.sh` 静态守护（83.1-83.3 子条文本锚 + SKILL.md 投诉响应协议段锚 + 零新键负断言）；合规自查载体=SKILL.md G10 域（原 C57 编号已被 Rule 81 归档自查占用——v171 瘦身后合规清单只剩 G1-G10、C 行物理不存在，G10/G9 承载 Rule 81/83 自查，本脚本 CF-01..06 为行为断言）（2026-10-15 task-v176 D8/D11 更正：原写「合规清单 C57 行」——C57 与 SKILL.md:125 口径（C57=Rule 81 域原编号）冲突，且 v171 后 C 行不存在、selftest-channel-fast-fail.sh 无此断言，改实况表述）；SKILL.md 投诉响应协议段「通道不可用快速失败（Rule 83）」条目锚。
 
-## 卫星路由索引（11 卫星 — 非核心域规则全文按需 Read；路径相对仓根）
+## 卫星路由索引（12 卫星 — 非核心域规则全文按需 Read；路径相对仓根）
 
 - **task-dispatch**（域=子代理派发与拆分调度）：规则全文见 `../../task-dispatch/references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104）；调用条件=涉及子代理拆分/派发/并行调度/粒度校验/执行体选型/冲突隔离/使用点标注时。
 - **task-discipline**（域=执行纪律与工作产物维护）：规则全文见 `../../task-discipline/references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,102）；调用条件=执行期纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物/惰性上抛/不可用判词证据面/否定矛盾触发上下文记录整理/跨项目跨目录操作授权/临时目录统一与工作树内放/git 使用加强/预算声明与执行动作自动批准（28.6）/长耗时任务停等止损（28.7）相关时，新请求计划同步反思/取消撤销文档同步/打断接续顺序执行相关时。
 - **media-planner**（域=媒体制作任务派发）：规则全文见 `../../media-planner/references/critical-rules-media.md`（Rule 47,49,50）；调用条件=视频生成/图片生成/剧集创作类任务的媒体轴拆分与执行体路由/生成产物物理常识缺陷强制抽检（47.6）时。
 - **plan-research-router**（域=调研分析与证据纪律）：规则全文见 `../../plan-research-router/references/critical-rules-research.md`（Rule 58,63,75）；调用条件=调研/分析/评估/归因类任务的证据面覆盖与反推诿时、用户明示参考网络诉求触发（75.9）/调研通道降级链推进（75.10）/无证据禁脑补核验（75.11）时。
 - **plan-template-kit**（域=模板生命周期与难度分级）：规则全文见 `../../plan-template-kit/references/critical-rules-template.md`（Rule 16,34,37,38）；调用条件=模板选取/沉淀入库/难度分级/轻量档判定时。
+- **plan-template-advisor**（域=项目模板适配与沉淀生产）：规则全文见 `../plan-template-advisor/SKILL.md`（规则随 SKILL 内联）；调用条件=项目模板适配分析/沉淀评估/缺口映射（Rule 34.8/34.9 消费面）时。
 - **plan-collab-router**（域=技能协同与工具面选择）：规则全文见 `../../plan-collab-router/references/critical-rules-collab.md`（Rule 39,40,91）；调用条件=动态工作流编排/harness 工具面主动选择时。
 - **plan-cost-guard**（域=成本控制）：规则全文见 `../../plan-cost-guard/references/critical-rules-cost.md`（Rule 17）；调用条件=opus 调用频次/嵌套成本/成本门控相关时。
 - **plan-resume**（域=计划续推）：规则全文见 `../../plan-resume/references/critical-rules-resume.md`（Rule 24）；调用条件=交付终态/会话恢复触发点的计划扫描与自主续推时。

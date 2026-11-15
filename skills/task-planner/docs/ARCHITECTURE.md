@@ -1,7 +1,7 @@
 # task-planner 多工具架构设计
 
 > **目标**：一份 canonical source，多工具部署位同步，零内容重复，env-var 解析路径。
-> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；80 条非核心规则按域分层至 11 卫星技能（3 新域 + 7 收编 + 1 验证域 verification-gate，Rule 84 task-v173 新增；其余 80 条中纪律域含 85/86/87/88/89/90/92/93/94/95/97、dispatch 域含 96，协同域含 91）；核心在位 14 条（1,2,3,5,19,20,26,51,62,66,80,81,82,83）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79；+Rule 97 → 80，2026-11-02 task-lazy-escalation-20261102），全集 14+80=94（77/78/79 已废弃不计）] --><!-- 2026-10-19 task-v191 对齐实态：Rules 1-92 全集、核心 12→14 条、非核心 76→73 条、第 11 颗卫星 verification-gate 入分解 --><!-- 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集 1-92→1-93、非核心 73→74 条 -->。
+> **家族分层（2026-10-12 task-v171）**：核心 = 四文件罗盘唯一管理域；80 条非核心规则按域分层至 12 卫星技能（4 新域 + 7 收编 + 1 验证域 verification-gate，Rule 84 task-v173 新增；其余 80 条中纪律域含 85/86/87/88/89/90/92/93/94/95/97、dispatch 域含 96，协同域含 91）；核心在位 14 条（1,2,3,5,19,20,26,51,62,66,80,81,82,83）；分层纪律 = Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 实测：卫星侧实体规则编号 dedup=76（+Rule 94 → 77，+Rule 95 → 78，+Rule 96 → 79；+Rule 97 → 80，2026-11-02 task-lazy-escalation-20261102），全集 14+80=94（77/78/79 已废弃不计）] --><!-- 2026-10-19 task-v191 对齐实态：Rules 1-92 全集、核心 12→14 条、非核心 76→73 条、第 11 颗卫星 verification-gate 入分解 --><!-- 2026-10-21 task-v195：Rule 93（规范再召回纪律）入纪律域，全集 1-92→1-93、非核心 73→74 条 -->。<!-- 2026-11-15 task-tpl-sediment-20261115 P2-S5b: 11→12 卫星计数同步（+plan-template-advisor 第 4 新域卫星） -->
 
 ---
 
@@ -10,7 +10,7 @@
 ### 1.1 单一事实源（Single Source of Truth）
 
 canonical 仓 `${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/` 是 task-planner 全部内容实现的唯一来源（2026-10-12 task-v171 拆分后实测）：
-- `SKILL.md`（237 行，hooks 字段为空；文末含 11 卫星路由表 + Rules 1-97 全集索引）<!-- 2026-10-19 task-v191 对齐实态：214→237 行、1-84→1-92 -->
+- `SKILL.md`（237 行，hooks 字段为空；文末含 12 卫星路由表 + Rules 1-97 全集索引）<!-- 2026-10-19 task-v191 对齐实态：214→237 行、1-84→1-92 --><!-- 2026-11-15 task-tpl-sediment-20261115: 11→12 卫星 -->
 - `references/`（6 篇规则文档：critical-rules/todo-sync/worktree-isolation/goal-gate/completion-gate/methodology；纪律/派发/媒体域规则已迁至各卫星 `references/critical-rules-*.md`）
 - `templates/`（13 个主模板 + 30 个 variant，`find templates -maxdepth 1 -type f -name '*.md' | wc -l` → 13，`templates/variant/*.md` → 30；variant 28/30 含「📚 必要知识储备」章节）
 - `scripts/`（148 条目 = 138 个 .sh（含 93 个 selftest-*.sh）+ .ps1/.cjs/.ts/.tsv + lib//capabilities/ 两个子目录）<!-- 2026-10-19 task-v191 对齐实态：119/110/76 → 146/137/92 --><!-- [2026-11-02 task-lazy-escalation-20261102 实测：新增 selftest-anti-deferral.sh，146/137/92 → 148/138/93] -->
@@ -32,9 +32,9 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 
 ---
 
-## 2. 技能家族分层：核心 + 11 卫星技能
+## 2. 技能家族分层：核心 + 12 卫星技能
 
-> 11 技能分层图 = 核心 task-planner + 3 新域卫星（task-dispatch / task-discipline / media-planner）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard）+ 1 验证域卫星（verification-gate，Rule 84，task-v173 新增；规则全文收编入 11 卫星，安装链路经 `lib/install-companion.sh` 顶层发现分发），共 12 个技能节点（核心 1 + 卫星 11）。<!-- 2026-10-19 task-v191 对齐实态：补第 11 颗 verification-gate，原「10 技能分层图/核心 1 + 卫星 10」分解与标题「11 卫星」矛盾 -->
+> 12 技能分层图 = 核心 task-planner + 4 新域卫星（task-dispatch / task-discipline / media-planner / plan-template-advisor〔task-tpl-sediment-20261115 新建〕）+ 7 收编卫星（plan-research-router / plan-template-kit / plan-collab-router / plan-cost-guard / plan-resume / progress-tracker / task-drift-guard）+ 1 验证域卫星（verification-gate，Rule 84，task-v173 新增；规则全文收编入 12 卫星，安装链路经 `lib/install-companion.sh` 顶层发现分发），共 13 个技能节点（核心 1 + 卫星 12）。<!-- 2026-10-19 task-v191 对齐实态：补第 11 颗 verification-gate，原「10 技能分层图/核心 1 + 卫星 10」分解与标题「11 卫星」矛盾 --><!-- 2026-11-15 task-tpl-sediment-20261115 P2-S5b: +plan-template-advisor 归入第 4 新域卫星，3→4/8→7 计数同步 -->
 
 ```
                     ┌───────────────────────────────────────────────┐
@@ -44,7 +44,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
                     └──────────────┬────────────────────────────────┘
                                    │ SKILL.md 文末「卫星路由表」按需 Read 规则全文
         ┌──────────────────────────┼───────────────────────────┐
-        ▼ 新域卫星 ×3（task-v171 新建）                            ▼ 收编卫星 ×7（既有 skill 收编规则全文）
+        ▼ 新域卫星 ×4（task-v171×3 + advisor）                       ▼ 收编卫星 ×7（既有 skill 收编规则全文）
 ┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
 │ task-dispatch      │ │ task-discipline    │ │ media-planner      │
 │ 子代理派发与拆分调度 │ │ 执行纪律与工作      │ │ 媒体制作任务派发    │
@@ -66,6 +66,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 │              ││61,64         │
 └──────────────┘└──────────────┘
 ```
+<!-- 2026-11-15 task-tpl-sediment-20261115: ASCII 图未重绘（第 4 新域卫星 plan-template-advisor 未增绘盒子），第 4 新域卫星 plan-template-advisor（项目模板适配与沉淀生产，Rule 34.8/34.9 消费面，task-tpl-sediment-20261115 新建，`../../plan-template-advisor/references/`）见下方 §2.1/§3 路由表 -->
 
 ### 2.1 新域卫星规格（task-v171 新建）
 
@@ -74,8 +75,9 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 | task-dispatch | 管「计划如何被拆分、派发、校验、调度」——子代理全生命周期的机器门控与执行纪律 | 不管四文件内容本身（核心）、通用执行纪律（task-discipline）、媒体制作（media-planner） | 11 | `../../task-dispatch/references/critical-rules-dispatch.md` |
 | task-discipline | 管「执行过程的纪律与工作产物」——错误闭环/证据/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收 | 不管四文件数据流转（核心 Rule 62）、派发机制（task-dispatch）、媒体制作 | 36 | `../../task-discipline/references/critical-rules-discipline.md` |
 | media-planner | 管「媒体制作类任务的拆分轴与执行体路由」——视频/图片/剧集创作媒体轴精细拆分 | 不管通用派发机制（task-dispatch）、通用纪律（task-discipline） | 3 | `../../media-planner/references/critical-rules-media.md` |
+| plan-template-advisor | 项目模板适配与沉淀生产 | 项目模板适配与沉淀生产（Rule 34.8/34.9 消费面） | 0 | `../../plan-template-advisor/references/` |
 
-新域卫星随迁资产：`task-dispatch` 收 6 个 scripts（analyze-splits/check-subagent-return/check-rescue-chain/subagent-fallback + selftest-rescue-chain/selftest-fallback）+ 3 篇 references；`task-discipline` 收 plan-hygiene.sh + capabilities/ + batch-quality-gate.md + capability-registry.md；`media-planner` 仅 SKILL.md + references。
+新域卫星随迁资产：`task-dispatch` 收 6 个 scripts（analyze-splits/check-subagent-return/check-rescue-chain/subagent-fallback + selftest-rescue-chain/selftest-fallback）+ 3 篇 references；`task-discipline` 收 plan-hygiene.sh + capabilities/ + batch-quality-gate.md + capability-registry.md；`media-planner` 仅 SKILL.md + references；`plan-template-advisor` 为 task-tpl-sediment-20261115 新建（消费 Rule 34.8/34.9），详见 `../../plan-template-advisor/`。
 
 ### 2.2 收编卫星规格（既有 skill，规则全文收编）
 
@@ -100,6 +102,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 | task-dispatch | 子代理派发与拆分调度 | `../../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
 | task-discipline | 执行纪律与工作产物维护 | `../../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31-36,41-45,48,53-57,60,65,67,69-74,76） |
 | media-planner | 媒体制作任务派发 | `../../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
+| plan-template-advisor | 项目模板适配与沉淀生产 | `../../plan-template-advisor/references/` | 项目模板适配与沉淀生产（Rule 34.8/34.9 消费面） |
 | plan-research-router | 调研分析与证据纪律 | `../../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
 | plan-template-kit | 模板生命周期与难度分级 | `../../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
 | plan-collab-router | 技能协同与工具面选择 | `../../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40） |
@@ -112,7 +115,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 
 **Rules 1-97 全集索引**（2026-11-02 task-lazy-escalation-20261102 更新：1-96→1-97；2026-10-24 task-nopause-execfirst-20261023 并集解更新：1-94→1-95→1-96；2026-10-23 task-focus-plan-split-20261023 更新；2026-10-21 task-v195 更新；2026-10-19 task-v191 对齐）：
 - **核心在位 14 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83）全文见 `references/critical-rules.md`（203 行，2026-10-23 task-kb-cr-lits L-5 实测；task-v191 快照 193 行；含分层架构说明 + 卫星路由索引）
-- **其余 80 条**按域迁至上表 11 卫星（3 新域 62 条 + 7 收编 17 条 + 验证域 1 条 Rule 84，合计 80；纪律域含 85/86/87/88/89/90/92/93/94/95/97（85-90/92-94 为 v171 后追加 9 条，95 为 2026-10-23 追加 1 条，97 为 2026-11-02 追加 1 条）、dispatch 域含 96（2026-10-24 task-subagent-boost-20261023 追加 1 条）、协同域含 91 为追加 1 条）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：原拆分 50+16+1=67 与外层 74/76 均不自洽（50/16 为 v171 快照、未含后续追加），改为现值 58=dispatch 11+discipline 44+media 3、17=research 3+template 4+collab 3+cost 1+resume 1+progress 1+drift 4，58+17+1=76 与实测 dedup 一致（+Rule 94: 58→59、44→45 → 77；+Rule 95 → 78、discipline 45→46；+Rule 96 → 79、dispatch 11→12）] -->
+- **其余 80 条**按域迁至上表 12 卫星（4 新域 62 条 + 7 收编 17 条 + 验证域 1 条 Rule 84，合计 80；纪律域含 85/86/87/88/89/90/92/93/94/95/97（85-90/92-94 为 v171 后追加 9 条，95 为 2026-10-23 追加 1 条，97 为 2026-11-02 追加 1 条）、dispatch 域含 96（2026-10-24 task-subagent-boost-20261023 追加 1 条）、协同域含 91 为追加 1 条）<!-- [2026-10-23 task-kb-cr-lits-20261023 L-5 扩面：原拆分 50+16+1=67 与外层 74/76 均不自洽（50/16 为 v171 快照、未含后续追加），改为现值 58=dispatch 11+discipline 44+media 3、17=research 3+template 4+collab 3+cost 1+resume 1+progress 1+drift 4，58+17+1=76 与实测 dedup 一致（+Rule 94: 58→59、44→45 → 77；+Rule 95 → 78、discipline 45→46；+Rule 96 → 79、dispatch 11→12）] --><!-- 2026-11-15 task-tpl-sediment-20261115 P2-S5b: 11→12/4新域(62条)+7收编(17条) 计数同步 -->
 - Rule 82（技能专业化分层纪律）为 task-v171 新增：建制/边界/回归防线三款，禁回潮、禁镜像副本
 
 **纪元演进史**（selftest 宽容正则锚守护随动，防回退误报）：
