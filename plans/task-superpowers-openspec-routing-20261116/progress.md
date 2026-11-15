@@ -97,6 +97,12 @@
   - [2026-11-16] drift-checker 终检（Rule 61/64）：**ALIGNED 零偏移**（.drift-checkpoint.md；改动集三受管文件无越界、择一语义与双裁决一致、零新文件零脚本守住）。
   - [2026-11-16] check-delegation stats 首跑 verdict=violation（Phase 4 Executor 串含「主进程」字样被机器误计）→ 措辞修正重跑归真（见本段 Test Results）。
   - [recall] Rule 93.2：主进程 Read skills/task-discipline/references/execution-recall-card.md（A-F 六域；本收尾对照=完成声称三条件/精准改动/逐 Phase commit/呈报四要素）。
+  - [drift] Rule 64.1 留痕三件套：drift-checker 判定 **ALIGNED** 零偏移（checkpoint=`.drift-checkpoint.md`；task_plan Drift Log 表已登记）。
+  - [template-sense] Rule 34.7 终验登记：处置=**不沉淀**（理由=一次性条款增补任务，无可复用跨任务类型画像；登记载体=task_plan 模板感知区块处置登记处）。
+  - [CR 轮1] critic REJECTED（checkpoint=`.cr-checkpoint-r1.md`）：条款本体 PASS；3 MAJOR 全在判据/证据链——①VC-4 判据串 head -1 误抓子脚本行（修正=Total 行提取，task_plan+verification 同步改）②worktree Total 无落盘日志（补=selftest-final.log 持久化+合并后复跑等价口径）③归档 checkbox 先勾未做（补=归档在本轮 CR 后立即执行，勾与做同程）。
+  - [VC-4 归因行] 最终全量回归（selftest-final.log 持久）：`Total: 98 PASS=93 FAIL=5`。归因=①2 预存（selftest-active-plan/selftest-execution-stability）②3 个为本任务面外因：单跑明细 `selftest-registry→T03 FAIL 孤儿行: selftest-md-edit-ops.sh`（task-mdedit-reliability-20261116 会话遗留登记孤儿行）、`selftest-self-resolution→SR-12 registry 总行数 100 应 99`（同孤儿行级联）、`selftest-summary-readability→SRV-11/12 registry 链级联`；**三受管文件（spec-mode §1b/初筛段/SKILL.md:65 指针）相关 FAIL=0** ✅。孤儿行修复归 task-mdedit 账面（跨任务隔离不代修）。
+  - [并发知会] Rule 102.0/并行 race 登记：mdedit 任务已被并行会话收口归档（71e32dc+58496df，spec-mode +1 行=md-edit-ops 指针）；veriffirst 任务 fc37133 在同三文件加 §5+指针（自称与 §1b 互引融合）；本任务剩余面=计划簿记+归档，不再触碰 spec-mode/skill-collaboration（CR W-1/W-2 登记为遗留建议，见 84.14 表）。
+  - [CR APPROVED] Rule 42.7 留痕：critic 三轮收敛——轮1 REJECTED（3 MAJOR 判据/证据链）→修复→轮2 4/5（V-4.1 第三副本漏网）→修复→轮3 **5/5 PASS blockers=none confidence=HIGH**（checkpoint=`subagent-state/2-critic.md`；VC-4 三副本全为 Total 提取形态+归因亲验复现+同程收口声明在案+条款完整性 1/1/1+遗留登记两载体在案）。范围外 NOTE：V-3.1..3 历史 worktree 路径串不可字面复现（目录已清理）——Phase 3 Status 行已注明「清理前实测 PASS，master 路径同内容已复核」，不改判。
 - Files created/modified:
   - master `skills/task-planner/SKILL.md`、`skills/task-planner/references/spec-mode.md`、`skills/plan-collab-router/references/skill-collaboration.md`（经 merge 42ab794）
   - 4 部署位同路径三文件（zcode/agents/claude/cursor；.agents 两位补建）

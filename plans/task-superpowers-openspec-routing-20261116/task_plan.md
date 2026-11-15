@@ -109,7 +109,7 @@ task-planner 按 2026-11-16 用户双裁决，在既有载体（spec-mode.md/ski
 | VC-1 | spec-mode.md §1b「复杂度分档→族选择」决策表在位：四档映射（L0/mini 直执行、L1→Superpowers 嵌入、L2+/规格留存→OpenSpec 移交、信号修正行）+择一语义 | grep 四关键词均命中 | `grep -q "复杂度分档→族选择" skills/task-planner/references/spec-mode.md && grep -q "L1（中等）且无规格留存需求" skills/task-planner/references/spec-mode.md && grep -q "L2+ 或规格留存需求" skills/task-planner/references/spec-mode.md && grep -q "择一语义" skills/task-planner/references/spec-mode.md` |
 | VC-2 | skill-collaboration.md §二含「复杂度主轴初筛」段：初筛轴+信号修正覆盖语义+与 §1b 同构互引 | grep 两关键词均命中 | `grep -q "复杂度主轴初筛" skills/plan-collab-router/references/skill-collaboration.md && grep -q "覆盖复杂度初判" skills/plan-collab-router/references/skill-collaboration.md` |
 | VC-3 | task-planner/SKILL.md Spec 模式检查行（:65）行尾含 §1b 择一路由指针，既有文字零改动 | grep 命中指针串 | `grep -q 'spec-mode.md` §1b' skills/task-planner/SKILL.md` |
-| VC-4 | selftest 回归无新增 FAIL：worktree 内全量运行 FAIL 数 ≤ master 基线 FAIL 数（基线对照防预存 FAIL 误判） | 双跑 Total 对照（worktree vs master），判据 worktree≤master | `m=$(bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/run-selftests.sh 2>&1 \| grep -oE 'FAIL=[0-9]+' \| head -1 \| cut -d= -f2); w=$(bash /mnt/data/dev/task-planner-skill/tmp/worktrees/task-superpowers-openspec-routing-20261116/skills/task-planner/scripts/run-selftests.sh 2>&1 \| grep -oE 'FAIL=[0-9]+' \| head -1 \| cut -d= -f2); [ -n "$m" ] && [ -n "$w" ] && [ "$w" -le "$m" ]` |
+| VC-4 | selftest 回归无本任务面新增 FAIL：全量 Total FAIL 逐个归因，与三受管文件相关的 FAIL=0（CR 轮1 修正：Total 行提取取代 head -1 误抓子脚本行；worktree 态已并入 master，合并后复跑=等价证据；并行会话外因 FAIL 归因见 progress） | run-selftests 全量落盘 plans/<dir>/selftest-final.log，Total+Failed 行逐个归因 | `bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/run-selftests.sh 2>&1 \| grep -E 'Total:\|Failed:'` |
 | VC-5 | 三受管文件 × 4 部署位（zcode/agents/claude/cursor）同步后逐对 diff=0 | for 循环 diff 全过 | `for p in /home/terry/.zcode/skills /home/terry/.agents/skills /home/terry/.claude/skills /home/terry/.cursor/skills; do diff -q "$p/task-planner/SKILL.md" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md >/dev/null && diff -q "$p/task-planner/references/spec-mode.md" /mnt/data/dev/task-planner-skill/skills/task-planner/references/spec-mode.md >/dev/null && diff -q "$p/plan-collab-router/references/skill-collaboration.md" /mnt/data/dev/task-planner-skill/skills/plan-collab-router/references/skill-collaboration.md >/dev/null \|\| exit 1; done` |
 | VC-6 | 合并回 master 完成（merge 记录在案）且 worktree 已清理（列表无残留） | git log 含 merge 记录且 worktree list 无本任务路径 | `git -C /mnt/data/dev/task-planner-skill log --oneline --grep="task-superpowers-openspec-routing-20261116" \| grep -q . && ! git -C /mnt/data/dev/task-planner-skill worktree list --porcelain \| grep -q "tmp/worktrees/task-superpowers-openspec-routing-20261116"` |
 | VC-7 | 调研结论在盘：findings-external-families.md 含 A 段集成现状结论（R4 已答） | grep 命中段标题 | `grep -q "A. 仓内集成现状" /mnt/data/dev/task-planner-skill/plans/task-superpowers-openspec-routing-20261116/findings-external-families.md` |
@@ -399,6 +399,7 @@ Phase 5（收尾：重锁定/check-complete/归档）
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
 | 1 | 无新发现（五维互洽：需求 R1-R5↔Goal↔三文件条款↔VC-1..7 全 PASS↔findings/知识储备已用尽——check-complete state-consistency 三源一致 PASS；verify-report 语义三性 PASS；drift ALIGNED） | 收敛出口（连续一轮零新发现）；遗留仅 WARN 级：task_plan 596 行>500（Rule 19.6，计划期文档体量，归档承载不回炉） |
+| 2 | CR 轮1 发现处置：MAJOR×3 判据/证据链缺陷已修（VC-4 Total 提取/selftest-final.log 持久/归档同程）；W-1（信号修正互斥优先级未显式定义——已由「权威源 §二判定顺序先命中先用」引用语义覆盖）与 W-2（§1 L0-T/L0-E vs §1b L0/mini 命名口径）=遗留建议不回炉——并发热点文件（mdedit/veriffirst 同日同文件三写）最小扰动原则；NIT（kb 缺 §1 节/INDEX 残留注释）=不阻断不修 | 处置证据：progress [CR 轮1]/[VC-4 归因行]；selftest-final.log |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 
@@ -507,7 +508,7 @@ Phase 5（收尾：重锁定/check-complete/归档）
 -->
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |             |        |      |
+| 2026-11-16（Phase 5 收尾） | drift-checker 三态判定 **ALIGNED** 零偏移（改动集=三受管文件无越界/择一语义与双裁决一致/零新文件零脚本守住） | VC-1..7 | checkpoint=`.drift-checkpoint.md`；progress Phase 5 段已留 [drift] 面证据（Rule 64.1 留痕三件套：本表+checkpoint+progress 行） |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）
 <!-- 

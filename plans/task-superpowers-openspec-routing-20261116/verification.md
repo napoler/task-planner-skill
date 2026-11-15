@@ -22,9 +22,9 @@ task-planner 在既有载体（spec-mode.md / skill-collaboration.md / SKILL.md 
 - [x] VC-3: task-planner/SKILL.md Spec 模式检查行行尾含 §1b 择一路由指针（既有文字零改动）
   Evidence: skills/task-planner/SKILL.md:65 行尾
   **Verify command**: grep -q 'spec-mode.md` §1b' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
-- [x] VC-4: selftest 回归无新增 FAIL：worktree 全量 FAIL 数 ≤ master 基线 FAIL 数（基线对照防预存 FAIL 误判）
-  Evidence: 双跑 Total 行对照记录（progress.md Test Results）
-  **Verify command**: m=$(bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -oE 'FAIL=[0-9]+' | head -1 | cut -d= -f2); w=$(bash /mnt/data/dev/task-planner-skill/tmp/worktrees/task-superpowers-openspec-routing-20261116/skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -oE 'FAIL=[0-9]+' | head -1 | cut -d= -f2); [ -n "$m" ] && [ -n "$w" ] && [ "$w" -le "$m" ]
+- [x] VC-4: selftest 回归无本任务面新增 FAIL：合并后全量 Total FAIL 逐个归因，三受管文件相关 FAIL=0（CR 轮1 修正判据：Total 行提取取代 head -1 误抓；worktree 态已并入 master，合并后复跑=等价证据）
+  Evidence: plans/task-superpowers-openspec-routing-20261116/selftest-final.log（持久）+ progress 归因行
+  **Verify command**: bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -E 'Total:|Failed:'
 - [x] VC-5: 三受管文件 × 4 部署位（zcode/agents/claude/cursor）同步后逐对 diff=0
   Evidence: 部署对账记录（progress.md Test Results）
   **Verify command**: for p in /home/terry/.zcode/skills /home/terry/.agents/skills /home/terry/.claude/skills /home/terry/.cursor/skills; do diff -q "$p/task-planner/SKILL.md" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md >/dev/null && diff -q "$p/task-planner/references/spec-mode.md" /mnt/data/dev/task-planner-skill/skills/task-planner/references/spec-mode.md >/dev/null && diff -q "$p/plan-collab-router/references/skill-collaboration.md" /mnt/data/dev/task-planner-skill/skills/plan-collab-router/references/skill-collaboration.md >/dev/null || exit 1; done
@@ -110,8 +110,8 @@ Status: `complete` Last verified: 2026-11-16（V-3.x 于 worktree 清理前实�
 - [x] 复检子代理结论=一致并落 verification.md 交叉验证记录（verify-report.md 97 行）
 
 **Verification**:
-- [x] V-4.1: selftest 基线对照（映射 VC-4）
-  **Verify command**: m=$(bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -oE 'FAIL=[0-9]+' | head -1 | cut -d= -f2); w=$(bash /mnt/data/dev/task-planner-skill/tmp/worktrees/task-superpowers-openspec-routing-20261116/skills/task-planner/scripts/run-selftests.sh 2>&1 | grep -oE 'FAIL=[0-9]+' | head -1 | cut -d= -f2); [ -n "$m" ] && [ -n "$w" ] && [ "$w" -le "$m" ]
+- [x] V-4.1: selftest 基线对照（映射 VC-4；CR 轮2 修正串：持久日志 Total 提取，worktree 态已并入 master）
+  **Verify command**: grep -E 'Total:|Failed:' /mnt/data/dev/task-planner-skill/plans/task-superpowers-openspec-routing-20261116/selftest-final.log
 - [x] V-4.2: 交叉验证记录行在位（映射 Rule 108）
   **Verify command**: grep -q "交叉验证记录" /mnt/data/dev/task-planner-skill/plans/task-superpowers-openspec-routing-20261116/verification.md
 
