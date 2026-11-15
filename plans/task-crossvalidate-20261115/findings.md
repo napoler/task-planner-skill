@@ -54,7 +54,9 @@
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
 |----------|-----------|
-|          |           |
+| EN-06 级联仅改 '1-107'→'1-108'（:9/:92/:93/:95/:97），',107' 断言保持不动 | F3 侦察结论：',107' 守护的是 discipline 路由行（SKILL:210 真实未变）；verification-gate 路由守护由新 CV-04 覆盖。草案偏差已裁决修正 |
+| selftest CV-03 收紧为仅 grep 'Rule 108'（删 `|| grep -q '108'` 兜底） | 任何行号串都会命中 '108'，断言过宽=真空守护；SKILL:4 description 编辑后必含 'Rule 108' 字面 |
+| Rule 108 判例锚采用 `（判例=subagent-verifier-fabricated-output-20261103 判例）` | F6 格式先例对齐（execution-recall-card.md:7 形态） |
 
 ## Issues Encountered
 <!-- 阻塞/意外问题与解法;代码错误走 progress.md Error Log(Rule 19.4) -->
