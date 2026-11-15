@@ -46,4 +46,5 @@
 - Rule 39/40/91（协同路由/工具选择）：spec 模式是路由面新增的专业执行体条目，非新 Rule
 - Rule 52（执行体专业化优先）：同源原则——专业的事给专业执行体
 - Rule 51.1（需求锚定）：spec 产物路径必须回链 task_plan 需求原文区 / findings（记录者义务）
+- Markdown 批量/结构化编辑执行面：优先 `skills/md-edit-ops/` 指令单（task-discipline Rule 106.6 指针），与规格路由无冲突、纯增量协同
 - 产物路径由外部技能/CLI 自管（OpenSpec 用 planningHome/changeRoot/artifactPaths 动态解析，禁硬编码猜测）
