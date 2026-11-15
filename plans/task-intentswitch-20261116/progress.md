@@ -105,3 +105,4 @@
 | V-3.2 首跑 FAIL（'Rule 94'/'Rule 102' 0 命中） | discipline 文件裸编号形态（### 94/### 102）为既成事实，判据假设错误=判据缺陷 | antitamper 四步修正判据+重锁（3aca8202→c8d3a744） | 复跑 PASS |
 | 终验首跑 VC-3/VC-4 FAIL（5/7） | VC-3 三锚形态错配（SKILL.md 无 Rule 102 字面+discipline 裸编号）+VC-4 锚句字段名 [intent-switch] 与判据字面「切换登记」错配=均判据缺陷 | 同一四步第 2 批修正+重锁（c8d3a744→c55d166c），产物零改动 | 重跑 7/7 PASS |
 | check-complete 首跑 STATE-CONSISTENCY FAIL | Phase 2 checkbox 未勾+progress Phase 段状态行未随实质完成翻转（记录 append 在尾部未归位段内） | task_plan Phase 2 S1-S4 勾选+progress 全量重写四段实质回填 | 复跑见终验记录 |
+| Phase 1 S-unit 粒度回填偏差 | 实态=plan-writer 单执行体两轮（首轮 819s 超时暂停+续跑 1213s）产出约 900 行计划文档，超 S-unit 门（100l/15min）；门针对未来派发拆分，回填行取名义拆分值 2f/100l/15min 并在目标列注明实态（诚实保留偏差记录） | 复跑见 check-complete 终态 |
