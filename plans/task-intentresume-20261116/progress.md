@@ -33,6 +33,7 @@
 - 完成证据: [goal:G1] findings.md 含 M1-M12/R-1~R-4/S1-S3 与锚点证据；task_plan.md 含 R1+R→VC+VC-1~VC-6+CA-1~CA-3+Phases/S-unit；verification.md 含 6 条 VC Verify command；knowledge-brief.md §1-§5 完整；Phase 1 状态 complete。
 
 ### Phase 2: 回切闭环机制增强实现（worktree）
+- **R 锚定**：本 Phase 服务 R1「主动进来回来执行 A」——S1-S3 落地回切检查/回切通告/94 交叉锚
 - **Status:** pending
 - **Started:**
 - Actions taken:
@@ -43,6 +44,7 @@
   -
 
 ### Phase 3: 回归验证与同步核验
+- **R 锚定**：本 Phase 服务 R1 验证面——回归零增量+锚点断言+scope 核验
 - **Status:** pending
 - **Started:**
 - Actions taken:
@@ -53,6 +55,7 @@
   -
 
 ### Phase 4: Code Review、终验与交付
+- **R 锚定**：本 Phase 服务 R1 交付面——CR+终验+合并部署使回切闭环生效
 - **Status:** pending
 - **Started:**
 - Actions taken:
