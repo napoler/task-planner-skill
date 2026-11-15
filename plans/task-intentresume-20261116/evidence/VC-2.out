@@ -1,0 +1,10 @@
+# [run-verification] VC-2 | 2026-11-15T23:03:03Z | cmd: grep -nE '挂起计划回切检查（intent-switch 回切）|outcome 判定后|归档前|\[intent-switch\]|旧=<id>|plans/INDEX\.md|Skill\("plan-resume"\)|不自动切|回切状态' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+# ---- stdout/stderr ----
+146:  - **挂起计划回切检查（intent-switch 回切）**：outcome 判定后、归档前，检查本计划 progress.md/Decisions 的 [intent-switch] 登记链（旧=<id>）与 plans/INDEX.md 待处理区——存在挂起计划则会话面输出【计划回切通告】询问是否切回：用户 yes=释放活跃指针→完成本计划归档/收尾提交→路由 Skill("plan-resume") 定向恢复该计划续推；no=登记保持挂起（[intent-switch] 追加 回切状态=no|保持挂起）。不自动切——切回也是目标变更，须用户显式确认，本回切门优先于 plan-resume 触发点③自主续推（本场景定向恢复须用户显式 yes）。多条挂起链按登记最近一条优先、逐条确认。（本检查须先于 [M] 机械子动作块的归档动作执行；归档置后）
+204:**意图切换执行清单（D 类定案后按序执行）**：① 旧计划挂起登记（其 progress.md 追加 [intent-switch] 行+在途单元断点检查点）→ ② 新计划 init（plans/{new-task-id}/ 全流程，指针自动切换）→ ③ 显性通告（会话面输出下方模板，用户可见）→ ④ 切换登记（新计划 progress.md [intent-switch] 行 + Decisions Made 一行）。
+205:**显性通告模板**：【计划切换通告】旧计划 <old-task-id> 已挂起（断点=其 progress.md [intent-switch] 行）→ 新计划 <new-task-id> 已激活（指针已切换）→ 触发原话=user-session-log #N → 后续在新计划推进，旧计划可用 plan-resume 恢复。
+206:**切换登记最小字段**：[intent-switch] 旧=<id> 新=<id> 触发=原话#N 判定=D/E 确认=yes|44.3自动 时间=<ISO8601>（复用既有载体，不新建文件）；回切分支追加 回切状态=<yes已回切|no|保持挂起>。
+207:**回切通告模板（B 收口时触发）**：【计划回切通告】B 已收口（<new-task-id>，outcome=<COMPLETE/PARTIAL>）→ 检测到挂起链 A（<old-task-id>，挂起于 user-session-log #N）→ 是否切回继续执行 A？yes=路由 plan-resume 定向恢复；no=保持挂起并登记 回切状态。
+307:| 外部 skill/agent | `drift-checker`（Rule 61）/`decision-arbiter`（Rule 69）/`Skill("plan-resume")`（Rule 24）/`Skill("progress-tracker")`（Rule 30）/`code-review` skill |
+
+# exit=0

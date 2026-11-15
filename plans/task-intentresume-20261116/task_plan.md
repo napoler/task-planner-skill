@@ -88,9 +88,9 @@ execution_lane: L1
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1 |
-| **裁决** | `pending`（终验填写：solved/partial/not-solved） |
-| **解决证据锚** | （终验填写：VC-2/VC-3/VC-4/VC-5 证据路径） |
-| **未解决面+原因** | （终验填写；solved 可填 n/a） |
+| **裁决** | `solved`（2026-11-16 终验：run-verification 7/7 PASS） |
+| **解决证据锚** | evidence/VC-1~6.out；SKILL.md:145 回切检查（定序句+B 归档归属+优先级声明）+:206 回切通告模板+:205 回切状态字段契约；discipline:620 回切交叉锚；merge 1b214f9+部署 IDENTICAL；CR 两轮（5 项→修复→APPROVED） |
+| **未解决面+原因** | n/a（R1 全覆盖：主动=收口序列强制回切检查；通告=【计划回切通告】模板；恢复=确认后路由 plan-resume 定向续推；防搁置=[intent-switch] 链+回切状态可审计） |
 | **已排除路径** | （not-solved 时必填） |
 | **下一步建议** | （partial/not-solved 时必填） |
 
@@ -129,6 +129,7 @@ execution_lane: L1
 | CA-2 | skills/task-planner/SKILL.md:202-204 邻近（显性通告模板区） | 修改 | 增量 | 同 R1 | findings R-2；M4,M5；:203 前向模板对称 | 补「回切通告模板」：【计划回切通告】含 B 已收口/检测到挂起链 A/是否切回，以及 yes/no 处置语义（与前向模板对称，不替代 :203） |
 | CA-3 | skills/task-discipline/references/critical-rules-discipline.md:619 之后（Rule 94 段末，:620 前） | 修改 | 增量 | 同 R1 | findings R-3；M7,M8；:615 94.4 封存待 resume；:619 既有前向交叉锚 | 追加 intent-switch 回切交叉锚：衔接 94.4 封存待 resume 与回切触发，指向 SKILL.md「终验交付」挂起计划回切检查/【计划回切通告】/`Skill("plan-resume")`，声明不自动切；保留 94.3/94.4 权威语义不改 |
 | CA-4 | skills/task-planner/scripts/selftest-batch-pilot.sh（BP-08 行数钉） | 修改（钉值 305→306+演进链注释） | 增量（回归修复连带——SKILL.md +2 行突破行数钉，守卫正常工作；Rule 74 判据=回归测试证伪旧钉值，scope 连带登记） | R1+回归零增量要求 | 钉值上调+注释演进链追加（历史先例 task-v086/v087/v088/initdelegation 同族） |
+| 回填与格式重锁登记（2026-11-16，antitamper 四步） | task_plan.md 状态行合法回填（Handoff #2/#3+CA-4+Phase 2/3 翻转+Phase 4 段）与 verification.md 判据格式修复（**Verify command** 命令外层 Markdown 反引号剥离——反引号致 run-verification shell 命令替换→VC 全 127 伪 FAIL；命令实质零变化）→ 重跑 attest 重锁 | 判据语义未动（token 逐字保留）；重锁前置=本登记 |
 
 ## 📚 必要知识储备（任务知识库对齐 — 开工前必填）
 
@@ -230,11 +231,11 @@ Phase 1
 | S1 | 跑 VC-1~VC-6 与 scope/sync 核对并登记证据 | 继承 | verification.md VC 命令；CA-1~CA-3 改动后文件；git diff --name-only | VC 命令退出码与输出记录于 verification/progress；scope 仅两文件；103.6 清单全绿 | 12min | 0f/0l/12min | 无 | S2,S3 | pending |
 
 ### Phase 4: Code Review、终验与交付
-- [ ] 触发 code-review（required）并处理 CHANGES_REQUESTED（如有）
-- [ ] 逐条复验 VC、填写核心目标达成裁决与收尾回读梳理记录
-- [ ] 产出交付摘要并按 Rule 81/归档前置条件收口（由主进程执行归档编排）
+- [x] 触发 code-review（required）并处理 CHANGES_REQUESTED（如有）——轮 1 五项→修复轮（用户授权主进程直修，provider 限流 7 连）→轮 2 APPROVED
+- [x] 逐条复验 VC、填写核心目标达成裁决与收尾回读梳理记录——终验 7/7（判据反引号格式修复重锁 6a0650e6）
+- [x] 产出交付摘要并按 Rule 81/归档前置条件收口（由主进程执行归档编排）
 - **V-N:** VC-1, VC-6
-- **Status:** pending
+- **Status:** complete
 - **Executor:** code-reviewer
 <!-- CR Gate 后主进程白名单面=git/归档编排+簿记与交付汇总 -->
 
@@ -246,6 +247,8 @@ Phase 1
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
+| 1 | ①open_questions 三条已由 S-A 默认决策落定（最近一条优先/载体复用/不自动切）未显式登记处置；②kb §7 入库触发未执行；③五维互洽无偏移——R1 回切闭环全覆盖、CA-1~4+回填重锁登记无超范围、终验 7/7 | ①本行即登记；②收尾序列执行 kb 入库；③无 |
+| 2 | 零新发现（连续一轮零新发现=收敛出口） | —— |
 | 1 | （终验填写：全量回读六文档五维互洽结果） | （修复/证据或“零新发现”） |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）

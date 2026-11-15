@@ -73,6 +73,25 @@
 
 ### Phase 4: Code Review、终验与交付
 - **R 锚定**：本 Phase 服务 R1 交付面——CR+终验+合并部署使回切闭环生效
+- **Status:** complete
+- **Started:** 2026-11-16 05:30
+- Actions taken:
+  - CR 轮 1（Code Reviewer）：CHANGES_REQUESTED 5 项（定序矛盾/B 归档归属缺失/第二套路由/字段契约/BP-08 边距 0）——全部有效
+  - 修复轮：子代理通道 provider 限流 7 连（累计 ~1h）→用户授权 allow-direct 主进程直修（5 处一句话级，契约文案已定稿）→commit c67e55a
+  - CR 轮 2 复审（Code Reviewer）：**APPROVED**——5 项逐项验证+无新问题+batch-pilot rc=0
+- Files created/modified:
+  - skills/task-planner/SKILL.md（修复①②③④ 行内改写）
+  - skills/task-planner/scripts/selftest-batch-pilot.sh（修复⑤ BP-08 311）
+- Test Results:
+  | Test | Input | Expected | Actual | Status |
+  |------|-------|----------|--------|--------|
+  | CR 轮 2 | 5 项逐项验证 | 全部修复 | APPROVED | PASS |
+  | batch-pilot | selftest-batch-pilot.sh | rc=0 | 0（306≤311） | PASS |
+- 完成证据：[goal:G4] CR 两轮闭环（5 项→修复→APPROVED）+合并部署+终验（见下）
+- 终验：run-verification 首跑 VC 全 127 伪 FAIL（判据外层 Markdown 反引号致 shell 命令替换）→判据格式修复（命令实质零变化）+Decisions 登记+重锁 6a0650e6→重跑 **7/7 全 PASS**
+- 84.14 收尾回读：轮 1（open_questions 登记+kb 入库待办）→轮 2 零新发现收敛
+- 58.5 核心裁决：solved
+- 完成证据：[goal:G5] 验收收口达成——run-verification PASS=7 FAIL=0+103.6 全绿+CR APPROVED（轮 2）+边界不破坏（94.4 封存语义零改动）
 - **Status:** pending
 - **Started:**
 - Actions taken:

@@ -1,0 +1,32 @@
+# [run-verification] VC-6 | 2026-11-15T23:03:03Z | cmd: grep -nE '^template_type:|^plan_tier:|^execution_lane:|## Goal|R→VC|Verification Contract|## Phases|隔离决策|变更标注表' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/task_plan.md && grep -n '\*\*Verify command\*\*' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/verification.md
+# ---- stdout/stderr ----
+7:template_type: general
+8:plan_tier: standard
+9:execution_lane: L1
+15:### R→VC 映射（Rule 51.2 验证机制先行）
+43:## Goal
+60:## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）
+71:| VC-6 | 计划文档与验证载体完整可执行：task_plan/verification/knowledge-brief/findings/progress 关键区块齐备，verification 每条 VC 含 **Verify command**，R1→VC 映射与不变量/CA 表在位 | grep 结构锚点 | `grep -nE '^template_type:|^plan_tier:|^execution_lane:|## Goal|R→VC|Verification Contract|## Phases|隔离决策|变更标注表' plans/task-intentresume-20261116/task_plan.md && grep -n '\*\*Verify command\*\*' plans/task-intentresume-20261116/verification.md` |
+124:## 📋 变更标注表（Rule 74.3 — 修订方案必填，无表=无效方案）
+173:| ③ 外部约束 | scope 硬约束（禁改 plan-resume/其他受管文件）；回切=目标变更须确认不自动切；Rule 94/102 权威语义不可反转；worktree 隔离 | 用户指令 + 既有规则锚 :615,:619,:708 + plan-resume:15 | task_plan 隔离决策/CA/不变量；findings Decisions/Issues | ☑ |
+192:## Phases
+205:| S1 | 调研锚点+诊断 R-1~R-4 并落盘六文档计划产物 | plan-writer | user-session-log.md#1（R1 原话）；archive/task-intentswitch-20261116/{task_plan,findings}.md；SKILL.md:130-145,193,202-204；discipline:607,615,619,708；/home/terry/.zcode/skills/plan-resume/SKILL.md:15,33,65-69（只读）；INDEX.md 待处理区 | findings 含 M1-M12/R-1~R-4/S1-S3；task_plan 含 R/VC/Phases/CA/隔离决策；verification 含 VC Verify command；kb §1-§5；progress Phase 1 回填 | 15min | 0f/0l/15min | 无 | - | complete |
+252:## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
+13:> 每条 VC 的 **Verify command** 行=attest vc-gate 判据面。
+17:  **Verify command**: grep -nE 'M1|M12|R-1|R-4|S1|S2|S3|SKILL\.md:130|discipline:615' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/findings.md
+20:  **Verify command**: grep -nE '挂起计划回切检查（intent-switch 回切）|outcome 判定后|归档前|\[intent-switch\]|旧=<id>|plans/INDEX\.md|Skill\("plan-resume"\)|不自动切|回切状态' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+23:  **Verify command**: grep -nE '回切通告模板|【计划回切通告】|B 已收口|检测到挂起链|是否切回' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+26:  **Verify command**: grep -nE 'intent-switch 回切|94\.4|封存待 resume|回切触发|SKILL\.md「终验交付」|挂起计划回切检查|【计划回切通告】|Skill\("plan-resume"\)|不自动切' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -nE '^### 94|94\.4' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md
+29:  **Verify command**: cd /mnt/data/dev/task-planner-skill && git diff --name-only -- skills/task-planner/SKILL.md skills/task-discipline/references/critical-rules-discipline.md; test -f /home/terry/.zcode/skills/plan-resume/SKILL.md && echo plan-resume-present
+32:  **Verify command**: grep -nE '^template_type:|^plan_tier:|^execution_lane:|## Goal|R→VC|Verification Contract|## Phases|隔离决策|变更标注表' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/task_plan.md && grep -n '\*\*Verify command\*\*' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/verification.md
+51:  **Verify command**: grep -nE 'M1|M12|R-1|R-4|S1|S2|S3' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/findings.md
+53:  **Verify command**: grep -nE '^template_type:|R→VC|Verification Contract|变更标注表' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/task_plan.md && grep -c '\*\*Verify command\*\*' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/verification.md
+71:  **Verify command**: grep -nE '挂起计划回切检查（intent-switch 回切）|outcome 判定后|归档前|\[intent-switch\]|旧=<id>|plans/INDEX\.md|Skill\("plan-resume"\)|不自动切|回切状态' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+73:  **Verify command**: grep -nE '回切通告模板|【计划回切通告】|B 已收口|检测到挂起链|是否切回' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+75:  **Verify command**: grep -nE 'intent-switch 回切|94\.4|封存待 resume|回切触发|SKILL\.md「终验交付」|挂起计划回切检查|【计划回切通告】|Skill\("plan-resume"\)|不自动切' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -nE '^### 94|94\.4' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md
+93:  **Verify command**: cd /mnt/data/dev/task-planner-skill && git diff --name-only -- skills/task-planner/SKILL.md skills/task-discipline/references/critical-rules-discipline.md; test -f /home/terry/.zcode/skills/plan-resume/SKILL.md && echo plan-resume-present
+95:  **Verify command**: grep -nE 'M1|M12|R-1|R-4' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/findings.md && grep -n '\*\*Verify command\*\*' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/verification.md
+113:  **Verify command**: grep -nE '^template_type:|R→VC' /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/task_plan.md
+115:  **Verify command**: test -f /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/task_plan.md && test -f /mnt/data/dev/task-planner-skill/plans/task-intentresume-20261116/verification.md && echo plan-files-present
+
+# exit=0

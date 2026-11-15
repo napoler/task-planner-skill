@@ -1,0 +1,5 @@
+# [run-verification] VC-1 | 2026-11-15T23:03:04Z | cmd: cd /mnt/data/dev/task-planner-skill && git diff --name-only -- skills/task-planner/SKILL.md skills/task-discipline/references/critical-rules-discipline.md; test -f /home/terry/.zcode/skills/plan-resume/SKILL.md && echo plan-resume-present
+# ---- stdout/stderr ----
+plan-resume-present
+
+# exit=0
