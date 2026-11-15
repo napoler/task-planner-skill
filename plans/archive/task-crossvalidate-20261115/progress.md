@@ -10,8 +10,7 @@
 ## Session: 2026-11-15
 <!-- 本会话日期,如 2026-09-05 -->
 
-### Phase 1: 侦察与起草
-<!-- Status 与 task_plan.md 同步 -->
+#<!-- Status 与 task_plan.md 同步 -->
 - **Status:** complete
 - **Started:** 2026-11-15 17:17
 - Actions taken:
@@ -25,7 +24,9 @@
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
 
-### Phase 2: [Title]
+### Phase 2: 落地插改（worktree 内实施）
+- **R 锚定**：本 Phase 服务 R1/R5「条款落地+级联+守护」——五单元落 worktree+级联 B 纪元演进
+- **Status:** complete
 <!-- Phase N 按上方 Phase 1 结构续加 -->
 - **Status:** pending
 - **Started:**
@@ -75,7 +76,7 @@
 - [2026-11-15 P2] 待办：级联B（EN-06 纪元演进）→ Phase 2 门（V-2.1..2.4+103.6+drift+commit）→ Phase 3 验证
 - [2026-11-15 P2] [recall] Rule 93.2：Phase 2 过 3 S-unit（实为 5 单元全落）主进程 Read execution-recall-card.md；对照要点=62.2 契约不可收窄（drift prompt 补 findings 仅追加锚）/64.7 用户原话对照面/26 翻转门三件套——已按卡纠偏
 
-## Phase 3: 验证（回归+复检+dogfood 实弹）
+### Phase 3: 验证（回归+复检+dogfood 实弹）
 - **R 锚定**：本 Phase 服务 R1/R3/R4「识别执行错误与虚构+更快识别缺陷」——回归零新增+独立复检闭环+方法论实弹
 - [P3-S1] 回归分账：主仓基线 `Total: 97 PASS=94 FAIL=3` vs worktree `Total: 98 PASS=96 FAIL=2`（2≤3 零新增；双跑同败 2 脚本=预存；rule-reserve-pairing 在 worktree 消失）→ .regression-baseline=3；checkpoint 5-regression.md
 - [P3-S2] critic 轮1 五维复检：CHANGES_REQUESTED（M1 计数 94→91/M2 CV 断言块锚+局部化/m2 R2 载体句零）；修复单元 4/4+五脚本绿（CV6/6·EN7/7·DQ14/14·AD12/12·SA20/20）→fix commit 2abe3ec
@@ -83,6 +84,9 @@
 - [P3-S3] dogfood 实弹：机械面主进程当日重跑 VC-1/2/3 全 PASS+修复项 grep（91×2/94×0/R2×1）；语义面=critic 轮1→轮2 链；分歧 D1（计数）经 108.4 处置（第一手重推导证实 critic 正确，主进程转译稿 94 为误判）→cross-validation-report.md 交叉验证判定=一致 PASS
 - [V-N] V-3.1 PASS（worktree 全量 `Total: 98 PASS=96 FAIL=2` ≤ 基线 3）；V-3.2 PASS（8-critic-r2.md 含 APPROVED）；V-3.3 PASS（报告含判定行）
 - Test Results: 全部门绿；已知遗留=MINOR m1/m3（SKILL 步骤承载段增强，登记 not 目标内）+NIT×3（critic 轮2 列）
+### Phase 4: 收口
+- **R 锚定**：本 Phase 服务 R5「固化相关技能与步骤」——合并回+清理+land+部署+归档+kb
+- **Status:** complete
 - [goal:G1] 插入点侦察 complete：findings F1-F6 六节全锚（Explore 侦察）+级联族枚举 F3——证据 findings.md ### F1-F6
 - [goal:G2] 条款起草 complete：clause-drafts.md §1 五子条+§2 模板区块+§3 级联七项（78 行）——证据 clause-drafts.md
 - [goal:G3] 落地插改 complete：worktree commit 8097063（7 文件 +59/-11）+fix 2abe3ec；V-2.1..2.4 全绿+103.6 六项——证据 progress P2 段+checkpoint 2/3a/3b/3c/3d
@@ -95,3 +99,4 @@
 - [Phase4 complete 证据] run-verification PASS=7 FAIL=0+委派 0.750 verdict=ok+84.14 轮1 收敛
 - [CR APPROVED] 42.7 留痕：critic 轮2 复检 APPROVED 4/4（checkpoint subagent-state/8-critic-r2.md；轮1 CHANGES_REQUESTED→fix 2abe3ec 闭环；负向实测断言非真空）——2026-11-15
 - [Error] git add plans/ 盲扫捎带并行会话未跟踪文件 plans/task-positioning-20261115/task_plan.md 入 0545712→归档提交（判例复发=task-userlog-recall 同款；处置=不改写历史（并行活跃）留原样+登记教训 pathspec 锁定本任务目录）
+- [judge] Rule 73.2 对齐三问（M1 修复裁决+归档动作，2026-11-15）：①问=修复 94→91 是否偏离用户原话？答=否——R5 固化正确性要求计数口径真实，critic 双路径证实草案 91 为正确值，修复方向与 R 锚一致 ②问=归档前状态与计划 VC 一致？答=是——7/7 VC PASS+合并 44f7f43+land 108 在账 ③问=有无未授权替代/删除？答=无——全程增量原则+并行会话暂存态落账系消解链并集解（归档副本在位核验）。结论=[align] 修复与归档动作对齐，继续收口
