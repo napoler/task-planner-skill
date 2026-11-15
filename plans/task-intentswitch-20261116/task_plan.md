@@ -333,7 +333,7 @@ Phase 1
 
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
-| 1 | 2026-11-16 | plan-writer(本轮) | P0 调研机制全景+H1-H6 诊断并落盘计划文档 | done | 完成 M1-M15 全景、H1-H6 与 R-1~R-5、S-A/S-B、task_plan/verification/kb/progress 初稿 | findings.md 全文；task_plan.md 全文 | findings.md Research Findings/Technical Decisions | n/a | - / 0 / ☑(主进程盘上复核 Goal/VC/Phases/findings) |
+| 1 | 2026-11-16 | plan-writer | P0 调研机制全景+H1-H6 诊断并落盘计划文档 | done | 完成 M1-M15 全景、H1-H6 与 R-1~R-5、S-A/S-B、task_plan/verification/kb/progress 初稿 | findings.md 全文；task_plan.md 全文 | findings.md Research Findings/Technical Decisions | n/a | - / 0 / ☑(主进程盘上复核 Goal/VC/Phases/findings) |
 | 2 | 2026-11-16 | drift-checker | Phase 1 目标对齐三态判定 | done | ✅ALIGNED：R1 覆盖有效/无范围漂移 | task_plan.md:43-44,13,15-18；findings.md:29-111 | drift-p1.md | checkpoints/drift-p1.md | - / 0 / ☑ |
 | 3 | 2026-11-16 | code-assistant | S1+S4 SKILL.md 单入口增强（判定卡+清单+通告+登记字段+边界） | done | +7/0 纯增量；:122-123/:193/:202-204 落位 | worktree diff stat；SKILL.md:122-123,193,202-204 | progress Phase 2 | n/a | - / 0 / ☑(主进程盘上复核) |
 | 4 | 2026-11-16 | code-assistant | S2 hook :287 快速锚句前置 | done | 2/1 PREFIX 原文保留；bash -n PASS | hook diff；zcode-userpromptsubmit.sh:287 | progress Phase 2 | n/a | - / 0 / ☑(主进程 diff 复核) |
