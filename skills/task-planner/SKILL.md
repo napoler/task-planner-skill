@@ -46,6 +46,15 @@ model: opus
   - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
   - **清除哨兵**：`node scripts/plan-created.cjs`（双清除 side+legacy）；哨兵存在期间 PreToolUse hook 拦截非 plans/ 路径 Write/Edit（exit 2）
 
+- [ ] [A] **初始化首动作委派（L1+）— 需求分析与计划文档创建子代理隔离**：
+  - **触发**：L1+（standard/full，非 L0/mini/trivial/L0-E）任务 `init-session.sh` 完成 7 文件后第一动作
+  - **动作**：派发计划子代理承接用户指令复述+需求分析+计划文档填写（`task_plan/findings/knowledge-brief/progress/verification`）；**首选 Plan Writer**（`~/.zcode/agents/plan-writer.md`），provider/档位失败按判例降级 `general-purpose` 并留痕
+  - **主代理职责收窄**：仅保留 skill 激活+init 机械子动作+派发+收据回收（盘上 Read 复核，Rule 84.4）+计划展示+D1 确认+attest 锁定；需求分析与文档撰写细节不进主上下文
+  - **收据契约**：子代理返回 ≤20 行 `{task_id, files_created[], open_questions[], 摘要}`；主进程对产物做盘上复核后再展示与确认
+  - **边界**：会话绑定脚本（`init-session.sh`/`attest-plan.sh`/`set-active-plan.sh`/`plan-created.cjs`/哨兵清理）禁由子代理执行（会话态竞争）；D1/attest/收据回收归主进程
+  - **豁免**：L0/mini/trivial/L0-E 轻量档不适用本条款（Rule 38.6/38.7 比例原则不变）
+  - **动机**：隔离更好、提高子代理激活率、降低主代理上下文占用；禁止误读为“所有场景一律加仪式”
+
 - [ ] [A] **初始化（哨兵机制）— 智能子动作**：体量分级判定与隔离决策
   - **冲突分析**：`bash scripts/check-conflicts.sh` → 结果+隔离决策写入 task_plan.md「🔀 隔离决策」（实现类默认首选 worktree）
   **可选思路**：
