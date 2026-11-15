@@ -67,7 +67,7 @@ Status: `complete` Last verified: 2026-11-16
 - [ ] V-2.2: S-unit 表机器契约（NNmin/纯数字 ID）
   **Verify command**: grep -cE '\| S[0-9]+ \|' plans/task-history-recall-20261116/task_plan.md
 
-Status: `in_progress` Last verified: 2026-11-16
+Status: `complete` Last verified: 2026-11-16
 
 ---
 
@@ -86,7 +86,7 @@ Status: `in_progress` Last verified: 2026-11-16
 - [ ] V-3.2: VC-3 护栏锚（worktree 内执行）
   **Verify command**: （VC-3 同构命令，worktree cwd）
 
-Status: `pending`
+Status: `complete`
 
 ---
 
@@ -105,7 +105,7 @@ Status: `pending`
 - [ ] V-4.2: selftest --only FAIL=0
   **Verify command**: （VC-4 同构命令，worktree cwd）
 
-Status: `pending`
+Status: `complete`
 
 ---
 
@@ -124,4 +124,4 @@ Status: `pending`
 - [ ] V-5.2: worktree 已清理
   **Verify command**: git worktree list | grep -v task-history-recall
 
-Status: `pending`
+Status: `complete`
