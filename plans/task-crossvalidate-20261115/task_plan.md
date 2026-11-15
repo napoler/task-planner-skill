@@ -182,11 +182,11 @@ n/a（纯执行类：交付物=条款文本+级联+守护脚本+实弹报告，�
 
 ## Current Phase
 
-Phase 1
+Phase 2
 
 ## Next Step
 
-派 Explore 侦察验证链插入点与守护面（Phase1-S1），回填 findings F1-F6
+派 general-coder 执行 P2-S1（Rule 108 条款插入 worktree 规则文 EOF），完成后并行派 S2/S4/S5
 
 ## 🧰 工具选择与编排（Rule 40）
 
@@ -206,8 +206,8 @@ Phase 1
 - [ ] 侦察验证链插入点/守护面/级联族（F1-F6 落 findings）
 - [ ] 起草 Rule 108 条款草案+模板 CV 区块草案（clause-drafts.md）
 - [ ] 知识储备必读项确认（上表 ☑ 项已在位）
-- **V-N:** VC-1, VC-2（侦察正确性支撑条款锚与级联落位）
-- **Status:** in_progress
+- **V-N:** VC-1, VC-2（侦察正确性支撑条款锚与级联落位）——V-1.1=6/6 PASS、V-1.2 五子条锚=11 处+§3 在位 PASS（progress 留痕）
+- **Status:** complete
 - **Executor:** Explore（默认档）/ general-purpose（默认档）
 
 <!-- S-unit 派发单元表(Rule 22.6)：10 列固定列序，禁增列禁管道转义 -->
@@ -221,7 +221,7 @@ Phase 1
 - [ ] 每 S-unit 106.1a 三规约（grep 段清单/锚行子串/结构回读）
 - [ ] 规范召回（Rule 93）：3 S-unit 后主进程 Read execution-recall-card.md 留 [recall] 行
 - **V-N:** VC-1, VC-2, VC-3
-- **Status:** pending
+- **Status:** in_progress
 - **Executor:** general-coder（默认档）
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
@@ -306,6 +306,7 @@ Phase 1
 | Phase 3 双轮质检第二轮由 critic 承接草稿态豁免 | 复检对象=落位终态文本强于草稿态复检，避免同内容双审（103.7 登记） |
 | code_review=n/a | 内容组画像；bash 断言脚本 ≤70 行由 critic+回归双检覆盖 |
 | D1 自动裁决记录（Rule 44.3 五要素）：超时值=5min（44.1 默认）；推荐项=按已展示计划执行；触发时间=2026-11-15 计划呈现后；裁决理由=/goal 完成性指令场景命中 44.3 自动通过口径；被覆盖的未决选项=无（无 D2/D5/D6 硬分叉，五子条措辞属可变量自主裁决项） | Goal 绑定确认：Goal 行原文+user-session-log.md #1 用户原话已复述（见呈现记录），attest 锁定含绑定 |
+| PLAN TAMPERED 重锁登记（Rule 51.7）：attest(df128c51) 后 task_plan.md 的变更均为流程操作性编辑——Phase 状态翻转/Drift Log 行/Current Phase/Next Step/S-unit 状态列/本登记行，无语义重规划；两条级联修订（EN-06 ',107' 保持不动/CV-03 收紧）已登记 findings Technical Decisions；处置=重跑 attest-plan.sh 重锁 | Rule 51.7 重锁前置=Decisions 已登记本行；重锁时间 2026-11-15（会话恢复续推） |
 
 ## Errors Encountered
 
@@ -323,7 +324,7 @@ Phase 1
 
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-|      |         |        |      |
+| 2026-11-15 P1 翻转前 | ✅ALIGNED | VC-1/VC-2 前置 | checkpoint=subagent-state/1-drift-p1.md；ledger drift_check 已追加；仓库无关脏态已分账不属本任务 scope |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6）
 
@@ -354,11 +355,16 @@ Phase 1
 | # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |
 |---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|
 | 1 | 2026-11-15 | Explore | 侦察验证链插入点与守护面 | done | F1-F6 六节全锚返回：108 追加锚=规则文 EOF(:58 后)；级联族=SKILL:9/224/267+enumerate-first:9/92-97；CV 模板插入点=:127 后 :131 前 | findings.md ### F1-F6 | ### F1-F6 | - | - / 0 / ☑ |
-| 2 | | general-purpose | 起草 clause-drafts.md | | | | | | - / 0 / ☐ |
-| 3 | | general-coder | P2 落地 S-unit（逐行补登） | | | | | | - / 0 / ☐ |
-| 4 | | code-runner-agent | 全量回归分账 | | | | | | - / 0 / ☐ |
-| 5 | | critic | 独立复检回执 | | | | | | - / 0 / ☐ |
-| 6 | | general-purpose | dogfood 双视角交叉验证 | | | | | | - / 0 / ☐ |
+| 2 | 2026-11-15 | general-purpose | 起草 clause-drafts.md | done | §1 五子条+§2 模板区块+§3 级联七项 78 行；主进程裁决修正 2 处（EN-06 ',107' 保持/CV-03 收紧）已登 findings | findings.md Technical Decisions | Technical Decisions | - | - / 0 / ☑ |
+| 3 | 2026-11-15 | general-coder | Rule 108 条款插入 worktree 规则文 | done | +12 行；108.[1-5]=5/### 108=1/### 84=1 主进程盘上复核 PASS | subagent-state/2-insert-rule108.md | findings F7 | - | - / 0 / ☑ |
+| 4 | 2026-11-15 | general-coder | 级联A 双 SKILL Rule 108 接线 | done | verifSKILL Rule 108=3/tpSKILL 84,108=1/1-108=3/1-107=0 盘上复核 PASS；自报 numstat 与实际 1 行出入（2/-1 vs 3/2）记 issues | subagent-state/3a-skill-cascade.md | findings F7 | - | - / 0 / ☑ |
+| 5 | 2026-11-15 | general-coder | 守护脚本+registry 新建 | done | 脚本+78 行 chmod+x bash -n OK；registry 4 列 tab 行；实跑 5/6（CV-05 预期 FAIL 待模板单元） | subagent-state/3b-selftest-registry.md | findings F7 | - | - / 0 / ☑ |
+| 6 | 2026-11-15 | general-coder | 模板 CV 区块插入 | done | +7 行 cv=1/h2=10 段序正确 主进程盘上复核 PASS | subagent-state/3c-template-cv.md | findings F7 | - | - / 0 / ☑ |
+| 7 | 2026-11-15 | drift-checker | P1 翻转前偏移检查 | done | ✅ALIGNED 四项全 PASS | subagent-state/1-drift-p1.md | - | - | - / 0 / ☑ |
+| 8 | | general-coder | 级联B EN-06 纪元演进 | queued | | | | | - / 0 / ☐ |
+| 9 | | code-runner-agent | 全量回归分账 | queued | | | | | - / 0 / ☐ |
+| 10 | | critic | 独立复检回执 | queued | | | | | - / 0 / ☐ |
+| 11 | | general-purpose | dogfood 双视角交叉验证 | queued | | | | | - / 0 / ☐ |
 
 ## 🔗 Chain 区块交接配置
 

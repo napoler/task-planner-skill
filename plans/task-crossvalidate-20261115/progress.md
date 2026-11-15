@@ -70,3 +70,5 @@
 - **R 锚定**：本 Phase 服务 R1「引入交叉验证从方法层面识别执行错误」+R5「固化相关技能与步骤」——侦察锁定插入点+起草 Rule 108 条款
 - [2026-11-15] attest 锁定 SHA=df128c5181b3c48c815dcfebe70f2f120c2d5f3c6e0b963cdb32106efb2bbef6；D1 自动裁决五要素已登记 task_plan Decisions Made；rule 108 预留成功
 - [2026-11-15] 哨兵清除+worktree 建立 tmp/worktrees/task-crossvalidate-20261115（branch wt/task-crossvalidate-20261115）
+- [2026-11-15 P2] 五单元落地回执全过（条款+12/级联A 双SKILL/脚本+registry/模板+7）；主进程盘上逐单元复核 PASS（findings F7）；PLAN TAMPERED 重锁完成（Decisions 登记行+attest 重跑）
+- [2026-11-15 P2] 待办：级联B（EN-06 纪元演进）→ Phase 2 门（V-2.1..2.4+103.6+drift+commit）→ Phase 3 验证

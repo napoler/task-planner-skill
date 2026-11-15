@@ -50,6 +50,13 @@
 - 实例1 execution-recall-card.md:7 `（task-drift-fakeqc-20261115 判例锚）`；实例2 core critical-rules.md:107 `判例锚：…（判例=task-drift-fakeqc-20261115 判例）`
 - Rule 108 判例锚沿用：`（判例=subagent-verifier-fabricated-output-20261103 判例）`同款格式
 
+### F7 worktree 落地回执（P2 五单元主进程盘上复核，2026-11-15）
+- 条款插入：规则文 +12 行（58→70），`^108\.[1-5]`=5/`^### 108`=1/`^### 84`=1/判例锚=1 全 PASS
+- 级联A：verification-gate/SKILL.md Rule 108=3（description :3/调用时机 :32/References）；task-planner/SKILL.md Rule 84,108=1、1-108=3（:9/:224/:267）、1-107=0、其余 94 条=2（:9/:224 顺带修正陈旧计数）；issues=该单元自报 numstat +2/-1 与实际 3/2 有 1 行出入（内容面已核实无碍）
+- 守护脚本：selftest-cross-validation.sh +78 行 chmod+x bash -n OK；CV-03 修订落实（`|| grep -q '108'`=0）；registry.tsv 新行 4 列 tab 实测；实跑 5/6（CV-05 预期 FAIL=模板未落时点）
+- 模板区块：verification.md +7 行，`交叉验证记录（Rule 108）`=1、`^## ` 9→10、段序=验证独立性/---/CV 区块/5Q 全 PASS
+- worktree git 面恰好 6 变更（5 M+1 新增脚本），scope 零越界
+
 ## Technical Decisions
 <!-- 技术选型/方案决策:一行摘要进 task_plan.md Decisions 表,论证过程写这里 -->
 | Decision | Rationale |
