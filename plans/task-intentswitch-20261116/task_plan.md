@@ -101,7 +101,7 @@ execution_lane: L1
 | G2 | 入口增强 | SKILL.md 单入口具备快速判定卡+显性通告+切换登记指引 | `grep -nE '意图切换快速判定|显性通告|切换登记|挂起' skills/task-planner/SKILL.md` 退出码 0 | Phase 2 / S1-S2 | pending |
 | G3 | 条款收敛 | Rule 94/102 与入口交叉锚一致、无漂移步骤 | `grep -nE '单入口|SKILL.md' skills/task-discipline/references/critical-rules-discipline.md` 退出码 0 且语义一致 | Phase 2 / S3 | pending |
 | G4 | hook提效 | UPS [plan-note] 含 Goal↔专档快速锚句与切换通告/登记提示 | `grep -nE 'Goal/范围/交付物|显性通告|切换登记' /home/terry/.zcode/skills/task-planner/scripts/zcode-userpromptsubmit.sh` 退出码 0 | Phase 2 / S4 | pending |
-| G5 | 验收收口 | VC 全绿、边界不破坏、CR/同步核对通过 | VC-1~VC-6 命令全退出 0 + 103.6 清单全绿 + CR APPROVED | Phase 3-4 / S1-S3 | pending |
+| G5 | 验收收口 | VC 全绿、边界不破坏、CR/同步核对通过 | VC-1~VC-6 命令全退出 0 + 103.6 清单全绿 + CR APPROVED | Phase 3-4 / S1-S3 | complete |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
