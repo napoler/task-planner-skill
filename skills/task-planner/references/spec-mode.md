@@ -15,6 +15,18 @@
 | 规格获批→实施与验证 | OpenSpec `openspec-apply-change` / `openspec-verify-change` | `Skill("openspec-apply-change")` / `Skill("openspec-verify-change")` | 实施勾选 / 三维验证报告 | 调度 + 验收记录落 progress |
 | 规格获批→实施计划 | Superpowers `writing-plans`（brainstorming 硬门规定其后唯一技能）或 OpenSpec `tasks.md`（apply 任务清单） | `Skill("writing-plans")` / openspec-apply-change | 计划/任务清单产物 | planner 记录产物路径收据并与 task_plan 对接，不重写计划内容（R4：任务计划交给专业执行体） |
 
+### 1b. 复杂度分档→族选择决策表（2026-11-16 用户 /goal 增补：按复杂度在 Superpowers/OpenSpec 间择一）
+> 判据裁决（用户 2026-11-16 双选）：载体=既有条款扩展（零新文件零脚本）；判据=复杂度主轴（沿用体量分级）+信号修正。本表与 plan-collab-router 权威源 `skill-collaboration.md` §二触发矩阵同构互引，冲突以权威源为准。
+
+| 复杂度档 | 择一路由 | 执行形态 | 备注 |
+|---------|---------|---------|------|
+| L0/mini（小任务） | 不路由，直执行 | 现行豁免不变 | 免仪式（§1 触发判定同口径） |
+| L1（中等）且无规格留存需求 | Superpowers（嵌入） | 主进程保持统筹，按需载入过程纪律成员（brainstorming→writing-plans→executing-plans/TDD/systematic-debugging/审查） | 单会话轻量；task-planner 保留计划循环与验证门 |
+| L2+ 或规格留存需求（proposal/design/tasks 有归档价值） | OpenSpec（移交） | `openspec-propose`→apply→verify→archive 生命周期 handoff | planner=忠实记录者+调度者（本文件既有语义） |
+| 信号修正（覆盖复杂度初判） | 触及已有 spec→OpenSpec；bug 排查→systematic-debugging（superpowers 单技能嵌入）；跨会话托管→comet | 按修正信号路由 | 多族命中=叠加协同；判定顺序 comet→OpenSpec→superpowers（权威源 §二） |
+
+**择一语义**：同任务同阶段在 Superpowers 与 OpenSpec 之间**择一主导**（防双真源双计划）；跨阶段可切换（brainstorming 收敛后转 `openspec-propose`，即 §1 既有路由）。技能/CLI 探针缺失 → 按 §2 安装引导；安装失败才回落本仓执行并登记（禁静默降级，Rule 97 证据门）。
+
 ## 2. 安装引导（检测缺失 → 直接安装，免用户门 —— 用户 R5 原话「遇到没有的话直接安装补充即可」）
 | 检测项 | 判定方式 | 缺失时动作（先留痕后执行） |
 |--------|---------|---------------------------|

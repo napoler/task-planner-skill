@@ -52,6 +52,8 @@
 
 **计划期**（T0 计划确认前评估）。判定顺序敏感、先命中先用（重→轻）：**comet → OpenSpec → superpowers**；多族命中 = 叠加协同（comet classic 本身即 OpenSpec+superpowers 双星）。
 
+**复杂度主轴初筛（2026-11-16 用户 /goal 增补：按复杂度在 superpowers/OpenSpec 间择一）**：计划期先按体量分级走复杂度轴——L0/mini 直执行不路由；L1（中等）且无规格留存需求→superpowers 嵌入；L2+ 或规格留存需求→OpenSpec 移交；跨会话托管→comet。下表信号修正可覆盖复杂度初判（如触及已有 spec→OpenSpec）；分档细则与择一语义见 task-planner `references/spec-mode.md` §1b（同构互引，冲突以本表为准）。
+
 | 族 | 触发信号（命中任意） | 成本 | CLI 探针前置 |
 |----|---------------------|------|-------------|
 | comet | 现有任意 3 项（Phase≥5 / 跨模块 / 需架构选型 / 新功能 feature / 需 proposal-design-tasks 三件套归档 / 期望跨会话断点续做） | 重（跨会话托管） | `command -v comet` + `.comet.yaml` 激活状态 |
