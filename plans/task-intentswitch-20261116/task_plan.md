@@ -199,7 +199,7 @@ Phase 1
 
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
-| P1 | P0 调研机制全景+H1-H6 诊断+计划文档落盘（findings/task_plan/verification/kb/progress） | plan-writer | user-session-log.md#1（R1 原话）；SKILL.md:188-201；discipline:18-23,607-618,695-706；drift-guard:8-68；plan-resume；hook:283-287 | findings 含 M 全景+H1-H6+R 排序+S-A/S-B；task_plan 含 Goal/R/VC/Phases/隔离决策 | 45min | 7f/900l/45min | 无 | - | complete |
+| S1 | P0 调研机制全景+H1-H6 诊断+计划文档落盘（findings/task_plan/verification/kb/progress） | plan-writer | user-session-log.md#1（R1 原话）；SKILL.md:188-201；discipline:18-23,607-618,695-706；drift-guard:8-68；plan-resume；hook:283-287 | findings 含 M 全景+H1-H6+R 排序+S-A/S-B；task_plan 含 Goal/R/VC/Phases/隔离决策 | 45min | 7f/900l/45min | 无 | - | complete |
 
 ### Phase 2: 单入口与显性化增强实现（worktree）
 - [x] S1：在 SKILL.md「用户新指令处理」强化单入口（快速判定卡+显性通告模板+切换登记最小字段指引）
