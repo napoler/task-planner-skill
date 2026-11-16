@@ -12,6 +12,7 @@
 #   attest-plan.sh --skip-fmea-check [plan_file]      # 跳过 FMEA 门控(v075 P4, 与 --skip-dispatch-check 同构, 须在交付报告披露)
 #   attest-plan.sh --skip-goal-check [plan_file]      # 跳过 Rule 66.5 Goal 单元表门(2026-10-09 CR F1 接线; 透传 check-plan-dispatch.sh, 须在交付报告披露)
 #   attest-plan.sh --skip-vc-check [plan_file]        # 跳过 Rule 84.1 VC 可执行性门(task-v173 验证技能独立化; 校验 verification.md 每条 VC 含可执行命令, 须在交付报告披露)
+#   attest-plan.sh --skip-audit-check [plan_file]     # 跳过计划审计门(Rule 109.8, task-auditgate-machine-20261116; L1+ 唯一逃生口, 须在交付报告披露)
 # 说明: Rule 51.1 需求原文区块门(缺区块/无 R 行/无 R→VC 映射/无 🧮 根源覆盖表 → 拒锁)为 fail-closed 硬门, 无 --skip 逃生口;
 #       mini 档(plan_tier: mini)整块豁免(与 FMEA mini 豁免同先例), 非 mini 计划必含四锚(51.1 三锚 + 53.1 第 4 锚)方可锁定。
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
@@ -29,6 +30,9 @@ skip_fmea=""
 skip_goal=""
 # [task-v173] Rule 84.1 VC 可执行性门开关（--skip-vc-check）
 skip_vc=""
+# [2026-11-17 task-auditgate-machine-20261116] 计划审计门逃生开关（--skip-audit-check, Rule 109.8 CA-8）:
+#   L1+ 计划唯一逃生口（[plan-audit-skip] 自声明对 L1+ 无效）; 任何档位使用必留 WARN+交付披露。
+skip_audit=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
@@ -39,7 +43,8 @@ for arg in "$@"; do
     --skip-fmea-check) skip_fmea=1 ;;
     --skip-goal-check) skip_goal=1 ;;
     --skip-vc-check) skip_vc=1 ;;
-    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    --skip-audit-check) skip_audit=1 ;;
+    -h|--help) sed -n '2,16p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
 done
@@ -85,7 +90,10 @@ case "$mode" in
     # [2026-10-17 task-v184-S5c] cksum 补 5 个新门控 env 档（vc-nonvacuous/rvc-coverage/step-
     # placeholder/tier-consistency/goal-cjk）——档位翻转须失效缓存，防 enforce→warn/warn→enforce
     # 时回放陈旧 PASS 结果（S3/S4 遗留风险「cksum 未纳入新 env」收口；最小增量追加第 7 参数组）。
-    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" | sha256sum | cut -d' ' -f1)"
+    # [2026-11-17 task-auditgate-machine-20261116] 第 8 参数组=审计门三项（R1 F3/F4; R7 Q-2 契约）:
+    #   skip_audit（--skip-audit-check 翻转）+ TASK_PLANNER_AUDIT_GATE_ENFORCE（enforce 档翻转）+
+    #   sha256(progress.md)（APPROVED 留痕追加/REJECTED→APPROVED 变更均须失效缓存, 防「先拒后准」回放陈旧拒锁或陈旧放行）。
+    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)" | sha256sum | cut -d' ' -f1)"
     _attest_cache="/tmp/attest-cache-${_attest_cksum}.result"
     if [ -f "$_attest_cache" ] && [ ! "$plan_file" -nt "$_attest_cache" ]; then
       # plan_file 未变更（mtime 不新于缓存）→ 回放缓存结果，跳过完整门链
@@ -95,6 +103,8 @@ case "$mode" in
       # 文案与门链 :109/:150 逐字一致（改动任一处须同步另一处，防漂移）。
       [ -n "$skip_dispatch" ] && echo "[attest] WARN: --skip-dispatch-check 跳过 S-unit 执行体校验" >&2
       [ -n "$skip_template" ] && echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
+      # [2026-11-17 task-auditgate-machine-20261116] 审计门逃生 WARN 同步重放（文案与门链内 :575 附近逐字一致, 防漂移）
+      [ -n "$skip_audit" ] && echo "[attest] [audit-gate] WARN: 已显式跳过审计门（--skip-audit-check）——交付须披露" >&2
       echo "[attest] 门结果缓存命中（Change #9：跳过完整门链，回放缓存结果；键含门控配置防 enforce 漂移）" >&2
       exit 0
     fi
@@ -558,6 +568,35 @@ case "$mode" in
         printf '%s\n' "$wl_out" | grep '⚠' >&2
         echo "[attest] [window-lint] 警告: 窗口口径跨族冲突（Rule 51.7 G2, 增强检查 warn 级不拒锁——重建派发/修正口径前重跑 check-window-consistency.sh 复核; 锁定照常继续）" >&2
       fi
+    fi
+    # [2026-11-17 task-auditgate-machine-20261116] 计划审计门机器强门接线（Rule 109.8; CA-8; R1-R8 八轮审计迭代收敛后落刀）:
+    # ① What: 四道前置门+窗口 lint 之后、锁定哈希取用之前，调用独立判定器 check-plan-audit-gate.sh
+    #    <plan-dir>（末段 [plan-audit-RN] 锚定 APPROVED+最小形态三 token+lane/skip 判定; rc 0/1/2）。
+    # ② Why: 「未经审计的产出禁交用户」的锁定时机器硬校验（Rule 109 audit-before-delivery attest 面）——
+    #    enforce 阶梯 env-only TASK_PLANNER_AUDIT_GATE_ENFORCE（enforce/warn/off; 零新 config 键 R1 F3 同族）:
+    #    enforce=rc1 拒锁不写锁（子 shell exit 1 → 主 shell 不写缓存）; warn（**默认档**, 首版起步——
+    #    存量 standard/L1 无留痕计划不被立即锁死, 交付披露登记迁移）=透传警告行不阻断; off=SKIP 行跳过。
+    #    --skip-audit-check=L1+ 唯一逃生（WARN+交付披露; [plan-audit-skip] 自声明对 L1+ 无效已由 checker 拒）。
+    # ③ 位置: 与 window-lint 同语义（被哈希固化的内容与门结果一一对应）; checker 输入=progress.md 审计留痕,
+    #    cksum 已纳 sha256(progress.md) → 「先拒后准」场景必失效缓存（R7 Q-2/CA-8）。
+    # ④ 聚合边界仅认 H2 `## `——审计段后随块必须用 H2 标题（H3/粗体则约束静默退化, R7 Q-1 前提, checker 头注释同登记）。
+    agc="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-plan-audit-gate.sh"
+    if [ -n "$skip_audit" ]; then
+      echo "[attest] [audit-gate] WARN: 已显式跳过审计门（--skip-audit-check）——交付须披露" >&2
+    elif [ -f "$agc" ]; then
+      ag_out="$(bash "$agc" "$plan_dir" 2>&1)" && ag_rc=0 || ag_rc=$?
+      if [ "$ag_rc" -eq 2 ]; then
+        printf '%s\n' "$ag_out" >&2   # checker 已打 WARN 行; 输入异常 fail-open 不阻断（R7 Q-2 rc2 语义）
+      elif [ "$ag_rc" -eq 1 ] && [ "${TASK_PLANNER_AUDIT_GATE_ENFORCE:-warn}" = "enforce" ]; then
+        printf '%s\n' "$ag_out" >&2
+        echo "[attest] [audit-gate] 拒锁: 计划审计门未达标（TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce）——先过 critic 独立审计并由主进程登记 [plan-audit-RN] APPROVED 留痕, 或显式 --skip-audit-check（须披露）" >&2
+        exit 1
+      else
+        printf '%s\n' "$ag_out" >&2   # rc0 PASS/SKIP 行留痕; rc1 warn 档透传+提示不阻断
+        [ "$ag_rc" -eq 1 ] && echo "[attest] [audit-gate] 警告: 计划审计门未达标（warn 档不阻断; enforce 档可 TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce 硬门）" >&2
+      fi
+    else
+      echo "[attest] [audit-gate] WARN: 判定器缺失（check-plan-audit-gate.sh 不存在）——门未运行（fail-open; 正常安装应存在）" >&2
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
     # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/51.1 需求区块/FMEA/窗口
