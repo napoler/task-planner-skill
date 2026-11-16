@@ -30,7 +30,7 @@
 | CR 分歧与裁决分歧已有 decision-arbiter/Rule 69 触点 | `skills/task-planner/SKILL.md:129`（CR 分歧 Rule 69.1 T6→decision-arbiter）；`:247`（Rule 108/69 索引） | 上抛裁决面为已识别覆盖；审计争议/无进展升级出口可复用 decision-arbiter/用户裁决 |
 | 活跃代码库当前无 Rule 109 定义；判别性专有 token 基线为 0（改动前） | 计划期 grep：`skills/task-planner/references/*.md` 无 `^### 109`；`SKILL.md`/`references` 无 `计划独立审计门`、`audit-before-delivery`；命中仅 `plans/archive/task-initdelegation-20261115/*` 历史记录 | VC-1/3/4 具判别性；新增 Rule 109 增量编号执行期按 Rule 20.6 reserve/land |
 | 规则/流程变更默认增量，文本优先，机器面扩展需显式授权 | `skills/task-planner/SKILL.md:26`；Rule 74/82 口径见 `references/critical-rules.md:176-182`；宪法文本优先铁律 | 落地策略：SKILL/critical-rules 文本增量为主；selftest/attest 接线列 CA-6 待授权候选 |
-| R1 独立审计已实证 REJECTED 且留痕在位（门控首例） | `plans/task-planaudit-20261116/progress.md:102-123`（`[plan-audit-R1]`：18 发现 B2/M7/m9，修复对照=打回修订） | VC-2/VC-6 首例证据；负向验证“未达标阻断进入 D1”成立；最终达标轮复审待执行（如 R3） |
+| R1 独立审计已实证 REJECTED 且留痕在位（门控首例） | `plans/task-planaudit-20261116/progress.md:102-123`（`[plan-audit-R1]`：18 发现 B2/M7/m9，修复对照=打回修订） | VC-2/VC-6 首例证据；负向验证“未达标阻断进入 D1”成立；`[84.14 闭环标注 2026-11-16]` R3 已 APPROVED（0C/0I，progress.md:177），审计循环收敛完毕 |
 
 ## §3 关键文件锚点表
 

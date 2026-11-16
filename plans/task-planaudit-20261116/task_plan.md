@@ -98,11 +98,11 @@ parallel_groups: [p1-audit-baseline]
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1, R2 |
-| **裁决** | `solved` / `partial` / `not-solved`（终验填写） |
-| **解决证据锚** | （终验填写：SKILL.md `计划独立审计门`/`audit-before-delivery` 段落、Rule 109 条款、已识别覆盖面映射、grep 输出、progress.md `[plan-audit-R1..R2]` 端到端留痕） |
-| **未解决面+原因** | （partial/not-solved 时填写） |
-| **已排除路径** | （not-solved 时填写） |
-| **下一步建议** | （not-solved 时填写，按 Rule 70 四要素） |
+| **裁决** | `solved`（终验填写 2026-11-16） |
+| **解决证据锚** | R1：worktree SKILL.md:68-77 审计门区块（L1+ 分档/critic 主审计/裁决映射 0C0I⇒APPROVED/迭代闭环/留痕 [plan-audit-R<N>]/阻断语义/44.3 不适用）+ G1:185 前置 + D1:81 排除括注；端到端实跑证据=本计划自身 R1 REJECTED→R2 REJECTED→R3 APPROVED 全留痕 progress.md:102-191（负向验证：REJECTED 计划在达标前被阻断进 D1，流程实证）+ P5-S1 采证 16/16 PASS。R2：critical-rules.md:194-212 Rule 109（109.1 总则三要素+109.4 已识别覆盖面映射五面+109.5 未列面判定规则）+ SKILL.md:75 103 边界不叠加声明；CR Gate APPROVED + DRIFT ALIGNED |
+| **未解决面+原因** | 无（CA-5 不落地=有据预裁；CA-6 机器面未授权未实施=文本优先铁律，非未解决） |
+| **已排除路径** | 不适用 |
+| **下一步建议** | 不适用；后续可选：机器面接线（CA-6）另行授权任务 |
 
 ## 🎯 Goal 单元表（Rule 66.1 — attest 获批后逐步落证据，standard 必填）
 
@@ -185,10 +185,10 @@ parallel_groups: [p1-audit-baseline]
 | ③ 外部约束 | 仓库内既有纪律：Rule 74（三判门/增量默认）、Rule 82（核心域边界）、宪法文本优先铁律（§二/§十）、Rule 20.6 编号预留、Rule 44.3 适用边界 | Read + 约束条目摘录 | findings.md `## Resources` / task_plan Decisions | ☑（计划期基线） |
 
 ## Current Phase
-Phase 1（计划审计门已达标：R3 APPROVED（0C/0I，progress.md [plan-audit-R3]）；待 D1 用户确认/44.3 超时口径后 attest 锁定进入执行）
+Phase 5 已 complete（P1-P5 全闭环）；当前=终验收口段：CR Gate APPROVED + DRIFT ALIGNED 已回填，进行中=合并回主仓→主仓复验→run-verification→Goal Gate→check-complete→归档+部署核验+交付总结
 
 ## Next Step
-主进程将修复轮 2 后的计划交独立 critic 复审（按 `progress.md [plan-audit-R<N>]` 固定留痕格式记录）；复审结论满足 0 CRITICAL/0 IMPORTANT 且连续一轮零新发现（定义见达标判据）并记录 APPROVED 后方可进入 D1 展示/确认。
+合并回主仓（smart-merge-back --deploy）→主仓 Read 复验→统一入口 run-verification 全 VC 复验→独立 Verifier 出 Goal Gate→check-complete→归档+部署核验+交付总结。（前置链已闭环：审计门 R3 APPROVED、P1-P5 complete、CR Gate APPROVED、DRIFT ALIGNED）
 
 ## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）
 
@@ -275,7 +275,7 @@ Phase 1（计划审计门已达标：R3 APPROVED（0C/0I，progress.md [plan-aud
 
 | 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |
 |------|------------------------------|----------------------|
-| 1    | （终验前填写）               |                      |
+| 1 | 84.14 全量回读发现四处陈旧/噪音：①findings/kb 多处「待最终达标轮复审（如 R3）」未闭环标注（R3 已 APPROVED）②task_plan Next Step/Current Phase 停留在 pre-D1 时点③Handoff #5-#9 queued 占位行与执行 done 行重复（簿记噪音）④progress 尾部 plan-resume 报告表为空属模板占位（本任务非 plan-resume 恢复场景，登记不适用） | 全部当轮处置：①findings 追加 84.14 闭环标注段+kb §2 L33 行追加闭环括注②③本回读轮内已更新/清理（Next Step 已改合并回序列；queued 副本已删除）④登记不适用理由。回读轮次 1 零新增未处置发现 → 满足收敛出口（连续一轮零新发现），可出 outcome |
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 
@@ -356,7 +356,8 @@ Phase 1（计划审计门已达标：R3 APPROVED（0C/0I，progress.md [plan-aud
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |
 |------|---------|--------|------|
-| 2026-11-16 | R1 critic REJECTED（18 发现：B2/M7/m9） | VC-1,VC-2,VC-3,VC-4,VC-5 | 已打回修订并逐项处置（F1-F18），待 R2 复审 |
+| 2026-11-16 | R1 critic REJECTED（18 发现：B2/M7/m9） | VC-1,VC-2,VC-3,VC-4,VC-5 | 已打回修订并逐项处置（F1-F18）→R2 REJECTED(12)→修复轮2+微修→R3 APPROVED（0C/0I）；审计循环收敛闭环 |
+| 2026-11-16 | drift-checker 全跨度检查（P1-P5） | VC-1~VC-6 | **ALIGNED**：worktree 仅 2 技能文件（diff master +37/-6 skills/）、主仓提交仅本计划目录+ledger、R1-R3 逐字锚在位、无越界无加戏 |
 
 ## 📦 Batch Report（批量处理质量门控 — Rule 18.6）
 
@@ -375,10 +376,10 @@ Phase 1（计划审计门已达标：R3 APPROVED（0C/0I，progress.md [plan-aud
 
 | 字段 | 值 |
 |------|-----|
-| 子代理执行 Phase 数 / 总 Phase 数 | 0 / 5（执行未启动；计划期审计 critic 已派发 R1+R2+R3 三轮，R3 APPROVED） |
+| 子代理执行 Phase 数 / 总 Phase 数 | 4 / 5（P1 explore×3 并行组+P3 executor×2+P4 executor×2+P5 code-runner×2；P2=主进程 25.3② 例外；计划期审计 critic R1/R2/R3 三轮另计） |
 | 主进程直做 Phase 清单 | Phase 2（例外理由:25.3② 计划系统文件维护——仅编辑 plans/** 计划文档；设计决策以既有七文件载体整合，派发开销大于收益） |
 | 委派率 | 待执行期统计（目标 ≥ delegation_rate_floor；主进程直做仅白名单例外） |
-| 激活子代理数（Rule 96.5） | 3（critic R1/R2/R3 三轮计划审计，R3 APPROVED）；计划期审计轮次不计入执行期委派率分母（单独作为准入证据登记）；执行期派发数待执行统计 |
+| 激活子代理数（Rule 96.5） | 15（计划期 6：Plan Writer 起草+修复轮1+修复轮2 / critic R1+R2+R3；执行期 9：explore×3+executor×4+general-reviewer×2+code-runner×2+drift-checker×1+Code Reviewer×1——复检/CR/漂移审计另计口径见 Handoff #15/#16/#17）；check-delegation stats=rate 0.800 verdict ok（0 violations） |
 | 最大并行宽度（Rule 96.5） | 1（当前）；Phase 1 设计并行组 `p1-audit-baseline`（S1-S3）待执行期并发派发 |
 | 串行化例外理由（Rule 96.4） | none（跨 Phase 串行属天然依赖；P1 组内并行已声明） |
 
@@ -397,11 +398,7 @@ Phase 1（计划审计门已达标：R3 APPROVED（0C/0I，progress.md [plan-aud
 | 16 | 2026-11-16 | general-reviewer | P4 独立复检（103.3a+103.6） | done | 首轮 FAIL 2 项→全部闭环：ledger=主仓共享账本伪缺陷（主仓 check=landed 实锚）；SKILL:70+critical-rules:202 两处「天然」措辞偏差主进程 grep 实锤直修（1f568f7/1c49637）→ **RECHECK: PASS** | worktree 全文回读+103.6 清单 | progress.md [p4-recheck] | subagent-state/p4-recheck-checkpoint.md | - / 7 / ☑ |
 | 8 | 2026-11-16 | code-runner-agent | P5-S1 VC 全量采证 | done | 16/16 全 PASS（VC-1~VC-4+回归+git；worktree clean HEAD 1c49637；diff master 2 skill files +37/-8） | p5-s1-checkpoint.md 采证汇总表 | findings.md P5 段 | subagent-state/p5-s1-checkpoint.md | - / 8 / ☑ |
 | 9 | 2026-11-16 | code-runner-agent | P5-S2 交付准备核对 | done | VC-5a/b/c PASS+VC-6 预演 PASS；NOT-READY=P5 翻转前事实（已翻转）；终验前待办清单已出 | p5-s2-checkpoint.md | findings.md P5 段 | subagent-state/p5-s2-checkpoint.md | - / 9 / ☑ |
-| 5 | | executor | P3-S2 对齐 D1/合规检查与103边界表述 | queued | | | | | - / 0 / ☐ |
-| 6 | | executor | P4-S1 追加 Rule 109 全流程条款(归属定稿) | queued | | | | | - / 0 / ☐ |
-| 7 | | executor | P4-S2 同步索引与 SKILL 联动摘要 | queued | | | | | - / 0 / ☐ |
-| 8 | | code-runner-agent | P5-S1 运行锚点与一致性校验采证 | queued | | | | | - / 0 / ☐ |
-| 9 | | code-runner-agent | P5-S2 核对计划完整性与交付准备 | queued | | | | | - / 0 / ☐ |
+| 17 | 2026-11-16 | drift-checker | P1-P5 全跨度偏移检查（Rule 61/64） | done | **DRIFT: ALIGNED**：R1-R3 逐字锚在位、worktree 仅 2 技能文件、主仓提交仅本计划目录+ledger、无越界；簿记噪音（queued 重复行）已清理 | drift-check-20261116.md | task_plan Drift Log | subagent-state/drift-check-20261116.md | - / 10 / ☑ |
 | 10 | 2026-11-16 | critic | 计划独立审计 R1（D1 前）：审计 task_plan.md 对 R1-R3 的覆盖与合理性 | done | REJECTED：18 发现（B2/M7/m9）全清单留痕 progress.md [plan-audit-R1]；已打回 Plan Writer 修订 | plans/task-planaudit-20261116/progress.md | progress.md [plan-audit-R1] | - | - / 1 / ☑ |
 | 11 | 2026-11-16 | Plan Writer(续) | R1 修复轮：按 F1-F18 修订五计划文档 | done | 18/18 逐项处置带落点；主进程盘上抽查 7/7 PASS；收据 progress.md [plan-audit-R1-revision] | plans/task-planaudit-20261116/progress.md | progress.md [plan-audit-R1-revision] | - | - / 2 / ☑ |
 | 12 | 2026-11-16 | critic(续) | 计划独立审计 R2（修订后复审）：核验 F1-F18 闭环与达标判据 | done | REJECTED：F1-F18 闭环 18/18；新发现 12（C1/I1/W6/Q1/N3）全录 progress.md [plan-audit-R2]；已打回修复轮 2 | plans/task-planaudit-20261116/progress.md | progress.md [plan-audit-R2] | - | - / 3 / ☑ |

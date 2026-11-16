@@ -107,3 +107,9 @@
 - 追加位置=critical-rules.md:192（83.4 末行）之后、:194 卫星路由索引之前（空行分隔）；格式范式=`### <N> <标题>（<任务/目标/判定面/衔接>）`+`N.x **小标题**：`+Why/建制段（:162-192 先例）
 - 索引同步清单（109 落核心 → 核心 14→15 条、全集 1-108→1-109、其余 91→90 条）：critical-rules.md:180（核心清单+计数）、:194-207（卫星路由索引头部）；SKILL.md:9、:247（核心在位/其余条数/108 描述）、:291
 - 约束锚：Rule 82=critical-rules.md:176-182（核心只留核心域+禁镜像+新规则先过 20.6 查重）；Rule 74=discipline:481-486（增量默认+74.3 逐条标注）；Rule 20.6=SKILL.md:74+rule-reserve.sh:8-14（reserve/land 形态；attest 曾报 new_rule 解析失败 fail-open——执行期手动 `rule-reserve.sh reserve 109 task-planaudit-20261116` 补登记）
+
+## 收尾回读梳理（Rule 84.14 — 2026-11-16 轮 1）
+- 五维互洽检查结论：需求↔目标↔执行↔验证↔知识 五维对齐；CR Gate APPROVED（0 Blocker）+ DRIFT ALIGNED（无越界无加戏）+ P5-S1 采证 16/16 PASS。
+- 本轮发现四处陈旧/噪音（详见 task_plan「收尾回读梳理记录」行）：①本文档与 knowledge-brief §2 中「待最终达标轮复审（如 R3）」等表述为 R3 前历史快照——**闭环标注：R3 已于 progress.md:177 APPROVED（0 CRITICAL 且 0 IMPORTANT），F1-F18 18/18 闭合+NEW-1~12 12/12 闭合，本文档 L51-52/L67 与 kb:33 的「待复审」状态全部已了结**；②task_plan Next Step/Current Phase 陈旧——已更新为合并回/终验序列；③Handoff #5-#9 queued 占位行重复——已清理；④progress 尾部 plan-resume 报告表为空=模板占位，本任务非恢复场景，登记不适用。
+- 修复对照：①-④当轮全部处置，轮 1 零新增未处置发现 → 满足收敛出口（连续一轮零新发现），可出 outcome。
+- 经验沉淀（供 kb 入库）：审计门端到端首例判例=R1 REJECTED 18 发现→迭代 R3 APPROVED；三个可复用教训=①子代理收据必须盘上 grep 复核（Plan Writer 空收据判例）②验证命令须模拟正反双态实测判别性（tac 恒真风险判例）③共享状态文件（ledger/INDEX）在 worktree 侧读数为陈旧快照，核查以主仓为权威。
