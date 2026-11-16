@@ -75,7 +75,7 @@ model: opus
   - **迭代闭环**：REJECTED→打回修正→再次审计，轮次不设上限；连续 ≥3 轮无实质进展→呈报用户裁决（防死循环）；每轮固定留痕 progress.md `[plan-audit-R<N>]` 段（轮次/审计体/结论/问题清单/修复对照）
   - **阻断语义**：未经审计 APPROVED（或豁免登记）禁展示给用户、禁进入 D1 yes/目标绑定确认/attest/清哨兵链路；本门**不适用 Rule 44.3 超时自动通过**（未达标禁自动放行）
   - **与既有机制边界**：计划面逃逸 Rule 103.3 由本门承载，执行期产物仍由 Rule 103 承载，二者不叠加；全流程原则与覆盖面映射全文=references/critical-rules.md Rule 109
-  - **机器门（attest 锁定前自动，Rule 109.8）**：attest 内置 `check-plan-audit-gate.sh` 判定 `[plan-audit-RN]` 审计留痕（`[audit-gate]` 行）；`TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce` 时未达标计划拒锁（默认 warn 留痕不阻断——存量不重锁，首版起步）；`--skip-audit-check` 仅 L1+ 逃生（WARN+交付披露）；mini/L0/trivial 跳过、无声明 `SKIP legacy-no-decl`；selftest=`scripts/selftest-plan-audit-gate.sh`
+  - **机器门（attest 锁定前自动，Rule 109.8）**：attest 内置 `check-plan-audit-gate.sh` 判定 `[plan-audit-RN]` 审计留痕（`[audit-gate]` 行）；`TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce` 时未达标计划拒锁——**含审计证据缺失（progress.md 缺失/不可读，enforce 档不得借 IO 异常旁路；CR W-1）**（默认 warn 留痕不阻断——存量不重锁，首版起步）；`--skip-audit-check` 仅 L1+ 逃生（WARN+交付披露）；mini/L0/trivial 跳过、无声明 `SKIP legacy-no-decl`、`ENFORCE=off` 显式 SKIP；selftest=`scripts/selftest-plan-audit-gate.sh`
 
 - [ ] [A] **计划确认**
   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）

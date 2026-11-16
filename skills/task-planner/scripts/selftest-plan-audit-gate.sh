@@ -101,17 +101,44 @@ rm -f "$D/progress.md"
 out=$(bash "$CK" "$D" 2>&1); rc=$?
 if [ "$rc" -eq 2 ] && printf '%s' "$out" | grep -q 'WARN 判定器输入异常'; then ok 13 "删除 progress.md → rc2+WARN"; else bad 13 "缺文件期望 rc2+WARN, 实得 rc=$rc out=$out"; fi
 
-# ── PAG-14 缓存隔离（enforce→改留痕→enforce 不复用陈旧结果; progress 哈希入 cksum, R1 F4）──
+# ── PAG-14 缓存隔离（同 enforce 档下改留痕→不复用陈旧 PASS; progress 哈希入 cksum, R1 F4）──
+# [2026-11-17 CR 修复 I-2] 判别性修正（两轮）：① **第二次 attest 前禁清缓存**（原实现两次都清,
+# 对哈希入键零判别力——critic mutation 实证）；② **两次同用 enforce 档**（首版修正误把 env 翻转当
+# 判别面——常量化 mutation 复测仍 PASS, 因 env 入键已先差异化 cksum, progress 维度仍未被测）。
+# 现判据: 同 enforce+只改 progress.md → 哈希入键则 K2≠K1 miss 重跑拒锁 rc1; 未入键则缓存回放 rc0 → FAIL。
 D="$ROOT/c14"; mkplan "$D" standard L1
 mkprog "$D" '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **APPROVED**' '- 问题清单: 无'
 clear_cache
 SK="--skip-dispatch-check --skip-template-check --skip-fmea-check --skip-goal-check --skip-vc-check"
-bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_pass=$?
+TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_pass=$?
 mkprog "$D" '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **REJECTED**' '- 问题清单: X'
-clear_cache
 TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_rej=$?
-if [ "$r_pass" -eq 0 ] && [ "$r_rej" -ne 0 ]; then ok 14 "缓存隔离: APPROVED 后改 REJECTED→enforce 再跑拒锁（progress 哈希入键生效）"; else bad 14 "缓存隔离期望 0/非0, 实得 $r_pass/$r_rej"; fi
-rm -f "$D/.plan-attestation"
+if [ "$r_pass" -eq 0 ] && [ "$r_rej" -ne 0 ]; then ok 14 "缓存隔离: 同 enforce 只改 progress 留痕→不回放陈旧 PASS（哈希入键生效）"; else bad 14 "缓存隔离期望 0/非0, 实得 $r_pass/$r_rej"; fi
+rm -f "$D/.plan-attestation"; clear_cache
+
+# ── PAG-17 off→enforce 递进（env 入键判别; CR I-2 增补 task_plan:79 声明的 enforce→off→enforce 面）──
+D="$ROOT/c17"; mkplan "$D" standard L1; : > "$D/progress.md"
+clear_cache
+TASK_PLANNER_AUDIT_GATE_ENFORCE=off bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_off=$?
+TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_esc=$?
+if [ "$r_off" -eq 0 ] && [ "$r_esc" -ne 0 ]; then ok 17 "off→enforce 递进拒锁（ENFORCE env 入键, off 档缓存不被 enforce 复用）"; else bad 17 "off→enforce 期望 0/非0, 实得 $r_off/$r_esc"; fi
+rm -f "$D/.plan-attestation"; clear_cache
+
+# ── PAG-18 --skip-audit-check 逃生（enforce+无留痕仍 rc0+WARN 行; CR I-2 增补未测面）──
+TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" --skip-audit-check $SK "$D/task_plan.md" >"$D/o18" 2>&1; r_skip=$?
+if [ "$r_skip" -eq 0 ] && grep -q 'skip-audit-check' "$D/o18"; then ok 18 "--skip-audit-check enforce 下逃生 rc0+WARN"; else bad 18 "skip 逃生期望 rc0+WARN, 实得 rc=$r_skip"; fi
+rm -f "$D/.plan-attestation"; clear_cache
+
+# ── PAG-19 enforce+删除 progress.md（rc2 证据缺失）→ 拒锁不写锁（CR W-1 旁路面）────────
+D="$ROOT/c19"; mkplan "$D" standard L1; : > "$D/progress.md"
+rm -f "$D/progress.md"
+TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >"$D/o19" 2>&1; r_del=$?
+if [ "$r_del" -ne 0 ] && [ ! -f "$D/.plan-attestation" ] && grep -q 'audit-gate' "$D/o19"; then
+  ok 19 "enforce+删 progress.md（rc2）拒锁不写锁——证据缺失不得旁路"
+else
+  bad 19 "enforce+删文件期望 rc≠0/无锁, 实得 rc=$r_del 锁=$(test -f "$D/.plan-attestation" && echo 有 || echo 无)"
+fi
+clear_cache
 
 # ── PAG-15 attest enforce 无留痕 → 拒锁 rc≠0 且不写锁（S2 接线真实链路）────────
 D="$ROOT/c15"; mkplan "$D" standard L1; : > "$D/progress.md"
