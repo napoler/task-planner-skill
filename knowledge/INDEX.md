@@ -1,6 +1,6 @@
 # 知识库索引 (knowledge/INDEX.md)
 
-> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-15T23:05:49Z | 条目计数: 32
+> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-16T14:46:48Z | 条目计数: 33
 
 | id | title | tags | sources | file |
 | anchor-discipline-plan-history-recall | "锚纪律与子代理产锚幻觉治理（plan-history-recall dogfood 判例）" | [kb, anchor-discipline, plan-history-recall, subagent-fabrication, vc6-vacuous-gate] | [plans/task-history-recall-20261116/design.md, plans/task-history-recall-20261116/findings.md, plans/task-history-recall-20261116/progress.md, skills/plan-history-recall/SKILL.md] | entries/anchor-discipline-plan-history-recall.md |
@@ -30,6 +30,7 @@
 | task-drift-fakeqc-20261115 | "执行偏移与虚假完成声称根治：94.7/51.14/64.7 三条款判例与插段坑" | [rule-landing, drift-guard, claim-honesty, clause-insert] | [plans/task-drift-fakeqc-20261115/knowledge-brief.md, plans/task-drift-fakeqc-20261115/clause-drafts.md, plans/task-drift-fakeqc-20261115/evidence-session-extract.md, plans/task-drift-fakeqc-20261115/progress.md] | entries/task-drift-fakeqc-20261115.md |
 | task-intentresume-20261116 | "意图切换回切闭环——B 收口后主动回切挂起计划 A（task-intentresume-20261116）" | [intent-switch, 回切, 计划隔离, Rule94, plan-resume, 显性通告] | [plans/archive/task-intentswitch-20261116/task_plan.md, plans/task-intentresume-20261116/findings.md] | entries/task-intentresume-20261116.md |
 | task-intentswitch-20261116 | "会话意图切换主动换计划——单入口判定卡+显性通告+切换登记（task-intentswitch-20261116）" | [intent-switch, 计划隔离, Rule94, Rule102, UPS-hook, 显性化] | [plans/task-intentswitch-20261116/task_plan.md, plans/task-intentswitch-20261116/findings.md] | entries/task-intentswitch-20261116.md |
+| task-planaudit-20261116 | "计划审计门与 Rule 109 独立审计门落地（audit-before-delivery 全流程原则）" | [task-planner, rule-109, audit-gate, 计划审计, 验证契约] | [plans/archive/task-planaudit-20261116/task_plan.md, plans/archive/task-planaudit-20261116/progress.md, plans/archive/task-planaudit-20261116/findings.md] | entries/task-planaudit-20261116.md |
 | task-skill-audit-fix-20261026 | "skill 深度审查缺陷修复：跨技能引用深度规则/索引级联漏号/僵尸计划收口范式" | [skill-audit, 跨技能引用, 委派门, 僵尸计划, 收口] | [plans/skill-audit-20261026/report.md, plans/task-skill-audit-fix-20261026/findings.md] | entries/task-skill-audit-fix-20261026.md |
 | template-sedimentation-mechanism | "任务路径沉淀机制：Rule 34.8/34.9 两级审查门与项目级模板位（task-tpl-sediment-20261115）" | [模板沉淀, rule-34, plan-template-advisor, 审查门, 项目级模板] | [skills/plan-template-kit/references/critical-rules-template.md, skills/plan-template-advisor/SKILL.md, plans/archive/task-tpl-sediment-20261115/findings.md] | entries/template-sedimentation-mechanism.md |
 | tplfix-template-gate-alignment | 模板-门六漂移对齐——验证区块契约+10 列序+断言随契约演进 | [templates, verification, attestation, 冒烟, 判例] | knowledge/entries/_draft-task-tpl-verify-fix-20261113.md<br>plans/task-tpl-verify-fix-20261113/delivery-summary.md<br>skills/task-planner/templates/ | entries/tplfix-template-gate-alignment.md |
