@@ -199,7 +199,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 109.2 **计划面强制门（D1 前审计）**：L1+ 计划在展示/D1 授权前必须交独立子代理（首选 critic）审计；插入点=计划产出盘上复核+智能子动作（冲突分析/隔离决策/Spec 判定）完成后、计划确认展示前；B/C/D/E 类任何计划（再）展示/确认前同样过门（修订重审简版=仅审变更增量+上轮问题闭环）。审计输入材料包=task_plan+user-session-log 逐字锚+knowledge-brief+上轮问题清单。裁决映射（由审计体出具，主进程只登记）：`0 CRITICAL 且 0 IMPORTANT ⇒ APPROVED，否则 REJECTED`（新发现=新增 CRITICAL/IMPORTANT；WARNING/QUESTION/NIT 留档不阻断）；达标=0C/0I 且连续一轮零新发现。REJECTED→打回修正（主进程驱动 Plan Writer 重派，22.4a/62.2 单写者不变）→再次审计，轮次不设上限；连续 ≥3 轮无实质进展→呈报用户裁决。每轮固定留痕 progress.md `[plan-audit-R<N>]`（轮次/审计体/结论/问题清单/修复对照）。阻断语义：未经 APPROVED（或豁免登记）禁展示/禁 D1 yes/禁 attest/禁清哨兵；本门不适用 Rule 44.3 超时自动通过。审计体降级链=critic→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）。
 
-109.3 **分档豁免（比例原则，对齐 Rule 38.7）**：mini/L0/trivial=轻量复核（主进程盘上复核+基线自查）或登记豁免（一行留痕 `[plan-audit-skip]`+理由）；L0-E 豁免；禁止把本门实施为一刀切仪式膨胀。
+109.3 **分档豁免（比例原则，对齐 Rule 38.7）**：mini/L0/trivial=轻量复核（主进程盘上复核+基线自查）或登记豁免（一行留痕 `[plan-audit-skip]`+理由）；L0-E 天然豁免；禁止把本门实施为一刀切仪式膨胀。
 
 109.4 **已识别覆盖面映射（引用不改写卫星语义）**：执行产物面=Rule 103 双轮质检（task-dispatch 卫星）+Rule 84.4 盘上复核+Rule 106 修改后复检（task-discipline 卫星）；终验面=Rule 33.3 独立复验+Rule 84.5 终验 SOP+Rule 84.7 内容型独立审查+Rule 108 交叉验证（verification-gate 卫星）；上抛裁决面=Rule 69 decision-arbiter 四态裁决+Rule 70 呈报四要素（task-discipline 卫星）；报告/总结面=交付总结/分析报告交付用户前按 109.1 三要素过独立审计（内容型走 84.7，其余简版复核并留痕）；计划面=109.2。主进程直做/白名单/103.7 豁免产出的交付前审计由本条兜底。
 
