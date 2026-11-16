@@ -11,23 +11,23 @@
 > All must pass for goal to be COMPLETE. 每条 VC 的 **Verify command** 为可执行纯命令（退出码判据，禁占位/禁真空/须引用本 VC 产出物）。VC-1/2/3 采用判别性专有 token + 基线负断言记录（基线=改动前 grep 0，见 findings.md “VC 判别性基线”）。
 
 - [x] VC-1: 计划审计门落地（判别性）——SKILL.md 在智能子动作完成后、D1 展示前插入 `计划独立审计门`（L1+ 强制，mini/L0/trivial 轻量复核或登记豁免，L0-E 豁免），独立子代理审计 APPROVED 后方可进入 D1；含再展示简版审计、44.3 不适用、审计体降级链
-  Evidence: `skills/task-planner/SKILL.md:68-77`（worktree）/合并回后主仓同区块；基线 0→落地 3（:68/:81/:185）；P5-S1 采证 PASS
-  **Verify command**: `grep -n "计划独立审计门" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md` → 实测 3 命中 PASS
+  Evidence: `skills/task-planner/SKILL.md:68-77`；基线 0→落地 3（:68/:81/:185）；P5-S1 采证 PASS；合并回后主仓实测 3 命中
+  **Verify command**: grep -n "计划独立审计门" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
 - [x] VC-2: 审计迭代闭环与留痕落地——达标=0 CRITICAL 且 0 IMPORTANT 且连续一轮零新发现（新发现=新增 CRITICAL/IMPORTANT；WARNING/QUESTION/NIT 留档不阻断）⇒APPROVED，否则 REJECTED（审计体出具，主进程只登记）；固定留痕 `progress.md [plan-audit-R<N>]`（轮次/审计体/结论/问题清单/修复对照）；升级出口与 R1 首例在位
-  Evidence: SKILL.md:75 迭代闭环行+progress `[plan-audit-R1/R2/R3]` 三段全录
-  **Verify command**: 三段 grep → 实测 PASS（R1 留痕+REJECTED+SKILL plan-audit-R 全命中）
+  Evidence: SKILL.md:75 迭代闭环行+progress `[plan-audit-R1/R2/R3]` 三段全录；合并回后主仓实测三段全命中
+  **Verify command**: grep -n "\[plan-audit-R1\]" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/progress.md && grep -n "REJECTED" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/progress.md && grep -n "plan-audit-R" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
 - [x] VC-3: 全流程“未经审计产出禁交用户”原则落地——`audit-before-delivery` 总则映射已识别覆盖面（非穷尽：计划/执行产物 Rule 103/终验 Rule 84+108/报告总结/上抛裁决 Rule 69），未列面默认简版独立复核+判定规则，103 边界不叠加
-  Evidence: `references/critical-rules.md:194-212` Rule 109（109.1 总则/109.4 五面映射/109.5 未列面规则）+ SKILL.md:68/:75
-  **Verify command**: audit-before-delivery 双文件 grep → 实测 PASS（SKILL 2 处+critical-rules 4 处）
+  Evidence: `references/critical-rules.md:194-212` Rule 109（109.1 总则/109.4 五面映射/109.5 未列面规则）+ SKILL.md:68/:75；实测 SKILL 2 处+critical-rules 4 处
+  **Verify command**: grep -n "audit-before-delivery" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md
 - [x] VC-4: 增量合规与归属/编号/索引一致性——Rule 74 增量，Rule 109 归属定稿（核心计划制作域+全流程总则，跨域引用不改写），`^### 109` 定义唯一且索引同步
-  Evidence: 变更标注表 CA-1~CA-4 落地+CA-5 预裁+CA-6 未授权未实施；计数 1-109/15 条/90 条四处一致，旧计数 0
-  **Verify command**: `^### 109 ` 计数=1 + Rule 109 双文件命中 → 实测 PASS
+  Evidence: 变更标注表 CA-1~CA-4 落地+CA-5 预裁+CA-6 未授权未实施；计数 1-109/15 条/90 条四处一致，旧计数 0；合并回后主仓实测 ^### 109=1
+  **Verify command**: test "$(grep -rn '^### 109 ' /mnt/data/dev/task-planner-skill/skills/task-planner/references 2>/dev/null | wc -l)" -eq 1 && grep -n "Rule 109" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md
 - [x] VC-5: 计划与知识底座可审计——task_plan.md 必填字段与 R→VC 完整，knowledge-brief.md §1-§6 实条目且 §2/§3 有可追溯锚点
   Evidence: P5-S2 核对 11 必填区块×1 全在位+kb §1-§7 在位+R1/R2/R3→VC 无 uncovered
-  **Verify command**: 文件在位+§2/§3 grep+R1 命中 → 实测 PASS
+  **Verify command**: test -f /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/task_plan.md && test -f /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/knowledge-brief.md && grep -n "^## §2" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/knowledge-brief.md && grep -n "^## §3" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/knowledge-brief.md && grep -n "R1" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/task_plan.md
 - [x] VC-6: 端到端实跑证据——本计划 R1(REJECTED, 18发现)→修订(F1-F18)→最终达标轮复审留痕与裁决；负向验证=R1 REJECTED 且达标前阻断进入 D1/展示；最终达标轮（首个达成 0 CRITICAL 且 0 IMPORTANT 且连续一轮零新发现的复审轮，如 R3）由审计体记录 APPROVED（新发现定义同 VC-2）后方可 D1
-  Evidence: progress.md `[plan-audit-R1]`（REJECTED 18 发现）→`[plan-audit-R2]`（REJECTED 12）→`[plan-audit-R3]`（**APPROVED** 0C/0I）；负向验证=R1/R2 REJECTED 期间计划未进 D1 展示（D1 于 R3 APPROVED 后才执行，44.3 登记在 Decisions）
-  **Verify command**: awk 末段聚合断言 → 实测 VC6=0 PASS（两轮独立实测：P5-S2 预演+主进程复核）
+  Evidence: progress.md `[plan-audit-R1]`（REJECTED 18 发现）→`[plan-audit-R2]`（REJECTED 12）→`[plan-audit-R3]`（**APPROVED** 0C/0I）；负向验证=R1/R2 REJECTED 期间计划未进 D1 展示（D1 于 R3 APPROVED 后才执行，44.3 登记在 Decisions）；awk 断言两轮独立实测 VC6=0
+  **Verify command**: grep -n "\[plan-audit-R1\]" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/progress.md && grep -q "REJECTED" /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/progress.md && awk '/^## \[plan-audit-R[0-9]+\] /{buf=""} {buf=buf $0 "\n"} END{printf "%s",buf}' /mnt/data/dev/task-planner-skill/plans/task-planaudit-20261116/progress.md | grep -q "结论: \*\*APPROVED\*\*"
 
 ---
 
@@ -126,7 +126,7 @@ Status: `complete` Last verified: 2026-11-16
 
 **Verification**:
 - [x] V-5.1: 规则/索引机械校验通过（对应 VC-4）——`^### 109 ` 计数=1
-  **Verify command**: `grep -rn "^### 109 " .../references | wc -l` → PASS（1）
+  **Verify command**: grep -rn "^### 109 " /mnt/data/dev/task-planner-skill/skills/task-planner/references 2>/dev/null | wc -l
 - [x] V-5.2: 计划与 kb 完整性可检（对应 VC-5）——kb §1-§7 在位
   **Verify command**: `grep -n "^## §2" .../knowledge-brief.md` → PASS
 

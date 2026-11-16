@@ -1,0 +1,5 @@
+# [run-verification] VC-1 | 2026-11-16T14:39:44Z | cmd: grep -rn "^### 109 " /mnt/data/dev/task-planner-skill/skills/task-planner/references 2>/dev/null | wc -l
+# ---- stdout/stderr ----
+1
+
+# exit=0

@@ -1,0 +1,10 @@
+# [run-verification] VC-3 | 2026-11-16T14:39:42Z | cmd: grep -n "audit-before-delivery" /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md
+# ---- stdout/stderr ----
+/mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md:68:- [ ] [A] **计划独立审计门（D1 前强制 — audit-before-delivery，Rule 109）**：L1+ 计划在展示/授权前必须经独立子代理审计迭代达标，未经审计的产出禁交用户
+/mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md:258:Rules 1-109 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 90 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列创作知识同步纪律域（均 task-discipline 卫星））、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md:194:### 109 独立审计门（audit-before-delivery）— task-planaudit-20261116（P0；目标：不将未经审计的产出交给用户；判定面=一切交用户可见的需审核产出；衔接 Rule 51/70/74/80/103/84/108/69）
+/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md:198:109.1 **总则（audit-before-delivery）**：独立审计三要素——①审计体独立（与产出者不同上下文，禁止自我复核冒充独立审计）②对照权威锚（用户逐字原话 Rule 80/需求锚 Rule 51.1，原话面>转译面）③裁决可登记（结论+问题清单+修复对照落盘 progress.md/verification.md）。已识别覆盖面（非穷尽，映射见 109.4）：计划面（109.2 强制门）、执行产物面、终验面、报告/总结面、上抛裁决面。未列面按 109.5 判定规则默认适用简版独立复核，禁止以「枚举面未含」为由跳过。
+/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md:206:109.5 **未列面判定规则**：产出满足任一即需独立审计——①交付后用户可见且含判断/结论性内容（非纯机械回执）②错误传导代价高（被用户据以决策）③产出者与结论利益相关（自证倾向）。命中→简版独立复核（全新上下文第二读对照权威锚+一行留痕 `[audit-before-delivery]`）；三问全否→留一行不适用理由即可。
+/mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md:208:109.6 **留痕与登记**：审计轮次/结论/问题清单/修复对照按载体落盘（计划面=`[plan-audit-R<N>]`；豁免=`[plan-audit-skip]`；其余面=`[audit-before-delivery]`）；终验时审计留痕作为完成声称证据链组成部分（Rule 51.14 档位自证）。
+
+# exit=0
