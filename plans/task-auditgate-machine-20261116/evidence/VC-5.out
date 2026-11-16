@@ -1,0 +1,5 @@
+# [run-verification] VC-5 | 2026-11-16T23:48:23Z | cmd: bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/check-plan-audit-gate.sh /mnt/data/dev/task-planner-skill/plans/task-auditgate-machine-20261116 && bash -c 'set -u; rm -f /tmp/attest-cache-*.result; O=$(mktemp); TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/attest-plan.sh /mnt/data/dev/task-planner-skill/plans/task-auditgate-machine-20261116/task_plan.md >"$O" 2>&1; r=$?; test "$r" -eq 0 && grep -q "\[audit-gate\]" "$O"; s=$?; rm -f "$O"; exit $s'
+# ---- stdout/stderr ----
+[audit-gate] PASS: 末段审计留痕 [plan-audit-R8] APPROVED（0C/0I 达标, Rule 109.2）
+
+# exit=0

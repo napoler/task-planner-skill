@@ -1,0 +1,5 @@
+# [run-verification] VC-4 | 2026-11-16T23:48:23Z | cmd: grep -n '^### 109 ' /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md && grep -q '109.8' /mnt/data/dev/task-planner-skill/skills/task-planner/references/critical-rules.md && grep -q '\[audit-gate\]' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md
+# ---- stdout/stderr ----
+194:### 109 独立审计门（audit-before-delivery）— task-planaudit-20261116（P0；目标：不将未经审计的产出交给用户；判定面=一切交用户可见的需审核产出；衔接 Rule 51/70/74/80/103/84/108/69）
+
+# exit=0

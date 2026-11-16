@@ -1,0 +1,24 @@
+# [run-verification] VC-3 | 2026-11-16T23:48:19Z | cmd: bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-plan-audit-gate.sh && grep -q 'selftest-plan-audit-gate.sh' /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-registry.tsv
+# ---- stdout/stderr ----
+PAG-01 PASS 规范示意 APPROVED rc0
+PAG-02 PASS 真实生产形态 APPROVED rc0（容忍括注 token）
+PAG-03 PASS 无留痕（空文件）rc1
+PAG-04 PASS 无声明 SKIP legacy-no-decl rc0
+PAG-05 PASS 轻量档 skip 声明放行 rc0
+PAG-06 PASS L1+ skip 自声明拒锁 rc1
+PAG-07 PASS mini 单独跳过 rc0
+PAG-08 PASS mini×L1 冲突必审 rc1
+PAG-09 PASS 形态残缺（缺问题清单 token）rc1
+PAG-10 PASS 中间态假阳性被拒 rc1
+PAG-11 PASS fixture a（段内裸文 APPROVED）rc1——锚定约束承重
+PAG-12 PASS fixture b（后随 H2 块锚定 APPROVED）rc1——边界约束承重
+PAG-13 PASS 删除 progress.md → rc2+WARN
+PAG-14 PASS 缓存隔离: 同 enforce 只改 progress 留痕→不回放陈旧 PASS（哈希入键生效）
+PAG-17 PASS off→enforce 递进拒锁（ENFORCE env 入键, off 档缓存不被 enforce 复用）
+PAG-18 PASS --skip-audit-check enforce 下逃生 rc0+WARN
+PAG-19 PASS enforce+删 progress.md（rc2）拒锁不写锁——证据缺失不得旁路
+PAG-15 PASS attest enforce 无留痕拒锁 rc≠0 不写锁+audit-gate 行
+PAG-16 PASS attest APPROVED 放行 rc0 写锁+audit-gate PASS 行
+Total: 19 PASS=19 FAIL=0
+
+# exit=0
