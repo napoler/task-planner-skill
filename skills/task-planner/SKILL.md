@@ -65,9 +65,20 @@ model: opus
   2. 思路 B：命中 §11.5 例外（纯文档/纯调研/单文件 ≤3 行 trivial）→ 直接在主工作树进行（适用场景：不产生运行行为变更、无并行冲突风险时）
   - （独立检查项）Spec 模式触发判定（2026-11-15）：L1+ 且需求模糊/多方向/规格类 → 整理阶段路由专业执行体：`Skill("brainstorming")` 发散澄清 / `Skill("openspec-propose")` 规格化；技能或 CLI 未安装 → 按 `references/spec-mode.md` §2 安装引导直接安装（免用户门）；planner 只记录产物路径收据并调度，禁自拟规格（详见 `references/spec-mode.md`）；按复杂度在两族间择一路由见 `references/spec-mode.md` §1b（复杂度主轴+信号修正，2026-11-16 /goal 增补）；验证前置定位见 `references/spec-mode.md` §5（验证三载体映射：计划面 VC 契约/执行面 TDD+verification-before-completion/收口面 openspec-verify-change，2026-11-16 /goal 增补）
 
+- [ ] [A] **计划独立审计门（D1 前强制 — audit-before-delivery，Rule 109）**：L1+ 计划在展示/授权前必须经独立子代理审计迭代达标，未经审计的产出禁交用户
+  - **触发**：计划产出（主进程盘上复核 Rule 84.4 完成后）且智能子动作（冲突分析+隔离决策复核+Spec 判定）完成之后、本区块「[A] 计划确认」展示之前；B/C/D/E 类任何计划（再）展示/确认前同样过门，修订重审可用简版（仅审变更增量+上轮问题清单闭环）
+  - **分档豁免（Rule 38.7 比例原则）**：L1+ 强制；mini/L0/trivial=轻量复核（主进程盘上复核+基线自查）或登记豁免（一行留痕 `[plan-audit-skip]`+理由）；L0-E 天然豁免
+  - **审计体（独立上下文，只读）**：首选 critic（「审查计划/review 文档」触发在位）；不可用降级链=critic 失败→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）；审计分歧→decision-arbiter（Rule 69.1）；修正执行=主进程驱动 Plan Writer 重派（22.4a/62.2 计划期单写者不变）
+  - **审计输入材料包**：task_plan.md + user-session-log.md 需求锚（逐字原文）+ knowledge-brief.md + 上轮问题清单（如有）
+  - **审计维度**：①需求覆盖完整性（含 51.9 自缩水检查）②机制设计合理性 ③既有机制冲突面 ④比例原则与豁免面 ⑤可执行性（VC 命令判别性）⑥篡改面（逐字锚/加戏检查）——逐维结论+file:line 证据
+  - **裁决映射（由审计体出具，主进程只登记不得自判达标）**：`0 CRITICAL 且 0 IMPORTANT ⇒ APPROVED，否则 REJECTED`（新发现=新增 CRITICAL/IMPORTANT；WARNING/QUESTION/NIT 留档不阻断）；达标=0C/0I 且连续一轮零新发现
+  - **迭代闭环**：REJECTED→打回修正→再次审计，轮次不设上限；连续 ≥3 轮无实质进展→呈报用户裁决（防死循环）；每轮固定留痕 progress.md `[plan-audit-R<N>]` 段（轮次/审计体/结论/问题清单/修复对照）
+  - **阻断语义**：未经审计 APPROVED（或豁免登记）禁展示给用户、禁进入 D1 yes/目标绑定确认/attest/清哨兵链路；本门**不适用 Rule 44.3 超时自动通过**（未达标禁自动放行）
+  - **与既有机制边界**：计划面逃逸 Rule 103.3 由本门承载，执行期产物仍由 Rule 103 承载，二者不叠加；全流程原则与覆盖面映射全文=references/critical-rules.md Rule 109
+
 - [ ] [A] **计划确认**
   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）
-  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
+  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：（注意：前置的计划独立审计门不适用本款——审计未达标禁自动放行，Rule 109）完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
   - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认（该确认等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
   - Spec 模式前置：命中 `references/spec-mode.md` §1 触发判定时，确认 spec 产物路径已登记（记录者收据）方可进入 yes/attest
   - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask
@@ -171,7 +182,7 @@ model: opus
 
 | # | 检查项 | 状态 |
 |---|--------|------|
-| G1 | 用户任务已复述目标无歧义；task_plan.md 存在且含 Phase+VC 表；计划已展示并获用户显式授权 | ☐ |
+| G1 | 用户任务已复述目标无歧义；task_plan.md 存在且含 Phase+VC 表；计划已展示并获用户显式授权；计划独立审计门已 APPROVED 或豁免登记（Rule 109，D1 前置） | ☐ |
 | G1b | 计划 Goal 的站点/域名词/目标实体与 user-session-log.md 最近用户原话有交集（目标绑定）；新建计划已过目标切换三判（E 类） | ☐ |
 | G2 | 本 Phase R 锚定复诵已写；动作相关性三问已过（v168 两锚点） | ☐ |
 | G3 | Phase 委派检查点已过：Executor 字段在位非主进程已派发；白名单直做已登记例外理由 | ☐ |
