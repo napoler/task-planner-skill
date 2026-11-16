@@ -371,7 +371,7 @@ echo "[scope-check] 已留痕 progress.md: diff=$diffn untracked=$untn"
 
 ## Key Questions
 
-1. **L1+ 判定口径**：lane 优先——`execution_lane: L1|L2` 必审；`plan_tier: mini` 与 L1 并存按最严=必审；显式 `plan_tier: standard|full` 必审；`plan_tier: mini`/`execution_lane: L0|L0-T|L0-E` 跳过；无声明=跳过但输出显式 `[audit-gate] SKIP legacy-no-decl`（禁静默）。答：采用 lane 优先+显式声明口径，避免阻断存量计划。
+1. **L1+ 判定口径**：lane 优先——`execution_lane: L1|L2` 必审；`plan_tier: mini` 与 L1 并存按最严=必审；显式 `plan_tier: standard|full` 必审；`plan_tier: mini` 或 lane 为 L0/L0-T/L0-E 跳过；无声明=跳过但输出显式 `[audit-gate] SKIP legacy-no-decl`（禁静默）。答：采用 lane 优先+显式声明口径，避免阻断存量计划。
 2. **`[plan-audit-skip]` 是否允许 L1+ 使用？** 答：否。skip 仅轻量档（mini/L0/L0-T/L0-E）生效；L1+ 写 skip 仍拒锁，唯一逃生=`--skip-audit-check` 参数+WARN+交付披露（与 109.3 轻量档限定对齐，不扩授权）；本计划不使用 skip。
 3. **独立 checker 还是内联 attest？** 答：独立 `check-plan-audit-gate.sh` + attest shell-out，便于 fixture 测试并与既有 check-tier-consistency 同构。
 4. **是否新增 config 键？** 答：否。用 env-only `TASK_PLANNER_AUDIT_GATE_ENFORCE`（enforce/warn/off，默认 enforce），避免 properties 键数级联断言。
