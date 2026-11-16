@@ -12,21 +12,71 @@
 
 ### Phase 1: 现状核实与覆盖面盘点
 <!-- 执行期由对应 S-unit 推进；本段记录计划期准备 -->
-- **Status:** pending
-- **Started:** （执行期填写；Phase 开启时更新 task_plan 同步）
+- **R 锚定**：本 Phase 服务 R1/R2「计划审计门插入点核实+全流程审核面覆盖缺口盘点」（user-session-log #1 前半，R 锚定复诵 v168）
+- **Status:** complete
+- **Started:** 2026-11-16（审计门 R3 APPROVED+D1 44.3 自动裁决+attest 8c8310ea 后开工）
 - Actions taken:
   - 2026-11-16 计划期（plan-writer）：Read `user-session-log.md`、`SKILL.md`、`references/critical-rules.md`、`critic.md`、模板文件；grep 确认活跃代码无 `### 109` 且专有 token（`计划独立审计门`/`audit-before-delivery`）基线=0；起草并写入 `task_plan.md`、`knowledge-brief.md`、`verification.md`，回填 `findings.md` 基线矩阵
   - 2026-11-16 修订期（plan-writer）：按 R1 审计 18 发现 F1-F18 增量修订五文件（task_plan/findings/knowledge-brief/verification/progress），保持 R1-R3 逐字锚不变；补 R2 Handoff 行、VC-6、分档/达标判据/留痕/降级链/归属定稿/判别性基线与锚点校正
+  - 2026-11-16 执行期（explore×3 并行组）：S1 插入锚点=SKILL:66/68 间+门控序列/G1:174/44.3:70-71/单写者:53/索引联动 5 面；S2 五面覆盖矩阵（缺口=计划面+报告总结面）+10 未列面候选；S3 next=109+落点 :192 后+范式与约束锚；结论回填 findings P1 段
 - Files created/modified:
-  - `plans/task-planaudit-20261116/task_plan.md`（R1 初稿 + F1-F18 增量修订：VC-6、分档/达标判据/归属定稿/判别性 token/并行组/留痕协议等）
-  - `plans/task-planaudit-20261116/knowledge-brief.md`（§1-§6 知识底座 + R1 教训/基线锚点校正）
-  - `plans/task-planaudit-20261116/verification.md`（VC/V-N 对齐 VC-1~VC-6，判别性命令）
-  - `plans/task-planaudit-20261116/findings.md`（基线核实 + VC 判别性基线 + R1 首例证据 + 锚点校正）
-  - `plans/task-planaudit-20261116/progress.md`（本记录 + R1 留痕 + 修订记录）
+  - `plans/task-planaudit-20261116/findings.md`（P1 现状核实段追加）
+  - `plans/task-planaudit-20261116/task_plan.md`（Phase 1 翻转+Handoff #1-#3 回填）
 - Test Results:
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
-  | （执行期填写） |  |  |  |  |
+  | check-3file-gate | plan-dir | exit=0 | exit=0 | PASS |
+  | V-1.1/V-1.2 | findings/task_plan grep | 命中 | 命中 | PASS |
+
+### Phase 2: 方案定稿与变更设计
+- **R 锚定**：本 Phase 服务 R1/R2/R3「审计门协议定稿+全流程原则载体设计」（25.3② 主进程例外：计划系统文件维护，仅编辑 plans/**）
+- **Status:** complete
+- **Started:** 2026-11-16
+- Actions taken:
+  - 主进程定稿 design-p3-p4.md：§A 审计门插入文本 11 行（触发/分档 L1+/审计体降级链/输入材料包/六审计维度/裁决映射 0C0I⇒APPROVED/迭代闭环+留痕 [plan-audit-RN]/阻断语义+44.3 不适用/103 边界）；§B G1+44.3 对齐；§C Rule 109 七子条+Why（≤95l）；§D 索引计数 4 行 5 处；§E CA-5 预裁=不落地
+- Files created/modified:
+  - `plans/task-planaudit-20261116/design-p3-p4.md`（新建，执行体输入材料包）
+- Test Results:
+  - V-2.1/V-2.2 PASS；CA-1~CA-6 勾核通过（Phase 5 承载）
+
+### Phase 3: 计划审计门落地（SKILL.md 流程）
+- **R 锚定**：本 Phase 服务 R1「L1+ 计划产出后、D1 前独立子代理审计迭代通过门控落地」
+- **Status:** complete
+- **Started:** 2026-11-16（worktree commit 5b728a7）
+- Actions taken:
+  - S1 executor：插入审计门区块 11 行（SKILL.md 307→318，:68-77，与 design §A 逐字一致）；主进程盘上逐字 diff 复核
+  - S2 executor：G1:185 审计前置+D1:81 44.3 排除括注（零增删行）；主进程 grep 复核 1/1
+  - 独立复检（general-reviewer，103.3a 全文回读四维）：RECHECK: PASS
+- Files created/modified:
+  - `skills/task-planner/SKILL.md`（worktree，+13/-2）
+- Test Results:
+  - VC-1 grep=3；V-3.1/V-3.2 PASS；check-plan-dispatch rc=0
+
+### Phase 4: 全流程原则条款与索引联动落地
+- **R 锚定**：本 Phase 服务 R2/R3「未经审计产出禁交用户全流程原则（Rule 109）落地+索引联动融入」
+- **Status:** complete
+- **Started:** 2026-11-16（worktree commits 70e29b1/1f568f7/1c49637）
+- Actions taken:
+  - S1 executor：追加 Rule 109（critical-rules.md 207→227，:194-212 七子条+Why）
+  - S2 executor：索引计数 4 行 5 处同步（1-109/15 条/90 条），旧计数清零
+  - 主进程：rule-reserve reserve/land 109（主仓台账 commit 18a4f2e）；P4 复检 FAIL 2 项闭环（ledger=主仓共享账本伪缺陷判定；SKILL:70+critical-rules:202「天然」措辞直修）；CA-5 实测 delivery-summary.md 在位→不落地（design §E 预裁兑现）
+- Files created/modified:
+  - `skills/task-planner/references/critical-rules.md`（+20-1）、`skills/task-planner/SKILL.md`（计数行）
+- Test Results:
+  - RECHECK: PASS（103.6 清单全绿）；V-4.1/V-4.2 PASS；rule-reserve check 109=landed（主仓权威）
+
+### Phase 5: 校验、收尾与交付准备
+- **R 锚定**：本 Phase 服务 R3「融入载体一致性校验+计划可审计性收口」
+- **Status:** complete
+- **Started:** 2026-11-16
+- Actions taken:
+  - S1 code-runner：VC 全量采证 16/16 PASS（VC-1~VC-4+回归+git）
+  - S2 code-runner：交付准备核对（VC-5a/b/c+VC-6 预演 PASS）
+  - 主进程：合并回主仓（smart-merge-back --deploy，部署位 IDENTICAL）+worktree/分支清理；drift-checker 全跨度 ALIGNED；CR Gate APPROVED（[cr-gate] 段）；run-verification PASS=7 FAIL=0（Verify command 反引号契约回炉修复后）；84.14 收尾回读轮 1 零新增未处置发现
+- Files created/modified:
+  - `plans/task-planaudit-20261116/evidence/VC-1~VC-6.out`（机器证据）；master 合并 4eb441b
+- Test Results:
+  - run-verification Total PASS=7 FAIL=0；evidence 全 exit=0；check-complete 门链递进收敛至 goal-gate 修复项
 
 ### Phase 2: 方案定稿与变更设计
 - **Status:** pending

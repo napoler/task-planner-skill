@@ -108,10 +108,10 @@ parallel_groups: [p1-audit-baseline]
 
 | goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |
 |---------|--------|--------------|------------------------|------------------|------|
-| G1 | 审计门落地 | L1+ 计划 D1 前必经独立审计迭代达标（分档+降级链） | `grep -n "计划独立审计门" skills/task-planner/SKILL.md` 命中且 Read 确认插入点/分档/循环/阻断语义 | P3-S1,S2 / Phase 3 | pending |
-| G2 | 全流程原则 | 未审计产出禁交用户总则映射已识别覆盖面（非穷尽） | `grep -n "audit-before-delivery" skills/task-planner/references/critical-rules.md` + Read 确认总则/已识别面/未列面简版复核与 103/84/108/69 映射 | P4-S1,S2 / Phase 4 | pending |
-| G3 | 一致性终验 | 归属/编号/索引/计划知识底座可审计且判别性命令通过 | `grep -rn "^### 109 " skills/task-planner/references` 计数=1 且 VC-4/VC-5/VC-1~3 判别性命令与证据齐 | P5-S1,S2 / Phase 5 | pending |
-| G4 | 审计实跑证据 | 本计划经 R1→修订→最终达标轮审计闭环达标后方可 D1 展示 | `grep -n "\[plan-audit-R1\]" plans/task-planaudit-20261116/progress.md` 且最终达标轮（首个达成 0C/0I 且连续一轮零新发现的复审轮，如 R3）留痕段满足 0C/0I+连续一轮零新发现（新发现=新增 CRITICAL/IMPORTANT；WARNING/QUESTION/NIT 留档不阻断）并记录 APPROVED | 审计轮次 R1→最终达标轮 R<N> / 全程 | pending |
+| G1 | 审计门落地 | L1+ 计划 D1 前必经独立审计迭代达标（分档+降级链） | `grep -n "计划独立审计门" skills/task-planner/SKILL.md` 命中且 Read 确认插入点/分档/循环/阻断语义 | P3-S1,S2 / Phase 3 | complete（主仓 SKILL.md:68-77 实测 grep=3；P5-S1 采证+独立复检背书） |
+| G2 | 全流程原则 | 未审计产出禁交用户总则映射已识别覆盖面（非穷尽） | `grep -n "audit-before-delivery" skills/task-planner/references/critical-rules.md` + Read 确认总则/已识别面/未列面简版复核与 103/84/108/69 映射 | P4-S1,S2 / Phase 4 | complete（主仓 critical-rules.md:194-212 实测；audit-before-delivery=4；Rule 109 落地） |
+| G3 | 一致性终验 | 归属/编号/索引/计划知识底座可审计且判别性命令通过 | `grep -rn "^### 109 " skills/task-planner/references` 计数=1 且 VC-4/VC-5/VC-1~3 判别性命令与证据齐 | P5-S1,S2 / Phase 5 | complete（run-verification PASS=7 FAIL=0；evidence/*.out 全 exit=0；VC-4 计数=1） |
+| G4 | 审计实跑证据 | 本计划经 R1→修订→最终达标轮审计闭环达标后方可 D1 展示 | `grep -n "\[plan-audit-R1\]" plans/task-planaudit-20261116/progress.md` 且最终达标轮（首个达成 0C/0I 且连续一轮零新发现的复审轮，如 R3）留痕段满足 0C/0I+连续一轮零新发现（新发现=新增 CRITICAL/IMPORTANT；WARNING/QUESTION/NIT 留档不阻断）并记录 APPROVED | 审计轮次 R1→最终达标轮 R<N> / 全程 | complete（R3 APPROVED 0C/0I progress.md:177；负向验证 R1/R2 REJECTED 阻断实证；VC-6 awk 断言 PASS） |
 
 ## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）
 
