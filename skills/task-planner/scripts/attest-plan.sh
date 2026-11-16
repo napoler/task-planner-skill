@@ -583,10 +583,20 @@ case "$mode" in
     agc="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-plan-audit-gate.sh"
     if [ -n "$skip_audit" ]; then
       echo "[attest] [audit-gate] WARN: 已显式跳过审计门（--skip-audit-check）——交付须披露" >&2
+    elif [ "${TASK_PLANNER_AUDIT_GATE_ENFORCE:-warn}" = "off" ]; then
+      # [2026-11-17 CR 修复 N-2] off 档=显式 SKIP 行且不调 checker（原实现 off 落入 warn 分支致文案误标）
+      echo "[attest] [audit-gate] SKIP (TASK_PLANNER_AUDIT_GATE_ENFORCE=off)" >&2
     elif [ -f "$agc" ]; then
       ag_out="$(bash "$agc" "$plan_dir" 2>&1)" && ag_rc=0 || ag_rc=$?
       if [ "$ag_rc" -eq 2 ]; then
-        printf '%s\n' "$ag_out" >&2   # checker 已打 WARN 行; 输入异常 fail-open 不阻断（R7 Q-2 rc2 语义）
+        # [2026-11-17 CR 修复 W-1] enforce 档下 rc2（证据缺失/不可读）同拒锁——审计证据被删不得借
+        # 「IO 异常 fail-open」旁路写锁（critic 实测: enforce+删 progress.md 曾 rc=0 照常写锁）;
+        # warn 档维持 fail-open 透传（R7 Q-2 契约面=checker 语义不变, 本分支只改 attest 侧档位处理）。
+        printf '%s\n' "$ag_out" >&2
+        if [ "${TASK_PLANNER_AUDIT_GATE_ENFORCE:-warn}" = "enforce" ]; then
+          echo "[attest] [audit-gate] 拒锁: 判定器输入异常且 enforce 档——审计证据缺失不得旁路（补全 progress.md 审计留痕或显式 --skip-audit-check）" >&2
+          exit 1
+        fi
       elif [ "$ag_rc" -eq 1 ] && [ "${TASK_PLANNER_AUDIT_GATE_ENFORCE:-warn}" = "enforce" ]; then
         printf '%s\n' "$ag_out" >&2
         echo "[attest] [audit-gate] 拒锁: 计划审计门未达标（TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce）——先过 critic 独立审计并由主进程登记 [plan-audit-RN] APPROVED 留痕, 或显式 --skip-audit-check（须披露）" >&2
