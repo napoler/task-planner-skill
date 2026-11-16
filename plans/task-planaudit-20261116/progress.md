@@ -189,3 +189,10 @@
   - NIT-5 68.3 advisory 接受（已登记不阻断）
 - 修复对照: 非阻断项按上述即时收敛（WARNING×3 + NIT-2/3/4）；NIT-1/5 留档
 - 审计循环收敛记录: R1 REJECTED(18 发现 B2/M7/m9) → 修复轮1 → R2 REJECTED(12 新发现 C1/I1/W6/Q1/N3) → 修复轮2+微修 → **R3 APPROVED**；轮次 3，未触及「连续≥3 轮无实质进展」升级出口；审计门机制在本计划自身完成端到端首例实跑（VC-6 端到端+负向验证双证据齐备）
+
+## [cr-gate] 2026-11-16 Code Review Gate（code_review: required，轻 diff 单轮）
+- 轮次: CR-R1 | 审查体: Code Reviewer（全新独立上下文只读） | 结论: **CR APPROVED**（0 Blocker/0 Suggestion；1 LOW nit=SKILL:70「L0-E 豁免」vs critical-rules:202「L0-E 天然豁免」分节基准措辞差异，语义同豁免，非阻断）
+- 审查对象: worktree diff master -- skills/（2 文件 +37/-6：SKILL.md 审计门区块+G1/D1/索引计数；critical-rules.md Rule 109+计数行）；4 commits 5b728a7/70e29b1/1f568f7/1c49637
+- 审查维度结论: 正确性 ✓（结构/编号连续/锚点合规）；一致性 ✓（双文件交叉引用互洽+计数四处一致+引用规则编号实锚）；风险面 ✓（diff 无计划外改动；44.3 排除/103 边界/单写者无冲突）；可维护性 ✓（措辞风格一致）
+- 证据: subagent-state/cr-gate-checkpoint.md + Handoff #16 后 CR 行 + verification.md 交叉验证记录
+- 模板感知沉淀判定（Rule 34.3②/34.7）: 复用既有 rule-enhancement 变体，**不沉淀新变体**——审计门流程增强属既有 rule-enhancement 画像全覆盖（模板感知区块预登记处兑现），无新增泛化缺口
