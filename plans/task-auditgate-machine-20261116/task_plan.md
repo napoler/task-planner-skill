@@ -76,7 +76,7 @@ parallel_groups: [p1-baseline]
 | # | 判定标准 | 验证方式 | 证据路径/命令 |
 |---|----------|----------|---------------|
 | VC-1 | （R1）审计门判定器落地（判别性）：新增 `check-plan-audit-gate.sh`——lane 优先（`execution_lane: L1/L2` 必审；`plan_tier: mini` 与 L1 并存按最严=必审）、显式 `plan_tier: standard/full` 必审、无声明输出 `[audit-gate] SKIP legacy-no-decl`、轻量档 `[plan-audit-skip]` 放行而 L1+ 写 skip 仍拒锁、末段 APPROVED 段须含 `审计体:`+`轮次:`+`问题清单` 最小形态（**`问题清单` 容忍全角/半角括注后接冒号**——唯一 APPROVED 段真实字节形态为 `- 问题清单（留档，不阻断）:`，按字面连写冒号判据会误拒真实 plan-dir（R7 I-1）；判据正则见 verification.md VC-1；`审计体:`/`轮次:` 维持字面）（**聚合边界止于下一个 H2 `## ` 行**——**该边界仅认 `^## `（H2），故审计段后随块必须用 H2 标题**，用 H3/粗体标题则边界不生效、约束静默退化（写作规范依赖，checker 注释须登记）、**结论行用 ERE 行首结构锚定**——`- 轮次: R<N>` + `审计体:` + `结论: **APPROVED**` 三段，完整正则见 verification.md VC-1；禁匹配反引号内/行中元引用）、rc 0/1/2（rc2 输出 `[audit-gate] WARN 判定器输入异常` 并 fail-open；**rc2 口径：progress.md 文件缺失/不可读=rc2，存在但空=无留痕 rc1**） | `bash -n` + fixture 正负例实测（无留痕 L1+→rc1；mini×L1 冲突→rc1；轻量 skip→rc0；**合规 APPROVED+三 token→rc0**；L1+ skip→rc1；APPROVED 缺形态→rc1；**中间态假阳性（REJECTED 段+后随含反引号 APPROVED 元引用的修复轮块）→rc1**；无声明 legacy→rc0 且输出含 SKIP legacy-no-decl；**真实生产形态（R6 字节形态：结论行带括注 + `问题清单` 带括注）→rc0**；**仅锚定假 PASS（段内裸文 APPROVED 意见文本）→rc1**；**仅边界假 PASS（后随 H2 块锚定 APPROVED 行）→rc1**；progress.md 删除→rc2 / 存在但空→rc1） | `skills/task-planner/scripts/check-plan-audit-gate.sh` |
-| VC-2 | （R1）attest 接线落地（判别性）：`attest-plan.sh` 含 `[audit-gate]` 段、`--skip-audit-check` 解析、`_attest_cksum` 同时纳入 `skip_audit` 与 `TASK_PLANNER_AUDIT_GATE_ENFORCE` 及 `sha256sum progress.md`、门置于 `hash=` 前、失败拒锁且不写 `.plan-attestation`；rc2 fail-open+显式 WARN | `bash -n` + fixture 负例实测（无留痕 L1+ fixture 调 attest→exit≠0 且 `.plan-attestation` 不存在）+ **正向用例（APPROVED+三 token fixture→exit 0 且 `.plan-attestation` 存在）** + 缓存隔离用例（enforce→off→enforce 不复用陈旧缓存） | `skills/task-planner/scripts/attest-plan.sh` |
+| VC-2 | （R1）attest 接线落地（判别性）：`attest-plan.sh` 含 `[audit-gate]` 段、`--skip-audit-check` 解析、`_attest_cksum` 同时纳入 `skip_audit` 与 `TASK_PLANNER_AUDIT_GATE_ENFORCE` 及 `sha256sum progress.md`、门置于 `hash=` 前、失败拒锁且不写 `.plan-attestation`；rc2 契约=warn 档 fail-open+显式 WARN / **enforce 档拒锁（证据缺失不得旁路，CR W-1）** | `bash -n` + fixture 负例实测（无留痕 L1+ fixture 调 attest→exit≠0 且 `.plan-attestation` 不存在）+ **正向用例（APPROVED+三 token fixture→exit 0 且 `.plan-attestation` 存在）** + 缓存隔离用例（enforce→off→enforce 不复用陈旧缓存） | `skills/task-planner/scripts/attest-plan.sh` |
 | VC-3 | （R2）selftest 正负例落地：`selftest-plan-audit-gate.sh` 覆盖静态 token + 行为断言（APPROVED 通过、无留痕 L1+ 拒锁、轻量档 skip 放行、L1+ skip 仍拒锁、mini 跳过、mini×L1 冲突必审、APPROVED 形态残缺 FAIL、rc2 输入缺失、缓存隔离；**R7/R8 增补判别用例以 verification.md:23 VC-3 全清单为权威**（真实生产形态正例 r7/仅锚定 fixture a/仅边界 fixture b/中间态假阳性/legacy SKIP/rc2=删文件），fixture 全在 `/tmp` 且正负例各用独立 task_plan 内容或每例清理 `/tmp/attest-cache-*`；脚本 exit 0 | 直接执行 `bash skills/task-planner/scripts/selftest-plan-audit-gate.sh`（exit 0 判）+ registry 行 `&&` 条件 | `skills/task-planner/scripts/selftest-plan-audit-gate.sh`、`skills/task-planner/scripts/selftest-registry.tsv` |
 | VC-4 | （R3）条款与联动一致（判别性）：`critical-rules.md` 追加 109.8 且 109.7 原文保留；109.8 明确 skip 仅轻量档、L1+ 唯一逃生=`--skip-audit-check`；`^### 109 ` 计数=1；SKILL.md 审计门含机器面行（`[audit-gate]`/`--skip-audit-check`）；registry 含 `selftest-plan-audit-gate.sh` 四列行 | `test "$(grep -c '^### 109 ' ...)" -eq 1` + grep 109.8/--skip-audit-check/registry | `skills/task-planner/references/critical-rules.md`、`skills/task-planner/SKILL.md`、`skills/task-planner/scripts/selftest-registry.tsv` |
 | VC-5 | （R1/R2）机器门自举实测：Phase 5 merge-back 后由主进程用主仓新 attest 对本 plan-dir 实跑 `[audit-gate]` rc=0 且输出含 `[audit-gate]`（排除旧脚本/缓存回放假通过），命令/输出留痕 progress；D1 走既有文本审计链路（bootstrap: gate-absent） | 主仓 `check-plan-audit-gate.sh` 对本计划 rc=0 + 主仓 `attest-plan.sh` 对本计划 rc=0 且输出 grep `[audit-gate]`；执行时点=merge-back 后 | `plans/task-auditgate-machine-20261116/progress.md`、`plans/task-auditgate-machine-20261116` |
@@ -103,7 +103,7 @@ parallel_groups: [p1-baseline]
 | 字段 | 值 |
 |------|-----|
 | **目标型需求** | R1, R2 |
-| **裁决** | `solved（2026-11-17 终验：R1=机器面三件套+109.8+SKILL 落地；R2=selftest 16 断言+VC-2 行为+VC-5 自举+run-verification PASS=6 FAIL=0）` |
+| **裁决** | `solved（2026-11-17 终验：R1=机器面三件套+109.8+SKILL 落地；R2=selftest 19 断言（含 mutation 判别终证）+VC-2 行为+VC-5 自举+run-verification PASS=6 FAIL=0）` |
 | **解决证据锚** | merge cf697f7（6 文件 +317/-2）；evidence/VC-1..6.out；VC-5=`[audit-gate] PASS: 末段审计留痕 [plan-audit-R8] APPROVED` rc=0；[plan-audit-R1..R8] 审计轨迹 |
 | **未解决面+原因** | 存量 7 FAIL（他任务在途债，R3 边界排除，冻结基线零增量判据）；selftest-self-resolution 跨执行根 flaky（环境态依赖，已辨析留痕）；CR Q-1 默认 warn 档=首版起步（迁移披露+enforce 可 env 一行开启，已按获批计划 D1 登记） |
 | **已排除路径** | 绝对 FAIL=0 判据（存量债确定性击穿，改同集零增量）；段锚 awk 消费 EOF 追加留痕（R5 I-1）；live worktree 断言（R4 I-1）；子串 skip 判定（自指计划误触发） |
@@ -254,7 +254,7 @@ Failed: selftest-active-plan selftest-batch-pilot selftest-enumerate-first selft
 
 ### Phase 2: 设计定稿与变更登记
 - [x] [audit-gate] 规格定稿（findings Design Decisions D1：lane/skip/聚合两约束/容忍 token/rc 分层全规格）
-- [x] selftest 断言清单与 fixture 规格定稿（findings D3；交付 16 断言=PAG-01..16——attest 写锁断言独立成项，CR N-3 口径修正）
+- [x] selftest 断言清单与 fixture 规格定稿（findings D3；交付 **19 断言**=PAG-01..19——CR 修复增补 PAG-17 off→enforce/PAG-18 skip 逃生/PAG-19 enforce+删证据拒锁，PAG-14 两轮判别修正+mutation 终证）
 - [x] 109.8 条款草案与 SKILL 机器面行草案定稿（findings D4/D5 逐字草案）
 - [x] 变更标注表 CA-7~CA-12 逐行可执行登记（task_plan 变更标注表已随审计迭代终态化）
 - **V-N:** VC-3, VC-4
@@ -374,7 +374,7 @@ echo "[scope-check] 已留痕 progress.md: diff=$diffn untracked=$untn"
 1. **L1+ 判定口径**：lane 优先——`execution_lane: L1|L2` 必审；`plan_tier: mini` 与 L1 并存按最严=必审；显式 `plan_tier: standard|full` 必审；`plan_tier: mini` 或 lane 为 L0/L0-T/L0-E 跳过；无声明=跳过但输出显式 `[audit-gate] SKIP legacy-no-decl`（禁静默）。答：采用 lane 优先+显式声明口径，避免阻断存量计划。
 2. **`[plan-audit-skip]` 是否允许 L1+ 使用？** 答：否。skip 仅轻量档（mini/L0/L0-T/L0-E）生效；L1+ 写 skip 仍拒锁，唯一逃生=`--skip-audit-check` 参数+WARN+交付披露（与 109.3 轻量档限定对齐，不扩授权）；本计划不使用 skip。
 3. **独立 checker 还是内联 attest？** 答：独立 `check-plan-audit-gate.sh` + attest shell-out，便于 fixture 测试并与既有 check-tier-consistency 同构。
-4. **是否新增 config 键？** 答：否。用 env-only `TASK_PLANNER_AUDIT_GATE_ENFORCE`（enforce/warn/off，默认 enforce），避免 properties 键数级联断言。
+4. **是否新增 config 键？** 答：否。用 env-only `TASK_PLANNER_AUDIT_GATE_ENFORCE`（enforce/warn/off，**默认 warn 首版起步**——存量不重锁；CR W-2 口径修正，与实现 `${TASK_PLANNER_AUDIT_GATE_ENFORCE:-warn}` 一致），避免 properties 键数级联断言。
 5. **109.7 改写还是追加 109.8？** 答：追加 109.8，109.7 原文逐字保留（Rule 74 增量默认）。
 
 ## Decisions Made

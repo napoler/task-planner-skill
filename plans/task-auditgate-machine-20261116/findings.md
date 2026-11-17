@@ -300,3 +300,9 @@ critic R7 范围化复审 REJECTED（0C/2I/2W/2Q/2N）；W-1（5Q 刷新）/N-1�
 
 ### D6 缓存键三项+插入锚点（S1 实测锚）
 插入=:560（window-lint fi）与 :561（hash=）之间；cksum printf 尾部追加 `${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)`。
+
+## Findings — CR 终检与修复（2026-11-17）
+- **CR1 REJECTED（0C/2I/2W/1Q/3N）**：I-1 完成状态未回填（progress Phase3/4 段/task_plan Phase5/G 表/裁决/merge_back/verification Phase Gates——第一次簿记脚本断言失败中断后未复查后续，Handoff #3/#4 实际未改成）；I-2 PAG-14 非判别（两次都清缓存，critic mutation 实证删哈希仍 16/16 全绿）。
+- **CR 修复（fix2 d6201f0）**：PAG-14 两轮判别修正（禁清缓存→常量化 mutation 仍 PASS→同 enforce 只变留痕→mutation **FAIL 0/0 终证**）+PAG-17 off→enforce 递进+PAG-18 skip 逃生+PAG-19 enforce+删证据拒锁（W-1 旁路面封堵，109.8 ④+SKILL:78 披露）+off 显式 SKIP（N-2）+19 断言。
+- **CR2 APPROVED（0C/0I/4W/2N 留档）**：critic 亲测 mutation 判别成立+五项原发现实跑确认修复；同时抓到主进程 4 处修复声称未落盘（W-2/N-3/委派 JSON/CR 段）——反造谣需覆盖「修复声称」本身。
+- **新教训**：判别性测试验收唯一可靠手段=mutation；「清缓存后再断言」=没有断言；修复轮价值=把断言从「能过」变成「错了会红」；修复声称本身须盘上复核（本计划主进程两犯：Handoff #3/#4 假更新+4 处声称未落盘——均被 critic 抓出）。

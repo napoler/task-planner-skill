@@ -483,3 +483,10 @@
 - **执行体披露**: explore×2+executor×3 五次派发均 provider rate limited（证据=会话 failed 通知）→Phase 1/3/4 全部主进程直做兜底（§十降级链穷尽+task-v171 先例；有界/确定性任务），Handoff 表 #2/#3/#4 已更新降级备注。
 - worktree git status：M attest-plan.sh + ?? check-plan-audit-gate.sh/selftest-plan-audit-gate.sh/SKILL.md M/critical-rules.md M/registry M（恰 6 文件=scope 内）。
 [scope-check] 2026-11-16T23:19:08Z SCOPE-OK diff=6 untracked=0
+
+## 2026-11-17 CR 终检与修复闭环（CR1 REJECTED→fix2 d6201f0→CR2 APPROVED 0C/0I）
+- **CR1 REJECTED**（0C/2I/2W/1Q/3N；subagent-state/cr-final.md）：I-1 完成状态未回填+I-2 PAG-14 非判别（mutation 实证）等 8 发现。
+- **修复**（fix2 merge d6201f0，4 文件 +45/-8）：PAG-14 两轮判别修正（禁清缓存+同 enforce 只变留痕；mutation 常量化 progress 哈希 → PAG-14 **FAIL 0/0** 终证）+PAG-17 off→enforce+PAG-18 skip 逃生+PAG-19 enforce+删 progress.md 拒锁不写锁（W-1 旁路封堵）+off 显式 SKIP 行（N-2）+109.8 ④/SKILL:78 披露+Handoff 类型格裸 token+全完成态回填（progress Phase3/4/task_plan Phase5/G 表/裁决 solved/verification Phase Gates）；主进程自纠：W-2 replace 无 assert 静默空转（再犯，已按 critic 指正真改）。
+- **CR2 APPROVED**（0C/0I/4W/2N 留档；同体续审亲测 mutation）：原五发现实跑确认修复；残留 W/N 全部留档（W-2/N-3 文档口径已随本轮真改；selftest 编号乱序=可读性 N 级登记遗留）。
+- **CR APPROVED（2026-11-17，CR2 终裁 0C/0I；证据 subagent-state/cr-final.md+evidence/VC-1..6.out fix2 后重跑）**
+- **登记后复跑**：check-complete 预期 rc=0（CR-GATE 由此行放行）；run-verification fix2 后 PASS=6 FAIL=0。

@@ -20,7 +20,7 @@
   Evidence: `skills/task-planner/scripts/attest-plan.sh` diff；fixture 负例输出与锁文件状态；**断言捕获时点**：负例断言紧贴 `r1` 捕获（在正例 fixture 写入与正例执行**之前**——正例会在同一 `$T` 建 `.plan-attestation`，晚求值 `test ! -f` 必假），正例断言紧贴 `r2` 捕获（R5 C-1）
   **Verify command**: bash -c 'set -u; P=/mnt/data/dev/task-planner-skill/plans/task-auditgate-machine-20261116; A=/mnt/data/dev/task-planner-skill/skills/task-planner/scripts/attest-plan.sh; T=$(mktemp -d); cp -r "$P"/. "$T"/; rm -f "$T"/.plan-attestation; cp /dev/null "$T"/progress.md; rm -f /tmp/attest-cache-*.result; TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$A" "$T"/task_plan.md >"$T"/o1 2>&1; r1=$?; test "$r1" -ne 0 && test ! -f "$T"/.plan-attestation && grep -q "audit-gate" "$T"/o1; n=$?; awk "BEGIN{print \"## [plan-audit-R1] fixture\"; print \"- 轮次: R1 | 审计体: critic | 结论: **APPROVED**\"; print \"- 问题清单: 无\"}" > "$T"/progress.md; rm -f /tmp/attest-cache-*.result; TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$A" "$T"/task_plan.md >"$T"/o2 2>&1; r2=$?; test "$r2" -eq 0 && test -f "$T"/.plan-attestation && grep -q "audit-gate" "$T"/o2; p=$?; rm -rf "$T"; test "$n" -eq 0 && test "$p" -eq 0'
 
-- [ ] VC-3: 新增 `selftest-plan-audit-gate.sh` 覆盖静态断言与行为断言（**规范示意形态 APPROVED 通过**（`- 问题清单: 无`）、**真实生产形态 APPROVED 通过**（R6 段字节形态：结论行带括注 + `- 问题清单（留档，不阻断）:`——R7 I-1，防 spec 与生产形态脱钩）、无留痕 L1+ 拒锁、**无声明 legacy → rc0 且输出含 `[audit-gate] SKIP legacy-no-decl`**（R7 W-2）、轻量档 skip 放行、L1+ skip 拒锁、mini 跳过、mini×L1 冲突必审、APPROVED 形态残缺 FAIL、**中间态假阳性（REJECTED 审计段 + 后随含反引号 APPROVED 元引用的修复轮块 → 必 FAIL）**、**仅锚定假 PASS 路径（fixture a：REJECTED 段内裸文 `结论: **APPROVED**` 意见文本 → 必 FAIL；R7 I-2）**、**仅边界假 PASS 路径（fixture b：后随 H2 块内含正规锚定 APPROVED 行 → 必 FAIL；R7 I-2）**、rc2 输入缺失（**删除 progress.md 文件**，非清空——空文件归无留痕 rc1，R7 Q-2）、缓存隔离），fixture 隔离于 `/tmp`、正负例各用独立 task_plan 内容或每例清理 `/tmp/attest-cache-*`，且脚本 exit 0；**两约束由独立 fixture 分别承重（R7 I-2）**：① 聚合边界（止下一个 H2）由 fixture b 独立承重（仅边界实现 → fixture b 抓住）② 结论行 ERE 行首锚定由 fixture a 独立承重（仅锚定实现 → fixture a 抓住）；两约束全缺由「中间态假阳性」负例抓住——**只做其一 = 约束未测**
+- [ ] VC-3: 新增 `selftest-plan-audit-gate.sh`（19 断言） 覆盖静态断言与行为断言（**规范示意形态 APPROVED 通过**（`- 问题清单: 无`）、**真实生产形态 APPROVED 通过**（R6 段字节形态：结论行带括注 + `- 问题清单（留档，不阻断）:`——R7 I-1，防 spec 与生产形态脱钩）、无留痕 L1+ 拒锁、**无声明 legacy → rc0 且输出含 `[audit-gate] SKIP legacy-no-decl`**（R7 W-2）、轻量档 skip 放行、L1+ skip 拒锁、mini 跳过、mini×L1 冲突必审、APPROVED 形态残缺 FAIL、**中间态假阳性（REJECTED 审计段 + 后随含反引号 APPROVED 元引用的修复轮块 → 必 FAIL）**、**仅锚定假 PASS 路径（fixture a：REJECTED 段内裸文 `结论: **APPROVED**` 意见文本 → 必 FAIL；R7 I-2）**、**仅边界假 PASS 路径（fixture b：后随 H2 块内含正规锚定 APPROVED 行 → 必 FAIL；R7 I-2）**、rc2 输入缺失（**删除 progress.md 文件**，非清空——空文件归无留痕 rc1，R7 Q-2）、缓存隔离），fixture 隔离于 `/tmp`、正负例各用独立 task_plan 内容或每例清理 `/tmp/attest-cache-*`，且脚本 exit 0；**两约束由独立 fixture 分别承重（R7 I-2）**：① 聚合边界（止下一个 H2）由 fixture b 独立承重（仅边界实现 → fixture b 抓住）② 结论行 ERE 行首锚定由 fixture a 独立承重（仅锚定实现 → fixture a 抓住）；两约束全缺由「中间态假阳性」负例抓住——**只做其一 = 约束未测**
   Evidence: `skills/task-planner/scripts/selftest-plan-audit-gate.sh`；`selftest-registry.tsv` 对应行；selftest stdout 含 `Total: PASS=`
   **Verify command**: bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-plan-audit-gate.sh && grep -q 'selftest-plan-audit-gate.sh' /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-registry.tsv
 
@@ -157,31 +157,31 @@ bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/check-delegati
 
 JSON 输出：
 ```json
-{待执行后粘贴 stats 命令原文输出}
+{"phases_total":5,"phases_delegated":4,"main_direct_count":1,"delegation_rate":0.800,"violations":[],"verdict":"ok"}（2026-11-17 check-delegation.sh stats 真实输出；执行期 Phase1/3/4/5 主进程兜底以 Handoff 降级备注+Executor 白名单例外理由登记）
 ```
 
-- [ ] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3：Phase 2=25.3② 计划系统文件维护；Phase 5 S2=① git 编排+⑤ 兜底接管，Phase Executor 为 code-runner-agent）
-- [ ] 委派率 < floor 或含白名单外理由或 verdict=violation → 按 violations 回炉；当前计划态 target rate=0.800
+- [x] 主进程直做 Phase 均在计划 Executor 字段登记白名单内例外理由（Rule 25.3：Phase 2=25.3② 计划系统文件维护；Phase 1/3/4/5=provider 限流降级兜底（§十降级链+task-v171 先例），Handoff #2/#3/#4/#5 降级备注+type 裸 token）
+- [x] 委派率 verdict=ok（0.800≥0.7 floor；S-unit 表口径 stats rc=0；主进程直做经 25.3 例外+降级披露登记）
 
 ## 质量门控统计（Rule 26）
-- [ ] Q1-Q6 逐项核查完成:触发 __ 项,豁免 __ 项,未处置 __ 项
-- [ ] Evidence 抽查 ≥3 条:路径可 Read、结论可复现,抽查记录 __
-- [ ] 豁免登记:项号/范围/理由/日期 __ (仅用户显式文字豁免;Q3 不适用)
-- [ ] 存在未处置违规 → outcome 已按 Rule 26.3 降级;Q3 → BLOCKED + STOP
+- [x] Q1-Q6 逐项核查完成:触发 3 项（skip 轻量档 109.3/legacy 迁移/CR Q-1 默认 warn 确认）,豁免 1 项（L0 比例不适用面）,未处置 0 项
+- [x] Evidence 抽查 4 条:evidence/VC-1..VC-4.out 可 Read 且命令复现 exit=0（CR 终检亦独立复跑）
+- [x] 豁免登记:CR Q-1 默认 warn=获批计划 R1 F12 迁移披露口径（2026-11-17；用户可 env 一行切 enforce）
+- [x] 无未处置违规；outcome 不降级
 
 ## Goal Gate (终验，所有 phase complete 后执行)
 
 ```
 ## Goal Verification — 在 task-planner 落地计划审计门机器强门并以 Phase 5 自举实测验证机器门行为有效
 对照 Verification Contract 逐条复验：
-- [ ] VC-1: checker lane 优先/形态断言/skip 语义/rc 语义 → PASS/FAIL
-- [ ] VC-2: attest [audit-gate]+skip+cksum(skip+enforce+progress)+拒锁行为 → PASS/FAIL
-- [ ] VC-3: selftest-plan-audit-gate 正负例/冲突档/缓存隔离/registry → PASS/FAIL
-- [ ] VC-4: 109.7 保留+109.8 追加+SKILL/registry 同步 → PASS/FAIL
-- [ ] VC-5: Phase 5 自举实测 rc=0 + progress 留痕（D1 走既有文本链路） → PASS/FAIL
-- [ ] VC-6: 全量 selftest **同集零增量**（`Failed:` 集合==Phase 1 冻结 7 名单，无新增 FAIL；非绝对 `FAIL=0`）+ 部署位 diff + git 范围 + user-session-log/config 未越界 → PASS/FAIL
+- [x] VC-1: checker lane 优先/形态断言/skip 语义/rc 语义 → **PASS**（run-verification exit=0，evidence/VC-1.out；CR2 独立复核）
+- [x] VC-2: attest [audit-gate]+skip+cksum(skip+enforce+progress)+拒锁行为 → **PASS**（run-verification exit=0，evidence/VC-2.out；CR2 独立复核）
+- [x] VC-3: selftest-plan-audit-gate 正负例/冲突档/缓存隔离/registry → **PASS**（run-verification exit=0，evidence/VC-3.out；CR2 独立复核）
+- [x] VC-4: 109.7 保留+109.8 追加+SKILL/registry 同步 → **PASS**（run-verification exit=0，evidence/VC-4.out；CR2 独立复核）
+- [x] VC-5: Phase 5 自举实测 rc=0 + progress 留痕（D1 走既有文本链路） → **PASS**（run-verification exit=0，evidence/VC-5.out；CR2 独立复核）
+- [x] VC-6: 全量 selftest **同集零增量**（`Failed:` 集合==Phase 1 冻结 7 名单，无新增 FAIL；非绝对 `FAIL=0`）+ 部署位 diff + git 范围 + user-session-log/config 未越界 → **PASS**（run-verification exit=0，evidence/VC-6.out；CR2 独立复核）
 
- outcome: COMPLETE / PARTIAL / BLOCKED
+ outcome: **COMPLETE**（2026-11-17 run-verification PASS=6 FAIL=0+CR2 APPROVED 0C/0I）
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。
@@ -197,8 +197,8 @@ JSON 输出：
 ## 交叉验证记录（Rule 108）
 | 验证对象 | 机械面路径（命令+结果） | 语义面路径（复检体+结论） | 判定（一致/分歧→108.4 处置） |
 |----------|------------------------|--------------------------|------------------------------|
-| 计划文档定稿（本轮） | check-plan-dispatch/check-rvc-coverage/check-vc-nonvacuous/check-template-type/check-tier-consistency/check-delegation stats（修复轮 7 轮末重跑，rc 见 progress.md R7 修复轮段） | critic R1-R5 复审均 REJECTED 并逐轮修复；R6 APPROVED（0C/0I）；R6a 单点加固（聚合中间态假阳性）落盘；**R7 范围化复审 REJECTED（0C/2I/2W/2Q/2N）→ 修复轮 7 已逐项修订（I-1 容忍 token+真实形态 fixture、I-2 r5/r6 独立负例、W-2 legacy SKIP 用例、Q-1 H2 前提、Q-2 空文件 rc 口径），待 R8 复审**；D1 走既有文本审计链路（bootstrap: gate-absent） | 待执行 |
-| 机器强门实现（执行期） | selftest-plan-audit-gate + 相关 selftest + attest fixture 正负例 rc | 独立复检体核对 109.8 授权范围与实现一致性 | 待执行 |
+| 计划文档定稿（本轮） | check-plan-dispatch/check-rvc-coverage/check-vc-nonvacuous/check-template-type/check-tier-consistency/check-delegation stats（修复轮 7 轮末重跑，rc 见 progress.md R7 修复轮段） | critic R1-R5 复审均 REJECTED 并逐轮修复；R6 APPROVED（0C/0I）；R6a 单点加固（聚合中间态假阳性）落盘；**R7 范围化复审 REJECTED（0C/2I/2W/2Q/2N）→ 修复轮 7 已逐项修订（I-1 容忍 token+真实形态 fixture、I-2 r5/r6 独立负例、W-2 legacy SKIP 用例、Q-1 H2 前提、Q-2 空文件 rc 口径），R8 APPROVED**；CR 终检 R1 REJECTED→修复（fix2 d6201f0）→CR2 APPROVED（0C/0I）；D1 走既有文本审计链路（bootstrap: gate-absent，SHA d1be4e66） | 2026-11-17 |
+| 机器强门实现（执行期） | selftest-plan-audit-gate 19 断言+run-verification PASS=6 FAIL=0+attest 真实链路 | **已核（CR2 APPROVED 0C/0I）**：109.8 授权范围一致；mutation 判别终证；fix2 范围恰 4 文件 | 2026-11-17 |
 
 ## 5-Question Reboot Check
 
@@ -208,5 +208,5 @@ JSON 输出：
 | 2 | Where am I going? | R8 复审（按 0C/0I 迭代）→ D1 → 既有 attest 锁定（bootstrap: gate-absent）→ Phase 1 执行 → Phase 3 实现 → Phase 4 文本/登记 → Phase 5 回归+自举实测+合并部署 |
 | 3 | What's the goal? | 落地计划审计门机器强门（attest [audit-gate]+checker+selftest）并以 Phase 5 自举实测验证机器门行为有效 |
 | 4 | What have I learned? | 见 findings.md / knowledge-brief.md（lane 优先、cksum 三项、progress 哈希、skip 仅轻量档、APPROVED 最小形态、**聚合边界止 H2（仅认 `^## `，后随块须 H2 标题）+ 结论行 ERE 行首锚定，两约束各配独立负例**、**`问题清单` 判据容忍括注形态（真实段 `- 问题清单（留档，不阻断）:`）**、**progress.md 缺失=rc2 / 空=rc1**、rc2 fail-open、bootstrap: gate-absent、VC 断言捕获时点、产出位置与消费断言的定位方式互洽） |
-| 5 | What have I done? | 6 计划文件已写并按 R1-R7 各轮审计发现逐轮增量修订（含微修轮 4b、R6a 单点加固、修复轮 7 五项）；user-session-log 原样未改；机械门八门 rc=0（修复轮 7 末重跑）；D1 待执行（前置=R7 修复后 R8 复审） |
+| 5 | What have I done? | 6 计划文件已写并按 R1-R7 各轮审计发现逐轮增量修订（含微修轮 4b、R6a 单点加固、修复轮 7 五项）；user-session-log 原样未改；机械门八门 rc=0（修复轮 7 末重跑）；D1 已过（44.3 完成性指令自动裁决+旧链锁定）；执行 Phase 1-5 complete；终验 PASS=6 FAIL=0；CR2 APPROVED——outcome COMPLETE |
 | 6 | Which tasks need processing? | plans/INDEX.md 待处理区（按需检查） |
