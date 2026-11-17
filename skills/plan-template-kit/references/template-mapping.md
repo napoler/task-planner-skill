@@ -10,7 +10,8 @@
 任务描述是什么?
 ├─ 关键词/SERP/数据调研 → research-type.md
 ├─ skill 审计/bug 排查 → diagnostic-type.md
-├─ 文章/长文撰写 → writing-type.md
+├─ 长篇小说/连载/剧集长篇剧情/长论文/长报告/跨章节一致性长文（含续写改写）→ longform-continuity-type.md（须加载 longform-continuity 技能，项目级大纲/设定库/知识库/脑图先行）
+├─ 文章/长文撰写（单篇/SEO 管线）→ writing-type.md
 ├─ API 发布/分发（数据推送）→ publish-type.md
 ├─ 代码改/写/删（明确单次编辑）→ code-edit-type.md
 ├─ 重构（行为不变）/ 瘦身 → refactor-type.md
@@ -65,6 +66,7 @@
 - `templates/variant/memory-hygiene-type.md`(v4，task-v109 收录；记忆体系盘点/整理/治理模板，M1-M5 记忆整理协议承载)
 - `templates/variant/image-type.md`(v1，task-videop1-planimage-001 收录；图像生成九原子步骤管线——三检闭环+静默自动，video 家族姊妹模板)
 - `templates/variant/script-dev-type.md`(剧本工序 M0-M3+合规审查，零生成；task-videop1-videotpl-001 收录)
+- `templates/variant/longform-continuity-type.md`(长篇小说/连载/剧集长篇/长论文长报告连续性：项目级大纲+设定库/知识库+脑图+全局检索+冲突裁决；须加载 longform-continuity 技能；task-longform-continuity-20261117)
 - `templates/variant/character-design-type.md`(角色设定→根图→G1→multiview→MCD 一致性锁)
 - `templates/variant/multiview-ref-type.md`(既有根锚派生 multiview/sheet/装备变体补制)
 - `templates/variant/storyboard-type.md`(分镜拆解：走位清单/geo lock/线稿关键帧页)
@@ -165,7 +167,8 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 通用标准 | `templates/task_plan.md` | 5 条通用 VC |
 | 调研类 | `templates/variant/research-type.md` | _channel_attempts[] / 数据源 ≥2 |
 | 诊断类 | `templates/variant/diagnostic-type.md` | S59 Read 门 / S64 路径验证 |
-| 写作类 | `templates/variant/writing-type.md` | SEO 字段 / 配图 ≥3 / 无 Amazon |
+| 长文连续性 | `templates/variant/longform-continuity-type.md` | 项目级大纲/设定库/知识库/脑图先行 / 动笔前全局检索 / 冲突禁静默覆盖 / 调用 longform-continuity |
+| 写作类 | `templates/variant/writing-type.md` | SEO 字段 / 配图 ≥3 / 无 Amazon（长篇连续场景优先 longform-continuity-type） |
 | 发布类 | `templates/variant/publish-type.md` | API 200 / 幂等性 / 回滚策略 |
 | 代码编辑 | `templates/variant/code-edit-type.md` | diff / lint / 测试 / 风格 |
 | 重构 | `templates/variant/refactor-type.md` | 行为不变 / 复杂度下降 |
@@ -207,6 +210,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | video vs image | video=**视频生产链**（草稿→video 调用→成片 QC）;image=纯图像层（成图三检即验收；产出进视频仍走 video 门） |
 | video/image vs 工序 11 类 | video=全流程整集;image=通用图像批;工序 11 类=**单专业任务**（各模板头注边界声明，误选回互斥表对账） |
 | script-dev vs video | script-dev=剧本文字层止于定稿（零生成）;video=生成生产链 |
+| longform-continuity vs writing/script-dev | longform-continuity=跨多单元/长篇连续性治理（项目级资产+全局检索，小说/剧集长篇/长论文/长报告）；writing=单篇SEO文章管线；script-dev=单集/剧本工序（长篇系列剧情治理叠加 longform-continuity/Rule 107） |
 | qc-defect vs video-fix | qc-defect=判定与处置路由;video-fix=重生成执行域 |
 
 ---

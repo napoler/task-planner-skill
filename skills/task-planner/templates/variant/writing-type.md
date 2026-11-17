@@ -1,6 +1,6 @@
 # Task Plan: [文章创作任务]
 <!-- template_type: writing -->
-<!-- 写作型模板 — 适用于文章管线 Phase 0→6 -->
+<!-- 写作型模板 — 适用于单篇/SEO 文章管线 Phase 0→6；若为长篇/连载/长论文长报告/跨章节一致性长文（含续写改写），优先改用 longform-continuity-type.md，并须加载 skills/longform-continuity/SKILL.md（Rule 107/长文连续性治理） -->
 
 <!-- plan_tier: standard -->
 ## Goal
@@ -23,6 +23,7 @@
 | VC-4 | SEO 字段完整 | jq '.meta_title, .focus_keyword' article.json | article.json |
 | VC-5 | 配图 ≥3 张 | jq '.images | length' article.json | article.json |
 | VC-6 | 无 Amazon 链接 | grep -c "amazon.com" content | content 字段 |
+| VC-7 | （长文/连续性场景适用）项目级大纲/设定库/知识库/脑图与 continuity 资产已登记并在动笔前全局检索；前后设定/论点一致、无静默覆盖（Rule 107） | 资产路径+检索/核对记录在位；冲突裁决已回写 | docs/<项目>/*, ledger |
 
 > 注：VC 表中脚本路径为示例值（目标项目相对路径），非本技能仓文件
 
@@ -46,6 +47,7 @@
 | 文献/论文 |  |  | 参考 | ☐ |
 | 图书/教程 |  |  | 参考 | ☐ |
 | 风格/SEO 规范 | 写作风格指南与 SEO 基线 + 主题权威文献 | 路径/URL | 必读 | ☐ |
+| 长文连续性资产（续写/系列/长论文长报告时必读） | 项目级 outline/setting-bible/knowledge-base/structure-map + continuity 台账（Rule 107） | 路径 | 必读（命中连续性场景）/否则 n/a | ☐ |
 
 **填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。
 
@@ -58,6 +60,7 @@
 ## Phases（对齐管线 Phase 0→6）
 
 ### Phase 1: 研究阶段 (Phase 0.5→1.5)
+- [ ] **连续性前置（命中长篇/连载/长论文长报告/续写改写时必做）**：加载 `skills/longform-continuity/SKILL.md`；确认项目级 `outline/setting-bible/knowledge-base/structure-map` 与 continuity 台账路径；完成总纲对应段与相关设定/知识的全局检索与一致性检查（非仅紧邻），检索未完成禁动笔；纯单篇无连续性可登记 n/a
 - [ ] Phase 0.5: research_data.json validator size-fail exit 7
 - [ ] Phase 1-KW-Intel: keyword intel gather
 - [ ] Phase 1-Topic: topic validation
@@ -76,10 +79,11 @@
 
 ### Phase 3: 写作阶段 (Phase 3.1→4)
 - [ ] Phase 3.1: title draft
-- [ ] Phase 3.2: body writing（fork article-phase-3-2-writer，deepseek-v4-pro 强制）
+- [ ] Phase 3.2: body writing（fork article-phase-3-2-writer，deepseek-v4-pro 强制；连续性场景须按已检索设定/大纲写作，禁止凭记忆或静默改写既有设定/论点）
 - [ ] Phase 3.3: assemble_article.py
 - [ ] Phase 3.5: quality-reviewer 审查（含去 AI 化 10 条清单 + 五维评分卡 ≥4.0 门控，指针 references/methodology.md §内容质量 Q3/Q4；开关键 content_quality_enforce）
 - [ ] Phase 4: schema 验证
+- [ ] （连续性场景）单元完成沉淀回写：更新 continuity 台账并回写受影响的项目级 outline/setting-bible/knowledge-base/structure-map；冲突显式裁决无静默覆盖
 - **Status:** pending
 - **Executor:** article-writer
 
