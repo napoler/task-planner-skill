@@ -256,7 +256,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-109 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 90 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列创作知识同步纪律域（均 task-discipline 卫星））、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-109 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 90 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星））、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 - **Rule 1 先规划再执行**（Rule 2 PreToolUse 阻断）：创建 task_plan.md→展示→等 yes→执行
 - **Rule 3 双操作后保存 / Rule 5 Phase 完成后更新**：2 次 view/browser/search 后写 findings；Phase 翻 in_progress→complete
 - **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件

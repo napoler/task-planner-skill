@@ -1,6 +1,6 @@
 # Task Plan: [剧本开发与合规审查任务]
 <!-- template_type: script-dev -->
-<!-- 剧本工序专用（M0 大纲→M1 展开→M2 审查→M3 静默修正；判定层=script-craft 全集）。边界：本模板止于定稿剧本与登记，零生成调用；全流程视频生产入 video-type。触发词：写剧本/大纲/台词修正/剧本审查/合规审查 -->
+<!-- 剧本工序专用（M0 大纲→M1 展开→M2 审查→M3 静默修正；判定层=script-craft 全集）。边界：本模板止于定稿剧本与登记，零生成调用；全流程视频生产入 video-type。触发词：写剧本/大纲/台词修正/剧本审查/合规审查。连续性/系列剧情：须加载 skills/longform-continuity/SKILL.md，遵循 Rule 107（项目级 outline/setting-bible/knowledge-base/structure-map+continuity 台账先行、动笔前全局检索、冲突禁静默覆盖）。 -->
 <!-- 交互：默认 interaction_mode: silent——M1→M2→M3 修订环静默跑；唯一合法人工停点=M0 大纲放行门（大纲先行门，约束级）与 Rule 28 D6；放行/否决登记双落 progress+Decisions -->
 
 <!-- plan_tier: standard -->
@@ -20,11 +20,12 @@
 | VC-3 | 合规检硬门：V16 平台合规八红线逐条自检（缺条=总评无效）+V8 语言锁三层优先级+V34 大纲一致性核对 | M2 报告 verdict+自检行 | 审查报告 |
 | VC-4 | 静默迭代：M3 修正环（findings 逐条修→复检）0 用户打断；修正确认只落修正日志；新 blocker=STOP 合法停点 | 修正日志环计数 | 修正日志 |
 | VC-5 | 验收判据：判定层全集（P1-P10/V1-V38/E0-E7）逐维结论，blocker 未处置=不得定稿；终态=PASS 或 PASS_WITH_NOTES | M2 报告 verdict 行 | 审查报告 |
-| VC-6 | 登记收口：定稿件落 docs/series/<id>/；outline/continuity 联动更新；废弃版本当日归档；资产缺口扫描结果移交资产任务 | 登记行+归档登记 | series docs |
+| VC-6 | 登记收口：定稿件落 docs/series/<id>/；outline/continuity 与受影响项目级资产（outline/setting-bible/knowledge-base/structure-map）联动更新并回写；冲突显式裁决无静默覆盖；废弃版本当日归档；资产缺口扫描结果移交资产任务 | 登记行+归档登记+资产回写记录 | series docs + 项目级资产 |
 
 ## Phases（六原子步骤）
 
 ### Phase 1: ① 锚点核验（铆钉前置门）
+- [ ] 加载 `skills/longform-continuity/SKILL.md`（系列/连续剧情必做）；核验项目级连续性资产（`outline/setting-bible/knowledge-base/structure-map` + continuity 台账）与本集对应大纲段/接口；完成**全局检索**（含相关更早集与设定节点，非仅紧邻）后再进入 M0/M1
 - [ ] style token/角色卡+母图锚点/场景卡/道具卡/bible 绑定表/continuity/outline 七类逐项核验；产出=核验清单（✅/缺口登记行）；M0 门口径=N2-N4 缺件降为资产缺口登记不 STOP，其余缺=blocked
 - **V-N:** VC-2, VC-6
 - **Status:** pending
@@ -55,7 +56,7 @@
 - **Executor:** script-writer（M3 模式）
 
 ### Phase 6: ⑥ 定稿与登记收口
-- [ ] verdict 达标才定稿；prompts 联动缺口登记；废弃版本当日归档（-superseded+登记簿一行）；资产缺口扫描移交
+- [ ] verdict 达标才定稿；prompts 联动缺口登记；更新 continuity 台账并回写受影响项目级资产（outline/setting-bible/knowledge-base/structure-map），冲突显式裁决禁静默覆盖；废弃版本当日归档（-superseded+登记簿一行）；资产缺口扫描移交
 - **V-N:** VC-5, VC-6
 - **Status:** pending
 - **Executor:** 主进程（验收+登记）
@@ -77,7 +78,8 @@
 | 类别 | 名称/主题 | 定位 | 必读级别 | 已确认 |
 |------|----------|------|---------|--------|
 | 工作流 | script-craft 技能（M0-M3 模板/判定清单/verdict 模板） | 仓库技能层 .zcode/skills/script-craft/ | 必读 | ☐ |
-| 系列设定 | bible 绑定表/outline 节奏参数/continuity | docs/series/<id>/ | 必读 | ☐ |
+| 系列设定 | 项目级 outline/setting-bible/knowledge-base/structure-map（优先）+ bible 绑定表/节奏参数/continuity 台账 | docs/series/<id>/ 或 docs/<项目>/ | 必读 | ☐ |
+| 连续性方法论 | `skills/longform-continuity/SKILL.md` + `skills/task-planner/references/longform-continuity-methodology.md` | 技能与 reference 路径 | 必读（系列/连续剧情） | ☐ |
 | 角色 | 角色卡（含音色/声线）+MCD | assets/<series>/cards/characters/；docs/CHARACTER.md §4.8 | 必读 | ☐ |
 | 风格 | style.md token 块+语言锁基线 | docs/style.md | 必读 | ☐ |
 | 对话基线 | 对话守则+分剧语料路由 | 系列内 dialogue-rules 件；docs/corpus-styles/index.md | 参考 | ☐ |
