@@ -82,7 +82,7 @@ model: opus
   - **门控**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：（注意：前置的计划独立审计门不适用本款——审计未达标禁自动放行，Rule 109）完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
   - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认（该确认等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
   - Spec 模式前置：命中 `references/spec-mode.md` §1 触发判定时，确认 spec 产物路径已登记（记录者收据）方可进入 yes/attest
-  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask
+  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，不可越权硬门仅单次阻塞降级收口禁空转（见 critical-rules-discipline 28.8/44.3/44.5）
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
 
 - [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置

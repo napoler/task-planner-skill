@@ -47,6 +47,15 @@ if [ -n "${TASK_PLANNER_INTERACTION_MODE:-}" ]; then
   # 非法值 → 忽略, 降级 ②
 fi
 
+# ---- ①b [2026-11-17 task-goal-autonomous-20261117, Rule 28.8] goal/目标迭代模式强制自治
+#      /goal 迭代语境下显式 env 置为 goal/1/true 即强制 silent（选择全自治、同问禁复发、防死循环）
+#      不新增 config 键；显式 TASK_PLANNER_INTERACTION_MODE=ask|silent 已在 ① 层优先返回
+if [ -n "${TASK_PLANNER_GOAL_MODE:-}" ]; then
+  case "$TASK_PLANNER_GOAL_MODE" in
+    goal|1|true|GOAL|TRUE) emit "silent" ;;
+  esac
+fi
+
 # ---- ② 计划配置表层 ----
 plan_cfg_row=""
 if [ $# -ge 1 ]; then
