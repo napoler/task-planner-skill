@@ -119,6 +119,8 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 62.4 **知识消费闭环（先查后调）**：调研型 S-unit 派发 prompt 的材料包摘要**必须**引用 knowledge-brief.md 对应节锚点（升格 22.4「brief 存在时应引用」为调研型强制）；后续同类调研先查 kb §2（已验证事实）与 §4（易错点），命中已验证结论的禁止从零重调研（联动 55.1 复用前置检查）——knowledge-brief 是调研结论的第一消费入口。
 
+62.4b **公共上下文一次读取与引用传递（创作/QC 型扩展，P1，2026-11-18 task-skill-loop-guard-20261118，判例 sess_ba603cf5 多代理重复回读公共材料）**：长序列/连续创作任务的公共上下文（bible/continuity/站设计/前集基线/skill 规范）由主进程在计划期一次读取并蒸馏为 knowledge-brief 对应节；后续创作/QC 型 S-unit 派发 prompt 只传「绝对路径 + kb 节锚 + ≤10 行摘要」，禁止要求每个子代理全量回读公共材料。Rule 103.3a 全文回读义务**仅限被修改文件本身**，不扩张至公共上下文基线；命中 kb 已蒸馏结论的禁止从零重读原文件。62.4 覆盖面由调研型扩展至创作型/QC 型。
+
 62.5 **知识增量门控（kb-distill gate）**：调研型 Phase 标记 complete 前，除 19.2 双条件（progress 回填 + findings 增量）外加查 **knowledge-brief 本 Phase 增量**（ledger `kb_distill` 事件行或 mtime 晚于 Phase 锚点；本 Phase 无调研产出的登记豁免一行，禁裸豁免）。机器面 = `check-3file-gate.sh --require-kb`（调研型 Phase 传入）+ `ledger-append.sh` 事件枚举增补 `kb_distill`（纯增量，既有枚举零改动）。
 
 62.6 **机制**：零新 config 键（lint 挂 dispatch_contract_enforce 既有档位、gate 扩展为参数传入）；`scripts/selftest-four-file-dataflow.sh` 静态守护（62.1-62.5 条款锚 + 派发模板 kb 契约行 + SKILL 触点 + lint/gate/ledger 扩展锚）；合规清单 C42；适用面 = 所有 Agent() 派发（62.2）与调研型 Phase（62.3-62.5），纯机械 S-unit（记账/搬运类）62.3-62.5 豁免（登记一行）。

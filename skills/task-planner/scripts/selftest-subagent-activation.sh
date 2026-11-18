@@ -17,7 +17,7 @@
 #   SA-14 [负] 防改写/回删+旧纪元残留: 21.4「未声明者默认串行」≥1 ∧ 96.2 约束复述「超档拆细不升档」≥1 ∧ 59.4 原文「先拆细再派」≥1 ∧ SKILL.md「Rules 1-94」=0
 #         （[S6 实现注] 设计稿 SA-14 把「超档拆细不升档」记为 59.4 在位锚; 实测 59.4 原文措辞=「先拆细再派，禁止派出去等失败再兜底」
 #          （dispatch.md 59.4 段）, 四字串实际随 96.2「约束不变」句落地, 故补 59.4 真实原文锚「先拆细再派」——断言条数不变、守卫增强）
-#   SA-15 [负] 防越界+登记闭环: dispatch.md 无 ^96.7 子条（六子条上限）∧ selftest-registry.tsv 已登记本脚本（selftest-registry.sh T02 双向配对兜底）
+#   SA-15 [负] 防越界+登记闭环: dispatch.md 无 ^96\.[8-9] 越界子条（96.7 全局预算门为 task-skill-loop-guard-20261118 合法新增,P0 见该计划）∧ selftest-registry.tsv 已登记本脚本（selftest-registry.sh T02 双向配对兜底）
 # 15 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
 
 set -u
@@ -82,9 +82,9 @@ if [ "${sa14a:-0}" -ge 1 ] && [ "${sa14b:-0}" -ge 1 ] && [ "${sa14c:-0}" -ge 1 ]
 else
   bad 14 "防回删锚缺失或旧纪元残留（串行=${sa14a:-0}/超档复述=${sa14b:-0}/先拆细再派=${sa14c:-0}/Rules 1-94=${sa14d:-0} 应 0）"
 fi
-# SA-15 [负] 子条越界 + registry 登记
-sa15a="$(cntE '^96\.7' "$DISPATCH")"; sa15b="$(cnt 'selftest-subagent-activation.sh' "$REGISTRY")"
-if [ "${sa15a:-0}" -eq 0 ] && [ "${sa15b:-0}" -ge 1 ]; then ok 15 "无 96.7 越界子条 ∧ registry 已登记本脚本"; else bad 15 "越界或漏登记（96.7=${sa15a:-0} 应 0 / registry 行=${sa15b:-0} 应 ≥1）"; fi
+# SA-15 [负] 子条越界 + registry 登记（96.7=task-skill-loop-guard-20261118 合法新增预算门；96.8+ 视为越界）
+sa15a="$(cntE '^96\.[8-9]' "$DISPATCH")"; sa15b="$(cnt 'selftest-subagent-activation.sh' "$REGISTRY")"
+if [ "${sa15a:-0}" -eq 0 ] && [ "${sa15b:-0}" -ge 1 ]; then ok 15 "无 96.8+ 越界子条（96.7 预算门为已登记新增）∧ registry 已登记本脚本"; else bad 15 "越界或漏登记（96.8+=${sa15a:-0} 应 0 / registry 行=${sa15b:-0} 应 ≥1）"; fi
 # SA-16 Rule 104 新形态（三级标题）+旧二级标题零残留
 sa16a="$(cntE '^### 104 ' "$DISPATCH")"; sa16b="$(cntE '^## Rule 104' "$DISPATCH")"
 if [ "${sa16a:-0}" -eq 1 ] && [ "${sa16b:-0}" -eq 0 ]; then ok 16 "104 新形态三级标题在位（### 104）且旧二级标题（## Rule 104）零残留"; else bad 16 "104 标题形态不符（三级=${sa16a:-0} 应 1 / 二级=${sa16b:-0} 应 0）"; fi

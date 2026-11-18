@@ -51,6 +51,12 @@
 # ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>;前置: ${PROJECT_ROOT}/.gitignore 含 tmp/ (Rule 100.2))
 git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
 
+# ①-校验（创建后规则版本一致性硬门，P1，2026-11-18 task-skill-loop-guard-20261118；固化 feedback worktree-branch-desync）
+#    进入②前先校验两点：① 基线分支确为当前主工作分支——本仓 main 为陈旧无关历史,须改用 master（git merge-base --is-ancestor main master 为 NO 即命中）；
+#    ② worktree 与主工作分支的关键规则文件（*/SKILL.md、*/references/critical-rules*.md）行数与关键锚一致。
+#    任一不一致 = 禁止开发，从主工作分支同步正确版本后重校，校验结果登记「隔离决策」区块（规则版本锚）；
+#    创作与审查必须同一规则版本快照，禁按旧规创作/按新规判 FAIL（判例 EP34 BLOCKER 纯流程性返工）。
+
 # ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
 #    子代理派发时在 prompt 中写明 worktree 绝对路径
 
