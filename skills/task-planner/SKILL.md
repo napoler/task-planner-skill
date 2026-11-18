@@ -119,6 +119,7 @@ model: opus
      - **替代（禁默认，四条件全满足才可）**：① 既有内容被新证据或回归测试证伪，或已被用户明示否决/作废；② 替代范围完整覆盖旧场景；③ 替代前已 Read 旧内容全文；④ 替代后既有守护/selftest 全绿。缺任一 → 回落增量
      - **删除（最高门槛）**：必须取得用户逐项授权；未授权只可停用/标记，禁物理删除
      - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
+     - **通用修改合规门（Rule 74.7，P0）**：执行期任一对已确立规范/阈值/区间的改动（含产物内口径就地放宽），落地前必须先补 `task_plan.md`「📋 变更标注表」合规四元组（变更对象+当前值原文→拟变更值+依据+影响评估+处置），无用户逐字授权+证据的放宽禁落地；若命中 `🔒 规范基线` 同步走 51.15 STOP→授权→Decisions→更新→重 attest。禁「先改后补」；详见 task-discipline/references/critical-rules-discipline.md Rule 74.7
   3. [M] **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
      - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `Edit findings.md`**（结论摘要+证据路径）；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁
      - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
