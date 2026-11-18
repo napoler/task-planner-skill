@@ -45,6 +45,7 @@
 | 知识源 | 定位 | 注入方式 |
 |--------|------|---------|
 | {knowledge_brief}(`<plan-dir>/knowledge-brief.md`,任务知识简略要点) | §1-§5 五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引 | 材料包段引用对应节锚点;brief 存在时必读其索引节(§5) |
+| {spec_baseline}规范基线(Rule 51.15/22.4e；存在 Spec-Baseline 时必填) | 从已 attest 锁定的 task_plan「🔒 规范基线」区块逐条原样抽取：`spec_id + 约束原文(verbatim) + 双向判定式(区间上下界齐全) + 来源锚 + sha256`；无基线填 `none(经确认)` | 派发 prompt 逐条携带，禁转译/放宽/只传单边；子代理 checkpoint 强制段=逐条核验表 `约束→观测→PASS/FAIL`；基线项缺边界或未携带=派发无效 |
 | {baseline_injection}基线定数(行数定数/Rule 编号/实体清单/selftest 基线) | 台账路径锚(`plans/.rule-reservations.jsonl` 等既有台账产物;缺口维度如实回填 brief §2 原文锚) | 一律经 `<plan-dir>/knowledge-brief.md` §2/§3 台账路径锚供料;派发 prompt 禁止内联重建基线定数(收口 v116 A2 变体;21.2.1 台账供料优先) |
 
 ## 3. 验收标准(2-5 条可观察证据)

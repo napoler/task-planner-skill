@@ -52,6 +52,12 @@ execution_lane: L1
 | 🔀 可变量 | <执行细节/工序排期/工具选型/S-unit 拆分> | - |
 | 📈 学得量 | <执行期新事实/教训/锚点→findings.md/notepad-learnings.md；禁反向改写不变量> | findings.md |
 
+## 🔒 规范基线（Spec-Baseline，Rule 51.15 — 含已确立硬约束时必填）
+<!-- 2026-11-19 task-spec-baseline-freeze-20261119：把「已确立且影响验收的业务硬约束」登记为受管基线。本区块随 task_plan.md 纳入 attest SHA-256 锁（Rule 20.1），修改/放宽/删除=[SPEC-BASELINE TAMPERED] P0。区间型必须同时登记上下界（如 4s≤单镜≤12s），禁只写单边——单边口径=无下限，是 3s 过审的机制根因。无硬约束的任务填一行「none（经确认本任务无已确立硬约束）」。四环消费：派发携带 22.4e / 复检回归 103.3b / 返工续写回归 106.7 / 终验门 84.15。 -->
+| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 |
+|---------|-------------------|------------------|-----------|------------|
+| <如 SPEC-DUR-01> | <如 单镜头时长 4-12s> | <弧规格:5 / skill:53> | <4s≤单镜≤12s；越界即FAIL，禁NOTE豁免> | <sha256 或 n/a(文本片段)> |
+
 ## Goal
 <!-- 
   WHAT: One clear sentence describing what you're trying to achieve.
