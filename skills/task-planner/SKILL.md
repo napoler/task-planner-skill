@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-109 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门；其余 90 条按域归 12 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-110 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门；其余 91 条按域归 12 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -257,7 +257,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-109 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 90 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星））、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-110 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 91 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星））、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
 - **Rule 1 先规划再执行**（Rule 2 PreToolUse 阻断）：创建 task_plan.md→展示→等 yes→执行
 - **Rule 3 双操作后保存 / Rule 5 Phase 完成后更新**：2 次 view/browser/search 后写 findings；Phase 翻 in_progress→complete
 - **Rule 19 3-File 落盘**：四文件=RAM/Disk 落地；回填门控 19.2=complete 硬门；恢复先读三文件
@@ -301,7 +301,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | 文档 | 用途 |
 |------|------|
 | `reference.md` | Manus 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 |
-| `references/critical-rules.md` | Critical Rules 核心域 1-109 全集索引（15 条核心全文+分层架构说明+卫星路由索引） |
+| `references/critical-rules.md` | Critical Rules 核心域 1-110 全集索引（15 条核心全文+分层架构说明+卫星路由索引） |
 | `references/methodology.md` | 思维方法论 T1-T5 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke |
 | `references/completion-gate.md` | 子代理验证 + 串行同步 |
 | `references/goal-gate.md` | Goal Gate + VC 规则 + 退出标准 |

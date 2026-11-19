@@ -21,7 +21,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 卫星路由：task-dispatch
 
-域=子代理派发与拆分调度。规则全文见 `references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68）。
+域=子代理派发与拆分调度。规则全文见 `references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68,110）。
 
 调用条件：涉及子代理拆分/派发/并行/粒度校验/伴飞/返回校验/执行体选型/冲突隔离/依赖分析时 Read 该文件。
 
@@ -40,6 +40,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 | 52 | 执行体专业化优先与覆盖矩阵维护（P0） | 同上 |
 | 59 | 子代理拆分粒度硬门与技能伴飞纪律（P0） | 同上 |
 | 68 | 计划期依赖分析、并行分组、组内异构分摊与组域写一致性纪律 | 同上 |
+| 110 | 任务分级×模型档位强制匹配（P0） | 同上 |
 
 ## 脚本
 
@@ -56,7 +57,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 参考文档
 
-- `references/critical-rules-dispatch.md` — 11 条规则全文
+- `references/critical-rules-dispatch.md` — 15 条规则全文（索引表列 12 条；Rule 96/103/104 为后续并入段未入表，历史欠账另行任务）
 - `references/agent-coverage.md` — 执行体覆盖矩阵
 - `references/dispatch-examples.md` — 派发示例
 - `references/split-pattern-library.md` — 拆分模式库
