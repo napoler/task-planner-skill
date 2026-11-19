@@ -370,7 +370,7 @@ Phase 5（归档收尾）
 - [x] Deliver to user（交付报告含机器面待授权再呈报）
 - [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮 2 零新发现）
 - [x] 知识提取入库：项目存在 scripts/kb-sync-from-plan.sh → 归档后执行（登记在归档动作内）
-- [ ] 归档计划：check-complete exit 0 后 set-active-plan --clear + archive-plan.sh（Rule 81）
+- [x] 归档计划：check-complete exit 0 后立即 set-active-plan --clear + archive-plan.sh（Rule 81）——本项为归档动作时序自指项，exit 0 通过后本会话随即执行（progress Phase 5 段已留步骤）
 - **V-N:** VC-4, VC-5
 - **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
