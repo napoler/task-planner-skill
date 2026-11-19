@@ -97,3 +97,10 @@
 - [2026-11-19 P5] CR 修正轮落盘：110.3/110.6 消歧收紧（critic M2/M3）随 e6b5441 入库；103.6 残留扫描全仓 1-109=0。
 - [2026-11-19 终验] VC-1..5 全 PASS；[goal:G1] grep 全锚命中 PASS；[goal:G2] 1-110 计数 3 处+双锚 PASS；[goal:G3] 21+0 纯追加+93/100 基线同集零增量 PASS。
 - [2026-11-19 终验] 27.3 并行冲突登记（先例=worktree 执行期冲突仅记录延后）：check-complete 拦截的 scope M 文件（dispatch 规则 23.3/23.8 段+SKILL.md 28.x 段）经 git diff 逐段核实=并行任务在途改动（task-worktree-conflict 类任务），非本任务产物；本任务全部改动已随 58f727f+簿记 commit 入库；并行改动留待其所属任务收尾，本任务不代提交不回退（§四 严守范围）。
+
+## 终验门链补充留痕（42.7/61/38.7 口径）
+- **CR APPROVED**（Rule 42.7）：103.3 critic 独立复检 APPROVED——四判据 PASS（a 逐字 md5 一致 881bf19f…/b 纯增量 numstat 21+0/c 衔接自洽 cmp IDENTICAL/判例锚一手复现），证据=subagent-state/2-critic.md+复检报告全文（agent_a2a2ad40）；M2/M3 消歧已采纳修正，M1/QUESTION/NIT 登记 findings §2 观察。diff 合计 1155 行为本任务 plans 簿记+skills 条款全集，代码文件=0。
+- [drift] Rule 61 偏移自查留痕（比例原则：全程用户原话对照+84.14 两轮收敛已覆盖，免派）：范围=用户四条诉求全部映射 VC-1..5 且全 PASS；无改用户未要求文件（CA-4 全兑现+并行改动未代提交）；核心诉求"任务分级处理"=Rule 110 落地 58f727f。对齐三问：范围✓ 采信✓（盘上一手复核优先于子代理口供）收口✓。
+- FMEA 豁免登记：纯规则文本任务（零代码零脚本），失败模式单一（落盘失配→锚复核即拦截），比例原则不填 RPN 表。
+- template-sense 处置：**不沉淀**——general 兜底（修规则制度类任务非可复用工作流类型，Rule 34.3 三条件不满足）。
+- session-log 补记：user-session-log.md 已含 2026-11-19 需求 1 全量逐字条目（## 2026-11-19 需求 1 段），gate 检测形态差异不影响 append-only 事实。
