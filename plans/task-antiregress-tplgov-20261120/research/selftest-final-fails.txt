@@ -1,0 +1,8 @@
+selftest-active-plan
+selftest-batch-pilot
+selftest-enumerate-first
+selftest-execution-stability
+selftest-registry
+selftest-rule-reserve-pairing
+selftest-self-resolution
+selftest-summary-readability

@@ -1,0 +1,6 @@
+.zcode: copied_ok=47 skill_absent_skip=0
+.agents: copied_ok=47 skill_absent_skip=0
+.cursor: copied_ok=47 skill_absent_skip=0
+.claude: copied_ok=47 skill_absent_skip=0
+TOTAL copied_ok=188 skip=0
+diff=0 verification: 188/188 files identical across 4 sites (zcode/.agents/.cursor/.claude), 0 MISMATCH (2026-11-20 06:18:48)

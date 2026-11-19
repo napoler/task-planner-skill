@@ -1,0 +1,922 @@
+diff --git a/CLAUDE.md b/CLAUDE.md
+index bdb9abf..5e56474 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
+ 
+ 仓库不运行可执行程序，不提供 API——它是一个 skill 包，被 Claude Code / OpenCode 加载后作为子流程工具使用。
+ 
++**项目定位（2026-11-15 锚定）**：用方法论方案，在不使用高档模型的前提下产出更稳定、更准确的质量内容；子代理优先、专业的事交给专业执行体；持续优化任务执行稳定性，核心是长上下文下的数据流转、记录与压缩优化。完整定位（含用户原话锚）见 [README_zh.md](README_zh.md)「项目定位」。
++
+ ## 目录结构
+ 
+ ```
+diff --git a/README_zh.md b/README_zh.md
+index 9528112..344ec2d 100644
+--- a/README_zh.md
++++ b/README_zh.md
+@@ -6,6 +6,23 @@
+ 
+ ---
+ 
++## 项目定位
++
++> **不依赖高档模型，用方法论工程保证质量：让稳定的流程、门控与数据工程，替代对更强模型的依赖。**（2026-11-15 用户定位锚定，四要点：）
++
++- **方法论换模型档位** —— 通过规划持久化、验证契约（VC）、阶段门控与验证链等方法论方案，在**不使用高档模型**的前提下，产出更稳定、更准确的质量内容。
++- **子代理优先、专业分工** —— 专业的事交给专业的执行体：主上下文只做编排、路由与结论回收，执行与调研下沉到专业化子代理。
++- **任务执行稳定性** —— 防漂移（偏移检查）、防造假（完成声称门控）、防丢失（落盘留痕），让长任务可预测、可恢复、可审计。
++- **长上下文数据工程（核心）** —— 长上下文场景下的数据流转、记录与压缩优化：计划/发现/进度文件化落盘、检查点断点续跑、大输出提炼压缩、上下文纠偏。
++
++机制实现细节见 [CLAUDE.md](CLAUDE.md) 与 `skills/task-planner/`。
++
++**定位原话锚（用户 2026-11-15 /goal，逐字）**：
++
++> 对当前项目的定位进行明确，就是在利用各种方法论的方案来确保就是在可以不使用高档模型的前提下，产出更加稳定以及准确的准确的质量内容。多使用子代理，让专业的事情交给更加专业的人去做，以及优化优化以及优化任务执行的稳定性，核心就是在长上下文的情况下，数据的流转以及记录压缩等等的优化。
++
++---
++
+ ## 为什么需要它？
+ 
+ LLM 会遗忘。经过约 50 次工具调用后，原始目标会漂移，指令互相竞争，代理开始"解决"已经不存在的问题。本 Skill 让计划成为磁盘上的第一类实体——因此：
+diff --git a/knowledge/INDEX.md b/knowledge/INDEX.md
+index c9c3099..1f11735 100644
+--- a/knowledge/INDEX.md
++++ b/knowledge/INDEX.md
+@@ -1,6 +1,6 @@
+ # 知识库索引 (knowledge/INDEX.md)
+ 
+-> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-16T14:46:48Z | 条目计数: 33
++> 本文件由 scripts/kb-rebuild-index.sh 生成，勿手改 | 生成时间: 2026-11-19T00:23:08Z | 条目计数: 37
+ 
+ | id | title | tags | sources | file |
+ | anchor-discipline-plan-history-recall | "锚纪律与子代理产锚幻觉治理（plan-history-recall dogfood 判例）" | [kb, anchor-discipline, plan-history-recall, subagent-fabrication, vc6-vacuous-gate] | [plans/task-history-recall-20261116/design.md, plans/task-history-recall-20261116/findings.md, plans/task-history-recall-20261116/progress.md, skills/plan-history-recall/SKILL.md] | entries/anchor-discipline-plan-history-recall.md |
+@@ -14,6 +14,8 @@
+ | md-edit-ops-structured-editing | "md-edit-ops 结构化 markdown 编辑执行器（edit-ops 指令单/预校验/原子应用/回滚）" | [markdown-editing, edit-ops, atomic-edit, tooling, reliability] | [skills/md-edit-ops/SKILL.md, skills/md-edit-ops/scripts/md-edit-ops.ts, skills/md-edit-ops/scripts/selftest-md-edit-ops.sh, skills/task-discipline/references/critical-rules-discipline.md, plans/archive/task-mdedit-reliability-20261116/findings.md, plans/archive/task-mdedit-reliability-20261116/research-external-tools.md] | entries/md-edit-ops-structured-editing.md |
+ | misc-skill-institutionalization-precedents | "技能制度化演进判例" | [制度化, 规则演进, 判例, 零级联, 机器守护] | plans/archive/task-v097-tool-selection/knowledge-brief.md<br>plans/archive/task-v098-auto-resolution/knowledge-brief.md<br>plans/archive/task-v119/knowledge-brief.md<br>plans/archive/task-v127/knowledge-brief.md<br>plans/archive/task-v127/findings.md<br>plans/archive/task-v154-decision-arbiter/findings.md<br>plans/archive/task-v162-change-absorption-safety/findings.md<br>plans/archive/task-v169-user-session-log-write-once/findings.md<br>plans/archive/task-v195-spec-recall/findings.md | entries/misc-skill-institutionalization-precedents.md |
+ | misc-task-typing-and-execution-gates | "杂项任务分型与落地门控" | [任务分型, 轻量档, 效率优化, 媒体派发, 需求覆盖] | plans/archive/task-v085-task-type-mechanism-profile/knowledge-brief.md<br>plans/archive/task-v086-mini-fast-path/findings.md<br>plans/archive/task-v091-efficiency-optimization/knowledge-brief.md<br>plans/archive/task-v122/knowledge-brief.md<br>plans/archive/task-v122/findings.md<br>plans/archive/task-v123/knowledge-brief.md<br>plans/archive/task-v123/findings.md<br>plans/archive/task-v124/knowledge-brief.md<br>plans/archive/task-v129/findings.md<br>plans/archive/task-v138/knowledge-brief.md<br>plans/archive/task-v138/findings.md | entries/misc-task-typing-and-execution-gates.md |
++| draft-task-model-tier-dispatch-20261119 | "（draft）task-model-tier-dispatch-20261119 知识蒸馏待精炼" | [draft, 未精炼] | [plans/archive/task-model-tier-dispatch-20261119/knowledge-brief.md, plans/archive/task-model-tier-dispatch-20261119/findings.md] | entries/model-tier-dispatch-rule110-20261119.md |
++| modification-compliance-gate | "通用修改合规门（Rule 74.7）：无依据放宽=投毒的落地前拦截（sess_ba603cf5 判例）" | [kb, anti-poison, modification-gate, compliance-quadruple, spec-baseline, anti-regression] | [plans/task-modification-compliance-gate-20261119/findings.md, plans/task-modification-compliance-gate-20261119/verification.md, forensics/modification-compliance-gap-20261119.md, skills/task-discipline/references/critical-rules-discipline.md] | entries/modification-compliance-gate.md |
+ | planflow-plan-lifecycle-gates | "计划生命周期与门控" | [计划生命周期, 门控, 归档索引, 上下文压力, 罗盘分账] | plans/archive/task-v170-archive-completed-plans/knowledge-brief.md<br>plans/archive/task-v170-archive-completed-plans/findings.md<br>plans/archive/task-v069-context-hygiene/knowledge-brief.md<br>plans/archive/task-v152-proactive-context/knowledge-brief.md<br>plans/archive/task-v156-drift-shield/findings.md<br>plans/archive/task-v166-summary-readability/findings.md<br>plans/archive/task-plan-resume-v05/findings.md | entries/planflow-plan-lifecycle-gates.md |
+ | planflow-template-verification-contract | "模板与验证契约" | [模板生命周期, 验证契约, VC门控, 断言级联, 交付契约] | plans/archive/task-v096-template-auto-record/knowledge-brief.md<br>plans/archive/task-v074-template-matrix-reflect-loop/knowledge-brief.md<br>plans/archive/task-v074-template-matrix-reflect-loop/findings.md<br>plans/archive/task-v160-decision-grading/findings.md<br>plans/archive/task-v166-summary-readability/findings.md<br>plans/archive/task-v081-fine-grain-step-gate/knowledge-brief.md<br>plans/archive/task-v156-drift-shield/findings.md | entries/planflow-template-verification-contract.md |
+ | rule105-ls-first-discipline | "Rule 105 可枚举集合全量枚举优先纪律（ls-first）落地与级联维护要点" | [rule-105, ls-first, 检索纪律, selftest, 级联锚] | [plans/task-enumerate-first-20261106/knowledge-brief.md, plans/task-enumerate-first-20261106/findings.md, skills/task-discipline/references/critical-rules-discipline.md] | entries/rule105-ls-first-discipline.md |
+@@ -22,10 +24,12 @@
+ | rule94-focus-isolation-landing-playbook | "Rule 94 任务专注性与计划隔离：落地内容与新规则级联 SOP 升级（task-focus-plan-split-20261023 蒸馏）" | [rule-landing, task-planner, 计划隔离, 级联SOP, rule-reserve] | [plans/task-focus-plan-split-20261023/task_plan.md, plans/task-focus-plan-split-20261023/subagent-state/, skills/task-discipline/references/critical-rules-discipline.md] | entries/rule94-focus-isolation-landing-playbook.md |
+ | rule95-nopause-execution-first-landing | "Rule 95 非必要暂停禁令落地与同日 Rule 96 并集解 SOP" | [rule-landing, media-executor, union-merge, epoch-cascade, deploy] | [plans/task-nopause-execfirst-20261023/findings.md, plans/task-nopause-execfirst-20261023/subagent-state/1-explore.md] | entries/rule95-nopause-execution-first-landing.md |
+ | serial-creation-knowledgesync-rule107 | "序列创作知识同步三环闭环（Rule 107）：根治跨集/跨章知识丢失的规范面落点与级联形态族" | [rule107, 序列创作, 知识同步, 派发契约, 纪元级联, selftest锁步] | [skills/task-discipline/references/critical-rules-discipline.md, skills/task-dispatch/references/critical-rules-dispatch.md, skills/media-planner/references/critical-rules-media.md, skills/task-planner/templates/subagent_dispatch.md, plans/task-serial-sync-20261115/knowledge-brief.md] | entries/serial-creation-knowledgesync-rule107.md |
++| spec-baseline-freeze-anti-regression | "规范基线冻结防倒退闭环（Spec-Baseline Freeze，sess_ba603cf5 4-12s 判例）" | [kb, anti-regression, spec-baseline, attest-lock, verification-gate, vacuous-gate-fix] | [plans/task-spec-baseline-freeze-20261119/findings.md, plans/task-spec-baseline-freeze-20261119/progress.md, plans/task-spec-baseline-freeze-20261119/verification.md, skills/task-planner/references/critical-rules.md] | entries/spec-baseline-freeze-anti-regression.md |
+ | specmode-integration-and-line-pin-20261115 | "Spec 模式外部技能集成（Superpowers×OpenSpec）与 SKILL.md 行数钉演进判例（task-specmode-integration-20261115）" | [spec-mode, superpowers, openspec, 外部技能集成, BP-08行数钉, stash窗口合并, 调用非复制] | [plans/task-specmode-integration-20261115/findings-superpowers.md, plans/task-specmode-integration-20261115/findings-openspec.md, plans/task-specmode-integration-20261115/findings-anchors.md, plans/task-specmode-integration-20261115/review-s7.md, skills/task-planner/references/spec-mode.md, plans/task-specmode-integration-20261115/user-session-log.md] | entries/specmode-integration-and-line-pin-20261115.md |
+ | superpowers-delivery-readthrough-gate | "superpowers 创作链交付前通读审查门（final-readthrough 技能+三接线）" | [superpowers, quality-gate, final-readthrough, delivery] | [plans/task-finalread-20261116/, ~/.agents/skills/final-readthrough/SKILL.md, ~/.agents/skills/executing-plans/SKILL.md, ~/.agents/skills/subagent-driven-development/SKILL.md, ~/.zcode/skills/using-superpowers/SKILL.md] | entries/superpowers-delivery-readthrough-gate.md |
+ | superpowers-openspec-complexity-routing | "Superpowers×OpenSpec 复杂度择一路由条款——设计要点、落地锚与 attest/部署判例" | [task-planner, spec-mode, plan-collab-router, routing, superpowers, openspec] | [plans/task-superpowers-openspec-routing-20261116/findings-external-families.md, plans/task-superpowers-openspec-routing-20261116/verify-report.md, skills/task-planner/references/spec-mode.md] | entries/superpowers-openspec-complexity-routing.md |
+ | task-audit-tail-20261026 | "审计尾批处置判例：删除前实况核查推翻「幽灵副本」误判/P01 封存/素材换词语义安全判据" | [判例, 删除前核查, 僵尸计划, selftest素材] | [plans/archive/task-audit-tail-20261026/, plans/archive/task-v190-skill-audit-legacy-fix/] | entries/task-audit-tail-20261026.md |
++| task-auditgate-machine-20261116 | "计划审计门机器强门落地（checker+attest [audit-gate]+selftest；R1-R8+CR 两轮全独立审计闭环）" | [task-planner, rule-109-8, audit-gate, 机器门, mutation-判别性] | [plans/archive/task-auditgate-machine-20261116/task_plan.md, plans/archive/task-auditgate-machine-20261116/progress.md, plans/archive/task-auditgate-machine-20261116/subagent-state/] | entries/task-auditgate-machine-20261116.md |
+ | task-clause-generalize-20261115 | "94.7/51.14/64.7 泛化修订与落位教训" | [rule-landing, clause-generalize, vc-gate, insert-discipline] | plans/archive/task-clause-generalize-20261115/findings.md<br>plans/archive/task-clause-generalize-20261115/task_plan.md<br>plans/archive/task-clause-generalize-20261115/clause-drafts-v2.md<br>plans/review-clause-generality-20261115.md<br>skills/task-discipline/references/critical-rules-discipline.md<br>skills/task-planner/references/critical-rules.md<br>skills/task-drift-guard/references/critical-rules-drift.md<br>skills/task-planner/SKILL.md<br>skills/task-discipline/references/execution-recall-card.md | entries/task-clause-generalize-20261115.md |
+ | task-drift-fakeqc-20261115 | "执行偏移与虚假完成声称根治：94.7/51.14/64.7 三条款判例与插段坑" | [rule-landing, drift-guard, claim-honesty, clause-insert] | [plans/task-drift-fakeqc-20261115/knowledge-brief.md, plans/task-drift-fakeqc-20261115/clause-drafts.md, plans/task-drift-fakeqc-20261115/evidence-session-extract.md, plans/task-drift-fakeqc-20261115/progress.md] | entries/task-drift-fakeqc-20261115.md |
+ | task-intentresume-20261116 | "意图切换回切闭环——B 收口后主动回切挂起计划 A（task-intentresume-20261116）" | [intent-switch, 回切, 计划隔离, Rule94, plan-resume, 显性通告] | [plans/archive/task-intentswitch-20261116/task_plan.md, plans/task-intentresume-20261116/findings.md] | entries/task-intentresume-20261116.md |
+diff --git a/skills/plan-resume/SKILL.md b/skills/plan-resume/SKILL.md
+index fcf9000..e2f86fa 100644
+--- a/skills/plan-resume/SKILL.md
++++ b/skills/plan-resume/SKILL.md
+@@ -6,434 +6,94 @@ description: Scan for interrupted or stuck task-planner plans across a workspace
+ 
+ # plan-resume — 中断/过期计划扫描与续推决策
+ 
+-主动盘点工作区里中断未完成的 task-planner 计划,逐个判断"还能不能续 / 应不应该放弃"。**v0.6 决策自主化契约**(演进: v0.4"一律 dry-run" → v0.5"恢复场景默认自主"(用户 2026-09-05"模型自主根据分析选择需要推进的任务进行完成,而不是等待用户抉择") → v0.6"自主推进不等决策点"(用户 2026-09-06"主动的分析哪些事没有做完…按照自动评估…自主的推进,而不是停下来等用户去决断。进行彻底的修复")):
++主动盘点工作区里中断未完成的 task-planner 计划,逐个判断"还能不能续 / 应不应该放弃"。**v0.6 决策自主化契约**(v0.4 dry-run → v0.5 恢复场景默认自主 → v0.6 决策点自主裁决,不停车):
+ 
+ | 模式 | 何时生效 | 行为 |
+ |------|---------|------|
+-| **自主推进(默认)** | 恢复触发点:① 会话启动且当前无活跃计划 ② 用户发出恢复类指令("继续上次任务"等) ③ 当前计划刚交付终态(COMPLETE/交付报告落盘) | 打分选 1 个最值得推进的计划 → 立即续推**至交付**;途中执行级决策点按 §7.10 框架自主裁决并记录,不停车等用户;选人理由必须报告(§7) |
+-| **只报告(dry-run)** | 当前计划执行中的被动扫描(task-planner Rule 24);或 `autonomous_resume: false`;或用户本轮说过"不要自动续推"/"只扫不动" | 只产出报告与推荐动作,不替用户 resume/archive/re-plan/drop |
++| **自主推进(默认)** | 恢复触发点:① 会话启动且无活跃计划 ② 用户恢复类指令("继续上次任务"等) ③ 当前计划交付终态(COMPLETE/交付报告落盘) | 打分选 1 个最值得推进的计划 → 续推**至交付**;途中执行级决策点按 §7.10 四项测试自主裁决并记录,不停车;选人理由必须报告(§7) |
++| **只报告(dry-run)** | 当前计划执行中的被动扫描(task-planner Rule 24);或 `autonomous_resume: false`;或用户本轮说"不要自动续推"/"只扫不动" | 只产出报告与推荐动作,不替用户 resume/archive/re-plan/drop |
+ 
+-守卫底线(两模式共同):跨仓/跨项目候选一律只报告不自动续推(宪法 §五 跨项目隔离 P0);`[blocked]` / `[hold]` / `[user-vetoed]` / 熔断标记计划一律跳过(`[awaiting-user]` **不再跳过**——决策点是自主裁决对象非死端,见 §7.10);单次触发最多自主续推 1 个计划。详见 §7。
+-
+-> 历史注: v0.4 的 smart-resume(cron `--auto-push` opt-in)已并入本 §7 自主推进模式,cron 场景复用同一路径;`--auto-push` flag 保留为显式覆盖开关。
++守卫底线(两模式共同):跨仓/跨项目候选一律只报告(宪法 §五 P0);`[blocked]`/`[hold]`/`[user-vetoed]`/熔断标记跳过(`[awaiting-user]` **不跳过**——决策点是自主裁决对象,§7.10);单次触发最多自主续推 1 个计划。详见 `references/autonomous-resume-detail.md`。
+ 
+ ## 何时触发
+ 
+ | 用户原话(中/英) | 触发 |
+ |-----------------|------|
+-| "继续上次任务" / "接着推进" / "扫一下还有什么没做完的" | ✅ |
+-| "看看 plan 里有没有过期的" / "stale plans" | ✅ |
+-| "/plan-resume" | ✅(user-invocable) |
+-| "任务卡住了怎么办" | ✅(排查卡点) |
+-| 用户明示开启新一轮工作但未指明 | ✅(预防"忘记还有未完成") |
+-| 用户直接给单个具体任务 ("修这个 bug") | ❌(用 task-planner) |
+-| 用户只是想看仓库某个文件 | ❌ |
++| "继续上次任务"/"接着推进"/"扫一下还有什么没做完的"/"看看 plan 有没有过期的"/"resume plan"/"stale plans"/"task-planner 恢复"/"/plan-resume"/"任务卡住了怎么办" | ✅ |
++| 用户明示开启新一轮工作但未指明 | ✅(预防忘记未完成) |
++| 用户直接给单个具体任务("修这个 bug")/只是想看某个文件 | ❌ |
+ 
+ ## 不做的事
+ 
+-- ❌ 本 skill 自身不会自动 `cd` 到 worktree / `git checkout` 分支 / `git merge`(自主续推时这些由**调用方**按 task-planner 协议执行,含其 worktree 合约)
+-- ❌ 不会自动删 task_plan.md,不会物理删除/drop 任何计划;归档(`mv plans/X plans/archive/`)仅限自主续推中**顺手关账**——已交付(PARTIAL/COMPLETE)计划或真模板垃圾脚手架,逐条判据记录后执行(先例: cron-governance Phase 6);非交付计划仍只推荐不移动
+-- ❌ 不会替用户改 Goal / Next Step(自主续推=接着干,发现 Goal 需变更即 STOP 写 `[awaiting-user]`——范围重定义属用户决策,§7.10 合法停点之一)
+-- ❌ 不会调 task-planner 的 PreToolUse hook(那个 hook 阻断本 skill 不在的写入,本 skill 只读)
+-- ❌ 不会扫 `.zcode/plans/**` 之外的所有 markdown(只看"计划三件套")
+-- ❌ 自主模式下不会扫仓外/全局计划位置,不会一次续推多个计划
++- ❌ 不自动 `cd` worktree / `git checkout` / `git merge`(自主续推由调用方按 task-planner/worktree 合约执行)
++- ❌ 不删 `task_plan.md`、不物理删除计划；归档(`mv` 到 `plans/archive/`)仅限已交付(PARTIAL/COMPLETE)或真模板垃圾脚手架,逐条判据记录后执行；非交付计划只推荐不移动
++- ❌ 不改 Goal/Next Step；Goal 需变更即 STOP 写 `[awaiting-user]`(§7.10 合法停点)
++- ❌ 不调 task-planner PreToolUse hook(本 skill 只读)；不扫三件套以外 markdown；自主模式不扫仓外/全局、不一次续推多个
+ 
+ ## 工作流(六步)
+ 
+-### 1. 定位所有计划目录 [M]
+-
+-按用户当前工作目录(`pwd`)的 git 仓根扫描。优先用 `scripts/scan-plans.sh <repo-root>`(已写好并发扫描),或主进程直接:
+-
++### 1. 定位计划目录 [M]
++按 `pwd` 的 git 仓根扫描。优先 `scripts/scan-plans.sh <repo-root>`，或:
+ ```bash
+-# 标准 task-planner 计划位置
+-ls -la plans/*/task_plan.md 2>/dev/null                          # plans/<task-id>/
+-ls -la plans/task-*/task_plan.md 2>/dev/null                     # 命名任务
+-ls -la .zcode/plans/plan-sess_*.md 2>/dev/null                   # session-scoped
+-ls -la skills/*/plans/task-*/task_plan.md 2>/dev/null            # skill 内计划
+-
+-# worktree 残留(过期判定维度②依赖)
++ls -la plans/*/task_plan.md 2>/dev/null
++ls -la plans/task-*/task_plan.md 2>/dev/null
++ls -la .zcode/plans/plan-sess_*.md 2>/dev/null
++ls -la skills/*/plans/task-*/task_plan.md 2>/dev/null
+ git worktree list
+ ```
++路径不存在跳过。用户参数映射: "30 天阈值"→`--time-threshold 2592000`；"只看 X"→`--only 'X'`；"只扫 plans/"→传 `<root>/plans`；默认 7 天。报告必含实际生效阈值(§5)。
+ 
+-> 路径不存在 ≠ 报错;跳过即可。
+-
+-#### 1.1 用户参数(自然语言声明 → 脚本调用映射)
+-
+-skill 接收用户在 prompt 中以自然语言声明的过滤/阈值条件,主进程负责转译成脚本参数:
+-
+-| 用户原话 | 脚本调用 |
+-|---------|---------|
+-| "用 30 天阈值" / "30 天以上的才算过期" | `scan-plans.sh --time-threshold 2592000` (30 × 86400) |
+-| "只看 ts-migration 或 fix 任务" | `scan-plans.sh --only 'ts-migration\|fix'` |
+-| "只扫 plans/ 子目录" | `scan-plans.sh <root>/plans` |
+-| "用默认" / 无声明 | `scan-plans.sh $(pwd)` (默认 7 天阈值) |
+-
+-> **报告里必含「实际生效阈值」段**(见 §5.1),避免用户事后忘记自己声明过什么。
+-
+-### 2. 提取每份计划的元数据 [M]
+-
+-每个 task_plan.md 用 `Read` 提取以下五字段(grep 模式,见 `scripts/extract-meta.sh`):
+-
+-| 字段 | 来源 | 用途 |
+-|------|------|------|
+-| `task_id` | 目录名 / `plan-sess_*` 文件名 | 报告主键 |
+-| `goal` | `## Goal` 段首句(到第一个 `.` / 换行) | 过期判定③(目标对比) |
+-| `current_phase` | `## Current Phase` 段内容 | 是否已完成 |
+-| `next_step` | `## Next Step` 段首句 | 续推动作提示 |
+-| `phase_status_map` | `### Phase N: ...` 下 `- **Status:** <s>` 列表 | 进度摘要 |
+-| `last_update` | `git log -1 --format=%ct plans/<id>/task_plan.md` 或 `stat -c %Y` | 过期判定①(时间) |
+-
+-**主进程自己不要逐文件 Read 大段**(>500 行派 `Explore`;实际计划文件多在 5-12KB,可主进程 Read 头 100 行)。
++### 2. 提取元数据 [M]
++每个 `task_plan.md` 提取(grep/`scripts/extract-meta.sh`,>500 行派 `Explore`;多为 5-12KB 可 Read 头 100 行): `task_id`/`goal`(`## Goal` 首句)/`current_phase`/`next_step`/`phase_status_map`(`Status:`)/`last_update`(`git log -1 --format=%ct` 或 `stat -c %Y`)。
+ 
+-### 3. 判断完成度(决定要不要进过期判定) [M]
++### 3. 判断完成度 [M]
++全部 complete→跳过(仅汇总)；含 in_progress→过期判定(可能慢)；含 pending→中断/未开始,过期判定(核心)；Goal/Next Step 缺失→`[corrupt]`。
+ 
+-```
+-所有 phase.status == "complete"  → 已完成,跳过(只列汇总)
+-phase 含 in_progress              → 进行中,过期判定(可能只是慢)
+-phase 含 pending 且 ≥1 个         → 中断/未开始,过期判定(核心目标)
+-Goal 缺失 / Next Step 缺失        → 损坏,直接标 [corrupt]
+-```
+-
+-### 4. 三维过期判定(只对未完成项) [A]
+-
+-每个未完成项跑三维度,**任一命中 = 触发过期推荐**:
+-
+-#### 维度① 时间衰减(time decay)
+-| 信号 | 推荐动作 |
+-|------|---------|
+-| last_update ≤ 3 天 | `[fresh]` 续推 |
+-| 3 < last_update ≤ 7 天 | `[stale-warn]` 续推前用户确认上下文 |
+-| 7 < last_update ≤ 30 天 | `[stale]` 默认 drop,用户可 override |
+-| > 30 天 | `[expired]` 默认 archive,用户可 override 续推 |
+-
+-> 阈值为 skill 默认值,用户可在触发时声明覆盖(如"用 30 天阈值")。
+-
+-#### 维度② 代码环境失效(env vanish)
+-检查计划 Goal / Scope 里明确列出的路径,缺失率 > 阈值则视为环境失效:
+-
+-```bash
+-# 提取计划中的允许文件列表(## ⚠️ 执行范围限制 表格)
+-grep -E "^\| .*\.(ts|js|py|sh|json|md) " plans/<id>/task_plan.md
+-
+-# 任一关键文件 fs 不可达 + worktree 分支已删除 → 维度②命中
+-git worktree list | grep -q "<branch>"  # worktree 已清理
+-ls -la plans/<id>/task_plan.md 2>/dev/null  # 计划文件本身消失(已被 mv 到 archive)
+-```
+-
+-| 信号 | 推荐动作 |
+-|------|---------|
+-| worktree 分支 `wt/<id>` 已删 + worktree_path 路径不存在 | `[env-vanished] archive` |
+-| Scope 列出的源文件 >50% 不存在 | `[env-vanished] drop 或 re-plan` |
+-| 全部存在 + worktree 在 | `[env-ok]` 不触发 |
+-
+-#### 维度③ 目标已被取代(goal superseded)
+-```bash
+-# 最近 7 天 commits 涉及计划 Goal 关键字 → 可能已被顺便完成
+-git log --since="<last_update>" --oneline | grep -iE "<goal_keywords>"
+-```
+-
+-| 信号 | 推荐动作 |
+-|------|---------|
+-| 最近 commits 与 Goal 重叠 ≥ 70%(粗判) | `[superseded] drop + 写明 commit` |
+-| commits 与 Goal 重叠 30-70% | `[possibly-superseded] 用户判断` |
+-| < 30% 或无 commits 涉及 | `[unique] 续推` |
+-
+-> 维度③ 实现成本最高,**前两个维度已能覆盖 80% 场景**;第三维度若 grep 出 0 命中,直接跳过不深入。
++### 4. 三维过期判定(仅未完成) [A]
++任一命中=触发过期推荐:
++- **① 时间衰减**: ≤3d `[fresh]`续推；3-7d `[stale-warn]`续推前确认上下文；7-30d `[stale]`默认 drop；>30d `[expired]`默认 archive(阈值可覆盖)。
++- **② 环境失效**: 提取 `## ⚠️ 执行范围限制` 路径；`wt/<id>` 分支+worktree 路径不存在→`[env-vanished] archive`；Scope 源文件 >50% 不存在→`drop/re-plan`；全部存在→`[env-ok]`。
++- **③ 目标已取代**: `git log --since=<last_update>` 与 Goal 关键字粗判重叠 ≥70%→`[superseded] drop+commit`；30-70%→`[possibly-superseded]`用户判断；<30%/无命中→`[unique]`续推(①②已覆盖 80% 场景,无命中可跳过)。
+ 
+ ### 5. 输出报告 [M]
++写 `<cwd>/.zcode/plans/plan-resume-report.md`(存在则覆写)+主上下文摘要。
+ 
+-#### 5.1 报告格式(强制)
+-
+-写到 `<worktree-or-cwd>/.zcode/plans/plan-resume-report.md`(已存在则覆写),并在主上下文打印摘要。
+-
+-```markdown
+-# plan-resume 报告 — <YYYY-MM-DD HH:MM>
+-
+-> 工作区: <repo-root>
+-> 扫描源: <列举的位置,5 项最多>
+-> 阈值: time=[3d/7d/30d]
+-
+-## 汇总
+-
+-| 总计划 | 已完成 | 未完成 | 推荐 resume | 推荐 archive | 推荐 drop | 损坏 |
+-|--------|--------|--------|-------------|--------------|-----------|------|
+-| 12 | 8 | 4 | 1 | 2 | 1 | 0 |
+-
+-## 候选清单(按推荐动作排序)
+-
+-### ✅ 推荐 resume — 1 项
+-| Task ID | Goal(摘要) | Current Phase | Last Update | 备注 |
+-|---------|------------|---------------|-------------|------|
+-| `task-cext-ts-migration` | content-extractor Python→TS 迁移 | Phase 3 in_progress | 5 天前 | [fresh] |
+-
+-### ⚠️ 推荐用户判断 — 1 项
+-| Task ID | Goal | Current Phase | Last Update | 维度 |
+-|---------|------|---------------|-------------|------|
+-| `task-X` | ... | ... | 12 天前 | ① [stale] |
+-
+-### 🚫 推荐 archive — 2 项
+-| Task ID | Goal | 触发维度 | 证据 |
+-|---------|------|----------|------|
+-| `task-Y` | ... | ①② | worktree 已删;scope 50% 不存在 |
+-| `task-Z` | ... | ① | 18 天未动 |
+-
+-### ❌ 推荐 drop — 1 项
+-| Task ID | Goal | 触发维度 | 证据 |
+-|---------|------|----------|------|
+-| `task-W` | ... | ②③ | commits 已包含目标 |
+-
+-## 损坏项 — 0 项
+-(无)
+-
+-## 报告元信息
+-
+-- 扫描时间:<ISO 时间>
+-- 扫描源路径:<abs 路径列表>
+-- 维度①时间阈值:3/7/30 天(可覆盖)— **写入用户实际生效值**
+-- 维度② fs 检查:enabled
+-- 维度③ commit 关键词匹配:enabled
+-- 报告路径:<abs path>
+-- 用户声明的参数:(如有:阈值 N 天 / 仅扫描 X / 等)
+-```
+-
+-#### 5.2 主上下文打印(用户看的那段)
+-
+-**只打印表格摘要 + 报告路径**,不打印明细(明细在文件里,用户 Read 复核或 grep)。摘要模板:
++**报告必含**: 工作区/扫描源/阈值(实际生效值+用户声明参数)/汇总表(总/完成/未完成/resume/archive/drop/损坏)/候选清单(按推荐动作: ✅resume/⚠️判断/🚫archive/❌drop/损坏,含 Task ID+Goal+Phase+Last Update+维度+证据)/元信息(ISO 时间/源路径/fs+commit 检查开关/报告路径)。
+ 
+-```
+-[plan-resume] 扫到 12 个 task-planner 计划(4 个未完成)
+-  ✅ 1 个推荐 resume:task-cext-ts-migration (Phase 3 in_progress, 5 天前)
+-  ⚠️ 1 个待你判断:task-X (12 天未动)
+-  🚫 2 个推荐 archive:task-Y / task-Z
+-  ❌ 1 个推荐 drop:task-W
+-完整报告: <abs path>/.zcode/plans/plan-resume-report.md
+-要不要继续?(仅 dry-run 模式输出此问句;自主推进模式不问——按 §7 直接续推至交付)
+-```
+-
+-### 6. 决策路由(v0.5:默认自主推进,不再等用户抉择) [A]
+-
+-报告输出后,按当前生效模式路由:
+-
+-**自主推进模式(触发点①②③ + `autonomous_resume: true`)**:不停止、不等用户选择——按 §7 打分选 Top 1,报告"选了哪个 + 为什么(score 细节) + 下一步动作",然后**调用方立即续推该计划**:Read 其三文件(task_plan/progress/findings)→ 定位下一 pending Phase → 按 task-planner 协议执行(含其 worktree 合约与 Executor 派发规则)→ **推进至交付**;途中执行级决策点(HANDOFF「待你决策」/二选一/`[awaiting-user]` 标记)按 §7.10 自主决策框架裁决并记录,**禁止停车站等用户**。续推期间每 Phase complete 后仍走 task-planner 的 DRIFT CHECK / plan-resume 被动扫描(此时为只报告)。
+-
+-**只报告模式(执行中扫描 / `autonomous_resume: false` / 用户本轮逃生)**:报告输出后**停止**,等用户响应:
++**主上下文(≤5 行摘要+报告路径)**: 仅 dry-run 模式末句问"要不要继续?";自主推进模式不问,直接按 §7 续推至交付。
+ 
+-| 用户响应 | skill 后续动作 |
+-|---------|---------------|
+-| "按推荐全部执行" | 主进程(或派 code-assistant)按推荐动作执行 — 但**仍需逐项确认** |
+-| "把 task-Y archive,task-Z 再等等" | 主进程 mv 到 plans/archive/,改 task-Z 的 Next Step 加 `[hold]` 标签 |
+-| "重新规划 task-W" | 主进程调 task-planner 新建 task_plan.md 覆盖 |
+-| "再看看 task-X 的 progress.md" | 主进程 Read 该任务 progress.md 提供更多上下文 |
+-| "续推 task-X" / 不回应 / 忽略 | 只报告模式下:用户点名才动;不回应=什么都不做(不强推) |
++### 6. 决策路由 [A]
++- **自主推进**(触发点①②③+config 开): 不停不等——§7 打分选 Top 1,报告"选了谁+为什么(score)+下一步",调用方立即续推: Read 三文件→下一 pending Phase→按 task-planner/worktree/Executor 执行→**推进至交付**;途中决策点按 §7.10 自主裁决并记录。续推期每 Phase complete 仍走 DRIFT CHECK/被动扫描(只报告)。
++- **只报告**(执行中/`autonomous_resume:false`/逃生): 停止等用户("按推荐全部执行"仍需逐项确认/"archive X"/"重新规划"/"看看 progress"/"续推 task-X"点名才动,不回应=不动)。
+ 
+-**用户否决权(两模式恒有效)**:用户本轮任何时点说"不要自动续推"/"停下"/"换一个",立即中止当前自主推进并回到只报告;被否决的计划写 `[hold]` 标记,本轮不再自动选中。
++**否决权恒有效**: 用户说"不要自动续推"/"停下"/"换一个"→中止并回到只报告;被否决计划记 `[hold]`,本轮不再选中。
+ 
+ ## 失败兜底
+-
+-| 现象 | 兜底 |
+-|------|------|
+-| plans/ 不存在 | 报告"工作区无 task-planner 计划",结束 |
+-| task_plan.md 损坏 / frontmatter 缺失 | 标 [corrupt],报告里单独列出,不替用户删 |
+-| git worktree list 调用失败 | 维度② 跳过 worktree 检查,只查 fs |
+-| commit log grep 无命中 | 维度③ 标 `[unique]`,默认续推 |
+-| 单个 Read 失败 | 跳过该文件,日志记一行,不阻断扫描 |
++plans/ 不存在→报告无计划并结束；task_plan 损坏/缺 frontmatter→`[corrupt]`单列不删；worktree list 失败→跳过② worktree 检查；commit grep 无命中→③ `[unique]`；单文件 Read 失败→跳过记日志不阻断。
+ 
+ ## 与其他 skill 的关系
++`task-planner`(只读,续推调其新建) / `task-drift-guard`(执行中漂移 vs 中断后盘点,互补) / `task-planner scripts/session-catchup.ts`(扫 session jsonl vs 扫文件系统,互补) / `todo-skill`(轻量 todo) / `memory-cleanup`(扫→判→报告结构类似)。
+ 
+-| Skill | 关系 |
+-|-------|------|
+-| `task-planner` | 本 skill 只**读取** task-plan 文件,不修改/不触发它的 hooks。续推时调它新建计划 |
+-| `task-drift-guard` | drift-guard 是"执行中检测漂移",本 skill 是"中断后盘点过期"。**互不替代** |
+-| `task-planner scripts/session-catchup.ts` | 该脚本扫 Claude session jsonl 找上下文断点;本 skill 扫文件系统找任务断点。互补 |
+-| `todo-skill` | todo-skill 是 Claude 内的轻量 todo 列表;本 skill 处理 task-planner 的长期计划文件 |
+-| `memory-cleanup` | memory-cleanup 处理记忆系统;本 skill 处理任务系统。结构类似(扫 → 判断 → 报告) |
+-| `agent-browser` / `Browser Automation` | 不涉及 |
+-
+-## 设计权衡(用户决策记录)
+-
+-- **恢复场景自主、执行场景克制**(v0.5):用户 2026-09-05 明确要求"自主选任务推进,不等用户抉择"——恢复触发点的等待被认定为体验缺陷;但执行中被动扫描仍只报告,防打断进行中工作(§四 漂移防护在续推计划自身的 Rule 24/guard 链路中保留)
+-- **多维度而非单时间**:单一时间维度误杀多(短任务快过期 / 长任务正常推进都可能被错杀),组合判定更稳
+-- **报告先写文件再打印摘要**:主上下文只承担摘要,明细落盘让用户可 Read 可 grep 可分享(顺带实现 §一"主上下文是稀缺资源")
+-- **不调 task-planner 的 hooks**:`check-scope.sh` 会阻断 PreToolUse 写入;本 skill 只读不写,绕开
++## 设计权衡(决策记录)
++恢复场景自主、执行场景克制(v0.5,用户 2026-09-05)；多维度判定(非单时间)；报告落盘+主上下文摘要(§一)；不调 task-planner hooks(只读)。
+ 
+ ## 参考
+-
+-- `scripts/scan-plans.sh` — 并发扫描所有计划位置(发到 `<plan-resume>/scripts/` 同步)
+-- `scripts/extract-meta.sh` — 单文件元数据提取(grep 实现,不依赖 jq/python)
+-- `scripts/score-plans.py` — 综合加权打分(out_degree 50% + git_hits 30% + 失败反比 20%;v0.4 引入)
+-- `scripts/select-and-resume.sh` — 自主推进编排(v0.5: config 驱动,默认自主;`--dry-run`/`--auto-push` 显式覆盖)
+-- `config.json` — **v0.5 新增** 自主推进开关与守卫阈值(§7.2)
+-- 用户宪法 `~/.zcode/AGENTS.md` §一(子代理优先)、§四(用户意图优先与防漂移)、§五(安全底线/跨项目隔离)、§十一(worktree 隔离)
++`scripts/scan-plans.sh` / `scripts/extract-meta.sh` / `scripts/score-plans.py` / `scripts/select-and-resume.sh`；`config.json`(§7.2 真源)；`references/critical-rules-resume.md`(Rule 24)；`references/autonomous-resume-detail.md`(§7 详细配置/打分/过滤/纪律/框架/兼容/风险)；宪法 `~/.zcode/AGENTS.md` §一/§四/§五/§十一。
+ 
+ ---
+ 
+-## §7 自主推进模式(2026-09-05 v0.5;由 v0.4 smart-resume 升级) [A]
+-
+-> **核心变更**: v0.4 旧契约"只扫描不执行,smart-resume 需显式 opt-in"在恢复场景下升级为**默认自主**: 恢复触发点命中即自动选 1 个最值得推进的计划 + 写 `[auto-pushed-by-cron]` 标记 + 调用方立即续推。授权来源从"每次调用方 prompt 显式声明"改为 **config.json `autonomous_resume`(默认 true)+ 会话级逃生**。
+-> **v0.6 增补(2026-09-06)**: 自主续推途中遇到计划内决策点(待你决策/二选一/`[awaiting-user]`)不再停车——按 §7.10 自主决策框架四项测试裁决并记录后继续,直至交付;仅"宪法 P0 / Goal 重定义 / circuit-break / 用户喊停"四类合法停点除外(§7.10)。
+-
+-### 7.1 触发条件与授权模型
+-
+-| 触发方 | 触发方式 | 生效模式 |
+-|--------|----------|----------|
+-| 会话启动无活跃计划(触发点①) | 初始化流程扫到中断计划且当前无 in_progress 计划 | 自主(config 开) |
+-| 用户恢复类指令(触发点②) | "继续上次任务"/"接着推进"等,未指明具体任务 | 自主(config 开) |
+-| 当前计划交付终态后(触发点③) | task-planner 终验交付 COMPLETE 后 | 自主(config 开) |
+-| task-planner Rule 24 执行中被动扫描 | 当前计划 Phase complete 后 | **只报告**(防打断进行中工作) |
+-| cron automation | `select-and-resume.sh --auto-push`(显式 flag,沿用) | 自主 |
+-| 显式 `--dry-run` flag / `autonomous_resume: false` / 用户说"不要自动续推" | — | 强制只报告 |
+-
+-**授权优先级**: 用户本轮口头指令 > `--dry-run`/`--auto-push` flag > config.json 默认。
+-
+-### 7.2 配置(config.json,与本 SKILL.md 同目录)
+-
+-```json
+-{
+-  "autonomous_resume": true,
+-  "max_auto_plans_per_trigger": 1,
+-  "cross_project_auto_resume": false,
+-  "skip_states": ["blocked", "hold", "user-vetoed"],
+-  "fresh_threshold_days": 7,
+-  "max_failure_count": 3
+-}
+-```
+-
+-| 键 | 默认 | 说明 |
+-|----|------|------|
+-| `autonomous_resume` | `true` | 自主推进总开关(v0.5 核心变更;false=退回 v0.4 全 dry-run 行为) |
+-| `max_auto_plans_per_trigger` | `1` | 单次触发自主续推上限,禁止调大(防上下文耗尽) |
+-| `cross_project_auto_resume` | `false` | **禁止改 true**——跨仓候选永远只报告(宪法 §五 跨项目隔离 P0),此键仅为显式表达禁令存在 |
+-| `skip_states` | blocked/hold/user-vetoed(v0.6 收窄) | 计划内出现这些状态标记(Phase Status/Next Step 标签)即硬排除,不参与打分。**`awaiting-user` 已移出**(v0.6):决策点是自主裁决对象非死端(§7.10);hold=用户显式搁置、user-vetoed=用户否决过,两者代表用户意图,继续尊重优先于自主 |
+-| `fresh_threshold_days` | `7` | 沿用 §7.4 过滤的 age 上限 |
+-| `max_failure_count` | `3` | Error Log 失败数上限,≥N 过滤 |
+-
+-脚本读取:`select-and-resume.sh` 启动时解析同目录 `config.json`(缺文件/缺键用上表默认值,不报错)。
+-
+-### 7.3 智能打分公式(用户 2026-09-04 拍板,v0.5 沿用)
+-
+-```
+-importance_score(plan) =
+-    0.5 × normalize(out_degree(plan), 0..max)
+-  + 0.3 × normalize(git_keyword_hits(plan), 0..max)
+-  + 0.2 × normalize(max(0, 5 - failure_count) / 5)
+-```
+-
+-- **out_degree(50%)** — plan 的 `block_id`(若无则用 task_id)被其他 plan 的 `depends_on` 引用次数。阻塞越多越重要。
+-- **git_keyword_hits(30%)** — plan Goal 段前 5 关键词在最近 7d `git log --oneline -i` 中的命中数。用户最近关注度。
+-- **failure 反比(20%)** — `failure_count` 来自 progress.md Error Log 段。失败越多分越低,≥3 次直接过滤。
+-
+-### 7.4 候选过滤(必须全部满足)
+-
+-| 条件 | 来源 | 不通过动作 |
+-|------|------|-----------|
+-| 真实 age ≤ `fresh_threshold_days`(默认 7d) | `git log -1 --format=%ct`,untracked 用 mtime | 跳过 |
+-| `all_complete = 0` | 含 `pending` 或 `in_progress` phase | 跳过 |
+-| 无 `skip_states` 状态标记 | phase `Status: blocked` / `[hold]` / `[user-vetoed]` 标签 | **硬排除**(v0.6 收窄:仅死端与用户显式意图;`[awaiting-user]` 不再排除——按 §7.10 自主裁决) |
+-| 非脚手架垃圾(v0.6 新增) | Goal 段(`## Goal` 后 3 行)含未展开模板占位符字面:`[一句话` / `$SITE` / `$ID` / `$RUNTS` | **硬排除**,报告记 `skip: scaffold-garbage`(L2 复发面封堵;仅查 Goal 段,防合法计划正文引用模板字面误伤) |
+-| `failure_count < max_failure_count` | progress.md Error Log 条目 | 跳过 |
+-| 计划位于 `--repo-root` 仓内 | scan-plans.sh 扫描源本就仓内相对 | 硬排除(跨项目候选只报告,v0.5 显式化) |
+-| 无 `[auto-pushed-by-cron]` | 防重入 | 跳过 |
+-| 无 `[circuit-break-by-cron]` | 防已熔断 | 跳过 |
+-| `## Goal` 段存在 | Read 头 30 行验证 | CIRCUIT-BREAK |
+-
+-### 7.5 推进纪律(circuit-break 一律熔断)
+-
+-- **单次触发最多 `max_auto_plans_per_trigger`(=1) 个 plan** — 用户 2026-09-04 拍板
+-- **推进前 Read 头 30 行** — 确认 Goal 不变(防 plan 已被人工改向)
+-- **推进 = 在 plan 头部写 `<!-- [auto-pushed-by-cron: <ts> mode=auto-resume score=<N>] -->` 标记**(标记 token 沿用 v0.4,防旧过滤逻辑失效)
+-- **选中后调用方立即续推**(v0.5 变更,取代 v0.4"只选+标记"):Read 该计划三文件 → 下一 pending Phase → 按 task-planner 协议执行;plan-resume 自身仍不直接改计划正文以外的文件
+-- **续推是"接着干",不是"重新决定"**:不得改 Goal/VC/范围;发现 Goal 需变更 = STOP 写 `[awaiting-user]` 交回用户(§7.10 合法停点之一)
+-- **途中决策点一律自主裁决**(v0.6 核心):HANDOFF「待你决策」/二选一/`[awaiting-user]` 标记 → §7.10 四项测试通过即裁即行 + 记录,禁止停车等用户
+-- **circuit-break 触发**(任一):
+-  - Phase 推进连续失败 ≥2 次
+-  - 子代理 30min 无产物
+-  - P0 投毒哨兵触发
+-  - 推进时检测到 plan Goal 已被人工改向
+-  → 立即停止,写 `[circuit-break-by-cron: <reason>]` 标记
+-- **不做的事**:
+-  - 不替用户 archive/drop plan(只标记候选)
+-  - 不读 / 改 /tmp、config/、.env* 等非 plans/ 文件
+-  - 不在自主续推里二次自主开新计划(交付后回到触发点③重新评估)
+-
+-### 7.6 报告输出(每次都写)
+-
+-`.zcode/plans/plan-resume-report-<YYYYMMDD-HHMM>.md` 包含:
+-- 扫描总数 / 候选数 / Top 1 score
+-- 候选 Top 列表(完整 score 细节)
+-- 推进模式(dry-run / auto-push)
+-- 推进结果(标记写入 / 跳过原因 / circuit-break)
+-- 自主裁决清单(v0.6 §7.10: 每项含裁决内容/依据/回滚路径,供用户事后审计与否决)
+-
+-### 7.7 与旧契约的兼容性
+-
+-| 调用方 | 默认行为 | v0.5 影响 |
+-|--------|----------|------|
+-| task-planner Rule 24 执行中被动扫描 | **dry-run** | 不变(防打断进行中工作) |
+-| 会话启动/恢复指令/交付终态后 | **自主续推 Top 1**(config 开) | **变更**:旧版此处也 dry-run 等用户点名 |
+-| 用户在主会话调 Skill("plan-resume") 且指明"只扫不动" | dry-run + 报告 | 不变 |
+-| cron `automation-ae80e75d` | **auto-push**(cron prompt 显式 flag) | 沿用,内部复用同一自主路径 |
+-| 显式 `bash select-and-resume.sh --auto-push` / `--dry-run` | flag 显式覆盖 config | 手动触发保留 |
+-| `autonomous_resume: false` | 全场景 dry-run | 等效 v0.4 行为 |
+-
+-→ **恢复场景自主化是默认**,执行中扫描保持只报告;`config.json` 一个开关可整体退回 v0.4。
+-
+-### 7.8 已知风险与缓解
+-
+-| 风险 | 缓解 |
+-|------|------|
+-| 误推 stale plan(mtime 不可信) | 用 `git log` 真实时间;untracked 用 mtime 但已记录 |
+-| 推进与 article-update cron 抢 plan | 推进前 Read 头 30 行 + `[auto-pushed-by-cron]` 标记防重入 |
+-| 自主续推接管了用户故意搁置的计划 | `skip_states` 硬排除 blocked/[hold]/[user-vetoed](v0.6 收窄);用户口头"不要自动续推"会话级逃生 |
+-| 自主裁决误判(v0.6 新风险) | §7.10 四项测试前置(T1 可逆性一票否决);每项裁决记录依据+回滚路径;用户事后可否决 → 记 `[user-vetoed]` 并按回滚路径还原;同计划连续误判 ≥2 → circuit-break |
+-| 用户撤回"auto-push"授权 | 删 plan 头部的 `[auto-pushed-by-cron]` 标记即可让下次 cron 重新评估;或 config 关总开关 |
+-| score-plans.py 选错 plan | 单次最多推 1 个,失败 circuit-break,下次重新评估 |
+-| ~~自主续推中途需要用户决策(计划本身 BLOCKED 点)~~(v0.6 废除此停点) | 执行级决策点按 §7.10 自主裁决继续;仅宪法 P0(保护区写入/凭据/不可逆破坏/跨项目)与 Goal 重定义仍停,停时交付「已完成裁决清单 + 精确授权请求包」,不空手停 |
+-| 推进后 plan 长期挂 [auto-pushed] 标记 | Phase complete 时由调用方清理标记 |
+-
+-### 7.9 用户决策记录
+-
+-| 决策 | 选择 | 理由 |
+-|------|------|------|
+-| 修改层级 | 改 skill 文件 | 用户明确说"当前技能文件存在严重的问题" |
+-| 选择策略 | 重要度优先(综合加权) | 比单维度更稳 |
+-| 执行边界 | 单次 ≤ 1 个 plan | 防上下文耗尽 |
+-| 安全护栏 | circuit-break 一律熔断 | 漂移防护,避免连环错误 |
+-| 打分公式 | out_degree 50% + git_hits 30% + 失败反比 20% | 综合三项关键信号 |
+-| **v0.5 自主化**(2026-09-05) | 恢复触发点默认自主续推,执行中扫描保持只报告 | 用户明确指令"模型自主根据分析选择需要推进的任务进行完成,而不是等待用户抉择";守卫(跨仓只报告/BLOCKED 跳过/单次 1 个/否决权)对冲自主风险 |
+-| **v0.6 决策自主化**(2026-09-06) | 途中决策点按 §7.10 框架自主裁决,不再停车等用户;`[awaiting-user]` 移出 skip_states;归档限已交付/垃圾脚手架逐条关账 | 用户明确指令"主动的分析哪些事没有做完,需要继续的,然后按照自动评估,然后自主的推进,而不是停下来等用户去决断。进行彻底的修复,确保以后不会再出问题";停点收窄为宪法 P0/Goal 重定义/熔断/用户喊停四类,自主边界不含范围重定义 |
+-
+-### 7.10 自主决策框架(2026-09-06 v0.6 — 决策自主化核心)
+-
+-自主续推途中遇到计划内决策点(HANDOFF「待你决策」/「待你授权」/二选一多选一/`[awaiting-user]` 标记)时,**不停车、不问用户**,按四项测试逐项判定;全部 PASS → 当场裁决、当场执行、当场记录,继续推进至交付。
+-
+-#### 四项测试(全部 PASS 才可自主裁决;任一 FAIL → 走「合法停点」流程)
+-
+-| # | 测试 | PASS 判据 | FAIL 示例 |
+-|---|------|----------|-----------|
+-| T1 | **可逆性** | 存在文档化回滚路径:备份/软状态(draft/archive)/git revert/`plans/archive/` 可移回 | 物理删除、trash 清空、凭据轮换、服务端硬删、不可逆 schema 变更 |
+-| T2 | **范围** | 动作落在该计划「执行范围限制」允许清单内,且服务 Goal 语义(不扩 scope) | 计划写明"仅切 publish_status"却去改正文;跨站点操作 |
+-| T3 | **宪法 P0** | 不写保护区(`~/.zcode/skills/**`、`~/.agents/skills/**`、`~/.zcode/agents/**`、AGENTS.md、基础设施配置);不涉凭据;不跨项目 | "授权可改"的保护区一行 diff——**仍然停**,技能无法自我授权(宪法 §六) |
+-| T4 | **先例一致性** | 与用户过往同类决策/显式反馈不冲突(memory 索引可查) | 用户否决过批量处置却选批量路径(先例: feedback-no-batch) |
+-
+-#### 裁决优先级(二选一/多选类决策点)
+-
+-1. **用户先例** — memory / 计划 Decisions Made 中用户对同类问题的既有裁决,直接沿用
+-2. **数据判据** — 用可量化事实裁决(内容价值、修复成本、流量数据、审计分数)
+-3. **保守可逆** — 无先例无数据时,选回滚成本最低的一侧(软下架>物理删除、draft>publish、备份后改>直接改、少动>多动)
+-
+-#### 记录义务(裁决即记账,缺一=违规)
+-
+-每项自主裁决三处落盘:① 计划 `Decisions Made` 表一行(裁决+理由+回滚路径) ② progress.md 动作留痕 ③ 本轮报告 §7.6「自主裁决清单」。用户事后可否决:否决 → 该计划记 `[user-vetoed]` + 按回滚路径还原。
++## §7 自主推进模式(摘要,详见 `references/autonomous-resume-detail.md`)
+ 
+-#### 唯一合法停点(自主推进中允许停的全部情形)
++> v0.5:恢复触发点默认自主(config `autonomous_resume`+逃生)。v0.6:决策点按 §7.10 自主裁决不停车；仅宪法 P0/Goal 重定义/circuit-break/用户喊停四类合法停点。
+ 
+-1. **宪法 P0 命中**(T3 FAIL)——停,同时交付「精确授权请求包」:待改文件 + 一行级 diff + 理由,用户一个"yes"即可解锁
+-2. **Goal/VC 需重定义**——范围变了,属用户决策(宪法 §四)
+-3. **circuit-break**(§7.5 五条件任一)
+-4. **用户本轮喊停**(否决权恒有效)
++### 7.1 触发与授权
++触发点①②③(会话启动无活跃/恢复指令/交付终态)→自主；Rule 24 执行中被动扫描→只报告；cron `--auto-push` 沿用。优先级:用户本轮口头 > `--dry-run`/`--auto-push` flag > `config.json`。
+ 
+-> 停止≠空手停:四类停点发生时,已完成的自主裁决照常交付,停点项打包成最小决策请求。**禁止**把 T1/T2/T4 可判定的决策点包装成"待用户确认"——那正是 v0.6 废除的行为(用户 2026-09-06 原话:"停下来等用户去决断"即本技能要修复的缺陷)。
++### 7.2-7.6 机制要点
++配置见 `config.json`/参考文档(`cross_project_auto_resume` 禁 true)。打分: `0.5*out_degree + 0.3*git_keyword_hits + 0.2*failure反比`。过滤: age≤阈值、未全完成、无 blocked/hold/user-vetoed、非脚手架垃圾、失败<上限、仓内、防重入/熔断、Goal 存在；`[awaiting-user]` 不排除。纪律: 单次≤1、推进前 Read 头 30 行确认 Goal、写 `[auto-pushed-by-cron]`、调用方立即续推至交付、途中决策点 §7.10 裁决；circuit-break(连续失败≥2/30min 无产物/P0 投毒/Goal 被改向)→写 `[circuit-break-by-cron]` 停。报告: `.zcode/plans/plan-resume-report-<YYYYMMDD-HHMM>.md` 含 score/结果/自主裁决清单。
+ 
+-## 卫星路由：plan-resume — 域=计划续推（Rule 24）
++### 7.10 自主决策框架(v0.6)
++遇「待你决策/待你授权/二选一/`[awaiting-user]`」**不停车**。四项测试全 PASS 才裁决执行并记录: **T1 可逆性**(有回滚路径,一票否决)/ **T2 范围**(在计划允许清单内且服务 Goal)/ **T3 宪法 P0**(不写保护区/不涉凭据/不跨项目,技能无法自授权)/ **T4 先例一致性**。优先级:用户先例→数据判据→保守可逆。三处落盘(Decisions Made+progress+报告裁决清单)。合法停点仅四类(P0/Goal 重定义/circuit-break/用户喊停),停时交付已完成裁决清单+最小决策请求,**禁止**把可判定决策包装成待确认。
+ 
+-规则全文见 references/critical-rules-resume.md（Rule 24 plan-resume 被动扫描与自主续推，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及计划中断扫描触发时机（Phase complete 派发 drift-checker 前/交付终态/会话恢复）或续推行为契约（执行中只报告、恢复点自主续推 Top 1、守卫与降级例外）时 Read 该文件。
+\ No newline at end of file
++## 卫星路由：plan-resume — 域=计划续推(Rule 24)
++规则全文见 `references/critical-rules-resume.md`(Phase complete/drift-checker 前/交付终态/会话恢复触发时机、执行中只报告/恢复点自主续推 Top 1、守卫与降级)。涉及触发/续推契约时 Read 该文件。
+diff --git a/skills/task-discipline/references/critical-rules-discipline.md b/skills/task-discipline/references/critical-rules-discipline.md
+index 9758554..12de41e 100644
+--- a/skills/task-discipline/references/critical-rules-discipline.md
++++ b/skills/task-discipline/references/critical-rules-discipline.md
+@@ -52,6 +52,7 @@
+ 28.1 **模式定义与解析优先级**:两种模式——`ask`(默认:关键决策点给选项供用户选)与 `silent`(静默:不询问、自主决策、登记清单)。解析优先级:env `TASK_PLANNER_INTERACTION_MODE` > 当前计划配置表 `interaction_mode` 行 > `../../task-planner/config.json#interaction_mode` > 默认 `ask`;非法值视同缺失,降级到下一级;用户会话中口头切换("接下来静默执行"/"问我")优先于一切既设值,切换后须 S5 回写计划配置表。
+ 28.2 **ask 模式询问点(D1-D6)**:D1 计划批准——展示计划后等待显式 yes(门形态保持;完成性指令/单步机械指令场景按 44.3 超时自动通过并登记自动裁决记录五要素,D2/D5/D6 不适用本款);D2 方案分叉——实现存在 ≥2 条合理路径且影响交付物形态/范围/兼容性 → AskUserQuestion;D3 兜底前移——22.3 链走到 ③ 降档前(② 拆细已失败)即询问"继续拆细/换方向/降档"(Recommended=按序继续降档,保持挽救链推进;silent 模式按推荐项继续不中断);D4 范围外需求——执行中发现需触碰 scope 外文件/引入新依赖/改 schema → 询问;D5 歧义指令——用户指令存在 ≥2 种合理解读且影响交付 → 询问；**可判定触发**（机器可判部分）：指令含新站点/域名/平台名词且与当前计划 Goal 零交集 / 指令含指示词（「其他」「另外」「换个」「别的」）+新对象词且与 Goal 零交集 / 指令宾语从 Goal 宾语变为另一宾语 —— 任一命中 = 目标歧义 = 必须询问，禁止自行解读执行;D6 既有硬停点——22.7 连续失败 STOP/Rule 11 drift BLOCKED/Rule 26 Q3/§五 破坏性操作确认,ask 模式硬停不可静默豁免;silent 模式下按 28.4.1 降级交付不空等。；**mini 档缺省 silent（[task-v094 T-B3]）：plan_tier=mini 且未显式声明 interaction_mode 时 resolve 层 ②b 直接 silent（env/计划行显式仍优先），简单任务免 D1 往返，静默决策清单留痕供复核**
+ 28.2.1 **ask 模式执行思路复述(D1 批准前置,task-v070)**:ask 模式展示计划(D1)时,**必须**在计划全文之后口头复述「大体执行思路」(≤5 行:Phase 序列与各自一句话目标 / 主要子代理执行体与模型档位 / 关键门控点 D2-D6 与失败兜底路径 / 隔离与合并策略(worktree 或 direct)/ 预估交付节奏与终验方式),使**不查计划文档也能理解整体工作流程**——用户看完即知"接下来会发生什么",无需逐行读 task_plan.md;复述后仍等待显式 yes 才进入 attest 锁定(复述是补充,不替代 D1 门控)。复述内容必须与计划实际一致(Phase/Executor/门控逐项可对照),禁止复述出计划外的承诺(对齐 §三 反造谣铁律:复述 = 计划摘要,不是新决策)。复述完成登记 Decisions Made 一行(`思路复述已呈示,<时间>`,防口头不留痕)。silent 模式不适用本条(28.4 决策清单已提供等效复核入口;若用户会话中口头要求"复述思路"→ 满足后继续,登记 Decisions Made)。Why:计划文档是执行事实源但阅读成本高,口头复述是低成本的"流程预知层",把"批准"从"信任落盘文档"升级为"理解即将发生的事",压缩执行中才发现方向不符的返工面。
++28.2.2 **指令理解迭代草稿与歧义门控(执行前方向对齐,task-intent-iter-20261117)**:复述/接收用户指令后、进入实质执行或计划细化前,完成 3-4 轮「理解迭代草稿」(粗稿非定稿)以暴露方向并支持早纠偏——① 原始指令复述(锚定逐字原话/user-session-log,冲突以原话为准,Rule 51.1/80.1) ② 模型理解(目标/对象/范围/约束/验收期望+明确「不做什么」排除项) ③ 模型思路与候选(简述推导并做歧义门控判定) ④ 大体执行方向(阶段/步骤预判与验收口径,不得作计划外承诺)。**歧义门控**:指令目标/对象/范围/交付明确且存在唯一明显合理低风险默认路径=理解明确→明确写出「无实质歧义,按<默认路径>推进」,**不因本模块新增阻塞确认/停等**(明确任务免无价值询问);存在多种合理解读、或≥2 个候选方案/路径(典型 3-4)且取舍影响方向/范围/交付/风险、或关键对象/范围不明且无可验证默认→列 2-4 选项,首选标 (Recommended) 置顶并写明理由权衡(28.3/Rule 72),**仅此时请求用户确认/选择**。**模式与时机**:ask 模式须展示 3-4 轮草稿供纠偏,无歧义时提示「若理解有偏请指出」后继续推进,有歧义时按选项确认;silent 模式、goal 强制自治(28.8)、44.3 超时自动通过及 mini 缺省 silent(②b)下不做多轮阻塞等待——完成理解收敛并结构化留痕(user-session-log 理解镜像/计划理解区块/Decisions Made),歧义按推荐项与可逆安全默认自决并登记假设。**goal/目标迭代优先覆盖(28.8, P0)**:goal 语境下 28.2.2 的 ask-选项确认分支**一律不适用**——无论明确或歧义/多候选/范围待裁决,均**禁止**向用户提问/列选项请求确认/等待回复,按推荐项或可逆安全默认静默自决并留痕后直接继续推进(28.4/44.3/66.2 同面),同问禁复发;歧义门控仅用于内部收敛与留痕假设,不得外化为阻塞询问。**D6/不可逆高风险/真分叉硬停仍按既有规则不可豁免**(goal 下硬门仅单次降级收口停止,禁循环重问)。L1+ 任务该迭代结果须作为计划起草输入并在计划确认链路可见(与 109 审计门协调:理解草稿=意图对齐材料,非计划交付承诺)。**边界**:与 28.2.1 分工(28.2.2=意图理解与方向草稿,28.2.1=已成计划执行思路摘要)互补不替代;不替代 D1 门控/109/目标绑定/attest;草稿须与用户原话及后续计划实际一致,禁止复述计划外承诺(§三 反造谣),理解镜像非权威对照面(80.7)。留痕:登记 Decisions Made 一行(如 `理解迭代草稿已呈示(明确|歧义待确认),<时间>`)。Why:判例=sess_105b4097(“模板体系升级”被误解跑偏)+用户裁决“明确任务不无谓确认,歧义/多候选才沟通”——前置暴露理解与方向,消除无价值打断；goal 下阻塞询问致空转复发(sess_ba603cf5)根治需 28.8 显式覆盖 28.2.2。
+ 28.3 **询问规范**:每次 AskUserQuestion 带 2-4 个选项,首选标 (Recommended) 置顶并写明理由与权衡(对齐用户宪法 §四 选项呈现规范);能选项化必须选项化,禁止开放提问代替选择题;用户答案回填 Decisions Made 表(问题+选择+时间),防止口头决策不留痕。
+ （task-v160）选项呈报按 Rule 72 分级：A 级（推翻已确认计划要素/不可逆/对外）必须询问；B 级默认项+自动超时；C 级禁问。
+ 28.4 **silent 模式语义**:除 D6 外不调用 AskUserQuestion;每个被跳过的询问点按"推荐项"自主决策,并登记「静默决策清单」——Decisions Made 表加 `silent:` 前缀行(决策+假设+复核入口);交付报告必须附清单供用户复核;用户保留随时打断与切换权。Why:方向性错误在分叉点被拦截(ask)或被显式登记供复核(silent),两端都压缩"执行到底才发现错"的返工面。
+diff --git a/skills/task-dispatch/references/critical-rules-dispatch.md b/skills/task-dispatch/references/critical-rules-dispatch.md
+index 74e4424..68f0cb6 100644
+--- a/skills/task-dispatch/references/critical-rules-dispatch.md
++++ b/skills/task-dispatch/references/critical-rules-dispatch.md
+@@ -88,12 +88,12 @@
+ 
+ 23.1 **检测时机**:plan 创建时(run check-conflicts.sh --runtime)+ 每次 PreToolUse 写入时
+ 23.2 **四级冲突**:A 同文件(scope_files 交集非空,硬)/ B 同 worktree 路径(硬)/ C 同 task-id/plans 目录重名(硬)/ D 环境信号(软,复用现有五信号)
+-23.3 **规避建议**:A/B/C 级 → 串行或新建 worktree/改名;D 级 → 处理信号后继续
++23.3 **规避建议**:A/B/C 级 → 串行或新建 worktree/改名;D 级 → 记录后继续。**worktree 内执行期**：A-D 级冲突/注入均仅作合并期收口记录，不中断执行、不向用户询问 scope，统一延后至合并回阶段(smart-merge-back V3/V5/V6, Rule 101.2)解决
+ 23.4 **session_id 必须写进 frontmatter**(注册表追踪,Rule 23.5 前提)
+ 23.5 **scope_files 必须从「执行范围限制」解析**(交集检测基础,Rule 23.2 前提)
+ 23.6 **fan-out 必须含 Aggregator Phase**(check-complete.sh 硬校验,否则 exit 1)
+ 23.7 **注册表心跳**:sync-todos.sh --index 每 10 次工具调用自动刷新一次,保持 INDEX.md 活跃 plan 最新
+-23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集
++23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集并注入 `[conflict]` 记录（仅合并期处理，worktree/执行期不打断、不询问）
+ 
+ 23.9 **并行创作组声明面（intra-plan 单元 manifest — 衔接 Rule 21.4/21.4.1/47/49，纯增补；task-v130）**:把「场景段落/关键帧批/资产批」建模为创作单元 Unit，每个 Unit 一条工序链 lane（写词→生成→质检→放行→组装）；并行单位=Unit（lane），Unit 内工序强串行。三层声明面：① frontmatter `parallel_groups: [<unit-id>,...]`（组名=创作单元 id）∧ `lanes: [...]`（单元线名册，Rule 49），**一次性声明全部 lane**（frontmatter 受 SHA-256 attest 锁定 Rule 20，执行期追加触发重锁）；② S-unit 表（22.6）增「单元/并行组」列，每行填 `[parallel-group:<unit-id>]`（Rule 21.4 机器可消费组标记，check-dispatch.sh 消费；check-plan-dispatch.sh 只硬校验「执行体」列，加列安全）；③ task_plan.md「📐 创作单元并行表（Lane 状态表）」区块（Rule 49.1，主进程单写者）——列=单元 id/工序链/当前工序/前置 S-unit/前置验收证据/组标记/共享引用集/预估烧秒/状态/最后推进时间。
+ 23.10 **单元级冲突检测清单（两 Unit 可并行 ⇔ 独立性四问全 no）**:① 文件集相交——写集∩写集≠∅→串行（产出命名空间隔离：每单元写自己的 `output/<ep>/<unit>/` 与 `tmp/<task>/<unit>/`，禁两单元写同一文件）；② 资源相争——同 worktree/分支、同交付物、同计划文件锚点、同预算 piece_id、同 NAS/VERSIONS.md、**同额度窗口**（生成额度=全局共享资源，Σ 在飞 lane 预算 ≤ 当日剩余额度，AGENTS 约束 4）→串行；③ 输入依赖——u2 输入含 u1 产物→串行（21.4 串行保留场景①）；④ 验收依赖——u2 验收需 u1 结果→串行（21.4 场景④，汇合/Aggregator 等齐）。**项目专属冲突类（必须显式枚举，不能只靠通用四问）**：a) 锚件换代（换装/装备变体/母图重抽，共享且可变）→强串行+冻结锁（见 23.12⑥）；b) 同场景组连续成片（AGENTS 约束 9「≤12s 场景组连续成片」）→同场景组镜头=同一 lane 内串行，跨场景组可并行；c) 同单元内 生成→质检→放行→视频 工序依赖→强串行；d) 人工门（草稿门约束 14/试水门约束 16/G1）→lane 内屏障不可并行越过（跨 lane 可同批呈示，降低用户打断次数）；e) 生成额度→资源相争的媒体实例。
+diff --git a/skills/task-planner/SKILL.md b/skills/task-planner/SKILL.md
+index 4358d72..ef4ab78 100644
+--- a/skills/task-planner/SKILL.md
++++ b/skills/task-planner/SKILL.md
+@@ -79,10 +79,11 @@ model: opus
+ 
+ - [ ] [A] **计划确认**
+   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）
+-  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：（注意：前置的计划独立审计门不适用本款——审计未达标禁自动放行，Rule 109）完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
+-  - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认（该确认等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
++  - **指令理解对齐（Rule 28.2.2）**：计划确认前须已完成/呈示 3-4 轮理解迭代草稿（原始指令→理解→思路与候选+歧义门控→大体方向，粗稿非定稿）以暴露方向供纠偏。**goal/目标迭代（28.8）优先覆盖**：明确或歧义/多候选均**禁止**向用户提问/列选项请求确认/等待回复，按推荐项或可逆安全默认静默自决并留痕后直接继续推进（歧义仅内收敛+登记假设）；同问禁复发，D6/§六 不可越权硬门仅单次降级收口停止。**非 goal**：明确任务不因本模块新增停等确认（无歧义时提示可纠偏后继续），仅歧义/多候选(典型3-4)或关键范围不明时按选项确认（28.3）；silent/44.3 自动通过/mini 缺省 silent 场景按 28.2.2 降级留痕与推荐项自决，不做多轮阻塞。
++  - **门控**：**goal/目标迭代（28.8）** 下 D1（计划批准）属可裁决点——**禁止**等待/询问用户 yes，按推荐项（已展示计划执行）静默自治批准并登记自动裁决记录五要素后直接执行后续链路（含 attest/清哨兵，受 Rule 109 审计门未达标禁自动放行约束；D6/§六 不可越权硬门例外）。**非 goal**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：（注意：前置的计划独立审计门不适用本款——审计未达标禁自动放行，Rule 109）完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
++  - **目标绑定确认（D1 升级，P0）**：D1 批准前，必须完成目标绑定——复述/落盘「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并形成确认锚；attest-plan.sh 锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**goal/目标迭代（28.8）**：按推荐项静默自治完成绑定与确认锚登记，**禁止**等待用户确认/回复；**非 goal**：须等用户确认（该等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）。**禁止**在确认锚（显式/自治登记）形成前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的确认锚，缺确认锚不认。
+   - Spec 模式前置：命中 `references/spec-mode.md` §1 触发判定时，确认 spec 产物路径已登记（记录者收据）方可进入 yes/attest
+-  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，不可越权硬门仅单次阻塞降级收口禁空转（见 critical-rules-discipline 28.8/44.3/44.5）
++  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行，28.2.1）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，不可越权硬门仅单次阻塞降级收口禁空转（见 critical-rules-discipline 28.8/44.3/44.5）
+   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
+ 
+ - [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
+@@ -203,7 +204,7 @@ model: opus
+ 
+ ### 🆕 用户新指令处理（计划影响判定 — 强制）
+ 
+-**新指令统一收口序列（强制，单入口定序）**：① 逐字落盘 user-session-log.md（80.1，含理解镜像 80.7）→ ② D/A/B/C/E 判定（判定前先过 8.1.2 入站预检：疑似误发/项目定位明显错位 → 先分析偏移点并询问是否纠正，再判定；下表；A 类无影响=走 ①② 后登记一行即完成，③-⑤ 仅 B/C/D/E 适用；E 类目标切换先过确认门、用户 yes 后按 D 处置再进序列）→ ③ 计划文档同步（task_plan/progress/需求锚）→ ④ Todo S5 重映射 → ⑤ 触发修改轮时衔接 Rule 103.6 同步完整性审查。两义务一体执行、顺序不可倒置（记录先于转译，防转译覆盖原话）；禁拆散单做（漏序=缺口）。
++**新指令统一收口序列（强制，单入口定序）**：① 逐字落盘 user-session-log.md（80.1，含理解镜像 80.7）→ ② D/A/B/C/E 判定（判定前先过 8.1.2 入站预检：疑似误发/项目定位明显错位 → 先分析偏移点并询问是否纠正，再判定；下表；A 类无影响=走 ①② 后登记一行即完成，③-⑤ 仅 B/C/D/E 适用；E 类目标切换先过确认门、用户 yes 后按 D 处置再进序列）→ ③ **指令理解迭代（Rule 28.2.2，执行前方向对齐）**：完成 3-4 轮理解迭代草稿（原始指令复述→模型理解[目标/范围/约束/不做什么]→模型思路与候选+歧义门控→大体执行方向，粗稿非定稿）并按模式处理。**goal/目标迭代（28.8）优先覆盖**：无论明确或歧义/多候选，**禁止**向用户提问/列选项请求确认/等待回复，直接按推荐项或可逆安全默认静默自决并留痕后继续（歧义仅内收敛+登记假设），同问禁复发（D6/§六 不可越权硬门仅单次降级收口停止）。**非 goal**：ask 模式展示供早纠偏，无实质歧义时不因本模块新增阻塞确认（提示可纠偏后继续），有歧义/多候选(典型3-4)时才按选项确认（28.3）；silent/44.3 自动通过/mini 缺省 silent 下不阻塞等待，收敛并留痕且歧义按推荐项与可逆安全默认自决→ ④ 计划文档同步（task_plan/progress/需求锚）→ ⑤ Todo S5 重映射 → ⑥ 触发修改轮时衔接 Rule 103.6 同步完整性审查。两义务一体执行、顺序不可倒置（记录先于转译，防转译覆盖原话）；禁拆散单做（漏序=缺口）。
+ 
+ **意图切换快速判定卡（新指令首动作，先于 A/B/C 细分）**：⓪ 前置预检（8.1.2）：指令任务类型/交付物与项目定位、当前任务域、最近原话三源比对——明显错位或疑似误发 → 先输出≤5 行分析（意图+偏移点）并询问是否纠正（澄清优先，86.4 三件套），确认后回落下方判定；无错位 → 直接进判定（[align-scan] 留痕）。提取新指令的「Goal/范围/交付物」三要素，与当前活跃计划 Goal 行及 user-session-log.md 最新原话比对——三要素均无交集 → 立即判 **D 类新任务边界**，按下方「意图切换执行清单」处置（禁吸收进当前计划）；含可判定换目标信号（新站点/域名/新对象词/宾语变更）→ **E 类**先确认再切换；有交集 → 回落 A/B/C 常规判定。
+ 
+@@ -225,7 +226,7 @@ model: opus
+ 
+ ### 🔀 冲突分析与工作树隔离（默认首选）
+ 
+-**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险；仅纯文档/调研类（只写 plans/ 与 .md）可直接开发；用户显式否决才直接开发。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」随计划展示；隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验。合约详见 `references/worktree-isolation.md`。
++**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险；仅纯文档/调研类（只写 plans/ 与 .md）可直接开发。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」并**默认按隔离执行，不就该安全默认向用户发起确认/询问**；仅当用户**显式**要求“直接改不用 worktree”且命中 AGENTS.md §11.5 豁免条件时才直改并登记理由。**创建前先 git 备份主仓未提交改动**（推荐 `git -C <project> stash push -u -m "pre-wt-backup:<task-id>" -- . ':(exclude)plans' ':(exclude)tmp'`，引用登记隔离决策；已干净则跳过）以稳定基线并利于合并回。隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/；**worktree 执行期不因并行冲突/Rule 23 `[conflict]` 注入而中断或询问，冲突仅记录、统一延后至合并回阶段**（`smart-merge-back.sh` V3/V5/V6 + Rule 101.2）解决。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（按需恢复备份前先重跑同落点盘点）。合约详见 `references/worktree-isolation.md`。
+ 
+ ## 投诉响应协议与 L0 边界审查（[task-perf-opt 2026-10-13 Change #10]）
+ 
+@@ -281,7 +282,7 @@ Rules 1-110 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,8
+ 
+ ## I/O 契约
+ 
+-输入=任务描述/CWD/已有 plan（恢复时用）；输出=规划→plan+思路复述（28.2.1，ask 模式）/执行→checkbox+错误/完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败→AskUserQuestion（交互模式语义见 Rule 28）。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh "<任务名>"`。机器面=`scripts/schemas/check-delegation-stats.schema.json`（check-delegation stats JSON 契约）+ `scripts/verify_io.sh <plan-dir>`（7 文件在位 + delegation stats JSON 断言，`scripts/selftest-verify-io.sh` 守护，task-v189 F11 修复）
++输入=任务描述/CWD/已有 plan（恢复时用）；输出=规划→理解迭代草稿（28.2.2，3-4轮：明确免无价值确认、歧义/多候选才确认）+plan+思路复述（28.2.1，ask 模式）/执行→checkbox+错误/完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败→AskUserQuestion（交互模式语义见 Rule 28）。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh "<任务名>"`。机器面=`scripts/schemas/check-delegation-stats.schema.json`（check-delegation stats JSON 契约）+ `scripts/verify_io.sh <plan-dir>`（7 文件在位 + delegation stats JSON 断言，`scripts/selftest-verify-io.sh` 守护，task-v189 F11 修复）
+ 
+ ## Chain 模式与协同路由（指针）
+ 
+diff --git a/skills/task-planner/config.json b/skills/task-planner/config.json
+index a83e5ed..2cd1f2d 100644
+--- a/skills/task-planner/config.json
++++ b/skills/task-planner/config.json
+@@ -56,7 +56,7 @@
+         "silent"
+       ],
+       "default": "ask",
+-      "description": "交互模式（Rule 28）：ask=关键决策点(D1-D6)给选项供用户选择，且 D1 批准前按 28.2.1 口头复述大体执行思路（≤5 行）；silent=静默自主决策并登记静默决策清单(Decisions Made 表 silent: 前缀行)供交付复核。解析优先级: env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > 本键 > 默认 ask；D6 硬停点(连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认)两模式一致不可豁免"
++      "description": "交互模式（Rule 28）：ask=关键决策点(D1-D6)给选项供用户选择；执行前按 28.2.2 完成 3-4 轮理解迭代草稿（明确任务免无价值确认/歧义或多候选才选项确认）并在 D1 批准前按 28.2.1 口头复述大体执行思路（≤5 行）；silent=静默自主决策并登记静默决策清单(Decisions Made 表 silent: 前缀行)供交付复核。解析优先级: env TASK_PLANNER_INTERACTION_MODE > 计划配置表 interaction_mode > 本键 > 默认 ask；D6 硬停点(连续失败 STOP/drift BLOCKED/Q3/破坏性操作确认)两模式一致不可豁免"
+     },
+     "dispatch_contract_enforce": {
+       "type": "string",
+diff --git a/skills/task-planner/references/critical-rules.md b/skills/task-planner/references/critical-rules.md
+index 03f2b1e..134e203 100644
+--- a/skills/task-planner/references/critical-rules.md
++++ b/skills/task-planner/references/critical-rules.md
+@@ -7,7 +7,7 @@
+ 本文件 = task-planner **核心技能**规则全集，只管**四文件罗盘域**：`task_plan.md` / `findings.md` / `progress.md` / `knowledge-brief.md` 四文件的计划制作与记录文档管理（Rule 19/20/62），及用户会话逐字记录专档 user-session-log.md（Rule 80）。
+ 
+ ### 1 先规划，再执行
+-创建 `task_plan.md` → 展示计划 → 等 "yes" → 执行。**D1 超时口径（Rule 44.3 衔接，2026-10-22 用户授权 task-videop1-protectfix-001 P3）**：完成性指令/单步机械指令场景下，D1 计划批准门允许按 44.3 超时自动通过（超时时长沿用 44.1 默认 5 分钟，默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍须等待用户答复，不适用本款。本条取代「D1=只等显式 yes、无超时出口」的保守口径——保守执行体不再只能无限等 yes（审计判例 F5：D1 与 44.3 冲突致停摆死等）。指针：44.1/44.3 全文见卫星 `../../task-discipline/references/critical-rules-discipline.md` Rule 44（核心域只载本规则的应用口径，不镜像卫星正文）。
++创建 `task_plan.md` → 展示计划 → 等 "yes" → 执行。执行/计划细化前按 Rule 28.2.2 完成 3-4 轮理解迭代草稿（方向对齐）。**goal/目标迭代（28.8）优先**：goal 语境下澄清、理解迭代歧义、计划批准/D1 等可裁决点一律不向用户提问、不等待确认，按推荐项/可逆安全默认静默自决并留痕后继续（28.2.2 的 ask-选项确认分支与常规“等 yes”在 goal 下不适用；D6/§六 不可越权硬门仅单次降级收口停止）。**非 goal 的 ask 模式**：明确任务不因本模块新增阻塞确认，歧义/多候选才选项确认。**D1 超时口径（Rule 44.3 衔接，2026-10-22 用户授权 task-videop1-protectfix-001 P3）**：完成性指令/单步机械指令场景下，D1 计划批准门允许按 44.3 超时自动通过（超时时长沿用 44.1 默认 5 分钟，默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）；真分叉（D2/D5）与破坏性动作（D6 硬停点）在非 goal 语境下仍须等待用户答复，不适用本款（goal 语境按 28.8/44.3 goal 补充自治推进，D6 例外）。本条取代「D1=只等显式 yes、无超时出口」的保守口径——保守执行体不再只能无限等 yes（审计判例 F5：D1 与 44.3 冲突致停摆死等）。指针：44.1/44.3 全文见卫星 `../../task-discipline/references/critical-rules-discipline.md` Rule 44（核心域只载本规则的应用口径，不镜像卫星正文）。
+ 
+ ### 2 PreToolUse 强制阻断
+ `task_plan.md` 不存在时 `check-scope.sh` 返回 exit 2，hook 阻止非初始化写入。
+diff --git a/skills/task-planner/references/worktree-isolation.md b/skills/task-planner/references/worktree-isolation.md
+index 2633bc3..0af161e 100644
+--- a/skills/task-planner/references/worktree-isolation.md
++++ b/skills/task-planner/references/worktree-isolation.md
+@@ -6,24 +6,24 @@
+ 
+ `bash scripts/check-conflicts.sh` → 五类信号（exit 0 安全 / 1 有风险）：
+ 
+-| 信号 | 含义 | 权重 |
+-|------|------|------|
+-| ① 未提交变更 | 与任务范围重叠会互相踩踏 | 直接开发必须先向用户报告并获认可 |
+-| 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。 | | |
+-| ② 额外 worktree | 可能有并行工作 | 强烈建议隔离 |
+-| ③ 遗留 wt/* 分支 | 未合并的隔离工作 | 先问用户：合并/废弃 |
+-| ④ INDEX 待处理任务在册 | 并行会话可能同时推进 | 建议隔离 |
+-| ⑤ 运行中基础设施改动 | 改动即影响所有会话 | 强烈建议隔离 |
++| 信号 | 含义 | 处置（默认不打断执行） |
++|------|------|------------------------|
++| ① 未提交变更 | 与任务范围重叠会互相踩踏 | 实现类任务默认隔离：创建 worktree 前按 §4 ①-备份 清理/备份主仓改动并登记，执行期不打断；合并期按 §4/§6 + V3 解决 |
++| 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项（呈报记录，不因此向用户发起是否隔离/是否继续的确认）。 | | |
++| ② 额外 worktree | 可能有并行工作 | 记录并行态；实现类任务仍默认隔离执行，不打断 |
++| ③ 遗留 wt/* 分支 | 未合并的隔离工作 | 登记遗留状态；不阻断本任务隔离执行，合并/清理由对应任务收口 |
++| ④ INDEX 待处理任务在册 | 并行会话可能同时推进 | 记录并行态；实现类任务仍默认隔离执行，不打断 |
++| ⑤ 运行中基础设施改动 | 改动即影响所有会话 | 记录风险；实现类任务默认仍隔离推进，不打断 |
+ 
+-结果 + 决策写入 task_plan.md「🔀 隔离决策」区块，随计划展示给用户。
++结果 + 决策写入 task_plan.md「🔀 隔离决策」区块，随计划记录（实现类默认直接执行，不就隔离/冲突向用户发起确认询问；执行期冲突仅记录、合并期解决）。
+ 
+ ## 2. 决策矩阵
+ 
+ | 任务类型 | 默认 | 说明 |
+ |----------|------|------|
+-| 实现类（代码/配置/基础设施/技能） | **worktree** | 用户未否决即隔离 |
+-| 纯文档/调研/计划类（只写 plans/、.md） | direct | 不影响运行行为;用户要求时仍可隔离 |
+-| 信号⑤ 命中（基础设施有未提交改动） | worktree + 强烈建议 | 或先请用户处理未提交变更 |
++| 实现类（代码/配置/基础设施/技能） | **worktree** | 默认隔离并直接执行；**禁止**就该安全默认向用户发起确认/询问。仅用户**显式**要求“直接改不用 worktree”且命中 AGENTS.md §11.5 豁免时才直改并登记理由 |
++| 纯文档/调研/计划类（只写 plans/、.md） | direct | 不影响运行行为；用户显式要求时仍可隔离 |
++| 信号⑤ 命中（基础设施有未提交改动） | worktree + 强烈建议 | 默认仍按隔离推进并呈报风险/看点；仅在用户显式豁免且合规时才不隔离 |
+ | 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。 | | |
+ 
+ ## 3. 路径规范（消除散落 — 2026-08-29 立；2026-11-04 修订为 Rule 100 内放）
+@@ -48,6 +48,12 @@
+ ## 4. 生命周期（最小命令集）
+ 
+ ```bash
++# ①-备份(前置): 主仓存在未提交变更时先做 git 备份,使主仓工作区干净、worktree 从稳定基线(main)创建,避免并行改动干扰且降低合并期 V3(scope 重叠)误拦
++#    推荐(保留 plans/ 与 tmp/ 等会话协调/临时目录,仅备份其余改动): 
++#      git -C ${PROJECT_ROOT} stash push -u -m "pre-wt-backup:<task-id>" -- . ':(exclude)plans' ':(exclude)tmp'
++#    备份引用(如 stash@{0}/摘要)登记「隔离决策」;主仓已干净则跳过。⑥ 收尾后按需恢复(恢复前重跑 6.1 同落点盘点)。
++#    注: worktree 自 main 创建已天然隔离于主仓工作区;①-备份用于清理主仓脏状态与稳定合并回,非 worktree 内容来源。
++
+ # ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>;前置: ${PROJECT_ROOT}/.gitignore 含 tmp/ (Rule 100.2))
+ git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
+ 
+@@ -57,7 +63,7 @@ git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
+ #    任一不一致 = 禁止开发，从主工作分支同步正确版本后重校，校验结果登记「隔离决策」区块（规则版本锚）；
+ #    创作与审查必须同一规则版本快照，禁按旧规创作/按新规判 FAIL（判例 EP34 BLOCKER 纯流程性返工）。
+ 
+-# ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
++# ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)——worktree 文件隔离保证执行期稳定,不受其他并行开发工作区改动干扰
+ #    子代理派发时在 prompt 中写明 worktree 绝对路径
+ 
+ # ③ worktree 内提交 — 每 Phase 完成即提交(Rule 27),禁止攒批到最后;禁止把未提交变更带回合并
+@@ -65,15 +71,17 @@ git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
+ git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> add <本 Phase 产物文件...>
+ git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
+ 
+-# ④ worktree 内全 VC 复验通过后,回主仓合并
++# ④ worktree 内全 VC 复验通过后,回主仓合并(同步开发冲突仅在此阶段处理,执行期不打断)
+ git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"
+ 
+ # ⑤ 清理
+ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/<task-id>
+ 
+-# ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>)
++# ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>);按需恢复 ①-备份(stash pop/apply 前重跑 6.1)
+ ```
+ 
++**执行期不打断原则（P0，对齐用户裁决）**：worktree 内执行**不因并行开发/其他在途 plan 的 Rule 23 同域冲突（`[conflict]` 注入、信号①-⑤、scope 重叠提示）而暂停或向用户发起 scope/是否继续确认**——冲突仅作记录，**统一延后至 ④ 合并回阶段**由 `smart-merge-back.sh` V3/V5/V6 与 Rule 101.2 解决。worktree 文件隔离 + ①-备份 保证执行稳定；冲突收口属于合并义务，不属于执行期阻塞。
++
+ 复杂场景（多工作树编排/上游同步）可调用 `Skill("using-git-worktrees")`。
+ 
+ ## 4. 合并回合约（全部满足才可合并）
+@@ -83,7 +91,7 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
+ ```
+ 1. worktree 内全部 Phase = complete,VC 逐条复验通过
+ 2. worktree 内无未提交变更(git status 干净)
+-3. 主仓无与任务范围重叠的未提交变更(信号①残余风险;有 → STOP 报告用户)
++3. 主仓无与任务范围重叠的未提交变更(信号①残余风险;①-备份已清理则通常满足;仍有重叠 → STOP 报告用户,按 V3/合并期处理,非执行期打断)
+    STOP 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项
+ 4. merge 后:主仓 Read 关键文件复验 + git log 确认 merge commit
+ 5. 清理 worktree 与分支;task_plan.md「隔离决策」merge_back 更新为 merged(<commit>)
+@@ -101,14 +109,16 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
+ - ❌ 合并后不清理 worktree/分支(遗留 wt/* 是下次冲突信号③)
+ - ❌ 切换会话 CWD 到 worktree(破坏哨兵与 hook 相对路径约定)
+ - ❌ 将 worktree/临时文件放在当前项目 tmp/ 之外(2026-11-04 Rule 100 内放;旧仓外集中目录路径已废止,见 §3)
++- ❌ 因 Rule 23 并行冲突注入(`[conflict]`)/信号①-⑤/scope 重叠提示在 worktree 执行期暂停或向用户询问确认(冲突仅记录,统一延后至 ④ 合并回/V3/V5/V6 解决)
+ 
+ ## 6. 并行任务同落点冲突与排队续跑（2026-10-16 立）
+ 
+ > 判例：task-v179（worktree 内 Rule 87）/task-v181（主仓直改 Rule 89）/task-v180（排队殿后 Rule 88）三任务同日竞写 `critical-rules-discipline.md` 末段与 SKILL.md 索引行——目录隔离各自合规仍发生冲突。**目录不冲突 ≠ 落点不冲突**；隔离必须从目录级升级到落点级。工作树隔离防的是「工作中互相覆盖」，防不了「汇合时抢同一追加锚点」与「协调态各会话各见一个世界」。
++> **与 worktree 执行期不打断原则的关系**：worktree 内执行不因并行冲突/Rule 23 注入中断（§4 原则）；本节 6.1 的“开工前盘点”仍须执行并登记落点交集/排队意图，但**不阻断 worktree 内开发推进**——同落点冲突作为合并期风险登记，由 ④ 合并回阶段解决（V3/V5/V6+101.2 并集解/复验）。主仓直改/非隔离场景发现实时覆盖风险时，仍按 6.2 STOP 排队续跑。
+ 
+ ### 6.1 同落点盘点（开工前强制；L0-T 直改主仓前同样适用）
+ 
+-动笔前三查（任一命中 → 先排队再动笔）：
++动笔前三查（任一命中 → 登记落点交集与排队/殿后意图；**worktree 内不阻断执行**，冲突留合并期解决；**主仓直改/非隔离场景**命中同落点实时覆盖风险时先排队再动笔）：
+ 
+ 1. 在途计划落点交集：`ls plans/ | grep -v archive` 列在途任务，对照各自 task_plan.md 的 scope_files/落点文件，与本次落点取交集；
+ 2. 台账在途占用：`plans/.rule-reservations.jsonl` 尾部（或 `rule-reserve.sh list`）reserved 未 land 行，指向同文件同锚点的在途任务；
+@@ -118,7 +128,7 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
+ 
+ ### 6.2 STOP 排队续跑语义（替代死停）
+ 
+-执行中才发现与在途任务重叠时，STOP 本身正确（不停 = 两会话互写同文件）；但 STOP 报告必须携带三件套，把「死停」变「排队」：
++执行中才发现与在途任务重叠时：**worktree 内执行不打断**，登记阻塞对象/合并期收口计划后继续（冲突由 ④ 合并回解决）；**主仓直改/非隔离场景**下实时覆盖风险仍 STOP，但 STOP 报告必须携带三件套，把「死停」变「排队」：
+ 
+ 1. **阻塞对象**：在途任务 ID + 其落点文件/锚点；
+ 2. **恢复条件**：可观察信号（对端 land 行出现在台账 / 对端 commit 出现于 master / worktree 已删）；
+diff --git a/skills/task-planner/scripts/check-conflicts.sh b/skills/task-planner/scripts/check-conflicts.sh
+index 7679922..5af5314 100755
+--- a/skills/task-planner/scripts/check-conflicts.sh
++++ b/skills/task-planner/scripts/check-conflicts.sh
+@@ -102,7 +102,7 @@ if [ "$RUNTIME" = false ]; then
+   fi
+ 
+   if [ "$risk" -eq 0 ]; then
+-    echo "[conflict-scan] ✓ 未发现冲突信号;实现类任务仍默认首选工作树隔离(用户可否决)"
++    echo "[conflict-scan] ✓ 未发现冲突信号;实现类任务仍默认首选工作树隔离(默认执行，不就此询问；仅用户显式豁免且合规时直改)"
+   fi
+   exit $risk
+ fi
+diff --git a/skills/task-planner/scripts/selftest-interaction.sh b/skills/task-planner/scripts/selftest-interaction.sh
+index 0d7290d..1ca9502 100755
+--- a/skills/task-planner/scripts/selftest-interaction.sh
++++ b/skills/task-planner/scripts/selftest-interaction.sh
+@@ -15,10 +15,11 @@
+ #          (ask 模式 D1 批准前置,防未来误删)
+ #   TI-12 (task-crossprojauth R7 2026-11-04) 静态守护: critical-rules-discipline.md 28.6 预算自动批准线锚在位
+ #   TI-13 (task-crossprojauth R7 2026-11-04) 静态守护: critical-rules-discipline.md 28.7 停等止损锚在位
++#   TI-14 (task-intent-iter-20261117) 静态守护: 28.2.2 指令理解迭代草稿+歧义门控锚在位(discipline+SKILL+core/config 接线)
+ # hermetic: mktemp 夹具 + trap 清理, 不触真实 plans/ 与真实 config.json;
+ # 各 config 层用例独立 <root> 目录 (resolve 读 <script_dir>/../config.json,
+ # 故 config.json 必须放 <root>/config.json 且 resolve copy 到 <root>/scripts/)。
+-# 13 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
++# 14 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
+ 
+ set -u
+ 
+@@ -165,5 +166,23 @@ else
+   FAIL=$((FAIL+1)); printf 'TI-13 FAIL 28.7 static guard (critical-rules-discipline.md 行首 28.7 锚缺失)\n'
+ fi
+ 
++# TI-14 (task-intent-iter-20261117): 28.2.2 指令理解迭代草稿+歧义门控静态守护
++# 目的:防条款/接线回退导致“无迭代理解暴露方向+无歧义门控仍无价值确认”。行为面不可脚本测,守护锚点与关键语义词。
++CRIT_CORE="$SCRIPT_DIR/../references/critical-rules.md"
++CFG="$SCRIPT_DIR/../config.json"
++ok14=1
++grep -q '^28\.2\.2 ' "$CRIT_D" || ok14=0
++grep -q '歧义门控' "$CRIT_D" || ok14=0
++grep -q '3-4 轮' "$CRIT_D" || ok14=0
++grep -q '28\.2\.2' "$SCRIPT_DIR/../SKILL.md" || ok14=0
++grep -q '歧义/多候选' "$SCRIPT_DIR/../SKILL.md" || ok14=0
++grep -q '28\.2\.2' "$CRIT_CORE" || ok14=0
++grep -q '28\.2\.2' "$CFG" || ok14=0
++if [ "$ok14" -eq 1 ]; then
++  PASS=$((PASS+1)); printf 'TI-14 PASS 28.2.2 static guard (discipline+SKILL+core+config 理解迭代/歧义门控锚)\n'
++else
++  FAIL=$((FAIL+1)); printf 'TI-14 FAIL 28.2.2 static guard (缺 28.2.2/歧义门控/3-4 轮/接线锚)\n'
++fi
++
+ printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
+ exit $((FAIL > 0))
+diff --git a/skills/task-planner/scripts/zcode-pretooluse.sh b/skills/task-planner/scripts/zcode-pretooluse.sh
+index d5e2728..0ea2e9d 100755
+--- a/skills/task-planner/scripts/zcode-pretooluse.sh
++++ b/skills/task-planner/scripts/zcode-pretooluse.sh
+@@ -197,7 +197,7 @@ if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
+       if [ "${scan_out%%$'\n'*}" = "HIT" ]; then
+         other_taskid="${other_dir##*/}"
+         other_session="${scan_out#*$'\n'}"
+-        printf '{"additionalContext": %s}\n' "$(printf '[conflict] 文件 %s 可能与其他 plan(%s, session=%s)冲突,请确认 scope' "$file" "$other_taskid" "$other_session" | jq -Rs .)"
++        printf '{"additionalContext": %s}\n' "$(printf '[conflict] 文件 %s 与其他在途 plan(%s, session=%s)同域(scope 重叠)——仅作合并期收口记录：worktree/执行期不打断、不向用户确认 scope，照常执行；冲突统一延后至合并回阶段(smart-merge-back V3/V5/V6, Rule 101.2)解决' "$file" "$other_taskid" "$other_session" | jq -Rs .)"
+         break
+       fi
+     done
+diff --git a/skills/task-planner/scripts/zcode-userpromptsubmit.sh b/skills/task-planner/scripts/zcode-userpromptsubmit.sh
+index b10fb14..79d896d 100755
+--- a/skills/task-planner/scripts/zcode-userpromptsubmit.sh
++++ b/skills/task-planner/scripts/zcode-userpromptsubmit.sh
+@@ -299,7 +299,7 @@ if [ -s /tmp/task-planner-conflict-$$ ]; then
+   conflict_msg="$(cat /tmp/task-planner-conflict-$$)"
+ fi
+ rm -f /tmp/task-planner-conflict-$$
+-[ -n "$conflict_msg" ] && conflict_msg="\n${conflict_msg}"
++[ -n "$conflict_msg" ] && conflict_msg="\n[并行冲突记录·仅合并期处理·执行不打断(勿就此询问/暂停)]\n${conflict_msg}"
+ 
+ # ─── 组装输出(JSON,additionalContext)─────────────────────────────────────
+ out=""
+diff --git a/skills/task-planner/templates/task_plan.md b/skills/task-planner/templates/task_plan.md
+index adc0d04..6e4ce69 100644
+--- a/skills/task-planner/templates/task_plan.md
++++ b/skills/task-planner/templates/task_plan.md
+@@ -32,6 +32,13 @@ execution_lane: L1
+ - **恢复协议**：会话恢复/上下文压缩后先读专档（#1 至最新条目），再读 task_plan.md（目标/验收/下一步）
+ - **理解镜像**：每条逐字条目后同号配对「理解镜像」块（Rule 80.7；非权威对照面，冲突以逐字原文为准）
+ 
++## 🧭 指令理解迭代草稿（Rule 28.2.2 — 执行前方向对齐｜粗稿非定稿）
++<!-- 3-4轮：用于暴露理解与方向、便于早纠偏；明确任务不因本模块新增阻塞确认，歧义/多候选(典型3-4)才选项确认（28.3）；与28.2.1执行思路复述分工 -->
++- **① 原始指令复述（锚）**：<逐字/等价复述，冲突以 user-session-log 原话为准>
++- **② 模型理解（理解1）**：目标/对象/范围/约束/验收期望；**不做什么**：<排除项>
++- **③ 思路与候选（思路2）**：推导与可选路径；**歧义门控**：`明确-按默认路径` / `歧义-待确认`（列 2-4 选项+推荐+理由）
++- **④ 大体执行方向（思路3/4）**：阶段/步骤预判与验收口径（草稿，非计划外承诺；后续以计划/VC 为准）
++
+ ## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）
+ <!-- 2026-10-05 task-v131：Rule 53.1 载体。结果级需求（确保质量/性能/可靠类）必须分解生产管线逐工序审计缺陷面；
+      非结果级（单点动作）任务须写「不适用（非结果级需求）」+ 一句定性理由（53.1 禁裸豁免，attest/终验可核；
+diff --git a/skills/task-planner/templates/user-session-log.md b/skills/task-planner/templates/user-session-log.md
+index 44803b6..bb85238 100644
+--- a/skills/task-planner/templates/user-session-log.md
++++ b/skills/task-planner/templates/user-session-log.md
+@@ -14,6 +14,7 @@
+ 
+ ### #N 理解镜像 | YYYY-MM-DD（模型理解同步记录 — Rule 80.7；紧随同号逐字条目追加；非权威对照面，冲突以逐字原文为准）
+ > <模型对该条请求的整理理解，要点化 ≤10 行：任务对象/范围边界/验收期望/约束假设；理解演进时追加「### #N 理解镜像更正」新块注明改判要点与依据，禁改旧镜像块>
++> <!-- Rule 28.2.2（理解迭代草稿，粗稿非定稿）：可在本镜像或同号追加块中记录 3-4 轮要点——①原始指令锚 ②理解(目标/范围/约束/不做什么) ③思路与候选+歧义判定(无歧义则默认路径/有歧义则候选与推荐) ④大体方向；明确任务不因展示新增确认，歧义/多候选才确认；仍须以逐字原文为准，禁计划外承诺 -->
+ 
+ <!-- 条目格式范式（复制后随正文保留；示例行的 #N 必须替换为真实数字序号）:
+   ① 条目标题: `## #N | 日期 | 来源` — N 单调递增（#1, #2, ...），日期=YYYY-MM-DD，
+diff --git a/skills/todo-skill/SKILL.md b/skills/todo-skill/SKILL.md
+index 13a2db8..75bf78e 100644
+--- a/skills/todo-skill/SKILL.md
++++ b/skills/todo-skill/SKILL.md
+@@ -39,7 +39,7 @@ model: haiku
+ |------|------|
+ | `tools/cli_todo-manager.ts <cmd> [args]` | 持久化任务管理（node 原生 TS，无需编译） |
+ 
+-> 路径说明：工具表中 `tools/...` 为技能目录相对路径；已安装时解析基准 = `~/.zcode/skills/todo-skill/tools/`（cwd≠技能目录时需带全路径调用）。
++> 路径说明：工具表中 `tools/<cmd>.ts` 形式为技能目录相对路径；已安装时解析基准 = `~/.zcode/skills/todo-skill/tools/`（cwd≠技能目录时需带全路径调用）。
+ | `session-kv set/get/del` | 存储/读取/删除计划 |
+ | `Agent(description=..., prompt=..., subagent_type="general-purpose")` | 任务拆解 |
+ | `TaskCreate(subject=..., description=...)` | 创建原生 Todo |
+diff --git a/skills/workflow-model-tiers/SKILL.md b/skills/workflow-model-tiers/SKILL.md
+index 1b33aad..3cdee6c 100644
+--- a/skills/workflow-model-tiers/SKILL.md
++++ b/skills/workflow-model-tiers/SKILL.md
+@@ -8,7 +8,7 @@ trigger: 工作流分档 / workflow 模型 / 子代理模型 / 模型力度 / CC
+ 
+ > 解决痛点：`CreateWorkflow` 的工作流若不显式指定档位，子代理易落到同一默认档位，分诊/格式化与架构规划同价。  
+ > 本技能给出：CCR 四档映射 + 脚本写法 + **与 Rule 91 一致的矛盾披露/验证/退化纪律**。  
+-> **权威规则**：`plan-collab-router/references/critical-rules-collab.md` **Rule 91**（91.1-91.12）。本技能是用法载体，不得弱化 Rule 91。
++> **权威规则**：`../plan-collab-router/references/critical-rules-collab.md` **Rule 91**（91.1-91.12）。本技能是用法载体，不得弱化 Rule 91。
+ 
+ ## 0) 先读：矛盾披露与可执行验证（P0，Rule 91.2/91.5）
+ 
