@@ -1,4 +1,5 @@
 # Task Plan: [图像生成任务]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,执行范围限制,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 <!-- template_type: image -->
 <!-- 图像生成工作流（Agnes 图像链路：母图/资产件/关键帧·线稿格/批量出图/修词重抽）。目标=出图稳定性与一致性：九原子步骤管线+合规/一致性/质量三检硬门+全自动静默。触发词：图像生成/批量出图/母图/关键帧批/线稿批/修词重抽/多抽卡/资产图/缺陷重出 -->
 <!-- 九原子步骤对照：①剧本规划=P1 ②合规与物理事实核验=P2 ③多状态定义=P3 ④提示词结构化=P4 ⑤图像生成=P5 ⑥质量审查+⑦缺陷检测+⑧静默重生成=P6（检测→归因→静默重抽闭环，回 P4/P5） ⑨终验=P7 -->

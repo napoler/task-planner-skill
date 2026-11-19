@@ -5,6 +5,8 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 
 # Plan Template Kit
 
+> 模板规范版本: spec_version=1（2026-11-20 task-antiregress-tplgov-20261120 建立；模板规范升级时递增并按 retrofit SOP 改造存量，见 S6）
+
 卫星技能：纯知识层——沉淀 task-planner 模板体系的选型决策树、定制契约与路径规范；机械层（variant 库、init-session.sh、check-template-type.sh、attest 门控）全部留守 task-planner。
 
 ## 何时读哪份 reference

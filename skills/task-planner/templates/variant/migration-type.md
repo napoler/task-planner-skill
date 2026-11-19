@@ -5,6 +5,7 @@
 <!-- execution_lane: L1（默认 standard 全流程；迁移=功能性代码变更+跨文件级联，Rule 38.7 禁 L0；跨系统级大迁移由 init-session.sh/lane-detect.sh 机器升 L2） -->
 
 # Task Plan: [迁移任务名称]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,DriftLog,委派统计,SubagentHandoff登记表,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 
 <!-- plan_tier: standard -->
 ## Goal

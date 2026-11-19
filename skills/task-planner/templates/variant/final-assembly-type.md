@@ -1,4 +1,5 @@
 # Task Plan: [终剪组装验证任务]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,执行范围限制,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 <!-- template_type: final-assembly -->
 <!-- 成片工序：段片清点→剪辑组装→seam QC→成片判定→NAS 备份→终审登记。边界：段片生成与段级修正入 video-type/video-fix-type；配音对齐入 audio-voice-type。触发词：粗剪/组装/成片/终剪/seam/备份 -->
 <!-- 五要素：①编号原子步骤+显式状态定义（段片台账×拼接清单）+合规检（seam 边界+成片判定层）+静默迭代（seam FAIL 回剪环）+验收判据（VC 表） -->
