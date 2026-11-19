@@ -921,6 +921,7 @@ _has_known_tt=0
 if [ -z "$TEMPLATE_TYPE" ] && [ -f "task_plan.md" ] \
    && [ "${_has_known_tt}" -eq 0 ]; then
     echo "[template-sense] ⚠ 任务类型空缺（general 兜底）——按 Rule 34.3②/34.7 评估沉淀，终验必查"
+    echo "[init] ⚠ general 兜底须登记理由（R3，2026-11-20 task-antiregress-tplgov-20261120）：计划期在 task_plan.md「🔁 模板感知」区块写明为何无适配 variant（数据依据=plans/ 类型分布），终验 check-complete 必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<'EOF'
 
@@ -954,6 +955,7 @@ if [ -n "$TEMPLATE_TYPE" ] && ! echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE
    && [ "$TASK_PLAN_SRC" = "task_plan.md" ] && [ -f "task_plan.md" ] \
    && [ "${_has_known_tt:-0}" -eq 0 ]; then
     echo "[template-sense] ⚠ 任务类型未知（$TEMPLATE_TYPE 不在白名单）——将落 general 兜底，按 Rule 34.3②/34.7 评估沉淀，终验必查"
+    echo "[init] ⚠ general 兜底须登记理由（R3，2026-11-20 task-antiregress-tplgov-20261120）：计划期在 task_plan.md「🔁 模板感知」区块写明为何无适配 variant（数据依据=plans/ 类型分布），终验 check-complete 必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<EOF
 
