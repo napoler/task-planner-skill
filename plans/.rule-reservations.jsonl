@@ -111,3 +111,4 @@
 {"rule":108,"status":"landed","task_id":"task-crossvalidate-20261115","ts":"2026-11-15","note":""}
 {"rule":109,"status":"reserved","task_id":"task-planaudit-20261116","ts":"2026-11-16","note":""}
 {"rule":109,"status":"landed","task_id":"task-planaudit-20261116","ts":"2026-11-16","note":""}
+{"rule":110,"status":"reserved","task_id":"task-model-tier-dispatch-20261119","ts":"2026-11-19","note":""}
