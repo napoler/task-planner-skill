@@ -2,8 +2,10 @@
 <!-- 适用场景: task-planner 技能规则/条款增强——新增 Rule NN、config 三档键、消费侧门控脚本、selftest 守护、SKILL 联动 -->
 <!-- 触发关键词: 加规则/新增 Rule/条款/门控/合规清单/守护/技能增强/机制化 -->
 <!-- 推荐 subagent: executor(sonnet-1) 写条款与脚本; code-runner-agent 跑 selftest; 合并部署主进程; 沉淀出处: task-v074（Rule 34.3① 同类任务第 3 次触发） -->
+<!-- 📦/🛡 进度产出基线与防倒退终检：按主模板 Rule 111 区块执行（本 variant 不重复区块本体） -->
 
 # Task Plan: [规则增强任务名称]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="根源覆盖表,不变量声明区,规范基线,进度产出基线,Goal,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 
 ## 🎯 用户需求原文（Rule 51.1 逐条抄录 + 51.2 R→VC 映射; R 行=用户原话逐条编号抄录，每条核心需求 ≥1 VC；缺区块或缺映射=计划无效先回炉）
 

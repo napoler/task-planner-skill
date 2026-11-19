@@ -674,6 +674,17 @@ if [ "$python_rc" -eq 0 ]; then
        && ! grep -qE '不沉淀理由[[:space:]]*[:：][^[:space:]]|沉淀理由[[:space:]]*[:：][^[:space:]]' "$PLAN_FILE" 2>/dev/null; then
         echo '[template-sense] ⚠ 计划含模板感知区块但终验未登记沉淀/不沉淀理由（Rule 34.7 全自动生成合约）' >&2
     fi
+    # [2026-11-20 task-antiregress-tplgov-20261120 S7 R3] general 兜底须登记理由 warn（不做硬门）
+    if grep -q '🔁 模板感知' "$PLAN_FILE" 2>/dev/null \
+       && grep -qE 'template_type:[[:space:]]*general|<!--[[:space:]]*template_type:[[:space:]]*general' "$PLAN_FILE" 2>/dev/null \
+       && ! grep -q '登记理由' "$PLAN_FILE" 2>/dev/null; then
+        echo '[template-sense] ⚠ general 兜底须登记理由（R3）：计划「🔁 模板感知」区块需写明为何无适配 variant 及数据依据（plans/ 类型分布）' >&2
+    fi
+    # [2026-11-20 task-antiregress-tplgov-20261120 S3] 防倒退终检 warn（Rule 111）：含防倒退终检区块但未登记净效果判定则提示
+    if grep -q '🛡 防倒退终检' "$PLAN_FILE" 2>/dev/null \
+       && ! grep -qE '净效果[[:space:]]*[:：].*[≥>=0]' "$PLAN_FILE" 2>/dev/null; then
+        echo '[anti-regress] ⚠ 计划含防倒退终检区块但未登记净效果判定（Rule 111）' >&2
+    fi
 
     # [2026-09-27 task-v091 C-2] 两门全过(全量通过,或本轮按四元键 SKIP)→ 写四元键状态供下轮 SKIP 判定;
     # 门失败路径已在上方 exit 1 不会到达此处=失败永不落状态; 状态文件不含 mtime/size(提案护栏)。

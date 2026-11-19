@@ -1,4 +1,5 @@
 # Task Plan: [视频生成提示词转换任务]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,执行范围限制,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 <!-- template_type: video-prompt -->
 <!-- 图→视频转换写词工序：镜头行→视频提示词映射、参考组配置、机械门、spec 登记。边界：纯写词+spec 层零视频调用（发视频入 video-type）；图像提示词入 prompt-struct-type；缺陷重出入 video-fix-type。触发词：视频提示词/转换/reference 配置/epNN-prompts -->
 <!-- 五要素：①编号原子步骤+显式状态定义（逐镜转换卡+槽位配置）+合规检（机械门+语言音色子句）+静默迭代（机械门 FAIL 回改环）+验收判据（VC 表） -->

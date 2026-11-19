@@ -5,7 +5,12 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 
 # Plan Template Kit
 
-卫星技能：纯知识层——沉淀 task-planner 模板体系的选型决策树、定制契约与路径规范；机械层（variant 库、init-session.sh、check-template-type.sh、attest 门控）全部留守 task-planner。
+> 模板规范版本: spec_version=1（2026-11-20 task-antiregress-tplgov-20261120 建立；模板规范升级时递增并按 retrofit SOP 改造存量，见 S6）
+> 原则→模板区块注册表：`references/principle-template-registry.md`（spec_version=1 权威映射与覆盖守卫口径）。
+> 派生铁律：二级派生须 base+parent 双参照，裁剪=父级∪新增并逐级对齐 base，核心区块未经豁免不得静默丢失。
+> Retrofit SOP（spec_version 存量改造）：`references/retrofit-sop.md`（scan-template-spec.sh 清单→改造→守卫复验→版本历史登记）。
+
+卫星技能：纯知识层——沉淀 task-planner 模板体系的选型决策树、定制契约与路径规范；机械层（variant 库、init-session.sh、check-template-type.sh、attest 门控）全部留守 task-planner।
 
 ## 何时读哪份 reference
 

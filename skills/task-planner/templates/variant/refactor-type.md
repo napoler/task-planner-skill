@@ -5,6 +5,7 @@
 <!-- 边界声明(R-35): 本模板前提 = 行为不变(见 VC-2 与 Notes『重构 = 行为不变』);以性能提升为目标(允许功能+性能共同变化)的优化任务 → performance-tuning-type,本模板仅保证性能不退化(VC-5) -->
 
 # Task Plan: [重构任务名称]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,NextStep,防倒退终检,收尾回读梳理记录,FMEA预演,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 
 <!-- plan_tier: standard -->
 ## Goal
@@ -154,6 +155,7 @@ Phase 1
 - 重构 = 行为不变,任何测试失败 = 立即回滚
 - 复杂度报告用 codebase-analyzer 子代理,主进程不直接读源码
 - 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
+- 📦/🛡 进度产出基线与防倒退终检：按主模板 Rule 111 区块执行（本 variant 不重复区块本体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |

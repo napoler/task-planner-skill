@@ -50,6 +50,8 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 
 ## 边界铁律
 
+> general 兜底非静默默认：选用 general 须在计划「🔁 模板感知」区块登记理由（为何无适配 variant + 数据依据），终验对照（R3，2026-11-20）
+
 - 禁直接写官方 `templates/`（含 `variant/`）；官方沉淀必须走 Rule 34.8 官方门 G1-G4，由权威流程承接。
 - 禁覆盖核心 7 计划文件模板（`task_plan`/`verification`/`progress`/`findings`/`knowledge-brief`/`user-session-log`/`notepad-learnings`）；本技能仅产出项目级 `*-type.md`。
 - 分析与预测必须有盘上证据（Rule 71）；无证据结论不得写入模板或登记为事实。

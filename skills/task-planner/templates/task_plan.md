@@ -1,5 +1,6 @@
 # Task Plan: {{TASK_NAME}}
 <!-- 渲染契约(task-tplrender-20261024)：{{VAR}} token 由 init-session.sh render_template() 脚本渲染（task-id/任务名/日期/路径）；尖括号中文占位=模型填写面，脚本禁碰 -->
+<!-- template-lineage: level=base spec_version=1 -->
 <!-- ===== frontmatter 头（Rule 16 选模板 + Rule 34.1 门控 + Rule 38.7 执行通道分级）=====
   选定 variant 后 template_type 填所选类型名（白名单={{TASK_PLANNER_ROOT}}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
   plan_tier ∈ {standard, mini}（Rule 38.1，mini 四条件机器判定）；execution_lane ∈ {L0, L1, L2}（Rule 38.7，缺省 L1；L0 禁滥用见 38.7 末段）
@@ -57,6 +58,14 @@ execution_lane: L1
 | spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 |
 |---------|-------------------|------------------|-----------|------------|
 | <如 SPEC-DUR-01> | <如 单镜头时长 4-12s> | <弧规格:5 / skill:53> | <4s≤单镜≤12s；越界即FAIL，禁NOTE豁免> | <sha256 或 n/a(文本片段)> |
+
+## 📦 进度产出基线（Rule 111 进度产出防倒退）
+<!-- Rule 111（2026-11-20 task-antiregress-tplgov-20261120）：存在项目级进度/产出基线候选时计划期必登，禁止拆东墙补西墙。来源=对项目关键产出/能力面盘点（如模板数与结构、规则编号面、selftest 基线、部署位状态、核心流程可用性）。本区块随 task_plan.md 纳入 Rule 20.1 SHA-256 attestation 锁定面（同 51.15 口径）；执行期修改/放宽/删除已登记项须 STOP→用户显式授权→Decisions Made 登记→更新基线→重跑 attest 重锁。无候选须显式填写 none-justified（附理由），禁静默遗漏。 -->
+| 基线项 | 动工前快照 | 关键产出/指标 | 禁倒退清单 | 状态 |
+|--------|------------|---------------|------------|------|
+| <如 B-01 模板数量与结构> | <动工前可复核快照/证据锚> | <关键产出与指标> | <禁止删除/降级/替换项；净效果<0 禁止> | <已登记/已回填/none-justified> |
+
+> 无候选时：在上表填一行 `none-justified | <理由> | n/a | n/a | 已登记`（禁止留空/静默省略）。
 
 ## Goal
 <!-- 
@@ -380,6 +389,18 @@ Phase 1
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
+
+## 🛡 防倒退终检（交付/合并前强制）
+<!-- Rule 111（2026-11-20 task-antiregress-tplgov-20261120）：交付/合并前对照「📦 进度产出基线」逐项判定。对既有产出的删除/降级/替换须登记消费方影响评估且净效果≥0，否则 BLOCK（禁止拆东墙补西墙，[PROGRESS-REGRESSION] P0）。 -->
+| 检查项 | 判定方法（机器/可复核） | 证据锚 | 结果 |
+|--------|-------------------------|--------|------|
+| 既有能力未削弱 | 对照 📦 基线逐项：无未登记删除/降级/替换 | <grep/diff/路径锚> | <PASS/FAIL> |
+| 模板解析兼容 | 模板/守卫解析与既有触点兼容（按任务触点验证） | <命令/输出锚> | <PASS/FAIL> |
+| 净效果≥0 逐项对照 | 变更涉及既有产出时：消费方影响已登记且净效果≥0（对照 Rule 111.3） | <登记/证据锚> | <PASS/FAIL/不适用> |
+| selftest 同集零增量 | 与动工前基线 FAIL 集对比无新增 FAIL | <baseline/final diff> | <PASS/FAIL> |
+| 部署位无漂移 | 部署位与产物逐位对照无漂移（按任务部署机制实测） | <diff=0 清单/锚> | <PASS/FAIL/不适用> |
+
+> 净效果判据（Rule 111）：既有产出的删除/降级/替换须登记消费方影响评估且**净效果≥0**，否则 `BLOCK`（禁止拆东墙补西墙，`[PROGRESS-REGRESSION]`）。
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
 <!-- 每轮一行：轮次/发现/处置；连续一轮零新发现才可出 outcome（收敛出口，轮次不设上限）；

@@ -921,6 +921,7 @@ _has_known_tt=0
 if [ -z "$TEMPLATE_TYPE" ] && [ -f "task_plan.md" ] \
    && [ "${_has_known_tt}" -eq 0 ]; then
     echo "[template-sense] ⚠ 任务类型空缺（general 兜底）——按 Rule 34.3②/34.7 评估沉淀，终验必查"
+    echo "[init] ⚠ general 兜底须登记理由（R3，2026-11-20 task-antiregress-tplgov-20261120）：计划期在 task_plan.md「🔁 模板感知」区块写明为何无适配 variant（数据依据=plans/ 类型分布），终验 check-complete 必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<'EOF'
 
@@ -954,6 +955,7 @@ if [ -n "$TEMPLATE_TYPE" ] && ! echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE
    && [ "$TASK_PLAN_SRC" = "task_plan.md" ] && [ -f "task_plan.md" ] \
    && [ "${_has_known_tt:-0}" -eq 0 ]; then
     echo "[template-sense] ⚠ 任务类型未知（$TEMPLATE_TYPE 不在白名单）——将落 general 兜底，按 Rule 34.3②/34.7 评估沉淀，终验必查"
+    echo "[init] ⚠ general 兜底须登记理由（R3，2026-11-20 task-antiregress-tplgov-20261120）：计划期在 task_plan.md「🔁 模板感知」区块写明为何无适配 variant（数据依据=plans/ 类型分布），终验 check-complete 必查"
     if ! grep -q '🔁 模板感知' "task_plan.md" 2>/dev/null; then
         cat >> "task_plan.md" <<EOF
 
@@ -1046,6 +1048,7 @@ if [ "${TRIVIAL_CODE_TIER:-0}" = "1" ]; then
 else
     echo "[init] 6/6 planning files verified"
 fi
+echo "    [init] 📦 提醒：计划期登记进度产出基线（Rule 111），禁倒退清单随计划 attest 锁定"
 # [2026-10-11 task-v169 Rule 80.1] 第 7 文件 user-session-log.md 独立存在性复核：
 # 六文件复核循环与「六件套全量 verified」回显行保持原样，第 7 文件单独成段——缺失或空 → ERROR + exit 1
 # （错误必须曝光，禁静默放行；既有条目 append-only，本处只做存在/非空校验不改内容）

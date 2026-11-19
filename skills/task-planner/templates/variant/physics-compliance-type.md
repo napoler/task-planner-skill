@@ -1,4 +1,5 @@
 # Task Plan: [物理事实与交通合规核验任务]
+<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 <!-- template_type: physics-compliance -->
 <!-- 判定审查工序：风险清单→逐镜合规核对→多态状态声明→修正路由→判定报告。边界：纯审查零生成调用；缺陷重生成处置入 qc-defect/video-fix-type；完整词工序入 prompt-struct-type。触发词：物理核验/合规检查/交通合规/装备核对/物理审查 -->
 <!-- 五要素：①编号原子步骤+显式状态定义（逐镜风险状态卡）+合规检（本模板即判定工序）+静默迭代（核对 FAIL 回改环）+验收判据（VC 表） -->
