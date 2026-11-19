@@ -12,6 +12,7 @@
 
 ### Phase 1: 判例取证与失效链定位
 - **Status:** complete
+- **R 锚定**：R1「没有践行模型分级理论」+R2「deepseekv4 pro 被滥用…sess_a7eb0603」——取证证实两诉求
 - 铁证：agent_4224ef20（article-content-editor+deepseek-v4-pro，2026-11-18T23:25Z）执行"删 1 句（-7 词/-0.60%）+8 步机械"；agent_4f8cfac1 同模型机械比对（2026-11-14）。findings §1.1。
 - 失效链四环：96.2 计划期触发面漏洞（判例为临场派发，task_plan 零命中）/混合任务无拆分义务/22.6 继承传染/契约模型边界仅存记忆。findings §1.2。
 - [goal:G1] 证据=judgment 侧完成（取证链为 G1 条款 Why 锚供料）——findings.md §1 全段落盘。
@@ -28,6 +29,7 @@
 
 ### Phase 2: 条款设计与计划定稿
 - **Status:** complete
+- **R 锚定**：R4「必须对当前skill 进行 任务分级处理」——设计即分级条款本体
 - Rule 110 七子条批准稿落 knowledge-brief §1；task_plan 七区块+VC 五条+CA 四行+S-unit 两行；attest 锁定 SHA-256=8557f68a…，rule 110 自动预留。
 - 机器面授权询问（AskUserQuestion 推荐项=授权硬拦截）用户未作答→按宪法文本优先铁律 P0 裁决仅文本先行，登记 Decisions。
 - **Status:** pending
@@ -41,18 +43,21 @@
 
 ### Phase 3: worktree 实施
 - **Status:** complete
+- **R 锚定**：R4「任务分级处理」落地+R3「完全是被滥用 必须纠正」——条款含判例锚直接纠偏
 - worktree 建成（879fb48 基线，scope 文件与主仓一致）；S1 executor(sonnet-1) [tier-class:judgment] 落盘 21 行纯追加（主进程盘上复核：锚 1+7/逐字 md5 一致/numstat 21+0）；S2 主进程机械级联 6 处。
 - 并行协调：master 前进至 79debfa（74.7 任务）→ worktree 内吸收合并零冲突；CR 修正轮 110.3/110.6 消歧收紧（critic M2/M3）随 e6b5441。
 - [goal:G1] grep '^### 110 '=1 且 '110.[1-7] **'=7 PASS；[goal:G2] SKILL.md '1-110'=3 处+task-dispatch SKILL.md 双锚（68,110/| 110 |）PASS。
 
 ### Phase 4: 验证与回归
 - **Status:** complete
+- **R 锚定**：R3「这种方案导致模型被大量浪费」——条款生效后机械类禁重档=资源平衡验证
 - VC-1..4 grep 锚全 PASS；VC-5 run-selftests 93/100，7 FAIL 基线对照（stash 单跑归因法）同集同数=零新增（全预存，findings §2 登记）。
 - 103.3 critic 独立复检 APPROVED（四判据 PASS：逐字 md5/纯增量/衔接 cmp/判例锚一手复现）；103.6 残留扫描全仓 1-109=0。
 - [goal:G3] 证据=selftest 同集零增量+git numstat 21+0 纯追加（VC-5 判据命令 exit 0）。
 
 ### Phase 5: 合并与交付
 - **Status:** complete
+- **R 锚定**：R1-R4 全链交付（规则入库 58f727f）
 - 主仓 stash 窗口法 merge --no-ff → 58f727f（并行在途改动 pop 零冲突恢复）；worktree+wt 分支已清理；reserve 簿记+计划目录已提交；27.3 并行冲突登记延后（progress 终验段）。
 
 ## 📚 必要知识储备使用记录
