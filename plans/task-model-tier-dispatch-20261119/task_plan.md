@@ -274,7 +274,7 @@ execution_lane: L1
   WHAT: Which phase you're currently working on (e.g., "Phase 1", "Phase 3").
   WHY: Quick reference for where you are in the task. Update this as you progress.
 -->
-Phase 3（方案已获用户批准后：建 worktree → S-unit 派发落盘）
+Phase 5（归档收尾）
 
 ## Next Step
 <!-- 
@@ -365,15 +365,14 @@ Phase 3（方案已获用户批准后：建 worktree → S-unit 派发落盘）
   WHAT: Final review and handoff to user.
   WHY: Ensures nothing is forgotten and deliverables are complete.
 -->
-- [ ] Review all output files
-- [ ] Ensure deliverables are complete
-- [ ] Deliver to user
-- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome
-- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-model-tier-dispatch-20261119 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）
-      <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->
-- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->
-- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
-- **Status:** pending
+- [x] Review all output files（三件套+knowledge-brief+subagent-state 复读一致）
+- [x] Ensure deliverables are complete（Rule 110 条款+级联+复检+回归全 PASS）
+- [x] Deliver to user（交付报告含机器面待授权再呈报）
+- [x] 全文档收尾回读梳理记录（Rule 84.14）：两轮收敛（轮 2 零新发现）
+- [x] 知识提取入库：项目存在 scripts/kb-sync-from-plan.sh → 归档后执行（登记在归档动作内）
+- [ ] 归档计划：check-complete exit 0 后 set-active-plan --clear + archive-plan.sh（Rule 81）
+- **V-N:** VC-4, VC-5
+- **Status:** complete
 - **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）
 
 ## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）
@@ -543,55 +542,6 @@ Phase 3（方案已获用户批准后：建 worktree → S-unit 派发落盘）
 | 2 | 2026-11-19 | critic(sonnet-1) | 103.3 独立复检条款文本 | done | APPROVED 四判据 PASS；M2/M3 采纳 NIT-3 已修 | 2-critic.md+复检报告 | findings §2 | subagent-state/2-critic.md | - / 0 / ☑ |
 | 3 | | | | | | | | | - / 0 / ☐ |
 
-## 🔗 Chain 区块交接配置（可选）
-
-<!-- 仅多 skill 接力任务填写（如：调研→创作→发布）。单 skill 任务可删除此整个区块。 -->
-
-### Chain 模式
-
-| 字段 | 值 |
-|------|-----|
-| **chain_mode** | `single` / `linked`（串行接力）/ `fan-out`（一对多派发） |
-| **current_block** | Block 1 |
-| **handoff_on_complete** | ✅ 是 / ❌ 否 |
-
-### Block 1: [本块名称]（当前块）
-
-| 字段 | 值 |
-|------|-----|
-| **goal** | [本 block 独立目标] |
-| **depends_on** | none |
-| **passes_to** | Block 2: `[交接产物路径]` |
-| **status** | in_progress / pending / complete |
-
-### Block 2: [下游块名称]
-
-| 字段 | 值 |
-|------|-----|
-| **goal** | [下游 block 目标] |
-| **depends_on** | Block 1 → `[交接产物路径]` |
-| **passes_to** | Block 3: `[...]` |
-| **status** | pending |
-
-<!-- 追加 Block N 时使用相同结构 -->
-
-### 🔗 Handoff 追踪表
-
-| Block | 状态 | 交接产物路径 | 验证命令 | 实际完成时间 |
-|-------|------|------------|---------|-------------|
-| Block 1 | - | - | - | - |
-| Block 2 | - | - | - | - |
-
----
-<!-- ★ Block 分隔符：每个独立交接区块下方用 --- 分隔，格式如下 -->
-<!--
-### Block 2: [名称]
-## Goal
-...
-## Phases
-...
-（复制完整 task_plan 结构，仅包含本 block 的 Phase 和 VC）
--->
 
 ## 🔁 模板感知
 <!-- template_type: general -->
