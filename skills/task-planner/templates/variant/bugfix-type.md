@@ -156,6 +156,7 @@ Phase 1
 - 修复必须新增回归测试(VC-5 强制)
 - 修代码必须派 `code-assistant`,主进程不直接 Edit
 - 每 2-3 个 Phase 完成 → 派发 `drift-checker` 偏移检查（Rule 61 载体）
+- 📦/🛡 进度产出基线与防倒退终检：按主模板 Rule 111 区块执行（本 variant 不重复区块本体）
 
 ## 🚨 Drift Log（漂移检测记录）
 | 时间 | 检测结果 | 涉及VC | 结论 |
