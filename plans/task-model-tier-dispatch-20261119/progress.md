@@ -109,3 +109,4 @@
 - FMEA 豁免登记：纯规则文本任务（零代码零脚本），失败模式单一（落盘失配→锚复核即拦截），比例原则不填 RPN 表。
 - template-sense 处置：**不沉淀**——general 兜底（修规则制度类任务非可复用工作流类型，Rule 34.3 三条件不满足）。
 - session-log 补记：user-session-log.md 已含 2026-11-19 需求 1 全量逐字条目（## 2026-11-19 需求 1 段），gate 检测形态差异不影响 append-only 事实。
+- [judge] 对齐三问（Rule 73.4，归档前终判）：范围=四诉求全映射 VC 全 PASS 未扩大；采信=盘上一手复核（md5/numstat/cmp）优先于子代理口供，critic 复检 APPROVED；收口=Rule 110 入库 58f727f，零回归，并行在途改动完好归还。
