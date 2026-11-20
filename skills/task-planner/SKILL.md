@@ -80,10 +80,11 @@ model: opus
 
 - [ ] [A] **计划确认**
   - 展示 `task_plan.md`（Phase 列表+VC 表）给用户，附计划文件绝对路径+待审项清单+看点+动作（Rule 70 四要素）；**VC 每项须含可执行验证命令（Rule 84.1）**——验证域规则与 SOP 详见卫星 `verification-gate`（`Skill("verification-gate")`）
-  - **门控**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：（注意：前置的计划独立审计门不适用本款——审计未达标禁自动放行，Rule 109）完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
-  - **目标绑定确认（D1 升级，P0）**：D1 显式 yes 前，必须口头复述「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并等用户确认（该确认等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）；确认后 attest-plan.sh 锁定，锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**禁止**在用户确认前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的用户确认锚，缺确认锚不认。
+  - **指令理解对齐（Rule 28.2.2）**：计划确认前须已完成/呈示 3-4 轮理解迭代草稿（原始指令→理解→思路与候选+歧义门控→大体方向，粗稿非定稿）以暴露方向供纠偏。**goal/目标迭代（28.8）优先覆盖**：明确或歧义/多候选均**禁止**向用户提问/列选项请求确认/等待回复，按推荐项或可逆安全默认静默自决并留痕后直接继续推进（歧义仅内收敛+登记假设）；同问禁复发，D6/§六 不可越权硬门仅单次降级收口停止。**非 goal**：明确任务不因本模块新增停等确认（无歧义时提示可纠偏后继续），仅歧义/多候选(典型3-4)或关键范围不明时按选项确认（28.3）；silent/44.3 自动通过/mini 缺省 silent 场景按 28.2.2 降级留痕与推荐项自决，不做多轮阻塞。
+  - **门控**：**goal/目标迭代（28.8）** 下 D1（计划批准）属可裁决点——**禁止**等待/询问用户 yes，按推荐项（已展示计划执行）静默自治批准并登记自动裁决记录五要素后直接执行后续链路（含 attest/清哨兵，受 Rule 109 审计门未达标禁自动放行约束；D6/§六 不可越权硬门例外）。**非 goal**：等待用户显式 `"yes"`——无授权禁止执行；**D1 超时自动通过（Rule 44.3，2026-10-22 用户授权 P3）**：（注意：前置的计划独立审计门不适用本款——审计未达标禁自动放行，Rule 109）完成性指令/单步机械指令场景下按 44.1 默认 5 分钟超时自动通过（默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）——D1 不再是「只能无限等 yes」的死等门；真分叉（D2/D5）与破坏性动作（D6 硬停点）仍必须等待用户答复，不适用本款。确认后 `bash scripts/attest-plan.sh` 锁定（内置 check-plan-dispatch.sh 校验派发型 Phase 的 S-unit 执行体列，缺失拒锁，`--skip-dispatch-check` 逃生）
+  - **目标绑定确认（D1 升级，P0）**：D1 批准前，必须完成目标绑定——复述/落盘「本计划 Goal = <Goal 行原文>，服务用户指令 = <user-session-log.md 最近一条用户原话>」并形成确认锚；attest-plan.sh 锁定记录须含 Goal 原文 + 用户原话摘录 + 确认时间（落 .active_plan 绑定或 attest 记录）。**goal/目标迭代（28.8）**：按推荐项静默自治完成绑定与确认锚登记，**禁止**等待用户确认/回复；**非 goal**：须等用户确认（该等待同样适用 44.3 超时自动通过口径：超时按已展示计划执行并登记自动裁决记录）。**禁止**在确认锚（显式/自治登记）形成前清哨兵（plan-created.cjs）。Why: RCA 缺失环节 2——D1 显式 yes 是 LLM 行为门（SKILL.md:49-51），可被跳过或默认「用户已同意」；本条把 D1 从行为门升级为需落盘的确认锚，缺确认锚不认。
   - Spec 模式前置：命中 `references/spec-mode.md` §1 触发判定时，确认 spec 产物路径已登记（记录者收据）方可进入 yes/attest
-  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，不可越权硬门仅单次阻塞降级收口禁空转（见 critical-rules-discipline 28.8/44.3/44.5）
+  - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行，28.2.1）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，不可越权硬门仅单次阻塞降级收口禁空转（见 critical-rules-discipline 28.8/44.3/44.5）
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
 
 - [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
@@ -205,7 +206,7 @@ model: opus
 
 ### 🆕 用户新指令处理（计划影响判定 — 强制）
 
-**新指令统一收口序列（强制，单入口定序）**：① 逐字落盘 user-session-log.md（80.1，含理解镜像 80.7）→ ② D/A/B/C/E 判定（判定前先过 8.1.2 入站预检：疑似误发/项目定位明显错位 → 先分析偏移点并询问是否纠正，再判定；下表；A 类无影响=走 ①② 后登记一行即完成，③-⑤ 仅 B/C/D/E 适用；E 类目标切换先过确认门、用户 yes 后按 D 处置再进序列）→ ③ 计划文档同步（task_plan/progress/需求锚）→ ④ Todo S5 重映射 → ⑤ 触发修改轮时衔接 Rule 103.6 同步完整性审查。两义务一体执行、顺序不可倒置（记录先于转译，防转译覆盖原话）；禁拆散单做（漏序=缺口）。
+**新指令统一收口序列（强制，单入口定序）**：① 逐字落盘 user-session-log.md（80.1，含理解镜像 80.7）→ ② D/A/B/C/E 判定（判定前先过 8.1.2 入站预检：疑似误发/项目定位明显错位 → 先分析偏移点并询问是否纠正，再判定；下表；A 类无影响=走 ①② 后登记一行即完成，③-⑤ 仅 B/C/D/E 适用；E 类目标切换先过确认门、用户 yes 后按 D 处置再进序列）→ ③ **指令理解迭代（Rule 28.2.2，执行前方向对齐）**：完成 3-4 轮理解迭代草稿（原始指令复述→模型理解[目标/范围/约束/不做什么]→模型思路与候选+歧义门控→大体执行方向，粗稿非定稿）并按模式处理。**goal/目标迭代（28.8）优先覆盖**：无论明确或歧义/多候选，**禁止**向用户提问/列选项请求确认/等待回复，直接按推荐项或可逆安全默认静默自决并留痕后继续（歧义仅内收敛+登记假设），同问禁复发（D6/§六 不可越权硬门仅单次降级收口停止）。**非 goal**：ask 模式展示供早纠偏，无实质歧义时不因本模块新增阻塞确认（提示可纠偏后继续），有歧义/多候选(典型3-4)时才按选项确认（28.3）；silent/44.3 自动通过/mini 缺省 silent 下不阻塞等待，收敛并留痕且歧义按推荐项与可逆安全默认自决→ ④ 计划文档同步（task_plan/progress/需求锚）→ ⑤ Todo S5 重映射 → ⑥ 触发修改轮时衔接 Rule 103.6 同步完整性审查。两义务一体执行、顺序不可倒置（记录先于转译，防转译覆盖原话）；禁拆散单做（漏序=缺口）。
 
 **意图切换快速判定卡（新指令首动作，先于 A/B/C 细分）**：⓪ 前置预检（8.1.2）：指令任务类型/交付物与项目定位、当前任务域、最近原话三源比对——明显错位或疑似误发 → 先输出≤5 行分析（意图+偏移点）并询问是否纠正（澄清优先，86.4 三件套），确认后回落下方判定；无错位 → 直接进判定（[align-scan] 留痕）。提取新指令的「Goal/范围/交付物」三要素，与当前活跃计划 Goal 行及 user-session-log.md 最新原话比对——三要素均无交集 → 立即判 **D 类新任务边界**，按下方「意图切换执行清单」处置（禁吸收进当前计划）；含可判定换目标信号（新站点/域名/新对象词/宾语变更）→ **E 类**先确认再切换；有交集 → 回落 A/B/C 常规判定。
 
@@ -227,7 +228,7 @@ model: opus
 
 ### 🔀 冲突分析与工作树隔离（默认首选）
 
-**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险；仅纯文档/调研类（只写 plans/ 与 .md）可直接开发；用户显式否决才直接开发。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」随计划展示；隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验。合约详见 `references/worktree-isolation.md`。
+**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险；仅纯文档/调研类（只写 plans/ 与 .md）可直接开发。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」并**默认按隔离执行，不就该安全默认向用户发起确认/询问**；仅当用户**显式**要求“直接改不用 worktree”且命中 AGENTS.md §11.5 豁免条件时才直改并登记理由。**创建前先 git 备份主仓未提交改动**（推荐 `git -C <project> stash push -u -m "pre-wt-backup:<task-id>" -- . ':(exclude)plans' ':(exclude)tmp'`，引用登记隔离决策；已干净则跳过）以稳定基线并利于合并回。隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/；**worktree 执行期不因并行冲突/Rule 23 `[conflict]` 注入而中断或询问，冲突仅记录、统一延后至合并回阶段**（`smart-merge-back.sh` V3/V5/V6 + Rule 101.2）解决。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（按需恢复备份前先重跑同落点盘点）。合约详见 `references/worktree-isolation.md`。
 
 ## 投诉响应协议与 L0 边界审查（[task-perf-opt 2026-10-13 Change #10]）
 
@@ -283,7 +284,7 @@ Rules 1-110 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,8
 
 ## I/O 契约
 
-输入=任务描述/CWD/已有 plan（恢复时用）；输出=规划→plan+思路复述（28.2.1，ask 模式）/执行→checkbox+错误/完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败→AskUserQuestion（交互模式语义见 Rule 28）。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh "<任务名>"`。机器面=`scripts/schemas/check-delegation-stats.schema.json`（check-delegation stats JSON 契约）+ `scripts/verify_io.sh <plan-dir>`（7 文件在位 + delegation stats JSON 断言，`scripts/selftest-verify-io.sh` 守护，task-v189 F11 修复）
+输入=任务描述/CWD/已有 plan（恢复时用）；输出=规划→理解迭代草稿（28.2.2，3-4轮：明确免无价值确认、歧义/多候选才确认）+plan+思路复述（28.2.1，ask 模式）/执行→checkbox+错误/完成→全部 [x]+验证。`config.json#escalation_threshold` 次失败→AskUserQuestion（交互模式语义见 Rule 28）。示例：`mkdir -p plans/task-001/ && cd $_ && bash <skill>/scripts/init-session.sh "<任务名>"`。机器面=`scripts/schemas/check-delegation-stats.schema.json`（check-delegation stats JSON 契约）+ `scripts/verify_io.sh <plan-dir>`（7 文件在位 + delegation stats JSON 断言，`scripts/selftest-verify-io.sh` 守护，task-v189 F11 修复）
 
 ## Chain 模式与协同路由（指针）
 

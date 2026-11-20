@@ -90,12 +90,12 @@
 
 23.1 **检测时机**:plan 创建时(run check-conflicts.sh --runtime)+ 每次 PreToolUse 写入时
 23.2 **四级冲突**:A 同文件(scope_files 交集非空,硬)/ B 同 worktree 路径(硬)/ C 同 task-id/plans 目录重名(硬)/ D 环境信号(软,复用现有五信号)
-23.3 **规避建议**:A/B/C 级 → 串行或新建 worktree/改名;D 级 → 处理信号后继续
+23.3 **规避建议**:A/B/C 级 → 串行或新建 worktree/改名;D 级 → 记录后继续。**worktree 内执行期**：A-D 级冲突/注入均仅作合并期收口记录，不中断执行、不向用户询问 scope，统一延后至合并回阶段(smart-merge-back V3/V5/V6, Rule 101.2)解决
 23.4 **session_id 必须写进 frontmatter**(注册表追踪,Rule 23.5 前提)
 23.5 **scope_files 必须从「执行范围限制」解析**(交集检测基础,Rule 23.2 前提)
 23.6 **fan-out 必须含 Aggregator Phase**(check-complete.sh 硬校验,否则 exit 1)
 23.7 **注册表心跳**:sync-todos.sh --index 每 10 次工具调用自动刷新一次,保持 INDEX.md 活跃 plan 最新
-23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集
+23.8 **Hook 自动检测**:UserPromptSubmit 启动新 plan 时自动跑 --runtime 模式;PreToolUse 写入时检查 scope 交集并注入 `[conflict]` 记录（仅合并期处理，worktree/执行期不打断、不询问）
 
 23.9 **并行创作组声明面（intra-plan 单元 manifest — 衔接 Rule 21.4/21.4.1/47/49，纯增补；task-v130）**:把「场景段落/关键帧批/资产批」建模为创作单元 Unit，每个 Unit 一条工序链 lane（写词→生成→质检→放行→组装）；并行单位=Unit（lane），Unit 内工序强串行。三层声明面：① frontmatter `parallel_groups: [<unit-id>,...]`（组名=创作单元 id）∧ `lanes: [...]`（单元线名册，Rule 49），**一次性声明全部 lane**（frontmatter 受 SHA-256 attest 锁定 Rule 20，执行期追加触发重锁）；② S-unit 表（22.6）增「单元/并行组」列，每行填 `[parallel-group:<unit-id>]`（Rule 21.4 机器可消费组标记，check-dispatch.sh 消费；check-plan-dispatch.sh 只硬校验「执行体」列，加列安全）；③ task_plan.md「📐 创作单元并行表（Lane 状态表）」区块（Rule 49.1，主进程单写者）——列=单元 id/工序链/当前工序/前置 S-unit/前置验收证据/组标记/共享引用集/预估烧秒/状态/最后推进时间。
 23.10 **单元级冲突检测清单（两 Unit 可并行 ⇔ 独立性四问全 no）**:① 文件集相交——写集∩写集≠∅→串行（产出命名空间隔离：每单元写自己的 `output/<ep>/<unit>/` 与 `tmp/<task>/<unit>/`，禁两单元写同一文件）；② 资源相争——同 worktree/分支、同交付物、同计划文件锚点、同预算 piece_id、同 NAS/VERSIONS.md、**同额度窗口**（生成额度=全局共享资源，Σ 在飞 lane 预算 ≤ 当日剩余额度，AGENTS 约束 4）→串行；③ 输入依赖——u2 输入含 u1 产物→串行（21.4 串行保留场景①）；④ 验收依赖——u2 验收需 u1 结果→串行（21.4 场景④，汇合/Aggregator 等齐）。**项目专属冲突类（必须显式枚举，不能只靠通用四问）**：a) 锚件换代（换装/装备变体/母图重抽，共享且可变）→强串行+冻结锁（见 23.12⑥）；b) 同场景组连续成片（AGENTS 约束 9「≤12s 场景组连续成片」）→同场景组镜头=同一 lane 内串行，跨场景组可并行；c) 同单元内 生成→质检→放行→视频 工序依赖→强串行；d) 人工门（草稿门约束 14/试水门约束 16/G1）→lane 内屏障不可并行越过（跨 lane 可同批呈示，降低用户打断次数）；e) 生成额度→资源相争的媒体实例。

@@ -102,7 +102,7 @@ if [ "$RUNTIME" = false ]; then
   fi
 
   if [ "$risk" -eq 0 ]; then
-    echo "[conflict-scan] ✓ 未发现冲突信号;实现类任务仍默认首选工作树隔离(用户可否决)"
+    echo "[conflict-scan] ✓ 未发现冲突信号;实现类任务仍默认首选工作树隔离(默认执行，不就此询问；仅用户显式豁免且合规时直改)"
   fi
   exit $risk
 fi

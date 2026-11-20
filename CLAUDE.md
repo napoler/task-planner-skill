@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 仓库不运行可执行程序，不提供 API——它是一个 skill 包，被 Claude Code / OpenCode 加载后作为子流程工具使用。
 
+**项目定位（2026-11-15 锚定）**：用方法论方案，在不使用高档模型的前提下产出更稳定、更准确的质量内容；子代理优先、专业的事交给专业执行体；持续优化任务执行稳定性，核心是长上下文下的数据流转、记录与压缩优化。完整定位（含用户原话锚）见 [README_zh.md](README_zh.md)「项目定位」。
+
 ## 目录结构
 
 ```

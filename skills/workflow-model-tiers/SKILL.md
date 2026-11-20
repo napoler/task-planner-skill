@@ -8,7 +8,7 @@ trigger: 工作流分档 / workflow 模型 / 子代理模型 / 模型力度 / CC
 
 > 解决痛点：`CreateWorkflow` 的工作流若不显式指定档位，子代理易落到同一默认档位，分诊/格式化与架构规划同价。  
 > 本技能给出：CCR 四档映射 + 脚本写法 + **与 Rule 91 一致的矛盾披露/验证/退化纪律**。  
-> **权威规则**：`plan-collab-router/references/critical-rules-collab.md` **Rule 91**（91.1-91.12）。本技能是用法载体，不得弱化 Rule 91。
+> **权威规则**：`../plan-collab-router/references/critical-rules-collab.md` **Rule 91**（91.1-91.12）。本技能是用法载体，不得弱化 Rule 91。
 
 ## 0) 先读：矛盾披露与可执行验证（P0，Rule 91.2/91.5）
 

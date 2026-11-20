@@ -15,10 +15,11 @@
 #          (ask 模式 D1 批准前置,防未来误删)
 #   TI-12 (task-crossprojauth R7 2026-11-04) 静态守护: critical-rules-discipline.md 28.6 预算自动批准线锚在位
 #   TI-13 (task-crossprojauth R7 2026-11-04) 静态守护: critical-rules-discipline.md 28.7 停等止损锚在位
+#   TI-14 (task-intent-iter-20261117) 静态守护: 28.2.2 指令理解迭代草稿+歧义门控锚在位(discipline+SKILL+core/config 接线)
 # hermetic: mktemp 夹具 + trap 清理, 不触真实 plans/ 与真实 config.json;
 # 各 config 层用例独立 <root> 目录 (resolve 读 <script_dir>/../config.json,
 # 故 config.json 必须放 <root>/config.json 且 resolve copy 到 <root>/scripts/)。
-# 13 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
+# 14 用例全 PASS exit 0; 任一 FAIL exit 1。幂等: 连跑两遍结果一致。
 
 set -u
 
@@ -163,6 +164,24 @@ if [ "$n" -ge 1 ]; then
   PASS=$((PASS+1)); printf 'TI-13 PASS 28.7 static guard (critical-rules-discipline.md 行首 28.7 锚 $n ≥1)\n'
 else
   FAIL=$((FAIL+1)); printf 'TI-13 FAIL 28.7 static guard (critical-rules-discipline.md 行首 28.7 锚缺失)\n'
+fi
+
+# TI-14 (task-intent-iter-20261117): 28.2.2 指令理解迭代草稿+歧义门控静态守护
+# 目的:防条款/接线回退导致“无迭代理解暴露方向+无歧义门控仍无价值确认”。行为面不可脚本测,守护锚点与关键语义词。
+CRIT_CORE="$SCRIPT_DIR/../references/critical-rules.md"
+CFG="$SCRIPT_DIR/../config.json"
+ok14=1
+grep -q '^28\.2\.2 ' "$CRIT_D" || ok14=0
+grep -q '歧义门控' "$CRIT_D" || ok14=0
+grep -q '3-4 轮' "$CRIT_D" || ok14=0
+grep -q '28\.2\.2' "$SCRIPT_DIR/../SKILL.md" || ok14=0
+grep -q '歧义/多候选' "$SCRIPT_DIR/../SKILL.md" || ok14=0
+grep -q '28\.2\.2' "$CRIT_CORE" || ok14=0
+grep -q '28\.2\.2' "$CFG" || ok14=0
+if [ "$ok14" -eq 1 ]; then
+  PASS=$((PASS+1)); printf 'TI-14 PASS 28.2.2 static guard (discipline+SKILL+core+config 理解迭代/歧义门控锚)\n'
+else
+  FAIL=$((FAIL+1)); printf 'TI-14 FAIL 28.2.2 static guard (缺 28.2.2/歧义门控/3-4 轮/接线锚)\n'
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

@@ -299,7 +299,7 @@ if [ -s /tmp/task-planner-conflict-$$ ]; then
   conflict_msg="$(cat /tmp/task-planner-conflict-$$)"
 fi
 rm -f /tmp/task-planner-conflict-$$
-[ -n "$conflict_msg" ] && conflict_msg="\n${conflict_msg}"
+[ -n "$conflict_msg" ] && conflict_msg="\n[并行冲突记录·仅合并期处理·执行不打断(勿就此询问/暂停)]\n${conflict_msg}"
 
 # ─── 组装输出(JSON,additionalContext)─────────────────────────────────────
 out=""

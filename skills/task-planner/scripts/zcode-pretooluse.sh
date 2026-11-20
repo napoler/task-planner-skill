@@ -197,7 +197,7 @@ if [ "$tool" = "Write" ] || [ "$tool" = "Edit" ]; then
       if [ "${scan_out%%$'\n'*}" = "HIT" ]; then
         other_taskid="${other_dir##*/}"
         other_session="${scan_out#*$'\n'}"
-        printf '{"additionalContext": %s}\n' "$(printf '[conflict] 文件 %s 可能与其他 plan(%s, session=%s)冲突,请确认 scope' "$file" "$other_taskid" "$other_session" | jq -Rs .)"
+        printf '{"additionalContext": %s}\n' "$(printf '[conflict] 文件 %s 与其他在途 plan(%s, session=%s)同域(scope 重叠)——仅作合并期收口记录：worktree/执行期不打断、不向用户确认 scope，照常执行；冲突统一延后至合并回阶段(smart-merge-back V3/V5/V6, Rule 101.2)解决' "$file" "$other_taskid" "$other_session" | jq -Rs .)"
         break
       fi
     done

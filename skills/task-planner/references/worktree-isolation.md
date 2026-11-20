@@ -6,24 +6,24 @@
 
 `bash scripts/check-conflicts.sh` → 五类信号（exit 0 安全 / 1 有风险）：
 
-| 信号 | 含义 | 权重 |
-|------|------|------|
-| ① 未提交变更 | 与任务范围重叠会互相踩踏 | 直接开发必须先向用户报告并获认可 |
-| 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。 | | |
-| ② 额外 worktree | 可能有并行工作 | 强烈建议隔离 |
-| ③ 遗留 wt/* 分支 | 未合并的隔离工作 | 先问用户：合并/废弃 |
-| ④ INDEX 待处理任务在册 | 并行会话可能同时推进 | 建议隔离 |
-| ⑤ 运行中基础设施改动 | 改动即影响所有会话 | 强烈建议隔离 |
+| 信号 | 含义 | 处置（默认不打断执行） |
+|------|------|------------------------|
+| ① 未提交变更 | 与任务范围重叠会互相踩踏 | 实现类任务默认隔离：创建 worktree 前按 §4 ①-备份 清理/备份主仓改动并登记，执行期不打断；合并期按 §4/§6 + V3 解决 |
+| 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项（呈报记录，不因此向用户发起是否隔离/是否继续的确认）。 | | |
+| ② 额外 worktree | 可能有并行工作 | 记录并行态；实现类任务仍默认隔离执行，不打断 |
+| ③ 遗留 wt/* 分支 | 未合并的隔离工作 | 登记遗留状态；不阻断本任务隔离执行，合并/清理由对应任务收口 |
+| ④ INDEX 待处理任务在册 | 并行会话可能同时推进 | 记录并行态；实现类任务仍默认隔离执行，不打断 |
+| ⑤ 运行中基础设施改动 | 改动即影响所有会话 | 记录风险；实现类任务默认仍隔离推进，不打断 |
 
-结果 + 决策写入 task_plan.md「🔀 隔离决策」区块，随计划展示给用户。
+结果 + 决策写入 task_plan.md「🔀 隔离决策」区块，随计划记录（实现类默认直接执行，不就隔离/冲突向用户发起确认询问；执行期冲突仅记录、合并期解决）。
 
 ## 2. 决策矩阵
 
 | 任务类型 | 默认 | 说明 |
 |----------|------|------|
-| 实现类（代码/配置/基础设施/技能） | **worktree** | 用户未否决即隔离 |
-| 纯文档/调研/计划类（只写 plans/、.md） | direct | 不影响运行行为;用户要求时仍可隔离 |
-| 信号⑤ 命中（基础设施有未提交改动） | worktree + 强烈建议 | 或先请用户处理未提交变更 |
+| 实现类（代码/配置/基础设施/技能） | **worktree** | 默认隔离并直接执行；**禁止**就该安全默认向用户发起确认/询问。仅用户**显式**要求“直接改不用 worktree”且命中 AGENTS.md §11.5 豁免时才直改并登记理由 |
+| 纯文档/调研/计划类（只写 plans/、.md） | direct | 不影响运行行为；用户显式要求时仍可隔离 |
+| 信号⑤ 命中（基础设施有未提交改动） | worktree + 强烈建议 | 默认仍按隔离推进并呈报风险/看点；仅在用户显式豁免且合规时才不隔离 |
 | 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。 | | |
 
 ## 3. 路径规范（消除散落 — 2026-08-29 立；2026-11-04 修订为 Rule 100 内放）
@@ -48,6 +48,12 @@
 ## 4. 生命周期（最小命令集）
 
 ```bash
+# ①-备份(前置): 主仓存在未提交变更时先做 git 备份,使主仓工作区干净、worktree 从稳定基线(main)创建,避免并行改动干扰且降低合并期 V3(scope 重叠)误拦
+#    推荐(保留 plans/ 与 tmp/ 等会话协调/临时目录,仅备份其余改动): 
+#      git -C ${PROJECT_ROOT} stash push -u -m "pre-wt-backup:<task-id>" -- . ':(exclude)plans' ':(exclude)tmp'
+#    备份引用(如 stash@{0}/摘要)登记「隔离决策」;主仓已干净则跳过。⑥ 收尾后按需恢复(恢复前重跑 6.1 同落点盘点)。
+#    注: worktree 自 main 创建已天然隔离于主仓工作区;①-备份用于清理主仓脏状态与稳定合并回,非 worktree 内容来源。
+
 # ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>;前置: ${PROJECT_ROOT}/.gitignore 含 tmp/ (Rule 100.2))
 git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
 
@@ -57,7 +63,7 @@ git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
 #    任一不一致 = 禁止开发，从主工作分支同步正确版本后重校，校验结果登记「隔离决策」区块（规则版本锚）；
 #    创作与审查必须同一规则版本快照，禁按旧规创作/按新规判 FAIL（判例 EP34 BLOCKER 纯流程性返工）。
 
-# ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)
+# ② 开发:所有文件操作用 worktree 绝对路径(CWD 不迁移!)——worktree 文件隔离保证执行期稳定,不受其他并行开发工作区改动干扰
 #    子代理派发时在 prompt 中写明 worktree 绝对路径
 
 # ③ worktree 内提交 — 每 Phase 完成即提交(Rule 27),禁止攒批到最后;禁止把未提交变更带回合并
@@ -65,14 +71,16 @@ git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
 git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> add <本 Phase 产物文件...>
 git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
 
-# ④ worktree 内全 VC 复验通过后,回主仓合并
+# ④ worktree 内全 VC 复验通过后,回主仓合并(同步开发冲突仅在此阶段处理,执行期不打断)
 git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"
 
 # ⑤ 清理
 git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/<task-id>
 
-# ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>)
+# ⑥ 主仓复验:Read 关键文件确认合并结果,更新 task_plan.md merge_back=merged(<commit>);按需恢复 ①-备份(stash pop/apply 前重跑 6.1)
 ```
+
+**执行期不打断原则（P0，对齐用户裁决）**：worktree 内执行**不因并行开发/其他在途 plan 的 Rule 23 同域冲突（`[conflict]` 注入、信号①-⑤、scope 重叠提示）而暂停或向用户发起 scope/是否继续确认**——冲突仅作记录，**统一延后至 ④ 合并回阶段**由 `smart-merge-back.sh` V3/V5/V6 与 Rule 101.2 解决。worktree 文件隔离 + ①-备份 保证执行稳定；冲突收口属于合并义务，不属于执行期阻塞。
 
 复杂场景（多工作树编排/上游同步）可调用 `Skill("using-git-worktrees")`。
 
@@ -83,7 +91,7 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
 ```
 1. worktree 内全部 Phase = complete,VC 逐条复验通过
 2. worktree 内无未提交变更(git status 干净)
-3. 主仓无与任务范围重叠的未提交变更(信号①残余风险;有 → STOP 报告用户)
+3. 主仓无与任务范围重叠的未提交变更(信号①残余风险;①-备份已清理则通常满足;仍有重叠 → STOP 报告用户,按 V3/合并期处理,非执行期打断)
    STOP 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项
 4. merge 后:主仓 Read 关键文件复验 + git log 确认 merge commit
 5. 清理 worktree 与分支;task_plan.md「隔离决策」merge_back 更新为 merged(<commit>)
@@ -101,14 +109,16 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
 - ❌ 合并后不清理 worktree/分支(遗留 wt/* 是下次冲突信号③)
 - ❌ 切换会话 CWD 到 worktree(破坏哨兵与 hook 相对路径约定)
 - ❌ 将 worktree/临时文件放在当前项目 tmp/ 之外(2026-11-04 Rule 100 内放;旧仓外集中目录路径已废止,见 §3)
+- ❌ 因 Rule 23 并行冲突注入(`[conflict]`)/信号①-⑤/scope 重叠提示在 worktree 执行期暂停或向用户询问确认(冲突仅记录,统一延后至 ④ 合并回/V3/V5/V6 解决)
 
 ## 6. 并行任务同落点冲突与排队续跑（2026-10-16 立）
 
 > 判例：task-v179（worktree 内 Rule 87）/task-v181（主仓直改 Rule 89）/task-v180（排队殿后 Rule 88）三任务同日竞写 `critical-rules-discipline.md` 末段与 SKILL.md 索引行——目录隔离各自合规仍发生冲突。**目录不冲突 ≠ 落点不冲突**；隔离必须从目录级升级到落点级。工作树隔离防的是「工作中互相覆盖」，防不了「汇合时抢同一追加锚点」与「协调态各会话各见一个世界」。
+> **与 worktree 执行期不打断原则的关系**：worktree 内执行不因并行冲突/Rule 23 注入中断（§4 原则）；本节 6.1 的“开工前盘点”仍须执行并登记落点交集/排队意图，但**不阻断 worktree 内开发推进**——同落点冲突作为合并期风险登记，由 ④ 合并回阶段解决（V3/V5/V6+101.2 并集解/复验）。主仓直改/非隔离场景发现实时覆盖风险时，仍按 6.2 STOP 排队续跑。
 
 ### 6.1 同落点盘点（开工前强制；L0-T 直改主仓前同样适用）
 
-动笔前三查（任一命中 → 先排队再动笔）：
+动笔前三查（任一命中 → 登记落点交集与排队/殿后意图；**worktree 内不阻断执行**，冲突留合并期解决；**主仓直改/非隔离场景**命中同落点实时覆盖风险时先排队再动笔）：
 
 1. 在途计划落点交集：`ls plans/ | grep -v archive` 列在途任务，对照各自 task_plan.md 的 scope_files/落点文件，与本次落点取交集；
 2. 台账在途占用：`plans/.rule-reservations.jsonl` 尾部（或 `rule-reserve.sh list`）reserved 未 land 行，指向同文件同锚点的在途任务；
@@ -118,7 +128,7 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
 
 ### 6.2 STOP 排队续跑语义（替代死停）
 
-执行中才发现与在途任务重叠时，STOP 本身正确（不停 = 两会话互写同文件）；但 STOP 报告必须携带三件套，把「死停」变「排队」：
+执行中才发现与在途任务重叠时：**worktree 内执行不打断**，登记阻塞对象/合并期收口计划后继续（冲突由 ④ 合并回解决）；**主仓直改/非隔离场景**下实时覆盖风险仍 STOP，但 STOP 报告必须携带三件套，把「死停」变「排队」：
 
 1. **阻塞对象**：在途任务 ID + 其落点文件/锚点；
 2. **恢复条件**：可观察信号（对端 land 行出现在台账 / 对端 commit 出现于 master / worktree 已删）；
