@@ -241,6 +241,13 @@ case "$ACTION" in
         # 基线行为: glob 直接枚举, archive 子目录若含 .session-owner 将参与匹配。
         SKIP_SIDE_WRITE=0
         claimant=""
+        # [2026-11-20 task-pointer-switch-defect-20261120] claimant 选取改为 owner 文件 mtime 最新者优先
+        # 现象: 多计划残留同 sid 的 .session-owner 时，WARN 指认的阻塞者常是字母序最前的任意旧计划，
+        #   而非最近活跃的占用者，文案误导用户排障方向。
+        # 根因: 原循环在首个 grep 命中处 break，仅按 glob 字母序取 claimant，未比较多个占用者的活跃时间。
+        # 修法: 遍历全部命中项，以 .session-owner 的 mtime(epoch 秒, stat -c %Y)最大者为 claimant；
+        #   --force/--sid 解析、原子写与 gc 分支不变。
+        claimant_mtime=0
         if [ -d "$PLAN_ROOT" ]; then
             for ownfile in "$PLAN_ROOT"/*/.session-owner; do
                 [ -f "$ownfile" ] || continue
@@ -251,18 +258,31 @@ case "$ACTION" in
                 # Why: 原 `^sess${SID}` 仅匹配带 sess 前缀 owner; 裸 uuid owner 会话(无 sess 前缀)被漏判,
                 #   守卫失效直接写入(trample)。修法=兼容双形态, 整行锚定($)实现 norm 后比较。
                 if grep -qE "^(sess)?${SID}$" "$ownfile" 2>/dev/null; then
-                    claimant="$(basename "$(dirname "$ownfile")")"
-                    break
+                    own_mtime="$(stat -c %Y "$ownfile" 2>/dev/null || printf '0')"
+                    case "$own_mtime" in ''|*[!0-9]*) own_mtime=0 ;; esac
+                    if [ -z "$claimant" ] || [ "$own_mtime" -gt "$claimant_mtime" ]; then
+                        claimant="$(basename "$(dirname "$ownfile")")"
+                        claimant_mtime="$own_mtime"
+                    fi
                 fi
             done
         fi
+        # [2026-11-20 task-pointer-switch-defect-20261120] G3 claimant in_progress 判定锚定状态控制行
+        # 现象: 注释、模板散文或说明段落在出现 in_progress 字样时，旧全文不锚定匹配误判 claimant 在途，
+        #   导致无谓 skip 写入并输出错误阻塞者（用户投诉的指针反复报错诱因之一）。
+        # 根因: 判定扫 claimant 的 task_plan.md 全文任意行，未按状态控制行边界约束。
+        # 修法: 仅命中以 [-*] 引导、可选加粗的 Status: in_progress 行（与 init-session.sh 同款正则），
+        #   兼容 - **Status:** in_progress 与 - Status: in_progress 两种真实形态；gc 已完成态判定不动。
         if [ -n "$claimant" ] && [ "$claimant" != "$pid" ]; then
             if [ -f "$PLAN_ROOT/$claimant/task_plan.md" ] \
-               && grep -qi 'Status.*in_progress' "$PLAN_ROOT/$claimant/task_plan.md" 2>/dev/null; then
+               && grep -Eq '^[[:space:]]*[-*][[:space:]]*(\*\*)?Status:(\*\*)?[[:space:]]*in_progress' "$PLAN_ROOT/$claimant/task_plan.md" 2>/dev/null; then
                 if [ -n "$FORCE_FLAG" ]; then
                     echo "[active-plan] WARN: side 键 sid=${SID} 已被在途计划 ${claimant} 声明，--force 覆盖，继续写入" >&2
                 else
-                    echo "[active-plan] WARN: side 键 sid=${SID} 已被在途计划 ${claimant} 声明，skip 写入防沿袭互踩；--force 可覆盖" >&2
+                    # [2026-11-20 task-pointer-switch-defect-20261120] G4: 明确「指针未切换」前缀，避免 exit 0 被误读为切换成功
+                    # Why: 调用点已评估（zcode-sessionstart gc/selftest×2/plan-hygiene/plan-doctor 均提示性，
+                    #   无 hook 依赖 set 子命令退出码），故保持 exit 0 不改码，仅以文案显式声明未切换；--force 文案不动。
+                    echo "[active-plan] WARN: 指针未切换：side 键 sid=${SID} 已被在途计划 ${claimant} 声明，skip 写入防沿袭互踩；--force 可覆盖" >&2
                     SKIP_SIDE_WRITE=1
                 fi
             else

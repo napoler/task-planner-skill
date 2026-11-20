@@ -1173,7 +1173,13 @@ if [ -n "$SIDSRC" ]; then
     #    新鲜窗探测(有 sidmap=身份已确定,绝不抢他会话); sidmap 内容损坏(_mapped 为空)同样跳过
     #    ②(fail-conservative: 指针按 env sid 落盘,不抢)。修后语义: ① sidmap 在→用映射键;
     #    ② 无 sidmap→新鲜窗探测; ③ 其余→env key 原样。
-    _sidmap_checked=0
+    # [2026-11-20 task-pointer-switch-defect-20261120] fallback 身份状态标志（G1 门控）：
+    # What: 记录 SIDKEY 是否来自 freshness fallback 抢用他会话哨兵（:1210-1216 抢用分支）。
+    # Why: fallback 场景下会话身份未确定（sid 属他会话命名空间，D3 事故路径），直写 side 键
+    #   会覆盖他会话指针空间；claimant 守卫据此保留 skip+WARN，仅 env/sidmap 身份确定时才
+    #   通告+直写，根治用户投诉的「反复 --force 切换」同时不破坏防互踩安全性。
+    _sid_fallback=0
+    _sidmap_checked=0   # 既有 sidmap 门控初始化（编辑中曾误删，F4 fallback 夹具捕获后恢复；勿删，:1194 -eq 0 依赖）
     if [ -n "$SIDKEY" ] && [ ! -f "${PLAN_ROOT}/.plan_required_side/${SIDKEY}.plan_required" ]; then
         _sent_dir="${PLAN_ROOT}/.plan_required_side"
         _map="${_sent_dir}/${SIDKEY}.sidmap"
@@ -1205,6 +1211,10 @@ if [ -n "$SIDSRC" ]; then
                 if [ -n "$_sent_sid" ] && [ "$_sent_sid" != "$SIDKEY" ] && [ "$_sent_age" -le 120 ]; then
                     echo "[init] INFO: env sid(${SIDKEY}) 无对应哨兵,fallback 最新哨兵 sid(${_sent_sid}, age=${_sent_age}s≤120s)"
                     SIDKEY="$_sent_sid"
+                    # [2026-11-20 task-pointer-switch-defect-20261120] 标记身份来自 fallback 抢用：
+                    # Why: 该 sid 属他会话哨兵命名空间（D3 事故路径），身份未确定，claimant 守卫须保留
+                    #   skip+WARN 防覆写他会话 side 键（详见下方 claimant 守卫重构注释）。
+                    _sid_fallback=1
                 elif [ -n "$_sent_sid" ] && [ "$_sent_sid" != "$SIDKEY" ]; then
                     echo "[init] WARN: env sid(${SIDKEY}) 无对应哨兵,最新哨兵(${_sent_sid}) age=${_sent_age}s>120s 疑似他会话 → 不抢用;指针按本 env sid 落盘,如错位请跑 set-active-plan.sh set <task> --sid" >&2
                 fi
@@ -1231,11 +1241,27 @@ if [ -n "$SIDSRC" ]; then
             break
         fi
     done
+    # [2026-11-20 task-pointer-switch-defect-20261120] claimant 守卫重构（G1 直写 + G3 锚定）：
+    # 现象: 用户投诉每次新任务 init / D 类切换反复报「指针仍被旧计划声明，需 --force」，2-3 次交互才切换成功。
+    # 根因: ①旧逻辑对同 sid 在途 claimant 一律置 SKIP_SIDE_WRITE=1 静默失切，与「init 于新计划目录执行
+    #   =明确切换意图」冲突，且无 force 通道；②旧判定用不锚定的全文匹配扫 in_progress 字样，
+    #   注释/散文/模板示例误命中，扩大无谓拦截面。
+    # 修法: 身份确定（env/sidmap, _sid_fallback=0）时输出通告后直接写 side 指针（内置 force 语义），
+    #   通告含 claimant 名与挂起/恢复/session-owner 提示；仅 fallback 抢用 sid（_sid_fallback=1）时
+    #   保留 skip+WARN 防覆盖他会话 side 键；判定锚定状态控制行，兼容加粗/非加粗两种真实形态。
+    #   claimant 不存在/已 complete 的 fail-open 分支保持不变。
     if [ -n "$_claimant" ] && [ "$_claimant" != "$(basename "$PWD")" ]; then
         if [ -f "${PLAN_ROOT}/${_claimant}/task_plan.md" ] \
-           && grep -qi 'Status.*in_progress' "${PLAN_ROOT}/${_claimant}/task_plan.md" 2>/dev/null; then
-            echo "[init] WARN: side 键 sid=${SIDKEY} 已被在途计划 ${_claimant} 声明，skip 写入防沿袭互踩" >&2
-            SKIP_SIDE_WRITE=1
+           && grep -Eq '^[[:space:]]*[-*][[:space:]]*(\*\*)?Status:(\*\*)?[[:space:]]*in_progress' "${PLAN_ROOT}/${_claimant}/task_plan.md" 2>/dev/null; then
+            if [ "$_sid_fallback" = "1" ]; then
+                # fallback 抢用他会话 sid，身份未确定：保留 skip+WARN，防覆盖他会话 side 键（D3 路径）。
+                echo "[init] WARN: 会话 id 未确定（freshness fallback），side 键 sid=${SIDKEY} 被在途计划 ${_claimant} 声明，skip 写入防覆盖他会话 side 键" >&2
+                SKIP_SIDE_WRITE=1
+            else
+                # 身份确定：init 于新计划目录执行=明确切换意图，通告后直接写 side 指针（不再置 SKIP_SIDE_WRITE）。
+                echo "[init] NOTICE: 检测到同会话在途计划 ${_claimant}——init 于新计划目录执行=明确切换意图，side 指针切换写入。"
+                echo "[init] 旧计划请按意图切换清单挂起登记并释放 .session-owner 占用；plan-resume 可恢复。"
+            fi
         else
             echo "[init] INFO: side 键 sid=${SIDKEY} 曾被计划 ${_claimant} 声明（已 complete/不存在），fail-open 继续写入"
         fi
