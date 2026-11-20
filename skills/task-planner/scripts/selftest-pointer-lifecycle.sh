@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# selftest-pointer-lifecycle.sh — task-v159: 指针与部署生命周期守护面（PL-01..10）
-# What: 静态断言 7（PL-01..07: gc 全局指针生命周期 / 哨兵-side 缺口巡检 / set 所有权守卫 /
-#      set ROOT fallback 修正 / deploy staging+post-verify / check-complete 移交提醒 / SKILL 移交纪律行）
-#      + 行为断言 3（PL-08 set ROOT 回归 / PL-09 stale 夹具 gc / PL-10 所有权守卫夹具）。
+# selftest-pointer-lifecycle.sh — task-v159: 指针与部署生命周期守护面（PL-01..14）
+# What: 静态断言 8（PL-01..07: gc 全局指针生命周期 / 哨兵-side 缺口巡检 / set 所有权守卫 /
+#      set ROOT fallback 修正 / deploy staging+post-verify / check-complete 移交提醒 / SKILL 移交纪律行；
+#      PL-14 fallback 身份门控静态锚）
+#      + 行为断言 6（PL-08 set ROOT 回归 / PL-09 stale 夹具 gc / PL-10 所有权守卫夹具 /
+#        PL-11 init 一次切换 / PL-12 非加粗不漏判 / PL-13 注释散文不误拦）。
 #      行为级夹具全部在 /tmp 隔离仓（mktemp -d），禁触真实 plans/ 与真实 side 键。
 # Why: 守护 design-pointer-fix.md §新 selftest 断言清单 的 F1-F5 机制点（D1-D5）不回退；
 #      守措辞不守行为错位复发风险（53.2/59.6 范式），行为级断言补齐「改了源码但行为错」盲区。
@@ -10,6 +12,7 @@
 # 全 PASS exit 0；任一 FAIL exit 1。
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INIT="$SCRIPT_DIR/init-session.sh"
 SET="$SCRIPT_DIR/set-active-plan.sh"
 MERGE="$SCRIPT_DIR/smart-merge-back.sh"
 COMPL="$SCRIPT_DIR/check-complete.sh"
@@ -94,5 +97,77 @@ else
   bad "PL-10" "守卫行为异常: OUT=[$OUT10] side_exists=$([ -f "$SIDE10" ] && echo 1 || echo 0)"
 fi
 
-echo "Total: 10 PASS=$PASS FAIL=$FAIL"
+# ── 行为断言 PL-11..14（2026-11-20 task-pointer-switch-defect-20261120；四类场景对应 G1/G3/G4）──
+# What: 固化 P1/P2 四类修复场景为回归断言——PL-11 init 一次切换（G1）、PL-12 非加粗不漏判（G3/G4）、
+#       PL-13 注释/散文不误拦 fail-open（G3）、PL-14 fallback 身份门控保留（G1 静态锚）。
+# Why: 2026-11-20 用户投诉「每次 init/D 类切换反复报指针错误、2-3 次 --force 才成功」；P1/P2 已改
+#       init-session.sh 与 set-active-plan.sh 守卫语义，若后续回退（skip 静默失切 / 全文裸匹配误伤 /
+#       fallback 覆写他会话 side 键）须由本 selftest 立即抓住，而非靠人工复查。
+# 夹具范式：沿用现有 $TMP（mktemp -d + EXIT trap 统一清理），每条断言独立子目录 + 不同随机 sid 前缀
+#           （pl11/pl12/pl13）防 claimant glob 互扰；目标计划一律含 task_plan.md（require_plan 校验要求）。
+
+# PL-11 [G1] init 一次切换：夹具=old-claimant（加粗 `- **Status:** in_progress` + owner=sess<sid>）
+#       + new-task 目录；export CLAUDE_CODE_SESSION_ID 后 cd new-task 跑 init-session.sh。
+#       判据=side 键内容=new-switch-task，且 stdout/stderr 含「明确切换意图」与 claimant 名、无「skip 写入」。
+mkdir -p "$TMP/p11/plans/old-claimant" "$TMP/p11/plans/new-switch-task"
+printf '%s\n' '### Phase 1' '- **Status:** in_progress' > "$TMP/p11/plans/old-claimant/task_plan.md"
+SID11="pl11${RANDOM}$$"
+printf 'sess%s\n' "$SID11" > "$TMP/p11/plans/old-claimant/.session-owner"
+INIT_OUT11="$( export CLAUDE_CODE_SESSION_ID="$SID11"; cd "$TMP/p11/plans/new-switch-task" && bash "$INIT" 2>&1 )"
+SIDE11="$TMP/p11/plans/.active_plan_side/${SID11}.active_plan"
+if [ -f "$SIDE11" ] && grep -qx 'new-switch-task' "$SIDE11" \
+   && printf '%s' "$INIT_OUT11" | grep -q '明确切换意图' \
+   && printf '%s' "$INIT_OUT11" | grep -q 'old-claimant' \
+   && ! printf '%s' "$INIT_OUT11" | grep -q 'skip 写入'; then
+  ok "PL-11 init 一次切换（G1: 同 sid 在途 claimant → 通告+直写 side=new-switch-task, 无 skip）"
+else
+  bad "PL-11" "init 一次切换场景异常: side=$([ -f "$SIDE11" ] && cat "$SIDE11" || echo '<无>') OUT=[$INIT_OUT11]"
+fi
+
+# PL-12 [G3/G4] 非加粗不漏判：claimant=`- Status: in_progress`（非加粗形态）+ owner，set target-12。
+#       判据=输出含「指针未切换」（G4 文案）且 side≠target（锚定正则兼容非加粗，G3 不漏判）。
+mkdir -p "$TMP/p12/plans/nonbold-claimant" "$TMP/p12/plans/target-12"
+printf '%s\n' '- Status: in_progress' > "$TMP/p12/plans/nonbold-claimant/task_plan.md"
+printf '%s\n' '### Phase 1' '- **Status:** pending' > "$TMP/p12/plans/target-12/task_plan.md"
+SID12="pl12${RANDOM}$$"
+printf 'sess%s\n' "$SID12" > "$TMP/p12/plans/nonbold-claimant/.session-owner"
+SIDE12="$TMP/p12/plans/.active_plan_side/${SID12}.active_plan"
+OUT12="$(cd "$TMP/p12" && bash "$SET" set target-12 --sid "$SID12" "$TMP/p12" 2>&1 || true)"
+if printf '%s' "$OUT12" | grep -q '指针未切换' \
+   && { [ ! -f "$SIDE12" ] || ! grep -qx 'target-12' "$SIDE12"; }; then
+  ok "PL-12 非加粗不漏判（G3/G4: - Status: in_progress 命中守卫, 输出指针未切换且 side≠target）"
+else
+  bad "PL-12" "非加粗不漏判场景异常: OUT=[$OUT12] side=$([ -f "$SIDE12" ] && cat "$SIDE12" || echo '<无>')"
+fi
+
+# PL-13 [G3] 注释/散文不误拦：claimant 仅注释行 + 散文行含 in_progress 字样 + `- **Status:** complete`，
+#       set target-13。判据=side=target-13（fail-open 写入成功），注释/散文不得被误判为在途 claimant。
+mkdir -p "$TMP/p13/plans/annotated-claimant" "$TMP/p13/plans/target-13"
+printf '%s\n' '<!-- 历史注释 Status: in_progress 仅说明 -->' \
+  '- Update phase status as you progress: pending → in_progress → complete' \
+  '- **Status:** complete' > "$TMP/p13/plans/annotated-claimant/task_plan.md"
+printf '%s\n' '### Phase 1' '- **Status:** pending' > "$TMP/p13/plans/target-13/task_plan.md"
+SID13="pl13${RANDOM}$$"
+printf 'sess%s\n' "$SID13" > "$TMP/p13/plans/annotated-claimant/.session-owner"
+SIDE13="$TMP/p13/plans/.active_plan_side/${SID13}.active_plan"
+OUT13="$(cd "$TMP/p13" && bash "$SET" set target-13 --sid "$SID13" "$TMP/p13" 2>&1 || true)"
+if [ -f "$SIDE13" ] && grep -qx 'target-13' "$SIDE13" \
+   && ! printf '%s' "$OUT13" | grep -q '指针未切换'; then
+  ok "PL-13 注释/散文不误拦（G3: 注释+散文含字样但状态 complete → fail-open 写入 side=target）"
+else
+  bad "PL-13" "注释/散文不误拦场景异常: OUT=[$OUT13] side=$([ -f "$SIDE13" ] && cat "$SIDE13" || echo '<无>')"
+fi
+
+# PL-14 [G1] fallback 门控保留（静态断言）：伪造 freshness fallback（无 sidmap + 抢用 ≤120s 他会话哨兵）
+#       需构造哨兵 mtime 与命名空间，成本高且脆弱，故降级为静态锚：init-session.sh 须同时含
+#       `_sid_fallback=1` 标记设置与「会话 id 未确定」WARN 文案。守住 fallback 时保留 skip+WARN、
+#       不覆盖他会话 side 键（D3 事故路径）的门控语义不被后续改动删除。
+if [ "$(cnt '_sid_fallback=1' "$INIT")" -ge 1 ] \
+   && [ "$(cnt '会话 id 未确定' "$INIT")" -ge 1 ]; then
+  ok "PL-14 fallback 门控保留（G1: 静态锚 _sid_fallback=1 + 「会话 id 未确定」WARN 在位）"
+else
+  bad "PL-14" "fallback 门控保留场景异常: init-session.sh 缺 _sid_fallback=1 或未确定 WARN 锚"
+fi
+
+echo "Total: 14 PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
