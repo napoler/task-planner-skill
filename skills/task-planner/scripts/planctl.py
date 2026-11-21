@@ -1143,14 +1143,35 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
     ]
     phases = _arr(doc, "phases")
     # [2026-11-22 task-jsonderive-deploy-20261122] What: 逐 Phase 输出 ### 标题 + Status/Started 行。
-    # Why: check-3file-gate.sh 从 task_plan.md 取 in_progress Phase、从 progress.md 取 Started 锚点；
+    # Why: check-3file-gate.sh 从 task_plan.md 取 in_progress Phase、从 progress.md取 Started 锚点；
     #       简表无法提供 `### Phase N:` 标题，门控会静默退化为「无活动 Phase」。
+    # [C-1 修复] What: 每 Phase 块内追加 `- **Executor:**` 行 + 该 Phase 的 S-unit 表（10 列锁序）。
+    # Why: check-plan-dispatch.sh:59 以全文级 `^- \*\*Executor:\*\*` 判现代计划，:47/:51 以 `## ` 收段
+    #       ——S-unit 表必须在 ### Phase 块内（下一个 ## 之前）才落解析面；独立顶层段被跳过（CR-1）。
+    s_units_all = _arr(doc, "s_units")
     if phases:
-        lines += ["", "## Phase 锚点明细（3file-gate 解析面）"]
+        lines += ["", "## Phase 锚点明细（3file-gate/plan-dispatch 解析面）"]
         for p in phases:
+            pid = _cell(p.get("id", ""))
+            ph_sus = [s for s in s_units_all if s.get("phase") == pid]
+            executors = "、".join(dict.fromkeys(
+                str(s.get("executor", "")).strip() for s in ph_sus if str(s.get("executor", "")).strip()
+            )) or "-"
+            su_rows = []
+            for s in ph_sus:
+                name = _cell(s.get("name", ""))
+                actions = _cell(s.get("actions", ""))
+                goal = f"[{_cell(pid)}] {name}" + (f"（{actions}）" if actions else "")
+                su_rows.append([_cell(s.get("id", "")), goal, _cell(s.get("executor", "")),
+                                _cell(s.get("files", "")), _cell(s.get("verify", "")),
+                                _cell(s.get("duration", "")), _cell(s.get("granularity", "")),
+                                _cell(s.get("parallel", "")) or "无", "-", "pending"])
             lines += ["", f"### Phase {_phase_no(p.get('id'))}: {_cell(p.get('name', ''))}".rstrip(),
                       f"- **Status:** {_cell(p.get('status', 'pending'))}",
-                      f"- **Started:** {_cell(p.get('started', ''))}"]
+                      f"- **Started:** {_cell(p.get('started', ''))}",
+                      f"- **Executor:** {executors}"]
+            if su_rows:
+                lines += [_md_table(SUNIT_HEADERS, su_rows)]
 
     understanding = _obj(doc, "understanding")
     if understanding:
@@ -1234,18 +1255,6 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                          [[x.get("phase"), x.get("tools"), x.get("why")] for x in tool_use],
                          _EMPTY % "工具选择")]
 
-    s_units = _arr(doc, "s_units")
-    if s_units:
-        rows = []
-        for s in s_units:
-            name = _cell(s.get("name", ""))
-            actions = _cell(s.get("actions", ""))
-            goal = f"[{_cell(s.get('phase', ''))}] {name}" + (f"（{actions}）" if actions else "")
-            rows.append([_cell(s.get("id", "")), goal, _cell(s.get("executor", "")),
-                         _cell(s.get("files", "")), _cell(s.get("verify", "")),
-                         _cell(s.get("duration", "")), _cell(s.get("granularity", "")),
-                         _cell(s.get("parallel", "")) or "无", "-", "pending"])
-        lines += ["", "## 🧩 S-units 派发单元表（10 列锁序）", _md_table(SUNIT_HEADERS, rows)]
 
     anti_regress = _arr(doc, "anti_regress")
     if anti_regress:
@@ -1520,8 +1529,17 @@ def cmd_render(args: argparse.Namespace) -> int:
         idx = {}  # 索引损坏不影响视图生成（状态文件仍是权威源），但不吞掉写入错误
     tid = doc["task_id"]
     stamp = f"- task_id: `{tid}`\n- 时间: created_at={doc['created_at']} / updated_at={doc['updated_at']}\n"
-    meta = (f"- plan_tier: `{doc['plan_tier']}` / execution_lane: `{doc['execution_lane']}` "
-            f"/ schema_version: {doc['schema_version']}\n")
+    # [2026-11-22 task-jsonderive-deploy-20261122 C-2 修复] What: meta 行改行首裸格式（无反引号）。
+    # Why: check-3file-gate/check-complete/check-plan-dispatch/check-tier-consistency 等门以
+    #       `plan_tier: mini`/`execution_lane: L0` 裸子串或行首锚 grep；反引号包裹使匹配全部落空
+    #       → L0/mini 门控静默失效（CR-1 C-2）。原行为=反引号列表行，删除。
+    _tt = doc.get("template_type")
+    meta_lines = [f"plan_tier: {doc['plan_tier']}",
+                  f"execution_lane: {doc['execution_lane']}",
+                  "schema_version: " + str(doc["schema_version"])]
+    if _tt:
+        meta_lines.insert(0, f"template_type: {_tt}")
+    meta = "\n".join(meta_lines) + "\n"
     top_tags = ", ".join(doc["tags"]) or "（无）"
 
     views: dict[str, str] = {
