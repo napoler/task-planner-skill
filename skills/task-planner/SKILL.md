@@ -305,19 +305,21 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 
 > [2026-11-21 task-json-state-20261121] 结构化状态升级硬条款；与上文「派发与执行纪律指针」并列，适用于所有使用 task-planner 的计划目录。
 
-- **权威源声明**：`<plan-dir>/plan-state.json` 是任务状态**唯一权威源**；`task_plan.md` / `progress.md` / `verification.md` / `findings.md` 是由 `planctl.py render` 生成的**只读视图**（禁止把视图当权威源直接改）。
-- **硬规则（违反=流程无效）**：所有 Phase / VC / findings / 审计 / tags 状态变更**必须**通过 `python3 <skill>/scripts/planctl.py <subcommand>` 完成（`<skill>` = 本技能根目录，脚本绝对路径 `scripts/planctl.py`）；禁止 Agent 直接 Edit/Write 上述四个 MD 文件来改状态。
+- **权威源声明**：`<plan-dir>/plan-state.json` 是任务状态**唯一权威源**，承载全部语义数据（Phase/VC/审计/派发 + Actions/Error Log/Test Results/Research/Decisions/Issues/S-units/FMEA 等全部语义段，2026-11-22 task-jsonderive-deploy-20261122 全量扩张）；`task_plan.md` / `progress.md` / `verification.md` / `findings.md` 是由 `planctl.py render` 从 JSON **全量派生**的只读视图。
+- **硬规则（违反=流程无效）**：所有状态与语义数据变更**必须**通过 `python3 <skill>/scripts/planctl.py <subcommand>` 完成（`<skill>` = 本技能根目录，脚本绝对路径 `scripts/planctl.py`）；**四个 MD 视图一律不得手工 Edit/Write**——手工编辑会在下一次 `render` 被全量覆盖（软堵：render 覆盖使直接编辑无效，用户裁决 2026-11-22）。语义内容（动作/错误/测试/结论/决策/证据）同样走 CLI 入 JSON 再 `render` 同步视图。
 - **常用命令速查**（每条均需追加 `--plan-dir <plan-dir>`）：
-  - 初始化：`init --task-id <id> --tier standard --lane L1`（tier 可选 standard/mini；lane 可选 L0/L1/L2；state 已存在则拒绝覆盖）
+  - 初始化：`init --task-id <id> --tier standard --lane L1`（tier 可选 standard/mini；lane 可选 L0/L1/L2；state 已存在则拒绝覆盖；init 后自动 render 生成 4 视图）
   - 读取：`get`（整份）/ `get --section <section> --id <id>` / `status` / `validate`
-  - 改字段 / 增条目：`set --section <s> --id <id> --field <f> --value <v>` / `add --section <s> --json '<JSON>'`（另有 `update` / `delete`）
-  - Phase / VC：`phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`
+  - 改字段 / 增条目：`set --section <s> --id <id> --field <f> --value <v>` / `add --section <s> --json '<JSON>'`（另有 `update` / `delete`；`set` 不带 `--section` 可写顶层标量/对象字段）
+  - Phase / VC：`phase-start --id P1`（置 in_progress+Started 锚）/ `phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`
+  - 语义段落盘（执行期高频，全部 JSON 入库后由 render 呈现）：`add --section actions --json '{"id":"A1","phase":"P1","text":"..."}'`；`add --section errors --json '{"id":"E1","timestamp":"...","error":"...","attempt":1,"resolution":"...","root_cause":"...","prevention":"...","trigger":"..."}'`；`add --section test_results|research|decisions|issues|resources|visual|knowledge_use|s_units|fmea ...`（36 个 section 通用 CRUD）
+  - Goal 证据（evidence 门数据源）：`add --section goals --json '{"id":"G1","text":"...","evidence":"命令 + PASS + 绝对路径"}'`
   - 审计留痕：`audit-add --round 1 --verdict APPROVED --by <审计体> --c 0 --i 0`（0C/0I 才可 APPROVED）
   - 标签：`tag-add --section <s> --id <id> --tag <tag>` / `tag-search --tag <tag>`
-  - 生成视图 / 安全回退：`render`（从 JSON 重写 4 个 MD 视图，状态变更后按需执行）/ `backup` / `restore [--version N]` / `history`
+  - 生成视图 / 安全回退：`render`（从 JSON **全量重建** 4 个 MD 视图；**每次状态/语义变更后必须 render**，这是软堵生效条件——不 render 则手工编辑残留不被覆盖）/ `backup` / `restore [--version N]` / `history`
 - **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。
 - **机器门**：`python3 scripts/planctl.py check vc-nonvacuous|rvc|audit|evidence` 输出单行 `PLANCTL CHECK <name>: PASS|FAIL <reason>`，rc 0=PASS / 1=FAIL / 2=输入异常；旧门脚本为双读 shim，前缀与 rc 外契约不变。
-- **迁移期**：存量无 `plan-state.json` 的计划沿用旧流程（MD 直接维护 + 原正则门），机器门双读 fallback 保证零回归；`init-session.sh` 创建新计划时幂等生成 plan-state.json（不调用 render，MD 视图保持现状）。
+- **迁移期**：存量无 `plan-state.json` 的旧计划一次性兼容（机器门双读 fallback 保证零回归），**新计划一律 JSON 权威源**：`init-session.sh` 创建 plan-state.json 后立即 `render` 生成 4 个派生视图（2026-11-22 起取消"不调用 render"旧口径）。templates/*.md 自此仅为 render 结构参考与 stub 判定基准，不再是人工填写面。
 
 ## References
 

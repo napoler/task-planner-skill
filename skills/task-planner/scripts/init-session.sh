@@ -1065,11 +1065,14 @@ else
 fi
 # [2026-11-21 task-json-state-20261121] 结构化权威源初始化（JSON mode, planctl.py init）:
 # What: 在 6/6（或 3/3）verified + user-session-log verified 之后、silent attest 之前，幂等生成
-#       <plan-dir>/plan-state.json；已存在则跳过，且**不调用 render**（MD 视图保持当前现状）。
-# Why: JSON 成为任务状态唯一权威源；首次 init 只建权威源，不覆盖刚渲染好的 MD（render 会与用户
-#       已填内容冲突）。planctl init 自身也拒覆盖已有文件，双保险。
-# fail-open: 调用失败（python 缺失/模板缺失/参数异常）不阻断原 init 流程；stderr 收敛但以 WARN
-#            显式暴露（原流程无本步骤，最坏结果=退回纯 MD 流程，不静默吞错）。
+#       <plan-dir>/plan-state.json；已存在则跳过。
+# Why: JSON 成为任务状态唯一权威源；planctl init 自身拒覆盖已有文件，双保险。
+# [2026-11-22 task-jsonderive-deploy-20261122] 改口径：init 成功后**立即 render** 生成 4 个派生视图。
+# What: render 全量重建 task_plan/progress/verification/findings 四 MD（MD=JSON 派生视图）。
+# Why: 用户裁决「全面 JSON 派生 + render 覆盖软堵」——旧口径「不调用 render 保持模板现状」会使
+#       视图与权威源脱钩（判例 sess_3c52df8e：JSON 空壳、MD 全直接编辑）；init 后即 render 让新计划
+#       从第一刻起 MD=派生视图，直接编辑被后续 render 覆盖（软堵生效前提=render 定期执行）。
+#       render 失败 fail-open（WARN 不阻断，退回模板 MD 现状，与 init 同口径不静默吞错）。
 if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
     _json_init_tier="standard"
     case "${PLAN_TIER:-}" in
@@ -1084,6 +1087,12 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
         --tier "$_json_init_tier" --lane "$_json_init_lane" >/dev/null 2>/dev/null || _json_init_rc=$?
     if [ "$_json_init_rc" -eq 0 ] && [ -f "plan-state.json" ]; then
         echo "[init] plan-state.json initialized (JSON mode)"
+        # [2026-11-22 task-jsonderive-deploy-20261122] init 后立即 render：4 MD=派生视图（软堵前提）
+        if python3 "$SCRIPT_DIR/planctl.py" render --plan-dir "$PWD" >/dev/null 2>&1; then
+            echo "[init] 4 MD views rendered from plan-state.json (derive mode)"
+        else
+            echo "[init] WARN: init 后 render 失败（fail-open, 保留模板 MD 现状, 可手动补 render）" >&2
+        fi
     else
         echo "[init] WARN: plan-state.json init 失败（rc=$_json_init_rc; JSON mode fail-open, 存量 MD 流程继续）" >&2
     fi
