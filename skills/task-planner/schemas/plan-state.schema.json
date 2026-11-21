@@ -106,7 +106,8 @@
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "text": { "type": "string" },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "tags": { "$ref": "#/definitions/tag_list" },
+        "evidence": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据锚文本（写入 progress.md 的 - [goal:G<n>] 行）; Why: evidence-anchor 门按 [goal:G<n>] 整行取证据,无此字段则 goal 证据无法从 JSON 派生。" }
       }
     },
     "vc": {
@@ -133,7 +134,9 @@
         "status": { "type": "string", "enum": ["pending", "in_progress", "complete"] },
         "s_units": { "type": "array", "items": { "type": "string" } },
         "v_checks": { "type": "array", "items": { "type": "string" } },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "tags": { "$ref": "#/definitions/tag_list" },
+        "name": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase 显示名; Why: render `### Phase <id>: <name>` 与模板逐字对齐。" },
+        "started": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase 起始 ISO8601 时间; Why: check-3file-gate.sh 从 progress.md 的 **Started:** 行取 mtime 锚点,必须由 JSON 派生。" }
       }
     },
     "finding": {
@@ -474,7 +477,9 @@
         "name": { "type": "string" },
         "loc": { "type": "string" },
         "level": { "type": "string" },
-        "confirmed": { "type": "string" }
+        "confirmed": { "type": "string" },
+        "consumed": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 是否已消费; Why: findings.md 知识对齐表第 3 列,原行为仅存在于 MD,JSON 无法派生。" },
+        "landing": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 结论落点段落锚; Why: findings.md 知识对齐表第 4 列,供知识消费闭环机器核验。" }
       }
     },
     "core_question": {
