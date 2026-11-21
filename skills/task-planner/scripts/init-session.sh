@@ -1065,9 +1065,13 @@ else
 fi
 # [2026-11-21 task-json-state-20261121] 结构化权威源初始化（JSON mode, planctl.py init）:
 # What: 在 6/6（或 3/3）verified + user-session-log verified 之后、silent attest 之前，幂等生成
-#       <plan-dir>/plan-state.json；已存在则跳过，且**不调用 render**（MD 视图保持当前现状）。
-# Why: JSON 成为任务状态唯一权威源；首次 init 只建权威源，不覆盖刚渲染好的 MD（render 会与用户
-#       已填内容冲突）。planctl init 自身也拒覆盖已有文件，双保险。
+#       <plan-dir>/plan-state.json；已存在则跳过，且**不调用 render**（模板骨架保持现状）。
+# Why: JSON 成为任务状态唯一权威源；planctl init 自身拒覆盖已有文件，双保险。
+# [2026-11-22 task-jsonderive-deploy-20261122 回撤说明] 原修正「init 后立即 render」经全量回归证伪：
+#       空数据 render 极简视图会当场覆盖 init 刚渲染好的模板骨架（mini-lite/variant 产物+填写面结构，
+#       PT-16/PT-26 实测首行变 GENERATED_HEADER），模板渲染沦为死代码。修正口径：init 只建权威源，
+#       **首次 planctl 数据写入后必须 render**（SKILL SOP 硬规则承载）——软堵机制不变（render 在每次
+#       变更后覆盖手工编辑），模板 MD 为 plan-writer 过渡期结构参考，首次 render 后即转派生视图。
 # fail-open: 调用失败（python 缺失/模板缺失/参数异常）不阻断原 init 流程；stderr 收敛但以 WARN
 #            显式暴露（原流程无本步骤，最坏结果=退回纯 MD 流程，不静默吞错）。
 if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then

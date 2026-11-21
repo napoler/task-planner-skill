@@ -48,22 +48,117 @@ HISTORY_LIMIT = 20
 GENERATED_HEADER = "<!-- 本文件由 planctl.py 从 plan-state.json 生成，勿直接编辑 -->"
 VIEW_NAMES = ("task_plan.md", "progress.md", "verification.md", "findings.md")
 
-ARRAY_SECTIONS = ("requirements", "goals", "vcs", "phases", "findings", "audits", "delegations")
-TOP_LEVEL_KEYS = (
-    "schema_version", "task_id", "plan_tier", "execution_lane", "created_at", "updated_at",
-    *ARRAY_SECTIONS, "tags",
+ARRAY_SECTIONS = (
+    "requirements", "goals", "vcs", "phases", "findings", "audits", "delegations",
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 追加 29 个语义段数组 section。
+    # Why: 原行为只覆盖 7 段，MD 语义段（Actions/Error Log/S-unit/Phase Gates 等）只能直接 Edit MD；
+    #       纳入后 add/get/update/delete/tag-add 的 --section choices 由元组自动生效，不新增子命令。
+    "actions", "files", "test_results", "errors", "reboot5q", "knowledge_use",
+    "research", "decisions", "issues", "resources", "visual",
+    "root_causes", "invariants", "spec_baseline", "progress_baseline", "scope_limits",
+    "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
+    "anti_regress", "fmea", "todo_sync", "key_questions",
+    "phase_gates", "knowledge_compliance", "cross_checks",
 )
+
+# [2026-11-22 task-jsonderive-deploy-20261122] What: 把原 TOP_LEVEL_KEYS 的双重语义拆开。
+# Why: 原行为中 TOP_LEVEL_KEYS 既当 required 又当 allowed；新字段全部可选，若直接并入会让
+#       存量 plan-state.json（StoryLab 空壳）validate FAIL，故 required 保持原 14 键不变。
+REQUIRED_TOP_LEVEL_KEYS = (
+    "schema_version", "task_id", "plan_tier", "execution_lane", "created_at", "updated_at",
+    "requirements", "goals", "vcs", "phases", "findings", "audits", "delegations", "tags",
+)
+OPTIONAL_TOP_LEVEL_KEYS = (
+    # 新增数组段（与 ARRAY_SECTIONS 尾部一致，供顶层 allowed/写入校验使用）
+    "actions", "files", "test_results", "errors", "reboot5q", "knowledge_use",
+    "research", "decisions", "issues", "resources", "visual",
+    "root_causes", "invariants", "spec_baseline", "progress_baseline", "scope_limits",
+    "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
+    "anti_regress", "fmea", "todo_sync", "key_questions",
+    "phase_gates", "knowledge_compliance", "cross_checks",
+    # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
+    "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
+    "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
+    "template_type", "next_step",
+)
+TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 
 # 新增条目时补齐的合法默认面（Why：避免 Agent 手写半条目导致 schema 校验失败；
 # 身份字段 id/round 仍强制，缺失即报错，不静默造 id）。
 ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "requirements": {"text": "", "type": "手段", "vc": [], "tags": []},
-    "goals": {"text": "", "tags": []},
+    "goals": {"text": "", "tags": [],
+              # [2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据默认空串; Why: 有值时 render 输出 [goal:G<n>] 证据行（evidence-anchor 门消费面）。
+              "evidence": ""},
     "vcs": {"criterion": "", "command": "", "status": "pending", "evidence": "", "tags": []},
-    "phases": {"status": "pending", "s_units": [], "v_checks": [], "tags": []},
+    "phases": {"status": "pending", "s_units": [], "v_checks": [], "tags": [],
+               # [2026-11-22 task-jsonderive-deploy-20261122] What: Phase 显示名/起始时间默认空; Why: Started 供 3file-gate mtime 锚点，name 供 `### Phase <id>: <name>` 标题。
+               "name": "", "started": ""},
     "findings": {"text": "", "source": "", "tags": []},
     "audits": {"verdict": "REJECTED", "by": "", "counts": {"C": 0, "I": 0, "W": 0}, "at": "", "tags": []},
     "delegations": {"agent": "", "scope": "", "status": "pending", "tags": []},
+    # [2026-11-22 task-jsonderive-deploy-20261122] 新 section 默认面：覆盖 schema required 字段
+    # （除 id），Why: 通用 `add --section X --json '{"id":"..."}'` 也能一次落库成功，
+    # 原行为缺字段即被 validate 拒绝；自由文本留空串，数组留空表，计数留 0。
+    "actions": {"phase": "", "text": "", "at": ""},
+    "files": {"phase": "", "path": "", "change": ""},
+    "test_results": {"phase": "", "test": "", "input": "", "expected": "", "actual": "", "status": "pending"},
+    "errors": {"timestamp": "", "error": "", "attempt": 0, "resolution": "",
+               "root_cause": "", "prevention": "", "trigger": ""},
+    "reboot5q": {"question": "", "answer": ""},
+    "knowledge_use": {"phase": "", "source": "", "purpose": ""},
+    "research": {"claim": "", "source": ""},
+    "decisions": {"decision": "", "rationale": ""},
+    "issues": {"issue": "", "resolution": ""},
+    "resources": {"locator": ""},
+    "visual": {"finding": "", "source": ""},
+    "root_causes": {"process": "", "defect": "", "fix": "", "vc": ""},
+    "invariants": {"state": "", "item": "", "anchor": ""},
+    "spec_baseline": {"verbatim": "", "anchor": "", "rule": "", "sha": ""},
+    "progress_baseline": {"item": "", "snapshot": "", "metric": "", "ban": "", "status": ""},
+    "scope_limits": {"category": "", "allow": [], "deny": []},
+    "changes": {"object": "", "type": "", "absorb": "", "quote": "", "basis": "", "action": ""},
+    "knowledge": {"category": "", "name": "", "loc": "", "level": "", "confirmed": "",
+                  # [2026-11-22 task-jsonderive-deploy-20261122] What: 知识消费态/落点默认空; Why: findings.md 知识对齐表 4 列需从 JSON 派生（consumed/landing）。
+                  "consumed": "", "landing": ""},
+    "research_status": {"unit": "", "state": "", "keywords": "", "channels": "", "output": "", "net": ""},
+    "evidence_faces": {"face": "", "target": "", "method": "", "anchor": "", "status": ""},
+    "tool_use": {"phase": "", "tools": "", "why": ""},
+    "s_units": {"phase": "", "name": "", "executor": "", "files": "", "actions": "",
+                "verify": "", "duration": "", "granularity": "", "parallel": ""},
+    "anti_regress": {"item": "", "method": "", "anchor": "", "result": ""},
+    "fmea": {"phase": "", "mode": "", "severity": 0, "occurrence": 0,
+             "detection": 0, "rpn": 0, "fallback": ""},
+    "todo_sync": {"trigger": "", "action": ""},
+    "key_questions": {"question": "", "answer": ""},
+    "phase_gates": {"goal": "", "depends": [], "done_when": "", "checks": [], "status": ""},
+    "knowledge_compliance": {"item": "", "status": ""},
+    "cross_checks": {"item": "", "method": "", "result": ""},
+}
+
+# [2026-11-22 task-jsonderive-deploy-20261122] 顶层对象字段规格：field → (required 集, 字段谓词, 是否允许额外键)。
+# What: 为 set --field 写入的对象段提供与 schema 等价的手写校验；Why: jsonschema 缺失时行为仍需一致，
+#       且 config 是自由扩展对象（原行为无该字段），显式放行额外键避免误拒未来配置项。
+STR_FIELD = lambda v: isinstance(v, str)
+INT_FIELD = lambda v: isinstance(v, int) and not isinstance(v, bool)
+STR_LIST_FIELD = lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)
+OBJECT_FIELD_SPECS: dict[str, tuple[set[str], dict[str, Callable[[Any], bool]], bool]] = {
+    "resume_report": ({"path"}, {"path": STR_FIELD, "last": STR_FIELD}, False),
+    "understanding": (set(), {k: STR_FIELD for k in ("original", "model", "options", "direction")}, False),
+    "config": (set(), {"code_review": STR_FIELD, "session_id": STR_FIELD,
+                       "worktree_path": STR_FIELD, "scope_files": STR_LIST_FIELD}, True),
+    "dual_qc": (set(), {k: STR_FIELD for k in ("scope", "exempt", "multi_file")}, False),
+    "goal_verdict": ({"goal", "verdict"},
+                     {k: STR_FIELD for k in ("goal", "verdict", "evidence", "unresolved", "excluded", "next")}, False),
+    "core_question": ({"text"}, {k: STR_FIELD for k in ("text", "checks", "verdict")}, False),
+    "isolation": (set(), {k: STR_FIELD for k in ("conflict", "path", "branch", "merge_back")}, False),
+    "batch": (set(), {"total": INT_FIELD, "success": INT_FIELD, "failed": INT_FIELD, "rate": STR_FIELD,
+                      "sampled_pass": INT_FIELD, "sampled_fail": INT_FIELD,
+                      "pre_check": STR_FIELD, "rollback": STR_FIELD}, True),
+    "delegation_stats": (set(), {k: INT_FIELD for k in ("total", "subagent", "parallel_width", "verified")}, True),
+    "chain": (set(), {k: STR_FIELD for k in ("mode", "blocks", "handoffs")}, False),
+    "quality_gates": (set(), {"delegation_reverify": STR_FIELD, "quality_control": STR_FIELD}, False),
+    "outcome": ({"result"}, {"result": STR_FIELD, "blocked_reason": STR_FIELD}, False),
 }
 
 
@@ -317,7 +412,8 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
                       "vc": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)})
         required = {"id", "text", "type", "vc"}
     elif section == "goals":
-        known.update({"text": lambda v: isinstance(v, str)})
+        # [2026-11-22 task-jsonderive-deploy-20261122] What: 允许可选 evidence 字段; Why: 与 schema goal.properties 对齐，render 据此产出 [goal:G<n>] 证据行。
+        known.update({"text": lambda v: isinstance(v, str), "evidence": STR_FIELD})
         required = {"id", "text"}
     elif section == "vcs":
         known.update({"criterion": lambda v: isinstance(v, str),
@@ -328,7 +424,9 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
     elif section == "phases":
         known.update({"status": lambda v: v in ("pending", "in_progress", "complete"),
                       "s_units": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v),
-                      "v_checks": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)})
+                      "v_checks": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v),
+                      # [2026-11-22 task-jsonderive-deploy-20261122] What: 可选 name/started; Why: 与 schema 对齐且 phase-start 写入 Started 锚点不被判未知字段。
+                      "name": STR_FIELD, "started": STR_FIELD})
         required = {"id", "status", "s_units", "v_checks"}
     elif section == "findings":
         known.update({"text": lambda v: isinstance(v, str), "source": lambda v: isinstance(v, str)})
@@ -353,6 +451,105 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({"agent": lambda v: isinstance(v, str), "scope": lambda v: isinstance(v, str),
                       "status": lambda v: v in ("pending", "running", "done", "fail")})
         required = {"id", "agent", "scope", "status"}
+    # [2026-11-22 task-jsonderive-deploy-20261122] 新 section 校验分支（What）：required 与
+    #   schema definitions 一一对应，字段集与 properties 对齐；原行为这些段根本不在 ARRAY_SECTIONS，
+    #   校验器直接报「未知字段」。Why: 通用 add --section 必须写出合法条目，错误在写前暴露。
+    #   free_text（含 markdown 原文）只校验类型，不限制内容。
+    elif section == "actions":
+        known.update({k: STR_FIELD for k in ("phase", "text", "at")})
+        required = {"id", "phase", "text"}
+    elif section == "files":
+        known.update({k: STR_FIELD for k in ("phase", "path", "change")})
+        required = {"id", "path", "change"}
+    elif section == "test_results":
+        known.update({k: STR_FIELD for k in ("phase", "test", "input", "expected", "actual", "status")})
+        required = {"id", "test", "status"}
+    elif section == "errors":
+        known.update({"timestamp": STR_FIELD, "error": STR_FIELD, "attempt": INT_FIELD,
+                      "resolution": STR_FIELD, "root_cause": STR_FIELD,
+                      "prevention": STR_FIELD, "trigger": STR_FIELD})
+        required = {"id", "timestamp", "error"}
+    elif section == "reboot5q":
+        known.update({"question": STR_FIELD, "answer": STR_FIELD})
+        required = {"id", "question", "answer"}
+    elif section == "knowledge_use":
+        known.update({k: STR_FIELD for k in ("phase", "source", "purpose")})
+        required = {"id", "source", "purpose"}
+    elif section == "research":
+        known.update({"claim": STR_FIELD, "source": STR_FIELD})
+        required = {"id", "claim", "source"}
+    elif section == "decisions":
+        known.update({"decision": STR_FIELD, "rationale": STR_FIELD})
+        required = {"id", "decision"}
+    elif section == "issues":
+        known.update({"issue": STR_FIELD, "resolution": STR_FIELD})
+        required = {"id", "issue"}
+    elif section == "resources":
+        known.update({"locator": STR_FIELD})
+        required = {"id", "locator"}
+    elif section == "visual":
+        known.update({"finding": STR_FIELD, "source": STR_FIELD})
+        required = {"id", "finding", "source"}
+    elif section == "root_causes":
+        known.update({k: STR_FIELD for k in ("process", "defect", "fix", "vc")})
+        required = {"id", "process", "defect", "fix"}
+    elif section == "invariants":
+        known.update({k: STR_FIELD for k in ("state", "item", "anchor")})
+        required = {"id", "state", "item", "anchor"}
+    elif section == "spec_baseline":
+        known.update({k: STR_FIELD for k in ("verbatim", "anchor", "rule", "sha")})
+        required = {"id", "verbatim", "anchor"}
+    elif section == "progress_baseline":
+        known.update({k: STR_FIELD for k in ("item", "snapshot", "metric", "ban", "status")})
+        required = {"id", "item", "snapshot"}
+    elif section == "scope_limits":
+        known.update({"category": STR_FIELD, "allow": STR_LIST_FIELD, "deny": STR_LIST_FIELD})
+        required = {"id", "category"}
+    elif section == "changes":
+        known.update({k: STR_FIELD for k in ("object", "type", "absorb", "quote", "basis", "action")})
+        required = {"id", "object", "type"}
+    elif section == "knowledge":
+        # [2026-11-22 task-jsonderive-deploy-20261122] What: 追加 consumed/landing 字段谓词; Why: findings 知识对齐表 4 列需经通用 add/set 写入，缺则被判未知字段。
+        known.update({k: STR_FIELD for k in ("category", "name", "loc", "level", "confirmed",
+                                             "consumed", "landing")})
+        required = {"id", "category", "name"}
+    elif section == "research_status":
+        known.update({k: STR_FIELD for k in ("unit", "state", "keywords", "channels", "output", "net")})
+        required = {"id", "unit", "state"}
+    elif section == "evidence_faces":
+        known.update({k: STR_FIELD for k in ("face", "target", "method", "anchor", "status")})
+        required = {"id", "face", "target"}
+    elif section == "tool_use":
+        known.update({k: STR_FIELD for k in ("phase", "tools", "why")})
+        required = {"id", "phase", "tools"}
+    elif section == "s_units":
+        known.update({k: STR_FIELD for k in ("phase", "name", "executor", "files", "actions",
+                                              "verify", "duration", "granularity", "parallel")})
+        required = {"id", "phase", "name"}
+    elif section == "anti_regress":
+        known.update({k: STR_FIELD for k in ("item", "method", "anchor", "result")})
+        required = {"id", "item", "method"}
+    elif section == "fmea":
+        known.update({"phase": STR_FIELD, "mode": STR_FIELD,
+                      "severity": INT_FIELD, "occurrence": INT_FIELD,
+                      "detection": INT_FIELD, "rpn": INT_FIELD, "fallback": STR_FIELD})
+        required = {"id", "phase", "mode"}
+    elif section == "todo_sync":
+        known.update({"trigger": STR_FIELD, "action": STR_FIELD})
+        required = {"id", "trigger", "action"}
+    elif section == "key_questions":
+        known.update({"question": STR_FIELD, "answer": STR_FIELD})
+        required = {"id", "question", "answer"}
+    elif section == "phase_gates":
+        known.update({"goal": STR_FIELD, "depends": STR_LIST_FIELD, "done_when": STR_FIELD,
+                      "checks": STR_LIST_FIELD, "status": STR_FIELD})
+        required = {"id", "goal", "done_when"}
+    elif section == "knowledge_compliance":
+        known.update({"item": STR_FIELD, "status": STR_FIELD})
+        required = {"id", "item", "status"}
+    elif section == "cross_checks":
+        known.update({"item": STR_FIELD, "method": STR_FIELD, "result": STR_FIELD})
+        required = {"id", "item", "method"}
 
     for key in required:
         if key not in entry:
@@ -369,7 +566,9 @@ def validate_state(doc: Any) -> list[str]:
     errs: list[str] = []
     if not isinstance(doc, dict):
         return ["$: 顶层必须是 object"]
-    for key in TOP_LEVEL_KEYS:
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 缺字段检查仍只用原 14 个 required 键。
+    # Why: 原行为 TOP_LEVEL_KEYS 兼作 required，新增可选字段若并入会导致存量 JSON 校验失败。
+    for key in REQUIRED_TOP_LEVEL_KEYS:
         if key not in doc:
             errs.append(f"$: 缺字段 {key}")
     for key in doc:
@@ -384,10 +583,35 @@ def validate_state(doc: Any) -> list[str]:
         "created_at": lambda v: _is_iso8601(v),
         "updated_at": lambda v: _is_iso8601(v),
         "tags": lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v),
+        # [2026-11-22 task-jsonderive-deploy-20261122] 新标量：原行为无此字段，按自由文本校验。
+        "template_type": STR_FIELD,
+        "next_step": STR_FIELD,
     }
     for key, pred in simple.items():
         if key in doc and not pred(doc[key]):
             errs.append(f"$.{key}: 值非法（{doc[key]!r}）")
+
+    # [2026-11-22 task-jsonderive-deploy-20261122] 顶层对象字段（resume_report/config/outcome 等）：
+    # What: 校验 required 子字段存在、类型合法、未知键（config/batch/delegation_stats 例外）。
+    # Why: set --field 可直接写整对象，必须在 commit 前用与 schema 一致的规则拦截坏数据。
+    for field, (obj_required, obj_props, allow_extra) in OBJECT_FIELD_SPECS.items():
+        if field not in doc:
+            continue
+        value = doc[field]
+        if not isinstance(value, dict):
+            errs.append(f"$.{field}: 必须是 object")
+            continue
+        for key in obj_required:
+            if key not in value:
+                errs.append(f"$.{field}: 缺字段 {key}")
+        # 遍历规格表（谓词在键上），不是遍历 value.items()——后者会把字段值误当函数调用。
+        for key, pred in obj_props.items():
+            if key in value and not pred(value[key]):
+                errs.append(f"$.{field}.{key}: 值非法（{value[key]!r}）")
+        if not allow_extra:
+            for key in value:
+                if key not in obj_props:
+                    errs.append(f"$.{field}: 未知字段 {key}")
 
     for section in ARRAY_SECTIONS:
         if section in doc:
@@ -541,6 +765,14 @@ def cmd_get(args: argparse.Namespace) -> int:
                 out = hit[1] if hit else None
             if out is None:
                 raise PlanctlError(f"{args.section} 中未找到 id={args.id!r}")
+    elif args.section in TOP_LEVEL_KEYS:
+        # [2026-11-22 task-jsonderive-deploy-20261122] What: 支持 get --section <顶层对象/标量字段>。
+        # Why: 原行为只认 tags 与原 7 个数组；新语义段可缺省，必须区分「未设置」与空值。
+        if args.id:
+            raise PlanctlError(f"顶层字段 {args.section} 不支持 --id")
+        if args.section not in doc:
+            raise PlanctlError(f"{args.section} 未设置（该顶层字段可选）")
+        out = doc[args.section]
     else:
         raise PlanctlError(f"未知 section: {args.section}")
     emit(out)
@@ -594,13 +826,31 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_set(args: argparse.Namespace) -> int:
-    """修改条目的单字段；值按 coerce_value 做 JSON 类型提升。"""
+    """修改条目字段（--section/--id）或顶层字段（仅 --field/--value）；值经 coerce_value 提升类型。
+
+    [2026-11-22 task-jsonderive-deploy-20261122] What: 新增无 --section 的顶层写入分支。
+    Why: 原行为 --section/--id 均 required，只能改数组条目；新语义段中 template_type/next_step/
+         outcome/config 等是顶层对象或标量，必须可写才能替代直接 Edit MD。
+         coerce_value 对 '{"a":1}' 返回 dict、对 '裸词' 返回 str，已兼容对象/字符串，无需改造。
+    """
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
+    value = coerce_value(args.value)
+    if not args.section:
+        if args.id is not None:
+            raise PlanctlError("写顶层字段时不得传 --id（要改条目请补 --section）")
+        if args.field not in TOP_LEVEL_KEYS:
+            raise PlanctlError(f"未知顶层字段: {args.field}")
+        doc[args.field] = value
+        commit_state(plan, doc)
+        emit({"field": args.field, "value": value, "scope": "top_level"})
+        return 0
+    if args.id is None:
+        raise PlanctlError("写条目字段必须同时传 --id")
     hit = find_entry(doc, args.section, args.id)
     if hit is None:
         raise PlanctlError(f"{args.section} 中未找到 id={args.id!r}")
-    hit[1][args.field] = coerce_value(args.value)
+    hit[1][args.field] = value
     commit_state(plan, doc)
     emit({"section": args.section, "id": args.id, "field": args.field,
           "value": hit[1][args.field]})
@@ -616,6 +866,10 @@ def cmd_add(args: argparse.Namespace) -> int:
         raise PlanctlError(f"--json 非法 JSON: {exc}") from exc
     doc = read_state(plan)
     entry = normalize_entry(args.section, payload)
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 可选 section 首次写入时懒初始化为 []。
+    # Why: 原行为 7 个数组由 init 模板保证存在；新段缺省于存量 JSON，直接 find/append 会误报
+    #       「未知或非法 section」，使通用 add 对存量计划不可用。
+    doc.setdefault(args.section, [])
     hit = find_entry(doc, args.section,
                      str(entry.get("round")) if args.section == "audits" else str(entry["id"]))
     if hit is not None:
@@ -667,6 +921,28 @@ def cmd_phase_done(args: argparse.Namespace) -> int:
     hit[1]["status"] = "complete"
     commit_state(plan, doc)
     emit({"id": args.id, "status": "complete", "updated_at": doc["updated_at"]})
+    return 0
+
+
+def cmd_phase_start(args: argparse.Namespace) -> int:
+    """[2026-11-22 task-jsonderive-deploy-20261122] Phase → in_progress 并写 started=now。
+
+    WHAT: 找到 phase 后设 status=in_progress、started=now_iso()，刷新 updated_at，原子提交。
+    WHY: check-3file-gate.sh 从 progress.md 的 `- **Started:**` 行取 mtime 锚点；原状态无 started
+         字段，render 只能输出空 Started，门控退化为 stale 阈值模式。phase-start 让 Started 有
+         真实 ISO 时间源（与 vc-pass/phase-done 同构的状态流转，不引入新依赖）。
+    """
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    hit = find_entry(doc, "phases", args.id)
+    if hit is None:
+        raise PlanctlError(f"phases 中未找到 id={args.id!r}")
+    started = now_iso()
+    hit[1]["status"] = "in_progress"
+    hit[1]["started"] = started
+    commit_state(plan, doc)
+    emit({"id": args.id, "status": "in_progress", "started": started,
+          "updated_at": doc["updated_at"]})
     return 0
 
 
@@ -765,10 +1041,485 @@ def _md_table(headers: list[str], rows: list[list[Any]]) -> str:
     return "\n".join(out)
 
 
+# ── [2026-11-22 task-jsonderive-deploy-20261122] MD 视图派生辅助 ────────────────
+# What: 为 4 个 MD 视图提供统一的「可选段安全读取 + 显式空占位 + Phase 号归一」原语。
+# Why: 原 cmd_render 只输出 7 段简表，模板全部语义段（Error Log/5Q/Research/Gate 等）无法从
+#       JSON 派生；新语义段对存量空壳是可选的，缺字段/类型异常必须退化为「无数据」而非崩溃。
+
+
+def _arr(doc: dict[str, Any], key: str) -> list[dict[str, Any]]:
+    """取可选数组段；缺字段或非数组时返回空表（fail-loud 由 validate 负责，render 只读）。"""
+    value = doc.get(key)
+    return value if isinstance(value, list) else []
+
+
+def _obj(doc: dict[str, Any], key: str) -> dict[str, Any]:
+    """取可选对象段；缺字段或非对象时返回空字典。"""
+    value = doc.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _phase_no(ident: Any) -> str:
+    """把 phase id（P1/1/p2）归一为模板 `### Phase N:` 的纯数字 N。
+
+    check-3file-gate.sh 以 `^#+ Phase [0-9]+:` 定位 Phase 段，若输出 `### Phase P1:` 则
+    永远匹配不到 —— 这是 Started mtime 锚点失效的直接成因，故此处统一剥掉 P 前缀。
+    """
+    m = re.match(r"^[Pp]?(\d+)$", str(ident))
+    return m.group(1) if m else str(ident)
+
+
+def _phase_match(value: Any, ident: Any) -> bool:
+    """按 phase 关联 actions/files/test_results 等条目；兼容 P1 / 1 / 1 三种写法。"""
+    no = _phase_no(ident)
+    return str(value) in {str(ident), no, f"P{no}"}
+
+
+def _cell(v: Any) -> str:
+    """把数组/None 转成可读单元格文本（_md_table 亦做此处理，便于段内自由文本拼接）。"""
+    if isinstance(v, list):
+        return ", ".join(str(x) for x in v)
+    return "" if v is None else str(v)
+
+
+def _table(headers: list[str], rows: list[list[Any]], empty: str) -> str:
+    """空数据补一行显式占位（Rule 71 / check-complete 3-File stub 判定的共同要求）。"""
+    return _md_table(headers, rows if rows else [[empty] + [""] * (len(headers) - 1)])
+
+
+def _bullets(items: list[str], empty: str, indent: str = "") -> list[str]:
+    """bullet 列表；无条目时输出显式占位行，不用空段。"""
+    return [f"{indent}- {x}" for x in items] if items else [f"{indent}- {empty}"]
+
+
+def _kv_table(obj: dict[str, Any], keys: tuple[str, ...], labels: tuple[str, ...] | None = None,
+              empty: str = "（本任务暂无记录）") -> str:
+    """把对象字段渲染为「字段|值」2 列表；无任何非空字段时输出占位行。"""
+    labels = labels or keys
+    rows = [[label, _cell(obj.get(k, ""))] for k, label in zip(keys, labels) if obj.get(k, "") not in (None, "", [], {})]
+    return _table(["字段", "值"], rows, empty)
+
+
+# S-unit 表 10 列固定列序（与 templates/task_plan.md:362 逐字一致）：
+# check-plan-dispatch.sh 用 awk -F'|' 的 $4/$5/$7/$8 定位执行体/输入/时长/粒度，列序不可改。
+SUNIT_HEADERS = ["ID", "目标(≤1 句)", "执行体(subagent_type(model))",
+                 "输入(路径 + ≤10 行摘要)", "验收(可观察)", "预估时长",
+                 "粒度(三值)", "伴飞技能", "前置依赖", "状态"]
+
+# 空段占位统一前缀（Rule 71：显式占位合法，禁推测填充）
+_EMPTY = "（本任务暂无%s）"
+
+
+def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
+                      top_tags: str, idx: dict[str, list[str]]) -> str:
+    """重建 task_plan.md：恒输出 Requirements/Goals/Phases/R→VC/VC，其余段按数据在位追加。
+
+    What: 原视图仅 4 张简表；本函数把 JSON 中 20+ 个语义段映射为模板同构段落。
+    Why: 「MD 全派生」要求模板语义段可从 JSON 重建；空段不输出以保持视图精简（与验收条款一致）。
+    """
+    lines: list[str] = [
+        GENERATED_HEADER, f"# Task Plan: {tid}", "", stamp.rstrip(), meta.rstrip(),
+        f"- 顶层 tags: {top_tags}", "",
+        "## Requirements（用户需求）",
+        _md_table(["id", "type", "text", "vc", "tags"],
+                  [[r.get("id"), r.get("type"), r.get("text"), r.get("vc", []), r.get("tags", [])]
+                   for r in _arr(doc, "requirements")]),
+        "", "## Goals（目标单元）",
+        _md_table(["id", "text", "evidence", "tags"],
+                  [[g.get("id"), g.get("text"), g.get("evidence", ""), g.get("tags", [])]
+                   for g in _arr(doc, "goals")]),
+        "", "## Phases（阶段状态）",
+        _md_table(["id", "status", "s_units", "v_checks", "name", "started", "tags"],
+                  [[p.get("id"), p.get("status"), p.get("s_units", []), p.get("v_checks", []),
+                    p.get("name", ""), p.get("started", ""), p.get("tags", [])]
+                   for p in _arr(doc, "phases")]),
+        "", "## R → VC 映射",
+        _md_table(["requirement", "vcs"],
+                  [[r.get("id"), r.get("vc", [])] for r in _arr(doc, "requirements")]),
+        "", "## ✅ Verification Contract（VC 状态与判据）",
+        _md_table(["#", "判定标准", "验证方式", "证据路径/命令"],
+                  [[v.get("id"), v.get("criterion"), v.get("command"), v.get("evidence")]
+                   for v in _arr(doc, "vcs")]),
+    ]
+    phases = _arr(doc, "phases")
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 逐 Phase 输出 ### 标题 + Status/Started 行。
+    # Why: check-3file-gate.sh 从 task_plan.md 取 in_progress Phase、从 progress.md取 Started 锚点；
+    #       简表无法提供 `### Phase N:` 标题，门控会静默退化为「无活动 Phase」。
+    # [C-1 修复] What: 每 Phase 块内追加 `- **Executor:**` 行 + 该 Phase 的 S-unit 表（10 列锁序）。
+    # Why: check-plan-dispatch.sh:59 以全文级 `^- \*\*Executor:\*\*` 判现代计划，:47/:51 以 `## ` 收段
+    #       ——S-unit 表必须在 ### Phase 块内（下一个 ## 之前）才落解析面；独立顶层段被跳过（CR-1）。
+    s_units_all = _arr(doc, "s_units")
+    if phases:
+        lines += ["", "## Phase 锚点明细（3file-gate/plan-dispatch 解析面）"]
+        for p in phases:
+            pid = _cell(p.get("id", ""))
+            ph_sus = [s for s in s_units_all if s.get("phase") == pid]
+            executors = "、".join(dict.fromkeys(
+                str(s.get("executor", "")).strip() for s in ph_sus if str(s.get("executor", "")).strip()
+            )) or "-"
+            su_rows = []
+            for s in ph_sus:
+                name = _cell(s.get("name", ""))
+                actions = _cell(s.get("actions", ""))
+                goal = f"[{_cell(pid)}] {name}" + (f"（{actions}）" if actions else "")
+                su_rows.append([_cell(s.get("id", "")), goal, _cell(s.get("executor", "")),
+                                _cell(s.get("files", "")), _cell(s.get("verify", "")),
+                                _cell(s.get("duration", "")), _cell(s.get("granularity", "")),
+                                _cell(s.get("parallel", "")) or "无", "-", "pending"])
+            lines += ["", f"### Phase {_phase_no(p.get('id'))}: {_cell(p.get('name', ''))}".rstrip(),
+                      f"- **Status:** {_cell(p.get('status', 'pending'))}",
+                      f"- **Started:** {_cell(p.get('started', ''))}",
+                      f"- **Executor:** {executors}"]
+            if su_rows:
+                lines += [_md_table(SUNIT_HEADERS, su_rows)]
+
+    understanding = _obj(doc, "understanding")
+    if understanding:
+        lines += ["", "## 🧭 指令理解迭代草稿",
+                  _kv_table(understanding, ("original", "model", "options", "direction"),
+                            ("① 原始指令复述", "② 模型理解", "③ 思路与候选", "④ 大体执行方向"))]
+
+    root_causes = _arr(doc, "root_causes")
+    if root_causes:
+        lines += ["", "## 🧮 根源覆盖表",
+                  _table(["工序", "缺陷面", "修复点", "VC"],
+                         [[x.get("process"), x.get("defect"), x.get("fix"), x.get("vc")]
+                          for x in root_causes], _EMPTY % "根源记录")]
+
+    invariants = _arr(doc, "invariants")
+    if invariants:
+        lines += ["", "## 🔒 不变量声明区",
+                  _table(["三态", "条目", "来源锚"],
+                         [[x.get("state"), x.get("item"), x.get("anchor")] for x in invariants],
+                         _EMPTY % "不变量")]
+
+    spec_baseline = _arr(doc, "spec_baseline")
+    if spec_baseline:
+        lines += ["", "## 🔒 规范基线（Spec-Baseline）",
+                  _table(["spec_id", "约束原文(verbatim)", "来源锚(path:line)", "双向判定式", "来源 sha256"],
+                         [[x.get("id"), x.get("verbatim"), x.get("anchor"), x.get("rule"), x.get("sha")]
+                          for x in spec_baseline], _EMPTY % "规范基线")]
+
+    progress_baseline = _arr(doc, "progress_baseline")
+    if progress_baseline:
+        lines += ["", "## 📦 进度产出基线",
+                  _table(["基线项", "动工前快照", "关键产出/指标", "禁倒退清单", "状态"],
+                         [[x.get("item"), x.get("snapshot"), x.get("metric"), x.get("ban"), x.get("status")]
+                          for x in progress_baseline], _EMPTY % "进度基线")]
+
+    scope_limits = _arr(doc, "scope_limits")
+    if scope_limits:
+        lines += ["", "## ⚠️ 执行范围限制",
+                  _table(["类别", "允许的文件", "禁止"],
+                         [[x.get("category"), x.get("allow", []), x.get("deny", [])]
+                          for x in scope_limits], _EMPTY % "范围限制")]
+
+    changes = _arr(doc, "changes")
+    if changes:
+        lines += ["", "## 📋 变更标注表",
+                  _table(["编号", "对象（文件+锚点）", "类型", "吸收判定", "用户原话（逐字）", "依据（证据）", "执行动作"],
+                         [[x.get("id"), x.get("object"), x.get("type"), x.get("absorb"),
+                           x.get("quote"), x.get("basis"), x.get("action")] for x in changes],
+                         _EMPTY % "变更标注")]
+
+    knowledge = _arr(doc, "knowledge")
+    if knowledge:
+        lines += ["", "## 📚 必要知识储备（任务知识库对齐）",
+                  _table(["类别", "名称/主题", "定位（路径/URL/版本/commit SHA）", "必读级别", "已确认"],
+                         [[x.get("category"), x.get("name"), x.get("loc"), x.get("level"),
+                           x.get("confirmed")] for x in knowledge], _EMPTY % "知识储备")]
+
+    core_question = _obj(doc, "core_question")
+    if core_question:
+        lines += ["", "## ⚠️ 核心问题定义",
+                  _kv_table(core_question, ("text", "checks", "verdict"),
+                            ("核心问题", "核心问题判断", "裁决"))]
+
+    evidence_faces = _arr(doc, "evidence_faces")
+    if evidence_faces:
+        lines += ["", "## 🔍 证据面清单",
+                  _table(["证据面", "取证对象（可指名）", "取证方式", "落盘锚", "状态"],
+                         [[x.get("face"), x.get("target"), x.get("method"), x.get("anchor"),
+                           x.get("status")] for x in evidence_faces], _EMPTY % "证据面")]
+
+    active_phase = next((p for p in phases if p.get("status") == "in_progress"), None)
+    if active_phase:
+        lines += ["", "## Current Phase", f"Phase {_phase_no(active_phase.get('id'))}"]
+    if doc.get("next_step"):
+        lines += ["", "## Next Step", _cell(doc["next_step"])]
+
+    tool_use = _arr(doc, "tool_use")
+    if tool_use:
+        lines += ["", "## 🧰 工具选择与编排",
+                  _table(["Phase", "命中工具面（40.1 六类）", "选择理由"],
+                         [[x.get("phase"), x.get("tools"), x.get("why")] for x in tool_use],
+                         _EMPTY % "工具选择")]
+
+
+    anti_regress = _arr(doc, "anti_regress")
+    if anti_regress:
+        lines += ["", "## 🛡 防倒退终检",
+                  _table(["检查项", "判定方法（机器/可复核）", "证据锚", "结果"],
+                         [[x.get("item"), x.get("method"), x.get("anchor"), x.get("result")]
+                          for x in anti_regress], _EMPTY % "防倒退终检")]
+
+    isolation = _obj(doc, "isolation")
+    if isolation:
+        lines += ["", "## 🔀 隔离决策",
+                  _kv_table(isolation, ("conflict", "path", "branch", "merge_back"),
+                            ("conflict_scan", "isolation/worktree_path", "branch", "merge_back"))]
+
+    fmea = _arr(doc, "fmea")
+    if fmea:
+        lines += ["", "## 📊 FMEA 预演",
+                  _table(["Phase", "失败模式", "S(1-10)", "O(1-10)", "D(1-10)", "RPN=S×O×D", "预设兜底动作"],
+                         [[x.get("phase"), x.get("mode"), x.get("severity"), x.get("occurrence"),
+                           x.get("detection"), x.get("rpn"), x.get("fallback")] for x in fmea],
+                         _EMPTY % "FMEA")]
+
+    todo_sync = _arr(doc, "todo_sync")
+    if todo_sync:
+        lines += ["", "## 🔁 原生 Todo 同步",
+                  _table(["Phase/触发", "Todo 已建/动作", "最近同步时间", "备注"],
+                         [[x.get("trigger"), x.get("action"), "", ""] for x in todo_sync],
+                         _EMPTY % "Todo 同步")]
+
+    key_questions = _arr(doc, "key_questions")
+    if key_questions:
+        lines += ["", "## Key Questions"]
+        lines += _bullets([f"{x.get('question', '')} — {x.get('answer', '')}" for x in key_questions],
+                          _EMPTY % "关键问题")
+
+    decisions = _arr(doc, "decisions")
+    if decisions:
+        lines += ["", "## Decisions Made",
+                  _table(["Decision", "Rationale"],
+                         [[x.get("decision"), x.get("rationale")] for x in decisions],
+                         _EMPTY % "决策记录")]
+
+    errors = _arr(doc, "errors")
+    if errors:
+        lines += ["", "## Errors Encountered",
+                  _table(["Error", "Attempt", "Resolution", "Prevention（Rule 31 指针）"],
+                         [[x.get("error"), x.get("attempt"), x.get("resolution"), x.get("prevention")]
+                          for x in errors], _EMPTY % "错误记录")]
+
+    batch = _obj(doc, "batch")
+    if batch:
+        lines += ["", "## 📦 Batch Report",
+                  _kv_table(batch, ("total", "success", "failed", "rate", "sampled_pass",
+                                    "sampled_fail", "pre_check", "rollback"),
+                            ("total", "success", "failed", "failure_rate", "sampled_pass",
+                             "sampled_fail", "pre_check", "rollback_point"))]
+
+    delegation_stats = _obj(doc, "delegation_stats")
+    if delegation_stats:
+        lines += ["", "## 📊 委派统计",
+                  _kv_table(delegation_stats, ("total", "subagent", "parallel_width", "verified"),
+                            ("总单元数", "子代理执行数", "最大并行宽度", "复验通过数"))]
+
+    chain = _obj(doc, "chain")
+    if chain:
+        lines += ["", "## 🔗 Chain 区块交接配置",
+                  _kv_table(chain, ("mode", "blocks", "handoffs"), ("chain_mode", "blocks", "handoffs"))]
+
+    return "\n".join(lines) + "\n"
+
+
+def _render_progress(doc: dict[str, Any], tid: str, stamp: str) -> str:
+    """重建 progress.md：保留 Phase 状态/审计/Delegations 表，补逐 Phase 明细与全部日志段。
+
+    What: Phase 段含 Status/Started/Actions/Files/Test Results；另含 Goals 证据行、Error Log、
+          知识储备使用记录、5Q、resume 检查点表。
+    Why: check-3file-gate.sh 解析 `### Phase N:` + `**Started:**`（mtime 锚），check-evidence-anchor
+         解析 `[goal:G<n>]` 整行，check-context-hygiene 统计 Phase 段行数——锚格式必须逐字保留。
+    """
+    phases = _arr(doc, "phases")
+    lines: list[str] = [
+        GENERATED_HEADER, f"# Progress: {tid}", "", stamp.rstrip(), "",
+        "## Phase 状态",
+        _md_table(["id", "status", "tags"],
+                  [[p.get("id"), p.get("status"), p.get("tags", [])] for p in phases]),
+        "", "## Goals（证据锚）",
+    ]
+    goal_lines = [f"[goal:{g.get('id')}] {_cell(g.get('evidence', ''))}"
+                  for g in _arr(doc, "goals") if g.get("evidence")]
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 仅 evidence 非空的 goal 输出证据行。
+    # Why: check-evidence-anchor.sh:300 按 `[goal:G<digits>]` 取整行；无 evidence 的 goal 不应产生空锚。
+    lines += _bullets(goal_lines, _EMPTY % "goal 证据记录")
+    lines += [
+        "", "## 审计轮次",
+        _md_table(["round", "verdict", "by", "C", "I", "W", "at", "tags"],
+                  [[a.get("round"), a.get("verdict"), a.get("by"),
+                    a.get("counts", {}).get("C"), a.get("counts", {}).get("I"),
+                    a.get("counts", {}).get("W"), a.get("at"), a.get("tags", [])]
+                   for a in _arr(doc, "audits")]),
+        "", "## Delegations（派发登记）",
+        _md_table(["id", "agent", "scope", "status", "tags"],
+                  [[d.get("id"), d.get("agent"), d.get("scope"), d.get("status"), d.get("tags", [])]
+                   for d in _arr(doc, "delegations")]),
+        "", "## Phase 执行明细",
+    ]
+    for p in phases:
+        pid = p.get("id")
+        lines += [f"### Phase {_phase_no(pid)}: {_cell(p.get('name', ''))}".rstrip(),
+                  f"- **Status:** {_cell(p.get('status', 'pending'))}",
+                  f"- **Started:** {_cell(p.get('started', ''))}",
+                  "- Actions taken:"]
+        actions = [_cell(a.get("text", "")) for a in _arr(doc, "actions")
+                   if _phase_match(a.get("phase", ""), pid)]
+        lines += _bullets(actions, _EMPTY % "动作记录", indent="  ")
+        lines += ["- Files created/modified:"]
+        files = [f"{_cell(f.get('path', ''))} — {_cell(f.get('change', ''))}".strip(" —")
+                 for f in _arr(doc, "files") if _phase_match(f.get("phase", ""), pid)]
+        lines += _bullets(files, _EMPTY % "文件记录", indent="  ")
+        lines += ["- Test Results:"]
+        tests = [t for t in _arr(doc, "test_results") if _phase_match(t.get("phase", ""), pid)]
+        lines += [_table(["Test", "Input", "Expected", "Actual", "Status"],
+                         [[t.get("test"), t.get("input"), t.get("expected"), t.get("actual"),
+                           t.get("status")] for t in tests], _EMPTY % "测试结果"), ""]
+
+    resume = _obj(doc, "resume_report")
+    resume_rows = [[resume.get("path"), resume.get("last")]] if resume else []
+    lines += [
+        "## 📚 必要知识储备使用记录",
+        _table(["Phase", "引用知识源", "用途(决策/实现/验证)"],
+               [[k.get("phase"), k.get("source"), k.get("purpose")]
+                for k in _arr(doc, "knowledge_use")], _EMPTY % "知识使用记录"),
+        "", "## Error Log",
+        # [2026-11-22 task-jsonderive-deploy-20261122] 7 列锁序与 templates/progress.md 对齐：
+        # check-complete.sh 按表头名 "Root Cause" 动态定位列号，表尾「触发命令/工具」增量增列不改列序。
+        _table(["Timestamp", "Error", "Attempt", "Resolution", "Root Cause", "Prevention", "触发命令/工具"],
+               [[e.get("timestamp"), e.get("error"), e.get("attempt"), e.get("resolution"),
+                 e.get("root_cause"), e.get("prevention"), e.get("trigger")]
+                for e in _arr(doc, "errors")], _EMPTY % "错误记录"),
+        "", "## 5-Question Reboot Check",
+        _table(["Question", "Answer"],
+               [[q.get("question"), q.get("answer")] for q in _arr(doc, "reboot5q")],
+               _EMPTY % "5Q 记录"),
+        "", "---", "## plan-resume 报告检查点",
+        _table(["plan-resume 报告路径", "上次更新"], resume_rows, _EMPTY % "plan-resume 检查点"),
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def _render_findings(doc: dict[str, Any], tid: str, stamp: str,
+                     idx: dict[str, list[str]]) -> str:
+    """重建 findings.md：保留 Findings 表 + tag 倒排，补 Requirements/知识对齐/Research 等段。
+
+    What: Research Findings 由 research[] 与 findings[] 合并展示（各自带 source）。
+    Why: 模板锚 `## Research Findings` / `## Technical Decisions` / `## Issues Encountered` 是子代理
+          回填与终验引用面；空段用显式占位，避免 stub 判定且禁止推测填充（Rule 71）。
+    """
+    local_refs = sorted({ref for refs in idx.values() for ref in refs if ref.startswith(tid + "#")})
+    lines: list[str] = [
+        GENERATED_HEADER, f"# Findings: {tid}", "", stamp.rstrip(), "",
+        "## Requirements",
+    ]
+    lines += _bullets([_cell(r.get("text", "")) for r in _arr(doc, "requirements")],
+                      _EMPTY % "需求记录")
+    lines += [
+        "", "## Findings",
+        _md_table(["id", "text", "source", "tags"],
+                  [[f.get("id"), f.get("text"), f.get("source"), f.get("tags", [])]
+                   for f in _arr(doc, "findings")]),
+        "", "## 📚 必要知识储备对齐记录（Knowledge Base Alignment）",
+        _table(["知识源", "定位(路径/URL)", "是否已消费", "结论落点(本文件段落)"],
+               [[k.get("name"), k.get("loc"), k.get("consumed"), k.get("landing")]
+                for k in _arr(doc, "knowledge")], _EMPTY % "知识对齐记录"),
+        "", "## Research Findings",
+    ]
+    research_lines = [f"{_cell(x.get('claim', ''))} — {_cell(x.get('source', ''))}".rstrip(" —")
+                      for x in _arr(doc, "research")]
+    research_lines += [f"{_cell(x.get('text', ''))} — {_cell(x.get('source', ''))}".rstrip(" —")
+                       for x in _arr(doc, "findings")]
+    lines += _bullets(research_lines, _EMPTY % "调研发现")
+    lines += [
+        "", "## Technical Decisions",
+        _table(["Decision", "Rationale"],
+               [[d.get("decision"), d.get("rationale")] for d in _arr(doc, "decisions")],
+               _EMPTY % "技术决策"),
+        "", "## Issues Encountered",
+        _table(["Issue", "Resolution"],
+               [[i.get("issue"), i.get("resolution")] for i in _arr(doc, "issues")],
+               _EMPTY % "问题记录"),
+        "", "## Resources",
+    ]
+    lines += _bullets([_cell(r.get("locator", "")) for r in _arr(doc, "resources")],
+                      _EMPTY % "资源引用")
+    lines += ["", "## Visual/Browser Findings"]
+    lines += _bullets([f"{_cell(v.get('finding', ''))} — {_cell(v.get('source', ''))}".rstrip(" —")
+                       for v in _arr(doc, "visual")],
+                      _EMPTY % "多模态发现——未产生截图/PDF/网页证据")
+    lines += ["", "---", "## 本任务 tag 倒排引用",
+              "\n".join(f"- {ref}" for ref in local_refs) or f"- {_EMPTY % 'tag 引用'}", ""]
+    return "\n".join(lines)
+
+
+def _render_verification(doc: dict[str, Any], tid: str, stamp: str) -> str:
+    """重建 verification.md：保留 VC 表，补 Goal/Phase Gates/知识符合/质量门控/Goal Gate/交叉验证/5Q。
+
+    What: 对象段（goal_verdict/quality_gates/outcome）为空时不输出对应明细，仅给显式占位。
+    Why: 「终验全派生」要求这些判定面可机读；模板锚 `## Goal Gate` / `## Phase Gates` /
+          `## 5-Question Reboot Check` 必须逐字保留，供终验脚本与人工恢复消费。
+    """
+    lines: list[str] = [
+        GENERATED_HEADER, f"# Verification: {tid}", "", stamp.rstrip(), "",
+        "## Goal (1 sentence)",
+    ]
+    lines += _bullets([_cell(g.get("text", "")) for g in _arr(doc, "goals")], _EMPTY % "Goal 语句")
+    verdict = _obj(doc, "goal_verdict")
+    if verdict:
+        lines += ["", _kv_table(verdict, ("goal", "verdict", "evidence", "unresolved", "excluded", "next"))]
+    lines += [
+        "", "---", "## Verification Contract（VC 状态与判据）",
+        _md_table(["id", "status", "criterion", "command", "evidence", "tags"],
+                  [[v.get("id"), v.get("status"), v.get("criterion"), v.get("command"),
+                    v.get("evidence"), v.get("tags", [])] for v in _arr(doc, "vcs")]),
+        "", "## Phase Gates",
+        _table(["Goal", "Depends on", "Done when", "Checks", "Status"],
+               [[pg.get("goal"), pg.get("depends", []), pg.get("done_when"),
+                 pg.get("checks", []), pg.get("status")] for pg in _arr(doc, "phase_gates")],
+               _EMPTY % "Phase Gates 记录"),
+        "", "## 📚 必要知识储备符合性核验（终验项）",
+        _table(["必读知识源", "核验方式(交付物对照点)", "结论(符合/偏离+说明)"],
+               [[kc.get("item"), "-", kc.get("status")] for kc in _arr(doc, "knowledge_compliance")],
+               _EMPTY % "知识符合性记录"),
+    ]
+    quality = _obj(doc, "quality_gates")
+    lines += ["", "## 委派统计复验（Rule 25.4）"]
+    lines += _bullets([f"**机器统计复验:** {_cell(quality['delegation_reverify'])}"]
+                      if quality.get("delegation_reverify") else [], _EMPTY % "委派复验记录")
+    lines += ["", "## 质量门控统计（Rule 26）"]
+    lines += _bullets([f"**质量门控:** {_cell(quality['quality_control'])}"]
+                      if quality.get("quality_control") else [], _EMPTY % "质量门控记录")
+    outcome = _obj(doc, "outcome")
+    lines += ["", "## Goal Gate (终验，所有 phase complete 后执行)"]
+    if outcome:
+        lines += [f"outcome: {_cell(outcome.get('result', ''))}"]
+        if outcome.get("blocked_reason"):
+            lines += [f"blocked_reason: {_cell(outcome['blocked_reason'])}"]
+    else:
+        lines += [f"- {_EMPTY % 'Goal Gate 记录'}"]
+    lines += [
+        "", "---", "## 交叉验证记录（Rule 108）",
+        _table(["验证对象", "机械面路径（命令+结果）", "语义面路径（复检体+结论）", "判定（一致/分歧→108.4 处置）"],
+               [[cc.get("item"), cc.get("method"), cc.get("result"), "-"]
+                for cc in _arr(doc, "cross_checks")], _EMPTY % "交叉验证记录"),
+        "", "## 5-Question Reboot Check",
+        _table(["#", "Question", "Answer (fill on resume)"],
+               [[i, q.get("question"), q.get("answer")]
+                for i, q in enumerate(_arr(doc, "reboot5q"), 1)], _EMPTY % "5Q 记录"),
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def cmd_render(args: argparse.Namespace) -> int:
     """从权威源生成 4 个 MD 视图（保留既有文件名以兼容 hook），全部原子写。
 
-    WHY：视图只读派生，Agent/人不得直接编辑；每次 render 全量覆盖，杜绝 JSON 与 MD 漂移。
+    [2026-11-22 task-jsonderive-deploy-20261122] What: 4 视图全量重建模板语义段（原仅 4 张简表）。
+    Why: 视图只读派生，Agent/人不得直接编辑；每次 render 全量覆盖，杜绝 JSON 与 MD 漂移，
+         同时让 evidence-anchor / 3file-gate / context-hygiene / plan-dispatch 等机器门可消费稳定锚。
     """
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
@@ -778,64 +1529,25 @@ def cmd_render(args: argparse.Namespace) -> int:
         idx = {}  # 索引损坏不影响视图生成（状态文件仍是权威源），但不吞掉写入错误
     tid = doc["task_id"]
     stamp = f"- task_id: `{tid}`\n- 时间: created_at={doc['created_at']} / updated_at={doc['updated_at']}\n"
-    meta = (f"- plan_tier: `{doc['plan_tier']}` / execution_lane: `{doc['execution_lane']}` "
-            f"/ schema_version: {doc['schema_version']}\n")
+    # [2026-11-22 task-jsonderive-deploy-20261122 C-2 修复] What: meta 行改行首裸格式（无反引号）。
+    # Why: check-3file-gate/check-complete/check-plan-dispatch/check-tier-consistency 等门以
+    #       `plan_tier: mini`/`execution_lane: L0` 裸子串或行首锚 grep；反引号包裹使匹配全部落空
+    #       → L0/mini 门控静默失效（CR-1 C-2）。原行为=反引号列表行，删除。
+    _tt = doc.get("template_type")
+    meta_lines = [f"plan_tier: {doc['plan_tier']}",
+                  f"execution_lane: {doc['execution_lane']}",
+                  "schema_version: " + str(doc["schema_version"])]
+    if _tt:
+        meta_lines.insert(0, f"template_type: {_tt}")
+    meta = "\n".join(meta_lines) + "\n"
     top_tags = ", ".join(doc["tags"]) or "（无）"
-    views: dict[str, str] = {}
 
-    views["task_plan.md"] = "\n".join([
-        GENERATED_HEADER, f"# Task Plan: {tid}", "", stamp.rstrip(), meta.rstrip(),
-        f"- 顶层 tags: {top_tags}", "", "## Requirements（用户需求）",
-        _md_table(["id", "type", "text", "vc", "tags"],
-                  [[r.get("id"), r.get("type"), r.get("text"), r.get("vc", []), r.get("tags", [])]
-                   for r in doc["requirements"]]),
-        "", "## Goals（目标单元）",
-        _md_table(["id", "text", "tags"],
-                  [[g.get("id"), g.get("text"), g.get("tags", [])] for g in doc["goals"]]),
-        "", "## Phases（阶段状态）",
-        _md_table(["id", "status", "s_units", "v_checks", "tags"],
-                  [[p.get("id"), p.get("status"), p.get("s_units", []), p.get("v_checks", []),
-                    p.get("tags", [])] for p in doc["phases"]]),
-        "", "## R → VC 映射",
-        _md_table(["requirement", "vcs"],
-                  [[r.get("id"), r.get("vc", [])] for r in doc["requirements"]]), "",
-    ])
-
-    views["progress.md"] = "\n".join([
-        GENERATED_HEADER, f"# Progress: {tid}", "", stamp.rstrip(), "",
-        "## Phase 状态",
-        _md_table(["id", "status", "tags"],
-                  [[p.get("id"), p.get("status"), p.get("tags", [])] for p in doc["phases"]]),
-        "", "## 审计轮次",
-        _md_table(["round", "verdict", "by", "C", "I", "W", "at", "tags"],
-                  [[a.get("round"), a.get("verdict"), a.get("by"),
-                    a.get("counts", {}).get("C"), a.get("counts", {}).get("I"),
-                    a.get("counts", {}).get("W"), a.get("at"), a.get("tags", [])]
-                   for a in doc["audits"]]),
-        "", "## Delegations（派发登记）",
-        _md_table(["id", "agent", "scope", "status", "tags"],
-                  [[d.get("id"), d.get("agent"), d.get("scope"), d.get("status"),
-                    d.get("tags", [])] for d in doc["delegations"]]), "",
-    ])
-
-    views["verification.md"] = "\n".join([
-        GENERATED_HEADER, f"# Verification: {tid}", "", stamp.rstrip(), "",
-        "## Verification Contract（VC 状态与判据）",
-        _md_table(["id", "status", "criterion", "command", "evidence", "tags"],
-                  [[v.get("id"), v.get("status"), v.get("criterion"), v.get("command"),
-                    v.get("evidence"), v.get("tags", [])] for v in doc["vcs"]]), "",
-    ])
-
-    local_refs = sorted({ref for refs in idx.values() for ref in refs if ref.startswith(tid + "#")})
-    views["findings.md"] = "\n".join([
-        GENERATED_HEADER, f"# Findings: {tid}", "", stamp.rstrip(), "",
-        "## Findings",
-        _md_table(["id", "text", "source", "tags"],
-                  [[f.get("id"), f.get("text"), f.get("source"), f.get("tags", [])]
-                   for f in doc["findings"]]),
-        "", "## 本任务 tag 倒排引用",
-        "\n".join(f"- {ref}" for ref in local_refs) or "- （无）", "",
-    ])
+    views: dict[str, str] = {
+        "task_plan.md": _render_task_plan(doc, tid, stamp, meta, top_tags, idx),
+        "progress.md": _render_progress(doc, tid, stamp),
+        "verification.md": _render_verification(doc, tid, stamp),
+        "findings.md": _render_findings(doc, tid, stamp, idx),
+    }
 
     written = []
     for name in VIEW_NAMES:
@@ -1092,15 +1804,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="允许覆盖已有状态（谨慎）")
 
     p = add_cmd("get", "输出整份/某段/某条目 JSON", cmd_get)
-    p.add_argument("--section", choices=("tags", *ARRAY_SECTIONS))
+    # [2026-11-22 task-jsonderive-deploy-20261122] choices 扩到顶层全集，使新对象/标量字段可读。
+    p.add_argument("--section", choices=("tags", *TOP_LEVEL_KEYS))
     p.add_argument("--id")
 
     add_cmd("status", "输出 Phase/VC/审计状态摘要 JSON", cmd_status)
     add_cmd("validate", "schema 校验（rc 0 通过 / 1 失败）", cmd_validate)
 
-    p = add_cmd("set", "修改条目单字段", cmd_set)
-    p.add_argument("--section", required=True, choices=ARRAY_SECTIONS)
-    p.add_argument("--id", required=True)
+    p = add_cmd("set", "修改条目字段或顶层字段", cmd_set)
+    # [2026-11-22 task-jsonderive-deploy-20261122] 原行为 --section/--id required；现改为可选，
+    # 省略即写顶层字段，条目写入仍须成对提供（cmd_set 内显式校验，不放宽成静默 no-op）。
+    p.add_argument("--section", choices=ARRAY_SECTIONS, help="条目段；省略则写顶层 --field")
+    p.add_argument("--id", help="条目 id；写顶层字段时不得传")
     p.add_argument("--field", required=True)
     p.add_argument("--value", required=True)
 
@@ -1118,6 +1833,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--id", required=True)
 
     p = add_cmd("phase-done", "Phase → complete", cmd_phase_done)
+    p.add_argument("--id", required=True)
+
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 新增 phase-start 子命令; Why: 为 3file-gate 的 Started 锚点提供可写入口（status=in_progress + started=now）。
+    p = add_cmd("phase-start", "Phase → in_progress 并记 started=now", cmd_phase_start)
     p.add_argument("--id", required=True)
 
     for name, help_text, handler in (("vc-pass", "VC → pass", cmd_vc_pass),

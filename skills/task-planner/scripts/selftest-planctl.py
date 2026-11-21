@@ -5,6 +5,7 @@
 WHAT：每个用例在 worktree 内的 tmp/planctl-selftest/ 下建独立临时 plan-dir，通过 subprocess
   真调 planctl.py（不 import 内部函数），覆盖 init→get 往返、CRUD、状态流转、tag 倒排、render、
   备份恢复、validate 拒绝非法 JSON、原子写无半文件、4 个 check 的正反例与 rc2 输入异常。
+  [2026-11-22 task-jsonderive-deploy-20261122] 追加：新语义段 add/validate/get 往返与存量空壳兼容。
 WHY：机器门会直接消费 planctl 的 stdout/rc；只测内部函数无法发现 CLI 参数与输出契约漂移。
 输出：每例 `TEST <name>: PASS|FAIL`，末行 `TOTAL N PASS M FAIL K`；全 PASS exit 0，否则 1。
 依赖：仅 Python 3 标准库。
@@ -13,6 +14,7 @@ WHY：机器门会直接消费 planctl 的 stdout/rc；只测内部函数无法�
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -374,6 +376,190 @@ def case_check_audit_no_progress_guard(root: Path) -> None:
     assert_check_line(ok(run_plan(streak, "check", "audit"), "streak PASS"), "audit", "PASS")
 
 
+def case_new_semantic_sections_roundtrip(root: Path) -> None:
+    """[2026-11-22 task-jsonderive-deploy-20261122] 三个新 section 的 add→validate→get 往返。
+
+    What: errors（Error Log 7 列）/ decisions（决策+理由）/ s_units（10 列锁序）各写入一条并回读。
+    Why: 原行为这些段不在 ARRAY_SECTIONS，add 直接报「未知 section」；必须验证通用 add 真正可用，
+         且手写 validator 与 schema 对 required/类型判定一致（attempt 传字符串应被拒）。
+    """
+    plan = new_plan(root, "jsonderive")
+    entries = (
+        ("errors", {"id": "E1", "timestamp": "2026-11-22T01:00:00Z", "error": "boom",
+                    "attempt": 1, "resolution": "fixed", "root_cause": "bad path",
+                    "prevention": "abs path", "trigger": "selftest"}),
+        ("decisions", {"id": "D1", "decision": "full JSON derive", "rationale": "MD-only edits drift"}),
+        ("s_units", {"id": "S1", "phase": "P1", "name": "schema expand", "executor": "general-coder",
+                     "files": "schemas/plan-state.schema.json", "actions": "add definitions",
+                     "verify": "python3 selftest", "duration": "10m", "granularity": "file",
+                     "parallel": "no"}),
+    )
+    for section, entry in entries:
+        ok(run_plan(plan, "add", "--section", section,
+                    "--json", json.dumps(entry, ensure_ascii=False)), f"add {section}")
+        assert ok(run_plan(plan, "validate"), f"validate after {section}").stdout.strip() == "VALIDATE PASS"
+        got = out_json(ok(run_plan(plan, "get", "--section", section, "--id", entry["id"]),
+                          f"get {section}"))
+        for key, value in entry.items():
+            assert got.get(key) == value, f"{section}/{key}: {got.get(key)!r} != {value!r}"
+    # 负向：attempt 必须是整数；写前校验拒绝且不污染权威源。
+    cp = bad(run_plan(plan, "add", "--section", "errors",
+                      "--json", '{"id":"E2","timestamp":"2026-11-22T02:00:00Z",'
+                                '"error":"bad type","attempt":"1"}'), "attempt type reject")
+    assert "attempt" in cp.stderr, cp.stderr
+    assert [e["id"] for e in out_json(ok(run_plan(plan, "get", "--section", "errors"), "errors"))] == ["E1"]
+    assert ok(run_plan(plan, "validate"), "final validate").stdout.strip() == "VALIDATE PASS"
+
+
+def case_legacy_empty_shell_and_top_level_set(root: Path) -> None:
+    """[2026-11-22 task-jsonderive-deploy-20261122] 存量空壳兼容 + 顶层字段 set/get 往返。
+
+    What: 用 StoryLab 风格只含原 14 个 required 键的 JSON 直接 validate；随后 set --field 写标量、
+          对象（含自由扩展 config），并验证非法对象被拒且不污染状态。
+    Why: 新字段全部可选，存量计划必须继续合法；原行为 set 只能改数组条目，顶层语义段无法入库。
+    """
+    plan = new_plan(root, "storylab-shell")
+    shell = {"schema_version": 1, "task_id": "storylab-ep36", "plan_tier": "standard",
+             "execution_lane": "L2", "created_at": "", "updated_at": "",
+             "requirements": [], "goals": [], "vcs": [], "phases": [], "findings": [],
+             "audits": [], "delegations": [], "tags": []}
+    (plan / "plan-state.json").write_text(json.dumps(shell, ensure_ascii=False), encoding="utf-8")
+    assert ok(run_plan(plan, "validate"), "legacy shell validate").stdout.strip() == "VALIDATE PASS"
+    whole = out_json(ok(run_plan(plan, "get"), "legacy shell get"))
+    assert all(k not in whole for k in ("errors", "decisions", "s_units", "outcome", "config")), whole
+
+    ok(run_plan(plan, "set", "--field", "template_type", "--value", "standard"), "set scalar")
+    assert out_json(ok(run_plan(plan, "get", "--section", "template_type"), "get scalar")) == "standard"
+    ok(run_plan(plan, "set", "--field", "outcome", "--value",
+                '{"result":"PASS","blocked_reason":""}'), "set object")
+    assert out_json(ok(run_plan(plan, "get", "--section", "outcome"), "get object")) == {
+        "result": "PASS", "blocked_reason": ""}
+    # config 是自由扩展对象：额外键须放行（schema 未设 additionalProperties:false）。
+    cfg = {"scope_files": ["a.md"], "future_key": "x"}
+    ok(run_plan(plan, "set", "--field", "config", "--value", json.dumps(cfg)), "set free-form config")
+    assert out_json(ok(run_plan(plan, "get", "--section", "config"), "get config")) == cfg
+    # 非法对象（缺 outcome.result）必须写前拒绝。
+    cp = bad(run_plan(plan, "set", "--field", "outcome", "--value", '{"blocked_reason":"x"}'),
+             "missing result reject")
+    assert "result" in cp.stderr, cp.stderr
+    assert ok(run_plan(plan, "validate"), "final legacy validate").stdout.strip() == "VALIDATE PASS"
+
+
+def case_render_full_semantics(root: Path) -> None:
+    """[2026-11-22 task-jsonderive-deploy-20261122] render 全链断言。
+
+    What: init → add 多个新语义段 → phase-start → render → 4 视图逐锚 grep + S-unit 10 列锁序。
+    Why: render 是「MD 全派生」核心；锚漂移会让 evidence-anchor / 3file-gate / plan-dispatch
+         等机器门静默假绿，必须以 CLI 端到端方式钉死输出格式。
+    """
+    plan = new_plan(root, "render-full")
+    ok(run_plan(plan, "add", "--section", "phases",
+                "--json", '{"id":"P1","name":"Impl"}'), "add phase")
+    started = out_json(ok(run_plan(plan, "phase-start", "--id", "P1"), "phase-start"))
+    assert started["status"] == "in_progress" and started["started"], started
+    ok(run_plan(plan, "add", "--section", "goals",
+                "--json", '{"id":"G1","text":"交付","evidence":"selftest-planctl.py 全 PASS"}'),
+       "add goal evidence")
+    entries = (
+        ("actions", {"id": "A1", "phase": "P1", "text": "实现 render", "at": "2026-11-22T01:00:00Z"}),
+        ("files", {"id": "F1", "phase": "P1", "path": "planctl.py", "change": "重写 cmd_render"}),
+        ("test_results", {"id": "T1", "phase": "P1", "test": "selftest", "input": "-",
+                          "expected": "PASS", "actual": "PASS", "status": "pass"}),
+        ("errors", {"id": "E1", "timestamp": "2026-11-22T01:00:00Z", "error": "boom",
+                    "attempt": 1, "resolution": "fixed", "root_cause": "bad path",
+                    "prevention": "abs path", "trigger": "pytest"}),
+        ("reboot5q", {"id": "5Q1", "question": "Where am I?", "answer": "Phase 1"}),
+        ("knowledge_use", {"id": "KU1", "phase": "P1", "source": "templates/progress.md",
+                           "purpose": "锚点对照"}),
+        ("decisions", {"id": "D1", "decision": "JSON 权威源", "rationale": "MD 正则易漂移"}),
+        ("research", {"id": "RS1", "claim": "知识前置", "source": "docs:12"}),
+        ("issues", {"id": "I1", "issue": "锚漂移", "resolution": "派生视图统一输出"}),
+        ("resources", {"id": "RE1", "locator": "https://example.org/doc"}),
+        ("visual", {"id": "V1", "finding": "无截图", "source": "n/a"}),
+        ("s_units", {"id": "S1", "phase": "P1", "name": "实现", "executor": "coder",
+                     "files": "planctl.py", "actions": "add", "verify": "selftest",
+                     "duration": "10min", "granularity": "1f/30l/10min", "parallel": "no"}),
+        ("phase_gates", {"id": "PG1", "goal": "G1", "done_when": "全部锚命中"}),
+        ("knowledge_compliance", {"id": "KC1", "item": "模板锚", "status": "符合"}),
+        ("cross_checks", {"id": "CC1", "item": "VC-1", "method": "grep", "result": "一致 PASS"}),
+    )
+    for section, entry in entries:
+        ok(run_plan(plan, "add", "--section", section, "--json", json.dumps(entry, ensure_ascii=False)),
+           f"add {section}")
+    assert ok(run_plan(plan, "validate"), "validate").stdout.strip() == "VALIDATE PASS"
+    ok(run_plan(plan, "render"), "render")
+
+    header = "<!-- 本文件由 planctl.py 从 plan-state.json 生成，勿直接编辑 -->"
+    texts = {name: (plan / name).read_text(encoding="utf-8")
+             for name in ("task_plan.md", "progress.md", "verification.md", "findings.md")}
+    for name, text in texts.items():
+        assert text.startswith(header), f"{name} 缺 GENERATED_HEADER"
+
+    progress = texts["progress.md"]
+    for anchor in ("### Phase 1:", "**Status:** in_progress", "**Started:**", "Actions taken:",
+                   "实现 render", "## Error Log", "Root Cause", "bad path",
+                   "5-Question Reboot Check", "[goal:G1]", "selftest-planctl.py 全 PASS"):
+        assert anchor in progress, f"progress.md 缺锚 {anchor}"
+    tp = texts["task_plan.md"]
+    for anchor in ("## Requirements", "## Goals", "## Phases", "## R → VC 映射",
+                   "## ✅ Verification Contract", "| ID | 目标(≤1 句) | 执行体", "| S1 |",
+                   "## Decisions Made"):
+        assert anchor in tp, f"task_plan.md 缺锚 {anchor}"
+    findings = texts["findings.md"]
+    for anchor in ("## Requirements", "## Research Findings", "## Technical Decisions",
+                   "## Issues Encountered", "## Resources", "## Visual/Browser Findings"):
+        assert anchor in findings, f"findings.md 缺锚 {anchor}"
+    verification = texts["verification.md"]
+    for anchor in ("## Goal (1 sentence)", "## Phase Gates", "## Goal Gate",
+                   "## 交叉验证记录", "## 5-Question Reboot Check"):
+        assert anchor in verification, f"verification.md 缺锚 {anchor}"
+
+    # S-unit 10 列锁序：数据行 awk -F'|' 的 $4/$5/$7/$8 必须与模板一致（执行体/输入/时长/粒度）
+    srow = next(line for line in tp.splitlines() if line.startswith("| S1 |"))
+    cols = [c.strip() for c in srow.split("|")[1:-1]]
+    assert len(cols) == 10, cols
+    assert cols[2:4] == ["coder", "planctl.py"] and cols[5:7] == ["10min", "1f/30l/10min"], cols
+
+    # 3file-gate 解析兼容冒烟：复刻 check-3file-gate.sh:107-129 的两段 awk 锚提取
+    m = re.search(r"^### Phase (\d+):", tp, re.M)
+    assert m and m.group(1) == "1", "task_plan.md 无可被 3file-gate 解析的 Phase 标题"
+    seg = progress.split("### Phase 1:", 1)[1]
+    assert re.search(r"^- \*\*Started:\*\* \d{4}-\d{2}-\d{2}", seg, re.M), \
+        "progress.md Started 行不匹配 check-3file-gate.sh 的 /- \\*\\*Started:\\*\\*/ 正则"
+
+
+def case_render_placeholders_and_legacy(root: Path) -> None:
+    """[2026-11-22 task-jsonderive-deploy-20261122] 空段显式占位 + legacy 空壳 render 不崩。
+
+    What: 空计划（仅一个空 Phase）render 后各空段含显式占位；再换成仅 14 required 键的
+          StoryLab 空壳 JSON，render 仍成功。
+    Why: Rule 71 要求空段显式占位（禁推测填充），存量空壳无新字段不得使 render 崩溃。
+    """
+    plan = new_plan(root, "render-empty")
+    ok(run_plan(plan, "add", "--section", "phases", "--json", '{"id":"P1"}'), "add empty phase")
+    ok(run_plan(plan, "render"), "render empty")
+    progress = (plan / "progress.md").read_text(encoding="utf-8")
+    findings = (plan / "findings.md").read_text(encoding="utf-8")
+    verification = (plan / "verification.md").read_text(encoding="utf-8")
+    checks = (
+        (progress, ("（本任务暂无动作记录）", "（本任务暂无错误记录）",
+                    "（本任务暂无5Q 记录）", "（本任务暂无plan-resume 检查点）")),
+        (findings, ("（本任务暂无需求记录）", "（本任务暂无调研发现）",
+                    "（本任务暂无技术决策）", "（本任务暂无多模态发现")),
+        (verification, ("（本任务暂无Phase Gates 记录）", "（本任务暂无Goal Gate 记录）")),
+    )
+    for text, anchors in checks:
+        for anchor in anchors:
+            assert anchor in text, f"缺空段占位 {anchor}"
+
+    shell = {"schema_version": 1, "task_id": "legacy", "plan_tier": "standard",
+             "execution_lane": "L1", "created_at": "", "updated_at": "",
+             "requirements": [], "goals": [], "vcs": [], "phases": [], "findings": [],
+             "audits": [], "delegations": [], "tags": []}
+    (plan / "plan-state.json").write_text(json.dumps(shell, ensure_ascii=False), encoding="utf-8")
+    ok(run_plan(plan, "render"), "legacy render")
+
+
 CASES: tuple[tuple[str, Callable[[Path], None]], ...] = (
     ("init_get_roundtrip", case_init_get),
     ("crud_set_add_update_delete", case_crud),
@@ -392,6 +578,12 @@ CASES: tuple[tuple[str, Callable[[Path], None]], ...] = (
     ("check_evidence_pos_neg", case_check_evidence),
     ("history_versioned_restore", case_history_versioned),
     ("check_input_anomaly_rc2", case_check_input_anomaly),
+    # [2026-11-22 task-jsonderive-deploy-20261122] 新语义段写入与存量兼容回归。
+    ("new_semantic_sections_roundtrip", case_new_semantic_sections_roundtrip),
+    ("legacy_empty_shell_and_top_level_set", case_legacy_empty_shell_and_top_level_set),
+    # [2026-11-22 task-jsonderive-deploy-20261122] render 全链 / 空段占位 / legacy 兼容回归。
+    ("render_full_semantics", case_render_full_semantics),
+    ("render_placeholders_and_legacy", case_render_placeholders_and_legacy),
 )
 
 
