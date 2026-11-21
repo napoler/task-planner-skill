@@ -36,7 +36,8 @@ ZCODE_HOME="${ZCODE_HOME:-$HOME/.zcode}"
 
 CFG_ENABLED=true
 CFG_VARIANT_TYPES="executor,explore,code-assistant,general-purpose"
-CFG_FALLBACK_SLUGS="agnes-2.5-flash"
+# [2026-11-20 task-agents-degrade-policy-20261120 用户裁决：fallback 模型必须∈注册集且逐级] 原 agnes-2.5-flash 已不在 v2/config.json 注册集（死通道），改注册档组合：跨 provider agnes-3.0-flash 优先+同 ccr fast 次之
+CFG_FALLBACK_SLUGS="agnes-3.0-flash,fast"
 CFG_PROBE_TIMEOUT_MS=20000
 
 load_config() {

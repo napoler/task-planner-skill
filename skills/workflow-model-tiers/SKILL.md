@@ -76,6 +76,8 @@ const results = await Promise.all(
 );
 ```
 
+> **计划质量门（2026-11-20 用户裁决）**：规划/计划类任务的 route 档位下限=medium（sonnet-1）；禁 minimal（haiku-1）承载计划产出——好的计划才可能导致好的结果；分诊 agent 对计划类任务按下限修正 route。
+
 要点：分诊器用最轻档且只选已批准档位；fan-out 内禁止重复 `model()` 声明；遵守 dynamic-workflows 拓扑/phase/报告契约。
 
 ## 4) 退化路径（验证失败或运行期不生效时的唯一合规动作）
