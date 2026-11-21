@@ -107,6 +107,8 @@ SHIM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$PLAN_DIR/plan-state.json" ] && [ -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
   _pc_out="$(python3 "$SHIM_SCRIPT_DIR/planctl.py" check audit --plan-dir "$PLAN_DIR")"
   _pc_rc=$?
+  # [2026-11-21] 命令替换截掉的仅末尾换行，reason 全文（含 NO_PROGRESS_STREAK_3 的
+  # <details: R1={I-5}, ...>）原样保留；下方 FAIL 行直接 echo $_pc_reason 完整透传，不截断。
   _pc_reason="${_pc_out#PLANCTL CHECK audit: PASS }"
   _pc_reason="${_pc_reason#PLANCTL CHECK audit: FAIL }"
   case "$_pc_rc" in
@@ -135,6 +137,66 @@ SEG="$(awk '/^## \[plan-audit-R[0-9]+\] /{inbuf=1; buf=""; next} inbuf && /^## /
 if [ -z "$SEG" ]; then
   echo "$AG FAIL: progress.md 无 [plan-audit-RN] 审计留痕段（L1+ 计划须经 critic 独立审计后由主进程登记留痕）"
   exit 1
+fi
+
+# ── MD fallback 无进展止损（2026-11-21 task-audit-rework-cap-20261121）──────────
+# What: 从最近最多 3 个 [plan-audit-RN] 段的问题清单行抽显式 `C-\d+`/`I-\d+` key（正则只吃
+#       数字，天然剥掉「残留/已修/修复中」尾缀）；3 个连续 REJECTED 段 key 集完全相同 → FAIL。
+# Why: 与 JSON 权威源 check audit 同口径，防 R1→R9 以同一 key 反复打回；解析不到任何显式 key
+#       时不硬升级，仅 WARN NO_ISSUE_KEYS legacy 并沿用原末段判定（存量 MD 零回归）；末轮
+#       APPROVED=真实收敛，跳过止损（防 R2→R3 清零样本误伤）。
+NP_SUMMARY="$(awk '
+function flush(   n, arr, i, rnd, verdict, keys, tmp, k, inlist) {
+  if (!have || buf == "") return
+  n = split(buf, arr, "\n")
+  rnd = ""; verdict = ""; keys = ""; inlist = 0
+  for (i = 1; i <= n; i++) {
+    if (rnd == "" && arr[i] ~ /^- 轮次: R[0-9]+/) {
+      rnd = arr[i]; sub(/^.*轮次: R/, "", rnd); sub(/[^0-9].*$/, "", rnd)
+    }
+    if (arr[i] ~ /结论: \*\*APPROVED\*\*/) verdict = "APPROVED"
+    else if (arr[i] ~ /结论: \*\*REJECTED\*\*/) verdict = "REJECTED"
+    if (arr[i] ~ /^- 问题清单([（(][^）)]*[）)])?:/) inlist = 1
+    if (inlist && arr[i] ~ /^- / && arr[i] !~ /^- 问题清单/) inlist = 0
+    if (inlist) {
+      tmp = arr[i]
+      while (match(tmp, /(C|I)-[0-9]+/)) {
+        k = substr(tmp, RSTART, RLENGTH)
+        if (index("," keys ",", "," k ",") == 0) keys = keys (keys == "" ? "" : ",") k
+        tmp = substr(tmp, RSTART + RLENGTH)
+      }
+    }
+  }
+  if (rnd == "") rnd = "0"
+  print rnd "\t" verdict "\t" keys
+}
+/^## \[plan-audit-R[0-9]+\] / { flush(); have = 1; buf = $0 "\n"; next }
+have && /^## / { flush(); have = 0; buf = ""; next }
+have { buf = buf $0 "\n" }
+END { flush() }
+' "$PROG")"
+
+NP_KEYS_FOUND=0; NP_LAST_VERDICT=""; NP_KEY_ARR=(); NP_ROUND_ARR=()
+while IFS=$'\t' read -r _np_round _np_verdict _np_keys; do
+  [ -z "$_np_round" ] && continue
+  NP_LAST_VERDICT="$_np_verdict"
+  [ -n "$_np_keys" ] && NP_KEYS_FOUND=1
+  if [ "$_np_verdict" = "REJECTED" ] && [ -n "$_np_keys" ]; then
+    NP_ROUND_ARR+=("$_np_round"); NP_KEY_ARR+=("$_np_keys")
+  fi
+done <<< "$NP_SUMMARY"
+
+if [ "${#NP_KEY_ARR[@]}" -ge 3 ] && [ "$NP_LAST_VERDICT" != "APPROVED" ]; then
+  _n=${#NP_KEY_ARR[@]}
+  _k1="${NP_KEY_ARR[$((_n-3))]}"; _k2="${NP_KEY_ARR[$((_n-2))]}"; _k3="${NP_KEY_ARR[$((_n-1))]}"
+  _r1="${NP_ROUND_ARR[$((_n-3))]}"; _r2="${NP_ROUND_ARR[$((_n-2))]}"; _r3="${NP_ROUND_ARR[$((_n-1))]}"
+  if [ "$_k1" = "$_k2" ] && [ "$_k2" = "$_k3" ]; then
+    echo "$AG FAIL NO_PROGRESS_STREAK_3 ESCALATE_USER_DECISION_REQUIRED <details: R${_r1}={${_k1}}, R${_r2}={${_k2}}, R${_r3}={${_k3}}>（连续 3 轮 REJECTED 开放 C/I key 集不变，禁止继续自动派发同类修复，改走 decision-arbiter/AskUser 上报）"
+    exit 1
+  fi
+fi
+if [ "$NP_KEYS_FOUND" -eq 0 ]; then
+  echo "$AG WARN NO_ISSUE_KEYS legacy（问题清单无显式 C/I key，保守沿用末段判定，不硬升级）"
 fi
 
 if printf '%s\n' "$SEG" | grep -qE '^- 轮次: R[0-9]+ \| 审计体: .+ \| 结论: \*\*REJECTED\*\*'; then

@@ -71,6 +71,86 @@ class PlanctlError(Exception):
     """planctl 业务异常：统一由 main() 转 stderr + rc 1，禁止静默吞错。"""
 
 
+# ── 审计问题 issue 与无进展判定（2026-11-21 task-audit-rework-cap-20261121）──────
+# What: issue.key 是跨轮无进展判定的唯一机器信号；开放 C/I = severity∈{C,I} 且 state∈{open,new}。
+# Why: 旧机器门只校验末段 APPROVED 形态，R1→R9 可反复以「I-5 残留」重现而一路 PASS；
+#       文本口径「连续≥3轮无进展→呈报用户」无机器判定。本组函数把该口径落为可测的 check 判定。
+ISSUE_KEY_RE = re.compile(r"^(C|I|W|N|Q)-[A-Za-z0-9_\u4e00-\u9fff-]{1,48}$")
+ISSUE_SEVERITIES = frozenset(("C", "I", "W", "N", "Q"))
+ISSUE_STATES = frozenset(("open", "fixed", "accepted", "new", "deferred"))
+OPEN_CI_SEVERITIES = frozenset(("C", "I"))
+OPEN_CI_STATES = frozenset(("open", "new"))
+
+
+def _valid_issue(value: Any) -> bool:
+    """校验单个 issue 条目；字段集与 schema definitions.audit_issue 一一对应。"""
+    if not isinstance(value, dict):
+        return False
+    if not set(value).issubset({"key", "severity", "state", "title"}):
+        return False
+    if not {"key", "severity", "state"}.issubset(value):
+        return False
+    key = value.get("key")
+    return (isinstance(key, str) and bool(ISSUE_KEY_RE.match(key))
+            and value.get("severity") in ISSUE_SEVERITIES
+            and value.get("state") in ISSUE_STATES
+            and ("title" not in value or isinstance(value["title"], str)))
+
+
+def parse_issues_json(raw: str | None) -> list[dict[str, Any]] | None:
+    """解析 audit-add --issues-json；未提供时返回 None（旧行为不变），非法输入显式报错。"""
+    if raw is None or not raw.strip():
+        return None
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise PlanctlError(f"--issues-json 非法 JSON: {exc}") from exc
+    if not isinstance(parsed, list):
+        raise PlanctlError("--issues-json 必须是 JSON 数组")
+    bad = [x for x in parsed if not _valid_issue(x)]
+    if bad:
+        raise PlanctlError("--issues-json 条目非法（key 须 C|I|W|N|Q-<1..48 字符>，"
+                           f"severity/state 须属枚举，必填 key/severity/state）: {bad[:3]!r}")
+    return parsed
+
+
+def open_ci_keys(audit: dict[str, Any]) -> set[str]:
+    """返回该审计轮尚未关闭的 C/I issue key 集合；无 issues 字段=无信号（空集）。"""
+    issues = audit.get("issues")
+    if not isinstance(issues, list):
+        return set()
+    return {str(x["key"]) for x in issues
+            if isinstance(x, dict) and x.get("severity") in OPEN_CI_SEVERITIES
+            and x.get("state") in OPEN_CI_STATES and isinstance(x.get("key"), str)}
+
+
+def audit_no_progress(audits: list[dict[str, Any]]) -> tuple[bool, str]:
+    """判定最近 3 个连续 REJECTED 轮是否开放 C/I key 集完全相同（零清零、零新增）。
+
+    返回 (是否命中, 各轮 key 集合详情)。末轮 APPROVED 视为已收敛，直接不命中——
+    防真实样本 R2→R3「I-5 清零后 APPROVED」被误伤。无 issues 字段的轮跳过（无信号）。
+    """
+    if not audits:
+        return False, ""
+    last = max(audits, key=lambda a: a.get("round", 0))
+    if last.get("verdict") == "APPROVED":
+        return False, "末轮 APPROVED 已收敛，跳过无进展判定"
+    rejected = sorted((a for a in audits if a.get("verdict") == "REJECTED"),
+                      key=lambda a: a.get("round", 0))
+    signaled = [(a.get("round"), open_ci_keys(a)) for a in rejected if "issues" in a]
+    details = ", ".join(f"R{r}={{{', '.join(sorted(k)) or '∅'}}}" for r, k in signaled[-3:])
+    if len(signaled) < 3:
+        return False, details
+    tail = signaled[-3:]
+    rounds = [r for r, _ in tail]
+    consecutive = all(rounds[j + 1] - rounds[j] == 1 for j in (0, 1))
+    sets = [k for _, k in tail]
+    # 判定口径=「key 集完全相同」而非「末轮 ⊆ 前轮」：后者会把真实清零误判为无进展。
+    if consecutive and sets[0] and sets[0] == sets[1] == sets[2]:
+        return True, details
+    return False, details
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 时间与 JSON I/O
 # ─────────────────────────────────────────────────────────────────────────────
@@ -260,6 +340,8 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
             "by": lambda v: isinstance(v, str),
             "at": lambda v: _is_iso8601(v),
             "tags": known["tags"],
+            # [2026-11-21] issues 为可选字段（向后兼容旧条目）；一旦出现即逐项按 schema 校验。
+            "issues": lambda v: isinstance(v, list) and all(_valid_issue(x) for x in v),
             "counts": lambda v: (
                 isinstance(v, dict) and set(v) == {"C", "I", "W"}
                 and all(isinstance(v[k], int) and not isinstance(v[k], bool) and v[k] >= 0
@@ -480,6 +562,8 @@ def cmd_status(args: argparse.Namespace) -> int:
 
     audits = doc["audits"]
     last_audit = max(audits, key=lambda a: a.get("round", 0)) if audits else None
+    # [2026-11-21] no_progress_streak 供外部观测无进展止损命中态（与 check audit 同一判定面）。
+    no_progress, _ = audit_no_progress(audits)
     emit({
         "task_id": doc["task_id"],
         "plan_tier": doc["plan_tier"],
@@ -491,6 +575,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         "phases": [{"id": p.get("id"), "status": p.get("status")} for p in phases],
         "vcs": [{"id": v.get("id"), "status": v.get("status")} for v in vcs],
         "last_audit": last_audit,
+        "no_progress_streak": no_progress,
         "tag_count": len(doc["tags"]),
     })
     return 0
@@ -609,15 +694,23 @@ def cmd_vc_fail(args: argparse.Namespace) -> int:
 
 
 def cmd_audit_add(args: argparse.Namespace) -> int:
-    """追加一轮独立审计；round 重复拒绝，at 自动填 ISO8601。"""
+    """追加一轮独立审计；round 重复拒绝，at 自动填 ISO8601。
+
+    [2026-11-21] 可选 --issues-json 落 issues[]；未提供时保持旧行为（条目无 issues 字段）。
+    Why: issues 是跨轮无进展判定的唯一信号源，必须在写入时就按 schema 校验，不能留到 check 才暴露。
+    """
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
     if find_entry(doc, "audits", str(args.round)) is not None:
         raise PlanctlError(f"audits 轮次已存在: round={args.round}")
-    entry = normalize_entry("audits", {
+    issues = parse_issues_json(getattr(args, "issues_json", None))
+    payload: dict[str, Any] = {
         "round": args.round, "verdict": args.verdict, "by": args.by,
         "counts": {"C": args.c, "I": args.i, "W": args.w}, "at": now_iso(), "tags": [],
-    })
+    }
+    if issues is not None:
+        payload["issues"] = issues
+    entry = normalize_entry("audits", payload)
     doc["audits"].append(entry)
     commit_state(plan, doc)
     emit({"added": entry})
@@ -893,10 +986,19 @@ def check_rvc(doc: dict[str, Any], plan_dir: Path) -> tuple[bool, str]:
 
 
 def check_audit(doc: dict[str, Any], plan_dir: Path) -> tuple[bool, str]:
-    """audit：末轮（round 最大）verdict=APPROVED 且 counts.C==0 and counts.I==0。"""
+    """audit：先做无进展止损（最近 3 个连续 REJECTED 轮 key 集不变→FAIL 并上报），再判末段形态。
+
+    [2026-11-21 task-audit-rework-cap-20261121] 原行为=仅校验末轮 APPROVED 且 0C/0I；
+    新增 no_progress 判定置于其后、原末段判定之前，且末轮 APPROVED 一律跳过（收敛不误伤）。
+    """
     audits = doc["audits"]
     if not audits:
         return False, "无 audit 记录（末轮审计缺失）"
+    no_progress, details = audit_no_progress(audits)
+    if no_progress:
+        return (False, "NO_PROGRESS_STREAK_3 ESCALATE_USER_DECISION_REQUIRED "
+                       f"<details: {details}>（连续 3 轮 REJECTED 开放 C/I key 集完全相同，"
+                       "禁止继续自动派发同类修复，改走 decision-arbiter/AskUser 上报）")
     last = max(audits, key=lambda a: a.get("round", 0))
     rnd = last.get("round")
     if last.get("verdict") != "APPROVED":
@@ -1030,6 +1132,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--c", type=int, default=0)
     p.add_argument("--i", type=int, default=0)
     p.add_argument("--w", type=int, default=0)
+    p.add_argument("--issues-json", dest="issues_json",
+                   help="可选：issue JSON 数组（每项含 key/severity/state，title 可选）；无进展判定信号源")
 
     p = add_cmd("tag-add", "打标签并更新倒排索引", cmd_tag_add)
     p.add_argument("--section", required=True, choices=ARRAY_SECTIONS)

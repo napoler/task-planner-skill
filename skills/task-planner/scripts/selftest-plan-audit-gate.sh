@@ -160,6 +160,74 @@ else
   bad 16 "APPROVED 放行期望 rc0/有锁/含 audit-gate, 实得 rc=$rc 锁=$(test -f "$D/.plan-attestation" && echo 有 || echo 无)"
 fi
 
+# ── PAG-20 JSON shim 无进展 reason 全文透传（2026-11-21 task-audit-rework-cap-20261121）────
+D="$ROOT/c20"; mkplan "$D" standard L1; : > "$D/progress.md"
+python3 "$SCRIPT_DIR/planctl.py" init --task-id t20 --plan-dir "$D" >/dev/null 2>&1
+for _r in 1 2 3; do
+  python3 "$SCRIPT_DIR/planctl.py" audit-add --round "$_r" --verdict REJECTED --by critic \
+    --issues-json '[{"key":"I-5","severity":"I","state":"open"}]' --plan-dir "$D" >/dev/null 2>&1
+done
+out=$(bash "$CK" "$D" 2>&1); rc=$?
+if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'NO_PROGRESS_STREAK_3 ESCALATE_USER_DECISION_REQUIRED' \
+   && printf '%s' "$out" | grep -q '<details: R1={I-5}, R2={I-5}, R3={I-5}>'; then
+  ok 20 "JSON shim 无进展 reason 全文透传（details 未截断）rc1"
+else
+  bad 20 "JSON shim 无进展期望 rc1+完整 reason, 实得 rc=$rc out=$out"
+fi
+
+# ── PAG-21 MD fallback 显式 key 解析无进展（去「残留/修复中」尾缀, 同一 I-5 三轮）────────
+D="$ROOT/c21"; mkplan "$D" standard L1
+mkprog "$D" \
+ '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - I-5 残留' \
+ '## [plan-audit-R2] fixture' '- 轮次: R2 | 审计体: critic | 结论: **REJECTED**' '- 问题清单（留档）:' '  - I-5残留' \
+ '## [plan-audit-R3] fixture' '- 轮次: R3 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - I-5 修复中'
+out=$(bash "$CK" "$D" 2>&1); rc=$?
+if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'NO_PROGRESS_STREAK_3' \
+   && printf '%s' "$out" | grep -q 'R3={I-5}'; then
+  ok 21 "MD fallback 显式 I-5 key 三轮不下降 rc1"
+else
+  bad 21 "MD fallback 无进展期望 rc1+NO_PROGRESS, 实得 rc=$rc out=$out"
+fi
+
+# ── PAG-22 无显式 key → 保守 WARN NO_ISSUE_KEYS legacy + 原末段判定（不硬升级）──────────
+D="$ROOT/c22"; mkplan "$D" standard L1
+mkprog "$D" '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **APPROVED**' '- 问题清单: 无'
+out=$(bash "$CK" "$D" 2>&1); rc=$?
+if [ "$rc" -eq 0 ] && printf '%s' "$out" | grep -q 'WARN NO_ISSUE_KEYS legacy' \
+   && printf '%s' "$out" | grep -q '\[audit-gate\] PASS'; then
+  ok 22 "无显式 key 保守 WARN legacy + 原判定 rc0"
+else
+  bad 22 "无 key 期望 rc0+WARN+PASS, 实得 rc=$rc out=$out"
+fi
+
+# ── PAG-23 末轮 APPROVED 收敛不误伤（3 轮同 key 后 R4 APPROVED → PASS）──────────────────
+D="$ROOT/c23"; mkplan "$D" standard L1
+mkprog "$D" \
+ '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - I-5 残留' \
+ '## [plan-audit-R2] fixture' '- 轮次: R2 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - I-5 残留' \
+ '## [plan-audit-R3] fixture' '- 轮次: R3 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - I-5 残留' \
+ '## [plan-audit-R4] fixture' '- 轮次: R4 | 审计体: critic | 结论: **APPROVED**' '- 问题清单: 无'
+out=$(bash "$CK" "$D" 2>&1); rc=$?
+if [ "$rc" -eq 0 ] && printf '%s' "$out" | grep -q '\[audit-gate\] PASS' \
+   && ! printf '%s' "$out" | grep -q 'NO_PROGRESS_STREAK_3'; then
+  ok 23 "3 轮同 key 后末轮 APPROVED → PASS（收敛不误伤）"
+else
+  bad 23 "末轮 APPROVED 期望 rc0+PASS, 实得 rc=$rc out=$out"
+fi
+
+# ── PAG-24 仅 W/N key 重复不触发（开放 C/I key 集为空）──────────────────────────────────
+D="$ROOT/c24"; mkplan "$D" standard L1
+mkprog "$D" \
+ '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - W-1 留档' '  - N-1 留档' \
+ '## [plan-audit-R2] fixture' '- 轮次: R2 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - W-1 留档' '  - N-1 留档' \
+ '## [plan-audit-R3] fixture' '- 轮次: R3 | 审计体: critic | 结论: **REJECTED**' '- 问题清单:' '  - W-1 留档' '  - N-1 留档'
+out=$(bash "$CK" "$D" 2>&1); rc=$?
+if [ "$rc" -eq 1 ] && ! printf '%s' "$out" | grep -q 'NO_PROGRESS_STREAK_3'; then
+  ok 24 "仅 W/N key 重复不触发无进展止损 rc1（原末段 REJECTED 判定）"
+else
+  bad 24 "W/N 重复期望 rc1 且无 NO_PROGRESS, 实得 rc=$rc out=$out"
+fi
+
 clear_cache
 printf 'Total: %d PASS=%d FAIL=%d\n' $((PASS+FAIL)) "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
