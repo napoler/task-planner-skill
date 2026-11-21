@@ -48,11 +48,40 @@ HISTORY_LIMIT = 20
 GENERATED_HEADER = "<!-- 本文件由 planctl.py 从 plan-state.json 生成，勿直接编辑 -->"
 VIEW_NAMES = ("task_plan.md", "progress.md", "verification.md", "findings.md")
 
-ARRAY_SECTIONS = ("requirements", "goals", "vcs", "phases", "findings", "audits", "delegations")
-TOP_LEVEL_KEYS = (
-    "schema_version", "task_id", "plan_tier", "execution_lane", "created_at", "updated_at",
-    *ARRAY_SECTIONS, "tags",
+ARRAY_SECTIONS = (
+    "requirements", "goals", "vcs", "phases", "findings", "audits", "delegations",
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 追加 29 个语义段数组 section。
+    # Why: 原行为只覆盖 7 段，MD 语义段（Actions/Error Log/S-unit/Phase Gates 等）只能直接 Edit MD；
+    #       纳入后 add/get/update/delete/tag-add 的 --section choices 由元组自动生效，不新增子命令。
+    "actions", "files", "test_results", "errors", "reboot5q", "knowledge_use",
+    "research", "decisions", "issues", "resources", "visual",
+    "root_causes", "invariants", "spec_baseline", "progress_baseline", "scope_limits",
+    "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
+    "anti_regress", "fmea", "todo_sync", "key_questions",
+    "phase_gates", "knowledge_compliance", "cross_checks",
 )
+
+# [2026-11-22 task-jsonderive-deploy-20261122] What: 把原 TOP_LEVEL_KEYS 的双重语义拆开。
+# Why: 原行为中 TOP_LEVEL_KEYS 既当 required 又当 allowed；新字段全部可选，若直接并入会让
+#       存量 plan-state.json（StoryLab 空壳）validate FAIL，故 required 保持原 14 键不变。
+REQUIRED_TOP_LEVEL_KEYS = (
+    "schema_version", "task_id", "plan_tier", "execution_lane", "created_at", "updated_at",
+    "requirements", "goals", "vcs", "phases", "findings", "audits", "delegations", "tags",
+)
+OPTIONAL_TOP_LEVEL_KEYS = (
+    # 新增数组段（与 ARRAY_SECTIONS 尾部一致，供顶层 allowed/写入校验使用）
+    "actions", "files", "test_results", "errors", "reboot5q", "knowledge_use",
+    "research", "decisions", "issues", "resources", "visual",
+    "root_causes", "invariants", "spec_baseline", "progress_baseline", "scope_limits",
+    "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
+    "anti_regress", "fmea", "todo_sync", "key_questions",
+    "phase_gates", "knowledge_compliance", "cross_checks",
+    # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
+    "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
+    "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
+    "template_type", "next_step",
+)
+TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 
 # 新增条目时补齐的合法默认面（Why：避免 Agent 手写半条目导致 schema 校验失败；
 # 身份字段 id/round 仍强制，缺失即报错，不静默造 id）。
@@ -64,6 +93,66 @@ ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "findings": {"text": "", "source": "", "tags": []},
     "audits": {"verdict": "REJECTED", "by": "", "counts": {"C": 0, "I": 0, "W": 0}, "at": "", "tags": []},
     "delegations": {"agent": "", "scope": "", "status": "pending", "tags": []},
+    # [2026-11-22 task-jsonderive-deploy-20261122] 新 section 默认面：覆盖 schema required 字段
+    # （除 id），Why: 通用 `add --section X --json '{"id":"..."}'` 也能一次落库成功，
+    # 原行为缺字段即被 validate 拒绝；自由文本留空串，数组留空表，计数留 0。
+    "actions": {"phase": "", "text": "", "at": ""},
+    "files": {"phase": "", "path": "", "change": ""},
+    "test_results": {"phase": "", "test": "", "input": "", "expected": "", "actual": "", "status": "pending"},
+    "errors": {"timestamp": "", "error": "", "attempt": 0, "resolution": "",
+               "root_cause": "", "prevention": "", "trigger": ""},
+    "reboot5q": {"question": "", "answer": ""},
+    "knowledge_use": {"phase": "", "source": "", "purpose": ""},
+    "research": {"claim": "", "source": ""},
+    "decisions": {"decision": "", "rationale": ""},
+    "issues": {"issue": "", "resolution": ""},
+    "resources": {"locator": ""},
+    "visual": {"finding": "", "source": ""},
+    "root_causes": {"process": "", "defect": "", "fix": "", "vc": ""},
+    "invariants": {"state": "", "item": "", "anchor": ""},
+    "spec_baseline": {"verbatim": "", "anchor": "", "rule": "", "sha": ""},
+    "progress_baseline": {"item": "", "snapshot": "", "metric": "", "ban": "", "status": ""},
+    "scope_limits": {"category": "", "allow": [], "deny": []},
+    "changes": {"object": "", "type": "", "absorb": "", "quote": "", "basis": "", "action": ""},
+    "knowledge": {"category": "", "name": "", "loc": "", "level": "", "confirmed": ""},
+    "research_status": {"unit": "", "state": "", "keywords": "", "channels": "", "output": "", "net": ""},
+    "evidence_faces": {"face": "", "target": "", "method": "", "anchor": "", "status": ""},
+    "tool_use": {"phase": "", "tools": "", "why": ""},
+    "s_units": {"phase": "", "name": "", "executor": "", "files": "", "actions": "",
+                "verify": "", "duration": "", "granularity": "", "parallel": ""},
+    "anti_regress": {"item": "", "method": "", "anchor": "", "result": ""},
+    "fmea": {"phase": "", "mode": "", "severity": 0, "occurrence": 0,
+             "detection": 0, "rpn": 0, "fallback": ""},
+    "todo_sync": {"trigger": "", "action": ""},
+    "key_questions": {"question": "", "answer": ""},
+    "phase_gates": {"goal": "", "depends": [], "done_when": "", "checks": [], "status": ""},
+    "knowledge_compliance": {"item": "", "status": ""},
+    "cross_checks": {"item": "", "method": "", "result": ""},
+}
+
+# [2026-11-22 task-jsonderive-deploy-20261122] 顶层对象字段规格：field → (required 集, 字段谓词, 是否允许额外键)。
+# What: 为 set --field 写入的对象段提供与 schema 等价的手写校验；Why: jsonschema 缺失时行为仍需一致，
+#       且 config 是自由扩展对象（原行为无该字段），显式放行额外键避免误拒未来配置项。
+STR_FIELD = lambda v: isinstance(v, str)
+INT_FIELD = lambda v: isinstance(v, int) and not isinstance(v, bool)
+STR_LIST_FIELD = lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)
+OBJECT_FIELD_SPECS: dict[str, tuple[set[str], dict[str, Callable[[Any], bool]], bool]] = {
+    "resume_report": ({"path"}, {"path": STR_FIELD, "last": STR_FIELD}, False),
+    "understanding": (set(), {k: STR_FIELD for k in ("original", "model", "options", "direction")}, False),
+    "config": (set(), {"code_review": STR_FIELD, "session_id": STR_FIELD,
+                       "worktree_path": STR_FIELD, "scope_files": STR_LIST_FIELD}, True),
+    "dual_qc": (set(), {k: STR_FIELD for k in ("scope", "exempt", "multi_file")}, False),
+    "goal_verdict": ({"goal", "verdict"},
+                     {k: STR_FIELD for k in ("goal", "verdict", "evidence", "unresolved", "excluded", "next")}, False),
+    "core_question": ({"text"}, {k: STR_FIELD for k in ("text", "checks", "verdict")}, False),
+    "isolation": (set(), {k: STR_FIELD for k in ("conflict", "path", "branch", "merge_back")}, False),
+    "batch": (set(), {"total": INT_FIELD, "success": INT_FIELD, "failed": INT_FIELD, "rate": STR_FIELD,
+                      "sampled_pass": INT_FIELD, "sampled_fail": INT_FIELD,
+                      "pre_check": STR_FIELD, "rollback": STR_FIELD}, True),
+    "delegation_stats": (set(), {k: INT_FIELD for k in ("total", "subagent", "parallel_width", "verified")}, True),
+    "chain": (set(), {k: STR_FIELD for k in ("mode", "blocks", "handoffs")}, False),
+    "quality_gates": (set(), {"delegation_reverify": STR_FIELD, "quality_control": STR_FIELD}, False),
+    "outcome": ({"result"}, {"result": STR_FIELD, "blocked_reason": STR_FIELD}, False),
 }
 
 
@@ -353,6 +442,103 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({"agent": lambda v: isinstance(v, str), "scope": lambda v: isinstance(v, str),
                       "status": lambda v: v in ("pending", "running", "done", "fail")})
         required = {"id", "agent", "scope", "status"}
+    # [2026-11-22 task-jsonderive-deploy-20261122] 新 section 校验分支（What）：required 与
+    #   schema definitions 一一对应，字段集与 properties 对齐；原行为这些段根本不在 ARRAY_SECTIONS，
+    #   校验器直接报「未知字段」。Why: 通用 add --section 必须写出合法条目，错误在写前暴露。
+    #   free_text（含 markdown 原文）只校验类型，不限制内容。
+    elif section == "actions":
+        known.update({k: STR_FIELD for k in ("phase", "text", "at")})
+        required = {"id", "phase", "text"}
+    elif section == "files":
+        known.update({k: STR_FIELD for k in ("phase", "path", "change")})
+        required = {"id", "path", "change"}
+    elif section == "test_results":
+        known.update({k: STR_FIELD for k in ("phase", "test", "input", "expected", "actual", "status")})
+        required = {"id", "test", "status"}
+    elif section == "errors":
+        known.update({"timestamp": STR_FIELD, "error": STR_FIELD, "attempt": INT_FIELD,
+                      "resolution": STR_FIELD, "root_cause": STR_FIELD,
+                      "prevention": STR_FIELD, "trigger": STR_FIELD})
+        required = {"id", "timestamp", "error"}
+    elif section == "reboot5q":
+        known.update({"question": STR_FIELD, "answer": STR_FIELD})
+        required = {"id", "question", "answer"}
+    elif section == "knowledge_use":
+        known.update({k: STR_FIELD for k in ("phase", "source", "purpose")})
+        required = {"id", "source", "purpose"}
+    elif section == "research":
+        known.update({"claim": STR_FIELD, "source": STR_FIELD})
+        required = {"id", "claim", "source"}
+    elif section == "decisions":
+        known.update({"decision": STR_FIELD, "rationale": STR_FIELD})
+        required = {"id", "decision"}
+    elif section == "issues":
+        known.update({"issue": STR_FIELD, "resolution": STR_FIELD})
+        required = {"id", "issue"}
+    elif section == "resources":
+        known.update({"locator": STR_FIELD})
+        required = {"id", "locator"}
+    elif section == "visual":
+        known.update({"finding": STR_FIELD, "source": STR_FIELD})
+        required = {"id", "finding", "source"}
+    elif section == "root_causes":
+        known.update({k: STR_FIELD for k in ("process", "defect", "fix", "vc")})
+        required = {"id", "process", "defect", "fix"}
+    elif section == "invariants":
+        known.update({k: STR_FIELD for k in ("state", "item", "anchor")})
+        required = {"id", "state", "item", "anchor"}
+    elif section == "spec_baseline":
+        known.update({k: STR_FIELD for k in ("verbatim", "anchor", "rule", "sha")})
+        required = {"id", "verbatim", "anchor"}
+    elif section == "progress_baseline":
+        known.update({k: STR_FIELD for k in ("item", "snapshot", "metric", "ban", "status")})
+        required = {"id", "item", "snapshot"}
+    elif section == "scope_limits":
+        known.update({"category": STR_FIELD, "allow": STR_LIST_FIELD, "deny": STR_LIST_FIELD})
+        required = {"id", "category"}
+    elif section == "changes":
+        known.update({k: STR_FIELD for k in ("object", "type", "absorb", "quote", "basis", "action")})
+        required = {"id", "object", "type"}
+    elif section == "knowledge":
+        known.update({k: STR_FIELD for k in ("category", "name", "loc", "level", "confirmed")})
+        required = {"id", "category", "name"}
+    elif section == "research_status":
+        known.update({k: STR_FIELD for k in ("unit", "state", "keywords", "channels", "output", "net")})
+        required = {"id", "unit", "state"}
+    elif section == "evidence_faces":
+        known.update({k: STR_FIELD for k in ("face", "target", "method", "anchor", "status")})
+        required = {"id", "face", "target"}
+    elif section == "tool_use":
+        known.update({k: STR_FIELD for k in ("phase", "tools", "why")})
+        required = {"id", "phase", "tools"}
+    elif section == "s_units":
+        known.update({k: STR_FIELD for k in ("phase", "name", "executor", "files", "actions",
+                                              "verify", "duration", "granularity", "parallel")})
+        required = {"id", "phase", "name"}
+    elif section == "anti_regress":
+        known.update({k: STR_FIELD for k in ("item", "method", "anchor", "result")})
+        required = {"id", "item", "method"}
+    elif section == "fmea":
+        known.update({"phase": STR_FIELD, "mode": STR_FIELD,
+                      "severity": INT_FIELD, "occurrence": INT_FIELD,
+                      "detection": INT_FIELD, "rpn": INT_FIELD, "fallback": STR_FIELD})
+        required = {"id", "phase", "mode"}
+    elif section == "todo_sync":
+        known.update({"trigger": STR_FIELD, "action": STR_FIELD})
+        required = {"id", "trigger", "action"}
+    elif section == "key_questions":
+        known.update({"question": STR_FIELD, "answer": STR_FIELD})
+        required = {"id", "question", "answer"}
+    elif section == "phase_gates":
+        known.update({"goal": STR_FIELD, "depends": STR_LIST_FIELD, "done_when": STR_FIELD,
+                      "checks": STR_LIST_FIELD, "status": STR_FIELD})
+        required = {"id", "goal", "done_when"}
+    elif section == "knowledge_compliance":
+        known.update({"item": STR_FIELD, "status": STR_FIELD})
+        required = {"id", "item", "status"}
+    elif section == "cross_checks":
+        known.update({"item": STR_FIELD, "method": STR_FIELD, "result": STR_FIELD})
+        required = {"id", "item", "method"}
 
     for key in required:
         if key not in entry:
@@ -369,7 +555,9 @@ def validate_state(doc: Any) -> list[str]:
     errs: list[str] = []
     if not isinstance(doc, dict):
         return ["$: 顶层必须是 object"]
-    for key in TOP_LEVEL_KEYS:
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 缺字段检查仍只用原 14 个 required 键。
+    # Why: 原行为 TOP_LEVEL_KEYS 兼作 required，新增可选字段若并入会导致存量 JSON 校验失败。
+    for key in REQUIRED_TOP_LEVEL_KEYS:
         if key not in doc:
             errs.append(f"$: 缺字段 {key}")
     for key in doc:
@@ -384,10 +572,35 @@ def validate_state(doc: Any) -> list[str]:
         "created_at": lambda v: _is_iso8601(v),
         "updated_at": lambda v: _is_iso8601(v),
         "tags": lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v),
+        # [2026-11-22 task-jsonderive-deploy-20261122] 新标量：原行为无此字段，按自由文本校验。
+        "template_type": STR_FIELD,
+        "next_step": STR_FIELD,
     }
     for key, pred in simple.items():
         if key in doc and not pred(doc[key]):
             errs.append(f"$.{key}: 值非法（{doc[key]!r}）")
+
+    # [2026-11-22 task-jsonderive-deploy-20261122] 顶层对象字段（resume_report/config/outcome 等）：
+    # What: 校验 required 子字段存在、类型合法、未知键（config/batch/delegation_stats 例外）。
+    # Why: set --field 可直接写整对象，必须在 commit 前用与 schema 一致的规则拦截坏数据。
+    for field, (obj_required, obj_props, allow_extra) in OBJECT_FIELD_SPECS.items():
+        if field not in doc:
+            continue
+        value = doc[field]
+        if not isinstance(value, dict):
+            errs.append(f"$.{field}: 必须是 object")
+            continue
+        for key in obj_required:
+            if key not in value:
+                errs.append(f"$.{field}: 缺字段 {key}")
+        # 遍历规格表（谓词在键上），不是遍历 value.items()——后者会把字段值误当函数调用。
+        for key, pred in obj_props.items():
+            if key in value and not pred(value[key]):
+                errs.append(f"$.{field}.{key}: 值非法（{value[key]!r}）")
+        if not allow_extra:
+            for key in value:
+                if key not in obj_props:
+                    errs.append(f"$.{field}: 未知字段 {key}")
 
     for section in ARRAY_SECTIONS:
         if section in doc:
@@ -541,6 +754,14 @@ def cmd_get(args: argparse.Namespace) -> int:
                 out = hit[1] if hit else None
             if out is None:
                 raise PlanctlError(f"{args.section} 中未找到 id={args.id!r}")
+    elif args.section in TOP_LEVEL_KEYS:
+        # [2026-11-22 task-jsonderive-deploy-20261122] What: 支持 get --section <顶层对象/标量字段>。
+        # Why: 原行为只认 tags 与原 7 个数组；新语义段可缺省，必须区分「未设置」与空值。
+        if args.id:
+            raise PlanctlError(f"顶层字段 {args.section} 不支持 --id")
+        if args.section not in doc:
+            raise PlanctlError(f"{args.section} 未设置（该顶层字段可选）")
+        out = doc[args.section]
     else:
         raise PlanctlError(f"未知 section: {args.section}")
     emit(out)
@@ -594,13 +815,31 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_set(args: argparse.Namespace) -> int:
-    """修改条目的单字段；值按 coerce_value 做 JSON 类型提升。"""
+    """修改条目字段（--section/--id）或顶层字段（仅 --field/--value）；值经 coerce_value 提升类型。
+
+    [2026-11-22 task-jsonderive-deploy-20261122] What: 新增无 --section 的顶层写入分支。
+    Why: 原行为 --section/--id 均 required，只能改数组条目；新语义段中 template_type/next_step/
+         outcome/config 等是顶层对象或标量，必须可写才能替代直接 Edit MD。
+         coerce_value 对 '{"a":1}' 返回 dict、对 '裸词' 返回 str，已兼容对象/字符串，无需改造。
+    """
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
+    value = coerce_value(args.value)
+    if not args.section:
+        if args.id is not None:
+            raise PlanctlError("写顶层字段时不得传 --id（要改条目请补 --section）")
+        if args.field not in TOP_LEVEL_KEYS:
+            raise PlanctlError(f"未知顶层字段: {args.field}")
+        doc[args.field] = value
+        commit_state(plan, doc)
+        emit({"field": args.field, "value": value, "scope": "top_level"})
+        return 0
+    if args.id is None:
+        raise PlanctlError("写条目字段必须同时传 --id")
     hit = find_entry(doc, args.section, args.id)
     if hit is None:
         raise PlanctlError(f"{args.section} 中未找到 id={args.id!r}")
-    hit[1][args.field] = coerce_value(args.value)
+    hit[1][args.field] = value
     commit_state(plan, doc)
     emit({"section": args.section, "id": args.id, "field": args.field,
           "value": hit[1][args.field]})
@@ -616,6 +855,10 @@ def cmd_add(args: argparse.Namespace) -> int:
         raise PlanctlError(f"--json 非法 JSON: {exc}") from exc
     doc = read_state(plan)
     entry = normalize_entry(args.section, payload)
+    # [2026-11-22 task-jsonderive-deploy-20261122] What: 可选 section 首次写入时懒初始化为 []。
+    # Why: 原行为 7 个数组由 init 模板保证存在；新段缺省于存量 JSON，直接 find/append 会误报
+    #       「未知或非法 section」，使通用 add 对存量计划不可用。
+    doc.setdefault(args.section, [])
     hit = find_entry(doc, args.section,
                      str(entry.get("round")) if args.section == "audits" else str(entry["id"]))
     if hit is not None:
@@ -1092,15 +1335,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true", help="允许覆盖已有状态（谨慎）")
 
     p = add_cmd("get", "输出整份/某段/某条目 JSON", cmd_get)
-    p.add_argument("--section", choices=("tags", *ARRAY_SECTIONS))
+    # [2026-11-22 task-jsonderive-deploy-20261122] choices 扩到顶层全集，使新对象/标量字段可读。
+    p.add_argument("--section", choices=("tags", *TOP_LEVEL_KEYS))
     p.add_argument("--id")
 
     add_cmd("status", "输出 Phase/VC/审计状态摘要 JSON", cmd_status)
     add_cmd("validate", "schema 校验（rc 0 通过 / 1 失败）", cmd_validate)
 
-    p = add_cmd("set", "修改条目单字段", cmd_set)
-    p.add_argument("--section", required=True, choices=ARRAY_SECTIONS)
-    p.add_argument("--id", required=True)
+    p = add_cmd("set", "修改条目字段或顶层字段", cmd_set)
+    # [2026-11-22 task-jsonderive-deploy-20261122] 原行为 --section/--id required；现改为可选，
+    # 省略即写顶层字段，条目写入仍须成对提供（cmd_set 内显式校验，不放宽成静默 no-op）。
+    p.add_argument("--section", choices=ARRAY_SECTIONS, help="条目段；省略则写顶层 --field")
+    p.add_argument("--id", help="条目 id；写顶层字段时不得传")
     p.add_argument("--field", required=True)
     p.add_argument("--value", required=True)
 

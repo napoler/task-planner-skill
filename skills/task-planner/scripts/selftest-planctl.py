@@ -5,6 +5,7 @@
 WHAT：每个用例在 worktree 内的 tmp/planctl-selftest/ 下建独立临时 plan-dir，通过 subprocess
   真调 planctl.py（不 import 内部函数），覆盖 init→get 往返、CRUD、状态流转、tag 倒排、render、
   备份恢复、validate 拒绝非法 JSON、原子写无半文件、4 个 check 的正反例与 rc2 输入异常。
+  [2026-11-22 task-jsonderive-deploy-20261122] 追加：新语义段 add/validate/get 往返与存量空壳兼容。
 WHY：机器门会直接消费 planctl 的 stdout/rc；只测内部函数无法发现 CLI 参数与输出契约漂移。
 输出：每例 `TEST <name>: PASS|FAIL`，末行 `TOTAL N PASS M FAIL K`；全 PASS exit 0，否则 1。
 依赖：仅 Python 3 标准库。
@@ -374,6 +375,75 @@ def case_check_audit_no_progress_guard(root: Path) -> None:
     assert_check_line(ok(run_plan(streak, "check", "audit"), "streak PASS"), "audit", "PASS")
 
 
+def case_new_semantic_sections_roundtrip(root: Path) -> None:
+    """[2026-11-22 task-jsonderive-deploy-20261122] 三个新 section 的 add→validate→get 往返。
+
+    What: errors（Error Log 7 列）/ decisions（决策+理由）/ s_units（10 列锁序）各写入一条并回读。
+    Why: 原行为这些段不在 ARRAY_SECTIONS，add 直接报「未知 section」；必须验证通用 add 真正可用，
+         且手写 validator 与 schema 对 required/类型判定一致（attempt 传字符串应被拒）。
+    """
+    plan = new_plan(root, "jsonderive")
+    entries = (
+        ("errors", {"id": "E1", "timestamp": "2026-11-22T01:00:00Z", "error": "boom",
+                    "attempt": 1, "resolution": "fixed", "root_cause": "bad path",
+                    "prevention": "abs path", "trigger": "selftest"}),
+        ("decisions", {"id": "D1", "decision": "full JSON derive", "rationale": "MD-only edits drift"}),
+        ("s_units", {"id": "S1", "phase": "P1", "name": "schema expand", "executor": "general-coder",
+                     "files": "schemas/plan-state.schema.json", "actions": "add definitions",
+                     "verify": "python3 selftest", "duration": "10m", "granularity": "file",
+                     "parallel": "no"}),
+    )
+    for section, entry in entries:
+        ok(run_plan(plan, "add", "--section", section,
+                    "--json", json.dumps(entry, ensure_ascii=False)), f"add {section}")
+        assert ok(run_plan(plan, "validate"), f"validate after {section}").stdout.strip() == "VALIDATE PASS"
+        got = out_json(ok(run_plan(plan, "get", "--section", section, "--id", entry["id"]),
+                          f"get {section}"))
+        for key, value in entry.items():
+            assert got.get(key) == value, f"{section}/{key}: {got.get(key)!r} != {value!r}"
+    # 负向：attempt 必须是整数；写前校验拒绝且不污染权威源。
+    cp = bad(run_plan(plan, "add", "--section", "errors",
+                      "--json", '{"id":"E2","timestamp":"2026-11-22T02:00:00Z",'
+                                '"error":"bad type","attempt":"1"}'), "attempt type reject")
+    assert "attempt" in cp.stderr, cp.stderr
+    assert [e["id"] for e in out_json(ok(run_plan(plan, "get", "--section", "errors"), "errors"))] == ["E1"]
+    assert ok(run_plan(plan, "validate"), "final validate").stdout.strip() == "VALIDATE PASS"
+
+
+def case_legacy_empty_shell_and_top_level_set(root: Path) -> None:
+    """[2026-11-22 task-jsonderive-deploy-20261122] 存量空壳兼容 + 顶层字段 set/get 往返。
+
+    What: 用 StoryLab 风格只含原 14 个 required 键的 JSON 直接 validate；随后 set --field 写标量、
+          对象（含自由扩展 config），并验证非法对象被拒且不污染状态。
+    Why: 新字段全部可选，存量计划必须继续合法；原行为 set 只能改数组条目，顶层语义段无法入库。
+    """
+    plan = new_plan(root, "storylab-shell")
+    shell = {"schema_version": 1, "task_id": "storylab-ep36", "plan_tier": "standard",
+             "execution_lane": "L2", "created_at": "", "updated_at": "",
+             "requirements": [], "goals": [], "vcs": [], "phases": [], "findings": [],
+             "audits": [], "delegations": [], "tags": []}
+    (plan / "plan-state.json").write_text(json.dumps(shell, ensure_ascii=False), encoding="utf-8")
+    assert ok(run_plan(plan, "validate"), "legacy shell validate").stdout.strip() == "VALIDATE PASS"
+    whole = out_json(ok(run_plan(plan, "get"), "legacy shell get"))
+    assert all(k not in whole for k in ("errors", "decisions", "s_units", "outcome", "config")), whole
+
+    ok(run_plan(plan, "set", "--field", "template_type", "--value", "standard"), "set scalar")
+    assert out_json(ok(run_plan(plan, "get", "--section", "template_type"), "get scalar")) == "standard"
+    ok(run_plan(plan, "set", "--field", "outcome", "--value",
+                '{"result":"PASS","blocked_reason":""}'), "set object")
+    assert out_json(ok(run_plan(plan, "get", "--section", "outcome"), "get object")) == {
+        "result": "PASS", "blocked_reason": ""}
+    # config 是自由扩展对象：额外键须放行（schema 未设 additionalProperties:false）。
+    cfg = {"scope_files": ["a.md"], "future_key": "x"}
+    ok(run_plan(plan, "set", "--field", "config", "--value", json.dumps(cfg)), "set free-form config")
+    assert out_json(ok(run_plan(plan, "get", "--section", "config"), "get config")) == cfg
+    # 非法对象（缺 outcome.result）必须写前拒绝。
+    cp = bad(run_plan(plan, "set", "--field", "outcome", "--value", '{"blocked_reason":"x"}'),
+             "missing result reject")
+    assert "result" in cp.stderr, cp.stderr
+    assert ok(run_plan(plan, "validate"), "final legacy validate").stdout.strip() == "VALIDATE PASS"
+
+
 CASES: tuple[tuple[str, Callable[[Path], None]], ...] = (
     ("init_get_roundtrip", case_init_get),
     ("crud_set_add_update_delete", case_crud),
@@ -392,6 +462,9 @@ CASES: tuple[tuple[str, Callable[[Path], None]], ...] = (
     ("check_evidence_pos_neg", case_check_evidence),
     ("history_versioned_restore", case_history_versioned),
     ("check_input_anomaly_rc2", case_check_input_anomaly),
+    # [2026-11-22 task-jsonderive-deploy-20261122] 新语义段写入与存量兼容回归。
+    ("new_semantic_sections_roundtrip", case_new_semantic_sections_roundtrip),
+    ("legacy_empty_shell_and_top_level_set", case_legacy_empty_shell_and_top_level_set),
 )
 
 
