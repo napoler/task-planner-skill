@@ -35,7 +35,7 @@ Create a research summary on the benefits of morning exercise.
 Read task_plan.md           # Refresh goals
 Skill("research-assistant", "morning exercise benefits")
 Write findings.md              # Store findings
-Edit task_plan.md           # Mark Phase 2 complete
+python3 scripts/planctl.py phase-done --id P2 && python3 scripts/planctl.py render   # Mark Phase 2 complete（派生视图）
 ```
 
 ### Loop 3: Synthesize
@@ -43,7 +43,7 @@ Edit task_plan.md           # Mark Phase 2 complete
 Read task_plan.md           # Refresh goals
 Read findings.md               # Get findings
 Write morning_exercise_summary.md
-Edit task_plan.md           # Mark Phase 3 complete
+python3 scripts/planctl.py phase-done --id P3 && python3 scripts/planctl.py render   # Mark Phase 3 complete（派生视图）
 ```
 
 ### Loop 4: Deliver

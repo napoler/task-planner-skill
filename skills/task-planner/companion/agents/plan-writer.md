@@ -140,7 +140,8 @@ cost_estimate:
 - **调研需求区块（Rule 75.1）**：standard/full 档计划必须含「🔍 调研需求与检索计划」区块——逐 S-unit/子目标标注三态（LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT），NET-* 条目登记检索关键词（≥2）+渠道+预期产出形态；mini 档豁免
 
 调用方还需:
-- **不在主进程** Edit task_plan.md — 由 plan-writer 通过本 agent 在隔离 context 写入
+- **不在主进程**直写 task_plan.md — 由 plan-writer 通过本 agent 以 planctl add/update 写入 plan-state.json 并 render 生成 task_plan.md 派生视图（MD 非直接写入面）
+- **落盘通道** — 下列区块语义均经 planctl add/set 写入 plan-state.json，render 派生 MD 视图；区块格式仍按下列规范组织字段
 - **不调用子代理** — plan-writer 已是最底层执行体
 - **不在 prompt 中**包含代码已存在情况下的源码阅读请求 — 那是 `codebase-analyzer` 的活;plan-writer 只接收 user goal
 

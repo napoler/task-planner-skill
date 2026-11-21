@@ -1,5 +1,6 @@
 # Task Plan: [分镜规划与镜头拆解任务]
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,执行范围限制,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
+<!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: storyboard -->
 <!-- 剧本→分镜工序专用：走位清单→地理底图→线稿逐格→QC+准入→页定稿。边界：剧本文字层入 script-dev-type；关键帧后的视频生成入 video-type；单角色资产入 character-design-type。触发词：分镜/线稿/走位/镜头拆解/关键帧页 -->
 <!-- 五要素：①编号原子步骤+显式状态定义（走位清单/格位映射/页状态）+合规检（走位铁律/去标注/负向基线）+静默迭代（修词重抽环）+验收判据（VC 表） -->

@@ -143,6 +143,8 @@ try {
   console.log('[task-plan] 初始化命令:');
   // [2026-08-28] 修复:提示语路径改指本 skill 的 zcode 副本(原为 ~/.claude,与 ZCode 实际加载路径不一致)
   console.log('[task-plan]   mkdir -p plans/task-{id}/ && cd $_ && bash ~/.zcode/skills/task-planner/scripts/init-session.sh');
+  // [2026-11-22 task-planctl-exec-surface-20261122] init 后数据链路提示（会话启动高频注入面，判例=sess_1d7e33d6 零提及 planctl）
+  console.log('[task-plan]   init 后数据链路: planctl add/set 写 plan-state.json → 首次写入后必须 render（4 个 MD=派生视图，禁手工填写；命令速查见 SKILL.md）');
   // [2026-09-10 task-planrequired-race] 哨兵位置说明：不再写 <CWD>/.plan-required，改会话私有 side 哨兵（B1-B4 竞态根除）
   console.log('[task-plan] 哨兵位置: ' + SENTINEL_PATH + '（会话私有；legacy <CWD>/.plan-required 不再写入）');
 } catch (e) {

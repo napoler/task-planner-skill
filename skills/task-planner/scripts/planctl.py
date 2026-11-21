@@ -413,7 +413,11 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         required = {"id", "text", "type", "vc"}
     elif section == "goals":
         # [2026-11-22 task-jsonderive-deploy-20261122] What: 允许可选 evidence 字段; Why: 与 schema goal.properties 对齐，render 据此产出 [goal:G<n>] 证据行。
-        known.update({"text": lambda v: isinstance(v, str), "evidence": STR_FIELD})
+        # [2026-11-22 task-planctl-exec-surface-20261122] What: 追加可选 name/verify/s_units/status;
+        # Why: render「🎯 Goal 单元表」（Rule 66.5 六列锚，attest 拒锁门）需要逐 goal 任务名/完整验证方式/对应 S-unit/状态。
+        known.update({"text": lambda v: isinstance(v, str), "evidence": STR_FIELD,
+                      "name": STR_FIELD, "verify": STR_FIELD, "status": STR_FIELD,
+                      "s_units": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)})
         required = {"id", "text"}
     elif section == "vcs":
         known.update({"criterion": lambda v: isinstance(v, str),
@@ -1120,6 +1124,14 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
     lines: list[str] = [
         GENERATED_HEADER, f"# Task Plan: {tid}", "", stamp.rstrip(), meta.rstrip(),
         f"- 顶层 tags: {top_tags}", "",
+        # [2026-11-22 task-planctl-exec-surface-20261122] What: 补「🎯 用户需求原文」+R 行区块。
+        # Why: attest Rule 51.1 硬门四锚（fail-closed 无 --skip 逃生口）按标题行 + R 需求行
+        #   正则 ^[[:space:]]*[-*][[:space:]]+\*\*R[0-9] 校验；原 render 缺失 → 纯 CLI 流
+        #   过不了 51.1（F4 闭环断裂同类）。数据源=requirements 逐条派生。
+        "## 🎯 用户需求原文",
+        *[f"- **{r.get('id', '')}（{r.get('type', '')}）** {r.get('text', '')}"
+          for r in _arr(doc, "requirements")],
+        "",
         "## Requirements（用户需求）",
         _md_table(["id", "type", "text", "vc", "tags"],
                   [[r.get("id"), r.get("type"), r.get("text"), r.get("vc", []), r.get("tags", [])]
@@ -1128,19 +1140,55 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
         _md_table(["id", "text", "evidence", "tags"],
                   [[g.get("id"), g.get("text"), g.get("evidence", ""), g.get("tags", [])]
                    for g in _arr(doc, "goals")]),
+        # [2026-11-22 task-planctl-exec-surface-20261122] What: 补「🎯 Goal 单元表」六列锚区块。
+        # Why: check-plan-dispatch.sh Rule 66.5（attest 拒锁门）按本区块表头六列关键词+G<n> 连续数据行
+        #   校验；原 render 缺失 → 纯 CLI 流（add→render→attest）结构性过不了 attest（F4 闭环断裂）。
+        #   字段：goal 新增可选 name/verify/s_units/status；存量 goal 无 verify 时回退指向 VC 全集
+        #   （诚实描述、非占位符，避免 66.5「完整验证方式列为空/占位」误伤存量数据）。
+        "", "## 🎯 Goal 单元表",
+        _md_table(["goal-id", "任务名", "目标", "完整验证方式", "对应 S-unit", "状态"],
+                  [[g.get("id"), g.get("name", ""), g.get("text"),
+                    g.get("verify", "") or "见下方 ✅ Verification Contract 区块（VC 全集）",
+                    ", ".join(g.get("s_units", [])) or "-", g.get("status", "pending")]
+                   for g in _arr(doc, "goals")]),
         "", "## Phases（阶段状态）",
         _md_table(["id", "status", "s_units", "v_checks", "name", "started", "tags"],
                   [[p.get("id"), p.get("status"), p.get("s_units", []), p.get("v_checks", []),
                     p.get("name", ""), p.get("started", ""), p.get("tags", [])]
                    for p in _arr(doc, "phases")]),
-        "", "## R → VC 映射",
+        "", "## R→VC 映射",
+        # [2026-11-22 task-planctl-exec-surface-20261122] What: 标题去空格（原「R → VC 映射」不命中
+        # attest 51.1 第 3 锚 ^#{2,3}.*R→VC 映射）；并在其后补「🧮 根源覆盖表」（第 4 锚 ^##[^#].*根源覆盖表，
+        # 数据源=root_causes 五列；未登记时输出补登指引行，禁静默空表）。
         _md_table(["requirement", "vcs"],
                   [[r.get("id"), r.get("vc", [])] for r in _arr(doc, "requirements")]),
+        "## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）",
+        _md_table(["工序", "缺陷面", "修复点", "VC"],
+                  [[rc.get("process"), rc.get("defect"), rc.get("fix"), rc.get("vc", "-")]
+                   for rc in _arr(doc, "root_causes")] or
+                  [["（root_causes 未登记）",
+                    "结果级需求须 planctl add --section root_causes 逐工序补登；非结果级任务在本行写「不适用（非结果级）」+定性理由",
+                    "-", "-"]]),
         "", "## ✅ Verification Contract（VC 状态与判据）",
         _md_table(["#", "判定标准", "验证方式", "证据路径/命令"],
                   [[v.get("id"), v.get("criterion"), v.get("command"), v.get("evidence")]
                    for v in _arr(doc, "vcs")]),
     ]
+    # [2026-11-22 task-planctl-exec-surface-20261122] What: 补「🔍 调研需求与检索计划」区块（Rule 75.1）。
+    # Why: check-plan-dispatch 75.1 advisory 按区块字面存在检测；数据源=research_status 对象。
+    #   mini 档豁免不输出；无数据时输出显式 LOCAL-ONLY 声明行（诚实非空段，非占位符）。
+    if doc.get("plan_tier") != "mini":
+        rs = _obj(doc, "research_status")
+        if rs and (rs.get("unit") or rs.get("state")):
+            rs_rows = [[rs.get("unit", "全局"), rs.get("state", "LOCAL-ONLY"),
+                        rs.get("keywords", "") or "（无 NET-* 检索项）",
+                        rs.get("channels", "") or "-", rs.get("output", "") or "-"]]
+        else:
+            rs_rows = [["全局", "LOCAL-ONLY",
+                        "（无 NET-* 检索项；执行期新增外部调研须先 planctl set --section research_status 补登）", "-", "-"]]
+        lines += ["", "## 🔍 调研需求与检索计划",
+                  _md_table(["unit", "三态(LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT)",
+                             "检索关键词", "渠道", "预期产出形态"], rs_rows)]
     phases = _arr(doc, "phases")
     # [2026-11-22 task-jsonderive-deploy-20261122] What: 逐 Phase 输出 ### 标题 + Status/Started 行。
     # Why: check-3file-gate.sh 从 task_plan.md 取 in_progress Phase、从 progress.md取 Started 锚点；

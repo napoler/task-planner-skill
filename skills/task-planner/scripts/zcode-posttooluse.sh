@@ -263,10 +263,10 @@ age_min=$(( age / 60 ))
 if [ "$age" -ge "$(( plan_min * 60 ))" ] && [ "$cd_left" -eq 0 ]; then
   echo "0 $(date +%s) $cooldown $cd_findings $cd_progress $f_last $p_last $f_miss $p_miss" > "$state"
   emit "[plan-sync] ⏰ 计划文档已 ${age_min} 分钟未更新（阈值 ${plan_min} 分钟）: ${plan}
-回写分流（Rule 19.6/19.7，三文件各归其位）:
-1. Edit task_plan.md 只回写状态与指针（Phase checkbox/Status/Errors 一行摘要）
-2. 调研与结论 → findings.md；动作与测试 → progress.md（细节禁止塞进 task_plan.md）
-3. TodoWrite / TaskUpdate 同步原生 Todo + bash ${SKILL_ROOT}/scripts/sync-todos.sh --index"
+回写分流（Rule 19.6/19.7；JSON 权威源，4 个 MD=render 派生视图禁手工 Edit）:
+1. 状态走 planctl：python3 ${SKILL_ROOT}/scripts/planctl.py phase-start|phase-done --id P<n>（Errors 一行摘要走 add --section errors）
+2. 调研与结论 → planctl add --section research|decisions；动作与测试 → add --section actions|test_results（细节禁塞 task_plan 视图）
+3. 变更后 python3 ${SKILL_ROOT}/scripts/planctl.py render 刷新派生视图 + TodoWrite / TaskUpdate 同步原生 Todo + bash ${SKILL_ROOT}/scripts/sync-todos.sh --index"
   exit 0
 fi
 
@@ -293,13 +293,13 @@ if [ -n "$f_mt" ]; then
       f_miss=0   # 升级后重置连续计数，避免每轮都升级刷屏（冷却逻辑不变）
       echo "0 $(date +%s) $cd_left $cooldown $cd_progress $f_last $p_last $f_miss $p_miss" > "$state"
       emit "[plan-compass] 🚨 升级警告：findings.md 已连续 ${esc_n} 次提醒未回填 — 违反 Rule 19.7（及时回填）
-处置：按 Rule 26.3 本违规登记 progress.md Error Log，终验 outcome 最高 PARTIAL。
-立即把近 2 次查看/搜索/子代理返回的结论 Edit 进 ${findings_file} 对应段落，再继续。"
+处置：按 Rule 26.3 本违规经 planctl add --section errors 登记 Error Log，终验 outcome 最高 PARTIAL。
+立即把近 2 次查看/搜索/子代理返回的结论经 planctl add --section research 写入 plan-state.json（${findings_file} 为派生视图，随 render 刷新），再继续。"
       exit 0
     fi
     echo "0 $(date +%s) $cd_left $cooldown $cd_progress $f_last $p_last $f_miss $p_miss" > "$state"
     emit "[plan-compass] 🧭 findings.md 已 ${f_age_min} 分钟未更新（阈值 ${findings_n}）: ${findings_file}
-2-Action Rule（Rule 3/19.7）：把最近 2 次查看/搜索/子代理返回的结论摘要+证据路径 Edit 进 findings.md 对应段落，再继续。"
+2-Action Rule（Rule 3/19.7）：把最近 2 次查看/搜索/子代理返回的结论摘要+证据路径经 planctl add --section research 写入（findings.md 为派生视图，随 render 刷新），再继续。"
     exit 0
   fi
 fi
@@ -321,13 +321,13 @@ if [ -n "$p_mt" ]; then
       p_miss=0   # 升级后重置连续计数，避免每轮都升级刷屏（冷却逻辑不变）
       echo "0 $(date +%s) $cd_left $cd_findings $cooldown $f_last $p_last $f_miss $p_miss" > "$state"
       emit "[plan-compass] 🚨 升级警告：progress.md 已连续 ${esc_n} 次提醒未回填 — 违反 Rule 19.7（及时回填）
-处置：按 Rule 26.3 本违规登记 progress.md Error Log，终验 outcome 最高 PARTIAL。
-立即把近 2 次查看/搜索/子代理返回的结论 Edit 进 ${progress_file} 对应段落，再继续。"
+处置：按 Rule 26.3 本违规经 planctl add --section errors 登记 Error Log，终验 outcome 最高 PARTIAL。
+立即把近 2 次关键动作/文件变更/测试结果经 planctl add --section actions|test_results 写入 plan-state.json（${progress_file} 为派生视图，随 render 刷新），再继续。"
       exit 0
     fi
     echo "0 $(date +%s) $cd_left $cd_findings $cooldown $f_last $p_last $f_miss $p_miss" > "$state"
     emit "[plan-compass] 🧭 progress.md 已 ${p_age_min} 分钟未更新（阈值 ${progress_n}）: ${progress_file}
-动作留痕（Rule 19.2/19.7）：把关键动作/文件变更/测试结果/错误 Edit 进 progress.md 当前 Phase 段，再继续。"
+动作留痕（Rule 19.2/19.7）：把关键动作/文件变更/测试结果/错误经 planctl add --section actions|test_results|errors 写入后 render（progress.md 为派生视图），再继续。"
     exit 0
   fi
 fi

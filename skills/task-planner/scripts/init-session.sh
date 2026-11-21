@@ -1088,6 +1088,13 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
         --tier "$_json_init_tier" --lane "$_json_init_lane" >/dev/null 2>/dev/null || _json_init_rc=$?
     if [ "$_json_init_rc" -eq 0 ] && [ -f "plan-state.json" ]; then
         echo "[init] plan-state.json initialized (JSON mode)"
+        # [2026-11-22 task-planctl-exec-surface-20261122] init 后下一步 CLI 指引：
+        #   判例 sess_1d7e33d6=init 仅一行输出、无 planctl 指引 → 执行者随即手写 4 MD（JSON 空壳）。
+        #   本块是执行者 init 后实际读到的第一个面，直接给出命令形态。
+        echo "[init] 下一步（JSON 为唯一权威源；task_plan/findings/progress/verification 4 个 MD 是 render 派生视图，禁手工填写）:"
+        echo "[init]   填数据: python3 \"$SCRIPT_DIR/planctl.py\" add --plan-dir \"$PWD\" --section <requirements|goals|vcs|phases|s_units|findings|decisions|actions|errors> --json '<JSON>'"
+        echo "[init]   首次数据写入后必须: python3 \"$SCRIPT_DIR/planctl.py\" render --plan-dir \"$PWD\"（此后 4 MD=派生视图，手工编辑会被 render 覆盖）"
+        echo "[init]   状态变更: phase-start/phase-done/vc-pass/vc-fail/set；每次变更后 render；命令速查见 SKILL.md「常用命令速查」"
     else
         echo "[init] WARN: plan-state.json init 失败（rc=$_json_init_rc; JSON mode fail-open, 存量 MD 流程继续）" >&2
     fi

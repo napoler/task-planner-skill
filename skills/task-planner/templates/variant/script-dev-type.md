@@ -1,5 +1,6 @@
 # Task Plan: [剧本开发与合规审查任务]
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
+<!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: script-dev -->
 <!-- 剧本工序专用（M0 大纲→M1 展开→M2 审查→M3 静默修正；判定层=script-craft 全集）。边界：本模板止于定稿剧本与登记，零生成调用；全流程视频生产入 video-type。触发词：写剧本/大纲/台词修正/剧本审查/合规审查。连续性/系列剧情：须加载 skills/longform-continuity/SKILL.md，遵循 Rule 107（项目级 outline/setting-bible/knowledge-base/structure-map+continuity 台账先行、动笔前全局检索、冲突禁静默覆盖）。 -->
 <!-- 交互：默认 interaction_mode: silent——M1→M2→M3 修订环静默跑；唯一合法人工停点=M0 大纲放行门（大纲先行门，约束级）与 Rule 28 D6；放行/否决登记双落 progress+Decisions -->
