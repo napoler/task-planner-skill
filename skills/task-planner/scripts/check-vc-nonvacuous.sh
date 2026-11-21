@@ -61,6 +61,40 @@ if [ ! -f "$VFILE" ]; then
     exit 2
 fi
 
+# ── JSON 权威源 shim（2026-11-21 task-json-state-20261121）───────────────────
+# What: plan-state.json 存在时转调 planctl.py check vc-nonvacuous，把单行 PLANCTL CHECK
+#       结果翻译成旧 stdout 前缀 + rc（0/1/2）；不存在时落到下方原正则实现（存量计划零回归）。
+# Why: 外契约（路径 + [vc-nonvacuous] 前缀 + rc）被 attest-plan.sh / check-complete.sh 消费，
+#      不可改；JSON 化后判定权威源迁到 planctl，双读让存量计划零改动继续通过。
+# 诊断透传: 命令替换只接 stdout，planctl stderr 原样继承（check-complete.sh 明令禁 2>/dev/null）。
+SHIM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$PLAN_DIR/plan-state.json" ] && [ -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+    _pc_out="$(python3 "$SHIM_SCRIPT_DIR/planctl.py" check vc-nonvacuous --plan-dir "$PLAN_DIR")"
+    _pc_rc=$?
+    _pc_reason="${_pc_out#PLANCTL CHECK vc-nonvacuous: PASS }"
+    _pc_reason="${_pc_reason#PLANCTL CHECK vc-nonvacuous: FAIL }"
+    case "$_pc_rc" in
+      0)
+        case "$_pc_reason" in
+          *"无 vcs 条目"*) printf '[vc-nonvacuous] SKIP (JSON 权威源无 vcs 判定面)\n' ;;
+          *)
+            _vc_n="$(printf '%s' "$_pc_reason" | sed -n 's/^\([0-9][0-9]*\) 条.*/\1/p')"
+            printf '[vc-nonvacuous] ✓ %s 条 VC 无真空命令\n' "${_vc_n:-0}"
+            ;;
+        esac
+        exit 0
+        ;;
+      1)
+        printf '[vc-nonvacuous] ✗ %s\n' "$_pc_reason"
+        exit 1
+        ;;
+      *)
+        printf '[vc-nonvacuous] ERROR: JSON 判定输入异常: %s\n' "$_pc_reason" >&2
+        exit 2
+        ;;
+    esac
+fi
+
 # ── 判定辅助 ──────────────────────────────────────────────────────────────────
 
 # trim_text — 剥首尾空白

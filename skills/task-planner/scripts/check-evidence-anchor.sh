@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # check-evidence-anchor.sh — 证据锚真实性检查（存在性 + 行界 + 否定 trim + provenance 三层 + CLAIM_MATCH 内容核对）
+# [2026-11-21 task-json-state-20261121] JSON 化迁移中，本门暂保留正则判定：planctl evidence 与旧 coverage/goal/provenance/claim-mismatch 语义不等价，1:1 替换会丢能力；待 planctl 补齐 source/claim 模型后再切换（本文件不改逻辑、不改 rc）。
 # [2026-10-17 task-v184-S6] CLAIM_MATCH 层落地：R3「对内容的错误及时审查出来」的机器层第一载体——
 #   证据格/证据行声明的结果串（Total:/PASS=/FAIL=/exit=/rc=）与引用证据文件实际内容交叉核对，
 #   收窄 report §7.3 语义级缺口第一层（路径层全过但内容张冠李戴）。

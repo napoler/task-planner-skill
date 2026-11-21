@@ -299,6 +299,24 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 - 主进程铁律摘要：任务执行一律 `Agent()` 派发（白名单外 Write/Edit 被 `check-delegation.sh` 拦截，enforce=exit 2）；bypass 仅显式 `allow-direct.sh on --confirm-user-requested`；六项白名单全文见 task-dispatch Rule 25.3
 - **子代理激活默认档/模型分档/并行硬标注/同消息并发/指标留痕** → 卫星 task-dispatch Rule 96（七类触发类别默认派发；主进程直做=窄白名单登记例外；≥2 个无依赖 S-unit 必须声明并行组；并行组成员同消息并发派发；交付报告激活子代理数与最大并行宽度）
 
+## 结构化状态操作 SOP（JSON 权威源）
+
+> [2026-11-21 task-json-state-20261121] 结构化状态升级硬条款；与上文「派发与执行纪律指针」并列，适用于所有使用 task-planner 的计划目录。
+
+- **权威源声明**：`<plan-dir>/plan-state.json` 是任务状态**唯一权威源**；`task_plan.md` / `progress.md` / `verification.md` / `findings.md` 是由 `planctl.py render` 生成的**只读视图**（禁止把视图当权威源直接改）。
+- **硬规则（违反=流程无效）**：所有 Phase / VC / findings / 审计 / tags 状态变更**必须**通过 `python3 <skill>/scripts/planctl.py <subcommand>` 完成（`<skill>` = 本技能根目录，脚本绝对路径 `scripts/planctl.py`）；禁止 Agent 直接 Edit/Write 上述四个 MD 文件来改状态。
+- **常用命令速查**（每条均需追加 `--plan-dir <plan-dir>`）：
+  - 初始化：`init --task-id <id> --tier standard --lane L1`（tier 可选 standard/mini；lane 可选 L0/L1/L2；state 已存在则拒绝覆盖）
+  - 读取：`get`（整份）/ `get --section <section> --id <id>` / `status` / `validate`
+  - 改字段 / 增条目：`set --section <s> --id <id> --field <f> --value <v>` / `add --section <s> --json '<JSON>'`（另有 `update` / `delete`）
+  - Phase / VC：`phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`
+  - 审计留痕：`audit-add --round 1 --verdict APPROVED --by <审计体> --c 0 --i 0`（0C/0I 才可 APPROVED）
+  - 标签：`tag-add --section <s> --id <id> --tag <tag>` / `tag-search --tag <tag>`
+  - 生成视图 / 安全回退：`render`（从 JSON 重写 4 个 MD 视图，状态变更后按需执行）/ `backup` / `restore [--version N]` / `history`
+- **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。
+- **机器门**：`python3 scripts/planctl.py check vc-nonvacuous|rvc|audit|evidence` 输出单行 `PLANCTL CHECK <name>: PASS|FAIL <reason>`，rc 0=PASS / 1=FAIL / 2=输入异常；旧门脚本为双读 shim，前缀与 rc 外契约不变。
+- **迁移期**：存量无 `plan-state.json` 的计划沿用旧流程（MD 直接维护 + 原正则门），机器门双读 fallback 保证零回归；`init-session.sh` 创建新计划时幂等生成 plan-state.json（不调用 render，MD 视图保持现状）。
+
 ## References
 
 | 文档 | 用途 |

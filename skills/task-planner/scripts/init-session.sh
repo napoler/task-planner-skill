@@ -1063,6 +1063,31 @@ if [ "${TRIVIAL_CODE_TIER:-0}" != "1" ]; then
 else
     echo "[init] user-session-log.md on-demand (trivial 代码修复档, Change #7; mini 档 Rule 80 豁免, 首次写入时建档)"
 fi
+# [2026-11-21 task-json-state-20261121] 结构化权威源初始化（JSON mode, planctl.py init）:
+# What: 在 6/6（或 3/3）verified + user-session-log verified 之后、silent attest 之前，幂等生成
+#       <plan-dir>/plan-state.json；已存在则跳过，且**不调用 render**（MD 视图保持当前现状）。
+# Why: JSON 成为任务状态唯一权威源；首次 init 只建权威源，不覆盖刚渲染好的 MD（render 会与用户
+#       已填内容冲突）。planctl init 自身也拒覆盖已有文件，双保险。
+# fail-open: 调用失败（python 缺失/模板缺失/参数异常）不阻断原 init 流程；stderr 收敛但以 WARN
+#            显式暴露（原流程无本步骤，最坏结果=退回纯 MD 流程，不静默吞错）。
+if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
+    _json_init_tier="standard"
+    case "${PLAN_TIER:-}" in
+      mini|l0|trivial) _json_init_tier="mini" ;;
+      standard|full)   _json_init_tier="standard" ;;
+      *) : ;;  # 未声明/未知值 → standard（planctl --tier 仅接受 standard|mini）
+    esac
+    _json_init_lane="${_lane:-L1}"
+    case "$_json_init_lane" in L0|L1|L2) ;; *) _json_init_lane="L1" ;; esac
+    _json_init_rc=0
+    python3 "$SCRIPT_DIR/planctl.py" init --plan-dir "$PWD" --task-id "$(basename "$PWD")" \
+        --tier "$_json_init_tier" --lane "$_json_init_lane" >/dev/null 2>/dev/null || _json_init_rc=$?
+    if [ "$_json_init_rc" -eq 0 ] && [ -f "plan-state.json" ]; then
+        echo "[init] plan-state.json initialized (JSON mode)"
+    else
+        echo "[init] WARN: plan-state.json init 失败（rc=$_json_init_rc; JSON mode fail-open, 存量 MD 流程继续）" >&2
+    fi
+fi
 # [2026-10-05 task-v132 G3 R3] silent 路径锚哈希即时落盘（G3：防窗口期篡改）：
 # 原因: silent/自动档交互模式（Rule 28 唯一权威解析口径, 层级见下方 ALIGN-P1b 注）下
 #       计划生成后即直接执行、无用户批准环节——原行为哈希锁定（attest-plan.sh）延后到执行中
