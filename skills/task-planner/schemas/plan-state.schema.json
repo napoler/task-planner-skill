@@ -107,7 +107,7 @@
     },
     "audit": {
       "type": "object",
-      "description": "独立审计轮次；check audit 取 round 最大条目判 APPROVED 且 C=0/I=0。",
+      "description": "独立审计轮次；check audit 取 round 最大条目判 APPROVED 且 C=0/I=0；issues（2026-11-21 新增，可选）承载显式问题 key 供连续无进展判定，旧条目无 issues 仍合法。",
       "required": ["round", "verdict", "by", "counts", "at"],
       "additionalProperties": false,
       "properties": {
@@ -125,7 +125,20 @@
           }
         },
         "at": { "type": "string", "format": "date-time" },
+        "issues": { "type": "array", "items": { "$ref": "#/definitions/audit_issue" } },
         "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "audit_issue": {
+      "type": "object",
+      "description": "审计问题单项（2026-11-21 task-audit-rework-cap-20261121）：key 是跨轮无进展判定的唯一信号源，severity/state 决定该 key 是否为开放 C/I。",
+      "required": ["key", "severity", "state"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "pattern": "^(C|I|W|N|Q)-[A-Za-z0-9_\\u4e00-\\u9fff-]{1,48}$" },
+        "severity": { "type": "string", "enum": ["C", "I", "W", "N", "Q"] },
+        "state": { "type": "string", "enum": ["open", "fixed", "accepted", "new", "deferred"] },
+        "title": { "type": "string" }
       }
     },
     "delegation": {

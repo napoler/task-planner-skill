@@ -66,6 +66,16 @@ def add_vc(plan: Path, vid: str, command: str, evidence: str = "") -> None:
                                       "evidence": evidence}, ensure_ascii=False)), f"add vc {vid}")
 
 
+def add_audit(plan: Path, rnd: int, verdict: str, issues: str | None = None,
+              c: int = 0, i: int = 0, w: int = 0) -> subprocess.CompletedProcess[str]:
+    """[2026-11-21] 测试夹具：追加审计轮；issues=None 表示不传 --issues-json（旧行为）。"""
+    args = ["audit-add", "--round", str(rnd), "--verdict", verdict, "--by", "critic",
+            "--c", str(c), "--i", str(i), "--w", str(w)]
+    if issues is not None:
+        args.extend(("--issues-json", issues))
+    return run_plan(plan, *args)
+
+
 def assert_check_line(cp: subprocess.CompletedProcess[str], name: str, verdict: str) -> str:
     """校验 check 的 stdout 恰为单行约定格式，返回原文供进一步断言。"""
     line = cp.stdout.strip()
@@ -288,6 +298,82 @@ def case_check_input_anomaly(root: Path) -> None:
     assert_check_line(cp, "rvc", "FAIL")
 
 
+def case_audit_add_issues_json(root: Path) -> None:
+    """[2026-11-21] audit-add --issues-json 正向落库 + 非法 key/枚举/缺字段拒绝 + 旧行为兼容。"""
+    plan = new_plan(root)
+    good = ('[{"key":"I-5","severity":"I","state":"open","title":"残留"},'
+            '{"key":"W-1","severity":"W","state":"new"}]')
+    ok(add_audit(plan, 1, "REJECTED", good), "issues ok")
+    entry = out_json(ok(run_plan(plan, "get", "--section", "audits", "--id", "R1"), "get audit"))
+    assert [x["key"] for x in entry["issues"]] == ["I-5", "W-1"], entry
+    assert entry["issues"][0]["title"] == "残留" and "title" not in entry["issues"][1], entry
+    # schema 拒绝：key 格式 / severity 枚举 / state 枚举 / 缺必填 / 非数组
+    for label, payload in (
+        ("bad key", '[{"key":"bad","severity":"I","state":"open"}]'),
+        ("bad severity", '[{"key":"I-6","severity":"X","state":"open"}]'),
+        ("bad state", '[{"key":"I-6","severity":"I","state":"bogus"}]'),
+        ("missing state", '[{"key":"I-6","severity":"I"}]'),
+        ("not array", '{"key":"I-6","severity":"I","state":"open"}'),
+    ):
+        cp = bad(add_audit(plan, 2, "REJECTED", payload), label)
+        assert "--issues-json" in cp.stderr, cp.stderr
+    audits = out_json(ok(run_plan(plan, "get", "--section", "audits"), "audits after rejects"))
+    assert len(audits) == 1, audits  # 非法写入不得污染权威源
+    # 旧行为：不传 --issues-json 的条目无 issues 字段，仍合法
+    ok(add_audit(plan, 3, "REJECTED"), "legacy no issues")
+    legacy = out_json(ok(run_plan(plan, "get", "--section", "audits", "--id", "R3"), "get legacy"))
+    assert "issues" not in legacy, legacy
+    assert ok(run_plan(plan, "validate"), "validate with issues").stdout.strip() == "VALIDATE PASS"
+
+
+def case_check_audit_no_progress_streak(root: Path) -> None:
+    """[2026-11-21] 连续 3 轮 REJECTED 同开放 C/I key → FAIL NO_PROGRESS_STREAK_3；2 轮不触发。"""
+    plan = new_plan(root / "streak")
+    i5 = '[{"key":"I-5","severity":"I","state":"open","title":"残留"}]'
+    for rnd in (1, 2):
+        ok(add_audit(plan, rnd, "REJECTED", i5), f"reject R{rnd}")
+    line = assert_check_line(bad(run_plan(plan, "check", "audit"), "2 rounds"), "audit", "FAIL")
+    assert "NO_PROGRESS_STREAK_3" not in line, line
+    assert out_json(ok(run_plan(plan, "status"), "status"))["no_progress_streak"] is False
+    ok(add_audit(plan, 3, "REJECTED", i5), "reject R3")
+    line = assert_check_line(bad(run_plan(plan, "check", "audit"), "3 rounds"), "audit", "FAIL")
+    assert "NO_PROGRESS_STREAK_3" in line, line
+    assert "ESCALATE_USER_DECISION_REQUIRED" in line, line
+    assert "R1={I-5}" in line and "R3={I-5}" in line, line
+    assert out_json(ok(run_plan(plan, "status"), "status"))["no_progress_streak"] is True
+
+
+def case_check_audit_no_progress_guard(root: Path) -> None:
+    """[2026-11-21] 不误伤守卫：W/N 重复不触发；末轮 APPROVED 清零后无条件 PASS。"""
+    plan = new_plan(root / "wn")
+    wn = '[{"key":"W-1","severity":"W","state":"open"},{"key":"N-1","severity":"N","state":"new"}]'
+    for rnd in (1, 2, 3):
+        ok(add_audit(plan, rnd, "REJECTED", wn), f"W/N reject R{rnd}")
+    line = assert_check_line(bad(run_plan(plan, "check", "audit"), "W/N only"), "audit", "FAIL")
+    assert "NO_PROGRESS_STREAK_3" not in line, line
+    assert out_json(ok(run_plan(plan, "status"), "status"))["no_progress_streak"] is False
+
+    # 真实样本 StoryLab task-ep36：R1/R2 I-5 open（2 轮，不触发），R3 清零 APPROVED → PASS。
+    sample = new_plan(root / "sample")
+    i5 = '[{"key":"I-5","severity":"I","state":"open"}]'
+    for rnd in (1, 2):
+        ok(add_audit(sample, rnd, "REJECTED", i5), f"sample reject R{rnd}")
+    line = assert_check_line(bad(run_plan(sample, "check", "audit"), "sample R2"), "audit", "FAIL")
+    assert "NO_PROGRESS_STREAK_3" not in line, line
+    ok(add_audit(sample, 3, "APPROVED", "[]"), "sample R3 converged")
+    assert_check_line(ok(run_plan(sample, "check", "audit"), "sample APPROVED"), "audit", "PASS")
+    assert out_json(ok(run_plan(sample, "status"), "status"))["no_progress_streak"] is False
+
+    # 4 段含 3 个连续 REJECTED：R3 时命中止损，R4 APPROVED 后无条件 PASS。
+    streak = new_plan(root / "streak-converged")
+    for rnd in (1, 2, 3):
+        ok(add_audit(streak, rnd, "REJECTED", i5), f"streak reject R{rnd}")
+    line = assert_check_line(bad(run_plan(streak, "check", "audit"), "streak R3"), "audit", "FAIL")
+    assert "NO_PROGRESS_STREAK_3" in line, line
+    ok(add_audit(streak, 4, "APPROVED", "[]"), "streak R4 converged")
+    assert_check_line(ok(run_plan(streak, "check", "audit"), "streak PASS"), "audit", "PASS")
+
+
 CASES: tuple[tuple[str, Callable[[Path], None]], ...] = (
     ("init_get_roundtrip", case_init_get),
     ("crud_set_add_update_delete", case_crud),
@@ -300,6 +386,9 @@ CASES: tuple[tuple[str, Callable[[Path], None]], ...] = (
     ("check_vc_nonvacuous_pos_neg", case_check_vc_nonvacuous),
     ("check_rvc_pos_neg", case_check_rvc),
     ("check_audit_pos_neg", case_check_audit),
+    ("audit_add_issues_json_and_schema_reject", case_audit_add_issues_json),
+    ("check_audit_no_progress_streak_3", case_check_audit_no_progress_streak),
+    ("check_audit_no_progress_guard", case_check_audit_no_progress_guard),
     ("check_evidence_pos_neg", case_check_evidence),
     ("history_versioned_restore", case_history_versioned),
     ("check_input_anomaly_rc2", case_check_input_anomaly),
