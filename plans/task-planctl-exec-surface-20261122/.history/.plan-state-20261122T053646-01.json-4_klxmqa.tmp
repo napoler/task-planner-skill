@@ -1,0 +1,532 @@
+{
+  "schema_version": 1,
+  "task_id": "task-planctl-exec-surface-20261122",
+  "plan_tier": "standard",
+  "execution_lane": "L1",
+  "created_at": "2026-11-21T20:32:16Z",
+  "updated_at": "2026-11-21T21:36:09Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "sess_1d7e33d6 会话中「planctl CLI+JSON 为默认」完全没被使用（plan-state.json 空壳+4 MD 手写）——根因修复：把 CLI 口径落到执行者实际读到的 4 个面",
+      "type": "目标",
+      "vc": [
+        "VC-1",
+        "VC-2",
+        "VC-3",
+        "VC-4"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "text": "修复不破坏既有面：全量回归零新增 FAIL + 四位部署逐位 diff=0",
+      "type": "目标",
+      "vc": [
+        "VC-5"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R3",
+      "text": "行为面真正用起来：tmp 冒烟全链 CLI 流（init→add→render→attest）exit 0 且 MD 为派生视图",
+      "type": "目标",
+      "vc": [
+        "VC-6"
+      ],
+      "tags": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "4 个执行面（init-session 输出/模板契约行含 29 variant/hook 教学文案/attest 空壳 WARN）全部切换 planctl 口径，旧教学字面清零",
+      "name": "执行面口径切换",
+      "verify": "VC-1/VC-2/VC-3 命令全 pass（grep 旧字面=0+init 输出块 tmp 实测）",
+      "s_units": [
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "G2",
+      "text": "全量 selftest 与基线对比零新增 FAIL；zcode/agents/claude/cursor 四位部署 diff=0 且部署位 selftest 复跑绿",
+      "name": "回归与部署零破坏",
+      "verify": "VC-5 命令（四位 diff=0）+ 全量 selftest 基线对比",
+      "s_units": [
+        "S9",
+        "S10"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "G3",
+      "text": "tmp 行为面冒烟：按 init 新输出指引走 planctl add→render→attest 全链 exit 0，4 MD 带 GENERATED_HEADER",
+      "name": "行为面闭环冒烟",
+      "verify": "VC-6 命令（/tmp/planctl-smoke-out/task_plan.md 首行=GENERATED_HEADER+attest exit 0）",
+      "s_units": [
+        "S11"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "init-session.sh JSON init 成功路径输出「下一步」CLI 指引块且脚本内 planctl.py 提及≥4 处",
+      "command": "test $(grep -c planctl.py /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/init-session.sh) -ge 4",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-2",
+      "criterion": "4 个派生视图模板（task_plan/findings/progress/verification）头部契约行改为 planctl 派生口径，「模型填写面」旧字面清零（notepad-learnings/user-session-log 为合法人工面保留除外）；variant 非 mini 档加派生警示行",
+      "command": "test $(grep -l 模型填写面 /mnt/data/dev/task-planner-skill/skills/task-planner/templates/task_plan.md /mnt/data/dev/task-planner-skill/skills/task-planner/templates/findings.md /mnt/data/dev/task-planner-skill/skills/task-planner/templates/progress.md /mnt/data/dev/task-planner-skill/skills/task-planner/templates/verification.md 2>/dev/null | wc -l) -eq 0",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-3",
+      "criterion": "hook 旧教学清零：posttooluse 6 处「Edit task_plan.md/Edit 进 findings.md/Edit 进 progress.md」改 planctl+render 口径；task-plan-init.cjs/plan-created.cjs 追加 planctl 行",
+      "command": "test $(grep -c \"Edit task_plan.md\\|Edit 进 findings.md\\|Edit 进 progress.md\" /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/zcode-posttooluse.sh) -eq 0",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-4",
+      "criterion": "attest-plan.sh 空壳 WARN：fixture（plan-state.json 业务全空+task_plan.md>2KB 手写）触发 SOFT_ONLY WARN 且 exit 0 不阻断",
+      "command": "cd /tmp/planctl-vc4-fixture && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/attest-plan.sh 2>&1 | grep -c SOFT_ONLY",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-5",
+      "criterion": "四位部署逐位 diff=0：源仓 254 个 git 跟踪文件（skills/task-planner）与 zcode/agents/claude/cursor 四位逐文件 cmp 全同（部署位含 .history/trash 运行期文件，整目录 diff-r 口径不可用）",
+      "command": "cd /mnt/data/dev/task-planner-skill && git ls-files skills/task-planner | while read f; do for base in /home/terry/.zcode/skills /home/terry/.agents/skills /home/terry/.claude/skills /home/terry/.cursor/skills; do cmp -s \"$f\" \"$base/$f\" || { echo DIFF-$base/$f; exit 1; }; done; done && echo DEPLOY-DIFF-0",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-6",
+      "criterion": "tmp 行为面冒烟：init→add(requirements/goals/vcs/phases)→render→attest 全链 exit 0，render 后 4 MD 首行为 GENERATED_HEADER",
+      "command": "test $(head -1 /tmp/planctl-smoke-out/plans/task-smoke-001/task_plan.md | grep -c 勿直接编辑) -eq 1",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "phases": [
+    {
+      "id": "P0",
+      "name": "计划与隔离+传播面 grep",
+      "status": "complete",
+      "s_units": [
+        "S1"
+      ],
+      "v_checks": [
+        "VC-5"
+      ],
+      "tags": [],
+      "started": "2026-11-21T20:34:54Z"
+    },
+    {
+      "id": "P1",
+      "name": "init-session.sh 输出下一步 CLI 命令块",
+      "status": "complete",
+      "s_units": [
+        "S2"
+      ],
+      "v_checks": [
+        "VC-1"
+      ],
+      "tags": [],
+      "started": "2026-11-21T20:40:43Z"
+    },
+    {
+      "id": "P2",
+      "name": "模板契约行改 planctl 派生口径（base4+variant）",
+      "status": "complete",
+      "s_units": [
+        "S3",
+        "S4"
+      ],
+      "v_checks": [
+        "VC-2"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P3",
+      "name": "旧教学文案清零（posttooluse+sessionstart 链+SKILL 工作流行+todo-sync+examples+plan-writer+userpromptsubmit）",
+      "status": "complete",
+      "s_units": [
+        "S5",
+        "S6"
+      ],
+      "v_checks": [
+        "VC-3"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P4",
+      "name": "attest 域互洽：空壳 WARN+render 补 gate 必需区块",
+      "status": "complete",
+      "s_units": [
+        "S7",
+        "S8"
+      ],
+      "v_checks": [
+        "VC-4",
+        "VC-6"
+      ],
+      "tags": [],
+      "started": "2026-11-21T20:46:41Z"
+    },
+    {
+      "id": "P5",
+      "name": "selftest 断言同步+全量回归基线对比",
+      "status": "complete",
+      "s_units": [
+        "S9"
+      ],
+      "v_checks": [
+        "VC-5"
+      ],
+      "tags": [],
+      "started": "2026-11-21T20:48:44Z"
+    },
+    {
+      "id": "P6",
+      "name": "merge 回 master+四位部署+清理 worktree",
+      "status": "in_progress",
+      "s_units": [
+        "S10"
+      ],
+      "v_checks": [
+        "VC-5"
+      ],
+      "tags": [],
+      "started": "2026-11-21T21:09:26Z"
+    },
+    {
+      "id": "P7",
+      "name": "行为面冒烟+交付报告+memory",
+      "status": "pending",
+      "s_units": [
+        "S11"
+      ],
+      "v_checks": [
+        "VC-6"
+      ],
+      "tags": [],
+      "started": ""
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "text": "时间线排除借口：四位部署 mtime 02:38:14-19，sess_1d7e33d6 启动哨兵 03:24:12（plans/.plan_required_side/1d7e33d6*.plan_required）——会话全程跑在新口径磁盘上仍失败",
+      "source": "stat 部署位 + StoryLab/plans/.plan_required_side/ + git log 1732eab=02:32:17",
+      "tags": []
+    },
+    {
+      "id": "F2",
+      "text": "执行层实证：task-corpus-enforce-001 plan-state.json 空壳（created==updated==2026-11-21T19:57:08Z 全业务数组空），task_plan.md 29KB/findings 16KB/verification 10KB/progress 4KB 全部手写，attest 04:06:47 锁手写 MD",
+      "source": "StoryLab/plans/task-corpus-enforce-001/{plan-state.json,.plan-attestation,stat}",
+      "tags": []
+    },
+    {
+      "id": "F3",
+      "text": "根因四条：①posttooluse.sh:267/268/302/330 每次工具调用教 Edit MD，全 hook 链 grep planctl 零命中；②4 模板+29variant 头部契约行仍写「=模型填写面」；③init-session.sh:1090 仅一行输出无下一步指引，task-plan-init.cjs:145/plan-created.cjs:217 同；④attest/check-complete 全读 MD，JSON 空壳全程绿灯",
+      "source": "源仓+部署位 grep/stat 实测（Explore 双路取证报告 2026-11-22）",
+      "tags": []
+    },
+    {
+      "id": "F4",
+      "text": "第 5 根因（本任务现场挖出）：render 产物结构性过不了 attest——check-plan-dispatch.sh:346-370 要求 task_plan.md 含「## 🎯 Goal 单元表」六列表头锚（goal-id/任务名/目标/完整验证方式/对应 S-unit/状态）+数据行，planctl.py 无该渲染逻辑（仅渲染 Phase Gates 表），75.1 调研区块同样缺失。即：纯 CLI 流即便被遵守也无法通过 attest 锁定，流程闭环断裂",
+      "source": "attest 实测 ✗（2026-11-22 04:35）+ grep planctl.py 零命中 Goal 单元渲染 + check-plan-dispatch.sh:346-370",
+      "tags": []
+    }
+  ],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "s_units": [
+    {
+      "id": "S7",
+      "phase": "P4",
+      "name": "attest-plan.sh 空壳 WARN 检测",
+      "executor": "主进程（小）",
+      "files": "skills/task-planner/scripts/attest-plan.sh",
+      "actions": "Edit 写入前检测块",
+      "verify": "VC-4 fixture 实测",
+      "duration": "20min",
+      "granularity": "1文件+25行",
+      "parallel": "否"
+    },
+    {
+      "id": "S8",
+      "phase": "P4",
+      "name": "render 补 🎯 Goal 单元表+🔍 调研区块使纯 CLI 流可过 attest",
+      "executor": "主进程（小）",
+      "files": "skills/task-planner/scripts/planctl.py + schemas/plan-state.schema.json",
+      "actions": "goal def 加可选字段+render 两区块+goal 数据回填",
+      "verify": "worktree planctl render 后 attest 66.5 过",
+      "duration": "30min",
+      "granularity": "2文件+60行",
+      "parallel": "否"
+    },
+    {
+      "id": "S2",
+      "phase": "P1",
+      "name": "init 输出追加下一步命令块",
+      "executor": "主进程（小）",
+      "files": "skills/task-planner/scripts/init-session.sh",
+      "actions": "Edit 追加 4-6 行",
+      "verify": "VC-1 命令",
+      "duration": "10min",
+      "granularity": "1文件+10行",
+      "parallel": "否"
+    },
+    {
+      "id": "S11",
+      "phase": "P7",
+      "name": "tmp 冒烟+报告+memory",
+      "executor": "主进程（小）",
+      "files": "/tmp/planctl-smoke-out",
+      "actions": "全链 CLI 流实跑+报告",
+      "verify": "VC-6 命令",
+      "duration": "20min",
+      "granularity": "tmp 一次性",
+      "parallel": "否"
+    },
+    {
+      "id": "S9",
+      "phase": "P5",
+      "name": "selftest 断言同步+全量回归",
+      "executor": "主进程（中）",
+      "files": "skills/task-planner/scripts/selftest*",
+      "actions": "grep pin 站点逐处同步+跑全量",
+      "verify": "基线对比零新增 FAIL",
+      "duration": "40min",
+      "granularity": "按 pin 数",
+      "parallel": "否"
+    },
+    {
+      "id": "S4",
+      "phase": "P2",
+      "name": "29 variant 头部契约行同步",
+      "executor": "general-coder（子代理）",
+      "files": "skills/task-planner/templates/variant/*-type.md",
+      "actions": "逐文件头部契约行替换+登记理由",
+      "verify": "VC-2 命令+抽查 Read",
+      "duration": "25min",
+      "granularity": "29文件×1行",
+      "parallel": "否"
+    },
+    {
+      "id": "S3",
+      "phase": "P2",
+      "name": "base4 模板头部契约行改口径",
+      "executor": "主进程（小）",
+      "files": "skills/task-planner/templates/{task_plan,findings,progress,verification}.md",
+      "actions": "Edit 头部注释",
+      "verify": "VC-2 命令",
+      "duration": "15min",
+      "granularity": "4文件×1-2行",
+      "parallel": "否"
+    },
+    {
+      "id": "S1",
+      "phase": "P0",
+      "name": "建 worktree+传播面 grep 定位 pin 站点",
+      "executor": "主进程（小）",
+      "files": "tmp/worktrees/task-planctl-exec-surface-20261122",
+      "actions": "git worktree add+grep 旧文案全集",
+      "verify": "grep 清单落 findings",
+      "duration": "10min",
+      "granularity": "只读",
+      "parallel": "否"
+    },
+    {
+      "id": "S10",
+      "phase": "P6",
+      "name": "merge+四位部署+清理",
+      "executor": "主进程（中）",
+      "files": "四位部署位",
+      "actions": "merge --no-ff+rsync 四位+worktree remove",
+      "verify": "VC-5 命令",
+      "duration": "30min",
+      "granularity": "部署位×4",
+      "parallel": "否"
+    },
+    {
+      "id": "S5",
+      "phase": "P3",
+      "name": "posttooluse 6 处教学文案改 planctl 口径",
+      "executor": "主进程（小）",
+      "files": "skills/task-planner/scripts/zcode-posttooluse.sh",
+      "actions": "Edit 6 处",
+      "verify": "VC-3 命令",
+      "duration": "20min",
+      "granularity": "1文件×6处",
+      "parallel": "否"
+    },
+    {
+      "id": "S6",
+      "phase": "P3",
+      "name": "sessionstart 链+userpromptsubmit 头行",
+      "executor": "主进程（小）",
+      "files": "skills/task-planner/scripts/{task-plan-init.cjs,plan-created.cjs,zcode-userpromptsubmit.sh}",
+      "actions": "Edit 追加 planctl 提示行",
+      "verify": "grep 命中",
+      "duration": "15min",
+      "granularity": "3文件×1-2行",
+      "parallel": "否"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "修复面=执行者实际读到的 4 个面（init 输出/模板契约行/hook 教学文案/attest 空壳 WARN），不新增任何拦截门",
+      "rationale": "用户既定裁决「真正有效的是在模板写入哪一步应该使用 cli 落盘」+两次否决 PreToolUse 硬拦截；取证证明 SKILL.md 散文载体执行者读不赢 hook 注入与模板契约行"
+    },
+    {
+      "id": "D2",
+      "decision": "hook 仅改教学文案（6 处罗盘提醒+2 处 init 提示+1 处回放头行），节奏提醒/计数器/门机制全部不动",
+      "rationale": "此前「hook 不动」为 jsonderive 任务范围控制；本次用户投诉直指方案未被使用，PostToolUse 旧教学是每次工具调用注入的最强反向指令，不对齐则修复大概率再度失效；无任何新增拦截"
+    },
+    {
+      "id": "D3",
+      "decision": "P4 空壳检测=warn-only 单行输出，不阻断不新增脚本，嵌入既有 attest-plan.sh",
+      "rationale": "文本优先铁律下机器断言最小化；使「JSON 空壳+MD 手写」复发立即可见而非静默绿灯，且不触碰已否决的拦截方向"
+    },
+    {
+      "id": "D4",
+      "decision": "render 扩展：新增「## 🎯 Goal 单元表」区块（goals 新增可选字段 name/verify/s_units/status 渲染六列锚）+「🔍 调研需求与检索计划」区块（research_status），schema 同步加可选字段不进 required",
+      "rationale": "JSON 全派生架构下 gate 必需区块必须可由 JSON 派生，否则纯 CLI 流无法过 attest（F4 闭环断裂）；goal 新字段全部可选保存量 validate 兼容"
+    },
+    {
+      "id": "D5",
+      "decision": "旧教学清零传播面按 grep 实测扩展：SKILL.md L109/L128/L222 工作流行、references/todo-sync.md S2/S5、examples.md、companion/agents/plan-writer.md 调用方约束、zcode-userpromptsubmit.sh:285 邻近引用提示、check-doc-sync.sh 注释、INSTALL.md 预期输出、CLAUDE.md:48——同类载体一并切 planctl 口径",
+      "rationale": "传播面先 grep（判例教训）；SKILL.md L109 每 Phase 工作流与 todo-sync S2/S5 是执行者高频读取面，漏改则旧教学残留在最强载体；plan-cost-guard/billing.md 属他技能范围不动，plans/ 存量档不清理（用户裁决）"
+    },
+    {
+      "id": "D6",
+      "decision": "VC-6 判据路径修正：冒烟产物实际在 /tmp/planctl-smoke-out/plans/task-smoke-001/（init 要求 plans/<task-id>/ 目录结构），原命令少了子目录层级",
+      "rationale": "判据冻结后修正=重锁协议（Decisions 登记+render+重跑 attest）；冒烟已实跑全链 exit 0"
+    },
+    {
+      "id": "D7",
+      "decision": "VC-5 判据口径修正：部署位含 8570 个运行期文件（.history/trash 等），整目录 diff -r 必然误报；改为 git 跟踪 254 文件逐位 cmp",
+      "rationale": "判据必须匹配真实生产字节（判例：判据 token 匹配真实生产字节）；重锁协议登记"
+    }
+  ],
+  "root_causes": [
+    {
+      "id": "RC1",
+      "process": "SKILL.md SOP 文本载体",
+      "defect": "散文条款执行者读不赢每次工具调用注入的 hook 旧教学（F3①）",
+      "fix": "S5/S6 执行面文案切换+速查口径",
+      "vc": "VC-3"
+    },
+    {
+      "id": "RC2",
+      "process": "模板契约行+init 输出",
+      "defect": "「模型填写面」契约+init 仅一行输出直接引导手写 4 MD（F3②③）",
+      "fix": "S2/S3/S4 模板派生口径+init 命令块",
+      "vc": "VC-1,VC-2"
+    },
+    {
+      "id": "RC3",
+      "process": "attest/check 门链",
+      "defect": "全读 MD：JSON 空壳绿灯不可见；render 缺 66.5/51.1 区块=纯 CLI 流闭环断裂（F3④/F4）",
+      "fix": "S7 空壳 WARN+S8 render 补锚",
+      "vc": "VC-4,VC-6"
+    },
+    {
+      "id": "RC4",
+      "process": "四位部署传播",
+      "defect": "部署位漂移风险（历史多次判例）",
+      "fix": "S9/S10 全量回归+四位 diff=0",
+      "vc": "VC-5"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "phase": "P1",
+      "text": "init-session.sh init 成功路径追加「下一步」CLI 命令块 4 行（tmp 实测输出完整可复制命令）",
+      "at": ""
+    },
+    {
+      "id": "A2",
+      "phase": "P2",
+      "text": "base4 模板契约行改 planctl 派生口径+29 非 mini variant 插派生警示行（mini-lite/l0-lite 豁免）",
+      "at": ""
+    },
+    {
+      "id": "A3",
+      "phase": "P3",
+      "text": "旧教学清零 31 处：posttooluse 6 处+sessionstart 链 2 处+userpromptsubmit 2 处+SKILL 3 行+todo-sync 3 处+examples 2 处+plan-writer+check-doc-sync 注释+INSTALL+CLAUDE 2 行+critical-rules 19.1（漏网点）",
+      "at": ""
+    },
+    {
+      "id": "A4",
+      "phase": "P4",
+      "text": "attest-plan.sh 加 warn-only 空壳检测（SOFT_ONLY 信号，exit 0 不阻断）；planctl.py render 补 🎯 Goal 单元表+🔍 调研区块+51.1 四锚（用户需求原文/R→VC 标题/根源覆盖表）；schema goal 加 4 可选字段",
+      "at": ""
+    },
+    {
+      "id": "A5",
+      "phase": "P4",
+      "text": "纯 CLI 流（add→render→attest）端到端首次跑通：主计划锁定+tmp 冒烟全链 exit 0（F4 闭环断裂修复的行为面证明）",
+      "at": ""
+    },
+    {
+      "id": "A6",
+      "phase": "P6",
+      "text": "S7 验收返工：attest 空壳 WARN 移至入口段（VC-4 实弹抓获）→ fix a7dadab",
+      "at": ""
+    }
+  ],
+  "test_results": [
+    {
+      "id": "T1",
+      "phase": "P5",
+      "test": "全量 selftest 双跑基线对比（master vs worktree，107 脚本）",
+      "input": "run-selftests.sh ×2 顺序执行（/tmp/selftest-{baseline,worktree}.log）",
+      "expected": "FAIL 集不新增、逐脚本 PASS/FAIL 一致",
+      "actual": "逐脚本完全一致；worktree 总 PASS=1440 断言；FAIL 集=基线 8 集零新增",
+      "status": "pass"
+    },
+    {
+      "id": "T2",
+      "phase": "P7",
+      "test": "tmp 行为面冒烟 init→add×5→render→attest",
+      "input": "/tmp/planctl-smoke-out/plans/task-smoke-001",
+      "expected": "全链 exit 0+GENERATED_HEADER+attest 锁定",
+      "actual": "全链 exit 0；task_plan.md 首行=GENERATED_HEADER；attest ✅ 锁定",
+      "status": "pass"
+    }
+  ]
+}

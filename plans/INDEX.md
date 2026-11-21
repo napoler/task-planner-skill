@@ -7,6 +7,7 @@
 
 | Task ID | Status | Phase 进度 | Goal | session_id | worktree | scope_files | 最后更新 | 待办 |
 |---------|--------|-----------|------|---------|------|
+| task-planctl-exec-surface-20261122 | complete | 8/8 | 修复 sess_1d7e33d6 判例：CLI+JSON 默认未被执行层使用——planctl 口径落到执行者实际读到的 4 面+render 补 66.5/75.1/51.1 区块（纯 CLI 流闭环）| sess_cd60a465 | 已清理 | skills/task-planner 49 文件+CLAUDE.md；merge 3d93d7d/a7dadab；四位部署 DEPLOY-DIFF-0-REAL | 2026-11-22 | ✓ 终锁 feed8dbc |
 | s77-p2-fix | complete | 4/4 | 在 worktree wt/s77-p2-fix 内修复 S77 审计的 2 项 P2 问题（P2- | none |  |  | 2026-10-21 | ✓ |
 | skill-audit-s77-20261019 | complete | 4/4 | 对 task-planner-skill 仓 skills/ 下全部 28 个技能（17 核心 +  | none |  | skills/*/SKILL.md + skills/*/references/*.md（全部 28 技能）,修改任何 SKILL.md | 2026-10-20 | ✓ |
 | skill-audit-s77-fix-20261019 | complete | 5/5 | 在 worktree wt/s77-fix 内修复 26 技能 S77 审查发现的 4 类 P1 问 | none |  |  | 2026-10-20 | ✓ |
