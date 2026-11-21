@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "plan-state.json — task-planner 结构化计划权威源",
+  "description": "P1（task-json-state-20261121）：把任务计划从半结构化 Markdown 升级为 JSON 权威源。planctl.py 是唯一写入者，4 个 MD 文件为只读派生视图。模板空串 created_at/updated_at 属未设置合法态（draft-07 format 为 annotation 非 assertion），init 落盘时填 ISO8601。",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "plan_tier",
+    "execution_lane",
+    "created_at",
+    "updated_at",
+    "requirements",
+    "goals",
+    "vcs",
+    "phases",
+    "findings",
+    "audits",
+    "delegations",
+    "tags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "task_id": { "type": "string", "minLength": 1 },
+    "plan_tier": { "type": "string", "enum": ["standard", "mini"] },
+    "execution_lane": { "type": "string", "enum": ["L0", "L0-T", "L0-E", "L1", "L2"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "requirements": { "type": "array", "items": { "$ref": "#/definitions/requirement" } },
+    "goals": { "type": "array", "items": { "$ref": "#/definitions/goal" } },
+    "vcs": { "type": "array", "items": { "$ref": "#/definitions/vc" } },
+    "phases": { "type": "array", "items": { "$ref": "#/definitions/phase" } },
+    "findings": { "type": "array", "items": { "$ref": "#/definitions/finding" } },
+    "audits": { "type": "array", "items": { "$ref": "#/definitions/audit" } },
+    "delegations": { "type": "array", "items": { "$ref": "#/definitions/delegation" } },
+    "tags": { "$ref": "#/definitions/tag_list" }
+  },
+  "definitions": {
+    "tag_list": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "requirement": {
+      "type": "object",
+      "description": "R 行：用户需求逐条抄录；type=目标须映射可观察判据型 VC。",
+      "required": ["id", "text", "type", "vc"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "type": { "type": "string", "enum": ["目标", "手段"] },
+        "vc": { "type": "array", "items": { "type": "string" } },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "goal": {
+      "type": "object",
+      "description": "goal 单元（Rule 66.1 的 JSON 投影）。",
+      "required": ["id", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "vc": {
+      "type": "object",
+      "description": "Verification Contract 条目；command 由 check vc-nonvacuous 静态判真空。",
+      "required": ["id", "criterion", "command", "status", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "criterion": { "type": "string" },
+        "command": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "pass", "fail"] },
+        "evidence": { "type": "string" },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "phase": {
+      "type": "object",
+      "description": "Phase 条目；v_checks 存映射的 VC 编号，供 check rvc 做 VC→引用兜底。",
+      "required": ["id", "status", "s_units", "v_checks"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "complete"] },
+        "s_units": { "type": "array", "items": { "type": "string" } },
+        "v_checks": { "type": "array", "items": { "type": "string" } },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "description": "findings 条目；source 为 file:line / URL 等可追溯锚。",
+      "required": ["id", "text", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "source": { "type": "string" },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "description": "独立审计轮次；check audit 取 round 最大条目判 APPROVED 且 C=0/I=0。",
+      "required": ["round", "verdict", "by", "counts", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "round": { "type": "integer", "minimum": 1 },
+        "verdict": { "type": "string", "enum": ["APPROVED", "REJECTED"] },
+        "by": { "type": "string" },
+        "counts": {
+          "type": "object",
+          "required": ["C", "I", "W"],
+          "additionalProperties": false,
+          "properties": {
+            "C": { "type": "integer", "minimum": 0 },
+            "I": { "type": "integer", "minimum": 0 },
+            "W": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "at": { "type": "string", "format": "date-time" },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
+    "delegation": {
+      "type": "object",
+      "description": "子代理派发登记（Rule 22.5 的 JSON 投影）。",
+      "required": ["id", "agent", "scope", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string" },
+        "scope": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "running", "done", "fail"] },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    }
+  }
+}

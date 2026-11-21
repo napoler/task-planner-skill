@@ -93,7 +93,15 @@ case "$mode" in
     # [2026-11-17 task-auditgate-machine-20261116] 第 8 参数组=审计门三项（R1 F3/F4; R7 Q-2 契约）:
     #   skip_audit（--skip-audit-check 翻转）+ TASK_PLANNER_AUDIT_GATE_ENFORCE（enforce 档翻转）+
     #   sha256(progress.md)（APPROVED 留痕追加/REJECTED→APPROVED 变更均须失效缓存, 防「先拒后准」回放陈旧拒锁或陈旧放行）。
-    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)" | sha256sum | cut -d' ' -f1)"
+    # [2026-11-21 task-json-state-20261121] 第 8 参数组尾部追加 plan-state.json 的 SHA-256（存在才追加）:
+    #   What: JSON 权威源每次写入（set/add/vc-pass/...）后 hash 变 → 缓存键变 → 不回放陈旧门结果。
+    #   Why: 门结果现可由 planctl 对 JSON 判定；只按 task_plan.md/progress.md 做键会在 JSON 变更后
+    #        错误回放旧门结果。存量计划无该文件 → key="" → 缓存键逐字不变（零回归）。
+    _attest_state_key=""
+    if [ -f "$plan_dir/plan-state.json" ]; then
+      _attest_state_key="|$(sha256sum "$plan_dir/plan-state.json" 2>/dev/null | cut -d' ' -f1)"
+    fi
+    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)${_attest_state_key}" | sha256sum | cut -d' ' -f1)"
     _attest_cache="/tmp/attest-cache-${_attest_cksum}.result"
     if [ -f "$_attest_cache" ] && [ ! "$plan_file" -nt "$_attest_cache" ]; then
       # plan_file 未变更（mtime 不新于缓存）→ 回放缓存结果，跳过完整门链

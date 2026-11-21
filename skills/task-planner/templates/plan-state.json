@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "task_id": "{{TASK_ID}}",
+  "plan_tier": "standard",
+  "execution_lane": "L1",
+  "created_at": "",
+  "updated_at": "",
+  "requirements": [],
+  "goals": [],
+  "vcs": [],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": []
+}

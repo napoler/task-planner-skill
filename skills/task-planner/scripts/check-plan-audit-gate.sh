@@ -97,6 +97,35 @@ if [ ! -r "$PROG" ]; then
   exit 2
 fi
 
+# ── JSON 权威源 shim（2026-11-21 task-json-state-20261121）───────────────────
+# What: 仅在"必须审计"分支（上文 lane/tier 预判、legacy-no-decl 与 [plan-audit-skip] SKIP 全部
+#       保留原样）且 plan-state.json 存在时，转调 planctl.py check audit；结果翻译为旧
+#       [audit-gate] PASS/FAIL 文案 + rc 0/1/2。不存在则落到下方原留痕段正则判定。
+# Why: planctl 未完整覆盖 lane/tier 与 skip 语义，故不整体替换；progress.md 的 rc2 分层仍在
+#       上文生效（「progress 缺失=2 在 enforce 下 attest 拒锁」外契约不变）。审计权威源改为 JSON。
+SHIM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$PLAN_DIR/plan-state.json" ] && [ -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+  _pc_out="$(python3 "$SHIM_SCRIPT_DIR/planctl.py" check audit --plan-dir "$PLAN_DIR")"
+  _pc_rc=$?
+  _pc_reason="${_pc_out#PLANCTL CHECK audit: PASS }"
+  _pc_reason="${_pc_reason#PLANCTL CHECK audit: FAIL }"
+  case "$_pc_rc" in
+    0)
+      _rn="$(printf '%s' "$_pc_reason" | grep -oE 'R[0-9]+' | head -n1 || true)"
+      echo "$AG PASS: 末段审计留痕 [plan-audit-${_rn:-JSON}] APPROVED（0C/0I 达标, Rule 109.2; JSON 权威源）"
+      exit 0
+      ;;
+    1)
+      echo "$AG FAIL: JSON 权威源审计未通过: $_pc_reason"
+      exit 1
+      ;;
+    *)
+      echo "$AG WARN 判定器输入异常: JSON 审计判定输入异常: $_pc_reason" >&2
+      exit 2
+      ;;
+  esac
+fi
+
 # ── APPROVED 末段聚合（R6a 两约束: 边界止 H2 + 结论行行首锚定）──────────────────
 # awk 语义: 命中审计段头 → inbuf=1 清 buf 重collect（头行不进 buf, token 均为体行）;
 #           inbuf 中命中任何 `^## `（H2, 含其他审计段头之前先被第一条规则 next 截获）→ inbuf=0 停止collect;

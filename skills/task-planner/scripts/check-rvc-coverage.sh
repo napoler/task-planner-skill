@@ -49,6 +49,42 @@ if [ ! -f "$PLAN_FILE" ]; then
     exit 2
 fi
 
+# ── JSON 权威源 shim（2026-11-21 task-json-state-20261121）───────────────────
+# What: plan-state.json 存在时转调 planctl.py check rvc，把结果翻译为旧 [rvc-coverage] 前缀+rc；
+#       不存在时落到下方原 awk 正则判定（存量计划零回归）。rc 2=输入异常（stderr 原样透传）。
+# Why: 外契约（前缀/rc）被 attest-plan.sh 消费不可改；JSON 权威源无「映射表行」概念，
+#      故 PASS 文案的「映射行」位填 0（前缀与 R/VC 计数保持旧形状），细节 reason 原文透出。
+SHIM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$PLAN_DIR/plan-state.json" ] && [ -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+    _pc_out="$(python3 "$SHIM_SCRIPT_DIR/planctl.py" check rvc --plan-dir "$PLAN_DIR")"
+    _pc_rc=$?
+    _pc_reason="${_pc_out#PLANCTL CHECK rvc: PASS }"
+    _pc_reason="${_pc_reason#PLANCTL CHECK rvc: FAIL }"
+    case "$_pc_rc" in
+      0)
+        case "$_pc_reason" in
+          *"无 requirements/vcs 条目"*)
+            printf '[rvc-coverage] SKIP (JSON 权威源无 requirements/vcs 判定面, 双向覆盖核对不适用)\n' ;;
+          *)
+            _rv="$(printf '%s' "$_pc_reason" | sed -n 's/^R=\([0-9][0-9]*\) VC=\([0-9][0-9]*\).*/\1 \2/p')"
+            read -r _nr _nv <<< "$_rv"
+            printf '[rvc-coverage] ✓ R→VC 双向覆盖完整（R=%d VC=%d 映射行=%d）\n' \
+                "${_nr:-0}" "${_nv:-0}" 0
+            ;;
+        esac
+        exit 0
+        ;;
+      1)
+        printf '[rvc-coverage] ✗ %s\n' "$_pc_reason"
+        exit 1
+        ;;
+      *)
+        printf '[rvc-coverage] ERROR: JSON 判定输入异常: %s\n' "$_pc_reason" >&2
+        exit 2
+        ;;
+    esac
+fi
+
 # ── 抽取（awk 三段, 输出 TSV）────────────────────────────────────────────────
 # 段切分口径: `^##[^#]` 命中即重设段; `###` 子节（如 `### R→VC 映射`）留在所属 ^## 段内
 R_ROWS="$(awk '
