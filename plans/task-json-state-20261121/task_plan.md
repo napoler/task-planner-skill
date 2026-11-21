@@ -9,11 +9,11 @@
 - [x] P3 改造机器门 + init-session/attest 接线
 - [x] P4 SKILL.md SOP 硬条款 + 旧脚本转 shim
 - [x] P5 selftest-planctl.py + selftest-planctl-shim.sh + registry 登记
-- [ ] P6 全量回归 + 端到端迁移试点 + 备份恢复验证
-- [ ] P7 合并回 master + 清理 worktree + 三处部署位 diff=0
+- [x] P6 全量回归 + 端到端迁移试点 + 备份恢复验证
+- [x] P7 合并回 master（merge 8590bf0）+ 清理 worktree + 三处部署位 diff=0
 
 ## Status
-当前 P1-P5 complete；P6/P7 待办。SHIM 15/15 + PLANCTL 14/14 主进程复跑通过；全量 selftest FAIL 8→8 不增。
+COMPLETE。P1-P7 全完成。SHIM 15/15 + PLANCTL 14/14 主进程复跑通过；全量 selftest 104 PASS FAIL=8（不增）；端到端 init→CRUD→tag→render→check→backup→corrupt→restore→validate 全绿；三处部署位 13 文件 md5 全对齐（DEPLOY_FAIL=0），部署位 selftest 复跑全 PASS。
 
 ## 验收
 - planctl.py 全子命令可用，原子写+备份+schema 校验+tags 检索
