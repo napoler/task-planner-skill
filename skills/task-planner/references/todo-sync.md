@@ -26,10 +26,10 @@
 | # | 时机 | 动作 |
 |---|------|------|
 | S1 | 计划创建后（init-session.sh 完成、哨兵清除前） | 运行 `sync-todos.sh --json` → 按映射规则建立全部 Phase 的 todo（一条 in_progress + 其余 pending） |
-| S2 | Phase 状态每次变更后（in_progress / complete） | `Edit task_plan.md` 状态行 + 同步该条 todo 状态，**两步必须紧邻执行，禁止只做其一** |
+| S2 | Phase 状态每次变更后（in_progress / complete） | `planctl phase-start/phase-done --id P<n>` + `render`（状态行经派生视图刷新）+ 同步该条 todo 状态，**必须紧邻执行，禁止只做其一** |
 | S3 | 每 `todo_sync_interval_calls`（默认 10）次工具调用 | 收到 `[plan-sync]` hook 提醒 → 执行第 4 节响应协议 |
 | S4 | 会话结束前（交付 COMPLETE/PARTIAL/BLOCKED 之前） | 终态同步：全部 todo 终结 + `sync-todos.sh --index` 刷新 INDEX.md + 计划文档终态一致（**前置=Rule 84.14 收尾回读梳理迭代已完成**——收敛出口（连续一轮零新发现）通过后才可终结 Todo 进入终态同步） |
-| S5 | 用户新指令影响计划后（扩展 B / 矛盾 C） | 先 `Edit task_plan.md`（Phase/VC/执行范围，注明来源指令与时间）→ 紧邻完成 Todo 重映射（增/改/删对应条目）→ 复述变更后再执行；**禁止口头接受新指令而不落盘**（判定规则见 SKILL.md § 用户新指令处理） |
+| S5 | 用户新指令影响计划后（扩展 B / 矛盾 C） | 先 `planctl update/set`（Phase/VC/执行范围，注明来源指令与时间）+ `render`→ 紧邻完成 Todo 重映射（增/改/删对应条目）→ 复述变更后再执行；**禁止口头接受新指令而不落盘**（判定规则见 SKILL.md § 用户新指令处理） |
 
 **S1 两组结构（任务组+基线组，Rule 106.5——task-docmod-recheck-20261112 落地）**
 1. S1 建立两组原生 todo：**任务组**（Phase 映射，既有规则）+**基线组**（固定五项 B1-B5，措辞以 Rule 106.5 为准）；两组必须同为原生条目（TodoWrite/Task 系统条目，禁止只存计划文档）。
@@ -44,7 +44,7 @@
 PostToolUse hook（`zcode-posttooluse.sh`）在检测到**计划文档超龄**（> `plan_update_interval_minutes`，默认 15 分钟）或**工具调用达到阈值**（`todo_sync_interval_calls`，默认 10）时，注入 `[plan-sync]` 提醒。**陈旧提醒触发后进入冷却**（`stale_remind_cooldown_calls`，默认 10 次调用内不再重复催）；已完结计划（outcome 为 COMPLETE/BLOCKED）不再提醒。收到提醒后必须立即执行三步：
 
 ```
-1. Edit task_plan.md        → 回写进度（当前 Phase 的 checkbox / 状态 / Errors 表）
+1. planctl phase-done + add --section errors + render → 回写进度（Phase 状态 / Errors 经派生视图刷新）
 2. TodoWrite / TaskUpdate   → 同步原生 Todo 状态
 3. bash scripts/sync-todos.sh --index   → 刷新 INDEX.md（校验解析一致）
 ```

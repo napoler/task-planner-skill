@@ -44,8 +44,8 @@ skills/task-planner/
 
 ```
 用户请求 → session-catchup.ts(中断恢复?) → init-session.sh(新建)
-→ 填写 task_plan.md(含 VC 表 + Scope 表) → 展示计划等待 "yes"
-→ 逐 Phase 执行（每 phase 完 Edit task_plan.md + sync-todos.sh --index）
+→ planctl 填写 plan-state.json(含 VC 表 + Scope 表)+render → 展示计划等待 "yes"
+→ 逐 Phase 执行（每 phase 完 planctl phase-done+render + sync-todos.sh --index）
 → 全部 phase complete → 逐条复验 VC → 输出 COMPLETE/PARTIAL/BLOCKED
 ```
 

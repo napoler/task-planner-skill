@@ -1,5 +1,6 @@
 # Task Plan: [质量审查与缺陷检测任务]
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,执行范围限制,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
+<!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: qc-defect -->
 <!-- 质检工序：抽样拆批→机检→亲检→四维归因→最小范围处置→判例固化。边界：判定与处置路由（重生成执行入 image-type/video-fix-type 生产域）；单一资产补制入 multiview-ref-type。触发词：质检/QC/缺陷检测/成片审查/择优 -->
 <!-- 五要素：①编号原子步骤+显式状态定义（逐件质检卡+处置枚举）+合规检（双硬错误+风格+一致性）+静默迭代（QC-重抽环 0 打断）+验收判据（VC 表） -->

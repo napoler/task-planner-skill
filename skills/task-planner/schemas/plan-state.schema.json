@@ -107,7 +107,11 @@
         "id": { "type": "string", "minLength": 1 },
         "text": { "type": "string" },
         "tags": { "$ref": "#/definitions/tag_list" },
-        "evidence": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据锚文本（写入 progress.md 的 - [goal:G<n>] 行）; Why: evidence-anchor 门按 [goal:G<n>] 整行取证据,无此字段则 goal 证据无法从 JSON 派生。" }
+        "evidence": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据锚文本（写入 progress.md 的 - [goal:G<n>] 行）; Why: evidence-anchor 门按 [goal:G<n>] 整行取证据,无此字段则 goal 证据无法从 JSON 派生。" },
+        "name": { "type": "string", "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 任务名（短名）; Why: render「🎯 Goal 单元表」（Rule 66.5 六列锚）任务名列数据源。" },
+        "verify": { "type": "string", "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 完整验证方式（命令/判据文本）; Why: Rule 66.5 完整验证方式列非空门的数据源。" },
+        "s_units": { "type": "array", "items": { "type": "string" }, "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 对应 S-unit 引用列表; Why: Rule 66.5 对应 S-unit 列数据源。" },
+        "status": { "type": "string", "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 状态（pending/pass/fail 等）; Why: Rule 66.5 状态列数据源。" }
       }
     },
     "vc": {

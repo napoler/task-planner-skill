@@ -273,7 +273,7 @@ cat ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/install.log | tail -2
 node --experimental-strip-types ~/.claude/skills/task-planner/scripts/register-hooks-cj.ts
 
 # Step 4: 启动 Claude Code 新会话，测试 SessionStart hook
-# 应该看到：[task-plan] mkdir -p plans/task-{id}/ ...
+# 应该看到：[task-plan] mkdir -p plans/task-{id}/ ... 及 init 后数据链路提示（planctl add → render）
 
 # Step 5: 创建第一个 plan
 # 在 Claude Code 中：Skill("task-planner")

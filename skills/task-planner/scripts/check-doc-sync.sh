@@ -6,7 +6,7 @@
 #
 # Exit codes:
 #   0 = plan is fresh (mtime within threshold)
-#   1 = plan is STALE — caller MUST Edit task_plan.md to append progress entry
+#   1 = plan is STALE — caller MUST planctl add --section actions + render to append progress entry (derived view)
 #   2 = no task_plan.md found — skip (no active planning session)
 #
 # Falls back to config.json#plan_update_interval_minutes if max_age_minutes not given.

@@ -1,5 +1,6 @@
 # Task Plan: [运动与运镜控制任务]
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
+<!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: motion-camera -->
 <!-- 镜头运动层写词工序：镜次目的→运镜选词→运动状态定义→物理可行性→落词登记。边界：纯文本层零生成调用；完整镜头词入 prompt-struct/video-prompt-type；物理合规判定入 physics-compliance-type。触发词：运镜/镜头运动/跟拍/甩镜/运动控制 -->
 <!-- 五要素：①编号原子步骤+显式状态定义（逐镜运动卡：镜次目的×运动主体×运动态×运镜词）+合规检（POV 纪律+物理可行性）+静默迭代（可行性 FAIL 回改环）+验收判据（VC 表） -->

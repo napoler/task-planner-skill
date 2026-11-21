@@ -215,6 +215,8 @@ if (!planFound) {
   console.log('[task-plan] ⚠ 未找到当前会话的有效活跃计划，无法清除哨兵。');
   console.log('[task-plan] 解析链: env TASK_PLANNER_PLAN_DIR → .active_plan_side/<sid>.active_plan → .active_plan → mtime 最新（均未含 task_plan.md）');
   console.log('[task-plan] 请创建计划: mkdir -p plans/task-{id}/ && cd $_ && bash ~/.zcode/skills/task-planner/scripts/init-session.sh');
+  // [2026-11-22 task-planctl-exec-surface-20261122] 创建后数据链路提示（与 task-plan-init.cjs 同口径）
+  console.log('[task-plan] 创建后数据写入: planctl add/set 写 plan-state.json → 首次写入后必须 render（4 个 MD=派生视图，禁手工填写）');
   process.exit(1);
 }
 

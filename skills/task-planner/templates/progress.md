@@ -1,5 +1,5 @@
 # Progress Log
-<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；[Title]/<待沉淀> 等语义占位=模型填写面 -->
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，Actions/Test Results/Error Log 语义段经 planctl add --section <actions|test_results|errors> 写入后 render 派生——直接填写会在首次 render 被覆盖 -->
 <!--
   动作日志:做过什么/改了什么文件/测试结果/错误。5Q Reboot 第 5 问答案源。
   Rule 19.2: Phase 标记 complete 前,对应 Phase 段必须已回填(check-3file-gate.sh 硬校验)。
