@@ -79,6 +79,29 @@ fi
 plan_dir="$(cd "$(dirname "$plan_file")" && pwd)"
 attest_file="$plan_dir/.plan-attestation"
 
+# [2026-11-22 task-planctl-exec-surface-20261122 S7 返工] warn-only 空壳检测（SOFT_ONLY 信号）：
+#   plan-state.json 业务数组全空而 task_plan.md 已非骨架（>2048B）→ MD 被手工填写、JSON 权威源未被使用。
+#   仅 WARN 留痕不阻断、不新增脚本（用户裁决不加拦截门；判例 sess_1d7e33d6=空壳全程绿灯不可见）。
+#   位置=入口段（mode 分派与门链之前）：S7 实弹发现置于锁定段时，空壳计划会被 51.1 等更早的门
+#   拦截退出、根本走不到 WARN——入口段保证任何跑法（含门链失败/缓存命中）都能看到信号。
+if [ -f "$plan_dir/plan-state.json" ]; then
+  if python3 - "$plan_dir" <<'_PWARN' >/dev/null 2>&1
+import json, os, sys
+pd = sys.argv[1]
+try:
+    d = json.load(open(os.path.join(pd, 'plan-state.json')))
+except Exception:
+    sys.exit(1)
+biz_empty = all(not d.get(k) for k in ('requirements', 'goals', 'vcs', 'phases', 'findings'))
+tp = os.path.join(pd, 'task_plan.md')
+md_big = os.path.exists(tp) and os.path.getsize(tp) > 2048
+sys.exit(0 if (biz_empty and md_big) else 1)
+_PWARN
+  then
+    echo "[attest] WARN: plan-state.json 业务数据为空而 task_plan.md 已被手工填写（SOFT_ONLY 信号；正确流程=planctl 写入+render）" >&2
+  fi
+fi
+
 case "$mode" in
   attest)
     # [task-perf-opt Change #9] 门结果缓存：复用下方 :342 的 SHA-256 作为缓存键主分量（+门控配置，
@@ -615,26 +638,6 @@ case "$mode" in
       fi
     else
       echo "[attest] [audit-gate] WARN: 判定器缺失（check-plan-audit-gate.sh 不存在）——门未运行（fail-open; 正常安装应存在）" >&2
-    fi
-    # [2026-11-22 task-planctl-exec-surface-20261122] warn-only 空壳检测（SOFT_ONLY 信号）：
-    #   plan-state.json 业务数组全空而 task_plan.md 已非骨架（>2048B）→ MD 被手工填写、JSON 权威源未被使用。
-    #   仅 WARN 留痕不阻断、不新增脚本（用户裁决不加拦截门；判例 sess_1d7e33d6=空壳全程绿灯不可见）。
-    if [ -f "$plan_dir/plan-state.json" ]; then
-      if python3 - "$plan_dir" <<'_PWARN' >/dev/null 2>&1
-import json, os, sys
-pd = sys.argv[1]
-try:
-    d = json.load(open(os.path.join(pd, 'plan-state.json')))
-except Exception:
-    sys.exit(1)
-biz_empty = all(not d.get(k) for k in ('requirements', 'goals', 'vcs', 'phases', 'findings'))
-tp = os.path.join(pd, 'task_plan.md')
-md_big = os.path.exists(tp) and os.path.getsize(tp) > 2048
-sys.exit(0 if (biz_empty and md_big) else 1)
-_PWARN
-      then
-        echo "[attest] WARN: plan-state.json 业务数据为空而 task_plan.md 已被手工填写（SOFT_ONLY 信号；正确流程=planctl 写入+render）" >&2
-      fi
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
     # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/51.1 需求区块/FMEA/窗口
