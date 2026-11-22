@@ -171,6 +171,11 @@ model: opus
      - **删除（最高门槛）**：必须取得用户逐项授权；未授权只可停用/标记，禁物理删除
      - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
      - **通用修改合规门（Rule 74.7，P0）**：执行期任一对已确立规范/阈值/区间的改动（含产物内口径就地放宽），落地前必须先补 `task_plan.md`「📋 变更标注表」合规四元组（变更对象+当前值原文→拟变更值+依据+影响评估+处置），无用户逐字授权+证据的放宽禁落地；若命中 `🔒 规范基线` 同步走 51.15 STOP→授权→Decisions→更新→重 attest。禁「先改后补」；详见 task-discipline/references/critical-rules-discipline.md Rule 74.7
+  2.5e [M] **Agent 失败会话级留痕（task-agent-failure-ledger-20261123，用户裁决）**：主进程每次 `Agent()` 调用**返回失败**（provider 限流/超时/UNKNOWN_ERROR/输出不可信被驳回等任何非成功返回）时，**紧邻一次** `bash <skill>/scripts/agent-failure-ledger.sh append <plan-dir> <sid> <agentType> "<失败原因>"`，把 `{ts, agentType, reason}` 追加到本任务 `.agent-failures/<sid>.jsonl`。
+     - **为何会话级而非 memory**：失败只记客观事实（时间/类型/原因），**不写"该 agent 有缺陷"的判断**——agent 修好后 ledger 随任务结束即弃，不会像 memory 那样陈旧误报（用户 2026-11-23 裁决）。
+     - **失败当下不注入、不阻断**：零机器门、零 hook、fail-open；失败当下照常按既有降级链处理（重试/换档/爬升），本条只负责留痕，不改变派发行为。
+     - **交付时消费**：终验交付总结（Rule 48）前执行 `bash <skill>/scripts/agent-failure-ledger.sh count <plan-dir> <sid>`；非 0 则在 delivery-summary「风险点」段增一节「本次 Agent 执行异常」列出 N 次失败与台账绝对路径，提示用户审查修正（模板见 `templates/delivery-summary.md`）；为 0 则写"无"。归档时 `clear` 清本会话台账。
+     - **子代理亦须遵守**：派发 prompt 的八字段契约追加一条——返回若为失败态，子代理自身亦以 `append` 留痕（其 sid=自身会话 id），确保嵌套派发失败也被记录。
   3. [M] **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
      - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `planctl add --section research`（结论摘要+证据路径）+ `render`**；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁
      - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘

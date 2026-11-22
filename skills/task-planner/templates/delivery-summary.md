@@ -73,6 +73,10 @@
   例「基线 43 脚本 676/0 — 失效条件: 任一新增/删除 selftest 脚本或计数漂移；重验: cd <仓库绝对路径> && bash <script>」]
 - **回滚方式**: [可直接执行的完整命令 + 仓库/分支/具体 commit（`cd <仓库绝对路径> && git revert <具体hash>`）/
   备份文件绝对路径 / 无]
+- **Agent 执行异常（task-agent-failure-ledger）**: [交付前必查 `bash <skill>/scripts/agent-failure-ledger.sh count <plan-dir> <sid>`；
+  - 为 0 → 写「本次无 Agent 调用失败」；
+  - 非 0 → 写「本次共 N 次 Agent 调用失败，台账：`<plan-dir>/.agent-failures/<sid>.jsonl`（含时间/agentType/原因），**建议审查这些失败并修正相应 agent/配置**」，并把"审查 Agent 失败台账"列入第 6 节下一步建议；
+  - 失败当下不打断流程、不写 memory（会话级随任务弃，避免陈旧误报），仅在交付时集中提示用户]
 
 ## 6. 下一步建议（用户可执行行动项，按推荐排序；默认项排第 1 位并标注「推荐」）
 > 每条必须含定位三要素（Rule 48.3）：**对象**（要打开/审查的东西：绝对路径 或 URL）｜**看点**（具体位置/锚点）｜
