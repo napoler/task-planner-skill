@@ -343,6 +343,7 @@ Phase 1
 - [ ] Write code to files before executing
 - [ ] Test incrementally
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
+- [ ] **周期性会话记忆回顾（Rule 93/80.8⑤）**：每完成 3 个 Todo/S-unit（"3/5 步"节奏，config `periodic_review_interval_calls`），主进程重读会话记忆四载体——`findings.md`（结论/纠偏）+ `knowledge-brief.md` §2-§4（知识锚/易错点）+ `user-session-log.md` 尾部 ≤30 行（用户原话锚）+ `progress.md` 本 Phase 尾部（动作/测试）→ ①梳理（当前执行与记忆是否一致）②纠偏（偏移记 `[corrected]`，Rule 65.4）③反思（遗漏/未利用知识回填 findings/kb）④留痕 progress `[memory-review]` 行；与 3f/3g 同拍执行，mini/L0 档豁免
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）
@@ -358,6 +359,7 @@ Phase 1
   - 伴飞技能列非「无」→ 校验对应 SKILL.md 路径存在(Rule 59.2)
   - Rule 68.1 前置依赖列必填,无依赖填 -（多依赖顿号分隔）
   - Rule 96.3 并行硬标注:前置依赖为 - 且独立性四问全 no 的 S-unit ≥2 个 → 必须声明并行组（frontmatter parallel_groups: 组名 + 行内注解 [parallel-group:<组名>];未声明且未按 Rule 68.2 登记全串行论证=计划缺陷,回炉补分析再 attest）
+  - Rule 96.7 全局预算(checkpoint):单会话 Agent() 累计 >40 次或 >60min 触发强制 checkpoint 上报,可数单元 >20 须拆多个 ≤10 单元分批计划——防长链返工爆炸（判例 sess_ba603cf5 54 子代理/9h）;公共上下文一次蒸馏传引用(Rule 62.4b),禁每子代理全量回读
   - Rule 104.3 计划期标注：类别以目标列内（An）前缀标注（A1-A7 / 47.2 具名 / LOCAL 纯执行）——S-unit 表为 10 列固定列序（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态，check-plan-dispatch.sh $4/$5/$7/$8 定位），禁增列、禁单元格管道转义
 -->
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
