@@ -39,10 +39,16 @@ model: opus
 - [ ] [M] **初始化（哨兵机制）— 机械子动作**：跑脚本建目录/设 env/校验在位/清哨兵
   > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
   - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）
+  - **模板检索前置（task-template-catalog-20261122）**：init 前先跑 `bash scripts/template-catalog.sh list --json --scope all` 拿模板清单（模板名/简介/适配场景/功能），据此匹配 `template_type` 再作为 init 第 2 参；禁靠读散文盲选（用法详见下方「模板检索与管理」）
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
   - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）
   - **模板优先级**（init-session.sh 自动处理）：项目级 `.claude/plan-templates/` 或 `.zcode/plan-templates/` 覆盖 → 兜底 `<platform-home>/skills/task-planner/templates/`（选型权威源=卫星 `plan-template-kit`，Rule 16/34）
+  - **模板检索与管理（`template-catalog.sh`，task-template-catalog-20261122）**：任务初期第一步调本脚本获取模板清单，让匹配流程化固定进 SOP；**脚本只提供稳定清单+排序，不替模型决策**（选型权威源仍是卫星 `plan-template-kit`）：
+    - **列清单**：`bash scripts/template-catalog.sh list --json --scope all` —— JSON 每项含 `file/type/name/summary/scenarios/features/path/scope/default/valid`；`--scope` ∈ all/builtin/project/user/user-global/user-install（user=全局+安装位），`--include-installs` 含四个平台安装位模板；去重优先级 project > user-global > user-install > builtin。
+    - **按任务匹配**：`bash scripts/template-catalog.sh list --query "视频 分镜 质检"`（关键词过滤）/ `bash scripts/template-catalog.sh list --recommend "修复生产环境数据库迁移 bug"`（按场景/功能命中数排序）。人不读散文试错，先看清单再定 `template_type` 传 init 第 2 参。
+    - **模板克隆/派生（流程化沉淀）**：`bash scripts/template-catalog.sh clone --from video --to video-xxx [--scope project|user-global] [--dry-run] [--force]`（基于现有模板克隆，默认落项目级 `.zcode/plan-templates/`）；`bash scripts/template-catalog.sh derive --from video --to video-yyy --prune "成片质检,台账登记" [--dry-run]`（克隆并按 `## ` 段名裁剪派生）；`bash scripts/template-catalog.sh add <name> --from <type>`（克隆入口别名）。写操作默认同名拒锁（需 `--force` 才覆盖并自动备份 `.bak.<ts>`），`--dry-run` 预演零写入。
+    - **元数据契约**：模板头 `<!-- template_meta: {"name":…,"summary":…,"scenarios":[…],"features":[…]} -->`；缺失时脚本回退注释散文启发式抽取（兼容存量与自定义模板）。`bash scripts/template-catalog.sh --help` 查全参数；exit 0=成功/1=业务失败/2=用法错误。
   - **验证**：7 文件在位（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief/user-session-log，Rule 80）
   - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
   - **进度产出基线登记（Rule 111）**：计划期登记 `📦 进度产出基线`，禁倒退清单随计划 attest 锁定（交付/合并/返工均不得就地删降替）

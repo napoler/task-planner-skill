@@ -1,4 +1,5 @@
 <!-- template_type: memory-hygiene -->
+<!-- template_meta: {"type": "memory-hygiene", "name": "记忆整理", "summary": "记忆体系盘点/整理/治理（MEMORY.md 索引加 topic 目录），每条 topic 四维校验加处置结论。", "scenarios": ["记忆体系盘点", "记忆整理/卫生", "过时记忆治理", "强时效断言漂移纠正", "基线数字被替代修正"], "features": ["Verification Contract", "执行范围限制", "记忆整理协议 M1-M5", "四维校验与处置结论", "Phases"]} -->
 <!-- 适用场景: 记忆体系盘点/整理/治理（MEMORY.md 索引 + topic .md 目录，如 ~/.zcode/cli/memories/projects/<project>/memory/） -->
 <!-- 触发关键词: 记忆整理/记忆卫生/记忆过时/记忆偏见/强时效断言漂移/基线数字被替代 -->
 <!-- 推荐 subagent: executor(fresh) 全量盘点 + verifier 抽验;主进程仅簿记(验证独立性铁律) -->

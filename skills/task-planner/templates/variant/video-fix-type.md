@@ -3,6 +3,7 @@
 <!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- S75 D1 豁免：videop1 专属伴飞路径，属部署者项目实态，非可移植硬编码；如需移植请替换为 <repo-root>/.zcode/skills/videop1-video-fix/ 占位 -->
 <!-- template_type: video-fix -->
+<!-- template_meta: {"type": "video-fix", "name": "视频修正重生成", "summary": "video 家族修正分支：四级阶梯最小范围修正至八类 QC 全过，收口台账/NAS/归档三登记。", "scenarios": ["视频修正", "局部重生成", "缺陷段重生成", "QC FAIL 处置", "成片修复/换代集重生成"], "features": ["Verification Contract", "执行范围限制", "Phases", "换代集分支门禁", "子代理隔离铁律"]} -->
 <!-- 家族=video 专模板 C 修正分支展开（EP6 四根因→机械门+门禁升级）；A/B 型任务回 video-type.md；用法：bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/init-session.sh <任务名> video-fix -->
 <!-- 触发词：视频修正/局部重生成/缺陷段重生成/QC FAIL 处置/成片修复/user-fix/full-regen 全量重试/换代集重生成 -->
 <!-- 配套：处置 SOP=/mnt/data/dev/videop1/.zcode/skills/videop1-video-fix/SKILL.md；八类 QC=/mnt/data/dev/videop1/tools/specs/qc-items-video-8cat.json；常识子句=/mnt/data/dev/videop1/prompts/common-sense-clauses.md；机械门=tools/gen.py video_ref_gate（refs 1-5+宽高比 0.4-2.5）+ spec kind=fix|regen 必填 disposition_ref -->

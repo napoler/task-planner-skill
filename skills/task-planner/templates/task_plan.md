@@ -5,6 +5,7 @@
   选定 variant 后 template_type 填所选类型名（白名单={{TASK_PLANNER_ROOT}}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）
   plan_tier ∈ {standard, mini}（Rule 38.1，mini 四条件机器判定）；execution_lane ∈ {L0, L1, L2}（Rule 38.7，缺省 L1；L0 禁滥用见 38.7 末段）
   check-template-type.sh 三形态之一：行首 `^template_type:`（本块）/ 表格行 / HTML 注释；本块用行首形态 -->
+<!-- template_meta: {"type": "general", "name": "通用计划", "summary": "任务计划通用骨架与回退档，含需求原文抄录、根源覆盖、不变量、验证契约、双轮质检与 Phases 等完整区块。", "scenarios": ["通用任务规划", "无匹配 variant 时的通用回退", "复杂多阶段任务规划", "跨模块/跨文件任务编排"], "features": ["用户需求原文抄录", "根源覆盖表", "不变量与规范基线", "Verification Contract", "Phases 与 FMEA 规划"]} -->
 template_type: general
 plan_tier: standard
 execution_lane: L1

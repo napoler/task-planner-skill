@@ -1,4 +1,5 @@
 <!-- template_type: migration -->
+<!-- template_meta: {"type": "migration", "name": "迁移升级", "summary": "Python→TS/Bun 迁移、框架升级、CLI 重写、Shebang 切换、API 协议迁移，达成行为等价。", "scenarios": ["Python→TS/Bun 迁移", "框架升级", "CLI 重写", "单语言→多语言切换", "API 协议迁移"], "features": ["Verification Contract", "执行范围限制", "Phases", "Goal 单元表", "行为等价验证"]} -->
 <!-- 适用场景: Python→TS/Bun 迁移、框架升级、CLI 重写、单语言→多语言、Shebang 切换、API 协议迁移 -->
 <!-- 触发关键词: 迁移/升级/重写/切换/转换/兼容 -->
 <!-- 推荐 subagent: executor (sonnet-1,跨步骤协调) + code-assistant -->

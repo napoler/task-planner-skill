@@ -2,6 +2,7 @@
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 <!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: writing -->
+<!-- template_meta: {"type": "writing", "name": "文章创作", "summary": "写作型模板，适用于单篇/SEO 文章管线 Phase 0→6；长篇连载改用 longform-continuity。", "scenarios": ["单篇文章创作", "SEO 文章管线", "长尾关键词文章", "文章创作"], "features": ["Code Review 配置", "Verification Contract", "工具选择与编排", "文章管线 Phase 0→6", "执行范围限制"]} -->
 <!-- 写作型模板 — 适用于单篇/SEO 文章管线 Phase 0→6；若为长篇/连载/长论文长报告/跨章节一致性长文（含续写改写），优先改用 longform-continuity-type.md，并须加载 skills/longform-continuity/SKILL.md（Rule 107/长文连续性治理） -->
 
 <!-- plan_tier: standard -->
