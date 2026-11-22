@@ -99,17 +99,25 @@ TaskCreate(subject="[todo-skill] 步骤N: <title>", description="<description>")
 对每个 pending 的 Todo 依次执行状态翻转与持久化：
 
 1. `TaskUpdate(taskId=<id>, status="in_progress")`
-2. `TaskUpdate(taskId=<id>, status="completed")`
-3. 同步到持久化管理器：`tools/cli_todo-manager.ts update --index N --status completed`
+2. 执行步骤并收集完成证据（产物路径/命令输出/验证结果，至少一项可复核）
+3. 仅在具备完成证据时：`TaskUpdate(taskId=<id>, status="completed")`
+4. 同步到持久化管理器：`tools/cli_todo-manager.ts update --index N --status completed`
 
 如果某步骤执行失败：
 - 保持 Todo 状态为 `in_progress`
-- 记录错误到 session-kv：`session-kv set todo-error-<N> "<错误信息>"`
-- 尝试重试一次，仍失败则跳过并标记 completed
+- 记录错误到 session-kv：`session-kv set todo-error-<N> '{"step":N,"reason":"<失败原因>","action":"<失败动作/命令>","time":"<ISO8601>"}'`
+- 尝试重试一次；重试仍失败时标记 `blocked` 并留痕（session-kv 保留失败原因/步骤/时间，Todo 描述或备注注明阻塞点），不得标记 `completed`
+- `completed` 必须有完成证据；无证据不得声称完成，也不得标记 `completed`
 
 ### Step 5b: 逐个执行（执行步骤操作） [A]
 
 按每个步骤的 `description` 执行对应操作（执行策略需按步骤性质判断）。
+
+**每步最小完成判据（缺一不可）**：
+- **执行证据**：实际执行了该步骤描述的动作（命令/工具调用/编辑记录）。
+- **产物证据**：产生可观察的产出（文件变更、命令输出、生成对象等）。
+- **验证证据**：对产出做了最小验证（Read 复核、命令 exit code、预期字段/内容存在）。
+- 三项证据齐备才可进入 Step 5a 的 `completed` 状态翻转；任一缺失保持 `in_progress` 或标记 `blocked`，不得假完成。
 
 **可选思路**：
 1. 思路 A：直接顺序执行——按 description 逐条完成操作，不调整顺序（适用场景：步骤独立、顺序确定、无需协调时）

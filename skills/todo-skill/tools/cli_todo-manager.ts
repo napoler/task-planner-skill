@@ -124,7 +124,7 @@ const STORE_FILE =
 const DEFAULT_STORE = { tasks: [] as Task[], created_at: null as string | null, updated_at: null as string | null };
 
 const PRIORITIES = ["High", "Medium", "Low"] as const;
-const STATUSES = ["pending", "in_progress", "completed"] as const;
+const STATUSES = ["pending", "in_progress", "completed", "blocked"] as const;
 
 // ================================================================================
 // 【类型定义】
@@ -453,7 +453,7 @@ ${TOOL_DESCRIPTION}
 
 子命令:
   create    创建任务    --title 必填, --desc, --priority High|Medium|Low
-  list      列出任务    [--status pending|in_progress|completed]
+  list      列出任务    [--status pending|in_progress|completed|blocked]
   update    更新任务    --index N 必填, [--status ...] [--desc "新描述"]
   clear     清空所有任务
   plan      创建计划骨架（清空旧任务）  --goal 必填, [--max_steps 10]

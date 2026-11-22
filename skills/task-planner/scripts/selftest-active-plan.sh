@@ -155,10 +155,11 @@ printf '%s\n' \
 >> "$R11/plans/bb/task_plan.md"
 bash "$SET" aa "$R11" > /dev/null 2>&1
 bash "$SET" set bb --sid s11 "$R11" > /dev/null 2>&1
-touch "$R11/plans/aa/task_plan.md"
-( cd "$R11" && env CLAUDE_CODE_SESSION_ID=s11 bash "$ATTEST" --skip-dispatch-check --skip-vc-check > /dev/null 2>&1 )
-RC=$?
-[ "$RC" = 0 ] && [ -f "$R11/plans/bb/.plan-attestation" ] && \
+	touch "$R11/plans/aa/task_plan.md"
+	# [2026-11-23 task-fix-all-20261123] hermetic: scrub ZCODE_SESSION_ID/CLAUDE_SESSION_ID 防真实会话 env 泄漏导致 resolver 落错计划（同 T12 系列 env -u 口径）
+	( cd "$R11" && env -u ZCODE_SESSION_ID -u CLAUDE_SESSION_ID CLAUDE_CODE_SESSION_ID=s11 bash "$ATTEST" --skip-dispatch-check --skip-vc-check > /dev/null 2>&1 )
+	RC=$?
+	[ "$RC" = 0 ] && [ -f "$R11/plans/bb/.plan-attestation" ] && \
   grep -q '^plan_file=.*bb/task_plan.md$' "$R11/plans/bb/.plan-attestation" && \
   [ ! -f "$R11/plans/aa/.plan-attestation" ] && pass 11 || \
   fail 11 "rc=$RC att_bb=$([ -f "$R11/plans/bb/.plan-attestation" ] && echo yes || echo no) att_aa=$([ -f "$R11/plans/aa/.plan-attestation" ] && echo no)"

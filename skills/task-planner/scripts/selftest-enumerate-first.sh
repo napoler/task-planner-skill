@@ -6,7 +6,7 @@
 #      EN-03 关键判据词计数（SEC105 grep -c）：`全量枚举`≥4、`零命中`≥1、`回退`≥1、`ls`≥2
 #      EN-04 105.5 反例锚段含「装备车」与「命名族」（锚定 SEC105）
 #      EN-05 交叉引 `Rule 35` 与 `100.6` 在位于规则文档（锚定 SEC105）
-#      EN-06 SKILL.md 含 `1-108` ≥3 处 且 discipline 路由行含 `,107`（全文）
+#      EN-06 SKILL.md 含 `1-110` ≥3 处 且 discipline 路由行含 `,107`（全文）
 #      EN-07 负断言：SKILL.md 内 `1-105` 字面残留=0（全文）
 # WHY: 判例锚 task-enumerate-first-20261106 #1（用户裁决「因小失大」）——可枚举小集合上关键词盲搜致漏检/错误否定；
 #      防回归为 grep/find -name 替代 ls 全量枚举、零命中直接下否定结论。
@@ -89,12 +89,13 @@ else
     echo "  [diag] missing SEC105 OR anchor='Rule 35'/'100.6'"
 fi
 
-# EN-06: SKILL.md 含 `1-108` ≥3 处 且 discipline 路由行含 `,107`
-_en06_n="$(grep -c '1-108' "$SKILL_MD" 2>/dev/null)" || _en06_n=0
+# EN-06: SKILL.md 含 `1-110` ≥3 处 且 discipline 路由行含 `,107`
+# [2026-11-23 task-fix-all-20261123] 纪元 1-108→1-110：Rule 110 已文档化（SKILL L9/L312/L424），保留 ,107 路由存在检查
+_en06_n="$(grep -c '1-110' "$SKILL_MD" 2>/dev/null)" || _en06_n=0
 if [ "$_en06_n" -ge 3 ] && grep -q ',107' "$SKILL_MD" 2>/dev/null; then
-    PASS=$((PASS+1)); echo "[PASS] EN-06 SKILL.md 含 '1-108' ≥3 处($_en06_n) 且含 ',107' 路由"
+    PASS=$((PASS+1)); echo "[PASS] EN-06 SKILL.md 含 '1-110' ≥3 处($_en06_n) 且含 ',107' 路由"
 else
-    FAIL=$((FAIL+1)); echo "[FAIL] EN-06 SKILL.md 含 '1-108' ≥3 处($_en06_n) 且含 ',107' 路由"
+    FAIL=$((FAIL+1)); echo "[FAIL] EN-06 SKILL.md 含 '1-110' ≥3 处($_en06_n) 且含 ',107' 路由"
     echo "  [diag] file=$SKILL_MD"
     grep -n ',107' "$SKILL_MD" 2>/dev/null | sed 's/^/  [diag] ,107 present: /' || echo "  [diag] ,107 not found"
 fi
