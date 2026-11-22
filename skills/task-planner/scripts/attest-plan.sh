@@ -309,10 +309,17 @@ case "$mode" in
             echo "[attest] [vc-gate] WARNING: verification.md 缺失(warn 档不阻断; TASK_PLANNER_VC_ENFORCE=enforce 可升级)" >&2
           fi
         else
-          # VC 条目数(行首允许缩进的 - [ ] VC-N / - [x] VC-N)
-          vc_total="$(grep -cE '^[[:space:]]*- \[[ xX]\] VC-[0-9]+' "$vfile" || true)"
-          # 非占位 Verify command 数(排除模板占位串: must be runnable/runnable command/path+key-line 等)
-          vc_cmd_ok="$(grep -E '^[[:space:]]*\*\*Verify command\*\*:[[:space:]]*[^[:space:]]' "$vfile" | grep -cvE 'must be runnable|runnable command|path\+key-line|diff/evidence|bash command OR' || true)"
+          # [2026-11-22 task-template-json-compat-20261122] What: VC 计数兼容 planctl render 表格格式。
+          # Why: render verification.md 输出 `| VC-1 | pass | criterion | command | ... |`，
+          #   旧判据只认 `- [ ] VC-N` + `**Verify command**:` → vc_total=0 静默放行（P0-c 假绿）。
+          #   两格式相加：存量 checklist 计划无表格(表计 0)、render 计划无 checklist(list 计 0)，互不干扰。
+          #   command 列=表格第 4 数据列（awk -F'|' 的 $5），非空且非占位即计。
+          vc_total_old="$(grep -cE '^[[:space:]]*- \[[ xX]\] VC-[0-9]+' "$vfile" || true)"
+          vc_cmd_ok_old="$(grep -E '^[[:space:]]*\*\*Verify command\*\*:[[:space:]]*[^[:space:]]' "$vfile" | grep -cvE 'must be runnable|runnable command|path\+key-line|diff/evidence|bash command OR' || true)"
+          vc_total_tbl="$(grep -cE '^\|[[:space:]]*VC-[0-9]+' "$vfile" || true)"
+          vc_cmd_ok_tbl="$(awk -F'|' '/^\|[[:space:]]*VC-[0-9]+/ { cmd=$5; gsub(/^[[:space:]]+|[[:space:]]+$/, "", cmd); if (cmd != "" && cmd !~ /^(must be runnable|runnable command|path\+key-line|diff\/evidence|bash command OR)/) n++ } END { print n+0 }' "$vfile")"
+          vc_total=$(( ${vc_total_old:-0} + ${vc_total_tbl:-0} ))
+          vc_cmd_ok=$(( ${vc_cmd_ok_old:-0} + ${vc_cmd_ok_tbl:-0} ))
           if [ "${vc_total:-0}" -eq 0 ]; then
             echo "[attest] [vc-gate] ⚠ verification.md 无 VC 条目(Rule 84.3: standard≥5/mini≥2);按档位处置" >&2
           elif [ "${vc_cmd_ok:-0}" -lt "${vc_total}" ]; then

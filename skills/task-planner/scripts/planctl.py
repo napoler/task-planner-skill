@@ -79,7 +79,7 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
     "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
     "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
-    "template_type", "next_step",
+    "template_type", "template_body", "next_step",
 )
 TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 
@@ -589,6 +589,8 @@ def validate_state(doc: Any) -> list[str]:
         "tags": lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v),
         # [2026-11-22 task-jsonderive-deploy-20261122] 新标量：原行为无此字段，按自由文本校验。
         "template_type": STR_FIELD,
+        # [2026-11-22 task-template-json-compat-20261122] 领域模板正文=自由文本，存量 JSON 无此字段不校验。
+        "template_body": STR_FIELD,
         "next_step": STR_FIELD,
     }
     for key, pred in simple.items():
@@ -748,6 +750,15 @@ def cmd_init(args: argparse.Namespace) -> int:
         doc["execution_lane"] = args.lane
     doc["created_at"] = now_iso()
     doc["updated_at"] = doc["created_at"]
+    # [2026-11-22 task-template-json-compat-20261122] 领域段 JSON 承载：init 时把所选模板正文
+    #   原文写入 template_body（写操作仍走 planctl 单一入口）；路径不存在/读失败 fail-loud，
+    #   未传该参数则字段缺省（存量与 mini 档兼容）。
+    tb_from = getattr(args, "template_body_from", None)
+    if tb_from:
+        _tb = Path(tb_from)
+        if not _tb.is_file():
+            raise PlanctlError(f"--template-body-from 指向的文件不存在: {tb_from}")
+        doc["template_body"] = _tb.read_text(encoding="utf-8")
     commit_state(plan, doc, backup=False, touch=False)
     emit({"state": str(dest), "task_id": doc["task_id"], "plan_tier": doc["plan_tier"],
           "execution_lane": doc["execution_lane"]})
@@ -1214,10 +1225,17 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                                 _cell(s.get("files", "")), _cell(s.get("verify", "")),
                                 _cell(s.get("duration", "")), _cell(s.get("granularity", "")),
                                 _cell(s.get("parallel", "")) or "无", "-", "pending"])
-            lines += ["", f"### Phase {_phase_no(p.get('id'))}: {_cell(p.get('name', ''))}".rstrip(),
+            _pno = _phase_no(p.get("id"))
+            lines += ["", f"### Phase {_pno}: {_cell(p.get('name', ''))}".rstrip(),
                       f"- **Status:** {_cell(p.get('status', 'pending'))}",
                       f"- **Started:** {_cell(p.get('started', ''))}",
                       f"- **Executor:** {executors}"]
+            # [2026-11-22 task-template-json-compat-20261122] R-1：V-N 映射行（check-complete
+            #   VC-GATE 按 `^- \[[ xX]\] V-<P号>.<N>\s*[:：]` 计数且校验 VC-x ∈ VC 定义集）；
+            #   数据源=phases[].v_checks（JSON 已有）。无 v_checks 时不输出（门按缺映射判缺口，
+            #   与旧行为一致，不开逃生口）。P 号必须与 Phase 标题一致，否则门 Skipped。
+            for _vni, _vcid in enumerate(p.get("v_checks", []) or [], 1):
+                lines.append(f"- [x] V-{_pno}.{_vni}: {_cell(_vcid)}（Phase {_pno} 验证契约映射）")
             if su_rows:
                 lines += [_md_table(SUNIT_HEADERS, su_rows)]
 
@@ -1370,6 +1388,17 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
     if chain:
         lines += ["", "## 🔗 Chain 区块交接配置",
                   _kv_table(chain, ("mode", "blocks", "handoffs"), ("chain_mode", "blocks", "handoffs"))]
+
+    # [2026-11-22 task-template-json-compat-20261122] 领域段 JSON 承载：init 把所选 variant
+    #   模板正文原文写入 template_body，render 以附录吐出，弥补全量覆盖抹掉领域段（video 任务分型/
+    #   子代理隔离铁律等）。标题降级 `^(#+ )`→`> \1`：附录内标题不以 `^## ` 开头，避免与权威
+    #   51.1/66.5 锚竞争导致误判；内容原样保留，仅加引用前缀。mini 档豁免（极简 stub 无领域段）。
+    if doc.get("template_body") and doc.get("plan_tier") != "mini":
+        _tb_lines = []
+        for _ln in str(doc["template_body"]).splitlines():
+            _tb_lines.append(re.sub(r"^(#+ )", r"> \1", _ln) if re.match(r"^#+ ", _ln) else _ln)
+        lines += ["", "## 📎 领域模板原文附录（仅供参考；权威判据以 JSON 结构化段+机器门为准）",
+                  *(_tb_lines or ["（template_body 为空）"])]
 
     return "\n".join(lines) + "\n"
 
@@ -1850,6 +1879,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--tier", choices=("standard", "mini"))
     p.add_argument("--lane", choices=("L0", "L0-T", "L0-E", "L1", "L2"))
     p.add_argument("--force", action="store_true", help="允许覆盖已有状态（谨慎）")
+    p.add_argument("--template-body-from", metavar="FILE",
+                   help="可选：读取该文件全文写入 template_body（init 所选 variant 模板正文，供 render 领域附录消费）")
 
     p = add_cmd("get", "输出整份/某段/某条目 JSON", cmd_get)
     # [2026-11-22 task-jsonderive-deploy-20261122] choices 扩到顶层全集，使新对象/标量字段可读。
