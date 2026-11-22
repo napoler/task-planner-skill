@@ -2,7 +2,9 @@
 # [2026-09-13 task-v066-skill-collab-routing] selftest-skill-collab.sh — 协同路由面守护套件
 # 守护 ../plan-collab-router/references/skill-collaboration.md + SKILL.md 指针 + critical-rules.md 22.3.3/22.7
 # + subagent-fallback.sh tier_order + config.json#skill_collab_enforce 一致性。
-# 10 组用例 T1-T10，共 19 断言, 全 PASS exit 0, 任一 FAIL exit 1。纯 grep/python3 机械断言, 无 fixture。
+# 13 组用例 T1-T13，共 27 断言, 全 PASS exit 0, 任一 FAIL exit 1。纯 grep/python3 机械断言, 无 fixture。
+# [2026-11-23 task-todo-default-engine-20261123 S9] 计数校正说明: 旧注释「10 组 T1-T10/19 断言」为 T11/T12
+#   (task-v080 网络调研路由) 加入前遗留的陈旧值; 实测基线 25 断言全 PASS, 加 T13 两项后为 27, 故按实态校正。
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$SCRIPT_DIR/.."                       # <repo-root>/skills/task-planner
@@ -108,6 +110,14 @@ t "T11d COLLAB 网页访问行 ∧ SKILL 协同路由行" bash -c "grep -q '网�
 # T12: [2026-09-17 task-v080] collaboration.md §二矩阵 research-assistant/browser-use 行
 t "T12a collab 矩阵 research-assistant 行" grep -q 'research-assistant（嵌入，网络调研触发' "$COLLAB"
 t "T12b collab 矩阵 browser-use 行" grep -q 'browser-use（嵌入，网页访问触发' "$COLLAB"
+
+# T13: [2026-11-23 task-todo-default-engine-20261123 S9] B6 引擎检测锚守护（防基线组 B6 契约被静默删）
+# Why: B6「建 todo 时检测引擎适配性」由双载体承载——契约面 $ROOT/references/todo-sync.md 与
+#   语义面 Rule 106.5($ROOT/../task-discipline/references/critical-rules-discipline.md)；任一被删都会使
+#   该纪律失去可机械验证的落点，故加 grep 断言锁定 B6 字面在位（沿用脚本 t() 框架，不新增守护脚本）。
+#   路径解析：ROOT=skills/task-planner（见脚本头 ROOT 变量定义），task-discipline 与其同级，故 $ROOT/../task-discipline。
+t "T13a todo-sync 含 B6 引擎检测" grep -q 'B6' "$ROOT/references/todo-sync.md"
+t "T13b Rule106.5 含 B6" grep -q 'B6' "$ROOT/../task-discipline/references/critical-rules-discipline.md"
 
 # ── 汇总 ──
 TOTAL=$((PASS + FAIL))

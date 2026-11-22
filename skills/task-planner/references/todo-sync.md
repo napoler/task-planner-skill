@@ -32,12 +32,12 @@
 | S5 | 用户新指令影响计划后（扩展 B / 矛盾 C） | 先 `planctl update/set`（Phase/VC/执行范围，注明来源指令与时间）+ `render`→ 紧邻完成 Todo 重映射（增/改/删对应条目）→ 复述变更后再执行；**禁止口头接受新指令而不落盘**（判定规则见 SKILL.md § 用户新指令处理） |
 
 **S1 两组结构（任务组+基线组，Rule 106.5——task-docmod-recheck-20261112 落地）**
-1. S1 建立两组原生 todo：**任务组**（Phase 映射，既有规则）+**基线组**（固定五项 B1-B5，措辞以 Rule 106.5 为准）；两组必须同为原生条目（TodoWrite/Task 系统条目，禁止只存计划文档）。
-2. 基线组生命周期：B1 持续项（开启即 in_progress，终验翻 complete，判据=progress 全部 [recheck] 行）；B2 每 Phase 翻转前勾检；B3/B4 终验期；B5 收尾。；基线组独立计数：B1 持续 in_progress 不受「同时只允许一条 in_progress」约束（该唯一性约束限任务组/Phase 映射条目）
-3. 门禁挂钩（对齐 Rule 106.5）：B1 未完成留痕=该修改步禁声称完成；B2 未勾=Phase 禁 complete；B3/B4 未勾=禁出 outcome。
-4. S3 `[plan-sync]` 回写协议：两组均回写；发现基线组条目丢失（hook 重映射/会话恢复后）=当次重建，禁止静默缺组运行。
-5. mini 档豁免口径：B1 不豁免（修改后验证无小任务例外）；B2-B5 随 mini 档既有豁免面。
-6. 基线组固定清单唯一事实源=本文件；Rule 106.5（task-discipline）为规则锚，两处措辞漂移以本文件为契约面、规则文为语义面。
+1. S1 建立两组原生 todo：**任务组**（Phase 映射，既有规则）+**基线组**（固定八项 B1-B8（B1-B5 逐字保留 + B6 引擎检测/B7 对齐/B8 worktree 核验），措辞以 Rule 106.5 为准）；两组必须同为原生条目（TodoWrite/Task 系统条目，禁止只存计划文档）。
+2. 基线组生命周期：B1 持续项（开启即 in_progress，终验翻 complete，判据=progress 全部 [recheck] 行）；B2 每 Phase 翻转前勾检；B3/B4 终验期；B5 收尾。；基线组独立计数：B1 持续 in_progress 不受「同时只允许一条 in_progress」约束（该唯一性约束限任务组/Phase 映射条目）；B6 建 todo 时检测引擎适配性（OpenSpec 规格化/Superpowers 方法论），结论落盘 Decisions；B7 对齐核查（吸收旧 task-align 默认项语义）；B8 实现类任务 worktree 隔离核验
+3. 门禁挂钩（对齐 Rule 106.5）：B1 未完成留痕=该修改步禁声称完成；B2 未勾=Phase 禁 complete；B3/B4 未勾=禁出 outcome。B6 未留痕=不得声称按专业引擎推进；B7 未勾=对齐核查未完成；B8 未勾=实现类不得直接改主树
+4. S3 `[plan-sync]` 回写协议：两组均回写；发现基线组条目丢失（含 B6/B7/B8，hook 重映射/会话恢复后）=当次重建，禁止静默缺组运行。
+5. mini 档豁免口径：B1 不豁免（修改后验证无小任务例外）；B2-B8 随 mini 档既有豁免面（B1 仍不豁免）。
+6. 基线组固定清单唯一事实源=本文件；Rule 106.5（task-discipline）为规则锚，两处措辞漂移以本文件为契约面、规则文为语义面。B6/B7/B8 同步见 Rule 106.5（task-discipline）语义锚
 
 ## 4. Hook 提醒响应协议
 

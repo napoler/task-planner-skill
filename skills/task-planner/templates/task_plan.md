@@ -466,6 +466,10 @@ Phase 1
 | Phase 4 | ☐ |  |  |
 | Phase 5 | ☐ |  |  |
 
+**基线组 B1-B8（S1 建组必含，B1-B5 逐字保留）**：
+B1 修改后验证 / B2 Phase翻转校验 / B3 终验VC复验 / B4 收尾回读 / B5 Todo终态 / B6 引擎检测（OpenSpec/Superpowers）/ B7 对齐核查 / B8 worktree核验。
+门禁：B6 未留痕不得声称按引擎推进；B8 未勾实现类不得直接改主树；缺失=S3 当次重建。
+
 > 契约详见 `{{TASK_PLANNER_ROOT}}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
 
 ## Key Questions
