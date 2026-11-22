@@ -49,6 +49,46 @@ model: opus
     - **按任务匹配**：`bash scripts/template-catalog.sh list --query "视频 分镜 质检"`（关键词过滤）/ `bash scripts/template-catalog.sh list --recommend "修复生产环境数据库迁移 bug"`（按场景/功能命中数排序）。人不读散文试错，先看清单再定 `template_type` 传 init 第 2 参。
     - **模板克隆/派生（流程化沉淀）**：`bash scripts/template-catalog.sh clone --from video --to video-xxx [--scope project|user-global] [--dry-run] [--force]`（基于现有模板克隆，默认落项目级 `.zcode/plan-templates/`）；`bash scripts/template-catalog.sh derive --from video --to video-yyy --prune "成片质检,台账登记" [--dry-run]`（克隆并按 `## ` 段名裁剪派生）；`bash scripts/template-catalog.sh add <name> --from <type>`（克隆入口别名）。写操作默认同名拒锁（需 `--force` 才覆盖并自动备份 `.bak.<ts>`），`--dry-run` 预演零写入。
     - **元数据契约**：模板头 `<!-- template_meta: {"name":…,"summary":…,"scenarios":[…],"features":[…]} -->`；缺失时脚本回退注释散文启发式抽取（兼容存量与自定义模板）。`bash scripts/template-catalog.sh --help` 查全参数；exit 0=成功/1=业务失败/2=用法错误。
+    - **脚本用法四件套（命令选择决策表 + 端到端可照抄示例 + 正反例 + 常见误用；2026-11-22 补示例减少反复试错）**：
+      - **按场景选命令**（下表四列：场景 / 该用哪个子命令 / 关键 flag / 易错点；选型权威源仍是卫星 `plan-template-kit`，脚本只给清单与排序，不替模型决策）：
+
+        | 场景 | 该用哪个子命令 | 关键 flag | 易错点 |
+        |---|---|---|---|
+        | 冷启动拿全量模板清单 | `list` | `--json --scope all` | 漏 `--json` 只能人读、模型难解析；忘 `--scope all` 只扫默认范围 |
+        | 按关键词找/排序模板 | `list` | `--query`、`--recommend`、`--json` | `--query` 传整句任务描述易零命中，应给 2-3 个短词；整句改用 `--recommend` |
+        | 含各平台安装位模板 | `list` | `--include-installs` | 与 `--scope user` 混用重复；`--scope all` 已含安装位 |
+        | 基于现有模板起自己骨架 | `add` | `--from <type> --dry-run` | 漏 `--dry-run` 直接落盘；同名已存在需 `--force` 才覆盖 |
+        | 原样复制模板再改名 | `clone` | `--from <type> --to <name>` | `--from`/`--to` 传反；忘 `--dry-run` 即写入 |
+        | 复制并按 `## ` 段裁剪 | `derive` | `--from --to --prune "段名"` | `--prune` 段名须与模板 `## ` 标题逐字一致，否则不裁剪 |
+
+      - **端到端可照抄示例**（init 前选模板 → 派生自己的模板 → 回读复核；写操作先 `--dry-run` 预览，去掉才真正写入）：
+
+        ```bash
+        # 1) 拿稳定 JSON 清单（模型可解析），据此定 template_type 传 init
+        bash scripts/template-catalog.sh list --json --scope all
+        # 2) 关键词过滤 + 推荐排序，缩小候选
+        bash scripts/template-catalog.sh list --query "代码审查,重构" --recommend "带单测的重构计划" --json
+        # 3) 派生自己的模板：先 dry-run 预览，零写入
+        bash scripts/template-catalog.sh derive --from code-edit --to my-review --prune "发布,回滚" --dry-run
+        # 4) 确认 stdout 为 DRY 无误后，去掉 --dry-run 才真正写入 project 范围（同名冲突再加 --force）
+        bash scripts/template-catalog.sh derive --from code-edit --to my-review --prune "发布,回滚"
+        # 5) 回读项目级清单，确认派生模板已就位并优先命中
+        bash scripts/template-catalog.sh list --scope project --json
+        ```
+
+      - **正反例对照**（✅ 正确做法 / ❌ 错误示范）：
+
+        - ✅ 正确：`bash scripts/template-catalog.sh list --json --scope all` 先用 JSON 清单锁定 `type`，再把该 `type` 传给 init。
+        - ❌ 错误示范：不查清单、凭记忆把 `template_type` 写成 `video` —— 源模板改名/不存在时选错模板且无提示。
+        - ✅ 正确：写操作先 `--dry-run`，如 `bash scripts/template-catalog.sh clone --from code-edit --to my-review --dry-run`，看到 `CATALOG … DRY` 再决定落盘。
+        - ❌ 错误示范：直接跑不带 `--dry-run` 的 `clone` 覆盖同名模板 —— 轻则拒锁报错，重则误覆盖已有自定义模板。
+
+      - **常见误用**（症状 → 规避法）：
+
+        - ① 症状：`--query "帮我写一个带登录鉴权的重构计划"` 零命中 → 规避：`--query` 传 2-3 个短关键词（如 `"代码审查,重构"`），整句任务描述改用 `--recommend`。
+        - ② 症状：`--prune "发布/回滚"` 派生后段仍在 → 规避：`--prune` 用逗号分隔且与模板 `## ` 段名逐字一致（如 `"发布,回滚"`），斜杠/空格不匹配。
+        - ③ 症状：`list --scope user` 结果重复或漏项 → 规避：`user` = 全局+安装位；要含全部安装位应直接用 `--scope all --include-installs`，靠 project > user-global > user-install > builtin 去重。
+        - ④ 症状：跑了 `--dry-run` 却以为模板已生效 → 规避：stdout `CATALOG <ACTION> DRY` 表示零写入，真正落盘是 `OK`；去掉 `--dry-run` 再跑一次。
   - **验证**：7 文件在位（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief/user-session-log，Rule 80）
   - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
   - **进度产出基线登记（Rule 111）**：计划期登记 `📦 进度产出基线`，禁倒退清单随计划 attest 锁定（交付/合并/返工均不得就地删降替）
@@ -327,6 +367,54 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 - **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。
 - **机器门**：`python3 scripts/planctl.py check vc-nonvacuous|rvc|audit|evidence` 输出单行 `PLANCTL CHECK <name>: PASS|FAIL <reason>`，rc 0=PASS / 1=FAIL / 2=输入异常；旧门脚本为双读 shim，前缀与 rc 外契约不变。
 - **迁移期**：存量无 `plan-state.json` 的旧计划一次性兼容（机器门双读 fallback 保证零回归），**新计划一律 JSON 权威源**：`init-session.sh` 创建 plan-state.json（不 render）；**首次 planctl 数据写入后必须 `render`**——此后 4 个 MD 即为派生视图，手工编辑被后续 render 覆盖（软堵）。templates/*.md 为 plan-writer 过渡结构参考与 stub 判定基准（全量回归 PT-16/26 实证：空数据 render 会覆盖模板骨架，故 init 不自动 render）。
+- **脚本用法四件套（命令选择决策表 + 端到端可照抄示例 + 正反例 + 常见误用；2026-11-22 补示例减少反复试错）**：`planctl.py` 子命令多、参数易混，按下表选命令再照抄示例；所有命令统一追加 `--plan-dir <plan-dir>`。
+  - **按场景选命令**（下表四列：场景 / 该用哪个子命令 / 关键 flag / 易错点）：
+
+    | 场景 | 该用哪个子命令 | 关键 flag | 易错点 |
+    |---|---|---|---|
+    | 新建计划权威源 | `init` | `--task-id --tier --lane` | state 已存在需 `--force`；init 只建 JSON、不 render |
+    | 读回状态 / 做校验 | `get` / `status` / `validate` | `--section`、`--id` | `get --section` 传错段名返回空；`validate` 只读不改 |
+    | 改单字段 / 加条目 | `set` / `add` | `set: --section --id --field --value`；`add: --section --json` | 写顶层字段时 `set` 不得带 `--section`/`--id`；`add` 必须带 `--json` |
+    | 推进 Phase / 判 VC | `phase-start` / `phase-done` / `vc-pass` / `vc-fail` | `--id` | 漏 `--id` 直接用法错误；先 start 再 done |
+    | 机器门判定 | `check` | 位置参数 `vc-nonvacuous`/`rvc`/`audit`/`evidence` | 检查项是位置参数、不是 flag；rc 0=PASS |
+    | 生成 MD 派生视图 | `render` | 仅 `--plan-dir` | 每次写后必须 render，否则手工编辑残留不被覆盖 |
+    | 追加审计轮次 | `audit-add` | `--round --verdict --by --c --i --w [--issues-json]` | APPROVED 须 0C/0I；无进展信号源走 `--issues-json` |
+
+  - **端到端可照抄示例**（init → 加入需求/VC → 推进 → 审计 → 门检 → render；写操作直接落 JSON，改坏用 `.history` 回退）：
+
+    ```bash
+    PD=plans/task-001   # 换成真实含 plan-state.json 的目录
+    # 1) 初始化权威源（state 已存在才加 --force）
+    python3 skills/task-planner/scripts/planctl.py init --plan-dir "$PD" --task-id TASK-001 --tier standard --lane L1
+    # 2) 加入需求与 VC（写操作，直接入 JSON）
+    python3 skills/task-planner/scripts/planctl.py add --plan-dir "$PD" --section requirements --json '{"id":"R1","text":"需求原文","type":"手段"}'
+    python3 skills/task-planner/scripts/planctl.py add --plan-dir "$PD" --section vcs --json '{"id":"VC1","criterion":"判据","command":"验证命令"}'
+    # 3) 写顶层字段、建 Phase（init 不预置 phases，须先 add 再 phase-start）、推进、判 VC
+    python3 skills/task-planner/scripts/planctl.py set --plan-dir "$PD" --field next_step --value '下一步动作'
+    python3 skills/task-planner/scripts/planctl.py add --plan-dir "$PD" --section phases --json '{"id":"P1","status":"pending","s_units":[],"v_checks":[]}'
+    python3 skills/task-planner/scripts/planctl.py phase-start --plan-dir "$PD" --id P1
+    python3 skills/task-planner/scripts/planctl.py vc-pass --plan-dir "$PD" --id VC1
+    # 4) 审计留痕（0C/0I 才可 APPROVED）
+    python3 skills/task-planner/scripts/planctl.py audit-add --plan-dir "$PD" --round 1 --verdict APPROVED --by reviewer --c 0 --i 0 --w 0
+    # 5) 机器门 + 生成 4 个 MD 派生视图（写完必 render）
+    python3 skills/task-planner/scripts/planctl.py check --plan-dir "$PD" vc-nonvacuous
+    python3 skills/task-planner/scripts/planctl.py render --plan-dir "$PD"
+    ```
+
+  - **正反例对照**（✅ 正确做法 / ❌ 错误示范）：
+
+    - ✅ 正确：每次写（add/set/phase-*/audit-add）之后跑 `render`，MD 视图与 JSON 权威源保持一致。
+    - ❌ 错误示范：写完直接手工改 `progress.md` —— 下次 `render` 全量覆盖，改动丢失且流程无效。
+    - ✅ 正确：`check` 用位置参数传检查项（如 `vc-nonvacuous`），读 rc 与单行 `PLANCTL CHECK` 判 PASS/FAIL。
+    - ❌ 错误示范：给 `check` 传一个不存在的选项名而不是位置参数 → 报 unrecognized arguments、rc 2。
+
+  - **常见误用**（症状 → 规避法）：
+
+    - ① 症状：写顶层字段却带 `--section requirements`，报 id 缺失 → 规避：写顶层字段时 `set` 省略 `--section` 与 `--id`；只有改条目时才带。
+    - ② 症状：`render` 后手改 MD 又丢失 → 规避：MD 是派生只读视图，语义一律 `add`/`set` 入 JSON 再 `render`，禁直接 Edit/Write。
+    - ③ 症状：`check` 传不存在的选项名报 unrecognized arguments → 规避：检查项 `vc-nonvacuous`/`rvc`/`audit`/`evidence` 是位置参数，直接跟在 `--plan-dir` 之后。
+    - ④ 症状：`init` 遇到已存在 state 报拒绝覆盖 → 规避：确认要重建才加 `--force`（会覆盖旧权威源），否则改用 `set`/`add` 做增量更新。
+    - ⑤ 症状：`phase-start --id P1` 报 `phases 中未找到 id='P1'`（实测 init 不预置 phases）→ 规避：先 `add --section phases --json '{"id":"P1","status":"pending","s_units":[],"v_checks":[]}'` 建条目，再推进 Phase。
 
 ## References
 

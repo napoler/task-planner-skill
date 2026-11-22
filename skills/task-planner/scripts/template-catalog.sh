@@ -304,16 +304,61 @@ def cmd_write(args, action):
     print(f"CATALOG {action.upper()} {status} {dst}")
 
 def build_parser():
-    p = argparse.ArgumentParser(prog="template-catalog.sh", description="模板检索/管理 CLI")
+    # [2026-11-22] 补 help 示例减少试错：根 epilog 提供可照抄工作流 + 输出/退出码约定（复用头注释既有事实）
+    p = argparse.ArgumentParser(
+        prog="template-catalog.sh",
+        description="模板检索/管理 CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""可照抄示例（工作流）：
+  1) 列出模板：             template-catalog.sh list
+  2) 关键词筛选/推荐排序：   template-catalog.sh list --query "代码审查,重构"
+                            template-catalog.sh list --recommend "写一个带单测的重构计划"
+  3) 派生自己的模板（先 dry-run 预览，去掉 --dry-run 才真正写入）：
+                            template-catalog.sh add my-skeleton --from code-edit --dry-run
+                            template-catalog.sh clone --from code-edit --to my-review --dry-run
+                            template-catalog.sh derive --from code-edit --to my-review --prune "发布,回滚" --dry-run
+  写入默认落 project 范围；也可显式 --scope user-global。
+
+输出约定：list 默认人读表；--json 输出稳定 JSON {"templates":[...],"default":...,"count":...}；
+          add/clone/derive stdout 单行 `CATALOG <ACTION> <OK|DRY|FAIL> <path>`；错误走 stderr。
+退出码：0=成功  1=业务失败(源不存在/同名冲突等)  2=用法错误。
+作用域优先级(去重)：project > user-global > user-install > builtin。""",
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
-    lp = sub.add_parser("list", help="列出模板清单")
+    # [2026-11-22] 补 help 示例减少试错：list 子命令给出可照抄示例
+    lp = sub.add_parser(
+        "list",
+        help="列出模板清单",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""示例（可照抄）：
+  template-catalog.sh list --scope builtin
+  template-catalog.sh list --query "代码审查"
+  template-catalog.sh list --recommend "重构计划" --json
+  template-catalog.sh list --scope all --include-installs""",
+    )
     lp.add_argument("--scope", default="all", choices=["all", "builtin", "project", "user", "user-global", "user-install"])
     lp.add_argument("--json", action="store_true")
     lp.add_argument("--query", help="按关键词过滤（名称/简介/场景/功能）")
     lp.add_argument("--recommend", help="按任务描述关键词排序推荐")
     lp.add_argument("--include-installs", action="store_true", help="含 ~/.zcode|agents|claude|cursor 安装位模板")
     for act in ("add", "clone", "derive"):
-        ap = sub.add_parser(act, help=f"{act} 模板")
+        # [2026-11-22] 补 help 示例减少试错：各子命令给出可照抄示例（写操作用 --dry-run 预览，不改业务逻辑）
+        ap = sub.add_parser(
+            act,
+            help=f"{act} 模板",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog={
+                "add": """示例（可照抄）：
+  template-catalog.sh add my-skeleton --from code-edit --dry-run
+  template-catalog.sh add my-skeleton --from code-edit --scope project --dry-run""",
+                "clone": """示例（可照抄）：
+  template-catalog.sh clone --from code-edit --to my-review --dry-run
+  template-catalog.sh clone --from code-edit --to my-review --scope user-global --dry-run""",
+                "derive": """示例（可照抄）：
+  template-catalog.sh derive --from code-edit --to my-review --prune "发布,回滚" --dry-run
+  template-catalog.sh derive --from code-edit --to my-review --prune "发布" --scope project --dry-run""",
+            }[act],
+        )
         if act == "add":
             ap.add_argument("name", help="新模板类型名")
             ap.add_argument("--from", dest="from_", help="源模板 type 或路径（省略=空骨架）")

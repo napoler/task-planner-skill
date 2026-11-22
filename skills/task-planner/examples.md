@@ -412,3 +412,123 @@ Parallel tasks share the same INDEX.md — the coordinator runs `sync-todos.sh -
 - Phase 5: 回滚预案确认
 
 **VC 重点**：VC-1 migration 可逆（up + down 双向脚本）。
+
+---
+
+## Example 11: template-catalog CLI — 检索选型到 init-session.sh 闭环
+
+**场景**：用户要求"为登录模块做一次代码审查与重构"。不再凭记忆猜模板名，改用 `template-catalog` 的检索/推荐结果反推 `template_type`，再初始化并校验 7 文件。
+
+> **占位符声明（执行前必须替换）**：下文 `<SKILL_DIR>` 换成 task-planner 技能真实根目录（含 `scripts/` 与 `templates/`）；`<计划目录>` / `plans/task-011/` 换成真实计划目录。下列选型结果是本机实测示例，实际以你自己 `list` 的输出为准。
+
+### 正例：可照抄工作流
+
+```bash
+# ① 路径占位符替换（SKILL_DIR=技能根目录；PLAN_DIR=计划目录）
+SKILL_DIR="<SKILL_DIR>"
+PLAN_DIR="<计划目录>"
+
+# ② 列清单（只读）：先看有哪些模板、默认模板是谁
+bash "$SKILL_DIR/scripts/template-catalog.sh" list
+bash "$SKILL_DIR/scripts/template-catalog.sh" list --scope builtin
+
+# ③ 关键词筛选 + 推荐排序（只读）：--json 便于脚本解析
+bash "$SKILL_DIR/scripts/template-catalog.sh" list --query "代码审查" --json \
+  | jq -r '.templates[].type'          # 本机实测命中 diagnostic
+bash "$SKILL_DIR/scripts/template-catalog.sh" list --query "重构" --json \
+  | jq -r '.templates[].type'          # 本机实测命中 refactor
+bash "$SKILL_DIR/scripts/template-catalog.sh" list --recommend "代码审查" --json
+# 若环境无 jq，直接看第 ② 步的人读表，效果等价
+
+# ④ 定 template_type：取上面命中/推荐首位的 type（本例 diagnostic，或按需 refactor）
+#    若要定制：先 --dry-run 预览（不落盘），看到 CATALOG DERIVE DRY <path> 再决定是否写入
+bash "$SKILL_DIR/scripts/template-catalog.sh" derive --from code-edit --to my-review --prune "发布,回滚" --scope project --dry-run
+# 写入示例（去掉 --dry-run 才真正落盘，按需取消注释）：
+# bash "$SKILL_DIR/scripts/template-catalog.sh" derive --from code-edit --to my-review --prune "发布,回滚" --scope project
+
+# ⑤ init-session.sh 初始化（写操作：在计划目录内创建 7 个规划文件）
+mkdir -p "$PLAN_DIR" && cd "$PLAN_DIR"
+bash "$SKILL_DIR/scripts/init-session.sh" "登录模块代码审查与重构"
+
+# ⑥ 校验 7 文件在位：task_plan / findings / progress / notepad-learnings /
+#    verification / knowledge-brief / user-session-log
+bash "$SKILL_DIR/scripts/verify_io.sh" "$PLAN_DIR"
+```
+
+关键判据：`template-catalog.sh` 的写操作（`add` / `clone` / `derive`）先加 `--dry-run`，stdout 出现 `CATALOG <ACTION> DRY <path>` 才算预览成功；退出码 `0`=成功、`1`=业务失败（源不存在/同名冲突等）、`2`=用法错误。`verify_io.sh` 全绿才说明 7 文件到位。
+
+### 反例 / 错误示范
+
+```bash
+# 反例 1：跳过检索，凭印象直接 derive → 模板不对，后续领域附录与任务错位
+bash "$SKILL_DIR/scripts/template-catalog.sh" derive --from code-edit --to my-review   # 未 --dry-run 直接写入
+
+# 反例 2：在仓库根目录跑 init-session.sh → "[init] ERROR: 必须在 plans/<task-id>/ 目录下运行"
+bash "$SKILL_DIR/scripts/init-session.sh" "登录模块代码审查与重构"   # 错误：没有先 cd "$PLAN_DIR"
+
+# 反例 3：verify_io.sh 传技能根目录 → 7 文件全部 missing、rc 1
+bash "$SKILL_DIR/scripts/verify_io.sh" "$SKILL_DIR"
+```
+
+反例根因：① 选型未用机器检索结果；② `init-session.sh` 强依赖"当前目录=计划目录"；③ 校验参数必须是计划目录而非技能目录。
+
+---
+
+## Example 12: planctl JSON Authority Loop — init → add → set → check → render → audit-add → render
+
+**权威源声明**：`<计划目录>/plan-state.json` 是任务状态**唯一权威源**。`planctl.py render` 产出的 4 个 MD（`task_plan.md` / `progress.md` / `verification.md` / `findings.md`）是**只读派生视图，禁止用 Write/Edit 手工修改**——任何改动都必须先写回 JSON，再 render 重新派生；否则下次 render 会覆盖手改，造成 JSON/MD 不一致。
+
+> **占位符声明（执行前必须替换）**：`<计划目录>` 换成含 `plan-state.json` 的真实目录；`--json` 里的 `id` / `text` / `criterion` / `command` 按任务实情填写。
+
+### 正例：可照抄闭环
+
+```bash
+PLAN_DIR="<计划目录>"
+
+# ① init：从模板生成 plan-state.json（原子写；已存在需 --force，谨慎）
+python3 planctl.py init --plan-dir "$PLAN_DIR" --task-id TASK-001 --tier standard --lane L0
+
+# ② add requirements / vcs（--json 为完整条目结构，字段按段而定）
+python3 planctl.py add --plan-dir "$PLAN_DIR" --section requirements --json '{"id":"R1","text":"按模板完成代码审查","type":"手段"}'
+python3 planctl.py add --plan-dir "$PLAN_DIR" --section vcs --json '{"id":"VC1","criterion":"7 文件在位且 schema 通过","command":"test -f plan-state.json"}'
+
+# ③ set：条目字段 + 顶层字段（template_type 用 Example 11 的选型结果）
+python3 planctl.py set --plan-dir "$PLAN_DIR" --section requirements --id R1 --field text --value '按模板完成代码审查（已确认）'
+python3 planctl.py set --plan-dir "$PLAN_DIR" --field template_type --value 'diagnostic'
+python3 planctl.py set --plan-dir "$PLAN_DIR" --field next_step --value '执行 Phase 1'
+
+# ④ check：机器门判定，stdout 单行 PLANCTL CHECK <name>: PASS|FAIL
+python3 planctl.py check --plan-dir "$PLAN_DIR" vc-nonvacuous
+echo "check rc=$?"   # 退出码 rc 0 = PASS；rc 1 = FAIL；rc 2 = 输入异常
+
+# ⑤ render：生成 4 个 MD 派生视图（只读产物，禁止手工 Edit）
+python3 planctl.py render --plan-dir "$PLAN_DIR"
+
+# ⑥ audit-add：追加审计轮次（写入权威源 JSON）
+python3 planctl.py audit-add --plan-dir "$PLAN_DIR" --round 1 --verdict APPROVED --by reviewer --c 3 --i 0 --w 0
+
+# ⑦ 再 render：让 4 个 MD 与新审计轮次保持一致
+python3 planctl.py render --plan-dir "$PLAN_DIR"
+
+# 只读核对：validate（退出码 0=通过 / 1=失败）、status、get
+python3 planctl.py validate --plan-dir "$PLAN_DIR"
+python3 planctl.py status --plan-dir "$PLAN_DIR"
+python3 planctl.py get --plan-dir "$PLAN_DIR" --section vcs --id VC1
+```
+
+写入安全：每条管理命令先校验新文档 → 旧版备份到 `<计划目录>/.history/`（保留最近 20 版）→ 临时文件 + fsync + `os.replace` 原子替换 → 回读校验，失败回滚。错误走 stderr，业务/IO/JSON 错误退出码 `1`。
+
+### 反例 / 错误示范
+
+```bash
+# 反例 1：直接 Edit task_plan.md 改 Phase 状态 → 下次 render 被 JSON 覆盖，改动丢失
+# Edit task_plan.md    # 错误：4 个 MD 是派生视图，禁手工 Edit
+
+# 反例 2：未 init 就 add → rc 1（plan-state.json 不存在），错误走 stderr
+python3 planctl.py add --plan-dir "$PLAN_DIR" --section requirements --json '{"id":"R9","text":"无权威源"}'
+
+# 反例 3：check 返回 rc 1 仍继续 render/audit-add → 把未过门状态固化进 MD
+python3 planctl.py check --plan-dir "$PLAN_DIR" vc-nonvacuous || echo "rc=1 FAIL，先回 JSON 修，禁止继续 render"
+```
+
+反例根因：①② 混淆"权威源 vs 派生视图"与写前依赖；③ 忽略机器门退出码，把 FAIL 当 PASS 往下走。
