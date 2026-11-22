@@ -185,3 +185,10 @@ git worktree add <project-root>/tmp/worktrees/<task-id>-rN -b wt/<task-id>-rN <b
 ### 6.3 协调态提交纪律
 
 台账预留行（`plans/.rule-reservations.jsonl`）与计划簿记是**跨会话共享事实**：任务收口（land/commit）时随行提交，禁止长期停留 uncommitted 态——uncommitted 的协调态 = 各会话各见一个世界，是误判「干净/无冲突」的第一根源（判例：worktree 内台账视图无 87 预留行，主仓工作区实际已预留，定号 `next=87` 因此撞号）。
+
+### 6.4 同写冲突检出后的补救性隔离（用户缺陷①②，2026-11-23）
+
+**触发**：check-conflicts.sh 或 PreToolUse 检出另一会话正在写同一受管文件；或发现两会话已在主树同写。
+**禁止**：仅"记录冲突、延后到合并期"后继续在主树直接写（这是用户投诉的错误路径）。
+**补救四步**：① 立即补建 worktree 隔离后续改动（路径/命名按 §3）；② 将主树该文件的未提交改动迁移到隔离分支（git stash 或手工复制后 git restore 主树，按 §4.5 找回纪律）；③ 后续所有改动在 worktree 内进行；④ 完成后用 smart-merge-back.sh 合并回主树（按 §4 合并回合约）。
+**锚点**：`同写冲突补救`（供 grep / 执行体定位）。

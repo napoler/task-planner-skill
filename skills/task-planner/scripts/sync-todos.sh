@@ -31,6 +31,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
+            echo "             --json also emits the B1-B8 baseline group (task_id/phase/status/subject)"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -197,7 +198,26 @@ forward_sync() {
     done < <(find "$plans_dir" -name "task_plan.md" -type f -not -path "*/archive/*" 2>/dev/null | sort)
 
     if $JSON_OUTPUT; then
-        echo "[$json_entries]"
+        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B8 由脚本自动带出，
+        # 不再依赖执行体手抄（用户缺陷③：todo 默认项纯文本契约）。
+        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的 8 条基线记录；
+        # WHY: 让 --json 消费方一次拿到完整 Todo 基线,避免 S1 建组遗漏门禁项。
+        # 单引号字面量含纯双引号 JSON,无反引号/单引号,不触碰上方 phase entries 的 \" 转义。
+        local baseline_entries=''
+        baseline_entries+='{"task_id":"B1","phase":0,"status":"baseline","subject":"修改后验证"},'
+        baseline_entries+='{"task_id":"B2","phase":0,"status":"baseline","subject":"Phase翻转校验"},'
+        baseline_entries+='{"task_id":"B3","phase":0,"status":"baseline","subject":"终验VC复验"},'
+        baseline_entries+='{"task_id":"B4","phase":0,"status":"baseline","subject":"收尾回读"},'
+        baseline_entries+='{"task_id":"B5","phase":0,"status":"baseline","subject":"Todo终态"},'
+        baseline_entries+='{"task_id":"B6","phase":0,"status":"baseline","subject":"引擎检测"},'
+        baseline_entries+='{"task_id":"B7","phase":0,"status":"baseline","subject":"对齐核查"},'
+        baseline_entries+='{"task_id":"B8","phase":0,"status":"baseline","subject":"worktree核验"}'
+        # phase 组非空时以逗号衔接;空组则不前置逗号,避免生成 "[,{...}]" 非法 JSON。
+        local all_entries="$baseline_entries"
+        if [[ -n "$json_entries" ]]; then
+            all_entries="${json_entries},${baseline_entries}"
+        fi
+        echo "[$all_entries]"
     else
         echo "[sync-todos] Total: $count phases to sync"
     fi
