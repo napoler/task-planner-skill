@@ -48,6 +48,7 @@
     "resources": { "type": "array", "items": { "$ref": "#/definitions/resource_item" } },
     "visual": { "type": "array", "items": { "$ref": "#/definitions/visual_item" } },
     "template_type": { "type": "string" },
+    "template_body": { "type": "string", "description": "init 所选 variant 模板正文原文（render 领域段附录数据源；可选，存量 JSON 无此字段照样合法）" },
     "understanding": { "$ref": "#/definitions/understanding" },
     "root_causes": { "type": "array", "items": { "$ref": "#/definitions/root_cause_item" } },
     "invariants": { "type": "array", "items": { "$ref": "#/definitions/invariant_item" } },

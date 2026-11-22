@@ -1,5 +1,5 @@
 # Verification Contract & Phase Gates
-<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，VC 与 Phase Gates 经 planctl add --section vcs / vc-pass|vc-fail 写入后 render 派生——直接填写会在首次 render 被覆盖 -->
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，VC 与 Phase Gates 经 planctl add --section vcs / vc-pass|vc-fail 写入后 render 派生——直接填写会在首次 render 被覆盖；领域段(task-template-json-compat-20261122)：init 所选 variant 模板正文原文写入 plan-state.json 的 template_body 可选字段，render 在 task_plan.md 以标题降级附录吐出（仅供参考，权威判据=JSON+机器门）-->
 
 ## Goal (1 sentence)
 

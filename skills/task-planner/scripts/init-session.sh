@@ -1083,9 +1083,16 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
     esac
     _json_init_lane="${_lane:-L1}"
     case "$_json_init_lane" in L0|L1|L2) ;; *) _json_init_lane="L1" ;; esac
+    # [2026-11-22 task-template-json-compat-20261122] 领域段 JSON 承载：
+    #   把已渲染的 task_plan.md 模板正文原文传给 planctl init 写入 template_body（render 领域附录数据源）。
+    #   mini/l0/trivial 档豁免（_json_init_tier=mini：极简 stub 无领域段，沿用 mini-lite/l0-lite 既有豁免口径）。
+    _json_init_tb_args=()
+    if [ "$_json_init_tier" = "standard" ] && [ -f "$PWD/task_plan.md" ]; then
+        _json_init_tb_args=(--template-body-from "$PWD/task_plan.md")
+    fi
     _json_init_rc=0
     python3 "$SCRIPT_DIR/planctl.py" init --plan-dir "$PWD" --task-id "$(basename "$PWD")" \
-        --tier "$_json_init_tier" --lane "$_json_init_lane" >/dev/null 2>/dev/null || _json_init_rc=$?
+        --tier "$_json_init_tier" --lane "$_json_init_lane" "${_json_init_tb_args[@]}" >/dev/null 2>/dev/null || _json_init_rc=$?
     if [ "$_json_init_rc" -eq 0 ] && [ -f "plan-state.json" ]; then
         echo "[init] plan-state.json initialized (JSON mode)"
         # [2026-11-22 task-planctl-exec-surface-20261122] init 后下一步 CLI 指引：
@@ -1095,6 +1102,11 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
         echo "[init]   填数据: python3 \"$SCRIPT_DIR/planctl.py\" add --plan-dir \"$PWD\" --section <requirements|goals|vcs|phases|s_units|findings|decisions|actions|errors> --json '<JSON>'"
         echo "[init]   首次数据写入后必须: python3 \"$SCRIPT_DIR/planctl.py\" render --plan-dir \"$PWD\"（此后 4 MD=派生视图，手工编辑会被 render 覆盖）"
         echo "[init]   状态变更: phase-start/phase-done/vc-pass/vc-fail/set；每次变更后 render；命令速查见 SKILL.md「常用命令速查」"
+        # [2026-11-22 task-template-json-compat-20261122] R-2：FMEA 门在非 mini 档 enforce；
+        #   render 无 fmea 数据不出段会被正当拒锁。补登记指引（不改门、不开逃生口）。
+        if [ "$_json_init_tier" = "standard" ]; then
+            echo "[init]   standard 档须: python3 \"$SCRIPT_DIR/planctl.py\" add --plan-dir \"$PWD\" --section fmea --json '<FMEA 条目>'（否则 FMEA 门拒锁）"
+        fi
     else
         echo "[init] WARN: plan-state.json init 失败（rc=$_json_init_rc; JSON mode fail-open, 存量 MD 流程继续）" >&2
     fi
