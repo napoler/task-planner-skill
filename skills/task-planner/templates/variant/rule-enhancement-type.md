@@ -1,4 +1,5 @@
 <!-- template_type: rule-enhancement -->
+<!-- template_meta: {"type": "rule-enhancement", "name": "规则增强", "summary": "技能规则/条款增强：新增 Rule、config 三档键、消费侧门控、selftest 守护与 SKILL 联动。", "scenarios": ["新增 Rule", "条款增强", "消费侧门控脚本", "selftest 守护", "技能机制化增强"], "features": ["用户需求原文 R→VC 映射", "Verification Contract", "工具选择与编排", "消费侧门控与 selftest 守护", "SKILL 联动"]} -->
 <!-- 适用场景: task-planner 技能规则/条款增强——新增 Rule NN、config 三档键、消费侧门控脚本、selftest 守护、SKILL 联动 -->
 <!-- 触发关键词: 加规则/新增 Rule/条款/门控/合规清单/守护/技能增强/机制化 -->
 <!-- 推荐 subagent: executor(sonnet-1) 写条款与脚本; code-runner-agent 跑 selftest; 合并部署主进程; 沉淀出处: task-v074（Rule 34.3① 同类任务第 3 次触发） -->

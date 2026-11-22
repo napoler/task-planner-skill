@@ -1,4 +1,5 @@
 <!-- template_type: deployment -->
+<!-- template_meta: {"type": "deployment", "name": "部署配置", "summary": "部署/CI/CD/Docker/k8s/nginx/cron/基础设施配置，达成健康、可访问、可回滚状态。", "scenarios": ["CI/CD 配置", "Docker 镜像构建", "k8s 部署", "nginx 配置", "基础设施即代码变更"], "features": ["Verification Contract", "执行范围限制", "Phases", "运行中基础设施强制 worktree 隔离", "Goal 单元表"]} -->
 <!-- 适用场景: CI/CD 配置、Docker 镜像、k8s 部署、nginx 配置、cron 任务、环境变量、基础设施即代码 -->
 <!-- 触发关键词: 部署/CI/CD/Docker/k8s/nginx/cron/基础设施/terraform/ansible -->
 <!-- 隔离: 涉及运行中基础设施 = §十一 P0 必 worktree(路径=<project-root>/tmp/worktrees/<task-id>, Rule 100 临时目录统一;tmp/ 入 .gitignore) -->

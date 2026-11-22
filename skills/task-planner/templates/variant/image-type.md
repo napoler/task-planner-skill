@@ -2,6 +2,7 @@
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,执行范围限制,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
 <!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: image -->
+<!-- template_meta: {"type": "image", "name": "图像生成", "summary": "Agnes 图像链路：母图/资产件/关键帧·线稿格/批量出图/修词重抽，九原子步骤加三检硬门。", "scenarios": ["图像生成", "批量出图", "母图生成", "关键帧批/线稿批", "修词重抽与缺陷重出"], "features": ["母图与资产件生成", "批量出图", "修词重抽", "合规/一致性/质量三检硬门", "九原子步骤管线"]} -->
 <!-- 图像生成工作流（Agnes 图像链路：母图/资产件/关键帧·线稿格/批量出图/修词重抽）。目标=出图稳定性与一致性：九原子步骤管线+合规/一致性/质量三检硬门+全自动静默。触发词：图像生成/批量出图/母图/关键帧批/线稿批/修词重抽/多抽卡/资产图/缺陷重出 -->
 <!-- 九原子步骤对照：①剧本规划=P1 ②合规与物理事实核验=P2 ③多状态定义=P3 ④提示词结构化=P4 ⑤图像生成=P5 ⑥质量审查+⑦缺陷检测+⑧静默重生成=P6（检测→归因→静默重抽闭环，回 P4/P5） ⑨终验=P7 -->
 <!-- 交互模式：本模板计划默认 interaction_mode: silent（2026-10-01 用户定令"fully automated, silent mode with minimal interruptions"）——批次执行 0 用户打断，唯一合法打断=预算冻结 STOP（约束 19②）与 Rule 28 D6 硬停点；人工裁决收敛到 Phase 7 批次末单份收尾报告（静默决策清单随附） -->

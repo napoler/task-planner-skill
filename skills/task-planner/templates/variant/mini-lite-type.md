@@ -1,4 +1,5 @@
 <!-- template_type: mini-lite -->
+<!-- template_meta: {"type": "mini-lite", "name": "轻量任务", "summary": "轻量任务（≤2 文件且≤15min 且单模块），跳过中/重仪式区块，单 Phase 实施加验收合一。", "scenarios": ["轻量任务", "单文件小改", "快修/微调", "15 分钟内小任务", "白名单内免派发任务"], "features": ["Goal", "Verification Contract", "执行范围限制", "单 Phase 实施加验收合一", "Subagent Handoff 表"]} -->
 <!-- plan_tier: mini -->
 <!-- 适用场景: 轻量任务（≤2 文件 ∧ 预估 ≤15min ∧ 单模块）——跳过中/重仪式区块，中/重任务禁用本模板（Rule 38.2） -->
 <!-- 触发关键词: 轻量/小改/单文件/快修/微调/15 分钟/小任务 -->
