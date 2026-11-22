@@ -95,5 +95,19 @@ plans/ 不存在→报告无计划并结束；task_plan 损坏/缺 frontmatter�
 ### 7.10 自主决策框架(v0.6)
 遇「待你决策/待你授权/二选一/`[awaiting-user]`」**不停车**。四项测试全 PASS 才裁决执行并记录: **T1 可逆性**(有回滚路径,一票否决)/ **T2 范围**(在计划允许清单内且服务 Goal)/ **T3 宪法 P0**(不写保护区/不涉凭据/不跨项目,技能无法自授权)/ **T4 先例一致性**。优先级:用户先例→数据判据→保守可逆。三处落盘(Decisions Made+progress+报告裁决清单)。合法停点仅四类(P0/Goal 重定义/circuit-break/用户喊停),停时交付已完成裁决清单+最小决策请求,**禁止**把可判定决策包装成待确认。
 
+### 7.11 执行后证据字段（S82 验证完备最小模板）
+<!-- [2026-11-23 task-fix-all-20261123] 补最小可照抄证据字段模板，强化 S82 验证完备；SOP/守卫不变，仅增格式示例 -->
+自主续推每次执行关键动作后，在 progress 或报告裁决清单按下列最小字段留证（缺字段=证据不完备，补齐后再声称完成）：
+
+```yaml
+evidence:
+  action: "<本次执行动作，如 resume/phase-complete/decision>"
+  target: "<plan-id 或 phase/path>"
+  result: "<PASS/FAIL/BLOCKED + 一句结论>"
+  evidence_path: "<绝对路径:行号 或 命令输出锚点>"
+  timestamp: "<YYYY-MM-DDTHH:MM:SS±TZ>"
+  verifier: "<执行者/复核者，如 main-agent/drift-checker>"
+```
+
 ## 卫星路由：plan-resume — 域=计划续推(Rule 24)
 规则全文见 `references/critical-rules-resume.md`(Phase complete/drift-checker 前/交付终态/会话恢复触发时机、执行中只报告/恢复点自主续推 Top 1、守卫与降级)。涉及触发/续推契约时 Read 该文件。

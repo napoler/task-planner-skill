@@ -100,3 +100,4 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 - `references/critical-rules-discipline.md` — 54 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102）
 - `references/batch-quality-gate.md` — 批量质量门控细则（Rule 18 正文引用）
 - `references/capability-registry.md` — 能力沉淀登记台账（随 S21 资产迁入）
+- `references/execution-recall-card.md` — 执行规范召回卡（Rule 93.1 唯一召回摘要；≤120 行，非权威摘要，权威原文见 critical-rules-*.md）
