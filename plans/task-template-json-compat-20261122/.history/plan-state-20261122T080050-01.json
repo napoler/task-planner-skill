@@ -1,0 +1,392 @@
+{
+  "schema_version": 1,
+  "task_id": "task-template-json-compat-20261122",
+  "plan_tier": "standard",
+  "execution_lane": "L1",
+  "created_at": "2026-11-21T23:24:11Z",
+  "updated_at": "2026-11-21T23:54:04Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "type": "目标",
+      "text": "评估旧模板体系（4 基础模板 + 29 variant）与 JSON 体系兼容性，判定不兼容面",
+      "vc": [
+        "VC-1"
+      ],
+      "tags": [
+        "compat"
+      ]
+    },
+    {
+      "id": "R2",
+      "type": "目标",
+      "text": "对不兼容面按用户选定档（领域段 JSON 承载 + 修门）做适应升级：schema 加可选字段承载 variant 领域段原文，render 附录吐出；修 VC-GATE 假绿 + V-N 真断",
+      "vc": [
+        "VC-2",
+        "VC-3",
+        "VC-4"
+      ],
+      "tags": [
+        "upgrade"
+      ]
+    },
+    {
+      "id": "R3",
+      "type": "手段",
+      "text": "守住兼容红线：不动存量计划、不加 PreToolUse 硬门、软堵 render 全量覆盖不变、不改门的正当判据、不新增脚本/机器门",
+      "vc": [
+        "VC-5",
+        "VC-6"
+      ],
+      "tags": [
+        "redline"
+      ]
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "name": "兼容诊断",
+      "text": "完成旧模板体系与 JSON 体系三路取证并给出部分兼容结论与断裂清单",
+      "verify": "grep -c 'VC-1\\|VC-2\\|VC-3' verification.md（VC 表） + findings.md 取证结论行",
+      "s_units": [
+        "S1",
+        "S2"
+      ],
+      "status": "in_progress",
+      "evidence": "findings.md 三路审计结论",
+      "tags": []
+    },
+    {
+      "id": "G2",
+      "name": "领域段 JSON 承载",
+      "text": "schema/planctl/init/render 全链支持 template_body 可选字段：init 写入 variant 领域段原文，render 以标题降级附录吐出",
+      "verify": "tmp 全链 init --template-body-from → render → grep 附录标题降级 + 权威锚未误判",
+      "s_units": [
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "status": "pending",
+      "evidence": "tmp fixture 实测",
+      "tags": []
+    },
+    {
+      "id": "G3",
+      "name": "门控格式对齐 + 回归部署",
+      "text": "修 VC-GATE 表格计数假绿 + V-N 映射真断；全量 selftest 零新增 FAIL + 四位部署 diff=0 + 存量 fixture 行为不变",
+      "verify": "attest VC-GATE 正确计数 + check-complete 不拒锁 + selftest 双跑 + 四位 diff=0",
+      "s_units": [
+        "S6",
+        "S7",
+        "S8"
+      ],
+      "status": "pending",
+      "evidence": "W6/W7 实弹",
+      "tags": []
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "三路取证结论落 findings：旧模板体系与 JSON 部分兼容，三类断裂（variant 领域段丢失/VC-GATE 假绿/V-N 真断）逐条附证据行号",
+      "command": "grep -c 'P0\\|R-1\\|VC-GATE' /mnt/data/dev/task-planner-skill/plans/task-template-json-compat-20261122/findings.md",
+      "evidence": "findings.md",
+      "tags": [
+        "compat"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "VC-2",
+      "criterion": "schema+planctl+init+render 四处 template_body 链路打通，init --template-body-from 写入、render 标题降级附录吐出",
+      "command": "grep -c template_body /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/planctl.py /mnt/data/dev/task-planner-skill/skills/task-planner/schemas/plan-state.schema.json",
+      "evidence": "worktree 4 文件",
+      "tags": [
+        "upgrade"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "VC-3",
+      "criterion": "tmp 全链实弹 5 项：4 MD GENERATED_HEADER + 领域附录标题降级 + VC-GATE 正确计数 + check-complete 不因 V-N 拒锁 + 51.1/66.5 未误判",
+      "command": "test -f /tmp/tjcompat-smoke/plans/task-smoke-001/task_plan.md && grep -c '勿直接编辑' /tmp/tjcompat-smoke/plans/task-smoke-001/task_plan.md",
+      "evidence": "tmp smoke",
+      "tags": [
+        "smoke"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "VC-4",
+      "criterion": "attest VC-GATE 增认 render 表格行且保留旧 checklist 识别（存量红线）；V-N 由 phases[].v_checks 派生吐出",
+      "command": "grep -c 'VC-[0-9]' /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/attest-plan.sh",
+      "evidence": "attest-plan.sh:313-328",
+      "tags": [
+        "gate"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "VC-5",
+      "criterion": "全量 selftest 双跑（master vs worktree）FAIL 集零新增（基线 8 集）",
+      "command": "bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | tail -3",
+      "evidence": "selftest 输出",
+      "tags": [
+        "regression"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "VC-6",
+      "criterion": "四位部署逐文件 diff=0（base=家目录根，禁双重嵌套）+ 存量 fixture 行为不变",
+      "command": "cd /mnt/data/dev/task-planner-skill && git ls-files skills/task-planner | while read f; do for base in /home/terry/.zcode/skills /home/terry/.agents/skills /home/terry/.claude/skills /home/terry/.cursor/skills; do cmp -s \"$f\" \"$base/$f\" || { echo DIFF-$base/$f; exit 1; }; done; done && echo DEPLOY-DIFF-0",
+      "evidence": "四位 cmp",
+      "tags": [
+        "deploy"
+      ],
+      "status": "pending"
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "name": "兼容诊断与计划",
+      "status": "in_progress",
+      "s_units": [
+        "S1",
+        "S2"
+      ],
+      "v_checks": [
+        "VC-1"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P2",
+      "name": "领域段 JSON 承载实现",
+      "status": "pending",
+      "s_units": [
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "v_checks": [
+        "VC-2"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P3",
+      "name": "门控修复与回归验证",
+      "status": "pending",
+      "s_units": [
+        "S6",
+        "S7"
+      ],
+      "v_checks": [
+        "VC-3",
+        "VC-4",
+        "VC-5"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P4",
+      "name": "收口部署",
+      "status": "pending",
+      "s_units": [
+        "S8"
+      ],
+      "v_checks": [
+        "VC-6"
+      ],
+      "tags": [],
+      "started": ""
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "text": "部分兼容：纯 CLI 流可跑通，51.1/66.5/75.1/FMEA 锚对齐；但 variant 领域段丢失、VC-GATE 假绿、V-N 真断三类实质断裂",
+      "source": "首轮审计+2 聚焦探索；planctl.py:49/1584/1594-1603；attest-plan.sh:313-317；check-complete.sh:900-1055",
+      "tags": []
+    },
+    {
+      "id": "F2",
+      "text": "P0-c 假绿性质修正：控制流未因 vc_total==0 跳过下游门；有 JSON shim 时 vc-nonvacuous/rvc 真判，上一轮 dogfood 非全假；但 VC-GATE 入口计数假绿",
+      "source": "attest-plan.sh:313-328,329-393；check-vc-nonvacuous.sh:65-102",
+      "tags": []
+    },
+    {
+      "id": "F3",
+      "text": "存量兼容红线：无 plan-state.json 旧计划有完整 fail-open；风险在有空壳 JSON 时 shim SKIP 假绿，已有 SOFT_ONLY WARN",
+      "source": "attest-plan.sh:87-104；planctl.py:1710-1723",
+      "tags": []
+    },
+    {
+      "id": "F4",
+      "text": "variant 领域段形态：含门禁判据（video 未 QC 不得 complete 等），非纯文本；原样吐出只保文案不保机器语义，用户已选文本附录档并知悉",
+      "source": "video-type.md:19-107；writing-type.md:62-105",
+      "tags": []
+    }
+  ],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "s_units": [
+    {
+      "id": "S1",
+      "phase": "P1",
+      "name": "三路取证结论汇总",
+      "executor": "general-purpose(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "三路取证结论汇总",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S2",
+      "phase": "P1",
+      "name": "计划目录 init + 专档逐字登记",
+      "executor": "main",
+      "files": "skills/task-planner",
+      "actions": "计划目录 init + 专档逐字登记",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S3",
+      "phase": "P2",
+      "name": "schema+planctl template_body 字段",
+      "executor": "code-assistant(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "schema+planctl template_body 字段",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S4",
+      "phase": "P2",
+      "name": "init-session 传参 + fmea 指引",
+      "executor": "code-assistant(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "init-session 传参 + fmea 指引",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S5",
+      "phase": "P2",
+      "name": "render 领域附录 + V-N 映射",
+      "executor": "code-assistant(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "render 领域附录 + V-N 映射",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S6",
+      "phase": "P3",
+      "name": "attest VC-GATE 表格计数",
+      "executor": "code-assistant(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "attest VC-GATE 表格计数",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S7",
+      "phase": "P3",
+      "name": "回归 selftest + tmp 全链 + 存量 fixture",
+      "executor": "general-purpose(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "回归 selftest + tmp 全链 + 存量 fixture",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    },
+    {
+      "id": "S8",
+      "phase": "P4",
+      "name": "merge + 四位部署 + 簿记",
+      "executor": "general-ops(sonnet)",
+      "files": "skills/task-planner",
+      "actions": "merge + 四位部署 + 簿记",
+      "verify": "实弹 exit 0",
+      "duration": "10min",
+      "granularity": "single-file",
+      "parallel": ""
+    }
+  ],
+  "root_causes": [
+    {
+      "id": "RC1",
+      "process": "本任务为机制兼容审计+升级",
+      "defect": "不适用（非结果级需求链；断裂面按 P0/P1 分级列 findings）",
+      "fix": "按用户选定档逐项修复",
+      "vc": "VC-2,VC-4"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "升级范围=领域段 JSON 承载 + 修门档（用户 AskUserQuestion 答复）；不采用骨架保留/系统级重建",
+      "rationale": "破坏面 1-2 人日+守红线，符合文本优先铁律；领域段含门禁判据，纯文本附录只保文案不保机器语义（用户已知悉）"
+    },
+    {
+      "id": "D2",
+      "decision": "FMEA 真断甄别为数据缺口下的正当拒锁，非兼容缺陷；不改门，只在 init 指引补 fmea 登记提示",
+      "rationale": "改门/开逃生口违反文本优先铁律与门判据不可降权原则"
+    },
+    {
+      "id": "D3",
+      "decision": "旧计划已终锁 feed8dbc+complete，hook 催回填不予执行；session-owner 用 mv 隔离释放",
+      "rationale": "写入会破坏终锁（P0 反作弊）；新任务 dogfood 簿记全落新计划目录"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "phase": "P1",
+      "text": "W0 新计划 init（general/standard）+ 三路取证结论回收；worktree wt/task-template-json-compat-20261122 就绪",
+      "at": "2026-11-22"
+    }
+  ],
+  "test_results": [
+    {
+      "id": "T1",
+      "phase": "P2",
+      "test": "W6① tmp 全链实弹 5 项",
+      "input": "init --template-body-from → add → render → attest → check-complete",
+      "expected": "4 MD GENERATED_HEADER + 领域附录标题降级 + V-N 映射 + VC-GATE 正确计数 + 51.1/66.5 未误判",
+      "actual": "全通过：VC-GATE 从 vc_total=0 假绿修成 OK: 1 条 VC 含可执行命令；领域附录 > ## 降级；V-1.1 映射行；51.1 四锚+66.5 Goal 表在位",
+      "status": "pass"
+    },
+    {
+      "id": "T2",
+      "phase": "P3",
+      "test": "W6③ 存量 fixture 行为不变",
+      "input": "fixture①无 JSON 旧 MD + fixture②空壳 JSON 手写 MD，master vs worktree 双跑",
+      "expected": "行为一致，红线守住",
+      "actual": "fixture① check-complete rc=1 两版一致（DELEGATION GATE fixture 构造问题）；fixture② attest rc=0 + SOFT_ONLY WARN 两版一致",
+      "status": "pass"
+    }
+  ]
+}

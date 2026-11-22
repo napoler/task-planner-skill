@@ -1,0 +1,450 @@
+{
+  "schema_version": 1,
+  "task_id": "task-template-catalog-20261122",
+  "plan_tier": "standard",
+  "execution_lane": "L1",
+  "created_at": "2026-11-22T01:33:58Z",
+  "updated_at": "2026-11-22T02:00:50Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "新增 template-catalog.sh 脚本，list 检索当前项目级 + 用户级模板，输出模板名/简介/适配场景/功能，JSON 可消费",
+      "type": "手段",
+      "vc": [
+        "VC-1"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "text": "base + 31 variant 模板头加统一 template_meta 注释块（从现有注释提炼，不动门控锚）；脚本解析缺失时启发式回退",
+      "type": "手段",
+      "vc": [
+        "VC-2"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R3",
+      "text": "任务初期调用脚本拿清单 → 按场景/功能匹配 template_type → 传 init-session.sh，匹配流程化写入 SOP",
+      "type": "手段",
+      "vc": [
+        "VC-5"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R4",
+      "text": "脚本支持 add/clone/derive：基于模板克隆/派生，幂等+备份+同名拒锁+dry-run+lineage 注入",
+      "type": "手段",
+      "vc": [
+        "VC-4"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R5",
+      "text": "用法与示例注入 SKILL.md（:41/:45）+ plan-template-kit 交叉指针，确保后续有效调用",
+      "type": "手段",
+      "vc": [
+        "VC-5"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R6",
+      "text": "守红线：不引 SQLite/SQL 引擎(D1)；不加 PreToolUse 硬门；不动存量计划文档；不新增 selftest/机器门；软堵不变",
+      "type": "目标",
+      "vc": [
+        "VC-6"
+      ],
+      "tags": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "template-catalog.sh 可用，list/add/clone/derive 四子命令实弹通过，三 scope 枚举 + JSON + query 稳定",
+      "evidence": "[goal:G1]",
+      "tags": []
+    },
+    {
+      "id": "G2",
+      "text": "32 模板 template_meta 覆盖 100%，既有门控注释零改动，scan-template-spec 绿，全量 selftest 零新增 FAIL",
+      "evidence": "[goal:G2]",
+      "tags": []
+    },
+    {
+      "id": "G3",
+      "text": "SKILL.md 用法示例注入 + SOP 流程化表述；dogfood list→init→attest 全链 exit 0；四位部署 diff=0",
+      "evidence": "[goal:G3]",
+      "tags": []
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "template_meta 解析率 100%（base + 31 variant）",
+      "command": "test $(grep -rl 'template_meta' /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/task_plan.md /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/variant/*-type.md | wc -l) -eq 32",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-2",
+      "criterion": "既有门控注释(template_type/plan_tier/template-lineage)零改动",
+      "command": "cd /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122 && git diff -- skills/task-planner/templates | grep -E '^[+-].*(template_type|plan_tier:|template-lineage)' | test $(grep -cE '^[+-].*(template_type|plan_tier:|template-lineage)' /dev/stdin) -eq 0",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-3",
+      "criterion": "list 三 scope + --json + --query 实弹通过",
+      "command": "bash /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/scripts/template-catalog.sh list --json --scope all | python3 -c 'import sys,json; d=json.load(sys.stdin); assert len(d[\"templates\"])>=31; print(\"LIST-OK\",len(d[\"templates\"]))'",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-4",
+      "criterion": "clone/derive dry-run 零写入 + 同名拒锁",
+      "command": "test -x /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/scripts/template-catalog.sh",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-5",
+      "criterion": "SKILL.md 用法示例注入 + plan-template-kit 交叉指针",
+      "command": "test $(grep -c 'template-catalog.sh' /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/SKILL.md) -ge 3",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-6",
+      "criterion": "全量 selftest 双跑零新增 FAIL + 四位部署 diff=0",
+      "command": "cd /mnt/data/dev/task-planner-skill && git ls-files skills/task-planner | while read f; do for base in /home/terry/.zcode/skills /home/terry/.agents/skills /home/terry/.claude/skills /home/terry/.cursor/skills; do cmp -s \"$f\" \"$base/$f\" || { echo DIFF-$base/$f; exit 1; }; done; done && echo DEPLOY-DIFF-0",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "name": "P1 计划与隔离",
+      "s_units": [],
+      "v_checks": [],
+      "status": "complete",
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P2",
+      "name": "P2 元数据统一",
+      "s_units": [],
+      "v_checks": [
+        "VC-1",
+        "VC-2"
+      ],
+      "status": "complete",
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P3",
+      "name": "P3 检索脚本",
+      "s_units": [],
+      "v_checks": [
+        "VC-3",
+        "VC-4"
+      ],
+      "status": "complete",
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P4",
+      "name": "P4 SOP 固化",
+      "s_units": [],
+      "v_checks": [
+        "VC-5"
+      ],
+      "status": "complete",
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P5",
+      "name": "P5 验证与收口",
+      "s_units": [],
+      "v_checks": [
+        "VC-6"
+      ],
+      "status": "complete",
+      "tags": [],
+      "started": ""
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "text": "无 SQLite 实现（全仓无 sqlite3/.db，planctl.py:46 是 JSON 倒排索引）；用户「SQL」为检索口述，D1=文件扫描+JSON 清单，不引 SQL 引擎",
+      "source": "Explore×3 (agent_d3f8d819 / f55c91e9 / 83b3acc2) + 主进程 Read 复核",
+      "tags": []
+    },
+    {
+      "id": "F2",
+      "text": "init-session.sh --list(:21-53) 仅人读枚举、单项目 scope、无 JSON/场景/功能字段，需新脚本扩展",
+      "source": "Explore×3 (agent_d3f8d819 / f55c91e9 / 83b3acc2) + 主进程 Read 复核",
+      "tags": []
+    },
+    {
+      "id": "F3",
+      "text": "31 variant template_type 齐全但简介/场景/功能散落散文（video:5 单行 / code-edit:2-4 三行标签），D2=统一 template_meta 注释块",
+      "source": "Explore×3 (agent_d3f8d819 / f55c91e9 / 83b3acc2) + 主进程 Read 复核",
+      "tags": []
+    },
+    {
+      "id": "F4",
+      "text": "可复用：init-session.sh:64-79 发现 / :82-97 复制 / check-template-type.sh:15-18 白名单 / install-companion.sh:84-149 幂等 / inject-template-lineage.sh lineage",
+      "source": "Explore×3 (agent_d3f8d819 / f55c91e9 / 83b3acc2) + 主进程 Read 复核",
+      "tags": []
+    },
+    {
+      "id": "F5",
+      "text": "SKILL.md:45 模板优先级行为主注入点；plan-template-kit 纯知识层只做交叉指针，不承载脚本",
+      "source": "Explore×3 (agent_d3f8d819 / f55c91e9 / 83b3acc2) + 主进程 Read 复核",
+      "tags": []
+    }
+  ],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "template_body": "# Task Plan: 模板检索管理技能脚本\n<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} token 由 init-session.sh render_template() 脚本渲染（task-id/任务名/日期/路径）；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，正式数据经 planctl add/set 写入 plan-state.json 后 render 派生本视图——直接填写会在首次 render 被覆盖；领域段(task-template-json-compat-20261122)：init 所选 variant 模板正文原文写入 plan-state.json 的 template_body 可选字段，render 在 task_plan.md 以标题降级附录吐出（仅供参考，权威判据=JSON+机器门）-->\n<!-- template-lineage: level=base spec_version=1 -->\n<!-- ===== frontmatter 头（Rule 16 选模板 + Rule 34.1 门控 + Rule 38.7 执行通道分级）=====\n  选定 variant 后 template_type 填所选类型名（白名单=/mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）\n  plan_tier ∈ {standard, mini}（Rule 38.1，mini 四条件机器判定）；execution_lane ∈ {L0, L1, L2}（Rule 38.7，缺省 L1；L0 禁滥用见 38.7 末段）\n  check-template-type.sh 三形态之一：行首 `^template_type:`（本块）/ 表格行 / HTML 注释；本块用行首形态 -->\ntemplate_type: general\nplan_tier: standard\nexecution_lane: L1\n<!-- \n  WHAT: This is your roadmap for the entire task. Think of it as your \"working memory on disk.\"\n  WHY: After 50+ tool calls, your original goals can get forgotten. This file keeps them fresh.\n  WHEN: Create this FIRST, before starting any work. Update after each phase completes.\n-->\n\n## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）\n<!-- 2026-10-05 task-v131：Rule 51.1 计划侧载体（审计 H-3 清账）。R 行=用户原话逐条编号抄录；映射=每条核心需求 ≥1 VC；缺区块或缺映射=计划无效先回炉（51.1/51.2） -->\n<!-- 2026-10-07 task-v143：Rule 58.4 手段/目标二分——每条 R 行末尾标注 [手段] 或 [目标]；[目标] 行必须映射 ≥1 条「问题解决判据」VC（核心问题的可观察解决证据，非手段产物完成）；目标型任务终验必填「🎯 核心目标达成裁决」区块（58.5） -->\n\n- **R1**: 「<用户原话第 1 条，逐字抄录，禁转译>」<sub>（[手段]/[目标]）</sub>\n- **R2**: 「<按需增行>」<sub>（[手段]/[目标]）</sub>\n\n### R→VC 映射（Rule 51.2 验证机制先行）\n| R | 映射 VC | 覆盖判据（可观察证据形态） |\n|---|---------|---------------------------|\n| R1 | VC-1 | <判据：计数=0/文件在位+绝对路径/命令输出形态> |\n\n### 🗣️ 用户会话逐字记录（Rule 80 — 只写不改专档指针）\n<!-- 2026-10-11 task-v169（Rule 80 落地）：用户会话逐字记录专档指针区块——用户需求与对话内容逐字落档 plans/task-template-catalog-20261122/user-session-log.md（只写不改，append-only）；本区块纯静态（专档路径+铁律+恢复协议，禁条目计数/首末条目标记类需随记录更新的可变内容——改 task_plan.md 即 [PLAN TAMPERED] 与 attest 哈希锁冲突） -->\n- **专档路径**：`plans/task-template-catalog-20261122/user-session-log.md`（模板 = /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/user-session-log.md）\n- **只写不改铁律**：条目 append-only；已写条目冻结，禁修订/删除/改写（Rule 80.2）\n- **恢复协议**：会话恢复/上下文压缩后先读专档（#1 至最新条目），再读 task_plan.md（目标/验收/下一步）\n- **理解镜像**：每条逐字条目后同号配对「理解镜像」块（Rule 80.7；非权威对照面，冲突以逐字原文为准）\n\n## 🧭 指令理解迭代草稿（Rule 28.2.2 — 执行前方向对齐｜粗稿非定稿）\n<!-- 3-4轮：用于暴露理解与方向、便于早纠偏；明确任务不因本模块新增阻塞确认，歧义/多候选(典型3-4)才选项确认（28.3）；与28.2.1执行思路复述分工 -->\n- **① 原始指令复述（锚）**：<逐字/等价复述，冲突以 user-session-log 原话为准>\n- **② 模型理解（理解1）**：目标/对象/范围/约束/验收期望；**不做什么**：<排除项>\n- **③ 思路与候选（思路2）**：推导与可选路径；**歧义门控**：`明确-按默认路径` / `歧义-待确认`（列 2-4 选项+推荐+理由）\n- **④ 大体执行方向（思路3/4）**：阶段/步骤预判与验收口径（草稿，非计划外承诺；后续以计划/VC 为准）\n\n## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）\n<!-- 2026-10-05 task-v131：Rule 53.1 载体。结果级需求（确保质量/性能/可靠类）必须分解生产管线逐工序审计缺陷面；\n     非结果级（单点动作）任务须写「不适用（非结果级需求）」+ 一句定性理由（53.1 禁裸豁免，attest/终验可核；\n     与 init-session.sh 注入版脚手架注释同口径） -->\n\n| 工序 | 缺陷面 | 修复点 | VC |\n|------|--------|--------|----|\n| <工序 1> | <此工序削弱该结果的缺陷/缺口，无则\"无\"> | <修复 S-unit/Phase> | <VC-n> |\n\n<!-- plan_tier: standard -->\n\n## 🔒 不变量声明区（Rule 73.3 — 声明后改动须走 73.2 对齐三问）\n<!-- WHAT: 任务要素显式分三态——不变量(锁)/可变量(自主调+登记)/学得量(只入 findings、禁反写不变量)。\n     WHY: 用户 R2「强化四文件，确保哪些不变/哪些可变/哪些学得」；无声明=执行期风格/范围漂移无对照物（R1 实证）。 -->\n| 三态 | 条目 | 来源锚 |\n|------|------|--------|\n| 🔒 不变量 | <Goal/VC 表/用户需求原文 R 条目/风格与质量约束，逐条列> | <task_plan.md 对应章节锚> |\n| 🔀 可变量 | <执行细节/工序排期/工具选型/S-unit 拆分> | - |\n| 📈 学得量 | <执行期新事实/教训/锚点→findings.md/notepad-learnings.md；禁反向改写不变量> | findings.md |\n\n## 🔒 规范基线（Spec-Baseline，Rule 51.15 — 含已确立硬约束时必填）\n<!-- 2026-11-19 task-spec-baseline-freeze-20261119：把「已确立且影响验收的业务硬约束」登记为受管基线。本区块随 task_plan.md 纳入 attest SHA-256 锁（Rule 20.1），修改/放宽/删除=[SPEC-BASELINE TAMPERED] P0。区间型必须同时登记上下界（如 4s≤单镜≤12s），禁只写单边——单边口径=无下限，是 3s 过审的机制根因。无硬约束的任务填一行「none（经确认本任务无已确立硬约束）」。四环消费：派发携带 22.4e / 复检回归 103.3b / 返工续写回归 106.7 / 终验门 84.15。 -->\n| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 |\n|---------|-------------------|------------------|-----------|------------|\n| <如 SPEC-DUR-01> | <如 单镜头时长 4-12s> | <弧规格:5 / skill:53> | <4s≤单镜≤12s；越界即FAIL，禁NOTE豁免> | <sha256 或 n/a(文本片段)> |\n\n## 📦 进度产出基线（Rule 111 进度产出防倒退）\n<!-- Rule 111（2026-11-20 task-antiregress-tplgov-20261120）：存在项目级进度/产出基线候选时计划期必登，禁止拆东墙补西墙。来源=对项目关键产出/能力面盘点（如模板数与结构、规则编号面、selftest 基线、部署位状态、核心流程可用性）。本区块随 task_plan.md 纳入 Rule 20.1 SHA-256 attestation 锁定面（同 51.15 口径）；执行期修改/放宽/删除已登记项须 STOP→用户显式授权→Decisions Made 登记→更新基线→重跑 attest 重锁。无候选须显式填写 none-justified（附理由），禁静默遗漏。 -->\n| 基线项 | 动工前快照 | 关键产出/指标 | 禁倒退清单 | 状态 |\n|--------|------------|---------------|------------|------|\n| <如 B-01 模板数量与结构> | <动工前可复核快照/证据锚> | <关键产出与指标> | <禁止删除/降级/替换项；净效果<0 禁止> | <已登记/已回填/none-justified> |\n\n> 无候选时：在上表填一行 `none-justified | <理由> | n/a | n/a | 已登记`（禁止留空/静默省略）。\n\n## Goal\n<!-- \n  WHAT: One clear sentence describing what you're trying to achieve.\n  WHY: This is your north star. Re-reading this keeps you focused on the end state.\n  EXAMPLE: \"Create a Python CLI todo app with add, list, and delete functionality.\"\n-->\n[One sentence describing the end state]\n\n## 🔍 Code Review 配置\n\n<!--\n  设计代码修改类任务：将下方值改为 required\n  纯调研/文档/规划类任务：留空或写 n/a\n  默认按 template_type 机制画像自动判定（Rule 37 + template-mapping.md §九）：代码组默认 required，内容组默认 n/a，通用组未声明时按通用守卫；显式声明优先于画像默认值\n-->\n| 字段 | 值 |\n|------|-----|\n| `code_review` | `n/a` / `required` |\n| `session_id` | `<uuid>` | 启动时生成,注册表追踪 |\n| `worktree_path` | `<path>` | §十一 隔离决策已有字段 |\n| `scope_files` | `[paths]` | 从「执行范围限制」解析,并发检测基础 |\n| `interaction_mode` | `ask` / `silent`（可省略，缺省回落 config.json#interaction_mode） | Rule 28 交互模式：ask=关键决策点给选项；silent=静默+静默决策清单登记 |\n| `对齐审查` | `[登记]` | Rule 42.6 消费：任务产出或更新的文档在完成前跑 alignment-review 对齐审查（标准收尾流程）;文档更新前跑版本一致性校验（未经校验不追加）;变更记录随交付物落盘;mini 档豁免（42.6.4） |\n| `自动超时默认项` | `[询问点: 默认选项/超时值]` | Rule 44 消费：本任务所有 2+ 选项询问点逐个登记默认选项（推荐项）与自动超时时长（默认 5 分钟,可覆盖）;低区分度选项（产出一致仅步骤/耗时差异）不询问、直接裁决并登记理由（44.2）;用户超时未答复按默认选项自动执行+登记自动裁决记录五要素（44.3）;mini 档豁免（44.4） |\n| `new_rule` | `<NN>` / 留空 | Rule 20.6：本任务新增 Rule 编号时填写（attest 自动预留+查重；无则留空） |\n| `质量审查工具` | `[检测结论]` | Rule 42 消费登记（42.4）：任务涉及质量审查面时按 42.2 四级检测（含内置 review-library 兜底池）,填 技能名/既有 agent 名/待补充 S-unit 指针;缺口按 42.3 补建并登记 S-unit;执行期必须用登记工具;mini 档豁免（42.5） |\n\n## ✅ Verification Contract（目标完成判定标准 — 全部通过 = 完成）\n\n<!--\n  WHAT: 任务执行完毕 ≠ 目标完成。此表确保每一步有可验证证据。\n  RULE: 每个 phase 完成后对照 VC 编号复验；phase 全部 complete ≠ 通过终验。\n  FORMAT: VC-N 是客观判定标准（可测试/可追溯/不依赖主观判断）。\n  V-N: goal-gate.md 规定「≥5 条 VC + 每 phase ≥2 条 V-N（映射到 VC 编号）」；\n       在每个 Phase 段（`### Phase N` 的 - **Status:** 行前）补 `- **V-N:**` 占位行，\n       填写本 Phase 验收映射的 VC 编号（≥2 条，如 `VC-1, VC-2`；对应逐条验收记录在\n       /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/verification.md 的 `V-N.N` 项，映射目标须为已定义 VC 编号）。\n       check-complete.sh 终验 VC-GATE 段机械校验（config.json vc_gate_enforce，默认 warn）。\n-->\n\n> **验证独立性**：本计划验证动作默认由独立子代理执行（Executor 字段可填 V-类执行体），主进程既有上下文自测不作为有效验收（Rule 33.3 延伸）\n\n| # | 判定标准 | 验证方式 | 证据路径/命令 |\n|---|----------|----------|---------------|\n| VC-1 | [交付物可观测要求 1] | [运行命令 / 检查文件 / 查看输出] | [路径或命令] |\n| VC-2 | [交付物可观测要求 2] | [同上] | [路径或命令] |\n| VC-3 | [交付物可观测要求 3] | [同上] | [路径或命令] |\n| VC-4 | [边界条件通过] | [同上] | [路径或命令] |\n| VC-5 | [无回归破坏] | [同上] | [路径或命令] |\n\n**终验规则**：\n- 全部 VC 通过 → outcome: **COMPLETE**\n- VC 通过但有已知遗留缺陷 → outcome: **PARTIAL**（列出 + 建议后续）\n- ≥1 VC 失败且重试 3 次无效 → outcome: **BLOCKED**（升级用户决策）\n\n> **注意**：若 `code_review: required`，终验前必须先通过 Code Review Gate（详见 SKILL.md），否则不得标记 COMPLETE。\n\n## 🛡 双轮质检与同步完整性声明（Rule 103 — 计划期设计位，standard/full 必填，mini 豁免）\n<!-- task-dualqc-20261104 新增：双轮质检机制在计划阶段显式设计——派发型实质产出 S-unit 默认两道检核（第一轮执行体自审 103.2 checkpoint 自审段；第二轮主代理派全新子代理独立复检 103.3，档位升一档 103.4、复检任务书简洁五要素 103.5）；多文件变更集（≥2 受管文件）Phase 翻转前过 103.6 同步完整性审查（关联面推导四族→同步核对清单全绿）。豁免面=103.7，逐 S-unit 登记理由；mini 档整体豁免。 -->\n| 登记项 | 值 |\n|--------|-----|\n| 双轮质检适用面 | （派发型实质产出 S-unit 清单或「默认全适用」） |\n| 豁免登记 | （逐 S-unit+豁免理由；无则写 none） |\n| 多文件变更集预判 | （预判触发 103.6 核对清单的 Phase/S-unit；无则写 none） |\n\n\n## 🎯 核心目标达成裁决（Rule 58.5 — 含目标型需求([目标]标注)的任务终验必填）\n<!--\n  WHEN: 终验时填写;含 [目标] 标注需求（下方 R 行）的任务必须在交付前出三态裁决\n  WHY: Rule 58.5 完成裁决门——「分析报告已交付」不等于「问题解决了」;not-solved/partial 禁止标 COMPLETE\n  载体: 58.4 手段/目标二分在需求原文区逐条标注 [手段]/[目标];本区块回收目标型需求的解决状态\n-->\n| 字段 | 值 |\n|------|-----|\n| **目标型需求** | （R 行编号，如 R1/R3） |\n| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |\n| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |\n| **未解决面+原因** | （partial/not-solved 必填） |\n| **已排除路径** | （not-solved 必填：试过什么+为何不行） |\n| **下一步建议** | （not-solved 必填：可执行的下一步）（按 Rule 70：对象路径+看点+动作） |\n\n> 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。\n\n## 🎯 Goal 单元表（Rule 66.1 — 规划获批后任务单元固化；standard/full 必填，mini 档豁免）\n<!--\n  WHEN: attest 获批后立即填写（自动分解：S-unit/Phase → goal 单元映射）\n  WHY: 用户 2026-10-09 裁决——任务分解后逐格固定为「任务名+目标+完整验证方式」，\n       执行按 goal 逐个推进（66.3），/goal 目标模式完成审计的证据源（66.2 映射供料）\n  列契约（66.1 六列）: goal-id(G1..) | 任务名(≤8字) | 目标(≤1句) | 完整验证方式(命令+判据/路径+关键行/diff形态,三选一必具其一) | 对应 S-unit/Phase | 状态(pending/complete)\n  状态机: pending → complete(仅 66.3 三证据齐备后翻格,同步 progress.md [goal:Gn] 证据行)\n-->\n| goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |\n|---------|--------|--------------|------------------------|------------------|------|\n| G1 | <示例> | | <命令+判据 或 路径+关键行> | S1/Phase 1 | pending |\n\n## ⚠️ 执行范围限制（强制 - 只操作列表内的文件）\n\n<!-- \n  🚫 禁止发散规则:\n  - 只操作本列表中明确列出的文件\n  - 未在列表中的文件一律不碰\n  - 如需扩展范围，必须获得用户授权\n-->\n| 类别 | 允许的文件 | 禁止 |\n|-------|------------|------|\n| 源码 | [明确列出，如 src/a.ts, src/b.ts] | 其他 .ts 文件 |\n| 测试 | [明确列出，如 tests/*.test.ts] | 其他测试文件 |\n| 配置 | [明确列出，如 package.json] | 其他配置 |\n| 文档 | [明确列出，如 README.md] | 其他文档 |\n\n**执行前自我检查:**\n- [ ] 这个文件在上面的列表中吗？\n- [ ] 这个修改对完成任务有必要吗？\n- [ ] 用户明确要求我做这个修改吗？\n- 全部 Yes → 可以执行 | 任一 No → 先问用户（问询按 Rule 70 四要素）\n\n## 📋 变更标注表（Rule 74.3 — 修订方案必填，无表=无效方案）\n\n<!--\n  WHAT: Rule 74.3 变更标注表 — 任何对既有文件/条目的变更，制定方案时逐条登记（编号/对象+锚点/类型/吸收判定/依据/执行动作）。\n  WHY: 落实 74.2 三判门（增量默认·替代四条件·删除授权）留痕；无表=无效方案禁入执行（74.3b），表兼验收清单（74.3c）。\n  WHEN: 制定修订方案时填写；用户新指令到达时先逐条转标注行再动任何文件（先标注后执行，74.3d）。\n-->\n\n任何对既有文件/条目的变更，制定方案时在此逐条登记；本表兼任验收清单（执行后逐行勾核，新增而产物缺失/增量而旧内容被改=FAIL）。用户新指令到达时先转标注行再动任何文件——先标注后执行。\n\n| 编号 | 对象（文件+锚点） | 类型（新增·修改·删除·更新） | 吸收判定（增量·替代·删除） | 用户原话（逐字） | 依据（证据） | 执行动作 |\n|------|------------------|---------------------------|-----------|----------------|------------------------|---------|\n| CA-1 | <示例: 文件:锚点> | 新增 | 增量 | <用户原话> | <证据> | <执行动作> |\n\n## 📚 必要知识储备（任务知识库对齐 — 开工前必填）\n\n<!--\n  WHAT: 本任务依赖的知识源清单(规范/官方文档/内部知识库/文献/图书)。\n  WHY: 对齐任务知识库 — 凭记忆硬写是返工与造谣的首要来源;开工前确认知识源可获取。\n  WHEN: 计划创建时填写;Phase 1 开工前逐项确认「已确认」列;必读项缺失 → STOP 记入 Errors Encountered。\n-->\n> 目的：对齐任务知识库。列出本任务依赖的规范/文档/文献/图书等知识源，Phase 1 开工前逐项确认可获取；`必读` 项无法获取 → STOP 记入 findings.md Errors，禁止凭记忆硬写。\n\n| 类别 | 名称/主题 | 定位（路径/URL/版本/commit SHA） | 必读级别 | 已确认 |\n|------|-----------|--------------------------------|---------|--------|\n| 规范/标准 |  |  | 必读/参考 | ☐ |\n| 官方文档 |  |  | 必读/参考 | ☐ |\n| 项目内部文档/知识库 |  |  | 参考 | ☐ |\n| 文献/论文 |  |  | 参考 | ☐ |\n| 图书/教程 |  |  | 参考 | ☐ |\n\n**填写规则**：① `定位` 必须可唯一定位（绝对路径/URL+版本）；② `必读` 项缺失 → 停止执行并在 Errors Encountered 登记；③ 引用格式对齐 SKILL.md「调研类操作·强制引用格式」。\n\n## ⚠️ 核心问题定义（强制 - 任务开始前必须回答）\n\n<!-- \n  在开始任何任务前，必须明确回答以下问题：\n  1. 核心问题是什么？\n  2. 解决这个问题后，结果能交付吗？\n  3. 解决这个问题的方法是什么？\n-->\n**核心问题**: [解决这个问题后，结果能交付吗？]\n\n**核心问题判断**:\n- [ ] 核心问题解决后，产品/结果能交付吗？\n- [ ] 核心问题不解决，其他工作都白费吗？\n- [ ] 核心问题的解决方法是清晰的、可执行的？\n\n**如果无法回答核心问题，禁止开始任务！**\n\n## 🔍 调研需求与检索计划（Rule 75.1 — 计划期调研需求三态分析）\n<!-- Rule 75.1 载体：计划期为每个子目标/S-unit 强制标注调研三态之一。NET-* 条目必登记关键词+渠道+产出形态。\n     豁免：mini 档任务整体豁免（Rule 38.3 区块白名单同口径）；纯机械 S-unit 默认 LOCAL-ONLY 无需逐行标注 -->\n\n| S-unit/子目标 | 三态 | 检索关键词（≥2） | 检索渠道（63.2 四步链） | 预期产出形态 | 网络解难评估（R5） |\n|---------------|------|------------------|--------------------------|--------------|-------------------|\n| <S-unit id> | LOCAL-ONLY / NET-RESEARCH / NET-DATA-DEPENDENT | <关键词1>、<关键词2> | WebSearch / Doc Search Agent / research-assistant / GitHub CLI / Forum Search Agent | <findings 小节 / 现成实现 / 媒体参考> | <是/否/不适用> |\n\n> 三态判定：LOCAL-ONLY=本地数据可完全解决（纯机械/簿记/既定步骤）；NET-RESEARCH=需网络调研补充知识/方案/报错解法；NET-DATA-DEPENDENT=必须接入网络数据（实时信息/外部 API/媒体参考/现成实现）。无 NET-* 条目且无豁免声明=计划不完整（check-plan-dispatch 机器校验）。\n\n## 🔍 证据面清单（Rule 58.1 — 调研/分析/评估/归因类任务计划期必填）\n<!--\n  WHEN: 计划创建时填写（适用判定:产出=结论/判断/建议/原因解释的任务）\n  WHY: Rule 58.1 证据面清单——下结论前三类基线证据面缺一不可,防「无对标就下结论」(用户 2026-10-07 判例:竞品分析没做就归因流量问题)\n  豁免: 纯执行类任务(单点动作)填 `n/a（纯执行类）`;对标面豁免仅限 58.2 两种登记理由,禁裸豁免\n-->\n| 证据面 | 取证对象（可指名） | 取证方式 | 落盘锚（54.5 格式） | 状态 |\n|--------|------------------|---------|---------------------|------|\n| ① 自身样本 | （自身内容/产品/数据） | | | ☐ |\n| ② 对标样本（58.2 强制） | （竞品/同类成功案例/历史基线，≥1 个可指名） | | | ☐ |\n| ③ 外部约束 | （平台规则/市场环境/算法机制） | | | ☐ |\n\n> 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。\n\n## Current Phase\n<!-- \n  WHAT: Which phase you're currently working on (e.g., \"Phase 1\", \"Phase 3\").\n  WHY: Quick reference for where you are in the task. Update this as you progress.\n-->\nPhase 1\n\n## Next Step\n<!-- \n  WHAT: 单一下一步动作(一句话,可执行)。\n  WHY: 恢复会话/上下文压缩后无需推断\"接下来干嘛\";5Q 第 6 问的答案源;smart 注入块每轮携带本字段。\n  WHEN: Phase 状态每次变更时同步刷新(Rule 20.4);完成一个动作后立即更新为再下一步。\n  EXAMPLE: \"派 code-assistant 修复 src/auth.ts 的 token 空值判断,然后跑 bun test\"\n-->\n[一句话下一步动作]\n\n## 🧰 工具选择与编排（Rule 40 — 计划期主动分析）\n<!--\n  WHAT: 逐 Phase 登记命中的 harness 执行工具面与选择理由（Rule 40.1 六类: /workflow 动态工作流、/goal 会话目标、Agent 子代理、卫星技能、MCP/平台工具、机械守卫脚本）。\n  WHY: 计划期显式选择最合适的执行工具,替代\"默认只有串行 Agent 派发一条路\"的隐式决策;记录工具选择的可追溯依据。\n  WHEN: 计划创建时（plan-writer）填写;执行期工具变更时回填。\n  定位声明: 本区块是 Executor 字段的**上游分析记录,不替代**其委派门控机器事实源地位（check-delegation/check-plan-dispatch 消费面不变）;本区块内禁止出现 Phase/Status/Executor 三形态伪行。mini 档豁免本区块（Rule 38.3 区块白名单）。机器校验边界见 Rule 40.5（LLM 行为面,selftest-tool-selection.sh 静态守护）。\n-->\n| Phase | 命中工具面（40.1 六类） | 选择理由 |\n|-------|----------------------|---------|\n| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |\n\n**workflow 编排判定（Rule 40.4）**: [命中 39.8 激活条件（独立并行 ≥3 S-unit 可 fan-out / 长链编排型 / 用户点名）→ 登记『CreateWorkflow 路由（39.8 条件命中）』并执行期按 39.8 三件套主动创建；未命中 → Rule 21.4 独立性守门调度（并行默认+声明制）]\n**/goal 对齐（Rule 40.3）**: [本计划 Goal+VC 即 session goal 的证据源;如用户已用 /goal 锚定本任务,在执行范围或 Goal 段注明映射;/goal 为用户侧 harness 命令,技能层不可代调]\n\n## Phases\n<!-- \n  WHAT: Break your task into 3-7 logical phases. Each phase should be completable.\n  WHY: Breaking work into phases prevents overwhelm and makes progress visible.\n  WHEN: Update status after completing each phase: pending → in_progress → complete\n  Executor 字段(Rule 25.1):每个 Phase 必须声明执行体;主进程直做必须写例外理由;选型按 SKILL.md §子代理路由与模型分级路由表;Executor≠主进程的 Phase 必附 S-unit 派发单元表(Rule 22.6,示范见 Phase 3);S-unit 表「执行体」列:默认写\"继承\"(= Phase Executor),混用模型时逐行写具体 subagent_type(model);check-plan-dispatch.sh 在计划批准时校验(22.6/25.1)\n-->\n\n### Phase 1: Requirements & Discovery\n<!-- \n  WHAT: Understand what needs to be done and gather initial information.\n  WHY: Starting without understanding leads to wasted effort. This phase prevents that.\n-->\n- [ ] Understand user intent\n- [ ] Identify constraints and requirements\n- [ ] Document findings in findings.md\n- [ ] 知识储备必读项已确认可获取(勾选「必要知识储备」表\"已确认\"列)\n- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）\n- **Status:** in_progress\n- **Executor:** explore（mini）\n<!-- \n  STATUS VALUES:\n  - pending: Not started yet\n  - in_progress: Currently working on this\n  - complete: Finished this phase\n-->\n\n### Phase 2: Planning & Structure\n<!-- \n  WHAT: Decide how you'll approach the problem and what structure you'll use.\n  WHY: Good planning prevents rework. Document decisions so you remember why you chose them.\n-->\n- [ ] Define technical approach\n- [ ] Create project structure if needed\n- [ ] Document decisions with rationale\n- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）\n- **Status:** pending\n- **Executor:** 主进程（例外理由:② 计划系统文件维护——Rule 25.3 白名单）\n\n### Phase 3: Implementation\n<!-- \n  WHAT: Actually build/create/write the solution.\n  WHY: This is where the work happens. Break into smaller sub-tasks if needed.\n-->\n- [ ] Execute the plan step by step\n- [ ] Write code to files before executing\n- [ ] Test incrementally\n- [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作\n- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）\n- **Status:** pending\n- **Executor:** code-assistant（haiku-1）\n（示例为代码组画像；非代码任务按 template-mapping.md §九 机制画像选内容类执行体，如 article-writer）\n\n<!-- S-unit 派发单元表(Rule 22.6 — Executor≠主进程的 Phase 计划期必填;每行 = 一次 Agent() 派发;单步 ≤step_max_files(2) 文件 / ≤step_max_lines(100) 行 / ≤step_max_minutes(15) 分钟,超限再拆而非升档;「执行体」列可写\"继承\"或具体 subagent_type(model);「输入」列在计划期预写材料包 = 路径 + ≤10 行摘要,执行期照单派发)\n  机器契约(check-plan-dispatch.sh attest 校验):\n  ① 预估时长列一律写 NNmin 格式(先估出可测的时长),逐行数值校验——超限= enforce 档硬阻断拒锁回炉重拆（Rule 59.1，2026-10-08 由 SKIPPED 提示升级）\n  ② 输入列文件路径 token 计数 ≤2,超限= enforce 档硬阻断拒锁回炉重拆（Rule 59.1，2026-10-08 由 SKIPPED 提示升级）\n  ③ 拆分决策基准 = 预估时间(用户裁决 09-17):写表时先给每行可测的 NNmin 预估,模型据此决定拆不拆,机侧校验行供 review 对照\n  ④ ID 列一律纯数字（S1/S2…），禁字母后缀——check-plan-dispatch.sh 数据行正则不认 S2a 式命名，attest 拒锁（task-v076 教训）\n  - 粒度三值列 Nf/Nl/Nmin 格式逐行校验,任一超 step_max_files/step_max_lines/step_max_minutes → enforce 拒锁\n  - 伴飞技能列非「无」→ 校验对应 SKILL.md 路径存在(Rule 59.2)\n  - Rule 68.1 前置依赖列必填,无依赖填 -（多依赖顿号分隔）\n  - Rule 96.3 并行硬标注:前置依赖为 - 且独立性四问全 no 的 S-unit ≥2 个 → 必须声明并行组（frontmatter parallel_groups: 组名 + 行内注解 [parallel-group:<组名>];未声明且未按 Rule 68.2 登记全串行论证=计划缺陷,回炉补分析再 attest）\n  - Rule 104.3 计划期标注：类别以目标列内（An）前缀标注（A1-A7 / 47.2 具名 / LOCAL 纯执行）——S-unit 表为 10 列固定列序（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态，check-plan-dispatch.sh $4/$5/$7/$8 定位），禁增列、禁单元格管道转义\n-->\n| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |\n|----|------------|------------------------|-------------|---------|------|------|------|------|------|\n| S1 | (A6) | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |\n| S2 | (A7) | 继承 | | | ≤15min | 1f/30l/15min | 无(示例) | - | pending |\n\n### Phase 4: Testing & Verification\n<!-- \n  WHAT: Verify everything works and meets requirements.\n  WHY: Catching issues early saves time. Document test results in progress.md.\n-->\n- [ ] Verify all requirements met\n- [ ] Document test results in progress.md\n- [ ] Fix any issues found\n- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）\n- **Status:** pending\n- **Executor:** code-runner-agent（mini）\n\n<!-- Executor≠主进程的 Phase 必附 S-unit 表（Rule 22.6；模板 CA-3 判例 task-tpl-verify-fix-20261113） -->\n| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |\n|----|------------|------------------------|-------------|---------|------|------|------|------|------|\n| S1 | (A6) <示例> | 继承 | | | ≤15min | 1f/30l/15min | 无 | - | pending |\n\n### Phase 5: Delivery\n<!-- \n  WHAT: Final review and handoff to user.\n  WHY: Ensures nothing is forgotten and deliverables are complete.\n-->\n- [ ] Review all output files\n- [ ] Ensure deliverables are complete\n- [ ] Deliver to user\n- [ ] 全文档收尾回读梳理记录（Rule 84.14）：全量回读六文档体系→五维互洽→偏移迭代→收敛出口（连续一轮零新发现）后才出 outcome\n- [ ] 归档计划：check-complete exit 0 后先 `bash <skill>/scripts/set-active-plan.sh --clear` 再 `bash <skill>/scripts/archive-plan.sh task-template-catalog-20261122 --root <plans根>`（Rule 81；守卫拒绝时登记理由不强移）\n      <!-- task-kb-auto-capture-20261022 增：收尾主动触发——归档与知识提取为收尾默认动作，勿依赖人想起手动跑 -->\n- [ ] 知识提取入库（条件式：项目存在 scripts/kb-sync-from-plan.sh 知识库机制则必做；不存在则登记「跳过：无知识库机制」）：`bash scripts/kb-sync-from-plan.sh <plan-dir>` 生成 draft → 精炼改名（去 _draft- 前缀、补行号锚、主题化去重）→ `bash scripts/kb-rebuild-index.sh`；条目规范见 knowledge/README.md（项目级 knowledge-brief.md §7 入库回链段，若有）<!-- 路径基准双轨：归档/模板类命令 <skill>/=技能根；kb-* 脚本实体在仓库根 scripts/（项目相对），勿混统一（2026-10-23 task-kb-cr-lits-20261023 CR MAJOR-1 回退） -->\n- **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）\n- **Status:** pending\n- **Executor:** 主进程（例外理由:① git 编排+② 簿记——Rule 25.3 白名单）\n\n## 🛡 防倒退终检（交付/合并前强制）\n<!-- Rule 111（2026-11-20 task-antiregress-tplgov-20261120）：交付/合并前对照「📦 进度产出基线」逐项判定。对既有产出的删除/降级/替换须登记消费方影响评估且净效果≥0，否则 BLOCK（禁止拆东墙补西墙，[PROGRESS-REGRESSION] P0）。 -->\n| 检查项 | 判定方法（机器/可复核） | 证据锚 | 结果 |\n|--------|-------------------------|--------|------|\n| 既有能力未削弱 | 对照 📦 基线逐项：无未登记删除/降级/替换 | <grep/diff/路径锚> | <PASS/FAIL> |\n| 模板解析兼容 | 模板/守卫解析与既有触点兼容（按任务触点验证） | <命令/输出锚> | <PASS/FAIL> |\n| 净效果≥0 逐项对照 | 变更涉及既有产出时：消费方影响已登记且净效果≥0（对照 Rule 111.3） | <登记/证据锚> | <PASS/FAIL/不适用> |\n| selftest 同集零增量 | 与动工前基线 FAIL 集对比无新增 FAIL | <baseline/final diff> | <PASS/FAIL> |\n| 部署位无漂移 | 部署位与产物逐位对照无漂移（按任务部署机制实测） | <diff=0 清单/锚> | <PASS/FAIL/不适用> |\n\n> 净效果判据（Rule 111）：既有产出的删除/降级/替换须登记消费方影响评估且**净效果≥0**，否则 `BLOCK`（禁止拆东墙补西墙，`[PROGRESS-REGRESSION]`）。\n\n## 🔁 收尾回读梳理记录（Rule 84.14 — 迭代环留痕，交付前必填）\n<!-- 每轮一行：轮次/发现/处置；连续一轮零新发现才可出 outcome（收敛出口，轮次不设上限）；\n     发现面=需求↔目标↔执行↔验证↔知识五维互洽（偏移/遗漏/未利用知识） -->\n| 轮次 | 发现（偏移/遗漏/未利用知识） | 处置（修复动作+证据） |\n|------|------------------------------|----------------------|\n| 1    |                              |                      |\n\n## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）\n<!-- \n  WHAT: check-conflicts.sh 扫描结果与工作树隔离决策。\n  WHY: 本仓多为运行中基础设施(skills/hooks/config 被所有会话实时使用),直接改动可能使功能工作期间半残;\n       worktree 隔离 = 改动在副本上完成,验证后原子合并回原分支。\n  WHEN: 计划创建时(init 后)运行 check-conflicts.sh 并填写;合并回后更新 merge_back。\n-->\n| 字段 | 值 |\n|------|-----|\n| `conflict_scan` | `safe` / `risk`（信号①-⑤ 摘要） |\n| `isolation` | `worktree`（实现类默认首选） / `direct`（纯文档/调研或用户否决） |\n| `worktree_path` | `<project-root>/tmp/worktrees/task-template-catalog-20261122` 或 n/a(Rule 100:tmp/ 入 .gitignore) |\n| `branch` | `wt/task-template-catalog-20261122` 或 n/a |\n| `merge_back` | `pending` / `merged(<commit>)` / n/a |\n\n> 契约详见 `/mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。\n\n## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/references/methodology.md §R2）\n\n<!--\n  WHAT: 对每个 Phase 枚举失败模式，打 S(严重度)/O(频度)/D(探测难度) 各 1-10 分，RPN=S×O×D。\n  WHY: RPN>100 的高风险 Phase 必须预先登记兜底动作（对齐 Rule 22.3 五档兜底链，task-v113 后含 22.3.0 资料先行档），避免执行期临时决策。\n  WHEN: 计划创建时填写（高 RPN 项）；纯文档/调研类小任务可写 n/a。\n  开关键: config.json#fmea_enforce（默认 warn；enforce 档下 RPN>100 无兜底登记 = 计划无效）。\n-->\n\n| Phase | 失败模式 | S(1-10) | O(1-10) | D(1-10) | RPN=S×O×D | 预设兜底动作（RPN>100 必填，对齐 22.3 ①-⑤） |\n|-------|---------|---------|---------|---------|-----------|---------------------------------------------|\n| Phase 1 | （示例）依赖配置缺失 |  |  |  |  |  |\n\n**填写规则**：RPN>100 的 Phase → 兜底动作列必填（写清走 22.3 哪一档：改派/拆细/降档/主进程接管/AskUserQuestion）；RPN≤100 可留空。本表是规划期预演，执行期实际失败仍走 Rule 22.3 完整兜底链，两者不互相替代。（AskUser/呈报按 Rule 70 四要素）\n\n## 🔁 原生 Todo 同步（S1–S5 强制）\n<!-- \n  WHAT: 计划文档 ↔ 原生 Todo（TodoWrite / Task 系统）的同步状态追踪。\n  WHY: 计划文档是唯一事实源，Todo 是执行视图；不同步 = 执行视图丢失目标。\n  WHEN: S1 计划创建后建映射 / S2 Phase 状态变更后紧邻同步 / S3 收到 [plan-sync] 提醒立即回写 / S4 会话结束前终态同步 / S5 用户新指令影响计划后先改计划再重映射 Todo。\n-->\n| Phase | Todo 已建 | 最近同步时间 | 备注 |\n|-------|-----------|--------------|------|\n| Phase 1 | ☐ |  |  |\n| Phase 2 | ☐ |  |  |\n| Phase 3 | ☐ |  |  |\n| Phase 4 | ☐ |  |  |\n| Phase 5 | ☐ |  |  |\n\n> 契约详见 `/mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。\n\n## Key Questions\n<!-- \n  WHAT: Important questions you need to answer during the task.\n  WHY: These guide your research and decision-making. Answer them as you go.\n  EXAMPLE: \n    1. Should tasks persist between sessions? (Yes - need file storage)\n    2. What format for storing tasks? (JSON file)\n-->\n1. [Question to answer]\n2. [Question to answer]\n\n## Decisions Made\n<!-- \n  WHAT: Technical and design decisions you've made, with the reasoning behind them.\n  WHY: You'll forget why you made choices. This table helps you remember and justify decisions.\n  WHEN: Update whenever you make a significant choice (technology, approach, structure).\n  EXAMPLE:\n    | Use JSON for storage | Simple, human-readable, built-in Python support |\n-->\n| Decision | Rationale |\n|----------|-----------|\n|          |           |\n\n## Errors Encountered\n<!-- \n  WHAT: Every error you encounter, what attempt number it was, and how you resolved it.\n  WHY: Logging errors prevents repeating the same mistakes. This is critical for learning.\n  WHEN: Add immediately when an error occurs, even if you fix it quickly.\n  EXAMPLE:\n    | FileNotFoundError | 1 | Check if file exists, create empty list if not |\n    | JSONDecodeError | 2 | Handle empty file case explicitly |\n-->\n| Error | Attempt | Resolution | Prevention（Rule 31 指针） |\n|-------|---------|------------|---------------------------|\n|       | 1       |            | → progress.md Error Log   |\n\n## Notes\n<!-- \n  REMINDERS:\n  - Update phase status as you progress: pending → in_progress → complete\n  - Re-read this plan before major decisions (attention manipulation)\n  - Log ALL errors - they help avoid repetition\n  - Never repeat a failed action - mutate your approach instead\n-->\n- Update phase status as you progress: pending → in_progress → complete\n- Re-read this plan before major decisions (attention manipulation)\n- Log ALL errors - they help avoid repetition\n\n## 🚨 Drift Log（漂移检测记录）\n<!-- \n  WHEN: 每次派发 drift-checker 偏移检查（Rule 61 载体）后追加一行记录\n  FORMAT: | timestamp | 结果 | VC条目 | 结论 |\n-->\n| 时间 | 检测结果 | 涉及VC | 结论 |\n|------|---------|--------|------|\n|      |             |        |      |\n\n## 📦 Batch Report（批量处理质量门控 — Rule 18.6,批量任务必填）\n<!-- \n  WHEN: chain_mode: fan-out 或 批量操作 ≥5 单元时必填;纯单次任务可删除整个区块\n  WHY: 批量操作禁止以牺牲质量/准确性为代价(Rule 18);前置 3 问 + 双采样抽检 + 失败率熔断的落盘证据\n  校验: failure_rate >5% → Phase 禁止 complete;sampled_fail >0 → 整批未验证;pre_check 缺项 → plan-writer 校验失败\n  完整模板: /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/batch_report.md | 规则详解: /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/references/batch-quality-gate.md\n  留空会被 check-complete 18.6 门拦（判例同上）\n-->\n| 字段 | 值 |\n|------|-----|\n| `total` | n/a（非批量任务或填写实际数量） |\n| `success` | n/a（非批量任务或填写实际数量） |\n| `failed` | n/a（非批量任务或填写实际数量） |\n| `failure_rate` | n/a（非批量任务；批量时填实际比率，>5% → STOP;>20% → 熔断回滚） |\n| `sampled_pass` | n/a（非批量任务；批量时填运行后抽 10% 结果） |\n| `sampled_fail` | n/a（非批量任务；批量时填运行前抽 2 结果，>0 → 整批熔断） |\n| `pre_check` | n/a（非批量任务；批量时填 Q1:否/Q2:有/Q3:能） |\n| `rollback_point` | n/a（非批量任务；批量时填回滚点，为空 → 禁止批量） |\n\n## 📊 委派统计（Rule 25.4 — 终验前必填）\n<!-- \n  WHAT: 本计划子代理 vs 主进程的执行分布统计。\n  WHY: 子代理占比需要可见反馈闭环;委派率 < config.json#delegation_rate_floor(默认 0.7)或含白名单外理由 → outcome 最高 PARTIAL(白名单见 critical-rules.md Rule 25.3)。\n  WHEN: 每个 Phase complete 后更新;终验交付前必须完整。\n-->\n| 字段 | 值 |\n|------|-----|\n| 子代理执行 Phase 数 / 总 Phase 数 |  /  |\n| 主进程直做 Phase 清单 | （含例外理由） |\n| 委派率 | （< delegation_rate_floor 默认 0.7,或含白名单外理由 → 最高 PARTIAL） |\n| 激活子代理数（Rule 96.5） | （Agent() 派发总次数） |\n| 最大并行宽度（Rule 96.5） | （并行组数 / 最宽组宽,如 2 组 / 最宽 3） |\n| 串行化例外理由（Rule 96.4） | （逐组一句话;无则写 none） |\n\n## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）\n<!--\n  WHEN: 每次 Agent() 派发前填一行;子代理返回 30s 内主进程必须 Read 实际产出 + 紧邻 Edit findings.md 回填结论(「findings 落点」列记段落锚点),两动作完成才在「备注」列勾 verify_done;failed/timeout 行必须回填 checkpoint 路径列(Rule 22.8.4)\n  WHY: 子代理规模限制 + 交接文件保障(Rule 22);findings 回填绑定(Rule 19.1/22.5)防止结论只留会话记忆\n  状态枚举: queued/pending/running/done/partial/timeout/failed/blocked/scaling-redispatch(22.3.1 provider 失败改派)\n  列说明: 备注列 = 低频列折叠单列(rescue 换档挽救记录 档位/结果/时间,failed|timeout 行必填,Rule 22.7;retry_count = 22.3 retry_limit 计数,初值 0,每次重试 +1;verify_done☐ = Read 产出 + findings 复核/回填双条件,Rule 22.5)——字段内容不删,仅列位折叠;verify_done 无机器消费(grep 实证 scripts/*.sh 除 selftest 零命中),为人工义务,不声称机器门\n  派发 prompt 八字段模板: /mnt/data/dev/task-planner-skill/tmp/worktrees/task-template-catalog-20261122/skills/task-planner/templates/subagent_dispatch.md\n  # [2026-09-27 task-v091 B-2] 单写者澄清+Handoff 低频列折叠（verify_done 无机器消费如实披露）\n-->\n\n| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 | 备注(rescue/retry/verify_done) |\n|---|------|--------------|----------------|------|--------------|---------------|--------------|----------------|------------------------|\n| 1 | | | | queued | | | | | - / 0 / ☐ |\n| 2 | | | | | | | | | - / 0 / ☐ |\n| 3 | | | | | | | | | - / 0 / ☐ |\n\n## 🔗 Chain 区块交接配置（可选）\n\n<!-- 仅多 skill 接力任务填写（如：调研→创作→发布）。单 skill 任务可删除此整个区块。 -->\n\n### Chain 模式\n\n| 字段 | 值 |\n|------|-----|\n| **chain_mode** | `single` / `linked`（串行接力）/ `fan-out`（一对多派发） |\n| **current_block** | Block 1 |\n| **handoff_on_complete** | ✅ 是 / ❌ 否 |\n\n### Block 1: [本块名称]（当前块）\n\n| 字段 | 值 |\n|------|-----|\n| **goal** | [本 block 独立目标] |\n| **depends_on** | none |\n| **passes_to** | Block 2: `[交接产物路径]` |\n| **status** | in_progress / pending / complete |\n\n### Block 2: [下游块名称]\n\n| 字段 | 值 |\n|------|-----|\n| **goal** | [下游 block 目标] |\n| **depends_on** | Block 1 → `[交接产物路径]` |\n| **passes_to** | Block 3: `[...]` |\n| **status** | pending |\n\n<!-- 追加 Block N 时使用相同结构 -->\n\n### 🔗 Handoff 追踪表\n\n| Block | 状态 | 交接产物路径 | 验证命令 | 实际完成时间 |\n|-------|------|------------|---------|-------------|\n| Block 1 | - | - | - | - |\n| Block 2 | - | - | - | - |\n\n---\n<!-- ★ Block 分隔符：每个独立交接区块下方用 --- 分隔，格式如下 -->\n<!--\n### Block 2: [名称]\n## Goal\n...\n## Phases\n...\n（复制完整 task_plan 结构，仅包含本 block 的 Phase 和 VC）\n-->\n\n## 🔁 模板感知\n<!-- template_type: general -->\n<!-- task-v096 P2-S1: 运行时追加区块（非模板本体）; general=类型空缺兜底, 已知 16 类类型不产生本区块;\n     上方注释行为 check-template-type 第三形态机读标记（general 恒合法, gate exit 0）, 同时完成 Rule 34.3② 预登记 -->\n- 触发信号: 任务类型空缺 → 落 general 兜底（非 16 类已知类型之一）\n- Rule 34.3②: 沉淀预登记 —— 任务完成终验时按 34.3 三条件评估是否沉淀为 variant\n- 终验必查: check-complete T3 warn 兜底检索 [template-sense] token\n- 处置登记处: 沉淀理由 / 不沉淀理由（二选一必填）→ 指向 plan-template-kit 卫星 SOP\n",
+  "s_units": [
+    {
+      "id": "S1",
+      "phase": "P1",
+      "name": "init 计划 + 原话登记",
+      "executor": "主进程",
+      "files": "plans/task-template-catalog-20261122/",
+      "actions": "init-session.sh + 逐字登记 #1",
+      "verify": "7 文件在位 + 原话入档",
+      "duration": "10",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S2",
+      "phase": "P2",
+      "name": "31 variant + base 元数据块注入",
+      "executor": "general-coder",
+      "files": "skills/task-planner/templates/",
+      "actions": "从现有注释提炼 template_meta 注释块，逐文件 Edit",
+      "verify": "32 文件解析率 100% + 门控锚零改动",
+      "duration": "25",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S3",
+      "phase": "P3",
+      "name": "template-catalog.sh 实现",
+      "executor": "general-coder",
+      "files": "skills/task-planner/scripts/template-catalog.sh",
+      "actions": "argparse/三 scope 枚举/list/add/clone/derive/JSON",
+      "verify": "fixture 实弹 list+clone/derive",
+      "duration": "35",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S4",
+      "phase": "P3",
+      "name": "脚本 fixture 实弹",
+      "executor": "general-coder",
+      "files": "/tmp/tcat-fixture/",
+      "actions": "list 三 scope+JSON+query；clone/derive dry-run+同名拒锁",
+      "verify": "全部 exit 0 + 断言通过",
+      "duration": "15",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S5",
+      "phase": "P4",
+      "name": "SKILL.md SOP 注入",
+      "executor": "主进程",
+      "files": "skills/task-planner/SKILL.md",
+      "actions": ":41/:45 插入模板检索用法示例+流程",
+      "verify": "grep template-catalog.sh ≥3",
+      "duration": "10",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S6",
+      "phase": "P4",
+      "name": "plan-template-kit 交叉指针",
+      "executor": "主进程",
+      "files": "skills/plan-template-kit/SKILL.md",
+      "actions": "加一行机械检索指针",
+      "verify": "grep 命中",
+      "duration": "5",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S7",
+      "phase": "P5",
+      "name": "验证全套",
+      "executor": "主进程",
+      "files": "全仓",
+      "actions": "selftest 双跑 + scan-template-spec + dogfood 全链",
+      "verify": "FAIL 零新增 + exit 0",
+      "duration": "30",
+      "granularity": "1",
+      "parallel": "no"
+    },
+    {
+      "id": "S8",
+      "phase": "P5",
+      "name": "merge + 四位部署 + 清理",
+      "executor": "主进程",
+      "files": "worktree/部署位",
+      "actions": "merge --no-ff + 四位 diff=0 + worktree remove",
+      "verify": "DEPLOY-DIFF-0 + 分支清理",
+      "duration": "20",
+      "granularity": "1",
+      "parallel": "no"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "D1 查询方式=文件扫描+可选 JSON 清单缓存，不引 SQLite",
+      "rationale": "零新依赖、无索引一致性成本、贴合 JSON 权威源；用户澄清问题未答，按推荐项自主决策"
+    },
+    {
+      "id": "D2",
+      "decision": "D2 元数据载体=模板头统一 template_meta 注释块",
+      "rationale": "元数据随模板走不漂移，改动限 skills/templates/ 属改进 skill，不碰 plans/ 存量计划"
+    },
+    {
+      "id": "D3",
+      "decision": "clone 与 add 语义合并（原话「添加或者克隆…就是克隆嘛」）",
+      "rationale": "避免重复实现，add 作为 clone/new 统一入口"
+    }
+  ],
+  "root_causes": [
+    {
+      "id": "RC1",
+      "process": "模板匹配靠人读散文与固定流程",
+      "defect": "场景/功能无机器可读字段，匹配不可流程化",
+      "fix": "template_meta 注释块 + template-catalog.sh list --json",
+      "vc": "VC-1 VC-3"
+    }
+  ],
+  "fmea": [
+    {
+      "id": "FMEA-1",
+      "phase": "P2-P5",
+      "mode": "template_meta 注入破坏门控锚",
+      "severity": 8,
+      "occurrence": 2,
+      "detection": 2,
+      "rpn": 32,
+      "fallback": "注入点紧贴 template_type 行之后；Verify=git diff 门控行零改动"
+    },
+    {
+      "id": "FMEA-2",
+      "phase": "P2-P5",
+      "mode": "脚本 clone 覆盖已有模板",
+      "severity": 7,
+      "occurrence": 2,
+      "detection": 3,
+      "rpn": 42,
+      "fallback": "同名拒锁 + --force 显式 + dry-run；Verify=fixture 同名拒锁"
+    },
+    {
+      "id": "FMEA-3",
+      "phase": "P2-P5",
+      "mode": "selftest 因模板行数变化新增 FAIL",
+      "severity": 6,
+      "occurrence": 3,
+      "detection": 3,
+      "rpn": 54,
+      "fallback": "双跑 master vs worktree 对比；若新增则调整注入位置不改门"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "phase": "P2",
+      "text": "W1: 子代理从现有注释提炼 32 模板 template_meta，断言式注入(门控行零改动)，解析率 32/32",
+      "at": "2026-11-22"
+    },
+    {
+      "id": "A2",
+      "phase": "P3",
+      "text": "W2: 新增 template-catalog.sh(list/add/clone/derive)，修复 2 bug(畸形尾部+源解析优先级)，clone meta 完整继承 sc=5/derive prune 生效实证",
+      "at": "2026-11-22"
+    },
+    {
+      "id": "A3",
+      "phase": "P4",
+      "text": "W3: SKILL.md :41/:45 注入模板检索 SOP 用法示例 + plan-template-kit 交叉指针",
+      "at": "2026-11-22"
+    }
+  ],
+  "test_results": [
+    {
+      "id": "T1",
+      "phase": "P2",
+      "test": "template_meta 覆盖+门控零改动+scan-template-spec",
+      "input": "32 模板",
+      "expected": "32/32 + gate_diff=0 + OUTDATED=0",
+      "actual": "META-32-OK / GATE-UNCHANGED-OK / OUTDATED: 0",
+      "status": "pass"
+    },
+    {
+      "id": "T2",
+      "phase": "P3",
+      "test": "list/query/recommend + clone/derive dry-run/同名拒锁/force备份/bug修复",
+      "input": "fixture 隔离",
+      "expected": "全 exit 0 + meta 完整",
+      "actual": "query 视频分镜→4命中; recommend db bug→diagnostic/bugfix; clone sc=5/ft=5; derive prune count=0; dup lock rc=1; force bak OK",
+      "status": "pass"
+    },
+    {
+      "id": "T3",
+      "phase": "P5",
+      "test": "tmp dogfood 全链",
+      "input": "list→init(bugfix)→fill→render→attest",
+      "expected": "exit 0 锁定",
+      "actual": "首次拒绝=fixture 数据缺口(goals/phases/s_units 未填);补全后锁定 SHA 44fc6273",
+      "status": "pass"
+    },
+    {
+      "id": "T4",
+      "phase": "P5",
+      "test": "selftest 双跑 FAIL 集对比",
+      "input": "master vs worktree 全量 --fresh",
+      "expected": "FAIL 集相等",
+      "actual": "首轮 wt 多 selftest-methodology(M-04 FMEA 预演计数2)，master 8 项；修复措辞后重跑待收口",
+      "status": "pending"
+    },
+    {
+      "id": "T5",
+      "phase": "P5",
+      "test": "四位部署 + 部署位实跑",
+      "input": "35 文件 × 4 位",
+      "expected": "diff=0 + 脚本生效",
+      "actual": "DEPLOY-DIFF-0-REAL；zcode 位 video meta_source=template_meta sc=5；DEPLOYED-META-32-OK",
+      "status": "pass"
+    }
+  ]
+}
