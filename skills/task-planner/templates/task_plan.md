@@ -344,7 +344,7 @@ Phase 1
 - [ ] Test incrementally
 - [ ] 规范召回（Rule 93）：每 3 个 S-unit/Phase 翻转主进程 Read ../task-discipline/references/execution-recall-card.md 并 progress 留 [recall] 行；压缩/恢复后第一动作
 - [ ] **周期性会话记忆回顾（Rule 93/80.8⑤）**：每完成 3 个 Todo/S-unit（"3/5 步"节奏，config `periodic_review_interval_calls`），主进程重读会话记忆四载体——`findings.md`（结论/纠偏）+ `knowledge-brief.md` §2-§4（知识锚/易错点）+ `user-session-log.md` 尾部 ≤30 行（用户原话锚）+ `progress.md` 本 Phase 尾部（动作/测试）→ ①梳理（当前执行与记忆是否一致）②纠偏（偏移记 `[corrected]`，Rule 65.4）③反思（遗漏/未利用知识回填 findings/kb）④留痕 progress `[memory-review]` 行；与 3f/3g 同拍执行，mini/L0 档豁免
-- [ ] **Git checkpoint（git-rework-guard）**：单个 S-unit/大改动完成即 `git add <scope 文件> && git commit`（不等整 Phase），commit message 含 task-id + Phase/S-unit 标识；返工/回退第一动作=`git log --oneline` 定位正确 commit → `git checkout <commit> -- <file>` 精确找回，禁凭记忆重做；方向彻底错=丢弃 wt/<task-id> 分支不污染 master（细则→worktree-isolation.md §4.5）
+- [ ] **Git checkpoint（git-rework-guard）**：单个 S-unit/大改动完成即 `git add <scope 文件> && git commit`（不等整 Phase），commit message 含 task-id + Phase/S-unit 标识；返工/回退第一动作=`git log --oneline` 定位正确 commit → `git checkout <commit> -- <file>` 精确找回，禁凭记忆重做；方向彻底错=丢弃 wt/<task-id> 分支不污染 master（细则→worktree-isolation.md §4.5）；方向根本错误且阈值命中→弃旧开新(§4.6)：评估归因+用户确认→salvage-manifest 提取有效数据→从基线牵新 wt/<task-id>-rN→新计划 restarted_from 登记，旧计划 outcome=RESTARTED
 - **V-N:** VC-x, VC-y（本 Phase 验收映射的 VC 编号,≥2 条）
 - **Status:** pending
 - **Executor:** code-assistant（haiku-1）

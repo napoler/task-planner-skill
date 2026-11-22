@@ -24,6 +24,7 @@
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
 - Git checkpoint: [commit hash + message;每个 S-unit/大改动完成即 commit,返工时据此 `git checkout <hash> -- <file>` 找回]
+- [restart] 弃旧开新(§4.6): [旧task-id → 新task-id(-rN); 有效数据清单(salvage-manifest); 触发证据(96.7/103.8b+归因); 用户确认原话#N; 基线commit]
 
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->
