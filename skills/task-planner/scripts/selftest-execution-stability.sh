@@ -103,26 +103,27 @@ t "T10b init-session.sh '6/6' ≥1" bash -c "[ \"\$(grep -c '6/6' '$INIT')\" -ge
 #   (posttooluse 重锁未命中 → attest 未被调用, 不产生新归属写入, 不被洗白)。
 #   每断言先跑一次真实 hook 再判定, 单条内 FAIL 可定位(正/负例分离计入 Total)。
 b1_pos() {
-    local T P
-    T="$(mktemp -d)" || { echo "[B1] fixture mktemp failed"; return 1; }
-    P="$T/plans/task-x"
-    mkdir -p "$P"
-    # [2026-10-05 task-v131 回归清账 Rule 45] 原行为: 夹具计划=裸 'goal' 一行, 新增 Rule 51.1
-    #   四锚 fail-closed 门先拒基线/重锁 attest → T11a/T11b FAIL。修法: 夹具补四锚最小集
-    #   (标题+R1 行+R→VC 映射+🧮 根源覆盖表, 非结果级声明带定性理由), 测试目标(自动重锁/
-    #   归属护栏防洗白)不变。后续 append 'goal v2' 仍与锚区块共存, 哈希链路断言不受影响。
-    { echo "goal"
-      printf '%s\n' \
-        '## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
-        '- **R1**: 「fixture」' \
-        '### R→VC 映射' \
-        '## 🧮 根源覆盖表' \
-        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
-    } > "$P/task_plan.md"
-    printf 'sessabc123' > "$P/.session-owner"
-    rm -f "/tmp/task-planner-hook-sessabc123.state"
-    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check --skip-vc-check >/dev/null 2>&1
-    local h1
+	    local T P
+	    T="$(mktemp -d)" || { echo "[B1] fixture mktemp failed"; return 1; }
+	    P="$T/plans/task-x"
+	    mkdir -p "$P"
+	    # [2026-10-05 task-v131 回归清账 Rule 45] 原行为: 夹具计划=裸 'goal' 一行, 新增 Rule 51.1
+	    #   四锚 fail-closed 门先拒基线/重锁 attest → T11a/T11b FAIL。修法: 夹具补四锚最小集
+	    #   (标题+R1 行+R→VC 映射+🧮 根源覆盖表, 非结果级声明带定性理由), 测试目标(自动重锁/
+	    #   归属护栏防洗白)不变。后续 append 'goal v2' 仍与锚区块共存, 哈希链路断言不受影响。
+	    { echo "goal"
+	      printf '%s\n' \
+	        '## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
+	        '- **R1**: 「fixture」' \
+	        '### R→VC 映射' \
+	        '## 🧮 根源覆盖表' \
+	        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
+	    } > "$P/task_plan.md"
+	    printf 'sessabc123' > "$P/.session-owner"
+	    rm -f "/tmp/task-planner-hook-sessabc123.state"
+	    # [2026-11-23 task-fix-all-20261123] hermetic: 同时 scrub CLAUDE_SESSION_ID，防真实会话 env 泄漏写入 attested_by_sid 导致 T11b 假 FAIL
+	    env -u ZCODE_SESSION_ID -u CLAUDE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check --skip-vc-check >/dev/null 2>&1
+	    local h1
     h1="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
     # 正例: 改内容 + 相对含 slash file_path 触发 posttooluse 自动重锁
     echo "goal v2" >> "$P/task_plan.md"
@@ -140,25 +141,26 @@ b1_pos() {
 t "T11a B1 正例: 相对含 slash 路径 Edit → 自动重锁(attested_by_sid=sessabc123 且 plan_sha256=新文件哈希)" \
     b1_pos
 b1_neg() {
-    local T P
-    T="$(mktemp -d)" || { echo "[B1-neg] fixture mktemp failed"; return 1; }
-    P="$T/plans/task-x"
-    mkdir -p "$P"
-    # [2026-10-05 task-v131 回归清账 Rule 45] 同 b1_pos: 裸 'goal' 夹具补 Rule 51.1 四锚最小集,
-    #   基线 attest 才能落锁; 负例语义(owner 换他会话后重锁不命中, attested_by_sid 保持基线值)
-    #   不变——基线值由基线 attest 写入, 本用例断言的是「未更新/不被洗白」。
-    { echo "goal"
-      printf '%s\n' \
-        '## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
-        '- **R1**: 「fixture」' \
-        '### R→VC 映射' \
-        '## 🧮 根源覆盖表' \
-        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
-    } > "$P/task_plan.md"
-    printf 'sessabc123' > "$P/.session-owner"
-    rm -f "/tmp/task-planner-hook-sessabc123.state"
-    env -u ZCODE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check --skip-vc-check >/dev/null 2>&1
-    local h1
+	    local T P
+	    T="$(mktemp -d)" || { echo "[B1-neg] fixture mktemp failed"; return 1; }
+	    P="$T/plans/task-x"
+	    mkdir -p "$P"
+	    # [2026-10-05 task-v131 回归清账 Rule 45] 同 b1_pos: 裸 'goal' 夹具补 Rule 51.1 四锚最小集,
+	    #   基线 attest 才能落锁; 负例语义(owner 换他会话后重锁不命中, attested_by_sid 保持基线值)
+	    #   不变——基线值由基线 attest 写入, 本用例断言的是「未更新/不被洗白」。
+	    { echo "goal"
+	      printf '%s\n' \
+	        '## 🎯 用户需求原文（Rule 51.1 — 逐条抄录，禁转译/缩写/合并）' \
+	        '- **R1**: 「fixture」' \
+	        '### R→VC 映射' \
+	        '## 🧮 根源覆盖表' \
+	        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
+	    } > "$P/task_plan.md"
+	    printf 'sessabc123' > "$P/.session-owner"
+	    rm -f "/tmp/task-planner-hook-sessabc123.state"
+	    # [2026-11-23 task-fix-all-20261123] hermetic: 同时 scrub CLAUDE_SESSION_ID（与 b1_pos 对齐）
+	    env -u ZCODE_SESSION_ID -u CLAUDE_SESSION_ID bash "$ATTEST" "$P/task_plan.md" --skip-dispatch-check --skip-vc-check >/dev/null 2>&1
+	    local h1
     h1="$(sha256sum "$P/task_plan.md" | awk '{print $1}')"
     # 负例: 先改内容, 再把 owner 换成他会话 → 同 stdin 重跑, 重锁必须不命中(归属护栏, P0-1 防洗白):
     #   plan_sha256 仍为旧值(不更新) 且 attested_by_sid 被 attest 重置为空串(非 sessabc123, 不被洗白)
