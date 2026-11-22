@@ -1864,17 +1864,45 @@ def build_parser() -> argparse.ArgumentParser:
         prog="planctl.py",
         description="task-planner 结构化状态工具：JSON 权威源 CRUD / MD 视图 / 倒排标签 / 机器门",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="输出约定：管理命令=JSON stdout；check=单行 PLANCTL CHECK ...；错误=stderr",
+        # [2026-11-22 S3] 补 help 可照抄示例以减少试错：epilog 扩为多行原文块，
+        # 内容复用模块 docstring 已有的输出/写入安全/退出码事实，不引入任何运行时行为。
+        epilog="""示例（可照抄；先把 <计划目录> 换成含 plan-state.json 的真实目录，按顺序执行）：
+  python3 planctl.py init      --plan-dir <计划目录> --task-id TASK-001 --tier standard --lane L0
+  python3 planctl.py add       --plan-dir <计划目录> --section requirements --json '{\"id\":\"R1\",\"text\":\"需求原文\",\"type\":\"手段\"}'
+  python3 planctl.py set       --plan-dir <计划目录> --section requirements --id R1 --field text --value '需求原文'
+  python3 planctl.py set       --plan-dir <计划目录> --field next_step --value '下一步动作'
+  python3 planctl.py check     --plan-dir <计划目录> vc-nonvacuous
+  python3 planctl.py render    --plan-dir <计划目录>
+  python3 planctl.py audit-add --plan-dir <计划目录> --round 1 --verdict APPROVED --by reviewer --c 3 --i 0 --w 0
+
+输出约定：管理命令=JSON stdout；check=单行 PLANCTL CHECK <name>: PASS|FAIL <reason>；错误=stderr。
+写入安全：写操作先校验新文档→旧版备份到 <计划目录>/.history/（保留最近 20 版）→临时文件+fsync+os.replace 原子替换→回读校验，失败回滚。
+退出码：0=成功、非0=失败；业务/IO/JSON 错误 stderr + rc 1；check 自报 0=PASS / 1=FAIL / 2=输入异常；validate 0=通过 / 1=失败。
+各子命令专属可照抄示例见 python3 planctl.py <子命令> --help 的『示例』段。""",
     )
     sub = parser.add_subparsers(dest="command", required=True, title="subcommands")
 
     def add_cmd(name: str, help_text: str, handler: Callable[..., int]) -> argparse.ArgumentParser:
-        p = sub.add_parser(name, help=help_text)
+        # [2026-11-22 S3] 补 help 示例减少试错：透传 RawDescriptionHelpFormatter 保留
+        # epilog 中的多行原文块；只改 parser 构造参数，参数定义与 handler 绑定保持原样。
+        p = sub.add_parser(
+            name, help=help_text,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog=("示例（通用调用格式；把 <计划目录> 换成含 plan-state.json 的真实目录，"
+                    "必填参数见上方 options，专属可照抄示例见该命令 --help 的『示例』段）：\n"
+                    f"  python3 planctl.py {name} --plan-dir <计划目录> [必填参数]"),
+        )
         p.add_argument("--plan-dir", required=True, help="计划目录（含 plan-state.json）")
         p.set_defaults(handler=handler)
         return p
 
     p = add_cmd("init", "从模板生成 plan-state.json（原子写）", cmd_init)
+    # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。
+    p.epilog = (
+        "示例（可照抄，先把 <计划目录> 换成真实目录）：\n"
+        "  python3 planctl.py init --plan-dir <计划目录> --task-id TASK-001 --tier standard --lane L0\n"
+        "  python3 planctl.py init --plan-dir <计划目录> --task-id TASK-001 --force"
+    )
     p.add_argument("--task-id", required=True)
     p.add_argument("--tier", choices=("standard", "mini"))
     p.add_argument("--lane", choices=("L0", "L0-T", "L0-E", "L1", "L2"))
@@ -1891,6 +1919,12 @@ def build_parser() -> argparse.ArgumentParser:
     add_cmd("validate", "schema 校验（rc 0 通过 / 1 失败）", cmd_validate)
 
     p = add_cmd("set", "修改条目字段或顶层字段", cmd_set)
+    # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。
+    p.epilog = (
+        "示例（可照抄，先把 <计划目录> 换成真实目录）：\n"
+        "  python3 planctl.py set --plan-dir <计划目录> --section requirements --id R1 --field text --value '需求原文'\n"
+        "  python3 planctl.py set --plan-dir <计划目录> --field next_step --value '下一步动作'"
+    )
     # [2026-11-22 task-jsonderive-deploy-20261122] 原行为 --section/--id required；现改为可选，
     # 省略即写顶层字段，条目写入仍须成对提供（cmd_set 内显式校验，不放宽成静默 no-op）。
     p.add_argument("--section", choices=ARRAY_SECTIONS, help="条目段；省略则写顶层 --field")
@@ -1899,6 +1933,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--value", required=True)
 
     p = add_cmd("add", "新增条目", cmd_add)
+    # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。
+    p.epilog = (
+        "示例（可照抄，先把 <计划目录> 换成真实目录）：\n"
+        "  python3 planctl.py add --plan-dir <计划目录> --section requirements --json '{\"id\":\"R1\",\"text\":\"需求原文\",\"type\":\"手段\"}'\n"
+        "  python3 planctl.py add --plan-dir <计划目录> --section vcs --json '{\"id\":\"VC1\",\"criterion\":\"判据\",\"command\":\"验证命令\"}'"
+    )
     p.add_argument("--section", required=True, choices=ARRAY_SECTIONS)
     p.add_argument("--json", required=True, help="条目 JSON 对象字符串")
 
@@ -1924,6 +1964,12 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--id", required=True)
 
     p = add_cmd("audit-add", "追加审计轮次", cmd_audit_add)
+    # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。
+    p.epilog = (
+        "示例（可照抄，先把 <计划目录> 换成真实目录）：\n"
+        "  python3 planctl.py audit-add --plan-dir <计划目录> --round 1 --verdict APPROVED --by reviewer --c 3 --i 0 --w 0\n"
+        "  python3 planctl.py audit-add --plan-dir <计划目录> --round 2 --verdict REJECTED --by reviewer --issues-json '[{\"key\":\"C-1\",\"severity\":\"C\",\"state\":\"open\"}]'"
+    )
     p.add_argument("--round", type=int, required=True)
     p.add_argument("--verdict", choices=("APPROVED", "REJECTED"), required=True)
     p.add_argument("--by", required=True)
@@ -1941,7 +1987,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = add_cmd("tag-search", "按 tag 从倒排索引 O(1) 检索", cmd_tag_search)
     p.add_argument("--tag", required=True)
 
-    add_cmd("render", "生成 4 个 MD 派生视图", cmd_render)
+    # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。
+    p = add_cmd("render", "生成 4 个 MD 派生视图", cmd_render)
+    p.epilog = (
+        "示例（可照抄，先把 <计划目录> 换成真实目录）：\n"
+        "  python3 planctl.py render --plan-dir <计划目录>\n"
+        "产出 4 个 MD 派生视图：task_plan.md / progress.md / verification.md / findings.md。"
+    )
     add_cmd("backup", "手动备份权威源", cmd_backup)
 
     p = add_cmd("restore", "从 .history 恢复（默认最近一次）", cmd_restore)
@@ -1950,6 +2002,13 @@ def build_parser() -> argparse.ArgumentParser:
     add_cmd("history", "列出可用备份版本", cmd_history)
 
     p = add_cmd("check", "机器门判定（stdout 单行 PLANCTL CHECK）", cmd_check)
+    # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。
+    p.epilog = (
+        "示例（可照抄，先把 <计划目录> 换成真实目录）：\n"
+        "  python3 planctl.py check --plan-dir <计划目录> vc-nonvacuous\n"
+        "  python3 planctl.py check --plan-dir <计划目录> audit\n"
+        "输出：stdout 单行 PLANCTL CHECK <name>: PASS|FAIL <reason>；rc 0=PASS / 1=FAIL / 2=输入异常。"
+    )
     p.add_argument("name", choices=tuple(CHECKS), help="检查项")
     return parser
 
