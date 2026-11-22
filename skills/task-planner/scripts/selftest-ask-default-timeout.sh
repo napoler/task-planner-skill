@@ -83,7 +83,7 @@ if [ "$a" -eq 0 ] && [ "$b" -eq 0 ]; then ok 08 "越界 1-4x 字面零命中（C
 # [2026-10-08 task-v144 合并级联: v145 新增 2 键(config=42),FF 守护 42 为准,旧定数 40→42]
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "53" ]; then ok 09 "config.json properties 键数 53（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 09 "config.json properties 键数=$keys（应 53）"; fi
+  if [ "$keys" = "54" ]; then ok 09 "config.json properties 键数 54（task-v172 合法新增 2 键 44→46；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 09 "config.json properties 键数=$keys（应 54）"; fi # [task-align-mandatory-step-20261123] 合法新增 align_anchor_enforce 1 键 53→54
 else
   printf 'RT-09 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi

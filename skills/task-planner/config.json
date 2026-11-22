@@ -138,6 +138,16 @@
       "default": "enforce",
       "description": "证据锚真实性门控档位（P-01，终审意见 7，scripts/check-evidence-anchor.sh）：校验 delivery-summary「需求覆盖核对」证据格与 progress.md [goal:Gn] 证据行的路径锚是否真实且归属本任务产出物——三层判定=① 存在性+行界（路径可解析、path:line 行号 ≤ 文件行数、否定字面 trim 后判定，修「无 」尾随空格击穿）② provenance 系统路径前缀（/etc /usr /bin …）→ 直接 FAIL ③ 域外路径（plan-dir 外且不在「执行范围限制」表内）→ FAIL ④ 机器落盘 evidence/ 引用须有 VC 编号+时间戳头；enforce=不中阻断 complete(exit 1) / warn=仅 stderr 告警 / off=关闭。接线=check-complete.sh R-COVERAGE 段与 goal-gate 段前置 shell-out（门控范围与两段自身对齐：mini 档 38.4/66.5 豁免）。档位解析优先级: env TASK_PLANNER_EVIDENCE_ANCHOR_ENFORCE > 本键 > .properties 默认 > enforce（jq/config 缺失回落 enforce，不静默降级）。诚实边界=只到路径归属层，内容级张冠李戴靠 run-verification.sh 落盘 evidence/VC-N.out 收敛"
     },
+    "align_anchor_enforce": {
+      "type": "string",
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
+      "default": "enforce",
+      "description": "对齐必选步骤机器门档位（scripts/check-complete.sh ALIGN-ANCHOR GATE）：校验 SKILL.md 四处精确对齐锚（修改完成后强制对齐/关联面四族+部署位+引用面/终验强制对齐/对齐核查）齐备，缺锚=对齐条款被丢弃。enforce=缺锚阻断 complete(exit 1) / warn=仅 stderr 告警 / off=关闭。档位解析优先级: env TASK_PLANNER_ALIGN_ANCHOR_ENFORCE > 本键 > .properties 默认 > enforce（jq/config 缺失 fail-closed 回落 enforce，不静默降级）。Why=用户裁决 D1①实施机器门；历史教训=多文件修改部分同步部分丢弃终验无拦截"
+    },
     "vc_nonvacuous_enforce": {
       "type": "string",
       "enum": [

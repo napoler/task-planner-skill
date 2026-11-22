@@ -134,10 +134,10 @@ fi
 
 # CP-09: jq '.properties|length' config.json =53（P-01 新增 evidence_anchor_enforce 46→47；[task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐））
 props=$(jq '.properties|length' "$CONFIG" 2>/dev/null)
-if [ "$props" -eq 53 ]; then  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）
-    ok "CP-09" "config properties=$props=53"
+if [ "$props" -eq 54 ]; then  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）; [task-align-mandatory-step-20261123] 合法新增 align_anchor_enforce 1 键 53→54
+    ok "CP-09" "config properties=$props=54"
 else
-    bad "CP-09" "config properties=$props≠53"
+    bad "CP-09" "config properties=$props≠54"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"

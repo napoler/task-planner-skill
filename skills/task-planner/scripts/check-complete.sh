@@ -1670,6 +1670,47 @@ END {print n+0}'
         printf '[plan] SKILL-MODIFY GATE SKIPPED (计划未声明涉及技能文件修改)\n' >&2
     fi
 
+    # [2026-11-23 task-align-mandatory-step-20261123] ALIGN-ANCHOR GATE FN BEGIN
+    # 对齐必选步骤机器门：校验 SKILL.md 四处精确锚齐备，缺锚=对齐条款被丢弃。
+    # WHAT: 把用户"修改完成后必须对齐"诉求落到机器面——enforce 档缺任一锚 exit 1；warn 仅告警；off 跳过。
+    # WHY: 历史教训=多文件修改部分同步部分丢弃，终验无机器门拦截；本门与 SKILL.md 三处锚+config 档位键+selftest BP-11 静态锚构成四族闭环。
+    # 自包含契约：只用入参 tier/skill_md + grep/printf/return + 局部变量，禁引用脚本外部变量（VC-5 sed 抽取 source 实测）。
+    align_anchor_gate() {
+        local tier="$1" skill_md="$2"
+        case "$tier" in enforce|warn|off) ;; *) tier="enforce" ;; esac  # 非法档 fail-closed 落 enforce
+        [ "$tier" = "off" ] && return 0
+        local missing=""
+        grep -Fq '修改完成后强制对齐' "$skill_md" 2>/dev/null || missing="$missing|A1"
+        grep -Fq '关联面四族+部署位+引用面' "$skill_md" 2>/dev/null || missing="$missing|A2"
+        grep -Fq "终验强制对齐" "$skill_md" 2>/dev/null || missing="$missing|A3"
+        grep -Fq '对齐核查' "$skill_md" 2>/dev/null || missing="$missing|A4"
+        if [ -n "$missing" ]; then
+            if [ "$tier" = "enforce" ]; then
+                printf '[plan] ALIGN-ANCHOR GATE FAILED: 对齐必选步骤锚缺失%s（修改完成后强制对齐条款被丢弃，补齐 SKILL.md 四处锚后重跑）\n' "$missing" >&2
+                return 1
+            fi
+            printf '[plan] ALIGN-ANCHOR GATE WARNING: 对齐锚缺失%s（warn 档不阻断）\n' "$missing" >&2
+            return 0
+        fi
+        printf '[plan] ALIGN-ANCHOR GATE PASSED (四处对齐锚齐备)\n' >&2
+        return 0
+    }
+    # [2026-11-23 task-align-mandatory-step-20261123] ALIGN-ANCHOR GATE FN END
+
+    # 档位解析优先级: env TASK_PLANNER_ALIGN_ANCHOR_ENFORCE > config 顶层 align_anchor_enforce > .properties 默认 > enforce（fail-closed）。
+    resolve_align_anchor_tier() {
+        local m="${TASK_PLANNER_ALIGN_ANCHOR_ENFORCE:-}"
+        case "$m" in enforce|warn|off) printf '%s' "$m"; return 0 ;; esac
+        if command -v jq >/dev/null 2>&1 && [ -f "$CONFIG_JSON" ]; then
+            m="$(jq -r '.align_anchor_enforce // .properties.align_anchor_enforce.default // "enforce"' "$CONFIG_JSON" 2>/dev/null)" || m=""
+        fi
+        case "$m" in enforce|warn|off) printf '%s' "$m" ;; *) printf 'enforce' ;; esac
+    }
+    ALIGN_ANCHOR_TIER="$(resolve_align_anchor_tier)"
+    if [ "$ALIGN_ANCHOR_TIER" != "off" ]; then
+        align_anchor_gate "$ALIGN_ANCHOR_TIER" "$SKILL_ROOT/SKILL.md" || exit 1
+    fi
+
     # [2026-09-20 task-v085 Rule 37] 机制画像抽查：内容组 (writing/research/publish) 计划声明 code_review: required 时，
     # warn=仅 stderr 提示不改 exit / enforce=exit 1 / off=跳过。档位 env > config.json mechanism_profile_enforce > warn(jq 缺失 fail-open)。
     mp_tier="${TASK_PLANNER_MECHANISM_PROFILE_ENFORCE:-}"

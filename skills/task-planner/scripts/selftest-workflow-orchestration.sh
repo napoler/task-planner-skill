@@ -91,7 +91,7 @@ if [ "$res" -eq 0 ]; then ok 11 "Rules 1-38 残留 0"; else bad 11 "Rules 1-38 �
 # [2026-10-08 task-v144 合并级联] 40→42：task-v142 遗留 periodic_review 孤儿键 2 个并入 master，键数漂移为合法现状
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq -r '.properties|keys|length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "53" ]; then ok 12 "config.json properties 键数 53（基线演进 40→42→46, task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 12 "config.json properties 键数=$keys（应 53）"; fi
+  if [ "$keys" = "54" ]; then ok 12 "config.json properties 键数 54（基线演进 40→42→46, task-v172 合法新增 2 键；P-01 合法新增 evidence_anchor_enforce 1 键 46→47）"; else bad 12 "config.json properties 键数=$keys（应 54）"; fi # [task-align-mandatory-step-20261123] 合法新增 align_anchor_enforce 1 键 53→54
 else
   printf 'WF-12 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
