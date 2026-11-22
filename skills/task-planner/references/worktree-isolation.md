@@ -70,6 +70,9 @@ git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
 #    只 add 本 Phase 产物文件(禁用 add -A 盲扫,防卷入 plans/ 与并行任务产物)
 git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> add <本 Phase 产物文件...>
 git -C ${PROJECT_ROOT}/tmp/worktrees/<task-id> commit -m "<type>(<scope>): task-<id>/Phase N — <摘要>"
+#    [git-rework-guard 2026-11-22] 更细 checkpoint:单个 S-unit/大改动完成即 commit(不等整 Phase),
+#    使每个可回退点都进版本历史——返工时用 git 找回而非重做(见下方「返工 Git 找回流程」节)。
+#    临时分支 wt/<task-id> 天然隔离主分支:方向错=丢弃分支,验证过=才合并,全程不污染 master。
 
 # ④ worktree 内全 VC 复验通过后,回主仓合并(同步开发冲突仅在此阶段处理,执行期不打断)
 git merge --no-ff wt/<task-id> -m "merge: <task-id> <goal>"
@@ -99,6 +102,20 @@ git worktree remove ${PROJECT_ROOT}/tmp/worktrees/<task-id> && git branch -d wt/
 
 **失败处理（2026-11-04 Rule 101.2 语义翻转）**：merge 冲突=收口义务（Rule 101.2）：逐条走 41.1 消解链配额（①git 三方合并/并集解 ②手动解冲突→复验 ③分叉重基）**解决所有冲突**，解后 VC 复验过才合并；仅**消解配额耗尽仍冲突**为真门（Rule 95.5）→ STOP 报告用户（Rule 70 四要素+冲突 hunk 看点）并在 progress 登记 `[conflict-unresolved]`；**不乱解守卫保留**：解冲突必带复验（VC/selftest/Read 对照），无复验的解=假收口（Rule 54），并集解仅限两侧增量场景、判为语义冲突处必须手动解+复验。worktree 内验证失败 → 修到通过才合并，3 次失败升级用户。
 呈报按 Rule 70：列变更/冲突文件绝对路径+看点（冲突 hunk/信号项）+动作+默认项。
+
+## 4.5 返工 Git 找回流程（git-rework-guard 2026-11-22，用户诉求：长链返工把可控项目改得不可控）
+
+**核心原则**：返工/回退的**第一动作永远是查 Git 历史找回**，禁止凭记忆重做或全量改写。Git 的版本保存+历史找回是核心资产，长链返工中不用 Git = 抛弃最有力的安全网。
+
+**触发**：QC FAIL / 方向错 / 改坏文件 / 需回退到某中间状态（含 Rule 103.8b 同文件第 3 轮返工前 STOP 换策略、Rule 96.7 checkpoint 后续批）。
+
+**找回步骤（按顺序）**：
+1. `git -C <worktree> log --oneline -20` → 定位最近的正确 commit（配套 commit message 写明 Phase/S-unit）；同时在 progress.md 查该节点的 commit hash 留痕。
+2. 精确恢复：只需回退某文件 → `git -C <worktree> checkout <good-commit> -- <file>`（只取回该文件，不动其他成果）；需整体回退 → `git -C <worktree> revert <bad-commit>` 或在新 checkpoint commit 上继续（禁 `reset --hard` 未提交成果）。
+3. 找回后**先 diff 对照**（`git diff <good-commit> -- <file>`）再决定保留哪些增量，禁止整文件覆盖丢失他人/他阶段成果。
+4. 方向彻底错 → 丢弃整条临时分支（`git worktree remove` + `git branch -D wt/<task-id>`），主分支零污染，从主仓重新开始——这是 worktree+临时分支相对直接改主分支的核心价值。
+
+**commit 频率纪律（防找回点缺失）**：单个 S-unit/一次大改动完成即 commit（粒度≤一个可回退单元），不等到整 Phase 末；commit message 必含 task-id + Phase/S-unit 标识。计划文档（plans/）也每 Phase 提交进版本控制（Rule 27），禁长期 uncommitted（否则会话中断/返工时 Git 无可找回）。
 
 ## 5. 反模式（禁止）
 

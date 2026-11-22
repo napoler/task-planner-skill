@@ -23,6 +23,7 @@
   | Test | Input | Expected | Actual | Status |
   |------|-------|----------|--------|--------|
   |      |       |          |        |        |
+- Git checkpoint: [commit hash + message;每个 S-unit/大改动完成即 commit,返工时据此 `git checkout <hash> -- <file>` 找回]
 
 ### Phase 2: [Title]
 <!-- Phase N 按上方 Phase 1 结构续加 -->
