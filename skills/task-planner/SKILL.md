@@ -183,6 +183,7 @@ model: opus
   - **3h 双轮质检（Rule 103）**：子代理返回→核 checkpoint 自审段（103.2）→Read 产出（84.4）→派全新复检体（103.3，升档 103.4/简洁五要素 103.5）→复检回执落 checkpoint；多文件变更集附同步核对清单（103.6）。复检体全文回读被改文件并整体分析（103.3a 义务，2026-11-14 task-audit-fullreread-20261114）。
   - **3i 修改后复检（Rule 106）**：受管文档每次修改后回读校验跨字段不变量（106.1-106.4）；同文件 ≥2 次修改后全量回归（106.3）——细则→task-discipline Rule 106；结构文件插段另守 106.1a
   4. [M] **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转；**多文件变更集（≥2 受管文件）翻转前先过 103.6 同步核对清单（清单全绿才可翻转，Rule 103.6）**
+  - **对齐必选步骤**：修改完成后强制对齐——任何受管文件修改完成后、Phase 翻转 complete 前必须执行对齐核查，逐项核对关联面四族+部署位+引用面（字面/引用/部署镜像/断言面）同步完整性，清单全绿才可翻转，杜绝部分改部分丢弃（机器门=check-complete.sh ALIGN-ANCHOR GATE；mini 档豁免）
   4.5 [M] **提交工作产物（Rule 27 / git-rework-guard）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；**单个 S-unit/大改动完成即 commit（不等整 Phase），让每个可回退点进版本历史**；非 git 记行跳过；deferred/用户显式豁免须写入计划。**返工第一动作=Git 找回**：QC FAIL/方向错/需回退 → 先 `git log --oneline` 定位正确 commit + `git checkout <commit> -- <file>` 精确找回，禁凭记忆重做；方向彻底错→丢弃 wt/<task-id> 分支（不污染 master）；细则→`references/worktree-isolation.md` §4.5+§4.6；**方向根本错误且阈值命中（96.7/103.8b）→走 §4.6 弃旧开新**：评估归因+用户确认→提取有效数据(salvage-manifest)→从基线牵新 wt/<task-id>-rN→新计划 restarted_from 登记，旧计划 outcome=RESTARTED(非 CANCELLED)（细则→§4.6）
   5. [M] **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
   6. [A] **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
@@ -204,6 +205,7 @@ model: opus
   - **计划归档（Rule 81.1）**：check-complete exit 0 后运行 `bash scripts/archive-plan.sh <task-id>` 将完成任务目录移入 plans/archive/——target 已存在=幂等报 `ALREADY_ARCHIVED` 视为通过；守卫拒绝（active 指针 / .session-owner 活跃 / Status 未全 complete，fail-closed）→ 保持原位并登记拒绝理由，禁止强移。Why：「在途在根、历史在 archive/」是 plans/ 存量唯一健康形态，防无限堆积致索引失真（task-v170；详见 references/critical-rules.md Rule 81）
 
 - [ ] [A] **终验交付 — 智能子动作**：VC 复验判定、质量门控与委派率核查、outcome 判定
+  - **终验强制对齐**：终验交付判定前必须执行对齐核查，核对本任务全部修改的关联面四族+部署位+引用面同步完整性，零丢弃才可判定 COMPLETE；机器门=check-complete.sh ALIGN-ANCHOR GATE enforce 缺锚阻断
   - **按卫星 `verification-gate` 终验 SOP 执行（Rule 84.5 Step 3）**：Read `verification.md`，逐条复验 VC（每条带证据路径+可执行命令）；统一入口 `bash <verification-gate>/scripts/run-verification.sh <plan-dir>` 自动执行 VC 命令并汇总 PASS/FAIL
   - **全文档收尾回读梳理（Rule 84.14，P0 迭代门）**：全部 Phase complete 后、outcome 判定前，主进程全量回读六文档体系（用户需求专档 #1→最新/task_plan Goal+R+VC/findings 全结论/knowledge-brief 沉淀/progress 动作线/verification 验收记录）做五维互洽检查（需求↔目标↔执行↔验证↔知识，每维问「有无偏移/遗漏/未利用」）；发现偏移→登记（task_plan「收尾回读梳理记录」区块+progress `[recall-final]` 行）→修复→再梳理；**收敛出口=连续一轮零新发现才可出 outcome**，迭代轮次不设上限（用户裁决「不要怕浪费资源」）
   - **双轮质检与同步完整性终验衔接（Rule 103）**：终验前核对本计划各多文件变更集的同步核对清单全绿记录（103.6）；双轮质检细则→task-dispatch 卫星 Rule 103。
@@ -249,6 +251,7 @@ model: opus
 | G8 | 原生 Todo 已同步（S2）；用户新指令已过 D/A/B/C 判定（如有） | ☐ |
 | G9 | 用户会话逐字记录自查（Rule 80，原 C56 并集承载）：每次用户发言已逐字落盘 user-session-log.md（80.1）；写入=append-only 历史条目零改写零删除零重排（80.2）；会话恢复先读专档再读 task_plan.md（80.4）；理解镜像已同号配对（80.7）；**决策前读取已过（80.8 五决策点：上抛裁决/反思门/交付双锚/派发双锚/周期对照，各读取动作有留痕或执行证据）**；（机器面=selftest-session-log.sh+check-complete SESSION-LOG GATE，记录内容人工核查；mini 档豁免） | ☐ |
 | G10 | 计划完成后归档自查（Rule 81，原 C57 并集承载）：check-complete exit 0 后已执行 `bash scripts/archive-plan.sh <task-id>`（81.1，guard/ALREADY_ARCHIVED 幂等路径走通）；守卫拒绝（active 指针/活会话标记/Status 未全 complete，81.3）时保持原位不归档并登记拒绝理由，禁强移；归档后已重跑 `sync-todos.sh --index`（81.4）（机器面=selftest-archive-plan.sh+check-complete [ARCHIVE-GATE] warn，归档动作与拒绝登记人工核查；mini 档豁免） | ☐ |
+| G11 | 修改完成后对齐核查：所有任务修改完成后已执行对齐核查——关联面四族（字面/引用/部署镜像/断言面）+部署位+引用面同步完整性逐项核对零丢弃，机器门=check-complete.sh ALIGN-ANCHOR GATE（enforce=缺锚阻断，mini 档豁免）；人工面=核对清单全绿 | ☐ |
 > 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
 
 ### 🔁 原生 Todo 同步（强制）

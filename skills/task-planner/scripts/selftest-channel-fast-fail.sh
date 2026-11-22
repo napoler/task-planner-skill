@@ -42,9 +42,9 @@ t "CF-02 SKILL.md 通道不可用快速失败(Rule 83)条目锚" bash -c "
 "
 
 # CF-03: 零新 config 键 properties=53（task-v172 CA-1/CA-2 后键数；P-01 新增 evidence_anchor_enforce 46→47；[task-v184-S2b] S1 引号形态级联漏网补齐 47→53）
-t "CF-03 零新 config 键 properties=53" bash -c "
-    [ \"\$(jq '.properties | keys | length' '$CONFIG' 2>/dev/null)\" = '53' ]
-"  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）
+t "CF-03 零新 config 键 properties=54" bash -c "
+    [ \"\$(jq '.properties | keys | length' '$CONFIG' 2>/dev/null)\" = '54' ]
+"  # [task-v184-S2b] 键数 47→53（S1 引号形态级联漏网补齐）; [task-align-mandatory-step-20261123] 合法新增 align_anchor_enforce 1 键 53→54
 
 # CF-04: registry 自登记
 t "CF-04 registry 自登记 selftest-channel-fast-fail.sh" bash -c "

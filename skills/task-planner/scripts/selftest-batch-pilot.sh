@@ -11,7 +11,8 @@
 #   BP-08 SKILL.md 行数 ≤275（行数回归钉; [2026-09-20 task-v085] 机制画像增量 548→549; [2026-09-20 task-v086] Rule 38 联动 549→551, 上限 549→552; [2026-09-22 task-v087] Rule 8.1 D 类联动 551→555, 上限 552→555; [2026-09-23 task-v088] Rule 39 联动 555→558, 上限 555→558; [2026-10-12 task-v171 S38] 技能专业化拆分后 SKILL.md 重写瘦身（分层至 10 卫星, 实值 214 行）, 上限 558→275=250+25 边距先例（同 task-v168 实值+25 口径, 设计文档 §6 BP-08 行数钉演进））; [2026-11-05 task-subagent-markup-20261105] Rule 104 就地速查表+7 行结构性增量（实值 280）, 上限 275→285; [2026-11-15 task-initdelegation-20261115] L1+ 初始化首动作委派条款插入（Phase 2 S1, +9 行, 实值 292）, 上限 285→300; [2026-11-15 task-initdelegation-20261115 修正] 并集解组合态记录+条款契约修正（实值 297）, 上限 300→305; [2026-11-23 task-fix-all-20261123] Rule 108-110 纪元/审计门等结构性增长（实值 440）, 上限 311→450（实值+10 边距, 口径同 task-v168 实值+边距先例）
 #   BP-09 batch-quality-gate.md 含「隶属 Rules 1-36..1-77」宽容正则（CD-19 宽容锚子串保护钉; [2026-10-12 task-v171 S38] 纪元锚扩: 76 既有规则按域分层至 10 卫星后全集跨 1-77, 仿 selftest-conclusion-discipline.sh CD-19「1-3[5-8]」宽容锚写法扩为「1-(3[6-9]|[4-6][0-9]|7[0-7])」——覆盖 1-77 全集（含 77 纪元）, 兼容当前在位字面 1-36 过渡, 设计文档 §6 rule-range 纪元锚扩）
 #   BP-10 仓库根 CHANGELOG.md 含 task-v083 条目（非仓库部署环境显式 SKIP）
-# 10 断言全 PASS（SKIP 不计 FAIL）exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
+#   BP-11 [2026-11-23 task-align-mandatory-step-20261123] SKILL.md 含对齐必选步骤四锚（修改完成后强制对齐/关联面四族+部署位+引用面/终验强制对齐/对齐核查；机器门 ALIGN-ANCHOR GATE 的静态 companion，防瘦身静默删条款）
+# 11 断言全 PASS（SKIP 不计 FAIL）exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
 
 set -u
 
@@ -72,6 +73,8 @@ if [ "$lines" -le 470 ]; then ok 08 "SKILL.md 行数 $lines ≤470"; else bad 08
 #   grep -qE '隶属 Rules 1-(3[6-9]|[4-6][0-9]|7[0-7])'（参照 selftest-conclusion-discipline.sh:101 CD-19「1-3[5-8]」宽容锚写法扩为含 77）;
 #   覆盖 1-36..1-77 全部纪元（当前 BGATE 在位字面 1-36 命中, 77 纪元前瞻命中）, 全集过渡不断钉
 if grep -qE '隶属 Rules 1-(3[6-9]|[4-6][0-9]|7[0-7])' "$BGATE"; then ok 09 "CD-19 宽容锚子串保护（隶属 Rules 1-36..1-77 全集宽容, 含 77）"; else bad 09 "CD-19 子串被破坏或纪元锚未覆盖 77"; fi
+# BP-11 [2026-11-23 task-align-mandatory-step-20261123] 对齐必选步骤四锚静态守卫：防未来瘦身静默删对齐条款（机器门 ALIGN-ANCHOR GATE 的静态 companion）。
+if grep -qF '修改完成后强制对齐' "$SKILLMD" && grep -qF '关联面四族+部署位+引用面' "$SKILLMD" && grep -qF '终验强制对齐' "$SKILLMD" && grep -qF '对齐核查' "$SKILLMD"; then ok 11 "对齐必选步骤四锚齐备"; else bad 11 "对齐锚缺失(A1-A4)"; fi
 # BP-10
 if [ -f "$CHANGELOG" ]; then
   if grep -q '批量试点先行硬门（task-v083）' "$CHANGELOG"; then ok 10 "CHANGELOG task-v083 条目"; else bad 10 "CHANGELOG 缺 task-v083 条目"; fi

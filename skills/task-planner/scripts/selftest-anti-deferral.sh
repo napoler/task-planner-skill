@@ -91,11 +91,12 @@ if [ "${ad10:-0}" -ge 2 ]; then ok 10 "SKILL.md 计数级联 其余 8x 条=${ad1
 # AD-11 [负] config.json properties 键数=53（LA-14 同口径；jq 缺失 SKIPPED 不 FAIL）
 if command -v jq >/dev/null 2>&1; then
   keys="$(jq '.properties | length' "$CONFIG" 2>/dev/null || true)"
-  if [ "$keys" = "53" ]; then
-    ok 11 "config.json properties 键数 53（零新 config 键，Rule 97 不扩配置面）"
+  if [ "$keys" = "54" ]; then
+    ok 11 "config.json properties 键数 54（零新 config 键，Rule 97 不扩配置面）"
   else
-    bad 11 "config.json properties 键数=$keys（应 53，未授权新键）"
+    bad 11 "config.json properties 键数=$keys（应 54，未授权新键）"
   fi
+  # [task-align-mandatory-step-20261123] 合法新增 align_anchor_enforce 1 键 53→54
 else
   printf 'AD-11 SKIPPED jq 缺失，无法校验 config.json 键数（安装 jq 后重跑）\n'
 fi
