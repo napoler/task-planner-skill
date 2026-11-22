@@ -92,6 +92,7 @@ model: opus
   - **验证**：7 文件在位（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief/user-session-log，Rule 80）
   - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
   - **进度产出基线登记（Rule 111）**：计划期登记 `📦 进度产出基线`，禁倒退清单随计划 attest 锁定（交付/合并/返工均不得就地删降替）
+  - **检索排除清单纪律（Rule 112）**：任何检索前先读项目根 `RETRIEVAL_EXCLUDE.md` 并按「可排除/必须纳入」条件排除（跨调研/执行/回找多域，L0-T 文本锚；详见 references/critical-rules.md Rule 112）
   - **清除哨兵**：`node scripts/plan-created.cjs`（双清除 side+legacy）；哨兵存在期间 PreToolUse hook 拦截非 plans/ 路径 Write/Edit（exit 2）
 
 - [ ] [A] **初始化首动作委派（L1+）— 需求分析与计划文档创建子代理隔离**：
@@ -199,6 +200,7 @@ model: opus
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
   - **退出前**：`bash scripts/check-complete.sh`——exit 0 正常结束；exit 1→STOP 报告未完成任务
   - **防倒退终检（Rule 111/106.8）**：交付/合并前执行 `🛡 防倒退终检`，对照 `📦 进度产出基线` 逐项判定净效果≥0，禁拆东墙补西墙
+  - **检索排除清单（Rule 112）**：检索前先读 `RETRIEVAL_EXCLUDE.md` 按条件排除，避免临时/资料文件淹没会话
   - **计划归档（Rule 81.1）**：check-complete exit 0 后运行 `bash scripts/archive-plan.sh <task-id>` 将完成任务目录移入 plans/archive/——target 已存在=幂等报 `ALREADY_ARCHIVED` 视为通过；守卫拒绝（active 指针 / .session-owner 活跃 / Status 未全 complete，fail-closed）→ 保持原位并登记拒绝理由，禁止强移。Why：「在途在根、历史在 archive/」是 plans/ 存量唯一健康形态，防无限堆积致索引失真（task-v170；详见 references/critical-rules.md Rule 81）
 
 - [ ] [A] **终验交付 — 智能子动作**：VC 复验判定、质量门控与委派率核查、outcome 判定
