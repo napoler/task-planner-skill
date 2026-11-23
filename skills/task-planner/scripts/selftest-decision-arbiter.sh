@@ -38,7 +38,7 @@ if [ -s "$ARBITER" ]; then ok 01 "decision-arbiter.md 在位"; else bad 01 "deci
 # DA-02 frontmatter model 逐字锚
 # What: frontmatter model 值逐字 = account:zai-individual-coding-plan/GLM-5.4（grep -F 固定串）。
 # [2026-11-24 task-goal-unattended-protocol-20261124] 原行为=钉 GLM-5.3；该配置在当前宿主派发必败（Reasoning level unsupported），
-# 用户裁决对齐宿主可用配置 GLM-5.4 + max，断言随 frontmatter 锁步（仍为逐字锚，强度不变）。
+# 用户裁决对齐宿主可用配置 GLM-5.4 + max；本断言仅把 model 锚随 frontmatter 锁步（仍为逐字锚，强度不变），thoughtLevel 未设断言（范围=零新 selftest，是否补断言待用户裁决）。
 # Why: 69.5 声明强模型档 frontmatter 为 truth source、禁降档改判——档位漂移=判断质量承诺失效。
 if grep -qF 'account:zai-individual-coding-plan/GLM-5.4' "$ARBITER"; then ok 02 "model 逐字=GLM-5.4 强档(max)"; else bad 02 "model 非 GLM-5.4 强档(max)"; fi
 

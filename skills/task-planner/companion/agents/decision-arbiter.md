@@ -11,7 +11,7 @@ color: '#2A9D8F'
   What: 定义 task-planner 判断/裁决子代理 = 四态裁决 + 五要素驳回单 + 六触发点矩阵。
   Why: 主进程遇判断类问题(方案终裁/失败定级/验收争议)缺强判断出口，用户明确要求"审查发现错误打回主代理"，
        故设 REJECT-REWORK 态与驳回单格式——修复权留给主代理，本 agent 只裁决不改码，职责不越界。
-  Why 强模型: 判断质量依赖推理深度，选 GLM-5.3 强档(对齐 complex-planner 先例)；低频重推理，不占高频预算。
+  Why 强模型: 判断质量依赖推理深度，选 GLM-5.4 强档 max 档(原选 GLM-5.3 强档、对齐 complex-planner 先例，2026-11-24 改，见下方注记)；低频重推理，不占高频预算。
   Why 字段序: 对齐 drift-checker.md(frontmatter 字段序/超时约束头/硬约束/SOP/检查点契约)，保持 companion 族内一致可预期。
   [2026-11-24 task-goal-unattended-protocol-20261124] 原行为=GLM-5.3 + thoughtLevel: enabled，在本宿主派发必败
   （"Reasoning level unsupported"，判例 sess_df5b8b4a 两次派发失败——首轮与第十轮各一次，独立仲裁拖到第 10 轮才打通）；
