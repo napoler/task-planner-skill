@@ -22,6 +22,10 @@
 #      subagent-state/*-drift-checker.md mtime 晚于锚点 或 task_plan.md 含 drift_exempt:
 #      声明且当前 Phase 命中豁免清单 或 plan_tier: mini 整体豁免; 否则按 env
 #      TASK_PLANNER_DRIFT_ENFORCE 降档 (off=跳过/warn=stderr 提示不阻断/默认 exit 1)
+#   8. [2026-11-24 task-session-regression-20261124 S7] Git 基线差异门控: L0-E 不适用 SKIP；
+#      plan-state.json 存在且 TASK_PLANNER_GIT_BASELINE_ENFORCE≠off 时 shell-out
+#      git-baseline.sh diff <plan-dir> [--repo <侧车 repo_root>]; rc=1/3 阻断(warn 档仅告警)、
+#      rc=2/脚本缺失 SKIP 放行。Why: 差异分析由门自己执行, 不再依赖模型记得跑。
 #
 # 设计取向: mtime 是代理指标,可被无关写入污染 —— 宁可误报（代价=多一次回填动作）,
 # 不可漏报（漏报=三文件罗盘失效回潮,即本门控要杜绝的现象）。依赖 GNU stat/date。
@@ -357,6 +361,56 @@ if [ "$DRIFT_OK" -ne 1 ]; then
             exit 1
             ;;
     esac
+fi
+
+# [2026-11-24 task-session-regression-20261124 S7] 第 8 条件: Git 基线差异门控（shell-out git-baseline.sh）。
+# What: L0-E 不适用直接 SKIP；plan-state.json 存在且档位非 off 时，调用 git-baseline.sh diff <plan-dir>
+#       （侧车有 repo_root 时附 --repo）对照任务基线；rc=1（有未处置偏移）/rc=3（无基线证据）默认
+#       exit 1，warn 档仅告警；rc=2（非 git 仓等降级）与脚本缺失均打印 SKIP 并继续。
+# Why: 原流程无 Git 执行点，差异分析靠模型记得跑；修复动作删掉既有设定时各门仍全绿。把对照放进
+#       Phase 翻转门，由门自己执行，缺证据即阻断；L0-E 与 plan-created.cjs 豁免口径保持一致。
+# 取舍: repo_root 只取本计划侧车，不靠 CWD 猜树；侧车缺失不传 --repo，保留 rc=3 触发 B9 提示。
+if grep -qm1 -E '^[[:space:]]*execution_lane:[[:space:]]*L0-E' "$PLAN_FILE" 2>/dev/null; then
+    echo "[git-baseline] SKIP lane-L0-E"
+elif [ -f "$PLAN_DIR/plan-state.json" ] && [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" != "off" ]; then
+    _gb="$(dirname "$(readlink -f "$0")")/git-baseline.sh"
+    _gb_sidecar="$PLAN_DIR/.git-baseline.json"
+    _gb_repo=""
+    if [ -f "$_gb_sidecar" ] && command -v jq >/dev/null 2>&1; then
+        _gb_repo="$(jq -r '.repo_root // empty' "$_gb_sidecar" 2>/dev/null || true)"
+    fi
+    _gb_args=(diff "$PLAN_DIR")
+    [ -n "$_gb_repo" ] && _gb_args+=(--repo "$_gb_repo")
+    if [ ! -f "$_gb" ]; then
+        echo "[git-baseline] SKIP script-missing"
+    else
+        _gb_out=""
+        _gb_rc=0
+        _gb_out="$(bash "$_gb" "${_gb_args[@]}" 2>&1)" || _gb_rc=$?
+        _gb_last="$(printf '%s\n' "$_gb_out" | tail -n 1)"
+        case "$_gb_rc" in
+            0)
+                # PASS（或 warn 档 rc=0 的 FAIL）：判定器输出原样透传，档位降档由脚本自身负责。
+                if [ -n "$_gb_out" ]; then printf '%s\n' "$_gb_out"; fi
+                ;;
+            1)
+                echo "[git-baseline] FAIL: $_gb_last"
+                if [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" != "warn" ]; then exit 1; fi
+                echo "[git-baseline] 警告: warn 档不阻断（TASK_PLANNER_GIT_BASELINE_ENFORCE=enforce 可升级）" >&2
+                ;;
+            3)
+                echo "[git-baseline] FAIL: 无基线证据。先执行 B9：bash $_gb snapshot $PLAN_DIR"
+                if [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" != "warn" ]; then exit 1; fi
+                echo "[git-baseline] 警告: warn 档不阻断（TASK_PLANNER_GIT_BASELINE_ENFORCE=enforce 可升级）" >&2
+                ;;
+            2)
+                echo "[git-baseline] SKIP degraded: $_gb_last"
+                ;;
+            *)
+                echo "[git-baseline] SKIP degraded: 未知 rc=$_gb_rc（fail-open 不阻断）"
+                ;;
+        esac
+    fi
 fi
 
 if [ "${_l0_exempt}" -eq 1 ]; then
