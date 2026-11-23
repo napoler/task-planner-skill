@@ -42,8 +42,7 @@ model: opus
   - **模板检索前置（task-template-catalog-20261122）**：init 前先跑 `bash scripts/template-catalog.sh list --json --scope all` 拿模板清单（模板名/简介/适配场景/功能），据此匹配 `template_type` 再作为 init 第 2 参；禁靠读散文盲选（用法详见下方「模板检索与管理」）
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
-  - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）
-  - **上下文压缩恢复（2026-11-24 task-session-regression-20261124）**：上下文压缩后由 SessionStart hook 注入 `[compact-recovery]`，第一动作按序读包内文件，禁止仅凭摘要续做
+  - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）；**上下文压缩恢复（2026-11-24 task-session-regression-20261124）**：压缩后 SessionStart hook 注入 `[compact-recovery]`，第一动作按序读包内文件，禁仅凭摘要续做
   - **模板优先级**（init-session.sh 自动处理）：项目级 `.claude/plan-templates/` 或 `.zcode/plan-templates/` 覆盖 → 兜底 `<platform-home>/skills/task-planner/templates/`（选型权威源=卫星 `plan-template-kit`，Rule 16/34）
   - **模板检索与管理（`template-catalog.sh`，task-template-catalog-20261122）**：任务初期第一步调本脚本获取模板清单，让匹配流程化固定进 SOP；**脚本只提供稳定清单+排序，不替模型决策**（选型权威源仍是卫星 `plan-template-kit`）：
     - **列清单**：`bash scripts/template-catalog.sh list --json --scope all` —— JSON 每项含 `file/type/name/summary/scenarios/features/path/scope/default/valid`；`--scope` ∈ all/builtin/project/user/user-global/user-install（user=全局+安装位），`--include-installs` 含四个平台安装位模板；去重优先级 project > user-global > user-install > builtin。
@@ -201,8 +200,7 @@ model: opus
 - [ ] [A] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
 
 - [ ] [M] **终验交付 — 机械子动作**：跑终验门脚本/合并回/提交核验/Read 产出/归档
-  - **3-File Gate（19.5）**：check-complete.sh 内置校验 findings/progress 非 stub，缺失/stub→exit 1→STOP 回填禁交付
-  - **GIT-BASELINE GATE（2026-11-24 task-session-regression-20261124）**：终验前 check-complete.sh 自动跑全量 Git 差异分析并核 sidecar，B9/B10 缺证或 B11 unresolved>0 → exit 1→STOP 禁出 outcome
+  - **3-File Gate（19.5）/GIT-BASELINE GATE（2026-11-24 task-session-regression-20261124）**：check-complete.sh 内置校验 findings/progress 非 stub（缺失/stub→exit 1→STOP 回填禁交付），终验自动跑全量 Git 差异分析并核 sidecar（B9/B10 缺证或 B11 unresolved>0→exit 1→STOP 禁出 outcome）
   - **隔离任务合并回**：worktree 内全 VC 复验且无未提交变更→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（合约见 `references/worktree-isolation.md`）
   - **git 提交核验+编号账本**：scope 文件无未提交变更（或已按 Rule 27 逐 Phase 提交）；新增编号 `bash scripts/rule-reserve.sh land <NN> <task-id>`
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
