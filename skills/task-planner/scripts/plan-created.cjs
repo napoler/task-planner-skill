@@ -220,6 +220,43 @@ if (!planFound) {
   process.exit(1);
 }
 
+// [2026-11-24 task-session-regression-20261124] What: 清哨兵前校验本会话 side 指针所指计划的 git 基线证据
+// Why: 基线证据缺失就清哨兵，会让后续受管写入绕过 B9 基线快照（必保项/既有设定被漂移删改且无对照）；
+//       用 sidkey + 项目根读 side 指针锁定「本会话计划」，避免拿 mtime 最新的他会话计划做门控。
+// 边界: TASK_PLANNER_GIT_BASELINE_ENFORCE=off / execution_lane=L0-E / 无 side 指针或读不到计划 → 维持现状路径。
+if (process.env.TASK_PLANNER_GIT_BASELINE_ENFORCE !== 'off') {
+  const ptr = path.join(PLANS_DIR, '.active_plan_side', sidkey + '.active_plan');
+  let baselinePlanDir = '';
+  try {
+    if (sidkey && fs.existsSync(ptr)) {
+      const pid = fs.readFileSync(ptr, 'utf8').trim();
+      if (isValidSlug(pid) && fs.existsSync(path.join(PLANS_DIR, pid))) {
+        baselinePlanDir = path.join(PLANS_DIR, pid);
+      }
+    }
+  } catch (e) { /* 指针不可读 → 无基线门控，维持现状（fail-open） */ }
+  if (baselinePlanDir) {
+    let executionLane = '';
+    try {
+      const st = JSON.parse(fs.readFileSync(path.join(baselinePlanDir, 'plan-state.json'), 'utf8'));
+      executionLane = (st && typeof st.execution_lane === 'string') ? st.execution_lane : '';
+    } catch (e) { /* plan-state 缺失/非法 → lane 视为非 L0-E，继续查基线 */ }
+    if (executionLane !== 'L0-E') {
+      let hasBaseline = false;
+      try {
+        const bg = JSON.parse(fs.readFileSync(path.join(baselinePlanDir, '.git-baseline.json'), 'utf8'));
+        hasBaseline = !!(bg && typeof bg === 'object' &&
+          Object.prototype.hasOwnProperty.call(bg, 'baseline_ref') && bg.baseline_ref);
+      } catch (e) { /* sidecar 缺失/非法 JSON → 无基线证据 */ }
+      if (!hasBaseline) {
+        console.log('[git-baseline] FAIL: 无基线证据，未清除哨兵。先执行 B9：bash ' +
+          path.join(__dirname, 'git-baseline.sh') + ' snapshot ' + baselinePlanDir);
+        process.exit(2);
+      }
+    }
+  }
+}
+
 // 清除动作（存在才删，各打印一行）
 // [2026-09-10 CR P1 修正] legacy 哨兵是跨会话共享面：仅当存在比它新的有效计划时才清
 // （新计划 mtime > legacy mtime；原先"任一计划存在即删"会让 legacy 在清除侧复活 B4 共享面），

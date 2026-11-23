@@ -13,6 +13,40 @@ INIT_CJS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/task-plan-init.cjs"
 out="$(TASK_PLANNER_SID="$sid" node "$INIT_CJS" 2>/dev/null)"
 rc=$?
 
+# [2026-11-24 task-session-regression-20261124] What: 压缩恢复后改注入磁盘在途计划的恢复包，跳过「新会话」开场白与 [task-resume]
+# Why: 本 hook 每次上下文压缩后触发，但旧逻辑只注入 init cjs 文案 + INDEX.md 未完成任务，从不叫会话重读手头计划；
+#       压缩后 SKILL.md 正文已不在上下文，「先读计划」文字规则失效（实证：某会话压缩后 6 分钟未读计划专档并误删既有设定事实）。
+# 边界: 无在途计划 / 库缺失 / 执行失败 → 完全维持现状路径（cjs stdout + 既有 task-resume），逐字节不变；hook 仍 exit 0。
+RECOVERY_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/plan-recovery.sh"
+recovery_plan=""
+if [ -f "$RECOVERY_LIB" ]; then
+  # 项目根解析口径对齐 task-plan-init.cjs / plan-created.cjs（从 $PWD 向上最多 10 层找 plans/）
+  scan_dir="$PWD"
+  scan_i=0
+  scan_root=""
+  while [ "$scan_i" -lt 10 ]; do
+    if [ -d "$scan_dir/plans" ]; then scan_root="$scan_dir"; break; fi
+    next_dir="$(cd "$scan_dir/.." 2>/dev/null && pwd)" || break
+    [ "$next_dir" = "$scan_dir" ] && break
+    scan_dir="$next_dir"
+    scan_i=$((scan_i + 1))
+  done
+  if [ -n "$scan_root" ]; then
+    # inflight 只认本会话 side 指针：不看 mtime/TTL、不做「最近改动计划」兜底（避免别的会话的计划串进来）
+    claim="$(bash "$RECOVERY_LIB" inflight "$scan_root" "$sid" 2>/dev/null)" || claim=""
+    if [ -n "$claim" ]; then
+      recovered="$(bash "$RECOVERY_LIB" recover "$claim" 80 2>/dev/null)" && recovery_plan="$claim" || recovery_plan=""
+      if [ -n "$recovery_plan" ] && [ -n "$recovered" ]; then
+        out="$recovered"
+      else
+        recovery_plan=""
+      fi
+    fi
+  fi
+fi
+
+if [ -z "$recovery_plan" ]; then
+# ↓↓↓ 现状 task-resume 段整体保留（仅包入跳过分支；未命中恢复包时行为逐字节不变）
 # [2026-08-28] 未完成任务恢复提醒:读 CWD/plans/INDEX.md 待处理区,有欠账则追加 [task-resume] 段
 # (每会话仅此一次;仅提示,未经用户确认不得自动拉起执行——防新会话意图被旧任务劫持)
 # [2026-10-14 task-v172 CA-5] 陈旧任务折叠:in_progress 任务全部 >7 天未更新时,折叠为单行噪音抑制
@@ -65,6 +99,8 @@ ${pending}
     fi
   fi
 fi
+fi
+# ↑↑↑ 现状 task-resume 段结束（在途计划命中时整段跳过，避免向做到一半的会话兜售无关任务）
 
 # [2026-09-10 active-plan-race] 顺带清扫过期会话指针(.active_plan_side/ mtime>24h,会话残留)
 # fail-open: 失败静默,不阻塞会话启动
