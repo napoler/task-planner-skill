@@ -132,6 +132,29 @@ recover() {
   ' "$state" 2>/dev/null)"
   [ -n "$decisions" ] || decisions="-"
 
+  # [2026-11-24 task-session-regression-20261124 补充] What: 恢复包新增 Git基线 状态行（B9/B10/B11 现状）
+  # Why: 恢复包替换了 init 输出，压缩后会话须直接从包里知道基线是否已打、有无未处置偏移；
+  #       无证据时显式指向 B9，证据存在时透出 checkpoints/未处置/必保丢失并指向 B11 复检。
+  local script_dir sidecar git_baseline_line gb
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  sidecar="$plan_dir/.git-baseline.json"
+  if [ ! -f "$sidecar" ]; then
+    git_baseline_line="Git基线: 缺失 → 先执行 B9（任务开始前备份，未做不得写受管文件）: bash $script_dir/git-baseline.sh snapshot $plan_dir"
+  else
+    # 非法 JSON / 非对象 → jq 非零，按「证据文件不可读」处理；字段缺失按 0 / - 处理，不编造
+    gb="$(jq -r --arg sd "$script_dir" --arg pd "$plan_dir" '
+      def s($v): if ($v | type) == "string" and $v != "" then $v else "-" end;
+      def n($v): if ($v | type) == "number" then ($v | tostring)
+                 elif ($v | type) == "string" and $v != "" then $v else "0" end;
+      "Git基线: \(s(.baseline_sha)[0:8]) 检查点=\(if (.checkpoints | type) == "array" then (.checkpoints | length) else 0 end) 未处置=\(n(.last_diff.unresolved)) 必保丢失=\(n(.last_diff.mustkeep_lost))（最近分析 \(s(.last_diff.at))；续做前先跑 B11: bash \($sd)/git-baseline.sh diff \($pd)）"
+    ' "$sidecar" 2>/dev/null)" || gb=""
+    if [ -n "$gb" ]; then
+      git_baseline_line="$gb"
+    else
+      git_baseline_line="Git基线: 证据文件不可读 → 重跑 bash $script_dir/git-baseline.sh status $plan_dir"
+    fi
+  fi
+
   local full
   full="$({
     printf '[compact-recovery] 上下文恢复包（检测到在途计划 %s；数据来自磁盘，非会话记忆。摘要可能丢细节，以下列文件为准）\n' "$id"
@@ -149,6 +172,7 @@ recover() {
     else
       printf '必保清单=缺失（存量计划，非阻断提示）\n'
     fi
+    printf '%s\n' "$git_baseline_line"
     printf 'Goal: %s\n' "$goal"
     printf 'Current Phase: %s\n' "$phase"
     printf 'Next Step: %s\n' "$next_step"
