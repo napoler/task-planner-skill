@@ -21,7 +21,7 @@
 - ② **每 Phase ≥2 条 V-N**：映射到 VC 编号（Phase Gates 的 V-N 项）
 - ③ **phase 间门控**：V-N 未全 PASS → 不进下一 Phase
 - ④ **终验必做**：全 Phase complete ≠ 目标完成；必须逐条 VC 复验（84.5）
-- ⑤ **升级阈值**：同一 V-N 重试 3 次 FAIL → AskUserQuestion（escalation_threshold）
+- ⑤ **升级阈值**：同一 V-N 重试 3 次 FAIL → AskUserQuestion（escalation_threshold）；goal 语境不 AskUser，按 28.9⑧ 终点覆盖（task-discipline Rule 28.9）
 - **VC 分级语义（Rule 50，指针）**：内容任务可按原子验收条目表做分级/加权评级（PASS/PARTIAL/FAIL 逐条 + 加权总分），作为二元三态之上的细化形态；不改变上述三态语义与五条规则（Rule 50 全文在核心 critical-rules.md）
 
 84.4 **子代理验证协议（migrated from completion-gate.md）**：subagent 返回 "done" ≠ 完成，必须 Read 实际验证（Rule 5/26 Q4 互补）：
@@ -37,7 +37,7 @@
 - ② 逐条 VC 执行 84.1 的可运行命令，对照判据出 PASS/FAIL
 - ③ 可用统一入口 `run-verification.sh <plan-dir>`（本卫星 scripts/）解析 VC 命令自动执行并汇总
 - ④ 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
-- ⑤ 出 outcome：全 VC PASS → COMPLETE；VC PASS 但有已知遗留 → PARTIAL（列出+建议）；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户
+- ⑤ 出 outcome：全 VC PASS → COMPLETE；VC PASS 但有已知遗留 → PARTIAL（列出+建议）；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户；goal 语境 BLOCKED 的消费=按 28.9②④ 登记待授权清单/判据上限并固定点应答，不升级提问（task-discipline Rule 28.9）。**语义保证型判据拆分（2026-11-24 task-goal-unattended-protocol-20261124）**：VC/Goal 含「确保/保证/根治/不再/杜绝/所有」等机器不可证明的语义保证时，计划期（attest 锁定前）必须拆为「机器可验拆分项（逐项命令）+ 残余风险清单」并登记 Decisions；执行期不新增判据行，以计划期登记者为准——拆分项全 PASS 且残余风险清单已登记 ⇒ PARTIAL（不得判 COMPLETE）；拆分项未全 PASS 或计划期未拆分 ⇒ BLOCKED
 - ⑥ 终验前跑 `check-complete.sh`（21 门总门）exit 0 才可交付
 - **验证独立性（Rule 33.3，指针）**：终验核查动作（回归/抽查/对齐审查）由全新独立子代理执行，主进程仅编排与簿记——禁止以主进程既有上下文自测替代验收（Rule 33 全文在 task-discipline 卫星）
 
