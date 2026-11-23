@@ -163,7 +163,7 @@ model: opus
      批量簿记→plan-bookkeeper｜单文件小改→Code Assistant｜中等编码→general-coder｜
      独立创作→general-writer｜分析归因→general-analyst｜偏移检查→drift-checker｜方案终裁→decision-arbiter
      （全文与触发判据见 `../task-dispatch/references/critical-rules-dispatch.md` Rule 104；主进程保留=编排/路由/派发/回收/决策/三文件回填/白名单①-⑥）
-  2.5b [A] **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）
+  2.5b [A] **技能激活确认**（v168）：派发前 Read knowledge-brief.md §6 可用强化技能清单 → 择优伴飞激活并登记 Handoff（用户触发型技能仅提示不代激活）；**资料消费锚（task-resource-utilization-20261123）**：本节命中并复用 kb/findings 既有条目时，同轮 `planctl add --section knowledge_use --json '{"id":"KU<n>","phase":"<P>","source":"<kb:§N|findings锚>","purpose":"<消费点>"}'`（复用既有 section，零新字段/新门；未命中无需记）
   2.5c [A] **动作相关性三问**（v168）：新文件/新命令/新 S-unit 动手前过三问——① 服务本 Phase R 锚定？② 在 scope_files 内？③ 用户原话要求过？任一 No→记录不执行
   2.5d [A] **变更类型判定（Rule 74 三判门，P0）**：对既有文件/条目的每处变更，执行前必须判定变更类型（增量/替代/删除），答案登记 task_plan.md「📋 变更标注表」：
      - **增量（默认且优先）**：用户措辞含"补充/再加/还有/另外/同时"或语义为新增条目 → 只追加、既有条目逐字保留不动；"补充一些条目"类指令永远走本档，禁以"整合/去重/顺手重构/格式化"名义回写既有条目
@@ -177,7 +177,7 @@ model: opus
      - **交付时消费**：终验交付总结（Rule 48）前执行 `bash <skill>/scripts/agent-failure-ledger.sh count <plan-dir> <sid>`；非 0 则在 delivery-summary「风险点」段增一节「本次 Agent 执行异常」列出 N 次失败与台账绝对路径，提示用户审查修正（模板见 `templates/delivery-summary.md`）；为 0 则写"无"。归档时 `clear` 清本会话台账。
      - **子代理亦须遵守**：派发 prompt 的八字段契约追加一条——返回若为失败态，子代理自身亦以 `append` 留痕（其 sid=自身会话 id），确保嵌套派发失败也被记录。
   3. [M] **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
-     - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `planctl add --section research`（结论摘要+证据路径）+ `render`**；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁
+     - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `planctl add --section research`（结论摘要+证据路径）+ `render`**；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁。**采集→消费闭环（task-resource-utilization-20261123）**：每条采集结论回填 research 时同轮补一条 `planctl add --section knowledge_use --json '{"id":"KU<n>","phase":"<P>","source":"<research锚>","purpose":"<下游消费点;未消费写「未消费 因__」>"}'`——把「查了却悄悄丢掉」变为「回填时显式声明去向」；purpose 留空或缺失视为该采集未闭环，收尾回读门（84.14）逐条核对。复用既有 section/schema/render（planctl.py knowledge_use），零新增脚本/门/hook。
      - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
      - **3c 动作留痕**：关键动作随做随记 progress.md；错误**立即**写 Error Log（19.4）并同轮完成四步（v168：记错误原文→Rule 31.2 四问根因→纠正→复验回填，未完禁下一动作）；关键动作同步 `bash <skill>/scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N]`
      - **3d hook 响应**：`[plan-sync]`→按 `references/todo-sync.md` §4 协议回写；`[plan-compass]`（findings/progress 陈旧，Rule 19.7）→立即回填再继续
@@ -212,7 +212,7 @@ model: opus
 - [ ] [A] **终验交付 — 智能子动作**：VC 复验判定、质量门控与委派率核查、outcome 判定
   - **终验强制对齐**：终验交付判定前必须执行对齐核查，核对本任务全部修改的关联面四族+部署位+引用面同步完整性，零丢弃才可判定 COMPLETE；机器门=check-complete.sh ALIGN-ANCHOR GATE enforce 缺锚阻断
   - **按卫星 `verification-gate` 终验 SOP 执行（Rule 84.5 Step 3）**：Read `verification.md`，逐条复验 VC（每条带证据路径+可执行命令）；统一入口 `bash <verification-gate>/scripts/run-verification.sh <plan-dir>` 自动执行 VC 命令并汇总 PASS/FAIL
-  - **全文档收尾回读梳理（Rule 84.14，P0 迭代门）**：全部 Phase complete 后、outcome 判定前，主进程全量回读六文档体系（用户需求专档 #1→最新/task_plan Goal+R+VC/findings 全结论/knowledge-brief 沉淀/progress 动作线/verification 验收记录）做五维互洽检查（需求↔目标↔执行↔验证↔知识，每维问「有无偏移/遗漏/未利用」）；发现偏移→登记（task_plan「收尾回读梳理记录」区块+progress `[recall-final]` 行）→修复→再梳理；**收敛出口=连续一轮零新发现才可出 outcome**，迭代轮次不设上限（用户裁决「不要怕浪费资源」）
+  - **全文档收尾回读梳理（Rule 84.14，P0 迭代门）**：全部 Phase complete 后、outcome 判定前，主进程全量回读六文档体系（用户需求专档 #1→最新/task_plan Goal+R+VC/findings 全结论/knowledge-brief 沉淀/progress 动作线/verification 验收记录）做五维互洽检查（需求↔目标↔执行↔验证↔知识，每维问「有无偏移/遗漏/未利用」）；**「知识」维新增逐条核对（task-resource-utilization-20261123）**：Read progress.md「📚 必要知识储备使用记录」表，本 Phase 每条 research/findings 采集结论应有 knowledge_use 行且 purpose 非空；缺失/空 purpose=补录消费点或在 findings 标注「未消费 因__」后重回读，禁采集后无声丢弃；发现偏移→登记（task_plan「收尾回读梳理记录」区块+progress `[recall-final]` 行）→修复→再梳理；**收敛出口=连续一轮零新发现才可出 outcome**，迭代轮次不设上限（用户裁决「不要怕浪费资源」）
   - **双轮质检与同步完整性终验衔接（Rule 103）**：终验前核对本计划各多文件变更集的同步核对清单全绿记录（103.6）；双轮质检细则→task-dispatch 卫星 Rule 103。
   - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
   - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉；**纯执行 S-unit 权重 0（P4，2026-10-22 用户授权）**：命中 L0-E 档（零仓库受管变更 ∧ 仅调用既有工具 ∧ 产物落 gitignore 区）的 S-unit **既不计入分子也不计入分母**——若计入分母会拉低委派率，方向与「机械操作免强制派子代理/免终验回炉」的豁免意图相反（审计判例 F9）；机器面=计划 Executor 行标 `L0-E`（或括注含「纯执行」）即识别，`check-delegation.sh stats` 已按此口径实现（分母扣减 + 该单元不判 violation + 整批皆纯执行时 rate=1.000 视为达标）
