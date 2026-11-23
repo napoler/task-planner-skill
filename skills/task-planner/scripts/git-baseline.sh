@@ -383,6 +383,8 @@ refresh_preexisting_anchor() {
   # [2026-11-24] 基线若来自干净 worktree，任务开始前别人留下的未提交改动会被 diff 误判为本任务偏移。
   # 首次 snapshot / 显式 anchor-preexisting 时把当时的工作树脏文件（含未跟踪、相对 HEAD）按内容 blob
   # 固化；diff 时仅当 path 与 blob 都未变才豁免。本任务侧车/报告自身必须排除，否则每轮都会自豁免。
+  # [2026-11-24 补漏] D 项（任务前已删除的文件）工作树无内容可 hash，改锚 HEAD:<path> 的 blob 并标
+  # deleted=true；否则这类存量删除会被当成任务偏移，终验门永远阻断。
   local -a items=() skips=() paths=()
   local s
   for s in "${EXCLUDE_PATHSPECS[@]}"; do skips+=("${s#:(exclude)}"); done
@@ -402,10 +404,16 @@ refresh_preexisting_anchor() {
       local skip=0 q
       for q in "${skips[@]}"; do [ "$q" = "$f" ] && skip=1; done
       [ "$skip" -eq 0 ] || continue
-      [ -f "${repo}/${f}" ] || continue   # 已删除文件无法 hash-object，不锚
-      blob="$(git -C "$repo" hash-object -- "$f" 2>/dev/null || true)"
-      [ -n "$blob" ] || continue
-      items+=("$(jq -nc --arg path "$f" --arg blob "$blob" '{path:$path,blob:$blob}')")
+      if [ -f "${repo}/${f}" ]; then
+        blob="$(git -C "$repo" hash-object -- "$f" 2>/dev/null || true)"
+        [ -n "$blob" ] || continue
+        items+=("$(jq -nc --arg path "$f" --arg blob "$blob" '{path:$path,blob:$blob}')")
+      else
+        # D 项：锚定 HEAD 中该路径的 blob，并标 deleted=true（工作树 hash-object 不可用）
+        blob="$(git -C "$repo" rev-parse "HEAD:${f}" 2>/dev/null || true)"
+        [ -n "$blob" ] || continue
+        items+=("$(jq -nc --arg path "$f" --arg blob "$blob" '{path:$path,blob:$blob,deleted:true}')")
+      fi
     done
   done < <(git -C "$repo" status --porcelain -z 2>/dev/null || true)
   local arrjson
@@ -853,12 +861,22 @@ cmd_diff() {
 
   # [2026-11-24] 存量脏文件豁免：只有锚定过且内容 blob 未变才从待处置集合剔除；
   # 一旦内容被本任务改动（blob 变化）就恢复为普通未处置项。未锚定/字段缺失时行为完全不变。
+  # deleted=true 的存量已删项：路径仍不存在且 HEAD blob 未变才豁免；恢复成文件则走普通处置。
   local -a PREEXIST_PATHS=() KEPT_PATHS=()
-  local anchored_blob cur_blob
+  local anchored_blob anchored_del cur_blob head_blob
   if [ "$(jq -r 'if (.preexisting_dirty|type)=="array" then "1" else "0" end' "$sidecar" 2>/dev/null || printf '0')" = 1 ]; then
     for p in "${UNIQ_PATHS[@]}"; do
       anchored_blob="$(jq -r --arg p "$p" '[.preexisting_dirty[]? | select(.path==$p) | .blob][0] // empty' "$sidecar" 2>/dev/null || true)"
-      if [ -n "$anchored_blob" ] && [ -f "${repo}/${p}" ]; then
+      anchored_del="$(jq -r --arg p "$p" '[.preexisting_dirty[]? | select(.path==$p) | (.deleted // false)][0] // false' "$sidecar" 2>/dev/null || true)"
+      if [ -n "$anchored_blob" ] && [ "$anchored_del" = true ]; then
+        # 存量已删：只有路径仍不存在、且 HEAD blob 未变才豁免；被恢复成文件就不再豁免
+        if [ ! -e "${repo}/${p}" ]; then
+          head_blob="$(git -C "$repo" rev-parse "HEAD:${p}" 2>/dev/null || true)"
+          if [ -n "$head_blob" ] && [ "$head_blob" = "$anchored_blob" ]; then
+            PREEXIST_PATHS+=("$p"); continue
+          fi
+        fi
+      elif [ -n "$anchored_blob" ] && [ -f "${repo}/${p}" ]; then
         cur_blob="$(git -C "$repo" hash-object -- "$p" 2>/dev/null || true)"
         if [ -n "$cur_blob" ] && [ "$cur_blob" = "$anchored_blob" ]; then
           PREEXIST_PATHS+=("$p"); continue
