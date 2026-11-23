@@ -39,9 +39,10 @@ die() { # die <rc> <message...> — 统一错误出口（stdout 保持契约字�
 
 usage() {
   printf '%s\n' \
-    'usage: git-baseline.sh <snapshot|checkpoint|diff|dispose|restore|anchor-auth|status> <plan-dir> [options]' \
+    'usage: git-baseline.sh <snapshot|checkpoint|diff|dispose|restore|anchor-auth|anchor-preexisting|status> <plan-dir> [options]' \
     '  snapshot   [--force] [--late]' \
     '  anchor-auth          只刷新授权锚（sidecar.auth_anchor），不动 baseline/checkpoint' \
+    '  anchor-preexisting   只刷新存量脏文件锚（sidecar.preexisting_dirty）' \
     '  checkpoint --label <id>' \
     '  diff       [--final] [--from <sha|label>] [--scope <file>]' \
     '  dispose    --file <path> --state retained|authorized|restored|fixed --evidence "<text>"' \
@@ -66,7 +67,7 @@ trap cleanup_all EXIT
 cmd="${1:-}"
 [ $# -ge 1 ] && shift || true
 case "$cmd" in
-  snapshot|checkpoint|diff|dispose|restore|anchor-auth|status) ;;
+  snapshot|checkpoint|diff|dispose|restore|anchor-auth|anchor-preexisting|status) ;;
   -h|--help) usage ;;
   *) usage ;;
 esac
@@ -375,6 +376,51 @@ cmd_anchor_auth() { # 只刷新授权锚，不动 baseline / checkpoint
   printf '[git-baseline] AUTH ANCHOR decisions=%s userlog=%s\n' "$AUTH_NDEC" "$AUTH_NLOG"
 }
 
+# ─────────────────────────── 存量脏文件锚（非本任务偏移） ───────────────────────────
+
+PREEXIST_N=0
+refresh_preexisting_anchor() {
+  # [2026-11-24] 基线若来自干净 worktree，任务开始前别人留下的未提交改动会被 diff 误判为本任务偏移。
+  # 首次 snapshot / 显式 anchor-preexisting 时把当时的工作树脏文件（含未跟踪、相对 HEAD）按内容 blob
+  # 固化；diff 时仅当 path 与 blob 都未变才豁免。本任务侧车/报告自身必须排除，否则每轮都会自豁免。
+  local -a items=() skips=() paths=()
+  local s
+  for s in "${EXCLUDE_PATHSPECS[@]}"; do skips+=("${s#:(exclude)}"); done
+  local rec st p oldp f blob
+  while IFS= read -r -d '' rec; do
+    st="${rec:0:2}"; p="${rec:3}"
+    case "$st" in R*|C*) IFS= read -r -d '' oldp || oldp="" ;; esac  # 重名记录多一条 old path
+    [ -n "$p" ] || continue
+    paths=("$p")
+    case "$p" in
+      */) paths=()
+          # status -z 对未跟踪目录只报目录，展开为其中的文件，才能与 diff 的文件级 path 对齐
+          while IFS= read -r -d '' f; do paths+=("$f"); done \
+            < <(git -C "$repo" ls-files --others --exclude-standard -z -- "$p" 2>/dev/null || true) ;;
+    esac
+    for f in "${paths[@]}"; do
+      local skip=0 q
+      for q in "${skips[@]}"; do [ "$q" = "$f" ] && skip=1; done
+      [ "$skip" -eq 0 ] || continue
+      [ -f "${repo}/${f}" ] || continue   # 已删除文件无法 hash-object，不锚
+      blob="$(git -C "$repo" hash-object -- "$f" 2>/dev/null || true)"
+      [ -n "$blob" ] || continue
+      items+=("$(jq -nc --arg path "$f" --arg blob "$blob" '{path:$path,blob:$blob}')")
+    done
+  done < <(git -C "$repo" status --porcelain -z 2>/dev/null || true)
+  local arrjson
+  arrjson="[$(IFS=,; printf '%s' "${items[*]:-}")]"
+  sc_apply '(.preexisting_dirty = $v)' --argjson v "$arrjson" || return 2
+  PREEXIST_N=${#items[@]}
+  return 0
+}
+
+cmd_anchor_preexisting() {
+  require_sidecar_repo
+  refresh_preexisting_anchor || die 2 "preexisting_dirty 写入失败"
+  printf '[git-baseline] PREEXISTING DIRTY n=%s\n' "$PREEXIST_N"
+}
+
 # ─────────────────────────── 路径安全 ───────────────────────────
 
 norm_path() { # 拒绝绝对路径与 .. 穿越，去掉开头 ./；路径含空格安全
@@ -542,8 +588,9 @@ cmd_snapshot() {
     || die 2 "commit-tree 失败"
   git -C "$repo" update-ref "$ref" "$sha" || die 2 "update-ref 失败"
   refresh_baseline_sidecar "$sha" "$tree" "$ref"
-  # 仅在真正建/重打基线时固化授权锚；幂等重跑不刷新（避免事后自补授权借 snapshot 洗白）
+  # 仅在真正建/重打基线时固化各锚；幂等重跑不刷新（避免事后自补授权/存量偏移借 snapshot 洗白）
   refresh_auth_anchor || die 2 "snapshot 授权锚写入失败"
+  refresh_preexisting_anchor || die 2 "snapshot 存量脏文件锚写入失败"
   printf '[git-baseline] BASELINE %s\n' "$ref"
 }
 
@@ -804,6 +851,24 @@ cmd_diff() {
     [ "$seen" -eq 0 ] && UNIQ_PATHS+=("$p")
   done
 
+  # [2026-11-24] 存量脏文件豁免：只有锚定过且内容 blob 未变才从待处置集合剔除；
+  # 一旦内容被本任务改动（blob 变化）就恢复为普通未处置项。未锚定/字段缺失时行为完全不变。
+  local -a PREEXIST_PATHS=() KEPT_PATHS=()
+  local anchored_blob cur_blob
+  if [ "$(jq -r 'if (.preexisting_dirty|type)=="array" then "1" else "0" end' "$sidecar" 2>/dev/null || printf '0')" = 1 ]; then
+    for p in "${UNIQ_PATHS[@]}"; do
+      anchored_blob="$(jq -r --arg p "$p" '[.preexisting_dirty[]? | select(.path==$p) | .blob][0] // empty' "$sidecar" 2>/dev/null || true)"
+      if [ -n "$anchored_blob" ] && [ -f "${repo}/${p}" ]; then
+        cur_blob="$(git -C "$repo" hash-object -- "$p" 2>/dev/null || true)"
+        if [ -n "$cur_blob" ] && [ "$cur_blob" = "$anchored_blob" ]; then
+          PREEXIST_PATHS+=("$p"); continue
+        fi
+      fi
+      KEPT_PATHS+=("$p")
+    done
+    UNIQ_PATHS=("${KEPT_PATHS[@]}")
+  fi
+
   local mkitems="" unresolved=0
   local -a UNRES_ITEMS=()
   for p in "${UNIQ_PATHS[@]}"; do
@@ -849,7 +914,10 @@ cmd_diff() {
     for i in "${!F_PATH[@]}"; do
       local fcell="${F_PATH[$i]}"
       fcell="${fcell//|/\\|}"
-      if [ "${F_OK[$i]}" = 1 ]; then ost="已处置/无需处置"; else ost="未处置"; fi
+      local is_pre=0 q2
+      for q2 in "${PREEXIST_PATHS[@]}"; do [ "$q2" = "${F_PATH[$i]}" ] && is_pre=1; done
+      if [ "$is_pre" -eq 1 ]; then ost="存量豁免"
+      elif [ "${F_OK[$i]}" = 1 ]; then ost="已处置/无需处置"; else ost="未处置"; fi
       # 二进制在 git numstat 中是 "-/-"，照原样呈现，不再伪装成 +0/-0
       local counts
       if [ "${F_BIN[$i]}" = 1 ]; then counts='-/-'
@@ -884,6 +952,9 @@ cmd_diff() {
       if [ "${F_OOS[$i]}" = 1 ]; then printf -- '- %s\n' "${F_PATH[$i]}"; oos_any=1; fi
     done
     [ "$oos_any" -eq 1 ] || printf '(无)\n'
+    printf '\n## 存量脏文件（非本任务，锚定时已存在且未变）\n\n'
+    if [ ${#PREEXIST_PATHS[@]} -eq 0 ]; then printf '(无)\n'
+    else for p in "${PREEXIST_PATHS[@]}"; do printf -- '- %s\n' "$p"; done; fi
     # [2026-11-24 可审计] 被授权豁免的删除必须在报告里一眼可见：逐行列出 sidecar.disposal
     printf '\n## 处置记录\n\n'
     local ndisp di dp ds de
@@ -1040,5 +1111,6 @@ case "$cmd" in
   dispose) cmd_dispose ;;
   restore) cmd_restore ;;
   anchor-auth) cmd_anchor_auth ;;
+  anchor-preexisting) cmd_anchor_preexisting ;;
   status) cmd_status ;;
 esac
