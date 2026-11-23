@@ -442,7 +442,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | 合并/隔离/辅助 | 6 | `smart-merge-back.sh`, `check-conflicts.sh`, `allow-direct.sh`, `lane-detect.sh`, `periodic-review.sh`, `rule-reserve.sh` | worktree 合并回、冲突、直改豁免、车道/周期/编号 |
 | hook/平台接线 | 4 | `zcode-sessionstart.sh`, `zcode-userpromptsubmit.sh`, `zcode-pretooluse.sh`, `zcode-posttooluse.sh` | ZCode hook 入口 |
 | 同步/校验/注册 | 7 | `sync-companion.sh`, `sync-ide-folders.ts`, `register-hooks-cj.ts`, `verify_io.sh`, `run-selftests.sh`, `selftest-registry.tsv`, `selftest-registry.sh` | 部署同步、I/O 校验、自测注册表/运行器 |
-| selftest | 103 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
+| selftest | 106 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
 | lib/schemas | 2 | `lib/plan-parse.sh`, `schemas/check-delegation-stats.schema.json` | 共享解析与 JSON schema |
 
 > 发现脚本时优先：① 本节类别 → ② `grep -rn "<关键词>" skills/task-planner/scripts` → ③ 直接读脚本头部注释/`--help`。新增脚本应归入对应类别并保持命名可检索（`check-*`/`selftest-*`/`sync-*`/`zcode-*`）。

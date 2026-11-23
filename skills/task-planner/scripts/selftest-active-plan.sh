@@ -214,6 +214,11 @@ if [ "$PCRE" = "yes" ]; then
   printf 'plan-required\ncreated_epoch: 1\n' > "$ROOT12D/plans/.plan_required_side/ffff0011aaaa2233.plan_required"
   mkdir -p "$ROOT12D/plans/.active_plan_side"
   printf 'zz\n' > "$ROOT12D/plans/.active_plan_side/ffff0011aaaa2233.active_plan"
+  # [2026-11-24 task-session-regression-20261124] What: 夹具补 B9 基线证据（.git-baseline.json 含非空 baseline_ref）。
+  # Why: plan-created.cjs 已加「清哨兵前校验基线证据」门；本用例原始意图=fallback sidkey 命中后的**正常清除**
+  #   （断言哨兵被删 + 输出「会话哨兵已清除」），不是测「无证据拒绝」；此前夹具缺 sidecar 导致 rc=2 连锁 FAIL。
+  #   只补过门所需最小证据，不改原断言与 sid 命名空间口径。
+  printf '{"schema":1,"baseline_ref":"refs/task-baseline/t12d","baseline_sha":"fixture"}\n' > "$ROOT12D/plans/zz/.git-baseline.json"
   OUT12D="$( cd "$ROOT12D/plans/zz" && env -u TASK_PLANNER_SID CLAUDE_CODE_SESSION_ID=deadbeef44 node "$SCRIPT_DIR/plan-created.cjs" </dev/null 2>&1 )"
   RC=$?
   if [ "$RC" = 0 ] && [ ! -f "$ROOT12D/plans/.plan_required_side/ffff0011aaaa2233.plan_required" ] && \
