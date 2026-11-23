@@ -674,6 +674,15 @@ in_scope() { # in_scope <path> — plans/ 豁免；scope 列表逐条前缀匹�
   return 1
 }
 
+oos_head_clean() { # <path> — 范围外文件是否被 HEAD 跟踪且相对当前 HEAD 工作树/索引干净
+  # [2026-11-24] 他会话在任务开始后提交的范围外文件：相对任务基线有 diff，但相对 HEAD 干净，
+  # 不应记为本任务偏移；若本地仍有改动/未跟踪，则照常 unresolved。
+  local p="$1" rc=0
+  git -C "$repo" cat-file -e "HEAD:${p}" 2>/dev/null || return 1
+  git -C "$repo" diff --quiet HEAD -- "$p" 2>/dev/null || rc=$?
+  [ "$rc" -eq 0 ]
+}
+
 disposal_valid_for() { # 按 dispose 同规则重放 sidecar 中该 path 的每条 ok=true 记录（防事后篡改）
   local p="$1" mkitems="$2" i=0 cnt dp dok ds de
   cnt="$(jq -r '.disposal|length' "$sidecar" 2>/dev/null || printf '0')"
@@ -847,9 +856,16 @@ cmd_diff() {
   done
 
   # 待处置需求：有删除行的文件 ∪ 越界文件 ∪ mustkeep_lost 文件（按 path 去重，同 path 合并校验）
-  local -a REQ_PATHS=()
+  # 范围外且相对当前 HEAD 干净（HEAD 已跟踪、无本地改动）的文件不算本任务偏移；
+  # 范围内（F_OOS=0）判定完全不变。
+  local -a REQ_PATHS=() F_HEADCLEAN=()
   for i in "${!F_PATH[@]}"; do
-    if [ -n "${F_DL[$i]}" ] || [ "${F_OOS[$i]}" = 1 ]; then REQ_PATHS+=("${F_PATH[$i]}"); fi
+    p="${F_PATH[$i]}"; F_HEADCLEAN[$i]=0
+    if [ "${F_OOS[$i]}" = 1 ] && oos_head_clean "$p"; then
+      F_HEADCLEAN[$i]=1
+      continue
+    fi
+    if [ -n "${F_DL[$i]}" ] || [ "${F_OOS[$i]}" = 1 ]; then REQ_PATHS+=("$p"); fi
   done
   for tg in "${MK_LOST_PATHS[@]}"; do REQ_PATHS+=("$tg"); done
   local -a UNIQ_PATHS=()
@@ -912,7 +928,9 @@ cmd_diff() {
         mkitems+="${MK_LOST_IDS[$j]}"$'\t'"${MK_LOST_VERBS[$j]}"$'\n'
       fi
     done
-    if [ -n "${F_DL[$i]}" ] || [ "${F_OOS[$i]}" = 1 ]; then
+    if [ "${F_HEADCLEAN[$i]}" = 1 ]; then
+      F_OK[$i]=1
+    elif [ -n "${F_DL[$i]}" ] || [ "${F_OOS[$i]}" = 1 ]; then
       if disposal_valid_for "$p" "$mkitems"; then F_OK[$i]=1; else F_OK[$i]=0; fi
     else
       F_OK[$i]=1
@@ -935,6 +953,7 @@ cmd_diff() {
       local is_pre=0 q2
       for q2 in "${PREEXIST_PATHS[@]}"; do [ "$q2" = "${F_PATH[$i]}" ] && is_pre=1; done
       if [ "$is_pre" -eq 1 ]; then ost="存量豁免"
+      elif [ "${F_HEADCLEAN[$i]}" = 1 ]; then ost="范围外·HEAD 干净"
       elif [ "${F_OK[$i]}" = 1 ]; then ost="已处置/无需处置"; else ost="未处置"; fi
       # 二进制在 git numstat 中是 "-/-"，照原样呈现，不再伪装成 +0/-0
       local counts
