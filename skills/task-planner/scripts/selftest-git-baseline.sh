@@ -2,6 +2,8 @@
 # [2026-11-24 task-session-regression-20261124] selftest-git-baseline.sh — B9/B10/B11 机器面实弹回归
 # What: 对 git-baseline.sh 的 snapshot/diff/dispose/restore/worktree/scope/numstat/attest 契约，
 #       以及 check-3file-gate.sh / check-complete.sh 两处门接线，做真实 git 仓夹具 + 真实子进程断言。
+#       T11/T12（2026-11-24 P1）：授权锚只认 snapshot 时快照、自补 D/原话无效；retained 必须含
+#       被删原文；mustkeep_lost>0 即使处置齐全也 FAIL（原 T4e 口径随此规则调整）。
 # Why: 新机制若只剩文档条款或静态 grep，删除必保事实仍可在验收全绿下溜过；本套件复演事故并
 #       反向证明门会阻断、处置校验不可伪造、还原与基线证据链可逐字节回验。
 # 风格: set -u（不用 -e，逐条控制 rc）+ mktemp 夹具 + t() 计数 + [PASS]/[FAIL] + Total 汇总；
@@ -39,6 +41,9 @@ mkcase() { # mkcase <name> → 回显 "<case-dir>"；夹具仓含 2 条 MK 必�
 {"spec_baseline":[{"id":"MK1","verbatim":"数据库使用 PostgreSQL 15","rule":"target=facts.md|数据库使用 PostgreSQL 15|retain","anchor":"facts.md:2"},{"id":"MK2","verbatim":"缓存使用 Redis","rule":"target=facts.md|缓存使用 Redis|retain","anchor":"facts.md:3"},{"id":"MK-NA","verbatim":"无既有事实需保","rule":"target=n/a|none|retain","anchor":"-"}],"decisions":[{"id":"D1","decision":"授权删除 MK1 的事实：数据库使用 PostgreSQL 15","rationale":"用户逐字授权"}],"config":{"scope_files":["facts.md","keep.txt"]}}
 EOF
     printf '# task plan\nplan_tier: mini\n' > "$c/plan/task_plan.md"
+    # P1 修复后 authorized 只认 snapshot 时的授权锚：夹具必须在 snapshot 前备好 `> 引用行`，
+    # 否则锚内 userlog 为空，合法授权断言会被误判为 REJECT（口径随新规则调整）。
+    printf '> 确实允许删除 MK1\n' > "$c/plan/user-session-log.md"
     printf '%s' "$c"
 }
 base_sha() { jq -r '.baseline_sha // ""' "$1/plan/.git-baseline.json" 2>/dev/null; }
@@ -108,8 +113,10 @@ run bash "$GB" dispose "$C3/plan" --file facts.md --state authorized --evidence 
 run bash "$GB" dispose "$C3/plan" --file facts.md --state authorized --evidence 'decisions:D1|用户原话:确实允许删除 MK1' --repo "$C3/repo"
 [ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'DISPOSE OK' && ok "T4d D 号+引用原话+MK 点名三齐全 → OK" || bad "T4d 合法授权 (rc=$RC)"
 run bash "$GB" diff "$C3/plan" --final --repo "$C3/repo"
-[ "$RC" -eq 0 ] && grep -qF -- '- facts.md | authorized | decisions:D1|用户原话:确实允许删除 MK1' "$(report "$C3")" \
-  && ok "T4e 报告「处置记录」节可见该授权且 unresolved=0" || bad "T4e 报告处置记录可见 (rc=$RC)"
+# P1 口径调整：授权只表示「有批准」；必保事实仍缺失，必须 FAIL（unresolved=0 && mustkeep_lost=1）。
+[ "$RC" -eq 1 ] && printf '%s\n' "$OUT" | grep -q 'FAIL unresolved=0 mustkeep_lost=1' \
+  && grep -qF -- '- facts.md | authorized | decisions:D1|用户原话:确实允许删除 MK1' "$(report "$C3")" \
+  && ok "T4e 报告可见授权；mustkeep_lost>0 即使 unresolved=0 仍 rc=1 FAIL" || bad "T4e 授权后仍 FAIL (rc=$RC)"
 
 # ── T5 两门接线：无侧车 / 未处置阻断；warn 不阻断；off SKIP ─────────────────
 C5="$(mkcase t5)"
@@ -260,6 +267,56 @@ run bash "$GB" diff "$C10/plan" --final --repo "$C10/repo"
 rm -f -- "$C10/plan/.plan-attestation"
 run bash "$GB" diff "$C10/plan" --final --repo "$C10/repo"
 [ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'PLAN-NOT-ATTESTED' && ok "T10c 无锁文件 → WARN 不阻断" || bad "T10c 无锁 WARN (rc=$RC)"
+
+# ── T11 P1 防自补授权：锚后新增 D/原话无效，anchor-auth 才生效 ────────────────
+C11="$(mkcase t11)"
+run bash "$GB" snapshot "$C11/plan" --repo "$C11/repo"
+del_line "$C11/repo/facts.md" '数据库使用 PostgreSQL 15'
+run bash "$GB" diff "$C11/plan" --final --repo "$C11/repo"
+jq '.decisions += [{"id":"D9","decision":"同意删除 MK1","rationale":"用户授权"}]' \
+  "$C11/plan/plan-state.json" > "$C11/ps.tmp" && mv -- "$C11/ps.tmp" "$C11/plan/plan-state.json"
+printf '> 同意删除 MK1\n' > "$C11/plan/user-session-log.md"
+run bash "$GB" dispose "$C11/plan" --file facts.md --state authorized \
+  --evidence 'decisions:D9|用户原话:同意删除 MK1' --repo "$C11/repo"
+[ "$RC" -eq 1 ] && printf '%s\n' "$OUT" | grep -q '锚内 decisions 查无精确 D 编号 D9' \
+  && ok "T11a 锚后自补 D9+原话 → authorized REJECT" || bad "T11a 自补授权 (rc=$RC)"
+B11="$(base_sha "$C11")"; N11="$(jq -r '.checkpoints|length' "$C11/plan/.git-baseline.json")"
+run bash "$GB" anchor-auth "$C11/plan" --repo "$C11/repo"
+[ "$RC" -eq 0 ] && [ "$(base_sha "$C11")" = "$B11" ] \
+  && [ "$(jq -r '.checkpoints|length' "$C11/plan/.git-baseline.json")" = "$N11" ] \
+  && jq -e '.auth_anchor.decisions[] | select(.id=="D9")' "$C11/plan/.git-baseline.json" >/dev/null \
+  && ok "T11b anchor-auth 只刷新锚，不动 baseline/checkpoint" || bad "T11b anchor-auth (rc=$RC)"
+run bash "$GB" dispose "$C11/plan" --file facts.md --state authorized \
+  --evidence 'decisions:D9|用户原话:同意删除 MK1' --repo "$C11/repo"
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'DISPOSE OK' \
+  && ok "T11c 显式 anchor-auth 后同一授权 → OK" || bad "T11c 锚后授权 (rc=$RC)"
+run bash "$GB" diff "$C11/plan" --final --repo "$C11/repo"
+[ "$RC" -eq 1 ] && printf '%s\n' "$OUT" | grep -q 'FAIL unresolved=0 mustkeep_lost=1' \
+  && ok "T11d 已授权但事实仍缺失 → diff rc=1 FAIL" || bad "T11d 授权后仍 FAIL (rc=$RC)"
+
+# ── T12 retained 证据必须含被删原文（防任意存活片段洗白）─────────────────────
+C12="$(mkcase t12)"
+cat > "$C12/repo/facts.md" <<'EOF'
+数据库使用 PostgreSQL 15
+缓存使用 Redis
+报告已归档
+备注：报告已归档
+EOF
+run bash "$GB" snapshot "$C12/plan" --repo "$C12/repo"
+awk '$0 != "报告已归档"' "$C12/repo/facts.md" > "$C12/f.tmp" && mv -- "$C12/f.tmp" "$C12/repo/facts.md"
+run bash "$GB" diff "$C12/plan" --final --repo "$C12/repo"
+[ "$RC" -eq 1 ] && jq -e '.last_diff.items[] | select(.kind=="deleted" and .path=="facts.md" and .verbatim=="报告已归档")' \
+  "$C12/plan/.git-baseline.json" >/dev/null \
+  && ok "T12a 删除行固化为 last_diff.items(kind=deleted)" || bad "T12a deleted 项 (rc=$RC)"
+run bash "$GB" dispose "$C12/plan" --file facts.md --state retained --evidence '缓存使用 Redis' --repo "$C12/repo"
+[ "$RC" -eq 1 ] && printf '%s\n' "$OUT" | grep -q '证据未包含被删原文' \
+  && ok "T12b 任意存活片段 retained → REJECT" || bad "T12b 存活片段洗白 (rc=$RC)"
+run bash "$GB" dispose "$C12/plan" --file facts.md --state retained --evidence '报告已归档' --repo "$C12/repo"
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'DISPOSE OK' \
+  && ok "T12c 证据含被删原文 → retained OK" || bad "T12c 合法 retained (rc=$RC)"
+run bash "$GB" diff "$C12/plan" --final --repo "$C12/repo"
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'PASS unresolved=0 mustkeep_lost=0' \
+  && ok "T12d 删除已处置且无必保丢失 → diff PASS" || bad "T12d diff PASS (rc=$RC)"
 
 TOTAL=$((PASS+FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"

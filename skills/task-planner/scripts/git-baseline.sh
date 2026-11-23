@@ -39,8 +39,9 @@ die() { # die <rc> <message...> — 统一错误出口（stdout 保持契约字�
 
 usage() {
   printf '%s\n' \
-    'usage: git-baseline.sh <snapshot|checkpoint|diff|dispose|restore|status> <plan-dir> [options]' \
+    'usage: git-baseline.sh <snapshot|checkpoint|diff|dispose|restore|anchor-auth|status> <plan-dir> [options]' \
     '  snapshot   [--force] [--late]' \
+    '  anchor-auth          只刷新授权锚（sidecar.auth_anchor），不动 baseline/checkpoint' \
     '  checkpoint --label <id>' \
     '  diff       [--final] [--from <sha|label>] [--scope <file>]' \
     '  dispose    --file <path> --state retained|authorized|restored|fixed --evidence "<text>"' \
@@ -65,7 +66,7 @@ trap cleanup_all EXIT
 cmd="${1:-}"
 [ $# -ge 1 ] && shift || true
 case "$cmd" in
-  snapshot|checkpoint|diff|dispose|restore|status) ;;
+  snapshot|checkpoint|diff|dispose|restore|anchor-auth|status) ;;
   -h|--help) usage ;;
   *) usage ;;
 esac
@@ -344,6 +345,36 @@ mk_collect() {
   fi
 }
 
+# ─────────────────────────── 授权锚（防事后自补授权） ───────────────────────────
+
+AUTH_NDEC=""; AUTH_NLOG=""
+refresh_auth_anchor() {
+  # [2026-11-24 P1 修复] 授权凭据在 snapshot / anchor-auth 时固化进 sidecar；之后执行体自补
+  # plan-state.json.decisions 或自写 user-session-log.md 的 `>` 行都不再被 dispose 采信。
+  # decisions = {id, text=decision+rationale}；userlog = `^>` 行去掉 > 前缀后的逐行文本。
+  local ps="${plan_dir}/plan-state.json" ulog="${plan_dir}/user-session-log.md"
+  local dec='[]' ul='[]'
+  if [ -f "$ps" ]; then
+    dec="$(jq -c '[.decisions[]? | select(type == "object") | {id:(.id // ""), text:((.decision // "") + " " + (.rationale // ""))}]' "$ps" 2>/dev/null || printf '[]')"
+  fi
+  if [ -f "$ulog" ]; then
+    ul="$(grep -E '^>' "$ulog" 2>/dev/null | sed -e 's/^>[[:space:]]*//' -e 's/\r$//' \
+          | jq -Rs 'split("\n") | map(select(length > 0))' 2>/dev/null || printf '[]')"
+  fi
+  [ -n "$dec" ] || dec='[]'; [ -n "$ul" ] || ul='[]'
+  sc_apply '(.auth_anchor = {at:$at,decisions:$dec,userlog:$ul})' \
+    --arg at "$now" --argjson dec "$dec" --argjson ul "$ul" || return 2
+  AUTH_NDEC="$(printf '%s' "$dec" | jq 'length' 2>/dev/null || printf '0')"
+  AUTH_NLOG="$(printf '%s' "$ul" | jq 'length' 2>/dev/null || printf '0')"
+  return 0
+}
+
+cmd_anchor_auth() { # 只刷新授权锚，不动 baseline / checkpoint
+  require_sidecar_repo
+  refresh_auth_anchor || die 2 "auth_anchor 写入失败"
+  printf '[git-baseline] AUTH ANCHOR decisions=%s userlog=%s\n' "$AUTH_NDEC" "$AUTH_NLOG"
+}
+
 # ─────────────────────────── 路径安全 ───────────────────────────
 
 norm_path() { # 拒绝绝对路径与 .. 穿越，去掉开头 ./；路径含空格安全
@@ -359,12 +390,12 @@ norm_path() { # 拒绝绝对路径与 .. 穿越，去掉开头 ./；路径含空
 
 DREASON=""
 validate_disposal() { # validate_disposal <path> <state> <evidence> [mkitems: 每行 id<TAB>verbatim]
-  # [2026-11-24 收紧] authorized 三条全过才 OK：
-  #   a) D 号精确等于 plan-state.json.decisions[].id（jq 精确匹配，不再 grep task_plan.md 子串）；
-  #   b) 原话片段必须命中 user-session-log.md 中以 `>` 开头的引用行（task_plan.md 不再是出处）；
-  #   c) 该 path 有 mustkeep_lost 时，该决定的 decision+rationale 必须点名 MK 编号或 verbatim 原文。
+  # [2026-11-24 P1 修复] authorized 只认 snapshot/anchor-auth 固化的 sidecar.auth_anchor，
+  # 绝不读当前 plan-state.json / user-session-log.md——执行体可在删必保项后自补 D 与 > 原话洗白。
+  #   a) D 号精确命中 auth_anchor.decisions[].id；b) 原话命中 auth_anchor.userlog[] 某行；
+  #   c) 该 path 有 mustkeep_lost 时，锚内决定文本必须点名 MK 编号或 verbatim 原文。
   local p="$1" state="$2" evidence="$3" mkitems="${4:-}"
-  local seg dpart upart d u rc=0 found f seg2 mid mverb dtext ps ulog
+  local seg dpart upart d u rc=0 found f seg2 mid mverb dtext anchor_log
   DREASON=""
   case "$state" in
     retained|fixed)
@@ -392,6 +423,21 @@ validate_disposal() { # validate_disposal <path> <state> <evidence> [mkitems: �
           [ "$found" -eq 1 ] || { DREASON="缺少 mustkeep 原文片段: ${mverb:-$mid}"; return 1; }
         done <<< "$mkitems"
       fi
+      # [P1 修复] deleted 原文约束：该 path 有 deleted 项时，证据至少含一条被删原文；
+      # 只凭「任意 ≥4 字存活片段」不能洗白删除。无 deleted 项时保持旧行为。
+      local dverbs
+      dverbs="$(jq -r --arg p "$p" '.last_diff.items[]? | select(.kind=="deleted" and .path==$p) | .verbatim' "$sidecar" 2>/dev/null || true)"
+      if [ -n "$dverbs" ]; then
+        found=0
+        while IFS= read -r seg2; do
+          [ -n "$seg2" ] || continue
+          for seg in "${segs[@]}"; do
+            if [ "$seg" = "$seg2" ]; then found=1; break; fi
+          done
+          if [ "$found" -eq 1 ]; then break; fi
+        done <<< "$dverbs"
+        [ "$found" -eq 1 ] || { DREASON="retained/fixed 证据未包含被删原文（deleted 项）"; return 1; }
+      fi
       return 0 ;;
     authorized)
       local IFS='|'
@@ -404,19 +450,20 @@ validate_disposal() { # validate_disposal <path> <state> <evidence> [mkitems: �
       case "$upart" in 用户原话:*) u="${upart#用户原话:}" ;; *) DREASON="缺少 用户原话: 前缀"; return 1 ;; esac
       [ -n "$d" ] || { DREASON="D 编号为空"; return 1; }
       [ "${#u}" -ge 4 ] || { DREASON="用户原话片段不足 4 字"; return 1; }
-      # a) D 号精确命中 plan-state.json.decisions[].id，同时取出决定文本供 c) 点名核对
-      ps="${plan_dir}/plan-state.json"
-      [ -f "$ps" ] || { DREASON="plan-state.json 不存在，无法核对 D 编号"; return 1; }
+      # 授权锚缺失 = 不可授权（老侧车须 snapshot --force 或 anchor-auth 显式补锚）
+      if [ "$(jq -r 'if (.auth_anchor|type)=="object" then "1" else "0" end' "$sidecar" 2>/dev/null || printf '0')" != 1 ]; then
+        DREASON="AUTH-ANCHOR-MISSING"; return 1
+      fi
+      # a) D 号精确命中锚内 decisions[].id，同时取出锚内决定文本供 c) 点名核对
       dtext="$(jq -r --arg d "$d" \
-        '[.decisions[]? | select((type == "object") and (.id == $d)) | ((.decision // "") + " " + (.rationale // ""))] | join("\n")' \
-        "$ps" 2>/dev/null || true)"
+        '[.auth_anchor.decisions[]? | select(.id == $d) | .text] | join("\n")' \
+        "$sidecar" 2>/dev/null || true)"
       [ "$(printf '%s' "$dtext" | tr -d '[:space:]')" != "" ] \
-        || { DREASON="decisions 中查无精确 D 编号 $d"; return 1; }
-      # b) 用户原话只认 user-session-log.md 的 `^>` 引用行
-      ulog="${plan_dir}/user-session-log.md"
-      [ -f "$ulog" ] || { DREASON="user-session-log.md 不存在，无法核对用户原话"; return 1; }
-      if ! grep -E '^>' "$ulog" 2>/dev/null | grep -qF -- "$u"; then
-        DREASON="用户原话片段不在 user-session-log.md 的 > 引用行: $u"; return 1
+        || { DREASON="锚内 decisions 查无精确 D 编号 $d"; return 1; }
+      # b) 用户原话只认锚内 userlog[] 的某一行（逐行 grep -F，不跨行拼接）
+      anchor_log="$(jq -r '.auth_anchor.userlog[]?' "$sidecar" 2>/dev/null || true)"
+      if ! printf '%s\n' "$anchor_log" | grep -qF -- "$u"; then
+        DREASON="用户原话片段不在授权锚 userlog 中: $u"; return 1
       fi
       # c) 必保项丢失时，决定文本必须点名 MK 编号或 verbatim，防无关授权豁免
       if [ -n "$mkitems" ]; then
@@ -495,6 +542,8 @@ cmd_snapshot() {
     || die 2 "commit-tree 失败"
   git -C "$repo" update-ref "$ref" "$sha" || die 2 "update-ref 失败"
   refresh_baseline_sidecar "$sha" "$tree" "$ref"
+  # 仅在真正建/重打基线时固化授权锚；幂等重跑不刷新（避免事后自补授权借 snapshot 洗白）
+  refresh_auth_anchor || die 2 "snapshot 授权锚写入失败"
   printf '[git-baseline] BASELINE %s\n' "$ref"
 }
 
@@ -685,6 +734,9 @@ cmd_diff() {
   fi
 
   # 逐文件：+/-、删除行、越界判定
+  # [P1 修复] 每条删除行同步固化为 last_diff.items(kind=deleted)，供 retained/fixed 证据核对；
+  # 片段截 240 字、每文件上限 20 条，避免巨型行/批量删除撑爆侧车。
+  local -a DELETED_ITEMS=()
   local deleted_lines=0 n_added=0 n_modified=0 n_deleted=0 n_oos=0 i
   for i in "${!F_PATH[@]}"; do
     p="${F_PATH[$i]}"
@@ -699,6 +751,15 @@ cmd_diff() {
       if [ -n "$dl" ]; then
         nline="$(printf '%s\n' "$dl" | grep -c . || true)"
         deleted_lines=$((deleted_lines + nline))
+        local dn=0 vv
+        while IFS= read -r vv; do
+          [ -n "$vv" ] || continue
+          dn=$((dn + 1)); [ "$dn" -le 20 ] || break
+          # vv 来自 diff 输出（ "-原文" ）；证据要写真正的行内容，剥掉 diff 的 '-' 标记
+          vv="${vv#-}"; vv="${vv:0:240}"
+          DELETED_ITEMS+=("$(jq -nc --arg path "$p" --arg verbatim "$vv" \
+            '{kind:"deleted",path:$path,verbatim:$verbatim}')")
+        done <<< "$dl"
       fi
     fi
     if in_scope "$p"; then F_OOS[$i]=0; else F_OOS[$i]=1; n_oos=$((n_oos + 1)); fi
@@ -841,17 +902,19 @@ cmd_diff() {
       done
     fi
     printf '\n## 结论\n\n'
-    if [ "$unresolved" -eq 0 ]; then printf 'PASS unresolved=0 mustkeep_lost=%s\n' "$mk_lost"
+    # [P1 修复] 必保项丢失即使已「处置」也不得 PASS：处置只表示有授权，事实仍缺失。
+    if [ "$unresolved" -eq 0 ] && [ "$mk_lost" -eq 0 ]; then printf 'PASS unresolved=0 mustkeep_lost=0\n'
     else printf 'FAIL unresolved=%s mustkeep_lost=%s\n' "$unresolved" "$mk_lost"; fi
   } > "$rtmp"
   mv -f -- "$rtmp" "$report" || die 2 "报告写入失败"
 
-  # sidecar.last_diff 固化（items = 未决项 + MK 丢失项，供 dispose 复核）
-  local all_items_json unres_json mk_json
+  # sidecar.last_diff 固化（items = 未决项 + MK 丢失项 + deleted 原文项，供 dispose 复核）
+  local all_items_json unres_json mk_json del_json
   unres_json="[$(IFS=,; printf '%s' "${UNRES_ITEMS[*]:-}")]"
   mk_json="[$(IFS=,; printf '%s' "${MK_LOST_ITEMS[*]:-}")]"
-  # 两段各自是 JSON 数组，jq -s 收成 [[…],[…]] 后 add 合并，避免 bash 拼串造成多余分隔符
-  all_items_json="$(printf '%s\n%s\n' "$unres_json" "$mk_json" | jq -c -s 'add')" \
+  del_json="[$(IFS=,; printf '%s' "${DELETED_ITEMS[*]:-}")]"
+  # 每段各自是 JSON 数组，jq -s 收成 [[…],…] 后 add 合并，避免 bash 拼串造成多余分隔符
+  all_items_json="$(printf '%s\n%s\n%s\n' "$unres_json" "$mk_json" "$del_json" | jq -c -s 'add')" \
     || die 2 "items JSON 合并失败"
   sc_apply '(.last_diff = {at:$at,from_ref:$from,report:$report,added:$added,modified:$modified,
     deleted:$deleted,out_of_scope:$oos,deleted_lines:$dl,unresolved:$unres,mustkeep_lost:$mklost,items:$items})' \
@@ -860,8 +923,8 @@ cmd_diff() {
     --argjson oos "$n_oos" --argjson dl "$deleted_lines" --argjson unres "$unresolved" \
     --argjson mklost "$mk_lost" --argjson items "$all_items_json" || die 2 "sidecar last_diff 写入失败"
 
-  if [ "$unresolved" -eq 0 ]; then
-    printf '[git-baseline] PASS unresolved=0 mustkeep_lost=%s report=%s\n' "$mk_lost" "$report"
+  if [ "$unresolved" -eq 0 ] && [ "$mk_lost" -eq 0 ]; then
+    printf '[git-baseline] PASS unresolved=0 mustkeep_lost=0 report=%s\n' "$report"
     return 0
   fi
   printf '[git-baseline] FAIL unresolved=%s mustkeep_lost=%s report=%s\n' "$unresolved" "$mk_lost" "$report"
@@ -976,5 +1039,6 @@ case "$cmd" in
   diff) cmd_diff ;;
   dispose) cmd_dispose ;;
   restore) cmd_restore ;;
+  anchor-auth) cmd_anchor_auth ;;
   status) cmd_status ;;
 esac
