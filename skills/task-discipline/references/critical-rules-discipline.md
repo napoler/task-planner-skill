@@ -750,6 +750,10 @@ C 级问题必须自动修复+登记（Decisions Made `auto:` 行或 progress.md
 - **通用基线组**（全任务恒存在，与任务类型无关，清单唯一事实源=todo-sync 契约）：**B1** 修改后验证与复检留痕（Rule 106.1/106.2/106.3，持续项：status=in_progress 直至终验，完成判据=期间全部 `[recheck]` 留痕齐备）；**B2** Phase 翻转前 V-N 校验（Rule 84.3，每 Phase 一次）；**B3** 终验 VC 全复验（Rule 84.5）；**B4** 收尾回读梳理（Rule 84.14，连续一轮零新发现）；**B5** Todo 终态同步（S4，含基线组自身）；**B6** 引擎适配性检测（建 todo 时判断是否适用 OpenSpec 规格化/Superpowers 方法论技能，结论落盘 Decisions）；**B7** 对齐核查（吸收 task-align 默认项语义）；**B8** worktree 隔离核验（实现类任务强制隔离）。
 - **任务步骤组**：Phase/S-unit 映射（todo-sync S1 既有契约不变）。
 基线组与门禁硬挂钩：B1 未勾=修改步不得声称完成；B2 未勾=Phase 不得翻 complete；B3/B4 未勾=不得出 outcome；S3 `[plan-sync]` 回写两组都要处理，基线组条目丢失=当次立即重建（防丢弃）；B6 未留痕=不得声称按专业引擎推进；B7 未勾=对齐核查未完成；B8 未勾=实现类不得直接改主树。Why：todo=执行视图唯一事实，门禁挂 todo 使「流程缺失/丢弃」在下次同步时可见；B1 设计为持续项避免逐次修改的 todo 刷屏，B6-B8 对应引擎激活/对齐/隔离三缺陷。
+- **B9/B10/B11 语义与门禁挂钩（2026-11-24 task-session-regression-20261124）**：B9 任务开始前备份（Git 基线快照）——首次写入受管文件前一次，清哨兵前校验强制，无基线证据=受管写入未完成；B10 修改后备份（检查点）——每个 S-unit/Phase 翻转前一次，无检查点=Phase 禁 complete；B11 Git 差异分析与处置——Phase 翻转前增量、终验前全量，由 check-3file-gate 第 8 条件与 check-complete 的 GIT-BASELINE GATE 两处门自动执行，unresolved>0=Phase 禁 complete 且禁出 outcome。三者完成判据=`git-baseline.sh` 写入的 sidecar 证据 `<plan-dir>/.git-baseline.json`，非 todo 勾选。
+- **四态处置（2026-11-24 task-session-regression-20261124）**：`retained`/`fixed` 须以登记的必保事实词做固定串查证（`grep -cF` ≥1），不得仅凭检查点自证；`authorized` 须用户逐字授权锚 + Decisions 锚 + 重新 attest；`restored` 须与基线一致。必保项丢失后只有三条出路：`restored` / `authorized` / 事实词重新查到；三者皆无=STOP 禁推进。
+- **必保清单义务（2026-11-24 task-session-regression-20261124）**：修改既有文件的任务须在 `spec_baseline` 登记 `MK<n>`（目标文件 + 既有事实词 + 真源出处/锚）；派发材料包里的每条「必须保留」先登记再动手；后续材料包与之冲突按 51.15/74.7 处置；MK 与 `MK-NA`（确无可保事实时登记，附理由）在计划期登记并随 attest 锁定（同 51.15 基线锁定口径）。
+- **压缩恢复（2026-11-24 task-session-regression-20261124）**：上下文压缩后 SessionStart hook 命中本会话在途计划时注入 `[compact-recovery]` 恢复包，第一动作按包内列出的顺序读文件；摘要可能丢细节，以磁盘文件为准，禁止仅凭摘要续做。
 
 106.6 **结构化编辑工具指针（md-edit-ops）**：markdown 批量/结构化修改优先走 `skills/md-edit-ops/` 的 edit-ops 指令单执行器（写前预校验/原子应用/回读断言/apply-report），替代裸 sed/python 长文批量替换。
 - apply-report 路径须记入 progress `[recheck]` 行（与 106.1 留痕协同），作为可审计证据。

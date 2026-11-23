@@ -66,6 +66,9 @@ execution_lane: L1
 | spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 |
 |---------|-------------------|------------------|-----------|------------|
 | <如 SPEC-DUR-01> | <如 单镜头时长 4-12s> | <弧规格:5 / skill:53> | <4s≤单镜≤12s；越界即FAIL，禁NOTE豁免> | <sha256 或 n/a(文本片段)> |
+2026-11-24 task-session-regression-20261124：修改既有文件的任务，把必保事实以 `MK<n>` 登记在本表——四列对应：目标文件（`spec_id` 列写 `MK<n>` + 目标文件路径）/ 字面片段（`约束原文(verbatim)` 列写必保事实词原文）/ 真源锚（`来源锚(path:line)` 列写派发材料包或事实源出处）/ sha（`来源 sha256` 列写片段摘要或 n/a）；`双向判定式` 列写固定串查证式（如 `grep -cF` ≥1）。
+确无可保事实时登记 `MK-NA` 并写明理由，格式：`MK-NA | 无既有事实需保（理由…） | n/a | none(固定串查证不适用) | n/a`；禁止留空。
+MK 与 `MK-NA` 均在计划期登记并随 attest 锁定（Rule 51.15 基线锁定口径）。
 
 ## 📦 进度产出基线（Rule 111 进度产出防倒退）
 <!-- Rule 111（2026-11-20 task-antiregress-tplgov-20261120）：存在项目级进度/产出基线候选时计划期必登，禁止拆东墙补西墙。来源=对项目关键产出/能力面盘点（如模板数与结构、规则编号面、selftest 基线、部署位状态、核心流程可用性）。本区块随 task_plan.md 纳入 Rule 20.1 SHA-256 attestation 锁定面（同 51.15 口径）；执行期修改/放宽/删除已登记项须 STOP→用户显式授权→Decisions Made 登记→更新基线→重跑 attest 重锁。无候选须显式填写 none-justified（附理由），禁静默遗漏。 -->
@@ -466,9 +469,10 @@ Phase 1
 | Phase 4 | ☐ |  |  |
 | Phase 5 | ☐ |  |  |
 
-**基线组 B1-B8（S1 建组必含，B1-B5 逐字保留）**：
-B1 修改后验证 / B2 Phase翻转校验 / B3 终验VC复验 / B4 收尾回读 / B5 Todo终态 / B6 引擎检测（OpenSpec/Superpowers）/ B7 对齐核查 / B8 worktree核验。
-门禁：B6 未留痕不得声称按引擎推进；B8 未勾实现类不得直接改主树；缺失=S3 当次重建。
+**基线组 B1-B11（S1 建组必含，B1-B5 逐字保留；B6-B8 不动；2026-11-24 task-session-regression-20261124）**：
+B1 修改后验证 / B2 Phase翻转校验 / B3 终验VC复验 / B4 收尾回读 / B5 Todo终态 / B6 引擎检测（OpenSpec/Superpowers）/ B7 对齐核查 / B8 worktree核验 / B9 任务开始前备份 / B10 修改后备份 / B11 Git差异分析与处置。
+B9 基线快照：`bash <skill>/scripts/git-baseline.sh snapshot <plan-dir>`；B10 检查点：`bash <skill>/scripts/git-baseline.sh checkpoint <plan-dir> --label <id>`；B11 差异分析：`bash <skill>/scripts/git-baseline.sh diff <plan-dir>`。B9-B11 完成判据=sidecar 证据 `<plan-dir>/.git-baseline.json`，非 todo 勾选。
+门禁：B6 未留痕不得声称按引擎推进；B8 未勾实现类不得直接改主树；B9 无基线证据=受管写入未完成；B10 无检查点=Phase 禁 complete；B11 unresolved>0=Phase 禁 complete 且禁出 outcome；缺失（含 B9-B11）=S3 当次重建。
 
 > 契约详见 `{{TASK_PLANNER_ROOT}}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
 
