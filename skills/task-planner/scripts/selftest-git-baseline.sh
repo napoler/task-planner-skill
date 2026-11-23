@@ -6,6 +6,7 @@
 #       被删原文；mustkeep_lost>0 即使处置齐全也 FAIL（原 T4e 口径随此规则调整）。
 #       T13（2026-11-24 存量脏）：snapshot 前既存脏文件未变则豁免、内容变化即恢复未处置、无锚不豁免；
 #       T13e/f：存量已删（status D）锚 HEAD blob，未恢复才豁免，恢复成文件则正常处置。
+#       T14：范围外文件相对当前 HEAD 干净（他会话新提交）不算任务偏移；有本地改动仍阻断。
 # Why: 新机制若只剩文档条款或静态 grep，删除必保事实仍可在验收全绿下溜过；本套件复演事故并
 #       反向证明门会阻断、处置校验不可伪造、还原与基线证据链可逐字节回验。
 # 风格: set -u（不用 -e，逐条控制 rc）+ mktemp 夹具 + t() 计数 + [PASS]/[FAIL] + Total 汇总；
@@ -369,6 +370,24 @@ run bash "$GB" diff "$C13D/plan" --final --repo "$C13D/repo"
 [ "$RC" -eq 1 ] && grep -qF '| gone.md | M |' "$(report "$C13D")" \
   && ! awk '/^## 存量脏文件/{f=1;next} /^## /{f=0} f' "$(report "$C13D")" | grep -qxF -- '- gone.md' \
   && ok "T13f 存量已删文件被恢复 → 不再豁免，rc=1 未处置" || bad "T13f 恢复后不豁免 (rc=$RC)"
+
+# ── T14 范围外文件相对 HEAD 干净 → 豁免；有本地改动 → 照常阻断 ────────────────────
+C14="$(mkcase t14)"
+printf 'coverage v1\n' > "$C14/repo/agent-coverage.md"
+git -C "$C14/repo" add -A && git -C "$C14/repo" commit -qm 'add out-of-scope file'
+run bash "$GB" snapshot "$C14/plan" --repo "$C14/repo"
+# 他会话在任务开始后提交该文件（相对任务基线有 diff，但相对当前 HEAD 干净）
+printf 'coverage v2 by other session\n' > "$C14/repo/agent-coverage.md"
+git -C "$C14/repo" commit -qam 'other session commit'
+run bash "$GB" diff "$C14/plan" --final --repo "$C14/repo"
+[ "$RC" -eq 0 ] && grep -qF '| agent-coverage.md | M |' "$(report "$C14")" \
+  && grep -qF '范围外·HEAD 干净' "$(report "$C14")" \
+  && ok "T14a 范围外 HEAD 干净 → 不进 REQ/unresolved，rc=0" || bad "T14a 范围外 HEAD 干净 (rc=$RC)"
+printf 'local dirty by this task\n' >> "$C14/repo/agent-coverage.md"
+run bash "$GB" diff "$C14/plan" --final --repo "$C14/repo"
+[ "$RC" -eq 1 ] && grep -qF '| agent-coverage.md | M |' "$(report "$C14")" \
+  && ! grep -qF '范围外·HEAD 干净' "$(report "$C14")" \
+  && ok "T14b 范围外有本地改动 → 照常阻断 rc=1" || bad "T14b 范围外本地改动 (rc=$RC)"
 
 TOTAL=$((PASS+FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
