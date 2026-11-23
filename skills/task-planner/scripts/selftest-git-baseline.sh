@@ -4,6 +4,7 @@
 #       以及 check-3file-gate.sh / check-complete.sh 两处门接线，做真实 git 仓夹具 + 真实子进程断言。
 #       T11/T12（2026-11-24 P1）：授权锚只认 snapshot 时快照、自补 D/原话无效；retained 必须含
 #       被删原文；mustkeep_lost>0 即使处置齐全也 FAIL（原 T4e 口径随此规则调整）。
+#       T13（2026-11-24 存量脏）：snapshot 前既存脏文件未变则豁免、内容变化即恢复未处置、无锚不豁免。
 # Why: 新机制若只剩文档条款或静态 grep，删除必保事实仍可在验收全绿下溜过；本套件复演事故并
 #       反向证明门会阻断、处置校验不可伪造、还原与基线证据链可逐字节回验。
 # 风格: set -u（不用 -e，逐条控制 rc）+ mktemp 夹具 + t() 计数 + [PASS]/[FAIL] + Total 汇总；
@@ -317,6 +318,33 @@ run bash "$GB" dispose "$C12/plan" --file facts.md --state retained --evidence '
 run bash "$GB" diff "$C12/plan" --final --repo "$C12/repo"
 [ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'PASS unresolved=0 mustkeep_lost=0' \
   && ok "T12d 删除已处置且无必保丢失 → diff PASS" || bad "T12d diff PASS (rc=$RC)"
+
+# ── T13 存量脏文件锚：未变则豁免 / 内容变化即恢复未处置 / 无锚不豁免 ────────────────
+C13="$(mkcase t13)"
+printf 'legacy original\n' > "$C13/repo/legacy.md"   # snapshot 前就存在的他人未提交文件
+run bash "$GB" snapshot "$C13/plan" --repo "$C13/repo"
+# 模拟真实事故：基线来自干净树（HEAD commit tree），故 legacy.md 在 diff 中表现为本任务新增的越界文件
+CLEAN13="$(git -C "$C13/repo" rev-parse 'HEAD^{tree}')"
+jq --arg t "$CLEAN13" '.baseline_tree=$t' "$C13/plan/.git-baseline.json" > "$C13/sc.tmp" \
+  && mv -- "$C13/sc.tmp" "$C13/plan/.git-baseline.json"
+run bash "$GB" anchor-preexisting "$C13/plan" --repo "$C13/repo"
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -q 'PREEXISTING DIRTY n=1' \
+  && jq -e '.preexisting_dirty[] | select(.path=="legacy.md")' "$C13/plan/.git-baseline.json" >/dev/null \
+  && ok "T13a anchor-preexisting 固化存量脏文件 blob" || bad "T13a 锚定存量脏文件 (rc=$RC)"
+run bash "$GB" diff "$C13/plan" --final --repo "$C13/repo"
+[ "$RC" -eq 0 ] && grep -qF -- '- legacy.md' "$(report "$C13")" \
+  && grep -qF '| legacy.md | A |' "$(report "$C13")" \
+  && ok "T13b 存量脏文件内容未变 → 豁免且 rc=0" || bad "T13b 存量豁免 (rc=$RC)"
+printf 'legacy modified by task\n' > "$C13/repo/legacy.md"
+run bash "$GB" diff "$C13/plan" --final --repo "$C13/repo"
+[ "$RC" -eq 1 ] && grep -qF '| legacy.md | A |' "$(report "$C13")" \
+  && ! awk '/^## 存量脏文件/{f=1;next} /^## /{f=0} f' "$(report "$C13")" | grep -qxF -- '- legacy.md' \
+  && ok "T13c 存量脏文件内容变化 → 不再豁免，rc=1 未处置" || bad "T13c blob 变化 (rc=$RC)"
+jq 'del(.preexisting_dirty)' "$C13/plan/.git-baseline.json" > "$C13/sc2.tmp" \
+  && mv -- "$C13/sc2.tmp" "$C13/plan/.git-baseline.json"
+run bash "$GB" diff "$C13/plan" --final --repo "$C13/repo"
+[ "$RC" -eq 1 ] && awk '/^## 存量脏文件/{f=1;next} /^## /{f=0} f' "$(report "$C13")" | grep -qxF '(无)' \
+  && ok "T13d 无锚字段 → 行为与旧版一致（不豁免、rc=1）" || bad "T13d 无锚回退 (rc=$RC)"
 
 TOTAL=$((PASS+FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
