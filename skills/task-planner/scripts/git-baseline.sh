@@ -141,7 +141,7 @@ command -v jq >/dev/null 2>&1 || die 2 "jq 不可用（hook 已依赖 jq，此�
 repo=""
 repo_mode="direct"
 resolve_repo() {
-  local r="" gd gcd declared wt_top valid=0
+  local r="" gd gcd declared wt_top valid=0 declared_present=0
   if [ -n "$repo_opt" ]; then
     r="$repo_opt"
   elif [ -n "${TASK_GIT_BASELINE_ROOT:-}" ]; then
@@ -150,6 +150,9 @@ resolve_repo() {
     # 第 3 级: 计划声明的工作树。必须同时满足「非空 + 目录存在 + git 顶层等于自身」，
     # 否则按契约打印 note 并落回第 4 级（当前目录），绝不静默猜树。
     declared="$(jq -r '.config.worktree_path // ""' "${plan_dir}/plan-state.json" 2>/dev/null || true)"
+    # 降噪（2026-11-24 实测反馈）：未声明时静默落回当前目录；只有「声明了但失效」才打印 note。
+    declared_present=0
+    [ -n "$declared" ] && declared_present=1
     if [ -n "$declared" ] && [ -d "$declared" ]; then
       declared="$(cd -- "$declared" && pwd -P)"
       wt_top="$(git -C "$declared" rev-parse --show-toplevel 2>/dev/null || true)"
@@ -158,7 +161,9 @@ resolve_repo() {
       fi
     fi
     if [ "$valid" -eq 0 ]; then
-      printf '[git-baseline] note: declared worktree_path invalid or absent, falling back to CWD\n'
+      if [ "$declared_present" -eq 1 ]; then
+        printf '[git-baseline] note: declared worktree_path invalid or absent, falling back to CWD\n'
+      fi
       r="$(git rev-parse --show-toplevel 2>/dev/null || true)"
     fi
   fi
@@ -254,6 +259,12 @@ make_tree() {
     printf '[git-baseline] ERROR NO_INDEX\n'; return 2
   fi
   cp -- "$realidx" "$idx" || return 2
+  # [2026-11-24 修 bug] 真实索引带 stat 缓存；「同大小 + 同秒 mtime」的内容改动会被 git add 跳过，
+  # 当前树漏掉该改动（实测二进制夹具偶发漏报）。用 ls-files -s | update-index --index-info 重建
+  # 临时索引，抹掉 stat 信息，强制 git add 按内容重新 hash；真实索引仍完全不动。
+  if ! ( cd -- "$repo" && export GIT_INDEX_FILE="$idx" && git ls-files -s -z | git update-index -z --index-info ); then
+    printf '[git-baseline] ERROR INDEX_RESET_FAILED\n' >&2; return 2
+  fi
 
   local -a add_specs=("${EXCLUDE_PATHSPECS[@]}")
   local ent d comp prefix
@@ -325,6 +336,9 @@ mk_collect() {
     while IFS=$'\t' read -r id vb tg an; do
       id="${id%$'\r'}"; vb="${vb%$'\r'}"; tg="${tg%$'\r'}"; an="${an%$'\r'}"
       [ -n "$id" ] || continue
+      # [2026-11-24 实测反馈] MK-NA = 计划声明「无既有事实需保」的占位项，verbatim 是理由、target=n/a；
+      # 它不是可查证的必保事实，不能计入数量、更不能查证成永久 LOST。大小写不敏感。
+      case "${id^^}" in MK-NA) continue ;; esac
       MK_ID+=("$id"); MK_VERB+=("$vb"); MK_TARGET+=("$tg"); MK_ANCHOR+=("${an:-}")
     done <<< "$tsv"
   fi
@@ -344,9 +358,13 @@ norm_path() { # 拒绝绝对路径与 .. 穿越，去掉开头 ./；路径含空
 # ─────────────────────────── 处置校验（dispose 与 diff 共用同一规则） ───────────────────────────
 
 DREASON=""
-validate_disposal() { # validate_disposal <path> <state> <evidence> [mk_verbs_新行分隔]
-  local p="$1" state="$2" evidence="$3" mkverbs="${4:-}"
-  local seg dpart upart d u rc=0 found d_found u_found f seg2 verb
+validate_disposal() { # validate_disposal <path> <state> <evidence> [mkitems: 每行 id<TAB>verbatim]
+  # [2026-11-24 收紧] authorized 三条全过才 OK：
+  #   a) D 号精确等于 plan-state.json.decisions[].id（jq 精确匹配，不再 grep task_plan.md 子串）；
+  #   b) 原话片段必须命中 user-session-log.md 中以 `>` 开头的引用行（task_plan.md 不再是出处）；
+  #   c) 该 path 有 mustkeep_lost 时，该决定的 decision+rationale 必须点名 MK 编号或 verbatim 原文。
+  local p="$1" state="$2" evidence="$3" mkitems="${4:-}"
+  local seg dpart upart d u rc=0 found f seg2 mid mverb dtext ps ulog
   DREASON=""
   case "$state" in
     retained|fixed)
@@ -364,15 +382,15 @@ validate_disposal() { # validate_disposal <path> <state> <evidence> [mk_verbs_�
         fi
       done
       # 该文件存在 mustkeep_lost 时，证据片段必须逐条包含丢失原文（执行体自填其它片段无效）
-      if [ -n "$mkverbs" ]; then
-        while IFS= read -r verb; do
-          [ -n "$verb" ] || continue
+      if [ -n "$mkitems" ]; then
+        while IFS=$'\t' read -r mid mverb; do
+          [ -n "$mid$mverb" ] || continue
           found=0
           for seg2 in "${segs[@]}"; do
-            if [ "$seg2" = "$verb" ]; then found=1; break; fi
+            if [ -n "$mverb" ] && [ "$seg2" = "$mverb" ]; then found=1; break; fi
           done
-          [ "$found" -eq 1 ] || { DREASON="缺少 mustkeep 原文片段: $verb"; return 1; }
-        done <<< "$mkverbs"
+          [ "$found" -eq 1 ] || { DREASON="缺少 mustkeep 原文片段: ${mverb:-$mid}"; return 1; }
+        done <<< "$mkitems"
       fi
       return 0 ;;
     authorized)
@@ -386,14 +404,30 @@ validate_disposal() { # validate_disposal <path> <state> <evidence> [mk_verbs_�
       case "$upart" in 用户原话:*) u="${upart#用户原话:}" ;; *) DREASON="缺少 用户原话: 前缀"; return 1 ;; esac
       [ -n "$d" ] || { DREASON="D 编号为空"; return 1; }
       [ "${#u}" -ge 4 ] || { DREASON="用户原话片段不足 4 字"; return 1; }
-      d_found=0; u_found=0
-      for f in "${plan_dir}/task_plan.md" "${plan_dir}/user-session-log.md"; do
-        [ -f "$f" ] || continue
-        grep -qF -- "$d" "$f" 2>/dev/null && d_found=1
-        grep -qF -- "$u" "$f" 2>/dev/null && u_found=1
-      done
-      [ "$d_found" -eq 1 ] || { DREASON="计划文档中查无 D 编号 $d"; return 1; }
-      [ "$u_found" -eq 1 ] || { DREASON="会话日志中查无用户原话 $u"; return 1; }
+      # a) D 号精确命中 plan-state.json.decisions[].id，同时取出决定文本供 c) 点名核对
+      ps="${plan_dir}/plan-state.json"
+      [ -f "$ps" ] || { DREASON="plan-state.json 不存在，无法核对 D 编号"; return 1; }
+      dtext="$(jq -r --arg d "$d" \
+        '[.decisions[]? | select((type == "object") and (.id == $d)) | ((.decision // "") + " " + (.rationale // ""))] | join("\n")' \
+        "$ps" 2>/dev/null || true)"
+      [ "$(printf '%s' "$dtext" | tr -d '[:space:]')" != "" ] \
+        || { DREASON="decisions 中查无精确 D 编号 $d"; return 1; }
+      # b) 用户原话只认 user-session-log.md 的 `^>` 引用行
+      ulog="${plan_dir}/user-session-log.md"
+      [ -f "$ulog" ] || { DREASON="user-session-log.md 不存在，无法核对用户原话"; return 1; }
+      if ! grep -E '^>' "$ulog" 2>/dev/null | grep -qF -- "$u"; then
+        DREASON="用户原话片段不在 user-session-log.md 的 > 引用行: $u"; return 1
+      fi
+      # c) 必保项丢失时，决定文本必须点名 MK 编号或 verbatim，防无关授权豁免
+      if [ -n "$mkitems" ]; then
+        while IFS=$'\t' read -r mid mverb; do
+          [ -n "$mid$mverb" ] || continue
+          found=0
+          if [ -n "$mid" ] && printf '%s\n' "$dtext" | grep -qF -- "$mid"; then found=1; fi
+          if [ "$found" -eq 0 ] && [ -n "$mverb" ] && printf '%s\n' "$dtext" | grep -qF -- "$mverb"; then found=1; fi
+          [ "$found" -eq 1 ] || { DREASON="授权决定未点名必保项 ${mid:-$mverb}"; return 1; }
+        done <<< "$mkitems"
+      fi
       return 0 ;;
     restored)
       local sha
@@ -408,9 +442,10 @@ validate_disposal() { # validate_disposal <path> <state> <evidence> [mk_verbs_�
   esac
 }
 
-mk_verbs_sidecar() { # 从 sidecar.last_diff.items 取指定 path 的 mustkeep_lost verbatim（新行分隔）
+mk_verbs_sidecar() { # 从 sidecar.last_diff.items 取指定 path 的丢失项，每行 id<TAB>verbatim
   local p="$1"
-  jq -r --arg p "$p" '.last_diff.items[]? | select(.kind=="mustkeep_lost" and .path==$p) | .verbatim' \
+  jq -r --arg p "$p" \
+    '.last_diff.items[]? | select(.kind=="mustkeep_lost" and .path==$p) | [(.id // ""), (.verbatim // "")] | @tsv' \
     "$sidecar" 2>/dev/null || true
 }
 
@@ -536,7 +571,7 @@ in_scope() { # in_scope <path> — plans/ 豁免；scope 列表逐条前缀匹�
 }
 
 disposal_valid_for() { # 按 dispose 同规则重放 sidecar 中该 path 的每条 ok=true 记录（防事后篡改）
-  local p="$1" verbs="$2" i=0 cnt dp dok ds de
+  local p="$1" mkitems="$2" i=0 cnt dp dok ds de
   cnt="$(jq -r '.disposal|length' "$sidecar" 2>/dev/null || printf '0')"
   while [ "$i" -lt "$cnt" ]; do
     dp="$(jq -r --argjson i "$i" '.disposal[$i].path // ""' "$sidecar" 2>/dev/null || true)"
@@ -545,7 +580,7 @@ disposal_valid_for() { # 按 dispose 同规则重放 sidecar 中该 path 的每�
       if [ "$dok" = true ]; then
         ds="$(jq -r --argjson i "$i" '.disposal[$i].state // ""' "$sidecar" 2>/dev/null || true)"
         de="$(jq -r --argjson i "$i" '.disposal[$i].evidence // ""' "$sidecar" 2>/dev/null || true)"
-        if validate_disposal "$p" "$ds" "$de" "$verbs" >/dev/null 2>&1; then return 0; fi
+        if validate_disposal "$p" "$ds" "$de" "$mkitems" >/dev/null 2>&1; then return 0; fi
       fi
     fi
     i=$((i + 1))
@@ -555,6 +590,18 @@ disposal_valid_for() { # 按 dispose 同规则重放 sidecar 中该 path 的每�
 
 cmd_diff() {
   require_sidecar_repo
+  # [2026-11-24 S5/S26] ATTTEST 一致性：必保清单随计划 attest 锁定；计划被改而没重新批准时，
+  # MK 清单可能已被放宽，此时差异分析即便「必保项全 OK」也不能信——锁存在且 hash 不符即 rc=1 阻断。
+  # 锁不存在/无 plan_sha256 行 = 存量计划不可读，WARN 放行（不静默当作通过）。
+  local att="${plan_dir}/.plan-attestation" locked="" actual=""
+  local warn='[git-baseline] WARN PLAN-NOT-ATTESTED（存量计划兼容；新计划应 attest-plan.sh）'
+  if [ -f "$att" ]; then
+    locked="$(grep -m1 '^plan_sha256=' "$att" 2>/dev/null | cut -d= -f2- | tr -d '[:space:]' || true)"
+    if [ -n "$locked" ] && [ -f "${plan_dir}/task_plan.md" ]; then
+      actual="$(sha256sum "${plan_dir}/task_plan.md" 2>/dev/null | cut -d' ' -f1)"
+      [ "$actual" = "$locked" ] || die 1 "PLAN TAMPERED: 计划内容在 attest 之后被改动（MK 清单/必保项可能被改写），先重新 attest-plan.sh 再重跑 B11"
+    else printf '%s\n' "$warn" >&2; fi
+  else printf '%s\n' "$warn" >&2; fi
   local baseline_sha baseline_tree cur_tree td ns num rc=0
   baseline_sha="$(sc_get '.baseline_sha // ""')"
   baseline_tree="$(sc_get '.baseline_tree // ""')"
@@ -585,7 +632,7 @@ cmd_diff() {
 
   declare -a F_STATUS=() F_PATH=() F_OLD=() F_ADD=() F_DEL=() F_BIN=() F_DL=() F_OOS=() F_OK=()
   declare -A N_ADD=() N_DEL=() N_BIN=()
-  local st p1 p2 stx fp old a d p dl nline
+  local st p1 p2 stx fp old a d p dl nline rec rest oldp
   while IFS= read -r -d '' st; do
     IFS= read -r -d '' p1 || break
     case "$st" in
@@ -596,9 +643,22 @@ cmd_diff() {
     F_STATUS+=("$stx"); F_PATH+=("$fp"); F_OLD+=("$old")
   done < "$ns"
 
-  while IFS= read -r -d '' a; do
-    IFS= read -r -d '' d || break
-    IFS= read -r -d '' p || break
+  # [2026-11-24 修 bug] git diff --numstat -z 的真实格式不是「a\0d\0path\0」：
+  #   普通文件一条 NUL 记录 = "added<TAB>deleted<TAB>path"（两个 TAB 在同一记录里）；
+  #   重命名文件首记录第三字段为空，old/new 续在随后两条 NUL 记录；二进制仍是 "-<TAB>-<TAB>path"。
+  # 旧实现按三条记录读，键全错导致报告总表恒 +0/-0。
+  while IFS= read -r -d '' rec; do
+    case "$rec" in *$'\t'*) ;; *) continue ;; esac
+    a="${rec%%$'\t'*}"
+    rest="${rec#*$'\t'}"
+    case "$rest" in *$'\t'*) ;; *) continue ;; esac
+    d="${rest%%$'\t'*}"
+    p="${rest#*$'\t'}"
+    if [ -z "$p" ]; then
+      IFS= read -r -d '' oldp || oldp=""
+      IFS= read -r -d '' p || p=""
+    fi
+    [ -n "$p" ] || continue
     if [ "$a" = "-" ] || [ "$d" = "-" ]; then
       N_BIN["$p"]=1; N_ADD["$p"]=0; N_DEL["$p"]=0
     else
@@ -683,14 +743,16 @@ cmd_diff() {
     [ "$seen" -eq 0 ] && UNIQ_PATHS+=("$p")
   done
 
-  local verbs="" unresolved=0
+  local mkitems="" unresolved=0
   local -a UNRES_ITEMS=()
   for p in "${UNIQ_PATHS[@]}"; do
-    verbs=""
+    mkitems=""
     for j in "${!MK_LOST_PATHS[@]}"; do
-      if [ "${MK_LOST_PATHS[$j]}" = "$p" ]; then verbs+="${MK_LOST_VERBS[$j]}"$'\n'; fi
+      if [ "${MK_LOST_PATHS[$j]}" = "$p" ]; then
+        mkitems+="${MK_LOST_IDS[$j]}"$'\t'"${MK_LOST_VERBS[$j]}"$'\n'
+      fi
     done
-    if disposal_valid_for "$p" "$verbs"; then
+    if disposal_valid_for "$p" "$mkitems"; then
       F_OK+=("1")
     else
       unresolved=$((unresolved + 1))
@@ -700,12 +762,14 @@ cmd_diff() {
   # 处置状态回填到总表（同 path 复用判定结果）
   for i in "${!F_PATH[@]}"; do
     p="${F_PATH[$i]}"
-    verbs=""
+    mkitems=""
     for j in "${!MK_LOST_PATHS[@]}"; do
-      if [ "${MK_LOST_PATHS[$j]}" = "$p" ]; then verbs+="${MK_LOST_VERBS[$j]}"$'\n'; fi
+      if [ "${MK_LOST_PATHS[$j]}" = "$p" ]; then
+        mkitems+="${MK_LOST_IDS[$j]}"$'\t'"${MK_LOST_VERBS[$j]}"$'\n'
+      fi
     done
     if [ -n "${F_DL[$i]}" ] || [ "${F_OOS[$i]}" = 1 ]; then
-      if disposal_valid_for "$p" "$verbs"; then F_OK[$i]=1; else F_OK[$i]=0; fi
+      if disposal_valid_for "$p" "$mkitems"; then F_OK[$i]=1; else F_OK[$i]=0; fi
     else
       F_OK[$i]=1
     fi
@@ -725,8 +789,11 @@ cmd_diff() {
       local fcell="${F_PATH[$i]}"
       fcell="${fcell//|/\\|}"
       if [ "${F_OK[$i]}" = 1 ]; then ost="已处置/无需处置"; else ost="未处置"; fi
-      printf '| %s | %s | +%s/-%s | %s |\n' "$fcell" "${F_STATUS[$i]}" \
-        "${F_ADD[$i]}" "${F_DEL[$i]}" "$ost"
+      # 二进制在 git numstat 中是 "-/-"，照原样呈现，不再伪装成 +0/-0
+      local counts
+      if [ "${F_BIN[$i]}" = 1 ]; then counts='-/-'
+      else counts="+${F_ADD[$i]}/-${F_DEL[$i]}"; fi
+      printf '| %s | %s | %s | %s |\n' "$fcell" "${F_STATUS[$i]}" "$counts" "$ost"
     done
     printf '\n## 逐文件删除行\n\n'
     for i in "${!F_PATH[@]}"; do
@@ -756,6 +823,23 @@ cmd_diff() {
       if [ "${F_OOS[$i]}" = 1 ]; then printf -- '- %s\n' "${F_PATH[$i]}"; oos_any=1; fi
     done
     [ "$oos_any" -eq 1 ] || printf '(无)\n'
+    # [2026-11-24 可审计] 被授权豁免的删除必须在报告里一眼可见：逐行列出 sidecar.disposal
+    printf '\n## 处置记录\n\n'
+    local ndisp di dp ds de
+    ndisp="$(jq -r '.disposal|length' "$sidecar" 2>/dev/null || printf '0')"
+    if [ "$ndisp" = 0 ]; then
+      printf '(无)\n'
+    else
+      di=0
+      while [ "$di" -lt "$ndisp" ]; do
+        dp="$(jq -r --argjson i "$di" '.disposal[$i].path // ""' "$sidecar" 2>/dev/null || true)"
+        ds="$(jq -r --argjson i "$di" '.disposal[$i].state // ""' "$sidecar" 2>/dev/null || true)"
+        de="$(jq -r --argjson i "$di" '.disposal[$i].evidence // ""' "$sidecar" 2>/dev/null || true)"
+        de="${de//$'\n'/ }"   # 一条处置记录占一行，证据内换行折叠为空格
+        printf -- '- %s | %s | %s\n' "$dp" "$ds" "$de"
+        di=$((di + 1))
+      done
+    fi
     printf '\n## 结论\n\n'
     if [ "$unresolved" -eq 0 ]; then printf 'PASS unresolved=0 mustkeep_lost=%s\n' "$mk_lost"
     else printf 'FAIL unresolved=%s mustkeep_lost=%s\n' "$unresolved" "$mk_lost"; fi
@@ -795,9 +879,9 @@ cmd_dispose() {
   [ "${#RESTORE_FILES[@]}" -gt 0 ] || die 1 "dispose 需 --file"
   local p
   p="$(norm_path "${RESTORE_FILES[$(( ${#RESTORE_FILES[@]} - 1 ))]}")" || die 1 "--file 路径非法"
-  local verbs
-  verbs="$(mk_verbs_sidecar "$p")"
-  if validate_disposal "$p" "$state_arg" "$evidence_arg" "$verbs"; then
+  local mkitems
+  mkitems="$(mk_verbs_sidecar "$p")"
+  if validate_disposal "$p" "$state_arg" "$evidence_arg" "$mkitems"; then
     sc_apply '(.disposal += [{path:$p,state:$s,evidence:$e,at:$at,ok:true}])' \
       --arg p "$p" --arg s "$state_arg" --arg e "$evidence_arg" --arg at "$now" \
       || die 2 "sidecar disposal 写入失败"
