@@ -10,7 +10,7 @@
 
 | # | 类型族 | 专用体（登记面） | 登记状态/兜底 |
 |---|---|---|---|
-| 1 | 计划/架构/编排 | plan-writer(D1), complex-planner(D1/D2, GLM-5.3), planner(D1/D2), architect(D1/D2), task-orchestrator(D1/D2) | 全部在位 |
+| 1 | 计划/架构/编排 | plan-writer(D1), complex-planner(D1/D2, GLM-5.4), planner(D1/D2), architect(D1/D2), task-orchestrator(D1/D2) | 全部在位 |
 | 2 | 代码编辑小改 | code-assistant(D1/D2/D3) | 在位 |
 | 3 | 代码编辑大改/跨文件 | executor(D1/D2/D3) | 在位 |
 | 4 | 重构/瘦身 | code-simplifier(D1/D3), refactor-cleaner(D2) | 在位 |
@@ -27,7 +27,7 @@
 | 15 | 浏览器/抓取 | browser-automation(D1/D2), web-scraper(D2) | 在位 |
 | 16 | CLI | cli-executor-agent(D2), cli-tool-builder(D2) | 在位 |
 | 17 | 数据 | data-engineer / analyst / analytics-reporter / data-cleaning-expert / data-synthesizer / ai-data-remediation-engineer (D2) | 全部在位 |
-| 18 | 其他 | simple-agent/complex-problem-solver/context-manager/time-keeper/meta-corrector(D2), complex-planner(D2, GLM-5.3) | 全部在位 |
+| 18 | 其他 | simple-agent/complex-problem-solver/context-manager/time-keeper/meta-corrector(D2), complex-planner(D2, GLM-5.4) | 全部在位 |
 | 19 | writing | article-writer(D1/D3), article-writing-phase-agent(D3) | 在位 |
 | 20 | research | research-assistant(D1/D3), web-search-agent(D3) | B3：research-assistant 为 skill 非 agent，双列标注（见 §二 B3） |
 | 21 | publish | code-runner-agent/article-batch-publisher(D3) | B4：登记名原为 article-batch-publish，已改 article-batch-publisher（见 §二 B4） |
