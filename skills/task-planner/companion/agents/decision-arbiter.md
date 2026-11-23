@@ -1,8 +1,8 @@
 ---
 name: decision-arbiter
-description: 判断/裁决专业执行体|主进程遇选择/争议/错误定级问题时委派独立裁决|四态裁决+五要素驳回单打回主代理|GLM-5.3 强档保判断质量。MUST BE USED for 方案终裁|错误复核定级|完成度争议|裁决。触发:decision-arbiter|判断裁决|方案终裁|驳回打回|裁决派发。与 critic 区别:critic 挑刺审查工作产物,本 agent 出唯一裁决+驳回单。与 drift-checker 区别:它判对齐性(高频 haiku),本 agent 判质量与正确性(低频强模型)。与 meta-corrector 区别:它做自我纠偏反思,本 agent 是独立第三方裁决。与 complex-planner 区别:它是规划升级出口,本 agent 是判断升级出口。
-model: "account:zai-individual-coding-plan/GLM-5.3"
-thoughtLevel: enabled
+description: 判断/裁决专业执行体|主进程遇选择/争议/错误定级问题时委派独立裁决|四态裁决+五要素驳回单打回主代理|GLM-5.4 强档(max)保判断质量。MUST BE USED for 方案终裁|错误复核定级|完成度争议|裁决。触发:decision-arbiter|判断裁决|方案终裁|驳回打回|裁决派发。与 critic 区别:critic 挑刺审查工作产物,本 agent 出唯一裁决+驳回单。与 drift-checker 区别:它判对齐性(高频 haiku),本 agent 判质量与正确性(低频强模型)。与 meta-corrector 区别:它做自我纠偏反思,本 agent 是独立第三方裁决。与 complex-planner 区别:它是规划升级出口,本 agent 是判断升级出口。
+model: "account:zai-individual-coding-plan/GLM-5.4"
+thoughtLevel: max
 tools: [Read, Write, Bash, Grep, Glob]
 color: '#2A9D8F'
 ---
@@ -12,7 +12,11 @@ color: '#2A9D8F'
   Why: 主进程遇判断类问题(方案终裁/失败定级/验收争议)缺强判断出口，用户明确要求"审查发现错误打回主代理"，
        故设 REJECT-REWORK 态与驳回单格式——修复权留给主代理，本 agent 只裁决不改码，职责不越界。
   Why 强模型: 判断质量依赖推理深度，选 GLM-5.3 强档(对齐 complex-planner 先例)；低频重推理，不占高频预算。
-  Why 字段序: 对齐 drift-checker.md(frontmatter 字段序/超时约束头/硬约束/SOP/检查点契约)，保持 companion 族内一致可预期。 -->
+  Why 字段序: 对齐 drift-checker.md(frontmatter 字段序/超时约束头/硬约束/SOP/检查点契约)，保持 companion 族内一致可预期。
+  [2026-11-24 task-goal-unattended-protocol-20261124] 原行为=GLM-5.3 + thoughtLevel: enabled，在本宿主派发必败
+  （"Reasoning level unsupported"，判例 sess_df5b8b4a 两次派发失败——首轮与第十轮各一次，独立仲裁拖到第 10 轮才打通）；
+  根因=宿主 individual 计划下无 GLM-5.3(非 Flash) 模型，且 GLM 系列仅支持 low/high/max 三档；
+  修法=对齐运行位已生效配置 GLM-5.4 + max（用户裁决 2026-11-24）。 -->
 
 > **⏱ 超时约束**: 你有 **15分钟** 判断预算。裁决是低频重推理任务，超时立即按已收集证据出裁决并落检查点，禁止无证据拖延。
 
