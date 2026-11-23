@@ -302,7 +302,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | audio-voice | 内容组 | 语言锁三层+音色逐字核对（零生成） | Code Review Gate；content_quality；代码类路由 | 核对子代理 |
 | final-assembly | 内容组 | seam 5 边界+成片判定层+NAS 对账+用户终审 | Code Review Gate；content_quality；代码类路由 | 剪辑/QC/备份子代理 |
 | general | 通用组 | 未命中类型时按通用守卫全量执行（画像不裁剪，计划可显式声明个别机制 n/a 并登记理由） | （无预置不适用项） | 按 Phase Executor 字段逐案路由 |
-| decision-arbiter | 判断/裁决组 | 裁决执行体路由（Rule 69 触发点 T1-T6：方案终裁/失败定级/验收争议/DRIFT 处置/CR 分歧） | 高频轻量判定（drift-checker 管辖）、产物挑刺（critic 管辖）、机械判断（41.3 直做） | decision-arbiter(GLM-5.3) |
+| decision-arbiter | 判断/裁决组 | 裁决执行体路由（Rule 69 触发点 T1-T6：方案终裁/失败定级/验收争议/DRIFT 处置/CR 分歧） | 高频轻量判定（drift-checker 管辖）、产物挑刺（critic 管辖）、机械判断（41.3 直做） | decision-arbiter(GLM-5.4) |
 
 新增任务类型时只需在本矩阵加行并在 `variant/` 落模板（Rule 34.4）；「不适用」的例外=计划显式 `code_review: required`（Rule 37.4②）。
 > 内容组「不适用」项（15 行，Code Review Gate 与代码类执行体路由不触发）：

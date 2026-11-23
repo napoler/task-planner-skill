@@ -36,9 +36,11 @@ bad() { FAIL=$((FAIL+1)); printf 'DA-%s FAIL %s\n' "$1" "$2"; }
 if [ -s "$ARBITER" ]; then ok 01 "decision-arbiter.md 在位"; else bad 01 "decision-arbiter.md 缺失/空"; fi
 
 # DA-02 frontmatter model 逐字锚
-# What: frontmatter model 值逐字 = account:zai-individual-coding-plan/GLM-5.3（grep -F 固定串）。
+# What: frontmatter model 值逐字 = account:zai-individual-coding-plan/GLM-5.4（grep -F 固定串）。
+# [2026-11-24 task-goal-unattended-protocol-20261124] 原行为=钉 GLM-5.3；该配置在当前宿主派发必败（Reasoning level unsupported），
+# 用户裁决对齐宿主可用配置 GLM-5.4 + max；本断言仅把 model 锚随 frontmatter 锁步（仍为逐字锚，强度不变），thoughtLevel 未设断言（范围=零新 selftest，是否补断言待用户裁决）。
 # Why: 69.5 声明强模型档 frontmatter 为 truth source、禁降档改判——档位漂移=判断质量承诺失效。
-if grep -qF 'account:zai-individual-coding-plan/GLM-5.3' "$ARBITER"; then ok 02 "model 逐字=GLM-5.3 强档"; else bad 02 "model 非 GLM-5.3 强档"; fi
+if grep -qF 'account:zai-individual-coding-plan/GLM-5.4' "$ARBITER"; then ok 02 "model 逐字=GLM-5.4 强档(max)"; else bad 02 "model 非 GLM-5.4 强档(max)"; fi
 
 # DA-03..06 四态字面各 1 断言（裁决消费协议 69.3 与 agent 文件字面一致）
 # What: agent 文件含 APPROVE/REJECT-REWORK/ESCALATE-USER/INSUFFICIENT-EVIDENCE 四态各 ≥1。
