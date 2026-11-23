@@ -4,7 +4,8 @@
 #       以及 check-3file-gate.sh / check-complete.sh 两处门接线，做真实 git 仓夹具 + 真实子进程断言。
 #       T11/T12（2026-11-24 P1）：授权锚只认 snapshot 时快照、自补 D/原话无效；retained 必须含
 #       被删原文；mustkeep_lost>0 即使处置齐全也 FAIL（原 T4e 口径随此规则调整）。
-#       T13（2026-11-24 存量脏）：snapshot 前既存脏文件未变则豁免、内容变化即恢复未处置、无锚不豁免。
+#       T13（2026-11-24 存量脏）：snapshot 前既存脏文件未变则豁免、内容变化即恢复未处置、无锚不豁免；
+#       T13e/f：存量已删（status D）锚 HEAD blob，未恢复才豁免，恢复成文件则正常处置。
 # Why: 新机制若只剩文档条款或静态 grep，删除必保事实仍可在验收全绿下溜过；本套件复演事故并
 #       反向证明门会阻断、处置校验不可伪造、还原与基线证据链可逐字节回验。
 # 风格: set -u（不用 -e，逐条控制 rc）+ mktemp 夹具 + t() 计数 + [PASS]/[FAIL] + Total 汇总；
@@ -345,6 +346,29 @@ jq 'del(.preexisting_dirty)' "$C13/plan/.git-baseline.json" > "$C13/sc2.tmp" \
 run bash "$GB" diff "$C13/plan" --final --repo "$C13/repo"
 [ "$RC" -eq 1 ] && awk '/^## 存量脏文件/{f=1;next} /^## /{f=0} f' "$(report "$C13")" | grep -qxF '(无)' \
   && ok "T13d 无锚字段 → 行为与旧版一致（不豁免、rc=1）" || bad "T13d 无锚回退 (rc=$RC)"
+
+# ── T13e/f 存量已删除文件（status D 项）：未恢复则豁免 / 恢复后不豁免 ────────────────
+C13D="$(mkcase t13d)"
+printf 'preexisting gone\n' > "$C13D/repo/gone.md"
+git -C "$C13D/repo" add -A && git -C "$C13D/repo" commit -qm 'add gone file'
+rm -f -- "$C13D/repo/gone.md"      # snapshot 前就已被他人删除的存量文件
+run bash "$GB" snapshot "$C13D/plan" --repo "$C13D/repo"
+CLEAND="$(git -C "$C13D/repo" rev-parse 'HEAD^{tree}')"
+jq --arg t "$CLEAND" '.baseline_tree=$t' "$C13D/plan/.git-baseline.json" > "$C13D/sc.tmp" \
+  && mv -- "$C13D/sc.tmp" "$C13D/plan/.git-baseline.json"
+run bash "$GB" anchor-preexisting "$C13D/plan" --repo "$C13D/repo"
+[ "$RC" -eq 0 ] && jq -e '.preexisting_dirty[] | select(.path=="gone.md" and .deleted==true and (.blob|length)==40)' \
+  "$C13D/plan/.git-baseline.json" >/dev/null \
+  && ok "T13e1 D 项锚定 HEAD blob 且标 deleted=true" || bad "T13e1 D 项锚定 (rc=$RC)"
+run bash "$GB" diff "$C13D/plan" --final --repo "$C13D/repo"
+[ "$RC" -eq 0 ] && grep -qF '| gone.md | D |' "$(report "$C13D")" \
+  && awk '/^## 存量脏文件/{f=1;next} /^## /{f=0} f' "$(report "$C13D")" | grep -qxF -- '- gone.md' \
+  && ok "T13e 存量已删且未变 → D 行被豁免，rc=0" || bad "T13e D 项豁免 (rc=$RC)"
+printf 'restored by task\n' > "$C13D/repo/gone.md"
+run bash "$GB" diff "$C13D/plan" --final --repo "$C13D/repo"
+[ "$RC" -eq 1 ] && grep -qF '| gone.md | M |' "$(report "$C13D")" \
+  && ! awk '/^## 存量脏文件/{f=1;next} /^## /{f=0} f' "$(report "$C13D")" | grep -qxF -- '- gone.md' \
+  && ok "T13f 存量已删文件被恢复 → 不再豁免，rc=1 未处置" || bad "T13f 恢复后不豁免 (rc=$RC)"
 
 TOTAL=$((PASS+FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
