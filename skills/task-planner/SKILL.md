@@ -42,7 +42,7 @@ model: opus
   - **模板检索前置（task-template-catalog-20261122）**：init 前先跑 `bash scripts/template-catalog.sh list --json --scope all` 拿模板清单（模板名/简介/适配场景/功能），据此匹配 `template_type` 再作为 init 第 2 参；禁靠读散文盲选（用法详见下方「模板检索与管理」）
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
-  - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）
+  - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）；**上下文压缩恢复（2026-11-24 task-session-regression-20261124）**：压缩后 SessionStart hook 注入 `[compact-recovery]`，第一动作按序读包内文件，禁仅凭摘要续做
   - **模板优先级**（init-session.sh 自动处理）：项目级 `.claude/plan-templates/` 或 `.zcode/plan-templates/` 覆盖 → 兜底 `<platform-home>/skills/task-planner/templates/`（选型权威源=卫星 `plan-template-kit`，Rule 16/34）
   - **模板检索与管理（`template-catalog.sh`，task-template-catalog-20261122）**：任务初期第一步调本脚本获取模板清单，让匹配流程化固定进 SOP；**脚本只提供稳定清单+排序，不替模型决策**（选型权威源仍是卫星 `plan-template-kit`）：
     - **列清单**：`bash scripts/template-catalog.sh list --json --scope all` —— JSON 每项含 `file/type/name/summary/scenarios/features/path/scope/default/valid`；`--scope` ∈ all/builtin/project/user/user-global/user-install（user=全局+安装位），`--include-installs` 含四个平台安装位模板；去重优先级 project > user-global > user-install > builtin。
@@ -187,9 +187,9 @@ model: opus
      - **3g 规范召回（Rule 93）**：每完成 3 个 S-unit 或 Phase 翻转 complete（先到者），主进程亲自 Read `../task-discipline/references/execution-recall-card.md` 并 progress 留 `[recall]` 行（可与 3f/3f' 同拍执行）；compaction 恢复/会话恢复/[assess]≥PRESSURE 后第一动作先读召回卡（93.3）；mini/L0 档豁免
   - **3h 双轮质检（Rule 103）**：子代理返回→核 checkpoint 自审段（103.2）→Read 产出（84.4）→派全新复检体（103.3，升档 103.4/简洁五要素 103.5）→复检回执落 checkpoint；多文件变更集附同步核对清单（103.6）。复检体全文回读被改文件并整体分析（103.3a 义务，2026-11-14 task-audit-fullreread-20261114）。
   - **3i 修改后复检（Rule 106）**：受管文档每次修改后回读校验跨字段不变量（106.1-106.4）；同文件 ≥2 次修改后全量回归（106.3）——细则→task-discipline Rule 106；结构文件插段另守 106.1a
-  4. [M] **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转；**多文件变更集（≥2 受管文件）翻转前先过 103.6 同步核对清单（清单全绿才可翻转，Rule 103.6）**
+  4. [M] **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 Phase 一行 `[implementation-only]` 声明计增量）；**V-N 校验（Rule 84.3/84.4）**：翻转前逐项执行 verification.md 当前 Phase 段的 V-N 验证命令（SOP→卫星 `verification-gate` Step 2），V-N 未全 PASS→禁止翻转；**多文件变更集（≥2 受管文件）翻转前先过 103.6 同步核对清单（清单全绿才可翻转，Rule 103.6）**；**Git 差异门（2026-11-24 task-session-regression-20261124）**：Phase 翻转前由 check-3file-gate 第 8 条件自动跑 Git 差异分析，unresolved>0 拒翻
   - **对齐必选步骤**：修改完成后强制对齐——任何受管文件修改完成后、Phase 翻转 complete 前必须执行对齐核查，逐项核对关联面四族+部署位+引用面（字面/引用/部署镜像/断言面）同步完整性，清单全绿才可翻转，杜绝部分改部分丢弃（机器门=check-complete.sh ALIGN-ANCHOR GATE；mini 档豁免）
-  4.5 [M] **提交工作产物（Rule 27 / git-rework-guard）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；**单个 S-unit/大改动完成即 commit（不等整 Phase），让每个可回退点进版本历史**；非 git 记行跳过；deferred/用户显式豁免须写入计划。**返工第一动作=Git 找回**：QC FAIL/方向错/需回退 → 先 `git log --oneline` 定位正确 commit + `git checkout <commit> -- <file>` 精确找回，禁凭记忆重做；方向彻底错→丢弃 wt/<task-id> 分支（不污染 master）；细则→`references/worktree-isolation.md` §4.5+§4.6；**方向根本错误且阈值命中（96.7/103.8b）→走 §4.6 弃旧开新**：评估归因+用户确认→提取有效数据(salvage-manifest)→从基线牵新 wt/<task-id>-rN→新计划 restarted_from 登记，旧计划 outcome=RESTARTED(非 CANCELLED)（细则→§4.6）
+  4.5 [M] **提交工作产物（Rule 27 / git-rework-guard）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；**单个 S-unit/大改动完成即 commit（不等整 Phase），让每个可回退点进版本历史**；非 git 记行跳过；deferred/用户显式豁免须写入计划。**返工第一动作=Git 找回**：QC FAIL/方向错/需回退 → 先 `git log --oneline` 定位正确 commit + `git checkout <commit> -- <file>` 精确找回，禁凭记忆重做；方向彻底错→丢弃 wt/<task-id> 分支（不污染 master）；细则→`references/worktree-isolation.md` §4.5+§4.6；**方向根本错误且阈值命中（96.7/103.8b）→走 §4.6 弃旧开新**：评估归因+用户确认→提取有效数据(salvage-manifest)→从基线牵新 wt/<task-id>-rN→新计划 restarted_from 登记，旧计划 outcome=RESTARTED(非 CANCELLED)（细则→§4.6）；**检查点（2026-11-24 task-session-regression-20261124）**：单个 S-unit/Phase 产物提交后执行 `bash <skill>/scripts/git-baseline.sh checkpoint <plan-dir> --label <S-unit 或 Phase id>`
   5. [M] **同步 Todo+索引（S2/S4）**：todo→completed；`bash scripts/sync-todos.sh --index` 刷新 INDEX.md
   6. [A] **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
      drift-checker=执行偏移/目标漂移的安全网（Rule 61/64），**非意图切换发起器**——用户新指令的意图变更走上方快速判定卡判定归属，偏移检查只在判定归属当前计划后才派发。
@@ -200,7 +200,7 @@ model: opus
 - [ ] [A] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
 
 - [ ] [M] **终验交付 — 机械子动作**：跑终验门脚本/合并回/提交核验/Read 产出/归档
-  - **3-File Gate（19.5）**：check-complete.sh 内置校验 findings/progress 非 stub，缺失/stub→exit 1→STOP 回填禁交付
+  - **3-File Gate（19.5）/GIT-BASELINE GATE（2026-11-24 task-session-regression-20261124）**：check-complete.sh 内置校验 findings/progress 非 stub（缺失/stub→exit 1→STOP 回填禁交付），终验自动跑全量 Git 差异分析并核 sidecar（B9/B10 缺证或 B11 unresolved>0→exit 1→STOP 禁出 outcome）
   - **隔离任务合并回**：worktree 内全 VC 复验且无未提交变更→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（合约见 `references/worktree-isolation.md`）
   - **git 提交核验+编号账本**：scope 文件无未提交变更（或已按 Rule 27 逐 Phase 提交）；新增编号 `bash scripts/rule-reserve.sh land <NN> <task-id>`
   - subagent 返回 "done" → **必须 Read 实际产出文件**，禁止信任自报
@@ -261,7 +261,7 @@ model: opus
 
 ### 🔁 原生 Todo 同步（强制）
 
-计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B8，Rule 106.5）详见 references/todo-sync.md
+计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B11，Rule 106.5）详见 references/todo-sync.md；B9-B11 的完成以 `git-baseline.sh` 写入的 sidecar 证据为准，非 todo 勾选（2026-11-24 task-session-regression-20261124）
 
 ### 🆕 用户新指令处理（计划影响判定 — 强制）
 
@@ -440,7 +440,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | 合并/隔离/辅助 | 6 | `smart-merge-back.sh`, `check-conflicts.sh`, `allow-direct.sh`, `lane-detect.sh`, `periodic-review.sh`, `rule-reserve.sh` | worktree 合并回、冲突、直改豁免、车道/周期/编号 |
 | hook/平台接线 | 4 | `zcode-sessionstart.sh`, `zcode-userpromptsubmit.sh`, `zcode-pretooluse.sh`, `zcode-posttooluse.sh` | ZCode hook 入口 |
 | 同步/校验/注册 | 7 | `sync-companion.sh`, `sync-ide-folders.ts`, `register-hooks-cj.ts`, `verify_io.sh`, `run-selftests.sh`, `selftest-registry.tsv`, `selftest-registry.sh` | 部署同步、I/O 校验、自测注册表/运行器 |
-| selftest | 103 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
+| selftest | 106 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
 | lib/schemas | 2 | `lib/plan-parse.sh`, `schemas/check-delegation-stats.schema.json` | 共享解析与 JSON schema |
 
 > 发现脚本时优先：① 本节类别 → ② `grep -rn "<关键词>" skills/task-planner/scripts` → ③ 直接读脚本头部注释/`--help`。新增脚本应归入对应类别并保持命名可检索（`check-*`/`selftest-*`/`sync-*`/`zcode-*`）。

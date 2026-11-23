@@ -119,6 +119,13 @@ t "T12b collab 矩阵 browser-use 行" grep -q 'browser-use（嵌入，网页访
 t "T13a todo-sync 含 B6 引擎检测" grep -q 'B6' "$ROOT/references/todo-sync.md"
 t "T13b Rule106.5 含 B6" grep -q 'B6' "$ROOT/../task-discipline/references/critical-rules-discipline.md"
 
+# [2026-11-24 task-session-regression-20261124 S11/S28] B9/B10/B11 契约面+语义面双锚守护
+# Why: B9/B10/B11 的契约唯一事实源在 todo-sync.md、语义锚在 task-discipline 的 Rule 106.5；
+#   任一侧被静默删改，基线机制就只剩脚本而失去可机械核对的条款。沿用 t() 框架与 grep -qF 具体
+#   字面，避免 grep -q 'B9' 这类宽泛命中造成假通过。
+t "T13c todo-sync 含 B9/B10/B11 三字面 + sidecar 证据判据" bash -c "grep -qF 'B9 基线快照/B10 检查点/B11 差异处置' '$ROOT/references/todo-sync.md' && grep -qF 'sidecar 证据' '$ROOT/references/todo-sync.md' && grep -qF '.git-baseline.json' '$ROOT/references/todo-sync.md'"
+t "T13d Rule106.5 段含 B9/B10/B11 语义锚 + MK 必保清单义务" bash -c "seg=\"\$(sed -n '/^106\.5 /,/^106\.6 /p' '$ROOT/../task-discipline/references/critical-rules-discipline.md')\"; printf '%s\n' \"\$seg\" | grep -qF 'B9/B10/B11 语义与门禁挂钩' && printf '%s\n' \"\$seg\" | grep -qF '必保清单义务' && printf '%s\n' \"\$seg\" | grep -qF 'MK<n>'"
+
 # ── 汇总 ──
 TOTAL=$((PASS + FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"

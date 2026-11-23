@@ -8,7 +8,7 @@
 # 输出: exit 0=全 complete 且各门放行(或全门 fail-open 通过); exit 1=门控失败或进度未完成;
 #      stdout 输出 [plan] 行; 全 complete 时透传 [plan-deferred-delegation-check] plan_dir= 行供 shell 层委派率终验
 # 依赖: 同目录 check-rescue-chain.sh / check-delegation.sh / check-plan-dispatch.sh(缺失各自行 fail-open)
-#       + templates/progress.md(3-File Gate stub 判定对照)
+#       + git-baseline.sh(GIT-BASELINE GATE, 缺失 SKIP 放行) + templates/progress.md(3-File Gate stub 判定对照)
 # 支持 single-block 与 multi-block 链式任务 (chain_mode: linked / fan-out)
 # 门控失败时 exit 1 (Batch Report Rule 18.6 / Aggregator Rule 23.6 / 3-File Gate Rule 19.5 / Learning Gate Rule 31.5)
 # Used by Stop hook to report task completion status
@@ -1465,6 +1465,61 @@ f && /^\|/ {
         fi
     fi
     printf '[CR-GATE] PASS（无风险信号命中/已豁免·Decisions 登记, 或 CR APPROVED 留痕在案）\n' >&2
+
+    # [2026-11-24 task-session-regression-20261124 S7/S8] GIT-BASELINE GATE — 终验全量差异分析（CR-GATE 后、LEARNING-GATE 前）
+    # What: 仅 L0-E 车道 SKIP（与 plan-created.cjs 豁免口径一致；L0-T 有受管文件改动仍受本门保护）；
+    #       其余调用 git-baseline.sh diff "$PLAN_DIR_GUESS" --final（侧车有 repo_root 时附 --repo）。
+    #       rc=1/默认阻断、warn 只告警；rc=2/脚本缺失/legacy MD 计划打印 SKIP 放行。
+    # Why: 修改型任务此前无 Git 执行点：无基线、无检查点、终验不对照差异，修复动作误删既有设定仍全绿。
+    #       终验门自己调用差异分析，不依赖模型记得跑；侧车缺失不传 --repo，保留 rc=3 触发 B9 提示。
+    # 兼容: 其余 L0 门照旧用 LANE_L0（本门不复用它，避免 L0-T 被误跳）；非 git 仓沿用 SKIPPED 不阻断口径。
+    _gb_l0e=0
+    grep -qm1 -E '^[[:space:]]*execution_lane:[[:space:]]*L0-E' "$PLAN_FILE" 2>/dev/null && _gb_l0e=1
+    if [ "$_gb_l0e" -eq 1 ]; then
+        printf '[git-baseline] SKIP lane-L0-E\n' >&2
+    elif [ ! -f "$PLAN_DIR_GUESS/plan-state.json" ]; then
+        printf '[git-baseline] SKIP legacy-no-json\n' >&2
+    else
+        _gb="$(dirname "$(readlink -f "$0")")/git-baseline.sh"
+        _gb_sidecar="$PLAN_DIR_GUESS/.git-baseline.json"
+        _gb_repo=""
+        if [ -f "$_gb_sidecar" ] && command -v jq >/dev/null 2>&1; then
+            _gb_repo="$(jq -r '.repo_root // empty' "$_gb_sidecar" 2>/dev/null || true)"
+        fi
+        _gb_args=(diff "$PLAN_DIR_GUESS")
+        [ -n "$_gb_repo" ] && _gb_args+=(--repo "$_gb_repo")
+        _gb_args+=(--final)
+        if [ ! -f "$_gb" ]; then
+            printf '[git-baseline] SKIP script-missing\n' >&2
+        else
+            _gb_out=""
+            _gb_rc=0
+            _gb_out="$(bash "$_gb" "${_gb_args[@]}" 2>&1)" || _gb_rc=$?
+            _gb_last="$(printf '%s\n' "$_gb_out" | tail -n 1)"
+            case "$_gb_rc" in
+                0)
+                    # PASS（或 warn 档 rc=0 的 FAIL）：判定器输出原样透传，档位降档由脚本自身负责。
+                    if [ -n "$_gb_out" ]; then printf '%s\n' "$_gb_out" >&2; fi
+                    ;;
+                1)
+                    printf '[git-baseline] FAIL: %s\n' "$_gb_last" >&2
+                    if [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" != "warn" ]; then exit 1; fi
+                    printf '[git-baseline] 警告: warn 档不阻断（TASK_PLANNER_GIT_BASELINE_ENFORCE=enforce 可升级）\n' >&2
+                    ;;
+                3)
+                    printf '[git-baseline] FAIL: 无基线证据。先执行 B9：bash %s snapshot %s\n' "$_gb" "$PLAN_DIR_GUESS" >&2
+                    if [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" != "warn" ]; then exit 1; fi
+                    printf '[git-baseline] 警告: warn 档不阻断（TASK_PLANNER_GIT_BASELINE_ENFORCE=enforce 可升级）\n' >&2
+                    ;;
+                2)
+                    printf '[git-baseline] SKIP degraded: %s\n' "$_gb_last" >&2
+                    ;;
+                *)
+                    printf '[git-baseline] SKIP degraded: 未知 rc=%s（fail-open 不阻断）\n' "$_gb_rc" >&2
+                    ;;
+            esac
+        fi
+    fi
 
     # [2026-09-14 task-v072 Rule 31] 终验 Learning Gate — 错误学习闭环:
     # progress.md 若含数据行(非模板占位)的「Root Cause」/「Prevention」列,则各行 Root Cause 非空

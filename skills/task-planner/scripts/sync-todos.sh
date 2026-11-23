@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B8 baseline group (task_id/phase/status/subject)"
+            echo "             --json also emits the B1-B11 baseline group (task_id/phase/status/subject/evidence/command)"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -144,6 +144,108 @@ parse_task_plan() {
     ' "$task_plan"
 }
 
+# [2026-11-24 task-session-regression-20261124 S6] What: JSON 字符串转义（\ " 换行/回车/Tab），零第三方依赖。
+# Why: evidence/command 来自侧车与环境变量，直接拼接可能破坏 --json 结构；统一转义后再嵌入。
+baseline_json_escape() {
+    local s="${1-}"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+# [2026-11-24 task-session-regression-20261124 S6] What: 只认本会话 side 指针 <plans>/.active_plan_side/<sidkey>.active_plan 指向的计划侧车，返回其绝对路径。
+# sid 优先级 TASK_PLANNER_SID → CLAUDE_CODE_SESSION_ID → ZCODE_SESSION_ID；规范化=剥非字母数字取前 40 再剥开头 sess（与 check-scope.sh:114 / plan-recovery.sh 同口径）。
+# Why: 12 个在途计划/多会话仓里，全局 .active_plan 或 mtime 兜底会把别的会话证据塞进本会话 Todo（假证据）；
+#       无 sid/无 side 指针/指针腐烂/侧车缺失一律返回空串，evidence 与 command 的 repo_root 随之降级为空，绝不跨会话猜测。
+baseline_sidecar_file() {
+    local plans_dir="$1" sid="" sidkey="" ptr="" pid="" plans_abs=""
+    if [[ -n "${TASK_PLANNER_SID:-}" ]]; then sid="$TASK_PLANNER_SID"
+    elif [[ -n "${CLAUDE_CODE_SESSION_ID:-}" ]]; then sid="$CLAUDE_CODE_SESSION_ID"
+    elif [[ -n "${ZCODE_SESSION_ID:-}" ]]; then sid="$ZCODE_SESSION_ID"
+    else return 0
+    fi
+    sidkey="$(printf '%s' "$sid" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    sidkey="${sidkey#sess}"
+    [[ -n "$sidkey" ]] || return 0
+    plans_abs="$(cd "$plans_dir" 2>/dev/null && pwd)" || return 0
+    ptr="$plans_abs/.active_plan_side/$sidkey.active_plan"
+    [[ -f "$ptr" ]] || return 0
+    pid="$(tr -d '[:space:]' < "$ptr" 2>/dev/null || true)"
+    [[ -n "$pid" ]] || return 0
+    # 指针内容只接受 slug（拒路径分隔符/隐藏目录），防跨计划穿越。
+    case "$pid" in */*|.*|*..*) return 0 ;; esac
+    if [[ -f "$plans_abs/$pid/.git-baseline.json" ]]; then
+        printf '%s' "$plans_abs/$pid/.git-baseline.json"
+    fi
+}
+
+# [2026-11-24 task-session-regression-20261124 S6] What: repo_root 三级来源：侧车 .repo_root → 计划 plan-state.json 的 .config.worktree_path（有效目录）→ plans 根父目录（直改模式）。
+# Why: 命令行必须带实际仓库绝对路径，避免执行体靠 CWD 猜树；侧车缺失（无本会话指针）时调用方直接传空串，不在此处猜。
+baseline_repo_root() {
+    local sidecar="$1" plans_dir="$2" repo="" declared="" plans_abs=""
+    [[ -n "$sidecar" && -f "$sidecar" ]] || return 0
+    if command -v jq >/dev/null 2>&1; then
+        repo="$(jq -r '.repo_root // empty' "$sidecar" 2>/dev/null || true)"
+        if [[ -z "$repo" ]]; then
+            declared="$(jq -r '.config.worktree_path // empty' "$(dirname "$sidecar")/plan-state.json" 2>/dev/null || true)"
+            if [[ -n "$declared" && -d "$declared" ]]; then
+                repo="$(cd "$declared" && pwd)"
+            fi
+        fi
+    fi
+    if [[ -z "$repo" ]]; then
+        plans_abs="$(cd "$plans_dir" 2>/dev/null && pwd)" || return 0
+        repo="$(dirname "$plans_abs")"
+    fi
+    printf '%s' "$repo"
+}
+
+# [2026-11-24 task-session-regression-20261124 S6] What: 读取侧车生成 B9/B10/B11 的 evidence（B9=baseline:<sha7>@<mode> / B10=最近 checkpoint label / B11=unresolved=<n>@<last_diff.at>）。
+# Why: B11 初始侧车的 last_diff.unresolved=0 代表「从未跑过差异分析」，必须判为无证据（空串），否则假通过；
+#       at 是差异分析真实发生的时标，与 unresolved 一同带出才能证明该项已完成。文件/jq/字段缺失一律空串，保证 --json 可解析。
+baseline_evidence_json() {
+    local tid="$1" sidecar="$2" val="" ref="" sha="" mode="" at="" unresolved=""
+    if [[ -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
+        case "$tid" in
+            B9)
+                ref="$(jq -r '.baseline_ref // empty' "$sidecar" 2>/dev/null || true)"
+                sha="$(jq -r '.baseline_sha // empty' "$sidecar" 2>/dev/null || true)"
+                mode="$(jq -r '.mode // empty' "$sidecar" 2>/dev/null || true)"
+                if [[ -n "$ref" && -n "$sha" ]]; then
+                    val="baseline:${sha:0:7}"
+                    [[ -n "$mode" ]] && val="$val@$mode"
+                fi
+                ;;
+            B10)
+                val="$(jq -r '.checkpoints[-1].label // empty' "$sidecar" 2>/dev/null || true)"
+                ;;
+            B11)
+                at="$(jq -r '.last_diff.at // empty' "$sidecar" 2>/dev/null || true)"
+                if [[ -n "$at" ]]; then
+                    unresolved="$(jq -r '.last_diff.unresolved // 0' "$sidecar" 2>/dev/null || true)"
+                    val="unresolved=$unresolved@$at"
+                fi
+                ;;
+        esac
+    fi
+    baseline_json_escape "$val"
+}
+
+# [2026-11-24 task-session-regression-20261124 S6] What: 给 B9/B10/B11 生成一条含实际绝对路径的可复制短命令（snapshot/checkpoint/diff + --repo <repo_root>）。
+# Why: todo 只写 subject 时执行体仍要自己拼命令，易漏 --repo 或用错树；命令随侧车 repo_root 运行时生成，前八条基线项无对应命令→空串。
+baseline_command_json() {
+    local tid="$1" scripts_dir="$2" plan_dir="$3" repo_root="$4" cmd=""
+    case "$tid" in
+        B9)  cmd="bash $scripts_dir/git-baseline.sh snapshot $plan_dir --repo $repo_root" ;;
+        B10) cmd="bash $scripts_dir/git-baseline.sh checkpoint $plan_dir --label <S-unit> --repo $repo_root" ;;
+        B11) cmd="bash $scripts_dir/git-baseline.sh diff $plan_dir --repo $repo_root" ;;
+    esac
+    baseline_json_escape "$cmd"
+}
+
 # task-v065/V-6 [2026-09-13] 删除此处与下方 extract_plan_meta 的字节级重复定义(diff 逐字相同), 仅保留下方一份
 forward_sync() {
     local plans_dir="$1"
@@ -198,10 +300,13 @@ forward_sync() {
     done < <(find "$plans_dir" -name "task_plan.md" -type f -not -path "*/archive/*" 2>/dev/null | sort)
 
     if $JSON_OUTPUT; then
-        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B8 由脚本自动带出，
+        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B11 由脚本自动带出，
         # 不再依赖执行体手抄（用户缺陷③：todo 默认项纯文本契约）。
-        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的 8 条基线记录；
+        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的 11 条基线记录；
         # WHY: 让 --json 消费方一次拿到完整 Todo 基线,避免 S1 建组遗漏门禁项。
+        # [2026-11-24 task-session-regression-20261124 S6] What: 追加 B9-B11 三条 Git 基线步骤，并为 11 条记录统一注入 evidence/command 字符串（B9/B10/B11 读本会话侧车，其余空串）。
+        # Why: 差异分析此前无强制执行点；带命令+侧车证据让 TodoWrite 建组时即拿到可执行步骤与客观完成凭据，不依赖模型记忆。
+        # 取舍: 前八条字面量逐字保留（含 B1/B8 必保行）；新字段在拼接阶段注入，避免改动既有记录文本。
         # 单引号字面量含纯双引号 JSON,无反引号/单引号,不触碰上方 phase entries 的 \" 转义。
         local baseline_entries=''
         baseline_entries+='{"task_id":"B1","phase":0,"status":"baseline","subject":"修改后验证"},'
@@ -212,10 +317,42 @@ forward_sync() {
         baseline_entries+='{"task_id":"B6","phase":0,"status":"baseline","subject":"引擎检测"},'
         baseline_entries+='{"task_id":"B7","phase":0,"status":"baseline","subject":"对齐核查"},'
         baseline_entries+='{"task_id":"B8","phase":0,"status":"baseline","subject":"worktree核验"}'
+        # B8 原字面量不带尾逗号，先补衔接符再追加 B9-B11（保持 B8 行逐字不变）。
+        baseline_entries+=','
+        baseline_entries+='{"task_id":"B9","phase":0,"status":"baseline","subject":"Git基线快照（首次写入前）"},'
+        baseline_entries+='{"task_id":"B10","phase":0,"status":"baseline","subject":"Git修改后备份（S-unit/Phase）"},'
+        baseline_entries+='{"task_id":"B11","phase":0,"status":"baseline","subject":"Git差异分析与处置（Phase/终验）"}'
+        # 逐条注入 evidence/command：以 "},{" 为记录分隔符（subject 中不含该序列），task_id 用 bash 正则提取，零 Python/Node 依赖。
+        local sidecar plan_dir repo_root rest chunk tid ev cmd sep='},' brace='}' baseline_with_evidence=""
+        sidecar="$(baseline_sidecar_file "$plans_dir")"
+        plan_dir=""
+        [[ -n "$sidecar" ]] && plan_dir="$(dirname "$sidecar")"
+        repo_root="$(baseline_repo_root "$sidecar" "$plans_dir")"
+        rest="$baseline_entries"
+        # sep 用变量传递，避免 '}' 在 ${var#pattern} 中被误判为展开结束符（曾致循环不收敛）。
+        while [[ -n "$rest" ]]; do
+            if [[ "$rest" == *"$sep"* ]]; then
+                chunk="${rest%%"$sep"*}"
+                rest="${rest#*"$sep"}"
+            else
+                chunk="$rest"
+                rest=""
+            fi
+            # 末条记录自带收尾 '}'，先剥除再统一注入新字段，防止出现 "},"evidence"…" 的双重闭合。
+            chunk="${chunk%"$brace"}"
+            tid=""
+            if [[ "$chunk" =~ \"task_id\":\"([^\"]+)\" ]]; then
+                tid="${BASH_REMATCH[1]}"
+            fi
+            ev="$(baseline_evidence_json "$tid" "$sidecar")"
+            cmd="$(baseline_command_json "$tid" "$SCRIPT_DIR" "$plan_dir" "$repo_root")"
+            if [[ -n "$baseline_with_evidence" ]]; then baseline_with_evidence+=","; fi
+            baseline_with_evidence+="${chunk},\"evidence\":\"$ev\",\"command\":\"$cmd\"}"
+        done
         # phase 组非空时以逗号衔接;空组则不前置逗号,避免生成 "[,{...}]" 非法 JSON。
-        local all_entries="$baseline_entries"
+        local all_entries="$baseline_with_evidence"
         if [[ -n "$json_entries" ]]; then
-            all_entries="${json_entries},${baseline_entries}"
+            all_entries="${json_entries},${baseline_with_evidence}"
         fi
         echo "[$all_entries]"
     else
