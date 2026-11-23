@@ -65,7 +65,7 @@ allowed-tools: "Read, Bash, Grep, Glob"
 
 1. 逐条 VC 对照判据出 PASS/FAIL
 2. 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
-3. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户（goal 语境按 task-discipline Rule 28.9②④⑤ 消费，不升级提问）；语义保证型判据（确保/保证/根治/不再/杜绝/所有）计划期拆为机器可验拆分项+残余风险清单，执行期不新增判据行：拆分项全 PASS ⇒ PARTIAL，未全 PASS 或未拆分 ⇒ BLOCKED
+3. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户（goal 语境按 task-discipline Rule 28.9②④⑤ 消费，不升级提问）；语义保证型判据（确保/保证/根治/不再/杜绝/所有）计划期拆为机器可验拆分项+残余风险清单，执行期不新增判据行：拆分项全 PASS 且残余风险清单已登记 ⇒ PARTIAL，未全 PASS 或未拆分 ⇒ BLOCKED
 4. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）
 4b. 存在 Spec-Baseline 的任务（task_plan「🔒 规范基线」区块非空），翻 COMPLETE 前必须先过 84.15 规范基线终验门——对交付物本体逐条执行双向判定式并产出核验表落 verification.md；任一基线 FAIL/软豁免/核验表缺失 → 禁 COMPLETE（见 `references/critical-rules-verification.md` Rule 84.15）。
 
