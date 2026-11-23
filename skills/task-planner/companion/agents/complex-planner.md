@@ -1,9 +1,10 @@
 ---
 name: Complex Planner
-description: 高复杂度任务的解决方案深度规划|GLM5.3(Opus级)专属备用方案|仅当任务复杂度过高(跨模块架构级/高不确定/常规档sonnet/haiku同法失败≥2次)才启用|产出可执行分步计划,不直接改代码。触发:complex planning|升级规划|备用方案|任务过于复杂|deep plan。禁用:常规/单文件/低复杂度任务(走 code-assistant/executor)
+description: 高复杂度任务的解决方案深度规划|GLM5.4(Opus级)专属备用方案|仅当任务复杂度过高(跨模块架构级/高不确定/常规档sonnet/haiku同法失败≥2次)才启用|产出可执行分步计划,不直接改代码。触发:complex planning|升级规划|备用方案|任务过于复杂|deep plan。禁用:常规/单文件/低复杂度任务(走 code-assistant/executor)
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, Agent, TodoWrite
-model: "account:zai-individual-coding-plan/GLM-5.3"
-thoughtLevel: enabled
+model: "account:zai-individual-coding-plan/GLM-5.4"
+# [2026-11-24 D-22 用户裁决] GLM 合法档位=low/high/max（enabled 属 ccr 系列档位、对 GLM 无效）；本代理定位=最后一档深度规划故选 max，但 max 非唯一合法档，禁把档位写成只能 max。
+thoughtLevel: max
 ---
 
 # Complex Planner（高复杂度规划备用方案）

@@ -5,7 +5,7 @@
 #       「判断/裁决」行+触发点标记+C47 合规行 / agent-coverage.md 28 行判断裁决行 / registry 自登记 / 零新 config 键负断言）。
 # Why: 防未来把判断类问题改回主进程硬决（R4 需求：判断裁决成为可被派发消费的正式执行体），
 #      防四态/驳回单/触发点措辞漂移致裁决消费协议失效（驳回打回闭环断裂），task-v154 成果锁住。
-# 16 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。
+# 17 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。（2026-11-24 D-22 新增 DA-02b 后由 16 改为 17）
 # 演进史注记位: 后续 Rule 69 载体演进（触发点增减/四态改名/上界联动）在此追加注记。
 
 set -u
@@ -39,8 +39,18 @@ if [ -s "$ARBITER" ]; then ok 01 "decision-arbiter.md 在位"; else bad 01 "deci
 # What: frontmatter model 值逐字 = account:zai-individual-coding-plan/GLM-5.4（grep -F 固定串）。
 # [2026-11-24 task-goal-unattended-protocol-20261124] 原行为=钉 GLM-5.3；该配置在当前宿主派发必败（Reasoning level unsupported），
 # 用户裁决对齐宿主可用配置 GLM-5.4 + max；本断言仅把 model 锚随 frontmatter 锁步（仍为逐字锚，强度不变），thoughtLevel 未设断言（范围=零新 selftest，是否补断言待用户裁决）。
+# [2026-11-24 D-22 用户裁决] 上述「未设断言」已由 DA-02b 补上；原注记逐字保留作决策演进证据链，不回改历史。
 # Why: 69.5 声明强模型档 frontmatter 为 truth source、禁降档改判——档位漂移=判断质量承诺失效。
 if grep -qF 'account:zai-individual-coding-plan/GLM-5.4' "$ARBITER"; then ok 02 "model 逐字=GLM-5.4 强档(max)"; else bad 02 "model 非 GLM-5.4 强档(max)"; fi
+
+# DA-02b thoughtLevel 合法档位断言（[2026-11-24 D-22 用户授权] 新增，不删既有断言）
+# What: ARBITER 的每一行 frontmatter thoughtLevel 均须命中 GLM 合法档正则 low|high|max，且至少 1 行命中。
+# 档位有多个合法选项 low/high/max，不钉死 max，但禁无效档 enabled（用户 2026-11-24 裁决；enabled 是 ccr 系列档位、非 GLM 档位）。
+# Why: GLM 系列仅支持 low/high/max，enabled/空值/其他档在宿主派发必败（Reasoning level unsupported）；
+#       只约束合法集合不钉唯一值，避免把「可选档位」误写成「只能 max」（用户同日指出的措辞问题）。
+tl_all="$(grep -cE '^thoughtLevel:' "$ARBITER" 2>/dev/null)"
+tl_ok="$(grep -cE '^thoughtLevel:[[:space:]]*(low|high|max)[[:space:]]*$' "$ARBITER" 2>/dev/null)"
+if [ "$tl_ok" -ge 1 ] && [ "$tl_all" = "$tl_ok" ]; then ok 02b "thoughtLevel 合法档(low|high|max)，enabled/空值/其他档拒绝"; else bad 02b "thoughtLevel 非法(enabled/空值/其他档)或非唯一行"; fi
 
 # DA-03..06 四态字面各 1 断言（裁决消费协议 69.3 与 agent 文件字面一致）
 # What: agent 文件含 APPROVE/REJECT-REWORK/ESCALATE-USER/INSUFFICIENT-EVIDENCE 四态各 ≥1。
