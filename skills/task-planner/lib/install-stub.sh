@@ -103,12 +103,12 @@ node --experimental-strip-types \$TASK_PLANNER_ROOT/scripts/register-hooks-cj.ts
 
 | 资源 | 路径 |
 |------|------|
-| 核心规则 | `${TASK_PLANNER_ROOT}/references/critical-rules.md` |
-| Todo 同步 | `${TASK_PLANNER_ROOT}/references/todo-sync.md` |
-| 工作树隔离 | `${TASK_PLANNER_ROOT}/references/worktree-isolation.md` |
-| 模板 | `${TASK_PLANNER_ROOT}/templates/` |
+| 核心规则 | \`\${TASK_PLANNER_ROOT}/references/critical-rules.md\` |
+| Todo 同步 | \`\${TASK_PLANNER_ROOT}/references/todo-sync.md\` |
+| 工作树隔离 | \`\${TASK_PLANNER_ROOT}/references/worktree-isolation.md\` |
+| 模板 | \`\${TASK_PLANNER_ROOT}/templates/\` |
 
-完整流程见 canonical 的 `README.md` + `examples.md`。
+完整流程见 canonical 的 \`README.md\` + \`examples.md\`。
 STUB_SKILL_EOF
       ;;
 
