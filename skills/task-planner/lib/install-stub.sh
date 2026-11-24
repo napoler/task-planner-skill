@@ -289,10 +289,15 @@ install_stub_for_tool() {
   # 宿主位是完整副本而非指向 canonical 的指针薄壳; 下方 sed 重写只是副本内的路径本地化。
   # [task-perf-opt Change #12] 主副本同步改为 rsync -a --delete（确保安装位与源仓完全一致，删除源仓已移除的文件）；
   # dry-run 先行记录差异范围，实做后记录同步时间戳+文件数（install.log 审计面）
+  # [2026-11-25 task-compact-recover-inline] What: rsync 的 lib 排除项加前导 `/`，只锚定同步根目录下的顶层 lib/。
+  # Why: 原 `--exclude='lib/'` 无锚点，rsync 按任意层级匹配，把 `scripts/lib/` 也排除了——压缩恢复 hook 的
+  #       在途判定依赖 scripts/lib/plan-recovery.sh，该文件永远同步不到部署位，恢复包整体失效；且 --delete
+  #       不删除被排除目录内的既有文件，部署位长期只剩旧 plan-parse.sh，缺陷被掩盖。
+  # 边界: 顶层 lib/（安装器自身）仍排除；其余排除项语义不变，不额外放开子目录的 SKILL.md/tests/docs。
   if command -v rsync >/dev/null 2>&1; then
-    _rsync_dry="$(rsync -a --delete --itemize-changes --dry-run --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null || true)"
+    _rsync_dry="$(rsync -a --delete --itemize-changes --dry-run --exclude='SKILL.md' --exclude='/lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null || true)"
     [ -n "$_rsync_dry" ] && echo "[install-stub] $tool_name dry-run 差异: $(printf '%s\n' "$_rsync_dry" | grep -c .) 项（删除/更新）"
-    rsync -a --delete --exclude='SKILL.md' --exclude='lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
+    rsync -a --delete --exclude='SKILL.md' --exclude='/lib/' --exclude='tests/' --exclude='docs/' --exclude='install.sh' --exclude='uninstall.sh' \
       "${TASK_PLANNER_ROOT}/" "${stub_dir}/" 2>/dev/null
     _ds_n="$(find "$stub_dir" -type f 2>/dev/null | wc -l | tr -d ' ')"
     echo "[install-stub] $tool_name synced (rsync -a --delete @ $(date +%s), ${_ds_n:-?} 文件)"
