@@ -1,5 +1,8 @@
 #!/bin/bash
 # check-template-principles.sh — 原则→模板区块覆盖守卫（spec_version=1）
+# [2026-11-25 task-json-template P5] JSON 模板优先：白名单/段锚/lineage 从 templates/json/*.template.json 的
+#   meta.lineage + sections[].anchor 读；无对应 JSON 才回退旧 MD 注释（旧计划/自造模板兼容）。
+# WHY: JSON 已成为模板权威源；若只读 MD，JSON-only 模板会被误判缺 lineage/区块，pruned 段会被误判缺失。
 # 读 principle-template-registry.md，对 base+derived 模板校验必选原则载体。
 # 退出码：0=全绿(PRINCIPLES-COVERAGE PASS)，1=存在 enforce 缺失；warn 仅输出不计 FAIL。
 # 用法：
@@ -23,19 +26,69 @@ WARN_ITEMS=()
 
 reset_counts() { FAIL_COUNT=0; WARN_COUNT=0; FAIL_ITEMS=(); WARN_ITEMS=(); }
 
+# [2026-11-25 P5] JSON 真源映射：base=task_plan.template.json，derived=<type>.template.json；无 JSON 返回空串。
+json_for_template() { # md-file -> json-file|""
+  local b="$1"
+  [ -n "${JSON_DIR:-}" ] || { printf '%s' ""; return 0; }
+  b="$(basename "$b")"
+  case "$b" in
+    task_plan.md) printf '%s' "${JSON_DIR:-}/task_plan.template.json" ;;
+    *-type.md) printf '%s' "${JSON_DIR:-}/${b%-type.md}.template.json" ;;
+    *) printf '%s' "" ;;
+  esac
+}
+
+# [2026-11-25 P5] 模板可读文本：优先 JSON 的 sections[].anchor + 规范化 lineage 行，缺 JSON 才 cat 旧 MD。
+# 用 shell grep/sed 逐字段读，不依赖 Python；JSON 是紧凑单行，字段边界由正则限定。
+template_text() { # file -> text
+  local f="$1" jf anchors lineage lvl parent base sv pruned
+  jf="$(json_for_template "$f")"
+  if [ -z "$jf" ] || [ ! -f "$jf" ]; then
+    cat "$f" 2>/dev/null || true
+    return 0
+  fi
+  anchors="$(grep -oE '"anchor":"[^"]*"' "$jf" | sed 's/^"anchor":"//;s/"$//' || true)"
+  lineage="$(grep -oE '"lineage":\{[^}]*\}' "$jf" || true)"
+  lvl="$(printf '%s' "$lineage" | grep -oE '"level":"[^"]*"' | head -n1 | cut -d'"' -f4 || true)"
+  parent="$(printf '%s' "$lineage" | grep -oE '"parent":"[^"]*"' | head -n1 | cut -d'"' -f4 || true)"
+  base="$(printf '%s' "$lineage" | grep -oE '"base":"[^"]*"' | head -n1 | cut -d'"' -f4 || true)"
+  sv="$(printf '%s' "$lineage" | grep -oE '"spec_version":[0-9]+' | head -n1 | cut -d: -f2 || true)"
+  pruned="$(grep -oE '"pruned":\[[^]]*\]' "$jf" | sed 's/^"pruned":\[//;s/\]$//;s/"//g' || true)"
+  printf '%s\n' "$anchors" "template-lineage: level=$lvl parent=$parent base=$base spec_version=$sv pruned=\"$pruned\""
+}
+
+# [2026-11-25 P5] JSON lineage.pruned 是有意裁剪清单，命中即不算缺失（MD 无此机制保持旧行为）。
+pruned_allows() { # file token
+  local jf pruned p token_nospace
+  jf="$(json_for_template "$1")"
+  [ -f "$jf" ] || return 1
+  pruned="$(grep -oE '"pruned":\[[^]]*\]' "$jf" | sed 's/^"pruned":\[//;s/\]$//;s/"//g' || true)"
+  [ -n "$pruned" ] || return 1
+  token_nospace="${2//[[:space:]]/}"
+  for p in ${pruned//,/ }; do
+    [ -n "$p" ] || continue
+    if [[ "$token_nospace" == *"$p"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 has_token() { # file token
-  local f="$1" t="$2"
-  grep -Fq -- "$t" "$f" 2>/dev/null
+  local text
+  text="$(template_text "$1")"
+  [[ "$text" == *"$2"* ]]
 }
 
 has_exempt() { # file keyword (principle/section hint)
-  local f="$1" k="$2"
-  grep -Fq -- "<!-- principle-exempt:" "$f" 2>/dev/null && grep -F -- "<!-- principle-exempt:" "$f" 2>/dev/null | grep -Fq -- "$k"
+  local text
+  text="$(template_text "$1")"
+  [[ "$text" == *'<!-- principle-exempt:'* && "$text" == *"$2"* ]]
 }
 
 check_enforce_token() { # file token label scope(is base/derived name)
   local f="$1" token="$2" label="$3" scope="$4"
-  if has_token "$f" "$token"; then
+  if has_token "$f" "$token" || pruned_allows "$f" "$token"; then
     return 0
   fi
   # try exemption by token or label keywords
@@ -49,7 +102,7 @@ check_enforce_token() { # file token label scope(is base/derived name)
 
 check_warn_token() { # file token label scope
   local f="$1" token="$2" label="$3" scope="$4"
-  if has_token "$f" "$token"; then
+  if has_token "$f" "$token" || pruned_allows "$f" "$token"; then
     return 0
   fi
   if has_exempt "$f" "$token" || has_exempt "$f" "$label"; then
@@ -74,6 +127,8 @@ run_checks() {
   # defaults aligned to spec_version=1 registry
   BASE_REL="skills/task-planner/templates/task_plan.md"
   VARIANT_REL="skills/task-planner/templates/variant"
+  # [2026-11-25 P5] JSON 权威模板目录（run_checks 的 root 可为 selftest 临时仓，故从 root 派生）
+  JSON_DIR="$root/skills/task-planner/templates/json"
   EXEMPT_VARIANTS_CSV="mini-lite-type.md,l0-lite-type.md"
   # parse registry assertions if present (lightweight)
   if [ -f "$registry" ]; then

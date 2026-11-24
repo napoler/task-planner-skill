@@ -953,11 +953,73 @@ if [ "$python_rc" -eq 0 ]; then
         }
 
         vc_gate_fail=0
-        # 1) VC 总数（v065 计划实测格式: `| VC-1 |...` 数据行；锚定首列为 VC-N，避免误匹配其他表格行）
-        vc_count="$(grep -cE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null || true)"
-        vc_count="${vc_count:-0}"
-        # 2) 已定义 VC 编号集合（映射目标校验用）
-        vc_defs="$(grep -oE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null | grep -oE 'VC-[0-9]+' | sort -u || true)"
+        # ── [2026-11-25 task-json-template P4] JSON-first VC/V-N 权威源 ──────────
+        # What: plan-state.json 存在且 vcs 非空时，VC 总数/定义集取 `planctl get --section vcs`，
+        #       每 Phase 的 V-N 映射取 `planctl get --section phases` 的 v_checks（P1 render 同源），
+        #       手改 task_plan.md 的 VC 表/V-N 行不再能左右门判定；无 JSON（或无 vcs 数据）才回退 MD 正则。
+        # Why:  P1 已让 V-N 勾态由 vcs[].status 派生，门若仍只读 MD 正则即留下「改派生视图骗绿」窗口。
+        # 约束: JSON 存在但读取/解析失败 = fail-closed（vc_gate_fail=1 + stderr），禁静默降级到 MD。
+        vc_json_mode=0
+        vc_ph_file=""
+        if [ -f "$PLAN_DIR_GUESS/plan-state.json" ] && [ -f "$SKILL_ROOT/scripts/planctl.py" ]; then
+            _vcj_err="$(mktemp "${TMPDIR:-/tmp}/vc-gate-json.XXXXXX")"
+            _vcj_vcs="$(mktemp "${TMPDIR:-/tmp}/vc-gate-vcs.XXXXXX")"
+            _vcj_phs="$(mktemp "${TMPDIR:-/tmp}/vc-gate-phs.XXXXXX")"
+            vc_ph_file="$(mktemp "${TMPDIR:-/tmp}/vc-gate-phmap.XXXXXX")"
+            python3 "$SKILL_ROOT/scripts/planctl.py" get --plan-dir "$PLAN_DIR_GUESS" --section vcs  > "$_vcj_vcs" 2>"$_vcj_err"; _vcj_rc=$?
+            python3 "$SKILL_ROOT/scripts/planctl.py" get --plan-dir "$PLAN_DIR_GUESS" --section phases > "$_vcj_phs" 2>>"$_vcj_err"; _phj_rc=$?
+            if [ "$_vcj_rc" -eq 0 ] && [ "$_phj_rc" -eq 0 ] \
+               && python3 - "$_vcj_vcs" "$_vcj_phs" "$vc_ph_file" <<'PYEOF'
+import json, re, sys
+try:
+    vcs = json.load(open(sys.argv[1], encoding="utf-8"))
+    phases = json.load(open(sys.argv[2], encoding="utf-8"))
+except Exception as exc:
+    print(f"[plan] VC-GATE JSON 权威源解析失败: {exc}", file=sys.stderr)
+    sys.exit(1)
+if not isinstance(vcs, list) or not isinstance(phases, list):
+    print("[plan] VC-GATE JSON 权威源 vcs/phases 必须是 array", file=sys.stderr)
+    sys.exit(1)
+defs = []
+seen = set()
+for v in vcs:
+    if not isinstance(v, dict):
+        continue
+    vid = str(v.get("id") or "")
+    if vid and vid not in seen:
+        seen.add(vid)
+        defs.append(vid)
+with open(sys.argv[3], "w", encoding="utf-8") as out:
+    for vid in defs:
+        out.write(f"DEF\t{vid}\n")
+    for p in phases:
+        if not isinstance(p, dict):
+            continue
+        m = re.match(r"^[Pp]?(\d+)$", str(p.get("id") or ""))
+        pno = m.group(1) if m else ""
+        if not pno:
+            continue
+        for vc in p.get("v_checks") or []:
+            out.write(f"PH\t{pno}\t{vc}\n")
+PYEOF
+            then
+                vc_defs="$(awk -F'\t' '$1=="DEF" {print $2}' "$vc_ph_file")"
+                vc_count="$(awk -F'\t' '$1=="DEF" {n++} END {print n+0}' "$vc_ph_file")"
+                [ "$vc_count" -gt 0 ] && vc_json_mode=1
+            else
+                printf '[plan] VC-GATE JSON 权威源不可读（rc vcs=%d phases=%d）: %s — fail-closed，禁回退 MD\n' \
+                    "$_vcj_rc" "$_phj_rc" "$(<"$_vcj_err")" >&2
+                vc_gate_fail=1
+            fi
+            rm -f "$_vcj_err" "$_vcj_vcs" "$_vcj_phs"
+        fi
+        # 1) VC 总数（无 JSON 时: v065 计划实测格式 `| VC-1 |...` 数据行）
+        if [ "$vc_json_mode" -ne 1 ]; then
+            vc_count="$(grep -cE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null || true)"
+            vc_count="${vc_count:-0}"
+            # 2) 已定义 VC 编号集合（映射目标校验用）
+            vc_defs="$(grep -oE '^\|[[:space:]]*VC-[0-9]+' "$PLAN_FILE" 2>/dev/null | grep -oE 'VC-[0-9]+' | sort -u || true)"
+        fi
         # 3) 逐 Phase 段查 V-N 映射（按段内 ### Phase 标题序编号 P1..Pn；
         #    segf = 「第 P 个 Phase 标题」到「第 P+1 个 Phase 标题」之间，段尾由 grep -m 行差截取）
         p_no=0
@@ -967,6 +1029,24 @@ if [ "$python_rc" -eq 0 ]; then
             mapfile -t phase_lines_arr <<< "$phase_titles"
             while IFS= read -r start_ln; do
                 p_no=$((p_no + 1))
+                if [ "$vc_json_mode" -eq 1 ]; then
+                    # JSON 权威 V-N 映射：phases[].v_checks（同 P1 render 的 V-N 行来源）；
+                    # 目标须 ∈ vcs 定义集，否则与 MD 正则口径一样判 target_bad。
+                    vn_total="$(awk -F'\t' -v p="$p_no" '$1=="PH" && $2==p {n++} END {print n+0}' "$vc_ph_file")"
+                    vn_sub="${vn_total:-0}"
+                    _vn_thresh=$vn_thresh_base
+                    if [ "$PLAN_TIER_MINI" = 1 ] && [ "$vn_sub" -eq 0 ]; then continue; fi
+                    if [ "$vn_sub" -ge "$_vn_thresh" ]; then
+                        target_bad=0
+                        _bad_vc="$(awk -F'\t' -v p="$p_no" '$1=="PH" && $2==p {print $3}' "$vc_ph_file" \
+                            | sort -u | grep -vxF -f <(printf '%s\n' "$vc_defs") 2>/dev/null || true)"
+                        [ -n "$_bad_vc" ] && target_bad=1
+                        [ "$target_bad" -eq 1 ] && vc_bad_phases="${vc_bad_phases} Phase${p_no}(V-N 映射目标未定义于 JSON vcs: ${_bad_vc}); "
+                        continue
+                    fi
+                    vc_bad_phases="${vc_bad_phases} Phase${p_no}(V-N 映射 ${vn_sub:-0} < ${_vn_thresh}); "
+                    continue
+                fi
                 if [ "$p_no" -lt "${#phase_lines_arr[@]}" ]; then end_ln="${phase_lines_arr[$p_no]}"; else end_ln=""; fi
                 segf="$(mktemp)" || continue
                 if [ -n "$end_ln" ]; then
@@ -1009,6 +1089,7 @@ if [ "$python_rc" -eq 0 ]; then
             done <<< "$phase_titles"
         fi
         rm -f "$vc_gate_section"
+        [ -n "$vc_ph_file" ] && rm -f "$vc_ph_file"
 
         # 判定: VC ≥5 且 所有 Phase 映射合规
         # [2026-09-20 task-v086 P2-S3 Rule 38.4②] mini 降档: 阈值用 $vc_min(5→2), 非 mini 恒 5

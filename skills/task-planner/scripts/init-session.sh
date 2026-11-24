@@ -20,11 +20,16 @@ set -e
 
 # [2026-09-21 task-v086 S6] --list 子命令: 输出当前可用模板清单(内置 variant+项目目录 *-type.md+当前默认项),
 # 不创建任何文件, 无需 plans/<task-id> CWD 守卫, 直接 exit 0
+# [2026-11-25 task-json-template P3] JSON 原生模板切主:
+#   What: 清单并入 templates/json/<type>.template.json（去后缀即类型名），附加 [json]/[legacy] 来源列；
+#         旧 "  <type> (built-in)/(project)" 前缀与 "[default]" 行逐字保留（selftest PT-23 断言依赖）。
+#   Why: 用户批准「JSON 原生模板 + 结构化勾选」，规划者须能从 --list 直接辨认 JSON/legacy 两类来源。
 LIST_TEMPLATES=0
 for a in "$@"; do [ "$a" = "--list" ] && LIST_TEMPLATES=1; done
 if [ "$LIST_TEMPLATES" = 1 ]; then
     _sdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     _bvd="$_sdir/../templates/variant"
+    _jdir="$_sdir/../templates/json"
     _list_pdir=""
     _d="$(pwd)"
     while [ "$_d" != "/" ]; do
@@ -38,16 +43,27 @@ if [ "$LIST_TEMPLATES" = 1 ]; then
     fi
     [ -z "$_def" ] && _def="${TASK_TEMPLATE_DEFAULT:-}"
     echo "Available templates (task-v086 S6 --list):"
-    for f in "$_bvd"/*-type.md; do
-        [ -e "$f" ] || continue
-        echo "  $(basename "$f" | sed 's/-type\.md$//') (built-in)"
+    # general + JSON 模板 + legacy variant + 项目 *-type.md，去重排序（Rule 34.1 单一事实源=模板目录）
+    _all_types="$({
+        printf '%s\n' general
+        ls "$_jdir"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
+        ls "$_bvd"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//'
+        if [ -n "$_list_pdir" ]; then
+            ls "$_list_pdir"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//'
+        fi
+    } | sed '/^$/d' | sort -u)"
+    for _t in $_all_types; do
+        _origin="built-in"
+        _source="legacy"
+        if [ -f "$_jdir/$_t.template.json" ] \
+           || { [ "$_t" = "general" ] && [ -f "$_jdir/task_plan.template.json" ]; }; then
+            # general 兼容早期 task_plan.template.json 命名（同仓并存实测）
+            _source="json"
+        elif [ ! -f "$_bvd/$_t-type.md" ] && [ -n "$_list_pdir" ] && [ -f "$_list_pdir/$_t-type.md" ]; then
+            _origin="project"
+        fi
+        echo "  $_t ($_origin) [$_source]"
     done
-    if [ -n "$_list_pdir" ]; then
-        for f in "$_list_pdir"/*-type.md; do
-            [ -e "$f" ] || continue
-            echo "  $(basename "$f" | sed 's/-type\.md$//') (project)"
-        done
-    fi
     [ -n "$_def" ] && echo "[default] $_def" || echo "[default] general"
     exit 0
 fi
@@ -664,20 +680,42 @@ DATE=$(date +%Y-%m-%d)
 
 echo "Initializing planning files for: $PROJECT_NAME"
 
-# Template type routing (Rule 16, v2.2.1 + Rule 34.1 动态派生): variant task_plan selected by template_type
+# Template type routing (Rule 16, v2.2.1 + Rule 34.1 动态派生): task_plan selected by template_type
 # Usage: ./init-session.sh [project-name] [template-type] | TASK_TEMPLATE_TYPE=<type> ./init-session.sh [project-name]
 # [2026-09-15 task-v074 P4-S1] 白名单动态派生: general + ls $BUILTIN_TEMPLATES/variant/*-type.md 去后缀
 #    (与 check-template-type.sh 同源自模板目录, 消除硬编码 12 类清单副本)
+# [2026-11-25 task-json-template P3] JSON 原生模板切主:
+#   What: 白名单 = general + json/*.template.json(去后缀) + variant/*-type.md + 项目 *-type.md，去重排序；
+#         命中 JSON → JSON_TEMPLATE_ABS 记绝对路径，MD 骨架仍取 legacy variant（无则通用 task_plan.md），
+#         仅作首轮渲染前的人读临时视图；未知类型 warning 回落 general（JSON general 存在则作权威源）。
+#   Why: 用户批准「JSON 原生模板 + 结构化勾选」，反对把整份 MD 读入 JSON 再吐出；JSON 是权威源，
+#         MD 骨架正文不得进入 plan-state.json（planctl init 接线见下方）。
+JSON_DIR="${BUILTIN_TEMPLATES}/json"
+JSON_TEMPLATE_ABS=""
+# 轻量档集合与下方 planctl init 的 _json_init_tier 判定保持同源（mini|l0|trivial → mini）
+_LIGHT_TIER=0
+case "${PLAN_TIER:-}" in mini|l0|trivial) _LIGHT_TIER=1 ;; esac
+# 通用 JSON 模板兼容两种落盘命名：canonical general.template.json 与早期 task_plan.template.json
+#（catalog to-json 首轮产物为后者，2026-11-25 实测同仓并存；两者都按 general 权威源消费）。
+_GENERAL_JSON=""
+for _cand in general task_plan; do
+    if [ -f "${JSON_DIR}/${_cand}.template.json" ]; then
+        _GENERAL_JSON="${JSON_DIR}/${_cand}.template.json"
+        break
+    fi
+done
 VARIANTS_DIR="${BUILTIN_TEMPLATES}/variant"
-VALID_TYPES="general $(ls "$VARIANTS_DIR"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
-VALID_TYPES="$(printf '%s' "$VALID_TYPES" | tr -s ' ')"
+_json_types="$(ls "$JSON_DIR"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//' | tr '\n' ' ')"
+_variant_types="$(ls "$VARIANTS_DIR"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
 # [2026-09-21 task-v086 S6] 项目 plan-templates 目录内的 *-type.md(去后缀)并入合法类型集合;
-# 无项目目录 → 集合与改前逐字节一致(非默认路径零影响)
+# 无 JSON 模板目录时白名单与改前的 general + variant + 项目集合等价（仅排序去重）。
 PDIR_RESOLVED="$(find_project_templates || true)"
+_pextra=""
 if [ -n "$PDIR_RESOLVED" ]; then
     _pextra="$(ls "$PDIR_RESOLVED"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
-    [ -n "$_pextra" ] && VALID_TYPES="$(printf '%s %s' "$VALID_TYPES" "$_pextra" | tr -s ' ')"
 fi
+VALID_TYPES="$(printf '%s\n' general $_json_types $_variant_types $_pextra | sed '/^$/d' | sort -u | tr '\n' ' ')"
+VALID_TYPES="$(printf '%s' "$VALID_TYPES" | tr -s ' ')"
 # [2026-09-21 task-v086 S6] 默认模板(每次只加载 1 个的选择入口):
 # 项目级 plan-templates/default 文件(内容=模板名) > env TASK_TEMPLATE_DEFAULT > 缺省=现状 general 行为逐字节不变
 if [ -z "$TEMPLATE_TYPE" ]; then
@@ -699,25 +737,54 @@ fi
 TASK_PLAN_SRC="task_plan.md"
 if [ -n "$TEMPLATE_TYPE" ]; then
     if echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE "; then
-        VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
-        VARIANT_ABS_BUILTIN="${BUILTIN_TEMPLATES}/${VARIANT_REL}"
-        if [ -f "$VARIANT_ABS_BUILTIN" ]; then
-            TASK_PLAN_SRC="$VARIANT_REL"
-            echo "Template routing: task_plan.md <- $VARIANT_REL (template_type: $TEMPLATE_TYPE)"
-        else
-            # [2026-09-21 task-v086 S6] 内置未命中 → 查项目 plan-templates 目录(项目模板发现:
-            # 项目 *-type.md 已并入 VALID_TYPES 前置段); 命中 → 复制源=项目文件
-            if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+        _json_candidate="${JSON_DIR}/${TEMPLATE_TYPE}.template.json"
+        if [ -f "$_json_candidate" ]; then
+            # [2026-11-25 task-json-template P3] JSON 原生模板命中：JSON 为唯一权威源；
+            # MD 骨架仍从 legacy 模板复制（无则通用骨架），仅供首次 render 前人读。
+            JSON_TEMPLATE_ABS="$_json_candidate"
+            echo "Template routing: JSON 权威模板 <- json/${TEMPLATE_TYPE}.template.json (template_type: $TEMPLATE_TYPE)"
+            VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
+            if [ -f "${BUILTIN_TEMPLATES}/${VARIANT_REL}" ]; then
+                TASK_PLAN_SRC="$VARIANT_REL"
+                echo "Template routing: task_plan.md(临时视图) <- $VARIANT_REL (JSON 权威源优先, 首次 render 重建)"
+            elif [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
                 TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
-                echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (project-level, task-v086 S6)"
+                echo "Template routing: task_plan.md(临时视图) <- ${TEMPLATE_TYPE}-type.md (project-level, JSON 权威源优先)"
             else
-                echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
+                echo "Template routing: task_plan.md(临时视图) <- 通用骨架 (JSON 权威源优先, 首次 render 重建)"
+            fi
+        else
+            # legacy 回退：原 variant/项目模板路由逐字保留（无 JSON 模板时行为不变）
+            VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
+            VARIANT_ABS_BUILTIN="${BUILTIN_TEMPLATES}/${VARIANT_REL}"
+            if [ -f "$VARIANT_ABS_BUILTIN" ]; then
+                TASK_PLAN_SRC="$VARIANT_REL"
+                echo "Template routing: task_plan.md <- $VARIANT_REL (template_type: $TEMPLATE_TYPE)"
+            else
+                # [2026-09-21 task-v086 S6] 内置未命中 → 查项目 plan-templates 目录(项目模板发现:
+                # 项目 *-type.md 已并入 VALID_TYPES); 命中 → 复制源=项目文件
+                if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+                    TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                    echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (project-level, task-v086 S6)"
+                else
+                    echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
+                fi
             fi
         fi
     else
         echo "WARNING: unknown template_type '$TEMPLATE_TYPE' — valid: $VALID_TYPES"
         echo "Falling back to generic task_plan.md"
+        # [2026-11-25 task-json-template P3] 未知类型回落 general：JSON general 存在则作权威源，
+        # 原 unknown 告警与 template-sense 区块语义不动（TEMPLATE_TYPE 保持原值供终验识别）。
+        if [ -n "$_GENERAL_JSON" ]; then
+            JSON_TEMPLATE_ABS="$_GENERAL_JSON"
+            echo "Template routing: 未知类型回落 JSON general 权威模板 (task-json-template P3)"
+        fi
     fi
+elif [ -n "$_GENERAL_JSON" ]; then
+    # [2026-11-25 task-json-template P3] 无显式/默认类型时，general JSON 存在即作权威源；MD 骨架仍通用。
+    JSON_TEMPLATE_ABS="$_GENERAL_JSON"
+    echo "Template routing: 未指定 template_type, 采用 JSON general 权威模板 (task-json-template P3)"
 fi
 
 # [2026-09-20 task-v086 P2-S2 Rule 38.2] tier 分流: mini 档 → mini-lite 模板
@@ -739,6 +806,22 @@ if [ "$PLAN_TIER" = "mini" ]; then
     else
         TASK_PLAN_SRC="variant/mini-lite-type.md"
         echo "Template routing: task_plan.md <- variant/mini-lite-type.md (plan_tier: mini, Rule 38.2)"
+    fi
+fi
+# [2026-11-25 task-json-template P3] mini/L0/trivial 档 MD 极简 stub 不变；JSON 权威源补齐：
+# What: 轻量档（与 planctl init 同源判定）优先 mini-lite.template.json（0 checklist，勾选段可为空），
+#       general JSON 仅兜底；planctl init 因此仍写 template_ref/template_doc。
+# Why: 轻量档不能因「无复杂领域段」丢掉模板溯源字段，也不能把 standard 模板的勾选段强塞进 stub。
+#       实测 general(task_plan.template.json) 带 19 条 checklist，mini-lite 带 0 条——按 tier 选档。
+if [ "$_LIGHT_TIER" = "1" ]; then
+    if [ -f "${JSON_DIR}/mini-lite.template.json" ]; then
+        if [ "$JSON_TEMPLATE_ABS" != "${JSON_DIR}/mini-lite.template.json" ]; then
+            echo "Template routing: 轻量档 JSON 权威源改选 mini-lite（不继承 standard 勾选段, task-json-template P3）"
+        fi
+        JSON_TEMPLATE_ABS="${JSON_DIR}/mini-lite.template.json"
+    elif [ -z "$JSON_TEMPLATE_ABS" ] && [ -n "$_GENERAL_JSON" ]; then
+        JSON_TEMPLATE_ABS="$_GENERAL_JSON"
+        echo "Template routing: 轻量档回落 JSON general 权威模板 (task-json-template P3)"
     fi
 fi
 
@@ -780,6 +863,8 @@ for file in $_init_files; do
 done
 
 # task_plan.md handled separately (may come from variant/)
+# [2026-11-25 task-json-template P3] 仅本轮新建的骨架允许打临时视图标记（重复 init 对既有文件零触碰）
+_TASK_PLAN_CREATED=0
 if [ -f "task_plan.md" ]; then
     echo "task_plan.md already exists, skipping"
 else
@@ -803,6 +888,7 @@ else
         # [2026-10-24 CR-fix BLOCKER-1] 记入本轮新建列表（variant/通用两分支复制点已过；
         # 供渲染接线只渲染本轮新建文件，重复 init 时既有 task_plan.md 零触碰）
         _created_this_round+=("task_plan.md")
+        _TASK_PLAN_CREATED=1
         # [2026-09-21 task-v086 S6] 自造模板 frontmatter 兜底: 复制产物无 template_type 标识行
         # (首行注释或表格行均无) 时头部插入一行, 保证 check-template-type 机器门控可识别
         if [ "$PROJECT_TPL_USED" = 1 ] && [ -n "$TEMPLATE_TYPE" ]; then
@@ -833,8 +919,23 @@ else
     elif copy_template "task_plan.md"; then
         # [2026-10-24 CR-fix BLOCKER-1] 通用模板（TASK_PLAN_SRC 即 task_plan.md）分支同样入列
         _created_this_round+=("task_plan.md")
+        _TASK_PLAN_CREATED=1
         echo "    Created task_plan.md"
     fi
+fi
+
+# [2026-11-25 task-json-template P3] JSON 原生模板模式下，MD 骨架=临时人读视图：
+# What: 在新建的 task_plan.md 标题行之后插一条注释，声明首次 planctl render 将由 JSON 权威源重建；
+#       planctl init 只接 --template-json，绝不把此 MD 正文写进 plan-state.json。
+# Why: 避免规划者把过渡期骨架误当权威源手工填写，也避免 render 覆盖时误判「内容凭空消失」；
+#       放在第 2 行而非首行，保持既有首行断言（selftest PT-26 标题精确匹配）逐字不变。
+if [ -n "$JSON_TEMPLATE_ABS" ] && [ "$_TASK_PLAN_CREATED" = "1" ] && [ -f "task_plan.md" ]; then
+    if ! head -3 "task_plan.md" | grep -q "TEMP VIEW: task-json-template"; then
+        awk -v marker='<!-- TEMP VIEW: task-json-template — 临时人读骨架；首次 planctl render 由 plan-state.json(JSON 权威源)重建，勿手工依赖此文件正文 -->' \
+            'NR==1{print; print marker; next} {print}' "task_plan.md" > "task_plan.md.tmp" \
+            && mv "task_plan.md.tmp" "task_plan.md"
+    fi
+    echo "    [init] task_plan.md=临时视图（JSON 权威源: ${JSON_TEMPLATE_ABS}；首次 render 重建，正文不入 plan-state.json）"
 fi
 
 # [2026-10-11 task-v169 Rule 80.1] user-session-log.md（第 7 计划文件）独立建档：
@@ -1097,16 +1198,27 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
     esac
     _json_init_lane="${_lane:-L1}"
     case "$_json_init_lane" in L0|L1|L2) ;; *) _json_init_lane="L1" ;; esac
-    # [2026-11-22 task-template-json-compat-20261122] 领域段 JSON 承载：
-    #   把已渲染的 task_plan.md 模板正文原文传给 planctl init 写入 template_body（render 领域附录数据源）。
-    #   mini/l0/trivial 档豁免（_json_init_tier=mini：极简 stub 无领域段，沿用 mini-lite/l0-lite 既有豁免口径）。
-    _json_init_tb_args=()
-    if [ "$_json_init_tier" = "standard" ] && [ -f "$PWD/task_plan.md" ]; then
-        _json_init_tb_args=(--template-body-from "$PWD/task_plan.md")
+    # [2026-11-25 task-json-template P3] JSON 原生模板切主（planctl init 接线）:
+    #   What: 命中 JSON 模板 → --template-json <绝对路径>，新计划不再传 --template-body-from；
+    #         legacy（variant/项目 MD）路径保留 deprecated --template-body-from 原有行为。
+    #   Why: 用户批准「JSON 原生模板 + 结构化勾选」，反对把整份 MD 读入 JSON 再吐出（template_body）。
+    #         mini/l0/trivial 档 MD 极简 stub 不变；若 JSON 模板存在仍写 template_ref/template_doc
+    #         （template_checks 允许为空），仅不传 deprecated 的 --template-body-from。
+    _json_init_tpl_args=()
+    if [ -n "$JSON_TEMPLATE_ABS" ]; then
+        if [ -f "$JSON_TEMPLATE_ABS" ]; then
+            _json_init_tpl_args=(--template-json "$JSON_TEMPLATE_ABS")
+        else
+            # 错误必须曝光：JSON 模板消失时不静默退回写 template_body（新计划禁写该字段）。
+            echo "[init] WARN: JSON 模板缺失 $JSON_TEMPLATE_ABS — 本次不写 template_body（task-json-template P3）" >&2
+        fi
+    elif [ "$_json_init_tier" = "standard" ] && [ -f "$PWD/task_plan.md" ]; then
+        # legacy 回退路径（deprecated 参数，仅无 JSON 模板时保留）
+        _json_init_tpl_args=(--template-body-from "$PWD/task_plan.md")
     fi
     _json_init_rc=0
     python3 "$SCRIPT_DIR/planctl.py" init --plan-dir "$PWD" --task-id "$(basename "$PWD")" \
-        --tier "$_json_init_tier" --lane "$_json_init_lane" "${_json_init_tb_args[@]}" >/dev/null 2>/dev/null || _json_init_rc=$?
+        --tier "$_json_init_tier" --lane "$_json_init_lane" "${_json_init_tpl_args[@]}" >/dev/null 2>/dev/null || _json_init_rc=$?
     if [ "$_json_init_rc" -eq 0 ] && [ -f "plan-state.json" ]; then
         echo "[init] plan-state.json initialized (JSON mode)"
         # [2026-11-22 task-planctl-exec-surface-20261122] init 后下一步 CLI 指引：

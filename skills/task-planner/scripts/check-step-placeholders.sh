@@ -18,7 +18,9 @@
 #        `npm install`）= 占位。带任一具体锚 → 可执行 → 放行（模糊动词 + 具体对象 ≠ 占位）。
 #   输出（stdout）: 命中逐行 `[step-placeholder] ✗ <行号> 不可执行步骤: <原文>`
 #   退出码: 0=无可执行性缺陷；1=存在占位步骤；2=plan-dir 缺失 / task_plan.md 缺失
-# 依赖: 纯 bash（read 状态机 + grep -E 字面/锚判定），无 awk/python/jq
+# 依赖: 纯 bash（read 状态机 + grep -E 字面/锚判定），无 awk/python/jq；
+#   [2026-11-25 P4] 仅当计划目录存在 plan-state.json 时额外调用 planctl.py get（JSON 权威源），
+#   用于跳过 template_checks 结构化勾选行（其文本来自 JSON，不参与 MD 占位启发式）。
 #
 # Why（设计取舍，逐条给理由）:
 #   · 为什么只判「模糊动词 ∧ 无锚」的 AND 面而非模糊动词全拦：「在 src/a.ts 完善边界处理」
@@ -58,8 +60,71 @@ if [ ! -f "$PLAN_FILE" ]; then
     exit 2
 fi
 
+# ── [2026-11-25 task-json-template P4] 结构化勾选行豁免面 ───────────────────
+# What: plan-state.json + template_checks 非空时，收集每条 check 的 id 与 text 作为标签；
+#       扫描到 `- [ ]/<mark> <label>`（含 render 注记形态 `<label>（...）`）即跳过该行，
+#       不计入 CHECKED、不参与模糊动词启发式。无 JSON → 标签为空，原扫描行为逐字不变。
+# Why:  这些勾选文本由 JSON 提供（P1 权威性迁移），其「已确认/看看」等字面不是工序步骤，
+#       拿 MD 启发式判它们会误报；而手改 MD 勾选由 check-state-consistency.sh S-3 负责。
+JSON_CHECK_LABELS=""
+if [ -f "$PLAN_DIR/plan-state.json" ]; then
+    _sp_py="$(cd "$(dirname "$0")" && pwd)/planctl.py"
+    if [ ! -f "$_sp_py" ]; then
+        printf '[step-placeholder] ERROR: plan-state.json 存在但 planctl.py 缺失（JSON 权威源不可读，禁回退 MD）: %s\n' "$_sp_py" >&2
+        exit 2
+    fi
+    _sp_err="$(mktemp "${TMPDIR:-/tmp}/step-placeholder-json.XXXXXX")"
+    _sp_out="$(mktemp "${TMPDIR:-/tmp}/step-placeholder-checks.XXXXXX")"
+    python3 "$_sp_py" get --plan-dir "$PLAN_DIR" --section template_checks > "$_sp_out" 2>"$_sp_err"
+    _sp_rc=$?
+    if [ "$_sp_rc" -ne 0 ]; then
+        printf '[step-placeholder] ERROR: planctl get template_checks rc=%d: %s\n' "$_sp_rc" "$(<"$_sp_err")" >&2
+        rm -f "$_sp_err" "$_sp_out"
+        exit 2
+    fi
+    JSON_CHECK_LABELS="$(python3 - "$_sp_out" <<'PYEOF'
+import json, sys
+try:
+    arr = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception as exc:
+    print(f"[step-placeholder] template_checks JSON 解析失败: {exc}", file=sys.stderr)
+    sys.exit(2)
+if arr is None:
+    arr = []
+if not isinstance(arr, list):
+    print("[step-placeholder] template_checks 必须是 array", file=sys.stderr)
+    sys.exit(2)
+for c in arr:
+    if not isinstance(c, dict):
+        continue
+    for key in ("id", "text"):
+        v = str(c.get(key) or "")
+        if v:
+            print(v)
+PYEOF
+)"
+    _sp_parse_rc=$?
+    rm -f "$_sp_err" "$_sp_out"
+    if [ "$_sp_parse_rc" -ne 0 ]; then
+        printf '[step-placeholder] ERROR: template_checks 解析失败 rc=%d（禁回退 MD）\n' "$_sp_parse_rc" >&2
+        exit 2
+    fi
+fi
+
+# _is_json_check <勾选行文本体> — 文本体是否 ∈ JSON check 标签（精确或 render 注记前缀）
+_is_json_check() {
+    [ -n "$JSON_CHECK_LABELS" ] || return 1
+    local body="$1" lab
+    while IFS= read -r lab; do
+        [ "$body" = "$lab" ] && return 0
+        case "$body" in "$lab（"*) return 0 ;; esac
+    done <<< "$JSON_CHECK_LABELS"
+    return 1
+}
+
 FAILS=0
 CHECKED=0
+SKIPPED_JSON=0
 IN_PHASE=0
 lineno=0
 
@@ -73,6 +138,11 @@ while IFS= read -r line || [ -n "$line" ]; do
     [ "$IN_PHASE" -eq 1 ] || continue
     case "$line" in
         '- [ ] '*|'- [x] '*|'- [X] '*)
+            # [P4] JSON template_checks 的结构化勾选行由 JSON 文本提供，不参与 MD 占位启发式
+            if _is_json_check "${line:6}"; then
+                SKIPPED_JSON=$((SKIPPED_JSON + 1))
+                continue
+            fi
             CHECKED=$((CHECKED + 1))
             # ① 模糊动词命中 且 ② 无任何具体锚 = 占位步骤
             if printf '%s' "$line" | grep -qE "$FUZZY_RE" \
@@ -84,10 +154,12 @@ while IFS= read -r line || [ -n "$line" ]; do
     esac
 done < "$PLAN_FILE"
 
+_json_note=""
+[ "$SKIPPED_JSON" -gt 0 ] && _json_note="（JSON 结构化勾选已豁免 $SKIPPED_JSON 行）"
 if [ "$FAILS" -gt 0 ]; then
-    printf '[step-placeholder] ✗ %d 项占位/不可执行步骤（扫描 checkbox 步骤 %d 行）— 补具体对象/命令/文件锚后重跑\n' \
-        "$FAILS" "$CHECKED"
+    printf '[step-placeholder] ✗ %d 项占位/不可执行步骤（扫描 checkbox 步骤 %d 行%s）— 补具体对象/命令/文件锚后重跑\n' \
+        "$FAILS" "$CHECKED" "$_json_note"
     exit 1
 fi
-printf '[step-placeholder] ✓ 无可执行性缺陷（扫描 checkbox 步骤 %d 行）\n' "$CHECKED"
+printf '[step-placeholder] ✓ 无可执行性缺陷（扫描 checkbox 步骤 %d 行%s）\n' "$CHECKED" "$_json_note"
 exit 0

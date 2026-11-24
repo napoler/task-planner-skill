@@ -1,5 +1,5 @@
 # Progress Log
-<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，Actions/Test Results/Error Log 语义段经 planctl add --section <actions|test_results|errors> 写入后 render 派生——直接填写会在首次 render 被覆盖；领域段(task-template-json-compat-20261122)：init 所选 variant 模板正文原文写入 plan-state.json 的 template_body 可选字段，render 在 task_plan.md 以标题降级附录吐出（仅供参考，权威判据=JSON+机器门）-->
+<!-- 渲染契约(task-tplrender-20261024)：{{VAR}} 由 init-session.sh render_template() 渲染；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，Actions/Test Results/Error Log 语义段经 planctl add --section <actions|test_results|errors> 写入后 render 派生——直接填写会在首次 render 被覆盖；领域段(task-json-template-20261125)：JSON 模板为源；plan-state.json 的 template_doc/template_checks 为权威，task_plan.md 为 render 派生视图；template_body 仅旧计划兼容（deprecated）-->
 <!--
   动作日志:做过什么/改了什么文件/测试结果/错误。5Q Reboot 第 5 问答案源。
   Rule 19.2: Phase 标记 complete 前,对应 Phase 段必须已回填(check-3file-gate.sh 硬校验)。

@@ -309,6 +309,60 @@ case "$mode" in
             echo "[attest] [vc-gate] WARNING: verification.md 缺失(warn 档不阻断; TASK_PLANNER_VC_ENFORCE=enforce 可升级)" >&2
           fi
         else
+          # [2026-11-25 task-json-template P4] What: VC 计数 JSON-first —— plan-state.json 的 vcs
+          #   非空时以 `planctl get --section vcs` 为唯一计数权威（id 去重计总数，command 非空且非
+          #   模板占位计可执行数）；无 JSON / JSON 无 vcs 数据时才走下方 MD 正则回退。
+          # Why:  P1 已把 verification.md 变派生视图，手改 MD 勾选/命令不能再决定锁定门计数；
+          #   JSON 存在但读取失败 = fail-closed 拒锁，禁静默回退 MD。
+          vc_json_total=0
+          vc_json_ok=0
+          if [ -f "$plan_dir/plan-state.json" ] && [ -f "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/planctl.py" ]; then
+            _vcj_py="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/planctl.py"
+            _vcj_err="$(mktemp "${TMPDIR:-/tmp}/attest-vc-json.XXXXXX")"
+            _vcj_out="$(mktemp "${TMPDIR:-/tmp}/attest-vc-count.XXXXXX")"
+            python3 "$_vcj_py" get --plan-dir "$plan_dir" --section vcs > "$_vcj_out" 2>"$_vcj_err"; _vcj_rc=$?
+            _vcj_counts="$(python3 - "$_vcj_out" <<'PYEOF'
+import json, sys
+try:
+    vcs = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception as exc:
+    print(f"[attest] [vc-gate] JSON 权威源解析失败: {exc}", file=sys.stderr)
+    sys.exit(1)
+if not isinstance(vcs, list):
+    print("[attest] [vc-gate] JSON vcs 必须是 array", file=sys.stderr)
+    sys.exit(1)
+placeholders = ("must be runnable", "runnable command", "path+key-line",
+                "diff/evidence", "bash command OR", "path + key")
+total = ok = 0
+seen = set()
+for v in vcs:
+    if not isinstance(v, dict):
+        continue
+    vid = str(v.get("id") or "")
+    if not vid or vid in seen:
+        continue
+    seen.add(vid)
+    total += 1
+    cmd = str(v.get("command") or "").strip()
+    if cmd and not any(p in cmd for p in placeholders):
+        ok += 1
+print(f"{total} {ok}")
+PYEOF
+)"
+            _vcj_parse_rc=$?
+            if [ "$_vcj_rc" -eq 0 ] && [ "$_vcj_parse_rc" -eq 0 ]; then
+              read -r vc_json_total vc_json_ok <<< "$_vcj_counts"
+            else
+              echo "[attest] ✗ VC-GATE JSON 权威源不可读（rc=$_vcj_rc / parse=$_vcj_parse_rc: $(<"$_vcj_err")），拒锁；禁回退 MD" >&2
+              exit 1
+            fi
+            rm -f "$_vcj_err" "$_vcj_out"
+          fi
+          if [ "${vc_json_total:-0}" -gt 0 ]; then
+            vc_total="$vc_json_total"
+            vc_cmd_ok="$vc_json_ok"
+            echo "[attest] [vc-gate] JSON 权威源计数: $vc_total 条 VC / $vc_cmd_ok 条含可执行命令"
+          else
           # [2026-11-22 task-template-json-compat-20261122] What: VC 计数兼容 planctl render 表格格式。
           # Why: render verification.md 输出 `| VC-1 | pass | criterion | command | ... |`，
           #   旧判据只认 `- [ ] VC-N` + `**Verify command**:` → vc_total=0 静默放行（P0-c 假绿）。
@@ -320,6 +374,7 @@ case "$mode" in
           vc_cmd_ok_tbl="$(awk -F'|' '/^\|[[:space:]]*VC-[0-9]+/ { cmd=$5; gsub(/^[[:space:]]+|[[:space:]]+$/, "", cmd); if (cmd != "" && cmd !~ /^(must be runnable|runnable command|path\+key-line|diff\/evidence|bash command OR)/) n++ } END { print n+0 }' "$vfile")"
           vc_total=$(( ${vc_total_old:-0} + ${vc_total_tbl:-0} ))
           vc_cmd_ok=$(( ${vc_cmd_ok_old:-0} + ${vc_cmd_ok_tbl:-0} ))
+          fi  # JSON-first 分支结束：仅无 JSON vcs 数据时走 MD 正则回退
           if [ "${vc_total:-0}" -eq 0 ]; then
             echo "[attest] [vc-gate] ⚠ verification.md 无 VC 条目(Rule 84.3: standard≥5/mini≥2);按档位处置" >&2
           elif [ "${vc_cmd_ok:-0}" -lt "${vc_total}" ]; then
