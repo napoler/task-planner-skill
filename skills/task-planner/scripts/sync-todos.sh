@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B11 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             --json also emits the B1-B8 + B12 (+ B9-B11) baseline group (task_id/phase/status/subject/evidence/command)"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -300,12 +300,13 @@ forward_sync() {
     done < <(find "$plans_dir" -name "task_plan.md" -type f -not -path "*/archive/*" 2>/dev/null | sort)
 
     if $JSON_OUTPUT; then
-        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B11 由脚本自动带出，
+        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B8 + B12 (+ B9-B11) 由脚本自动带出，
         # 不再依赖执行体手抄（用户缺陷③：todo 默认项纯文本契约）。
-        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的 11 条基线记录；
+        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的基线记录；
         # WHY: 让 --json 消费方一次拿到完整 Todo 基线,避免 S1 建组遗漏门禁项。
         # [2026-11-24 task-session-regression-20261124 S6] What: 追加 B9-B11 三条 Git 基线步骤，并为 11 条记录统一注入 evidence/command 字符串（B9/B10/B11 读本会话侧车，其余空串）。
         # Why: 差异分析此前无强制执行点；带命令+侧车证据让 TodoWrite 建组时即拿到可执行步骤与客观完成凭据，不依赖模型记忆。
+        # [2026-11-24 task-two-stage-fix-20261124 S2] What: 追加 B12 根因/风险线索包登记驱动点；B1-B8 字面量逐字保留，B9-B11 保留。
         # 取舍: 前八条字面量逐字保留（含 B1/B8 必保行）；新字段在拼接阶段注入，避免改动既有记录文本。
         # 单引号字面量含纯双引号 JSON,无反引号/单引号,不触碰上方 phase entries 的 \" 转义。
         local baseline_entries=''
@@ -316,9 +317,9 @@ forward_sync() {
         baseline_entries+='{"task_id":"B5","phase":0,"status":"baseline","subject":"Todo终态"},'
         baseline_entries+='{"task_id":"B6","phase":0,"status":"baseline","subject":"引擎检测"},'
         baseline_entries+='{"task_id":"B7","phase":0,"status":"baseline","subject":"对齐核查"},'
-        baseline_entries+='{"task_id":"B8","phase":0,"status":"baseline","subject":"worktree核验"}'
-        # B8 原字面量不带尾逗号，先补衔接符再追加 B9-B11（保持 B8 行逐字不变）。
-        baseline_entries+=','
+        baseline_entries+='{"task_id":"B8","phase":0,"status":"baseline","subject":"worktree核验"},'
+        baseline_entries+='{"task_id":"B12","phase":0,"status":"baseline","subject":"根因/风险线索包已落盘 + 后续任务已登记（非修复类标 N/A + 证据）"},'
+        # B8 原字面量不带尾逗号，先补衔接符再追加 B9-B11（保持 B8 行逐字不变）。[2026-11-24 S2] B8 已补逗号并追加 B12；B9-B11 保留。
         baseline_entries+='{"task_id":"B9","phase":0,"status":"baseline","subject":"Git基线快照（首次写入前）"},'
         baseline_entries+='{"task_id":"B10","phase":0,"status":"baseline","subject":"Git修改后备份（S-unit/Phase）"},'
         baseline_entries+='{"task_id":"B11","phase":0,"status":"baseline","subject":"Git差异分析与处置（Phase/终验）"}'
