@@ -51,6 +51,94 @@ if [ ! -f "$PLAN_FILE" ]; then
     exit 0
 fi
 
+# ── [2026-11-25 task-json-template P4] JSON 权威勾选一致性（负控制）────────────
+# What: plan-state.json + template_checks 非空时，用 `planctl.py get --section template_checks`
+#       的 checked 作为唯一权威，逐条比对渲染视图 task_plan.md 中 `- [x]/[ ] <text|id>` 的勾态；
+#       JSON=false 而 MD 手改 [x]、JSON=true 而 MD 手改 [ ] 一律 S-3 FAIL。
+# Why:  P1 已把勾选权威源迁到 JSON，MD 是 render 派生视图；若门只读 MD，手改 MD 即假绿。
+#       render 产出 `- [ ] <text>`（text 来自 JSON），故按 text 精确匹配、id 兜底；
+#       JSON 段缺失（存量计划）走下方原三源正则，零回归；JSON 存在但不可读 = fail-closed，
+#       禁静默回退到 MD 正则（否则绕过面重新打开）。
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLANCTL="$SCRIPT_DIR/planctl.py"
+JSON_CHECK_ROWS=""
+JSON_CHECK_FAIL=0
+
+# _md_check_mark <label> — 渲染视图中 `- [ ]/<mark> <label>` 的勾态（x/X=已勾, 空格=未勾）；未找到=空
+# 边界: label 须完整等于勾选文本，或以 "（" 起尾随注记（render 的 note 形态），防前缀误配。
+_md_check_mark() {
+    awk -v label="$1" '
+        /^- \[[ xX]\] / {
+            s = substr($0, 7)
+            if (index(s, label) == 1 && (length(s) == length(label) || substr(s, length(label) + 1, 1) == "（")) {
+                print substr($0, 4, 1); exit
+            }
+        }' "$PLAN_FILE"
+}
+
+if [ -f "$PLAN_DIR/plan-state.json" ]; then
+    if [ ! -f "$PLANCTL" ]; then
+        echo "[state-consistency] ✗ FAIL: plan-state.json 存在但 planctl.py 缺失（JSON 权威源不可读，禁回退 MD）" >&2
+        exit 1
+    fi
+    _tc_err_file="$(mktemp "${TMPDIR:-/tmp}/state-consistency-tc.XXXXXX")"
+    _tc_json="$(python3 "$PLANCTL" get --plan-dir "$PLAN_DIR" --section template_checks 2>"$_tc_err_file")"
+    _tc_rc=$?
+    if [ "$_tc_rc" -ne 0 ]; then
+        printf '[state-consistency] ✗ FAIL: planctl get template_checks rc=%d: %s\n' "$_tc_rc" "$(<"$_tc_err_file")" >&2
+        rm -f "$_tc_err_file"
+        exit 1
+    fi
+    rm -f "$_tc_err_file"
+    # JSON -> TSV: id<TAB>text<TAB>checked(0/1)；解析异常 fail-closed，不吞错。
+    JSON_CHECK_ROWS="$(printf '%s' "$_tc_json" | python3 -c '
+import json, sys
+try:
+    arr = json.load(sys.stdin)
+except Exception as exc:
+    print(f"template_checks JSON 解析失败: {exc}", file=sys.stderr)
+    sys.exit(2)
+if arr is None:
+    arr = []
+if not isinstance(arr, list):
+    print("template_checks 必须是 array", file=sys.stderr)
+    sys.exit(2)
+for c in arr:
+    if not isinstance(c, dict):
+        continue
+    cid = str(c.get("id") or "")
+    txt = str(c.get("text") or "")
+    if not cid and not txt:
+        continue
+    print("%s\t%s\t%d" % (cid, txt, 1 if c.get("checked") is True else 0))
+')"
+    _tc_parse_rc=$?
+    if [ "$_tc_parse_rc" -ne 0 ]; then
+        echo "[state-consistency] ✗ FAIL: template_checks 权威源解析失败 rc=$_tc_parse_rc（禁回退 MD）" >&2
+        exit 1
+    fi
+fi
+
+if [ -n "$JSON_CHECK_ROWS" ]; then
+    while IFS=$'\t' read -r _cid _text _want; do
+        [ -n "${_cid:-}${_text:-}" ] || continue
+        _mark="$(_md_check_mark "$_text")"
+        if [ -z "$_mark" ] && [ -n "$_cid" ] && [ "$_cid" != "$_text" ]; then
+            _mark="$(_md_check_mark "$_cid")"
+        fi
+        if [ -z "$_mark" ]; then
+            printf '[state-consistency] ⚠ JSON check %s 在 task_plan.md 无对应勾选行（先 planctl render）；本条跳过\n' "$_cid" >&2
+            continue
+        fi
+        _actual=0; [ "$_mark" = "x" ] || [ "$_mark" = "X" ] && _actual=1
+        if [ "$_actual" -ne "$_want" ]; then
+            printf '[state-mismatch] S-3 check %s: JSON checked=%s 但 task_plan.md 勾态=[%s]（手改派生视图无效；用 planctl set checked + render 改权威源）\n' \
+                "$_cid" "$_want" "$_mark"
+            JSON_CHECK_FAIL=1
+        fi
+    done <<< "$JSON_CHECK_ROWS"
+fi
+
 # ── 解析 task_plan.md: 每 Phase 段输出 "P<TAB>name<TAB>un<TAB>ck<TAB>status" ──
 # 段边界 = 下一 `###`(非 Phase)/`## `/`---`；checkbox 行 `- [ ]`/`- [x]`/`- [X]` 计数，
 # `**Status:**` 取段内首个值（段内应恰一行；多行取最后，口径宽松不误伤）。
@@ -78,8 +166,13 @@ PLAN_ROWS="$(awk '
     END { emit() }
 ' "$PLAN_FILE" 2>/dev/null)"
 
-# 无任何 Phase 段 → 无可判定面 fail-open（同 check-complete.sh No phases 语义）
+# 无任何 Phase 段 → 三源判定 fail-open（同 check-complete.sh No phases 语义）；
+# 但 P4 JSON 勾态不变量不受此豁免——已发现的 S-3 必须照常 fail-closed。
 if [ -z "$PLAN_ROWS" ]; then
+    if [ "$JSON_CHECK_FAIL" -eq 1 ]; then
+        echo "[state-consistency] ✗ FAIL — JSON 权威勾选与渲染视图不一致（S-3；无 Phase 段不影响本判定）"
+        exit 1
+    fi
     echo "[state-consistency] PASS (fail-open: task_plan.md 无 `### Phase` 段)"
     exit 0
 fi
@@ -133,9 +226,9 @@ while IFS=$'\t' read -r _tag pname pun pck pstat; do
     fi
 done <<< "$PLAN_ROWS"
 
-if [ "$MISMATCHES" -eq 1 ]; then
-    echo "[state-consistency] ✗ FAIL — 计划状态三源不一致（上方 [state-mismatch] 逐条: 回填证据 / 翻转 Status / 补 progress 完成证据后重跑）"
+if [ "$MISMATCHES" -eq 1 ] || [ "$JSON_CHECK_FAIL" -eq 1 ]; then
+    echo "[state-consistency] ✗ FAIL — 计划状态三源/JSON 勾选不一致（上方 [state-mismatch] 逐条: 回填证据 / 翻转 Status / 补 progress 完成证据 / planctl set+render 修勾选后重跑）"
     exit 1
 fi
-echo "[state-consistency] PASS — 三源一致（checkbox↔Status↔progress）"
+echo "[state-consistency] PASS — 三源一致（checkbox↔Status↔progress；JSON 权威勾选一致）"
 exit 0

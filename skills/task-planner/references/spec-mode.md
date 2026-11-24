@@ -9,7 +9,7 @@
 
 **运行时判定（2026-11-24 方案A/H2）**：本节路由表（含 §1b 决策表）是 `scripts/check-spec-route.sh` 判定「应路由技能族」的**唯一事实源**；脚本运行时只解析本表的文本行，**不在运行时另立规则、不内联技能内容（R6）**。表若改，脚本判定随之改，两者不得分叉。
 - **两级判定时序**（避免与 B13 职能重叠）：
-  1. **init 期 tier 粗筛**：`planctl.py` 的 `cmd_init`（`add_cmd("init", ...)`）只能消费 `task_id/tier/lane/template_body`，**拿不到需求特征** → 用 `bash <skill>/scripts/check-spec-route.sh --tier <L0|L1|L2|L2+> [--no-dry-run --receipt-file <plan-dir>/route-receipts.jsonl]` 产出**初判收据**（只分档到族：不路由 / Superpowers 嵌入 / OpenSpec 移交）。
+  1. **init 期 tier 粗筛**：`planctl.py` 的 `cmd_init`（`add_cmd("init", ...)`）只能消费 `task_id/tier/lane/template_json`（旧 `template_body` 仅旧计划兼容、deprecated），**拿不到需求特征** → 用 `bash <skill>/scripts/check-spec-route.sh --tier <L0|L1|L2|L2+> [--no-dry-run --receipt-file <plan-dir>/route-receipts.jsonl]` 产出**初判收据**（只分档到族：不路由 / Superpowers 嵌入 / OpenSpec 移交）；模板权威源为 `templates/json/*.template.json`，落在 `plan-state.json` 的 `template_doc/template_checks`，`task_plan.md` 为 render 派生视图。
   2. **需求特征级终判（B13 基线组执行期）**：需求已产出后，用 `bash <skill>/scripts/check-spec-route.sh --feature <特征[,特征...]> --no-dry-run --receipt-file <plan-dir>/route-receipts.jsonl` 读取本节表产出**终判收据**（落到具体技能：brainstorming / openspec-propose / systematic-debugging 等），由 B13 基线组消费并纳入 fail-closed 门（见 `todo-sync.md` §3 B13）。两级分级互补、初判不得顶替终判。
 - **探针与可观测状态**：脚本内含可移植 OpenSpec CLI 探针（`$(npm config get prefix)/bin/openspec` → `command -v openspec` → 本机观测路径兜底；不改 `~/.bashrc`、不硬编码单一路径）。失败显式记 `unavailable(不可接管)`；`--probe` 可单独输出 SP/OS 到达状态供 B12 消费，`--require-cli` 下探针失败 rc=3。
 

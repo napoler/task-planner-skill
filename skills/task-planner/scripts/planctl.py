@@ -40,6 +40,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SKILL_DIR = SCRIPT_DIR.parent
 SCHEMA_PATH = SKILL_DIR / "schemas" / "plan-state.schema.json"
 TEMPLATE_PATH = SKILL_DIR / "templates" / "plan-state.json"
+# [2026-11-25 task-json-template P1] 仓库根（scripts → task-planner → skills → repo），用于 template_ref 相对化。
+REPO_ROOT = SCRIPT_DIR.parents[2]
 
 STATE_NAME = "plan-state.json"
 HISTORY_DIR = ".history"
@@ -59,6 +61,9 @@ ARRAY_SECTIONS = (
     "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
     "anti_regress", "fmea", "todo_sync", "key_questions",
     "phase_gates", "knowledge_compliance", "cross_checks",
+    # [2026-11-25 task-json-template P1] What: template_checks 纳入通用数组段（set/get/update/delete/tag-add 自动可用）。
+    # Why: 勾选需唯一权威入口，复用现有 CRUD 引擎而非另造编辑面；template_doc/template_ref 是顶层对象/字符串。
+    "template_checks",
     # [2026-11-25 task-output-example-contract] What: Rule 113 输出示例契约段（完整示例+可复用模板的结构化承载位）。
     # Why: 原计划只有 criterion/command/evidence 的「可验证」契约，缺「可模仿」的产出形态；
     #      用户投诉「说输出 JSON 却不给 JSON 实例」即由此漏检。
@@ -83,7 +88,7 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
     "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
     "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
-    "template_type", "template_body", "next_step",
+    "template_type", "template_ref", "template_doc", "template_checks", "template_body", "next_step",
 )
 TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 
@@ -142,6 +147,10 @@ ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "phase_gates": {"goal": "", "depends": [], "done_when": "", "checks": [], "status": ""},
     "knowledge_compliance": {"item": "", "status": ""},
     "cross_checks": {"item": "", "method": "", "result": ""},
+    # [2026-11-25 task-json-template P1] What: 结构化勾选条目默认面；checked 为 bool（非字符串），
+    # Why: normalize_entry 经通用 add/update 补默认后须直接通过 _validate_entry/schema 校验。
+    "template_checks": {"section": "", "block": "", "text": "", "checked": False,
+                        "note": "", "tags": []},
     # [2026-11-25 task-output-example-contract] Rule 113 条目默认面：身份 id 强制，其余按 schema required 补齐。
     # Why: 默认面让字段名齐全；vc_refs 仍须显式给 ≥1 个 VC（Rule 113.4），空引用由 _validate_entry 拒绝。
     "output_examples": {"deliverable": "", "format": "", "example": "", "template": "", "vc_refs": [], "tags": []},
@@ -188,6 +197,12 @@ OBJECT_FIELD_SPECS: dict[str, tuple[set[str], dict[str, Callable[[Any], bool]], 
     "chain": (set(), {k: STR_FIELD for k in ("mode", "blocks", "handoffs")}, False),
     "quality_gates": (set(), {"delegation_reverify": STR_FIELD, "quality_control": STR_FIELD}, False),
     "outcome": ({"result"}, {"result": STR_FIELD, "blocked_reason": STR_FIELD}, False),
+    # [2026-11-25 task-json-template P1] What: template_doc 顶层对象最小校验（深校验见 _validate_template_doc）。
+    # Why: jsonschema 是可选依赖，手写校验必须独立拦住坏 meta/sections；其余字段允许扩展。
+    "template_doc": ({"schema_version", "meta", "sections"},
+                     {"schema_version": lambda v: isinstance(v, int) and not isinstance(v, bool) and v == 1,
+                      "meta": lambda v: isinstance(v, dict),
+                      "sections": lambda v: isinstance(v, list)}, True),
 }
 
 
@@ -460,6 +475,62 @@ def _is_iso8601(value: Any, *, allow_empty: bool = True) -> bool:
     return bool(_ISO_RE.match(value))
 
 
+def _validate_template_doc(value: Any, where: str, errs: list[str]) -> None:
+    """深校验 template_doc 的 sections/blocks/checklist items（与 schema 定义等价的手写判定面）。
+
+    [2026-11-25 task-json-template P1] What: 校验 section.id/anchor/kind、block.kind 与
+      checklist item.id/checked 的类型；其余字段一律放行（契约「其余字段允许」）。
+    Why: jsonschema 是可选依赖且 schema 对 block 采用宽松 additionalProperties，坏模板若不在
+      init/set 时被拦住，会在 render 阶段才炸或渲染出错位勾选项；fail-loud 前置到写入口。
+    """
+    if not isinstance(value, dict):
+        errs.append(f"{where}: 必须是 object")
+        return
+    sections = value.get("sections")
+    if not isinstance(sections, list):
+        errs.append(f"{where}.sections: 必须是 array")
+        return
+    for si, section in enumerate(sections):
+        sp = f"{where}.sections[{si}]"
+        if not isinstance(section, dict):
+            errs.append(f"{sp}: 必须是 object")
+            continue
+        for key in ("id", "anchor"):
+            if not STR_FIELD(section.get(key)) or not section[key]:
+                errs.append(f"{sp}.{key}: 值非法（{section.get(key)!r}）")
+        if section.get("kind") not in ("ref", "blocks"):
+            errs.append(f"{sp}.kind: 值非法（{section.get('kind')!r}，须 ref|blocks）")
+        blocks = section.get("blocks", [])
+        if not isinstance(blocks, list):
+            errs.append(f"{sp}.blocks: 必须是 array")
+            continue
+        for bi, block in enumerate(blocks):
+            bp = f"{sp}.blocks[{bi}]"
+            if not isinstance(block, dict):
+                errs.append(f"{bp}: 必须是 object")
+                continue
+            kind = block.get("kind")
+            if kind not in ("markdown", "checklist", "table", "raw"):
+                errs.append(f"{bp}.kind: 值非法（{kind!r}，须 markdown|checklist|table|raw）")
+                continue
+            if kind != "checklist":
+                continue
+            items = block.get("items", [])
+            if not isinstance(items, list):
+                errs.append(f"{bp}.items: 必须是 array")
+                continue
+            for ii, item in enumerate(items):
+                ip = f"{bp}.items[{ii}]"
+                if not isinstance(item, dict):
+                    errs.append(f"{ip}: 必须是 object")
+                    continue
+                if not STR_FIELD(item.get("id")) or not item["id"]:
+                    errs.append(f"{ip}.id: 必须是非空字符串")
+                # 与 schema 的 required [id, checked] 对齐：缺 checked 也拒，避免到 commit 才失败。
+                if "checked" not in item or not isinstance(item["checked"], bool):
+                    errs.append(f"{ip}.checked: 必须是 bool（{item.get('checked')!r}）")
+
+
 def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> None:
     """对单个数组条目做与 plan-state.schema.json 等价的类型/枚举/必填校验。"""
     if not isinstance(entry, dict):
@@ -597,6 +668,9 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({k: STR_FIELD for k in ("phase", "name", "executor", "files", "actions",
                                               "verify", "duration", "granularity", "parallel")})
         known["escort_skills"] = STR_LIST_FIELD
+        # [2026-11-25 task-json-template P1] What: s_units 可选 status 纳入写入面。
+        # Why: render 第 10 列状态改由本字段派生，若不登记则 set --field status 被当作未知字段拒绝。
+        known["status"] = STR_FIELD
         required = {"id", "phase", "name"}
     elif section == "anti_regress":
         known.update({k: STR_FIELD for k in ("item", "method", "anchor", "result")})
@@ -622,6 +696,13 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
     elif section == "cross_checks":
         known.update({"item": STR_FIELD, "method": STR_FIELD, "result": STR_FIELD})
         required = {"id", "item", "method"}
+    elif section == "template_checks":
+        # [2026-11-25 task-json-template P1] What: 勾选条目 checked 严格 bool（字符串 "true" 拒收）。
+        # Why: CLI --value true 经 coerce_value 已转 bool；若放字符串会让 render 把 "false" 判成真。
+        known.update({"section": STR_FIELD, "block": STR_FIELD, "text": STR_FIELD,
+                      "note": STR_FIELD, "tags": STR_LIST_FIELD,
+                      "checked": lambda v: isinstance(v, bool)})
+        required = {"id", "checked"}
     elif section == "output_examples":
         # [2026-11-25 task-output-example-contract] Rule 113 条目校验（与 schema definitions.output_example_item 等价）。
         # Why: 原行为本段不在手工字段表，通用 add 写出 example/template/vc_refs 被误判「未知字段」而拒绝。
@@ -668,7 +749,8 @@ def validate_state(doc: Any) -> list[str]:
         "tags": lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v),
         # [2026-11-22 task-jsonderive-deploy-20261122] 新标量：原行为无此字段，按自由文本校验。
         "template_type": STR_FIELD,
-        # [2026-11-22 task-template-json-compat-20261122] 领域模板正文=自由文本，存量 JSON 无此字段不校验。
+        # [2026-11-25 task-json-template P1] JSON 模板路径=自由文本；template_body 降级 deprecated 但保留兼容。
+        "template_ref": STR_FIELD,
         "template_body": STR_FIELD,
         "next_step": STR_FIELD,
     }
@@ -697,6 +779,10 @@ def validate_state(doc: Any) -> list[str]:
             for key in value:
                 if key not in obj_props:
                     errs.append(f"$.{field}: 未知字段 {key}")
+
+    # [2026-11-25 task-json-template P1] template_doc 深校验只在此处做一次，写入/回读共用同一判定面。
+    if "template_doc" in doc:
+        _validate_template_doc(doc["template_doc"], "$.template_doc", errs)
 
     for section in ARRAY_SECTIONS:
         if section in doc:
@@ -828,6 +914,87 @@ def read_tag_index(plan_dir: Path) -> dict[str, list[str]]:
 # 子命令实现
 # ─────────────────────────────────────────────────────────────────────────────
 
+# [2026-11-25 task-json-template P1] JSON 原生模板加载：只读、fail-loud、不改模板源文件。
+# What: template_ref 用仓库内相对路径（跨仓/仓外保留传入原路径）；template_doc 只取 meta+sections；
+#       template_checks 由所有 checklist blocks 扁平化，id 重复即拒绝。
+# Why: 勾选只能有一处权威源（JSON），MD 勾选是渲染派生；init 若静默跳过重复 id 会让后续 set/get
+#       定位歧义，故此处显式报错而不是"最后一条覆盖"。
+def _template_ref_for(path: str) -> str:
+    """把模板路径转成相对仓库根的路径；不在仓库内则原样返回传入路径。"""
+    p = Path(path)
+    absolute = p if p.is_absolute() else Path.cwd() / p
+    try:
+        return str(absolute.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return path
+
+
+def _flatten_template_checks(sections: list[Any]) -> list[dict[str, Any]]:
+    """从 template_doc.sections 的所有 checklist blocks 扁平化为 template_checks 条目。"""
+    checks: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for section in sections:
+        if not isinstance(section, dict):
+            raise PlanctlError("模板 sections 条目必须是 object")
+        sec_id = str(section.get("id", ""))
+        blocks = section.get("blocks", [])
+        if not isinstance(blocks, list):
+            raise PlanctlError(f"模板 section {sec_id!r} 的 blocks 必须是 array")
+        for block in blocks:
+            if not isinstance(block, dict):
+                raise PlanctlError(f"模板 section {sec_id!r} 的 block 必须是 object")
+            if block.get("kind") != "checklist":
+                continue
+            block_id = str(block.get("id", ""))
+            items = block.get("items", [])
+            if not isinstance(items, list):
+                raise PlanctlError(f"模板 checklist {sec_id}/{block_id} 的 items 必须是 array")
+            for item in items:
+                if not isinstance(item, dict) or not STR_FIELD(item.get("id")) or not item["id"]:
+                    raise PlanctlError(f"模板 checklist {sec_id}/{block_id} 的 item 缺合法 id: {item!r}")
+                cid = str(item["id"])
+                if cid in seen:
+                    raise PlanctlError(f"--template-json checklist id 重复: {cid}（section={sec_id}, block={block_id}）")
+                seen.add(cid)
+                checked = item.get("checked", False)
+                if not isinstance(checked, bool):
+                    raise PlanctlError(f"模板 checklist item {cid} 的 checked 必须是 bool（{checked!r}）")
+                tags = item.get("tags", [])
+                if not isinstance(tags, list) or not all(isinstance(t, str) for t in tags):
+                    raise PlanctlError(f"模板 checklist item {cid} 的 tags 必须是字符串数组")
+                checks.append({"id": cid, "section": sec_id, "block": block_id,
+                               "text": str(item.get("text", "")), "checked": checked,
+                               "note": str(item.get("note", "")), "tags": copy.deepcopy(tags)})
+    return checks
+
+
+def _load_template_json(path: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """读取 JSON 模板，返回 (template_doc 载荷, template_checks)；任何结构错误都抛 PlanctlError。"""
+    p = Path(path)
+    if not p.is_file():
+        raise PlanctlError(f"--template-json 指向的文件不存在: {path}")
+    try:
+        tpl = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise PlanctlError(f"--template-json 读取/解析失败: {path}: {exc}") from exc
+    if not isinstance(tpl, dict):
+        raise PlanctlError("--template-json 顶层必须是 object")
+    version = tpl.get("schema_version", 1)
+    if not isinstance(version, int) or isinstance(version, bool) or version != 1:
+        raise PlanctlError(f"--template-json schema_version 必须为 1（实际 {version!r}）")
+    meta = tpl.get("meta")
+    sections = tpl.get("sections")
+    if not isinstance(meta, dict) or not isinstance(sections, list):
+        raise PlanctlError("--template-json 必须含 object meta 与 array sections")
+    template_doc = {"schema_version": version, "meta": copy.deepcopy(meta),
+                    "sections": copy.deepcopy(sections)}
+    errs: list[str] = []
+    _validate_template_doc(template_doc, "$.template_doc", errs)
+    if errs:
+        raise PlanctlError("--template-json 结构非法: " + " | ".join(errs[:8]))
+    return template_doc, _flatten_template_checks(sections)
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     """从模板生成权威源；task_id/tier/lane 覆盖模板占位，时间戳填当前 UTC。"""
     plan = check_plan_dir(args.plan_dir)
@@ -844,14 +1011,23 @@ def cmd_init(args: argparse.Namespace) -> int:
         doc["execution_lane"] = args.lane
     doc["created_at"] = now_iso()
     doc["updated_at"] = doc["created_at"]
-    # [2026-11-22 task-template-json-compat-20261122] 领域段 JSON 承载：init 时把所选模板正文
-    #   原文写入 template_body（写操作仍走 planctl 单一入口）；路径不存在/读失败 fail-loud，
-    #   未传该参数则字段缺省（存量与 mini 档兼容）。
+    # [2026-11-25 task-json-template P1] JSON 原生模板：init 落 template_ref/template_doc/template_checks，
+    #   render 从 JSON 派生领域段与勾选；不再写 template_body，避免勾选双源。
+    # [2026-11-22 task-template-json-compat-20261122] 旧 --template-body-from 保留给存量流程（deprecated）。
+    tj_from = getattr(args, "template_json", None)
     tb_from = getattr(args, "template_body_from", None)
-    if tb_from:
+    if tj_from and tb_from:
+        raise PlanctlError("不得同时传 --template-json 与已废弃的 --template-body-from（避免勾选双源）")
+    if tj_from:
+        template_doc, checks = _load_template_json(tj_from)
+        doc["template_ref"] = _template_ref_for(tj_from)
+        doc["template_doc"] = template_doc
+        doc["template_checks"] = checks
+    elif tb_from:
         _tb = Path(tb_from)
         if not _tb.is_file():
             raise PlanctlError(f"--template-body-from 指向的文件不存在: {tb_from}")
+        # DEPRECATED（2026-11-25 P1）：仅供无 JSON 模板的旧流程，新计划请传 --template-json。
         doc["template_body"] = _tb.read_text(encoding="utf-8")
     commit_state(plan, doc, backup=False, touch=False)
     emit({"state": str(dest), "task_id": doc["task_id"], "plan_tier": doc["plan_tier"],
@@ -865,7 +1041,12 @@ def cmd_get(args: argparse.Namespace) -> int:
     if not args.section:
         out: Any = doc
     elif args.section in ("tags", *ARRAY_SECTIONS):
-        out = doc[args.section]
+        # [2026-11-25 task-json-template P4] What: 可选数组段（template_checks）缺省时输出 []，
+        #   而非 KeyError traceback（cmd_get 数组分支先于 TOP_LEVEL_KEYS 分支命中）。
+        # Why: P4 门控统一用 `get --section template_checks` 判定「有无结构化勾选」；存量计划
+        #   无该段是合法状态（OPTIONAL_TOP_LEVEL_KEYS），必须给稳定空标记才能走 MD 回退，
+        #   不得靠异常/2>/dev/null 掩盖。必填数组段（vcs 等）在合法 state 中恒存在，零行为变化。
+        out = doc.get(args.section, [])
         if args.id:
             if args.section == "tags":
                 out = next((t for t in out if t == args.id), None)
@@ -1517,6 +1698,86 @@ SUNIT_HEADERS = ["ID", "目标(≤1 句)", "执行体(subagent_type(model))",
 _EMPTY = "（本任务暂无%s）"
 
 
+# [2026-11-25 task-json-template P1] JSON 原生模板派生渲染：核心段仍由既有代码生成，
+# 模板 kind=blocks 的锚段在核心段之后按序追加。勾选只读 template_checks（MD 勾选不回读），
+# 彻底消除「MD 手改勾选」与 JSON 双源漂移。
+def _template_check_index(doc: dict[str, Any]) -> tuple[dict[tuple[str, str, str], dict[str, Any]],
+                                                        dict[str, dict[str, Any]]]:
+    """构造 (section, block, id) → 勾选条目 索引，以及 id → 条目 的单键兜底索引。"""
+    by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
+    by_id: dict[str, dict[str, Any]] = {}
+    for check in _arr(doc, "template_checks"):
+        if not isinstance(check, dict):
+            continue
+        cid = str(check.get("id", ""))
+        if not cid:
+            continue
+        by_key[(str(check.get("section", "")), str(check.get("block", "")), cid)] = check
+        by_id.setdefault(cid, check)
+    return by_key, by_id
+
+
+def _render_template_block(section: dict[str, Any], block: dict[str, Any],
+                           by_key: dict[tuple[str, str, str], dict[str, Any]],
+                           by_id: dict[str, dict[str, Any]]) -> list[str]:
+    """把单个模板块渲染为 MD 行；checklist 的 checked 从 JSON 索引取（不读 MD 勾选）。"""
+    kind = block.get("kind")
+    if kind in ("markdown", "raw"):
+        return str(block.get("text", "")).splitlines()
+    if kind == "table":
+        # [2026-11-25 task-json-template] header=columns 兼容：to-json 转换器从 MD 表头
+        # 产出 header 字段，渲染器原仅认 columns，导致领域表被渲染成空段。
+        columns = block.get("columns") or block.get("header")
+        rows = block.get("rows")
+        if not isinstance(columns, list) or not isinstance(rows, list):
+            return [str(block.get("text", ""))]
+        names = [str(c) for c in columns]
+        normalized = [[_cell(r.get(c, "")) for c in names] if isinstance(r, dict)
+                      else [_cell(c) for c in r] for r in rows]
+        return [_md_table(names, normalized)]
+    if kind == "checklist":
+        sec_id, block_id = str(section.get("id", "")), str(block.get("id", ""))
+        out: list[str] = []
+        items = block.get("items")
+        if not isinstance(items, list):
+            return out
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            cid = str(item.get("id", ""))
+            check = by_key.get((sec_id, block_id, cid)) or by_id.get(cid)
+            # 缺登记时退回模板项自身的初始 checked（init 时与 JSON 一致）；绝不解析 MD 勾选。
+            source = check if check is not None else item
+            mark = "x" if source.get("checked") is True else " "
+            text = _cell(source.get("text", item.get("text", "")))
+            note = _cell(source.get("note", item.get("note", "")))
+            out.append(f"- [{mark}] {text}" + (f"（{note}）" if note else ""))
+        return out
+    return []
+
+
+def _append_template_sections(doc: dict[str, Any], lines: list[str]) -> None:
+    """在核心段之后按 template_doc.sections 顺序追加 kind=blocks 的锚段；mini 档豁免。"""
+    tpl = _obj(doc, "template_doc")
+    if not tpl or doc.get("plan_tier") == "mini":
+        return
+    sections = tpl.get("sections")
+    if not isinstance(sections, list):
+        return
+    by_key, by_id = _template_check_index(doc)
+    for section in sections:
+        if not isinstance(section, dict) or section.get("kind") != "blocks":
+            continue
+        anchor = str(section.get("anchor", "")).strip().lstrip("#").strip()
+        lines += ["", f"## {anchor or section.get('id', '')}"]
+        blocks = section.get("blocks")
+        if not isinstance(blocks, list):
+            continue
+        for block in blocks:
+            if isinstance(block, dict):
+                lines.extend(_render_template_block(section, block, by_key, by_id))
+
+
 def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                       top_tags: str, idx: dict[str, list[str]]) -> str:
     """重建 task_plan.md：恒输出 Requirements/Goals/Phases/R→VC/VC，其余段按数据在位追加。
@@ -1645,10 +1906,13 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                 _escort = _cell(s.get("escort_skills", "")).strip() or "无"
                 _parallel = _cell(s.get("parallel", "")).strip()
                 _deps = f"- [parallel-group:{_parallel}]" if _parallel else "-"
+                # [2026-11-25 task-json-template P1] What: S-unit 第 10 列状态由 s_units[].status 派生，
+                # Why: 原恒写 pending 使 JSON 中 pass/in_progress 状态在视图里永远不可见；缺省仍 pending。
+                _su_status = _cell(s.get("status") or "pending")
                 su_rows.append([_cell(s.get("id", "")), goal, _cell(s.get("executor", "")),
                                 _cell(s.get("files", "")), _cell(s.get("verify", "")),
                                 _cell(s.get("duration", "")), _cell(s.get("granularity", "")),
-                                _escort, _deps, "pending"])
+                                _escort, _deps, _su_status])
             _pno = _phase_no(p.get("id"))
             lines += ["", f"### Phase {_pno}: {_cell(p.get('name', ''))}".rstrip(),
                       f"- **Status:** {_cell(p.get('status', 'pending'))}",
@@ -1658,8 +1922,15 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
             #   VC-GATE 按 `^- \[[ xX]\] V-<P号>.<N>\s*[:：]` 计数且校验 VC-x ∈ VC 定义集）；
             #   数据源=phases[].v_checks（JSON 已有）。无 v_checks 时不输出（门按缺映射判缺口，
             #   与旧行为一致，不开逃生口）。P 号必须与 Phase 标题一致，否则门 Skipped。
+            # [2026-11-25 task-json-template P1] What: V-N 映射 checkbox 由对应 vcs[].status 派生
+            #   （pass→[x]；pending/fail→[ ]）；找不到对应 VC 时保持旧 [x] 兼容存量计划。
+            # Why: 原恒写 [x] 使未验证 VC 在 task_plan.md 显示为已通过，check-complete 的 VC-GATE
+            #   只数映射行不验真实状态，形成假绿；勾选唯一权威源是 JSON 的 vcs[].status。
+            _vc_by_id = {str(v.get("id")): v for v in _arr(doc, "vcs") if isinstance(v, dict)}
             for _vni, _vcid in enumerate(p.get("v_checks", []) or [], 1):
-                lines.append(f"- [x] V-{_pno}.{_vni}: {_cell(_vcid)}（Phase {_pno} 验证契约映射）")
+                _vc_entry = _vc_by_id.get(str(_vcid))
+                _vc_mark = "x" if _vc_entry is None or _vc_entry.get("status") == "pass" else " "
+                lines.append(f"- [{_vc_mark}] V-{_pno}.{_vni}: {_cell(_vcid)}（Phase {_pno} 验证契约映射）")
             if su_rows:
                 lines += [_md_table(SUNIT_HEADERS, su_rows)]
 
@@ -1824,11 +2095,14 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
         lines += ["", "## 🔗 Chain 区块交接配置",
                   _kv_table(chain, ("mode", "blocks", "handoffs"), ("chain_mode", "blocks", "handoffs"))]
 
-    # [2026-11-22 task-template-json-compat-20261122] 领域段 JSON 承载：init 把所选 variant
-    #   模板正文原文写入 template_body，render 以附录吐出，弥补全量覆盖抹掉领域段（video 任务分型/
-    #   子代理隔离铁律等）。标题降级 `^(#+ )`→`> \1`：附录内标题不以 `^## ` 开头，避免与权威
-    #   51.1/66.5 锚竞争导致误判；内容原样保留，仅加引用前缀。mini 档豁免（极简 stub 无领域段）。
-    if doc.get("template_body") and doc.get("plan_tier") != "mini":
+    # [2026-11-25 task-json-template P1] 核心段之后按序追加 JSON 模板 blocks 段（勾选派生自
+    #   template_checks）；有 template_doc 即新计划，不再吐旧 template_body 附录，避免双源。
+    _append_template_sections(doc, lines)
+
+    # [2026-11-22 task-template-json-compat-20261122] 兼容兜底：仅无 template_doc 的旧计划
+    #   才把 template_body 原文以附录吐出（标题降级 `^(#+ )`→`> \1` 避免与权威 51.1/66.5 锚竞争）。
+    # [2026-11-25 P1] 加 `not template_doc` 门：新计划禁用该附录，mini 档仍豁免复杂段。
+    if not _obj(doc, "template_doc") and doc.get("template_body") and doc.get("plan_tier") != "mini":
         _tb_lines = []
         for _ln in str(doc["template_body"]).splitlines():
             _tb_lines.append(re.sub(r"^(#+ )", r"> \1", _ln) if re.match(r"^#+ ", _ln) else _ln)
@@ -2357,8 +2631,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--tier", choices=("standard", "mini"))
     p.add_argument("--lane", choices=("L0", "L0-T", "L0-E", "L1", "L2"))
     p.add_argument("--force", action="store_true", help="允许覆盖已有状态（谨慎）")
+    # [2026-11-25 task-json-template P1] 新入口：结构化 JSON 模板（唯一勾选源）；旧参数保留但 deprecated。
+    p.add_argument("--template-json", metavar="FILE",
+                   help="可选：读取 JSON 原生模板，写 template_ref/template_doc/template_checks（推荐；勾选唯一权威源）")
     p.add_argument("--template-body-from", metavar="FILE",
-                   help="可选：读取该文件全文写入 template_body（init 所选 variant 模板正文，供 render 领域附录消费）")
+                   help="DEPRECATED：读取该文件全文写入 template_body（仅供旧计划兼容，勿与 --template-json 同传）")
 
     p = add_cmd("get", "输出整份/某段/某条目 JSON", cmd_get)
     # [2026-11-22 task-jsonderive-deploy-20261122] choices 扩到顶层全集，使新对象/标量字段可读。

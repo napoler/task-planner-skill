@@ -67,8 +67,15 @@ fi
 # Why: 外契约（路径 + [vc-nonvacuous] 前缀 + rc）被 attest-plan.sh / check-complete.sh 消费，
 #      不可改；JSON 化后判定权威源迁到 planctl，双读让存量计划零改动继续通过。
 # 诊断透传: 命令替换只接 stdout，planctl stderr 原样继承（check-complete.sh 明令禁 2>/dev/null）。
+# [2026-11-25 task-json-template P4] JSON-first 收敛: 仅「无 plan-state.json」才回退下方正则；
+# JSON 在而 planctl 缺失 = 输入异常 rc 2（fail-loud，禁静默回退 MD 重开绕过面）。
 SHIM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$PLAN_DIR/plan-state.json" ] && [ -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+if [ -f "$PLAN_DIR/plan-state.json" ]; then
+    if [ ! -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+        printf '[vc-nonvacuous] ERROR: plan-state.json 存在但 planctl.py 缺失（JSON 权威源不可读，禁回退 MD）: %s\n' \
+            "$SHIM_SCRIPT_DIR/planctl.py" >&2
+        exit 2
+    fi
     _pc_out="$(python3 "$SHIM_SCRIPT_DIR/planctl.py" check vc-nonvacuous --plan-dir "$PLAN_DIR")"
     _pc_rc=$?
     _pc_reason="${_pc_out#PLANCTL CHECK vc-nonvacuous: PASS }"

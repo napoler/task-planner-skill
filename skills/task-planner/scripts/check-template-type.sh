@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # [2026-09-15 task-v074 Rule 34] check-template-type.sh — 模板选取门控 (Rule 34.1)
-# 校验 task_plan.md 的 template_type ∈ 白名单(动态派生, 无硬编码副本):
-#   白名单 = general(恒合法) + templates/variant/*-type.md 派生的类型名
+# [2026-11-25 task-json-template P5] JSON 原生模板纳入白名单：
+#   白名单 = general(恒合法) + templates/json/*.template.json 派生的类型名 + templates/variant/*-type.md（旧 MD 兼容）
+# WHY: P1/P3 已切 JSON 模板为源；门控若只认 MD 会把 JSON-only 类型误判为非法。
 # 提取顺序: frontmatter `^template_type:` → 表格行 `| template_type |` 第二列 → HTML 注释 `<!-- template_type: X -->`（task-v086 S7-1: mini-lite/init frontmatter 插入产物为注释形态, 第三形态补齐否则 gate 视角=缺失, enforce 档拒锁）
+#   [2026-11-25 P5] → 第四形态：同目录 plan-state.json 的 template_type / template_ref（JSON 模板为源时 render 视图可能不带 MD 标记，缺此回退=误判失败）
 # Usage: check-template-type.sh <task_plan.md>
 # exit: 0=合法 1=缺失/非法/文件不存在 2=用法错误
 set -u
@@ -12,9 +14,14 @@ plan_file="$1"
 [ -f "$plan_file" ] || { echo "[template-gate] INVALID: 文件不存在: $plan_file" >&2; exit 1; }
 
 SKILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# 白名单动态派生: general + variant 目录 <type>-type.md 去后缀 (Rule 34.1 禁硬编码副本)
+# 白名单动态派生: general + json 目录 <type>.template.json 去后缀 + variant 目录 <type>-type.md 去后缀 (Rule 34.1 禁硬编码副本)
+# task_plan.template.json 的 meta.template_type=general，按文件名映射会多出 task_plan；显式剔除，general 已恒合法。
 # tr '\n' ' ' 保证 VALID 单行, 供 grep 匹配
-VALID="general $(ls "$SKILL_ROOT/templates/variant/"*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
+VALID="$( { ls "$SKILL_ROOT/templates/json/"*.template.json 2>/dev/null || true; \
+            ls "$SKILL_ROOT/templates/variant/"*-type.md 2>/dev/null || true; } \
+          | sed 's/.*\///;s/\.template\.json$//;s/-type\.md$//' \
+          | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
+VALID="general $VALID"
 VALID="$(printf '%s' "$VALID" | tr -s ' ')"
 
 tt="$(grep -m1 '^template_type:' "$plan_file" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"
@@ -29,12 +36,29 @@ if [ -z "$tt" ]; then
   tt="$(grep -m1 -oE '<!--[[:space:]]*template_type:[[:space:]]*[A-Za-z0-9-]+' "$plan_file" 2>/dev/null | sed 's/.*template_type:[[:space:]]*//')"
 fi
 
+# [2026-11-25 P5] 第四形态（JSON 权威源）：MD 三形态均缺时读同目录 plan-state.json 的 type/ref。
+# WHY: planctl --template-json 生成的计划只在 JSON 里留 template_ref，render 视图不带 MD 标记；不回退会把合法 JSON 计划误判为缺失。
+if [ -z "$tt" ]; then
+  state_file="$(dirname "$plan_file")/plan-state.json"
+  if [ -f "$state_file" ]; then
+    tt="$(grep -m1 -oE '"template_type"[[:space:]]*:[[:space:]]*"[A-Za-z0-9-]+"' "$state_file" 2>/dev/null | sed 's/.*:[[:space:]]*"//;s/"$//')"
+    if [ -z "$tt" ]; then
+      ref="$(grep -m1 -oE '"template_ref"[[:space:]]*:[[:space:]]*"[^"]+"' "$state_file" 2>/dev/null | sed 's/.*:[[:space:]]*"//;s/"$//')"
+      case "$(basename "$ref")" in
+        task_plan.template.json) tt="general" ;;
+        *.template.json) tt="${ref##*/}"; tt="${tt%.template.json}" ;;
+        *-type.md) tt="${ref##*/}"; tt="${tt%-type.md}" ;;
+      esac
+    fi
+  fi
+fi
+
 if [ -n "$tt" ] && printf ' %s ' "$VALID" | grep -q " $tt "; then
   echo "[template-gate] OK: template_type=$tt"
   exit 0
 fi
 if [ -z "$tt" ]; then
-  echo "[template-gate] INVALID: 缺失 template_type (行首直书/表格行/注释 form 三形态均未找到)" >&2
+  echo "[template-gate] INVALID: 缺失 template_type (行首直书/表格行/注释/plan-state.json 四形态均未找到)" >&2
 else
   echo "[template-gate] INVALID: template_type=$tt 不在白名单内" >&2
 fi

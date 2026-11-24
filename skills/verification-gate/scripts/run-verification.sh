@@ -44,6 +44,74 @@ declare -a FAIL_DETAIL
 #       task-planner/scripts/check-evidence-anchor.sh 的 `"$PLAN_DIR"/evidence/*` 判定分支。
 EVID_DIR="$PLAN_DIR/evidence"
 
+# [2026-11-25 task-json-template P4] 待验 VC 选择 JSON-first：
+# What: plan-state.json 存在且 vcs 非空时，`planctl.py get --section vcs` 是待验 VC 清单的
+#       唯一权威源；把 JSON 的 (id, command) 转成临时 VC 清单喂给下方既有解析器执行，
+#       手改 verification.md 的 VC 条目/命令不再影响本轮执行集合。
+# Why:  P1 起 verification.md 是 render 派生视图；执行器若仍读 MD 即留「改派生视图换 VC 集合」
+#       假绿窗口。JSON 存在但读取失败 = fail-closed（rc 2），禁静默回退 MD。
+# 约束: 仅新增输入选择层，MD 解析/落盘/汇总逻辑逐字不动（selftest-verification-gate VG-11/
+#       selftest-evidence-anchor EA-15 依赖既有解析与 evidence/VC-N.out 契约）。
+VERIF_IN="$VERIF_FILE"
+VERIF_LABEL="$VERIF_FILE"
+JSON_VC_TMP=""
+if [ -f "$PLAN_DIR/plan-state.json" ]; then
+  _rv_py="$(cd "$(dirname "$0")/../../task-planner/scripts" 2>/dev/null && pwd)/planctl.py"
+  if [ ! -f "$_rv_py" ]; then
+    echo "[run-verification] ERROR: plan-state.json 存在但 planctl.py 缺失（JSON 权威源不可读，禁回退 MD）: $_rv_py" >&2
+    exit 2
+  fi
+  _rv_err="$(mktemp "${TMPDIR:-/tmp}/run-verification-json.XXXXXX")"
+  _rv_out="$(mktemp "${TMPDIR:-/tmp}/run-verification-vcs.XXXXXX")"
+  python3 "$_rv_py" get --plan-dir "$PLAN_DIR" --section vcs > "$_rv_out" 2>"$_rv_err"
+  _rv_rc=$?
+  if [ "$_rv_rc" -ne 0 ]; then
+    echo "[run-verification] ERROR: planctl get vcs rc=$_rv_rc: $(<"$_rv_err")" >&2
+    rm -f "$_rv_err" "$_rv_out"
+    exit 2
+  fi
+  JSON_VC_TMP="$(mktemp "${TMPDIR:-/tmp}/run-verification-vclist.XXXXXX")"
+  python3 - "$_rv_out" > "$JSON_VC_TMP" <<'PYEOF'
+import json, sys
+try:
+    vcs = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception as exc:
+    print(f"[run-verification] vcs JSON 解析失败: {exc}", file=sys.stderr)
+    sys.exit(2)
+if not isinstance(vcs, list):
+    print("[run-verification] vcs 必须是 array", file=sys.stderr)
+    sys.exit(2)
+seen = set()
+for v in vcs:
+    if not isinstance(v, dict):
+        continue
+    vid = str(v.get("id") or "")
+    cmd = str(v.get("command") or "")
+    if not vid or vid in seen or not cmd.strip():
+        continue
+    seen.add(vid)
+    print(f"- [ ] {vid}")
+    print(f"**Verify command**: {cmd}")
+PYEOF
+  _rv_parse_rc=$?
+  if [ "$_rv_parse_rc" -ne 0 ]; then
+    echo "[run-verification] ERROR: JSON vcs 解析失败 rc=$_rv_parse_rc（禁回退 MD）" >&2
+    rm -f "$_rv_err" "$_rv_out" "$JSON_VC_TMP"
+    exit 2
+  fi
+  rm -f "$_rv_err" "$_rv_out"
+  if [ -s "$JSON_VC_TMP" ]; then
+    VERIF_IN="$JSON_VC_TMP"
+    VERIF_LABEL="$VERIF_FILE (VC 清单源自 plan-state.json)"
+    trap 'rm -f "$JSON_VC_TMP"' EXIT
+    echo "[run-verification] 待验 VC 清单来自 JSON 权威源（$(grep -c '^\- \[ \]' "$JSON_VC_TMP") 条）"
+  else
+    echo "[run-verification] JSON vcs 无可验命令，回退 verification.md（存量计划兼容）" >&2
+    rm -f "$JSON_VC_TMP"
+    JSON_VC_TMP=""
+  fi
+fi
+
 # ─── 状态机式逐行扫描：VC 条目行（- [ ] VC-N / - [x] VC-N）设置 current_vc；───
 # ─── "**Verify command**:" 行提取命令并关联 current_vc 执行；同一 VC 只取其首个命令（幂等）───
 while IFS= read -r line; do
@@ -102,10 +170,10 @@ while IFS= read -r line; do
   fi
   # 同一 VC 只取其首个 Verify command（防 VC 下多命令行重复计数）
   current_vc=""
-done < "$VERIF_FILE"
+done < "$VERIF_IN"
 
 # ─── 汇总输出 ───
-echo "[run-verification] Verification Contract 执行汇总 — $VERIF_FILE"
+echo "[run-verification] Verification Contract 执行汇总 — $VERIF_LABEL"
 echo "----------------------------------------------------------------"
 for r in "${RESULT_LINES[@]:-}"; do
   [ -z "$r" ] && continue

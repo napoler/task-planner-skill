@@ -278,7 +278,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 - **权威源声明**：`<plan-dir>/plan-state.json` 是任务状态**唯一权威源**，承载全部语义数据（Phase/VC/审计/派发 + Actions/Error Log/Test Results/Research/Decisions/Issues/S-units/FMEA 等全部语义段，2026-11-22 task-jsonderive-deploy-20261122 全量扩张）；`task_plan.md` / `progress.md` / `verification.md` / `findings.md` 是由 `planctl.py render` 从 JSON **全量派生**的只读视图。
 - **硬规则（违反=流程无效）**：所有状态与语义数据变更**必须**通过 `python3 <skill>/scripts/planctl.py <subcommand>` 完成（`<skill>` = 本技能根目录，脚本绝对路径 `scripts/planctl.py`）；**四个 MD 视图一律不得手工 Edit/Write**——手工编辑会在下一次 `render` 被全量覆盖（软堵：render 覆盖使直接编辑无效，用户裁决 2026-11-22）。语义内容（动作/错误/测试/结论/决策/证据）同样走 CLI 入 JSON 再 `render` 同步视图。
 - **常用命令速查**（每条均需追加 `--plan-dir <plan-dir>`）：
-  - 初始化：`init --task-id <id> --tier standard --lane L1 [--template-body-from <模板文件>]`（tier 可选 standard/mini；lane 可选 L0/L1/L2；state 已存在则拒绝覆盖；init 只建权威源不 render，首次数据写入后必须 render；`--template-body-from` 把所选 variant 模板正文写入 plan-state.json 的 `template_body` 可选字段，供 render 领域段附录消费，mini 档豁免）
+  - 初始化：`init --task-id <id> --tier standard --lane L1 [--template-json <templates/json/*.template.json>]`（tier 可选 standard/mini；lane 可选 L0/L1/L2；state 已存在则拒绝覆盖；init 只建权威源不 render，首次数据写入后必须 render；JSON 模板为源，`plan-state.json` 的 `template_doc/template_checks` 为权威，`task_plan.md` 为 render 派生视图；`--template-body-from` 仅旧计划兼容（deprecated，禁与新计划同传），mini 档豁免领域勾选）
   - 读取：`get`（整份）/ `get --section <section> --id <id>` / `status` / `validate`
   - 改字段 / 增条目：`set --section <s> --id <id> --field <f> --value <v>` / `add --section <s> --json '<JSON>'`（另有 `update` / `delete`；`set` 不带 `--section` 可写顶层标量/对象字段）
   - Phase / VC：`phase-start --id P1`（置 in_progress+Started 锚）/ `phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`

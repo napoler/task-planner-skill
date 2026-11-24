@@ -2,6 +2,9 @@
 set -euo pipefail
 
 # scan-template-spec.sh
+# [2026-11-25 task-json-template P5] JSON 原生模板优先：
+#   每个逻辑模板若有 templates/json/<type>.template.json，则从 meta.lineage 读 spec_version/pruned（输出 pruned_len）；
+#   无 JSON 才回退旧 MD 注释。仍按逻辑模板计数（一 MD 对应一 JSON 不重复计），旧 selftest 的 44 项口径不变。
 # Scan plan templates for spec_version lineage compliance against kit authority.
 # Outputs: CURRENT-SPEC, per-template status lines, OUTDATED summary.
 # Exit: 0 if OUTDATED=0, 1 if any OUTDATED/MISSING-counted-as-outdated.
@@ -69,6 +72,21 @@ extract_spec_version() {
   echo "$line" | grep -Eo 'spec_version=[0-9]+' | head -n1 | cut -d= -f2 || true
 }
 
+# [2026-11-25 P5] JSON 模板读取：meta.lineage.spec_version / pruned（紧凑单行 JSON，字段边界由正则限定）
+extract_spec_version_json() {
+  local file="$1"
+  grep -Eo '"spec_version":[0-9]+' "$file" | head -n1 | cut -d: -f2 || true
+}
+
+json_pruned_len() {
+  local file="$1" arr items=()
+  arr="$(grep -oE '"pruned":\[[^]]*\]' "$file" | sed 's/^"pruned":\[//;s/\]$//;s/"//g' || true)"
+  if [[ -n "$arr" ]]; then
+    IFS=',' read -r -a items <<< "$arr"
+  fi
+  echo "${#items[@]}"
+}
+
 echo "CURRENT-SPEC: $CURRENT_SPEC"
 
 OUTDATED_COUNT=0
@@ -78,7 +96,6 @@ mapfile -t VAR_FILES < <(find "$TPL_DIR/variant" -maxdepth 1 -type f -name '*.md
 FILES=("${ROOT_FILES[@]}" "${VAR_FILES[@]}")
 
 for f in "${FILES[@]}"; do
-  rel="${f#"$ROOT"/}"
   base="$(basename "$f")"
   in_variant=0
   [[ "$f" == "$TPL_DIR/variant/"* ]] && in_variant=1
@@ -90,33 +107,50 @@ for f in "${FILES[@]}"; do
     if is_root_aux_exempt "$base"; then exempt=1; fi
   fi
 
-  sv="$(extract_spec_version "$f")"
+  # [2026-11-25 P5] JSON 优先：有同 type JSON 就读 meta.lineage，MD 仅作回退；计数仍按逻辑模板一份。
+  jf=""
+  if [[ "$base" == "task_plan.md" && -f "$TPL_DIR/json/task_plan.template.json" ]]; then
+    jf="$TPL_DIR/json/task_plan.template.json"
+  elif [[ "$base" == *-type.md ]]; then
+    cand="$TPL_DIR/json/${base%-type.md}.template.json"
+    [[ -f "$cand" ]] && jf="$cand"
+  fi
+  scan_file="$f"
+  detail=""
+  if [[ -n "$jf" ]]; then
+    sv="$(extract_spec_version_json "$jf")"
+    detail=" [json] pruned_len=$(json_pruned_len "$jf")"
+    scan_file="$jf"
+  else
+    sv="$(extract_spec_version "$f")"
+  fi
+  rel="${scan_file#"$ROOT"/}"
 
   if [[ $SIMULATE -eq 1 ]]; then
     # Upgrade simulation: all scanned templates listed as OUTDATED.
     vdisp="${sv:-missing}"
-    echo "$rel spec_version=$vdisp OUTDATED"
+    echo "$rel spec_version=$vdisp OUTDATED$detail"
     OUTDATED_COUNT=$((OUTDATED_COUNT + 1))
     continue
   fi
 
   if [[ $exempt -eq 1 ]]; then
     vdisp="${sv:-exempt}"
-    echo "$rel spec_version=$vdisp SKIPPED-EXEMPT"
+    echo "$rel spec_version=$vdisp SKIPPED-EXEMPT$detail"
     continue
   fi
 
   if [[ -z "$sv" ]]; then
-    echo "$rel spec_version=missing MISSING"
+    echo "$rel spec_version=missing MISSING$detail"
     OUTDATED_COUNT=$((OUTDATED_COUNT + 1))
     continue
   fi
 
   if [[ "$sv" -lt "$TARGET" ]]; then
-    echo "$rel spec_version=$sv OUTDATED"
+    echo "$rel spec_version=$sv OUTDATED$detail"
     OUTDATED_COUNT=$((OUTDATED_COUNT + 1))
   else
-    echo "$rel spec_version=$sv OK"
+    echo "$rel spec_version=$sv OK$detail"
   fi
 done
 

@@ -48,7 +48,10 @@
     "resources": { "type": "array", "items": { "$ref": "#/definitions/resource_item" } },
     "visual": { "type": "array", "items": { "$ref": "#/definitions/visual_item" } },
     "template_type": { "type": "string" },
-    "template_body": { "type": "string", "description": "init 所选 variant 模板正文原文（render 领域段附录数据源；可选，存量 JSON 无此字段照样合法）" },
+    "template_ref": { "type": "string", "description": "2026-11-25 P1 JSON 原生模板：模板 JSON 文件路径（仓库内为相对仓库根路径，仓库外保留传入原路径）；可选" },
+    "template_doc": { "$ref": "#/definitions/template_doc" },
+    "template_checks": { "type": "array", "items": { "$ref": "#/definitions/template_check_item" }, "description": "2026-11-25 P1：勾选唯一权威源，由 init 从 template_doc 的 checklist blocks 扁平化；planctl set/get --section template_checks 编辑" },
+    "template_body": { "type": "string", "description": "DEPRECATED（2026-11-25 P1）：init 所选 variant 模板正文原文；仅无 template_doc 的旧计划在 render 时吐出附录。保留字段兼容 406 份存量中 13 份非空数据，新计划不写此字段。" },
     "understanding": { "$ref": "#/definitions/understanding" },
     "root_causes": { "type": "array", "items": { "$ref": "#/definitions/root_cause_item" } },
     "invariants": { "type": "array", "items": { "$ref": "#/definitions/invariant_item" } },
@@ -571,7 +574,8 @@
         "duration": { "type": "string" },
         "granularity": { "type": "string" },
         "parallel": { "type": "string" },
-        "escort_skills": { "type": "array", "items": { "type": "string" } }
+        "escort_skills": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "description": "2026-11-25 P1：S-unit 当前状态；render 第 10 列优先取本字段，缺省写 pending" }
       }
     },
     "anti_regress_item": {
@@ -712,6 +716,79 @@
       "properties": {
         "result": { "type": "string" },
         "blocked_reason": { "type": "string" }
+      }
+    },
+    "template_doc": {
+      "type": "object",
+      "description": "2026-11-25 P1 JSON 原生模板源（meta + sections），其余顶层字段允许；render 仅消费 sections 中 kind=blocks 的段。",
+      "required": ["schema_version", "meta", "sections"],
+      "additionalProperties": true,
+      "properties": {
+        "schema_version": { "type": "integer", "const": 1 },
+        "meta": { "type": "object", "additionalProperties": true },
+        "sections": { "type": "array", "items": { "$ref": "#/definitions/template_doc_section" } }
+      }
+    },
+    "template_doc_section": {
+      "type": "object",
+      "description": "2026-11-25 P1：模板锚段；kind=ref 为外部引用（不渲染），kind=blocks 由 render 按序追加。",
+      "required": ["id", "anchor", "kind"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "anchor": { "type": "string" },
+        "level": { "type": "integer" },
+        "kind": { "type": "string", "enum": ["ref", "blocks"] },
+        "required": { "type": "boolean" },
+        "ref": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": { "path": { "type": "string" }, "renderer": { "type": "string" } }
+        },
+        "blocks": { "type": "array", "items": { "$ref": "#/definitions/template_doc_block" } }
+      }
+    },
+    "template_doc_block": {
+      "type": "object",
+      "description": "2026-11-25 P1：模板段内块；checklist 的 items 在 init 时扁平化为 template_checks（勾选唯一权威源）。",
+      "required": ["kind"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "type": "string", "enum": ["markdown", "checklist", "table", "raw"] },
+        "text": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "checked"],
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "text": { "type": "string" },
+              "checked": { "type": "boolean" },
+              "note": { "type": "string" },
+              "tags": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "columns": { "type": "array", "items": { "type": "string" } },
+        "rows": { "type": "array", "items": { "type": "array", "items": {} } }
+      }
+    },
+    "template_check_item": {
+      "type": "object",
+      "description": "2026-11-25 P1：单条结构化勾选；section/block 记录来源锚，checked 是 render 唯一勾选数据源。",
+      "required": ["id", "checked"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "section": { "type": "string" },
+        "block": { "type": "string" },
+        "text": { "type": "string" },
+        "checked": { "type": "boolean" },
+        "note": { "type": "string" },
+        "tags": { "$ref": "#/definitions/tag_list" }
       }
     },
     "cross_check_item": {

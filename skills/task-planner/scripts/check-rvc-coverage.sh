@@ -54,8 +54,15 @@ fi
 #       不存在时落到下方原 awk 正则判定（存量计划零回归）。rc 2=输入异常（stderr 原样透传）。
 # Why: 外契约（前缀/rc）被 attest-plan.sh 消费不可改；JSON 权威源无「映射表行」概念，
 #      故 PASS 文案的「映射行」位填 0（前缀与 R/VC 计数保持旧形状），细节 reason 原文透出。
+# [2026-11-25 task-json-template P4] JSON-first 收敛: 仅「无 plan-state.json」才回退下方 awk 判定；
+# JSON 在而 planctl 缺失 = 输入异常 rc 2（fail-loud，禁静默回退 MD 重开绕过面）。
 SHIM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$PLAN_DIR/plan-state.json" ] && [ -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+if [ -f "$PLAN_DIR/plan-state.json" ]; then
+    if [ ! -f "$SHIM_SCRIPT_DIR/planctl.py" ]; then
+        printf '[rvc-coverage] ERROR: plan-state.json 存在但 planctl.py 缺失（JSON 权威源不可读，禁回退 MD）: %s\n' \
+            "$SHIM_SCRIPT_DIR/planctl.py" >&2
+        exit 2
+    fi
     _pc_out="$(python3 "$SHIM_SCRIPT_DIR/planctl.py" check rvc --plan-dir "$PLAN_DIR")"
     _pc_rc=$?
     _pc_reason="${_pc_out#PLANCTL CHECK rvc: PASS }"
