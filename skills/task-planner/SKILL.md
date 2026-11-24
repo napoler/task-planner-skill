@@ -36,6 +36,14 @@ model: opus
 
 ## 计划制作循环
 
+> **[P0] 两段式修复拆分判定（D1' 分级全覆盖 + D5 阶段二启动，强制）**：收到实现/修复/优化类请求时先做拆分判定，**禁止跳过**。
+> - **分级全覆盖（D1'）**：修复类请求（报错/改错/bug/回归/异常）= 阶段一快修表层 + 产出完整根因线索包 + 阶段二从底层根治；非修复类请求 = 阶段一产出可用结果并尽早**合并回 master**、**不阻塞**下游 + 阶段二独立同族风险/隐患排雷（无风险以 `N/A`+证据收口）。
+> - **升档铁律**：修复类请求命中 L0/mini/trivial/L0-E，**一律先升 L1 standard 复核，再走两段式**；不得以轻量档豁免跳过拆分判定（本判定优先于 :98-107 豁免块）。
+> - **阶段一**：快刀修表层、快速产出；VC 复验通过后**立即合并回 master**，让依赖该成果的下游任务不被阻塞。
+> - **阶段二**：独立 task-id（建议 `<A-id>-rc`），新 worktree 从底层排查根因、全面排雷，确保不再犯同类错误；与阶段一解耦，阶段二失败不影响阶段一结果。
+> - **双向 tag 登记**：阶段一计划登记 `rootcause-followup:<B-id>`；阶段二计划登记 `followup-of:<A-id>`（INDEX 与计划元数据同步）。**根因线索包机器标记契约**：阶段一须用 `planctl add --section findings` 把线索包登记为 `[rootcause-followup:PASS] 线索包已落盘` 字面标记（非修复类无风险用 `[rootcause-followup:N/A]` + 理由），`planctl render` 后自动写入 findings.md 供 rootcause 消费门校验；禁只登记 tag 不写标记（门读 findings 正文，不读索引 key）。
+> - **阶段二启动四要素（D5）**：执行者=阶段一主进程；触发时点=阶段一合并回 master 完成且 VC 复验通过后同轮；命令=`git worktree add <项目根>/tmp/worktrees/<A-id>-rc -b wt/<A-id>-rc master`（`--base master`）；失败口径=派发失败/会话结束仅在 INDEX 与 tag 登记 `pending`（`followup-of:<A-id>`），**不改阶段一 outcome、不回滚**。
+
 - [ ] [M] **初始化（哨兵机制）— 机械子动作**：跑脚本建目录/设 env/校验在位/清哨兵
   > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
   - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）
@@ -96,6 +104,7 @@ model: opus
   - **清除哨兵**：`node scripts/plan-created.cjs`（双清除 side+legacy）；哨兵存在期间 PreToolUse hook 拦截非 plans/ 路径 Write/Edit（exit 2）
 
 - [ ] [A] **初始化首动作委派（L1+）— 需求分析与计划文档创建子代理隔离**：
+  - **两段式判定指针**：修复类请求先过「计划制作循环」开头的 **[P0] 两段式修复拆分判定**（含 L0/mini/trivial/L0-E 升档铁律）；本块仅管委派形态，不承载判定本体。
   - **触发**：L1+（standard/full，非 L0/mini/trivial/L0-E）任务 `init-session.sh` 完成 7 文件后的首个智能子动作（机械子动作/清哨兵按既有契约先行）
   - **动作**：派发计划子代理承接用户指令复述+需求分析+计划文档填写（`task_plan/findings/knowledge-brief/progress/verification`，以执行体产出契约为准）；**首选 Plan Writer**（`companion/agents/plan-writer.md`（仓库同级部署位同名 agent）），provider/档位失败按判例降级 `general-purpose` 并留痕
   - **计划期例外（22.4a/62.2）**：计划产出子代理=计划文档**计划期单写者**（隔离决策区块含 check-conflicts.sh 判读由其起草）；执行期子代理仍按 22.4a 只读；主进程对产物**盘上复核**（Rule 84.4）后展示/确认
@@ -261,9 +270,11 @@ model: opus
 
 ### 🔁 原生 Todo 同步（强制）
 
-计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B11，Rule 106.5）详见 references/todo-sync.md；B9-B11 的完成以 `git-baseline.sh` 写入的 sidecar 证据为准，非 todo 勾选（2026-11-24 task-session-regression-20261124）
+计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B14，Rule 106.5）详见 references/todo-sync.md；B9-B11 的完成以 `git-baseline.sh` 写入的 sidecar 证据为准，非 todo 勾选（2026-11-24 task-session-regression-20261124）；B14 = 根因/风险线索包已落盘 + 后续任务已登记（非修复类标 N/A + 证据）；B12/B13 归方案A/H3（SP/OS 技能到达 + Spec 路由命中），两组语义不重叠
 
 ### 🆕 用户新指令处理（计划影响判定 — 强制）
+
+> **两段式拆分判定（同「计划制作循环」P0 条款，单一口径）**：新指令进入实现/修复/优化路径时，在 ② 判定前先过两段式拆分判定。修复类（报错/改错/bug/回归/异常）与非修复类均分两阶段（D1' 分级全覆盖）：阶段一快修表层/产出可用结果→VC 复验通过后立即**合并回 master**、**不阻塞**下游；阶段二独立 task-id（`<A-id>-rc`）新 worktree 从底层根治/同族排雷，双向 tag `rootcause-followup:<B-id>` / `followup-of:<A-id>`。**修复类命中 L0/mini/trivial/L0-E 一律先升 L1 standard 复核再走两段式**。阶段二启动四要素（D5）：执行者=阶段一主进程；触发=阶段一合并回 master 完成且 VC 复验通过后同轮；命令=`git worktree add <项目根>/tmp/worktrees/<A-id>-rc -b wt/<A-id>-rc master`（`--base master`）；失败=仅 INDEX/tag 登记 `pending`（`followup-of:<A-id>`），不改阶段一 outcome、不回滚。
 
 **新指令统一收口序列（强制，单入口定序）**：① 逐字落盘 user-session-log.md（80.1，含理解镜像 80.7）→ ② D/A/B/C/E 判定（判定前先过 8.1.2 入站预检：疑似误发/项目定位明显错位 → 先分析偏移点并询问是否纠正，再判定；下表；A 类无影响=走 ①② 后登记一行即完成，③-⑤ 仅 B/C/D/E 适用；E 类目标切换先过确认门、用户 yes 后按 D 处置再进序列）→ ③ **指令理解迭代（Rule 28.2.2，执行前方向对齐）**：完成 3-4 轮理解迭代草稿（原始指令复述→模型理解[目标/范围/约束/不做什么]→模型思路与候选+歧义门控→大体执行方向，粗稿非定稿）并按模式处理。**goal/目标迭代（28.8）优先覆盖**：无论明确或歧义/多候选，**禁止**向用户提问/列选项请求确认/等待回复，直接按推荐项或可逆安全默认静默自决并留痕后继续（歧义仅内收敛+登记假设），同问禁复发（预算外硬门按 28.9② 登记待授权清单后继续，不停表；续推与授权到达按 28.9③-⑦）。**非 goal**：ask 模式展示供早纠偏，无实质歧义时不因本模块新增阻塞确认（提示可纠偏后继续），有歧义/多候选(典型3-4)时才按选项确认（28.3）；silent/44.3 自动通过/mini 缺省 silent 下不阻塞等待，收敛并留痕且歧义按推荐项与可逆安全默认自决→ ④ 计划文档同步（task_plan/progress/需求锚）→ ⑤ Todo S5 重映射 → ⑥ 触发修改轮时衔接 Rule 103.6 同步完整性审查。两义务一体执行、顺序不可倒置（记录先于转译，防转译覆盖原话）；禁拆散单做（漏序=缺口）。
 

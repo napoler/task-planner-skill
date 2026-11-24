@@ -451,6 +451,72 @@ else
 fi
 rm -rf "$C06"
 
+# ── EA-21 rootcause POS（--source=rootcause-followup 真门正例）────────────────
+# 真实 planctl init + add findings + tag-add 生成 fixture；findings.md 显式写入
+# [rootcause-followup:PASS] +「线索包已落盘」标记，满足 check-evidence-anchor.sh
+# run_rootcause_followup() 契约（标记+文本+tags-index rootcause-followup:*）。
+F21="$(mktemp -d "${TMPDIR:-/tmp}/ea21.XXXXXX")"
+mkdir -p "$F21/plans/tp1"
+python3 "$SCRIPT_DIR/planctl.py" init --plan-dir "$F21/plans/tp1" --task-id tp1 --tier standard --lane L2 >/dev/null 2>&1
+python3 "$SCRIPT_DIR/planctl.py" add --plan-dir "$F21/plans/tp1" --section findings --json '{"id":"F1","text":"[rootcause-followup:PASS] 线索包已落盘","source":"","tags":[]}' >/dev/null 2>&1
+python3 "$SCRIPT_DIR/planctl.py" tag-add --plan-dir "$F21/plans/tp1" --section findings --id F1 --tag 'rootcause-followup:tp1-F1' >/dev/null 2>&1
+# [2026-11-24 独立复核 W-4] 现象: 初版手工 printf 覆盖 findings.md，掩盖真实 producer→render→gate 链路断裂；
+# 根因: 测试自己造标记 = 虚假信心；修法: 不手工写 findings.md，改由 planctl render 从 plan-state.json 派生正文，
+#       让断言覆盖执行体真实生产链路（planctl add findings text 带标记 → render → 门读标记）。
+python3 "$SCRIPT_DIR/planctl.py" render --plan-dir "$F21/plans/tp1" >/dev/null 2>&1
+_o="$(bash "$EA" "$F21/plans/tp1" --source=rootcause-followup 2>&1)"; _rc=$?
+if [ "$_rc" -eq 0 ]; then
+    ok 21 "rootcause POS：PASS 标记+线索包已落盘+tag 已登记 → rc=0（输出: $(printf '%s' "$_o" | tail -1)）"
+else
+    bad 21 "rootcause POS 被误拦: rc=$_rc（应 0）输出=$_o"
+fi
+rm -rf "$F21"
+
+# ── EA-22 rootcause NEG（无标记 → rc=1，防 arg-case-only 零逻辑 NO-OP 门）────
+# fixture findings.md 仅含「无标记」文本；真实执行 check-evidence-anchor.sh 并断言 rc=1。
+F22="$(mktemp -d "${TMPDIR:-/tmp}/ea22.XXXXXX")"
+mkdir -p "$F22/plans/tp1"
+printf '%s\n' '# Findings' '' '无标记' > "$F22/plans/tp1/findings.md"
+_o="$(bash "$EA" "$F22/plans/tp1" --source=rootcause-followup 2>&1)"; _rc=$?
+if [ "$_rc" -eq 1 ]; then
+    ok 22 "rootcause NEG：findings.md 无标记 → rc=1（输出: $(printf '%s' "$_o" | tail -1)）"
+else
+    bad 22 "rootcause NEG 未被拦截: rc=$_rc（应 1）输出=$_o"
+fi
+rm -rf "$F22"
+
+# ── EA-23 sync-todos --json 基线组含 B14 + B1-B13（B12/B13 归方案A/H3）───────
+# mktemp 空 plans 目录，不依赖真实 plans 状态；B14 为两段式修复脚本内置基线项。
+F23="$(mktemp -d "${TMPDIR:-/tmp}/ea23.XXXXXX")"
+mkdir -p "$F23/plans"
+_sync_out="$(bash "$SCRIPT_DIR/sync-todos.sh" --json "$F23/plans" 2>&1)"
+_ea23_ok=1; _ea23_reason=""
+if ! printf '%s' "$_sync_out" | grep -qF '"task_id":"B14"'; then
+    _ea23_ok=0; _ea23_reason="缺 task_id:B14"
+fi
+if [ "$_ea23_ok" -eq 1 ] && ! printf '%s' "$_sync_out" | grep -q '线索包'; then
+    _ea23_ok=0; _ea23_reason="B14 subject 缺 线索包"
+fi
+for _b in B1 B2 B3 B4 B5 B6 B7 B8; do
+    if [ "$_ea23_ok" -eq 1 ] && ! printf '%s' "$_sync_out" | grep -qF "\"task_id\":\"$_b\""; then
+        _ea23_ok=0; _ea23_reason="缺 $_b"
+    fi
+done
+# B9-B13: 若脚本含则全在（B12/B13 归方案A/H3，并集解后原文保留；B14 已在上方单独断言）
+for _b in B9 B10 B11 B12 B13; do
+    if [ "$_ea23_ok" -eq 1 ] && grep -qF "\"task_id\":\"$_b\"" "$SCRIPT_DIR/sync-todos.sh" 2>/dev/null; then
+        if ! printf '%s' "$_sync_out" | grep -qF "\"task_id\":\"$_b\""; then
+            _ea23_ok=0; _ea23_reason="脚本含 $_b 但输出缺失"
+        fi
+    fi
+done
+if [ "$_ea23_ok" -eq 1 ]; then
+    ok 23 "sync-todos --json 含 B14(subject 含线索包) + B1-B13 全在（B12/B13 归方案A/H3，原文保留）"
+else
+    bad 23 "sync-todos --json 基线组断言失败: $_ea23_reason"
+fi
+rm -rf "$F23"
+
 echo "----------------------------------------------------------------"
 echo "[selftest-evidence-anchor] Total: PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1

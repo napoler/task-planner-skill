@@ -1064,6 +1064,29 @@ if [ "$python_rc" -eq 0 ]; then
         run_evidence_anchor coverage
     fi
 
+    # [2026-11-24 task-two-stage-fix-20261124 S8] EVIDENCE-ANCHOR GATE — rootcause-followup 段独立受控调用
+    # What: 复用 run_evidence_anchor 封装调用 check-evidence-anchor.sh --source=rootcause-followup。
+    # Why:  S7 已在 check-evidence-anchor.sh 新增 rootcause-followup mode（EVIDENCE_MODE=rootcause,
+    #       POS=0/NEG=1 真 mode）；本块把该 mode 接入终验门，使 rootcause 消费失败可计入门失败。
+    # Guard: 与 coverage/goal 同档位口径（VC_GATE_TIER!=off 且非 mini）；独立块，不入 run_evidence_anchor 函数体。
+    #        仅当**本计划**声明两段式修复意图时才调用：findings.md 含 [rootcause-followup:...] 标记，
+    #        或本计划 plan-state.json（权威源）含 rootcause-followup: tag。两者皆无 = 非两段式修复计划，本门不适用
+    #        （EA-17 等普通计划不被误拦；VC-5/EA-22/S12 直接调 check-evidence-anchor.sh，不受本 guard 影响）。
+    # [2026-11-24 独立复核 C-1 修复] 现象: 初版 guard 读 <plan-dir>/../.tags-index.json（跨计划共享倒排索引），
+    # 根因: 任一计划登记 rootcause-followup: tag → 同 workspace 全部无关计划的终验都命中 guard → 无标记 →
+    #       enforce 档 exit 1（新引入回归，违背"不阻塞下游"目标）；修法: 改读本计划 plan-state.json 权威源，
+    #       tag-index 仅作运行期倒排加速，不得作为本计划身份判据。
+    _rc_findings="$PLAN_DIR_GUESS/findings.md"
+    _rc_state="$PLAN_DIR_GUESS/plan-state.json"
+    _rc_two_stage=0
+    if { [ -f "$_rc_findings" ] && grep -qF '[rootcause-followup:' "$_rc_findings"; } || \
+       { [ -f "$_rc_state" ] && grep -qF 'rootcause-followup:' "$_rc_state"; }; then
+        _rc_two_stage=1
+    fi
+    if [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ] && [ "$_rc_two_stage" -eq 1 ]; then
+        run_evidence_anchor rootcause-followup
+    fi
+
     if [ "${LANE_L0:-0}" = 1 ] && [ "$VC_GATE_TIER" != "off" ]; then
         rcov_l0_file="$PLAN_DIR_GUESS/delivery-summary.md"
         if [ ! -f "$rcov_l0_file" ]; then
