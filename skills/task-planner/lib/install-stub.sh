@@ -252,6 +252,11 @@ STUB_SKILL_EOF
 # sed-rewrite hardcoded paths in scripts (idempotent: only acts on unrewritten files)
 rewrite_paths_in_scripts() {
   local stub_dir="$1"
+  # What: expand FALLBACK to concrete TASK_PLANNER_ROOT at install-time (double-quoted sed).
+  # Why: single-quoted sed left literal ${FALLBACK} in deployed scripts; at runtime that var
+  #      is undefined -> SKILL_ROOT="" -> hooks invoke `python3 /scripts/planctl.py` (empty root).
+  # Fix: install-time expand to "${TASK_PLANNER_ROOT:-<concrete>}" so runtime has a hard fallback.
+  local FALLBACK="${TASK_PLANNER_ROOT}"
 
   # Order matters: replace .zcode first (more specific), then .claude
   find "$stub_dir/scripts" -type f \( -name "*.sh" -o -name "*.cjs" -o -name "*.ps1" -o -name "*.ts" \) -print0 2>/dev/null | \
@@ -259,10 +264,10 @@ rewrite_paths_in_scripts() {
       # Only rewrite if the file still has hardcoded zcode path (idempotency)
       if grep -q '\$HOME/\.zcode/skills/task-planner\|/home/.*/\.zcode/skills/task-planner' "$file" 2>/dev/null; then
         sed -i \
-          -e 's|"\${OPENCODE_SKILL_ROOT:-\$HOME/\.zcode/skills/task-planner}"|"\${TASK_PLANNER_ROOT:-${FALLBACK}}"|g' \
-          -e 's|node /home/.*/\.zcode/skills/task-planner/scripts/|node "${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g' \
-          -e 's|bash "/home/.*/\.zcode/skills/task-planner/scripts/|bash "${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g' \
-          -e 's|bash ~/\.zcode/skills/task-planner/scripts/|bash "${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g' \
+          -e "s|\"\${OPENCODE_SKILL_ROOT:-\$HOME/\.zcode/skills/task-planner}\"|\"\${TASK_PLANNER_ROOT:-${FALLBACK}}\"|g" \
+          -e "s|node /home/.*/\.zcode/skills/task-planner/scripts/\([^ \"']*\)|node \"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/\1\"|g" \
+          -e "s|bash \"/home/.*/\.zcode/skills/task-planner/scripts/|bash \"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g" \
+          -e "s|bash ~/\.zcode/skills/task-planner/scripts/\([^ \"']*\)|bash \"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/\1\"|g" \
           "$file"
       fi
     done
