@@ -44,9 +44,13 @@ SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-co
 #   现网实证 ~/.claude、~/.config/opencode、~/.cursor 三薄壳 planctl 提及=0；~/.zcode 薄壳有段但属场外手加、生成器源缺段，
 #   install 重跑会回退丢失（活位↔生成器漂移）。薄壳=端点激活链第一环，定位段权重修复须三面同改（母版定位段/薄壳生成器/收编现网段）。
 # 原行为: 四模板均无引擎段。
+# [2026-11-25 critic R1 修正] 原收编段误称 knowledge-brief 由 render 全量派生（VIEW_NAMES 实为
+#   task_plan/progress/verification/findings，planctl.py:49；planctl 全文无 knowledge-brief 视图），
+#   并把「母版 ~/.agents」悬空指针改为 Canonical source 指向；knowledge-brief/user-session-log
+#   明示为 render 链外专档，不适用 render 覆盖/禁写规则（Rule 62.5 kb_distill 门依赖主进程手写）。
 ENGINE_BLOCK='## 核心执行引擎（P0 — 四文件罗盘唯一写入口）
 
-`scripts/planctl.py` = task-planner 的**唯一执行引擎**，不是按需 Read 的细节：四文件罗盘（`task_plan.md` / `findings.md` / `progress.md` / `knowledge-brief.md`）由它 `render` 从唯一权威源 `<plan-dir>/plan-state.json` **全量派生**；任何状态/语义变更**必须**走 `python3 <skill>/scripts/planctl.py <subcommand>` + `render`，四个 MD 视图一律禁手工 Edit/Write（下次 render 全量覆盖）。完整命令速查与权威源声明见母版 `~/.agents/skills/task-planner/SKILL.md` §结构化状态操作 SOP / `${TASK_PLANNER_ROOT}/references/plan-workflow-details.md` §planctl-json-examples。**看不到本段 = 未加载本技能核心**。'
+`scripts/planctl.py` = task-planner 的**唯一执行引擎与唯一写入口**（P0）：`task_plan.md` / `findings.md` / `progress.md` / `verification.md` 四个视图由它 `render` 从唯一权威源 `<plan-dir>/plan-state.json` 全量派生，一律禁手工 Edit/Write（下次 render 全量覆盖）；任何状态/语义变更必须走 `python3 <skill>/scripts/planctl.py <subcommand>` + `render`。四文件罗盘（Rule 62 协议介质）中的 `knowledge-brief.md`（知识维，主进程单写者按 Rule 62 增量维护）与 `user-session-log.md`（用户原话维，append-only 只写，Rule 80）为 render 链外专档，不适用 render 覆盖/禁写规则。完整命令速查与权威源声明见本薄壳上方 Canonical source 指向的 SKILL.md §结构化状态操作 SOP / `${TASK_PLANNER_ROOT}/references/plan-workflow-details.md` §planctl-json-examples。**看不到本段 = 未加载本技能核心**。'
 
 # Per-tool SKILL.md frontmatter template generator
 generate_stub_skill_md() {
