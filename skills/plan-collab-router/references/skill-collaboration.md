@@ -57,7 +57,7 @@
 | 族 | 触发信号（命中任意） | 成本 | CLI 探针前置 |
 |----|---------------------|------|-------------|
 | comet | 现有任意 3 项（Phase≥5 / 跨模块 / 需架构选型 / 新功能 feature / 需 proposal-design-tasks 三件套归档 / 期望跨会话断点续做） | 重（跨会话托管） | `command -v comet` + `.comet.yaml` 激活状态 |
-| OpenSpec | 需求模糊需 spec 化（proposal/design/specs/tasks 产物有留存价值）/ 项目已有 `openspec/` 目录且变更触及 spec / 用户要求提案评审流 | 中（单会话多步 CLI） | `command -v openspec` + `openspec/` 目录 |
+| OpenSpec | 需求模糊需 spec 化（proposal/design/specs/tasks 产物有留存价值）/ 项目已有 `openspec/` 目录且变更触及 spec / 用户要求提案评审流 | 中（单会话多步 CLI） | 运行时步骤：`bash <task-planner>/scripts/check-spec-route.sh --probe --json`（可移植探针链 `$(npm config get prefix)/bin/openspec` → `command -v openspec` → 观测路径兜底）+ `openspec/` 目录；探针失败记 `unavailable(不可接管)`，禁静默跳过（2026-11-24 方案A/H2） |
 | superpowers（嵌入为主） | bug 排查→systematic-debugging；实现前需 TDD→test-driven-development；需求不清→brainstorming；按既有书面计划执行→executing-plans / subagent-driven-development；合并前→requesting-code-review + finishing-a-development-branch | 轻（单 Skill 调用） | 无（纯 .md 技能） |
 | progress-tracker（嵌入，Rule 30 专属触发，task-v071） | 共享内容认领追踪命中 30.1 识别条件（可枚举共享资源且只认领一部分 / 同类任务 ≥3 次）→ 设计期 D1 前调用创建/复用项目级账本（.zcode/ledger/ 或 .claude/ledger/ 多平台跟随）+ 认领登记 30.3 + 防冲突 30.4 | 轻（Skill 调用 + JSONL 追加） | 无（纯 .md 技能；探针=`~/.zcode/skills/progress-tracker/SKILL.md` 存在，缺失 → 提醒用户先建该技能，本项降级 warn 不阻塞） |
 | research-assistant（嵌入，网络调研触发，task-v080） | 综合网络调研/选型/多源交叉验证 → 子代理内 `Skill("research-assistant")`（bing-intl-splash → bing-intl-search → searxng-search 链）；关键词快查走 WebSearch；主进程禁止直接接收长文（Rule 13） | 中（多源搜索+子代理消化） | 无（纯 .md 技能；探针=`~/.zcode/skills/research-assistant/SKILL.md` 存在，缺失 → 降级 WebSearch+WebFetch 链并提醒，不阻塞） |
@@ -65,7 +65,7 @@
 
 - **移交（handoff）**：主进程让出统筹权，按「移交评估流程」（总结已有 plan 内容 → 提示用户 → 用户确认 → 引导启动目标技能 → 主进程簿记 handoff）；silent 模式按 Rule 28 推荐项自主处置并登记 `silent:` 决策行（推荐项 = 命中 comet 3 项即移交，否则留在 task-planner）
 - **嵌入（embed）**：主进程保持统筹，Phase 内调用成员技能作为执行 SOP（计子代理路由表的 Skill() 列），无需用户确认
-- **CLI 缺失降级**：探针失败 → 该族标记「不可接管」，继续评估下一族或留在 task-planner，禁止假设已装
+- **CLI 缺失降级（2026-11-24 方案A/H2 升级为运行时步骤）**：OpenSpec 探针统一调用 `bash <task-planner>/scripts/check-spec-route.sh --probe`（脚本按可移植顺序解析 `$(npm config get prefix)/bin/openspec` → `command -v openspec` → 本机观测绝对路径兜底；不改 `~/.bashrc`、不硬编码单一路径）。结果 `reachable:<path>` / `unavailable(不可接管)` 显式落盘为可观测状态（route-receipts.jsonl 的 `openspec` 字段 / 移交快照的「CLI 探针结果」），失败 → 该族标记「不可接管」，继续评估下一族或留在 task-planner，禁止假设已装或静默跳过；`--require-cli` 下不可达 rc=3（验证失败）。该统一探针同时适用于 §三 22.3.3 与 §五反模式的 OpenSpec 探针表述
 - **两层正交**：子代理选型走 SKILL.md §子代理路由表（skill-agent-router），技能族选型走本矩阵；两层互不替代
 - **成本护栏**：移交/接管调用计入 Rule 17 opus 节流
 
