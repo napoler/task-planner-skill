@@ -78,6 +78,7 @@
   - **审计维度**：①需求覆盖完整性（含 51.9 自缩水检查）②机制设计合理性 ③既有机制冲突面 ④比例原则与豁免面 ⑤可执行性（VC 命令判别性）⑥篡改面（逐字锚/加戏检查）——逐维结论+file:line 证据
   - **裁决映射（由审计体出具，主进程只登记不得自判达标）**：`0 CRITICAL 且 0 IMPORTANT ⇒ APPROVED，否则 REJECTED`（新发现=新增 CRITICAL/IMPORTANT；WARNING/QUESTION/NIT 留档不阻断）；达标=0C/0I 且连续一轮零新发现
   - **迭代闭环**：REJECTED→打回修正→再次审计，轮次不设上限；连续 ≥3 轮无实质进展→呈报用户裁决（防死循环）；每轮固定留痕 progress.md `[plan-audit-R<N>]` 段（轮次/审计体/结论/问题清单/修复对照）
+    - [2026-11-24 task-perf-default-mini] 脚本刹车补充：累计 2 轮 REJECTED 且无 APPROVED → planctl 写入回显 [audit-cap] + PreToolUse 拦 Agent 派发（decision-arbiter 例外），登记 [audit-converge] 收口；「轮次不设上限」仅指有实质进展（issues 收敛）的迭代，无进展轮数由本刹车约束。
     - **无进展机器判定口径（2026-11-21 task-audit-rework-cap-20261121）**：取最近最多 3 个连续 REJECTED 轮，以显式 issue key 为信号——`issues[]` 中 `severity∈{C,I}` 且 `state∈{open,new}` 的 key 集跨轮完全相同（无清零、无新增）即判无进展；无 issues 字段的轮视为无信号跳过；末轮 APPROVED（清零收敛）一律不命中，防真实进展被误伤。命中后**禁止继续自动派发同类修复**，改走 decision-arbiter→AskUser 上报用户裁决（机器面 reason=`NO_PROGRESS_STREAK_3`，见下方机器门行）；goal 语境不 AskUser：独立仲裁一次后按 28.9②④ 登记待授权清单/判据上限，续推按 28.9⑤ 固定点应答。简版再审输入包收敛为「仅变更增量 + 上轮问题清单」：重派只带本轮 delta 与未闭环 key，禁整包重审放大重复发现。
   - **阻断语义**：未经审计 APPROVED（或豁免登记）禁展示给用户、禁进入 D1 yes/目标绑定确认/attest/清哨兵链路；本门**不适用 Rule 44.3 超时自动通过**（未达标禁自动放行）
   - **与既有机制边界**：计划面逃逸 Rule 103.3 由本门承载，执行期产物仍由 Rule 103 承载，二者不叠加；全流程原则与覆盖面映射全文=references/critical-rules.md Rule 109

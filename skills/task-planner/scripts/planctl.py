@@ -276,6 +276,33 @@ def audit_no_progress(audits: list[dict[str, Any]]) -> tuple[bool, str, str]:
     return False, details, ""
 
 
+def audit_cap(audits: list[dict[str, Any]]) -> tuple[bool, str]:
+    """[task-perf-default-mini 2026-11-24] 审计轮数硬刹车：累计 REJECTED≥2 且无 APPROVED 即命中。
+
+    What: 只看轮数与 APPROVED 存在性，不看 issue key、不看审计体名——轮数是唯一客观信号。
+    Why: 既有 NO_PROGRESS_STREAK_3/CUMULATIVE_REJECTED_4 都依赖 issues 字段比对 key 集或
+         累计 4 轮，真实任务审计条目从不带 issues → 永不命中（判例 5 轮审计烧 1h）。
+         原行为=审计循环体内无任何脚本被调用，止损只挂默认 warn 的 attest 上；本层为新增
+         独立刹车，不改 109/96.7 既有判定语义。
+    返回 (命中bool, 触发token)；token="AUDIT_CAP_2" 或 ""。任一 APPROVED（含末轮）视为真实
+    收敛，不命中。
+    """
+    rejected = [a for a in audits if a.get("verdict") == "REJECTED"]
+    any_approved = any(a.get("verdict") == "APPROVED" for a in audits)
+    if len(rejected) >= 2 and not any_approved:
+        return True, "AUDIT_CAP_2"
+    return False, ""
+
+
+# [2026-11-24 task-perf-default-mini] 审计刹车文案：planctl 写入回显与 PreToolUse 拦截共用同一口径。
+AUDIT_CAP_MESSAGE = (
+    "[audit-cap] ⛔ 本计划审计已累计 2 轮 REJECTED（AUDIT_CAP_2）："
+    "禁止再派任何第 3 轮审计体（换 critic key/换审计体名不构成合法理由）。"
+    "唯一出口：派一次 decision-arbiter 终裁，按裁决由主进程收口并在计划登记 "
+    "[audit-converge] 行 + 遗留风险清单。"
+)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 时间与 JSON I/O
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1229,7 +1256,18 @@ def cmd_add(args: argparse.Namespace) -> int:
         raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id')}")
     doc[args.section].append(entry)
     commit_state(plan, doc)
-    emit({"section": args.section, "added": entry})
+    result: dict[str, Any] = {"section": args.section, "added": entry}
+    # [2026-11-24 task-perf-default-mini 包3] What: audits 写入落盘后重读权威源跑 audit_cap，
+    #   命中则把强制指令块随本次 add 的 stdout JSON 回显（不阻断写入）。
+    # Why: 第 2 轮 REJECTED 本身必须能落盘（否则审计证据丢失）；刹车对象是之后的第 3 轮派发。
+    #   文案放进 emit 的 JSON 字段而非另打裸文本，保住「planctl stdout 可 json.load」既有契约，
+    #   PreToolUse Agent 分支用同一 token/口径做硬拦截。
+    if args.section == "audits":
+        cap_hit, cap_token = audit_cap(read_state(plan).get("audits", []))
+        if cap_hit:
+            result["audit_cap"] = AUDIT_CAP_MESSAGE
+            result["audit_cap_token"] = cap_token
+    emit(result)
     return 0
 
 
