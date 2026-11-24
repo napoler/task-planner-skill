@@ -177,32 +177,39 @@ b1_neg() {
 t "T11b B1 负例: 改内容后 owner=othersid999 → 重锁不命中(plan_sha256 仍为旧值 且 attested_by_sid 重置为空, 不被洗白)" \
     b1_neg
 
-# T13: [2026-09-17 task-v078-guard-fp-fixes S5] 行为级断言 — 已交付计划提醒豁免
-#      (zcode-posttooluse.sh L105 verification.md outcome 兜底分支, VC-4):
+# T13: [2026-09-17 task-v078-guard-fp-fixes S5 → 2026-11-24 task-perf-default-mini] 行为级断言 — 已交付计划提醒豁免
+#      (zcode-posttooluse.sh 完结判定, 原 verification.md outcome 兜底分支 VC-4):
 #      本仓约定 outcome 落盘在 verification.md 而非 task_plan.md, 既有 outcome 检查(L100)
 #      永不命中 → 已交付计划的 compass/plan-sync 陈旧提醒误报(v076/v077 连续误报)。
+#      [2026-11-24 修复判例] 原宽松 grep 'outcome: *(COMPLETE|BLOCKED)' 会命中模板
+#      verification.md:118 示例行 ' outcome: COMPLETE / PARTIAL / BLOCKED'(前导空格) → 新 init 计划
+#      被误判已完结、陈旧提醒从不生效。完结判定改双源: 优先 plan-state.json 的 .outcome
+#      (jq test("^(COMPLETE|BLOCKED)$") 权威源), 降级才用文本行首锚 ^outcome:, 示例行不再豁免。
 #      fixture: 临时计划目录 $T/plans/task-y, task_plan.md 陈旧 mtime(无 outcome 字样,
-#      满足 L100 不命中 → 无 verification.md 时陈旧提醒必然触发), 唯一 sid=ST13_SID
-#      (L172 每次运行生成, canon sess 前缀剥除后=sfx<$$><RANDOM>, 不复用 T11 的
+#      满足 L100 不命中 → 陈旧提醒必然触发), verification.md 保留模板前导空格示例行
+#      (模拟真实形态), plan-state.json 由用例分别注入 COMPLETE / 无 outcome, 唯一 sid=ST13_SID
+#      (每次运行生成, canon sess 前缀剥除后=sfx<$$><RANDOM>, 不复用 T11 的
 #      sessabc123 state 文件, 跨 suite 运行互不污染)。
 #      执行手法照 T11a/b: stdin JSON(绝对 file_path → L62 case /* 不动, 与 T11 的相对
 #      file_path 无关联) + env -u ZCODE_SESSION_ID。
-#      T13a 正例(豁免生效): verification.md 内容=前导空格+"outcome: COMPLETE"(模拟真实
-#        落盘格式, 验证 L105 grep -qiE 容前导空格) → 执行输出不含 plan-compass/plan-sync 提醒
-#      T13b 因果对照: 同 fixture 删掉 verification.md 再执行 → 输出含 plan-sync 陈旧提醒
-#        (证明 T13a 的豁免由兜底分支因果生效, 非环境巧合; T11a/b 既有用例无
-#        verification.md, 行为路径不变, 回归保护)
+#      T13a 正例(权威源豁免生效): plan-state.json.outcome=COMPLETE → 执行输出不含
+#        plan-compass/plan-sync 提醒(权威源 jq 主路径早退, 模板示例行不再参与豁免)
+#      T13b 因果对照: 同 fixture 但 plan-state.json 无 outcome → 输出含 plan-sync
+#        陈旧提醒(证明模板示例行不再误判豁免; 与 T13a 同走 jq 主路径, 非降级分支巧合)
 #      维护注记: sid 每次运行唯一(ST13_SID 含 $$/${RANDOM}; 见下方套件级变量), 保证同一次
 #      suite 内 T13a/T13b 共用同一 sid(因果对照有效)且跨 suite 运行互不污染; 若用固定 sid,
 #      hook 的 state 文件(/tmp/task-planner-hook-sfx12345.state)持久化, 重跑会落入 plan-sync
 #      冷却窗口(cd_left≠0)不再提醒 → T13b 非密闭 FAIL(首跑 PASS/重跑必 FAIL, 主进程复跑实证)。
-st13_fixture() { # st13_fixture <tmpdir>: 写陈旧 task_plan.md + 前导空格 outcome 的 verification.md
-    local T="$1" P
+#      [2026-11-24] T13a 权威源早退发生在 /tmp state 写入(plan-sync 分支)之前, 共用 sid 下
+#      T13b 的 cd_left 仍为 0, 因果对照密闭; 勿把夹具改回「T13a 触发提醒」形态。
+st13_fixture() { # st13_fixture <tmpdir> <plan-state.json 内容>: 写陈旧 task_plan.md + 模板形态 verification.md + 完结判定权威源 plan-state.json
+    local T="$1" state="$2" P
     P="$T/plans/task-y"
     mkdir -p "$P"
     echo "goal" > "$P/task_plan.md"
-    printf ' outcome: COMPLETE\n' > "$P/verification.md"
-    touch -d "2 hours ago" "$P/task_plan.md" "$P/verification.md"
+    printf ' outcome: COMPLETE / PARTIAL / BLOCKED\n' > "$P/verification.md"
+    printf '%s\n' "$state" > "$P/plan-state.json"
+    touch -d "2 hours ago" "$P/task_plan.md" "$P/verification.md" "$P/plan-state.json"
 }
 ST13_SID="sfx${$}${RANDOM}"   # T13 套件级唯一 sid(每次 suite 运行生成一次, T13a/T13b 共用)
 st13_exec() { # st13_exec <tmpdir>: 照 T11a/b 手法执行 POSTTOOL hook(唯一 sid=ST13_SID), 输出到 stdout
@@ -214,30 +221,29 @@ st13_exec() { # st13_exec <tmpdir>: 照 T11a/b 手法执行 POSTTOOL hook(唯一
 st13_pos() {
     local T
     T="$(mktemp -d)" || { echo "[T13a] fixture mktemp failed"; return 1; }
-    st13_fixture "$T"
+    st13_fixture "$T" '{"task_id":"task-y","plan_tier":"mini","outcome":"COMPLETE"}'
     local out
     out="$(st13_exec "$T")"
     rm -rf "$T" "/tmp/task-planner-hook-${ST13_SID}.state"
-    # 豁免生效: 兜底分支 L105 命中 → exit 0, 无任何 plan 提醒输出
+    # 权威源豁免: plan-state.json.outcome=COMPLETE 命中 jq 双源主路径 → exit 0, 无任何 plan 提醒输出
     [ -z "$out" ]
 }
-t "T13a S5 正例: 陈旧计划+verification.md(前导空格 outcome: COMPLETE) → POSTTOOL 输出无 plan-compass/plan-sync 提醒(兜底豁免生效)" \
+t "T13a S5 正例: 陈旧计划+plan-state.json.outcome=COMPLETE(模板示例行在位) → POSTTOOL 输出无 plan-compass/plan-sync 提醒(权威源豁免生效)" \
     st13_pos
 st13_neg() {
     local T
     T="$(mktemp -d)" || { echo "[T13b] fixture mktemp failed"; return 1; }
-    st13_fixture "$T"
-    rm -f "$T/plans/task-y/verification.md"   # 因果对照: 删掉兜底锚, 既有 L100 outcome 检查回退到不命中
+    st13_fixture "$T" '{"task_id":"task-y","plan_tier":"mini"}'
     local out
     out="$(st13_exec "$T")"
     rm -rf "$T" "/tmp/task-planner-hook-${ST13_SID}.state"
-    # 无 verification.md → 陈旧提醒必然触发(plan-sync; 无 findings/progress 文件故仅 plan-sync 命中)
+    # 对照因果: 同走 jq 主路径但 outcome 缺失 → 模板前导空格示例行不构成豁免 → 陈旧提醒必然触发
     case "$out" in
         *plan-compass*|*plan-sync*) return 0 ;;
-        *) echo "[T13b-diag] 无 verification.md 时未触发陈旧提醒, 实际输出='$out'"; return 1 ;;
+        *) echo "[T13b-diag] plan-state.json 无 outcome 时未触发陈旧提醒, 实际输出='$out'"; return 1 ;;
     esac
 }
-t "T13b S5 因果对照: 同 fixture 删 verification.md → 输出含 plan-compass/plan-sync 陈旧提醒(豁免由兜底分支因果生效, 非环境巧合)" \
+t "T13b S5 因果对照: 同夹具但 plan-state.json 无 outcome(模板示例行在位) → 输出含 plan-compass/plan-sync 陈旧提醒(示例行不再误判豁免)" \
     st13_neg
 rm -f "/tmp/task-planner-hook-${ST13_SID}.state"   # 清理 T13 两个用例的 state 文件(sid=ST13_SID, 每次运行唯一)
 
