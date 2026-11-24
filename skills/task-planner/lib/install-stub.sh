@@ -71,12 +71,13 @@ user-invocable: true
 node --experimental-strip-types \$TASK_PLANNER_ROOT/scripts/register-hooks-cj.ts
 \`\`\`
 
+<!-- [task-tier-deadzone-fix-20261125] 三位 PostToolUse 追加 tier 检查，死角#1 -->
 \`\`\`json
 {
   "hooks": {
     "SessionStart":     [{ "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/task-plan-init.cjs" }],
     "PreToolUse":       [{ "matcher": "Write|Edit", "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-scope.sh \"\${CLAUDE_TOOL_NAME:-Write}\" \"\${FILE_PATH:-}\"" }],
-    "PostToolUse":      [{ "matcher": "Write|Edit", "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh" }],
+    "PostToolUse":      [{ "matcher": "Write|Edit", "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh" }, { "matcher": "*", "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/tier-upgrade-check.sh" }],
     "UserPromptSubmit": [{ "command": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh" }],
     "Stop":             [{ "command": "SD=\"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"\$SD/check-complete.ps1\" 2>/dev/null || sh \"\$SD/check-complete.sh\"" }]
   }
@@ -169,6 +170,12 @@ hooks:
   name: PostToolUse
   command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh"
   statusMessage: "[task-planner] 计划/Todo 同步检查..."
+# [task-tier-deadzone-fix-20261125] 死角#1：三位 PostToolUse 追加 tier 升档检查（共享 lib 单一事实源）
+- type: command
+  name: PostToolUse
+  matcher: "*"
+  command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/tier-upgrade-check.sh"
+  statusMessage: "[task-planner] tier 升档检查..."
 - type: command
   name: UserPromptSubmit
   command: "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh"
@@ -205,7 +212,7 @@ model: opus
   "hooks": {
     "SessionStart":    "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/task-plan-init.cjs",
     "PreToolUse":      "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-scope.sh",
-    "PostToolUse":     "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh",
+    "PostToolUse":     "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-doc-sync.sh; bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/tier-upgrade-check.sh",
     "UserPromptSubmit": "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/zcode-userpromptsubmit.sh",
     "Stop":            "bash \${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/check-complete.sh"
   }

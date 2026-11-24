@@ -86,8 +86,9 @@ else
 fi
 
 # CP-06: bash -n zcode-posttooluse.sh 通过 ∧ TASK_PLANNER_CONTEXT_PRESSURE>=2 ∧ [context-pressure]>=1 ∧ emit 计数=常量基线
-# hook emit 总数基线=13（原 12 + 2026-11-24 tier-upgrade 注入 1 处，task-perf-default-mini）；变更须同步此常量与注释
-emit_expect=13
+# [task-tier-deadzone-fix-20261125] What: emit 基线 13→14（tier 升级 emit 迁入共享库 lib/tier-upgrade-lib.sh）；Why: 断言随单一事实源迁移同步（a865074b 先例）
+# hook emit 总数基线=14（原 13 + task-tier-deadzone-fix-20261125：tier_emit() 宿主适配行 + lib source 后 emit 计数净增 1）；变更须同步此常量与注释
+emit_expect=14
 bash -n "$POSTTOOLUSE" 2>/dev/null
 bn_ok=$?
 c1=$(grep -c 'TASK_PLANNER_CONTEXT_PRESSURE' "$POSTTOOLUSE")
