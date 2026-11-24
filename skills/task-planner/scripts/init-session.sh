@@ -635,6 +635,38 @@ if [ "${TASK_SCOPE_FILES:-}" = "1" ] && [ "${TASK_SCOPE_MODULES:-}" = "1" ] \
         [ "${_trivial_code}" = "0" ] && echo "[init] trivial 代码修复档：文件 ${_t_fname} 命中保护区（§六/§11.5 条件4），强制不降档"
     fi
 fi
+
+# [task-perf-tiers 2026-11-24 Change #1] 纯文档轻量档判定（第五条件，紧邻 _trivial_code 判定之后）:
+# What: TASK_SCOPE_FILE_LIST 逗号分隔文件名列表 ∈ [3,5] 个 ∧ 全部为纯文本文档后缀
+#       （.md/.txt/.rst/.adoc/.tex/.csv 等，明确不含 .sh/.ts/.py/.json 代码/配置后缀）
+#       ∧ 全部不命中保护区路径 → _pure_doc=1。
+# Why: 实测 4 文件纯文档任务不满足旧「≤2 文件」闸门被误判 L1 标准档，触发 6 轮 critic + 5 轮
+#       drift 审计风暴耗时数小时；本判定只扩大 mini 自动降档的适用面，不改子代理委派门/CLI 工具/
+#       Superpowers/OpenSpec 判定语义（用户 11-23 裁决）。保护区路径 case 逐字复用上方
+#       _trivial_code 分支（镜像 check-delegation.sh:332-345），命中即否决（宪法 §六/§11.5）。
+_pure_doc=0
+if [ -n "${TASK_SCOPE_FILE_LIST:-}" ]; then
+    _pd_nfiles="$(printf '%s' "${TASK_SCOPE_FILE_LIST}" | awk -F',' '{print NF}')"
+    if _s22_uint "${_pd_nfiles:-0}" && [ "${_pd_nfiles}" -ge 3 ] && [ "${_pd_nfiles}" -le 5 ]; then
+        _pd_all_doc=1
+        # 逗号切分逐个校验（与 _trivial_code 的字面文件名口径一致，文件名不含空格）
+        for _pd_fname in $(printf '%s' "${TASK_SCOPE_FILE_LIST}" | tr ',' ' '); do
+            case "$_pd_fname" in
+                *.md|*.txt|*.rst|*.adoc|*.asciidoc|*.tex|*.csv|*.org|*.markdown) ;;
+                *) _pd_all_doc=0 ;;
+            esac
+            case "$_pd_fname" in
+                */.zcode/skills/*|*/.zcode/agents/*|*/.zcode/commands/*|*/.zcode/AGENTS.md|*/.zcode/cli/*) _pd_all_doc=0 ;;
+                */.claude/skills/*|*/.agents/skills/*|*/.agents/AGENTS.md|*/.agents/agents/*|*/.agents/commands/*|*/.config/opencode/*) _pd_all_doc=0 ;;
+                skills/*|*/skills/*|agents/*|*/agents/*) _pd_all_doc=0 ;;
+                *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*) _pd_all_doc=0 ;;
+                *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) _pd_all_doc=0 ;;
+            esac
+        done
+        [ "${_pd_all_doc:-0}" = "1" ] && _pure_doc=1
+    fi
+fi
+
 if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
     if [ "${TASK_TIER_EXCLUDE:-}" = "1" ]; then
         echo "[init] auto-tier: 命中④排除条件（保护区/Rule 36 技能修改/D6 高危），不自动降 mini（Rule 38.6；显式指定 mini 仍可）"
@@ -647,6 +679,16 @@ if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
         AUTO_TIER_FIRED=1
         TRIVIAL_CODE_TIER=1
         echo "[init] auto-tier: trivial 代码修复命中（scope=单文件代码 ${TASK_SCOPE_FILE_LIST} ∧ 预估 ${TASK_EST_LINES} 行 ≤3 ∧ ${TASK_EST_MINUTES}min ≤15 ∧ 单模块 ∧ ④排除未命中）→ mini+L0（Rule 38.6 第四条件, task-perf-opt）"
+    elif [ "${_pure_doc:-0}" = "1" ] \
+       && [ "${TASK_TIER_EXCLUDE:-}" != "1" ] \
+       && _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
+       && _s22_uint "${TASK_SCOPE_MODULES:-}" && [ "${TASK_SCOPE_MODULES}" -eq 1 ]; then
+        # [task-perf-tiers 2026-11-24 Change #1] 第五条件分支：纯文档轻量档（3-5 个纯文本文档 ∧ ≤15min
+        # ∧ 单模块 ∧ ④排除未命中）→ mini。Why: ≤2 文件的旧闸门漏掉 4 文件纯文档任务，导致标准档
+        # 审计风暴；本分支只走既有 mini 通道（复用其验证/委派豁免），不新增机器门，保留显式档优先。
+        PLAN_TIER="mini"
+        AUTO_TIER_FIRED=1
+        echo "[init] auto-tier: 纯文档轻量档命中（scope=${TASK_SCOPE_FILE_LIST} ∧ 3-5 文件全纯文档后缀 ∧ ${TASK_EST_MINUTES}min ≤15 ∧ 单模块 ∧ ④排除未命中）→ 自动降档 mini（Rule 38.6 第五条件, task-perf-tiers 2026-11-24）"
     elif _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
        && _s22_uint "${TASK_SCOPE_FILES:-}" && [ "${TASK_SCOPE_FILES}" -ge 1 ] && [ "${TASK_SCOPE_FILES}" -le 2 ] \
        && _s22_uint "${TASK_SCOPE_MODULES:-}" && [ "${TASK_SCOPE_MODULES}" -eq 1 ]; then
@@ -720,7 +762,18 @@ fi
 # [2026-09-20 task-v086 P2-S2 Rule 38.2] tier 分流: mini 档 → mini-lite 模板
 # 正交语义: 已命中 variant template_type(定制中档)时 tier=mini 不生效, 仅提示
 if [ "$PLAN_TIER" = "mini" ]; then
-    if [ -n "$TEMPLATE_TYPE" ] && [ "$TASK_PLAN_SRC" != "task_plan.md" ]; then
+    # [task-perf-tiers 2026-11-24 Change #2] auto-tier 轻量档不被 variant 吞（前置分支）:
+    # What: AUTO_TIER_FIRED=1（自动判定 mini）→ 强制 TASK_PLAN_SRC=variant/mini-lite-type.md，
+    #       跳过下方「variant 定制优先 + tier=mini 忽略」原逻辑；显式 TASK_PLAN_TIER=mini
+    #       （AUTO_TIER_FIRED=0）仍走原逻辑，PT-13/PT-17 锁定的显式场景语义逐字不变。
+    # Why: auto-tier 自动降档的 mini 遇 writing/storyboard/character-design 等 variant 被同一分支吞掉，
+    #       产物丢 plan_tier: mini 标记 → check-delegation ④b 与 check-scope D10 双门失效 → 被迫全套委派。
+    #       mini-lite-type.md 自带 plan_tier: mini 行，下游 auto_tier 标记插入逻辑（依赖 AUTO_TIER_FIRED=1
+    #       ∧ 产物含该行）自然成立，链路无需另改。
+    if [ "${AUTO_TIER_FIRED:-0}" = "1" ]; then
+        TASK_PLAN_SRC="variant/mini-lite-type.md"
+        echo "[init] auto-tier 轻量档不被 variant 吞：template_type=${TEMPLATE_TYPE:-无} 自动降档优先，沿用 mini-lite 模板（Rule 38.2 正交语义仅对显式 mini 生效, task-perf-tiers 2026-11-24）"
+    elif [ -n "$TEMPLATE_TYPE" ] && [ "$TASK_PLAN_SRC" != "task_plan.md" ]; then
         echo "[init] tier=mini 忽略：template_type=$TEMPLATE_TYPE 定制优先（variant 即中档定制，mini 不适用，Rule 38.2）"
     else
         TASK_PLAN_SRC="variant/mini-lite-type.md"

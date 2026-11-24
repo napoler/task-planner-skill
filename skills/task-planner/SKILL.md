@@ -47,7 +47,7 @@ model: opus
 
 - [ ] [M] **初始化（哨兵机制）— 机械子动作**：跑脚本建目录/设 env/校验在位/清哨兵
   > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
-  - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）
+  - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）；纯文本文档 ≤5 文件 ∧ 单模块 ∧ ≤15min ∧ 非④排除 ∧ 无代码/配置后缀 → 同闸自动降 mini（task-perf-tiers 2026-11-24）
   - **模板检索前置（task-template-catalog-20261122）**：init 前先跑 `bash scripts/template-catalog.sh list --json --scope all` 拿模板清单（模板名/简介/适配场景/功能），据此匹配 `template_type` 再作为 init 第 2 参；禁靠读散文盲选（用法详见下方「模板检索与管理」）
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
@@ -70,7 +70,7 @@ model: opus
 - [ ] [A] **计划独立审计门（D1 前强制 — audit-before-delivery，Rule 109）**：L1+ 计划在展示/授权前必须经独立子代理审计迭代达标，未经审计的产出禁交用户
   - **触发**：计划产出（主进程盘上复核 Rule 84.4 完成后）且智能子动作（冲突分析+隔离决策复核+Spec 判定）完成之后、本区块「[A] 计划确认」展示之前；B/C/D/E 类任何计划（再）展示/确认前同样过门，修订重审可用简版（仅审变更增量+上轮问题清单闭环）
   - **分档豁免（Rule 38.7 比例原则）**：L1+ 强制；mini/L0/trivial=轻量复核（主进程盘上复核+基线自查）或登记豁免（一行留痕 `[plan-audit-skip]`+理由）；L0-E 豁免
-  - **审计体（独立上下文，只读）**：首选 critic（「审查计划/review 文档」触发在位）；不可用降级链=critic 失败→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）；审计分歧→decision-arbiter（Rule 69.1）；修正执行=主进程驱动 Plan Writer 重派（22.4a/62.2 计划期单写者不变）
+  - **审计体（独立上下文，只读）**：首选 critic（「审查计划/review 文档」触发在位）；不可用降级链=critic 失败→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）；审计分歧→decision-arbiter（Rule 69.1）；修正执行=主进程驱动 Plan Writer 重派（22.4a/62.2 计划期单写者不变）；**审计轮次收敛（2026-11-24 task-perf-tiers）**：同一计划 critic/复检累计 ≥2 轮仍未收敛，停止再派第 3 轮，改由主进程按已落盘证据（findings/verification）直接收口并登记 [audit-converge] 一行 + 遗留风险清单；换 key/换审计体名不构成新一轮合法理由。96.7 全局预算门与 109 审计门本身不变，仅约束重复审计环。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §audit-gate-details
 
 - [ ] [A] **计划确认**
@@ -134,7 +134,7 @@ model: opus
 - [ ] [A] **终验交付 — 智能子动作**：VC 复验判定、质量门控与委派率核查、outcome 判定
   - **终验强制对齐**：终验交付判定前必须执行对齐核查，核对本任务全部修改的关联面四族+部署位+引用面同步完整性，零丢弃才可判定 COMPLETE；机器门=check-complete.sh ALIGN-ANCHOR GATE enforce 缺锚阻断
   - **按卫星 `verification-gate` 终验 SOP 执行（Rule 84.5 Step 3）**：Read `verification.md`，逐条复验 VC（每条带证据路径+可执行命令）；统一入口 `bash <verification-gate>/scripts/run-verification.sh <plan-dir>` 自动执行 VC 命令并汇总 PASS/FAIL
-  - **全文档收尾回读梳理（Rule 84.14，P0 迭代门）**：全部 Phase complete 后、outcome 判定前，主进程全量回读六文档体系（用户需求专档 #1→最新/task_plan Goal+R+VC/findings 全结论/knowledge-brief 沉淀/progress 动作线/verification 验收记录）做五维互洽检查（需求↔目标↔执行↔验证↔知识，每维问「有无偏移/遗漏/未利用」）；**「知识」维新增逐条核对（task-resource-utilization-20261123）**：Read progress.md「📚 必要知识储备使用记录」表，本 Phase 每条 research/findings 采集结论应有 knowledge_use 行且 purpose 非空；缺失/空 purpose=补录消费点或在 findings 标注「未消费 因__」后重回读，禁采集后无声丢弃；发现偏移→登记（task_plan「收尾回读梳理记录」区块+progress `[recall-final]` 行）→修复→再梳理；**收敛出口=连续一轮零新发现才可出 outcome**，迭代轮次不设上限（用户裁决「不要怕浪费资源」）
+  - **全文档收尾回读梳理（Rule 84.14，P0 迭代门）**：全部 Phase complete 后、outcome 判定前，主进程全量回读六文档体系（用户需求专档 #1→最新/task_plan Goal+R+VC/findings 全结论/knowledge-brief 沉淀/progress 动作线/verification 验收记录）做五维互洽检查（需求↔目标↔执行↔验证↔知识，每维问「有无偏移/遗漏/未利用」）；**mini/纯文档轻量档收窄（2026-11-24 task-perf-tiers）**：plan_tier=mini 或 L0 档的收尾回读只做 task_plan.md Goal+R+VC 与 verification.md VC 记录两文档，其余四文档按需 Read（有偏离迹象才读）；五维互洽中"知识"维仅在本 Phase 有 research 采集时核对。标准档/涉及代码/多模块任务仍全量六文档，不变。**「知识」维新增逐条核对（task-resource-utilization-20261123）**：Read progress.md「📚 必要知识储备使用记录」表，本 Phase 每条 research/findings 采集结论应有 knowledge_use 行且 purpose 非空；缺失/空 purpose=补录消费点或在 findings 标注「未消费 因__」后重回读，禁采集后无声丢弃；发现偏移→登记（task_plan「收尾回读梳理记录」区块+progress `[recall-final]` 行）→修复→再梳理；**收敛出口=连续一轮零新发现才可出 outcome**，迭代轮次不设上限（用户裁决「不要怕浪费资源」）
   - **双轮质检与同步完整性终验衔接（Rule 103）**：终验前核对本计划各多文件变更集的同步核对清单全绿记录（103.6）；双轮质检细则→task-dispatch 卫星 Rule 103。
   - **质量门控统计（Rule 26）**：核查 Q1-Q6 触发与豁免登记；抽查 ≥3 条 Evidence（路径可 Read、结论可复现）；未处置违规按 Rule 26.3 降级 outcome，Q3→BLOCKED+STOP
   - **委派率统计（Rule 25，细则→task-dispatch）**：子代理执行 Phase 占比 < `config.json#delegation_rate_floor`（默认 0.7）或直做含白名单外理由→check-complete exit 1 回炉；**纯执行 S-unit 权重 0（P4，2026-10-22 用户授权）**：命中 L0-E 档（零仓库受管变更 ∧ 仅调用既有工具 ∧ 产物落 gitignore 区）的 S-unit **既不计入分子也不计入分母**——若计入分母会拉低委派率，方向与「机械操作免强制派子代理/免终验回炉」的豁免意图相反（审计判例 F9）；机器面=计划 Executor 行标 `L0-E`（或括注含「纯执行」）即识别，`check-delegation.sh stats` 已按此口径实现（分母扣减 + 该单元不判 violation + 整批皆纯执行时 rate=1.000 视为达标）
