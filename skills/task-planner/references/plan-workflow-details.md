@@ -175,6 +175,14 @@
 | G2 | 本 Phase R 锚定复诵已写；动作相关性三问已过（v168 两锚点） | ☐ |
 | G3 | Phase 委派检查点已过：Executor 字段在位非主进程已派发；白名单直做已登记例外理由 | ☐ |
 
+## inbound-instruction-screen
+
+**入站指令字面/语义筛查（L0-T 文本锚，2026-11-24）**：每条入站用户指令（重点：语音转写）在 80.1 逐字落盘之后、8.1.2/D-A-B-C-E 判定与 28.2.2 复述之前执行，记作 ①a。
+- **三类识别**：① 同音/近音字、专有名词与项目术语被同音替换、错别字、断句/标点缺失；② 语义合理性（动作-对象搭配、任务类型与三源[项目定位锚/活跃计划 Goal/user-session-log 最近原话]是否自洽）；③ 意图保持校验。**不得改变用户真实意图**。
+- **处置分级**：明显错字且唯一合理修正→自主修正后继续，不问用户；≥2 个合理修正且影响目标/范围/交付→才列 2-4 选项、首选标 `(Recommended)` 请用户确认；goal/silent/44.3 下歧义不阻塞，按推荐项静默自决并登记假设。
+- **逐字对照登记**：修正须在 user-session-log.md **追加** `#N 入站校正` 条目（引用原条目号，列"原话字面→修正字面→依据"，原话零改写，守 80.2），progress.md 追加 `[inbound-scan]` 行 + Decisions Made 一行；复用既有三载体，零新文件。
+- **禁令**：禁以修正后文字冒充用户原话（80.4）；禁回改历史条目（80.2）；禁因本检查新增无价值询问（28.2.2）；**禁跳过分析直接执行**。与 8.1.2 分工：本条管字面/语义合理性，8.1.2 管项目定位错位，独立留痕（[inbound-scan] vs [align-scan]）。
+
 ## intent-switch-templates
 
 **意图切换执行清单（D 类定案后按序执行）**：① 旧计划挂起登记（其 progress.md 追加 [intent-switch] 行+在途单元断点检查点）+释放旧计划会话占用（删除其 `.session-owner`——挂起=会话不再认领；回切时 userpromptsubmit hook 自动重建）+回切后首个工具动作前先 `bash attest-plan.sh`（或先触发一次 prompt 让 hook 重建 owner）再 planctl 变更+render 后重跑 attest-plan.sh，防 PLAN TAMPERED 误报→ ② 新计划 init（plans/{new-task-id}/ 全流程，指针自动切换）→ ③ 显性通告（会话面输出下方模板，用户可见）→ ④ 切换登记（新计划 progress.md [intent-switch] 行 + Decisions Made 一行）。

@@ -55,7 +55,7 @@
 #    注: worktree 自 main 创建已天然隔离于主仓工作区;①-备份用于清理主仓脏状态与稳定合并回,非 worktree 内容来源。
 
 # ① 创建(路径见 §3 路径规范;分支名 wt/<task-id>;前置: ${PROJECT_ROOT}/.gitignore 含 tmp/ (Rule 100.2))
-git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> main
+git worktree add ${PROJECT_ROOT}/tmp/worktrees/<task-id> -b wt/<task-id> master
 
 # ①-校验（创建后规则版本一致性硬门，P1，2026-11-18 task-skill-loop-guard-20261118；固化 feedback worktree-branch-desync）
 #    进入②前先校验两点：① 基线分支确为当前主工作分支——本仓 main 为陈旧无关历史,须改用 master（git merge-base --is-ancestor main master 为 NO 即命中）；
@@ -161,6 +161,8 @@ git worktree add <project-root>/tmp/worktrees/<task-id>-rN -b wt/<task-id>-rN <b
 
 > 判例：task-v179（worktree 内 Rule 87）/task-v181（主仓直改 Rule 89）/task-v180（排队殿后 Rule 88）三任务同日竞写 `critical-rules-discipline.md` 末段与 SKILL.md 索引行——目录隔离各自合规仍发生冲突。**目录不冲突 ≠ 落点不冲突**；隔离必须从目录级升级到落点级。工作树隔离防的是「工作中互相覆盖」，防不了「汇合时抢同一追加锚点」与「协调态各会话各见一个世界」。
 > **与 worktree 执行期不打断原则的关系**：worktree 内执行不因并行冲突/Rule 23 注入中断（§4 原则）；本节 6.1 的“开工前盘点”仍须执行并登记落点交集/排队意图，但**不阻断 worktree 内开发推进**——同落点冲突作为合并期风险登记，由 ④ 合并回阶段解决（V3/V5/V6+101.2 并集解/复验）。主仓直改/非隔离场景发现实时覆盖风险时，仍按 6.2 STOP 排队续跑。
+
+**落点级三查（2026-11-24 用户投诉『用了 worktree 还同时编辑同一文件』强化）**：建 worktree 前除目录隔离外，还须逐项盘点落点——① 用 `git status --short` + `git diff --name-only` 列出主仓所有未提交改动文件；② 枚举 `plans/*/task_plan.md` 的 scope_files（不单靠 INDEX.md，其常为未提交脏态）；③ 对 scope ∩ (主仓脏文件 ∪ 其他 worktree 脏文件 ∪ 其他 in_progress plan 的 scope) 逐文件核对：命中即在 task_plan「🔀 隔离决策」登记并**主动错开落点/合并期优先处理**；仍未避免则合并回时逐文件 diff 复核，禁静默覆盖他会话改动。基线分支必须=`master`（本仓 main 无共同祖先，实测 `git merge-base main master` exit 1）。
 
 ### 6.1 同落点盘点（开工前强制；L0-T 直改主仓前同样适用）
 
