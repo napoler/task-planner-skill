@@ -427,9 +427,9 @@ Phase 1
 | 类别 | 检查项 | 判据 | 证据 |
 |---|---|---|---|
 | 对齐 | 口径计数 / 冲突条款 / 行数快照 | 冲突锚 grep 无本任务新增命中 | progress `[align-final]` 行 |
-| 清理 | 历史注释 / 过期注 / 残留物 | 本任务新增痕迹注为 0 | progress `[cleanup-final]` 行 |
+| 清理 | Skill 说明 Markdown（SKILL.md/references/templates）中的历史旁注 / 过期注 / 残留物；**代码文件注释不在清理范围、受保护** | 本任务新增痕迹注为 0（代码注释不计入） | progress `[cleanup-final]` 行 |
 
-执行时机：outcome 判定之前、合并回动作之前；mini / L0-lite 档豁免本板块。
+范围：只清会被 Agent 读进上下文的 Skill 说明文件；代码文件（.py/.sh/.ts 等）里的注释不进 Agent 上下文、便于后期理解，属保护对象，禁止清理。执行时机：outcome 判定之前、合并回动作之前；mini / L0-lite 档豁免本板块。
 
 ## 🔀 隔离决策（冲突分析 — 实现类默认首选 worktree）
 <!-- 

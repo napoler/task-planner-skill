@@ -23,7 +23,7 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 - 本技能**不执行**任何机械动作：模板查找/复制/白名单=init-session.sh，类型门控=check-template-type.sh + attest，均为 task-planner 脚本职责
 - 模板清单检索/克隆/派生 = task-planner `../task-planner/scripts/template-catalog.sh`（task-template-catalog-20261122）：`list --json --scope all` 拿模板名/简介/场景/功能、`clone`/`derive` 固化沉淀；本技能仅将此脚本作为选型时的只读清单来源，不复制其机械职责
 - 白名单动态派生自 variant/ 目录（task-v115 videop1 回流后 29 类），本技能两份 reference 只描述、不改机械行为
-- 收尾对齐与清理板块由 task_plan 基座模板 + `planctl.py` render 承载；variant 通过 template-lineage 的 `pruned` 声明裁剪该板块；mini-lite/l0-lite 档豁免，不进入正文。
+- 收尾对齐与清理板块由 task_plan 基座模板 + `planctl.py` render 承载；variant 通过 template-lineage 的 `pruned` 声明裁剪该板块；mini-lite/l0-lite 档豁免，不进入正文。该板块的清理范围仅限会被 Agent 读进上下文的 Skill 说明 Markdown；代码文件（.py/.sh/.ts 等）里的注释属保护对象、禁止清理（便于后期理解、不占 Agent 上下文）。
 
 ## 沉淀指针（Rule 34）
 
