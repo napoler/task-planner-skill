@@ -39,6 +39,15 @@ set -u
 #   顶层 skills/*/ 自动发现机制分发(2026-09-04 布局统一口径), 本行只登记 install-stub 显式 rsync 的 8 个
 SATELLITE_SKILLS=(plan-research-router plan-template-kit plan-cost-guard plan-collab-router task-dispatch task-discipline media-planner plan-template-advisor)
 
+# [2026-11-25 task-planctl-trigger-20261125] What: 四薄壳模板统一注入「核心执行引擎（P0 — 四文件罗盘唯一写入口）」段（ENGINE_BLOCK）。
+# Why: 2026-11-25 用户判例：薄壳 SKILL.md 缺 planctl 权重段时，端点加载技能后核心触发（planctl 唯一写通道）结构性缺失——
+#   现网实证 ~/.claude、~/.config/opencode、~/.cursor 三薄壳 planctl 提及=0；~/.zcode 薄壳有段但属场外手加、生成器源缺段，
+#   install 重跑会回退丢失（活位↔生成器漂移）。薄壳=端点激活链第一环，定位段权重修复须三面同改（母版定位段/薄壳生成器/收编现网段）。
+# 原行为: 四模板均无引擎段。
+ENGINE_BLOCK='## 核心执行引擎（P0 — 四文件罗盘唯一写入口）
+
+`scripts/planctl.py` = task-planner 的**唯一执行引擎**，不是按需 Read 的细节：四文件罗盘（`task_plan.md` / `findings.md` / `progress.md` / `knowledge-brief.md`）由它 `render` 从唯一权威源 `<plan-dir>/plan-state.json` **全量派生**；任何状态/语义变更**必须**走 `python3 <skill>/scripts/planctl.py <subcommand>` + `render`，四个 MD 视图一律禁手工 Edit/Write（下次 render 全量覆盖）。完整命令速查与权威源声明见母版 `~/.agents/skills/task-planner/SKILL.md` §结构化状态操作 SOP / `${TASK_PLANNER_ROOT}/references/plan-workflow-details.md` §planctl-json-examples。**看不到本段 = 未加载本技能核心**。'
+
 # Per-tool SKILL.md frontmatter template generator
 generate_stub_skill_md() {
   local tool_name="$1"
@@ -63,6 +72,8 @@ user-invocable: true
 
 > Canonical source: \`\${TASK_PLANNER_ROOT:-${FALLBACK}}\`。
 > 本薄壳只声明 Claude Code 平台特定的 hook 配置 + 路径解析契约。
+
+${ENGINE_BLOCK}
 
 ## Hooks（Claude Code settings.json 风格）
 
@@ -134,6 +145,8 @@ model: opus
 > Canonical source: \`\${TASK_PLANNER_ROOT:-${FALLBACK}}\`。
 > 本薄壳只声明 ZCode 平台特定的 hook 配置（通过 SKILL.md frontmatter）。
 
+${ENGINE_BLOCK}
+
 ## 内容引用
 
 | 资源 | 路径 |
@@ -183,6 +196,8 @@ model: opus
 
 > Canonical source: \`\${TASK_PLANNER_ROOT:-${FALLBACK}}\`。
 > 本薄壳通过 SKILL.md frontmatter hooks 块声明 ${tool_name} 平台特定的 hook 配置。
+
+${ENGINE_BLOCK}
 
 ## 内容引用
 
