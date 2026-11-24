@@ -211,16 +211,7 @@ if [ -f "$rhythm_f10" ]; then
   fi
 fi
 
-[ "$age" -gt 86400 ] && exit 0   # >24h 未更新 = 历史任务，不打扰
-
-# ─── 完结计划静默（[2026-08-28] 防误报:outcome 已定局的任务不再催）────────────
-if grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "$plan" 2>/dev/null; then
-  exit 0
-fi
-# [2026-09-17 task-v078] 兜底: 本仓约定 outcome 落盘在 verification.md(task_plan.md 不含) —
-# 已交付计划(verification.md 含 outcome: COMPLETE|BLOCKED)同样豁免陈旧提醒(误报修复)
-[ -f "${plan_dir}/verification.md" ] && grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "${plan_dir}/verification.md" 2>/dev/null && exit 0
-
+# [fix-tierup-20261124] 置于完结静默守卫之前：模板 verification.md 示例行 "outcome: COMPLETE / PARTIAL / BLOCKED" 会被下方宽松 grep 误判为已完结而 exit 0；本函数的完结判定用 plan-state.json 权威源（jq），不受模板示例字样影响。
 # ─── [task-perf-default-mini 2026-11-24] 运行时间自动升级 standard ─────────────
 # What: 活跃计划 plan_tier=mini ∧ 本会话未升级 ∧ now-created_at > TASK_PLANNER_TIER_UPGRADE_MINUTES
 #       （默认 15min）→ planctl set plan_tier=standard + decisions 登记 TU-1 + render + 可选 attest 重锁
@@ -285,6 +276,26 @@ PY
   exit 0   # 单轮单 JSON 约束（F9）：升级注入后结束本轮 hook，避免与下方提醒双行输出
 }
 tier_upgrade_check "$plan" "$SID" "$plan_dir" "$(dirname "$plan_dir")"
+
+[ "$age" -gt 86400 ] && exit 0   # >24h 未更新 = 历史任务，不打扰
+
+# ─── 完结计划静默（[2026-08-28] 防误报:outcome 已定局的任务不再催）────────────
+# [fix-tierup-20261124] 完结判定改双源：优先 plan-state.json 的 .outcome（权威源；模板 verification.md:118
+# 含示例行 "outcome: COMPLETE / PARTIAL / BLOCKED"，宽松 grep 会把示例文本误判为已完结 → 新 init 计划
+# 被完结静默误挡，陈旧提醒对新计划从未生效过）。降级（无 jq / 无 state 文件）才用文本行首锚 ^outcome:，
+# 模板示例行有前导空格不被 ^ 命中。
+_cc_done=0
+if command -v jq >/dev/null 2>&1 && [ -f "${plan_dir}/plan-state.json" ]; then
+  jq -e '(.outcome // "") | test("^(COMPLETE|BLOCKED)$")' "${plan_dir}/plan-state.json" >/dev/null 2>&1 && _cc_done=1
+elif grep -qE '^outcome: *(COMPLETE|BLOCKED)' "$plan" 2>/dev/null; then
+  _cc_done=1
+fi
+if [ "$_cc_done" = 1 ]; then
+  exit 0
+fi
+# [2026-09-17 task-v078] 兜底: 本仓约定 outcome 落盘在 verification.md(task_plan.md 不含) —
+# 已交付计划(verification.md 含 outcome: COMPLETE|BLOCKED)同样豁免陈旧提醒(误报修复)
+[ -f "${plan_dir}/verification.md" ] && grep -qE '^outcome: *(COMPLETE|BLOCKED)' "${plan_dir}/verification.md" 2>/dev/null && exit 0
 
 # ─── 读阈值（config.json；解析失败兜底默认值，保证 fail-open）────────────────
 SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
