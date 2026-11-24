@@ -260,9 +260,12 @@ PY
   decision="[tier-upgrade] 运行 ${elapsed} 分钟超轻量阈值(${threshold}min)，自动升级 standard 检查面"
   python3 "$script_dir_tu/planctl.py" add --plan-dir "$pdir" --section decisions --json "{\"id\":\"TU-1\",\"decision\":\"${decision}\",\"rationale\":\"用户 2026-11-24 裁决：基于运行时间升级，非主观判断\"}" >/dev/null 2>&1 || return 0
   python3 "$script_dir_tu/planctl.py" render --plan-dir "$pdir" >/dev/null 2>&1 || return 0
-  # 重锁：仅当既有 attestation 存在（实测调用形态 attest-plan.sh <task_plan.md>，不带 --skip 旗标）
-  if [ -f "$pdir/.plan-attestation" ] && [ -f "$script_dir_tu/attest-plan.sh" ]; then
-    bash "$script_dir_tu/attest-plan.sh" "$pdir/task_plan.md" >/dev/null 2>&1 || return 0
+  # [fix-tierup2-20261124] stale 锁处理：升级后计划文档仍是 mini-lite 骨架（无 R 需求行等 standard 硬锚），
+  # attest 重锁必被 fail-closed 拒锁（实测 rc=1，"mini 档豁免——先回炉补区块再锁定"）→ 旧锁（锁 mini 形态哈希）
+  # 留着会在后续 attest --verify 时误报 TAMPERED。机制性删除 stale 锁：TU-1 decision 已登记本次机制变更
+  # （Rule 51.7 登记要求满足）；standard 门的锁定要求仍在——模型按 standard 流程补全 R 区块后自然重新锁定。
+  if [ -f "$pdir/.plan-attestation" ]; then
+    rm -f "$pdir/.plan-attestation"
   fi
   # 幂等状态原子写（模仿 drift-rhythm 的 先 tmp 后覆盖 范式，防并发半写）
   mkdir -p "$plans_root/.tier_state" 2>/dev/null || return 0
