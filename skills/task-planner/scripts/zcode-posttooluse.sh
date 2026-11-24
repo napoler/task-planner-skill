@@ -215,11 +215,16 @@ fi
 # Why: 三死角#1 跨工具（claude/cursor/opencode 无 tier 逻辑）；#2 幂等粒度 <sid>_<taskkey>.state；
 #      #3 半升级静默→state-first+repair+tier_emit FAIL 曝光；#5 完结守卫对象兼容。修复登记见 lib 头注释。
 # zcode 宿主适配：tier_emit=JSON additionalContext 包装（F9 单轮单 JSON）；TIER_UPGRADED=1 时 exit 0。
+# [R2/F3] 单轮单 JSON 的真正保证：lib 出口 tier_flush 一轮至多输出一次，但本 hook 后续提醒链
+#   （plan-sync/findings/progress/todo-sync/drift-rhythm）会再输出一行 → 与 tier 行叠成 2 行 JSON。
+#   故本轮只要产出了 tier 文案（TIER_EMITTED=1，含 FAIL 轮）即 exit 0：tier 故障优先曝光，提醒链顺延
+#   到下一轮（FAIL 未修复前每轮都会重试并曝光，不丢信息）。TIER_UPGRADED 一并保留以明示升级语义。
 tier_emit() { emit "$1"; }
 # shellcheck source=lib/tier-upgrade-lib.sh
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/tier-upgrade-lib.sh"
 tier_upgrade_check "$plan" "$SID" "$plan_dir" "$(dirname "$plan_dir")"
 [ "${TIER_UPGRADED:-0}" = 1 ] && exit 0
+[ "${TIER_EMITTED:-0}" = 1 ] && exit 0
 
 [ "$age" -gt 86400 ] && exit 0   # >24h 未更新 = 历史任务，不打扰
 
