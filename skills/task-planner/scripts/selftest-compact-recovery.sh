@@ -232,9 +232,12 @@ printf '%s\n' "$CTX16" | grep -qF '常驻嘉宾必须是明星' \
 DEPLOY="$T/deploy/skills/task-planner"
 mkdir -p "$DEPLOY"
 cp -r "$SCRIPT_DIR" "$DEPLOY/scripts"
+# SKILL_MD 在 T13c 已回溯到 canonical 正文（部署位薄壳场景也成立），其父目录才是真正的技能根；
+# 不能用 $REPO/skills/task-planner——在部署位环境下 $REPO=~/.zcode，会指回薄壳自身。
+_CANON_SKILL_DIR="$(dirname "$SKILL_MD")"
 {
   printf '%s\n' '---' 'name: task-planner' '---' '# task-planner — 宿主薄壳（夹具）'
-  printf '> Canonical source: `${TASK_PLANNER_ROOT:-%s}`.\n' "$REPO/skills/task-planner"
+  printf '> Canonical source: `${TASK_PLANNER_ROOT:-%s}`.\n' "$_CANON_SKILL_DIR"
   printf '%s\n' 'STUB-ONLY-MARKER 薄壳无技能正文'
 } > "$DEPLOY/SKILL.md"
 R17A="$(mkroot t17a)"
@@ -245,7 +248,7 @@ printf '%s\n' "$CTX17A" | grep -qF '[compact-recovery]' && [ "$(printf '%s\n' "$
 FEATURE17="$(grep -m1 -F '四文件罗盘的唯一管理域' "$SKILL_MD")"
 printf '%s\n' "$CTX17A" | grep -qF -- "$FEATURE17" && ! printf '%s\n' "$CTX17A" | grep -qF 'STUB-ONLY-MARKER' \
   && ok "T17b 薄壳 SKILL.md 回溯 canonical 正文（注入源仓全文，不注入薄壳内容）" || bad "T17b 薄壳未回溯 canonical"
-printf '%s\n' "$CTX17A" | grep -qF "$REPO/skills/task-planner/SKILL.md" \
+printf '%s\n' "$CTX17A" | grep -qF "$_CANON_SKILL_DIR/SKILL.md" \
   && ok "T17c 注入的技能正文路径指向 canonical 源仓" || bad "T17c 技能正文路径非 canonical"
 # T17d 进度全貌 + 最近动作（planctl 直调）：✓/▶/○ 三态 + 按 at 取尾部、无 at 排最前
 R17D="$(mkroot t17d)"
