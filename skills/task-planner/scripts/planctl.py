@@ -124,8 +124,12 @@ ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "research_status": {"unit": "", "state": "", "keywords": "", "channels": "", "output": "", "net": ""},
     "evidence_faces": {"face": "", "target": "", "method": "", "anchor": "", "status": ""},
     "tool_use": {"phase": "", "tools": "", "why": ""},
+    # [2026-11-24 task-sp-driven-invocation H5] What: s_units 默认键增 escort_skills（字符串数组）。
+    # Why: 伴飞技能 .md 路径原本无专用编码载体，parallel 占「伴飞技能」列致 Rule 59.2 路径无法入库；
+    #      类型与 s_units 其他数组字段一致（审计 N-I-3/NIT，非单一字符串）。
     "s_units": {"phase": "", "name": "", "executor": "", "files": "", "actions": "",
-                "verify": "", "duration": "", "granularity": "", "parallel": ""},
+                "verify": "", "duration": "", "granularity": "", "parallel": "",
+                "escort_skills": []},
     "anti_regress": {"item": "", "method": "", "anchor": "", "result": ""},
     "fmea": {"phase": "", "mode": "", "severity": 0, "occurrence": 0,
              "detection": 0, "rpn": 0, "fallback": ""},
@@ -527,8 +531,12 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({k: STR_FIELD for k in ("phase", "tools", "why")})
         required = {"id", "phase", "tools"}
     elif section == "s_units":
+        # [2026-11-24 task-sp-driven-invocation H5] What: known 键增 escort_skills → STR_LIST_FIELD。
+        # Why: 缺省时通用 add/set 写入 escort_skills 会被下方「未知字段」分支拒绝（审计 N-I-3），
+        #      导致默认键虽存在却无法经权威写入接口落库。
         known.update({k: STR_FIELD for k in ("phase", "name", "executor", "files", "actions",
                                               "verify", "duration", "granularity", "parallel")})
+        known["escort_skills"] = STR_LIST_FIELD
         required = {"id", "phase", "name"}
     elif section == "anti_regress":
         known.update({k: STR_FIELD for k in ("item", "method", "anchor", "result")})
@@ -1221,10 +1229,19 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                 name = _cell(s.get("name", ""))
                 actions = _cell(s.get("actions", ""))
                 goal = f"[{_cell(pid)}] {name}" + (f"（{actions}）" if actions else "")
+                # [2026-11-24 task-sp-driven-invocation H5] What: 第8列「伴飞技能」改渲染 escort_skills 的 .md
+                #   路径（空→「无」）；parallel 组标识从第8列移出，落第9列「前置依赖」行内注解。
+                # Why: 原第8列填 parallel 使 Rule 59.2「路径+首动作 Read」无承载列；前置依赖列原恒渲 "-"
+                #   恰好可复用，零列变更、不动 SUNIT_HEADERS/31 个 variant。注解用 [parallel-group:<值>]
+                #   中性 token：check-plan-dispatch.sh 的 rule68_expand_deps 对非 ID token 原样输出，
+                #   H4 只查 ID→组映射，不会把注解误判为非法 S-unit ID（审计 H3 风险规避）。
+                _escort = _cell(s.get("escort_skills", "")).strip() or "无"
+                _parallel = _cell(s.get("parallel", "")).strip()
+                _deps = f"- [parallel-group:{_parallel}]" if _parallel else "-"
                 su_rows.append([_cell(s.get("id", "")), goal, _cell(s.get("executor", "")),
                                 _cell(s.get("files", "")), _cell(s.get("verify", "")),
                                 _cell(s.get("duration", "")), _cell(s.get("granularity", "")),
-                                _cell(s.get("parallel", "")) or "无", "-", "pending"])
+                                _escort, _deps, "pending"])
             _pno = _phase_no(p.get("id"))
             lines += ["", f"### Phase {_pno}: {_cell(p.get('name', ''))}".rstrip(),
                       f"- **Status:** {_cell(p.get('status', 'pending'))}",

@@ -31,7 +31,9 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B8 + B12 (+ B9-B11) baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             --json also emits the B1-B14 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             B12=SP/OS 技能到达与产物承接收据检查；B13=Spec 路由命中核查（需求特征终判）"
+            echo "             B14=两段式根因/风险线索包已落盘 + 后续任务已登记（N/A+证据）"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -203,12 +205,92 @@ baseline_repo_root() {
     printf '%s' "$repo"
 }
 
+# [2026-11-24 方案A/H3] What: B12「SP/OS 技能到达检查」证据——从计划文件/actions 中读取「技能步骤产物承接收据」标记。
+# Why: 仅查 SKILL.md 存在只能证明技能已安装，无法证明 R4「被调用并用于推进」；必须同时登记技能名与该步骤产出物
+#       路径（如 brainstorming 选项文档、systematic-debugging 根因报告）才产生证据，缺收据返回空串 → todo-sync.md
+#       的 B12 fail-closed 门不通过。收据格式约定（写入 findings.md / actions.md / task_plan.md / progress.md 任一）:
+#       [sp-os-receipt] <skill> -> <artifact-path>
+# 例: [sp-os-receipt] brainstorming -> docs/superpowers/specs/2026-11-24-x-design.md
+baseline_b12_receipt() {
+    local plans_dir="${1-}" pd="" tp="" f="" hit="" rest="" skill="" artifact=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    # 遍历所有在途计划目录（排除 archive），任一计划登记了承接收据即视为该项有证据；不依赖本会话侧车。
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        for f in findings.md actions.md task_plan.md progress.md; do
+            [[ -f "$pd/$f" ]] || continue
+            hit="$(grep -m1 -F '[sp-os-receipt]' "$pd/$f" 2>/dev/null || true)"
+            [[ -n "$hit" ]] || continue
+            rest="${hit#*\[sp-os-receipt\]}"
+            rest="${rest#"${rest%%[![:space:]]*}"}"   # 去前导空白
+            skill="${rest%%[[:space:]]*}"
+            rest="${rest#"$skill"}"
+            rest="${rest#"${rest%%[![:space:]]*}"}"
+            rest="${rest#->}"                          # 剥 -> 分隔符
+            rest="${rest#"${rest%%[![:space:]]*}"}"
+            artifact="${rest%%[[:space:]]*}"
+            if [[ -n "$skill" && -n "$artifact" && "$artifact" != -* ]]; then
+                printf 'receipt=%s@%s' "$skill" "$artifact"
+                return 0
+            fi
+        done
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    return 0
+}
+
+# [2026-11-24 方案A/H3] What: B13「Spec 路由命中核查」证据——读取 check-spec-route.sh 写入的需求特征级终判收据
+#       （<plan-dir>/route-receipts.jsonl 末行，字段 route/input/level）。
+# Why: 路由命中必须在需求产出后由运行时脚本判定并留痕；仅凭 SKILL.md 或文本指针无法证明「命中已被核查」。
+#       末行缺文件/缺 route 字段一律空串，保证 fail-closed 门与 --json 可解析。纯 bash 解析，无 jq/Python 依赖。
+baseline_b13_receipt() {
+    local plans_dir="${1-}" tp="" pd="" rf="" last="" route="" input="" found_route="" found_input=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        rf="$pd/route-receipts.jsonl"
+        [[ -f "$rf" ]] || continue
+        last="$(tail -n 1 "$rf" 2>/dev/null || true)"
+        [[ -n "$last" ]] || continue
+        route=""; input=""
+        if [[ "$last" =~ \"route\":\"([^\"]*)\" ]]; then route="${BASH_REMATCH[1]}"; fi
+        if [[ "$last" =~ \"input\":\"([^\"]*)\" ]]; then input="${BASH_REMATCH[1]}"; fi
+        [[ -n "$route" ]] && { found_route="$route"; found_input="$input"; }
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    [[ -n "$found_route" ]] || return 0
+    printf 'route=%s@input=%s' "$found_route" "$found_input"
+}
+
+# [2026-11-24 task-two-stage-fix-20261124 B14] What: 两段式根因/风险线索包登记证据——从在途计划 findings.md 读 [rootcause-followup:PASS|N/A] 机器标记。
+# Why: B12/B13（方案A/H3）占用于 SP/OS 技能到达与 Spec 路由命中；两段式驱动点避让编号为 B14，语义不重叠。
+#      证据为真 planctl add/render 产出的 findings 标记（非自填 todo 勾选），缺标记=空串 fail-closed。纯 bash，无 jq/Python 依赖。
+baseline_b14_receipt() {
+    local plans_dir="${1-}" tp="" pd="" f="" hit=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        f="$pd/findings.md"
+        [[ -f "$f" ]] || continue
+        hit="$(grep -m1 -E '\[rootcause-followup:(PASS|N/A)\]' "$f" 2>/dev/null || true)"
+        if [[ -n "$hit" ]]; then printf 'rootcause-followup=%s' "${hit:0:60}"; return 0; fi
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    return 0
+}
+
 # [2026-11-24 task-session-regression-20261124 S6] What: 读取侧车生成 B9/B10/B11 的 evidence（B9=baseline:<sha7>@<mode> / B10=最近 checkpoint label / B11=unresolved=<n>@<last_diff.at>）。
 # Why: B11 初始侧车的 last_diff.unresolved=0 代表「从未跑过差异分析」，必须判为无证据（空串），否则假通过；
 #       at 是差异分析真实发生的时标，与 unresolved 一同带出才能证明该项已完成。文件/jq/字段缺失一律空串，保证 --json 可解析。
+# [2026-11-24 方案A/H3] 增量: B12/B13 不依赖侧车（读计划文件收据），故在 jq 守卫之前先判；B9-B11 逻辑逐字不变。
 baseline_evidence_json() {
-    local tid="$1" sidecar="$2" val="" ref="" sha="" mode="" at="" unresolved=""
-    if [[ -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
+    local tid="$1" sidecar="$2" plans_dir="${3-}" val="" ref="" sha="" mode="" at="" unresolved=""
+    case "$tid" in
+        B12) val="$(baseline_b12_receipt "$plans_dir")" ;;
+        B13) val="$(baseline_b13_receipt "$plans_dir")" ;;
+        B14) val="$(baseline_b14_receipt "$plans_dir")" ;;
+    esac
+    if [[ -z "$val" && -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
         case "$tid" in
             B9)
                 ref="$(jq -r '.baseline_ref // empty' "$sidecar" 2>/dev/null || true)"
@@ -236,12 +318,18 @@ baseline_evidence_json() {
 
 # [2026-11-24 task-session-regression-20261124 S6] What: 给 B9/B10/B11 生成一条含实际绝对路径的可复制短命令（snapshot/checkpoint/diff + --repo <repo_root>）。
 # Why: todo 只写 subject 时执行体仍要自己拼命令，易漏 --repo 或用错树；命令随侧车 repo_root 运行时生成，前八条基线项无对应命令→空串。
+# [2026-11-24 方案A/H3] 增量: B12=运行时技能到达探针（check-spec-route.sh --probe），B13=需求特征级终判并落终判收据；
+#       与 B9-B11 的 Git 基线快照/备份/差异无语义重叠，仅复用同一 command 字段形态。
 baseline_command_json() {
     local tid="$1" scripts_dir="$2" plan_dir="$3" repo_root="$4" cmd=""
     case "$tid" in
         B9)  cmd="bash $scripts_dir/git-baseline.sh snapshot $plan_dir --repo $repo_root" ;;
         B10) cmd="bash $scripts_dir/git-baseline.sh checkpoint $plan_dir --label <S-unit> --repo $repo_root" ;;
         B11) cmd="bash $scripts_dir/git-baseline.sh diff $plan_dir --repo $repo_root" ;;
+        B12) cmd="bash $scripts_dir/check-spec-route.sh --probe --dry-run" ;;
+        # 无本会话侧车时 plan_dir 为空 → 用 <plan-dir> 占位，避免生成写入根目录的 /route-receipts.jsonl 危险命令。
+        B13) cmd="bash $scripts_dir/check-spec-route.sh --feature <需求特征> --no-dry-run --receipt-file ${plan_dir:-<plan-dir>}/route-receipts.jsonl" ;;
+        B14) cmd="bash $scripts_dir/check-evidence-anchor.sh ${plan_dir:-<plan-dir>} --source=rootcause-followup" ;;
     esac
     baseline_json_escape "$cmd"
 }
@@ -300,14 +388,16 @@ forward_sync() {
     done < <(find "$plans_dir" -name "task_plan.md" -type f -not -path "*/archive/*" 2>/dev/null | sort)
 
     if $JSON_OUTPUT; then
-        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B8 + B12 (+ B9-B11) 由脚本自动带出，
+        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B11 由脚本自动带出，
         # 不再依赖执行体手抄（用户缺陷③：todo 默认项纯文本契约）。
-        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的基线记录；
+        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的 11 条基线记录；
         # WHY: 让 --json 消费方一次拿到完整 Todo 基线,避免 S1 建组遗漏门禁项。
         # [2026-11-24 task-session-regression-20261124 S6] What: 追加 B9-B11 三条 Git 基线步骤，并为 11 条记录统一注入 evidence/command 字符串（B9/B10/B11 读本会话侧车，其余空串）。
         # Why: 差异分析此前无强制执行点；带命令+侧车证据让 TodoWrite 建组时即拿到可执行步骤与客观完成凭据，不依赖模型记忆。
-        # [2026-11-24 task-two-stage-fix-20261124 S2] What: 追加 B12 根因/风险线索包登记驱动点；B1-B8 字面量逐字保留，B9-B11 保留。
-        # 取舍: 前八条字面量逐字保留（含 B1/B8 必保行）；新字段在拼接阶段注入，避免改动既有记录文本。
+        # [2026-11-24 方案A/H3] What: 再追加 B12「SP/OS 技能到达与产物承接收据检查」+ B13「Spec 路由命中核查（需求特征终判）」两条必选基线项；
+        # Why: SP/OS 技能此前无脚本驱动点（功能同构竞争根因），B12/B13 把「技能到达+承接收据」与「路由命中终判」升为每次建组必带的可执行步骤+证据字段；
+        # 取舍: 避开 commit 5915e78a 已占用的 B9-B11，与 Git 基线快照/备份/差异零语义重叠；B1-B11 字面量逐字保留。
+        # 取舍: B12/B13 证据读计划文件收据（非侧车），故 evidence 生成在 jq 守卫之前分支处理。
         # 单引号字面量含纯双引号 JSON,无反引号/单引号,不触碰上方 phase entries 的 \" 转义。
         local baseline_entries=''
         baseline_entries+='{"task_id":"B1","phase":0,"status":"baseline","subject":"修改后验证"},'
@@ -317,12 +407,17 @@ forward_sync() {
         baseline_entries+='{"task_id":"B5","phase":0,"status":"baseline","subject":"Todo终态"},'
         baseline_entries+='{"task_id":"B6","phase":0,"status":"baseline","subject":"引擎检测"},'
         baseline_entries+='{"task_id":"B7","phase":0,"status":"baseline","subject":"对齐核查"},'
-        baseline_entries+='{"task_id":"B8","phase":0,"status":"baseline","subject":"worktree核验"},'
-        baseline_entries+='{"task_id":"B12","phase":0,"status":"baseline","subject":"根因/风险线索包已落盘 + 后续任务已登记（非修复类标 N/A + 证据）"},'
-        # B8 原字面量不带尾逗号，先补衔接符再追加 B9-B11（保持 B8 行逐字不变）。[2026-11-24 S2] B8 已补逗号并追加 B12；B9-B11 保留。
+        baseline_entries+='{"task_id":"B8","phase":0,"status":"baseline","subject":"worktree核验"}'
+        # B8 原字面量不带尾逗号，先补衔接符再追加 B9-B11（保持 B8 行逐字不变）。
+        baseline_entries+=','
         baseline_entries+='{"task_id":"B9","phase":0,"status":"baseline","subject":"Git基线快照（首次写入前）"},'
         baseline_entries+='{"task_id":"B10","phase":0,"status":"baseline","subject":"Git修改后备份（S-unit/Phase）"},'
-        baseline_entries+='{"task_id":"B11","phase":0,"status":"baseline","subject":"Git差异分析与处置（Phase/终验）"}'
+        baseline_entries+='{"task_id":"B11","phase":0,"status":"baseline","subject":"Git差异分析与处置（Phase/终验）"},'
+        # [2026-11-24 方案A/H3] B11 补尾逗号后追加 B12/B13（B11 行 subject 逐字不变，仅加连接符）。
+        baseline_entries+='{"task_id":"B12","phase":0,"status":"baseline","subject":"SP/OS技能到达与产物承接收据检查"},'
+        baseline_entries+='{"task_id":"B13","phase":0,"status":"baseline","subject":"Spec路由命中核查（需求特征终判）"},'
+        # [2026-11-24 task-two-stage-fix-20261124] B13 补尾逗号后追加 B14（B13 行 subject 逐字不变）；B14=两段式根因/风险线索包+后续任务登记（避让方案A/H3已占用的 B12/B13）。
+        baseline_entries+='{"task_id":"B14","phase":0,"status":"baseline","subject":"两段式根因/风险线索包已落盘+后续任务已登记（N/A+证据）"}'
         # 逐条注入 evidence/command：以 "},{" 为记录分隔符（subject 中不含该序列），task_id 用 bash 正则提取，零 Python/Node 依赖。
         local sidecar plan_dir repo_root rest chunk tid ev cmd sep='},' brace='}' baseline_with_evidence=""
         sidecar="$(baseline_sidecar_file "$plans_dir")"
@@ -345,7 +440,8 @@ forward_sync() {
             if [[ "$chunk" =~ \"task_id\":\"([^\"]+)\" ]]; then
                 tid="${BASH_REMATCH[1]}"
             fi
-            ev="$(baseline_evidence_json "$tid" "$sidecar")"
+            # [2026-11-24 方案A/H3] 第三参传 plans_dir：B12/B13 收据扫描全部在途计划目录，不依赖本会话侧车（无侧车也必须能取证）。
+            ev="$(baseline_evidence_json "$tid" "$sidecar" "$plans_dir")"
             cmd="$(baseline_command_json "$tid" "$SCRIPT_DIR" "$plan_dir" "$repo_root")"
             if [[ -n "$baseline_with_evidence" ]]; then baseline_with_evidence+=","; fi
             baseline_with_evidence+="${chunk},\"evidence\":\"$ev\",\"command\":\"$cmd\"}"

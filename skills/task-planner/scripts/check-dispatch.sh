@@ -422,7 +422,7 @@ fine_grain_checks() {
     # [2026-10-08 task-v144 S18 P2-5 local 卫生] ⑥ 粒度三值检测(fmax/lmax/mmax/gtok/gfv/grange/gl/gm) 与
     # ⑦ 伴飞路径校验(esrcs/er/epath/p) 新增变量并入函数顶部 local 声明（原 ⑥⑦ 落地时未声明,
     # 泄漏至外层 shell 变量域; 此处补齐后行为零变化——Bash 局部性修正, 31+10+11 断言全过验证）
-    local fmax lmax mmax gtok gfv grange gl gm esrcs er epath p
+    local fmax lmax mmax gtok gfv grange gl gm esrcs er epath p suid intent_escort
     # ① prompt 长度: wc -m vs prompt_max_chars(jq 读 config .properties.subagent.prompt_max_chars.default;
     #    与 ② 同源: jq 缺失/键缺失/非数字 → 回退 3000 + 一行 SKIPPED 说明(P2 check-plan-dispatch 范式)
     # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] 原单层路径致覆盖静默失效
@@ -585,6 +585,18 @@ $(cat -- "$tb" 2>/dev/null)"
             while IFS= read -r er; do esrcs+=("$er"); done < <(grep '伴飞' "$tb" 2>/dev/null | grep -oE '[A-Za-z0-9._/-]+\.md' | sort -u || true)
         done
     fi
+    # [2026-11-24 task-sp-driven-invocation H5] What: 意图信号 = 当前 S-unit 的 escort_skills 非空。
+    # Why: 原「esrcs 非空才校验」在伴飞路径未实例化/未注入时整段跳过，形成规则 59.2「无 token 跳过」
+    #   断链（子代理首动作 Read 无路径可读却放行）；escort_skills 非空 = 计划期显式声明该单元需要伴飞，
+    #   此时提取不到有效 .md token 即属注入失败，须 fail-closed。无 escort_skills 维持原跳过（向后兼容）。
+    # 口径: prompt 中 distinct S<n> 取首个为当前单元 ID（单 S-unit 派发制，② 已捕获多打包）；
+    #   plan-state.json 存在且 jq 可读时按 id 精确匹配，解析失败/缺文件 → unknown（环境侧 fail-open，
+    #   与守卫既有 jq 缺失口径一致，不误拦正常派发）。
+    intent_escort="unknown"
+    suid="$(grep -oE 'S[0-9]+' "$pf" 2>/dev/null | sort -u | head -1 || true)"
+    if [ -n "$suid" ] && [ -n "$pd" ] && [ -f "$pd/plan-state.json" ] && command -v jq >/dev/null 2>&1; then
+        intent_escort="$(jq -r --arg id "$suid" '([.s_units[]? | select(.id == $id) | (.escort_skills // [])[]? | select(. != "")] | length > 0) | tostring' "$pd/plan-state.json" 2>/dev/null || printf 'unknown')"
+    fi
     if [ "${#esrcs[@]}" -gt 0 ]; then
         # 去重后逐路径 -f 校验; 首个不存在即短路违规（阻断语义下无需全量枚举）
         epath=""
@@ -596,6 +608,13 @@ $(cat -- "$tb" 2>/dev/null)"
             [ -n "$hits" ] && hits="$hits; "
             hits="${hits}伴飞路径不存在($epath)"
         fi
+    elif [ "$intent_escort" = "true" ]; then
+        # [2026-11-24 task-sp-driven-invocation H5] What: escort_skills 非空却无有效 .md token → 计违规。
+        # Why: 意图信号存在而路径载体缺失=Rule 59.2 伴飞注入未声明完成，本就不应放行；与「伴飞路径不存在」
+        #   同管线，warn 档落计数 / enforce 档 exit 2，与 ①-⑦ 其他检测一致。
+        echo "[dispatch-guard] ⚠ Rule 59.2 伴飞路径未注入: S-unit ${suid} 的 escort_skills 非空, 但派发 prompt 提取不到有效 .md token — 伴飞注入失效(子代理首动作 Read 无路径可读), 须补写绝对路径或清空 escort_skills" >&2
+        [ -n "$hits" ] && hits="$hits; "
+        hits="${hits}伴飞路径未注入($suid)"
     fi
     # ⑤ 需求锚 advisory（[2026-10-05 task-v131 P6-S2, Rule 51.1a/53.5 机器边界; critic P1-4 裁定落地, warn 档 fail-open）
     # What: prompt 全文缺「需求锚」字样 → stderr 一行提醒, 不改变任何 exit 码。

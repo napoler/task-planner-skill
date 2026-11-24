@@ -541,7 +541,7 @@
     },
     "s_unit_item": {
       "type": "object",
-      "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: S-unit 10 列锁序（id/phase/name/executor/files/actions/verify/duration/granularity/parallel）；原行为为 MD 表格；Why: 锁序字段全部可选留白，核心三列必填以支持定位与派发。",
+      "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: S-unit 10 列锁序（id/phase/name/executor/files/actions/verify/duration/granularity/parallel）＋ H5 新增 escort_skills 伴飞路径数组；原行为为 MD 表格；Why: 锁序字段全部可选留白，核心三列必填以支持定位与派发；[2026-11-24 task-sp-driven-invocation H5] escort_skills 为伴随技能 .md 绝对路径数组，是 Rule 59.2「路径+首动作 Read」到达子代理执行层的唯一泛化注入载体，additionalProperties:false 下须显式登记否则 schema 拒写。",
       "required": ["id", "phase", "name"],
       "additionalProperties": false,
       "properties": {
@@ -554,7 +554,8 @@
         "verify": { "type": "string" },
         "duration": { "type": "string" },
         "granularity": { "type": "string" },
-        "parallel": { "type": "string" }
+        "parallel": { "type": "string" },
+        "escort_skills": { "type": "array", "items": { "type": "string" } }
       }
     },
     "anti_regress_item": {

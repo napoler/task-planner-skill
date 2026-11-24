@@ -30,6 +30,8 @@
 #      门控面守护脚本)并入同一存在性检查循环
 #   10. task-v055-fallback provider 探测脚本可执行 + config.provider_fallback 键
 #      (subagent-fallback.sh;2026-09-08)
+#   11. H1 SP 注入脚本 canonical 可执行 + 各部署位 scripts/ 内容一致(2026-11-24,
+#      zcode-sp-inject.sh;SessionStart 指向部署位,缺失即 ENOENT)
 #
 # Returns exit 0 if all pass; non-zero with summary if any fail.
 
@@ -247,6 +249,31 @@ verify_installation() {
   else
     fail "config.json missing .properties.provider_fallback (Rule 22.3.1)"
   fi
+
+  # 11. [2026-11-24 task-sp-driven-invocation H1] SP 注入脚本 canonical + 部署位对账
+  # What: 校验 zcode-sp-inject.sh 在 canonical 存在且可执行，且每个已检出工具 stub 的
+  #       scripts/ 下同名文件与 canonical 内容一致（cmp）。
+  # Why: SessionStart hook 命令指向部署位绝对路径；仅 canonical 有而部署位缺失 = 首次触发
+  #       ENOENT（improvement-proposal.md H1 W-3）。纳入 summary 计数使部署漂移即 FAIL。
+  # 边界: 软链模式下 stub/scripts 即 canonical，cmp 自然成立；无该工具 stub 则跳过该工具。
+  local sp_src="$TASK_PLANNER_ROOT/scripts/zcode-sp-inject.sh"
+  if [ -x "$sp_src" ]; then
+    pass "zcode-sp-inject.sh exists and is executable at canonical scripts/"
+  else
+    fail "zcode-sp-inject.sh missing or not executable at $sp_src"
+  fi
+  for tool in "${TOOLS_DETECTED[@]}"; do
+    local stub="${TOOL_STUB_ROOT[$tool]:-}"
+    [ -n "$stub" ] && [ -d "$stub" ] || continue
+    local sp_deployed="$stub/scripts/zcode-sp-inject.sh"
+    if [ ! -f "$sp_deployed" ]; then
+      fail "$tool deploy missing zcode-sp-inject.sh at $sp_deployed (SessionStart hook ENOENT)"
+    elif [ -f "$sp_src" ] && ! cmp -s "$sp_src" "$sp_deployed"; then
+      fail "$tool deploy drift: zcode-sp-inject.sh differs from canonical ($sp_deployed)"
+    else
+      pass "$tool deploy: zcode-sp-inject.sh in sync with canonical"
+    fi
+  done
 
   # Summary
   echo ""

@@ -136,6 +136,33 @@ if [ ${#TOOLS_DETECTED[@]} -gt 0 ]; then
   fi
 fi
 
+# ─── Phase 4.5: Ensure SP injection hook script in each deploy stub ──────
+# [2026-11-24 task-sp-driven-invocation H1] What: 显式保障 zcode-sp-inject.sh 落到各工具位
+#   scripts/（Phase 4 的全量 rsync 已覆盖 scripts/，本步为幂等兜底 + 可 grep 的部署登记）。
+# Why: config.json 的 SessionStart 命令指向部署位绝对路径，仅落 canonical 源则首次触发即
+#   ENOENT（improvement-proposal.md H1 W-3 修正）；显式登记使部署清单可验证。
+# 边界: 尊重 DRY_RUN / TOOLS_FILTER；目标已存在且与 canonical 内容一致时 cmp 短路零写入。
+log "Phase 4.5: ensure zcode-sp-inject.sh in each deploy stub (targets: ${TOOLS_DETECTED[*]:-(none)})"
+SP_INJECT_SRC="$TASK_PLANNER_ROOT/scripts/zcode-sp-inject.sh"
+if [ -f "$SP_INJECT_SRC" ]; then
+  for tool in "${TOOLS_DETECTED[@]}"; do
+    _sp_dst="${TOOL_STUB_ROOT[$tool]}/scripts/zcode-sp-inject.sh"
+    if [ -f "$_sp_dst" ] && cmp -s "$SP_INJECT_SRC" "$_sp_dst"; then
+      log "  $tool: zcode-sp-inject.sh already in sync — skip"
+      continue
+    fi
+    dry "cp $SP_INJECT_SRC $_sp_dst"
+    if [ "$DRY_RUN" -eq 0 ]; then
+      mkdir -p "$(dirname "$_sp_dst")"
+      cp "$SP_INJECT_SRC" "$_sp_dst"
+      chmod +x "$_sp_dst"
+      log "  $tool: zcode-sp-inject.sh deployed to $_sp_dst"
+    fi
+  done
+else
+  log "  WARNING: zcode-sp-inject.sh missing at $SP_INJECT_SRC — SP injection hook will be unavailable"
+fi
+
 # ─── Phase 5: Migrate external references ───────────────────────────────
 log "Phase 5: migrate external references"
 dry "source lib/migrate-refs.sh; migrate_external_references"

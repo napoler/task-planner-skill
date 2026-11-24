@@ -7,6 +7,12 @@
 **触发**：L1+ 任务（mini / L0-T / L0-E 豁免）且命中任一——需求模糊/多方向/「优化改进」类未定边界/需要规格或变更提案。mini/L0-T 小任务不触发（免仪式）。
 **原则**：路由=默认建议路径（L1+ 命中即走）；整理阶段的专业内容归专业执行体，planner 不越俎代庖。
 
+**运行时判定（2026-11-24 方案A/H2）**：本节路由表（含 §1b 决策表）是 `scripts/check-spec-route.sh` 判定「应路由技能族」的**唯一事实源**；脚本运行时只解析本表的文本行，**不在运行时另立规则、不内联技能内容（R6）**。表若改，脚本判定随之改，两者不得分叉。
+- **两级判定时序**（避免与 B13 职能重叠）：
+  1. **init 期 tier 粗筛**：`planctl.py` 的 `cmd_init`（`add_cmd("init", ...)`）只能消费 `task_id/tier/lane/template_body`，**拿不到需求特征** → 用 `bash <skill>/scripts/check-spec-route.sh --tier <L0|L1|L2|L2+> [--no-dry-run --receipt-file <plan-dir>/route-receipts.jsonl]` 产出**初判收据**（只分档到族：不路由 / Superpowers 嵌入 / OpenSpec 移交）。
+  2. **需求特征级终判（B13 基线组执行期）**：需求已产出后，用 `bash <skill>/scripts/check-spec-route.sh --feature <特征[,特征...]> --no-dry-run --receipt-file <plan-dir>/route-receipts.jsonl` 读取本节表产出**终判收据**（落到具体技能：brainstorming / openspec-propose / systematic-debugging 等），由 B13 基线组消费并纳入 fail-closed 门（见 `todo-sync.md` §3 B13）。两级分级互补、初判不得顶替终判。
+- **探针与可观测状态**：脚本内含可移植 OpenSpec CLI 探针（`$(npm config get prefix)/bin/openspec` → `command -v openspec` → 本机观测路径兜底；不改 `~/.bashrc`、不硬编码单一路径）。失败显式记 `unavailable(不可接管)`；`--probe` 可单独输出 SP/OS 到达状态供 B12 消费，`--require-cli` 下探针失败 rc=3。
+
 | 整理场景 | 路由执行体 | 调用形态 | 产物（外部技能自管） | task-planner 记录动作（记录者职责） |
 |----------|-----------|---------|---------------------|-----------------------------------|
 | 目标模糊→发散澄清/头脑风暴 | Superpowers `brainstorming` | `Skill("brainstorming")` | 设计文档 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`（9 步 HARD-GATE，终态移交 writing-plans） | 产物路径+结论收据 → findings.md / task_plan 需求原文区锚定 |

@@ -485,25 +485,25 @@ else
 fi
 rm -rf "$F22"
 
-# ── EA-23 sync-todos --json 基线组含 B12 + B1-B11 ────────────────────────────
-# mktemp 空 plans 目录，不依赖真实 plans 状态；B12 为脚本内置基线组。
+# ── EA-23 sync-todos --json 基线组含 B14 + B1-B13（B12/B13 归方案A/H3）───────
+# mktemp 空 plans 目录，不依赖真实 plans 状态；B14 为两段式修复脚本内置基线项。
 F23="$(mktemp -d "${TMPDIR:-/tmp}/ea23.XXXXXX")"
 mkdir -p "$F23/plans"
 _sync_out="$(bash "$SCRIPT_DIR/sync-todos.sh" --json "$F23/plans" 2>&1)"
 _ea23_ok=1; _ea23_reason=""
-if ! printf '%s' "$_sync_out" | grep -qF '"task_id":"B12"'; then
-    _ea23_ok=0; _ea23_reason="缺 task_id:B12"
+if ! printf '%s' "$_sync_out" | grep -qF '"task_id":"B14"'; then
+    _ea23_ok=0; _ea23_reason="缺 task_id:B14"
 fi
 if [ "$_ea23_ok" -eq 1 ] && ! printf '%s' "$_sync_out" | grep -q '线索包'; then
-    _ea23_ok=0; _ea23_reason="B12 subject 缺 线索包"
+    _ea23_ok=0; _ea23_reason="B14 subject 缺 线索包"
 fi
 for _b in B1 B2 B3 B4 B5 B6 B7 B8; do
     if [ "$_ea23_ok" -eq 1 ] && ! printf '%s' "$_sync_out" | grep -qF "\"task_id\":\"$_b\""; then
         _ea23_ok=0; _ea23_reason="缺 $_b"
     fi
 done
-# B9-B11: 若脚本含则全在
-for _b in B9 B10 B11; do
+# B9-B13: 若脚本含则全在（B12/B13 归方案A/H3，并集解后原文保留；B14 已在上方单独断言）
+for _b in B9 B10 B11 B12 B13; do
     if [ "$_ea23_ok" -eq 1 ] && grep -qF "\"task_id\":\"$_b\"" "$SCRIPT_DIR/sync-todos.sh" 2>/dev/null; then
         if ! printf '%s' "$_sync_out" | grep -qF "\"task_id\":\"$_b\""; then
             _ea23_ok=0; _ea23_reason="脚本含 $_b 但输出缺失"
@@ -511,7 +511,7 @@ for _b in B9 B10 B11; do
     fi
 done
 if [ "$_ea23_ok" -eq 1 ]; then
-    ok 23 "sync-todos --json 含 B12(subject 含线索包) + B1-B8 全在 + B9-B11 脚本含则输出全在"
+    ok 23 "sync-todos --json 含 B14(subject 含线索包) + B1-B13 全在（B12/B13 归方案A/H3，原文保留）"
 else
     bad 23 "sync-todos --json 基线组断言失败: $_ea23_reason"
 fi
