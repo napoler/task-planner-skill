@@ -301,6 +301,29 @@ baseline_b15_receipt() {
     return 0
 }
 
+# [2026-11-24 task-session-regression-20261124 续 B16] What: B16「合并回主分支+合并后回归核验」证据——从在途计划
+#       plan-state.json 的 .isolation.merge_back 读取 planctl 已写入的 merged(...) 合并回执。
+# Why: 合并回主分支是收尾环节，不能靠 todo 自填勾选自证；plan-state.json 是 planctl 权威状态，
+#       其 isolation.merge_back 含 merged( 即客观合并证据（实例如 "merged(1acf0cff); ..."）。
+#       jq 缺失/字段缺失/值不含 merged( 一律返回空串 fail-closed，不报错退出，保证 --json 可解析。
+#       不做截断：merged( 可能出现在长值中部，截断会丢掉判据锚点。
+baseline_b16_receipt() {
+    local plans_dir="${1-}" tp="" pd="" sf="" val=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    command -v jq >/dev/null 2>&1 || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        sf="$pd/plan-state.json"
+        [[ -f "$sf" ]] || continue
+        val="$(jq -r '.isolation.merge_back // empty' "$sf" 2>/dev/null || true)"
+        [[ -n "$val" && "$val" == *"merged("* ]] || continue
+        printf 'merge=%s' "$val"
+        return 0
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    return 0
+}
+
 # [2026-11-24 task-session-regression-20261124 S6] What: 读取侧车生成 B9/B10/B11 的 evidence（B9=baseline:<sha7>@<mode> / B10=最近 checkpoint label / B11=unresolved=<n>@<last_diff.at>）。
 # Why: B11 初始侧车的 last_diff.unresolved=0 代表「从未跑过差异分析」，必须判为无证据（空串），否则假通过；
 #       at 是差异分析真实发生的时标，与 unresolved 一同带出才能证明该项已完成。文件/jq/字段缺失一律空串，保证 --json 可解析。
@@ -312,6 +335,8 @@ baseline_evidence_json() {
         B13) val="$(baseline_b13_receipt "$plans_dir")" ;;
         B14) val="$(baseline_b14_receipt "$plans_dir")" ;;
         B15) val="$(baseline_b15_receipt "$plans_dir")" ;;
+        # [2026-11-24 续 B16] 合并回执同样读在途计划文件（非侧车），故与 B12-B15 同置于 jq 守卫之前。
+        B16) val="$(baseline_b16_receipt "$plans_dir")" ;;
     esac
     if [[ -z "$val" && -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
         case "$tid" in
@@ -354,6 +379,10 @@ baseline_command_json() {
         B13) cmd="bash $scripts_dir/check-spec-route.sh --feature <需求特征> --no-dry-run --receipt-file ${plan_dir:-<plan-dir>}/route-receipts.jsonl" ;;
         B14) cmd="bash $scripts_dir/check-evidence-anchor.sh ${plan_dir:-<plan-dir>} --source=rootcause-followup" ;;
         B15) cmd="bash $scripts_dir/periodic-review.sh ${plan_dir:-<plan-dir>}" ;;
+        # [2026-11-24 续 B16] 合并本身是多步 git 流程（merge --no-ff / worktree remove / branch -d，见
+        # references/worktree-isolation.md），无单一可执行参数；故只给客观回归命令 + 合并步骤注释，
+        # 不编造 --final 之类不存在的参数。verify.sh 真实路径 = <skill-root>/lib/verify.sh（由 SCRIPT_DIR 剥 /scripts 得到）。
+        B16) cmd="bash $scripts_dir/run-selftests.sh --fresh # 合并: git merge --no-ff + git worktree remove <path> + git branch -d wt/<task-id>（见 references/worktree-isolation.md）；回归: bash ${scripts_dir%/scripts}/lib/verify.sh 需 TASK_PLANNER_ROOT；证据: plan-state.json isolation.merge_back 含 merged(" ;;
     esac
     baseline_json_escape "$cmd"
 }
@@ -443,7 +472,10 @@ forward_sync() {
         # [2026-11-24 task-two-stage-fix-20261124] B13 补尾逗号后追加 B14（B13 行 subject 逐字不变）；B14=两段式根因/风险线索包+后续任务登记（避让方案A/H3已占用的 B12/B13）。
         baseline_entries+='{"task_id":"B14","phase":0,"status":"baseline","subject":"两段式根因/风险线索包已落盘+后续任务已登记（N/A+证据）"},'
         # [2026-11-25 压缩后核心任务丢失根治 B15] B14 补尾逗号后追加 B15（B14 行 subject 逐字不变）；B15=周期性偏移回顾，绑定 periodic-review.sh 证据收据。
-        baseline_entries+='{"task_id":"B15","phase":0,"status":"baseline","subject":"周期性偏移回顾（每N次工具调用读user-session-log全原话+periodic-review对照，落PASS/DRIFT标记）"}'
+        # [2026-11-24 续 B16] B15 补尾逗号后追加 B16（B15 subject 逐字不变）；B16=合并回主分支+合并后回归核验，
+        # 完成证据读 plan-state.json 的 isolation.merge_back（含 merged( 即已合并），非 todo 勾选。
+        baseline_entries+='{"task_id":"B15","phase":0,"status":"baseline","subject":"周期性偏移回顾（每N次工具调用读user-session-log全原话+periodic-review对照，落PASS/DRIFT标记）"},'
+        baseline_entries+='{"task_id":"B16","phase":0,"status":"baseline","subject":"合并回主分支+合并后回归核验（merge --no-ff/worktree清理/verify+selftest不增FAIL）"}'
         # 逐条注入 evidence/command：以 "},{" 为记录分隔符（subject 中不含该序列），task_id 用 bash 正则提取，零 Python/Node 依赖。
         local sidecar plan_dir repo_root rest chunk tid ev cmd sep='},' brace='}' baseline_with_evidence=""
         sidecar="$(baseline_sidecar_file "$plans_dir")"
