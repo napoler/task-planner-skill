@@ -73,6 +73,12 @@ done
 printf '%s\n' "$CTX" | grep -qF '强制读取指令' && PATHLEAK=$((PATHLEAK+1))
 [ "$PATHLEAK" -eq 0 ] && ok "T13c 恢复包不再列派生视图路径/强制读取指令" || bad "T13c 仍在给路径（$PATHLEAK 处）"
 SKILL_MD="$(cd "$SCRIPT_DIR/.." && pwd)/SKILL.md"
+# 部署位的 SKILL.md 是宿主薄壳（只有 hook frontmatter + Canonical source 指针），注入的是 canonical
+# 源仓技能正文。按薄壳的 Canonical source 行回溯，否则拿 43 行薄壳当正文比对会假 FAIL（部署位实测）。
+if grep -qF 'Canonical source:' "$SKILL_MD" 2>/dev/null; then
+  _canon="$(grep -m1 -F 'Canonical source:' "$SKILL_MD" | sed -n 's/.*TASK_PLANNER_ROOT:-\([^}]*\)}.*/\1/p')"
+  if [ -n "$_canon" ] && [ -f "$_canon/SKILL.md" ]; then SKILL_MD="$_canon/SKILL.md"; fi
+fi
 # 结束标记须是末行（纪律提示行里本就含该字样，裸 grep 恒真——变异验证 M2 实证）
 printf '%s\n' "$CTX" | grep -qF '【技能正文·开始】' && [ "$(printf '%s\n' "$CTX" | tail -n 1)" = '【技能正文·结束】' ] \
   && ok "T13c2 技能正文开始标记齐全且结束标记为末行" || bad "T13c2 技能正文标记缺失/结束标记非末行"
@@ -93,7 +99,13 @@ R13B="$(mkroot t13golden)"
 printf 'not-me\n' > "$R13B/plans/.active_plan_side/othersid.active_plan"
 printf '%s\n' '## 待处理' '- **task-x** | in_progress | 2026-11-24' > "$R13B/plans/INDEX.md"
 mkdir -p "$T/golden"
-git -C "$REPO" archive master skills/task-planner/scripts | tar -x -C "$T/golden"
+# 部署位的 .git 是另一个历史仓（可能没有 master 分支），金样改从 canonical 源仓取（SKILL_MD 已回溯）
+GOLD_REPO="$REPO"
+if ! git -C "$GOLD_REPO" rev-parse --verify -q master >/dev/null 2>&1; then
+  _canon_root="$(dirname "$(dirname "$(dirname "$SKILL_MD")")")"  # SKILL.md → task-planner → skills → repo
+  if git -C "$_canon_root" rev-parse --verify -q master >/dev/null 2>&1; then GOLD_REPO="$_canon_root"; fi
+fi
+git -C "$GOLD_REPO" archive master skills/task-planner/scripts | tar -x -C "$T/golden"
 GOLD_HOOK="$T/golden/skills/task-planner/scripts/zcode-sessionstart.sh"
 if [ -f "$GOLD_HOOK" ]; then
   H_GOLD="$(hook_run "$R13B" sess-norecover "$GOLD_HOOK")"
