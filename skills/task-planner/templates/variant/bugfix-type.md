@@ -87,6 +87,8 @@ Phase 1
 - [ ] 派 `Agent(subagent_type: debugger)` 协助深挖
 - [ ] 根因含证据链:日志/堆栈/最小复现/调用链
 - [ ] 写 findings.md「根因」节
+- [ ] 根因线索包已落盘（≤15行：现象/直接原因/根因假设/出错来源=哪个技能·规则·脚本·agent·门/本该拦住而未拦/同族波及面/证据锚）；用 `planctl add --section findings` 写 `[rootcause-followup:PASS] 线索包已落盘`（无风险用 `[rootcause-followup:N/A]` + 理由），render 后供 rootcause 门校验
+- [ ] 根因后续任务已登记（阶段二 task-id + followup-of:/rootcause-followup: 双向 tag + 合并回 master 后新 worktree 启动；无制度性根因写 N/A+证据）
 - **Status:** pending
 - **Executor:** debugger（sonnet-1）
 
