@@ -503,7 +503,7 @@ for _b in B1 B2 B3 B4 B5 B6 B7 B8; do
     fi
 done
 # B9-B13: 若脚本含则全在（B12/B13 归方案A/H3，并集解后原文保留；B14 已在上方单独断言）
-for _b in B9 B10 B11 B12 B13; do
+for _b in B9 B10 B11 B12 B13 B14 B15 B16; do
     if [ "$_ea23_ok" -eq 1 ] && grep -qF "\"task_id\":\"$_b\"" "$SCRIPT_DIR/sync-todos.sh" 2>/dev/null; then
         if ! printf '%s' "$_sync_out" | grep -qF "\"task_id\":\"$_b\""; then
             _ea23_ok=0; _ea23_reason="脚本含 $_b 但输出缺失"
@@ -511,7 +511,7 @@ for _b in B9 B10 B11 B12 B13; do
     fi
 done
 if [ "$_ea23_ok" -eq 1 ]; then
-    ok 23 "sync-todos --json 含 B14(subject 含线索包) + B1-B13 全在（B12/B13 归方案A/H3，原文保留）"
+    ok 23 "sync-todos --json 含 B14(subject 含线索包) + B1-B16 全在（B12/B13 归方案A/H3，B15 周期回顾、B16 合并+回归，原文保留）"
 else
     bad 23 "sync-todos --json 基线组断言失败: $_ea23_reason"
 fi
