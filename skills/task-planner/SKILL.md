@@ -48,7 +48,7 @@ model: opus
 - [ ] [M] **初始化（哨兵机制）— 机械子动作**：跑脚本建目录/设 env/校验在位/清哨兵
   > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
   <!-- [task-perf-default-mini 2026-11-24] What: 分级缺省=mini，去掉 trivial/纯文档主观闸门；Why: 用户裁决默认简单 SOP、升级依据=客观运行时间而非主观判断 -->
-  - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；**分级缺省=mini**（task-perf-default-mini 2026-11-24：默认简单 SOP、不做主观判断；④排除 `TASK_TIER_EXCLUDE=1` 或显式 `TASK_PLAN_TIER=standard` / `TASK_AUTO_TIER=0` 才落 standard）；运行超时（默认 15min，`TASK_PLANNER_TIER_UPGRADE_MINUTES` 可调）由 posttooluse hook 自动升级 standard 检查面）
+  - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；**分级缺省=mini**（task-perf-default-mini 2026-11-24：默认简单 SOP、不做主观判断；④排除 `TASK_TIER_EXCLUDE=1` 或显式 `TASK_PLAN_TIER=standard` / `TASK_AUTO_TIER=0` 才落 standard）；升档双判据（软阈值默认 15min，`TASK_PLANNER_TIER_UPGRADE_MINUTES` 可调，须联合步骤门：phase complete / findings 非空 / delegations 非空；无信号时硬兜底默认 45min，`TASK_PLANNER_TIER_UPGRADE_HARD_MINUTES` 可调；至少完成调研后升档才有参考价值，2026-11-24/25 用户裁决）由 posttooluse hook 自动升级 standard 检查面）
   - **模板检索前置（task-template-catalog-20261122）**：init 前先跑 `bash scripts/template-catalog.sh list --json --scope all` 拿模板清单（模板名/简介/适配场景/功能），据此匹配 `template_type` 再作为 init 第 2 参；禁靠读散文盲选（用法详见下方「模板检索与管理」）
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
@@ -170,7 +170,7 @@ model: opus
 > 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
 
 <!-- [task-perf-default-mini 2026-11-24] What: 汇总散落 mini 豁免为单一常置指针表；Why: 缺省 mini 后逐处翻规则成本高，冲突裁决以各门脚本为准 -->
-> **mini 缺省档最小流程（2026-11-24 缺省 mini 后的常置口径）**：init 产物即 mini → 免计划独立审计体（:72 轻量复核）、免双轮质检复检体（103.7 豁免面）、免 drift-checker 派发（G4）、免归档（G10）、收尾回读两文档（:137）、基线 todo 裁 6 条（B2/B6/B7/B8/B15/B16，sync-todos）；运行 >15min 由 hook 自动升级 standard（[tier-upgrade] 注入），升级后以上全部恢复标准档。散落豁免以此表为索引，冲突以各门脚本为准。
+> **mini 缺省档最小流程（2026-11-24 缺省 mini 后的常置口径）**：init 产物即 mini → 免计划独立审计体（:72 轻量复核）、免双轮质检复检体（103.7 豁免面）、免 drift-checker 派发（G4）、免归档（G10）、收尾回读两文档（:137）、基线 todo 裁 6 条（B2/B6/B7/B8/B15/B16，sync-todos）；运行 >15min 且命中步骤门（phase complete / findings 非空 / delegations 非空任一），或无信号运行 >45min 硬兜底，由 hook 自动升级 standard（[tier-upgrade] 注入；两阈值 env 可调），升级后以上全部恢复标准档。散落豁免以此表为索引，冲突以各门脚本为准。
 
 ### 🔁 原生 Todo 同步（强制）
 

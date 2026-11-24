@@ -212,13 +212,15 @@ if [ -f "$rhythm_f10" ]; then
 fi
 
 # [fix-tierup-20261124] 置于完结静默守卫之前：模板 verification.md 示例行 "outcome: COMPLETE / PARTIAL / BLOCKED" 会被下方宽松 grep 误判为已完结而 exit 0；本函数的完结判定用 plan-state.json 权威源（jq），不受模板示例字样影响。
-# ─── [task-perf-default-mini 2026-11-24] 运行时间自动升级 standard ─────────────
-# What: 活跃计划 plan_tier=mini ∧ 本会话未升级 ∧ now-created_at > TASK_PLANNER_TIER_UPGRADE_MINUTES
-#       （默认 15min）→ planctl set plan_tier=standard + decisions 登记 TU-1 + render + 可选 attest 重锁
+# ─── [task-perf-default-mini 2026-11-24 / tier-gate 2026-11-25] 时长+步骤门双判据升级 standard ───
+# What: 活跃计划 plan_tier=mini ∧ 本会话未升级 ∧（elapsed > 软阈值15min ∧ 步骤门命中 ∨ elapsed > 硬阈值45min）
+#       → planctl set plan_tier=standard + decisions 登记 TU-1（注明触发原因）+ render + stale 锁删除
 #       + .tier_state/<sid>.state 幂等标记 + 单行 [tier-upgrade] 注入。plan_tier 一改，委派门 floor
 #       恢复 0.7、审计门按 L1 强制、VC 阈值恢复 standard、G4-G11 不再豁免、六文档回读全量恢复。
-# Why: 用户 2026-11-24 裁决「基于运行时间升级任务难度，不做主观判断」；缺省 mini 后若超时任务仍走
-#       轻量档，检查面会全部豁免到终验，必须用客观时间把任务推回 standard。
+# Why: 用户 2026-11-24 裁决「基于运行时间升级任务难度，不做主观判断」；2026-11-25 补充「至少完成调研后
+#       才做决定，调研后做升级才具有参考价值」。纯时长会误升级正常任务（单个调研子代理即可超15min），
+#       故软阈值仅作前置时长条件，必须与步骤门联合生效；步骤门=plan-state.json 权威字段三选一
+#       （phase status=complete / findings 非空 / delegations 非空），零主观判断；硬阈值45min为无信号兜底。
 # 调用形态实测（planctl.py set --help）：顶层字段写入 = `set --plan-dir <dir> --field plan_tier --value standard`；
 #       （用户任务书给的 `set --plan-dir <dir> plan_tier standard` 非本仓 CLI 形态）。
 # fail-open: jq/python3/planctl 任一缺失或任一步失败 → 静默 return 0 继续原 hook 路径，不重试、不污染 stdout。
@@ -226,7 +228,7 @@ fi
 tier_upgrade_check() {
   local p="$1" sid="$2" pdir="$3" plans_root="$4"
   local sfile="$plans_root/.tier_state/${sid}.state"
-  local script_dir_tu tmp_sf elapsed threshold decision
+  local script_dir_tu tmp_sf elapsed threshold hard gate_signal reason decision
   script_dir_tu="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" 2>/dev/null || return 0
   [ -f "$pdir/plan-state.json" ] || return 0
   command -v jq >/dev/null 2>&1 || return 0
@@ -235,8 +237,11 @@ tier_upgrade_check() {
   [ -f "$sfile" ] && grep -q '^upgraded=1' "$sfile" 2>/dev/null && return 0
   jq -e '.plan_tier == "mini"' "$pdir/plan-state.json" >/dev/null 2>&1 || return 0
   jq -e '(.outcome // "") | test("COMPLETE|BLOCKED")' "$pdir/plan-state.json" >/dev/null 2>&1 && return 0
+  # [2026-11-25 用户裁决] 软阈值15min 仅前置时长条件，须与步骤门联合生效；硬阈值45min 为无信号兜底，env 均可调
   threshold="${TASK_PLANNER_TIER_UPGRADE_MINUTES:-15}"
   case "$threshold" in ''|*[!0-9]*|0) threshold=15 ;; esac
+  hard="${TASK_PLANNER_TIER_UPGRADE_HARD_MINUTES:-45}"
+  case "$hard" in ''|*[!0-9]*|0) hard=45 ;; esac
   # 时长计算：ISO8601(带 Z/偏移) → UTC epoch；解析失败/字段缺失 → 空串 → fail-open 不升级
   elapsed="$(python3 - "$pdir/plan-state.json" <<'PY' 2>/dev/null || true
 import json
@@ -254,11 +259,27 @@ except Exception:
 PY
 )"
   case "$elapsed" in ''|*[!0-9]*) return 0 ;; esac
-  [ "$elapsed" -gt "$threshold" ] || return 0
+  # 双判据：软阈值须与步骤门联合；硬阈值独立兜底。步骤门只读 plan-state.json 权威字段，零主观判断。
+  gate_signal=""
+  if [ "$elapsed" -gt "$threshold" ]; then
+    gate_signal="$(jq -r '
+      if ([.phases[]? | select(.status == "complete")] | length) > 0 then "phase:complete"
+      elif ((.findings // []) | length) > 0 then "findings"
+      elif ((.delegations // []) | length) > 0 then "delegations"
+      else "" end
+    ' "$pdir/plan-state.json" 2>/dev/null || true)"
+    case "$gate_signal" in ''|null|'null') gate_signal="" ;; esac
+  fi
+  reason=""
+  [ -n "$gate_signal" ] && reason="步骤门：${gate_signal}"
+  if [ -z "$reason" ] && [ "$elapsed" -gt "$hard" ]; then
+    reason="硬阈值兜底"
+  fi
+  [ -n "$reason" ] || return 0   # 双判据均未命中 → 静默；幂等 state 只在真升档时写
   # 升级动作链：逐步 fail-open，前一步成功但后一步失败时不回滚（档位已改=检查面已恢复，优于留在 mini）
   python3 "$script_dir_tu/planctl.py" set --plan-dir "$pdir" --field plan_tier --value standard >/dev/null 2>&1 || return 0
-  decision="[tier-upgrade] 运行 ${elapsed} 分钟超轻量阈值(${threshold}min)，自动升级 standard 检查面"
-  python3 "$script_dir_tu/planctl.py" add --plan-dir "$pdir" --section decisions --json "{\"id\":\"TU-1\",\"decision\":\"${decision}\",\"rationale\":\"用户 2026-11-24 裁决：基于运行时间升级，非主观判断\"}" >/dev/null 2>&1 || return 0
+  decision="[tier-upgrade] 运行 ${elapsed} 分钟，触发原因：${reason}（软阈值 ${threshold}min / 硬阈值 ${hard}min），自动升级 standard 检查面"
+  python3 "$script_dir_tu/planctl.py" add --plan-dir "$pdir" --section decisions --json "{\"id\":\"TU-1\",\"decision\":\"${decision}\",\"rationale\":\"用户 2026-11-24/25 裁决：软阈值15min须联合步骤门(phase complete/findings/delegations) 或 硬阈值45min兜底，零主观判断\"}" >/dev/null 2>&1 || return 0
   python3 "$script_dir_tu/planctl.py" render --plan-dir "$pdir" >/dev/null 2>&1 || return 0
   # [fix-tierup2-20261124] stale 锁处理：升级后计划文档仍是 mini-lite 骨架（无 R 需求行等 standard 硬锚），
   # attest 重锁必被 fail-closed 拒锁（实测 rc=1，"mini 档豁免——先回炉补区块再锁定"）→ 旧锁（锁 mini 形态哈希）
@@ -275,7 +296,7 @@ PY
     rm -f "$tmp_sf" 2>/dev/null || true
     return 0
   fi
-  emit "[tier-upgrade] ⏫ 本计划已运行 ${elapsed} 分钟，超轻量阈值 ${threshold}min（TASK_PLANNER_TIER_UPGRADE_MINUTES 可调）→ 已自动升级 standard 检查面：委派门 floor 恢复 0.7、审计门按 L1 强制、VC 阈值恢复 standard、G4-G11 不再豁免、收尾回读恢复全量六文档。后续按标准档执行，无需重写计划文档。"
+  emit "[tier-upgrade] ⏫ 本计划已运行 ${elapsed} 分钟，触发原因：${reason}（软阈值 ${threshold}min 须联合步骤门 / 硬阈值 ${hard}min 兜底；TASK_PLANNER_TIER_UPGRADE_MINUTES 与 TASK_PLANNER_TIER_UPGRADE_HARD_MINUTES 可调）→ 已自动升级 standard 检查面：委派门 floor 恢复 0.7、审计门按 L1 强制、VC 阈值恢复 standard、G4-G11 不再豁免、收尾回读恢复全量六文档。后续按标准档执行，无需重写计划文档。"
   exit 0   # 单轮单 JSON 约束（F9）：升级注入后结束本轮 hook，避免与下方提醒双行输出
 }
 tier_upgrade_check "$plan" "$SID" "$plan_dir" "$(dirname "$plan_dir")"
