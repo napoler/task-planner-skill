@@ -866,16 +866,12 @@ def cmd_recover(args: argparse.Namespace) -> int:
         lines.append(f"3. {plan_dir}/findings.md（结论与证据锚）")
         lines.append(f"【按需·非强制】（非任务目标类，遇到问题再读）: 4. {plan_dir}/knowledge-brief.md（易错点） 5. {plan_dir}/.git-baseline-report.md（未处置偏移，若存在）")
 
-    # skill_contract：压缩后 SKILL.md 正文与规则可能被整体冲掉 → agent 遗忘技能语义、行为偏移。
-    #   必须重读技能入口与规则目录，确保「压缩后仍按本技能执行」（用户 2026-11-25 补充）。
+    # skill_contract：压缩后 SKILL.md 正文可能被整体冲掉 → agent 遗忘技能语义、行为偏移。
+    #   只重读技能入口 SKILL.md 一个文件；其余规则/配置由 SKILL.md 的指针按需加载，不在此预列
+    #   （用户 2026-11-25 裁决：不要画蛇添足一次性铺开整个技能包）。
     if "skill_contract" in fields:
-        lines.append("【技能体系·强制重读】（压缩后本技能 SKILL.md 正文与规则可能被整体遗忘→行为偏移技能要求；须先重读再执行）:")
+        lines.append("【技能体系·强制重读】（压缩后本技能 SKILL.md 正文可能被整体遗忘→行为偏移技能要求；须先重读再执行，其余规则/配置按 SKILL.md 指针按需加载）:")
         lines.append(f"1. {SKILL_DIR}/SKILL.md（技能入口：frontmatter + 工作流 + 全部硬条款，全文；遗忘此文件=技能体系崩溃）")
-        ref_dir = SKILL_DIR / "references"
-        lines.append(f"2. {ref_dir}/（规则权威目录：critical-rules.md=Rules 全集、completion-gate.md、goal-gate.md、worktree-isolation.md 等，按 SKILL.md 指引读）")
-        cfg = SKILL_DIR / "config.json"
-        if cfg.is_file():
-            lines.append(f"3. {cfg}（运行时阈值与门控档位）")
 
     # requirements[].text：用户逐字原话 = 任务目标权威源（旧版遗漏的关键字段）
     if "requirements" in fields:
