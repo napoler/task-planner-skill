@@ -169,8 +169,10 @@ run python3 "$PLANCTL" recover --plan-dir "$R16/plans/aa"
 printf '%s\n' "$OUT" | grep -qF '数据库使用 PostgreSQL 15' && ok "T16b 必保项 MK 从权威源读出" || bad "T16b MK 必保项缺失"
 printf '%s\n' "$OUT" | grep -qF 'Goal:' && printf '%s\n' "$OUT" | grep -qF 'Current Phase:' \
   && printf '%s\n' "$OUT" | grep -qF 'Git基线:' && ok "T16c 核心字段 Goal/Phase/Git基线齐全" || bad "T16c 核心字段缺失"
-printf '%s\n' "$OUT" | grep -qF 'SKILL.md' && printf '%s\n' "$OUT" | grep -qF 'references/' \
-  && ok "T16d skill_contract 纳入 SKILL.md+references 重读面" || bad "T16d 技能契约缺失"
+printf '%s\n' "$OUT" | grep -qF 'SKILL.md' \
+  && ! printf '%s\n' "$OUT" | grep -qF 'references/' \
+  && ! printf '%s\n' "$OUT" | grep -qF 'config.json' \
+  && ok "T16d skill_contract 只列 SKILL.md，不预列 references/config（按需加载）" || bad "T16d 技能契约范围不符"
 # 参数指定：只传 requirements，输出不应含 Goal:/Git基线:
 run python3 "$PLANCTL" recover --plan-dir "$R16/plans/aa" --fields requirements
 [ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF '常驻嘉宾必须是明星' \
