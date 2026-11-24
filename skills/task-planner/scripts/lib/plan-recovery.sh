@@ -7,6 +7,8 @@
 # [2026-11-25 压缩后强制读取核心文件] 用户授权收窄：恢复包从「列 5 条同权必读」改为
 #       「⚠️ 强制读取指令 + 核心 3 文件（user-session-log/task_plan/findings=任务目标/原话/上下文类）强制，
 #       knowledge-brief/.git-baseline-report 降为按需」；只要求读任务目标相关文件，不内联全文、不扩大读取面。
+# [2026-11-25 task-planctl-recover] 本库的 recover 函数（列文件路径版）已被 planctl.py recover（直接内联任务核心
+#       状态 + 技能正文全文）取代，hook 不再调用；保留仅供 selftest-compact-recovery T15 回归，勿再接回 hook。
 # 约定: 不设 set -e/-u（source 侧可能已有）；jq 缺失 → stderr 一行 DEGRADED=no-jq + rc 2（调用方 fail-open）。
 
 # mustkeep <plan-dir> — 打印 spec_baseline 中 id 以 MK 开头的条目

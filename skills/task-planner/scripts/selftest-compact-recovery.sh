@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # [2026-11-24 task-session-regression-20261124] selftest-compact-recovery.sh — 压缩恢复包全链回归
 # What: 覆盖 lib/plan-recovery.sh 的 inflight/mustkeep/recover 与 zcode-sessionstart.sh 的
-#       单行 JSON 注入契约：会话归属、无 TTL、终态豁免、必读绝对路径、必保字面、Git基线行、限幅落盘，
+#       单行 JSON 注入契约：会话归属、无 TTL、终态豁免；恢复包=直接内联（任务核心状态取自权威源
+#       plan-state.json 经 planctl recover + 技能正文 SKILL.md 全文），不再列文件路径；含必保字面、
+#       Git基线行、限幅不吞技能正文、部署位薄壳形态，
 #       以及「无在途计划时与 master 版 hook 逐字节一致」的零破坏对照。
 # Why: 上下文压缩后正文规则失效，恢复包错注入他会话计划或漏掉必保项会直接导致既有设定被覆盖；
 #       金样对照防止 hook 的无在途路径被顺手改动而无人察觉。
@@ -62,21 +64,25 @@ H13="$(hook_run "$R13" sess-recover123)"
   && ok "T13a stdout 单行且严格合法 JSON" || bad "T13a 单行 JSON"
 CTX="$(printf '%s\n' "$H13" | jq -r '.additionalContext // ""' 2>/dev/null)"
 printf '%s\n' "$CTX" | grep -qF '[compact-recovery]' && ok "T13b 含 [compact-recovery] 标记" || bad "T13b compact 标记"
-MISS=0
+# [2026-11-25 task-compact-recover-inline] 恢复包=直接内联内容：不再列派生视图路径叫模型自己 Read。
+#   反证用夹具绝对路径（技能正文 SKILL.md 里本就可能出现同名文件的相对提法，不能拿裸文件名当反证）。
+PATHLEAK=0
 for f in user-session-log.md task_plan.md findings.md knowledge-brief.md .git-baseline-report.md; do
-  printf '%s\n' "$CTX" | grep -qF "$R13/plans/aa/$f" || { MISS=$((MISS+1)); echo "[T13c-diag] missing path=$f"; }
+  printf '%s\n' "$CTX" | grep -qF "$R13/plans/aa/$f" && { PATHLEAK=$((PATHLEAK+1)); echo "[T13c-diag] leaked path=$f"; }
 done
-[ "$MISS" -eq 0 ] && ok "T13c 5 条必读文件绝对路径齐全" || bad "T13c 必读绝对路径缺 $MISS 条"
-# [2026-11-25 压缩后强制读取核心文件] 强制指令 + 核心/按需分级断言
-printf '%s\n' "$CTX" | grep -qF '强制读取指令' && ok "T13c2 含压缩后强制读取指令" || bad "T13c2 强制读取指令缺失"
-printf '%s\n' "$CTX" | grep -qF '核心·强制读取' && ok "T13c3 含核心强制读取分级" || bad "T13c3 核心强制分级缺失"
-printf '%s\n' "$CTX" | grep -qF '按需·非强制' && ok "T13c4 含按需非强制分级" || bad "T13c4 按需分级缺失"
-CORE=0
-printf '%s\n' "$CTX" | grep -qF '【核心·强制读取】' || CORE=$((CORE+1))
-for f in user-session-log.md task_plan.md findings.md; do
-  printf '%s\n' "$CTX" | grep -qF "$f" || CORE=$((CORE+1))
-done
-[ "$CORE" -eq 0 ] && ok "T13c5 三核心文件(原话/计划/结论)标为强制" || bad "T13c5 核心文件缺 $CORE 条"
+printf '%s\n' "$CTX" | grep -qF '强制读取指令' && PATHLEAK=$((PATHLEAK+1))
+[ "$PATHLEAK" -eq 0 ] && ok "T13c 恢复包不再列派生视图路径/强制读取指令" || bad "T13c 仍在给路径（$PATHLEAK 处）"
+SKILL_MD="$(cd "$SCRIPT_DIR/.." && pwd)/SKILL.md"
+# 结束标记须是末行（纪律提示行里本就含该字样，裸 grep 恒真——变异验证 M2 实证）
+printf '%s\n' "$CTX" | grep -qF '【技能正文·开始】' && [ "$(printf '%s\n' "$CTX" | tail -n 1)" = '【技能正文·结束】' ] \
+  && ok "T13c2 技能正文开始标记齐全且结束标记为末行" || bad "T13c2 技能正文标记缺失/结束标记非末行"
+# 开始/结束标记之间的内容须与 SKILL.md 全文逐字节一致（sed -e '$a\' 统一末尾换行，消除无尾换行的 1 字节差）
+printf '%s\n' "$CTX" | awk '/^【技能正文·开始】/{f=1;next} /^【技能正文·结束】/{f=0} f' > "$T/t13-skill-got.md"
+diff <(sed -e '$a\' "$T/t13-skill-got.md") <(sed -e '$a\' "$SKILL_MD") > "$T/t13-skill.diff" 2>&1 \
+  && ok "T13c3 hook 注入的技能正文与 SKILL.md 全文逐字节一致" \
+  || bad "T13c3 技能正文与 SKILL.md 不一致 $(head -n 3 "$T/t13-skill.diff" | tr '\n' ' ')"
+printf '%s\n' "$CTX" | grep -qF 'Phase 进度:' && printf '%s\n' "$CTX" | grep -qF '最近动作' \
+  && ok "T13c4 hook 注入含 Phase 进度全貌与最近动作（RECOVER_FIELDS 已带新字段）" || bad "T13c4 进度全貌/最近动作未注入"
 printf '%s\n' "$CTX" | grep -qF '数据库使用 PostgreSQL 15' && ok "T13d 必保项字面在注入内容中" || bad "T13d 必保项字面"
 printf '%s\n' "$CTX" | grep -qF 'Git基线:' && ok "T13e 含 Git基线: 状态行" || bad "T13e Git基线行"
 ! printf '%s\n' "$CTX" | grep -qF '[task-resume]' && ! printf '%s\n' "$CTX" | grep -qF '初始化命令' \
@@ -169,10 +175,10 @@ run python3 "$PLANCTL" recover --plan-dir "$R16/plans/aa"
 printf '%s\n' "$OUT" | grep -qF '数据库使用 PostgreSQL 15' && ok "T16b 必保项 MK 从权威源读出" || bad "T16b MK 必保项缺失"
 printf '%s\n' "$OUT" | grep -qF 'Goal:' && printf '%s\n' "$OUT" | grep -qF 'Current Phase:' \
   && printf '%s\n' "$OUT" | grep -qF 'Git基线:' && ok "T16c 核心字段 Goal/Phase/Git基线齐全" || bad "T16c 核心字段缺失"
-printf '%s\n' "$OUT" | grep -qF 'SKILL.md' \
-  && ! printf '%s\n' "$OUT" | grep -qF 'references/' \
-  && ! printf '%s\n' "$OUT" | grep -qF 'config.json' \
-  && ok "T16d skill_contract 只列 SKILL.md，不预列 references/config（按需加载）" || bad "T16d 技能契约范围不符"
+# [2026-11-25 task-compact-recover-inline] skill_contract=内联技能正文全文（references/config 由 SKILL.md 指针按需加载）
+printf '%s\n' "$OUT" | grep -qF '【技能正文·开始】' && [ "$(printf '%s\n' "$OUT" | tail -n 1)" = '【技能正文·结束】' ] \
+  && ! printf '%s\n' "$OUT" | grep -qF '强制读取指令' \
+  && ok "T16d skill_contract 内联技能正文全文（结束标记为末行）且不列派生视图路径" || bad "T16d 技能契约范围不符"
 # 参数指定：只传 requirements，输出不应含 Goal:/Git基线:
 run python3 "$PLANCTL" recover --plan-dir "$R16/plans/aa" --fields requirements
 [ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF '常驻嘉宾必须是明星' \
@@ -204,6 +210,62 @@ H16="$(hook_run "$R16H" sess-recover16h)"
 CTX16="$(printf '%s\n' "$H16" | jq -r '.additionalContext // ""' 2>/dev/null)"
 printf '%s\n' "$CTX16" | grep -qF '常驻嘉宾必须是明星' \
   && ok "T16g hook 集成输出含 planctl 读出的 requirements 原话" || bad "T16g hook 未走 planctl 权威源"
+
+# ── T17 内联契约：部署位薄壳形态 / 进度全貌+最近动作 / 限幅不吞技能正文 ──────────
+# [2026-11-25 task-compact-recover-inline] What: 锁住「恢复包直接内联内容」在真实运行形态下的契约。
+# Why: 实际运行的 hook 在部署位（~/.zcode/skills/...，由 cli/config.json 以绝对路径注册），其 SKILL.md 是
+#   宿主薄壳（只含 hook frontmatter + Canonical source 指针），技能正文在 canonical 源仓——必须在部署形态下
+#   验证，否则「源仓自测全绿、线上什么都没注入」（2026-11-25 实证：源仓三轮改动均因停留在未部署的旧脚本而从未生效）。
+# T17a 部署形态：scripts/ 整体拷到假部署位 + 薄壳 SKILL.md → hook 仍走通 planctl recover 并内联 canonical 正文
+DEPLOY="$T/deploy/skills/task-planner"
+mkdir -p "$DEPLOY"
+cp -r "$SCRIPT_DIR" "$DEPLOY/scripts"
+{
+  printf '%s\n' '---' 'name: task-planner' '---' '# task-planner — 宿主薄壳（夹具）'
+  printf '> Canonical source: `${TASK_PLANNER_ROOT:-%s}`.\n' "$REPO/skills/task-planner"
+  printf '%s\n' 'STUB-ONLY-MARKER 薄壳无技能正文'
+} > "$DEPLOY/SKILL.md"
+R17A="$(mkroot t17a)"
+point "$R17A" deploy17a aa
+CTX17A="$(hook_run "$R17A" sess-deploy17a "$DEPLOY/scripts/zcode-sessionstart.sh" | jq -r '.additionalContext // ""' 2>/dev/null)"
+printf '%s\n' "$CTX17A" | grep -qF '[compact-recovery]' && [ "$(printf '%s\n' "$CTX17A" | tail -n 1)" = '【技能正文·结束】' ] \
+  && ok "T17a 部署位形态 hook 走通 planctl recover 并内联技能正文" || bad "T17a 部署位形态链路不通"
+FEATURE17="$(grep -m1 -F '四文件罗盘的唯一管理域' "$SKILL_MD")"
+printf '%s\n' "$CTX17A" | grep -qF -- "$FEATURE17" && ! printf '%s\n' "$CTX17A" | grep -qF 'STUB-ONLY-MARKER' \
+  && ok "T17b 薄壳 SKILL.md 回溯 canonical 正文（注入源仓全文，不注入薄壳内容）" || bad "T17b 薄壳未回溯 canonical"
+printf '%s\n' "$CTX17A" | grep -qF "$REPO/skills/task-planner/SKILL.md" \
+  && ok "T17c 注入的技能正文路径指向 canonical 源仓" || bad "T17c 技能正文路径非 canonical"
+# T17d 进度全貌 + 最近动作（planctl 直调）：✓/▶/○ 三态 + 按 at 取尾部、无 at 排最前
+R17D="$(mkroot t17d)"
+python3 - "$R17D/plans/aa/plan-state.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p, encoding="utf-8"))
+d["phases"] = [{"id": "P1", "name": "取证", "status": "complete"},
+               {"id": "P2", "name": "实现", "status": "in_progress"},
+               {"id": "P3", "name": "收口", "status": "pending"}]
+# 11 条（A0 无时间 + A1..A10 按日递增），输入顺序故意打乱：验证按 at 排序而非按输入顺序
+_acts = [{"id": "A0", "text": "无时间动作"}] + [
+    {"id": "A%d" % i, "text": "动作%02d" % i, "at": "2026-01-%02dT00:00:00Z" % i} for i in range(1, 11)]
+_acts = [_acts[k] for k in (5, 0, 9, 1, 7, 3, 10, 2, 8, 4, 6)]
+d["actions"] = _acts
+json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+PY
+run python3 "$PLANCTL" recover --plan-dir "$R17D/plans/aa" --fields phase,recent_actions
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF 'P1✓ P2▶ P3○' \
+  && ok "T17d Phase 进度全貌三态标记" || bad "T17d 进度全貌缺失 (rc=$RC)"
+printf '%s\n' "$OUT" | grep -qF 'Current Phase: 实现' && ok "T17e Current Phase 取 in_progress" || bad "T17e Current Phase 错误"
+# 强断言：顺序（按 at 升序）+ 条数（恰 8 条）+ 截尾（最早的 A0/A1/A2 不得出现）
+A_LINES="$(printf '%s\n' "$OUT" | grep '^\[A[0-9]* ' | sed 's/^\[\(A[0-9]*\) .*/\1/' | tr '\n' ' ')"
+[ "$A_LINES" = "A3 A4 A5 A6 A7 A8 A9 A10 " ] \
+  && ok "T17f 最近动作按时间升序取尾部 8 条（A3..A10，最早的被截掉）" || bad "T17f 最近动作顺序/条数不符: [$A_LINES]"
+# T17g 限幅只截任务状态块：复用 T15 的 70 条 MK 夹具 + 上限 20 行 → 技能正文仍完整
+run python3 "$PLANCTL" recover --plan-dir "$R15/plans/aa" --fields mustkeep,skill_contract --max-lines 20
+L17G="$(printf '%s\n' "$OUT" | wc -l)"
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF '任务状态已截断（上限 20 行）' \
+  && printf '%s\n' "$OUT" | tail -n 1 | grep -qF '【技能正文·结束】' \
+  && [ "$L17G" -gt "$(wc -l < "$SKILL_MD")" ] \
+  && ok "T17g 限幅只截任务状态块，技能正文完整保留（总 $L17G 行）" || bad "T17g 限幅吞了技能正文 (rc=$RC lines=$L17G)"
 
 TOTAL=$((PASS+FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"

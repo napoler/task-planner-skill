@@ -20,10 +20,13 @@ rc=$?
 _SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RECOVERY_LIB="$_SCRIPTS_DIR/lib/plan-recovery.sh"   # 仅用于 inflight 会话定位（在途判定），非核心数据获取
 # [2026-11-25 task-planctl-recover] 压缩恢复的核心数据获取收口到 planctl 权威脚本：
-#   下面两个变量=「压缩后要拿哪些核心数据」的唯一定义处。升级数据面只改这里 + planctl.py 的 cmd_recover，
+#   下面两个变量=「压缩后注入哪些核心数据」的唯一定义处。升级数据面只改这里 + planctl.py 的 cmd_recover，
 #   不再各自散落在 lib/plan-recovery.sh 的 jq 拼接里。RECOVER_FIELDS 显式传参给 planctl recover。
+# [2026-11-25 task-compact-recover-inline] 恢复包=直接内联内容（任务核心状态取自权威源 plan-state.json
+#   + 技能正文 SKILL.md 全文），不再只给路径叫模型自己 Read（用户裁决：要让模型直接知道）。
+#   --max-lines 只限任务状态块，技能正文不受限。
 PLANCTL_PY="$_SCRIPTS_DIR/planctl.py"
-RECOVER_FIELDS="core_files,skill_contract,requirements,goal,phase,next_step,decisions,mustkeep,git_baseline"
+RECOVER_FIELDS="skill_contract,requirements,goal,phase,recent_actions,next_step,decisions,mustkeep,git_baseline"
 recovery_plan=""
 if [ -f "$RECOVERY_LIB" ]; then
   # 项目根解析口径对齐 task-plan-init.cjs / plan-created.cjs（从 $PWD 向上最多 10 层找 plans/）
@@ -42,7 +45,7 @@ if [ -f "$RECOVERY_LIB" ]; then
     claim="$(bash "$RECOVERY_LIB" inflight "$scan_root" "$sid" 2>/dev/null)" || claim=""
     if [ -n "$claim" ]; then
       # 核心数据从 planctl 权威源读；python3 缺失/执行失败 → fail-open 维持现状路径
-      recovered="$(python3 "$PLANCTL_PY" recover --plan-dir "$claim" --fields "$RECOVER_FIELDS" --max-lines 80 2>/dev/null)" && recovery_plan="$claim" || recovery_plan=""
+      recovered="$(python3 "$PLANCTL_PY" recover --plan-dir "$claim" --fields "$RECOVER_FIELDS" --max-lines 150 2>/dev/null)" && recovery_plan="$claim" || recovery_plan=""
       if [ -n "$recovery_plan" ] && [ -n "$recovered" ]; then
         out="$recovered"
       else

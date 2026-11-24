@@ -808,9 +808,22 @@ def cmd_get(args: argparse.Namespace) -> int:
 # Why: 原方案把「恢复时能拿到什么」写死在 lib/plan-recovery.sh 的 jq 拼接里，hook/selftest
 #   各自引用旁路，升级数据面要改多处；且原 recover 只读 goals、漏了 requirements[].text
 #   （用户原话=任务目标权威源）。收口到 planctl 后：升级只改这一处，数据源唯一、无 jq 依赖。
+# [2026-11-25 task-compact-recover-inline] What: 恢复包由「列路径叫模型自己 Read」改为「直接内联内容」：
+#   ① skill_contract 内联技能正文（canonical SKILL.md 全文）；② 删除 core_files 字段；
+#   ③ phase 增补进度全貌、新增 recent_actions（做过什么）；④ 限幅只作用于任务状态块。
+# Why: 用户裁决——压缩后要的是「让模型直接知道」；只给路径依赖模型自觉去读，既浪费模型资源也不可靠。
+#   依据项目自身设计：plan-state.json 是唯一权威源、4 个 MD 是 render 派生视图（禁手工 Edit），
+#   故进度只从权威源读、不再列派生视图路径（同一内容给两遍=画蛇添足）；SKILL.md 是技能入口
+#   （工作流+硬条款，非派生视图），压缩后被整体冲掉=技能体系崩塌，故全文内联且不受限幅；
+#   references/config 由 SKILL.md 内指针按需加载，不预列（用户裁决：不要一次性铺开整个技能包）。
 RECOVER_DEFAULT_FIELDS = (
-    "core_files", "skill_contract", "requirements", "goal", "phase", "next_step", "decisions", "mustkeep", "git_baseline",
+    "skill_contract", "requirements", "goal", "phase", "recent_actions",
+    "next_step", "decisions", "mustkeep", "git_baseline",
 )
+RECOVER_SKILL_BEGIN = "【技能正文·开始】"
+RECOVER_SKILL_END = "【技能正文·结束】"   # 未见此标记=技能正文被平台截断，消费端须 Read 补全
+RECOVER_ACTION_TAIL = 8     # 「做过什么」取最近 N 条动作（更早的属已翻篇阶段，按需查 progress 视图）
+RECOVER_ACTION_CHARS = 200  # 单条动作注入限幅；超出截断并标 …（只限幅不改写，不编造）
 
 
 def _recover_flat(value: Any, fallback: str = "-") -> str:
@@ -837,88 +850,154 @@ def _recover_flat(value: Any, fallback: str = "-") -> str:
     return str(value)
 
 
-def cmd_recover(args: argparse.Namespace) -> int:
-    """压缩恢复包：从权威源读核心字段 -> 文本注入 + 全文落盘 .compact-recovery.md。
+def _recover_skill_text() -> tuple[Path, str]:
+    """读取技能正文 SKILL.md 全文，返回 (实际读取的路径, 全文)；读不到返回 (路径, "")。
 
-    --fields 逗号分隔指定核心字段（默认 RECOVER_DEFAULT_FIELDS）：requirements/goal/phase/
-    next_step/decisions/mustkeep/git_baseline/core_files。字段缺失一律写 `-`，不编造。
-    --max-lines 限幅注入（默认 80，落盘全文不受限）。输出文本与旧 shell 版兼容。
+    Why 要做 canonical 解析：部署位（~/.zcode/skills/task-planner 等）的 SKILL.md 是宿主薄壳
+    （只有 hook frontmatter + 指向 canonical 的资源路径表，见 lib/install-stub.sh 的
+    generate_stub_skill_md），技能正文在 canonical 源仓；薄壳正文含
+    「Canonical source: `${TASK_PLANNER_ROOT:-<绝对路径>}`」行，据此取到正文。
+    环境变量 TASK_PLANNER_ROOT 与薄壳同语义，优先级最高；都取不到则用脚本自身上级目录的
+    SKILL.md（源仓内运行时它本身就是完整版）。
+    """
+    skill_md = SKILL_DIR / "SKILL.md"
+    try:
+        own = skill_md.read_text(encoding="utf-8")
+    except OSError:
+        own = ""
+    candidates: list[Path] = []
+    env_root = os.environ.get("TASK_PLANNER_ROOT")
+    if env_root:
+        candidates.append(Path(env_root) / "SKILL.md")
+    m = re.search(r"Canonical source:\s*`\$\{TASK_PLANNER_ROOT:-([^}]+)\}`", own)
+    if m:
+        candidates.append(Path(m.group(1)) / "SKILL.md")
+    for cand in candidates:
+        try:
+            text = cand.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if text:
+            return cand, text
+    return skill_md, own
+
+
+def _recover_phase_lines(phases: Any) -> list[str]:
+    """Phase 进度全貌（一行）+ 当前 Phase 名。✓=complete ▶=in_progress ○=pending（schema 枚举三态）。"""
+    marks = {"complete": "✓", "in_progress": "▶", "pending": "○"}
+    overview: list[str] = []
+    cur = "-"
+    found_cur = False
+    if isinstance(phases, list):
+        for p in phases:
+            if not isinstance(p, dict):
+                continue
+            pid = str(p.get("id") or "-")
+            status = str(p.get("status") or "-")
+            overview.append(f"{pid}{marks.get(status, '?')}")
+            if status == "in_progress" and not found_cur:
+                cur = str(p.get("name") or p.get("phase") or p.get("id") or p.get("title") or "-")
+                found_cur = True
+    return [f"Phase 进度: {' '.join(overview) if overview else '-'}（✓完成 ▶进行中 ○待办）",
+            f"Current Phase: {cur}"]
+
+
+def _recover_action_lines(actions: Any) -> list[str]:
+    """最近动作（做过什么）：按 at 时间升序取尾部 RECOVER_ACTION_TAIL 条；无 at 的排最前。"""
+    if not isinstance(actions, list) or not actions:
+        return ["最近动作: -"]
+
+    def _at(item: dict[str, Any]) -> str:
+        return str(item.get("at") or "")
+
+    items = [a for a in actions if isinstance(a, dict)]
+    items.sort(key=_at)
+    out = [f"最近动作（做过什么，最近 {RECOVER_ACTION_TAIL} 条）:"]
+    for a in items[-RECOVER_ACTION_TAIL:]:
+        text = _recover_flat(a.get("text"), "")
+        if len(text) > RECOVER_ACTION_CHARS:
+            text = text[:RECOVER_ACTION_CHARS] + "…"
+        out.append(f"[{a.get('id') or '-'} {_at(a) or '-'}] {text or '-'}")
+    return out
+
+
+def _recover_git_baseline_lines(plan_dir: Path) -> list[str]:
+    """Git 基线行：读 .git-baseline.json sidecar（缺失/不可读写指引，不编造）。"""
+    sidecar = plan_dir / ".git-baseline.json"
+    script_dir = SCRIPT_DIR
+    if not sidecar.is_file():
+        return [f"Git基线: 缺失 → 先执行 B9（任务开始前备份，未做不得写受管文件）: bash {script_dir}/git-baseline.sh snapshot {plan_dir}"]
+    try:
+        g = json.loads(sidecar.read_text(encoding="utf-8"))
+        sha = str(g.get("baseline_sha") or "-")[:8]
+        cps = g.get("checkpoints")
+        cps_n = len(cps) if isinstance(cps, list) else 0
+        last = g.get("last_diff") if isinstance(g.get("last_diff"), dict) else {}
+
+        def _n(v: Any) -> str:
+            return str(v) if isinstance(v, (int, str)) and v != "" else "0"
+
+        return [
+            f"Git基线: {sha} 检查点={cps_n} 未处置={_n(last.get('unresolved'))} "
+            f"必保丢失={_n(last.get('mustkeep_lost'))}（最近分析 {last.get('at') or '-'}；"
+            f"续做前先跑 B11: bash {script_dir}/git-baseline.sh diff {plan_dir}）"
+        ]
+    except (OSError, ValueError, TypeError):
+        return [f"Git基线: 证据文件不可读 → 重跑 bash {script_dir}/git-baseline.sh status {plan_dir}"]
+
+
+def cmd_recover(args: argparse.Namespace) -> int:
+    """压缩恢复包：任务核心状态（权威源）+ 技能正文全文 → 直接注入，并全文落盘 .compact-recovery.md。
+
+    --fields 逗号分隔指定要注入的字段（默认 RECOVER_DEFAULT_FIELDS）；字段缺失一律写 `-`，不编造。
+    --max-lines 只限「任务状态」块（默认 150）；技能正文不参与限幅（规则残缺比多占上下文更糟）。
+    输出顺序：恢复纪律 → 任务状态（固定核心行在前、长列表在后可截断）→ 技能正文。
+    落盘文件只存任务状态全文（供截断后追读）；技能正文磁盘上本就是 SKILL.md，不重复落盘。
     """
     plan_dir = check_plan_dir(args.plan_dir)
     task_id = plan_dir.name
     fields_raw = getattr(args, "fields", None) or ",".join(RECOVER_DEFAULT_FIELDS)
     fields = [f.strip() for f in fields_raw.split(",") if f.strip()]
-    max_lines_raw = getattr(args, "max_lines", 80)
-    max_lines = max_lines_raw if isinstance(max_lines_raw, int) and max_lines_raw >= 2 else 80
+    max_lines_raw = getattr(args, "max_lines", 150)
+    max_lines = max_lines_raw if isinstance(max_lines_raw, int) and max_lines_raw >= 2 else 150
 
     doc = read_state(plan_dir)
-    lines: list[str] = []
 
-    # 保留旧版首行标记，确保 hook/selftest 的 [compact-recovery] 断言继续成立
-    lines.append(f"[compact-recovery] 上下文恢复包（检测到在途计划 {task_id}；数据来自 planctl 读权威源 plan-state.json，非会话记忆。摘要可能丢细节，以下列字段为准）")
+    # ① 恢复纪律（固定头，不参与限幅）。保留旧版首行 [compact-recovery] 标记（hook/selftest 断言锚）。
+    head = [
+        f"[compact-recovery] 上下文恢复包（检测到在途计划 {task_id}；数据来自 planctl 读权威源 plan-state.json，非会话记忆。摘要可能丢细节，以下列字段为准）",
+        "⚠️ 恢复纪律（先于任何其它工具调用）: ①压缩摘要不可信，任务目标/进度以下方「任务状态」为准，读完前不得推进任务、不得删改任何既有设定/事实；"
+        "②下方已内联技能正文全文，无需再 Read SKILL.md，按其工作流与硬条款继续执行，references/配置按其中指针按需加载；"
+        f"③若未见「{RECOVER_SKILL_END}」标记=技能正文被平台截断，须 Read 补全后再执行。",
+    ]
 
-    # core_files：任务目标/原话/上下文核心文件的强制读取指令（用户 2026-11-25 授权收窄范围）
-    if "core_files" in fields:
-        lines.append("⚠️ 强制读取指令（压缩后必做，先于任何其它工具调用）: 摘要不可信。必须立即用 Read 依次读下列【核心文件（任务目标/上下文类）】全文，读完前不得推进任务、不得删改任何既有设定/事实：")
-        lines.append("【核心·强制读取】（任务目标/原话/规范基线/结论，按序）:")
-        lines.append(f"1. {plan_dir}/user-session-log.md（全文；用户原话=任务目标权威源，逐字条目 #N）")
-        lines.append(f"2. {plan_dir}/task_plan.md（需求原文 / 🔒 规范基线(MK) / 变更标注表 / 验收契约 / Goal / Phase）")
-        lines.append(f"3. {plan_dir}/findings.md（结论与证据锚）")
-        lines.append(f"【按需·非强制】（非任务目标类，遇到问题再读）: 4. {plan_dir}/knowledge-brief.md（易错点） 5. {plan_dir}/.git-baseline-report.md（未处置偏移，若存在）")
+    # ② 任务状态·固定核心行（短，任何限幅下都保全）
+    core: list[str] = []
+    if "goal" in fields:
+        core.append(f"Goal: {_recover_flat(doc.get('goal', doc.get('goals')))}")
+    if "phase" in fields:
+        core.extend(_recover_phase_lines(doc.get("phases")))
+    if "next_step" in fields:
+        core.append(f"Next Step: {_recover_flat(doc.get('next_step', doc.get('next')))}")
+    if "git_baseline" in fields:
+        core.extend(_recover_git_baseline_lines(plan_dir))
 
-    # skill_contract：压缩后 SKILL.md 正文可能被整体冲掉 → agent 遗忘技能语义、行为偏移。
-    #   只重读技能入口 SKILL.md 一个文件；其余规则/配置由 SKILL.md 的指针按需加载，不在此预列
-    #   （用户 2026-11-25 裁决：不要画蛇添足一次性铺开整个技能包）。
-    if "skill_contract" in fields:
-        lines.append("【技能体系·强制重读】（压缩后本技能 SKILL.md 正文可能被整体遗忘→行为偏移技能要求；须先重读再执行，其余规则/配置按 SKILL.md 指针按需加载）:")
-        lines.append(f"1. {SKILL_DIR}/SKILL.md（技能入口：frontmatter + 工作流 + 全部硬条款，全文；遗忘此文件=技能体系崩溃）")
-
-    # requirements[].text：用户逐字原话 = 任务目标权威源（旧版遗漏的关键字段）
+    # ③ 任务状态·长列表（超限幅时从尾部截断；按「丢了最致命」排序：用户原话 > 必保 > 裁决 > 动作）
+    longs: list[str] = []
     if "requirements" in fields:
         reqs = doc.get("requirements") or []
-        lines.append("Requirements（用户原话/任务目标，逐字）:")
+        longs.append("Requirements（用户原话/任务目标，逐字）:")
         if isinstance(reqs, list) and reqs:
             for r in reqs[:100]:
                 if isinstance(r, dict):
-                    rid = r.get("id") or "-"
-                    lines.append(f"[{rid}] {_recover_flat(r.get('text'))}")
+                    longs.append(f"[{r.get('id') or '-'}] {_recover_flat(r.get('text'))}")
                 else:
-                    lines.append(_recover_flat(r))
+                    longs.append(_recover_flat(r))
         else:
-            lines.append("-")
-
-    if "goal" in fields:
-        goal = doc.get("goal", doc.get("goals"))
-        lines.append(f"Goal: {_recover_flat(goal)}")
-
-    if "phase" in fields:
-        phases = doc.get("phases") or []
-        cur = "-"
-        if isinstance(phases, list):
-            for p in phases:
-                if isinstance(p, dict) and p.get("status") == "in_progress":
-                    cur = str(p.get("name") or p.get("phase") or p.get("id") or p.get("title") or "-")
-                    break
-        lines.append(f"Current Phase: {cur}")
-
-    if "next_step" in fields:
-        lines.append(f"Next Step: {_recover_flat(doc.get('next_step', doc.get('next')))}")
-
-    if "decisions" in fields:
-        decs = doc.get("decisions", doc.get("decisions_made")) or []
-        lines.append("Decisions（全部，一行一条）:")
-        if isinstance(decs, list) and decs:
-            for d in decs[:100]:
-                lines.append(_recover_flat(d))
-        elif isinstance(decs, dict) or isinstance(decs, str):
-            lines.append(_recover_flat(decs))
-        else:
-            lines.append("-")
-
-    # mustkeep：spec_baseline 中 id 以 MK 开头的必保项（与 shell 版 mustkeep 同语义）
+            longs.append("-")
     if "mustkeep" in fields:
         sb = doc.get("spec_baseline") or []
-        lines.append("必保清单:")
+        longs.append("必保清单:")
         mk_count = 0
         if isinstance(sb, list):
             for item in sb:
@@ -931,48 +1010,51 @@ def cmd_recover(args: argparse.Namespace) -> int:
                 rule = str(item.get("rule") or "")
                 target = rule.split("target=", 1)[1].split("|", 1)[0] if "target=" in rule else "?"
                 anchor = _recover_flat(item.get("anchor"))
-                lines.append(f"{mid} | {verbatim} | target={target} | 真源={anchor}")
+                longs.append(f"{mid} | {verbatim} | target={target} | 真源={anchor}")
                 mk_count += 1
         if mk_count == 0:
-            lines.append("必保清单=缺失（存量计划，非阻断提示）")
-
-    # git_baseline：读 .git-baseline.json sidecar（缺失/不可读写指引，不编造）
-    if "git_baseline" in fields:
-        sidecar = plan_dir / ".git-baseline.json"
-        script_dir = SCRIPT_DIR
-        if not sidecar.is_file():
-            lines.append(f"Git基线: 缺失 → 先执行 B9（任务开始前备份，未做不得写受管文件）: bash {script_dir}/git-baseline.sh snapshot {plan_dir}")
+            longs.append("必保清单=缺失（存量计划，非阻断提示）")
+    if "decisions" in fields:
+        decs = doc.get("decisions", doc.get("decisions_made")) or []
+        longs.append("Decisions（全部，一行一条）:")
+        if isinstance(decs, list) and decs:
+            for d in decs[:100]:
+                longs.append(_recover_flat(d))
+        elif isinstance(decs, dict) or isinstance(decs, str):
+            longs.append(_recover_flat(decs))
         else:
-            try:
-                g = json.loads(sidecar.read_text(encoding="utf-8"))
-                sha = str(g.get("baseline_sha") or "-")[:8]
-                cps = g.get("checkpoints")
-                cps_n = len(cps) if isinstance(cps, list) else 0
-                last = g.get("last_diff") if isinstance(g.get("last_diff"), dict) else {}
-                def _n(v: Any) -> str:
-                    return str(v) if isinstance(v, (int, str)) and v != "" else "0"
-                lines.append(
-                    f"Git基线: {sha} 检查点={cps_n} 未处置={_n(last.get('unresolved'))} "
-                    f"必保丢失={_n(last.get('mustkeep_lost'))}（最近分析 {last.get('at') or '-'}；"
-                    f"续做前先跑 B11: bash {script_dir}/git-baseline.sh diff {plan_dir}）"
-                )
-            except (OSError, ValueError, TypeError):
-                lines.append(f"Git基线: 证据文件不可读 → 重跑 bash {script_dir}/git-baseline.sh status {plan_dir}")
+            longs.append("-")
+    if "recent_actions" in fields:
+        longs.extend(_recover_action_lines(doc.get("actions")))
 
-    full = "\n".join(lines)
+    # ④ 限幅：只作用于任务状态块（core 必保全，longs 让位），-1 给截断提示行留位
+    state = core + longs
+    if len(head) + len(state) > max_lines:
+        keep = max(max_lines - len(head) - len(core) - 1, 0)
+        state = core + longs[:keep]
+        state.append(f"…任务状态已截断（上限 {max_lines} 行）；完整内容见 {plan_dir}/.compact-recovery.md")
 
-    # 全文落盘供截断后追读；写入失败 fail-open，不影响注入
+    lines = head + state
+
+    # ⑤ 技能正文全文内联（不参与限幅）
+    if "skill_contract" in fields:
+        skill_path, skill_text = _recover_skill_text()
+        body = skill_text.rstrip("\n")
+        if body:
+            lines.append(f"{RECOVER_SKILL_BEGIN} {skill_path}（技能入口全文 {len(body.splitlines())} 行，已内联，无需再 Read）")
+            lines.extend(body.splitlines())
+            lines.append(RECOVER_SKILL_END)
+        else:
+            lines.append(f"{RECOVER_SKILL_BEGIN} 技能正文不可读（{skill_path}）→ 须手动 Read 该文件 {RECOVER_SKILL_END}")
+
+    # 全文落盘供截断后追读（只落任务状态；技能正文磁盘上本就是 SKILL.md，不重复落盘）；
+    # 写入失败 fail-open，不影响注入
     try:
-        (plan_dir / ".compact-recovery.md").write_text(full + "\n", encoding="utf-8")
+        (plan_dir / ".compact-recovery.md").write_text("\n".join(head + core + longs) + "\n", encoding="utf-8")
     except OSError:
         pass
 
-    total = len(lines)
-    if total > max_lines:
-        print("\n".join(lines[: max_lines - 1]))
-        print(f"…已截断（上限 {max_lines} 行）；全文见 {plan_dir}/.compact-recovery.md")
-    else:
-        print(full)
+    print("\n".join(lines))
     return 0
 
 
@@ -2108,15 +2190,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     # [2026-11-25 task-planctl-recover] 压缩恢复专用命令：核心数据获取能力收口到 planctl；
     #   升级「恢复时能拿到什么」只改 cmd_recover 一处，hook 与 selftest 不再各自引用旁路实现。
-    p = add_cmd("recover", "压缩恢复：从权威源读核心字段产出注入包（参数指定字段集）", cmd_recover)
+    p = add_cmd("recover", "压缩恢复：权威源核心状态 + 技能正文全文直接内联，产出注入包（参数指定字段集）", cmd_recover)
     p.epilog = (
         "示例（可照抄）：\n"
         "  python3 planctl.py recover --plan-dir <计划目录>\n"
         "  python3 planctl.py recover --plan-dir <计划目录> --fields requirements,goal,mustkeep\n"
-        "  python3 planctl.py recover --plan-dir <计划目录> --fields core_files,requirements --max-lines 80"
+        "  python3 planctl.py recover --plan-dir <计划目录> --fields requirements,goal --max-lines 40"
     )
-    p.add_argument("--fields", help="逗号分隔核心字段（默认 core_files,skill_contract,requirements,goal,phase,next_step,decisions,mustkeep,git_baseline）")
-    p.add_argument("--max-lines", type=int, default=80, help="注入行数上限（默认 80；落盘全文不受限）")
+    p.add_argument("--fields", help="逗号分隔核心字段（默认 skill_contract,requirements,goal,phase,recent_actions,next_step,decisions,mustkeep,git_baseline）")
+    p.add_argument("--max-lines", type=int, default=150, help="任务状态块注入行数上限（默认 150；技能正文不受限，落盘全文不受限）")
 
     add_cmd("status", "输出 Phase/VC/审计状态摘要 JSON", cmd_status)
     add_cmd("validate", "schema 校验（rc 0 通过 / 1 失败）", cmd_validate)
