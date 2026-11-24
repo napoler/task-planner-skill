@@ -146,6 +146,63 @@ G15="$(printf '%s\n' "$OUT" | grep -n 'Git基线:' | head -1 | cut -d: -f1)"
 [ -f "$R15/plans/aa/.compact-recovery.md" ] && grep -qF '事实词070' "$R15/plans/aa/.compact-recovery.md" \
   && ok "T15c .compact-recovery.md 落盘且含被截断内容" || bad "T15c 全文落盘"
 
+# ── T16 planctl recover：核心数据获取能力收口到权威脚本 ─────────────────
+# [2026-11-25 task-planctl-recover] What: 直接调 planctl.py recover 验证核心字段从权威源读出、
+#   参数指定字段集、字段缺失不编造、SKILL.md 技能契约纳入重读面。
+# Why: 旧方案核心数据获取散落在 lib/plan-recovery.sh 的 jq 拼接里且漏了 requirements 原话；
+#   收口到 planctl 后升级只改一处，这里锁住该契约防止回退。
+PLANCTL="$SCRIPT_DIR/planctl.py"
+R16="$(mkroot t16)"
+# mkroot 夹具补 requirements 用户原话 + MK 必保项（T16 专属，避免污染其它用例）
+python3 - "$R16/plans/aa/plan-state.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p, encoding="utf-8"))
+d["requirements"] = [{"id": "R1", "text": "常驻嘉宾必须是明星", "type": "目标", "vc": [], "tags": []}]
+d["spec_baseline"] = [{"id": "MK1", "verbatim": "数据库使用 PostgreSQL 15",
+                       "rule": "target=facts.md|数据库使用 PostgreSQL 15|retain", "anchor": "facts.md:2"}]
+json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+PY
+run python3 "$PLANCTL" recover --plan-dir "$R16/plans/aa"
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF '常驻嘉宾必须是明星' \
+  && ok "T16a planctl recover 从权威源读出 requirements 用户原话" || bad "T16a requirements 原话缺失"
+printf '%s\n' "$OUT" | grep -qF '数据库使用 PostgreSQL 15' && ok "T16b 必保项 MK 从权威源读出" || bad "T16b MK 必保项缺失"
+printf '%s\n' "$OUT" | grep -qF 'Goal:' && printf '%s\n' "$OUT" | grep -qF 'Current Phase:' \
+  && printf '%s\n' "$OUT" | grep -qF 'Git基线:' && ok "T16c 核心字段 Goal/Phase/Git基线齐全" || bad "T16c 核心字段缺失"
+printf '%s\n' "$OUT" | grep -qF 'SKILL.md' && printf '%s\n' "$OUT" | grep -qF 'references/' \
+  && ok "T16d skill_contract 纳入 SKILL.md+references 重读面" || bad "T16d 技能契约缺失"
+# 参数指定：只传 requirements，输出不应含 Goal:/Git基线:
+run python3 "$PLANCTL" recover --plan-dir "$R16/plans/aa" --fields requirements
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF '常驻嘉宾必须是明星' \
+  && ! printf '%s\n' "$OUT" | grep -qF 'Git基线:' && ok "T16e --fields 参数指定生效（只出 requirements）" || bad "T16e --fields 参数未生效"
+# 字段缺失不编造
+R16E="$(mkroot t16empty)"
+# 删除 goals/next_step 键，构造真正的"字段缺失"夹具（mkroot 默认夹具这两项有值）
+python3 - "$R16E/plans/aa/plan-state.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p, encoding="utf-8"))
+d.pop("goals", None)
+d.pop("next_step", None)
+json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+PY
+run python3 "$PLANCTL" recover --plan-dir "$R16E/plans/aa" --fields goal,next_step
+[ "$RC" -eq 0 ] && printf '%s\n' "$OUT" | grep -qF 'Goal: -' && ok "T16f 字段缺失写-不编造" || bad "T16f 缺失字段编造"
+# hook 集成输出含 requirements 原话（证明 hook 真的走了 planctl）
+R16H="$(mkroot t16hook)"
+point "$R16H" recover16h aa
+python3 - "$R16H/plans/aa/plan-state.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p, encoding="utf-8"))
+d["requirements"] = [{"id": "R1", "text": "常驻嘉宾必须是明星", "type": "目标", "vc": [], "tags": []}]
+json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+PY
+H16="$(hook_run "$R16H" sess-recover16h)"
+CTX16="$(printf '%s\n' "$H16" | jq -r '.additionalContext // ""' 2>/dev/null)"
+printf '%s\n' "$CTX16" | grep -qF '常驻嘉宾必须是明星' \
+  && ok "T16g hook 集成输出含 planctl 读出的 requirements 原话" || bad "T16g hook 未走 planctl 权威源"
+
 TOTAL=$((PASS+FAIL))
 echo "Total: $TOTAL  PASS=$PASS  FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1

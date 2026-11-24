@@ -17,7 +17,13 @@ rc=$?
 # Why: 本 hook 每次上下文压缩后触发，但旧逻辑只注入 init cjs 文案 + INDEX.md 未完成任务，从不叫会话重读手头计划；
 #       压缩后 SKILL.md 正文已不在上下文，「先读计划」文字规则失效（实证：某会话压缩后 6 分钟未读计划专档并误删既有设定事实）。
 # 边界: 无在途计划 / 库缺失 / 执行失败 → 完全维持现状路径（cjs stdout + 既有 task-resume），逐字节不变；hook 仍 exit 0。
-RECOVERY_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/plan-recovery.sh"
+_SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RECOVERY_LIB="$_SCRIPTS_DIR/lib/plan-recovery.sh"   # 仅用于 inflight 会话定位（在途判定），非核心数据获取
+# [2026-11-25 task-planctl-recover] 压缩恢复的核心数据获取收口到 planctl 权威脚本：
+#   下面两个变量=「压缩后要拿哪些核心数据」的唯一定义处。升级数据面只改这里 + planctl.py 的 cmd_recover，
+#   不再各自散落在 lib/plan-recovery.sh 的 jq 拼接里。RECOVER_FIELDS 显式传参给 planctl recover。
+PLANCTL_PY="$_SCRIPTS_DIR/planctl.py"
+RECOVER_FIELDS="core_files,skill_contract,requirements,goal,phase,next_step,decisions,mustkeep,git_baseline"
 recovery_plan=""
 if [ -f "$RECOVERY_LIB" ]; then
   # 项目根解析口径对齐 task-plan-init.cjs / plan-created.cjs（从 $PWD 向上最多 10 层找 plans/）
@@ -35,7 +41,8 @@ if [ -f "$RECOVERY_LIB" ]; then
     # inflight 只认本会话 side 指针：不看 mtime/TTL、不做「最近改动计划」兜底（避免别的会话的计划串进来）
     claim="$(bash "$RECOVERY_LIB" inflight "$scan_root" "$sid" 2>/dev/null)" || claim=""
     if [ -n "$claim" ]; then
-      recovered="$(bash "$RECOVERY_LIB" recover "$claim" 80 2>/dev/null)" && recovery_plan="$claim" || recovery_plan=""
+      # 核心数据从 planctl 权威源读；python3 缺失/执行失败 → fail-open 维持现状路径
+      recovered="$(python3 "$PLANCTL_PY" recover --plan-dir "$claim" --fields "$RECOVER_FIELDS" --max-lines 80 2>/dev/null)" && recovery_plan="$claim" || recovery_plan=""
       if [ -n "$recovery_plan" ] && [ -n "$recovered" ]; then
         out="$recovered"
       else
