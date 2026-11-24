@@ -220,7 +220,12 @@ fi
 # Why: 用户 2026-11-24 裁决「基于运行时间升级任务难度，不做主观判断」；2026-11-25 补充「至少完成调研后
 #       才做决定，调研后做升级才具有参考价值」。纯时长会误升级正常任务（单个调研子代理即可超15min），
 #       故软阈值仅作前置时长条件，必须与步骤门联合生效；步骤门=plan-state.json 权威字段三选一
-#       （phase status=complete / findings 非空 / delegations 非空），零主观判断；硬阈值45min为无信号兜底。
+#       （phase status=complete / findings 或 research 非空 / delegations 非空），零主观判断；硬阈值45min为无信号兜底。
+# [tier-gate-research 2026-11-25] What: 信号②由「findings 非空」扩为「findings 或 research 非空」（标签 findings/research）；
+#       research=子代理返回后 `planctl add --section research` 的调研回填主通道，实测判例 StoryLab
+#       research=7/findings=6/delegations=0、align-mandatory research=4/findings=1/delegations=4。
+#       Why: 用户裁决「至少完成调研后升档」，research 才是调研完成的第一信号；delegations 经常为 0，
+#       原实现只查 findings 会把「调研已回填但 findings 恰为空」误判为无信号 → 30min 仍留 mini。
 # 调用形态实测（planctl.py set --help）：顶层字段写入 = `set --plan-dir <dir> --field plan_tier --value standard`；
 #       （用户任务书给的 `set --plan-dir <dir> plan_tier standard` 非本仓 CLI 形态）。
 # fail-open: jq/python3/planctl 任一缺失或任一步失败 → 静默 return 0 继续原 hook 路径，不重试、不污染 stdout。
@@ -264,7 +269,7 @@ PY
   if [ "$elapsed" -gt "$threshold" ]; then
     gate_signal="$(jq -r '
       if ([.phases[]? | select(.status == "complete")] | length) > 0 then "phase:complete"
-      elif ((.findings // []) | length) > 0 then "findings"
+      elif (((.findings // []) | length > 0) or ((.research // []) | length > 0)) then "findings/research"
       elif ((.delegations // []) | length) > 0 then "delegations"
       else "" end
     ' "$pdir/plan-state.json" 2>/dev/null || true)"
