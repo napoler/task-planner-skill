@@ -2,7 +2,7 @@
 # Progress: task-cleanup-alignment-20261125
 
 - task_id: `task-cleanup-alignment-20261125`
-- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:13:03Z
+- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:40:16Z
 
 ## Phase 状态
 | id | status | tags |
@@ -11,6 +11,7 @@
 | P2 | pending |  |
 | P3 | pending |  |
 | P4 | pending |  |
+| P5 | pending |  |
 
 ## Goals（证据锚）
 - （本任务暂无goal 证据记录）
@@ -66,6 +67,19 @@
 - Actions taken:
   - [S5] 用户新指令 B 扩展（原话 #5）：推广至所有模板+模板 skill；先落盘 R5/VC6/P4 再执行。
   - [Rule 36 计划范围登记] 推广改动 30 文件：29 标准 variant lineage pruned 声明 + plan-template-kit/SKILL.md 承载说明一句；audio-voice 从 HEAD 恢复后补声明，未清存量、未改守卫/功能模板/mini 豁免。
+- Files created/modified:
+  - （本任务暂无文件记录）
+- Test Results:
+| Test | Input | Expected | Actual | Status |
+|---|---|---|---|---|
+| （本任务暂无测试结果） |  |  |  |  |
+
+### Phase 5: 固化代码注释保护边界到条款
+- **Status:** pending
+- **Started:** 
+- Actions taken:
+  - [S5] 用户澄清（原话 #6）：代码注释受保护、禁列清理；清理限 Skill 说明 Markdown；先落盘 R6/VC7/P5 后执行。
+  - [Rule 36 计划范围登记] 代码注释保护边界固定 5 处：todo-sync B18 / task_plan 模板板块 / planctl render / SKILL 指针 / kit 教学面；代码注释属保护对象禁止清理。
 - Files created/modified:
   - （本任务暂无文件记录）
 - Test Results:

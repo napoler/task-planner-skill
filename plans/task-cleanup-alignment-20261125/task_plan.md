@@ -2,7 +2,7 @@
 # Task Plan: task-cleanup-alignment-20261125
 
 - task_id: `task-cleanup-alignment-20261125`
-- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:13:03Z
+- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:40:16Z
 plan_tier: standard
 execution_lane: L2
 schema_version: 1
@@ -14,6 +14,7 @@ schema_version: 1
 - **R3（手段）** 纯文本条款落地即可：todo 最后两步做对齐+清理；task 模板中新增一个板块列出必要步骤；不搞脚本门/基建（用户原话 #3）
 - **R4（手段）** 采纳方案 A，按三段式推进（用户原话 #4）
 - **R5（目标）** 把收尾对齐与清理板块推广到所有模板与模板 skill（用户核查问句 #5）
+- **R6（手段）** 代码文件注释（.py/.sh/.ts 等）受保护、不属清理对象；清理范围严格限定为会被 Agent 读取进上下文的 Skill 说明文件（SKILL.md/references/templates 等 Markdown）中的无价值历史旁注；边界须写进条款固定（用户原话 #6）
 
 ## Requirements（用户需求）
 | id | type | text | vc | tags |
@@ -23,6 +24,7 @@ schema_version: 1
 | R3 | 手段 | 纯文本条款落地即可：todo 最后两步做对齐+清理；task 模板中新增一个板块列出必要步骤；不搞脚本门/基建（用户原话 #3） |  |  |
 | R4 | 手段 | 采纳方案 A，按三段式推进（用户原话 #4） |  |  |
 | R5 | 目标 | 把收尾对齐与清理板块推广到所有模板与模板 skill（用户核查问句 #5） |  |  |
+| R6 | 手段 | 代码文件注释（.py/.sh/.ts 等）受保护、不属清理对象；清理范围严格限定为会被 Agent 读取进上下文的 Skill 说明文件（SKILL.md/references/templates 等 Markdown）中的无价值历史旁注；边界须写进条款固定（用户原话 #6） |  |  |
 
 ## Goals（目标单元）
 | id | text | evidence | tags |
@@ -39,6 +41,7 @@ schema_version: 1
 | P2 | pending |  |  | 段2：task 模板新板块 + render 同步 |  |  |
 | P3 | pending |  |  | 段3：SKILL 指针 + 验证 + 合并回 |  |  |
 | P4 | pending |  |  | 全模板族与模板 skill 推广 |  |  |
+| P5 | pending |  |  | 固化代码注释保护边界到条款 |  |  |
 
 ## R→VC 映射
 | requirement | vcs |
@@ -48,6 +51,7 @@ schema_version: 1
 | R3 |  |
 | R4 |  |
 | R5 |  |
+| R6 |  |
 ## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）
 | 工序 | 缺陷面 | 修复点 | VC |
 |---|---|---|---|
@@ -62,6 +66,7 @@ schema_version: 1
 | VC4 | SKILL.md 终验智能子动作段含收尾对齐与清理指针 | grep -nF "收尾对齐与清理" skills/task-planner/SKILL.md |  |
 | VC5 | 语法检查通过且 selftest 零新增 FAIL、verify.sh 0 fail | bash -n skills/task-planner/scripts/*.sh && python3 -m py_compile skills/task-planner/scripts/*.py && bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 \| tail -3 |  |
 | VC6 | 所有模板族与模板 skill 教学面含收尾对齐与清理板块，mini 豁免口径一致 | grep -rlF "收尾对齐与清理" skills/task-planner/templates skills/*/SKILL.md 2>/dev/null \| sort -u |  |
+| VC7 | B18 定义/模板板块/render 文本/SKILL 指针/kit 教学面均明确写出代码注释受保护、清理仅限 Skill 说明 Markdown | grep -rnE '属保护对象\|禁止清理' skills/task-planner/references/todo-sync.md skills/task-planner/templates/task_plan.md skills/task-planner/scripts/planctl.py skills/task-planner/SKILL.md skills/plan-template-kit/SKILL.md |  |
 
 ## 🔍 调研需求与检索计划
 | unit | 三态(LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT) | 检索关键词 | 渠道 | 预期产出形态 |
@@ -90,18 +95,23 @@ schema_version: 1
 - **Started:** 
 - **Executor:** -
 
+### Phase 5: 固化代码注释保护边界到条款
+- **Status:** pending
+- **Started:** 
+- **Executor:** -
+
 ## 🧹 收尾对齐与清理（交付前必填）
 | 类别 | 检查项 | 判据 | 证据 |
 |---|---|---|---|
 | 对齐 | 口径计数 / 冲突条款 / 行数快照 | 冲突锚 grep 无本任务新增命中 | progress `[align-final]` 行 |
-| 清理 | 历史注释 / 过期注 / 残留物 | 本任务新增痕迹注为 0 | progress `[cleanup-final]` 行 |
+| 清理 | Skill 说明 Markdown 中的历史旁注 / 过期注 / 残留物；代码文件注释不在清理范围、受保护 | 本任务新增痕迹注为 0（代码注释不计入） | progress `[cleanup-final]` 行 |
 
-执行时机：outcome 判定之前、合并回动作之前；mini / L0-lite 档豁免本板块。
+范围：只清会被 Agent 读进上下文的 Skill 说明文件；代码文件（.py/.sh/.ts 等）里的注释属保护对象，禁止清理。执行时机：outcome 判定之前、合并回动作之前；mini / L0-lite 档豁免本板块。
 
 ## 🔀 隔离决策
 | 字段 | 值 |
 |---|---|
-| merge_back | merged(a3b6e304) |
+| merge_back | merged(e79d90b7) |
 
 ## Decisions Made
 | Decision | Rationale |

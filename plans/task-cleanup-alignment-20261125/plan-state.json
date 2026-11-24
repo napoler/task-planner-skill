@@ -4,7 +4,7 @@
   "plan_tier": "standard",
   "execution_lane": "L2",
   "created_at": "2026-11-24T21:11:47Z",
-  "updated_at": "2026-11-24T22:13:03Z",
+  "updated_at": "2026-11-24T22:40:16Z",
   "requirements": [
     {
       "id": "R1",
@@ -38,6 +38,13 @@
       "id": "R5",
       "text": "把收尾对齐与清理板块推广到所有模板与模板 skill（用户核查问句 #5）",
       "type": "目标",
+      "vc": [],
+      "tags": []
+    },
+    {
+      "id": "R6",
+      "text": "代码文件注释（.py/.sh/.ts 等）受保护、不属清理对象；清理范围严格限定为会被 Agent 读取进上下文的 Skill 说明文件（SKILL.md/references/templates 等 Markdown）中的无价值历史旁注；边界须写进条款固定（用户原话 #6）",
+      "type": "手段",
       "vc": [],
       "tags": []
     }
@@ -91,6 +98,14 @@
       "status": "pending",
       "evidence": "",
       "tags": []
+    },
+    {
+      "id": "VC7",
+      "criterion": "B18 定义/模板板块/render 文本/SKILL 指针/kit 教学面均明确写出代码注释受保护、清理仅限 Skill 说明 Markdown",
+      "command": "grep -rnE '属保护对象|禁止清理' skills/task-planner/references/todo-sync.md skills/task-planner/templates/task_plan.md skills/task-planner/scripts/planctl.py skills/task-planner/SKILL.md skills/plan-template-kit/SKILL.md",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
     }
   ],
   "phases": [
@@ -129,6 +144,15 @@
       "v_checks": [],
       "tags": [],
       "started": ""
+    },
+    {
+      "id": "P5",
+      "name": "固化代码注释保护边界到条款",
+      "status": "pending",
+      "s_units": [],
+      "v_checks": [],
+      "tags": [],
+      "started": ""
     }
   ],
   "findings": [],
@@ -161,9 +185,21 @@
       "phase": "P4",
       "text": "[Rule 36 计划范围登记] 推广改动 30 文件：29 标准 variant lineage pruned 声明 + plan-template-kit/SKILL.md 承载说明一句；audio-voice 从 HEAD 恢复后补声明，未清存量、未改守卫/功能模板/mini 豁免。",
       "at": "2026-11-24T22:12:46Z"
+    },
+    {
+      "id": "A4",
+      "phase": "P5",
+      "text": "[S5] 用户澄清（原话 #6）：代码注释受保护、禁列清理；清理限 Skill 说明 Markdown；先落盘 R6/VC7/P5 后执行。",
+      "at": "2026-11-24T22:27:35Z"
+    },
+    {
+      "id": "A5",
+      "phase": "P5",
+      "text": "[Rule 36 计划范围登记] 代码注释保护边界固定 5 处：todo-sync B18 / task_plan 模板板块 / planctl render / SKILL 指针 / kit 教学面；代码注释属保护对象禁止清理。",
+      "at": "2026-11-24T22:40:16Z"
     }
   ],
   "isolation": {
-    "merge_back": "merged(a3b6e304)"
+    "merge_back": "merged(e79d90b7)"
   }
 }
