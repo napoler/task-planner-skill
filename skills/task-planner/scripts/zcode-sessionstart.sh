@@ -107,8 +107,19 @@ if [ -f "$idx" ]; then
 ${pending}
 开场时向用户提议是否继续;未经用户确认勿自动执行。"
     fi
+    fi
   fi
-fi
+  # [2026-11-24 task-compact-skill-always] 技能契约无条件续命：无在途计划也必须注入 SKILL.md 全文。
+  # What: 调 planctl recover-skill 把技能正文直接内联到注入包（不给路径叫模型自己 Read）。
+  # Why: 压缩会把整个技能体系冲掉；原逻辑把技能正文绑在 inflight 条件上，无 side 指针（首次/测试会话）
+  #       或空壳计划（指针存在但无 task_plan.md）时技能正文完全不注入，实证测试会话压缩后只剩开场白。
+  # 边界: python3 缺失/执行失败 → fail-open（保留现状开场白，不阻塞会话）；有在途计划时 cmd_recover
+  #       已内联技能正文且跳过本分支，不会重复注入。
+  skill_pkg="$(python3 "$PLANCTL_PY" recover-skill 2>/dev/null)" || skill_pkg=""
+  if [ -n "$skill_pkg" ]; then
+    out="${out}
+${skill_pkg}"
+  fi
 fi
 # ↑↑↑ 现状 task-resume 段结束（在途计划命中时整段跳过，避免向做到一半的会话兜售无关任务）
 
