@@ -1714,6 +1714,16 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                          [[x.get("item"), x.get("method"), x.get("anchor"), x.get("result")]
                           for x in anti_regress], _EMPTY % "防倒退终检")]
 
+    # 收尾对齐与清理板块：在 outcome 判定与合并回前核对口径并清理本任务新增痕迹注释，证据落 progress。
+    _lane = str(doc.get("execution_lane", "L1"))
+    if doc.get("plan_tier") != "mini" and _lane not in ("L0", "L0-T", "L0-E"):
+        lines += ["", "## 🧹 收尾对齐与清理（交付前必填）",
+                  _table(["类别", "检查项", "判据", "证据"],
+                         [["对齐", "口径计数 / 冲突条款 / 行数快照", "冲突锚 grep 无本任务新增命中", "progress `[align-final]` 行"],
+                          ["清理", "历史注释 / 过期注 / 残留物", "本任务新增痕迹注为 0", "progress `[cleanup-final]` 行"]],
+                         _EMPTY % "收尾对齐与清理"),
+                  "", "执行时机：outcome 判定之前、合并回动作之前；mini / L0-lite 档豁免本板块。"]
+
     isolation = _obj(doc, "isolation")
     if isolation:
         lines += ["", "## 🔀 隔离决策",
