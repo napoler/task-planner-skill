@@ -31,9 +31,10 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B14 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             --json also emits the B1-B15 baseline group (task_id/phase/status/subject/evidence/command)"
             echo "             B12=SP/OS 技能到达与产物承接收据检查；B13=Spec 路由命中核查（需求特征终判）"
             echo "             B14=两段式根因/风险线索包已落盘 + 后续任务已登记（N/A+证据）"
+            echo "             B15=周期性偏移回顾（每N次工具调用读user-session-log全原话对照当前执行+periodic-review收据）"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -279,6 +280,27 @@ baseline_b14_receipt() {
     return 0
 }
 
+# [2026-11-25 压缩后核心任务丢失根治 B15] What: 周期性偏移回顾证据——从在途计划 findings.md/progress.md 读 periodic-review 机器标记。
+# Why: 用户明确要求「todo 中每隔几次循环回顾一次基础信息判断是否偏移」，此前该驱动点从未进入基线组（B1-B14 无此项），
+#       hook 层 [drift-rhythm] 仅是文字提醒、无可勾选 todo 承载 ⇒ 回顾动作无落盘、压缩后无从找回。
+#       B15 把「周期性读 user-session-log 全原话 + periodic-review.sh 对照 Goal/结论」升为每次建组必带的证据项；
+#       证据为真 planctl add/render 产出的 findings/progress 标记（非自填勾选），缺标记=空串 fail-closed。纯 bash，无 jq/Python 依赖。
+#       标记约定：[periodic-review:PASS]（无矛盾）/ [periodic-review:DRIFT:<n>]（发现 n 处偏移，须处置后再标 PASS）。
+baseline_b15_receipt() {
+    local plans_dir="${1-}" tp="" pd="" f="" hit=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        for f in findings.md progress.md; do
+            [[ -f "$pd/$f" ]] || continue
+            hit="$(grep -m1 -E '\[periodic-review:(PASS|DRIFT:[0-9]+)\]' "$pd/$f" 2>/dev/null || true)"
+            if [[ -n "$hit" ]]; then printf 'periodic-review=%s' "${hit:0:60}"; return 0; fi
+        done
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    return 0
+}
+
 # [2026-11-24 task-session-regression-20261124 S6] What: 读取侧车生成 B9/B10/B11 的 evidence（B9=baseline:<sha7>@<mode> / B10=最近 checkpoint label / B11=unresolved=<n>@<last_diff.at>）。
 # Why: B11 初始侧车的 last_diff.unresolved=0 代表「从未跑过差异分析」，必须判为无证据（空串），否则假通过；
 #       at 是差异分析真实发生的时标，与 unresolved 一同带出才能证明该项已完成。文件/jq/字段缺失一律空串，保证 --json 可解析。
@@ -289,6 +311,7 @@ baseline_evidence_json() {
         B12) val="$(baseline_b12_receipt "$plans_dir")" ;;
         B13) val="$(baseline_b13_receipt "$plans_dir")" ;;
         B14) val="$(baseline_b14_receipt "$plans_dir")" ;;
+        B15) val="$(baseline_b15_receipt "$plans_dir")" ;;
     esac
     if [[ -z "$val" && -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
         case "$tid" in
@@ -330,6 +353,7 @@ baseline_command_json() {
         # 无本会话侧车时 plan_dir 为空 → 用 <plan-dir> 占位，避免生成写入根目录的 /route-receipts.jsonl 危险命令。
         B13) cmd="bash $scripts_dir/check-spec-route.sh --feature <需求特征> --no-dry-run --receipt-file ${plan_dir:-<plan-dir>}/route-receipts.jsonl" ;;
         B14) cmd="bash $scripts_dir/check-evidence-anchor.sh ${plan_dir:-<plan-dir>} --source=rootcause-followup" ;;
+        B15) cmd="bash $scripts_dir/periodic-review.sh ${plan_dir:-<plan-dir>}" ;;
     esac
     baseline_json_escape "$cmd"
 }
@@ -417,7 +441,9 @@ forward_sync() {
         baseline_entries+='{"task_id":"B12","phase":0,"status":"baseline","subject":"SP/OS技能到达与产物承接收据检查"},'
         baseline_entries+='{"task_id":"B13","phase":0,"status":"baseline","subject":"Spec路由命中核查（需求特征终判）"},'
         # [2026-11-24 task-two-stage-fix-20261124] B13 补尾逗号后追加 B14（B13 行 subject 逐字不变）；B14=两段式根因/风险线索包+后续任务登记（避让方案A/H3已占用的 B12/B13）。
-        baseline_entries+='{"task_id":"B14","phase":0,"status":"baseline","subject":"两段式根因/风险线索包已落盘+后续任务已登记（N/A+证据）"}'
+        baseline_entries+='{"task_id":"B14","phase":0,"status":"baseline","subject":"两段式根因/风险线索包已落盘+后续任务已登记（N/A+证据）"},'
+        # [2026-11-25 压缩后核心任务丢失根治 B15] B14 补尾逗号后追加 B15（B14 行 subject 逐字不变）；B15=周期性偏移回顾，绑定 periodic-review.sh 证据收据。
+        baseline_entries+='{"task_id":"B15","phase":0,"status":"baseline","subject":"周期性偏移回顾（每N次工具调用读user-session-log全原话+periodic-review对照，落PASS/DRIFT标记）"}'
         # 逐条注入 evidence/command：以 "},{" 为记录分隔符（subject 中不含该序列），task_id 用 bash 正则提取，零 Python/Node 依赖。
         local sidecar plan_dir repo_root rest chunk tid ev cmd sep='},' brace='}' baseline_with_evidence=""
         sidecar="$(baseline_sidecar_file "$plans_dir")"
