@@ -136,6 +136,14 @@ function buildHooks(canonicalRoot: string): Record<string, unknown[]> {
         command: 'bash ' + SD + '/check-doc-sync.sh',
         statusMessage: '[task-planner] 计划/Todo 同步检查...',
       },
+      {
+        // [task-tier-deadzone-fix-20261125 R2/F6] 死角#1：claude 位 tier 升档检查（claude 无 zcode 的
+        // posttooluse tier 逻辑 → mini 计划永不升级）。形态与上一条完全一致（本文件既有 schema），
+        // 不引入新字段；与 install-stub.sh 薄壳文档、SKILL.md 无 hook 位自查条款三处同源。
+        matcher: '*',
+        command: 'bash ' + SD + '/tier-upgrade-check.sh',
+        statusMessage: '[task-planner] tier 升档检查...',
+      },
     ],
     UserPromptSubmit: [
       {

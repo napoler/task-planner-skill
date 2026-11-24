@@ -9,8 +9,17 @@
 # fail-open：stdin/解析/jq 缺失/无活跃计划 → exit 0 静默，不阻塞工具调用。
 # 零 home-dir 硬编码路径（部署位白名单外新文件）。
 
+# [R2/F5] 有意不随仓内 `set -euo pipefail` 惯例：本脚本是 PostToolUse hook 体，fail-open 优先——
+#   -e 会让任一步非零（jq 解析失败/无活跃计划）中断链路并向平台冒泡错误；-o pipefail 同理。
+#   宽容仅在「不阻塞工具调用」这一已声明的 hook 契约下成立，非通用脚本范式。
 set -u
-input="$(cat 2>/dev/null || true)"
+# [R2/F5] 终端直跑防挂起：stdin 为 TTY 时 cat 会一直等 EOF（SKILL.md 声明本脚本可手动跑）。
+# hook 场景 stdin 恒为 JSON 管道（非 TTY），两条路径互不干扰。
+if [ -t 0 ]; then
+  input=""
+else
+  input="$(cat 2>/dev/null || true)"
+fi
 
 SID="$(printf '%s' "$input" | jq -r '.session_id // .sessionId // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
 SID="${SID:-default}"
