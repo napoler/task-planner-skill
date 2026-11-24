@@ -75,6 +75,7 @@ run_checks() {
   BASE_REL="skills/task-planner/templates/task_plan.md"
   VARIANT_REL="skills/task-planner/templates/variant"
   EXEMPT_VARIANTS_CSV="mini-lite-type.md,l0-lite-type.md"
+  OUTPUT_EXAMPLE_TOKEN="🧩 输出示例与格式契约"
   # parse registry assertions if present (lightweight)
   if [ -f "$registry" ]; then
     local inblock=0 line
@@ -88,6 +89,7 @@ run_checks() {
           BASE_TEMPLATE=*) BASE_REL="${line#BASE_TEMPLATE=}" ;;
           VARIANT_DIR=*) VARIANT_REL="${line#VARIANT_DIR=}" ;;
           EXEMPT_VARIANTS=*) EXEMPT_VARIANTS_CSV="${line#EXEMPT_VARIANTS=}" ;;
+          OUTPUT_EXAMPLE_TOKEN=*) OUTPUT_EXAMPLE_TOKEN="${line#OUTPUT_EXAMPLE_TOKEN=}" ;;
         esac
       fi
     done < "$registry"
@@ -111,6 +113,8 @@ run_checks() {
     check_enforce_token "$base" "✅ Verification Contract" "验证契约" "base:$BASE_REL" || true
     check_enforce_token "$base" "📊 FMEA 预演" "FMEA 预演" "base:$BASE_REL" || true
     check_enforce_token "$base" "🔍 证据面清单" "证据锚/证据面" "base:$BASE_REL" || true
+    # [2026-11-25 task-output-example-contract] Rule 113 输出示例契约（base enforce）。
+    check_enforce_token "$base" "$OUTPUT_EXAMPLE_TOKEN" "输出示例契约(Rule 113)" "base:$BASE_REL" || true
   fi
 
   # derived checks
@@ -122,6 +126,9 @@ run_checks() {
     for f in "$vdir"/*.md; do
       [ -e "$f" ] || continue
       b="$(basename "$f")"
+      # [2026-11-25 task-output-example-contract] Rule 113 全档必填（用户明确要求「所有计划任务都包含完整示例」）：
+      #   豁免档只跳过其他原则，输出示例契约不豁免——先于 continue 检查。
+      check_enforce_token "$f" "$OUTPUT_EXAMPLE_TOKEN" "输出示例契约(Rule 113)" "derived:$VARIANT_REL/$b" || true
       if is_exempt_variant_name "$b"; then
         continue
       fi
@@ -180,6 +187,7 @@ SPEC_VERSION=1
 BASE_TEMPLATE=skills/task-planner/templates/task_plan.md
 VARIANT_DIR=skills/task-planner/templates/variant
 EXEMPT_VARIANTS=mini-lite-type.md,l0-lite-type.md
+OUTPUT_EXAMPLE_TOKEN=🧩 输出示例与格式契约
 ```
 REG
   # OK base fixture
@@ -195,6 +203,7 @@ REG
 ## 📊 FMEA 预演
 ## 🔍 证据面清单
 ## 🛡 防倒退终检
+## 🧩 输出示例与格式契约
 EOF
   # OK derived fixture
   cat > "$tmp/skills/task-planner/templates/variant/ok-type.md" <<'EOF'
@@ -207,14 +216,17 @@ EOF
 ## ✅ Verification Contract
 ## 📊 FMEA 预演
 ## 🔍 证据面清单
+## 🧩 输出示例与格式契约
 防倒退：进度产出基线指针
 EOF
-  # exempt variants (should be skipped)
+  # exempt variants (skipped for other principles, but Rule 113 output-example is mandatory for all)
   cat > "$tmp/skills/task-planner/templates/variant/mini-lite-type.md" <<'EOF'
 # mini-lite exempt
+## 🧩 输出示例与格式契约（Rule 113 · 极简档）
 EOF
   cat > "$tmp/skills/task-planner/templates/variant/l0-lite-type.md" <<'EOF'
 # l0-lite exempt
+## 🧩 输出示例与格式契约（Rule 113 · 极简档）
 EOF
 
   echo "[smoke] case-1: all-ok fixture expects PASS"

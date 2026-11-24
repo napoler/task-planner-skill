@@ -157,3 +157,42 @@
 | ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
 |----|------------|------------------------|-------------|---------|------|------|------|------|------|
 | S1 | （A6） | 继承 |  |  | 10min | 1f/10l/10min | 无 | - | pending |
+
+## 🧩 输出示例与格式契约（Rule 113）
+> 必填：本类型计划中凡声明输出格式/结构的交付物，均须在 `plan-state.json.output_examples` 登记至少 1 条完整示例 + 1 个同结构可复用模板（经 `planctl add --section output_examples` 写入），由 `planctl render` 派生到 task_plan.md 同名区块。禁止只写「输出为 JSON」等无样例声明；禁「略/同上/TBD」。
+
+| 交付物 | 格式 | 完整示例（fenced，见下方） | 可复用模板（占位符版，见下方） | 对应 VC |
+|---|---|---|---|---|
+| publish-report.json | JSON | 见下方示例代码块 | 见下方模板代码块 | VC-2, VC-3, VC-9 |
+
+**完整示例（可直接查看、可比对）**：
+
+```json
+{
+  "batch_id": "publish-20261125-001",
+  "endpoint": "https://api.example.com/articles",
+  "http_status": 200,
+  "idempotent": true,
+  "total": 5,
+  "success": 5,
+  "failed": 0,
+  "failure_rate": 0.0
+}
+```
+
+**可复用模板（占位符版，供执行期复制）**：
+
+```json
+{
+  "batch_id": "<BATCH_ID>",
+  "endpoint": "<ENDPOINT_URL>",
+  "http_status": "<HTTP_STATUS_INT>",
+  "idempotent": "<IDEMPOTENT_BOOL>",
+  "total": "<TOTAL_INT>",
+  "success": "<SUCCESS_INT>",
+  "failed": "<FAILED_INT>",
+  "failure_rate": "<FAILURE_RATE_FLOAT>"
+}
+```
+
+填写纪律：① 示例与模板的字段集/层级必须一致；② 示例必须自包含可查看（JSON 须合法可解析、表格须有表头+≥1 行数据）；③ 无格式交付物时显式写 `none-justified（理由）`，禁留空；④ 示例的 `vc_refs` 至少映射 1 个已存在 VC（Rule 113.4）。

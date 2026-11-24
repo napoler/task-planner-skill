@@ -29,6 +29,8 @@
   Evidence: [file path / command output]
   **Verify command**: <可执行纯命令——禁占位（must be runnable 类模板串会被 attest vc-gate 拒）；禁真空（true/echo 类）；命令须引用本 VC 产出物；判据=退出码>
 
+> **输出示例对照（Rule 113）**：凡 VC 判定标准涉及输出格式/结构（JSON/Markdown 表格/YAML/文件树/API payload 等），须在 `task_plan.md`「🧩 输出示例与格式契约」区块有对应 `output_examples` 条目（完整示例 + 同结构可复用模板 + `vc_refs` 指向本 VC）；验收时产出形态与示例不一致 = VC 未通过，禁仅凭命令退出码放行。
+
 ---
 
 ## Phase Gates

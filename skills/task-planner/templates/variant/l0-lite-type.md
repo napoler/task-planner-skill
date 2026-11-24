@@ -20,3 +20,11 @@
 
 <!-- [task-perf-default-mini 2026-11-24] What: l0-lite 回落阈值对齐 mini-lite ≤5 文件；Why: >2≤5 的纯文档走 mini-lite，l0-lite 仅保留单文件极简档，避免两档重叠。 -->
 > l0-lite：写此 stub 后直接改目标文件；免 VC≥2 表 / 3-File 回填 / G-gates / 归档，可随时补跑 `check-complete` 兜底；多模块 / 新脚本 / >5 文件 → 回落 standard 全量模板。
+
+## 🧩 输出示例与格式契约（Rule 113 · 极简档）
+> 本档至少 1 条：完整示例 + 同结构模板（字段可最小化，但结构必须真实可模仿）。
+
+- 交付物 / 格式：article.json / JSON
+- 完整示例：`{"title":"示例标题","count":3}`
+- 可复用模板：`{"title":"<TITLE>","count":<INT>}`
+- 对应 VC：VC-1

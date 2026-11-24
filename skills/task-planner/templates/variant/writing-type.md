@@ -140,3 +140,36 @@
 | `sampled_fail` | 任务 <5 单元不触发抽样 |
 | `pre_check` | Q1:否 / Q2:无共享写 / Q3:能 |
 | `rollback_point` | <worktree 分支，合并前可弃> |
+
+## 🧩 输出示例与格式契约（Rule 113）
+> 必填：本类型计划中凡声明输出格式/结构的交付物，均须在 `plan-state.json.output_examples` 登记至少 1 条完整示例 + 1 个同结构可复用模板（经 `planctl add --section output_examples` 写入），由 `planctl render` 派生到 task_plan.md 同名区块。禁止只写「输出为 JSON」等无样例声明；禁「略/同上/TBD」。
+
+| 交付物 | 格式 | 完整示例（fenced，见下方） | 可复用模板（占位符版，见下方） | 对应 VC |
+|---|---|---|---|---|
+| article.json | JSON | 见下方示例代码块 | 见下方模板代码块 | VC-1, VC-4, VC-5 |
+
+**完整示例（可直接查看、可比对）**：
+
+```json
+{
+  "title": "示例标题：轻量入门指南",
+  "meta_title": "示例标题 | 示例站点",
+  "focus_keyword": "示例关键词",
+  "content": "<h2>示例小节</h2><p>示例正文段落。</p>",
+  "images": ["https://storage.maomihezi.com/img/example-1.png", "https://storage.maomihezi.com/img/example-2.png", "https://storage.maomihezi.com/img/example-3.png"]
+}
+```
+
+**可复用模板（占位符版，供执行期复制）**：
+
+```json
+{
+  "title": "<TITLE>",
+  "meta_title": "<META_TITLE>",
+  "focus_keyword": "<FOCUS_KEYWORD>",
+  "content": "<HTML_CONTENT>",
+  "images": ["<IMAGE_URL_1>", "<IMAGE_URL_2>", "<IMAGE_URL_3>"]
+}
+```
+
+填写纪律：① 示例与模板的字段集/层级必须一致；② 示例必须自包含可查看（JSON 须合法可解析、表格须有表头+≥1 行数据）；③ 无格式交付物时显式写 `none-justified（理由）`，禁留空；④ 示例的 `vc_refs` 至少映射 1 个已存在 VC（Rule 113.4）。
