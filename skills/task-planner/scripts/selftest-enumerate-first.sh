@@ -89,13 +89,14 @@ else
     echo "  [diag] missing SEC105 OR anchor='Rule 35'/'100.6'"
 fi
 
-# EN-06: SKILL.md 含 `1-110` ≥3 处 且 discipline 路由行含 `,107`
+# EN-06: SKILL.md 含 `1-112` ≥3 处 且 discipline 路由行含 `,107`
 # [2026-11-23 task-fix-all-20261123] 纪元 1-108→1-110：Rule 110 已文档化（SKILL L9/L312/L424），保留 ,107 路由存在检查
-_en06_n="$(grep -c '1-110' "$SKILL_MD" 2>/dev/null)" || _en06_n=0
+# [2026-11-25 skill-fix 审计 P1-b] 1-110→1-112：Rule 111/112 核心在位，索引同步演进
+_en06_n="$(grep -c '1-112' "$SKILL_MD" 2>/dev/null)" || _en06_n=0
 if [ "$_en06_n" -ge 3 ] && grep -q ',107' "$SKILL_MD" 2>/dev/null; then
-    PASS=$((PASS+1)); echo "[PASS] EN-06 SKILL.md 含 '1-110' ≥3 处($_en06_n) 且含 ',107' 路由"
+    PASS=$((PASS+1)); echo "[PASS] EN-06 SKILL.md 含 '1-112' ≥3 处($_en06_n) 且含 ',107' 路由"
 else
-    FAIL=$((FAIL+1)); echo "[FAIL] EN-06 SKILL.md 含 '1-110' ≥3 处($_en06_n) 且含 ',107' 路由"
+    FAIL=$((FAIL+1)); echo "[FAIL] EN-06 SKILL.md 含 '1-112' ≥3 处($_en06_n) 且含 ',107' 路由"
     echo "  [diag] file=$SKILL_MD"
     grep -n ',107' "$SKILL_MD" 2>/dev/null | sed 's/^/  [diag] ,107 present: /' || echo "  [diag] ,107 not found"
 fi

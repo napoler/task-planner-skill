@@ -285,7 +285,7 @@
 | hook/平台接线 | 4 | `zcode-sessionstart.sh`, `zcode-userpromptsubmit.sh`, `zcode-pretooluse.sh`, `zcode-posttooluse.sh` | ZCode hook 入口 |
 | 同步/校验/注册 | 7 | `sync-companion.sh`, `sync-ide-folders.ts`, `register-hooks-cj.ts`, `verify_io.sh`, `run-selftests.sh`, `selftest-registry.tsv`, `selftest-registry.sh` | 部署同步、I/O 校验、自测注册表/运行器 |
 | selftest | 106 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
-| lib/schemas | 2 | `lib/plan-parse.sh`, `schemas/check-delegation-stats.schema.json` | 共享解析与 JSON schema |
+| lib/schemas | 2（路径相对 skills/task-planner/，lib/ 与 schemas/ 为同级子目录） | `lib/plan-parse.sh`, `schemas/check-delegation-stats.schema.json` | 共享解析与 JSON schema |
 
 > 发现脚本时优先：① 本节类别 → ② `grep -rn "<关键词>" skills/task-planner/scripts` → ③ 直接读脚本头部注释/`--help`。新增脚本应归入对应类别并保持命名可检索（`check-*`/`selftest-*`/`sync-*`/`zcode-*`）。
 
