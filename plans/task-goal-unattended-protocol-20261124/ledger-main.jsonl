@@ -1,0 +1,6 @@
+{"tick":1,"ts":"2026-11-23T18:22:07Z","agent":"main","phase":"1","event":"drift_check","summary":"P1 末偏移检查 ALIGNED（subagent-state/13-drift-checker.md）","files":[]}
+{"tick":2,"ts":"2026-11-23T20:00:36Z","agent":"main","phase":"2","event":"note","summary":"P2 簿记修正：plan-state 中 P2 一直为 pending/无 started（整条目替换时丢失），实际自 11-24 00:50 起执行；补 phase-start，不改变任何已完成工作的认定","files":[]}
+{"tick":3,"ts":"2026-11-23T20:04:03Z","agent":"main","phase":"2","event":"drift_check","summary":"源码落地阶段收尾前偏移检查 ALIGNED（subagent-state/20-drift-checker.md；原话/动作/scope 三锚证据齐全，未触碰 complex-planner/运行位/goal.md）","files":[]}
+{"tick":4,"ts":"2026-11-23T20:30:13Z","agent":"main","phase":"3","event":"drift_check","summary":"验证与独立审查阶段收尾前偏移检查 ALIGNED（subagent-state/26-drift-checker.md；复审采纳的五处修订均为必要级联，无新增脚本/门/断言；未触碰 complex-planner/","files":[]}
+{"tick":5,"ts":"2026-11-23T21:00:16Z","agent":"main","phase":"5","event":"drift_check","summary":"部署阶段收尾前偏移检查 ALIGNED（subagent-state/30-drift-checker.md；部署 9 文件在预授权内、护栏四项齐、未触碰 agent 定义副本与 scope 外文件）","files":[]}
+{"tick":6,"ts":"2026-11-23T21:16:40Z","agent":"main","phase":"6","event":"drift_check","summary":"收尾前偏移检查 DRIFT（subagent-state/32-drift-checker.md）：VC-8 标 pass 名实不符 → 改判 fail（D-21）；scope 外无触碰、无未记录失败","files":[]}

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "task-retrieval-exclude-20261123",
+  "plan_tier": "standard",
+  "execution_lane": "L2",
+  "created_at": "2026-11-22T19:45:57Z",
+  "updated_at": "2026-11-22T19:46:25Z",
+  "requirements": [],
+  "goals": [],
+  "vcs": [],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "范围=skill规则(全局)+当前项目清单文档",
+      "rationale": "用户定案"
+    },
+    {
+      "id": "D2",
+      "decision": "初始排除项仅trash/(沿用Rule 100.6)，清单支持后续维护",
+      "rationale": "用户定案"
+    },
+    {
+      "id": "D3",
+      "decision": "纯文本L0-T文本锚、零新脚本/hook/config",
+      "rationale": "用户定案+宪法§二文本优先铁律"
+    }
+  ]
+}

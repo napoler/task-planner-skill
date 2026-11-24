@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "task_id": "task-planner-lean-20261123",
+  "plan_tier": "mini",
+  "execution_lane": "L1",
+  "created_at": "2026-11-24T13:10:20Z",
+  "updated_at": "2026-11-24T13:10:20Z",
+  "requirements": [],
+  "goals": [],
+  "vcs": [],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "decisions": [
+    {
+      "id": "DC-1",
+      "decision": "四项修复已拆分入库（attest/planctl 两文件经包1 commit 落 master；init-session/task-plan-init 的 plan_scope 推断链被 2026-11-24 缺省mini设计取代不入库）；计划收口=修复已入库",
+      "rationale": "2026-11-24 用户裁决：默认简单SOP+运行时间升级"
+    }
+  ]
+}

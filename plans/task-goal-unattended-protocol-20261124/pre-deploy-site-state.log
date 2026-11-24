@@ -1,0 +1,36 @@
+## skills/task-discipline/references/critical-rules-discipline.md
+  SAME :: /home/terry/.zcode
+  SAME :: /home/terry/.agents
+  DIFF 4 :: /home/terry/.claude
+  DIFF 10 :: /home/terry/.config/opencode
+  DIFF 4 :: /home/terry/.cursor
+## skills/task-planner/SKILL.md
+  SAME :: /home/terry/.zcode
+  DIFF 5 :: /home/terry/.agents
+  DIFF 5 :: /home/terry/.claude
+  DIFF 5 :: /home/terry/.config/opencode
+  DIFF 10 :: /home/terry/.cursor
+## skills/task-planner/references/critical-rules.md
+  SAME :: /home/terry/.zcode
+  SAME :: /home/terry/.agents
+  SAME :: /home/terry/.claude
+  SAME :: /home/terry/.config/opencode
+  SAME :: /home/terry/.cursor
+## skills/verification-gate/references/critical-rules-verification.md
+  SAME :: /home/terry/.zcode
+  SAME :: /home/terry/.agents
+  SAME :: /home/terry/.claude
+  DIFF 2 :: /home/terry/.config/opencode
+  SAME :: /home/terry/.cursor
+## skills/verification-gate/SKILL.md
+  SAME :: /home/terry/.zcode
+  SAME :: /home/terry/.agents
+  SAME :: /home/terry/.claude
+  DIFF 1 :: /home/terry/.config/opencode
+  SAME :: /home/terry/.cursor
+## skills/task-dispatch/references/critical-rules-dispatch.md
+  SAME :: /home/terry/.zcode
+  SAME :: /home/terry/.agents
+  SAME :: /home/terry/.claude
+  DIFF 8 :: /home/terry/.config/opencode
+  SAME :: /home/terry/.cursor

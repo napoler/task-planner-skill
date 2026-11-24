@@ -1,0 +1,1904 @@
+{
+  "schema_version": 1,
+  "task_id": "task-goal-unattended-protocol-20261124",
+  "plan_tier": "standard",
+  "execution_lane": "L2",
+  "created_at": "2026-11-23T16:44:25Z",
+  "updated_at": "2026-11-23T21:26:02Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "用户原话（user-session-log #1 逐字）：「当前  skill子啊  goal 模式下导致不能自主确认推进 ,导致无效多次循环是严重的缺陷  没有达到自主角色目标  sess_df5b8b4a-8536-4c7e-87ac-fd85024635eb 会话就是示例 必须对skill缺陷进行解决」",
+      "type": "目标",
+      "vc": [
+        "VC-1",
+        "VC-2",
+        "VC-3",
+        "VC-8"
+      ],
+      "tags": [
+        "plan-brief §B3",
+        "原类型=结果"
+      ]
+    },
+    {
+      "id": "R2",
+      "text": "user-session-log #2 裁决一：goal 模式部署预授权+护栏",
+      "type": "手段",
+      "vc": [
+        "VC-2",
+        "VC-7"
+      ],
+      "tags": [
+        "plan-brief §B3",
+        "原类型=手段"
+      ]
+    },
+    {
+      "id": "R3",
+      "text": "user-session-log #2 裁决二：本次部署到全部运行位",
+      "type": "手段",
+      "vc": [
+        "VC-4",
+        "VC-5"
+      ],
+      "tags": [
+        "plan-brief §B3",
+        "原类型=手段"
+      ]
+    },
+    {
+      "id": "R4",
+      "text": "user-session-log #2 裁决三：decision-arbiter 对齐 GLM-5.4 + max",
+      "type": "手段",
+      "vc": [
+        "VC-6",
+        "VC-9"
+      ],
+      "tags": [
+        "plan-brief §B3",
+        "原类型=手段"
+      ]
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "修复 Skill 家族在 goal 模式下不能自主确认推进、无效多次循环的缺陷（Rule 28.9 + 载体级联）。",
+      "name": "G1",
+      "verify": "见 ✅ Verification Contract 对应 VC",
+      "s_units": [],
+      "status": "pending",
+      "tags": [],
+      "evidence": ""
+    },
+    {
+      "id": "G2",
+      "text": "修复在全部运行位生效（合并 + 部署 5 位）。",
+      "name": "G2",
+      "verify": "见 ✅ Verification Contract 对应 VC",
+      "s_units": [],
+      "status": "pending",
+      "tags": [],
+      "evidence": ""
+    },
+    {
+      "id": "G3",
+      "text": "独立裁决体 decision-arbiter 在当前宿主可派发（源配置对齐见 VC-6；派发冒烟见 VC-9）。",
+      "name": "G3",
+      "verify": "见 ✅ Verification Contract 对应 VC",
+      "s_units": [],
+      "status": "pending",
+      "tags": [],
+      "evidence": ""
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "条款锚在位且旧措辞清零。 判据：6 个载体文件逐一打印的「28.9」计数均 ≥1；`old-wording-in-SKILL=0`。（改前：6 个计数全为 0、old=2——具判别性）",
+      "command": "cd /mnt/data/dev/task-planner-skill && for f in skills/task-discipline/references/critical-rules-discipline.md skills/task-planner/SKILL.md skills/task-planner/references/critical-rules.md skills/verification-gate/references/critical-rules-verification.md skills/verification-gate/SKILL.md skills/task-dispatch/references/critical-rules-dispatch.md; do echo \"$(grep -c '28\\.9' \"$f\") $f\"; done; echo \"old-wording-in-SKILL=$(grep -c '仅单次降级收口停止' skills/task-planner/SKILL.md)\"",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-2",
+      "criterion": "Rule 28.9 本体在位：条款行 =1，八个子条标记 ①-⑧ 齐全，且含部署护栏原文。 判据：第一数 =1；第二数 =8；第三数 ≥3。",
+      "command": "cd /mnt/data/dev/task-planner-skill && F=skills/task-discipline/references/critical-rules-discipline.md; grep -c '^28\\.9 ' $F; sed -n '/^28\\.9 /p' $F | grep -o '[①②③④⑤⑥⑦⑧]' | sort -u | wc -l; sed -n '/^28\\.9 /p' $F | grep -o -E '逐位 diff 判向|禁整文件覆盖|部署前备份|verify 对账' | wc -l",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-3",
+      "criterion": "语法与 selftest 回归不破基线（selftest 基线 = `baseline-selftest.log`：104 PASS / 0 FAIL）。 判据：输出 `SYNTAX_OK`；fresh selftest 汇总行 FAIL 数 =0 且 PASS 数 =104（与基线相同）。",
+      "command": "cd /mnt/data/dev/task-planner-skill && bash -n skills/task-planner/scripts/*.sh && echo SYNTAX_OK; bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 | tail -4",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-4",
+      "criterion": "合并进 master 且隔离区已清理。 判据：第一数 ≥1；第二数 =0；第三数 =0。",
+      "command": "cd /mnt/data/dev/task-planner-skill && git log --oneline -6 | grep -c 'task-goal-unattended-protocol-20261124'; git worktree list | grep -c 'task-goal-unattended-protocol-20261124'; git branch --list 'wt/task-goal-unattended-protocol-20261124' | wc -l",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-5",
+      "criterion": "5 个运行位逐文件新锚在位（30 个位文件计数均 ≥1、无 MISSING），且部署对账不差于基线（`verify.sh` 基线 23 pass / 3 fail）。 判据：输出 `site-files-bad=0`；summary 行 pass ≥23 且 fail ≤3。",
+      "command": "cd /mnt/data/dev/task-planner-skill && for s in /home/terry/.zcode /home/terry/.agents /home/terry/.claude /home/terry/.config/opencode /home/terry/.cursor; do for f in skills/task-discipline/references/critical-rules-discipline.md skills/task-planner/SKILL.md skills/task-planner/references/critical-rules.md skills/verification-gate/references/critical-rules-verification.md skills/verification-gate/SKILL.md skills/task-dispatch/references/critical-rules-dispatch.md; do t=\"$s/$f\"; if [ -f \"$t\" ]; then grep -c '28\\.9' \"$t\"; else echo MISSING; fi; done; done | awk '{ if ($1==\"MISSING\" || $1+0<1) bad++ } END { print \"site-files-bad=\" bad+0 }'; TASK_PLANNER_ROOT=/mnt/data/dev/task-planner-skill/skills/task-planner bash skills/task-planner/lib/verify.sh 2>&1 | grep summary",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-6",
+      "criterion": "decision-arbiter 源配置对齐。 判据：=2（model 行与 thoughtLevel 行各 1）。",
+      "command": "cd /mnt/data/dev/task-planner-skill && sed -n '1,12p' skills/task-planner/companion/agents/decision-arbiter.md | grep -cE '^model: \"account:zai-individual-coding-plan/GLM-5\\.4\"$|^thoughtLevel: max$'",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-7",
+      "criterion": "项目 AGENTS.md 含 goal 部署预授权例外。 判据：≥1（改前 =0）。",
+      "command": "grep -c 'goal 模式部署预授权' /mnt/data/dev/task-planner-skill/AGENTS.md",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-8",
+      "criterion": "新会话行为演练四判据全 PASS（D1 零等待式提问；D2 首轮即产出预算内成果并登记待授权清单与判据上限；D3 其后 3 轮模拟续推每轮 ≤10 行、无工具调用步骤、决策不翻转；D4「授权」当轮即执行待授权预案并验证）。 判据：第一数 =4；第二行 `skeleton-ok`。报告行严格按模板「- D<n> 判据 <名称>：PASS|FAIL」每条一行；原始证据骨架 `drill-skeleton.txt`（主进程从演练会话记录抽取的逐消息骨架）非空，D1-D4 由主进程对照骨架判定并在报告中引用骨架行号。",
+      "command": "grep -cE '^- (D[1-4]) 判据[^:]*：PASS' /mnt/data/dev/task-planner-skill/plans/task-goal-unattended-protocol-20261124/drill-report.md; test -s /mnt/data/dev/task-planner-skill/plans/task-goal-unattended-protocol-20261124/drill-skeleton.txt && echo skeleton-ok",
+      "status": "fail",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    },
+    {
+      "id": "VC-9",
+      "criterion": "decision-arbiter 派发冒烟成功（S15）：裁决体在当前宿主正常返回并落 checkpoint。 判据：≥1（checkpoint 缺失时命令失败 = FAIL，具判别性）。",
+      "command": "grep -c '^status: done' /mnt/data/dev/task-planner-skill/plans/task-goal-unattended-protocol-20261124/subagent-state/12-decision-arbiter.md",
+      "status": "pass",
+      "evidence": "",
+      "tags": [
+        "plan-brief §B4"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "status": "complete",
+      "s_units": [
+        "S1",
+        "S2"
+      ],
+      "v_checks": [],
+      "name": "计划建立与独立审计",
+      "started": "2026-11-23T18:04:59Z",
+      "tags": [
+        "plan-brief §B5"
+      ]
+    },
+    {
+      "s_units": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9",
+        "S18",
+        "S19"
+      ],
+      "status": "complete",
+      "v_checks": [],
+      "tags": [],
+      "name": "",
+      "started": "2026-11-23T20:00:34Z",
+      "id": "P2"
+    },
+    {
+      "id": "P3",
+      "status": "complete",
+      "s_units": [
+        "S10",
+        "S11",
+        "S20",
+        "S21",
+        "S22",
+        "S23"
+      ],
+      "v_checks": [
+        "VC-1",
+        "VC-2",
+        "VC-3"
+      ],
+      "name": "验证与独立审查",
+      "started": "2026-11-23T20:04:07Z",
+      "tags": [
+        "plan-brief §B5"
+      ]
+    },
+    {
+      "id": "P4",
+      "status": "complete",
+      "s_units": [
+        "S12"
+      ],
+      "v_checks": [
+        "VC-4"
+      ],
+      "name": "合并",
+      "started": "2026-11-23T20:32:57Z",
+      "tags": [
+        "plan-brief §B5"
+      ]
+    },
+    {
+      "id": "P5",
+      "status": "complete",
+      "s_units": [
+        "S13",
+        "S14"
+      ],
+      "v_checks": [
+        "VC-5"
+      ],
+      "name": "部署 5 位",
+      "started": "2026-11-23T20:34:52Z",
+      "tags": [
+        "plan-brief §B5"
+      ]
+    },
+    {
+      "id": "P6",
+      "status": "in_progress",
+      "s_units": [
+        "S15",
+        "S16",
+        "S17"
+      ],
+      "v_checks": [
+        "VC-8",
+        "VC-9"
+      ],
+      "name": "冒烟与收尾",
+      "started": "2026-11-23T21:00:27Z",
+      "tags": [
+        "plan-brief §B5"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "FR-1",
+      "text": "示例会话形态：150 条消息；真实用户消息 2 条（`/goal`、`授权`）；宿主 verifier 续推 14 轮（消息 ID `msg_goal_verify_target_…_1..14`）；`AskUserQuestion` 9 次无应答；部署决策翻转 3 次；前 10 轮续推均触发实质动作；用户「授权」到达后模型未执行任何预案。来源：ReadSession 分页回读 + 落盘页 `~/.zcode/cli/artifacts/sess_18af15b1-d11e-45ab-8597-ca72e1b32c1c/call_1cb7005b66e9487f809f6713-tool-result-65480603-eed9-4f3f-8a19-08642e482f5f.json`；旁证 `plans/task-resource-utilization-20261123/REPORT.md` §7-§11、`task_plan.md`。",
+      "source": "plan-brief.md §B11 FR-1",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-2",
+      "text": "非部署漂移：`~/.zcode` 与 `~/.agents` 运行位的 goal 自治相关文件与源仓逐文件 diff=0（仅 `.agents/task-planner/SKILL.md` 落后 5 行，属他任务欠账）。",
+      "source": "plan-brief.md §B11 FR-2",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-3",
+      "text": "升级终点清单（均以「升级用户/AskUser」收尾）：`critical-rules-verification.md:24`（84.3⑤）、`:40`（84.5）；`critical-rules.md:204`（109.2）；`critical-rules-discipline.md:28`（escalation_threshold）、`:144`（41.5）、`:183`（44.3）、`:186`（44.5）、`:395`（69.3）、`:449`（72.1 A 级）、`:653`（97.5）；`critical-rules-dispatch.md:53`（retry_limit）、`:225`（96.7）；`SKILL.md:119/123-124/346`。",
+      "source": "plan-brief.md §B11 FR-3",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-4",
+      "text": "旧措辞全仓字面面 9 处（grep 实测）：见 B7 第 2 行。",
+      "source": "plan-brief.md §B11 FR-4",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-5",
+      "text": "`TASK_PLANNER_GOAL_MODE` 全仓无写入方（`resolve-interaction-mode.sh:52-58` 的 goal 分支运行时不可达）；goal 语境实际靠模型读语境判定，示例会话判定正确——识别不是病因。",
+      "source": "plan-brief.md §B11 FR-5",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-6",
+      "text": "28.8 无任何 selftest 文本锚（脚本面 grep「28.8 / 单次降级收口 / goal 自治 / 强制自治」仅 1 条注释命中）。",
+      "source": "plan-brief.md §B11 FR-6",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-7",
+      "text": "decision-arbiter：源 frontmatter `GLM-5.3 + thoughtLevel: enabled`；宿主 ListModels 显示 individual 计划下仅 `GLM-5.4`、`GLM-5.3-Flash`，GLM 系列档位 `low/high/max`；运行位 11-23 已为 `GLM-5.4 + max`。示例会话内两次派发失败：首轮（消息 `msg_mwsqaxy2_bc16e046-c10d-4221-951a-448c21068874`「裁决体因环境配置失败（Reasoning level unsupported，非限流）」）与第十轮（消息 `msg_mwssig10_3…`「decision-arbiter 因 reasoning level 不支持而失败」）；留痕 `plans/task-resource-utilization-20261123/.agent-failures/df5b8b4a85364c7e87acfd85024635eb.jsonl`。",
+      "source": "plan-brief.md §B11 FR-7",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-8",
+      "text": "`~/.zcode/commands/goal.md`（2026-08-26，143 行，引用 `~/.claude/skills/...`）通篇「等待确认/AskUserQuestion/升级用户/用户确认接受」；官方命令指南（zcode-guide `diagnosing-commands`）载明与内置命令撞名的本地命令在交互面被过滤——判为潜伏隐患、非本次主因。",
+      "source": "plan-brief.md §B11 FR-8",
+      "tags": [
+        "第一手取证"
+      ]
+    },
+    {
+      "id": "FR-9",
+      "text": "运行位现状（部署前实测，`pre-deploy-site-state.log`）：5 位 × 6 文件全部存在、均为普通文件；`~/.zcode` 6/6 与源一致；其余位存在既有差异（agents SKILL.md 5 行；claude discipline 4 行 + SKILL.md 5 行；opencode 5 个文件 1-10 行；cursor discipline 4 行 + SKILL.md 10 行）——均为其他任务的历史欠账，部署必须原样保留。",
+      "source": "plan-brief.md §B11 FR-9",
+      "tags": [
+        "第一手取证"
+      ]
+    }
+  ],
+  "audits": [
+    {
+      "round": 1,
+      "verdict": "REJECTED",
+      "by": "critic",
+      "counts": {
+        "C": 1,
+        "I": 6,
+        "W": 8
+      },
+      "at": "2026-11-23T17:45:35Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "C-1",
+          "severity": "C",
+          "state": "open"
+        },
+        {
+          "key": "I-1",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "I-2",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "I-3",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "I-4",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "I-5",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "I-6",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "W-1",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-2",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-3",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-4",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-5",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-6",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-7",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-8",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "Q-1",
+          "severity": "Q",
+          "state": "open"
+        },
+        {
+          "key": "Q-2",
+          "severity": "Q",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "verdict": "REJECTED",
+      "by": "critic",
+      "counts": {
+        "C": 0,
+        "I": 1,
+        "W": 1
+      },
+      "at": "2026-11-23T18:14:41Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "C-1",
+          "severity": "C",
+          "state": "fixed"
+        },
+        {
+          "key": "I-1",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "I-2",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "I-3",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "I-4",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "I-5",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "I-6",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "W-1",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-2",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-3",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-4",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-5",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-6",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-8",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "Q-1",
+          "severity": "Q",
+          "state": "fixed"
+        },
+        {
+          "key": "Q-2",
+          "severity": "Q",
+          "state": "fixed"
+        },
+        {
+          "key": "W-7",
+          "severity": "W",
+          "state": "accepted"
+        },
+        {
+          "key": "I-7",
+          "severity": "I",
+          "state": "open"
+        },
+        {
+          "key": "W-9",
+          "severity": "W",
+          "state": "fixed"
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "verdict": "APPROVED",
+      "by": "critic",
+      "counts": {
+        "C": 0,
+        "I": 0,
+        "W": 1
+      },
+      "at": "2026-11-23T18:19:07Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "I-7",
+          "severity": "I",
+          "state": "fixed"
+        },
+        {
+          "key": "W-9",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-10",
+          "severity": "W",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "verdict": "APPROVED",
+      "by": "critic",
+      "counts": {
+        "C": 0,
+        "I": 0,
+        "W": 3
+      },
+      "at": "2026-11-23T20:19:30Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "W-5",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-6",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "W-7",
+          "severity": "W",
+          "state": "fixed"
+        },
+        {
+          "key": "N-3",
+          "severity": "N",
+          "state": "accepted"
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "verdict": "APPROVED",
+      "by": "decision-arbiter",
+      "counts": {
+        "C": 0,
+        "I": 0,
+        "W": 3
+      },
+      "at": "2026-11-23T21:11:08Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "W-11",
+          "severity": "W",
+          "state": "open"
+        },
+        {
+          "key": "W-12",
+          "severity": "W",
+          "state": "accepted"
+        },
+        {
+          "key": "W-13",
+          "severity": "W",
+          "state": "accepted"
+        }
+      ]
+    },
+    {
+      "round": 6,
+      "verdict": "REJECTED",
+      "by": "drift-checker",
+      "counts": {
+        "C": 0,
+        "I": 1,
+        "W": 0
+      },
+      "at": "2026-11-23T21:16:39Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "I-8",
+          "severity": "I",
+          "state": "fixed"
+        }
+      ]
+    },
+    {
+      "round": 7,
+      "verdict": "APPROVED",
+      "by": "drift-checker",
+      "counts": {
+        "C": 0,
+        "I": 0,
+        "W": 0
+      },
+      "at": "2026-11-23T21:26:02Z",
+      "tags": []
+    }
+  ],
+  "delegations": [
+    {
+      "id": "H1",
+      "agent": "plan-writer",
+      "scope": "S1 计划文档编码（plan-state.json + 4 视图 + knowledge-brief.md）",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H2",
+      "agent": "critic",
+      "scope": "S2 计划独立审计（Rule 109）",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H3",
+      "agent": "executor",
+      "scope": "S3-S8 按 edit-spec.md 修改 worktree 内 skills/ 六文件",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H4",
+      "agent": "executor",
+      "scope": "S9 主仓 AGENTS.md §2 增 goal 部署例外",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H5",
+      "agent": "critic",
+      "scope": "S11 条款文本独立审查",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H6",
+      "agent": "general-ops",
+      "scope": "S13 五位部署：判向+备份+精确增量",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H7",
+      "agent": "decision-arbiter",
+      "scope": "S15 decision-arbiter 派发冒烟",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H8",
+      "agent": "drift-checker",
+      "scope": "P1 末偏移检查（Rule 61/64）",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H9",
+      "agent": "executor",
+      "scope": "S4 SKILL.md：E8-E13",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H10",
+      "agent": "executor",
+      "scope": "S5 critical-rules.md：E14-E16",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H11",
+      "agent": "executor",
+      "scope": "S6 verification-gate 两文件：E17-E20",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H12",
+      "agent": "executor",
+      "scope": "S7 dispatch：E21-E22",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H13",
+      "agent": "executor",
+      "scope": "S8 decision-arbiter：E23-E24",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H14",
+      "agent": "general-purpose",
+      "scope": "S18 discipline 引用面锁步 E26-E28",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H15",
+      "agent": "general-purpose",
+      "scope": "S19 断言面与覆盖表锁步 E29-E30",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H16",
+      "agent": "general-purpose",
+      "scope": "S20 E29 修订落地",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H17",
+      "agent": "general-purpose",
+      "scope": "S21 dispatch 引用面同步 E31-E32",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H18",
+      "agent": "general-purpose",
+      "scope": "S22 两处注释改如实 E33-E34",
+      "status": "done",
+      "tags": []
+    },
+    {
+      "id": "H19",
+      "agent": "general-purpose",
+      "scope": "S23 PARTIAL 判据口径对齐 E35",
+      "status": "done",
+      "tags": []
+    }
+  ],
+  "tags": [],
+  "template_body": "",
+  "template_type": "rule-enhancement",
+  "core_question": {
+    "text": "goal 语境下「用户不在场」且「宿主会自动续推」时，skill 如何做到零提问、零停表、续推幂等、授权到达即执行？",
+    "checks": "以 VC-1..VC-8 全 PASS 为准；非 goal 语境语义不变",
+    "verdict": "已批准计划（user-session-log #3 D1=yes）"
+  },
+  "isolation": {
+    "conflict": "risk（实现类、改运行行为的受管文件；AGENTS.md 未跟踪，经用户批准在主仓直接编辑）",
+    "path": "/mnt/data/dev/task-planner-skill/tmp/worktrees/task-goal-unattended-protocol-20261124",
+    "branch": "wt/task-goal-unattended-protocol-20261124",
+    "merge_back": "pending"
+  },
+  "config": {
+    "code_review": "n/a",
+    "session_id": "sess_df5b8b4a",
+    "worktree_path": "/mnt/data/dev/task-planner-skill/tmp/worktrees/task-goal-unattended-protocol-20261124",
+    "scope_files": [
+      "skills/task-discipline/references/critical-rules-discipline.md",
+      "skills/task-planner/SKILL.md",
+      "skills/task-planner/references/critical-rules.md",
+      "skills/verification-gate/references/critical-rules-verification.md",
+      "skills/verification-gate/SKILL.md",
+      "skills/task-dispatch/references/critical-rules-dispatch.md",
+      "skills/task-planner/companion/agents/decision-arbiter.md",
+      "AGENTS.md",
+      "plans/task-goal-unattended-protocol-20261124/**",
+      "tmp/deploy-backups/task-goal-unattended-protocol-20261124/**",
+      "~/.zcode/skills/同相对路径",
+      "~/.agents/skills/同相对路径",
+      "~/.claude/skills/同相对路径",
+      "~/.config/opencode/skills/同相对路径",
+      "~/.cursor/skills/同相对路径"
+    ]
+  },
+  "delegation_stats": {
+    "total": 6,
+    "subagent": 5,
+    "parallel_width": 1,
+    "verified": 0
+  },
+  "s_units": [
+    {
+      "id": "S1",
+      "phase": "P1",
+      "name": "计划文档编码（plan-state.json + 4 视图 + knowledge-brief.md）",
+      "executor": "plan-writer(sonnet-1)",
+      "files": "plans/task-goal-unattended-protocol-20261124/plan-brief.md §B（唯一内容源，逐字编码 12 段语义）；plan-state.json（权威源，经 planctl 写入）",
+      "actions": "计划文档编码（plan-state.json + 4 视图 + knowledge-brief.md）；按 plan-brief §A 执行步骤推进",
+      "verify": "planctl validate 通过；render 后 4 视图无模板占位残留；§B 各段清点一致",
+      "duration": "15min",
+      "granularity": "2f/80l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S2",
+      "phase": "P1",
+      "name": "计划独立审计（Rule 109）",
+      "executor": "critic(opus-1)",
+      "files": "plans/task-goal-unattended-protocol-20261124/task_plan.md（已批准计划逐字，Rule 109 审计面）；plan-brief.md §A/§B（审批与编码对照）",
+      "actions": "计划独立审计（Rule 109）；按 plan-brief §A 执行步骤推进",
+      "verify": "critic 出具 Rule 109 独立审计结论并落 findings.md",
+      "duration": "10min",
+      "granularity": "2f/60l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S3",
+      "phase": "P2",
+      "name": "discipline 条款（E1a-E7 + E2 插入）",
+      "executor": "executor(haiku-1)",
+      "files": "skills/task-discipline/references/critical-rules-discipline.md（28.9 插入点+措辞/指针锚）",
+      "actions": "按 edit-spec.md E1a-E7 与 E2 插入修改 discipline",
+      "verify": "E2 八子条在位、①-⑧=8；旧措辞归零",
+      "duration": "15min",
+      "granularity": "1f/2l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S4",
+      "phase": "P2",
+      "name": "SKILL.md 措辞/指针（E8-E13）",
+      "executor": "executor(haiku-1)",
+      "files": "skills/task-planner/SKILL.md（旧措辞 132/133/136/268 + 指针 123-124/346）",
+      "actions": "按 edit-spec.md E8-E13 修改 SKILL.md",
+      "verify": "旧措辞计数=0；净增 ≤8 行",
+      "duration": "15min",
+      "granularity": "1f/0l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S5",
+      "phase": "P2",
+      "name": "critical-rules.md 索引与指针（E14-E16）",
+      "executor": "executor(haiku-1)",
+      "files": "skills/task-planner/references/critical-rules.md（:10 索引 + 66.2 + 109.2）",
+      "actions": "按 edit-spec.md E14-E16 修改 critical-rules.md",
+      "verify": "索引行与 66.2/109.2 goal 指针在位",
+      "duration": "10min",
+      "granularity": "1f/0l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S6",
+      "phase": "P2",
+      "name": "verification-gate 两文件（E17-E20）",
+      "executor": "executor(haiku-1)",
+      "files": "skills/verification-gate/references/critical-rules-verification.md + skills/verification-gate/SKILL.md",
+      "actions": "按 edit-spec.md E17-E20 修改 verification-gate 两文件",
+      "verify": "84.5 判据拆分 + 反作弊第 9 条同步",
+      "duration": "15min",
+      "granularity": "2f/0l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S7",
+      "phase": "P2",
+      "name": "dispatch 升级出口指针（E21-E22）",
+      "executor": "executor(haiku-1)",
+      "files": "skills/task-dispatch/references/critical-rules-dispatch.md（:53 retry_limit、:225 96.7）",
+      "actions": "按 edit-spec.md E21-E22 修改 dispatch",
+      "verify": "两处 goal 指针在位",
+      "duration": "10min",
+      "granularity": "1f/0l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S8",
+      "phase": "P2",
+      "name": "decision-arbiter 源配置（E23-E24）",
+      "executor": "executor(haiku-1)",
+      "files": "skills/task-planner/companion/agents/decision-arbiter.md（frontmatter model/thoughtLevel）",
+      "actions": "按 edit-spec.md E23-E24 对齐源配置",
+      "verify": "VC-6 model 与 thoughtLevel 两行命中",
+      "duration": "10min",
+      "granularity": "1f/3l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S9",
+      "phase": "P2",
+      "name": "AGENTS.md §2 goal 部署例外（E25）",
+      "executor": "executor(haiku-1)",
+      "files": "AGENTS.md（仓库根，未跟踪文件；§2 增 goal 部署预授权例外，主仓直接编辑）",
+      "actions": "按 edit-spec.md E25 在主仓 AGENTS.md §2 增例外",
+      "verify": "VC-7 grep 计数≥1；git status 仅 AGENTS.md 变更",
+      "duration": "5min",
+      "granularity": "1f/1l/5min",
+      "parallel": "无"
+    },
+    {
+      "id": "S10",
+      "phase": "P3",
+      "name": "VC-1/VC-2/VC-3 机械验证（selftest 基线 = baseline-selftest.log 104/0）",
+      "executor": "主进程（白名单③ 机械验证命令）",
+      "files": "plans/task-goal-unattended-protocol-20261124/baseline-selftest.log（selftest 基线 104 PASS / 0 FAIL）；VC-1/VC-2/VC-3 命令（plan-brief §B4 逐字）",
+      "actions": "VC-1/VC-2/VC-3 机械验证；按 plan-brief §A 执行步骤推进",
+      "verify": "VC-3 输出 SYNTAX_OK；fresh selftest PASS=104 且 FAIL=0（与 baseline-selftest.log 基线相同）",
+      "duration": "15min",
+      "granularity": "2f/20l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S11",
+      "phase": "P3",
+      "name": "条款文本独立审查（子条互斥/自洽/冲突面）",
+      "executor": "critic(opus-1)",
+      "files": "skills/task-discipline/references/critical-rules-discipline.md + 另 5 个载体文件（plan-brief §A 方案 B 表）；plan-brief §B7 变更标注表（替代四条件）",
+      "actions": "条款文本独立审查（子条互斥/自洽/与既有规则冲突面）；按 plan-brief §A 执行步骤推进",
+      "verify": "critic 审查报告无未解决条款冲突；冲突已就地修正并回读",
+      "duration": "15min",
+      "granularity": "2f/0l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S12",
+      "phase": "P4",
+      "name": "smart-merge-back + 清理 worktree/分支",
+      "executor": "主进程（①）",
+      "files": "tmp/worktrees/task-goal-unattended-protocol-20261124（分支 wt/…，基于 master 9e42c0b）；smart-merge-back.sh（不带 --deploy）",
+      "actions": "smart-merge-back（不带 --deploy）+ 清理 worktree/分支；按 plan-brief §A 执行步骤推进",
+      "verify": "VC-4 git log 命中≥1、worktree 与分支计数均=0",
+      "duration": "10min",
+      "granularity": "2f/30l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S13",
+      "phase": "P5",
+      "name": "逐位 diff 判向 + 备份 + 精确增量同步",
+      "executor": "general-ops(sonnet-1)",
+      "files": "~/.zcode、~/.agents、~/.claude、~/.config/opencode、~/.cursor 五个运行位同相对路径的 9 个 skills 文件（清单以 deploy-runbook.md 为准，D-16/D-17）；tmp/deploy-backups/task-goal-unattended-protocol-20261124/（备份）",
+      "actions": "按 deploy-runbook.md 执行：阶段 A=逐位 diff 判向+备份+补丁预演（不写运行位），主进程复核后下发阶段 B=仅对预演 OK 项做逐文件 patch 增量并验证",
+      "verify": "VC-5 存在位逐文件 28.9 计数≥1；缺失位如实列 MISSING；备份目录有对应文件",
+      "duration": "15min",
+      "granularity": "2f/30l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S14",
+      "phase": "P5",
+      "name": "verify.sh 对比部署对账基线（baseline-verify.log 23/3）",
+      "executor": "主进程（③）",
+      "files": "plans/task-goal-unattended-protocol-20261124/baseline-verify.log（部署对账基线 23 pass / 3 fail）；lib/verify.sh 实跑输出",
+      "actions": "verify.sh 对比基线；按 plan-brief §A 执行步骤推进",
+      "verify": "verify.sh summary 行 pass ≥23 且 fail ≤3（不差于部署对账基线 baseline-verify.log 23/3）",
+      "duration": "5min",
+      "granularity": "2f/20l/5min",
+      "parallel": "无"
+    },
+    {
+      "id": "S15",
+      "phase": "P6",
+      "name": "decision-arbiter 派发冒烟（checkpoint：subagent-state/12-decision-arbiter.md）",
+      "executor": "decision-arbiter(GLM-5.4)",
+      "files": "skills/task-planner/companion/agents/decision-arbiter.md（源 GLM-5.4 + max）；subagent-state/12-decision-arbiter.md（checkpoint；VC-9 命令锚）",
+      "actions": "decision-arbiter 派发冒烟；按 plan-brief §A 执行步骤推进",
+      "verify": "VC-9：grep -c \"^status: done\" plans/task-goal-unattended-protocol-20261124/subagent-state/12-decision-arbiter.md ≥1（checkpoint 缺失=FAIL）",
+      "duration": "5min",
+      "granularity": "2f/20l/5min",
+      "parallel": "无"
+    },
+    {
+      "id": "S16",
+      "phase": "P6",
+      "name": "新会话 goal 行为演练 + drill-report.md + drill-skeleton.txt",
+      "executor": "主进程（② 计划文件维护 / ③ 只读回读）",
+      "files": "plan-brief.md §A 步骤 8（模拟续推 3 轮 + 授权到达）；plans/task-goal-unattended-protocol-20261124/drill-report.md + drill-skeleton.txt（新建，D1-D4 逐消息骨架与判据行）",
+      "actions": "新会话 goal 行为演练 + drill-report.md；按 plan-brief §A 执行步骤推进",
+      "verify": "VC-8：drill-report.md 中 D1-D4「- D<n> 判据 <名称>：PASS」行计数=4，且 drill-skeleton.txt 非空输出 skeleton-ok；报告引用骨架行号",
+      "duration": "15min",
+      "granularity": "2f/60l/15min",
+      "parallel": "无"
+    },
+    {
+      "id": "S17",
+      "phase": "P6",
+      "name": "记忆 / 台账 / 归档 / 清哨兵",
+      "executor": "主进程（②）",
+      "files": "plans/task-goal-unattended-protocol-20261124/progress.md（仅追加）；项目级 ledger 与记忆目录（一事一文件）；计划归档",
+      "actions": "记忆 / 台账 / 归档 / 清哨兵；按 plan-brief §A 执行步骤推进",
+      "verify": "记忆条目×1、台账更新、计划归档、哨兵清理均有落盘证据",
+      "duration": "10min",
+      "granularity": "2f/60l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S18",
+      "phase": "P2",
+      "name": "discipline 引用面锁步（E26-E28：Rule 69 三处旧配置字面）",
+      "executor": "general-purpose",
+      "files": "skills/task-discipline/references/critical-rules-discipline.md",
+      "actions": "按 edit-spec.md E26-E28 把 Rule 69 中 decision-arbiter 的 GLM-5.3/enabled 字面同步为 GLM-5.4/max",
+      "verify": "E26-E28 new 串各=1；Rule 69 段内旧配置字面=0",
+      "duration": "10min",
+      "granularity": "1f/0l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S19",
+      "phase": "P2",
+      "name": "断言面与覆盖表锁步（E29-E30：agent-coverage 第 40 行、selftest DA-02）",
+      "executor": "general-purpose",
+      "files": "skills/task-dispatch/references/agent-coverage.md；skills/task-planner/scripts/selftest-decision-arbiter.sh",
+      "actions": "按 edit-spec.md E29-E30 同步覆盖表与 DA-02 断言到 GLM-5.4（断言强度不变，仍为逐字锚）",
+      "verify": "bash skills/task-planner/scripts/selftest-decision-arbiter.sh 输出 16 PASS/0 FAIL",
+      "duration": "10min",
+      "granularity": "2f/3l/10min",
+      "parallel": "无"
+    },
+    {
+      "id": "S20",
+      "phase": "P3",
+      "name": "E29 修订落地（agent-coverage 第 40 行收回为 GLM-5.4 强档）",
+      "executor": "general-purpose",
+      "files": "skills/task-dispatch/references/agent-coverage.md",
+      "actions": "按 edit-spec.md E29 修订把第 40 行的 GLM-5.4 强档 max 收回为 GLM-5.4 强档",
+      "verify": "selftest-agent-coverage 输出 9 PASS/0 FAIL；全量 --fresh 104 PASS/0 FAIL",
+      "duration": "5min",
+      "granularity": "1f/1l/5min",
+      "parallel": "无"
+    },
+    {
+      "id": "S21",
+      "phase": "P3",
+      "name": "dispatch 引用面同步（E31-E32：template-mapping 第 305 行、critical-rules-dispatch 第 245 行）",
+      "executor": "general-purpose",
+      "files": "skills/plan-template-kit/references/template-mapping.md；skills/task-dispatch/references/critical-rules-dispatch.md",
+      "actions": "按 edit-spec.md E31-E32 把 decision-arbiter 的 GLM-5.3 字面同步为 GLM-5.4",
+      "verify": "E31/E32 new 串各=1、old 串各=0；同行档位泛称未动",
+      "duration": "5min",
+      "granularity": "2f/2l/5min",
+      "parallel": "无"
+    },
+    {
+      "id": "S22",
+      "phase": "P3",
+      "name": "agent 定义旧注释与断言注释改如实（E33-E34）",
+      "executor": "general-purpose",
+      "files": "skills/task-planner/companion/agents/decision-arbiter.md；skills/task-planner/scripts/selftest-decision-arbiter.sh",
+      "actions": "按 edit-spec.md E33-E34 改两处注释，frontmatter 与断言不动",
+      "verify": "E33/E34 new 串各=1、old 串各=0；selftest-decision-arbiter 16 PASS/0 FAIL；脚本行数 111 不变",
+      "duration": "5min",
+      "granularity": "2f/2l/5min",
+      "parallel": "无"
+    },
+    {
+      "id": "S23",
+      "phase": "P3",
+      "name": "PARTIAL 判据口径对齐（E35：verification-gate SKILL.md 第 68 行）",
+      "executor": "general-purpose",
+      "files": "skills/verification-gate/SKILL.md",
+      "actions": "按 edit-spec.md E35 补「且残余风险清单已登记」",
+      "verify": "E35 new 串=1、old 串=0",
+      "duration": "5min",
+      "granularity": "1f/1l/5min",
+      "parallel": "无"
+    }
+  ],
+  "fmea": [
+    {
+      "id": "F1",
+      "phase": "P3",
+      "mode": "新措辞与既有条款（28.8/44.3/95/109）冲突",
+      "severity": 6,
+      "occurrence": 4,
+      "detection": 3,
+      "rpn": 72,
+      "fallback": "critic 独立审查 + 回读互检；冲突就地修正"
+    },
+    {
+      "id": "F2",
+      "phase": "P2",
+      "mode": "SKILL.md 行数触 581 钉（selftest G-09）",
+      "severity": 3,
+      "occurrence": 3,
+      "detection": 1,
+      "rpn": 9,
+      "fallback": "当前 469 行，预计净增 ≤8；触顶按「实值+25」调钉并登记"
+    },
+    {
+      "id": "F3",
+      "phase": "P3",
+      "mode": "改措辞击破 selftest 文本锚",
+      "severity": 7,
+      "occurrence": 2,
+      "detection": 2,
+      "rpn": 28,
+      "fallback": "实测脚本面对旧措辞零锚（grep=0）；fresh 全量对比基线"
+    },
+    {
+      "id": "F4",
+      "phase": "P5",
+      "mode": "整文件覆盖抹掉运行位自有增量",
+      "severity": 8,
+      "occurrence": 3,
+      "detection": 2,
+      "rpn": 48,
+      "fallback": "逐位 diff 判向；位≠旧源→就地锚定增量；先备份到 tmp/deploy-backups"
+    },
+    {
+      "id": "F5",
+      "phase": "P4",
+      "mode": "合并与他会话改动冲突",
+      "severity": 6,
+      "occurrence": 3,
+      "detection": 2,
+      "rpn": 36,
+      "fallback": "smart-merge-back V3/V5/V6；目标文件当前无未提交改动"
+    },
+    {
+      "id": "F6",
+      "phase": "P6",
+      "mode": "新会话演练卡在权限审批",
+      "severity": 4,
+      "occurrence": 3,
+      "detection": 1,
+      "rpn": 12,
+      "fallback": "退回本会话演练并在交付标注"
+    }
+  ],
+  "changes": [
+    {
+      "id": "CH1",
+      "object": "Rule 28.9（discipline，新增一条）",
+      "type": "增量",
+      "absorb": "仅 goal 语境生效；非 goal 语义不变",
+      "quote": "— → 八子条全文（edit-spec.md E2）",
+      "basis": "判例 sess_df5b8b4a + 用户批准计划（user-session-log #3）",
+      "action": "新增"
+    },
+    {
+      "id": "CH2",
+      "object": "「仅单次降级收口停止 / 单次阻塞降级收口 / …并停止该目标迭代」类措辞（全仓字面面 9 处：SKILL.md:132/136/268、critical-rules.md:10/134、discipline:55/64/183/186）+ SKILL.md:133「不可越权硬门例外」",
+      "type": "**替代**",
+      "absorb": "goal 语境硬门处置方式改变；非 goal 不变",
+      "quote": "停表等待 → 预算外硬门登记待授权清单后继续，续推按 28.9③-⑤",
+      "basis": "替代四条件：①既有内容被 sess_df5b8b4a 第一手记录证伪（停→续推→再停成环）且用户明示要求修复；②28.9②-⑦ 完整覆盖旧场景（硬门/不可自治项处置）；③已 Read 旧文全文；④改后 selftest 全绿",
+      "action": "替代并保留 28.8 指针"
+    },
+    {
+      "id": "CH3",
+      "object": "84.5 终验判定 + 反作弊第 9 条",
+      "type": "增量",
+      "absorb": "终验 PARTIAL 判定新增一类合法入口",
+      "quote": "增加「语义保证型判据拆分：计划期拆分不属中途改判据；拆分项全 PASS → PARTIAL」",
+      "basis": "同上",
+      "action": "增量"
+    },
+    {
+      "id": "CH4",
+      "object": "decision-arbiter 源 frontmatter `model`/`thoughtLevel`",
+      "type": "替代",
+      "absorb": "裁决体从「派发必败」变为可派发；运行位不动",
+      "quote": "`GLM-5.3` + `enabled` → `GLM-5.4` + `max`",
+      "basis": "用户裁决（user-session-log #2 裁决三）；ListModels 实测该宿主 individual 计划仅 GLM-5.4 / GLM-5.3-Flash，GLM 系列档位 low/high/max",
+      "action": "替代"
+    },
+    {
+      "id": "CH5",
+      "object": "项目 AGENTS.md §2",
+      "type": "增量",
+      "absorb": "仅 /goal 语境的部署判定",
+      "quote": "新增「goal 模式部署预授权」一条",
+      "basis": "用户裁决（#2 裁决一）",
+      "action": "增量"
+    }
+  ],
+  "progress_baseline": [
+    {
+      "id": "PB1",
+      "item": "Rule 28.9 八子条（discipline）×1",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "Rule 28.9 八子条（discipline）×1",
+      "ban": "禁倒退：Rule 28.9 八子条（discipline）×1",
+      "status": "pending"
+    },
+    {
+      "id": "PB2",
+      "item": "载体措辞/指针：SKILL.md（132/133/136/268 措辞 + 123-124/346 指针）、discipline（28.8②③ + :28/:55/:183/:186/:395 指针）、critical-rules.md（:10 索引行 + 66.2 + 109.2）、verification-gate（84.3⑤/84.5 + SKILL.md 终验/反作弊第 9 条）、dispatch（retry_limit + 96.7）",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "载体措辞/指针：SKILL.md（132/133/136/268 措辞 + 123-124/346 指针）、discipline（28.8②③ + :28/:55/:183/:186/:395 指针）、critical-rules.md（:10 索引行 + 66.2 + 109.2）、verification-gate（84.3⑤/84.5 + SKILL.md 终验/反作弊第 9 条）、dispatch（retry_limit + 96.7）",
+      "ban": "禁倒退：载体措辞/指针：SKILL.md（132/133/136/268 措辞 + 123-124/346 指针）、discipline（28.8②③ + :28/:55/:183/:186/:395 指针）、critical-rules.md（:10 索引行 + 66.2 + 109.2）、verification-gate（84.3⑤/84.5 + SKILL.md 终验/反作弊第 9 条）、dispatch（retry_limit + 96.7）",
+      "status": "pending"
+    },
+    {
+      "id": "PB3",
+      "item": "decision-arbiter 源 frontmatter 修正 ×1",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "decision-arbiter 源 frontmatter 修正 ×1",
+      "ban": "禁倒退：decision-arbiter 源 frontmatter 修正 ×1",
+      "status": "pending"
+    },
+    {
+      "id": "PB4",
+      "item": "AGENTS.md goal 部署例外 ×1",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "AGENTS.md goal 部署例外 ×1",
+      "ban": "禁倒退：AGENTS.md goal 部署例外 ×1",
+      "status": "pending"
+    },
+    {
+      "id": "PB5",
+      "item": "5 位部署同步 + 备份",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "5 位部署同步 + 备份",
+      "ban": "禁倒退：5 位部署同步 + 备份",
+      "status": "pending"
+    },
+    {
+      "id": "PB6",
+      "item": "演练报告 drill-report.md ×1",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "演练报告 drill-report.md ×1",
+      "ban": "禁倒退：演练报告 drill-report.md ×1",
+      "status": "pending"
+    },
+    {
+      "id": "PB7",
+      "item": "记忆条目 ×1",
+      "snapshot": "动工前基线：selftest=baseline-selftest.log（104 PASS/0 FAIL）；部署对账=baseline-verify.log（23 pass/3 fail，预存漂移 claude/opencode/cursor）；见 plan-brief §A 步骤 0",
+      "metric": "记忆条目 ×1",
+      "ban": "禁倒退：记忆条目 ×1",
+      "status": "pending"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D-1",
+      "decision": "D-1 goal 模式部署 = 预授权+护栏（用户裁决 2026-11-24，#2 裁决一）。",
+      "rationale": "goal 模式部署 = 预授权+护栏（用户裁决 2026-11-24，#2 裁决一）。"
+    },
+    {
+      "id": "D-2",
+      "decision": "D-2 本次修复部署 = 全部运行位（#2 裁决二）。",
+      "rationale": "本次修复部署 = 全部运行位（#2 裁决二）。"
+    },
+    {
+      "id": "D-3",
+      "decision": "D-3 decision-arbiter 源配置 = GLM-5.4 + max（#2 裁决三）。",
+      "rationale": "decision-arbiter 源配置 = GLM-5.4 + max（#2 裁决三）。"
+    },
+    {
+      "id": "D-4",
+      "decision": "D-4 零新脚本 / 零新门 / 零 hook / 零新 selftest（文本优先铁律 + 用户批准计划）。",
+      "rationale": "零新脚本 / 零新门 / 零 hook / 零新 selftest（文本优先铁律 + 用户批准计划）。"
+    },
+    {
+      "id": "D-5",
+      "decision": "D-5 部署方式 = 逐位 diff 判向 + 精确增量；禁 `smart-merge-back --deploy` / `install.sh` 整槽覆盖（二者为整槽替换，会抹掉 claude/opencode/cursor 位自有增量；verify 基线已显示三位 SKILL.md 与源不一致）。",
+      "rationale": "部署方式 = 逐位 diff 判向 + 精确增量；禁 `smart-merge-back --deploy` / `install.sh` 整槽覆盖（二者为整槽替换，会抹掉 claude/opencode/cursor 位自有增量；verify 基线已显示三位 SKILL.md 与源不一致）。"
+    },
+    {
+      "id": "D-6",
+      "decision": "D-6 D1 = yes：用户于计划模式显式批准计划（user-session-log #3），执行中不二次确认。",
+      "rationale": "D1 = yes：用户于计划模式显式批准计划（user-session-log #3），执行中不二次确认。"
+    },
+    {
+      "id": "D-7",
+      "decision": "D-7 不改 `~/.zcode/commands/goal.md`；不执行示例会话遗留的待授权项。",
+      "rationale": "不改 `~/.zcode/commands/goal.md`；不执行示例会话遗留的待授权项。"
+    },
+    {
+      "id": "D-8",
+      "decision": "D-8（计划审计 R1 裁定，2026-11-24）C-1/I-1..I-6/W-1..W-6,W-8/Q-1,Q-2 全部采纳并在 edit-spec/plan-brief 修正；W-7（planctl render 硬编码 V-N 复选框为已勾）登记为已知局限——属既有渲染行为、不在本任务范围，依文本优先铁律不改渲染器，交付时如实披露。",
+      "rationale": "R1 裁定，2026-11-24）C-1/I-1..I-6/W-1..W-6,W-8/Q-1,Q-2 全部采纳并在 edit-spec/plan-brief 修正；W-7（planctl render 硬编码 V-N 复选框为已勾）登记为已知局限——属既有渲染行为、不在本任务范围，依文本优先铁律不改渲染器，交付时如实披露。"
+    },
+    {
+      "id": "D-9",
+      "decision": "D-9（计划审计 R1 I-2 裁定）28.9② 的源码修改预授权收窄为「/goal 指令明示为任务对象的源码修改」；指令未明示的 skills/** 技能源码、agent 定义、指令文件修改仍属预算外。用户裁决（#2）只覆盖部署，不扩大。",
+      "rationale": "R1 I-2 裁定）28.9② 的源码修改预授权收窄为「/goal 指令明示为任务对象的源码修改」；指令未明示的 skills/** 技能源码、agent 定义、指令文件修改仍属预算外。用户裁决（#2）只覆盖部署，不扩大。"
+    },
+    {
+      "id": "D-10",
+      "decision": "D-10（计划审计 R2 裁定，I-7）28.9 的预算外集合只拦 D6 类（含 72.1 A② 不可逆破坏、A③ 对外发布）；72.1 A①/A④（计划要素取舍、语义级目标分叉）在 goal 语境保持既有自治（28.8①、41.2 G4 silent、44.3 D2/D5 推荐项），不因 A 级名义转为预算外；⑦ 泛化授权只对 D6 类项要求逐项显式确认。",
+      "rationale": "R1 修正时把整个 A 级划为永不自动属矫枉过正，与 41.2/44.3/28.8① 冲突（审计 R2 I-7）；按审计建议拆分 A 级子集。"
+    },
+    {
+      "id": "D-11",
+      "decision": "D-11（计划审计 R3 W-10，已采纳）28.9② 中 72.1 A① 涉及范围者以 28.8④ 登记的交付单元上界为限：上界内的计划要素取舍属预算内，超上界的范围扩张属预算外。",
+      "rationale": "A① 含「范围」，需与「超 28.8④ 上界=预算外」对齐；R3 裁定 APPROVED 后立即修正，P3 条款审查复核。"
+    },
+    {
+      "id": "D1-ANCHOR",
+      "decision": "D1 目标绑定确认锚（2026-11-24T02:19:06+08:00）：本计划 Goal =「修复 Skill 家族在 goal 模式下不能自主确认推进、无效多次循环的缺陷（Rule 28.9 + 载体级联），合并并部署到全部运行位」；服务用户指令 = user-session-log #1 原话「当前  skill子啊  goal 模式下导致不能自主确认推进 ,导致无效多次循环是严重的缺陷  没有达到自主角色目标  sess_df5b8b4a-8536-4c7e-87ac-fd85024635eb 会话就是示例 必须对skill缺陷进行解决」；确认方式 = 用户于计划模式显式批准计划（user-session-log #3）；计划审计 R1→R3 迭代后 APPROVED（0C/0I）。",
+      "rationale": "用户批准计划即 D1=yes；确认锚形成后方可 attest 与清哨兵。"
+    },
+    {
+      "id": "D-12",
+      "decision": "D-12（执行偏差认可）E20 的例外条款落在反作弊第 9 条禁止句末尾（「私自改判据推进=交付作废）；例外…」），而非规格所指的「判据冻结协议」句之后。",
+      "rationale": "新增文字与规格逐字相同、位于同一条款内、紧随其所例外的禁令；执行体已在回执披露。主进程盘上核验确认仅此一处落点差异，其余 E17-E19 逐条一致；P3 独立审查全量回读 diff 复核。"
+    },
+    {
+      "id": "D-13",
+      "decision": "D-13（回归发现，授权内级联）selftest-decision-arbiter.sh 的 DA-02 断言由钉 GLM-5.3 改为钉 GLM-5.4，断言强度不变（仍为逐字锚）；Rule 69（discipline 393/396/399）与 agent-coverage.md 第 40 行的旧配置字面同步。complex-planner 的同类配置（GLM-5.3 + enabled）不在授权范围，不改，交付时报告。",
+      "rationale": "用户裁决三（#2）要求 decision-arbiter 对齐 GLM-5.4 + max；Rule 74 替代条件④要求改后 selftest 全绿；引用面与断言面必须随 truth source 锁步，否则后续会话可能把配置改回。"
+    },
+    {
+      "id": "D-14",
+      "decision": "D-14（不绕过委派门）三次子代理派发停摆后，主进程不直接编辑隔离区 skills/ 文件：委派门（check-delegation.sh）只认 plans/ 白名单、mini/L0-E 直做通道或用户本人在终端运行的 allow-direct.sh，设计上禁止模型自助绕过。处置=更换执行体类型继续派发。",
+      "rationale": "用 sed 经 Bash 改 skills/ 文件可避开 Edit 钩子，但属于绕过体系（用户明令反对）；25.3 白名单⑤的「兜底接管」在机器面没有对应放行通道。"
+    },
+    {
+      "id": "D-15",
+      "decision": "D-15（规格修订 E29）agent-coverage.md 第 40 行新文案由「decision-arbiter(D1, GLM-5.4 强档 max)」收回为「decision-arbiter(D1, GLM-5.4 强档)」。",
+      "rationale": "全量回归 selftest-agent-coverage AC-04 FAIL：该断言从矩阵「专用体」列提取小写英文 token 当 agent 名去 test -f，新增的 max 被判为缺位实体。矩阵该列是机器解析面，只能放实体名；max 档信息以 decision-arbiter.md frontmatter 与 Rule 69.5 为准（已写全）。另一选项=把 max 加进 selftest 豁免名单，属放宽守卫，不取。"
+    },
+    {
+      "id": "D-16",
+      "decision": "D-16（部署范围修订）deploy-runbook 的部署文件由 6 个修订为 8 个，新增 skills/task-dispatch/references/agent-coverage.md 与 skills/task-planner/scripts/selftest-decision-arbiter.sh。",
+      "rationale": "二者是 decision-arbiter 配置对齐的随动引用面与断言面（D-13、D-15），属 skills/ 内容，落在用户裁决①的 goal 模式部署预授权内；不同步则运行位与源码矛盾。预检：两文件在 5 个运行位相对基线差异均为 0。agent 定义副本不在预授权内（裁决①明示 agent 定义的 model/frontmatter 不在此列）：仅 ~/.zcode/agents/decision-arbiter.md 为 GLM-5.4+max，claude/agents/opencode/cursor 四位仍为 GLM-5.3+enabled，不改，交付时报告待裁决。"
+    },
+    {
+      "id": "D-17",
+      "decision": "D-17（采纳执行期复审第二轮五处修订）新增规格 E31-E35：template-mapping.md 第 305 行与 critical-rules-dispatch.md 第 245 行的 decision-arbiter 配置字面同步为 GLM-5.4；decision-arbiter.md 第 14 行旧注释与 selftest 第 41 行注释改为如实表述；verification-gate SKILL.md 的 PARTIAL 判据补「且残余风险清单已登记」与 84.5 对齐。复审其余条目（W-2/W-3/Q-1/Q-2/N-2 与 DA-02 整文件 grep）维持提醒级不改。",
+      "rationale": "前两处证明规格第 173 行的豁免归类有误（非 complex-planner 引用而是 arbiter 专属，且 103.4 紧邻「派发 model 参数显式指定」，照字面执行会重现已修复的派发失败）；后三处是本任务自身造成的不一致。均为引用面/注释/口径对齐，不改机器门、不新增断言（thoughtLevel 是否补断言留待用户裁决）。"
+    },
+    {
+      "id": "D-18",
+      "decision": "D-18（部署预演 FAIL 项处置）opencode 位的 critical-rules-dispatch.md 不用原补丁，改用主进程生成的专用补丁 site-opencode_critical-rules-dispatch.md.patch（只做本次三处片语替换，保留该位既有内容）。",
+      "rationale": "该位文件是比基线更旧的版本（缺 11-19/11-20 的数段修订，别的任务未部署过去），22.3 行有既有差异致原补丁第 1 块上下文不匹配；另两块可过。证据：三处替换式作用于基线可逐字重现当前源码（diff 为空）；该位文件中三处旧串各出现 1 次；专用补丁预演 rc=0 且运行位文件未变。符合已批准计划步骤 7「位有自有内容→该位就地锚定增量」。"
+    },
+    {
+      "id": "D-19",
+      "decision": "D-19（部署校验口径修订）硬校验改为整行相等匹配：补丁的每个 + 行必须在运行位文件中整行存在、每个 - 行必须整行不存在（grep -x -F）；改前差异为 0 的位追加与当前源码逐字节比对。续做范围=仅对 ZCode 位 SKILL.md 补打补丁，其余 44 项不重复写入。",
+      "rationale": "原口径（28.9 整行=1）只对 discipline 成立，对另 5 个载体恒为 0，属主进程规格错误；执行体按 B4 停止并恢复是正确行为。修订口径经自检：对当前源码 9 文件均 0 0，对基线版本可判出 6 6 / 1 1。44 项已达标不重复写入，符合写入最小化。"
+    },
+    {
+      "id": "D-20",
+      "decision": "D-20（演练降级）VC-8 的新会话行为演练未能进行：全新会话首个工具调用即被权限模式拦下等待审批（needs_attention/approval），无人可批。按已批准计划的预案退回同会话模拟演练，四判据由主进程按 28.9 扮演执行者自评并全部 PASS；证据骨架与报告醒目标注降级事实与未覆盖面。",
+      "rationale": "会话权限模式由宿主设置决定，创建会话的接口无法指定；审批权在用户，不代批、不绕。演练会话已中断并归档，其哨兵与演练目录已清理。真实效果以用户下一次真实 /goal 运行为准。"
+    },
+    {
+      "id": "D-21",
+      "decision": "D-21（演练验收项改判未通过）VC-8 由 pass 改为 fail。收尾前偏移检查（subagent-state/32-drift-checker.md）判 DRIFT：VC-8 判据主语为「新会话行为演练」，实际做的是同会话模拟演练，标 pass 名实不符。处置：VC-8=fail；drill-report.md 四行结论改为 FAIL；同会话模拟演练降为补充证据；P6 不翻 complete；计划暂不归档，待用户以自动放行的权限模式开新会话（或手动审批）补做演练。",
+      "rationale": "新会话以 build 权限模式运行，任何写入前都需审批，无人值守时演练无法进行；宿主权限审批不在 skill 条款控制范围。已批准计划的回退演练只能作补充证据，不能替代判据主语。改判为 fail 比带限定的 pass 更不易误导。"
+    }
+  ],
+  "research": [
+    {
+      "id": "FR-1",
+      "claim": "示例会话形态：150 条消息；真实用户消息 2 条（`/goal`、`授权`）；宿主 verifier 续推 14 轮（消息 ID `msg_goal_verify_target_…_1..14`）；`AskUserQuestion` 9 次无应答；部署决策翻转 3 次；前 10 轮续推均触发实质动作；用户「授权」到达后模型未执行任何预案。来源：ReadSession 分页回读 + 落盘页 `~/.zcode/cli/artifacts/sess_18af15b1-d11e-45ab-8597-ca72e1b32c1c/call_1cb7005b66e9487f809f6713-tool-result-65480603-eed9-4f3f-8a19-08642e482f5f.json`；旁证 `plans/task-resource-utilization-20261123/REPORT.md` §7-§11、`task_plan.md`。",
+      "source": "plan-brief.md §B11 FR-1"
+    },
+    {
+      "id": "FR-2",
+      "claim": "非部署漂移：`~/.zcode` 与 `~/.agents` 运行位的 goal 自治相关文件与源仓逐文件 diff=0（仅 `.agents/task-planner/SKILL.md` 落后 5 行，属他任务欠账）。",
+      "source": "plan-brief.md §B11 FR-2"
+    },
+    {
+      "id": "FR-3",
+      "claim": "升级终点清单（均以「升级用户/AskUser」收尾）：`critical-rules-verification.md:24`（84.3⑤）、`:40`（84.5）；`critical-rules.md:204`（109.2）；`critical-rules-discipline.md:28`（escalation_threshold）、`:144`（41.5）、`:183`（44.3）、`:186`（44.5）、`:395`（69.3）、`:449`（72.1 A 级）、`:653`（97.5）；`critical-rules-dispatch.md:53`（retry_limit）、`:225`（96.7）；`SKILL.md:119/123-124/346`。",
+      "source": "plan-brief.md §B11 FR-3"
+    },
+    {
+      "id": "FR-4",
+      "claim": "旧措辞全仓字面面 9 处（grep 实测）：见 B7 第 2 行。",
+      "source": "plan-brief.md §B11 FR-4"
+    },
+    {
+      "id": "FR-5",
+      "claim": "`TASK_PLANNER_GOAL_MODE` 全仓无写入方（`resolve-interaction-mode.sh:52-58` 的 goal 分支运行时不可达）；goal 语境实际靠模型读语境判定，示例会话判定正确——识别不是病因。",
+      "source": "plan-brief.md §B11 FR-5"
+    },
+    {
+      "id": "FR-6",
+      "claim": "28.8 无任何 selftest 文本锚（脚本面 grep「28.8 / 单次降级收口 / goal 自治 / 强制自治」仅 1 条注释命中）。",
+      "source": "plan-brief.md §B11 FR-6"
+    },
+    {
+      "id": "FR-7",
+      "claim": "decision-arbiter：源 frontmatter `GLM-5.3 + thoughtLevel: enabled`；宿主 ListModels 显示 individual 计划下仅 `GLM-5.4`、`GLM-5.3-Flash`，GLM 系列档位 `low/high/max`；运行位 11-23 已为 `GLM-5.4 + max`。示例会话内两次派发失败：首轮（消息 `msg_mwsqaxy2_bc16e046-c10d-4221-951a-448c21068874`「裁决体因环境配置失败（Reasoning level unsupported，非限流）」）与第十轮（消息 `msg_mwssig10_3…`「decision-arbiter 因 reasoning level 不支持而失败」）；留痕 `plans/task-resource-utilization-20261123/.agent-failures/df5b8b4a85364c7e87acfd85024635eb.jsonl`。",
+      "source": "plan-brief.md §B11 FR-7"
+    },
+    {
+      "id": "FR-8",
+      "claim": "`~/.zcode/commands/goal.md`（2026-08-26，143 行，引用 `~/.claude/skills/...`）通篇「等待确认/AskUserQuestion/升级用户/用户确认接受」；官方命令指南（zcode-guide `diagnosing-commands`）载明与内置命令撞名的本地命令在交互面被过滤——判为潜伏隐患、非本次主因。",
+      "source": "plan-brief.md §B11 FR-8"
+    },
+    {
+      "id": "FR-9",
+      "claim": "运行位现状（部署前实测，`pre-deploy-site-state.log`）：5 位 × 6 文件全部存在、均为普通文件；`~/.zcode` 6/6 与源一致；其余位存在既有差异（agents SKILL.md 5 行；claude discipline 4 行 + SKILL.md 5 行；opencode 5 个文件 1-10 行；cursor discipline 4 行 + SKILL.md 10 行）——均为其他任务的历史欠账，部署必须原样保留。",
+      "source": "plan-brief.md §B11 FR-9"
+    },
+    {
+      "id": "FR-10",
+      "claim": "计划审计三轮收敛：R1 REJECTED（1C/6I/8W/2Q）→ 修订后 R2 上轮 17 项全部闭环但新增 I-7（为堵「泛化授权」把 72.1 A 级整体划为永不自动，与 41.2 G4 silent、44.3 D2/D5、28.8① 冲突）→ 只拦 D6 类后 R3 APPROVED。条款设计教训：封堵漏洞时按子集拆分，禁把上位类别整体收紧；每轮修正都要回查与既有条款的相容性。",
+      "source": "subagent-state/02-critic.md（R1-R3 段）；plan-brief.md §B10 D-8/D-9/D-10；edit-spec.md E0"
+    },
+    {
+      "id": "FR-11",
+      "claim": "task-planner 机器门实测口径（本任务踩坑）：手动运行 check-dispatch.sh pretool 做预检会写 subagent-state/.dispatch-inflight 串行锁（120s 内拦下一次派发）；派发稿里的圈号列表计入步骤枚举（上限 4）；S-unit 须整数编号且纯子代理 Phase 受 59.1 粒度三值硬门（≤2 文件/≤100 行/≤15 分钟）；R→VC 映射列只认 VC 编号；audit-add 的 issues.state 枚举为 open/fixed/accepted/new/deferred；planctl render 把 V-N 复选框硬编码为已勾（已知局限，未改渲染器）。",
+      "source": "本会话错误留痕 E1-E5；check-dispatch.sh:634-680；check-plan-dispatch.sh:187-330；planctl.py:192-193"
+    },
+    {
+      "id": "FR-12",
+      "claim": "执行期独立审查（S11）R1：E1a-E25 逐条一致、28.9 行与规格逐字相同、结构正确、diff 统计吻合；两处已登记执行偏差（D-12 落点、注释闭合符迁移）均获认可；REJECTED 的 1C/1I 为「断言与规则正文仍写旧模型」——与主进程 fresh selftest 的 DA-02 FAIL 同源。",
+      "source": "subagent-state/10-critic.md；after-selftest.log"
+    },
+    {
+      "id": "FR-13",
+      "claim": "S18 三次派发「停摆」的真实原因=供应商侧模型请求延迟：宿主日志按 agent id 过滤可见 subagent.background.started 后首个 model.request 从 19:40:32 到 19:43:22 才完成，其后每轮 2.5-3 分钟；hook.run.allowed（无钩子拦截），tool.call 持续推进；第四个执行体（general-purpose）约 9 分钟完成 S18。结论=非死锁、非守卫拦截；E7 的「通道停摆、未定位」表述据此更正。",
+      "source": "/home/terry/.zcode/cli/log/zcode-2026-11-24.jsonl（19:40-19:48Z 段，按 0f3e2e7a 过滤）"
+    },
+    {
+      "id": "FR-14",
+      "claim": "独立裁决体（decision-arbiter，GLM-5.4+max，派发冒烟成功）对部署完成声称裁决 COMPLETE：自写脚本整行相等核对 45 项 hard_bad=0、强校验 35/35、备份与改前记录 45/45 吻合、备份→现文件的变更行集与补丁行集 45/45 相等、9 份补丁与 git diff 逐字节相同、运行位独有行 0 丢失。另查明：opencode 位的 dispatch 规则文件等若干运行位文件本就是比源码更旧的版本（别的任务遗留的部署漂移），本次只落增量，旧漂移保留——verify.sh 的 3 个 fail 即此类。",
+      "source": "subagent-state/12-decision-arbiter.md；after-verify.log 与 baseline-verify.log 的 FAILED checks 段"
+    }
+  ],
+  "scope_limits": [
+    {
+      "id": "SC1",
+      "category": "源码/规则载体（P2-P3 写）",
+      "allow": [
+        "skills/task-discipline/references/critical-rules-discipline.md",
+        "skills/task-planner/SKILL.md",
+        "skills/task-planner/references/critical-rules.md",
+        "skills/verification-gate/references/critical-rules-verification.md",
+        "skills/verification-gate/SKILL.md",
+        "skills/task-dispatch/references/critical-rules-dispatch.md",
+        "skills/task-planner/companion/agents/decision-arbiter.md"
+      ],
+      "deny": [
+        "其他 skills/**",
+        "worktree",
+        "主仓其他文件",
+        "~/.zcode/skills 运行位（P2-P3 阶段）"
+      ]
+    },
+    {
+      "id": "SC2",
+      "category": "项目说明（P2 主仓直改）",
+      "allow": [
+        "AGENTS.md（仓库根，未跟踪；§2 goal 部署例外）"
+      ],
+      "deny": [
+        "~/.zcode/AGENTS.md",
+        "其他项目文件"
+      ]
+    },
+    {
+      "id": "SC3",
+      "category": "计划目录（全期）",
+      "allow": [
+        "plans/task-goal-unattended-protocol-20261124/**"
+      ],
+      "deny": [
+        "user-session-log.md（只读需求锚）",
+        "delegations（H1-H7 勿改）",
+        "task_plan.md 逐字文本（状态由主进程翻转）"
+      ]
+    },
+    {
+      "id": "SC4",
+      "category": "部署位（仅 P5 写）",
+      "allow": [
+        "~/.zcode/skills/同相对路径",
+        "~/.agents/skills/同相对路径",
+        "~/.claude/skills/同相对路径",
+        "~/.config/opencode/skills/同相对路径",
+        "~/.cursor/skills/同相对路径"
+      ],
+      "deny": [
+        "整槽覆盖 install.sh / smart-merge-back --deploy",
+        "缺该 skill 目录时新建安装",
+        "~/.zcode/commands/goal.md"
+      ]
+    },
+    {
+      "id": "SC5",
+      "category": "备份与隔离区",
+      "allow": [
+        "tmp/deploy-backups/task-goal-unattended-protocol-20261124/**",
+        "/mnt/data/dev/task-planner-skill/tmp/worktrees/task-goal-unattended-protocol-20261124"
+      ],
+      "deny": [
+        "主分支直接写入实现类变更",
+        "未授权 git 写操作（本 S1）"
+      ]
+    },
+    {
+      "id": "SC6",
+      "category": "对齐核查锁步（P2 写；回归 selftest 与引用面核查补出）",
+      "allow": [
+        "skills/task-dispatch/references/agent-coverage.md",
+        "skills/task-planner/scripts/selftest-decision-arbiter.sh"
+      ],
+      "deny": []
+    }
+  ],
+  "root_causes": [
+    {
+      "id": "RC1",
+      "process": "续推指令消费",
+      "defect": "无「收到续推怎么办」条款，每轮续推被当成新工作（前 10 轮空转）",
+      "fix": "28.9③ 续推识别 + ④ 首次差异归因 + ⑤ 固定点应答",
+      "vc": "VC-1,VC-2,VC-8"
+    },
+    {
+      "id": "RC2",
+      "process": "升级路径出口",
+      "defect": "所有升级终点都是问用户，硬门为开放集合，无法自主确认",
+      "fix": "28.9② 授权预算矩阵取代开放硬门 + ⑥ 决策冻结 + ⑦ 授权到达即执行",
+      "vc": "VC-2,VC-6,VC-7"
+    },
+    {
+      "id": "RC3",
+      "process": "决策仲裁",
+      "defect": "无决策冻结/翻转预算，部署决策翻转 3 次",
+      "fix": "28.9⑥ 翻转上限 1 次 + D-1..D-7 冻结",
+      "vc": "VC-2,VC-7"
+    },
+    {
+      "id": "RC4",
+      "process": "终验判据",
+      "defect": "「确保」类目标词无合法出口；PARTIAL 要求 VC 全 PASS，改判据被反作弊禁",
+      "fix": "84.5 语义保证型判据拆分（计划期登记拆分项）",
+      "vc": "VC-1,VC-3"
+    },
+    {
+      "id": "RC5",
+      "process": "授权消息处置",
+      "defect": "无「授权到达→命中待授权清单→立即执行预案」规则，用户授权被丢弃",
+      "fix": "28.9⑦ 授权到达即执行 + ⑧ 终点覆盖",
+      "vc": "VC-2,VC-8"
+    },
+    {
+      "id": "RC6",
+      "process": "独立裁决体",
+      "defect": "decision-arbiter 源 GLM-5.3 + enabled 在当前宿主不可用，拖到第 10 轮",
+      "fix": "源配置对齐 GLM-5.4 + max（运行位不动）+ 冒烟派发",
+      "vc": "VC-6"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "phase": "P1",
+      "text": "前置检查：主仓 master@9e42c0b，目标 skill 文件无他会话未提交改动（AGENTS.md 为未跟踪文件）；建 worktree tmp/worktrees/task-goal-unattended-protocol-20261124 干净；基线=selftest 104 PASS/0 FAIL（baseline-selftest.log）+ verify 23 pass/3 fail（baseline-verify.log）；运行位现状实测 5 位×6 文件全在（pre-deploy-site-state.log）。",
+      "at": "2026-11-23T18:04:38Z"
+    },
+    {
+      "id": "A2",
+      "phase": "P1",
+      "text": "取证：示例会话 150 条消息分页回读（真实用户消息 2 条、verifier 续推 14 轮、9 次无应答提问、授权到达被丢弃）；3 个 Explore 子代理排查条款面/验证循环/子代理定义与部署漂移；ListModels 核实宿主思考档位。",
+      "at": "2026-11-23T18:04:39Z"
+    },
+    {
+      "id": "A3",
+      "phase": "P1",
+      "text": "计划建立：Plan Writer 编码 plan-state.json（R4/G3/VC9/P6/S-unit17/FMEA6/变更5/基线7/决策9/取证9）并两次返工（整数 S-unit 编号与粒度拆分；审计 R1 修订同步）；check-plan-dispatch 与 attest 门链通过。",
+      "at": "2026-11-23T18:04:40Z"
+    },
+    {
+      "id": "A4",
+      "phase": "P1",
+      "text": "计划审计 R1（critic）REJECTED 1C/6I/8W/2Q；主进程逐项裁定并修订 edit-spec.md（E0 条款全文、E5、E6、E15、E18-E20、E24）与 plan-brief.md（VC-5/VC-8/VC-9、D-8、D-9、FR-3/FR-7/FR-9）；审计 R2 派发中。",
+      "at": "2026-11-23T18:04:45Z"
+    },
+    {
+      "id": "A5",
+      "phase": "P1",
+      "text": "计划审计 R1-R3：R1 REJECTED → 修订 edit-spec.md/plan-brief.md → R2 REJECTED（新增 I-7）→ 修正 A 级子集 → R3 APPROVED；W-10 边界说明已补；D1 目标绑定确认锚登记。",
+      "at": "2026-11-23T18:19:12Z"
+    },
+    {
+      "id": "A6",
+      "phase": "P1",
+      "text": "[drift-check] P1 末偏移检查：ALIGNED（检查点 subagent-state/13-drift-checker.md；审计修订未改变用户批准计划语义，28.9 预算内未超出 user-session-log #2 三项裁决，排除项未触碰）。",
+      "at": "2026-11-23T18:22:07Z"
+    },
+    {
+      "id": "A7",
+      "phase": "P2",
+      "text": "R 锚定：P2 服务 R1「必须对 skill 缺陷进行解决」——按 edit-spec.md 在 worktree 内落地 Rule 28.9 及各载体措辞/指针（S3-S9）。",
+      "at": "2026-11-23T18:22:36Z"
+    },
+    {
+      "id": "A8",
+      "phase": "P2",
+      "text": "S3 落地并经主进程盘上核验：discipline 新增 28.9（与规格 E0 逐字相同）+ 7 处编辑，+8/-6，仅该文件变更；隔离区已提交。",
+      "at": "2026-11-23T18:31:07Z"
+    },
+    {
+      "id": "A9",
+      "phase": "P2",
+      "text": "S4 落地并经主进程盘上核验：SKILL.md 六处编辑 +6/-6，旧措辞清零，469 行；隔离区已提交。",
+      "at": "2026-11-23T18:36:20Z"
+    },
+    {
+      "id": "A10",
+      "phase": "P2",
+      "text": "S5 落地并经主进程盘上核验：critical-rules.md 三处编辑 +3/-3；隔离区已提交。",
+      "at": "2026-11-23T18:38:55Z"
+    },
+    {
+      "id": "A11",
+      "phase": "P2",
+      "text": "S6 落地并经主进程盘上核验：verification-gate 两文件四处编辑 +4/-4；E20 落点偏差已认可并登记 D-12；隔离区已提交。",
+      "at": "2026-11-23T18:44:01Z"
+    },
+    {
+      "id": "A12",
+      "phase": "P2",
+      "text": "S7 落地并经主进程盘上核验：task-dispatch 两处编辑 +2/-2；隔离区已提交。",
+      "at": "2026-11-23T18:46:25Z"
+    },
+    {
+      "id": "A13",
+      "phase": "P2",
+      "text": "S8 落地并经主进程盘上核验：decision-arbiter 源 frontmatter 三处替代 + 注释四行新增；注释块闭合符 --> 随新末行迁移（+8/-4 为正确形态）。首轮回执后核验发现既有行行首被加制表符，打回返工已修正；隔离区已提交。",
+      "at": "2026-11-23T18:51:16Z"
+    },
+    {
+      "id": "A14",
+      "phase": "P2",
+      "text": "S9 落地并经主进程盘上核验：主仓 AGENTS.md §2 新增 goal 模式部署预授权条目（第 24 行，与规格逐字相同，+1 行）。P2 七个施工单元 S3-S9 全部完成。隔离区预检：VC-1 六载体 28.9 计数 7/6/3/2/2/2、旧措辞 0；VC-2 为 1/8/4；VC-6 为 2。",
+      "at": "2026-11-23T18:53:46Z"
+    },
+    {
+      "id": "A15",
+      "phase": "P2",
+      "text": "隔离区 fresh selftest：104 中 103 PASS/1 FAIL（selftest-decision-arbiter DA-02）；执行期审查 S11 REJECTED（1C/1I，同源）。处置：规格补 E26-E30，计划增 S18/S19 与 scope SC6，待施工后重跑 selftest。",
+      "at": "2026-11-23T19:04:47Z"
+    },
+    {
+      "id": "A16",
+      "phase": "P2",
+      "text": "S18 executor 两次挂起后升档 general-coder(sonnet-1) 改派（S18、S19 执行体同步变更）。",
+      "at": "2026-11-23T19:26:18Z"
+    },
+    {
+      "id": "A17",
+      "phase": "P2",
+      "text": "S18 完成：general-purpose 执行体落地 E26-E28（discipline Rule 69 第 393/396/399 行），主进程逐字核验+其余行零改动校验通过，提交 17705c1。此前 executor(haiku-1)×2 与 general-coder(sonnet-1) 各约 10 分钟无产出；宿主日志显示子代理每次模型请求约 3 分钟（供应商侧延迟），非钩子拦截，处置=不换通道、耐心等待。",
+      "at": "2026-11-23T20:00:06Z"
+    },
+    {
+      "id": "A18",
+      "phase": "P2",
+      "text": "S19 完成：general-purpose 执行体落地 E29-E30（agent-coverage.md 第 40 行、selftest-decision-arbiter.sh DA-02），主进程逐字核验+其余行零改动校验通过，独立重跑 selftest 16 PASS/0 FAIL，提交 c8cc87b1。隔离区相对基线 9 文件 +39/-31，工作树干净。",
+      "at": "2026-11-23T20:00:07Z"
+    },
+    {
+      "id": "A19",
+      "phase": "P3",
+      "text": "全量回归首轮 103/1：decision-arbiter selftest 转绿（16/0），agent-coverage AC-04 新 FAIL，定位为规格 E29 文案的 max token 被当作 agent 名。处置：规格 E29 修订（D-15）+ 追加 S20 重改。另更正 E7 根因记录：宿主日志显示此前「派发停摆」实为子代理每次模型请求约 3 分钟（供应商侧延迟），非通道死锁。",
+      "at": "2026-11-23T20:05:45Z"
+    },
+    {
+      "id": "A20",
+      "phase": "P3",
+      "text": "修订单元完成：agent-coverage.md 第 40 行收回为 decision-arbiter(D1, GLM-5.4 强档)（相对基线仅版本号一处差异，其余行零改动）；主进程独立重跑 selftest-agent-coverage 9 PASS/0 FAIL、selftest-decision-arbiter 16 PASS/0 FAIL；提交 ee254abd。隔离区相对基线 9 文件 +39/-31，工作树干净。第二轮全量回归后台运行中。",
+      "at": "2026-11-23T20:09:51Z"
+    },
+    {
+      "id": "A21",
+      "phase": "P3",
+      "text": "第二轮全量回归 104 PASS/0 FAIL，逐脚本与基线一致。执行期复审第二轮 APPROVED（0C/0I）：C-1/I-1/W-4 已闭环；指出规格豁免归类有误两处与三处自致不一致。处置：规格补 E31-E35（D-17），拆为三个单元串行施工，完成后重跑相关 selftest 与全量回归。",
+      "at": "2026-11-23T20:19:43Z"
+    },
+    {
+      "id": "A22",
+      "phase": "P3",
+      "text": "复审采纳的五处修订全部落地并提交：e39d8997（template-mapping 第 305 行、critical-rules-dispatch 第 245 行）、fb47cea6（decision-arbiter.md 第 14 行注释、selftest 第 41 行注释）、79e9a9de（verification-gate SKILL.md PARTIAL 判据补齐）。每单主进程逐字核验+其余行零改动校验通过。隔离区相对基线 10 文件 +42/-34。第三轮全量回归后台运行中。",
+      "at": "2026-11-23T20:28:10Z"
+    },
+    {
+      "id": "A23",
+      "phase": "P3",
+      "text": "第三轮全量回归（五处修订全部落地后）104 PASS/0 FAIL，逐脚本与基线 IDENTICAL；152 个脚本 bash -n 0 失败。隔离区等效执行 VC-1（六载体 7/6/3/2/2/2、SKILL 旧措辞 0）、VC-2（1/8/护栏词）、VC-6（=2）均达标；合并后按判据原文在主仓复跑再标 pass。",
+      "at": "2026-11-23T20:32:41Z"
+    },
+    {
+      "id": "A24",
+      "phase": "P4",
+      "text": "合并：smart-merge-back V1/V2/V3/V5 OK，V6 MERGED d9f68655（--no-ff）。主仓相对基线 10 文件 +42/-34，与分支末端一致；主仓未提交清单（他会话）未变。清理：worktree 已移除、wt 分支已删，另两个 worktree 未动。合并后主仓按判据原文复跑 VC-1/2/6/7 与 VC-3 语法部分均达标；VC-4 三数 6/0/0。",
+      "at": "2026-11-23T20:34:22Z"
+    },
+    {
+      "id": "A25",
+      "phase": "P5",
+      "text": "部署阶段 A 完成并经主进程独立复核：9 份补丁非空、45 个备份与运行位逐字节一致（运行位零写入）、预演 44 OK/1 FAIL（opencode 位 dispatch 文件 hunk#1）。合并后主仓全量回归 104/0 与基线一致，VC-3 按原文达标。处置 FAIL 项=D-18 专用补丁；手册补硬校验（新条款整行逐字在位）与 B4 恢复条款。",
+      "at": "2026-11-23T20:42:14Z"
+    },
+    {
+      "id": "A26",
+      "phase": "P5",
+      "text": "部署完成：5 运行位 × 9 文件共 45 项全部达标（主进程独立复核：硬校验 45/45 为 0 0、改后差异==改前差异 45/45、改前与源码一致的 35 项现与源码逐字节相同；45 份备份完好；无 .rej/.orig）。VC-5 原文：site-files-bad=0；verify.sh 23 pass/3 fail 与基线同一批失败项（claude/opencode/cursor 位 SKILL.md 既有差异，非本次引入）。备份与过程记录在 tmp/deploy-backups/task-goal-unattended-protocol-20261124/。",
+      "at": "2026-11-23T20:56:20Z"
+    },
+    {
+      "id": "A27",
+      "phase": "P6",
+      "text": "冒烟阶段完成：decision-arbiter 派发成功并裁决 COMPLETE（VC-9 原文=2）；goal 行为演练降级为同会话模拟演练，D1-D4 全 PASS（VC-8 原文=4 + skeleton-ok），演练目录与新会话哨兵已清理。骨架 .txt 由主进程写 .md 后派子代理机械落盘（主进程写通道只放行 .md/.json）。",
+      "at": "2026-11-23T21:11:21Z"
+    },
+    {
+      "id": "A28",
+      "phase": "P6",
+      "text": "收尾前偏移检查判 DRIFT（仅 VC-8 口径）。处置：VC-8 改判 fail；drill-report.md 四行结论改为 FAIL，同会话模拟演练降为补充证据；骨架与报告更正新会话事实（卡在第 3 个工具调用的审批，build 权限模式，宿主日志为证）。P6 保持 in_progress，计划暂不归档。",
+      "at": "2026-11-23T21:16:40Z"
+    }
+  ],
+  "errors": [
+    {
+      "id": "E1",
+      "timestamp": "2026-11-24T01:05:00+08:00",
+      "error": "首次派发 Plan Writer 被 [dispatch-block] 串行槽占用拦截（锁 age=26s）",
+      "attempt": 1,
+      "resolution": "等待锁过期后重发成功",
+      "root_cause": "主进程手动运行 check-dispatch.sh pretool 做预检，守卫放行时写了 subagent-state/.dispatch-inflight 锁",
+      "prevention": "禁止用守卫脚本做派发预检；只做字数与结构核对",
+      "trigger": "PreToolUse Agent 守卫 exit 2"
+    },
+    {
+      "id": "E2",
+      "timestamp": "2026-11-24T01:27:00+08:00",
+      "error": "派发 critic 被步骤枚举门拦截（6>4，Rule 21.1b）",
+      "attempt": 1,
+      "resolution": "把六维审查维度的圈号编号改为并列表述后重发成功",
+      "root_cause": "派发稿用圈号列维度，count_step_markers 把其计入步骤序号",
+      "prevention": "派发稿只保留 Step1-Step4 一套步骤编号，其余列表不用圈号/第N步",
+      "trigger": "PreToolUse Agent 守卫 [dispatch-block] 细粒度检测"
+    },
+    {
+      "id": "E3",
+      "timestamp": "2026-11-24T01:20:00+08:00",
+      "error": "attest 拒锁：Phase 1/2 缺 S-unit 表或数据行（Rule 22.6）",
+      "attempt": 1,
+      "resolution": "S-unit 改整数编号 S1-S17，P2 拆为 S3-S9（每单元≤2 文件/≤100 行/≤15 分钟）后过门",
+      "root_cause": "check-plan-dispatch 只认行首 | S<整数> |；且纯子代理 Phase 受 Rule 59.1 粒度三值硬门",
+      "prevention": "计划期 S-unit 一律整数编号并按粒度上限拆分（拆单元而非放宽）",
+      "trigger": "attest-plan.sh exit 1"
+    },
+    {
+      "id": "E4",
+      "timestamp": "2026-11-24T01:24:00+08:00",
+      "error": "attest 拒锁：rvc-coverage 覆盖缺口（R2 引用不存在的 VC）",
+      "attempt": 1,
+      "resolution": "R2 的 vc 改为 VC-2、VC-7 后过门",
+      "root_cause": "主进程在 plan-brief 的 R→VC 映射单元格里写了注释文字「VC-2（②含护栏原文）」",
+      "prevention": "映射列只写 VC 编号；注释放判据列",
+      "trigger": "attest-plan.sh exit 1"
+    },
+    {
+      "id": "E5",
+      "timestamp": "2026-11-24T02:19:06+08:00",
+      "error": "audit-add 第 2 轮登记失败但输出被 `tail -1 >/dev/null` 静音，主进程未察觉（复核时发现 audits 仅有 R1）",
+      "attempt": 1,
+      "resolution": "去掉静音重跑并显示报错；issues.state 改用合法枚举（fixed/accepted）后登记成功",
+      "root_cause": "批处理函数把 planctl 输出丢弃；且 state 用了枚举外的 closed",
+      "prevention": "写操作批处理必须检查 returncode；失败路径不得重定向到 /dev/null",
+      "trigger": "jq 复核 audits 数组"
+    },
+    {
+      "id": "E6",
+      "timestamp": "2026-11-24T03:04:39+08:00",
+      "error": "隔离区 fresh selftest：104 中 1 FAIL（selftest-decision-arbiter DA-02「model 非 GLM-5.3 强档」），基线为 104/0",
+      "attempt": 1,
+      "resolution": "断言与 Rule 69/覆盖表的旧配置字面随 frontmatter 锁步到 GLM-5.4（E26-E30，S18/S19），重跑 selftest 复验",
+      "root_cause": "E23 按用户裁决改了裁决体模型，但其守护断言与引用面仍钉旧值；计划期全仓字面面核查只覆盖了旧「停表措辞」，未覆盖模型字面",
+      "prevention": "改 frontmatter model/thoughtLevel 时，对齐核查必须把「模型字面」纳入字面面与断言面扫描",
+      "trigger": "run-selftests.sh --fresh（after-selftest.log）"
+    },
+    {
+      "id": "E7",
+      "timestamp": "2026-11-24T03:26:13+08:00",
+      "error": "S18 派发 executor(haiku-1) 两次挂起（各约 10 分钟、9 分钟无任何动作，隔离区工作树始终干净）",
+      "attempt": 2,
+      "resolution": "两次均 TaskStop 终止并留痕 agent-failure ledger；按 Rule 22.3 升档改派 general-coder(sonnet-1)",
+      "root_cause": "haiku 档执行体通道停摆（此前 S3-S9 同型派发均正常，critic/opus 档同期正常）——未进一步定位，如实记录",
+      "prevention": "同型连续停摆 2 次即升档，不第三次原法重试",
+      "trigger": "TaskOutput 长时间 no_progress"
+    },
+    {
+      "id": "E8",
+      "timestamp": "2026-11-24T04:10:00+08:00",
+      "error": "隔离区全量 selftest：104 中 103 PASS/1 FAIL（selftest-agent-coverage AC-04「候选 agent 缺位: max」；基线 104/0）",
+      "attempt": 1,
+      "resolution": "修订规格 E29 并追加单元 S20 重改该行（D-15），重跑受影响 selftest 与全量回归",
+      "root_cause": "规格 E29 新文案在机器解析列加入英文 token max，被 AC-04 的实体名提取器误判",
+      "prevention": "改矩阵登记列前先跑 selftest-agent-coverage；登记列只放实体名与版本号",
+      "trigger": "run-selftests.sh --fresh 对比基线"
+    },
+    {
+      "id": "E9",
+      "timestamp": "2026-11-24T04:52:00+08:00",
+      "error": "部署阶段 B 中止：B2 硬校验在第 2 项判不符，执行体按 B4 停止并恢复 ~/.zcode 位 SKILL.md（45 项补丁已全部落位 rc=0）",
+      "attempt": 1,
+      "resolution": "主进程修订硬校验口径为整行相等匹配（D-19），只读复核 44 项达标、1 项未部署；下发续做（仅补该 1 项并对 45 项重跑校验）",
+      "root_cause": "主进程写入手册的硬校验口径有误：要求 28.9 整行在前 6 个载体均=1，实际仅 discipline 含该整行；另初版口径用子串匹配，会把追加型改动的旧行误判为仍在（自检发现后改为 -x 整行相等）",
+      "prevention": "校验口径下发前先在源码上自检（当前源码应全过）并做反向自检（基线版本应能判出）；子代理的 B4 停止机制保留",
+      "trigger": "执行体回执 status=failed（B4 触发）"
+    },
+    {
+      "id": "E10",
+      "timestamp": "2026-11-24T05:12:00+08:00",
+      "error": "初版骨架与演练报告写「新会话首个工具调用即被拦截」，与事实不符：宿主日志显示新会话（build 权限模式）完成加载技能与一条 shell 命令后，在第 3 个工具调用的权限请求处等待",
+      "attempt": 1,
+      "resolution": "已查宿主日志（按会话 id 过滤 tool.call 与 tool.permission 事件）更正骨架与报告",
+      "root_cause": "仅凭会话消息视图下结论（该视图不显示工具调用明细），未先查宿主日志",
+      "prevention": "行为演练的事实描述以宿主日志的工具调用与权限事件为准",
+      "trigger": "drift-checker 判 DRIFT 后的事实复核"
+    }
+  ]
+}

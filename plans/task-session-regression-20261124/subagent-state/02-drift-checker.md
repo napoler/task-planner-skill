@@ -1,0 +1,15 @@
+# Drift Check 02 | 2026-11-24
+- 触发点: 主进程中途核对（用户#1-#8 实施对齐）
+- 判定: **ALIGNED**
+- 证据锚:
+  - `user-session-log.md#1-#4/#6-#8` vs `plan-state.json` decisions D18/D19、R→VC 映射：目标/范围一致。
+  - `git -C .../tmp/worktrees/task-session-regression-20261124 log --oneline d9f68655..HEAD` → 5d0f030a/c171e262/d64f59ec/0a4cde86（10 文件，均在 scope 18）。
+  - `git status --short`（worktree）→ M check-3file-gate.sh, check-complete.sh, lib/plan-recovery.sh, sync-todos.sh; ?? selftest-git-baseline.sh（均在 scope）；无 scope 外改动。
+- 原话对照:
+  - #1/#2 根治倒退+Git备份/检查点/差异/可还原 → `git-baseline.sh`(980L, snapshot/checkpoint/diff/dispose/restore)、两门 shell-out diff、plan-created.cjs B9 清哨兵校验。ALIGNED
+  - #3/#4 Git 必选 todo、脚本+门驱动、禁归因执行方 → `sync-todos.sh` B9-B11+evidence/command；check-3file-gate:366/check-complete:1469 `[git-baseline]` 门。ALIGNED
+  - #6 压缩后 hook 强制重读 → `zcode-sessionstart.sh` 注入 `[compact-recovery]`、`lib/plan-recovery.sh` mustkeep/recover。ALIGNED
+  - #7 禁“计划主仓/实施工作树”推诿、停审计循环、须实施+质量门 → D18 停审计/S1取代；D19 repo 解析 `--repo>env>worktree_path>CWD` 禁从 plan-dir 推导(`git-baseline.sh:143-185`)；已 4 提交+在途实现。ALIGNED
+  - #8 “继续” 无新增要求。ALIGNED
+- 风险/缺口: 质量门(#7:变异复演+全量selftest不增FAIL+独立复核)与VC尚未全部实证通过（属进行中，非漂移）；main repo 有无关脏文件，不属本任务 scope。
+- 建议: 继续按 S-unit 落地未提交改动，自测 selftest-git-baseline.sh 并跑全量回归后再做独立复核。

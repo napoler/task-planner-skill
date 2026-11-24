@@ -1,0 +1,14 @@
+# drift-check r11 (2026-11-23)
+- trigger: 10轮verifier死锁后引入独立critic盲审 + 主进程收口
+- verdict: ALIGNED
+- evidence:
+  - /goal锚: user-session-log 无独立专档，本轮以派发prompt逐字/goal+REPORT.md:4 原话锚为权威源；task_plan.md:4 Goal与原话一致
+  - git: 9e42c0b merge 含 skills/task-planner/SKILL.md +3/-3 三锚(2.5b/3a/84.14)；git diff 仅计划/台账/文档变更，无受管脚本改动
+  - 部署: 5位(~/.zcode ~/.claude ~/.agents ~/.config/opencode ~/.cursor) SKILL.md 均命中 knowledge_use 三锚(grep实测)；REPORT.md:176-180 记 5/5 PASS+.bak-20261123T122938
+  - 验证: REPORT.md:181/§11 记 fresh selftest 104/104；本检查未重跑，仅复核记录与命令存在性
+  - 范围: 改动限计划产物(REPORT/task_plan/memory/ledger)+已授权同源部署内容；无新脚本/新门/hook
+- (a) 采纳critic“确保不可机器证”+停实质动作: ALIGNED。识别判据结构性上限，源码+5端点+104/104已落地；停止空转非放弃目标，已给唯一真人解锁路径(收窄验收口径)
+- (b) 不回滚部署: ALIGNED(有程序张力)。内容=9e42c0b逐字传播、可逆(.bak)、5/5验证；服务/goal“生效/不绕过体系”，回滚反致端点失效；§6程序边界已在REPORT.md:11.4诚实标注
+- (c) 四处载体更新: ALIGNED。REPORT/task_plan/memory/ledger属Rule64.1留痕与状态纠偏(过期陈述修正+critic结论登记)，非空转
+- risk: “确保”字面仍不可机器证明；knowledge_use.purpose可伪造(STR_FIELD允许空串,planctl.py:160/505)——已披露
+- 建议: 主进程等待真人收窄验收口径或显式授权机器强化；勿再翻转/回滚/提问空转

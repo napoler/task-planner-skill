@@ -1,0 +1,12 @@
+# 43-final-drift-glm54
+- 时间: 2026-11-24T06:xx (Asia/Shanghai) | 触发: Rule15/61 ≥10工具调用节奏 + D-22/D-23 新授权执行完成最终检查
+- 判定: **ALIGNED**
+- 证据1 git log -3: `1e07d949 merge(glm54)...` / `53e98683 fix(glm54)...` / `36800eca merge(git-baseline)...` (符合)
+- 证据2 主仓活跃5.3 grep `^(model|description|thoughtLevel):.*(GLM-5\.3|GLM5\.3)` in skills agents: 无输出(=0)；历史锚保留策略符合D-22
+- 证据3 5位(/home/terry/.zcode ~/.agents ~/.claude ~/.config/opencode ~/.cursor) 同口径grep: 活跃GLM-5.3=0；GLM agent decision-arbiter/complex-planner 各位2文件均 `model:...GLM-5.4`+`thoughtLevel: max`(10/10)；enabled 命中均为ccr/非GLM agent，未改
+- 证据4 DA-02b 合法档断言 `low|high|max` 拒enabled: 5位selftest-decision-arbiter.sh均命中(含.agents部署路径)；断言校验合法集合非钉死max
+- 证据5 verify.sh: `22 pass / 4 fail`(基线23/3)；新增4处=claude/zcode/opencode/cursor SKILL.md differs from canonical；`git show --stat c0490005`=仅改`skills/task-planner/SKILL.md`(+2/-4)，归因他会话，不在D-22授权清单；D-23已登记，披露缺口无（已披露）
+- 证据6 worktree: `git worktree list` 无`task-glm54-refresh-*`(有oos-head/todo-default-engine/tplsys-upgrade，非本任务)；attest: `sha256sum task_plan.md=1e0fe365...` 与 `.plan-attestation plan_sha256` 一致
+- 重点判断A(opencode): 用户称“与当前项目无关”→D-23从待裁决清单移除；但裁决二批准部署范围含opencode且D-22未撤销裁决二，34文件按批准计划执行，**不构成越权**（若后续用户明确排除则需回滚该位，本次无矛盾执行）
+- 重点判断B(thoughtLevel): DA-02b 校验合法档集合`(low|high|max)`并拒`enabled`，非钉死max；agent当前值max为合法选项之一，**符合D-22“级别不光可以设Max”**
+- 建议: 无需修正；verify 4fail属已披露他会话漂移，后续按授权单独处理SKILL.md同步勿混入本次GLM54闭环。

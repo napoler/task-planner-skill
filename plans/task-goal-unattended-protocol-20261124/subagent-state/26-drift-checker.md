@@ -1,0 +1,11 @@
+# 26-drift-checker
+- time: 2026-11-24T04:35:00+08:00
+- trigger: 验证与独立审查阶段收尾前（距上次检查>10次工具调用）
+- verdict: ALIGNED
+- evidence:
+  - 原话锚: user-session-log.md #1/#2/#3（R1修缺陷/R2预授权护栏/R3全部运行位/R4 GLM-5.4+max；#3批准计划“不再二次确认”）与 task_plan.md R1-R4 一致；无冲突。
+  - 动作锚: progress.md 尾部 D-13~D-17 + P3 actions（S18-S23、两轮全量回归104/0、复审APPROVED、5处采纳修订已落地、第三轮回归运行中）；未见超范围动作。
+  - scope锚: worktree `git diff --stat 9e42c0b HEAD`=10 files +42/-34（均 skills/）；commits e39d8997/fb47cea6/79e9a9de 为采纳修订。主仓 `git status` 仅 `?? AGENTS.md` 在本任务相关；其余脏项属其他会话。
+- adopted-fixes-check: S21(template-mapping:305, critical-rules-dispatch:245) 配置字面GLM-5.3→GLM-5.4；S22(decision-arbiter.md:14注释, selftest-decision-arbiter.sh:41注释) 注释如实化，DA-02断言行未改；S23(verification-gate/SKILL.md:67) PARTIAL判据补“且残余风险清单已登记”对齐Rule 84.5。均为必要级联，无新脚本/机器门/selftest断言。
+- scope-exclusions: diff无 complex-planner配置、无运行位、无 ~/.zcode/commands/goal.md、无示例会话遗留待授权项改动。
+- suggestion: 第三轮全量回归结果核对后按手册合并/部署；部署清单6→8属计划期后对齐文件，执行前确认均在已批准范围与护栏内。

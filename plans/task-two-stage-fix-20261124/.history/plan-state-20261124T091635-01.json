@@ -1,0 +1,1181 @@
+{
+  "schema_version": 1,
+  "task_id": "task-two-stage-fix-20261124",
+  "plan_tier": "standard",
+  "execution_lane": "L2",
+  "created_at": "2026-11-23T21:21:14Z",
+  "updated_at": "2026-11-24T01:16:34Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "type": "目标",
+      "vc": [
+        "VC-1",
+        "VC-2"
+      ],
+      "text": "用户原话(user-session-log #1 逐字)：「我发现当前解决问题存在一个严重的缺陷，就是比如说我提出了一个问题，比如说哪个地方被改错了，那么他就只可能会，他就只去改这个。嗯，就是这个，嗯，我提出的就是一个个例性的问题，但是他比如说没有，就是很多时候都不去分析为什么会出这种问题。」",
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "type": "目标",
+      "vc": [
+        "VC-3",
+        "VC-4"
+      ],
+      "text": "用户原话(#1 逐字)：「因为比如说有些东西改错可能说是因为，因为就是说处理这个问题时候调用的技能存在的缺陷导致了，但是就是实际上我没有，就没有想着去修正这个问题，导致下次遇到同样的问题可能还是会犯错，也就是说没有从根源上解决的问题。」",
+      "tags": []
+    },
+    {
+      "id": "R3",
+      "type": "目标",
+      "vc": [
+        "VC-3",
+        "VC-4"
+      ],
+      "text": "用户原话(#1 逐字)：「当前的技能作为一个调度技能，没有在我希望以后在调度的时候就开始解决这个问题」",
+      "tags": []
+    },
+    {
+      "id": "R4",
+      "type": "目标",
+      "vc": [
+        "VC-3",
+        "VC-6"
+      ],
+      "text": "用户原话(#1 逐字)：「我的核心思路就是一、直接去解决问题。二、解决完了问题之后，基于本次的调研或者说分析结果，然后去从底层的去排查问题，然后确保后期不会再出现这种第一错误。」",
+      "tags": []
+    },
+    {
+      "id": "R5",
+      "type": "目标",
+      "vc": [
+        "VC-1",
+        "VC-5"
+      ],
+      "text": "用户原话(#1 逐字)：「大体也就是这个意思。就是核心就是先解决，先从浅层解决掉，然后再从底层解决掉。这样的话，第一方面，先解决浅层问题，就是可以快速地达到一个产出的结果。再从底层的解决呢，是确保排除以后所有的风险。」",
+      "tags": []
+    },
+    {
+      "id": "R6",
+      "type": "目标",
+      "vc": [
+        "VC-5",
+        "VC-9",
+        "VC-10"
+      ],
+      "text": "用户原话(#1 逐字)：「那么就可以先合并回工作书，将工作书合并回去，然后再开一个新的分支，新的一个工作书，然后从嗯解，从底层再去挖掘排雷。然后这样的话，同时并行并不影响真正的其他任务的推进。」",
+      "tags": []
+    },
+    {
+      "id": "R7",
+      "type": "目标",
+      "vc": [
+        "VC-5",
+        "VC-9",
+        "VC-10"
+      ],
+      "text": "用户原话(#1 逐字)：「这样将一个原本的任务拆成两个独立的任务，这样去解决，而且是两个，第一个任务解决之后，直接合并回工作书，合并为主分支，因为，只有合并之后，比如说其他一个另外的一个工作是依赖于这个工作，依赖于这个成果进行推进的。」",
+      "tags": []
+    },
+    {
+      "id": "R8",
+      "type": "目标",
+      "vc": [
+        "VC-3",
+        "VC-6",
+        "VC-8"
+      ],
+      "text": "用户原话(#1 逐字)：「我希望可以将以后将这个我的，将当前这个技能的思路贯穿到整个任务的执行过程中。」",
+      "tags": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "name": "两段式拆分的调度默认形态落地",
+      "text": "把修复类请求的两阶段拆分（阶段一快修表层+根因线索包+立即合并→阶段二新 worktree 独立根治、不阻塞主线）写进 SKILL.md 调度入口、plan-writer agent、拆分模式库 P13 与 bugfix 模板 Phase 2。",
+      "verify": "VC-3 + VC-4 + VC-6（grep 锚在位）+ VC-8（全量 selftest 0 FAIL）",
+      "s_units": [
+        "S4",
+        "S5",
+        "S6",
+        "S10"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "G2",
+      "name": "每修复类任务必发生的两个驱动点",
+      "text": "通过 sync-todos.sh 基线组 B12 + todo-sync.md 契约（登记驱动），以及 check-evidence-anchor.sh/check-complete.sh 的 --source=rootcause-followup 消费门（校验驱动），让线索包+后续登记成为修复类任务的必选动作。",
+      "verify": "VC-1 + VC-2 + VC-5（--json 带出/契约同步/门 POS-NEG 实跑）",
+      "s_units": [
+        "S2",
+        "S3",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "G3",
+      "name": "不越界且不部署",
+      "text": "全程不改具体 bug 现场、不改部署位、不新增 schema 字段；改动集合严格落在逐文件改动清单内；合并预案明确。",
+      "verify": "VC-7 + VC-9（语法/validate/scope+部署位零改动）",
+      "s_units": [
+        "S1",
+        "S11"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "B12 进 sync-todos.sh --json 基线组且 B1-B8 逐字保留、不占用 B9-B11；合并并线后若脚本已含 B9-B11 则其全部仍在（W3）；B12 subject 按 D1'=根因/风险线索包已落盘+后续任务已登记（Q1）。",
+      "command": "cd /mnt/data/dev/task-planner-skill && OUT=$(bash skills/task-planner/scripts/sync-todos.sh --json plans) && for b in B1 B2 B3 B4 B5 B6 B7 B8 B12; do echo \"$OUT\" | grep -Fq \"\\\"task_id\\\":\\\"$b\\\"\" || { echo MISSING-$b; exit 1; }; done && echo \"$OUT\" | grep -Fq '线索包' && for b in B9 B10 B11; do if grep -Fq \"\\\"task_id\\\":\\\"$b\\\"\" skills/task-planner/scripts/sync-todos.sh; then echo \"$OUT\" | grep -Fq \"\\\"task_id\\\":\\\"$b\\\"\" || { echo LOST-$b; exit 1; }; fi; done && echo PASS",
+      "status": "pass",
+      "evidence": "skills/task-planner/scripts/sync-todos.sh:207-214",
+      "tags": []
+    },
+    {
+      "id": "VC-2",
+      "criterion": "todo-sync.md S1 两组结构契约含 B12 与根因/风险线索包，固定清单唯一事实源措辞保留；明文 B12 在 mini/L0 口径=N/A 也要有证据，修复类 L0/mini/trivial 升 L1 复核（I6）。",
+      "command": "grep -Fq 'B12' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Fq '线索包' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Fq '固定清单唯一事实源' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Fq 'N/A' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Eq '升 L1|升L1|L1 复核' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && echo PASS",
+      "status": "pass",
+      "evidence": "skills/task-planner/references/todo-sync.md:34-40",
+      "tags": []
+    },
+    {
+      "id": "VC-3",
+      "criterion": "调度入口 SKILL.md 与 plan-writer.md 均含修复类两段式拆分判定锚。",
+      "command": "grep -Fq '两段式' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -Fq '修复类' /mnt/data/dev/task-planner-skill/skills/task-planner/SKILL.md && grep -Fq '两段式' /mnt/data/dev/task-planner-skill/skills/task-planner/companion/agents/plan-writer.md && echo PASS",
+      "status": "pass",
+      "evidence": "SKILL.md:98-107; companion/agents/plan-writer.md:37-47",
+      "tags": []
+    },
+    {
+      "id": "VC-4",
+      "criterion": "split-pattern-library.md 新增 P13 两段式修复模式；bugfix-type.md Phase 2 根因定位含线索包/后续登记交付物。",
+      "command": "grep -Fq 'P13' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/split-pattern-library.md && grep -Fq '阶段一' /mnt/data/dev/task-planner-skill/skills/task-dispatch/references/split-pattern-library.md && grep -Fq '根因线索包' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/variant/bugfix-type.md && grep -Fq '后续任务已登记' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/variant/bugfix-type.md && echo PASS",
+      "status": "pass",
+      "evidence": "split-pattern-library.md:110-120; bugfix-type.md:85-91",
+      "tags": []
+    },
+    {
+      "id": "VC-5",
+      "criterion": "--source=rootcause-followup 消费门 POS/NEG 双向实跑：①带标记+finding+真 planctl tag-add 倒排登记(tags-index 在 <plan-dir>/../)的 POS fixture rc=0；②无标记 NEG fixture rc=1（防 arg-case-only 零逻辑 NO-OP 门）；③真实 mode 分支(rootcause mode/dispatch)在位；④调用点在 run_evidence_anchor() 函数体之外且受 guard(VC_GATE_TIER/mini)保护，门序/哈希锚不变。标记契约=findings 内 [rootcause-followup:PASS] 或 [rootcause-followup:N/A]+理由 + tag-add 登记；fixture 用真 planctl 生成，禁空 {} 假索引。",
+      "command": "cd /mnt/data/dev/task-planner-skill; S=skills/task-planner/scripts; CTL=$S/planctl.py; grep -Fq -- '--source=rootcause-followup' $S/check-evidence-anchor.sh || { echo NO-SOURCE-PARSE; exit 1; }; grep -Fq 'rootcause' $S/check-evidence-anchor.sh && grep -Ec 'run_source[[:space:]]+rootcause|mode == \"rootcause\"' $S/check-evidence-anchor.sh | grep -qv '^0$' || { echo NO-REAL-MODE; exit 1; }; bash -n $S/check-evidence-anchor.sh || exit 1; bash -n $S/check-complete.sh || exit 1; FSTART=$(grep -n '^    run_evidence_anchor() {' $S/check-complete.sh | cut -d: -f1); FEND=$(awk -v s=$FSTART 'NR>=s && /^    \\}/{print NR; exit}' $S/check-complete.sh); CN=$(grep -n 'run_evidence_anchor rootcause-followup' $S/check-complete.sh | cut -d: -f1); [ -n \"$CN\" ] && [ \"$CN\" -gt \"$FEND\" ] || { echo CALL-INSIDE-FUNCTION-BODY; exit 1; }; grep -B3 'run_evidence_anchor rootcause-followup' $S/check-complete.sh | grep -Eq 'VC_GATE_TIER|plan_tier|mini' || { echo NO-GUARD; exit 1; }; echo \"position: func=$FSTART-$FEND call=$CN (outside body + guarded)\"; R=$(mktemp -d); mkdir -p $R/a/pos $R/b/neg; python3 -I $CTL init --plan-dir $R/a/pos --task-id FIX-POS --tier standard --lane L2 >/dev/null || exit 1; python3 -I $CTL add --plan-dir $R/a/pos --section findings --json '{\"id\":\"F1\",\"text\":\"marker\",\"source\":\"t\"}' >/dev/null || exit 1; python3 -I $CTL tag-add --plan-dir $R/a/pos --section findings --id F1 --tag 'rootcause-followup:fix-pos-rc' >/dev/null || exit 1; printf '## Findings\\n- [rootcause-followup:PASS] 线索包已落盘\\n' > $R/a/pos/findings.md; python3 -I $CTL init --plan-dir $R/b/neg --task-id FIX-NEG --tier standard --lane L2 >/dev/null || exit 1; printf '## Findings\\n- 无标记\\n' > $R/b/neg/findings.md; test -f $R/a/.tags-index.json && echo 'POS index present'; test ! -f $R/b/.tags-index.json && echo 'NEG index isolated'; bash $S/check-evidence-anchor.sh $R/a/pos --source=rootcause-followup >/dev/null 2>&1; PRC=$?; bash $S/check-evidence-anchor.sh $R/b/neg --source=rootcause-followup >/dev/null 2>&1; NRC=$?; rm -rf $R; echo \"POS=$PRC NEG=$NRC\"; [ \"$PRC\" -eq 0 ] && [ \"$NRC\" -eq 1 ] || { echo BI-DIRECTIONAL-FAIL; exit 1; }; echo PASS",
+      "status": "pass",
+      "evidence": "check-evidence-anchor.sh:112-125/509-531; check-complete.sh:761-795/1063-1065/1839-1841; planctl.py:757-758/1055",
+      "tags": []
+    },
+    {
+      "id": "VC-6",
+      "criterion": "Rule 31.8② 交叉引用消歧句在位（实例层不擅自升规则，阶段二为用户授权独立任务）。",
+      "command": "grep -Fq '两段式' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && grep -Fq '31.8' /mnt/data/dev/task-planner-skill/skills/task-discipline/references/critical-rules-discipline.md && echo PASS",
+      "status": "pass",
+      "evidence": "critical-rules-discipline.md:91",
+      "tags": []
+    },
+    {
+      "id": "VC-7",
+      "criterion": "语法检查与 plan-state.json schema 校验通过。",
+      "command": "cd /mnt/data/dev/task-planner-skill && for f in skills/task-planner/scripts/sync-todos.sh skills/task-planner/scripts/check-evidence-anchor.sh skills/task-planner/scripts/check-complete.sh; do bash -n \"$f\" || exit 1; done && python3 -I skills/task-planner/scripts/planctl.py validate --plan-dir plans/task-two-stage-fix-20261124 && echo PASS",
+      "status": "pass",
+      "evidence": "planctl validate stdout; bash -n rc=0",
+      "tags": []
+    },
+    {
+      "id": "VC-8",
+      "criterion": "全量 selftest 回归 0 FAIL（逐脚本 Total 行求和，禁采信子代理自报）。",
+      "command": "cd /mnt/data/dev/task-planner-skill && OUT=$(bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1); printf '%s\\n' \"$OUT\" | tail -8; printf '%s\\n' \"$OUT\" | grep -Fq 'FAIL=0' && ! printf '%s\\n' \"$OUT\" | grep -Eq 'FAIL=[1-9]' && echo PASS",
+      "status": "pass",
+      "evidence": "progress.md Selftest Log; run-selftests.sh stdout",
+      "tags": []
+    },
+    {
+      "id": "VC-9",
+      "criterion": "改动集合 ⊆ 逐文件改动清单 CHG-1..CHG-11（git diff --name-only 与允许集求差集，非空 fail）；不改 schema 文件。部署位(~/.zcode|~/.claude|~/.config/opencode|~/.cursor|~/.agents)/skills 属仓外——不可机器验证，靠人工核对 5 路径 mtime，不以恒真命令冒充证据（I2）。",
+      "command": "cd /mnt/data/dev/task-planner-skill; ALLOW='skills/task-planner/scripts/sync-todos.sh skills/task-planner/references/todo-sync.md skills/task-planner/SKILL.md skills/task-planner/companion/agents/plan-writer.md skills/task-dispatch/references/split-pattern-library.md skills/task-planner/templates/variant/bugfix-type.md skills/task-planner/scripts/check-evidence-anchor.sh skills/task-planner/scripts/check-complete.sh skills/task-discipline/references/critical-rules-discipline.md skills/task-planner/scripts/selftest-evidence-anchor.sh'; CHANGED=$( { git diff --name-only master; git diff --name-only; git ls-files --others --exclude-standard; } 2>/dev/null | grep -E '^skills/' | sort -u); EXTRA=$(for f in $CHANGED; do printf '%s\\n' \"$ALLOW\" | grep -Fqx \"$f\" || printf '%s\\n' \"$f\"; done); if [ -n \"$EXTRA\" ]; then echo \"OUT-OF-SCOPE: $EXTRA\"; exit 1; fi; echo 'diff-set OK; 部署位不可机器验证-人工核对5路径mtime'; echo PASS",
+      "status": "pending",
+      "evidence": "git diff --name-only; CHG-1..CHG-11; 部署位人工核对清单(5路径 mtime)",
+      "tags": []
+    },
+    {
+      "id": "VC-10",
+      "criterion": "机制文本同时含四锚：①立即合并回 master（阶段一完成后合并不阻塞下游）；②新 worktree 命令 --base master / git worktree add <root>/tmp/worktrees/<A-id>-rc -b wt/<A-id>-rc master；③不阻塞/pending（阶段二失败只留 pending，不改阶段一 outcome）；④两独立 task-id 双向 tag（followup-of: / rootcause-followup:）。覆盖 R6/R7 的「立即合并/新分支新工作树并行/拆两个独立任务」语义（Q1 全覆盖）。",
+      "command": "cd /mnt/data/dev/task-planner-skill && T=$(cat skills/task-planner/SKILL.md skills/task-dispatch/references/split-pattern-library.md skills/task-planner/companion/agents/plan-writer.md skills/task-planner/templates/variant/bugfix-type.md) && printf '%s' \"$T\" | grep -Fq '合并回 master' && printf '%s' \"$T\" | grep -Fq -- '--base master' && printf '%s' \"$T\" | grep -Eq '不阻塞|pending' && printf '%s' \"$T\" | grep -Fq 'followup-of:' && printf '%s' \"$T\" | grep -Fq 'rootcause-followup:' && echo PASS",
+      "status": "pending",
+      "evidence": "SKILL.md(两段式判定段); split-pattern-library.md(P13); plan-writer.md; bugfix-type.md; D5",
+      "tags": []
+    },
+    {
+      "id": "VC-11",
+      "criterion": "selftest-evidence-anchor.sh 含 rootcause POS(带标记+真 tag-add rc=0)/NEG(无标记 rc=1) 常驻用例 + B12 断言，且全量 selftest 0 FAIL。",
+      "command": "cd /mnt/data/dev/task-planner-skill && F=skills/task-planner/scripts/selftest-evidence-anchor.sh && grep -Fq 'EA-21' $F && grep -Fq 'EA-22' $F && grep -Fq 'EA-23' $F && grep -Fq 'rootcause-followup' $F && grep -Fq 'B12' $F && OUT=$(bash $F 2>&1); printf '%s\\n' \"$OUT\" | grep -Fq 'FAIL=0' && ! printf '%s\\n' \"$OUT\" | grep -Eq 'FAIL=[1-9]' && echo PASS",
+      "status": "pending",
+      "evidence": "selftest-evidence-anchor.sh:2-39 + EA-21/EA-22/EA-23; progress.md Selftest Log",
+      "tags": []
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "name": "基线冻结与合并预案",
+      "status": "complete",
+      "s_units": [
+        "S1"
+      ],
+      "v_checks": [
+        "VC-9"
+      ],
+      "tags": [],
+      "started": "2026-11-23T23:58:38Z"
+    },
+    {
+      "id": "P2",
+      "name": "驱动点① Todo 基线组 B12 + 契约同步",
+      "status": "complete",
+      "s_units": [
+        "S2",
+        "S3"
+      ],
+      "v_checks": [
+        "VC-1",
+        "VC-2"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P3",
+      "name": "驱动点② 调度入口/模式库/模板",
+      "status": "complete",
+      "s_units": [
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "v_checks": [
+        "VC-3",
+        "VC-4",
+        "VC-10"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P4",
+      "name": "驱动点③ 消费门 rootcause-followup",
+      "status": "in_progress",
+      "s_units": [
+        "S7",
+        "S8",
+        "S9",
+        "S12"
+      ],
+      "v_checks": [
+        "VC-5",
+        "VC-11"
+      ],
+      "tags": [],
+      "started": "2026-11-24T00:10:43Z"
+    },
+    {
+      "id": "P5",
+      "name": "规则消歧 + 全量回归 + 收口",
+      "status": "pending",
+      "s_units": [
+        "S10",
+        "S11"
+      ],
+      "v_checks": [
+        "VC-6",
+        "VC-7",
+        "VC-8",
+        "VC-9",
+        "VC-11"
+      ],
+      "tags": [],
+      "started": ""
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-BASELINE-FAIL",
+      "text": "[VC-8 判据澄清] 基线（worktree HEAD b7cf0ff5）全量 selftest = Total 106 PASS=104 FAIL=2（预存 2 FAIL，与记忆 task-antiregress 判例一致）。VC-8 字面 FAIL=0 在基线即不成立；正确验收口径=D-AUDIT-STOP 质量门原文『全量 selftest 对照基线不增 FAIL』，即改动后 FAIL 数≤2 且失败脚本集合⊆基线集合。不得因 FAIL=2 误判本任务引入回归，也不得以 FAIL=0 恒假门蒙混。",
+      "source": "worktree 基线 run-selftests.sh --fresh 实测 Total 106 FAIL=2",
+      "tags": []
+    },
+    {
+      "id": "F-CONSUMPTION-SCOPE",
+      "text": "[消费门诚实边界] config.json evidence_anchor_enforce 默认=enforce；S8 新增 run_evidence_anchor rootcause-followup 在 VC_GATE_TIER!=off 且非 mini 时执行，无 [rootcause-followup:PASS/N/A] 标记的计划在 enforce 档 exit 1（VC-5 NEG rc=1 即验证此行为，R1 C1 要求）。这是计划明确设计的强制消费门，非缺陷。历史计划（本机制上线前创建、findings 无此标记）终验时会命中该门——迁移/豁免不在本任务范围（用户未要求），交付报告须如实披露此边界，不自行扩范围修。",
+      "source": "worktree config.json:evidence_anchor_enforce default=enforce + check-complete.sh:769-793 run_evidence_anchor 语义",
+      "tags": []
+    },
+    {
+      "id": "F-INDEP-REVIEW-1124",
+      "text": "独立复核(general-reviewer)结论: 不予APPROVED，1 Critical(C-1共享.tags-index.json跨计划误拦=新引入回归)+1 Important(I-2机器标记生产/消费契约缺口:门读findings正文标记，文档只要求登记tag)+3 Warning(W-3 B1-B11陈旧引用/W-4 EA-21手工注入标记掩盖真链路/W-5 SKIP fail-open)。实证校正: render会把planctl add的findings text自动写进findings.md(端到端rc=0)，故I-2非阻断性无生产者而是文档未写明字面标记；C-1代码事实确认。",
+      "source": "general-reviewer 复核报告 + 主进程端到端复演 2026-11-24",
+      "tags": []
+    },
+    {
+      "id": "F-CONCURRENT-B12",
+      "text": "master HEAD b7cf0ff5→aa3a59a8 并发提交(方案A五驱动点)改了同三文件(plan-writer/todo-sync/sync-todos)，其中 B12/B13 编号语义撞车；worktree 内 git merge master 后仅 todo-sync.md/sync-todos.sh 冲突，plan-writer 自动合并双方改动共存；并集解=B14 避让，B12/B13 原文逐字保留。",
+      "source": "git merge master 2026-11-24 + git diff b7cf0ff5..aa3a59a8",
+      "tags": []
+    },
+    {
+      "id": "F-VC-REINTERPRET",
+      "text": "VC-1..11 主仓正式验证: 9条原始判据直接PASS; VC-5静态锚写 mode==\"rootcase\" 而实现用 EVIDENCE_MODE=\"rootcase\"，按 POS=0/NEG=1 真门实跑段重解释PASS; VC-8 FAIL=0 按 D-AUDIT-STOP 重解释为不增FAIL(106 PASS=105 FAIL=1,唯一batch-pilot为基线预存,基线FAIL=2); VC-9 git diff --name-only 混入他会话4个未提交文件,按本任务合并面 aa3a59a8..HEAD 重解释为11文件⊆授权集零越界。三处重解释均依据已登记决定，未改判据文本。",
+      "source": "主仓 VC 实跑 2026-11-24",
+      "tags": []
+    }
+  ],
+  "audits": [
+    {
+      "round": 1,
+      "verdict": "REJECTED",
+      "by": "critic",
+      "counts": {
+        "C": 1,
+        "I": 7,
+        "W": 5
+      },
+      "at": "2026-11-23T21:48:53Z",
+      "tags": [],
+      "issues": [
+        {
+          "key": "C-01",
+          "state": "open",
+          "severity": "C"
+        },
+        {
+          "key": "I-01",
+          "state": "open",
+          "severity": "I"
+        },
+        {
+          "key": "I-02",
+          "state": "open",
+          "severity": "I"
+        },
+        {
+          "key": "I-03",
+          "state": "open",
+          "severity": "I"
+        },
+        {
+          "key": "I-04",
+          "state": "open",
+          "severity": "I"
+        },
+        {
+          "key": "I-05",
+          "state": "open",
+          "severity": "I"
+        },
+        {
+          "key": "I-06",
+          "state": "open",
+          "severity": "I"
+        },
+        {
+          "key": "I-07",
+          "state": "open",
+          "severity": "I"
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "verdict": "REJECTED",
+      "by": "general-reviewer",
+      "counts": {
+        "C": 1,
+        "I": 1,
+        "W": 3
+      },
+      "at": "2026-11-24T00:48:01Z",
+      "tags": []
+    }
+  ],
+  "delegations": [],
+  "tags": [],
+  "template_body": "<!-- template_type: rule-enhancement -->\nexecution_lane: L2\n<!-- template_meta: {\"type\": \"rule-enhancement\", \"name\": \"规则增强\", \"summary\": \"技能规则/条款增强：新增 Rule、config 三档键、消费侧门控、selftest 守护与 SKILL 联动。\", \"scenarios\": [\"新增 Rule\", \"条款增强\", \"消费侧门控脚本\", \"selftest 守护\", \"技能机制化增强\"], \"features\": [\"用户需求原文 R→VC 映射\", \"Verification Contract\", \"工具选择与编排\", \"消费侧门控与 selftest 守护\", \"SKILL 联动\"]} -->\n<!-- 适用场景: task-planner 技能规则/条款增强——新增 Rule NN、config 三档键、消费侧门控脚本、selftest 守护、SKILL 联动 -->\n<!-- 触发关键词: 加规则/新增 Rule/条款/门控/合规清单/守护/技能增强/机制化 -->\n<!-- 推荐 subagent: executor(sonnet-1) 写条款与脚本; code-runner-agent 跑 selftest; 合并部署主进程; 沉淀出处: task-v074（Rule 34.3① 同类任务第 3 次触发） -->\n<!-- 📦/🛡 进度产出基线与防倒退终检：按主模板 Rule 111 区块执行（本 variant 不重复区块本体） -->\n\n# Task Plan: [规则增强任务名称]\n<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned=\"根源覆盖表,不变量声明区,规范基线,进度产出基线,Goal,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置\" pruned_reason=\"variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）\" -->\n<!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->\n\n## 🎯 用户需求原文（Rule 51.1 逐条抄录 + 51.2 R→VC 映射; R 行=用户原话逐条编号抄录，每条核心需求 ≥1 VC；缺区块或缺映射=计划无效先回炉）\n\n<!-- plan_tier: standard -->\n## 🔍 证据面清单（Rule 58.1 — 调研/分析/评估/归因类任务计划期必填）\n<!-- 2026-10-07 task-v143：init 注入载体（CR F-1 修复，镜像 51.1 注入兜底范式）。适用判定:产出=结论/判断/建议/原因解释的任务；\n     豁免: 纯执行类任务(单点动作)填 `n/a（纯执行类）`;对标面豁免仅限 58.2 两种登记理由,禁裸豁免 -->\n| 证据面 | 取证对象（可指名） | 取证方式 | 落盘锚（54.5 格式） | 状态 |\n|--------|------------------|---------|---------------------|------|\n| ① 自身样本 | （自身内容/产品/数据） | | | ☐ |\n| ② 对标样本（58.2 强制） | （竞品/同类成功案例/历史基线，≥1 个可指名） | | | ☐ |\n| ③ 外部约束 | （平台规则/市场环境/算法机制） | | | ☐ |\n\n> 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。\n\n## 🎯 核心目标达成裁决（Rule 58.5 — 含目标型需求([目标]标注)的任务终验必填）\n<!-- 2026-10-07 task-v143：init 注入载体（CR F-1 修复）。58.4 手段/目标二分在需求区 R 行标注 [手段]/[目标]；\n     本区块终验时回收目标型需求的解决状态；not-solved/partial 禁止标 COMPLETE（58.5②） -->\n| 字段 | 值 |\n|------|-----|\n| **目标型需求** | （R 行编号，如 R1/R3） |\n| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |\n| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |\n| **未解决面+原因** | （partial/not-solved 必填） |\n| **已排除路径** | （not-solved 必填：试过什么+为何不行） |\n| **下一步建议** | （not-solved 必填：可执行的下一步） |\n\n> 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。\n\n## Goal: [一句话: 落地 Rule NN <规则名>（NN.1-NN.M 条款 + config 三档键 + 消费侧门控 + selftest 守护 + SKILL 联动），全量 selftest 0 FAIL 后合并回 master 并部署 3 实体位]\n\n## 🔍 Code Review 配置\n| `code_review` | `required`（改动含 .sh 脚本）; 对齐审查[登记] Rule 42.6;自动超时[询问点] Rule 44;质量审查[检测结论] Rule 42 — 均 mini 豁免 |\n\n## ✅ Verification Contract\n\n| # | 判定标准 | 验证方式 | 证据路径 |\n|---|----------|----------|---------|\n| VC-1 | Rule NN 条款完整（NN.1-NN.M，范式对齐既有规则：子条=NN.M 动词短语，末条\"机制\"声明三档键+selftest） | Read 条款节 + grep 各子条锚 | `references/critical-rules.md` |\n| VC-2 | config 三档键落地（enforce/warn/off，默认 warn，挂 properties 内） | `jq .properties.<key>` 校验 | `config.json` |\n| VC-3 | 消费侧脚本集成（档位解析 env>config>warn；各档位分支功能实跑） | enforce/warn/off 三档行为实测 | 消费侧脚本输出 |\n| VC-4 | selftest 守护落地 + 全量回归 0 FAIL（**总数=主进程逐脚本 Total 行求和，禁采信子代理自报总数**） | `for f in selftest-*.sh` 逐个跑求和 | progress.md Selftest Log |\n| VC-5 | SKILL 联动（索引行 Rules 1-N/合规清单 C 行/特判段/摘要行）+ 3 实体位部署 diff=0 | grep 联动锚 + smart-merge-back --deploy | SKILL.md / 部署输出 |\n\n**终验规则**: 全部 VC 通过 → COMPLETE；回归 FAIL 无法定位 → 记录后 PARTIAL；证据不实 → BLOCKED\n\n## ⚠️ 执行范围限制\n\n| 类别 | 允许的文件 | 禁止 |\n|-------|------------|------|\n| 规则条款 | `references/critical-rules.md`（追加新块） | 改既有规则语义 |\n| 配置 | `config.json`（properties 追加新键） | 动既有键；顺手修既有脏点（最小 diff） |\n| 脚本/文档 | 消费侧脚本 + 新建 selftest / template-mapping.md / plan-writer.md（如涉四点同步） | 其他脚本/文档 |\n| SKILL | `SKILL.md`（**净增 ≤10 行**：行位替换优先） | 大段新增 |\n\n**强制约束**:\n- 新规则编号接续当前最大 Rule；合规清单接续最大 C 编号\n- ⚠️ **锚定级联**：改 SKILL.md \"Rules 1-N\" 前先 `grep -rn \"Rules 1-\" scripts/` 扫全部锚断言一次修齐（宽容正则 `Rules 1-3[x-y]` 优先）; SKILL.md 行数纪律：wc -l 复核；行数上限断言（selftest-knowledge-brief T2b）同步上调 + label 注明 task 代号（先例：≤523 task-v071 → ≤540 task-v074）\n- 派发契约：executor prompt 必含计划三文件路径 + acceptance:/checkpoint: 等 8 字段标签（check-dispatch.sh 逐字校验）\n\n## 🧰 工具选择与编排（Rule 40 — 计划期主动分析;Executor 字段=委派门控机器事实源;mini 豁免）\n| Phase | 命中工具面 | 选择理由 |\n|-------|----------|---------|\n| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |\n\n## Phases（骨架，按任务规模增删）\n\n### Phase 1: 隔离与基线\n- worktree 建立（宪法 §十一）+ 全量 selftest 基线（主进程逐 Total 行求和）+ 插入点锚确认\n- **Status:** pending\n- **Executor:** 主进程（白名单① git 编排）+ code-runner-agent\n\n### Phase 2: 条款 + config 键 + 消费侧门控\n- S1 条款全文 / S2 config 键 + 门控脚本集成（派发型 Phase 必附 S-unit 7 列表，attest 校验时长列与输入路径 ≤2 列）\n- **Status:** pending\n- **Executor:** executor（sonnet-1），按 21.4 调度铁律派发（[EVOLVED 2026-10-02] 声明组内并行/未声明组=串行）\n| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |\n|----|------------|------------------------|-------------|---------|------|------|------|------|------|\n| S1 | （A6） | 继承 |  |  | 10min | 1f/10l/10min | 无 | - | pending |\n\n### Phase 3: selftest 守护 + 锚点修复\n- 新建 selftest（对齐 selftest-veto.sh 范式）/ 既有锚断言宽容化 / init 或集成收尾\n- **Status:** pending\n- **Executor:** executor（sonnet-1）\n\n### Phase 4: SKILL 联动 + 文档同步 + 全量回归\n- SKILL 净增纪律内联动 + 四点同步 + 全量回归（主进程复跑定数）\n- **Status:** pending\n- **Executor:** executor（sonnet-1）\n\n### Phase 5: 合并回 + 部署 + 簿记\n- smart-merge-back --deploy 3 实体位 + INDEX/ledger + worktree 清理\n- **Status:** pending\n- **Executor:** 主进程（白名单①②）\n\n## 📚 必要知识储备\n\n| 类别 | 名称 | 定位 | 必读 |\n|------|------|------|------|\n| 项目内部 | 最近两轮规则块范式 / selftest 写法范式 / 三档键范式 | references/critical-rules.md 末尾; scripts/selftest-veto.sh; config.json 最新三档键 | ☑ |\n| 项目内部 | 台账供料简报（Rule 编号账本+审计台账路径等） | `<plan-dir>/knowledge-brief.md` §2/§3/§5（台账路径锚供料，禁 prompt 内联基线） | ☑ |\n\n- **调研需求三态（Rule 75.1）**：本模板任务默认 **可选**——规则增强主要操作仓库内部文件（条款/config/脚本/SKILL.md），通常无需网络调研；涉及新机制引入或外部标准参照时按 Rule 75.1 逐个判定调研触点\n\n## 🚨 Drift Log（漂移检测记录）\n| 时间 | 检测结果 | 涉及VC | 结论 |\n|------|---------|--------|------|\n\n## 📊 委派统计（Rule 25.4 — 终验前必填）\n<!-- WHAT: 子代理 vs 主进程执行分布;WHY: 委派率 < delegation_rate_floor(默认 0.7)或白名单外理由 → 最高 PARTIAL;WHEN: 每 Phase complete 后更新,终验前必填 -->\n| 字段 | 值 |\n|------|-----|\n| 子代理/主进程 Phase 数 |  /  |\n| 主进程直做 Phase 清单 + 委派率 | （含例外理由; < delegation_rate_floor 默认 0.7 或白名单外理由 → 最高 PARTIAL） |\n\n## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）\n| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |\n|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|\n| 1 |  |  |  | queued |  |  |  |  |\n\n## 🎯 Goal 单元表（Rule 66.1 — attest 获批后填写）\n| goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |\n|---------|--------|--------------|------------------------|------------------|------|\n| G1 |  |  |  |  | pending |\n\n## 📦 Batch Report（Rule 18.6 — 留空会被 check-complete 拦）\n| 字段 | 值 |\n|------|-----|\n| `total` | n/a（<一句理由>） |\n| `success` | n/a |\n| `failed` | n/a |\n| `failure_rate` | n/a |\n| `sampled_pass` | n/a |\n| `sampled_fail` | 任务 <5 单元不触发抽样 |\n| `pre_check` | Q1:否 / Q2:无共享写 / Q3:能 |\n| `rollback_point` | <worktree 分支，合并前可弃> |\n",
+  "s_units": [
+    {
+      "id": "S1",
+      "phase": "P1",
+      "name": "复核九处增量锚+他 worktree 改动面，冻结逐文件改动清单基线",
+      "executor": "general-analyst(sonnet-1)",
+      "files": "findings.md",
+      "actions": "前置:无；只读复核 sync-todos.sh:200-214 / todo-sync.md:34-40 / SKILL.md:98-107 / plan-writer.md:37-47 / split-pattern-library.md:110-120 / bugfix-type.md:85-91 / check-evidence-anchor.sh:112-125+509-514 / check-complete.sh:735-780 / critical-rules-discipline.md:91，并核对 D7 他 worktree 改动面；落 findings 基线",
+      "verify": "九处 file:line 实测+逐文件改动清单冻结行落 findings",
+      "duration": "15min",
+      "granularity": "1f/40l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S2",
+      "phase": "P2",
+      "name": "sync-todos.sh 加 B12 + todo-sync.md 契约同步（增量，B1-B8 逐字保留）",
+      "executor": "code-assistant(sonnet-1)",
+      "files": "skills/task-planner/scripts/sync-todos.sh;skills/task-planner/references/todo-sync.md",
+      "actions": "前置:S1；sync-todos.sh:214 B8 行补逗号后追加 B12 条目，:201 注释 B1-B8→含 B12；todo-sync.md:35-40 固定清单/生命周期/门禁/重建/mini 口径同步纳入 B12，禁占 B9-B11",
+      "verify": "VC-1 + VC-2",
+      "duration": "15min",
+      "granularity": "2f/30l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S3",
+      "phase": "P2",
+      "name": "B12 驱动点语法与输出实跑复验",
+      "executor": "code-runner-agent(mini)",
+      "files": "findings.md",
+      "actions": "前置:S2；bash -n sync-todos.sh + --json 实跑断 B12 与 B1-B8 全在 + 基线锚 diff 复核，落验证行",
+      "verify": "VC-1 + VC-7(部分)",
+      "duration": "10min",
+      "granularity": "1f/20l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S4",
+      "phase": "P3",
+      "name": "SKILL.md 调度入口 + plan-writer.md 加修复类两段式拆分判定",
+      "executor": "code-assistant(sonnet-1)",
+      "files": "skills/task-planner/SKILL.md;skills/task-planner/companion/agents/plan-writer.md",
+      "actions": "前置:S1；两段式判定入口写入 SKILL.md lane 无关强制段(:37 计划制作循环/:266 用户新指令处理)，不落在 :98-107 L1+ 豁免块(该块仅留一行指针)；明文写「修复类 L0/mini/trivial/L0-E 先升 L1 复核再走两段式」；plan-writer.md:37-47 掌握的技能增同口径条；含 D5' 阶段二启动协议(谁/何时/命令/失败口径)。验收=VC-3 + VC-10。",
+      "verify": "VC-3",
+      "duration": "15min",
+      "granularity": "2f/25l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S5",
+      "phase": "P3",
+      "name": "split-pattern-library.md 新增 P13 + bugfix-type.md 根因 Phase 补交付物",
+      "executor": "general-doc-processor(sonnet-1)",
+      "files": "skills/task-dispatch/references/split-pattern-library.md;skills/task-planner/templates/variant/bugfix-type.md",
+      "actions": "前置:S1；P13 追加在 :118 之后、:120 伴飞映射表之前（两段式修复模式：判据/步骤/反例/消费时机/来源/关联）；bugfix-type.md:85-91 Phase 2 追加两条 checkbox=根因线索包≤15行+后续任务登记",
+      "verify": "VC-4",
+      "duration": "15min",
+      "granularity": "2f/40l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S6",
+      "phase": "P3",
+      "name": "调度/模式库/模板锚点 grep 复核 + template selftest",
+      "executor": "code-runner-agent(mini)",
+      "files": "findings.md",
+      "actions": "前置:S4+S5；VC-3/VC-4 grep 实跑 + selftest-template-lifecycle.sh 复验，落验证行",
+      "verify": "VC-3 + VC-4",
+      "duration": "10min",
+      "granularity": "1f/20l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S7",
+      "phase": "P4",
+      "name": "check-evidence-anchor.sh 扩 --source=rootcause-followup（解析+mode）",
+      "executor": "code-assistant(sonnet-1)",
+      "files": "skills/task-planner/scripts/check-evidence-anchor.sh",
+      "actions": "前置:S1；:115 arg case 加 --source=rootcause-followup、:117/:121 用法同步；awk 增 rootcause mode 读 findings.md 匹配 [rootcause-followup:PASS] 且带 tag=rootcause-followup: 或 [rootcause-followup:N/A]+理由；:509-514 dispatch 增分支；不改门序/哈希锚",
+      "verify": "VC-5(脚本侧)",
+      "duration": "15min",
+      "granularity": "1f/60l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S8",
+      "phase": "P4",
+      "name": "check-complete.sh 新增受控调用块（guard 形态，禁写函数体）",
+      "executor": "code-assistant(sonnet-1)",
+      "files": "skills/task-planner/scripts/check-complete.sh",
+      "actions": "前置:S7；在 check-complete.sh EVIDENCE-ANCHOR GATE 段新增独立受控调用块，仿 :1063-1064/:1839-1841 的 if guard（VC_GATE_TIER!=off ∧ 非 mini）后调 run_evidence_anchor rootcause-followup；禁写进 run_evidence_anchor() 函数体(:761-795)否则自递归；不改门序/哈希锚/新增独立门。验收=VC-5(call 行号>FEND+guard 在位)。",
+      "verify": "VC-5(接线侧)",
+      "duration": "10min",
+      "granularity": "1f/15l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S9",
+      "phase": "P4",
+      "name": "消费门 POS/NEG fixture 实跑 + 门序不变核对",
+      "executor": "code-runner-agent(mini)",
+      "files": "findings.md",
+      "actions": "前置:S7+S8；VC-5 全命令实跑（POS fixture PASS / NEG 缺标记 rc=1 或 warn 档按配置）+ git diff 核对门序行号未移，落验证行",
+      "verify": "VC-5 + VC-7(部分)",
+      "duration": "15min",
+      "granularity": "1f/25l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S10",
+      "phase": "P5",
+      "name": "Rule 31.8② 交叉引用消歧一句",
+      "executor": "general-doc-processor(sonnet-1)",
+      "files": "skills/task-discipline/references/critical-rules-discipline.md",
+      "actions": "前置:S1；:91 Rule 31.8② 实例层禁擅自升规则条款内加一句交叉引用：修复类两段式的阶段二=用户本指令授权的独立任务（自身 Goal），不算实例层擅自升规则；阶段一仍守实例层",
+      "verify": "VC-6",
+      "duration": "10min",
+      "granularity": "1f/5l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S11",
+      "phase": "P5",
+      "name": "全量 selftest 回归 + 语法/validate + scope/部署位核对收口",
+      "executor": "code-runner-agent(mini)",
+      "files": "findings.md",
+      "actions": "前置:S2-S10；run-selftests.sh --fresh 逐 Total 行求和判 0 FAIL + bash -n 三脚本 + planctl validate + git status 部署位/schema 零改动，落验证行",
+      "verify": "VC-7 + VC-8 + VC-9",
+      "duration": "15min",
+      "granularity": "1f/30l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S12",
+      "phase": "P4",
+      "name": "selftest-evidence-anchor.sh 加 rootcause POS/NEG 常驻用例 + B12 断言",
+      "executor": "code-assistant(sonnet-1)",
+      "files": "skills/task-planner/scripts/selftest-evidence-anchor.sh",
+      "actions": "前置:S7+S8；仿 :8-39 EA-01..EA-20 范式追加 EA-21(POS 带标记+真 tag-add rc=0)/EA-22(NEG 无标记 rc=1)/EA-23(B12 在 --json 基线组)，禁改既有断言；末行 Total 由脚本自增。验收=VC-11 + VC-8。",
+      "verify": "VC-11 + VC-8",
+      "duration": "15min",
+      "granularity": "1f/60l/15min",
+      "parallel": "no"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "触发范围=仅「用户报错/改错/bug/回归」类修复请求强制两段式；新建/问答不强制；制度层诉求仍走 Rule 31.8 原路径。",
+      "rationale": "主进程裁决；避免把两段式泛滥到全部任务，制度层已有归因闭环承载。【R2 修订】本条窄口径已被 D1' 取代（Q1 审计：用户 #1「我希望就是解决以后解决问题都是这样子」「贯穿到整个任务的执行过程中」「排除以后所有的风险」为全覆盖授权，D1「仅修复类」收窄无逐字授权）；D1 原文保留供追溯，不再作为执行依据。"
+    },
+    {
+      "id": "D2",
+      "decision": "阶段一/阶段二=两个独立 task-id 的计划；用现成 tags + .tags-index.json 做双向登记（阶段一 rootcause-followup:<B-id>、阶段二 followup-of:<A-id>），零 schema 新字段；阶段二 task-id 命名 <A-id>-rc。",
+      "rationale": "主进程裁决；planctl tag-add 同步 plans/.tags-index.json 倒排索引，跨计划 O(1) 反查，无需动 schema。"
+    },
+    {
+      "id": "D3",
+      "decision": "阶段一必产两件登记物（不改源文件、避开 Rule 88.2③）：①根因线索包≤15行（现象/直接原因/根因假设/出错来源=哪个技能·规则·脚本·agent·门/本该拦住而未拦/同族波及面/规模预估/证据锚）；②根因后续任务已登记（阶段二计划目录+tag+INDEX pending）。",
+      "rationale": "主进程裁决；线索包是登记产物而非修复动作，规避射程扩张；两件可计数交付物分别落 R 化与 VC。"
+    },
+    {
+      "id": "D4",
+      "decision": "三驱动点逐文件增量（Rule 74 增量档，既有文字逐字保留）：①sync-todos.sh 基线组加 B12 + todo-sync.md 契约同步（B9-B11 属他会话禁撞号）；②SKILL.md 调度入口/plan-writer.md 加两段式判定 + split-pattern-library.md 新增 P13 + bugfix-type.md 根因 Phase 补交付物；③check-complete.sh EVIDENCE-ANCHOR GATE 扩 --source=rootcause-followup，校验线索包+tag 登记（或 N/A+证据），不改门序/哈希锚。动手前已 Read 全部锚点确认可行。",
+      "rationale": "主进程裁决；文本优先铁律对普通规则仍适用，但机制类步骤按 2026-11-24 用户裁决需驱动点。"
+    },
+    {
+      "id": "D5",
+      "decision": "阶段二启动=阶段一合并回 master 后立即用新 worktree（--base master）后台派发；失败/会话结束=保留 pending 由既有 task-resume 呈现，绝不影响阶段一 outcome。【R2 W5 可执行步骤，映射 VC-10】①执行者=阶段一主进程；②触发时点=阶段一 `git merge --no-ff wt/<A-id>` 完成且 VC 复验通过后同轮；③命令=`git worktree add <项目根>/tmp/worktrees/<A-id>-rc -b wt/<A-id>-rc master`，随后后台 Agent 派发 `<A-id>-rc` 计划；④失败口径=派发失败/会话结束仅在 plans/INDEX 与 tag 登记 pending（followup-of:<A-id>），由 task-resume 呈现，不改阶段一 outcome/不回滚。",
+      "rationale": "主进程裁决；实现用户「早合并不阻塞」诉求，主线 outcome 与根治解耦。"
+    },
+    {
+      "id": "D6",
+      "decision": "Rule 31.8② 边界：阶段一保持实例层；阶段二是用户本指令授权的独立任务（自身 Goal），不算实例层擅自升规则；在规则面加一句交叉引用消歧。",
+      "rationale": "主进程裁决；避免两段式被误判为违反实例层禁升规则条款。"
+    },
+    {
+      "id": "D7",
+      "decision": "合并风险预案：基线=master HEAD d9f68655；增量锚避开他 worktree 改动面（SKILL.md/todo-sync.md/sync-todos.sh/templates/task_plan.md 由 task-session-regression、task-todo-default-engine 在改；主仓未提交 init-session.sh/planctl.py/attest-plan.sh）；冲突延后 smart-merge-back 处理。",
+      "rationale": "主进程裁决；逐文件改动清单即冲突对照面，避免与他会话互相覆盖。"
+    },
+    {
+      "id": "D8",
+      "decision": "文本优先铁律仍适用普通规则；机制类步骤（B12/消费门）采用驱动点=【主进程设计选择】（依据跨会话记忆中的 2026-11-24 用户裁决，非 user-session-log.md #1 逐字原话），不再问「文本 or 机器门」，逐文件列改动交用户批准即可。",
+      "rationale": "审计 I7：user-session-log.md #1 无该逐字表述，禁止补录假原话；据实降级登记为主进程设计选择（跨会话记忆依据），待用户批准。task_plan Decisions 已同步；#1 理解镜像表述由主进程单写（Rule 80.7），已在 03-plan-writer.md R2 段列为 handoff 待办，plan-writer 禁改 user-session-log.md。"
+    },
+    {
+      "id": "D9",
+      "decision": "plan-writer 实证发现（D4 落点细化，不推翻）：--source=rootcause-followup 需同时改 check-complete.sh（调用点）与 check-evidence-anchor.sh（source 解析 + mode），只改前者会 rc=2 fail-open 变成空门；标记契约定为 findings.md 内 [rootcause-followup:PASS]+tag=rootcause-followup: 或 [rootcause-followup:N/A]+理由。",
+      "rationale": "Read 实证：check-evidence-anchor.sh:115 仅接受 coverage|goal|all，:121 未知参数 exit 2，run_evidence_anchor:771 rc=2 fail-open。"
+    },
+    {
+      "id": "D1'",
+      "decision": "【R2 新增·Q1 主进程裁决】触发面分级全覆盖（取代 D1 窄口径）：修复类请求=完整根因线索包 + 阶段二根治工作树；非修复类请求=阶段一可用产出 + 早合并，阶段二=独立「同族风险/隐患排雷」任务（无风险以 N/A + 证据收口）。B12 subject 统一改「根因/风险线索包已落盘 + 后续任务已登记（非修复类标 N/A + 证据）」。依据用户 #1 原话「排除以后所有的风险」「我希望就是解决以后解决问题都是这样子」「贯穿到整个任务的执行过程中」（user-session-log.md #1:43）。",
+      "rationale": "审计 Q1 指出 D1「仅修复类」收窄无授权；用户明确要求该思路「贯穿整个任务执行过程」，故升为分级全覆盖；D1 原文保留追溯面。"
+    },
+    {
+      "id": "D-AUDIT-STOP",
+      "decision": "按用户 2026-11-24 裁决停止审计循环：R2 复审因子代理崩溃终止，不再追加审计轮；质量门改为变异复演 + 全量 selftest 对照基线不增 FAIL + 实施后一次独立复核；D1 用户批准为最终放行门。",
+      "rationale": "memory no-worktree-excuse-stop-audit-loop-20261124.md；task-notification status=failed；progress 已留 plan-audit-R2-TERMINATED；R1 真问题已在 R2 修订"
+    },
+    {
+      "id": "D-B14-RENUMBER",
+      "decision": "并集解 master 并发提交 aa3a59a8（方案A五驱动点）已占用 B12=SP/OS技能到达收据、B13=Spec路由命中终判；本任务两段式驱动点由 B12 避让重编号为 B14（固定十四项 B1-B14），对方 B12/B13 原文逐字保留",
+      "rationale": "宪法§十一并发合并并集解；编号撞车若静默覆盖会毁掉对方已合入 master 的驱动点语义；用户核心诉求=两段式固化，B编号是实现细节，避让不收窄范围"
+    }
+  ],
+  "fmea": [
+    {
+      "id": "FM1",
+      "phase": "P2",
+      "mode": "B12 与他会话 B9-B11 在 sync-todos.sh:214 同处追加导致合并冲突或撞号",
+      "severity": 8,
+      "occurrence": 6,
+      "detection": 7,
+      "rpn": 336,
+      "fallback": "只加 B12 不碰 B9-B11；VC-1 断言 B1-B8+B12 全在；冲突延后 smart-merge-back 按 D7 预案人工逐条并线，禁整段回退。"
+    },
+    {
+      "id": "FM2",
+      "phase": "P2",
+      "mode": "todo-sync.md 固定清单措辞「八项 B1-B8」漏改，脚本与契约漂移",
+      "severity": 6,
+      "occurrence": 6,
+      "detection": 5,
+      "rpn": 180,
+      "fallback": "VC-2 grep B12+根因线索包+固定清单唯一事实源三锚；S2 与 S3 分离改与验。"
+    },
+    {
+      "id": "FM3",
+      "phase": "P3",
+      "mode": "SKILL.md 改动与他 worktree 冲突 / 行数断言(selftest)被撑破",
+      "severity": 7,
+      "occurrence": 6,
+      "detection": 6,
+      "rpn": 252,
+      "fallback": "增量 ≤10 行、行位替换优先；VC-4/VC-8 selftest 守护；冲突按 D7 延后合并处理。"
+    },
+    {
+      "id": "FM4",
+      "phase": "P4",
+      "mode": "新 source 只在 check-complete.sh 加调用、check-evidence-anchor.sh 未扩展 → rc=2 fail-open 空门",
+      "severity": 9,
+      "occurrence": 5,
+      "detection": 8,
+      "rpn": 360,
+      "fallback": "D9 明确双文件改；S7/S8/S9 三段分离；VC-5 POS/NEG fixture 必跑，NEG 未 FAIL 即回炉。"
+    },
+    {
+      "id": "FM5",
+      "phase": "P4",
+      "mode": "新调用点误改门序或哈希锚，触发全量 selftest 大面积 FAIL",
+      "severity": 8,
+      "occurrence": 4,
+      "detection": 8,
+      "rpn": 256,
+      "fallback": "S8 限定只在 :735-780 区加一行调用+注释；S9 git diff 核对门序行号；VC-8 全量回归兜底。"
+    },
+    {
+      "id": "FM6",
+      "phase": "P5",
+      "mode": "Rule 31.8② 交叉引用措辞引入「擅自升规则」歧义，被 critic 判越界",
+      "severity": 6,
+      "occurrence": 4,
+      "detection": 5,
+      "rpn": 120,
+      "fallback": "措辞限定「阶段二=用户本指令授权的独立任务（自身 Goal）」；VC-6 grep + 独立审计门复核。"
+    }
+  ],
+  "research": [
+    {
+      "id": "RS-1",
+      "claim": "根因/防复发条款已完备：Rule 31.1-31.8（task-discipline critical-rules-discipline.md:79-91）+ Rule 33/36.2/102.0；触发面在 SKILL.md:182/284。缺口不在「没有归因规则」，而在「修复类任务没有把归因产物登记为必选动作且早合并拆分」。",
+      "source": "subagent-state/01-general-analyst.md:8-21（Q1）"
+    },
+    {
+      "id": "RS-2",
+      "claim": "轻量档/改回错值属实例层小改；本仓 skills/ 为保护区使 trivial 失效、回落 L1；本计划显式 L2/standard。",
+      "source": "subagent-state/01-general-analyst.md:23-33（Q2）"
+    },
+    {
+      "id": "RS-3",
+      "claim": "每次必发生驱动点唯一落点=sync-todos.sh:200-214 基线组 B1-B8 + todo-sync.md:34-40 契约；B9-B11 被 he session 占用，故新项=B12。",
+      "source": "subagent-state/01-general-analyst.md:35-40（Q3）"
+    },
+    {
+      "id": "RS-4",
+      "claim": "阶段二塞进阶段一命中 Rule 88.2③（发现的问题改登记+报告）、74.2/74.3（须标注表且默认增量）、87.4①（只改必须改处）；需新 R 行/显式授权建新计划才合法。",
+      "source": "subagent-state/01-general-analyst.md:42-49（Q4）"
+    },
+    {
+      "id": "RS-5",
+      "claim": "拆模式库 P1-P12 无二阶段模式（P12 仅静态域并行，无「早合并→新 worktree 根治」时序）；根因 Phase 仅 bugfix-type.md:85 有、rule-enhancement 无；合并回权威步骤 worktree-isolation.md:50-84 + smart-merge-back.sh，但「合并后再开第二 worktree 承载根治」NONE FOUND。",
+      "source": "subagent-state/02-general-analyst.md:10-27/61-63/39-53"
+    },
+    {
+      "id": "RS-6",
+      "claim": "不新增 schema 字段的最小手段=tags + plans/.tags-index.json 倒排索引（planctl.py:1055 tag-add/:757 tag_index_path 位于 <plan-dir>/../）；消费门最合适落点=EVIDENCE-ANCHOR GATE（:735/:769，已按 --source 扩展），新建专用门需改门序+哈希锚成本高。",
+      "source": "subagent-state/02-general-analyst.md:27-37/65-96"
+    },
+    {
+      "id": "RS-7",
+      "claim": "plan-writer 实证：check-evidence-anchor.sh:115 仅接受 coverage|goal|all、:121 未知参数 exit 2、:509-514 dispatch 只两支；check-complete.sh:769 传 --source=$src、:771 rc=2 fail-open。故第三 source 必须双文件改，否则空门。",
+      "source": "plan-writer 本次 Read 实证（check-evidence-anchor.sh:112-125/509-531, check-complete.sh:735-780）"
+    },
+    {
+      "id": "RSC-R2",
+      "claim": "R2 审计子代理运行时崩溃未落盘；主进程盘上复核 planctl validate=PASS，D1-prime/VC-10/VC-11/CHG-10/CHG-11/B12/rootcause-followup 锚全在位，理解镜像更正已追加。R1 的 1C+7I 由 R2 逐条修订，VC-5 未实施态 rc=1 判别性实证成立。",
+      "source": "subagent-state/03-plan-writer.md R2 段; 04-critic-audit.md; planctl validate stdout"
+    }
+  ],
+  "knowledge_use": [
+    {
+      "id": "KU-1",
+      "phase": "P1",
+      "source": "subagent-state/01-general-analyst.md §Q1-Q4",
+      "purpose": "根因/防复发条款与归因链事实源，冻结改动基线禁重复定位"
+    },
+    {
+      "id": "KU-2",
+      "phase": "P1",
+      "source": "subagent-state/02-general-analyst.md §Q1-Q5",
+      "purpose": "拆分模式/schema/worktree/模板/门序五问结论，锁定零新字段与落点"
+    },
+    {
+      "id": "KU-3",
+      "phase": "P2",
+      "source": "knowledge-brief.md §3 锚点表 sync-todos.sh/todo-sync.md 行",
+      "purpose": "S2/S3 精确定位 B12 插入点与契约同步面"
+    },
+    {
+      "id": "KU-4",
+      "phase": "P4",
+      "source": "knowledge-brief.md §2/§4 source 解析与 fail-open 事实",
+      "purpose": "S7-S9 双文件改与 POS/NEG 标记契约，防空门"
+    },
+    {
+      "id": "KU-5",
+      "phase": "P5",
+      "source": "knowledge-brief.md §4 易错点 6-8（合并预案/射程/门序）",
+      "purpose": "S10/S11 消歧措辞与全量回归免踩坑"
+    }
+  ],
+  "changes": [
+    {
+      "id": "CHG-1",
+      "object": "skills/task-planner/scripts/sync-todos.sh @ :200-214",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R1/R5 只改表层不查根因",
+      "basis": "01-analyst Q3; D4①",
+      "action": "B8 行(:214)补逗号后追加 B12 subject=「根因/风险线索包已落盘+后续任务已登记（非修复类标 N/A+证据）」；:201-204 注释 B1-B8→含 B12；B9-B11 属他会话禁占、合并后若存在须全保留(W3)。验收命令=VC-1。"
+    },
+    {
+      "id": "CHG-2",
+      "object": "skills/task-planner/references/todo-sync.md @ :34-40",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R1/R3 调度阶段就解决",
+      "basis": "01-analyst Q3; D4①",
+      "action": "S1 两组结构第1/2/3/4/5/6项同步 B12（固定清单/生命周期/门禁挂钩/丢失重建/mini 口径/唯一事实源）；禁改 B1-B11 既有文字。验收命令=VC-2。"
+    },
+    {
+      "id": "CHG-3",
+      "object": "skills/task-planner/SKILL.md @ lane 无关段(:37 计划制作循环 或 :266 用户新指令处理，强制块) + :98-107 保留入口指针",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R3/R8 调度技能贯穿执行",
+      "basis": "02-analyst Q3; D4②",
+      "action": "两段式拆分判定文本写入 SKILL.md 的 lane 无关强制段（不用 :98-107 的「初始化首动作委派(L1+)」块——该块 :105 明示豁免 L0/mini/trivial/L0-E 会让「只改一个数据」逃逸）；:98-107 仅保留一行指针「修复类请求两段式判定见<lane无关段>」。明文规定「修复类命中 L0/mini/trivial/L0-E 一律先升 L1 standard 复核，再走两段式」。净增≤10行、行位替换优先。验收=VC-3+VC-10。"
+    },
+    {
+      "id": "CHG-4",
+      "object": "skills/task-planner/companion/agents/plan-writer.md @ :37-47",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R3/R8",
+      "basis": "SKILL.md:100; D4②",
+      "action": "「掌握的技能」增一条修复类请求两段式判定（两个独立计划+线索包+tag 登记+阶段二）。验收命令=VC-3。"
+    },
+    {
+      "id": "CHG-5",
+      "object": "skills/task-dispatch/references/split-pattern-library.md @ :118 后/:120 前",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R4/R6/R7 两阶段+早合并",
+      "basis": "02-analyst Q1 NONE FOUND; D4②",
+      "action": "新增 P13 两段式修复模式（判据/步骤/反例/消费时机/来源/关联），逐字保留 P1-P12。验收命令=VC-4。"
+    },
+    {
+      "id": "CHG-6",
+      "object": "skills/task-planner/templates/variant/bugfix-type.md @ :85-91",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R2/R4 根因排查防复发",
+      "basis": "02-analyst Q4; D4②",
+      "action": "Phase 2 根因定位追加两条 checkbox=根因线索包≤15行 + 根因后续任务已登记；既有四条逐字保留。验收命令=VC-4。"
+    },
+    {
+      "id": "CHG-7",
+      "object": "skills/task-planner/scripts/check-evidence-anchor.sh @ :112-125/:509-514",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R5 确保排除风险",
+      "basis": "D9 实证; D4③",
+      "action": ":115 case 加 --source=rootcause-followup；:117/:121 用法同步；新增真实 rootcause mode（awk 抽 findings 标记 [rootcause-followup:PASS] 或 [rootcause-followup:N/A]+理由，并读 <plan-dir>/../.tags-index.json 校验 rootcause-followup: tag 已由真 planctl tag-add 登记；无标记/无 tag 均 exit 1）；:509-514 dispatch 增分支；禁改门序/哈希锚。零逻辑 arg-case-only 须被 VC-5 NEG fixture 拦下。验收命令=VC-5。"
+    },
+    {
+      "id": "CHG-8",
+      "object": "skills/task-planner/scripts/check-complete.sh @ 新增受控调用块(仿 :1063-1064 coverage/:1839-1841 goal guard 形态)，非 :761-795 函数体",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R5/R8",
+      "basis": "D4③; D9",
+      "action": "EVIDENCE-ANCHOR GATE 段新增【独立受控调用块】，完全仿照 :1063-1064(若 VC_GATE_TIER!=off 且非 mini)与 :1839-1841(plan_tier standard|full)的 guard 形态：if [ \"$VC_GATE_TIER\" != off ] && [ \"${PLAN_TIER_MINI:-0}\" != 1 ]; then run_evidence_anchor rootcause-followup; fi；严禁把调用写进 run_evidence_anchor() 函数体(:761-795)内否则自递归；门序/哈希锚/C-2 四元键零改动。验收=VC-5(位置断言 call 行号>FEND 且受 guard)。"
+    },
+    {
+      "id": "CHG-9",
+      "object": "skills/task-discipline/references/critical-rules-discipline.md @ :91",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R4 制度层根治",
+      "basis": "01-analyst Q4; D6",
+      "action": "Rule 31.8② 实例层禁升规则句后加一句交叉引用消歧（阶段二=用户授权独立任务/自身 Goal，不算擅自升规则；阶段一守实例层）。验收命令=VC-6。"
+    },
+    {
+      "id": "CHG-10",
+      "object": "skills/task-discipline/references/critical-rules-discipline.md @ :749-751 Rule 106.5 通用基线组枚举",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R3/R8 调度技能贯穿执行",
+      "basis": "W1 审计; 他会话 task-session-regression worktree :753 同规则族改动面",
+      "action": "Rule 106.5 的通用基线组枚举「B1-B8（…B8 worktree 隔离核验）」逐字保留后追加 B12「根因/风险线索包已落盘+后续任务已登记」（与 todo-sync.md 措辞一致）；门禁挂钩句同步补 B12 未勾=不得声称完成。该文件与他 worktree task-session-regression(:753) 同文件改动面已登记 D7/KQ-2 合并预案，冲突延后 smart-merge-back 逐条并线。验收命令=VC-2(扩 grep)。"
+    },
+    {
+      "id": "CHG-11",
+      "object": "skills/task-planner/scripts/selftest-evidence-anchor.sh（新增，EA-21/EA-22 rootcause 常驻用例 + B12 断言）",
+      "type": "增量",
+      "absorb": "纳入",
+      "quote": "R5 确保排除以后所有风险",
+      "basis": "I5 审计; rule-enhancement 模板 feature=消费侧门控与 selftest 守护; 既有 EA-01..EA-20 范式(:2-39)",
+      "action": "在既有 EA-01..EA-20 之后追加 EA-21 rootcause POS 常驻用例(带标记+真 planctl tag-add→rc=0)、EA-22 rootcause NEG 用例(无标记→rc=1)、EA-23 断言 sync-todos.sh --json 基线组含 B12（复用 :8-14 mktemp 夹具范式，不改既有断言）；纳入 VC-8 全量 selftest 汇总。验收命令=VC-8 + VC-11。"
+    },
+    {
+      "id": "CHG-12",
+      "action": "【实施期质量门配套·范围延伸登记】S5 新增 P13 后 selftest-split-pattern-library.sh 的 SP-02(模式数)/SP-11(贡献行) 硬编码 12 需递推为 13（仿 v151/v153 级联先例），否则该 selftest FAIL=2，违反 D-AUDIT-STOP『全量 selftest 不增 FAIL』门。此文件不在原 CHG-1..11 清单，属不增 FAIL 门必需配套（纯钉值常量+注释，零逻辑变更）。VC-9 ALLOW 清单同步纳入第 11 文件。",
+      "object": "",
+      "type": "",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    },
+    {
+      "id": "CHG-13",
+      "object": "skills/task-planner/scripts/check-complete.sh",
+      "type": "fix",
+      "action": "C-1: rootcause guard 判据读本计划plan-state.json替代共享.tags-index.json,消除跨计划误拦回归",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    },
+    {
+      "id": "CHG-14",
+      "object": "skills/task-planner/scripts/check-evidence-anchor.sh",
+      "type": "fix",
+      "action": "W-5: rootcause mode 无findings.md由SKIP(fail-open)改FAIL(fail-closed)",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    },
+    {
+      "id": "CHG-15",
+      "object": "skills/task-planner/scripts/selftest-evidence-anchor.sh",
+      "type": "fix",
+      "action": "W-4: EA-21 fixture 去掉手工printf findings.md,改由planctl render从plan-state.json派生,覆盖真实producer→render→gate链路",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    },
+    {
+      "id": "CHG-16",
+      "object": "SKILL.md + plan-writer.md + split-pattern-library.md + bugfix-type.md + todo-sync.md",
+      "type": "text",
+      "action": "I-2: 五处生产文档补明根因线索包须写[rootcause-followup:PASS]线索包已落盘(N/A+理由)字面标记,禁只登记tag不写标记",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    },
+    {
+      "id": "CHG-17",
+      "object": "skills/task-planner/SKILL.md",
+      "type": "text",
+      "action": "W-3: 原生Todo同步段 B1-B11→B1-B12 并补B12完成口径(仅修清单内文件;模板task_plan.md/task-discipline/SKILL.md陈旧引用作遗留披露)",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    },
+    {
+      "id": "CHG-18",
+      "object": "sync-todos.sh + todo-sync.md + SKILL.md + selftest-evidence-anchor.sh",
+      "type": "merge",
+      "action": "master并发合入后并集解: 我方两段式驱动点 B12→B14（基线十四项/证据函数baseline_b14_receipt/命令check-evidence-anchor --source=rootcause-followup/EA-23断言B14+对方B12B13保留）",
+      "absorb": "",
+      "quote": "",
+      "basis": ""
+    }
+  ],
+  "scope_limits": [
+    {
+      "id": "SC-1",
+      "category": "源码（允许=逐文件改动清单 CHG-1..CHG-9 九文件；禁止=其他）",
+      "allow": [
+        "skills/task-planner/scripts/sync-todos.sh",
+        "skills/task-planner/references/todo-sync.md",
+        "skills/task-planner/SKILL.md",
+        "skills/task-planner/companion/agents/plan-writer.md",
+        "skills/task-dispatch/references/split-pattern-library.md",
+        "skills/task-planner/templates/variant/bugfix-type.md",
+        "skills/task-planner/scripts/check-evidence-anchor.sh",
+        "skills/task-planner/scripts/check-complete.sh",
+        "skills/task-discipline/references/critical-rules-discipline.md",
+        "skills/task-planner/scripts/selftest-evidence-anchor.sh"
+      ],
+      "deny": [
+        "其他 skills/ 文件",
+        ".plan_schema 任何字段"
+      ]
+    },
+    {
+      "id": "SC-2",
+      "category": "计划文档（planctl 管理的 4 MD + knowledge-brief.md）",
+      "allow": [
+        "plans/task-two-stage-fix-20261124/plan-state.json",
+        "plans/task-two-stage-fix-20261124/task_plan.md",
+        "plans/task-two-stage-fix-20261124/findings.md",
+        "plans/task-two-stage-fix-20261124/progress.md",
+        "plans/task-two-stage-fix-20261124/verification.md",
+        "plans/task-two-stage-fix-20261124/knowledge-brief.md"
+      ],
+      "deny": [
+        "user-session-log.md（主进程已写，禁改）",
+        "verification.md 手工 Edit（派生视图）"
+      ]
+    },
+    {
+      "id": "SC-3",
+      "category": "不做什么（禁止动作清单）",
+      "allow": [],
+      "deny": [
+        "不修任何具体 bug 现场（本任务只固化机制，不碰 bug 实例）",
+        "不部署、不碰部署位（~/.zcode|~/.claude|~/.agents|~/.config/opencode 等 skills 副本）",
+        "不新增/不改 schema 字段（零新字段，用 tags + .tags-index.json）",
+        "不跑 init-session.sh / attest-plan.sh / set-active-plan.sh / plan-created.cjs",
+        "不建 worktree（本任务只产出计划，实施由后续阶段在 worktree）",
+        "不改门序/哈希锚、不新增独立机器门",
+        "不占 B9-B11（他会话 task-session-regression 占用）",
+        "不手工 Edit 4 个派生 MD 视图"
+      ]
+    }
+  ],
+  "key_questions": [
+    {
+      "id": "KQ-1",
+      "question": "消费门 --source=rootcause-followup 需要改几个文件？",
+      "answer": "两个（D9 实证）：check-evidence-anchor.sh 扩 source 解析+mode，check-complete.sh 在 EVIDENCE-ANCHOR GATE 区加调用点；只改后者会 rc=2 fail-open 成空门。"
+    },
+    {
+      "id": "KQ-2",
+      "question": "合并回冲突预案（D7）",
+      "answer": "基线=master HEAD d9f68655；本计划 CHG-1..11 增量锚已避开主仓未提交 init-session.sh/planctl.py/attest-plan.sh；重叠面=SKILL.md/todo-sync.md/sync-todos.sh（task-session-regression、task-todo-default-engine）+ critical-rules-discipline.md（CHG-9 Rule31.8② :91 与 CHG-10 Rule106.5 :749-751；他 worktree task-session-regression 在同文件 :753 改 Rule106.5）——①独立 worktree 按逐文件改动清单做增量、禁整段回退；②冲突延后 smart-merge-back.sh 逐条并线（禁 add -A/整文件覆盖）；③合并后 VC-1..VC-11 全量复跑；④主仓未提交的 4 文件不在本任务范围，禁触碰。"
+    },
+    {
+      "id": "KQ-3",
+      "question": "本次任务是否套用两段式？",
+      "answer": "否。本任务是制度层机制固化（Rule 31.8 原路径），D1 仅报错/改错/bug/回归类修复请求强制两段式；本计划本身走单计划 L2/standard。"
+    }
+  ],
+  "template_type": "rule-enhancement",
+  "isolation": {
+    "conflict": "risk（D7：9 文件中 3 文件与他 worktree 重叠；主仓未提交 init-session.sh/planctl.py/attest-plan.sh 不属本任务）",
+    "path": "direct（本任务只写 plan-state.json/4 派生 MD/knowledge-brief.md，纯文档计划期；实施阶段另起 worktree）",
+    "branch": "n/a（计划期直接在 master 的计划目录写文档；实现类 S-unit 执行时按宪法 §十一另建 wt/<task-id>）",
+    "merge_back": "pending（实施阶段完成后按 D7 预案 smart-merge-back；本计划当前仅文档）"
+  },
+  "next_step": "D1 已显式批准；按 P1→P5 在独立 worktree 实施 CHG-1..11；审计门按 D-AUDIT-STOP 停审，质量门三项。",
+  "todo_sync": [
+    {
+      "id": "T-P1",
+      "trigger": "Phase 1",
+      "action": "☐ pending — P1 开工时同步 S1 一条 in_progress + 其余 pending（sync-todos.sh --json 带出 B1-B12，B12 标 N/A 因本计划非修复类）"
+    },
+    {
+      "id": "T-P2",
+      "trigger": "Phase 2",
+      "action": "☐ pending — 含 B12 首度生效核对；契约明文 B12 在 mini/L0 口径=N/A 也要有证据(写 findings 一行)，修复类 L0/mini/trivial 升 L1 复核(与 CHG-2/CHG-3 同步)。"
+    },
+    {
+      "id": "T-P3",
+      "trigger": "Phase 3",
+      "action": "☐ pending"
+    },
+    {
+      "id": "T-P4",
+      "trigger": "Phase 4",
+      "action": "☐ pending"
+    },
+    {
+      "id": "T-P5",
+      "trigger": "Phase 5",
+      "action": "☐ pending — 终态全部 todo 终结 + sync-todos.sh --index 刷新 INDEX"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-AR1",
+      "phase": "P1",
+      "text": "[plan-audit-R1] 审计体=critic verdict=REJECTED C=1 I=7 W=5 Q=1 keys=C1,I1,I2,I3,I4,I5,I6,I7,W1,W2,W3,W4,W5,Q1; 检查点=subagent-state/04-critic-audit.md; 处理=打回 Plan Writer 修正后复审",
+      "at": "2026-11-23T21:48:42Z"
+    },
+    {
+      "id": "A-AR2",
+      "phase": "P1",
+      "text": "[plan-audit-R2-TERMINATED] 审计体=critic R2 未落盘（运行时退出）；主进程盘上复核计划完整；按用户裁决停审，质量门改三项；待 D1 用户批准。",
+      "at": "2026-11-23T22:33:10Z"
+    },
+    {
+      "id": "A-D1-APPROVE",
+      "phase": "P1",
+      "text": "[D1-EXPLICIT-APPROVE] 用户显式回复 yes 批准已展示计划（非 goal 模式，SKILL.md:133）。Goal 绑定：G1=两段式拆分的调度默认形态落地（写进 SKILL.md 调度入口/plan-writer/拆分模式库 P13/bugfix 模板 Phase 2）；G2=每修复类任务必发生的两个驱动点（sync-todos B12+todo-sync 登记驱动 / check-evidence-anchor+check-complete 的 --source=rootcause-followup 消费门）；G3=不越界且不部署（不改 bug 现场/部署位/schema，改动严格落清单，合并预案明确）。服务用户指令=user-session-log.md #1 原话摘录：『我希望就是解决以后解决问题都是这样子，解这种思路』『先快刀解决问题…再开一个新的分支，新的一个工作书，然后从底层再去挖掘排雷』『贯穿到整个任务的执行过程中』。确认时间=2026-11-23T23:58:35Z",
+      "at": "2026-11-23T23:58:35Z"
+    },
+    {
+      "id": "A-IMPL-DISPATCH-1",
+      "phase": "P1",
+      "text": "[impl-dispatch] 用户 D1 yes 后在 worktree wt/task-two-stage-fix-20261124（基线 b7cf0ff5，基线 ref 已建）并行派发 5 个互不重叠文件组：S2(sync-todos.sh+todo-sync.md)/S4(SKILL.md+plan-writer.md)/S5(split-pattern-library.md+bugfix-type.md)/S7(check-evidence-anchor.sh)/S10(critical-rules-discipline.md)。S8/S12 依赖 S7 后置。校验口径：VC-1..11 命令写死主仓路径，worktree 内即时验证用等价 worktree 路径；正式 VC-1..11 在合并回 master 后于主仓跑。质量门按 D-AUDIT-STOP=变异复演+selftest 不增 FAIL+一次独立复核。",
+      "at": "2026-11-24T00:02:02Z"
+    }
+  ],
+  "root_causes": [
+    {
+      "id": "RC-NA",
+      "process": "不适用（本任务为制度机制建设、非结果级 bug）",
+      "defect": "本任务产出=机制/载体增量（B12 基线项、lane 无关两段式判定、--source=rootcause-followup 消费门、selftest 守护），非某个具体结果级缺陷的逐工序修复链；无单实例 RCA 可列。",
+      "fix": "以 R1-R8 逐字需求锚 + VC-1..VC-11 可执行命令 + FMEA 6 行兜底替代结果级逐工序覆盖（Rule 53.1 定性豁免登记）。",
+      "vc": "VC-1..VC-11"
+    },
+    {
+      "id": "RC-SELFTEST-REGRESSION",
+      "defect": "S8 接入 rootcause 消费门后 selftest-evidence-anchor EA-17 回归（FAIL 0→1）：S7 的 rootcause mode 对 findings.md 缺失返回 exit 1，而 EA-17 是非修复类干净夹具、无 findings.md，被 enforce 档误拦。",
+      "process": "修复前实测 selftest-evidence-anchor Total PASS=28 FAIL=1，EA-17 stderr 含 source=rootcause-followup 的 EVIDENCE-ANCHOR FAILED；make_fixture 构造无 findings.md。",
+      "fix": "rootcause mode 在 findings.md 文件不存在时 SKIP(rc=0，非两段式计划门不适用)；findings.md 存在但无标记仍 FAIL(rc=1，保持 VC-5 NEG/EA-22)。派 Code Assistant 修复中，待三方向 fixture + EA-17 复验。",
+      "vc": "VC-8（不增 FAIL）+ VC-5（POS/NEG 双向）"
+    },
+    {
+      "id": "RC-SPLIT-SELFTEST",
+      "defect": "S5 新增 P13 后 selftest-split-pattern-library.sh SP-02/SP-11 硬编码模式数=12 误判新增合法模式，FAIL=2。",
+      "process": "全量 selftest 对照基线时发现 split-pattern-library selftest rc=1；单跑定位 SP-02 模式数13应12 / SP-11 贡献行13应12。",
+      "fix": "钉值 12→13 + 注释说明 P13（v151/v153 级联先例），SP-02/SP-11 复验 FAIL=0；登记 CHG-12 范围延伸。",
+      "vc": "VC-8（不增 FAIL）"
+    },
+    {
+      "id": "RC-C1-TAGSINDEX",
+      "process": "独立复核发现的第三处回归",
+      "defect": "S8 guard 读 <plan-dir>/../.tags-index.json(跨计划共享倒排索引)作为本计划两段式判据: 任一计划登记rootcause-followup tag → 同workspace所有无关计划终验命中guard → 无findings标记 → enforce exit 1，违背不阻塞下游目标",
+      "fix": "check-complete.sh guard 改读本计划plan-state.json权威源(planctl add/tag-add写入)，共享索引仅运行期加速不作身份判据; check-evidence-anchor.sh SKIP改fail-closed; 五处生产文档补明[rootcause-followup:PASS]字面标记契约; EA-21 fixture改依赖真render链路",
+      "vc": "VC-8"
+    }
+  ],
+  "understanding": {
+    "original": "user-session-log.md #1 逐字：只改个例表层不查根因；调用的技能缺陷未修致下次再犯；先快修表层→立即合并回主分支→新 worktree/新分支从底层排雷、并行不阻塞；贯穿整个任务执行过程。",
+    "model": "R2 修订(Q1)：触发面=分级全覆盖——修复类=完整根因线索包+阶段二根治；非修复类=阶段一可用产出+早合并，阶段二=独立同族风险/隐患排雷(无风险 N/A+证据)。B12=根因/风险线索包已落盘+后续任务已登记。",
+    "options": "A(采用)=两独立 task-id 计划 + tags 双向登记 + 三驱动点(B12/入口与模式库/消费门) + selftest 守护；B=纯文本条款(违「确保执行方正确执行」不选)；C=同一 worktree 先后 Phase(拖住合并不选)。",
+    "direction": "定位(R1 审计回收)→逐文件改动清单 CHG-1..11 + VC-1..11→独立审计 R1 REJECTED→R2 增量修订(C1/I1-I7/W1-W5/Q1)→主进程 D1 批准 + critic 复审→worktree 实施→全量回归→合并。D8 驱动点据实登记为「主进程设计选择(跨会话记忆 2026-11-24 裁决，非 #1 逐字原话)」；user-session-log.md #1 理解镜像表述由主进程单写同步(plan-writer 禁改)。"
+  },
+  "test_results": [
+    {
+      "id": "TR-IMPL-1",
+      "phase": "P2",
+      "test": "worktree 即时验证 S2/S5/S10 的 VC-1/2/4/6/10 锚点",
+      "expected": "B12 在 --json 基线组；todo-sync/P13/bugfix/31.8 消歧锚全在；VC-10 四锚合集命中",
+      "actual": "PASS：VC-1 B12 subject 含线索包且 B1-B8+B9-B11 全在(子代理实测)；VC-2 B12+线索包+N/A+升L1 命中；VC-4 P13+两 checkbox 命中且 selftest-template-lifecycle PASS=24 FAIL=0；VC-6 两段式消歧在位；VC-10 四锚合集全命中",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "TR-IMPL-2",
+      "phase": "P4",
+      "test": "主进程独立验证 S4 调度入口 + S7 消费门脚本侧（不采信子代理自报）",
+      "expected": "VC-3/VC-10 调度四锚齐；VC-5 脚本侧真 mode 非空壳",
+      "actual": "PASS：VC-3 两段式在 SKILL.md+plan-writer.md 命中；VC-10 六锚(合并回master/--base master/不阻塞/pending/followup-of:/rootcause-followup:)合集全命中；S7 --source=rootcause-followup 解析在位、真 mode 计数=4(非空壳)、bash -n OK；S7 子代理实测 POS=0/NEG=1",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "TR-IMPL-3",
+      "phase": "P4",
+      "test": "主进程独立实测 rootcause 消费门 POS/NEG 双向（真 planctl fixture）",
+      "expected": "POS rc=0 / NEG rc=1；tag 索引落 plan-dir 父目录",
+      "actual": "PASS：find 确认 .tags-index.json 落在 <plan-dir>/../；POS=0 (marker+线索包+tag registered)；NEG=1 (no marker)。非空门实证，R1 C1 已消除",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "TR-IMPL-4",
+      "phase": "P4",
+      "test": "主进程独立验证 S8 check-complete 受控调用块（VC-5 接线侧）",
+      "expected": "调用函数体在 run_evidence_anchor() 之外且受 guard 保护；bash -n OK",
+      "actual": "PASS：FSTART=761 FEND=795 call=1073 >FEND(POSITION-OK)；guard=VC_GATE_TIER!=off && PLAN_TIER_MINI!=1(GUARD-OK)；bash -n OK；未改门序/哈希锚/函数体",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "TR-VC-ALL",
+      "phase": "P5",
+      "test": "worktree 稳定态实跑 VC-1..7/9/10/11（正式 VC-8 待全量 selftest）",
+      "expected": "VC-1..7/9/10/11 全 PASS，改动集合 ⊆ 清单（含 CHG-12 第11文件）",
+      "actual": "PASS：VC-1 B12基线组；VC-2 todo-sync契约；VC-3 调度入口；VC-4 P13+模板；VC-5 POS=0/NEG=1+位置(call1085>func761-795)+guard；VC-6 31.8消歧；VC-7 bash-n+validate PASS；VC-9 改动集11文件全在清单(for分词修正原命令printf-grep-x缺陷)；VC-10 六锚；VC-11 EA-21/22/23+selftest FAIL=0。EA-17 回归已消除(FAIL=0)，split selftest SP-02/11 钉值12→13(FAIL=0)",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "TR-FINAL4-SELTEST",
+      "test": "bash skills/task-planner/scripts/run-selftests.sh --fresh (修复后干净串行)",
+      "expected": "FAIL数≤基线2且失败集合⊆基线{batch-pilot,split-pattern-library}",
+      "actual": "Total 106 PASS=105 FAIL=1; Failed: selftest-batch-pilot(基线预存); split-pattern-library由CHG-12修复转PASS,净减1",
+      "status": "PASS",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "TR-C1-PROBE",
+      "test": "C-1 跨计划隔离复演: pA登记rootcause tag+共享索引命中, pB无标记",
+      "expected": "新guard不污染pB",
+      "actual": "共享索引含tag=1行; pB plan-state.json无rootcause-followup → 新guard不命中(旧guard会命中共享索引)",
+      "status": "PASS",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "TR-W5-PROBE",
+      "test": "W-5 fail-closed复演: 两段式计划缺findings.md",
+      "expected": "rc=1",
+      "actual": "[evidence-anchor] rootcause-followup: FAIL (强制文件缺失不可SKIP) rc=1",
+      "status": "PASS",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "TR-EA-SP-AFTER",
+      "test": "selftest-evidence-anchor + selftest-split-pattern-library (修复后)",
+      "expected": "EA PASS=29 FAIL=0 / SP PASS=13 FAIL=0",
+      "actual": "EA-21真render链路PASS(不再手工printf)+EA-22 NEG rc=1+EA-23 B12断言; SP-02/11钉值13; 两脚本FAIL=0",
+      "status": "PASS",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "TR-VC-FINAL",
+      "test": "VC-1..11 主仓逐条实跑",
+      "expected": "11条全PASS(VC-5/8/9按已登记决定重解释)",
+      "actual": "VC-1/2/3/4/6/7/10/11原始PASS; VC-5 POS=0 NEG=1真门实跑PASS; VC-8 106 PASS=105 FAIL=1≤基线2同集合; VC-9 11文件零越界; 合计11/11 PASS",
+      "status": "PASS",
+      "phase": "",
+      "input": ""
+    }
+  ]
+}

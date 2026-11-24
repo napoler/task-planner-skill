@@ -2,7 +2,7 @@
 # Findings: task-cli-help-examples-20261122
 
 - task_id: `task-cli-help-examples-20261122`
-- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z
+- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T14:07:26Z
 
 ## Requirements
 - CLI help（--help / 子命令 help）提供更完善可照抄示例：典型工作流、副作用、退出码、参数说明
@@ -23,6 +23,8 @@
 - planctl.py 主 parser @1861-1869 epilog 仅一行；add_cmd @1871-1875 不传 formatter；19 子命令无示例；docstring @3-20 有可复用契约 — Explore agent 5e87503c
 - SKILL.md 用法散落无端到端示例/正反例/决策表；examples.md 仅两条 phase-done+render；references/docs 无脚本文档 — Explore agent d934b87f
 - 13 处 SKILL.md 副本仅源仓+~/.agents+~/.claude+~/.cursor+~/.zcode 五处三文件 md5 全一致 — Explore agent d934b87f
+- P4 并发漂移实证（W-18 成真）：执行期 master 从 aff89a9 前进 4 commit 到 3d964e6（git-rework-guard 改 SKILL.md 4.5 节+两模板），旧基座直接部署会回滚并发内容且 VC-5 worktree 源自比假通过 — git rev-list --left-right --count master...HEAD=4 0; git show 613c2fd
+- 处置闭环：worktree 提交 4 目标文件→rebase master（HEAD=a52b9e5,0 1）→VC-1/2/3/4/7 重验 PASS + VC-6 selftest 104/96/8 NEW_FAIL=[]→merge --no-ff fcc025c→部署源用主树路径（D5） — git rebase/merge 输出 + run-selftests --fresh 实测
 
 ## Technical Decisions
 | Decision | Rationale |

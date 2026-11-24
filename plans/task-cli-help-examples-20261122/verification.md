@@ -2,7 +2,7 @@
 # Verification: task-cli-help-examples-20261122
 
 - task_id: `task-cli-help-examples-20261122`
-- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z
+- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T14:07:26Z
 
 ## Goal (1 sentence)
 - 两个 CLI 的 help 输出含可照抄示例 + 副作用/退出码/参数说明，实测 help 可见

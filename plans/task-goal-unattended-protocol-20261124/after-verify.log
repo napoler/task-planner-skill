@@ -1,0 +1,32 @@
+[verify] ✓ canonical source exists at /mnt/data/dev/task-planner-skill/skills/task-planner (git repo)
+[verify] ✗ claude-code deploy drift: full-copy SKILL.md differs from canonical (/home/terry/.claude/skills/task-planner)
+[verify] ✓ zcode deploy = physical full copy, deploy matches canonical (全量副本模型)
+[verify] ✗ opencode deploy drift: full-copy SKILL.md differs from canonical (/home/terry/.config/opencode/skills/task-planner)
+[verify] ✗ cursor deploy drift: full-copy SKILL.md differs from canonical (/home/terry/.cursor/skills/task-planner)
+[verify] ✓ claude-code scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ zcode scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ opencode scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ cursor scripts: canonical scripts/full copy — hardcoded-path scan N/A
+[verify] ✓ claude-code SKILL.md = canonical full copy (88946 bytes, full-copy deploy)
+[verify] ✓ zcode SKILL.md = canonical full copy (90477 bytes, full-copy deploy)
+[verify] ✓ opencode SKILL.md = canonical full copy (88946 bytes, full-copy deploy)
+[verify] ✓ cursor SKILL.md = canonical full copy (87970 bytes, full-copy deploy)
+[verify] ✓ check-complete.sh runs OK
+[verify] ✓ check-doc-sync.sh runs OK (exit=2)
+[verify] ✓ external references migrated to env-var form
+[verify] ✓ Claude Code: hooks registered in /home/terry/.claude/settings.local.json
+[verify] ✓ ZCode: hooks registered in /home/terry/.zcode/cli/config.json
+[verify] ✓ opencode: hooks registered at platform level (frontmatter block N/A for full copy)
+[verify] ✓ cursor: hooks registered at platform level (frontmatter block N/A for full copy)
+[verify] ✓ check-delegation.sh exists and is executable
+[verify] ✓ allow-direct.sh exists and is executable
+[verify] ✓ selftest-delegation.sh exists and is executable
+[verify] ✓ selftest-methodology.sh exists and is executable
+[verify] ✓ subagent-fallback.sh exists and is executable
+[verify] ✓ config.json provider_fallback key present
+
+[verify] summary: 23 pass / 3 fail
+[verify] FAILED checks:
+  - claude-code deploy drift: full-copy SKILL.md differs from canonical (/home/terry/.claude/skills/task-planner)
+  - opencode deploy drift: full-copy SKILL.md differs from canonical (/home/terry/.config/opencode/skills/task-planner)
+  - cursor deploy drift: full-copy SKILL.md differs from canonical (/home/terry/.cursor/skills/task-planner)

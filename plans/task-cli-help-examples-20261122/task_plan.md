@@ -2,7 +2,7 @@
 # Task Plan: task-cli-help-examples-20261122
 
 - task_id: `task-cli-help-examples-20261122`
-- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z
+- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T14:07:26Z
 plan_tier: standard
 execution_lane: L1
 schema_version: 1
@@ -38,10 +38,10 @@ schema_version: 1
 | id | status | s_units | v_checks | name | started | tags |
 |---|---|---|---|---|---|---|
 | P1 | complete |  |  | P1 需求与勘察 |  |  |
-| P2 | pending |  | VC-1, VC-2 | P2 两 CLI help 增强 |  |  |
-| P3 | pending |  | VC-3, VC-4 | P3 Skill 文档示例补充 |  |  |
-| P4 | pending |  | VC-4, VC-6, VC-7 | P4 验证与回归 |  |  |
-| P5 | pending |  | VC-5 | P5 部署同步与合并 |  |  |
+| P2 | complete |  | VC-1, VC-2 | P2 两 CLI help 增强 | 2026-11-22T13:31:21Z |  |
+| P3 | complete |  | VC-3, VC-4 | P3 Skill 文档示例补充 |  |  |
+| P4 | complete |  | VC-4, VC-6, VC-7 | P4 验证与回归 |  |  |
+| P5 | complete |  | VC-5 | P5 部署同步与合并 |  |  |
 
 ## R→VC 映射
 | requirement | vcs |
@@ -83,8 +83,8 @@ schema_version: 1
 | S1 | [P1] init 计划+原话登记+勘察（init-session.sh + 逐字登记 #1 + 两 Explore 勘察） | 主进程 | plans/task-cli-help-examples-20261122/ | 7 文件在位 + 原话入档 + 勘察报告落 findings | 10min | 1f/40l/10min | no | - | pending |
 
 ### Phase 2: P2 两 CLI help 增强
-- **Status:** pending
-- **Started:** 
+- **Status:** complete
+- **Started:** 2026-11-22T13:31:21Z
 - **Executor:** general-coder
 - [x] V-2.1: VC-1（Phase 2 验证契约映射）
 - [x] V-2.2: VC-2（Phase 2 验证契约映射）
@@ -94,7 +94,7 @@ schema_version: 1
 | S3 | [P2] planctl.py help 增强（add_cmd 透传 formatter+epilog，根+关键子命令加示例/输出约定） | general-coder | skills/task-planner/scripts/planctl.py | VC-2 六子命令 help 含示例 | 15min | 1f/60l/15min | no | - | pending |
 
 ### Phase 3: P3 Skill 文档示例补充
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** general-writer
 - [x] V-3.1: VC-3（Phase 3 验证契约映射）
@@ -105,7 +105,7 @@ schema_version: 1
 | S5 | [P3] examples.md 两个完整脚本示例段（新增 template-catalog 检索→选型→init 与 planctl JSON 闭环两个可照抄示例） | general-writer | skills/task-planner/examples.md | VC-3 examples.md 两 CLI 覆盖 + ≥3 bash 块 | 13min | 2f/60l/13min | no | - | pending |
 
 ### Phase 4: P4 验证与回归
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** 主进程
 - [x] V-4.1: VC-4（Phase 4 验证契约映射）
@@ -116,7 +116,7 @@ schema_version: 1
 | S6 | [P4] help 实测+示例 flag 核对+回归（跑 VC-1..4/6/7，核对 flag 差集与 FAIL 集） | 主进程 | 全仓 | VC-4 FAKE_FLAGS 空 + VC-6 NEW_FAIL 空 + VC-7 CTRL_FLOW_DIFF=0 | 15min | 1f/25l/15min | no | - | pending |
 
 ### Phase 5: P5 部署同步与合并
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** 主进程
 - [x] V-5.1: VC-5（Phase 5 验证契约映射）

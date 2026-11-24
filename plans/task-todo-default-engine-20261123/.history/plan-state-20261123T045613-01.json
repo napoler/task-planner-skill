@@ -1,0 +1,514 @@
+{
+  "schema_version": 1,
+  "task_id": "task-todo-default-engine-20261123",
+  "plan_tier": "standard",
+  "execution_lane": "L2",
+  "created_at": "2026-11-22T20:05:05Z",
+  "updated_at": "2026-11-22T20:55:48Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "引擎检测设为 todo 默认项 — user-session-log.md #2：在todo的默认选项中加入到检测是否引入Open Spec和Superpowers来执行任务",
+      "type": "目标",
+      "vc": [
+        "VC-1"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "text": "对齐落地 — user-session-log.md #2「像之前添加的对齐，默认添加对齐来一样…之前添加的东西不要丢弃掉」；供料=plans/task-align-mandatory-step-20261123/task_plan.md R1/R2",
+      "type": "目标",
+      "vc": [
+        "VC-2"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R3",
+      "text": "worktree 隔离核验入默认项（默认 worktree 仍争写同文件需可被核验）",
+      "type": "目标",
+      "vc": [
+        "VC-3"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R4",
+      "text": "三层载体（产出器 sync-todos.sh --json + 模板 task_plan.md Todo 段 + 守护 selftest-skill-collab.sh/registry）落地 B1-B8",
+      "type": "目标",
+      "vc": [
+        "VC-4",
+        "VC-5"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R5",
+      "text": "定位守正（不推翻既有功能 / 核心定位=知识·记忆体系 / 机器硬门仅登记不实施）",
+      "type": "目标",
+      "vc": [
+        "VC-6"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R6",
+      "type": "目标",
+      "text": "发现同写冲突后的 worktree 事后补救路径：检出多会话争写同文件时，须补建 worktree 隔离后续改动并从主树迁移未提交改动，后期合并（用户#1缺陷②逐字锚：明明可以使用工作树隔离开先做修改，修改完成之后，在后期进行合并处理）",
+      "vc": [
+        "VC-7"
+      ],
+      "tags": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "name": "R1 引擎检测设为 todo 默认项（顶层 Goal 行）",
+      "text": "通过 todo 默认基线项 B6/B7/B8 使引擎检测/对齐/worktree 检查自动带出，修复软契约无载体根因",
+      "evidence": "[goal:G1]",
+      "verify": "VC-1 grep todo-sync.md 含 B6/引擎检测",
+      "s_units": [
+        "S1"
+      ],
+      "status": "pending",
+      "tags": []
+    },
+    {
+      "id": "G2",
+      "name": "对齐落地",
+      "text": "对齐落地 — 旧计划 task-align 交付物吸收不丢弃",
+      "evidence": "[goal:G2]",
+      "verify": "VC-2 grep todo-sync.md 含 B7/对齐",
+      "s_units": [
+        "S2"
+      ],
+      "status": "pending",
+      "tags": []
+    },
+    {
+      "id": "G3",
+      "name": "worktree 隔离核验",
+      "text": "worktree 隔离核验入 todo 默认项",
+      "evidence": "[goal:G3]",
+      "verify": "VC-3 grep todo-sync.md 含 B8/worktree",
+      "s_units": [
+        "S2"
+      ],
+      "status": "pending",
+      "tags": []
+    },
+    {
+      "id": "G4",
+      "name": "三层载体",
+      "text": "三层载体（产出器+模板+守护）落地 B6/B7/B8 且 sync-todos --json 输出 B 组",
+      "evidence": "[goal:G4]",
+      "verify": "VC-4 真断言 sync-todos 输出含 B6/B7/B8；VC-5 模板+守护锚",
+      "s_units": [
+        "S4"
+      ],
+      "status": "pending",
+      "tags": []
+    },
+    {
+      "id": "G5",
+      "name": "定位守正",
+      "text": "定位守正（不推翻既有 / 核心定位知识·记忆体系 / 硬门仅登记）",
+      "evidence": "[goal:G5]",
+      "verify": "VC-6 B1-B5 逐字保留 + 全量 selftest 0 FAIL",
+      "s_units": [
+        "S6"
+      ],
+      "status": "pending",
+      "tags": []
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "引擎检测进 todo 默认项：todo-sync.md 契约含 B6 且文案含“引擎检测”",
+      "command": "grep -Fq 'B6' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Fq '引擎检测' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-2",
+      "criterion": "对齐落地入默认项：todo-sync.md 契约含 B7 且文案含“对齐”",
+      "command": "grep -Fq 'B7' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Fq '对齐' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-3",
+      "criterion": "worktree 隔离核验入默认项：todo-sync.md 契约含 B8 且文案含“worktree”",
+      "command": "grep -Fq 'B8' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && grep -Fq 'worktree' /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md && echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-4",
+      "criterion": "产出器真出 B 组：sync-todos.sh --json 输出须真实包含 B6、B7、B8（acceptance#3 强断言）",
+      "command": "bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/sync-todos.sh --json /mnt/data/dev/task-planner-skill/plans/task-todo-default-engine-20261123 | grep -q 'B6' && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/sync-todos.sh --json /mnt/data/dev/task-planner-skill/plans/task-todo-default-engine-20261123 | grep -q 'B7' && bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/sync-todos.sh --json /mnt/data/dev/task-planner-skill/plans/task-todo-default-engine-20261123 | grep -q 'B8' && echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-5",
+      "criterion": "模板露出+守护锚：task_plan.md 模板含 B6，selftest-skill-collab.sh 含“引擎检测”锚断言",
+      "command": "grep -Fq 'B6' /mnt/data/dev/task-planner-skill/skills/task-planner/templates/task_plan.md && grep -Fq '引擎检测' /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/selftest-skill-collab.sh && echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-6",
+      "criterion": "守正+零回归：B1-B5 在 todo-sync.md 逐字保留，且 3 个相关 selftest（skill-collab/doc-script-paths/session-log）实跑 0 FAIL",
+      "command": "for a in B1 B2 B3 B4 B5; do grep -Fq \"$a\" /mnt/data/dev/task-planner-skill/skills/task-planner/references/todo-sync.md || exit 1; done; for s in selftest-skill-collab.sh selftest-doc-script-paths.sh selftest-session-log.sh; do bash /mnt/data/dev/task-planner-skill/skills/task-planner/scripts/$s >/dev/null 2>&1 || exit 1; done; echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-7",
+      "criterion": "worktree 冲突补救 SOP 落盘：worktree-isolation.md 含\"冲突补救\"锚且给出检出同写→补建worktree→迁移改动→后期合并的可操作步骤",
+      "command": "grep -Fq '冲突补救' /mnt/data/dev/task-planner-skill/skills/task-planner/references/worktree-isolation.md && echo PASS",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "name": "设计锚定",
+      "status": "pending",
+      "s_units": [
+        "S1"
+      ],
+      "v_checks": [
+        "VC-1"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P2",
+      "name": "契约与规则锚落地",
+      "status": "pending",
+      "s_units": [
+        "S2",
+        "S3",
+        "S8"
+      ],
+      "v_checks": [
+        "VC-2",
+        "VC-3"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P3",
+      "name": "产出器+模板+守护",
+      "status": "pending",
+      "s_units": [
+        "S4",
+        "S7",
+        "S9"
+      ],
+      "v_checks": [
+        "VC-4",
+        "VC-5",
+        "VC-7"
+      ],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P4",
+      "name": "合并回+部署同步",
+      "status": "pending",
+      "s_units": [
+        "S5"
+      ],
+      "v_checks": [],
+      "tags": [],
+      "started": ""
+    },
+    {
+      "id": "P5",
+      "name": "验证交付",
+      "status": "pending",
+      "s_units": [
+        "S6"
+      ],
+      "v_checks": [
+        "VC-6"
+      ],
+      "tags": [],
+      "started": ""
+    }
+  ],
+  "findings": [],
+  "audits": [
+    {
+      "round": 1,
+      "verdict": "REJECTED",
+      "by": "critic",
+      "counts": {
+        "C": 1,
+        "I": 6,
+        "W": 5
+      },
+      "at": "2026-11-22T20:33:39Z",
+      "tags": []
+    },
+    {
+      "round": 2,
+      "verdict": "REJECTED",
+      "by": "critic",
+      "counts": {
+        "C": 0,
+        "I": 2,
+        "W": 5
+      },
+      "at": "2026-11-22T20:37:56Z",
+      "tags": []
+    },
+    {
+      "round": 3,
+      "verdict": "APPROVED",
+      "by": "critic",
+      "counts": {
+        "C": 0,
+        "I": 0,
+        "W": 0
+      },
+      "at": "2026-11-22T20:43:42Z",
+      "tags": []
+    }
+  ],
+  "delegations": [],
+  "tags": [],
+  "template_body": "<!-- template_type: rule-enhancement -->\nexecution_lane: L2\n<!-- template_meta: {\"type\": \"rule-enhancement\", \"name\": \"规则增强\", \"summary\": \"技能规则/条款增强：新增 Rule、config 三档键、消费侧门控、selftest 守护与 SKILL 联动。\", \"scenarios\": [\"新增 Rule\", \"条款增强\", \"消费侧门控脚本\", \"selftest 守护\", \"技能机制化增强\"], \"features\": [\"用户需求原文 R→VC 映射\", \"Verification Contract\", \"工具选择与编排\", \"消费侧门控与 selftest 守护\", \"SKILL 联动\"]} -->\n<!-- 适用场景: task-planner 技能规则/条款增强——新增 Rule NN、config 三档键、消费侧门控脚本、selftest 守护、SKILL 联动 -->\n<!-- 触发关键词: 加规则/新增 Rule/条款/门控/合规清单/守护/技能增强/机制化 -->\n<!-- 推荐 subagent: executor(sonnet-1) 写条款与脚本; code-runner-agent 跑 selftest; 合并部署主进程; 沉淀出处: task-v074（Rule 34.3① 同类任务第 3 次触发） -->\n<!-- 📦/🛡 进度产出基线与防倒退终检：按主模板 Rule 111 区块执行（本 variant 不重复区块本体） -->\n\n# Task Plan: [规则增强任务名称]\n<!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned=\"根源覆盖表,不变量声明区,规范基线,进度产出基线,Goal,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,防倒退终检,收尾回读梳理记录,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置\" pruned_reason=\"variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）\" -->\n<!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->\n\n## 🎯 用户需求原文（Rule 51.1 逐条抄录 + 51.2 R→VC 映射; R 行=用户原话逐条编号抄录，每条核心需求 ≥1 VC；缺区块或缺映射=计划无效先回炉）\n\n<!-- plan_tier: standard -->\n## 🔍 证据面清单（Rule 58.1 — 调研/分析/评估/归因类任务计划期必填）\n<!-- 2026-10-07 task-v143：init 注入载体（CR F-1 修复，镜像 51.1 注入兜底范式）。适用判定:产出=结论/判断/建议/原因解释的任务；\n     豁免: 纯执行类任务(单点动作)填 `n/a（纯执行类）`;对标面豁免仅限 58.2 两种登记理由,禁裸豁免 -->\n| 证据面 | 取证对象（可指名） | 取证方式 | 落盘锚（54.5 格式） | 状态 |\n|--------|------------------|---------|---------------------|------|\n| ① 自身样本 | （自身内容/产品/数据） | | | ☐ |\n| ② 对标样本（58.2 强制） | （竞品/同类成功案例/历史基线，≥1 个可指名） | | | ☐ |\n| ③ 外部约束 | （平台规则/市场环境/算法机制） | | | ☐ |\n\n> 归因类结论（为什么没流量/为什么不如人）在 ② 未完成第一手取证前禁止产出（58.2 无对标取证=无据结论）。\n\n## 🎯 核心目标达成裁决（Rule 58.5 — 含目标型需求([目标]标注)的任务终验必填）\n<!-- 2026-10-07 task-v143：init 注入载体（CR F-1 修复）。58.4 手段/目标二分在需求区 R 行标注 [手段]/[目标]；\n     本区块终验时回收目标型需求的解决状态；not-solved/partial 禁止标 COMPLETE（58.5②） -->\n| 字段 | 值 |\n|------|-----|\n| **目标型需求** | （R 行编号，如 R1/R3） |\n| **裁决** | `solved` / `partial` / `not-solved`（三选一必填） |\n| **解决证据锚** | （file#锚点/取证记录行；solved 必填） |\n| **未解决面+原因** | （partial/not-solved 必填） |\n| **已排除路径** | （not-solved 必填：试过什么+为何不行） |\n| **下一步建议** | （not-solved 必填：可执行的下一步） |\n\n> 纯手段型任务（用户只要动作/产物，无问题待解）可填 `n/a（纯手段型任务）`——须与需求区标注一致，禁裸豁免。\n\n## Goal: [一句话: 落地 Rule NN <规则名>（NN.1-NN.M 条款 + config 三档键 + 消费侧门控 + selftest 守护 + SKILL 联动），全量 selftest 0 FAIL 后合并回 master 并部署 3 实体位]\n\n## 🔍 Code Review 配置\n| `code_review` | `required`（改动含 .sh 脚本）; 对齐审查[登记] Rule 42.6;自动超时[询问点] Rule 44;质量审查[检测结论] Rule 42 — 均 mini 豁免 |\n\n## ✅ Verification Contract\n\n| # | 判定标准 | 验证方式 | 证据路径 |\n|---|----------|----------|---------|\n| VC-1 | Rule NN 条款完整（NN.1-NN.M，范式对齐既有规则：子条=NN.M 动词短语，末条\"机制\"声明三档键+selftest） | Read 条款节 + grep 各子条锚 | `references/critical-rules.md` |\n| VC-2 | config 三档键落地（enforce/warn/off，默认 warn，挂 properties 内） | `jq .properties.<key>` 校验 | `config.json` |\n| VC-3 | 消费侧脚本集成（档位解析 env>config>warn；各档位分支功能实跑） | enforce/warn/off 三档行为实测 | 消费侧脚本输出 |\n| VC-4 | selftest 守护落地 + 全量回归 0 FAIL（**总数=主进程逐脚本 Total 行求和，禁采信子代理自报总数**） | `for f in selftest-*.sh` 逐个跑求和 | progress.md Selftest Log |\n| VC-5 | SKILL 联动（索引行 Rules 1-N/合规清单 C 行/特判段/摘要行）+ 3 实体位部署 diff=0 | grep 联动锚 + smart-merge-back --deploy | SKILL.md / 部署输出 |\n\n**终验规则**: 全部 VC 通过 → COMPLETE；回归 FAIL 无法定位 → 记录后 PARTIAL；证据不实 → BLOCKED\n\n## ⚠️ 执行范围限制\n\n| 类别 | 允许的文件 | 禁止 |\n|-------|------------|------|\n| 规则条款 | `references/critical-rules.md`（追加新块） | 改既有规则语义 |\n| 配置 | `config.json`（properties 追加新键） | 动既有键；顺手修既有脏点（最小 diff） |\n| 脚本/文档 | 消费侧脚本 + 新建 selftest / template-mapping.md / plan-writer.md（如涉四点同步） | 其他脚本/文档 |\n| SKILL | `SKILL.md`（**净增 ≤10 行**：行位替换优先） | 大段新增 |\n\n**强制约束**:\n- 新规则编号接续当前最大 Rule；合规清单接续最大 C 编号\n- ⚠️ **锚定级联**：改 SKILL.md \"Rules 1-N\" 前先 `grep -rn \"Rules 1-\" scripts/` 扫全部锚断言一次修齐（宽容正则 `Rules 1-3[x-y]` 优先）; SKILL.md 行数纪律：wc -l 复核；行数上限断言（selftest-knowledge-brief T2b）同步上调 + label 注明 task 代号（先例：≤523 task-v071 → ≤540 task-v074）\n- 派发契约：executor prompt 必含计划三文件路径 + acceptance:/checkpoint: 等 8 字段标签（check-dispatch.sh 逐字校验）\n\n## 🧰 工具选择与编排（Rule 40 — 计划期主动分析;Executor 字段=委派门控机器事实源;mini 豁免）\n| Phase | 命中工具面 | 选择理由 |\n|-------|----------|---------|\n| Phase 1 | [如: Agent 子代理 executor(sonnet-1)] | [一句话理由] |\n\n## Phases（骨架，按任务规模增删）\n\n### Phase 1: 隔离与基线\n- worktree 建立（宪法 §十一）+ 全量 selftest 基线（主进程逐 Total 行求和）+ 插入点锚确认\n- **Status:** pending\n- **Executor:** 主进程（白名单① git 编排）+ code-runner-agent\n\n### Phase 2: 条款 + config 键 + 消费侧门控\n- S1 条款全文 / S2 config 键 + 门控脚本集成（派发型 Phase 必附 S-unit 7 列表，attest 校验时长列与输入路径 ≤2 列）\n- **Status:** pending\n- **Executor:** executor（sonnet-1），按 21.4 调度铁律派发（[EVOLVED 2026-10-02] 声明组内并行/未声明组=串行）\n| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |\n|----|------------|------------------------|-------------|---------|------|------|------|------|------|\n| S1 | （A6） | 继承 |  |  | 10min | 1f/10l/10min | 无 | - | pending |\n\n### Phase 3: selftest 守护 + 锚点修复\n- 新建 selftest（对齐 selftest-veto.sh 范式）/ 既有锚断言宽容化 / init 或集成收尾\n- **Status:** pending\n- **Executor:** executor（sonnet-1）\n\n### Phase 4: SKILL 联动 + 文档同步 + 全量回归\n- SKILL 净增纪律内联动 + 四点同步 + 全量回归（主进程复跑定数）\n- **Status:** pending\n- **Executor:** executor（sonnet-1）\n\n### Phase 5: 合并回 + 部署 + 簿记\n- smart-merge-back --deploy 3 实体位 + INDEX/ledger + worktree 清理\n- **Status:** pending\n- **Executor:** 主进程（白名单①②）\n\n## 📚 必要知识储备\n\n| 类别 | 名称 | 定位 | 必读 |\n|------|------|------|------|\n| 项目内部 | 最近两轮规则块范式 / selftest 写法范式 / 三档键范式 | references/critical-rules.md 末尾; scripts/selftest-veto.sh; config.json 最新三档键 | ☑ |\n| 项目内部 | 台账供料简报（Rule 编号账本+审计台账路径等） | `<plan-dir>/knowledge-brief.md` §2/§3/§5（台账路径锚供料，禁 prompt 内联基线） | ☑ |\n\n- **调研需求三态（Rule 75.1）**：本模板任务默认 **可选**——规则增强主要操作仓库内部文件（条款/config/脚本/SKILL.md），通常无需网络调研；涉及新机制引入或外部标准参照时按 Rule 75.1 逐个判定调研触点\n\n## 🚨 Drift Log（漂移检测记录）\n| 时间 | 检测结果 | 涉及VC | 结论 |\n|------|---------|--------|------|\n\n## 📊 委派统计（Rule 25.4 — 终验前必填）\n<!-- WHAT: 子代理 vs 主进程执行分布;WHY: 委派率 < delegation_rate_floor(默认 0.7)或白名单外理由 → 最高 PARTIAL;WHEN: 每 Phase complete 后更新,终验前必填 -->\n| 字段 | 值 |\n|------|-----|\n| 子代理/主进程 Phase 数 |  /  |\n| 主进程直做 Phase 清单 + 委派率 | （含例外理由; < delegation_rate_floor 默认 0.7 或白名单外理由 → 最高 PARTIAL） |\n\n## 🔗 Subagent Handoff 登记表（Rule 22.5 必填）\n| # | 时间 | subagent_type | 任务目标(≤1 句) | 状态 | 结论摘要(≤3 行) | 证据(file:line) | findings 落点 | checkpoint 路径 |\n|---|------|--------------|----------------|------|---------------|---------------|--------------|----------------|\n| 1 |  |  |  | queued |  |  |  |  |\n\n## 🎯 Goal 单元表（Rule 66.1 — attest 获批后填写）\n| goal-id | 任务名 | 目标（≤1 句） | 完整验证方式（可复现） | 对应 S-unit/Phase | 状态 |\n|---------|--------|--------------|------------------------|------------------|------|\n| G1 |  |  |  |  | pending |\n\n## 📦 Batch Report（Rule 18.6 — 留空会被 check-complete 拦）\n| 字段 | 值 |\n|------|-----|\n| `total` | n/a（<一句理由>） |\n| `success` | n/a |\n| `failed` | n/a |\n| `failure_rate` | n/a |\n| `sampled_pass` | n/a |\n| `sampled_fail` | 任务 <5 单元不触发抽样 |\n| `pre_check` | Q1:否 / Q2:无共享写 / Q3:能 |\n| `rollback_point` | <worktree 分支，合并前可弃> |\n",
+  "template_type": "rule-enhancement",
+  "next_step": "S1 [P1] R锚定复核+三处锚点精确文案草稿 → general-doc-processor（按 Phase 顺序逐单元派发）",
+  "core_question": {
+    "text": "通过 todo 默认基线项 B6/B7/B8 使引擎检测/对齐/worktree 检查自动带出，修复软契约无载体根因",
+    "checks": "R1→VC1 / R2→VC2 / R3→VC3 / R4→VC4,VC5 / R5→VC6；三层载体齐备且 B1-B5 逐字保留",
+    "verdict": "待执行（plan 期录入，S6 VC 全量复验后裁决）"
+  },
+  "s_units": [
+    {
+      "id": "S1",
+      "phase": "P1",
+      "name": "R锚定复核+三处锚点精确文案草稿",
+      "executor": "general-doc-processor",
+      "files": "user-session-log.md(#1#2逐字) + task_plan.md",
+      "actions": "前置:无；复核 R 锚并以 todo-sync.md:34-40 / critical-rules-discipline.md:747-750 / SKILL.md:256 三处为落点起草 B6/B7/B8 文案",
+      "verify": "三处插入点行号实测+文案草稿落 findings",
+      "duration": "10min",
+      "granularity": "1f/30l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S2",
+      "phase": "P2",
+      "name": "todo-sync.md 契约扩 B1-B8",
+      "executor": "general-doc-processor",
+      "files": "skills/task-planner/references/todo-sync.md:34-40",
+      "actions": "前置:S1；基线 B1-B5 逐字保留，仅叠加 B6 引擎检测/B7 对齐/B8 worktree 核验",
+      "verify": "VC-1/2/3 grep 命中；B1-B5 未改",
+      "duration": "15min",
+      "granularity": "1f/40l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S3",
+      "phase": "P2",
+      "name": "规则锚同步A（Rule106.5语义锚+task-planner SKILL指针）",
+      "executor": "general-doc-processor",
+      "files": "critical-rules-discipline.md:747-750 + task-planner/SKILL.md:256",
+      "actions": "前置:S1；两处规则锚同步引用 todo 默认项 B6/B7/B8，禁改既有语义；BP-08 SKILL.md 净增 ≤9 行",
+      "verify": "两锚互链一致，diff 仅增量",
+      "duration": "15min",
+      "granularity": "2f/30l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S4",
+      "phase": "P3",
+      "name": "产出器+模板露出（sync-todos.sh+task_plan模板）",
+      "executor": "general-coder",
+      "files": "sync-todos.sh + templates/task_plan.md:455-470",
+      "actions": "前置:S2,S3,S8；sync-todos --json 输出 B1-B8，模板 Todo 段列 B1-B8 清单锚",
+      "verify": "VC-4 PASS（输出含 B6/B7/B8）；VC-5 模板锚 PASS；B1-B5 保留",
+      "duration": "15min",
+      "granularity": "2f/30l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S5",
+      "phase": "P4",
+      "name": "合并回+部署位同步（主仓执行，worktree 内只标记）",
+      "executor": "general-ops",
+      "files": "worktree 分支 wt/task-todo-default-engine-20261123 + 主仓部署位",
+      "actions": "前置:S4,S7,S9；worktree 内只登记，主仓执行 git 合并且全实体位同步",
+      "verify": "合并回合约 6 条全满足，部署位 diff=0",
+      "duration": "15min",
+      "granularity": "2f/20l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S6",
+      "phase": "P5",
+      "name": "VC 全量复验",
+      "executor": "Verifier",
+      "files": "verification.md + 4 派生视图",
+      "actions": "前置:S5；逐条实跑 VC-1..VC-7 command 并贴原文输出行，主进程机械求和",
+      "verify": "7/7 VC PASS；status phases=5/vcs=7；VC-7 冲突补救 SOP 断言 PASS",
+      "duration": "10min",
+      "granularity": "1f/20l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S7",
+      "phase": "P3",
+      "name": "[P3] worktree冲突补救SOP落地",
+      "executor": "general-doc-processor",
+      "files": "worktree-isolation.md（check-conflicts.sh/smart-merge-back.sh 只读接口参考，不写入）",
+      "actions": "补写冲突补救段：检出同写冲突→补建worktree隔离后续改动→迁移主树未提交改动→后期合并，含冲突补救锚",
+      "verify": "worktree-isolation.md 含冲突补救锚且含检出→补建→迁移→合并步骤",
+      "duration": "15min",
+      "granularity": "1f/40l/15min",
+      "parallel": "no"
+    },
+    {
+      "id": "S8",
+      "phase": "P2",
+      "name": "规则锚同步B（task-discipline SKILL索引）",
+      "executor": "general-doc-processor",
+      "files": "task-discipline/SKILL.md:86",
+      "actions": "前置:S1；Rule 106 索引同步 B1-B5→B1-B8，禁改既有语义",
+      "verify": "索引含 B6/B7/B8 且 B1-B5 逐字保留",
+      "duration": "10min",
+      "granularity": "1f/10l/10min",
+      "parallel": "no"
+    },
+    {
+      "id": "S9",
+      "phase": "P3",
+      "name": "selftest守护加锚（B6引擎检测锚）",
+      "executor": "general-coder",
+      "files": "selftest-skill-collab.sh + selftest-registry.tsv",
+      "actions": "前置:S2,S3,S8；selftest-skill-collab.sh 加 B6/引擎检测锚断言 + selftest-registry.tsv 登记（不新增守护脚本）",
+      "verify": "3 个相关 selftest 实跑零新增 FAIL；B6 锚断言 PASS",
+      "duration": "10min",
+      "granularity": "2f/20l/10min",
+      "parallel": "no"
+    }
+  ],
+  "root_causes": [
+    {
+      "id": "RC1",
+      "process": "worktree 隔离默认",
+      "defect": "worktree 宪法为纯文本约束，AGENTS.md:151-210 无 exit 硬门，跳过隔离仍可写同文件",
+      "fix": "B8 worktree 隔离核验入 todo 默认项（机器硬门仅登记不实施）",
+      "vc": "VC-3"
+    },
+    {
+      "id": "RC2",
+      "process": "冲突事后补救",
+      "defect": "worktree-isolation.md / check-conflicts.sh 无冲突发生后的补救路径",
+      "fix": "B8 补齐隔离核验默认项并登记补救路径",
+      "vc": "VC-3"
+    },
+    {
+      "id": "RC3",
+      "process": "引擎软路由",
+      "defect": "skill-collaboration.md:4-10 / todo-sync.md:34-40 的 enforce 仅语义预留，未落默认项",
+      "fix": "B6 引擎检测（OpenSpec/Superpowers 适配性）入 todo 默认项，结论落 Decisions",
+      "vc": "VC-1"
+    },
+    {
+      "id": "RC4",
+      "process": "对齐落地",
+      "defect": "4 锚 NOT-FOUND / sync-todos --json 输出 [] / templates 无 B 组",
+      "fix": "B7 对齐核查从旧计划 task-align-mandatory-step 吸收交付物，不丢弃",
+      "vc": "VC-2"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "方案A：B1-B5逐字保留叠加B6引擎检测/B7对齐/B8 worktree核验；补R6冲突后worktree补救路径；OpenSpec规格化纳入流程修复被修缺陷自我复现；机器硬门仅登记不实施=运行时exit非0门，静态锚属既有selftest检查不冲突",
+      "rationale": "user-session-log.md #2依赖todo引擎=最简单方案+之前东西不丢弃；#1缺陷②冲突补救；L2+须OpenSpec移交（skill-collaboration.md:55）；用户旧计划D1已授权静态锚"
+    }
+  ],
+  "fmea": [
+    {
+      "id": "F1",
+      "phase": "P3",
+      "mode": "sync-todos.sh --json 未输出 B 组导致默认项不生效",
+      "severity": 5,
+      "occurrence": 3,
+      "detection": 5,
+      "rpn": 75,
+      "fallback": "VC-4 真断言输出含 B6/B7/B8；S4 于 selftest-skill-collab.sh 加锚断言守护；失败回退 .history"
+    }
+  ],
+  "resources": [
+    {
+      "id": "RES1",
+      "locator": "skills/task-planner/references/todo-sync.md:34-40"
+    },
+    {
+      "id": "RES2",
+      "locator": "skills/task-discipline/references/critical-rules-discipline.md:747-750"
+    },
+    {
+      "id": "RES3",
+      "locator": "skills/task-planner/SKILL.md:256"
+    },
+    {
+      "id": "RES4",
+      "locator": "skills/task-planner/templates/task_plan.md:455-470"
+    },
+    {
+      "id": "RES5",
+      "locator": "skills/task-discipline/SKILL.md:86"
+    },
+    {
+      "id": "RES6",
+      "locator": "skills/plan-collab-router/references/skill-collaboration.md:53-109"
+    },
+    {
+      "id": "RES7",
+      "locator": "skills/task-planner/scripts/{sync-todos.sh,selftest-skill-collab.sh,selftest-registry.tsv}"
+    },
+    {
+      "id": "RES8",
+      "locator": "plans/task-align-mandatory-step-20261123/task_plan.md（R1/R2对齐锚，供B7吸收不丢弃）"
+    }
+  ],
+  "research": [
+    {
+      "id": "RS-S0",
+      "claim": "#### [sub:S0-plan] 方案A结构化录入完成（B1-B5 保留叠加 B6/B7/B8）；VC-4 由任务书 B6/B7 扩为 B6/B7/B8 真断言以满 acceptance#3",
+      "source": "S0-plan-writer checkpoint"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-S0-1",
+      "phase": "P1",
+      "text": "[sub:S0] planctl 增量录入 requirements R1-R5 / goals G1-G5 / vcs VC-1..6 / phases P1-P5 / s_units S1-S6 / root_causes RC1-RC4 / decision D1 / fmea / resources / goal，render 4 派生视图",
+      "at": "2026-11-23"
+    }
+  ]
+}

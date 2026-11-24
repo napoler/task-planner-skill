@@ -1,0 +1,22 @@
+[conflict-scan] repo=/mnt/data/dev/task-planner-skill mode=init
+[conflict-scan] ⚠ 信号①: 未提交变更 48 个文件(与任务范围重叠时互相踩踏):
+     M .zcode/ledger/task-planner-maintenance/task-planner-maintenance.jsonl
+     M .zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md
+     M docs/frontmatter-linter-skill-tier-proposal.md
+     D plans/task-cli-help-examples-20261122/.fix_vcs.py
+     D plans/task-cli-help-examples-20261122/.fix_vcs_r3.py
+     D plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json
+     D plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json
+     D plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json
+    ...(共 48)
+[conflict-scan] ⚠ 信号⑤: 其中 5 个是运行中基础设施(hooks/skills/config/agents)——直接改动即影响所有会话,强烈建议工作树隔离
+[conflict-scan] ⚠ 信号②: 存在 3 个额外 worktree(可能有并行工作):
+    /mnt/data/dev/task-planner-skill/tmp/worktrees/task-goal-unattended-protocol-20261124  9e42c0b [wt/task-goal-unattended-protocol-20261124]
+    /mnt/data/dev/task-planner-skill/tmp/worktrees/task-todo-default-engine-20261123       ea2d6df [wt/task-todo-default-engine-20261123]
+    /mnt/data/dev/task-planner-skill/tmp/worktrees/wt-tplsys-upgrade-20261117              3b8a021 [wt/tplsys-upgrade-20261117]
+[conflict-scan] ⚠ 信号③: 遗留 wt/* 分支 4 个(可能含未合并的隔离工作):
+    + wt/task-goal-unattended-protocol-20261124
+    + wt/task-todo-default-engine-20261123
+      wt/task-v168-machine-parked
+    + wt/tplsys-upgrade-20261117
+[conflict-scan] ⚠ 信号④: 28 个未完成任务在册(plans/INDEX.md)——并行会话可能同时推进

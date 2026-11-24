@@ -1,0 +1,2948 @@
+{
+  "schema": 1,
+  "task_id": "task-session-regression-20261124",
+  "repo_root": "/mnt/data/dev/task-planner-skill",
+  "mode": "direct",
+  "baseline_ref": "refs/task-baseline/task-session-regression-20261124",
+  "baseline_sha": "d9f68655bccedc5b8d7d6c9db814fd6b58c24b3b",
+  "baseline_tree": "855ae686fbb055a44962d443c9051923f888e000",
+  "created_at": "2026-11-23T21:12:04Z",
+  "file_count": 4582,
+  "seed": "real-index-copy",
+  "late": false,
+  "mustkeep": {
+    "count": 5,
+    "empty": false,
+    "source": "lib"
+  },
+  "checkpoints": [
+    {
+      "n": 1,
+      "label": "P2-D-B-A",
+      "ref": "refs/task-checkpoint/task-session-regression-20261124/001-P2-D-B-A",
+      "sha": "8b9b44da3bb29f915a9d44efa75b87aaae5fdcae",
+      "tree": "507526f4afcec4f01995ab92e42472d7b16c8376",
+      "at": "2026-11-23T21:12:05Z"
+    }
+  ],
+  "last_diff": {
+    "at": "2026-11-23T22:51:36Z",
+    "from_ref": "baseline",
+    "report": "/mnt/data/dev/task-planner-skill/plans/task-session-regression-20261124/.git-baseline-report.md",
+    "added": 378,
+    "modified": 34,
+    "deleted": 6,
+    "out_of_scope": 22,
+    "deleted_lines": 2047,
+    "unresolved": 0,
+    "mustkeep_lost": 0,
+    "items": [
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "# 立项：task-planner 核心能力优化（记忆连续性 / 性能提速 / 子代理有效并行）"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "用户核心诉求：当前技能最核心的任务是**对项目过程中发现的问题、查询、分析出的知识点做提取→存储→定期回顾**，确保会话间**记忆连续性**、防止上下文窗口过大导致重要信息丢失（强调\"核心知识记忆\"，反对什么都存）；同时抱怨**执行很慢**、怀疑**子代理没被有效利用**（本可并行的任务被串行阻塞），要求立项优化。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "三路只读勘察（结论交叉印证，均带磁盘路径实证）关键发现："
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "1. **记忆**：机制多（10+ 技能）但真问题是——`MEMORY.md` 膨胀至 **275 行/83KB** 且 200+ 主题文件，核心知识与流水未分层；**无统一\"定期主动回顾\"调度**（用户明确要的\"隔一段时间回顾\"目前空白）；压缩/切换的连续性靠文本纪律，`session-kv`(/tmp 易失)、`memory-consolidate`(目标分裂)、`dna-memory`(独立路径) 契约不统一。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "2. **性能**：慢是**流程结构性放大**——`sess_ba603cf5` 判例（54 子代理 / 9~21h，1797 调用来自子代理）根因是无全局预算+返工无上限+上下文重复读，非\"并行不够\"；Hook 每轮注入复利（UserPromptSubmit ~1KB/轮、PostToolUse 0.34s/次）、fresh 自测 204s、SKILL.md 72KB+refs 134KB。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "3. **⚠️ 快赢**：`perf-diagnosis` 的 12 项提速补丁已在孤立 worktree（`a0c5a03`，29 files，77/77 PASS）落地但**从未合并 master**——用户一直在跑未优化主线。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "4. **并行**：规则已完善（Rule 96/59/104），但 `check-dispatch.sh` 仅单一串行槽、不做\"独立性四问\"机器校验；串行多来自正确性门（真实依赖）。**盲目加宽并行会放大慢速**。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "用户裁决：分阶段实施；边界仅 task-planner 仓 + 直接部署位。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- **worktree 隔离**：改 skill 定义属保护区，先在 `<repo>/tmp/worktrees/task-core-opt-20261122`（分支 `wt/task-core-opt-20261122`）实施，逐 Phase 验证后合并回 master 并清理 worktree。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- **范围守恒**：不动全局 `~/.zcode/AGENTS.md`（P0 保护区，需另行授权）；不改 memory-\\*/session-kv/dna-memory 等跨技能生态（超边界）。记忆机制落 task-planner 仓内 + 该项目 MEMORY 目录。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- **文本优先**：规则/偏好以条款文本落地即完成，禁升级为脚本/hook 基建工程（除非勘察证明现有机制不足且用户授权）。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- 旧计划 `task-cli-help-examples-20261122` 挂起（D 类意图切换，登记不删条目）。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "## 方案（按 Phase，推荐顺序）"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "**Phase 0 — 快赢清障：核实并合入 perf 提速补丁**"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- 核实 worktree `a0c5a03` / `wt/perf-opt-20261012` 是否仍存在且可合并；`git log` + 关键文件 diff 比对主仓。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- 可合并则并集解冲突、跑 77/77 selftest、部署位 diff=0 后合入；不可合并则提取仍适用的补丁项（attest 缓存、selftest 指纹、CA-1 限频已落地，重点核对其余项）手工重放。"
+      },
+      {
+        "kind": "deleted",
+        "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+        "verbatim": "- 产出：性能前后基线数据（hook 注入字节/轮、fresh 时长、attest 时长）。"
+      },
+      {
+        "kind": "deleted",
+        "path": "docs/frontmatter-linter-skill-tier-proposal.md",
+        "verbatim": "> 状态：**提案稿，未落地**。目标文件 `/home/terry/.zcode/agents/frontmatter-linter.md` 属 §六 保护区，本次未获用户明确授权，**禁止直接修改**。本提案供用户授权后落地。"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "#!/usr/bin/env python3"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "\"\"\"一次性修复脚本：重写 VC-1/2/3/4/6/7 判别力 + 修 C-2（VC-7 挂载）。用完即删。\"\"\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "import json, subprocess"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "P = '/home/terry/.zcode/skills/task-planner/scripts/planctl.py'"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "WT = '/mnt/data/dev/task-planner-skill/tmp/worktrees/task-cli-help-examples-20261122/skills/task-planner'"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "WT_ROOT = WT.rsplit('/skills/task-planner', 1)[0]"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "def run(*a):"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "    r = subprocess.run(a, capture_output=True, text=True)"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "    if r.returncode:"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "        print('ERR', a[:4], r.stderr.strip()[:150])"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "    return r.returncode"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "def set_cmd(vc_id, value):"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "    run('python3', P, 'set', '--plan-dir', '.', '--section', 'vcs',"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": "        '--id', vc_id, '--field', 'command', '--value', value)"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "#!/usr/bin/env python3"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "\"\"\"R3 修复：VC-1 双锚 / VC-2 输出约定改为文档侧退出码锚 / VC-4 续行归一化 + 代码块整体扫描。用完即删。\"\"\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "import json, subprocess"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "P = '/home/terry/.zcode/skills/task-planner/scripts/planctl.py'"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "WT = '/mnt/data/dev/task-planner-skill/tmp/worktrees/task-cli-help-examples-20261122/skills/task-planner'"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "def run(*a):"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "    r = subprocess.run(a, capture_output=True, text=True)"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "    if r.returncode:"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "        print('ERR', a[:4], r.stderr.strip()[:150])"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "    return r.returncode"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "def set_cmd(vc_id, value):"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "    run('python3', P, 'set', '--plan-dir', '.', '--section', 'vcs',"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": "        '--id', vc_id, '--field', 'command', '--value', value)"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+        "verbatim": ""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "{"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"schema_version\": 1,"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"task_id\": \"task-cli-help-examples-20261122\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"plan_tier\": \"standard\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"execution_lane\": \"L1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"created_at\": \"2026-11-22T12:16:14Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"updated_at\": \"2026-11-22T12:46:15Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "  \"requirements\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      \"id\": \"R1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      \"text\": \"CLI help（--help / 子命令 help）提供更完善可照抄示例：典型工作流、副作用、退出码、参数说明\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      \"type\": \"手段\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      \"vc\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "        \"VC-1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "        \"VC-2\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      ],"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      \"tags\": []"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "    },"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+        "verbatim": "      \"id\": \"R2\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "{"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"schema_version\": 1,"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"task_id\": \"task-cli-help-examples-20261122\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"plan_tier\": \"standard\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"execution_lane\": \"L1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"created_at\": \"2026-11-22T12:16:14Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"updated_at\": \"2026-11-22T12:47:13Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "  \"requirements\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      \"id\": \"R1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      \"text\": \"CLI help（--help / 子命令 help）提供更完善可照抄示例：典型工作流、副作用、退出码、参数说明\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      \"type\": \"手段\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      \"vc\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "        \"VC-1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "        \"VC-2\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      ],"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      \"tags\": []"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "    },"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+        "verbatim": "      \"id\": \"R2\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "{"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"schema_version\": 1,"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"task_id\": \"task-cli-help-examples-20261122\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"plan_tier\": \"standard\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"execution_lane\": \"L1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"created_at\": \"2026-11-22T12:16:14Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"updated_at\": \"2026-11-22T12:56:57Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "  \"requirements\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      \"id\": \"R1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      \"text\": \"CLI help（--help / 子命令 help）提供更完善可照抄示例：典型工作流、副作用、退出码、参数说明\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      \"type\": \"手段\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      \"vc\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "        \"VC-1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "        \"VC-2\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      ],"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      \"tags\": []"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "    },"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+        "verbatim": "      \"id\": \"R2\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "{"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"schema_version\": 1,"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"task_id\": \"task-cli-help-examples-20261122\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"plan_tier\": \"standard\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"execution_lane\": \"L1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"created_at\": \"2026-11-22T12:16:14Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"updated_at\": \"2026-11-22T12:57:00Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "  \"requirements\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      \"id\": \"R1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      \"text\": \"CLI help（--help / 子命令 help）提供更完善可照抄示例：典型工作流、副作用、退出码、参数说明\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      \"type\": \"手段\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      \"vc\": ["
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "        \"VC-1\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "        \"VC-2\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      ],"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      \"tags\": []"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "    },"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "    {"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+        "verbatim": "      \"id\": \"R2\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/findings.md",
+        "verbatim": "- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+        "verbatim": "  \"updated_at\": \"2026-11-22T13:15:43Z\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+        "verbatim": "      \"status\": \"pending\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+        "verbatim": "      \"started\": \"\""
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+        "verbatim": "      \"status\": \"pending\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+        "verbatim": "      \"status\": \"pending\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+        "verbatim": "      \"status\": \"pending\","
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "| P2 | pending |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "| P3 | pending |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "| P4 | pending |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "| P5 | pending |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "- **Started:** "
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/progress.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "| P2 | pending |  | VC-1, VC-2 | P2 两 CLI help 增强 |  |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "| P3 | pending |  | VC-3, VC-4 | P3 Skill 文档示例补充 |  |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "| P4 | pending |  | VC-4, VC-6, VC-7 | P4 验证与回归 |  |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "| P5 | pending |  | VC-5 | P5 部署同步与合并 |  |  |"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "- **Started:** "
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+        "verbatim": "- **Status:** pending"
+      },
+      {
+        "kind": "deleted",
+        "path": "plans/task-cli-help-examples-20261122/verification.md",
+        "verbatim": "- 时间: created_at=2026-11-22T12:16:14Z / updated_at=2026-11-22T13:15:43Z"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-discipline/SKILL.md",
+        "verbatim": "| 106 | 文档修改复检与 todo 驱动对齐纪律（写后回读/派生值基准/同文件二次回归/交付物本体验证/两组 todo B1-B8（B6 引擎检测/B7 对齐/B8 worktree 核验））· task-docmod-recheck-20261112 | `references/critical-rules-discipline.md` `### 106` 段 |"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-dispatch/references/agent-coverage.md",
+        "verbatim": "| 1 | 计划/架构/编排 | plan-writer(D1), complex-planner(D1/D2, GLM-5.3), planner(D1/D2), architect(D1/D2), task-orchestrator(D1/D2) | 全部在位 |"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-dispatch/references/agent-coverage.md",
+        "verbatim": "| 18 | 其他 | simple-agent/complex-problem-solver/context-manager/time-keeper/meta-corrector(D2), complex-planner(D2, GLM-5.3) | 全部在位 |"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-dispatch/references/critical-rules-dispatch.md",
+        "verbatim": "22.4e **规范基线强制携带（Spec-Baseline，Rule 51.15 派发面承载，2026-11-19 task-spec-baseline-freeze-20261119）**：任务存在已登记 Spec-Baseline（`task_plan.md`「🔒 规范基线」区块）时，派发任一子代理（创作/修订/QC）的 prompt 必须逐条携带：①每条基线的 `spec_id + 约束原文(verbatim) + 双向判定式`（区间型上下界齐全，禁只传单边）；②基线"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/INSTALL.md",
+        "verbatim": "| `companion/agents/complex-planner.md` | `~/.zcode/agents/` | 高复杂度规划备用(GLM-5.3,常规档升级链穷尽后启用) |"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/SKILL.md",
+        "verbatim": "  - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/SKILL.md",
+        "verbatim": "  4. [M] **回写计划**：Phase→`complete`+勾选+证据路径；**⚠️ 3-File 回填门控（19.2）**：翻转前 progress Phase 段已回填（Actions/Files/Test Results）+ findings 本 Phase 有实质增量，`bash <skill>/scripts/check-3file-gate.sh <plan-dir>` exit 0 才可翻转（信号优先级 ledger 语义证据 > mtime；纯实施 "
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/SKILL.md",
+        "verbatim": "  4.5 [M] **提交工作产物（Rule 27 / git-rework-guard）**：实现类 Phase 翻转 complete 前 commit 本 Phase 产物（禁跨 Phase 攒批、禁 `git add -A` 盲扫、只 add scope 文件）；**单个 S-unit/大改动完成即 commit（不等整 Phase），让每个可回退点进版本历史**；非 git 记行跳过；deferred/用户显式豁免须写入计划。**返工第一动作=Git 找回**：Q"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/SKILL.md",
+        "verbatim": "  - **3-File Gate（19.5）**：check-complete.sh 内置校验 findings/progress 非 stub，缺失/stub→exit 1→STOP 回填禁交付"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/SKILL.md",
+        "verbatim": "计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B8，Rule"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/SKILL.md",
+        "verbatim": "| selftest | 103 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/companion/agents/complex-planner.md",
+        "verbatim": "description: 高复杂度任务的解决方案深度规划|GLM5.3(Opus级)专属备用方案|仅当任务复杂度过高(跨模块架构级/高不确定/常规档sonnet/haiku同法失败≥2次)才启用|产出可执行分步计划,不直接改代码。触发:complex planning|升级规划|备用方案|任务过于复杂|deep plan。禁用:常规/单文件/低复杂度任务(走 code-assistant/executor)"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/companion/agents/complex-planner.md",
+        "verbatim": "model: \"account:zai-individual-coding-plan/GLM-5.3\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/companion/agents/complex-planner.md",
+        "verbatim": "thoughtLevel: enabled"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/references/todo-sync.md",
+        "verbatim": "1. S1 建立两组原生 todo：**任务组**（Phase 映射，既有规则）+**基线组**（固定八项 B1-B8（B1-B5 逐字保留 + B6 引擎检测/B7 对齐/B8 worktree 核验），措辞以 Rule 106.5 为准）；两组必须同为原生条目（TodoWrite/Task 系统条目，禁止只存计划文档）。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/references/todo-sync.md",
+        "verbatim": "2. 基线组生命周期：B1 持续项（开启即 in_progress，终验翻 complete，判据=progress 全部 [recheck] 行）；B2 每 Phase 翻转前勾检；B3/B4 终验期；B5 收尾。；基线组独立计数：B1 持续 in_progress 不受「同时只允许一条 in_progress」约束（该唯一性约束限任务组/Phase 映射条目）；B6 建 todo 时检测引擎适配性（OpenSpec 规格化/Superpowers 方法论），结论落盘 De"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/references/todo-sync.md",
+        "verbatim": "3. 门禁挂钩（对齐 Rule 106.5）：B1 未完成留痕=该修改步禁声称完成；B2 未勾=Phase 禁 complete；B3/B4 未勾=禁出 outcome。B6 未留痕=不得声称按专业引擎推进；B7 未勾=对齐核查未完成；B8 未勾=实现类不得直接改主树"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/references/todo-sync.md",
+        "verbatim": "4. S3 `[plan-sync]` 回写协议：两组均回写；发现基线组条目丢失（含 B6/B7/B8，hook 重映射/会话恢复后）=当次重建，禁止静默缺组运行。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/attest-plan.sh",
+        "verbatim": "    # 无 sid 时空串;向后兼容: verify 仅读 plan_sha256, 旧 attestation 无此字段不影响校验)"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/attest-plan.sh",
+        "verbatim": "    printf 'plan_sha256=%s\\nplan_file=%s\\nattested_at=%s\\nattested_by_sid=%s\\n' \"$hash\" \"$(cd \"$plan_dir\" && pwd)/$(basename \"$plan_file\")\" \"$(date -Iseconds)\" \"$attest_sid\" > \"$attest_file\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/check-complete.sh",
+        "verbatim": "#       + templates/progress.md(3-File Gate stub 判定对照)"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   原「缺省=现状行为逐字节不变」→「四条件全命中（env TASK_AUTO_TIER=1 提交体量事实且"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   预估 ≤15min ∧ scope_files ≤2 ∧ 单模块 ∧ ④排除未命中）且未显式指定 tier 时自动 mini」；"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   无 TASK_AUTO_TIER=1 输入的调用路径仍与 task-v091 前逐字节一致"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   419 行 general 重档）。主进程调用前以 env 提交任务体量事实（三体量条件为派发前模型估计、"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   ④排除同为模型自判——提案质量风险披露），脚本侧机器闸门：四条件全过且未显式指定 tier"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   才自动降 mini；任一不过/输入缺失/非法 → 保持缺省档（fail-safe，兼容 38.4 非 mini 零影响"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   铁律：无 TASK_AUTO_TIER=1 的调用零影响）。显式优先：第 3 位置参 > env TASK_PLAN_TIER >"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "#   自动判定（显式声明任何档位时本块不参与，auto_tier 不覆盖显式值）。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/init-session.sh",
+        "verbatim": "if [ -z \"$PLAN_TIER\" ] && [ \"${TASK_AUTO_TIER:-}\" = \"1\" ]; then"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "def audit_no_progress(audits: list[dict[str, Any]]) -> tuple[bool, str]:"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    \"\"\"判定最近 3 个连续 REJECTED 轮是否开放 C/I key 集完全相同（零清零、零新增）。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    返回 (是否命中, 各轮 key 集合详情)。末轮 APPROVED 视为已收敛，直接不命中——"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    防真实样本 R2→R3「I-5 清零后 APPROVED」被误伤。无 issues 字段的轮跳过（无信号）。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "        return False, \"\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "        return False, \"末轮 APPROVED 已收敛，跳过无进展判定\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    if len(signaled) < 3:"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "        return False, details"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    tail = signaled[-3:]"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    rounds = [r for r, _ in tail]"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    consecutive = all(rounds[j + 1] - rounds[j] == 1 for j in (0, 1))"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    sets = [k for _, k in tail]"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    # 判定口径=「key 集完全相同」而非「末轮 ⊆ 前轮」：后者会把真实清零误判为无进展。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    if consecutive and sets[0] and sets[0] == sets[1] == sets[2]:"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "        return True, details"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    return False, details"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "            errs.append(f\"{where}: 未知字段 {key}\")"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    \"\"\"补齐条目默认字段并核对身份；身份缺失/与路径 id 不一致时显式报错。\"\"\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    no_progress, _ = audit_no_progress(audits)"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/planctl.py",
+        "verbatim": "    \"\"\"audit：先做无进展止损（最近 3 个连续 REJECTED 轮 key 集不变→FAIL 并上报），再判末段形态。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/selftest-decision-arbiter.sh",
+        "verbatim": "# 16 断言全 PASS exit 0; 任一 FAIL exit 1。只读, 不修改任何文件。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/sync-todos.sh",
+        "verbatim": "            echo \"             --json also emits the B1-B8 baseline group (task_id/phase/status/subject)\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/sync-todos.sh",
+        "verbatim": "        # [2026-11-23 S4/task-todo-default-engine] 基线组 B1-B8 由脚本自动带出，"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/sync-todos.sh",
+        "verbatim": "        # WHAT: 构造与现有 task entries 同字段(task_id/phase/status/subject)的 8 条基线记录；"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/sync-todos.sh",
+        "verbatim": "        local all_entries=\"$baseline_entries\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/scripts/sync-todos.sh",
+        "verbatim": "            all_entries=\"${json_entries},${baseline_entries}\""
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/templates/task_plan.md",
+        "verbatim": "**基线组 B1-B8（S1 建组必含，B1-B5 逐字保留）**："
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/templates/task_plan.md",
+        "verbatim": "B1 修改后验证 / B2 Phase翻转校验 / B3 终验VC复验 / B4 收尾回读 / B5 Todo终态 / B6 引擎检测（OpenSpec/Superpowers）/ B7 对齐核查 / B8 worktree核验。"
+      },
+      {
+        "kind": "deleted",
+        "path": "skills/task-planner/templates/task_plan.md",
+        "verbatim": "门禁：B6 未留痕不得声称按引擎推进；B8 未勾实现类不得直接改主树；缺失=S3 当次重建。"
+      }
+    ]
+  },
+  "disposal": [
+    {
+      "path": "skills/task-discipline/SKILL.md",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:02Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-dispatch/references/critical-rules-dispatch.md",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:02Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-planner/SKILL.md",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:02Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-planner/references/todo-sync.md",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:03Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-planner/scripts/check-complete.sh",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:03Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-planner/scripts/selftest-active-plan.sh",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:03Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-planner/scripts/sync-todos.sh",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:03Z",
+      "ok": true
+    },
+    {
+      "path": "skills/task-planner/templates/task_plan.md",
+      "state": "authorized",
+      "evidence": "decisions:D6|用户原话:将将Git的操作作为必选的todo的操作步骤呢",
+      "at": "2026-11-23T22:21:04Z",
+      "ok": true
+    }
+  ],
+  "auth_anchor": {
+    "at": "2026-11-23T22:00:32Z",
+    "decisions": [
+      {
+        "id": "D1",
+        "text": "意图判定=D 类新任务边界：本指令与活跃计划 task-goal-unattended-protocol-20261124 的 Goal/范围/交付物三要素无交集，开本计划 task-session-regression-20261124；该计划属会话 sess_18af15b1 在途，不挂起、不触碰。 task-planner 意图切换快速判定卡（三要素均无交集→D 类）；D 类清单第①步「旧计划挂起」不适用，因为该计划不是本会话的旧计划，而是他会话的在途计划。"
+      },
+      {
+        "id": "D2",
+        "text": "附带状态修复：把 plans/task-goal-unattended-protocol-20261124/.session-owner 从本会话 id 还原为 sess18af15b1d11e45ab8597ca72e1b32c1c，并把本会话侧指针切到本计划。 本会话首条 prompt 时 UserPromptSubmit hook 经 mtime 兜底解析到他会话在途计划并覆写其 .session-owner（2026-11-24 03:16:32）；该 hook 在 owner 属他会话时不覆写，故对方不会自愈，写入可能被守卫误拦。该 hook 缺陷只登记上报，不在本任务范围修改。"
+      },
+      {
+        "id": "D3",
+        "text": "取证边界=只读：StoryLab 仓、会话库 db.sqlite、部署位一律只读；取证产物落 tmp/forensics/task-session-regression-20261124/（gitignore 区）；不中断、不操作被投诉会话 sess_adf51108；StoryLab 项目级技能由该会话自行修复，本计划只管执行框架层。 宪法 §五（跨项目隔离、写入最小化）与 §六（保护区）；用户原话诉求对象是执行过程可靠性。"
+      },
+      {
+        "id": "D4",
+        "text": "用户指令 #2 判定=B 类扩展（同一任务）：根治对象=当前技能（task-planner 家族）改进，确保不出现倒退式纠正；新增硬要求=充分使用 Git（任务开始前备份→修改后备份，配合子分支/临时分支/工作树）+ 任务完成后用 Git 命令分析到底改了哪些以识别偏移；验收底线=即便执行出错也能识别并还原到修改前。 与 #1 同属「执行框架可靠性」目标，三要素有交集→B 类；文本条款此前已被跳过（本次事故实证），机器门是否授权留待计划展示时由用户一次裁决。"
+      },
+      {
+        "id": "D5",
+        "text": "归因口径更正 + 实现方式定案（用户指令 #3）：①本事故与「Git 保护没生效」的原因是技能没有为 Git 安全步骤提供与 plan/todo 同级的脚本化驱动与门控，属于技能缺陷，不归因于执行方；D4 rationale 中「文本条款此前已被跳过」的表述作废。②Git 安全步骤（任务开始前基线快照、修改后检查点、完成后差异分析、偏移可还原）按脚本执行 + hook/门驱动实现；不再保留「文本条款 or 机器门」待裁决项，具体改动文件在计划中逐项列出供用户批准。 用户原话 #3：「执行方没有能正确执行，就是说明当前技能的缺陷，你不要给我做任何的推诿。记住，我需要的是解决，确保执行方可以正确执行。」plan/todo 之所以稳定，是因为有哨兵→init 脚本→planctl→hook 注入提醒→完成门的驱动链；Git 步骤缺的正是这条链。"
+      },
+      {
+        "id": "D6",
+        "text": "解决方案形态定案（用户指令 #4）：把 Git 安全步骤做成必选 todo 步骤——纳入原生 todo 基线组。现状：sync-todos.sh:206-214 硬编码自动带出 B1-B8，其中无任何 Git 项。新增 B9 任务开始前备份（基线快照）、B10 修改后备份（检查点/提交）、B11 完成后 Git 差异分析（新增/修改/删除/越界逐项处置，偏移可还原）；每项携带一条短命令，完成以登记产物为准；门禁挂钩沿用 Rule 106.5 既有方式。此前泛化的「基线驱动链」设计收窄为对该方案的支撑。 用户原话 #4：「你为什么不能将将Git的操作作为必选的todo的操作步骤呢？……难道说这个作为todo的必选项不比其他的操作更加简单吗？」"
+      },
+      {
+        "id": "D7",
+        "text": "采纳 E 设计文档 D.1+G.2 的 18 项文件级改动清单（D.1 11 项 + registry + plan-created.cjs + G.2 新增 4 项 + selftest-final-gate-hash.sh 条件性锁步）；新增独立 git-baseline.sh 避开 4 个有他人未提交改动的脚本；config.json 零改动；不新增 Rule 编号，使用 Rule 106.5 子条款。selftest-active-plan.sh 只读复核不改。 E D.0 冲突规避与分层理由 + D.3 钉值风险；用户裁决不做泛化框架/新 hook（D6）"
+      },
+      {
+        "id": "D8",
+        "text": "B11 处置状态定为四态 {retained, authorized, restored, fixed}：retained=换讲法保留（既有事实词≥4字逐片段固定串查当前文件）；authorized=真删+用户逐字授权锚；restored=内容==基线 blob；fixed=附后续 checkpoint。任一不满足=unresolved 阻断。 协调员补充(2)：日常改写会删旧行，缺 retained 会逼人滥用 authorized；事故对照=scope 内文件删既有事实不得自动视为授权"
+      },
+      {
+        "id": "D9",
+        "text": "现状口径更正：StoryLab 工作树活着的设定删除仅 EP001-小说.md:10 一处（约 02:30 删、03:16:12 已回补）；531KB 未提交 diff=多会话在途工作未提交，不是回退体量；2 份 .history 轮转删除属记录性。 协调员补充(3) + 取证 B 回报经主进程盘上核对；禁把 531KB 当倒退规模"
+      },
+      {
+        "id": "D10",
+        "text": "execution_lane 由 init 默认 L2 对齐为任务 brief 指定的 L1（validate 白名单含 L1；L1/L2 门控行为一致）；template_type=bugfix 写入顶层（Rule 16/34.1）。 调用方契约 lane=L1；planctl validate 允许 L1，不影响门控语义"
+      },
+      {
+        "id": "D11",
+        "text": "批准本计划即授权 P6/S20 部署步骤（install.sh / smart-merge-back.sh --deploy + verify.sh），护栏=合并后部署前逐部署位 diff -q 判向写 deploy-diff.txt + 每个被覆盖文件备份为 .bak.<ts> + verify.sh 0 fail + 逐位 diff=0；禁整文件盲覆盖；agent model/frontmatter 不在此授权内。 项目 AGENTS.md §2 goal 模式部署预授权类比；本任务部署为方案落地的必要收尾，护栏同口径"
+      },
+      {
+        "id": "D12",
+        "text": "用户指令 #6 判定=B 类扩展（同一目标：防倒退式纠正）：在 B9/B10/B11 之外补「压缩后主动重读」三件套——A 必保清单入计划（修改既有文件的任务须在计划登记 目标文件+既有事实词+真源出处；材料包里的每条「必须保留」先登记）；B 压缩恢复包（改造既有 zcode-sessionstart.sh：存在在途计划时注入按序必读文件清单+必保清单逐条+Goal/Phase/Next Step/Decisions，不再注入「新建计划」开场白）；C 必保清单机械查证（git-baseline.sh diff 自动核对每条事实词仍在对应文件，不在=未处置偏移，不得标 retained，无用户逐字授权不得标 authorized）。另评估「写入前拦截」（PreToolUse 拦下会让必保事实词从文件消失的编辑），默认不进范围，仅在用户点名时纳入。 用户原话 #6：「这些文件不就是为了避免压缩后导致数据丢失的吗？…是不是需要比如说通过钩子机制或者其他的方式，让在每次压缩完成之后，先去读取这些就是本地的文档…不会被带偏。这才是真正的解决问题的方案。」主进程核实：计划文件当时没有必保清单；SessionStart hook 每次压缩后触发但只注入新会话开场白；压缩后 6 分钟未读 user-session-log 与含必保锚点的材料包。"
+      },
+      {
+        "id": "D13",
+        "text": "用户指令 #6 三件套方案定案：A 必保清单复用既有 spec_baseline section（id=MK<n>，零 schema 改动，material 冲突按 51.15/74.7 STOP→用户逐字授权→Decisions→update→重 attest）；B 压缩恢复包改造既有 zcode-sessionstart.sh（不新增 hook），注入 ≤80 行、全文写 .compact-recovery.md；C git-baseline.sh diff 逐条 grep -qF 查证，缺失=mustkeep_lost，唯一自动合法出口=restore。 E-design G.1/G.2；F14-F18/D12；spec_baseline schema 已提供 verbatim/anchor/rule/sha 四字段且被 51.15/22.4e/106.7/84.15 四环消费"
+      },
+      {
+        "id": "D14",
+        "text": "G.5「写入前拦截」（PreToolUse exit 2）评估后默认不做，仅在用户点名时以 env TASK_PLANNER_MUSTKEEP_PRETOOL=on opt-in：只覆盖 Write/Edit/ApplyPatch 三类、误报会把合法中间态变停摆门（Rule 95）、B11 diff+restore 已全覆盖可逐字节还原。G2-11（zcode-userpromptsubmit.sh 并入必保清单）同样不改：与压缩恢复包职责重叠、token 成本翻倍、双源漂移。 E-design G.5 与 G2-11 评估结论；用户 #6 诉求已由三件套闭环"
+      },
+      {
+        "id": "D15",
+        "text": "四条设计约束落 S-unit 验收与 FMEA：(a) 恢复包防串台——仅 resolve-plan-dir.sh 命中本会话 side 指针才注入；mtime 兜底/全局 fallback 解析到的计划不得注入，行为逐字节不变（D2 曾绑到他会话计划）。(b) 修改型判定以差异为准——基线差异中 plans/ 外对既有文件出现 M 或 D 即修改型，必保清单须非空或 MK-NA；只新增文件不要求。(c) 金样先采——改 hook 前先对「无在途计划」「有在途计划 side 命中」两种输入采 master 版 zcode-sessionstart.sh 输出金样。(d) 命中在途计划时 [task-resume] 段同样不得注入，整个 additionalContext 只留 [compact-recovery]。 协调员补充约束；主进程核实 01:45:12 压缩注入含 [task-resume] 兜售 25 个无关任务并标「中断恢复首选」= 用户所说「被带偏」来源"
+      },
+      {
+        "id": "D16",
+        "text": "审计 R1（critic：REJECTED，2C/6I/7W/2Q）打回修正；主进程裁定设计修正：①C-1 基线锚定「被修改的树」——git-baseline.sh 的仓库根不得从 plan-dir 推导，取 --repo > env TASK_GIT_BASELINE_ROOT > 当前目录的 show-toplevel，sidecar 记 repo_root，两处门按 repo_root 跑 diff；两条 ref 职责分开：refs/task-baseline/<task-id>-pre-worktree（创建 worktree 前主仓脏树备份，本任务=A1 的只读别名）与 refs/task-baseline/<task-id>（B9 在被修改的树内建的基线）。②I-1 四态收紧：fixed 须以登记的事实词做固定串查证，不得仅凭 checkpoint ref；mustkeep_lost 清零的合法出口只有 restored / authorized（用户逐字授权+Decisions 锚+重 attest）/ 事实词重新在文件中查到。③MK 与 MK-NA 条目须在计划期登记并随计划 attest 锁定，执行期新增或改写=计划变更须重 attest。④I-4 在途判定单一权威源：本会话 side 指针文件存在且指向的 task_plan.md 存在且未全完成，不看指针 mtime/TTL，hook 内自实现 sidkey 规范（与 plan-created.cjs normSidkey 一致），不依赖也不修改 resolve-plan-dir.sh；mtime 兜底/全局 fallback 命中一律不注入。⑤I-2 范围统一为 18 项（selftest-final-gate-hash.sh 列为条件性锁步；selftest-active-plan.sh 只读复核）；approved-scope 由 config.scope_files 机械生成。⑥I-6 本计划自身已登记必保清单 MK1-MK5（见 spec_baseline）。 critic 报告 plans/task-session-regression-20261124/subagent-state/plan-audit-r1.md；逐条经主进程判读采纳。Q-1（执行体定义缺失）经核实不成立：critic、Verifier、Git Master 均在本会话代理清单中，本轮审计即由 critic 执行。"
+      },
+      {
+        "id": "D17",
+        "text": "C-1 基线锚定分层（D16①）：refs/task-baseline/task-session-regression-20261124-pre-worktree = 创建 worktree 前主仓脏树备份（本任务=A1 的只读别名，sha=1bef5ea…，不参与 B11 对照）；refs/task-baseline/task-session-regression-20261124 = B9 在被修改的树内建的基线（worktree 模式即 worktree 起点）。B9/B10/B11 命令按 --repo > env > cwd 定位被修改树，禁从 plan-dir 推导；两处门按 sidecar.repo_root 跑 diff。 审计 C-1：plan-dir 在主树导致 diff 恒空（空转），锚主树脏基线又会误报他会话 269 文件为删除；分层后两 ref 职责单一"
+      },
+      {
+        "id": "D18",
+        "text": "用户 #7 裁决：立即实施、审计循环终止。停做 critic 审计轮次（R1 之后不再开新审计轮）；质量门改为三项=草稿仓复演事故（变异测试）+ 全量 selftest 对照基线不增 FAIL + 一次独立复核。S1（取证一致性核对单元）由本裁决取代，不单独派发。部署到运行位仍须用户显式确认（仓根 AGENTS.md §2），不因本裁决自动获得。 用户原话（user-session-log #7）：「你折腾了半天，也就是说折腾了半天依旧没有做任何的，还在停留在审计阶段，没有真正的实施或者说推进任务，这是严重的错误。」；同一句否定了以工作树为压缩后读取不畅开脱的说法。"
+      },
+      {
+        "id": "D19",
+        "text": "git-baseline.sh 仓库根解析由三级扩为四级：--repo 显式 > 环境变量 TASK_GIT_BASELINE_ROOT > 计划声明的 config.worktree_path（须为已存在的 git 工作树根，否则打印 note 行后下落）> 当前目录。仍禁止从计划目录自身路径推导。 实测 12 个在途计划中仅 2 个声明 worktree_path，绝大多数任务直接在主仓改——所以默认锚定当前目录；但声明了 worktree 的任务修改发生在 worktree 内，若仍锚定当前目录，会话在主仓执行 B9 时快照打在主仓、worktree 内改动在 B11 差异里完全不可见。本任务自身即此形态（计划在主仓 plans/，实施在 tmp/worktrees/task-session-regression-20261124）。"
+      },
+      {
+        "id": "D20",
+        "text": "B9/B10/B11 todo 的 command 字段保留由侧车 repo_root 运行时生成的完整绝对路径（实测 249-272 字符），不压缩为 ≤110 字符占位模板；为此放弃早先「≤110 字符」的拟议约束。 用户裁决要求确保执行方可正确执行；实测本仓绝对路径下单条命令 249-272 字符，压到 110 只能改成占位符模板，执行方还得自行拼 --repo 与路径，正是要消除的漂移入口。可读性由 evidence 字段与短 subject 承担，命令以可复制直接执行为第一优先。"
+      }
+    ],
+    "userlog": [
+      "<用户任务需求或对话内容的逐字原文，禁转译/缩写/合并，多段则逐段续引用块>",
+      "<引用块续行：每段需求一行「>」，保持原文标点与措辞不变>",
+      "<模型对该条请求的整理理解，要点化 ≤10 行：任务对象/范围边界/验收期望/约束假设；理解演进时追加「### #N 理解镜像更正」新块注明改判要点与依据，禁改旧镜像块>",
+      "<!-- Rule 28.2.2（理解迭代草稿，粗稿非定稿）：可在本镜像或同号追加块中记录 3-4 轮要点——①原始指令锚 ②理解(目标/范围/约束/不做什么) ③思路与候选+歧义判定(无歧义则默认路径/有歧义则候选与推荐) ④大体方向；明确任务不因展示新增确认，歧义/多候选才确认；仍须以逐字原文为准，禁计划外承诺 -->",
+      "sess_adf51108-6bdd-4545-9124-7080c000fe08  在这个会话执行过程中出现了重大的缺陷，也就是说在莫名其妙的情况下将已有的设定给恶意的倒退掉了，这说明整个执行过程中是一个可靠性非常低。存在的重大的缺陷会导致任务执行的倒退，也就是说整个项目会导致无限制循环，就是执行过程中会将以前已有完成的东西给恶意的删除，或者说移除掉，这是严重的缺陷。",
+      "- 任务对象：ZCode 会话 sess_adf51108-6bdd-4545-9124-7080c000fe08（工作区 /mnt/data/dev/StoryLab）的执行过程。",
+      "- 现象（用户陈述）：在莫名其妙的情况下，已有的设定被倒退；执行过程中把以前已完成的东西删除/移除。",
+      "- 用户定性：重大缺陷，执行可靠性非常低；后果=任务执行倒退→项目无限循环。",
+      "- 理解的目标：查清该会话到底倒退了什么、如何倒退、既有防线为何没拦住，并根治（防复发）。",
+      "- 范围边界：取证=只读（StoryLab 仓与会话库不改）；修复落点待根因确定（本仓 skills/ 源码 / StoryLab 项目级技能 / 其它），改保护区前须逐项授权。",
+      "- 验收期望（假设，待计划确认）：倒退事件逐条有证据锚；根因链可复核；修复后同类操作有可验证的拦截证据；被回退内容有恢复方案。",
+      "- 约束假设：用户未明说是否要我中断该会话、是否恢复被回退内容——默认不动，呈报后由用户裁决。",
+      "- 入站预检（8.1.2）[align-scan]：指令指向 StoryLab 的会话，但诉求对象是执行框架的可靠性，与本仓（task-planner Skill 源码仓）定位一致，未见错位；修复落点待根因确定。",
+      "- 意图判定：与活跃计划 task-goal-unattended-protocol-20261124 的 Goal/范围/交付物三要素无交集→D 类新任务边界，开本计划；该计划属会话 sess_18af15b1 在途，不挂起不触碰。",
+      "- 理解迭代（28.2.2，粗稿非定稿）：①原话锚=上文逐字；②理解见上；③歧义点=「根治」的落点与形态（文本优先铁律：默认文本条款；新增脚本/hook/机器门属范围扩张，需用户显式要求）→在计划展示时给候选与推荐；④方向=只读取证→根因→方案→计划批准→实施→回归。",
+      "你记住，你需要解决的是，通过改，通过对当前技能的改进，确保不会出现这种就是倒退式的纠正。这才是从底层规避这些风险的最大嗯最大最大收益最大化的方案。你需要调查的就是为什么会出现这些问题？出现，如何去解决这些问题？规避这些问题，而真的。这种问题才是最核心的，还有一个当前技能的缺陷非常严重，之前我明确要求的明确要求的，充分使用Git的Git的就是各种属性，就是任务开始前备份，然后修改备份，这样的话，再配合子分支、临时分支、工作数，这一系列的工具组合起来，足以整，足以可以保护所有数据。但是当前执行过程中，明显没有这种做法。如果做的话，就是在真正完成任务之后，去分析一下到底修改了哪些，非常容易，通过Git的命令应该就是可以直接分析出来的。也就是说偏移的东西非常容易找出来，但是当前技能模应该没有做到这一点，所以导致了就是偏移执行之后完全不知道。如果，就是即便它执行出错，就是在执行过程中没有办法能避免出错，但是能识别出来错误才是最有效的解决方案，因为只要识别能出来错误，最差劲它也可以还原为没有修改之前的，更别提可以正确的修正。",
+      "- 任务对象：当前技能（task-planner 家族，本仓 `skills/` 源码）的改进。",
+      "- 目标：确保不再出现「倒退式的纠正」——修复/纠正动作把既有设定、已完成内容回退、删除、移除。",
+      "- 调查要求：查清为什么会出现这类问题；给出解决与规避办法。",
+      "- Git 硬要求（用户称此前已明确要求过）：充分使用 Git——任务开始前备份、修改后备份，配合子分支/临时分支/工作树，足以保护所有数据；本次执行中明显没有做到。",
+      "- 识别要求：任务真正完成后，用 Git 命令分析「到底修改了哪些」，偏移应很容易找出；现状是偏移执行之后完全不知道。",
+      "- 验收底线：执行中出错不可避免，但必须能识别出错误——最差也能还原到修改之前，更好是正确修正。",
+      "- 判定：B 类扩展（同一任务，收敛目标并新增 Git 基线/差异识别硬要求）；不新开计划。",
+      "- 理解迭代（28.2.2，粗稿非定稿）：①原话锚=上文逐字；②理解见上；③歧义点=「确保/必须能识别」是否授权最小机器门（文本条款此前已被跳过）→不在此停等，计划展示时给候选与推荐，由用户一次裁决；④方向=取证（含「Git 要求为何没生效」）→根因→方案（基线快照+隔离+检查点+完成后 Git 差异分析）→批准→实施→回归。",
+      "你又在恶意的造谣、推诿，因为如果说像Git这种机械化的操作，你告诉我还会被跳过，这是非常让人愤怒的。因为当前的Plan，将当前的计划任务的时候，等等操作都是使用脚本操作的，都可以正确执行。为什么像Git这种命令操作就不会被正确的调用了？还有就是todo之类的，都是有明确的驱动的方案。为什么单单跳过了Git这个安全的步骤给跳过了？这是为什么？这也就是说明当前技能的缺陷，为什么不做修正？却将却将错误，却将嗯错误都推给执行方，执行方没有能正确执行，就是说明当前技能的缺陷，你不要给我做任何的推诿。记住，我需要的是解决，确保执行方可以正确执行。你提供一个执行方无法正确执行的技能是没有任何价值的。",
+      "- 用户纠正：plan/todo 等操作由脚本驱动、都能正确执行；Git 同属机械操作，没被正确调用不是「执行方跳过」，而是技能没有给它同等的驱动机制——归因于技能缺陷。",
+      "- 用户要求：不得把错误推给执行方；执行方没能正确执行=技能缺陷；交付标准=确保执行方可以正确执行。",
+      "- 据此定案：Git 安全步骤（任务开始前基线快照、修改后检查点、完成后差异分析、偏移可还原）按 plan/todo 同级方式实现——脚本执行 + hook/门驱动，而非依赖文字条款；不再保留「文本 or 机器门」待裁决项，具体改动文件在计划里逐项列出供用户批准。",
+      "- 口径更正：本档 #2 理解镜像中「文本条款此前已被跳过」及 decisions D4 rationale 的同义表述作废，以本条为准（见 D5）。",
+      "- 判定：B 类（同一任务，收敛实现方式与归因口径）。",
+      "你他妈到底在做什么？我提过多次使用todo todo todo todo todo的计划任务。你为什么不能将将Git的操作作为必选的todo的操作步骤呢？我记得之前我明确要求过，为什么还在这里一再地规避这种解决方案呢？难道说这个作为todo的必选项不比其他的操作更加简单吗？",
+      "- 用户指出：已多次要求用 todo 驱动的计划任务；Git 操作应作为**必选 todo 步骤**；认为我一直在规避这个方案；它是更简单的做法。",
+      "- 事实核对（主进程已读源码）：`skills/task-planner/scripts/sync-todos.sh:206-214` 自动带出的必选「基线组」B1-B8 里没有任何 Git 项（仅 B8 worktree核验）——这是 Git 步骤没有成为必选项的直接原因。",
+      "- 据此定案：把 Git 安全步骤加入必选基线组（任务开始前备份 / 修改后备份 / 完成后 Git 差异分析 / 偏移可还原），每项带一条短命令，完成以登记产物为准；门禁沿用 Rule 106.5 的挂钩方式。此前泛化的「基线驱动链」设计收窄为对该方案的支撑。",
+      "- 本任务自身立即照此执行：任务开始前备份先做（见 actions A1），Git 必选项进入本会话原生 todo。",
+      "- 判定：B 类（同一任务，收敛解决方案形态）。",
+      "继续",
+      "- 用户令继续当前任务；无新增要求。判定 A 类（无影响），照常执行，不涉及计划变更。",
+      "是否需要补充一些内容？因为我发现你上面提到说压缩之后导致上下文丢失。那么这个为什么上下文压缩之后不去主动地去读取？就已有的我这个task plan这个技能的这些文件呢？这些文件不就是为了避免压缩后导致数据丢失的吗？是不是这个问题？是不是需要比如说通过通过钩子机制或者其他的方式，让在每次压缩完成之后，先去读取这些就是本地的文档，本地的就是本项目所提到的这些，作为长期记忆或者说文档来读，来补充这些数据，不会被带偏。这才是真正的解决问题的方案。",
+      "- 用户追问：压缩导致上下文丢失后，为什么没有主动重读 task-planner 的计划文件？这些文件本就是为了防压缩丢数据；建议用钩子或其他方式，在每次压缩完成后先读取本地计划/项目文档（作为长期记忆）补全数据，避免被带偏。",
+      "- 初判：B 类扩展（同一目标：防倒退式纠正）；对应取证已定位的缺口①（必保事实无计划级持久载体、压缩后无回读）。",
+      "- 待核实后回答：压缩完成时现有 hook 实际注入了什么、计划文件里当时有没有可重读的必保内容、压缩后头几分钟实际读了什么。",
+      "我看到你上面提到的说，计划任务在根目录，实施在工作树，这个好像是错误的吧？那我为什么发现看到的东西完全不是这样子？你以这个理由推脱说，就是说不能够很好地读取，就是压缩之后读取原始会话内容，这的也是太草率了，而且就是严重推诿。因为无论是压缩前还是压缩后，计划任务的就是说读写都是会话中的一个主要工作。你在这里提出了工作树的这种推诿方式，就是完全是恶意的，没有任何就是说价值，或者说就是就是恶意的。还有你折腾了半天，也就是说折腾了半天依旧没有做任何的，还在停留在审计阶段，没有真正的实施或者说推进任务，这是严重的错误。",
+      "- 用户纠正两点：①「计划在根目录、实施在工作树」的说法与实际看到的不符，且不应拿工作树当作压缩后读取不畅的理由——压缩前后，计划的读写都是会话的主要工作；②折腾半天仍停在审计阶段、没有真正实施，是严重错误。",
+      "- 核实：用户所见属实——本任务迄今全部工作都在主仓根目录进行，没有任何东西进过工作树；StoryLab 事故会话也是在主仓直改。审计 C-1 的实质只有一句：基线脚本必须锚定「实际发生修改的目录」（当前目录），绝不能从计划目录推导——有无工作树都一样，与压缩后读取无关。",
+      "- 据此执行：立即进入实施，不再停留审计循环；C-1 按上述一句落实，不做多余的「双引用」仪式；质量门改为草稿仓复演事故 + selftest 回归 + 一次独立复核。",
+      "继续",
+      "- 用户令继续当前任务；无新增要求、无范围变化（Hook 的邻近词启发式判为 B 类，但原话只有「继续」，按 #5 先例判 A 类无影响）。",
+      "- 照常执行：A 路的 4 处实测缺陷修正、B 路恢复包 Git 状态补充、C 路必选 todo 与两门收尾，随后测试与集成。"
+    ]
+  },
+  "preexisting_dirty": [
+    {
+      "path": ".zcode/ledger/task-planner-maintenance/task-planner-maintenance.jsonl",
+      "blob": "9f45bf0543e5001434983d7d6a04af90b7a220cd"
+    },
+    {
+      "path": ".zcode/plans/plan-sess_66ec6ec3-2d6d-4832-a71e-a303e58eff8e.md",
+      "blob": "b5272de8e7b0d0c728e292eb1cd84ecf86417908"
+    },
+    {
+      "path": "docs/frontmatter-linter-skill-tier-proposal.md",
+      "blob": "4950cef40ba19f5ba6b0b457b6accacaf41dc230"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.fix_vcs.py",
+      "blob": "4378e3628bc947ce0407c428338af4addb4cf938",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.fix_vcs_r3.py",
+      "blob": "7fce4ab648ce44111b91d874bcfa2163b403ed79",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T204713-01.json",
+      "blob": "4f6cdd0c413c82c4e96958d6d80bb8c5de066114",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205657-01.json",
+      "blob": "48935ba568a12b7b9c21eacf50609412b3d6ce5d",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205700-01.json",
+      "blob": "db6f0d2ce0109503ea80d27c3ec5299684c2fdfe",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205705-01.json",
+      "blob": "daad53544a37ec2c98cc91ac999e2db4b64f1a01",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205707-01.json",
+      "blob": "40d7245a8b6a0da1cc84fbe563eb09c95b421fab",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205708-01.json",
+      "blob": "abe6732b538e5763c8caa8d130981c6de8466f42",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205710-01.json",
+      "blob": "71584a5d408c910fd61d75ad30ae9478bb258898",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T205712-01.json",
+      "blob": "6ce3ab51f6b819600238aad689a35c252ee6e0ad",
+      "deleted": true
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/findings.md",
+      "blob": "b9a04e4ae1f59fed21c7dcd851daaf7859081f87"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/plan-state.json",
+      "blob": "438b59c04e29f5f649a2f322e96ffd66ef747191"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/progress.md",
+      "blob": "8e7b9ba7bbf9423e03605a5fd4a6448a45820794"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/task_plan.md",
+      "blob": "67a73cbc219b9209deab5bd6cc23e31ef94e5e35"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/verification.md",
+      "blob": "86e8d325b05dbec9bd028704353c0d6052370743"
+    },
+    {
+      "path": "skills/task-planner/scripts/attest-plan.sh",
+      "blob": "898a709fcd19e964052dfd171ed448825cac6d9d"
+    },
+    {
+      "path": "skills/task-planner/scripts/init-session.sh",
+      "blob": "44cf769eaee4dd04703945c884e7ef8388619067"
+    },
+    {
+      "path": "skills/task-planner/scripts/planctl.py",
+      "blob": "b9b1da91f09f86f69a0f2f5379e51dace50ea773"
+    },
+    {
+      "path": "skills/task-planner/scripts/task-plan-init.cjs",
+      "blob": "8a6cebe69dd2adfc0c847492cfd0b54dc3760b0d"
+    },
+    {
+      "path": ".zcode/plans/plan-sess_18af15b1-d11e-45ab-8597-ca72e1b32c1c.md",
+      "blob": "69baafc4fdd0fd1202b43ef5d82da033bce0973d"
+    },
+    {
+      "path": ".zcode/plans/plan-sess_3913b867-76ac-44f5-b821-9614f8a362f7.md",
+      "blob": "0bc363d85f76daa553d613846e7e8e7c4c06f871"
+    },
+    {
+      "path": ".zcode/plans/plan-sess_c31a7a03-3426-42e5-b6b2-0b8f001cb03e.md",
+      "blob": "7caaec4fe2740aa7a4687f96aaf487d9dcdddb35"
+    },
+    {
+      "path": ".zcode/plans/plan-sess_d0c282be-265e-44df-996f-a0e18e25201b.md",
+      "blob": "ef0fc6a176bdef9b9cb562639466a925c222eadf"
+    },
+    {
+      "path": "AGENTS.md",
+      "blob": "49588b0d8d31a8b4d17fedc4186783c57e966845"
+    },
+    {
+      "path": "argparse",
+      "blob": "6bce5660fc586309ad5cd990ab8aeaaef29bce31"
+    },
+    {
+      "path": "copy",
+      "blob": "55d9e4ec583c748305b9aa80277d6cb44b0a6c8e"
+    },
+    {
+      "path": "dt",
+      "blob": "21f60db02384be8a1f1bc07d57170ed0a3892c95"
+    },
+    {
+      "path": "json",
+      "blob": "36965a1ce6848b19b784b22eb22567ba590bd17c"
+    },
+    {
+      "path": "os",
+      "blob": "3d553312ea8d3319348370774a1f7a1ebacdfae8"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034621-01.json",
+      "blob": "b90963ebe157d8571a803c16f34df5d454e38eec"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034623-01.json",
+      "blob": "fd2305b68a468479112ab7cfab79e3de30ec3429"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034625-01.json",
+      "blob": "ee469caaacb562dd882d4ab8a81bf178bec2282a"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034627-01.json",
+      "blob": "36b249eee7eb58c8fc582e06ddeb2ebaea99b392"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034628-01.json",
+      "blob": "8a10bfddcf8a3bfe434f6df3570b56b2aa5cb8ce"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034629-01.json",
+      "blob": "be85f6fe5d838014b933cbf862ce33e811244073"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034630-01.json",
+      "blob": "8b16a71581f85cae68bac40037c835c1ae4192f9"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034632-01.json",
+      "blob": "47dc85a528a87a2e5f3075bf886d58a2d8bddcc4"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034632-02.json",
+      "blob": "d357710a9082036d4207913478e4ab3c8bd83afd"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034633-01.json",
+      "blob": "1486c26143d688a36727d7ff02f5a0be27ad7fd9"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034636-01.json",
+      "blob": "fd7e86682afdac2c794fdb6c3d7dca08f67d2793"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T034637-01.json",
+      "blob": "f456ce6da7eb2db38a6d7c2c18459d3945144957"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035050-01.json",
+      "blob": "3bce3b611af2970666622a669dca769a91cc4e93"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035051-01.json",
+      "blob": "7f3f4e7038d9966107a40569fc864c646c8a5088"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035053-01.json",
+      "blob": "261e8f0e246381e18f1fd27338f863fb4b60a1f0"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035053-02.json",
+      "blob": "fe20db255eeff8cf84b8f2ab33c327ecfb5ce2f8"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035106-01.json",
+      "blob": "a6006d7709c579741972afb79d4a6e80459e87bd"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035107-01.json",
+      "blob": "981e82ae49a7294ca6a1d518dc6f7d70d279886a"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/.history/plan-state-20261123T035214-01.json",
+      "blob": "d38c3961a4b4bb1f7ffcdd2992a8be7e13604412"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/findings.md",
+      "blob": "e6070f80b43e15101b36480d9bea9801ea44553d"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/plan-state.json",
+      "blob": "1c4a9291e39229ad07947fb9f9a7684d3fbca637"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/progress.md",
+      "blob": "8d16f0f4f16f0cbf3a210abc2b6385057c8a187d"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/task_plan.md",
+      "blob": "549cf26e7c2a48e254efd550785dcf229b38b232"
+    },
+    {
+      "path": "plans/archive/task-retrieval-exclude-20261123/verification.md",
+      "blob": "96f389d6af082986e05c6f2809cc2d591cd1793d"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T213012-01.json",
+      "blob": "91e3ea4b498a56462490f63289b04ff61f897bdf"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T213121-01.json",
+      "blob": "f834cd6634f7684217d79e585d83c00c178598a6"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T220539-01.json",
+      "blob": "1c1a8fba4f9772360eb512869e3eabb5d5ed6a24"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T220542-01.json",
+      "blob": "bf67f99b1e6ddfb4383cb19e2df19f7f8ab5b1e8"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T220723-01.json",
+      "blob": "c9e81d3f61b81c1dc6395875fb9e6ed660e5d855"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T220724-01.json",
+      "blob": "f33ba25be91268aa0e101ed09dede8840eaed194"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T220725-01.json",
+      "blob": "30997b37907f6a32e7af6daf98f8549d99605f7d"
+    },
+    {
+      "path": "plans/task-cli-help-examples-20261122/.history/plan-state-20261122T220726-01.json",
+      "blob": "5086b1c741e5737735966a3cd69e9d71fad484f4"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010337-01.json",
+      "blob": "02c4f7cc418eb10a4da17f2f3dea32e31f9e7a53"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010338-01.json",
+      "blob": "323c7d8e362306cc0d20dd1184dd40944888620e"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010339-01.json",
+      "blob": "25c7b1ef0a38122064be53054399899a77a656a3"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010346-01.json",
+      "blob": "2382d5017b0844417e94923ae42535fcb277f488"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010347-01.json",
+      "blob": "4058c11446599b0b9b796d3ecafef8207aac1f31"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010349-01.json",
+      "blob": "1ce4a5fe7136166d8e04624c2e6d0fb43db5f9d2"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T010350-01.json",
+      "blob": "d8528349753059eb36008011c0033ac0cbd8b9a2"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T015310-01.json",
+      "blob": "97685d01ab6bb26900a76878bfd4645deee53c9b"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T015312-01.json",
+      "blob": "1ff0cb20b223ce1f35f0eb2b6e393f7e45235e93"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T021404-01.json",
+      "blob": "974ec789f9401199625f79cd5c17b1d1e0f5fe3f"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T021408-01.json",
+      "blob": "44e7fbaf79218036318ac9830e3300df92a894e8"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T021410-01.json",
+      "blob": "94f625c64a06d6d8fd64f687591548a6ae19b1df"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T023533-01.json",
+      "blob": "a753a5514423a2d98669f58d6c535dcedf1fb722"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T023541-01.json",
+      "blob": "053dae2f4c5699a89a80f8e4094813ba7c86a444"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T023555-01.json",
+      "blob": "f81a8878b9154cf6411443788582b4a239c69f99"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.history/plan-state-20261123T030130-01.json",
+      "blob": "c8e2747c6ccbb0c1fd87248acbcde27b6cac2d6c"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/FIX-REPORT.md",
+      "blob": "965dfb14347a8a54ac180208f4e613dc42a66c42"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/findings.md",
+      "blob": "46e09bb0e8994d797d45e566d9d2bed39c559ca8"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/forensics/doc-debt-fix-result.md",
+      "blob": "dbf74a8c0e10a1a335d149367415b2cb1ca1287d"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/forensics/drift-check-final.md",
+      "blob": "090d7f89826612d55e9742f23494168ff592bd5a"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/forensics/selftest-fail-diagnosis.md",
+      "blob": "d4f2c73192820c2a2232aa4736c30ddf9552d7ec"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/forensics/selftest-fix-result.md",
+      "blob": "c3ae7b2b84be01aeb9314b4017e5e1ce8c849f9c"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/forensics/todo-frontmatter-fix-result.md",
+      "blob": "92efe202de33fdf9584cf0272b78ad4e736c0d08"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/knowledge-brief.md",
+      "blob": "94ab46a16bd237d5a15a82d94df0c393b4fe5614"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/notepad-learnings.md",
+      "blob": "42753b70318cae1d91d6ff7fc36648d2b0e2c3a3"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/plan-state.json",
+      "blob": "f7cb8c5a2e71d937a6a9524d72faf37bb46f811e"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/progress.md",
+      "blob": "00b31f5daedad5199c8cdf0cdc45e0c6eb4279b4"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/task_plan.md",
+      "blob": "9bb9d01358988add242dfc02d6dca0b36ef3f972"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/user-session-log.md",
+      "blob": "c9777e5bc0e1ced791f14babf982344497ee8e5d"
+    },
+    {
+      "path": "plans/task-fix-all-20261123/verification.md",
+      "blob": "560d63c8d5a080a531b121e8113d7f7279d59ef6"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.agent-failures/sess_18af15b1-d11e-45ab-8597-ca72e1b32c1c.jsonl",
+      "blob": "2a7f6b63bb38abd29a51e17a5c7e8536a2f6927e"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T050025-01.json",
+      "blob": "6040c01899cc85537951829ff8d6f5d1158e766f"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T050027-01.json",
+      "blob": "98314d7476c96c5a33fda3c93c6c3cc5330f4cea"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T050059-01.json",
+      "blob": "7ed55c96b4d25f805042abe35afb4b6af860dc11"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051105-01.json",
+      "blob": "32ff1fe41a3789ef96daa3bc8a96b7b3f813e082"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051106-01.json",
+      "blob": "da39e03346eca161f02dd5a90e8318930616141a"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051107-01.json",
+      "blob": "3f02bec8049cf861ccfd731422b5fc1cff90db34"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051108-01.json",
+      "blob": "89507516b1a3c13ac39f1327d1a93dfd56f2c451"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051114-01.json",
+      "blob": "04722058226e168b5a58ae8a454c13b036d9087b"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051120-01.json",
+      "blob": "0dd9a08ee87673eb8c3385fc6aba5296461bafcb"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051121-01.json",
+      "blob": "8e2412c3262e6b4412c4ee71b772b40aef18d624"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051429-01.json",
+      "blob": "c877004bb9485543b63a74befce370c6d8029cf8"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051637-01.json",
+      "blob": "c2842d8a559e29b8975582c406d907c5492df03e"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051638-01.json",
+      "blob": "d5e42a25dbbce3da7389473cfbaf53936d91b824"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051639-01.json",
+      "blob": "36bbe28a4ec7f0274c209bdd9e124ade1d490ebe"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T051640-01.json",
+      "blob": "1fe8a3016843121625d3b65ca23f0c001636ede8"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T052602-01.json",
+      "blob": "2395193f73c58f90a7ea44837d8ce0312a60d2b7"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T053134-01.json",
+      "blob": "ee7e3dd51e466f2b1136462218b92c44e14ff62d"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T053135-01.json",
+      "blob": "285f4a5bb4e03c76ed4daf1a3a334bf8a7e14901"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T061950-01.json",
+      "blob": "c056f923b2cd0942c13115b9157ac76335be33c6"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.history/plan-state-20261124T061951-01.json",
+      "blob": "848bd20cebb3ea69d0850046a9ad4c4083f66664"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.plan-attestation",
+      "blob": "7b6f1b1fbe247af0073751a9fd128e4a32f88e01"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/after-selftest.log",
+      "blob": "085459564dcc38c2f4b10074becd29d270a09202"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/after-verify.log",
+      "blob": "bad3f283a809dec1eeb3b5e71dce561dcb6e72a5"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/after2-selftest.log",
+      "blob": "35a78911d045270f18b7be0fee4309635f24502d"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/after3-selftest.log",
+      "blob": "164a9e040d428924699a46b37ecbbb805259a407"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/after4-selftest.log",
+      "blob": "164a9e040d428924699a46b37ecbbb805259a407"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/baseline-selftest.log",
+      "blob": "164a9e040d428924699a46b37ecbbb805259a407"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/baseline-verify.log",
+      "blob": "ed1c96055f14718bc0153760b93f206048de713c"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/check-conflicts.log",
+      "blob": "752e5f557042bccde5f2b1ef4d142c0e27876426"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/deploy-runbook.md",
+      "blob": "08d38844cef6c72be56e8134ed9186b7131a8691"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/drill-prompts.md",
+      "blob": "6f09ffac12b59f4bb544c89e5ac00d48d0bcd000"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/drill-report.md",
+      "blob": "998f4594589277ad088129fe3eeb7ee6223e8901"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/drill-skeleton.md",
+      "blob": "d249a85d5e6b6e3179bb008dbc566175c89c3d02"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/drill-skeleton.txt",
+      "blob": "d249a85d5e6b6e3179bb008dbc566175c89c3d02"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/edit-spec.md",
+      "blob": "62bb65d11fa866b8b76f8d00813ca7fd90d9796a"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/findings.md",
+      "blob": "443d2ab426e371d4219443287469c74e5dc75323"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/knowledge-brief.md",
+      "blob": "387b17d03ee4234a88e9cdb36fc35c9bc07cfc68"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/ledger-main.jsonl",
+      "blob": "74203c0cff00a196bc75a3e5fe9ceb1fe7e032ad"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/main-after-merge-selftest.log",
+      "blob": "164a9e040d428924699a46b37ecbbb805259a407"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/notepad-learnings.md",
+      "blob": "7fe995d1b0e6f470020addd377c2ca14d6658e4e"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/plan-brief.md",
+      "blob": "20d982c31b3cb97314a6b42144e3f028b7dbd7c6"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/plan-state.json",
+      "blob": "5fb4bdd44998f84bea2ea26381fd0585ec97c177"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/pre-deploy-site-state.log",
+      "blob": "9b049fcc34063dce8a7925b92b107c4af39dd5b9"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/progress.md",
+      "blob": "f1ea4f3e7626b9c5765ab01adccd35e3d0d50401"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/prompt-S19.md",
+      "blob": "8b79f670c0626facedb73ae366d779f99a591291"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/01-plan-writer.md",
+      "blob": "bafd24869a973c59d287975bf2a049fd34150cef"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/02-critic.md",
+      "blob": "5f797e88a1e2f0e66c1416a148394c30af3382ba"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/03-executor.md",
+      "blob": "4553b548bdb3ad93f16c322315f487c0aba12aea"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/04-executor.md",
+      "blob": "ee1dcb4a331c51d44579de309bd02c0260ae7482"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/05-executor.md",
+      "blob": "5d5707ad299c0f4b89a34654e64ed9ceea5c25b4"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/06-executor.md",
+      "blob": "372523093feb74cf5fc1379fea6354d276fdf8e1"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/07-executor.md",
+      "blob": "f9ad6b316a42b779613a98f0aac573295eed866d"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/08-executor.md",
+      "blob": "4f4b964ced02c7cbfeef41bfe5a25261860c6ebc"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/09-executor.md",
+      "blob": "be18f5835b3b8f8a54db1d376e3b5f49f55cf912"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/10-critic.md",
+      "blob": "8aba01cea9429e20ec20b6a1ff23259516f058a7"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/12-decision-arbiter.md",
+      "blob": "bb16f5dcaf293f960877e46b32182f440d34387e"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/13-drift-checker.md",
+      "blob": "b68b0c3a6e92ad6bbbdce28b63494d7db00b8af7"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/18-general-purpose.md",
+      "blob": "274beb7aa2ce2514c33b49e0225858f39122c603"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/19-general-purpose.md",
+      "blob": "bd72ee066ad09ce883834390b23ee22f03babda7"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/20-drift-checker.md",
+      "blob": "973bb19ad9ba96066d0a28d32c074e411cffa9c4"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/21-general-purpose.md",
+      "blob": "b5162ec6cc1d8e5e9d6234959d6124484f7323b7"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/22-critic.md",
+      "blob": "907b2252b2004ae1c28099a7900e63190641dac9"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/23-general-purpose.md",
+      "blob": "623302f8dffa3227fecc348c9006c9a0615caec4"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/24-general-purpose.md",
+      "blob": "fc04d643dc17c66dd08ab39566d80408bacbc1bb"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/25-general-purpose.md",
+      "blob": "363060bcd60904c57d5ef498d98d797a84095adc"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/26-drift-checker.md",
+      "blob": "d0d36b9180778b29949f17de6e3821c348d11579"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/27-general-ops.md",
+      "blob": "66ae2a8ac7fdb98de4c8f7ca49e8ba738fb8e553"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/28-general-ops.md",
+      "blob": "7638a5063026a51a0b61aa80c6deb577a222f18f"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/29-general-ops.md",
+      "blob": "5daca8fc69f04289647216dbe1168589d96adf1e"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/30-drift-checker.md",
+      "blob": "2f8d8bd868938028709853d5c5bb7082a812e88a"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/30-prompt.md",
+      "blob": "8368c8b9feef35cdbd44d14642752e8948558619"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/31-general-purpose.md",
+      "blob": "4c82fea0af29d393984a8f3a60668e8dd8ca2346"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/32-drift-checker.md",
+      "blob": "38ac60e9a127bf667737bdf7d1f9b2041f3beb35"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/32-prompt.md",
+      "blob": "e1f90fb5b1ae5a1bdcf4e627c0afb30105298e1d"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/33-general-purpose.md",
+      "blob": "81c713d9efcd74423e567da9c2b0bad612af8abf"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/34-drift-checker.md",
+      "blob": "d9d3b104b8b6c42a82592c2b806ebd1be7979f2e"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/35-final-readthrough-docs.md",
+      "blob": "ced6d8bf4f29e3a7ade0950b017de61cdbf28623"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/36-final-readthrough-src.md",
+      "blob": "101bedc216a12fddac0bb1d6dd4b694803e5f90c"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/37-final-readthrough-docs-r2.md",
+      "blob": "0f9c1ad574f6a9ae5bd29530189bc0985c1da51f"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/38-memory-librarian.md",
+      "blob": "ff13bb1596088eea15df02bf7c07d41d89d5932f"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/subagent-state/39-final-drift-checker.md",
+      "blob": "ac375df837c02e9e25479930fba0ee5301007f71"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/task_plan.md",
+      "blob": "cd329c4560653fab1dffa3a08c0e563e3bc22d52"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/user-session-log.md",
+      "blob": "1cf6e43c1b6e55d515fd1e2105a9cf5ecd47069a"
+    },
+    {
+      "path": "plans/task-goal-unattended-protocol-20261124/verification.md",
+      "blob": "ffe33f02d9eac64503ab4d2e7a55c3c7bd3b9735"
+    },
+    {
+      "path": "plans/task-init-agents-md-20261123/task_plan.md",
+      "blob": "74ca4dcb4747d7d952cadba7ddb6dc514c2ecb8f"
+    },
+    {
+      "path": "plans/task-planner-lean-20261123/task_plan.md",
+      "blob": "5c248e994edbe2c981d97e9c4fb0374dd620af87"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T000435-01.json",
+      "blob": "15cb0c696ab1681f317c32e51d7a0474ddcba42c"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T000439-01.json",
+      "blob": "3b2df18fd33b3ed7f9f6ca624bcfbbafc2c05afc"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T000440-01.json",
+      "blob": "15f7640403e7087a3d8cee977145d42537614541"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T000444-01.json",
+      "blob": "d7942f55b861813a8131be0cdaa280ed0a4b608a"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T001706-01.json",
+      "blob": "809de95e3911e7ca01cce55ab02557dcff214fe4"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T001708-01.json",
+      "blob": "e5edeac2bbacc16260eed7f7d562423d56f9d2cf"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T001708-02.json",
+      "blob": "a9431873bce6d0ae9edd670d1110cb47d70c89c8"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T001710-01.json",
+      "blob": "dde74f5d044ffcfe3b1286799dba4507d9779dd4"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T001711-01.json",
+      "blob": "6b69b5249a777f4de69ab91fe8b94fa9b613868c"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002631-01.json",
+      "blob": "d3590b1e46b7d4ec05bed60ab04709e9e1326d66"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002632-01.json",
+      "blob": "19b85474f4851fb5f9a7cbe4bb5f33c8db2a3917"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002634-01.json",
+      "blob": "7dd2cbcd3f706b4c63b74c68b20fe8ad4a069e92"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002634-02.json",
+      "blob": "5eb73021eb75da39ea3bb87e34824a2652281762"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002635-01.json",
+      "blob": "097f2b25087262af1c1fef22dcfecc8500a8930e"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002637-01.json",
+      "blob": "c7dde8be826858e1500743120efde05ed3ecbc46"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002925-01.json",
+      "blob": "4e460bb367c57fee9f088438a23600b578ba8990"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002926-01.json",
+      "blob": "2d6edbf5b6b1ae44afb4306e7fcb4e977a523ec6"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002943-01.json",
+      "blob": "799e53b31e3e56ab0e616ac7853c2003a99b45e9"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T002956-01.json",
+      "blob": "bd6c8377e5295bf27178491aaa5518b8be4fc8fc"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.history/plan-state-20261123T005720-01.json",
+      "blob": "f769ea54fd7aadb811c0fa6c94122f6302339625"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/AUDIT-REPORT.md",
+      "blob": "1d5e7db9bfbea0d0db9ff578f3b66c4e76b183cb"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/findings.md",
+      "blob": "3eeef2917a99d73a34e16e60003bed8623abab31"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/deploy-selftest.md",
+      "blob": "de69a0dbbe73dc0ea034670e688aed2851186869"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/drift-check-p1.md",
+      "blob": "a1e8ec1470a96c84f8a7835639db10c0a6341f5a"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/git-health.md",
+      "blob": "bf74763ea7ee713b6cde6f741b5e291332dca8ef"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/plan-drift.md",
+      "blob": "22a3270d897e27d004740584190f56ccdaae955b"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/skill-audit-calls-redundancy.md",
+      "blob": "ca0aee91328772914c4ac8fcf0bea25c92ce2967"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/skill-audit-frontmatter.md",
+      "blob": "5fd49f0f327e091f8f6a022bbbf11608d9c5383f"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/forensics/skill-audit-quality.md",
+      "blob": "b8d51598f9f09a708c3b06b12be8998f38479ef5"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/knowledge-brief.md",
+      "blob": "31d3306c9af7163e1cb238a2a1d2f1b2ce42ab6a"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/notepad-learnings.md",
+      "blob": "a669864756496a1dc624ba5d38e8dfffec82a43a"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/plan-state.json",
+      "blob": "5196146227dd17d6206c93e551a901692b2b5df0"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/progress.md",
+      "blob": "4b28a0fa60ee39a879daf6a3f5ba0f1a303a8d35"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/task_plan.md",
+      "blob": "8401ca5aa3f9b15fd5602ad34a6c4ad30914312d"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/user-session-log.md",
+      "blob": "a5d875c99738e43e5485fe9092ea5662160e23e1"
+    },
+    {
+      "path": "plans/task-project-audit-20261123/verification.md",
+      "blob": "67e21a74577ed2ffd7a16c5ba1b084017b47bce4"
+    },
+    {
+      "path": "plans/task-resource-utilization-20261123/.agent-failures/df5b8b4a85364c7e87acfd85024635eb.jsonl",
+      "blob": "09a668a378374ea34f05b4d7690dee5a347be05c"
+    },
+    {
+      "path": "plans/task-resource-utilization-20261123/.drift-check-20261123-r11",
+      "blob": "02f4411e25da9c6b463160a019a77f4fec245520"
+    },
+    {
+      "path": "plans/task-resource-utilization-20261123/REPORT.md",
+      "blob": "20f43b9a2619588bc6298c992a6a2db756ea209f"
+    },
+    {
+      "path": "plans/task-resource-utilization-20261123/deploy_skill_md_preview.py",
+      "blob": "facabed2afd017b9b5f4a0b046822a60f9198ad3"
+    },
+    {
+      "path": "plans/task-resource-utilization-20261123/task_plan.md",
+      "blob": "ad267918bfb012ed8307ce3db6b442de77b3eb84"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.compact-recovery.md",
+      "blob": "879f924e42f7741a2000a6a7089b3a9e246b56f0"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T050801-02.json",
+      "blob": "7e7d60f235aecb7c702c15013bb83cc8434a7356"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T051347-01.json",
+      "blob": "0905ecad06c9fe2cd634efa0295f576604838dce"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T051348-01.json",
+      "blob": "6c9cb10ac45a3f7a82661ce5a5ede2cde3176d84"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T051349-01.json",
+      "blob": "a5ce1a3cf881fc7136b738c4cbc55fdeaec65dd0"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T051350-01.json",
+      "blob": "7a05fe0606b94fa6bba7c769fa803dfaaec61cbf"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T053039-01.json",
+      "blob": "62f1af832762d42b95acc21fb58e90476591b969"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T053255-01.json",
+      "blob": "beb90e437ec1865bcef8951cea080fb77c35e3da"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T053444-01.json",
+      "blob": "bfc64bc5b45d7a3a9d9b26ffcc175f57c3c88777"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T053537-01.json",
+      "blob": "2681dbf89038df1e221b938f9d8447c35ad8a3be"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T054504-01.json",
+      "blob": "a5333cc697faf7b6e3040bbece8e7c3be7e89807"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T055418-01.json",
+      "blob": "ff1c32cab8f750e96ba96d730bc9a401c4500ef3"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T055425-01.json",
+      "blob": "24eb02efdecadaa7979bf4aecc5a3f1c3c1808ac"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T055429-01.json",
+      "blob": "0fa8b82845f6b36aa246094e6b9c5cfa8e5e1fc2"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T060257-01.json",
+      "blob": "c7b103624ee563dab92c1b5887772229ef0ffd38"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T060300-01.json",
+      "blob": "1adb4676eb78ea062804a91d9dcbf2a2b791c076"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T062203-01.json",
+      "blob": "e38da78add8c8f154101c822ba1a9e1f0d7ed781"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T062204-01.json",
+      "blob": "ed1bf4e8184b30ade69d8edf01d46bcb4d69e7ab"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T062205-01.json",
+      "blob": "8e1e7f67046605355aa9586f665c7df2ffbcf0ce"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T062215-01.json",
+      "blob": "4ea97c26c7ecd5f1f0d2f897829a2cdb3756ac56"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.history/plan-state-20261124T062216-01.json",
+      "blob": "ae6e2f44d89fd4aa377ca5570254fc4cd6bf6fac"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/findings.md",
+      "blob": "34eb7a0f9a022b62a2bb8df11bfc4b6c35f6b361"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/knowledge-brief.md",
+      "blob": "12b1ad87fecd23b434d3eb3d2ff06b2f10820fc0"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/notepad-learnings.md",
+      "blob": "9df162db293e161edf0728b1bd6146ac449aaf6f"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/plan-state.json",
+      "blob": "bbb75b65600de591c1ff16da065b919577293c7a"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/progress.md",
+      "blob": "5f787007166c5f3638c567a3739e174dd174d737"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/subagent-state/02-drift-checker.md",
+      "blob": "104d0239d56554f866b49e9f2715e3839f98510d"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/subagent-state/03-drift-checker.md",
+      "blob": "17223773bede441be8564e20cde2a302ff30f701"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/subagent-state/plan-audit-r1.md",
+      "blob": "412f513fe542fc6acbc208031b48e21ee4dca7ea"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/task_plan.md",
+      "blob": "1ce804ef587701387f9fc0c15d2e5cdc16b5672e"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/user-session-log.md",
+      "blob": "6c485dc37a509a63bdd757abd7c1433220a2a829"
+    },
+    {
+      "path": "plans/task-session-regression-20261124/verification.md",
+      "blob": "5c33bfdbf7084f7e0234ce3c3cf464496a72e53d"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T051259-01.json",
+      "blob": "9b49a10fc7489e760ca8e3ca9c1b7e4320e5feba"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T051726-01.json",
+      "blob": "59409000d49af2de235e00599843027fc3b29889"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T051726-02.json",
+      "blob": "7477e32420c0e982818a1272448c8be07c37890b"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T051727-01.json",
+      "blob": "2f431ee33687807a5c2a8bf5415ab315f7d6d739"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T051728-01.json",
+      "blob": "40bdbc681e2c146cca3aac3c7bac78f59305f67d"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T051729-01.json",
+      "blob": "8283b133634b936a90274140177981011cb476ec"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T053527-01.json",
+      "blob": "9cb852212fb1de61ad9f218fcc5639a9a285113f"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T053546-01.json",
+      "blob": "10b9e926150551e1279fef8294cc1f517101f8c6"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T053548-01.json",
+      "blob": "0d041e8e7de9d0d462e5b0f99e7348b914c7a381"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T053549-01.json",
+      "blob": "eb873225ee82d0626d6f762e73df55339567767c"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T053636-01.json",
+      "blob": "080ac8925ef3db3448e42c41da25a78e61c7786c"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T053637-01.json",
+      "blob": "4aa3338bac8a04a6869eb74194f76019afb4f0e3"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T055207-01.json",
+      "blob": "760f9c9fe85fe3141ea1fb74d9038f1f8cf95581"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T055255-01.json",
+      "blob": "e1dc6d0419b4178ce2a2ebda14449c631ced12d8"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T062415-01.json",
+      "blob": "12930bc9ceb513873a5455678980018381882da0"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T062416-01.json",
+      "blob": "660a52088ac78f315013f18d379ffe0899db1f97"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T062417-01.json",
+      "blob": "7aba7bfa92a96780d03fc3c53f0935b0cfa7f0be"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T062859-01.json",
+      "blob": "4754ecc37b61a7a78b297153356f00a5875b88a5"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T062900-01.json",
+      "blob": "e6994582e77a4976d99df4ea37fcefaa5b429b96"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.history/plan-state-20261124T062918-01.json",
+      "blob": "c78a4f3387bad8dad120f9e2eae1f552d0d594d1"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.plan-attestation",
+      "blob": "0747bec6c3d01a6624a8b9edb6f269f10dbe8716"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/findings.md",
+      "blob": "659ce54ab9c68e52faa40389fb2adbf274c940a5"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/knowledge-brief.md",
+      "blob": "001d2defe7c7c71599e6eabdb37cb04f9dd2507b"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/notepad-learnings.md",
+      "blob": "bd707eabfb81ebaf99dc07187d76f8d42b5ed036"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/plan-brief.md",
+      "blob": "fafa34b6e478a57bc02d6ec2dd9fddc04ba702c8"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/plan-state.json",
+      "blob": "c46b5a7abc79a7baaf193d1063a6ddf0f90025da"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/progress.md",
+      "blob": "25bd264cda674ad0ca4bec94b0fc48509e1ee4e7"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/1-plan-writer.md",
+      "blob": "413030924564aab8c8f0e2baf1f90713c9a0275c"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/11-general-analyst.md",
+      "blob": "50aaf8e269e59429fd0c554050b4c088a9d6c088"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/12-general-analyst.md",
+      "blob": "66ba95fa33023268058fd6d1a79c2bcc17034ce3"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/2-critic.md",
+      "blob": "036169f253d705cf0c99f7ecbcbcf2186391308c"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/3-quality-auditor.md",
+      "blob": "38f8f1acf7e4df5646c2af78b3157012b9a5fa3f"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/4-quality-auditor.md",
+      "blob": "037932418d38e9c68399a26189cb6f99555d2ee9"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/5-quality-auditor.md",
+      "blob": "202a1f1d6ce0a396a967bef2497bde30efcf6fa1"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/6-quality-auditor.md",
+      "blob": "dd7da9b920e82b559f5e41ba41059e720a2a7d54"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/7-general-analyst.md",
+      "blob": "6f8a9eb844bdd3a373c3b91318032e18bc77313c"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/8-general-analyst.md",
+      "blob": "7250df6c183a48e20d8cc6df7883e3613deb2ca9"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/subagent-state/9-general-analyst.md",
+      "blob": "77751af905a1a52959ca093cf6481116f20c335d"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/task_plan.md",
+      "blob": "9c0fd21aca6bd30f8d434dc7117b8e3f261f4c37"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/user-session-log.md",
+      "blob": "b17c72da039ada7e0a0dadf7851d4181055e43d0"
+    },
+    {
+      "path": "plans/task-sp-os-invocation-audit-20261124/verification.md",
+      "blob": "ea486fd03f5728b4549b5d467701960a5477b9f0"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T044544-01.json",
+      "blob": "84d7080689766735fb4f74a4b1dea3f76d05c8f9"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T044554-01.json",
+      "blob": "7d74560c23f6d7a700c043db32197aa5183fadfc"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T044556-01.json",
+      "blob": "ef57324fdecc38f8ba7346f99115aba23f4e5749"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T044558-01.json",
+      "blob": "371d98bed40f7d287c9f5e3d6b120d414722703e"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045538-01.json",
+      "blob": "0203739d22fcc9865206afb1a9363fae09720ae0"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045539-01.json",
+      "blob": "672c9cabb22552179fa007a409c0ec52fcb2f7a3"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045540-01.json",
+      "blob": "7297e0402856060bae2de5df3a5ffb725b7b53ed"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045541-01.json",
+      "blob": "4cd6f925c9db7678a1d48a6347adf037ce6a879d"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045543-01.json",
+      "blob": "a8018c2a3985d0b2911cfe39baa698b934032e19"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045545-01.json",
+      "blob": "a6b71fd60defda525098bee947d58a5f1c17560f"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045548-01.json",
+      "blob": "027b79d9726f47dfd216eb8109d85f7f71171ff5"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045613-01.json",
+      "blob": "417995d073c9676be013f4f65f0a88c2db71b799"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045617-01.json",
+      "blob": "bd4e5fbce547283417b9ec008d76c3cff678da33"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045630-01.json",
+      "blob": "74de2ae14ed6d714afa37f0287d52183ff7882e0"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045808-01.json",
+      "blob": "e9b0d7dc2e012468a537ce0686b79d999ae236c3"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T045810-01.json",
+      "blob": "2f5cb26c542e2f2885e6b1331494874f7112d46c"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T050201-01.json",
+      "blob": "14950eac1352cf6dcfd2338a9f7aaaa660f497fd"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T050209-01.json",
+      "blob": "5ac32265c22110956022e252cb1b9b6f7ebf65c7"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T050211-01.json",
+      "blob": "2f7b5e86d7ab6ee48d68808580c35ee8a47926f6"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.history/plan-state-20261123T050916-01.json",
+      "blob": "fcadb91b11cdcb9ef244f5bffea562e49cbab1c5"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.plan-attestation",
+      "blob": "cb648e7dbd484076b8fa8b1b1ce0329d17d77394"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/findings.md",
+      "blob": "ca6a1010e15f6c4b0ea65e9c880f0e5c479f88cb"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/knowledge-brief.md",
+      "blob": "a4a4c085bc87f1f6199ca8cec04c5d526978885d"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/notepad-learnings.md",
+      "blob": "18c38dd63714d44a9eb35e0fe4a4793f3e0ef385"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/plan-state.json",
+      "blob": "7c6a8a7c024d25632cc31e99fa73f22b9835450f"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/progress.md",
+      "blob": "4e36c95e7a3109b4e27af29b5a95d4b84d8aa621"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/QC-report.md",
+      "blob": "c12568ef054b8506c0e930996b59f089306ab2ba"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/QC-task.md",
+      "blob": "997a5bbbcdbde0967d710f05306ef70d64e1b7ad"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-audit-prompt.md",
+      "blob": "8bea1f0df2c298b4c31df3b312ac628bc40d3352"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-auditor.md",
+      "blob": "04dd753eb0532e320a5a2454531c0d4328c7fb3d"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-drift-prompt.md",
+      "blob": "7448a2ea1d0c2614d46c5a3df751b5105ba34103"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-drift.md",
+      "blob": "b00b7dc233028c658fd48bc9d85814e3c8056246"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-openspec-tasks-sync.md",
+      "blob": "ad39b182f15a11c6f75c1f1a823954d34688b949"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-plan-writer.md",
+      "blob": "e5afa71e8d9eb510b3094bb0faa0446dd445db91"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-prompt.md",
+      "blob": "c081715c4ec8f808a63344bf43d4f53d0bc6ae39"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-reaudit-prompt.md",
+      "blob": "b3550abd11ef4ee74d4723e88334789760efa250"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-reaudit3-prompt.md",
+      "blob": "c2b895851b61ac1d2d13121d46b70fe6d984e1f3"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-reaudit3.md",
+      "blob": "17253b851ac7b7844e6496f1f28f8c89c213edc6"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S0-reauditor.md",
+      "blob": "3e7ab60265b6b7759899dbc493eeb19a80b600fe"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S2-task.md",
+      "blob": "d186c61820ca3e70381454b706fdc780073bc4a9"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S2-todo-sync.md",
+      "blob": "af3579c96bc4d89e369be306fa532ac6da59c666"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S3-fix-overreach-done.md",
+      "blob": "95aa41128754c18beae02931a00bdd74d6ed87f9"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S3-fix-overreach-task.md",
+      "blob": "474aad5b84b0b303b53b2dcc9626e1b1f3c59b31"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S3-rule-anchors.md",
+      "blob": "1de897e8d85f991299148a0e46a93e480ad7f0d8"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S3-task.md",
+      "blob": "e0d262fdaaad5512c745e8a98f1e13d3de9c2154"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S4-carrier.md",
+      "blob": "e0234810a4af8fa080bda802f57fc3adeb6d5cfa"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S4-task.md",
+      "blob": "e0b414de185a2dc5feb516284f537e254d600468"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S7-conflict-recovery.md",
+      "blob": "2aba87a5f85ca09e945567e4df007ab6a3b499d5"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S7-task.md",
+      "blob": "1f8b868eabd53f022782a6549f1c7f7a62cb1980"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S8-discipline-index.md",
+      "blob": "1f8f6266d5464d543fa492f580daaa80799e55aa"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S8-task.md",
+      "blob": "7705cc5754cc877e57d87e041fff8226db166370"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S9-selftest-anchor.md",
+      "blob": "eaff832e0fdd7cfc0b503c1bc5001fb0eebf005f"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/subagent-state/S9-task.md",
+      "blob": "7bc8fbdd5631500ebf55b2c13f8299cc03281393"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/task_plan.md",
+      "blob": "2b87cd6af727ab5e02e31123fed2cfa53f07d467"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/user-session-log.md",
+      "blob": "beda54c062ac890817f033b632a483c08ae3e71c"
+    },
+    {
+      "path": "plans/task-todo-default-engine-20261123/verification.md",
+      "blob": "fce6ef95fdbc7094d1101ae916964865f68c0fb3"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055545-01.json",
+      "blob": "fa91ab5415eb01839af9853bb492b5739e40a167"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055548-01.json",
+      "blob": "8887267eff2db816646af4f905f45c458208c9b2"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055549-01.json",
+      "blob": "790732b3c7c9af891e1233038f2918b346b8177d"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055551-01.json",
+      "blob": "cc9ccafe1a9363eb4b4cc7dbc037f23169b797bc"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055552-01.json",
+      "blob": "5ce844ca033f43c83be1e4cf6f51d2348decd8f9"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055554-01.json",
+      "blob": "3a3395aaea7da4ef29899a767ffa770b964cb3ca"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055555-01.json",
+      "blob": "ebca9507efab90afc96d64a37ac0da52c10170eb"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055558-01.json",
+      "blob": "4a335e9996c335a42b13a9ed932ec004e7a0b246"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055559-01.json",
+      "blob": "12a2f9f69c0a9afbc436af8afb22bbd281989e78"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055602-01.json",
+      "blob": "0c61e355992725f7bae39013222b8014fe0b4bdd"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055603-01.json",
+      "blob": "c76db08ba4f46e0c5f6b80482f64aa96fda8a00a"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055605-01.json",
+      "blob": "e21d3742e865454e48bbd8e959ab2793c56dd326"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055607-01.json",
+      "blob": "faf665a096b1eade90c5dc2998487c5d69cc4b51"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055609-01.json",
+      "blob": "11d055bdb8557fac3e651a353e6db778e37d926b"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055610-01.json",
+      "blob": "ed3f0d56888fe5c47b6588e3a25625e157315a29"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055613-01.json",
+      "blob": "42f421caaf4d12325f3b8d3a99201f89294c13b9"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055614-01.json",
+      "blob": "ad2f4ede88b84477b1e30d2ee6e9d2d4990b8a81"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055644-01.json",
+      "blob": "583e5bcaf1710da192800cdb2a831d9af3c59b72"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055645-01.json",
+      "blob": "acbfc55cc37a0bfc273d5ab07512aa729356ec6b"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.history/plan-state-20261124T055704-01.json",
+      "blob": "f12a75010200602999aca5c6514d14265f7f6016"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/.session-log-baseline",
+      "blob": "c05bbf9070be3ab2061b613d0dc8a49febb564b3"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/findings.md",
+      "blob": "5ba88e8eaf5f719aee8df93f96a30d04f39c57c0"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/knowledge-brief.md",
+      "blob": "0b226b1926d91502fe4e7cc97fd7dcb4e5f75188"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/notepad-learnings.md",
+      "blob": "671df31b35ba6a4d90b03b23f5ae4feee214fb26"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/plan-state.json",
+      "blob": "ce1c762e60db20cfbcc0905b775eb87d1f9a487a"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/progress.md",
+      "blob": "3b011433c71cf096acc2e1536343f9c2e4ae4252"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/subagent-state/01-general-analyst.md",
+      "blob": "1b39593da7285162f747c8d1aa70868dbb7fb345"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/subagent-state/02-general-analyst.md",
+      "blob": "bda7e328dd7df3d70147f1dcc8c2a472370bf062"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/subagent-state/03-plan-writer.md",
+      "blob": "e6b01b6188f234037bbd2d4ccf949d039f657d8f"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/subagent-state/04-critic-audit.md",
+      "blob": "ab79a27b8f3a45ce99fab9eb3e4e095df1318a57"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/task_plan.md",
+      "blob": "57ee313d6fdc9b50d6bd5d44d20b080defa2deb2"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/user-session-log.md",
+      "blob": "c434a06d1283ecd9081c40028530bdd22b1d0936"
+    },
+    {
+      "path": "plans/task-two-stage-fix-20261124/verification.md",
+      "blob": "3d659f99a4646fc5d42330d769a33a5412ac88cc"
+    }
+  ]
+}

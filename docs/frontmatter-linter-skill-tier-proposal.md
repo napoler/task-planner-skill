@@ -1,6 +1,6 @@
 # frontmatter-linter skill 档适配提案（task-fix-all-20261123）
 
-> 状态：**提案稿，未落地**。目标文件 `/home/terry/.zcode/agents/frontmatter-linter.md` 属 §六 保护区，本次未获用户明确授权，**禁止直接修改**。本提案供用户授权后落地。
+> 状态：**已于 2026-11-23 授权落地**（用户原话「授权落实」，见 `plans/task-fix-all-20261123/FIX-REPORT.md` 第六节）。目标文件 `/home/terry/.zcode/agents/frontmatter-linter.md` 的 3 处改动已按本提案 §3 完成并行为验收通过（skill 误报清零、agent 档仍严格）。本提案下方正文保留为落地依据存档。
 
 ## 1. 根因
 
