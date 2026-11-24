@@ -86,8 +86,8 @@ else
 fi
 
 # CP-06: bash -n zcode-posttooluse.sh 通过 ∧ TASK_PLANNER_CONTEXT_PRESSURE>=2 ∧ [context-pressure]>=1 ∧ emit 计数=常量基线
-# hook emit 总数基线=12，本任务 hook 接线前后实测；变更须同步此常量与注释
-emit_expect=12
+# hook emit 总数基线=13（原 12 + 2026-11-24 tier-upgrade 注入 1 处，task-perf-default-mini）；变更须同步此常量与注释
+emit_expect=13
 bash -n "$POSTTOOLUSE" 2>/dev/null
 bn_ok=$?
 c1=$(grep -c 'TASK_PLANNER_CONTEXT_PRESSURE' "$POSTTOOLUSE")

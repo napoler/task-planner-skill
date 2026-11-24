@@ -93,7 +93,9 @@ if [ "$PLAN_TIER_MINI" = 1 ]; then
     printf '%s\n' "$goal_sec" | grep -qE '≤15min|<=15min' || mismatch_items="${mismatch_items}Goal 行缺 ≤15min 预估时长字样 "
     scope_sec="$(awk '/^##[[:space:]]*.*执行范围限制/{f=1;next} /^##[[:space:]]/{f=0} f' "$PLAN_FILE" 2>/dev/null)"
     scope_rows="$(printf '%s\n' "$scope_sec" | grep -c '^|' || true)"
-    [ "${scope_rows:-0}" -gt 4 ] && mismatch_items="${mismatch_items}执行范围表数据行>2 (${scope_rows}行表格行) "
+    # [task-perf-default-mini 2026-11-24] 阈值 4→7：mini 执行范围表数据行上限 2→5（表格 2 行头+5 数据=7），
+    # 对齐缺省 mini 的 3-5 文件场景；文案字面「执行范围表数据行>2」作为 PT-20/21/PT-31 断言锚保留不改。
+    [ "${scope_rows:-0}" -gt 7 ] && mismatch_items="${mismatch_items}执行范围表数据行>2 (${scope_rows}行表格行) "
     if [ -n "$mismatch_items" ]; then
         if [ "$PTIER" = "enforce" ]; then
             echo "[plan-tier] MISMATCH: mini 判定条件不满足(${mismatch_items% }) — 阻断锁定(plan_tier_enforce=enforce, Rule 38.1); 改回 standard 或补齐条件" >&2

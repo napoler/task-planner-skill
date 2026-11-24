@@ -140,6 +140,24 @@ ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "cross_checks": {"item": "", "method": "", "result": ""},
 }
 
+# [2026-11-23 task-planner-lean 修1] 字段别名归一表：section -> {常见误写字段: 合法字段}。
+# What: Agent 凭直觉写 research.question / decisions.source / errors.time 等近义字段，旧行为
+#       _validate_entry 以"未知字段 X"硬拒且不给合法字段名，逼出 6-7 次盲试（sess_093593a1 实测）。
+# Why: 修脚本容错面而非降校验强度——只在"合法字段未出现"时把误写字段搬过去，绝不覆盖显式正确值；
+#       真类型错误（如 attempt="1"）仍由 _validate_entry 原样硬拒（selftest-planctl.py:405 依赖此行为）。
+FIELD_ALIASES: dict[str, dict[str, str]] = {
+    "research": {"question": "claim", "conclusion": "source", "desc": "claim"},
+    "decisions": {"source": "rationale", "reason": "rationale", "desc": "decision"},
+    "errors": {"time": "timestamp", "when": "timestamp", "msg": "error"},
+    "actions": {"desc": "text", "when": "at"},
+    "test_results": {"desc": "test", "result": "status"},
+    "findings": {"desc": "text"},
+    "issues": {"desc": "issue"},
+    "resources": {"desc": "locator", "url": "locator"},
+}
+# 可自动补的时间字段（仅缺失时补；不补 id 以保留"缺 id 报错"契约；不动类型校验）。
+AUTO_STAMP: dict[str, str] = {"errors": "timestamp", "audits": "at", "actions": "at"}
+
 # [2026-11-22 task-jsonderive-deploy-20261122] 顶层对象字段规格：field → (required 集, 字段谓词, 是否允许额外键)。
 # What: 为 set --field 写入的对象段提供与 schema 等价的手写校验；Why: jsonschema 缺失时行为仍需一致，
 #       且 config 是自由扩展对象（原行为无该字段），显式放行额外键避免误拒未来配置项。
@@ -223,31 +241,66 @@ def open_ci_keys(audit: dict[str, Any]) -> set[str]:
             and x.get("state") in OPEN_CI_STATES and isinstance(x.get("key"), str)}
 
 
-def audit_no_progress(audits: list[dict[str, Any]]) -> tuple[bool, str]:
-    """判定最近 3 个连续 REJECTED 轮是否开放 C/I key 集完全相同（零清零、零新增）。
+def audit_no_progress(audits: list[dict[str, Any]]) -> tuple[bool, str, str]:
+    """判定审计是否无进展，并返回区分两种止损的触发 token。
 
-    返回 (是否命中, 各轮 key 集合详情)。末轮 APPROVED 视为已收敛，直接不命中——
-    防真实样本 R2→R3「I-5 清零后 APPROVED」被误伤。无 issues 字段的轮跳过（无信号）。
+    [2026-11-23 task-planner-lean 修3] What: 在原有「最近 3 连续 REJECTED 且开放 C/I key 集
+          完全相同」之外新增第二触发「累计 REJECTED≥4 且末轮非 APPROVED」。
+    Why: 原判定只认 key 集一字不差；sess_093593a1 真实审计 2C/12I→1C/6I→0C/3I→0C/1I→0C/0I
+         每轮换 key，判定永不命中，5 轮烧 4-5 小时仍不上抛。同一计划反复打回≥4 轮本身即真无
+         进展，应强制走 decision-arbiter/AskUser，禁止继续自动派发同类修复。
+    返回 (是否命中, 各轮 key 集合详情, 触发 token)：token ∈ {NO_PROGRESS_STREAK_3,
+    CUMULATIVE_REJECTED_4, ""}。末轮 APPROVED 一律跳过（收敛不误伤，真实样本 R4 APPROVED
+    不再误判）；streak 判定跳过无 issues 字段的轮（无信号），累计判定则计入（反复打回即信号）。
     """
     if not audits:
-        return False, ""
+        return False, "", ""
     last = max(audits, key=lambda a: a.get("round", 0))
     if last.get("verdict") == "APPROVED":
-        return False, "末轮 APPROVED 已收敛，跳过无进展判定"
+        return False, "末轮 APPROVED 已收敛，跳过无进展判定", ""
     rejected = sorted((a for a in audits if a.get("verdict") == "REJECTED"),
                       key=lambda a: a.get("round", 0))
     signaled = [(a.get("round"), open_ci_keys(a)) for a in rejected if "issues" in a]
     details = ", ".join(f"R{r}={{{', '.join(sorted(k)) or '∅'}}}" for r, k in signaled[-3:])
-    if len(signaled) < 3:
-        return False, details
-    tail = signaled[-3:]
-    rounds = [r for r, _ in tail]
-    consecutive = all(rounds[j + 1] - rounds[j] == 1 for j in (0, 1))
-    sets = [k for _, k in tail]
-    # 判定口径=「key 集完全相同」而非「末轮 ⊆ 前轮」：后者会把真实清零误判为无进展。
-    if consecutive and sets[0] and sets[0] == sets[1] == sets[2]:
-        return True, details
-    return False, details
+    if len(signaled) >= 3:
+        tail = signaled[-3:]
+        rounds = [r for r, _ in tail]
+        consecutive = all(rounds[j + 1] - rounds[j] == 1 for j in (0, 1))
+        sets = [k for _, k in tail]
+        # 判定口径=「key 集完全相同」而非「末轮 ⊆ 前轮」：后者会把真实清零误判为无进展。
+        if consecutive and sets[0] and sets[0] == sets[1] == sets[2]:
+            return True, details, "NO_PROGRESS_STREAK_3"
+    # 第二触发：累计 REJECTED≥4（末轮非 APPROVED 已在顶部短路，无需重复判）。
+    if len(rejected) >= 4:
+        return True, details, "CUMULATIVE_REJECTED_4"
+    return False, details, ""
+
+
+def audit_cap(audits: list[dict[str, Any]]) -> tuple[bool, str]:
+    """[task-perf-default-mini 2026-11-24] 审计轮数硬刹车：累计 REJECTED≥2 且无 APPROVED 即命中。
+
+    What: 只看轮数与 APPROVED 存在性，不看 issue key、不看审计体名——轮数是唯一客观信号。
+    Why: 既有 NO_PROGRESS_STREAK_3/CUMULATIVE_REJECTED_4 都依赖 issues 字段比对 key 集或
+         累计 4 轮，真实任务审计条目从不带 issues → 永不命中（判例 5 轮审计烧 1h）。
+         原行为=审计循环体内无任何脚本被调用，止损只挂默认 warn 的 attest 上；本层为新增
+         独立刹车，不改 109/96.7 既有判定语义。
+    返回 (命中bool, 触发token)；token="AUDIT_CAP_2" 或 ""。任一 APPROVED（含末轮）视为真实
+    收敛，不命中。
+    """
+    rejected = [a for a in audits if a.get("verdict") == "REJECTED"]
+    any_approved = any(a.get("verdict") == "APPROVED" for a in audits)
+    if len(rejected) >= 2 and not any_approved:
+        return True, "AUDIT_CAP_2"
+    return False, ""
+
+
+# [2026-11-24 task-perf-default-mini] 审计刹车文案：planctl 写入回显与 PreToolUse 拦截共用同一口径。
+AUDIT_CAP_MESSAGE = (
+    "[audit-cap] ⛔ 本计划审计已累计 2 轮 REJECTED（AUDIT_CAP_2）："
+    "禁止再派任何第 3 轮审计体（换 critic key/换审计体名不构成合法理由）。"
+    "唯一出口：派一次 decision-arbiter 终裁，按裁决由主进程收口并在计划登记 "
+    "[audit-converge] 行 + 遗留风险清单。"
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -568,7 +621,9 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
             errs.append(f"{where}: 缺字段 {key}")
     for key, value in entry.items():
         if key not in known:
-            errs.append(f"{where}: 未知字段 {key}")
+            # [2026-11-23 task-planner-lean 修1] What: 未知字段报错附合法字段清单。
+            # Why: 原行为只报"未知字段 X"，Agent 无从得知正确字段名，只能 6-7 次盲试。
+            errs.append(f"{where}: 未知字段 {key}（合法字段: {', '.join(sorted(known))}）")
         elif not known[key](value):
             errs.append(f"{where}.{key}: 值非法（{value!r}）")
 
@@ -677,14 +732,29 @@ def find_entry(doc: dict[str, Any], section: str, ident: str) -> tuple[int, dict
 
 
 def normalize_entry(section: str, payload: Any, ident: str | None = None) -> dict[str, Any]:
-    """补齐条目默认字段并核对身份；身份缺失/与路径 id 不一致时显式报错。"""
+    """补齐条目默认字段并核对身份；身份缺失/与路径 id 不一致时显式报错。
+
+    [2026-11-23 task-planner-lean 修1] What: 写库前做字段别名归一 + 自动补时间戳。
+    Why: 原行为 Agent 用 research.question / decisions.source 等近义字段被"未知字段"硬拒且
+         无提示，逼出 6-7 次 schema 盲试（sess_093593a1）。别名只在合法字段未出现时搬运，
+         不覆盖显式正确值；id 仍强制（保留缺 id 报错契约），类型错误仍由 validate 原样拒。
+    """
     if section not in ARRAY_SECTIONS:
         raise PlanctlError(f"未知 section: {section}（可用: {', '.join(ARRAY_SECTIONS)}）")
     if not isinstance(payload, dict):
         raise PlanctlError(f"{section}: --json 必须是 object")
     entry = copy.deepcopy(payload)
+    # 别名归一必须在补默认之前：默认空串会让"合法字段未出现"判断失效。
+    legal_keys = set(ENTRY_DEFAULTS[section]) | {"id"}
+    for wrong, right in FIELD_ALIASES.get(section, {}).items():
+        if wrong in entry and right not in entry and right in legal_keys:
+            entry[right] = entry.pop(wrong)
     for key, value in ENTRY_DEFAULTS[section].items():
         entry.setdefault(key, copy.deepcopy(value))
+    # 自动补时间戳：仅该字段确实缺省时补（不影响 attempt 等类型校验）。
+    stamp_key = AUTO_STAMP.get(section)
+    if stamp_key and not entry.get(stamp_key):
+        entry[stamp_key] = now_iso()
 
     if section == "audits":
         if "round" not in entry:
@@ -1104,7 +1174,8 @@ def cmd_status(args: argparse.Namespace) -> int:
     audits = doc["audits"]
     last_audit = max(audits, key=lambda a: a.get("round", 0)) if audits else None
     # [2026-11-21] no_progress_streak 供外部观测无进展止损命中态（与 check audit 同一判定面）。
-    no_progress, _ = audit_no_progress(audits)
+    # [2026-11-23 task-planner-lean 修3] 返回值扩为三元组（新增触发 token），观测态只需bool。
+    no_progress, _, _ = audit_no_progress(audits)
     emit({
         "task_id": doc["task_id"],
         "plan_tier": doc["plan_tier"],
@@ -1185,7 +1256,18 @@ def cmd_add(args: argparse.Namespace) -> int:
         raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id')}")
     doc[args.section].append(entry)
     commit_state(plan, doc)
-    emit({"section": args.section, "added": entry})
+    result: dict[str, Any] = {"section": args.section, "added": entry}
+    # [2026-11-24 task-perf-default-mini 包3] What: audits 写入落盘后重读权威源跑 audit_cap，
+    #   命中则把强制指令块随本次 add 的 stdout JSON 回显（不阻断写入）。
+    # Why: 第 2 轮 REJECTED 本身必须能落盘（否则审计证据丢失）；刹车对象是之后的第 3 轮派发。
+    #   文案放进 emit 的 JSON 字段而非另打裸文本，保住「planctl stdout 可 json.load」既有契约，
+    #   PreToolUse Agent 分支用同一 token/口径做硬拦截。
+    if args.section == "audits":
+        cap_hit, cap_token = audit_cap(read_state(plan).get("audits", []))
+        if cap_hit:
+            result["audit_cap"] = AUDIT_CAP_MESSAGE
+            result["audit_cap_token"] = cap_token
+    emit(result)
     return 0
 
 
@@ -2078,16 +2160,23 @@ def check_rvc(doc: dict[str, Any], plan_dir: Path) -> tuple[bool, str]:
 
 
 def check_audit(doc: dict[str, Any], plan_dir: Path) -> tuple[bool, str]:
-    """audit：先做无进展止损（最近 3 个连续 REJECTED 轮 key 集不变→FAIL 并上报），再判末段形态。
+    """audit：先做无进展止损（两种触发→FAIL 并上报），再判末段形态。
 
     [2026-11-21 task-audit-rework-cap-20261121] 原行为=仅校验末轮 APPROVED 且 0C/0I；
     新增 no_progress 判定置于其后、原末段判定之前，且末轮 APPROVED 一律跳过（收敛不误伤）。
+    [2026-11-23 task-planner-lean 修3] 第二触发=累计 REJECTED≥4（key 逐轮换但反复打回），
+    与 NO_PROGRESS_STREAK_3 并列上报，各自独立 token 便于机器门与日志区分。
     """
     audits = doc["audits"]
     if not audits:
         return False, "无 audit 记录（末轮审计缺失）"
-    no_progress, details = audit_no_progress(audits)
+    no_progress, details, trigger = audit_no_progress(audits)
     if no_progress:
+        if trigger == "CUMULATIVE_REJECTED_4":
+            return (False, "CUMULATIVE_REJECTED_4 ESCALATE_USER_DECISION_REQUIRED "
+                           f"<details: {details}>（累计 4+ 轮 REJECTED 且末轮未 APPROVED，"
+                           "同一计划反复打回=真无进展，禁止继续自动派发同类修复，"
+                           "改走 decision-arbiter/AskUser 上报）")
         return (False, "NO_PROGRESS_STREAK_3 ESCALATE_USER_DECISION_REQUIRED "
                        f"<details: {details}>（连续 3 轮 REJECTED 开放 C/I key 集完全相同，"
                        "禁止继续自动派发同类修复，改走 decision-arbiter/AskUser 上报）")

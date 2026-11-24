@@ -115,6 +115,69 @@ case "$tool" in
     # 派发（当日实锤 4 次）。守卫侧修复见 check-dispatch.sh（prompt 自声明计划目录优先 + warn 降级）。
     sid="$(printf '%s' "$input" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'a-zA-Z0-9' | head -c 40)"
     sid="${sid:-default}"
+
+    # [2026-11-24 task-perf-default-mini 包3] What: 在 check-dispatch 之前加两层客观刹车——
+    #   ① 审计 cap：活跃计划累计 ≥2 轮 REJECTED 且无 APPROVED 且未登记 [audit-converge] → 拦派发；
+    #   ② Rule 96.7：会话级派发计数 >40 且未登记 [dispatch-checkpoint] → 拦派发。
+    # Why: 判例 5 轮审计全无 issues 字段 → NO_PROGRESS_STREAK_3 永不命中，审计循环体内无任何
+    #   脚本被调用，止损只挂默认 warn 的 attest；用户裁决按客观规则（轮数）刹车。原行为=Agent
+    #   分支直接进 check-dispatch，无轮数/次数门。两层均 fail-open：解析/读文件/jq 失败一律跳过，
+    #   decision-arbiter 终裁与 [audit-converge] 收口登记是唯一合法出口；不触碰既有判定语义。
+    _agent_count_file="/tmp/task-planner-agent-count-${sid}"
+    _agent_count="$(cat "$_agent_count_file" 2>/dev/null || printf '')"
+    case "$_agent_count" in
+      ''|*[!0-9]*) _agent_count=1 ;;
+      *) _agent_count=$((_agent_count + 1)) ;;
+    esac
+    printf '%s\n' "$_agent_count" > "$_agent_count_file" 2>/dev/null || :
+
+    # 活跃计划解析：复用 check-dispatch 同款 resolve-plan-dir.sh "$CWD" "$sid"；无 plan → 跳过 cap
+    _cap_plan_dir=""
+    if [ -f "$SKILL_ROOT/resolve-plan-dir.sh" ]; then
+      _cap_cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || printf '')"
+      _cap_cwd="${_cap_cwd:-$PWD}"
+      _cap_plan_file="$(bash "$SKILL_ROOT/resolve-plan-dir.sh" "$_cap_cwd" "$sid" 2>/dev/null | head -n 1 || printf '')"
+      _cap_plan_dir="${_cap_plan_file%/task_plan.md}"
+      [ -n "$_cap_plan_file" ] && [ -f "$_cap_plan_dir/plan-state.json" ] || _cap_plan_dir=""
+    fi
+
+    # checkpoint 登记 → 计数重置放行（What: 防计数跨阶段累积误伤；Why: Rule 96.7 以登记换额度）
+    _dispatch_checkpoint=0
+    if [ -n "$_cap_plan_dir" ] && grep -q '\[dispatch-checkpoint\]' "$_cap_plan_dir/progress.md" 2>/dev/null; then
+      _dispatch_checkpoint=1
+      _agent_count=1
+      printf '1\n' > "$_agent_count_file" 2>/dev/null || :
+    fi
+
+    # 审计 cap：只看 REJECTED 计数与 APPROVED 存在性（与 planctl.audit_cap 同口径）
+    if [ -n "$_cap_plan_dir" ]; then
+      _cap_state="$_cap_plan_dir/plan-state.json"
+      _cap_rejected="$(jq -r '[.audits[]? | select(.verdict == "REJECTED")] | length' "$_cap_state" 2>/dev/null || printf '')"
+      _cap_approved="$(jq -r 'any(.audits[]?; .verdict == "APPROVED")' "$_cap_state" 2>/dev/null || printf '')"
+      case "$_cap_rejected" in ''|*[!0-9]*) _cap_rejected=0 ;; esac
+      _cap_converged="$(grep -l '\[audit-converge\]' "$_cap_plan_dir/task_plan.md" "$_cap_plan_dir/progress.md" 2>/dev/null || printf '')"
+      if [ "$_cap_rejected" -ge 2 ] && [ "$_cap_approved" != "true" ] && [ -z "$_cap_converged" ]; then
+        _cap_subagent="$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // empty' 2>/dev/null || printf '')"
+        if [ "$_cap_subagent" != "decision-arbiter" ]; then
+          printf '%s\n' '[audit-cap] ⛔ 本计划审计已累计 2 轮 REJECTED（AUDIT_CAP_2）：禁止再派任何第 3 轮审计体（换 critic key/换审计体名不构成合法理由）。唯一出口：派一次 decision-arbiter 终裁，按裁决由主进程收口并在计划登记 [audit-converge] 行 + 遗留风险清单。' >&2
+          exit 2
+        fi
+      fi
+    fi
+
+    # Rule 96.7 次数门 + 时间提醒（时间维度只提醒不阻断，stdout 注入上下文）
+    if [ "$_agent_count" -gt 40 ] && [ "$_dispatch_checkpoint" -eq 0 ]; then
+      printf '%s\n' '[96.7] 会话累计派发已超 40 次且未登记 [dispatch-checkpoint]：请先在 <plan>/progress.md 登记 checkpoint（Rule 96.7）后再派发' >&2
+      exit 2
+    fi
+    _cap_birth="$(stat -c %W "$_agent_count_file" 2>/dev/null || printf '')"
+    _cap_mtime="$(stat -c %Y "$_agent_count_file" 2>/dev/null || printf '')"
+    case "$_cap_birth" in ''|*[!0-9]*) _cap_birth=0 ;; esac
+    case "$_cap_mtime" in ''|*[!0-9]*) _cap_mtime=0 ;; esac
+    if [ "$_cap_birth" -gt 0 ] && [ "$_cap_mtime" -gt "$_cap_birth" ] && [ $(( _cap_mtime - _cap_birth )) -gt 3600 ]; then
+      printf '%s\n' '[96.7] 累计派发已超 60 分钟——建议按 96.7 登记 checkpoint'
+    fi
+
     pf="$(mktemp "${TMPDIR:-/tmp}/task-planner-dispatch-XXXXXX" 2>/dev/null)" || exit 0
     printf '%s' "$input" | jq -r '.tool_input.prompt // empty' > "$pf" 2>/dev/null || { rm -f "$pf"; exit 0; }
     # [2026-09-10 active-plan-race] 传会话 sid 给 check-dispatch → 其 resolve 走 .active_plan_side/<sid>.active_plan,

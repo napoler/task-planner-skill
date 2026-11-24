@@ -31,10 +31,11 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B15 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             --json also emits the B1-B16 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             [task-perf-default-mini 2026-11-24] mini 档裁 6 条（B2/B6/B7/B8/B15/B16），standard 全量 B1-B16 不变"
             echo "             B12=SP/OS 技能到达与产物承接收据检查；B13=Spec 路由命中核查（需求特征终判）"
             echo "             B14=两段式根因/风险线索包已落盘 + 后续任务已登记（N/A+证据）"
-            echo "             B15=周期性偏移回顾（每N次工具调用读user-session-log全原话对照当前执行+periodic-review收据）"
+            echo "             B15=周期性偏移回顾（每N次工具调用读user-session-log全原话对照当前执行+periodic-review收据；mini 档豁免不输出）"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -451,6 +452,31 @@ forward_sync() {
         # Why: SP/OS 技能此前无脚本驱动点（功能同构竞争根因），B12/B13 把「技能到达+承接收据」与「路由命中终判」升为每次建组必带的可执行步骤+证据字段；
         # 取舍: 避开 commit 5915e78a 已占用的 B9-B11，与 Git 基线快照/备份/差异零语义重叠；B1-B11 字面量逐字保留。
         # 取舍: B12/B13 证据读计划文件收据（非侧车），故 evidence 生成在 jq 守卫之前分支处理。
+        # [task-perf-default-mini 2026-11-24] mini 档基线裁剪（What+Why）:
+        # What: 解析活跃计划 plan_tier（env TASK_PLANNER_PLAN_TIER 显式优先 → plans_dir 下 mtime 最新
+        #       plan-state.json 的 .plan_tier → 回落 task_plan.md 的 plan_tier: mini 行），mini 时输出循环
+        #       跳过 B2/B6/B7/B8/B15/B16；standard/无法判定 → 全量输出（fail-safe 保持旧行为）。
+        # Why: 六条对应既有明文豁免（单 Phase 无翻转 / mini 不加工具区块 / G11 对齐豁免 / 不走 worktree /
+        #       DRIFT GATE 跳过 / 无合并回），缺省 mini 后它们对 ≤15min 任务是纯仪式噪音。
+        local plan_tier_for_baseline="${TASK_PLANNER_PLAN_TIER:-}"
+        if [ -z "$plan_tier_for_baseline" ]; then
+            local latest_state=""
+            latest_state="$(ls -t "$plans_dir"/*/plan-state.json 2>/dev/null | head -1 || true)"
+            if [ -n "$latest_state" ] && command -v jq >/dev/null 2>&1; then
+                plan_tier_for_baseline="$(jq -r '.plan_tier // empty' "$latest_state" 2>/dev/null || true)"
+            fi
+            if [ -z "$plan_tier_for_baseline" ]; then
+                local latest_plan=""
+                latest_plan="$(ls -t "$plans_dir"/*/task_plan.md 2>/dev/null | head -1 || true)"
+                if [ -n "$latest_plan" ] && grep -qE 'plan_tier:[[:space:]]*mini' "$latest_plan" 2>/dev/null; then
+                    plan_tier_for_baseline="mini"
+                fi
+            fi
+        fi
+        local mini_baseline=0
+        if [ "$plan_tier_for_baseline" = "mini" ]; then
+            mini_baseline=1
+        fi
         # 单引号字面量含纯双引号 JSON,无反引号/单引号,不触碰上方 phase entries 的 \" 转义。
         local baseline_entries=''
         baseline_entries+='{"task_id":"B1","phase":0,"status":"baseline","subject":"修改后验证"},'
@@ -497,6 +523,13 @@ forward_sync() {
             tid=""
             if [[ "$chunk" =~ \"task_id\":\"([^\"]+)\" ]]; then
                 tid="${BASH_REMATCH[1]}"
+            fi
+            # [task-perf-default-mini 2026-11-24] mini 档裁 6 条：在 evidence/command 拼接前跳过，
+            # 逗号衔接沿用既有 baseline_with_evidence 判空逻辑，JSON 结构与 standard 完全一致（仅条目少 6）。
+            if [[ "$mini_baseline" -eq 1 ]]; then
+                case "$tid" in
+                    B2|B6|B7|B8|B15|B16) continue ;;
+                esac
             fi
             # [2026-11-24 方案A/H3] 第三参传 plans_dir：B12/B13 收据扫描全部在途计划目录，不依赖本会话侧车（无侧车也必须能取证）。
             ev="$(baseline_evidence_json "$tid" "$sidecar" "$plans_dir")"

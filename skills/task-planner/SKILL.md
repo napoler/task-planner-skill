@@ -47,7 +47,8 @@ model: opus
 
 - [ ] [M] **初始化（哨兵机制）— 机械子动作**：跑脚本建目录/设 env/校验在位/清哨兵
   > `[2026-09-10 task-planrequired-race]` 哨兵会话私有化：SessionStart 写会话私有哨兵 `plans/.plan_required_side/<sidkey>.plan_required`（sidkey=uuid core）；legacy `<root>/.plan-required` 仅兼容读取
-  - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；trivial 判定：≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非④排除 → `TASK_AUTO_TIER=1` 四条件闸门自动降 mini，Rule 38.6）；纯文本文档 ≤5 文件 ∧ 单模块 ∧ ≤15min ∧ 非④排除 ∧ 无代码/配置后缀 → 同闸自动降 mini（task-perf-tiers 2026-11-24）
+  <!-- [task-perf-default-mini 2026-11-24] What: 分级缺省=mini，去掉 trivial/纯文档主观闸门；Why: 用户裁决默认简单 SOP、升级依据=客观运行时间而非主观判断 -->
+  - 运行 `node --experimental-strip-types scripts/session-catchup.ts` 检测中断恢复点；创建 `plans/{task-id}/`，运行 `bash scripts/init-session.sh "<任务名>"`（任务名=$1，渲染进产物；**分级缺省=mini**（task-perf-default-mini 2026-11-24：默认简单 SOP、不做主观判断；④排除 `TASK_TIER_EXCLUDE=1` 或显式 `TASK_PLAN_TIER=standard` / `TASK_AUTO_TIER=0` 才落 standard）；运行超时（默认 15min，`TASK_PLANNER_TIER_UPGRADE_MINUTES` 可调）由 posttooluse hook 自动升级 standard 检查面）
   - **模板检索前置（task-template-catalog-20261122）**：init 前先跑 `bash scripts/template-catalog.sh list --json --scope all` 拿模板清单（模板名/简介/适配场景/功能），据此匹配 `template_type` 再作为 init 第 2 参；禁靠读散文盲选（用法详见下方「模板检索与管理」）
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
@@ -70,7 +71,8 @@ model: opus
 - [ ] [A] **计划独立审计门（D1 前强制 — audit-before-delivery，Rule 109）**：L1+ 计划在展示/授权前必须经独立子代理审计迭代达标，未经审计的产出禁交用户
   - **触发**：计划产出（主进程盘上复核 Rule 84.4 完成后）且智能子动作（冲突分析+隔离决策复核+Spec 判定）完成之后、本区块「[A] 计划确认」展示之前；B/C/D/E 类任何计划（再）展示/确认前同样过门，修订重审可用简版（仅审变更增量+上轮问题清单闭环）
   - **分档豁免（Rule 38.7 比例原则）**：L1+ 强制；mini/L0/trivial=轻量复核（主进程盘上复核+基线自查）或登记豁免（一行留痕 `[plan-audit-skip]`+理由）；L0-E 豁免
-  - **审计体（独立上下文，只读）**：首选 critic（「审查计划/review 文档」触发在位）；不可用降级链=critic 失败→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）；审计分歧→decision-arbiter（Rule 69.1）；修正执行=主进程驱动 Plan Writer 重派（22.4a/62.2 计划期单写者不变）；**审计轮次收敛（2026-11-24 task-perf-tiers）**：同一计划 critic/复检累计 ≥2 轮仍未收敛，停止再派第 3 轮，改由主进程按已落盘证据（findings/verification）直接收口并登记 [audit-converge] 一行 + 遗留风险清单；换 key/换审计体名不构成新一轮合法理由。96.7 全局预算门与 109 审计门本身不变，仅约束重复审计环。
+  <!-- [task-perf-default-mini 2026-11-24] What: 审计收敛依据改挂脚本锚；Why: 与 critical-rules/plan-workflow-details 口径对齐，避免「不设上限」被误读为无刹车 -->
+  - **审计体（独立上下文，只读）**：首选 critic（「审查计划/review 文档」触发在位）；不可用降级链=critic 失败→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）；审计分歧→decision-arbiter（Rule 69.1）；修正执行=主进程驱动 Plan Writer 重派（22.4a/62.2 计划期单写者不变）；**审计轮次脚本刹车（2026-11-24 task-perf-default-mini）**：累计 2 轮 REJECTED 且无 APPROVED → planctl 写入打印 [audit-cap]，Agent 派发被 PreToolUse 拦截（decision-arbiter 例外），直到登记 [audit-converge]；「轮次不设上限」仅指有实质进展的迭代。96.7/109 门不变。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §audit-gate-details
 
 - [ ] [A] **计划确认**
@@ -156,7 +158,8 @@ model: opus
 | # | 检查项 | 状态 |
 |---|--------|------|
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §compliance-table-a
-| G4 | DRIFT CHECK 已派+留痕三件套齐（检查点/ledger drift_check/Drift Log 行） | ☐ |
+<!-- [task-perf-default-mini 2026-11-24] What: G4 补 mini 档豁免口径；Why: 与 G9-G11 同款措辞，缺省 mini 后 drift-checker 派发豁免需可查 -->
+| G4 | DRIFT CHECK 已派+留痕三件套齐（检查点/ledger drift_check/Drift Log 行；机器面=selftest-drift-check-subagent.sh + check-drift.sh，人工核查；mini 档豁免） | ☐ |
 | G5 | 子代理结论已落 findings（含多模态转文字）；ledger 关键动作已追加 | ☐ |
 | G6 | complete 前 `check-3file-gate.sh` exit 0（progress 回填+findings 增量，19.2）；Handoff verify_done 已勾（Read+回填双条件） | ☐ |
 | G7 | 本 Phase 无未处置质量违规（Rule 26 Q1-Q6 或已豁免登记）；产物已 commit（Rule 27） | ☐ |
@@ -165,6 +168,9 @@ model: opus
 | G10 | 计划完成后归档自查（Rule 81，原 C57 并集承载）：check-complete exit 0 后已执行 `bash scripts/archive-plan.sh <task-id>`（81.1，guard/ALREADY_ARCHIVED 幂等路径走通）；守卫拒绝（active 指针/活会话标记/Status 未全 complete，81.3）时保持原位不归档并登记拒绝理由，禁强移；归档后已重跑 `sync-todos.sh --index`（81.4）（机器面=selftest-archive-plan.sh+check-complete [ARCHIVE-GATE] warn，归档动作与拒绝登记人工核查；mini 档豁免） | ☐ |
 | G11 | 修改完成后对齐核查：所有任务修改完成后已执行对齐核查——关联面四族（字面/引用/部署镜像/断言面）+部署位+引用面同步完整性逐项核对零丢弃，机器门=check-complete.sh ALIGN-ANCHOR GATE（enforce=缺锚阻断，mini 档豁免）；人工面=核对清单全绿 | ☐ |
 > 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
+
+<!-- [task-perf-default-mini 2026-11-24] What: 汇总散落 mini 豁免为单一常置指针表；Why: 缺省 mini 后逐处翻规则成本高，冲突裁决以各门脚本为准 -->
+> **mini 缺省档最小流程（2026-11-24 缺省 mini 后的常置口径）**：init 产物即 mini → 免计划独立审计体（:72 轻量复核）、免双轮质检复检体（103.7 豁免面）、免 drift-checker 派发（G4）、免归档（G10）、收尾回读两文档（:137）、基线 todo 裁 6 条（B2/B6/B7/B8/B15/B16，sync-todos）；运行 >15min 由 hook 自动升级 standard（[tier-upgrade] 注入），升级后以上全部恢复标准档。散落豁免以此表为索引，冲突以各门脚本为准。
 
 ### 🔁 原生 Todo 同步（强制）
 

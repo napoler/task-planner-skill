@@ -1,7 +1,8 @@
 <!-- template_type: mini-lite -->
-<!-- template_meta: {"type": "mini-lite", "name": "轻量任务", "summary": "轻量任务（≤2 文件且≤15min 且单模块），跳过中/重仪式区块，单 Phase 实施加验收合一。", "scenarios": ["轻量任务", "单文件小改", "快修/微调", "15 分钟内小任务", "白名单内免派发任务"], "features": ["Goal", "Verification Contract", "执行范围限制", "单 Phase 实施加验收合一", "Subagent Handoff 表"]} -->
+<!-- [task-perf-default-mini 2026-11-24] What: mini-lite 适用面 ≤2→≤5 文件（缺省 mini 档）；Why: 缺省 mini 后 3-5 文件任务也走本模板，旧字面会误导为不适用。 -->
+<!-- template_meta: {"type": "mini-lite", "name": "轻量任务", "summary": "轻量任务（≤5 文件（缺省 mini 缺省档；task-perf-default-mini 2026-11-24）且≤15min 且单模块），跳过中/重仪式区块，单 Phase 实施加验收合一。", "scenarios": ["轻量任务", "单文件小改", "快修/微调", "15 分钟内小任务", "白名单内免派发任务"], "features": ["Goal", "Verification Contract", "执行范围限制", "单 Phase 实施加验收合一", "Subagent Handoff 表"]} -->
 <!-- plan_tier: mini -->
-<!-- 适用场景: 轻量任务（≤2 文件 ∧ 预估 ≤15min ∧ 单模块）——跳过中/重仪式区块，中/重任务禁用本模板（Rule 38.2） -->
+<!-- 适用场景: 轻量任务（≤5 文件（缺省 mini 缺省档；task-perf-default-mini 2026-11-24） ∧ 预估 ≤15min ∧ 单模块）——跳过中/重仪式区块，中/重任务禁用本模板（Rule 38.2） -->
 <!-- 触发关键词: 轻量/小改/单文件/快修/微调/15 分钟/小任务 -->
 <!-- 推荐 subagent: 主进程直做（白名单②）或 executor(haiku) 单文件小改；无强制派发 -->
 <!-- 38.3 区块白名单: 仅 Goal/VC/执行范围限制表/单 Phase/Handoff 表, 增其他仪式区块=模板违约(selftest-plan-tier 断言); [task-v094 T-B2] 2 Phase→单 Phase(实施+验收合一) -->
@@ -26,7 +27,7 @@
 
 ## ⚠️ 执行范围限制
 
-| 改什么（scope_files ≤2） | 禁碰什么 |
+| 改什么（scope_files ≤5 文件（缺省 mini 缺省档；task-perf-default-mini 2026-11-24）） | 禁碰什么 |
 |-------|------|
 | [文件 1] | [禁改文件 / 禁改范围] |
 | [文件 2（可空）] | [禁改文件 / 禁改范围] |
