@@ -28,12 +28,13 @@ model: opus
 
 **Goal**：产出结构化 `task_plan.md`（含 Phases/VC/V-N），按 phase 推进，全 phase complete 后逐条复验 VC，交付 COMPLETE/PARTIAL/BLOCKED。**每轮锚定（抗上下文稀释）**：每次回答前（含工具调用后的续答）先复述当前任务 Goal 与 Requirements 首条用户原话（≤2 行）再推进；上下文定位不到锚时先读 plan-state.json/恢复包再答，禁凭压缩摘要继续。
 
-## 定位：核心 = 四文件罗盘管理（task-v171 分层后）
+## 定位：核心 = planctl.py 驱动的四文件罗盘管理（task-v171 分层后）
 
-> **核心定位**：本技能 = **四文件罗盘的唯一管理域**——`task_plan.md`（目标维：状态与指针）/ `findings.md`（决策维：调研结论与证据）/ `progress.md`（进度维：动作与测试）/ `knowledge-brief.md`（知识维：可复用知识底座）四文件 = 主代理↔子代理数据流转**唯一协议介质**（Rule 62.1）；`verification.md`（终验维）与 `user-session-log.md`（用户原话维，append-only 只写不改，Rule 80）同属记录文档域。子代理上下文=RAM，四文件=Disk。
+<!-- [2026-11-25 task-planctl-trigger-20261125] What: 定位段权重修复——原标题「核心 = 四文件罗盘管理」与下方分流铁律通篇未提 planctl.py，入口权重区把四文件呈现为可直接操作对象；实证 ~/.claude/opencode/cursor 三薄壳 planctl 提及=0、~/.zcode 段为场外手加（生成器源缺段，install 会回退丢失），端点执行期核心触发（planctl 唯一写通道）结构性不激活→直接手写派生视图（用户 2026-11-25 判例）。Why: 入口权重=激活链第一环，定位段不携带引擎表述则文末「结构化状态操作 SOP」硬规则埋底、下游门全部失效（本末倒置根治）。原行为: 定位段仅述四文件管理域与分流铁律，引擎表述仅存于文末 SOP 段。 -->
+> **核心定位**：本技能 = **四文件罗盘的唯一管理域**，而罗盘的**唯一执行引擎与唯一写入口 = `scripts/planctl.py`**（P0：一切计划状态/语义变更必须经 `python3 <skill>/scripts/planctl.py <subcommand>` + `render`，`<plan-dir>/plan-state.json` = 唯一权威源，四个 MD 派生视图禁手工 Edit/Write——详见文末「结构化状态操作 SOP」）——`task_plan.md`（目标维：状态与指针）/ `findings.md`（决策维：调研结论与证据）/ `progress.md`（进度维：动作与测试）/ `knowledge-brief.md`（知识维：可复用知识底座）四文件 = 主代理↔子代理数据流转**唯一协议介质**（Rule 62.1）；`verification.md`（终验维）与 `user-session-log.md`（用户原话维，append-only 只写不改，Rule 80）同属记录文档域。子代理上下文=RAM，四文件=Disk。
 > **非核心域已分层至卫星**：派发/拆分/调度→`task-dispatch`；执行纪律/错误闭环→`task-discipline`；媒体制作→`media-planner`；其余见文末「卫星路由表」。分层纪律=Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）。
 
-**四文件写入分流铁律**：状态与指针→task_plan.md（控制面板：只放目标/Phase 状态/VC/范围/一行摘要，Rule 19.6）；调研与结论→findings.md；动作与测试→progress.md；可复用知识→knowledge-brief.md。外部内容只进 findings.md（Rule 20.2）；结论禁只留会话记忆（Rule 19.1）。
+**四文件写入分流铁律（写入动作本体 = planctl 子命令）**：状态与指针→`planctl set/add --section …`（→task_plan.md 派生视图；控制面板：只放目标/Phase 状态/VC/范围/一行摘要，Rule 19.6）；调研与结论→`planctl add --section findings`（→findings.md 派生视图）；动作与测试→`planctl add --section actions/errors`（→progress.md 派生视图）；可复用知识→knowledge-brief.md（render 链外专档，Rule 62 增量门控维护）。**「写到哪个文件」只决定选哪类子命令；写入动作本体永远是 planctl 子命令——task_plan/findings/progress/verification 四视图手工 Edit/Write=流程无效（render 全量覆盖）**。外部内容只进 findings.md（Rule 20.2）；结论禁只留会话记忆（Rule 19.1）。
 
 ## 计划制作循环
 
