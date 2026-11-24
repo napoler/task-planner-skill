@@ -40,9 +40,12 @@ trap cleanup EXIT
 
 # 行为级公共: init-session 需在 plans/<task-id>/ 目录运行（CWD 守卫）;
 # 清掉 env 类型兜底防干扰
+# [task-perf-default-mini 2026-11-24] What: helper 加 TASK_AUTO_TIER=0 逃生门；
+# Why: 缺省 mini 会让 AUTO_TIER_FIRED=1 前置分支吞掉 general/unknown/bugfix 模板选择，
+#       使 T1 模板感知正例/重跑幂等负例失效；隔离 tier 后保留 Rule 34.7 原测试意图。
 run_init() { # $1=task-dir $2=type-arg(""=不传)
     local dir="$1" ttype="$2"
-    ( cd "$dir/plans/demo" && TASK_TEMPLATE_TYPE= TASK_TEMPLATE_DEFAULT= bash "$INIT" proj ${ttype:+"$ttype"} ) 2>&1
+    ( cd "$dir/plans/demo" && TASK_TEMPLATE_TYPE= TASK_TEMPLATE_DEFAULT= TASK_AUTO_TIER=0 bash "$INIT" proj ${ttype:+"$ttype"} ) 2>&1
 }
 
 # case-7/8 CR-fix 负例: 第 3 位置参 tier 直传 (init-session.sh proj "" mini)。

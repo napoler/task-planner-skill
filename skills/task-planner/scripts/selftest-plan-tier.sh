@@ -126,9 +126,16 @@ if [ "${std_marks:-0}" -ge 14 ]; then ok 14 "13 variant + general 含 plan_tier:
 T="$(mktemp -d /tmp/selftest-plan-tier.XXXXXX)"
 rm -rf "$T"; mkdir -p "$T/dflt/plans/p1" "$T/mini/plans/p2" "$T/var/plans/p3" "$T/planmini" "$T/planbad" "$T/planstd"
 
-# PT-15 init 缺省（general 源）
+# [task-perf-default-mini 2026-11-24] PT-15 契约同步（Why: 缺省档由 general 改为 mini，原断言「无 mini 标记」直接失效；
+# What: 改为断言缺省产物=mini-lite 源 + plan_tier/auto_tier 双标记，测试意图「缺省复制源正确」不放松）。
 (cd "$T/dflt/plans/p1" && bash "$INIT" p1 >/dev/null 2>&1)
-if [ -f "$T/dflt/plans/p1/task_plan.md" ] && ! grep -q 'plan_tier: mini' "$T/dflt/plans/p1/task_plan.md"; then ok 15 "init 缺省场景=general 源（无 mini 标记）"; else bad 15 "init 缺省场景复制源异常"; fi
+if [ -f "$T/dflt/plans/p1/task_plan.md" ] && grep -q 'plan_tier: mini' "$T/dflt/plans/p1/task_plan.md" \
+   && grep -q 'auto_tier: mini' "$T/dflt/plans/p1/task_plan.md" \
+   && grep -q 'template_type: mini-lite' "$T/dflt/plans/p1/task_plan.md"; then
+  ok 15 "init 缺省场景=mini 源（缺省 mini + auto_tier 双标记, task-perf-default-mini）"
+else
+  bad 15 "init 缺省场景复制源异常（非 mini-lite 或缺 mini 标记）"
+fi
 
 # PT-16 init TASK_PLAN_TIER=mini
 (cd "$T/mini/plans/p2" && TASK_PLAN_TIER=mini bash "$INIT" p2 >/dev/null 2>&1)
@@ -254,13 +261,14 @@ fi
 # ── [2026-09-27 task-v091 S23 A-1] auto-tier 消费层行为级（标记存在性 + 终验 AUTO-TIER 复核两态）──
 mkdir -p "$T/auto/plans/pa" "$T/expl/plans/pe" "$T/planautobad" "$T/planautook"
 
-# PT-29 init auto-tier 路径: 四条件 env 事实提交 → mini 产物 + auto_tier 标记(S22 机制, S23 消费侧断言)
+# [task-perf-default-mini 2026-11-24] PT-29 日志锚同步（Why: 四条件闸门被缺省 mini 取代，旧日志字面不再出现；
+# What: 产物双标记断言保留，日志锚改为新「缺省轻量档 mini」字面，测试意图「auto-tier 标记链路在位」不放松）。
 (cd "$T/auto/plans/pa" && TASK_AUTO_TIER=1 TASK_EST_MINUTES=10 TASK_SCOPE_FILES=1 TASK_SCOPE_MODULES=1 bash "$INIT" pa > "$T/auto/out.log" 2>&1)
 if [ -f "$T/auto/plans/pa/task_plan.md" ] \
    && grep -q 'plan_tier: mini' "$T/auto/plans/pa/task_plan.md" \
    && grep -q 'auto_tier: mini' "$T/auto/plans/pa/task_plan.md" \
-   && grep -q 'auto-tier: 四条件全过' "$T/auto/out.log"; then
-  ok 29 "auto-tier 路径: 四条件 env 提交 → mini 产物含 auto_tier: mini 标记（Rule 38.6）"
+   && grep -q '缺省轻量档 mini' "$T/auto/out.log"; then
+  ok 29 "auto-tier 路径: mini 产物含 auto_tier: mini 标记 + 缺省日志（task-perf-default-mini）"
 else
   bad 29 "auto-tier 路径标记缺失（产物/日志异常）"
 fi
@@ -345,8 +353,11 @@ else
   bad 23 "--list 异常 rc=$rc built-in=${builtin_n}(应≥14) 不创建文件=$([ -f "$T6/proj/plans/px/task_plan.md" ] && echo 否 || echo 是)"
 fi
 
+# [task-perf-default-mini 2026-11-24] PT-24~27 隔离说明（Why: 缺省 mini 下 AUTO_TIER_FIRED=1 前置分支会吞掉所有
+# variant/项目 default 选择；What: 这四条 S6 路由断言显式加 TASK_AUTO_TIER=0 逃生门恢复 standard 缺省，
+# 保留「路由/渲染/frontmatter 插入」原测试意图，不被新 tier 缺省覆盖）。
 # PT-24 项目 default 文件生效(未显式 type)
-(cd "$T6/proj/plans/px" && env -u TASK_TEMPLATE_DEFAULT bash "$INIT" px >/dev/null 2>&1)
+(cd "$T6/proj/plans/px" && env -u TASK_TEMPLATE_DEFAULT TASK_AUTO_TIER=0 bash "$INIT" px >/dev/null 2>&1)
 if [ -f "$T6/proj/plans/px/task_plan.md" ] \
    && head -1 "$T6/proj/plans/px/task_plan.md" | grep -q 'template_type: my-custom' \
    && grep -q 'selftest S6 自造模板样例' "$T6/proj/plans/px/task_plan.md"; then
@@ -356,7 +367,7 @@ else
 fi
 
 # PT-25 env TASK_TEMPLATE_DEFAULT(无 default 文件的环境目录)
-(cd "$T6/env/plans/pe" && TASK_TEMPLATE_DEFAULT=bugfix bash "$INIT" pe >/dev/null 2>&1)
+(cd "$T6/env/plans/pe" && TASK_TEMPLATE_DEFAULT=bugfix TASK_AUTO_TIER=0 bash "$INIT" pe >/dev/null 2>&1)
 if grep -q 'template_type: bugfix' "$T6/env/plans/pe/task_plan.md" 2>/dev/null; then
   ok 25 "env TASK_TEMPLATE_DEFAULT=bugfix 生效(无项目 default 文件)"
 else
@@ -371,7 +382,7 @@ fi
 #   原行为: head -1 | grep -q 'Task Plan: \[Brief Description\]'（断言占位符原样保留）。
 #   新断言: 标题行**精确等于** `# Task Plan: pp`（传参任务名）+ 显式断言无 `[Brief Description]`
 #     残留 → 测试意图「标题被正确填充」不放松（旧断言只证占位符在，新断言证填充值正确，更严）。
-(cd "$T6/plain/plans/pp" && env -u TASK_TEMPLATE_DEFAULT bash "$INIT" pp > "$T6/plain/out.log" 2>&1)
+(cd "$T6/plain/plans/pp" && env -u TASK_TEMPLATE_DEFAULT TASK_AUTO_TIER=0 bash "$INIT" pp > "$T6/plain/out.log" 2>&1)
 _pt26_title="$(head -1 "$T6/plain/plans/pp/task_plan.md" 2>/dev/null)"
 if [ -f "$T6/plain/plans/pp/task_plan.md" ] \
    && [ "$_pt26_title" = "# Task Plan: pp" ] \
@@ -384,7 +395,7 @@ else
 fi
 
 # PT-27 显式指定自造模板 type(无 template_type 行) → 复制 + frontmatter 插入
-(cd "$T6/proj/plans" && rm -f px/task_plan.md; cd px && bash "$INIT" px my-custom >/dev/null 2>&1)
+(cd "$T6/proj/plans" && rm -f px/task_plan.md; cd px && TASK_AUTO_TIER=0 bash "$INIT" px my-custom >/dev/null 2>&1)
 if head -1 "$T6/proj/plans/px/task_plan.md" 2>/dev/null | grep -q 'template_type: my-custom'; then
   ok 27 "自造模板无 template_type 行时显式指定 → 头部插入 frontmatter 行"
 else
