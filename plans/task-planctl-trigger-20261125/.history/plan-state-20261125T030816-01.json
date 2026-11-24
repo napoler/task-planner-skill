@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "task_id": "task-planctl-trigger-20261125",
+  "plan_tier": "standard",
+  "execution_lane": "L2",
+  "created_at": "2026-11-24T18:16:47Z",
+  "updated_at": "2026-11-24T19:08:15Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "type": "手段",
+      "text": "用户原话镜像(2026-11-25)：skill 中 planctl.py 权重被恶意降低，定位段「核心=四文件罗盘管理(task-v171 分层后)」完全没有提及 planctl.py，导致后期执行技能时核心触发完全没有被激活、直接手写四文件造成错误；一直解决技能问题一直本末倒置，核心触发不解决则所有产物都不会得到有效激活。要求恢复 planctl.py 的核心触发权重。",
+      "vc": [
+        "VC-1",
+        "VC-2",
+        "VC-3"
+      ],
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "type": "手段",
+      "text": "范围外(不改)：critical-rules.md 规则正文与 references 细节文档、不新增脚本/机器门/hook(文本优先铁律)、~/.claude/settings.json 等个人配置；tier-deadzone 在途计划保持原状不回滚。",
+      "vc": [
+        "VC-3"
+      ],
+      "tags": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "name": "核心触发权重修复",
+      "text": "母版定位段+四端点薄壳 planctl.py 引擎权重恢复",
+      "verify": "定位段含 planctl 唯一引擎锚+四薄壳含核心执行引擎段+selftest 零增量",
+      "status": "pending",
+      "evidence": "",
+      "s_units": [],
+      "tags": []
+    },
+    {
+      "id": "G2",
+      "name": "部署闭环收口",
+      "text": "合并 master+install 部署+verify+selftest+四端点对账+计划收口",
+      "verify": "verify.sh 0 fail+部署位 grep 对账+attest 重锁+commit",
+      "status": "pending",
+      "evidence": "",
+      "s_units": [],
+      "tags": []
+    }
+  ],
+  "vcs": [
+    {
+      "id": "VC-1",
+      "criterion": "母版定位段权重恢复：SKILL.md 定位标题与核心定位段以 planctl.py 为唯一执行引擎/唯一写入口表述，且保留 selftest 锚「四文件罗盘的唯一管理域」",
+      "command": "grep -q \"核心 = planctl.py 驱动的四文件罗盘管理\" skills/task-planner/SKILL.md && grep -q \"四文件罗盘的唯一管理域\" skills/task-planner/SKILL.md",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-2",
+      "criterion": "四端点薄壳(SKILL.md)均含「核心执行引擎（P0」段且生成器源含同段(防再漂移)",
+      "command": "test $(grep -l \"核心执行引擎（P0\" /home/terry/.zcode/skills/task-planner/SKILL.md /home/terry/.claude/skills/task-planner/SKILL.md /home/terry/.config/opencode/skills/task-planner/SKILL.md /home/terry/.cursor/skills/task-planner/SKILL.md 2>/dev/null | wc -l) -eq 4",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC-3",
+      "criterion": "部署闭环：verify.sh 全 PASS 且全量 selftest FAIL 集不增",
+      "command": "TASK_PLANNER_ROOT=/mnt/data/dev/task-planner-skill/skills/task-planner bash /mnt/data/dev/task-planner-skill/skills/task-planner/lib/verify.sh",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "name": "取证与计划初始化",
+      "status": "complete",
+      "started": "2026-11-24T18:18:10Z",
+      "s_units": [],
+      "v_checks": [],
+      "tags": []
+    },
+    {
+      "id": "P2",
+      "name": "源仓修复(SKILL.md 定位段+薄壳生成器)",
+      "status": "in_progress",
+      "started": "2026-11-24T18:18:12Z",
+      "s_units": [],
+      "v_checks": [],
+      "tags": []
+    },
+    {
+      "id": "P3",
+      "name": "部署验证与收口",
+      "status": "pending",
+      "started": "",
+      "s_units": [],
+      "v_checks": [],
+      "tags": []
+    }
+  ],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "decisions": [
+    {
+      "id": "IS-1",
+      "decision": "[intent-switch] 自 task-tier-deadzone-fix-20261125(执行中途中断)切至本修复任务；tier-deadzone 保持 in-flight 原状(P1 complete/夹具已建)，本任务收口后可回切",
+      "rationale": "用户 2026-11-25 新指令三要素(计划/交付物/对象)与 tier-deadzone 无交集=D 类新任务边界；Rule 94 计划隔离"
+    },
+    {
+      "id": "RL-1",
+      "decision": "[re-lock] 本计划 attest 基线(init 落盘)后的数据填充与例行状态翻转均属计划获批流程内写入；每次 render 后按 hook 分支①重跑 attest 重锁，本条为全程重锁统一前置登记",
+      "rationale": "Rule 51.7 重锁前置=Decisions 登记；本条覆盖机械性重锁，语义级重规划仍须单独登记"
+    },
+    {
+      "id": "TI-1",
+      "decision": "[tier] mini→standard：保护区多文件手术（母版定位段+薄壳生成器+四端点部署闭环）体量超 mini 判据（≤15min/≤5文件），且 attest 派发门按 standard 面校验",
+      "rationale": "同族先例=tier-deadzone 同日取 standard（多文件保护区手术复杂度已知）；运行时升级链触发同样以步骤门信号为准"
+    },
+    {
+      "id": "D-1",
+      "decision": "登记待批遗留清单:I-2 smart-merge-back --deploy 整树覆盖薄壳且 deploy_reconcile/verify 双门难抓(修复可被合法流程静默回退)/W-1 ENGINE_BLOCK 无回归门/W-2 install 脏树静默跳 pull/NIT README+ARCHITECTURE 文档滞后——按 R2 范围约束+文本优先铁律本轮不实施,待用户授权后独立任务",
+      "rationale": "critic R1 四项遗留的诚实边界:文本修复已闭环,机器门/脚本改造属范围扩张需显式授权"
+    }
+  ],
+  "s_units": [
+    {
+      "id": "S1.1",
+      "name": "取证与计划初始化",
+      "actions": "母版/薄壳/计划三面取证+init+原话落盘+tier-deadzone 重锁",
+      "duration": "10min",
+      "executor": "主进程",
+      "files": "0",
+      "granularity": "≤100l",
+      "parallel": "否",
+      "phase": "P1",
+      "verify": "计划锁定+user-session-log 原话在位",
+      "escort_skills": []
+    },
+    {
+      "id": "S2.1",
+      "name": "SKILL.md 定位段权重修复",
+      "actions": "worktree 内改写定位段：核心=planctl.py 驱动+四视图禁手写+保留 selftest 锚",
+      "duration": "15min",
+      "executor": "主进程",
+      "files": "1",
+      "granularity": "≤30l",
+      "parallel": "否",
+      "phase": "P2",
+      "verify": "grep 两锚在位+行数钉余量",
+      "escort_skills": []
+    },
+    {
+      "id": "S2.2",
+      "name": "薄壳生成器注入引擎段",
+      "actions": "install-stub.sh 四模板注入核心执行引擎段(ENGINE_BLOCK 收编现网 zcode 段)",
+      "duration": "15min",
+      "executor": "主进程",
+      "files": "1",
+      "granularity": "≤40l",
+      "parallel": "否",
+      "phase": "P2",
+      "verify": "变异复演：临时目录生成薄壳 grep 引擎段 4/4",
+      "escort_skills": []
+    },
+    {
+      "id": "S3.1",
+      "name": "部署闭环",
+      "actions": "合并 master→install.sh 四位→verify.sh→全量 selftest→端点对账",
+      "duration": "25min",
+      "executor": "主进程",
+      "files": "0",
+      "granularity": "≤100l",
+      "parallel": "否",
+      "phase": "P3",
+      "verify": "verify 0 fail+selftest FAIL 集不增+VC-2 4/4",
+      "escort_skills": []
+    },
+    {
+      "id": "S3.2",
+      "name": "计划收口与提交",
+      "actions": "VC 翻转+render+attest+INDEX+commit+交付报告",
+      "duration": "10min",
+      "executor": "主进程",
+      "files": "0",
+      "granularity": "≤100l",
+      "parallel": "否",
+      "phase": "P3",
+      "verify": "VC 3/3 pass+计划 outcome+commit 在位",
+      "escort_skills": []
+    }
+  ],
+  "research": [
+    {
+      "id": "FS-1",
+      "claim": "claude-settings 分支 heredoc 表格4行+footer 转义丢失=前代遗留缺陷(三历史版本字节一致)；修复前生成 claude 薄壳=空变量表+反引号执行报错；r3 已修,复演产物表格字面变量",
+      "source": "install-stub.sh 字节取证+复演产物 /tmp/stub-r3-*"
+    },
+    {
+      "id": "FS-2",
+      "claim": "install.sh 对 zcode 位 rsync 扫描 ~194854 项(位内 .git 大仓)→单位安装>10min；快速通道=直调 generate_stub_skill_md(tool_name hook_style out_path)重生成薄壳",
+      "source": "/tmp/install-r2.log+ps 证据"
+    },
+    {
+      "id": "FS-3",
+      "claim": "critic R1 八项归置: 修 C-1/I-1/I-5+额外修 claude 转义; 遗留待批 I-2/W-1/W-2/NIT 全部留痕待授权",
+      "source": "critic R1 报告+diff 98a67002/e8155481"
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-1",
+      "phase": "P1",
+      "text": "T1 计划 init(standard)+R/VC/S-unit+原话落盘+tier-deadzone 篡改重锁(SHA 912c81a3)",
+      "at": "2026-11-24T19:08:10Z"
+    },
+    {
+      "id": "A-2",
+      "phase": "P2",
+      "text": "worktree r1: 定位段改写+ENGINE_BLOCK 四模板注入+变异复演4/4+抽查 selftest 双绿 → commit ebbb42b5→merge 403bfb78",
+      "at": "2026-11-24T19:08:11Z"
+    },
+    {
+      "id": "A-3",
+      "phase": "P3",
+      "text": "部署四位+母版位+薄壳终检; 经 r2(critic 修复集 1895e247)与 r3(claude 转义 e8155481)两轮修正,直调 generate_stub_skill_md 重生成四薄壳,五端点终检全绿",
+      "at": "2026-11-24T19:08:13Z"
+    },
+    {
+      "id": "A-4",
+      "phase": "P3",
+      "text": "verify 27/4(4项=smart-merge-back/init-session 既有 hardcoded-paths,非本任务引入)+抽查 selftest 40/40,11/11,18/18+全量回归后台跑",
+      "at": "2026-11-24T19:08:14Z"
+    }
+  ],
+  "errors": [
+    {
+      "id": "E-1",
+      "error": "Rule 19.7 回填违规: findings/progress 超阈值未回填(hook 两次升级警告)",
+      "resolution": "本条登记+本批补登记 research/actions",
+      "timestamp": "2026-11-24T19:08:15Z",
+      "attempt": 0,
+      "root_cause": "",
+      "prevention": "",
+      "trigger": ""
+    }
+  ]
+}
