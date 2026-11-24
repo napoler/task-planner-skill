@@ -647,14 +647,23 @@ case "$mode" in
       echo "[attest] [audit-gate] WARN: 判定器缺失（check-plan-audit-gate.sh 不存在）——门未运行（fail-open; 正常安装应存在）" >&2
     fi
     hash="$(sha256sum "$plan_file" | awk '{print $1}')"
+    # [2026-11-23 task-planner-lean 修2] What: 锁定 plan-state.json（JSON 权威源）的 SHA-256 到 state_sha256 字段。
+    # Why: 原实现只锁 task_plan.md（render 每次全量覆盖的派生视图），执行期一 render 就必然失配，
+    #       逼出「执行期只写 JSON 不 render」的绕行条款与四步返工。权威源 plan-state.json 不受 render
+    #       影响，锁它才能做到「正常 render 不破锁」。存量计划无该文件 → state_hash="" → verify 自动
+    #       回落 plan_sha256（见 verify 分支），零回归。
+    state_hash=""
+    if [ -f "$plan_dir/plan-state.json" ]; then
+      state_hash="$(sha256sum "$plan_dir/plan-state.json" | awk '{print $1}')"
+    fi
     # Why（task-v115 线C 补强）: 先哈希后写——哈希取的是通过 S-unit/模板/51.1 需求区块/FMEA/窗口
     # lint（增强）检查之后的
     # 计划内容；若先写 attestation 再跑门控，门失败退出时留下一份锁定着「未获批计划」的哈希，
     # 后续 hook 会把未获批内容当事实源注入（篡改语义等价）。锁定动作必须是批准流程的终点。
     # [2026-09-13 task-v068 E2] 追加 attested_by_sid 字段: 记录锁定时会话 sid(同 sid 获取链,
-    # 无 sid 时空串;向后兼容: verify 仅读 plan_sha256, 旧 attestation 无此字段不影响校验)
+    # 无 sid 时空串;向后兼容: verify 优先读 state_sha256, 缺失则回落 plan_sha256, 旧 attestation 不受影响)
     attest_sid="${ZCODE_SESSION_ID:-${CLAUDE_SESSION_ID:-}}"
-    printf 'plan_sha256=%s\nplan_file=%s\nattested_at=%s\nattested_by_sid=%s\n' "$hash" "$(cd "$plan_dir" && pwd)/$(basename "$plan_file")" "$(date -Iseconds)" "$attest_sid" > "$attest_file"
+    printf 'plan_sha256=%s\nplan_file=%s\nattested_at=%s\nattested_by_sid=%s\nstate_sha256=%s\n' "$hash" "$(cd "$plan_dir" && pwd)/$(basename "$plan_file")" "$(date -Iseconds)" "$attest_sid" "$state_hash" > "$attest_file"
     echo "[attest] ✅ 计划已锁定: $plan_file"
     echo "[attest]   SHA-256: $hash"
     echo "[attest]   存储于: $attest_file(计划重规划并重新获批后重跑本命令更新锁定)"
@@ -684,6 +693,15 @@ case "$mode" in
     ;;
   verify)
     [ -f "$attest_file" ] || exit 2
+    # [2026-11-23 task-planner-lean 修2] What: 优先用 state_sha256（锁 JSON 权威源 plan-state.json）校验。
+    # Why: render 会全量覆盖 task_plan.md，以它为准必然误判破锁。state_sha256 存在但 plan-state.json
+    #       丢失=异常 rc2；旧 attestation 无该字段（或为空）→ 回落 plan_sha256，存量计划零回归。
+    stored_state="$(grep '^state_sha256=' "$attest_file" | head -1 | cut -d= -f2)"
+    if [ -n "$stored_state" ]; then
+      [ -f "$plan_dir/plan-state.json" ] || exit 2
+      actual_state="$(sha256sum "$plan_dir/plan-state.json" | awk '{print $1}')"
+      [ "$stored_state" = "$actual_state" ] && exit 0 || exit 1
+    fi
     stored="$(grep '^plan_sha256=' "$attest_file" | head -1 | cut -d= -f2)"
     [ -z "$stored" ] && exit 2
     actual="$(sha256sum "$plan_file" | awk '{print $1}')"
