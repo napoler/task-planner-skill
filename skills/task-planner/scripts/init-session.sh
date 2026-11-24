@@ -636,67 +636,28 @@ if [ "${TASK_SCOPE_FILES:-}" = "1" ] && [ "${TASK_SCOPE_MODULES:-}" = "1" ] \
     fi
 fi
 
-# [task-perf-tiers 2026-11-24 Change #1] 纯文档轻量档判定（第五条件，紧邻 _trivial_code 判定之后）:
-# What: TASK_SCOPE_FILE_LIST 逗号分隔文件名列表 ∈ [3,5] 个 ∧ 全部为纯文本文档后缀
-#       （.md/.txt/.rst/.adoc/.tex/.csv 等，明确不含 .sh/.ts/.py/.json 代码/配置后缀）
-#       ∧ 全部不命中保护区路径 → _pure_doc=1。
-# Why: 实测 4 文件纯文档任务不满足旧「≤2 文件」闸门被误判 L1 标准档，触发 6 轮 critic + 5 轮
-#       drift 审计风暴耗时数小时；本判定只扩大 mini 自动降档的适用面，不改子代理委派门/CLI 工具/
-#       Superpowers/OpenSpec 判定语义（用户 11-23 裁决）。保护区路径 case 逐字复用上方
-#       _trivial_code 分支（镜像 check-delegation.sh:332-345），命中即否决（宪法 §六/§11.5）。
-_pure_doc=0
-if [ -n "${TASK_SCOPE_FILE_LIST:-}" ]; then
-    _pd_nfiles="$(printf '%s' "${TASK_SCOPE_FILE_LIST}" | awk -F',' '{print NF}')"
-    if _s22_uint "${_pd_nfiles:-0}" && [ "${_pd_nfiles}" -ge 3 ] && [ "${_pd_nfiles}" -le 5 ]; then
-        _pd_all_doc=1
-        # 逗号切分逐个校验（与 _trivial_code 的字面文件名口径一致，文件名不含空格）
-        for _pd_fname in $(printf '%s' "${TASK_SCOPE_FILE_LIST}" | tr ',' ' '); do
-            case "$_pd_fname" in
-                *.md|*.txt|*.rst|*.adoc|*.asciidoc|*.tex|*.csv|*.org|*.markdown) ;;
-                *) _pd_all_doc=0 ;;
-            esac
-            case "$_pd_fname" in
-                */.zcode/skills/*|*/.zcode/agents/*|*/.zcode/commands/*|*/.zcode/AGENTS.md|*/.zcode/cli/*) _pd_all_doc=0 ;;
-                */.claude/skills/*|*/.agents/skills/*|*/.agents/AGENTS.md|*/.agents/agents/*|*/.agents/commands/*|*/.config/opencode/*) _pd_all_doc=0 ;;
-                skills/*|*/skills/*|agents/*|*/agents/*) _pd_all_doc=0 ;;
-                *package.json|*pyproject.toml|*/.github/*|*/.gitlab-ci.yml|*/k8s/*) _pd_all_doc=0 ;;
-                *docker-compose*|*/.env*|*Dockerfile|*nginx.conf) _pd_all_doc=0 ;;
-            esac
-        done
-        [ "${_pd_all_doc:-0}" = "1" ] && _pure_doc=1
-    fi
-fi
-
-if [ -z "$PLAN_TIER" ] && [ "${TASK_AUTO_TIER:-}" = "1" ]; then
-    if [ "${TASK_TIER_EXCLUDE:-}" = "1" ]; then
-        echo "[init] auto-tier: 命中④排除条件（保护区/Rule 36 技能修改/D6 高危），不自动降 mini（Rule 38.6；显式指定 mini 仍可）"
-    elif [ "$_trivial_code" = "1" ]; then
-        # [task-perf-opt Change #1] 第四条件分支：trivial 代码修复（单文件代码 ∧ ≤3 行 ∧ ≤15min ∧ 单模块
-        # ∧ ④排除未命中）→ mini 档 + L0 微变更通道。Why：L0 通道存在但 lane-detect 禁滥用条款将代码文件
-        # 改动一律排除（lane-detect.sh:86 实测），trivial 单文件 ≤3 行修复被误落 L1 重档；本分支为
-        # 既有 mini 通道补 trivial 代码子类，复用 mini 豁免（多波验证/推演自证/委派仪式）+ L0 薄验证。
+# [task-perf-default-mini 2026-11-24] 分级缺省=mini（用户裁决：默认简单 SOP、运行时间升级、不做主观判断）。
+# What: 无显式 tier 时一律 mini；唯一例外=④排除（TASK_TIER_EXCLUDE=1：保护区/Rule 36 技能修改/D6 高危，
+#       宪法 §六 硬红线，属安全规则非主观判断）与 TASK_AUTO_TIER=0 逃生门（恢复旧 standard 缺省）。
+# Why: 原四条件/纯文档判定依赖 env 体量事实，全仓无调用方提交 → 机制从未触发（11-23 判例）；词面推断
+#       （.plan_scope 方案）被用户裁决否弃——推断本身即主观判断。缺省 mini 后升级由 zcode-posttooluse
+#       hook 按运行时间自动执行（plan_tier→standard 检查面全链恢复），判定依据=客观时间。
+# 原行为: 四条件(≤2文件/单模块/≤15min)+trivial 代码档+纯文档档(≤5)逐级判断，全不过→standard。
+# [保留说明 2026-11-24] `_trivial_code` 判定块（:602-637）保留：grep 实证 TRIVIAL_CODE_TIER 仍被下游
+#   :805/:889/:936/:1044/:1099/:1110 消费（3 文件缩减 + lane-detect --trivial 传参），故降级判定不再由
+#   trivial 决定档位，但保留子类标记；`_pure_doc` 仅被下方旧 tier 分支消费、全仓无其他调用方，随旧分支移除。
+if [ -z "$PLAN_TIER" ]; then
+    if [ "${TASK_AUTO_TIER:-1}" = "1" ] && [ "${TASK_TIER_EXCLUDE:-}" != "1" ]; then
         PLAN_TIER="mini"
         AUTO_TIER_FIRED=1
-        TRIVIAL_CODE_TIER=1
-        echo "[init] auto-tier: trivial 代码修复命中（scope=单文件代码 ${TASK_SCOPE_FILE_LIST} ∧ 预估 ${TASK_EST_LINES} 行 ≤3 ∧ ${TASK_EST_MINUTES}min ≤15 ∧ 单模块 ∧ ④排除未命中）→ mini+L0（Rule 38.6 第四条件, task-perf-opt）"
-    elif [ "${_pure_doc:-0}" = "1" ] \
-       && [ "${TASK_TIER_EXCLUDE:-}" != "1" ] \
-       && _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
-       && _s22_uint "${TASK_SCOPE_MODULES:-}" && [ "${TASK_SCOPE_MODULES}" -eq 1 ]; then
-        # [task-perf-tiers 2026-11-24 Change #1] 第五条件分支：纯文档轻量档（3-5 个纯文本文档 ∧ ≤15min
-        # ∧ 单模块 ∧ ④排除未命中）→ mini。Why: ≤2 文件的旧闸门漏掉 4 文件纯文档任务，导致标准档
-        # 审计风暴；本分支只走既有 mini 通道（复用其验证/委派豁免），不新增机器门，保留显式档优先。
-        PLAN_TIER="mini"
-        AUTO_TIER_FIRED=1
-        echo "[init] auto-tier: 纯文档轻量档命中（scope=${TASK_SCOPE_FILE_LIST} ∧ 3-5 文件全纯文档后缀 ∧ ${TASK_EST_MINUTES}min ≤15 ∧ 单模块 ∧ ④排除未命中）→ 自动降档 mini（Rule 38.6 第五条件, task-perf-tiers 2026-11-24）"
-    elif _s22_uint "${TASK_EST_MINUTES:-}" && [ "${TASK_EST_MINUTES}" -le 15 ] \
-       && _s22_uint "${TASK_SCOPE_FILES:-}" && [ "${TASK_SCOPE_FILES}" -ge 1 ] && [ "${TASK_SCOPE_FILES}" -le 2 ] \
-       && _s22_uint "${TASK_SCOPE_MODULES:-}" && [ "${TASK_SCOPE_MODULES}" -eq 1 ]; then
-        PLAN_TIER="mini"
-        AUTO_TIER_FIRED=1
-        echo "[init] auto-tier: 四条件全过（预估 ${TASK_EST_MINUTES}min ≤15 ∧ scope_files ${TASK_SCOPE_FILES} ≤2 ∧ 单模块 ∧ ④排除未命中）→ 自动降档 mini（Rule 38.6）"
+        # [task-perf-default-mini 2026-11-24] trivial 子类标记保留（消费者同上），仅影响文件集/lane 增强，
+        # 不再参与档位判定：档位缺省已统一 mini，避免旧「单文件代码」主观闸门继续左右 SOP。
+        if [ "$_trivial_code" = "1" ]; then
+            TRIVIAL_CODE_TIER=1
+        fi
+        echo "[init] 缺省轻量档 mini（task-perf-default-mini：默认简单 SOP；运行超时由 hook 自动升级 standard，检查面随之恢复）"
     else
-        echo "[init] auto-tier: 体量三条件未全命中或输入缺失/非法，保持缺省档（Rule 38.6 fail-safe）"
+        echo "[init] 保持 standard 缺省（TASK_AUTO_TIER=0 逃生门 或 ④排除命中：保护区/技能修改/D6）"
     fi
 fi
 DATE=$(date +%Y-%m-%d)

@@ -67,6 +67,19 @@ emit() {
   printf '{"additionalContext": %s}\n' "$(printf '%s' "$1" | jq -Rs .)"
 }
 
+# [task-perf-default-mini 2026-11-24] mini 档检测（What+Why）
+# What: 先读 task_plan.md 的 `plan_tier: mini` 行（init 产物注释形态），缺失则读 plan-state.json 的 .plan_tier（JSON 权威源）。
+# Why: 缺省 mini 后大多数任务都是 mini；hook 在 mini 档静默 drift-rhythm 提醒且不做陈旧阈值 ×mult。
+#       升级 standard 后（planctl set plan_tier=standard）本检测自然失配 → 提醒/×mult 自动恢复，无需改 hook。
+# fail-open: jq 缺失/文件缺失/解析失败 → 返回 1（按非 mini 处理，原提醒逻辑不变）。
+plan_is_mini() {
+  local p="$1" pdir="$2"
+  grep -qE 'plan_tier:[[:space:]]*mini' "$p" 2>/dev/null && return 0
+  [ -f "$pdir/plan-state.json" ] || return 1
+  command -v jq >/dev/null 2>&1 || return 1
+  jq -e '.plan_tier == "mini"' "$pdir/plan-state.json" >/dev/null 2>&1
+}
+
 drift_rhythm_check() {
   local plan_dir="$1" sid="$2"
   local n="${TASK_PLANNER_DRIFT_RHYTHM_N:-10}"
@@ -105,7 +118,15 @@ drift_rhythm_check() {
   # 第三键 due：0=无待注入，1=阈值命中待注入（end-emit 处统一 emit）
   # 写回 count（未触发时也写回，保持状态一致）；未达阈值时保留既有 due 不 clobber
   if [ "$(( count - last_inject ))" -ge "$n" ]; then
-    printf 'count %s\nlast_inject %s\ndue 1\n' "$count" "$count" > "$sfile" 2>/dev/null || true
+    # [task-perf-default-mini 2026-11-24] mini 档静默：计数/last_inject 照写（节奏状态不漂移），
+    # 但 due 不置位（保留既有 due 值：standard 期残留的待投递位在升级后仍可投递）。
+    # Why: 缺省 mini 后大多数任务 ≤15min，每 N（默认 10，经 ×2 为 20）次工具调用的偏移提醒是纯噪音；
+    #       plan_tier 升级 standard 后本分支自动恢复 due=1，提醒全量恢复，无需重写计划文档。
+    if plan_is_mini "$plan" "$plan_dir"; then
+      printf 'count %s\nlast_inject %s\ndue %s\n' "$count" "$count" "$due" > "$sfile" 2>/dev/null || true
+    else
+      printf 'count %s\nlast_inject %s\ndue 1\n' "$count" "$count" > "$sfile" 2>/dev/null || true
+    fi
   else
     printf 'count %s\nlast_inject %s\ndue %s\n' "$count" "$last_inject" "$due" > "$sfile" 2>/dev/null || return 0
   fi
@@ -200,6 +221,71 @@ fi
 # 已交付计划(verification.md 含 outcome: COMPLETE|BLOCKED)同样豁免陈旧提醒(误报修复)
 [ -f "${plan_dir}/verification.md" ] && grep -qiE 'outcome: *(COMPLETE|BLOCKED)' "${plan_dir}/verification.md" 2>/dev/null && exit 0
 
+# ─── [task-perf-default-mini 2026-11-24] 运行时间自动升级 standard ─────────────
+# What: 活跃计划 plan_tier=mini ∧ 本会话未升级 ∧ now-created_at > TASK_PLANNER_TIER_UPGRADE_MINUTES
+#       （默认 15min）→ planctl set plan_tier=standard + decisions 登记 TU-1 + render + 可选 attest 重锁
+#       + .tier_state/<sid>.state 幂等标记 + 单行 [tier-upgrade] 注入。plan_tier 一改，委派门 floor
+#       恢复 0.7、审计门按 L1 强制、VC 阈值恢复 standard、G4-G11 不再豁免、六文档回读全量恢复。
+# Why: 用户 2026-11-24 裁决「基于运行时间升级任务难度，不做主观判断」；缺省 mini 后若超时任务仍走
+#       轻量档，检查面会全部豁免到终验，必须用客观时间把任务推回 standard。
+# 调用形态实测（planctl.py set --help）：顶层字段写入 = `set --plan-dir <dir> --field plan_tier --value standard`；
+#       （用户任务书给的 `set --plan-dir <dir> plan_tier standard` 非本仓 CLI 形态）。
+# fail-open: jq/python3/planctl 任一缺失或任一步失败 → 静默 return 0 继续原 hook 路径，不重试、不污染 stdout。
+# 完结计划由上方 outcome 早退守卫拦截（含 verification.md 回退），此处再查 plan-state.json.outcome 兜底。
+tier_upgrade_check() {
+  local p="$1" sid="$2" pdir="$3" plans_root="$4"
+  local sfile="$plans_root/.tier_state/${sid}.state"
+  local script_dir_tu tmp_sf elapsed threshold decision
+  script_dir_tu="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" 2>/dev/null || return 0
+  [ -f "$pdir/plan-state.json" ] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+  command -v python3 >/dev/null 2>&1 || return 0
+  # 幂等：本会话已升级过不再执行（跨计划共享 sidkey 语义=一次会话一次升级）
+  [ -f "$sfile" ] && grep -q '^upgraded=1' "$sfile" 2>/dev/null && return 0
+  jq -e '.plan_tier == "mini"' "$pdir/plan-state.json" >/dev/null 2>&1 || return 0
+  jq -e '(.outcome // "") | test("COMPLETE|BLOCKED")' "$pdir/plan-state.json" >/dev/null 2>&1 && return 0
+  threshold="${TASK_PLANNER_TIER_UPGRADE_MINUTES:-15}"
+  case "$threshold" in ''|*[!0-9]*|0) threshold=15 ;; esac
+  # 时长计算：ISO8601(带 Z/偏移) → UTC epoch；解析失败/字段缺失 → 空串 → fail-open 不升级
+  elapsed="$(python3 - "$pdir/plan-state.json" <<'PY' 2>/dev/null || true
+import json
+import sys
+from datetime import datetime, timezone
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        created = json.load(f).get("created_at", "")
+    dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    print(int((datetime.now(timezone.utc) - dt).total_seconds() // 60))
+except Exception:
+    pass
+PY
+)"
+  case "$elapsed" in ''|*[!0-9]*) return 0 ;; esac
+  [ "$elapsed" -gt "$threshold" ] || return 0
+  # 升级动作链：逐步 fail-open，前一步成功但后一步失败时不回滚（档位已改=检查面已恢复，优于留在 mini）
+  python3 "$script_dir_tu/planctl.py" set --plan-dir "$pdir" --field plan_tier --value standard >/dev/null 2>&1 || return 0
+  decision="[tier-upgrade] 运行 ${elapsed} 分钟超轻量阈值(${threshold}min)，自动升级 standard 检查面"
+  python3 "$script_dir_tu/planctl.py" add --plan-dir "$pdir" --section decisions --json "{\"id\":\"TU-1\",\"decision\":\"${decision}\",\"rationale\":\"用户 2026-11-24 裁决：基于运行时间升级，非主观判断\"}" >/dev/null 2>&1 || return 0
+  python3 "$script_dir_tu/planctl.py" render --plan-dir "$pdir" >/dev/null 2>&1 || return 0
+  # 重锁：仅当既有 attestation 存在（实测调用形态 attest-plan.sh <task_plan.md>，不带 --skip 旗标）
+  if [ -f "$pdir/.plan-attestation" ] && [ -f "$script_dir_tu/attest-plan.sh" ]; then
+    bash "$script_dir_tu/attest-plan.sh" "$pdir/task_plan.md" >/dev/null 2>&1 || return 0
+  fi
+  # 幂等状态原子写（模仿 drift-rhythm 的 先 tmp 后覆盖 范式，防并发半写）
+  mkdir -p "$plans_root/.tier_state" 2>/dev/null || return 0
+  tmp_sf="${sfile}.tmp.$$"
+  printf 'upgraded=1 upgraded_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$tmp_sf" 2>/dev/null || return 0
+  if ! mv -f "$tmp_sf" "$sfile" 2>/dev/null; then
+    rm -f "$tmp_sf" 2>/dev/null || true
+    return 0
+  fi
+  emit "[tier-upgrade] ⏫ 本计划已运行 ${elapsed} 分钟，超轻量阈值 ${threshold}min（TASK_PLANNER_TIER_UPGRADE_MINUTES 可调）→ 已自动升级 standard 检查面：委派门 floor 恢复 0.7、审计门按 L1 强制、VC 阈值恢复 standard、G4-G11 不再豁免、收尾回读恢复全量六文档。后续按标准档执行，无需重写计划文档。"
+  exit 0   # 单轮单 JSON 约束（F9）：升级注入后结束本轮 hook，避免与下方提醒双行输出
+}
+tier_upgrade_check "$plan" "$SID" "$plan_dir" "$(dirname "$plan_dir")"
+
 # ─── 读阈值（config.json；解析失败兜底默认值，保证 fail-open）────────────────
 SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
 # [2026-09-26 task-v091 C-1b：双层路径修复，顶层覆盖优先] config.json 顶层键=用户覆盖值、.properties.X.default=schema 默认值；
@@ -213,14 +299,19 @@ cooldown="$(printf '%s' "$_cfg_tsv" | cut -f3)"
 # [2026-09-04 Rule 19.7] 新增 findings/progress 陈旧阈值；解析失败兜底默认。
 findings_n="$(printf '%s' "$_cfg_tsv" | cut -f4)"
 progress_n="$(printf '%s' "$_cfg_tsv" | cut -f5)"
-# [task-v172 CA-2] tier-aware 提醒周期(轻档 ×mult): plan_tier=mini ∨ execution_lane=L0 计划
-#   的 task_plan/progress/findings 陈旧阈值 15/20/25min → ×mult(默认 2=30/40/50min)。
-#   WHY(R3): 原阈值全 tier 统一,低复杂度任务被 [plan-sync]/[plan-compass] 反复打回写
+# [task-v172 CA-2] tier-aware 提醒周期(轻档 ×mult): execution_lane=L0 计划的
+#   task_plan/progress/findings 陈旧阈值 15/20/25min → ×mult(默认 2=30/40/50min)。
+# [task-perf-default-mini 2026-11-24] mini 档从 ×mult 改为「不注入 drift-rhythm 提醒」：
+#   What: mini 不再放大陈旧阈值（上方 plan_is_mini 判定 + 置位分支静默），仅 L0 保留 ×mult。
+#   Why: 缺省 mini 后大多数任务都是 mini，每 20 次调用一次的偏移提醒对 ≤15min 任务是纯噪音；
+#        运行超时升级 standard 后 plan_tier 标记翻转，×mult 与 drift 提醒同步恢复。
+#   WHY(R3 原注释保留): 原阈值全 tier 统一,低复杂度任务被 [plan-sync]/[plan-compass] 反复打回写
 #   计划文件=「来回读写 task_plan」体感来源之一。fail-open: mult 非数字/0 → 1(不放大);
 #   计划档位读取失败 → grep 未命中 → 不放大(保持原阈值,todo/calls 类阈值不动)。
 _TIER_MULT="$(jq -r '.properties.light_tier_interval_multiplier.default // 2' "$SKILL_ROOT/config.json" 2>/dev/null || echo 2)"
 case "$_TIER_MULT" in ''|*[!0-9]*|0) _TIER_MULT=1 ;; esac
-if [ "$_TIER_MULT" -gt 1 ] && grep -qE '(plan_tier:[[:space:]]*mini|execution_lane:[[:space:]]*L0)' "$plan" 2>/dev/null; then
+if [ "$_TIER_MULT" -gt 1 ] && ! plan_is_mini "$plan" "$plan_dir" \
+   && grep -qE 'execution_lane:[[:space:]]*L0' "$plan" 2>/dev/null; then
   plan_min=$(( plan_min * _TIER_MULT ))
   findings_n=$(( findings_n * _TIER_MULT ))
   progress_n=$(( progress_n * _TIER_MULT ))
@@ -349,7 +440,10 @@ fi
 rhythm_sfile="$(dirname "$plan_dir")/.drift-rhythm/${SID}.state"
 due="$(sed -n 's/^due[[:space:]]\{1,\}//p' "$rhythm_sfile" 2>/dev/null | head -1)"
 case "$due" in ''|*[!0-9]*) due=0 ;; esac
-if [ "$due" -eq 1 ]; then
+# [task-perf-default-mini 2026-11-24] mini 档静默补丁：上位置位分支已不再置 due；此处再守一次，
+# 防历史残留 due=1（例如 standard 期遗留）在 mini 期被投递。保留 due 不清零 → 升级 standard 后
+# plan_is_mini 失配，原投递链自动恢复（Why: 缺省 mini 的 ≤15min 任务对偏移提醒零收益，纯噪音）。
+if [ "$due" -eq 1 ] && ! plan_is_mini "$plan" "$plan_dir"; then
   rhythm_n="${TASK_PLANNER_DRIFT_RHYTHM_N:-10}"
   case "$rhythm_n" in ''|*[!0-9]*) rhythm_n=10 ;; esac
   [ "$rhythm_n" -ge 1 ] 2>/dev/null || rhythm_n=10   # 除零防护（env 可注入 0）
