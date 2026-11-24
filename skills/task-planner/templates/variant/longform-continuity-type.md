@@ -78,3 +78,41 @@
 - 技能：`skills/longform-continuity/SKILL.md`
 - 方法论：`skills/task-planner/references/longform-continuity-methodology.md`
 - 规则：Rule 107、task-dispatch 22.4d
+
+## 🧩 输出示例与格式契约（Rule 113）
+> 必填：本类型计划中凡声明输出格式/结构的交付物，均须在 `plan-state.json.output_examples` 登记至少 1 条完整示例 + 1 个同结构可复用模板（经 `planctl add --section output_examples` 写入），由 `planctl render` 派生到 task_plan.md 同名区块。禁止只写「输出为 JSON」等无样例声明；禁「略/同上/TBD」。
+
+| 交付物 | 格式 | 完整示例（fenced，见下方） | 可复用模板（占位符版，见下方） | 对应 VC |
+|---|---|---|---|---|
+| continuity-entry.yaml | YAML | 见下方示例代码块 | 见下方模板代码块 | VC-4 |
+
+**完整示例（可直接查看、可比对）**：
+
+```yaml
+unit_id: ch-03
+outline_ref: "docs/demo/outline.md#ch-03"
+sources_checked:
+  - docs/demo/setting-bible.md
+  - docs/demo/knowledge-base.md
+decisions:
+  - topic: 时间线
+    ruling: 沿用第一章设定
+conflict: none
+writeback: pending
+```
+
+**可复用模板（占位符版，供执行期复制）**：
+
+```yaml
+unit_id: <PLACEHOLDER>
+outline_ref: "<PLACEHOLDER>"
+sources_checked:
+  - <PLACEHOLDER>
+decisions:
+  - topic: <PLACEHOLDER>
+    ruling: <PLACEHOLDER>
+conflict: <PLACEHOLDER>
+writeback: <PLACEHOLDER>
+```
+
+填写纪律：① 示例与模板的字段集/层级必须一致；② 示例必须自包含可查看（JSON 须合法可解析、表格须有表头+≥1 行数据）；③ 无格式交付物时显式写 `none-justified（理由）`，禁留空；④ 示例的 `vc_refs` 至少映射 1 个已存在 VC（Rule 113.4）。

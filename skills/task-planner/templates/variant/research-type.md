@@ -123,3 +123,38 @@
 | `sampled_fail` | 任务 <5 单元不触发抽样 |
 | `pre_check` | Q1:否 / Q2:无共享写 / Q3:能 |
 | `rollback_point` | <worktree 分支，合并前可弃> |
+
+## 🧩 输出示例与格式契约（Rule 113）
+> 必填：本类型计划中凡声明输出格式/结构的交付物，均须在 `plan-state.json.output_examples` 登记至少 1 条完整示例 + 1 个同结构可复用模板（经 `planctl add --section output_examples` 写入），由 `planctl render` 派生到 task_plan.md 同名区块。禁止只写「输出为 JSON」等无样例声明；禁「略/同上/TBD」。
+
+| 交付物 | 格式 | 完整示例（fenced，见下方） | 可复用模板（占位符版，见下方） | 对应 VC |
+|---|---|---|---|---|
+| research_data.json | JSON | 见下方示例代码块 | 见下方模板代码块 | VC-2, VC-3, VC-4 |
+
+**完整示例（可直接查看、可比对）**：
+
+```json
+{
+  "topic": "示例主题",
+  "data": [
+    {"keyword": "示例关键词A", "volume": 1200, "source": "官方文档"},
+    {"keyword": "示例关键词B", "volume": 800, "source": "竞品公开资料"}
+  ],
+  "coverage": 0.86
+}
+```
+
+**可复用模板（占位符版，供执行期复制）**：
+
+```json
+{
+  "topic": "<TOPIC>",
+  "data": [
+    {"keyword": "<KEYWORD_1>", "volume": "<VOLUME_INT_1>", "source": "<SOURCE_1>"},
+    {"keyword": "<KEYWORD_2>", "volume": "<VOLUME_INT_2>", "source": "<SOURCE_2>"}
+  ],
+  "coverage": "<COVERAGE_FLOAT_0_TO_1>"
+}
+```
+
+填写纪律：① 示例与模板的字段集/层级必须一致；② 示例必须自包含可查看（JSON 须合法可解析、表格须有表头+≥1 行数据）；③ 无格式交付物时显式写 `none-justified（理由）`，禁留空；④ 示例的 `vc_refs` 至少映射 1 个已存在 VC（Rule 113.4）。

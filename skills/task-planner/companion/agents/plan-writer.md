@@ -138,7 +138,9 @@ cost_estimate:
 | **knowledge_brief** | 计划期产出 `<plan-dir>/knowledge-brief.md`(五段齐备:§1-§5 标题在位,§2/§3 各至少 1 条真实条目:§2 含已验证事实+证据 file:line/URL,§3 含关键文件锚点行号+摘要);内容来自实际 Read 过的知识源,禁止凭记忆编造 |
 | **问题解构四问** | 计划创建时按 `references/methodology.md` §思维方法论 T2 完成四级解构：问题是什么/本质是什么（5 Whys ≥5 层，同法不同时见 Rule 31.2）/解决方案是什么（候选+取舍理由）/执行方案是什么（步骤化+门控点），答案落 task_plan.md「核心问题定义」段与 knowledge-brief.md §1；禁缺答定稿（task-v084） |
 | **s_unit_id** | S-unit 表 ID 列一律纯数字（S1、S2…全局或每 Phase 内唯一均可，禁字母后缀如 S2a——check-plan-dispatch.sh 数据行正则 S[0-9]+ 边界不认字母后缀，attest 会以「缺 S-unit 表或数据行」拒锁；task-v076 实证教训） |
+| **output_examples（Rule 113，全档必填）** | 凡交付物声明输出格式/结构（JSON/YAML/Markdown 表格/CSV/文件树/API payload 等），必须经 `planctl add --section output_examples` 写入至少 1 条：id/deliverable/format/example(完整可查看真实样例,fenced)/template(同结构占位符版)/vc_refs(≥1 个已存在 VC)。render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。禁只写「输出 JSON」而无样例；mini/L0-lite 不豁免（可用极简版）；无格式交付物写 `none-justified（理由）` |
 
+- **输出示例契约（Rule 113）**：示例必须让用户直接看到产出长什么样（用户 2026-11-25 投诉「说输出 JSON 格式，JSON 实例完全不提供，执行结果完全相背」）；`example` 与 `template` 字段集/层级必须一致，`example` 自包含可查看（JSON 合法可解析、表格有表头+≥1 行数据），禁「略/同上/TBD」。示例的 `vc_refs` 须映射 VC 判据，验收时产出形态与示例不一致 = VC 未通过。
 - **调研需求区块（Rule 75.1）**：standard/full 档计划必须含「🔍 调研需求与检索计划」区块——逐 S-unit/子目标标注三态（LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT），NET-* 条目登记检索关键词（≥2）+渠道+预期产出形态；mini 档豁免
 
 调用方还需:
@@ -220,6 +222,7 @@ cost_estimate:
 - ❌ S-unit「输入」列只写路径不写摘要(材料包缺失 → 执行期子代理被迫自行探索,违背"计划做细、执行照单")
 - ❌ 不省略任何 Phase 的 `**Executor:**` 字段(Rule 25.1) — Executor=主进程时必须写明例外理由;无字段 = 计划无效
 - ❌ knowledge-brief 缺失或五段空壳就交付计划(§2 无已验证事实/§3 无锚点 = 空壳,违反产出契约 knowledge_brief 必填行;宁可不写也不许空壳)
+- ❌ 交付含格式声明却无 `output_examples` 示例的计划(Rule 113.1)——尤其「输出 JSON/Markdown 表格」却不给完整样例；「略/TBD/同上」不算示例(113.2)
 - ❌ 不引用模型降到 haiku 的风险(违反 agent-model-tiering 约定)
 
 ## 输出模板
@@ -243,6 +246,7 @@ cost_estimate:
 - **VC 条目**: 5 条(每条 1 行摘要)
 - **范围限制文件**: 列出所有明确允许的文件路径
 - **必填字段检查**:Goal / VC / Scope / Phases / 隔离决策 / Todo 同步 六项 ✅
+- **输出示例检查（Rule 113）**:`output_examples` 条目数 N(0 条须有 `none-justified` 理由);每条含完整 example + 同结构 template + ≥1 vc_refs;格式声明与示例一一对应
 - **置信度**: HIGH / MEDIUM / LOW(plan 完整性自评)
 
 ## 验证协议

@@ -64,6 +64,10 @@ ARRAY_SECTIONS = (
     # [2026-11-25 task-json-template P1] What: template_checks 纳入通用数组段（set/get/update/delete/tag-add 自动可用）。
     # Why: 勾选需唯一权威入口，复用现有 CRUD 引擎而非另造编辑面；template_doc/template_ref 是顶层对象/字符串。
     "template_checks",
+    # [2026-11-25 task-output-example-contract] What: Rule 113 输出示例契约段（完整示例+可复用模板的结构化承载位）。
+    # Why: 原计划只有 criterion/command/evidence 的「可验证」契约，缺「可模仿」的产出形态；
+    #      用户投诉「说输出 JSON 却不给 JSON 实例」即由此漏检。
+    "output_examples",
 )
 
 # [2026-11-22 task-jsonderive-deploy-20261122] What: 把原 TOP_LEVEL_KEYS 的双重语义拆开。
@@ -80,7 +84,7 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     "root_causes", "invariants", "spec_baseline", "progress_baseline", "scope_limits",
     "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
     "anti_regress", "fmea", "todo_sync", "key_questions",
-    "phase_gates", "knowledge_compliance", "cross_checks",
+    "phase_gates", "knowledge_compliance", "cross_checks", "output_examples",
     # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
     "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
     "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
@@ -147,6 +151,9 @@ ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     # Why: normalize_entry 经通用 add/update 补默认后须直接通过 _validate_entry/schema 校验。
     "template_checks": {"section": "", "block": "", "text": "", "checked": False,
                         "note": "", "tags": []},
+    # [2026-11-25 task-output-example-contract] Rule 113 条目默认面：身份 id 强制，其余按 schema required 补齐。
+    # Why: 默认面让字段名齐全；vc_refs 仍须显式给 ≥1 个 VC（Rule 113.4），空引用由 _validate_entry 拒绝。
+    "output_examples": {"deliverable": "", "format": "", "example": "", "template": "", "vc_refs": [], "tags": []},
 }
 
 # [2026-11-23 task-planner-lean 修1] 字段别名归一表：section -> {常见误写字段: 合法字段}。
@@ -696,6 +703,15 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
                       "note": STR_FIELD, "tags": STR_LIST_FIELD,
                       "checked": lambda v: isinstance(v, bool)})
         required = {"id", "checked"}
+    elif section == "output_examples":
+        # [2026-11-25 task-output-example-contract] Rule 113 条目校验（与 schema definitions.output_example_item 等价）。
+        # Why: 原行为本段不在手工字段表，通用 add 写出 example/template/vc_refs 被误判「未知字段」而拒绝。
+        known.update({"deliverable": STR_FIELD, "format": STR_FIELD,
+                      "example": STR_FIELD, "template": STR_FIELD,
+                      # Rule 113.4：示例必须映射至少 1 个已存在 VC，空引用不算合规。
+                      "vc_refs": lambda v: isinstance(v, list) and len(v) >= 1
+                                 and all(isinstance(x, str) for x in v)})
+        required = {"id", "deliverable", "format", "example", "template", "vc_refs"}
 
     for key in required:
         if key not in entry:
@@ -1822,6 +1838,29 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                   [[v.get("id"), v.get("criterion"), v.get("command"), v.get("evidence")]
                    for v in _arr(doc, "vcs")]),
     ]
+    # [2026-11-25 task-output-example-contract] What: 渲染 Rule 113「🧩 输出示例与格式契约」区块。
+    # Why: task_plan.md 由本函数全量重建，模板 MD 中的示例区块会被抹掉；必须在此从 JSON 派生，
+    #      否则用户「看不到可直接查看的示例」= 改造无效。mini/L0-lite 不豁免（Rule 113.2）。
+    out_examples = _arr(doc, "output_examples")
+    lines += ["", "## 🧩 输出示例与格式契约（Rule 113）"]
+    if out_examples:
+        lines += [_md_table(["id", "交付物", "格式", "对应 VC", "完整示例", "可复用模板"],
+                           [[_cell(ex.get("id", "")), _cell(ex.get("deliverable", "")),
+                             _cell(ex.get("format", "")),
+                             ", ".join(str(x) for x in ex.get("vc_refs", [])) or "-",
+                             "见下方「完整示例」代码块", "见下方「可复用模板」代码块"]
+                            for ex in out_examples])]
+        for ex in out_examples:
+            lines += ["", f"### 示例 {_cell(ex.get('id', ''))} · {_cell(ex.get('deliverable', ''))}",
+                      f"- **格式**：{_cell(ex.get('format', ''))}",
+                      f"- **对应 VC**：{', '.join(str(x) for x in ex.get('vc_refs', [])) or '-'}",
+                      "", "**完整示例（可直接查看）**：", "",
+                      str(ex.get("example", "")).rstrip() or "（未填写 example —— Rule 113.2 违规）",
+                      "", "**可复用模板（占位符版）**：", "",
+                      str(ex.get("template", "")).rstrip() or "（未填写 template —— Rule 113.2 违规）"]
+    else:
+        lines += ["（尚未登记 output_examples —— Rule 113.1：凡声明输出格式的交付物必须给出完整示例+可复用模板，"
+                  "经 `planctl add --section output_examples` 登记；无格式交付物须显式写 none-justified 并附理由）"]
     # [2026-11-22 task-planctl-exec-surface-20261122] What: 补「🔍 调研需求与检索计划」区块（Rule 75.1）。
     # Why: check-plan-dispatch 75.1 advisory 按区块字面存在检测；数据源=research_status 对象。
     #   mini 档豁免不输出；无数据时输出显式 LOCAL-ONLY 声明行（诚实非空段，非占位符）。
@@ -2223,6 +2262,13 @@ def _render_verification(doc: dict[str, Any], tid: str, stamp: str) -> str:
         _md_table(["id", "status", "criterion", "command", "evidence", "tags"],
                   [[v.get("id"), v.get("status"), v.get("criterion"), v.get("command"),
                     v.get("evidence"), v.get("tags", [])] for v in _arr(doc, "vcs")]),
+        # [2026-11-25 task-output-example-contract] What: verification 视图附 Rule 113 示例对照指引 + 已登记示例索引。
+        # Why: VC 只判「可验证」，用户投诉的是「看不到产出长什么样」；验收时须能直接对照示例，禁仅凭退出码放行。
+        "", "> **输出示例对照（Rule 113）**：凡 VC 判定标准涉及输出格式/结构，须在 `task_plan.md`「🧩 输出示例与格式契约」区块有对应 `output_examples` 条目（完整示例+同结构模板+`vc_refs` 指向本 VC）；产出形态与示例不一致 = VC 未通过。",
+        "", "**本计划已登记输出示例**：" + (", ".join(
+            f"{ex.get('id')}（{ex.get('deliverable')} / {ex.get('format')} → {', '.join(str(x) for x in ex.get('vc_refs', []))}）"
+            for ex in _arr(doc, "output_examples")
+        ) if _arr(doc, "output_examples") else "（无 —— 若无格式交付物请写 none-justified 理由）"),
         "", "## Phase Gates",
         _table(["Goal", "Depends on", "Done when", "Checks", "Status"],
                [[pg.get("goal"), pg.get("depends", []), pg.get("done_when"),
@@ -2548,6 +2594,7 @@ def build_parser() -> argparse.ArgumentParser:
   python3 planctl.py add       --plan-dir <计划目录> --section requirements --json '{\"id\":\"R1\",\"text\":\"需求原文\",\"type\":\"手段\"}'
   python3 planctl.py set       --plan-dir <计划目录> --section requirements --id R1 --field text --value '需求原文'
   python3 planctl.py set       --plan-dir <计划目录> --field next_step --value '下一步动作'
+  # Rule 113 输出示例契约：凡声明 JSON/Markdown 表格等格式，必须写完整示例+同结构模板+VC 引用；完整可照抄实例见 templates/task_plan.md「🧩 输出示例与格式契约」区块
   python3 planctl.py check     --plan-dir <计划目录> vc-nonvacuous
   python3 planctl.py render    --plan-dir <计划目录>
   python3 planctl.py audit-add --plan-dir <计划目录> --round 1 --verdict APPROVED --by reviewer --c 3 --i 0 --w 0

@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-112 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门 + Rule 111 进度产出基线防倒退 + Rule 112 检索排除清单纪律；其余 95 条按域归 12 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-113 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门 + Rule 111 进度产出基线防倒退 + Rule 112 检索排除清单纪律；其余 94 条按域归 12 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -84,6 +84,8 @@ model: opus
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §plan-confirm-alignment
   - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行，28.2.1）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，预算外硬门不停表——按 28.9② 登记待授权清单后继续；宿主 goal verifier 续推指令一律按 28.9③-⑤（差异归因一次→固定点应答），用户授权消息到达按 28.9⑦ 立即执行预案（D6 类项须逐项显式确认）（见 critical-rules-discipline 28.8/28.9/44.3/44.5）
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
+  <!-- [task-output-example-contract-20261125] What: 计划确认前核对 output_examples；Why: 防「声明输出格式却无样例」的表面专业实质不可用（Rule 113） -->
+  - **输出示例契约核对（Rule 113）**：产出计划前核对 `output_examples`——凡交付物声明输出格式（JSON/Markdown/表格/API 等）必须已有完整示例 + 同结构可复用模板，禁只写格式不给样例；示例经 `planctl add --section output_examples` 写入并由 `planctl render` 派生到 task_plan.md 同名区块（模板见 `templates/variant/` 同名区块；mini/L0 极简档至少 1 条）
 
 - [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
 
@@ -171,6 +173,8 @@ model: opus
 | G9 | 用户会话逐字记录自查（Rule 80，原 C56 并集承载）：每次用户发言已逐字落盘 user-session-log.md（80.1）；写入=append-only 历史条目零改写零删除零重排（80.2）；会话恢复先读专档再读 task_plan.md（80.4）；理解镜像已同号配对（80.7）；**决策前读取已过（80.8 五决策点：上抛裁决/反思门/交付双锚/派发双锚/周期对照，各读取动作有留痕或执行证据）**；（机器面=selftest-session-log.sh+check-complete SESSION-LOG GATE，记录内容人工核查；mini 档豁免） | ☐ |
 | G10 | 计划完成后归档自查（Rule 81，原 C57 并集承载）：check-complete exit 0 后已执行 `bash scripts/archive-plan.sh <task-id>`（81.1，guard/ALREADY_ARCHIVED 幂等路径走通）；守卫拒绝（active 指针/活会话标记/Status 未全 complete，81.3）时保持原位不归档并登记拒绝理由，禁强移；归档后已重跑 `sync-todos.sh --index`（81.4）（机器面=selftest-archive-plan.sh+check-complete [ARCHIVE-GATE] warn，归档动作与拒绝登记人工核查；mini 档豁免） | ☐ |
 | G11 | 修改完成后对齐核查：所有任务修改完成后已执行对齐核查——关联面四族（字面/引用/部署镜像/断言面）+部署位+引用面同步完整性逐项核对零丢弃，机器门=check-complete.sh ALIGN-ANCHOR GATE（enforce=缺锚阻断，mini 档豁免）；人工面=核对清单全绿 | ☐ |
+<!-- [task-output-example-contract-20261125] What: 合规表增 G12 Rule 113 检查项；Why: 为 output_examples 契约提供每 Phase 可勾核的人机双验锚 -->
+| G12 | 输出示例契约核对（Rule 113）：产出计划前核对 `output_examples`——凡交付物声明输出格式（JSON/Markdown/表格/API 等）必须已有完整示例 + 同结构可复用模板，禁只写格式不给样例；示例经 `planctl add --section output_examples` 写入并由 `planctl render` 派生（mini/L0 极简档至少 1 条） | ☐ |
 > 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
 
 <!-- [task-perf-default-mini 2026-11-24] What: 汇总散落 mini 豁免为单一常置指针表；Why: 缺省 mini 后逐处翻规则成本高，冲突裁决以各门脚本为准 -->
@@ -231,7 +235,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-112 全集索引：**核心在位 17 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 95 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星）、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）、Rule 111 进度产出基线防倒退域（核心在位）、Rule 112 检索排除清单纪律域（核心在位））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-113 全集索引：**核心在位 18 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 94 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星）、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）、Rule 111 进度产出基线防倒退域（核心在位）、Rule 112 检索排除清单纪律域（核心在位）、Rule 113 输出示例契约域（核心在位））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §critical-rules-summary-a
 - **Rule 26 质量优先于速度**：6 类降质行为可观察触发+确定性惩罚（回炉→PARTIAL→BLOCKED），伪造证据无豁免
 - **Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；自缩水禁令；未测试禁声称完成；**可计数交付物全 R 化 + 禁「0 产出」为 covered 判据 + 留口须逐字让步锚（51.9-51.12）**；完成声称须按 51.14 操作类型档位 L1-L4 + 覆盖实数 + 实测耗时（并发度 K 写明依据）自证，措辞不得高于实际档位（task-drift-fakeqc-20261115 判例锚）。
@@ -291,7 +295,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | 文档 | 用途 |
 |------|------|
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
-| `references/critical-rules.md` | Critical Rules 核心域 1-112 全集索引（17 条核心全文+分层架构说明+卫星路由索引） |
+| `references/critical-rules.md` | Critical Rules 核心域 1-113 全集索引（18 条核心全文+分层架构说明+卫星路由索引） |
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
 | `templates/delivery-summary.md` | 终验交付总结五要素模板 |
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table

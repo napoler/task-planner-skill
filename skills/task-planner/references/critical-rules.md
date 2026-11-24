@@ -261,3 +261,22 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 112.5 **与既有规则关系（分工互斥）**：本条是 Rule 100.6③「检索排除 trash/」的通用化文档载体（trash/ 为清单首个条目，100.6 原文不改）；Rule 105.1「枚举面排除 trash/」与本条并列（105 管可枚举小集合的枚举方式，本条管跨检索动作的排除清单）；Rule 62.4b「公共上下文一次读取+引用传递」被本条 112.2 复用（清单一次读取复用，禁反复重读）。四者互补不重叠。
 
 112.6 **机制（L0-T 文本优先）**：判定面=LLM 行为（检索前读清单 + 条件比对 + 排除参数注入 + 子代理传播）+ 本条款文本锚；机器面=零新增（无新脚本/无新 config 键/无 hook），selftest 机器化属 opt-in（Rule 38.7 L0-T 档），仅当用户显式要求才建。「确保后期执行」的既有承载 = 本条款文本锚 + 清单文档载体，不构成建机器门的授权（宪法 §二文本优先铁律）。
+
+### 113 输出示例契约（Output Example Contract，P0，2026-11-25 task-output-example-contract-20261125；目标：根治「计划表面专业但执行产出完全相背」——格式已声明却无示例，执行体只能脑补）
+> 适用：一切由 task-planner 产出的计划任务（含 standard / mini / L0-lite 全档，含主模板与 31 个 variant）。机制=规则文本 + 模板必选区块 + `plan-state.json.output_examples` 结构化承载 + `planctl render` 派生视图 + 既有守卫。Why：用户 2026-11-25 原话「表面看着很繁荣、很专业，但实际上是一塌糊涂……说输出 JSON 格式，JSON 的格式实例完全不提供……没有一个可以让用户直接看到的结果、示例」；根因=既有 VC 契约只覆盖「可验证」（criterion/command/evidence），不覆盖「可模仿」（预期产出形态），格式声明与示例缺失不违规。
+
+113.1 **强制示例义务（P0）**：计划中任何交付物一旦声明输出格式或结构（JSON / YAML / Markdown / CSV / 表格 / API payload / 文件树 / 配置片段 / 代码签名等），必须在同一计划的 `output_examples` 段登记至少 1 条完整示例；禁止只写「输出为 JSON 格式」「按 Markdown 输出」等无样例声明。判定式：计划含格式声明词但无对应 `output_examples` 条目 = FAIL。
+
+113.2 **示例双件套（完整示例 + 可复用模板）**：每条 `output_examples` 必须同时给出 `example`（完整、可直接查看的真实形态，fenced code block 或 Markdown 表格，禁「略/同上/TBD/示例略」）与 `template`（同结构占位符版，供执行期直接复制填写）；二者字段结构必须一致。mini / L0-lite 档不豁免，但允许极简版（1 示例 + 1 模板，各 ≥1 行）。
+
+113.3 **结构化承载与派生（P0）**：示例一律经 `planctl add --section output_examples --json '...'` 写入 `plan-state.json`，由 `planctl render` 派生到 `task_plan.md`「## 🧩 输出示例与格式契约（Rule 113）」区块；禁止只写 MD（下次 render 全量覆盖）。字段：`id | deliverable | format | example | template | vc_refs | tags`。
+
+113.4 **VC 对齐**：每条示例的 `vc_refs` 至少引用 1 个已存在的 VC id；VC 的 `criterion`/`command` 判据须能在 `example` 中找到对应形态（命令输出类示例须含真实可比对的输出片段）。引用不存在的 VC = FAIL。
+
+113.5 **传播面全覆盖（模板族）**：`templates/task_plan.md` 主模板 + `templates/variant/*.md` 全部 31 个变体 + `templates/verification.md` + `templates/subagent_dispatch.md` 必须包含本区块的填写指引；新增 variant 时同步补区块（Rule 34.2 四点同步扩展）。原则注册表 `principle-template-registry.md` 纳入 enforce token `🧩 输出示例与格式契约`，由既有 `check-template-principles.sh` 守护，防「主模板改了变体漏了」。
+
+113.6 **派发与验收消费**：S-unit 有格式要求时，dispatch 契约须携带示例路径或内联示例摘要（≤10 行）；执行体返回产物须与 `example` 形态一致方可判 VC pass。验收对照中「示例与实际产出不一致」视同 VC 未通过。
+
+113.7 **与既有规则分工**：Rule 21.6.4 No-Placeholder 管「禁 TBD 占位」，本条管「格式声明必须有可模仿的完整样例」（占位模板合法但须配完整示例）；Rule 51 管 R→VC 覆盖，本条管 VC 判据的产出形态可执行化；Rule 111 管产出不倒退，本条管产出可预期。四者互补，禁以「已有 VC/已无占位符」为由绕过本条。
+
+113.8 **机制（文本优先 + 必要承载）**：本条以规则文本 + 模板区块 + JSON/schema 承载位 + render 派生为落地载体；机器面=复用既有 `planctl validate`（schema `additionalProperties:false` + 条目必填校验）与既有 `check-template-principles` 守卫，零新增机器门脚本、零新 config 键、零新 hook（对齐宪法 §二文本优先铁律，新增 selftest/机器门属 opt-in 须用户显式授权）。

@@ -81,9 +81,25 @@
     "knowledge_compliance": { "type": "array", "items": { "$ref": "#/definitions/knowledge_compliance_item" } },
     "quality_gates": { "$ref": "#/definitions/quality_gates" },
     "outcome": { "$ref": "#/definitions/outcome" },
-    "cross_checks": { "type": "array", "items": { "$ref": "#/definitions/cross_check_item" } }
+    "cross_checks": { "type": "array", "items": { "$ref": "#/definitions/cross_check_item" } },
+    "output_examples": { "type": "array", "items": { "$ref": "#/definitions/output_example_item" }, "description": "[Rule 113 输出示例契约] 每条格式声明须配完整示例+可复用模板；planctl add --section output_examples 写入，planctl render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。" }
   },
   "definitions": {
+    "output_example_item": {
+      "type": "object",
+      "description": "Rule 113 输出示例契约条目。example=完整可读的真实形态（fenced code block 或 Markdown 表格文本，禁 TBD/略/同上）；template=同结构占位符版，供执行期复制填写；二者字段集/层级必须一致。vc_refs 至少引用 1 个已存在 VC。mini/L0-lite 不豁免，允许极简版。",
+      "required": ["id", "deliverable", "format", "example", "template", "vc_refs"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "deliverable": { "type": "string", "minLength": 1, "description": "交付物名称（如 article.json / 验证报告表格）" },
+        "format": { "type": "string", "minLength": 1, "description": "输出格式/结构（JSON / YAML / Markdown 表格 / 文件树 / API payload 等）" },
+        "example": { "type": "string", "minLength": 1, "description": "完整、可直接查看的示例文本；必须自包含，禁 '略/同上/TBD'" },
+        "template": { "type": "string", "minLength": 1, "description": "与 example 同结构的占位符模板，供执行期直接复制填写" },
+        "vc_refs": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "对应 VC id 列表（至少 1 个已存在 VC）" },
+        "tags": { "$ref": "#/definitions/tag_list" }
+      }
+    },
     "tag_list": {
       "type": "array",
       "items": { "type": "string" },

@@ -16,6 +16,7 @@
 | FMEA 预演 | Rule 22.3 / 方法论 R2 | `## 📊 FMEA 预演` | 是（enforce） | 标题或豁免/pruned 显式登记；derived 当前按 **warn** 逐步补齐 | mini-lite, l0-lite | base: enforce `📊 FMEA 预演`；derived: warn |
 | 证据锚 | Rule 71 | `## 🔍 证据面清单`（证据面/无源不写条款） | 是（enforce） | 标题或豁免/pruned 显式登记；derived 当前按 **warn** 逐步补齐 | mini-lite, l0-lite | base: enforce `🔍 证据面清单`；derived: warn |
 | 指令理解迭代 | Rule 28.2.2 | `## 🧭 指令理解迭代草稿` | 是（在途豁免） | base 在途未落盘按登记豁免；derived 标题或豁免/pruned，当前按 **warn** | mini-lite, l0-lite | base: in-flight 豁免（合并后对齐 enforce）；derived: warn |
+| 输出示例契约 | Rule 113（输出示例契约） | `## 🧩 输出示例与格式契约` | 是（enforce） | derived 全 31 档必填（含 mini-lite/l0-lite 极简版），标题 token 在位即合规；本原则**不随豁免档跳过** | 无（用户 2026-11-25 明确要求「所有计划任务必须包含完整示例」） | base: enforce `🧩 输出示例与格式契约`；derived: enforce（含豁免档） |
 | lineage（派生治理） | 本任务 S4/S5（模板分级） | `<!-- template-lineage:` 头（derived 必选；base=`level=base` 行） | 是（enforce） | derived 必含 `template-lineage`；base 必含 `level=base` | 无（lineage 为派生治理核心，不豁免） | base: enforce `level=base`；derived: enforce `template-lineage` 头 |
 
 ### 备注与口径
@@ -39,6 +40,7 @@ SPEC_VERSION=1
 BASE_TEMPLATE=skills/task-planner/templates/task_plan.md
 VARIANT_DIR=skills/task-planner/templates/variant
 EXEMPT_VARIANTS=mini-lite-type.md,l0-lite-type.md
+OUTPUT_EXAMPLE_TOKEN=🧩 输出示例与格式契约
 ENFORCE_BASE=📦 进度产出基线|🛡 防倒退终检|🔒 规范基线|🎯 用户需求原文|🧮 根源覆盖表|🎯 Goal 单元表|✅ Verification Contract|📊 FMEA 预演|🔍 证据面清单|level=base
 ENFORCE_DERIVED_LINEAGE=template-lineage
 WARN_DERIVED=进度产出基线|🔒 规范基线|🎯 用户需求原文|🧮 根源覆盖表|🎯 Goal 单元表|✅ Verification Contract|📊 FMEA 预演|🔍 证据面清单
