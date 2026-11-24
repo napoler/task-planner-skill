@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-110 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门；其余 91 条按域归 12 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-112 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门 + Rule 111 进度产出基线防倒退 + Rule 112 检索排除清单纪律；其余 95 条按域归 12 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -25,6 +25,7 @@ model: opus
 ---
 
 **[P0]** 禁止跨项目污染 · 禁止虚构 · 修改前必须 Read 并展示 diff · 技能文件修改需逐项授权。发现缺失=STOP 报告，禁止补全。
+**完成总结（S58）**：交付前输出四字段中文总结——已完成事项 / 产出文件清单 / 遗留问题 / 下一步建议（≥2 条）；字段名逐字使用，禁用「应该没问题/已成功」等模糊语。
 
 **Goal**：产出结构化 `task_plan.md`（含 Phases/VC/V-N），按 phase 推进，全 phase complete 后逐条复验 VC，交付 COMPLETE/PARTIAL/BLOCKED。**每轮锚定（抗上下文稀释）**：每次回答前（含工具调用后的续答）先复述当前任务 Goal 与 Requirements 首条用户原话（≤2 行）再推进；上下文定位不到锚时先读 plan-state.json/恢复包再答，禁凭压缩摘要继续。
 
@@ -110,7 +111,7 @@ model: opus
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §agent-failure-ledger-details
   3. [M] **执行 Phase 工作**（内嵌 3-File 落盘，Rule 19）：
      - **3a 子代理产出回填（19.1）**：每次子代理/调研 Skill 返回后**紧邻一次 `planctl add --section research`（结论摘要+证据路径）+ `render`**；回填完成才勾 Handoff `verify_done`（Read 产出+findings 双条件）；验收争议（Rule 69.1 T4）→ decision-arbiter 仲裁。**采集→消费闭环（task-resource-utilization-20261123）**：每条采集结论回填 research 时同轮补一条 `planctl add --section knowledge_use --json '{"id":"KU<n>","phase":"<P>","source":"<research锚>","purpose":"<下游消费点;未消费写「未消费 因__」>"}'`——把「查了却悄悄丢掉」变为「回填时显式声明去向」；purpose 留空或缺失视为该采集未闭环，收尾回读门（84.14）逐条核对。复用既有 section/schema/render（planctl.py knowledge_use），零新增脚本/门/hook。
-     - **3b 2-Action Rule（Rule 3）**：每 2 次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
+     - **3b 2-Action Rule（Rule 3）**：每 config.json#max_view_browser_before_save（默认 2）次 view/browser/search 后写 findings.md；多模态内容立即转文字落盘
      - **3c 动作留痕**：关键动作随做随记 progress.md；错误**立即**写 Error Log（19.4）并同轮完成四步（v168：记错误原文→Rule 31.2 四问根因→纠正→复验回填，未完禁下一动作）；关键动作同步 `bash <skill>/scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N]`
      - **3d hook 响应**：`[plan-sync]`→按 `references/todo-sync.md` §4 协议回写；`[plan-compass]`（findings/progress 陈旧，Rule 19.7）→立即回填再继续
      - **3e 上下文卫生（Rule 29，细则→task-discipline）**：每 2 个 Phase 跑 `bash scripts/check-context-hygiene.sh`；工作文件整理在会话恢复/用户指令时运行
@@ -172,7 +173,7 @@ model: opus
 > 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
 
 <!-- [task-perf-default-mini 2026-11-24] What: 汇总散落 mini 豁免为单一常置指针表；Why: 缺省 mini 后逐处翻规则成本高，冲突裁决以各门脚本为准 -->
-> **mini 缺省档最小流程（2026-11-24 缺省 mini 后的常置口径）**：init 产物即 mini → 免计划独立审计体（:72 轻量复核）、免双轮质检复检体（103.7 豁免面）、免 drift-checker 派发（G4）、免归档（G10）、收尾回读两文档（:137）、基线 todo 裁 6 条（B2/B6/B7/B8/B15/B16，sync-todos）；运行 >15min 且命中步骤门（phase complete / findings/research 落盘 / delegations 非空任一），或无信号运行 >45min 硬兜底，由 hook 自动升级 standard（[tier-upgrade] 注入；两阈值 env 可调），升级后以上全部恢复标准档。无 hook 的工具位主进程按三时机自查升档（Phase 翻转/每 10 次工具调用/收尾回读，判据同 hook 双判据，命中即 set standard+render+登记+重 attest；tier-upgrade-check.sh 已随技能部署可手动跑）。散落豁免以此表为索引，冲突以各门脚本为准。
+> **mini 缺省档最小流程（2026-11-24 缺省 mini 后的常置口径）**：init 产物即 mini → 免计划独立审计体（Rule 75 轻量复核）、免双轮质检复检体（103.7 豁免面）、免 drift-checker 派发（G4）、免归档（G10）、收尾回读两文档（Rule 84.14，L141）、基线 todo 裁 6 条（B2/B6/B7/B8/B15/B16，sync-todos）；运行 >15min 且命中步骤门（phase complete / findings/research 落盘 / delegations 非空任一），或无信号运行 >45min 硬兜底，由 hook 自动升级 standard（[tier-upgrade] 注入；两阈值 env 可调），升级后以上全部恢复标准档。无 hook 的工具位主进程按三时机自查升档（Phase 翻转/每 10 次工具调用/收尾回读，判据同 hook 双判据，命中即 set standard+render+登记+重 attest；tier-upgrade-check.sh 已随技能部署可手动跑）。散落豁免以此表为索引，冲突以各门脚本为准。
 
 ### 🔁 原生 Todo 同步（强制）
 
@@ -229,7 +230,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-110 全集索引：**核心在位 15 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 91 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星））、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-112 全集索引：**核心在位 17 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 95 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星）、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）、Rule 111 进度产出基线防倒退域（核心在位）、Rule 112 检索排除清单纪律域（核心在位））——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §critical-rules-summary-a
 - **Rule 26 质量优先于速度**：6 类降质行为可观察触发+确定性惩罚（回炉→PARTIAL→BLOCKED），伪造证据无豁免
 - **Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；自缩水禁令；未测试禁声称完成；**可计数交付物全 R 化 + 禁「0 产出」为 covered 判据 + 留口须逐字让步锚（51.9-51.12）**；完成声称须按 51.14 操作类型档位 L1-L4 + 覆盖实数 + 实测耗时（并发度 K 写明依据）自证，措辞不得高于实际档位（task-drift-fakeqc-20261115 判例锚）。
@@ -289,7 +290,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | 文档 | 用途 |
 |------|------|
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
-| `references/critical-rules.md` | Critical Rules 核心域 1-110 全集索引（15 条核心全文+分层架构说明+卫星路由索引） |
+| `references/critical-rules.md` | Critical Rules 核心域 1-112 全集索引（17 条核心全文+分层架构说明+卫星路由索引） |
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
 | `templates/delivery-summary.md` | 终验交付总结五要素模板 |
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
