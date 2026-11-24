@@ -110,15 +110,22 @@ CLAIM_PATTERNS=(
 
 PLAN_DIR="${1:-}"
 SOURCE="all"
+EVIDENCE_MODE="legacy"
 if [ -n "${2:-}" ]; then
     case "$2" in
-        --source=coverage|--source=goal|--source=all) SOURCE="${2#--source=}" ;;
+        --source=coverage|--source=goal|--source=all|--source=rootcause-followup)
+            SOURCE="${2#--source=}"
+            case "$SOURCE" in
+                rootcause-followup) EVIDENCE_MODE=rootcause ;;
+                *) EVIDENCE_MODE=legacy ;;
+            esac
+            ;;
         -h|--help)
-            printf 'Usage: %s <plan-dir> [--source=coverage|goal|all]\n' "$0"
+            printf 'Usage: %s <plan-dir> [--source=coverage|goal|all|rootcause-followup]\n' "$0"
             exit 0
             ;;
         *)
-            printf '[evidence-anchor] ERROR: 未知参数 %s（支持 --source=coverage|goal|all）\n' "$2" >&2
+            printf '[evidence-anchor] ERROR: 未知参数 %s（支持 --source=coverage|goal|all|rootcause-followup）\n' "$2" >&2
             exit 2
             ;;
     esac
@@ -505,6 +512,93 @@ run_source() {
         judge_token "$file" "$ln" "$payload" "$lineno" "$excerpt"
     done <<< "$rows"
 }
+
+# run_rootcause_followup — --source=rootcause-followup 真实 mode
+# 判定：findings.md 含 [rootcause-followup:PASS] +「线索包已落盘」类文本，或 [rootcause-followup:N/A] + 理由文本。
+# PASS 情形要求 plans/.tags-index.json 存在 rootcause-followup: 前缀 tag（真 planctl 登记）。
+# N/A 情形允许无 tag，但必须有理由文本。任一必选条件缺失 → FAIL(rc=1)，全过 → PASS(rc=0)。
+run_rootcause_followup() {
+    local findings_file="$PLAN_DIR/findings.md"
+    local tags_index="$PLAN_DIR/../.tags-index.json"
+    local has_pass=0 has_na=0 na_reason_ok=0 tag_ok=0
+    local reason=""
+
+    # [2026-11-24 独立复核 W-5] 现象: 初版无 findings.md 即 SKIP return 0，enforce 下声明两段式却缺强制文件可静默过门；
+    # 根因: fail-open 与"强制消费门"定位矛盾；修法: 本 mode 仅在 guard 判定本计划两段式后触发（或显式调用），
+    #       此时 findings.md 属强制三文件，缺失即异常 → fail-closed rc=1。
+    if [ ! -f "$findings_file" ]; then
+        printf '[evidence-anchor] rootcause-followup: FAIL (两段式计划缺 findings.md，强制文件缺失不可 SKIP: %s)\n' "$findings_file"
+        return 1
+    fi
+
+    # PASS 标记：同一行/文本中含 [rootcause-followup:PASS] 且含「线索包已落盘」
+    if grep -qF '[rootcause-followup:PASS]' "$findings_file" \
+        && grep -E '\[rootcause-followup:PASS\].*(线索包已落盘|线索包.*落盘)' "$findings_file" >/dev/null 2>&1; then
+        has_pass=1
+    elif grep -qF '[rootcause-followup:PASS]' "$findings_file"; then
+        # 有 PASS tag 但缺少“线索包已落盘”文本，也视为不完整
+        printf '[evidence-anchor] rootcause-followup: FAIL (PASS marker present but missing "线索包已落盘" text in findings.md)\n'
+        return 1
+    fi
+
+    # N/A 标记：含 [rootcause-followup:N/A] 且同行/后续有理由文本（非空、非仅标记）
+    if [ "$has_pass" -eq 0 ] && grep -qF '[rootcause-followup:N/A]' "$findings_file"; then
+        has_na=1
+        # 理由文本：同一行在标记后有非空白内容，或标记后有非空行
+        if awk '
+            /rootcause-followup:N\/A/ {
+                line=$0
+                sub(/.*rootcause-followup:N\/A\]?[:：[:space:]]*/, "", line)
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+                if (length(line) > 0) { found=1; exit }
+                in_na=1; next
+            }
+            in_na {
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0)
+                if ($0 == "") next
+                if ($0 ~ /^#/) next
+                found=1; exit
+            }
+            END { exit(found?0:1) }
+        ' "$findings_file"; then
+            na_reason_ok=1
+        fi
+    fi
+
+    # tag 校验：plans/.tags-index.json 中存在 rootcause-followup: 前缀 key
+    if [ -f "$tags_index" ]; then
+        if grep -qE '"rootcause-followup:' "$tags_index"; then
+            tag_ok=1
+        fi
+    fi
+
+    if [ "$has_pass" -eq 1 ]; then
+        if [ "$tag_ok" -ne 1 ]; then
+            printf '[evidence-anchor] rootcause-followup: FAIL (PASS marker found but no rootcause-followup:* tag in %s)\n' "$tags_index"
+            return 1
+        fi
+        printf '[evidence-anchor] rootcause-followup: PASS (marker+线索包已落盘 present, tag registered)\n'
+        return 0
+    fi
+
+    if [ "$has_na" -eq 1 ]; then
+        if [ "$na_reason_ok" -ne 1 ]; then
+            printf '[evidence-anchor] rootcause-followup: FAIL (N/A marker found but reason text missing)\n'
+            return 1
+        fi
+        # N/A 允许无 tag，但有 tag 也可接受
+        printf '[evidence-anchor] rootcause-followup: PASS (N/A with reason text)\n'
+        return 0
+    fi
+
+    printf '[evidence-anchor] rootcause-followup: FAIL (no [rootcause-followup:PASS]/[rootcause-followup:N/A] marker in findings.md)\n'
+    return 1
+}
+
+if [ "$EVIDENCE_MODE" = "rootcause" ]; then
+    run_rootcause_followup
+    exit $?
+fi
 
 case "$SOURCE" in
     coverage|all) run_source coverage "$PLAN_DIR/delivery-summary.md" ;;
