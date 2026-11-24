@@ -2,7 +2,7 @@
 # Progress: task-planctl-trigger-20261125
 
 - task_id: `task-planctl-trigger-20261125`
-- 时间: created_at=2026-11-24T18:16:47Z / updated_at=2026-11-24T19:17:41Z
+- 时间: created_at=2026-11-24T18:16:47Z / updated_at=2026-11-24T19:23:14Z
 
 ## Phase 状态
 | id | status | tags |
@@ -55,6 +55,7 @@
 - Actions taken:
   - 部署四位+母版位+薄壳终检; 经 r2(critic 修复集 1895e247)与 r3(claude 转义 e8155481)两轮修正,直调 generate_stub_skill_md 重生成四薄壳,五端点终检全绿
   - verify 27/4(4项=smart-merge-back/init-session 既有 hardcoded-paths,非本任务引入)+抽查 selftest 40/40,11/11,18/18+全量回归后台跑
+  - 部署收口(用户令「部署」): 树漂移实测=零(关键文件五端点 sha 同,含 tier-gate 同批产物); 三部署位仓部署态提交(pathspec 锁 9 目录, 零删除/44+162+161 项)+push 源仓 99dd5355/zcode 165df2b/claude 6ace7a2; opencode 分叉(ahead3/behind3)仅本地提交未 push 待裁决; cursor 非 git 仓落盘即终态; verify 27/4 同基线
 - Files created/modified:
   - （本任务暂无文件记录）
 - Test Results:

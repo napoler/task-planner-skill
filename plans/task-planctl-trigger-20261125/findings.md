@@ -2,7 +2,7 @@
 # Findings: task-planctl-trigger-20261125
 
 - task_id: `task-planctl-trigger-20261125`
-- 时间: created_at=2026-11-24T18:16:47Z / updated_at=2026-11-24T19:17:41Z
+- 时间: created_at=2026-11-24T18:16:47Z / updated_at=2026-11-24T19:23:14Z
 
 ## Requirements
 - 用户原话镜像(2026-11-25)：skill 中 planctl.py 权重被恶意降低，定位段「核心=四文件罗盘管理(task-v171 分层后)」完全没有提及 planctl.py，导致后期执行技能时核心触发完全没有被激活、直接手写四文件造成错误；一直解决技能问题一直本末倒置，核心触发不解决则所有产物都不会得到有效激活。要求恢复 planctl.py 的核心触发权重。

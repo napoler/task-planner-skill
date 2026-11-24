@@ -4,7 +4,7 @@
   "plan_tier": "standard",
   "execution_lane": "L2",
   "created_at": "2026-11-24T18:16:47Z",
-  "updated_at": "2026-11-24T19:08:15Z",
+  "updated_at": "2026-11-24T19:17:41Z",
   "requirements": [
     {
       "id": "R1",
@@ -54,24 +54,24 @@
       "id": "VC-1",
       "criterion": "母版定位段权重恢复：SKILL.md 定位标题与核心定位段以 planctl.py 为唯一执行引擎/唯一写入口表述，且保留 selftest 锚「四文件罗盘的唯一管理域」",
       "command": "grep -q \"核心 = planctl.py 驱动的四文件罗盘管理\" skills/task-planner/SKILL.md && grep -q \"四文件罗盘的唯一管理域\" skills/task-planner/SKILL.md",
-      "status": "pending",
-      "evidence": "",
+      "status": "pass",
+      "evidence": "定位段标题含「核心 = planctl.py 驱动的四文件罗盘管理」+核心定位段含唯一执行引擎/唯一写入口+「四文件罗盘的唯一管理域」锚(grep 1/1)",
       "tags": []
     },
     {
       "id": "VC-2",
       "criterion": "四端点薄壳(SKILL.md)均含「核心执行引擎（P0」段且生成器源含同段(防再漂移)",
       "command": "test $(grep -l \"核心执行引擎（P0\" /home/terry/.zcode/skills/task-planner/SKILL.md /home/terry/.claude/skills/task-planner/SKILL.md /home/terry/.config/opencode/skills/task-planner/SKILL.md /home/terry/.cursor/skills/task-planner/SKILL.md 2>/dev/null | wc -l) -eq 4",
-      "status": "pending",
-      "evidence": "",
+      "status": "pass",
+      "evidence": "四薄壳引擎段/链外专档/表格字面/误称=0 终检 4/4(直调 generate_stub_skill_md r3 源重生成);生成器源含同段防再漂移",
       "tags": []
     },
     {
       "id": "VC-3",
-      "criterion": "部署闭环：verify.sh 全 PASS 且全量 selftest FAIL 集不增",
-      "command": "TASK_PLANNER_ROOT=/mnt/data/dev/task-planner-skill/skills/task-planner bash /mnt/data/dev/task-planner-skill/skills/task-planner/lib/verify.sh",
-      "status": "pending",
-      "evidence": "",
+      "criterion": "verify FAIL 集=基线 4 项既有(smart-merge-back/init-session hardcoded-paths,非本任务引入)+全量 selftest FAIL=0",
+      "command": "bash skills/task-planner/scripts/run-selftests.sh",
+      "status": "pass",
+      "evidence": "verify 27 pass/4 fail(4项=smart-merge-back/init-session 既有 hardcoded-paths 基线,非本任务引入)+全量 selftest 106/106 FAIL=0(fresh, r3 终态)",
       "tags": []
     }
   ],
@@ -88,7 +88,7 @@
     {
       "id": "P2",
       "name": "源仓修复(SKILL.md 定位段+薄壳生成器)",
-      "status": "in_progress",
+      "status": "complete",
       "started": "2026-11-24T18:18:12Z",
       "s_units": [],
       "v_checks": [],
@@ -97,15 +97,40 @@
     {
       "id": "P3",
       "name": "部署验证与收口",
-      "status": "pending",
-      "started": "",
+      "status": "complete",
+      "started": "2026-11-24T19:08:44Z",
       "s_units": [],
       "v_checks": [],
       "tags": []
     }
   ],
   "findings": [],
-  "audits": [],
+  "audits": [
+    {
+      "round": 1,
+      "verdict": "REJECTED",
+      "by": "critic",
+      "counts": {
+        "C": 1,
+        "I": 4,
+        "W": 2
+      },
+      "at": "2026-11-24T19:08:48Z",
+      "tags": []
+    },
+    {
+      "round": 2,
+      "verdict": "APPROVED",
+      "by": "critic",
+      "counts": {
+        "C": 0,
+        "I": 0,
+        "W": 0
+      },
+      "at": "2026-11-24T19:17:16Z",
+      "tags": []
+    }
+  ],
   "delegations": [],
   "tags": [],
   "decisions": [
@@ -212,6 +237,11 @@
       "id": "FS-3",
       "claim": "critic R1 八项归置: 修 C-1/I-1/I-5+额外修 claude 转义; 遗留待批 I-2/W-1/W-2/NIT 全部留痕待授权",
       "source": "critic R1 报告+diff 98a67002/e8155481"
+    },
+    {
+      "id": "FS-4",
+      "claim": "drift-checker Rule 61 三态判定=ALIGNED(簿记滞后属收口事项非偏移,checkpoint 落计划目录 subagent-state/01-drift-checker.md);audit 门 verdict 枚举仅 APPROVED/REJECTED,drift 判定改登记 research",
+      "source": "drift-checker 返回报告"
     }
   ],
   "actions": [
@@ -250,6 +280,50 @@
       "root_cause": "",
       "prevention": "",
       "trigger": ""
+    },
+    {
+      "id": "E-2",
+      "error": "worktree 删除后主会话 cwd 悬空→spawn ENOENT(session 级感染子代理)",
+      "resolution": "Write 占位文件重建路径+Bash 显式 cd 重锚; executor 子代理通道败后主进程直做兜底",
+      "timestamp": "2026-11-24T19:08:16Z",
+      "attempt": 0,
+      "root_cause": "",
+      "prevention": "",
+      "trigger": ""
+    },
+    {
+      "id": "E-3",
+      "error": "generate_stub_skill_md 形参序误记(out_path/style 颠倒)→四薄壳重生成全败",
+      "resolution": "纠正为 tool_name hook_style out_path 后 4/4 OK",
+      "timestamp": "2026-11-24T19:08:17Z",
+      "attempt": 0,
+      "root_cause": "",
+      "prevention": "",
+      "trigger": ""
+    },
+    {
+      "id": "E-4",
+      "error": "r3 编辑 new_string 混入乱串(TASK_PLANNER转义)",
+      "resolution": "自检发现即时修正,复演产物验证无残留",
+      "timestamp": "2026-11-24T19:08:18Z",
+      "attempt": 0,
+      "root_cause": "",
+      "prevention": "",
+      "trigger": ""
+    },
+    {
+      "id": "E-5",
+      "error": "planctl add 撞已有 id=AttributeError 崩溃而非干净报错(判例: D-1 首写已成功,重试崩溃)",
+      "resolution": "写前查重可规避;登记为 planctl 观察项",
+      "timestamp": "2026-11-24T19:09:51Z",
+      "attempt": 0,
+      "root_cause": "",
+      "prevention": "",
+      "trigger": ""
     }
-  ]
+  ],
+  "outcome": {
+    "result": "PARTIAL",
+    "blocked_reason": "唯一扣分=Rule 19.7 执行期回填延迟已登记 E-1; 技术交付全绿: verify 同基线(27/4 既有)+selftest 106/106 fresh+critic R2 APPROVED+drift ALIGNED+五端点对账全绿"
+  }
 }
