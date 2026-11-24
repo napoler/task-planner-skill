@@ -4,6 +4,9 @@
 # Why: 上下文压缩后 SKILL.md 正文不在上下文，「先读计划」文字规则失效；实证某会话压缩后 6 分钟
 #       未读计划专档并误删既有设定事实。本库把「在途判定 + 必读清单 + 必保项」固化为磁盘权威源，
 #       供 SessionStart hook 与 git-baseline.sh 共用，避免两处各自复制语义走样。
+# [2026-11-25 压缩后强制读取核心文件] 用户授权收窄：恢复包从「列 5 条同权必读」改为
+#       「⚠️ 强制读取指令 + 核心 3 文件（user-session-log/task_plan/findings=任务目标/原话/上下文类）强制，
+#       knowledge-brief/.git-baseline-report 降为按需」；只要求读任务目标相关文件，不内联全文、不扩大读取面。
 # 约定: 不设 set -e/-u（source 侧可能已有）；jq 缺失 → stderr 一行 DEGRADED=no-jq + rc 2（调用方 fail-open）。
 
 # mustkeep <plan-dir> — 打印 spec_baseline 中 id 以 MK 开头的条目
@@ -158,12 +161,12 @@ recover() {
   local full
   full="$({
     printf '[compact-recovery] 上下文恢复包（检测到在途计划 %s；数据来自磁盘，非会话记忆。摘要可能丢细节，以下列文件为准）\n' "$id"
-    printf '必读（按序，绝对路径）:\n'
-    printf '1. %s/user-session-log.md（全文）\n' "$plan_dir"
-    printf '2. %s/task_plan.md（用户需求原文 / 🔒 规范基线(MK) / 变更标注表 / 验收契约）\n' "$plan_dir"
-    printf '3. %s/findings.md（结论）\n' "$plan_dir"
-    printf '4. %s/knowledge-brief.md（易错点）\n' "$plan_dir"
-    printf '5. %s/.git-baseline-report.md（未处置偏移，若存在）\n' "$plan_dir"
+    printf '⚠️ 强制读取指令（压缩后必做，先于任何其它工具调用）: 摘要不可信。必须立即用 Read 依次读下列【核心文件（任务目标/上下文类）】全文，读完前不得推进任务、不得删改任何既有设定/事实：\n'
+    printf '【核心·强制读取】（任务目标/原话/规范基线/结论，按序）:\n'
+    printf '1. %s/user-session-log.md（全文；用户原话=任务目标权威源，逐字条目 #N）\n' "$plan_dir"
+    printf '2. %s/task_plan.md（需求原文 / 🔒 规范基线(MK) / 变更标注表 / 验收契约 / Goal / Phase）\n' "$plan_dir"
+    printf '3. %s/findings.md（结论与证据锚）\n' "$plan_dir"
+    printf '【按需·非强制】（非任务目标类，遇到问题再读）: 4. %s/knowledge-brief.md（易错点） 5. %s/.git-baseline-report.md（未处置偏移，若存在）\n' "$plan_dir" "$plan_dir"
     printf '必保清单:\n'
     local mk
     mk="$(mustkeep "$plan_dir")"

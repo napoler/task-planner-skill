@@ -67,6 +67,16 @@ for f in user-session-log.md task_plan.md findings.md knowledge-brief.md .git-ba
   printf '%s\n' "$CTX" | grep -qF "$R13/plans/aa/$f" || { MISS=$((MISS+1)); echo "[T13c-diag] missing path=$f"; }
 done
 [ "$MISS" -eq 0 ] && ok "T13c 5 条必读文件绝对路径齐全" || bad "T13c 必读绝对路径缺 $MISS 条"
+# [2026-11-25 压缩后强制读取核心文件] 强制指令 + 核心/按需分级断言
+printf '%s\n' "$CTX" | grep -qF '强制读取指令' && ok "T13c2 含压缩后强制读取指令" || bad "T13c2 强制读取指令缺失"
+printf '%s\n' "$CTX" | grep -qF '核心·强制读取' && ok "T13c3 含核心强制读取分级" || bad "T13c3 核心强制分级缺失"
+printf '%s\n' "$CTX" | grep -qF '按需·非强制' && ok "T13c4 含按需非强制分级" || bad "T13c4 按需分级缺失"
+CORE=0
+printf '%s\n' "$CTX" | grep -qF '【核心·强制读取】' || CORE=$((CORE+1))
+for f in user-session-log.md task_plan.md findings.md; do
+  printf '%s\n' "$CTX" | grep -qF "$f" || CORE=$((CORE+1))
+done
+[ "$CORE" -eq 0 ] && ok "T13c5 三核心文件(原话/计划/结论)标为强制" || bad "T13c5 核心文件缺 $CORE 条"
 printf '%s\n' "$CTX" | grep -qF '数据库使用 PostgreSQL 15' && ok "T13d 必保项字面在注入内容中" || bad "T13d 必保项字面"
 printf '%s\n' "$CTX" | grep -qF 'Git基线:' && ok "T13e 含 Git基线: 状态行" || bad "T13e Git基线行"
 ! printf '%s\n' "$CTX" | grep -qF '[task-resume]' && ! printf '%s\n' "$CTX" | grep -qF '初始化命令' \
