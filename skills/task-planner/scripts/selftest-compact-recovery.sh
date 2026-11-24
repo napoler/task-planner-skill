@@ -112,11 +112,13 @@ if [ -f "$GOLD_HOOK" ]; then
   H_CUR="$(hook_run "$R13B" sess-norecover)"
   CTX_GOLD="$(printf '%s\n' "$H_GOLD" | jq -r '.additionalContext // ""' 2>/dev/null)"
   CTX_CUR="$(printf '%s\n' "$H_CUR" | jq -r '.additionalContext // ""' 2>/dev/null)"
-  # [2026-11-24 task-compact-skill-always] 开场白段仍须与 master 逐字节一致（零破坏），
-  #   但新增的「无条件技能正文包」是特意要变的——按 [compact-recovery] 行切开比对前缀。
+  # [2026-11-24 task-compact-skill-always] 开场白段仍须与基线逐字节一致（零破坏），
+  #   但新增的「无条件技能正文包」是特意要变的——双方都按 [compact-recovery] 行切开取前缀。
+  # Why 双方都切: 合并后 master 已含新行为，若只切当前版会把新版金样的技能包当开场白，假 FAIL。
+  CTX_GOLD_PREFIX="$(printf '%s\n' "$CTX_GOLD" | awk '/^\[compact-recovery\]/{exit} {print}')"
   CTX_CUR_PREFIX="$(printf '%s\n' "$CTX_CUR" | awk '/^\[compact-recovery\]/{exit} {print}')"
-  [ "$CTX_CUR_PREFIX" = "$CTX_GOLD" ] \
-    && ok "T13g 无在途时开场白段与 master 版金样逐字节一致（新增技能包不计）" || bad "T13g master 金样对照"
+  [ "$CTX_CUR_PREFIX" = "$CTX_GOLD_PREFIX" ] \
+    && ok "T13g 无在途时开场白段与基线金样逐字节一致（新增技能包不计）" || bad "T13g 基线金样对照"
 else
   bad "T13g master 金样对照（git archive master 未生成 hook）"
 fi
