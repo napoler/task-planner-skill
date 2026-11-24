@@ -110,10 +110,44 @@ GOLD_HOOK="$T/golden/skills/task-planner/scripts/zcode-sessionstart.sh"
 if [ -f "$GOLD_HOOK" ]; then
   H_GOLD="$(hook_run "$R13B" sess-norecover "$GOLD_HOOK")"
   H_CUR="$(hook_run "$R13B" sess-norecover)"
-  [ "$H_CUR" = "$H_GOLD" ] && ok "T13g 无在途时与 master 版 hook 金样逐字节一致" || bad "T13g master 金样对照"
+  CTX_GOLD="$(printf '%s\n' "$H_GOLD" | jq -r '.additionalContext // ""' 2>/dev/null)"
+  CTX_CUR="$(printf '%s\n' "$H_CUR" | jq -r '.additionalContext // ""' 2>/dev/null)"
+  # [2026-11-24 task-compact-skill-always] 开场白段仍须与 master 逐字节一致（零破坏），
+  #   但新增的「无条件技能正文包」是特意要变的——按 [compact-recovery] 行切开比对前缀。
+  CTX_CUR_PREFIX="$(printf '%s\n' "$CTX_CUR" | awk '/^\[compact-recovery\]/{exit} {print}')"
+  [ "$CTX_CUR_PREFIX" = "$CTX_GOLD" ] \
+    && ok "T13g 无在途时开场白段与 master 版金样逐字节一致（新增技能包不计）" || bad "T13g master 金样对照"
 else
   bad "T13g master 金样对照（git archive master 未生成 hook）"
 fi
+
+# ── T18 无条件技能续命：无 side 指针 / 空壳计划也必须注入技能正文全文 ──────────
+# Why: 用户核心诉求「每次压缩后必须重新注入当前技能」，压缩会冲掉整个技能体系；
+#   旧逻辑把技能正文绑在 inflight 上，无指针（测试会话）或空壳计划（无 task_plan.md）
+#   时完全不注入——2026-11-24 sess_f922cf1e 实测压缩后只剩开场白，技能体系即崩。
+# 判别性：变异「hook 删掉 recover-skill 调用」→ T18a/T18b 必须翻红（见变异验证记录）。
+for t18case in noptr shellplan; do
+  R18="$(mkroot "t18-$t18case")"
+  case "$t18case" in
+    noptr) : ;;  # 完全无 side 指针
+    shellplan) point "$R18" shellsid shellonly ;;  # 指针存在但目标目录无 task_plan.md
+  esac
+  printf '%s\n' '## 待处理' '- **task-x** | in_progress | 2026-11-24' > "$R18/plans/INDEX.md"
+  H18="$(hook_run "$R18" sess-t18-$t18case)"
+  CTX18="$(printf '%s\n' "$H18" | jq -r '.additionalContext // ""' 2>/dev/null)"
+  printf '%s\n' "$CTX18" | grep -qF '[compact-recovery]' \
+    && printf '%s\n' "$CTX18" | grep -qF '【技能正文·开始】' \
+    && [ "$(printf '%s\n' "$CTX18" | tail -n 1)" = '【技能正文·结束】' ] \
+    && ok "T18a-$t18case 无在途计划仍注入技能正文（开始/结束标记齐全，末行为结束标记）" \
+    || bad "T18a-$t18case 未注入技能正文（压缩后技能体系会崩）"
+  printf '%s\n' "$CTX18" | awk '/^【技能正文·开始】/{f=1;next} /^【技能正文·结束】/{f=0} f' > "$T/t18-$t18case.md"
+  diff <(sed -e '$a\' "$T/t18-$t18case.md") <(sed -e '$a\' "$SKILL_MD") >/dev/null 2>&1 \
+    && ok "T18b-$t18case 注入的技能正文与 SKILL.md 全文逐字节一致" \
+    || bad "T18b-$t18case 技能正文不完整"
+  # 无在途只注入技能契约，不得伪造任务状态行（避免模型把占位当权威源）
+  ! printf '%s\n' "$CTX18" | grep -qE '^(Goal:|Phase 进度:|Git基线:)' \
+    && ok "T18c-$t18case 无在途时不伪造任务状态行" || bad "T18c-$t18case 伪造了任务状态"
+done
 
 # ── T14 mustkeep：MK* 原始 TSV / MK-NA 在消费端跳过 / 无 plan-state.json ───
 # 口径（2026-11-24 coordinator 裁决）：mustkeep 是 spec_baseline 的原始 TSV 输出面，MK-NA

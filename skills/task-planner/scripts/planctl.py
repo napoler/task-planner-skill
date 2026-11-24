@@ -1058,6 +1058,36 @@ def cmd_recover(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_recover_skill(args: argparse.Namespace) -> int:
+    """无在途计划也要无条件续命的技能契约注入包：只出恢复纪律 + 技能正文全文。
+
+    2026-11-24 压缩恢复实测缺陷根治：原 recover 必须带 --plan-dir 且 hook 只在 inflight
+    命中时才调用，导致无 side 指针（首次会话/测试会话）或空壳计划（指针存在但无
+    task_plan.md）时技能正文完全不注入——压缩把 SKILL.md 语义冲掉后技能体系即崩。
+    用户核心诉求=「每次压缩后必须重新注入当前技能」。本命令与 cmd_recover 共享
+    _recover_skill_text()（单一读取口径），但不读权威源、不需要计划目录、不落盘，
+    只负责技能正文这一无条件部分；任务核心状态仍由 cmd_recover 在有在途计划时附加。
+    fail-closed 边界：技能正文不可读时注入明确指引（不静默出空包伪装成功）。
+    """
+    head = [
+        "[compact-recovery] 上下文恢复包（未检测到在途计划：仅无条件注入技能契约；数据来自技能入口 SKILL.md，非会话记忆）",
+        "⚠️ 恢复纪律（先于任何其它工具调用）: ①压缩摘要不可信，任务目标/进度以下方技能契约与会话内既有事实为准，"
+        "读完前不得删改任何既有设定/事实；②下方已内联技能正文全文，无需再 Read SKILL.md，"
+        "按其工作流与硬条款继续执行，references/配置按其中指针按需加载；"
+        f"③若未见「{RECOVER_SKILL_END}」标记=技能正文被平台截断，须 Read 补全后再执行。",
+    ]
+    skill_path, skill_text = _recover_skill_text()
+    body = skill_text.rstrip("\n")
+    if body:
+        head.append(f"{RECOVER_SKILL_BEGIN} {skill_path}（技能入口全文 {len(body.splitlines())} 行，已内联，无需再 Read）")
+        head.extend(body.splitlines())
+        head.append(RECOVER_SKILL_END)
+    else:
+        head.append(f"{RECOVER_SKILL_BEGIN} 技能正文不可读（{skill_path}）→ 须手动 Read 该文件 {RECOVER_SKILL_END}")
+    print("\n".join(head))
+    return 0
+
+
 def cmd_status(args: argparse.Namespace) -> int:
     """输出 Phase/VC/审计状态摘要 JSON（机器可读，非人读表格）。"""
     doc = read_state(check_plan_dir(args.plan_dir))
@@ -2199,6 +2229,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--fields", help="逗号分隔核心字段（默认 skill_contract,requirements,goal,phase,recent_actions,next_step,decisions,mustkeep,git_baseline）")
     p.add_argument("--max-lines", type=int, default=150, help="任务状态块注入行数上限（默认 150；技能正文不受限，落盘全文不受限）")
+
+    # [2026-11-24 task-compact-skill-always] 无在途计划也须无条件注入技能契约：独立子命令，
+    #   绕过 add_cmd 的 --plan-dir required=True（本命令不读权威源，不需要计划目录）。
+    #   直接 sub.add_parser + set_defaults，与 add_cmd 的 handler 绑定方式一致。
+    p_skill = sub.add_parser(
+        "recover-skill",
+        help="无条件注入技能正文 SKILL.md 全文（无在途计划时压缩恢复用，不读权威源）",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p_skill.set_defaults(handler=cmd_recover_skill)
 
     add_cmd("status", "输出 Phase/VC/审计状态摘要 JSON", cmd_status)
     add_cmd("validate", "schema 校验（rc 0 通过 / 1 失败）", cmd_validate)
