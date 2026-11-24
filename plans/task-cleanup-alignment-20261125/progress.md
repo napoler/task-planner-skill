@@ -2,7 +2,7 @@
 # Progress: task-cleanup-alignment-20261125
 
 - task_id: `task-cleanup-alignment-20261125`
-- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T21:32:20Z
+- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:13:03Z
 
 ## Phase 状态
 | id | status | tags |
@@ -10,6 +10,7 @@
 | P1 | pending |  |
 | P2 | pending |  |
 | P3 | pending |  |
+| P4 | pending |  |
 
 ## Goals（证据锚）
 - （本任务暂无goal 证据记录）
@@ -52,6 +53,19 @@
 - **Started:** 
 - Actions taken:
   - （本任务暂无动作记录）
+- Files created/modified:
+  - （本任务暂无文件记录）
+- Test Results:
+| Test | Input | Expected | Actual | Status |
+|---|---|---|---|---|
+| （本任务暂无测试结果） |  |  |  |  |
+
+### Phase 4: 全模板族与模板 skill 推广
+- **Status:** pending
+- **Started:** 
+- Actions taken:
+  - [S5] 用户新指令 B 扩展（原话 #5）：推广至所有模板+模板 skill；先落盘 R5/VC6/P4 再执行。
+  - [Rule 36 计划范围登记] 推广改动 30 文件：29 标准 variant lineage pruned 声明 + plan-template-kit/SKILL.md 承载说明一句；audio-voice 从 HEAD 恢复后补声明，未清存量、未改守卫/功能模板/mini 豁免。
 - Files created/modified:
   - （本任务暂无文件记录）
 - Test Results:

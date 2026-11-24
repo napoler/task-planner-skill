@@ -2,7 +2,7 @@
 # Task Plan: task-cleanup-alignment-20261125
 
 - task_id: `task-cleanup-alignment-20261125`
-- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T21:32:20Z
+- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:13:03Z
 plan_tier: standard
 execution_lane: L2
 schema_version: 1
@@ -13,6 +13,7 @@ schema_version: 1
 - **R2（目标）** 任务完成后执行双步骤：①对齐（过期/冲突口径拉平）②垃圾清理（无价值历史注释）（用户原话 #2）
 - **R3（手段）** 纯文本条款落地即可：todo 最后两步做对齐+清理；task 模板中新增一个板块列出必要步骤；不搞脚本门/基建（用户原话 #3）
 - **R4（手段）** 采纳方案 A，按三段式推进（用户原话 #4）
+- **R5（目标）** 把收尾对齐与清理板块推广到所有模板与模板 skill（用户核查问句 #5）
 
 ## Requirements（用户需求）
 | id | type | text | vc | tags |
@@ -21,6 +22,7 @@ schema_version: 1
 | R2 | 目标 | 任务完成后执行双步骤：①对齐（过期/冲突口径拉平）②垃圾清理（无价值历史注释）（用户原话 #2） |  |  |
 | R3 | 手段 | 纯文本条款落地即可：todo 最后两步做对齐+清理；task 模板中新增一个板块列出必要步骤；不搞脚本门/基建（用户原话 #3） |  |  |
 | R4 | 手段 | 采纳方案 A，按三段式推进（用户原话 #4） |  |  |
+| R5 | 目标 | 把收尾对齐与清理板块推广到所有模板与模板 skill（用户核查问句 #5） |  |  |
 
 ## Goals（目标单元）
 | id | text | evidence | tags |
@@ -36,6 +38,7 @@ schema_version: 1
 | P1 | pending |  |  | 段1：todo 收尾两步 B17/B18 |  |  |
 | P2 | pending |  |  | 段2：task 模板新板块 + render 同步 |  |  |
 | P3 | pending |  |  | 段3：SKILL 指针 + 验证 + 合并回 |  |  |
+| P4 | pending |  |  | 全模板族与模板 skill 推广 |  |  |
 
 ## R→VC 映射
 | requirement | vcs |
@@ -44,6 +47,7 @@ schema_version: 1
 | R2 |  |
 | R3 |  |
 | R4 |  |
+| R5 |  |
 ## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）
 | 工序 | 缺陷面 | 修复点 | VC |
 |---|---|---|---|
@@ -57,6 +61,7 @@ schema_version: 1
 | VC3 | planctl render 实际输出该板块（standard 档），mini 档不输出 | python3 skills/task-planner/scripts/planctl.py render --plan-dir plans/task-cleanup-alignment-20261125 >/dev/null && grep -nF "收尾对齐与清理" plans/task-cleanup-alignment-20261125/task_plan.md |  |
 | VC4 | SKILL.md 终验智能子动作段含收尾对齐与清理指针 | grep -nF "收尾对齐与清理" skills/task-planner/SKILL.md |  |
 | VC5 | 语法检查通过且 selftest 零新增 FAIL、verify.sh 0 fail | bash -n skills/task-planner/scripts/*.sh && python3 -m py_compile skills/task-planner/scripts/*.py && bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 \| tail -3 |  |
+| VC6 | 所有模板族与模板 skill 教学面含收尾对齐与清理板块，mini 豁免口径一致 | grep -rlF "收尾对齐与清理" skills/task-planner/templates skills/*/SKILL.md 2>/dev/null \| sort -u |  |
 
 ## 🔍 调研需求与检索计划
 | unit | 三态(LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT) | 检索关键词 | 渠道 | 预期产出形态 |
@@ -80,6 +85,11 @@ schema_version: 1
 - **Started:** 
 - **Executor:** -
 
+### Phase 4: 全模板族与模板 skill 推广
+- **Status:** pending
+- **Started:** 
+- **Executor:** -
+
 ## 🧹 收尾对齐与清理（交付前必填）
 | 类别 | 检查项 | 判据 | 证据 |
 |---|---|---|---|
@@ -91,7 +101,7 @@ schema_version: 1
 ## 🔀 隔离决策
 | 字段 | 值 |
 |---|---|
-| merge_back | merged(9d5fb1b2) |
+| merge_back | merged(a3b6e304) |
 
 ## Decisions Made
 | Decision | Rationale |

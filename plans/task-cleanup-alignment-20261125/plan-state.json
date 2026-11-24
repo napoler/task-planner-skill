@@ -4,7 +4,7 @@
   "plan_tier": "standard",
   "execution_lane": "L2",
   "created_at": "2026-11-24T21:11:47Z",
-  "updated_at": "2026-11-24T21:32:20Z",
+  "updated_at": "2026-11-24T22:13:03Z",
   "requirements": [
     {
       "id": "R1",
@@ -31,6 +31,13 @@
       "id": "R4",
       "text": "采纳方案 A，按三段式推进（用户原话 #4）",
       "type": "手段",
+      "vc": [],
+      "tags": []
+    },
+    {
+      "id": "R5",
+      "text": "把收尾对齐与清理板块推广到所有模板与模板 skill（用户核查问句 #5）",
+      "type": "目标",
       "vc": [],
       "tags": []
     }
@@ -76,6 +83,14 @@
       "status": "pending",
       "evidence": "",
       "tags": []
+    },
+    {
+      "id": "VC6",
+      "criterion": "所有模板族与模板 skill 教学面含收尾对齐与清理板块，mini 豁免口径一致",
+      "command": "grep -rlF \"收尾对齐与清理\" skills/task-planner/templates skills/*/SKILL.md 2>/dev/null | sort -u",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
     }
   ],
   "phases": [
@@ -105,6 +120,15 @@
       "v_checks": [],
       "tags": [],
       "started": ""
+    },
+    {
+      "id": "P4",
+      "name": "全模板族与模板 skill 推广",
+      "status": "pending",
+      "s_units": [],
+      "v_checks": [],
+      "tags": [],
+      "started": ""
     }
   ],
   "findings": [],
@@ -125,9 +149,21 @@
       "phase": "P1",
       "text": "[periodic-review:PASS] 对照 user-session-log.md #1-#4 原话与当前执行：P1/P2/P3 三段严格对齐「todo 最后两步 + task 模板一个板块 + 纯文本条款」，无范围蔓延；Phase 仍 pending 因 executor 正在隔离区实施。",
       "at": "2026-11-24T21:16:39Z"
+    },
+    {
+      "id": "A2",
+      "phase": "P4",
+      "text": "[S5] 用户新指令 B 扩展（原话 #5）：推广至所有模板+模板 skill；先落盘 R5/VC6/P4 再执行。",
+      "at": "2026-11-24T21:51:05Z"
+    },
+    {
+      "id": "A3",
+      "phase": "P4",
+      "text": "[Rule 36 计划范围登记] 推广改动 30 文件：29 标准 variant lineage pruned 声明 + plan-template-kit/SKILL.md 承载说明一句；audio-voice 从 HEAD 恢复后补声明，未清存量、未改守卫/功能模板/mini 豁免。",
+      "at": "2026-11-24T22:12:46Z"
     }
   ],
   "isolation": {
-    "merge_back": "merged(9d5fb1b2)"
+    "merge_back": "merged(a3b6e304)"
   }
 }

@@ -2,7 +2,7 @@
 # Verification: task-cleanup-alignment-20261125
 
 - task_id: `task-cleanup-alignment-20261125`
-- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T21:32:20Z
+- 时间: created_at=2026-11-24T21:11:47Z / updated_at=2026-11-24T22:13:03Z
 
 ## Goal (1 sentence)
 - （本任务暂无Goal 语句）
@@ -16,6 +16,7 @@
 | VC3 | pending | planctl render 实际输出该板块（standard 档），mini 档不输出 | python3 skills/task-planner/scripts/planctl.py render --plan-dir plans/task-cleanup-alignment-20261125 >/dev/null && grep -nF "收尾对齐与清理" plans/task-cleanup-alignment-20261125/task_plan.md |  |  |
 | VC4 | pending | SKILL.md 终验智能子动作段含收尾对齐与清理指针 | grep -nF "收尾对齐与清理" skills/task-planner/SKILL.md |  |  |
 | VC5 | pending | 语法检查通过且 selftest 零新增 FAIL、verify.sh 0 fail | bash -n skills/task-planner/scripts/*.sh && python3 -m py_compile skills/task-planner/scripts/*.py && bash skills/task-planner/scripts/run-selftests.sh --fresh 2>&1 \| tail -3 |  |  |
+| VC6 | pending | 所有模板族与模板 skill 教学面含收尾对齐与清理板块，mini 豁免口径一致 | grep -rlF "收尾对齐与清理" skills/task-planner/templates skills/*/SKILL.md 2>/dev/null \| sort -u |  |  |
 
 ## Phase Gates
 | Goal | Depends on | Done when | Checks | Status |
