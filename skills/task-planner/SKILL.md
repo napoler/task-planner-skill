@@ -182,7 +182,7 @@ model: opus
 
 ### 🔁 原生 Todo 同步（强制）
 
-计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B16，Rule 106.5）详见 references/todo-sync.md；B9-B11 的完成以 `git-baseline.sh` 写入的 sidecar 证据为准，非 todo 勾选（2026-11-24 task-session-regression-20261124）；B14 = 根因/风险线索包已落盘 + 后续任务已登记（非修复类标 N/A + 证据）；B12/B13 归方案A/H3（SP/OS 技能到达 + Spec 路由命中），两组语义不重叠。B16 = 合并回主分支+合并后回归核验（merge --no-ff/worktree 清理/selftest 不增 FAIL），合并证据读 plan-state.json 的 isolation.merge_back。
+计划文档=唯一事实源，原生 Todo（`TodoWrite`/Task）=执行视图。五个强制同步时机：**S1** 计划创建后建映射→**S2** Phase 状态变更后紧邻同步→**S3** `[plan-sync]` hook 提醒立即回写→**S4** 会话结束前终态同步+`--index`→**S5** 用户新指令影响计划后先改计划再重映射。映射规则与响应协议详见 `references/todo-sync.md`。S1 两组结构（任务组+基线组 B1-B18，Rule 106.5）详见 references/todo-sync.md；B9-B11 的完成以 `git-baseline.sh` 写入的 sidecar 证据为准，非 todo 勾选（2026-11-24 task-session-regression-20261124）；B14 = 根因/风险线索包已落盘 + 后续任务已登记（非修复类标 N/A + 证据）；B12/B13 归方案A/H3（SP/OS 技能到达 + Spec 路由命中），两组语义不重叠。B16 = 合并回主分支+合并后回归核验（merge --no-ff/worktree 清理/selftest 不增 FAIL），合并证据读 plan-state.json 的 isolation.merge_back。B17 = 口径对齐（交付前拉平触及的过期计数与冲突条款，冲突锚 grep 无新增命中，证据 `[align-final]`）；B18 = 垃圾清理（Skill 说明 Markdown 历史旁注清理；代码注释保护不清理，证据 `[cleanup-final]`）[2026-11-25 task-skill-deploy-fix A7]।
 
 ### 🆕 用户新指令处理（计划影响判定 — 强制）
 

@@ -28,6 +28,9 @@ TOOL_PROBES=(
 TOOLS_DETECTED=()
 declare -gA TOOL_STUB_ROOT
 declare -gA TOOL_HOOK_STYLE
+# [2026-11-25 task-skill-deploy-fix] B1: 暴露工具根目录。What: 新增 TOOL_ROOT 映射。Why: install-companion.sh
+#   需遍历 TOOLS_DETECTED 对每个 TOOL_ROOT[$tool] 执行同步，而非只认单目标。
+declare -gA TOOL_ROOT
 
 detect_tools() {
   for probe in "${TOOL_PROBES[@]}"; do
@@ -36,6 +39,8 @@ detect_tools() {
       TOOLS_DETECTED+=("$name")
       TOOL_STUB_ROOT[$name]="$stub_dir"
       TOOL_HOOK_STYLE[$name]="$hook_style"
+      # [2026-11-25 task-skill-deploy-fix] B1: 记录探测到的工具根目录
+      TOOL_ROOT[$name]="$probe_path"
     fi
   done
 }

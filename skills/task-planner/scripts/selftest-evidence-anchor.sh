@@ -502,8 +502,9 @@ for _b in B1 B2 B3 B4 B5 B6 B7 B8; do
         _ea23_ok=0; _ea23_reason="缺 $_b"
     fi
 done
-# B9-B13: 若脚本含则全在（B12/B13 归方案A/H3，并集解后原文保留；B14 已在上方单独断言）
-for _b in B9 B10 B11 B12 B13 B14 B15 B16; do
+# B9-B18: 若脚本含则全在（B12/B13 归方案A/H3，并集解后原文保留；B14 已在上方单独断言）
+# [2026-11-25 task-skill-deploy-fix A7] 扩 B17/B18（口径对齐/垃圾清理）。
+for _b in B9 B10 B11 B12 B13 B14 B15 B16 B17 B18; do
     if [ "$_ea23_ok" -eq 1 ] && grep -qF "\"task_id\":\"$_b\"" "$SCRIPT_DIR/sync-todos.sh" 2>/dev/null; then
         if ! printf '%s' "$_sync_out" | grep -qF "\"task_id\":\"$_b\""; then
             _ea23_ok=0; _ea23_reason="脚本含 $_b 但输出缺失"
@@ -511,7 +512,7 @@ for _b in B9 B10 B11 B12 B13 B14 B15 B16; do
     fi
 done
 if [ "$_ea23_ok" -eq 1 ]; then
-    ok 23 "sync-todos --json 含 B14(subject 含线索包) + B1-B16 全在（B12/B13 归方案A/H3，B15 周期回顾、B16 合并+回归，原文保留）"
+    ok 23 "sync-todos --json 含 B14(subject 含线索包) + B1-B18 全在（B12/B13 归方案A/H3，B15 周期回顾、B16 合并+回归、B17 口径对齐、B18 垃圾清理，原文保留） [2026-11-25 task-skill-deploy-fix A7]"
 else
     bad 23 "sync-todos --json 基线组断言失败: $_ea23_reason"
 fi

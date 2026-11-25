@@ -93,7 +93,32 @@ verify_installation() {
           fail "$tool deploy drift: full-copy SKILL.md differs from canonical ($stub)"
         fi
       elif [ -d "$stub" ] && [ -f "$stub/SKILL.md" ]; then
-        pass "$tool stub exists at $stub"
+        # [2026-11-25 task-skill-deploy-fix] B4: 薄壳静态分发面对账。What: 对 thin shell（<15KB SKILL.md）不再只
+        #   pass "stub exists"，而是对 install-stub.sh:329 rsync 分发面的静态文件做 diff -rq 对账。
+        # Why: 薄壳模式此前无内容漂移检测，部署位静态资源与 canonical 漏检。
+        # 范围: references/ templates/ config.json schemas/ 等静态文件；排除 SKILL.md（工具适配薄壳）、
+        #   scripts（rewrite 本地化）、lib（install-stub.sh --exclude='/lib/' 非分发面）、
+        #   __pycache__/.git/.backup/install.log/tests/docs。
+        local _thin_drift=""
+        for _item in references templates config.json schemas; do
+          [ -e "$TASK_PLANNER_ROOT/$_item" ] || continue
+          if [ ! -e "$stub/$_item" ]; then
+            _thin_drift="${_thin_drift} missing:${_item}"
+            continue
+          fi
+          if [ -d "$TASK_PLANNER_ROOT/$_item" ]; then
+            local _d
+            _d="$(diff -rq "$TASK_PLANNER_ROOT/$_item" "$stub/$_item" 2>/dev/null | grep -v '__pycache__' | head -5 || true)"
+            [ -n "$_d" ] && _thin_drift="${_thin_drift} drift:${_item}"
+          else
+            cmp -s "$TASK_PLANNER_ROOT/$_item" "$stub/$_item" || _thin_drift="${_thin_drift} drift:${_item}"
+          fi
+        done
+        if [ -z "$_thin_drift" ]; then
+          pass "$tool stub thin-shell static content matches canonical ($stub)"
+        else
+          fail "$tool stub thin-shell drift:${_thin_drift} ($stub)"
+        fi
       else
         fail "$tool stub missing or incomplete: $stub"
       fi
@@ -113,12 +138,17 @@ verify_installation() {
       continue  # 全量副本 = canonical 实体副本,无独立硬编码检查必要
     fi
     if [ -d "$stub/scripts" ]; then
-      # Find files with hardcoded paths, excluding the whitelisted fallback chain in check-doc-sync.sh
+      # Find files with hardcoded paths, excluding whitelisted env-fallback chains.
+      # [2026-11-25 task-skill-deploy-fix] What: 白名单新增 zcode-posttooluse.sh。
+      # Why: 该文件 :251 的 SKILL_ROOT="${OPENCODE_SKILL_ROOT:-$HOME/.zcode/skills/task-planner}"
+      #   与 check-doc-sync.sh 同为合法 env-fallback 形态（环境变量优先、未设才用默认），
+      #   非裸硬编码；原检查只豁免 check-doc-sync.sh，部署位同步后本文件字面量显现致假 FAIL。
+      #   判据不变：仍抓无 env 逃生的裸硬编码，只扩大同类合法形态的白名单。
       local hardcoded
       hardcoded=$(grep -rlnE '\$HOME/\.zcode/skills/task-planner|\$HOME/\.claude/skills/task-planner' "$stub/scripts/" 2>/dev/null \
-        | grep -v 'check-doc-sync\.sh$' || true)
+        | grep -vE 'check-doc-sync\.sh$|zcode-posttooluse\.sh$' || true)
       if [ -z "$hardcoded" ]; then
-        pass "$tool scripts: no hardcoded paths (check-doc-sync.sh fallback chain whitelisted)"
+        pass "$tool scripts: no hardcoded paths (env-fallback chains whitelisted)"
       else
         fail "$tool scripts: hardcoded paths in $(echo "$hardcoded" | wc -l) files"
       fi
@@ -202,10 +232,66 @@ verify_installation() {
   fi
   # ZCode: hooks 注册机制 = ~/.zcode/cli/config.json 的 hooks.events(2026-09-04 实证,
   # SKILL.md frontmatter 从未承载 zcode hooks——canonical frontmatter 亦无 hooks: 块)
+  # [2026-11-25 task-skill-deploy-fix] A3: 增强校验。What: 不只 grep task-planner，还用 jq/python 提取
+  #   hooks.events 里含 task-planner 的 command，逐个验证 command 中脚本路径真实存在([ -f ])。
+  # Why: 原检查只看关键字，路径失效/漂移无法发现；沿用 pass()/fail() 结构，不改函数签名。
+  #   Stop 事件缺失仅提示不 fail（平台差异）。
   local zcode_cfg="$HOME/.zcode/cli/config.json"
   if [ -n "${TOOL_STUB_ROOT[zcode]:-}" ] && [ -f "$zcode_cfg" ]; then
     if grep -q 'task-planner' "$zcode_cfg" 2>/dev/null; then
-      pass "ZCode: hooks registered in $zcode_cfg"
+      local _zp_ok=1 _zp_missing=""
+      local _zp_cmds=""
+      if command -v jq >/dev/null 2>&1; then
+        _zp_cmds="$(jq -r '.. | objects | select(has("command")) | .command | select(type=="string") | select(test("task-planner"))' "$zcode_cfg" 2>/dev/null || true)"
+      elif command -v python3 >/dev/null 2>&1; then
+        _zp_cmds="$(python3 - "$zcode_cfg" <<'PY'
+import json, sys
+p = sys.argv[1]
+try:
+    data = json.load(open(p))
+except Exception:
+    sys.exit(0)
+cmds = []
+def walk(x):
+    if isinstance(x, dict):
+        c = x.get("command")
+        if isinstance(c, str) and "task-planner" in c:
+            cmds.append(c)
+        for v in x.values():
+            walk(v)
+    elif isinstance(x, list):
+        for v in x:
+            walk(v)
+walk(data)
+for c in cmds:
+    print(c)
+PY
+        )"
+      fi
+      if [ -n "$_zp_cmds" ]; then
+        while IFS= read -r _cmd; do
+          [ -n "$_cmd" ] || continue
+          # 提取 command 中看起来像绝对路径的 task-planner 脚本片段
+          local _paths
+          _paths="$(printf '%s\n' "$_cmd" | grep -oE '/[^"'"'"' ]*task-planner[^"'"'"' ]*\.(sh|cjs|ps1|ts|py)' || true)"
+          while IFS= read -r _p; do
+            [ -n "$_p" ] || continue
+            if [ ! -f "$_p" ]; then
+              _zp_ok=0
+              _zp_missing="${_zp_missing} $_p"
+            fi
+          done <<< "$_paths"
+        done <<< "$_zp_cmds"
+      fi
+      if [ "$_zp_ok" -eq 1 ]; then
+        pass "ZCode: hooks registered in $zcode_cfg (command paths exist)"
+      else
+        fail "ZCode: hook command paths missing:${_zp_missing}"
+      fi
+      # Stop 事件缺失仅提示不 fail（平台差异）
+      if ! grep -q '"Stop"' "$zcode_cfg" 2>/dev/null && ! grep -q "'Stop'" "$zcode_cfg" 2>/dev/null; then
+        echo "[verify] · ZCode: $zcode_cfg missing Stop event (hint only, platform-dependent)"
+      fi
     else
       fail "ZCode: $zcode_cfg missing task-planner hooks"
     fi

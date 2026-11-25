@@ -23,9 +23,12 @@
 #                    SKILL_ROOT(脚本运行处), 从部署位运行亦以主仓 canonical 内容为源);
 #                    slot 校验 REJECTED / 部署源缺失 → DRIFT exit 6(fail-closed);
 #                    --deploy 对账通过后自动执行池成员顶层枚举挂载(install_pool_links): <skills>/<member> 相对软链→task-planner/review-library/<member>;冲突跳过 LINK-WARN;增强段不改 exit 码 [task-v105]
+#                    [2026-11-25 task-skill-deploy-fix] B2: 默认槽位扩为 5 位(+cursor/continue)，不加入 .agents
+#                    (全局保护区,走 TASK_PLANNER_DEPLOY_SLOTS env 显式覆盖)；SLOTS/DEFAULT_DEPLOY_ROOTS 同源函数输出。
 #                    守卫语义(2026-09-12 R3): $HOME 内部 slot = 白名单口径 — 仅当位于任一默认部署根
 #                    ($HOME/.zcode/skills/task-planner、$HOME/.claude/skills/task-planner、
-#                    $HOME/.config/opencode/skills/task-planner)之内(或等于)才放行; 其余 $HOME 子路径
+#                    $HOME/.config/opencode/skills/task-planner、$HOME/.cursor/skills/task-planner、
+#                    $HOME/.continue/skills/task-planner)之内(或等于)才放行; 其余 $HOME 子路径
 #                    (含 $HOME/.zcode 本身、$HOME/.ssh) → REJECTED;
 #                    显式逃生口 --allow-home-slot(默认关): $HOME 内部任意子路径放行(风险自担, 无生产需要);
 #                    SKILL_ROOT/WT_PATH/MAIN_REPO = exact + 内部 + 祖先全向
@@ -51,7 +54,8 @@
 #   [CLEANUP] git worktree remove <path> && git branch -d <branch>   (只提示不执行 — 清理时机留主进程)
 #   --deploy: 逐位 [DEPLOY] REJECTED|IDENTICAL|DRIFT: <位>; 任一 REJECTED/DRIFT → exit 6 DEPLOY_DRIFT
 #     (2026-09-17 task-v077: IDENTICAL 判定基准 = 主仓 skills/task-planner(DEPLOY_SRC); 部署源缺失亦 DRIFT exit 6)
-#   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 3 真实位;
+#   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 5 真实位(+cursor/continue,
+#   .agents 不进默认、走 env 显式覆盖 — 全局保护区);
 #   HOME 未设置且 env 未覆盖 → [DEPLOY] REJECTED: (HOME 未设置 — 默认部署位不可解析) + exit 6。
 #   slot 安全: IFS=':' 解析 + validate_slot 守卫(拒空/非绝对/含空白或 glob/规范化后为
 #     / 或 .git 末组件 → REJECTED exit 6);
@@ -76,7 +80,7 @@
 #     ⑦ MERGE_HEAD 检测改绝对路径(--path-format=absolute; 不支持时回退 --git-dir 相对则 cd 主仓解析)。
 #   2026-09-12 R3 复审修复轮: ① $HOME home 豁免改白名单口径 — 复审实证 slot=$HOME/.zcode 在旧
 #     "home 类型整体豁免 inside"下 rc=0 假绿且 $HOME/.zcode/{skills,memories,AGENTS.md} 被摧毁;
-#     新语义: home 类型 slot 仅当 norm_path(slot) 位于 DEFAULT_DEPLOY_ROOTS 三默认部署根之一
+#     新语义: home 类型 slot 仅当 norm_path(slot) 位于 DEFAULT_DEPLOY_ROOTS 五默认部署根之一
 #     (之内或等于)才放行, 其余 $HOME 子路径按 inside 规则 REJECTED; 显式逃生口 --allow-home-slot
 #     (默认关, 风险自担);
 #     ② EXIT trap 体封成 cleanup_tmpdirs() 函数(顶层 local 报错), stderr 零输出; 正常退出/TERM/INT 由
@@ -383,11 +387,16 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         echo "[DEPLOY] DRIFT: (部署源不存在: $DEPLOY_SRC — 主仓布局缺失, 禁回退 SKILL_ROOT)"
         DRIFT=1
     }
-    if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
-        SLOTS="$TASK_PLANNER_DEPLOY_SLOTS"
-    elif [ -n "${HOME:-}" ]; then
-        SLOTS="$HOME/.zcode/skills/task-planner:$HOME/.claude/skills/task-planner:$HOME/.config/opencode/skills/task-planner"
-    else
+	    # [2026-11-25 task-skill-deploy-fix] B2: 共享默认槽位函数，SLOTS/DEFAULT_DEPLOY_ROOTS 同源，避免再漂移。
+	    # 不加入 .agents（全局保护区, 走 TASK_PLANNER_DEPLOY_SLOTS env 显式覆盖）。
+	    default_deploy_slots() {
+	        printf '%s' "$HOME/.zcode/skills/task-planner:$HOME/.claude/skills/task-planner:$HOME/.config/opencode/skills/task-planner:$HOME/.cursor/skills/task-planner:$HOME/.continue/skills/task-planner"
+	    }
+	    if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
+	        SLOTS="$TASK_PLANNER_DEPLOY_SLOTS"
+	    elif [ -n "${HOME:-}" ]; then
+	        SLOTS="$(default_deploy_slots)"
+	    else
         SLOTS=""
         echo "[DEPLOY] REJECTED: (HOME 未设置 — 默认部署位不可解析)"
         DRIFT=1
@@ -465,9 +474,13 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         esac
     done
 
-    # [2026-09-12 R3 P0] 默认部署根白名单(三根, 冒号分隔): home 类型 slot 仅当位于
-    # 任一部署根之内(或等于)才放行 — 其余 $HOME 子路径按 inside 规则 REJECTED
-    DEFAULT_DEPLOY_ROOTS="${HOME:-}/.zcode/skills/task-planner:${HOME:-}/.claude/skills/task-planner:${HOME:-}/.config/opencode/skills/task-planner"
+	    # [2026-09-12 R3 P0] 默认部署根白名单: home 类型 slot 仅当位于任一部署根之内(或等于)才放行 — 其余 $HOME 子路径按 inside 规则 REJECTED
+	    # [2026-11-25 task-skill-deploy-fix] B2: 与 SLOTS 同源（5 位），不加入 .agents（全局保护区, env 显式覆盖）。
+	    if [ -n "${HOME:-}" ]; then
+	        DEFAULT_DEPLOY_ROOTS="$(default_deploy_slots)"
+	    else
+	        DEFAULT_DEPLOY_ROOTS=""
+	    fi
     # 白名单根逐条规范化(循环外算好, 空根 — HOME 未设 — 比较前跳过)
     default_roots_norm=()
     if [ -n "${HOME:-}" ]; then

@@ -49,26 +49,39 @@ if [ ! -f "$REPO_ROOT/CHANGELOG.md" ] || [ ! -d "$REPO_SKILLS/task-planner" ]; t
   exit 1
 fi
 
-# 目标根探测:显式指定 > .zcode > .claude
-if [ -z "$TARGET_ROOT" ]; then
-  if [ -d "$HOME/.zcode" ]; then
-    TARGET_ROOT="$HOME/.zcode"
-  elif [ -d "$HOME/.claude" ]; then
-    TARGET_ROOT="$HOME/.claude"
-  else
-    echo "[companion] ERROR: no tool root found (~/.zcode or ~/.claude); use --target" >&2
+# [2026-11-25 task-skill-deploy-fix] B1: 多工具根支持。What: 传 --target 保持单目标兼容；未传时 source
+#   detect-tools.sh，遍历 TOOLS_DETECTED[@] 对每个 TOOL_ROOT[$tool] 执行现有 sync 流程。
+# Why: 原仅探测单目标，遗漏其它已部署工具位。
+TARGET_ROOTS=()
+TARGET_TOOLS=()
+if [ -n "$TARGET_ROOT" ]; then
+  TARGET_ROOTS+=("$TARGET_ROOT")
+  TARGET_TOOLS+=("explicit")
+else
+  # shellcheck disable=SC1091
+  source "$SKILL_ROOT/lib/detect-tools.sh"
+  for _tool in "${TOOLS_DETECTED[@]}"; do
+    _root="${TOOL_ROOT[$_tool]:-}"
+    [ -n "$_root" ] && [ -d "$_root" ] || continue
+    TARGET_ROOTS+=("$_root")
+    TARGET_TOOLS+=("$_tool")
+  done
+  if [ ${#TARGET_ROOTS[@]} -eq 0 ]; then
+    echo "[companion] ERROR: no tool root found; use --target" >&2
     exit 1
   fi
 fi
 
 # [2026-10-08 task-v149 D25] 备份根移出技能扫描路径：原落 $COMPANION_DIR/.backup-*（当 TASK_PLANNER_ROOT 指向部署位时备份落进扫描路径内，v146 判例复发）；仓库内无 skill-deploy-backups 惯例（grep=0），改用 ~/.task-planner-backups/companion/<ts>/
-BACKUP_DIR="$HOME/.task-planner-backups/companion/$(date +%Y%m%d-%H%M%S)"
+BACKUP_BASE="$HOME/.task-planner-backups/companion/$(date +%Y%m%d-%H%M%S)"
+# 全局计数（跨目标汇总）
 installed=0; skipped=0; updated=0
 
 # ─── 平台 model 行适配(v2.2.2)─────────────────────────────────────────
 # ZCode agent model 格式: custom:<provider-uuid>:<slug>(slug: sonnet-1/haiku-1/mini/opus-1/%2F 转义)
 # Claude agent model 格式: 纯档位名(sonnet/haiku/opus/"mini"/"<自定义串>")
 # companion/ 内文件统一存 ZCode 格式(修改源);安装到 Claude 平台时按此映射转换。
+# [2026-11-25 task-skill-deploy-fix] B1: adapt_model_line 按当前 TARGET_ROOT 判断（循环内每目标设置）。
 adapt_model_line() {
   # $1 = 目标文件(已 cp);仅当目标是 Claude 平台且文件含 ZCode 格式 model 行时改写
   local dst="$1"
@@ -118,6 +131,7 @@ sync_one() {
     action="update"
     if [ "$FORCE" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
       # [2026-10-08 task-v149 D25] cp 目标路径与 mkdir 对齐（原 basename 拍平致备份扁平化+同名覆盖）
+      # [2026-11-25 task-skill-deploy-fix] B1: 多目标时 BACKUP_DIR 含 tool 子目录，避免同名覆盖。
       mkdir -p "$BACKUP_DIR/$(dirname "${dst#$TARGET_ROOT/}")"
       cp "$dst" "$BACKUP_DIR/${dst#$TARGET_ROOT/}"
       echo "  backup: $(basename "$dst") → $BACKUP_DIR"
@@ -148,61 +162,74 @@ adapt_model_line_quiet() {
   sed -i "s|^model:.*|model: $pure|" "$dst"
 }
 
-echo "[companion] target root: $TARGET_ROOT"
-echo "[companion] companion dir: $COMPANION_DIR"
+# [2026-11-25 task-skill-deploy-fix] B1: 遍历每个目标工具根执行 sync。What: 原单 TARGET_ROOT 改为循环。
+# Why: 未传 --target 时应覆盖 detect-tools.sh 检出的所有工具位；--target 保持单目标兼容。
+for _ti in $(seq 0 $((${#TARGET_ROOTS[@]}-1))); do
+  TARGET_ROOT="${TARGET_ROOTS[$_ti]}"
+  _tool_label="${TARGET_TOOLS[$_ti]}"
+  # [2026-11-25 task-skill-deploy-fix] B1: 多目标时备份目录加 tool 子目录避免同名覆盖。
+  if [ ${#TARGET_ROOTS[@]} -gt 1 ]; then
+    BACKUP_DIR="$BACKUP_BASE/$_tool_label"
+  else
+    BACKUP_DIR="$BACKUP_BASE"
+  fi
 
-# 1. agents/*.md → <root>/agents/
-if [ -d "$COMPANION_DIR/agents" ]; then
-  echo "[companion] agents:"
-  for f in "$COMPANION_DIR"/agents/*.md; do
-    [ -e "$f" ] || continue
-    sync_one "$f" "$TARGET_ROOT/agents/$(basename "$f")"
-  done
-fi
+  echo "[companion] target root: $TARGET_ROOT (tool=$_tool_label)"
+  echo "[companion] companion dir: $COMPANION_DIR"
 
-# 2. 顶层外围 skills/<name>/ → <root>/skills/<name>/(排除 task-planner 本体,只分发含 SKILL.md 的目录)
-if [ -d "$REPO_SKILLS" ]; then
-  echo "[companion] skills:"
-  for skill_dir in "$REPO_SKILLS"/*/; do
-    [ -d "$skill_dir" ] || continue
-    skill_name="$(basename "$skill_dir")"
-    if [ "$skill_name" = "task-planner" ]; then
-      # [task-v105] 池成员宿主可枚举分发: review-library/<member>/SKILL.md → <root>/skills/<member>/SKILL.md
-      # 单文件分发(池成员为纯文档 skill,零 scripts/config);幂等=cmp 等同由 sync_one 自跳;
-      # 顶层已有独立 skill 且内容不同 → 独立 skill 不覆盖,skip+WARN 留痕
-      pool_dir="$REPO_SKILLS/task-planner/review-library"
-      if [ -d "$pool_dir" ]; then
-        for member_dir in "$pool_dir"/*/; do
-          [ -d "$member_dir" ] || continue
-          member_name="$(basename "$member_dir")"
-          member_skill="$member_dir/SKILL.md"
-          [ -f "$member_skill" ] || continue
-          member_dst="$TARGET_ROOT/skills/$member_name/SKILL.md"
-          if [ -f "$member_dst" ] && ! cmp -s "$member_skill" "$member_dst"; then
-            echo "[companion] WARN: skip pool member $member_name (顶层已存在独立 skill 且内容不同,不覆盖)"
-            skipped=$((skipped+1))
-            continue
-          fi
-          sync_one "$member_skill" "$member_dst"
-        done
-      fi
-      continue
-    fi
-    [ -f "$skill_dir/SKILL.md" ] || { echo "  skip: $skill_name (no SKILL.md)"; continue; }
-    # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
-    # 排除 .git / tests/ 等非同步内容
-    while IFS= read -r -d '' f; do
+  # 1. agents/*.md → <root>/agents/
+  if [ -d "$COMPANION_DIR/agents" ]; then
+    echo "[companion] agents:"
+    for f in "$COMPANION_DIR"/agents/*.md; do
       [ -e "$f" ] || continue
-      rel="${f#$skill_dir}"          # scripts/scan-plans.sh
-      sync_one "$f" "$TARGET_ROOT/skills/$skill_name/$rel"
-    done < <(find "$skill_dir" -mindepth 1 -maxdepth 2 -type f -not -path '*/.git/*' \
-                                -not -path '*/tests/*' \
-                                -not -name '*.pyc' -not -name '*.md.bak' \
-                                -print0)
-  done
-fi
+      sync_one "$f" "$TARGET_ROOT/agents/$(basename "$f")"
+    done
+  fi
 
-echo "[companion] summary: $installed installed, $updated updated, $skipped skipped (dry_run=$DRY_RUN)"
+  # 2. 顶层外围 skills/<name>/ → <root>/skills/<name>/(排除 task-planner 本体,只分发含 SKILL.md 的目录)
+  if [ -d "$REPO_SKILLS" ]; then
+    echo "[companion] skills:"
+    for skill_dir in "$REPO_SKILLS"/*/; do
+      [ -d "$skill_dir" ] || continue
+      skill_name="$(basename "$skill_dir")"
+      if [ "$skill_name" = "task-planner" ]; then
+        # [task-v105] 池成员宿主可枚举分发: review-library/<member>/SKILL.md → <root>/skills/<member>/SKILL.md
+        # 单文件分发(池成员为纯文档 skill,零 scripts/config);幂等=cmp 等同由 sync_one 自跳;
+        # 顶层已有独立 skill 且内容不同 → 独立 skill 不覆盖,skip+WARN 留痕
+        pool_dir="$REPO_SKILLS/task-planner/review-library"
+        if [ -d "$pool_dir" ]; then
+          for member_dir in "$pool_dir"/*/; do
+            [ -d "$member_dir" ] || continue
+            member_name="$(basename "$member_dir")"
+            member_skill="$member_dir/SKILL.md"
+            [ -f "$member_skill" ] || continue
+            member_dst="$TARGET_ROOT/skills/$member_name/SKILL.md"
+            if [ -f "$member_dst" ] && ! cmp -s "$member_skill" "$member_dst"; then
+              echo "[companion] WARN: skip pool member $member_name (顶层已存在独立 skill 且内容不同,不覆盖)"
+              skipped=$((skipped+1))
+              continue
+            fi
+            sync_one "$member_skill" "$member_dst"
+          done
+        fi
+        continue
+      fi
+      [ -f "$skill_dir/SKILL.md" ] || { echo "  skip: $skill_name (no SKILL.md)"; continue; }
+      # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
+      # 排除 .git / tests/ 等非同步内容
+      while IFS= read -r -d '' f; do
+        [ -e "$f" ] || continue
+        rel="${f#$skill_dir}"          # scripts/scan-plans.sh
+        sync_one "$f" "$TARGET_ROOT/skills/$skill_name/$rel"
+      done < <(find "$skill_dir" -mindepth 1 -maxdepth 2 -type f -not -path '*/.git/*' \
+                                  -not -path '*/tests/*' \
+                                  -not -name '*.pyc' -not -name '*.md.bak' \
+                                  -print0)
+    done
+  fi
+done
+
+echo "[companion] summary: $installed installed, $updated updated, $skipped skipped (dry_run=$DRY_RUN, targets=${#TARGET_ROOTS[@]})"
 if [ "$DRY_RUN" -eq 0 ] && [ "$updated" -gt 0 ]; then
   echo "[companion] NOTE: 更新的文件需重启会话生效(frontmatter model/tools 为快照语义)"
 fi

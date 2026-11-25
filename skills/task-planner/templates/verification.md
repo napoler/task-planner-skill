@@ -12,6 +12,7 @@
 > These are the FINAL checks. All must pass for goal to be COMPLETE.
 > Each item: observable, testable, traceable to evidence.
 > 每条 VC 的 **Verify command** 行=attest vc-gate（attest-plan.sh:244-285）判据面——模板必须预置该行（缺失验证区块判例 task-tpl-verify-fix-20261113）。
+> 禁反引号包裹与尾注；若误写，执行器按 canonical 命令归一化（仅容错，非推荐写法）[2026-11-25 task-skill-deploy-fix A8]。
 
 - [ ] VC-1: [判定标准：可观察判据]
   Evidence: [file path / command output]
