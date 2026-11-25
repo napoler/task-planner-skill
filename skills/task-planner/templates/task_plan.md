@@ -137,6 +137,7 @@ MK 与 `MK-NA` 均在计划期登记并随 attest 锁定（Rule 51.15 基线锁�
 > **注意**：若 `code_review: required`，终验前必须先通过 Code Review Gate（详见 SKILL.md），否则不得标记 COMPLETE。
 
 ## 🧩 输出示例与格式契约（Rule 113 — 凡声明输出格式必给可直接查看的完整示例）
+> **展示义务（Rule 113.10 · 项目级强制）**：先向用户展示至少一个完整产出示例实物（真实路径/可读代码块 + 同结构占位模板 + 审查命令与预期输出），再写条款；权威形态=`examples/json-template-upgrade/review.md`；禁仅标题 token。
 <!--
   WHAT: 让用户与执行体在计划期就能看到产出长什么样；根治「说输出 JSON 却不给 JSON 实例，执行产出与计划完全相背」。
   RULE: Rule 113.1-113.4；示例写入 plan-state.json.output_examples（planctl add --section output_examples），本区块由 planctl render 全量派生；禁止只改本 MD（下次 render 覆盖）。

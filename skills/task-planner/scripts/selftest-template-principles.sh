@@ -70,7 +70,7 @@ if [ -f "$tmp_smoke" ] && grep -q "\[smoke\]\[PASS\] all-ok" "$tmp_smoke" && gre
 else
   bad "TP-05: 正反夹具行为级证据缺失（期望 smoke 输出 all-ok 与 missing-block PASS）"
 fi
-rm -f "$tmp_smoke"
+# smoke 证据保留到 TP-08 复核后再清理
 
 # TP-06: kit 指针行（注册表路径 + 派生铁律含“双参照”）
 if [ -f "$KIT_SKILL" ] && grep -Fq 'references/principle-template-registry.md' "$KIT_SKILL" && grep -Fq '双参照' "$KIT_SKILL"; then
@@ -85,6 +85,17 @@ if [ -f "$REGISTRY" ] && grep -Fq '派生铁律' "$REGISTRY" && grep -Fq 'spec_v
 else
   bad "TP-07: 注册表派生铁律或 spec_version=1 缺失"
 fi
+
+# TP-08: Rule 113.10 强制展示示例实物的文本锚 + 行为负控制（smoke case-3）
+if grep -Fq '113.10 **展示义务与项目级强制' "$SKILL_ROOT/references/critical-rules.md" \
+   && grep -Fq '[example-gate]' "$SKILL_ROOT/scripts/attest-plan.sh" \
+   && grep -Fq 'examples/json-template-upgrade/review.md' "$REGISTRY" \
+   && [ -f "$tmp_smoke" ] && grep -q "\[smoke\]\[PASS\] empty-example" "$tmp_smoke"; then
+  ok "TP-08: Rule 113.10 + [example-gate] + 权威实物锚 + 空壳示例负控制全在位"
+else
+  bad "TP-08: 强制展示示例锚或空壳负控制缺失"
+fi
+rm -f "$tmp_smoke"
 
 echo ""
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"

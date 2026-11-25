@@ -100,6 +100,35 @@ check_enforce_token() { # file token label scope(is base/derived name)
   return 1
 }
 
+# [2026-11-25 task-example-mandatory] Rule 113.10：示例段必须有可审查内容（仅标题 token 不再合规）。
+# 判据：截取该 ## 段，要求 fenced code block 或行内 code 真实实例（极简档）；占位文本不算内容。
+check_output_example_content() { # file token scope
+  local f="$1" token="$2" scope="$3" sec body
+  sec="$(awk -v tok="$token" '
+    index($0,tok) && $0 ~ /^## / {found=1; print; next}
+    found && $0 ~ /^## / {exit}
+    found {print}
+  ' "$f" 2>/dev/null)"
+  if [ -z "$sec" ]; then
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    FAIL_ITEMS+=("$scope :: 缺失示例段[$token]（Rule 113.10）")
+    return 1
+  fi
+  # 只取真实示例行（围栏与行内 code 实例），排除说明行里的「禁略/TBD」提示文字。
+  body="$(printf '%s\n' "$sec" | grep -v '^>' | grep -E '^```|`' || true)"
+  if [ -z "$body" ]; then
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    FAIL_ITEMS+=("$scope :: 示例段仅有标题 token 无真实内容（Rule 113.10）")
+    return 1
+  fi
+  if printf '%s\n' "$body" | grep -qE 'TBD|示例略|同上|\.\.\.'; then
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    FAIL_ITEMS+=("$scope :: 示例内容含占位文本（Rule 113.2/113.10）")
+    return 1
+  fi
+  return 0
+}
+
 check_warn_token() { # file token label scope
   local f="$1" token="$2" label="$3" scope="$4"
   if has_token "$f" "$token" || pruned_allows "$f" "$token"; then
@@ -170,6 +199,7 @@ run_checks() {
     check_enforce_token "$base" "🔍 证据面清单" "证据锚/证据面" "base:$BASE_REL" || true
     # [2026-11-25 task-output-example-contract] Rule 113 输出示例契约（base enforce）。
     check_enforce_token "$base" "$OUTPUT_EXAMPLE_TOKEN" "输出示例契约(Rule 113)" "base:$BASE_REL" || true
+    check_output_example_content "$base" "$OUTPUT_EXAMPLE_TOKEN" "base:$BASE_REL" || true
   fi
 
   # derived checks
@@ -184,6 +214,7 @@ run_checks() {
       # [2026-11-25 task-output-example-contract] Rule 113 全档必填（用户明确要求「所有计划任务都包含完整示例」）：
       #   豁免档只跳过其他原则，输出示例契约不豁免——先于 continue 检查。
       check_enforce_token "$f" "$OUTPUT_EXAMPLE_TOKEN" "输出示例契约(Rule 113)" "derived:$VARIANT_REL/$b" || true
+      check_output_example_content "$f" "$OUTPUT_EXAMPLE_TOKEN" "derived:$VARIANT_REL/$b" || true
       if is_exempt_variant_name "$b"; then
         continue
       fi
@@ -259,6 +290,10 @@ REG
 ## 🔍 证据面清单
 ## 🛡 防倒退终检
 ## 🧩 输出示例与格式契约
+**完整示例**：
+```json
+{"id":"OE-1","deliverable":"demo.json","format":"JSON","vc_refs":["VC-1"]}
+```
 EOF
   # OK derived fixture
   cat > "$tmp/skills/task-planner/templates/variant/ok-type.md" <<'EOF'
@@ -272,16 +307,19 @@ EOF
 ## 📊 FMEA 预演
 ## 🔍 证据面清单
 ## 🧩 输出示例与格式契约
+完整示例：`{"topic":"示例主题","count":3}`
 防倒退：进度产出基线指针
 EOF
   # exempt variants (skipped for other principles, but Rule 113 output-example is mandatory for all)
   cat > "$tmp/skills/task-planner/templates/variant/mini-lite-type.md" <<'EOF'
 # mini-lite exempt
 ## 🧩 输出示例与格式契约（Rule 113 · 极简档）
+完整示例：`{"title":"示例标题","count":3}`；占位模板：`{"title":"<TITLE>","count":<INT>}`
 EOF
   cat > "$tmp/skills/task-planner/templates/variant/l0-lite-type.md" <<'EOF'
 # l0-lite exempt
 ## 🧩 输出示例与格式契约（Rule 113 · 极简档）
+完整示例：`{"title":"示例标题","count":3}`；占位模板：`{"title":"<TITLE>","count":<INT>}`
 EOF
 
   echo "[smoke] case-1: all-ok fixture expects PASS"
@@ -326,8 +364,38 @@ EOF
     fi
   fi
 
-  rm -f /tmp/_tp_smoke_ok.$$ /tmp/_tp_smoke_bad.$$
-  if [ $rc_ok -eq 1 ] && [ $rc_bad -eq 1 ]; then
+  # [2026-11-25 task-example-mandatory] case-3: 示例段只有 token、无真实内容 -> FAIL
+  echo "[smoke] case-3: empty-example fixture expects FAIL"
+  cat > "$tmp/skills/task-planner/templates/task_plan.md" <<'EOF'
+# Task Plan
+<!-- template-lineage: level=base spec_version=1 -->
+## 📦 进度产出基线
+## 🔒 规范基线
+## 🎯 用户需求原文
+## 🧮 根源覆盖表
+## 🎯 Goal 单元表
+## ✅ Verification Contract
+## 📊 FMEA 预演
+## 🔍 证据面清单
+## 🛡 防倒退终检
+## 🧩 输出示例与格式契约
+EOF
+  rc_empty=0
+  if run_checks "$tmp" "$tmp/skills/plan-template-kit/references/principle-template-registry.md" >/tmp/_tp_smoke_empty.$$ 2>&1; then
+    echo "  [smoke][FAIL] empty-example unexpectedly PASS" >&2
+    cat /tmp/_tp_smoke_empty.$$ >&2
+  else
+    if grep -q "PRINCIPLES-COVERAGE FAIL" /tmp/_tp_smoke_empty.$$ && grep -q "示例段仅有标题 token" /tmp/_tp_smoke_empty.$$; then
+      echo "  [smoke][PASS] empty-example"
+      rc_empty=1
+    else
+      echo "  [smoke][FAIL] empty-example wrong output" >&2
+      cat /tmp/_tp_smoke_empty.$$ >&2
+    fi
+  fi
+
+  rm -f /tmp/_tp_smoke_ok.$$ /tmp/_tp_smoke_bad.$$ /tmp/_tp_smoke_empty.$$
+  if [ $rc_ok -eq 1 ] && [ $rc_bad -eq 1 ] && [ $rc_empty -eq 1 ]; then
     echo "SELFTEST-SMOKE PASS"
     return 0
   else
