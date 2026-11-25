@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "task_id": "task-align-preserve-extra-20261125",
+  "plan_tier": "standard",
+  "execution_lane": "L1",
+  "created_at": "2026-11-24T23:58:46Z",
+  "updated_at": "2026-11-25T00:08:06Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "用户原话：对齐女钓手规范时小说层被恶意丢弃；当前skill重大缺陷必须纠正",
+      "type": "目标",
+      "vc": [],
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "text": "新增 Rule 114 对齐任务内容保真铁律（参照规范非内容白名单/差异三分型/保留资产零丢失VC）+ selftest 静态断言",
+      "type": "手段",
+      "vc": [],
+      "tags": []
+    }
+  ],
+  "goals": [],
+  "vcs": [
+    {
+      "id": "VC1",
+      "criterion": "新断言 selftest-alignment-preserve.sh 全部 PASS",
+      "command": "bash skills/task-planner/scripts/selftest-alignment-preserve.sh",
+      "status": "pass",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC2",
+      "criterion": "全量 selftest 零新增 FAIL",
+      "command": "bash skills/task-planner/scripts/run-selftests.sh --fresh",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "id": "VC3",
+      "criterion": "verify.sh 0 fail",
+      "command": "TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh",
+      "status": "pending",
+      "evidence": "",
+      "tags": []
+    }
+  ],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "next_step": "全量回归 + 合并回 master + 清理 worktree"
+}

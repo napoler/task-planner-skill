@@ -1,5 +1,6 @@
 script	domain	trigger_scenarios	dep_anchors
 selftest-active-plan.sh	active-plan 会话私有指针	set-active-plan.sh / plan-created.cjs / resolve-plan-dir.sh / init-session.sh / attest-plan.sh 改动	set-active-plan.sh;plan-created.cjs;resolve-plan-dir.sh;init-session.sh;attest-plan.sh
+selftest-alignment-preserve.sh	Rule 114 对齐任务内容保真铁律静态守护(五子条锚/核心判据词/判例锚/core 路由/registry 自登记)	Rule 114 条款或 core 路由表 114 锚改动	../task-discipline/references/critical-rules-discipline.md;references/critical-rules.md;scripts/selftest-registry.tsv
 selftest-batch-pilot.sh	Rule 18 批量试点先行门	batch-quality-gate.md / Rule 18 条款措辞改动	references/batch-quality-gate.md;references/critical-rules.md;SKILL.md
 selftest-check-conflicts.sh	check-conflicts 五类信号行为级(v091 C-1f)	check-conflicts.sh 改动	check-conflicts.sh
 selftest-conclusion-discipline.sh	Rule 35 执行结论纪律	Rule 35 条款 / check-dispatch.sh 超限提示 / batch-quality-gate.md 措辞改动	references/critical-rules.md;references/batch-quality-gate.md;SKILL.md
