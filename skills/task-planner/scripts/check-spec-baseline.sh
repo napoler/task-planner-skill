@@ -17,7 +17,7 @@
 # 退出码: 0=通过（含 l0-lite SKIP） / 1=检查不通过 / 2=输入缺失或未知参数
 set -euo pipefail
 
-# ── 单一词表位置：内容类判定（§4.4，改清单只改这里）──────────────────────────────
+# ── 内置 fallback（注册表缺失时回退现状行为）：内容类判定词表（§4.4）────────────
 CONTENT_TEMPLATES='longform-continuity|writing|script-dev|storyboard|character-design|prompt-struct|video-prompt|image|video|video-fix'
 CONTENT_EXECUTORS='script-writer|script-auditor|storyboard-reviewer|general-writer'
 SLOTS='naming rhythm language reference'
@@ -25,6 +25,17 @@ SLOT_ZH_naming='命名'; SLOT_ZH_rhythm='节奏'; SLOT_ZH_language='语言'; SLO
 # 判定式「非空话」：比较/存在性判据任一命中；纯散文（遵守规范/人工确认/通过）不命中
 RULE_OPERATORS='≤|≥|<|>|=|:=|⊆|∈|grep|wc|diff|sha'
 PLACEHOLDER_OBS='^(tbd|todo|略|待终验|待补|待填|无|none|n\/a|-+|—+)$'
+# [2026-11-26 task-spec-registry-generalization S3/S4] What: 注册表合并态（维度必覆盖集、
+#   内容类词表、中文槽名映射）；英文槽名/执行体名均可含连字符，故中文名映射用关联数组避免间接展开歧义。
+# Why: 新项目类型通过项目级 .spec-registry.tsv 声明即可进必覆盖集/内容类判定，无需改本脚本封闭枚举；
+#   种子缺失时三维回退内置变量，保证既有夹具行为逐字不变。
+declare -A D_MUST_SEED=() D_MUST_DECL=() DIM_REF=() SLOT_ZH_MAP=()
+REG_TEMPLATES=''
+REG_EXECUTORS=''
+for _slot in $SLOTS; do
+    _zh_var="SLOT_ZH_$_slot"
+    SLOT_ZH_MAP["$_slot"]="${!_zh_var:-}"
+done
 
 PLAN_DIR=''
 MODE='plan'
@@ -55,6 +66,99 @@ STATE_FILE="$PLAN_DIR/plan-state.json"
 VERIFY_FILE="$PLAN_DIR/verification.md"
 SCAN_JSON="$PLAN_DIR/.spec-scan.json"
 REPO_ROOT="$(cd "$PLAN_DIR/../.." 2>/dev/null && pwd || printf '%s' "$PLAN_DIR")"
+
+# ── 词表注册表加载（种子 + 项目级两层）────────────────────────────────────────────
+# [2026-11-26 task-spec-registry-generalization S3/S4] What: 读 <skill>/config/spec-registry.tsv（种子）
+#   与 <repo-root>/.spec-registry.tsv（项目级）两份 5 列 TSV（类型/id/说明/别名/适用域）：
+#   dimension 合并进 D_MUST_SEED(content-all) / D_MUST_DECL(项目级 project|opt-in)，
+#   template/executor 合并进 REG_TEMPLATES / REG_EXECUTORS（与内置 fallback 用 | 连接），
+#   并逐维度记录来源 "path:行号" 供 C7 错误定位；列数≠5 的坏行跳过并 stderr 告警。
+# Why: 旧实现四槽 + 10 模板 + 4 执行体三处封闭枚举，使新场景必须改 skills/ 源码，
+#   否则 is_content_plan=false 导致 C7/F6 整链静默失效；注册表把扩展点外移到项目声明文件，
+#   同时种子缺失时回退内置变量保持现状行为（fail-safe，不放宽也不额外收紧）。
+# 实现边界：纯 bash + 内建参数展开逐 TAB 切列（read -a 会折叠连续 TAB，故不用）；禁 python/jq。
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SEED_DIR="$(cd "$SCRIPT_DIR/../config" 2>/dev/null && pwd || printf '%s' "$SCRIPT_DIR/../config")"
+SEED_REGISTRY="$SEED_DIR/spec-registry.tsv"
+PROJECT_REGISTRY="$REPO_ROOT/.spec-registry.tsv"
+
+load_spec_registry() {
+    local seed_loaded=0 src lineno line tabs rest kind id desc alias scope name
+    for src in "$SEED_REGISTRY" "$PROJECT_REGISTRY"; do
+        [ -f "$src" ] || continue
+        if [ "$src" = "$SEED_REGISTRY" ]; then seed_loaded=1; fi
+        lineno=0
+        while IFS= read -r line || [ -n "$line" ]; do
+            lineno=$((lineno + 1))
+            case "$line" in ''|\#*) continue ;; esac
+            tabs="${line//[^$'\t']/}"
+            if [ "${#tabs}" -ne 4 ]; then
+                printf '[spec-baseline] WARN: 注册表坏行跳过（列数≠5）%s:%d\n' "$src" "$lineno" >&2
+                continue
+            fi
+            rest="$line"
+            kind="${rest%%$'\t'*}"; rest="${rest#*$'\t'}"
+            id="${rest%%$'\t'*}"; rest="${rest#*$'\t'}"
+            desc="${rest%%$'\t'*}"; rest="${rest#*$'\t'}"
+            alias="${rest%%$'\t'*}"; rest="${rest#*$'\t'}"
+            scope="$rest"
+            if [ -z "$kind" ] || [ -z "$id" ]; then
+                printf '[spec-baseline] WARN: 注册表类型或 id 为空（跳过）%s:%d\n' "$src" "$lineno" >&2
+                continue
+            fi
+            case "$kind" in
+                dimension)
+                    case "$scope" in
+                        content-all)
+                            D_MUST_SEED["$id"]=1
+                            DIM_REF["$id"]="$src:$lineno"
+                            ;;
+                        project|opt-in)
+                            # 项目级声明即强制；种子里的 opt-in 只是可选目录，不进必覆盖集
+                            if [ "$src" = "$PROJECT_REGISTRY" ]; then
+                                D_MUST_DECL["$id"]=1
+                                DIM_REF["$id"]="$src:$lineno"
+                            fi
+                            ;;
+                        *)
+                            printf '[spec-baseline] WARN: 注册表适用域未知 %s（跳过）%s:%d\n' "$scope" "$src" "$lineno" >&2
+                            ;;
+                    esac
+                    ;;
+                template|executor)
+                    # 正则注入护栏：名字只含 [A-Za-z0-9_-] 才并入词表，否则跳过并告警
+                    if printf '%s' "$id" | grep -qE '^[A-Za-z0-9_-]+$'; then
+                        if [ "$kind" = 'template' ]; then
+                            case "|$REG_TEMPLATES|" in
+                                *"|$id|"*) ;;
+                                *) REG_TEMPLATES="${REG_TEMPLATES:+$REG_TEMPLATES|}$id" ;;
+                            esac
+                        else
+                            case "|$REG_EXECUTORS|" in
+                                *"|$id|"*) ;;
+                                *) REG_EXECUTORS="${REG_EXECUTORS:+$REG_EXECUTORS|}$id" ;;
+                            esac
+                        fi
+                    else
+                        printf '[spec-baseline] WARN: 注册表%s名非法（跳过）%s:%d: %s\n' "$kind" "$src" "$lineno" "$id" >&2
+                    fi
+                    ;;
+                *)
+                    printf '[spec-baseline] WARN: 注册表类型未知 %s（跳过）%s:%d\n' "$kind" "$src" "$lineno" >&2
+                    ;;
+            esac
+        done < "$src"
+    done
+    # 种子缺失（或无可用的 content-all 维度）→ 回退内置四槽，保持门的历史判定行为
+    if [ "$seed_loaded" -eq 0 ] || [ "${#D_MUST_SEED[@]}" -eq 0 ]; then
+        local slot
+        for slot in $SLOTS; do
+            D_MUST_SEED["$slot"]=1
+            DIM_REF["$slot"]="内置 fallback（$SEED_REGISTRY 缺失）"
+        done
+    fi
+}
+load_spec_registry
 
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/spec-baseline.XXXXXX")"
 trap 'rm -f "$TMP/baseline.tsv" "$TMP/state.tsv" "$TMP/must.txt" "$TMP/sunits.tsv" "$TMP/final.tsv" "$TMP/body.txt"; rmdir "$TMP" 2>/dev/null || true' EXIT
@@ -176,20 +280,23 @@ extract_sunits() {
 }
 
 # is_content_plan — 内容类判定唯一口径（C7 与 C3/F6 共用同一词表，避免双源漂移）
-# [2026-11-26 task-spec-consumption-chain C3] What: 三路任一命中即内容类：
-#   ①task_plan.md template_type/template_ref 命中 CONTENT_TEMPLATES
-#   ②plan-state.json scenarios 命中创作场景词
-#   ③S-unit 执行体命中 CONTENT_EXECUTORS（须先 extract_sunits）
-# Why: 计划期 C7 四槽检查与终验期零 SPEC SKIP 必须用同一词表；否则内容类计划可借「零 SPEC」整链绕过。
+# [2026-11-26 task-spec-consumption-chain C3 / task-spec-registry-generalization S4] What: 三路任一命中即内容类：
+#   ①task_plan.md template_type/template_ref 命中 内置fallback ∪ REG_TEMPLATES
+#   ②plan-state.json scenarios 命中创作场景词（不变）
+#   ③S-unit 执行体命中 内置fallback ∪ REG_EXECUTORS（须先 extract_sunits）
+# Why: 计划期 C7 维度检查与终验期零 SPEC SKIP 必须用同一词表；注册表声明的新模板/执行体若只进其中一处，
+#   内容类计划可借「零 SPEC」整链绕过。REG_* 为空时正则与旧版逐字相同，保持兼容。
 # 返回: 0=内容类 / 1=非内容类；不输出任何文本。
 is_content_plan() {
-    if grep -E '^(template_type|template_ref):' "$PLAN_FILE" 2>/dev/null | grep -qE "$CONTENT_TEMPLATES"; then
+    local template_re="$CONTENT_TEMPLATES${REG_TEMPLATES:+|$REG_TEMPLATES}"
+    local executor_re="$CONTENT_EXECUTORS${REG_EXECUTORS:+|$REG_EXECUTORS}"
+    if grep -E '^(template_type|template_ref):' "$PLAN_FILE" 2>/dev/null | grep -qE "$template_re"; then
         return 0
     fi
     if [ -f "$STATE_FILE" ] && grep -E '"scenarios"' "$STATE_FILE" 2>/dev/null | grep -qE '小说|剧本|分镜|长篇|创作'; then
         return 0
     fi
-    if awk -F'\t' -v re="$CONTENT_EXECUTORS" '$2 ~ re {f=1} END{exit(f?0:1)}' "$TMP/sunits.tsv"; then
+    if awk -F'\t' -v re="$executor_re" '$2 ~ re {f=1} END{exit(f?0:1)}' "$TMP/sunits.tsv"; then
         return 0
     fi
     return 1
@@ -379,13 +486,42 @@ else
             fail 'C6' '⑥' "$sid sha 不一致（声明 $expected / 实测 $actual: $path）"
         fi
     done < "$TMP/baseline.tsv"
-    # ⑦ 内容类四槽：naming/rhythm/language/reference，每槽 ≥1 SPEC(kind=槽) 或 NA(含槽名+理由)
+    # ⑦ 内容类必覆盖维度：种子 content-all ∪ 项目级声明(project/opt-in) ∪ .spec-scan.tsv 归纳维度
+    # [2026-11-26 task-spec-registry-generalization S4] What: 逐维度沿用原 awk 判定块（SPEC kind=维度 或 NA 含名+理由），
+    #   错误信息带注册表来源 "path:行号"；归纳维度来自 <plan-dir>/.spec-scan.tsv 第二列（| 分隔），缺文件即空集。
+    # Why: 四槽硬编码无法承接新项目维度；三层来源合并后 NA 逃生口语义不变，缺失维度一律 fail-closed。
     # [2026-11-26 C3] 判定统一走 is_content_plan()（与终验 F6 同一词表；extract_sunits 已在两模式入口调用）
     extract_sunits
     if is_content_plan; then
-        for slot in $SLOTS; do
-            zh="SLOT_ZH_$slot"; zh="${!zh}"
-            if ! awk -F'\t' -v s="$slot" -v z="$zh" '
+        dims=()
+        for d in "${!D_MUST_SEED[@]}" "${!D_MUST_DECL[@]}"; do
+            dims+=("$d")
+        done
+        SCAN_TSV="$PLAN_DIR/.spec-scan.tsv"
+        if [ -f "$SCAN_TSV" ]; then
+            scan_lineno=0
+            while IFS= read -r scan_line || [ -n "$scan_line" ]; do
+                scan_lineno=$((scan_lineno + 1))
+                case "$scan_line" in ''|\#*) continue ;; esac
+                scan_tabs="${scan_line//[^$'\t']/}"
+                [ "${#scan_tabs}" -ge 1 ] || continue
+                scan_rest="${scan_line#*$'\t'}"
+                scan_dims="${scan_rest%%$'\t'*}"
+                IFS='|' read -r -a scan_parts <<< "$scan_dims"
+                for d in "${scan_parts[@]}"; do
+                    [ -n "$d" ] || continue
+                    dims+=("$d")
+                    if [ -z "${DIM_REF[$d]:-}" ]; then DIM_REF["$d"]="$SCAN_TSV:$scan_lineno"; fi
+                done
+            done < "$SCAN_TSV"
+        fi
+        declare -A dim_seen=()
+        for d in "${dims[@]}"; do
+            [ -n "$d" ] || continue
+            if [ -n "${dim_seen[$d]:-}" ]; then continue; fi
+            dim_seen["$d"]=1
+            zh="${SLOT_ZH_MAP[$d]:-}"
+            if ! awk -F'\t' -v s="$d" -v z="$zh" '
                 $1 ~ /^SPEC-/ && tolower($6) == s { f=1 }
                 $1 ~ /^NA-/ {
                     v = tolower($2)
@@ -396,7 +532,7 @@ else
                     }
                 }
                 END{exit(f?0:1)}' "$TMP/baseline.tsv"; then
-                fail 'C7' '⑦' "内容类四槽缺 $slot（需 SPEC kind=$slot 或 NA 理由）"
+                fail 'C7' '⑦' "维度覆盖缺 $d（需 SPEC kind=$d 或 NA 理由；注册表: ${DIM_REF[$d]:-}）"
             fi
         done
     fi

@@ -2816,6 +2816,84 @@ def _spec_scan_candidates(project_root: Path, plan: Path, doc: dict[str, Any],
     return ordered
 
 
+# ── spec-scan 维度归纳（2026-11-26 task-spec-registry-generalization S4）──────────
+# What: 从种子注册表 <skill>/config/spec-registry.tsv 与项目级 <project-root>/.spec-registry.tsv
+#       的 dimension 行「别名关键词」列对候选 path/basename/内容头做子串匹配，标注 suggest_dims。
+# Why: 维度词表已外置注册表，scan 与门必须同源；只报候选不提示维度仍需 Agent 手工对照词表，
+#       归纳命中把可审查的候选维度输入送到计划期 SPEC 覆盖，避免把维度重新封闭编码进 CLI。
+# 实现边界：标准库按 TAB 切 5 列（与 check-spec-baseline.sh 的 load_spec_registry 同口径）；
+#       缺文件/坏行只跳过归纳，不改变候选扫描与既有回执语义。
+
+_SPEC_DIM_HEAD_CHARS = 2000
+_SPEC_SEED_REGISTRY = SKILL_DIR / "config" / "spec-registry.tsv"
+
+
+def _spec_head_text(path: Path) -> str:
+    """候选内容前 2000 字符；二进制（NUL/非 UTF-8）与读失败一律空串，避免噪声误命中。
+
+    UTF-8 单字最多 4 字节，先按 4 倍字节读取再截字符，避免中文文档在第 667 字左右被截断；
+    读取窗口末端可能切断多字节序列，回退最多 3 字节再失败才判为非文本。
+    """
+    try:
+        with path.open("rb") as fh:
+            raw = fh.read(_SPEC_DIM_HEAD_CHARS * 4)
+    except OSError:
+        return ""
+    if b"\x00" in raw:
+        return ""
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        for trim in range(1, 4):
+            try:
+                text = raw[:-trim].decode("utf-8")
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            return ""
+    return text[:_SPEC_DIM_HEAD_CHARS]
+
+
+def _infer_dims(path: str, content_head: str, project_root: Path | None = None) -> list[str]:
+    """注册表 dimension 行别名归纳候选维度 id；先种子后项目级，按首次命中去重保序。
+
+    project_root 缺省用模块 REPO_ROOT（与直接调用两参签名兼容）；扫描时由 cmd_spec_scan
+    传入实际 --project-root，保证项目级声明随被扫项目走而非随工具安装位置走。
+    """
+    haystack = f"{path}\n{os.path.basename(str(path))}\n{content_head}".casefold()
+    sources = (_SPEC_SEED_REGISTRY, (project_root or REPO_ROOT) / ".spec-registry.tsv")
+    dims: list[str] = []
+    seen: set[str] = set()
+    for src in sources:
+        try:
+            lines = src.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            if not line or line.lstrip().startswith("#"):
+                continue
+            cols = line.split("\t")
+            if len(cols) != 5 or cols[0] != "dimension":
+                continue
+            dim_id = cols[1].strip()
+            if not dim_id or dim_id in seen:
+                continue
+            aliases = [a.strip().casefold() for a in cols[3].split("|") if a.strip()]
+            if any(alias in haystack for alias in aliases):
+                seen.add(dim_id)
+                dims.append(dim_id)
+    return dims
+
+
+def _spec_suggested(entry: dict[str, Any]) -> list[str]:
+    """兼容旧 sidecar：无 suggest_dims（或类型异常）=归纳集为空，不报错、不猜值。"""
+    raw = entry.get("suggest_dims")
+    if not isinstance(raw, list):
+        return []
+    return _dedup([str(x) for x in raw if str(x)])
+
+
 def cmd_spec_scan(args: argparse.Namespace) -> int:
     """扫描规范候选；缺省 dry-run 只打印，--write 才落盘三件（baseline/sidecar/findings）。"""
     plan = Path(args.plan_dir).resolve()
@@ -2829,14 +2907,31 @@ def cmd_spec_scan(args: argparse.Namespace) -> int:
     if not project_root.is_dir():
         raise PlanctlError(f"--project-root 缺失或非目录: {project_root}")
     candidates = _spec_scan_candidates(project_root, plan, doc, str(args.scope or ""))
+    # 归纳只做只读标注：候选内容头取文件前 2000 字符（二进制/读失败为空串）；
+    # 命中才写 suggest_dims 字段，未命中候选保持旧结构，避免下游严格键集断言漂移。
+    for c in candidates:
+        probe = project_root / c["path"]
+        if not probe.is_file():
+            probe = plan / c["path"]
+        dims = _infer_dims(c["path"], _spec_head_text(probe), project_root)
+        if dims:
+            c["suggest_dims"] = dims
     at = now_iso()
     must = sum(1 for c in candidates if c["cls"] == "must")
     ref = len(candidates) - must
     receipt = f"[spec-scan] n={len(candidates)} must={must} ref={ref} at={at}"
-    write = bool(getattr(args, "write", False)) and not bool(getattr(args, "dry_run", False))
-    if not write:
+
+    def _print_candidates() -> None:
+        """既有候选行原样输出，命中候选补一行可核对的维度归纳回执。"""
         for c in candidates:
             print(f"id={c['id']} cls={c['cls']} origin={c['origin']} path={c['path']}")
+            dims = _spec_suggested(c)
+            if dims:
+                print(f"[spec-scan] suggest_dims: {c['path']} → {'|'.join(dims)}")
+
+    write = bool(getattr(args, "write", False)) and not bool(getattr(args, "dry_run", False))
+    if not write:
+        _print_candidates()
         print(receipt + " (dry-run 未落盘)")
         return 0
     # ① spec_baseline：先删全部旧 SRC-* 再写新行 → 重复执行结果恒定
@@ -2849,12 +2944,27 @@ def cmd_spec_scan(args: argparse.Namespace) -> int:
         }))
     doc["spec_baseline"] = baseline
     commit_state(plan, doc)
-    # ② sidecar：扫描快照（机器门 B19 消费面）
+    # ② sidecar：扫描快照（机器门 B19 消费面）；旧文件缺 suggest_dims 按空集兼容
+    sidecar_candidates: list[dict[str, Any]] = []
+    for c in candidates:
+        item: dict[str, Any] = {"id": c["id"], "path": c["path"], "cls": c["cls"],
+                                "origin": c["origin"], "sha": c["sha"]}
+        dims = _spec_suggested(c)
+        if dims:
+            item["suggest_dims"] = dims
+        sidecar_candidates.append(item)
     atomic_write(plan / ".spec-scan.json", json_bytes({
         "at": at, "project_root": str(project_root), "must": must, "ref": ref,
-        "candidates": [{"id": c["id"], "path": c["path"], "cls": c["cls"],
-                        "origin": c["origin"], "sha": c["sha"]} for c in candidates],
+        "candidates": sidecar_candidates,
     }))
+    # ②b 归纳副本：两列 path<TAB>dims(|分隔)，仅命中候选；无命中不写并清旧副本，保证幂等。
+    tsv_path = plan / ".spec-scan.tsv"
+    hit_rows = [(c["path"], _spec_suggested(c)) for c in candidates]
+    hit_rows = [(p, dims) for p, dims in hit_rows if dims]
+    if hit_rows:
+        atomic_write(tsv_path, "".join(f"{p}\t{'|'.join(dims)}\n" for p, dims in hit_rows))
+    elif tsv_path.exists():
+        tsv_path.unlink()
     # ③ findings 收据：复用既有 add 通道；先移除旧收据保证幂等
     fresh = read_state(plan)
     fresh["findings"] = [f for f in _arr(fresh, "findings")
@@ -2864,8 +2974,7 @@ def cmd_spec_scan(args: argparse.Namespace) -> int:
         cmd_add(argparse.Namespace(plan_dir=str(plan), section="findings",
                                    json=json.dumps({"id": _SPEC_RECEIPT_ID, "text": receipt,
                                                     "source": "spec-scan"}, ensure_ascii=False)))
-    for c in candidates:
-        print(f"id={c['id']} cls={c['cls']} origin={c['origin']} path={c['path']}")
+    _print_candidates()
     print(receipt + " (--write 已落盘)")
     return 0
 
