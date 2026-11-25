@@ -280,3 +280,5 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 113.7 **与既有规则分工**：Rule 21.6.4 No-Placeholder 管「禁 TBD 占位」，本条管「格式声明必须有可模仿的完整样例」（占位模板合法但须配完整示例）；Rule 51 管 R→VC 覆盖，本条管 VC 判据的产出形态可执行化；Rule 111 管产出不倒退，本条管产出可预期。四者互补，禁以「已有 VC/已无占位符」为由绕过本条。
 
 113.8 **机制（文本优先 + 必要承载）**：本条以规则文本 + 模板区块 + JSON/schema 承载位 + render 派生为落地载体；机器面=复用既有 `planctl validate`（schema `additionalProperties:false` + 条目必填校验）与既有 `check-template-principles` 守卫，零新增机器门脚本、零新 config 键、零新 hook（对齐宪法 §二文本优先铁律，新增 selftest/机器门属 opt-in 须用户显式授权）。
+
+113.9 **脚本化产出（2026-11-25 用户追加显式授权）**：`output_examples` 条目 JSON 一律经 `scripts/render-output-example.py` 从 `templates/output-example.template.json`（`{{KEY}}` 占位符）以 CLI 参数生成，禁手写 JSON（防转义/结构错误）。可照抄：`python3 <skill>/scripts/render-output-example.py --set id=OE-1 --set deliverable=article.json --set format=JSON --example-file <完整示例文件> --template-file <占位符模板文件> --vc-ref VC-1 --out <oe-1.json> [--plan-dir <计划目录>] [--dry-run]`。生成器强制：必填字段/未知字段/`vc_refs` 非空/Rule 113.2 禁占位文本/占位符 fail-closed/VC 参照存在（有 `--plan-dir` 时）；产物可被 `planctl add --section output_examples --json` 消费并由 `planctl render` 派生到计划。本条是用户明确要求的脚本化增量，不推翻 113.8 口径——后者仅约束未授权场景的基建扩张。

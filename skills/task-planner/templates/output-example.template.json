@@ -1,0 +1,9 @@
+{
+  "id": "{{ID}}",
+  "deliverable": "{{DELIVERABLE}}",
+  "format": "{{FORMAT}}",
+  "example": "{{EXAMPLE}}",
+  "template": "{{TEMPLATE}}",
+  "vc_refs": [],
+  "tags": []
+}
