@@ -51,6 +51,8 @@
 
 > 选定 template_type 后，立即按 §九「机制适用性矩阵」套用该类型的机制画像（Rule 37）：Code Review Gate、执行体路由等按矩阵行取捨。
 
+> **项目级模板优先与规范基线（2026-11-26 task-spec-consumption-chain）**：项目级 `plan-templates/` 下的 `*-type.md` 与 `*.template.json` 与内置 `templates/variant/` 同权入 `check-template-type.sh` 白名单（Rule 34.1 同源派生，禁第二处硬编码）；内容类任务命中创作模板（writing / storyboard / video / longform-continuity 等）时不得被轻量档 mini-lite 吞掉——档位按场景命中单一化，禁以「省步骤」为由自动降档；选 `general` / `mini-lite` 须在计划内登记 `[template-select] <理由>`（说明为何未命中场景模板），缺理由=选型不成立（`check-tier-consistency.sh` 机器面计 FAILS）。
+
 **文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
 - `templates/task_plan.md`(默认通用)
 - `templates/variant/research-type.md`

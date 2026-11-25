@@ -32,6 +32,36 @@ mk_root() {  # <name> → 建 plans/{aa,bb}/task_plan.md, 输出 root 路径
   printf '%s' "$r"
 }
 
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] What: 为 legacy 夹具补规范基线新契约最小实物
+#   （9 列基线表 1 条 SPEC + 真实来源锚 sha + 零 must 扫描收据 + plan-state.json 同构 + 核验表 PASS + 正文点名）。
+# Why: attest 计划期新门要求 C1..C9；T11 的 bb 夹具停留旧口径会被 spec-gate 拒锁，测试意图（side 指针锁 bb）
+#   与门无关。口径同 S23/S24（21-pins-s23s24.md）；只写夹具目录、断言本体与门脚本零改动、零 git 触碰。
+spec_fixture_scaffold() {
+  local d="$1" src="$1/spec-source.md" sha abs
+  printf '%s\n' '# spec fixture source' 'alpha constraint line.' 'beta constraint line.' > "$src"
+  sha="$(sha256sum "$src" | awk '{print substr($1,1,12)}')"
+  abs="$(cd "$d" && pwd)"
+  {
+    printf '\n## 🔒 规范基线（Spec-Baseline）\n\n'
+    printf '| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |\n'
+    printf '|---|---|---|---|---|---|---|---|---|\n'
+    printf '| SPEC-1 | selftest 夹具约束 | %s/spec-source.md:2 | grep -c alpha %s/spec-source.md = 1 | %s | check | grep -c alpha %s/spec-source.md | * | 待终验 |\n' "$abs" "$abs" "$sha" "$abs"
+    printf '\n## ✅ 规范消费点（selftest 夹具）\nSPEC-1 在本节由 VC-1 判据点名（Rule 84.15 / C9）\n'
+  } >> "$d/task_plan.md"
+  printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$d/.spec-scan.json"
+  cat > "$d/plan-state.json" <<EOF
+{"schema_version":1,"task_id":"selftest-spec-fixture","plan_tier":"mini","execution_lane":"L0-T","created_at":"2026-11-26T00:00:00Z","updated_at":"2026-11-26T00:00:00Z","requirements":[],"goals":[],"vcs":[],"phases":[],"findings":[],"audits":[],"delegations":[],"tags":[],"template_type":"mini-lite","output_examples":[{"id":"EX-1","deliverable":"task_plan.md","example":"{\"id\":1,\"name\":\"alpha\"}","template":"{\"id\":<INT>,\"name\":<STRING>}","format":"JSON","vc_refs":["VC-1"],"tags":["selftest"]}],"spec_baseline":[{"id":"SPEC-1","verbatim":"selftest 夹具约束","anchor":"$abs/spec-source.md:2","rule":"grep -c alpha $abs/spec-source.md = 1","sha":"$sha","kind":"check","check":"grep -c alpha $abs/spec-source.md","applies":"*","src":""}]}
+EOF
+  cat > "$d/verification.md" <<EOF
+# Verification: selftest fixture
+
+## 基线-产物逐条核验表（Rule 84.15）
+| spec_id | 双向判定式 | 校验命令 | 观测 | 证据锚(path:line 或回执) | 结论 |
+|---|---|---|---|---|---|
+| SPEC-1 | grep -c alpha $abs/spec-source.md = 1 | grep -c alpha | 1 hit (实测) | spec-source.md:2 | PASS |
+EOF
+}
+
 call() {  # 清 CLAUDE_CODE_SESSION_ID 后跑命令 → RC/COUT/CERR(防外层 env 扰动, 保 hermetic)
   RC=0; COUT="$(env -u CLAUDE_CODE_SESSION_ID "$@" 2>"$TMP/err")"; RC=$?
   CERR="$(cat "$TMP/err")"
@@ -153,6 +183,9 @@ printf '%s\n' \
 '|------|--------|--------|----|' \
 '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）' \
 >> "$R11/plans/bb/task_plan.md"
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] bb 为 attest 实际锁定对象（aa 仅断言不产生锁），
+#   故只升级 bb：补规范基线契约侧车，保持 T11「side 指针锁 bb 不被 mtime 更新的 aa 顶掉」语义不变。
+spec_fixture_scaffold "$R11/plans/bb"
 bash "$SET" aa "$R11" > /dev/null 2>&1
 bash "$SET" set bb --sid s11 "$R11" > /dev/null 2>&1
 	touch "$R11/plans/aa/task_plan.md"

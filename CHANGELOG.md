@@ -9,6 +9,8 @@
 
 ### 变更
 
+- **2026-11-26 task-spec-consumption-chain**：规范基线一等公民化——spec-scan/spec-brief CLI、check-spec-baseline.sh 九项/四项门、attest 锁门与 check-complete SPEC-GATE 接线、B19 全档位必带、5 个 JSON 模板与 mini-lite 白名单增补、档位单一化与反向错配门、粒度门 JSON 原生计划违规化、恢复包/回放块规范行、51.15 四环机器化
+
 - **活跃计划全局指针瞬态化（task-v164）** — 2026-10-10/11：`plans/.active_plan` 由 git 跟踪文件改为工作树内瞬态状态文件（`git rm --cached`+仓根 `.gitignore:15`，与 `.active_plan_side/`/`.plan_required_side/`/`.drift-rhythm/` 同族归一）——指针路径本就随 `$PWD` 工作树本地化（set-active-plan.sh:41,109/resolve-plan-dir.sh 实证），瞬态化后跨树零共享、合并零冲突、历史 8 次 chore 移交噪音止息；正常路径=side 会话私有指针（2026-10-07 后权威层），全局层降级为 sid-less/cron fallback；28 文件引用面措辞级联（退役"移交/legacy"旧语义，全域 grep 零残留）+selftest PL-07 断言锁步（指针移交→指针清理）+critical-rules 新增「瞬态状态文件合并规则」登记段；check-complete 终验提醒文案「完成后请移交」→「完成后无需移交、请清理」；merge a849947 回 master，三部署位 IDENTICAL，合并后态 selftest 75/75 rc=0
 
 ### 新增

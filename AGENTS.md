@@ -87,6 +87,7 @@ bash skills/task-planner/scripts/run-selftests.sh --only dispatch
 - **脚本规范**：Shell 顶部 `set -euo pipefail`；`--dry-run` 为安全默认；退出码 0 成功/1 用户错误/2 环境错误/3 验证失败；shell 脚本不得依赖 Python/Node；Python 3.8+ 且无第三方依赖。
 - **模板登记**：`templates/variant/` 新增 `<type>-type.md` 需按 `critical-rules.md` Rule 34.2 做三点登记（template-mapping / plan-writer 映射表 / 模板节）；init 白名单从该目录动态派生，无需改脚本。
 - **CLI 向后兼容**：脚本新增参数须带默认值，不改现有行为。
+- **规范基线机制内聚**：spec-scan/spec-brief/check-spec-baseline/B19 属 task-planner 内聚机制，改动须跑 `selftest-spec-baseline.sh`。
 - **修改敏感区前先读文档**：`README_zh.md`、`CONTRIBUTING_zh.md`、`CLAUDE.md`，以及 `skills/task-planner/references/critical-rules.md`（Rules 1-113）、`worktree-isolation.md`。改 references/ 可能影响已有计划，须配合版本号升级。 <!-- skill-fix 2026-11-25：规则区间对齐至 Rules 1-113，Rule 111/112/113 已落地 -->
 
 ## 6. Git / 分支坑

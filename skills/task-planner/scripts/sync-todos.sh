@@ -31,13 +31,14 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B18 baseline group (task_id/phase/status/subject/evidence/command)"
-            echo "             [task-perf-default-mini 2026-11-24] mini 档裁 8 条（B2/B6/B7/B8/B15/B16/B17/B18），standard 全量 B1-B18 不变 [2026-11-25 task-skill-deploy-fix A7]"
+            echo "             --json also emits the B1-B19 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             [task-perf-default-mini 2026-11-24] mini 档裁 8 条（B2/B6/B7/B8/B15/B16/B17/B18），standard 全量 B1-B19 不变 [2026-11-25 task-skill-deploy-fix A7]"
             echo "             B12=SP/OS 技能到达与产物承接收据检查；B13=Spec 路由命中核查（需求特征终判）"
             echo "             B14=两段式根因/风险线索包已落盘 + 后续任务已登记（N/A+证据）"
             echo "             B15=周期性偏移回顾（每N次工具调用读user-session-log全原话对照当前执行+periodic-review收据；mini 档豁免不输出）"
             echo "             B17=口径对齐（交付前拉平触及的过期计数与冲突条款，冲突锚grep无新增命中；证据=[align-final]）"
             echo "             B18=垃圾清理（Skill说明Markdown历史旁注清理；代码注释保护不清理；证据=[cleanup-final]）"
+            echo "             B19=规范基线闭环（spec-scan/.spec-baseline/.spec-final 三侧车齐备且计数非零；证据=spec-scan=<n>(must:<a>/ref:<b>) baseline=PASS(spec:<m>) final=PASS(<p>/<m>)；l0-lite 豁免=l0-lite-exempt；全档位必带）"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -363,6 +364,53 @@ baseline_b18_receipt() {
     return 0
 }
 
+# [2026-11-26 task-spec-consumption-chain S12] What: B19「规范基线闭环」证据——从在途计划目录的 .spec-scan.json /
+#       .spec-baseline.json / .spec-final.json 三个侧车读取 must/ref 计数与 PASS 收据，拼成
+#       spec-scan=<must+ref>(must:<a>/ref:<b>) baseline=PASS(spec:<m>) final=PASS(<p>/<m>)。
+# Why: 规范基线从扫描→基线→终验的闭环此前无基线 todo 承载；缺任一侧车、status 非 PASS 或 spec 计数为 0 一律空串
+#       fail-closed（沿用 B17/B18「遍历在途计划、缺证据空串」先例），避免自填勾选假通过。字段只读 grep/tr，
+#       禁 jq/Python 依赖；l0-lite 零 attest 档（同 check-spec-baseline.sh:176 判定）返回 l0-lite-exempt 常量串，
+#       避免该档位永久空证据。lite 判定优先于侧车证据（同目录多计划时 l0-lite 豁免优先）。
+baseline_b19_receipt() {
+    local plans_dir="${1-}" tp="" pd="" ss="" sb="" sf="" must="" ref="" bspec="" fspec="" fpass=""
+    local bstatus="" fstatus="" total=""
+    local -a tps=()
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] && tps+=("$tp")
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    [[ ${#tps[@]} -gt 0 ]] || return 0
+    for tp in "${tps[@]}"; do
+        if grep -E '^(template_type|template_ref):.*l0-lite|^plan_tier:[[:space:]]*l0-lite' "$tp" >/dev/null 2>&1; then
+            printf 'l0-lite-exempt'
+            return 0
+        fi
+    done
+    for tp in "${tps[@]}"; do
+        pd="$(dirname "$tp")"
+        ss="$pd/.spec-scan.json"; sb="$pd/.spec-baseline.json"; sf="$pd/.spec-final.json"
+        [[ -f "$ss" && -f "$sb" && -f "$sf" ]] || continue
+        must="$(grep -oE '"must"[[:space:]]*:[[:space:]]*[0-9]+' "$ss" 2>/dev/null | head -n 1 | tr -cd '0-9' || true)"
+        ref="$(grep -oE '"ref"[[:space:]]*:[[:space:]]*[0-9]+' "$ss" 2>/dev/null | head -n 1 | tr -cd '0-9' || true)"
+        bstatus="$(grep -oE '"status"[[:space:]]*:[[:space:]]*"PASS"' "$sb" 2>/dev/null | head -n 1 || true)"
+        fstatus="$(grep -oE '"status"[[:space:]]*:[[:space:]]*"PASS"' "$sf" 2>/dev/null | head -n 1 || true)"
+        bspec="$(grep -oE '"spec"[[:space:]]*:[[:space:]]*[0-9]+' "$sb" 2>/dev/null | head -n 1 | tr -cd '0-9' || true)"
+        fspec="$(grep -oE '"spec"[[:space:]]*:[[:space:]]*[0-9]+' "$sf" 2>/dev/null | head -n 1 | tr -cd '0-9' || true)"
+        fpass="$(grep -oE '"pass"[[:space:]]*:[[:space:]]*[0-9]+' "$sf" 2>/dev/null | head -n 1 | tr -cd '0-9' || true)"
+        [[ -n "$must" && -n "$ref" && -n "$bstatus" && -n "$fstatus" && -n "$bspec" && -n "$fspec" && -n "$fpass" ]] || continue
+        total=$(( must + ref ))
+        # [2026-11-26 task-spec-consumption-chain 回归修复 A 段配套] What: B19 证据串计数门槛由「>0」改为「>=0」，
+        #   兼容零 SPEC 计划的 spec-scan=0(must:0/ref:0) baseline=PASS(spec:0) final=PASS(0/0) 形态。
+        # Why: check-spec-baseline.sh --final 对无 SPEC 计划按新语义 SKIP 并写 spec=0 侧车；若仍要求计数>0，
+        #   B19 对这些计划恒空串（假阴性），与终验门放行结果矛盾。三侧车齐备且 status=PASS 的守卫保持不变。
+        [[ "$total" -ge 0 && "$bspec" -ge 0 && "$fspec" -ge 0 ]] || continue
+        printf 'spec-scan=%d(must:%d/ref:%d) baseline=PASS(spec:%d) final=PASS(%d/%d)' \
+            "$total" "$must" "$ref" "$bspec" "$fpass" "$fspec"
+        return 0
+    done
+    return 0
+}
+
 # [2026-11-24 task-session-regression-20261124 S6] What: 读取侧车生成 B9/B10/B11 的 evidence（B9=baseline:<sha7>@<mode> / B10=最近 checkpoint label / B11=unresolved=<n>@<last_diff.at>）。
 # Why: B11 初始侧车的 last_diff.unresolved=0 代表「从未跑过差异分析」，必须判为无证据（空串），否则假通过；
 #       at 是差异分析真实发生的时标，与 unresolved 一同带出才能证明该项已完成。文件/jq/字段缺失一律空串，保证 --json 可解析。
@@ -379,6 +427,8 @@ baseline_evidence_json() {
         # [2026-11-25 task-skill-deploy-fix A7] B17/B18：口径对齐/垃圾清理证据，读计划文件 [align-final]/[cleanup-final] 标记。
         B17) val="$(baseline_b17_receipt "$plans_dir")" ;;
         B18) val="$(baseline_b18_receipt "$plans_dir")" ;;
+        # [2026-11-26 task-spec-consumption-chain S12] B19：规范基线闭环证据，读三个 spec 侧车（与 B12-B18 同置于 jq 守卫之前）。
+        B19) val="$(baseline_b19_receipt "$plans_dir")" ;;
     esac
     if [[ -z "$val" && -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
         case "$tid" in
@@ -428,6 +478,8 @@ baseline_command_json() {
         # [2026-11-25 task-skill-deploy-fix A7] B17/B18：核验命令直接 grep 计划文件收据标记（不虚构脚本）。
         B17) cmd="grep -nF '[align-final]' ${plan_dir:-<plan-dir>}/progress.md ${plan_dir:-<plan-dir>}/findings.md" ;;
         B18) cmd="grep -nF '[cleanup-final]' ${plan_dir:-<plan-dir>}/progress.md ${plan_dir:-<plan-dir>}/findings.md" ;;
+        # [2026-11-26 task-spec-consumption-chain S12] B19：终验命令复用 check-spec-baseline.sh --final（与 S11b SPEC-GATE 同一判定器）。
+        B19) cmd="bash $scripts_dir/check-spec-baseline.sh --final ${plan_dir:-<plan-dir>}" ;;
     esac
     baseline_json_escape "$cmd"
 }
@@ -549,7 +601,10 @@ forward_sync() {
         # [2026-11-25 task-skill-deploy-fix A7] B16 补尾逗号后追加 B17/B18（B16 subject 逐字不变）；
         # B17=口径对齐、B18=垃圾清理，证据为真 planctl add/render 产出的 [align-final]/[cleanup-final] 标记。
         baseline_entries+='{"task_id":"B17","phase":0,"status":"baseline","subject":"口径对齐（交付前拉平触及的过期计数与冲突条款，冲突锚grep无新增命中）"},'
-        baseline_entries+='{"task_id":"B18","phase":0,"status":"baseline","subject":"垃圾清理（Skill说明Markdown历史旁注清理；代码注释保护不清理）"}'
+        baseline_entries+='{"task_id":"B18","phase":0,"status":"baseline","subject":"垃圾清理（Skill说明Markdown历史旁注清理；代码注释保护不清理）"},'
+        # [2026-11-26 task-spec-consumption-chain S12] B18 补尾逗号后追加 B19（B18 subject 逐字不变）；
+        # B19=规范基线闭环，证据读 spec-scan/.spec-baseline/.spec-final 三侧车，mini 档不裁剪。
+        baseline_entries+='{"task_id":"B19","phase":0,"status":"baseline","subject":"规范基线闭环（spec-scan/基线/终验三侧车齐备且计数非零，PASS 收据可复核）"}'
         # 逐条注入 evidence/command：以 "},{" 为记录分隔符（subject 中不含该序列），task_id 用 bash 正则提取，零 Python/Node 依赖。
         local sidecar plan_dir repo_root rest chunk tid ev cmd sep='},' brace='}' baseline_with_evidence=""
         sidecar="$(baseline_sidecar_file "$plans_dir")"
@@ -572,11 +627,11 @@ forward_sync() {
             if [[ "$chunk" =~ \"task_id\":\"([^\"]+)\" ]]; then
                 tid="${BASH_REMATCH[1]}"
             fi
-            # [task-perf-default-mini 2026-11-24 / 2026-11-25 A7] mini 档裁 8 条（原 6 条 + B17/B18）：在 evidence/command 拼接前跳过，
-            # 逗号衔接沿用既有 baseline_with_evidence 判空逻辑，JSON 结构与 standard 完全一致（standard 全量 B1-B18，mini 少 8）。
+            # [task-perf-default-mini 2026-11-24 / 2026-11-25 A7 / 2026-11-26 S12] mini 档裁 8 条（原 6 条 + B17/B18）：在 evidence/command 拼接前跳过，
+            # 逗号衔接沿用既有 baseline_with_evidence 判空逻辑，JSON 结构与 standard 完全一致（standard 全量 B1-B19，mini 少 8）。
             if [[ "$mini_baseline" -eq 1 ]]; then
                 case "$tid" in
-                    B2|B6|B7|B8|B15|B16|B17|B18) continue ;;
+                    B2|B6|B7|B8|B15|B16|B17|B18) continue ;; # B19 全档位必带（规范基线闭环）
                 esac
             fi
             # [2026-11-24 方案A/H3] 第三参传 plans_dir：B12/B13 收据扫描全部在途计划目录，不依赖本会话侧车（无侧车也必须能取证）。

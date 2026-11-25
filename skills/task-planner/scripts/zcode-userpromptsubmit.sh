@@ -218,6 +218,34 @@ tmpf="$(mktemp)"
   [ -n "$ip" ] && echo "$ip"
   [ -n "$decisions" ] && { echo "Decisions(末3):"; echo "$decisions"; }
   [ -n "$prog_tail" ] && { echo "progress 尾5:"; echo "$prog_tail"; }
+  # [2026-11-26 task-spec-consumption-chain S13] plan-data 回放块追加「Spec 基线(前8)」区。
+  # What: 从 plan-state.json spec_baseline 取 SPEC-* 前 8 条，单行 `SPEC-<nn> <verbatim前40> | <applies>`；
+  #   无 SPEC 行给「规范基线=未登记（spec-scan --write 后处置）」；>8 条截断并加省略行；整块 ≤10 行。
+  # Why: 压缩后每轮 prompt 的复诵块此前只回显 Goal/Next/Decisions/progress，规范条款不在回放面，
+  #   执行体据此失锚；带上前 8 条让规范随每次复诵可见。
+  # 取舍: jq 缺失时整块跳过（对齐本文件既有 jq 静默降级先例，不新增 DEGRADED 噪声）；
+  #   只在 Decisions/progress 尾输出之后追加，既有输出逐字节不变；复用 plan_dir/SKILL_ROOT 不额外探测。
+  if command -v jq >/dev/null 2>&1 && [ -f "$plan_dir/plan-state.json" ]; then
+    _sb_all="$(jq -r '
+      def txt($v): if $v == null then "" elif ($v | type) == "string" then $v else ($v | tostring) end;
+      def one($v): txt($v) | gsub("[\\r\\n\\t]"; " ");
+      if ((.spec_baseline // []) | type) != "array" then empty
+      else
+        .spec_baseline[]
+        | select((txt(.id)) | startswith("SPEC-"))
+        | "\(txt(.id)) \(one(.verbatim)[0:40]) | \(one(.applies))"
+      end
+    ' "$plan_dir/plan-state.json" 2>/dev/null || true)"
+    printf 'Spec 基线(前8):\n'
+    if [ -n "$_sb_all" ]; then
+      _sb_total="$(printf '%s\n' "$_sb_all" | wc -l)"
+      printf '%s\n' "$_sb_all" | head -8
+      [ "$_sb_total" -gt 8 ] && printf '…另 %s 条 Spec 基线见 plan-state.json spec_baseline\n' "$((_sb_total - 8))"
+    else
+      printf '规范基线=未登记（spec-scan --write 后处置）\n'
+    fi
+    unset -v _sb_all _sb_total
+  fi
 } > "$tmpf" 2>/dev/null
 
 if [ -s "$tmpf" ] && [ "${_smart_skip:-0}" != "1" ]; then

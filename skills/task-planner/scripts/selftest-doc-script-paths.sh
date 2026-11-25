@@ -80,6 +80,17 @@ resolve_path() { # $1=token  $2=文档目录  $3=文档所属技能根
   local t="$1" ddir="$2" skroot="$3" a
   t="${t//<skill>/skills/${skroot##*/}}"          # 占位符 → skills/<文档所属技能>
   t="${t#./}"
+  # [2026-11-26 task-spec-consumption-chain 回归修复 C 段] What: 卫星文档以 <skill>/scripts/ 指代主技能机械层脚本时，
+  #   按 Rule 82 的真实落点解析（当前仅新落地的 check-spec-baseline.sh）；解析后仍要求文件真实存在。
+  # Why: verification-gate/SKILL.md 84.15 段引用规范基线终验门，该门实现按「机械层留守主技能」放在
+  #   task-planner/scripts/，<skill> 占位符指向卫星自身会误判悬空；只补这一条规范化解析锚，不放松存在性断言。
+  case "$t" in
+    skills/verification-gate/scripts/check-spec-baseline.sh)
+      [ -e "$SKILLS_ROOT/task-planner/scripts/check-spec-baseline.sh" ] && {
+        RESOLVED="$SKILLS_ROOT/task-planner/scripts/check-spec-baseline.sh"; return 0
+      }
+      ;;
+  esac
   case "$t" in
     /*) [ -e "$t" ] && { RESOLVED="$t"; return 0; }; return 1 ;;   # 绝对路径直判（不做锚点拼接）
   esac

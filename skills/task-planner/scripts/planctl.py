@@ -20,8 +20,12 @@ WHY（用户裁决）：旧 SOP 用 grep/awk 正则从半结构化 Markdown 抽 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import copy
 import datetime as dt
+import fnmatch
+import hashlib
+import io
 import json
 import os
 import re
@@ -636,8 +640,19 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({k: STR_FIELD for k in ("state", "item", "anchor")})
         required = {"id", "state", "item", "anchor"}
     elif section == "spec_baseline":
-        known.update({k: STR_FIELD for k in ("verbatim", "anchor", "rule", "sha")})
+        # [2026-11-26 task-spec-consumption-chain S3] What: 基线条目 id 前缀扩展到
+        #   MK*/SPEC-*/NA-*/SRC-*；新增 12 个可选 STR_FIELD 字段（kind 槽位 / check 判定式 /
+        #   applies 适用单元 / src 对应 SRC / result 结论 / observed 观测 / cls 类别 / origin 来源），
+        #   required 仍为 {id,verbatim,anchor}。
+        # Why: spec-scan 与 spec-brief 需在同一权威源中登记规范、待处置候选与不适用项；
+        #   旧字段与 MK 前缀逐字节保留，SB* 与哨兵 none-justified 属存量兼容，不得因新前缀判定而拒写。
+        known.update({k: STR_FIELD for k in ("verbatim", "anchor", "rule", "sha", "kind",
+                                             "check", "applies", "src", "result", "observed",
+                                             "cls", "origin")})
         required = {"id", "verbatim", "anchor"}
+        _spec_id = str(entry.get("id") or "")
+        if not _spec_id.startswith(("MK", "SPEC-", "NA-", "SRC-", "SB", "none-justified")):
+            errs.append(f"{where}.id: 前缀必须是 MK*/SPEC-*/NA-*/SRC-*（存量 SB*/none-justified 兼容）")
     elif section == "progress_baseline":
         known.update({k: STR_FIELD for k in ("item", "snapshot", "metric", "ban", "status")})
         required = {"id", "item", "snapshot"}
@@ -1619,10 +1634,13 @@ def cmd_tag_search(args: argparse.Namespace) -> int:
 
 
 def _md_table(headers: list[str], rows: list[list[Any]]) -> str:
-    """生成 Markdown 表格；单元格内的竖线转义，避免破坏列边界。"""
+    """生成 Markdown 表格；单元格内半角竖线转全角「｜」，避免破坏列边界。"""
+    # [2026-11-26 task-spec-consumption-chain gate-fix3] What: 单元格里的半角 | 替换为全角 ｜（原为反斜杠转义 \|）。
+    # Why: \| 仍保留半角 |，下游按 | split 时列数错位（含管道符的判定式会把 9 列撑成更多列）；全角字符不再是分隔符。
+    # 所有表（_table/_kv_table/直接 _md_table 调用）统一经此单元格函数；无管道符的既有计划 replace 无命中，render 输出逐字节不变。
     def cell(v: Any) -> str:
         s = ", ".join(str(x) for x in v) if isinstance(v, list) else ("" if v is None else str(v))
-        return s.replace("|", "\\|").replace("\n", " ")
+        return s.replace("|", "｜").replace("\n", " ")
     out = ["| " + " | ".join(headers) + " |",
            "|" + "|".join(["---"] * len(headers)) + "|"]
     out.extend("| " + " | ".join(cell(c) for c in row) + " |" for row in rows)
@@ -1956,9 +1974,15 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
 
     spec_baseline = _arr(doc, "spec_baseline")
     if spec_baseline:
+        # [2026-11-26 task-spec-consumption-chain S3] What: 既有 5 列顺序原样保留，右侧追加
+        #   槽/校验命令/适用S-unit/结果 4 列（取 S3 新增 STR_FIELD，空值渲染空单元格）。
+        # Why: check-spec-baseline.sh 与人工复核需在同一表内看到判定式、验证命令与最终结论，
+        #   前 5 列是历史门控消费面，改序会破坏存量计划；追加列对旧行保持空值兼容。
         lines += ["", "## 🔒 规范基线（Spec-Baseline）",
-                  _table(["spec_id", "约束原文(verbatim)", "来源锚(path:line)", "双向判定式", "来源 sha256"],
-                         [[x.get("id"), x.get("verbatim"), x.get("anchor"), x.get("rule"), x.get("sha")]
+                  _table(["spec_id", "约束原文(verbatim)", "来源锚(path:line)", "双向判定式", "来源 sha256",
+                          "槽", "校验命令", "适用S-unit", "结果"],
+                         [[x.get("id"), x.get("verbatim"), x.get("anchor"), x.get("rule"), x.get("sha"),
+                           x.get("kind"), x.get("check"), x.get("applies"), x.get("result")]
                           for x in spec_baseline], _EMPTY % "规范基线")]
 
     progress_baseline = _arr(doc, "progress_baseline")
@@ -2304,6 +2328,21 @@ def _render_verification(doc: dict[str, Any], tid: str, stamp: str) -> str:
                [[i, q.get("question"), q.get("answer")]
                 for i, q in enumerate(_arr(doc, "reboot5q"), 1)], _EMPTY % "5Q 记录"),
     ]
+    # [2026-11-26 task-spec-consumption-chain S3] What: verification.md 尾部追加
+    #   「基线-产物逐条核验表（Rule 84.15）」：仅存在 SPEC-* 行时生成；观测取 observed、
+    #   结论取 result，空值显式写「待终验」，证据锚取基线 anchor。
+    # Why: 规范不消费的根因是「判定式只写在计划里、派发与终验均无逐条回执」；
+    #   该表把每条 SPEC 的判定式、校验命令、观测与结论落在终验视图，供 Rule 84.15 逐条核验。
+    _spec_rows = [x for x in _arr(doc, "spec_baseline")
+                  if isinstance(x, dict) and str(x.get("id") or "").startswith("SPEC-")]
+    if _spec_rows:
+        lines += ["", "## 基线-产物逐条核验表（Rule 84.15）",
+                  _table(["spec_id", "双向判定式", "校验命令", "观测", "证据锚(path:line 或回执)", "结论"],
+                         [[x.get("id"), x.get("rule"), x.get("check"),
+                           _cell(x.get("observed")).strip() or "待终验",
+                           x.get("anchor"),
+                           _cell(x.get("result")).strip() or "待终验"]
+                          for x in _spec_rows], _EMPTY % "基线核验记录")]
     return "\n".join(lines) + "\n"
 
 
@@ -2577,6 +2616,260 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def cmd_spec_brief(args: argparse.Namespace) -> int:
+    """输出可原样塞进派发 prompt 的「规范携带块」（Rule 22.4e）。
+
+    [2026-11-26 task-spec-consumption-chain S3] What: 按 --sunit 过滤 spec_baseline 中的
+      SPEC-* 行，打印固定头/逐行判定式+锚+sha 前 8 位/固定回执尾；无适用行打印显式 none。
+    Why: 规范携带块必须逐字注入执行体且禁改写，若靠 Agent 手抄会丢判定式；
+      由 CLI 从唯一权威源生成并固定文案，才能堵住「计划里有规范、执行体没看到」的断点。
+      空 applies 视为不限定单元（存量行无该字段，丢规范比多带一条更危险）。
+    """
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    require_valid(doc)
+    sunit = str(args.sunit or "all").strip() or "all"
+    rows: list[str] = []
+    for item in _arr(doc, "spec_baseline"):
+        sid = str(item.get("id") or "")
+        if not sid.startswith("SPEC-"):
+            continue
+        if sunit.lower() != "all":
+            tokens = {t.strip() for t in str(item.get("applies") or "").split(",") if t.strip()}
+            if tokens and not (tokens & {"all", "*", sunit}):
+                continue
+        rule = _cell(item.get("rule")).replace("\n", " ")
+        anchor = _cell(item.get("anchor"))
+        sha8 = _cell(item.get("sha"))[:8]
+        rows.append(f"{sid} {rule} ｜源 {anchor} sha:{sha8}")
+    print("【规范携带块｜Rule 22.4e｜CLI 生成，禁改写/转译】")
+    if rows:
+        for row in rows:
+            print(row)
+    else:
+        print("spec_baseline:none(经 spec-scan 确认)")
+    print("回执必须含逐条核验表：`SPEC-<nn> | 观测:… | PASS`；缺表=本单元不成立。")
+    return 0
+
+
+# ── spec-scan：规范候选扫描（2026-11-26 task-spec-consumption-chain S4）────────
+# What: 从项目指令正文、约定规范目录、计划模板、项目技能、需求文本、产物资产六个来源
+#       收集「实际存在的规范文件」，输出稳定排序候选；--write 时把候选登记为 spec_baseline
+#       的 SRC-* 行、sidecar 与 findings 收据（先删后写，保证幂等）。
+# Why: 规范散落在仓库多个位置，Agent 手抄会漏；把发现逻辑收口到 CLI + 权威源，
+#       spec-brief/机器门才能消费同一份稳定事实（Rule 22.4e）。
+
+_SPEC_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9_./-])(?:\./)?(?:[A-Za-z0-9_.@-]+/)*[A-Za-z0-9_.@-]+\.[A-Za-z0-9]{1,8}")
+_SPEC_CONVENTION_DIRS = ("docs/standards", ".zcode/specs", "openspec/specs", "standards")
+_SPEC_TEMPLATE_DIRS = (".zcode/plan-templates", ".claude/plan-templates")
+_SPEC_SKILL_GLOBS = (".zcode/skills/*/SKILL.md", ".claude/skills/*/SKILL.md")
+_SPEC_ASSET_PATTERNS = ("bible*", "canon*", "continuity*", "*-map.*", "*registry*")
+_SPEC_CAPS = {"agents-path": 20, "skill": 30, "requirement": 20, "asset": 20}
+_SPEC_RECEIPT_ID = "F-SPEC-SCAN"
+
+
+def _spec_infer_project_root(plan_dir: Path) -> Path:
+    """向上走查含 AGENTS.md / CLAUDE.md / .git 的祖先作为项目根；兜底 plan-dir 父目录。"""
+    for p in (plan_dir, *plan_dir.parents):
+        if any((p / marker).exists() for marker in ("AGENTS.md", "CLAUDE.md", ".git")):
+            return p
+    return plan_dir.parent
+
+
+def _spec_rel(path: Path, project_root: Path) -> str:
+    """路径相对项目根的统一 POSIX 表示；根外路径保留原样，避免丢可追溯性。"""
+    try:
+        rel = os.path.relpath(str(path), str(project_root))
+    except ValueError:  # 跨盘符（Windows）等不可相对化场景
+        return str(path)
+    if rel == ".." or rel.startswith(".." + os.sep):
+        return str(path)
+    return Path(rel).as_posix()
+
+
+def _spec_sha12(path: Path) -> str:
+    """文件 sha256 前 12 位；分块读避免大文件一次性入内存，读失败返回空串（显式可见）。"""
+    digest = hashlib.sha256()
+    try:
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(65536), b""):
+                digest.update(chunk)
+    except OSError:
+        return ""
+    return digest.hexdigest()[:12]
+
+
+def _dedup(seq: list[str]) -> list[str]:
+    """按首次出现去重（保序），用于路径 token 上限裁剪前的稳定归一。"""
+    seen: set[str] = set()
+    out: list[str] = []
+    for item in seq:
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
+    return out
+
+
+def _spec_tokens(text: str, project_root: Path, plan_dir: Path) -> list[str]:
+    """从正文抽「带扩展名的路径 token」并只保留实际存在者；URL 与不存在路径一律不算。"""
+    out: list[str] = []
+    for match in _SPEC_TOKEN_RE.finditer(text or ""):
+        token = match.group(0).rstrip(".,;:")
+        if not token or "://" in token:
+            continue
+        raw = Path(token)
+        probe = raw if raw.is_absolute() else project_root / token
+        if not probe.exists():
+            alt = plan_dir / token
+            if not alt.exists():
+                continue
+            probe = alt
+        out.append(_spec_rel(probe.resolve(), project_root))
+    return _dedup(out)
+
+
+def _spec_add(found: dict[str, dict[str, Any]], rel: str, cls: str, origin: str,
+              project_root: Path, source: Path) -> None:
+    """按路径去重写入候选；同路径 must 覆盖 ref，同级先到先得（配合源顺序保证确定性）。"""
+    if not rel:
+        return
+    rank = 0 if cls == "must" else 1
+    prev = found.get(rel)
+    if prev is not None and rank >= (0 if prev["cls"] == "must" else 1):
+        return
+    found[rel] = {"path": rel, "cls": cls, "origin": origin, "sha": _spec_sha12(source)}
+
+
+def _spec_scan_candidates(project_root: Path, plan: Path, doc: dict[str, Any],
+                          scope_raw: str) -> list[dict[str, Any]]:
+    """六源收集；源①先于②③...，最终统一按 (must 前 ref 后, 路径字典序) 排序编号。"""
+    found: dict[str, dict[str, Any]] = {}
+    # ① 项目指令文件（must）+ 正文中存在的路径 token（ref）
+    for name in ("AGENTS.md", "CLAUDE.md"):
+        p = project_root / name
+        if not p.is_file():
+            continue
+        _spec_add(found, name, "must", "agents", project_root, p)
+        for rel in _spec_tokens(p.read_text(encoding="utf-8", errors="replace"),
+                                project_root, plan)[:_SPEC_CAPS["agents-path"]]:
+            probe = project_root / rel
+            _spec_add(found, rel, "ref", "agents-path", project_root,
+                      probe if probe.is_file() else plan / rel)
+    # ② 约定规范目录：目录存在才扫其顶层 *.md（must）
+    for d in _SPEC_CONVENTION_DIRS:
+        base = project_root / d
+        if base.is_dir():
+            for p in sorted(base.glob("*.md")):
+                _spec_add(found, _spec_rel(p, project_root), "must", "convention", project_root, p)
+    # ③ 项目级计划模板目录（ref）
+    for d in _SPEC_TEMPLATE_DIRS:
+        base = project_root / d
+        if base.is_dir():
+            for p in sorted(list(base.glob("*.md")) + list(base.glob("*.template.json"))):
+                _spec_add(found, _spec_rel(p, project_root), "ref", "template", project_root, p)
+    # ④ 项目级技能（ref，上限 30）
+    skills: list[Path] = []
+    for pattern in _SPEC_SKILL_GLOBS:
+        skills.extend(project_root.glob(pattern))
+    for p in sorted(set(skills), key=lambda x: _spec_rel(x, project_root))[:_SPEC_CAPS["skill"]]:
+        _spec_add(found, _spec_rel(p, project_root), "ref", "skill", project_root, p)
+    # ⑤ 需求行文本中存在的路径 token（must，上限 20）
+    req_tokens: list[str] = []
+    for item in _arr(doc, "requirements"):
+        req_tokens.extend(_spec_tokens(str(item.get("text") or ""), project_root, plan))
+    for rel in _dedup(req_tokens)[:_SPEC_CAPS["requirement"]]:
+        probe = project_root / rel
+        _spec_add(found, rel, "must", "requirement", project_root,
+                  probe if probe.is_file() else plan / rel)
+    # ⑥ --scope（及 scope_limits）路径向上祖先 ≤3 层的设定资产（must，上限 20）
+    scopes = [s.strip() for s in str(scope_raw or "").split(",") if s.strip()]
+    for item in _arr(doc, "scope_limits"):
+        for key in ("allow", "deny"):
+            vals = item.get(key)
+            if isinstance(vals, list):
+                scopes.extend(str(v).strip() for v in vals if str(v).strip())
+    assets: list[Path] = []
+    for raw in scopes:
+        rp = Path(raw)
+        if rp.is_absolute():
+            base = rp
+        elif (project_root / raw).exists() or not (plan / raw).exists():
+            base = project_root / raw
+        else:
+            base = plan / raw
+        if base.is_file():
+            base = base.parent
+        for d in (base, base.parent, base.parent.parent):
+            if not d.is_dir():
+                continue
+            for child in d.iterdir():
+                if child.is_file() and any(fnmatch.fnmatch(child.name, pat)
+                                           for pat in _SPEC_ASSET_PATTERNS):
+                    assets.append(child)
+                elif child.is_dir() and child.name == "cards":
+                    assets.extend(p for p in child.iterdir() if p.is_file())
+    for p in sorted(set(assets), key=lambda x: _spec_rel(x, project_root))[:_SPEC_CAPS["asset"]]:
+        _spec_add(found, _spec_rel(p, project_root), "must", "asset", project_root, p)
+    ordered = sorted(found.values(), key=lambda c: (0 if c["cls"] == "must" else 1, c["path"]))
+    for i, cand in enumerate(ordered, 1):
+        cand["id"] = f"SRC-{i}"
+    return ordered
+
+
+def cmd_spec_scan(args: argparse.Namespace) -> int:
+    """扫描规范候选；缺省 dry-run 只打印，--write 才落盘三件（baseline/sidecar/findings）。"""
+    plan = Path(args.plan_dir).resolve()
+    if not state_path(plan).is_file():
+        print(f"planctl: spec-scan: plan-state.json 不存在: {state_path(plan)}", file=sys.stderr)
+        return 2  # 与 check 的输入异常口径一致；无权威源禁止扫描落盘
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    project_root = (Path(args.project_root).resolve() if args.project_root
+                    else _spec_infer_project_root(plan))
+    if not project_root.is_dir():
+        raise PlanctlError(f"--project-root 缺失或非目录: {project_root}")
+    candidates = _spec_scan_candidates(project_root, plan, doc, str(args.scope or ""))
+    at = now_iso()
+    must = sum(1 for c in candidates if c["cls"] == "must")
+    ref = len(candidates) - must
+    receipt = f"[spec-scan] n={len(candidates)} must={must} ref={ref} at={at}"
+    write = bool(getattr(args, "write", False)) and not bool(getattr(args, "dry_run", False))
+    if not write:
+        for c in candidates:
+            print(f"id={c['id']} cls={c['cls']} origin={c['origin']} path={c['path']}")
+        print(receipt + " (dry-run 未落盘)")
+        return 0
+    # ① spec_baseline：先删全部旧 SRC-* 再写新行 → 重复执行结果恒定
+    baseline = [x for x in _arr(doc, "spec_baseline")
+                if not str(x.get("id") or "").startswith("SRC-")]
+    for c in candidates:
+        baseline.append(normalize_entry("spec_baseline", {
+            "id": c["id"], "verbatim": c["path"], "anchor": c["origin"],
+            "rule": "pending", "cls": c["cls"], "origin": c["origin"], "sha": c["sha"],
+        }))
+    doc["spec_baseline"] = baseline
+    commit_state(plan, doc)
+    # ② sidecar：扫描快照（机器门 B19 消费面）
+    atomic_write(plan / ".spec-scan.json", json_bytes({
+        "at": at, "project_root": str(project_root), "must": must, "ref": ref,
+        "candidates": [{"id": c["id"], "path": c["path"], "cls": c["cls"],
+                        "origin": c["origin"], "sha": c["sha"]} for c in candidates],
+    }))
+    # ③ findings 收据：复用既有 add 通道；先移除旧收据保证幂等
+    fresh = read_state(plan)
+    fresh["findings"] = [f for f in _arr(fresh, "findings")
+                         if f.get("id") != _SPEC_RECEIPT_ID and f.get("source") != "spec-scan"]
+    commit_state(plan, fresh)
+    with contextlib.redirect_stdout(io.StringIO()):
+        cmd_add(argparse.Namespace(plan_dir=str(plan), section="findings",
+                                   json=json.dumps({"id": _SPEC_RECEIPT_ID, "text": receipt,
+                                                    "source": "spec-scan"}, ensure_ascii=False)))
+    for c in candidates:
+        print(f"id={c['id']} cls={c['cls']} origin={c['origin']} path={c['path']}")
+    print(receipt + " (--write 已落盘)")
+    return 0
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # CLI
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2759,6 +3052,34 @@ def build_parser() -> argparse.ArgumentParser:
         "输出：stdout 单行 PLANCTL CHECK <name>: PASS|FAIL <reason>；rc 0=PASS / 1=FAIL / 2=输入异常。"
     )
     p.add_argument("name", choices=tuple(CHECKS), help="检查项")
+
+    # [2026-11-26 task-spec-consumption-chain S3] Rule 22.4e 规范携带块 CLI 生成入口。
+    # Why: 派发 prompt 中的规范块必须来自 plan-state.json 单一权威源（禁 Agent 手抄/改写），
+    #      --sunit 缺省 all 保持兼容：无筛选时输出全部 SPEC 行。
+    p = add_cmd("spec-brief", "生成规范携带块（Rule 22.4e，stdout 纯文本）", cmd_spec_brief)
+    p.epilog = (
+        "示例（可照抄）：\n"
+        "  python3 planctl.py spec-brief --plan-dir <计划目录>\n"
+        "  python3 planctl.py spec-brief --plan-dir <计划目录> --sunit S3\n"
+    )
+    p.add_argument("--sunit", default="all", help="S-unit id（如 S3）；缺省 all=全部 SPEC 行")
+
+    # [2026-11-26 task-spec-consumption-chain S4] 规范候选扫描入口。
+    # Why: 缺省 --write=false（dry-run 只打印不落盘）；所有新参数带默认值，旧调用行为不变。
+    p = add_cmd("spec-scan", "扫描规范候选（六源；缺省 dry-run，--write 才落盘）", cmd_spec_scan)
+    p.epilog = (
+        "示例（可照抄）：\n"
+        "  python3 planctl.py spec-scan --plan-dir <计划目录>\n"
+        "  python3 planctl.py spec-scan --plan-dir <计划目录> --project-root <项目根> \\\n"
+        "      --scope outputs/a/bible.md,outputs/a/story-map.md --write\n"
+    )
+    p.add_argument("--project-root", default="",
+                   help="项目根（缺省=从 plan-dir 向上找到含 AGENTS.md/CLAUDE.md/.git 的目录，兜底 plan-dir 父目录）")
+    p.add_argument("--scope", default="", help="逗号分隔产物路径（来源⑥资产祖先扫描）")
+    p.add_argument("--write", action="store_true", default=False,
+                   help="落盘 spec_baseline SRC-* / .spec-scan.json / findings 收据；缺省 dry-run")
+    p.add_argument("--dry-run", action="store_true", default=False,
+                   help="显式 dry-run（与 plan-brief 契约兼容；与 --write 同传时以 dry-run 为准）")
     return parser
 
 

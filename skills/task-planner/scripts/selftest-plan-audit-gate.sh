@@ -21,6 +21,42 @@ ROOT="$(mktemp -d)"
 trap 'rm -rf "$ROOT"' EXIT
 clear_cache() { rm -f /tmp/attest-cache-*.result; }
 
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] What: 为走 attest 真门链的 PAG 夹具补规范基线契约
+#   （9 列基线表 1 条 SPEC + 真实来源锚 sha + 零 must 收据 + plan-state.json 同构 + 核验表 PASS + 正文点名）。
+# Why: attest 计划期 spec-gate C1..C9 会拒锁旧口径夹具，导致 PAG-14..19/15/16 的审计门交互断言连锁 FAIL；
+#   夹具审计留痕语义（APPROVED/REJECTED/无留痕/删文件）由各用例自行在 state 的 audits 字段表达，断言本体不变。
+#   口径同 S23/S24，只写 /tmp 夹具目录、门脚本零改动、零 git 触碰。
+spec_fixture_scaffold() {
+  local d="$1" src="$1/spec-source.md" sha abs
+  printf '%s\n' '# spec fixture source' 'alpha constraint line.' 'beta constraint line.' > "$src"
+  sha="$(sha256sum "$src" | awk '{print substr($1,1,12)}')"
+  abs="$(cd "$d" && pwd)"
+  {
+    printf '\n## 🔒 规范基线（Spec-Baseline）\n\n'
+    printf '| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |\n'
+    printf '|---|---|---|---|---|---|---|---|---|\n'
+    printf '| SPEC-1 | selftest 夹具约束 | %s/spec-source.md:2 | grep -c alpha %s/spec-source.md = 1 | %s | check | grep -c alpha %s/spec-source.md | * | 待终验 |\n' "$abs" "$abs" "$sha" "$abs"
+    printf '\n## ✅ 规范消费点（selftest 夹具）\nSPEC-1 在本节由 VC-1 判据点名（Rule 84.15 / C9）\n'
+  } >> "$d/task_plan.md"
+  printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$d/.spec-scan.json"
+  cat > "$d/plan-state.json" <<EOF
+{"schema_version":1,"task_id":"selftest-spec-fixture","plan_tier":"mini","execution_lane":"L0-T","created_at":"2026-11-26T00:00:00Z","updated_at":"2026-11-26T00:00:00Z","requirements":[],"goals":[],"vcs":[],"phases":[],"findings":[],"audits":[],"delegations":[],"tags":[],"template_type":"mini-lite","output_examples":[{"id":"EX-1","deliverable":"task_plan.md","example":"{\"id\":1,\"name\":\"alpha\"}","template":"{\"id\":<INT>,\"name\":<STRING>}","format":"JSON","vc_refs":["VC-1"],"tags":["selftest"]}],"spec_baseline":[{"id":"SPEC-1","verbatim":"selftest 夹具约束","anchor":"$abs/spec-source.md:2","rule":"grep -c alpha $abs/spec-source.md = 1","sha":"$sha","kind":"check","check":"grep -c alpha $abs/spec-source.md","applies":"*","src":""}]}
+EOF
+  cat > "$d/verification.md" <<EOF
+# Verification: selftest fixture
+
+## 基线-产物逐条核验表（Rule 84.15）
+| spec_id | 双向判定式 | 校验命令 | 观测 | 证据锚(path:line 或回执) | 结论 |
+|---|---|---|---|---|---|
+| SPEC-1 | grep -c alpha $abs/spec-source.md = 1 | grep -c alpha | 1 hit (实测) | spec-source.md:2 | PASS |
+EOF
+}
+# 审计留痕注入：JSON 权威源下 planctl check audit 取末轮 verdict；用例切换 verdict 时同步改 state。
+ag_audit_set() { # <dir> <APPROVED|REJECTED>
+  sed -i "s/\"audits\":\[\]/\"audits\":[{\"round\":1,\"verdict\":\"$2\",\"by\":\"critic\",\"counts\":{\"C\":0,\"I\":0,\"W\":0},\"at\":\"2026-11-26T00:00:00Z\",\"tags\":[]}]/" "$1/plan-state.json"
+  [ "$2" = 'APPROVED' ] || sed -i 's/"verdict":"APPROVED"/"verdict":"REJECTED"/' "$1/plan-state.json"
+}
+
 # fixture 构造器: task_plan.md（四锚最小合规体——requirement-gate 判据 =## 🎯 用户需求原文/`- **R1**`/R→VC 映射标题/根源覆盖表 ## 标题）
 # $1=dir $2=tier(可空) $3=lane(可空) $4=附加内容(可空, 如行首 [plan-audit-skip] 声明行)
 mkplan() {
@@ -108,16 +144,19 @@ if [ "$rc" -eq 2 ] && printf '%s' "$out" | grep -q 'WARN 判定器输入异常';
 # 现判据: 同 enforce+只改 progress.md → 哈希入键则 K2≠K1 miss 重跑拒锁 rc1; 未入键则缓存回放 rc0 → FAIL。
 D="$ROOT/c14"; mkplan "$D" standard L1
 mkprog "$D" '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **APPROVED**' '- 问题清单: 无'
+spec_fixture_scaffold "$D"; ag_audit_set "$D" APPROVED
 clear_cache
 SK="--skip-dispatch-check --skip-template-check --skip-fmea-check --skip-goal-check --skip-vc-check"
 TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_pass=$?
 mkprog "$D" '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **REJECTED**' '- 问题清单: X'
+ag_audit_set "$D" REJECTED   # 留痕反转同步进 JSON 权威源，缓存隔离命中的是「同 enforce 只改留痕」而非门链差异
 TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_rej=$?
 if [ "$r_pass" -eq 0 ] && [ "$r_rej" -ne 0 ]; then ok 14 "缓存隔离: 同 enforce 只改 progress 留痕→不回放陈旧 PASS（哈希入键生效）"; else bad 14 "缓存隔离期望 0/非0, 实得 $r_pass/$r_rej"; fi
 rm -f "$D/.plan-attestation"; clear_cache
 
 # ── PAG-17 off→enforce 递进（env 入键判别; CR I-2 增补 task_plan:79 声明的 enforce→off→enforce 面）──
 D="$ROOT/c17"; mkplan "$D" standard L1; : > "$D/progress.md"
+spec_fixture_scaffold "$D"   # audits 留空：off 档放行 / enforce 档拒锁由本组用例自行判别
 clear_cache
 TASK_PLANNER_AUDIT_GATE_ENFORCE=off bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_off=$?
 TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >/dev/null 2>&1; r_esc=$?
@@ -131,6 +170,7 @@ rm -f "$D/.plan-attestation"; clear_cache
 
 # ── PAG-19 enforce+删除 progress.md（rc2 证据缺失）→ 拒锁不写锁（CR W-1 旁路面）────────
 D="$ROOT/c19"; mkplan "$D" standard L1; : > "$D/progress.md"
+spec_fixture_scaffold "$D"
 rm -f "$D/progress.md"
 TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" >"$D/o19" 2>&1; r_del=$?
 if [ "$r_del" -ne 0 ] && [ ! -f "$D/.plan-attestation" ] && grep -q 'audit-gate' "$D/o19"; then
@@ -142,6 +182,7 @@ clear_cache
 
 # ── PAG-15 attest enforce 无留痕 → 拒锁 rc≠0 且不写锁（S2 接线真实链路）────────
 D="$ROOT/c15"; mkplan "$D" standard L1; : > "$D/progress.md"
+spec_fixture_scaffold "$D"
 clear_cache
 out=$(TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" 2>&1); rc=$?
 if [ "$rc" -ne 0 ] && [ ! -f "$D/.plan-attestation" ] && printf '%s' "$out" | grep -q 'audit-gate'; then
@@ -152,6 +193,7 @@ fi
 
 # ── PAG-16 attest APPROVED → 放行 rc0 且写锁（含 [audit-gate] PASS 行）─────────
 mkprog "$D" '## [plan-audit-R1] fixture' '- 轮次: R1 | 审计体: critic | 结论: **APPROVED**' '- 问题清单: 无'
+ag_audit_set "$D" APPROVED   # JSON 权威源同步末轮 APPROVED，MD 留痕与 state 同口径
 clear_cache
 out=$(TASK_PLANNER_AUDIT_GATE_ENFORCE=enforce bash "$AT" $SK "$D/task_plan.md" 2>&1); rc=$?
 if [ "$rc" -eq 0 ] && [ -f "$D/.plan-attestation" ] && printf '%s' "$out" | grep -q 'audit-gate'; then

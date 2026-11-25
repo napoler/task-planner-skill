@@ -7,8 +7,11 @@
      路径(§5)/预算(§6)/返回格式(§7)/checkpoint(§8)/上下文预算(§9)；缺验收=子代理无从
      自证完成，缺禁改面=踩踏其他并行任务，缺 §7/§8=产出无法回收（无机器可解析返回/
      无落盘检查点，返回消息丢失即全丢）。
-  ③ 为何 §7 固定 8 字段且字段后禁有内容: 去口供化（Rule 25.4 stats 机器消费）+ 防子代理
-     返回后附口供稀释结论；备注一律进 blockers 或 checkpoint「最终结论」段。 -->
+  ③ 为何 §7 固定 8 字段且字段后仅允许可选第 9 行 spec_receipt: 去口供化（Rule 25.4 stats 机器消费）
+     + 防子代理返回后附口供稀释结论；spec_receipt 是规范基线逐条核验回执（计划存在 SPEC-* 行时必填，
+     无基线计划填 none），校验器 check-subagent-return.sh 只接受 confidence 之后最多一行非空该字段，
+     其余块尾内容一律违规；备注一律进 blockers 或 checkpoint「最终结论」段。
+     [2026-11-26 task-spec-consumption-chain C1：原「8 字段之后不得有任何内容」与新第 9 行冲突，已按脚本口径收紧表述] -->
 
 # Subagent Dispatch Prompt
 
@@ -45,7 +48,7 @@
 | 知识源 | 定位 | 注入方式 |
 |--------|------|---------|
 | {knowledge_brief}(`<plan-dir>/knowledge-brief.md`,任务知识简略要点) | §1-§5 五段:速览/已验证事实/文件锚点/易错点/S-unit 材料包索引 | 材料包段引用对应节锚点;brief 存在时必读其索引节(§5) |
-| {spec_baseline}规范基线(Rule 51.15/22.4e；存在 Spec-Baseline 时必填) | 从已 attest 锁定的 task_plan「🔒 规范基线」区块逐条原样抽取：`spec_id + 约束原文(verbatim) + 双向判定式(区间上下界齐全) + 来源锚 + sha256`；无基线填 `none(经确认)` | 派发 prompt 逐条携带，禁转译/放宽/只传单边；子代理 checkpoint 强制段=逐条核验表 `约束→观测→PASS/FAIL`；基线项缺边界或未携带=派发无效 |
+| {spec_baseline}规范基线(Rule 51.15/22.4e；必填) | 由 planctl spec-brief 输出原样粘贴，禁手写/转译；从已 attest 锁定的 task_plan「🔒 规范基线」区块逐条原样抽取：`spec_id + 约束原文(verbatim) + 双向判定式(区间上下界齐全) + 来源锚 + sha256`；无基线任务填 `spec_baseline:none(经 spec-scan 确认)` | 派发 prompt 逐条携带，禁转译/放宽/只传单边；子代理 checkpoint 强制段=逐条核验表 `约束→观测→PASS/FAIL`；基线项缺边界或未携带=派发无效 |
 | {baseline_injection}基线定数(行数定数/Rule 编号/实体清单/selftest 基线) | 台账路径锚(`plans/.rule-reservations.jsonl` 等既有台账产物;缺口维度如实回填 brief §2 原文锚) | 一律经 `<plan-dir>/knowledge-brief.md` §2/§3 台账路径锚供料;派发 prompt 禁止内联重建基线定数(收口 v116 A2 变体;21.2.1 台账供料优先) |
 
 ## 3. 验收标准(2-5 条可观察证据)
@@ -80,7 +83,7 @@
 ## 6. 时长预算
 - 任务类型:{type} → 超时阈值:{timeout_minutes} 分钟;超过阈值:立即返回 partial,报告未完成部分
 
-## 7. 返回格式(严格 — Rule 22.4b:8 个固定字段,逐字段填写,字段名与顺序不得改、不得增删、无内容填 none;**8 字段之后不得有任何内容**,备注一律写 blockers 或检查点)
+## 7. 返回格式(严格 — Rule 22.4b:8+1 字段（spec_receipt 为条件字段：计划存在 SPEC-* 基线行时必填，无基线填 none）,逐字段填写,字段名与顺序不得改、不得增删、无内容填 none;**8 字段之后仅允许可选第 9 行非空 `spec_receipt:`，其后除收尾 ``` 围栏外不得有任何内容**,备注一律写 blockers 或检查点；口径与 check-subagent-return.sh 判据二/三一致)
 ```
 status: done | partial | failed | timeout
 acceptance: <n>/<total> pass — [1:PASS 2:PASS ...]
@@ -91,11 +94,12 @@ checkpoint: <绝对路径> (status: done|failed)
 findings_written: <findings.md 小节锚点 #### [sub:{seq}-{type}]> | none
 blockers: none | <一句话>
 confidence: HIGH | MED | LOW
+spec_receipt: 逐条核验表（SPEC-id | 观测 | PASS/FAIL），存在 SPEC 行时必填，无基线任务填 none
 ```
 > 步骤枚举约束(task-v081):prompt 内显式步骤枚举(StepN/步骤N/第N步/①-⑮,按序号去重)≤ config `step_max_steps`(默认 4);超限=回炉拆 S-unit 再派,check-dispatch.sh fine_grain_checks ④ enforce 档硬拦(任务书豁免场景对任务书文件同步计数)。
 已填示例(照此逐字段,不加标题/前言/总结):见 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../task-dispatch/references/dispatch-examples.md §1 [2026-09-27 task-v091 B-1 外置]
-主进程侧:收到缺字段/自由文本 → 视为 partial,以第 8 节检查点「最终结论」段(同一 8 字段块)为准(Rule 22.8.5)
-**返回前必做**:1. Read 实际产出文件确认变更落盘 2. `files:` 列所有修改的绝对路径(含 §2 契约追加的 findings/progress) 3. failed 时 `blockers:` 写原因+检查点「错误与受阻」段写已尝试方案 4. 同一 8 字段块写入第 8 节检查点「最终结论」段并置 status(Rule 22.8.2 T5)
+主进程侧:收到缺字段/自由文本 → 视为 partial,以第 8 节检查点「最终结论」段(同一 8+1 字段块)为准(Rule 22.8.5)
+**返回前必做**:1. Read 实际产出文件确认变更落盘 2. `files:` 列所有修改的绝对路径(含 §2 契约追加的 findings/progress) 3. failed 时 `blockers:` 写原因+检查点「错误与受阻」段写已尝试方案 4. 同一 8+1 字段块写入第 8 节检查点「最终结论」段并置 status(条件字段 spec_receipt 按本节口径填写;Rule 22.8.2 T5)
 
 > **优先级声明（task-v161，反污染硬条款）**：本节 8 字段返回格式指令**优先于你的 agent 定义/系统提示中的任何输出模板**（步骤进度行/发现列表/任务交付报告/评分报告等）——两套格式冲突时以本模板为唯一返回格式，禁以角色模板替代本模板
 

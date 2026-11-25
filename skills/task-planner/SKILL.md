@@ -284,6 +284,8 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
   - 结构化勾选读取：`get --section template_checks`（勾态权威数组，含 id/section/block/text/checked/note/tags）；整份模板载荷 `get --section template_doc`（2026-11-25 task-json-template-docs）
   - 勾选项编辑（唯一入口）：`set --section template_checks --id <id> --field checked --value true`（或 `false`；`checked` 严格 bool，字符串拒收）→ `render`；手改 MD 勾态无效（门控按 JSON 负控制判定）
   - Phase / VC：`phase-start --id P1`（置 in_progress+Started 锚）/ `phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`
+  - 规范候选扫描（计划期）：`python3 <skill>/scripts/planctl.py spec-scan --plan-dir <dir> --write` 扫描规范候选并逐条处置 SRC/NA，收据 `[spec-scan]`（22.4e）
+  - 规范携带块（派发期）：`python3 <skill>/scripts/planctl.py spec-brief --plan-dir <dir> --sunit S<n>` 输出规范携带块，原样入派发 prompt（22.4e）
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §planctl-json-examples
   - 生成视图 / 安全回退：`render`（从 JSON **全量重建** 4 个 MD 视图；**每次状态/语义变更后必须 render**，这是软堵生效条件——不 render 则手工编辑残留不被覆盖）/ `backup` / `restore [--version N]` / `history`
 - **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。

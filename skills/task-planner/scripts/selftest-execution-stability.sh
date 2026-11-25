@@ -31,6 +31,36 @@ t() { # t <name> <cond-expr...>
     fi
 }
 
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] What: 为 T11a/b 的 legacy 夹具补规范基线新契约最小实物
+#   （9 列基线表 1 条 SPEC + 真实来源锚 sha + 零 must 收据 + plan-state.json 同构 + 核验表 PASS + 正文点名）。
+# Why: 基线 attest 与 posttooluse 自动重锁都会走 attest 计划期 spec-gate（C1..C9）；夹具只有四锚会被拒锁，
+#   T11a/T11b 的哈希链路与归属护栏断言本身无需改动。口径同 S23/S24；只写夹具目录、零 git 触碰。
+spec_fixture_scaffold() {
+  local d="$1" src="$1/spec-source.md" sha abs
+  printf '%s\n' '# spec fixture source' 'alpha constraint line.' 'beta constraint line.' > "$src"
+  sha="$(sha256sum "$src" | awk '{print substr($1,1,12)}')"
+  abs="$(cd "$d" && pwd)"
+  {
+    printf '\n## 🔒 规范基线（Spec-Baseline）\n\n'
+    printf '| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |\n'
+    printf '|---|---|---|---|---|---|---|---|---|\n'
+    printf '| SPEC-1 | selftest 夹具约束 | %s/spec-source.md:2 | grep -c alpha %s/spec-source.md = 1 | %s | check | grep -c alpha %s/spec-source.md | * | 待终验 |\n' "$abs" "$abs" "$sha" "$abs"
+    printf '\n## ✅ 规范消费点（selftest 夹具）\nSPEC-1 在本节由 VC-1 判据点名（Rule 84.15 / C9）\n'
+  } >> "$d/task_plan.md"
+  printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$d/.spec-scan.json"
+  cat > "$d/plan-state.json" <<EOF
+{"schema_version":1,"task_id":"selftest-spec-fixture","plan_tier":"mini","execution_lane":"L0-T","created_at":"2026-11-26T00:00:00Z","updated_at":"2026-11-26T00:00:00Z","requirements":[],"goals":[],"vcs":[],"phases":[],"findings":[],"audits":[],"delegations":[],"tags":[],"template_type":"mini-lite","output_examples":[{"id":"EX-1","deliverable":"task_plan.md","example":"{\"id\":1,\"name\":\"alpha\"}","template":"{\"id\":<INT>,\"name\":<STRING>}","format":"JSON","vc_refs":["VC-1"],"tags":["selftest"]}],"spec_baseline":[{"id":"SPEC-1","verbatim":"selftest 夹具约束","anchor":"$abs/spec-source.md:2","rule":"grep -c alpha $abs/spec-source.md = 1","sha":"$sha","kind":"check","check":"grep -c alpha $abs/spec-source.md","applies":"*","src":""}]}
+EOF
+  cat > "$d/verification.md" <<EOF
+# Verification: selftest fixture
+
+## 基线-产物逐条核验表（Rule 84.15）
+| spec_id | 双向判定式 | 校验命令 | 观测 | 证据锚(path:line 或回执) | 结论 |
+|---|---|---|---|---|---|
+| SPEC-1 | grep -c alpha $abs/spec-source.md = 1 | grep -c alpha | 1 hit (实测) | spec-source.md:2 | PASS |
+EOF
+}
+
 # T1: check-scope.sh memory 写入豁免在位 (E1)
 t "T1 check-scope.sh 'memories' 豁免 ≥1" bash -c "[ \"\$(grep -c 'memories' '$SCOPE')\" -ge 1 ]"
 
@@ -119,6 +149,9 @@ b1_pos() {
 	        '## 🧮 根源覆盖表' \
 	        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
 	    } > "$P/task_plan.md"
+	    # [2026-11-26 task-spec-consumption-chain 回归修复 C 段] b1_pos/b1_neg 同源夹具补规范基线契约：
+	    #   基线 attest 与 posttooluse 重锁共用该夹具，C1..C9 新门不再拒锁；h1/h2 在补完后计算，断言零改动。
+	    spec_fixture_scaffold "$P"
 	    printf 'sessabc123' > "$P/.session-owner"
 	    rm -f "/tmp/task-planner-hook-sessabc123.state"
 	    # [2026-11-23 task-fix-all-20261123] hermetic: 同时 scrub CLAUDE_SESSION_ID，防真实会话 env 泄漏写入 attested_by_sid 导致 T11b 假 FAIL
@@ -156,6 +189,9 @@ b1_neg() {
 	        '## 🧮 根源覆盖表' \
 	        '> 不适用（非结果级需求）: 单点动作夹具, 无结果级需求需全链工序审计（Rule 53.1 口径）'
 	    } > "$P/task_plan.md"
+	    # [2026-11-26 task-spec-consumption-chain 回归修复 C 段] b1_pos/b1_neg 同源夹具补规范基线契约：
+	    #   基线 attest 与 posttooluse 重锁共用该夹具，C1..C9 新门不再拒锁；h1/h2 在补完后计算，断言零改动。
+	    spec_fixture_scaffold "$P"
 	    printf 'sessabc123' > "$P/.session-owner"
 	    rm -f "/tmp/task-planner-hook-sessabc123.state"
 	    # [2026-11-23 task-fix-all-20261123] hermetic: 同时 scrub CLAUDE_SESSION_ID（与 b1_pos 对齐）

@@ -41,6 +41,15 @@
 #     「缺表头即跳过」范式）；但多 Phase / 重门控两项与 scope 表无关，照常判定。
 #   · L0-T 为何 cap 12 非 3：L0-T 纯文本档（2026-10-15 文本优先裁决，task-v177）文件数不设硬上限、
 #     cap ≤12 防变相基建（38.7 L0-T 条款原文）；判定以计划内 `L0-T` 字面探测分流。
+# [2026-11-26 task-spec-consumption-chain S6] 增量（仅追加判定面，既有 exit 0/1/2 语义不变）：
+#   ① 反向错配硬错: 同目录 plan-state.json 的 template_ref 文件名含 mini-lite/l0-lite，而 task_plan.md
+#     行首声明 plan_tier=standard → ✗ + FAILS（不受 plan_tier_enforce=warn 默认影响）。
+#     根因: init 轻量档会强制改写 JSON 模板为 mini-lite，档位未声明时仍按 standard 执行，原脚本只查
+#     「mini 声明但体量过大」，反向（轻量模板+standard 标签）无判定面（plan-brief.md §2 gap 4/5）。
+#   ② 项目级模板存在性提示: 从 plan-dir 向上找到 .zcode|claude/plan-templates 目录，且计划声明
+#     template_type=general/mini-lite，且无 [template-select] 理由行 → 提示行并计 FAILS。
+#     理由: 项目已带专属创作模板却选通用/轻量模板，属于规范消费漏接，须在计划期登记选择理由才可豁免。
+#   抽取只用 grep/sed/basename，不引入 jq/python（SPEC-2 纯 bash）；不新增 hook/派发前拦截（22.4e）。
 # 用法: bash check-tier-consistency.sh <plan-dir>
 # 依赖: bash + grep/awk/sed/sort/wc（无 jq / 无 python，纯 bash 实现，同 check-evidence-anchor.sh 口径）
 set -u
@@ -63,6 +72,62 @@ TIER="$(grep -m1 -E '^plan_tier:' "$PLAN_FILE" | sed -E 's/^plan_tier:[[:space:]
 LANE="$(grep -m1 -E '^execution_lane:' "$PLAN_FILE" | grep -oE 'L[012]([_-][A-Za-z0-9]+)*' | head -n 1)"
 IS_L0T=0
 grep -q 'L0-T' "$PLAN_FILE" && IS_L0T=1
+
+# ── [S6 2026-11-26] 模板/档位反向错配 + 项目级模板选择登记（FAILS 在此统一初始化）──
+FAILS=0
+# 反向错配: 只读同目录 plan-state.json（权威源），grep -o 抽 template_ref，禁 jq/python。
+STATE_FILE="$PLAN_DIR/plan-state.json"
+TEMPLATE_REF="$(grep -o '"template_ref"[^,}]*' "$STATE_FILE" 2>/dev/null | head -n 1 | sed -E 's/.*"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
+if [ -n "$TEMPLATE_REF" ]; then
+    REF_BASE="$(basename "$TEMPLATE_REF")"
+    case "$REF_BASE" in
+        *mini-lite*|*l0-lite*)
+            if [ "$TIER" = "standard" ]; then
+                REF_TYPE="${REF_BASE%.template.json}"
+                REF_TYPE="${REF_TYPE%-type.md}"
+                REF_EXT='.template.json'
+                case "$REF_BASE" in *-type.md) REF_EXT='-type.md' ;; esac
+                FAILS=$((FAILS + 1))
+                printf '[tier-consistency] ✗ template_ref=%s(%s) 但 plan_tier=standard（反向错配，不受 warn 默认影响）\n' \
+                    "$REF_TYPE" "$REF_EXT"
+            fi
+            ;;
+    esac
+fi
+
+# 项目级模板存在性提示: 只查 plan-dir 祖先链上的模板目录，不扫描任意路径（对齐 check-template-type.sh 探测口径）。
+_PJ_TPL_ROOT=""
+_WALK_DIR="$(cd "$PLAN_DIR" && pwd)"
+while [ "$_WALK_DIR" != "/" ]; do
+    if [ -d "$_WALK_DIR/.claude/plan-templates" ]; then
+        _PJ_TPL_ROOT="$_WALK_DIR/.claude/plan-templates"
+        break
+    fi
+    if [ -d "$_WALK_DIR/.zcode/plan-templates" ]; then
+        _PJ_TPL_ROOT="$_WALK_DIR/.zcode/plan-templates"
+        break
+    fi
+    _WALK_DIR="$(dirname "$_WALK_DIR")"
+done
+if [ -n "$_PJ_TPL_ROOT" ]; then
+    # 三形态声明抽取: 行首 / HTML 注释 / 表格行（同 check-template-type.sh 兼容面）；空值=无判定面。
+    _DECL="$(grep -m1 -E '^template_type:' "$PLAN_FILE" | sed 's/^template_type:[[:space:]]*//;s/[[:space:]（].*$//')"
+    if [ -z "$_DECL" ]; then
+        _DECL="$(grep -m1 -oE '<!--[[:space:]]*template_type:[[:space:]]*[A-Za-z0-9-]+' "$PLAN_FILE" | sed 's/.*template_type:[[:space:]]*//')"
+    fi
+    if [ -z "$_DECL" ]; then
+        _DECL="$(grep -m1 '|[[:space:]]*template_type[[:space:]]*|' "$PLAN_FILE" | awk -F'|' '{gsub(/[[:space:]]/,"",$3); print $3}' | sed 's/（.*//')"
+    fi
+    case "$_DECL" in
+        general|mini-lite)
+            if ! grep -q '\[template-select\]' "$PLAN_FILE"; then
+                FAILS=$((FAILS + 1))
+                printf '[tier-consistency] ⚠ 项目级模板存在（%s）但 template_type=%s 未登记 [template-select] 理由（计入 FAILS；计划期登记 [template-select] <理由> 即豁免）\n' \
+                    "$_PJ_TPL_ROOT" "$_DECL"
+            fi
+            ;;
+    esac
+fi
 
 # ── 体量指标抽取 ─────────────────────────────────────────────────────────────
 # lines / phases（容器标题「## Phases」不计，只认带数字的 Phase 标题行）
@@ -88,7 +153,8 @@ SCOPE_FOUND="${_SCOPE_OUT#* }"
 [ -n "$SCOPE" ] && [ -n "$SCOPE_FOUND" ] || { SCOPE=0; SCOPE_FOUND=0; }
 
 # ── 无判定面：两档声明均缺 → SKIP exit 0（fail-open，对齐 38.1 legacy 零影响口径）──
-if [ -z "$TIER" ] && [ -z "$LANE" ]; then
+# [S6] 仅当 S6 新增模板面也无 FAIL（如项目模板提示）时才 SKIP；有 FAIL 则继续走统一汇总 exit 1。
+if [ -z "$TIER" ] && [ -z "$LANE" ] && [ "$FAILS" -eq 0 ]; then
     printf '[tier-consistency] SKIP (无档位声明: plan_tier / execution_lane 均缺 → 无判定面, exit 0)\n'
     exit 0
 fi
@@ -102,8 +168,7 @@ L0_MAX_FILES=3       # 38.7 L0: ≤3 文件
 L0T_MAX_FILES=12     # 38.7 L0-T 纯文本档 cap ≤12（task-v177 文本优先裁决）
 L0_MAX_PHASES=1      # 38.7 L0: 单 Phase 执行
 L0_MAX_SUNIT=2       # L0 重门控: sunit ≥3 = 多单元派发
-
-FAILS=0
+# FAILS 已在 S6 模板/档位块初始化（上方），此处不再重置，避免覆盖新增判定结果。
 
 # ── mini 体量复核（Rule 38.1 四条件外部近似）──
 if [ "$TIER" = "mini" ]; then
