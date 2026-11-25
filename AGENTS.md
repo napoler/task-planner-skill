@@ -28,15 +28,9 @@
 
 ## 2.5 🔴 项目级强制：所有计划必须先展示产出示例实物（2026-11-25 用户裁决）
 
-用户原话：「都没有展出产出的模板示例是什么样子的，也就是无法确保后期如何进行审查，这个不合规」「将必须展示示例强制升级为该项目的要求，确保所有计划的必选项目；这是要更新到 skill 规范确保后期可以复现」。
+本仓库项目级强制（standard / mini / L0-lite 均不豁免）：计划创建/审核第一动作=向用户展示可审查的产出示例实物，再写条款/方案；无实物 = 计划不合格，禁止进入执行。
 
-**适用范围**：本仓库产出的所有计划（standard / mini / L0-lite 均不豁免；极简档可用极简示例）。
-
-**铁律（先实物，后条款）**：计划创建或审核时，**第一动作**是向用户展示至少一个完整、可直接查看的**产出示例实物**——真实文件路径（或 fenced 代码块/表格）+ 同结构占位模板 + 审查命令与预期输出；禁止只写「输出为 JSON」「见 output_examples」或仅放标题 token。无实物 = 计划不合格，禁止进入执行。
-
-**权威示例**：`examples/json-template-upgrade/review.md`（pretty-print JSON + MD 教学视图 + 逐字段对照 + C1–C8 审查命令真实输出，含手改 MD 勾选必须 FAIL 的负控制）。新计划照此形态产出，禁止脑补示例。
-
-**承载与强制**：Rule 113.10 写规范；`plan-state.json.output_examples` 为权威数据面，`planctl render` 派生到 `task_plan.md`「🧩 输出示例与格式契约」；新计划在 `attest-plan.sh` 锁定时由 `[example-gate]` 机器校验（缺失/空/占位即拒锁）；模板侧由 `check-template-principles.sh` 校验示例段**内容**而非仅标题 token。存量计划（无 `output_examples` 字段）不追溯、不破坏其读写路径。
+**单一事实源（随 skill 部署生效）**：完整判定式、FAIL 情形、机器门与存量兼容边界见 `skills/task-planner/references/critical-rules.md` Rule 113.10；权威可审查示例与 C1–C8 审查命令见 `examples/json-template-upgrade/review.md`。本节只作导航，禁止在此复制或改写条款——避免仓库项目指令与端点规范形成双源漂移。
 
 ## 3. 主要目录
 
