@@ -11,6 +11,8 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 
 激活后按 SOP 六步执行，逐步落盘证据与产物（Rule 71 无源不写）。
 
+- **示例优先硬入口（升级/转换/新增/适配模板，2026-11-25）**：命中「升级模板」「转换成 JSON 模板」「加/适配模板」等意图时，**第一动作**是打开 `../../examples/json-template-upgrade/review.md`，向用户展示产出模板实物（pretty-print JSON + MD 教学视图 + 逐字段对照 + 渲染片段）并执行 C1–C8（C6 负控制必须 FAIL）；**先产出可审查实物，再写条款/方案**。禁止在未见实物时把 MD 叠加层或新建 `*-type.md` 作为推荐首选；判例=sess_11371d87（升级模板推荐零次提及 JSON，经用户纠正才改 JSON-first）。
+
 ### ① 项目分析
 - 读取 AGENTS/CLAUDE/README、目录与技术栈画像，建立项目基线。
 - 统计 `plans/INDEX.md` 与 `plans/archive/` 近期任务类型分布与频次。
@@ -27,7 +29,7 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 - 对照模板白名单：`templates/variant/*-type.md`（30 类，**教学视图**）与权威源 `templates/json/*.template.json`（33 个），以及项目级既有模板（`.claude/plan-templates/` 或 `.zcode/plan-templates/` 下的 MD 与 JSON，init-session.sh 原生发现并并入白名单的机制）；JSON 与 MD 同名时以 JSON 元数据（scenarios/features/lineage）为缺口判定依据。
 - 无专用 variant 的高频类型 → 标记为候选新类型模板。
 - 已有 variant 但 Verify command/执行范围限制需项目本地化 → 标记为适配版候选。
-- JSON 缺口判定（2026-11-25）：扫描 `templates/json/` 与项目级 JSON 位——MD 已存在但缺 `<type>.template.json` = 待转换（交 task-planner `to-json` 机械转换）；JSON/MD 均缺 = 候选新类型；JSON 已有但 scenarios/features 不覆盖项目高频坑 = 适配版候选（改 JSON meta + blocks，而非只改 MD 文案）。
+- JSON 缺口判定（2026-11-25）：扫描 `templates/json/` 与项目级 JSON 位——MD 已存在但缺 `<type>.template.json` = 待转换（交 task-planner `to-json` 机械转换）；JSON/MD 均缺 = 候选新类型；JSON 已有但 scenarios/features 不覆盖项目高频坑 = 适配版候选（改 JSON meta + blocks，而非只改 MD 文案）。每类判定均须产出可审查实物并按 `../../examples/json-template-upgrade/review.md` 的 C1–C8 审过；无实物不得定稿。
 - 查重同时覆盖两种形态：同名 `*-type.md` 与 `*.template.json` 任一存在即视为已有类型，避免重复沉淀造成双源漂移。
 - 清单来源：先跑 `template-catalog.sh list --json --scope all`，按 `source=json` / `preferred=true` 取官方权威候选；项目级 JSON 位由 `ls` 实测，禁止凭记忆判定缺口。
 - 映射前先 `ls` 白名单与项目级目录查重，避免重复沉淀。

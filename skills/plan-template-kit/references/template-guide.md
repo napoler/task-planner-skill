@@ -27,6 +27,20 @@ task-planner 提供 **双层优先级** 的模板机制：
 
 同名 `type` 的 JSON 与 MD 并存时，一切语义判定（勾选/状态/scenarios/features）以 JSON 为准；MD 仅作展示与审查视图。项目级 JSON 由 init-session.sh 原生发现并入白名单，零接线。
 
+### 1.2 产出实物示例与审查清单（示例优先，2026-11-25）
+
+<!-- [2026-11-25 task-json-template-recommend] What: 把用户认可的 JSON 原生模板示例落成可审查实物与固定审查命令；Why: 只写链路/规则而不展示产出模板长什么样，后期无法审查——用户明确判为不合规。 -->
+
+任何「升级/转换/新增/适配模板」请求，先打开权威示例清单 `../../../examples/json-template-upgrade/review.md`（实物位于同目录）：
+
+- `upgraded/<type>.template.json`：产出模板实物（pretty-print 可人读；与生产单行 JSON `json.load` 语义等价）。
+- `upgraded/<type>-type.md`：同步后的 MD 教学视图；`original/` 为升级前 MD 骨架。
+- `review.md`：逐字段对照表（meta/lineage/sections/anchors/blocks/checklist id）、原始 MD→JSON 差异、渲染视图片段，以及 8 条审查命令与 PASS/FAIL 判据。
+
+固定审查动作：按 `review.md` §4 跑 C1–C8——JSON 解析、MD/JSON `template_type` 同值、catalog `source=json/preferred=true`、init 消费 JSON、`planctl set checked` + `render` 往返（渲染行出现 `- [x] ...`）、**手改 MD 勾选必须被门 FAIL（C6 负控制）**、`render` 回正 PASS、`check-template-type.sh` exit 0。任一条不符即不得定稿。
+
+边界：默认 mini 档会按 Rule 38 改选 `mini-lite.template.json`（勾选为空），审查勾选往返须显式 `TASK_PLAN_TIER=standard`；生产 JSON 保持单行压缩，pretty-print 仅为审查视图。
+
 ---
 
 ## 二、内置模板清单

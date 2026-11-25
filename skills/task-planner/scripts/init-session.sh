@@ -50,6 +50,9 @@ if [ "$LIST_TEMPLATES" = 1 ]; then
         ls "$_bvd"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//'
         if [ -n "$_list_pdir" ]; then
             ls "$_list_pdir"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//'
+            # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源并入清单（根目录 + json/ 子目录两种落位）
+            ls "$_list_pdir"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
+            ls "$_list_pdir"/json/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
         fi
     } | sed '/^$/d' | sort -u)"
     for _t in $_all_types; do
@@ -58,6 +61,10 @@ if [ "$LIST_TEMPLATES" = 1 ]; then
         if [ -f "$_jdir/$_t.template.json" ] \
            || { [ "$_t" = "general" ] && [ -f "$_jdir/task_plan.template.json" ]; }; then
             # general 兼容早期 task_plan.template.json 命名（同仓并存实测）
+            _source="json"
+        elif [ -n "$_list_pdir" ] && { [ -f "$_list_pdir/$_t.template.json" ] || [ -f "$_list_pdir/json/$_t.template.json" ]; }; then
+            # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源：origin=project + source=json
+            _origin="project"
             _source="json"
         elif [ ! -f "$_bvd/$_t-type.md" ] && [ -n "$_list_pdir" ] && [ -f "$_list_pdir/$_t-type.md" ]; then
             _origin="project"
@@ -711,10 +718,14 @@ _variant_types="$(ls "$VARIANTS_DIR"/*-type.md 2>/dev/null | sed 's/.*\///;s/-ty
 # 无 JSON 模板目录时白名单与改前的 general + variant + 项目集合等价（仅排序去重）。
 PDIR_RESOLVED="$(find_project_templates || true)"
 _pextra=""
+_pjson_types=""
 if [ -n "$PDIR_RESOLVED" ]; then
     _pextra="$(ls "$PDIR_RESOLVED"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
+    # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源类型入白名单（根目录 + json/ 子目录两种落位）；
+    # 无项目 JSON 时本行为空，VALID_TYPES 与改前逐字节等价。
+    _pjson_types="$({ ls "$PDIR_RESOLVED"/*.template.json 2>/dev/null; ls "$PDIR_RESOLVED"/json/*.template.json 2>/dev/null; } | sed 's/.*\///;s/\.template\.json$//' | sed '/^task_plan$/d' | sort -u | tr '\n' ' ')"
 fi
-VALID_TYPES="$(printf '%s\n' general $_json_types $_variant_types $_pextra | sed '/^$/d' | sort -u | tr '\n' ' ')"
+VALID_TYPES="$(printf '%s\n' general $_json_types $_variant_types $_pextra $_pjson_types | sed '/^$/d' | sort -u | tr '\n' ' ')"
 VALID_TYPES="$(printf '%s' "$VALID_TYPES" | tr -s ' ')"
 # [2026-09-21 task-v086 S6] 默认模板(每次只加载 1 个的选择入口):
 # 项目级 plan-templates/default 文件(内容=模板名) > env TASK_TEMPLATE_DEFAULT > 缺省=现状 general 行为逐字节不变
@@ -737,12 +748,25 @@ fi
 TASK_PLAN_SRC="task_plan.md"
 if [ -n "$TEMPLATE_TYPE" ]; then
     if echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE "; then
+        # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源优先（template-guide §1.1 优先级 1）：
+        # 根目录 <type>.template.json 与 json/ 子目录两种落位都发现；未命中则维持内置 JSON 原路径逐字节不变。
+        _project_json=""
+        if [ -n "$PDIR_RESOLVED" ]; then
+            for _pj in "$PDIR_RESOLVED/json/${TEMPLATE_TYPE}.template.json" "$PDIR_RESOLVED/${TEMPLATE_TYPE}.template.json"; do
+                if [ -f "$_pj" ]; then _project_json="$_pj"; break; fi
+            done
+        fi
         _json_candidate="${JSON_DIR}/${TEMPLATE_TYPE}.template.json"
+        [ -n "$_project_json" ] && _json_candidate="$_project_json"
         if [ -f "$_json_candidate" ]; then
             # [2026-11-25 task-json-template P3] JSON 原生模板命中：JSON 为唯一权威源；
             # MD 骨架仍从 legacy 模板复制（无则通用骨架），仅供首次 render 前人读。
             JSON_TEMPLATE_ABS="$_json_candidate"
-            echo "Template routing: JSON 权威模板 <- json/${TEMPLATE_TYPE}.template.json (template_type: $TEMPLATE_TYPE)"
+            if [ -n "$_project_json" ]; then
+                echo "Template routing: JSON 权威模板(项目级) <- $_project_json (template_type: $TEMPLATE_TYPE)"
+            else
+                echo "Template routing: JSON 权威模板 <- json/${TEMPLATE_TYPE}.template.json (template_type: $TEMPLATE_TYPE)"
+            fi
             VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
             if [ -f "${BUILTIN_TEMPLATES}/${VARIANT_REL}" ]; then
                 TASK_PLAN_SRC="$VARIANT_REL"

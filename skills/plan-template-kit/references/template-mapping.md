@@ -37,6 +37,7 @@
 ├─ 视频生产（母图/分镜/镜头/成片 QC，Agnes 视频链路）→ video-type.md
 ├─ 视频修正/局部重生成/QC FAIL 处置 → video-fix-type.md
 ├─ 技能规则增强/新增 Rule/门控/selftest 守护（沉淀类）→ rule-enhancement-type.md
+├─ 既有模板升级/转换/适配（MD→JSON、项目级模板本地化）→ **JSON 原生权威源优先**，MD 仅教学视图；先展出产出实物并按 `../../../examples/json-template-upgrade/review.md` C1–C8 审过，禁默认推荐 MD 叠加层/新建类型
 ├─ 轻量任务（≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非排除，Rule 38 自动降 mini）→ mini-lite-type.md
 ├─ L0-T 极简 stub/零 attest/哨兵解除专用（l0-lite，L0-T 边界；中重任务禁用，不替代 mini-lite）→ l0-lite-type.md [2026-11-25 task-skill-deploy-fix A9]
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
@@ -45,6 +46,8 @@
 > **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类，task-videop1 起 image=18 类+视频工序 11 类=28 类，task-v115 videop1 回流起 29 类；task-l0lite-exempt 20261103 起 +l0-lite 极简豁免档=30 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `../../task-planner/references/critical-rules.md` Rule 34。 [2026-11-25 task-skill-deploy-fix A9]
 
 > **JSON 模板清单来源（task-json-template-20261125）**：选型先跑 `bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/template-catalog.sh list --json --scope all`；返回 `templates[]` 每项含 `file/type/name/summary/scenarios/features/path/scope/valid/source/preferred`。`source=json` = 内置 `templates/json/*.template.json` 权威源，`source=legacy` = 旧 MD 兼容；同 type 并存时以 `source=json` 优先，`preferred=true` 为选型首选。新增类型必须同步落 JSON 模板（见 §六 速查表与 template-guide §2.7），MD 仅教学视图。
+
+> **升级=JSON 原生优先（示例优先铁律，2026-11-25）**：「升级/转换/适配既有模板」的推荐必须先打开 `../../../examples/json-template-upgrade/review.md` 展示**产出模板实物**（pretty-print JSON + MD 教学视图 + 逐字段对照 + 渲染片段），并实跑该文件 C1–C8（C6 负控制必须 FAIL）后才可给方案；方案首选=JSON 权威源转换（`template-catalog.sh to-json --dry-run` → 落 JSON + 同步 MD），MD 叠加层/新建独立类型只能在有明确理由且已展示实物后作为次选。判例=sess_11371d87：助手先推荐 MD 叠加层、零次提及 JSON，用户纠正后才改 JSON-first。
 
 > 选定 template_type 后，立即按 §九「机制适用性矩阵」套用该类型的机制画像（Rule 37）：Code Review Gate、执行体路由等按矩阵行取捨。
 
