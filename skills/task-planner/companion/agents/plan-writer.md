@@ -140,7 +140,7 @@ cost_estimate:
 | **s_unit_id** | S-unit 表 ID 列一律纯数字（S1、S2…全局或每 Phase 内唯一均可，禁字母后缀如 S2a——check-plan-dispatch.sh 数据行正则 S[0-9]+ 边界不认字母后缀，attest 会以「缺 S-unit 表或数据行」拒锁；task-v076 实证教训） |
 | **output_examples（Rule 113，全档必填）** | 凡交付物声明输出格式/结构（JSON/YAML/Markdown 表格/CSV/文件树/API payload 等），必须经 `planctl add --section output_examples` 写入至少 1 条：id/deliverable/format/example(完整可查看真实样例,fenced)/template(同结构占位符版)/vc_refs(≥1 个已存在 VC)。render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。禁只写「输出 JSON」而无样例；mini/L0-lite 不豁免（可用极简版）；无格式交付物写 `none-justified（理由）` |
 
-- **输出示例契约（Rule 113）**：示例必须让用户直接看到产出长什么样（用户 2026-11-25 投诉「说输出 JSON 格式，JSON 实例完全不提供，执行结果完全相背」）；`example` 与 `template` 字段集/层级必须一致，`example` 自包含可查看（JSON 合法可解析、表格有表头+≥1 行数据），禁「略/同上/TBD」。示例的 `vc_refs` 须映射 VC 判据，验收时产出形态与示例不一致 = VC 未通过。
+- **输出示例契约（Rule 113）**：示例必须让用户直接看到产出长什么样（用户 2026-11-25 投诉「说输出 JSON 格式，JSON 实例完全不提供，执行结果完全相背」）；`example` 与 `template` 字段集/层级必须一致，`example` 自包含可查看（JSON 合法可解析、表格有表头+≥1 行数据），禁「略/同上/TBD」。示例的 `vc_refs` 须映射 VC 判据，验收时产出形态与示例不一致 = VC 未通过。 示例 JSON 一律经 `scripts/render-output-example.py` CLI 传参生成（Rule 113.9），禁手写（防转义/结构错误）。
 - **调研需求区块（Rule 75.1）**：standard/full 档计划必须含「🔍 调研需求与检索计划」区块——逐 S-unit/子目标标注三态（LOCAL-ONLY/NET-RESEARCH/NET-DATA-DEPENDENT），NET-* 条目登记检索关键词（≥2）+渠道+预期产出形态；mini 档豁免
 
 调用方还需:

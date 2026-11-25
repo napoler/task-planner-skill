@@ -286,6 +286,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
   - 生成视图 / 安全回退：`render`（从 JSON **全量重建** 4 个 MD 视图；**每次状态/语义变更后必须 render**，这是软堵生效条件——不 render 则手工编辑残留不被覆盖）/ `backup` / `restore [--version N]` / `history`
 - **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。
 - **机器门**：`python3 scripts/planctl.py check vc-nonvacuous|rvc|audit|evidence` 输出单行 `PLANCTL CHECK <name>: PASS|FAIL <reason>`，rc 0=PASS / 1=FAIL / 2=输入异常；旧门脚本为双读 shim，前缀与 rc 外契约不变。
+- **输出示例生成器（Rule 113.9）**：`python3 scripts/render-output-example.py --set id=OE-1 --set deliverable=article.json --set format=JSON --example-file <完整示例文件> --template-file <占位符模板文件> --vc-ref VC-1 --out oe-1.json [--plan-dir <计划目录>] [--dry-run]` —— CLI 传参填充 `templates/output-example.template.json`（`{{KEY}}` 占位符），产出符合 `output_example_item` 契约的 JSON 文件；产物经 `planctl add --section output_examples --json` 落库并 render 派生。
 - **迁移期**：存量无 `plan-state.json` 的旧计划一次性兼容（机器门双读 fallback 保证零回归），**新计划一律 JSON 权威源**：`init-session.sh` 创建 plan-state.json（不 render）；**首次 planctl 数据写入后必须 `render`**——此后 4 个 MD 即为派生视图，手工编辑被后续 render 覆盖（软堵）。templates/*.md 为 plan-writer 过渡结构参考与 stub 判定基准（全量回归 PT-16/26 实证：空数据 render 会覆盖模板骨架，故 init 不自动 render）。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §planctl-four-piece
 
