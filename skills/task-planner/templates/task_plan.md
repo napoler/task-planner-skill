@@ -1,5 +1,6 @@
 # Task Plan: {{TASK_NAME}}
 <!-- 渲染契约(task-tplrender-20261024)：{{VAR}} token 由 init-session.sh render_template() 脚本渲染（task-id/任务名/日期/路径）；planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架仅供 init，正式数据经 planctl add/set 写入 plan-state.json 后 render 派生本视图——直接填写会在首次 render 被覆盖；领域段(task-json-template-20261125)：JSON 模板为源；plan-state.json 的 template_doc/template_checks 为权威，task_plan.md 为 render 派生视图；template_body 仅旧计划兼容（deprecated）-->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/task_plan.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- template-lineage: level=base spec_version=1 -->
 <!-- ===== frontmatter 头（Rule 16 选模板 + Rule 34.1 门控 + Rule 38.7 执行通道分级）=====
   选定 variant 后 template_type 填所选类型名（白名单={{TASK_PLANNER_ROOT}}/templates/variant/*-type.md 动态派生，见 check-template-type.sh）；general=通用回退（恒合法，Rule 34.1）

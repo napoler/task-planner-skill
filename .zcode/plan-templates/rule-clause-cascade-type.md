@@ -1,5 +1,6 @@
 <!-- template_type: rule-clause-cascade -->
 # 规则/条款级联修订（本仓项目适配）
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/rule-clause-cascade.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 
 **template_type**: rule-clause-cascade
 **适用**: task-planner-skill 源仓内规则增款、条款修订、纪律域级联同步（高频：Rule 编号增补/子条插段/卫星路由与计数联动）。

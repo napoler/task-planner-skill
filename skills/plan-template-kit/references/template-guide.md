@@ -15,6 +15,18 @@ task-planner 提供 **双层优先级** 的模板机制：
 
 **初始化脚本** `init-session.sh` 自动按优先级查找并复制模板到 plan 目录。
 
+### 1.1 JSON 模板路径优先级（task-json-template-20261125）
+
+<!-- [2026-11-25 task-json-template-docs] What: 增量补写 JSON 模板的三级路径优先级；Why: 上文双层优先级只覆盖 MD，JSON 成为权威源后若不写路径优先级，项目级 JSON 与内置 JSON 的覆盖关系无文本依据。 -->
+
+```
+优先级 1（最高）: {project}/.claude/plan-templates/<type>.template.json / {project}/.zcode/plan-templates/<type>.template.json（项目级 JSON 权威源）
+优先级 2（兜底）: ${TASK_PLANNER_ROOT}/templates/json/<type>.template.json（内置 33 个 JSON 权威源，planctl init --template-json 消费）
+优先级 3（教学视图）: templates/variant/<type>-type.md（仅供人读/展示，不再作为「整份 MD 读入 Python」的数据源）
+```
+
+同名 `type` 的 JSON 与 MD 并存时，一切语义判定（勾选/状态/scenarios/features）以 JSON 为准；MD 仅作展示与审查视图。项目级 JSON 由 init-session.sh 原生发现并入白名单，零接线。
+
 ---
 
 ## 二、内置模板清单
@@ -102,6 +114,16 @@ task-planner 提供 **双层优先级** 的模板机制：
 | 其他类型 | 可选（视具体任务而定） | 按 Rule 75.1 三态分析逐个判定 |
 
 判定结果必须写入模板（调研触点行或"不需要调研"声明），无判定=模板不完整。
+
+### 2.7 JSON 模板结构与 checklist/block 约定（task-json-template-20261125）
+
+<!-- [2026-11-25 task-json-template-docs] What: 增量补写 JSON 权威源的结构、block 与勾选约定；Why: §2.1-2.6 全以 MD 为对象，JSON 落地后勾选/表格的表达位置与「手改 MD 无效」的判定口径缺文本承载。 -->
+
+**权威源**：`templates/json/<type>.template.json`（33 个）；variant MD 为教学视图。**结构**：`{schema_version:1, meta:{template_type,name,summary,scenarios,features,lineage{level,parent,base,spec_version,pruned,pruned_reason}}, sections:[{id,anchor,level,kind:ref|blocks,required,ref?:{path,renderer},blocks?:[]}]}`；`kind=ref` 由 planctl 核心渲染器填值，`kind=blocks` 按 `anchor` 在核心段之后按序追加。
+
+**block 约定**：`markdown{text}` / `table{header,rows}` / `checklist{items:[{id,text,checked:false,note,tags?}]}` / `raw`。checklist item 的 `id` 全模板唯一（init 扁平化遇重复即拒绝），`checked` 严格 bool，`text` 即渲染文案；init 落 `template_checks`，渲染的 `- [x]/[ ]` 只读该数组——**手改 MD 勾态会被下一次 render 覆盖**；`check-state-consistency.sh` 按 JSON 做负控制（JSON 不可读/解析异常=FAIL，禁回退 MD）。
+
+**转换工具**：`bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/template-catalog.sh to-json --dry-run` 先看 33 条源→目标与字段计数，`--write` 才落盘；旧 `--template-body-from` 仅供无 JSON 的存量计划兼容（deprecated）。
 
 ---
 

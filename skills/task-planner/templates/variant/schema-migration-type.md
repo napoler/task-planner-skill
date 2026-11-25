@@ -1,5 +1,6 @@
 <!-- template_type: schema-migration -->
 <!-- template_meta: {"type": "schema-migration", "name": "Schema 迁移", "summary": "数据库 schema 变更、migration 脚本、索引重建、数据回填与在线 DDL。", "scenarios": ["数据库 schema 变更", "migration 脚本", "索引重建", "数据回填", "在线 DDL"], "features": ["Code Review 配置", "Verification Contract", "执行范围限制", "工具选择与编排", "Phases"]} -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/schema-migration.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- 适用场景: 数据库 schema 变更、migration 脚本、索引重建、数据回填、在线 DDL -->
 <!-- 触发关键词: 数据库/schema/migration/索引/在线 DDL/回填 -->
 <!-- 推荐 subagent: database-optimizer (sonnet-1) -->

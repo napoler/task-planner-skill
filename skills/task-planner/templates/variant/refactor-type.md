@@ -1,5 +1,6 @@
 <!-- template_type: refactor -->
 <!-- template_meta: {"type": "refactor", "name": "代码重构", "summary": "代码重构/瘦身，行为不变前提下降低复杂度、清理死代码、提升可读性，保证性能不退化。", "scenarios": ["代码重构", "代码瘦身", "简化", "清理死代码", "降低复杂度"], "features": ["Code Review 配置", "Verification Contract", "行为不变判据", "Phases", "隔离决策"]} -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/refactor.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- 适用场景: 代码重构/瘦身 -->
 <!-- 触发关键词: 重构/瘦身/简化/清理死代码/降低复杂度 -->
 <!-- 推荐 subagent: code-simplifier(瘦身) / executor(大型重构) -->

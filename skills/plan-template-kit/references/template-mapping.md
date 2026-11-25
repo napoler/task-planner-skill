@@ -43,6 +43,8 @@
 
 > **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类，task-videop1 起 image=18 类+视频工序 11 类=28 类，task-v115 videop1 回流起 29 类；task-l0lite-exempt 20261103 +l0-lite 极简豁免档=30 类，task-l0lite-exempt 20261103 起 30 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `../../task-planner/references/critical-rules.md` Rule 34。
 
+> **JSON 模板清单来源（task-json-template-20261125）**：选型先跑 `bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/template-catalog.sh list --json --scope all`；返回 `templates[]` 每项含 `file/type/name/summary/scenarios/features/path/scope/valid/source/preferred`。`source=json` = 内置 `templates/json/*.template.json` 权威源，`source=legacy` = 旧 MD 兼容；同 type 并存时以 `source=json` 优先，`preferred=true` 为选型首选。新增类型必须同步落 JSON 模板（见 §六 速查表与 template-guide §2.7），MD 仅教学视图。
+
 > 选定 template_type 后，立即按 §九「机制适用性矩阵」套用该类型的机制画像（Rule 37）：Code Review Gate、执行体路由等按矩阵行取捨。
 
 **文件路径**（相对 `${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/`）：
@@ -195,6 +197,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | 质检 | `templates/variant/qc-defect-type.md` | 机检+亲检 / 四级处置 / 判例固化 |
 | 配音对齐 | `templates/variant/audio-voice-type.md` | 声线表 / 语言锁 / 零生成 |
 | 终剪组装 | `templates/variant/final-assembly-type.md` | seam 5 边界 / 成片判定 / NAS |
+| JSON 权威源（全类型） | `templates/json/<type>.template.json`（source=json, preferred=true） | 结构字段/勾选块约定见 template-guide §2.7 |
 | 已有 .execution-plan.json | 允许替代 | — |
 
 ### 模板互斥关系(避免误选)

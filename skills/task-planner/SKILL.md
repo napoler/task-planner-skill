@@ -275,12 +275,14 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 
 > [2026-11-21 task-json-state-20261121] 结构化状态升级硬条款；与上文「派发与执行纪律指针」并列，适用于所有使用 task-planner 的计划目录。
 
-- **权威源声明**：`<plan-dir>/plan-state.json` 是任务状态**唯一权威源**，承载全部语义数据（Phase/VC/审计/派发 + Actions/Error Log/Test Results/Research/Decisions/Issues/S-units/FMEA 等全部语义段，2026-11-22 task-jsonderive-deploy-20261122 全量扩张）；`task_plan.md` / `progress.md` / `verification.md` / `findings.md` 是由 `planctl.py render` 从 JSON **全量派生**的只读视图。
+- **权威源声明**：`<plan-dir>/plan-state.json` 是任务状态**唯一权威源**，承载全部语义数据（Phase/VC/审计/派发 + Actions/Error Log/Test Results/Research/Decisions/Issues/S-units/FMEA 等全部语义段，2026-11-22 task-jsonderive-deploy-20261122 全量扩张）；`task_plan.md` / `progress.md` / `verification.md` / `findings.md` 是由 `planctl.py render` 从 JSON **全量派生**的只读视图。模板维度同理：`template_doc`（结构化模板载荷）+ `template_checks`（勾选唯一权威源）+ `template_ref` 同在 plan-state.json 内，`task_plan.md` 的领域段与 `- [x]` 勾态均为 render 派生（2026-11-25 task-json-template-docs）。
 - **硬规则（违反=流程无效）**：所有状态与语义数据变更**必须**通过 `python3 <skill>/scripts/planctl.py <subcommand>` 完成（`<skill>` = 本技能根目录，脚本绝对路径 `scripts/planctl.py`）；**四个 MD 视图一律不得手工 Edit/Write**——手工编辑会在下一次 `render` 被全量覆盖（软堵：render 覆盖使直接编辑无效，用户裁决 2026-11-22）。语义内容（动作/错误/测试/结论/决策/证据）同样走 CLI 入 JSON 再 `render` 同步视图。
 - **常用命令速查**（每条均需追加 `--plan-dir <plan-dir>`）：
   - 初始化：`init --task-id <id> --tier standard --lane L1 [--template-json <templates/json/*.template.json>]`（tier 可选 standard/mini；lane 可选 L0/L1/L2；state 已存在则拒绝覆盖；init 只建权威源不 render，首次数据写入后必须 render；JSON 模板为源，`plan-state.json` 的 `template_doc/template_checks` 为权威，`task_plan.md` 为 render 派生视图；`--template-body-from` 仅旧计划兼容（deprecated，禁与新计划同传），mini 档豁免领域勾选）
   - 读取：`get`（整份）/ `get --section <section> --id <id>` / `status` / `validate`
   - 改字段 / 增条目：`set --section <s> --id <id> --field <f> --value <v>` / `add --section <s> --json '<JSON>'`（另有 `update` / `delete`；`set` 不带 `--section` 可写顶层标量/对象字段）
+  - 结构化勾选读取：`get --section template_checks`（勾态权威数组，含 id/section/block/text/checked/note/tags）；整份模板载荷 `get --section template_doc`（2026-11-25 task-json-template-docs）
+  - 勾选项编辑（唯一入口）：`set --section template_checks --id <id> --field checked --value true`（或 `false`；`checked` 严格 bool，字符串拒收）→ `render`；手改 MD 勾态无效（门控按 JSON 负控制判定）
   - Phase / VC：`phase-start --id P1`（置 in_progress+Started 锚）/ `phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §planctl-json-examples
   - 生成视图 / 安全回退：`render`（从 JSON **全量重建** 4 个 MD 视图；**每次状态/语义变更后必须 render**，这是软堵生效条件——不 render 则手工编辑残留不被覆盖）/ `backup` / `restore [--version N]` / `history`
@@ -289,6 +291,19 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 - **输出示例生成器（Rule 113.9）**：`python3 scripts/render-output-example.py --set id=OE-1 --set deliverable=article.json --set format=JSON --example-file <完整示例文件> --template-file <占位符模板文件> --vc-ref VC-1 --out oe-1.json [--plan-dir <计划目录>] [--dry-run]` —— CLI 传参填充 `templates/output-example.template.json`（`{{KEY}}` 占位符），产出符合 `output_example_item` 契约的 JSON 文件；产物经 `planctl add --section output_examples --json` 落库并 render 派生。
 - **迁移期**：存量无 `plan-state.json` 的旧计划一次性兼容（机器门双读 fallback 保证零回归），**新计划一律 JSON 权威源**：`init-session.sh` 创建 plan-state.json（不 render）；**首次 planctl 数据写入后必须 `render`**——此后 4 个 MD 即为派生视图，手工编辑被后续 render 覆盖（软堵）。templates/*.md 为 plan-writer 过渡结构参考与 stub 判定基准（全量回归 PT-16/26 实证：空数据 render 会覆盖模板骨架，故 init 不自动 render）。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §planctl-four-piece
+
+### 📐 JSON 原生模板（结构化源 + 勾选负控制 — task-json-template-20261125）
+
+<!-- [2026-11-25 task-json-template-docs] What: 补写 JSON 模板权威源、勾选编辑入口与门控负控制口径；Why: 此前技能正文仅留 1 行注释，端点执行体仍按「整份 MD 读进 Python」旧路径操作，手改勾选被 render 覆盖却无从判断，故把已落地机制写进入口权重区。 -->
+
+- **模板源路径**：`templates/json/<type>.template.json`（33 个）。选型仍先跑 `scripts/template-catalog.sh list --json --scope all`，`source=json` 为权威首选、`source=legacy` 为旧 MD 兼容；`templates/variant/*.md` 降级为教学/展示视图，不再作为「整份 MD 读入 Python」的数据源。
+- **结构要点**：`{schema_version:1, meta:{template_type,name,summary,scenarios,features,lineage{level,parent,base,spec_version,pruned,pruned_reason}}, sections:[{id,anchor,level,kind:ref|blocks,required,ref?:{path,renderer},blocks?:[{id,kind:markdown|checklist|table|raw,...}]}]}`。`kind=ref` 由 planctl 既有核心渲染器填值；`kind=blocks` 按 `anchor` 顺序追加；`checklist.items[].id/text/checked` 是勾选条目来源。
+- **派生登记**：`meta.lineage` 记录 `level/parent/base/spec_version/pruned/pruned_reason`；二级派生须 `parent`+`base` 双参照，裁剪区块在 `pruned[]` 显式登记并写 `pruned_reason`（Rule 34.5），核心区块未经豁免禁静默丢失。
+- **转换工具**：`scripts/template-catalog.sh to-json [--dry-run|--write]`（33 个 MD 骨架→JSON；默认 dry-run 只列源→目标与字段计数，拒绝部分转换，`--write` 才落盘）；新增/改造类型先用它核对 JSON 源，再交 `init --template-json` 消费。
+- **落位与权威**：`planctl init --template-json <path>` 写 `template_ref`（仓内相对路径）/`template_doc`（仅 meta+sections）/`template_checks`（所有 checklist items 扁平化，id 重复即 fail-loud 拒绝）；新计划禁写 `template_body`，`render` 不吐旧模板附录。
+- **勾选编辑（唯一入口）**：`get --section template_checks` 读权威勾态 → `set --section template_checks --id <id> --field checked --value true|false` → `render`。**手改 `task_plan.md` 的 `- [x]` 无效**：下一次 render 全量覆盖，判定一律按 JSON；门控负控制见下条。
+- **门控负控制**：`check-state-consistency.sh` 等门先读 `plan-state.json` 的 `template_checks`；JSON 存在但 planctl 缺失/解析异常=FAIL 且**禁回退 MD**；勾态与渲染视图不一致报 `[state-mismatch]`（提示改用 set checked + render）。仅当无 JSON 时才回退旧 MD 正则，保证存量计划零回归。
+- **旧计划兼容边界**：`--template-body-from` 仅供无 JSON 的旧计划使用（deprecated，禁与 `--template-json` 同传）；旧 `template_body` 仅在无 `template_doc` 时以附录呈现；新计划一律 JSON 权威源，MD 模板不作为状态/勾选写入面。
 
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §script-index
 ## References

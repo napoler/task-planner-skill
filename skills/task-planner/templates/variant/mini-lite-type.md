@@ -1,5 +1,6 @@
 <!-- template_type: mini-lite -->
 <!-- [task-perf-default-mini 2026-11-24] What: mini-lite 适用面 ≤2→≤5 文件（缺省 mini 档）；Why: 缺省 mini 后 3-5 文件任务也走本模板，旧字面会误导为不适用。 -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/mini-lite.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- template_meta: {"type": "mini-lite", "name": "轻量任务", "summary": "轻量任务（≤5 文件（缺省 mini 缺省档；task-perf-default-mini 2026-11-24）且≤15min 且单模块），跳过中/重仪式区块，单 Phase 实施加验收合一。", "scenarios": ["轻量任务", "单文件小改", "快修/微调", "15 分钟内小任务", "白名单内免派发任务"], "features": ["Goal", "Verification Contract", "执行范围限制", "单 Phase 实施加验收合一", "Subagent Handoff 表"]} -->
 <!-- plan_tier: mini -->
 <!-- 适用场景: 轻量任务（≤5 文件（缺省 mini 缺省档；task-perf-default-mini 2026-11-24） ∧ 预估 ≤15min ∧ 单模块）——跳过中/重仪式区块，中/重任务禁用本模板（Rule 38.2） -->

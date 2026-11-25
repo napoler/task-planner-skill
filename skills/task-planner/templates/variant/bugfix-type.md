@@ -1,5 +1,6 @@
 <!-- template_type: bugfix -->
 <!-- template_meta: {"type": "bugfix", "name": "Bug 修复", "summary": "适用于 bug 修复与根因定位，目标为修复具体症状并使回归测试通过。", "scenarios": ["bug 修复", "根因定位", "程序报错/异常排查", "功能不工作", "系统崩溃修复"], "features": ["Code Review 配置", "Verification Contract", "执行范围限制", "Phases", "隔离决策"]} -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/bugfix.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- 适用场景: bug 修复/根因定位 -->
 <!-- 触发关键词: 修 bug/修复/报错/失败/异常/崩溃/不工作 -->
 <!-- 推荐 subagent: debugger + Skill("systematic-debugging") -->
