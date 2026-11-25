@@ -40,7 +40,7 @@
 - 中断恢复 → 用 `task-planner scripts/session-catchup.ts`
 - 变更需求 → Edit task_plan.md 调整，不重新规划
 - 新会话重启 → 算新计费（context 已重置）
-- **嵌套 opus Skill 复用**:同一 phase 已触发 `Skill("code-review")`,复用其输出而非再次调用（Rule 17.1）
+- **嵌套 opus Skill 复用**:同一 phase 已触发 `Skill("code-quality-review")`,复用其输出而非再次调用（Rule 17.1）
 - **plan-writer 复用旧 Decisions Made**:不重新生成同 task_plan（Rule 17.3）
 
 ## 单会话 opus 累计门控（Rule 17.5）

@@ -83,27 +83,41 @@ case "$_PARALLEL_MODE" in ''|off|on) ;; *) _PARALLEL_MODE=off ;; esac
 _PARALLEL_ACTIVE=0
 if [ "$_PARALLEL_MODE" = "on" ] && [ "$FRESH" = "1" ] && [ -z "$ONLY" ]; then _PARALLEL_ACTIVE=1; fi
 _TOP5_RE='final-gate-hash|requirement-coverage|vc-gate|plan-tier|smart-merge'
+# [2026-11-25 defect-fix P1] 缓存完整性校验：原实现 read 失败 || true + ${rc:-0} 兜底，
+# 缓存文件损坏/被篡改（空文件、'0 999 999'）时按 rc=0 PASS 复用 → 假绿且脚本根本不执行。
+# 缓存内容必须是恰好三个整数 'N N N'，否则判为无效并强制重跑。
+_cache_valid() {
+  local cf="$1" line
+  [ -f "$cf" ] || return 1
+  line="$(cat "$cf" 2>/dev/null)"
+  printf '%s' "$line" | grep -qE '^[0-9]+ [0-9]+ [0-9]+$' || return 1
+  return 0
+}
 # 单脚本执行封装：写独立结果文件 <res_file>（4 字段：rc p f mode），供并行/串行统一汇总
 exec_one() {
   local script="$1" base="$2" cache_key="$3" cache_file="$4" res_file="$5" log_file="$6"
   local rc p f
-  if [ "$FRESH" = "0" ] && [ -f "$cache_file" ]; then
-    rc=0; p=0; f=0; read -r rc p f < "$cache_file" 2>/dev/null || true
-    printf '%s %s %s reused\n' "${rc:-0}" "${p:-0}" "${f:-0}" > "$res_file"
-    printf '[reused] %s (rc=%s PASS=%s FAIL=%s)\n' "$base" "${rc:-0}" "${p:-0}" "${f:-0}" >> "$log_file"
+  if [ "$FRESH" = "0" ] && _cache_valid "$cache_file"; then
+    read -r rc p f < "$cache_file"
+    printf '%s %s %s reused\n' "$rc" "$p" "$f" > "$res_file"
+    printf '[reused] %s (rc=%s PASS=%s FAIL=%s)\n' "$base" "$rc" "$p" "$f" >> "$log_file"
     return 0
   fi
+  # 缓存损坏：删除后强制实跑（^[0-9]+ [0-9]+ [0-9]+$ 校验失败时不复用）
+  [ -f "$cache_file" ] && rm -f "$cache_file"
   out="$(bash "$script" 2>&1)"; rc=$?
   p="$(printf '%s\n' "$out" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2)"
   f="$(printf '%s\n' "$out" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)"
   [ -z "$p" ] && p=0; [ -z "$f" ] && f=0
+  # [2026-11-25 defect-fix P1] 自报 FAIL>0 即使 rc=0 也视为失败，杜绝"断言失败却 exit 0"假绿。
+  if [ "$rc" -eq 0 ] && [ "$f" -gt 0 ]; then rc=1; fi
   if [ "$rc" = "0" ]; then printf '%s %s %s\n' "$rc" "$p" "$f" > "$cache_file"; fi
   if [ "$rc" = "0" ]; then
     printf '0 %s %s run\n' "$p" "$f" > "$res_file"
     printf '[run]    %s (rc=0 PASS=%s FAIL=%s)\n' "$base" "$p" "$f" >> "$log_file"
   else
     printf '%s %s %s fail\n' "$rc" "$p" "$f" > "$res_file"
-    printf '[FAIL]   %s (rc=%s)\n' "$base" "$rc" >> "$log_file"
+    printf '[FAIL]   %s (rc=%s FAIL=%s)\n' "$base" "$rc" "$f" >> "$log_file"
   fi
   return 0
 }
@@ -129,20 +143,25 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
   fi
 
   # 串行执行（非 top-5，或并行未启用）
-  RUNN=$((RUNN+1))
-  if [ "$FRESH" = "0" ] && [ -f "$cache_file" ]; then
-    rc=0; p=0; f=0; read -r rc p f < "$cache_file" 2>/dev/null || true
+  if [ "$FRESH" = "0" ] && _cache_valid "$cache_file"; then
+    read -r rc p f < "$cache_file"
     REUSEDN=$((REUSEDN+1))
-    if [ "${rc:-0}" = "0" ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; fi
-    echo "[reused] $base (rc=${rc:-0} PASS=${p:-0} FAIL=${f:-0})"
+    # [2026-11-25 defect-fix P1] 复用缓存同样要求 f=0 才算 PASS
+    if [ "$rc" = "0" ] && [ "$f" -eq 0 ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; fi
+    echo "[reused] $base (rc=$rc PASS=$p FAIL=$f)"
     continue
   fi
+  # 缓存损坏：删除后强制实跑
+  [ -f "$cache_file" ] && rm -f "$cache_file"
+  RUNN=$((RUNN+1))
   out="$(bash "$script" 2>&1)"; rc=$?
   p="$(printf '%s\n' "$out" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2)"
   f="$(printf '%s\n' "$out" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)"
   [ -z "$p" ] && p=0; [ -z "$f" ] && f=0
+  # [2026-11-25 defect-fix P1] 自报 FAIL>0 即使 rc=0 也判 FAIL；同时修正 run= 计数（原在缓存判断前，reused 也计入 run）
+  if [ "$rc" -eq 0 ] && [ "$f" -gt 0 ]; then rc=1; fi
   if [ "$rc" = "0" ]; then printf '%s %s %s\n' "$rc" "$p" "$f" > "$cache_file"; fi
-  if [ "$rc" = "0" ]; then PASSN=$((PASSN+1)); echo "[run]    $base (rc=0 PASS=$p FAIL=$f)"; else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; echo "[FAIL]   $base (rc=$rc)"; fi
+  if [ "$rc" = "0" ]; then PASSN=$((PASSN+1)); echo "[run]    $base (rc=0 PASS=$p FAIL=$f)"; else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; echo "[FAIL]   $base (rc=$rc FAIL=$f)"; fi
 done
 
 # [task-perf-opt Change #11] 并行 top-5 汇总：wait 后台 + 读各 res_file 更新统计 + 打印各 log
@@ -159,7 +178,8 @@ if [ -n "${_PAR_PIDS:-}" ]; then
       run) RUNN=$((RUNN+1));;
       *) RUNN=$((RUNN+1));;
     esac
-    if [ "${_rc:-0}" = "0" ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $_b"; fi
+    # [2026-11-25 defect-fix P1] 并行汇总同样要求 rc=0 且 f=0
+    if [ "${_rc:-0}" = "0" ] && [ "${_f:-0}" -eq 0 ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $_b"; fi
   done
 fi
 

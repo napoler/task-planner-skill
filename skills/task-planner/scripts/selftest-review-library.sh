@@ -132,7 +132,7 @@ else
 fi
 # RL-13 [task-v171 核心瘦身] 42.6.3 三要素升级锚：C32 合规行随清单表退役 → SKILL Code Review Gate 段（审查消费面现存载体）
 #   现象：SKILL.md 瘦身后 C32 行（三要素消费行）归零，RL-13 恒 FAIL；CRIT_D 42.6.3 行三要素在位（p=1 不变）。
-#   根因：Rule 42 属纪律域；SKILL 侧审查消费面=Code Review Gate 段（Skill("code-review") APPROVED 才可终验交付）。
+#   根因：Rule 42 属纪律域；SKILL 侧审查消费面=Code Review Gate 段（Skill("code-quality-review") APPROVED 才可终验交付）。
 #   修法：m=SKILL.md 'Code Review Gate' ≥1（审查消费面载体）；p=CRIT_D 42.6.3 行三要素锚不变。
 p="$(grep '^42\.6\.3' "$CRIT_D" | grep -c '三要素' || true)"
 m="$(grep -c 'Code Review Gate' "$SKILLMD" || true)"

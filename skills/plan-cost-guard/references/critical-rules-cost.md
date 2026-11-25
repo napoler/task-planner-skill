@@ -14,5 +14,5 @@ opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainst
 17.4 **drift 检测频次上限**:每 phase 内 `drift-checker` 派发 ≤3 次(2-3 todo + 切模块 + phase complete)
 17.5 **opus 调用门控**:单次会话 opus 累计(主进程 + Skill 嵌套 + subagent 升级)≥10 次 → AskUserQuestion
 17.6 **复杂任务优先 subagent**:opus 上下文长读文件(>500 行)必派 subagent(沿用 Rule 13)
-17.7 **代码 review 必含 `required`**:`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")`
+17.7 **代码 review 必含 `required`**:`task_plan.md#code_review` = `required` 才触发 `Skill("code-quality-review")`
 17.8 **每次 opus 调用记 `cost_log.md`**:子代理/Skill 调用记录到 `cost_log.md` 便于复盘;`plan-writer` 产出契约加 `cost_estimate` 字段

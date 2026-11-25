@@ -18,7 +18,7 @@
  * If --settings is omitted, defaults to ~/.claude/settings.local.json.
  * If --canonical is omitted, defaults to $HOME/dev/task-planner.
  */
-import { readFileSync, writeFileSync, mkdirSync, statSync, existsSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, statSync, existsSync, unlinkSync, renameSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 
@@ -70,14 +70,18 @@ const TASK_PLANNER_ROOT = process.env.TASK_PLANNER_ROOT ||
   join(homedir(), 'dev', 'task-planner');
 
 function loadSettings(path: string): Record<string, unknown> {
+  // [2026-11-25 defect-fix P0-3] 文件不存在=首次安装，合法返回空对象；
+  // 但文件存在却解析失败时禁止静默返回 {}——否则 dumpSettings 会用空对象整写覆盖
+  // 用户的其它配置（插件 hook、权限等）永久丢失。改为抛错由 main 兜底退出。
+  if (!existsSync(path)) return {};
   try {
     // [2026-09-01] memory-safety: size guard before readFileSync
-    if (statSync(path).size > 50 * 1024 * 1024) return {};
+    if (statSync(path).size > 50 * 1024 * 1024) throw new Error('settings file >50MB');
     const raw = readFileSync(path, 'utf8').trim();
     if (!raw) return {};
     return JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    return {};
+  } catch (err) {
+    throw new Error(`[task-planner] 无法解析 ${path}（疑似损坏/半截 JSON）: ${err}。已中止以避免覆盖用户配置，请人工检查该文件。`);
   }
 }
 
@@ -92,26 +96,32 @@ function dumpSettings(path: string, obj: Record<string, unknown>, dryRun: boolea
     mkdirSync(parent, { recursive: true });
   } catch { /* directory may already exist */ }
   const tmp = path + '.tmp.' + process.pid;
+  // [2026-11-25 defect-fix P0-3] 原实现 writeFileSync(path, readFileSync(tmp)) 是截断-重写，
+  // 非原子；异常时 catch 二次直写会在半截状态上再写一遍，可损毁用户 settings。
+  // 改为同目录 renameSync（POSIX 原子替换）；失败仅清理 tmp 并抛错，禁二次直写。
   writeFileSync(tmp, JSON.stringify(obj, null, 2) + '\n', 'utf8');
   try {
-    writeFileSync(path, readFileSync(tmp));
-    unlinkSync(tmp);
-  } catch {
-    // atomic-fallback: direct write
-    writeFileSync(path, JSON.stringify(obj, null, 2) + '\n', 'utf8');
+    renameSync(tmp, path);
+  } catch (err) {
+    try { unlinkSync(tmp); } catch { /* tmp 可能已不存在 */ }
+    throw new Error(`[task-planner] 原子写回 ${path} 失败: ${err}`);
   }
   console.log('[task-planner] settings.local.json patched.');
 }
 
-function taskPlannerHookEnv(commandBase: string): string {
+// [2026-11-25 defect-fix P0-1] 原实现把 SD 硬编码为 '${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts'，
+// 该 fallback 路径在实盘不存在（/home/terry/dev/task-planner 无 scripts/ 子目录），
+// 且 canonicalRoot 参数只用于日志打印、未参与命令构造 → Claude Code 会话未设 env 时全部 hook ENOENT。
+// 本函数在安装期把不存在的默认 fallback 替换为真实 canonical 根，确保写出的命令指向有效脚本目录。
+function taskPlannerHookEnv(commandBase: string, canonicalRoot: string): string {
   return commandBase.replace(
-    '$HOME/dev/task-planner',
-    '${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}'
+    '${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}',
+    '${TASK_PLANNER_ROOT:-' + canonicalRoot + '}'
   );
 }
 
 function buildHooks(canonicalRoot: string): Record<string, unknown[]> {
-  const SD = '${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts';
+  const SD = taskPlannerHookEnv('${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/scripts', canonicalRoot);
   const HOOK_TOOL = '${CLAUDE_TOOL_NAME:-Write}';
   const HOOK_FILE = '${FILE_PATH:-}';
   const HOOK_SD = '"$SD"';
@@ -181,19 +191,31 @@ function buildHooks(canonicalRoot: string): Record<string, unknown[]> {
   return hooks;
 }
 
-function patchSettings(settings: Record<string, unknown>, hooks: Record<string, unknown[]>, dryRun: boolean): void {
+function patchSettings(settings: Record<string, unknown>, hooks: Record<string, unknown[]>, dryRun: boolean, settingsPath: string): void {
   const existing = settings.hooks as Record<string, unknown[]> | undefined;
   const merged = { ...existing } as Record<string, unknown[]> | {};
   for (const [name, cmds] of Object.entries(hooks)) {
-    if (merged[name]) {
-      console.log(`[task-planner] hook ${name}: existing entry found, overwriting with canonical.`);
+    // [2026-11-25 defect-fix P0-4] 原实现 merged[name]=cmds 整段替换，会清除同事件下
+    // 其它插件/用户自有的 hook。改为按 command 去重合并：先保留所有非本技能的条目，
+    // 再追加/替换本技能条目（以 command 字符串是否位于 cmds 集合判定归属）。
+    const incoming = cmds as Array<{ command?: string }>;
+    const incomingCmds = new Set(incoming.map(c => c.command));
+    const prior = (merged[name] ?? []) as Array<{ command?: string }>;
+    const kept = prior.filter(c => !incomingCmds.has(c.command ?? ''));
+    const isTpHook = (cmd: string) => cmd.includes('/task-planner/') || cmd.includes('${TASK_PLANNER_ROOT');
+    const replaced = prior.some(c => isTpHook(c.command ?? ''));
+    if (replaced) {
+      console.log(`[task-planner] hook ${name}: refreshed task-planner entries (preserved ${kept.length} third-party).`);
     } else {
       console.log(`[task-planner] hook ${name}: registered (new).`);
     }
-    merged[name] = cmds;
+    merged[name] = [...kept, ...cmds];
   }
   settings.hooks = merged;
-  dumpSettings(process.argv[2] ?? join(homedir(), '.claude', 'settings.local.json'), settings, dryRun);
+  // [2026-11-25 defect-fix P0-2] 原实现用 process.argv[2] 作为写入目标：
+  // --settings <path> 时 argv[2] 是字面量 '--settings'，会在 cwd 创建错误文件；
+  // --canonical <dir> 时 argv[2] 是目录 → EISDIR。统一改用已解析的 settingsPath。
+  dumpSettings(settingsPath, settings, dryRun);
 }
 
 function main(): void {
@@ -217,9 +239,15 @@ function main(): void {
     process.exit(1);
   }
 
-  const settings = loadSettings(settingsPath);
-  const hooks = buildHooks(canonicalPath);
-  patchSettings(settings, hooks, dryRun);
+  try {
+    const settings = loadSettings(settingsPath);
+    const hooks = buildHooks(canonicalPath);
+    patchSettings(settings, hooks, dryRun, settingsPath);
+  } catch (err) {
+    // [2026-11-25 defect-fix P0-3] 配置损坏/写回失败时非零退出，禁止静默吞错
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exit(2);
+  }
 }
 
 main();

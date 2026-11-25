@@ -2124,7 +2124,10 @@ END {print n+0}'
         else
             # [M2-fix 2026-10-14] 结果性校验：Total 行 FAIL=N（N>0）→ ①不通过
             # 原 GATE 只验存在性（Total: 行有值即可放行），升级：FAIL>0 须补 fresh 全量重跑
-            _l0_fail_n="$(grep -oE 'FAIL=[0-9]+' "$l0_vf" 2>/dev/null | head -1 | grep -oE '[0-9]+' || true)"
+            # [2026-11-25 defect-fix P1] 原实现 grep 全文首个 FAIL= 即取，若 Total 行之前存在
+            # [run] selftest-x (FAIL=0) 行会取到 0，使终验 FAIL=3 被假阴放行。
+            # 改为先锚定 ^Total: 行再提取其 FAIL=N。
+            _l0_fail_n="$(grep -E '^Total:' "$l0_vf" 2>/dev/null | head -1 | grep -oE 'FAIL=[0-9]+' | grep -oE '[0-9]+' || true)"
             if [ -n "${_l0_fail_n:-}" ] && [ "$_l0_fail_n" -gt 0 ]; then
                 l0_fail="${l0_fail}①全量终验 FAIL=${_l0_fail_n}>0（L0 底线=0 FAIL；FAIL>0 须补 fresh 全量重跑） "
             fi

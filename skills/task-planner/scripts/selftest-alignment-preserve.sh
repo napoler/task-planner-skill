@@ -64,7 +64,11 @@ else
 fi
 
 # AP-05: core 路由表 task-discipline 行含 114
-if grep -q '^\- \*\*task-discipline\*\*' "$CRIT" && grep -q '101,102,114' "$CRIT"; then
+# [2026-11-25 defect-fix] 原断言 grep '101,102,114' 字面连续串，与路由表 Rule 集合顺序强耦合；
+# 路由表补全 105/106/107 后变为 '101,102,105,106,107,114' 导致本断言假 FAIL。
+# 改为先取 task-discipline 路由行，再分别断言该行同时含 102 与 114（与相邻编号顺序解耦）。
+_crit_td_line="$(grep '^\- \*\*task-discipline\*\*' "$CRIT" | head -1)"
+if [ -n "$_crit_td_line" ] && printf '%s' "$_crit_td_line" | grep -qE '(^|[^0-9])114([^0-9]|$)' && printf '%s' "$_crit_td_line" | grep -qE '(^|[^0-9])102([^0-9]|$)'; then
   ok "AP-05: core 路由表 task-discipline 行含 114"
 else
   bad "AP-05: core 路由表缺 114 接线"
@@ -75,6 +79,15 @@ if [ -f "$REG" ] && grep -q '^selftest-alignment-preserve\.sh	' "$REG"; then
   ok "AP-06: selftest-alignment-preserve.sh 已登记 registry"
 else
   bad "AP-06: 本脚本未登记 selftest-registry.tsv"
+fi
+
+# [2026-11-25 defect-fix P1] AP-07: 入口 SKILL.md 的卫星路由表也须含 114（原 AP-05 只守 critical-rules.md，
+# SKILL.md:224 路由表缺 114 导致从入口读规则看不到内容保真铁律——正是 Rule 114 判例要防的事故）。
+# 断言 SKILL.md 的 task-discipline 路由行（含 critical-rules-discipline.md 路径）同时含 114。
+if grep -q 'critical-rules-discipline.md' "$SKILL_ROOT/SKILL.md" && grep -q '105,106,107,114' "$SKILL_ROOT/SKILL.md"; then
+  ok "AP-07: SKILL.md 卫星路由表 task-discipline 行含 114"
+else
+  bad "AP-07: SKILL.md 卫星路由表缺 114 接线"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"

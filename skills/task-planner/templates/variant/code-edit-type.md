@@ -98,7 +98,7 @@ Phase 1
 
 ### Phase 4: 触发 Code Review Gate
 - [ ] 收集本次修改文件清单(`git diff --name-only`)
-- [ ] 调用 `Skill("code-review")` 上下文隔离审查
+- [ ] 调用 `Skill("code-quality-review")` 上下文隔离审查
 - [ ] APPROVED → 进入 Phase 5;CHANGES_REQUESTED → 回到 Phase 2 修复
 - **Status:** pending
 - **Executor:** 主进程（例外理由:编排与交付属主进程白名单）

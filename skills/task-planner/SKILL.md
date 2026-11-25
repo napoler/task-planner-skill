@@ -15,7 +15,7 @@ references:
 - references/methodology.md: 思维方法论 T1-T5 指针 + 内容质量 Q3/Q4 + FMEA/Poka-Yoke
 - references/spec-mode.md: Spec 模式路由（Superpowers×OpenSpec 显性集成：触发判定/路由表/安装引导/反模式/记录者调度者职责）
 - 卫星技能 task-dispatch: 子代理派发/拆分/调度/超时兜底/返回校验/代码编辑隔离/使用点标注（`../task-dispatch/`，Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104）
-- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95,97,98）
+- 卫星技能 task-discipline: 执行纪律/错误闭环/批量质量/反思/注释/可靠性/能力沉淀/变更吸收（`../task-discipline/`，Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,102,105,106,107,114）
 - 卫星技能 media-planner: 媒体制作派发/单元线并行/内容分级（`../media-planner/`，Rule 47,49,50）
 - 卫星技能 verification-gate: 任务验证全链路——VC 可执行化设计/执行期 V-N 校验/终验 VC 复验/子代理验证/统一验证入口（`../verification-gate/`，Rule 84）
 - references/plan-workflow-details.md: 计划制作循环细节（模板/审计/终验/JSON SOP/planctl 四件套等，按需 Read）
@@ -128,7 +128,7 @@ model: opus
   6. [A] **[DRIFT CHECK]** 派发 `drift-checker` 偏移检查（载体 Rule 61/64，详见卫星 `task-drift-guard`）：✅ALIGNED→继续；⚠️DRIFT→记 progress 警觉继续（「警觉 vs 返工」拿不准→decision-arbiter 裁决）；🔴BLOCKED→STOP 报告用户等决策。触发时机=Phase complete 后立即/连续 ≥3 次工具调用/切换文件模块前/用户新指令时（先过「用户新指令处理」判定）；留痕三件套（检查点+`ledger-append.sh drift_check`+Drift Log 行）缺一=未执行
      drift-checker=执行偏移/目标漂移的安全网（Rule 61/64），**非意图切换发起器**——用户新指令的意图变更走上方快速判定卡判定归属，偏移检查只在判定归属当前计划后才派发。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §drift-check-options
-- [ ] [A] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
+- [ ] [A] **Code Review Gate**（仅 `code_review: required`）：全部 Phase complete 后、终验交付前触发；轻 diff（代码 ≤3 文件且合计 ≤50 行）单轮轻量审查，重 diff 全量多轮；`Skill("code-quality-review")` 输出 APPROVED 才可进入终验交付；CHANGES_REQUESTED→追加 fix-phase 回执行循环；CR 分歧（Rule 69.1 T6）→decision-arbiter
 
 - [ ] [M] **终验交付 — 机械子动作**：跑终验门脚本/合并回/提交核验/Read 产出/归档
   - **3-File Gate（19.5）/GIT-BASELINE GATE（2026-11-24 task-session-regression-20261124）**：check-complete.sh 内置校验 findings/progress 非 stub（缺失/stub→exit 1→STOP 回填禁交付），终验自动跑全量 Git 差异分析并核 sidecar（B9/B10 缺证或 B11 unresolved>0→exit 1→STOP 禁出 outcome）
@@ -221,7 +221,7 @@ model: opus
 | 卫星 | 域 | 规则全文路径 | 调用条件 |
 |------|----|------------|---------|
 | task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离/使用点标注（Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104） |
-| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收/跨项目跨目录操作授权/临时目录统一与工作树内放/git 使用加强（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,105,106,107） |
+| task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收/跨项目跨目录操作授权/临时目录统一与工作树内放/git 使用加强（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41-45,48,53-57,60,65,67,69-74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,102,105,106,107,114） |
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
 | plan-template-advisor | 项目模板适配与沉淀生产 | `../plan-template-advisor/SKILL.md` | 项目模板适配分析/沉淀评估/缺口映射（Rule 34.8/34.9 消费面） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
@@ -316,4 +316,4 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | `templates/delivery-summary.md` | 终验交付总结五要素模板 |
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
 | `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源 |
-| 外部 skill/agent | `drift-checker`（Rule 61）/`decision-arbiter`（Rule 69）/`Skill("plan-resume")`（Rule 24）/`Skill("progress-tracker")`（Rule 30）/`code-review` skill |
+| 外部 skill/agent | `drift-checker`（Rule 61）/`decision-arbiter`（Rule 69）/`Skill("plan-resume")`（Rule 24）/`Skill("progress-tracker")`（Rule 30）/`code-quality-review` skill |
