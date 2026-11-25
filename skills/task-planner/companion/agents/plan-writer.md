@@ -56,6 +56,7 @@ cost_estimate:
 | `research` | `templates/variant/research-type.md` | 关键词调研/SERP/竞品研究 |
 | `diagnostic` | `templates/variant/diagnostic-type.md` | skill 审计/bug 排查/路径验证 |
 | `writing` | `templates/variant/writing-type.md` | 长文/文章/文档撰写 |
+| `longform-continuity` | `templates/variant/longform-continuity-type.md` | 长篇小说/连载/剧集长篇剧情/长论文长报告（跨章节一致性，含续写改写；须加载 longform-continuity 技能） |
 | `publish` | `templates/variant/publish-type.md` | API 发布/跨平台分发 |
 | `code-edit` | `templates/variant/code-edit-type.md` | 单文件/多文件代码编辑 |
 | `refactor` | `templates/variant/refactor-type.md` | 代码重构/瘦身(行为不变) |
@@ -69,6 +70,7 @@ cost_estimate:
 | `video-fix` | `templates/variant/video-fix-type.md` | 视频修正/局部重生成/QC FAIL 处置（video 家族 C 修正分支展开；A/B 型回 video） |
 | `video` | `templates/variant/video-type.md` | 视频创作（母图/分镜/镜头生产/成片质检；video 家族主分支，task-v093 收录） |
 | `mini-lite` | `templates/variant/mini-lite-type.md` | 轻量档 mini 计划（≤2 文件 ∧ ≤15min ∧ 单模块，Rule 38.3 区块白名单豁免） |
+| `l0-lite` | `templates/variant/l0-lite-type.md` | L0-T 极简 stub/零 attest/哨兵解除专用；中重任务禁用，不替代 mini-lite [2026-11-25 task-skill-deploy-fix A9] |
 | `memory-hygiene` | `templates/variant/memory-hygiene-type.md` | 记忆体系盘点/整理/治理（M1-M5 记忆整理协议；删除类处置仅建议；修正版先落计划目录抽验） |
 | `image` | `templates/variant/image-type.md` | 图像生成（母图/关键帧批/修词重抽；静默自动；task-videop1-planimage-001 收录） |
 | `script-dev` | `templates/variant/script-dev-type.md` | 剧本工序 M0 大纲/M1 定稿本（原子六相+八红线自检，零生成；task-videop1-videotpl-001 收录） |

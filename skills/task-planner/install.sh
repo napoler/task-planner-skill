@@ -17,7 +17,9 @@
 #   TASK_PLANNER_ROOT   override canonical location (default: $SCRIPT_DIR (dir containing install.sh))
 #   INSTALL_LOG         log file path (default: $TASK_PLANNER_ROOT/install.log)
 
-set -uo pipefail
+# [2026-11-25 task-skill-deploy-fix] What: 启用 set -e（fail-fast）。Why: 原缺 -e 导致中间命令失败静默继续；
+#   配合 pipefail 需对管道显式捕获 PIPESTATUS，避免 head/sed 提前退出触发 SIGPIPE 误杀（见 :79/:189/:213）。
+set -euo pipefail
 
 # ─── Defaults ────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -76,7 +78,9 @@ elif [ -d "$SCRIPT_DIR/.git" ] && [ "$SCRIPT_DIR" != "$TASK_PLANNER_ROOT" ]; the
   log "  cloning $SCRIPT_DIR → $TASK_PLANNER_ROOT"
   dry "git clone $SCRIPT_DIR $TASK_PLANNER_ROOT"
   if [ "$DRY_RUN" -eq 0 ]; then
-    git clone "$SCRIPT_DIR" "$TASK_PLANNER_ROOT" 2>&1 | head -3
+    # [2026-11-25 task-skill-deploy-fix] What: 去掉 `| head -3`。Why: set -euo pipefail 下 head 提前退出会
+    #   通过 pipefail+SIGPIPE 误杀 clone 成功路径；install.log 已 tee 捕获输出，无需截断。
+    git clone "$SCRIPT_DIR" "$TASK_PLANNER_ROOT" 2>&1
   fi
 else
   log "  initializing new git repo at $TASK_PLANNER_ROOT"
@@ -141,6 +145,7 @@ fi
 #   scripts/（Phase 4 的全量 rsync 已覆盖 scripts/，本步为幂等兜底 + 可 grep 的部署登记）。
 # Why: config.json 的 SessionStart 命令指向部署位绝对路径，仅落 canonical 源则首次触发即
 #   ENOENT（improvement-proposal.md H1 W-3 修正）；显式登记使部署清单可验证。
+# [2026-11-25 task-skill-deploy-fix] A2: 未设 TASK_PLANNER_ROOT 时 fallback 到部署位绝对路径，不回落 canonical 源码。
 # 边界: 尊重 DRY_RUN / TOOLS_FILTER；目标已存在且与 canonical 内容一致时 cmp 短路零写入。
 log "Phase 4.5: ensure zcode-sp-inject.sh in each deploy stub (targets: ${TOOLS_DETECTED[*]:-(none)})"
 SP_INJECT_SRC="$TASK_PLANNER_ROOT/scripts/zcode-sp-inject.sh"
@@ -164,20 +169,27 @@ else
 fi
 
 # ─── Phase 5: Migrate external references ───────────────────────────────
-log "Phase 5: migrate external references"
-dry "source lib/migrate-refs.sh; migrate_external_references"
+# [2026-11-25 task-skill-deploy-fix] B3: 默认不再自动改写用户全局文件。Why: 外部引用迁移会 sed -i 改写
+#   ~/.claude/CLAUDE.md 等用户文件，默认应 opt-in；提示用户显式 --apply 或 TASK_PLANNER_MIGRATE_REFS=1。
+log "Phase 5: migrate external references (opt-in)"
+dry "source lib/migrate-refs.sh; migrate_external_references --dry-run"
 if [ "$DRY_RUN" -eq 0 ]; then
   export HOME
   export TASK_PLANNER_ROOT
   # shellcheck disable=SC1091
   source "$TASK_PLANNER_ROOT/lib/migrate-refs.sh"
-  migrate_external_references
+  if [ "${TASK_PLANNER_MIGRATE_REFS:-0}" = "1" ]; then
+    migrate_external_references --apply
+  else
+    migrate_external_references --dry-run
+    log "  提示: 默认仅预览不改写。显式 opt-in: TASK_PLANNER_MIGRATE_REFS=1 bash install.sh 或直接调用 migrate_external_references --apply"
+  fi
 fi
 
 # ─── Phase 5.5: Register hooks per tool ──────────────────────────────────
-# Claude Code requires explicit settings.json patch; other platforms read
-# hooks from SKILL.md frontmatter (auto-registered). This phase ensures
-# Claude Code is always re-registered after stub install/update.
+# [2026-11-25 task-skill-deploy-fix] A3: 职责澄清。Claude 用 settings.local.json 显式注册（install.sh patch）；
+# ZCode 由 ~/.zcode/cli/config.json hooks.events 维护（用户/环境维护，install.sh 不自动改写全局 config）；
+# opencode/cursor/continue 走 SKILL.md frontmatter 声明，由平台运行时自动注册。
 log "Phase 5.5: register hooks for tools that need explicit config"
 for tool in "${TOOLS_DETECTED[@]}"; do
   case "$tool" in
@@ -186,7 +198,13 @@ for tool in "${TOOLS_DETECTED[@]}"; do
       dry "node --experimental-strip-types $HOME/.claude/skills/task-planner/scripts/register-hooks-cj.ts"
       if [ "$DRY_RUN" -eq 0 ]; then
         if command -v node >/dev/null 2>&1; then
-          (cd "$HOME/.claude/skills/task-planner/scripts" && node --experimental-strip-types register-hooks-cj.ts) 2>&1 | head -10
+          # [2026-11-25 task-skill-deploy-fix] What: 捕获 PIPESTATUS[0]，去掉 `| head -10`。Why: set -euo pipefail 下
+          #   head 提前退出会误杀注册成功路径；注册语义非阻断，真实失败仅 WARNING，不 `|| true` 吞掉。
+          _rc=0
+          (cd "$HOME/.claude/skills/task-planner/scripts" && node --experimental-strip-types register-hooks-cj.ts) 2>&1 || _rc=$?
+          if [ "$_rc" -ne 0 ]; then
+            log "  WARNING: register-hooks-cj.ts exited $_rc (non-blocking)"
+          fi
         else
           log "  WARNING: node not found, skipping Claude Code hook registration"
           log "           install node: https://nodejs.org (v22.6+ for --experimental-strip-types)"
@@ -194,7 +212,13 @@ for tool in "${TOOLS_DETECTED[@]}"; do
         fi
       fi
       ;;
-    zcode|opencode|cursor|continue)
+    zcode)
+      # [2026-11-25 task-skill-deploy-fix] A3: ZCode hooks 由 ~/.zcode/cli/config.json hooks.events 维护，
+      # install.sh 不自动改写用户全局 config；提示用户确认/注册。
+      log "  zcode: hooks 由 ~/.zcode/cli/config.json hooks.events 维护（用户/环境维护）"
+      log "         install.sh 不自动改写全局 config；请确认 config.json 已注册 task-planner hooks"
+      ;;
+    opencode|cursor|continue)
       # Hooks are declared in SKILL.md frontmatter (installed in Phase 4)
       # and registered automatically by the platform runtime. No further action.
       log "  $tool: hooks registered via SKILL.md frontmatter (auto by platform)"
@@ -210,7 +234,13 @@ done
 log "Phase 5.6: install companion files"
 if [ -d "$TASK_PLANNER_ROOT/companion" ]; then
   DRY_RUN_ARG=""; [ "$DRY_RUN" -eq 1 ] && DRY_RUN_ARG="--dry-run"
-  bash "$TASK_PLANNER_ROOT/lib/install-companion.sh" $DRY_RUN_ARG 2>&1 | sed 's/^/  /'
+  # [2026-11-25 task-skill-deploy-fix] What: 捕获 PIPESTATUS[0]，避免 sed 吞掉上游真实 rc。Why: set -euo pipefail
+  #   下 sed 早退/SIGPIPE 会误杀；companion 安装语义非阻断，真实失败仅 WARNING。用 `|| _rc=${PIPESTATUS[0]}` 保持 PIPESTATUS 可见。
+  _rc=0
+  bash "$TASK_PLANNER_ROOT/lib/install-companion.sh" $DRY_RUN_ARG 2>&1 | sed 's/^/  /' || _rc=${PIPESTATUS[0]:-0}
+  if [ "$_rc" -ne 0 ]; then
+    log "  WARNING: install-companion.sh exited $_rc (non-blocking)"
+  fi
 else
   log "  no companion/ dir — skipping"
 fi
@@ -251,4 +281,6 @@ fi
 log "install complete. canonical: $TASK_PLANNER_ROOT"
 log "next steps:"
 log "  1. Restart your agent tool(s) to load hooks"
-log "  2. For Claude Code: hooks are auto-registered; restart Claude Code to apply"
+# [2026-11-25 task-skill-deploy-fix] A3: 修正矛盾措辞。Why: install.sh 已 patch settings.local.json（Phase 5.5），
+#   "auto-registered" 易误解为无需 install.sh；实际是 install.sh 注册、重启生效。
+log "  2. For Claude Code: hooks 已由 install.sh 写入 settings.local.json; restart Claude Code to apply"

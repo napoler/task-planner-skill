@@ -57,12 +57,16 @@ generate_stub_skill_md() {
   local tool_name="$1"
   local hook_style="$2"
   local out_path="$3"
+  # [2026-11-25 task-skill-deploy-fix] What: 增加第 4 参数 stub_dir。Why: A2 要求 FALLBACK 指向部署位自身；
+  #   生成器需知道 stub_dir 才能写入正确 fallback。兼容旧调用：未传则回退 TASK_PLANNER_ROOT。
+  local stub_dir="${4:-${TASK_PLANNER_ROOT}}"
 
   case "$hook_style" in
     claude-settings)
       # Claude Code uses settings.json hooks
-      # Use install-stub.sh's own TASK_PLANNER_ROOT as the env-var default
-      local FALLBACK="${TASK_PLANNER_ROOT}"
+      # [2026-11-25 task-skill-deploy-fix] What: FALLBACK 从 canonical TASK_PLANNER_ROOT 改为部署位 stub_dir。
+      # Why: 未设 TASK_PLANNER_ROOT 时应 fallback 到部署位自身，不回落 canonical 源码（避免跨部署位漂移/源缺失误指）。
+      local FALLBACK="$stub_dir"
       cat > "$out_path" <<STUB_SKILL_EOF
 ---
 name: task-planner
@@ -113,7 +117,9 @@ STUB_SKILL_EOF
       ;;
 
     zcode-frontmatter)
-      local FALLBACK="${TASK_PLANNER_ROOT}"
+      # [2026-11-25 task-skill-deploy-fix] What: FALLBACK 改为部署位 stub_dir（同 claude-settings 分支）。
+      # Why: 未设 TASK_PLANNER_ROOT 时 fallback 到部署位绝对路径，不回落 canonical 源码。
+      local FALLBACK="$stub_dir"
       cat > "$out_path" <<STUB_SKILL_EOF
 ---
 name: task-planner
@@ -165,7 +171,9 @@ STUB_SKILL_EOF
 
     opencode-frontmatter|cursor-frontmatter|continue-frontmatter)
       # Generic frontmatter-stub for platforms with similar hook-via-SKILL mechanism
-      local FALLBACK="${TASK_PLANNER_ROOT}"
+      # [2026-11-25 task-skill-deploy-fix] What: FALLBACK 改为部署位 stub_dir（同其他分支）。
+      # Why: 未设 TASK_PLANNER_ROOT 时 fallback 到部署位绝对路径，不回落 canonical 源码。
+      local FALLBACK="$stub_dir"
       cat > "$out_path" <<STUB_SKILL_EOF
 ---
 name: task-planner
@@ -252,22 +260,29 @@ STUB_SKILL_EOF
 # sed-rewrite hardcoded paths in scripts (idempotent: only acts on unrewritten files)
 rewrite_paths_in_scripts() {
   local stub_dir="$1"
-  # What: expand FALLBACK to concrete TASK_PLANNER_ROOT at install-time (double-quoted sed).
-  # Why: single-quoted sed left literal ${FALLBACK} in deployed scripts; at runtime that var
-  #      is undefined -> SKILL_ROOT="" -> hooks invoke `python3 /scripts/planctl.py` (empty root).
-  # Fix: install-time expand to "${TASK_PLANNER_ROOT:-<concrete>}" so runtime has a hard fallback.
-  local FALLBACK="${TASK_PLANNER_ROOT}"
+  # [2026-11-25 task-skill-deploy-fix] What: FALLBACK 从 canonical TASK_PLANNER_ROOT 改为部署位 stub_dir。
+  # Why: 未设 TASK_PLANNER_ROOT 时 fallback 到部署位绝对路径，不回落 canonical 源码；与 SKILL.md 生成语义一致。
+  #   install-time expand to "${TASK_PLANNER_ROOT:-<concrete-deploy-dir>}" so runtime has a hard fallback.
+  local FALLBACK="$stub_dir"
+
+  # [2026-11-25 task-skill-deploy-fix] What: 一次性迁移识别旧 canonical fallback 形态。Why: 原幂等条件只认
+  #   $HOME/.zcode/skills/task-planner 硬编码，旧 canonical fallback（${TASK_PLANNER_ROOT:-<canonical>}/scripts）
+  #   不命中会导致已部署副本永不重写；加入对 scripts/planctl.py 等 canonical 形态的识别。
+  local canonical_pat
+  canonical_pat="$(printf '%s' "$TASK_PLANNER_ROOT" | sed 's/[.[\*^$()+?{}|]/\\&/g')"
 
   # Order matters: replace .zcode first (more specific), then .claude
   find "$stub_dir/scripts" -type f \( -name "*.sh" -o -name "*.cjs" -o -name "*.ps1" -o -name "*.ts" \) -print0 2>/dev/null | \
     while IFS= read -r -d '' file; do
-      # Only rewrite if the file still has hardcoded zcode path (idempotency)
-      if grep -q '\$HOME/\.zcode/skills/task-planner\|/home/.*/\.zcode/skills/task-planner' "$file" 2>/dev/null; then
+      # Only rewrite if the file still has hardcoded zcode path (idempotency) OR old canonical fallback form
+      if grep -q '\$HOME/\.zcode/skills/task-planner\|/home/.*/\.zcode/skills/task-planner' "$file" 2>/dev/null \
+         || grep -qE "\\\$\{TASK_PLANNER_ROOT:-${canonical_pat}\}" "$file" 2>/dev/null; then
         sed -i \
           -e "s|\"\${OPENCODE_SKILL_ROOT:-\$HOME/\.zcode/skills/task-planner}\"|\"\${TASK_PLANNER_ROOT:-${FALLBACK}}\"|g" \
           -e "s|node /home/.*/\.zcode/skills/task-planner/scripts/\([^ \"']*\)|node \"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/\1\"|g" \
           -e "s|bash \"/home/.*/\.zcode/skills/task-planner/scripts/|bash \"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/|g" \
           -e "s|bash ~/\.zcode/skills/task-planner/scripts/\([^ \"']*\)|bash \"\${TASK_PLANNER_ROOT:-${FALLBACK}}/scripts/\1\"|g" \
+          -e "s|\${TASK_PLANNER_ROOT:-${canonical_pat}}|\${TASK_PLANNER_ROOT:-${FALLBACK}}|g" \
           "$file"
       fi
     done
@@ -340,7 +355,8 @@ install_stub_for_tool() {
   install_satellite_skills "$stub_dir"
 
   # Generate tool-specific SKILL.md (overwrites canonical's stripped version)
-  generate_stub_skill_md "$tool_name" "$hook_style" "${stub_dir}/SKILL.md"
+  # [2026-11-25 task-skill-deploy-fix] What: 传入 stub_dir 作为第 4 参数。Why: FALLBACK 改为部署位自身。
+  generate_stub_skill_md "$tool_name" "$hook_style" "${stub_dir}/SKILL.md" "$stub_dir"
 
   # Rewrite hardcoded paths in scripts
   rewrite_paths_in_scripts "$stub_dir"

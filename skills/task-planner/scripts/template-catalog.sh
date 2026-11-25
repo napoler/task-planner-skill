@@ -682,13 +682,16 @@ def convert_template(src, ttype):
     """结构化转换单个模板；不复制核心锚段正文（由 planctl 渲染器负责）。"""
     text = read(src)
     meta = parse_meta(src)
-    if not meta["summary"]:
-        # rule-clause-cascade 等无 template_meta 注释模板：从 `**适用**:` 行补摘要/场景
+    # [2026-11-25 task-skill-deploy-fix A5] scenarios 为空时也从 `**适用**:` 补提，防 to-json --write 覆盖为空回退；
+    # summary 非空时仅补 scenarios，不覆盖既有 summary。
+    if not meta["summary"] or not meta["scenarios"]:
         fit = re.search(r'\*\*适用\*\*\s*[:：]\s*(.+)', text)
         if fit:
-            meta["summary"] = fit.group(1).strip()
-            meta["scenarios"] = [x.strip() for x in re.split(r'[/、,，]', meta["summary"])
-                                 if x.strip()][:6]
+            if not meta["summary"]:
+                meta["summary"] = fit.group(1).strip()
+            if not meta["scenarios"]:
+                meta["scenarios"] = [x.strip() for x in re.split(r'[/、,，]', meta["summary"] or fit.group(1).strip())
+                                     if x.strip()][:6]
     lineage = parse_lineage(text)
     pruned = {norm_section(x) for x in lineage["pruned"]}
     sections = []

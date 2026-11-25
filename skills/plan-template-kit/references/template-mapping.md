@@ -38,10 +38,11 @@
 ├─ 视频修正/局部重生成/QC FAIL 处置 → video-fix-type.md
 ├─ 技能规则增强/新增 Rule/门控/selftest 守护（沉淀类）→ rule-enhancement-type.md
 ├─ 轻量任务（≤15min ∧ ≤2 文件 ∧ 单模块 ∧ 非排除，Rule 38 自动降 mini）→ mini-lite-type.md
+├─ L0-T 极简 stub/零 attest/哨兵解除专用（l0-lite，L0-T 边界；中重任务禁用，不替代 mini-lite）→ l0-lite-type.md [2026-11-25 task-skill-deploy-fix A9]
 └─ 不匹配上述任何一类 → templates/task_plan.md（通用）
 ```
 
-> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类，task-videop1 起 image=18 类+视频工序 11 类=28 类，task-v115 videop1 回流起 29 类；task-l0lite-exempt 20261103 +l0-lite 极简豁免档=30 类，task-l0lite-exempt 20261103 起 30 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `../../task-planner/references/critical-rules.md` Rule 34。
+> **Rule 34 门控提示（task-v074）**：选定 template_type 后 attest 锁定会经 `check-template-type.sh` 机器门控（34.1：白名单=variant/ 动态派生+general，enforce 档缺失/非法拒绝锁定）；类型不在既有 variant 白名单（动态派生，v093 起 16 类，task-v109 起 17 类，task-videop1 起 image=18 类+视频工序 11 类=28 类，task-v115 videop1 回流起 29 类；task-l0lite-exempt 20261103 起 +l0-lite 极简豁免档=30 类）且命中 34.3 沉淀触发条件时，按 34.4 评估沉淀新 variant 变体。完整条款见 `../../task-planner/references/critical-rules.md` Rule 34。 [2026-11-25 task-skill-deploy-fix A9]
 
 > **JSON 模板清单来源（task-json-template-20261125）**：选型先跑 `bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/template-catalog.sh list --json --scope all`；返回 `templates[]` 每项含 `file/type/name/summary/scenarios/features/path/scope/valid/source/preferred`。`source=json` = 内置 `templates/json/*.template.json` 权威源，`source=legacy` = 旧 MD 兼容；同 type 并存时以 `source=json` 优先，`preferred=true` 为选型首选。新增类型必须同步落 JSON 模板（见 §六 速查表与 template-guide §2.7），MD 仅教学视图。
 
@@ -63,6 +64,7 @@
 - `templates/variant/schema-migration-type.md`(v2)
 - `templates/variant/rule-enhancement-type.md`(v2,沉淀；技能规则增强/新增 Rule/门控/selftest 守护模板，§六 速查表既有落点回填)
 - `templates/variant/mini-lite-type.md`(v2，task-v086 新增；轻量档 mini 计划模板，Rule 38.3 区块白名单承载)
+- `templates/variant/l0-lite-type.md`(L0-T 极简 stub/零 attest/哨兵解除专用；中重任务禁用，不替代 mini-lite) [2026-11-25 task-skill-deploy-fix A9]
 - `templates/variant/video-type.md`(v3，task-v093 收录；视频生产任务模板，video 家族主分支)
 - `templates/variant/video-fix-type.md`(v3，task-v093 收录；视频修正/局部重生成/QC FAIL 处置，video 家族 C 修正分支展开)
 - `templates/variant/memory-hygiene-type.md`(v4，task-v109 收录；记忆体系盘点/整理/治理模板，M1-M5 记忆整理协议承载)
@@ -182,6 +184,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-typ
 | schema 迁移(v2) | `templates/variant/schema-migration-type.md` | 可逆 up/down / 数据零丢失 / 在线切换 |
 | 规则增强(v2,沉淀) | `templates/variant/rule-enhancement-type.md` | 新增 Rule 条款 / config 三档键 / selftest 守护 / SKILL 联动 / 锚定级联防呆 |
 | 轻量档(v2) | `templates/variant/mini-lite-type.md` | 轻量档豁免（Rule 38.3 区块白名单：≤2 文件 ∧ ≤15min ∧ 单模块） |
+| L0-T 极简(v2) | `templates/variant/l0-lite-type.md` | L0-T stub/零 attest/哨兵解除专用；中重任务禁用，不替代 mini-lite [2026-11-25 task-skill-deploy-fix A9] |
 | 视频生产(v3) | `templates/variant/video-type.md` | 内容组-视频：人工门 32.2 / QC 8 类 / video 家族主分支 |
 | 视频修正(v3) | `templates/variant/video-fix-type.md` | 内容组-视频：disposition_ref 必填 / full-regen 仅 d 级显式批准 |
 | 记忆卫生(v4) | `templates/variant/memory-hygiene-type.md` | 通用组-记忆卫生：M1 盘点表 / M2 四维校验 / M3 四态处置(删除仅建议) / M4 修正版抽验契约 / M5 写入三要素 |
@@ -291,6 +294,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | video | 内容组-视频 | content_quality 门控（Q3/Q4）+人工门 32.2 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | Agnes 视频链路（母图/分镜/镜头/成片 QC 8 类） |
 | video-fix | 内容组-视频 | content_quality 门控（Q3/Q4）+disposition_ref 必填 | Code Review Gate；code-assistant/debugger/code-reviewer 路由 | videop1-video-fix SOP（full-regen 仅 d 级显式批准） |
 | mini-lite | 轻量档豁免 | 轻量档豁免（Rule 38.3 区块白名单：跳 FMEA/知识储备表/委派统计/Batch 区块） | standard 全量仪式（VC≥5 五条） | code-assistant 或主进程白名单 |
+| l0-lite | L0-T 极简豁免 | L0-T stub/零 attest/哨兵解除专用（中重任务禁用，不替代 mini-lite）[2026-11-25 task-skill-deploy-fix A9] | standard/mini 全量仪式（非 L0-T 禁用） | 主进程或 executor（仅 L0-T） |
 | memory-hygiene | 通用组 | 记忆整理协议 M1-M5（M1 盘点表/M2 四维机械校验/M3 四态处置删除仅建议/M4 修正版抽验契约/M5 写入三要素） | content_quality 门控；仓内无代码功能变更 | executor(fresh) 盘点 / verifier 抽验 |
 | image | 内容组 | 成图三检 QC 门控（合规/一致性/质量——本仓 videop1-review-image 族+tools/qc.py 机检+主进程亲检） | Code Review Gate；content_quality（Q3/Q4）；code-assistant/debugger/code-reviewer 路由 | 生成/写词/QC 子代理+tools/gen.py·qc.py |
 | script-dev | 内容组 | 剧本判定层全集（script-craft P/V/E 维+八红线自检+M0 放行门） | Code Review Gate；content_quality；代码类路由 | 兜底路由=executor(sonnet-1)+script-dev variant 模板 SOP（同 :298 媒体族兜底范式；专用体缺位时） |
@@ -329,6 +333,7 @@ awk '/^## ⚠️ 执行范围限制/{f=1; next} /^## /{f=0} f && /\|.*\|.*\|/ &&
 | 规则/模板组（rule-enhancement/schema-migration） | executor（worktree 隔离必须） | Agent 子代理+机械 selftest 面;主进程 git 编排（Rule 25.3 白名单①） | 串行;级联锚清单先行 |
 | 迁移/部署组（migration/deployment） | 主进程 git 编排+executor | 机械守卫脚本+git 编排（白名单①③）;MCP 工具按需 | 串行;合并回走 smart-merge-back |
 | 轻量档（mini-lite） | code-assistant 或主进程白名单 | 豁免「🧰」区块（Rule 38.3）;默认按 21.4 独立性守门（并行默认+声明组，未声明=串行，10-02） | 不判定 |
+| L0-T 极简（l0-lite） | 主进程或 executor（仅 L0-T stub） | 豁免「🧰」区块；L0-T stub/零 attest/哨兵解除专用；中重任务禁用，不替代 mini-lite [2026-11-25 task-skill-deploy-fix A9] | 不判定（非 L0-T 禁用） |
 | 调研/诊断组（research/diagnostic） | Explore/web-search/debugger 子代理 | 子代理+MCP（web_reader/node_repl）+research 卫星 | 串行;多主题可拆多 explore |
 | 判断/裁决 | decision-arbiter（Rule 69 载体） | Agent 子代理（低频单次独立派发，Rule 69.5） | 未命中编排条件（单点裁决，无 fan-out 需求） |
 

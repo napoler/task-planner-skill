@@ -127,6 +127,16 @@ while IFS= read -r line; do
     continue
   fi
 
+  # [2026-11-25 task-skill-deploy-fix A8] 归一化：剥反引号 + 保守截断尾注（→/->）+ trim。
+  # Why: 复用 check-vc-nonvacuous.sh:163 语义，防模板误写反引号/尾注导致误判或执行失败；canonical 用于判定/执行，evidence 头格式不改。
+  raw_cmd="$cmd"
+  cmd="${cmd//\`/}"
+  cmd="$(printf '%s' "$cmd" | sed -E 's/[[:space:]]*(→|->).*$//')"
+  cmd="$(printf '%s' "$cmd" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  if [ "$raw_cmd" != "$cmd" ]; then
+    echo "[run-verification] INFO: $current_vc 命令归一化(剥反引号/尾注) raw=[$raw_cmd] canonical=[$cmd]" >&2
+  fi
+
   # 占位/不可执行检测：模板典型占位串（must be runnable / runnable command / path+key-line /
   # diff/evidence form / bash command OR）→ SKIP，不计 FAIL（模板未填 vs 真命令执行失败须区分）
   case "$cmd" in

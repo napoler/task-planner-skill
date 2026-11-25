@@ -201,8 +201,16 @@ function patchSettings(settings: Record<string, unknown>, hooks: Record<string, 
     const incoming = cmds as Array<{ command?: string }>;
     const incomingCmds = new Set(incoming.map(c => c.command));
     const prior = (merged[name] ?? []) as Array<{ command?: string }>;
-    const kept = prior.filter(c => !incomingCmds.has(c.command ?? ''));
-    const isTpHook = (cmd: string) => cmd.includes('/task-planner/') || cmd.includes('${TASK_PLANNER_ROOT');
+    const isTpHook = (cmd: string) =>
+      cmd.includes('/task-planner/') ||
+      cmd.includes('${TASK_PLANNER_ROOT') ||
+      cmd.includes('dev/task-planner}/scripts') ||
+      cmd.includes('$SD'); // 旧 Stop hook 用 SD= 变量间接指向 task-planner 脚本
+    // [2026-11-25 task-skill-deploy-fix P0-4b] 原 kept 只按 command 字符串精确相等排除 incoming，
+    // 旧 task-planner hook（fallback 指向已不存在的 $HOME/dev/task-planner）字符串与新 command 不同，
+    // 被误判为第三方而保留 → settings 里新旧 hook 并存、坏路径无法清除（dry-run 实证残留 7 处）。
+    // 修正：kept 同时排除"本技能旧 hook"（无论其 fallback 形态），只真正保留第三方条目。
+    const kept = prior.filter(c => !incomingCmds.has(c.command ?? '') && !isTpHook(c.command ?? ''));
     const replaced = prior.some(c => isTpHook(c.command ?? ''));
     if (replaced) {
       console.log(`[task-planner] hook ${name}: refreshed task-planner entries (preserved ${kept.length} third-party).`);

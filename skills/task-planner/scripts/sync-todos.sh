@@ -31,11 +31,13 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: sync-todos.sh [--json|--index] [/path/to/plans/dir]"
             echo "  (default)  emit Phase→Todo sync report (human, or machine via --json)"
-            echo "             --json also emits the B1-B16 baseline group (task_id/phase/status/subject/evidence/command)"
-            echo "             [task-perf-default-mini 2026-11-24] mini 档裁 6 条（B2/B6/B7/B8/B15/B16），standard 全量 B1-B16 不变"
+            echo "             --json also emits the B1-B18 baseline group (task_id/phase/status/subject/evidence/command)"
+            echo "             [task-perf-default-mini 2026-11-24] mini 档裁 8 条（B2/B6/B7/B8/B15/B16/B17/B18），standard 全量 B1-B18 不变 [2026-11-25 task-skill-deploy-fix A7]"
             echo "             B12=SP/OS 技能到达与产物承接收据检查；B13=Spec 路由命中核查（需求特征终判）"
             echo "             B14=两段式根因/风险线索包已落盘 + 后续任务已登记（N/A+证据）"
             echo "             B15=周期性偏移回顾（每N次工具调用读user-session-log全原话对照当前执行+periodic-review收据；mini 档豁免不输出）"
+            echo "             B17=口径对齐（交付前拉平触及的过期计数与冲突条款，冲突锚grep无新增命中；证据=[align-final]）"
+            echo "             B18=垃圾清理（Skill说明Markdown历史旁注清理；代码注释保护不清理；证据=[cleanup-final]）"
             echo "  --index    write plans/INDEX.md cross-task registry + print summary"
             echo "             (the resume entry point: read INDEX.md to see what needs processing)"
             exit 0
@@ -325,6 +327,42 @@ baseline_b16_receipt() {
     return 0
 }
 
+# [2026-11-25 task-skill-deploy-fix A7] What: B17「口径对齐」证据——从在途计划 findings.md/progress.md 读 [align-final] 机器标记。
+# Why: 交付前口径对齐此前无基线 todo 承载，易遗漏计数/锚点/冲突条款拉平；证据为真 planctl add/render 产出标记，缺标记=空串 fail-closed。
+# 标记约定：[align-final:PASS] / [align-final:PASS:<摘要>]
+baseline_b17_receipt() {
+    local plans_dir="${1-}" tp="" pd="" f="" hit=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        for f in progress.md findings.md; do
+            [[ -f "$pd/$f" ]] || continue
+            hit="$(grep -m1 -E '\[align-final:(PASS|OK)(:[^]]*)?\]' "$pd/$f" 2>/dev/null || true)"
+            if [[ -n "$hit" ]]; then printf 'align-final=%s' "${hit:0:60}"; return 0; fi
+        done
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    return 0
+}
+
+# [2026-11-25 task-skill-deploy-fix A7] What: B18「垃圾清理」证据——从在途计划 findings.md/progress.md 读 [cleanup-final] 机器标记。
+# Why: Skill说明Markdown历史旁注清理易被遗漏或误伤代码注释；证据为真 planctl add/render 产出标记，缺标记=空串 fail-closed。
+# 标记约定：[cleanup-final:PASS] / [cleanup-final:PASS:<摘要>]
+baseline_b18_receipt() {
+    local plans_dir="${1-}" tp="" pd="" f="" hit=""
+    [[ -n "$plans_dir" && -d "$plans_dir" ]] || return 0
+    while IFS= read -r tp; do
+        [[ -n "$tp" ]] || continue
+        pd="$(dirname "$tp")"
+        for f in progress.md findings.md; do
+            [[ -f "$pd/$f" ]] || continue
+            hit="$(grep -m1 -E '\[cleanup-final:(PASS|OK)(:[^]]*)?\]' "$pd/$f" 2>/dev/null || true)"
+            if [[ -n "$hit" ]]; then printf 'cleanup-final=%s' "${hit:0:60}"; return 0; fi
+        done
+    done < <(find "$plans_dir" -name task_plan.md -type f -not -path '*/archive/*' 2>/dev/null | sort)
+    return 0
+}
+
 # [2026-11-24 task-session-regression-20261124 S6] What: 读取侧车生成 B9/B10/B11 的 evidence（B9=baseline:<sha7>@<mode> / B10=最近 checkpoint label / B11=unresolved=<n>@<last_diff.at>）。
 # Why: B11 初始侧车的 last_diff.unresolved=0 代表「从未跑过差异分析」，必须判为无证据（空串），否则假通过；
 #       at 是差异分析真实发生的时标，与 unresolved 一同带出才能证明该项已完成。文件/jq/字段缺失一律空串，保证 --json 可解析。
@@ -338,6 +376,9 @@ baseline_evidence_json() {
         B15) val="$(baseline_b15_receipt "$plans_dir")" ;;
         # [2026-11-24 续 B16] 合并回执同样读在途计划文件（非侧车），故与 B12-B15 同置于 jq 守卫之前。
         B16) val="$(baseline_b16_receipt "$plans_dir")" ;;
+        # [2026-11-25 task-skill-deploy-fix A7] B17/B18：口径对齐/垃圾清理证据，读计划文件 [align-final]/[cleanup-final] 标记。
+        B17) val="$(baseline_b17_receipt "$plans_dir")" ;;
+        B18) val="$(baseline_b18_receipt "$plans_dir")" ;;
     esac
     if [[ -z "$val" && -n "$sidecar" && -f "$sidecar" ]] && command -v jq >/dev/null 2>&1; then
         case "$tid" in
@@ -384,6 +425,9 @@ baseline_command_json() {
         # references/worktree-isolation.md），无单一可执行参数；故只给客观回归命令 + 合并步骤注释，
         # 不编造 --final 之类不存在的参数。verify.sh 真实路径 = <skill-root>/lib/verify.sh（由 SCRIPT_DIR 剥 /scripts 得到）。
         B16) cmd="bash $scripts_dir/run-selftests.sh --fresh # 合并: git merge --no-ff + git worktree remove <path> + git branch -d wt/<task-id>（见 references/worktree-isolation.md）；回归: bash ${scripts_dir%/scripts}/lib/verify.sh 需 TASK_PLANNER_ROOT；证据: plan-state.json isolation.merge_back 含 merged(" ;;
+        # [2026-11-25 task-skill-deploy-fix A7] B17/B18：核验命令直接 grep 计划文件收据标记（不虚构脚本）。
+        B17) cmd="grep -nF '[align-final]' ${plan_dir:-<plan-dir>}/progress.md ${plan_dir:-<plan-dir>}/findings.md" ;;
+        B18) cmd="grep -nF '[cleanup-final]' ${plan_dir:-<plan-dir>}/progress.md ${plan_dir:-<plan-dir>}/findings.md" ;;
     esac
     baseline_json_escape "$cmd"
 }
@@ -501,7 +545,11 @@ forward_sync() {
         # [2026-11-24 续 B16] B15 补尾逗号后追加 B16（B15 subject 逐字不变）；B16=合并回主分支+合并后回归核验，
         # 完成证据读 plan-state.json 的 isolation.merge_back（含 merged( 即已合并），非 todo 勾选。
         baseline_entries+='{"task_id":"B15","phase":0,"status":"baseline","subject":"周期性偏移回顾（每N次工具调用读user-session-log全原话+periodic-review对照，落PASS/DRIFT标记）"},'
-        baseline_entries+='{"task_id":"B16","phase":0,"status":"baseline","subject":"合并回主分支+合并后回归核验（merge --no-ff/worktree清理/verify+selftest不增FAIL）"}'
+        baseline_entries+='{"task_id":"B16","phase":0,"status":"baseline","subject":"合并回主分支+合并后回归核验（merge --no-ff/worktree清理/verify+selftest不增FAIL）"},'
+        # [2026-11-25 task-skill-deploy-fix A7] B16 补尾逗号后追加 B17/B18（B16 subject 逐字不变）；
+        # B17=口径对齐、B18=垃圾清理，证据为真 planctl add/render 产出的 [align-final]/[cleanup-final] 标记。
+        baseline_entries+='{"task_id":"B17","phase":0,"status":"baseline","subject":"口径对齐（交付前拉平触及的过期计数与冲突条款，冲突锚grep无新增命中）"},'
+        baseline_entries+='{"task_id":"B18","phase":0,"status":"baseline","subject":"垃圾清理（Skill说明Markdown历史旁注清理；代码注释保护不清理）"}'
         # 逐条注入 evidence/command：以 "},{" 为记录分隔符（subject 中不含该序列），task_id 用 bash 正则提取，零 Python/Node 依赖。
         local sidecar plan_dir repo_root rest chunk tid ev cmd sep='},' brace='}' baseline_with_evidence=""
         sidecar="$(baseline_sidecar_file "$plans_dir")"
@@ -524,11 +572,11 @@ forward_sync() {
             if [[ "$chunk" =~ \"task_id\":\"([^\"]+)\" ]]; then
                 tid="${BASH_REMATCH[1]}"
             fi
-            # [task-perf-default-mini 2026-11-24] mini 档裁 6 条：在 evidence/command 拼接前跳过，
-            # 逗号衔接沿用既有 baseline_with_evidence 判空逻辑，JSON 结构与 standard 完全一致（仅条目少 6）。
+            # [task-perf-default-mini 2026-11-24 / 2026-11-25 A7] mini 档裁 8 条（原 6 条 + B17/B18）：在 evidence/command 拼接前跳过，
+            # 逗号衔接沿用既有 baseline_with_evidence 判空逻辑，JSON 结构与 standard 完全一致（standard 全量 B1-B18，mini 少 8）。
             if [[ "$mini_baseline" -eq 1 ]]; then
                 case "$tid" in
-                    B2|B6|B7|B8|B15|B16) continue ;;
+                    B2|B6|B7|B8|B15|B16|B17|B18) continue ;;
                 esac
             fi
             # [2026-11-24 方案A/H3] 第三参传 plans_dir：B12/B13 收据扫描全部在途计划目录，不依赖本会话侧车（无侧车也必须能取证）。
