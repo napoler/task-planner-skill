@@ -113,3 +113,5 @@
 {"rule":109,"status":"landed","task_id":"task-planaudit-20261116","ts":"2026-11-16","note":""}
 {"rule":110,"status":"reserved","task_id":"task-model-tier-dispatch-20261119","ts":"2026-11-19","note":""}
 {"rule":110,"status":"landed","task_id":"task-fix-all-20261123","ts":"2026-11-23","note":"Rule 110 已在 SKILL.md/dispatch 卫星文档化，补 landed 配对解 PR-02"}
+{"rule":114,"status":"reserved","task_id":"task-align-preserve-extra-20261125","ts":"2026-11-25","note":"Rule 114 对齐任务内容保真铁律：参照规范非内容白名单，目标侧新增内容层默认保留"}
+{"rule":114,"status":"landed","task_id":"task-align-preserve-extra-20261125","ts":"2026-11-25","note":""}
