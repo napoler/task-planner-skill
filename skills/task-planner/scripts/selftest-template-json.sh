@@ -366,5 +366,82 @@ PY
 }
 legacy_group || true
 
+# ── TJ-09 示例优先：可审查实物与四处条款锚在位（2026-11-25 task-json-template-recommend） ──
+example_group() {
+    local review="$REPO_ROOT/examples/json-template-upgrade/review.md"
+    if [ ! -s "$review" ]; then bad 09a "示例审查清单缺失: $review"; return 1; fi
+    if grep -q 'C6' "$review" && grep -q 'C8' "$review" && grep -q 'PASS 标准' "$review"; \
+        then ok 09a "示例审查清单含 C1-C8 与 PASS 判据"; else bad 09a "审查清单判据不全"; fi
+    local pretty="$REPO_ROOT/examples/json-template-upgrade/upgraded/research.template.json"
+    if [ -f "$pretty" ] && python3 -m json.tool "$pretty" >/dev/null 2>&1; then ok 09b "示例 JSON 实物为 pretty-print 且可解析"; else bad 09b "示例 JSON 实物缺失/不可解析"; fi
+    local anchors=(
+        "$REPO_ROOT/skills/plan-template-kit/references/critical-rules-template.md"
+        "$REPO_ROOT/skills/plan-template-kit/references/template-mapping.md"
+        "$REPO_ROOT/skills/plan-template-kit/references/template-guide.md"
+        "$REPO_ROOT/skills/plan-template-advisor/SKILL.md"
+    )
+    local f hit=0
+    for f in "${anchors[@]}"; do
+        if [ -f "$f" ] && grep -q 'examples/json-template-upgrade/review.md' "$f"; then hit=$((hit+1)); fi
+    done
+    if [ "$hit" -eq 4 ]; then ok 09c "四处模板条款均链接同一示例实物"; else bad 09c "条款实物锚命中 $hit/4"; fi
+    if grep -q '^34\.10 .*JSON 原生优先' "$REPO_ROOT/skills/plan-template-kit/references/critical-rules-template.md"; then ok 09d "Rule 34.10 JSON 原生优先在位"; else bad 09d "Rule 34.10 缺失"; fi
+}
+example_group || true
+
+# ── TJ-10 项目级 JSON 模板发现与消费（行为夹具，仅写 /tmp） ──
+project_json_group() {
+    local proj="$FIXTURE_ROOT/tj10-project" pdir plandir
+    pdir="$proj/.zcode/plan-templates"
+    plandir="$proj/plans/tj10-plan"
+    mkdir -p "$pdir" "$plandir"
+    python3 - "$pdir/selftest-probe.template.json" <<'PY'
+"""TJ-10: 生成项目级 JSON 权威源夹具（含 checklist，证明勾选权威来自 JSON）。"""
+import json, sys
+doc = {"schema_version": 1,
+       "meta": {"template_type": "selftest-probe", "name": "selftest probe", "summary": "probe",
+                "scenarios": ["probe"], "features": ["Goal"],
+                "lineage": {"level": "base", "parent": "", "base": "", "spec_version": 1,
+                            "pruned": [], "pruned_reason": ""}},
+       "sections": [
+           {"id": "sec-goal", "anchor": "## Goal", "level": 2, "kind": "ref",
+            "ref": {"path": "goals", "renderer": "goal_statement"}, "required": True},
+           {"id": "sec-knowledge", "anchor": "## 📚 必要知识储备", "level": 2, "kind": "blocks",
+            "required": True, "blocks": [{"id": "ck", "kind": "checklist", "items": [
+                {"id": "TJ10-1", "text": "项目 JSON 已确认", "checked": False, "note": ""}]}]}]}
+with open(sys.argv[1], "w", encoding="utf-8") as f:
+    json.dump(doc, f, ensure_ascii=False)
+PY
+    cat > "$pdir/selftest-probe-type.md" <<'EOF'
+<!-- template_type: selftest-probe -->
+# selftest probe（教学视图）
+**template_type**: selftest-probe
+## Goal
+- [ ] 验证项目级 JSON 发现
+## VC 表（≥2）
+| VC-ID | 验收项 | Verify command |
+|---|---|---|
+| VC-1 | 路由到项目 JSON | `grep -F 'JSON 权威模板(项目级)' init.log` |
+EOF
+    ( cd "$proj" && bash "$SCRIPT_DIR/init-session.sh" --list ) >"$OUT" 2>"$ERR" || true
+    if grep -q '^  selftest-probe (project) \[json\]' "$OUT"; then ok 10a "--list 发现项目级 JSON 类型"; else bad 10a "--list 未发现项目 JSON"; diag "$(<"$OUT")"; fi
+    if ( cd "$plandir" && TASK_PLAN_TIER=standard TASK_TEMPLATE_TYPE=selftest-probe bash "$SCRIPT_DIR/init-session.sh" "tj10-plan" ) >"$OUT" 2>"$ERR"; then
+        if grep -q 'JSON 权威模板(项目级)' "$OUT"; then ok 10b "init 路由到项目级 JSON"; else bad 10b "init 未走项目级 JSON 路由"; diag "$(<"$OUT")"; fi
+    else
+        bad 10b "init-session.sh 失败"; diag "$(<"$ERR")"
+    fi
+    if [ -f "$plandir/plan-state.json" ] && python3 - "$plandir/plan-state.json" <<'PY'
+"""TJ-10: project JSON 的 template_ref 与 checklist 必须入权威源。"""
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+assert str(d.get("template_ref", "")).endswith("selftest-probe.template.json"), d.get("template_ref")
+assert any(it.get("id") == "TJ10-1" for it in d.get("template_checks", [])), "template_checks 缺 TJ10-1"
+assert "template_body" not in d, "新计划禁写 template_body"
+PY
+    then ok 10c "plan-state.json 消费项目 JSON 且无 template_body"; else bad 10c "权威源未消费项目 JSON"; fi
+    if bash "$SCRIPT_DIR/check-template-type.sh" "$plandir/task_plan.md" >"$OUT" 2>"$ERR"; then ok 10d "项目 JSON 类型经门控放行"; else bad 10d "项目 JSON 类型被门误拒"; diag "$(<"$OUT")"; fi
+}
+project_json_group || true
+
 echo "PASS=$PASS FAIL=$FAIL"
 exit $((FAIL > 0))

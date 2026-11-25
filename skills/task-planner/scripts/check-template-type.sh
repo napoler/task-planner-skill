@@ -21,7 +21,23 @@ VALID="$( { ls "$SKILL_ROOT/templates/json/"*.template.json 2>/dev/null || true;
             ls "$SKILL_ROOT/templates/variant/"*-type.md 2>/dev/null || true; } \
           | sed 's/.*\///;s/\.template\.json$//;s/-type\.md$//' \
           | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
-VALID="general $VALID"
+# [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源类型入白名单：
+# 从 <task_plan.md> 所在目录向上找 .claude|zcode/plan-templates，只认该目录（含 json/ 子目录）内的
+# *.template.json，禁任意路径 JSON 伪装；无项目 JSON 时本串为空，VALID 与改前逐字节一致。
+_pj_types=""
+_walk_dir="$(cd "$(dirname "$plan_file")" && pwd)"
+while [ "$_walk_dir" != "/" ]; do
+    _pj_root=""
+    if [ -d "$_walk_dir/.claude/plan-templates" ]; then _pj_root="$_walk_dir/.claude/plan-templates"; fi
+    if [ -z "$_pj_root" ] && [ -d "$_walk_dir/.zcode/plan-templates" ]; then _pj_root="$_walk_dir/.zcode/plan-templates"; fi
+    if [ -n "$_pj_root" ]; then
+        _pj_types="$( { ls "$_pj_root"/*.template.json 2>/dev/null; ls "$_pj_root"/json/*.template.json 2>/dev/null; } \
+                      | sed 's/.*\///;s/\.template\.json$//' | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
+        break
+    fi
+    _walk_dir="$(dirname "$_walk_dir")"
+done
+VALID="general $VALID $_pj_types"
 VALID="$(printf '%s' "$VALID" | tr -s ' ')"
 
 tt="$(grep -m1 '^template_type:' "$plan_file" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"
