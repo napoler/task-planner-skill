@@ -23,6 +23,7 @@
 > l0-lite：写此 stub 后直接改目标文件；免 VC≥2 表 / 3-File 回填 / G-gates / 归档，可随时补跑 `check-complete` 兜底；多模块 / 新脚本 / >5 文件 → 回落 standard 全量模板。
 
 ## 🧩 输出示例与格式契约（Rule 113 · 极简档）
+> **展示义务（Rule 113.10 · 项目级强制）**：先向用户展示至少一个完整产出示例实物（真实路径/可读代码块 + 同结构占位模板 + 审查命令与预期输出），再写条款；权威形态=`examples/json-template-upgrade/review.md`；禁仅标题 token。
 > 本档至少 1 条：完整示例 + 同结构模板（字段可最小化，但结构必须真实可模仿）。
 
 - 交付物 / 格式：article.json / JSON

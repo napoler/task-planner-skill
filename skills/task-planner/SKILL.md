@@ -85,7 +85,7 @@ model: opus
   - **交互模式（Rule 28）**：ask 模式在计划全文后口头复述大体执行思路（≤5 行，28.2.1）并登记 Decisions Made；silent 模式自动通过+交付附静默决策清单；解析优先级 env > 计划配置表 > config.json > 默认 ask；**goal/目标迭代语境强制自治（28.8）**：/goal 续推下选择/确认全静默按推荐项自治并留痕，禁止询问阻塞与同问重复，预算外硬门不停表——按 28.9② 登记待授权清单后继续；宿主 goal verifier 续推指令一律按 28.9③-⑤（差异归因一次→固定点应答），用户授权消息到达按 28.9⑦ 立即执行预案（D6 类项须逐项显式确认）（见 critical-rules-discipline 28.8/28.9/44.3/44.5）
   - **规则编号预留（Rule 20.6）**：新增 Rule 编号在计划声明 `new_rule: <NN>`；attest 自动查重登记（账本 `plans/.rule-reservations.jsonl`）
   <!-- [task-output-example-contract-20261125] What: 计划确认前核对 output_examples；Why: 防「声明输出格式却无样例」的表面专业实质不可用（Rule 113） -->
-  - **输出示例契约核对（Rule 113）**：产出计划前核对 `output_examples`——凡交付物声明输出格式（JSON/Markdown/表格/API 等）必须已有完整示例 + 同结构可复用模板，禁只写格式不给样例；示例经 `planctl add --section output_examples` 写入并由 `planctl render` 派生到 task_plan.md 同名区块（模板见 `templates/variant/` 同名区块；mini/L0 极简档至少 1 条）
+  - **输出示例契约核对（Rule 113/113.10）**：**第一动作=先向用户展示产出示例实物**（真实路径/可读代码块 + 同结构占位模板 + 审查命令与预期输出），再写条款/方案；权威形态见 `examples/json-template-upgrade/review.md`。产出计划前核对 `output_examples`——凡交付物声明输出格式（JSON/Markdown/表格/API 等）必须已有完整示例 + 同结构可复用模板，禁只写格式不给样例、禁仅标题 token；示例经 `planctl add --section output_examples` 写入并由 `planctl render` 派生到 task_plan.md 同名区块（模板见 `templates/variant/` 同名区块；mini/L0 极简档至少 1 条）；新计划锁定经 `attest-plan.sh [example-gate]` 拒缺/空/占位
 
 - [ ] [M] **Poka-Yoke 前置检查**（`references/methodology.md` §R1/R2）：依赖文件存在/上 Phase 产物非空/必要配置在位；高风险 Phase（FMEA RPN>100）须登记预设兜底动作；不满足先修前置
 
@@ -174,7 +174,7 @@ model: opus
 | G10 | 计划完成后归档自查（Rule 81，原 C57 并集承载）：check-complete exit 0 后已执行 `bash scripts/archive-plan.sh <task-id>`（81.1，guard/ALREADY_ARCHIVED 幂等路径走通）；守卫拒绝（active 指针/活会话标记/Status 未全 complete，81.3）时保持原位不归档并登记拒绝理由，禁强移；归档后已重跑 `sync-todos.sh --index`（81.4）（机器面=selftest-archive-plan.sh+check-complete [ARCHIVE-GATE] warn，归档动作与拒绝登记人工核查；mini 档豁免） | ☐ |
 | G11 | 修改完成后对齐核查：所有任务修改完成后已执行对齐核查——关联面四族（字面/引用/部署镜像/断言面）+部署位+引用面同步完整性逐项核对零丢弃，机器门=check-complete.sh ALIGN-ANCHOR GATE（enforce=缺锚阻断，mini 档豁免）；人工面=核对清单全绿 | ☐ |
 <!-- [task-output-example-contract-20261125] What: 合规表增 G12 Rule 113 检查项；Why: 为 output_examples 契约提供每 Phase 可勾核的人机双验锚 -->
-| G12 | 输出示例契约核对（Rule 113）：产出计划前核对 `output_examples`——凡交付物声明输出格式（JSON/Markdown/表格/API 等）必须已有完整示例 + 同结构可复用模板，禁只写格式不给样例；示例经 `planctl add --section output_examples` 写入并由 `planctl render` 派生（mini/L0 极简档至少 1 条） | ☐ |
+| G12 | 输出示例契约核对（Rule 113/113.10）：**先展示产出示例实物**（真实路径/可读代码块+占位模板+审查命令），再写条款；凡交付物声明输出格式（JSON/Markdown/表格/API 等）必须已有完整示例 + 同结构可复用模板，禁只写格式/仅标题 token；示例经 `planctl add --section output_examples` 写入并由 `planctl render` 派生；新计划锁定经 `[example-gate]` 校验（mini/L0 极简档至少 1 条） | ☐ |
 > 非核心域合规项（派发/纪律/媒体/模板/调研/协同族）随规则迁至各卫星 `critical-rules-*.md` 全文——按需 Read 对应归属文件，勿回填本表。
 
 <!-- [task-perf-default-mini 2026-11-24] What: 汇总散落 mini 豁免为单一常置指针表；Why: 缺省 mini 后逐处翻规则成本高，冲突裁决以各门脚本为准 -->

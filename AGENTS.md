@@ -26,6 +26,18 @@
 - 「本项目的 Skill」≠「已安装到某个 AI 工具里的那份 Skill」。二者同源，但**编辑目标永远是仓库内的 `skills/`**。
 - **本文件（仓库根 `AGENTS.md`）自身不进部署链路**：`install.sh` / `smart-merge-back.sh --deploy` 只部署 `skills/<name>/` 下的 `SKILL.md`、`scripts/`、`references/`、`templates/`、`config.json`，从不拷贝/软链本文件。它只在「以本仓库为工作目录」时被加载；端点上的技能执行以**部署位的 SKILL.md + references/ + scripts/** 为准，与本文件无同步关系——不存在「本文件没同步到端点导致执行不一致」的问题。真正会导致端点跑旧版的是「改了 `skills/` 源码却没 redeploy」，靠 §4 闭环 + verify.sh/对账门防。
 
+## 2.5 🔴 项目级强制：所有计划必须先展示产出示例实物（2026-11-25 用户裁决）
+
+用户原话：「都没有展出产出的模板示例是什么样子的，也就是无法确保后期如何进行审查，这个不合规」「将必须展示示例强制升级为该项目的要求，确保所有计划的必选项目；这是要更新到 skill 规范确保后期可以复现」。
+
+**适用范围**：本仓库产出的所有计划（standard / mini / L0-lite 均不豁免；极简档可用极简示例）。
+
+**铁律（先实物，后条款）**：计划创建或审核时，**第一动作**是向用户展示至少一个完整、可直接查看的**产出示例实物**——真实文件路径（或 fenced 代码块/表格）+ 同结构占位模板 + 审查命令与预期输出；禁止只写「输出为 JSON」「见 output_examples」或仅放标题 token。无实物 = 计划不合格，禁止进入执行。
+
+**权威示例**：`examples/json-template-upgrade/review.md`（pretty-print JSON + MD 教学视图 + 逐字段对照 + C1–C8 审查命令真实输出，含手改 MD 勾选必须 FAIL 的负控制）。新计划照此形态产出，禁止脑补示例。
+
+**承载与强制**：Rule 113.10 写规范；`plan-state.json.output_examples` 为权威数据面，`planctl render` 派生到 `task_plan.md`「🧩 输出示例与格式契约」；新计划在 `attest-plan.sh` 锁定时由 `[example-gate]` 机器校验（缺失/空/占位即拒锁）；模板侧由 `check-template-principles.sh` 校验示例段**内容**而非仅标题 token。存量计划（无 `output_examples` 字段）不追溯、不破坏其读写路径。
+
 ## 3. 主要目录
 
 - `skills/` — 产品本体。每个子目录一个 Skill；`task-planner/` 是核心。

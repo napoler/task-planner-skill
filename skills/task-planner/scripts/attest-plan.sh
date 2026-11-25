@@ -207,6 +207,51 @@ case "$mode" in
     else
       echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
     fi
+    # [2026-11-25 task-example-mandatory] Rule 113.10 项目级强制：新计划锁定前必须已有可审查示例实物。
+    # What: output_examples 缺失/空/占位即拒锁；展示义务与权威形态见 examples/json-template-upgrade/review.md。
+    # Why: 旧 Rule 113 只要求「计划里有条目」，守卫只查标题 token；实际仍出现产出模板未展示、无法审查。
+    # 存量兼容: 无 plan-state.json 的存量计划 SKIP 不追溯；validate_state 不加全局 FAIL（commit_state 每次写入都调用，
+    #           仓库 22/22 存量 plan-state 无本字段，加门会瘫痪存量读写）。
+    _ex_state="$plan_dir/plan-state.json"
+    if [ -f "$_ex_state" ]; then
+      _ex_msg="$(python3 - "$_ex_state" <<'PY'
+"""[example-gate] Rule 113.10：output_examples 必选且 example/template 为完整可审查内容。"""
+import json, re, sys
+p = sys.argv[1]
+try:
+    with open(p, encoding="utf-8") as f:
+        doc = json.load(f)
+except Exception as exc:
+    print(f"plan-state.json 不可读: {exc}")
+    sys.exit(1)
+ex = doc.get("output_examples")
+if not isinstance(ex, list) or not ex:
+    print("output_examples 缺失或空数组（Rule 113.10 项目级强制）")
+    sys.exit(1)
+for i, item in enumerate(ex):
+    if not isinstance(item, dict):
+        print(f"条目 {i} 非 object")
+        sys.exit(1)
+    for key in ("example", "template"):
+        value = item.get(key)
+        if not isinstance(value, str) or len(value.strip()) < 8:
+            print(f"条目 {i}.{key} 为空或过短（须完整可审查示例）")
+            sys.exit(1)
+        if re.search(r"TBD|示例略|同上|略$|\.\.\.", value):
+            print(f"条目 {i}.{key} 含占位文本（Rule 113.2/113.10）")
+            sys.exit(1)
+print(f"OK {len(ex)}")
+PY
+)" && _ex_rc=0 || _ex_rc=$?
+      if [ "$_ex_rc" -eq 0 ]; then
+        echo "[example-gate] OK (Rule 113.10: $_ex_msg 条可审查示例)"
+      else
+        echo "[attest] ✗ 示例门失败,拒绝锁定(Rule 113.10): $_ex_msg" >&2
+        exit 1
+      fi
+    else
+      echo "[example-gate] SKIP (无 plan-state.json，存量计划不追溯)" >&2
+    fi
     # [2026-10-17 task-v184-S4/P-09] 档位声明外部复核接线。
     # What: shell-out check-tier-consistency.sh 复核 plan_tier: standard/mini 自声明与 Rule 38.1
     #       体量判据（Phase 数/VC 数/S-unit 数/行数/scope 文件数，机器近似；含 execution_lane

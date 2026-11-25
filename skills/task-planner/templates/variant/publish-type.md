@@ -160,6 +160,7 @@
 | S1 | （A6） | 继承 |  |  | 10min | 1f/10l/10min | 无 | - | pending |
 
 ## 🧩 输出示例与格式契约（Rule 113）
+> **展示义务（Rule 113.10 · 项目级强制）**：先向用户展示至少一个完整产出示例实物（真实路径/可读代码块 + 同结构占位模板 + 审查命令与预期输出），再写条款；权威形态=`examples/json-template-upgrade/review.md`；禁仅标题 token。
 > 必填：本类型计划中凡声明输出格式/结构的交付物，均须在 `plan-state.json.output_examples` 登记至少 1 条完整示例 + 1 个同结构可复用模板（经 `planctl add --section output_examples` 写入），由 `planctl render` 派生到 task_plan.md 同名区块。禁止只写「输出为 JSON」等无样例声明；禁「略/同上/TBD」。
 
 | 交付物 | 格式 | 完整示例（fenced，见下方） | 可复用模板（占位符版，见下方） | 对应 VC |
