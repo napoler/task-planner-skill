@@ -12,13 +12,13 @@
 | task-planner 主会话 | opus（frontmatter） | 1 次/会话 | ❌ 必烧 opus |
 | `drift-checker` 派发（Rule 61 载体） | haiku-1 | 高频（每 2-3 todo） | ✅ 已优化 |
 | `Skill("systematic-debugging")` | 继承主会话 = opus | bug 类任务触发 | 🔴 嵌套 opus |
-| `Skill("code-review")` | 继承主会话 = opus | code_review: required 触发 | 🔴 嵌套 opus |
+| `Skill("code-quality-review")` | 继承主会话 = opus | code_review: required 触发 | 🔴 嵌套 opus |
 | `Skill("brainstorming")` | opus 档 | 用户主动触发 | 🟡 用户可控 |
 | `Skill("writing-plans")` | opus 档 | 用户主动触发 | 🟡 用户可控 |
 | `Skill("comet-*")` | opus 档 | 用户主动触发 | 🟡 用户可控 |
 | `Agent(complex-problem-solver)` | sonnet-1（默认 3-strike 升级 opus） | 失败 ≥3 次 | 🟡 prompt 升级机制 |
 
-**真正的隐藏成本源**：opus 主会话中调 `Skill("systematic-debugging")` / `Skill("code-review")`（嵌套 opus = 每次额外 1 次 opus 计费）。
+**真正的隐藏成本源**：opus 主会话中调 `Skill("systematic-debugging")` / `Skill("code-quality-review")`（嵌套 opus = 每次额外 1 次 opus 计费）。
 
 ---
 
@@ -32,7 +32,7 @@
 | **17.4** | drift 检测频次上限：每 phase 内 drift-checker 派发 ≤3 次（Rule 61 载体）（2-3 todo + 切模块 + phase complete） | PostToolUse hook 计数 |
 | **17.5** | opus 调用门控：单次会话 opus 累计调用（含主进程 + Skill 嵌套 + subagent 升级）≥10 次 → 触发 AskUserQuestion | PostToolUse hook 计数 + 软警告 |（与主侧 17.5 同源，无更高 STOP 档，task-v116 对齐）
 | **17.6** | 复杂任务优先 subagent：opus 上下文长读文件（>500 行）必派 subagent（沿用 Rule 13） | Rule 13 已护住 |
-| **17.7** | 代码 review 必含 `required`：`task_plan.md#code_review` = `required` 才触发 `Skill("code-review")` | 既定 design |
+| **17.7** | 代码 review 必含 `required`：`task_plan.md#code_review` = `required` 才触发 `Skill("code-quality-review")` | 既定 design |
 | **17.8** | 每次 opus 调用记 cost_log.md：子代理/Skill 调用记录到 `references/cost_log.md` 便于复盘 | plan-writer 产出模板加 cost_estimate |
 
 ---
@@ -49,7 +49,7 @@
 | 漂移检测 | drift-checker 子代理（Rule 61 载体；task-drift-guard skill=交互载体） | haiku-1 | ≈ 0.05× opus |
 | bug 根因 | debugger | sonnet-1 | ≈ 0.3× opus |
 | 主进程调度 | task-planner 主会话 | opus | 1× opus（必烧） |
-| **嵌套 opus** | `Skill("systematic-debugging")` / `Skill("code-review")` | opus（继承主会话） | **1× opus（Rule 17.1 节流）** |
+| **嵌套 opus** | `Skill("systematic-debugging")` / `Skill("code-quality-review")` | opus（继承主会话） | **1× opus（Rule 17.1 节流）** |
 
 **成本对比示例**（一次 phase 执行）：
 - 旧版（全跑 opus 主进程）：1（主会话）+ 5（嵌套 skill） = 6× opus
@@ -69,7 +69,7 @@
 | 时间 | 类型 | 触发点 | 累计 opus 调用 | 备注 |
 |------|------|--------|--------------|------|
 | 09:00 | 主会话 | task-planner 启动 | 1 | 主进程烧 1 次 |
-| 09:15 | Skill("code-review") | Phase 3 complete | 2 | 嵌套 opus（Rule 17.1 第 1 次） |
+| 09:15 | Skill("code-quality-review") | Phase 3 complete | 2 | 嵌套 opus（Rule 17.1 第 1 次） |
 | ... | ... | ... | ... | ... |
 
 ## 累计统计

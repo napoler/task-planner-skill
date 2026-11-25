@@ -124,7 +124,12 @@ case "$mode" in
     if [ -f "$plan_dir/plan-state.json" ]; then
       _attest_state_key="|$(sha256sum "$plan_dir/plan-state.json" 2>/dev/null | cut -d' ' -f1)"
     fi
-    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)${_attest_state_key}" | sha256sum | cut -d' ' -f1)"
+    # [2026-11-25 defect-fix P1] 缓存键原缺两个维度：
+    # ① skip_goal（:44 定义、:156 确实改变门链）——带/不带 --skip-goal-check 复用同一缓存；
+    # ② 计划路径——两个内容相同但路径不同的计划共用缓存（/tmp/attest-cache-<cksum> 无路径分量）。
+    # 两者均导致门链被错误跳过。追加 skip_goal 与 plan_file 绝对规范路径两个分量。
+    _attest_plan_key="$(cd "$plan_dir" 2>/dev/null && pwd -P || printf '%s' "$plan_dir")"
+    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)${_attest_state_key}" "${skip_goal:-}" "$_attest_plan_key" | sha256sum | cut -d' ' -f1)"
     _attest_cache="/tmp/attest-cache-${_attest_cksum}.result"
     if [ -f "$_attest_cache" ] && [ ! "$plan_file" -nt "$_attest_cache" ]; then
       # plan_file 未变更（mtime 不新于缓存）→ 回放缓存结果，跳过完整门链

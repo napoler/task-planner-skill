@@ -110,7 +110,7 @@ Phase 1
 ### Phase 5: 验证 + Code Review + 提交
 - [ ] 跑最小复现脚本 → 无报错
 - [ ] 派 `code-runner-agent` 跑 `bun test` 全量回归
-- [ ] 调用 `Skill("code-review")`(重点:根因是否真解决 + 是否有副作用)
+- [ ] 调用 `Skill("code-quality-review")`(重点:根因是否真解决 + 是否有副作用)
 - [ ] APPROVED → commit;CHANGES_REQUESTED → 回到 Phase 4
 - [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending

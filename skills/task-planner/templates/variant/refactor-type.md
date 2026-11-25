@@ -108,7 +108,7 @@ Phase 1
 - **Executor:** code-runner-agent（mini）
 
 ### Phase 5: Code Review Gate + 提交
-- [ ] 调用 `Skill("code-review")` 审查(重点:行为是否真不变 + API 兼容性)
+- [ ] 调用 `Skill("code-quality-review")` 审查(重点:行为是否真不变 + API 兼容性)
 - [ ] APPROVED → commit;CHANGES_REQUESTED → 回到 Phase 3
 - [ ] 派发 `drift-checker` 子代理偏移检查（Rule 61 载体）终验
 - **Status:** pending

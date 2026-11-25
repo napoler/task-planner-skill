@@ -36,7 +36,7 @@
 | **18.6** | **批次元数据必填**：每次批量在 task_plan.md 追加「📦 Batch Report」区块，含 `total/success/failed/failure_rate/sampled_pass/sampled_fail/pre_check/rollback_point` 八字段；缺项 → 视为 Phase 未完成 | 模板强制（templates/batch_report.md） | 批量完成但无 Batch Report |
 > 零单元逃生（2026-09-16 task-v074 P9）：正文含 "Batch Report" 但任务无批量生成单元（如纯验证型）时，Batch Report 段内写一行 `不适用（无批量生成单元）` 即跳过 8 字段校验（check-complete.sh 门控），其余情况仍 fail-closed。
 | **18.7** | **fan-out 必含聚合 Phase**：`chain_mode: fan-out` 时 task_plan.md 必须含一个聚合 Phase（`### Phase N: Aggregator`），负责收集子任务结果 + 跑 18.2 抽检 + 写 Batch Report；无此 Phase → plan-writer 输出校验失败 | plan-writer 产出校验 | fan-out plan 无聚合 Phase |
-| **18.8** | **批量质量回看强制**：批量任务完成后 `failure_rate > 10%` → 触发 `Skill("meta-corrector")` 结构化复盘 → 经验写入 memory（`batch-quality-YYYYMMDD.md`，§八闭环） | 记忆沉淀 | 批量失败后无复盘直接进下一任务 |
+| **18.8** | **批量质量回看强制**：批量任务完成后 `failure_rate > 10%` → 触发 `Agent(subagent_type="meta-corrector")` 结构化复盘 → 经验写入 memory（`batch-quality-YYYYMMDD.md`，§八闭环） | 记忆沉淀 | 批量失败后无复盘直接进下一任务 |
 | **18.9** | **试点先行硬门（task-v083）**：批量启动前必须先对 1 个代表性样本完成单件「处理→端到端验证」试点且通过（证据落 progress.md）；试点未通过或未做 → 禁止批量；「十足把握」最低构成 = 试点通过 + 首批小步（≤5 单元）+ 批间抽检（18.2）+ 可回滚/可枚举已写对象 | 试点证据检查（progress.md） | 无试点记录直接全量跑 |
 | **18.10** | **单件失败禁批量（投毒红线，task-v083）**：单件失败且根因未定位/未修复复验时启动或继续批量 = P0 投毒级违规；立即中止 + 盘点已写对象 + 逐对象回滚或修复 + Rule 31 归因 | 批量启动前置检查 | 单件 FAIL 后批量照跑 |
 | **18.11** | **宁慢勿错（task-v083）**：「为了快/省时间/任务急」一律无效理由；宁单件串行慢速，不赌未验证批量；用户 2026-09-18 明示接受降速换正确性 | 理由审查 | 以速度为由跳过试点/抽检 |

@@ -61,6 +61,6 @@
 
 ### 复盘触发（Rule 18.8）
 
-- [ ] `failure_rate > 10%` → 已触发 `Skill("meta-corrector")` 复盘
+- [ ] `failure_rate > 10%` → 已触发 `Agent(subagent_type="meta-corrector")` 复盘
 - [ ] 复盘经验已写入 `~/.zcode/cli/memories/.../batch-quality-YYYYMMDD.md`
 - n/a（failure_rate ≤10% 时勾选）
