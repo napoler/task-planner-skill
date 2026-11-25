@@ -1,5 +1,6 @@
 <!-- template_type: test-writing -->
 <!-- template_meta: {"type": "test-writing", "name": "测试编写", "summary": "单元/集成/E2E 测试编写、测试框架搭建与覆盖率提升，达成覆盖率门槛。", "scenarios": ["单元测试", "集成测试", "E2E 测试", "测试框架搭建", "覆盖率提升"], "features": ["Code Review 配置", "Verification Contract", "工具选择与编排", "Phases", "隔离决策"]} -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/test-writing.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- 适用场景: 单元/集成/E2E 测试编写、测试框架搭建、覆盖率提升 -->
 <!-- 触发关键词: 测试/覆盖率/单元测试/集成测试/E2E/pytest/vitest/bun test -->
 <!-- 推荐 subagent: test-engineer (sonnet-1) -->

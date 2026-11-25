@@ -1,5 +1,6 @@
 # Task Plan: [剧本开发与合规审查任务]
 <!-- template-lineage: level=derived parent=../task_plan.md base=../task_plan.md spec_version=1 pruned="用户需求原文,根源覆盖表,不变量声明区,规范基线,进度产出基线,CodeReview配置,双轮质检与同步完整性声明,核心目标达成裁决,变更标注表,核心问题定义,调研需求与检索计划,证据面清单,CurrentPhase,NextStep,工具选择与编排,防倒退终检,收尾回读梳理记录,收尾对齐与清理,隔离决策,FMEA预演,原生Todo同步,KeyQuestions,DecisionsMade,ErrorsEncountered,Notes,Chain区块交接配置" pruned_reason="variant=领域裁剪全文，裁剪面以本清单显式登记（Rule 34.5 派生登记）" -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/script-dev.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- planctl 派生口径(task-planctl-exec-surface-20261122)：本骨架数据经 planctl add/set 写入 plan-state.json 后 render 派生 task_plan.md 视图；直接填写会在首次 render 被覆盖 -->
 <!-- template_type: script-dev -->
 <!-- template_meta: {"type": "script-dev", "name": "剧本开发", "summary": "剧本工序：M0 大纲→M1 展开→M2 审查→M3 静默修正，止于定稿剧本与登记，零生成调用。", "scenarios": ["写剧本", "大纲创作", "台词修正", "剧本审查", "合规审查"], "features": ["M0 大纲放行门", "M1 展开与 M2 审查", "M3 静默修正", "八红线自检", "Verification Contract"]} -->

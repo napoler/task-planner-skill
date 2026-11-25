@@ -1,5 +1,6 @@
 <!-- template_type: performance-tuning -->
 <!-- template_meta: {"type": "performance-tuning", "name": "性能优化", "summary": "性能瓶颈定位、慢查询优化、索引设计、缓存策略、benchmark，达成 P95 下降或 TPS 提升指标。", "scenarios": ["性能瓶颈定位", "慢查询优化", "索引设计", "缓存策略", "压测/benchmark/Core Web Vitals"], "features": ["Code Review 配置", "Verification Contract", "工具选择与编排", "Phases", "隔离决策"]} -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/performance-tuning.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- 适用场景: 性能瓶颈定位、慢查询优化、索引设计、缓存策略、benchmark、bundle 优化、Core Web Vitals -->
 <!-- 触发关键词: 性能/瓶颈/慢/压测/benchmark/P95/Core Web Vitals -->
 <!-- 推荐 subagent: performance-optimizer (sonnet-1) + database-optimizer (sonnet-1,若涉及 SQL) + debugger -->

@@ -1,5 +1,6 @@
 <!-- template_type: code-edit -->
 <!-- template_meta: {"type": "code-edit", "name": "代码编辑", "summary": "单文件/多文件代码编辑（明确单次编辑任务），编辑指定文件的代码段并验证效果。", "scenarios": ["单文件代码编辑", "多文件代码编辑", "函数实现/新增", "代码增删", "代码加注释"], "features": ["Code Review 配置", "Verification Contract", "执行范围限制", "Phases", "隔离决策"]} -->
+<!-- JSON 模板源(task-json-template-20261125)：skills/task-planner/templates/json/code-edit.template.json — 本 MD 为教学/临时视图；权威源=plan-state.json 的 template_doc/template_checks；勾选请用 planctl set --section template_checks ... -->
 <!-- 适用场景: 单文件/多文件代码编辑(明确单次编辑任务) -->
 <!-- 触发关键词: 修改/编辑/实现/新增/添加/删除/写函数/加注释/改 bug -->
 <!-- 推荐 subagent: code-assistant (≤3 文件) / executor (>3 文件) -->

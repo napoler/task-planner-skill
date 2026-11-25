@@ -24,16 +24,22 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 - 输出预测清单并指向证据条目，供缺口映射引用。
 
 ### ③ 缺口映射
-- 对照模板白名单：`templates/variant/*-type.md`（30 类）与项目级既有模板（init-session.sh 原生发现并并入白名单的机制）。
+- 对照模板白名单：`templates/variant/*-type.md`（30 类，**教学视图**）与权威源 `templates/json/*.template.json`（33 个），以及项目级既有模板（`.claude/plan-templates/` 或 `.zcode/plan-templates/` 下的 MD 与 JSON，init-session.sh 原生发现并并入白名单的机制）；JSON 与 MD 同名时以 JSON 元数据（scenarios/features/lineage）为缺口判定依据。
 - 无专用 variant 的高频类型 → 标记为候选新类型模板。
 - 已有 variant 但 Verify command/执行范围限制需项目本地化 → 标记为适配版候选。
+- JSON 缺口判定（2026-11-25）：扫描 `templates/json/` 与项目级 JSON 位——MD 已存在但缺 `<type>.template.json` = 待转换（交 task-planner `to-json` 机械转换）；JSON/MD 均缺 = 候选新类型；JSON 已有但 scenarios/features 不覆盖项目高频坑 = 适配版候选（改 JSON meta + blocks，而非只改 MD 文案）。
+- 查重同时覆盖两种形态：同名 `*-type.md` 与 `*.template.json` 任一存在即视为已有类型，避免重复沉淀造成双源漂移。
+- 清单来源：先跑 `template-catalog.sh list --json --scope all`，按 `source=json` / `preferred=true` 取官方权威候选；项目级 JSON 位由 `ls` 实测，禁止凭记忆判定缺口。
 - 映射前先 `ls` 白名单与项目级目录查重，避免重复沉淀。
 
 ### ④ 模板产出
 - 候选先落当前任务计划目录 `template-candidate/`，便于审查与回溯。
-- 项目级落位 `<项目>/.zcode/plan-templates/<类型>-type.md`（或 `.claude/plan-templates/` 同名位）；task-planner `init-session.sh` 原生发现并入白名单，零接线。
-- 只写 `*-type.md` 后缀文件；单次激活产出 ≤3 个，防刷量与过度定制。
-- 类型标识=文件名去 `-type.md` 后缀（init-session.sh 派生口径）：机读头与 `template_type` 填该标识（如文件 `foo-type.md`→类型 `foo`），禁重复带 `-type` 后缀（判例=task-tpl-sediment-20261115 G2 首跑选型失败回退 generic）。
+- 项目级落位 `<项目>/.zcode/plan-templates/<类型>-type.md`（或 `.claude/plan-templates/` 同名位）**及其 JSON 结构化源** `<项目>/.zcode/plan-templates/<类型>.template.json`（Claude Code 侧 `.claude/plan-templates/` 同名位）；task-planner `init-session.sh` 原生发现并入白名单，零接线。
+- 只写 `*-type.md` 与同名 `*.template.json` 两种后缀文件；单次激活产出 ≤3 个类型（每类型的 JSON+MD 两份视为一个候选），防刷量与过度定制。
+- 类型标识=文件名去 `-type.md` 后缀（init-session.sh 派生口径）：机读头与 `template_type` 填该标识（如文件 `foo-type.md`→类型 `foo`），禁重复带 `-type` 后缀（判例=task-tpl-sediment-20261115 G2 首跑选型失败回退 generic）；JSON 侧 `meta.template_type` 必须同值。
+- 候选须同时产出两份：**JSON 结构化源**（`schema_version/meta{lineage:level,parent,base,spec_version,pruned,pruned_reason}/sections[{id,anchor,kind,blocks}]`）为权威 + **MD 教学视图**（`*-type.md`）供人读；勾选与表格用 JSON `blocks[].kind=checklist|table` 表达（item 含 `id/text/checked:bool/note/tags`），禁只在 MD 写 `- [ ]` 而 JSON 缺对应条目（render 会覆盖手改勾态）。
+- 消费与自检（零新脚本）：`planctl.py init --template-json <path>` 落 `template_ref/template_doc/template_checks`；候选期用 task-planner `template-catalog.sh to-json --dry-run` 核对结构与勾选条目后再定稿；本技能不新增 `.sh`/hook/门。
+- 审查分工：MD 教学视图承载 Goal/VC 表/Phase 骨架的展示文案，JSON `kind=ref` 段由 planctl 核心渲染器填值；两者不得各写一套勾态/状态字段，只有 JSON 的 `checked` 与 `plan-state.json` 参与门控比较。
 - 模板须含机读头与最小结构骨架，适配项目实际验证命令与范围约束。
 
 ### ⑤ 审查
