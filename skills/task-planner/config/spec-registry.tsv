@@ -1,0 +1,25 @@
+# spec-registry.tsv — 规范维度与内容类注册表（种子；项目级扩展通道=<repo-root>/.spec-registry.tsv 同格式追加）
+# 列: 类型 id 行说明/中文名 别名关键词(|分隔；仅 dimension 行用于扫描归纳，template/executor 行填 -)
+# 适用域: content-all=内容类计划默认强制 | opt-in=项目级声明或扫描归纳命中才强制 | project=项目级声明 dimension 行默认
+dimension	naming	命名	命名|角色名|主名|别名	content-all
+dimension	rhythm	节奏	节奏|句数|密度|时长|秒	content-all
+dimension	language	语言	句长|短句|措辞|字数	content-all
+dimension	reference	参考对应	母图|参考图|图集|格位|对应关系	content-all
+dimension	logic	逻辑一致性	逻辑|因果|动机|矛盾|设定冲突	opt-in
+dimension	continuity	连续性	连续性|承接|伏笔|前后一致	opt-in
+dimension	format	格式规范	格式规范|标题规范|文件命名规则	opt-in
+dimension	safety	合规红线	禁词|敏感词|合规|红线	opt-in
+template	longform-continuity	长篇连续叙事	-	-
+template	writing	文章创作	-	-
+template	script-dev	剧本开发	-	-
+template	storyboard	分镜	-	-
+template	character-design	角色设计	-	-
+template	prompt-struct	提示词结构	-	-
+template	video-prompt	视频提示词	-	-
+template	image	图片创作	-	-
+template	video	视频创作	-	-
+template	video-fix	视频修复	-	-
+executor	script-writer	剧本撰写执行体	-	-
+executor	script-auditor	剧本审查执行体	-	-
+executor	storyboard-reviewer	分镜审查执行体	-	-
+executor	general-writer	通用写作执行体	-	-
