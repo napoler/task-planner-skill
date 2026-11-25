@@ -81,3 +81,46 @@
 2. 高：P4 安装部署 4 个 P0 关联 P1（verify 三态判定/install.sh set -e）——需用户授权改部署策略后单独任务。
 3. 中：Todo B1-B18 矛盾二选一；Verify command 反引号双门统一；plan-writer longform 映射。
 4. 低：P2/P3 批量清理（空转门/红灯/静态断言升级）。
+
+---
+
+## 九、授权修正批次（2026-11-25 第二阶段，merge e9f90c3e）
+
+用户"授权修正"后，对第一批评为"需裁决/授权"的缺陷实施修正。方案先经 ExitPlanMode 批准，三路只读调研确认锚点，两路 executor 并行实施源码修正，主进程复核 + 批次 C 部署同步。
+
+### 修正清单（18 文件，commit 4e66abcd → merge e9f90c3e）
+- **A1** install.sh `set -euo pipefail` + 3 处管道 PIPESTATUS/`$?` 捕获（消除半升级假成功）
+- **A2** install-stub FALLBACK 从 canonical 源码改为部署位 stub_dir + 旧 canonical fallback 一次性迁移（根治"改源仓≠生效"）
+- **A3** ZCode hook 注册职责文案澄清（不写用户全局 config.json）+ verify 校验 hook 脚本路径存在
+- **A4/A9** plan-writer 补 longform-continuity + l0-lite 映射（l0-lite 补登记附"L0-T stub 专用"边界）
+- **A5** rule-clause-cascade scenarios 补值 + catalog 转换逻辑防回退空值
+- **A6** dynamic-workflows bundled-only 标注（collab 侧；cost-control 侧经查证锚点不存在，无需改）
+- **A7** Todo B1-B16 → B1-B18：sync-todos emit/evidence/command/mini 裁剪 + SKILL.md + selftest 同步
+- **A8** run-verification 反引号/中文尾注归一化（消除双门 127 伪 FAIL）
+- **B1** install-companion 多工具根（复用 detect-tools.sh 的 TOOL_ROOT）
+- **B2** smart-merge-back --deploy 3→5 槽位（+cursor/continue，`.agents` 仍走显式 env；共享 default_deploy_slots()）
+- **B3** migrate-refs 强 opt-in + 备份 + 同源判据（默认不写全局 AGENTS.md）
+- **B4** verify.sh 薄壳静态分发面对账（references/templates/config/schemas，排除适配/本地化文件）
+- **verify 白名单** zcode-posttooluse.sh 的合法 env-fallback 加入 hardcoded 豁免
+
+### 关键发现（非显然）
+1. **调研子代理虚构锚点**：A6 调研称 cost-control.md:18 有 dynamic-workflows/bundled-only 锚点，执行子代理发现 grep 全空；主进程盘上复核确认主仓/worktree 均无该锚点 → 判定无需改。**子代理声称≠采信**，执行体诚实报 blocker 避免了凭空捏造修改。
+2. **P0-4b 回归**（本批主进程发现）：上一批 P0-4 修复的 patchSettings 只按 command 精确相等排除旧 hook，旧 task-planner hook（fallback 指向已不存在的 `$HOME/dev/task-planner`）字符串与新 command 不同 → 被当第三方保留，`~/.claude/settings.local.json` 新旧 hook 并存坏路径无法清除。dry-run 预检实证残留 7 处。修复：`kept` 同时用 `isTpHook` 过滤旧本技能 hook（含 `$SD` 间接形态）。**教训：上一批"第三方 hook 保留"验证只查保留未查旧条目移除，验证不充分；dry-run 判别性预检抓到。**
+3. **verify 27/4 基线归因**：同步后 hardcoded 从 2→3 files，第 3 个 zcode-posttooluse.sh 是合法 `${OPENCODE_SKILL_ROOT:-...}` fallback，加白名单后回到基线 2 files（smart-merge-back 默认槽位 + init-session 注释，均为合法既有）→ 零增量。verify 把合法部署位路径当硬编码是检查口径过严，建议独立任务根治。
+
+### 批次 C 部署同步（全局配置，备份+判向）
+- 备份：`~/.task-planner-backups/deploy-fix-20261125-20261125-182541`（8 项：5 部署位 + settings.local.json + 2 点名卫星）
+- 薄壳四位（zcode/claude/opencode/cursor）：rsync 同步 scripts/lib/templates/references，保留平台适配 SKILL.md
+- `.agents` 全量副本：整目录同步 + 补齐 4 缺失文件（selftest-alignment-preserve/render-output-example/selftest-render-output-example/output-example.template.json）
+- `~/.claude/settings.local.json`：用源码修复版 register-hooks-cj.ts dry-run→备份→实写；坏路径 7→0、好路径 7、非 tp 字段保留、hook 脚本 6/6 存在、JSON 合法
+- 点名卫星：plan-resume 补 7.11 节、todo-skill 去"失败标 completed"旧语义（均 identical 源码）
+- ZCode config.json Stop 事件缺失：探测平台无 Stop 契约 → 记录为平台差异，不盲改
+
+### 验证
+- 语法：18 脚本 bash -n / node strip-types 全通过
+- 全量 selftest --fresh：109/109（worktree + 主仓合并后均真跑零新增 FAIL）
+- verify.sh：27/4 = 修复前基线（2 files hardcoded，合法既有），零增量
+- 部署位：关键修复文件 5/5 identical；register-hooks P0-4b 修复同步后 5/5 identical
+
+### 新发现待独立任务
+- verify.sh hardcoded-paths 检查口径过严（把合法部署位 fallback 路径/默认槽位常量/注释当硬编码）→ 建议改为只抓无 env 逃生的裸硬编码或 canonical 源码路径，避免永久 4 条误报基线。
