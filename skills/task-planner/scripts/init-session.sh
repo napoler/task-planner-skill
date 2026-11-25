@@ -101,6 +101,22 @@ find_project_templates() {
     return 1
 }
 
+# [2026-11-26 task-spec-consumption-chain S5] 项目根探测（供 spec-scan --project-root 使用）:
+# What: 自 CWD 向上找首个含 AGENTS.md / CLAUDE.md / .git（文件或目录皆可，worktree 的 .git 是文件）的目录。
+# Why: spec-scan 的六源采集需以真实项目根为基准；不带 --project-root 时 planctl 自行推断，
+#       但 init 侧显式传参可与 planctl 的 _spec_infer_project_root 同一口径且可留痕。
+find_project_root() {
+    local dir="$(pwd)"
+    while [ "$dir" != "/" ]; do
+        if [ -f "$dir/AGENTS.md" ] || [ -f "$dir/CLAUDE.md" ] || [ -e "$dir/.git" ]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
 # Copy a template file: project-level if exists, else built-in
 # Usage: copy_template <filename>
 copy_template() {
@@ -335,27 +351,56 @@ render_template() {
 # 插入量=🎯 脚手架 10 行（空行分隔符 1 + 9）；🧮 脚手架 11 行（空行分隔符 1
 #   + 10，含 HTML 注释 2 行+四列表+占位行，格式对齐 templates/task_plan.md :19-25）；
 #   双缺场景共写 21 行。
+# [2026-11-26 task-spec-consumption-chain S5] 锚 C「🔒 规范基线（Rule 51.15）」兜底注入：
+#   What: 新增第三锚独立判定（grep '规范基线'），缺则于锚 B 脚手架之后插入 9 列表格
+#         （spec_id/约束原文/来源锚/双向判定式/来源 sha256/槽/校验命令/适用S-unit/结果）
+#         + 1 行占位说明 + 1 行示例行（格式与 planctl render / check-spec-baseline.sh 消费列同序）；
+#         三锚俱在才 echo INFO 跳过；双区块注入消息同步补锚 C 文案。
+#   Why: 事故形态=正式计划零规范基线，而旧注入只覆盖 51.1/53.1 两锚，模板未携带即永久缺位；
+#         规范基线是 22.4e 派发携带与 attest 硬门的事实源，生成面必须全档位兜底。
+#   Gate 2 的 mini 白名单豁免只作用于锚 A/锚 B（原行为逐字保留）；锚 C 对 mini/l0/trivial
+#         全档位注入，l0-lite/trivial 三文件缩减档（TRIVIAL_CODE_TIER=1 / plan_tier: l0-lite）
+#         除外并输出 INFO（零 attest 通道无需基线门）。
+#   插入量=锚 C 脚手架 5 行（空行分隔 1 + 说明 1 + 表头 1 + 分隔符 1 + 示例行 1）。
 # ============================================================================
 inject_requirement_block() {
     local file="task_plan.md"
-    local scaffold insat inja injb
+    local scaffold insat inja injb injc _c_tail _sb_skip
 
     [ -f "$file" ] || return 0
 
-    # Gate 1: 双锚独立判断（P1-3：模板已含其一则只注入缺的那个）
-    # 锚 A = 51.1 需求原文区块；锚 B = 53.1 根源覆盖表（grep「根源覆盖表」字样）
-    inja=0; injb=0
+    # Gate 1: 三锚独立判断（P1-3 双锚判据保留；S5 增锚 C=规范基线，全档位必填）
+    # 锚 A = 51.1 需求原文区块；锚 B = 53.1 根源覆盖表；锚 C = 51.15 规范基线（grep「规范基线」字样）
+    inja=0; injb=0; injc=0
     grep -q '## 🎯 用户需求原文' "$file" 2>/dev/null || inja=1
     grep -q '根源覆盖表' "$file" 2>/dev/null || injb=1
-    if [ "$inja" -eq 0 ] && [ "$injb" -eq 0 ]; then
-        echo "[init] INFO: task_plan.md 已含 🎯 用户需求原文 + 🧮 根源覆盖表 双区块（模板自带载体）— 注入跳过"
+    grep -q '规范基线' "$file" 2>/dev/null || injc=1
+    if [ "$inja" -eq 0 ] && [ "$injb" -eq 0 ] && [ "$injc" -eq 0 ]; then
+        echo "[init] INFO: task_plan.md 已含 🎯 用户需求原文 + 🧮 根源覆盖表 + 🔒 规范基线 三区块（模板自带载体）— 注入跳过"
         return 0
     fi
 
-    # Gate 2: mini 档豁免（Rule 38.2 白名单；判定见函数头注释 ①②）
-    if [ "$TASK_PLAN_SRC" = "variant/mini-lite-type.md" ] \
-       || grep -q 'plan_tier: mini' "$file" 2>/dev/null; then
-        echo "[init] INFO: mini 档豁免（Rule 38.2 区块白名单）— 不注入 🎯 用户需求原文/🧮 根源覆盖表 区块"
+    # Gate 2: mini 档豁免（Rule 38.2 白名单；判定见函数头注释 ①②）只作用于锚 A/锚 B。
+    # S5: 原「直接 return 0」改为仅清零 A/B 注入标志，锚 C 不受 mini 豁免影响继续注入；
+    #     mini 且三锚俱缺时仍先输出原 INFO 文案，既有 A/B 豁免形态不变。
+    if [ "$inja" -eq 1 ] || [ "$injb" -eq 1 ]; then
+        if [ "$TASK_PLAN_SRC" = "variant/mini-lite-type.md" ] \
+           || grep -q 'plan_tier: mini' "$file" 2>/dev/null; then
+            echo "[init] INFO: mini 档豁免（Rule 38.2 区块白名单）— 不注入 🎯 用户需求原文/🧮 根源覆盖表 区块"
+            inja=0; injb=0
+        fi
+    fi
+    # l0-lite/trivial 三文件缩减档（零 attest 通道）：锚 C 亦不注入，输出 INFO 留痕。
+    _sb_skip=0
+    case "${PLAN_TIER:-}" in l0-lite|trivial) _sb_skip=1 ;; esac
+    case "${TEMPLATE_TYPE:-}" in *l0-lite*) _sb_skip=1 ;; esac
+    if [ "${TRIVIAL_CODE_TIER:-0}" = "1" ]; then _sb_skip=1; fi
+    if grep -q 'plan_tier:[[:space:]]*l0-lite' "$file" 2>/dev/null; then _sb_skip=1; fi
+    if [ "$injc" -eq 1 ] && [ "$_sb_skip" -eq 1 ]; then
+        echo "[init] INFO: l0-lite/trivial 三文件缩减档豁免 — 不注入 🔒 规范基线 区块（零 attest 通道）"
+        injc=0
+    fi
+    if [ "$inja" -eq 0 ] && [ "$injb" -eq 0 ] && [ "$injc" -eq 0 ]; then
         return 0
     fi
 
@@ -441,6 +486,18 @@ EOF
 | <工序 1> | <此工序削弱该结果的缺陷/缺口，无则"无"> | <修复 S-unit/Phase> | <VC-n> |
 EOF
     fi
+    # [2026-11-26 S5] 锚 C 脚手架：插在锚 B 之后（同一 insat 位、追加写），9 列顺序与
+    # check-spec-baseline.sh:81-90 抽取器及 planctl render 的扩列视图严格一致，禁改表头/删列。
+    if [ "$injc" -eq 1 ]; then
+        printf '\n' >> "$scaffold"
+        cat >> "$scaffold" <<'EOF'
+## 🔒 规范基线（Rule 51.15 — 全档位必填）
+<!-- 2026-11-26 task-spec-consumption-chain S5：init 锚 C 兜底（全档位，mini 不豁免；l0-lite/trivial 三文件缩减档除外）。占位说明: 下表 SPEC-1 为占位示例行，规划者须依 init 末尾 spec-scan 回执的 SRC-<n> 逐条替换为真值（禁留空；无硬约束写 none-justified+理由）；9 列顺序=render/check-spec-baseline.sh 消费口径，禁改表头/删列；随 task_plan.md 纳入 SHA-256 锁定 -->
+| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽/类别 | 校验命令 | 适用S-unit | 结果 |
+|---------|-------------------|------------------|-----------|------------|--------|---------|-----------|------|
+| SPEC-1 | <约束原文逐字抄录，禁转译/缩写> | <真实存在的 path:line> | <如 4s≤单镜≤12s；越界即 FAIL，禁 NOTE 豁免> | <来源文件 sha256 前 12 位> | <hard/naming/rhythm/language/reference> | <可执行的校验命令> | <S<n> 或 *> | <PASS/FAIL/待核验> |
+EOF
+    fi
     # 在 insat 行之前打印脚手架 + 1 行空行分隔（保住 markdown 结构；写入行数
     # =🎯 9 行 / 🧮 10 行 / 双缺 9+1+10，见函数头「插入量」注释）
     if ! awk -v f="$scaffold" -v insat="$insat" '
@@ -459,12 +516,19 @@ EOF
         return 0
     fi
     rm -f "$scaffold"
-    if [ "$inja" -eq 1 ] && [ "$injb" -eq 1 ]; then
-        echo "    [init] 🎯 用户需求原文 + 🧮 根源覆盖表 双脚手架已插入（Rule 51.1/53.1 生成面兜底, task-v131 P1-3；规划者填写 R 行/映射/覆盖表后 attest 校验）"
+    # S5: 锚 C 文案作为追加尾巴；injc=0 时为空串 → 原 A/B 三分支消息逐字节不变。
+    _c_tail=""
+    if [ "$injc" -eq 1 ]; then
+        _c_tail=" + 🔒 规范基线（Rule 51.15 全档位必填, task-spec-consumption-chain S5；规划者据 spec-scan 回执逐条处置后 attest 锁定）"
+    fi
+    if [ "$inja" -eq 0 ] && [ "$injb" -eq 0 ] && [ "$injc" -eq 1 ]; then
+        echo "    [init] 🔒 规范基线 脚手架已插入（Rule 51.15 全档位兜底, task-spec-consumption-chain S5；mini 不豁免；规划者据 spec-scan 回执填写 9 列后 attest 校验）"
+    elif [ "$inja" -eq 1 ] && [ "$injb" -eq 1 ]; then
+        echo "    [init] 🎯 用户需求原文 + 🧮 根源覆盖表${_c_tail} 双脚手架已插入（Rule 51.1/53.1 生成面兜底, task-v131 P1-3；规划者填写 R 行/映射/覆盖表后 attest 校验）"
     elif [ "$inja" -eq 1 ]; then
-        echo "    [init] 🎯 用户需求原文 脚手架已插入（Rule 51.1 生成面兜底, task-v131；规划者填写 R 行+映射后 attest 校验；🧮 根源覆盖表已含于模板）"
+        echo "    [init] 🎯 用户需求原文${_c_tail} 脚手架已插入（Rule 51.1 生成面兜底, task-v131；规划者填写 R 行+映射后 attest 校验；🧮 根源覆盖表已含于模板）"
     else
-        echo "    [init] 🧮 根源覆盖表 脚手架已插入（Rule 53.1 载体, critic P1-3；🎯 用户需求原文已含于模板；规划者填表或写「不适用+定性理由」后 attest 校验）"
+        echo "    [init] 🧮 根源覆盖表${_c_tail} 脚手架已插入（Rule 53.1 载体, critic P1-3；🎯 用户需求原文已含于模板；规划者填表或写「不适用+定性理由」后 attest 校验）"
     fi
     return 0
 }
@@ -598,6 +662,11 @@ EOF
 #     未知/缺失类型 WARNING 回退 generic task_plan.md)
 PROJECT_NAME="${1:-project}"
 TEMPLATE_TYPE="${2:-${TASK_TEMPLATE_TYPE:-}}"   # positional first, env fallback
+# [2026-11-26 task-spec-consumption-chain S5] 显式/项目级模板选择标记：只用于「轻量档 JSON 权威源
+# 不得覆盖已选模板」与「无显式 tier 时标准档模板不被自动判为 mini」两处；不参与档位自动判定本身。
+_TEMPLATE_SELECTED=0
+if [ -n "$TEMPLATE_TYPE" ]; then _TEMPLATE_SELECTED=1; fi
+_PROJECT_TEMPLATE_SELECTED=0
 # [2026-09-20 task-v086 P2-S2 Rule 38.2] 第 3 位置参或 env TASK_PLAN_TIER=mini（tier 路由，
 #   与 template_type 正交；38.4 非 mini 零影响铁律）
 # [2026-09-27 task-v091 S22 A-1 Rule 38.6] 缺省契约改写（36.4 清单①登记）：
@@ -605,6 +674,9 @@ TEMPLATE_TYPE="${2:-${TASK_TEMPLATE_TYPE:-}}"   # positional first, env fallback
 #   预估 ≤15min ∧ scope_files ≤2 ∧ 单模块 ∧ ④排除未命中）且未显式指定 tier 时自动 mini」；
 #   无 TASK_AUTO_TIER=1 输入的调用路径仍与 task-v091 前逐字节一致
 PLAN_TIER="${3:-${TASK_PLAN_TIER:-}}"
+# S5: 区分「调用方显式指定档位」与「缺省/自动 mini」——仅用于 JSON 档位推导与模板同源判定。
+_TIER_EXPLICIT=0
+if [ -n "$PLAN_TIER" ]; then _TIER_EXPLICIT=1; fi
 # [2026-09-21 task-v086 S6] 复制源命中项目级自造模板=1 (frontmatter 插入判定用)
 PROJECT_TPL_USED=0
 # [2026-09-27 task-v091 S22 A-1] auto-tier 四条件判定（Rule 38.6；慢源 R16=忘传 tier 即落
@@ -735,6 +807,8 @@ if [ -z "$TEMPLATE_TYPE" ]; then
     if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/default" ]; then
         _default_type="$(head -n1 "$PDIR_RESOLVED/default" 2>/dev/null | tr -d '[:space:]')"
         [ -n "$_default_type" ] && _default_src="project default 文件(.claude/plan-templates/default)"
+        # S5: 项目级 default 命中=项目级模板已选，轻量档不得覆盖其 JSON 权威源。
+        if [ -n "$_default_type" ]; then _PROJECT_TEMPLATE_SELECTED=1; fi
     fi
     if [ -z "$_default_type" ] && [ -n "${TASK_TEMPLATE_DEFAULT:-}" ]; then
         _default_type="$TASK_TEMPLATE_DEFAULT"
@@ -742,6 +816,8 @@ if [ -z "$TEMPLATE_TYPE" ]; then
     fi
     if [ -n "$_default_type" ]; then
         TEMPLATE_TYPE="$_default_type"
+        # S5: default 文件/env 默认也是「已选模板」，轻量档 JSON 强制改选不得吞掉它。
+        _TEMPLATE_SELECTED=1
         echo "Template routing: 未显式给 template_type, 采用默认模板 $TEMPLATE_TYPE (${_default_src}, task-v086 S6)"
     fi
 fi
@@ -755,6 +831,8 @@ if [ -n "$TEMPLATE_TYPE" ]; then
             for _pj in "$PDIR_RESOLVED/json/${TEMPLATE_TYPE}.template.json" "$PDIR_RESOLVED/${TEMPLATE_TYPE}.template.json"; do
                 if [ -f "$_pj" ]; then _project_json="$_pj"; break; fi
             done
+            # S5: 项目级 JSON 命中=项目级模板已选（轻量档沿用，不改选 mini-lite）。
+            if [ -n "$_project_json" ]; then _PROJECT_TEMPLATE_SELECTED=1; fi
         fi
         _json_candidate="${JSON_DIR}/${TEMPLATE_TYPE}.template.json"
         [ -n "$_project_json" ] && _json_candidate="$_project_json"
@@ -773,6 +851,7 @@ if [ -n "$TEMPLATE_TYPE" ]; then
                 echo "Template routing: task_plan.md(临时视图) <- $VARIANT_REL (JSON 权威源优先, 首次 render 重建)"
             elif [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
                 TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                _PROJECT_TEMPLATE_SELECTED=1  # S5: 项目级模板命中标记
                 echo "Template routing: task_plan.md(临时视图) <- ${TEMPLATE_TYPE}-type.md (project-level, JSON 权威源优先)"
             else
                 echo "Template routing: task_plan.md(临时视图) <- 通用骨架 (JSON 权威源优先, 首次 render 重建)"
@@ -789,6 +868,7 @@ if [ -n "$TEMPLATE_TYPE" ]; then
                 # 项目 *-type.md 已并入 VALID_TYPES); 命中 → 复制源=项目文件
                 if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
                     TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                    _PROJECT_TEMPLATE_SELECTED=1  # S5: 项目级模板命中标记
                     echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (project-level, task-v086 S6)"
                 else
                     echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
@@ -837,7 +917,19 @@ fi
 #       general JSON 仅兜底；planctl init 因此仍写 template_ref/template_doc。
 # Why: 轻量档不能因「无复杂领域段」丢掉模板溯源字段，也不能把 standard 模板的勾选段强塞进 stub。
 #       实测 general(task_plan.template.json) 带 19 条 checklist，mini-lite 带 0 条——按 tier 选档。
-if [ "$_LIGHT_TIER" = "1" ]; then
+# [2026-11-26 task-spec-consumption-chain S5] 轻量档 JSON 强制改选单一化：
+# What: 仅当「未显式指定 template_type 且未命中项目级模板」时才把 JSON 权威源改选 mini-lite；
+#       显式 template_type（位置参/env TASK_TEMPLATE_TYPE/默认模板）或项目级模板命中且已有 JSON
+#       权威源时，轻量档沿用所选 JSON 模板（原强制覆盖只在这些场景被条件化，非 mini 档零影响）。
+#       已选类型无 JSON（legacy MD 模板）仍走原 mini-lite/general 兜底，旧链路不断档。
+# Why: 事故形态 tier=standard + template_ref=mini-lite 的同源反向错配——轻量档无条件覆盖会吞掉
+#       显式 longform/writing 等模板的权威源，规范化勾选段与基线被清零。档位与模板必须同源。
+_S5_ALLOW_LIGHT_OVERRIDE=1
+if { [ "$_TEMPLATE_SELECTED" -eq 1 ] || [ "$_PROJECT_TEMPLATE_SELECTED" -eq 1 ]; } \
+   && [ -n "$JSON_TEMPLATE_ABS" ]; then
+    _S5_ALLOW_LIGHT_OVERRIDE=0
+fi
+if [ "$_LIGHT_TIER" = "1" ] && [ "$_S5_ALLOW_LIGHT_OVERRIDE" -eq 1 ]; then
     if [ -f "${JSON_DIR}/mini-lite.template.json" ]; then
         if [ "$JSON_TEMPLATE_ABS" != "${JSON_DIR}/mini-lite.template.json" ]; then
             echo "Template routing: 轻量档 JSON 权威源改选 mini-lite（不继承 standard 勾选段, task-json-template P3）"
@@ -847,6 +939,8 @@ if [ "$_LIGHT_TIER" = "1" ]; then
         JSON_TEMPLATE_ABS="$_GENERAL_JSON"
         echo "Template routing: 轻量档回落 JSON general 权威模板 (task-json-template P3)"
     fi
+elif [ "$_LIGHT_TIER" = "1" ] && [ -n "$JSON_TEMPLATE_ABS" ]; then
+    echo "Template routing: 轻量档沿用所选 JSON 权威源（显式/项目级模板命中, task-spec-consumption-chain S5）: $JSON_TEMPLATE_ABS"
 fi
 
 # Check for project-level templates
@@ -1220,6 +1314,19 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
       standard|full)   _json_init_tier="standard" ;;
       *) : ;;  # 未声明/未知值 → standard（planctl --tier 仅接受 standard|mini）
     esac
+    # [2026-11-26 task-spec-consumption-chain S5] 档位与模板同源（仅无显式 tier 时）：
+    # What: 模板命中内容/创作类（与 check-spec-baseline.sh:19 CONTENT_TEMPLATES 同清单）或
+    #       项目级模板时，JSON 权威源 tier 取 standard；显式 tier（含显式 mini）始终优先。
+    # Why: 原缺省 mini 由 task-perf-default-mini 自动派生，内容/项目模板的规范勾选段被判为 mini
+    #       后与模板声明冲突（事故形态 tier=standard + mini-lite 模板的镜像错配）。
+    # 不变量: 缺省仍 standard；本块不新增任何自动降档，只阻止自动 mini 覆盖已选标准模板。
+    if [ "$_TIER_EXPLICIT" -eq 0 ]; then
+        case "${TEMPLATE_TYPE:-}" in
+          longform-continuity|writing|script-dev|storyboard|character-design|prompt-struct|video-prompt|image|video|video-fix)
+              _json_init_tier="standard" ;;
+        esac
+        if [ "$_PROJECT_TEMPLATE_SELECTED" -eq 1 ]; then _json_init_tier="standard"; fi
+    fi
     _json_init_lane="${_lane:-L1}"
     case "$_json_init_lane" in L0|L1|L2) ;; *) _json_init_lane="L1" ;; esac
     # [2026-11-25 task-json-template P3] JSON 原生模板切主（planctl init 接线）:
@@ -1259,6 +1366,31 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
         fi
     else
         echo "[init] WARN: plan-state.json init 失败（rc=$_json_init_rc; JSON mode fail-open, 存量 MD 流程继续）" >&2
+    fi
+fi
+# [2026-11-26 task-spec-consumption-chain S5] 规范候选扫描守卫（init 收尾，dry-run 安全默认）:
+# What: plan-state.json 在位时调用 planctl.py spec-scan（不带 --write，仅打印候选 + 回执），成功
+#       回显候选汇总行与「下一步: 加 --write 落盘候选处置」提示；planctl/项目根缺失、无权威源或
+#       rc≠0 时仅一行 WARN，不阻断 init（与上方 planctl init 同 fail-open 范式）。
+# Why: 规范散落项目多处，规划者手抄必漏；init 是计划生成第一触点，须把候选面与处置入口即时呈现。
+#       禁 --write 默认落盘：未经规划者逐条判定的候选不得进入权威源（Rule 51.15/22.4e）。
+_S5_PROJECT_ROOT="$(find_project_root || true)"
+if [ ! -f "$SCRIPT_DIR/planctl.py" ]; then
+    echo "[init] WARN: planctl.py 缺失，跳过 spec-scan（fail-open: 规划者须手动执行 spec-scan --dry-run）" >&2
+elif [ ! -f "plan-state.json" ]; then
+    echo "[init] WARN: plan-state.json 缺失，跳过 spec-scan（fail-open: 无权威源不扫描）" >&2
+elif [ -z "$_S5_PROJECT_ROOT" ]; then
+    echo "[init] WARN: 项目根探测失败，跳过 spec-scan（fail-open: 规划者须手动指定 --project-root）" >&2
+else
+    _s5_scan_out=""
+    _s5_scan_rc=0
+    _s5_scan_out="$(python3 "$SCRIPT_DIR/planctl.py" spec-scan --plan-dir "$PWD" --project-root "$_S5_PROJECT_ROOT" 2>&1)" || _s5_scan_rc=$?
+    if [ "$_s5_scan_rc" -eq 0 ]; then
+        _s5_scan_receipt="$(printf '%s\n' "$_s5_scan_out" | grep -m1 '^\[spec-scan\]' 2>/dev/null || true)"
+        echo "[init] ${_s5_scan_receipt:-spec-scan 回执缺失（dry-run 完成）}"
+        echo "[init]   下一步: 加 --write 落盘候选处置（python3 \"$SCRIPT_DIR/planctl.py\" spec-scan --plan-dir \"$PWD\" --project-root \"$_S5_PROJECT_ROOT\" --write）"
+    else
+        echo "[init] WARN: spec-scan 失败（rc=$_s5_scan_rc）— 不阻断 init（fail-open: 规划者须手动复核规范候选）" >&2
     fi
 fi
 # [2026-10-05 task-v132 G3 R3] silent 路径锚哈希即时落盘（G3：防窗口期篡改）：

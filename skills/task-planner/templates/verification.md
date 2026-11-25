@@ -32,6 +32,11 @@
 
 > **输出示例对照（Rule 113）**：凡 VC 判定标准涉及输出格式/结构（JSON/Markdown 表格/YAML/文件树/API payload 等），须在 `task_plan.md`「🧩 输出示例与格式契约」区块有对应 `output_examples` 条目（完整示例 + 同结构可复用模板 + `vc_refs` 指向本 VC）；验收时产出形态与示例不一致 = VC 未通过，禁仅凭命令退出码放行。
 
+## 域适配说明：基线-产物逐条核验表（Rule 84.15）
+<!-- 说明性区块（2026-11-26 task-spec-consumption-chain S14）：表体由 `planctl render` 从 `plan-state.json#spec_baseline` 自动生成（仅存在 SPEC-* 行时生成同名区块），模板侧只写列定义与填写规则，禁预置同名表体，避免 render 覆盖/双表冲突 -->
+- 列定义：`spec_id` | `双向判定式`（区间上下界齐全，禁单边） | `校验命令`（可执行纯命令） | `观测`（命令实测输出） | `证据锚(path:line 或回执)` | `结论`（PASS/FAIL）。
+- 填写规则 note：存在 SPEC 行时逐条必填（缺行=终验 FAIL），观测/结论未取到显式写「待终验」；无基线任务经 spec-scan 确认后填 `none`，禁静默留空；终验 `check-spec-baseline.sh <plan-dir> --final`（判定器）经 check-complete.sh SPEC-GATE 消费 未逐条验真不得判 COMPLETE（Rule 51.15/84.15）。
+
 ---
 
 ## Phase Gates

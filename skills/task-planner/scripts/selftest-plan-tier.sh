@@ -123,7 +123,85 @@ std_marks="$(cat "$SKILL_ROOT"/templates/variant/*.md "$SKILL_ROOT/templates/tas
 if [ "${std_marks:-0}" -ge 14 ]; then ok 14 "13 variant + general 含 plan_tier: standard 标记（实测 ${std_marks} 处）"; else bad 14 "standard 标记仅 ${std_marks:-0} 处（需 ≥14）"; fi
 
 # ── 行为级（样例构造: /tmp/selftest-plan-tier-* 用后清理）──
+# [2026-11-26 task-spec-consumption-chain S23/S24] What: 夹具补规范基线契约实物（9 列基线表 1 条 SPEC +
+#   来源锚真实文件 sha256 前 12 位 + .spec-scan.json 零 must 收据 + plan-state.json spec_baseline 同构 +
+#   verification.md 核验表 PASS 行 + 正文 VC 点名），满足 attest/check-complete 新门（SPEC-2 断言语义零弱化）。
+# Why: 新不变量=规范基线全档位必填（l0-lite 除外）；PT-18/19/28/31/32 原夹具停留旧口径被 spec-gate 拦，
+#   唯一合法修法=升级夹具计划到新契约，禁改门脚本。纯 bash/grep/sed/sha256sum，只写夹具目录、零 git 触碰。
+spec_fixture_scaffold() {
+    local dir="$1" units="${2:-}"
+    local src="$dir/spec-source.md" sha abs
+    printf '%s\n' '# spec fixture source' 'alpha constraint line.' 'beta constraint line.' > "$src"
+    sha="$(sha256sum "$src" | awk '{print substr($1,1,12)}')"
+    abs="$(cd "$dir" && pwd)"
+    {
+        printf '\n## 🔒 规范基线（Spec-Baseline）\n\n'
+        printf '| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |\n'
+        printf '|---|---|---|---|---|---|---|---|---|\n'
+        printf '| SPEC-1 | selftest 夹具约束 | %s/spec-source.md:2 | grep -c alpha %s/spec-source.md = 1 | %s | check | grep -c alpha %s/spec-source.md | %s | 待终验 |\n' \
+            "$abs" "$abs" "$sha" "$abs" "${units:-*}"
+        printf '\n## ✅ 规范消费点（selftest 夹具）\nSPEC-1 在本节由 VC-1 判据点名（Rule 84.15 / C9）\n'
+    } >> "$dir/task_plan.md"
+    # 扫描收据：无 must 候选 → candidates 空 + must=0（check-spec-baseline C2 落点）
+    printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$dir/.spec-scan.json"
+    cat > "$dir/plan-state.json" <<EOF
+{
+  "schema_version": 1,
+  "task_id": "selftest-spec-fixture",
+  "plan_tier": "mini",
+  "execution_lane": "L0-T",
+  "created_at": "2026-11-26T00:00:00Z",
+  "updated_at": "2026-11-26T00:00:00Z",
+  "requirements": [],
+  "goals": [],
+  "vcs": [],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "template_type": "mini-lite",
+  "output_examples": [
+    {
+      "id": "EX-1",
+      "deliverable": "task_plan.md",
+      "example": "{\"id\":1,\"name\":\"alpha\"}",
+      "template": "{\"id\":<INT>,\"name\":<STRING>}",
+      "format": "JSON",
+      "vc_refs": ["VC-1"],
+      "tags": ["selftest"]
+    }
+  ],
+  "spec_baseline": [
+    {
+      "id": "SPEC-1",
+      "verbatim": "selftest 夹具约束",
+      "anchor": "$abs/spec-source.md:2",
+      "rule": "grep -c alpha $abs/spec-source.md = 1",
+      "sha": "$sha",
+      "kind": "check",
+      "check": "grep -c alpha $abs/spec-source.md",
+      "applies": "${units:-*}",
+      "src": ""
+    }
+  ]
+}
+EOF
+    cat > "$dir/verification.md" <<EOF
+# Verification: selftest fixture
+
+## 基线-产物逐条核验表（Rule 84.15）
+| spec_id | 双向判定式 | 校验命令 | 观测 | 证据锚(path:line 或回执) | 结论 |
+|---|---|---|---|---|---|
+| SPEC-1 | grep -c alpha $abs/spec-source.md = 1 | grep -c alpha | 1 hit (实测) | spec-source.md:2 | PASS |
+EOF
+}
 T="$(mktemp -d /tmp/selftest-plan-tier.XXXXXX)"
+# [2026-11-26 S23/S24] 夹具生命周期：EXIT 统一清理 T/T6（原脚本无 trap，历史遗留 /tmp 夹具残留）
+trap 'rm -rf "$T" "${T6:-}"' EXIT
+# [2026-11-26 S23/S24] plan-state.json 落夹具后 check-complete 的 git-baseline 门会触发（夹具在 /tmp 无基线证据）；
+#   off 档仅作用于本 selftest 进程（同 selftest-git-baseline.sh 既有先例），断言本体与门脚本零改动。
+export TASK_PLANNER_GIT_BASELINE_ENFORCE=off
 rm -rf "$T"; mkdir -p "$T/dflt/plans/p1" "$T/mini/plans/p2" "$T/var/plans/p3" "$T/planmini" "$T/planbad" "$T/planstd"
 
 # [task-perf-default-mini 2026-11-24] PT-15 契约同步（Why: 缺省档由 general 改为 mini，原断言「无 mini 标记」直接失效；
@@ -169,6 +247,8 @@ print('planmini written')
 PYEOF
 printf '%s\n' "# Findings（selftest fake）" "- F1: mini 样例构造" "- F2: FMEA 段缺失豁免验证" "- F3: VC=2 降档验证" > "$T/planmini/findings.md"
 printf '%s\n' "# Progress（selftest fake）" "- 2026-09-20 P1 实施 complete" "- 2026-09-20 P2 验收 complete" > "$T/planmini/progress.md"
+# [2026-11-26 S23/S24] mini 夹具升级到规范基线新契约（PT-18/19/28 + planbad/planautobad/planautook 继承基座）
+spec_fixture_scaffold "$T/planmini" ''
 
 # PT-18 锚1 FMEA 豁免
 out="$(bash "$ATTEST" "$T/planmini/task_plan.md" 2>&1)"; rc=$?
@@ -306,6 +386,10 @@ print('planautobad/planautook written')
 PYEOF
 cp "$T/planmini/findings.md" "$T/planmini/progress.md" "$T/planautobad/"
 cp "$T/planmini/findings.md" "$T/planmini/progress.md" "$T/planautook/"
+# [2026-11-26 S23/S24] AUTO-TIER 两夹具继承规范基线契约（PT-31/32 走到 check-complete --final 面）；
+#   来源锚沿用基座绝对路径（文件在夹具生命周期内常驻，sha 与副本一致），核验表/收据/state 一并复制。
+cp "$T/planmini/plan-state.json" "$T/planmini/verification.md" "$T/planmini/.spec-scan.json" "$T/planmini/spec-source.md" "$T/planautobad/"
+cp "$T/planmini/plan-state.json" "$T/planmini/verification.md" "$T/planmini/.spec-scan.json" "$T/planmini/spec-source.md" "$T/planautook/"
 
 # PT-31 AUTO-TIER 复核触发态: 超限 → WARNING 点名 且 warn 档不阻断
 out="$(bash "$CC" "$T/planautobad/task_plan.md" 2>&1)"; rc=$?

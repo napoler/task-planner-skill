@@ -13,6 +13,7 @@
 #   attest-plan.sh --skip-goal-check [plan_file]      # 跳过 Rule 66.5 Goal 单元表门(2026-10-09 CR F1 接线; 透传 check-plan-dispatch.sh, 须在交付报告披露)
 #   attest-plan.sh --skip-vc-check [plan_file]        # 跳过 Rule 84.1 VC 可执行性门(task-v173 验证技能独立化; 校验 verification.md 每条 VC 含可执行命令, 须在交付报告披露)
 #   attest-plan.sh --skip-audit-check [plan_file]     # 跳过计划审计门(Rule 109.8, task-auditgate-machine-20261116; L1+ 唯一逃生口, 须在交付报告披露)
+#   attest-plan.sh --skip-spec-gate [plan_file]       # 跳过 Rule 51.15 规范基线门(task-spec-consumption-chain S11, 须在交付报告披露)
 # 说明: Rule 51.1 需求原文区块门(缺区块/无 R 行/无 R→VC 映射/无 🧮 根源覆盖表 → 拒锁)为 fail-closed 硬门, 无 --skip 逃生口;
 #       mini 档(plan_tier: mini)整块豁免(与 FMEA mini 豁免同先例), 非 mini 计划必含四锚(51.1 三锚 + 53.1 第 4 锚)方可锁定。
 # 约束:fail-open 不适用本脚本(写操作需明确);被 hook 调用(--verify)时任何异常 exit 2 视为"未锁定"。
@@ -33,6 +34,9 @@ skip_vc=""
 # [2026-11-17 task-auditgate-machine-20261116] 计划审计门逃生开关（--skip-audit-check, Rule 109.8 CA-8）:
 #   L1+ 计划唯一逃生口（[plan-audit-skip] 自声明对 L1+ 无效）; 任何档位使用必留 WARN+交付披露。
 skip_audit=""
+# [2026-11-26 task-spec-consumption-chain S11] Rule 51.15 规范基线门逃生开关（--skip-spec-gate）:
+#   与 --skip-goal-check 同先例——使用时须在交付报告披露；四锚硬门 MK1 无此逃生口。
+skip_spec=""
 for arg in "$@"; do
   case "$arg" in
     --show) mode="show" ;;
@@ -44,7 +48,8 @@ for arg in "$@"; do
     --skip-goal-check) skip_goal=1 ;;
     --skip-vc-check) skip_vc=1 ;;
     --skip-audit-check) skip_audit=1 ;;
-    -h|--help) sed -n '2,16p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    --skip-spec-gate) skip_spec=1 ;;
+    -h|--help) sed -n '2,17p' "$0" | sed 's/^# \?//'; exit 0 ;;
     *) plan_file="$arg" ;;
   esac
 done
@@ -129,7 +134,10 @@ case "$mode" in
     # ② 计划路径——两个内容相同但路径不同的计划共用缓存（/tmp/attest-cache-<cksum> 无路径分量）。
     # 两者均导致门链被错误跳过。追加 skip_goal 与 plan_file 绝对规范路径两个分量。
     _attest_plan_key="$(cd "$plan_dir" 2>/dev/null && pwd -P || printf '%s' "$plan_dir")"
-    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)${_attest_state_key}" "${skip_goal:-}" "$_attest_plan_key" | sha256sum | cut -d' ' -f1)"
+    # [2026-11-26 task-spec-consumption-chain S11] 缓存键追加 skip_spec 分量：
+    #   What: --skip-spec-gate 翻转会改变门链，带/不带该 flag 不得复用同一缓存（同 skip_goal 先例）。
+    #   Why:  否则缓存命中会跳过新增的 Rule 51.15 门，逃生口状态与门结果串扰。
+    _attest_cksum="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' "$_attest_hash" "$skip_dispatch" "$skip_template" "${skip_fmea:-}" "${skip_vc:-}" "${TASK_PLANNER_TEMPLATE_GATE_ENFORCE:-}|${TASK_PLANNER_FMEA_ENFORCE:-}|${TASK_PLANNER_VC_ENFORCE:-}" "${TASK_PLANNER_VC_NONVACUOUS_ENFORCE:-}|${TASK_PLANNER_RVC_COVERAGE_ENFORCE:-}|${TASK_PLANNER_STEP_PLACEHOLDER_ENFORCE:-}|${TASK_PLANNER_TIER_CONSISTENCY_ENFORCE:-}|${TASK_PLANNER_GOAL_CJK_ENFORCE:-}" "${skip_audit:-}|${TASK_PLANNER_AUDIT_GATE_ENFORCE:-}|$(sha256sum "$plan_dir/progress.md" 2>/dev/null | cut -d' ' -f1)${_attest_state_key}" "${skip_goal:-}" "$_attest_plan_key" "${skip_spec:-}" | sha256sum | cut -d' ' -f1)"
     _attest_cache="/tmp/attest-cache-${_attest_cksum}.result"
     if [ -f "$_attest_cache" ] && [ ! "$plan_file" -nt "$_attest_cache" ]; then
       # plan_file 未变更（mtime 不新于缓存）→ 回放缓存结果，跳过完整门链
@@ -141,6 +149,8 @@ case "$mode" in
       [ -n "$skip_template" ] && echo "[attest] WARN: --skip-template-check 跳过模板门控(Rule 34.1, 须在交付报告披露)" >&2
       # [2026-11-17 task-auditgate-machine-20261116] 审计门逃生 WARN 同步重放（文案与门链内 :575 附近逐字一致, 防漂移）
       [ -n "$skip_audit" ] && echo "[attest] [audit-gate] WARN: 已显式跳过审计门（--skip-audit-check）——交付须披露" >&2
+      # [2026-11-26 task-spec-consumption-chain S11] 文案与门链 skip_spec 分支逐字一致（防漂移）
+      [ -n "$skip_spec" ] && echo "[attest] WARN: --skip-spec-gate 跳过规范基线门(Rule 51.15, 须在交付报告披露)" >&2
       echo "[attest] 门结果缓存命中（Change #9：跳过完整门链，回放缓存结果；键含门控配置防 enforce 漂移）" >&2
       exit 0
     fi
@@ -330,6 +340,43 @@ PY
         exit 1
       fi
       echo "[attest] [requirement-gate] OK (Rule 51.1 三锚 + 第 4 锚「🧮 根源覆盖表」(Rule 53.1) 共四锚在位)"
+    fi
+    # [2026-11-26 task-spec-consumption-chain S11] Rule 51.15 规范基线门接线。
+    # What: 在四锚 requirement-gate 之后 shell-out 同目录 check-spec-baseline.sh <plan-dir>：
+    #       rc=0 → OK 行；rc=1 → fail-closed 拒锁（输出首条失败原因）；rc=2 → 输入缺失 SKIPPED。
+    # Why:  S4 判定器已能机器判「规范是否在计划期逐条处置/验真」，此前无消费者=文本承诺仍可锁定；
+    #       与 FMEA/goal 门同构接到锁定面，堵「无基线/无扫描收据仍获批」入口。MK1 四锚块零改动且
+    #       无 --skip（本门是独立后置门）；判定器缺失对齐既有 [gate-degraded] 先例 SKIPPED 放行。
+    if [ -n "$skip_spec" ]; then
+      echo "[attest] WARN: --skip-spec-gate 跳过规范基线门(Rule 51.15, 须在交付报告披露)" >&2
+    else
+      _sb_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/check-spec-baseline.sh"
+      if [ -f "$_sb_script" ]; then
+        _sb_out="$(mktemp "${TMPDIR:-/tmp}/attest-spec-baseline.XXXXXX")"
+        bash "$_sb_script" "$plan_dir" > "$_sb_out"; _sb_rc=$?
+        case "$_sb_rc" in
+          0)
+            cat "$_sb_out"
+            echo "[attest] [spec-baseline] OK (Rule 51.15)"
+            ;;
+          1)
+            # 判定器 stdout/stderr 双写失败行；仅取首条原因，避免重复整段噪声。
+            _sb_first="$(grep -m1 '\[spec-baseline\] ✗' "$_sb_out" 2>/dev/null || true)"
+            rm -f "$_sb_out"
+            echo "[attest] ✗ [spec-baseline] 拒绝锁定（Rule 51.15）: ${_sb_first:-判定器未给出具体原因}" >&2
+            exit 1
+            ;;
+          2)
+            echo "[attest] [spec-baseline] SKIPPED (输入缺失 rc=2；规范基线检查未运行)" >&2
+            ;;
+          *)
+            echo "[attest] [spec-baseline] SKIPPED (判定器异常 rc=$_sb_rc；规范基线检查未运行)" >&2
+            ;;
+        esac
+        rm -f "$_sb_out"
+      else
+        echo "[attest] [gate-degraded] check-spec-baseline.sh 缺失，规范基线门 SKIPPED（Rule 51.15 门未运行）" >&2
+      fi
     fi
     # [2026-10-14 task-v173] Rule 84.1 VC 可执行性门（attest 前置硬门；创建任务时须写好验证规则与脚本）:
     # 校验 plan_dir/verification.md 的 VC 条目每条含可执行验证命令（非占位）。

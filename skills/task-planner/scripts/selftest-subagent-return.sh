@@ -2,7 +2,7 @@
 # selftest-subagent-return.sh — Rule 22.4b 返回格式污染三面守护 (task-v161 S4, 登记 selftest-registry.tsv)
 # What: 静态+行为断言四件上游产物: check-subagent-return.sh(返回侧四判据) / check-dispatch.sh return_section_check(prompt 侧段结构) / subagent_dispatch.md §7 三反污染条款 / critical-rules-dispatch.md 22.4b 污染三面句（[task-v171 2026-10-12] Rule 22 归属 task-dispatch，随迁）; 任一 FAIL → rc 1, 全 PASS → rc 0(末行 Total/PASS/FAIL 摘要)
 # Why: task-v152 实证 summary: 契约外字段混入 + §7 段被 ①②③ 任务清单替换——上游产物是漂移载体, 本脚本机器化防回退; 纯读断言(零 VCS 命令/禁写被断言文件)
-# Usage: bash selftest-subagent-return.sh(A3-A5 stdin 喂合规块/契约外 summary/块尾「## 附」段; A9 heredoc 污染夹具重复标题+①②③ → pretool rc≠0 且 stderr「返回格式段结构违规」; A10 干净夹具 §7 模板块+三文件+brief 引用+subagent-state/ → pretool rc=0)
+# Usage: bash selftest-subagent-return.sh(A3-A5 stdin 喂合规块/契约外 summary/块尾「## 附」段; A9 heredoc 污染夹具重复标题+①②③ → pretool rc≠0 且 stderr「返回格式段结构违规」; A10 干净夹具 §7 模板块+三文件+brief 引用+subagent-state/ → pretool rc=0; A13-A15 [2026-11-26 C1] 8+1 变体: 第9行 spec_receipt 合规 rc=0 / 附加自由文本 rc=1 / 模板+脚本口径一致)
 # A9/A10 子 shell export TASK_PLANNER_PLAN_DIR 指真实计划目录(三文件在位使缺项扫描通过, 只测段结构门), 父 shell 无泄漏+显式 unset; 锁 .dispatch-inflight 运行前备份、尾回写, 零残留
 # [task-v171 回归修复 2026-10-12] 该计划目录已被主仓批归档, PLAN 现指 plans/archive/ 归档位(见 :16 注记); 残留脆弱点: 主仓绝对路径硬编码, 部署位/worktree 外运行时 A9/A10 会 fail-open 空转, 后续可改 $TMP hermetic 夹具(同 selftest-dispatch.sh:17 / selftest-interaction.sh:64 范式)——本轮不做设计级重构, 仅修路径
 set -u
@@ -109,5 +109,25 @@ if grep -q '22.8.6' "$CR" && grep -q '主进程代建' "$CR" && grep -q '待主�
 else
   bad 12 "CA-4: critical-rules-dispatch.md 缺 22.8.6 代建豁免（grep 命中不足）"
 fi
+# ── ⑬~⑮ [2026-11-26 task-spec-consumption-chain C1] 8+1 回执变体断言（追加, 不替换 A3/A5 的 8 行夹具）──
+# What: 校验器白名单/块尾口径与模板 §7 措辞三面一致；Why: 26-critic.md:52-56 实证「按模板返回必被误杀」。
+# ⑬ 合规 9 行（spec_receipt: none）→ rc=0 + PASS
+OUT="$(printf '%s\n' 'status: done' 'acceptance: 1/1 pass — [1:PASS]' 'files: none' 'evidence: e' 'checkpoint: /p/x.md' 'findings_written: none' 'blockers: none' 'confidence: HIGH' 'spec_receipt: none' | bash "$RS" 2>&1)"; RC=$?
+[ "$RC" = 0 ] && printf '%s' "$OUT" | grep -qF '[return-guard] PASS' && ok 13 '合规 8+1 行块 rc=0+PASS' || bad 13 "8+1 行块 rc=$RC" "$OUT"
+# ⑭ 9 行后再追加自由文本 → rc=1（收紧面：spec_receipt 不是任意尾注许可证）
+OUT="$(printf '%s\n' 'status: done' 'acceptance: 1/1 pass — [1:PASS]' 'files: none' 'evidence: e' 'checkpoint: /p/x.md' 'findings_written: none' 'blockers: none' 'confidence: HIGH' 'spec_receipt: none' '## 附:验收细节' | bash "$RS" 2>&1)"; RC=$?
+[ "$RC" = 1 ] && ok 14 'spec_receipt 后附自由文本 rc=1' || bad 14 "块尾附加 rc=$RC" "$OUT"
+# ⑮ 模板 §7 代码围栏内含非空 spec_receipt 行 + 措辞不再禁止第 9 行 + 校验器白名单含该字段
+N15A="$(printf '%s\n' "$TPL7" | grep -cE '^spec_receipt: .+')"
+N15B="$(grep -cF '8 字段之后仅允许可选第 9 行' "$TPL")"
+N15C="$(grep -cF 'confidence|spec_receipt' "$RS")"
+[ "${N15A:-0}" -ge 1 ] && [ "${N15B:-0}" -ge 1 ] && [ "${N15C:-0}" -ge 1 ] \
+  && ok 15 '模板 §7 第9行 + 措辞 + 校验器白名单一致' || bad 15 '8+1 契约三面不一致' "counts=[$N15A,$N15B,$N15C]"
+# ⑯ 基线计划必填模式: 8 字段块 + --require-spec-receipt → rc=1 且点名 spec_receipt
+OUT="$(printf '%s\n' 'status: done' 'acceptance: 1/1 pass — [1:PASS]' 'files: none' 'evidence: e' 'checkpoint: /p/x.md' 'findings_written: none' 'blockers: none' 'confidence: HIGH' | bash "$RS" --require-spec-receipt 2>&1)"; RC=$?
+[ "$RC" = 1 ] && printf '%s' "$OUT" | grep -qF 'spec_receipt' && ok 16 '基线模式缺 spec_receipt rc=1+点名' || bad 16 "基线模式缺行 rc=$RC" "$OUT"
+# ⑰ 基线计划必填模式: 9 字段块 → rc=0（无基线计划则在其值写 none，同样过）
+OUT="$(printf '%s\n' 'status: done' 'acceptance: 1/1 pass — [1:PASS]' 'files: none' 'evidence: e' 'checkpoint: /p/x.md' 'findings_written: none' 'blockers: none' 'confidence: HIGH' 'spec_receipt: none' | bash "$RS" --require-spec-receipt 2>&1)"; RC=$?
+[ "$RC" = 0 ] && printf '%s' "$OUT" | grep -qF '[return-guard] PASS' && ok 17 '基线模式含 spec_receipt rc=0+PASS' || bad 17 "基线模式含行 rc=$RC" "$OUT"
 echo "Total: $((PASS+FAIL)) PASS=$PASS FAIL=$FAIL"
 exit $(( FAIL > 0 ))

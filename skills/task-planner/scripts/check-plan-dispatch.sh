@@ -60,6 +60,22 @@ if ! grep -qE '^- \*\*Executor:\*\*' "$PLAN_FILE" 2>/dev/null; then
     exit 0
 fi
 
+# ── [2026-11-26 task-spec-consumption-chain S7] JSON 原生计划判定（粒度三值 fail-open 收窄）──
+# WHAT: 判定计划是否为「JSON 原生计划」：① 同目录 plan-state.json 的 template_ref 值含
+#   .template.json（按任务约束用 grep -o 读取，禁 jq/python）；② 或 task_plan.md 含
+#   `TEMP VIEW: task-json-template` 注释标记（planctl render 前的临时人读骨架，同 init-session.sh:1051 锚）。
+# WHY: 原行为对「粒度三值未填报/格式不可解析」一律 SKIPPED fail-open（兼容旧格式计划）；
+#   JSON 原生计划以 plan-state.json 为权威源、由 JSON 模板渲染，三值是必填列，留空=结构性漏填
+#   （Rule 59.1），改走既有 add_violation 汇管线由调用方 attest 拒锁；legacy 计划保持 SKIPPED 不变。
+#   例外登记分支与三值超限分支不在此收窄范围，行为完全不变（不破坏既有退出码与语义）。
+JSON_NATIVE_PLAN=0
+PLAN_STATE_FILE="${PLAN_FILE%/*}/plan-state.json"
+if [ -f "$PLAN_STATE_FILE" ] && grep -o '"template_ref"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLAN_STATE_FILE" 2>/dev/null | grep -q '\.template\.json'; then
+    JSON_NATIVE_PLAN=1
+elif grep -qm1 -F 'TEMP VIEW: task-json-template' "$PLAN_FILE" 2>/dev/null; then
+    JSON_NATIVE_PLAN=1
+fi
+
 # ── [2026-09-20 task-v086 P2-S3 Rule 38.1/38.4④] mini 档: 判定前置 + S-unit 豁免 + MISMATCH ──
 # 判定公共前置: grep 计划文件(init 复制产物 task_plan.md)「plan_tier: mini」; standard 模板
 # 标记 plan_tier: standard 天然不命中 → 非 mini 路径零改动。
@@ -298,9 +314,21 @@ while IFS= read -r line; do
                 add_violation "$phase_no" "行 S${s_id} 粒度三值 ${gfiles}f/${glines}l/${gmin}min: 时长 ${gmin}min > step_max_minutes(${STEP_MAX_MIN})（Rule 59.1 粒度三值硬门）— 回炉重拆"
             fi
         elif [ -n "$col8" ]; then
-            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值格式不可解析(${col8})（Rule 59.1 粒度三值未填报或格式漂移,Nf/Nl/Nmin）"
+            # [2026-11-26 S7] JSON 原生计划格式不可解析=模板必填列损坏 → add_violation；
+            # legacy 计划保持原 SKIPPED fail-open 文案与退出码不变。
+            if [ "$JSON_NATIVE_PLAN" -eq 1 ]; then
+                add_violation "$phase_no" "行 S${s_id} 粒度三值格式不可解析(${col8})（Rule 59.1: JSON 原生计划须实填 Nf/Nl/Nmin）"
+            else
+                echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值格式不可解析(${col8})（Rule 59.1 粒度三值未填报或格式漂移,Nf/Nl/Nmin）"
+            fi
         else
-            echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值未填报（Rule 59.1 强制）— 旧格式计划兼容 fail-open"
+            # [2026-11-26 S7] JSON 原生计划列空=漏填 → add_violation（Rule 59.1 须实填 Nf/Nl/Nmin）；
+            # legacy 计划维持旧格式兼容 fail-open，文案一字不改。
+            if [ "$JSON_NATIVE_PLAN" -eq 1 ]; then
+                add_violation "$phase_no" "行 S${s_id} 粒度三值未填报（Rule 59.1: JSON 原生计划须实填 Nf/Nl/Nmin）"
+            else
+                echo "[plan-dispatch] SKIPPED Phase ${phase_no} S${s_id} 粒度三值未填报（Rule 59.1 强制）— 旧格式计划兼容 fail-open"
+            fi
         fi
         # 步骤枚举（task-v081 第三维,advisory）: 目标($3) distinct 步骤枚举序号 > step_max_steps
         # → 提示拆分（不阻断,与前两维同范式）; 计数口径=上方 count_step_markers

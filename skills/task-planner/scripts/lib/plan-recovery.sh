@@ -177,7 +177,34 @@ recover() {
     else
       printf '必保清单=缺失（存量计划，非阻断提示）\n'
     fi
+    # [2026-11-26 task-spec-consumption-chain S13] 恢复包新增「规范基线（SPEC 行）」区。
+    # What: 逐条列 spec_baseline 中 SPEC-* 的 verbatim 前 60 字 / applies / result（空值兜底 pending）；
+    #   无 SPEC 行给一条 spec-scan --write 处置提示，jq 解析失败给缺失提示（fail-open，不阻断恢复）。
+    # Why: 压缩后执行体须直接从恢复包看到规范条款，不能只靠指向 plan-state.json 的指针；
+    #   刻意不改 mustkeep() 的 TSV 输出面——git-baseline.mk_collect 与 selftest T14a 依赖其逐字不变。
+    # 取舍: 放在 Git基线行之后（同属必保清单 printf 区），是为了守住 selftest T15b
+    #   「Git基线行在 80 行截断点之前」的既有契约——70 条 MK 时新段会把它挤出限幅；
+    #   追加而非改写，既有 MK / Git基线 / Goal 等输出逐字节不动。
     printf '%s\n' "$git_baseline_line"
+    printf '规范基线（SPEC 行）:\n'
+    local spec_rows="" spec_rc=0
+    spec_rows="$(jq -r '
+      def txt($v): if $v == null then "" elif ($v | type) == "string" then $v else ($v | tostring) end;
+      def one($v): txt($v) | gsub("[\\r\\n\\t]"; " ");
+      if ((.spec_baseline // []) | type) != "array" then empty
+      else
+        .spec_baseline[]
+        | select((txt(.id)) | startswith("SPEC-"))
+        | "\(txt(.id)) | \(one(.verbatim)[0:60]) | 适用于:\(one(.applies)) | 状态:\(if (txt(.result) | length) > 0 then one(.result) else "pending" end)"
+      end
+    ' "$state" 2>/dev/null)" || spec_rc=$?
+    if [ "$spec_rc" -ne 0 ]; then
+      printf '规范基线=缺失（plan-state.json 解析失败，非阻断提示）\n'
+    elif [ -n "$spec_rows" ]; then
+      printf '%s\n' "$spec_rows"
+    else
+      printf '规范基线=未登记（运行 python3 %s/planctl.py spec-scan --write --plan-dir %s）\n' "$script_dir" "$plan_dir"
+    fi
     printf 'Goal: %s\n' "$goal"
     printf 'Current Phase: %s\n' "$phase"
     printf 'Next Step: %s\n' "$next_step"

@@ -22,6 +22,11 @@
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CC="$SKILL_ROOT/scripts/check-complete.sh"
 CPD="$SKILL_ROOT/scripts/check-plan-dispatch.sh"
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] 夹具补 plan-state.json 后，check-complete 的
+#   git-baseline 门会要求 /tmp 夹具提供 B9 基线证据（与本用例的四元键 SKIP 目标无关）。沿用
+#   selftest-git-baseline.sh / S23/S24 既有先例：off 档仅作用于本 selftest 进程，门脚本与断言零改动。
+export TASK_PLANNER_GIT_BASELINE_ENFORCE=off
+
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf '  [PASS] %s\n' "$1"; }
 bad() { FAIL=$((FAIL+1)); printf '  [FAIL] %s\n' "$1"; }
@@ -61,6 +66,37 @@ pre_key4_integrity() {
     else
         bad "前置-键④完整性漂移(键④枚举需同步更新): $(head -20 "$SB/keys.diff" | tr '\n' '; ')"
     fi
+}
+
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] What: 夹具补规范基线契约（9 列基线表 1 条 SPEC +
+#   真实来源锚 sha + 零 must 收据 + plan-state.json 同构 + 核验表 PASS + 正文点名），使 attest 与
+#   check-complete --final 的新门放行；夹具仍只存在于 /tmp 沙箱副本。
+# Why: 原夹具只有四锚最小集，attest 计划期 spec-gate C1/C2/C3 拒锁导致 setup_sandbox 返回 1（rc=2 零用例运行）；
+#   六夹具 SKIP-BY-HASH 测试目标与断言本体零改动。口径同 S23/S24，零 git 触碰。
+spec_fixture_scaffold() {
+  local d="$1" src="$1/spec-source.md" sha abs
+  printf '%s\n' '# spec fixture source' 'alpha constraint line.' 'beta constraint line.' > "$src"
+  sha="$(sha256sum "$src" | awk '{print substr($1,1,12)}')"
+  abs="$(cd "$d" && pwd)"
+  {
+    printf '\n## 🔒 规范基线（Spec-Baseline）\n\n'
+    printf '| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |\n'
+    printf '|---|---|---|---|---|---|---|---|---|\n'
+    printf '| SPEC-1 | selftest 夹具约束 | %s/spec-source.md:2 | grep -c alpha %s/spec-source.md = 1 | %s | check | grep -c alpha %s/spec-source.md | * | 待终验 |\n' "$abs" "$abs" "$sha" "$abs"
+    printf '\n## ✅ 规范消费点（selftest 夹具）\nSPEC-1 在本节由 VC-1 判据点名（Rule 84.15 / C9）\n'
+  } >> "$d/task_plan.md"
+  printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$d/.spec-scan.json"
+  cat > "$d/plan-state.json" <<EOF
+{"schema_version":1,"task_id":"selftest-spec-fixture","plan_tier":"mini","execution_lane":"L0-T","created_at":"2026-11-26T00:00:00Z","updated_at":"2026-11-26T00:00:00Z","requirements":[],"goals":[],"vcs":[],"phases":[],"findings":[],"audits":[],"delegations":[],"tags":[],"template_type":"mini-lite","output_examples":[{"id":"EX-1","deliverable":"task_plan.md","example":"{\"id\":1,\"name\":\"alpha\"}","template":"{\"id\":<INT>,\"name\":<STRING>}","format":"JSON","vc_refs":["VC-1"],"tags":["selftest"]}],"spec_baseline":[{"id":"SPEC-1","verbatim":"selftest 夹具约束","anchor":"$abs/spec-source.md:2","rule":"grep -c alpha $abs/spec-source.md = 1","sha":"$sha","kind":"check","check":"grep -c alpha $abs/spec-source.md","applies":"*","src":""}]}
+EOF
+  cat > "$d/verification.md" <<EOF
+# Verification: selftest fixture
+
+## 基线-产物逐条核验表（Rule 84.15）
+| spec_id | 双向判定式 | 校验命令 | 观测 | 证据锚(path:line 或回执) | 结论 |
+|---|---|---|---|---|---|
+| SPEC-1 | grep -c alpha $abs/spec-source.md = 1 | grep -c alpha | 1 hit (实测) | spec-source.md:2 | PASS |
+EOF
 }
 
 # ── 沙箱建立: 复制 skill 树 + 夹具计划三件套 + attest 锁定 ────────────────────
@@ -128,6 +164,7 @@ EOF
 - 夹具进度 2: 全量基线跑通并写入四元键状态
 - 夹具进度 3: 六夹具顺序执行并各自恢复现场
 EOF
+    spec_fixture_scaffold "$PLAN_DIR"
     bash "$SKL/scripts/attest-plan.sh" "$PLAN" --skip-vc-check > "$SB/attest-setup.out" 2>&1
 }
 
@@ -154,7 +191,12 @@ fi
 
 # ── 夹具① TAMPERED(篡改 plan 后哈希不符)仍抓 ───────────────────────────────
 cp "$PLAN" "$SB/plan.bak"
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] attest --verify 自 2026-11-23 起以 state_sha256
+#   为权威（plan-state.json 存在时）；夹具补 JSON 权威源后，只改 task_plan.md 不再破锁。夹具同步篡改
+#   两个被锁文件（plan 追加探针 + state 追加合法换行），保持 ①「TAMPERED 仍抓」原断言语义零弱化。
+cp "$PLAN_DIR/plan-state.json" "$SB/state.bak"
 printf '\n<!-- tamper-probe-① -->\n' >> "$PLAN"
+printf '\n' >> "$PLAN_DIR/plan-state.json"
 av="$(bash "$SKL/scripts/attest-plan.sh" --verify "$PLAN" > /dev/null 2>&1; echo $?)"
 if [ "$av" != "0" ]; then ok "①a: attest --verify 篡改后 rc=$av (TAMPERED 仍抓, attest 本体零改动)"; else bad "①a: 篡改后 attest --verify rc=0, TAMPERED 未抓"; fi
 rc="$(run_cc)"
@@ -164,6 +206,7 @@ else
     bad "①b: rc=$rc skip=$(skip_lines) — 篡改轮不应 SKIP"
 fi
 mv "$SB/plan.bak" "$PLAN"
+mv "$SB/state.bak" "$PLAN_DIR/plan-state.json"   # 同步还原 JSON 权威源，锁定指纹回到基线
 av="$(bash "$SKL/scripts/attest-plan.sh" --verify "$PLAN" > /dev/null 2>&1; echo $?)"
 [ "$av" = "0" ] && ok "①c: 恢复后 attest --verify rc=0" || bad "①c: 恢复后 verify rc=$av"
 
@@ -282,8 +325,12 @@ fi
 rc="$(run_cc)"
 [ "$(skip_lines)" = "2" ] || bad "⑥pre: 前置失败(应 SKIP,skip=$(skip_lines))"
 cp "$PLAN" "$SB/plan.bak"
+# [2026-11-26 task-spec-consumption-chain 回归修复 C 段] 同 ①：verify 以 state_sha256 为权威，
+#   夹具篡改同时覆盖 plan 与 state，保证「真变化必须破锁」断言在新权威源下仍有效。
+cp "$PLAN_DIR/plan-state.json" "$SB/state.bak"
 # 注: 替换文本不得含半角冒号(check-delegation type_hint 的 #*: 冒号前缀剥离会误伤括号内说明)
 sed -i 's/- \*\*Executor:\*\* 主进程（白名单①：git 编排）/- **Executor:** explorer（夹具⑥调研定位）/' "$PLAN"
+printf '\n' >> "$PLAN_DIR/plan-state.json"
 av="$(bash "$SKL/scripts/attest-plan.sh" --verify "$PLAN" > /dev/null 2>&1; echo $?)"
 [ "$av" != "0" ] && ok "⑥a: 篡改后 attest --verify rc=$av(TAMPERED)" || bad "⑥a: verify rc=0"
 rc="$(run_cc)"
@@ -293,6 +340,7 @@ else
     bad "⑥b: rc=$rc skip=$(skip_lines) — 真变化必须被门拦截"
 fi
 mv "$SB/plan.bak" "$PLAN"
+mv "$SB/state.bak" "$PLAN_DIR/plan-state.json"   # 与 ① 同步还原 JSON 权威源
 av="$(bash "$SKL/scripts/attest-plan.sh" --verify "$PLAN" > /dev/null 2>&1; echo $?)"
 rc="$(run_cc)"
 if [ "$av" = "0" ] && [ "$rc" = "0" ] && [ "$(skip_lines)" = "2" ]; then

@@ -1124,6 +1124,52 @@ PYEOF
         run_rvc_coverage
     fi
 
+    # [2026-11-26 task-spec-consumption-chain S11b] SPEC-GATE — 规范基线终验门接线（Rule 84.15）
+    # What: VC-GATE 块结束后 shell-out 同目录 check-spec-baseline.sh <plan-dir> --final，把
+    #       「基线-产物逐条核验表」的逐条验真结果接入完成判定：rc=0 → OK (N 条全 PASS)；
+    #       rc=1 → FAILED + exit 1（fail-closed，本门无 warn 档）；rc=2/判定器缺失 → SKIPPED。
+    # Why:  84.15 既有文本要求逐条核验表才能判完成，而 check-complete 此前对规范基线零引用——
+    #       VC 全计数通过也能报 COMPLETE（规范未消费）。本门是 84.15 的机器化，不新设档位、
+    #       不新增 config 键；判定器 stdout 明细中继，门自身判定走 stderr（同 run_vc_nonvacuous 范式）。
+    # Guard: l0-lite（plan_tier=l0-lite 或 template_ref 含 l0-lite）沿既有 lane-L0 薄化先例——
+    #       零 attest 自然无逐条核验表面 → SKIPPED；判定器缺失/rc=2 走 gate-degraded 先例不阻断；
+    #       插入点在主门链 fi 内、既有门链顺序与输出形态零改动。
+    _sg_checker="$SKILL_ROOT/scripts/check-spec-baseline.sh"
+    _sg_lite=0
+    if grep -qm1 -E '^(template_type|template_ref):.*l0-lite|^plan_tier:[[:space:]]*l0-lite' "$PLAN_FILE" 2>/dev/null; then
+        _sg_lite=1
+    fi
+    if [ "$_sg_lite" -eq 1 ]; then
+        printf '[spec-gate] SKIPPED (l0-lite 档豁免, 零 attest 无逐条核验表面; 沿 lane-L0 薄化先例)\n' >&2
+    elif [ ! -f "$_sg_checker" ]; then
+        printf '[spec-gate] SKIPPED (判定器缺失, gate-degraded 先例)\n' >&2
+    else
+        _sg_out="$(bash "$_sg_checker" "$PLAN_DIR_GUESS" --final 2>&1)"
+        _sg_rc=$?
+        case "$_sg_rc" in
+            0)
+                [ -n "$_sg_out" ] && printf '%s\n' "$_sg_out"
+                _sg_final="$PLAN_DIR_GUESS/.spec-final.json"
+                _sg_spec="$(grep -oE '"spec"[[:space:]]*:[[:space:]]*[0-9]+' "$_sg_final" 2>/dev/null | grep -oE '[0-9]+' | head -1 || true)"
+                _sg_pass="$(grep -oE '"pass"[[:space:]]*:[[:space:]]*[0-9]+' "$_sg_final" 2>/dev/null | grep -oE '[0-9]+' | head -1 || true)"
+                if [ -n "$_sg_spec" ] && [ -n "$_sg_pass" ]; then
+                    printf '[spec-gate] OK (规范基线终验 %s 条全 PASS)\n' "$_sg_spec"
+                else
+                    printf '[spec-gate] OK\n'
+                fi
+                ;;
+            1)
+                [ -n "$_sg_out" ] && printf '%s\n' "$_sg_out" >&2
+                printf '[spec-gate] FAILED (Rule 84.15: 基线-产物核验表缺行/观测空/结论非 PASS)\n' >&2
+                exit 1
+                ;;
+            *)
+                [ -n "$_sg_out" ] && printf '%s\n' "$_sg_out" >&2
+                printf '[spec-gate] SKIPPED (判定器 rc=%s 输入异常, gate-degraded 先例)\n' "$_sg_rc" >&2
+                ;;
+        esac
+    fi
+
     # [2026-10-05 task-v132 G1 (Rule 51.1a) R-COVERAGE 门 — 72h 事故修复: 完成声称对照(51.3)的机器化]
     # 校验 delivery-summary.md「需求覆盖核对」区块是否逐项覆盖计划 R 行:
     #   ① R 行数=计划 R 行数(按 R 编号对齐, 缺行/多行=FAIL)

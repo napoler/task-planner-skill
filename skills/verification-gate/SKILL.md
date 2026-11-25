@@ -68,6 +68,7 @@ allowed-tools: "Read, Bash, Grep, Glob"
 3. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户（goal 语境按 task-discipline Rule 28.9②④⑤ 消费，不升级提问）；语义保证型判据（确保/保证/根治/不再/杜绝/所有）计划期拆为机器可验拆分项+残余风险清单，执行期不新增判据行：拆分项全 PASS 且残余风险清单已登记 ⇒ PARTIAL，未全 PASS 或未拆分 ⇒ BLOCKED
 4. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）
 4b. 存在 Spec-Baseline 的任务（task_plan「🔒 规范基线」区块非空），翻 COMPLETE 前必须先过 84.15 规范基线终验门——对交付物本体逐条执行双向判定式并产出核验表落 verification.md；任一基线 FAIL/软豁免/核验表缺失 → 禁 COMPLETE（见 `references/critical-rules-verification.md` Rule 84.15）。
+4c. 终验前运行 `bash <skill>/scripts/check-spec-baseline.sh <plan-dir> --final`（fail-closed，无 warn 档；l0-lite 豁免）；核验表观测/证据锚/结论列由终验执行者经 `planctl set` 写入后 `planctl render` 刷新。
 
 **可选思路**：
 1. 思路 A：逐条对照判据机械判定 PASS/FAIL，失败项按 3 次重试后升级 BLOCKED（适用场景：VC 判据客观、命令输出可直接比对时）

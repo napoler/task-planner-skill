@@ -24,6 +24,71 @@ assert() {   # <T名> <实际rc> <期望rc> <stdout必含|-> <stderr必含|->
   else FAIL=$((FAIL+1)); printf 'T%s FAIL %s (rc=%s exp=%s)\n' "$name" "$name" "$rc" "$exp"; fi
 }
 
+# [2026-11-26 task-spec-consumption-chain S23/S24] What: T06 attest 集成夹具补规范基线契约实物（9 列基线表
+#   1 条 SPEC + 真实来源锚 sha256 前 12 位 + .spec-scan.json 零 must 收据 + plan-state.json spec_baseline
+#   同构 + applies 绑定夹具内唯一非主进程 S-unit（S1）+ 正文 VC 点名），满足 attest 新门 Rule 51.15。
+# Why: 新不变量=规范基线全档位必填（l0-lite 除外）；T06 原夹具停留旧口径被 [spec-gate] 拒锁（C1/C2/C3/C8），
+#   唯一合法修法=升级夹具计划到新契约，禁改门脚本；断言本体零改动。纯 bash/sed/sha256sum，夹具全在 $TMP。
+spec_fixture_scaffold() {
+    local dir="$1" units="${2:-}"
+    local src="$dir/spec-source.md" sha abs
+    printf '%s\n' '# spec fixture source' 'alpha constraint line.' 'beta constraint line.' > "$src"
+    sha="$(sha256sum "$src" | awk '{print substr($1,1,12)}')"
+    abs="$(cd "$dir" && pwd)"
+    {
+        printf '\n## 🔒 规范基线（Spec-Baseline）\n\n'
+        printf '| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |\n'
+        printf '|---|---|---|---|---|---|---|---|---|\n'
+        printf '| SPEC-1 | selftest 夹具约束 | %s/spec-source.md:2 | grep -c alpha %s/spec-source.md = 1 | %s | check | grep -c alpha %s/spec-source.md | %s | 待终验 |\n' \
+            "$abs" "$abs" "$sha" "$abs" "${units:-*}"
+        printf '\n## ✅ 规范消费点（selftest 夹具）\nSPEC-1 在本节由 VC-1 判据点名（Rule 84.15 / C9）\n'
+    } >> "$dir/task_plan.md"
+    printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$dir/.spec-scan.json"
+    cat > "$dir/plan-state.json" <<EOF
+{
+  "schema_version": 1,
+  "task_id": "selftest-spec-fixture",
+  "plan_tier": "mini",
+  "execution_lane": "L0-T",
+  "created_at": "2026-11-26T00:00:00Z",
+  "updated_at": "2026-11-26T00:00:00Z",
+  "requirements": [],
+  "goals": [],
+  "vcs": [],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "template_type": "mini-lite",
+  "output_examples": [
+    {
+      "id": "EX-1",
+      "deliverable": "task_plan.md",
+      "example": "{\"id\":1,\"name\":\"alpha\"}",
+      "template": "{\"id\":<INT>,\"name\":<STRING>}",
+      "format": "JSON",
+      "vc_refs": ["VC-1"],
+      "tags": ["selftest"]
+    }
+  ],
+  "spec_baseline": [
+    {
+      "id": "SPEC-1",
+      "verbatim": "selftest 夹具约束",
+      "anchor": "$abs/spec-source.md:2",
+      "rule": "grep -c alpha $abs/spec-source.md = 1",
+      "sha": "$sha",
+      "kind": "check",
+      "check": "grep -c alpha $abs/spec-source.md",
+      "applies": "${units:-*}",
+      "src": ""
+    }
+  ]
+}
+EOF
+}
+
 # ── 夹具 ─────────────────────────────────────────────────────────────────────
 for d in ok notable blankexec legacy none attest notable2 noexec overmin overin1 emptydur allgood; do mkdir -p "$TMP/$d"; done
 P1="$TMP/ok/task_plan.md"; P2="$TMP/notable/task_plan.md"; P3="$TMP/blankexec/task_plan.md"
@@ -92,6 +157,8 @@ printf '%s\n' \
 
 # T06 夹具 = T02 目录
 cp "$P2" "$P6"
+# [2026-11-26 S23/S24] 仅升级 T06 夹具（P2 保持 T02 缺表负例语义零改动）；S1 是夹具中唯一非主进程 S-unit
+spec_fixture_scaffold "$TMP/attest" S1
 
 # T07 夹具(F-2 回归): 有 `- **Executor:**` 行 + 整份计划无 S-unit 表 → 修复前被 legacy 误放行
 printf '%s\n' \

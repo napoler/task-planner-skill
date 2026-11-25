@@ -3,6 +3,9 @@
 # [2026-11-25 task-json-template P5] JSON 原生模板纳入白名单：
 #   白名单 = general(恒合法) + templates/json/*.template.json 派生的类型名 + templates/variant/*-type.md（旧 MD 兼容）
 # WHY: P1/P3 已切 JSON 模板为源；门控若只认 MD 会把 JSON-only 类型误判为非法。
+# [2026-11-26 task-spec-consumption-chain S6] 增量: 项目级 plan-templates 根目录的 *-type.md 也并入白名单
+#   （与既有 *_pj_types 同一个向上探测循环，不新增遍历）。WHY: 项目级创作模板常以 MD variant 形态落地，
+#   仅收 JSON 会把合法项目类型误判为非法（plan-brief.md §2 gap 6）；general 恒合法与四形态抽取均不变。
 # 提取顺序: frontmatter `^template_type:` → 表格行 `| template_type |` 第二列 → HTML 注释 `<!-- template_type: X -->`（task-v086 S7-1: mini-lite/init frontmatter 插入产物为注释形态, 第三形态补齐否则 gate 视角=缺失, enforce 档拒锁）
 #   [2026-11-25 P5] → 第四形态：同目录 plan-state.json 的 template_type / template_ref（JSON 模板为源时 render 视图可能不带 MD 标记，缺此回退=误判失败）
 # Usage: check-template-type.sh <task_plan.md>
@@ -31,8 +34,11 @@ while [ "$_walk_dir" != "/" ]; do
     if [ -d "$_walk_dir/.claude/plan-templates" ]; then _pj_root="$_walk_dir/.claude/plan-templates"; fi
     if [ -z "$_pj_root" ] && [ -d "$_walk_dir/.zcode/plan-templates" ]; then _pj_root="$_walk_dir/.zcode/plan-templates"; fi
     if [ -n "$_pj_root" ]; then
-        _pj_types="$( { ls "$_pj_root"/*.template.json 2>/dev/null; ls "$_pj_root"/json/*.template.json 2>/dev/null; } \
-                      | sed 's/.*\///;s/\.template\.json$//' | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
+        # [S6 2026-11-26] 同循环追加项目级 *-type.md（旧 MD 兼容），避免为 MD 再跑一次向上遍历；
+        # 后缀归一沿用既有 sed（-type.md / .template.json → 类型名），无项目模板时结果仍为空串。
+        _pj_types="$( { ls "$_pj_root"/*.template.json 2>/dev/null; ls "$_pj_root"/json/*.template.json 2>/dev/null; \
+                        ls "$_pj_root"/*-type.md 2>/dev/null; } \
+                      | sed 's/.*\///;s/\.template\.json$//;s/-type\.md$//' | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
         break
     fi
     _walk_dir="$(dirname "$_walk_dir")"

@@ -412,7 +412,15 @@
         "verbatim": { "type": "string" },
         "anchor": { "type": "string" },
         "rule": { "type": "string" },
-        "sha": { "type": "string" }
+        "sha": { "type": "string" },
+        "kind": { "type": "string" },
+        "check": { "type": "string" },
+        "applies": { "type": "string" },
+        "src": { "type": "string" },
+        "result": { "type": "string" },
+        "observed": { "type": "string" },
+        "cls": { "type": "string" },
+        "origin": { "type": "string" }
       }
     },
     "progress_baseline_item": {
