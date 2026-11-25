@@ -215,13 +215,15 @@ for _ti in $(seq 0 $((${#TARGET_ROOTS[@]}-1))); do
         continue
       fi
       [ -f "$skill_dir/SKILL.md" ] || { echo "  skip: $skill_name (no SKILL.md)"; continue; }
-      # 用 find -maxdepth 2 扫 skill 目录下一层子目录(支持 scripts/ 子目录结构)
+      # 用 find -maxdepth 5 扫 skill 目录及多层子目录(支持 scripts/capabilities/ 等深层结构)
+      # [2026-11-25 task-deploy-all-skills] What: maxdepth 2→5; Why: 实测唯一漏文件
+      #   task-discipline/scripts/capabilities/agnes-quota.sh 相对 skill_dir 深度 3, 旧 maxdepth 2 漏发; 不改其他逻辑。
       # 排除 .git / tests/ 等非同步内容
       while IFS= read -r -d '' f; do
         [ -e "$f" ] || continue
         rel="${f#$skill_dir}"          # scripts/scan-plans.sh
         sync_one "$f" "$TARGET_ROOT/skills/$skill_name/$rel"
-      done < <(find "$skill_dir" -mindepth 1 -maxdepth 2 -type f -not -path '*/.git/*' \
+      done < <(find "$skill_dir" -mindepth 1 -maxdepth 5 -type f -not -path '*/.git/*' \
                                   -not -path '*/tests/*' \
                                   -not -name '*.pyc' -not -name '*.md.bak' \
                                   -print0)

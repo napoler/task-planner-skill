@@ -25,6 +25,9 @@
 #                    --deploy 对账通过后自动执行池成员顶层枚举挂载(install_pool_links): <skills>/<member> 相对软链→task-planner/review-library/<member>;冲突跳过 LINK-WARN;增强段不改 exit 码 [task-v105]
 #                    [2026-11-25 task-skill-deploy-fix] B2: 默认槽位扩为 5 位(+cursor/continue)，不加入 .agents
 #                    (全局保护区,走 TASK_PLANNER_DEPLOY_SLOTS env 显式覆盖)；SLOTS/DEFAULT_DEPLOY_ROOTS 同源函数输出。
+#                    [2026-11-25 task-deploy-all-skills] F6: --deploy 现含全量 skill 同步(末尾调 canonical install-companion.sh,
+#                    把 task-planner 之外全部 skill 发到所有探测工具根); Why: 原路径只发 task-planner 一个 skill, 其余完全不同步;
+#                    TASK_PLANNER_DEPLOY_SLOTS 已注入(selftest 临时 slot)或 TASK_PLANNER_DEPLOY_ALL=0 时跳过(防 companion 污染真实工具根)。
 #                    守卫语义(2026-09-12 R3): $HOME 内部 slot = 白名单口径 — 仅当位于任一默认部署根
 #                    ($HOME/.zcode/skills/task-planner、$HOME/.claude/skills/task-planner、
 #                    $HOME/.config/opencode/skills/task-planner、$HOME/.cursor/skills/task-planner、
@@ -788,6 +791,20 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         exit 6
     fi
     echo "[DEPLOY] OK: 全部部署位 IDENTICAL(基准=主仓 skills/task-planner)"
+    # [2026-11-25 task-deploy-all-skills] F6 全量 skill 同步。What: task-planner 逐位对账通过后调用 canonical 仓的
+    #   lib/install-companion.sh(与 install.sh Phase 5.6 同源), 把 $MAIN_REPO/skills 下其余全部 skill 同步到
+    #   detect-tools.sh 探测到的所有工具根; TASK_PLANNER_ROOT 显式指向 canonical(install-companion.sh:45-50 校验),
+    #   防从部署位运行时把部署副本误当安装源。Why: 原 --deploy 只发 task-planner 一个 skill, 其余 20 个完全不同步。
+    #   守卫: TASK_PLANNER_DEPLOY_SLOTS 已注入(selftest 用临时 slot, companion 会写真实工具根)或
+    #   TASK_PLANNER_DEPLOY_ALL=0 时跳过本段; 失败 stderr 报 DEPLOY_DRIFT 并 exit 6(与既有部署失败语义一致)。
+    if [ -z "${TASK_PLANNER_DEPLOY_SLOTS:-}" ] && [ "${TASK_PLANNER_DEPLOY_ALL:-1}" != "0" ]; then
+        if ! TASK_PLANNER_ROOT="$MAIN_REPO/skills/task-planner" \
+             bash "$MAIN_REPO/skills/task-planner/lib/install-companion.sh"; then
+            echo "[DEPLOY-ALL] DEPLOY_DRIFT: 全量 skill 同步失败(canonical=$MAIN_REPO/skills)" >&2
+            exit 6
+        fi
+        echo "[DEPLOY-ALL] OK: all skills synced"
+    fi
 fi
 
 # 成功: MERGED 或 ALREADY_MERGED, 且 --deploy 全位 IDENTICAL(对账基准=主仓 skills/task-planner, task-v077)
