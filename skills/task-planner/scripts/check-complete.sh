@@ -1668,6 +1668,62 @@ f && /^\|/ {
                     printf '[git-baseline] SKIP degraded: 未知 rc=%s（fail-open 不阻断）\n' "$_gb_rc" >&2
                     ;;
             esac
+
+            # [diff-audit 处置门]（追加；既有 git-baseline.sh 调用后执行）
+            # 读 .diff-manifest.json 的 source_hits；任一 hit 无对应处置行→FAIL(rc=1, 沿用 GIT-BASELINE GATE 失败路径)。
+            # 处置行判据=在 plan-dir 的 findings.md 或 progress.md 中 grep 到含该锚词的 [diff-disposition] 或 [source-waiver] 行。
+            # 容错: manifest 缺失/无 jq/解析失败→静默跳过（不改变既有 rc 语义）。
+            if [ "$_gb_rc" -eq 0 ] || { [ "$_gb_rc" -eq 1 ] && [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" = "warn" ]; }; then
+                _da_manifest="$PLAN_DIR_GUESS/.diff-manifest.json"
+                if [ -f "$_da_manifest" ] && command -v jq >/dev/null 2>&1; then
+                    _da_hits_count="$(jq -r '.source_hits | length' "$_da_manifest" 2>/dev/null || printf '0')"
+                    case "$_da_hits_count" in ''|*[!0-9]*) _da_hits_count=0 ;; esac
+                    if [ "$_da_hits_count" -gt 0 ]; then
+                        _da_i=0
+                        while [ "$_da_i" -lt "$_da_hits_count" ]; do
+                            _da_kw="$(jq -r --argjson i "$_da_i" '.source_hits[$i].anchor_kw // ""' "$_da_manifest" 2>/dev/null || printf '')"
+                            _da_src="$(jq -r --argjson i "$_da_i" '.source_hits[$i].source // ""' "$_da_manifest" 2>/dev/null || printf '')"
+                            _da_i=$((_da_i + 1))
+                            [ -n "$_da_kw" ] || continue
+                            _da_disposed=0
+                            # 处置行判据: findings.md 或 progress.md 中含该锚词的 [diff-disposition] 或 [source-waiver] 行
+                            if grep -F -- "$_da_kw" "$PLAN_DIR_GUESS/findings.md" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null | grep -qE '\[diff-disposition\]|\[source-waiver\]'; then
+                                _da_disposed=1
+                            fi
+                            if [ "$_da_disposed" -eq 0 ]; then
+                                printf '[diff-audit] FAILED: 删除行命中声明源锚 "%s"(%s) 无处置行 — findings/progress 补 [diff-disposition] 或 [source-waiver]（用户原话+源锚+授权锚）\n' "$_da_kw" "$_da_src" >&2
+                                if [ "${TASK_PLANNER_GIT_BASELINE_ENFORCE:-enforce}" != "warn" ]; then exit 1; fi
+                                printf '[git-baseline] 警告: warn 档不阻断（TASK_PLANNER_GIT_BASELINE_ENFORCE=enforce 可升级）\n' >&2
+                            fi
+                        done
+                    fi
+                fi
+            fi
+
+            # [zero-commit WARN] complete 判定前: acceptance.status==awaiting(或缺失) 且 findings/progress 有"零commit"字样
+            # 但无含"用户"字样的豁免锚行（含「用户」+「原话/授权/裁决」任一的行）→ WARN（不改 rc，只 stderr）。
+            _zc_acc="missing"
+            if [ -f "$PLAN_DIR_GUESS/plan-state.json" ] && command -v jq >/dev/null 2>&1; then
+                _zc_acc="$(jq -r '.acceptance.status // "missing"' "$PLAN_DIR_GUESS/plan-state.json" 2>/dev/null || printf 'missing')"
+            fi
+            if [ "$_zc_acc" = "awaiting" ] || [ "$_zc_acc" = "missing" ]; then
+                if grep -qF "零commit" "$PLAN_DIR_GUESS/findings.md" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null; then
+                    _zc_waived=0
+                    # 豁免锚行: 含「用户」+「原话/授权/裁决」任一的行
+                    if grep -F "零commit" "$PLAN_DIR_GUESS/findings.md" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null | grep -F "用户" | grep -qE '原话|授权|裁决'; then
+                        _zc_waived=1
+                    fi
+                    # 也接受显式 [zero-commit-waiver] + 用户原话锚
+                    if [ "$_zc_waived" -eq 0 ]; then
+                        if grep -F "[zero-commit-waiver]" "$PLAN_DIR_GUESS/findings.md" "$PLAN_DIR_GUESS/progress.md" 2>/dev/null | grep -qF "用户"; then
+                            _zc_waived=1
+                        fi
+                    fi
+                    if [ "$_zc_waived" -eq 0 ]; then
+                        printf '[zero-commit] WARN: 零commit 且验收 awaiting/缺 —— 须 commit 或 [zero-commit-waiver] 用户原话锚\n' >&2
+                    fi
+                fi
+            fi
         fi
     fi
 
