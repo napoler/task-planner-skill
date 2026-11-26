@@ -270,6 +270,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 - **媒体制作/单元线并行/内容权重分级** → 卫星 `media-planner`
 - 主进程铁律摘要：任务执行一律 `Agent()` 派发（白名单外 Write/Edit 被 `check-delegation.sh` 拦截，enforce=exit 2）；bypass 仅显式 `allow-direct.sh on --confirm-user-requested`；六项白名单全文见 task-dispatch Rule 25.3
 - **子代理激活默认档/模型分档/并行硬标注/同消息并发/指标留痕** → 卫星 task-dispatch Rule 96（七类触发类别默认派发；主进程直做=窄白名单登记例外；≥2 个无依赖 S-unit 必须声明并行组；并行组成员同消息并发派发；交付报告激活子代理数与最大并行宽度）
+- **声明源通用消费与本地调研通道（Rule 115）** → research-channels 技能（`project-inventory.sh` 索引第 0 步）+ core Rule 115 + discipline 101.5/B20；计划期 spec-scan 源扫描 + check-spec-baseline `[source-gate]`；终验 `--final` + diff 对账 `[diff-disposition]/[source-waiver]`
 
 ## 结构化状态操作 SOP（JSON 权威源）
 
@@ -285,7 +286,8 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
   - 勾选项编辑（唯一入口）：`set --section template_checks --id <id> --field checked --value true`（或 `false`；`checked` 严格 bool，字符串拒收）→ `render`；手改 MD 勾态无效（门控按 JSON 负控制判定）
   - Phase / VC：`phase-start --id P1`（置 in_progress+Started 锚）/ `phase-done --id P1` / `vc-pass --id VC-1` / `vc-fail --id VC-1`
   - 规范候选扫描（计划期）：`python3 <skill>/scripts/planctl.py spec-scan --plan-dir <dir> --write` 扫描规范候选并逐条处置 SRC/NA，收据 `[spec-scan]`（22.4e） spec-scan 会按 config/spec-registry.tsv 维度别名归纳候选源（suggest_dims 落 .spec-scan.tsv）；项目可经 <repo-root>/.spec-registry.tsv 声明自有内容类模板/执行体与新维度（零代码扩展）
-  - 规范携带块（派发期）：`python3 <skill>/scripts/planctl.py spec-brief --plan-dir <dir> --sunit S<n>` 输出规范携带块，原样入派发 prompt（22.4e）
+  - **调研第 0 步（Rule 115.1）**：任何调研动作前先 `bash research-channels/scripts/project-inventory.sh --root <repo-root> [--check]`（research-channels 技能）建立项目内外源索引；索引外=未探索区显形。五层通道失败纪律=当轮换层+留证据，五层穷尽才可声明受限（core Rule 115.2）。
+  - 规范携带块（派发期）：`python3 <skill>/scripts/planctl.py spec-brief --plan-dir <dir> --sunit S<n>` 输出规范携带块，原样入派发 prompt（22.4e）；派发同时携带必保锚词/排除面（core Rule 115.4/114.8，discipline B20）。
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §planctl-json-examples
   - 生成视图 / 安全回退：`render`（从 JSON **全量重建** 4 个 MD 视图；**每次状态/语义变更后必须 render**，这是软堵生效条件——不 render 则手工编辑残留不被覆盖）/ `backup` / `restore [--version N]` / `history`
 - **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。
@@ -318,4 +320,5 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | `templates/delivery-summary.md` | 终验交付总结五要素模板 |
   → 详细步骤/表格/示例按需 Read references/plan-workflow-details.md §references-table
 | `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源 |
+| `../research-channels/SKILL.md` | 声明源通用消费与本地调研通道（Rule 115）：project-inventory 索引第 0 步、五层通道失败纪律、源注册表消费 |
 | 外部 skill/agent | `drift-checker`（Rule 61）/`decision-arbiter`（Rule 69）/`Skill("plan-resume")`（Rule 24）/`Skill("progress-tracker")`（Rule 30）/`code-quality-review` skill |

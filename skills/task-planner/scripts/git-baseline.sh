@@ -39,12 +39,13 @@ die() { # die <rc> <message...> — 统一错误出口（stdout 保持契约字�
 
 usage() {
   printf '%s\n' \
-    'usage: git-baseline.sh <snapshot|checkpoint|diff|dispose|restore|anchor-auth|anchor-preexisting|status> <plan-dir> [options]' \
+    'usage: git-baseline.sh <snapshot|checkpoint|diff|manifest|dispose|restore|anchor-auth|anchor-preexisting|status> <plan-dir> [options]' \
     '  snapshot   [--force] [--late]' \
     '  anchor-auth          只刷新授权锚（sidecar.auth_anchor），不动 baseline/checkpoint' \
     '  anchor-preexisting   只刷新存量脏文件锚（sidecar.preexisting_dirty）' \
     '  checkpoint --label <id>' \
     '  diff       [--final] [--from <sha|label>] [--scope <file>]' \
+    '  manifest   (只读输出/重生成 .diff-manifest.json，等价 diff --final 的 manifest 部分)' \
     '  dispose    --file <path> --state retained|authorized|restored|fixed --evidence "<text>"' \
     '  restore    (--file <path> | --all) [--from <sha>]' \
     '  status' >&2
@@ -67,7 +68,7 @@ trap cleanup_all EXIT
 cmd="${1:-}"
 [ $# -ge 1 ] && shift || true
 case "$cmd" in
-  snapshot|checkpoint|diff|dispose|restore|anchor-auth|anchor-preexisting|status) ;;
+  snapshot|checkpoint|diff|manifest|dispose|restore|anchor-auth|anchor-preexisting|status) ;;
   -h|--help) usage ;;
   *) usage ;;
 esac
@@ -194,10 +195,10 @@ fi
 EXCLUDE_PATHSPECS=()
 case "$plan_dir" in
   "$repo")
-    EXCLUDE_PATHSPECS+=(':(exclude).git-baseline.json' ':(exclude).git-baseline-report.md') ;;
+    EXCLUDE_PATHSPECS+=(':(exclude).git-baseline.json' ':(exclude).git-baseline-report.md' ':(exclude).diff-manifest.json') ;;
   "$repo"/*)
     rel_plan="${plan_dir#$repo/}"
-    EXCLUDE_PATHSPECS+=(":(exclude)${rel_plan}/.git-baseline.json" ":(exclude)${rel_plan}/.git-baseline-report.md") ;;
+    EXCLUDE_PATHSPECS+=(":(exclude)${rel_plan}/.git-baseline.json" ":(exclude)${rel_plan}/.git-baseline-report.md" ":(exclude)${rel_plan}/.diff-manifest.json") ;;
 esac
 
 # ─────────────────────────── sidecar 原子写入 ───────────────────────────
@@ -214,7 +215,7 @@ sc_ensure() { # 首次建立完整骨架（所有契约字段齐全）
   if jq -n --arg tid "$task_id" --arg root "$repo" --arg mode "$repo_mode" --arg at "$now" \
     '{schema:1,task_id:$tid,repo_root:$root,mode:$mode,baseline_ref:"",baseline_sha:"",
       baseline_tree:"",created_at:$at,file_count:0,seed:"real-index-copy",late:false,
-      mustkeep:{count:0,empty:true,source:"missing"},checkpoints:[],
+      mustkeep:{count:0,empty:true,source:"missing"},checkpoints:[],files:[],
       last_diff:{at:"",from_ref:"",report:"",added:0,modified:0,deleted:0,out_of_scope:0,
                  deleted_lines:0,unresolved:0,mustkeep_lost:0,items:[]},disposal:[]}' > "$tmp"; then
     mv -f -- "$tmp" "$sidecar"
@@ -643,6 +644,202 @@ cmd_checkpoint() {
   printf '[git-baseline] CHECKPOINT %s\n' "$CHECKPOINT_REF"
 }
 
+# ─────────────────────────── diff-audit manifest（删除行锚词对账） ───────────────────────────
+
+DIFF_MANIFEST_FILE=""
+DIFF_AUDIT_HITS_JSON="[]"
+DIFF_AUDIT_REGISTRY_PRESENT=0
+
+diff_audit_reset() {
+  DIFF_AUDIT_HITS_JSON="[]"
+  DIFF_AUDIT_REGISTRY_PRESENT=0
+}
+
+# emit_diff_audit_manifest <plan-dir> <repo-root> <from-tree> <cur-tree>
+# Reads .source-registry.tsv at repo root (4-col TSV: source_path spec_kind anchors_keywords(|sep) scope_tags).
+# Scans deleted lines (- prefix, excluding ---/+++) in diff from-tree..cur-tree for anchor keyword hits.
+# Writes <plan-dir>/.diff-manifest.json and emits [diff-audit] stdout lines.
+# Missing registry => silent skip with one [diff-audit] skip line. Fault-tolerant: never non-zero.
+emit_diff_audit_manifest() {
+  local pd="$1" rr="$2" ft="$3" ct="$4"
+  local reg="${rr}/.source-registry.tsv"
+  local manifest="${pd}/.diff-manifest.json"
+  DIFF_MANIFEST_FILE="$manifest"
+  diff_audit_reset
+
+  # Build files array from git diff numstat+name-status (same trees as diff)
+  local files_json="[]"
+  local tmpf
+  tmpf="$(mktemp "${TMPDIR:-/tmp}/git-baseline-manifest.XXXXXX")" || tmpf=""
+  if [ -n "$tmpf" ]; then
+    CLEANUP_DIRS+=("$tmpf")
+    # files: [{"path","added":n,"deleted":n}]
+    local nsf numf
+    nsf="$(mktemp "${TMPDIR:-/tmp}/git-baseline-mns.XXXXXX")" || nsf=""
+    numf="$(mktemp "${TMPDIR:-/tmp}/git-baseline-mnum.XXXXXX")" || numf=""
+    if [ -n "$nsf" ] && [ -n "$numf" ]; then
+      CLEANUP_DIRS+=("$nsf" "$numf")
+      git -C "$rr" diff --name-status -M -z "$ft" "$ct" > "$nsf" 2>/dev/null || true
+      git -C "$rr" diff --numstat -M -z "$ft" "$ct" > "$numf" 2>/dev/null || true
+      local -A _MA=() _MD=() _MB=()
+      local rec a d p rest oldp
+      while IFS= read -r -d '' rec; do
+        case "$rec" in *$'\t'*) ;; *) continue ;; esac
+        a="${rec%%$'\t'*}"; rest="${rec#*$'\t'}"
+        case "$rest" in *$'\t'*) ;; *) continue ;; esac
+        d="${rest%%$'\t'*}"; p="${rest#*$'\t'}"
+        if [ -z "$p" ]; then
+          IFS= read -r -d '' oldp || oldp=""
+          IFS= read -r -d '' p || p=""
+        fi
+        [ -n "$p" ] || continue
+        if [ "$a" = "-" ] || [ "$d" = "-" ]; then
+          _MB["$p"]=1; _MA["$p"]=0; _MD["$p"]=0
+        else
+          _MB["$p"]=0; _MA["$p"]="$a"; _MD["$p"]="$d"
+        fi
+      done < "$numf"
+      local st p1 p2 fp
+      local fitems=""
+      while IFS= read -r -d '' st; do
+        IFS= read -r -d '' p1 || break
+        case "$st" in R*|C*) IFS= read -r -d '' p2 || p2=""; fp="$p2" ;; *) fp="$p1" ;; esac
+        [ -n "$fp" ] || continue
+        local aa="${_MA[$fp]:-0}" dd="${_MD[$fp]:-0}"
+        local fobj
+        fobj="$(jq -nc --arg path "$fp" --argjson added "${aa:-0}" --argjson deleted "${dd:-0}" \
+          '{path:$path,added:$added,deleted:$deleted}' 2>/dev/null)" || fobj=""
+        [ -n "$fobj" ] || continue
+        if [ -n "$fitems" ]; then fitems="${fitems},${fobj}"; else fitems="$fobj"; fi
+      done < "$nsf"
+      files_json="[${fitems}]"
+    fi
+  fi
+
+  if [ ! -f "$reg" ]; then
+    # No registry: write manifest with empty source_hits, emit skip line
+    local gen_at
+    gen_at="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || printf '')"
+    jq -nc --argjson files "$files_json" --argjson source_hits '[]' --arg generated_at "$gen_at" \
+      '{files:$files,source_hits:$source_hits,generated_at:$generated_at}' > "$manifest" 2>/dev/null || true
+    printf '[diff-audit] no .source-registry.tsv — skip\n'
+    DIFF_AUDIT_HITS_JSON="[]"
+    DIFF_AUDIT_REGISTRY_PRESENT=0
+    return 0
+  fi
+
+  DIFF_AUDIT_REGISTRY_PRESENT=1
+
+  # Parse registry: 4 cols TAB - source_path spec_kind anchors_keywords(|sep) scope_tags
+  local -a REG_SRC=() REG_KWS=()
+  local line src_path spec_kind anchors scope_tags kw
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%$'\r'}"
+    [ -n "$line" ] || continue
+    case "$line" in \#*) continue ;; esac
+    # split by TAB
+    IFS=$'\t' read -r src_path spec_kind anchors scope_tags <<< "$line"
+    [ -n "${src_path:-}" ] || continue
+    [ -n "${anchors:-}" ] || continue
+    REG_SRC+=("$src_path")
+    REG_KWS+=("$anchors")
+  done < "$reg"
+
+  # Collect deleted lines from diff (unified=0, only - lines excluding ---)
+  # We scan per-file deleted text; easier to use git diff -U0 and parse.
+  local raw_del
+  raw_del="$(git -C "$rr" diff -U0 -M "$ft" "$ct" -- 2>/dev/null || true)"
+
+  local -a HIT_KW=() HIT_SRC=() HIT_EX=()
+  local -A HIT_SEEN=()  # dedupe by kw@src@excerpt
+  local excerpt dl
+  # Iterate deleted lines
+  while IFS= read -r dl; do
+    case "$dl" in
+      ---*) continue ;;
+      -*) ;;
+      *) continue ;;
+    esac
+    # strip leading -
+    dl="${dl#-}"
+    [ -n "$dl" ] || continue
+    local ri=0
+    for ri in "${!REG_SRC[@]}"; do
+      local kws="${REG_KWS[$ri]}"
+      local sp="${REG_SRC[$ri]}"
+      # split kws by |
+      local IFS_SAVE="$IFS"
+      IFS='|'
+      local -a kwa=()
+      read -ra kwa <<< "$kws"
+      IFS="$IFS_SAVE"
+      local k
+      for k in "${kwa[@]}"; do
+        [ -n "$k" ] || continue
+        if [[ "$dl" == *"$k"* ]]; then
+          excerpt="$dl"
+          # trim to 60 chars
+          if [ "${#excerpt}" -gt 60 ]; then excerpt="${excerpt:0:60}"; fi
+          local key="${k}@${sp}@${excerpt}"
+          if [ -z "${HIT_SEEN[$key]:-}" ]; then
+            HIT_SEEN["$key"]=1
+            HIT_KW+=("$k")
+            HIT_SRC+=("$sp")
+            HIT_EX+=("$excerpt")
+          fi
+        fi
+      done
+    done
+  done <<< "$raw_del"
+
+  # Build source_hits json
+  local hits_items=""
+  local hi
+  for hi in "${!HIT_KW[@]}"; do
+    local hobj
+    hobj="$(jq -nc --arg anchor_kw "${HIT_KW[$hi]}" --arg source "${HIT_SRC[$hi]}" --arg first_line_excerpt "${HIT_EX[$hi]}" \
+      '{anchor_kw:$anchor_kw,source:$source,first_line_excerpt:$first_line_excerpt}' 2>/dev/null)" || hobj=""
+    [ -n "$hobj" ] || continue
+    if [ -n "$hits_items" ]; then hits_items="${hits_items},${hobj}"; else hits_items="$hobj"; fi
+  done
+  DIFF_AUDIT_HITS_JSON="[${hits_items}]"
+
+  # Emit per-source stdout lines (n=0 also output)
+  local -A SRC_HITS=() SRC_KWS_SEEN=()
+  for hi in "${!HIT_KW[@]}"; do
+    local sp="${HIT_SRC[$hi]}" k="${HIT_KW[$hi]}"
+    SRC_HITS["$sp"]=$(( ${SRC_HITS[$sp]:-0} + 1 ))
+    # accumulate kws (unique-ish, pipe joined for display)
+    if [ -z "${SRC_KWS_SEEN[$sp|$k]:-}" ]; then
+      SRC_KWS_SEEN["$sp|$k"]=1
+      if [ -z "${SRC_KWS_SEEN[$sp]:-}" ]; then SRC_KWS_SEEN["$sp"]="$k"; else SRC_KWS_SEEN["$sp"]="${SRC_KWS_SEEN[$sp]}|$k"; fi
+    fi
+  done
+  local si
+  for si in "${!REG_SRC[@]}"; do
+    local sp="${REG_SRC[$si]}"
+    local n="${SRC_HITS[$sp]:-0}"
+    local kws_disp="${SRC_KWS_SEEN[$sp]:-}"
+    if [ -z "$kws_disp" ]; then
+      # show registry keywords when n=0? contract says "kw=<锚词>" - report matched kw; n=0 means none matched
+      kws_disp="-"
+    fi
+    printf '[diff-audit] %s: deleted-line hits=%s (kw=%s)\n' "$sp" "$n" "$kws_disp"
+  done
+
+  local gen_at
+  gen_at="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || printf '')"
+  jq -nc --argjson files "$files_json" --argjson source_hits "$DIFF_AUDIT_HITS_JSON" --arg generated_at "$gen_at" \
+    '{files:$files,source_hits:$source_hits,generated_at:$generated_at}' > "$manifest" 2>/dev/null || true
+  # Persist files list into sidecar for init-session overlap/acceptance checks (best-effort)
+  if [ -f "$sidecar" ]; then
+    local _fpaths
+    _fpaths="$(printf '%s' "$files_json" | jq -c '[.[].path]' 2>/dev/null || printf '[]')"
+    sc_apply '(.files = $f)' --argjson f "$_fpaths" >/dev/null 2>&1 || true
+  fi
+  return 0
+}
+
 # ─────────────────────────── diff ───────────────────────────
 
 FROM_REF=""; FROM_TREE=""; FROM_SHA=""
@@ -1031,6 +1228,9 @@ cmd_diff() {
     --argjson oos "$n_oos" --argjson dl "$deleted_lines" --argjson unres "$unresolved" \
     --argjson mklost "$mk_lost" --argjson items "$all_items_json" || die 2 "sidecar last_diff 写入失败"
 
+  # diff-audit manifest + [diff-audit] stdout lines (append-only; existing output preserved byte-for-byte above)
+  emit_diff_audit_manifest "$plan_dir" "$repo" "$FROM_TREE" "$cur_tree" || true
+
   if [ "$unresolved" -eq 0 ] && [ "$mk_lost" -eq 0 ]; then
     printf '[git-baseline] PASS unresolved=0 mustkeep_lost=0 report=%s\n' "$report"
     return 0
@@ -1038,6 +1238,23 @@ cmd_diff() {
   printf '[git-baseline] FAIL unresolved=%s mustkeep_lost=%s report=%s\n' "$unresolved" "$mk_lost" "$report"
   if [ "$enforce" = warn ]; then return 0; fi
   return 1
+}
+
+# ─────────────────────────── manifest（只读输出/重生成 manifest） ───────────────────────────
+
+cmd_manifest() {
+  require_sidecar_repo
+  local baseline_sha baseline_tree cur_tree
+  baseline_sha="$(sc_get '.baseline_sha // ""')"
+  baseline_tree="$(sc_get '.baseline_tree // ""')"
+  [ -n "$baseline_sha" ] && [ -n "$baseline_tree" ] || die 3 "NO_BASELINE（sidecar 缺基线字段）"
+  make_tree || die 2 "生成当前树失败"
+  cur_tree="$CUR_TREE"
+  # manifest 等价 diff --final 的 manifest 部分：以 baseline tree 对照当前树
+  emit_diff_audit_manifest "$plan_dir" "$repo" "$baseline_tree" "$cur_tree" || true
+  # 输出 manifest 路径便于调用方
+  printf '[diff-audit] manifest=%s\n' "${plan_dir}/.diff-manifest.json"
+  return 0
 }
 
 # ─────────────────────────── dispose ───────────────────────────
@@ -1145,6 +1362,7 @@ case "$cmd" in
   snapshot) cmd_snapshot ;;
   checkpoint) cmd_checkpoint ;;
   diff) cmd_diff ;;
+  manifest) cmd_manifest ;;
   dispose) cmd_dispose ;;
   restore) cmd_restore ;;
   anchor-auth) cmd_anchor_auth ;;

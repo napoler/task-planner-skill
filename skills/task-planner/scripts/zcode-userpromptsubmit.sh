@@ -312,7 +312,7 @@ if [ "$n" -ge 1 ]; then  # [2026-11-04 R5 Rule 102.4] note 每 prompt 触发(与
   elif [ "$_near_ref" = "1" ]; then
     note="[邻近引用→B 类] [plan-note] 新指令到达 — 先做影响判定: 检测到同文件邻近行引用词(第 N 行/上一句/继续/接着等),归为 B 类(扩展)而非 D 类(新计划); 先 planctl update/set 更新 Phase/VC/范围+render（task_plan.md 为派生视图）+ 同步 Todo(S5) 落盘后再执行; D 新任务边界(与当前 Goal/范围/交付物均无关联)→开新计划目录,旧任务记录断点检查点; A 无影响→照常; E 取消/撤销→102.1e 文档同步。禁止口头接受不落盘(Rule 8.1/102.2)。 不相干内容禁止混入当前计划(Rule 8.1)。新指令到达时先对照专档（user-session-log.md）既有条目——已答过的问题禁再上抛，冲突以逐字原话为准（Rule 80.8②）。"
   else
-    note="[plan-note] 意图切换快速判定（先于一切）：提取新指令 Goal/范围/交付物三要素，与活跃计划 Goal 及 user-session-log 最新原话比对——均无交集=立即 D 类切换（挂起旧计划→init 新计划→显性通告→[intent-switch] 登记）；可判定换目标=E 类先确认。
+    note="[plan-note] 意图切换快速判定（先于一切）：提取新指令 Goal/范围/交付物三要素，与活跃计划 Goal 及 user-session-log 最新原话比对——均无交集=立即 D 类切换（挂起旧计划→init 新计划→显性通告→[intent-switch] 登记）；可判定换目标=E 类先确认。D 类切换 step0：若脏文件∩旧计划 scope≠∅，先 git-baseline snapshot/checkpoint 并登记 [intent-switch] checkpoint 行后再挂起（discipline 94.4b）。
 新指令到达 — 先做反思门(Rule 102.0): A 无影响→照常执行(登记一行); B 扩展/C 矛盾→先同步文档(task_plan.md Phase/VC/范围 + progress/需求锚 + Todo S5)落盘后再按文档执行; D 新任务边界→开新计划目录+旧任务断点检查点(打断接续: 在途单元做完或显式挂起登记); E 取消/撤销→标 cancelled 不删条目+Decisions Made 理由。B/C/D/E 先落盘后执行;口头接受不落盘=P0 违规(Rule 8.1/51.1/102.2)。 不相干内容禁止混入当前计划(Rule 8.1)。新指令到达时先对照专档（user-session-log.md）既有条目——已答过的问题禁再上抛，冲突以逐字原话为准（Rule 80.8②）。"
   fi
 fi

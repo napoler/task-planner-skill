@@ -93,6 +93,8 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
     "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
     "template_type", "template_ref", "template_doc", "template_checks", "template_body", "next_step",
+    # [2026-11-26 task-source-registry] 顶层验收对象（可选）
+    "acceptance",
 )
 TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 
@@ -127,7 +129,9 @@ ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "visual": {"finding": "", "source": ""},
     "root_causes": {"process": "", "defect": "", "fix": "", "vc": ""},
     "invariants": {"state": "", "item": "", "anchor": ""},
-    "spec_baseline": {"verbatim": "", "anchor": "", "rule": "", "sha": ""},
+    # [2026-11-26 task-source-registry] spec_baseline 扩展新字段（dimension/disposition/fallback_reason/tags），默认宽松保持向后兼容。
+    "spec_baseline": {"verbatim": "", "anchor": "", "rule": "", "sha": "",
+                      "dimension": "", "disposition": "pending", "fallback_reason": "", "tags": []},
     "progress_baseline": {"item": "", "snapshot": "", "metric": "", "ban": "", "status": ""},
     "scope_limits": {"category": "", "allow": [], "deny": []},
     "changes": {"object": "", "type": "", "absorb": "", "quote": "", "basis": "", "action": ""},
@@ -207,6 +211,9 @@ OBJECT_FIELD_SPECS: dict[str, tuple[set[str], dict[str, Callable[[Any], bool]], 
                      {"schema_version": lambda v: isinstance(v, int) and not isinstance(v, bool) and v == 1,
                       "meta": lambda v: isinstance(v, dict),
                       "sections": lambda v: isinstance(v, list)}, True),
+    # [2026-11-26 task-source-registry] acceptance object
+    "acceptance": ({"status"}, {"status": lambda v: v in ("awaiting", "accepted", "rejected") or v == "",
+                                "date": STR_FIELD, "anchor": STR_FIELD}, True),
 }
 
 
@@ -646,13 +653,22 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         #   required 仍为 {id,verbatim,anchor}。
         # Why: spec-scan 与 spec-brief 需在同一权威源中登记规范、待处置候选与不适用项；
         #   旧字段与 MK 前缀逐字节保留，SB* 与哨兵 none-justified 属存量兼容，不得因新前缀判定而拒写。
+        # [2026-11-26 task-source-registry] 扩展：dimension(=spec_kind)、disposition(pending|must|na)、fallback_reason、tags（向后兼容宽松）
         known.update({k: STR_FIELD for k in ("verbatim", "anchor", "rule", "sha", "kind",
                                              "check", "applies", "src", "result", "observed",
-                                             "cls", "origin")})
+                                             "cls", "origin", "dimension", "fallback_reason")})
+        known["disposition"] = lambda v: v in ("pending", "must", "na") or v == ""  # allow empty for legacy
+        known["tags"] = lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v)
         required = {"id", "verbatim", "anchor"}
         _spec_id = str(entry.get("id") or "")
         if not _spec_id.startswith(("MK", "SPEC-", "NA-", "SRC-", "SB", "none-justified")):
             errs.append(f"{where}.id: 前缀必须是 MK*/SPEC-*/NA-*/SRC-*（存量 SB*/none-justified 兼容）")
+        # [2026-11-26 task-source-registry] na 时 fallback_reason 必填
+        disp = entry.get("disposition")
+        if disp == "na":
+            fr = entry.get("fallback_reason")
+            if not isinstance(fr, str) or not fr.strip():
+                errs.append(f"{where}.fallback_reason: disposition=na 时必须为非空字符串")
     elif section == "progress_baseline":
         known.update({k: STR_FIELD for k in ("item", "snapshot", "metric", "ban", "status")})
         required = {"id", "item", "snapshot"}
@@ -1803,9 +1819,11 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
     What: 原视图仅 4 张简表；本函数把 JSON 中 20+ 个语义段映射为模板同构段落。
     Why: 「MD 全派生」要求模板语义段可从 JSON 重建；空段不输出以保持视图精简（与验收条款一致）。
     """
+    acc = _obj(doc, "acceptance")
+    acc_badge = f"验收: {acc.get('status','awaiting')}" if acc and acc.get('status') else "验收: awaiting"
     lines: list[str] = [
         GENERATED_HEADER, f"# Task Plan: {tid}", "", stamp.rstrip(), meta.rstrip(),
-        f"- 顶层 tags: {top_tags}", "",
+        f"- 顶层 tags: {top_tags}", f"- {acc_badge}", "",
         # [2026-11-22 task-planctl-exec-surface-20261122] What: 补「🎯 用户需求原文」+R 行区块。
         # Why: attest Rule 51.1 硬门四锚（fail-closed 无 --skip 逃生口）按标题行 + R 需求行
         #   正则 ^[[:space:]]*[-*][[:space:]]+\*\*R[0-9] 校验；原 render 缺失 → 纯 CLI 流
@@ -2624,11 +2642,25 @@ def cmd_spec_brief(args: argparse.Namespace) -> int:
     Why: 规范携带块必须逐字注入执行体且禁改写，若靠 Agent 手抄会丢判定式；
       由 CLI 从唯一权威源生成并固定文案，才能堵住「计划里有规范、执行体没看到」的断点。
       空 applies 视为不限定单元（存量行无该字段，丢规范比多带一条更危险）。
+    [2026-11-26 task-source-registry] 也输出 disposition=must 的源条目（按 dimension 分组）。
     """
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
     require_valid(doc)
     sunit = str(args.sunit or "all").strip() or "all"
+    # [2026-11-26 task-source-registry] must 源条目分组输出
+    must_items = []
+    for item in _arr(doc, "spec_baseline"):
+        disp = item.get("disposition", "pending")
+        if disp != "must":
+            continue
+        # include if applies matches sunit or no applies
+        applies = str(item.get("applies") or "").strip()
+        if sunit.lower() != "all":
+            tokens = {t.strip() for t in applies.split(",") if t.strip()}
+            if tokens and not (tokens & {"all", "*", sunit}):
+                continue
+        must_items.append(item)
     rows: list[str] = []
     for item in _arr(doc, "spec_baseline"):
         sid = str(item.get("id") or "")
@@ -2648,6 +2680,20 @@ def cmd_spec_brief(args: argparse.Namespace) -> int:
             print(row)
     else:
         print("spec_baseline:none(经 spec-scan 确认)")
+    if must_items:
+        # group by dimension/spec_kind
+        groups: dict[str, list[dict[str, Any]]] = {}
+        for it in must_items:
+            dim = str(it.get("dimension") or it.get("kind") or "unknown")
+            groups.setdefault(dim, []).append(it)
+        print("\n【必须保留的源基线条目（disposition=must）】")
+        for dim in sorted(groups.keys()):
+            print(f"## dimension={dim}")
+            for it in groups[dim]:
+                aid = str(it.get("id") or "")
+                anc = _cell(it.get("anchor"))
+                verb = _cell(it.get("verbatim"))
+                print(f"- {aid} | anchor={anc} | {verb}")
     print("回执必须含逐条核验表：`SPEC-<nn> | 观测:… | PASS`；缺表=本单元不成立。")
     return 0
 
@@ -2894,6 +2940,77 @@ def _spec_suggested(entry: dict[str, Any]) -> list[str]:
     return _dedup([str(x) for x in raw if str(x)])
 
 
+
+
+def cmd_disposition(args: argparse.Namespace) -> int:
+    """设置 spec_baseline 条目的 disposition（must|na）。
+
+    [2026-11-26 task-source-registry] What: 按 anchor/id 精确定位 spec_baseline 条目，
+      写 disposition=must 或 disposition=na+fallback_reason。
+    Why: 源注册表扫描出的候选默认 pending，必须有显式处置动作才能通过 source-gate。
+    """
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    require_valid(doc)
+    target = str(args.anchor or "").strip()
+    disposition = str(args.disposition or "").strip().lower()
+    if disposition not in ("must", "na"):
+        raise PlanctlError(f"disposition 非法: {disposition}（须为 must|na）")
+    reason = str(getattr(args, "reason", "") or "").strip()
+    if disposition == "na" and not reason:
+        raise PlanctlError("disposition=na 时必须提供 --reason")
+    sb = _arr(doc, "spec_baseline")
+    hit = None
+    for item in sb:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("anchor") or "") == target or str(item.get("id") or "") == target:
+            hit = item
+            break
+    if hit is None:
+        raise PlanctlError(f"未找到 spec_baseline 条目: {target}")
+    hit["disposition"] = disposition
+    if disposition == "na":
+        hit["fallback_reason"] = reason
+    elif reason:
+        hit["fallback_reason"] = reason
+    commit_state(plan, doc)
+    emit({"anchor": target, "disposition": disposition, "fallback_reason": hit.get("fallback_reason", "")})
+    return 0
+def cmd_acceptance(args: argparse.Namespace) -> int:
+    """写入/读取 plan-state 顶层 acceptance 对象。
+
+    - 无 --status: 只读输出当前值（或 {"status":"awaiting"} 默认态）。
+    - 有 --status: 写入 {"status", "date"(ISO8601 UTC), "anchor"(可选)}。
+    """
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    if not getattr(args, "status", None):
+        acc = doc.get("acceptance")
+        if not isinstance(acc, dict):
+            emit({"status": "awaiting", "date": "", "anchor": ""})
+        else:
+            emit({
+                "status": acc.get("status", "awaiting"),
+                "date": acc.get("date", ""),
+                "anchor": acc.get("anchor", ""),
+            })
+        return 0
+    status = args.status
+    if status not in ("awaiting", "accepted", "rejected"):
+        raise PlanctlError(f"--status 非法: {status}（须为 awaiting|accepted|rejected）")
+    acc: dict[str, Any] = {"status": status, "date": now_iso()}
+    anchor = getattr(args, "anchor", None)
+    if anchor:
+        acc["anchor"] = str(anchor)
+    else:
+        acc["anchor"] = ""
+    doc["acceptance"] = acc
+    commit_state(plan, doc)
+    emit({"acceptance": acc})
+    return 0
+
+
 def cmd_spec_scan(args: argparse.Namespace) -> int:
     """扫描规范候选；缺省 dry-run 只打印，--write 才落盘三件（baseline/sidecar/findings）。"""
     plan = Path(args.plan_dir).resolve()
@@ -2930,6 +3047,102 @@ def cmd_spec_scan(args: argparse.Namespace) -> int:
                 print(f"[spec-scan] suggest_dims: {c['path']} → {'|'.join(dims)}")
 
     write = bool(getattr(args, "write", False)) and not bool(getattr(args, "dry_run", False))
+
+    # [2026-11-26 task-source-registry] 源注册表扫描（.source-registry.tsv）
+    source_reg_path = project_root / ".source-registry.tsv"
+    source_entries_added: list[tuple[str, int, str]] = []  # (source_path, count, spec_kind)
+    if source_reg_path.is_file():
+        try:
+            text = source_reg_path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            raise PlanctlError(f".source-registry.tsv 读取失败: {source_reg_path}: {exc}")
+        for line_no, raw_line in enumerate(text.splitlines(), start=1):
+            if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+                continue
+            parts = raw_line.split("\t")
+            if len(parts) < 4:
+                # try spaces as fallback? spec says TAB; be strict but lenient on missing cols
+                parts = [p.strip() for p in raw_line.split("\t")]
+            if len(parts) < 4:
+                # try 4-space or multiple spaces? stick to TAB as specified
+                continue
+            src_path_pat = parts[0].strip()
+            spec_kind = parts[1].strip() if len(parts) > 1 else ""
+            anchors_kw = parts[2].strip() if len(parts) > 2 else ""
+            scope_tags_str = parts[3].strip() if len(parts) > 3 else "-"
+            if not src_path_pat or not spec_kind or not anchors_kw:
+                continue
+            keywords = [k.strip() for k in anchors_kw.split("|") if k.strip()]
+            if not keywords:
+                continue
+            # glob expand
+            matches = sorted(project_root.glob(src_path_pat))
+            if not matches:
+                # also try relative to plan dir? no, spec says relative to repo-root
+                print(f"[source-scan] {src_path_pat}: 0 candidates (kind={spec_kind}) (no matches)")
+                source_entries_added.append((src_path_pat, 0, spec_kind))
+                continue
+            seen_anchors: set[str] = set()
+            count = 0
+            for mf in matches:
+                if not mf.is_file():
+                    continue
+                try:
+                    lines = mf.read_text(encoding="utf-8", errors="replace").splitlines()
+                except OSError:
+                    continue
+                for lineno_f, fline in enumerate(lines, start=1):
+                    if count >= 10:
+                        break
+                    # grep any keyword
+                    matched_kw = None
+                    for kw in keywords:
+                        if kw in fline:
+                            matched_kw = kw
+                            break
+                    if not matched_kw:
+                        continue
+                    anchor = f"{_spec_rel(mf, project_root)}:{lineno_f}"
+                    if anchor in seen_anchors:
+                        continue
+                    seen_anchors.add(anchor)
+                    verbatim = fline.strip()
+                    if len(verbatim) > 120:
+                        verbatim = verbatim[:120]
+                    file_sha = _spec_sha12(mf)
+                    sha12 = file_sha[:12] if file_sha else ""
+                    src_entry = {
+                        "id": f"SRC-{anchor.replace('/', '_').replace(':', '_').replace('.', '_')[:60]}",
+                        "verbatim": verbatim,
+                        "anchor": anchor,
+                        "rule": "",
+                        "sha": sha12,
+                        "dimension": spec_kind,
+                        "disposition": "pending",
+                        "fallback_reason": "",
+                        "tags": [t.strip() for t in scope_tags_str.split(",") if t.strip()] if scope_tags_str != "-" else [],
+                        "kind": spec_kind,
+                        "origin": "source-registry",
+                    }
+                    # merge into doc baseline later if write
+                    candidates.append({
+                        "id": src_entry["id"],
+                        "cls": "source",
+                        "origin": "source-registry",
+                        "path": _spec_rel(mf, project_root),
+                        "sha": sha12,
+                        "_src_spec": src_entry,
+                    })
+                    count += 1
+                if count >= 10:
+                    break
+            if count >= 10:
+                print(f"[source-scan] warning: {src_path_pat} truncated to 10 candidates per source", file=sys.stderr)
+            print(f"[source-scan] {src_path_pat}: {count} candidates (kind={spec_kind})")
+            source_entries_added.append((src_path_pat, count, spec_kind))
+    else:
+        print("[source-scan] no .source-registry.tsv — skip")
+
     if not write:
         _print_candidates()
         print(receipt + " (dry-run 未落盘)")
@@ -2937,29 +3150,46 @@ def cmd_spec_scan(args: argparse.Namespace) -> int:
     # ① spec_baseline：先删全部旧 SRC-* 再写新行 → 重复执行结果恒定
     baseline = [x for x in _arr(doc, "spec_baseline")
                 if not str(x.get("id") or "").startswith("SRC-")]
+    # add existing candidates (from scan)
     for c in candidates:
+        if c.get("_src_spec"):
+            # from source registry
+            continue
         baseline.append(normalize_entry("spec_baseline", {
             "id": c["id"], "verbatim": c["path"], "anchor": c["origin"],
             "rule": "pending", "cls": c["cls"], "origin": c["origin"], "sha": c["sha"],
         }))
+    # add source-registry entries (merge by anchor)
+    existing_anchors = {str(x.get("anchor") or "") for x in baseline}
+    for c in candidates:
+        if not c.get("_src_spec"):
+            continue
+        se = c["_src_spec"]
+        if se["anchor"] in existing_anchors:
+            continue  # dedupe: anchor same => no duplicate
+        baseline.append(normalize_entry("spec_baseline", se))
+        existing_anchors.add(se["anchor"])
     doc["spec_baseline"] = baseline
     commit_state(plan, doc)
     # ② sidecar：扫描快照（机器门 B19 消费面）；旧文件缺 suggest_dims 按空集兼容
     sidecar_candidates: list[dict[str, Any]] = []
     for c in candidates:
-        item: dict[str, Any] = {"id": c["id"], "path": c["path"], "cls": c["cls"],
-                                "origin": c["origin"], "sha": c["sha"]}
-        dims = _spec_suggested(c)
-        if dims:
-            item["suggest_dims"] = dims
-        sidecar_candidates.append(item)
+        if c.get("_src_spec"):
+            sidecar_candidates.append({"id": c["id"], "path": c["path"], "cls": "source", "origin": "source-registry", "sha": c.get("sha", "")})
+        else:
+            item: dict[str, Any] = {"id": c["id"], "path": c["path"], "cls": c["cls"],
+                                    "origin": c["origin"], "sha": c["sha"]}
+            dims = _spec_suggested(c)
+            if dims:
+                item["suggest_dims"] = dims
+            sidecar_candidates.append(item)
     atomic_write(plan / ".spec-scan.json", json_bytes({
         "at": at, "project_root": str(project_root), "must": must, "ref": ref,
         "candidates": sidecar_candidates,
     }))
     # ②b 归纳副本：两列 path<TAB>dims(|分隔)，仅命中候选；无命中不写并清旧副本，保证幂等。
     tsv_path = plan / ".spec-scan.tsv"
-    hit_rows = [(c["path"], _spec_suggested(c)) for c in candidates]
+    hit_rows = [(c["path"], _spec_suggested(c)) for c in candidates if not c.get("_src_spec")]
     hit_rows = [(p, dims) for p, dims in hit_rows if dims]
     if hit_rows:
         atomic_write(tsv_path, "".join(f"{p}\t{'|'.join(dims)}\n" for p, dims in hit_rows))
@@ -3189,6 +3419,18 @@ def build_parser() -> argparse.ArgumentParser:
                    help="落盘 spec_baseline SRC-* / .spec-scan.json / findings 收据；缺省 dry-run")
     p.add_argument("--dry-run", action="store_true", default=False,
                    help="显式 dry-run（与 plan-brief 契约兼容；与 --write 同传时以 dry-run 为准）")
+
+    # [2026-11-26 task-source-registry] disposition：设置 spec_baseline 条目处置态
+    p = add_cmd("disposition", "设置 spec_baseline 条目 disposition（must|na）", cmd_disposition)
+    p.add_argument("anchor", help="spec_baseline 条目的 anchor 或 id")
+    p.add_argument("disposition", choices=("must", "na"), help="处置态")
+    p.add_argument("--reason", default="", help="disposition=na 时必填的理由")
+
+    # [2026-11-26 task-source-registry] acceptance：顶层验收状态
+    p = add_cmd("acceptance", "读写 plan-state 顶层 acceptance 对象", cmd_acceptance)
+    p.add_argument("--status", choices=("awaiting", "accepted", "rejected"), default=None,
+                   help="写入状态；缺省只读")
+    p.add_argument("--anchor", default="", help="可选锚点/原文引用")
     return parser
 
 

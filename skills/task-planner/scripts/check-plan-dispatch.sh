@@ -693,6 +693,46 @@ if [ "$PLAN_TIER_MINI" != 1 ]; then
     fi
 fi
 
+# ── [dispatch-receipt] advisory（仅 WARN，不改 rc；灰度）────────────────────────
+# WHAT: 派发 prompt 含 spec-brief 产物标记（[spec-brief] 或 must 条目锚 path:line）→ [dispatch-receipt] OK；
+#       内容类计划派发缺回执 → [dispatch-receipt] WARN。
+# WHY:  diff×指令对账链路要求派发携带 spec-brief 回执，减少“声明源未回执”漂移。
+# 容错: 任意异常不影响既有 exit/rc。
+{
+  _dr_has_receipt=0
+  # 标记1: [spec-brief] 字面量
+  if grep -qF '[spec-brief]' "$PLAN_FILE" 2>/dev/null; then
+    _dr_has_receipt=1
+  fi
+  # 标记2: must 条目锚 path:line（形如 foo/bar.ext:123 或 path:line）
+  if [ "$_dr_has_receipt" -eq 0 ]; then
+    if grep -qE '[A-Za-z0-9_./-]+\.[A-Za-z0-9]+:[0-9]+' "$PLAN_FILE" 2>/dev/null; then
+      # 仅当与 must/spec-brief 语境邻近时视为回执锚；保守：存在 path:line 即认作锚候选
+      _dr_has_receipt=1
+    fi
+  fi
+
+  if [ "$_dr_has_receipt" -eq 1 ]; then
+    echo "[dispatch-receipt] OK"
+  else
+    # 内容类计划判定（advisory）：template_type 含 content/writing/longform/storyboard/character-design/copy
+    # 或 plan 文本含“内容类/文案/写作”字样。仅用于 WARN，不改 rc；避免新增硬枚举依赖。
+    _dr_is_content=0
+    _dr_tt="$(grep -m1 -E 'template_type[[:space:]]*[:=]' "$PLAN_FILE" 2>/dev/null || true)"
+    if printf '%s' "$_dr_tt" | grep -qiE 'content|writing|longform|storyboard|character-design|copy|script|novel'; then
+      _dr_is_content=1
+    fi
+    if [ "$_dr_is_content" -eq 0 ]; then
+      if grep -qE '内容类|文案类|写作类' "$PLAN_FILE" 2>/dev/null; then
+        _dr_is_content=1
+      fi
+    fi
+    if [ "$_dr_is_content" -eq 1 ]; then
+      echo "[dispatch-receipt] WARN: 派发未携带 spec-brief 回执（must 条目）"
+    fi
+  fi
+} || true
+
 # ── 输出 ─────────────────────────────────────────────────────────────────────
 if [ -n "$violation_list" ]; then
     printf '%s' "$violation_list"

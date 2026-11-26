@@ -1613,3 +1613,107 @@ else
     fi
 fi
 echo "Planning files initialized!"
+
+# ── [task-research-channels-20261126] init 后增量检查（全部容错，不改 rc） ──
+# 索引检查 / 重叠警告 [init-overlap] / [acceptance-warning]
+# 既有输出已完整输出；以下仅追加新行，任何异常静默跳过。
+{
+  _irc_skill_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  _irc_repo_root=""
+  _irc_repo_root="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null || true)"
+  [ -n "$_irc_repo_root" ] || _irc_repo_root="$(git -C "${PLAN_ROOT:-}" rev-parse --show-toplevel 2>/dev/null || true)"
+
+  # 1) 索引检查：兄弟技能 project-inventory.sh --root <repo-root> --check
+  _irc_inv="${_irc_skill_dir}/../research-channels/scripts/project-inventory.sh"
+  if [ -n "$_irc_repo_root" ] && [ -f "$_irc_inv" ]; then
+    _irc_inv_rc=0
+    bash "$_irc_inv" --root "$_irc_repo_root" --check >/dev/null 2>&1 || _irc_inv_rc=$?
+    if [ "$_irc_inv_rc" -eq 2 ]; then
+      echo "[research-channels] 项目索引缺失——研究第 0 步建议生成：bash ${_irc_inv} --root ${_irc_repo_root}" >&2
+    elif [ "$_irc_inv_rc" -eq 1 ]; then
+      echo "[research-channels] 项目索引陈旧——建议刷新：bash ${_irc_inv} --root ${_irc_repo_root} --refresh" >&2
+    elif [ "$_irc_inv_rc" -eq 0 ]; then
+      : # 安静或一行 OK（遵循 --quiet 语义，这里不强制输出）
+    fi
+  fi
+
+  # 2) 重叠警告 [init-overlap]：其他 plan .git-baseline.json files 与本次 repo-root git status 脏文件交集
+  _irc_plans_root="${PLAN_ROOT:-}"
+  if [ -z "$_irc_plans_root" ]; then
+    # fallback: PWD is plans/<task-id> per CWD guard
+    _irc_plans_root="$(cd "$PWD/.." 2>/dev/null && pwd || true)"
+  fi
+  _irc_cur_plan="$(basename "$PWD")"
+  if [ -n "$_irc_repo_root" ] && [ -d "$_irc_plans_root" ] && command -v git >/dev/null 2>&1; then
+    _irc_dirty=""
+    _irc_dirty="$(git -C "$_irc_repo_root" status --porcelain 2>/dev/null | awk '{print $NF}' || true)"
+    if [ -n "$_irc_dirty" ]; then
+      for _irc_plan_dir in "$_irc_plans_root"/*; do
+        [ -d "$_irc_plan_dir" ] || continue
+        _irc_other="$(basename "$_irc_plan_dir")"
+        [ "$_irc_other" = "$_irc_cur_plan" ] && continue
+        _irc_side="${_irc_plan_dir}/.git-baseline.json"
+        [ -f "$_irc_side" ] || continue
+        # extract files list from sidecar
+        _irc_files=""
+        if command -v jq >/dev/null 2>&1; then
+          _irc_files="$(jq -r '.files[]? // empty' "$_irc_side" 2>/dev/null || true)"
+        else
+          # crude fallback: grep quoted paths
+          _irc_files="$(grep -oE '"[^"]+"' "$_irc_side" 2>/dev/null | tr -d '"' || true)"
+        fi
+        [ -n "$_irc_files" ] || continue
+        while IFS= read -r _irc_f; do
+          [ -n "$_irc_f" ] || continue
+          if printf '%s\n' "$_irc_dirty" | grep -Fxq -- "$_irc_f"; then
+            echo "[init-overlap] 警告: 文件 ${_irc_f} 与在途计划 ${_irc_other} 重叠（未验收接力风险）——建议先 checkpoint 或显式 --inherit" >&2
+          fi
+        done <<< "$_irc_files"
+      done
+    fi
+  fi
+
+  # 3) [acceptance-warning]: 其他非归档 plan acceptance.status==awaiting 且 files 与本次范围交集非空
+  if [ -n "$_irc_plans_root" ] && [ -d "$_irc_plans_root" ]; then
+    _irc_dirty2=""
+    if [ -n "$_irc_repo_root" ]; then
+      _irc_dirty2="$(git -C "$_irc_repo_root" status --porcelain 2>/dev/null | awk '{print $NF}' || true)"
+    fi
+    for _irc_plan_dir2 in "$_irc_plans_root"/*; do
+      [ -d "$_irc_plan_dir2" ] || continue
+      _irc_other2="$(basename "$_irc_plan_dir2")"
+      [ "$_irc_other2" = "$_irc_cur_plan" ] && continue
+      # skip archived (heuristic: archived dir or status archived in plan-state)
+      case "$_irc_other2" in archive|archived|_archive) continue ;; esac
+      _irc_ps="${_irc_plan_dir2}/plan-state.json"
+      _irc_side2="${_irc_plan_dir2}/.git-baseline.json"
+      [ -f "$_irc_ps" ] || continue
+      [ -f "$_irc_side2" ] || continue
+      _irc_acc=""
+      if command -v jq >/dev/null 2>&1; then
+        _irc_acc="$(jq -r '.acceptance.status // ""' "$_irc_ps" 2>/dev/null || true)"
+      else
+        _irc_acc="$(grep -oE '"status"[[:space:]]*:[[:space:]]*"awaiting"' "$_irc_ps" 2>/dev/null | head -1 || true)"
+        [ -n "$_irc_acc" ] && _irc_acc="awaiting"
+      fi
+      [ "$_irc_acc" = "awaiting" ] || continue
+      _irc_files2=""
+      if command -v jq >/dev/null 2>&1; then
+        _irc_files2="$(jq -r '.files[]? // empty' "$_irc_side2" 2>/dev/null || true)"
+      else
+        _irc_files2="$(grep -oE '"[^"]+"' "$_irc_side2" 2>/dev/null | tr -d '"' || true)"
+      fi
+      [ -n "$_irc_files2" ] || continue
+      _irc_overlap2=0
+      if [ -n "$_irc_dirty2" ]; then
+        while IFS= read -r _irc_f2; do
+          [ -n "$_irc_f2" ] || continue
+          if printf '%s\n' "$_irc_dirty2" | grep -Fxq -- "$_irc_f2"; then _irc_overlap2=1; break; fi
+        done <<< "$_irc_files2"
+      fi
+      if [ "$_irc_overlap2" -eq 1 ]; then
+        echo "[acceptance-warning] ${_irc_other2} awaiting acceptance 且文件重叠" >&2
+      fi
+    done
+  fi
+} || true

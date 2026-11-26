@@ -250,6 +250,33 @@ extract_state() {
     ' "$STATE_FILE" > "$TMP/state.tsv" 2>/dev/null || : > "$TMP/state.tsv"
 }
 
+
+# [2026-11-26 task-research-channels-20261126] source-gate 用：从 plan-state.json 抽取
+# spec_baseline 的 id/dimension/disposition/fallback_reason/anchor/kind 六列。
+extract_source_state() {
+    : > "$TMP/source_state.tsv"
+    [ -f "$STATE_FILE" ] || return 0
+    awk '
+    function field(buf, key,    s) {
+        if (match(buf, "\"" key "\"[[:space:]]*:[[:space:]]*\"[^\"]*\"")) {
+            s = substr(buf, RSTART, RLENGTH)
+            sub(/^[^:]*:[[:space:]]*"/, "", s); sub(/"$/, "", s)
+            return s
+        }
+        return ""
+    }
+    /"spec_baseline"[[:space:]]*:/ { inarr=1; buf=""; next }
+    inarr && /^[[:space:]]*][,]?[[:space:]]*$/ { exit }
+    inarr {
+        buf = buf $0 "\n"
+        if ($0 ~ /^[[:space:]]*}/) {
+            id = field(buf, "id")
+            if (id != "") printf "%s\t%s\t%s\t%s\t%s\t%s\n", id, field(buf, "dimension"), field(buf, "disposition"), field(buf, "fallback_reason"), field(buf, "anchor"), field(buf, "kind")
+            buf = ""
+        }
+    }
+    ' "$STATE_FILE" > "$TMP/source_state.tsv" 2>/dev/null || : > "$TMP/source_state.tsv"
+}
 extract_must_ids() {
     [ -f "$SCAN_JSON" ] || return 0
     awk '
@@ -317,7 +344,7 @@ extract_final_rows() {
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", obs)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", concl)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", anchor)
-        if (id !~ /^SPEC-[0-9]+$/) next
+        if (id !~ /^(SPEC|SRC)-[A-Za-z0-9_.:-]+$/) next
         printf "%s\t%s\t%s\t%s\n", id, obs, concl, anchor
     }
     ' "$VERIFY_FILE" > "$TMP/final.tsv" 2>/dev/null || : > "$TMP/final.tsv"
@@ -342,6 +369,7 @@ fi
 
 extract_baseline
 extract_state
+extract_source_state
 
 if [ "$MODE" = 'final' ]; then
     # ══ 终验期五项 + 内容类零 SPEC 阻断 ══════════════════════════════════════════
@@ -402,6 +430,32 @@ if [ "$MODE" = 'final' ]; then
                 SPEC-*) grep -qF -- "$sid" "$TMP/final.tsv" || fail 'F2' '②' "$sid 核验表缺行" ;;
             esac
         done < "$TMP/baseline.tsv"
+        # [2026-11-26 task-research-channels-20261126] disposition=must 的源条目（非 SPEC-*，如源注册表 SRC 项）
+        # 复用既有基线-产物逐条核验表按行核验；SPEC-* 已由上方反向核对覆盖，此处跳过避免重复计数。
+        if [ -f "$TMP/source_state.tsv" ]; then
+            while IFS=$'\t' read -r _sid _dim _disp _fr _anch _kind; do
+                [ -n "$_sid" ] || continue
+                [ "$_disp" = "must" ] || continue
+                case "$_sid" in SPEC-*) continue ;; esac
+                if ! grep -qF -- "$_sid" "$TMP/final.tsv"; then
+                    fail 'F2' '②' "$_sid 核验表缺行"
+                else
+                    _frow="$(grep -F -- "$_sid" "$TMP/final.tsv" | head -1)"
+                    _fobs="$(printf '%s' "$_frow" | awk -F'\t' '{print $2}')"
+                    _fconcl="$(printf '%s' "$_frow" | awk -F'\t' '{print $3}')"
+                    _fanch="$(printf '%s' "$_frow" | awk -F'\t' '{print $4}')"
+                    if [ -z "$_fobs" ] || printf '%s' "$_fobs" | grep -qiE "$PLACEHOLDER_OBS" || printf '%s' "$_fobs" | grep -q '<'; then
+                        fail 'F3' '③' "$_sid 观测列为空或占位（$_fobs）"
+                    fi
+                    if [ -z "$_fanch" ] || printf '%s' "$_fanch" | grep -qiE "$PLACEHOLDER_OBS" || printf '%s' "$_fanch" | grep -q '<'; then
+                        fail 'F5' '⑤' "$_sid 证据锚列为空或占位（${_fanch:-<空>}）"
+                    fi
+                    if [ "$_fconcl" != 'PASS' ]; then
+                        fail 'F4' '④' "$_sid 结论非 PASS（${_fconcl:-<空>}）"
+                    fi
+                fi
+            done < "$TMP/source_state.tsv"
+        fi
     fi
 else
     # ══ 计划期九项 ═══════════════════════════════════════════════════════════════
@@ -554,6 +608,113 @@ else
     done < "$TMP/baseline.tsv"
 fi
 
+# ── ⑩ [source-gate] 声明源覆盖门（task-research-channels-20261126 追加）────────────
+# [2026-11-26 task-research-channels-20261126] What: 计划期/终验期追加第⑩项源注册表覆盖检查。
+#   前置：REPO_ROOT/.source-registry.tsv 存在 && 计划属内容类（is_content_plan 同源词表）。
+#   不满足任一→SKIP 行，rc 不受影响。满足时逐 scope 命中源检查 plan-state.json spec_baseline[]
+#   中有 dimension==spec_kind 且(disposition==must 或 disposition==na 且 fallback_reason 非空) 的条目；
+#   缺→FAILED(rc+=1)，pending→WARN(rc 不变)。全部齐→OK。sidecar 附写 sources_covered。
+# Why: 源注册表声明的基线源必须被计划显式处置，防止"注册了但没消费"。
+# 约束：只追加，不改既有九项/F1-F6 锚文案；纯 bash+awk/grep/sed（禁 python/jq）。
+SOURCE_GATE_RAN=0
+SOURCE_GATE_JSON=""
+SOURCE_GATE_TSV="$REPO_ROOT/.source-registry.tsv"
+if [ ! -f "$SOURCE_GATE_TSV" ]; then
+    printf '[source-gate] SKIP (no .source-registry.tsv)\n'
+elif ! is_content_plan; then
+    printf '[source-gate] SKIP (non-content plan)\n'
+else
+    SOURCE_GATE_RAN=1
+    # source_state.tsv 已在前置 extract_source_state() 生成
+
+    # 收集 plan scope tokens：template_type + executors + tags（best-effort）
+    PLAN_SCOPE_TOKENS=""
+    _pt="$(grep -E '^(template_type|template_ref):' "$PLAN_FILE" 2>/dev/null | head -1 | sed 's/^[^:]*:[[:space:]]*//' | tr -d '"' || true)"
+    [ -n "$_pt" ] && PLAN_SCOPE_TOKENS="$PLAN_SCOPE_TOKENS $_pt"
+    while IFS=$'\t' read -r _sid _ex; do
+        [ -n "$_ex" ] && PLAN_SCOPE_TOKENS="$PLAN_SCOPE_TOKENS $_ex"
+    done < "$TMP/sunits.tsv"
+    # tags from plan-state.json（best-effort：抽取 tags 数组字符串值或顶层 tags 键）
+    if [ -f "$STATE_FILE" ]; then
+        _tags="$(grep -oE '"tags"[[:space:]]*:[[:space:]]*\[[^]]*\]' "$STATE_FILE" 2>/dev/null | head -1 | grep -oE '"[^"]+"' | tr -d '"' | tr '\n' ' ' || true)"
+        [ -n "$_tags" ] && PLAN_SCOPE_TOKENS="$PLAN_SCOPE_TOKENS $_tags"
+    fi
+
+    _sg_total=0
+    _sg_covered=0
+    _sg_entries=""
+    while IFS= read -r _srcline || [ -n "$_srcline" ]; do
+        case "$_srcline" in ''|\#*) continue ;; esac
+        _src_path="$(printf '%s' "$_srcline" | awk -F'\t' '{print $1}')"
+        _src_kind="$(printf '%s' "$_srcline" | awk -F'\t' '{print $2}')"
+        _src_scope="$(printf '%s' "$_srcline" | awk -F'\t' '{print $4}')"
+        [ -n "$_src_path" ] || continue
+        [ -n "$_src_kind" ] || continue
+        [ -n "$_src_scope" ] || _src_scope="-"
+
+        # scope 命中判定
+        _scope_hit=0
+        if [ "$_src_scope" = "-" ]; then
+            _scope_hit=1
+        else
+            for _tok in $PLAN_SCOPE_TOKENS; do
+                [ -n "$_tok" ] || continue
+                case "$_src_scope" in
+                    *"$_tok"*) _scope_hit=1; break ;;
+                esac
+            done
+        fi
+        [ "$_scope_hit" -eq 1 ] || continue
+
+        _sg_total=$((_sg_total + 1))
+        # 查找 dimension==spec_kind 且(disposition==must 或 disposition==na 且 fallback_reason 非空)
+        _cov_state="missing"
+        _has_pending=0
+        _pending_anchor=""
+        while IFS=$'\t' read -r _sid _dim _disp _fr _anch _kind; do
+            [ -n "$_sid" ] || continue
+            _match_dim="$_dim"
+            [ -n "$_match_dim" ] || _match_dim="$_kind"
+            [ "$_match_dim" = "$_src_kind" ] || continue
+            if [ "$_disp" = "must" ]; then
+                _cov_state="covered"; break
+            elif [ "$_disp" = "na" ] && [ -n "$_fr" ]; then
+                _cov_state="covered"; break
+            elif [ "$_disp" = "pending" ] || [ -z "$_disp" ]; then
+                _has_pending=1
+                [ -n "$_pending_anchor" ] || _pending_anchor="$_anch"
+            fi
+        done < "$TMP/source_state.tsv"
+
+        if [ "$_cov_state" = "covered" ]; then
+            _sg_covered=$((_sg_covered + 1))
+            _sg_entries="${_sg_entries}\"${_src_path}\":\"covered\","
+        elif [ "$_has_pending" -eq 1 ]; then
+            _sg_entries="${_sg_entries}\"${_src_path}\":\"pending\","
+            printf '[source-disposition] WARN: %s pending 处置未完成\n' "${_pending_anchor:-$_src_path}"
+            # WARN 不改 rc；pending 不计 covered
+        else
+            _sg_entries="${_sg_entries}\"${_src_path}\":\"missing\","
+            _sg_msg="[source-gate] FAILED: 声明源 ${_src_path}(kind=${_src_kind}) 无 spec_baseline 条目（must 或 na+reason）"
+            printf '%s\n' "$_sg_msg"
+            printf '%s\n' "$_sg_msg" >&2
+            FAILS=$((FAILS + 1))
+        fi
+    done < "$SOURCE_GATE_TSV"
+
+    _sg_entries="${_sg_entries%,}"
+    SOURCE_GATE_JSON="{${_sg_entries}}"
+    if [ "$_sg_total" -eq 0 ]; then
+        printf '[source-gate] SKIP (no scope-matched source)\n'
+        SOURCE_GATE_RAN=0
+        SOURCE_GATE_JSON=""
+    elif [ "$_sg_covered" -eq "$_sg_total" ]; then
+        printf '[source-gate] OK: %d source(s) covered\n' "$_sg_total"
+    fi
+    # sources_covered 也写入文件供 final/sidecar 使用
+    printf '%s' "$SOURCE_GATE_JSON" > "$TMP/sources_covered.json"
+fi
+
 if [ "$FAILS" -gt 0 ]; then
     # 失败即清对应旧 sidecar：避免上一次 PASS 残留被 B19 证据串误读为当前通过（fail-closed）
     if [ "$MODE" = 'final' ]; then
@@ -561,19 +722,27 @@ if [ "$FAILS" -gt 0 ]; then
     else
         rm -f "$PLAN_DIR/.spec-baseline.json"
     fi
-    printf '[spec-baseline] ✗ %d 项检查不通过（mode=%s）\n' "$FAILS" "$MODE" >&2
+    printf '[spec-baseline] ✗ %d 项检查不通过（mode=%s)\n' "$FAILS" "$MODE" >&2
     exit 1
 fi
 
 AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 if [ "$MODE" = 'final' ]; then
-    printf '{"status":"PASS","spec":%d,"pass":%d,"at":"%s"}\n' "$n_spec" "$n_pass" "$AT" > "$PLAN_DIR/.spec-final.json"
+    if [ -n "$SOURCE_GATE_JSON" ]; then
+        printf '{"status":"PASS","spec":%d,"pass":%d,"at":"%s","sources_covered":%s}\n' "$n_spec" "$n_pass" "$AT" "$SOURCE_GATE_JSON" > "$PLAN_DIR/.spec-final.json"
+    else
+        printf '{"status":"PASS","spec":%d,"pass":%d,"at":"%s"}\n' "$n_spec" "$n_pass" "$AT" > "$PLAN_DIR/.spec-final.json"
+    fi
     printf '[spec-baseline] ✓ 终验四项全过（spec=%d pass=%d）→ %s/.spec-final.json\n' "$n_spec" "$n_pass" "$PLAN_DIR"
 else
     n_spec="$(awk -F'\t' '$1 ~ /^SPEC-/ {n++} END{print n+0}' "$TMP/baseline.tsv")"
     n_na="$(awk -F'\t' '$1 ~ /^NA-/ {n++} END{print n+0}' "$TMP/baseline.tsv")"
     n_src="$(awk -F'\t' '$1 ~ /^SRC-/ {n++} END{print n+0}' "$TMP/baseline.tsv")"
-    printf '{"status":"PASS","spec":%d,"na":%d,"src":%d,"at":"%s"}\n' "$n_spec" "$n_na" "$n_src" "$AT" > "$PLAN_DIR/.spec-baseline.json"
+    if [ -n "$SOURCE_GATE_JSON" ]; then
+        printf '{"status":"PASS","spec":%d,"na":%d,"src":%d,"at":"%s","sources_covered":%s}\n' "$n_spec" "$n_na" "$n_src" "$AT" "$SOURCE_GATE_JSON" > "$PLAN_DIR/.spec-baseline.json"
+    else
+        printf '{"status":"PASS","spec":%d,"na":%d,"src":%d,"at":"%s"}\n' "$n_spec" "$n_na" "$n_src" "$AT" > "$PLAN_DIR/.spec-baseline.json"
+    fi
     printf '[spec-baseline] ✓ 计划期九项全过（spec=%d na=%d src=%d）→ %s/.spec-baseline.json\n' "$n_spec" "$n_na" "$n_src" "$PLAN_DIR"
 fi
 exit 0
