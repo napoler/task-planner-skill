@@ -296,7 +296,7 @@ MK 与 `MK-NA` 均在计划期登记并随 attest 锁定（Rule 51.15 基线锁�
 
 > 三态判定：LOCAL-ONLY=本地数据可完全解决（纯机械/簿记/既定步骤）；NET-RESEARCH=需网络调研补充知识/方案/报错解法；NET-DATA-DEPENDENT=必须接入网络数据（实时信息/外部 API/媒体参考/现成实现）。无 NET-* 条目且无豁免声明=计划不完整（check-plan-dispatch 机器校验）。
 
-<!-- Rule 114 通道接线（2026-11-26 task-research-channels-20261126）：调研第 0 步=project-inventory 索引；五层通道失败纪律=当轮换层+留证据，五层穷尽才可声明受限。 -->
+<!-- Rule 115 通道接线（2026-11-26 task-research-channels-20261126）：调研第 0 步=project-inventory 索引；五层通道失败纪律=当轮换层+留证据，五层穷尽才可声明受限。 -->
 | 通道层 | 入口/命令 | 失败纪律 | 证据锚 |
 |--------|-----------|----------|--------|
 | 0 索引 | `bash <skill>/scripts/project-inventory.sh --root <root> [--check]` | 索引缺失/失败→记录后进声明源扫描 | `[inventory]` |

@@ -532,18 +532,18 @@ else
 fi
 
 # ── RC-16 静态锚：planctl.py 含 cmd_acceptance、disposition 子命令注册、[source-scan] 输出锚；
-#         SKILL.md/模板 含「Rule 114 通道接线」锚（以盘面实测为准）──
+#         SKILL.md/模板 含「Rule 115 通道接线」锚（以盘面实测为准）──
 P_ACC=$(grep -c 'def cmd_acceptance' "$PLANCTL" || true)
 P_DISP=$(grep -c 'def cmd_disposition' "$PLANCTL" || true)
 P_SSCAN=$(grep -c '\[source-scan\]' "$PLANCTL" || true)
 # 注册命令锚：add_cmd("acceptance"... cmd_acceptance) / add_cmd("disposition"... cmd_disposition)
 P_REG_ACC=$(grep -c 'add_cmd("acceptance"' "$PLANCTL" || true)
 P_REG_DISP=$(grep -c 'add_cmd("disposition"' "$PLANCTL" || true)
-# Rule 114 通道接线锚：templates/task_plan.md 存在；SKILL.md 实测不含字面“Rule 114 通道接线”，
-# 但含 “Rule 114” + 通道接线相关锚（见 273/289/323 行）。以盘面实测锚为准：模板必须含字面锚；
-# SKILL.md 含 Rule 114 且含 research-channels/通道 关键词即可。
-TPL_114=$(grep -c 'Rule 114 通道接线' "$TP_TPL" || true)
-SKILL_114=$(grep -c 'Rule 114' "$TP_SKILL" || true)
+# Rule 115 通道接线锚：templates/task_plan.md 存在；SKILL.md 实测不含字面“Rule 115 通道接线”，
+# 但含 “Rule 115” + 通道接线相关锚（见 273/289/323 行）。以盘面实测锚为准：模板必须含字面锚；
+# SKILL.md 含 Rule 115 且含 research-channels/通道 关键词即可。
+TPL_114=$(grep -c 'Rule 115 通道接线' "$TP_TPL" || true)
+SKILL_114=$(grep -c 'Rule 115' "$TP_SKILL" || true)
 SKILL_CH=$(grep -c '通道' "$TP_SKILL" || true)
 
 RC16_OK=1; RC16_MSG=""

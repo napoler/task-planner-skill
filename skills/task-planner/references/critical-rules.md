@@ -285,22 +285,22 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 113.10 **展示义务与项目级强制（2026-11-25 晚用户裁决；先实物后条款）**：本条把「必须展示示例」从「计划内有条目」升级为**项目级强制、所有计划的必选项**。①**顺序铁律**：计划创建/审核第一动作=向用户展示至少一个完整、可直接查看的**产出示例实物**（真实文件路径或 fenced 代码块/表格 + 同结构占位模板 + 审查命令与预期输出），再写条款/方案；禁止脑补、禁止只写「见 output_examples」或仅放标题 token。②**实物形态**：交付物为模板/配置/结构化数据时，`example` 必须是可读的 pretty-print 源 + MD 教学视图 + 逐字段对照 + 审查命令真实输出；权威示例=`examples/json-template-upgrade/review.md`（C1–C8，其中 C6 手改 MD 勾选必须 FAIL）。③**FAIL 判定**：`output_examples` 缺失/空、示例为空或含「略/TBD/...」占位、只有标题 token 无真实内容、未向用户展示实物——任一命中即不合格。④**机器门落点（复用既有、零新脚本）**：新计划在 `attest-plan.sh` 锁定时经 `[example-gate]` 校验（缺/空/占位拒锁）；模板侧由 `check-template-principles.sh` 校验示例段**内容**（极简档允许行内 code 真实实例，不误伤 mini/L0-lite）。⑤**存量兼容**：`planctl.py validate_state` 被 `commit_state` 在每次写入时调用，仓库 22/22 存量 plan-state 无本字段，故**不在此处加无条件 FAIL**（会瘫痪存量读写）；强制仅在「新计划锁定」时点生效，既有计划零改动。⑥与 113.8 关系：本次为用户显式要求的强制升级，复用既有门与既有 selftest，不新增脚本/hook/config 键。
 
-### 114 声明源通用消费与本地调研通道（2026-11-26 task-research-channels-20261126 增）
+### 115 声明源通用消费与本地调研通道（2026-11-26 task-research-channels-20261126 增）
 
-114.0 **公理（机制通用，目录数据归项目）**：机制通用、目录数据归项目。`.source-registry.tsv` 为项目级源注册表，4 列 `source_path/spec_kind/anchors_keywords/scope_tags`，维度为开放标签（零代码枚举）；bible/outline 等仅是项目声明实例，不是机制硬编码。
+115.0 **公理（机制通用，目录数据归项目）**：机制通用、目录数据归项目。`.source-registry.tsv` 为项目级源注册表，4 列 `source_path/spec_kind/anchors_keywords/scope_tags`，维度为开放标签（零代码枚举）；bible/outline 等仅是项目声明实例，不是机制硬编码。
 
-114.1 **索引第 0 步（先建索引再调研）**：任何调研动作前先执行 `bash <skill>/scripts/project-inventory.sh --root <root> [--check]`（research-channels 技能）产出项目内外源索引；索引外=未探索区显形，禁止在未索引面上直接下结论。
+115.1 **索引第 0 步（先建索引再调研）**：任何调研动作前先执行 `bash research-channels/scripts/project-inventory.sh --root <root> [--check]`（research-channels 技能）产出项目内外源索引；索引外=未探索区显形，禁止在未索引面上直接下结论。
 
-114.2 **五层通道与失败纪律**：通道顺序=索引 → 声明源扫描（spec-scan 源扫描）→ 历史（plans 历史/history-miner）→ 知识库/corpus → 外部（plan-research-router）。任一层失败→当轮换下一层并留证据（通道+错误+时间），五层穷尽才可声明受限；禁止停留单层宣布受限。
+115.2 **五层通道与失败纪律**：通道顺序=索引 → 声明源扫描（spec-scan 源扫描）→ 历史（plans 历史/history-miner）→ 知识库/corpus → 外部（plan-research-router）。任一层失败→当轮换下一层并留证据（通道+错误+时间），五层穷尽才可声明受限；禁止停留单层宣布受限。
 
-114.3 **消费门（计划期）**：内容类计划须对 scope 命中的声明源产出 `spec_baseline` 条目（must 或 na+理由），否则拒锁（check-spec-baseline ⑩ `[source-gate]`）。
+115.3 **消费门（计划期）**：内容类计划须对 scope 命中的声明源产出 `spec_baseline` 条目（must 或 na+理由），否则拒锁（check-spec-baseline ⑩ `[source-gate]`）。
 
-114.4 **动笔前携带**：派发必须携带 spec-brief 回执（must 条目），写作执行体动笔前必见必保清单；缺回执=派发无效。
+115.4 **动笔前携带**：派发必须携带 spec-brief 回执（must 条目），写作执行体动笔前必见必保清单；缺回执=派发无效。
 
-114.5 **终验对账**：`--final` 逐条观测，must 条目缺失/降级须 `[source-waiver]`（用户原话+源锚+授权锚）双锚齐备；缺锚=FAIL。
+115.5 **终验对账**：`--final` 逐条观测，must 条目缺失/降级须 `[source-waiver]`（用户原话+源锚+授权锚）双锚齐备；缺锚=FAIL。
 
-114.6 **diff 对账**：git-baseline `diff --final` 产 `.diff-manifest.json`，删除行命中声明源锚词且无 `[diff-disposition]`/`[source-waiver]` 处置行→FAIL。
+115.6 **diff 对账**：git-baseline `diff --final` 产 `.diff-manifest.json`，删除行命中声明源锚词且无 `[diff-disposition]`/`[source-waiver]` 处置行→FAIL。
 
-114.7 **零 commit 治理**：零 commit 且验收 awaiting/缺、无用户原话豁免锚 → WARN+登记待批；禁止把“零 commit”作为无授权的继承约束传递。
+115.7 **零 commit 治理**：零 commit 且验收 awaiting/缺、无用户原话豁免锚 → WARN+登记待批；禁止把“零 commit”作为无授权的继承约束传递。
 
-114.8 **子代理传播**：派发检索型子代理须携带清单排除面与必保锚词（对齐 22.4f），使子代理在隔离上下文中同等执行约束。
+115.8 **子代理传播**：派发检索型子代理须携带清单排除面与必保锚词（对齐 22.4f），使子代理在隔离上下文中同等执行约束。
