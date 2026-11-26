@@ -64,6 +64,7 @@ execution_lane: L1
 
 ## 🔒 规范基线（Spec-Baseline，Rule 51.15 — 含已确立硬约束时必填）
 <!-- 2026-11-19 task-spec-baseline-freeze-20261119：把「已确立且影响验收的业务硬约束」登记为受管基线。本区块随 task_plan.md 纳入 attest SHA-256 锁（Rule 20.1），修改/放宽/删除=[SPEC-BASELINE TAMPERED] P0。区间型必须同时登记上下界（如 4s≤单镜≤12s），禁只写单边——单边口径=无下限，是 3s 过审的机制根因。无硬约束的任务填一行「none（经确认本任务无已确立硬约束）」。四环消费：派发携带 22.4e / 复检回归 103.3b / 返工续写回归 106.7 / 终验门 84.15。 -->
+<!-- 维度=开放标签，经 .source-registry.tsv 声明，机制零枚举（Rule 114.0）。 -->
 | spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 |
 |---------|-------------------|------------------|-----------|------------|
 | <如 SPEC-DUR-01> | <如 单镜头时长 4-12s> | <弧规格:5 / skill:53> | <4s≤单镜≤12s；越界即FAIL，禁NOTE豁免> | <sha256 或 n/a(文本片段)> |
@@ -294,6 +295,15 @@ MK 与 `MK-NA` 均在计划期登记并随 attest 锁定（Rule 51.15 基线锁�
 | <S-unit id> | LOCAL-ONLY / NET-RESEARCH / NET-DATA-DEPENDENT | <关键词1>、<关键词2> | WebSearch / Doc Search Agent / research-assistant / GitHub CLI / Forum Search Agent | <findings 小节 / 现成实现 / 媒体参考> | <是/否/不适用> |
 
 > 三态判定：LOCAL-ONLY=本地数据可完全解决（纯机械/簿记/既定步骤）；NET-RESEARCH=需网络调研补充知识/方案/报错解法；NET-DATA-DEPENDENT=必须接入网络数据（实时信息/外部 API/媒体参考/现成实现）。无 NET-* 条目且无豁免声明=计划不完整（check-plan-dispatch 机器校验）。
+
+<!-- Rule 114 通道接线（2026-11-26 task-research-channels-20261126）：调研第 0 步=project-inventory 索引；五层通道失败纪律=当轮换层+留证据，五层穷尽才可声明受限。 -->
+| 通道层 | 入口/命令 | 失败纪律 | 证据锚 |
+|--------|-----------|----------|--------|
+| 0 索引 | `bash <skill>/scripts/project-inventory.sh --root <root> [--check]` | 索引缺失/失败→记录后进声明源扫描 | `[inventory]` |
+| 1 声明源扫描 | spec-scan / `.source-registry.tsv` 命中源 | 未命中/失败→进历史层 | `[source-scan]` |
+| 2 历史 | plans 历史 / history-miner | 未命中/失败→进知识库层 | `[history]` |
+| 3 知识库/corpus | 项目知识库/corpus 检索 | 未命中/失败→进外部层 | `[corpus]` |
+| 4 外部 | plan-research-router / WebSearch 降级链 | 失败→换下一外部通道；五层穷尽才可声明受限 | `[external]` |
 
 ## 🔍 证据面清单（Rule 58.1 — 调研/分析/评估/归因类任务计划期必填）
 <!--
