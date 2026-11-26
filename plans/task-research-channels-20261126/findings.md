@@ -2,7 +2,7 @@
 # Findings: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T03:07:39Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:27:11Z
 
 ## Requirements
 - 用户新建独立调研技能承载本地调研方法论（五层：枚举/索引/检索/阅读/外部），机制零写死目录，目录数据归项目索引与注册表
@@ -14,6 +14,7 @@
 ## Findings
 | id | text | source | tags |
 |---|---|---|---|
+| F-SPEC-SCAN | [spec-scan] n=27 must=2 ref=25 at=2026-11-26T09:11:00Z | spec-scan |  |
 
 ## 📚 必要知识储备对齐记录（Knowledge Base Alignment）
 | 知识源 | 定位(路径/URL) | 是否已消费 | 结论落点(本文件段落) |
@@ -22,6 +23,7 @@
 
 ## Research Findings
 - B 序列编号真源=sync-todos.sh（B1-B19 全序列；evidence-anchor selftest 断言 B9-B18），单文件 grep discipline 会漏——本次撞号已修正 B17→B20 — skills/task-planner/scripts/sync-todos.sh:35-40,427-430 + selftest-evidence-anchor.sh:507
+- [spec-scan] n=27 must=2 ref=25 at=2026-11-26T09:11:00Z — spec-scan
 
 ## Technical Decisions
 | Decision | Rationale |

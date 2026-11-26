@@ -2,7 +2,7 @@
 # Task Plan: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T03:07:39Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:27:11Z
 plan_tier: standard
 execution_lane: L2
 schema_version: 1
@@ -19,11 +19,11 @@ schema_version: 1
 ## Requirements（用户需求）
 | id | type | text | vc | tags |
 |---|---|---|---|---|
-| R1 | 手段 | 用户新建独立调研技能承载本地调研方法论（五层：枚举/索引/检索/阅读/外部），机制零写死目录，目录数据归项目索引与注册表 |  |  |
-| R2 | 手段 | 通用源消费链去枚举化：维度=注册表开放标签，代码零新增枚举；未声明源项目行为逐字节不变 |  |  |
-| R3 | 手段 | git 修改面对账：diff --final 产 manifest，删除行命中声明源锚词须处置；零commit 无用户原话锚治理 |  |  |
-| R4 | 手段 | D类意图切换检查点交接+验收闭环（acceptance 字段+警告） |  |  |
-| R5 | 手段 | 判别性验证：负控制必须 FAIL（删已声明源锚定内容拦/未声明源放）；全量回归 FAIL==基线；StoryLab 真数据回放拦截事故形态 |  |  |
+| R1 | 手段 | 用户新建独立调研技能承载本地调研方法论（五层：枚举/索引/检索/阅读/外部），机制零写死目录，目录数据归项目索引与注册表 | VC-1, VC-2 |  |
+| R2 | 手段 | 通用源消费链去枚举化：维度=注册表开放标签，代码零新增枚举；未声明源项目行为逐字节不变 | VC-3 |  |
+| R3 | 手段 | git 修改面对账：diff --final 产 manifest，删除行命中声明源锚词须处置；零commit 无用户原话锚治理 | VC-5 |  |
+| R4 | 手段 | D类意图切换检查点交接+验收闭环（acceptance 字段+警告） | VC-6 |  |
+| R5 | 手段 | 判别性验证：负控制必须 FAIL（删已声明源锚定内容拦/未声明源放）；全量回归 FAIL==基线；StoryLab 真数据回放拦截事故形态 | VC-2, VC-4, VC-5 |  |
 
 ## Goals（目标单元）
 | id | text | evidence | tags |
@@ -48,11 +48,11 @@ schema_version: 1
 ## R→VC 映射
 | requirement | vcs |
 |---|---|
-| R1 |  |
-| R2 |  |
-| R3 |  |
-| R4 |  |
-| R5 |  |
+| R1 | VC-1, VC-2 |
+| R2 | VC-3 |
+| R3 | VC-5 |
+| R4 | VC-6 |
+| R5 | VC-2, VC-4, VC-5 |
 ## 🧮 根源覆盖表（Rule 53.1 — 结果级需求全链工序审计）
 | 工序 | 缺陷面 | 修复点 | VC |
 |---|---|---|---|
@@ -61,7 +61,7 @@ schema_version: 1
 ## ✅ Verification Contract（VC 状态与判据）
 | # | 判定标准 | 验证方式 | 证据路径/命令 |
 |---|---|---|---|
-| VC-1 | 输出含 VC1-PASS 且 rc=0 | bash -n skills/research-channels/scripts/project-inventory.sh && test -s skills/research-channels/SKILL.md && test -s skills/research-channels/references/research-channels.md && echo VC1-PASS |  |
+| VC-1 | 三文件在位且 bash -n rc=0（规范基线 SPEC-3 判定式同门复核） | bash -n skills/research-channels/scripts/project-inventory.sh && test -s skills/research-channels/SKILL.md && test -s skills/research-channels/references/research-channels.md && echo VC1-PASS |  |
 | VC-2 | Total 行 FAIL=0 | bash skills/task-planner/scripts/selftest-research-channels.sh ｜ tail -1 |  |
 | VC-3 | Total 行 FAIL=0（词表数据化等价） | bash skills/task-planner/scripts/selftest-spec-baseline.sh ｜ tail -1 |  |
 | VC-4 | FAIL 集==既有基线零新增 | bash skills/task-planner/scripts/run-selftests.sh --fresh ｜ tail -5 |  |
@@ -95,32 +95,84 @@ schema_version: 1
 ### Phase 1: P1 新技能 research-channels
 - **Status:** complete
 - **Started:** 2026-11-26T01:10:40Z
-- **Executor:** -
+- **Executor:** executor
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|---|---|---|---|---|---|---|---|---|---|
+| S1 | [P1] research-channels 三件套创建 | executor |  |  |  |  | 无 | - | complete |
+| S-P1 | [P1] P1 交付实施（真实执行=executor 子代理派发+主进程亲验）（实施+验证） | executor | 见 A-1~A-6 台账 | 对应 VC |  |  | 无 | - | complete |
 
 ### Phase 2: P2 消费链去枚举化
 - **Status:** complete
 - **Started:** 
-- **Executor:** -
+- **Executor:** executor
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|---|---|---|---|---|---|---|---|---|---|
+| S-P2 | [P2] P2 交付实施（真实执行=executor 子代理派发+主进程亲验）（实施+验证） | executor | 见 A-1~A-6 台账 | 对应 VC |  |  | 无 | - | complete |
 
 ### Phase 3: P3 门与集成
 - **Status:** complete
 - **Started:** 
-- **Executor:** -
+- **Executor:** executor
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|---|---|---|---|---|---|---|---|---|---|
+| S-P3 | [P3] P3 交付实施（真实执行=executor 子代理派发+主进程亲验）（实施+验证） | executor | 见 A-1~A-6 台账 | 对应 VC |  |  | 无 | - | complete |
 
 ### Phase 4: P4 条款与模板
 - **Status:** pending
 - **Started:** 
-- **Executor:** -
+- **Executor:** executor
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|---|---|---|---|---|---|---|---|---|---|
+| S-P4 | [P4] P4 交付实施（真实执行=executor 子代理派发+主进程亲验）（实施+验证） | executor | 见 A-1~A-6 台账 | 对应 VC |  |  | 无 | - | complete |
 
 ### Phase 5: P5 验证
 - **Status:** complete
 - **Started:** 
-- **Executor:** -
+- **Executor:** executor
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|---|---|---|---|---|---|---|---|---|---|
+| S-P5 | [P5] P5 交付实施（真实执行=executor 子代理派发+主进程亲验）（实施+验证） | executor | 见 A-1~A-6 台账 | 对应 VC |  |  | 无 | - | complete |
 
 ### Phase 6: P6 收口
 - **Status:** complete
 - **Started:** 
-- **Executor:** -
+- **Executor:** executor
+| ID | 目标(≤1 句) | 执行体(subagent_type(model)) | 输入(路径 + ≤10 行摘要) | 验收(可观察) | 预估时长 | 粒度(三值) | 伴飞技能 | 前置依赖 | 状态 |
+|---|---|---|---|---|---|---|---|---|---|
+| S-P6 | [P6] P6 交付实施（真实执行=executor 子代理派发+主进程亲验）（实施+验证） | executor | 见 A-1~A-6 台账 | 对应 VC |  |  | 无 | - | complete |
+
+## 🔒 规范基线（Spec-Baseline）
+| spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | 来源 sha256 | 槽 | 校验命令 | 适用S-unit | 结果 |
+|---|---|---|---|---|---|---|---|---|
+| SRC-1 | AGENTS.md | agents | pending | 8d5f3b56b1b2 |  |  |  |  |
+| SRC-2 | CLAUDE.md | agents | pending | 7b4f8ef5a526 |  |  |  |  |
+| SRC-3 | .zcode/plan-templates/README.md | template | pending | de0171ab28d0 |  |  |  |  |
+| SRC-4 | .zcode/plan-templates/knowledge-brief.md | template | pending | 86cb6ef74206 |  |  |  |  |
+| SRC-5 | .zcode/plan-templates/rule-clause-cascade-type.md | template | pending | 33b903318d6b |  |  |  |  |
+| SRC-6 | CHANGELOG.md | agents-path | pending | 7230e1afb0c7 |  |  |  |  |
+| SRC-7 | CONTRIBUTING_zh.md | agents-path | pending | 3f7004d3c7ec |  |  |  |  |
+| SRC-8 | INSTALL_zh.md | agents-path | pending | e82fdcf72ecb |  |  |  |  |
+| SRC-9 | README_zh.md | agents-path | pending | 1c563a6dc0df |  |  |  |  |
+| SRC-10 | RETRIEVAL_EXCLUDE.md | agents-path | pending | e9692de60e9f |  |  |  |  |
+| SRC-11 | examples/json-template-upgrade/review.md | agents-path | pending | c14e27132eec |  |  |  |  |
+| SRC-12 | plans/INDEX.md | agents-path | pending | 1947043a2764 |  |  |  |  |
+| SRC-13 | plans/task-research-channels-20261126/findings.md | agents-path | pending | 6463b7f97551 |  |  |  |  |
+| SRC-14 | plans/task-research-channels-20261126/knowledge-brief.md | agents-path | pending | 1bf25fc59c26 |  |  |  |  |
+| SRC-15 | plans/task-research-channels-20261126/notepad-learnings.md | agents-path | pending | 539a29c6f9ae |  |  |  |  |
+| SRC-16 | plans/task-research-channels-20261126/plan-state.json | agents-path | pending | 7ac3dc93017c |  |  |  |  |
+| SRC-17 | plans/task-research-channels-20261126/task_plan.md | agents-path | pending | 73227e006515 |  |  |  |  |
+| SRC-18 | plans/task-research-channels-20261126/verification.md | agents-path | pending | 70ae75d5a15b |  |  |  |  |
+| SRC-19 | progress.md | agents-path | pending | 71eed07d13de |  |  |  |  |
+| SRC-20 | skills/plan-cost-guard/references/billing.md | agents-path | pending | fd4fdc3216ff |  |  |  |  |
+| SRC-21 | skills/task-planner/config.json | agents-path | pending | 1000e69e8653 |  |  |  |  |
+| SRC-22 | skills/task-planner/install.sh | agents-path | pending | 31c956745fa3 |  |  |  |  |
+| SRC-23 | skills/task-planner/lib/verify.sh | agents-path | pending | e986626c1bdc |  |  |  |  |
+| SRC-24 | skills/task-planner/references/critical-rules.md | agents-path | pending | 79b5071f4531 |  |  |  |  |
+| SRC-25 | skills/task-planner/scripts/check-drift.sh | agents-path | pending | 07fcd07164e1 |  |  |  |  |
+| SRC-26 | skills/task-planner/scripts/run-selftests.sh | agents-path | pending | c238ef9dbf86 |  |  |  |  |
+| SRC-27 | skills/task-planner/scripts/session-catchup.ts | agents-path | pending | 3984f52a48ee |  |  |  |  |
+| SPEC-3 | AGENTS.md | AGENTS.md:81 | bash skills/task-planner/scripts/selftest-research-channels.sh ｜ grep -c 'FAIL=0' >= 1 | 8d5f3b56b1b2 |  |  | S1-S6 |  |
+| NA-2 | RETRIEVAL_EXCLUDE 类仓库配置锚，非本任务规范适用项 | agents | RETRIEVAL_EXCLUDE 类仓库配置锚，非本任务规范适用项 |  |  | n/a | S1-S9 | NA |
 
 ## 🧹 收尾对齐与清理（交付前必填）
 | 类别 | 检查项 | 判据 | 证据 |

@@ -2,7 +2,7 @@
 # Progress: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T03:07:39Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:27:11Z
 
 ## Phase 状态
 | id | status | tags |
@@ -91,12 +91,14 @@
 - **Started:** 
 - Actions taken:
   - P6 完成合并 b3b9c572 + 五位部署对账（research-channels 五位 diff=0、discipline 五位 IDENTICAL、verify 27/4=既有基线）+VC-6
+  - 用户四问验收驱动抓出真集成缺口：disposition 只写字段不生成既有 C4/C5/C8 消费的 SPEC/NA 约定行（含 C8 仅认 SPEC applies 绑定、C6 要 path:line 锚、C9 要 VC 判据点名）——修复 5475d350+src 规范化+RC-10 适配，R-VC 双向映射补齐后计划锁定 SHA 045b56a8；五位部署含最终 planctl
 - Files created/modified:
   - （本任务暂无文件记录）
 - Test Results:
 | Test | Input | Expected | Actual | Status |
 |---|---|---|---|---|
 | 部署对账（zcode/agents/claude/cursor/opencode 五位） |  | research-channels 三件套+discipline 各位 IDENTICAL；task-planner verify 27/4=既有基线 | 五位 research-channels 在位 diff=0；discipline 五位 IDENTICAL；verify 27/4=既有基线（残留 4=check-spec-route/check-dispatch 硬编码白名单缺口，非本次引入） | PASS |
+| 部署位形态自测（zcode 薄壳/claude/agents 全量三态） |  | 三位 selftest 16/16 | zcode 15/16→定位薄壳无正文→RC-16 改断 references Rule115 标题（3a9e732e）→zcode/claude 16/16；agents 位全量拷贝未同步本次合并→补同步 14 文件→16/16 | PASS |
 
 ## 📚 必要知识储备使用记录
 | Phase | 引用知识源 | 用途(决策/实现/验证) |

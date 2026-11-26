@@ -1,0 +1,221 @@
+{
+  "at": "2026-11-26T09:11:00Z",
+  "project_root": "/mnt/data/dev/task-planner-skill",
+  "must": 2,
+  "ref": 25,
+  "candidates": [
+    {
+      "id": "SRC-1",
+      "path": "AGENTS.md",
+      "cls": "must",
+      "origin": "agents",
+      "sha": "8d5f3b56b1b2"
+    },
+    {
+      "id": "SRC-2",
+      "path": "CLAUDE.md",
+      "cls": "must",
+      "origin": "agents",
+      "sha": "7b4f8ef5a526"
+    },
+    {
+      "id": "SRC-3",
+      "path": ".zcode/plan-templates/README.md",
+      "cls": "ref",
+      "origin": "template",
+      "sha": "de0171ab28d0"
+    },
+    {
+      "id": "SRC-4",
+      "path": ".zcode/plan-templates/knowledge-brief.md",
+      "cls": "ref",
+      "origin": "template",
+      "sha": "86cb6ef74206",
+      "suggest_dims": [
+        "logic"
+      ]
+    },
+    {
+      "id": "SRC-5",
+      "path": ".zcode/plan-templates/rule-clause-cascade-type.md",
+      "cls": "ref",
+      "origin": "template",
+      "sha": "33b903318d6b"
+    },
+    {
+      "id": "SRC-6",
+      "path": "CHANGELOG.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "7230e1afb0c7",
+      "suggest_dims": [
+        "language"
+      ]
+    },
+    {
+      "id": "SRC-7",
+      "path": "CONTRIBUTING_zh.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "3f7004d3c7ec",
+      "suggest_dims": [
+        "logic"
+      ]
+    },
+    {
+      "id": "SRC-8",
+      "path": "INSTALL_zh.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "e82fdcf72ecb"
+    },
+    {
+      "id": "SRC-9",
+      "path": "README_zh.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1c563a6dc0df"
+    },
+    {
+      "id": "SRC-10",
+      "path": "RETRIEVAL_EXCLUDE.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "e9692de60e9f"
+    },
+    {
+      "id": "SRC-11",
+      "path": "examples/json-template-upgrade/review.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "c14e27132eec"
+    },
+    {
+      "id": "SRC-12",
+      "path": "plans/INDEX.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1947043a2764"
+    },
+    {
+      "id": "SRC-13",
+      "path": "plans/task-research-channels-20261126/findings.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "6463b7f97551",
+      "suggest_dims": [
+        "safety"
+      ]
+    },
+    {
+      "id": "SRC-14",
+      "path": "plans/task-research-channels-20261126/knowledge-brief.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1bf25fc59c26",
+      "suggest_dims": [
+        "logic"
+      ]
+    },
+    {
+      "id": "SRC-15",
+      "path": "plans/task-research-channels-20261126/notepad-learnings.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "539a29c6f9ae"
+    },
+    {
+      "id": "SRC-16",
+      "path": "plans/task-research-channels-20261126/plan-state.json",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "7ac3dc93017c"
+    },
+    {
+      "id": "SRC-17",
+      "path": "plans/task-research-channels-20261126/task_plan.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "73227e006515"
+    },
+    {
+      "id": "SRC-18",
+      "path": "plans/task-research-channels-20261126/verification.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "70ae75d5a15b"
+    },
+    {
+      "id": "SRC-19",
+      "path": "progress.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "71eed07d13de"
+    },
+    {
+      "id": "SRC-20",
+      "path": "skills/plan-cost-guard/references/billing.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "fd4fdc3216ff"
+    },
+    {
+      "id": "SRC-21",
+      "path": "skills/task-planner/config.json",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1000e69e8653"
+    },
+    {
+      "id": "SRC-22",
+      "path": "skills/task-planner/install.sh",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "31c956745fa3"
+    },
+    {
+      "id": "SRC-23",
+      "path": "skills/task-planner/lib/verify.sh",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "e986626c1bdc"
+    },
+    {
+      "id": "SRC-24",
+      "path": "skills/task-planner/references/critical-rules.md",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "79b5071f4531",
+      "suggest_dims": [
+        "rhythm"
+      ]
+    },
+    {
+      "id": "SRC-25",
+      "path": "skills/task-planner/scripts/check-drift.sh",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "07fcd07164e1",
+      "suggest_dims": [
+        "language"
+      ]
+    },
+    {
+      "id": "SRC-26",
+      "path": "skills/task-planner/scripts/run-selftests.sh",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "c238ef9dbf86",
+      "suggest_dims": [
+        "naming"
+      ]
+    },
+    {
+      "id": "SRC-27",
+      "path": "skills/task-planner/scripts/session-catchup.ts",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "3984f52a48ee"
+    }
+  ]
+}

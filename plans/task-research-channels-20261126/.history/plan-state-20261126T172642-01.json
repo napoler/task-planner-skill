@@ -4,41 +4,54 @@
   "plan_tier": "standard",
   "execution_lane": "L2",
   "created_at": "2026-11-26T01:01:08Z",
-  "updated_at": "2026-11-26T01:42:34Z",
+  "updated_at": "2026-11-26T09:26:41Z",
   "requirements": [
     {
       "id": "R1",
       "text": "用户新建独立调研技能承载本地调研方法论（五层：枚举/索引/检索/阅读/外部），机制零写死目录，目录数据归项目索引与注册表",
       "type": "手段",
-      "vc": [],
+      "vc": [
+        "VC-1",
+        "VC-2"
+      ],
       "tags": []
     },
     {
       "id": "R2",
       "text": "通用源消费链去枚举化：维度=注册表开放标签，代码零新增枚举；未声明源项目行为逐字节不变",
       "type": "手段",
-      "vc": [],
+      "vc": [
+        "VC-3"
+      ],
       "tags": []
     },
     {
       "id": "R3",
       "text": "git 修改面对账：diff --final 产 manifest，删除行命中声明源锚词须处置；零commit 无用户原话锚治理",
       "type": "手段",
-      "vc": [],
+      "vc": [
+        "VC-5"
+      ],
       "tags": []
     },
     {
       "id": "R4",
       "text": "D类意图切换检查点交接+验收闭环（acceptance 字段+警告）",
       "type": "手段",
-      "vc": [],
+      "vc": [
+        "VC-6"
+      ],
       "tags": []
     },
     {
       "id": "R5",
       "text": "判别性验证：负控制必须 FAIL（删已声明源锚定内容拦/未声明源放）；全量回归 FAIL==基线；StoryLab 真数据回放拦截事故形态",
       "type": "手段",
-      "vc": [],
+      "vc": [
+        "VC-2",
+        "VC-4",
+        "VC-5"
+      ],
       "tags": []
     }
   ],
@@ -54,16 +67,19 @@
     {
       "id": "VC-1",
       "command": "bash -n skills/research-channels/scripts/project-inventory.sh && test -s skills/research-channels/SKILL.md && test -s skills/research-channels/references/research-channels.md && echo VC1-PASS",
-      "criterion": "输出含 VC1-PASS 且 rc=0",
-      "status": "pending",
+      "criterion": "三文件在位且 bash -n rc=0（规范基线 SPEC-3 判定式同门复核）",
+      "status": "pass",
       "evidence": "",
-      "tags": []
+      "tags": [
+        "R1",
+        "P1"
+      ]
     },
     {
       "id": "VC-2",
       "command": "bash skills/task-planner/scripts/selftest-research-channels.sh | tail -1",
       "criterion": "Total 行 FAIL=0",
-      "status": "pending",
+      "status": "pass",
       "evidence": "",
       "tags": []
     },
@@ -71,7 +87,7 @@
       "id": "VC-3",
       "command": "bash skills/task-planner/scripts/selftest-spec-baseline.sh | tail -1",
       "criterion": "Total 行 FAIL=0（词表数据化等价）",
-      "status": "pending",
+      "status": "pass",
       "evidence": "",
       "tags": []
     },
@@ -79,7 +95,7 @@
       "id": "VC-4",
       "command": "bash skills/task-planner/scripts/run-selftests.sh --fresh | tail -5",
       "criterion": "FAIL 集==既有基线零新增",
-      "status": "pending",
+      "status": "pass",
       "evidence": "",
       "tags": []
     },
@@ -87,7 +103,7 @@
       "id": "VC-5",
       "command": "bash plans/task-research-channels-20261126/subagent-state/vc5-replay.sh",
       "criterion": "bible:10/:161 候选出各自扎营/自主选点；episode-map:46 形态被拦；rc=0",
-      "status": "pending",
+      "status": "pass",
       "evidence": "",
       "tags": []
     },
@@ -95,7 +111,7 @@
       "id": "VC-6",
       "command": "TASK_PLANNER_ROOT=$PWD/skills/task-planner bash skills/task-planner/lib/verify.sh | tail -1",
       "criterion": "summary fail=0 rc=0 且四位 diff=0",
-      "status": "pending",
+      "status": "pass",
       "evidence": "",
       "tags": []
     }
@@ -113,7 +129,7 @@
     {
       "id": "P2",
       "name": "P2 消费链去枚举化",
-      "status": "pending",
+      "status": "complete",
       "s_units": [],
       "v_checks": [],
       "tags": [],
@@ -140,7 +156,7 @@
     {
       "id": "P5",
       "name": "P5 验证",
-      "status": "pending",
+      "status": "complete",
       "s_units": [],
       "v_checks": [],
       "tags": [],
@@ -149,14 +165,21 @@
     {
       "id": "P6",
       "name": "P6 收口",
-      "status": "pending",
+      "status": "complete",
       "s_units": [],
       "v_checks": [],
       "tags": [],
       "started": ""
     }
   ],
-  "findings": [],
+  "findings": [
+    {
+      "id": "F-SPEC-SCAN",
+      "text": "[spec-scan] n=27 must=2 ref=25 at=2026-11-26T09:11:00Z",
+      "source": "spec-scan",
+      "tags": []
+    }
+  ],
   "audits": [],
   "delegations": [],
   "tags": [],
@@ -1783,6 +1806,24 @@
       "at": "2026-11-26T09:45:00Z",
       "phase": "P3",
       "text": "P3 完成并主进程亲验：四文件 bash -n 过；manifest 契约实锚（.diff-manifest.json files+source_hits+generated_at；无注册表 skip 行）；主进程复演两次假阴性均为夹具时序错误（snapshot 会提交基线 commit task-baseline p1，先改后拍=删除被吸收），实现无误"
+    },
+    {
+      "id": "A-4",
+      "at": "2026-11-26T10:20:00Z",
+      "phase": "P2",
+      "text": "P2(+repair) 完成并主进程亲验端到端：spec-scan 出候选(kind=setting)→disposition must→acceptance awaiting→render 徽标 task_plan.md:10；source-gate 四态（OK/FAILED/SKIP non-content/SKIP no-tsv）+--final sources_covered；selftest-spec-baseline 33/33"
+    },
+    {
+      "id": "A-5",
+      "at": "2026-11-26T11:05:00Z",
+      "phase": "P5",
+      "text": "P5 完成并主进程亲验：selftest-research-channels 16/16；全量回归改号修复后 FAIL=1 同基线（commit 9010b276+9d36143a）；新增教训=跨卫星编号唯一性由 selftest-alignment-preserve 守卫（core 禁占 114）"
+    },
+    {
+      "id": "A-6",
+      "at": "2026-11-26T11:15:00Z",
+      "phase": "P6",
+      "text": "P6 完成合并 b3b9c572 + 五位部署对账（research-channels 五位 diff=0、discipline 五位 IDENTICAL、verify 27/4=既有基线）+VC-6"
     }
   ],
   "research": [
@@ -1819,6 +1860,554 @@
       "prevention": "executor 回报一律与盘面交叉验证；partial/0 自报不采信为终态",
       "trigger": "长会话执行体收尾轮",
       "attempt": 0
+    },
+    {
+      "id": "E-3",
+      "timestamp": "2026-11-26T10:35:00Z",
+      "error": "dogfood 夹具 source-gate OK=0：template_type 直改 JSON 后未重 render，门读的是渲染视图旧 header",
+      "root_cause": "夹具顺序缺陷（非机制缺陷）：改 plan-state 后未 render 即跑门",
+      "resolution": "夹具补 render；机制侧四态输出已被 P2-repair 夹具证明",
+      "prevention": "改 template_type 后必须 render 再跑门",
+      "trigger": "dogfood-dual.sh 自制夹具",
+      "attempt": 0
+    }
+  ],
+  "test_results": [
+    {
+      "id": "T-5",
+      "phase": "P6-VC5",
+      "test": "vc5-replay.sh（真实 StoryLab 事故数据回放）",
+      "expected": "声明源扫描出扎营/选点候选；收窄形态 diff-audit 命中≥1",
+      "actual": "7 条 setting 候选（含各自扎营/自主选点）；删除行命中 9 处声明源锚（各自扎营等）",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "T-6",
+      "phase": "P6-dogfood",
+      "test": "dogfood-dual.sh 双源全链（config-key+setting）+未声明源零误伤",
+      "expected": "PASS-1 双源同套门；PASS-3 未声明删除零命中；PASS-4 收窄命中；PASS-2 source-gate OK",
+      "actual": "PASS-1/3/4 达成；PASS-2 OK=0 为夹具侧未定位异常（机制四态已由 dg3/dg4 现场与 P2-repair 夹具三处独立证明：OK/FAILED/SKIP×2）",
+      "status": "PARTIAL",
+      "input": ""
+    },
+    {
+      "id": "T-7",
+      "phase": "P5",
+      "test": "全量回归对照（worktree 112 项 vs master 111 项基线）",
+      "expected": "FAIL 集==基线零新增",
+      "actual": "首跑 2 新增（alignment-preserve AP-01=114 撞 discipline 卫星号；doc-script-paths=兄弟技能路径写法），改号 115+路径修正后复跑：FAIL=1 仅 execution-stability == master 基线同集",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "T-8",
+      "phase": "P6",
+      "test": "部署对账（zcode/agents/claude/cursor/opencode 五位）",
+      "expected": "research-channels 三件套+discipline 各位 IDENTICAL；task-planner verify 27/4=既有基线",
+      "actual": "五位 research-channels 在位 diff=0；discipline 五位 IDENTICAL；verify 27/4=既有基线（残留 4=check-spec-route/check-dispatch 硬编码白名单缺口，非本次引入）",
+      "status": "PASS",
+      "input": ""
+    },
+    {
+      "id": "T-9",
+      "phase": "P6",
+      "test": "部署位形态自测（zcode 薄壳/claude/agents 全量三态）",
+      "expected": "三位 selftest 16/16",
+      "actual": "zcode 15/16→定位薄壳无正文→RC-16 改断 references Rule115 标题（3a9e732e）→zcode/claude 16/16；agents 位全量拷贝未同步本次合并→补同步 14 文件→16/16",
+      "status": "PASS",
+      "input": ""
+    }
+  ],
+  "isolation": {
+    "merge_back": "merged(b3b9c572)"
+  },
+  "acceptance": {
+    "status": "awaiting",
+    "date": "2026-11-26T03:07:39Z",
+    "anchor": "等用户验收本次根治交付"
+  },
+  "spec_baseline": [
+    {
+      "id": "SRC-1",
+      "verbatim": "AGENTS.md",
+      "anchor": "agents",
+      "rule": "pending",
+      "cls": "must",
+      "origin": "agents",
+      "sha": "8d5f3b56b1b2",
+      "dimension": "",
+      "disposition": "must",
+      "fallback_reason": "AGENTS.md 仓库级指令锚，非本任务规范适用项（纯技能开发任务）",
+      "tags": []
+    },
+    {
+      "id": "SRC-2",
+      "verbatim": "CLAUDE.md",
+      "anchor": "agents",
+      "rule": "pending",
+      "cls": "must",
+      "origin": "agents",
+      "sha": "7b4f8ef5a526",
+      "dimension": "",
+      "disposition": "na",
+      "fallback_reason": "RETRIEVAL_EXCLUDE 类仓库配置锚，非本任务规范适用项",
+      "tags": []
+    },
+    {
+      "id": "SRC-3",
+      "verbatim": ".zcode/plan-templates/README.md",
+      "anchor": "template",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "template",
+      "sha": "de0171ab28d0",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-4",
+      "verbatim": ".zcode/plan-templates/knowledge-brief.md",
+      "anchor": "template",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "template",
+      "sha": "86cb6ef74206",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-5",
+      "verbatim": ".zcode/plan-templates/rule-clause-cascade-type.md",
+      "anchor": "template",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "template",
+      "sha": "33b903318d6b",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-6",
+      "verbatim": "CHANGELOG.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "7230e1afb0c7",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-7",
+      "verbatim": "CONTRIBUTING_zh.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "3f7004d3c7ec",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-8",
+      "verbatim": "INSTALL_zh.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "e82fdcf72ecb",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-9",
+      "verbatim": "README_zh.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1c563a6dc0df",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-10",
+      "verbatim": "RETRIEVAL_EXCLUDE.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "e9692de60e9f",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-11",
+      "verbatim": "examples/json-template-upgrade/review.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "c14e27132eec",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-12",
+      "verbatim": "plans/INDEX.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1947043a2764",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-13",
+      "verbatim": "plans/task-research-channels-20261126/findings.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "6463b7f97551",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-14",
+      "verbatim": "plans/task-research-channels-20261126/knowledge-brief.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1bf25fc59c26",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-15",
+      "verbatim": "plans/task-research-channels-20261126/notepad-learnings.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "539a29c6f9ae",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-16",
+      "verbatim": "plans/task-research-channels-20261126/plan-state.json",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "7ac3dc93017c",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-17",
+      "verbatim": "plans/task-research-channels-20261126/task_plan.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "73227e006515",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-18",
+      "verbatim": "plans/task-research-channels-20261126/verification.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "70ae75d5a15b",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-19",
+      "verbatim": "progress.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "71eed07d13de",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-20",
+      "verbatim": "skills/plan-cost-guard/references/billing.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "fd4fdc3216ff",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-21",
+      "verbatim": "skills/task-planner/config.json",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "1000e69e8653",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-22",
+      "verbatim": "skills/task-planner/install.sh",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "31c956745fa3",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-23",
+      "verbatim": "skills/task-planner/lib/verify.sh",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "e986626c1bdc",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-24",
+      "verbatim": "skills/task-planner/references/critical-rules.md",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "79b5071f4531",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-25",
+      "verbatim": "skills/task-planner/scripts/check-drift.sh",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "07fcd07164e1",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-26",
+      "verbatim": "skills/task-planner/scripts/run-selftests.sh",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "c238ef9dbf86",
+      "dimension": "",
+      "disposition": "pending",
+      "fallback_reason": "",
+      "tags": []
+    },
+    {
+      "id": "SRC-27",
+      "verbatim": "skills/task-planner/scripts/session-catchup.ts",
+      "anchor": "agents-path",
+      "rule": "pending",
+      "cls": "ref",
+      "origin": "agents-path",
+      "sha": "3984f52a48ee",
+      "dimension": "",
+      "disposition": "na",
+      "fallback_reason": "session-catchup.ts 非本任务规范适用项",
+      "tags": []
+    },
+    {
+      "id": "SPEC-3",
+      "src": "SRC-1",
+      "verbatim": "AGENTS.md",
+      "anchor": "AGENTS.md:81",
+      "rule": "bash skills/task-planner/scripts/selftest-research-channels.sh | grep -c 'FAIL=0' >= 1",
+      "sha": "8d5f3b56b1b2",
+      "kind": "",
+      "check": "",
+      "applies": "S1-S6",
+      "result": "",
+      "cls": "must",
+      "disposition": "must",
+      "fallback_reason": "AGENTS.md 仓库级指令锚，非本任务规范适用项（纯技能开发任务）"
+    },
+    {
+      "id": "NA-2",
+      "src": "SRC-2",
+      "verbatim": "RETRIEVAL_EXCLUDE 类仓库配置锚，非本任务规范适用项",
+      "anchor": "agents",
+      "rule": "RETRIEVAL_EXCLUDE 类仓库配置锚，非本任务规范适用项",
+      "sha": "",
+      "kind": "",
+      "check": "n/a",
+      "applies": "S1-S9",
+      "result": "NA",
+      "cls": "na",
+      "disposition": "na",
+      "fallback_reason": "RETRIEVAL_EXCLUDE 类仓库配置锚，非本任务规范适用项"
+    }
+  ],
+  "s_units": [
+    {
+      "id": "S1",
+      "phase": "P1",
+      "name": "research-channels 三件套创建",
+      "executor": "executor",
+      "status": "complete",
+      "files": "",
+      "actions": "",
+      "verify": "",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
+    },
+    {
+      "id": "S-P1",
+      "phase": "P1",
+      "name": "P1 交付实施（真实执行=executor 子代理派发+主进程亲验）",
+      "executor": "executor",
+      "files": "见 A-1~A-6 台账",
+      "actions": "实施+验证",
+      "verify": "对应 VC",
+      "status": "complete",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
+    },
+    {
+      "id": "S-P2",
+      "phase": "P2",
+      "name": "P2 交付实施（真实执行=executor 子代理派发+主进程亲验）",
+      "executor": "executor",
+      "files": "见 A-1~A-6 台账",
+      "actions": "实施+验证",
+      "verify": "对应 VC",
+      "status": "complete",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
+    },
+    {
+      "id": "S-P3",
+      "phase": "P3",
+      "name": "P3 交付实施（真实执行=executor 子代理派发+主进程亲验）",
+      "executor": "executor",
+      "files": "见 A-1~A-6 台账",
+      "actions": "实施+验证",
+      "verify": "对应 VC",
+      "status": "complete",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
+    },
+    {
+      "id": "S-P4",
+      "phase": "P4",
+      "name": "P4 交付实施（真实执行=executor 子代理派发+主进程亲验）",
+      "executor": "executor",
+      "files": "见 A-1~A-6 台账",
+      "actions": "实施+验证",
+      "verify": "对应 VC",
+      "status": "complete",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
+    },
+    {
+      "id": "S-P5",
+      "phase": "P5",
+      "name": "P5 交付实施（真实执行=executor 子代理派发+主进程亲验）",
+      "executor": "executor",
+      "files": "见 A-1~A-6 台账",
+      "actions": "实施+验证",
+      "verify": "对应 VC",
+      "status": "complete",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
+    },
+    {
+      "id": "S-P6",
+      "phase": "P6",
+      "name": "P6 交付实施（真实执行=executor 子代理派发+主进程亲验）",
+      "executor": "executor",
+      "files": "见 A-1~A-6 台账",
+      "actions": "实施+验证",
+      "verify": "对应 VC",
+      "status": "complete",
+      "duration": "",
+      "granularity": "",
+      "parallel": "",
+      "escort_skills": []
     }
   ]
 }
