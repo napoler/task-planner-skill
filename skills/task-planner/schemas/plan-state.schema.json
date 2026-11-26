@@ -83,7 +83,8 @@
     "outcome": { "$ref": "#/definitions/outcome" },
     "cross_checks": { "type": "array", "items": { "$ref": "#/definitions/cross_check_item" } },
     "output_examples": { "type": "array", "items": { "$ref": "#/definitions/output_example_item" }, "description": "[Rule 113 输出示例契约] 每条格式声明须配完整示例+可复用模板；planctl add --section output_examples 写入，planctl render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。" },
-    "acceptance": { "type": "object", "description": "[2026-11-26 task-source-registry] 顶层验收状态（awaiting/accepted/rejected）", "properties": { "status": { "type": "string", "enum": ["awaiting", "accepted", "rejected"] }, "date": { "type": "string" }, "anchor": { "type": "string" } }, "additionalProperties": true }
+    "acceptance": { "type": "object", "description": "[2026-11-26 task-source-registry] 顶层验收状态（awaiting/accepted/rejected）", "properties": { "status": { "type": "string", "enum": ["awaiting", "accepted", "rejected"] }, "date": { "type": "string" }, "anchor": { "type": "string" } }, "additionalProperties": true },
+    "scope_boundary": { "type": "object", "description": "[2026-11-27 task-boundary-advance-20261127] 范围边界机器门；缺省=存量兼容放行", "properties": { "enabled": { "type": "boolean" }, "include": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "exclude": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "declared_by": { "type": "string" }, "updated_at": { "type": "string" } }, "additionalProperties": false }
   },
   "definitions": {
     "output_example_item": {

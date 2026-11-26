@@ -2421,6 +2421,72 @@ PYWTC
     fi
 fi
 
+# [2026-11-27 task-boundary-advance-20261127 Rule 119] STAGE-ADVANCE GATE — 两段式推进机器门
+# [stage-advance] marker: selftest mutation 依赖此标记行（删本行→TC-02夹具翻FAIL，证明门有效）
+# What: 两段式声明计划在阶段1合并后，必须创建 -rc 阶段2计划或登记 N/A 豁免，才可终验 complete。
+# Why:  防止“合并即结束”导致根因深挖阶段静默丢失（Comet continuation-and-checkpoints 蒸馏）。
+# Trigger (ALL AND): 两段式声明(plan-state tags 含 rootcause-followup:* 或 findings 含 [rootcause-followup:PASS])
+#   AND isolation.merge_back 含 merged( AND plans/<task-id>-rc 不存在 AND 无 N/A 豁免
+# Tier: mini 豁免照抄 rootcause evidence-anchor 门同款（PLAN_TIER_MINI==1 → SKIPPED）。
+if [ "$VC_GATE_TIER" != "off" ] && [ "${PLAN_TIER_MINI:-0}" != 1 ] && [ -n "${PLAN_DIR_GUESS:-}" ]; then
+    _sa_task_id="$(basename "$PLAN_DIR_GUESS")"
+    _sa_plans_root="$(cd "$PLAN_DIR_GUESS/.." && pwd 2>/dev/null)" || _sa_plans_root=""
+    _sa_state="$PLAN_DIR_GUESS/plan-state.json"
+    _sa_findings="$PLAN_DIR_GUESS/findings.md"
+    _sa_two_stage=0
+    _sa_has_na=0
+    _sa_merge_back=""
+    # 两段式声明检测（spec: tags 含 rootcause-followup:* 或 findings 含 [rootcause-followup:PASS]）
+    if [ -f "$_sa_state" ]; then
+        if grep -qF 'rootcause-followup:' "$_sa_state" 2>/dev/null; then
+            _sa_two_stage=1
+        fi
+        if grep -qF '[rootcause-followup:N/A]' "$_sa_state" 2>/dev/null; then
+            _sa_has_na=1
+        fi
+        # 读取 isolation.merge_back（轻量 python3，避免 jq 依赖）
+        if command -v python3 >/dev/null 2>&1; then
+            _sa_merge_back="$(python3 - "$_sa_state" <<'PYSA'
+import json, sys
+try:
+    d=json.load(open(sys.argv[1], encoding='utf-8'))
+except Exception:
+    print('')
+    raise SystemExit(0)
+iso=d.get('isolation') or {}
+if not isinstance(iso, dict):
+    iso={}
+v=iso.get('merge_back','')
+print('' if v is None else str(v))
+PYSA
+)" || _sa_merge_back=""
+        else
+            _sa_merge_back="$(grep -o '"merge_back"[[:space:]]*:[[:space:]]*"[^"]*"' "$_sa_state" 2>/dev/null | head -1 | sed 's/.*"merge_back"[[:space:]]*:[[:space:]]*"//; s/"$//')"
+        fi
+    fi
+    if [ -f "$_sa_findings" ]; then
+        if grep -qF '[rootcause-followup:PASS]' "$_sa_findings" 2>/dev/null; then
+            _sa_two_stage=1
+        fi
+        if grep -qF '[rootcause-followup:N/A]' "$_sa_findings" 2>/dev/null; then
+            _sa_has_na=1
+        fi
+    fi
+    # 判定: 两段式声明 AND merged AND 无 -rc 计划 AND 无 N/A 豁免 → fail-closed
+    if [ "$_sa_two_stage" -eq 1 ] && printf '%s' "$_sa_merge_back" | grep -qF 'merged('; then
+        _sa_rc_dir="$_sa_plans_root/${_sa_task_id}-rc"
+        if [ "$_sa_has_na" -eq 1 ]; then
+            printf '[stage-advance] SKIPPED: %s 已标记 N/A 豁免\n' "$_sa_task_id" >&2
+        elif [ -n "$_sa_plans_root" ] && [ -d "$_sa_rc_dir" ]; then
+            printf '[stage-advance] OK: %s 阶段2计划已存在 (%s)\n' "$_sa_task_id" "$_sa_rc_dir" >&2
+        else
+            printf '[stage-advance] FAIL 两段式已合并但阶段2未创建（无 %s-rc 计划 / 无 N/A 豁免）\n' "$_sa_task_id" >&2
+            printf '[stage-advance] 修复: 创建 plans/%s-rc 计划并完成阶段2深挖，或在 findings/tags 登记 [rootcause-followup:N/A] 豁免后重跑\n' "$_sa_task_id" >&2
+            exit 1
+        fi
+    fi
+fi
+
 # [2026-10-11 task-v170 Phase 4 S7] ARCHIVE-GATE — 终验后「已完成计划未归档」提醒（Rule 81 机制件）
 # What: 枚举 plans 根（PLAN_DIR_GUESS 的上级目录）直接子目录，按 archive-plan.sh guard_reason 同口径
 #   （archive-plan.sh:88-123）逐目录判定「- **Status:** 行全 complete（总数>0）∧ 无 .active_plan /

@@ -41,7 +41,7 @@ cost_estimate:
 - 任务分解:将 user goal 拆为 3-7 个可执行 Phase;派发型 Phase(Executor≠主进程)再拆 S-unit 派发单元(每步 ≤2 文件/≤100 行/预估 ≤15min),计划期预写每步材料包(路径 + ≤10 行摘要)与可观察验收,每步「执行体」列必填(默认"继承"= Phase Executor,混用模型逐行写 subagent_type(model))——计划多花一倍时间拆细,执行省三倍返工(Rule 21.1b/22.6)
 - **伴飞技能填列义务（Rule 59.2 / H5，强制）**:计划期每个 S-unit 表「伴飞技能」列须填 `escort_skills` 中的 `.md` 绝对路径（多个用 `, ` 拼接;确无伴飞则写「无」），并经 `planctl add/set --section s_units --field escort_skills` 写入 plan-state.json;禁止把 parallel 并行组标识填进该列(并行组标识落「前置依赖」列行内注解)。Why:该列是 Rule 59.2「路径+首动作 Read」从计划层到达子代理执行层的**唯一泛化注入路径**——planctl 渲染此列 → 派发任务书「伴飞技能」节 → 子代理首动作 Read 对齐方法论后再执行;字段留空、只写组标识或写未实例化占位符都会使伴飞注入失效,check-dispatch.sh 在 escort_skills 非空却提取不到有效 .md token 时 fail-closed 拦截
 - VC 设计:为每个 Phase 配 5 条可验证的 Verification Contract 条目
-- Scope 限定:列出允许/禁止的文件,避免执行期越界
+- Scope 限定:列出允许/禁止的文件,避免执行期越界；创建/锁定计划时用 `planctl scope-set --include ... --exclude ... --declared-by plan+user` 声明 `scope_boundary`（Rule 118），扩张走 `scope-extend --path ... --reason ...` 且须用户批准+Decisions 登记
 - 隔离决策:根据任务类型(worktree / direct)填写冲突分析区块
 - knowledge-brief 产出:计划期提炼任务知识简略要点,按 `templates/knowledge-brief.md` 五段格式(§1 任务速览与核心概念 / §2 已验证关键事实(事实|证据 file:line/URL|影响,禁录未验证推测) / §3 关键文件锚点表(路径|行号|≤10 行摘要) / §4 易错点与禁止假设清单 / §5 S-unit 材料包索引)写入 `<plan-dir>/knowledge-brief.md`;内容必须来自实际 Read 过的知识源(源码/文档/既有计划文件),禁止凭记忆编造;§5 与 task_plan.md S-unit 表「输入」列互链,材料包摘要引用对应节锚点(§1-§5)
 - 工具选择与编排区块（Rule 40.2,task-v097）: standard/full 档计划必填——逐 Phase 登记命中工具面与选择理由（选型依据=../plan-template-kit/references/template-mapping.md §工具选择映射）,并填写 workflow 编排判定（40.4: 命中 39.8 激活条件→登记 CreateWorkflow 路由并执行期主动创建+39.4 豁免登记）与 /goal 对齐（40.3: 如实披露用户侧命令不可代调）两判定行;mini 档豁免;区块是 Executor 字段上游分析记录,不替代其委派门控机器事实源地位

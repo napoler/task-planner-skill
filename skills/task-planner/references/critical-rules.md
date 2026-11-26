@@ -354,3 +354,43 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 117.11 **与既有消费链边界**：`todo.json`=问题级 backlog（跨任务未结问题）；`plans/`=执行计划，由 plan-resume 扫描续推。用户问「还有什么任务没解决」先扫 todo.json，问「看看计划/恢复计划」走 plan-resume；二者互不镜像、互不替代。
 
 117.12 **通用面三问自查**：换项目成立（任意 `--root` 同机制）／与既有门互认（复用 archive-plan 守卫与 sync-index，不新增机器门、不新增 hook）／部署位实测（scripts 随 rsync 进部署位、Python 免 chmod、CLI 在部署位实跑 next/review/retire --dry-run）。each executor self-check.
+
+### 118 范围边界契约（P0, 2026-11-27 task-boundary-advance-20261127）
+
+> 适用：一切使用 task-planner 的标准/mini/L1 执行计划（存量无字段计划按兼容放行）。机制=plan-state.json 顶层 `scope_boundary` 对象 + planctl `scope-set/scope-extend` 唯一写入口 + `check-scope.sh` PreToolUse 边界比对段 + render `## ⚠️ 执行范围限制` 段，零新 hook。Why：无写路径比对门导致任务 A 被无限拓展；边界须在计划锁定时声明、扩张须授权可审计，机器门负责写前拦截而非事后复盘。示例实物与 C-B1–C-B4 审查命令见 `examples/scope-boundary/review.md`（Rule 113.10 权威形态）。
+
+118.0 **公理（P0）**：计划范围边界属于执行契约，不属于口头约定。凡声明了 `scope_boundary.enabled=true` 的活跃计划，写入目标必须落在 `include` 且不命中 `exclude`；越界写入=BLOCK，禁止“先写再解释”。
+
+118.1 **数据契约**：`plan-state.json` 顶层对象 `scope_boundary={enabled:bool, include:string[], exclude:string[], declared_by:string, updated_at:ISO8601Z}`。`include/exclude` 元素为非空字符串（绝对路径或相对项目根 glob/路径）；`updated_at` 由 planctl 写入自动刷新。缺省（字段不存在）=存量兼容态，不作为违规。
+
+118.2 **唯一写入口（P0）**：`planctl scope-set --include ... --exclude ... --declared-by ... [--enabled true|false]` 整对象覆写；`planctl scope-extend --path <P> --reason <R>` 仅追加 include。`--reason` 为空必须 exit 1。扩张是授权动作：执行 `scope-extend` 前须获用户批准，并在 Decisions/进度记录登记批准理由；CLI 输出提示但不替代用户授权。
+
+118.3 **声明时点**：plan-writer/主进程创建或锁定计划时，应通过 `scope-set` 声明初始边界（至少 include 覆盖计划预期写入面）。未声明不阻断存量计划，但新计划应默认声明以获得机器保护。
+
+118.4 **check-scope.sh 比对语义**：在既有计划门放行后、worktree 门前追加 `[scope-boundary]` 比对。匹配语义：`**` 结尾或目录路径=前缀匹配，其余=精确或目录前缀或 glob 匹配；`exclude` 优先判为越界。豁免面不变：`plans/` 目录、计划文件名豁免、轻量/机械产物区/gitignore 区仍按既有逻辑先行。无 `scope_boundary` 字段输出 `[scope-boundary] WARN 未声明范围边界，按存量计划放行` 并 exit 0。
+
+118.5 **渲染与可见性**：`planctl render` 在存在 `scope_boundary` 时输出 `## ⚠️ 执行范围限制` 段（表格含 enabled/include/exclude/declared_by/updated_at），并在 task_plan.md 头部输出 `scope_boundary:` 行。无字段不渲染该段，避免存量计划噪音。
+
+118.6 **机器门与 selftest**：`check-scope.sh` 命中越界输出 `[scope-boundary] BLOCKED ...` + exit 1；`selftest-scope-boundary.sh` 覆盖 TC-01~TC-07（正例/负控制/mutation/存量兼容/无 reason 拒绝/可移植性）。`selftest-registry.tsv` 登记触发条件与依赖锚。
+
+118.7 **通用面三问自查**：换项目成立（任意项目根 plan-state.json 同字段与 CLI）／与既有门互认（复用 check-scope PreToolUse 链，不新增 hook；不改变 plans/ 豁免与 worktree 门语义）／部署位实测（scripts 随 skill 部署，Python/bash 自测在 worktree 内可跑）。each executor self-check。
+
+### 119 两段式推进机器门（P0, 2026-11-27 task-boundary-advance-20261127）
+
+> 适用：一切声明两段式根因跟进（`rootcause-followup:*` tag 或 findings 含 `[rootcause-followup:PASS]`）的 task-planner 计划。机制=smart-merge-back.sh 成功路径写 `isolation.merge_back=merged(<sha7>)` + `followup-of:<task-id>` pending 登记 + check-complete.sh `STAGE-ADVANCE GATE` fail-closed 阻断 + zcode-sessionstart.sh 只读探针注入，零新 hook。Why：阶段1合并后根因深挖阶段易静默丢失；需事件→登记→消费→门禁四环咬合，保证“合并不等于结束”。示例实物与审查命令见 `examples/stage-advance/review.md`（Rule 113.10 权威形态）。
+
+119.0 **公理（P0）**：两段式声明是执行契约，不是备注。凡声明 `rootcause-followup:*` 或 `[rootcause-followup:PASS]` 的计划，阶段1合并后必须进入阶段2（创建 `<task-id>-rc` 计划）或显式登记 N/A 豁免；缺任一即禁止终验 complete。
+
+119.1 **数据契约**：`plan-state.json.isolation.merge_back = "merged(<sha7>)"` 为阶段1合并证据（sha7=7位短哈希）；顶层 tag `followup-of:<task-id>` 为阶段2 pending 登记；阶段2计划目录名固定 `<task-id>-rc`（位于同 plans 根）。`[rootcause-followup:N/A]`（findings/tags 信号）为显式豁免，不登记 pending。
+
+119.2 **同轮=自动推进（默认自动）**：smart-merge-back.sh 合并+cleanup 成功后，同轮写入 `merge_back`、登记 `followup-of:*`（防重）并输出 `[stage2-pending]` 指令块（含 worktree add + init-session.sh 精确命令）。同轮自动推进为默认路径；当 VC 复验失败或命中用户裁决点（不可逆/跨项目/安全边界等）时，阻塞交还用户，不擅自创建阶段2计划（蒸馏自 Comet decision-ownership 停顿点协议）。
+
+119.3 **只读探针纪律**：zcode-sessionstart.sh 仅只读扫描 `.tags-index.json` 中未消费 `followup-of:*`（对应 `<rc-id>/plan-state.json` 不存在）并注入 `[stage2-pending]` 文本；不建计划、不切分支、不改 plan-state/tags-index。多候选全列，歧义不猜；损坏/异常静默，零 pending 完全静默（蒸馏自 Comet resume-probe 只读探针纪律）。
+
+119.4 **失败不得绕过（P0）**：任一门失败不得通过直接手改 `plan-state.json`/tags-index 伪造 `merge_back`、伪造 `-rc` 目录或清除 followup tag 绕过；应修复真实条件（创建 -rc 计划或登记 N/A 豁免）后重跑（蒸馏自 Comet guard “失败不得硬改状态”）。
+
+119.5 **兼容与豁免**：无两段式声明的普通计划仅保持既有行为（smart-merge-back 仅多一行 `[merge-back]` 或静默兼容）；merge 失败路径不写 `merge_back`。mini 档 tier 豁免照抄 check-complete.sh 既有 rootcause evidence-anchor 门同款。
+
+119.6 **机器门与 selftest**：`check-complete.sh` STAGE-ADVANCE GATE 命中触发条件输出 `[stage-advance] FAIL ...` 并 exit 1（fail-closed）；GATE 段含固定标记 `[stage-advance]` 供 mutation 判别。`selftest-stage-advance.sh` 覆盖真 merge 夹具/阻断/放行/N/A/SessionStart 探针注入/静默/mutation/可移植性；`selftest-registry.tsv` 登记触发条件与依赖锚。
+
+119.7 **通用面三问自查**：换项目成立（任意项目根 plans/ 同契约与脚本行为）／与既有门互认（复用 check-complete 终验链与 SessionStart 注入通道，不新增 hook；不改变非两段式计划语义）／部署位实测（scripts 随 skill 部署，bash/py_compile + selftest 在 worktree/部署位可跑）。each executor self-check。
