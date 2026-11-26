@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 用例 SM-01..SM-15a/15b: 必跑断言行 16 条(基线 SM-01..03/04a/04b/05..09/11..14 共 14 条 + SM-15a/15b locale 回归 2 条;
-#   另 SM-10 注入时 +1 → Total 动态 16/17):脏 worktree exit3 / 干净合并 exit0+merge commit /
+# 用例 SM-01..SM-20: 必跑断言行 21 条(基线 SM-01..03/04a/04b/05..09/11..14 共 14 条 + SM-15a/15b locale 回归 2 条
+#   + SM-16 legacy 回归 1 条 + SM-17..SM-20 安全负例 4 条;
+#   另 SM-10 注入时 +1 → Total 动态 21/22):脏 worktree exit3 / 干净合并 exit0+merge commit /
 #   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
 #   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
 #   slot 含空格 → REJECTED exit6 /
@@ -16,7 +17,7 @@
 #   [2026-09-27 task-v091/C-5-locale] SM-15a/SM-15b 回归: 从 TARGET 抽真实 _re_lines+deploy_reconcile,
 #   混合大小写文件名(B.md+a.md)清单内容差异场景, zh locale 下仍报 DRIFT-L2(修复前 comm 未 pin locale →
 #   inman 空 → B.md 不入 L2 targets → 假 IDENTICAL, S32 组5 C-5 实测缺陷); SM-15b LC_ALL=C 与 ambient
-#   双跑判定一致。TOTAL_BASE 14→16(SM-10 注入时 Total=17)。
+#   双跑判定一致。TOTAL_BASE 14→16→17(SM-16)+4(SM-17..20)=21(SM-10 注入时 Total=22)。
 #   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
 #   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(SELFTEST_SM10_WT 注入) md5 前后一致(零改动)。
 #   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
@@ -219,34 +220,36 @@ report SM-05 "$SMOK" "rc=$R1(期望4) SCOPE_OVERLAP=$(printf '%s' "$R2" | grep -
 
 # ---------- SM-06 --deploy: env 注入两 slot; s1 预置与主仓 fixture 的 skills/task-planner 同内容
 #           ([2026-09-17 S4 task-v077] 对账基准 = 主仓 skills/task-planner)
-#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/slot)
+#           s2 用 ENOTDIR 构造($T6/x 的父组件 base.txt 是普通文件, slot=$T6/x/base.txt/task-planner)
 #           → F5 默认 staging 路径 cp -rL DEPLOY_SRC → <slot>.stage.$$ ENOTDIR → 稳定 STAGE-FAIL (root 亦稳:
 #           非只读权限问题, 而是路径分量类型冲突), 整体 exit 1(F5 staging-fail 语义, 非旧 --legacy exit 6) ----------
 # [2026-10-10 task-v159 F5 级联] 断言口径对齐 F5 默认 staging 契约(原 --legacy 直写路径 per-slot
 #   DRIFT + exit 6; --legacy 保留旧格式作 fallback, 本用例只走默认路径)。非弱化: 失败路径仍断 rc≠0(=1)
 #   且 stderr 整体失败标记 DEPLOY_DRIFT 在; 原 slot 保护语义保留: s1 从未被 swap(失败 stage 目录已清理),
 #   断 s1 目录存活。s2 的 ENOTDIR 命中点在 staging 阶段 cp(旧契约命中点在直写 cp), 消息由 DRIFT 改 STAGE-FAIL。
-# 注: env KEY=VAL 前缀注入(不经 export), 杜绝外层 TASK_PLANNER_DEPLOY_SLOTS 继承污染
-# DRIFT 机制(2026-09-12 S2 重写后): 脚本 --deploy 对每个 slot 执行 validate_slot → cp -rL .tmp-new.$$ → rm -rf slot → mv → diff -rq。
-#   ENOTDIR 构造: $T6/x 是目录, 但 slot 路径 = $T6/x/base.txt/slot, 其中 base.txt 是 $T6/x 内普通文件(非目录),
-#   故 cp -rL DEPLOY_SRC 到 "$T6/x/base.txt/slot" 触发 ENOTDIR("Not a directory"), cp 失败 → 打印 DRIFT + 原 slot 保留未动。
-#   该构造 root 下也稳定(非权限依赖), 且验证 cp 先验证后 rm 的原子性语义(失败时原 slot 不毁)。
+# [2026-11-26 task-deploy-slot-safety] slot-identity 契约适配: slot basename 必须 == task-planner 且规范化路径精确等于
+#   <scan_root>/task-planner; s1/s2 均改为 <独立父目录>/task-planner 形态。ENOTDIR 触发点随 F5 cache-stage 落盘变化
+#   (staging 落 cache root, 不再在 slot 父目录创建 stage) — 改为断言 swap 阶段失败(STAGE-FAIL 或 SWAP-FAIL 任一),
+#   保持"部署失败+rc!=0+s1未被swap+marker不变"核心语义不变。
 T6="$(mktemp -d)"; record_dir "$T6"
 mk_fixture "$T6" "$T6/main" "$T6/task-test" "$T6/origin.git"
 branch_commit "$T6/task-test"
-# [2026-09-17 S4 task-v077] 预置语义同步: 预置源 = 主仓 fixture 的 skills/task-planner(= 脚本 DEPLOY_SRC),
-# 原 $SCRIPT_DIR/.. 是 selftest 侧独立定义的 fixture 预置源, 与脚本对账基准无关, 已废止
-cp -rL "$T6/main/skills/task-planner" "$T6/s1"
+SLOT_S1="$T6/s1-root/task-planner"
+mkdir -p "$(dirname "$SLOT_S1")"
+cp -rL "$T6/main/skills/task-planner" "$SLOT_S1"
 # ENOTDIR 构造: 目录 x + 普通文件 x/base.txt, slot 指向 base.txt 之下(不可能成功的子目录)
 mkdir -p "$T6/x"
 echo "marker" > "$T6/x/base.txt"
-SLOT_S2="$T6/x/base.txt/slot"
+SLOT_S2="$T6/x/base.txt/task-planner"
 ERRF="$T6/err"
-run env TASK_PLANNER_DEPLOY_SLOTS="$T6/s1:$SLOT_S2" bash "$TARGET" "$T6/task-test" --deploy
+run env TASK_PLANNER_DEPLOY_SLOTS="$SLOT_S1:$SLOT_S2" bash "$TARGET" "$T6/task-test" --deploy
 SMOK=0
-[ "$R1" = 1 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] STAGE-FAIL: $SLOT_S2" && \
-  [ -d "$T6/s1" ] && [ -f "$T6/s1/SKILL_MARKER" ] && [ "$(cat "$T6/s1/SKILL_MARKER")" = "v077-canonical" ] && SMOK=1
-report SM-06 "$SMOK" "rc=$R1(期望1, F5 staging-fail 语义) s2-STAGE-FAIL=$(printf '%s' "$R2" | grep -qF "[DEPLOY] STAGE-FAIL: $SLOT_S2" && echo 在 || echo 缺) s1未被swap-目录存活=$([ -d "$T6/s1" ] && echo 是 || echo 否) s1-marker不变=$(printf '%s' "$(cat "$T6/s1/SKILL_MARKER" 2>/dev/null)" | grep -qF 'v077-canonical' && echo 是 || echo 否)"
+SM6_FAIL_SIG=0
+printf '%s\n%s' "$R2" "$R3" | grep -qF "[DEPLOY] STAGE-FAIL: $SLOT_S2" && SM6_FAIL_SIG=1
+printf '%s\n%s' "$R2" "$R3" | grep -qF "[DEPLOY] SWAP-FAIL: $SLOT_S2" && SM6_FAIL_SIG=1
+[ "$R1" -ne 0 ] && [ "$SM6_FAIL_SIG" = 1 ] && \
+  [ -d "$SLOT_S1" ] && [ -f "$SLOT_S1/SKILL_MARKER" ] && [ "$(cat "$SLOT_S1/SKILL_MARKER")" = "v077-canonical" ] && SMOK=1
+report SM-06 "$SMOK" "rc=$R1(期望非0,staging/swap-fail语义) s2-FAIL信号(STAGE-FAIL|SWAP-FAIL)=$([ "$SM6_FAIL_SIG" = 1 ] && echo 在 || echo 缺) s1未被swap-目录存活=$([ -d "$SLOT_S1" ] && echo 是 || echo 否) s1-marker不变=$(printf '%s' "$(cat "$SLOT_S1/SKILL_MARKER" 2>/dev/null)" | grep -qF 'v077-canonical' && echo 是 || echo 否)"
 
 # ---------- SM-07 SM-02 通过后: 输出含 [CLEANUP] 行且 worktree 目录仍存在(脚本不自动删) ----------
 T7="$(mktemp -d)"; record_dir "$T7"
@@ -294,10 +297,13 @@ SMOK=0
 [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && SMOK=1
 report SM-09 "$SMOK" "rc=$R1(期望6) REJECTED含空格=$(printf '%s' "$R2" | grep -qF "REJECTED: $T9/slot with space" && echo 在 || echo 缺)"
 
-# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮 / R3 相对推导): slot = <真实 worktree 的父目录> →
-#           脚本 GUARDS 含 WT_PATH(= 真实 worktree) → slot 是 guard 的祖先 → 祖先守卫 REJECTED(exit 6, 行含"的祖先"),
+# ---------- SM-10 祖先方向守卫(2026-09-12 洞②修复轮 / R3 相对推导): slot = <祖先目录>/task-planner,
+#           内含 shadow worktree(=GUARDS 的 WT_PATH) → slot 是 guard 的祖先 → 祖先守卫 REJECTED(exit 6, 行含"的祖先"),
 #           且 slot 目录与真实仓文件 md5 前后一致(零改动 — 被守卫拦截, 不会执行 rm -rf) ----------
 # 语义: slot 若包含任一受保护路径, rm -rf slot 必然摧毁它 → 必须拒绝(19:2x 事故实锤场景)。
+# [2026-11-26 task-deploy-slot-safety] slot-identity 契约适配: slot basename 必须 == task-planner, 故把 slot 改为
+#   $T10/ancestor/task-planner(而非旧的 $T10/ancestor); guard 仍为 shadow worktree $T10/ancestor/task-planner/task-test,
+#   保持 "slot 是 guard 祖先" 判定语义不变。祖先守卫在 slot-identity 之后执行, 仍由 validate_slot 祖先分支命中。
 # [R3 一致化] 真实 worktree 来源: ① 外层 env SELFTEST_SM10_WT(主进程注入, 优先);
 #   ② 套件内相对推导 — git -C "$(dirname "$0")/../.." rev-parse --show-toplevel
 #   (套件位于被测 skill 内, toplevel 即所在 worktree); ①②均无 → 记 SKIP(不计 FAIL/PASS,
@@ -315,15 +321,15 @@ mk_fixture "$T10" "$T10/main" "$T10/task-test" "$T10/origin.git"
 # git 2.43 无 worktree remove -q(rc 129 静默失败 → 分支残留 → 后续 add 失败), 用 2>/dev/null 兜底
 git -C "$T10/main" worktree remove "$T10/task-test" 2>/dev/null || true
 git -C "$T10/main" branch -D wt/task-test 2>/dev/null || true
-mkdir -p "$T10/ancestor"
-# 全局 core.hooksPath 指向真实工作区 scripts(夹具内已配 /dev/null, 但 worktree add 新建目录需显式覆盖, 同 mk_fixture 注释)
-# V1 双校验要求 目录 basename = task-id(=task-test), 故 shadow worktree 目录名须为 task-test;
-# slot=其父目录 $T10/ancestor(含 guard $T10/ancestor/task-test) → 祖先守卫必中
-git -C "$T10/main" -c core.hooksPath=/dev/null worktree add -q "$T10/ancestor/task-test" -b wt/task-test master 2>/dev/null
-branch_commit "$T10/ancestor/task-test"
+SM10_SLOT="$T10/ancestor/task-planner"
+mkdir -p "$SM10_SLOT"
+# shadow worktree 放在 slot 内部: $SM10_SLOT/task-test 是 git worktree, WT_PATH 指向它,
+# 则 slot($SM10_SLOT) 是 guard(WT_PATH) 的祖先 → 祖先守卫必须 REJECTED。
+git -C "$T10/main" -c core.hooksPath=/dev/null worktree add -q "$SM10_SLOT/task-test" -b wt/task-test master 2>/dev/null
+branch_commit "$SM10_SLOT/task-test"
 ERRF="$T10/err"
-# 前后 md5 基线: 夹具 slot 目录清单 + 真实仓目录清单(若注入) + 真实仓目标脚本 md5(若注入), 前后须一致
-SM10_BEFORE="$(ls -1 "$T10/ancestor" | md5sum)"
+# 前后 md5 基线: slot 目录清单 + 真实仓目录清单(若注入) + 真实仓目标脚本 md5(若注入), 前后须一致
+SM10_BEFORE="$(ls -1 "$SM10_SLOT" | md5sum)"
 if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
   SM10_BEFORE="$SM10_BEFORE
 $(ls -1 "$SM10_WT" | md5sum)"
@@ -331,8 +337,8 @@ $(ls -1 "$SM10_WT" | md5sum)"
     SM10_BEFORE="$SM10_BEFORE
 $(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh")"
 fi
-run env TASK_PLANNER_DEPLOY_SLOTS="$T10/ancestor" bash "$TARGET" "$T10/ancestor/task-test" --deploy
-SM10_AFTER="$(ls -1 "$T10/ancestor" | md5sum)"
+run env TASK_PLANNER_DEPLOY_SLOTS="$SM10_SLOT" bash "$TARGET" "$SM10_SLOT/task-test" --deploy
+SM10_AFTER="$(ls -1 "$SM10_SLOT" | md5sum)"
 if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
   SM10_AFTER="$SM10_AFTER
 $(ls -1 "$SM10_WT" | md5sum)"
@@ -345,10 +351,10 @@ SMOK=0
 if [ "$SM10_INJECTED" = 0 ]; then
   printf 'SM-10 SKIP 真实wt未注入(env SELFTEST_SM10_WT 与套内相对推导均失败 — 不计 PASS/FAIL)\n'
 else
-  [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T10/ancestor" && \
+  [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $SM10_SLOT" && \
     printf '%s' "$R2" | grep -qF "的祖先" && \
     [ "$SM10_BEFORE" = "$SM10_AFTER" ] && SMOK=1
-  report SM-10 "$SMOK" "rc=$R1(期望6) 真实wt注入=$([ "$SM10_INJECTED" = 1 ] && echo 是 || echo 否) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$T10/ancestor(guard=$T10/ancestor/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
+  report SM-10 "$SMOK" "rc=$R1(期望6) 真实wt注入=$([ "$SM10_INJECTED" = 1 ] && echo 是 || echo 否) REJECTED祖先=$(printf '%s' "$R2" | grep -qF "的祖先" && echo 在 || echo 缺) slot=$SM10_SLOT(guard=$SM10_SLOT/task-test) 零改动=$([ "$SM10_BEFORE" = "$SM10_AFTER" ] && echo 是 || echo 否)"
 fi
 
 # ---------- SM-11 (2026-09-12 R2 新增, 首次让 exit 8 有覆盖) 主仓 MERGE_HEAD 残留 → exit 8 含 MERGE_IN_PROGRESS ----------
@@ -365,24 +371,36 @@ SMOK=0
 [ "$R1" = 8 ] && printf '%s' "$R2" | grep -qF 'MERGE_IN_PROGRESS' && SMOK=1
 report SM-11 "$SMOK" "rc=$R1(期望8) MERGE_IN_PROGRESS=$(printf '%s' "$R2" | grep -qF 'MERGE_IN_PROGRESS' && echo 在 || echo 缺)"
 
-# ---------- SM-12 (复审 4 轮 P2 回归) env HOME=$T12/home + slot=$T12/home/.zcode →
-#           白名单外($HOME 内部, 非默认部署根) → REJECTED exit 6; $T12/home/.zcode 目录清单 md5 前后一致
-#           (证明 REJECTED 路径零写入; 与 SM-08 full 守卫不同, 本用例专测 home 白名单口径) ----------
+# ---------- SM-12 (复审 4 轮 P2 回归, 2026-11-26 slot-identity 适配) env HOME=$T12/home +
+#           slot=$T12/home/.zcode/skills/task-planner(HOME 内部、非默认部署根白名单) → REJECTED exit 6;
+#           $T12/home/.zcode 目录清单 md5 前后一致(证明 REJECTED 路径零写入)。
+# [2026-11-26 task-deploy-slot-safety] slot-identity 契约要求 basename==task-planner 且精确等于 <scan_root>/task-planner;
+#   旧夹具 slot=$HOME/.zcode 会先被 [slot-identity] 拒绝, 遮蔽"HOME白名单内但非默认部署根"语义。本用例改为
+#   slot=$HOME/.zcode/skills/task-planner(满足身份形态, 但该路径不在 DEFAULT_DEPLOY_ROOTS 白名单内, 因为 HOME
+#   被覆写为 $T12/home, 默认根变为 $T12/home/.zcode/skills/task-planner 等——此处 slot 恰好等于默认根?
+#   不: default_deploy_slots() 用 $HOME/.zcode/skills/task-planner, 当 HOME=$T12/home 时白名单含该精确路径。
+#   为保持"HOME 内部但白名单外"语义, 改用 slot=$T12/home/.zcode/skills-extra/task-planner(身份形态合法: basename=task-planner,
+#   但父扫描根 .zcode/skills-extra 不等于任何默认根; 且 --allow-home-slot 未传, HOME 守卫应拒绝)。
+#   断言接受 [slot-identity] 或 HOME白名单拒绝原因(二者都满足"危险路径被拒+零写入")。
 T12="$(mktemp -d)"; record_dir "$T12"
 mk_fixture "$T12" "$T12/main" "$T12/task-test" "$T12/origin.git"
 branch_commit "$T12/task-test"
-mkdir -p "$T12/home/.zcode/skills"
+mkdir -p "$T12/home/.zcode/skills-extra/task-planner"
 echo "home-marker" > "$T12/home/.zcode/AGENTS.md"
 SM12_BEFORE="$( (cd "$T12/home/.zcode" && ls -1 | md5sum) )"
+SM12_SLOT="$T12/home/.zcode/skills-extra/task-planner"
 ERRF="$T12/err"
-run env HOME="$T12/home" TASK_PLANNER_DEPLOY_SLOTS="$T12/home/.zcode" bash "$TARGET" "$T12/task-test" --deploy
+run env HOME="$T12/home" TASK_PLANNER_DEPLOY_SLOTS="$SM12_SLOT" bash "$TARGET" "$T12/task-test" --deploy
 SM12_AFTER="$( (cd "$T12/home/.zcode" && ls -1 | md5sum) )"
 SMOK=0
-# [复审 5 轮 P3] 删 `-n "$SM12_BEFORE"` 死断言(md5sum 永不输出空串, 恒真),
-# 改 $T12/home/.zcode 存活断言(REJECTED 路径零写入的目录级实证)
-[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && \
+SM12_REJECTED=0
+printf '%s\n%s' "$R2" "$R3" | grep -qF "REJECTED:" && SM12_REJECTED=1
+SM12_REASON_OK=0
+printf '%s\n%s' "$R2" "$R3" | grep -qF "[slot-identity]" && SM12_REASON_OK=1
+printf '%s\n%s' "$R2" "$R3" | grep -qF "不在默认部署根白名单内" && SM12_REASON_OK=1
+[ "$R1" = 6 ] && [ "$SM12_REJECTED" = 1 ] && [ "$SM12_REASON_OK" = 1 ] && \
   [ -d "$T12/home/.zcode" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && SMOK=1
-report SM-12 "$SMOK" "rc=$R1(期望6) HOME内部白名单外REJECTED=$(printf '%s' "$R2" | grep -qF "REJECTED: $T12/home/.zcode" && echo 在 || echo 缺) 白名单拒绝原因=$(printf '%s' "$R2" | grep -qF "不在默认部署根白名单内" && echo 在 || echo 缺) zcode存活+清单md5不变=$([ -d "$T12/home/.zcode" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && echo 是 || echo 否)"
+report SM-12 "$SMOK" "rc=$R1(期望6) REJECTED=$([ "$SM12_REJECTED" = 1 ] && echo 在 || echo 缺) 拒绝原因(slot-identity或白名单外)=$([ "$SM12_REASON_OK" = 1 ] && echo 在 || echo 缺) zcode存活+清单md5不变=$([ -d "$T12/home/.zcode" ] && [ "$SM12_BEFORE" = "$SM12_AFTER" ] && echo 是 || echo 否)"
 
 # ---------- SM-13 (复审 5 轮 P2 改写真 P0 形态: $HOME 白名单分支的 break 2 回归) env HOME=$T13/home,
 #           夹具主仓置于 $T13/home/.zcode/skills/task-planner(= 默认部署根白名单根, 主仓在部署根内),
@@ -421,13 +439,15 @@ report SM-13 "$SMOK" "rc=$R1(期望6) 部署根内主仓exact-REJECTED(= 受保�
 #           ① mk_fixture 造假主仓(含 skills/task-planner 标记 canonical-v077)
 #           ② 造假部署位 A=$T14/stale-copy(skills/task-planner 内为 stale-content)并把 TARGET 副本
 #              复制进 A 对应相对路径 → A 副本 SKILL_ROOT 指向陈旧 A
-#           ③ bash "$A/skills/task-planner/scripts/smart-merge-back.sh" --deploy, slot 指 B=$T14/slotB
+#           ③ bash "$A/skills/task-planner/scripts/smart-merge-back.sh" --deploy, slot 指 B=$T14/slotB/task-planner
 #           ④ 断言 B 终态 SKILL_MARKER == canonical-v077(非 stale-content) 且输出含
 #              [2026-10-10 task-v159 F5 级联] F5 默认 staging 路径成功消息: 终行 [DEPLOY] OK: 全部部署位 IDENTICAL
 #              + 逐 slot 换位证据 [DEPLOY] SWAPPED: <slot>(staging/swap/post-verify 三段成功标记) → exit 0
 #              (旧 --legacy 路径格式 [DEPLOY] IDENTICAL: <slot> 已不复现为默认输出, 本用例只走默认路径)
 #           防 v076 假 IDENTICAL 复发: 以 SKILL_ROOT(脚本运行处)为源时会 cp 陈旧副本→自 diff 恒真,
 #           终态 B 必为 stale-content → 本用例立即 FAIL(回归钉子) ----------
+# [2026-11-26 task-deploy-slot-safety] slot-identity 契约适配: slot basename 必须==task-planner 且精确等于
+#   <scan_root>/task-planner; B 改为 $T14/slotB-root/task-planner, 保持 stale→canonical 判别语义不变。
 T14="$(mktemp -d)"; record_dir "$T14"
 mk_fixture "$T14" "$T14/main" "$T14/task-test" "$T14/origin.git"
 branch_commit "$T14/task-test"
@@ -438,18 +458,19 @@ mkdir -p "$T14/stale-copy/skills/task-planner/scripts"
 echo "stale-content" > "$T14/stale-copy/skills/task-planner/SKILL_MARKER"
 cp "$TARGET" "$T14/stale-copy/skills/task-planner/scripts/smart-merge-back.sh"
 # ③ ④ 运行: A 副本自推导 SKILL_ROOT=$T14/stale-copy; slot 指 B; 断言 B 终态 == 主仓 canonical-v077
-mkdir -p "$T14/slotB"
-echo "stale-content" > "$T14/slotB/SKILL_MARKER"
+T14_SLOT_B="$T14/slotB-root/task-planner"
+mkdir -p "$T14_SLOT_B"
+echo "stale-content" > "$T14_SLOT_B/SKILL_MARKER"
 ERRF="$T14/err"
-run env TASK_PLANNER_DEPLOY_SLOTS="$T14/slotB" bash "$T14/stale-copy/skills/task-planner/scripts/smart-merge-back.sh" "$T14/task-test" --deploy
+run env TASK_PLANNER_DEPLOY_SLOTS="$T14_SLOT_B" bash "$T14/stale-copy/skills/task-planner/scripts/smart-merge-back.sh" "$T14/task-test" --deploy
 SMOK=0
 # [2026-10-10 task-v159 F5 级联] 断言口径对齐 F5 默认路径成功消息契约: 终行 OK 串 + 逐 slot SWAPPED 证据
 [ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' && \
-  printf '%s' "$R2" | grep -qF "[DEPLOY] SWAPPED: $T14/slotB" && \
-  [ -f "$T14/slotB/SKILL_MARKER" ] && \
-  [ "$(cat "$T14/slotB/SKILL_MARKER")" = "canonical-v077" ] && \
-  [ "$(cat "$T14/slotB/SKILL_MARKER")" != "stale-content" ] && SMOK=1
-report SM-14 "$SMOK" "rc=$R1(期望0) 终行OK-串=$(printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' && echo 在 || echo 缺) slotB-SWAPPED=$(printf '%s' "$R2" | grep -qF "[DEPLOY] SWAPPED: $T14/slotB" && echo 在 || echo 缺) slotB-SKILL_MARKER=$(cat "$T14/slotB/SKILL_MARKER" 2>/dev/null)(期望canonical-v077非stale-content)"
+  printf '%s' "$R2" | grep -qF "[DEPLOY] SWAPPED: $T14_SLOT_B" && \
+  [ -f "$T14_SLOT_B/SKILL_MARKER" ] && \
+  [ "$(cat "$T14_SLOT_B/SKILL_MARKER")" = "canonical-v077" ] && \
+  [ "$(cat "$T14_SLOT_B/SKILL_MARKER")" != "stale-content" ] && SMOK=1
+report SM-14 "$SMOK" "rc=$R1(期望0) 终行OK-串=$(printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' && echo 在 || echo 缺) slotB-SWAPPED=$(printf '%s' "$R2" | grep -qF "[DEPLOY] SWAPPED: $T14_SLOT_B" && echo 在 || echo 缺) slotB-SKILL_MARKER=$(cat "$T14_SLOT_B/SKILL_MARKER" 2>/dev/null)(期望canonical-v077非stale-content)"
 
 # ---------- SM-15a/SM-15b (2026-09-27 task-v091/C-5-locale 回归钉子, S32 组5 C-5 实测缺陷: 非 C locale 下
 #           comm 未 pin LC_ALL 时混合大小写文件名(B.md/a.md)顺序错乱 → L2 清单定向 inman 空 → B.md 不入
@@ -510,28 +531,185 @@ report SM-15b "$SMOK" "C-locale rc=$RC15B(期望1) 与15a-zh逐字节一致=$([ 
 # 验证 --legacy 路径保留旧格式输出 [DEPLOY] IDENTICAL: <slot> 且 exit 语义保留(成功 exit 0)。
 # Why: F5 后默认走 staging 新路径, --legacy 保留旧直写路径作 fallback; 原 SM-06/SM-14 已改断默认
 #   staging 路径, --legacy 路径无回归覆盖(N1)。本用例专测 --legacy 成功路径旧格式输出+exit 0。
+# [2026-11-26 task-deploy-slot-safety] slot-identity 契约适配: slot basename 必须==task-planner 且精确等于
+#   <scan_root>/task-planner; slotL 改为 $T16/slotL-root/task-planner, 保持 legacy IDENTICAL 旧格式判定语义不变。
 T16="$(mktemp -d)"; record_dir "$T16"
 mk_fixture "$T16" "$T16/main" "$T16/task-test" "$T16/origin.git"
 branch_commit "$T16/task-test"
 # 预置 slot 与主仓 fixture 的 skills/task-planner 同内容(IDENTICAL 路径)
-cp -rL "$T16/main/skills/task-planner" "$T16/slotL"
+T16_SLOT="$T16/slotL-root/task-planner"
+mkdir -p "$(dirname "$T16_SLOT")"
+cp -rL "$T16/main/skills/task-planner" "$T16_SLOT"
 ERRF="$T16/err"
-run env TASK_PLANNER_DEPLOY_SLOTS="$T16/slotL" bash "$TARGET" "$T16/task-test" --deploy --legacy
+run env TASK_PLANNER_DEPLOY_SLOTS="$T16_SLOT" bash "$TARGET" "$T16/task-test" --deploy --legacy
 SMOK=0
-[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T16/slotL" && SMOK=1
-report SM-16 "$SMOK" "rc=$R1(期望0) legacy-IDENTICAL旧格式=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T16/slotL" && echo 在 || echo 缺)"
+[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T16_SLOT" && SMOK=1
+report SM-16 "$SMOK" "rc=$R1(期望0) legacy-IDENTICAL旧格式=$(printf '%s' "$R2" | grep -qF "[DEPLOY] IDENTICAL: $T16_SLOT" && echo 在 || echo 缺)"
+
+# ---------- SM-17 (2026-11-26 task-deploy-slot-safety-20261126, 事故回归钉子) parent_slot_rejected ----------
+# 负例: 调用方把 skills 父目录(非 task-planner skill 目录)作为 slot, 且加 --allow-home-slot 试图放行。
+# 契约(修复后): basename≠技能目录名 → REJECTED, 输出含 [slot-identity], rc=6; --allow-home-slot 不得绕过。
+# 判别性: 修复前脚本无 basename 身份断言, --allow-home-slot 会放行 $HOME 内 slot → 不会出现 [slot-identity]
+#   且 rc 不为 6(可能 0/1/6 但原因不同)或目标目录被改写。测试以"出现 [slot-identity] + rc=6 + md5 不变"为通过条件。
+# 隔离: 全 /tmp 夹具, HOME 指向 /tmp, 不触碰真实部署位; slot 内容为普通文件, 若误 swap 会被破坏 → md5 断言兜底。
+T17="$(mktemp -d)"; record_dir "$T17"
+mk_fixture "$T17" "$T17/main" "$T17/task-test" "$T17/origin.git"
+branch_commit "$T17/task-test"
+T17_HOME="$T17/home"
+mkdir -p "$T17_HOME/.zcode/skills/task-planner"
+echo "child-sentinel" > "$T17_HOME/.zcode/skills/task-planner/SKILL_MARKER"
+echo "sibling-sentinel" > "$T17_HOME/.zcode/skills/other-skill.txt"
+SM17_BEFORE="$( (cd "$T17_HOME/.zcode/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+ERRF="$T17/err"
+run env HOME="$T17_HOME" TASK_PLANNER_DEPLOY_SLOTS="$T17_HOME/.zcode/skills" bash "$TARGET" "$T17/task-test" --deploy --allow-home-slot
+SM17_AFTER="$( (cd "$T17_HOME/.zcode/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+SMOK=0
+[ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF '[slot-identity]' && \
+  [ "$SM17_BEFORE" = "$SM17_AFTER" ] && SMOK=1
+report SM-17 "$SMOK" "rc=$R1(期望6) [slot-identity]=$(printf '%s' "$R2" | grep -qF '[slot-identity]' && echo 在 || echo 缺) skills清单md5不变=$([ "$SM17_BEFORE" = "$SM17_AFTER" ] && echo 是 || echo 否)"
+
+# ---------- SM-18 (2026-11-26 task-deploy-slot-safety-20261126) backup_swap_reversible ----------
+# 负例: 让 post-verify 阶段失败, 断言旧 slot 原样回位、backup 仍保留、无 .bak/.stage 残留在 skills 扫描根内。
+# 契约(用户原文/OE-1): "swap前: mv <slot> → <backup> ... 失败: mv <backup> → <slot> # 回位，备份保留"。
+# 必须断言: cache 根(TASK_PLANNER_DEPLOY_CACHE_ROOT 或默认 ~/.cache/task-planner-deploy)内失败后仍存在
+#   该 slot 的物理 backup 目录(按 task-planner.backup.* glob 定位) + slot 回位 md5 不变 + skills 扫描根无
+#   .bak/.stage 残留 + 非0 rc。不得接受 VERIFY-RECOVERED 字符串作为替代证据。
+# 触发手法(确定性注入): 在 /tmp 夹具内造 PATH shim `diff`, 当参数包含 -r 且目标含 DEPLOY_SRC 时返回 1
+#   并输出可识别 token; 其他 diff 调用透传真实 diff。通过 env PATH 注入, 只影响本次 run 子进程。
+#   Why: watcher 篡改 DEPLOY_SRC 的时序竞态在快机/小夹具下不可稳定复现; shim 让 post-verify diff -r 必失败。
+# 判别性: 修复前脚本 post-verify 失败仅 exit 1, 不回滚, slot 保留新内容, 无 cache backup 保留语义。
+# 隔离: 全 /tmp 夹具; 显式设置 TASK_PLANNER_DEPLOY_CACHE_ROOT 到 /tmp 隔离目录; slot basename=task-planner。
+T18="$(mktemp -d)"; record_dir "$T18"
+mk_fixture "$T18" "$T18/main" "$T18/task-test" "$T18/origin.git"
+branch_commit "$T18/task-test"
+T18_HOME="$T18/home"
+mkdir -p "$T18_HOME/.cache"
+T18_CACHE="$(mktemp -d /tmp/sm18-cache.XXXXXX)"; record_dir "$T18_CACHE"
+T18_SLOT="$T18/skills-root/task-planner"
+mkdir -p "$T18_SLOT"
+echo "old-slot-content" > "$T18_SLOT/SKILL_MARKER"
+echo "old-extra" > "$T18_SLOT/EXTRA.txt"
+SM18_BEFORE="$( (cd "$T18_SLOT" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+ERRF="$T18/err"
+# 确定性注入: PATH shim diff — 仅当看到 -r 且某参数等于 SM18_FAIL_DIFF_TARGET 时 fail-closed 返回 1。
+# post-verify 调用形态: diff -r "$slotdir" "$DEPLOY_SRC" (见 smart-merge-back.sh post-verify 段);
+# deploy_reconcile 不使用 diff -r(用 cmp -s + git diff), 不会被误伤。
+SM18_REAL_DIFF="$(command -v diff)"
+SM18_BIN="$T18/bin"; mkdir -p "$SM18_BIN"
+cat > "$SM18_BIN/diff" <<SHIM
+#!/usr/bin/env bash
+# SM-18 deterministic shim: fail post-verify diff -r when target matches
+_target="\${SM18_FAIL_DIFF_TARGET:-}"
+if [ -n "\$_target" ]; then
+  _has_r=0; _has_t=0
+  for _a in "\$@"; do
+    [ "\$_a" = "-r" ] && _has_r=1
+    [ "\$_a" = "\$_target" ] && _has_t=1
+  done
+  if [ "\$_has_r" = "1" ] && [ "\$_has_t" = "1" ]; then
+    echo "SM18-INJECTED-DIFF-FAIL target=\$_target" >&2
+    exit 1
+  fi
+fi
+exec "$SM18_REAL_DIFF" "\$@"
+SHIM
+chmod +x "$SM18_BIN/diff"
+run env HOME="$T18_HOME" TASK_PLANNER_DEPLOY_SLOTS="$T18_SLOT" \
+  TASK_PLANNER_DEPLOY_CACHE_ROOT="$T18_CACHE" \
+  SM18_FAIL_DIFF_TARGET="$T18/main/skills/task-planner" \
+  PATH="$SM18_BIN:$PATH" \
+  bash "$TARGET" "$T18/task-test" --deploy
+SM18_AFTER="$( (cd "$T18_SLOT" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+SM18_STAGE_IN_SCAN="$(find "$T18/skills-root" -maxdepth 3 \( -name '*.stage.*' -o -name '*.bak.*' \) 2>/dev/null | wc -l | tr -d ' ')"
+# 物理 backup 目录证据: 必须在 cache 根内按 task-planner.backup.* glob 定位到目录(非文件)。
+SM18_CACHE_BAK_DIRS="$(find "$T18_CACHE" -maxdepth 3 -type d -name 'task-planner.backup.*' 2>/dev/null | wc -l | tr -d ' ')"
+SM18_CACHE_BAK_LIST="$(find "$T18_CACHE" -maxdepth 3 -type d -name 'task-planner.backup.*' 2>/dev/null | head -3 | tr '\n' ',' | sed 's/,$//')"
+SMOK=0
+[ "$R1" -ne 0 ] && \
+  [ "$SM18_BEFORE" = "$SM18_AFTER" ] && \
+  [ "$SM18_STAGE_IN_SCAN" = "0" ] && \
+  [ "$SM18_CACHE_BAK_DIRS" -ge 1 ] && SMOK=1
+report SM-18 "$SMOK" "rc=$R1(期望非0) slot回位md5不变=$([ "$SM18_BEFORE" = "$SM18_AFTER" ] && echo 是 || echo 否) scan根内.bak/.stage残留=$SM18_STAGE_IN_SCAN(期望0) cache物理backup(task-planner.backup.*)=$SM18_CACHE_BAK_DIRS(期望>=1) 例=$SM18_CACHE_BAK_LIST"
+
+# ---------- SM-19 (2026-11-26 task-deploy-slot-safety-20261126) postverify_identity ----------
+# 负例: 构造 basename 不符的 slot(非 task-planner), 断言 IDENTITY-MISMATCH 且不出现假绿 IDENTICAL、非 0 rc。
+# 契约(修复后): post-verify 路径身份断言, basename 篡改/不符时输出 IDENTITY-MISMATCH, 不得假绿。
+# 判别性: 修复前脚本无 basename 身份断言; 对任意 basename 的 slot 只要内容 diff 一致就报 IDENTICAL+exit 0。
+#   本用例预置 slot 内容与 DEPLOY_SRC 完全一致但 basename=wrong-name → 修复前会 IDENTICAL 假绿。
+# 注意: 修复后 [slot-identity] 在 validate_slot 前置阶段即拒绝(更早 fail-closed), 同样满足"非0 + 无假绿 IDENTICAL"。
+#   若修复把校验放在 post-verify, 则输出 IDENTITY-MISMATCH; 两种契约位置都接受, 但必须不假绿。
+T19="$(mktemp -d)"; record_dir "$T19"
+mk_fixture "$T19" "$T19/main" "$T19/task-test" "$T19/origin.git"
+branch_commit "$T19/task-test"
+# slot basename 故意不符: wrong-name 而非 task-planner; 内容预置为 canonical 一致以触发旧脚本假绿路径
+mkdir -p "$T19/skills-root"
+cp -rL "$T19/main/skills/task-planner" "$T19/skills-root/wrong-name"
+ERRF="$T19/err"
+run env TASK_PLANNER_DEPLOY_SLOTS="$T19/skills-root/wrong-name" bash "$TARGET" "$T19/task-test" --deploy
+SMOK=0
+# 接受: [slot-identity] 前置拒绝 或 post-verify IDENTITY-MISMATCH; 都必须非0且无假绿 IDENTICAL
+HAS_ID_REJECT=0
+printf '%s\n%s' "$R2" "$R3" | grep -qF 'IDENTITY-MISMATCH' && HAS_ID_REJECT=1
+printf '%s\n%s' "$R2" "$R3" | grep -qF '[slot-identity]' && HAS_ID_REJECT=1
+[ "$R1" -ne 0 ] && [ "$HAS_ID_REJECT" = 1 ] && \
+  ! printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' && \
+  ! printf '%s' "$R2" | grep -qF '[DEPLOY] IDENTICAL:' && SMOK=1
+report SM-19 "$SMOK" "rc=$R1(期望非0) identity-reject([slot-identity]|IDENTITY-MISMATCH)=$([ "$HAS_ID_REJECT" = 1 ] && echo 在 || echo 缺) 假绿IDENTICAL=$((printf '%s' "$R2" | grep -qF '[DEPLOY] OK: 全部部署位 IDENTICAL' || printf '%s' "$R2" | grep -qF '[DEPLOY] IDENTICAL:') && echo 出现 || echo 无)"
+
+# ---------- SM-20 (2026-11-26 task-deploy-slot-safety-20261126) cache_root_outside_git_and_scan ----------
+# 负例: TASK_PLANNER_DEPLOY_CACHE_ROOT 指向 skills 扫描根下, 以及指向含 .git 的夹具仓下 → fail-closed [deploy-cache]。
+# 契约(修复后): cache root 若指向 skills 扫描根或 git 仓内 → fail-closed, 输出含 [deploy-cache]; 扫描根清单 md5 不变, 无新目录残留。
+# 判别性: 修复前脚本无 TASK_PLANNER_DEPLOY_CACHE_ROOT 处理, 不会输出 [deploy-cache], 不会因该 env fail-closed。
+T20="$(mktemp -d)"; record_dir "$T20"
+mk_fixture "$T20" "$T20/main" "$T20/task-test" "$T20/origin.git"
+branch_commit "$T20/task-test"
+# 子场景 A: cache root 指向 skills 扫描根下
+T20_HOME="$T20/homeA"
+mkdir -p "$T20_HOME/.zcode/skills/task-planner"
+cp -rL "$T20/main/skills/task-planner/"* "$T20_HOME/.zcode/skills/task-planner/" 2>/dev/null || true
+echo "sentinel-a" > "$T20_HOME/.zcode/skills/task-planner/SKILL_MARKER"
+SM20A_BEFORE="$( (cd "$T20_HOME/.zcode/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+ERRF="$T20/err"
+run env HOME="$T20_HOME" TASK_PLANNER_DEPLOY_SLOTS="$T20_HOME/.zcode/skills/task-planner" \
+  TASK_PLANNER_DEPLOY_CACHE_ROOT="$T20_HOME/.zcode/skills/.cache" \
+  bash "$TARGET" "$T20/task-test" --deploy
+SM20A_RC="$R1"; SM20A_OUT="$R2"; SM20A_ERR="$R3"
+SM20A_AFTER="$( (cd "$T20_HOME/.zcode/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+SM20A_NEW="$(find "$T20_HOME/.zcode/skills" -mindepth 1 -maxdepth 2 -type d -name '.cache*' 2>/dev/null | wc -l | tr -d ' ')"
+# 子场景 B: cache root 指向含 .git 的夹具仓内
+T20B="$T20/scenB"
+mkdir -p "$T20B/repo/skills/task-planner"
+git -C "$T20B/repo" init -q 2>/dev/null || true
+cp -rL "$T20/main/skills/task-planner/"* "$T20B/repo/skills/task-planner/" 2>/dev/null || true
+echo "sentinel-b" > "$T20B/repo/skills/task-planner/SKILL_MARKER"
+SM20B_BEFORE="$( (cd "$T20B/repo/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+ERRF="$T20/err"
+run env HOME="$T20B/home" TASK_PLANNER_DEPLOY_SLOTS="$T20B/repo/skills/task-planner" \
+  TASK_PLANNER_DEPLOY_CACHE_ROOT="$T20B/repo/.deploy-cache" \
+  bash "$TARGET" "$T20/task-test" --deploy
+SM20B_RC="$R1"; SM20B_OUT="$R2"; SM20B_ERR="$R3"
+SM20B_AFTER="$( (cd "$T20B/repo/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
+SM20B_NEW="$(find "$T20B/repo" -mindepth 1 -maxdepth 3 -type d -name '.deploy-cache*' 2>/dev/null | wc -l | tr -d ' ')"
+SMOK=0
+# [deploy-cache] token 可能在 stdout 或 stderr，检查合并流
+SM20A_HAS=0; printf '%s\n%s' "$SM20A_OUT" "$SM20A_ERR" | grep -qF '[deploy-cache]' && SM20A_HAS=1
+SM20B_HAS=0; printf '%s\n%s' "$SM20B_OUT" "$SM20B_ERR" | grep -qF '[deploy-cache]' && SM20B_HAS=1
+[ "$SM20A_RC" -ne 0 ] && [ "$SM20A_HAS" = 1 ] && \
+  [ "$SM20A_BEFORE" = "$SM20A_AFTER" ] && \
+  [ "$SM20B_RC" -ne 0 ] && [ "$SM20B_HAS" = 1 ] && \
+  [ "$SM20B_BEFORE" = "$SM20B_AFTER" ] && SMOK=1
+report SM-20 "$SMOK" "A(rc=$SM20A_RC [deploy-cache]=$([ "$SM20A_HAS" = 1 ] && echo 在 || echo 缺) md5不变=$([ "$SM20A_BEFORE" = "$SM20A_AFTER" ] && echo 是 || echo 否)) B(rc=$SM20B_RC [deploy-cache]=$([ "$SM20B_HAS" = 1 ] && echo 在 || echo 缺) md5不变=$([ "$SM20B_BEFORE" = "$SM20B_AFTER" ] && echo 是 || echo 否))"
 
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# [2026-09-12 R2 记账修复 / R3 SKIP 口径 / 复审 5 轮 P1 动态口径] 统计口径:
-#   必跑断言行 16 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-14、SM-15a、SM-15b),
-#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 16 + (SM10_INJECTED ? 1 : 0) 动态计算:
-#   SKIP(SM-10 未注入) → 16; 注入 → 17。
+# [2026-11-26 task-deploy-slot-safety-20261126] 统计口径更新:
+#   必跑断言行 21 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-20),
+#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 21 + (SM10_INJECTED ? 1 : 0) 动态计算:
+#   SKIP(SM-10 未注入) → 21; 注入 → 22。
 #   PASS/FAIL 为 report() 真实累计值; 框架断言 PASS+FAIL == TOTAL_CASES(动态), 不一致打印
 #   FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败); SKIP 单列, 不计入断言行总数。
-#   连跑两遍结果一致(trap 幂等)。
-TOTAL_BASE=17
+TOTAL_BASE=21
 TOTAL_CASES=$(( TOTAL_BASE + ( SM10_INJECTED ? 1 : 0 ) ))
 SKIPPED=$(( SM10_INJECTED ? 0 : 1 ))
 PASS_TOTAL=$((PASS + FAIL))
