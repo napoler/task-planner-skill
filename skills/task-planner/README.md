@@ -69,9 +69,9 @@
 | task-dispatch | 子代理派发与拆分调度 | `../task-dispatch/references/critical-rules-dispatch.md` | 拆分/派发/并行/粒度校验/执行体选型/超时兜底/代码编辑隔离（Rule 12,13,14,21,22,23,25,46,52,59,68） |
 | task-discipline | 执行纪律与工作产物维护 | `../task-discipline/references/critical-rules-discipline.md` | 执行纪律/错误闭环/证据/调研/批量/反思/注释/可靠性/能力沉淀/变更吸收（Rule 4,6,7,8,9,10,18,27,28,29,31-36,41-45,48,53-57,60,65,67,69-74,76） |
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
-| plan-template-advisor | 项目模板适配与沉淀生产 | `../plan-template-advisor/SKILL.md` | 激活后分析项目→预测问题→缺口映射→产出候选模板→审查→登记（Rule 34.8/34.9 消费面） |
+| plan-template-advisor | 项目模板适配与沉淀生产 | `../plan-template-advisor/SKILL.md` | 激活后分析项目→预测问题→缺口映射→研究前置→产出候选→审查→用户授权→登记（Rule 34.8/34.9 消费面，禁 silent 自动落盘） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
-| plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
+| plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定；三层（项目级→用户级→内置）+研究前置+用户明确审核授权后落盘，禁 silent 自动落盘（Rule 16,34,37,38） |
 | plan-collab-router | 技能协同与工具面选择 | `../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40） |
 | plan-cost-guard | 成本控制 | `../plan-cost-guard/references/critical-rules-cost.md` | opus 频次/嵌套成本/成本门控（Rule 17） |
 | plan-resume | 计划续推 | `../plan-resume/references/critical-rules-resume.md` | 交付终态/会话恢复触发点扫描与自主续推（Rule 24） |
@@ -186,7 +186,7 @@ ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/                         
 | `findings_stale_minutes` | 20 | findings.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
 | `compass_escalate_after` | 2 | 连续陈旧提醒未响应次数；达到后升级 `[plan-compass]` 警告 | Rule 19.7 |
 | `progress_stale_minutes` | 25 | progress.md 最长存活时间；超时触发 `[plan-compass]` 陈旧提醒 | `[plan-compass]` 链路 |
-| `template_priority` | `["project-level", "built-in"]` | 模板搜索顺序：项目级覆盖优先，内置兜底 | ../plan-template-kit/references/template-mapping.md |
+| `template_priority` | `["project-level", "user-level", "built-in"]` | 模板搜索顺序：项目级→用户级→内置，ZCode 优先 `.zcode/plan-templates`（`.claude` 仅兼容） | ../plan-template-kit/references/template-mapping.md |
 | `subagent` | (见 config) | 子代理超时档位（explore/editor/debugger/executor） | Rule 22.3 |
 | `interaction_mode` | `ask` | 交互双模式（Rule 28）：ask=关键决策点询问用户；silent=自主决策+静默决策清单登记；解析优先级 env > 计划配置表 > 本键 > 默认 ask | Rule 28.1 |
 | `fmea_enforce` | `warn` | 规划期 FMEA 预演档位（enforce/warn/off），RPN>100 Phase 须登记兜底动作（methodology.md R2） | methodology.md |

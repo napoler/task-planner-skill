@@ -37,11 +37,11 @@ description: 计划模板选型/定制/沉淀知识库。主路由：task-planne
 
 ## 沉淀指针（Rule 34）
 
-- Rule 34.3 触发条件命中（同类任务第 2 次 / 新类型可泛化 / 用户点名）→ 按 34.4 流程新建 variant 模板后，执行 **34.2 四点同步**：① template-mapping.md 决策树与清单 ② plan-writer 映射表 ③ task-planner SKILL.md 模板节 ④ template-guide.md 变体表与计数；**JSON 模板同步口径（2026-11-25）**：四点点名与顺序不变，但新 variant 入库必须同步落 `templates/json/<type>.template.json`（先 `to-json --dry-run` 核对字段与勾选条目，再 `--write`），JSON 为第①点清单的权威数据面（含 lineage/pruned 登记），MD 变体仅作教学视图——即「四点同步 + 一份 JSON 权威源」，缺 JSON 视为沉淀未完成
+- Rule 34.3 触发条件命中（同类任务第 2 次 / 新类型可泛化 / 用户点名）→ 按 34.4 **研究前置与生成/沉淀流程**执行：先任务分析+项目/用户/内置相似模板扫描+网络调研并记录依据，再生成候选；候选先落计划目录 `template-candidate/`，**获用户明确审核授权后才可落盘**持久库（禁 silent 自动落盘、禁无调研依据生成）。落盘后执行 **34.2 四点同步**：① template-mapping.md 决策树与清单 ② plan-writer 映射表 ③ task-planner SKILL.md 模板节 ④ template-guide.md 变体表与计数；**JSON 模板同步口径（2026-11-25）**：四点点名与顺序不变，但新 variant 入库必须同步落 `templates/json/<type>.template.json`（先 `to-json --dry-run` 核对字段与勾选条目，再 `--write`），JSON 为第①点清单的权威数据面（含 lineage/pruned 登记），MD 变体仅作教学视图——即「四点同步 + 一份 JSON 权威源」，缺 JSON 视为沉淀未完成
 - 一致性由 task-planner `../task-planner/scripts/selftest-template-lifecycle.sh` 守护；沉淀动作登记计划 Decisions Made 表
-- **全自动生成合约（34.7）**：终验 outcome=COMPLETE 且命中 34.3 任一条件 → 主进程直接派 plan-writer 或 code-assistant 生成新 variant（不问用户）；生成侧双闸门=34.5 的 `ls templates/variant/` 查重+泛化性评估，一次性/不可泛化则登记「不沉淀理由」收场而非硬生成
-- 同步清单：template-mapping.md 清单与计数、template-guide.md 变体表与「N 个」计数加一（均在本卫星 references/）、companion 的 plan-writer.md 映射表行、主 SKILL.md 模板节指针核对；计数级联要求=selftest-template-lifecycle TL-17「N 个」断言同改（v093 教训）；init-session 与 check-template-type 白名单动态派生免同步
-- 执行期候选登记与项目级适配生产由 plan-template-advisor 卫星承接（Rule 34.8 执行期触点/34.9 项目级沉淀位）。
+- **研究前置/审后落盘合约（34.7）**：终验 outcome=COMPLETE 且命中 34.3 任一条件 → 按 34.4 执行：先网络调研并记录依据，再生成/派生候选至 `template-candidate/`（可派 plan-writer/code-assistant 产出候选，但**不得**直接写入持久模板库）；候选须过 34.5 双闸门与 34.8 对应门禁；**必须向用户展示候选并询问是否保存/保存位置，获用户明确审核授权后才可落盘**到项目级/用户级/官方库（禁 silent 自动落盘）。一次性/不可泛化任务 → 登记「不沉淀理由」收场而非硬生成
+- 同步清单：template-mapping.md 清单与计数、template-guide.md 变体表与「N 个」计数加一（均在本卫星 references/）、companion 的 plan-writer.md 映射表行、主 SKILL.md 模板节指针核对；计数级联要求=selftest-template-lifecycle TL-17「N 个」断言同改（v093 教训）；init-session 与 check-template-type 白名单动态派生免同步（扫描层/优先级规则变更须同步两脚本与文档）
+- 执行期候选登记与项目级适配生产由 plan-template-advisor 卫星承接（Rule 34.8 执行期触点/34.9 项目级/用户级沉淀位）。
 
 ## 使用入口（两种）
 

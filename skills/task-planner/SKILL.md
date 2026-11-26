@@ -57,7 +57,7 @@ model: opus
   - **脚本侧渲染（tplrender 2026-10-24）**：init 渲染层自动替换模板机械占位符（{{TASK_ID}}/任务名/日期/路径 6 变量+8 旧形态兼容映射，含 ${TASK_PLANNER_ROOT:-…} 死串修复）；**模型禁手工修正机械占位**，仅填写语义占位（尖括号中文/<用户原话>/#N 序号/[Title] 等）；残留 {{大写}} token 非注释行触发 fail-closed exit 1
   - **auto-tier env 变量（主进程调用 init 前以 env 提交任务体量事实）**：`TASK_AUTO_TIER=1`（opt-in 开关）+ `TASK_EST_MINUTES`（预估分钟）+ `TASK_SCOPE_FILES`（scope 文件数）+ `TASK_SCOPE_MODULES`（模块数）+ `TASK_TIER_EXCLUDE=1`（④排除）。[task-perf-opt Change #1] 新增 `TASK_SCOPE_FILE_LIST`（逗号分隔的文件名列表，如 `fix-bug.sh`）与 `TASK_EST_LINES`（预估变更行数）两个 env：主进程从用户指令解析 scope 文件列表与预估行数以 env 传入，init 在 auto-tier 块读取；四条件 ∧ 单文件代码（.sh/.ts/.cjs/.js/.py/.json）∧ ≤3 行 → 第四条件命中 mini+L0+trivial 三文件缩减档（Rule 38.6）
   - **会话隔离指针**：活跃计划经 `resolve-plan-dir.sh [root] [sid]` 双参解析（side 指针优先于全局 fallback；残留由 `set-active-plan.sh gc` 清扫）；**上下文压缩恢复（2026-11-24 task-session-regression-20261124 / task-compact-skill-always）**：压缩后 SessionStart hook 注入 `[compact-recovery]`——技能正文 SKILL.md 全文**无条件注入**（`planctl.py recover-skill`，无在途计划也注入，因压缩会冲掉整个技能体系）；有在途计划时再附加任务核心状态（权威源 `plan-state.json` 经 `planctl.py recover`），以包内字段为准续做，禁仅凭摘要续做
-  - **模板优先级**（init-session.sh 自动处理）：项目级 `.claude/plan-templates/` 或 `.zcode/plan-templates/` 覆盖 → 兜底 `<platform-home>/skills/task-planner/templates/`（选型权威源=卫星 `plan-template-kit`，Rule 16/34）
+  - **模板优先级**（init-session.sh 自动处理，三层）：**项目级 → 用户级 → 内置**；当前 Agent=ZCode 时优先项目 `<项目>/.zcode/plan-templates/` 与用户 `~/.zcode/plan-templates/`（`.claude/plan-templates/` 仅兼容探测）→ 兜底 `<platform-home>/skills/task-planner/templates/`。选型先分析任务再按该顺序扫描匹配；模板生成/派生须经调研前置并获用户明确审核授权后方可落盘（禁 silent 自动落盘；选型/生命周期权威源=卫星 `plan-template-kit`，Rule 16/34）
   → 模板检索与选型细则（按需加载）→ 详见 references/plan-workflow-details.md §template-catalog；触发：制作/审计计划需要模板选型细则、template-catalog 操作或 JSON 模板 SOP 时；关键词：模板选型 template-catalog 变体 render JSON
   - **验证**：7 文件在位（task_plan/findings/progress/notepad-learnings/verification/knowledge-brief/user-session-log，Rule 80）
   - **S1 同步**：`bash scripts/sync-todos.sh --json` → 每 Phase 一条原生 Todo；**禁止只建计划不建 Todo**
@@ -226,7 +226,7 @@ model: opus
 | media-planner | 媒体制作任务派发 | `../media-planner/references/critical-rules-media.md` | 视频/图片/剧集创作媒体轴拆分与执行体路由（Rule 47,49,50） |
 | plan-template-advisor | 项目模板适配与沉淀生产 | `../plan-template-advisor/SKILL.md` | 项目模板适配分析/沉淀评估/缺口映射（Rule 34.8/34.9 消费面） |
 | plan-research-router | 调研分析与证据纪律 | `../plan-research-router/references/critical-rules-research.md` | 调研/分析/评估/归因证据面覆盖与反推诿（Rule 58,63,75） |
-| plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定（Rule 16,34,37,38） |
+| plan-template-kit | 模板生命周期与难度分级 | `../plan-template-kit/references/critical-rules-template.md` | 模板选取/沉淀入库/难度分级/轻量档判定；选型三层（项目级→用户级→内置）+研究前置+用户明确审核授权后落盘，禁 silent 自动落盘（Rule 16,34,37,38） |
 | plan-collab-router | 技能协同与工具面选择 | `../plan-collab-router/references/critical-rules-collab.md` | comet/OpenSpec/superpowers/dynamic-workflows 路由（Rule 39,40,91） |
 | plan-cost-guard | 成本控制 | `../plan-cost-guard/references/critical-rules-cost.md` | opus 频次/嵌套成本/成本门控（Rule 17） |
 | plan-resume | 计划续推 | `../plan-resume/references/critical-rules-resume.md` | 交付终态/会话恢复触发点扫描与自主续推（Rule 24） |
@@ -261,7 +261,7 @@ Rules 1-117 全集索引：**核心在位 20 条**（1,2,3,5,19,20,26,51,62,66,8
 
 ## Chain 模式与协同路由（指针）
 
-`chain_mode` 默认 `single`（单 block）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，成员按 Rule 21.4 声明组并行）的值语义与 block 交接合约权威源=`reference.md § Chain Handoff Contract`。专业技能协同（comet/OpenSpec/superpowers/dynamic-workflows）权威源=`../plan-collab-router/references/skill-collaboration.md`，主路由 `Skill("plan-collab-router")`；dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8 编排条件（常设授权）时主动路由——激活按 39.8 三件套（留痕/91.12 分档/83 探测）（Rule 39,40,91）。调研 SOP=卫星 `plan-research-router`（`../plan-research-router/references/research-routing.md`）；模板库=卫星 `plan-template-kit`（本技能 `templates/` 机械层留守）。
+`chain_mode` 默认 `single`（单 block）；`linked`（多 skill 串行接力）/`fan-out`（一对多派发，成员按 Rule 21.4 声明组并行）的值语义与 block 交接合约权威源=`reference.md § Chain Handoff Contract`。专业技能协同（comet/OpenSpec/superpowers/dynamic-workflows）权威源=`../plan-collab-router/references/skill-collaboration.md`，主路由 `Skill("plan-collab-router")`；dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8 编排条件（常设授权）时主动路由——激活按 39.8 三件套（留痕/91.12 分档/83 探测）（Rule 39,40,91）。调研 SOP=卫星 `plan-research-router`（`../plan-research-router/references/research-routing.md`）；模板库=卫星 `plan-template-kit`（本技能 `templates/` 机械层留守；选型三层 项目级→用户级→内置，生成/沉淀须研究前置并获用户明确审核授权后落盘，禁 silent 自动落盘）。
 Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头脑风暴/规格/变更提案）交 Superpowers（brainstorming 等）与 OpenSpec（propose/apply/verify）执行，task-planner=忠实记录者+调度者。路由表/安装引导/反模式见 `references/spec-mode.md`；触发：计划进入任务整理阶段需判定是否启用 Spec 模式、查阅 Superpowers/OpenSpec 路由表或安装引导/反模式时；关键词：Spec模式 Superpowers OpenSpec 路由 规格提案。（跨技能优先级以 plan-collab-router 权威源 skill-collaboration.md 为准，本行只细化 Spec 模式场景）
 
 ## 派发与执行纪律指针（卫星 authoritative）

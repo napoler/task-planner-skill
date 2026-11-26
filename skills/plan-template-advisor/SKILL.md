@@ -9,7 +9,7 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 
 ## 使用入口
 
-激活后按 SOP 六步执行，逐步落盘证据与产物（Rule 71 无源不写）。
+激活后按 SOP 六步执行，逐步落盘证据与产物（Rule 71 无源不写）。模板生成/适配**必须研究前置**：先分析任务与项目、扫描项目→用户→内置相似模板并检索网络做法/坑点/质量要点，记录可追溯依据；**无调研依据不得产出候选**。候选先落 `template-candidate/`，**获用户明确审核授权后才可落盘**到项目级/用户级/官方持久库（禁 silent 自动落盘）。
 
 - **示例优先硬入口（升级/转换/新增/适配模板，2026-11-25）**：命中「升级模板」「转换成 JSON 模板」「加/适配模板」等意图时，**第一动作**是打开 `../../examples/json-template-upgrade/review.md`，向用户展示产出模板实物（pretty-print JSON + MD 教学视图 + 逐字段对照 + 渲染片段）并执行 C1–C8（C6 负控制必须 FAIL）；**先产出可审查实物，再写条款/方案**。禁止在未见实物时把 MD 叠加层或新建 `*-type.md` 作为推荐首选；判例=sess_11371d87（升级模板推荐零次提及 JSON，经用户纠正才改 JSON-first）。
 
@@ -25,33 +25,30 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 - 标注每类任务的高风险环节（验证命令缺失、范围失控、知识储备不足等）。
 - 输出预测清单并指向证据条目，供缺口映射引用。
 
-### ③ 缺口映射
-- 对照模板白名单：`templates/variant/*-type.md`（30 类，**教学视图**）与权威源 `templates/json/*.template.json`（33 个），以及项目级既有模板（`.claude/plan-templates/` 或 `.zcode/plan-templates/` 下的 MD 与 JSON，init-session.sh 原生发现并并入白名单的机制）；JSON 与 MD 同名时以 JSON 元数据（scenarios/features/lineage）为缺口判定依据。
-- 无专用 variant 的高频类型 → 标记为候选新类型模板。
-- 已有 variant 但 Verify command/执行范围限制需项目本地化 → 标记为适配版候选。
-- JSON 缺口判定（2026-11-25）：扫描 `templates/json/` 与项目级 JSON 位——MD 已存在但缺 `<type>.template.json` = 待转换（交 task-planner `to-json` 机械转换）；JSON/MD 均缺 = 候选新类型；JSON 已有但 scenarios/features 不覆盖项目高频坑 = 适配版候选（改 JSON meta + blocks，而非只改 MD 文案）。每类判定均须产出可审查实物并按 `../../examples/json-template-upgrade/review.md` 的 C1–C8 审过；无实物不得定稿。
-- 查重同时覆盖两种形态：同名 `*-type.md` 与 `*.template.json` 任一存在即视为已有类型，避免重复沉淀造成双源漂移。
-- 清单来源：先跑 `template-catalog.sh list --json --scope all`，按 `source=json` / `preferred=true` 取官方权威候选；项目级 JSON 位由 `ls` 实测，禁止凭记忆判定缺口。
-- 映射前先 `ls` 白名单与项目级目录查重，避免重复沉淀。
+### ③ 缺口映射与基底扫描
+- 对照模板白名单：`templates/variant/*-type.md`（30 类，**教学视图**）与权威源 `templates/json/*.template.json`（33 个），以及**项目级/用户级/内置**既有模板（ZCode：`.zcode/plan-templates/`、`~/.zcode/plan-templates/`、内置 `variant/`；`.claude` 仅兼容）；JSON 与 MD 同名时以 JSON 元数据（scenarios/features/lineage）为缺口判定依据。
+- 无专用 variant 的高频类型 → 标记为候选新类型模板；已有 variant 但 Verify command/执行范围限制需项目本地化 → 标记为适配版候选。
+- JSON 缺口判定（2026-11-25）：扫描 `templates/json/` 与项目/用户级 JSON 位——MD 已存在但缺 `<type>.template.json` = 待转换（交 task-planner `to-json` 机械转换）；JSON/MD 均缺 = 候选新类型；JSON 已有但 scenarios/features 不覆盖项目高频坑 = 适配版候选（改 JSON meta + blocks，而非只改 MD 文案）。每类判定均须产出可审查实物并按 `../../examples/json-template-upgrade/review.md` 的 C1–C8 审过；无实物不得定稿。
+- 查重同时覆盖三层与两种形态：同名 `*-type.md` 与 `*.template.json` 任一在项目/用户/内置存在即视为已有类型；标注可派生基底与差异点，避免重复沉淀造成双源漂移。
+- 清单来源：先跑 `template-catalog.sh list --json --scope all`，按 `source=json` / `preferred=true` 取官方权威候选；项目/用户级位由 `ls` 实测，禁止凭记忆判定缺口。
 
-### ④ 模板产出
-- 候选先落当前任务计划目录 `template-candidate/`，便于审查与回溯。
-- 项目级落位 `<项目>/.zcode/plan-templates/<类型>-type.md`（或 `.claude/plan-templates/` 同名位）**及其 JSON 结构化源** `<项目>/.zcode/plan-templates/<类型>.template.json`（Claude Code 侧 `.claude/plan-templates/` 同名位）；task-planner `init-session.sh` 原生发现并入白名单，零接线。
-- 只写 `*-type.md` 与同名 `*.template.json` 两种后缀文件；单次激活产出 ≤3 个类型（每类型的 JSON+MD 两份视为一个候选），防刷量与过度定制。
-- 类型标识=文件名去 `-type.md` 后缀（init-session.sh 派生口径）：机读头与 `template_type` 填该标识（如文件 `foo-type.md`→类型 `foo`），禁重复带 `-type` 后缀（判例=task-tpl-sediment-20261115 G2 首跑选型失败回退 generic）；JSON 侧 `meta.template_type` 必须同值。
-- 候选须同时产出两份：**JSON 结构化源**（`schema_version/meta{lineage:level,parent,base,spec_version,pruned,pruned_reason}/sections[{id,anchor,kind,blocks}]`）为权威 + **MD 教学视图**（`*-type.md`）供人读；勾选与表格用 JSON `blocks[].kind=checklist|table` 表达（item 含 `id/text/checked:bool/note/tags`），禁只在 MD 写 `- [ ]` 而 JSON 缺对应条目（render 会覆盖手改勾态）。
+### ④ 模板产出（研究前置）
+- **网络调研强制**：检索该领域有效做法、步骤结构、常见坑与质量要点，记录来源与可追溯摘要/依据（写入候选「调研依据」区块或随候选附带调研记录）；**无调研依据不得生成/产出候选**。
+- 基于调研创建或从相似基底派生（标注基底与差异）；候选先落当前任务计划目录 `template-candidate/`，便于审查与回溯。**未获用户明确审核授权前禁止写入**项目级/用户级/官方持久模板库。
+- 落位（授权后）：项目级 `<项目>/.zcode/plan-templates/<类型>-type.{md,json}>` 或用户级 `~/.zcode/plan-templates/<类型>-type.{md,json}>`（`.claude` 同名位仅兼容）；task-planner `init-session.sh` 原生发现并入白名单，零接线。只写 `*-type.md` 与同名 `*.template.json`；单次激活产出 ≤3 个类型（每类型 JSON+MD 视为一个候选）。
+- 类型标识=文件名去 `-type.md` 后缀（init-session.sh 派生口径）：机读头与 `template_type` 填该标识（如 `foo-type.md`→`foo`），禁重复带 `-type` 后缀；JSON 侧 `meta.template_type` 必须同值。
+- 候选须同时产出两份：**JSON 结构化源**（`schema_version/meta{lineage:level,parent,base,spec_version,pruned,pruned_reason}/sections[{id,anchor,kind,blocks}]`）为权威 + **MD 教学视图**（`*-type.md`）供人读；勾选与表格用 JSON `blocks[].kind=checklist|table` 表达（item 含 `id/text/checked:bool/note/tags`），禁只在 MD 写 `- [ ]` 而 JSON 缺对应条目。
 - 消费与自检（零新脚本）：`planctl.py init --template-json <path>` 落 `template_ref/template_doc/template_checks`；候选期用 task-planner `template-catalog.sh to-json --dry-run` 核对结构与勾选条目后再定稿；本技能不新增 `.sh`/hook/门。
-- 审查分工：MD 教学视图承载 Goal/VC 表/Phase 骨架的展示文案，JSON `kind=ref` 段由 planctl 核心渲染器填值；两者不得各写一套勾态/状态字段，只有 JSON 的 `checked` 与 `plan-state.json` 参与门控比较。
-- 模板须含机读头与最小结构骨架，适配项目实际验证命令与范围约束。
+- 模板须含机读头与最小结构骨架（Goal/VC/Phase/执行范围限制/必要知识储备/调研依据），适配项目实际验证命令与范围约束。
 
-### ⑤ 审查
-- 按 Rule 34.8 项目级门执行 G1 结构 lint：Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备 + ≤100 行 + 机读头。
+### ⑤ 审查与用户授权
+- 按 Rule 34.8 项目级门执行 G1 结构 lint：Goal/VC 表/Phase 骨架/执行范围限制/必要知识储备+调研依据 + ≤100 行 + 机读头。
 - G2：`render_template` 冒烟无 `{{}}` 残留（复用其既有 fail-closed 契约：残留 token 即渲染失败）。
-- G3：独立审查派发（critic / agent-quality-auditor）复核适配性与证据一致性。
-- 未过门模板留在候选位，禁止落位项目级目录，并登记未通过原因与证据指针。
+- G3：独立审查派发（critic / agent-quality-auditor）复核适配性、证据一致性与调研依据充分性。
+- **用户明确审核授权**：向用户展示候选（路径+关键结构+调研依据摘要），询问是否永久保存、保存到项目级还是用户级；**未获明确授权不得落盘持久库**。未过门/未授权模板留在候选位，并登记原因与证据指针。
 
 ### ⑥ 登记
-- 在 `.zcode/plan-templates/README.md`（或对应项目级模板目录 manifest）登记：模板名/适用类型/来源任务/审查日期/门记录指针。
+- 授权落盘后，在目标模板目录 manifest（README/INDEX）登记：模板名/适用类型/来源任务/基底与调研来源/审查与授权日期/门记录指针。
 - 记录复用入口：由 task-planner `init-session.sh` 原生发现，无需额外接线配置。
 - 若仅保留候选，同步登记候选状态与阻塞门项，供后续激活续审。
 - 登记完成后回链当前任务 findings/progress，保持证据闭环。
@@ -63,9 +60,10 @@ description: 项目模板适配分析与沉淀建议。主路由：激活后主�
 > 降级须在计划「🔁 模板感知」区块以 `[template-select]` 登记理由（为何不用创作模板 + 数据依据），终验对照；与 general 兜底登记口径叠加生效。
 
 - 禁直接写官方 `templates/`（含 `variant/`）；官方沉淀必须走 Rule 34.8 官方门 G1-G4，由权威流程承接。
-- 禁覆盖核心 7 计划文件模板（`task_plan`/`verification`/`progress`/`findings`/`knowledge-brief`/`user-session-log`/`notepad-learnings`）；本技能仅产出项目级 `*-type.md`。
-- 分析与预测必须有盘上证据（Rule 71）；无证据结论不得写入模板或登记为事实。
-- 产出上限与查重：单次激活 ≤3 个候选/落位；动笔前先核对白名单与项目级既有模板，防重复沉淀与命名冲突。
+- 禁覆盖核心 7 计划文件模板（`task_plan`/`verification`/`progress`/`findings`/`knowledge-brief`/`user-session-log`/`notepad-learnings`）；本技能仅产出项目/用户级 `*-type.md` 与同名 JSON。
+- 分析与预测必须有盘上证据（Rule 71）；无证据结论不得写入模板或登记为事实。网络调研必须记录来源与可追溯摘要，**无调研依据不得产出候选**。
+- 产出上限与查重：单次激活 ≤3 个候选/落位；动笔前先核对项目/用户/内置三层白名单，防重复沉淀与命名冲突。
+- **用户明确审核授权前禁落盘持久库**；候选仅暂存 `template-candidate/`。禁 silent 自动落盘。
 - 零新脚本：纯 SOP 技能，不新增 `.sh`/hook/守卫/机器门；验证复用既有 `render_template` 与审查派发能力。
 
 ## 卫星路由：plan-template-advisor — 域=项目模板适配与沉淀生产（Rule 34.8/34.9 消费面）
