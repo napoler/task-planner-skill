@@ -7,11 +7,13 @@
 #   机制化 v062 双窗口事故教训: 另一窗口已合并 → V4 ALREADY_MERGED 跳过合并转提示, 无需人工 git 考古。
 #
 # Usage:
-#   smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force]
+#   smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force] [--no-cleanup]
 #
 # 参数:
 #   <worktree-path>  必填; worktree 绝对路径
 #   --base <branch>  目标分支, 默认 master
+#   --no-cleanup     显式保留 worktree+分支现场(默认: merge 成功后主动 worktree remove + branch -d);
+#                    仅显式传入才生效, 输出 [CLEANUP-SKIP] WARN; 用于调试/取证, 非默认路径
 #   --deploy         合并后对部署位执行 F5 staging 原子化部署 — 2026-10-10 task-v159 替代旧直写路径
 #                    (D4 事故根因: 2026-10-10 04:45-04:49 claude 写入后 zcode 删除致技能全局停摆):
 #                    ①staging: 全部 slot 先行 cp -rL 至 cache 根 <slot>.stage.$$(内容就位与指针切换分离,
@@ -45,6 +47,7 @@
 #   --legacy         仅 --deploy 相关: 走 F5 之前旧直写路径(cp→rm→mv 改名换位 + 两级对账 L1/L2);
 #                    2026-10-10 task-v159 保留为 fallback(新路径默认启用; 旧路径失败语义 exit 6 不变)
 #   --force          V5 MASTER_AHEAD 时强制继续(默认中止;  merge 冲突仍 exit 7 STOP)
+#   --no-cleanup     merge 成功后保留 worktree+分支现场(默认主动清理); 仅显式传入才生效
 #   --allow-home-slot  仅 --deploy 相关: $HOME 内部任意子路径放行(默认关; 生产三默认位均在白名单内, 无需要)
 #   TASK_PLANNER_DEPLOY_CACHE_ROOT  仅 --deploy 相关: stage/backup 落盘根目录(默认 ${HOME}/.cache/task-planner-deploy);
 #                    必须位于 skills 扫描根与 git 仓之外, 否则 [deploy-cache] fail-closed exit 1
@@ -63,7 +66,10 @@
 #   V6 合并执行(git -C <主仓> merge --no-ff branch)          → [V6] MERGED: <commit>; 冲突 exit 7 MERGE_CONFLICT(收口义务语义, Rule 101.2)
 #
 # 后续输出:
-#   [CLEANUP] git worktree remove <path> && git branch -d <branch>   (只提示不执行 — 清理时机留主进程)
+#   merge 成功(含 ALREADY_MERGED)后默认主动清理: git worktree remove <wt> && git branch -d <branch>
+#     → 成功输出 [CLEANUP-DONE] worktree_removed=<path> branch_deleted=<branch> merge_commit=<sha>
+#     → 清理失败输出 [CLEANUP-FAIL] + stderr 详情并 exit 1(禁止 || true 吞错; 未 merge 成功绝不清理)
+#   --no-cleanup: 显式保留现场, 输出 [CLEANUP-SKIP] WARN: 保留 worktree=<path> branch=<branch> merge_commit=<sha>
 #   --deploy: 逐位 [DEPLOY] REJECTED|IDENTICAL|DRIFT: <位>; 任一 REJECTED/DRIFT → exit 6 DEPLOY_DRIFT
 #     (2026-09-17 task-v077: IDENTICAL 判定基准 = 主仓 skills/task-planner(DEPLOY_SRC); 部署源缺失亦 DRIFT exit 6)
 #   slot 列表由 env TASK_PLANNER_DEPLOY_SLOTS(冒号分隔)覆盖(供自测注入); 未设默认 5 真实位(+cursor/continue,
@@ -90,6 +96,10 @@
 #     ⑥ worktree list --porcelain awk 改 branch 行累积至下一块/END 输出, 保证 path|branch 配对
 #     (兜底判据③ bare-origin+base-branch 形态真正可达);
 #     ⑦ MERGE_HEAD 检测改绝对路径(--path-format=absolute; 不支持时回退 --git-dir 相对则 cd 主仓解析)。
+#   2026-11-27 task-worktree-required-mergeback-20261127 缺陷②根治: merge 成功后默认主动清理 worktree+分支
+#     (worktree remove + branch -d, git 原生命令, 禁 rm -rf); 成功输出 [CLEANUP-DONE] + merge_commit;
+#     清理失败 [CLEANUP-FAIL] + stderr + exit 1, 禁止 || true 吞错; 显式 --no-cleanup 才保留现场并输出
+#     [CLEANUP-SKIP] WARN; merge 冲突/exit 7 语义不变; 未 merge 成功绝不清理。
 #   2026-09-12 R3 复审修复轮: ① $HOME home 豁免改白名单口径 — 复审实证 slot=$HOME/.zcode 在旧
 #     "home 类型整体豁免 inside"下 rc=0 假绿且 $HOME/.zcode/{skills,memories,AGENTS.md} 被摧毁;
 #     新语义: home 类型 slot 仅当 norm_path(slot) 位于 DEFAULT_DEPLOY_ROOTS 五默认部署根之一
@@ -127,10 +137,11 @@ set -u
 # ---------- 参数解析 ----------
 usage() {
     cat <<'EOF'
-Usage: smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force] [--allow-home-slot] [--legacy]
-退出码: 0 成功 | 2 PRECHECK_INVALID/ARG_INVALID | 3 PRECHECK_DIRTY | 4 SCOPE_OVERLAP
+Usage: smart-merge-back.sh <worktree-path> [--base master] [--deploy] [--force] [--no-cleanup] [--allow-home-slot] [--legacy]
+退出码: 0 成功(含 merge 后主动清理) | 1 环境错误/清理失败(CLEANUP-FAIL)/未归类项
+        2 PRECHECK_INVALID/ARG_INVALID | 3 PRECHECK_DIRTY | 4 SCOPE_OVERLAP
         5 MASTER_AHEAD | 6 DEPLOY_DRIFT | 7 MERGE_CONFLICT | 8 MERGE_IN_PROGRESS
-        1 环境错误/未归类项(含 --deploy F5 staging/swap/post-verify 阶段失败)
+--no-cleanup       merge 成功后保留 worktree+分支现场(显式 flag 才生效, 默认主动清理)
 --allow-home-slot  $HOME 内部任意 slot 放行(默认关, 风险自担)
 --legacy          --deploy 走 F5 前旧直写路径(fallback; 新路径默认)
 EOF
@@ -142,6 +153,7 @@ DO_DEPLOY=0
 DO_FORCE=0
 ALLOW_HOME_SLOT=0
 DO_LEGACY=0
+DO_CLEANUP=1
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -155,6 +167,7 @@ while [ $# -gt 0 ]; do
     --force)  DO_FORCE=1; shift ;;
     --allow-home-slot) ALLOW_HOME_SLOT=1; shift ;;
     --legacy) DO_LEGACY=1; shift ;;
+    --no-cleanup) DO_CLEANUP=0; shift ;;
     -h|--help) usage; exit 0 ;;
     -*)
         echo "[V1] ARG_INVALID: 未知选项 $1" >&2; usage; exit 2 ;;
@@ -334,9 +347,12 @@ echo "[V3] OK: 主仓无 scope 重叠(merge-base $MB)"
 # ---------- V4 已合并检测 ----------
 CLEANUP_LINE=""
 ALREADY=0
+MERGE_COMMIT=""
 if git -C "$MAIN_REPO" merge-base --is-ancestor "$BRANCH" "$BASE" 2>/dev/null; then
     echo "[V4] ALREADY_MERGED: $BRANCH 已在 $BASE(merge-base $MB) — 跳过合并(另一窗口可能已合并)"
     ALREADY=1
+    # ALREADY_MERGED: merge commit = branch tip 已在 base 祖先链上; 取 branch tip 作为可追溯 SHA
+    MERGE_COMMIT="$(git -C "$MAIN_REPO" rev-parse --verify "$BRANCH" 2>/dev/null || echo unknown)"
     CLEANUP_LINE="git worktree remove $WT_PATH && git branch -d $BRANCH"
 else
     # ---------- V5 master 前进检测 ----------
@@ -367,9 +383,28 @@ else
     CLEANUP_LINE="git worktree remove $WT_PATH && git branch -d $BRANCH"
 fi
 
-# ---------- 清理提示(不自动执行) ----------
+# ---------- 清理: 默认主动执行(2026-11-27 缺陷②根治) ----------
+# merge 成功(V6 MERGED)或 ALREADY_MERGED 才进入本段; 冲突/未 merge 成功已 exit, 绝不清理。
+# --no-cleanup: 显式保留现场并 WARN; 默认: worktree remove + branch -d, 任一步失败 exit 1, 禁止 || true。
 if [ -n "$CLEANUP_LINE" ]; then
-    echo "[CLEANUP] 由主进程择机执行: $CLEANUP_LINE"
+    if [ "$DO_CLEANUP" -ne 1 ]; then
+        echo "[CLEANUP-SKIP] WARN: 保留 worktree=$WT_PATH branch=$BRANCH merge_commit=${MERGE_COMMIT:-unknown} (--no-cleanup 显式传入)"
+    else
+        cleanup_err=""
+        if ! cleanup_err="$(git -C "$MAIN_REPO" worktree remove "$WT_PATH" 2>&1)"; then
+            echo "[CLEANUP-FAIL] worktree remove 失败: $WT_PATH" >&2
+            printf '%s\n' "$cleanup_err" >&2
+            echo "[CLEANUP-FAIL] merge_commit=${MERGE_COMMIT:-unknown} branch=$BRANCH — worktree/分支保留供人工核对" >&2
+            exit 1
+        fi
+        if ! cleanup_err="$(git -C "$MAIN_REPO" branch -d "$BRANCH" 2>&1)"; then
+            echo "[CLEANUP-FAIL] branch -d 失败: $BRANCH (worktree 已移除: $WT_PATH)" >&2
+            printf '%s\n' "$cleanup_err" >&2
+            echo "[CLEANUP-FAIL] merge_commit=${MERGE_COMMIT:-unknown} — 分支保留供人工核对" >&2
+            exit 1
+        fi
+        echo "[CLEANUP-DONE] worktree_removed=$WT_PATH branch_deleted=$BRANCH merge_commit=${MERGE_COMMIT:-unknown}"
+    fi
 fi
 
 # ---------- --deploy 逐位重部署对账 ----------

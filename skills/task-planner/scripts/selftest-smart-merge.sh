@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # selftest-smart-merge.sh — task-v064-smart-merge-back S1: smart-merge-back.sh 智能门 hermetic 自测
-# 用例 SM-01..SM-20: 必跑断言行 21 条(基线 SM-01..03/04a/04b/05..09/11..14 共 14 条 + SM-15a/15b locale 回归 2 条
-#   + SM-16 legacy 回归 1 条 + SM-17..SM-20 安全负例 4 条;
-#   另 SM-10 注入时 +1 → Total 动态 21/22):脏 worktree exit3 / 干净合并 exit0+merge commit /
-#   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 exit6(ENOTDIR 稳定 DRIFT, root 亦稳) /
-#   [CLEANUP] 提示且 worktree 保留 / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
+# 用例 SM-01..SM-22: 必跑断言行 24 条(基线 SM-01..03/04a/04b/05..06 共 7 条 + SM-07默认清理+SM-07b --no-cleanup + SM-08..09 共 4 条
+#   + SM-11..SM-14 共 4 条 + SM-15a/SM-15b locale 回归 2 条 + SM-16 legacy 回归 1 条
+#   + SM-17..SM-20 安全负例 4 条 + SM-21 mutation 判别 1 条 + SM-22 cleanup-fail 1 条;
+#   另 SM-10 注入时 +1 → Total 动态 24/25):脏 worktree exit3 / 干净合并 exit0+merge commit /
+#   master 前进 exit5(--force 后 exit0) / scope 重叠 exit4 / --deploy slot 判定 /
+#   SM-07 merge 成功后默认主动清理(worktree 目录删除+分支删除+[CLEANUP-DONE]+merge commit) /
+#   SM-07b --no-cleanup 显式保留现场+[CLEANUP-SKIP] WARN / env slot 传 worktree自身·主仓·相对路径 → REJECTED exit6 且目标 md5 前后一致 /
 #   slot 含空格 → REJECTED exit6 /
 #   SM-14(2026-09-17 S4 task-v077 新增, 陈旧副本回归钉子): 脚本副本置于陈旧部署位 A(预置 stale-content)
 #   运行 --deploy, slot 指 B → 断言 B 终态 SKILL_MARKER==主仓 canonical-v077(非 stale-content) 且输出含
@@ -17,7 +19,10 @@
 #   [2026-09-27 task-v091/C-5-locale] SM-15a/SM-15b 回归: 从 TARGET 抽真实 _re_lines+deploy_reconcile,
 #   混合大小写文件名(B.md+a.md)清单内容差异场景, zh locale 下仍报 DRIFT-L2(修复前 comm 未 pin locale →
 #   inman 空 → B.md 不入 L2 targets → 假 IDENTICAL, S32 组5 C-5 实测缺陷); SM-15b LC_ALL=C 与 ambient
-#   双跑判定一致。TOTAL_BASE 14→16→17(SM-16)+4(SM-17..20)=21(SM-10 注入时 Total=22)。
+#   双跑判定一致。TOTAL_BASE 14→16→17(SM-16)+4(SM-17..20)+3(SM-07b/SM-21/SM-22)=24(SM-10 注入时 Total=25)。
+#   [2026-11-27 task-worktree-required-mergeback-20261127 缺陷②] SM-07 反向锁定修正:
+#     旧断言"含 [CLEANUP] 且 worktree 保留" → 新断言"含 [CLEANUP-DONE] + worktree 不存在 + 分支已删 + merge commit 在 master 祖先链"。
+#     新增 SM-07b(--no-cleanup 保留现场+[CLEANUP-SKIP] WARN)、SM-21(删掉默认清理动作的 mutation 探针必须 FAIL)、SM-22(清理失败 exit 1)。
 #   SM-10(2026-09-12 洞②修复轮): 夹具 slot=$T10/ancestor(内含 shadow worktree=GUARDS 的 WT_PATH) →
 #   祖先方向守卫 REJECTED(含"的祖先") exit6, 且 slot/真实仓(SELFTEST_SM10_WT 注入) md5 前后一致(零改动)。
 #   [2026-09-12 R3] 真实 worktree 来源改套件内相对推导: git -C "$(dirname "$0")/../.."
@@ -251,21 +256,49 @@ printf '%s\n%s' "$R2" "$R3" | grep -qF "[DEPLOY] SWAP-FAIL: $SLOT_S2" && SM6_FAI
   [ -d "$SLOT_S1" ] && [ -f "$SLOT_S1/SKILL_MARKER" ] && [ "$(cat "$SLOT_S1/SKILL_MARKER")" = "v077-canonical" ] && SMOK=1
 report SM-06 "$SMOK" "rc=$R1(期望非0,staging/swap-fail语义) s2-FAIL信号(STAGE-FAIL|SWAP-FAIL)=$([ "$SM6_FAIL_SIG" = 1 ] && echo 在 || echo 缺) s1未被swap-目录存活=$([ -d "$SLOT_S1" ] && echo 是 || echo 否) s1-marker不变=$(printf '%s' "$(cat "$SLOT_S1/SKILL_MARKER" 2>/dev/null)" | grep -qF 'v077-canonical' && echo 是 || echo 否)"
 
-# ---------- SM-07 SM-02 通过后: 输出含 [CLEANUP] 行且 worktree 目录仍存在(脚本不自动删) ----------
+# ---------- SM-07 merge 成功后: 默认主动清理(worktree remove + branch -d), 输出 [CLEANUP-DONE] ----------
+# [2026-11-27 task-worktree-required-mergeback-20261127 缺陷②] 旧断言"含 [CLEANUP] 且 worktree 保留"是反向锁定,
+# 把搁置缺陷当通过; 现改为断言: merge commit 产生 + worktree 目录不存在 + 分支已删除 + 含 [CLEANUP-DONE]。
 T7="$(mktemp -d)"; record_dir "$T7"
 mk_fixture "$T7" "$T7/main" "$T7/task-test" "$T7/origin.git"
 branch_commit "$T7/task-test"
 ERRF="$T7/err"
 run "$TARGET" "$T7/task-test"
 SMOK=0
-[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF '[CLEANUP]' && [ -d "$T7/task-test" ] && SMOK=1
-report SM-07 "$SMOK" "rc=$R1 CLEANUP行=$(printf '%s' "$R2" | grep -qF '[CLEANUP]' && echo 在 || echo 缺) worktree保留=$([ -d "$T7/task-test" ] && echo 是 || echo 否)"
+MERGED_SHA="$(printf '%s' "$R2" | grep -oE '\[V6\] MERGED: [0-9a-f]{7,40}' | head -1 | awk '{print $NF}')"
+WT_GONE=1; [ -d "$T7/task-test" ] && WT_GONE=0
+BR_GONE=1
+git -C "$T7/main" show-ref --verify --quiet refs/heads/wt/task-test 2>/dev/null && BR_GONE=0
+SHA_ON_MASTER=0
+if [ -n "$MERGED_SHA" ]; then
+  git -C "$T7/main" merge-base --is-ancestor "$MERGED_SHA" master 2>/dev/null && SHA_ON_MASTER=1
+fi
+[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF '[CLEANUP-DONE]' && \
+  [ "$WT_GONE" = 1 ] && [ "$BR_GONE" = 1 ] && [ "$SHA_ON_MASTER" = 1 ] && SMOK=1
+report SM-07 "$SMOK" "rc=$R1(期望0) CLEANUP-DONE=$(printf '%s' "$R2" | grep -qF '[CLEANUP-DONE]' && echo 在 || echo 缺) worktree已删=$([ "$WT_GONE" = 1 ] && echo 是 || echo 否) 分支已删=$([ "$BR_GONE" = 1 ] && echo 是 || echo 否) merge_sha_on_master=$([ "$SHA_ON_MASTER" = 1 ] && echo 是 || echo 否:$MERGED_SHA)"
+
+# ---------- SM-07b --no-cleanup 显式保留现场: 含 [CLEANUP-SKIP] WARN + worktree/分支仍存在 ----------
+T7b="$(mktemp -d)"; record_dir "$T7b"
+mk_fixture "$T7b" "$T7b/main" "$T7b/task-test" "$T7b/origin.git"
+branch_commit "$T7b/task-test"
+ERRF="$T7b/err"
+run "$TARGET" "$T7b/task-test" --no-cleanup
+SMOK=0
+WT_KEPT=0; [ -d "$T7b/task-test" ] && WT_KEPT=1
+BR_KEPT=0
+git -C "$T7b/main" show-ref --verify --quiet refs/heads/wt/task-test 2>/dev/null && BR_KEPT=1
+[ "$R1" = 0 ] && printf '%s' "$R2" | grep -qF '[CLEANUP-SKIP]' && \
+  printf '%s' "$R2" | grep -qF 'WARN' && \
+  [ "$WT_KEPT" = 1 ] && [ "$BR_KEPT" = 1 ] && SMOK=1
+report SM-07b "$SMOK" "rc=$R1(期望0) CLEANUP-SKIP=$(printf '%s' "$R2" | grep -qF '[CLEANUP-SKIP]' && echo 在 || echo 缺) WARN=$(printf '%s' "$R2" | grep -qF 'WARN' && echo 在 || echo 缺) worktree保留=$([ "$WT_KEPT" = 1 ] && echo 是 || echo 否) 分支保留=$([ "$BR_KEPT" = 1 ] && echo 是 || echo 否)"
 
 # ---------- SM-08 env slot 传 worktree自身/主仓路径/相对路径 → 三种危险 slot 全部 REJECTED + exit 6;
 #           且目标目录内容前后不变: 证明 REJECTED 路径生效, 受保护目录未被 cp/rm ----------
 # 口径: 3 危险 slot 中 worktree/主仓 命中 GUARDS 前缀守卫, relative 命中非绝对校验, 全 REJECTED。
 #       前后 md5 基线取 worktree 侧 base.txt 文件 md5 — 若 REJECTED 误将 worktree 自身作为合法 slot 被 cp+rm,
 #       其 base.txt 内容被替换为 skill 根 → md5 必变; 主仓/相对路径因 REJECTED 不触及磁盘(主仓经 merge 自身推进, 非部署路径)。
+# [2026-11-27 task-worktree-required-mergeback-20261127] 默认清理改为主动执行; 本用例目的=REJECTED 守卫,
+# 非清理语义, 显式 --no-cleanup 保留 worktree 以便 md5 前后对比。
 T8="$(mktemp -d)"; record_dir "$T8"
 mk_fixture "$T8" "$T8/main" "$T8/task-test" "$T8/origin.git"
 branch_commit "$T8/task-test"
@@ -276,7 +309,7 @@ BAD_SLOTS="$T8/task-test:$T8/main:relative-slot"
 #   main 侧仅判"未被部署路径 cp+rm": 主仓工作树不应出现 skill 根专有文件(config.json), 若 main 被误当 slot 替换则 config.json 会现身
 WT_MD5_BEFORE="$(md5sum < "$T8/task-test/base.txt")"
 ERRF="$T8/err"
-run env TASK_PLANNER_DEPLOY_SLOTS="$BAD_SLOTS" bash "$TARGET" "$T8/task-test" --deploy
+run env TASK_PLANNER_DEPLOY_SLOTS="$BAD_SLOTS" bash "$TARGET" "$T8/task-test" --deploy --no-cleanup
 SMOK=0
 WT_MD5_AFTER="$(md5sum < "$T8/task-test/base.txt" 2>/dev/null)"
 [ "$R1" = 6 ] && printf '%s' "$R2" | grep -qF "REJECTED: $T8/task-test" && \
@@ -337,7 +370,7 @@ $(ls -1 "$SM10_WT" | md5sum)"
     SM10_BEFORE="$SM10_BEFORE
 $(md5sum < "$SM10_WT/skills/task-planner/scripts/smart-merge-back.sh")"
 fi
-run env TASK_PLANNER_DEPLOY_SLOTS="$SM10_SLOT" bash "$TARGET" "$SM10_SLOT/task-test" --deploy
+run env TASK_PLANNER_DEPLOY_SLOTS="$SM10_SLOT" bash "$TARGET" "$SM10_SLOT/task-test" --deploy --no-cleanup
 SM10_AFTER="$(ls -1 "$SM10_SLOT" | md5sum)"
 if [ -n "$SM10_WT" ] && [ -d "$SM10_WT" ]; then
   SM10_AFTER="$SM10_AFTER
@@ -672,7 +705,7 @@ SM20A_BEFORE="$( (cd "$T20_HOME/.zcode/skills" && find . -type f | LC_ALL=C sort
 ERRF="$T20/err"
 run env HOME="$T20_HOME" TASK_PLANNER_DEPLOY_SLOTS="$T20_HOME/.zcode/skills/task-planner" \
   TASK_PLANNER_DEPLOY_CACHE_ROOT="$T20_HOME/.zcode/skills/.cache" \
-  bash "$TARGET" "$T20/task-test" --deploy
+  bash "$TARGET" "$T20/task-test" --deploy --no-cleanup
 SM20A_RC="$R1"; SM20A_OUT="$R2"; SM20A_ERR="$R3"
 SM20A_AFTER="$( (cd "$T20_HOME/.zcode/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
 SM20A_NEW="$(find "$T20_HOME/.zcode/skills" -mindepth 1 -maxdepth 2 -type d -name '.cache*' 2>/dev/null | wc -l | tr -d ' ')"
@@ -686,7 +719,7 @@ SM20B_BEFORE="$( (cd "$T20B/repo/skills" && find . -type f | LC_ALL=C sort | whi
 ERRF="$T20/err"
 run env HOME="$T20B/home" TASK_PLANNER_DEPLOY_SLOTS="$T20B/repo/skills/task-planner" \
   TASK_PLANNER_DEPLOY_CACHE_ROOT="$T20B/repo/.deploy-cache" \
-  bash "$TARGET" "$T20/task-test" --deploy
+  bash "$TARGET" "$T20/task-test" --deploy --no-cleanup
 SM20B_RC="$R1"; SM20B_OUT="$R2"; SM20B_ERR="$R3"
 SM20B_AFTER="$( (cd "$T20B/repo/skills" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do md5sum "$f"; done | md5sum) )"
 SM20B_NEW="$(find "$T20B/repo" -mindepth 1 -maxdepth 3 -type d -name '.deploy-cache*' 2>/dev/null | wc -l | tr -d ' ')"
@@ -700,16 +733,98 @@ SM20B_HAS=0; printf '%s\n%s' "$SM20B_OUT" "$SM20B_ERR" | grep -qF '[deploy-cache
   [ "$SM20B_BEFORE" = "$SM20B_AFTER" ] && SMOK=1
 report SM-20 "$SMOK" "A(rc=$SM20A_RC [deploy-cache]=$([ "$SM20A_HAS" = 1 ] && echo 在 || echo 缺) md5不变=$([ "$SM20A_BEFORE" = "$SM20A_AFTER" ] && echo 是 || echo 否)) B(rc=$SM20B_RC [deploy-cache]=$([ "$SM20B_HAS" = 1 ] && echo 在 || echo 缺) md5不变=$([ "$SM20B_BEFORE" = "$SM20B_AFTER" ] && echo 是 || echo 否))"
 
+# ---------- SM-21 mutation 判别: 把默认清理动作删掉后 selftest 必须 FAIL ----------
+# 负例注入: 复制 TARGET 到临时脚本, 将默认清理执行体替换为旧式"只提示不执行"行为;
+# 期望: 对该 mutation 脚本跑 SM-07 等价场景时, worktree 仍存在/分支仍在 或 无 CLEANUP-DONE,
+#       因此本断言判定 mutation 被捕获(PASS)。若 mutation 未被捕获则本用例 FAIL。
+T21="$(mktemp -d)"; record_dir "$T21"
+MUT="$T21/smart-merge-back.mut.sh"
+cp "$TARGET" "$MUT"
+chmod +x "$MUT"
+# mutation: 注释掉默认清理执行体, 恢复旧行为(只打印 CLEANUP 提示, 不 remove/branch -d)
+# 精确替换清理段头尾锚点; 若锚点不存在则 mutation 视为未应用(PASS_BY_MUTATION_MISS 处理为 FAIL 安全侧)
+MUT_APPLIED=0
+if grep -qF 'worktree_removed=$WT_PATH branch_deleted=$BRANCH merge_commit=${MERGE_COMMIT:-unknown}' "$MUT" \
+   && grep -qF '# ---------- 清理: 默认主动执行(2026-11-27 缺陷②根治) ----------' "$MUT"; then
+  python3 - "$MUT" <<'PY'
+import sys, re, pathlib
+p = pathlib.Path(sys.argv[1])
+s = p.read_text(encoding='utf-8')
+pat = r"# ---------- 清理: 默认主动执行\(2026-11-27 缺陷②根治\) ----------.*?echo \"\[CLEANUP-DONE\] worktree_removed=\$WT_PATH branch_deleted=\$BRANCH merge_commit=\$\{MERGE_COMMIT:-unknown\}\"\n    fi\nfi"
+repl = """# ---------- 清理: 默认主动执行(2026-11-27 缺陷②根治) ----------
+# MUTATION: cleanup removed
+if [ -n "$CLEANUP_LINE" ]; then
+    echo "[CLEANUP] 由主进程择机执行: $CLEANUP_LINE"
+fi"""
+ns, n = re.subn(pat, repl, s, count=1, flags=re.S)
+if n != 1:
+    sys.exit(2)
+p.write_text(ns, encoding='utf-8')
+PY
+  [ $? -eq 0 ] && MUT_APPLIED=1
+fi
+SMOK=0
+if [ "$MUT_APPLIED" -ne 1 ]; then
+  report SM-21 0 "mutation未应用(锚点缺失) — 无法判别, 视为FAIL(需同步更新mutation锚点)"
+else
+  mk_fixture "$T21" "$T21/main" "$T21/task-test" "$T21/origin.git"
+  branch_commit "$T21/task-test"
+  ERRF="$T21/err"
+  run "$MUT" "$T21/task-test"
+  WT_STILL=0; [ -d "$T21/task-test" ] && WT_STILL=1
+  BR_STILL=0
+  git -C "$T21/main" show-ref --verify --quiet refs/heads/wt/task-test 2>/dev/null && BR_STILL=1
+  HAS_DONE=0
+  printf '%s' "$R2" | grep -qF '[CLEANUP-DONE]' && HAS_DONE=1
+  # mutation 应被捕获: 要么无 CLEANUP-DONE, 要么 worktree/分支仍存在
+  if [ "$HAS_DONE" -eq 0 ] || [ "$WT_STILL" -eq 1 ] || [ "$BR_STILL" -eq 1 ]; then
+    SMOK=1
+  fi
+  report SM-21 "$SMOK" "mutation_applied=$MUT_APPLIED rc=$R1 CLEANUP-DONE=$([ "$HAS_DONE" = 1 ] && echo 在 || echo 缺) worktree仍在=$([ "$WT_STILL" = 1 ] && echo 是 || echo 否) 分支仍在=$([ "$BR_STILL" = 1 ] && echo 是 || echo 否) (期望:捕获=至少一项异常)"
+fi
+
+# ---------- SM-22 cleanup-fail 负例: worktree remove 失败时必须 exit 1 + [CLEANUP-FAIL]，禁止吞错 ----------
+# 构造: merge 成功后让 git worktree remove 失败。方法: 在 worktree 内创建 tracked 子目录,
+# commit 后 chmod 555 该子目录(使其内容不可删), 同时 worktree 根保持可写避免 V2 PRECHECK_DIRTY
+# 对根目录本身报错? 注意: git status 会把不可读但已 tracked 的目录报为正常(clean)或 warn;
+# 更稳妥: 创建 tracked 文件后, chmod 000 该文件, chmod 555 父目录; git status --porcelain
+# 对 mode 不变但不可读的 tracked 文件通常仍 clean。验证: 需保持 V2 通过。
+T22="$(mktemp -d)"; record_dir "$T22"
+mk_fixture "$T22" "$T22/main" "$T22/task-test" "$T22/origin.git"
+branch_commit "$T22/task-test"
+# 制造删除障碍: tracked 子目录, commit 后去掉写权限; 保持 worktree 根可写让 git status 正常
+mkdir -p "$T22/task-test/blocked-sub"
+echo x > "$T22/task-test/blocked-sub/f.txt"
+git -C "$T22/task-test" add blocked-sub/f.txt
+git -C "$T22/task-test" -c user.email=t@l -c user.name=t commit -qm "add blocked" 2>/dev/null
+chmod 555 "$T22/task-test/blocked-sub"
+# 确认 worktree 仍 clean (V2 前置)
+ERRF="$T22/err"
+run "$TARGET" "$T22/task-test"
+# 恢复权限以便 trap 清理
+chmod 755 "$T22/task-test/blocked-sub" 2>/dev/null || true
+chmod 755 "$T22/task-test" 2>/dev/null || true
+SMOK=0
+HAS_FAIL=0
+printf '%s\n%s' "$R2" "$R3" | grep -qF '[CLEANUP-FAIL]' && HAS_FAIL=1
+# merge 应已成功(MERGED 或 ALREADY_MERGED) — worktree 已 ahead of master? branch_commit 已提交, merge 会产生 MERGED
+HAS_MERGED=0
+printf '%s' "$R2" | grep -qE '\[V6\] MERGED|\[V4\] ALREADY_MERGED' >/dev/null && HAS_MERGED=1
+# exit 必须非0; [CLEANUP-FAIL] 必须出现
+WT_EXISTS=0; [ -d "$T22/task-test" ] && WT_EXISTS=1
+[ "$R1" -ne 0 ] && [ "$HAS_FAIL" = 1 ] && [ "$HAS_MERGED" = 1 ] && SMOK=1
+report SM-22 "$SMOK" "rc=$R1(期望非0) CLEANUP-FAIL=$([ "$HAS_FAIL" = 1 ] && echo 在 || echo 缺) MERGED=$([ "$HAS_MERGED" = 1 ] && echo 在 || echo 缺) worktree仍在=$([ "$WT_EXISTS" = 1 ] && echo 是 || echo 否)"
+
 # ---------- 全量清理: 统一走 EXIT trap(cleanup_all); 上方显式段仅做断言兜底防 trap 失守 ----------
 :
 
-# [2026-11-26 task-deploy-slot-safety-20261126] 统计口径更新:
-#   必跑断言行 21 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-11..SM-20),
-#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 21 + (SM10_INJECTED ? 1 : 0) 动态计算:
-#   SKIP(SM-10 未注入) → 21; 注入 → 22。
+# [2026-11-27 task-worktree-required-mergeback-20261127 缺陷②] 统计口径更新:
+#   必跑断言行 24 条(SM-01..SM-03、SM-04a、SM-04b、SM-05..SM-09、SM-07b、SM-11..SM-22),
+#   SM-10 注入真实 wt 时多 1 条 → TOTAL_CASES = 24 + (SM10_INJECTED ? 1 : 0) 动态计算:
+#   SKIP(SM-10 未注入) → 24; 注入 → 25。
 #   PASS/FAIL 为 report() 真实累计值; 框架断言 PASS+FAIL == TOTAL_CASES(动态), 不一致打印
 #   FRAMEWORK_BROKEN 并 exit 97(记账框架自身损坏, 非用例失败); SKIP 单列, 不计入断言行总数。
-TOTAL_BASE=21
+TOTAL_BASE=24
 TOTAL_CASES=$(( TOTAL_BASE + ( SM10_INJECTED ? 1 : 0 ) ))
 SKIPPED=$(( SM10_INJECTED ? 0 : 1 ))
 PASS_TOTAL=$((PASS + FAIL))

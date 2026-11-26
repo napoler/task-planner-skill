@@ -32,9 +32,11 @@
 #     · P1 机械产物区（项目根下 tmp/ output/ .cache/）或 gitignore 区（git check-ignore 命中，节 ④ 口径②；
 #       legacy .plan-required 哨兵在位时亦经同入口放行，节 ⑥）
 #     · 无哨兵（会话 side 未命中且 legacy .plan-required 不存在，节 ⑥）
-#   1 = BLOCKED (哨兵存在且判定未满足，写入 plans/ 外非豁免路径)
+#   1 = BLOCKED (哨兵存在且判定未满足，写入 plans/ 外非豁免路径，或 worktree REQUIRED 未满足)
 
 set -eu
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 TOOL="${1:-}"
 FILE_PATH="${2:-}"
@@ -247,32 +249,102 @@ if [ -n "$_side_sentinel" ] && [ -f "$_side_sentinel" ]; then
       # [task-kb-cr-lits-20261023 S3 L-8②] 放行留痕 → >&2（消费面核查：zcode-pretooluse.sh 仅消费 rc，
       #   无 stdout 展示为放行原因文本的证据；对齐 zcode-pretooluse.sh 阻断反馈走 stderr 惯例）
       echo "[PLAN-GUARD] ✅ D10'' attestation 仲裁放行: $ROOT/plans/$_d10pp_plan_dir/.plan-attestation (plan_sha256 一致)" >&2
-      exit 0
+      # [2026-11-27 worktree-required] 在已通过计划门的前提下，继续做 worktree REQUIRED 检查
+      :
+    else
+      _d10pp_plan_dir=""
+    fi
+  fi
+  # 如果 D10'' 放行了，上面已经 echo 并且我们需要继续检查 worktree；但这里结构复杂，改为：只有未通过 D10'' 时才走后续
+  if [ -n "$_d10pp_plan_dir" ] && [ -f "$ROOT/plans/$_d10pp_plan_dir/.plan-attestation" ]; then
+    _ap_hash2="$(sed -n 's/^plan_sha256=//p' "$ROOT/plans/$_d10pp_plan_dir/.plan-attestation" 2>/dev/null | head -1 | tr 'A-F' 'a-f')"
+    _cur_hash2="$(sha256sum "$ROOT/plans/$_d10pp_plan_dir/task_plan.md" 2>/dev/null | awk '{print $1}' | tr 'A-F' 'a-f')"
+    if [ -n "$_ap_hash2" ] && [ "$_ap_hash2" = "$_cur_hash2" ]; then
+      : # already handled
+    fi
+  fi
+fi
+
+# 重构：更清晰的 D10'' 放行后工作流
+_d10pp_released="false"
+if [ -n "${_side_sentinel:-}" ] && [ -f "${_side_sentinel:-}" ]; then
+  # (keep existing epoch checks simplified? no, easier to recheck D10'')
+  :
+fi
+
+# 重新实现 D10'' 放行逻辑（简洁版）
+if [ -n "${_side_sentinel:-}" ] && [ -f "${_side_sentinel:-}" ]; then
+  # D10'' check
+  _d10pp_plan_dir2=""
+  if [ -n "${TASK_PLANNER_SID:-}" ]; then
+    _sidkey2="$(printf '%s' "$TASK_PLANNER_SID" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    case "$_sidkey2" in sess*) _sidkey2="${_sidkey2#sess}" ;; esac
+    for _ap in "$ROOT/plans/.active_plan_side/$_sidkey2.active_plan" "$ROOT/plans/.active_plan_side/sess$_sidkey2.active_plan"; do
+      if [ -f "$_ap" ]; then
+        _ap_dir2="$(tr -d '[:space:]' < "$_ap" 2>/dev/null || true)"
+        if [ -n "$_ap_dir2" ] && [ -f "$ROOT/plans/$_ap_dir2/task_plan.md" ]; then
+          _d10pp_plan_dir2="$_ap_dir2"
+          break
+        fi
+      fi
+    done
+  fi
+  if [ -n "$_d10pp_plan_dir2" ] && [ -f "$ROOT/plans/$_d10pp_plan_dir2/.plan-attestation" ]; then
+    _ap_hash3="$(sed -n 's/^plan_sha256=//p' "$ROOT/plans/$_d10pp_plan_dir2/.plan-attestation" 2>/dev/null | head -1 | tr 'A-F' 'a-f')"
+    _cur_hash3="$(sha256sum "$ROOT/plans/$_d10pp_plan_dir2/task_plan.md" 2>/dev/null | awk '{print $1}' | tr 'A-F' 'a-f')"
+    if [ -n "$_ap_hash3" ] && [ "$_ap_hash3" = "$_cur_hash3" ]; then
+      echo "[PLAN-GUARD] ✅ D10'' attestation 仲裁放行: $ROOT/plans/$_d10pp_plan_dir2/.plan-attestation (plan_sha256 一致)" >&2
+      _d10pp_released="true"
     fi
   fi
 
-  # [P1] 轻量/机械操作放行（优先于拦截：机械操作零停摆，见 ④ 口径说明）
-  if _lightweight_release "$abs_path"; then
-    exit 0
+  if [ "$_d10pp_released" != "true" ]; then
+    # do D10 epoch arbitration (original)
+    _created_epoch2=""
+    while IFS= read -r _line; do
+      case "$_line" in
+        created_epoch:*) _created_epoch2="$(printf '%s' "${_line#created_epoch:}" | tr -d '[:space:]')"; break ;;
+      esac
+    done < "$_side_sentinel"
+    if [ -n "$_created_epoch2" ]; then
+      _skill_dir2="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+      _rp2="$(bash "$_skill_dir2/resolve-plan-dir.sh" "$ROOT" "$(printf '%s' "${TASK_PLANNER_SID:-}" | tr -cd 'a-zA-Z0-9' | head -c 40 | sed 's/^sess//')" 2>/dev/null || true)"
+      if [ -n "$_rp2" ] && [ -f "$_rp2" ]; then
+        _case_epoch2="$_created_epoch2"
+        if [ "${#_created_epoch2}" -ge 11 ]; then _case_epoch2="${_created_epoch2:0:10}"; fi
+        _ref2="/tmp/.plan-guard-ref.$$"
+        if touch -d "@$_case_epoch2" "$_ref2" 2>/dev/null; then
+          if [ "$_rp2" -nt "$_ref2" ]; then
+            rm -f "$_ref2"
+            _d10pp_released="true"
+          fi
+          rm -f "$_ref2"
+        fi
+      fi
+    fi
   fi
 
-  # 未满足 → 拦截
-  echo "[PLAN-GUARD] 🚫 本会话计划哨兵未满足 (.plan_required_side active: $(basename "$_side_sentinel"))."
-  echo "  Tool: $TOOL"
-  echo "  File: $FILE_PATH"
-  echo ""
-  echo "  Steps to proceed:"
-  echo "    1. 创建计划（plans/ 写入豁免）: mkdir -p <ROOT>/plans/task-{id}/ && 填写 task_plan.md"
-  echo "       （task_plan.md 存在即 D10 仲裁放行，无需手动清哨兵）"
-  echo "    2. 或清除本会话哨兵: node .../skills/task-planner/scripts/plan-created.cjs（调用即清）"
-  echo "  Or call: Skill(\"task-planner\")"
-  exit 1
+  if [ "$_d10pp_released" != "true" ]; then
+    # [P1] lightweight release
+    if _lightweight_release "$abs_path"; then
+      exit 0
+    fi
+    echo "[PLAN-GUARD] 🚫 本会话计划哨兵未满足 (.plan_required_side active: $(basename "$_side_sentinel"))."
+    echo "  Tool: $TOOL"
+    echo "  File: $FILE_PATH"
+    echo ""
+    echo "  Steps to proceed:"
+    echo "    1. 创建计划（plans/ 写入豁免）: mkdir -p <ROOT>/plans/task-{id}/ && 填写 task_plan.md"
+    echo "       （task_plan.md 存在即 D10 仲裁放行，无需手动清哨兵）"
+    echo "    2. 或清除本会话哨兵: node .../skills/task-planner/scripts/plan-created.cjs（调用即清）"
+    echo "  Or call: Skill(\"task-planner\")"
+    exit 1
+  fi
+  # _d10pp_released == true => continue to worktree check below
 fi
 
 # ─── ⑥ legacy 降级（无 sid 或 side 未命中）：仅查 <ROOT>/.plan-required 固定位置 ─
-# [2026-09-10 task-planrequired-race] 原"向上 4 级盲搜"已删除；B2 根除后 legacy 只查项目根
 if [ -f "$ROOT/.plan-required" ]; then
-  # [P1] 轻量/机械操作放行（同 ④ 口径：机械操作不因「无计划」被拦）
   if _lightweight_release "$abs_path"; then
     exit 0
   fi
@@ -286,6 +358,51 @@ if [ -f "$ROOT/.plan-required" ]; then
   echo "    2. After plan creation: node ~/.zcode/skills/task-planner/scripts/plan-created.cjs"
   echo "  Or call: Skill(\"task-planner\")"
   exit 1
+fi
+
+# ─── [worktree-required] 2026-11-27 接线 ─────────────────────────────────────
+# 对“准备写入受管文件”的场景做 worktree REQUIRED 检查（保守启发式）：
+# - 以 ROOT 为检测 cwd（检测当前是否处于 worktree）；check-worktree-required.sh 支持 --cwd
+# - .md 保守按 delivery=1、lines=3 试探；否则 delivery=0、lines=3 试探
+# - 若判定为 REQUIRED 且不在 worktree（非 SATISFIED）则阻断（输出含 [worktree-required]）
+# [2026-11-27 收口复核] 原行为=本段引号写成 Unicode 弯引号（” “），POSIX shell 当作普通字符，
+# 变量赋值/文件名/命令替换全部失效，接线门实际不可执行；改为 ASCII 双引号，保持判定语义不变。
+# [2026-11-27 回归修复] 原行为=对任何走到此处的非豁免路径都跑 worktree 判定，包括 /tmp 夹具与
+# 仓外部署位；实测 selftest-rule23-conflict-scan 的 /tmp/r23-selftest-*/s 被误拦、selftest-deploy-all-skills
+# DA-06 rc=2。改为仅对本项目根内路径生效：仓外路径不属于本计划 worktree 管辖，维持放行。
+case "$abs_path" in
+  "$ROOT"/*) ;;
+  *) exit 0 ;;
+esac
+# [2026-11-27 回归修复] hermetic 夹具（如 selftest-rule23-conflict-scan 的 /tmp/r23-selftest-*）
+# 也自带 plans/ 目录，会被误判成项目根；真实工作树隔离只存在于 git 仓，非 git 根直接放行。
+if ! command -v git >/dev/null 2>&1 || ! git -C "$ROOT" rev-parse --show-toplevel >/dev/null 2>&1; then
+  exit 0
+fi
+_wt_check_script="$SCRIPT_DIR/check-worktree-required.sh"
+if [ -x "$_wt_check_script" ] || [ -f "$_wt_check_script" ]; then
+  _wt_delivery="0"
+  case "$abs_path" in
+    *.md|*.markdown|*.MD)
+      _wt_delivery="1"
+      ;;
+    *)
+      _wt_delivery="0"
+      ;;
+  esac
+  _wt_out="$(bash "$_wt_check_script" --files "$abs_path" --lines 3 --delivery "$_wt_delivery" --cwd "$ROOT" 2>&1 || true)"
+  if printf '%s\n' "$_wt_out" | grep -q '^REQUIRED worktree'; then
+    echo "[PLAN-GUARD] [worktree-required] 🚫 需要在 git worktree 中进行隔离开发后再写入受管文件。" >&2
+    echo "  Tool: $TOOL" >&2
+    echo "  File: $FILE_PATH" >&2
+    echo "  判定: $_wt_out" >&2
+    echo "" >&2
+    echo "  请先创建/进入 worktree（参考 skills/task-planner/references/worktree-isolation.md §2/§4），" >&2
+    echo "  例如: git worktree add <project-root>/tmp/worktrees/<task-id> -b wt/<task-id> master" >&2
+    echo "  若确属 AGENTS.md §11.5 豁免（纯非交付型且≤2行 trivial 等），需在计划中登记豁免理由后再操作。" >&2
+    exit 1
+  fi
+  # SATISFIED 或 EXEMPT 都放行
 fi
 
 exit 0
