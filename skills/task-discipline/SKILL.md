@@ -21,9 +21,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 卫星路由：task-discipline
 
-域=执行过程纪律与工作产物维护。规则全文见 `references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,102）。
-
-调用条件：涉及执行纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物/产出文件尺寸与拆分时 Read 该文件。
+域=执行过程纪律与工作产物维护。规则全文见 `references/critical-rules-discipline.md`（Rule 4,6,7,8,9,10,18,27,28,29,31,32,33,35,36,41,42,43,44,45,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76,85,86,87,88,89,90,92,93,94,95,97,98,99,100,101,102）；触发：涉及执行纪律/错误闭环/证据面/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收/工作产物/产出文件尺寸与拆分时 Read 该文件；关键词：critical-rules-discipline 执行纪律 错误闭环 能力沉淀。
 - md-edit-ops 指针（速查）：批量/结构化 markdown 修改优先走 md-edit-ops 指令单（Rule 106.6；apply-report 记 [recheck]）；裸 sed/python 0 命中即 FAIL。
 
 ## 规则索引
@@ -77,14 +75,14 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 | 94 | 任务专注性与计划隔离纪律 | 同上 |
 | 95 | 非必要暂停禁令与执行优先纪律 | 同上 |
 | 97 | 惰性上抛禁令与不可用判词证据门 | 同上 |
-| 98 | 否定矛盾触发与上下文记录整理触发纪律 | `references/critical-rules-discipline.md` `### 98` 段 |
-| 99 | 跨项目/跨目录操作授权纪律 | `references/critical-rules-discipline.md` `### 99` 段 |
-| 100 | 临时目录统一与工作树内放纪律 | `references/critical-rules-discipline.md` `### 100` 段 |
-| 101 | git 使用加强纪律 | `references/critical-rules-discipline.md` `### 101` 段 |
-| 102 | 新请求计划同步与反思门纪律 | `references/critical-rules-discipline.md` `### 102` 段 |
-| 105 | 可枚举集合全量枚举优先纪律（ls-first）·素材/资产等可枚举集合检索方式选择与零命中回退复核 | `references/critical-rules-discipline.md` `### 105` 段 |
-| 106 | 文档修改复检与 todo 驱动对齐纪律（写后回读/派生值基准/同文件二次回归/交付物本体验证/两组 todo B1-B11（B9 基线快照/B10 检查点/B11 差异处置）· B6 引擎检测/B7 对齐/B8 worktree 核验保留 · 2026-11-24 task-session-regression-20261124）· task-docmod-recheck-20261112 | `references/critical-rules-discipline.md` `### 106` 段 |
-| 107 | 序列与长文连续性治理纪律（项目级大纲/设定库/知识库/脑图先行+动笔前全局检索+冲突禁静默覆盖+长文本优化策略）· task-serial-sync-20261115 / task-longform-continuity-20261117 | `references/critical-rules-discipline.md` `### 107` 段 |
+| 98 | 否定矛盾触发与上下文记录整理触发纪律 | `references/critical-rules-discipline.md` `### 98` 段（触发：遇否定矛盾表述或需触发上下文记录整理时；关键词：否定矛盾 上下文整理 记录） |
+| 99 | 跨项目/跨目录操作授权纪律 | `references/critical-rules-discipline.md` `### 99` 段（触发：执行跨项目/跨目录操作前需确认授权与边界时；关键词：跨项目 跨目录 授权 隔离） |
+| 100 | 临时目录统一与工作树内放纪律 | `references/critical-rules-discipline.md` `### 100` 段（触发：需要确定临时目录放置位置或工作树内放约束时；关键词：临时目录 工作树 放置） |
+| 101 | git 使用加强纪律 | `references/critical-rules-discipline.md` `### 101` 段（触发：涉及 git 操作规范/起点固定/合并解冲突时；关键词：git 规范 合并 冲突） |
+| 102 | 新请求计划同步与反思门纪律 | `references/critical-rules-discipline.md` `### 102` 段（触发：新请求到达需判定计划同步与反思门时；关键词：新请求 计划同步 反思门） |
+| 105 | 可枚举集合全量枚举优先纪律（ls-first）·素材/资产等可枚举集合检索方式选择与零命中回退复核 | `references/critical-rules-discipline.md` `### 105` 段（触发：检索可枚举素材/资产集合需先全量枚举再筛选时；关键词：ls-first 全量枚举 零命中复核） |
+| 106 | 文档修改复检与 todo 驱动对齐纪律（写后回读/派生值基准/同文件二次回归/交付物本体验证/两组 todo B1-B11） | `references/critical-rules-discipline.md` `### 106` 段（触发：文档/规则批量修改后需复检对齐与 todo 驱动验收时；关键词：文档复检 todo对齐 派生值基准） |
+| 107 | 序列与长文连续性治理纪律（项目级大纲/设定库/知识库/脑图先行+动笔前全局检索+冲突禁静默覆盖+长文本优化策略） | `references/critical-rules-discipline.md` `### 107` 段（触发：长篇/连载/系列内容创作需连续性治理与资产先行时；关键词：长文连续性 大纲 设定库 冲突裁决） |
 
 **落盘状态（task-v171 批次进度）**：Rule 4,6,7,8,9,10,18,28,29,31,32,33,35,36,41,42,43,44,45 共 19 条已由 S15-S17 迁移落盘（源行区间与迁移注记见 `references/critical-rules-discipline.md` 头部）；Rule 27,48,53,54,55,56,57,60,65,67,69,70,71,72,73,74,76 属 v171 后续批次（S18+，均已落盘）；Rule 85（task-v175 用户输入一致性）、Rule 86（task-v177 可测问题禁问）与 Rule 87（task-v179 精准执行与极简改动）、Rule 88（task-v180 任务射程契约）与 Rule 89（task-v181 前后逻辑一致性禁反言）已后补落盘、Rule 90/92/93（task-v182/v185/v195）与 Rule 94（task-focus-plan-split-20261023 任务专注性与计划隔离）、Rule 95（task-nopause-execfirst-20261023 非必要暂停禁令与执行优先）与 Rule 97（task-lazy-escalation-20261102 惰性上抛禁令与不可用判词证据门）、Rule 98（task-ctxcorrect-20261103 否定矛盾触发与上下文记录整理触发纪律）与 Rule 99（task-crossprojauth-20261104 跨项目/跨目录操作授权纪律）与 Rule 100（task-crossprojauth-20261104-R2 临时目录统一与工作树内放纪律）与 Rule 101（task-crossprojauth-20261104-R3 git 使用加强纪律——起点原始数据固定提交+终点主动合并解冲突）已后补落盘、Rule 102（task-crossprojauth-20261104-R5 新请求计划同步与反思门纪律——五类判定+计划优先门+取消同步+痕迹累积）已后补落盘——本索引现共 54 条全文可消费。Rule 107 已后补落盘并于 2026-11-17 增强为序列与长文连续性治理（项目级资产+全局检索+冲突裁决，见 `references/critical-rules-discipline.md` `### 107`）。
 
@@ -98,6 +96,6 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ## 参考文档
 
 - `references/critical-rules-discipline.md` — 54 条规则全文（含后补落盘的 Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102）
-- `references/batch-quality-gate.md` — 批量质量门控细则（Rule 18 正文引用）
-- `references/capability-registry.md` — 能力沉淀登记台账（随 S21 资产迁入）
-- `references/execution-recall-card.md` — 执行规范召回卡（Rule 93.1 唯一召回摘要；≤120 行，非权威摘要，权威原文见 critical-rules-*.md）
+- `references/batch-quality-gate.md` — 批量质量门控细则（Rule 18 正文引用）；触发：涉及批量质量门控细则/Rule18 执行细则查阅时；关键词：batch-quality-gate 批量质量门控 Rule18
+- `references/capability-registry.md` — 能力沉淀登记台账（随 S21 资产迁入）；触发：需要查阅或更新能力沉淀登记台账时；关键词：capability-registry 能力沉淀 登记台账
+- `references/execution-recall-card.md` — 执行规范召回卡（Rule 93.1 唯一召回摘要；≤120 行，非权威摘要，权威原文见 critical-rules-*.md）；触发：需要快速回召执行规范摘要（非权威，权威以 critical-rules-*.md 为准）时；关键词：execution-recall-card 规范召回 摘要 Rule93.1

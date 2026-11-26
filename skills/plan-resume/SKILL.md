@@ -13,7 +13,7 @@ description: Scan for interrupted or stuck task-planner plans across a workspace
 | **自主推进(默认)** | 恢复触发点:① 会话启动且无活跃计划 ② 用户恢复类指令("继续上次任务"等) ③ 当前计划交付终态(COMPLETE/交付报告落盘) | 打分选 1 个最值得推进的计划 → 续推**至交付**;途中执行级决策点按 §7.10 四项测试自主裁决并记录,不停车;选人理由必须报告(§7) |
 | **只报告(dry-run)** | 当前计划执行中的被动扫描(task-planner Rule 24);或 `autonomous_resume: false`;或用户本轮说"不要自动续推"/"只扫不动" | 只产出报告与推荐动作,不替用户 resume/archive/re-plan/drop |
 
-守卫底线(两模式共同):跨仓/跨项目候选一律只报告(宪法 §五 P0);`[blocked]`/`[hold]`/`[user-vetoed]`/熔断标记跳过(`[awaiting-user]` **不跳过**——决策点是自主裁决对象,§7.10);单次触发最多自主续推 1 个计划。详见 `references/autonomous-resume-detail.md`。
+守卫底线(两模式共同):跨仓/跨项目候选一律只报告(宪法 §五 P0);`[blocked]`/`[hold]`/`[user-vetoed]`/熔断标记跳过(`[awaiting-user]` **不跳过**——决策点是自主裁决对象,§7.10);单次触发最多自主续推 1 个计划。详见 `references/autonomous-resume-detail.md`（自主续推详细配置/打分/过滤/纪律/框架）；触发：需要配置或理解自主续推细则、打分过滤或决策框架时；关键词：autonomous-resume, 打分, 续推配置, 决策框架。
 
 ## 何时触发
 
@@ -78,11 +78,11 @@ plans/ 不存在→报告无计划并结束；task_plan 损坏/缺 frontmatter�
 恢复场景自主、执行场景克制(v0.5,用户 2026-09-05)；多维度判定(非单时间)；报告落盘+主上下文摘要(§一)；不调 task-planner hooks(只读)。
 
 ## 参考
-`scripts/scan-plans.sh` / `scripts/extract-meta.sh` / `scripts/score-plans.py` / `scripts/select-and-resume.sh`；`config.json`(§7.2 真源)；`references/critical-rules-resume.md`(Rule 24)；`references/autonomous-resume-detail.md`(§7 详细配置/打分/过滤/纪律/框架/兼容/风险)；宪法 `~/.zcode/AGENTS.md` §一/§四/§五/§十一。
+`scripts/scan-plans.sh` / `scripts/extract-meta.sh` / `scripts/score-plans.py` / `scripts/select-and-resume.sh`；`config.json`(§7.2 真源)；`references/critical-rules-resume.md`（Rule 24；触发：查阅计划续推/自主推进触发时机、守卫与降级契约时；关键词：critical-rules-resume Rule24 续推 触发时机）`；`references/autonomous-resume-detail.md`(§7 详细配置/打分/过滤/纪律/框架/兼容/风险)；宪法 `~/.zcode/AGENTS.md` §一/§四/§五/§十一。
 
 ---
 
-## §7 自主推进模式(摘要,详见 `references/autonomous-resume-detail.md`)
+## §7 自主推进模式(摘要,详见 `references/autonomous-resume-detail.md`；触发：配置/排查自主续推行为、打分或熔断策略时；关键词：autonomous_resume, 打分, 熔断, 续推策略)
 
 > v0.5:恢复触发点默认自主(config `autonomous_resume`+逃生)。v0.6:决策点按 §7.10 自主裁决不停车；仅宪法 P0/Goal 重定义/circuit-break/用户喊停四类合法停点。
 
@@ -110,4 +110,4 @@ evidence:
 ```
 
 ## 卫星路由：plan-resume — 域=计划续推(Rule 24)
-规则全文见 `references/critical-rules-resume.md`(Phase complete/drift-checker 前/交付终态/会话恢复触发时机、执行中只报告/恢复点自主续推 Top 1、守卫与降级)。涉及触发/续推契约时 Read 该文件。
+规则全文见 `references/critical-rules-resume.md`（Phase complete/drift-checker 前/交付终态/会话恢复触发时机、执行中只报告/恢复点自主续推 Top 1、守卫与降级）；触发：涉及触发时机判定、续推/只报告模式选择、守卫与降级契约时 Read 该文件；关键词：critical-rules-resume Rule24 计划续推 守卫。

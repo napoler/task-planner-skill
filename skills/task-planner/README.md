@@ -221,7 +221,7 @@ bash install.sh --dry-run                        # 演练
 bash install.sh --no-verify                      # 跳过自检
 ```
 
-详见 [INSTALL.md](INSTALL.md)。
+详见 [INSTALL.md](INSTALL.md)（按需加载）；触发：需要完整安装步骤、参数说明或排障入口时；关键词：安装 INSTALL 参数 排障
 
 ---
 
@@ -279,11 +279,7 @@ bash ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/scripts/run-selftest
 | check-doc-sync 误判 STALE | fallback 链未含 canonical | 检查 `check-doc-sync.sh` 的 `for _c in` 列表 |
 | 卫星技能未随 task-planner 装上 | SATELLITE_SKILLS 未登记 | 检查 `lib/install-stub.sh:41` 数组含全部 8 个显式 rsync 卫星 |
 
-详见 [INSTALL.md §5 故障排查](INSTALL.md)。
-
----
-
-## 版本历史
+详见 [INSTALL.md §5 故障排查](INSTALL.md)（按需加载）；触发：部署/升级/验证出现异常需查故障排查章节时；关键词：故障排查 INSTALL troubleshooting 升级
 
 - **v2.1（2026-10-12）**：技能专业化拆分（task-v171）
   - 核心只负责四文件罗盘管理：SKILL.md 558→214 行瘦身，行数钉演进 558→275（≤250+25 边距）

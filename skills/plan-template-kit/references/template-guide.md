@@ -89,7 +89,7 @@ task-planner 提供 **双层优先级** 的模板机制：
 | `variant/audio-voice-type.md` (videotpl) | 音频配音对齐（零生成） | 声线表 / 语言锁三层 |
 | `variant/final-assembly-type.md` (videotpl) | 终剪组装验证 | seam 5 边界 / 成片判定 / NAS |
 
-**决策树**详见 `references/template-mapping.md`;`plan-writer` agent 按关键词自动匹配。各类型适用的机制画像见 template-mapping.md §九（Rule 37）。
+**决策树**详见 `references/template-mapping.md`（模板类型决策树与映射规则）；触发：选择 plan 模板类型、查关键词匹配或机制画像时；关键词：template-mapping, 决策树, 模板选型, Rule37。`plan-writer` agent 按关键词自动匹配。各类型适用的机制画像见 template-mapping.md §九（Rule 37）。
 
 ### 2.3 辅助模板（v2.1 新增）
 
@@ -200,7 +200,7 @@ cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md
 - 范围限制表内容（根据 skill 实际操作文件定制）
 - 注释段（`<!-- ... -->`）
 - Key Questions / Decisions / Notes 等结构区
-- 模板契约补充指针（task-tpl-verify-fix-20261113 落地）：验证区块契约（VC 必含行首 `**Verify command**:`，判据源 attest-plan.sh:244-285）与 S-unit 10 列序契约（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态，check-plan-dispatch.sh:246-278）详见 `references/template-mapping.md` §7.1。
+- 模板契约补充指针（task-tpl-verify-fix-20261113 落地）：验证区块契约（VC 必含行首 `**Verify command**:`，判据源 attest-plan.sh:244-285）与 S-unit 10 列序契约（ID/目标/执行体/输入/验收/预估时长/粒度/伴飞/前置/状态，check-plan-dispatch.sh:246-278）详见 `references/template-mapping.md` §7.1（模板契约与字段映射）；触发：编写/校验计划模板 VC 或 S-unit 字段契约时；关键词：template-mapping, VC契约, S-unit, attest-plan。
 
 ---
 

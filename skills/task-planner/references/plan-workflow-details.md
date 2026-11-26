@@ -70,7 +70,7 @@
   **可选思路**：
   1. 思路 A：按 §十一 硬条款判定——命中保护区/基础设施/并行开发任一条 → 选 worktree 隔离（适用场景：实现类任务、改运行行为、用户并行开发时）
   2. 思路 B：命中 §11.5 例外（纯文档/纯调研/单文件 ≤3 行 trivial）→ 直接在主工作树进行（适用场景：不产生运行行为变更、无并行冲突风险时）
-  - （独立检查项）Spec 模式触发判定（2026-11-15）：L1+ 且需求模糊/多方向/规格类 → 整理阶段路由专业执行体：`Skill("brainstorming")` 发散澄清 / `Skill("openspec-propose")` 规格化；技能或 CLI 未安装 → 按 `references/spec-mode.md` §2 安装引导直接安装（免用户门）；planner 只记录产物路径收据并调度，禁自拟规格（详见 `references/spec-mode.md`）；按复杂度在两族间择一路由见 `references/spec-mode.md` §1b（复杂度主轴+信号修正，2026-11-16 /goal 增补）；验证前置定位见 `references/spec-mode.md` §5（验证三载体映射：计划面 VC 契约/执行面 TDD+verification-before-completion/收口面 openspec-verify-change，2026-11-16 /goal 增补）
+  - （独立检查项）Spec 模式触发判定（2026-11-15）：L1+ 且需求模糊/多方向/规格类 → 整理阶段路由专业执行体：`Skill("brainstorming")` 发散澄清 / `Skill("openspec-propose")` 规格化；技能或 CLI 未安装 → 按 `references/spec-mode.md` §2 安装引导直接安装（免用户门）；触发：L1+ 需求模糊需路由 Spec 模式或查安装引导时；关键词：Spec模式 brainstorming openspec 安装引导。planner 只记录产物路径收据并调度，禁自拟规格（详见 `references/spec-mode.md`；触发：需要 Spec 模式总览与路由边界时；关键词：Spec模式 路由 规格 边界）；按复杂度在两族间择一路由见 `references/spec-mode.md` §1b（复杂度主轴+信号修正，2026-11-16 /goal 增补）；触发：Spec 模式下按复杂度选择 brainstorming/openspec 路由时；关键词：复杂度路由 brainstorming openspec；验证前置定位见 `references/spec-mode.md` §5（验证三载体映射：计划面 VC 契约/执行面 TDD+verification-before-completion/收口面 openspec-verify-change，2026-11-16 /goal 增补）；触发：Spec 模式需定位验证三载体映射时；关键词：验证映射 VC TDD openspec-verify
 
 ## audit-gate-details
 
@@ -118,7 +118,7 @@
 ## change-type-compliance-gate
 
      - **判据**：先问是补充还是替代——补充是常态，替代是例外，删除是特许；未做三判即写入 = P0 违规
-     - **通用修改合规门（Rule 74.7，P0）**：执行期任一对已确立规范/阈值/区间的改动（含产物内口径就地放宽），落地前必须先补 `task_plan.md`「📋 变更标注表」合规四元组（变更对象+当前值原文→拟变更值+依据+影响评估+处置），无用户逐字授权+证据的放宽禁落地；若命中 `🔒 规范基线` 同步走 51.15 STOP→授权→Decisions→更新→重 attest。禁「先改后补」；详见 task-discipline/references/critical-rules-discipline.md Rule 74.7
+     - **通用修改合规门（Rule 74.7，P0）**：执行期任一对已确立规范/阈值/区间的改动（含产物内口径就地放宽），落地前必须先补 `task_plan.md`「📋 变更标注表」合规四元组（变更对象+当前值原文→拟变更值+依据+影响评估+处置），无用户逐字授权+证据的放宽禁落地；若命中 `🔒 规范基线` 同步走 51.15 STOP→授权→Decisions→更新→重 attest。禁「先改后补」；详见 task-discipline/references/critical-rules-discipline.md Rule 74.7；触发：执行期改动既有规范/阈值/区间或需合规四元组判定时；关键词：合规门 Rule74.7 规范基线 四元组
 
 ## agent-failure-ledger-details
 

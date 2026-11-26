@@ -497,7 +497,7 @@ Phase 1
 | `branch` | `wt/{{TASK_ID}}` 或 n/a |
 | `merge_back` | `pending` / `merged(<commit>)` / n/a |
 
-> 契约详见 `{{TASK_PLANNER_ROOT}}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式）。
+> 契约详见 `{{TASK_PLANNER_ROOT}}/references/worktree-isolation.md`（决策矩阵/生命周期/合并回合约/反模式，按需加载）；触发：填写隔离决策区块、判定 worktree/direct 或执行合并回时；关键词：worktree 隔离 合并回 决策矩阵
 
 ## 📊 FMEA 预演（规划期 — v063 方法论引入，指针 {{TASK_PLANNER_ROOT}}/references/methodology.md §R2）
 
@@ -533,7 +533,7 @@ B1 修改后验证 / B2 Phase翻转校验 / B3 终验VC复验 / B4 收尾回读 
 B9 基线快照：`bash <skill>/scripts/git-baseline.sh snapshot <plan-dir>`；B10 检查点：`bash <skill>/scripts/git-baseline.sh checkpoint <plan-dir> --label <id>`；B11 差异分析：`bash <skill>/scripts/git-baseline.sh diff <plan-dir>`。B9-B11 完成判据=sidecar 证据 `<plan-dir>/.git-baseline.json`，非 todo 勾选。
 门禁：B6 未留痕不得声称按引擎推进；B8 未勾实现类不得直接改主树；B9 无基线证据=受管写入未完成；B10 无检查点=Phase 禁 complete；B11 unresolved>0=Phase 禁 complete 且禁出 outcome；缺失（含 B9-B11）=S3 当次重建。
 
-> 契约详见 `{{TASK_PLANNER_ROOT}}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式）。
+> 契约详见 `{{TASK_PLANNER_ROOT}}/references/todo-sync.md`（映射规则/工具选择/hook 响应协议/反模式，按需加载）；触发：执行 Todo 同步、处理 plan-sync 提醒或核对 S1-S5 映射时；关键词：Todo同步 plan-sync 映射 S1-S5
 
 ## Key Questions
 <!-- 

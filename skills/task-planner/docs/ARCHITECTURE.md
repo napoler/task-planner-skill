@@ -75,7 +75,7 @@ canonical 仓的**内容不绑定**任何特定 agent 工具：
 | task-dispatch | 管「计划如何被拆分、派发、校验、调度」——子代理全生命周期的机器门控与执行纪律 | 不管四文件内容本身（核心）、通用执行纪律（task-discipline）、媒体制作（media-planner） | 11 | `../../task-dispatch/references/critical-rules-dispatch.md` |
 | task-discipline | 管「执行过程的纪律与工作产物」——错误闭环/证据/调研/模板/反思/可靠性/能力沉淀/卫生/交互/超时/注释/来源锚/变更吸收 | 不管四文件数据流转（核心 Rule 62）、派发机制（task-dispatch）、媒体制作 | 36 | `../../task-discipline/references/critical-rules-discipline.md` |
 | media-planner | 管「媒体制作类任务的拆分轴与执行体路由」——视频/图片/剧集创作媒体轴精细拆分 | 不管通用派发机制（task-dispatch）、通用纪律（task-discipline） | 3 | `../../media-planner/references/critical-rules-media.md` |
-| plan-template-advisor | 管「项目模板适配与沉淀生产」——激活后分析当前项目→预测执行问题→缺口映射→产出候选模板→审查→登记入库的轻量 SOP 执行体 | 不管官方模板选型/生命周期（归 plan-template-kit）、机械发现/模板校验脚本（归 task-planner 脚本层）；规则承载=Rule 34.8/34.9 随 SKILL 内联 | 0（内联） | `../../plan-template-advisor/SKILL.md` |
+| plan-template-advisor | 管「项目模板适配与沉淀生产」——激活后分析当前项目→预测执行问题→缺口映射→产出候选模板→审查→登记入库的轻量 SOP 执行体；触发：需要项目模板适配/沉淀生产或查 plan-template-advisor 职责边界时；关键词：模板适配 沉淀 plan-template-advisor 缺口映射 | 不管官方模板选型/生命周期（归 plan-template-kit）、机械发现/模板校验脚本（归 task-planner 脚本层）；规则承载=Rule 34.8/34.9 随 SKILL 内联 | 0（内联） | `../../plan-template-advisor/SKILL.md`（按需加载） |
 
 新域卫星随迁资产：`task-dispatch` 收 6 个 scripts（analyze-splits/check-subagent-return/check-rescue-chain/subagent-fallback + selftest-rescue-chain/selftest-fallback）+ 3 篇 references；`task-discipline` 收 plan-hygiene.sh + capabilities/ + batch-quality-gate.md + capability-registry.md；`media-planner` 仅 SKILL.md + references；`plan-template-advisor` 为 task-tpl-sediment-20261115 新建（消费 Rule 34.8/34.9），详见 `../../plan-template-advisor/`。
 

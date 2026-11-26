@@ -66,8 +66,8 @@ allowed-tools: "Read, Bash, Grep, Glob"
 1. 逐条 VC 对照判据出 PASS/FAIL
 2. 质量门控统计（Rule 26 面）+ 委派统计（Rule 25.4 面）按模板段核查
 3. 出 outcome：全 VC PASS → COMPLETE；有已知遗留 → PARTIAL；≥1 VC 失败且 3 次重试无效 → BLOCKED 升级用户（goal 语境按 task-discipline Rule 28.9②④⑤ 消费，不升级提问）；语义保证型判据（确保/保证/根治/不再/杜绝/所有）计划期拆为机器可验拆分项+残余风险清单，执行期不新增判据行：拆分项全 PASS 且残余风险清单已登记 ⇒ PARTIAL，未全 PASS 或未拆分 ⇒ BLOCKED
-4. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）
-4b. 存在 Spec-Baseline 的任务（task_plan「🔒 规范基线」区块非空），翻 COMPLETE 前必须先过 84.15 规范基线终验门——对交付物本体逐条执行双向判定式并产出核验表落 verification.md；任一基线 FAIL/软豁免/核验表缺失 → 禁 COMPLETE（见 `references/critical-rules-verification.md` Rule 84.15）。
+4. 内容型交付（VC 证据/交付物含非脚本产出）翻 COMPLETE 前必须走 84.7 内容审查门（独立子代理 + 结论落 findings.md，见 `references/critical-rules-verification.md` Rule 84.7）；触发：需要查阅内容审查门（84.7）执行细则或结论落盘要求时；关键词：critical-rules-verification Rule84.7 内容审查门。
+4b. 存在 Spec-Baseline 的任务（task_plan「🔒 规范基线」区块非空），翻 COMPLETE 前必须先过 84.15 规范基线终验门——对交付物本体逐条执行双向判定式并产出核验表落 verification.md；任一基线 FAIL/软豁免/核验表缺失 → 禁 COMPLETE（见 `references/critical-rules-verification.md` Rule 84.15）；触发：需要查阅规范基线终验门（84.15）或核验表要求时；关键词：critical-rules-verification Rule84.15 规范基线 终验门。
 4c. 终验前运行 `bash <skill>/scripts/check-spec-baseline.sh <plan-dir> --final`（fail-closed，无 warn 档；l0-lite 豁免）；核验表观测/证据锚/结论列由终验执行者经 `planctl set` 写入后 `planctl render` 刷新。
 
 **可选思路**：
@@ -117,7 +117,7 @@ allowed-tools: "Read, Bash, Grep, Glob"
 
 | 文档 | 用途 |
 |------|------|
-| `references/critical-rules-verification.md` | 验证域规则全文（Rule 84.1-84.14, Rule 108 + 迁移的 VC 规则/子代理验证协议） |
+| `references/critical-rules-verification.md` | 验证域规则全文（Rule 84.1-84.14, Rule 108 + 迁移的 VC 规则/子代理验证协议）；触发：查阅验证域规则细则/VC 设计与终验规则时；关键词：critical-rules-verification 规则全文 Rule84 Rule108 |
 | `templates/verification.md` | Verification Contract 模板（VC 可执行化 + Goal Gate + Phase Gates + 质量门控统计） |
 | `scripts/run-verification.sh` | 统一验证执行入口（解析 verification.md VC 命令→逐条执行→PASS/FAIL 汇总） |
 | 主技能引用面 | `task-planner/SKILL.md` 卫星路由表 + 计划期/执行期/终验三处步骤指针 |

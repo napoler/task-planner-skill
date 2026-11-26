@@ -25,6 +25,8 @@ user-invocable: true
 | L4 | 阅读锚定 | 结论落盘/回执 | 逐字摘录 + `file:line` 锚，禁转译改写 | [§4](references/research-channels.md#4-l4-阅读锚定层) |
 | L5 | 外部 | 本地证据不足 | 转 `plan-research-router` / `research-assistant` | [§5](references/research-channels.md#5-l5-外部层) |
 
+- 详见 `references/research-channels.md`（本地调研五层方法论与通道细节速查与判定口径）；触发：需要查阅 L1-L5 各层的详细步骤、失败纪律或回执格式细则时；关键词：research-channels 五层方法 枚举 索引 检索 阅锚 外层。
+
 ## §研究第 0 步
 
 任何调研动作前先取项目索引（防遗漏清单完整性保证）：
@@ -51,4 +53,4 @@ bash <skill>/scripts/project-inventory.sh --root <root> --check || \
 ## §消费回执接线
 
 - L4 阅读层产出 =「声明源扫描回执」，落 plan-state `spec_baseline`（`dimension` 为开放标签，机制不枚举）。
-- 回执格式与字段见 [§4](references/research-channels.md#4-l4-阅读锚定层)；与 task-planner 的 `spec-scan` / `spec-brief` / `check-spec-baseline` 消费门衔接由 task-planner 侧完成，本技能只声明分工与产出格式。
+- 回执格式与字段见 [§4](references/research-channels.md#4-l4-阅读锚定层)；与 task-planner 的 `spec-scan` / `spec-brief` / `check-spec-baseline` 消费门衔接由 task-planner 侧完成，本技能只声明分工与产出格式。触发：需要查阅 L4 阅读锚定层回执格式、字段定义或消费门衔接说明时；关键词：research-channels L4 阅读锚定 回执 字段。

@@ -49,7 +49,7 @@ model: haiku
 
 ## 条目格式
 
-每行一条 JSON 记录（完整字段说明与示例见 `references/ledger-format.md`）：
+每行一条 JSON 记录（完整字段说明与示例见 `references/ledger-format.md`；触发：需要查阅 ledger 条目字段定义/示例/查询场景时；关键词：ledger-format JSONL 条目格式）：
 
 ```json
 {"ts":"2026-09-14T10:00:00Z","topic":"site-maintenance","target":"https://example.com","action":"更新首页文章链接","changed":["/home/site/index.html"],"status":"done","effect":"链接 301 正常，首页访问数 +2"}
@@ -89,7 +89,7 @@ mkdir -p "$LEDGER_DIR/<topic>"
 ### Step 1：识别或创建主题 [A]
 
 根据任务性质选主题名（kebab-case）。不确定时问用户。
-若 `$LEDGER_DIR/INDEX.md` 不存在，创建它（格式见 references/ledger-format.md）。
+若 `$LEDGER_DIR/INDEX.md` 不存在，创建它（格式见 references/ledger-format.md`；触发：需要确认 INDEX.md 格式或初始化索引时；关键词：ledger-format INDEX 格式）。
 
 ### Step 2：先查后写 [M]
 
@@ -153,7 +153,7 @@ grep -F "<target>" "$LEDGER_DIR/<topic>/<topic>.jsonl" | tail -3
 grep -F "<action关键词>" "$LEDGER_DIR/<topic>/<topic>.jsonl" | grep -F '"status":"done"'
 ```
 
-更多查询场景与示例见 `references/ledger-format.md`。
+更多查询场景与示例见 `references/ledger-format.md`（触发：需要更多 ledger 查询示例或场景时；关键词：ledger-format 查询示例）。
 
 ## 闭环保障：自动创建 Todo 防止遗忘
 
@@ -194,6 +194,6 @@ TodoWrite 或 TaskCreate：
 
 ## 卫星路由：progress-tracker — 域=共享内容认领（Rule 30）
 
-规则全文见 `references/critical-rules-progress.md`（Rule 30）。
+规则全文见 `references/critical-rules-progress.md`（Rule 30）；触发：涉及共享内容认领/跨任务进度复用/认领防冲突/共享追踪账本登记时 Read 该文件；关键词：critical-rules-progress Rule30 共享认领 进度账本。
 
 调用条件：涉及共享内容认领/跨任务进度复用/认领防冲突/共享追踪账本登记时 Read 该文件。

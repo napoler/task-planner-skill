@@ -1,5 +1,5 @@
 <!-- subagent_dispatch.md — Agent() 派发 prompt 模板(Rule 22.4)
-使用方式:主进程读本模板填九字段作 Agent() prompt | 已填示例与主进程参考段(例/Resume/STOP)外置 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../task-dispatch/references/dispatch-examples.md 按需 Read [2026-09-27 task-v091 B-1] | 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
+使用方式:主进程读本模板填九字段作 Agent() prompt | 已填示例与主进程参考段(例/Resume/STOP)外置 ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/../task-dispatch/references/dispatch-examples.md（按需加载）；触发：需要派发示例、Resume/STOP 参考段或填写 dispatch 模板时；关键词：派发示例 dispatch-examples Resume STOP [2026-09-27 task-v091 B-1] | 禁止:省略任何必填字段;字段值使用占位符 {placeholder} 形式,调用方替换 -->
 <!-- 填写指引 Why（task-v115 线C 补强，Rule 45.2/45.4）:
   ① 何时用: 每次 Agent() 派发子代理前，主进程以本模板为 prompt 骨架逐项替换占位符；
      子代理无会话记忆，prompt 必须自包含（22.4a 自包含原则）——缺字段=子代理无据判断。
