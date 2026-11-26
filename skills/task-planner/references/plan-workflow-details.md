@@ -274,17 +274,17 @@
 
 <!-- [2026-11-23 task-fix-all-20261123] 补充脚本发现性索引：163 个脚本文件按类别索引，避免仅靠正文零散提及导致发现性差；不穷举全部 selftest，给分类+权威发现命令。 -->
 
-`scripts/` 共 **163** 个文件（含 `lib/`、`schemas/`）。权威清单以文件系统为准：`ls skills/task-planner/scripts`（或 `find skills/task-planner/scripts -type f | sort`）。
+`scripts/` 共 **184** 个文件（含 `lib/`、`schemas/`；2026-11-26 task-shared-todo-20261126 增 `todoctl.py` 与 `selftest-todoctl.sh` 后实测）。权威清单以文件系统为准：`ls skills/task-planner/scripts`（或 `find skills/task-planner/scripts -type f | sort`）。
 
 | 类别 | 数量(约) | 代表脚本/入口 | 用途 |
 |------|---------:|---------------|------|
 | 生命周期/init | 11 | `init-session.sh`, `attest-plan.sh`, `archive-plan.sh`, `set-active-plan.sh`, `resolve-plan-dir.sh`, `resolve-interaction-mode.sh`, `auto-finalize.sh`, `plan-created.cjs`, `session-catchup.ts`, `task-plan-init.cjs` | 计划创建/锁定/归档/指针/恢复 |
-| 状态与计划操作 | 5 | `planctl.py`, `plan-doctor.sh`, `sync-todos.sh`, `ledger-append.sh`, `template-catalog.sh` | JSON 权威源 CRUD/render、诊断、Todo/账本/模板 |
+| 状态与计划操作 | 6 | `planctl.py`, `todoctl.py`, `plan-doctor.sh`, `sync-todos.sh`, `ledger-append.sh`, `template-catalog.sh` | JSON 权威源 CRUD/render、跨任务共用待办（Rule 117）、诊断、Todo/账本/模板 |
 | 机械门/检查 | 25 | `check-complete.sh`, `check-3file-gate.sh`, `check-plan-audit-gate.sh`, `check-plan-dispatch.sh`, `check-dispatch.sh`, `check-delegation.sh`, `check-drift.sh`, `check-scope.sh`, `check-rvc-coverage.sh`, `check-vc-nonvacuous.sh` | attest/完成/派发/漂移/范围/VC 等门禁（`check-*.sh`） |
 | 合并/隔离/辅助 | 6 | `smart-merge-back.sh`, `check-conflicts.sh`, `allow-direct.sh`, `lane-detect.sh`, `periodic-review.sh`, `rule-reserve.sh` | worktree 合并回、冲突、直改豁免、车道/周期/编号 |
 | hook/平台接线 | 4 | `zcode-sessionstart.sh`, `zcode-userpromptsubmit.sh`, `zcode-pretooluse.sh`, `zcode-posttooluse.sh` | ZCode hook 入口 |
 | 同步/校验/注册 | 7 | `sync-companion.sh`, `sync-ide-folders.ts`, `register-hooks-cj.ts`, `verify_io.sh`, `run-selftests.sh`, `selftest-registry.tsv`, `selftest-registry.sh` | 部署同步、I/O 校验、自测注册表/运行器 |
-| selftest | 106 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
+| selftest | 114 | `selftest-*.sh` / `selftest-planctl.py` | 规则/脚本回归守护（含 `selftest-todoctl.sh`）；全量入口 `bash scripts/run-selftests.sh`，登记见 `selftest-registry.tsv` |
 | lib/schemas | 2（路径相对 skills/task-planner/，lib/ 与 schemas/ 为同级子目录） | `lib/plan-parse.sh`, `schemas/check-delegation-stats.schema.json` | 共享解析与 JSON schema |
 
 > 发现脚本时优先：① 本节类别 → ② `grep -rn "<关键词>" skills/task-planner/scripts` → ③ 直接读脚本头部注释/`--help`。新增脚本应归入对应类别并保持命名可检索（`check-*`/`selftest-*`/`sync-*`/`zcode-*`）。

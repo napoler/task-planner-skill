@@ -181,7 +181,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 **建制（为什么有这条）**：task-planner 曾把 77 条既有规则（1-76+80）与全流程脚本堆在单一核心，SKILL.md 556 行什么都讲——产出边界混乱（用户定性「什么都负责导致产出边界混乱」，R1-R5 见 plans/task-v171-skill-specialization/task_plan.md）。task-v171 起按域分层：核心=四文件罗盘（`task_plan.md`/`findings.md`/`progress.md`/`knowledge-brief.md`，Rule 19/20/62）+用户会话逐字记录专档（Rule 80）；子代理派发与拆分调度→task-dispatch；通用执行纪律与工作产物→task-discipline；媒体制作→media-planner；其余规则归 7 个既有卫星（plan-research-router/plan-template-kit/plan-collab-router/plan-cost-guard/plan-resume/progress-tracker/task-drift-guard）。归属判定=「主题⟷四文件/计划生命周期门→核心；否则按域归卫星」。
 
-**边界（管什么/不管什么）**：核心 `references/critical-rules.md` 只保留核心域规则全文（15 条：1,2,3,5,19,20,26,51,62,66,80,81,82,83,109）（2026-10-15 task-v176 D10 更正：原列 12 条（1,2,3,5,19,20,26,51,62,66,80,82），实际 Rule 81/83 已先后落核心（task-v170/task-v172），本清单未同步；以 SKILL.md:9/258「核心在位 15 条」口径为准）；非核心域规则的唯一权威全文在其归属卫星的 `references/critical-rules-<域>.md`——核心文件只留末尾「卫星路由索引」（路径+规则编号集+调用条件），**禁止在核心文件留存非核心域规则正文或镜像副本**（双份正文=漂移源，改一份漏一份=规则分叉）；卫星之间不互相收编（域间争议按「先例归属→用户裁决」收敛，禁静默改嫁）；新规则先过 Rule 20.6 rule-reserve.sh 查重，再入其归属域文件，禁直接写入核心。
+**边界（管什么/不管什么）**：核心 `references/critical-rules.md` 只保留核心域规则全文（20 条：1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113,116,117）（历史沿革：2026-10-15 task-v176 D10 更正原列 12 条；2026-11-26 task-shared-todo-20261126 增 Rule 117；当前口径以 SKILL.md frontmatter 与「Critical Rules 指针」段的「核心在位 20 条 / Rules 1-117」为准）；非核心域规则的唯一权威全文在其归属卫星的 `references/critical-rules-<域>.md`——核心文件只留末尾「卫星路由索引」（路径+规则编号集+调用条件），**禁止在核心文件留存非核心域规则正文或镜像副本**（双份正文=漂移源，改一份漏一份=规则分叉）；卫星之间不互相收编（域间争议按「先例归属→用户裁决」收敛，禁静默改嫁）；新规则先过 Rule 20.6 rule-reserve.sh 查重，再入其归属域文件，禁直接写入核心。
 
 **回归防线（怎么防回潮）**：① **删除与落盘原子配对**——从核心删除某规则前，其全文（含溯源注释）必须已在归属卫星逐字在位（配对前逐字核验脚本比对，零差异才可删），拆开执行=规则悬空/丢失（task-v171 实例：66 条迁移中 4 条溯源注释漂移即被配对前核验拦截并补挂）；② **空壳与预留号纪律**——Rule 77/78/79 为 task-v168 预留未落地号；Rule 80 曾被 design-architecture §5 D-01 按空壳登记删除，本次 S31 实测其正文已由 task-v169 实落（commit 3eff362d，80.1-80.6 完整且 selftest-session-log.sh SL-04 锚定核心文件）而保留于核心——预留号落地/废弃按 Rule 20.6 台账 land/release，删除任何规则前必须实测当前正文而非凭历史登记；③ **机器守护三重钉**——SKILL.md 行数钉（≤250+边距，selftest-batch-pilot.sh BP-08）+ 核心 critical-rules `^### ` 规则计数 + 迁移后 selftest 断言指向归属 home（原核心锚改指卫星路径）——任一钉子回归即挡；④ **SKILL.md 瘦身口径**——核心 SKILL.md 只写四文件罗盘定位段+计划制作循环+卫星路由表+核心规则指针；非核心域细节段随迁删除（与四文件罗盘/计划制作主循环直接相关的保留，拿不准的段保留并登记）。
 
@@ -324,3 +324,23 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 116.7 **卫星接线**：discipline 卫星在 101.5 旁新增接线条款（引用 core Rule 116 权威语义，对齐 101.5 形态先例）。
 
 116.8 **通用面三问自查**：换技能成立（条款对任意技能文档面成立）／与既有门互认（独立 fail-closed 门，接统一收口序列）／部署位实测（VC5 部署位跑门）。each executor self-check.
+
+### 117 跨任务共用未解决问题登记（Shared Backlog Contract，P0，2026-11-26 task-shared-todo-20261126；治理目标：根治「任务半途搁置后问题只留会话、后期遗忘、无法统计已解决与未解决」）
+
+> 适用：一切使用 task-planner 的项目（不限任务类型/内容域）。机制=项目根 `todo.json`（JSON 权威源）+ 唯一写入口 `scripts/todoctl.py` + 文本登记义务，零新 hook、零 plan-state 字段。Why：既有 `plans/INDEX.md` 是脚本派生的 MD 任务索引，`todo-sync.md`/`todo-skill` 只管单次任务内 Todo，均非跨任务 JSON 权威源；任务被搁置时问题随会话消失，用户无法整体计划性处理。示例实物与 C1–C6 审查命令见 `examples/shared-todo/review.md`（Rule 113.10 权威形态）。
+
+117.0 **公理（P0）**：未解决问题属于项目级共有资产，不属于任何单次任务或 task-plan。凡执行、修 bug、扫描、审查中发现但**未在此刻解决**的问题，必须登记到项目根 `todo.json`；任务是否被搁置不改变登记义务。
+
+117.1 **数据契约**：顶层 `{schema_version:1, updated_at:ISO8601Z, items:[]}`；条目必含 `id/status/priority/title/detail/source/tags/created_at/updated_at/resolved_at/resolution`。`status ∈ {open,in_progress,done,cancelled}`；终态必须有 `resolved_at`，未结必须为 `null`。已解决项**保留不删**（status=done + 处置说明），这是统计「已解决 vs 未解决」的基础。
+
+117.2 **唯一写入口（P0）**：`python3 <skill>/scripts/todoctl.py <subcommand> [--root <project-root>]`；`init/add/list/get/resolve/reopen/set/stats/check`。`todo.json` 禁手工 Edit/Write（手改会破坏原子写/备份/回读校验链，且 `check` 可判定为 FAIL）。`add` 对未结项同标题幂等，避免重复登记；`list` 默认只列未结项，`stats` 给四态计数。
+
+117.3 **登记时机**：① 修 bug 或执行中发现的新缺陷/半成品；② 扫描/门禁/审计发现且本轮未修的问题；③ 用户明确提出的遗留事项。登记时 `source.type`/`source.ref` 记录来源锚（开放标签，如 `task`/`scan`/`review`，不枚举、不写死任务类型）；`detail` 写现象+复现+判定标准，保证后期可独立接手。
+
+117.4 **与既有消费链的边界**：`findings.md`（单任务派生视图）记本任务结论与证据；`todo.json` 记**跨任务未结问题**——二者互不替代、互不镜像。不修改 `plans/INDEX.md`、`todo-sync.md`、`todo-skill`、`plan-state.json`、`progress-tracker`，避免形成两套口径。worktree 并行时各自副本按普通文件参与 merge-back，收口后在主仓复跑 `stats` 确认条目汇合。
+
+117.5 **通用性（零写死）**：`source.type` 与 `tags` 均为开放标签，机制不因项目/任务类型变化而失效；CLI 的 `--root` 支持任意项目根，不硬编码本仓路径。新增场景零代码扩展（对齐 115.0/112.1 注册表化先例）。
+
+117.6 **机器门与 selftest**：`todoctl.py check` 输出单行 `TODOCTL CHECK schema: PASS|FAIL <reason>`（rc 0/1/2）；`selftest-todoctl.sh` 以 fixture 覆盖 C1–C6、幂等 add、mutation（删 `status` → 门转 FAIL）与开放标签负控制。全量回归入口 `run-selftests.sh`。
+
+117.7 **通用面三问自查**：换项目成立（任意项目根 `todo.json` 同机制）／与既有门互认（`check` 单行判定接统一 rc 契约，不拦截既有门）／部署位实测（scripts 随 rsync 自动进部署位，Python 免 chmod，在部署位实跑 `stats`）。each executor self-check.

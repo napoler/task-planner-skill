@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-26T14:00:00Z",
+  "items": [
+    {
+      "id": "TODO-0001",
+      "status": "open",
+      "priority": "high",
+      "title": "半途搁置任务遗留的 X 缺陷未修完",
+      "detail": "现象：任务执行到一半被搁置，缺陷复现步骤只留在会话里；判定： reproduce.sh 可稳定复现且无对应修复 commit",
+      "source": {
+        "type": "task",
+        "plan_id": "task-xxx-20261126",
+        "ref": "findings.md:L12"
+      },
+      "tags": [
+        "bug",
+        "unresolved"
+      ],
+      "created_at": "2026-11-26T09:00:00Z",
+      "updated_at": "2026-11-26T09:00:00Z",
+      "resolved_at": null,
+      "resolution": null
+    },
+    {
+      "id": "TODO-0002",
+      "status": "done",
+      "priority": "normal",
+      "title": "扫描发现的文档漂移（已修）",
+      "detail": "现象：端点 SKILL.md 与源仓计数不一致；判定：verify.sh 逐位 diff=0",
+      "source": {
+        "type": "scan",
+        "ref": "check-doc-sync.sh"
+      },
+      "tags": [
+        "doc"
+      ],
+      "created_at": "2026-11-25T10:00:00Z",
+      "updated_at": "2026-11-26T08:00:00Z",
+      "resolved_at": "2026-11-26T08:00:00Z",
+      "resolution": "commit abc1234"
+    }
+  ]
+}

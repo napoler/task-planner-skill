@@ -6,7 +6,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, Agent, Skill, TodoWrite, Ta
 user-invocable: true
 references:
 - reference.md: Manus context engineering 原则 + 3-Strike + 5Q + Chain Handoff Contract 合约 + Chain Handoff Contract 重规划触发条件
-- references/critical-rules.md: Critical Rules 核心域——Rules 1-116 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113,116，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门 + Rule 111 进度产出基线防倒退 + Rule 112 检索排除清单纪律 + Rule 116 惰性文件引入规范；其余 95 条按域归 12 卫星，见文末「卫星路由表」）
+- references/critical-rules.md: Critical Rules 核心域——Rules 1-117 全集索引（核心在位 1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113,116,117，含 Rule 82 分层纪律 + Rule 83 通道快速失败 + Rule 109 独立审计门 + Rule 111 进度产出基线防倒退 + Rule 112 检索排除清单纪律 + Rule 116 惰性文件引入规范 + Rule 117 跨任务共用未解决问题登记；其余 96 条按域归 12 卫星，见文末「卫星路由表」）
 - examples.md: 完整执行示例（调研/bugfix/功能开发/错误恢复）
 - references/completion-gate.md: 子代理验证（指针；全文→卫星 `../verification-gate/` Rule 84.4，2026-10-14 task-v173 迁移）
 - references/goal-gate.md: Goal Gate + VC 规则（指针；全文→卫星 `../verification-gate/` Rule 84.3，2026-10-14 task/v173 迁移）
@@ -236,7 +236,7 @@ model: opus
 
 ## Critical Rules 指针（核心域）
 
-Rules 1-116 全集索引：**核心在位 19 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113,116）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 95 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星）、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）、Rule 111 进度产出基线防倒退域（核心在位）、Rule 112 检索排除清单纪律域（核心在位）、Rule 113 输出示例契约域（核心在位）、Rule 114/115 纪律域）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
+Rules 1-117 全集索引：**核心在位 20 条**（1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113,116,117）全文见 `references/critical-rules.md`（含分层架构说明+卫星路由索引）；其余 96 条已按域迁至上表 12 卫星（含 Rule 84 验证域、Rule 85/86/87/88/89/90/92/93/94/95/97/98/99/100/101/102 纪律域、Rule 103 双轮质检与同步完整性域、Rule 104 子代理使用点显式标注域（dispatch 卫星）、Rule 105 可枚举集合全量枚举优先纪律域、Rule 106 文档修改复检与 todo 驱动对齐纪律域、Rule 107 序列与长文连续性治理纪律域（项目级大纲/设定库/知识库/脑图+全局检索，均 task-discipline 卫星）、Rule 108 交叉验证纪律域（verification-gate 卫星）、Rule 109 独立审计门（audit-before-delivery，核心在位）、Rule 110 任务分级×模型档位强制匹配域（dispatch 卫星）、Rule 111 进度产出基线防倒退域（核心在位）、Rule 112 检索排除清单纪律域（核心在位）、Rule 113 输出示例契约域（核心在位）、Rule 114/115 纪律域）——**非核心域规则勿在本技能展开**（Rule 82 回归防线）。
   → 核心规则摘要 A 细则（按需加载）→ 详见 references/plan-workflow-details.md §critical-rules-summary-a；触发：需要快速回顾核心规则摘要或执行期规则速查时；关键词：核心规则 摘要 速查 Rule
 - **Rule 26 质量优先于速度**：6 类降质行为可观察触发+确定性惩罚（回炉→PARTIAL→BLOCKED），伪造证据无豁免
 - **Rule 51 需求覆盖与完成声称**：需求原文逐字锚+R→VC 映射；自缩水禁令；未测试禁声称完成；**可计数交付物全 R 化 + 禁「0 产出」为 covered 判据 + 留口须逐字让步锚（51.9-51.12）**；完成声称须按 51.14 操作类型档位 L1-L4 + 覆盖实数 + 实测耗时（并发度 K 写明依据）自证，措辞不得高于实际档位（task-drift-fakeqc-20261115 判例锚）。
@@ -293,6 +293,8 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
   - 生成视图 / 安全回退：`render`（从 JSON **全量重建** 4 个 MD 视图；**每次状态/语义变更后必须 render**，这是软堵生效条件——不 render 则手工编辑残留不被覆盖）/ `backup` / `restore [--version N]` / `history`
 - **安全说明**：每次写操作自动备份权威源到 `<plan-dir>/.history/`（保留最近 20 版），改坏可 `restore`；错误操作不破坏旧版，禁止手工删除/改写 `.history/`。
 - **机器门**：`python3 scripts/planctl.py check vc-nonvacuous|rvc|audit|evidence` 输出单行 `PLANCTL CHECK <name>: PASS|FAIL <reason>`，rc 0=PASS / 1=FAIL / 2=输入异常；旧门脚本为双读 shim，前缀与 rc 外契约不变。
+  → 跨任务共用待办（项目根 `todo.json` 的唯一写入口；发现未结问题或统计已解决/未解决项时必用）→ 详见 examples/shared-todo/review.md；触发：执行/修 bug/扫描/审查中发现未解决的问题需要登记，或需要统计跨任务未结与已结条目时；关键词：todo.json 待办 未解决 登记 todoctl
+  - 跨任务待办命令（Rule 117）：`python3 <skill>/scripts/todoctl.py add --title "<问题>" --source-type task --ref findings.md:L12 --root <repo-root>` 登记；`todoctl.py stats` / `list` 统计与查看；`check` 单行 `TODOCTL CHECK schema: PASS|FAIL`。**禁手改 `todo.json`**（唯一写入口=CLI），已解决项保留不删以支撑统计。
 - **输出示例生成器（Rule 113.9）**：`python3 scripts/render-output-example.py --set id=OE-1 --set deliverable=article.json --set format=JSON --example-file <完整示例文件> --template-file <占位符模板文件> --vc-ref VC-1 --out oe-1.json [--plan-dir <计划目录>] [--dry-run]` —— CLI 传参填充 `templates/output-example.template.json`（`{{KEY}}` 占位符），产出符合 `output_example_item` 契约的 JSON 文件；产物经 `planctl add --section output_examples --json` 落库并 render 派生。
 - **迁移期**：存量无 `plan-state.json` 的旧计划一次性兼容（机器门双读 fallback 保证零回归），**新计划一律 JSON 权威源**：`init-session.sh` 创建 plan-state.json（不 render）；**首次 planctl 数据写入后必须 `render`**——此后 4 个 MD 即为派生视图，手工编辑被后续 render 覆盖（软堵）。templates/*.md 为 plan-writer 过渡结构参考与 stub 判定基准（全量回归 PT-16/26 实证：空数据 render 会覆盖模板骨架，故 init 不自动 render）。
   → planctl 四件套与备份恢复细则（按需加载）→ 详见 references/plan-workflow-details.md §planctl-four-piece；触发：需要 planctl init/render/backup/restore 全流程或迁移期说明时；关键词：planctl 四件套 render backup restore
@@ -316,7 +318,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 | 文档 | 用途 |
 |------|------|
   → 参考文档表细则（按需加载）→ 详见 references/plan-workflow-details.md §references-table；触发：查找 references/templates/外部 skill 的用途与读取时机时；关键词：参考文档 references 模板 索引
-| `references/critical-rules.md` | Critical Rules 核心域 1-116 全集索引（19 条核心全文+分层架构说明+卫星路由索引）；触发：查规则编号、判定规则归属域、核对核心/卫星边界时；关键词：规则 索引 Rule 归属 核心 卫星 |
+| `references/critical-rules.md` | Critical Rules 核心域 1-117 全集索引（20 条核心全文+分层架构说明+卫星路由索引）；触发：查规则编号、判定规则归属域、核对核心/卫星边界时；关键词：规则 索引 Rule 归属 核心 卫星 |
 | `templates/delivery-summary.md` | 终验交付总结五要素模板；触发：终验交付需要输出五要素总结或填写交付摘要时；关键词：交付总结 模板 五要素 delivery |
 | `../plan-collab-router/references/skill-collaboration.md` | 专业技能协同路由权威源；触发：任务涉及 comet/OpenSpec/superpowers/dynamic-workflows 协同路由时；关键词：协同路由 comet OpenSpec superpowers workflow |
 | `../research-channels/SKILL.md` | 声明源通用消费与本地调研通道（Rule 115）：project-inventory 索引第 0 步、五层通道失败纪律、源注册表消费 |
