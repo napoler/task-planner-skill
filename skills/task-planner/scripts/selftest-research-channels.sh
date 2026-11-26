@@ -24,6 +24,9 @@ CHECK_COMPLETE="$SCRIPT_DIR/check-complete.sh"
 GIT_BASELINE="$SCRIPT_DIR/git-baseline.sh"
 TP_SKILL="$SCRIPT_DIR/../SKILL.md"
 TP_TPL="$SCRIPT_DIR/../templates/task_plan.md"
+# [2026-11-26 RC-16 部署位修复] What: 薄壳部署位 SKILL.md 只有指针壳（无正文），Rule 115 标题锚改断
+#   references/critical-rules.md（部署位为全量拷贝）；Why: canonical 16/16 而部署位 15/16 假 FAIL。
+TP_CRIT="$SCRIPT_DIR/../references/critical-rules.md"
 REGISTRY="$SCRIPT_DIR/selftest-registry.tsv"
 
 PASS=0; FAIL=0
@@ -539,12 +542,11 @@ P_SSCAN=$(grep -c '\[source-scan\]' "$PLANCTL" || true)
 # 注册命令锚：add_cmd("acceptance"... cmd_acceptance) / add_cmd("disposition"... cmd_disposition)
 P_REG_ACC=$(grep -c 'add_cmd("acceptance"' "$PLANCTL" || true)
 P_REG_DISP=$(grep -c 'add_cmd("disposition"' "$PLANCTL" || true)
-# Rule 115 通道接线锚：templates/task_plan.md 存在；SKILL.md 实测不含字面“Rule 115 通道接线”，
-# 但含 “Rule 115” + 通道接线相关锚（见 273/289/323 行）。以盘面实测锚为准：模板必须含字面锚；
-# SKILL.md 含 Rule 115 且含 research-channels/通道 关键词即可。
+# Rule 115 通道接线锚：templates/task_plan.md 存在字面锚；SKILL 锚改断言 references/critical-rules.md
+# 的 `### 115 ` 标题（部署位为薄壳：SKILL.md 只有指针壳，Rule 115 全文在 references 全量拷贝中；
+# [2026-11-26 修复] 部署位形态实测 15/16 假 FAIL 根因=薄壳无正文，本断言原读 $TP_SKILL）。
 TPL_114=$(grep -c 'Rule 115 通道接线' "$TP_TPL" || true)
-SKILL_114=$(grep -c 'Rule 115' "$TP_SKILL" || true)
-SKILL_CH=$(grep -c '通道' "$TP_SKILL" || true)
+CRIT_115=$(grep -c '^### 115 声明源通用消费与本地调研通道' "$TP_CRIT" || true)
 
 RC16_OK=1; RC16_MSG=""
 [ "$P_ACC" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG cmd_acceptance"; }
@@ -552,12 +554,11 @@ RC16_OK=1; RC16_MSG=""
 [ "$P_SSCAN" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG [source-scan]"; }
 [ "$P_REG_ACC" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG reg_acceptance"; }
 [ "$P_REG_DISP" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG reg_disposition"; }
-[ "$TPL_114" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG tpl_Rule114通道接线"; }
-[ "$SKILL_114" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG skill_Rule114"; }
-[ "$SKILL_CH" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG skill_通道"; }
+[ "$TPL_114" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG tpl_Rule115通道接线"; }
+[ "$CRIT_115" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG crit_Rule115标题"; }
 
 if [ "$RC16_OK" -eq 1 ]; then
-  ok "16" "planctl acceptance/disposition/[source-scan]+注册+SKILL.md Rule114/通道+template Rule114通道接线 锚齐"
+  ok "16" "planctl acceptance/disposition/[source-scan]+注册+critical-rules Rule115 标题+template Rule115通道接线 锚齐"
 else
   bad "16" "静态锚缺失:$RC16_MSG"
 fi
