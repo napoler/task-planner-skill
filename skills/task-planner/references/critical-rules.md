@@ -333,7 +333,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 117.1 **数据契约**：顶层 `{schema_version:1, updated_at:ISO8601Z, items:[]}`；条目必含 `id/status/priority/title/detail/source/tags/created_at/updated_at/resolved_at/resolution`。`status ∈ {open,in_progress,done,cancelled}`；终态必须有 `resolved_at`，未结必须为 `null`。已解决项**保留不删**（status=done + 处置说明），这是统计「已解决 vs 未解决」的基础。
 
-117.2 **唯一写入口（P0）**：`python3 <skill>/scripts/todoctl.py <subcommand> [--root <project-root>]`；`init/add/list/get/resolve/reopen/set/stats/check`。`todo.json` 禁手工 Edit/Write（手改会破坏原子写/备份/回读校验链，且 `check` 可判定为 FAIL）。`add` 对未结项同标题幂等，避免重复登记；`list` 默认只列未结项，`stats` 给四态计数。
+117.2 **唯一写入口（P0）**：`python3 <skill>/scripts/todoctl.py <subcommand> [--root <project-root>]`；`init/add/list/get/resolve/reopen/set/stats/check/next/review/retire`。`todo.json` 禁手工 Edit/Write（手改会破坏原子写/备份/回读校验链，且 `check` 可判定为 FAIL）。`add` 对未结项同标题幂等，避免重复登记；`list` 默认只列未结项，`stats` 给四态计数。
 
 117.3 **登记时机**：① 修 bug 或执行中发现的新缺陷/半成品；② 扫描/门禁/审计发现且本轮未修的问题；③ 用户明确提出的遗留事项。登记时 `source.type`/`source.ref` 记录来源锚（开放标签，如 `task`/`scan`/`review`，不枚举、不写死任务类型）；`detail` 写现象+复现+判定标准，保证后期可独立接手。
 
@@ -341,6 +341,16 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 117.5 **通用性（零写死）**：`source.type` 与 `tags` 均为开放标签，机制不因项目/任务类型变化而失效；CLI 的 `--root` 支持任意项目根，不硬编码本仓路径。新增场景零代码扩展（对齐 115.0/112.1 注册表化先例）。
 
-117.6 **机器门与 selftest**：`todoctl.py check` 输出单行 `TODOCTL CHECK schema: PASS|FAIL <reason>`（rc 0/1/2）；`selftest-todoctl.sh` 以 fixture 覆盖 C1–C6、幂等 add、mutation（删 `status` → 门转 FAIL）与开放标签负控制。全量回归入口 `run-selftests.sh`。
+117.6 **机器门与 selftest**：`todoctl.py check` 输出单行 `TODOCTL CHECK schema: PASS|FAIL <reason>`（rc 0/1/2）；`selftest-todoctl.sh` 以 fixture 覆盖 C1–C10、幂等 add、mutation（删 status → check FAIL）、开放标签负控制、next 排序/终态排除、review 陈旧阈值、retire dry-run 零移动与终态关联 mutation。全量回归入口 `run-selftests.sh`。
 
 117.7 **通用面三问自查**：换项目成立（任意项目根 `todo.json` 同机制）／与既有门互认（`check` 单行判定接统一 rc 契约，不拦截既有门）／部署位实测（scripts 随 rsync 自动进部署位，Python 免 chmod，在部署位实跑 `stats`）。each executor self-check.
+
+117.8 **主动消费触发（P0）**：用户原话「检查一下还有什么任务没有解决 / 帮我推进 / 还有什么没做完的 / 清理已完成计划 / 更新跟进状态」→ 先跑 `todoctl.py review` 与 `todoctl.py next`（问题级 backlog 优先）。`next` 只做确定性选择与报告，不自动建计划、不改状态；选中后按 task-planner 常规流程建计划/worktree 推进，完成后 `resolve` 并按需 `retire`。
+
+117.9 **选取与跟进判据**：`next` 候选=`open|in_progress`，排序=priority 降序→created_at 升序→id 升序，输出 reason；`review --older-than-days N`（默认 7，仅 CLI 参数，零新 config 键）报四态计数、stale 未结项与 retire_candidates。跟进=对 stale 项确认推进/降级/取消；状态变更必须经 `todoctl.py`，禁手改 JSON。
+
+117.10 **主动退场边界**：`retire` 默认 dry-run 零移动；候选仅来自终态 todo 的 `source.plan_id` 且计划目录存在；`--execute` 前必须经 `archive-plan.sh --batch --dry-run` 权威守卫过滤，只归档通过守卫的 id；active 指针 / 24h 内 `.session-owner` / Status 未全 complete 一律 SKIP，禁强移、禁删指针、禁碰 worktree；归档成功后联动 `sync-todos.sh --index`（Rule 81.4）。
+
+117.11 **与既有消费链边界**：`todo.json`=问题级 backlog（跨任务未结问题）；`plans/`=执行计划，由 plan-resume 扫描续推。用户问「还有什么任务没解决」先扫 todo.json，问「看看计划/恢复计划」走 plan-resume；二者互不镜像、互不替代。
+
+117.12 **通用面三问自查**：换项目成立（任意 `--root` 同机制）／与既有门互认（复用 archive-plan 守卫与 sync-index，不新增机器门、不新增 hook）／部署位实测（scripts 随 rsync 进部署位、Python 免 chmod、CLI 在部署位实跑 next/review/retire --dry-run）。each executor self-check.

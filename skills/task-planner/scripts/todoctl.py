@@ -4,7 +4,7 @@
 What（判定逻辑 + 输入输出契约）:
   用法: python3 todoctl.py <subcommand> [--root <project-root>] [options]
   权威源: <project-root>/todo.json（JSON，非 MD）；所有写入必须经本脚本，禁手改。
-  子命令: init / add / list / get / resolve / reopen / set / stats / check
+  子命令: init / add / list / get / resolve / reopen / set / stats / check / next / review / retire
   输出: 管理命令=JSON 到 stdout；check=单行 `TODOCTL CHECK <name>: PASS|FAIL <reason>`；错误到 stderr。
   退出码: 0=成功 / 1=业务失败（未找到、校验失败、幂等冲突等） / 2=输入异常（缺参、路径错误）。
 
@@ -15,6 +15,7 @@ Why:
   机制通用：source.type 与 tags 为开放标签，不写死任何任务类型或内容域（Rule 117.4）。
 
   [2026-11-26 task-shared-todo-20261126] 新增；配套 Rule 117 + examples/shared-todo。
+  [2026-11-26 task-todo-consumption-20261126] 新增 next/review/retire 消费闭环子命令。
 """
 
 import argparse
@@ -33,6 +34,7 @@ BACKUP_SUFFIX = ".bak"
 SCHEMA_VERSION = 1
 STATUSES = ("open", "in_progress", "done", "cancelled")
 PRIORITIES = ("low", "normal", "high", "urgent")
+PRIORITY_RANK = {"urgent": 3, "high": 2, "normal": 1, "low": 0}
 TERMINAL = ("done", "cancelled")
 SOURCE_KEYS = ("type", "plan_id", "ref", "session_id")
 ITEM_KEYS = (
@@ -41,6 +43,8 @@ ITEM_KEYS = (
 )
 ID_RE = re.compile(r"^TODO-(\d{4,})$")
 TS_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+ARCHIVE_CANDIDATE_RE = re.compile(r"SKIP\s+(\S+)\s+\(candidate/none\)")
+ARCHIVE_SKIP_RE = re.compile(r"SKIP\s+(\S+)\s+\(([^)]+)\)")
 
 
 class TodoCtlError(Exception):
@@ -192,6 +196,68 @@ def parse_tags(raw):
     return [t.strip() for t in raw.split(",") if t.strip()]
 
 
+def _parse_ts_dt(value, label):
+    """解析 ISO8601Z 时间戳为 UTC datetime；校验失败抛 TodoCtlError。"""
+    parse_ts(value, label)
+    return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+
+
+def _age_days(created_at, now_dt):
+    """created_at 到 now_dt 的天数差，向下取整。"""
+    created = _parse_ts_dt(created_at, "created_at")
+    delta = now_dt - created
+    days = int(delta.total_seconds() // 86400)
+    return max(days, 0)
+
+
+def _is_actionable(item):
+    return item.get("status") in ("open", "in_progress")
+
+
+def _next_sort_key(item):
+    # priority 降序 -> rank 取负；created_at 升序；id 升序
+    rank = PRIORITY_RANK.get(item.get("priority"), -1)
+    return (-rank, item.get("created_at", ""), item.get("id", ""))
+
+
+def _skill_root():
+    """skill 根 = todoctl.py 所在位置向上两级（scripts/<file> -> skill root）。"""
+    return Path(__file__).resolve().parents[1]
+
+
+def _run_cmd(cmd, cwd=None):
+    """运行命令并返回 (rc, stdout, stderr)。不抛异常，交给调用方判定。"""
+    proc = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        cwd=str(cwd) if cwd else None,
+    )
+    return proc.returncode, proc.stdout or "", proc.stderr or ""
+
+
+def _retire_candidates(doc, root):
+    """终态条目的 source.plan_id 去重，且 plans/<plan_id>/task_plan.md 存在。"""
+    plans_dir = root / "plans"
+    seen = set()
+    result = []
+    for item in doc.get("items", []):
+        if item.get("status") not in TERMINAL:
+            continue
+        source = item.get("source") or {}
+        plan_id = source.get("plan_id")
+        if not isinstance(plan_id, str) or not plan_id.strip():
+            continue
+        plan_id = plan_id.strip()
+        if plan_id in seen:
+            continue
+        seen.add(plan_id)
+        if (plans_dir / plan_id / "task_plan.md").exists():
+            result.append(plan_id)
+    return sorted(result)
+
+
 def cmd_init(args):
     doc, path = read_state(args.root, allow_missing=True)
     if doc is not None:
@@ -324,6 +390,187 @@ def cmd_check(args):
     return 0
 
 
+def cmd_next(args):
+    """只读：选择下一条可执行待办（open/in_progress）。"""
+    doc, _ = read_state(args.root)
+    candidates = [i for i in doc.get("items", []) if _is_actionable(i)]
+    candidates.sort(key=_next_sort_key)
+    if not candidates:
+        print(json.dumps({"status": "empty", "count": 0}, ensure_ascii=False))
+        return 0
+    item = candidates[0]
+    reason = "priority=%s, oldest %s" % (item.get("priority"), item.get("status"))
+    out = {"status": "selected", "count": len(candidates), "item": item, "reason": reason}
+    print(json.dumps(out, ensure_ascii=False))
+    return 0
+
+
+def cmd_review(args):
+    """只读：统计状态分布、过期未结项、可退场 plan_id 候选。"""
+    doc, _ = read_state(args.root)
+    days = args.older_than_days
+    if days < 0:
+        raise TodoCtlError("--older-than-days 必须 >= 0", 2)
+    now_dt = datetime.now(timezone.utc)
+    counts = {s: 0 for s in STATUSES}
+    stale = []
+    for item in doc.get("items", []):
+        st = item.get("status")
+        if st in counts:
+            counts[st] += 1
+        if st in TERMINAL:
+            continue
+        age = _age_days(item.get("created_at"), now_dt)
+        if age >= days:
+            stale.append({
+                "id": item.get("id"),
+                "title": item.get("title"),
+                "status": st,
+                "age_days": age,
+            })
+    stale.sort(key=lambda x: (-x["age_days"], x.get("id", "")))
+    retire_candidates = _retire_candidates(doc, args.root)
+    out = {
+        "counts": counts,
+        "stale": stale,
+        "retire_candidates": retire_candidates,
+        "index_hint": "bash scripts/sync-todos.sh --index %s/plans" % str(args.root),
+    }
+    print(json.dumps(out, ensure_ascii=False))
+    return 0
+
+
+def _archive_dry_run(archive_script, plans_dir):
+    rc, stdout, stderr = _run_cmd(["bash", str(archive_script), "--batch", "--dry-run", "--root", str(plans_dir)])
+    eligible = []
+    for line in (stdout or "").splitlines():
+        m = ARCHIVE_CANDIDATE_RE.search(line)
+        if m:
+            eligible.append(m.group(1))
+    skipped = []
+    for line in (stdout or "").splitlines():
+        m = ARCHIVE_SKIP_RE.search(line)
+        if not m:
+            continue
+        sid, reason = m.group(1), m.group(2)
+        if reason == "candidate/none":
+            continue
+        skipped.append({"id": sid, "reason": reason})
+    return rc, stdout, stderr, sorted(set(eligible)), skipped
+
+
+def cmd_retire(args):
+    """默认 dry-run 零写入；--execute 时通过 archive-plan.sh + sync-todos.sh 执行归档。"""
+    doc, _ = read_state(args.root)
+    candidates = _retire_candidates(doc, args.root)
+    if args.id and args.id not in candidates:
+        raise TodoCtlError("不是可退场候选: %s" % args.id, 1)
+
+    skill = _skill_root()
+    archive_script = skill / "scripts" / "archive-plan.sh"
+    sync_script = skill / "scripts" / "sync-todos.sh"
+    plans_dir = args.root / "plans"
+
+    if not archive_script.exists():
+        raise TodoCtlError("未找到 archive-plan.sh: %s" % archive_script, 2)
+    if not plans_dir.exists():
+        raise TodoCtlError("plans 目录不存在: %s" % plans_dir, 2)
+
+    rc, stdout, stderr, eligible_all, skipped_all = _archive_dry_run(archive_script, plans_dir)
+    eligible = [p for p in candidates if p in set(eligible_all)]
+    if args.id:
+        eligible = [p for p in eligible if p == args.id]
+    eligible_set = set(eligible)
+
+    # 将候选集中被守卫拦下的项加入 skipped（含 reason）
+    skipped = []
+    seen_skip = set()
+    for s in skipped_all:
+        if s["id"] in set(candidates) and s["id"] not in eligible_set:
+            key = (s["id"], s["reason"])
+            if key not in seen_skip:
+                seen_skip.add(key)
+                skipped.append(s)
+    # 候选但 dry-run 未列出的项（例如 archive-plan.sh rc!=0 或未枚举到）给出保守 reason
+    listed = set(s["id"] for s in skipped_all) | set(eligible_all)
+    for cid in candidates:
+        if args.id and cid != args.id:
+            continue
+        if cid in eligible_set:
+            continue
+        if cid not in listed:
+            key = (cid, "not-enumerated-by-archive-dry-run")
+            if key not in seen_skip:
+                seen_skip.add(key)
+                skipped.append({"id": cid, "reason": "not-enumerated-by-archive-dry-run"})
+
+    if rc != 0 and not eligible_all and not skipped_all:
+        raise TodoCtlError(
+            "archive-plan.sh --dry-run 失败(rc=%d): %s" % (rc, (stderr or stdout).strip()[:500]),
+            1,
+        )
+
+    if not args.execute:
+        out = {"mode": "dry-run", "eligible": eligible, "skipped": skipped}
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    archived = []
+    already = []
+    failed = []
+    for pid in eligible:
+        arc_rc, arc_out, arc_err, _, _ = (None, "", "", None, None)
+        arc_rc, arc_out, arc_err = _run_cmd(["bash", str(archive_script), pid, "--root", str(plans_dir)])
+        combined = (arc_out or "") + "\n" + (arc_err or "")
+        if "ALREADY_ARCHIVED" in combined:
+            already.append(pid)
+        elif "ARCHIVED" in combined and "REJECT" not in combined and "FAIL" not in combined and arc_rc == 0:
+            archived.append(pid)
+        elif arc_rc == 0 and "ARCHIVED" in combined:
+            archived.append(pid)
+        else:
+            reason = "rc=%d" % arc_rc
+            if "REJECT" in combined:
+                reason = "REJECT"
+            elif "FAIL" in combined:
+                reason = "FAIL"
+            detail = (arc_err or arc_out).strip().splitlines()
+            tail = detail[-1] if detail else reason
+            failed.append({"id": pid, "reason": reason, "detail": tail[:300]})
+
+    index_refresh = "skipped"
+    total_rc = 0
+    if archived:
+        if not sync_script.exists():
+            index_refresh = "failed"
+            failed.append({"id": "__index__", "reason": "sync-todos.sh-missing", "detail": str(sync_script)})
+            total_rc = 1
+        else:
+            idx_rc, idx_out, idx_err = _run_cmd(["bash", str(sync_script), "--index", str(plans_dir)])
+            if idx_rc == 0:
+                index_refresh = "ok"
+            else:
+                index_refresh = "failed"
+                failed.append({"id": "__index__", "reason": "rc=%d" % idx_rc, "detail": ((idx_err or idx_out).strip()[-300:])})
+                total_rc = 1
+    if failed:
+        # 有归档失败或 index 失败
+        has_real_failure = any(f.get("id") != "__index__" or index_refresh == "failed" for f in failed)
+        if has_real_failure:
+            total_rc = 1
+
+    out = {
+        "mode": "execute",
+        "archived": archived,
+        "already": already,
+        "skipped": skipped,
+        "failed": failed,
+        "index_refresh": index_refresh,
+    }
+    print(json.dumps(out, ensure_ascii=False))
+    return total_rc
+
+
 def add_root_arg(parser, suppress=False):
     kwargs = {"help": "项目根目录（默认 git toplevel 或 cwd）"}
     if suppress:
@@ -379,6 +626,20 @@ def build_parser():
 
     sp = sub.add_parser("check", help="机器门：校验权威源结构")
     add_root_arg(sp, suppress=True); sp.set_defaults(func=cmd_check)
+
+    sp = sub.add_parser("next", help="只读：按优先级/创建时间选择下一条待办")
+    add_root_arg(sp, suppress=True); sp.set_defaults(func=cmd_next)
+
+    sp = sub.add_parser("review", help="只读：状态统计 + stale 未结项 + 退场候选")
+    add_root_arg(sp, suppress=True)
+    sp.add_argument("--older-than-days", type=int, default=7, help="stale 判定阈值（天，默认 7）")
+    sp.set_defaults(func=cmd_review)
+
+    sp = sub.add_parser("retire", help="退场归档：默认 dry-run；--execute 调用 archive-plan.sh")
+    add_root_arg(sp, suppress=True)
+    sp.add_argument("--id", help="仅退场指定 plan-id（须在候选集内）")
+    sp.add_argument("--execute", action="store_true", help="执行归档（默认 dry-run 零写入）")
+    sp.set_defaults(func=cmd_retire)
     return p
 
 

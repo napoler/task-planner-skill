@@ -279,7 +279,7 @@
 | 类别 | 数量(约) | 代表脚本/入口 | 用途 |
 |------|---------:|---------------|------|
 | 生命周期/init | 11 | `init-session.sh`, `attest-plan.sh`, `archive-plan.sh`, `set-active-plan.sh`, `resolve-plan-dir.sh`, `resolve-interaction-mode.sh`, `auto-finalize.sh`, `plan-created.cjs`, `session-catchup.ts`, `task-plan-init.cjs` | 计划创建/锁定/归档/指针/恢复 |
-| 状态与计划操作 | 6 | `planctl.py`, `todoctl.py`, `plan-doctor.sh`, `sync-todos.sh`, `ledger-append.sh`, `template-catalog.sh` | JSON 权威源 CRUD/render、跨任务共用待办（Rule 117）、诊断、Todo/账本/模板 |
+| 状态与计划操作 | 6 | `planctl.py`, `todoctl.py`, `plan-doctor.sh`, `sync-todos.sh`, `ledger-append.sh`, `template-catalog.sh` | JSON 权威源 CRUD/render、跨任务共用待办登记/扫描推进/退场（Rule 117）、诊断、Todo/账本/模板 |
 | 机械门/检查 | 25 | `check-complete.sh`, `check-3file-gate.sh`, `check-plan-audit-gate.sh`, `check-plan-dispatch.sh`, `check-dispatch.sh`, `check-delegation.sh`, `check-drift.sh`, `check-scope.sh`, `check-rvc-coverage.sh`, `check-vc-nonvacuous.sh` | attest/完成/派发/漂移/范围/VC 等门禁（`check-*.sh`） |
 | 合并/隔离/辅助 | 6 | `smart-merge-back.sh`, `check-conflicts.sh`, `allow-direct.sh`, `lane-detect.sh`, `periodic-review.sh`, `rule-reserve.sh` | worktree 合并回、冲突、直改豁免、车道/周期/编号 |
 | hook/平台接线 | 4 | `zcode-sessionstart.sh`, `zcode-userpromptsubmit.sh`, `zcode-pretooluse.sh`, `zcode-posttooluse.sh` | ZCode hook 入口 |

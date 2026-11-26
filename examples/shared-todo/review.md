@@ -23,7 +23,7 @@
 | 条目 | `status` | `open` / `done` | 取值 `open\|in_progress\|done\|cancelled`；终态必须有 `resolved_at`，未结必须为 `null` |
 | 条目 | `priority` | `high` / `normal` | 取值 `low\|normal\|high\|urgent` |
 | 条目 | `title` / `detail` | 一句话标题 + 现象/判定标准 | 标题非空；`add` 对未结项同标题幂等 |
-| 条目 | `source` | `{type,plan_id,ref,session_id}` | **开放标签**，全部可选；`type` 不写死任务类型（可 `task`/`scan`/`review`/任意值） |
+| 条目 | `source` | `{type,plan_id,ref,session_id}`；示例 done 项 `{"type":"scan","ref":"check-doc-sync.sh","plan_id":"task-demo-retire-20261126"}` | **开放标签**，全部可选；`type` 不写死任务类型（可 `task`/`scan`/`review`/任意值）。终态项的 `plan_id` 供 retire 关联计划；schema 不升版本。 |
 | 条目 | `tags` | `["bug","unresolved"]` | 字符串数组、开放标签，机制零枚举 |
 | 条目 | `created_at` / `updated_at` | ISO8601Z | 创建/最近更新时间 |
 | 条目 | `resolved_at` / `resolution` | `null` 或时间戳 / 处置说明 | 未结为 `null`；`resolve` 自动填时间戳与 `--note` |
@@ -39,16 +39,33 @@
 | C5 | `python3 <skill>/scripts/todoctl.py resolve TODO-0001 --note "已修于 commit xxx" --root <tmp-root>` | status=done 且 resolved_at 非空 | `{"status": "resolved", "item": {"id": "TODO-0001", "status": "done", "resolved_at": "2026-11-26T13:42:55Z", "resolution": "已修于 commit xxx"}}`；`rc=0` |
 | C6 | 把 fixture 的 `schema_version` 改成 `"x"` 后重跑 `check` | **FAIL**（负控制） | `TODOCTL CHECK schema: FAIL schema_version 必须为 1`；`rc=1` |
 
+## 3b. 消费闭环审查命令（C7–C10，全部实跑）
+
+> 证据采集：2026-11-26，主进程实跑；临时夹具路径脱敏为 `<tmp-root>`，技能脚本路径脱敏为 `<skill>`（`<skill>` = `skills/task-planner`）。
+
+| # | 命令 | 预期 | 实测输出 |
+|---|---|---|---|
+| C7 | `python3 <skill>/scripts/todoctl.py next --root <tmp-root>` | 选中优先级最高、最老的 open 项；done 不会被选中；rc 0 | `{"status": "selected", "count": 1, "item": {"id": "TODO-0001", "status": "open", "priority": "high", ...}, "reason": "priority=high, oldest open"}`；`rc=0` |
+| C8 | `python3 <skill>/scripts/todoctl.py review --root <tmp-root> --older-than-days 7` | 返回 counts/stale/retire_candidates/index_hint；fresh 项不进 stale；rc 0 | `{"counts": {"open": 1, "in_progress": 0, "done": 1, "cancelled": 0}, "stale": [], "retire_candidates": ["task-demo-retire-20261126"], "index_hint": "bash scripts/sync-todos.sh --index <tmp-root>/plans"}`；`rc=0` |
+| C9 | `python3 <skill>/scripts/todoctl.py retire --root <tmp-root>` | 默认 dry-run；只列 eligible/skipped，不移动、不创建 archive；rc 0 | `{"mode": "dry-run", "eligible": ["task-demo-retire-20261126"], "skipped": []}`；`rc=0` |
+| C10 | `python3 <skill>/scripts/todoctl.py retire --root <tmp-root> --id task-demo-retire-20261126 --execute` | 执行归档并刷新 INDEX；rc 0 | `{"mode": "execute", "archived": ["task-demo-retire-20261126"], "already": [], "skipped": [], "failed": [], "index_refresh": "ok"}`；`rc=0` |
+| C10-neg | 夹具 `<tmp-root>/plans/.active_plan` 内容写 `task-demo-retire-20261126` 后重跑 C9（负控制） | active-pointer 项不得 eligible；rc 0 | `{"mode": "dry-run", "eligible": [], "skipped": [{"id": "task-demo-retire-20261126", "reason": "active-pointer"}]}`；`rc=0` |
+
+### 夹具构造（C9/C10）
+
+C9/C10 的 `<tmp-root>/plans/task-demo-retire-20261126/task_plan.md` 必须含 `### Phase 1` 与 `- **Status:** complete` 两行才能通过 `archive-plan.sh` 守卫。实跑中缺 `-` 列表符会得到 `status-none`，导致 `eligible=[]`（这是真实踩坑，审查时须确认夹具/计划文件满足该格式）。
+
 ## 4. 后期审查流程（固定动作）
 
 1. 打开 `todo.example.json`，按 §2 字段表逐行核对；实际项目的 `<root>/todo.json` 应与之一致（仅条目不同）。
-2. 跑 §3 的 C1–C6，逐条比对输出；**C6 必须 FAIL**，其余必须 PASS。
-3. 任何条款/脚本改动后，重跑 C1–C6 + `bash skills/task-planner/scripts/run-selftests.sh --only todoctl`；示例实物与条款锚不一致即视为回归。
-4. 统计未结问题用 `todoctl.py list`（默认 open）与 `todoctl.py stats`；不要手改 JSON（唯一写入口=CLI，Rule 117.3）。
+2. 跑 §3 的 C1–C6 与 §3b 的 C7–C10/C10-neg，逐条比对输出；**C6 必须 FAIL**，其余必须 PASS。
+3. 任何条款/脚本改动后，重跑 C1–C10 + `bash skills/task-planner/scripts/run-selftests.sh --only todoctl`；示例实物与条款锚不一致即视为回归。
+4. 统计未结问题用 `todoctl.py list`（默认 open）与 `todoctl.py stats`；消费闭环用 `next`/`review`/`retire`（默认 dry-run）；不要手改 JSON（唯一写入口=CLI，Rule 117.3）。
 
 ## 5. 已知边界
 
 - 已解决项永久保留（status=done），不物理删除；如需重新处理用 `reopen`。
 - `add` 的幂等仅针对**未结项且标题完全相同**；标题相近但不同仍视为新问题。
 - worktree 并行时其 `todo.json` 副本按普通文件参与 merge-back；收口后在主仓复跑 `stats` 确认条目汇合，CLI 的 `--root` 可显式指向任一 checkout。
+- `retire` 默认 dry-run；`--execute` 才移动计划并刷新 INDEX，且完全服从 `archive-plan.sh` 守卫，不删 active/side 指针、不碰 worktree。
 - 本示例不预填真实遗留问题（禁止脑补）；实际项目文件由 `todoctl.py init` 建空骨架。
