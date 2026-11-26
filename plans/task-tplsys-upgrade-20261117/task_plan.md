@@ -128,7 +128,7 @@ execution_lane: L2
 
 ### Phase 4: 适配能力增强、文档映射同步与验证
 - 目标：完善 mapping/guide/SKILL/示例与场景模板生成指引（以调研驱动）；补充必要自测/验证并完成交付对齐
-- **Status:** complete（实现/验证通过；主仓合并待重叠脏改收敛）
+- **Status:** pending（parked：未入 master；[移植去向] task-tplsys-systematic-correction-20261127 已在 master 现状上等价移植 R2-R5）
 - **Executor:** executor/code-runner + 主进程收口
 - **V-N:** VC-1, VC-5
 
