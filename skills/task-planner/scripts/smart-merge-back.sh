@@ -14,14 +14,21 @@
 #   --base <branch>  目标分支, 默认 master
 #   --deploy         合并后对部署位执行 F5 staging 原子化部署 — 2026-10-10 task-v159 替代旧直写路径
 #                    (D4 事故根因: 2026-10-10 04:45-04:49 claude 写入后 zcode 删除致技能全局停摆):
-#                    ①staging: 全部 slot 先行 cp -rL 至同父目录 <slot>.stage.$$(内容就位与指针切换分离,
-#                    任 slot stage 失败=整体 exit 1 不进入 swap); ②swap: 逐 slot rm -rf <slot> &&
-#                    mv <slot>.stage.$$ <slot>(rename 原子切换, 失败恢复原位); ③post-verify: 每 slot
-#                    存在性 + diff -r <slot> 零差异, 任一失败 exit 1 并输出缺失/diff 详情,
-#                    禁止部分 slot 成功当整体成功; EXIT trap 清理 stage 残留。
+#                    ①staging: 全部 slot 先行 cp -rL 至 cache 根 <slot>.stage.$$(内容就位与指针切换分离,
+#                    任 slot stage 失败=整体 exit 1 不进入 swap); ②swap: 先 mv 旧 slot 到 cache backup
+#                    (旧技能立即退出扫描根) → mv stage→slot → post-verify PASS → 删除 backup; ③post-verify:
+#                    身份断言(basename+规范化路径精确等于声明 slot)+存在性+diff -r 零差异, 任一失败 exit 1,
+#                    禁止部分 slot 成功当整体成功; EXIT trap 清理 stage/恢复 backup。
 #                    源=主仓 skills/task-planner — 2026-09-17 task-v077 修复假 IDENTICAL: 部署源/对账基准不再用
 #                    SKILL_ROOT(脚本运行处), 从部署位运行亦以主仓 canonical 内容为源);
 #                    slot 校验 REJECTED / 部署源缺失 → DRIFT exit 6(fail-closed);
+#                    [2026-11-26 事故修复] slot 身份校验: basename 必须等于期望技能名且规范化路径精确等于
+#                    已配置扫描根下 <root>/<skill-name>; 父目录级/祖先/后代/相对/worktree/主仓根一律
+#                    [slot-identity] REJECTED, --allow-home-slot 不绕过身份校验(仅影响 $HOME 白名单)。
+#                    [2026-11-26 事故修复] TASK_PLANNER_DEPLOY_CACHE_ROOT(默认 ${HOME}/.cache/task-planner-deploy):
+#                    stage/backup 必须落在 cache 根, 绝不可落在 skills 扫描根或任何 git 仓目录; cache 根落在
+#                    扫描根/仓内 → fail-closed [deploy-cache] exit 1。Why: .bak/.stage 留扫描根且含 SKILL.md
+#                    时仍被加载器识别=重大漏洞; 备份放 .zcode(git 管理仓)会搞乱项目。
 #                    --deploy 对账通过后自动执行池成员顶层枚举挂载(install_pool_links): <skills>/<member> 相对软链→task-planner/review-library/<member>;冲突跳过 LINK-WARN;增强段不改 exit 码 [task-v105]
 #                    [2026-11-25 task-skill-deploy-fix] B2: 默认槽位扩为 5 位(+cursor/continue)，不加入 .agents
 #                    (全局保护区,走 TASK_PLANNER_DEPLOY_SLOTS env 显式覆盖)；SLOTS/DEFAULT_DEPLOY_ROOTS 同源函数输出。
@@ -39,6 +46,8 @@
 #                    2026-10-10 task-v159 保留为 fallback(新路径默认启用; 旧路径失败语义 exit 6 不变)
 #   --force          V5 MASTER_AHEAD 时强制继续(默认中止;  merge 冲突仍 exit 7 STOP)
 #   --allow-home-slot  仅 --deploy 相关: $HOME 内部任意子路径放行(默认关; 生产三默认位均在白名单内, 无需要)
+#   TASK_PLANNER_DEPLOY_CACHE_ROOT  仅 --deploy 相关: stage/backup 落盘根目录(默认 ${HOME}/.cache/task-planner-deploy);
+#                    必须位于 skills 扫描根与 git 仓之外, 否则 [deploy-cache] fail-closed exit 1
 #
 # 接口规格(照 findings「smart-merge-back.sh 设计」):
 #   - branch 由 `git -C <wt> branch --show-current` 取得, 须匹配 wt/<task-id> 且目录名 = task-id(双校验)
@@ -376,6 +385,14 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     # 修复 v076 实证的假 IDENTICAL: 原实现以 SKILL_ROOT(脚本运行处)为 cp 源与 diff 基准 — 从部署位运行时
     # 以陈旧副本自 copy 再自 diff, 恒真假绿。SKILL_ROOT 仅保留于守卫(GUARDS 行)与自位 REJECTED 提示。
     DEPLOY_SRC="$MAIN_REPO/skills/task-planner"
+    # [2026-11-26 事故修复] 期望技能名=部署源 basename, 作为 slot 身份强校验的唯一真源。
+    # Why: 2026-11-26 真实事故 — 调用方误传 skills 父目录并用 --allow-home-slot 放行,
+    # validate_slot 仅校验路径形态不校验 basename, rm -rf slot 后把 stage 移入导致四位 skills 根被覆盖。
+    EXPECTED_SKILL_NAME="$(basename "$DEPLOY_SRC")"
+    # [2026-11-26 事故修复] 部署 cache 根: stage/backup 统一落盘于此, 绝不落 skills 扫描根或 git 仓内。
+    # Why: .bak/.stage 留在 skills 扫描根且含 SKILL.md 时仍被技能加载器识别=重大漏洞;
+    # 备份放 .zcode(git 管理仓)会搞乱项目。用户裁决: 固定放 ~/.cache/task-planner-deploy/。
+    DEPLOY_CACHE_ROOT="${TASK_PLANNER_DEPLOY_CACHE_ROOT:-${HOME:-}/.cache/task-planner-deploy}"
     # [2026-09-17 task-v077] fail-closed: 主仓无 skills/task-planner(非标准仓布局) → 显式 DRIFT exit 6,
     # 禁静默回退 SKILL_ROOT(回退 = 假 IDENTICAL 根因复发)。DRIFT 置位延迟至下方 DRIFT 初始化之后
     # (防 R3 P3 类缺陷: 初始化置 0 吞掉标志 → 假绿回归)。
@@ -412,31 +429,64 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     # full=exact+inside+ancestor 全向(SKILL_ROOT/WT_PATH/MAIN_REPO)。
     # ${HOME:-} 防 env -u HOME 下 set -u 中止; 空 guard 在比较前已过滤。
     GUARDS="${HOME:-}:home|$SKILL_ROOT:full|$WT_PATH:full|$MAIN_REPO:full"
+    # [2026-11-26 事故修复] 扫描根身份清单: 用于 slot 身份校验与 cache 根隔离检查。
+    # Why: slot 必须精确等于 <scan_root>/<EXPECTED_SKILL_NAME>; cache 根若落在扫描根/仓内,
+    # stage/backup 仍可被技能加载器识别或污染 git 仓, 必须 fail-closed。
+    SCAN_ROOTS=()
+    if [ -n "${HOME:-}" ]; then
+        SCAN_ROOTS+=("$HOME/.zcode/skills" "$HOME/.claude/skills" "$HOME/.config/opencode/skills" "$HOME/.cursor/skills" "$HOME/.continue/skills")
+    fi
+    # TASK_PLANNER_DEPLOY_SLOTS 显式注入时, 其父目录也视为扫描根参与隔离检查(不放宽身份白名单)。
+    if [ -n "${TASK_PLANNER_DEPLOY_SLOTS:-}" ]; then
+        IFS=':' read -r -a _scan_extra <<< "$TASK_PLANNER_DEPLOY_SLOTS"
+        for _se in "${_scan_extra[@]}"; do
+            [ -n "$_se" ] || continue
+            SCAN_ROOTS+=("$(dirname "$_se")")
+        done
+    fi
     # [2026-09-12 R2 P3] 本批次 tmpdir 数组累积, trap 逐个清理(原前缀 glob 匹配他进程 .tmp-deploy.*)
     BATCH_TMPDIRS=()
-    # [task-v159 F5] staging 原子化路径用: slot 归一路径与对应 stage 路径(并行数组, 下标对齐)
+    # [task-v159 F5] staging 原子化路径用: slot 归一路径与对应 stage/backup 路径(并行数组, 下标对齐)
     SLOTDIRS=()
     STAGEDIRS=()
-    # [2026-09-12 R3 P2] trap 体封成 cleanup_tmpdirs() 函数(原顶层 local 报错), stderr 零输出;
-    # [2026-09-12 R3 P3] 正常退出/TERM/INT 由 EXIT trap 兜底恢复(.bak 尚在且 slot 缺席 → mv 回原位);
-    # SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回原位
-    # [task-v159 F5] stage 残留清理: swap 成功位 stagedir 已 mv 走(不存在, 幂等); 异常中断(TERM/INT)
-    #   时若 slotdir 缺席且 stagedir 尚在 → 先 mv 回原位(恢复语义同 swap 失败路径), 再清理其余残留
+    SLOTBACKUPS=()
+    SLOTNORMS=()
+    # [2026-11-26 事故修复+用户裁决复核] trap 兜底: stage/backup 全部位于 DEPLOY_CACHE_ROOT(扫描根外)。
+    # 异常中断时若 slot 缺席且 backup 存在 → 优先恢复(保持旧技能可用)。
+    # 2026-11-26 用户裁决: "回位+备份保留""不希望得到任何伤害" — 任何失败回位在 backup→slot 成功后,
+    # 必须在 cache 根保留该 backup 的物理副本(cp -a slotdir backupdir); cp 失败仅 stderr WARN, 绝不静默删 backup。
     slotbak=""
     slotdir=""
     cleanup_tmpdirs() {
         for _t in ${BATCH_TMPDIRS[@]+"${BATCH_TMPDIRS[@]}"}; do
             [ -n "$_t" ] && rm -rf "$_t" 2>/dev/null
         done
-        [ -n "${slotbak:-}" ] && [ ! -e "${slotdir:-x}" ] && [ -e "${slotbak:-y}" ] && mv "$slotbak" "$slotdir" 2>/dev/null
-        for _i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
-            _sd="${STAGEDIRS[$_i]:-}"
-            [ -n "$_sd" ] || continue
-            if [ ! -e "${SLOTDIRS[$_i]:-}" ] && [ -e "$_sd" ]; then
-                mv "$_sd" "${SLOTDIRS[$_i]}" 2>/dev/null || true
-            else
-                [ -e "$_sd" ] && rm -rf "$_sd" 2>/dev/null || true
+        # legacy 单槽位兼容变量兜底
+        if [ -n "${slotbak:-}" ] && [ ! -e "${slotdir:-x}" ] && [ -e "${slotbak:-y}" ]; then
+            if mv "$slotbak" "$slotdir" 2>/dev/null; then
+                cp -a "$slotdir" "$slotbak" 2>/dev/null || echo "[deploy-cache] WARN: trap 回位后备份副本重建失败, backup 路径: $slotbak" >&2
             fi
+        fi
+        local _i _sd _sb _sl
+        for _i in $( [ ${#SLOTDIRS[@]} -gt 0 ] && seq 0 $((${#SLOTDIRS[@]}-1)) ); do
+            _sl="${SLOTDIRS[$_i]:-}"
+            _sd="${STAGEDIRS[$_i]:-}"
+            _sb="${SLOTBACKUPS[$_i]:-}"
+            [ -n "$_sl" ] || continue
+            # slot 缺席且 backup 存在 → 优先恢复(保持旧技能可用)；恢复成功后重建物理备份副本(用户裁决: 回位+备份保留)。
+            if [ ! -e "$_sl" ] && [ -n "$_sb" ] && [ -e "$_sb" ]; then
+                if mv "$_sb" "$_sl" 2>/dev/null; then
+                    if ! cp -a "$_sl" "$_sb" 2>/dev/null; then
+                        echo "[deploy-cache] WARN: trap 回位后备份副本重建失败, backup 路径: $_sb" >&2
+                    fi
+                    [ -n "$_sd" ] && [ -e "$_sd" ] && rm -rf "$_sd" 2>/dev/null
+                    continue
+                else
+                    echo "[deploy-cache] WARN: trap 恢复失败, 保留 backup: $_sb" >&2
+                fi
+            fi
+            # slot 已存在时清理残留 stage; backup 保留策略由调用点决定(成功后显式删除)
+            [ -n "$_sd" ] && [ -e "$_sd" ] && rm -rf "$_sd" 2>/dev/null
         done
         return 0
     }
@@ -463,6 +513,121 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         done
         if [ ${#out[@]} -eq 0 ]; then printf '/\n'; else
             printf '/%s\n' "$(IFS='/'; echo "${out[*]}")"
+        fi
+    }
+
+    # [2026-11-26 事故修复] cache 根安全断言: stage/backup 绝不可落在 skills 扫描根或任一 git 仓目录内。
+    # Why: 扫描根内的 .stage/.bak 若含 SKILL.md 会被技能加载器识别=重大漏洞; git 仓内备份会搞乱项目。
+    # fail-closed: 任何不安全命中 → [deploy-cache] stderr + exit 1。
+    assert_cache_root_safe() {
+        local cache_norm
+        cache_norm="$(norm_path "$DEPLOY_CACHE_ROOT")"
+        [ -n "$cache_norm" ] && [ "$cache_norm" != "/" ] || {
+            echo "[deploy-cache] FATAL: cache 根无效: $DEPLOY_CACHE_ROOT" >&2
+            exit 1
+        }
+        # 扫描根隔离: cache 根不得等于/位于任一扫描根内, 也不得是扫描根的祖先(防把扫描根整个纳入 cache)
+        local sr srn
+        for sr in ${SCAN_ROOTS[@]+"${SCAN_ROOTS[@]}"}; do
+            [ -n "$sr" ] || continue
+            srn="$(norm_path "$sr")"
+            [ -n "$srn" ] || continue
+            if [ "$cache_norm" = "$srn" ]; then
+                echo "[deploy-cache] FATAL: cache 根等于扫描根: $cache_norm == $srn" >&2; exit 1
+            fi
+            case "$cache_norm/" in "$srn"/*)
+                echo "[deploy-cache] FATAL: cache 根位于扫描根内: $cache_norm in $srn" >&2; exit 1 ;;
+            esac
+            case "$srn/" in "$cache_norm"/*)
+                echo "[deploy-cache] FATAL: cache 根是扫描根祖先: $cache_norm ancestor-of $srn" >&2; exit 1 ;;
+            esac
+        done
+        # git 仓隔离: cache 根不得位于任一 git 仓内(覆盖主仓/worktree/任意扫描根下的 git 仓)。
+        # 同时做路径前缀兜底: 即使 git 元数据不可用, 位于 MAIN_REPO/WT_PATH 下也拒绝。
+        local _git_probe
+        for _git_probe in "$MAIN_REPO" "$WT_PATH" "$SKILL_ROOT"; do
+            [ -n "$_git_probe" ] || continue
+            local _gp_norm
+            _gp_norm="$(norm_path "$_git_probe")"
+            if [ "$cache_norm" = "$_gp_norm" ]; then
+                echo "[deploy-cache] FATAL: cache 根等于仓库路径: $cache_norm == $_gp_norm" >&2; exit 1
+            fi
+            case "$cache_norm/" in "$_gp_norm"/*)
+                echo "[deploy-cache] FATAL: cache 根位于仓库路径内: $cache_norm in $_gp_norm" >&2; exit 1 ;;
+            esac
+            [ -d "$_git_probe" ] || continue
+            local _git_top
+            _git_top="$(git -C "$_git_probe" rev-parse --show-toplevel 2>/dev/null || true)"
+            [ -n "$_git_top" ] || continue
+            _git_top="$(norm_path "$_git_top")"
+            if [ "$cache_norm" = "$_git_top" ]; then
+                echo "[deploy-cache] FATAL: cache 根位于 git 仓内: $cache_norm in $_git_top" >&2; exit 1
+            fi
+            case "$cache_norm/" in "$_git_top"/*)
+                echo "[deploy-cache] FATAL: cache 根位于 git 仓内: $cache_norm in $_git_top" >&2; exit 1 ;;
+            esac
+        done
+        mkdir -p "$cache_norm" || { echo "[deploy-cache] FATAL: 无法创建 cache 根: $cache_norm" >&2; exit 1; }
+        # 额外: 若 cache 根本身在某个 git work tree 中, 也拒绝(覆盖用户自定义路径)
+        if git -C "$cache_norm" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            echo "[deploy-cache] FATAL: cache 根位于 git work tree 内: $cache_norm" >&2; exit 1
+        fi
+        DEPLOY_CACHE_ROOT="$cache_norm"
+    }
+
+    # [2026-11-26 事故修复] slot 身份校验: basename 必须等于 EXPECTED_SKILL_NAME, 且规范化路径
+    # 精确等于某个已配置扫描根下的 <root>/<EXPECTED_SKILL_NAME>。
+    # Why: 2026-11-26 事故 — 父目录级 slot(basename=skills)被 validate_slot 放行,
+    # 导致 rm -rf skills 根后四位 skills 根被覆盖。--allow-home-slot 不得绕过此身份校验。
+    slot_identity_ok() {
+        local norm="$1" raw="$2"
+        local bn
+        bn="$(basename "$norm")"
+        if [ "$bn" != "$EXPECTED_SKILL_NAME" ]; then
+            echo "[DEPLOY] REJECTED: $raw [slot-identity] basename '$bn' != expected '$EXPECTED_SKILL_NAME' (slot 必须是技能目录本身)"
+            return 1
+        fi
+        local sr srn expected
+        for sr in ${SCAN_ROOTS[@]+"${SCAN_ROOTS[@]}"}; do
+            [ -n "$sr" ] || continue
+            srn="$(norm_path "$sr")"
+            expected="$srn/$EXPECTED_SKILL_NAME"
+            if [ "$norm" = "$expected" ]; then
+                return 0
+            fi
+        done
+        echo "[DEPLOY] REJECTED: $raw [slot-identity] 规范化路径 '$norm' 不等于任一已配置扫描根下的 <root>/$EXPECTED_SKILL_NAME"
+        return 1
+    }
+
+    # [2026-11-26 事故修复] post-verify 身份断言: 对账前确认 slot basename/规范化路径仍与声明值一致。
+    # Why: 防止同源复制恒真或路径漂移导致假绿 IDENTICAL。
+    assert_slot_identity_for_verify() {
+        local slotdir="$1" declared_norm="$2"
+        local actual_norm bn
+        actual_norm="$(norm_path "$slotdir")"
+        bn="$(basename "$actual_norm")"
+        if [ "$bn" != "$EXPECTED_SKILL_NAME" ]; then
+            echo "[DEPLOY] IDENTITY-MISMATCH: $slotdir (basename '$bn' != '$EXPECTED_SKILL_NAME')" >&2
+            return 1
+        fi
+        if [ "$actual_norm" != "$declared_norm" ]; then
+            echo "[DEPLOY] IDENTITY-MISMATCH: $slotdir (norm '$actual_norm' != declared '$declared_norm')" >&2
+            return 1
+        fi
+        return 0
+    }
+
+    # [2026-11-26 事故修复] cache 内 per-slot 路径生成: 用 slot 规范化路径的 sha256 前缀隔离不同 slot。
+    slot_cache_key() {
+        local norm="$1"
+        if command -v sha256sum >/dev/null 2>&1; then
+            printf '%s' "$norm" | sha256sum | awk '{print substr($1,1,16)}'
+        elif command -v shasum >/dev/null 2>&1; then
+            printf '%s' "$norm" | shasum -a 256 | awk '{print substr($1,1,16)}'
+        else
+            # fallback: 可读但安全的转义 key
+            printf '%s' "$norm" | sed 's#[^A-Za-z0-9._-]#_#g' | tail -c 64
         fi
     }
 
@@ -505,6 +670,11 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         [ "$norm" = "/" ] && { echo "[DEPLOY] REJECTED: / (规范化后为根 — 危险路径)"; return 1; }
         # .git 末组件按规范化后判定
         case "$norm" in .git|*/.git) echo "[DEPLOY] REJECTED: $slot (末组件 .git — 危险路径)"; return 1 ;; esac
+        # [2026-11-26 事故修复] slot 身份校验前置: basename 必须等于 EXPECTED_SKILL_NAME 且规范化路径
+        # 精确等于已配置扫描根下 <root>/<EXPECTED_SKILL_NAME>。父目录级/祖先/后代/相对/worktree 自身/
+        # 主仓根一律 REJECTED, 输出含 [slot-identity] token; --allow-home-slot 不得绕过此身份校验
+        # (只影响 $HOME 白名单, 不放松 slot 身份)。前置于 guard 比较, 确保身份违规统一报 [slot-identity]。
+        slot_identity_ok "$norm" "$slot" || return 1
         # [2026-09-12 R3 P0] 守卫比较按类型分支:
         #   home = 白名单口径(默认关): norm 位于任一 DEFAULT_DEPLOY_ROOTS 部署根内(或等于) → 放行
         #          (跳过其余 $HOME 检查, 生产三默认位均在 $HOME 下); 否则按 inside 规则 REJECTED
@@ -545,6 +715,10 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         # home guard 为空(HOME 未设)时白名单无基准 — slot 非 $HOME 内部则无家可避, 直接放行(无 $HOME 检查可做)
         return 0
     }
+    # [2026-11-26 事故修复] cache 根 fail-closed 校验: 必须在任何 staging/swap 前完成。
+    # Why: cache 根落在扫描根/仓内会让 stage/backup 被加载器识别或污染 git 仓。
+    assert_cache_root_safe
+
     # [2026-09-12 R3] 部署循环恒执行(不再条件包裹): HOME 未设且 env 未覆盖时 SLOTS="" → 循环零次,
     # DRIFT=1 已在上方(SLOTS 分支, 先于循环初始化)置位 → 仍走 exit 6
     # (DRIFT=0 初始化已移至 SLOTS 分支之前; 条件包裹会吞掉 HOME 空的 DRIFT 标志, 均已实证修复 rc=0 假绿回归)
@@ -633,8 +807,10 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
     }
     IFS=':' read -r -a slots <<< "$SLOTS"
     if [ "$DO_LEGACY" -eq 1 ]; then
-        # [--legacy task-v159] 旧直写路径: cp→rm→mv 改名换位 + 两级对账(L1/L2), 保留为 fallback。
+        # [--legacy task-v159] 旧直写路径: 保留为 fallback, 但强制遵守 2026-11-26 事故修复约束。
         # Why: F5 之前唯一实现; 新路径默认启用, --legacy 仅用于对照/应急(失败语义 exit 6 不变)。
+        # [2026-11-26 事故修复] legacy 路径同样: (a) stage/backup 落 DEPLOY_CACHE_ROOT, 不落扫描根/仓内;
+        # (b) 恢复失败必须报错并保持备份, 不得吞错后删除; (c) post-verify 前做身份断言。
         for slot in "${slots[@]}"; do
             [ -n "$slot" ] || continue
             if ! validate_slot "$slot"; then
@@ -649,38 +825,69 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
                 continue
             fi
             slotdir="${slot%/}"                      # 末尾 / 归一(绝对路径, 已无空白)
-            tmpdir="${slotdir%.tmp-new.$$}.tmp-new.$$"   # 归一: 若 slotdir 已残留本批 tmp 名则稳定收敛, 避免后缀叠加
-            # 原子替换(改名换位): cp 先验证, 成功后 slot→.bak.$$ → tmp→slot → rm .bak —
-            # [2026-09-12 R3 P3] 常规失败路径各 mv 失败处均恢复原位; 正常退出/TERM/INT 由 EXIT trap 兜底
-            # 恢复(.bak 尚在且 slot 缺席 → mv 回原位); SIGKILL 不可捕获, 残留 slot.bak.$$ 需人工 mv 回
-            # cp 前 rm -rf tmpdir([2026-09-12 R3 P3] 防 PID 复用残留嵌套)
-            rm -rf "$tmpdir" 2>/dev/null || true
+            slotnorm="$(norm_path "$slotdir")"
+            slotkey="$(slot_cache_key "$slotnorm")"
+            # [2026-11-26 事故修复] stage/backup 落 cache 根, 绝不落扫描根。
+            tmpdir="$DEPLOY_CACHE_ROOT/${EXPECTED_SKILL_NAME}.legacy-stage.${slotkey}.$$"
+            slotbak="$DEPLOY_CACHE_ROOT/${EXPECTED_SKILL_NAME}.legacy-backup.${slotkey}.$$"
+            rm -rf "$tmpdir" "$slotbak" 2>/dev/null || true
+            # 注册到 trap 数组, 保证异常中断时可恢复
+            SLOTDIRS+=("$slotdir")
+            STAGEDIRS+=("$tmpdir")
+            SLOTBACKUPS+=("$slotbak")
+            SLOTNORMS+=("$slotnorm")
             if ! cp -rL "$DEPLOY_SRC" "$tmpdir" 2>/dev/null; then
                 rm -rf "$tmpdir" 2>/dev/null || true
+                STAGEDIRS[${#STAGEDIRS[@]}-1]=""
+                SLOTBACKUPS[${#SLOTBACKUPS[@]}-1]=""
                 echo "[DEPLOY] DRIFT: $slotdir (cp 失败 — 槽位不可写或路径不存在; 原 slot 保留未动)"
                 DRIFT=1
                 continue
             fi
-            BATCH_TMPDIRS+=("$tmpdir")
-            slotbak="$slotdir.bak.$$"
             if ! mv "$slotdir" "$slotbak" 2>/dev/null; then
                 rm -rf "$tmpdir" 2>/dev/null || true
-                slotbak=""
-                echo "[DEPLOY] DRIFT: $slotdir (slot→.bak 换位失败 — 原 slot 保留未动)"
+                STAGEDIRS[${#STAGEDIRS[@]}-1]=""
+                SLOTBACKUPS[${#SLOTBACKUPS[@]}-1]=""
+                echo "[DEPLOY] DRIFT: $slotdir (slot→backup 换位失败 — 原 slot 保留未动)"
                 DRIFT=1
                 continue
             fi
             if ! mv "$tmpdir" "$slotdir" 2>/dev/null; then
-                mv "$slotbak" "$slotdir" 2>/dev/null || true   # 恢复原位(常规失败路径)
-                rm -rf "$slotbak" 2>/dev/null
-                slotbak=""
-                echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位)"
+                # [2026-11-26 事故修复+用户裁决复核] 恢复失败必须报错并保持备份, 不得吞错后删除。
+                # 2026-11-26 用户裁决: "回位+备份保留""不希望得到任何伤害" — backup→slot 成功后必须在 cache 根
+                # 保留该 backup 的物理副本(cp -a slotdir backupdir); cp 失败仅 stderr WARN, 绝不静默删 backup。
+                if ! mv "$slotbak" "$slotdir" 2>/dev/null; then
+                    echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败, 且恢复 backup→slot 失败 — backup 保留供人工核对: $slotbak)" >&2
+                    STAGEDIRS[${#STAGEDIRS[@]}-1]=""
+                    # backup 保留, 不清 SLOTBACKUPS
+                    DRIFT=1
+                    continue
+                fi
+                if ! cp -a "$slotdir" "$slotbak" 2>/dev/null; then
+                    echo "[DEPLOY] WARN: legacy 回位后备份副本重建失败 — backup 路径保留但可能不完整: $slotbak" >&2
+                fi
+                STAGEDIRS[${#STAGEDIRS[@]}-1]=""
+                echo "[DEPLOY] DRIFT: $slotdir (tmp→slot 换位失败 — 原 slot 已恢复原位, backup 已保留: $slotbak)"
                 DRIFT=1
                 continue
             fi
-            rm -rf "$slotbak" 2>/dev/null
-            slotbak=""
-            BATCH_TMPDIRS=("${BATCH_TMPDIRS[@]:1}")    # 归位后出队, trap 不再清(已变 slot)
+            # 部署成功: 清理 backup, 清空数组登记(stage 已 mv 成 slot)
+            if [ -e "$slotbak" ]; then
+                if ! rm -rf "$slotbak" 2>/dev/null; then
+                    echo "[DEPLOY] DRIFT: $slotdir (backup 清理失败 — 保留供人工核对: $slotbak)" >&2
+                    STAGEDIRS[${#STAGEDIRS[@]}-1]=""
+                    DRIFT=1
+                    continue
+                fi
+            fi
+            SLOTBACKUPS[${#SLOTBACKUPS[@]}-1]=""
+            STAGEDIRS[${#STAGEDIRS[@]}-1]=""
+            # [2026-11-26 事故修复] post-verify 前身份断言: 防同源复制恒真/路径漂移假绿。
+            if ! assert_slot_identity_for_verify "$slotdir" "$slotnorm"; then
+                echo "[DEPLOY] DRIFT: $slotdir (身份断言失败 — IDENTITY-MISMATCH)" >&2
+                DRIFT=1
+                continue
+            fi
             # [2026-09-17 task-v077] 对账基准 = DEPLOY_SRC(主仓 skills/task-planner), 非脚本运行处
             # [2026-09-27 task-v091 C-5] 全树 diff -rq → 两级对账(L1 集合差 + L2 定向 diff, 明细行 DRIFT-L1/DRIFT-L2
             # 先行打印; 判定行与 exit 码语义不变: 两级全过 = IDENTICAL)
@@ -696,9 +903,10 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
         # Why(D4 事故根因=2026-10-10 04:45-04:49 claude 写入后 zcode 删除致技能全局停摆):
         #   旧路径 rm slot 后直写新内容, 写入中断=slot 缺席=全部会话技能停摆。新路径把"内容就位"
         #   与"指针切换"分离: staging 全部先行(任 slot stage 失败=整体 exit 1 不进入 swap);
-        #   swap 逐位 rename 原子切换(失败恢复原位); post-verify 存在性+diff -r 零差异,
-        #   任一失败 exit 1, 禁止部分 slot 成功当整体成功。
-        # ---------- staging: 全部 slot 先行 cp -rL 至同父目录 <slot>.stage.$$ ----------
+        #   swap: 旧 slot mv→cache backup(旧技能立即退出扫描根) → stage mv→slot → post-verify PASS → 删 backup。
+        # [2026-11-26 事故修复] stage/backup 必须落 DEPLOY_CACHE_ROOT, 绝不落扫描根/仓内;
+        #   cache 根已在循环前 assert_cache_root_safe fail-closed 校验。
+        # ---------- staging: 全部 slot 先行 cp -rL 至 cache 根 <name>.stage.<key>.$$ ----------
         for slot in "${slots[@]}"; do
             [ -n "$slot" ] || continue
             if ! validate_slot "$slot"; then
@@ -710,71 +918,185 @@ if [ "$DO_DEPLOY" -eq 1 ]; then
                 continue
             fi
             slotdir="${slot%/}"
-            stagedir="${slotdir}.stage.$$"
-            rm -rf "$stagedir" 2>/dev/null || true    # 防 PID 复用残留嵌套
+            slotnorm="$(norm_path "$slotdir")"
+            slotkey="$(slot_cache_key "$slotnorm")"
+            stagedir="$DEPLOY_CACHE_ROOT/${EXPECTED_SKILL_NAME}.stage.${slotkey}.$$"
+            backupdir="$DEPLOY_CACHE_ROOT/${EXPECTED_SKILL_NAME}.backup.${slotkey}.$$"
+            rm -rf "$stagedir" "$backupdir" 2>/dev/null || true    # 防 PID 复用残留嵌套
             if ! cp -rL "$DEPLOY_SRC" "$stagedir" 2>/dev/null; then
                 rm -rf "$stagedir" 2>/dev/null || true
                 echo "[DEPLOY] STAGE-FAIL: $slotdir (cp 失败 — 整体退出, 不进入 swap)"
-                # 清理本批已 stage 的残留(防半成品 stage 目录遗留父目录)
+                # 清理本批已 stage 的残留(防半成品 stage 目录遗留 cache)
                 for _sd in ${STAGEDIRS[@]+"${STAGEDIRS[@]}"}; do
                     [ -n "$_sd" ] && rm -rf "$_sd" 2>/dev/null || true
                 done
                 STAGEDIRS=()
+                SLOTBACKUPS=()
+                SLOTDIRS=()
+                SLOTNORMS=()
                 echo "[DEPLOY] DEPLOY_DRIFT: staging 阶段失败" >&2
                 exit 1
             fi
             SLOTDIRS+=("$slotdir")
             STAGEDIRS+=("$stagedir")
-            echo "[DEPLOY] STAGED: $slotdir → ${slotdir}.stage.$$"
+            SLOTBACKUPS+=("$backupdir")
+            SLOTNORMS+=("$slotnorm")
+            echo "[DEPLOY] STAGED: $slotdir → $stagedir"
         done
-        # ---------- swap: 逐 slot rm -rf <slot> && mv <slot>.stage.$$ <slot> ----------
-        # rename(2) 原子切换(同父目录); 失败不继续 post-verify(整体 exit 1)
+        # ---------- swap: 旧 slot mv→cache backup, 再 stage mv→slot ----------
+        # [2026-11-26 事故修复] 顺序强制: 先把旧 slot 整体 mv 到 backup(旧技能立即退出扫描根)
+        # → 再把 stage mv 到 slot → post-verify PASS → 才删除 backup。
+        # 任何一步失败: 把 backup 原样 mv 回 slot, 保留 backup 供人工核对, 不得静默删除;
+        # 禁止 `|| true` 吞失败; 禁止无备份的 rm -rf slot。
         SWAP_FAIL=0
-        for i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+        for i in $( [ ${#SLOTDIRS[@]} -gt 0 ] && seq 0 $((${#SLOTDIRS[@]}-1)) ); do
             [ -n "${SLOTDIRS[$i]:-}" ] || continue
             slotdir="${SLOTDIRS[$i]}"
             stagedir="${STAGEDIRS[$i]}"
-            if ! rm -rf "$slotdir" 2>/dev/null; then
-                echo "[DEPLOY] SWAP-FAIL: $slotdir (rm 失败 — 原 slot 保留未动)"
-                SWAP_FAIL=1
-                continue
+            backupdir="${SLOTBACKUPS[$i]}"
+            # step 1: 旧 slot → backup (旧技能立即退出扫描根)
+            if [ -e "$slotdir" ]; then
+                if ! mv "$slotdir" "$backupdir" 2>/dev/null; then
+                    echo "[DEPLOY] SWAP-FAIL: $slotdir (slot→backup 换位失败 — 原 slot 保留未动, backup=$backupdir)" >&2
+                    SWAP_FAIL=1
+                    continue
+                fi
+            else
+                # slot 不存在: 记录为空 backup(后续回滚无需恢复旧内容)
+                backupdir=""
+                SLOTBACKUPS[$i]=""
             fi
+            # step 2: stage → slot
             if ! mv "$stagedir" "$slotdir" 2>/dev/null; then
-                # 恢复原位: stage 尚在, mv 回(rm 已执行, stage 回即恢复)
-                mv "$stagedir" "$slotdir" 2>/dev/null || true
-                echo "[DEPLOY] SWAP-FAIL: $slotdir (mv 失败 — stage 已回原位)"
+                echo "[DEPLOY] SWAP-FAIL: $slotdir (stage→slot 换位失败 — 尝试恢复 backup)" >&2
+                if [ -n "$backupdir" ] && [ -e "$backupdir" ]; then
+                    if mv "$backupdir" "$slotdir" 2>/dev/null; then
+                        # [2026-11-26 用户裁决] 回位+备份保留: 恢复成功后在 cache 根保留 backup 物理副本。
+                        if ! cp -a "$slotdir" "$backupdir" 2>/dev/null; then
+                            echo "[DEPLOY] WARN: swap 回位后备份副本重建失败 — backup 路径保留但可能不完整: $backupdir" >&2
+                        fi
+                        echo "[DEPLOY] SWAP-RECOVERED: $slotdir (已从 backup 恢复原位, backup 已保留: $backupdir)"
+                    else
+                        echo "[DEPLOY] SWAP-FAIL: $slotdir (恢复 backup→slot 失败 — backup 保留供人工核对: $backupdir)" >&2
+                    fi
+                fi
                 SWAP_FAIL=1
                 continue
             fi
-            echo "[DEPLOY] SWAPPED: $slotdir"
+            echo "[DEPLOY] SWAPPED: $slotdir (backup=$backupdir)"
         done
         if [ "$SWAP_FAIL" -eq 1 ]; then
-            echo "[DEPLOY] DEPLOY_DRIFT: swap 阶段失败(已 swap 位保持新内容一致态, 失败位已恢复原位)" >&2
+            echo "[DEPLOY] DEPLOY_DRIFT: swap 阶段失败(失败位已尝试恢复, backup 保留供人工核对)" >&2
             exit 1
         fi
-        # ---------- post-verify: 每 slot 存在性 + diff -r 零差异 ----------
-        # 任一失败 exit 1 并输出 slot 缺失/diff 详情, 禁止部分 slot 成功当整体成功
+        # ---------- post-verify: 身份断言 + 存在性 + diff -r 零差异 ----------
+        # [2026-11-26 事故修复] 对账前先断言目标 slot 的 basename 与期望技能名一致且规范化路径
+        # 精确等于声明值; 身份不符输出 IDENTITY-MISMATCH 并以非 0 退出, 不得因同源复制恒真而假绿。
+        # 对账基准明确来自 canonical DEPLOY_SRC 与已校验身份后的 slot, 不拿父目录自身与源比。
         VERIFY_FAIL=0
-        for i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+        for i in $( [ ${#SLOTDIRS[@]} -gt 0 ] && seq 0 $((${#SLOTDIRS[@]}-1)) ); do
             [ -n "${SLOTDIRS[$i]:-}" ] || continue
             slotdir="${SLOTDIRS[$i]}"
+            slotnorm="${SLOTNORMS[$i]:-$(norm_path "$slotdir")}"
+            backupdir="${SLOTBACKUPS[$i]:-}"
+            # 身份断言先于内容对账
+            if ! assert_slot_identity_for_verify "$slotdir" "$slotnorm"; then
+                echo "[DEPLOY] VERIFY-FAIL: $slotdir (IDENTITY-MISMATCH — 禁止假绿)" >&2
+                VERIFY_FAIL=1
+                # [2026-11-26 用户裁决] 回位+备份保留, 不希望得到任何伤害:
+                # 先将当前 slot 移到 cache quarantine(保留现场), 再 restore backup; restore 失败则把 quarantine 移回 slot。
+                if [ -n "$backupdir" ] && [ -e "$backupdir" ]; then
+                    _quarantine="$DEPLOY_CACHE_ROOT/${EXPECTED_SKILL_NAME}.quarantine.${slotkey:-$(slot_cache_key "$slotnorm")}.$$.$i"
+                    rm -rf "$_quarantine" 2>/dev/null || true
+                    if [ -e "$slotdir" ]; then
+                        if ! mv "$slotdir" "$_quarantine" 2>/dev/null; then
+                            echo "[DEPLOY] VERIFY-FAIL: $slotdir (身份不符, quarantine 失败 — slot 保持原位, backup 保留: $backupdir)" >&2
+                            continue
+                        fi
+                    else
+                        _quarantine=""
+                    fi
+                    if mv "$backupdir" "$slotdir" 2>/dev/null; then
+                        if ! cp -a "$slotdir" "$backupdir" 2>/dev/null; then
+                            echo "[DEPLOY] WARN: verify 回位后备份副本重建失败 — backup 路径保留但可能不完整: $backupdir" >&2
+                        fi
+                        echo "[DEPLOY] VERIFY-RECOVERED: $slotdir (身份不符, 已从 backup 恢复, backup 已保留: $backupdir)"
+                        [ -n "$_quarantine" ] && [ -e "$_quarantine" ] && rm -rf "$_quarantine" 2>/dev/null || true
+                    else
+                        echo "[DEPLOY] VERIFY-FAIL: $slotdir (身份不符且恢复失败 — 尝试回滚 quarantine, backup 保留: $backupdir)" >&2
+                        if [ -n "$_quarantine" ] && [ -e "$_quarantine" ]; then
+                            mv "$_quarantine" "$slotdir" 2>/dev/null || echo "[DEPLOY] VERIFY-FAIL: $slotdir (quarantine 回滚也失败 — 人工介入: $_quarantine)" >&2
+                        fi
+                    fi
+                fi
+                continue
+            fi
             if [ ! -d "$slotdir" ]; then
                 echo "[DEPLOY] VERIFY-FAIL: $slotdir (slot 缺失)"
                 VERIFY_FAIL=1
+                # [2026-11-26 用户裁决] 回位+备份保留: 恢复成功后保留 backup 物理副本。
+                if [ -n "$backupdir" ] && [ -e "$backupdir" ]; then
+                    if mv "$backupdir" "$slotdir" 2>/dev/null; then
+                        if ! cp -a "$slotdir" "$backupdir" 2>/dev/null; then
+                            echo "[DEPLOY] WARN: verify slot缺失回位后备份副本重建失败 — backup 路径保留但可能不完整: $backupdir" >&2
+                        fi
+                        echo "[DEPLOY] VERIFY-RECOVERED: $slotdir (slot 缺失, 已从 backup 恢复, backup 已保留: $backupdir)"
+                    else
+                        echo "[DEPLOY] VERIFY-FAIL: $slotdir (slot 缺失且恢复失败 — backup 保留: $backupdir)" >&2
+                    fi
+                fi
                 continue
             fi
+            # 对账基准: canonical DEPLOY_SRC vs 已校验身份的 slotdir
             if ! diff -r "$slotdir" "$DEPLOY_SRC" >/dev/null 2>&1; then
-                echo "[DEPLOY] VERIFY-FAIL: $slotdir (diff -r 差异详情:)"
+                echo "[DEPLOY] VERIFY-FAIL: $slotdir (diff -r 差异详情, 基准=$DEPLOY_SRC):"
                 diff -r "$slotdir" "$DEPLOY_SRC" 2>&1 | head -n 10
                 VERIFY_FAIL=1
+                # [2026-11-26 用户裁决] 回位+备份保留, 不希望得到任何伤害:
+                # 先将当前 slot 移到 cache quarantine, 再 restore backup; restore 失败则把 quarantine 移回 slot。
+                if [ -n "$backupdir" ] && [ -e "$backupdir" ]; then
+                    _quarantine="$DEPLOY_CACHE_ROOT/${EXPECTED_SKILL_NAME}.quarantine.${slotkey:-$(slot_cache_key "$slotnorm")}.$$.$i"
+                    rm -rf "$_quarantine" 2>/dev/null || true
+                    if [ -e "$slotdir" ]; then
+                        if ! mv "$slotdir" "$_quarantine" 2>/dev/null; then
+                            echo "[DEPLOY] VERIFY-FAIL: $slotdir (diff 失败, quarantine 失败 — slot 保持原位, backup 保留: $backupdir)" >&2
+                            continue
+                        fi
+                    else
+                        _quarantine=""
+                    fi
+                    if mv "$backupdir" "$slotdir" 2>/dev/null; then
+                        if ! cp -a "$slotdir" "$backupdir" 2>/dev/null; then
+                            echo "[DEPLOY] WARN: verify 回位后备份副本重建失败 — backup 路径保留但可能不完整: $backupdir" >&2
+                        fi
+                        echo "[DEPLOY] VERIFY-RECOVERED: $slotdir (diff 失败, 已从 backup 恢复, backup 已保留: $backupdir)"
+                        [ -n "$_quarantine" ] && [ -e "$_quarantine" ] && rm -rf "$_quarantine" 2>/dev/null || true
+                    else
+                        echo "[DEPLOY] VERIFY-FAIL: $slotdir (diff 失败且恢复失败 — 尝试回滚 quarantine, backup 保留: $backupdir)" >&2
+                        if [ -n "$_quarantine" ] && [ -e "$_quarantine" ]; then
+                            mv "$_quarantine" "$slotdir" 2>/dev/null || echo "[DEPLOY] VERIFY-FAIL: $slotdir (quarantine 回滚也失败 — 人工介入: $_quarantine)" >&2
+                        fi
+                    fi
+                fi
             fi
         done
         if [ "$VERIFY_FAIL" -eq 1 ]; then
-            echo "[DEPLOY] DEPLOY_DRIFT: post-verify 阶段失败(存在性/diff 零差异未过)" >&2
+            echo "[DEPLOY] DEPLOY_DRIFT: post-verify 阶段失败(身份/存在性/diff 零差异未过, backup 已尽量保留)" >&2
             exit 1
         fi
+        # [2026-11-26 事故修复] post-verify PASS 后才删除 backup; 删除失败报错但不伪造成功后回滚已验证 slot。
+        for i in $( [ ${#SLOTDIRS[@]} -gt 0 ] && seq 0 $((${#SLOTDIRS[@]}-1)) ); do
+            backupdir="${SLOTBACKUPS[$i]:-}"
+            [ -n "$backupdir" ] || continue
+            if [ -e "$backupdir" ]; then
+                if ! rm -rf "$backupdir" 2>/dev/null; then
+                    echo "[DEPLOY] VERIFY-WARN: backup 删除失败(已验证 slot 保持不动, 请人工清理): $backupdir" >&2
+                fi
+            fi
+            SLOTBACKUPS[$i]=""
+        done
         # [task-v105] 池成员顶层枚举挂载(增强段, 失败不改 exit 码)
-        for i in $(seq 0 $((${#SLOTDIRS[@]}-1))); do
+        for i in $( [ ${#SLOTDIRS[@]} -gt 0 ] && seq 0 $((${#SLOTDIRS[@]}-1)) ); do
             [ -n "${SLOTDIRS[$i]:-}" ] || continue
             install_pool_links "${SLOTDIRS[$i]}"
         done

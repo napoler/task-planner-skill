@@ -79,7 +79,10 @@ mkdir -p "$HOME_DIR/.zcode/skills/task-planner" \
          "$HOME_DIR/.config/opencode/skills" \
          "$HOME_DIR/.cursor/skills" \
          "$HOME_DIR/.continue/skills"
-FAKE_SLOT="$TMP/fake-slot"
+# [2026-11-26 task-deploy-slot-safety] slot-identity 契约: 注入 slot basename 必须==task-planner 且精确等于
+#   <scan_root>/task-planner。DA-06/DA-07 语义是“注入 slot 时 F6 守卫跳过”，不是“slot 身份非法被拒”；
+#   因此夹具改为合法身份形态，保持 F6 跳过与外围 skill 不落该 slot 的判定语义不变。
+FAKE_SLOT="$TMP/fake-scan-root/task-planner"
 mkdir -p "$FAKE_SLOT"
 
 # ---------- 正向: 不注入 TASK_PLANNER_DEPLOY_SLOTS, 走默认 slot + F6 ----------
