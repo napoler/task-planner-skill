@@ -270,7 +270,7 @@ Spec 模式路由（2026-11-15 增）：任务整理阶段的专业内容（头�
 - **媒体制作/单元线并行/内容权重分级** → 卫星 `media-planner`
 - 主进程铁律摘要：任务执行一律 `Agent()` 派发（白名单外 Write/Edit 被 `check-delegation.sh` 拦截，enforce=exit 2）；bypass 仅显式 `allow-direct.sh on --confirm-user-requested`；六项白名单全文见 task-dispatch Rule 25.3
 - **子代理激活默认档/模型分档/并行硬标注/同消息并发/指标留痕** → 卫星 task-dispatch Rule 96（七类触发类别默认派发；主进程直做=窄白名单登记例外；≥2 个无依赖 S-unit 必须声明并行组；并行组成员同消息并发派发；交付报告激活子代理数与最大并行宽度）
-- **声明源通用消费与本地调研通道（Rule 114）** → research-channels 技能（`project-inventory.sh` 索引第 0 步）+ core Rule 114 + discipline 101.5/B17；计划期 spec-scan 源扫描 + check-spec-baseline `[source-gate]`；终验 `--final` + diff 对账 `[diff-disposition]/[source-waiver]`
+- **声明源通用消费与本地调研通道（Rule 114）** → research-channels 技能（`project-inventory.sh` 索引第 0 步）+ core Rule 114 + discipline 101.5/B20；计划期 spec-scan 源扫描 + check-spec-baseline `[source-gate]`；终验 `--final` + diff 对账 `[diff-disposition]/[source-waiver]`
 
 ## 结构化状态操作 SOP（JSON 权威源）
 
