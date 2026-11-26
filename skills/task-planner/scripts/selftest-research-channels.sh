@@ -208,7 +208,8 @@ PY
         RC10_OK=0; RC10_MSG="未找到 setting 条目 anchor"
       else
         set +e
-        DISP_OUT=$(PYTHONPATH="" python3 "$PLANCTL" disposition --plan-dir "$FIX10/plans/pl" "$ANCHOR" must 2>"$TMPBASE/rc10.disp.err")
+        # [2026-11-26 适配] disposition=must 现要求 --rule（生成 SPEC-n 约定处置行，C5 消费双向判定式）
+        DISP_OUT=$(PYTHONPATH="" python3 "$PLANCTL" disposition --plan-dir "$FIX10/plans/pl" "$ANCHOR" must --rule "grep -q '各自扎营' docs/setting.md" --applies S1 2>"$TMPBASE/rc10.disp.err")
         RC10_DISP=$?
         set -e
         if [ "$RC10_DISP" -ne 0 ]; then

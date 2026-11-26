@@ -2948,6 +2948,11 @@ def cmd_disposition(args: argparse.Namespace) -> int:
     [2026-11-26 task-source-registry] What: 按 anchor/id 精确定位 spec_baseline 条目，
       写 disposition=must 或 disposition=na+fallback_reason。
     Why: 源注册表扫描出的候选默认 pending，必须有显式处置动作才能通过 source-gate。
+    [2026-11-26 task-research-channels-20261126 P6 收口修复] What: disposition 同时生成/替换
+      C4/C5/C8 消费的约定处置行（must→SPEC-n, na→NA-n），携带 src/rule/applies/result/cls 等字段；
+      同一 src 原位替换防重复；emit 回传 marker_id。
+    Why: cmd_disposition 原仅写 disposition/fallback_reason，spec-baseline 门实际消费 SPEC-<n>/NA-<n>
+      行字段，导致处置后 C4/C5/C8 仍不满足（集成缺口）。
     """
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
@@ -2957,8 +2962,12 @@ def cmd_disposition(args: argparse.Namespace) -> int:
     if disposition not in ("must", "na"):
         raise PlanctlError(f"disposition 非法: {disposition}（须为 must|na）")
     reason = str(getattr(args, "reason", "") or "").strip()
+    rule = str(getattr(args, "rule", "") or "").strip()
+    applies = str(getattr(args, "applies", "") or "").strip() or "S1-S9"
     if disposition == "na" and not reason:
         raise PlanctlError("disposition=na 时必须提供 --reason")
+    if disposition == "must" and not rule:
+        raise PlanctlError("disposition=must 时必须提供 --rule（双向判定式，C5 消费）")
     sb = _arr(doc, "spec_baseline")
     hit = None
     for item in sb:
@@ -2974,8 +2983,84 @@ def cmd_disposition(args: argparse.Namespace) -> int:
         hit["fallback_reason"] = reason
     elif reason:
         hit["fallback_reason"] = reason
+
+    # [2026-11-26 task-research-channels-20261126 P6 收口修复]
+    # 生成/替换 C4/C5/C8 消费的约定处置行：must->SPEC-n, na->NA-n。
+    # [2026-11-26 task-research-channels-20261126 P6 口径收敛] C4 按 src==候选ID(SRC-n) 匹配
+    # (check-spec-baseline.sh C4: awk $3==c, c 来自 must.txt 候选 id)。anchor 调用时 target!=SRC-n
+    # 会导致 C4 永不匹配；故 src 规范化为 hit.id(SRC-n) 优先、否则 target，且查重与写入用同一 src_value。
+    src_value = str(hit.get("id") or "").strip() if str(hit.get("id") or "").startswith("SRC-") else target
+    # next_n: 从 1 起找空号（最大号+1 语义等价于无空洞时；显式扫空号更稳健）。
+    prefix = "SPEC-" if disposition == "must" else "NA-"
+    used_nums: set[int] = set()
+    for item in sb:
+        if not isinstance(item, dict):
+            continue
+        iid = str(item.get("id") or "")
+        if iid.startswith("SPEC-") or iid.startswith("NA-"):
+            suffix = iid.split("-", 1)[1]
+            if suffix.isdigit():
+                used_nums.add(int(suffix))
+    next_n = 1
+    while next_n in used_nums:
+        next_n += 1
+
+    # 替换语义：同一 src==src_value 且 id 以 SPEC-/NA- 开头的行原位替换，防重复。
+    replace_idx = None
+    for idx, item in enumerate(sb):
+        if not isinstance(item, dict):
+            continue
+        iid = str(item.get("id") or "")
+        if str(item.get("src") or "") == src_value and (iid.startswith("SPEC-") or iid.startswith("NA-")):
+            replace_idx = idx
+            # 复用既有 marker id 的编号槽位，避免替换时 id 漏洞增长。
+            if iid.startswith(prefix):
+                suffix = iid.split("-", 1)[1]
+                if suffix.isdigit():
+                    next_n = int(suffix)
+            break
+
+    hit_kind = str(hit.get("dimension") or hit.get("kind") or "")
+    if disposition == "must":
+        marker = {
+            "id": f"SPEC-{next_n}",
+            "src": src_value,
+            "verbatim": str(hit.get("verbatim") or ""),
+            "anchor": str(hit.get("anchor") or ""),
+            "rule": rule,
+            "sha": str(hit.get("sha") or ""),
+            "kind": hit_kind,
+            "check": "",
+            "applies": applies,
+            "result": "",
+            "cls": "must",
+            "disposition": "must",
+            "fallback_reason": str(hit.get("fallback_reason") or ""),
+        }
+    else:
+        marker = {
+            "id": f"NA-{next_n}",
+            "src": src_value,
+            "verbatim": reason,
+            "anchor": str(hit.get("anchor") or ""),
+            "rule": reason,
+            "sha": "",
+            "kind": hit_kind,
+            "check": "n/a",
+            "applies": applies,
+            "result": "NA",
+            "cls": "na",
+            "disposition": "na",
+            "fallback_reason": reason,
+        }
+
+    if replace_idx is not None:
+        sb[replace_idx] = marker
+    else:
+        sb.append(marker)
+
     commit_state(plan, doc)
-    emit({"anchor": target, "disposition": disposition, "fallback_reason": hit.get("fallback_reason", "")})
+    emit({"anchor": target, "disposition": disposition, "fallback_reason": hit.get("fallback_reason", ""), "marker_id": marker["id"], "src_normalized": src_value})
     return 0
 def cmd_acceptance(args: argparse.Namespace) -> int:
     """写入/读取 plan-state 顶层 acceptance 对象。
@@ -3425,6 +3510,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("anchor", help="spec_baseline 条目的 anchor 或 id")
     p.add_argument("disposition", choices=("must", "na"), help="处置态")
     p.add_argument("--reason", default="", help="disposition=na 时必填的理由")
+    # [2026-11-26 task-research-channels-20261126 P6 收口修复] C5/C8 消费字段
+    p.add_argument("--rule", default="", help="disposition=must 时必填：双向判定式（C5 消费）")
+    p.add_argument("--applies", default="S1-S9", help="处置行 applies 字段（默认 S1-S9）")
 
     # [2026-11-26 task-source-registry] acceptance：顶层验收状态
     p = add_cmd("acceptance", "读写 plan-state 顶层 acceptance 对象", cmd_acceptance)

@@ -422,6 +422,7 @@
         "observed": { "type": "string" },
         "cls": { "type": "string" },
         "origin": { "type": "string" },
+        "target": { "type": "string" },
         "dimension": { "type": "string" },
         "disposition": { "type": "string", "enum": ["pending", "must", "na"] },
         "fallback_reason": { "type": "string" },
