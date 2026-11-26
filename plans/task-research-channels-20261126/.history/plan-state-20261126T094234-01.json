@@ -4,7 +4,7 @@
   "plan_tier": "standard",
   "execution_lane": "L2",
   "created_at": "2026-11-26T01:01:08Z",
-  "updated_at": "2026-11-26T01:03:51Z",
+  "updated_at": "2026-11-26T01:42:32Z",
   "requirements": [
     {
       "id": "R1",
@@ -104,11 +104,11 @@
     {
       "id": "P1",
       "name": "P1 新技能 research-channels",
-      "status": "pending",
+      "status": "complete",
       "s_units": [],
       "v_checks": [],
       "tags": [],
-      "started": ""
+      "started": "2026-11-26T01:10:40Z"
     },
     {
       "id": "P2",
@@ -122,7 +122,7 @@
     {
       "id": "P3",
       "name": "P3 门与集成",
-      "status": "pending",
+      "status": "complete",
       "s_units": [],
       "v_checks": [],
       "tags": [],
@@ -1749,6 +1749,66 @@
       "detection": 3,
       "rpn": 96,
       "fallback": "种子文件缺失回退内置行为；selftest-spec-baseline 既有断言全量重跑"
+    }
+  ],
+  "output_examples": [
+    {
+      "id": "EX-1",
+      "deliverable": "skills/research-channels/{SKILL.md,references/research-channels.md,scripts/project-inventory.sh} + 通用源消费门",
+      "example": ".spec-registry.tsv 三源类型声明：bible.md\\tsetting\\t各自扎营|自主选点\\tcontent-creation ／ config/render-pipeline.json\\tconfig-key\\tframe_rate|resolution\\trender ／ agnes-api-notes.md\\tlibrary-doc\\tupload_url|rate_limit\\tvideo-generation。门输出：[source-gate] FAILED: ①声明源通道 NA/空（注册表命中 3 源未扫描）; rc=1 ／ [diff-audit] FAILED: 删除行命中声明源锚 无处置行; rc=1",
+      "format": "TSV 四列声明文件+门 stdout 带 tag/rc",
+      "template": "<source_path>\\t<spec_kind>\\t<anchors_keywords>\\t<scope_tags>；<gate-tag> FAILED/OK: <对象> <判据>; rc=<n>",
+      "vc_refs": [
+        "VC-1",
+        "VC-2"
+      ],
+      "tags": []
+    }
+  ],
+  "actions": [
+    {
+      "id": "A-1",
+      "at": "2026-11-26T09:10:00Z",
+      "phase": "P1",
+      "text": "P1 完成：research-channels 三文件（54/199/189 行）主进程亲验 PASS——bash -n rc=0；通道失败纪律/研究第0步/结论锚定锚×7；无写死路径；--check rc 2/1/0 正确；worktree 提交 3868f5a0"
+    },
+    {
+      "id": "A-2",
+      "at": "2026-11-26T09:30:00Z",
+      "phase": "P4",
+      "text": "撞号修正：P4 新增派发回执条款原编 B17 与既有 B17=口径对齐（sync-todos.sh B1-B19 序列）冲突，主进程亲验抓出，改为 B20 并加编号注（B17/B18/B19 已占用）；教训=跨文件编号必须查 sync-todos.sh 而非单文件 grep"
+    },
+    {
+      "id": "A-3",
+      "at": "2026-11-26T09:45:00Z",
+      "phase": "P3",
+      "text": "P3 完成并主进程亲验：四文件 bash -n 过；manifest 契约实锚（.diff-manifest.json files+source_hits+generated_at；无注册表 skip 行）；主进程复演两次假阴性均为夹具时序错误（snapshot 会提交基线 commit task-baseline p1，先改后拍=删除被吸收），实现无误"
+    }
+  ],
+  "research": [
+    {
+      "id": "RS-1",
+      "claim": "B 序列编号真源=sync-todos.sh（B1-B19 全序列；evidence-anchor selftest 断言 B9-B18），单文件 grep discipline 会漏——本次撞号已修正 B17→B20",
+      "source": "skills/task-planner/scripts/sync-todos.sh:35-40,427-430 + selftest-evidence-anchor.sh:507"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D-1",
+      "decision": "P2 字面偏离已批准计划 M1 的“拆除词表枚举”条款：保留 check-spec-baseline 内置 fallback 词表",
+      "rationale": "该 fallback 是 task-spec-registry-generalization 显式登记的 fail-safe 契约（种子缺失=现状逐字节），拆除违反向后兼容硬红线；通用性改由源注册表数据层实现（维度开放标签零新枚举），意图满足 M1"
+    }
+  ],
+  "errors": [
+    {
+      "id": "E-1",
+      "timestamp": "2026-11-26T09:20:00Z",
+      "error": "并行派发事故：P3 执行体把 P2 未提交的 planctl.py 改动误判遗留而 git restore 还原",
+      "root_cause": "派发 prompt 只禁 commit 未禁 restore/checkout/stash 对非自有文件的操作",
+      "resolution": "P2 已重建改动；后续并行派发一律加禁 restore 条款",
+      "prevention": "同 worktree 并行执行体的 prompt 必须显式列出 git 危险操作禁令",
+      "trigger": "并行执行体观察 git status 见非自有脏文件",
+      "attempt": 0
     }
   ]
 }

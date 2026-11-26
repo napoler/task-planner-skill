@@ -2,11 +2,12 @@
 # Task Plan: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T01:04:14Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T03:07:39Z
 plan_tier: standard
 execution_lane: L2
 schema_version: 1
 - 顶层 tags: （无）
+- 验收: awaiting
 
 ## 🎯 用户需求原文
 - **R1（手段）** 用户新建独立调研技能承载本地调研方法论（五层：枚举/索引/检索/阅读/外部），机制零写死目录，目录数据归项目索引与注册表
@@ -37,12 +38,12 @@ schema_version: 1
 ## Phases（阶段状态）
 | id | status | s_units | v_checks | name | started | tags |
 |---|---|---|---|---|---|---|
-| P1 | pending |  |  | P1 新技能 research-channels |  |  |
-| P2 | pending |  |  | P2 消费链去枚举化 |  |  |
-| P3 | pending |  |  | P3 门与集成 |  |  |
+| P1 | complete |  |  | P1 新技能 research-channels | 2026-11-26T01:10:40Z |  |
+| P2 | complete |  |  | P2 消费链去枚举化 |  |  |
+| P3 | complete |  |  | P3 门与集成 |  |  |
 | P4 | pending |  |  | P4 条款与模板 |  |  |
-| P5 | pending |  |  | P5 验证 |  |  |
-| P6 | pending |  |  | P6 收口 |  |  |
+| P5 | complete |  |  | P5 验证 |  |  |
+| P6 | complete |  |  | P6 收口 |  |  |
 
 ## R→VC 映射
 | requirement | vcs |
@@ -92,17 +93,17 @@ schema_version: 1
 ## Phase 锚点明细（3file-gate/plan-dispatch 解析面）
 
 ### Phase 1: P1 新技能 research-channels
-- **Status:** pending
-- **Started:** 
+- **Status:** complete
+- **Started:** 2026-11-26T01:10:40Z
 - **Executor:** -
 
 ### Phase 2: P2 消费链去枚举化
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** -
 
 ### Phase 3: P3 门与集成
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** -
 
@@ -112,12 +113,12 @@ schema_version: 1
 - **Executor:** -
 
 ### Phase 5: P5 验证
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** -
 
 ### Phase 6: P6 收口
-- **Status:** pending
+- **Status:** complete
 - **Started:** 
 - **Executor:** -
 
@@ -129,11 +130,28 @@ schema_version: 1
 
 范围：只清会被 Agent 读进上下文的 Skill 说明文件；代码文件（.py/.sh/.ts 等）里的注释属保护对象，禁止清理。执行时机：outcome 判定之前、合并回动作之前；mini / L0-lite 档豁免本板块。
 
+## 🔀 隔离决策
+| 字段 | 值 |
+|---|---|
+| merge_back | merged(b3b9c572) |
+
 ## 📊 FMEA 预演
 | Phase | 失败模式 | S(1-10) | O(1-10) | D(1-10) | RPN=S×O×D | 预设兜底动作 |
 |---|---|---|---|---|---|---|
 | P5 | 负控制恒真（判据恒 PASS） | 9 | 4 | 3 | 108 | 夹具 T2/T5 删除已声明源锚定内容必须 FAIL；mutation 复演；门以 rc 判定禁恒真 |
 | P2 | 词表数据化迁移丢失致夹具漂移 | 8 | 4 | 3 | 96 | 种子文件缺失回退内置行为；selftest-spec-baseline 既有断言全量重跑 |
+
+## Decisions Made
+| Decision | Rationale |
+|---|---|
+| P2 字面偏离已批准计划 M1 的“拆除词表枚举”条款：保留 check-spec-baseline 内置 fallback 词表 | 该 fallback 是 task-spec-registry-generalization 显式登记的 fail-safe 契约（种子缺失=现状逐字节），拆除违反向后兼容硬红线；通用性改由源注册表数据层实现（维度开放标签零新枚举），意图满足 M1 |
+
+## Errors Encountered
+| Error | Attempt | Resolution | Prevention（Rule 31 指针） |
+|---|---|---|---|
+| 并行派发事故：P3 执行体把 P2 未提交的 planctl.py 改动误判遗留而 git restore 还原 | 0 | P2 已重建改动；后续并行派发一律加禁 restore 条款 | 同 worktree 并行执行体的 prompt 必须显式列出 git 危险操作禁令 |
+| P2 末轮回报异常：自称被要求 TEXT ONLY 0 验证（prompt 无此约束=末轮自我限制幻觉）且 acceptance 0/5 自报 | 0 | 主进程盘面亲验为准：Task A done/Task B 未做；派 P2-repair 专补 | executor 回报一律与盘面交叉验证；partial/0 自报不采信为终态 |
+| dogfood 夹具 source-gate OK=0：template_type 直改 JSON 后未重 render，门读的是渲染视图旧 header | 0 | 夹具补 render；机制侧四态输出已被 P2-repair 夹具证明 | 改 template_type 后必须 render 再跑门 |
 
 ## 🧭 指令理解迭代草稿（Rule 28.2.2 — 执行前方向对齐｜粗稿非定稿）
 - **① 原始指令复述（锚）**：<逐字/等价复述，冲突以 user-session-log 原话为准>

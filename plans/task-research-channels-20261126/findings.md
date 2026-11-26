@@ -2,7 +2,7 @@
 # Findings: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T01:04:14Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T03:07:39Z
 
 ## Requirements
 - 用户新建独立调研技能承载本地调研方法论（五层：枚举/索引/检索/阅读/外部），机制零写死目录，目录数据归项目索引与注册表
@@ -21,12 +21,12 @@
 | （本任务暂无知识对齐记录） |  |  |  |
 
 ## Research Findings
-- （本任务暂无调研发现）
+- B 序列编号真源=sync-todos.sh（B1-B19 全序列；evidence-anchor selftest 断言 B9-B18），单文件 grep discipline 会漏——本次撞号已修正 B17→B20 — skills/task-planner/scripts/sync-todos.sh:35-40,427-430 + selftest-evidence-anchor.sh:507
 
 ## Technical Decisions
 | Decision | Rationale |
 |---|---|
-| （本任务暂无技术决策） |  |
+| P2 字面偏离已批准计划 M1 的“拆除词表枚举”条款：保留 check-spec-baseline 内置 fallback 词表 | 该 fallback 是 task-spec-registry-generalization 显式登记的 fail-safe 契约（种子缺失=现状逐字节），拆除违反向后兼容硬红线；通用性改由源注册表数据层实现（维度开放标签零新枚举），意图满足 M1 |
 
 ## Issues Encountered
 | Issue | Resolution |
