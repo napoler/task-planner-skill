@@ -367,6 +367,18 @@ fi
 # - 若判定为 REQUIRED 且不在 worktree（非 SATISFIED）则阻断（输出含 [worktree-required]）
 # [2026-11-27 收口复核] 原行为=本段引号写成 Unicode 弯引号（” “），POSIX shell 当作普通字符，
 # 变量赋值/文件名/命令替换全部失效，接线门实际不可执行；改为 ASCII 双引号，保持判定语义不变。
+# [2026-11-27 回归修复] 原行为=对任何走到此处的非豁免路径都跑 worktree 判定，包括 /tmp 夹具与
+# 仓外部署位；实测 selftest-rule23-conflict-scan 的 /tmp/r23-selftest-*/s 被误拦、selftest-deploy-all-skills
+# DA-06 rc=2。改为仅对本项目根内路径生效：仓外路径不属于本计划 worktree 管辖，维持放行。
+case "$abs_path" in
+  "$ROOT"/*) ;;
+  *) exit 0 ;;
+esac
+# [2026-11-27 回归修复] hermetic 夹具（如 selftest-rule23-conflict-scan 的 /tmp/r23-selftest-*）
+# 也自带 plans/ 目录，会被误判成项目根；真实工作树隔离只存在于 git 仓，非 git 根直接放行。
+if ! command -v git >/dev/null 2>&1 || ! git -C "$ROOT" rev-parse --show-toplevel >/dev/null 2>&1; then
+  exit 0
+fi
 _wt_check_script="$SCRIPT_DIR/check-worktree-required.sh"
 if [ -x "$_wt_check_script" ] || [ -f "$_wt_check_script" ]; then
   _wt_delivery="0"
