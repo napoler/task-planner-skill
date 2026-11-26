@@ -21,9 +21,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 卫星路由：task-dispatch
 
-域=子代理派发与拆分调度。规则全文见 `references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104,110）。
-
-调用条件：涉及子代理拆分/派发/并行/粒度校验/伴飞/返回校验/执行体选型/冲突隔离/依赖分析/双轮质检/使用点标注时 Read 该文件。
+域=子代理派发与拆分调度。规则全文见 `references/critical-rules-dispatch.md`（Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104,110）；触发：涉及子代理拆分/派发/并行/粒度校验/伴飞/返回校验/执行体选型/冲突隔离/依赖分析/双轮质检/使用点标注时 Read 该文件；关键词：critical-rules-dispatch Rule12-25-68 拆分 派发 并行 粒度校验 伴飞 返回校验。
 
 ## 规则索引
 
@@ -61,6 +59,6 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 ## 参考文档
 
 - `references/critical-rules-dispatch.md` — 15 条规则全文（索引表列 15 条：Rule 12,13,14,21,22,23,25,46,52,59,68,96,103,104,110；[2026-11-23 task-fix-all-20261123] 补齐 Rule 96/103/104 入表，对齐实际编号清单）
-- `references/agent-coverage.md` — 执行体覆盖矩阵
-- `references/dispatch-examples.md` — 派发示例
-- `references/split-pattern-library.md` — 拆分模式库
+- `references/agent-coverage.md` — 执行体覆盖矩阵；触发：选择执行体/查阅覆盖矩阵或路由映射时；关键词：agent-coverage 覆盖矩阵 执行体路由。
+- `references/dispatch-examples.md` — 派发示例；触发：需要派发示例/写派发 prompt 模板参考时；关键词：dispatch-examples 派发示例 模板。
+- `references/split-pattern-library.md` — 拆分模式库；触发：需要拆分模式库/粒度拆分参考时；关键词：split-pattern-library 拆分模式 粒度。

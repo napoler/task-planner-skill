@@ -32,7 +32,7 @@
 
 ## 4. Workflow Flow
 
-6 步工作流（详见 SKILL.md「工作流」段）：Step 1 创建计划骨架 [M] → Step 2 任务拆解（Agent）[A] → Step 3 存储计划 [M] → Step 4 创建 Todo 列表 [M] → Step 5a 逐个执行（状态翻转与持久化）[M] + Step 5b 逐个执行（执行步骤操作）[A] → Step 6 清理 [M]。
+6 步工作流（详见 SKILL.md「工作流」段：todo-skill 六步执行流程与状态翻转规则）；触发：执行 todo-skill 工作流、确认步骤顺序或状态持久化要求时；关键词：todo工作流, 六步流程, 状态翻转, 持久化。Step 1 创建计划骨架 [M] → Step 2 任务拆解（Agent）[A] → Step 3 存储计划 [M] → Step 4 创建 Todo 列表 [M] → Step 5a 逐个执行（状态翻转与持久化）[M] + Step 5b 逐个执行（执行步骤操作）[A] → Step 6 清理 [M]。
 
 > 本文件由 workflow-gen.ts 于 2026-08-21 生成，2026-10-20 手动校正以匹配 SKILL.md 6 步工作流（S77 P2-4 修复）。
 

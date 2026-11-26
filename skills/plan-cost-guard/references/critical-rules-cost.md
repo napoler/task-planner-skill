@@ -6,7 +6,7 @@
 > 源文件核心 critical-rules.md 原文本批次不删（删除见后续 Phase 删除基线执行）。
 
 ### 17 成本控制（P0）— 降低 Opus 使用频率
-opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `cost-control.md`。
+opus 主会话中嵌套 opus Skill(`systematic-debugging`/`code-review`/`brainstorming`/`writing-plans`/`comet-*`)是隐藏成本源,主进程 + Skill 嵌套 = 每次额外 1 次 opus 计费。详见 `cost-control.md`（完整成本控制策略与模型档位映射）；触发：评估/控制 opus 嵌套调用成本、选择节流策略时；关键词：cost-control, opus节流, 成本控制, 模型档位。
 
 17.1 **opus Skill 节流**:opus 档 Skill 同 phase 内 ≤1 次;超出 → AskUserQuestion「继续/拆型/降级」
 17.2 **subagent 嵌套禁止**:禁止 plan-writer 调 plan-writer / code-assistant 调 code-assistant(frontmatter `tools` 不含 Agent/Skill 已防止)

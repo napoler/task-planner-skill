@@ -4,7 +4,7 @@
 
 > 每次 opus 档 Skill 调用 / 主进程 opus 计算 / 嵌套 opus 都记一行。
 > 主进程在 PostToolUse hook 检测到 opus 类调用时自动追加;用户也可手工补充。
-> 详见 `references/cost-control.md` §四 + `../../task-planner/references/critical-rules.md` Rule 17.5。
+> 详见 `references/cost-control.md` §四（成本控制策略与节流规则）+ `../../task-planner/references/critical-rules.md` Rule 17.5（opus 调用门控）；触发：记录/复盘 opus 调用成本、检查节流或门控时；关键词：cost_log, opus成本, 节流, Rule17.5。
 
 ---
 

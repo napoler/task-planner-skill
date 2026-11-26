@@ -19,7 +19,7 @@ model: "custom:9e221f47-3040-4ea7-b742-20b813fb79aa:sonnet-1"
 
 ```yaml
 ---
-template_type: code-edit  # variant 白名单之一（动态派生，详见 SKILL.md §任务模板库）
+template_type: code-edit  # variant 白名单之一（动态派生，详见 SKILL.md §任务模板库；触发：确认 template_type 合法值或白名单来源时；关键词：template_type 白名单 variant）
 cost_estimate:
   main_process_opus: 1          # 主会话 opus 调用次数（通常 1）
   subagent_calls:
@@ -36,7 +36,7 @@ cost_estimate:
 
 ## 掌握的技能
 
-- 模板选择:根据 `template_type` 参数从 `templates/variant/` 选择对应模板填充
+- 模板选择:根据 `template_type` 参数从 `templates/variant/` 选择对应模板填充；触发：起草计划需要按 template_type 选模板时；关键词：模板选择 template_type variant
 - 任务分解:将 user goal 拆为 3-7 个可执行 Phase;派发型 Phase(Executor≠主进程)再拆 S-unit 派发单元(每步 ≤2 文件/≤100 行/预估 ≤15min),计划期预写每步材料包(路径 + ≤10 行摘要)与可观察验收,每步「执行体」列必填(默认"继承"= Phase Executor,混用模型逐行写 subagent_type(model))——计划多花一倍时间拆细,执行省三倍返工(Rule 21.1b/22.6)
 - **伴飞技能填列义务（Rule 59.2 / H5，强制）**:计划期每个 S-unit 表「伴飞技能」列须填 `escort_skills` 中的 `.md` 绝对路径（多个用 `, ` 拼接;确无伴飞则写「无」），并经 `planctl add/set --section s_units --field escort_skills` 写入 plan-state.json;禁止把 parallel 并行组标识填进该列(并行组标识落「前置依赖」列行内注解)。Why:该列是 Rule 59.2「路径+首动作 Read」从计划层到达子代理执行层的**唯一泛化注入路径**——planctl 渲染此列 → 派发任务书「伴飞技能」节 → 子代理首动作 Read 对齐方法论后再执行;字段留空、只写组标识或写未实例化占位符都会使伴飞注入失效,check-dispatch.sh 在 escort_skills 非空却提取不到有效 .md token 时 fail-closed 拦截
 - VC 设计:为每个 Phase 配 5 条可验证的 Verification Contract 条目
@@ -102,7 +102,7 @@ cost_estimate:
 - 含「修 bug/修复/报错/失败/异常」→ `bugfix`
 - 其他 → `general`
 
-**批量触发词(叠加规则,不改变 template_type)**:user goal 含「批量/batch/批处理/并发/批量处理/多文件批量」时,无论最终选中哪个 template_type,**必须**在产出的 task_plan.md 中追加以下 Rule 18 强制内容(详见 `references/batch-quality-gate.md`):
+**批量触发词(叠加规则,不改变 template_type)**:user goal 含「批量/batch/批处理/并发/批量处理/多文件批量」时,无论最终选中哪个 template_type,**必须**在产出的 task_plan.md 中追加以下 Rule 18 强制内容(详见 `references/batch-quality-gate.md`（批量质量门控规则与八字段口径，按需加载）；触发：批量任务需填 Batch Report 或查批量质量门控规则时；关键词：批量 batch-quality-gate Rule18 BatchReport):
 1. 「📦 Batch Report」区块(八字段必填,复制 `templates/batch_report.md` 结构)
 2. 前置 3 问判定(`pre_check` 字段:Q1 是否依赖每单元独立判断/Q2 有无客观验收/Q3 能否回滚)
 3. `chain_mode: fan-out` 时追加聚合 Phase(`### Phase N: Aggregator`,负责收集子任务结果 + 双采样抽检 + 写 Batch Report)

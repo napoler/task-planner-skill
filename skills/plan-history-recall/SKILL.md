@@ -35,10 +35,10 @@ description: 跨任务历史经验挖掘——从 plans/ 文档体系（含 arch
 - **≤3 并行**，**每代理 ≤3 任务**；超 8 个候选 → 分轮，按轮合并简报。
 - 派发材料包（Rule 35.3）：任务目录清单（绝对路径）+主题+卡片落盘路径+八字段返回要求。
 - 子代理逐任务读五文档（task_plan/findings/progress/user-session-log/knowledge-brief，按需分段读+关键段定向 grep（如 grep -n '^## \|Decisions' 定位证据段）；行号锚必须 ≤ wc -l）+
-  `git log --grep "<task-id>"` 提交面 → 按 references/experience-card-schema.md 产卡落盘。
+  `git log --grep "<task-id>"` 提交面 → 按 references/experience-card-schema.md 产卡落盘；触发：history-miner 产出经验卡前需遵循卡片字段与证据锚契约时；关键词：experience-card 经验卡 证据锚。
 
 ### 4 综合简报（主进程）
-按 references/brief-template.md 填充，**简报 ≤150 行**：
+按 references/brief-template.md 填充（触发：主进程汇总简报前需遵循简报结构与证据锚要求时；关键词：brief-template 历史简报 证据锚），**简报 ≤150 行**：
 跨任务结论四维（成功模式/失败教训频次与根因聚类/用户偏好演变/可复用资产）；
 每条结论必须带证据锚（卡路径+源文件:行号）；无锚结论禁写，查不到的字段如实标「未查到」。
 
@@ -71,5 +71,5 @@ description: 跨任务历史经验挖掘——从 plans/ 文档体系（含 arch
 ## 参考
 
 - 设计来源=源仓 plans/ 档案（非运行期依赖）
-- 卡契约：references/experience-card-schema.md；简报契约：references/brief-template.md
+- 卡契约：references/experience-card-schema.md（触发：产出或审阅经验卡需按字段/证据锚规范时；关键词：experience-card schema 经验卡）；简报契约：references/brief-template.md（触发：生成或审阅历史简报需按模板结构/证据要求时；关键词：brief-template 简报 模板）
 - 派发执行体：companion/agents/history-miner.md（伴飞，只读+卡落盘）

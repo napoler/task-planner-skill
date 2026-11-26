@@ -5,7 +5,7 @@ description: 专业技能协同路由知识库——comet（跨会话 5 阶段�
 
 # Plan Collab Router
 
-卫星技能：为 task-planner 承接「专业技能协同路由」——把复杂任务按信号移交/嵌入到 comet、OpenSpec、superpowers 三族专业技能的判定矩阵、合约与反模式全文。完整正文在 references/skill-collaboration.md（task-v095 P5-S1 迁移已完成，本卫星为该知识库唯一正文），主技能 SKILL.md 仅保留协同触发条件与指针行。
+卫星技能：为 task-planner 承接「专业技能协同路由」——把复杂任务按信号移交/嵌入到 comet、OpenSpec、superpowers 三族专业技能的判定矩阵、合约与反模式全文。完整正文在 references/skill-collaboration.md（task-v095 P5-S1 迁移已完成，本卫星为该知识库唯一正文），主技能 SKILL.md 仅保留协同触发条件与指针行。UI 提示：触发：需要查阅三族判定矩阵/移交与嵌入合约/反模式细则时 Read 该文件；关键词：skill-collaboration comet OpenSpec superpowers 协同路由 移交 嵌入。
 
 ## 何时读 references/skill-collaboration.md
 
@@ -37,8 +37,8 @@ description: 专业技能协同路由知识库——comet（跨会话 5 阶段�
 
 ## 铁律
 
-CLI 探针前置（禁假设已装）；移交与嵌入互斥（嵌入不得升级为移交）；接管调用计入 Rule 17 opus 节流；silent 模式处置必须登记决策行。全文 6 条反模式见 references/skill-collaboration.md §五。
+CLI 探针前置（禁假设已装）；移交与嵌入互斥（嵌入不得升级为移交）；接管调用计入 Rule 17 opus 节流；silent 模式处置必须登记决策行。全文 6 条反模式见 references/skill-collaboration.md §五（触发：评估协同接管/排查反模式时；关键词：skill-collaboration 反模式 接管）。
 
 ## 卫星路由：plan-collab-router — 域=技能协同与工具面选择（Rule 39,40,91）
 
-规则全文见 references/critical-rules-collab.md（Rule 39 动态工作流编排、Rule 40 harness 工具面主动选择，自 task-planner 核心 critical-rules.md 收编）。调用条件：涉及 /workflow 动态工作流编排路由（Rule 39）、计划期 harness 执行工具面主动分析（Rule 40）或 workflow 脚本内 per-subagent 模型分档纪律（Rule 91）时 Read 该文件。
+规则全文见 references/critical-rules-collab.md（Rule 39 动态工作流编排、Rule 40 harness 工具面主动选择，自 task-planner 核心 critical-rules.md 收编）；触发：涉及 /workflow 动态工作流编排路由（Rule 39）、计划期 harness 执行工具面主动分析（Rule 40）或 workflow 脚本内 per-subagent 模型分档纪律（Rule 91）时 Read 该文件；关键词：critical-rules-collab Rule39 Rule40 Rule91 动态工作流 工具面选择。

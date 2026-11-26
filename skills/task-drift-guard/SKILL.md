@@ -10,9 +10,7 @@ model: haiku
 
 ## 卫星路由：task-drift-guard
 
-域=漂移检测与偏移留痕。规则全文见 `references/critical-rules-drift.md`（Rule 11,15,61,64）。
-
-调用条件：涉及漂移检测/偏移检查/漂移纠正/偏移留痕/节奏化提醒时 Read 该文件。
+域=漂移检测与偏移留痕。规则全文见 `references/critical-rules-drift.md`（Rule 11,15,61,64）；触发：涉及漂移检测/偏移检查/漂移纠正/偏移留痕/节奏化提醒时 Read 该文件；关键词：critical-rules-drift Rule11 Rule15 Rule61 Rule64 漂移检测 偏移留痕。
 
 ## 触发条件（命中任一即调用）
 

@@ -11,7 +11,7 @@
 调研/搜索/大文件读取/跨文件 Read 必须派子代理。完整路由表见 SKILL.md §「子代理路由与模型分级」。主进程禁止直接 Read >500 行文件后改动、跑测试、接收 `Skill("research-assistant")` 长文。模型档位复用 `~/.zcode/cli/memories/projects/.zcode-c4bb56bd9710299a/memory/agent-model-tiering.md` 既有约定。
 
 ### 14 代码编辑必须派子代理（P0）
-主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.sh/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）④ mini 直做通道（[task-v094 T-B4]：plan_tier=mini 含 auto-tier ∧ 非保护区 → 主进程直做合法；纪律口径 ≤30 行/≤2 文件/单模块由 Executor 登记 25.3 白名单⑥ 承载，机器面=check-delegation pretool ④b 放行，保护区永不放行）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
+主进程禁止直接 Edit/Write 业务代码（`.ts/.tsx/.js/.jsx/.py/.sh/.go/.rs/.java/.c/.cpp/.h/.hpp`）。详见 SKILL.md §「代码编辑强制隔离」（主进程编辑边界与例外清单）；触发：判断主进程能否直接编辑代码/配置、选择派发路由时；关键词：代码编辑隔离, 主进程Edit, 派发路由, code-assistant。仅允许主进程 Edit ① 计划系统文件（`plans/**` 三件套/notepad/verification/INDEX/ledger、`.claude/plan-templates/`）② 原生 Todo 同步 ③ 单文件 ≤3 行 trivial 修改（非保护区）④ mini 直做通道（[task-v094 T-B4]：plan_tier=mini 含 auto-tier ∧ 非保护区 → 主进程直做合法；纪律口径 ≤30 行/≤2 文件/单模块由 Executor 登记 25.3 白名单⑥ 承载，机器面=check-delegation pretool ④b 放行，保护区永不放行）；其余 `.md/.json/.yaml`（业务文档/配置/技能文件）默认派子代理，主进程直做须按 Rule 25.3 登记白名单内例外理由。变更规模路由：≤3 文件/≤300 行 → code-assistant（haiku-1）；>3 文件或 >300 行 → executor（sonnet-1）。
 
 
 ### 21 子任务拆分与模型分工（P0）— 小步快跑:大模型拆分、小模型执行
@@ -46,7 +46,7 @@
 机制句:零新 config 键;selftest-split-pattern-library.sh 静态守护（断言清单见脚本头注释,../../task-planner/scripts/selftest-split-pattern-library.sh）;管辖声明=拆分质量判据归 Rule 21、派发规模/超时归 Rule 22,两条线各自独立,本条为 21.1b/59.1 数值硬门的定性补强,不改变其 enforce 语义
 
 ### 22 子代理规模限制与交接文件(P0)
-子代理任务过长 = 上下文过长 = 执行失败风险上升;规模必须限制 + 交接文件必须自包含。详见 SKILL.md §「子代理路由与模型分级」+ §「超时与失败兜底」。
+子代理任务过长 = 上下文过长 = 执行失败风险上升;规模必须限制 + 交接文件必须自包含。详见 SKILL.md §「子代理路由与模型分级」+ §「超时与失败兜底」（派发规模上限、超时档位、失败换道）；触发：规划子代理派发规模、处理超时/失败兜底或选模型档位时；关键词：子代理规模, 超时兜底, 模型分级, 失败换道。
 
 22.1 **单次派发规模上限**:单 Phase 内 `Agent()` 派发次数 ≤`../../task-planner/config.json#subagent.max_per_phase`(默认 5);超出 → 回炉拆 Phase 或 AskUser;单任务触及文件 >`max_files_per_dispatch`(默认 3)或行数 >`max_lines_per_dispatch`(默认 300)→ 拆子任务或升 subagent
 22.2 **超时档位**:按 subagent_type 映射超时:explore/只读 ≤30min / editor 编辑/重构 ≤60min / debugger 调试 ≤60min / executor 批量执行 ≤120min(见 `../../task-planner/config.json#subagent.timeout_by_type`);超时 → 立即报告用户,禁止静默重试

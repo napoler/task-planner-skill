@@ -11,9 +11,9 @@ description: 成本控制与计费知识库——Rule 17 嵌套 opus Skill 节�
 
 | 文档 | 职责 | 何时读 |
 |------|------|--------|
-| `references/cost-control.md` | Rule 17 详解：八条款节流机制（17.1 同 phase ≤1 次 / 17.5 累计门控 / 17.8 记账）+ 模型档位映射 + opus 降级路径（ROI 排序清单） | 需要完整节流策略、降级候选、hook 集成点时 |
-| `references/billing.md` | 计费模式（单次 `/plan` 必烧 1 opus + 嵌套/子代理独立计费）+ 子代理成本估算表 + 避免重复计费规则 | 估算任务成本、回答「这次会花多少」时 |
-| `references/cost_log.md` | opus 调用日志模板：字段契约（时间/类型/触发点/累计/备注）+ 累计统计 + 节流自检 checklist | 写/更新 plans/{task-id}/cost_log.md 时 |
+| `references/cost-control.md` | Rule 17 详解：八条款节流机制（17.1 同 phase ≤1 次 / 17.5 累计门控 / 17.8 记账）+ 模型档位映射 + opus 降级路径（ROI 排序清单） | 需要完整节流策略、降级候选、hook 集成点时；触发：评估/制定 opus 节流策略或查阅模型档位与降级路径时；关键词：cost-control 节流 模型档位 降级 |
+| `references/billing.md` | 计费模式（单次 `/plan` 必烧 1 opus + 嵌套/子代理独立计费）+ 子代理成本估算表 + 避免重复计费规则 | 估算任务成本、回答「这次会花多少」时；触发：估算任务/子代理调用成本或解释计费规则时；关键词：billing 计费 成本估算 子代理 |
+| `references/cost_log.md` | opus 调用日志模板：字段契约（时间/类型/触发点/累计/备注）+ 累计统计 + 节流自检 checklist | 写/更新 plans/{task-id}/cost_log.md 时；触发：记录或复盘 opus 调用成本、填写 cost_log 模板时；关键词：cost_log 记账 日志 复盘 |
 
 ## 关键契约速记
 
@@ -38,6 +38,4 @@ description: 成本控制与计费知识库——Rule 17 嵌套 opus Skill 节�
 
 ## 卫星路由：plan-cost-guard — 域=成本控制（Rule 17）
 
-域=成本控制。规则全文见 `references/critical-rules-cost.md`（Rule 17）。
-
-调用条件：涉及 opus 嵌套 Skill 节流/单会话 opus 累计门控/cost_log 记账/成本估算时 Read 该文件。
+域=成本控制。规则全文见 `references/critical-rules-cost.md`（Rule 17）；触发：涉及 opus 嵌套 Skill 节流/单会话 opus 累计门控/cost_log 记账/成本估算时 Read 该文件；关键词：critical-rules-cost Rule17 opus 节流 cost_log。

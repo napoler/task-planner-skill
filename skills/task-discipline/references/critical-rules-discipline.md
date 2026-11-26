@@ -13,10 +13,10 @@
 错误 → `task_plan.md` Errors + `progress.md` Error Log。
 
 ### 7 永不重复失败
-`action_failed: next_action != same_action`。详见 `reference.md § 三击协议`。
+`action_failed: next_action != same_action`。详见 `reference.md § 三击协议`；触发：同一失败动作反复出现需判定是否进入三击止损/换道时；关键词：三击协议 反复失败 换道 止损。
 
 ### 8 新请求强制重新规划（三分类判定）
-新请求 = 重规划触发器：停 → 记 `notepad-learnings.md` → A/B/C 影响判定（A 无影响照常执行 / B 扩展 / C 矛盾，详见 SKILL.md § 用户新指令处理）→ **凡影响计划（B/C）：先更新 task_plan.md 对应 Phase/VC/范围，并紧邻同步原生 Todo（todo-sync.md S5），再执行** → 确认 → 继续。禁止口头接受新指令而计划与 Todo 不动。**用户指出错误（A/B/C 判定命中「已产出/结论有误」）时先走 Rule 31 根因分析闭环（31.2 分析 → 31.3 定向修 → 31.4 沉淀），禁止跳过归因直接改**。
+新请求 = 重规划触发器：停 → 记 `notepad-learnings.md` → A/B/C 影响判定（A 无影响照常执行 / B 扩展 / C 矛盾，详见 SKILL.md § 用户新指令处理；触发：收到新请求需判定 A/B/C/D/E 并决定是否重规划时；关键词：新请求 重规划 A/B/C/D/E 用户指令处理）→ **凡影响计划（B/C）：先更新 task_plan.md 对应 Phase/VC/范围，并紧邻同步原生 Todo（todo-sync.md S5），再执行** → 确认 → 继续。禁止口头接受新指令而计划与 Todo 不动。**用户指出错误（A/B/C 判定命中「已产出/结论有误」）时先走 Rule 31 根因分析闭环（31.2 分析 → 31.3 定向修 → 31.4 沉淀），禁止跳过归因直接改**。
 
 8.1 **新任务边界判定（D 类，task-v087）**:新指令到达时先做**任务边界判定（D 先于 A/B/C）**——对照当前活跃 task_plan.md 三要素（`## Goal` + `scope_files`/执行范围 + 交付物），若该指令与三要素**均无主题/范围/交付物关联**（用户要的是一个独立新任务，而非对当前任务的追问/扩展/纠正），判定 **D 类「新任务」**，处置：①**禁止**把该指令当 A 类「照常执行」在当前计划上下文里做（= 不相干内容混入当前计划），**禁止**当 B 类扩进当前计划范围；②为新任务开**新计划目录** `plans/{new-task-id}/`（init-session.sh 全流程：三文件 + 初始化 + 哨兵清除 + S1 Todo 映射）；③旧计划**原样保留**（其 Phase/VC/Todo 映射继续有效，不标 superseded——区别于 C 类）；④判定落一行 `notepad-learnings.md`（指令摘要 → D 判定 → 新计划目录路径）+ Decisions Made。仅当**存在进行中的活跃计划**时本条适用；无活跃计划（或旧计划已 COMPLETE/BLOCKED）时新指令天然开新计划，本条 N/A。指令与当前目标**有关联**（哪怕影响小）则回退 A 类。机制侧守护：SKILL.md §用户新指令处理 D 行+特判段、UPS hook [plan-note] D 类指引（../../task-planner/scripts/zcode-userpromptsubmit.sh）、todo-sync.md S5 D 类分支、../../task-planner/scripts/selftest-task-boundary.sh 静态锚（防条款误删）。变更吸收语义门（Rule 74）：指令并入既有计划（B/C 类）时，对既有计划/规则/模板的每一处变更先过 74.2 三判门——增量默认、替代四条件、删除授权；答案登记 task_plan.md 变更标注表（74.3），无标注表禁入执行。
 
@@ -28,10 +28,10 @@
 出错 → 记 progress.md + 告诉用户 + `../../task-planner/config.json#escalation_threshold` 次失败则 AskUserQuestion。**goal 语境终点覆盖（28.9⑧，2026-11-24）**：本条的「升级用户/AskUser/等待答复」终点在 goal 语境下一律改按 28.9③④⑤执行（续推=差距线索→差异归因一次→待授权清单+固定点应答），判定条件与轮次上限不变。
 
 ### 10 Scope 变更必重规划
-详见 `reference.md § Chain Handoff Contract · 重规划触发条件`。
+详见 `reference.md § Chain Handoff Contract · 重规划触发条件`；触发：Scope 变更或需判定重规划触发条件时；关键词：Scope变更 重规划 触发条件 Chain Handoff。
 
 ### 18 批量处理质量门控（P0）— 禁止以牺牲质量为代价换批量
-批量操作(脚本/并发/多文件处理)**禁止以牺牲内容质量或准确性为代价**。批量脚本撰写之前必须先做质量影响评估(前置 3 问);明显降低质量 → 必须停下慎重决策,禁止静默执行。详见 `references/batch-quality-gate.md`。
+批量操作(脚本/并发/多文件处理)**禁止以牺牲内容质量或准确性为代价**。批量脚本撰写之前必须先做质量影响评估(前置 3 问);明显降低质量 → 必须停下慎重决策,禁止静默执行。详见 `references/batch-quality-gate.md`；触发：涉及批量/并发/多文件处理且需执行质量门控前置评估时；关键词：批量 质量门控 前置3问 失败率。
 
 18.1 **门控 flag 禁止一刀切跳过**:批量禁止用单一布尔 flag(如 `--skip-quality-gate`)绕过全部门控;允许分项跳过 + 理由必填;跳过 ≥总数 10% → AskUserQuestion 重审
 18.2 **批次前后双采样**:批量 ≥10 单元,运行前随机抽 2 单元完整跑(ground truth),运行后抽 10% verify;任一抽检失败 → 整批熔断,禁止部分回滚
@@ -708,7 +708,10 @@ C 级问题必须自动修复+登记（Decisions Made `auto:` 行或 progress.md
 **合并回主分支收口清单（2026-11-24 用户投诉『解决完不主动合并回主分支导致积压』强化，L0-T 文本锚）**：worktree 任务完成后，**主动**（不等用户指令、不就此询问）按序：① worktree 内全 VC 复验 + `git status` 干净 → ② 合并回 master（`git merge --no-ff wt/<task-id>`）→ ③ 主仓 Read 关键文件复验 → ④ **立即** `git worktree remove <path>` + `git branch -d wt/<task-id>`（清理不等用户、不择机拖延）→ ⑤ 确认 `git worktree list` 无该路径、`git branch --list wt/<task-id>` 为空，并把 `merged(<sha>)` 写入 plan-state.json 的 `.isolation.merge_back`（经 planctl，非勾选 todo）。**完成判据**：以上五步全有留痕；仅合并未清理=未完成，禁出 outcome COMPLETE。**遗留处理**：历史遗留 worktree/分支（如 tplsys 待裁决、v168 用户封存、main 无共同祖先）逐个登记来源与状态，禁以"清理"名义擅自删除未授权分支。
 - **101.3 SOP 随动面（已随动登记）**：worktree-isolation.md §4「merge 冲突 → STOP 报告用户(不自动解决)」句已翻转为「冲突=收口义务，解决所有后合并，仅消解失败真门 STOP」；§5 反模式「❌ 合并冲突自动乱解不报告」收窄为「❌ 解冲突不复验/留冲突给用户」（不乱解守卫保留，只翻转「冲突=停等点」→「冲突=收口义务」语义）。两文档读合时语义必须一致，漂移=对 SOP 侧修回本条口径（Rule 72 同向）。
 - **101.4 机制（文本优先 L0-T — 2026-11-04 用户指令，对齐 94.6/99.6/100.5 机制条款范式）**：判定面=LLM 行为（起点侧按 101.1 baseline 自检+终点侧按 101.2 主动合并/解冲突）+本条款文本锚+既有命令（`git status --short`/smart-merge-back.sh 退出码/41.1 链）；**零新增守护脚本/零新 config 键**；selftest/registry 机器化属 opt-in（Rule 38.7 L0-T 档），仅当用户显式要求才建。判例锚=用户 2026-11-04 R3 指令（plans/task-crossprojauth-20261104/task_plan.md R3 用户原话行）。
-- **101.5 源注册表消费与 diff 对账（2026-11-26 task-research-channels-20261126 增）**：计划期消费 `.source-registry.tsv` 声明源（对齐 core Rule 114.0/114.3）；终验执行 diff 对账（core Rule 114.6）并遵守零 commit 治理（core Rule 114.7）。本条为 discipline 侧接线指针，权威语义以 core Rule 114 为准。
+- **101.5 源注册表消费与 diff 对账（2026-11-26 task-research-channels-20261126 增）**：计划期消费 `.source-registry.tsv` 声明源（对齐 core Rule 115.0/115.3）；终验执行 diff 对账（core Rule 115.6）并遵守零 commit 治理（core Rule 115.7）。本条为 discipline 侧接线指针，权威语义以 core Rule 115 为准。
+
+### 101.6 惰性文件引入规范接线（2026-11-26 task-lazyref-trigger-20261126 增）
+技能文档面惰性指针规范=core Rule 116（四判定门 `check-lazy-refs.sh`，L1 路径存在/L2 常载面触发标记/L3 简介存在/L4 可达性，fail-closed）；技能作者维护技能文档时按 116.2 形态书写惰性指针（行内/表格均含一句话简介+触发条件+触发关键词；机器判定锚=`触发：` token，全角/半角冒号均认），深层互引按 116.4（路径存在+简介强制，触发标记推荐不强制）。对齐 101.5 形态先例：本条为 discipline 侧接线指针，权威语义以 core Rule 116 为准。
 
 ### 102 新请求计划同步与反思门纪律（P0 — task-crossprojauth-20261104 R5，目标：根治「新指令到达后不做任何重新计划/计划进化/文档同步，直接乱做」——每次用户指令（新请求/打断/变更/取消）到达先反思门（102.0）→ 五类判定（102.1 A 无影响/B 扩展/C 矛盾/D 新任务边界（含打断接续子场景）/E 取消撤销）→ 计划优先门（102.2 B/C/D/E 类先同步计划/进度/需求文档落盘，再按文档执行）→ 多重同步验证（102.3 一条指令一行痕迹累积不擦写；取消=标记 cancelled 不删条目+理由登记）；判定面=LLM 行为+本条款文本锚+UPS hook [plan-note] 五类反思提示（逐 prompt 触发，102.4），零新增守护脚本/零新 config 键（hook 编辑=用户 2026-11-04 R5 显式授权面，其余机器化 opt-in 未获授权不建）；衔接 Rule 8/8.1/8.1.1/10（重规划判定面——102 为其执行闭环补集：判定→文档同步→落盘后执行）/51.1（口头接受不落盘禁令）/74（变更吸收语义门），既有 8/8.1/8.1.1/10/51.1/74 条款原文零改动（Rule 36.5 纯增量，v179 管辖二分先例）；机制侧=zcode-userpromptsubmit.sh [plan-note] 五类反思提示+E 类取消关键词检测+note 逐 prompt 触发（重注入块 CA-1 限流不变，102.4）
 

@@ -21,9 +21,7 @@ allowed-tools: "Read, Write, Edit, Bash, Grep, Glob"
 
 ## 卫星路由：media-planner
 
-域=媒体制作任务派发。规则全文见 `references/critical-rules-media.md`（Rule 47,49,50）。
-
-调用条件：涉及媒体制作/视频生成/图片生成/剧集创作类任务的媒体轴拆分（阶段×生产单元）、具名执行体路由（general-purpose 兜底禁止）、批量生成试点先行、单元线多路并行推进（推进三条件/advancement 登记）、内容要求权重分级与评级（P/E 类型×H/S 层级）时 Read 该文件。
+域=媒体制作任务派发。规则全文见 `references/critical-rules-media.md`（Rule 47,49,50）；触发：涉及媒体制作/视频生成/图片生成/剧集创作类任务的媒体轴拆分（阶段×生产单元）、具名执行体路由（general-purpose 兜底禁止）、批量生成试点先行、单元线多路并行推进（推进三条件/advancement 登记）、内容要求权重分级与评级（P/E 类型×H/S 层级）时 Read 该文件；关键词：媒体派发 视频生成 图片生成 剧集 单元线并行 内容分级 Rule47 Rule49 Rule50
 
 ## 规则索引
 

@@ -32,7 +32,7 @@
 **对比 naive（全 opus 主进程）**：5-7× opus 等效。
 **节流后节省**：约 **50-70%** opus 调用（前提：充分用 subagent 路由 + 节流嵌套 skill）。
 
-详见 `references/cost-control.md` 完整成本控制策略。
+详见 `references/cost-control.md` 完整成本控制策略；触发：估算子代理/Skill 调用成本、制定计费或节流方案时；关键词：cost-control, 计费, 成本估算, 节流。
 
 ## 避免重复计费
 
