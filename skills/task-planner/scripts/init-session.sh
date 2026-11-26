@@ -921,10 +921,13 @@ if [ -n "$TEMPLATE_TYPE" ]; then
             done
         fi
         _json_candidate=""
+        # [2026-11-27 回归修复] What: JSON 路由提示沿用 master 的中文来源标签（项目级/用户级）；
+        # Why: selftest-template-json TJ-10b 断言 `JSON 权威模板(项目级)`，英文标签会使既有回归新增 FAIL；
+        # 原行为=project-level/user-level 英文标签，修法=仅提示文案改中文，发现/路由优先级不变。
         if [ -n "$_project_json" ]; then
-            _json_candidate="$_project_json"; _json_src_label="project-level"
+            _json_candidate="$_project_json"; _json_src_label="项目级"
         elif [ -n "$_user_json" ]; then
-            _json_candidate="$_user_json"; _json_src_label="user-level"
+            _json_candidate="$_user_json"; _json_src_label="用户级"
         elif [ -f "${JSON_DIR}/${TEMPLATE_TYPE}.template.json" ]; then
             _json_candidate="${JSON_DIR}/${TEMPLATE_TYPE}.template.json"; _json_src_label="built-in"
         fi
