@@ -180,5 +180,130 @@ else
   ok 13 'CLI 无硬编码仓路径'
 fi
 
+# TC-14: next 选中（priority=high 的 TODO-0001）
+FX14="$(mktemp -d "$FIXTURE/fx14.XXXXXX")"
+cp "$EXAMPLE" "$FX14/todo.json"
+python3 "$CLI" next --root "$FX14" > "$FX14/next.json" 2>&1; rc=$?
+n_status="$(json_field "$FX14/next.json" 'status')"
+n_id="$(json_field "$FX14/next.json" 'item.id')"
+n_reason="$(json_field "$FX14/next.json" 'reason')"
+if [ "$rc" -eq 0 ] && [ "$n_status" = 'selected' ] && [ "$n_id" = 'TODO-0001' ] && printf '%s' "$n_reason" | grep -qF 'priority=high'; then
+  ok 14 'next 选中 TODO-0001 且 reason 含 priority=high'
+else
+  bad 14 "next 异常 rc=$rc status=$n_status id=$n_id reason=$n_reason"
+fi
+
+# TC-15: next 排除终态后返回 empty
+python3 "$CLI" resolve TODO-0001 --note done --root "$FX14" >/dev/null 2>&1
+python3 "$CLI" next --root "$FX14" > "$FX14/next2.json" 2>&1; rc=$?
+n2_status="$(json_field "$FX14/next2.json" 'status')"
+n2_count="$(json_field "$FX14/next2.json" 'count')"
+if [ "$rc" -eq 0 ] && [ "$n2_status" = 'empty' ] && [ "$n2_count" = '0' ]; then
+  ok 15 'next 排除终态后返回 empty count=0'
+else
+  bad 15 "next 终态排除异常 rc=$rc status=$n2_status count=$n2_count"
+fi
+
+# TC-16: review 陈旧阈值
+FX16="$(mktemp -d "$FIXTURE/fx16.XXXXXX")"
+cp "$EXAMPLE" "$FX16/todo.json"
+python3 "$CLI" review --older-than-days 9999 --root "$FX16" > "$FX16/r1.json" 2>&1; rc1=$?
+python3 "$CLI" review --older-than-days 0 --root "$FX16" > "$FX16/r2.json" 2>&1; rc2=$?
+stale9999_len="$(python3 - "$FX16/r1.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding='utf-8'))
+print(len(doc.get('stale', [])))
+PY
+)"
+stale0_has_t1="$(python3 - "$FX16/r2.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding='utf-8'))
+ids = [s.get('id') for s in doc.get('stale', [])]
+print('yes' if 'TODO-0001' in ids else 'no')
+PY
+)"
+if [ "$rc1" -eq 0 ] && [ "$rc2" -eq 0 ] && [ "$stale9999_len" = '0' ] && [ "$stale0_has_t1" = 'yes' ]; then
+  ok 16 'review 陈旧阈值：9999 空、0 含 TODO-0001'
+else
+  bad 16 "review 异常 rc1=$rc1 rc2=$rc2 stale9999=$stale9999_len stale0_has_TODO-0001=$stale0_has_t1"
+fi
+
+# TC-17: retire 默认 dry-run 零移动
+FX17="$(mktemp -d "$FIXTURE/fx17.XXXXXX")"
+cp "$EXAMPLE" "$FX17/todo.json"
+mkdir -p "$FX17/plans/task-demo-retire-20261126"
+cat > "$FX17/plans/task-demo-retire-20261126/task_plan.md" <<'PLAN'
+# Task Plan
+### Phase 1
+- **Status:** complete
+PLAN
+python3 "$CLI" retire --root "$FX17" > "$FX17/retire.json" 2>&1; rc=$?
+r_mode="$(json_field "$FX17/retire.json" 'mode')"
+r_has_demo="$(python3 - "$FX17/retire.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding='utf-8'))
+print('yes' if 'task-demo-retire-20261126' in doc.get('eligible', []) else 'no')
+PY
+)"
+if [ "$rc" -eq 0 ] && [ "$r_mode" = 'dry-run' ] && [ "$r_has_demo" = 'yes' ] && [ ! -d "$FX17/plans/archive" ]; then
+  ok 17 'retire dry-run 零移动且 eligible 含 demo plan'
+else
+  bad 17 "retire dry-run 异常 rc=$rc mode=$r_mode has_demo=$r_has_demo archive_exists=$([ -d "$FX17/plans/archive" ] && echo yes || echo no)"
+fi
+
+# TC-18: mutation 终态→未结后 retire 候选移除
+FX18="$(mktemp -d "$FIXTURE/fx18.XXXXXX")"
+cp "$EXAMPLE" "$FX18/todo.json"
+mkdir -p "$FX18/plans/task-demo-retire-20261126"
+cat > "$FX18/plans/task-demo-retire-20261126/task_plan.md" <<'PLAN'
+# Task Plan
+### Phase 1
+- **Status:** complete
+PLAN
+python3 "$CLI" set TODO-0002 --field status --value open --root "$FX18" >/dev/null 2>&1
+python3 "$CLI" retire --root "$FX18" > "$FX18/retire.json" 2>&1; rc=$?
+r18_eligible_len="$(python3 - "$FX18/retire.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding='utf-8'))
+print(len(doc.get('eligible', [])))
+PY
+)"
+if [ "$rc" -eq 0 ] && [ "$r18_eligible_len" = '0' ]; then
+  ok 18 'set 终态→open 后 retire eligible 为空'
+else
+  bad 18 "retire mutation 异常 rc=$rc eligible_len=$r18_eligible_len"
+fi
+
+# TC-19: active-pointer 守卫
+FX19="$(mktemp -d "$FIXTURE/fx19.XXXXXX")"
+cp "$EXAMPLE" "$FX19/todo.json"
+mkdir -p "$FX19/plans/task-demo-retire-20261126"
+cat > "$FX19/plans/task-demo-retire-20261126/task_plan.md" <<'PLAN'
+# Task Plan
+### Phase 1
+- **Status:** complete
+PLAN
+printf '%s' 'task-demo-retire-20261126' > "$FX19/plans/.active_plan"
+python3 "$CLI" retire --root "$FX19" > "$FX19/retire.json" 2>&1; rc=$?
+r19_eligible_len="$(python3 - "$FX19/retire.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding='utf-8'))
+print(len(doc.get('eligible', [])))
+PY
+)"
+r19_skip="$(python3 - "$FX19/retire.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1], encoding='utf-8'))
+skipped = doc.get('skipped', [])
+hit = any(s.get('id') == 'task-demo-retire-20261126' and s.get('reason') == 'active-pointer' for s in skipped)
+print('yes' if hit else 'no')
+PY
+)"
+if [ "$rc" -eq 0 ] && [ "$r19_eligible_len" = '0' ] && [ "$r19_skip" = 'yes' ]; then
+  ok 19 'active-pointer 守卫：eligible 空且 skipped 含 active-pointer'
+else
+  bad 19 "active-pointer 异常 rc=$rc eligible_len=$r19_eligible_len skip_hit=$r19_skip"
+fi
+
 echo "=== TOTAL: PASS=$PASS FAIL=$FAIL ==="
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
