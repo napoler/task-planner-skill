@@ -2,7 +2,7 @@
 # Verification: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:27:11Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:30:13Z
 
 ## Goal (1 sentence)
 - 交付 research-channels 技能（方法论+索引脚本）与通用源消费链（注册表驱动零枚举+diff对账+D类检查点+验收闭环），负控制判别性验证通过，全量回归零新增，四位部署对账

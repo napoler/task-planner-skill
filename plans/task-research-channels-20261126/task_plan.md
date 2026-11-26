@@ -2,7 +2,7 @@
 # Task Plan: task-research-channels-20261126
 
 - task_id: `task-research-channels-20261126`
-- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:27:11Z
+- 时间: created_at=2026-11-26T01:01:08Z / updated_at=2026-11-26T09:30:13Z
 plan_tier: standard
 execution_lane: L2
 schema_version: 1
@@ -197,6 +197,7 @@ schema_version: 1
 | Decision | Rationale |
 |---|---|
 | P2 字面偏离已批准计划 M1 的“拆除词表枚举”条款：保留 check-spec-baseline 内置 fallback 词表 | 该 fallback 是 task-spec-registry-generalization 显式登记的 fail-safe 契约（种子缺失=现状逐字节），拆除违反向后兼容硬红线；通用性改由源注册表数据层实现（维度开放标签零新枚举），意图满足 M1 |
+| 锁定后因 A-7 台账回填触发 render 改哈希（PLAN TAMPERED），登记纠正后重锁 | render 刷新派生视图属簿记非语义重规划；按 Rule 51.7 重锁前置显式登记，重跑 attest 同步哈希 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution | Prevention（Rule 31 指针） |
