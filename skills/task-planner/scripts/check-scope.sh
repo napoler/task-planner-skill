@@ -360,6 +360,119 @@ if [ -f "$ROOT/.plan-required" ]; then
   exit 1
 fi
 
+# ─── [scope-boundary] 2026-11-27 task-boundary-advance-20261127 ────────────────
+# What: 对“已通过计划门”的写入做范围边界比对（enabled && 不在 include 或命中 exclude → BLOCK）。
+# Why: 无写路径比对门导致任务A无限拓展；scope_boundary 由 planctl scope-set/scope-extend 唯一写入口维护。
+# 豁免: plans/ 目录与计划文件自身已在 ②/③ 提前 exit 0；既有放行分支优先级不变。
+# 存量兼容: 无 scope_boundary 字段 → WARN 一行 + 放行。仅对本项目根内路径生效。
+case "$abs_path" in
+  "$ROOT"/*) ;;
+  *) exit 0 ;;
+esac
+# [2026-11-27 回归修复] hermetic 夹具（如 selftest-rule23-conflict-scan 的 /tmp/r23-selftest-*）
+# 也自带 plans/ 目录，会被误判成项目根；真实工作树隔离只存在于 git 仓，非 git 根直接放行。
+if ! command -v git >/dev/null 2>&1 || ! git -C "$ROOT" rev-parse --show-toplevel >/dev/null 2>&1; then
+  exit 0
+fi
+
+_scope_boundary_check() {
+  local _fp="$1" _root="$2"
+  local _sidkey="" _rp="" _plan_dir="" _state=""
+  if [ -n "${TASK_PLANNER_SID:-}" ]; then
+    _sidkey="$(printf '%s' "$TASK_PLANNER_SID" | tr -cd 'a-zA-Z0-9' | head -c 40)"
+    case "$_sidkey" in sess*) _sidkey="${_sidkey#sess}" ;; esac
+  fi
+  _rp="$(bash "$SCRIPT_DIR/resolve-plan-dir.sh" "$_root" "$_sidkey" 2>/dev/null || true)"
+  if [ -z "$_rp" ]; then
+    return 0
+  fi
+  _plan_dir="$(dirname "$_rp")"
+  _state="$_plan_dir/plan-state.json"
+  if [ ! -f "$_state" ]; then
+    return 0
+  fi
+  python3 - "$_state" "$_fp" "$_root" <<'PY'
+import json, os, sys, fnmatch
+state_path, abs_path, root = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    doc = json.load(open(state_path, encoding='utf-8'))
+except Exception:
+    sys.exit(0)
+sb = doc.get('scope_boundary')
+if not isinstance(sb, dict):
+    print('[scope-boundary] WARN 未声明范围边界，按存量计划放行')
+    sys.exit(0)
+if not bool(sb.get('enabled', False)):
+    sys.exit(0)
+include = sb.get('include') if isinstance(sb.get('include'), list) else []
+exclude = sb.get('exclude') if isinstance(sb.get('exclude'), list) else []
+task_id = str(doc.get('task_id') or os.path.basename(os.path.dirname(state_path)))
+
+def norm(p):
+    if not p:
+        return ''
+    p = os.path.abspath(p)
+    return p
+
+abs_n = norm(abs_path)
+root_n = norm(root)
+
+def rel(p):
+    p = norm(p)
+    try:
+        return os.path.relpath(p, root_n).replace(os.sep, '/')
+    except Exception:
+        return p.replace(os.sep, '/')
+
+abs_rel = rel(abs_n)
+
+def match_one(pattern, path_abs, path_rel):
+    pat = str(pattern or '').strip()
+    if not pat:
+        return False
+    pat_norm = pat.replace(os.sep, '/')
+    # absolute or relative pattern
+    candidates = []
+    if os.path.isabs(pat_norm):
+        candidates.append(norm(pat_norm))
+    else:
+        candidates.append(norm(os.path.join(root_n, pat_norm)))
+    # directory prefix semantics: ** suffix or trailing /
+    for cand in candidates:
+        cand_norm = cand.replace(os.sep, '/')
+        if cand_norm.endswith('/**'):
+            base = cand_norm[:-3].rstrip('/')
+            if path_abs == base or path_abs.startswith(base + '/'):
+                return True
+        if cand_norm.endswith('/'):
+            base = cand_norm.rstrip('/')
+            if path_abs == base or path_abs.startswith(base + '/'):
+                return True
+        if path_abs == cand_norm or path_abs.startswith(cand_norm.rstrip('/') + '/'):
+            return True
+        # glob on absolute and rel
+        if fnmatch.fnmatch(path_abs, cand_norm) or fnmatch.fnmatch(path_rel, pat_norm.lstrip('./')):
+            return True
+        if fnmatch.fnmatch(path_abs.replace(os.sep, '/'), cand_norm):
+            return True
+    # also try glob against rel path directly
+    if fnmatch.fnmatch(path_rel, pat_norm.lstrip('./')):
+        return True
+    return False
+
+in_include = any(match_one(p, abs_n, abs_rel) for p in include)
+in_exclude = any(match_one(p, abs_n, abs_rel) for p in exclude)
+if (not in_include) or in_exclude:
+    inc_txt = ','.join(str(x) for x in include)
+    print(f'[scope-boundary] BLOCKED 越界写入: {abs_path}（计划={task_id} include={inc_txt}；扩张通道: python3 planctl.py scope-extend --path {abs_path} --reason 用户批准理由（须用户批准+Decisions 登记））')
+    sys.exit(1)
+sys.exit(0)
+PY
+  return $?
+}
+
+_scope_boundary_check "$abs_path" "$ROOT" || exit 1
+
 # ─── [worktree-required] 2026-11-27 接线 ─────────────────────────────────────
 # 对“准备写入受管文件”的场景做 worktree REQUIRED 检查（保守启发式）：
 # - 以 ROOT 为检测 cwd（检测当前是否处于 worktree）；check-worktree-required.sh 支持 --cwd

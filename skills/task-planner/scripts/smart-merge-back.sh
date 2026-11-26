@@ -407,6 +407,175 @@ if [ -n "$CLEANUP_LINE" ]; then
     fi
 fi
 
+# ---------- [stage-advance] merge_back 证据写入 + stage2 pending 登记 (Rule 119) ----------
+# 2026-11-27 task-boundary-advance-20261127: 成功路径(merge --no-ff 成功且 cleanup 完成后、
+# 最终 exit 0 之前)登记 merge_back + 两段式 pending。失败路径不写 merge_back。
+# [stage-advance] marker: gate/probe/selftest 依赖此段存在性做 mutation 判别。
+if [ -n "${MERGE_COMMIT:-}" ] && [ "${MERGE_COMMIT:-unknown}" != "unknown" ]; then
+    _sa_plan_dir="$MAIN_REPO/plans/$TASK_ID"
+    _sa_plan_state="$_sa_plan_dir/plan-state.json"
+    _sa_task_id="$TASK_ID"
+    _sa_merge_sha7="$(printf '%s' "$MERGE_COMMIT" | cut -c1-7)"
+    if [ ! -f "$_sa_plan_state" ]; then
+        echo "[merge-back] WARN: plan-state.json 不存在, 跳过登记: $_sa_plan_state" >&2
+    else
+        _sa_write_rc=0
+        _sa_write_out="$(python3 - "$_sa_plan_state" "$_sa_task_id" "$_sa_merge_sha7" "$_sa_plan_dir" <<'PYSA'
+import json, os, sys, tempfile
+
+state_path, expected_task_id, sha7, plan_dir = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+try:
+    with open(state_path, 'r', encoding='utf-8') as f:
+        doc = json.load(f)
+except Exception as e:
+    print(f'WARN: plan-state.json 读取失败: {e}')
+    sys.exit(2)
+
+actual = str(doc.get('task_id', '') or '')
+if actual != expected_task_id:
+    print(f'WARN: task_id 不匹配, 拒绝写入 (expected={expected_task_id} actual={actual})')
+    sys.exit(3)
+
+iso = doc.get('isolation')
+if not isinstance(iso, dict):
+    iso = {}
+iso['merge_back'] = f'merged({sha7})'
+doc['isolation'] = iso
+
+d = os.path.dirname(state_path)
+fd, tmp = tempfile.mkstemp(dir=d, prefix='.plan-state.', suffix='.tmp')
+try:
+    with os.fdopen(fd, 'w', encoding='utf-8') as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+        f.write('\n')
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, state_path)
+except Exception as e:
+    try:
+        os.unlink(tmp)
+    except Exception:
+        pass
+    print(f'WARN: plan-state.json 写入失败: {e}')
+    sys.exit(4)
+
+# 两段式声明检测
+tags = doc.get('tags') if isinstance(doc.get('tags'), list) else []
+has_rc_tag = any(isinstance(t, str) and t.startswith('rootcause-followup:') for t in tags)
+findings_path = os.path.join(plan_dir, 'findings.md')
+has_rc_pass = False
+has_na = False
+try:
+    with open(findings_path, 'r', encoding='utf-8') as f:
+        ftxt = f.read()
+    has_rc_pass = '[rootcause-followup:PASS]' in ftxt
+    has_na = '[rootcause-followup:N/A]' in ftxt
+except Exception:
+    pass
+is_two_stage = has_rc_tag or has_rc_pass
+# N/A 信号优先于 pending：仅 N/A 且无 PASS/tag 时不登记 pending
+if has_na and not has_rc_pass and not has_rc_tag:
+    print('OK na-signal')
+    sys.exit(0)
+if not is_two_stage:
+    print('OK no-two-stage')
+    sys.exit(0)
+
+plans_root = os.path.dirname(plan_dir)
+rc_dir = os.path.join(plans_root, f'{expected_task_id}-rc')
+if os.path.isdir(rc_dir):
+    print('OK rc-exists')
+    sys.exit(0)
+
+follow_tag = f'followup-of:{expected_task_id}'
+changed = False
+if follow_tag not in tags:
+    tags.append(follow_tag)
+    tags = sorted(set([t for t in tags if isinstance(t, str)]))
+    doc['tags'] = tags
+    changed = True
+
+idx_path = os.path.join(plans_root, '.tags-index.json')
+idx = {}
+if os.path.isfile(idx_path):
+    try:
+        with open(idx_path, 'r', encoding='utf-8') as f:
+            idx = json.load(f)
+        if not isinstance(idx, dict):
+            idx = {}
+    except Exception:
+        idx = {}
+ref = f'{expected_task_id}#tags/{follow_tag}'
+refs = idx.get(follow_tag)
+if not isinstance(refs, list):
+    refs = []
+if ref not in refs:
+    refs.append(ref)
+    refs = sorted(set(refs))
+    idx[follow_tag] = refs
+    changed = True
+
+if changed:
+    fd, tmp = tempfile.mkstemp(dir=d, prefix='.plan-state.', suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(doc, f, ensure_ascii=False, indent=2)
+            f.write('\n')
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, state_path)
+    except Exception as e:
+        try:
+            os.unlink(tmp)
+        except Exception:
+            pass
+        print(f'WARN: plan-state.json followup tag 写入失败: {e}')
+        sys.exit(4)
+    fd2, tmp2 = tempfile.mkstemp(dir=plans_root, prefix='.tags-index.', suffix='.tmp')
+    try:
+        with os.fdopen(fd2, 'w', encoding='utf-8') as f:
+            json.dump(idx, f, ensure_ascii=False, indent=2)
+            f.write('\n')
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp2, idx_path)
+    except Exception as e:
+        try:
+            os.unlink(tmp2)
+        except Exception:
+            pass
+        print(f'WARN: tags-index.json 写入失败: {e}')
+        sys.exit(4)
+
+print(f'PENDING {expected_task_id}-rc')
+sys.exit(0)
+PYSA
+)" || _sa_write_rc=$?
+        if [ "$_sa_write_rc" -eq 0 ]; then
+            echo "[merge-back] merged(${_sa_merge_sha7})"
+            case "$_sa_write_out" in
+                PENDING\ *)
+                    _sa_rc_id="${_sa_write_out#PENDING }"
+                    echo "[stage2-pending] task=${_sa_task_id} rc_plan=${_sa_rc_id}"
+                    echo "[stage2-pending] action: git -C \"$MAIN_REPO\" worktree add \"$MAIN_REPO/tmp/worktrees/${_sa_rc_id}\" -b \"wt/${_sa_rc_id}\" master && bash \"$MAIN_REPO/skills/task-planner/scripts/init-session.sh\" \"$MAIN_REPO/plans/${_sa_rc_id}\""
+                    ;;
+                "OK na-signal")
+                    echo "[stage2-pending] N/A: ${_sa_task_id} 标记 rootcause-followup:N/A，跳过阶段2登记"
+                    ;;
+                OK*)
+                    : # no-two-stage / rc-exists - 保持向后兼容，仅 merge-back 行
+                    ;;
+                *)
+                    [ -n "$_sa_write_out" ] && echo "[merge-back] WARN: 未预期输出: $_sa_write_out" >&2
+                    ;;
+            esac
+        else
+            [ -n "$_sa_write_out" ] && echo "[merge-back] WARN: $_sa_write_out" >&2
+            echo "[merge-back] WARN: merge_back/stage2 登记失败 (rc=$_sa_write_rc)，不阻断主流程" >&2
+        fi
+    fi
+fi
+
 # ---------- --deploy 逐位重部署对账 ----------
 # [2026-09-12 S2 P0+P1 重写: 原实现"rm 先于 cp 验证 + 空格分词"可摧毁受保护路径(worktree/主仓/HOME)
 #  且 exit 0 假绿。现: slot IFS 安全解析 + validate_slot 前缀守卫 + cp→rm→mv 原子替换(tmp 建同目录保 mv 原子)。]

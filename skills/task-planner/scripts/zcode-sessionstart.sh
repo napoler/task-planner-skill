@@ -128,6 +128,64 @@ fi
 # [2026-09-10 task-planrequired-race] gc stdout 原混入 hook stdout 破坏「单行 JSON」契约(ZCode 严格校验,既有缺陷)→ 1>/dev/null 抑出,stderr 保留
 bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/set-active-plan.sh" gc 1>/dev/null 2>/dev/null || true
 
+# [2026-11-27 task-boundary-advance-20261127 Rule 119] stage2-pending 只读探针
+# [stage-advance] marker: SessionStart probe — 只读注入, 不建计划/不切分支/不改状态
+# What: 扫描 plans 根 .tags-index.json 的 followup-of:* 未消费 tag（tag 在且对应 plans/<rc-id>/plan-state.json 不存在）
+#       → 注入 [stage2-pending] 提示块。多候选全列；损坏/异常→静默；无 pending→完全静默。
+# Why:  Comet resume-probe 蒸馏——只读探针纪律：不建计划/不跨分支/只输出文本，歧义不猜。
+_stage2_probe_out="$(
+  python3 - "$PWD" <<'PYPROBE' 2>/dev/null || true
+import json, os, sys
+cwd = sys.argv[1]
+scan_dir = cwd
+scan_root = ''
+for _ in range(10):
+    if os.path.isdir(os.path.join(scan_dir, 'plans')):
+        scan_root = scan_dir
+        break
+    parent = os.path.dirname(scan_dir)
+    if parent == scan_dir:
+        break
+    scan_dir = parent
+if not scan_root:
+    raise SystemExit(0)
+plans_root = os.path.join(scan_root, 'plans')
+idx_path = os.path.join(plans_root, '.tags-index.json')
+if not os.path.isfile(idx_path):
+    raise SystemExit(0)
+try:
+    with open(idx_path, 'r', encoding='utf-8') as f:
+        idx = json.load(f)
+except Exception:
+    raise SystemExit(0)
+if not isinstance(idx, dict):
+    raise SystemExit(0)
+pending = []
+for tag, refs in idx.items():
+    if not isinstance(tag, str) or not tag.startswith('followup-of:'):
+        continue
+    task_id = tag[len('followup-of:'):].strip()
+    if not task_id:
+        continue
+    rc_id = task_id + '-rc'
+    rc_state = os.path.join(plans_root, rc_id, 'plan-state.json')
+    if os.path.isfile(rc_state):
+        continue
+    pending.append((task_id, rc_id))
+if not pending:
+    raise SystemExit(0)
+lines = ['[stage2-pending] 检测到未消费的两段式 followup（只读探针，不自动建计划/不切分支）:']
+for task_id, rc_id in sorted(set(pending)):
+    lines.append(f'- task={task_id} rc_plan={rc_id}')
+    lines.append(f'  action: git -C "{scan_root}" worktree add "{scan_root}/tmp/worktrees/{rc_id}" -b "wt/{rc_id}" master && bash "{scan_root}/skills/task-planner/scripts/init-session.sh" "{scan_root}/plans/{rc_id}"')
+print('\n'.join(lines))
+PYPROBE
+)"
+if [ -n "$_stage2_probe_out" ]; then
+  out="${out}
+${_stage2_probe_out}"
+fi
+
 if [ "$rc" -eq 0 ] && [ -n "$out" ]; then
   printf '{"additionalContext": %s}\n' "$(printf '%s' "$out" | jq -Rs .)"
 fi

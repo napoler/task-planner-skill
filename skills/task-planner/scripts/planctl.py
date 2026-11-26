@@ -95,6 +95,8 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     "template_type", "template_ref", "template_doc", "template_checks", "template_body", "next_step",
     # [2026-11-26 task-source-registry] 顶层验收对象（可选）
     "acceptance",
+    # [2026-11-27 task-boundary-advance-20261127] 范围边界机器门（可选，存量计划缺省放行）
+    "scope_boundary",
 )
 TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 
@@ -187,7 +189,9 @@ AUTO_STAMP: dict[str, str] = {"errors": "timestamp", "audits": "at", "actions": 
 #       且 config 是自由扩展对象（原行为无该字段），显式放行额外键避免误拒未来配置项。
 STR_FIELD = lambda v: isinstance(v, str)
 INT_FIELD = lambda v: isinstance(v, int) and not isinstance(v, bool)
+BOOL_FIELD = lambda v: isinstance(v, bool)
 STR_LIST_FIELD = lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)
+STR_LIST_NONEMPTY_FIELD = lambda v: isinstance(v, list) and all(isinstance(x, str) and x != "" for x in v)
 OBJECT_FIELD_SPECS: dict[str, tuple[set[str], dict[str, Callable[[Any], bool]], bool]] = {
     "resume_report": ({"path"}, {"path": STR_FIELD, "last": STR_FIELD}, False),
     "understanding": (set(), {k: STR_FIELD for k in ("original", "model", "options", "direction")}, False),
@@ -214,6 +218,15 @@ OBJECT_FIELD_SPECS: dict[str, tuple[set[str], dict[str, Callable[[Any], bool]], 
     # [2026-11-26 task-source-registry] acceptance object
     "acceptance": ({"status"}, {"status": lambda v: v in ("awaiting", "accepted", "rejected") or v == "",
                                 "date": STR_FIELD, "anchor": STR_FIELD}, True),
+    # [2026-11-27 task-boundary-advance-20261127] scope_boundary: 范围边界机器门权威字段。
+    # Why: 无写路径比对门导致任务A无限拓展；对象字段由 planctl scope-set/scope-extend 唯一写入口维护。
+    "scope_boundary": (set(), {
+        "enabled": BOOL_FIELD,
+        "include": STR_LIST_NONEMPTY_FIELD,
+        "exclude": STR_LIST_NONEMPTY_FIELD,
+        "declared_by": STR_FIELD,
+        "updated_at": STR_FIELD,
+    }, False),
 }
 
 
@@ -1820,10 +1833,27 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
     Why: 「MD 全派生」要求模板语义段可从 JSON 重建；空段不输出以保持视图精简（与验收条款一致）。
     """
     acc = _obj(doc, "acceptance")
-    acc_badge = f"验收: {acc.get('status','awaiting')}" if acc and acc.get('status') else "验收: awaiting"
-    lines: list[str] = [
+    acc_badge = f"验收: {acc.get('status','awaiting')}" if acc and acc.get("status") else "验收: awaiting"
+    scope_boundary = _obj(doc, "scope_boundary")
+    scope_line = ""
+    if scope_boundary:
+        sb_enabled = bool(scope_boundary.get("enabled", False))
+        sb_inc = scope_boundary.get("include", [])
+        sb_exc = scope_boundary.get("exclude", [])
+        inc_txt = ",".join(str(x) for x in sb_inc) if isinstance(sb_inc, list) else str(sb_inc)
+        exc_txt = ",".join(str(x) for x in sb_exc) if isinstance(sb_exc, list) else str(sb_exc)
+        if sb_enabled:
+            scope_line = f"- scope_boundary: enabled include={inc_txt or '-'} exclude={exc_txt or '-'}"
+        else:
+            scope_line = f"- scope_boundary: disabled include={inc_txt or '-'} exclude={exc_txt or '-'}"
+    header_lines = [
         GENERATED_HEADER, f"# Task Plan: {tid}", "", stamp.rstrip(), meta.rstrip(),
-        f"- 顶层 tags: {top_tags}", f"- {acc_badge}", "",
+        f"- 顶层 tags: {top_tags}", f"- {acc_badge}",
+    ]
+    if scope_line:
+        header_lines.append(scope_line)
+    header_lines.append("")
+    lines: list[str] = header_lines + [
         # [2026-11-22 task-planctl-exec-surface-20261122] What: 补「🎯 用户需求原文」+R 行区块。
         # Why: attest Rule 51.1 硬门四锚（fail-closed 无 --skip 逃生口）按标题行 + R 需求行
         #   正则 ^[[:space:]]*[-*][[:space:]]+\*\*R[0-9] 校验；原 render 缺失 → 纯 CLI 流
@@ -2010,9 +2040,23 @@ def _render_task_plan(doc: dict[str, Any], tid: str, stamp: str, meta: str,
                          [[x.get("item"), x.get("snapshot"), x.get("metric"), x.get("ban"), x.get("status")]
                           for x in progress_baseline], _EMPTY % "进度基线")]
 
+    scope_boundary = _obj(doc, "scope_boundary")
+    if scope_boundary:
+        sb_enabled = bool(scope_boundary.get("enabled", False))
+        sb_include = scope_boundary.get("include", [])
+        sb_exclude = scope_boundary.get("exclude", [])
+        sb_by = _cell(scope_boundary.get("declared_by", ""))
+        sb_at = _cell(scope_boundary.get("updated_at", ""))
+        lines += ["", "## ⚠️ 执行范围限制",
+                  _table(["enabled", "include", "exclude", "declared_by", "updated_at"],
+                         [["true" if sb_enabled else "false",
+                           ", ".join(str(x) for x in sb_include) if isinstance(sb_include, list) else _cell(sb_include),
+                           ", ".join(str(x) for x in sb_exclude) if isinstance(sb_exclude, list) else _cell(sb_exclude),
+                           sb_by, sb_at]],
+                         _EMPTY % "范围限制")]
     scope_limits = _arr(doc, "scope_limits")
     if scope_limits:
-        lines += ["", "## ⚠️ 执行范围限制",
+        lines += ["", "## scope_limits 明细（兼容旧表）",
                   _table(["类别", "允许的文件", "禁止"],
                          [[x.get("category"), x.get("allow", []), x.get("deny", [])]
                           for x in scope_limits], _EMPTY % "范围限制")]
@@ -3062,6 +3106,90 @@ def cmd_disposition(args: argparse.Namespace) -> int:
     commit_state(plan, doc)
     emit({"anchor": target, "disposition": disposition, "fallback_reason": hit.get("fallback_reason", ""), "marker_id": marker["id"], "src_normalized": src_value})
     return 0
+def _parse_scope_paths(raw: str) -> list[str]:
+    """解析逗号分隔路径清单：去空白、去空串、保序去重。"""
+    if raw is None:
+        return []
+    out: list[str] = []
+    seen: set[str] = set()
+    for part in str(raw).split(","):
+        item = part.strip()
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        out.append(item)
+    return out
+
+
+def _ensure_scope_boundary(doc: dict[str, Any]) -> dict[str, Any]:
+    """确保 scope_boundary 对象存在并具备完整字段。"""
+    sb = doc.get("scope_boundary")
+    if not isinstance(sb, dict):
+        sb = {}
+    sb.setdefault("enabled", True)
+    sb.setdefault("include", [])
+    sb.setdefault("exclude", [])
+    sb.setdefault("declared_by", "")
+    sb.setdefault("updated_at", "")
+    doc["scope_boundary"] = sb
+    return sb
+
+
+def cmd_scope_set(args: argparse.Namespace) -> int:
+    """整对象覆写 scope_boundary（唯一写入口之一）。"""
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    include = _parse_scope_paths(getattr(args, "include", "") or "")
+    exclude = _parse_scope_paths(getattr(args, "exclude", "") or "")
+    enabled_raw = str(getattr(args, "enabled", "true") or "true").strip().lower()
+    if enabled_raw in ("1", "true", "yes", "on"):
+        enabled = True
+    elif enabled_raw in ("0", "false", "no", "off"):
+        enabled = False
+    else:
+        raise PlanctlError(f"--enabled 非法: {getattr(args, 'enabled', '')!r}（须为 true/false）")
+    sb = {
+        "enabled": enabled,
+        "include": include,
+        "exclude": exclude,
+        "declared_by": str(getattr(args, "declared_by", "") or "").strip(),
+        "updated_at": now_iso(),
+    }
+    doc["scope_boundary"] = sb
+    commit_state(plan, doc)
+    emit({"scope_boundary": sb, "action": "scope-set"})
+    return 0
+
+
+def cmd_scope_extend(args: argparse.Namespace) -> int:
+    """追加单个路径到 include；--reason 为空拒绝（扩张须可审计）。"""
+    plan = check_plan_dir(args.plan_dir)
+    doc = read_state(plan)
+    path = str(getattr(args, "path", "") or "").strip()
+    reason = str(getattr(args, "reason", "") or "").strip()
+    if not path:
+        raise PlanctlError("--path 不能为空")
+    if not reason:
+        raise PlanctlError("--reason 不能为空（范围扩张须用户批准+Decisions 登记）")
+    sb = _ensure_scope_boundary(doc)
+    include = sb.get("include")
+    if not isinstance(include, list):
+        include = []
+    if path not in include:
+        include.append(path)
+    sb["include"] = include
+    sb["updated_at"] = now_iso()
+    commit_state(plan, doc)
+    emit({
+        "scope_boundary": sb,
+        "action": "scope-extend",
+        "path": path,
+        "reason": reason,
+        "notice": "扩张须用户批准+Decisions 登记",
+    })
+    return 0
+
+
 def cmd_acceptance(args: argparse.Namespace) -> int:
     """写入/读取 plan-state 顶层 acceptance 对象。
 
@@ -3519,6 +3647,25 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--status", choices=("awaiting", "accepted", "rejected"), default=None,
                    help="写入状态；缺省只读")
     p.add_argument("--anchor", default="", help="可选锚点/原文引用")
+
+    # [2026-11-27 task-boundary-advance-20261127] scope-boundary: 范围边界机器门唯一写入口。
+    p = add_cmd("scope-set", "覆写 scope_boundary（范围边界唯一写入口）", cmd_scope_set)
+    p.epilog = (
+        "示例（可照抄）：\n"
+        "  python3 planctl.py scope-set --plan-dir <计划目录> --include 'skills/task-planner/**,plans/**' --exclude 'tmp/**' --declared-by plan+user\n"
+    )
+    p.add_argument("--include", default="", help="逗号分隔的 include glob 清单")
+    p.add_argument("--exclude", default="", help="逗号分隔的 exclude glob 清单")
+    p.add_argument("--declared-by", dest="declared_by", default="", help="声明来源（plan+user 等）")
+    p.add_argument("--enabled", default="true", help="true/false（默认 true）")
+
+    p = add_cmd("scope-extend", "追加 include 路径（扩张须 --reason，可审计）", cmd_scope_extend)
+    p.epilog = (
+        "示例（可照抄）：\n"
+        "  python3 planctl.py scope-extend --plan-dir <计划目录> --path skills/task-planner/scripts/check-scope.sh --reason '用户批准扩张范围'\n"
+    )
+    p.add_argument("--path", required=True, help="要追加到 include 的路径/glob")
+    p.add_argument("--reason", required=True, help="扩张理由（空则拒绝；须用户批准+Decisions 登记）")
     return parser
 
 

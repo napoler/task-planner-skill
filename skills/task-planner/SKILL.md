@@ -37,6 +37,7 @@ model: opus
 > **非核心域已分层至卫星**：派发/拆分/调度→`task-dispatch`；执行纪律/错误闭环→`task-discipline`；媒体制作→`media-planner`；其余见文末「卫星路由表」。分层纪律=Rule 82（建制/边界/回归防线：禁回潮、禁镜像副本）。
 
 **四文件写入分流铁律（写入动作本体 = planctl 子命令）**：状态与指针→`planctl set/add --section …`（→task_plan.md 派生视图；控制面板：只放目标/Phase 状态/VC/范围/一行摘要，Rule 19.6）；调研与结论→`planctl add --section findings`（→findings.md 派生视图）；动作与测试→`planctl add --section actions/errors`（→progress.md 派生视图）；可复用知识→knowledge-brief.md（render 链外专档，Rule 62 增量门控维护）。**「写到哪个文件」只决定选哪类子命令；写入动作本体永远是 planctl 子命令——task_plan/findings/progress/verification 四视图手工 Edit/Write=流程无效（render 全量覆盖）**。外部内容只进 findings.md（Rule 20.2）；结论禁只留会话记忆（Rule 19.1）。
+**范围边界指针（2026-11-27 Rule 118）**：计划锁定时用 `planctl scope-set` 声明 `scope_boundary`（include/exclude/enabled）；执行期越界写由 `check-scope.sh` [scope-boundary] 拦截；扩张用 `planctl scope-extend --path ... --reason ...` 且须用户批准+Decisions 登记。
 
 ## 计划制作循环
 
