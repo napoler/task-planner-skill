@@ -82,7 +82,8 @@
     "quality_gates": { "$ref": "#/definitions/quality_gates" },
     "outcome": { "$ref": "#/definitions/outcome" },
     "cross_checks": { "type": "array", "items": { "$ref": "#/definitions/cross_check_item" } },
-    "output_examples": { "type": "array", "items": { "$ref": "#/definitions/output_example_item" }, "description": "[Rule 113 输出示例契约] 每条格式声明须配完整示例+可复用模板；planctl add --section output_examples 写入，planctl render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。" }
+    "output_examples": { "type": "array", "items": { "$ref": "#/definitions/output_example_item" }, "description": "[Rule 113 输出示例契约] 每条格式声明须配完整示例+可复用模板；planctl add --section output_examples 写入，planctl render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。" },
+    "acceptance": { "type": "object", "description": "[2026-11-26 task-source-registry] 顶层验收状态（awaiting/accepted/rejected）", "properties": { "status": { "type": "string", "enum": ["awaiting", "accepted", "rejected"] }, "date": { "type": "string" }, "anchor": { "type": "string" } }, "additionalProperties": true }
   },
   "definitions": {
     "output_example_item": {
@@ -404,7 +405,7 @@
     },
     "spec_baseline_item": {
       "type": "object",
-      "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 规范基线（Rule 51.15），verbatim 存原文引用；原行为为 MD 引文；Why: sha/anchor 使漂移可检出。",
+      "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 规范基线（Rule 51.15），verbatim 存原文引用；原行为为 MD 引文；Why: sha/anchor 使漂移可检出。 [2026-11-26 task-source-registry] 新增可选字段 dimension/disposition/fallback_reason/tags（向后兼容）。",
       "required": ["id", "verbatim", "anchor"],
       "additionalProperties": false,
       "properties": {
@@ -420,7 +421,11 @@
         "result": { "type": "string" },
         "observed": { "type": "string" },
         "cls": { "type": "string" },
-        "origin": { "type": "string" }
+        "origin": { "type": "string" },
+        "dimension": { "type": "string" },
+        "disposition": { "type": "string", "enum": ["pending", "must", "na"] },
+        "fallback_reason": { "type": "string" },
+        "tags": { "$ref": "#/definitions/tag_list" }
       }
     },
     "progress_baseline_item": {
