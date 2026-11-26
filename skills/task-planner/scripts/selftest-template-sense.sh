@@ -4,12 +4,13 @@
 #   case-1 T1 正例: init-session 类型空缺（general 兜底）→ 输出含 [template-sense] 且生成的 task_plan.md 末尾含「🔁 模板感知」区块
 #   case-2 T1 正例: 未知类型 foobar → 输出含 [template-sense] 与「🔁 模板感知」
 #   case-3 T1 负例: 已知类型 bugfix → [template-sense] 计 0（known-type 路径零触发）
-#   case-4 条款锚: [task-v171 2026-10-12 锚修复] critical-rules-template.md 首列 34.7 恰 1 条且含「全自动生成合约」；plan-template-kit SKILL.md 含「全自动生成合约（34.7）」段
+#   case-4 条款锚: critical-rules-template.md 34.7 恰 1 条且含「研究前置/审后落盘」；plan-template-kit SKILL.md 含「研究前置/审后落盘合约（34.7）」；4 相关文件不含旧「全自动不 AskUserQuestion，silent 合法」
 #   case-5 T3 warn: 计划含「🔁 模板感知」区块且无处置登记 → check-complete 输出含 [template-sense]；无区块计划零输出
 #   case-6 registry 自检: selftest-registry.tsv 含本脚本登记行（含本 S-unit 写入的 dep_anchors）
 #   case-7 T1 CR-fix 负例: mini 档（tier=mini + 空类型）→ 产物 mini-lite 带标记, 无「🔁 模板感知」区块、无 general 注释（无标记守卫消除 P1-1）
 #   case-8 T1 CR-fix 负例: 重跑（先 bugfix 再空类型重跑）→ 产物类型标记仍 bugfix 且无感知区块（无标记守卫消除 P1-2, 来源守卫保留）
-# 8 断言全 PASS exit 0; 任一 FAIL exit 1。行为级用例临时产物均在 mktemp -d 目录, 脚本退出前清理, 不写仓库内任何路径。
+#   case-9 静态守护: Rule16 35/39 验收句保留；34.1 三层；研究前置/用户明确审核授权在 kit/advisor/critical-rules-template
+# 9 断言全 PASS exit 0; 任一 FAIL exit 1。行为级用例临时产物均在 mktemp -d 目录, 脚本退出前清理, 不写仓库内任何路径。
 
 set -u
 
@@ -24,6 +25,7 @@ CRIT="$SKILL_ROOT/references/critical-rules.md"
 # 修法（只改断言 target，断言语义零改动——守护面=34.7 条款层+SKILL 消费层在位）。
 CRIT_T="$SKILL_ROOT/../plan-template-kit/references/critical-rules-template.md"
 TPL_SKILL="$SKILL_ROOT/../plan-template-kit/SKILL.md"
+ADVISOR_SKILL="$SKILL_ROOT/../plan-template-advisor/SKILL.md"
 SKILL="$SKILL_ROOT/SKILL.md"
 INIT="$SCRIPT_DIR/init-session.sh"
 CHECK="$SCRIPT_DIR/check-complete.sh"
@@ -91,15 +93,16 @@ else
 fi
 
 # case-4 条款锚（T2 静态守护）
-# [task-v171 2026-10-12 锚修复] 原行为=核心 critical-rules.md grep 34.7 条数/「全自动生成合约」+ 核心 SKILL.md C22 行
-#   grep「34.7 全自动生成」；Rule 34 随模板域收编（条款 target=CRIT_T），C22 行随 S33 瘦身删除（SKILL 消费面
-#   target=plan-template-kit SKILL.md「全自动生成合约（34.7）」段）。守护语义零改动。
+# [2026-11-17 tplsys-upgrade 对齐] 34.7 合约由「全自动生成」改为「研究前置/审后落盘」；旧 silent 自动落盘语义禁止回归。
 r347="$(grep -c '^34\.7 ' "$CRIT_T" 2>/dev/null || echo 0)"
-if [ "$r347" = 1 ] && grep '^34\.7 ' "$CRIT_T" | grep -q '全自动生成合约' \
-   && grep -q '全自动生成合约（34.7）' "$TPL_SKILL"; then
-    ok 4 "critical-rules-template 34.7 恰 1 条且含「全自动生成合约」; plan-template-kit SKILL.md 含「全自动生成合约（34.7）」"
+old_silent="全自动不 AskUserQuestion，silent 合法"
+if [ "$r347" = 1 ] \
+   && grep '^34\.7 ' "$CRIT_T" | grep -q '研究前置/审后落盘' \
+   && grep -q '研究前置/审后落盘合约（34.7）' "$TPL_SKILL" \
+   && ! grep -RFn "$old_silent" "$CRIT_T" "$TPL_SKILL" "$ADVISOR_SKILL" "$CHECK" >/dev/null 2>&1; then
+    ok 4 "34.7 恰 1 条且含「研究前置/审后落盘」; kit SKILL 含合约锚; 4 文件无旧 silent 自动落盘语义"
 else
-    bad 4 "条款锚缺失/漂移: 34.7 条数=$r347, TPL SKILL 段: $(grep '全自动生成合约（34.7）' "$TPL_SKILL" | head -1)"
+    bad 4 "条款锚缺失/漂移: 34.7 条数=$r347, kit=$(grep '研究前置/审后落盘合约（34.7）' "$TPL_SKILL" | head -1), old_silent_hits=$(grep -RFn "$old_silent" "$CRIT_T" "$TPL_SKILL" "$ADVISOR_SKILL" "$CHECK" | wc -l | tr -d ' ')"
 fi
 
 # case-5 T3 check-complete warn 行为
@@ -134,12 +137,12 @@ else
     bad 5 "T3 warn 行为漂移: 含区块输出计 $(grep -cF '[template-sense]' <<<"$out5a" || true), 无区块输出计 $(grep -cF '[template-sense]' <<<"$out5b" || true)"
 fi
 
-# case-6 registry 自检（本 S-unit 登记行: 脚本名 + dep_anchors 四条）
+# case-6 registry 自检（本 S-unit 登记行: 脚本名 + dep_anchors）
 if [ -f "$TSV" ] \
-   && grep -F "$SELF_NAME" "$TSV" | grep -F 'init-session.sh;critical-rules.md;check-complete.sh;SKILL.md' >/dev/null; then
-    ok 6 "selftest-registry.tsv 含本脚本登记行且 dep_anchors 四条在位"
+   && grep -F "$SELF_NAME" "$TSV" | grep -F 'init-session.sh;check-complete.sh;critical-rules-template.md;plan-template-kit/SKILL.md;plan-template-advisor/SKILL.md' >/dev/null; then
+    ok 6 "selftest-registry.tsv 含本脚本登记行且 dep_anchors 覆盖 init/check-complete/critical-rules-template/kit/advisor"
 else
-    bad 6 "registry 缺本脚本行或 dep_anchors 漂移"
+    bad 6 "registry 缺本脚本行或 dep_anchors 漂移: $(grep -F "$SELF_NAME" "$TSV" | head -1)"
 fi
 
 # case-7 CR-fix 负例: mini 档 tier=mini + 空类型 → mini-lite 产物无感知区块、无 general 注释（P1-1 消除）
@@ -169,6 +172,18 @@ if [ "$b8" -ge 1 ] && [ "$s8" = 0 ] && [ "$g8" = 0 ] && [ "$n8b" = 0 ]; then
     ok 8 "bugfix 后空类型重跑 → 产物标记仍 bugfix 且无感知区块（CR P1-2 负例通过）"
 else
     bad 8 "重跑误追加: bugfix 标记计 $b8, 区块计 $s8, general 注释计 $g8, 二次输出 [template-sense] 计 $n8b"
+fi
+
+# case-9 静态守护: Rule16 35/39 验收句保留 + 34.1 三层 + 研究前置/用户明确审核授权
+r16_anchor='白名单模板标配（38.3 豁免 4 类不计入）,验收'
+if grep -qF "$r16_anchor" "$CRIT_T" \
+   && grep -qF '35/39' "$CRIT_T" \
+   && grep -qE '项目级.*用户级.*内置|项目级 → 用户级 → 内置' "$CRIT_T" \
+   && grep -q '研究前置' "$CRIT_T" && grep -q '研究前置' "$TPL_SKILL" && grep -q '研究前置' "$ADVISOR_SKILL" \
+   && grep -q '用户明确审核授权' "$CRIT_T" && grep -q '用户明确审核授权' "$TPL_SKILL" && grep -q '用户明确审核授权' "$ADVISOR_SKILL"; then
+    ok 9 "Rule16 35/39 验收句保留; 34.1 三层; 研究前置/用户明确审核授权覆盖 kit/advisor/critical-rules-template"
+else
+    bad 9 "静态守护缺失: r16=$(grep -cF "$r16_anchor" "$CRIT_T" || true) 35/39=$(grep -cF '35/39' "$CRIT_T" || true) 三层=$(grep -cE '项目级.*用户级.*内置|项目级 → 用户级 → 内置' "$CRIT_T" | wc -l | tr -d ' ')"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

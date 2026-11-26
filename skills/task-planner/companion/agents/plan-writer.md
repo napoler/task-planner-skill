@@ -19,7 +19,7 @@ model: "custom:9e221f47-3040-4ea7-b742-20b813fb79aa:sonnet-1"
 
 ```yaml
 ---
-template_type: code-edit  # variant 白名单之一（动态派生，详见 SKILL.md §任务模板库；触发：确认 template_type 合法值或白名单来源时；关键词：template_type 白名单 variant）
+template_type: code-edit  # 白名单之一（动态合并：内置 variant + 项目级 .zcode/plan-templates + 用户级 ~/.zcode/plan-templates，三层优先级 项目级→用户级→内置；触发：确认 template_type 合法值或白名单来源时；关键词：template_type 白名单 variant 三层）
 cost_estimate:
   main_process_opus: 1          # 主会话 opus 调用次数（通常 1）
   subagent_calls:
@@ -31,12 +31,13 @@ cost_estimate:
 ```
 
 **禁止** frontmatter 缺 `template_type`（违反 Rule 16）。
+**选型纪律（Rule 16/34.1）**：先分析任务再选模板，按三层（项目级→用户级→内置）扫描匹配；涉及新建/派生模板时须先研究前置（任务分析→相似模板扫描→网络调研记录依据→候选），**获用户明确审核授权后才可落盘**持久库，禁 silent 自动落盘、禁无调研依据生成。
 
 **禁止** 重复生成同 task_plan（Rule 17.3 复用 Decisions Made）。
 
 ## 掌握的技能
 
-- 模板选择:根据 `template_type` 参数从 `templates/variant/` 选择对应模板填充；触发：起草计划需要按 template_type 选模板时；关键词：模板选择 template_type variant
+- 模板选择:先分析任务再选模板，按三层（项目级 `.zcode/plan-templates/` → 用户级 `~/.zcode/plan-templates/` → 内置 `templates/variant/`）扫描匹配后选定 `template_type`；触发：起草计划需要按 template_type 选模板时；关键词：模板选择 template_type 三层 variant
 - 任务分解:将 user goal 拆为 3-7 个可执行 Phase;派发型 Phase(Executor≠主进程)再拆 S-unit 派发单元(每步 ≤2 文件/≤100 行/预估 ≤15min),计划期预写每步材料包(路径 + ≤10 行摘要)与可观察验收,每步「执行体」列必填(默认"继承"= Phase Executor,混用模型逐行写 subagent_type(model))——计划多花一倍时间拆细,执行省三倍返工(Rule 21.1b/22.6)
 - **伴飞技能填列义务（Rule 59.2 / H5，强制）**:计划期每个 S-unit 表「伴飞技能」列须填 `escort_skills` 中的 `.md` 绝对路径（多个用 `, ` 拼接;确无伴飞则写「无」），并经 `planctl add/set --section s_units --field escort_skills` 写入 plan-state.json;禁止把 parallel 并行组标识填进该列(并行组标识落「前置依赖」列行内注解)。Why:该列是 Rule 59.2「路径+首动作 Read」从计划层到达子代理执行层的**唯一泛化注入路径**——planctl 渲染此列 → 派发任务书「伴飞技能」节 → 子代理首动作 Read 对齐方法论后再执行;字段留空、只写组标识或写未实例化占位符都会使伴飞注入失效,check-dispatch.sh 在 escort_skills 非空却提取不到有效 .md token 时 fail-closed 拦截
 - VC 设计:为每个 Phase 配 5 条可验证的 Verification Contract 条目
@@ -85,7 +86,7 @@ cost_estimate:
 | `audio-voice` | `templates/variant/audio-voice-type.md` | 音频配音对齐（声线表/语言锁三层，零生成） |
 | `final-assembly` | `templates/variant/final-assembly-type.md` | 终剪组装验证（段片组整集成片，seam 全过+NAS 备份+终审登记） |
 
-> **门控契约（Rule 34.1 — task-v074）**：template_type 必填且 attest 锁定前会被 `check-template-type.sh` 机器校验（白名单=variant/ 动态派生+general）；缺失/非法在 attest enforce 档拒绝锁定（warn 档告警放行，`--skip-template-check` 逃生须披露）。
+> **门控契约（Rule 34.1 — task-v074/tplsys-upgrade）**：template_type 必填且 attest 锁定前会被 `check-template-type.sh` 机器校验（白名单=内置 variant/ + 项目级 + 用户级 `*-type.md` 动态合并 + `general`；三层优先级 项目级→用户级→内置）；缺失/非法在 attest enforce 档拒绝锁定（warn 档告警放行，`--skip-template-check` 逃生须披露）。
 
 **默认行为**:若调用方未传 `template_type`,根据 user goal 关键词匹配(顺序敏感,先命中先用):
 - 含「迁移/升级/重写/切换/转换/兼容」→ `migration`

@@ -263,9 +263,10 @@
       },
       "default": [
         "project-level",
+        "user-level",
         "built-in"
       ],
-      "description": "Template search order: project-level first, then built-in fallback"
+      "description": "Template search order (descriptive config; actual precedence is enforced by init-session.sh/check-template-type.sh): project-level > user-level > built-in. ZCode-first: .zcode/plan-templates preferred, .claude as compat fallback."
     },
     "escalation_threshold": {
       "type": "integer",
@@ -378,37 +379,61 @@
     },
     "reflect_verify_enforce": {
       "type": "string",
-      "enum": ["enforce", "warn", "off"],
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
       "default": "enforce",
       "description": "Rule 33 解决→反思→验证迭代循环(reflect-verify loop)三档: enforce=REFLECT-GATE 校验失败阻断交付; warn=注入警告不阻断; off=关闭。触发条件/反思四问/[reflect] 行格式见 references/critical-rules.md Rule 33。"
     },
     "template_gate_enforce": {
       "type": "string",
-      "enum": ["enforce", "warn", "off"],
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
       "default": "warn",
       "description": "Rule 34 模板选取门控三档: enforce=attest 锁定前 template_type 缺失/非法拒绝锁定; warn=告警放行; off=门控关闭。白名单源=templates/variant/ 动态派生+general, 见 references/critical-rules.md Rule 34。"
     },
     "mechanism_profile_enforce": {
       "type": "string",
-      "enum": ["enforce", "warn", "off"],
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
       "default": "warn",
       "description": "Rule 37 任务类型机制画像三档：warn=终验画像抽查仅提示；enforce=内容组计划声明 code_review: required 时 exit 1；off=跳过。详见 template-mapping.md §九"
     },
     "skill_modify_enforce": {
       "type": "string",
-      "enum": ["enforce", "warn", "off"],
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
       "default": "warn",
       "description": "Rule 36 技能修改保守化三档: enforce=未授权技能文件写入硬阻断(pretooluse exit 2); warn=注入提醒放行(观察期, 默认); off=不触发。消费侧=check-skill-modify.sh(pretooluse 接线)+check-complete SKILL-MODIFY GATE+selftest-skill-modify.sh 守护。"
     },
     "plan_tier_enforce": {
       "type": "string",
-      "enum": ["enforce", "warn", "off"],
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
       "default": "warn",
       "description": "Rule 38 任务难度分级与轻量档(plan tier)三档: off=mini 声明也走全量门控(38.4 豁免全关闭); warn=豁免生效+FMEA/VC-GATE 等 MISMATCH 提示不阻断(默认); enforce=豁免生效+MISMATCH 阻断锁定。判定=计划 frontmatter plan_tier: mini ∧ scope ≤2 文件 ∧ ≤15min ∧ 单模块; 消费侧=attest-plan FMEA 段/check-complete VC-GATE+委派统计/check-plan-dispatch S-unit 表+knowledge-brief 5 锚点 if 前置豁免(非 mini 路径零改动)+init-session.sh tier 分流; selftest-plan-tier.sh 守护。详见 references/critical-rules.md Rule 38"
     },
     "periodic_review_enforce": {
       "type": "string",
-      "enum": ["enforce", "warn", "off"],
+      "enum": [
+        "enforce",
+        "warn",
+        "off"
+      ],
       "default": "warn",
       "description": "Rule 57 周期性回顾与前后对照三档: enforce=发现矛盾立即阻断; warn=注入警告并计数(默认); off=关闭。触发条件/执行步骤/前后对照检查维度/自动纠正机制见 references/critical-rules.md Rule 57。"
     },
@@ -522,7 +547,10 @@
     },
     "smart_inject_type_gate": {
       "type": "string",
-      "enum": ["off", "on"],
+      "enum": [
+        "off",
+        "on"
+      ],
       "default": "on",
       "description": "[task-perf-opt Change #5] UserPromptSubmit smart 注入 prompt 类型门控: off=每轮注入(原行为); on=短闲聊/追问(prompt<50 字符且不含 Goal 关键 token)跳过 smart 注入块, 仅保留 [plan-note] 节流注入。[task-v172 CA-1] 默认 on（原 opt-in 默认 off→CA-1 改为默认 on）: 每轮无条件注入 0.22-0.26s+1-1.5KB 复利开销实测, 与内容限频双闸启用。"
     },
@@ -540,7 +568,10 @@
     },
     "selftest_heavy_concurrent": {
       "type": "string",
-      "enum": ["off", "on"],
+      "enum": [
+        "off",
+        "on"
+      ],
       "default": "off",
       "description": "[task-perf-opt Change #11] run-selftests.sh top-5 重脚本(final-gate-hash/requirement-coverage/vc-gate/plan-tier/smart-merge)并发化开关: off=全部串行(原行为); on=fresh 模式下 top-5 后台并发+wait 其余串行。opt-in, 默认 off。键名避开 P-07(Rule 68.7 零 new-key 守护 grep 模式)的既有字面, 本键针对 selftest 回归并发化, 非任务执行分组。]"
     }

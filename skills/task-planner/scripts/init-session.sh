@@ -18,32 +18,50 @@
 
 set -e
 
-# [2026-09-21 task-v086 S6] --list 子命令: 输出当前可用模板清单(内置 variant+项目目录 *-type.md+当前默认项),
+# [2026-09-21 task-v086 S6] --list 子命令: 输出当前可用模板清单(内置 variant+项目/用户目录 *-type.md+当前默认项),
 # 不创建任何文件, 无需 plans/<task-id> CWD 守卫, 直接 exit 0
 # [2026-11-25 task-json-template P3] JSON 原生模板切主:
 #   What: 清单并入 templates/json/<type>.template.json（去后缀即类型名），附加 [json]/[legacy] 来源列；
 #         旧 "  <type> (built-in)/(project)" 前缀与 "[default]" 行逐字保留（selftest PT-23 断言依赖）。
 #   Why: 用户批准「JSON 原生模板 + 结构化勾选」，规划者须能从 --list 直接辨认 JSON/legacy 两类来源。
+# [2026-11-27 task-tplsys-systematic-correction R3/R5] 三层发现+ZCode-first:
+#   What: --list 扫描 项目(.zcode优先/.claude compat fallback) → 用户(~/.zcode/plan-templates) → 内置；
+#         标签严格为 (project)/(user)/(built-in)，并保留 [json]/[legacy] 来源标记（JSON-first 不回退）。
+#   Why: R3/R5 要求三层优先级同口径，且 .claude 仅 compat fallback、不作 ZCode 默认优先路径。
 LIST_TEMPLATES=0
 for a in "$@"; do [ "$a" = "--list" ] && LIST_TEMPLATES=1; done
 if [ "$LIST_TEMPLATES" = 1 ]; then
     _sdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     _bvd="$_sdir/../templates/variant"
     _jdir="$_sdir/../templates/json"
+    _agent_home_name="${TASK_PLANNER_AGENT_HOME:-.zcode}"
+    _user_tpl_dir="${TASK_PLANNER_USER_TEMPLATES_DIR:-$HOME/${_agent_home_name}/plan-templates}"
     _list_pdir=""
     _d="$(pwd)"
     while [ "$_d" != "/" ]; do
-        if [ -d "$_d/.claude/plan-templates" ]; then _list_pdir="$_d/.claude/plan-templates"; break; fi
-        if [ -d "$_d/.zcode/plan-templates" ]; then _list_pdir="$_d/.zcode/plan-templates"; break; fi
+        if [ -d "$_d/${_agent_home_name}/plan-templates" ]; then _list_pdir="$_d/${_agent_home_name}/plan-templates"; break; fi
+        # 兼容: ZCode 场景优先 .zcode, .claude 仅作次级 compat fallback（不作为默认优先路径）
+        if [ "$_agent_home_name" = ".zcode" ] && [ -d "$_d/.claude/plan-templates" ]; then _list_pdir="$_d/.claude/plan-templates"; break; fi
         _d="$(dirname "$_d")"
     done
+    _list_udir=""
+    [ -d "$_user_tpl_dir" ] && _list_udir="$_user_tpl_dir"
     _def=""
+    _def_src=""
     if [ -n "$_list_pdir" ] && [ -f "$_list_pdir/default" ]; then
         _def="$(head -n1 "$_list_pdir/default" 2>/dev/null | tr -d '[:space:]')"
+        [ -n "$_def" ] && _def_src="project"
     fi
-    [ -z "$_def" ] && _def="${TASK_TEMPLATE_DEFAULT:-}"
-    echo "Available templates (task-v086 S6 --list):"
-    # general + JSON 模板 + legacy variant + 项目 *-type.md，去重排序（Rule 34.1 单一事实源=模板目录）
+    if [ -z "$_def" ] && [ -n "$_list_udir" ] && [ -f "$_list_udir/default" ]; then
+        _def="$(head -n1 "$_list_udir/default" 2>/dev/null | tr -d '[:space:]')"
+        [ -n "$_def" ] && _def_src="user"
+    fi
+    if [ -z "$_def" ] && [ -n "${TASK_TEMPLATE_DEFAULT:-}" ]; then
+        _def="${TASK_TEMPLATE_DEFAULT}"; _def_src="env"
+    fi
+    echo "Available templates (task-v086 S6 --list, precedence: project > user > built-in):"
+    # general + JSON 模板 + legacy variant + 项目/用户 *-type.md + 项目/用户 *.template.json，去重排序
+    # (Rule 34.1 单一事实源=模板目录；三层发现顺序=project>user>built-in)
     _all_types="$({
         printf '%s\n' general
         ls "$_jdir"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
@@ -54,24 +72,38 @@ if [ "$LIST_TEMPLATES" = 1 ]; then
             ls "$_list_pdir"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
             ls "$_list_pdir"/json/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
         fi
+        if [ -n "$_list_udir" ]; then
+            ls "$_list_udir"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//'
+            ls "$_list_udir"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
+            ls "$_list_udir"/json/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//'
+        fi
     } | sed '/^$/d' | sort -u)"
     for _t in $_all_types; do
         _origin="built-in"
         _source="legacy"
-        if [ -f "$_jdir/$_t.template.json" ] \
-           || { [ "$_t" = "general" ] && [ -f "$_jdir/task_plan.template.json" ]; }; then
-            # general 兼容早期 task_plan.template.json 命名（同仓并存实测）
-            _source="json"
-        elif [ -n "$_list_pdir" ] && { [ -f "$_list_pdir/$_t.template.json" ] || [ -f "$_list_pdir/json/$_t.template.json" ]; }; then
-            # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源：origin=project + source=json
+        # 来源判定按发现优先级 project > user > built-in（与路由同口径）
+        _has_pjson=0; _has_ujson=0; _has_bjson=0
+        [ -n "$_list_pdir" ] && { [ -f "$_list_pdir/$_t.template.json" ] || [ -f "$_list_pdir/json/$_t.template.json" ]; } && _has_pjson=1
+        [ -n "$_list_udir" ] && { [ -f "$_list_udir/$_t.template.json" ] || [ -f "$_list_udir/json/$_t.template.json" ]; } && _has_ujson=1
+        { [ -f "$_jdir/$_t.template.json" ] || { [ "$_t" = "general" ] && [ -f "$_jdir/task_plan.template.json" ]; }; } && _has_bjson=1
+        _has_pmd=0; _has_umd=0; _has_bmd=0
+        [ -n "$_list_pdir" ] && [ -f "$_list_pdir/$_t-type.md" ] && _has_pmd=1
+        [ -n "$_list_udir" ] && [ -f "$_list_udir/$_t-type.md" ] && _has_umd=1
+        [ -f "$_bvd/$_t-type.md" ] && _has_bmd=1
+        # origin = 最高优先级命中层；source = 该层是否为 JSON（JSON-first 可见性保留）
+        if [ "$_has_pjson" -eq 1 ] || [ "$_has_pmd" -eq 1 ]; then
             _origin="project"
-            _source="json"
-        elif [ ! -f "$_bvd/$_t-type.md" ] && [ -n "$_list_pdir" ] && [ -f "$_list_pdir/$_t-type.md" ]; then
-            _origin="project"
+            if [ "$_has_pjson" -eq 1 ]; then _source="json"; else _source="legacy"; fi
+        elif [ "$_has_ujson" -eq 1 ] || [ "$_has_umd" -eq 1 ]; then
+            _origin="user"
+            if [ "$_has_ujson" -eq 1 ]; then _source="json"; else _source="legacy"; fi
+        else
+            _origin="built-in"
+            if [ "$_has_bjson" -eq 1 ]; then _source="json"; else _source="legacy"; fi
         fi
         echo "  $_t ($_origin) [$_source]"
     done
-    [ -n "$_def" ] && echo "[default] $_def" || echo "[default] general"
+    [ -n "$_def" ] && echo "[default] $_def${_def_src:+ ($_def_src)}" || echo "[default] general"
     exit 0
 fi
 
@@ -84,20 +116,55 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILTIN_TEMPLATES="${SCRIPT_DIR}/../templates"  # <platform-home>/skills/task-planner/templates/ (由安装位置派生, 平台无关)
 
-# Find project-level templates: traverse upward from CWD to find .claude/ or .zcode/plan-templates/
+# [2026-11-27 task-tplsys-systematic-correction R3/R5] Agent-aware 模板目录：
+# What: env TASK_PLANNER_USER_TEMPLATES_DIR 覆盖用户级目录，默认 ~/.zcode/plan-templates；
+#       env TASK_PLANNER_AGENT_HOME 默认 .zcode（决定项目/用户目录名）。
+# Why: ZCode-first 三层发现（项目→用户→内置），.claude 仅 compat fallback，不作为默认优先路径。
+AGENT_HOME_NAME="${TASK_PLANNER_AGENT_HOME:-.zcode}"
+USER_TEMPLATE_DIR="${TASK_PLANNER_USER_TEMPLATES_DIR:-$HOME/${AGENT_HOME_NAME}/plan-templates}"
+
+# Find project-level templates: traverse upward from CWD.
+# Precedence at each level (ZCode): .zcode/plan-templates first; .claude/plan-templates only as compat fallback.
 find_project_templates() {
     local dir="$(pwd)"
     while [ "$dir" != "/" ]; do
-        if [ -d "$dir/.claude/plan-templates" ]; then
-            echo "$dir/.claude/plan-templates"
+        if [ -d "$dir/${AGENT_HOME_NAME}/plan-templates" ]; then
+            echo "$dir/${AGENT_HOME_NAME}/plan-templates"
             return 0
         fi
-        if [ -d "$dir/.zcode/plan-templates" ]; then
-            echo "$dir/.zcode/plan-templates"
+        # 兼容: ZCode 场景下 .claude 仅作次级 compat fallback（不作为默认优先路径）
+        if [ "$AGENT_HOME_NAME" = ".zcode" ] && [ -d "$dir/.claude/plan-templates" ]; then
+            echo "$dir/.claude/plan-templates"
             return 0
         fi
         dir="$(dirname "$dir")"
     done
+    return 1
+}
+
+# Find user-level templates directory for current agent (if exists).
+find_user_templates() {
+    if [ -d "$USER_TEMPLATE_DIR" ]; then
+        echo "$USER_TEMPLATE_DIR"
+        return 0
+    fi
+    return 1
+}
+
+# Resolve first matching path for a template file by precedence: project -> user -> built-in.
+# Usage: resolve_template_path <filename>
+resolve_template_path() {
+    local filename="$1"
+    local project_templates user_templates
+    if project_templates=$(find_project_templates) && [ -f "$project_templates/$filename" ]; then
+        echo "$project_templates/$filename"; return 0
+    fi
+    if user_templates=$(find_user_templates) && [ -f "$user_templates/$filename" ]; then
+        echo "$user_templates/$filename"; return 0
+    fi
+    if [ -f "$BUILTIN_TEMPLATES/$filename" ]; then
+        echo "$BUILTIN_TEMPLATES/$filename"; return 0
+    fi
     return 1
 }
 
@@ -117,15 +184,18 @@ find_project_root() {
     return 1
 }
 
-# Copy a template file: project-level if exists, else built-in
+# Copy a template file by precedence: project-level > user-level > built-in
 # Usage: copy_template <filename>
 copy_template() {
     local filename="$1"
-    local project_templates
+    local project_templates user_templates
 
     if project_templates=$(find_project_templates) && [ -f "$project_templates/$filename" ]; then
         cp "$project_templates/$filename" "$filename"
         echo "  └─ $filename (project-level)"
+    elif user_templates=$(find_user_templates) && [ -f "$user_templates/$filename" ]; then
+        cp "$user_templates/$filename" "$filename"
+        echo "  └─ $filename (user-level)"
     elif [ -f "$BUILTIN_TEMPLATES/$filename" ]; then
         cp "$BUILTIN_TEMPLATES/$filename" "$filename"
         echo "  └─ $filename (built-in)"
@@ -764,11 +834,14 @@ echo "Initializing planning files for: $PROJECT_NAME"
 # [2026-09-15 task-v074 P4-S1] 白名单动态派生: general + ls $BUILTIN_TEMPLATES/variant/*-type.md 去后缀
 #    (与 check-template-type.sh 同源自模板目录, 消除硬编码 12 类清单副本)
 # [2026-11-25 task-json-template P3] JSON 原生模板切主:
-#   What: 白名单 = general + json/*.template.json(去后缀) + variant/*-type.md + 项目 *-type.md，去重排序；
+#   What: 白名单 = general + json/*.template.json(去后缀) + variant/*-type.md + 项目/用户 *-type.md + 项目/用户 *.template.json，去重排序；
 #         命中 JSON → JSON_TEMPLATE_ABS 记绝对路径，MD 骨架仍取 legacy variant（无则通用 task_plan.md），
 #         仅作首轮渲染前的人读临时视图；未知类型 warning 回落 general（JSON general 存在则作权威源）。
 #   Why: 用户批准「JSON 原生模板 + 结构化勾选」，反对把整份 MD 读入 JSON 再吐出；JSON 是权威源，
 #         MD 骨架正文不得进入 plan-state.json（planctl init 接线见下方）。
+# [2026-11-27 task-tplsys-systematic-correction R3/R5] 三层发现+ZCode-first:
+#   发现/覆盖顺序 项目(.zcode优先/.claude compat fallback) → 用户(~/.zcode/plan-templates) → 内置；
+#   白名单/默认/default 同口径；JSON-first 保留（不得回退纯 MD 路由）。
 JSON_DIR="${BUILTIN_TEMPLATES}/json"
 JSON_TEMPLATE_ABS=""
 # 轻量档集合与下方 planctl init 的 _json_init_tier 判定保持同源（mini|l0|trivial → mini）
@@ -787,28 +860,35 @@ VARIANTS_DIR="${BUILTIN_TEMPLATES}/variant"
 _json_types="$(ls "$JSON_DIR"/*.template.json 2>/dev/null | sed 's/.*\///;s/\.template\.json$//' | tr '\n' ' ')"
 _variant_types="$(ls "$VARIANTS_DIR"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
 # [2026-09-21 task-v086 S6] 项目 plan-templates 目录内的 *-type.md(去后缀)并入合法类型集合;
-# 无 JSON 模板目录时白名单与改前的 general + variant + 项目集合等价（仅排序去重）。
+# [2026-11-27 R3/R5] 用户级 plan-templates 同并入白名单；发现顺序 项目→用户→内置。
 PDIR_RESOLVED="$(find_project_templates || true)"
-_pextra=""
-_pjson_types=""
+UDIR_RESOLVED="$(find_user_templates || true)"
+_pextra=""; _uextra=""; _pjson_types=""; _ujson_types=""
 if [ -n "$PDIR_RESOLVED" ]; then
     _pextra="$(ls "$PDIR_RESOLVED"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
     # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源类型入白名单（根目录 + json/ 子目录两种落位）；
-    # 无项目 JSON 时本行为空，VALID_TYPES 与改前逐字节等价。
     _pjson_types="$({ ls "$PDIR_RESOLVED"/*.template.json 2>/dev/null; ls "$PDIR_RESOLVED"/json/*.template.json 2>/dev/null; } | sed 's/.*\///;s/\.template\.json$//' | sed '/^task_plan$/d' | sort -u | tr '\n' ' ')"
 fi
-VALID_TYPES="$(printf '%s\n' general $_json_types $_variant_types $_pextra $_pjson_types | sed '/^$/d' | sort -u | tr '\n' ' ')"
+if [ -n "$UDIR_RESOLVED" ]; then
+    _uextra="$(ls "$UDIR_RESOLVED"/*-type.md 2>/dev/null | sed 's/.*\///;s/-type\.md$//' | tr '\n' ' ')"
+    _ujson_types="$({ ls "$UDIR_RESOLVED"/*.template.json 2>/dev/null; ls "$UDIR_RESOLVED"/json/*.template.json 2>/dev/null; } | sed 's/.*\///;s/\.template\.json$//' | sed '/^task_plan$/d' | sort -u | tr '\n' ' ')"
+fi
+VALID_TYPES="$(printf '%s\n' general $_json_types $_variant_types $_pextra $_uextra $_pjson_types $_ujson_types | sed '/^$/d' | sort -u | tr '\n' ' ')"
 VALID_TYPES="$(printf '%s' "$VALID_TYPES" | tr -s ' ')"
 # [2026-09-21 task-v086 S6] 默认模板(每次只加载 1 个的选择入口):
-# 项目级 plan-templates/default 文件(内容=模板名) > env TASK_TEMPLATE_DEFAULT > 缺省=现状 general 行为逐字节不变
+# [2026-11-27 R3/R5] 默认模板优先级: 项目 default > 用户 default > env TASK_TEMPLATE_DEFAULT > general
 if [ -z "$TEMPLATE_TYPE" ]; then
     _default_src=""
     _default_type=""
     if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/default" ]; then
         _default_type="$(head -n1 "$PDIR_RESOLVED/default" 2>/dev/null | tr -d '[:space:]')"
-        [ -n "$_default_type" ] && _default_src="project default 文件(.claude/plan-templates/default)"
+        [ -n "$_default_type" ] && _default_src="project default 文件($PDIR_RESOLVED/default)"
         # S5: 项目级 default 命中=项目级模板已选，轻量档不得覆盖其 JSON 权威源。
         if [ -n "$_default_type" ]; then _PROJECT_TEMPLATE_SELECTED=1; fi
+    fi
+    if [ -z "$_default_type" ] && [ -n "$UDIR_RESOLVED" ] && [ -f "$UDIR_RESOLVED/default" ]; then
+        _default_type="$(head -n1 "$UDIR_RESOLVED/default" 2>/dev/null | tr -d '[:space:]')"
+        [ -n "$_default_type" ] && _default_src="user default 文件($UDIR_RESOLVED/default)"
     fi
     if [ -z "$_default_type" ] && [ -n "${TASK_TEMPLATE_DEFAULT:-}" ]; then
         _default_type="$TASK_TEMPLATE_DEFAULT"
@@ -824,9 +904,10 @@ fi
 TASK_PLAN_SRC="task_plan.md"
 if [ -n "$TEMPLATE_TYPE" ]; then
     if echo " $VALID_TYPES " | grep -q " $TEMPLATE_TYPE "; then
-        # [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源优先（template-guide §1.1 优先级 1）：
-        # 根目录 <type>.template.json 与 json/ 子目录两种落位都发现；未命中则维持内置 JSON 原路径逐字节不变。
-        _project_json=""
+        # [2026-11-27 task-tplsys-systematic-correction R3/R5] 三层发现+JSON-first:
+        # JSON 权威源按 项目 → 用户 → 内置 查找（项目/用户支持根目录 + json/ 子目录两种落位）；
+        # MD 临时视图骨架同按 项目 → 用户 → 内置 查找；JSON 权威源优先级高于 MD。
+        _project_json=""; _user_json=""; _json_src_label=""
         if [ -n "$PDIR_RESOLVED" ]; then
             for _pj in "$PDIR_RESOLVED/json/${TEMPLATE_TYPE}.template.json" "$PDIR_RESOLVED/${TEMPLATE_TYPE}.template.json"; do
                 if [ -f "$_pj" ]; then _project_json="$_pj"; break; fi
@@ -834,45 +915,58 @@ if [ -n "$TEMPLATE_TYPE" ]; then
             # S5: 项目级 JSON 命中=项目级模板已选（轻量档沿用，不改选 mini-lite）。
             if [ -n "$_project_json" ]; then _PROJECT_TEMPLATE_SELECTED=1; fi
         fi
-        _json_candidate="${JSON_DIR}/${TEMPLATE_TYPE}.template.json"
-        [ -n "$_project_json" ] && _json_candidate="$_project_json"
-        if [ -f "$_json_candidate" ]; then
+        if [ -z "$_project_json" ] && [ -n "$UDIR_RESOLVED" ]; then
+            for _uj in "$UDIR_RESOLVED/json/${TEMPLATE_TYPE}.template.json" "$UDIR_RESOLVED/${TEMPLATE_TYPE}.template.json"; do
+                if [ -f "$_uj" ]; then _user_json="$_uj"; break; fi
+            done
+        fi
+        _json_candidate=""
+        if [ -n "$_project_json" ]; then
+            _json_candidate="$_project_json"; _json_src_label="project-level"
+        elif [ -n "$_user_json" ]; then
+            _json_candidate="$_user_json"; _json_src_label="user-level"
+        elif [ -f "${JSON_DIR}/${TEMPLATE_TYPE}.template.json" ]; then
+            _json_candidate="${JSON_DIR}/${TEMPLATE_TYPE}.template.json"; _json_src_label="built-in"
+        fi
+        if [ -n "$_json_candidate" ]; then
             # [2026-11-25 task-json-template P3] JSON 原生模板命中：JSON 为唯一权威源；
             # MD 骨架仍从 legacy 模板复制（无则通用骨架），仅供首次 render 前人读。
             JSON_TEMPLATE_ABS="$_json_candidate"
-            if [ -n "$_project_json" ]; then
-                echo "Template routing: JSON 权威模板(项目级) <- $_project_json (template_type: $TEMPLATE_TYPE)"
+            if [ "$_json_src_label" = "built-in" ]; then
+                echo "Template routing: JSON 权威模板 <- json/${TEMPLATE_TYPE}.template.json (template_type: $TEMPLATE_TYPE, built-in)"
             else
-                echo "Template routing: JSON 权威模板 <- json/${TEMPLATE_TYPE}.template.json (template_type: $TEMPLATE_TYPE)"
+                echo "Template routing: JSON 权威模板(${_json_src_label}) <- $_json_candidate (template_type: $TEMPLATE_TYPE)"
             fi
             VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
-            if [ -f "${BUILTIN_TEMPLATES}/${VARIANT_REL}" ]; then
-                TASK_PLAN_SRC="$VARIANT_REL"
-                echo "Template routing: task_plan.md(临时视图) <- $VARIANT_REL (JSON 权威源优先, 首次 render 重建)"
-            elif [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+            # MD 临时视图骨架: 项目 → 用户 → 内置（JSON-first，不改权威源）
+            if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
                 TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
                 _PROJECT_TEMPLATE_SELECTED=1  # S5: 项目级模板命中标记
                 echo "Template routing: task_plan.md(临时视图) <- ${TEMPLATE_TYPE}-type.md (project-level, JSON 权威源优先)"
+            elif [ -n "$UDIR_RESOLVED" ] && [ -f "$UDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+                TASK_PLAN_SRC="$UDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                echo "Template routing: task_plan.md(临时视图) <- ${TEMPLATE_TYPE}-type.md (user-level, JSON 权威源优先)"
+            elif [ -f "${BUILTIN_TEMPLATES}/${VARIANT_REL}" ]; then
+                TASK_PLAN_SRC="$VARIANT_REL"
+                echo "Template routing: task_plan.md(临时视图) <- $VARIANT_REL (JSON 权威源优先, 首次 render 重建)"
             else
                 echo "Template routing: task_plan.md(临时视图) <- 通用骨架 (JSON 权威源优先, 首次 render 重建)"
             fi
         else
-            # legacy 回退：原 variant/项目模板路由逐字保留（无 JSON 模板时行为不变）
+            # legacy 回退：项目 → 用户 → 内置（JSON-first 体系下无 JSON 时的 MD 兼容路径）
             VARIANT_REL="variant/${TEMPLATE_TYPE}-type.md"
-            VARIANT_ABS_BUILTIN="${BUILTIN_TEMPLATES}/${VARIANT_REL}"
-            if [ -f "$VARIANT_ABS_BUILTIN" ]; then
+            if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+                TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                _PROJECT_TEMPLATE_SELECTED=1  # S5: 项目级模板命中标记
+                echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (project-level, task-v086 S6)"
+            elif [ -n "$UDIR_RESOLVED" ] && [ -f "$UDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
+                TASK_PLAN_SRC="$UDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
+                echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (user-level)"
+            elif [ -f "${BUILTIN_TEMPLATES}/${VARIANT_REL}" ]; then
                 TASK_PLAN_SRC="$VARIANT_REL"
-                echo "Template routing: task_plan.md <- $VARIANT_REL (template_type: $TEMPLATE_TYPE)"
+                echo "Template routing: task_plan.md <- $VARIANT_REL (template_type: $TEMPLATE_TYPE, built-in)"
             else
-                # [2026-09-21 task-v086 S6] 内置未命中 → 查项目 plan-templates 目录(项目模板发现:
-                # 项目 *-type.md 已并入 VALID_TYPES); 命中 → 复制源=项目文件
-                if [ -n "$PDIR_RESOLVED" ] && [ -f "$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md" ]; then
-                    TASK_PLAN_SRC="$PDIR_RESOLVED/${TEMPLATE_TYPE}-type.md"
-                    _PROJECT_TEMPLATE_SELECTED=1  # S5: 项目级模板命中标记
-                    echo "Template routing: task_plan.md <- ${TEMPLATE_TYPE}-type.md (project-level, task-v086 S6)"
-                else
-                    echo "WARNING: variant template not found: $VARIANT_REL — falling back to generic task_plan.md"
-                fi
+                echo "WARNING: variant template not found for '$TEMPLATE_TYPE' — falling back to generic task_plan.md"
             fi
         fi
     else
@@ -943,12 +1037,17 @@ elif [ "$_LIGHT_TIER" = "1" ] && [ -n "$JSON_TEMPLATE_ABS" ]; then
     echo "Template routing: 轻量档沿用所选 JSON 权威源（显式/项目级模板命中, task-spec-consumption-chain S5）: $JSON_TEMPLATE_ABS"
 fi
 
-# Check for project-level templates
+# Check for project/user-level templates (agent-aware, ZCode prefers .zcode)
 if project_templates=$(find_project_templates); then
     echo "Using project templates: $project_templates"
 else
-    echo "No project-level templates found, using built-in defaults"
-    echo "  (Add .claude/plan-templates/ to your project for custom templates)"
+    echo "No project-level templates found for current agent (${AGENT_HOME_NAME}/plan-templates)"
+fi
+if user_templates=$(find_user_templates); then
+    echo "Using user templates: $user_templates"
+else
+    echo "No user-level templates found: $USER_TEMPLATE_DIR"
+    echo "  (Project: ./${AGENT_HOME_NAME}/plan-templates or User: ~/${AGENT_HOME_NAME}/plan-templates)"
 fi
 echo ""
 
@@ -996,11 +1095,19 @@ else
                 PROJECT_TPL_USED=1
                 ;;
             *)
+                # [2026-11-27 task-tplsys-systematic-correction R3/R5] 复制源按 项目 → 用户 → 内置 搜索
+                _tpl_src=""; _tpl_from_builtin=0
                 if project_templates=$(find_project_templates) && [ -f "$project_templates/$TASK_PLAN_SRC" ]; then
-                    cp "$project_templates/$TASK_PLAN_SRC" "task_plan.md"
+                    _tpl_src="$project_templates/$TASK_PLAN_SRC"
+                elif user_templates=$(find_user_templates) && [ -f "$user_templates/$TASK_PLAN_SRC" ]; then
+                    _tpl_src="$user_templates/$TASK_PLAN_SRC"
                 else
-                    cp "${BUILTIN_TEMPLATES}/${TASK_PLAN_SRC}" "task_plan.md"
+                    _tpl_src="${BUILTIN_TEMPLATES}/${TASK_PLAN_SRC}"
+                    _tpl_from_builtin=1
                 fi
+                cp "$_tpl_src" "task_plan.md"
+                # 来自项目/用户层的自定义模板也需要 frontmatter 兜底
+                [ "$_tpl_from_builtin" -eq 0 ] && PROJECT_TPL_USED=1
                 ;;
         esac
         # [2026-10-24 CR-fix BLOCKER-1] 记入本轮新建列表（variant/通用两分支复制点已过；

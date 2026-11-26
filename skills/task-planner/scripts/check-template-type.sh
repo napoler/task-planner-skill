@@ -17,22 +17,33 @@ plan_file="$1"
 [ -f "$plan_file" ] || { echo "[template-gate] INVALID: 文件不存在: $plan_file" >&2; exit 1; }
 
 SKILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# 白名单动态派生: general + json 目录 <type>.template.json 去后缀 + variant 目录 <type>-type.md 去后缀 (Rule 34.1 禁硬编码副本)
+# [2026-11-27 task-tplsys-systematic-correction R3/R5] Agent-aware 目录约定（ZCode-first）：
+# What: env TASK_PLANNER_AGENT_HOME 默认 .zcode；env TASK_PLANNER_USER_TEMPLATES_DIR 默认 ~/.zcode/plan-templates。
+# Why: check-template-type 白名单必须与 init-session 的三层发现（项目→用户→内置）同口径，避免 enforce 门误拒合法类型。
+AGENT_HOME_NAME="${TASK_PLANNER_AGENT_HOME:-.zcode}"
+USER_TEMPLATE_DIR="${TASK_PLANNER_USER_TEMPLATES_DIR:-$HOME/${AGENT_HOME_NAME}/plan-templates}"
+
+# 白名单动态派生: general + 内置 json/*.template.json + 内置 variant/*-type.md (Rule 34.1 禁硬编码副本)
 # task_plan.template.json 的 meta.template_type=general，按文件名映射会多出 task_plan；显式剔除，general 已恒合法。
 # tr '\n' ' ' 保证 VALID 单行, 供 grep 匹配
 VALID="$( { ls "$SKILL_ROOT/templates/json/"*.template.json 2>/dev/null || true; \
             ls "$SKILL_ROOT/templates/variant/"*-type.md 2>/dev/null || true; } \
           | sed 's/.*\///;s/\.template\.json$//;s/-type\.md$//' \
           | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
-# [2026-11-25 task-json-template-recommend] 项目级 JSON 权威源类型入白名单：
-# 从 <task_plan.md> 所在目录向上找 .claude|zcode/plan-templates，只认该目录（含 json/ 子目录）内的
-# *.template.json，禁任意路径 JSON 伪装；无项目 JSON 时本串为空，VALID 与改前逐字节一致。
+
+# [2026-11-25 task-json-template-recommend] 项目级 JSON/MD 权威源类型入白名单：
+# 从 <task_plan.md> 所在目录向上找当前 Agent 目录（ZCode 优先 .zcode，.claude 仅 compat fallback），
+# 只认该目录（含 json/ 子目录）内的 *.template.json 与 *-type.md，禁任意路径伪装。
+# [2026-11-27 R3/R5] 保留 JSON-first（*.template.json + json/ 子目录）并扩展三层发现同口径。
 _pj_types=""
 _walk_dir="$(cd "$(dirname "$plan_file")" && pwd)"
 while [ "$_walk_dir" != "/" ]; do
     _pj_root=""
-    if [ -d "$_walk_dir/.claude/plan-templates" ]; then _pj_root="$_walk_dir/.claude/plan-templates"; fi
-    if [ -z "$_pj_root" ] && [ -d "$_walk_dir/.zcode/plan-templates" ]; then _pj_root="$_walk_dir/.zcode/plan-templates"; fi
+    if [ -d "$_walk_dir/${AGENT_HOME_NAME}/plan-templates" ]; then
+        _pj_root="$_walk_dir/${AGENT_HOME_NAME}/plan-templates"
+    elif [ "$AGENT_HOME_NAME" = ".zcode" ] && [ -d "$_walk_dir/.claude/plan-templates" ]; then
+        _pj_root="$_walk_dir/.claude/plan-templates"
+    fi
     if [ -n "$_pj_root" ]; then
         # [S6 2026-11-26] 同循环追加项目级 *-type.md（旧 MD 兼容），避免为 MD 再跑一次向上遍历；
         # 后缀归一沿用既有 sed（-type.md / .template.json → 类型名），无项目模板时结果仍为空串。
@@ -43,7 +54,17 @@ while [ "$_walk_dir" != "/" ]; do
     fi
     _walk_dir="$(dirname "$_walk_dir")"
 done
-VALID="general $VALID $_pj_types"
+
+# [2026-11-27 R3/R5] 用户级模板类型并入白名单（与 init-session.sh 同口径：项目→用户→内置）。
+# 支持 *-type.md 与 *.template.json（根目录 + json/ 子目录），保持 JSON-first 形态不回退。
+_uj_types=""
+if [ -d "$USER_TEMPLATE_DIR" ]; then
+    _uj_types="$( { ls "$USER_TEMPLATE_DIR"/*.template.json 2>/dev/null; ls "$USER_TEMPLATE_DIR"/json/*.template.json 2>/dev/null; \
+                    ls "$USER_TEMPLATE_DIR"/*-type.md 2>/dev/null; } \
+                  | sed 's/.*\///;s/\.template\.json$//;s/-type\.md$//' | grep -v '^task_plan$' | sort -u | tr '\n' ' ')"
+fi
+
+VALID="general $VALID $_pj_types $_uj_types"
 VALID="$(printf '%s' "$VALID" | tr -s ' ')"
 
 tt="$(grep -m1 '^template_type:' "$plan_file" 2>/dev/null | sed 's/^template_type:[[:space:]]*//;s/[[:space:]]*$//')"

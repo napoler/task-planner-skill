@@ -6,14 +6,19 @@
 
 ## 一、模板系统架构
 
-task-planner 提供 **双层优先级** 的模板机制：
+task-planner 提供 **三层优先级** 的模板机制（按当前 Agent 对应目录解析；当前 ZCode 为默认语境）：
 
 ```
-优先级 1（最高）: {project}/.claude/plan-templates/{filename}（Claude Code）/ {project}/.zcode/plan-templates/{filename}（ZCode）
-优先级 2（兜底）: ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/{filename}
+优先级 1（项目级）: <项目>/.zcode/plan-templates/{filename}（ZCode 优先；.claude/plan-templates 仅 compat fallback，不作默认优先路径）
+优先级 2（用户级）: ~/.zcode/plan-templates/{filename}（当前 Agent 用户目录，env TASK_PLANNER_USER_TEMPLATES_DIR 可覆盖，默认 ~/.zcode/plan-templates）
+优先级 3（内置）  : ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/{filename}
 ```
 
-**初始化脚本** `init-session.sh` 自动按优先级查找并复制模板到 plan 目录。
+- **扫描/匹配顺序**：先分析任务，再按 **项目→用户→内置** 扫描并匹配；同名/同类型按该顺序覆盖决议。
+- **Agent 适配（R5/ZCode-first）**：目录以当前 Agent 为准，ZCode 场景优先 `.zcode`/`~/.zcode`；`.claude` 仅兼容探测回退，避免误用 `.claude` 默认路径导致脚本/语义错配。
+- **初始化脚本** `init-session.sh` 自动按优先级查找并复制模板到 plan 目录；`check-template-type.sh`/`attest-plan.sh` 白名单与发现一致（含项目/用户自定义 `*-type.md` 与 `*.template.json`）。
+- **config 说明**：`config.json` 的 `template_priority.default` 可声明 `["project-level","user-level","built-in"]`，但该键为**描述性配置，实际顺序以脚本为准**（init-session.sh/check-template-type.sh）。
+- **生成/派生约束（R2/R4）**：新建或派生模板须先执行网络调研并记录依据（Rule 34.4），候选先落 `template-candidate/`；持久落盘（项目/用户/官方库）前必须向用户展示并获明确审核授权（Rule 34.7/34.8），禁 silent 自动保存。
 
 ### 1.1 JSON 模板路径优先级（task-json-template-20261125）
 
@@ -146,15 +151,17 @@ task-planner 提供 **双层优先级** 的模板机制：
 ### 方式 A：项目级覆盖（推荐，全项目生效）
 
 ```bash
-# 创建项目级模板目录（ZCode 用 .zcode/plan-templates/，Claude Code 用 .claude/plan-templates/，以下以 .claude 为例）
-mkdir -p /path/to/project/.claude/plan-templates/
+# 创建项目级模板目录（ZCode 优先；Claude Code 兼容位为 .claude/plan-templates/，仅 compat fallback）
+mkdir -p /path/to/project/.zcode/plan-templates/
+# 可选：用户级模板目录（跨项目复用，保存前须用户授权）
+mkdir -p ~/.zcode/plan-templates/
 
-# 复制并修改需要的模板
-cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md /path/to/project/.claude/plan-templates/
+# 复制并修改需要的模板（项目级示例）
+cp ${TASK_PLANNER_ROOT:-$HOME/.zcode/skills/task-planner}/templates/task_plan.md /path/to/project/.zcode/plan-templates/
 
 # 编辑内容，适配本项目的 phase 结构
-vi /path/to/project/.claude/plan-templates/task_plan.md
-# ZCode 平台对应：将上述路径中 .claude/ 替换为 .zcode/
+vi /path/to/project/.zcode/plan-templates/task_plan.md
+# Claude Code 兼容对应：将 .zcode/ 替换为 .claude/（仅 compat fallback 场景）
 ```
 
 **优势**：无需修改 skill 文件，所有后续任务自动使用新模板。
@@ -337,9 +344,11 @@ ls *.md | sort
 
 ```json
 {
-  "template_priority": ["project-level", "built-in"]
+  "template_priority": ["project-level", "user-level", "built-in"]
 }
 ```
+
+> 说明：`template_priority` 为描述性配置，实际模板发现/路由顺序以 `init-session.sh` / `check-template-type.sh` 脚本为准（ZCode-first：`.zcode/plan-templates` 优先，`.claude/plan-templates` 仅 compat fallback）。
 
 ---
 

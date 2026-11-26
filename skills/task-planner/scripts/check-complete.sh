@@ -661,7 +661,7 @@ if [ "$python_rc" -eq 0 ]; then
         fi
     fi
 
-    # [2026-09-29 task-v096 P4-S1 T3] template-sense warn 抽查段（Rule 34.7 全自动生成合约，
+    # [2026-09-29 task-v096 P4-S1 T3; 2026-11-17 tplsys-upgrade 对齐] template-sense warn 抽查段（Rule 34.7 研究前置/审后落盘合约，
     # fmea-gate warn 范式：不阻断、零新 config 键）：
     # 计划含「🔁 模板感知」区块（init-session 运行时追加）且「处置登记处」未填写
     # （「不沉淀理由 / 沉淀理由」冒号后带实质内容方命中; 占位行关键词后无冒号不命中）
@@ -672,7 +672,7 @@ if [ "$python_rc" -eq 0 ]; then
     # 内容必命中排除=登记有效，属既有语义保留。
     if grep -q '🔁 模板感知' "$PLAN_FILE" 2>/dev/null \
        && ! grep -qE '不沉淀理由[[:space:]]*[:：][^[:space:]]|沉淀理由[[:space:]]*[:：][^[:space:]]' "$PLAN_FILE" 2>/dev/null; then
-        echo '[template-sense] ⚠ 计划含模板感知区块但终验未登记沉淀/不沉淀理由（Rule 34.7 全自动生成合约）' >&2
+        echo '[template-sense] ⚠ 计划含模板感知区块但终验未登记沉淀/不沉淀理由（Rule 34.7 研究前置/审后落盘合约）' >&2
     fi
     # [2026-11-20 task-antiregress-tplgov-20261120 S7 R3] general 兜底须登记理由 warn（不做硬门）
     if grep -q '🔁 模板感知' "$PLAN_FILE" 2>/dev/null \

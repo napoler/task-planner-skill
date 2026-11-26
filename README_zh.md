@@ -263,12 +263,12 @@ Skill 包内英文文档：`skills/task-planner/INSTALL.md`（英文安装说明
   "max_view_browser_before_save": 2,    // 每 2 次浏览操作后写 findings.md
   "escalation_threshold": 3,            // 连续失败次数 → AskUserQuestion
   "plan_dir_pattern": "plans/{task-id}/",
-  "template_priority": ["project-level", "built-in"],
+  "template_priority": ["project-level", "user-level", "built-in"], // 描述性配置：实际顺序以 init-session.sh/check-template-type.sh 脚本为准
   "fmea_enforce": "warn"                    // FMEA 门控档位（task-v075 起已兑现：attest FMEA 门控段 + check-complete 终验双点消费，warn/enforce/off 三档分化；逃生 --skip-fmea-check 须披露）
 }
 ```
 
-`$schema` 强制 `additionalProperties: false` —— 拼写错误会立刻报错。task-v075 起运行时消费的键：`fmea_enforce`（已兑现——attest FMEA 门控段 + check-complete 终验双点，warn/enforce/off 三档分化）与 `dispatch_contract_enforce`（三项细粒度检查：prompt 长度 / 多 S-unit 打包 / brief 引用提示；本仓默认值实测为 enforce，即部署后为硬阻断）；`step_max_*` / `prompt_max_chars` 四键由 check-plan-dispatch / check-dispatch 首次消费（见 CHANGELOG）。
+`$schema` 强制 `additionalProperties: false` —— 拼写错误会立刻报错。task-v075 起运行时消费的键：`fmea_enforce`（已兑现——attest FMEA 门控段 + check-complete 终验双点，warn/enforce/off 三档分化）与 `dispatch_contract_enforce`（三项细粒度检查：prompt 长度 / 多 S-unit 打包 / brief 引用提示；本仓默认值实测为 enforce，即部署后为硬阻断）；`step_max_*` / `prompt_max_chars` 四键由 check-plan-dispatch / check-dispatch 首次消费（见 CHANGELOG）。`template_priority` 为描述性配置（声明三层优先级 project-level > user-level > built-in，ZCode-first：`.zcode/plan-templates` 优先，`.claude/plan-templates` 仅 compat fallback），实际发现/路由顺序以 `init-session.sh`/`check-template-type.sh` 脚本为准，不由该配置驱动。
 
 ---
 

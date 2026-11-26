@@ -6,6 +6,8 @@
 
 ## 一、模板选择决策树
 
+> 执行/选型时先分析任务，再按当前 Agent 目录**三层优先级**（project-level → user-level → built-in）扫描匹配：项目 `.zcode/plan-templates/` → 用户 `~/.zcode/plan-templates/` → 内置 `templates/variant/`（ZCode-first：`.zcode` 优先，`.claude` 仅 compat fallback，不作默认优先路径）。模板新建/派生须先网络调研并记录依据，候选落 `template-candidate/`；持久落盘前必须获用户审核授权并确认保存位置（Rule 34.4/34.7/34.8）。`template_priority` 为描述性配置，实际顺序以 init-session.sh/check-template-type.sh 脚本为准。
+
 ```
 任务描述是什么?
 ├─ 关键词/SERP/数据调研 → research-type.md
@@ -104,9 +106,9 @@
 
 **使用方式**：
 ```bash
-# 项目级覆盖
+# 项目级覆盖（ZCode 优先 .zcode；.claude 仅 compat fallback）
 cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/research-type.md \
-   .claude/plan-templates/task_plan.md
+   .zcode/plan-templates/task_plan.md
 ```
 
 ---
@@ -125,10 +127,10 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/research-type.
 
 **使用方式**：
 ```bash
-# 文章管线项目级覆盖
-mkdir -p <project-root>/.claude/plan-templates/
+# 文章管线项目级覆盖（ZCode 优先；.claude 仅 compat fallback）
+mkdir -p <project-root>/.zcode/plan-templates/
 cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/writing-type.md \
-   <project-root>/.claude/plan-templates/task_plan.md  # （示例路径，仅作格式示意）
+   <project-root>/.zcode/plan-templates/task_plan.md  # ZCode 优先；.claude 仅 compat fallback
 ```
 
 ---
@@ -147,10 +149,10 @@ cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/writing-type.m
 
 **使用方式**：
 ```bash
-# skill-fix 项目级覆盖
-mkdir -p ~/.zcode/skills/skill-fix/.zcode/plan-templates/
+# skill-fix 项目级覆盖（ZCode 优先；.claude 仅 compat fallback）
+mkdir -p <project-root>/.zcode/plan-templates/
 cp ${TASK_PLANNER_ROOT:-$HOME/dev/task-planner}/templates/variant/diagnostic-type.md \
-   ~/.zcode/skills/skill-fix/.zcode/plan-templates/task_plan.md  # （示例路径，仅作格式示意；Claude Code 侧对应 `.claude/plan-templates/`）
+   <project-root>/.zcode/plan-templates/task_plan.md  # 项目级示例；用户级可存 ~/.zcode/plan-templates/（保存前须用户授权）；.claude 仅 compat fallback
 ```
 
 ---
