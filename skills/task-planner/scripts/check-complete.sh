@@ -2313,6 +2313,112 @@ END {print n+0}'
     if [ -n "$_cp_active_ptr" ] && [ "$_cp_active_ptr" = "$(basename "$PLAN_DIR_GUESS")" ]; then
         printf '[plan] 移交提醒( pointer-lifecycle ): 全局指针仍指向本任务，完成后无需移交、请清理（置空或指向在途任务；gc 亦会清理 stale）\n' >&2
     fi
+
+    # [2026-11-27 task-worktree-required-mergeback-20261127 缺陷②] WORKTREE-CLOSE GATE — 隔离任务终验强制门
+    # What: 当计划为隔离任务(worktree 场景)时, 必须同时满足: merge commit 是 master/current base 祖先、
+    #       worktree path 不存在、分支已删(或显式豁免登记)。缺任一 FAIL 并阻止 complete。
+    # Why: 用户原话锚 2026-11-27 "工作树结束后 却没有主动合并回到主分支导致 被搁置 这是非常错误的"。
+    # 判定口径(实况优先, 不信字段存在性):
+    #   - 隔离任务识别: plan-state.json isolation.path 存在且非空; 或 git worktree list --porcelain 含 plans/<task>/ 分支 wt/<task>;
+    #     非隔离任务保持原行为(SKIPPED)。
+    #   - merge 实况: isolation.merge_back 中提取 commit SHA, git merge-base --is-ancestor <sha> <base>; base 优先 master, 回退 main。
+    #   - worktree 实况: isolation.path 不存在(目录已删)。
+    #   - 分支实况: wt/<task_id> 不存在(refs/heads/wt/<task_id> 缺失); 或 plan-state isolation.merge_back 含显式豁免标记 "EXEMPT:"。
+    # fail-closed: 隔离任务任一实况缺失 → exit 1; 非隔离 → SKIPPED。
+    _wtc_task_id="$(basename "$PLAN_DIR_GUESS")"
+    _wtc_is_isolated=0
+    _wtc_iso_path=""
+    _wtc_iso_merge_back=""
+    _wtc_iso_branch=""
+    _wtc_plan_state="$PLAN_DIR_GUESS/plan-state.json"
+    if [ -f "$_wtc_plan_state" ] && command -v python3 >/dev/null 2>&1; then
+        _wtc_iso_fields="$(python3 - "$_wtc_plan_state" <<'PYWTC'
+import json, sys
+p=sys.argv[1]
+try:
+    d=json.load(open(p,encoding='utf-8'))
+except Exception:
+    print('|||')
+    raise SystemExit(0)
+iso=d.get('isolation') or {}
+if not isinstance(iso, dict):
+    iso={}
+def g(k):
+    v=iso.get(k,'')
+    return '' if v is None else str(v).replace('\n',' ').strip()
+print(g('path')+'|'+g('merge_back')+'|'+g('branch'))
+PYWTC
+)" || _wtc_iso_fields="||"
+        _wtc_iso_path="$(printf '%s' "$_wtc_iso_fields" | awk -F'|' '{print $1}')"
+        _wtc_iso_merge_back="$(printf '%s' "$_wtc_iso_fields" | awk -F'|' '{print $2}')"
+        _wtc_iso_branch="$(printf '%s' "$_wtc_iso_fields" | awk -F'|' '{print $3}')"
+    fi
+    # 判定是否隔离任务: isolation.path 非空即视为隔离计划声明; 另兜底: git worktree 列表含 wt/<task>
+    if [ -n "$_wtc_iso_path" ]; then
+        _wtc_is_isolated=1
+    elif command -v git >/dev/null 2>&1; then
+        _wtc_repo_root="$(git -C "$PLAN_DIR_GUESS" rev-parse --show-toplevel 2>/dev/null || true)"
+        if [ -n "$_wtc_repo_root" ]; then
+            if git -C "$_wtc_repo_root" worktree list --porcelain 2>/dev/null | grep -qF "branch refs/heads/wt/${_wtc_task_id}"; then
+                _wtc_is_isolated=1
+                # 从 git worktree porcelain 取 path
+                _wtc_iso_path="$(git -C "$_wtc_repo_root" worktree list --porcelain 2>/dev/null | awk -v b="refs/heads/wt/${_wtc_task_id}" '$1=="worktree"{p=$2} $1=="branch" && $2==b{print p; exit}')"
+                [ -z "$_wtc_iso_branch" ] && _wtc_iso_branch="wt/${_wtc_task_id}"
+            fi
+        fi
+    fi
+    if [ "$_wtc_is_isolated" -ne 1 ]; then
+        printf '[worktree-close] SKIPPED (非隔离任务: plan-state isolation.path 为空且 git worktree 无 wt/%s)\n' "$_wtc_task_id" >&2
+    else
+        _wtc_fail=0
+        _wtc_msgs=""
+        _wtc_repo_root="${_wtc_repo_root:-$(git -C "$PLAN_DIR_GUESS" rev-parse --show-toplevel 2>/dev/null || true)}"
+        _wtc_base="master"
+        if [ -n "$_wtc_repo_root" ] && ! git -C "$_wtc_repo_root" rev-parse --verify master >/dev/null 2>&1; then
+            git -C "$_wtc_repo_root" rev-parse --verify main >/dev/null 2>&1 && _wtc_base="main"
+        fi
+        # 1) merge commit 是 base 祖先 (实况)
+        _wtc_merge_sha=""
+        _wtc_merge_sha="$(printf '%s' "$_wtc_iso_merge_back" | grep -oE '[0-9a-f]{7,40}' | head -1 || true)"
+        if [ -z "$_wtc_merge_sha" ]; then
+            # 兜底: 若分支已不存在但 worktree 已清理, 尝试从 git log --grep task_id 找 merge commit
+            if [ -n "$_wtc_repo_root" ]; then
+                _wtc_merge_sha="$(git -C "$_wtc_repo_root" log --all --grep="$_wtc_task_id" --format='%H' -n 1 2>/dev/null || true)"
+            fi
+        fi
+        if [ -z "$_wtc_merge_sha" ]; then
+            _wtc_fail=1; _wtc_msgs="${_wtc_msgs} merge_commit_missing"
+        elif [ -z "$_wtc_repo_root" ]; then
+            _wtc_fail=1; _wtc_msgs="${_wtc_msgs} repo_root_unresolved"
+        elif ! git -C "$_wtc_repo_root" merge-base --is-ancestor "$_wtc_merge_sha" "$_wtc_base" 2>/dev/null; then
+            _wtc_fail=1; _wtc_msgs="${_wtc_msgs} merge_commit_not_ancestor(${_wtc_merge_sha:0:12}!=$_wtc_base)"
+        fi
+        # 2) worktree path 不存在 (实况)
+        if [ -z "$_wtc_iso_path" ]; then
+            # 路径未知但被识别为隔离任务: fail-closed 要求可证明已清理; 无法证明则 FAIL
+            _wtc_fail=1; _wtc_msgs="${_wtc_msgs} worktree_path_unknown"
+        elif [ -e "$_wtc_iso_path" ]; then
+            _wtc_fail=1; _wtc_msgs="${_wtc_msgs} worktree_still_exists($_wtc_iso_path)"
+        fi
+        # 3) 分支已删 或 显式豁免
+        _wtc_branch="${_wtc_iso_branch:-wt/${_wtc_task_id}}"
+        _wtc_exempt=0
+        printf '%s' "$_wtc_iso_merge_back" | grep -qE '^EXEMPT:|[[:space:]]EXEMPT:' && _wtc_exempt=1
+        if [ "$_wtc_exempt" -eq 1 ]; then
+            printf '[worktree-close] INFO: branch exemption declared in isolation.merge_back (%s)\n' "$_wtc_iso_merge_back" >&2
+        elif [ -n "$_wtc_repo_root" ] && git -C "$_wtc_repo_root" show-ref --verify --quiet "refs/heads/${_wtc_branch}" 2>/dev/null; then
+            _wtc_fail=1; _wtc_msgs="${_wtc_msgs} branch_still_exists($_wtc_branch)"
+        fi
+        if [ "$_wtc_fail" -eq 1 ]; then
+            # [2026-11-27 收口复核] 原行为=失败文案硬编码本任务 id，任何其它隔离任务都会误报本任务名；
+            # 改为使用上面从 plan 目录派生的 $_wtc_task_id，保持门控语义不变、只修正诊断信息通用性。
+            printf '[worktree-close] ✗ WORKTREE-CLOSE GATE FAILED (%s, R2): 隔离任务未闭环 —%s\n' "$_wtc_task_id" "$_wtc_msgs" >&2
+            printf '[worktree-close]   要求: merge commit 为 %s 祖先 + worktree path 不存在 + 分支已删(或 isolation.merge_back=EXEMPT:<reason>)\n' "$_wtc_base" >&2
+            printf '[worktree-close]   实况: iso.path=%s iso.merge_back=%s iso.branch=%s\n' "${_wtc_iso_path:-<empty>}" "${_wtc_iso_merge_back:-<empty>}" "${_wtc_iso_branch:-<empty>}" >&2
+            exit 1
+        fi
+        printf '[worktree-close] OK: 隔离任务已闭环 (merge=%s base=%s worktree_gone=%s branch_gone_or_exempt=%s)\n' "${_wtc_merge_sha:0:12}" "$_wtc_base" "${_wtc_iso_path:-<unknown>}" "$_wtc_branch" >&2
+    fi
 fi
 
 # [2026-10-11 task-v170 Phase 4 S7] ARCHIVE-GATE — 终验后「已完成计划未归档」提醒（Rule 81 机制件）

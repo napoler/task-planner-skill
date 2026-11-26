@@ -74,7 +74,7 @@ model: opus
 
 - [ ] [A] **计划独立审计门（D1 前强制 — audit-before-delivery，Rule 109）**：L1+ 计划在展示/授权前必须经独立子代理审计迭代达标，未经审计的产出禁交用户
   - **触发**：计划产出（主进程盘上复核 Rule 84.4 完成后）且智能子动作（冲突分析+隔离决策复核+Spec 判定）完成之后、本区块「[A] 计划确认」展示之前；B/C/D/E 类任何计划（再）展示/确认前同样过门，修订重审可用简版（仅审变更增量+上轮问题清单闭环）
-  - **分档豁免（Rule 38.7 比例原则）**：L1+ 强制；mini/L0/trivial=轻量复核（主进程盘上复核+基线自查）或登记豁免（一行留痕 `[plan-audit-skip]`+理由）；L0-E 豁免
+  - **分档豁免（Rule 38.7 比例原则）**：L1+ 强制；mini/L0/trivial 类档位下仍需按实际改动类型判断——其中 **L0-E（零仓库受管变更且仅机械产物区/gitignore 区操作）** 可豁免审计门等轻量流程，但 **工作树隔离判定不因“trivial/L0”而绕过**：交付型 Markdown（小说/写作/长文档/多章节）或预计改动 >2 行/多文件 → 仍 **REQUIRED worktree**（详见 `references/worktree-isolation.md` §2，2026-11-27 用户裁决）；仅非交付型过程文档且 ≤2 行 trivial 可豁免。
   <!-- [task-perf-default-mini 2026-11-24] What: 审计收敛依据改挂脚本锚；Why: 与 critical-rules/plan-workflow-details 口径对齐，避免「不设上限」被误读为无刹车 -->
   - **审计体（独立上下文，只读）**：首选 critic（「审查计划/review 文档」触发在位）；不可用降级链=critic 失败→重试 1 次→decision-arbiter→general-purpose→AskUser（逐级留痕）；审计分歧→decision-arbiter（Rule 69.1）；修正执行=主进程驱动 Plan Writer 重派（22.4a/62.2 计划期单写者不变）；**审计轮次脚本刹车（2026-11-24 task-perf-default-mini）**：累计 2 轮 REJECTED 且无 APPROVED → planctl 写入打印 [audit-cap]，Agent 派发被 PreToolUse 拦截（decision-arbiter 例外），直到登记 [audit-converge]；「轮次不设上限」仅指有实质进展的迭代。96.7/109 门不变。
   → 计划独立审计门细则（按需加载）→ 详见 references/plan-workflow-details.md §audit-gate-details；触发：L1+ 计划进入 D1 前审计、判定 APPROVED/REJECTED 或处理审计无进展刹车时；关键词：审计 audit APPROVED REJECTED 刹车
@@ -208,7 +208,7 @@ model: opus
 
 ### 🔀 冲突分析与工作树隔离（默认首选）
 
-**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险；仅纯文档/调研类（只写 plans/ 与 .md）可直接开发。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」并**默认按隔离执行，不就该安全默认向用户发起确认/询问**；仅当用户**显式**要求“直接改不用 worktree”且命中 AGENTS.md §11.5 豁免条件时才直改并登记理由。**创建前先 git 备份主仓未提交改动**（推荐 `git -C <project> stash push -u -m "pre-wt-backup:<task-id>" -- . ':(exclude)plans' ':(exclude)tmp'`，引用登记隔离决策；已干净则跳过）以稳定基线并利于合并回。隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/；**worktree 执行期不因并行冲突/Rule 23 `[conflict]` 注入而中断或询问，冲突仅记录、统一延后至合并回阶段**（`smart-merge-back.sh` V3/V5/V6 + Rule 101.2）解决。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（按需恢复备份前先重跑同落点盘点）。合约详见 `references/worktree-isolation.md`；触发：创建/使用/合并 worktree 隔离区或判定隔离豁免时；关键词：worktree 隔离 合并回 check-conflicts 豁免
+**实现类任务一律首选 git worktree 隔离**——本仓多为运行中基础设施（skills/hooks/config 被所有会话实时使用），直接改动有半残风险。**隔离判定不以文件扩展名为准（2026-11-27 用户裁决）**：交付型 Markdown（小说/写作/长文档/多章节/手册类交付物）或预计改动 **> 2 行**或**多文件** → **REQUIRED worktree**；仅**非交付型过程文档且 ≤ 2 行** trivial 修改可豁免为 direct（须在计划/备注登记“非交付型 + ≤2 行 trivial”）。用户显式要求“直接改不用 worktree”仍按 AGENTS.md §11.5 处理，但**不因 .md 后缀自动生效**。初始化 `bash scripts/check-conflicts.sh`（五类冲突信号）→ 隔离决策写入 task_plan「🔀 隔离决策」并**默认按隔离执行，不就该安全默认向用户发起确认/询问**；仅当命中上述豁免且符合 §11.5 时才直改并登记理由。**创建前先 git 备份主仓未提交改动**（推荐 `git -C <project> stash push -u -m "pre-wt-backup:<task-id>" -- . ':(exclude)plans' ':(exclude)tmp'`，引用登记隔离决策；已干净则跳过）以稳定基线并利于合并回。隔离期间 CWD 不迁移、文件操作用 worktree 绝对路径、计划文档留主仓 plans/；**worktree 执行期不因并行冲突/Rule 23 `[conflict]` 注入而中断或询问，冲突仅记录、统一延后至合并回阶段**（`smart-merge-back.sh` V3/V5/V6 + Rule 101.2）解决。完成合并：全 VC 复验→`bash <skill>/scripts/smart-merge-back.sh <worktree-path> [--deploy]`→清理 worktree/分支→主仓 Read 复验（按需恢复备份前先重跑同落点盘点）。合约详见 `references/worktree-isolation.md`；触发：创建/使用/合并 worktree 隔离区或判定隔离豁免时；关键词：worktree 隔离 合并回 check-conflicts 豁免
 
 ## 投诉响应协议与 L0 边界审查（[task-perf-opt 2026-10-13 Change #10]）
 

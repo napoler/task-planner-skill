@@ -86,9 +86,12 @@ FAKE_SLOT="$TMP/fake-scan-root/task-planner"
 mkdir -p "$FAKE_SLOT"
 
 # ---------- 正向: 不注入 TASK_PLANNER_DEPLOY_SLOTS, 走默认 slot + F6 ----------
+# [2026-11-27 task-worktree-required-mergeback] 原行为=正向跑完默认清理会删掉 $WT，
+# 后续负例 DA-06 因 worktree 不存在 rc=2；本夹具只测 F6 slot 守卫，显式 --no-cleanup 保留现场，
+# 避免把「完成即清理」新默认误判为部署守卫回归。
 LAST_RC=0
 if LAST_OUT="$(cd / && env -u TASK_PLANNER_DEPLOY_SLOTS -u TASK_PLANNER_DEPLOY_ALL \
-    HOME="$HOME_DIR" bash "$FIXTURE_SCRIPT" "$WT" --deploy 2>&1)"; then
+    HOME="$HOME_DIR" bash "$FIXTURE_SCRIPT" "$WT" --deploy --no-cleanup 2>&1)"; then
   LAST_RC=0
 else
   LAST_RC=$?
@@ -124,7 +127,7 @@ report DA-05 "$ok" "深层 agnes-quota.sh 落地(maxdepth 修复)=$( [ "$ok" = 1
 LAST_NEG_RC=0
 if NEG_OUT="$(cd / && env -u TASK_PLANNER_DEPLOY_ALL \
     HOME="$HOME_DIR" TASK_PLANNER_DEPLOY_SLOTS="$FAKE_SLOT" \
-    bash "$FIXTURE_SCRIPT" "$WT" --deploy 2>&1)"; then
+    bash "$FIXTURE_SCRIPT" "$WT" --deploy --no-cleanup 2>&1)"; then
   LAST_NEG_RC=0
 else
   LAST_NEG_RC=$?
