@@ -106,6 +106,10 @@ TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 # 身份字段 id/round 仍强制，缺失即报错，不静默造 id）。
 ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "requirements": {"text": "", "type": "手段", "vc": [], "tags": []},
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] What: evidence_binding 默认面覆盖 schema required 四项，且不含 id。
+    # Why: 本段已入 ARRAY_SECTIONS 却缺默认面，normalize_entry 在 legal_keys 处 KeyError；schema
+    #       additionalProperties:false 且无 id，禁止伪造身份，条目以 path 定位。
+    "evidence_binding": {"path": "", "sha256": "", "version": "", "recorded_at": ""},
     "goals": {"text": "", "tags": [],
               # [2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据默认空串; Why: 有值时 render 输出 [goal:G<n>] 证据行（evidence-anchor 门消费面）。
               "evidence": ""},
@@ -567,7 +571,19 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         "tags": lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v),
     }
     required = {"id"}
-    if section == "requirements":
+    if section == "evidence_binding":
+        # [2026-11-27 task-comet-trust-evidence-binding 修复] What: 手写校验与 schema evidence_binding 定义等价：
+        #   required=path/sha256/version/recorded_at，sha256 严格 64 位小写 hex，recorded_at 走 ISO8601 形态判定。
+        # Why: 原行为本段落到默认 {id,tags} 分支，合法四项被误报"缺 id + 未知字段"，commit_state 拒写；
+        #       known 用全量替换（非 update）以对齐 schema additionalProperties:false，杜绝 id/tags 混入。
+        known = {
+            "path": lambda v: isinstance(v, str) and v != "",
+            "sha256": lambda v: isinstance(v, str) and re.fullmatch(r"[0-9a-f]{64}", v) is not None,
+            "version": lambda v: isinstance(v, str) and v != "",
+            "recorded_at": lambda v: _is_iso8601(v, allow_empty=False),
+        }
+        required = {"path", "sha256", "version", "recorded_at"}
+    elif section == "requirements":
         known.update({"text": lambda v: isinstance(v, str),
                       "type": lambda v: v in ("目标", "手段"),
                       "vc": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)})
@@ -861,10 +877,13 @@ def require_valid(doc: dict[str, Any]) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _entry_matches(entry: dict[str, Any], section: str, ident: str) -> bool:
-    """audits 无 id 字段：接受 round 数字串与 'R<round>' 两种引用形态。"""
+    """audits 无 id 字段：接受 round 数字串与 'R<round>' 两种引用形态；evidence_binding 以 path 定位。"""
     if section == "audits":
         rnd = entry.get("round")
         return ident in {str(rnd), f"R{rnd}"}
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] evidence_binding 无 id，path 作定位键（与 add 的身份选择一致）。
+    if section == "evidence_binding":
+        return str(entry.get("path", "")) == str(ident)
     return str(entry.get("id", "")) == str(ident)
 
 
@@ -907,6 +926,11 @@ def normalize_entry(section: str, payload: Any, ident: str | None = None) -> dic
     if section == "audits":
         if "round" not in entry:
             raise PlanctlError("audits: --json 缺 round")
+    elif section == "evidence_binding":
+        # [2026-11-27 task-comet-trust-evidence-binding 修复] What: 无 id 段以 path 为定位键；缺 path 显式报错，不注入 id。
+        # Why: schema 无 id 且禁额外字段；沿用通用 id 分支会让 add/update 在未写库前必然失败。
+        if not isinstance(entry.get("path"), str) or not entry["path"]:
+            raise PlanctlError("evidence_binding: --json 需含非空 path（本段无 id，以 path 定位）")
     else:
         if not entry.get("id") and ident:
             entry["id"] = ident
@@ -1493,8 +1517,14 @@ def cmd_add(args: argparse.Namespace) -> int:
     # Why: 原行为 7 个数组由 init 模板保证存在；新段缺省于存量 JSON，直接 find/append 会误报
     #       「未知或非法 section」，使通用 add 对存量计划不可用。
     doc.setdefault(args.section, [])
-    hit = find_entry(doc, args.section,
-                     str(entry.get("round")) if args.section == "audits" else str(entry["id"]))
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] 身份按段选择：audits=round、evidence_binding=path（schema 无 id）、其余=id。
+    if args.section == "audits":
+        ident = str(entry.get("round"))
+    elif args.section == "evidence_binding":
+        ident = str(entry.get("path", ""))
+    else:
+        ident = str(entry["id"])
+    hit = find_entry(doc, args.section, ident)
     if hit is not None:
         raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id')}")
     doc[args.section].append(entry)
