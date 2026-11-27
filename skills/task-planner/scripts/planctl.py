@@ -1582,16 +1582,27 @@ def cmd_delete(args: argparse.Namespace) -> int:
 def _blocking_unconfirmed_ids(doc: dict[str, Any]) -> list[str]:
     """返回 decisions 中 blocking:true 且未 confirmed:true 的条目 id（用户门未决账本）。
 
-    What: 只读权威源 decisions；字段缺省一律视为「无未决项」，与存量计划兼容。
+    What: 只读权威源 decisions；两种缺省语义不同：blocking 缺省 = 非 blocking 项（存量条目兼容）；
+          confirmed 缺省 = 已 blocking 但未确认 = 未决（可选布尔缺省 false，不得静默放行）。
+          结构异常（decisions 非 array / 行非 object / blocking、confirmed 非 bool）显式报
+          PlanctlError（planctl 错误模型 rc=1），与 check-complete.sh 的 rc2 fail-closed 同向，
+          不再把损坏的权威源静默当作「无未决项」。
     Why: 终验/phase-done 不得把等待用户裁决的决定当已完成；与 check-complete.sh 的用户门同语义，
          但在此处给状态流转子命令 rc=3 的硬拒锁（区别于普通用户错误 rc=1）。
     """
-    rows = doc.get("decisions")
+    rows = doc.get("decisions", [])
     if not isinstance(rows, list):
-        return []
-    return [str(row.get("id") or "") for row in rows
-            if isinstance(row, dict) and row.get("blocking") is True
-            and row.get("confirmed") is not True]
+        raise PlanctlError(f"decisions 必须是 array（实际 {type(rows).__name__}）")
+    pending: list[str] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            raise PlanctlError(f"decisions[] 元素必须是 object（实际 {type(row).__name__}）")
+        for key in ("blocking", "confirmed"):
+            if key in row and not isinstance(row[key], bool):
+                raise PlanctlError(f"decisions[].{key} 必须是 boolean（实际 {row[key]!r}）")
+        if row.get("blocking") is True and row.get("confirmed") is not True:
+            pending.append(str(row.get("id") or ""))
+    return pending
 
 
 def cmd_phase_done(args: argparse.Namespace) -> int:

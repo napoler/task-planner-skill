@@ -21,31 +21,48 @@ PLAN_FILE="${1:-task_plan.md}"
 #       confirmed:true 或存量条目无这两个字段 → 放行；权威源不可读/结构异常 → exit 2（环境错误，曝光）。
 # Why: 原终验只看 Phase 勾选/goal/VC 等簿记面，不消费用户裁决账本：等待用户决定的计划可被报成
 #       COMPLETE。门置于所有早退之前，连「无 task_plan.md」的调用也无法绕过拒锁。
-# 约束: 通用账本，不与 G1-G12 编号绑定；python3 缺失或判定异常 → stderr 痕迹 + fail-open，
-#       门自身故障不得锁死正常终验（与既有 shell-out 门同方向）。
+# 约束: 通用账本，不与 G1-G12 编号绑定；仅 python3 缺失时显式 fail-open（门自身故障惯例）；
+#       权威源不可读或结构异常（含根非 object、decisions 非 array、行非 object、布尔字段类型非法）
+#       一律 rc2 fail-closed——review F1：此前这些形态静默放行，等于把权威源损坏当成"无未决"。
 USER_GATE_DIR="$(cd "$(dirname "$PLAN_FILE")" 2>/dev/null && pwd)" || USER_GATE_DIR=""
 USER_GATE_STATE="${USER_GATE_DIR:-.}/plan-state.json"
 if [ -f "$USER_GATE_STATE" ]; then
+    # fd3 重定向失败不会启动 python3，若落到通用分支会 fail-open；先用实际 open 探测并 rc2 曝光。
+    if ! ( : < "$USER_GATE_STATE" ) 2>/dev/null; then
+        printf '[user-gate] rc2: 权威源结构异常/不可读，终验终止（环境错误）\n' >&2
+        exit 2
+    fi
     if command -v python3 >/dev/null 2>&1; then
         # heredoc 占 fd0，目标 JSON 挂 fd3 供 Python 读原文（Task 5 /dev/stdin 坑，避免读到源码尾）。
         ug_result="$(python3 - "$USER_GATE_STATE" 3<"$USER_GATE_STATE" <<'PYUG'
 import json, sys
+
+def rc2(reason):
+    print(f"[user-gate] rc2 权威源结构异常: {reason}", file=sys.stderr)
+    raise SystemExit(2)
+
 try:
-    with open("/dev/fd/3", encoding="utf-8") as fh:
-        doc = json.load(fh)
-except Exception as exc:
-    print(f"[user-gate] rc2: plan-state.json 解析失败: {exc}", file=sys.stderr)
-    raise SystemExit(2)
-decisions = doc.get("decisions", [])
-if decisions is None:
-    decisions = []
-if not isinstance(decisions, list):
-    print("[user-gate] rc2: decisions 必须是 array", file=sys.stderr)
-    raise SystemExit(2)
-pending = [str(row.get("id") or "<no-id>") for row in decisions
-           if isinstance(row, dict) and row.get("blocking") is True
-           and row.get("confirmed") is not True]
-print("BLOCK:" + ",".join(pending) if pending else "OK")
+    try:
+        with open("/dev/fd/3", encoding="utf-8") as fh:
+            doc = json.load(fh)
+    except Exception as exc:
+        rc2(f"plan-state.json 不可读或解析失败: {exc}")
+    if not isinstance(doc, dict):
+        rc2("根必须是 object")
+    decisions = doc.get("decisions", [])
+    if not isinstance(decisions, list):
+        rc2(f"decisions 必须是 array（实际 {type(decisions).__name__}）")
+    for row in decisions:
+        if not isinstance(row, dict):
+            rc2(f"decisions[] 元素必须是 object（实际 {type(row).__name__}）")
+        for key in ("blocking", "confirmed"):
+            if key in row and not isinstance(row[key], bool):
+                rc2(f"decisions[].{key} 必须是 boolean（实际 {row[key]!r}）")
+    pending = [str(row.get("id") or "<no-id>") for row in decisions
+               if row.get("blocking") is True and row.get("confirmed") is not True]
+    print("BLOCK:" + ",".join(pending) if pending else "OK")
+except Exception as exc:  # 未预期异常也按权威源异常 fail-closed，禁止 traceback + rc=0 形态
+    rc2(f"未预期判定异常: {exc}")
 PYUG
 )"
         ug_rc=$?
@@ -57,11 +74,11 @@ PYUG
                         exit 1
                         ;;
                     OK) printf '[user-gate] OK: decisions 无未决 blocking 项（含存量无字段条目）\n' >&2 ;;
-                    *) printf '[user-gate] ⚠ 未知判定结果 %s（fail-open）\n' "$ug_result" >&2 ;;
+                    *) printf '[user-gate] rc2: 权威源结构异常/不可读（未知判定结果 %s），终验终止（环境错误）\n' "$ug_result" >&2; exit 2 ;;
                 esac
                 ;;
-            2) printf '[user-gate] rc2: 权威源解析失败，终验终止（环境错误）\n' >&2; exit 2 ;;
-            *) printf '[user-gate] ⚠ python3 判定异常 rc=%s（fail-open，不阻断终验）\n' "$ug_rc" >&2 ;;
+            2) printf '[user-gate] rc2: 权威源结构异常/不可读，终验终止（环境错误）\n' >&2; exit 2 ;;
+            *) printf '[user-gate] rc2: 权威源结构异常/不可读（python3 判定异常 rc=%s），终验终止（环境错误）\n' "$ug_rc" >&2; exit 2 ;;
         esac
     else
         printf '[user-gate] ⚠ python3 缺失，账本门 fail-open（不阻断终验）\n' >&2
