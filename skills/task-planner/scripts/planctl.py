@@ -660,7 +660,11 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({"claim": STR_FIELD, "source": STR_FIELD})
         required = {"id", "claim", "source"}
     elif section == "decisions":
-        known.update({"decision": STR_FIELD, "rationale": STR_FIELD})
+        # [2026-11-27 Task 6] What: decisions 条目可选 blocking/confirmed，类型严格 boolean，required 仍仅 id/decision。
+        # Why: schema decision_item 已注册这两个字段；手写校验必须与 schema 同步，否则重演 Task 1
+        #       「schema 已加、planctl 仍拒」的注册缺陷。存量条目无这两个字段继续合法。
+        known.update({"decision": STR_FIELD, "rationale": STR_FIELD,
+                      "blocking": BOOL_FIELD, "confirmed": BOOL_FIELD})
         required = {"id", "decision"}
     elif section == "issues":
         known.update({"issue": STR_FIELD, "resolution": STR_FIELD})
@@ -1575,10 +1579,30 @@ def cmd_delete(args: argparse.Namespace) -> int:
     return 0
 
 
+def _blocking_unconfirmed_ids(doc: dict[str, Any]) -> list[str]:
+    """返回 decisions 中 blocking:true 且未 confirmed:true 的条目 id（用户门未决账本）。
+
+    What: 只读权威源 decisions；字段缺省一律视为「无未决项」，与存量计划兼容。
+    Why: 终验/phase-done 不得把等待用户裁决的决定当已完成；与 check-complete.sh 的用户门同语义，
+         但在此处给状态流转子命令 rc=3 的硬拒锁（区别于普通用户错误 rc=1）。
+    """
+    rows = doc.get("decisions")
+    if not isinstance(rows, list):
+        return []
+    return [str(row.get("id") or "") for row in rows
+            if isinstance(row, dict) and row.get("blocking") is True
+            and row.get("confirmed") is not True]
+
+
 def cmd_phase_done(args: argparse.Namespace) -> int:
-    """Phase 状态流转 → complete，自动刷新 updated_at。"""
+    """Phase 状态流转 → complete，自动刷新 updated_at；用户门未决时 rc=3 拒锁。"""
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
+    pending = _blocking_unconfirmed_ids(doc)
+    if pending:
+        print(f"planctl: [user-gate] FAIL phase-done 被未确认用户决定拒锁: {', '.join(pending)} "
+              "（先取得用户确认并把 decisions[].confirmed 置 true 后重试；rc=3）", file=sys.stderr)
+        return 3
     hit = find_entry(doc, "phases", args.id)
     if hit is None:
         raise PlanctlError(f"phases 中未找到 id={args.id!r}")

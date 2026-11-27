@@ -1035,6 +1035,14 @@
         },
         "rationale": {
           "type": "string"
+        },
+        "blocking": {
+          "type": "boolean",
+          "description": "[2026-11-27 Task 6] 用户门账本：该决定在终验/phase-done 前必须被用户确认；可选，缺省 false（存量 decisions 条目兼容）"
+        },
+        "confirmed": {
+          "type": "boolean",
+          "description": "[2026-11-27 Task 6] 用户门账本：blocking:true 时须为 true 方可终验；可选，缺省 false（未确认）；不与具体 G 编号绑定"
         }
       }
     },

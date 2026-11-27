@@ -6,6 +6,7 @@
 #      (3-File Gate)、config.json 各门档位键(vc_gate_enforce/error_loop_enforce/fmea_enforce/delegation_rate_floor);
 #      依赖外部命令: python3(段解析主体)/ jq(档位解析, 缺失时按各门 fail-open 语义回退)
 # 输出: exit 0=全 complete 且各门放行(或全门 fail-open 通过); exit 1=门控失败或进度未完成;
+#      exit 2=用户门账本权威源解析失败(环境错误); 用户门未决 blocking 项按 exit 1 拒锁
 #      stdout 输出 [plan] 行; 全 complete 时透传 [plan-deferred-delegation-check] plan_dir= 行供 shell 层委派率终验
 # 依赖: 同目录 check-rescue-chain.sh / check-delegation.sh / check-plan-dispatch.sh(缺失各自行 fail-open)
 #       + git-baseline.sh(GIT-BASELINE GATE, 缺失 SKIP 放行) + templates/progress.md(3-File Gate stub 判定对照)
@@ -14,6 +15,58 @@
 # Used by Stop hook to report task completion status
 
 PLAN_FILE="${1:-task_plan.md}"
+
+# [2026-11-27 Task 6] USER-GATE LEDGER GATE — decisions 未决用户决定拒终验
+# What: 同目录 plan-state.json 的 decisions 中只要有一条 blocking:true 且 confirmed 非 true → exit 1；
+#       confirmed:true 或存量条目无这两个字段 → 放行；权威源不可读/结构异常 → exit 2（环境错误，曝光）。
+# Why: 原终验只看 Phase 勾选/goal/VC 等簿记面，不消费用户裁决账本：等待用户决定的计划可被报成
+#       COMPLETE。门置于所有早退之前，连「无 task_plan.md」的调用也无法绕过拒锁。
+# 约束: 通用账本，不与 G1-G12 编号绑定；python3 缺失或判定异常 → stderr 痕迹 + fail-open，
+#       门自身故障不得锁死正常终验（与既有 shell-out 门同方向）。
+USER_GATE_DIR="$(cd "$(dirname "$PLAN_FILE")" 2>/dev/null && pwd)" || USER_GATE_DIR=""
+USER_GATE_STATE="${USER_GATE_DIR:-.}/plan-state.json"
+if [ -f "$USER_GATE_STATE" ]; then
+    if command -v python3 >/dev/null 2>&1; then
+        # heredoc 占 fd0，目标 JSON 挂 fd3 供 Python 读原文（Task 5 /dev/stdin 坑，避免读到源码尾）。
+        ug_result="$(python3 - "$USER_GATE_STATE" 3<"$USER_GATE_STATE" <<'PYUG'
+import json, sys
+try:
+    with open("/dev/fd/3", encoding="utf-8") as fh:
+        doc = json.load(fh)
+except Exception as exc:
+    print(f"[user-gate] rc2: plan-state.json 解析失败: {exc}", file=sys.stderr)
+    raise SystemExit(2)
+decisions = doc.get("decisions", [])
+if decisions is None:
+    decisions = []
+if not isinstance(decisions, list):
+    print("[user-gate] rc2: decisions 必须是 array", file=sys.stderr)
+    raise SystemExit(2)
+pending = [str(row.get("id") or "<no-id>") for row in decisions
+           if isinstance(row, dict) and row.get("blocking") is True
+           and row.get("confirmed") is not True]
+print("BLOCK:" + ",".join(pending) if pending else "OK")
+PYUG
+)"
+        ug_rc=$?
+        case "$ug_rc" in
+            0)
+                case "$ug_result" in
+                    BLOCK*)
+                        printf '[user-gate] FAIL: blocking 用户决定尚未确认 (%s) — 取得用户确认并把 decisions[].confirmed 置 true 后重跑终验\n' "${ug_result#BLOCK:}" >&2
+                        exit 1
+                        ;;
+                    OK) printf '[user-gate] OK: decisions 无未决 blocking 项（含存量无字段条目）\n' >&2 ;;
+                    *) printf '[user-gate] ⚠ 未知判定结果 %s（fail-open）\n' "$ug_result" >&2 ;;
+                esac
+                ;;
+            2) printf '[user-gate] rc2: 权威源解析失败，终验终止（环境错误）\n' >&2; exit 2 ;;
+            *) printf '[user-gate] ⚠ python3 判定异常 rc=%s（fail-open，不阻断终验）\n' "$ug_rc" >&2 ;;
+        esac
+    else
+        printf '[user-gate] ⚠ python3 缺失，账本门 fail-open（不阻断终验）\n' >&2
+    fi
+fi
 
 if [ ! -f "$PLAN_FILE" ]; then
     echo "[plan] No task_plan.md found — no active planning session."
