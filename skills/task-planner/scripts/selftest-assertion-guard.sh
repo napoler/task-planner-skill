@@ -27,11 +27,22 @@ total="$(printf '%s\n' "$output" | grep -iE 'total:' | tail -1 || true)"
 [ -n "$total" ] || { echo "[assertion-guard] FAIL: no Total/count line: $TARGET" >&2; exit 1; }
 pass_n="$(printf '%s' "$total" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2 || true)"
 fail_n="$(printf '%s' "$total" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2 || true)"
+# Why（2026-11-27 Task4 reviewer Important finding）：
+#   原回退式正则同一分支里 `PASS[: ]+n` 与 `n PASS` 并存，`Total: 4  PASS: 0` 时左起先命中
+#   `4 PASS`，把 Total 计数当 PASS 数，双 0 被误判有断言（guard rc=0 假绿）。
+# What：先抽标签前置 `PASS[:=] n` / `FAIL[:=] n`（数值紧跟标签）；仅缺失时回退数值前置
+#   `n PASS` / `n FAIL`，回退取首个匹配，保持 TOTAL: n PASS / n FAIL 等存量格式。
 if [ -z "$pass_n" ]; then
-  pass_n="$(printf '%s' "$total" | grep -ioE 'PASS[: ]+[0-9]+|[0-9]+[[:space:]]+PASS' | grep -oE '[0-9]+' | tail -1 || true)"
+  pass_n="$(printf '%s' "$total" | grep -ioE 'PASS[:=][[:space:]]*[0-9]+' | grep -oE '[0-9]+' | tail -1 || true)"
+fi
+if [ -z "$pass_n" ]; then
+  pass_n="$(printf '%s' "$total" | grep -ioE '[0-9]+[[:space:]]+PASS' | grep -oE '[0-9]+' | head -1 || true)"
 fi
 if [ -z "$fail_n" ]; then
-  fail_n="$(printf '%s' "$total" | grep -ioE 'FAIL[: ]+[0-9]+|[0-9]+[[:space:]]+FAIL' | grep -oE '[0-9]+' | tail -1 || true)"
+  fail_n="$(printf '%s' "$total" | grep -ioE 'FAIL[:=][[:space:]]*[0-9]+' | grep -oE '[0-9]+' | tail -1 || true)"
+fi
+if [ -z "$fail_n" ]; then
+  fail_n="$(printf '%s' "$total" | grep -ioE '[0-9]+[[:space:]]+FAIL' | grep -oE '[0-9]+' | head -1 || true)"
 fi
 if [ "${pass_n:-0}" -eq 0 ] && [ "${fail_n:-0}" -eq 0 ]; then
   echo "[assertion-guard] FAIL: zero assertions in $TARGET" >&2; exit 1
