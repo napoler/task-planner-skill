@@ -1,0 +1,12 @@
+# Drift Checkpoint 01 — drift-checker
+- 时间: 2026-11-27
+- 触发点: Task 8 终验修复轮（终审 NEEDS FIX → ONE fixer 修复中）
+- 判定: **ALIGNED**
+- 证据:
+  - `plans/task-comet-trust-learning-20261127/plan-state.json:8-29,218-243,289-353,396-400` R1-R3=Comet可信度融合/底座不可拆/不改源码仅计划阶段（计划阶段已过，现实施阶段属用户已授权的执行）；D7+AC12+T5 登记终审3必修与单fixer处置。
+  - `docs/superpowers/plans/2026-11-27-comet-trustworthiness-learning.md:602-660` Task 8 收尾=终验→合并→部署对账→清理；当前修复为终验前置必修，未越Task8边界。
+  - `docs/superpowers/specs/2026-11-27-comet-trustworthiness-learning-design.md:73-78,80-85` §6底座不可拆(权威源+派生+user-session-log+ledger+todo)；§7验收要求判别性负控制/零回归/部署对账。
+  - `.superpowers/sdd/progress.md:32-39` Task8 in_progress，3必修P0/P0/P1与D7一致；明确“单fixer一次性修复+补判别性负控制”。
+  - worktree `wt/task-comet-trust-learning-20261127` `git status --short` 仅6文件: `check-evidence-binding.sh,check-verdict.sh,planctl.py,run-selftests.sh,selftest-evidence-binding.sh,selftest-verdict-tristate.sh`；diff 对准3必修（verdict取真实末行outcome、evidence按recorded_at/version选当前拒旧hash、cache p=f=0回退实跑）。
+- 原话锚: `plans/task-comet-trust-learning-20261127/user-session-log.md:1-40` 无真实#N逐字条目（仅模板/消费点表）；本次按R条目+任务书已给用户授权口径判定，标注“原话证据缺位，证据不足以排除口径转译风险但现有证据不支持DRIFT”。
+- 建议: fixer 收尾后跑全量selftest确认FAIL==基线，再按Task8 Step1-5继续；保持底座文件(plan-state/render链/user-session-log/ledger)不拆。

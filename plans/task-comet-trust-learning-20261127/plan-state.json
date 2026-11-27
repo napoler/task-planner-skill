@@ -1,0 +1,474 @@
+{
+  "schema_version": 1,
+  "task_id": "task-comet-trust-learning-20261127",
+  "plan_tier": "standard",
+  "execution_lane": "L2",
+  "created_at": "2026-11-26T22:41:31Z",
+  "updated_at": "2026-11-27T04:30:23Z",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "从 Comet 提炼可信度机制并按地基→入口→出口融合进 task-planner",
+      "type": "手段",
+      "vc": [],
+      "tags": []
+    },
+    {
+      "id": "R2",
+      "text": "保住项目核心=长线会话记录的数据基础、长任务稳定性；底座不可拆",
+      "type": "手段",
+      "vc": [],
+      "tags": []
+    },
+    {
+      "id": "R3",
+      "text": "交付=设计spec+writing-plans实施计划；不改源码/不部署/不提交",
+      "type": "手段",
+      "vc": [],
+      "tags": []
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "产出 Comet 可信度学习设计 spec 并通过自审",
+      "tags": [],
+      "evidence": ""
+    }
+  ],
+  "vcs": [],
+  "phases": [],
+  "findings": [],
+  "audits": [],
+  "delegations": [],
+  "tags": [],
+  "template_ref": "skills/task-planner/templates/json/mini-lite.template.json",
+  "template_doc": {
+    "schema_version": 1,
+    "meta": {
+      "template_type": "mini-lite",
+      "name": "轻量任务",
+      "summary": "轻量任务（≤5 文件（缺省 mini 缺省档；task-perf-default-mini 2026-11-24）且≤15min 且单模块），跳过中/重仪式区块，单 Phase 实施加验收合一。",
+      "scenarios": [
+        "轻量任务",
+        "单文件小改",
+        "快修/微调",
+        "15 分钟内小任务",
+        "白名单内免派发任务"
+      ],
+      "features": [
+        "Goal",
+        "Verification Contract",
+        "执行范围限制",
+        "单 Phase 实施加验收合一",
+        "Subagent Handoff 表"
+      ],
+      "lineage": {
+        "level": "derived",
+        "parent": "../task_plan.md",
+        "base": "../task_plan.md",
+        "spec_version": 1,
+        "pruned": [],
+        "pruned_reason": ""
+      }
+    },
+    "sections": [
+      {
+        "id": "sec-goal",
+        "anchor": "## Goal",
+        "level": 2,
+        "kind": "ref",
+        "ref": {
+          "path": "goals",
+          "renderer": "goal_statement"
+        },
+        "required": true
+      },
+      {
+        "id": "sec-spec-baseline",
+        "anchor": "## 🔒 规范基线（Rule 51.15 — 全档位必填）",
+        "level": 2,
+        "kind": "blocks",
+        "required": true,
+        "blocks": [
+          {
+            "id": "table",
+            "kind": "table",
+            "header": [
+              "spec_id",
+              "约束原文(verbatim)",
+              "来源锚(path:line)",
+              "双向判定式",
+              "来源 sha256"
+            ],
+            "rows": [
+              [
+                "<SPEC-ID>",
+                "<约束原文>",
+                "<来源锚 path:line>",
+                "<上下界齐全的判定式，如 4s≤单镜≤12s>",
+                "<sha256 或 n/a(文本片段)>"
+              ]
+            ]
+          },
+          {
+            "id": "note",
+            "kind": "markdown",
+            "text": "填写规则（全档位必填）：无候选写 `none-justified（理由）`，禁留空；区间型硬约束的双向判定式必须同时写上下界（如 `4s≤单镜≤12s`），禁单边；登记后任何放宽/删除须按 Rule 51.15 STOP→用户授权→Decisions Made 登记→重锁 attest。"
+          }
+        ]
+      },
+      {
+        "id": "sec-vc",
+        "anchor": "## ✅ Verification Contract",
+        "level": 2,
+        "kind": "ref",
+        "ref": {
+          "path": "vcs",
+          "renderer": "vc_table"
+        },
+        "required": true
+      },
+      {
+        "id": "sec-scope-limits",
+        "anchor": "## ⚠️ 执行范围限制",
+        "level": 2,
+        "kind": "ref",
+        "ref": {
+          "path": "scope_limits",
+          "renderer": "scope_limits_table"
+        },
+        "required": true
+      },
+      {
+        "id": "sec-phases",
+        "anchor": "## Phases（固定 1：实施+验收合一，[task-v094 T-B2]；3-File 双条件在本 Phase 照常一次，Rule 19.2 降档）",
+        "level": 2,
+        "kind": "ref",
+        "ref": {
+          "path": "phases",
+          "renderer": "phases_table"
+        },
+        "required": true
+      },
+      {
+        "id": "sec-handoff",
+        "anchor": "## 🔗 Subagent Handoff 登记表（Rule 22.5）",
+        "level": 2,
+        "kind": "blocks",
+        "required": true,
+        "blocks": [
+          {
+            "id": "table",
+            "kind": "table",
+            "header": [
+              "#",
+              "subagent_type",
+              "任务目标(≤1 句)",
+              "状态",
+              "结论摘要",
+              "checkpoint 路径"
+            ],
+            "rows": [
+              [
+                "1",
+                "（派发时填写；全程主进程填「无」）",
+                "",
+                "pending",
+                "",
+                ""
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sec-s06",
+        "anchor": "## 🧩 输出示例与格式契约（Rule 113 · 极简档）",
+        "level": 2,
+        "kind": "blocks",
+        "required": true,
+        "blocks": [
+          {
+            "id": "note",
+            "kind": "markdown",
+            "text": "> 本档至少 1 条：完整示例 + 同结构模板（字段可最小化，但结构必须真实可模仿）。\n- 交付物 / 格式：article.json / JSON\n- 完整示例：`{\"title\":\"示例标题\",\"count\":3}`\n- 可复用模板：`{\"title\":\"<TITLE>\",\"count\":<INT>}`\n- 对应 VC：VC-1"
+          }
+        ]
+      }
+    ]
+  },
+  "template_checks": [],
+  "decisions": [
+    {
+      "id": "D1",
+      "decision": "交付范围=方案+writing-plans；优先级=地基优先（状态/证据→验收→决策/断点）；第3-6节设计全部通过",
+      "rationale": "用户 AskUserQuestion 三次选定；两侧根因调研独立收敛到消费侧门优先"
+    },
+    {
+      "id": "D2",
+      "decision": "用户追加要求：真正开始前先打 Git 阶段性 tag（大范围重构基线锚点）。tag 沿用既有轻量风格，命名 baseline-before-comet-trust-refactor-20261127-064717，指向当前 HEAD ced991e4",
+      "rationale": "重构涉及面广需可追溯/可回退锚点；tag 只指向已提交 commit，不纳入 28 项未提交变更（含他任务杂物）"
+    },
+    {
+      "id": "TU-1",
+      "decision": "[tier-upgrade] 运行 59 分钟，触发原因：步骤门：findings/research（软阈值 15min / 硬阈值 45min），自动升级 standard 检查面",
+      "rationale": "用户 2026-11-24/25 裁决：软阈值15min须联合步骤门(phase complete/findings/delegations) 或 硬阈值45min兜底，零主观判断"
+    },
+    {
+      "id": "D3",
+      "decision": "本阶段设计/计划文档（spec 措辞修正 + writing-plans 实施计划）在 docs/ 下产出，豁免 worktree 隔离",
+      "rationale": "宪法 §11.5②纯文档非实现类 + 用户明确交付=方案+实施计划；本阶段不改任何 skills/ 源码、不部署、不提交；worktree 从 master checkout 看不到未提交的 spec 文档，隔离无意义"
+    },
+    {
+      "id": "D4",
+      "decision": "worktree-required 门与 SOP §158（文档留主仓）冲突，经用户授权用 Bash heredoc 落盘设计过程文档；仅 docs/superpowers/ 两份，不动 skills/ 源码",
+      "rationale": "门把过程文档误分类为 delivery=1；实现阶段（Task 0 Step3 起）仍严格在 worktree 内进行"
+    },
+    {
+      "id": "D5",
+      "decision": "Task 4 为 2 个历史零断言 selftest（user-instruction-priority/verify-io）补真断言后再启用零断言 guard，保持回归 FAIL==基线2",
+      "rationale": "用户裁决：避免破坏回归判据且真正消除假绿；基线实测 selftest 117/115/2、verify 27/4"
+    },
+    {
+      "id": "D6",
+      "decision": "Task3 brief 插入位置与盘上控制流冲突：check-scope.sh 节② walk-up(:73-81)对 plans/ 祖先路径直接 exit 0，保护段插其后必失效；裁决采纳 implementer 选项0——把 abs_path 计算+派生MD保护段前移到节②(:71)之前，仅对4个派生MD收紧，其余 plans/ 放行语义不变",
+      "rationale": "controller 盘上复查证实(:71 abs_path、:73-81 早退、:90-92 basename豁免、:183 真锚点)；属执行细节技术修正非G门用户决策；负控rc=1唯一有效位置"
+    },
+    {
+      "id": "D7",
+      "decision": "终审 NEEDS FIX：3 必修（P0 check-verdict 取首个 outcome 致模板字面行假绿；P0 check-evidence-binding 不读 version/recorded_at 致旧 hash 放行；P1 run-selftests 缓存合成 0/0 致幻影 FAIL）；按 SDD 派 ONE fixer 一次性修复，保留 Minor 到后续独立任务",
+      "rationale": "终审实测复现三缺陷；逐条派修复违反 SDD 单 fixer 规则；三项均不改 Total=121"
+    },
+    {
+      "id": "D8",
+      "decision": "部署对账范围按 install.sh 默认 4 位（zcode/claude/opencode/cursor）；~/.agents 位按 smart-merge-back.sh :615/:850 明示为全局保护区、需 TASK_PLANNER_DEPLOY_SLOTS env 显式覆盖，未经授权不直写，登记为已知边界",
+      "rationale": "宪法 §六/项目 AGENTS §2：部署位只走 install.sh 官方链路；.agents 明确排除默认部署，避免越权投毒"
+    }
+  ],
+  "actions": [
+    {
+      "id": "AC1",
+      "text": "spec 写入 docs/superpowers/specs/2026-11-27-comet-trustworthiness-learning-design.md（97行/12700字节）；结构自检 C1-C7 PASS（C2 精确版排除元描述），未提交",
+      "phase": "",
+      "at": "2026-11-26T22:43:10Z"
+    },
+    {
+      "id": "AC2",
+      "text": "按用户追加要求创建阶段性基线轻量 tag baseline-before-comet-trust-refactor-20261127-064717，指向 HEAD ced991e4（未 push）",
+      "phase": "",
+      "at": "2026-11-26T22:47:43Z"
+    },
+    {
+      "id": "AC3",
+      "text": "writing-plans 产出 docs/superpowers/plans/2026-11-27-comet-trustworthiness-learning.md（661行/8任务/3Phase/6commit点/22负控制）；spec 据实修正 4 处失准表述（verify.sh现状/G1-G12/注入已落地/二态探针）",
+      "phase": "",
+      "at": "2026-11-26T23:53:52Z"
+    },
+    {
+      "id": "AC4",
+      "text": "SDD 执行启动：Task0 基线 selftest 117/115/FAIL2、verify27/4；worktree wt/task-comet-trust-learning-20261127 建成于 ced991e4；Task1 完成（implementer 1933ee49→reviewer发现Important→fixer 85ae068c→复审通过）",
+      "phase": "",
+      "at": "2026-11-27T00:43:29Z"
+    },
+    {
+      "id": "AC5",
+      "text": "Task1 经历 implementer→reviewer发现Important(注册即拒绝)→fixer→复审通过；Task2 经历 implementer→reviewer发现报告层失实→fixer→复审通过；基线按 harness 拆分，dispatch 既存性经 blob 同一性证明",
+      "phase": "",
+      "at": "2026-11-27T01:06:09Z"
+    },
+    {
+      "id": "AC6",
+      "text": "Phase1 三任务全部落地：Task1 evidence_binding字段(85ae068c)、Task2 校验门(782e70b9)、Task3 派生MD保护(52e19f4e)；均经 implementer→review→fixer→复审 流程",
+      "phase": "",
+      "at": "2026-11-27T01:23:42Z"
+    },
+    {
+      "id": "AC7",
+      "text": "Phase1 三任务全部完成并复审通过（Task1 85ae068c/Task2 782e70b9/Task3 52e19f4e）；Task4 零断言guard+2脚本补断言 implementer 运行中",
+      "phase": "",
+      "at": "2026-11-27T01:56:53Z"
+    },
+    {
+      "id": "AC8",
+      "text": "Task4 完成用户裁决（2零断言脚本补真断言PASS=9/6）+零断言guard；reviewer发现兼容回退正则绕过（Total:4 PASS:0 FAIL:0 假绿），fixer 5ce7a24f 修复，负控6/6正控5/5",
+      "phase": "",
+      "at": "2026-11-27T02:20:07Z"
+    },
+    {
+      "id": "AC9",
+      "text": "Phase2 完成：Task4 零断言guard(5ce7a24f)+Task5 三态verdict(06f00dd4) 均复审通过；check-verdict.sh 要求BLOCKED须confirmed:true，TDD+mutation验证，全量119/116/FAIL3零新增",
+      "phase": "",
+      "at": "2026-11-27T02:43:01Z"
+    },
+    {
+      "id": "AC10",
+      "text": "Task6 用户门账本落地：decisions 增 blocking/confirmed（schema+planctl双注册）、check-complete 拒锁、RED2/1→GREEN4/0含存量兼容，全量120/117/FAIL3零新增；commit 00636c3e",
+      "phase": "",
+      "at": "2026-11-27T03:05:13Z"
+    },
+    {
+      "id": "AC11",
+      "text": "Task7 四态恢复探针完成：verdict 独立子命令 READY/STALE/BLOCKED/DEGRADED，注入逻辑零改动(sha256 de4fac4f)，RED TC-03 四态FAIL→GREEN PASS=4，全量121/118/FAIL3基线零新增；commit d44ca180；全部7实现任务完成",
+      "phase": "",
+      "at": "2026-11-27T03:43:36Z"
+    },
+    {
+      "id": "AC12",
+      "text": "全分支终审完成：11 commit/21 文件，裁决 NEEDS FIX；必修清单+Minor 分诊已落盘，派单 fixer 修复中",
+      "at": "2026-11-27T04:20:00Z",
+      "phase": ""
+    },
+    {
+      "id": "AC13",
+      "text": "修复轮完成：3 commit/7 文件 +139/-18；已派复审代理复核判别性与回归",
+      "at": "2026-11-27T04:30:00Z",
+      "phase": ""
+    },
+    {
+      "id": "AC14",
+      "text": "merge --no-ff 74bab18f；install.sh --no-backup 部署；4 位全文件对账 19/19 identical；worktree 与 wt 分支已清理；全量 --fresh 回归运行中",
+      "at": "2026-11-27T04:55:00Z",
+      "phase": ""
+    },
+    {
+      "id": "AC15",
+      "text": "Task 8 收口：全量 --fresh 终验通过（121/118/FAIL3=基线），簿记/memory/台账已回填；D8 .agents 位边界登记",
+      "at": "2026-11-27T05:05:00Z",
+      "phase": ""
+    }
+  ],
+  "research": [
+    {
+      "id": "RS1",
+      "claim": "Comet 可信度根因=把决策/验收/证据/状态/失败/恢复变成有归属有绑定有阻塞的显式协议；本项目缺消费侧门（SOFT_ONLY/假绿门/伪造证据判例）",
+      "source": "两子代理调研+主进程盘上抽查"
+    },
+    {
+      "id": "RS2",
+      "claim": "SDD Task1-2 完成：evidence_binding 字段注册（schema+planctl 校验面）与证据绑定校验门（path+sha256 双匹配、负控制）；reviewer 两轮各抓出真实缺陷并修复",
+      "source": "worktree commits 1933ee49/85ae068c/edd4cf91/782e70b9 + task-1/2 review 报告"
+    },
+    {
+      "id": "RS3",
+      "claim": "Task3 发现 brief 与 check-scope.sh 控制流冲突（节② plans/ 祖先 exit 0 提前放行），D6 裁决前移 abs_path+保护段；负控4派生MD全rc=1、正例rc=0、零新增FAIL",
+      "source": "worktree commit 52e19f4e + task-3-report.md + D6 决策"
+    },
+    {
+      "id": "RS4",
+      "claim": "Task4 零断言guard落地：2历史零断言脚本补真断言(PASS=9/6)，guard 对假零断言rc=1/真断言rc=0，全量118/115/FAIL3 与基线一致、guard命中0",
+      "source": "worktree commit c293dd8a + task-4-report.md"
+    },
+    {
+      "id": "RS5",
+      "claim": "Task5 三态verdict落地：check-verdict.sh 要求 BLOCKED 须 confirmed:true；TDD红→绿+mutation；全量119/116/FAIL3 基线零新增；Total118→119 因新增selftest",
+      "source": "worktree commit 06f00dd4 + task-5-report.md"
+    },
+    {
+      "id": "RS6",
+      "claim": "Phase2 完成：Task4 零断言guard（修绕过：标签前缀优先解析）、Task5 三态verdict（BLOCKED须confirmed:true），全量119/116/FAIL3基线零新增；reviewer 累计抓出并修复4类真实缺陷",
+      "source": "worktree commits 5ce7a24f/06f00dd4 + task-4/5 review"
+    },
+    {
+      "id": "RS7",
+      "claim": "Task6 用户门账本落地：decisions blocking/confirmed 双注册、check-complete 拒锁+fail-closed（修复5种权威源损坏形态rc2）、存量兼容；RED2/1→GREEN4/0，全量120/117/FAIL3零新增",
+      "source": "worktree commits 00636c3e/5f9059c6 + task-6 review"
+    },
+    {
+      "id": "RS8",
+      "claim": "终审3必修由单 fixer 一次性修复：7b824116 verdict 跳模板字面行取末条真实 outcome；b47c85db 证据绑定按 recorded_at/version 选当前条目+planctl (path,version) 审计追加；115dea34 缓存 p=f=0 时实跑取真实输出供断言守卫。主进程复跑：verdict 模板+BLOCKED 未确认 rc1/已确认 rc0；针对性 selftest 4/0、6/0、9/0；bash -n 与 py_compile OK",
+      "source": "worktree d44ca180..115dea34 diff + 主进程复跑"
+    },
+    {
+      "id": "RS9",
+      "claim": "修复后复审 READY TO MERGE（三必修判别探针全通过、无新增假绿）；最终通读 PARTIAL→审查实物同步修订 dfac9677（verdict/evidence-binding review 计数与判别口径对齐代码）；merged 74bab18f；install.sh --no-backup 后默认 4 位 verify 27 pass/4 fail（4 项 hardcoded paths 为既有基线），22 变更文件中 19 个 skills 文件在 4 位逐字节 IDENTICAL",
+      "source": "re-review agent_02b6448a + readthrough agent_25d55a82 + git log + verify log /tmp/comet-install.log + 全文件 cmp 循环"
+    }
+  ],
+  "test_results": [
+    {
+      "id": "T1",
+      "test": "spec 结构自检 C1-C7",
+      "status": "pass",
+      "expected": "全PASS",
+      "actual": "C1非空/C2无占位(精确版)/C3六维=6/C4三阶段=3/C5核心锚成节/C6自审/C7证据锚可达",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "T2",
+      "test": "tag 创建验证",
+      "status": "pass",
+      "expected": "tag 指向 HEAD=ced991e4，类型 commit",
+      "actual": "git rev-list -n1 tag=ced991e4d2...=HEAD；git cat-file -t=commit；tag 列表唯一命中",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "T3",
+      "test": "实施计划结构自审",
+      "status": "pass",
+      "expected": "8任务/3Phase/无占位/路径真实",
+      "actual": "Task=8 Phase=3 commit=6 负控制=22 C1精确无占位PASS C5五路径全OK；未提交",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "T4",
+      "test": "Task1 复审",
+      "status": "pass",
+      "expected": "evidence_binding 写入/校验可用，无回归",
+      "actual": "Spec✅ Quality Approved；validate rc0/add回读成功/非法sha与缺path rc1；基线FAIL集合扩为{enumerate-first,execution-stability,render_full_semantics}",
+      "phase": "",
+      "input": ""
+    },
+    {
+      "id": "T5",
+      "test": "final whole-branch review",
+      "status": "fail",
+      "expected": "READY TO MERGE",
+      "actual": "NEEDS FIX：P0 check-verdict 首个 outcome 假绿（78/240 存量 verification.md 含模板字面行）、P0 旧 hash rc0 放行、P1 缓存双跑 fresh PASS=cached FAIL；schema 2079 行 diff 经 JSON 树对比确认仅排版重排（新增叶20/删除0/改写0）",
+      "input": "review-ced991e4..d44ca180.diff",
+      "phase": ""
+    },
+    {
+      "id": "T6",
+      "test": "fix-targeted verification",
+      "status": "pass",
+      "expected": "三必修 RED→GREEN、无 rc 契约破坏",
+      "actual": "selftest-verdict-tristate PASS=4 FAIL=0；selftest-evidence-binding PASS=6 FAIL=0 SKIP=0；selftest-tier-consistency PASS=9 FAIL=0 含 TC-09 缓存双跑；P0 探针模板字面行+BLOCKED/unconfirmed rc1、confirmed rc0；bash -n 全过 + py_compile OK",
+      "input": "worktree HEAD=115dea34",
+      "phase": ""
+    },
+    {
+      "id": "T7",
+      "test": "post-deploy verify",
+      "status": "pass",
+      "expected": "恢复基线 27 pass/4 fail（4 hardcoded paths 既存）",
+      "actual": "install 后 verify summary 27 pass / 4 fail，失败集=claude/zcode/opencode/cursor scripts hardcoded paths（既存基线，非新增）；工作树部署前 23/8 中新增 4 项为 template/schema 未部署漂移，部署后消失",
+      "input": "/tmp/comet-install.log",
+      "phase": ""
+    },
+    {
+      "id": "T8",
+      "test": "final full selftest (post-deploy, --fresh)",
+      "status": "pass",
+      "expected": "Total=121，FAIL 集恰为 {dispatch, enumerate-first, execution-stability}，零新增",
+      "actual": "Total: 121 PASS=118 FAIL=3 (run=121 reused=0)；Failed: selftest-dispatch selftest-enumerate-first selftest-execution-stability；rc=1（约定基线码）",
+      "input": "/tmp/comet-final-selftest.log",
+      "phase": ""
+    }
+  ],
+  "errors": [
+    {
+      "id": "ER1",
+      "error": "首次探查子代理因 ZCode 运行时进程意外退出(OOM)失败、无产出",
+      "root_cause": "运行时进程 OOM",
+      "resolution": "核对交付物完好且代理只读未留改动后，重新派发同任务探查代理",
+      "prevention": "探查 prompt 限制输出长度以控制内存",
+      "timestamp": "2026-11-26T23:41:37Z",
+      "attempt": 0,
+      "trigger": ""
+    }
+  ]
+}
