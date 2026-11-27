@@ -124,6 +124,7 @@ JSON 输出：
 ...
 
  outcome: COMPLETE / PARTIAL / BLOCKED
+ confirmed: false # BLOCKED 时须用户确认后改 true
 ```
 
 **COMPLETE**：全部 VC 通过，无遗留阻塞 → 交付。

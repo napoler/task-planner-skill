@@ -5,6 +5,7 @@
 # 覆盖: TC-01 scope-set+render; TC-02 越界BLOCK; TC-03 include内放行;
 #       TC-04 存量无字段WARN放行; TC-05 mutation 删门段后TC-02翻转FAIL;
 #       TC-06 scope-extend 无--reason拒绝; TC-07 可移植性(无硬编码绝对路径)
+#       TC-08 派生 MD 直写拦截(4 个 basename 全负控制); TC-09 render 令牌放行正例
 # 输出: TC-N PASS|FAIL <说明>；末行 === TOTAL: PASS=N FAIL=M ===
 # 退出码: 0=全过 / 1=任一FAIL
 
@@ -176,6 +177,43 @@ if grep -qE "${_p1}${_p2}|${_p3}${_p4}" "$SELFTEST" 2>/dev/null; then
   bad 07 '自测脚本含硬编码宿主绝对路径'
 else
   ok 07 '自测脚本无硬编码宿主绝对路径'
+fi
+
+# TC-08: 4 个派生 MD 直写负控制（无 render 令牌必须 rc=1 + 专属 BLOCKED 文案）
+# Why（2026-11-27 Task 3）：节② plans/ 祖先豁免与节③ basename 豁免原样放行 4 个派生 MD，
+#   门必须置于两道豁免之前才有效；本用例为可证伪负控制，门缺失即 TC-08 FAIL。
+_dm_names="task_plan.md findings.md progress.md verification.md"
+_dm_fail=0
+_dm_last=""
+for _dm in $_dm_names; do
+  out=$(run_check "$REPO2" "$REPO2/plans/task-sb/$_dm"); rc=$?
+  _dm_last="$out"
+  if [ "$rc" -ne 1 ] || ! printf '%s' "$out" | grep -qF '[scope] BLOCKED 派生 MD 禁止直接写入'; then
+    _dm_fail=1
+  fi
+done
+if [ "$_dm_fail" -eq 0 ]; then
+  ok 08 '4 派生 MD 直写均被 BLOCKED rc=1'
+else
+  bad 08 "派生 MD 直写未全拦截（rc 必须=1 且含 BLOCKED 文案）out=$_dm_last"
+fi
+
+# TC-09: render 令牌正例（TASK_PLAN_ALLOW_RENDER=1 时 4 个派生 MD 全放行 rc=0）
+# Why：守卫不能把 planctl render 的合法落盘路径一并拦死；正例与 TC-08 负控制成对。
+_dm_fail=0
+_dm_last=""
+for _dm in $_dm_names; do
+  out=$(
+    cd "$REPO2"
+    TASK_PLANNER_SID="" TASK_PLAN_ALLOW_RENDER=1 bash "$CHECK_SCOPE" Write "$REPO2/plans/task-sb/$_dm" 2>&1
+  ); rc=$?
+  _dm_last="$out"
+  [ "$rc" -eq 0 ] || _dm_fail=1
+done
+if [ "$_dm_fail" -eq 0 ]; then
+  ok 09 'render 令牌放行 4 派生 MD 写入 rc=0'
+else
+  bad 09 "render 令牌未全放行 rc=$rc out=$_dm_last"
 fi
 
 printf '=== TOTAL: PASS=%d FAIL=%d ===\n' "$PASS" "$FAIL"

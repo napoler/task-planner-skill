@@ -55,6 +55,7 @@ GENERATED_HEADER = "<!-- 本文件由 planctl.py 从 plan-state.json 生成，�
 VIEW_NAMES = ("task_plan.md", "progress.md", "verification.md", "findings.md")
 
 ARRAY_SECTIONS = (
+    "evidence_binding",
     "requirements", "goals", "vcs", "phases", "findings", "audits", "delegations",
     # [2026-11-22 task-jsonderive-deploy-20261122] What: 追加 29 个语义段数组 section。
     # Why: 原行为只覆盖 7 段，MD 语义段（Actions/Error Log/S-unit/Phase Gates 等）只能直接 Edit MD；
@@ -89,6 +90,7 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
     "anti_regress", "fmea", "todo_sync", "key_questions",
     "phase_gates", "knowledge_compliance", "cross_checks", "output_examples",
+    "evidence_binding",
     # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
     "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
     "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
@@ -104,6 +106,10 @@ TOP_LEVEL_KEYS = REQUIRED_TOP_LEVEL_KEYS + OPTIONAL_TOP_LEVEL_KEYS
 # 身份字段 id/round 仍强制，缺失即报错，不静默造 id）。
 ENTRY_DEFAULTS: dict[str, dict[str, Any]] = {
     "requirements": {"text": "", "type": "手段", "vc": [], "tags": []},
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] What: evidence_binding 默认面覆盖 schema required 四项，且不含 id。
+    # Why: 本段已入 ARRAY_SECTIONS 却缺默认面，normalize_entry 在 legal_keys 处 KeyError；schema
+    #       additionalProperties:false 且无 id，禁止伪造身份，条目以 path 定位。
+    "evidence_binding": {"path": "", "sha256": "", "version": "", "recorded_at": ""},
     "goals": {"text": "", "tags": [],
               # [2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据默认空串; Why: 有值时 render 输出 [goal:G<n>] 证据行（evidence-anchor 门消费面）。
               "evidence": ""},
@@ -565,7 +571,19 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         "tags": lambda v: isinstance(v, list) and all(isinstance(t, str) for t in v),
     }
     required = {"id"}
-    if section == "requirements":
+    if section == "evidence_binding":
+        # [2026-11-27 task-comet-trust-evidence-binding 修复] What: 手写校验与 schema evidence_binding 定义等价：
+        #   required=path/sha256/version/recorded_at，sha256 严格 64 位小写 hex，recorded_at 走 ISO8601 形态判定。
+        # Why: 原行为本段落到默认 {id,tags} 分支，合法四项被误报"缺 id + 未知字段"，commit_state 拒写；
+        #       known 用全量替换（非 update）以对齐 schema additionalProperties:false，杜绝 id/tags 混入。
+        known = {
+            "path": lambda v: isinstance(v, str) and v != "",
+            "sha256": lambda v: isinstance(v, str) and re.fullmatch(r"[0-9a-f]{64}", v) is not None,
+            "version": lambda v: isinstance(v, str) and v != "",
+            "recorded_at": lambda v: _is_iso8601(v, allow_empty=False),
+        }
+        required = {"path", "sha256", "version", "recorded_at"}
+    elif section == "requirements":
         known.update({"text": lambda v: isinstance(v, str),
                       "type": lambda v: v in ("目标", "手段"),
                       "vc": lambda v: isinstance(v, list) and all(isinstance(x, str) for x in v)})
@@ -642,7 +660,11 @@ def _validate_entry(section: str, entry: Any, where: str, errs: list[str]) -> No
         known.update({"claim": STR_FIELD, "source": STR_FIELD})
         required = {"id", "claim", "source"}
     elif section == "decisions":
-        known.update({"decision": STR_FIELD, "rationale": STR_FIELD})
+        # [2026-11-27 Task 6] What: decisions 条目可选 blocking/confirmed，类型严格 boolean，required 仍仅 id/decision。
+        # Why: schema decision_item 已注册这两个字段；手写校验必须与 schema 同步，否则重演 Task 1
+        #       「schema 已加、planctl 仍拒」的注册缺陷。存量条目无这两个字段继续合法。
+        known.update({"decision": STR_FIELD, "rationale": STR_FIELD,
+                      "blocking": BOOL_FIELD, "confirmed": BOOL_FIELD})
         required = {"id", "decision"}
     elif section == "issues":
         known.update({"issue": STR_FIELD, "resolution": STR_FIELD})
@@ -859,10 +881,15 @@ def require_valid(doc: dict[str, Any]) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _entry_matches(entry: dict[str, Any], section: str, ident: str) -> bool:
-    """audits 无 id 字段：接受 round 数字串与 'R<round>' 两种引用形态。"""
+    """audits 无 id 字段：接受 round 数字串与 'R<round>' 两种引用形态；evidence_binding 以 path 定位。"""
     if section == "audits":
         rnd = entry.get("round")
         return ident in {str(rnd), f"R{rnd}"}
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] evidence_binding 无 id，path 作定位键。
+    # [2026-11-27 Task2 终审修复] 这里保留 path-only 读侧身份（通用 find/update/remove 的 --id 接口兼容）；
+    # add 侧去重已改为 (path, version) 复合键以支持「单当前 + 审计追加」，当前版本由门控按时间戳选出。
+    if section == "evidence_binding":
+        return str(entry.get("path", "")) == str(ident)
     return str(entry.get("id", "")) == str(ident)
 
 
@@ -905,6 +932,11 @@ def normalize_entry(section: str, payload: Any, ident: str | None = None) -> dic
     if section == "audits":
         if "round" not in entry:
             raise PlanctlError("audits: --json 缺 round")
+    elif section == "evidence_binding":
+        # [2026-11-27 task-comet-trust-evidence-binding 修复] What: 无 id 段以 path 为定位键；缺 path 显式报错，不注入 id。
+        # Why: schema 无 id 且禁额外字段；沿用通用 id 分支会让 add/update 在未写库前必然失败。
+        if not isinstance(entry.get("path"), str) or not entry["path"]:
+            raise PlanctlError("evidence_binding: --json 需含非空 path（本段无 id，以 path 定位）")
     else:
         if not entry.get("id") and ident:
             entry["id"] = ident
@@ -1491,10 +1523,29 @@ def cmd_add(args: argparse.Namespace) -> int:
     # Why: 原行为 7 个数组由 init 模板保证存在；新段缺省于存量 JSON，直接 find/append 会误报
     #       「未知或非法 section」，使通用 add 对存量计划不可用。
     doc.setdefault(args.section, [])
-    hit = find_entry(doc, args.section,
-                     str(entry.get("round")) if args.section == "audits" else str(entry["id"]))
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] 身份按段选择：audits=round、evidence_binding=path（schema 无 id）、其余=id。
+    # [2026-11-27 Task2 终审修复] What: evidence_binding 采用「单当前 + 审计追加」语义：同 path 可追加
+    # 不同 version 的新条目（append 绝不覆盖旧条目），旧 hash 仅供审计，当前版本由 check-evidence-binding.sh
+    # 按 recorded_at/version 选出；重复判定因此改为 (path, version) 复合身份。
+    # Why: 原 path-only 唯一性使同产物的 v2 绑定无法落盘（第二条被拒），而门控侧已按当前版本判定，
+    # 二者口径不一致。选型理由：不改 _entry_matches/find_entry 的 path-only 身份，是为了保持通用
+    # find/update/remove 的 --id 接口向后兼容（它们仍可按 path 定位）；复合键只用在 add 的去重上。
+    hit = None
+    if args.section == "evidence_binding":
+        ident = str(entry.get("path", ""))
+        version = str(entry.get("version", ""))
+        for x in doc[args.section]:
+            if isinstance(x, dict) and str(x.get("path", "")) == ident and str(x.get("version", "")) == version:
+                hit = x
+                break
+    elif args.section == "audits":
+        ident = str(entry.get("round"))
+        hit = find_entry(doc, args.section, ident)
+    else:
+        ident = str(entry["id"])
+        hit = find_entry(doc, args.section, ident)
     if hit is not None:
-        raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id')}")
+        raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id') or entry.get('path')}")
     doc[args.section].append(entry)
     commit_state(plan, doc)
     result: dict[str, Any] = {"section": args.section, "added": entry}
@@ -1543,10 +1594,41 @@ def cmd_delete(args: argparse.Namespace) -> int:
     return 0
 
 
+def _blocking_unconfirmed_ids(doc: dict[str, Any]) -> list[str]:
+    """返回 decisions 中 blocking:true 且未 confirmed:true 的条目 id（用户门未决账本）。
+
+    What: 只读权威源 decisions；两种缺省语义不同：blocking 缺省 = 非 blocking 项（存量条目兼容）；
+          confirmed 缺省 = 已 blocking 但未确认 = 未决（可选布尔缺省 false，不得静默放行）。
+          结构异常（decisions 非 array / 行非 object / blocking、confirmed 非 bool）显式报
+          PlanctlError（planctl 错误模型 rc=1），与 check-complete.sh 的 rc2 fail-closed 同向，
+          不再把损坏的权威源静默当作「无未决项」。
+    Why: 终验/phase-done 不得把等待用户裁决的决定当已完成；与 check-complete.sh 的用户门同语义，
+         但在此处给状态流转子命令 rc=3 的硬拒锁（区别于普通用户错误 rc=1）。
+    """
+    rows = doc.get("decisions", [])
+    if not isinstance(rows, list):
+        raise PlanctlError(f"decisions 必须是 array（实际 {type(rows).__name__}）")
+    pending: list[str] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            raise PlanctlError(f"decisions[] 元素必须是 object（实际 {type(row).__name__}）")
+        for key in ("blocking", "confirmed"):
+            if key in row and not isinstance(row[key], bool):
+                raise PlanctlError(f"decisions[].{key} 必须是 boolean（实际 {row[key]!r}）")
+        if row.get("blocking") is True and row.get("confirmed") is not True:
+            pending.append(str(row.get("id") or ""))
+    return pending
+
+
 def cmd_phase_done(args: argparse.Namespace) -> int:
-    """Phase 状态流转 → complete，自动刷新 updated_at。"""
+    """Phase 状态流转 → complete，自动刷新 updated_at；用户门未决时 rc=3 拒锁。"""
     plan = check_plan_dir(args.plan_dir)
     doc = read_state(plan)
+    pending = _blocking_unconfirmed_ids(doc)
+    if pending:
+        print(f"planctl: [user-gate] FAIL phase-done 被未确认用户决定拒锁: {', '.join(pending)} "
+              "（先取得用户确认并把 decisions[].confirmed 置 true 后重试；rc=3）", file=sys.stderr)
+        return 3
     hit = find_entry(doc, "phases", args.id)
     if hit is None:
         raise PlanctlError(f"phases 中未找到 id={args.id!r}")
