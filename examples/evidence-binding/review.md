@@ -10,10 +10,10 @@
 
 | ID | 命令 | 预期 | 实测 |
 |---|---|---|---|
-| C1 | `bash skills/task-planner/scripts/selftest-evidence-binding.sh` | `PASS=4 FAIL=0 SKIP=0`, rc=0 | `PASS TC-01..TC-04`；`Total: PASS=4 FAIL=0 SKIP=0`；rc=0 |
+| C1 | `bash skills/task-planner/scripts/selftest-evidence-binding.sh` | `PASS=6 FAIL=0 SKIP=0`, rc=0 | `PASS TC-01..TC-05/TC-05b`；`Total: PASS=6 FAIL=0 SKIP=0`；rc=0 |
 | C2 | `env -u TASK_PLANNER_SID bash skills/task-planner/scripts/check-scope.sh Write "$WT/plans/task-demo/task_plan.md"` | rc=1，输出 `[scope] BLOCKED 派生 MD 禁止直接写入` | rc=1，4 个派生 MD basename 均 BLOCKED |
 | C3 | `env -u TASK_PLANNER_SID TASK_PLAN_ALLOW_RENDER=1 bash skills/task-planner/scripts/check-scope.sh Write "$WT/plans/task-demo/task_plan.md"` | rc=0 | rc=0，4 个派生 MD basename 均放行 |
-| C4 | `printf '{"schema_version":1}' > "$D/plan-state.json"; bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'a%.0s' {1..64})"` | rc=1（mutation 存活） | `[evidence-binding] rc1: no current-version binding for a.md`；rc=1 |
+| C4 | `D=$(mktemp -d); printf '{"schema_version":1}' > "$D/plan-state.json"; bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'a%.0s' {1..64})"` | rc=1（mutation 存活） | `[evidence-binding] rc1: no current-version binding for a.md`；rc=1 |
 
 C4 说明：brief 原表写作「删 `evidence_binding` 字段后重跑 C2」，但 C2 是派生 MD 门、不读该字段；
 盘上对应 mutation 控制是 `selftest-evidence-binding.sh` TC-04 / `check-evidence-binding.sh`（上表已按真实门校正）。

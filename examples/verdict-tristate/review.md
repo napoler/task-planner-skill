@@ -29,7 +29,7 @@
 
 | ID | 命令 | 预期 | 实测 |
 |---|---|---|---|
-| C1 | `bash skills/task-planner/scripts/selftest-verdict-tristate.sh` | `PASS=2 FAIL=0`, rc=0 | `PASS TC-01` / `PASS TC-02` / `[selftest-verdict-tristate] Total: PASS=2 FAIL=0`；rc=0 |
+| C1 | `bash skills/task-planner/scripts/selftest-verdict-tristate.sh` | `PASS=4 FAIL=0`, rc=0 | `PASS TC-01` / `PASS TC-02` / `PASS TC-03` / `PASS TC-04` / `[selftest-verdict-tristate] Total: PASS=4 FAIL=0`；rc=0 |
 | C2 | `printf 'outcome: BLOCKED\nconfirmed: true\n' \| bash skills/task-planner/scripts/check-verdict.sh /dev/stdin` | rc=0，`[verdict] OK: BLOCKED` | `[verdict] OK: BLOCKED`；rc=0 |
 | C3 | `printf 'outcome: BLOCKED\nconfirmed: false\n' \| bash skills/task-planner/scripts/check-verdict.sh /dev/stdin` | rc=1，拒绝（负控制） | `[verdict] rc1: BLOCKED without user confirmation`；rc=1 |
 | C4 | 临时副本删除 `if not c or c.group(1)!='true'` 确认检查后重跑 C3，再对原脚本重跑 C3 | mutant rc=0（门失效，mutation 可证伪）；原脚本 rc=1 | mutant `[verdict] OK: BLOCKED` rc=0；原脚本 `[verdict] rc1: BLOCKED without user confirmation` rc=1 |
@@ -44,7 +44,8 @@ C4 只改 `mktemp -d` 下的临时副本（断言锚唯一后替换），生产�
 
 ## 已知边界
 
-- 门是逐行正则文本解析（取首个 `outcome:` 与首个 `confirmed:`），不是 YAML parser；`COMPLETE`/`PARTIAL` 不要求 `confirmed`，只有 `BLOCKED` 要求 `confirmed: true`。
+- 门是逐行正则文本解析（不是 YAML parser）：扫描全部 `outcome:` 行，跳过含 ` / ` 的模板字面行（如 `outcome: COMPLETE / PARTIAL / BLOCKED`），取末条真实 outcome；`confirmed` 只取与该真实 outcome 同行或紧随其后（容一空行）的 `confirmed: true|false`。`COMPLETE`/`PARTIAL` 不要求 `confirmed`，只有 `BLOCKED` 要求 `confirmed: true`。
+- 负控制覆盖：模板字面行先于真实值的场景已由 TC-03（同一夹具含模板行 + 真实 `outcome: BLOCKED` + `confirmed: false` → rc=1 拒绝）与 TC-04（同夹具仅翻转 `confirmed: true` → rc=0 放行且输出含 `BLOCKED`）显式覆盖，防止“取首个 outcome/首个 confirmed”导致的假绿。
 - 本门独立于 `check-complete.sh` 的进程门，未接入 PreToolUse / 终验门链；brief Step 2 明确要求独立新增，业务 outcome 的三态文案仍由模板持有。
 - 模板新增行是填写契约，默认 `false`；BLOCKED 时须由用户确认后改 `true`，门只校验文本标记，不替代用户授权动作。
 - selftest 以仓根相对路径调用门，须从 worktree / 仓根执行（与既有 harness 的命令口径一致）。
