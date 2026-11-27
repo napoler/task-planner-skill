@@ -34,9 +34,15 @@ D=$(mktemp -d); trap 'rm -rf "$D"' EXIT
 printf '{"schema_version":1,"evidence_binding":[{"path":"a.md","sha256":"%s","version":"v1","recorded_at":"2026-11-27T00:00:00Z"}]}' "$(printf 'a%.0s' {1..64})" > "$D/plan-state.json"
 bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'a%.0s' {1..64})" >/dev/null 2>&1 && ok TC-02 || bad TC-02
 # TC-03 负控制: 旧 hash → 必须 rc1
-bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'b%.0s' {1..64})" >/dev/null 2>&1 && bad TC-03 || ok TC-03
-# TC-04 mutation: 删字段 → 必须 rc1
+# 2026-11-27 fix: 原 `&& bad || ok` 只判「非零」，门返回 rc2(参数错) 或 rc127(脚本缺失)
+# 同样会被计为 ok 假 PASS；改为显式断言 rc==1，仅「绑定过期」才通过负控制。
+bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'b%.0s' {1..64})" >/dev/null 2>&1
+rc=$?
+if [ "$rc" -eq 1 ]; then ok TC-03; else bad TC-03; fi
+# TC-04 mutation: 删字段 → 必须 rc1（同一假 PASS 根因，同样显式断言 rc==1）
 printf '{"schema_version":1}' > "$D/plan-state.json"
-bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'a%.0s' {1..64})" >/dev/null 2>&1 && bad TC-04 || ok TC-04
+bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'a%.0s' {1..64})" >/dev/null 2>&1
+rc=$?
+if [ "$rc" -eq 1 ]; then ok TC-04; else bad TC-04; fi
 echo "[selftest-evidence-binding] Total: PASS=$PASS FAIL=$FAIL SKIP=$SKIP"
 [ "$FAIL" -eq 0 ] || exit 1
