@@ -10,11 +10,26 @@ F="${1:-/dev/stdin}"
 python3 - "$F" 3<"$F" <<'PY'
 import sys,re
 txt=open('/dev/fd/3',encoding='utf-8').read()
-m=re.search(r'^\s*outcome:\s*(COMPLETE|PARTIAL|BLOCKED)',txt,re.M)
-if not m: print('[verdict] rc1: no outcome',file=sys.stderr); sys.exit(1)
-if m.group(1)=='BLOCKED':
-    c=re.search(r'^\s*confirmed:\s*(true|false)',txt,re.M)
+lines=txt.splitlines()
+# Why（2026-11-27 Task5 终审 P0 假绿）：原实现 re.search 取首个 outcome 行，存量 rendered
+# verification.md 的模板字面行 `outcome: COMPLETE / PARTIAL / BLOCKED` 常排在真实值之前
+# （全仓约 78/240 份），导致真实 `outcome: BLOCKED + confirmed:false` 被读成 COMPLETE 而 rc0。
+# What：扫描全部 outcome 行，跳过含 ` / ` 的模板示例行，只认最后一个真实 outcome。
+outcome_re=re.compile(r'^\s*outcome:\s*(COMPLETE|PARTIAL|BLOCKED)\b')
+real=[(i,m.group(1)) for i,line in enumerate(lines)
+      for m in [outcome_re.search(line)] if m and ' / ' not in line]
+if not real: print('[verdict] rc1: no outcome',file=sys.stderr); sys.exit(1)
+idx,verdict=real[-1]
+if verdict=='BLOCKED':
+    # Why：confirmed 若按全文首个匹配取值，模板示例的 `confirmed: true/false` 或前一轮记录
+    # 会绑定到本轮 BLOCKED 上，同样造成假绿；故只取与该真实 outcome 同行或紧随其后（容一空行）的值。
+    c=re.search(r'\bconfirmed:\s*(true|false)\b',lines[idx])
+    if c is None:
+        for j in (idx+1,idx+2):
+            if j<len(lines):
+                c=re.search(r'^\s*confirmed:\s*(true|false)\b',lines[j])
+                if c: break
     if not c or c.group(1)!='true':
         print('[verdict] rc1: BLOCKED without user confirmation',file=sys.stderr); sys.exit(1)
-print('[verdict] OK: %s'%m.group(1)); sys.exit(0)
+print('[verdict] OK: %s'%verdict); sys.exit(0)
 PY
