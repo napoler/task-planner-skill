@@ -44,5 +44,18 @@ printf '{"schema_version":1}' > "$D/plan-state.json"
 bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$(printf 'a%.0s' {1..64})" >/dev/null 2>&1
 rc=$?
 if [ "$rc" -eq 1 ]; then ok TC-04; else bad TC-04; fi
+# TC-05 判别性对照（2026-11-27 终审 P0）：同 path 两条绑定（旧 hash v1 / 新 hash v2）并存时，
+# 旧 hash 必须 rc1、新 hash 必须 rc0。Why：TC-02/TC-03 只有单条绑定，无法暴露
+# 「任意命中同 path+sha256 即放行」的旧 hash 放行缺陷；version/recorded_at 此前零消费。
+# What：显式断言每个调用的 rc，不用 &&/|| 吞码。
+OLD_HASH="$(printf 'a%.0s' {1..64})"
+NEW_HASH="$(printf 'b%.0s' {1..64})"
+printf '{"schema_version":1,"evidence_binding":[{"path":"a.md","sha256":"%s","version":"v1","recorded_at":"2026-11-27T00:00:00Z"},{"path":"a.md","sha256":"%s","version":"v2","recorded_at":"2026-11-27T01:00:00Z"}]}' "$OLD_HASH" "$NEW_HASH" > "$D/plan-state.json"
+bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$OLD_HASH" >/dev/null 2>&1
+rc=$?
+if [ "$rc" -eq 1 ]; then ok TC-05; else bad TC-05; fi
+bash skills/task-planner/scripts/check-evidence-binding.sh "$D" a.md "$NEW_HASH" >/dev/null 2>&1
+rc=$?
+if [ "$rc" -eq 0 ]; then ok TC-05b; else bad TC-05b; fi
 echo "[selftest-evidence-binding] Total: PASS=$PASS FAIL=$FAIL SKIP=$SKIP"
 [ "$FAIL" -eq 0 ] || exit 1

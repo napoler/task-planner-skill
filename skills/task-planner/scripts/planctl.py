@@ -885,7 +885,9 @@ def _entry_matches(entry: dict[str, Any], section: str, ident: str) -> bool:
     if section == "audits":
         rnd = entry.get("round")
         return ident in {str(rnd), f"R{rnd}"}
-    # [2026-11-27 task-comet-trust-evidence-binding 修复] evidence_binding 无 id，path 作定位键（与 add 的身份选择一致）。
+    # [2026-11-27 task-comet-trust-evidence-binding 修复] evidence_binding 无 id，path 作定位键。
+    # [2026-11-27 Task2 终审修复] 这里保留 path-only 读侧身份（通用 find/update/remove 的 --id 接口兼容）；
+    # add 侧去重已改为 (path, version) 复合键以支持「单当前 + 审计追加」，当前版本由门控按时间戳选出。
     if section == "evidence_binding":
         return str(entry.get("path", "")) == str(ident)
     return str(entry.get("id", "")) == str(ident)
@@ -1522,15 +1524,28 @@ def cmd_add(args: argparse.Namespace) -> int:
     #       「未知或非法 section」，使通用 add 对存量计划不可用。
     doc.setdefault(args.section, [])
     # [2026-11-27 task-comet-trust-evidence-binding 修复] 身份按段选择：audits=round、evidence_binding=path（schema 无 id）、其余=id。
-    if args.section == "audits":
-        ident = str(entry.get("round"))
-    elif args.section == "evidence_binding":
+    # [2026-11-27 Task2 终审修复] What: evidence_binding 采用「单当前 + 审计追加」语义：同 path 可追加
+    # 不同 version 的新条目（append 绝不覆盖旧条目），旧 hash 仅供审计，当前版本由 check-evidence-binding.sh
+    # 按 recorded_at/version 选出；重复判定因此改为 (path, version) 复合身份。
+    # Why: 原 path-only 唯一性使同产物的 v2 绑定无法落盘（第二条被拒），而门控侧已按当前版本判定，
+    # 二者口径不一致。选型理由：不改 _entry_matches/find_entry 的 path-only 身份，是为了保持通用
+    # find/update/remove 的 --id 接口向后兼容（它们仍可按 path 定位）；复合键只用在 add 的去重上。
+    hit = None
+    if args.section == "evidence_binding":
         ident = str(entry.get("path", ""))
+        version = str(entry.get("version", ""))
+        for x in doc[args.section]:
+            if isinstance(x, dict) and str(x.get("path", "")) == ident and str(x.get("version", "")) == version:
+                hit = x
+                break
+    elif args.section == "audits":
+        ident = str(entry.get("round"))
+        hit = find_entry(doc, args.section, ident)
     else:
         ident = str(entry["id"])
-    hit = find_entry(doc, args.section, ident)
+        hit = find_entry(doc, args.section, ident)
     if hit is not None:
-        raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id')}")
+        raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id') or entry.get('path')}")
     doc[args.section].append(entry)
     commit_state(plan, doc)
     result: dict[str, Any] = {"section": args.section, "added": entry}
