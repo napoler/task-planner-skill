@@ -61,6 +61,15 @@ if stats['verdict'] not in verdict_enum:
     sys.exit(1)  # 校验器拒
 " && bad 04 "坏 verdict 未被拒（校验器逻辑错）" || ok 04 "坏 verdict 拒判 exit≠0"
 
+# ── [Task4 2026-11-27] IO-05/06 契约锚真断言 ──
+# 原脚本 4 条断言全过且已有 PASS/FAIL 计数，但末行只输出「总计: N PASS, N FAIL」，
+# harness 的 PASS=/FAIL= 正则解析为 0/0 → 假绿；此处补真断言 + 机器可读 Total 行，退出码语义不变。
+grep -q 'SEVEN_FILES=(task_plan.md findings.md progress.md' "$VERIFY_IO" \
+  && ok 05 "verify_io 七文件清单锚在位" || bad 05 "verify_io 七文件清单锚缺失"
+grep -q '"required"' "$SCHEMA" && grep -q '"verdict"' "$SCHEMA" \
+  && ok 06 "stats schema required/verdict 锚在位" || bad 06 "stats schema required/verdict 锚缺失"
+
 echo ""
 echo "=== 总计: $PASS PASS, $FAIL FAIL ==="
+printf 'Total: PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
 [ $FAIL -eq 0 ] && exit 0 || exit 1

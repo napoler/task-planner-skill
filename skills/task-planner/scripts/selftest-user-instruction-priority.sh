@@ -12,12 +12,15 @@ CRITICAL_RULES="$SKILL_ROOT/references/critical-rules.md"
 CRIT_D="$SKILL_ROOT/../task-discipline/references/critical-rules-discipline.md"
 SKILL_MD="$SKILL_ROOT/SKILL.md"
 
-FAIL=0
+PASS=0; FAIL=0
 
+# [Task4 2026-11-27] check() 原只记 FAIL，7 条真断言全过却无机器可读计数，
+#   harness 按 PASS=0 FAIL=0 计通过=假绿；补 PASS 计数与末行 Total（退出码语义不变）。
 check() {
     local cmd="$1"
     local label="$2"
     if eval "$cmd" >/dev/null 2>&1; then
+        PASS=$((PASS+1))
         echo "✓ $label"
     else
         echo "✗ $label"
@@ -45,6 +48,13 @@ check "grep -qE '^\| task-discipline \|' \"$SKILL_MD\"" "SKILL 联动锚（卫�
 
 # 零新键声明
 check "grep -q '零新 config 键' \"$CRIT_D\" && grep -q '56' \"$CRIT_D\"" "零新键声明"
+
+# [Task4 2026-11-27] 补两条真实条款锚断言（Rule 56 节标题 + SKILL 消费侧 C39 指称），
+#   与上方 56.1-56.5 共同构成机器可读 PASS 计数；不新增 config 键或守护脚本。
+check "grep -q '^### 56 用户指令优先与自动执行' \"$CRIT_D\"" "Rule 56 节标题锚"
+check "grep -q '消费侧=SKILL 合规清单 C39' \"$CRIT_D\"" "Rule 56 SKILL 消费侧 C39 锚"
+
+printf 'Total: PASS=%d FAIL=%d\n' "$PASS" "$FAIL"
 
 if [ "$FAIL" -eq 0 ]; then
     echo "=== ALL PASS ==="

@@ -6,6 +6,8 @@
 #   末行以既有口径汇总 "Total: N PASS=x FAIL=y"（另附 reused=z，簿记可只抄前半）。
 #   指纹 = 全部 selftest 脚本内容 + 技能源目录状态戳（git porcelain+HEAD，非 git 仓降级 tree-hash）；
 #   指纹未变的脚本命中缓存即跳过重跑（[reused]），rc/FAIL 数照缓存值入账。
+#   [Task4 2026-11-27] 汇总前对每个被枚举脚本跑 selftest-assertion-guard.sh（复用已捕获输出，
+#   不重复执行脚本）：PASS=0 且 FAIL=0 的零断言假绿脚本计入 FAIL，任一命中 → 整体 exit 1。
 #
 # Why（病灶与移植来源）：
 #   task-planner 实测病灶=单任务固定开销含两轮全量回归（77 脚本 × 5-12s ≈ 6-15min/轮），
@@ -95,10 +97,12 @@ _cache_valid() {
 }
 # 单脚本执行封装：写独立结果文件 <res_file>（4 字段：rc p f mode），供并行/串行统一汇总
 exec_one() {
-  local script="$1" base="$2" cache_key="$3" cache_file="$4" res_file="$5" log_file="$6"
+  local script="$1" base="$2" cache_key="$3" cache_file="$4" res_file="$5" log_file="$6" out_file="$7"
   local rc p f
   if [ "$FRESH" = "0" ] && _cache_valid "$cache_file"; then
     read -r rc p f < "$cache_file"
+    # [Task4] 缓存命中无原始输出：用缓存计数合成最小 Total 行供 guard 复核（避免重跑）
+    printf 'Total: PASS=%s FAIL=%s\n' "$p" "$f" > "$out_file"
     printf '%s %s %s reused\n' "$rc" "$p" "$f" > "$res_file"
     printf '[reused] %s (rc=%s PASS=%s FAIL=%s)\n' "$base" "$rc" "$p" "$f" >> "$log_file"
     return 0
@@ -106,6 +110,8 @@ exec_one() {
   # 缓存损坏：删除后强制实跑（^[0-9]+ [0-9]+ [0-9]+$ 校验失败时不复用）
   [ -f "$cache_file" ] && rm -f "$cache_file"
   out="$(bash "$script" 2>&1)"; rc=$?
+  # [Task4] 保留原始输出供汇总处 guard 复核（各脚本独立文件，并行安全）
+  printf '%s\n' "$out" > "$out_file"
   p="$(printf '%s\n' "$out" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2)"
   f="$(printf '%s\n' "$out" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)"
   [ -z "$p" ] && p=0; [ -z "$f" ] && f=0
@@ -128,6 +134,8 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
   # 防御性兜底（2026-10-11）：显式排除自身——即使未来本目录再出现 selftest- 前缀的非断言脚本，
   # 也不会被枚举命中导致递归
   [ "$script" = "$SCRIPT_DIR/run-selftests.sh" ] && continue
+  # [Task4 2026-11-27] guard 是需参数的元检查器，不是断言脚本：不纳入枚举计数，避免无参 rc2 污染基线
+  [ "$(basename "$script")" = "selftest-assertion-guard.sh" ] && continue
   base="$(basename "$script" .sh)"
   if [ -n "$ONLY" ] && ! printf '%s' "$base" | grep -q "$ONLY"; then continue; fi
   TOTAL=$((TOTAL+1))
@@ -136,8 +144,8 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
 
   if [ "$_PARALLEL_ACTIVE" = "1" ] && printf '%s' "$base" | grep -qE "^${_TOP5_RE}\$"; then
     # top-5 重脚本 → 后台并行（各写独立 res/log，无共享状态，竞态安全）
-    res_file="$_RUN_DIR/$base.res"; log_file="$_RUN_DIR/$base.log"
-    ( exec_one "$script" "$base" "$cache_key" "$cache_file" "$res_file" "$log_file" ) &
+    res_file="$_RUN_DIR/$base.res"; log_file="$_RUN_DIR/$base.log"; out_file="$_RUN_DIR/$base.out"
+    ( exec_one "$script" "$base" "$cache_key" "$cache_file" "$res_file" "$log_file" "$out_file" ) &
     _PAR_PIDS="$_PAR_PIDS $!"
     continue
   fi
@@ -145,6 +153,8 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
   # 串行执行（非 top-5，或并行未启用）
   if [ "$FRESH" = "0" ] && _cache_valid "$cache_file"; then
     read -r rc p f < "$cache_file"
+    # [Task4] 缓存命中合成最小 Total 行供 guard 复核（不重跑脚本）
+    printf 'Total: PASS=%s FAIL=%s\n' "$p" "$f" > "$_RUN_DIR/$base.out"
     REUSEDN=$((REUSEDN+1))
     # [2026-11-25 defect-fix P1] 复用缓存同样要求 f=0 才算 PASS
     if [ "$rc" = "0" ] && [ "$f" -eq 0 ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; fi
@@ -155,6 +165,8 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
   [ -f "$cache_file" ] && rm -f "$cache_file"
   RUNN=$((RUNN+1))
   out="$(bash "$script" 2>&1)"; rc=$?
+  # [Task4] 原始输出留给 guard 复核（与单脚本文件一一对应）
+  printf '%s\n' "$out" > "$_RUN_DIR/$base.out"
   p="$(printf '%s\n' "$out" | grep -oE 'PASS=[0-9]+' | tail -1 | cut -d= -f2)"
   f="$(printf '%s\n' "$out" | grep -oE 'FAIL=[0-9]+' | tail -1 | cut -d= -f2)"
   [ -z "$p" ] && p=0; [ -z "$f" ] && f=0
@@ -182,6 +194,33 @@ if [ -n "${_PAR_PIDS:-}" ]; then
     if [ "${_rc:-0}" = "0" ] && [ "${_f:-0}" -eq 0 ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $_b"; fi
   done
 fi
+
+# [Task4 2026-11-27] 零断言拒绝汇总：对每个被发现脚本跑 guard（第二参复用已捕获输出，不重跑）。
+#   仅对当前计入 PASS 的脚本追补 FAIL：已因 rc/自报 FAIL 失败的脚本不重复计数，保持基线口径。
+GUARD="$SCRIPT_DIR/selftest-assertion-guard.sh"
+if [ ! -f "$GUARD" ]; then echo "[assertion-guard] rc2: guard missing: $GUARD" >&2; exit 2; fi
+GUARD_FAIL_LIST=""
+for script in "$SCRIPT_DIR"/selftest-*.sh; do
+  [ "$(basename "$script")" = "selftest-assertion-guard.sh" ] && continue
+  base="$(basename "$script" .sh)"
+  if [ -n "$ONLY" ] && ! printf '%s' "$base" | grep -q "$ONLY"; then continue; fi
+  out_file="$_RUN_DIR/$base.out"
+  if [ ! -f "$out_file" ]; then
+    echo "[ASSERTION-GUARD-FAIL] $base (no captured output)" >&2
+    GUARD_FAIL_LIST="$GUARD_FAIL_LIST $base"
+  elif ! bash "$GUARD" "$script" "$out_file" >/dev/null 2>&1; then
+    echo "[ASSERTION-GUARD-FAIL] $base" >&2
+    GUARD_FAIL_LIST="$GUARD_FAIL_LIST $base"
+  fi
+done
+for base in $GUARD_FAIL_LIST; do
+  case " $FAILED_LIST " in
+    *" $base "*) continue ;;
+  esac
+  # 从 PASS 移项到 FAIL，保持 PASS+FAIL=TOTAL 的汇总不变量
+  [ "$PASSN" -gt 0 ] && PASSN=$((PASSN-1))
+  FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"
+done
 
 echo "Total: $TOTAL PASS=$PASSN FAIL=$FAILN (run=$RUNN reused=$REUSEDN)"
 [ -n "$FAILED_LIST" ] && echo "Failed:$FAILED_LIST"
