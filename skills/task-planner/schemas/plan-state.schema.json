@@ -21,351 +21,1082 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "schema_version": { "type": "integer", "const": 1 },
-    "task_id": { "type": "string", "minLength": 1 },
-    "plan_tier": { "type": "string", "enum": ["standard", "mini"] },
-    "execution_lane": { "type": "string", "enum": ["L0", "L0-T", "L0-E", "L1", "L2"] },
-    "created_at": { "type": "string", "format": "date-time" },
-    "updated_at": { "type": "string", "format": "date-time" },
-    "requirements": { "type": "array", "items": { "$ref": "#/definitions/requirement" } },
-    "goals": { "type": "array", "items": { "$ref": "#/definitions/goal" } },
-    "vcs": { "type": "array", "items": { "$ref": "#/definitions/vc" } },
-    "phases": { "type": "array", "items": { "$ref": "#/definitions/phase" } },
-    "findings": { "type": "array", "items": { "$ref": "#/definitions/finding" } },
-    "audits": { "type": "array", "items": { "$ref": "#/definitions/audit" } },
-    "delegations": { "type": "array", "items": { "$ref": "#/definitions/delegation" } },
-    "tags": { "$ref": "#/definitions/tag_list" },
-    "actions": { "type": "array", "items": { "$ref": "#/definitions/action_item" } },
-    "files": { "type": "array", "items": { "$ref": "#/definitions/file_item" } },
-    "test_results": { "type": "array", "items": { "$ref": "#/definitions/test_result_item" } },
-    "errors": { "type": "array", "items": { "$ref": "#/definitions/error_item" } },
-    "reboot5q": { "type": "array", "items": { "$ref": "#/definitions/reboot5q_item" } },
-    "knowledge_use": { "type": "array", "items": { "$ref": "#/definitions/knowledge_use_item" } },
-    "resume_report": { "$ref": "#/definitions/resume_report" },
-    "research": { "type": "array", "items": { "$ref": "#/definitions/research_item" } },
-    "decisions": { "type": "array", "items": { "$ref": "#/definitions/decision_item" } },
-    "issues": { "type": "array", "items": { "$ref": "#/definitions/issue_item" } },
-    "resources": { "type": "array", "items": { "$ref": "#/definitions/resource_item" } },
-    "visual": { "type": "array", "items": { "$ref": "#/definitions/visual_item" } },
-    "template_type": { "type": "string" },
-    "template_ref": { "type": "string", "description": "2026-11-25 P1 JSON 原生模板：模板 JSON 文件路径（仓库内为相对仓库根路径，仓库外保留传入原路径）；可选" },
-    "template_doc": { "$ref": "#/definitions/template_doc" },
-    "template_checks": { "type": "array", "items": { "$ref": "#/definitions/template_check_item" }, "description": "2026-11-25 P1：勾选唯一权威源，由 init 从 template_doc 的 checklist blocks 扁平化；planctl set/get --section template_checks 编辑" },
-    "template_body": { "type": "string", "description": "DEPRECATED（2026-11-25 P1）：init 所选 variant 模板正文原文；仅无 template_doc 的旧计划在 render 时吐出附录。保留字段兼容 406 份存量中 13 份非空数据，新计划不写此字段。" },
-    "understanding": { "$ref": "#/definitions/understanding" },
-    "root_causes": { "type": "array", "items": { "$ref": "#/definitions/root_cause_item" } },
-    "invariants": { "type": "array", "items": { "$ref": "#/definitions/invariant_item" } },
-    "spec_baseline": { "type": "array", "items": { "$ref": "#/definitions/spec_baseline_item" } },
-    "progress_baseline": { "type": "array", "items": { "$ref": "#/definitions/progress_baseline_item" } },
-    "config": { "$ref": "#/definitions/config_obj" },
-    "dual_qc": { "$ref": "#/definitions/dual_qc" },
-    "goal_verdict": { "$ref": "#/definitions/goal_verdict" },
-    "scope_limits": { "type": "array", "items": { "$ref": "#/definitions/scope_limit_item" } },
-    "changes": { "type": "array", "items": { "$ref": "#/definitions/change_item" } },
-    "knowledge": { "type": "array", "items": { "$ref": "#/definitions/knowledge_item" } },
-    "core_question": { "$ref": "#/definitions/core_question" },
-    "research_status": { "type": "array", "items": { "$ref": "#/definitions/research_status_item" } },
-    "evidence_faces": { "type": "array", "items": { "$ref": "#/definitions/evidence_face_item" } },
-    "next_step": { "type": "string" },
-    "tool_use": { "type": "array", "items": { "$ref": "#/definitions/tool_use_item" } },
-    "s_units": { "type": "array", "items": { "$ref": "#/definitions/s_unit_item" } },
-    "anti_regress": { "type": "array", "items": { "$ref": "#/definitions/anti_regress_item" } },
-    "isolation": { "$ref": "#/definitions/isolation" },
-    "fmea": { "type": "array", "items": { "$ref": "#/definitions/fmea_item" } },
-    "todo_sync": { "type": "array", "items": { "$ref": "#/definitions/todo_sync_item" } },
-    "key_questions": { "type": "array", "items": { "$ref": "#/definitions/key_question_item" } },
-    "batch": { "$ref": "#/definitions/batch" },
-    "delegation_stats": { "$ref": "#/definitions/delegation_stats" },
-    "chain": { "$ref": "#/definitions/chain" },
-    "phase_gates": { "type": "array", "items": { "$ref": "#/definitions/phase_gate_item" } },
-    "knowledge_compliance": { "type": "array", "items": { "$ref": "#/definitions/knowledge_compliance_item" } },
-    "quality_gates": { "$ref": "#/definitions/quality_gates" },
-    "outcome": { "$ref": "#/definitions/outcome" },
-    "cross_checks": { "type": "array", "items": { "$ref": "#/definitions/cross_check_item" } },
-    "output_examples": { "type": "array", "items": { "$ref": "#/definitions/output_example_item" }, "description": "[Rule 113 输出示例契约] 每条格式声明须配完整示例+可复用模板；planctl add --section output_examples 写入，planctl render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。" },
-    "acceptance": { "type": "object", "description": "[2026-11-26 task-source-registry] 顶层验收状态（awaiting/accepted/rejected）", "properties": { "status": { "type": "string", "enum": ["awaiting", "accepted", "rejected"] }, "date": { "type": "string" }, "anchor": { "type": "string" } }, "additionalProperties": true },
-    "scope_boundary": { "type": "object", "description": "[2026-11-27 task-boundary-advance-20261127] 范围边界机器门；缺省=存量兼容放行", "properties": { "enabled": { "type": "boolean" }, "include": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "exclude": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "declared_by": { "type": "string" }, "updated_at": { "type": "string" } }, "additionalProperties": false }
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_tier": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "mini"
+      ]
+    },
+    "execution_lane": {
+      "type": "string",
+      "enum": [
+        "L0",
+        "L0-T",
+        "L0-E",
+        "L1",
+        "L2"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/requirement"
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/goal"
+      }
+    },
+    "vcs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/vc"
+      }
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/phase"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/finding"
+      }
+    },
+    "audits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/audit"
+      }
+    },
+    "delegations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/delegation"
+      }
+    },
+    "tags": {
+      "$ref": "#/definitions/tag_list"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/action_item"
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/file_item"
+      }
+    },
+    "test_results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/test_result_item"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/error_item"
+      }
+    },
+    "reboot5q": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/reboot5q_item"
+      }
+    },
+    "knowledge_use": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/knowledge_use_item"
+      }
+    },
+    "resume_report": {
+      "$ref": "#/definitions/resume_report"
+    },
+    "research": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/research_item"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/decision_item"
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/issue_item"
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/resource_item"
+      }
+    },
+    "visual": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/visual_item"
+      }
+    },
+    "template_type": {
+      "type": "string"
+    },
+    "template_ref": {
+      "type": "string",
+      "description": "2026-11-25 P1 JSON 原生模板：模板 JSON 文件路径（仓库内为相对仓库根路径，仓库外保留传入原路径）；可选"
+    },
+    "template_doc": {
+      "$ref": "#/definitions/template_doc"
+    },
+    "template_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/template_check_item"
+      },
+      "description": "2026-11-25 P1：勾选唯一权威源，由 init 从 template_doc 的 checklist blocks 扁平化；planctl set/get --section template_checks 编辑"
+    },
+    "template_body": {
+      "type": "string",
+      "description": "DEPRECATED（2026-11-25 P1）：init 所选 variant 模板正文原文；仅无 template_doc 的旧计划在 render 时吐出附录。保留字段兼容 406 份存量中 13 份非空数据，新计划不写此字段。"
+    },
+    "understanding": {
+      "$ref": "#/definitions/understanding"
+    },
+    "root_causes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/root_cause_item"
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/invariant_item"
+      }
+    },
+    "spec_baseline": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/spec_baseline_item"
+      }
+    },
+    "progress_baseline": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/progress_baseline_item"
+      }
+    },
+    "config": {
+      "$ref": "#/definitions/config_obj"
+    },
+    "dual_qc": {
+      "$ref": "#/definitions/dual_qc"
+    },
+    "goal_verdict": {
+      "$ref": "#/definitions/goal_verdict"
+    },
+    "scope_limits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/scope_limit_item"
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/change_item"
+      }
+    },
+    "knowledge": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/knowledge_item"
+      }
+    },
+    "core_question": {
+      "$ref": "#/definitions/core_question"
+    },
+    "research_status": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/research_status_item"
+      }
+    },
+    "evidence_faces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/evidence_face_item"
+      }
+    },
+    "next_step": {
+      "type": "string"
+    },
+    "tool_use": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/tool_use_item"
+      }
+    },
+    "s_units": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/s_unit_item"
+      }
+    },
+    "anti_regress": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/anti_regress_item"
+      }
+    },
+    "isolation": {
+      "$ref": "#/definitions/isolation"
+    },
+    "fmea": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/fmea_item"
+      }
+    },
+    "todo_sync": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/todo_sync_item"
+      }
+    },
+    "key_questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/key_question_item"
+      }
+    },
+    "batch": {
+      "$ref": "#/definitions/batch"
+    },
+    "delegation_stats": {
+      "$ref": "#/definitions/delegation_stats"
+    },
+    "chain": {
+      "$ref": "#/definitions/chain"
+    },
+    "phase_gates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/phase_gate_item"
+      }
+    },
+    "knowledge_compliance": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/knowledge_compliance_item"
+      }
+    },
+    "quality_gates": {
+      "$ref": "#/definitions/quality_gates"
+    },
+    "outcome": {
+      "$ref": "#/definitions/outcome"
+    },
+    "cross_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/cross_check_item"
+      }
+    },
+    "output_examples": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/output_example_item"
+      },
+      "description": "[Rule 113 输出示例契约] 每条格式声明须配完整示例+可复用模板；planctl add --section output_examples 写入，planctl render 派生到 task_plan.md「🧩 输出示例与格式契约」区块。"
+    },
+    "acceptance": {
+      "type": "object",
+      "description": "[2026-11-26 task-source-registry] 顶层验收状态（awaiting/accepted/rejected）",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "awaiting",
+            "accepted",
+            "rejected"
+          ]
+        },
+        "date": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "scope_boundary": {
+      "type": "object",
+      "description": "[2026-11-27 task-boundary-advance-20261127] 范围边界机器门；缺省=存量兼容放行",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "declared_by": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_binding": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sha256",
+          "version",
+          "recorded_at"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "证据→版本绑定：产物路径绑定到写入时的 sha256 与版本；旧 hash 只留审计不得推进状态"
+    }
   },
   "definitions": {
     "output_example_item": {
       "type": "object",
       "description": "Rule 113 输出示例契约条目。example=完整可读的真实形态（fenced code block 或 Markdown 表格文本，禁 TBD/略/同上）；template=同结构占位符版，供执行期复制填写；二者字段集/层级必须一致。vc_refs 至少引用 1 个已存在 VC。mini/L0-lite 不豁免，允许极简版。",
-      "required": ["id", "deliverable", "format", "example", "template", "vc_refs"],
+      "required": [
+        "id",
+        "deliverable",
+        "format",
+        "example",
+        "template",
+        "vc_refs"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "deliverable": { "type": "string", "minLength": 1, "description": "交付物名称（如 article.json / 验证报告表格）" },
-        "format": { "type": "string", "minLength": 1, "description": "输出格式/结构（JSON / YAML / Markdown 表格 / 文件树 / API payload 等）" },
-        "example": { "type": "string", "minLength": 1, "description": "完整、可直接查看的示例文本；必须自包含，禁 '略/同上/TBD'" },
-        "template": { "type": "string", "minLength": 1, "description": "与 example 同结构的占位符模板，供执行期直接复制填写" },
-        "vc_refs": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "对应 VC id 列表（至少 1 个已存在 VC）" },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deliverable": {
+          "type": "string",
+          "minLength": 1,
+          "description": "交付物名称（如 article.json / 验证报告表格）"
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "输出格式/结构（JSON / YAML / Markdown 表格 / 文件树 / API payload 等）"
+        },
+        "example": {
+          "type": "string",
+          "minLength": 1,
+          "description": "完整、可直接查看的示例文本；必须自包含，禁 '略/同上/TBD'"
+        },
+        "template": {
+          "type": "string",
+          "minLength": 1,
+          "description": "与 example 同结构的占位符模板，供执行期直接复制填写"
+        },
+        "vc_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "对应 VC id 列表（至少 1 个已存在 VC）"
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "tag_list": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "uniqueItems": true
     },
     "requirement": {
       "type": "object",
       "description": "R 行：用户需求逐条抄录；type=目标须映射可观察判据型 VC。",
-      "required": ["id", "text", "type", "vc"],
+      "required": [
+        "id",
+        "text",
+        "type",
+        "vc"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "text": { "type": "string" },
-        "type": { "type": "string", "enum": ["目标", "手段"] },
-        "vc": { "type": "array", "items": { "type": "string" } },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "目标",
+            "手段"
+          ]
+        },
+        "vc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "goal": {
       "type": "object",
       "description": "goal 单元（Rule 66.1 的 JSON 投影）。",
-      "required": ["id", "text"],
+      "required": [
+        "id",
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "text": { "type": "string" },
-        "tags": { "$ref": "#/definitions/tag_list" },
-        "evidence": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据锚文本（写入 progress.md 的 - [goal:G<n>] 行）; Why: evidence-anchor 门按 [goal:G<n>] 整行取证据,无此字段则 goal 证据无法从 JSON 派生。" },
-        "name": { "type": "string", "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 任务名（短名）; Why: render「🎯 Goal 单元表」（Rule 66.5 六列锚）任务名列数据源。" },
-        "verify": { "type": "string", "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 完整验证方式（命令/判据文本）; Why: Rule 66.5 完整验证方式列非空门的数据源。" },
-        "s_units": { "type": "array", "items": { "type": "string" }, "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 对应 S-unit 引用列表; Why: Rule 66.5 对应 S-unit 列数据源。" },
-        "status": { "type": "string", "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 状态（pending/pass/fail 等）; Why: Rule 66.5 状态列数据源。" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        },
+        "evidence": {
+          "type": "string",
+          "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: goal 证据锚文本（写入 progress.md 的 - [goal:G<n>] 行）; Why: evidence-anchor 门按 [goal:G<n>] 整行取证据,无此字段则 goal 证据无法从 JSON 派生。"
+        },
+        "name": {
+          "type": "string",
+          "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 任务名（短名）; Why: render「🎯 Goal 单元表」（Rule 66.5 六列锚）任务名列数据源。"
+        },
+        "verify": {
+          "type": "string",
+          "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 完整验证方式（命令/判据文本）; Why: Rule 66.5 完整验证方式列非空门的数据源。"
+        },
+        "s_units": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 对应 S-unit 引用列表; Why: Rule 66.5 对应 S-unit 列数据源。"
+        },
+        "status": {
+          "type": "string",
+          "description": "[2026-11-22 task-planctl-exec-surface-20261122] What: goal 状态（pending/pass/fail 等）; Why: Rule 66.5 状态列数据源。"
+        }
       }
     },
     "vc": {
       "type": "object",
       "description": "Verification Contract 条目；command 由 check vc-nonvacuous 静态判真空。",
-      "required": ["id", "criterion", "command", "status", "evidence"],
+      "required": [
+        "id",
+        "criterion",
+        "command",
+        "status",
+        "evidence"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "criterion": { "type": "string" },
-        "command": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "pass", "fail"] },
-        "evidence": { "type": "string" },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "criterion": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "pass",
+            "fail"
+          ]
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "phase": {
       "type": "object",
       "description": "Phase 条目；v_checks 存映射的 VC 编号，供 check rvc 做 VC→引用兜底。",
-      "required": ["id", "status", "s_units", "v_checks"],
+      "required": [
+        "id",
+        "status",
+        "s_units",
+        "v_checks"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "status": { "type": "string", "enum": ["pending", "in_progress", "complete"] },
-        "s_units": { "type": "array", "items": { "type": "string" } },
-        "v_checks": { "type": "array", "items": { "type": "string" } },
-        "tags": { "$ref": "#/definitions/tag_list" },
-        "name": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase 显示名; Why: render `### Phase <id>: <name>` 与模板逐字对齐。" },
-        "started": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase 起始 ISO8601 时间; Why: check-3file-gate.sh 从 progress.md 的 **Started:** 行取 mtime 锚点,必须由 JSON 派生。" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "in_progress",
+            "complete"
+          ]
+        },
+        "s_units": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "v_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        },
+        "name": {
+          "type": "string",
+          "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase 显示名; Why: render `### Phase <id>: <name>` 与模板逐字对齐。"
+        },
+        "started": {
+          "type": "string",
+          "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase 起始 ISO8601 时间; Why: check-3file-gate.sh 从 progress.md 的 **Started:** 行取 mtime 锚点,必须由 JSON 派生。"
+        }
       }
     },
     "finding": {
       "type": "object",
       "description": "findings 条目；source 为 file:line / URL 等可追溯锚。",
-      "required": ["id", "text", "source"],
+      "required": [
+        "id",
+        "text",
+        "source"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "text": { "type": "string" },
-        "source": { "type": "string" },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "audit": {
       "type": "object",
       "description": "独立审计轮次；check audit 取 round 最大条目判 APPROVED 且 C=0/I=0；issues（2026-11-21 新增，可选）承载显式问题 key 供连续无进展判定，旧条目无 issues 仍合法。",
-      "required": ["round", "verdict", "by", "counts", "at"],
+      "required": [
+        "round",
+        "verdict",
+        "by",
+        "counts",
+        "at"
+      ],
       "additionalProperties": false,
       "properties": {
-        "round": { "type": "integer", "minimum": 1 },
-        "verdict": { "type": "string", "enum": ["APPROVED", "REJECTED"] },
-        "by": { "type": "string" },
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "APPROVED",
+            "REJECTED"
+          ]
+        },
+        "by": {
+          "type": "string"
+        },
         "counts": {
           "type": "object",
-          "required": ["C", "I", "W"],
+          "required": [
+            "C",
+            "I",
+            "W"
+          ],
           "additionalProperties": false,
           "properties": {
-            "C": { "type": "integer", "minimum": 0 },
-            "I": { "type": "integer", "minimum": 0 },
-            "W": { "type": "integer", "minimum": 0 }
+            "C": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "I": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "W": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         },
-        "at": { "type": "string", "format": "date-time" },
-        "issues": { "type": "array", "items": { "$ref": "#/definitions/audit_issue" } },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/audit_issue"
+          }
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "audit_issue": {
       "type": "object",
       "description": "审计问题单项（2026-11-21 task-audit-rework-cap-20261121）：key 是跨轮无进展判定的唯一信号源，severity/state 决定该 key 是否为开放 C/I。",
-      "required": ["key", "severity", "state"],
+      "required": [
+        "key",
+        "severity",
+        "state"
+      ],
       "additionalProperties": false,
       "properties": {
-        "key": { "type": "string", "pattern": "^(C|I|W|N|Q)-[A-Za-z0-9_\\u4e00-\\u9fff-]{1,48}$" },
-        "severity": { "type": "string", "enum": ["C", "I", "W", "N", "Q"] },
-        "state": { "type": "string", "enum": ["open", "fixed", "accepted", "new", "deferred"] },
-        "title": { "type": "string" }
+        "key": {
+          "type": "string",
+          "pattern": "^(C|I|W|N|Q)-[A-Za-z0-9_\\u4e00-\\u9fff-]{1,48}$"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "C",
+            "I",
+            "W",
+            "N",
+            "Q"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "fixed",
+            "accepted",
+            "new",
+            "deferred"
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
       }
     },
     "delegation": {
       "type": "object",
       "description": "子代理派发登记（Rule 22.5 的 JSON 投影）。",
-      "required": ["id", "agent", "scope", "status"],
+      "required": [
+        "id",
+        "agent",
+        "scope",
+        "status"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "agent": { "type": "string" },
-        "scope": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "running", "done", "fail"] },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "running",
+            "done",
+            "fail"
+          ]
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "action_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 动作留痕条目（Rule 19.2）；原行为仅存在于 progress.md 自由文本，无机器可读结构；Why: 全面 JSON 派生后需承载写入。",
-      "required": ["id", "phase", "text"],
+      "required": [
+        "id",
+        "phase",
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "text": { "type": "string" },
-        "at": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
       }
     },
     "file_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Files created/modified 表条目；原行为只在 MD 表格中，无法被机器门消费；Why: 变更留痕入库。",
-      "required": ["id", "path", "change"],
+      "required": [
+        "id",
+        "path",
+        "change"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "path": { "type": "string" },
-        "change": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "change": {
+          "type": "string"
+        }
       }
     },
     "test_result_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Test Results 七列条目；原行为为 MD 表格；Why: 测试证据结构化后可校验 status。",
-      "required": ["id", "test", "status"],
+      "required": [
+        "id",
+        "test",
+        "status"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "test": { "type": "string" },
-        "input": { "type": "string" },
-        "expected": { "type": "string" },
-        "actual": { "type": "string" },
-        "status": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "test": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        },
+        "expected": {
+          "type": "string"
+        },
+        "actual": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
       }
     },
     "error_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Error Log 七列（Rule 19.4/31）；原行为仅 MD 文本，错误根因无法聚合；Why: 失败复盘入库。attempt 为重试序号（整数），其余为自由文本。",
-      "required": ["id", "timestamp", "error"],
+      "required": [
+        "id",
+        "timestamp",
+        "error"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "timestamp": { "type": "string" },
-        "error": { "type": "string" },
-        "attempt": { "type": "integer" },
-        "resolution": { "type": "string" },
-        "root_cause": { "type": "string" },
-        "prevention": { "type": "string" },
-        "trigger": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "attempt": {
+          "type": "integer"
+        },
+        "resolution": {
+          "type": "string"
+        },
+        "root_cause": {
+          "type": "string"
+        },
+        "prevention": {
+          "type": "string"
+        },
+        "trigger": {
+          "type": "string"
+        }
       }
     },
     "reboot5q_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 5-Question Reboot 问答（Rule 67）；原行为为 MD 段落；Why: 统一 id 以复用通用 add/get/set/delete 定位。",
-      "required": ["id", "question", "answer"],
+      "required": [
+        "id",
+        "question",
+        "answer"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "question": { "type": "string" },
-        "answer": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
       }
     },
     "knowledge_use_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 知识储备使用记录；原行为散落于执行叙述；Why: 显式留痕来源与用途。",
-      "required": ["id", "source", "purpose"],
+      "required": [
+        "id",
+        "source",
+        "purpose"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "source": { "type": "string" },
-        "purpose": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        }
       }
     },
     "resume_report": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: plan-resume 报告锚（path/last）；原行为由脚本另读路径文件；Why: 锚点入权威源，视图重建可直接消费。",
-      "required": ["path"],
+      "required": [
+        "path"
+      ],
       "additionalProperties": false,
       "properties": {
-        "path": { "type": "string" },
-        "last": { "type": "string" }
+        "path": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        }
       }
     },
     "research_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Research Findings 三列（Rule 71 无源不写）；原行为仅 findings.md 文本；Why: source 必填使无源断言无法入库。",
-      "required": ["id", "claim", "source"],
+      "required": [
+        "id",
+        "claim",
+        "source"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "claim": { "type": "string" },
-        "source": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
       }
     },
     "decision_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Technical Decisions（决策+理由）；原行为为 MD 段落；Why: 决策可追溯、可被裁决门引用。",
-      "required": ["id", "decision"],
+      "required": [
+        "id",
+        "decision"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "decision": { "type": "string" },
-        "rationale": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
       }
     },
     "issue_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Issues Encountered；原行为为 MD 列表；Why: 问题与处置入结构化源。",
-      "required": ["id", "issue"],
+      "required": [
+        "id",
+        "issue"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "issue": { "type": "string" },
-        "resolution": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue": {
+          "type": "string"
+        },
+        "resolution": {
+          "type": "string"
+        }
       }
     },
     "resource_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Resources（locator 可为 URL/文件路径）；原行为为 MD 列表；Why: 资源定位可机器消费。",
-      "required": ["id", "locator"],
+      "required": [
+        "id",
+        "locator"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "locator": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "type": "string"
+        }
       }
     },
     "visual_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Visual/Browser Findings（Rule 71.3）；原行为为 MD 截图叙述；Why: source 必填约束同 Research Findings。",
-      "required": ["id", "finding", "source"],
+      "required": [
+        "id",
+        "finding",
+        "source"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "finding": { "type": "string" },
-        "source": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "finding": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
       }
     },
     "understanding": {
@@ -373,85 +1104,197 @@
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 理解草稿四栏（Rule 28.2.2），original 按 markdown 原文存储；原行为为 MD 文本块；Why: 规划面进权威源。所有键可选，草稿可为空对象。",
       "additionalProperties": false,
       "properties": {
-        "original": { "type": "string" },
-        "model": { "type": "string" },
-        "options": { "type": "string" },
-        "direction": { "type": "string" }
+        "original": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "options": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string"
+        }
       }
     },
     "root_cause_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 根源覆盖表五列（Rule 53.1）；原行为在 MD 表格；Why: 每根因可核对 VC。",
-      "required": ["id", "process", "defect", "fix"],
+      "required": [
+        "id",
+        "process",
+        "defect",
+        "fix"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "process": { "type": "string" },
-        "defect": { "type": "string" },
-        "fix": { "type": "string" },
-        "vc": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "process": {
+          "type": "string"
+        },
+        "defect": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        },
+        "vc": {
+          "type": "string"
+        }
       }
     },
     "invariant_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 不变量四列（Rule 73.3）；原行为为 MD 表格；Why: 状态-项-锚可校验。",
-      "required": ["id", "state", "item", "anchor"],
+      "required": [
+        "id",
+        "state",
+        "item",
+        "anchor"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "state": { "type": "string" },
-        "item": { "type": "string" },
-        "anchor": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        }
       }
     },
     "spec_baseline_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 规范基线（Rule 51.15），verbatim 存原文引用；原行为为 MD 引文；Why: sha/anchor 使漂移可检出。 [2026-11-26 task-source-registry] 新增可选字段 dimension/disposition/fallback_reason/tags（向后兼容）。",
-      "required": ["id", "verbatim", "anchor"],
+      "required": [
+        "id",
+        "verbatim",
+        "anchor"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "verbatim": { "type": "string" },
-        "anchor": { "type": "string" },
-        "rule": { "type": "string" },
-        "sha": { "type": "string" },
-        "kind": { "type": "string" },
-        "check": { "type": "string" },
-        "applies": { "type": "string" },
-        "src": { "type": "string" },
-        "result": { "type": "string" },
-        "observed": { "type": "string" },
-        "cls": { "type": "string" },
-        "origin": { "type": "string" },
-        "target": { "type": "string" },
-        "dimension": { "type": "string" },
-        "disposition": { "type": "string", "enum": ["pending", "must", "na"] },
-        "fallback_reason": { "type": "string" },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verbatim": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string"
+        },
+        "sha": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "check": {
+          "type": "string"
+        },
+        "applies": {
+          "type": "string"
+        },
+        "src": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        },
+        "observed": {
+          "type": "string"
+        },
+        "cls": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "string"
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "must",
+            "na"
+          ]
+        },
+        "fallback_reason": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "progress_baseline_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 进度产出基线（Rule 111）；原行为为 MD 快照表；Why: ban/status 供防倒退终检读取。",
-      "required": ["id", "item", "snapshot"],
+      "required": [
+        "id",
+        "item",
+        "snapshot"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "item": { "type": "string" },
-        "snapshot": { "type": "string" },
-        "metric": { "type": "string" },
-        "ban": { "type": "string" },
-        "status": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item": {
+          "type": "string"
+        },
+        "snapshot": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string"
+        },
+        "ban": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
       }
     },
     "config_obj": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Code Review/会话配置；原行为为散落的脚本参数；Why: 声明为自由扩展对象（不设 additionalProperties:false），兼容未来配置项。",
       "properties": {
-        "code_review": { "type": "string" },
-        "session_id": { "type": "string" },
-        "worktree_path": { "type": "string" },
-        "scope_files": { "type": "array", "items": { "type": "string" } }
+        "code_review": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "worktree_path": {
+          "type": "string"
+        },
+        "scope_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "dual_qc": {
@@ -459,151 +1302,337 @@
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 双轮质检范围/豁免/多文件标记（Rule 103）；原行为为 MD 声明；Why: 质检门可读取结构化范围。",
       "additionalProperties": false,
       "properties": {
-        "scope": { "type": "string" },
-        "exempt": { "type": "string" },
-        "multi_file": { "type": "string" }
+        "scope": {
+          "type": "string"
+        },
+        "exempt": {
+          "type": "string"
+        },
+        "multi_file": {
+          "type": "string"
+        }
       }
     },
     "goal_verdict": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 目标裁决六栏（Rule 58.5）；原行为为 MD 结论段；Why: verdict/evidence 必须入库以支持机器核对。",
-      "required": ["goal", "verdict"],
+      "required": [
+        "goal",
+        "verdict"
+      ],
       "additionalProperties": false,
       "properties": {
-        "goal": { "type": "string" },
-        "verdict": { "type": "string" },
-        "evidence": { "type": "string" },
-        "unresolved": { "type": "string" },
-        "excluded": { "type": "string" },
-        "next": { "type": "string" }
+        "goal": {
+          "type": "string"
+        },
+        "verdict": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "unresolved": {
+          "type": "string"
+        },
+        "excluded": {
+          "type": "string"
+        },
+        "next": {
+          "type": "string"
+        }
       }
     },
     "scope_limit_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 范围限制 allow/deny 列表；原行为为 MD  bullet；Why: 数组化后范围检查无需正则。",
-      "required": ["id", "category"],
+      "required": [
+        "id",
+        "category"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "category": { "type": "string" },
-        "allow": { "type": "array", "items": { "type": "string" } },
-        "deny": { "type": "array", "items": { "type": "string" } }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string"
+        },
+        "allow": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deny": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "change_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 变更标注七列（Rule 74.3）；原行为为 MD 表格；Why: 变更理由与原文锚同条目存放。",
-      "required": ["id", "object", "type"],
+      "required": [
+        "id",
+        "object",
+        "type"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "object": { "type": "string" },
-        "type": { "type": "string" },
-        "absorb": { "type": "string" },
-        "quote": { "type": "string" },
-        "basis": { "type": "string" },
-        "action": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "absorb": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "basis": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        }
       }
     },
     "knowledge_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 知识储备清单；原行为为 MD 表格；Why: level/confirmed 便于知识符合性检查。",
-      "required": ["id", "category", "name"],
+      "required": [
+        "id",
+        "category",
+        "name"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "category": { "type": "string" },
-        "name": { "type": "string" },
-        "loc": { "type": "string" },
-        "level": { "type": "string" },
-        "confirmed": { "type": "string" },
-        "consumed": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 是否已消费; Why: findings.md 知识对齐表第 3 列,原行为仅存在于 MD,JSON 无法派生。" },
-        "landing": { "type": "string", "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 结论落点段落锚; Why: findings.md 知识对齐表第 4 列,供知识消费闭环机器核验。" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "loc": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "confirmed": {
+          "type": "string"
+        },
+        "consumed": {
+          "type": "string",
+          "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 是否已消费; Why: findings.md 知识对齐表第 3 列,原行为仅存在于 MD,JSON 无法派生。"
+        },
+        "landing": {
+          "type": "string",
+          "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 结论落点段落锚; Why: findings.md 知识对齐表第 4 列,供知识消费闭环机器核验。"
+        }
       }
     },
     "core_question": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 核心问题（text 按 markdown 原文存储 + checks/verdict）；原行为为 MD 段；Why: 目标裁决前的核心问题可机器引用。",
-      "required": ["text"],
+      "required": [
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "text": { "type": "string" },
-        "checks": { "type": "string" },
-        "verdict": { "type": "string" }
+        "text": {
+          "type": "string"
+        },
+        "checks": {
+          "type": "string"
+        },
+        "verdict": {
+          "type": "string"
+        }
       }
     },
     "research_status_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 调研三态（Rule 75.1）六列；原行为为 MD 状态表；Why: state/net 显式化，避免「搜过」无法核验。",
-      "required": ["id", "unit", "state"],
+      "required": [
+        "id",
+        "unit",
+        "state"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "unit": { "type": "string" },
-        "state": { "type": "string" },
-        "keywords": { "type": "string" },
-        "channels": { "type": "string" },
-        "output": { "type": "string" },
-        "net": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unit": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "string"
+        },
+        "channels": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "net": {
+          "type": "string"
+        }
       }
     },
     "evidence_face_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 证据面五列（Rule 58.1）；原行为为 MD 表格；Why: 每面有 target/method/anchor/status 可核。",
-      "required": ["id", "face", "target"],
+      "required": [
+        "id",
+        "face",
+        "target"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "face": { "type": "string" },
-        "target": { "type": "string" },
-        "method": { "type": "string" },
-        "anchor": { "type": "string" },
-        "status": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "face": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
       }
     },
     "tool_use_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 工具编排记录（Rule 40），tools 为逗号串或自由文本；原行为为叙述；Why: 编排理由留痕。",
-      "required": ["id", "phase", "tools"],
+      "required": [
+        "id",
+        "phase",
+        "tools"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "tools": { "type": "string" },
-        "why": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "string"
+        },
+        "why": {
+          "type": "string"
+        }
       }
     },
     "s_unit_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: S-unit 10 列锁序（id/phase/name/executor/files/actions/verify/duration/granularity/parallel）＋ H5 新增 escort_skills 伴飞路径数组；原行为为 MD 表格；Why: 锁序字段全部可选留白，核心三列必填以支持定位与派发；[2026-11-24 task-sp-driven-invocation H5] escort_skills 为伴随技能 .md 绝对路径数组，是 Rule 59.2「路径+首动作 Read」到达子代理执行层的唯一泛化注入载体，additionalProperties:false 下须显式登记否则 schema 拒写。",
-      "required": ["id", "phase", "name"],
+      "required": [
+        "id",
+        "phase",
+        "name"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "name": { "type": "string" },
-        "executor": { "type": "string" },
-        "files": { "type": "string" },
-        "actions": { "type": "string" },
-        "verify": { "type": "string" },
-        "duration": { "type": "string" },
-        "granularity": { "type": "string" },
-        "parallel": { "type": "string" },
-        "escort_skills": { "type": "array", "items": { "type": "string" } },
-        "status": { "type": "string", "description": "2026-11-25 P1：S-unit 当前状态；render 第 10 列优先取本字段，缺省写 pending" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "executor": {
+          "type": "string"
+        },
+        "files": {
+          "type": "string"
+        },
+        "actions": {
+          "type": "string"
+        },
+        "verify": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "granularity": {
+          "type": "string"
+        },
+        "parallel": {
+          "type": "string"
+        },
+        "escort_skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "2026-11-25 P1：S-unit 当前状态；render 第 10 列优先取本字段，缺省写 pending"
+        }
       }
     },
     "anti_regress_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 防倒退终检（Rule 111）；原行为为 MD 表；Why: result 与 anchor 绑定便于复核。",
-      "required": ["id", "item", "method"],
+      "required": [
+        "id",
+        "item",
+        "method"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "item": { "type": "string" },
-        "method": { "type": "string" },
-        "anchor": { "type": "string" },
-        "result": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        }
       }
     },
     "isolation": {
@@ -611,72 +1640,147 @@
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 隔离决策四栏（冲突/路径/分支/回合）；原行为为 MD 声明；Why: worktree 生命周期可机器追踪。",
       "additionalProperties": false,
       "properties": {
-        "conflict": { "type": "string" },
-        "path": { "type": "string" },
-        "branch": { "type": "string" },
-        "merge_back": { "type": "string" }
+        "conflict": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "merge_back": {
+          "type": "string"
+        }
       }
     },
     "fmea_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: FMEA 七列；原行为为 MD 表；Why: severity/occurrence/detection/rpn 为数值，便于排序；fallback 为文本。",
-      "required": ["id", "phase", "mode"],
+      "required": [
+        "id",
+        "phase",
+        "mode"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "phase": { "type": "string" },
-        "mode": { "type": "string" },
-        "severity": { "type": "integer" },
-        "occurrence": { "type": "integer" },
-        "detection": { "type": "integer" },
-        "rpn": { "type": "integer" },
-        "fallback": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "integer"
+        },
+        "occurrence": {
+          "type": "integer"
+        },
+        "detection": {
+          "type": "integer"
+        },
+        "rpn": {
+          "type": "integer"
+        },
+        "fallback": {
+          "type": "string"
+        }
       }
     },
     "todo_sync_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Todo 同步规则（Rule 3/19.6）；原行为为 MD 说明；Why: 触发器与动作成对入库。",
-      "required": ["id", "trigger", "action"],
+      "required": [
+        "id",
+        "trigger",
+        "action"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "trigger": { "type": "string" },
-        "action": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trigger": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        }
       }
     },
     "key_question_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 关键问答三列；原行为为 MD 列表；Why: 统一 id 以支持通用 CRUD 定位。",
-      "required": ["id", "question", "answer"],
+      "required": [
+        "id",
+        "question",
+        "answer"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "question": { "type": "string" },
-        "answer": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
       }
     },
     "batch": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 批量操作统计（Rule 18.6）；原行为为 MD 数字叙述；Why: 计数为整数、抽样与回滚为文本，全部可选以便逐步填写。",
       "properties": {
-        "total": { "type": "integer" },
-        "success": { "type": "integer" },
-        "failed": { "type": "integer" },
-        "rate": { "type": "string" },
-        "sampled_pass": { "type": "integer" },
-        "sampled_fail": { "type": "integer" },
-        "pre_check": { "type": "string" },
-        "rollback": { "type": "string" }
+        "total": {
+          "type": "integer"
+        },
+        "success": {
+          "type": "integer"
+        },
+        "failed": {
+          "type": "integer"
+        },
+        "rate": {
+          "type": "string"
+        },
+        "sampled_pass": {
+          "type": "integer"
+        },
+        "sampled_fail": {
+          "type": "integer"
+        },
+        "pre_check": {
+          "type": "string"
+        },
+        "rollback": {
+          "type": "string"
+        }
       }
     },
     "delegation_stats": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 委派统计（Rule 25.4）；原行为为 MD 数字；Why: 整数化后可比较复验覆盖率。",
       "properties": {
-        "total": { "type": "integer" },
-        "subagent": { "type": "integer" },
-        "parallel_width": { "type": "integer" },
-        "verified": { "type": "integer" }
+        "total": {
+          "type": "integer"
+        },
+        "subagent": {
+          "type": "integer"
+        },
+        "parallel_width": {
+          "type": "integer"
+        },
+        "verified": {
+          "type": "integer"
+        }
       }
     },
     "chain": {
@@ -684,34 +1788,74 @@
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 链式任务配置；原行为为 MD 声明；Why: mode/blocks/handoffs 入权威源。",
       "additionalProperties": false,
       "properties": {
-        "mode": { "type": "string" },
-        "blocks": { "type": "string" },
-        "handoffs": { "type": "string" }
+        "mode": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "string"
+        },
+        "handoffs": {
+          "type": "string"
+        }
       }
     },
     "phase_gate_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Phase Gates 五列；原行为为 MD 表；Why: depends/checks 数组化，status 便于机器判定。",
-      "required": ["id", "goal", "done_when"],
+      "required": [
+        "id",
+        "goal",
+        "done_when"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "goal": { "type": "string" },
-        "depends": { "type": "array", "items": { "type": "string" } },
-        "done_when": { "type": "string" },
-        "checks": { "type": "array", "items": { "type": "string" } },
-        "status": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal": {
+          "type": "string"
+        },
+        "depends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "done_when": {
+          "type": "string"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
       }
     },
     "knowledge_compliance_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 知识符合性表；原行为为 MD 表；Why: status 可判定项是否达标。",
-      "required": ["id", "item", "status"],
+      "required": [
+        "id",
+        "item",
+        "status"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "item": { "type": "string" },
-        "status": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
       }
     },
     "quality_gates": {
@@ -719,103 +1863,232 @@
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 委派复验/质量门控（Rule 25.4/26）；原行为为 MD 声明；Why: 门控状态可核对。",
       "additionalProperties": false,
       "properties": {
-        "delegation_reverify": { "type": "string" },
-        "quality_control": { "type": "string" }
+        "delegation_reverify": {
+          "type": "string"
+        },
+        "quality_control": {
+          "type": "string"
+        }
       }
     },
     "outcome": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: Goal Gate 结果（result/blocked_reason）；原行为为 MD 结论；Why: blocked_reason 是停止再派发的机器信号。",
-      "required": ["result"],
+      "required": [
+        "result"
+      ],
       "additionalProperties": false,
       "properties": {
-        "result": { "type": "string" },
-        "blocked_reason": { "type": "string" }
+        "result": {
+          "type": "string"
+        },
+        "blocked_reason": {
+          "type": "string"
+        }
       }
     },
     "template_doc": {
       "type": "object",
       "description": "2026-11-25 P1 JSON 原生模板源（meta + sections），其余顶层字段允许；render 仅消费 sections 中 kind=blocks 的段。",
-      "required": ["schema_version", "meta", "sections"],
+      "required": [
+        "schema_version",
+        "meta",
+        "sections"
+      ],
       "additionalProperties": true,
       "properties": {
-        "schema_version": { "type": "integer", "const": 1 },
-        "meta": { "type": "object", "additionalProperties": true },
-        "sections": { "type": "array", "items": { "$ref": "#/definitions/template_doc_section" } }
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/template_doc_section"
+          }
+        }
       }
     },
     "template_doc_section": {
       "type": "object",
       "description": "2026-11-25 P1：模板锚段；kind=ref 为外部引用（不渲染），kind=blocks 由 render 按序追加。",
-      "required": ["id", "anchor", "kind"],
+      "required": [
+        "id",
+        "anchor",
+        "kind"
+      ],
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "anchor": { "type": "string" },
-        "level": { "type": "integer" },
-        "kind": { "type": "string", "enum": ["ref", "blocks"] },
-        "required": { "type": "boolean" },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "level": {
+          "type": "integer"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "ref",
+            "blocks"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
         "ref": {
           "type": "object",
           "additionalProperties": true,
-          "properties": { "path": { "type": "string" }, "renderer": { "type": "string" } }
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "renderer": {
+              "type": "string"
+            }
+          }
         },
-        "blocks": { "type": "array", "items": { "$ref": "#/definitions/template_doc_block" } }
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/template_doc_block"
+          }
+        }
       }
     },
     "template_doc_block": {
       "type": "object",
       "description": "2026-11-25 P1：模板段内块；checklist 的 items 在 init 时扁平化为 template_checks（勾选唯一权威源）。",
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "kind": { "type": "string", "enum": ["markdown", "checklist", "table", "raw"] },
-        "text": { "type": "string" },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "markdown",
+            "checklist",
+            "table",
+            "raw"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
         "items": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "checked"],
+            "required": [
+              "id",
+              "checked"
+            ],
             "additionalProperties": true,
             "properties": {
-              "id": { "type": "string", "minLength": 1 },
-              "text": { "type": "string" },
-              "checked": { "type": "boolean" },
-              "note": { "type": "string" },
-              "tags": { "type": "array", "items": { "type": "string" } }
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string"
+              },
+              "checked": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         },
-        "columns": { "type": "array", "items": { "type": "string" } },
-        "rows": { "type": "array", "items": { "type": "array", "items": {} } }
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {}
+          }
+        }
       }
     },
     "template_check_item": {
       "type": "object",
       "description": "2026-11-25 P1：单条结构化勾选；section/block 记录来源锚，checked 是 render 唯一勾选数据源。",
-      "required": ["id", "checked"],
+      "required": [
+        "id",
+        "checked"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "section": { "type": "string" },
-        "block": { "type": "string" },
-        "text": { "type": "string" },
-        "checked": { "type": "boolean" },
-        "note": { "type": "string" },
-        "tags": { "$ref": "#/definitions/tag_list" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "section": {
+          "type": "string"
+        },
+        "block": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "checked": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/definitions/tag_list"
+        }
       }
     },
     "cross_check_item": {
       "type": "object",
       "description": "[2026-11-22 task-jsonderive-deploy-20261122] What: 交叉验证表（Rule 108）；原行为为 MD 表；Why: method/result 成对入库便于复核。",
-      "required": ["id", "item", "method"],
+      "required": [
+        "id",
+        "item",
+        "method"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "item": { "type": "string" },
-        "method": { "type": "string" },
-        "result": { "type": "string" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        }
       }
     }
   }

@@ -55,6 +55,7 @@ GENERATED_HEADER = "<!-- 本文件由 planctl.py 从 plan-state.json 生成，�
 VIEW_NAMES = ("task_plan.md", "progress.md", "verification.md", "findings.md")
 
 ARRAY_SECTIONS = (
+    "evidence_binding",
     "requirements", "goals", "vcs", "phases", "findings", "audits", "delegations",
     # [2026-11-22 task-jsonderive-deploy-20261122] What: 追加 29 个语义段数组 section。
     # Why: 原行为只覆盖 7 段，MD 语义段（Actions/Error Log/S-unit/Phase Gates 等）只能直接 Edit MD；
@@ -89,6 +90,7 @@ OPTIONAL_TOP_LEVEL_KEYS = (
     "changes", "knowledge", "research_status", "evidence_faces", "tool_use", "s_units",
     "anti_regress", "fmea", "todo_sync", "key_questions",
     "phase_gates", "knowledge_compliance", "cross_checks", "output_examples",
+    "evidence_binding",
     # 新增对象/标量段（progress / findings / task_plan / verification 的非数组语义）
     "resume_report", "understanding", "config", "dual_qc", "goal_verdict", "core_question",
     "isolation", "batch", "delegation_stats", "chain", "quality_gates", "outcome",
