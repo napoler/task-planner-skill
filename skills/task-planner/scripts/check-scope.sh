@@ -23,7 +23,7 @@
 #   0 = ALLOWED。放行来源（按实际代码逐条枚举；节号=代码内 ①-⑥ 标记）:
 #     · 空 FILE_PATH（部分工具调用不含路径，脚本入口即放行）
 #     · 无项目根（无 plans/ 祖先，≤6 级上溯；无 plans/ 项目不产生哨兵）
-#     · 写 plans/ 目录（创建计划本身豁免，节 ②）
+#     · 写 plans/ 目录（创建计划本身豁免，节 ②；4 个派生 MD 除外，见节②前置）
 #     · 豁免文件名（memory 前缀 + 豁免表，节 ③）
 #     · D10 check-time 仲裁（task_plan.md mtime 晚于哨兵 created_epoch，节 ⑤）
 #     · D10'' attestation 仲裁（side 指针 + plan_sha256 一致，节 ⑤）
@@ -32,7 +32,7 @@
 #     · P1 机械产物区（项目根下 tmp/ output/ .cache/）或 gitignore 区（git check-ignore 命中，节 ④ 口径②；
 #       legacy .plan-required 哨兵在位时亦经同入口放行，节 ⑥）
 #     · 无哨兵（会话 side 未命中且 legacy .plan-required 不存在，节 ⑥）
-#   1 = BLOCKED (哨兵存在且判定未满足，写入 plans/ 外非豁免路径，或 worktree REQUIRED 未满足)
+#   1 = BLOCKED (哨兵存在且判定未满足，写入 plans/ 外非豁免路径，派生 MD 无 render 令牌，或 worktree REQUIRED 未满足)
 
 set -eu
 
@@ -60,7 +60,15 @@ done
 # 无项目根 → 无拦截语义（无 plans/ 项目不产生哨兵）
 [ -z "$ROOT" ] && exit 0
 
-# ─── ② 目标路径 abs 化 + plans/ 目录豁免（原样保留，放行优先复用）──────────
+# ─── ② 前置：派生 MD 直接写保护（2026-11-27 Task 3 / controller D6）─────────
+# What：4 个派生 MD（task_plan.md/findings.md/progress.md/verification.md）只能由
+#   planctl render 落盘；无 render 令牌的直接 Write/Edit → BLOCK rc=1，
+#   TASK_PLAN_ALLOW_RENDER=1（render 专用令牌）→ 放行。
+# Why 位置（实测判例）：节② plans/ 祖先 exit 0 与节③ basename 豁免表都会提前放行
+#   plans/<task-id>/ 下的派生 MD；保护段放在节③之前（:85 前）经探针实测仍 rc=0，
+#   故 abs_path 计算 + 保护段必须整体置于节② walk-up 之前。
+# 边界：仅收紧这 4 个 basename；其它 plans/ 路径继续走原节②/③放行语义，行为零变化。
+# abs_path 由原节②整段前移（全脚本仅此一处赋值，realpath -m -- byte 语义不变），下游共用。
 # [2026-09-27 task-v091 S17 C-1d] python3 abspath → realpath -m: 去除每次调用 fork python
 # 解释器(Python 冷启动数十 ms vs realpath ~1ms, PreToolUse 热路径); 语义对拍一致
 # (绝对/相对/../×2/尾斜杠/不存在路径共 10 组 byte 一致; realpath -m 同为不要求路径存在,
@@ -69,7 +77,16 @@ done
 # symlink 组件为物理路径(如 slink→sub), 对本脚本下游(向上找 plans 名目录/文件名豁免/
 # memory 前缀豁免, 本机 $HOME 为真实目录)无行为影响, 详见 S17 报告 risks)
 abs_path="$(realpath -m -- "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")"
+case "$abs_path" in
+  */plans/*/task_plan.md|*/plans/*/findings.md|*/plans/*/progress.md|*/plans/*/verification.md)
+    if [ "${TASK_PLAN_ALLOW_RENDER:-0}" != "1" ]; then
+      echo "[scope] BLOCKED 派生 MD 禁止直接写入（只能经 planctl render）: $abs_path" >&2
+      exit 1
+    fi
+    ;;
+esac
 
+# ─── ② plans/ 目录豁免（abs 化已在节②前置完成，其余原样保留）────────────────
 # Walk up from abs_path to find plans/ ancestor
 _check_dir="$(dirname "$abs_path")"
 while [ "$_check_dir" != "/" ] && [ -n "$_check_dir" ]; do
