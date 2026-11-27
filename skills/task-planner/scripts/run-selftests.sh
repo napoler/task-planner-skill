@@ -95,14 +95,31 @@ _cache_valid() {
   printf '%s' "$line" | grep -qE '^[0-9]+ [0-9]+ [0-9]+$' || return 1
   return 0
 }
+# [2026-11-27 Task3 终审修复 P1] 缓存命中幻影 FAIL：
+#   Why：原缓存分支无条件合成 `Total: PASS=0 FAIL=0` 供 guard 扫描；3 个存量枚举脚本使用非标准
+#   Total 格式（`Total: N pass, N fail` / `TOTAL: N PASS / N FAIL` 等），harness 解析 p=f=0 后
+#   assertion-guard 把零断言误判为失败（隔离缓存实测 fresh rc0 / cached rc1 幻影 FAIL）。
+#   What：仅在缓存 p=f=0 时实跑目标一次，把真实输出落到 out_file 供 guard 扫描；rc/p/f 仍按缓存
+#   记账、不写回缓存，PASS/FAIL 统计口径不变；p>0||f>0 保持原合成行，不增加额外开销。
+#   选型理由：相比把规范化 Total 写成缓存第 4 字段，本方案不改缓存文件格式，存量缓存零迁移成本。
+_probe_zero_assertion() {
+  local script="$1" out_file="$2"
+  # 此处不关心 rc：仅捕获输出给 guard；本脚本未启用 set -e，非零返回不会中断汇总。
+  bash "$script" > "$out_file" 2>&1
+}
 # 单脚本执行封装：写独立结果文件 <res_file>（4 字段：rc p f mode），供并行/串行统一汇总
 exec_one() {
   local script="$1" base="$2" cache_key="$3" cache_file="$4" res_file="$5" log_file="$6" out_file="$7"
   local rc p f
   if [ "$FRESH" = "0" ] && _cache_valid "$cache_file"; then
     read -r rc p f < "$cache_file"
-    # [Task4] 缓存命中无原始输出：用缓存计数合成最小 Total 行供 guard 复核（避免重跑）
-    printf 'Total: PASS=%s FAIL=%s\n' "$p" "$f" > "$out_file"
+    # [Task4] 缓存命中无原始输出：有断言计数时用缓存计数合成最小 Total 行供 guard 复核（避免重跑）；
+    # [2026-11-27 Task3] p=f=0 改为实跑取真实输出，规避非标准 Total 格式被解析成零断言的幻影 FAIL。
+    if [ "$p" -eq 0 ] && [ "$f" -eq 0 ]; then
+      _probe_zero_assertion "$script" "$out_file"
+    else
+      printf 'Total: PASS=%s FAIL=%s\n' "$p" "$f" > "$out_file"
+    fi
     printf '%s %s %s reused\n' "$rc" "$p" "$f" > "$res_file"
     printf '[reused] %s (rc=%s PASS=%s FAIL=%s)\n' "$base" "$rc" "$p" "$f" >> "$log_file"
     return 0
@@ -153,8 +170,13 @@ for script in "$SCRIPT_DIR"/selftest-*.sh; do
   # 串行执行（非 top-5，或并行未启用）
   if [ "$FRESH" = "0" ] && _cache_valid "$cache_file"; then
     read -r rc p f < "$cache_file"
-    # [Task4] 缓存命中合成最小 Total 行供 guard 复核（不重跑脚本）
-    printf 'Total: PASS=%s FAIL=%s\n' "$p" "$f" > "$_RUN_DIR/$base.out"
+    # [Task4] 缓存命中合成最小 Total 行供 guard 复核（不重跑脚本）；
+    # [2026-11-27 Task3] p=f=0 时实跑取真实输出供 guard 扫描，计数仍按缓存入账（幻影 FAIL 修复）。
+    if [ "$p" -eq 0 ] && [ "$f" -eq 0 ]; then
+      _probe_zero_assertion "$script" "$_RUN_DIR/$base.out"
+    else
+      printf 'Total: PASS=%s FAIL=%s\n' "$p" "$f" > "$_RUN_DIR/$base.out"
+    fi
     REUSEDN=$((REUSEDN+1))
     # [2026-11-25 defect-fix P1] 复用缓存同样要求 f=0 才算 PASS
     if [ "$rc" = "0" ] && [ "$f" -eq 0 ]; then PASSN=$((PASSN+1)); else FAILN=$((FAILN+1)); FAILED_LIST="$FAILED_LIST $base"; fi

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# selftest-tier-consistency.sh — P-09「档位声明外部复核」行为级 + 静态守护（TC-01..TC-08）
+# selftest-tier-consistency.sh — P-09「档位声明外部复核」行为级 + 静态守护（TC-01..TC-09）
+# [2026-11-27 Task3] TC-09 为缓存双跑一致性判别对照（入口层幻影 FAIL 回归）。
 #
 # What（守护对象 + 运行方式）:
 #   守护 P-09 落点，8 条编号断言，分两组：
@@ -131,6 +132,27 @@ else
     bad 08 "L0 多 Phase 未拦截: rc=$_rc（应 1）输出=$_o"
 fi
 rm -rf "$F8"
+
+# ── TC-09 缓存一致性判别对照（2026-11-27 Task3 终审 P1）──────────────────────
+# Why：run-selftests.sh 缓存命中曾合成 `Total: PASS=0 FAIL=0`，非标准 Total 格式的存量脚本被
+#      assertion-guard 误判零断言 → 同一脚本 fresh rc0 / cached rc1 幻影 FAIL；前 8 条守护不到入口层。
+# What：隔离缓存目录对 selftest-verdict-tristate.sh 先 fresh 再 cached，显式断言两次 rc 与
+#      Total 计数一致。Total 行的 `(run=.. reused=..)` 只是执行方式簿记（fresh/cached 必然不同），
+#      故用 ${var%% (run=*} 剥离后再比，只比较脚本结果口径。目标不能选本脚本自身（--only 下递归）。
+F9="$(mktemp -d "${TMPDIR:-/tmp}/tc9-cache-XXXXXX")"
+RUNNER="$SCRIPT_DIR/run-selftests.sh"
+_fresh_out="$(TASK_PLANNER_SELFTEST_CACHE_DIR="$F9" bash "$RUNNER" --fresh --only selftest-verdict-tristate 2>&1)"; _fresh_rc=$?
+_cached_out="$(TASK_PLANNER_SELFTEST_CACHE_DIR="$F9" bash "$RUNNER" --only selftest-verdict-tristate 2>&1)"; _cached_rc=$?
+_fresh_total="$(printf '%s\n' "$_fresh_out" | grep -E '^Total:' | tail -1)"
+_cached_total="$(printf '%s\n' "$_cached_out" | grep -E '^Total:' | tail -1)"
+_fresh_counts="${_fresh_total%% (run=*}"
+_cached_counts="${_cached_total%% (run=*}"
+if [ "$_fresh_rc" -eq 0 ] && [ "$_cached_rc" -eq 0 ] && [ -n "$_fresh_counts" ] && [ "$_fresh_counts" = "$_cached_counts" ]; then
+    ok 09 "缓存双跑一致: fresh/cached rc=0 且 $_fresh_counts"
+else
+    bad 09 "缓存双跑不一致: fresh rc=$_fresh_rc ($_fresh_counts) / cached rc=$_cached_rc ($_cached_counts)"
+fi
+rm -rf "$F9"
 
 echo "----------------------------------------------------------------"
 echo "[selftest-tier-consistency] Total: PASS=$PASS FAIL=$FAIL"
