@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # [2026-11-24 task-session-regression-20261124] plan-recovery.sh — 压缩恢复用的在途计划磁盘读取库
-# What: 提供 mustkeep / inflight / recover 三个函数（可被 source，也可 `bash <file> <cmd>` 直接调用）
+# What: 提供 mustkeep / inflight / recover / verdict 四个函数（可被 source，也可 `bash <file> <cmd>` 直接调用）
 # Why: 上下文压缩后 SKILL.md 正文不在上下文，「先读计划」文字规则失效；实证某会话压缩后 6 分钟
 #       未读计划专档并误删既有设定事实。本库把「在途判定 + 必读清单 + 必保项」固化为磁盘权威源，
 #       供 SessionStart hook 与 git-baseline.sh 共用，避免两处各自复制语义走样。
@@ -64,6 +64,66 @@ inflight() {
     return 0
   fi
   return 1
+}
+
+# [2026-11-27 Task 7] verdict <root> <sid> — 只读恢复探针结构化四态
+# What: stdout 唯一一行 `status: READY|STALE|BLOCKED|DEGRADED`；rc 沿用 inflight 语义 0=命中/1=未命中/2=降级。
+#   READY=本会话 side 指针命中 + 在途状态行有效 + attestation（若存在）校验通过；
+#   STALE=指针不存在/陈旧（终态、状态行失效、破锁）或 attestation 不匹配；
+#   BLOCKED=命中且 decisions 有 blocking:true,confirmed:false（含 confirmed 缺省）的用户门未决项；
+#   DEGRADED=jq 缺失或 plan-state.json 解析/结构异常。判别顺序：DEGRADED > BLOCKED > STALE > READY。
+# Why: 旧 inflight 只有二态（命中 rc0 / 未命中 rc1 / 无 jq rc2），调用方无法区分「陈旧指针」与
+#   「用户门未决」；四态把这两种需要不同处置的情形显式化，仍不改任何调用方解析。
+# 取舍: 刻意不改 inflight 的 stdout —— selftest-compact-recovery T12/T13 把它当计划路径金样逐字节比对；
+#   四态以**独立子命令附加输出行**提供，调用方按需要 opt-in；本轮 hook 按显式约束零改动，
+#   注入回归由 selftest-recovery-probe.sh TC-01 守护。
+#   BLOCKED 仍 rc0（在途指针本身有效，仅表示用户门未决）；本函数只读，不建计划/不切分支/不改状态。
+verdict() {
+  local root="${1:-}" sid="${2:-}" claim="" irc=0 status="STALE" rc=1 ledger="" attest_script=""
+  if ! command -v jq >/dev/null 2>&1; then
+    printf 'DEGRADED=no-jq\n' >&2
+    printf 'status: DEGRADED\n'
+    return 2
+  fi
+  claim="$(inflight "$root" "$sid" 2>/dev/null)"; irc=$?
+  if [ "$irc" -ne 0 ] || [ -z "$claim" ] || [ ! -f "$claim/plan-state.json" ]; then
+    printf 'status: STALE\n'
+    return 1
+  fi
+  # 结构异常显式 DEGRADED（不静默当空账本）；confirmed 缺省与 Task 6 check-complete 同口径=未确认
+  ledger="$(jq -r '
+    if type != "object" then error("root not object")
+    elif .decisions == null then "OK"
+    elif (.decisions | type) != "array" then error("decisions not array")
+    else
+      [ .decisions[]
+        | if type != "object" then error("decisions[] not object")
+          elif (.blocking != null and (.blocking | type) != "boolean") then error("blocking not boolean")
+          elif (.confirmed != null and (.confirmed | type) != "boolean") then error("confirmed not boolean")
+          elif .blocking == true and .confirmed != true then .id // "<no-id>"
+          else empty end ]
+      | if length > 0 then "BLOCK" else "OK" end
+    end
+  ' "$claim/plan-state.json" 2>/dev/null)" || {
+    printf 'DEGRADED=plan-state-unreadable\n' >&2
+    printf 'status: DEGRADED\n'
+    return 2
+  }
+  case "$ledger" in
+    BLOCK) printf 'status: BLOCKED\n'; return 0 ;;
+    OK) : ;;
+    *) printf 'DEGRADED=unknown-ledger-result\n' >&2; printf 'status: DEGRADED\n'; return 2 ;;
+  esac
+  # attestation 缺失按存量计划兼容（不要求补锁）；存在则必须匹配，破锁=STALE 而非 READY
+  attest_script="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/attest-plan.sh"
+  if [ -f "$claim/.plan-attestation" ] \
+     && ! bash "$attest_script" --verify "$claim/task_plan.md" >/dev/null 2>&1; then
+    printf 'status: STALE\n'
+    return 1
+  fi
+  status="READY"; rc=0
+  printf 'status: %s\n' "$status"
+  return "$rc"
 }
 
 # recover <plan-dir> [maxlines=80] — 打印恢复包；全文另写 <plan-dir>/.compact-recovery.md
@@ -230,7 +290,8 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then
   case "${1:-}" in
     mustkeep) mustkeep "${2:-}" ;;
     inflight) inflight "${2:-}" "${3:-}" ;;
+    verdict)  verdict "${2:-}" "${3:-}" ;;
     recover)  recover "${2:-}" "${3:-80}" ;;
-    *) printf 'usage: plan-recovery.sh {mustkeep|inflight|recover} <args...>\n' >&2; exit 2 ;;
+    *) printf 'usage: plan-recovery.sh {mustkeep|inflight|verdict|recover} <args...>\n' >&2; exit 2 ;;
   esac
 fi
