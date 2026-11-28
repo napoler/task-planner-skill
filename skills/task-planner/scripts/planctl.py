@@ -1478,6 +1478,33 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_schema(args: argparse.Namespace) -> int:
+    """输出 plan-state 各 section 合法字段表（JSON）。"""
+    # [2026-11-28 task-skill-fix-defs-20261128] What: 新增 schema 子命令，从 ENTRY_DEFAULTS 深拷贝派生 section->fields；Why: 审计 DEF planctl 上手性，提供机器可读字段表，避免盲试字段名；原行为=无 schema 子命令。
+    import copy
+    defaults = copy.deepcopy(ENTRY_DEFAULTS)
+    sections: dict[str, list[str]] = {}
+    for name in ARRAY_SECTIONS:
+        fields = list(defaults.get(name, {}).keys())
+        # identity field: audits use round, evidence_binding uses path identity, others use id
+        if name == "audits":
+            if "round" not in fields:
+                fields.insert(0, "round")
+        elif name == "evidence_binding":
+            pass  # schema has no id
+        else:
+            if "id" not in fields:
+                fields.insert(0, "id")
+        sections[name] = fields
+    section_filter = getattr(args, "section", None)
+    if section_filter:
+        if section_filter not in sections:
+            raise PlanctlError(f"未知 section: {section_filter}（可用: {', '.join(ARRAY_SECTIONS)}）")
+        sections = {section_filter: sections[section_filter]}
+    emit({"sections": sections})
+    return 0
+
+
 def cmd_set(args: argparse.Namespace) -> int:
     """修改条目字段（--section/--id）或顶层字段（仅 --field/--value）；值经 coerce_value 提升类型。
 
@@ -1545,7 +1572,9 @@ def cmd_add(args: argparse.Namespace) -> int:
         ident = str(entry["id"])
         hit = find_entry(doc, args.section, ident)
     if hit is not None:
-        raise PlanctlError(f"{args.section} 条目已存在: {args.id or entry.get('id') or entry.get('path')}")
+        # [2026-11-28 task-skill-fix-defs-20261128] What: args.id -> getattr(args,"id",None)/entry.get("id")；Why: add 子命令无 --id 属性，f-string 访问 args.id 在重复 id 报错路径触发 AttributeError（审计 DEF）；原行为=重复 id 本应报 PlanctlError「已存在」，实为 AttributeError。
+        dup_id = getattr(args, "id", None) or entry.get("id") or entry.get("path")
+        raise PlanctlError(f"{args.section} 条目已存在: {dup_id}")
     doc[args.section].append(entry)
     commit_state(plan, doc)
     result: dict[str, Any] = {"section": args.section, "added": entry}
@@ -3676,6 +3705,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", type=int, help="history 中的 1-based 序号")
 
     add_cmd("history", "列出可用备份版本", cmd_history)
+
+    # [2026-11-28 FIX-1] schema 子命令：全局内省，无需 plan-dir（兼容旧用法可带但不必需）。
+    p = sub.add_parser(
+        "schema",
+        help="输出各 section 合法字段表（JSON，含 sections 键）",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "示例（全局内省，无需 plan-dir）：\n"
+            "  python3 planctl.py schema\n"
+            "  python3 planctl.py schema --section phases\n"
+            "  python3 planctl.py schema --plan-dir <可选旧参数，当前忽略>\n"
+        ),
+    )
+    p.add_argument("--plan-dir", required=False, help="(可选，兼容旧调用，schema 不读 plan-state)")
+    p.add_argument("--section", choices=ARRAY_SECTIONS, help="仅输出指定 section")
+    p.set_defaults(handler=cmd_schema)
 
     p = add_cmd("check", "机器门判定（stdout 单行 PLANCTL CHECK）", cmd_check)
     # [2026-11-22 S3] 补 help 示例减少试错（仅文案，不改参数定义）。

@@ -54,6 +54,7 @@ printf '%s' "$SEG" | grep -qF '污染三面与主进程动作闭环（task-v161�
 # ⑧ check-dispatch.sh 含 return_section_check 函数定义行(段结构门被删 = prompt 侧污染失明)
 grep -qE 'return_section_check\(\)[[:space:]]*\{' "$D" && ok 8 'return_section_check 定义在位' || bad 8 'return_section_check 定义缺失'
 # ⑨ heredoc 用户实证污染夹具(要素: 三文件绝对路径+brief/§ 引用+subagent-state/+重复标题+①②③ 三行任务清单)
+# [2026-11-28 FIX-2 B模式] DEF-02 语义锚补齐: 补验收/范围锚满足契约语义检查, 测试意图(段结构违规)不变。
 cat > "$TMP/bad.md" <<'EOF'
 ## 返回格式## 返回格式
 ① v3.1 23 段新配置摘要表
@@ -67,6 +68,8 @@ cat >> "$TMP/bad.md" <<EOF
 knowledge-brief 见 $PLAN/knowledge-brief.md §3
 status:
 acceptance:
+验收: none
+范围: 仅本测试
 checkpoint: $PLAN/subagent-state/9-code-assistant.md
 EOF
 ( export TASK_PLANNER_PLAN_DIR="$PLAN"; exec bash "$D" pretool "$TMP/bad.md" selftest-9 ) > "$TMP/o9" 2> "$TMP/e9"; RC=$?
@@ -82,12 +85,15 @@ TPL7="$(sed -n '/^## 7\. 返回格式/,/^## 8/p' "$TPL" | sed -n '/^```/,/^```/p
   printf '%s\n' "$TPL7"
   echo "checkpoint 路径: $PLAN/subagent-state/10-selftest.md"
 } > "$TMP/good.md"
+# [2026-11-28 FIX-2 B模式] DEF-02 语义锚补齐: 干净夹具补验收+范围锚, 断言意图 rc=0 不变。
 cat >> "$TMP/good.md" <<EOF
 - task_plan: $PLAN/task_plan.md
 - findings: $PLAN/findings.md
 - progress: $PLAN/progress.md
 knowledge-brief 见 $PLAN/knowledge-brief.md §3
 需求锚: 不适用（纯机械单元）
+验收: n/total
+范围: 仅本测试
 EOF
 ( export TASK_PLANNER_PLAN_DIR="$PLAN"; exec bash "$D" pretool "$TMP/good.md" selftest-10 ) > "$TMP/o10" 2> "$TMP/e10"; RC=$?
 [ "$RC" = 0 ] && ok 10 '干净夹具 pretool rc=0' || bad 10 "干净夹具 rc=$RC" "$(head -n2 "$TMP/e10" | tr '\n' ' ')"

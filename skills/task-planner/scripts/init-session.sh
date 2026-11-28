@@ -1468,7 +1468,8 @@ if [ -f "$SCRIPT_DIR/planctl.py" ] && [ ! -f "plan-state.json" ]; then
         echo "[init] 下一步（JSON 为唯一权威源；task_plan/findings/progress/verification 4 个 MD 是 render 派生视图，禁手工填写）:"
         echo "[init]   填数据: python3 \"$SCRIPT_DIR/planctl.py\" add --plan-dir \"$PWD\" --section <requirements|goals|vcs|phases|s_units|findings|decisions|actions|errors> --json '<JSON>'"
         echo "[init]   首次数据写入后必须: python3 \"$SCRIPT_DIR/planctl.py\" render --plan-dir \"$PWD\"（此后 4 MD=派生视图，手工编辑会被 render 覆盖）"
-        echo "[init]   状态变更: phase-start/phase-done/vc-pass/vc-fail/set；每次变更后 render；命令速查见 SKILL.md「常用命令速查」"
+        # [2026-11-28 task-skill-fix-defs-20261128] 迁移自 SKILL.md：命令速查锚同改（原「SKILL.md『常用命令速查』」→ plan-workflow-details.md §命令速查与脚本索引）
+        echo "[init]   状态变更: phase-start/phase-done/vc-pass/vc-fail/set；每次变更后 render；命令速查见 references/plan-workflow-details.md §命令速查与脚本索引"
         # [2026-11-22 task-template-json-compat-20261122] R-2：FMEA 门在非 mini 档 enforce；
         #   render 无 fmea 数据不出段会被正当拒锁。补登记指引（不改门、不开逃生口）。
         if [ "$_json_init_tier" = "standard" ]; then

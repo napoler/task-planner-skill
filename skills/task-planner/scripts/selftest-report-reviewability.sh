@@ -116,13 +116,15 @@ fi
 #       与「终验交付」行（呈报四要素（Rule 70）），'Rule 70' 计数 4→2。
 # Why: Rule 70 属纪律域（迁 CRIT_D）；四要素条款本体在 CRIT_D（RRV-02 已锁四要素词），SKILL 侧保留接线点+内容锚。
 #       内容锚（非编号）纪律保持：改钉「计划确认」行的 '待审项清单' 字样 + CRIT_D 70 段 '可定位地址' 字样，编号让位不再级联。
-RRV04_RULE70=$(cnt "Rule 70" "$SKILL")
-RRV04_LIST=$(grep -F '待审项清单' "$SKILL" 2>/dev/null | grep -cF 'Rule 70' 2>/dev/null || true)
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] Rule 70/待审项清单呈报行从 SKILL.md 迁至 plan-workflow-details.md，断言改指 PWD_REF。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+RRV04_RULE70=$(cnt "Rule 70" "$PWD_REF")
+RRV04_LIST=$(grep -F '待审项清单' "$PWD_REF" 2>/dev/null | grep -cF 'Rule 70' 2>/dev/null || true)
 RRV04_ADDR=$(sed -n '/^### 70 /,/^### 71 /p' "$CRIT_D" 2>/dev/null | grep -c "可定位地址" 2>/dev/null || true)
 if [ "$RRV04_RULE70" -ge 1 ] && [ "$RRV04_LIST" -ge 1 ] && [ "$RRV04_ADDR" -ge 1 ]; then
-    ok "RRV-04" "SKILL 接线锚(Rule 70≥1 计划确认行内容锚含待审项清单 ∧ CRIT_D 70 段含可定位地址)"
+    ok "RRV-04" "plan-workflow-details 接线锚(Rule 70≥1 计划确认行内容锚含待审项清单 ∧ CRIT_D 70 段含可定位地址)"
 else
-    bad "RRV-04" "SKILL 接线锚(got Rule70=$RRV04_RULE70 list=$RRV04_LIST addr=$RRV04_ADDR)"
+    bad "RRV-04" "plan-workflow-details 接线锚(got Rule70=$RRV04_RULE70 list=$RRV04_LIST addr=$RRV04_ADDR)"
 fi
 
 # ── RRV-05 13 触点文件 Rule 70 锚齐备 ──
@@ -212,12 +214,14 @@ fi
 # SKILL.md 瘦身后旧触点（呈报规格（Rule 70）×4 / 会话内一切其他呈报 终验句）随 556→214 行重写移除；
 # 现存触点='Rule 70'×2（计划确认四要素行+终验交付指针行）+ 终验交付段「呈报四要素（Rule 70）按卫星 task-discipline 全文执行」句。
 # 触点组守护语义保持（SKILL 侧呈报面接线在位），锚随现措辞演进。
-RRV12_SPEC=$(cnt "Rule 70" "$SKILL")
-RRV12_FINAL=$(cnt "呈报四要素" "$SKILL")
-if [ "$RRV12_SPEC" -ge 1 ] && [ "$RRV12_FINAL" -eq 1 ]; then
-    ok "RRV-12" "SKILL 触点组(Rule 70≥1 呈报四要素终验句=1)"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] Rule 70/呈报四要素从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="${PWD_REF:-$SKILL_ROOT/references/plan-workflow-details.md}"
+RRV12_SPEC=$(cnt "Rule 70" "$PWD_REF")
+RRV12_FINAL=$(cnt "呈报四要素" "$PWD_REF")
+if [ "$RRV12_SPEC" -ge 1 ] && [ "$RRV12_FINAL" -ge 1 ]; then
+    ok "RRV-12" "plan-workflow-details 触点组(Rule 70≥1 呈报四要素终验句>=1)"
 else
-    bad "RRV-12" "SKILL 触点组(got spec=$RRV12_SPEC final=$RRV12_FINAL expect spec>=1 final=1)"
+    bad "RRV-12" "plan-workflow-details 触点组(got spec=$RRV12_SPEC final=$RRV12_FINAL expect spec>=1 final>=1)"
 fi
 
 # ── RRV-13: 占位跳过（诚实 WARN 档，不计 PASS）──

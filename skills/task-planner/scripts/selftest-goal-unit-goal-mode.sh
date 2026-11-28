@@ -52,11 +52,11 @@ PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); printf 'G-%s PASS %s\n' "$1" "$2"; }
 bad() { FAIL=$((FAIL+1)); printf 'G-%s FAIL %s\n' "$1" "$2"; }
 
-# G-01 critical-rules.md `^### 66 ` 标题行计数=1
+# G-01 [2026-11-28 FIX-1（模式 A，锚更新）] critical-rules.md Rule 66 标题归一为 `### Rule 66`。
 # What：断言 Rule 66 章节标题唯一。
 # Why：标题行是章节识别锚；=1 防重复插入/误删。
-n="$(grep -cE '^### 66 ' "$CRIT" || true)"
-if [ "$n" -eq 1 ]; then ok 01 "critical-rules.md '### 66 ' 标题锚 =1"; else bad 01 "critical-rules.md '### 66 ' 计数=$n（应 =1）"; fi
+n="$(grep -cE '^### Rule 66( |$)' "$CRIT" || true)"
+if [ "$n" -eq 1 ]; then ok 01 "critical-rules.md '### Rule 66' 标题锚 =1"; else bad 01 "critical-rules.md '### Rule 66' 计数=$n（应 =1）"; fi
 
 # G-02 critical-rules.md `^66\.[1-6] ` 六子条计数=6
 # What：断言 66.1-66.6 六条子条主体行全在位。

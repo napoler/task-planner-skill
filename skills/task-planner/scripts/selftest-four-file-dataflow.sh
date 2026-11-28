@@ -5,7 +5,7 @@
 #   静态断言 task-v145 全链落点在位（对齐 selftest-iteration-persistence.sh / selftest-execution-honesty.sh 范式），
 #   共 18 条编号断言 FF-01..FF-18：
 #     · references/critical-rules.md（Rule 62 条款本体，FF-01..FF-06）:
-#         FF-01 `^### 62 ` 标题=1；FF-02 `^62\.[1-6] ` 六子条=6；FF-03 判例注释含 task-v145（来源任务锚）≥1
+#         FF-01 `^### Rule 62 ` 标题=1；FF-02 `^62\.[1-6] ` 六子条=6；FF-03 判例注释含 task-v145（来源任务锚）≥1（2026-11-28 归一：核心规则标题统一为 ### Rule N 形态）
 #         FF-04 62.2 语义内核锚「不可收窄」≥1 且「叠加义务」≥1（防「标题在但正文被裁」死文变体）
 #         FF-05 62.3 双落盘语义锚「双落盘」≥1 且「kb:§N」≥1（Handoff 双锚 schema 内核）
 #         FF-06 62.5 门控语义锚 `--require-kb` ≥1 且 `kb_distill` ≥1（机器面声明与实现配对）
@@ -70,7 +70,7 @@ cnt() { # [2026-10-08 CR-P2 修正] 缺失文件回显 0（防空串进整数比
     grep -c -e "$1" "$2" 2>/dev/null || true; }
 
 # ── critical-rules.md Rule 62 条款本体 ──
-eq   "FF-01 critical-rules ### 60 标题=1"                 "$(cnt '^### 62 ' "$CR")" 1
+eq   "FF-01 critical-rules ### Rule 62 标题=1"            "$(cnt '^### Rule 62 ' "$CR")" 1
 eq   "FF-02 critical-rules 62.1-62.6 六子条=6"            "$(cnt '^62\.[1-6] \*\*' "$CR")" 6
 ge   "FF-03 判例注释 task-v145 来源锚"                     "$(cnt 'Rule 62 (task-v145 2026-10-08)' "$CR")" 1
 pair "FF-04 62.2 语义内核(不可收窄+叠加义务)"               "$(cnt '不可收窄' "$CR")" "$(cnt '叠加义务' "$CR")"
@@ -90,17 +90,14 @@ ge   "FF-09 ledger-append VALID_EVENTS 行含 kb_distill"   "$(cnt 'VALID_EVENTS
 # ── templates 派发契约载体 ──
 pair "FF-10 dispatch 模板 kb 行+findings 可写行双在位"      "$(cnt 'knowledge-brief: {plan_dir}' "$TPL")" "$(cnt '可写=仅追加' "$TPL")"
 
-# ── SKILL.md 消费侧 ──
-# [task-v171 核心瘦身] FF-11/12 重定向：合规清单表（C41/C42 行）随瘦身替换为 G1-G8 核心域合规表，Rule 62 摘要行
-#   措辞演进为 '**Rule 62 四文件罗盘数据流转**' 指针 bullet（Rule 62 属核心在位规则，瘦身后仍在 SKILL 正文三处）。
-#   现象：'^| C42 |' 与旧摘要行字面 'Rule 62（四文件罗盘' 均零命中，FF-11/12 恒 FAIL。
-#   根因：合规清单 C 行体系整体退役（G 表仅核心域）；摘要 bullet 去掉全角括号措辞。
-#   修法：FF-11 合规消费点→G 表四文件相关行（G5 findings 落盘+G6 回填门控，=2，Rule 62 消费面的现存合规载体）；
-#     FF-12 摘要行→Critical Rules 指针段 'Rule 62 四文件罗盘数据流转' bullet =1；FF-13/14 不变（实测在位）。
-eq   "FF-11 SKILL G 表四文件合规行=2(G5+G6)"                  "$(cnt '^| G[56] ' "$SKILL")" 2
-eq   "FF-12 SKILL Rule 62 指针 bullet=1"                      "$(cnt 'Rule 62 四文件罗盘数据流转' "$SKILL")" 1
-eq   "FF-13 SKILL 映射表蒸馏行=1"                          "$(cnt '主进程单写者蒸馏，Rule 62.3 双落盘' "$SKILL")" 1
-ge   "FF-14 SKILL Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule 62' "$SKILL")" 3
+# ── SKILL.md / references/plan-workflow-details.md 消费侧 ──
+# [task-v171 核心瘦身] FF-11/12 重定向：合规清单表（C41/C42 行）随瘦身替换为 G1-G8 核心域合规表；摘要改为指针 bullet。
+# [2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: FF-11 与 FF-13 的文本锚点已迁入 references/plan-workflow-details.md（G5/G6 与蒸馏映射行）。
+# Why: 仅重指向新位置，禁把大段内容迁回 SKILL.md；FF-12/FF-14 仍以 SKILL.md 为锚点。
+eq   "FF-11 references/plan-workflow-details.md G 表四文件合规行=2(G5+G6)" "$(cnt '^| G[56] ' "$SCRIPT_DIR/../references/plan-workflow-details.md")" 2
+eq   "FF-12 SKILL.md Rule 62 指针 bullet=1"                      "$(cnt 'Rule 62 四文件罗盘数据流转' "$SKILL")" 1
+eq   "FF-13 references/plan-workflow-details.md 映射表蒸馏行=1" "$(cnt '主进程单写者蒸馏，Rule 62.3 双落盘' "$SCRIPT_DIR/../references/plan-workflow-details.md")" 1
+ge   "FF-14 SKILL.md Rule 62 全文≥3(三落点联动)"              "$(cnt 'Rule 62' "$SKILL")" 3
 
 # ── config.json 零新键（复合双条件，单列断言）──
 PROPS="$(jq '.properties | length' "$CONFIG" 2>/dev/null || echo -1)"
@@ -113,9 +110,10 @@ else
 fi
 
 # ── 负断言：Rule 62 块范围内无 66.x（语境锚定，防裸全文误触）──
-# [2026-10-09 task-v151 S4 钉值级联/D2 同法] 语境锚定由「60.6 起至文件尾」收窄为「Rule 62 区块」（awk: ### 62 起至下一 ### 止）
+# [2026-10-09 task-v151 S4 钉值级联/D2 同法] 语境锚定由「60.6 起至文件尾」收窄为「Rule 62 区块」（awk: ### Rule 62 起至下一 ### Rule 止）
+# [2026-11-28 归一] 2026-11-28 核心规则标题统一为 ### Rule N 形态；awk 边界同步更新。
 #   ——Rule 66 已合法落地于 62 块之后，tail-to-EOF 口径下 66.x 计数=6 必红；收窄后保留「62 块内无 66 入侵」负断言。
-FF16_BLOCK="$(awk '/^### 62 /{f=1;next} /^### /{f=0} f' "$CR" 2>/dev/null)"
+FF16_BLOCK="$(awk '/^### Rule 62 /{f=1;next} /^### Rule /{f=0} f' "$CR" 2>/dev/null)"
 TAIL61="$(printf '%s\n' "$FF16_BLOCK" | grep -c -e '^66\.[0-9] ' || true)"
 TAIL61="${TAIL61:-0}"
 zero "FF-16 62 块范围内无 66.x(前向防线)"                    "$TAIL61"

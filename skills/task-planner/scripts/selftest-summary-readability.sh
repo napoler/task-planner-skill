@@ -89,12 +89,14 @@ fi
 #     旧阈值 ≥5（摘要/合规 C55/终验句/References/全集行五处）恒 FAIL。
 #   根因：Rule 76 属纪律域（迁 CRIT_D）；SKILL 侧接线点收敛为终验交付指针行+卫星路由表行。
 #   修法：阈值改 ≥1 ∧ CRIT_D '^### 76 ' 标题=1（条款本体在位，接线面强度经双载体保持）。
-SRV04_RULE76=$(cnt 'Rule 76' "$SKILL")
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] Rule 76 指针从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+SRV04_RULE76=$(( $(cnt 'Rule 76' "$SKILL") + $(cnt 'Rule 76' "$PWD_REF") ))
 SRV04_CRIT76=$(cntE '^### 76 ' "$CRIT_D")
 if [ "$SRV04_RULE76" -ge 1 ] && [ "$SRV04_CRIT76" -ge 1 ]; then
-    ok "SRV-04" "SKILL 接线锚(Rule 76=$SRV04_RULE76≥1 ∧ CRIT_D 76 标题=$SRV04_CRIT76)"
+    ok "SRV-04" "SKILL/PWD 接线锚(Rule 76=$SRV04_RULE76≥1 ∧ CRIT_D 76 标题=$SRV04_CRIT76)"
 else
-    bad "SRV-04" "SKILL 接线锚(got Rule76=$SRV04_RULE76 CRIT_D 标题=$SRV04_CRIT76 expect 各≥1)"
+    bad "SRV-04" "SKILL/PWD 接线锚(got Rule76=$SRV04_RULE76 CRIT_D 标题=$SRV04_CRIT76 expect 各≥1)"
 fi
 
 # ── SRV-05 [task-v171 核心瘦身]: C55 合规行退役 → 卫星路由表 task-discipline 行 + CRIT_D 76 段「编号列表」语义锚 ──
@@ -114,11 +116,13 @@ fi
 #   现象：瘦身后终验交付段旧联动句「用户面总结/呈报的列表一律编号列表」退役（细则归 CRIT_D 条文），
 #     现存联动载体=终验交付段「编号列表规范（Rule 76）按卫星 task-discipline 全文执行」行。
 #   修法：锚随现措辞演进为 '编号列表规范（Rule 76）'（≥1）。
-SRV06_LINE=$(cnt '编号列表规范（Rule 76）' "$SKILL")
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] 联动句从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="${PWD_REF:-$SKILL_ROOT/references/plan-workflow-details.md}"
+SRV06_LINE=$(( $(cnt '编号列表规范（Rule 76）' "$SKILL") + $(cnt '编号列表规范（Rule 76）' "$PWD_REF") ))
 if [ "$SRV06_LINE" -ge 1 ]; then
-    ok "SRV-06" "SKILL 终验段 Rule 76 联动句在位（编号列表规范措辞）"
+    ok "SRV-06" "SKILL/PWD 终验段 Rule 76 联动句在位（编号列表规范措辞）"
 else
-    bad "SRV-06" "SKILL 终验段 Rule 76 联动句缺失(got line=$SRV06_LINE expect>=1)"
+    bad "SRV-06" "SKILL/PWD 终验段 Rule 76 联动句缺失(got line=$SRV06_LINE expect>=1)"
 fi
 
 # ── SRV-07: delivery-summary §3 审查清单表格段表头行三列 ──

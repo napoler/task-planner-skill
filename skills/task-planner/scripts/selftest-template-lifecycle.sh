@@ -115,7 +115,10 @@ if grep -q '^## 九、' "$TMAP"; then ok 18 "template-mapping.md 含 §九 机�
 TDEL="$SKILL_ROOT/templates/delivery-summary.md"
 if [ -f "$TDEL" ] && [ "$(grep -cE '^## [1-5]\.' "$TDEL")" = "5" ]; then ok 19 "delivery-summary.md 存在且五区块=5"; else bad 19 "delivery-summary.md 缺失或五要素区块计数≠5"; fi
 # TL-20 [task-v112] SKILL.md delivery-summary 指针行 ≥2 处（终验段指针 + References 行）
-if [ "$(grep -c 'delivery-summary' "$SKILL")" -ge 2 ]; then ok 20 "SKILL.md 含 delivery-summary 指针 ≥2"; else bad 20 "SKILL.md delivery-summary 指针 <2"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] 指针从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+_ds_n=$(( $(grep -c 'delivery-summary' "$SKILL" || true) + $(grep -c 'delivery-summary' "$PWD_REF" || true) ))
+if [ "$_ds_n" -ge 2 ]; then ok 20 "SKILL/PWD 含 delivery-summary 指针 >=2 (n=$_ds_n)"; else bad 20 "delivery-summary 指针 <2 (n=$_ds_n)"; fi
 # TL-21 [task-v112] template-guide.md 口径句含 delivery-summary.md（不入口径表述）
 if grep -q 'delivery-summary.md' "$TGUIDE"; then ok 21 "template-guide.md 口径句含 delivery-summary.md"; else bad 21 "template-guide.md 口径句缺 delivery-summary.md"; fi
 # TL-22 [task-v123] delivery-summary.md 可定位性硬规则三锚（Rule 48.5）

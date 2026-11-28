@@ -244,9 +244,11 @@ td "SL-14c task-discipline 含 '前置读档门' (Rule 80.8① 86.1 前置)" \
    "missing file=$DISCIPLINE_CR OR anchor='前置读档门'"
 
 # SL-15 (item 6): SKILL.md G9/Rule80 索引读取纪律双锚
-td "SL-15a SKILL.md 含 '决策前读取已过' (G9 自查项)" \
-   "[ -f '$SKILL' ] && grep -qF '决策前读取已过' '$SKILL'" \
-   "missing file=$SKILL OR anchor='决策前读取已过'"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] G9 行随 SKILL 瘦身迁至 plan-workflow-details.md。
+PWD_REF="$SCRIPT_DIR/../references/plan-workflow-details.md"
+td "SL-15a plan-workflow-details.md 含 '决策前读取已过' (G9 自查项)" \
+   "[ -f '$PWD_REF' ] && grep -qF '决策前读取已过' '$PWD_REF'" \
+   "missing file=$PWD_REF OR anchor='决策前读取已过'"
 td "SL-15b SKILL.md 含 '决策前读取纪律（80.8' (Rule 80 索引接线)" \
    "[ -f '$SKILL' ] && grep -qF '决策前读取纪律（80.8' '$SKILL'" \
    "missing file=$SKILL OR anchor='决策前读取纪律（80.8'"

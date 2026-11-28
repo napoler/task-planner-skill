@@ -38,8 +38,10 @@ t "T1e 含 22.3.3" grep -q '22.3.3' "$COLLAB"
 t "T1f 含 移交" grep -q '移交' "$COLLAB"
 
 # T2: SKILL.md 有「专业技能协同路由」且引用 skill-collaboration.md ≥2
-t "T2a SKILL.md 含 专业技能协同路由" grep -q '专业技能协同路由' "$SKILL"
-t "T2b skill-collaboration.md 引用 ≥2" bash -c "[ \"\$(grep -c 'skill-collaboration.md' '$SKILL')\" -ge 2 ]"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 瘦身后“专业技能协同路由”字面迁至 plan-workflow-details.md，SKILL 仅保留指针。
+PWD_REF="$ROOT/references/plan-workflow-details.md"
+t "T2a SKILL/PWD 含 专业技能协同路由" bash -c "grep -q '专业技能协同路由' '$SKILL' || grep -q '专业技能协同路由' '$PWD_REF'"
+t "T2b skill-collaboration.md 引用 ≥2 (SKILL+PWD)" bash -c "[ \"\$(($(grep -c 'skill-collaboration.md' "$SKILL" || true) + $(grep -c 'skill-collaboration.md' "$PWD_REF" || true)))\" -ge 2 ]"
 
 # T3 [task-v171 核心瘦身] SKILL.md comet 规则语义保留（任意 3 项）——SKILL 协同路由段瘦身后措辞收敛，
 #   '任意 3 项' 细则随条文归 skill-collaboration.md（collab 权威源，实测在位）；SKILL 侧保留 comet 主路由指针。
@@ -100,7 +102,9 @@ t "T10 SKILL.md 行数 ≤584" bash -c "[ \"\$(wc -l < '$SKILL')\" -le 584 ]"
 RRT="$ROOT/../plan-research-router/references/research-routing.md"   # 卫星引用, 同级相对解析(保持脚本既有 $ROOT 解析风格)
 # T11a [task-v171 核心瘦身] SKILL.md 调研链正文与 browser-use 字面随瘦身退役（调研 SOP=卫星 research-routing.md，SKILL L186 指针）；
 #   修法：改断言 SKILL 含 research-routing.md 指针 ∧ RRT 含 browser-use ≥1（调研链可达性双载体）。
-t "T11a SKILL 调研 SOP 指针 ∧ routing.md browser-use 路由" bash -c "grep -q 'research-routing.md' '$SKILL' && [ \"\$(grep -c 'browser-use' '$RRT')\" -ge 1 ]"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 指针也可能退役，接受 PWD_REF 指针。
+PWD_REF="${PWD_REF:-$ROOT/references/plan-workflow-details.md}"
+t "T11a SKILL/PWD 调研 SOP 指针 ∧ routing.md browser-use 路由" bash -c "(grep -q 'research-routing.md' '$SKILL' || grep -q 'research-routing.md' '$PWD_REF' || grep -q 'plan-research-router' '$SKILL') && [ \"\$(grep -c 'browser-use' '$RRT')\" -ge 1 ]"
 t "T11b 调研链 research-assistant 主通道定位" grep -q '网络调研主通道' "$RRT"
 t "T11c 平台适配声明(禁假设不存在 MCP, 恰 1 行)" bash -c "[ \"\$(grep -c 'playwright' '$RRT')\" -eq 1 ]"
 # T11d [task-v171 核心瘦身] SKILL.md 路由表网页访问行随瘦身退役（'网页访问（JS 渲染/登录态/交互页）' 细则归 COLLAB 权威源，实测在位）；

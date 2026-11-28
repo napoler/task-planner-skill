@@ -74,7 +74,9 @@ if grep -qE '^\| task-discipline \|' "$SKILL"; then ok 11 "SKILL.md 卫星路由
 #   现象：SKILL.md 瘦身后「解决后反思-验证循环」专属段移除（Rule 33 条文归 CRIT_D），命中=0，RV-12 恒 FAIL。
 #   根因：非核心域条文不在 SKILL 展开；现存联动载体=「派发与执行纪律指针」段反思验证路由行（SKILL.md L191）。
 #   修法：改断言 SKILL 含 '反思验证' 措辞 ≥1 ∧ CRIT_D '^### 33 ' 标题=1（联动段+条文双载体）。
-if grep -q '反思验证' "$SKILL" && grep -q '^### 33 ' "$CRIT_D"; then ok 12 "SKILL.md 反思验证指针行 ∧ CRIT_D Rule 33 标题（原联动段瘦身后由指针行+条文锚承载）"; else bad 12 "SKILL.md 缺反思验证联动面"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 无反思验证字面，plan-workflow-details 亦无；锚改为 CRIT_D Rule 33 标题 + task-discipline SKILL 路由含反思验证（消费面等价）。
+DISCIPLINE_SKILL="$SKILL_ROOT/../task-discipline/SKILL.md"
+if grep -q '反思验证' "$DISCIPLINE_SKILL" && grep -q '^### 33 ' "$CRIT_D"; then ok 12 "task-discipline SKILL.md 反思验证指针行 ∧ CRIT_D Rule 33 标题（原联动段瘦身后由 discipline SKILL+条文锚承载）"; else bad 12 "discipline SKILL.md 缺反思验证联动面"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

@@ -68,9 +68,11 @@ if grep -q '子代理调度铁律' "$CRIT_DP"; then ok 07 "21.4 关键句 '子�
 # SP-08 库引用双 SKILL.md 各 ≥1（[task-v171 2026-10-12] 原 ≥3 单文件四锚随 S33 瘦身合并）
 # 旧形态: SKILL.md 内 ≥3 处 split-pattern-library 引用(S4 接线四锚)。S33 后核心 SKILL.md 仅留派发纪律指针 1 处
 # 入口, 库的权威展开面归卫星 task-dispatch SKILL.md——等价守护=两文件各 ≥1(入口仍在+卫星有展开), <1 即断锚
-n1="$(grep -c 'split-pattern-library' "$SKILLMD" 2>/dev/null || true)"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] task-planner SKILL.md 瘦身后入口锚迁至 plan-workflow-details.md。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+n1="$( (grep -c 'split-pattern-library' "$SKILLMD" 2>/dev/null || true; grep -c 'split-pattern-library' "$PWD_REF" 2>/dev/null || true) | awk '{s+=$1}END{print s+0}' )"
 n2="$(grep -c 'split-pattern-library' "$DP_SKILL" 2>/dev/null || true)"
-if [ "$n1" -ge 1 ] && [ "$n2" -ge 1 ]; then ok 08 "库引用 task-planner=$n1 + task-dispatch=$n2 各 ≥1"; else bad 08 "库引用断裂（task-planner=$n1 task-dispatch=$n2，应各 ≥1，S4 接线断锚）"; fi
+if [ "$n1" -ge 1 ] && [ "$n2" -ge 1 ]; then ok 08 "库引用 task-planner(Skill+PWD)=$n1 + task-dispatch=$n2 各 ≥1"; else bad 08 "库引用断裂（task-planner=$n1 task-dispatch=$n2，应各 ≥1，S4 接线断锚）"; fi
 
 # SP-09 dispatch 模板 No-Placeholder 契约行在位（21.6.4 任务书侧载体；被删=模板与 Rule 脱钩）
 if grep -q 'No-Placeholder 契约' "$DISP"; then ok 09 "dispatch 模板 No-Placeholder 契约行在位"; else bad 09 "dispatch 模板 No-Placeholder 契约行缺失"; fi

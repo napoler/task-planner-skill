@@ -48,7 +48,9 @@ fi
 #   根因：指针清理语义（残留 side 指针清扫）在瘦身后由「初始化 → 会话隔离指针」bullet 承载
 #     （SKILL.md L40：「残留由 `set-active-plan.sh gc` 清扫」——gc 清扫指令=指针清理纪律的现存字面载体）。
 #   修法：锚随现措辞演进为 'set-active-plan.sh gc'（≥1），守护语义（SKILL 侧指针清理纪律行在位）不变。
-[ "$(cnt 'set-active-plan.sh gc' "$SKILL")" -ge 1 ] && ok "PL-07 SKILL.md 含指针清理纪律行（会话隔离指针 bullet 的 gc 清扫措辞承载）" || bad "PL-07" "SKILL.md 指针清理纪律行缺失（set-active-plan.sh gc 措辞未在位）"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] gc 清扫措辞迁至 plan-workflow-details.md，断言改指该文件。
+PWD_REF="$SCRIPT_DIR/../references/plan-workflow-details.md"
+[ "$(cnt 'set-active-plan.sh gc' "$PWD_REF")" -ge 1 ] && ok "PL-07 plan-workflow-details.md 含指针清理纪律行（gc 清扫措辞承载）" || bad "PL-07" "plan-workflow-details.md 指针清理纪律行缺失（set-active-plan.sh gc 措辞未在位）"
 
 # ── 行为断言 PL-08..10（/tmp 隔离夹具, 禁触真实 plans/ 与真实 side 键）──
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT

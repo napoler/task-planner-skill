@@ -23,7 +23,7 @@
 #   6. check-doc-sync.sh runs OK
 #   7. External references use ${TASK_PLANNER_ROOT} form
 #   8. Hooks registered per platform (claude=settings.local.json, zcode=cli/config.json,
-#      opencode/cursor=SKILL.md frontmatter;全量副本模式下 frontmatter hooks: 块 N/A)
+#      opencode/cursor=SKILL.md frontmatter;全量副本模式下同样检查 hooks: 块存在性)
 #   9. task-v055 委派门控三件套可执行(check-delegation.sh + allow-direct.sh +
 #      selftest-delegation.sh;2026-09-07)
 #      + task-v075 P5 (v063 遗留①): selftest-methodology.sh(v063 引入,methodology
@@ -296,19 +296,25 @@ PY
       fail "ZCode: $zcode_cfg missing task-planner hooks"
     fi
   fi
-  # OpenCode/Cursor/Continue(薄壳实体模型): SKILL.md frontmatter must contain hooks: block
-  # 全量实体副本:canonical frontmatter 无 hooks: 块(hooks 按平台配置注册,SKILL.md 内是注释说明)
+  # OpenCode/Cursor/Continue(薄壳实体模型+全量实体副本): SKILL.md frontmatter must contain hooks: block
+  # [2026-11-28 task-skill-fix-defs-20261128 DEF-05] What: 全量实体副本位也检查 SKILL.md frontmatter hooks: 块存在性。
+  # Why: 根因=审计 DEF-05 盲区（verify.sh:26 hooks N/A=对账盲区）；原行为=N/A 跳过；现=hooks 存在性检查进对账，缺失计 fail。
+  #      全量副本是 canonical 实体副本，正常应含 hooks: 块；缺失说明部署漂移，不应静默 N/A。
   for tool in opencode cursor continue; do
     local stub="${TOOL_STUB_ROOT[$tool]:-}"
     [ -n "$stub" ] && [ -d "$stub" ] && [ -f "$stub/SKILL.md" ] || continue
-    if stub_is_full_copy "$stub"; then
-      pass "$tool: hooks registered at platform level (frontmatter block N/A for full copy)"
-      continue
-    fi
     if grep -q '^hooks:' "$stub/SKILL.md" 2>/dev/null; then
-      pass "$tool: hooks declared in SKILL.md frontmatter"
+      if stub_is_full_copy "$stub"; then
+        pass "$tool: hooks declared in SKILL.md frontmatter (full-copy deploy)"
+      else
+        pass "$tool: hooks declared in SKILL.md frontmatter"
+      fi
     else
-      fail "$tool: SKILL.md missing hooks: block (run install.sh to regenerate)"
+      if stub_is_full_copy "$stub"; then
+        fail "$tool: SKILL.md missing hooks: block in full-copy deploy ($stub)"
+      else
+        fail "$tool: SKILL.md missing hooks: block (run install.sh to regenerate)"
+      fi
     fi
   done
 

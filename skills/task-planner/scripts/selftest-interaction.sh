@@ -141,11 +141,14 @@ assert_mode 10 silent
 # (复述是 LLM 行为,无脚本可测行为面;守护=条款存在性 + 关键语义锚点, 防未来误删/改写丢失语义)
 # [task-v171 纪律域搬迁 2026-10-12] Rule 28（交互模式与询问门控）属纪律域，28.2.1 原文已迁至
 #   skills/task-discipline/references/critical-rules-discipline.md，RULES 部分改指 CRIT_D；SKILL.md 联动锚不变。
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 瘦身后 28.2.1 字面锚迁至 plan-workflow-details.md，
+#   断言改指 PWD（plan-workflow-details.md），CRIT_D 守护不变。
 CRIT_D="$SCRIPT_DIR/../../task-discipline/references/critical-rules-discipline.md"
-if grep -q "28\.2\.1" "$CRIT_D" && grep -q "思路复述" "$CRIT_D" && grep -q "28\.2\.1" "$SCRIPT_DIR/../SKILL.md"; then
-  PASS=$((PASS+1)); printf 'TI-11 PASS 28.2.1 static guard (critical-rules.md + SKILL.md 均含 28.2.1/思路复述)\n'
+PWD_REF="$SCRIPT_DIR/../references/plan-workflow-details.md"
+if grep -q "28\.2\.1" "$CRIT_D" && grep -q "思路复述" "$CRIT_D" && grep -q "28\.2\.1" "$PWD_REF"; then
+  PASS=$((PASS+1)); printf 'TI-11 PASS 28.2.1 static guard (critical-rules-discipline.md + plan-workflow-details.md 均含 28.2.1/思路复述)\n'
 else
-  FAIL=$((FAIL+1)); printf 'TI-11 FAIL 28.2.1 static guard (critical-rules.md/SKILL.md 缺 28.2.1 或 思路复述 锚点)\n'
+  FAIL=$((FAIL+1)); printf 'TI-11 FAIL 28.2.1 static guard (discipline/plan-workflow-details 缺 28.2.1 或 思路复述 锚点)\n'
 fi
 
 # TI-12 (task-crossprojauth R7 2026-11-04): 28.6 预算自动批准线静态守护 — 行首 '^28.6 ' 锚在位
@@ -168,18 +171,21 @@ fi
 
 # TI-14 (task-intent-iter-20261117): 28.2.2 指令理解迭代草稿+歧义门控静态守护
 # 目的:防条款/接线回退导致“无迭代理解暴露方向+无歧义门控仍无价值确认”。行为面不可脚本测,守护锚点与关键语义词。
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 瘦身后“歧义/多候选”字面迁至 plan-workflow-details.md，
+#   28.2.2 仍在 SKILL.md；歧义/多候选锚改指 PWD_REF。
 CRIT_CORE="$SCRIPT_DIR/../references/critical-rules.md"
 CFG="$SCRIPT_DIR/../config.json"
+PWD_REF="${PWD_REF:-$SCRIPT_DIR/../references/plan-workflow-details.md}"
 ok14=1
 grep -q '^28\.2\.2 ' "$CRIT_D" || ok14=0
 grep -q '歧义门控' "$CRIT_D" || ok14=0
 grep -q '3-4 轮' "$CRIT_D" || ok14=0
 grep -q '28\.2\.2' "$SCRIPT_DIR/../SKILL.md" || ok14=0
-grep -q '歧义/多候选' "$SCRIPT_DIR/../SKILL.md" || ok14=0
+grep -q '歧义/多候选' "$PWD_REF" || ok14=0
 grep -q '28\.2\.2' "$CRIT_CORE" || ok14=0
 grep -q '28\.2\.2' "$CFG" || ok14=0
 if [ "$ok14" -eq 1 ]; then
-  PASS=$((PASS+1)); printf 'TI-14 PASS 28.2.2 static guard (discipline+SKILL+core+config 理解迭代/歧义门控锚)\n'
+  PASS=$((PASS+1)); printf 'TI-14 PASS 28.2.2 static guard (discipline+SKILL+plan-workflow-details+core+config 理解迭代/歧义门控锚)\n'
 else
   FAIL=$((FAIL+1)); printf 'TI-14 FAIL 28.2.2 static guard (缺 28.2.2/歧义门控/3-4 轮/接线锚)\n'
 fi

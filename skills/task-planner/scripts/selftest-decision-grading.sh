@@ -115,22 +115,17 @@ else
     bad "DG-03" "Rule 72 段行号引用形态命中=$DG03_HITS"
 fi
 
-# ── DG-04 [task-v171 核心瘦身]: SKILL 接线锚（Rule 72>=1 终验段 + 卫星路由表 discipline 行 + CRIT_D 72 块 A 级/C 级锚）──
-# What: 断言 SKILL.md 中 `Rule 72` 命中数>=1（瘦身后 SKILL 侧唯一接线点=终验交付段「决策分级（Rule 72）…按卫星
-#       task-discipline 全文执行」行；原 >=5=Rules 全集行/References 表/终验段/索引段/合规清单五处，随瘦身合并为终验段+
-#       卫星路由表两载体），并以卫星路由表 discipline 行为路由内容锚，以 CRIT_D Rule 72 段为分级语义锚（A 级/C 级）。
-# Why: Rule 72 属纪律域已迁 CRIT_D；SKILL 侧不展开非核心规则条文（Rule 82 禁回潮），合规清单行（`^| C<N> | ...决策分级与用户打断...`）
-#      随合规清单表瘦身移除。内容锚（行号锚替代纪律）保持：语义锚改钉 CRIT_D 72 段原文（DG-02 同测 CRIT_D 三级关键词，双保险）。
-#      本处修法=现象（R72 5→1、合规行=0 致 DG-04 恒 FAIL）+根因（瘦身移除非核心域摘要/C 行）+修法（终验段+路由表+CRIT_D 语义锚三锚重定向）。
-DG04_R72=$(cnt "Rule 72" "$SKILL")
+# ── DG-04 [task-v171 核心瘦身][2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: Rule 72 SKILL 侧接线已迁至 plan-workflow-details.md 终验段与卫星路由表；分级语义锚在 CRIT_D。 Why: 重指向迁移后位置，不在 SKILL 展开非核心规则条文。
+DETAILS_MD="$SKILL_ROOT/references/plan-workflow-details.md"
+DG04_R72=$(cnt "Rule 72" "$DETAILS_MD")
 DG04_ROWCNT=$(cnt '| task-discipline |' "$SKILL")
 DG04_BLOCK72="$(sed -n '/^### 72 /,$p' "$CRIT_D" 2>/dev/null || true)"
 DG04_A=$(printf '%s' "$DG04_BLOCK72" | grep -c "A 级")
 DG04_C=$(printf '%s' "$DG04_BLOCK72" | grep -c "C 级")
 if [ "$DG04_R72" -ge 1 ] && [ "$DG04_ROWCNT" -ge 1 ] && [ "$DG04_A" -ge 1 ] && [ "$DG04_C" -ge 1 ]; then
-    ok "DG-04" "SKILL 接线锚(终验段 Rule 72>=1 ∧ 路由表 discipline 行>=1 ∧ CRIT_D 72 段语义锚含 A 级/C 级)"
+    ok "DG-04" "接线锚(plan-workflow-details.md 含 Rule 72>=1 ∧ SKILL 路由表 discipline 行>=1 ∧ CRIT_D 72 段 A/C 级)"
 else
-    bad "DG-04" "SKILL 接线锚(got R72=$DG04_R72 ROW=$DG04_ROWCNT A=$DG04_A C=$DG04_C expect R72>=1,ROW>=1,A>=1,C>=1)"
+    bad "DG-04" "接线锚(got details_R72=$DG04_R72 ROW=$DG04_ROWCNT A=$DG04_A C=$DG04_C expect >=1,>=1,A>=1,C>=1)"
 fi
 
 # ── DG-05: 触点文件清单 Rule 72 锚齐备（逐文件阈值断言）──
@@ -206,20 +201,17 @@ else
     bad "DG-10" "管线面组缺失(batch-publisher=$DG10_PUB expect>=2, field-fixer=$DG10_FIX expect>=1)"
 fi
 
-# ── DG-11 [task-v171 核心瘦身]: SKILL 接线组（终验段 Rule 72>=1 + 路由表 discipline 行 + CRIT_D 72 段 A 级/C 级）──
-# What: 与 DG-04 同口径重定向后的触点分组再组织（SKILL 接线面单列一组）：SKILL.md `Rule 72`>=1（终验交付段唯一接线点），
-#       路由内容锚=卫星路由表 discipline 行，分级语义锚=CRIT_D Rule 72 段（A 级必须询问/C 级禁止询问原文）。
-# Why: 同 DG-04——Rule 72 迁纪律域后 SKILL 侧合规清单行随瘦身移除，>=5 五处接线合并为「终验段+路由表」两载体；
-#      分组锚定位「接线面」被裁剪的能力保持（终验段 Rule 72 或路由表 discipline 行任一丢失即 FAIL）。
-DG11_R72=$(cnt "Rule 72" "$SKILL")
+# ── DG-11 [2026-11-28 FIX-1（模式 C）] 同 DG-04：plan-workflow-details.md Rule 72 + SKILL 路由表 discipline 行 + CRIT_D 72 段 A/C ──
+DETAILS_MD="$SKILL_ROOT/references/plan-workflow-details.md"
+DG11_R72=$(cnt "Rule 72" "$DETAILS_MD")
 DG11_ROWCNT=$(cnt '| task-discipline |' "$SKILL")
 DG11_ROWLINE="$(sed -n '/^### 72 /,$p' "$CRIT_D" 2>/dev/null || true)"
 DG11_A=$(printf '%s' "$DG11_ROWLINE" | grep -c "A 级")
 DG11_C=$(printf '%s' "$DG11_ROWLINE" | grep -c "C 级")
 if [ "$DG11_R72" -ge 1 ] && [ "$DG11_ROWCNT" -ge 1 ] && [ "$DG11_A" -ge 1 ] && [ "$DG11_C" -ge 1 ]; then
-    ok "DG-11" "SKILL 接线组(终验段 Rule 72>=1 路由表 discipline 行>=1 CRIT_D 72 段含 A 级/C 级)"
+    ok "DG-11" "接线组(plan-workflow-details.md Rule 72>=1 ∧ SKILL 路由表 discipline 行>=1 ∧ CRIT_D 72 段 A/C)"
 else
-    bad "DG-11" "SKILL 接线组缺失(R72=$DG11_R72 ROW=$DG11_ROWCNT A=$DG11_A C=$DG11_C expect R72>=1,ROW>=1,A>=1,C>=1)"
+    bad "DG-11" "接线组缺失(details_R72=$DG11_R72 ROW=$DG11_ROWCNT A=$DG11_A C=$DG11_C expect >=1,>=1,A>=1,C>=1)"
 fi
 
 # ── DG-12: 占位跳过（诚实 WARN 档，不计 PASS）──

@@ -41,10 +41,10 @@ chk "AD-03" "Rule 74 条文段内无硬编码行号锚（:[0-9] 引用形态）"
 # [2026-10-11 task-v169 Rule 80 纪元扩展] 保留：全集索引 1-80 三处锚阈值 ≥3 不变（前端子条件实测=3 通过）。
 # [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽]
 chk "AD-04" "SKILL.md 接线锚 ≥3：'1-(7x|8x|9x|10x)' 三处（全集/索引段/References 表，1-70..101 宽窗）+ 新指令处理段 'Rule 74 三判门' + 卫星路由表 task-discipline 行" "test \$(grep -cE '1-(7[0-9]|[89][0-9]|10[0-9]|11[0-9])' \"\$SKILL\") -ge 3 && grep -qF 'Rule 74 三判门' \"\$SKILL\" && grep -qE '^\| task-discipline \|' \"\$SKILL\""
-# AD-05 触点锚：critical-rules 8.1/36.5/56.1 段 grep 'Rule 74' 命中 ≥3 + SKILL B 类行含 'Rule 74' + CRIT_D 含「可行性判别门」
-# [task-v171 核心瘦身] 末子项原锚=SKILL 'B/C 类' 段含「可行性判别门」——瘦身后 SKILL.md 不再展开非核心规则条文，
-#   「可行性判别门」唯一载体=CRIT_D Rule 74 条文段（实测 2 处）。修法：SKILL 侧保留 B 行 'Rule 74' 触点断言，条文侧锚改指 CRIT_D。
-chk "AD-05" "触点锚：critical-rules 8.1/36.5/56.1 段 'Rule 74' 命中 ≥3 + SKILL B 类行 'Rule 74' + CRIT_D 含「可行性判别门」" "test \$(grep -E '^(8\.1|36\.5|56\.1) ' \"\$CRIT_D\" | grep -cF 'Rule 74') -ge 3 && grep -E '\| B 扩展 \|' \"\$SKILL\" | grep -qF 'Rule 74' && grep -qF '可行性判别门' \"\$CRIT_D\""
+# AD-05 触点锚：critical-rules 8.1/36.5/56.1 段 grep 'Rule 74' 命中 ≥3 + CRIT_D 含「可行性判别门」
+# [2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: SKILL.md 中旧的 '| B 扩展 |' 行及「变更吸收三判门（Rule 74」表述已迁移/改写；触点现由卫星 CRIT_D 与 SKILL 2.5d 指针承担。
+# Why: 以 CRIT_D 的 8.1/36.5/56.1 段 Rule 74 命中与 CRIT_D 内「可行性判别门」为权威锚；SKILL 侧改为检查 2.5d 处存在 Rule 74 三判门关键词（见 AD-15 调整后的判定面）。
+chk "AD-05" "触点锚：critical-rules 8.1/36.5/56.1 段 'Rule 74' 命中 ≥3 + SKILL 2.5d 含 'Rule 74 三判门' + CRIT_D 含「可行性判别门」" "test \$(grep -E '^(8\.1|36\.5|56\.1) ' \"\$CRIT_D\" | grep -cF 'Rule 74') -ge 3 && grep -qF \"变更类型判定（Rule 74 三判门\" \"\$SKILL\" && grep -qF '可行性判别门' \"\$CRIT_D\""
 # AD-06 templates/task_plan.md 含「📋 变更标注表」且六列关键词齐备（编号/对象/类型/吸收判定/依据/执行动作）+四类型串「新增·修改·删除·更新」+吸收判定三态串「增量·替代·删除」
 chk "AD-06" "templates/task_plan.md 含「📋 变更标注表」且六列（编号/对象/类型/吸收判定/依据/执行动作）+四类型串+吸收判定三态串齐备" "hdr=\$(grep -F '吸收判定' \"\$PLAN_TPL\" || true); test -n \"\$hdr\" && grep -qF '📋 变更标注表' \"\$PLAN_TPL\" && grep -qF '编号' <<<\"\$hdr\" && grep -qF '对象' <<<\"\$hdr\" && grep -qF '类型' <<<\"\$hdr\" && grep -qF '依据' <<<\"\$hdr\" && grep -qF '执行动作' <<<\"\$hdr\" && grep -qF '新增·修改·删除·更新' <<<\"\$hdr\" && grep -qF '增量·替代·删除' <<<\"\$hdr\""
 # AD-07 templates/subagent_dispatch.md 含「定稿可行性判别模式」+三维关键词（可执行性/相容性/风险性）+三态串（PASS-WITH-RISKS）
@@ -123,8 +123,9 @@ fi
 # AD-14 脚本自身 chmod+x（可执行位）且 bash -n 语法通过（自跑 exit 0 由尾部退出码覆盖）
 chk "AD-14" "脚本自身 chmod+x（可执行位）且 bash -n 语法通过" "test -x \"\$SELF\" && bash -n \"\$SELF\""
 
-# AD-15 SKILL.md 含变更类型判定强制步骤（2.5d 步骤 + Rule 74 三判门关键词）
-chk "AD-15" "SKILL.md 含变更类型判定强制步骤（2.5d + Rule 74 三判门关键词）" "grep -qF '变更类型判定（Rule 74 三判门，P0）' \"\$SKILL\" && grep -qF '增量（默认且优先）' \"\$SKILL\" && grep -qF '替代（禁默认，四条件全满足才可）' \"\$SKILL\" && grep -qF '删除（最高门槛）' \"\$SKILL\""
+# AD-15 变更类型判定强制步骤（2.5d + Rule 74 三判门关键词）
+# [2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: 2.5d 的强制步骤与三档关键词已迁入 references/plan-workflow-details.md §2.5d 段。Why: 重指向新位置，禁把大段文本迁回 SKILL.md。
+chk "AD-15" "plan-workflow-details.md 含变更类型判定强制步骤（2.5d + Rule 74 三判门关键词）" "grep -qF '变更类型判定（Rule 74 三判门，P0）' \"\$SKILL_ROOT/references/plan-workflow-details.md\" && grep -qF '增量（默认且优先）' \"\$SKILL_ROOT/references/plan-workflow-details.md\" && grep -qF '替代（禁默认，四条件全满足才可）' \"\$SKILL_ROOT/references/plan-workflow-details.md\" && grep -qF '删除（最高门槛）' \"\$SKILL_ROOT/references/plan-workflow-details.md\""
 
 # AD-16 templates/task_plan.md 变更标注表含「用户原话（逐字）」列
 chk "AD-16" "templates/task_plan.md 变更标注表含「用户原话（逐字）」列" "grep -qF '用户原话（逐字）' \"\$PLAN_TPL\""

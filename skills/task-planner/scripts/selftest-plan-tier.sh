@@ -144,6 +144,8 @@ spec_fixture_scaffold() {
     } >> "$dir/task_plan.md"
     # 扫描收据：无 must 候选 → candidates 空 + must=0（check-spec-baseline C2 落点）
     printf '{"at":"2026-11-26T00:00:00Z","project_root":"%s","must":0,"ref":"selftest-fixture","candidates":[]}\n' "$abs" > "$dir/.spec-scan.json"
+    # [2026-11-28 FIX-2 B模式] SOFT_ONLY fail-closed 夹具补最小业务数据:
+    #   requirements/goals/vcs/phases 各≥1, 避免空壳拒锁; 断言语义/门文案不变。
     cat > "$dir/plan-state.json" <<EOF
 {
   "schema_version": 1,
@@ -152,11 +154,14 @@ spec_fixture_scaffold() {
   "execution_lane": "L0-T",
   "created_at": "2026-11-26T00:00:00Z",
   "updated_at": "2026-11-26T00:00:00Z",
-  "requirements": [],
-  "goals": [],
-  "vcs": [],
-  "phases": [],
-  "findings": [],
+  "requirements": [{"id":"R1","text":"fixture req","type":"手段","vc":["VC-1","VC-2"],"tags":[]}],
+  "goals": [{"id":"G1","text":"fixture goal","tags":[],"evidence":""}],
+  "vcs": [
+    {"id":"VC-1","criterion":"fixture vc","command":"grep -qF alpha $abs/spec-source.md","status":"pending","evidence":"","tags":[]},
+    {"id":"VC-2","criterion":"fixture regression","command":"test -f $abs/spec-source.md","status":"pending","evidence":"","tags":[]}
+  ],
+  "phases": [{"id":"P1","status":"complete","s_units":[],"v_checks":["VC-1","VC-2"],"tags":[],"name":"实施","started":"2026-11-28T00:00:00Z"}],
+  "findings": [{"id":"F1","text":"fixture finding","source":"selftest","tags":[]}],
   "audits": [],
   "delegations": [],
   "tags": [],

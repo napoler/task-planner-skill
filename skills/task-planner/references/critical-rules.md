@@ -6,19 +6,19 @@
 
 本文件 = task-planner **核心技能**规则全集，只管**四文件罗盘域**：`task_plan.md` / `findings.md` / `progress.md` / `knowledge-brief.md` 四文件的计划制作与记录文档管理（Rule 19/20/62），及用户会话逐字记录专档 user-session-log.md（Rule 80）。
 
-### 1 先规划，再执行
+### Rule 1 先规划，再执行
 创建 `task_plan.md` → 展示计划 → 等 "yes" → 执行。执行/计划细化前按 Rule 28.2.2 完成 3-4 轮理解迭代草稿（方向对齐）。**goal/目标迭代（28.8）优先**：goal 语境下澄清、理解迭代歧义、计划批准/D1 等可裁决点一律不向用户提问、不等待确认，按推荐项/可逆安全默认静默自决并留痕后继续（28.2.2 的 ask-选项确认分支与常规“等 yes”在 goal 下不适用；预算外硬门按 28.9② 登记待授权清单后继续、不停表，续推按 28.9③-⑤）。**非 goal 的 ask 模式**：明确任务不因本模块新增阻塞确认，歧义/多候选才选项确认。**D1 超时口径（Rule 44.3 衔接，2026-10-22 用户授权 task-videop1-protectfix-001 P3）**：完成性指令/单步机械指令场景下，D1 计划批准门允许按 44.3 超时自动通过（超时时长沿用 44.1 默认 5 分钟，默认项=按已展示计划执行），自动通过须登记「自动裁决记录」五要素（超时值/推荐项/触发时间/裁决理由/被覆盖的未决选项）；真分叉（D2/D5）与破坏性动作（D6 硬停点）在非 goal 语境下仍须等待用户答复，不适用本款（goal 语境按 28.8/44.3 goal 补充自治推进，D6 例外）。本条取代「D1=只等显式 yes、无超时出口」的保守口径——保守执行体不再只能无限等 yes（审计判例 F5：D1 与 44.3 冲突致停摆死等）。指针：44.1/44.3 全文见卫星 `../../task-discipline/references/critical-rules-discipline.md` Rule 44（核心域只载本规则的应用口径，不镜像卫星正文）。
 
-### 2 PreToolUse 强制阻断
+### Rule 2 PreToolUse 强制阻断
 `task_plan.md` 不存在时 `check-scope.sh` 返回 exit 2，hook 阻止非初始化写入。
 
-### 3 双操作后立即保存
+### Rule 3 双操作后立即保存
 每 `config.json#max_view_browser_before_save` 次 view/browser/search 后写 findings.md。
 
-### 5 Phase 完成后更新
+### Rule 5 Phase 完成后更新
 标记 `in_progress` → `complete`，记录错误和文件。
 
-### 19 3-File 落盘强制（P0）— Context Window 是 RAM,Filesystem 是 Disk
+### Rule 19 3-File 落盘强制（P0）— Context Window 是 RAM,Filesystem 是 Disk
 三文件(task_plan.md / findings.md / progress.md)是 planning-with-files 原版核心理念的落地:**重要内容必须落盘,禁止只留会话记忆**(context reset 后会话记忆全丢)。执行循环内嵌写入点见 SKILL.md §Phase 执行循环第 3 步 + §产出落盘映射。
 
 19.1 **子代理结论必落盘**:每次子代理(Explore/research/debugger/codebase-analyzer 等)或调研类 Skill 返回后,**紧邻一次 planctl add --section research 写入结论摘要 + 证据路径后 render**（findings.md 为派生视图，禁手工 Edit；task-planctl-exec-surface-20261122）;禁止让结论只留在主上下文(子代理省了读取,产出堆回会话记忆 = Context Stuffing 回潮)。**流程绑定(22.5 联动)**:该次回填完成前不得勾选 Handoff 登记表 verify_done——verify_done = Read 实际产出 ✓ + findings.md 回填 ✓ 双条件,回填段落锚点记入登记表「findings 落点」列(子代理已按 22.4a 自写 findings 小节时,本条对该子代理改为复核其小节,见 22.5)
@@ -30,7 +30,7 @@
 19.8 **工作账本(ledger,移植自上游 planning-with-files v3)**:执行循环的关键动作随做追加 `bash scripts/ledger-append.sh <plan-dir> <event> <summary> [--phase N] [--files f1,f2]` — 事件枚举 progress/phase_complete/error/gate_block/attest/note;写入 `<plan-dir>/ledger-<agent>.jsonl` 单行 JSON(tick 全局单调/flock 并发安全/UTF-8 截断修复,上游已验证逻辑)。ledger 是 19.2 门控的主信号(语义化真实工作,不可 touch 伪造)与停滞检测基础;md 三文件 = 人读层,ledger = 机器层(上游架构 C3:workers 追加 ledger,orchestrator 拥有 md)
 19.7 **及时性提醒链路([plan-compass] hook 响应)**:2-Action Rule(Rule 3)为主控,hook 为兜底:PostToolUse 检测 findings.md/progress.md 陈旧(阈值 config.json#findings_stale_minutes 默认 20 / #progress_stale_minutes 默认 25)→ 注入 `[plan-compass]` 提醒 → 收到后**立即回填对应文件再继续**(findings 陈旧 → 补写近 2 次查看类操作的发现;progress 陈旧 → 补记关键动作/测试/错误);响应协议与 [plan-sync](todo-sync.md §4)同构,每次最多响应一条,回填后自然进入冷却。**升级机制**:同一文件连续 compass_escalate_after(默认 2)次提醒仍无回填(文件 mtime 早于上次提醒时间戳)→ hook 输出升级警告(🚨 违反 Rule 19.7),按 Rule 26.3 处置:违规登记 progress.md Error Log,终验 outcome 最高 PARTIAL
 
-### 20 计划注入与防篡改（P0）— turn-start 复诵 + SHA-256 锁定 + 数据边界
+### Rule 20 计划注入与防篡改（P0）— turn-start 复诵 + SHA-256 锁定 + 数据边界
 ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计划复诵块"(smart 注入:Goal/Next Step/Current Phase/in_progress Phase 全文/Decisions 末3行 + progress 尾5行,`===BEGIN-PLAN-DATA===`/`===END-PLAN-DATA===` 包裹)。turn-start 注入是防漂移最有效手段;per-tool-call 复诵省略(证据:v3 autonomous 结论——强模型每 call 注入收益低)。
 
 20.1 **计划 attestation(SHA-256 锁定)**:用户批准计划后运行 `bash scripts/attest-plan.sh [plan路径]` 锁定;hook 每次注入前校验,哈希不符 → 注入 `[PLAN TAMPERED]` 警告并**拒绝注入计划内容**;自己重规划后重跑 attest 更新锁定,`--clear` 清除
@@ -51,7 +51,7 @@ ZCode/Claude 的 UserPromptSubmit hook 在**每轮开始**注入"结构感知计
 
 **Next Step 字段(Rule 20 配套)**:task_plan.md 的 `## Next Step` 存单一下一步动作,Phase 状态变更时同步刷新——恢复/压缩后无需推断"接下来干嘛",smart 注入每轮携带。
 
-### 26 质量优先于速度门控（P0）— 验证步骤不可压缩,降质行为必触发可判定惩罚
+### Rule 26 质量优先于速度门控（P0）— 验证步骤不可压缩,降质行为必触发可判定惩罚
 
 Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非批量场景"为赶速度压缩验证、伪造证据、复验走形式"无门控。本规则把「质量 > 速度」做成可判定门控:每种降质行为对应可观察判定式 + 确定性惩罚。执行者自评的速度收益不得作为跳过/压缩验证的理由。
 
@@ -81,7 +81,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 26.6 **失败联动**:违规即以 `[quality-violation]` 标签写 progress.md Error Log + task_plan.md Errors 表(复用 Rule 6/19.4 通道);终验 outcome 判定前,质量门控统计段存在未处置违规 → 禁止 COMPLETE;C15 未勾 → 禁止进入终验交付。
 
-### 51 需求覆盖与完成声称门控（task-v129）
+### Rule 51 需求覆盖与完成声称门控（task-v129）
 > 判例源：videop1 mvlock 虚假执行（2026-10-04）——声称"停线完成"但核心需求仅 2/18+自挂起+17 次零需求生成；用户定性「流程失控/缺失，非能力问题」。
 
 51.1 需求原文锚定（目标先行）：计划创建与重规划时必须设「🎯 用户需求原文」区块，逐条编号抄录用户原话（R1..Rn；禁转译/缩写/合并——转译即漂移入口）；每条核心需求映射 ≥1 条 VC（R→VC 映射）。缺该区块或核心需求零 VC 映射=计划无效，先回炉再 attest（判例：videop1 S15 被改写为"无替代件不归档，挂起"后全链绿灯；判例：一个月→72小时两次改写、四环绿灯，2026-10-05（取证与修复全程见 plans/incident-reports/2026-10-05-72h-instruction-mutation.md；本判例锚=task-v132 G4））。
@@ -109,7 +109,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 51.15 **规范基线冻结与防倒退（Spec-Baseline Freeze，P0，2026-11-19 task-spec-baseline-freeze-20261119；判例 sess_ba603cf5 分镜 4-12s 硬约束被静默降级为 3s/15s）**：任务中凡「已确立且影响验收的业务硬约束」（下称规范基线 Spec-Baseline，例：视频/分镜单镜时长 4-12s、画面元素数量上限、禁用项、格式/字段定数、字数区间等），计划期必须在 `task_plan.md`「🔒 规范基线（Spec-Baseline）」区块逐条登记：`spec_id | 约束原文(verbatim) | 来源锚(path:line) | 双向判定式 | sha256(来源片段)`。**双向显式铁律**：区间型硬约束必须同时登记上下界（如 `4s≤单镜≤12s`），禁只写单边（如仅 `≤12s`）——单边口径等于无下限，是 3s 类违规过审的机制根因（判例：C87 只写 `≤12s` 缺 ≥4s）。该区块随 `task_plan.md` 纳入 Rule 20.1 SHA-256 attestation 锁定面，无需新增脚本；执行期修改/放宽/删除任一基线项、或以「超拍登记/NOTE 保留/叙事必要」类软豁免放行越界值 = 等同改判据，唯一合法路径=STOP→用户显式授权→Decisions Made 登记→更新基线→重跑 attest 重锁；未走此流程的降级 = `[SPEC-BASELINE TAMPERED]`（PLAN TAMPERED 同族 P0，交付作废）。**执行链四环绑定**：派发必带（22.4e）、复检逐条核验（103.3b）、返工/续写全量回归（106.7）、终验基线门（verification-gate 84.15），缺一即视为规范未受管。**登记前置强化**：计划期须对用户/项目/SOP/技能中「已确立硬约束」做来源扫描，候选约束逐条登记进基线区块；确认无基线候选须显式写 `none-justified`，禁静默遗漏（登记遗漏=未受管）。**通用修改合规门跨域指针**：本条管已登记基线的冻结与四环消费；对「未登记规范/执行期就地放宽/单边口径」的全部修改，须先过纪律域 Rule 74.7 通用修改合规门（合规四元组 + 无依据放宽 P0 禁止），先过 74.7 再判是否叠加本条——两门互补，禁以「未登记」为由绕过合规论证。机制=L0-T 文本锚 + 复用现有 attest/check 门，零新脚本零新 config 键。 **全档位必填与四环机器化（2026-11-26 task-spec-consumption-chain）**：全档位必填（l0-lite 零 attest 除外）；内容类计划四槽（命名/节奏/语言/参考对应）缺槽须 NA+理由；计划期 spec-scan 六源扫描留 [spec-scan] 收据；attest 锁定前 shell-out check-spec-baseline.sh 不过不锁（逃生口 --skip-spec-gate 须交付披露）；todo 基线组 B19 全档位必带；派发携带块由 spec-brief CLI 生成原样携带；终验 SPEC-GATE（check-complete shell-out --final）未逐条验真不得判 COMPLETE；计数型判据不得单独充当规范覆盖 [2026-11-26 task-spec-registry-generalization] What: 维度注册表化——内容类必覆盖集由种子注册表 skills/task-planner/config/spec-registry.tsv（4 槽种子 scope=content-all + logic/continuity/format/safety opt-in 种子）∪ 项目级 <repo-root>/.spec-registry.tsv 声明维度（scope=project 即强制）∪ spec-scan 归纳命中维度（suggest_dims，NA 豁免可用）三层合并；Why: 四槽硬编码对新场景（新维度/新项目类型）静默失效，注册表化后新场景零代码接入。机器面=check-spec-baseline.sh C7 维度覆盖检查读注册表与 .spec-scan.tsv；禁改种子四槽的 content-all 适用域（向后兼容锚）
 
 <!-- Rule 62 (task-v145 2026-10-08): 纯增量新增；判例=videop1 调研派发 prompt 手写「findings.md（主进程回填，你只写检查点）」收窄 22.4a 契约——调研子代理守约禁写，30KB 知识只停检查点，findings.md 43 行 0 小节；守卫 check-dispatch.sh 只查三文件路径存在性，对契约措辞语义盲区 -->
-### 62 四文件罗盘数据流转与调研知识沉淀纪律（P0 — task-v145，目标：task_plan/findings/progress/knowledge-brief 四文件 = 主代理↔子代理数据流转唯一协议介质，调研产出双落盘、派发契约不可收窄、知识增量门控；判定面=LLM 行为+check-dispatch.sh/check-3file-gate.sh 机器扩展，零新 config 键；衔接 Rule 19/22.4a/22.5/22.8/55，既有 Rules 原文零改动）
+### Rule 62 四文件罗盘数据流转与调研知识沉淀纪律（P0 — task-v145，目标：task_plan/findings/progress/knowledge-brief 四文件 = 主代理↔子代理数据流转唯一协议介质，调研产出双落盘、派发契约不可收窄、知识增量门控；判定面=LLM 行为+check-dispatch.sh/check-3file-gate.sh 机器扩展，零新 config 键；衔接 Rule 19/22.4a/22.5/22.8/55，既有 Rules 原文零改动）
 
 本条源于用户 2026-10-08 反馈：调研子代理被派发 prompt 明确禁写 findings.md（「主进程回填，你只写检查点」），知识发现型产出的积累链路断裂——三文件罗盘（Rule 19）与知识底座（v067 起第 6 计划文件）各自为政未成体系。本条把四文件升格为跨代理数据流转协议，并给派发契约措辞上机器守卫。
 
@@ -127,7 +127,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 62.6 **机制**：零新 config 键（lint 挂 dispatch_contract_enforce 既有档位、gate 扩展为参数传入）；`scripts/selftest-four-file-dataflow.sh` 静态守护（62.1-62.5 条款锚 + 派发模板 kb 契约行 + SKILL 触点 + lint/gate/ledger 扩展锚）；合规清单 C42；适用面 = 所有 Agent() 派发（62.2）与调研型 Phase（62.3-62.5），纯机械 S-unit（记账/搬运类）62.3-62.5 豁免（登记一行）。
 
-### 66 goal 单元固化与 /goal 驱动推进纪律（P0, 2026-10-09 task-v151，目标：规划获批后任务自动分解固化为 goal 单元（任务名+目标+完整验证方式），执行按 goal 逐个调度推进并与 ZCode 内置 /goal 目标模式对齐供料，确保后期执行可靠性；判定面=计划期区块+执行期门控，机器面=check-plan-dispatch/check-complete/selftest-goal-unit-goal-mode.sh，零新 config 键；Rule 40.3 /goal 既有口径不动）
+### Rule 66 goal 单元固化与 /goal 驱动推进纪律（P0, 2026-10-09 task-v151，目标：规划获批后任务自动分解固化为 goal 单元（任务名+目标+完整验证方式），执行按 goal 逐个调度推进并与 ZCode 内置 /goal 目标模式对齐供料，确保后期执行可靠性；判定面=计划期区块+执行期门控，机器面=check-plan-dispatch/check-complete/selftest-goal-unit-goal-mode.sh，零新 config 键；Rule 40.3 /goal 既有口径不动）
 
 66.1 **goal 单元固化（goal-unit freezing）**：计划获批（attest）后，任务必须自动分解固化为「🎯 Goal 单元表」逐行 goal 单元——六列契约：goal-id（G1/G2… 纯数字递增）| 任务名（≤8 字）| 目标（≤1 句）| 完整验证方式（可复现：命令+判据 或 路径+关键行 或 diff/输出形态，三选一必具其一，禁「检查没问题」类无据表述）| 对应 S-unit/Phase | 状态（pending/complete）。standard/full 档必填（缺一列或验证方式列空白=计划无效回炉）；mini 档豁免（66.5）。
 
@@ -141,7 +141,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 66.6 **机制（mechanism）**：零新 config 键（沿用 25.4/43.4 零新键纪律）；机器面=check-plan-dispatch.sh 计划期硬门 + check-complete.sh 终验对照 + scripts/selftest-goal-unit-goal-mode.sh 静态守护（66.1-66.6 子条锚/模板区块锚/SKILL 摘要行/C45 合规行/registry 登记行/零新键负断言）+selftest-registry.tsv 登记；合规清单 C45（SKILL.md 消费侧）。
 
-## Rule 80（用户会话逐字记录与只写不改纪律 — task-v169）
+### Rule 80（用户会话逐字记录与只写不改纪律 — task-v169）
 <!-- 编号说明（task-v169 CR-N1）：Rule 77/78/79 为 task-v168 经 plans/.rule-reservations.jsonl 预留但未落地的编号（其方向经用户否决、工作 parked 未合并主仓）；本规则编号 80 由预留台账顺位取得，序号非连续是「预留未落地」的既成事实，非跳号错误——落地 77/78/79 前 SKILL.md 全集索引口径维持 1-80。 -->
 
 > 用户需求与对话内容逐字落盘第 7 计划文件 user-session-log.md，append-only 只写不改（需求锚 R1/R4/R5）；与 Rule 51.1 逐字口径、Rule 74.3 变更标注表、attest 哈希锁（Rule 20/51.7）联动。
@@ -163,7 +163,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 80.8 **决策前读取纪律（task-userlog-recall-20261105，用户原话「你必须要对，技能中，必须要对这个文件进行的有效利用」）**：user-session-log.md 专档不止写入面（80.1-80.7），五类决策点**必须先读专档再决策**——① 上抛裁决前（AskUserQuestion/暂停请示/escalation 前）：先 Read 专档最近条目（尾部 ≤30 行），所问问题已有用户原话裁决/要求 → 按原话执行禁再上抛（事故判例：用户补充新要求后 agent 反过来问「这些问题如何决策」=抛弃用户指令）；② 新指令反思门：Rule 102.0 反思第⑤问对照专档既有条目，冲突以逐字原话为准（80.4 权威序延伸）；③ 完成声称与交付前：Rule 51.3 需求覆盖核对=task_plan R 条目+专档同号条目双锚（权威序=专档原话面 > task_plan 转译面，防转译面冒充原话面）；④ 子代理派发需求锚双锚：需求相关 S-unit 派发 prompt 需求锚字段带专档条目 #N（templates/subagent_dispatch.md）；⑤ 周期对照：Rule 19.7 3f 周期性三文件对照时纳入专档尾部原话（每 S-unit 完成节点 Read 专档尾部 ≤30 行回顾——承载用户「定时回顾」要求）。会话恢复场景=80.4 既有读取义务不变（本条不新增恢复触发）。**机制（文本优先 L0-T，对齐 80.7 范式）**：判定面=LLM 行为+本子条文本锚+templates/user-session-log.md 消费点区块锚；机器面=selftest-session-log.sh SL 断言扩展；零新 hook 逻辑零新 config 键。
 
 <!-- [2026-10-12 task-v170 S4 追加] 新增 Rule 81；原因=用户判定 plans/ 堆积为严重缺陷（R2 需求锚「这是严重缺陷，必须添加归档」），完成流程末段缺一环归档步骤需制度化为机器可守的纪律；原行为=完成流程止于 check-complete.sh，无任何归档动作，plans/ 根持续堆积已完成目录 -->
-### 81 计划完成后归档纪律（task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C57，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）
+### Rule 81 计划完成后归档纪律（task-v170，目标：把「计划完成后必须归档」从自觉约定制度化为 fail-closed 可机器守卫的纪律——完成即归档、在途保护、存量有序清退、引用面不失真；判定面=archive-plan.sh 守卫（脚本内机器判）+ selftest-archive-plan.sh 静态守护 + check-complete.sh [ARCHIVE-GATE] warn + 合规清单 C57，零新 config 键；衔接 Rule 18（批量四步与批门）/Rule 27（git 管理强制，归档=git mv 可 revert 数据面变更）/plan-created.cjs archive 跳过先例，既有条款原文零改动）
 
 81.1 **触发点（completion trigger，P0）**：任务终验 `check-complete.sh` exit 0 后、会话退出前，必须对当前任务目录执行归档（`scripts/archive-plan.sh <task-id>`）——完成流程末段闭环从「check-complete 通过即结束」修正为「check-complete 通过 → 归档 → 会话退出」。跳过=违规；会话因故障中断未归档的，由 [ARCHIVE-GATE] warn 在下一次终验时提醒补档（存量收敛通道）。
 
@@ -177,15 +177,15 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 
 81.6 **机制（零新 config 键）**：`scripts/selftest-archive-plan.sh` 静态守护（81.1-81.5 子条文本锚 + archive-plan.sh 守卫断言 + SKILL.md 终验交付段归档步骤锚 + 计数级联锚 + registry 自登记，S8 产物）；`check-complete.sh` [ARCHIVE-GATE] 段 warn 输出「complete 未归档」计数提醒（恒 exit 0，不阻断既有终验语义）；SKILL.md 合规面实况：v171 瘦身后 SKILL.md 合规清单只剩 G1-G10、C 行已物理不存在——Rule 81 自查由 **G10**（计划完成后归档自查，SKILL.md:125，原 C57 并集承载）承载，selftest-archive-plan.sh AP-01..16 / check-complete.sh [ARCHIVE-GATE] 为行为断言（2026-10-15 task-v176 D11/D8 实况更正：原写「合规清单 C56 行（S9 产物）」——S9 产物行早已随 v171 清单表→G1-G10 表迁移移除，C56 且已被 SKILL.md:124 划为 Rule 80 域原编号；三组件断言对象不变：selftest-archive-plan.sh 仍只断言新增锚，不触碰既有脚本断言，防锚级联（与 63.6/58.7/75.7 同范式））
 
-### 82 技能专业化分层纪律（P0 — task-v171，目标：核心技能唯一性制度化——核心只管四文件罗盘域（计划制作+记录文档管理），非核心域规则/脚本/目录分层归属卫星，删除与落盘原子配对，分层架构防回潮；判定面=LLM 行为+selftest 静态守护、零新 config 键；衔接 Rule 36.5（保守化）/20.6（编号预留），既有条款原文零改动）
+### Rule 82 技能专业化分层纪律（P0 — task-v171，目标：核心技能唯一性制度化——核心只管四文件罗盘域（计划制作+记录文档管理），非核心域规则/脚本/目录分层归属卫星，删除与落盘原子配对，分层架构防回潮；判定面=LLM 行为+selftest 静态守护、零新 config 键；衔接 Rule 36.5（保守化）/20.6（编号预留），既有条款原文零改动）
 
 **建制（为什么有这条）**：task-planner 曾把 77 条既有规则（1-76+80）与全流程脚本堆在单一核心，SKILL.md 556 行什么都讲——产出边界混乱（用户定性「什么都负责导致产出边界混乱」，R1-R5 见 plans/task-v171-skill-specialization/task_plan.md）。task-v171 起按域分层：核心=四文件罗盘（`task_plan.md`/`findings.md`/`progress.md`/`knowledge-brief.md`，Rule 19/20/62）+用户会话逐字记录专档（Rule 80）；子代理派发与拆分调度→task-dispatch；通用执行纪律与工作产物→task-discipline；媒体制作→media-planner；其余规则归 7 个既有卫星（plan-research-router/plan-template-kit/plan-collab-router/plan-cost-guard/plan-resume/progress-tracker/task-drift-guard）。归属判定=「主题⟷四文件/计划生命周期门→核心；否则按域归卫星」。
 
 **边界（管什么/不管什么）**：核心 `references/critical-rules.md` 只保留核心域规则全文（20 条：1,2,3,5,19,20,26,51,62,66,80,81,82,83,109,111,112,113,116,117）（历史沿革：2026-10-15 task-v176 D10 更正原列 12 条；2026-11-26 task-shared-todo-20261126 增 Rule 117；当前口径以 SKILL.md frontmatter 与「Critical Rules 指针」段的「核心在位 20 条 / Rules 1-117」为准）；非核心域规则的唯一权威全文在其归属卫星的 `references/critical-rules-<域>.md`——核心文件只留末尾「卫星路由索引」（路径+规则编号集+调用条件），**禁止在核心文件留存非核心域规则正文或镜像副本**（双份正文=漂移源，改一份漏一份=规则分叉）；卫星之间不互相收编（域间争议按「先例归属→用户裁决」收敛，禁静默改嫁）；新规则先过 Rule 20.6 rule-reserve.sh 查重，再入其归属域文件，禁直接写入核心。
 
-**回归防线（怎么防回潮）**：① **删除与落盘原子配对**——从核心删除某规则前，其全文（含溯源注释）必须已在归属卫星逐字在位（配对前逐字核验脚本比对，零差异才可删），拆开执行=规则悬空/丢失（task-v171 实例：66 条迁移中 4 条溯源注释漂移即被配对前核验拦截并补挂）；② **空壳与预留号纪律**——Rule 77/78/79 为 task-v168 预留未落地号；Rule 80 曾被 design-architecture §5 D-01 按空壳登记删除，本次 S31 实测其正文已由 task-v169 实落（commit 3eff362d，80.1-80.6 完整且 selftest-session-log.sh SL-04 锚定核心文件）而保留于核心——预留号落地/废弃按 Rule 20.6 台账 land/release，删除任何规则前必须实测当前正文而非凭历史登记；③ **机器守护三重钉**——SKILL.md 行数钉（≤250+边距，selftest-batch-pilot.sh BP-08）+ 核心 critical-rules `^### ` 规则计数 + 迁移后 selftest 断言指向归属 home（原核心锚改指卫星路径）——任一钉子回归即挡；④ **SKILL.md 瘦身口径**——核心 SKILL.md 只写四文件罗盘定位段+计划制作循环+卫星路由表+核心规则指针；非核心域细节段随迁删除（与四文件罗盘/计划制作主循环直接相关的保留，拿不准的段保留并登记）。
+**回归防线（怎么防回潮）**：① **删除与落盘原子配对**——从核心删除某规则前，其全文（含溯源注释）必须已在归属卫星逐字在位（配对前逐字核验脚本比对，零差异才可删），拆开执行=规则悬空/丢失（task-v171 实例：66 条迁移中 4 条溯源注释漂移即被配对前核验拦截并补挂）；② **空壳与预留号纪律**——Rule 77/78/79 为 task-v168 预留未落地号；Rule 80 曾被 design-architecture §5 D-01 按空壳登记删除，本次 S31 实测其正文已由 task-v169 实落（commit 3eff362d，80.1-80.6 完整且 selftest-session-log.sh SL-04 锚定核心文件）而保留于核心——预留号落地/废弃按 Rule 20.6 台账 land/release，删除任何规则前必须实测当前正文而非凭历史登记；③ **机器守护三重钉**——SKILL.md 行数钉（≤250+边距，selftest-batch-pilot.sh BP-08）+ 核心 critical-rules `^### Rule` 规则计数（2026-11-28 归一：原 `^### ` 改为 `^### Rule`，与核心规则标题形态统一；命中自测锚已同改）+ 迁移后 selftest 断言指向归属 home（原核心锚改指卫星路径）——任一钉子回归即挡；④ **SKILL.md 瘦身口径**——核心 SKILL.md 只写四文件罗盘定位段+计划制作循环+卫星路由表+核心规则指针；非核心域细节段随迁删除（与四文件罗盘/计划制作主循环直接相关的保留，拿不准的段保留并登记）。
 
-### 83 通道不可用快速失败（P0 — task-v172 CA-6，目标：/workflow 等通道请求在环境工具面缺失时快速失败并给替代选项，禁 ≥2 次同法重试；判定面=LLM 行为+selftest 静态守护、零新 config 键；衔接 Rule 22.3（问题解决灵活性）/38.7（执行通道分级），既有条款原文零改动）
+### Rule 83 通道不可用快速失败（P0 — task-v172 CA-6，目标：/workflow 等通道请求在环境工具面缺失时快速失败并给替代选项，禁 ≥2 次同法重试；判定面=LLM 行为+selftest 静态守护、零新 config 键；衔接 Rule 22.3（问题解决灵活性）/38.7（执行通道分级），既有条款原文零改动）
 
 **建制（为什么有这条）**：videop1 D6 判例——CreateWorkflow 无 Skill 工具 3 次重试全拦，每次重试浪费完整派发开销（子代理 spawn+上下文加载+返回），且用户体感「卡住不动」。根因=通道请求无前置工具面探测，失败后才被动发现不可用，且无快速失败纪律。
 
@@ -195,7 +195,7 @@ Rule 18 管批量质量、19.2 管回填存在性、25 管委派率,但单/非�
 - **83.3 禁 ≥2 次同法重试**：同一通道请求失败后，禁 ≥2 次同法重试（Rule 22.3 同法失败 ≥2 次强制换道）；第 1 次失败后即进入 83.2 快速失败路径。
 - **83.4 机制（零新 config 键）**：`scripts/selftest-channel-fast-fail.sh` 静态守护（83.1-83.3 子条文本锚 + SKILL.md 投诉响应协议段锚 + 零新键负断言）；合规自查载体=SKILL.md G10 域（原 C57 编号已被 Rule 81 归档自查占用——v171 瘦身后合规清单只剩 G1-G10、C 行物理不存在，G10/G9 承载 Rule 81/83 自查，本脚本 CF-01..06 为行为断言）（2026-10-15 task-v176 D8/D11 更正：原写「合规清单 C57 行」——C57 与 SKILL.md:125 口径（C57=Rule 81 域原编号）冲突，且 v171 后 C 行不存在、selftest-channel-fast-fail.sh 无此断言，改实况表述）；SKILL.md 投诉响应协议段「通道不可用快速失败（Rule 83）」条目锚。
 
-### 109 独立审计门（audit-before-delivery）— task-planaudit-20261116（P0；目标：不将未经审计的产出交给用户；判定面=一切交用户可见的需审核产出；衔接 Rule 51/70/74/80/103/84/108/69）
+### Rule 109 独立审计门（audit-before-delivery）— task-planaudit-20261116（P0；目标：不将未经审计的产出交给用户；判定面=一切交用户可见的需审核产出；衔接 Rule 51/70/74/80/103/84/108/69）
 
 > 原则总则：任何需要审核的产出（计划/报告/总结/分析/上抛呈报/裁决材料等），在交付用户之前必须经过独立审计——由独立上下文（全新子代理或独立检查体）对照需求锚与证据复核其完整性、合理性与可靠性；主进程不得自判达标后跳过审计直接交付。本条=原则总则+计划面强制门+覆盖面映射；已识别覆盖面非穷尽，未列面按 109.5 判定规则默认适用。
 
@@ -232,7 +232,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 - **task-drift-guard**（域=漂移检测与偏移留痕）：规则全文见 `../../task-drift-guard/references/critical-rules-drift.md`（Rule 11,15,61,64）；调用条件=漂移检测/偏移检查子代理化/周期回顾节奏触发时。
 - **verification-gate**（域=任务验证全链路）：规则全文见 `../../verification-gate/references/critical-rules-verification.md`（Rule 84）；调用条件=VC 可执行化设计/执行期 V-N 校验/终验 VC 复验/子代理验证/统一验证入口触发时（2026-10-14 task-v173 建制，VC 规则由主技能 goal-gate.md + 子代理验证由 completion-gate.md 迁入）。
 
-### 111 进度产出基线防倒退（Progress-Output Baseline，P0，2026-11-20 task-antiregress-tplgov-20261120；治理目标：禁止拆东墙补西墙式进度倒退）
+### Rule 111 进度产出基线防倒退（Progress-Output Baseline，P0，2026-11-20 task-antiregress-tplgov-20261120；治理目标：禁止拆东墙补西墙式进度倒退）
 > 适用：存在项目级进度/产出基线候选的计划（模板/规则/脚本/守卫/流程/部署位等可枚举关键产出与能力面）。机制=L0-T 文本锚+复用现有 attest/check 门，零新脚本零新 config 键。Why：在无基线对照时，「改 A 坏 B」「用新实现替代旧实现时顺手移除」「为让 A 过验收而削弱 B」等拆东墙补西墙不可检；判例=本仓部署/级联面多次"修一处破一处"漂移。
 
 111.1 **计划期登记义务（P0）**：存在项目级进度/产出基线候选时，计划期必须在 `task_plan.md`「📦 进度产出基线（Rule 111 进度产出防倒退）」区块逐条登记：`基线项 | 动工前快照 | 关键产出/指标 | 禁倒退清单 | 状态`；来源=对项目关键产出/能力面盘点（如模板数与结构、规则编号面、selftest 基线、部署位状态、核心流程可用性）。确认无候选须显式填写 `none-justified`（附一句理由），禁静默遗漏（登记遗漏=未受管）。
@@ -247,7 +247,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 111.6 **四环绑定**：派发必带（dispatch Rule 22.4f，携带基线清单与禁倒退清单+判定式）、返工/续写/合并回归（discipline Rule 106.8 全量逐条对照）、终检（🛡 区块+Rule 84 终验面）、verification 收尾对照；缺一即视为进度产出未受管。
 
-### 112 检索排除清单纪律（Retrieval-Exclude List，P0，2026-11-23 task-retrieval-exclude-20261123；目标：检索前先读项目根排除清单并按条件排除，根治无用临时/资料文件淹没会话致执行拖慢）
+### Rule 112 检索排除清单纪律（Retrieval-Exclude List，P0，2026-11-23 task-retrieval-exclude-20261123；目标：检索前先读项目根排除清单并按条件排除，根治无用临时/资料文件淹没会话致执行拖慢）
 > 适用：一切检索动作（Explore/Grep/Glob/ls 目录扫描/Read 目录列举/素材选型/数据回找）。机制=L0-T 文本锚（对齐 100.5/111），判定面=LLM 行为+本条款文本锚，零新脚本零新 config 键零 hook。Why：用户 2026-11-23 反馈「检索没做排除、临时文件过多、改几个提示词执行十几小时」——根因=检索把 tmp/.history/落选稿等无意义文件读进会话；既有 Rule 100.6 仅对 trash/ 硬编码排除，缺通用可维护载体。本条为 100.6③「检索排除 trash/」的通用化文档载体，100.6 原文不动（Rule 36.5 纯增量）。
 
 112.1 **清单载体（定义）**：每个项目根维护一份 `RETRIEVAL_EXCLUDE.md`（约定文件名，便于统一检索）；表格列 = `路径/模式 | 说明 | ✅ 可排除场景 | ❌ 必须纳入场景 | 依据`；每条排除项必须同时写明两种场景 + 依据，禁只写「排除 X」不带条件（无条件的排除=潜在误删关键信息）。项目可按实况增删条目——本条定义机制与格式，不固化具体清单内容（内容归项目维护）。
@@ -262,7 +262,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 112.6 **机制（L0-T 文本优先）**：判定面=LLM 行为（检索前读清单 + 条件比对 + 排除参数注入 + 子代理传播）+ 本条款文本锚；机器面=零新增（无新脚本/无新 config 键/无 hook），selftest 机器化属 opt-in（Rule 38.7 L0-T 档），仅当用户显式要求才建。「确保后期执行」的既有承载 = 本条款文本锚 + 清单文档载体，不构成建机器门的授权（宪法 §二文本优先铁律）。
 
-### 113 输出示例契约（Output Example Contract，P0，2026-11-25 task-output-example-contract-20261125；目标：根治「计划表面专业但执行产出完全相背」——格式已声明却无示例，执行体只能脑补）
+### Rule 113 输出示例契约（Output Example Contract，P0，2026-11-25 task-output-example-contract-20261125；目标：根治「计划表面专业但执行产出完全相背」——格式已声明却无示例，执行体只能脑补）
 > 适用：一切由 task-planner 产出的计划任务（含 standard / mini / L0-lite 全档，含主模板与 31 个 variant）。机制=规则文本 + 模板必选区块 + `plan-state.json.output_examples` 结构化承载 + `planctl render` 派生视图 + 既有守卫。Why：用户 2026-11-25 原话「表面看着很繁荣、很专业，但实际上是一塌糊涂……说输出 JSON 格式，JSON 的格式实例完全不提供……没有一个可以让用户直接看到的结果、示例」；根因=既有 VC 契约只覆盖「可验证」（criterion/command/evidence），不覆盖「可模仿」（预期产出形态），格式声明与示例缺失不违规。
 
 113.1 **强制示例义务（P0）**：计划中任何交付物一旦声明输出格式或结构（JSON / YAML / Markdown / CSV / 表格 / API payload / 文件树 / 配置片段 / 代码签名等），必须在同一计划的 `output_examples` 段登记至少 1 条完整示例；禁止只写「输出为 JSON 格式」「按 Markdown 输出」等无样例声明。判定式：计划含格式声明词但无对应 `output_examples` 条目 = FAIL。
@@ -285,7 +285,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 113.10 **展示义务与项目级强制（2026-11-25 晚用户裁决；先实物后条款）**：本条把「必须展示示例」从「计划内有条目」升级为**项目级强制、所有计划的必选项**。①**顺序铁律**：计划创建/审核第一动作=向用户展示至少一个完整、可直接查看的**产出示例实物**（真实文件路径或 fenced 代码块/表格 + 同结构占位模板 + 审查命令与预期输出），再写条款/方案；禁止脑补、禁止只写「见 output_examples」或仅放标题 token。②**实物形态**：交付物为模板/配置/结构化数据时，`example` 必须是可读的 pretty-print 源 + MD 教学视图 + 逐字段对照 + 审查命令真实输出；权威示例=`examples/json-template-upgrade/review.md`（C1–C8，其中 C6 手改 MD 勾选必须 FAIL）。③**FAIL 判定**：`output_examples` 缺失/空、示例为空或含「略/TBD/...」占位、只有标题 token 无真实内容、未向用户展示实物——任一命中即不合格。④**机器门落点（复用既有、零新脚本）**：新计划在 `attest-plan.sh` 锁定时经 `[example-gate]` 校验（缺/空/占位拒锁）；模板侧由 `check-template-principles.sh` 校验示例段**内容**（极简档允许行内 code 真实实例，不误伤 mini/L0-lite）。⑤**存量兼容**：`planctl.py validate_state` 被 `commit_state` 在每次写入时调用，仓库 22/22 存量 plan-state 无本字段，故**不在此处加无条件 FAIL**（会瘫痪存量读写）；强制仅在「新计划锁定」时点生效，既有计划零改动。⑥与 113.8 关系：本次为用户显式要求的强制升级，复用既有门与既有 selftest，不新增脚本/hook/config 键。
 
-### 115 声明源通用消费与本地调研通道（2026-11-26 task-research-channels-20261126 增）
+#### Rule 115 声明源通用消费与本地调研通道（2026-11-26 task-research-channels-20261126 增）
 
 115.0 **公理（机制通用，目录数据归项目）**：机制通用、目录数据归项目。`.source-registry.tsv` 为项目级源注册表，4 列 `source_path/spec_kind/anchors_keywords/scope_tags`，维度为开放标签（零代码枚举）；bible/outline 等仅是项目声明实例，不是机制硬编码。
 
@@ -305,7 +305,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 115.8 **子代理传播**：派发检索型子代理须携带清单排除面与必保锚词（对齐 22.4f），使子代理在隔离上下文中同等执行约束。
 
-### 116 惰性文件引入规范（Lazy Reference Loading Contract，P0，2026-11-26 task-lazyref-trigger-20261126；治理目标：根治「惰性文件该加载时没加载」——D1 有指针无触发/D2 常载面零指针不可达）
+### Rule 116 惰性文件引入规范（Lazy Reference Loading Contract，P0，2026-11-26 task-lazyref-trigger-20261126；治理目标：根治「惰性文件该加载时没加载」——D1 有指针无触发/D2 常载面零指针不可达）
 
 116.0 **公理（P0）**：触发判定信息必须可见于执行期必经面（常载面=各技能 SKILL.md 入口）；写在惰性文件内部的自述不作首载依据，仅作二级导航（用户裁决 2026-11-26）。
 
@@ -325,7 +325,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 116.8 **通用面三问自查**：换技能成立（条款对任意技能文档面成立）／与既有门互认（独立 fail-closed 门，接统一收口序列）／部署位实测（VC5 部署位跑门）。each executor self-check.
 
-### 117 跨任务共用未解决问题登记（Shared Backlog Contract，P0，2026-11-26 task-shared-todo-20261126；治理目标：根治「任务半途搁置后问题只留会话、后期遗忘、无法统计已解决与未解决」）
+### Rule 117 跨任务共用未解决问题登记（Shared Backlog Contract，P0，2026-11-26 task-shared-todo-20261126；治理目标：根治「任务半途搁置后问题只留会话、后期遗忘、无法统计已解决与未解决」）
 
 > 适用：一切使用 task-planner 的项目（不限任务类型/内容域）。机制=项目根 `todo.json`（JSON 权威源）+ 唯一写入口 `scripts/todoctl.py` + 文本登记义务，零新 hook、零 plan-state 字段。Why：既有 `plans/INDEX.md` 是脚本派生的 MD 任务索引，`todo-sync.md`/`todo-skill` 只管单次任务内 Todo，均非跨任务 JSON 权威源；任务被搁置时问题随会话消失，用户无法整体计划性处理。示例实物与 C1–C6 审查命令见 `examples/shared-todo/review.md`（Rule 113.10 权威形态）。
 
@@ -355,7 +355,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 117.12 **通用面三问自查**：换项目成立（任意 `--root` 同机制）／与既有门互认（复用 archive-plan 守卫与 sync-index，不新增机器门、不新增 hook）／部署位实测（scripts 随 rsync 进部署位、Python 免 chmod、CLI 在部署位实跑 next/review/retire --dry-run）。each executor self-check.
 
-### 118 范围边界契约（P0, 2026-11-27 task-boundary-advance-20261127）
+#### Rule 118 范围边界契约（P0, 2026-11-27 task-boundary-advance-20261127）
 
 > 适用：一切使用 task-planner 的标准/mini/L1 执行计划（存量无字段计划按兼容放行）。机制=plan-state.json 顶层 `scope_boundary` 对象 + planctl `scope-set/scope-extend` 唯一写入口 + `check-scope.sh` PreToolUse 边界比对段 + render `## ⚠️ 执行范围限制` 段，零新 hook。Why：无写路径比对门导致任务 A 被无限拓展；边界须在计划锁定时声明、扩张须授权可审计，机器门负责写前拦截而非事后复盘。示例实物与 C-B1–C-B4 审查命令见 `examples/scope-boundary/review.md`（Rule 113.10 权威形态）。
 
@@ -375,7 +375,7 @@ Why：主上下文分析偏差可直达用户（RCA：计划产出→D1 之间�
 
 118.7 **通用面三问自查**：换项目成立（任意项目根 plan-state.json 同字段与 CLI）／与既有门互认（复用 check-scope PreToolUse 链，不新增 hook；不改变 plans/ 豁免与 worktree 门语义）／部署位实测（scripts 随 skill 部署，Python/bash 自测在 worktree 内可跑）。each executor self-check。
 
-### 119 两段式推进机器门（P0, 2026-11-27 task-boundary-advance-20261127）
+#### Rule 119 两段式推进机器门（P0, 2026-11-27 task-boundary-advance-20261127）
 
 > 适用：一切声明两段式根因跟进（`rootcause-followup:*` tag 或 findings 含 `[rootcause-followup:PASS]`）的 task-planner 计划。机制=smart-merge-back.sh 成功路径写 `isolation.merge_back=merged(<sha7>)` + `followup-of:<task-id>` pending 登记 + check-complete.sh `STAGE-ADVANCE GATE` fail-closed 阻断 + zcode-sessionstart.sh 只读探针注入，零新 hook。Why：阶段1合并后根因深挖阶段易静默丢失；需事件→登记→消费→门禁四环咬合，保证“合并不等于结束”。示例实物与审查命令见 `examples/stage-advance/review.md`（Rule 113.10 权威形态）。
 

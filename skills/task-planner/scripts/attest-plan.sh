@@ -84,11 +84,14 @@ fi
 plan_dir="$(cd "$(dirname "$plan_file")" && pwd)"
 attest_file="$plan_dir/.plan-attestation"
 
-# [2026-11-22 task-planctl-exec-surface-20261122 S7 返工] warn-only 空壳检测（SOFT_ONLY 信号）：
-#   plan-state.json 业务数组全空而 task_plan.md 已非骨架（>2048B）→ MD 被手工填写、JSON 权威源未被使用。
-#   仅 WARN 留痕不阻断、不新增脚本（用户裁决不加拦截门；判例 sess_1d7e33d6=空壳全程绿灯不可见）。
-#   位置=入口段（mode 分派与门链之前）：S7 实弹发现置于锁定段时，空壳计划会被 51.1 等更早的门
-#   拦截退出、根本走不到 WARN——入口段保证任何跑法（含门链失败/缓存命中）都能看到信号。
+# [2026-11-28 task-skill-fix-defs-20261128] SOFT_ONLY 空壳检测：warn-only → fail-closed（审计 DEF-01）。
+#   What: plan-state.json 业务数组全空（requirements/goals/vcs/phases/findings 均空）而 task_plan.md
+#     已非骨架（>2048B）→ 判空壳手填；attest 模式默认拒锁（exit 1）；逃生阀
+#     TASK_PLANNER_SOFT_ONLY_ENFORCE=off 时降级为 WARN 不阻断；非 attest 模式仅告警不阻断。
+#   Why:  根因=审计 DEF-01 warn-only 空壳全程绿灯（判例 sess_1d7e33d6）；原行为=2026-11-22 用户裁决
+#     warn-only（S7 返工仅留痕不阻断）；现=fail-closed+逃生阀；依据=用户 /goal 原话「基于以上分析的内容进行逐个修改 优化确保skill的可用性」。
+#   位置=入口段（mode 分派与门链之前）：保证任何跑法（含门链失败/缓存命中）都能看到信号；拒锁仅在 attest 模式生效。
+_soft_only_hit=0
 if [ -f "$plan_dir/plan-state.json" ]; then
   if python3 - "$plan_dir" <<'_PWARN' >/dev/null 2>&1
 import json, os, sys
@@ -103,7 +106,19 @@ md_big = os.path.exists(tp) and os.path.getsize(tp) > 2048
 sys.exit(0 if (biz_empty and md_big) else 1)
 _PWARN
   then
-    echo "[attest] WARN: plan-state.json 业务数据为空而 task_plan.md 已被手工填写（SOFT_ONLY 信号；正确流程=planctl 写入+render）" >&2
+    _soft_only_hit=1
+  fi
+fi
+if [ "$_soft_only_hit" = "1" ]; then
+  _so_enforce="${TASK_PLANNER_SOFT_ONLY_ENFORCE:-enforce}"
+  case "$_so_enforce" in off|OFF|0|false) _so_enforce="off" ;; *) _so_enforce="enforce" ;; esac
+  if [ "$_so_enforce" = "off" ]; then
+    echo "[attest] WARN: plan-state.json 业务数据为空而 task_plan.md 已被手工填写（SOFT_ONLY 信号；TASK_PLANNER_SOFT_ONLY_ENFORCE=off 降级 warn 不阻断；正确流程=planctl 写入+render）" >&2
+  elif [ "$mode" = "attest" ]; then
+    echo "[attest] ✗ SOFT_ONLY 空壳计划拒绝锁定（plan-state.json 业务数组全空而 task_plan.md 已被手工填写>2048B；2026-11-28 task-skill-fix-defs-20261128 升级 fail-closed，依据=用户 /goal 逐个修改授权；legacy 逃生阀 TASK_PLANNER_SOFT_ONLY_ENFORCE=off）" >&2
+    exit 1
+  else
+    echo "[attest] WARN: SOFT_ONLY 空壳信号（非 attest 模式仅告警；正确流程=planctl 写入+render）" >&2
   fi
 fi
 
