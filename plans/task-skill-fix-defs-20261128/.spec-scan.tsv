@@ -1,0 +1,7 @@
+.zcode/plan-templates/knowledge-brief.md	logic
+CHANGELOG.md	language
+CONTRIBUTING_zh.md	logic
+plans/task-skill-fix-defs-20261128/knowledge-brief.md	logic
+skills/task-planner/references/critical-rules.md	rhythm
+skills/task-planner/scripts/check-drift.sh	language
+skills/task-planner/scripts/run-selftests.sh	naming
