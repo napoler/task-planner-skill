@@ -101,10 +101,12 @@ fi
 #   现象：SKILL.md 瘦身后合规清单 C39 行（Rule 65 周期性回顾合规项）随清单表退役，'C39' 命中=0，PR-10 恒 FAIL。
 #   根因：Rule 65 属纪律域；瘦身后 SKILL 侧消费点=Phase 执行循环 3f「周期性三文件对照」行（含 Rule 65.4 corrected 回错误步引措）。
 #   修法：改断言 SKILL.md 含 'Rule 65' ≥1（3f 行为锚），合规面语义由该执行循环行承载。
-if grep -q 'Rule 65' "$SKILL_MD"; then
-  ok "PR-10" "SKILL.md 含 Rule 65 消费面（3f 周期性三文件对照行；C39 合规行瘦身后由执行循环行承载）"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] 3f 行随 SKILL.md 瘦身迁至 plan-workflow-details.md，断言改指该文件。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+if grep -q 'Rule 65' "$PWD_REF"; then
+  ok "PR-10" "plan-workflow-details.md 含 Rule 65 消费面（3f 周期性三文件对照行；C39 合规行瘦身后由 plan-workflow-details 承载）"
 else
-  bad "PR-10" "SKILL.md Rule 65 消费面缺失"
+  bad "PR-10" "plan-workflow-details.md Rule 65 消费面缺失"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS + FAIL))" "$PASS" "$FAIL"

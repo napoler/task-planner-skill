@@ -51,11 +51,15 @@ if grep '^31\.5 ' "$CRIT_D" | grep -q '被否决方案'; then ok 06 "31.5 消费
 #   根因：Rule 32 属纪律域；SKILL 侧现存联动=「派发与执行纪律指针」段「用户否决」措辞行（L191）；
 #     条文本体（用户否决与禁令追踪）在 CRIT_D。
 #   修法：VT-07=SKILL 含 '用户否决' ∧ CRIT_D '^### 32 ' 标题含「用户否决」；VT-08=卫星路由表 discipline 行（C20 载体）。
-if grep -q '用户否决' "$SKILLMD" && grep '^### 32 ' "$CRIT_D" | grep -q '用户否决'; then ok 07 "SKILL.md 指针段用户否决措辞 ∧ CRIT_D Rule 32 标题（摘要行瘦身后由指针行+条文承载）"; else bad 07 "SKILL.md 摘要缺 Rule 32 联动面"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 瘦身后用户否决指针迁至 plan-workflow-details.md。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+if (grep -q '用户否决' "$SKILLMD" || grep -q '用户否决' "$PWD_REF") && grep '^### 32 ' "$CRIT_D" | grep -q '用户否决'; then ok 07 "SKILL/PWD 指针段用户否决措辞 ∧ CRIT_D Rule 32 标题（摘要行瘦身后由指针行+条文承载）"; else bad 07 "SKILL/PWD 摘要缺 Rule 32 联动面"; fi
 # VT-08 [task-v171 核心瘦身] C20 检查项 → 卫星路由表 task-discipline 行
 if grep -qE '^\| task-discipline \|' "$SKILLMD"; then ok 08 "SKILL.md 卫星路由表 discipline 行（C20 合规面载体）"; else bad 08 "SKILL.md 缺 C20 现载体"; fi
 # VT-09 [task-v171 核心瘦身] 否决登记指针 → SKILL「用户否决」指针 + notepad 模板「🚫 被否决方案」消费段
-if grep -q '用户否决' "$SKILLMD" && grep -q '被否决方案' "$TPL_NOTEPAD"; then ok 09 "SKILL.md 用户否决指针 ∧ notepad 模板被否决方案段（登记链双载体）"; else bad 09 "SKILL.md 缺否决登记指针"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] 用户否决指针迁至 plan-workflow-details.md。
+PWD_REF="${PWD_REF:-$SKILL_ROOT/references/plan-workflow-details.md}"
+if (grep -q '用户否决' "$SKILLMD" || grep -q '用户否决' "$PWD_REF") && grep -q '被否决方案' "$TPL_NOTEPAD"; then ok 09 "SKILL/PWD 用户否决指针 ∧ notepad 模板被否决方案段（登记链双载体）"; else bad 09 "SKILL/PWD 缺否决登记指针"; fi
 # VT-10 [2026-10-08 task-v144 合并级联: SKILL References/索引锚演进 1-62（58/59/60/62 落地）,宽容正则扩 6x 纪元][2026-10-10 task-v158 扩 7x 纪元 1-(3[1-9]|[4-7]x)]
 # [2026-10-10 task-v160 合并并集: 保留演进记录，Rule 72 落地 1-72 纪元]
 # [2026-10-11 task-v169 合并级联: Rule 80 落地 1-80 纪元, 末段字符类 4-7x→4-8x（后由 task-v170 精化为 8[01] 尾边界，禁越界放开 82-89）]

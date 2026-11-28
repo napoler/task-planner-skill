@@ -547,7 +547,8 @@ P_REG_DISP=$(grep -c 'add_cmd("disposition"' "$PLANCTL" || true)
 # 的 `### 115 ` 标题（部署位为薄壳：SKILL.md 只有指针壳，Rule 115 全文在 references 全量拷贝中；
 # [2026-11-26 修复] 部署位形态实测 15/16 假 FAIL 根因=薄壳无正文，本断言原读 $TP_SKILL）。
 TPL_114=$(grep -c 'Rule 115 通道接线' "$TP_TPL" || true)
-CRIT_115=$(grep -c '^### 115 声明源通用消费与本地调研通道' "$TP_CRIT" || true)
+# [2026-11-28 FIX-2 R1 归一适配] Rule 115 标题归一为 `#### Rule 115 ...`（core critical-rules.md），接受新旧格式。
+CRIT_115=$(grep -cE '^#{3,4} (Rule )?115 ' "$TP_CRIT" || true)
 
 RC16_OK=1; RC16_MSG=""
 [ "$P_ACC" -ge 1 ] || { RC16_OK=0; RC16_MSG="$RC16_MSG cmd_acceptance"; }

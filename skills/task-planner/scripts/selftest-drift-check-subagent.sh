@@ -57,17 +57,15 @@ if grep -E '^\| task-drift-guard \|' "$SKILLMD" | grep -qE 'Rule [0-9,]*61'; the
 #   修法：改断言步骤 6 [DRIFT CHECK] 行含「派发」+drift-checker（现措辞带反引号：派发 `drift-checker`，锚用非紧邻正则）。
 if grep -q '派发.*drift-checker' "$SKILLMD"; then ok 03 "Phase 循环步骤 6 [DRIFT CHECK] 含 派发 drift-checker（Chain 步骤 4 语义由步骤 6 承载）"; else bad 03 "步骤 6 派发 drift-checker 缺失"; fi
 
-# DCS-04 [task-v171 核心瘦身] 合规清单 C4 行 → 用户新指令处理 B/C 行（合规清单表替换为 G1-G8 核心域表后，非核心域合规项经 B/C 行+路由表承载）
-if grep -F '处理完再派 drift-checker' "$SKILLMD" | grep -q 'Rule 73.2'; then ok 04 "用户新指令处理 B/C 行含 drift-checker（C4 合规行瘦身后由 B/C 行承载）"; else bad 04 "B/C 行缺 drift-checker"; fi
+# DCS-04 [task-v171 核心瘦身][2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: "处理完再派 drift-checker"+Rule 73.2 语义已迁入 references/plan-workflow-details.md（§inbound 指令收口段）。 Why: 仅重指向新位置，禁把大段内容迁回 SKILL.md。
+DETAILS_MD="$SKILL_ROOT/references/plan-workflow-details.md"
+if grep -qF "处理完再派 drift-checker" "$DETAILS_MD" && grep -qF "Rule 73.2" "$DETAILS_MD"; then ok 04 "用户新指令处理 B/C 行含 drift-checker（迁移至 plan-workflow-details.md）"; else bad 04 "B/C 行缺 drift-checker（plan-workflow-details.md）"; fi
 
-# DCS-05 [task-v171 核心瘦身] B/C 类处理完行（措辞演进：「B/C 类处理完」→「处理完再派 drift-checker」，锚随现措辞更新）
-if grep -F '处理完再派 drift-checker' "$SKILLMD"; then ok 05 "B/C 类处理完行含 drift-checker（现措辞:处理完再派）"; else bad 05 "B/C 类处理完行缺 drift-checker"; fi
+# DCS-05 [task-v171 核心瘦身][2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: B/C 处理完后派 drift-checker 措辞迁至 references/plan-workflow-details.md。 Why: 重指向新位置。
+if grep -qF "处理完再派 drift-checker" "$DETAILS_MD"; then ok 05 "B/C 类处理完行含 drift-checker（迁移至 plan-workflow-details.md）"; else bad 05 "B/C 类处理完行缺 drift-checker（plan-workflow-details.md）"; fi
 
-# DCS-06 [task-v171 核心瘦身] Rule 15 bullet+高频漂移纠正摘要行 → 步骤 6 触发时机行（Rule 15 归漂移域；SKILL 侧留触发时机摘要）
-#   现象：旧「每 2-3 个原生 todo」bullet 与「任一触发条件命中」高频漂移纠正节随瘦身移除。
-#   根因：Rule 15 条文归 CRIT_G；SKILL 步骤 6 保留触发时机清单（Phase complete 后立即/连续 ≥3 次工具调用/…）。
-#   修法：改断言「触发时机」行含 drift-checker（触发节奏语义在位）。
-if grep '触发时机' "$SKILLMD" | grep -q 'drift-checker'; then ok 06 "步骤 6 触发时机行含 drift-checker（Rule 15 bullet+高频摘要瘦身后由触发时机行承载）"; else bad 06 "触发时机行缺 drift-checker"; fi
+# DCS-06 [task-v171 核心瘦身][2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] What: 步骤 6 触发时机行（含 drift-checker）迁至 references/plan-workflow-details.md §drift-check-options。 Why: 重指向新位置。
+if grep -q "触发时机" "$DETAILS_MD" && grep -q "drift-checker" "$DETAILS_MD"; then ok 06 "步骤 6 触发时机行含 drift-checker（迁移至 plan-workflow-details.md）"; else bad 06 "触发时机行缺 drift-checker（plan-workflow-details.md）"; fi
 
 # DCS-07 [task-v171 核心瘦身] 路由表漂移检测行 → 卫星路由表 task-drift-guard 行；haiku-1 执行体选型面迁 task-dispatch（由 DCS-17 agent-coverage drift-checker 行守护）
 #   现象：旧 SKILL 派发路由表「漂移检测（高频）」行（含 haiku-1 档位）随瘦身移除。根因：执行体选型表归 task-dispatch 域。

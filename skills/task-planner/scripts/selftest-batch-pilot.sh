@@ -67,8 +67,13 @@ if grep -q '## 八、试点先行硬门详解' "$BGATE"; then ok 07 "§八 试�
 # [2026-11-15 task-specmode-integration-20261115] Spec 模式路由 +3 行 & frontmatter 登记 +1 行（实值 287）, 上限 285→292（实值+5 边距，口径同 2026-11-05）
 # [2026-11-15 task-initdelegation-20261115 并集解修正] 组合态实值 296=287(master)+9(本任务)（双分支注释各自基线如上）；条款契约修正版 +1 行实值 297, 上限 300→305（CR P2-2：线性链恢复+边距≥5 先例口径）; [2026-11-16 task-intentresume-20261116] 回切检查条款+回切通告模板 +2 行（实值 306）, 上限 305→306；实值 306+5 边距（口径同 2026-11-15 CR P2-2）→ 上限 306→311
 # [2026-11-23 task-fix-all-20261123] Rule 108-110 纪元/审计门等结构性增长（实值 440）, 上限 311→450（实值+10 边距, 口径同 task-v168 实值+边距先例）; 同任务文档债务组新增脚本索引表 +19 行（实值 459）, 上限 450→470（实值+11 边距, 并行 commit 叠加后口径同步）
+# [2026-11-28 task-skill-fix-defs-20261128] What: 行钉 470→185（实测+10 边距）+ 新增字节钉 ≤30734（实测 27940 *110% 向上取整）；Why: 审计 DEF-03 行钉逐次抬升失守，借 Superpowers tests/skill-size 字节门补双钉；原行为=行钉 470 单钉无字节门。迁移自 SKILL.md 大段命令速查/SOP/计划循环细节至 plan-workflow-details.md。
 lines=$(wc -l < "$SKILLMD")
-if [ "$lines" -le 470 ]; then ok 08 "SKILL.md 行数 $lines ≤470"; else bad 08 "SKILL.md 行数 $lines 超 470"; fi
+bytes=$(wc -c < "$SKILLMD")
+line_ok=0; byte_ok=0
+if [ "$lines" -le 185 ]; then line_ok=1; fi
+if [ "$bytes" -le 30734 ]; then byte_ok=1; fi
+if [ "$line_ok" -eq 1 ] && [ "$byte_ok" -eq 1 ]; then ok 08 "SKILL.md 行数 $lines ≤185 且字节 $bytes ≤30734"; else bad 08 "SKILL.md 行数 $lines(≤185?) 字节 $bytes(≤30734?)"; fi
 # BP-09 [2026-10-12 task-v171 S38] 纪元锚扩至覆盖 1-77 全集: 原字面 grep '隶属 Rules 1-36' → 宽容正则
 #   grep -qE '隶属 Rules 1-(3[6-9]|[4-6][0-9]|7[0-7])'（参照 selftest-conclusion-discipline.sh:101 CD-19「1-3[5-8]」宽容锚写法扩为含 77）;
 #   覆盖 1-36..1-77 全部纪元（当前 BGATE 在位字面 1-36 命中, 77 纪元前瞻命中）, 全集过渡不断钉

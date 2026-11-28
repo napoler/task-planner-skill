@@ -117,6 +117,24 @@ CONFIG_JSON="$SKILL_ROOT/../config.json"
 
 # 缺项扫描: $1=prompt 文件 $2=计划目录 → stdout 每行一个缺项名(固定顺序 P1..P3,R1..R3,C1)
 # [2026-09-10 task-path-identity] 原行为=grep -qF 字面匹配+无效 alt 拼写（realpath 不折叠 bind mount），混拼写 prompt 被误判缺项；改为文件身份判定：存在文件→stat -c %d:%i inode 比对（bind mount 免疫），不存在→realpath -m 规范串比对；废除 alt 拼写
+# [2026-11-28 task-skill-fix-defs-20261128] DEF-02 契约语义校验：证据锚+范围锚最小机器化。
+#   What: 在既有路径/key 存在性检查后追加语义锚检查——①证据锚（含「证据」或「验收」或 VC 编号引用 VC\d/V-\d）
+#     ②范围锚（含「禁改/只读/范围/不得修改/不要改/禁止改」任一）；缺失记为缺项（与既有缺项同管线）。
+#   Why:  审计 DEF-02=派发契约只校验三文件路径+固定 key，缺证据/范围语义时仍可放行；最小机器化优先复用
+#     本守卫契约文本面。VC 编号引用纳入证据锚正向判定，避免历史「验收列有 VC1/VC2 无“证据”字样」计划误伤。
+#   兼容: legacy 计划（无 - **Executor:** 行）由 cmd_pretool 调用方在 resolve 后判定跳过；本函数仅产出缺项名。
+scan_dispatch_semantic_anchors() {
+    local f="$1"
+    # 证据锚：证据/验收 关键词，或 VC 编号引用（VC1/V-1 形态）视为验收证据锚
+    if ! grep -qE '证据|验收|VC[0-9]|V-[0-9]' "$f" 2>/dev/null; then
+        printf '契约证据锚(证据/验收/VC引用)\n'
+    fi
+    # 范围锚：禁改/只读/范围/不得修改/不要改/禁止改/不可改
+    if ! grep -qE '禁改|只读|范围|不得修改|不要改|禁止改|不可改|只允许修改|仅限' "$f" 2>/dev/null; then
+        printf '契约范围锚(禁改/只读/范围)\n'
+    fi
+}
+
 scan_missing() {
     local f="$1" pd="$2" item c hit id_cand id_ref dc dr
     pd="${pd%/}"
@@ -167,6 +185,14 @@ scan_missing() {
             grep -qF -- "$item" "$f" 2>/dev/null || printf '%s\n' "$item" ;;
         esac
     done
+    # [2026-11-28 task-skill-fix-defs-20261128] DEF-02：语义锚追加在既有七项缺项之后，保持固定顺序尾部扩展。
+    # legacy 计划（无 - **Executor:** 行）跳过该新增门，与 check-plan-dispatch.sh legacy 分支一致。
+    if [ -n "$pd" ] && [ -f "$pd/task_plan.md" ] && grep -qE '^- \*\*Executor:\*\*' "$pd/task_plan.md" 2>/dev/null; then
+        scan_dispatch_semantic_anchors "$f"
+    elif [ -z "$pd" ] || [ ! -f "$pd/task_plan.md" ]; then
+        # plan-dir 不可读时无法判定 legacy，保守执行语义锚检查（fail-closed 方向，不静默放行）
+        scan_dispatch_semantic_anchors "$f"
+    fi
 }
 
 # scan_contract_narrowing <prompt-file> — [2026-10-08 task-v145 S-1, Rule 62.2] 契约收窄措辞检测

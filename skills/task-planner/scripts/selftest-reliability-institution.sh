@@ -135,8 +135,10 @@ fi
 #   根因：C37 消费语义（未处置违规降级 outcome）在瘦身后由终验交付段「质量门控统计（Rule 26）…未处置违规按
 #     Rule 26.3 降级 outcome，Q3→BLOCKED+STOP」承载；Q9 触发面登记锚由 CRIT_D 53.5（R-15）守护。
 #   修法：改断言 SKILL.md 含 'Rule 26.3' ≥1（降级门执行载体）。
-n="$(grep -c 'Rule 26.3' "$SKILLMD" || true)"
-if [ "$n" -ge 1 ]; then ok 16 "SKILL.md 终验交付段 Rule 26.3 违规降级门=$n（C37 合规面瘦身后由降级门承载）"; else bad 16 "SKILL.md Rule 26.3 锚=$n（应 ≥1）"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] Rule 26.3 字面从 SKILL.md 迁至 plan-workflow-details.md，断言改指 PWD_REF。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+n="$(grep -c 'Rule 26.3' "$PWD_REF" || true)"
+if [ "$n" -ge 1 ]; then ok 16 "plan-workflow-details.md 终验交付段 Rule 26.3 违规降级门=$n（C37 合规面瘦身后由 plan-workflow-details 承载）"; else bad 16 "plan-workflow-details.md Rule 26.3 锚=$n（应 ≥1）"; fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"
 exit $((FAIL > 0))

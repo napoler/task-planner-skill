@@ -51,6 +51,8 @@ grep -q '重 diff' "$SKILL_ROOT/SKILL.md" && ok 13 "验证流程合并句" || ba
 mkdir -p "$T/p1/plans/pk/subagent-state"
 printf '# p\n<!-- parallel_readonly: true -->\n### Phase 1\n- **Status:** in_progress\n- **Executor:** executor（sonnet-1）\n\n| ID | 目标 | 执行体 | 输入 | 验收 | 时长 | 状态 |\n|---|---|---|---|---|---|---|\n| S1 | x | explore(mini) | y | z | 5min | pending |\n' > "$T/p1/plans/pk/task_plan.md"
 now=$(date +%s); echo $((now-30)) > "$T/p1/plans/pk/subagent-state/.dispatch-inflight"
+# [2026-11-28 FIX-2 B模式] DEF-02 语义锚补齐: 夹具补「验收/范围」锚满足契约证据+范围锚检查(原 acceptance 英文不命中),
+#   测试意图(只读分槽豁免/槽占用/槽空闲)不变; 仅补最小锚文本, 不放宽断言。
 cat > "$T/pr.txt" << EOF
 只读探查 [readonly-parallel]
 $T/p1/plans/pk/task_plan.md
@@ -59,6 +61,8 @@ $T/p1/plans/pk/progress.md
 checkpoint: $T/p1/plans/pk/subagent-state/ck.md
 status: done
 acceptance: n/total
+验收: n/total
+范围: 全部
 EOF
 cat > "$T/pw.txt" << EOF
 写类实施
@@ -68,6 +72,8 @@ $T/p1/plans/pk/progress.md
 checkpoint: $T/p1/plans/pk/subagent-state/ck.md
 status: pending
 acceptance: n/total
+验收: n/total
+范围: 全部
 EOF
 TASK_PLANNER_PLAN_DIR="$T/p1/plans/pk" bash "$CKDIS" pretool "$T/pr.txt" sid-a >/dev/null 2>&1; [ $? -eq 0 ] && ok 14 "只读声明+标记槽占用放行" || bad 14 "只读豁免未放行"
 TASK_PLANNER_PLAN_DIR="$T/p1/plans/pk" bash "$CKDIS" pretool "$T/pw.txt" sid-b >/dev/null 2>&1; [ $? -eq 2 ] && ok 15 "写类槽占用仍拦截" || bad 15 "写类被误放行"

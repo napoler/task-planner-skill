@@ -57,25 +57,28 @@ else
   bad 04 "Rule 8 原文被改动"
 fi
 # TB-05: SKILL.md 用户新指令表 D 行
-if grep -q '| D 新任务边界 |' "$SKILLMD"; then
-  ok 05 "SKILL.md D 行"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] D 行从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+if grep -q 'D 类新任务边界' "$PWD_REF" || grep -q '| D 新任务边界 |' "$SKILLMD"; then
+  ok 05 "plan-workflow-details/SKILL D 类新任务边界锚在位"
 else
-  bad 05 "SKILL.md 缺 D 行"
+  bad 05 "缺 D 类新任务边界锚"
 fi
 # TB-06 [task-v171 核心瘦身] SKILL.md D 特判段 → 「判定顺序：先 D 再 A/B/C」行（特判段瘦身后由判定顺序行承载）
-#   现象：SKILL.md 瘦身后旧「新增任务边界判定（Rule 8.1 — task-v087）」特判段标题随重写退役，命中=0，TB-06 恒 FAIL。
-#   根因：用户新指令处理表重写后，D 特判语义由「判定顺序：先 D 再 A/B/C（仅存在活跃计划时 D 类适用）」行承载。
-#   修法：锚随现措辞演进为 '先 D 再 A/B/C'（≥1）。
-if grep -q '先 D 再 A/B/C' "$SKILLMD"; then
-  ok 06 "SKILL.md D 特判段（判定顺序行「先 D 再 A/B/C」承载）"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] D 特判锚从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="${PWD_REF:-$SKILL_ROOT/references/plan-workflow-details.md}"
+if grep -q '先 D 再 A/B/C' "$PWD_REF" || grep -q '先 D 再 A/B/C' "$SKILLMD"; then
+  ok 06 "plan-workflow-details/SKILL D 特判段（判定顺序行「先 D 再 A/B/C」承载）"
 else
-  bad 06 "SKILL.md 缺 D 特判段"
+  bad 06 "缺 D 特判段"
 fi
 # TB-07 [task-v171 核心瘦身] C12 检查项扩为 D/A/B/C → G8 合规行（合规清单表瘦身后 D/A/B/C 判定由 G8 行承载）
-if grep -qE '^\| G8 ' "$SKILLMD" && grep -E '^\| G8 ' "$SKILLMD" | grep -q 'D/A/B/C'; then
-  ok 07 "SKILL.md G8 行含 D/A/B/C（C12 检查项瘦身后由 G8 合规行承载）"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] G8 行迁至 plan-workflow-details.md。
+PWD_REF="${PWD_REF:-$SKILL_ROOT/references/plan-workflow-details.md}"
+if (grep -qE '^\| G8 ' "$PWD_REF" && grep -E '^\| G8 ' "$PWD_REF" | grep -q 'D/A/B/C') || (grep -qE '^\| G8 ' "$SKILLMD" && grep -E '^\| G8 ' "$SKILLMD" | grep -q 'D/A/B/C'); then
+  ok 07 "PWD/SKILL G8 行含 D/A/B/C（C12 检查项瘦身后由 G8 合规行承载）"
 else
-  bad 07 "SKILL.md G8 未含 D/A/B/C"
+  bad 07 "G8 未含 D/A/B/C"
 fi
 # TB-08: UPS hook [plan-note] 文案含 D 类指引
 if grep 'plan-note' "$UPS" | grep -q 'D 新任务边界' && grep 'plan-note' "$UPS" | grep -q '不相干内容禁止混入'; then
@@ -96,13 +99,12 @@ else
   bad 10 "todo-sync.md S5 缺 D 类分支"
 fi
 # TB-11 [task-v171 核心瘦身] 高频漂移触发时机行提法未失效（措辞演进重锚）
-#   现象：旧字面 'A/B/C 判定后做漂移检查' 随新指令段重写退役，命中=0，TB-11 恒 FAIL。
-#   根因：B/C 处理后派 drift-checker 的语义现存措辞=「B/C 变更前过 Rule 73.2 对齐三问+[align] 行，处理完再派 drift-checker」。
-#   修法：锚随现措辞演进为 '处理完再派 drift-checker'（≥1，提法兼容性语义保持）。
-if grep -q '处理完再派 drift-checker' "$SKILLMD"; then
-  ok 11 "SKILL.md 漂移触发时机行兼容（B/C 处理完再派 drift-checker 措辞）"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] 漂移触发行从 SKILL.md 迁至 plan-workflow-details.md。
+PWD_REF="${PWD_REF:-$SKILL_ROOT/references/plan-workflow-details.md}"
+if grep -q '处理完再派 drift-checker' "$PWD_REF" || grep -q '处理完再派 drift-checker' "$SKILLMD"; then
+  ok 11 "PWD/SKILL 漂移触发时机行兼容（B/C 处理完再派 drift-checker 措辞）"
 else
-  bad 11 "SKILL.md 漂移触发时机行失效"
+  bad 11 "漂移触发时机行失效"
 fi
 
 printf 'Total: %d PASS=%d FAIL=%d\n' "$((PASS+FAIL))" "$PASS" "$FAIL"

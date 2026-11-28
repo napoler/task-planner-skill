@@ -36,7 +36,8 @@ if [ "$n" -ge 7 ]; then ok 01 "critical-rules.md Rule 51 子条锚 $n ≥7"; els
 # RC-02 Rule 51 标题锚 `grep -q '^### 51 '`
 # What：断言 '### 51 ' 章节标题行在位。
 # Why：标题行是 44/45/46/47/49 范式（章节标题+子条）的识别锚——丢了标题，Rule 51 会退化为无主条款（防章节误删/标题降级为普通段落）。
-if grep -q '^### 51 ' "$CRIT"; then
+# [2026-11-28 FIX-2 R1 重指向/归一适配] 核心规则标题归一为 `### Rule N ...`（DEF-06），断言接受新旧格式。
+if grep -qE '^### (Rule )?51 ' "$CRIT"; then
   ok 02 "critical-rules.md Rule 51 标题锚在位"
 else
   bad 02 "critical-rules.md Rule 51 标题锚缺失（### 51 未命中）"

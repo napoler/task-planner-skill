@@ -84,10 +84,12 @@ else
 fi
 
 # HPR-07 task-planner 接线锚（收紧到可选前置接线行特征串）
-if grep -Fq '可选前置（历史经验）**：L1+ 新任务主题涉同类改造' "$TP_SKILL"; then
-  ok 07 "task-planner SKILL 含 plan-history-recall 可选前置接线"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] 接线行随 SKILL 瘦身迁至 plan-workflow-details.md。
+PWD_REF="$ROOT/skills/task-planner/references/plan-workflow-details.md"  # [2026-11-28 FIX-2 R1 重指向] TP_ROOT未定义，改用ROOT
+if grep -Fq '可选前置（历史经验）**：L1+ 新任务主题涉同类改造' "$PWD_REF"; then
+  ok 07 "plan-workflow-details.md 含 plan-history-recall 可选前置接线（SKILL 瘦身后迁移）"
 else
-  bad 07 "task-planner SKILL 缺 plan-history-recall 可选前置接线"
+  bad 07 "plan-workflow-details.md 缺 plan-history-recall 可选前置接线"
 fi
 
 # HPR-08 registry 自登记行锚

@@ -121,3 +121,6 @@ selftest-assertion-guard.sh	acceptance	zero-assertion selftest must FAIL	selftes
 selftest-verdict-tristate.sh	验收三态 verdict 契约(BLOCKED 须 confirmed:true)行为回归(TC-01 未确认拒/TC-02 已确认放行)	check-verdict.sh 或 verification.md Goal Gate outcome 段或 selftest-verdict-tristate.sh 改动	check-verdict.sh;templates/verification.md;examples/verdict-tristate/review.md
 selftest-user-gate-ledger.sh	用户门账本 blocking 未决项拒终验(TC-01 未确认拒/TC-02 确认放行/TC-03 存量无字段兼容/TC-04 confirmed 缺省拒)	decisions.blocking/confirmed 或 planctl phase-done 拒锁或 check-complete 账本门改动	check-complete.sh;planctl.py;schemas/plan-state.schema.json;selftest-user-gate-ledger.sh
 selftest-recovery-probe.sh	recovery	compression injection unconditional + probe four-state + read-only discipline	plan-recovery.sh;zcode-sessionstart.sh
+selftest-rule-heading.sh	rule-heading	core rule heading normalization guard (DEF-06) detects ### N / ## Rule N drift	critical-rules.md;selftest-rule-heading.sh
+selftest-softonly-gate.sh	softonly-gate	SOFT_ONLY fail-closed three-way fixture (empty+default, empty+off, normal) (DEF-01)	attest-plan.sh;selftest-softonly-gate.sh
+selftest-verify-hooks.sh	verify-hooks	verify.sh full-copy hooks existence check for OpenCode/Cursor/Continue (DEF-05)	verify.sh;selftest-verify-hooks.sh

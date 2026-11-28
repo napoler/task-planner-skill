@@ -30,7 +30,9 @@ cnt() { [ -f "$2" ] || { echo 0; return; }; grep -c -e "$1" "$2" 2>/dev/null || 
 [ "$(cnt 'Rule 64.2' "$GATE")" -ge 1 ] && ok "DCE-04 gate 含 Rule 64.2 条件段" || bad "DCE-04" "条件段缺失"
 [ "$(cnt 'drift-rhythm' "$HOOK")" -ge 1 ] && ok "DCE-05 posttooluse 含 drift-rhythm" || bad "DCE-05" "注入段缺失"
 [ "$(cnt '留痕三件套' "$SKILL")" -ge 1 ] && ok "DCE-06 SKILL.md 含留痕三件套接线（DRIFT CHECK 行）" || bad "DCE-06" "接线缺失"
-[ "$(cnt '留痕三件套齐' "$SKILL")" -ge 1 ] && ok "DCE-07 SKILL G4 行含留痕三件套齐" || bad "DCE-07" "C4 追加缺失"
+# [2026-11-28 FIX-1（模式 C：SKILL 瘦身迁移）] G4 行含留痕三件套齐已迁至 references/plan-workflow-details.md
+DETAILS_MD="$SCRIPT_DIR/../references/plan-workflow-details.md"
+if [ -f "$DETAILS_MD" ] && [ "$(cnt '留痕三件套齐' "$DETAILS_MD")" -ge 1 ]; then ok "DCE-07 详情文件 G4 行含留痕三件套齐（plan-workflow-details.md）"; else bad "DCE-07" "G4 留痕三件套齐锚缺失（plan-workflow-details.md）"; fi
 [ "$(cnt '判定输入' "$AGENT")" -ge 1 ] && ok "DCE-08 drift-checker.md 含判定输入锚" || bad "DCE-08" "判定输入缺失"
 [ "$(cnt 'drift_enforce' "$CONFIG")" -eq 0 ] && ok "DCE-09 config.json 不含 drift_enforce（零新键）" || bad "DCE-09" "got=$(cnt 'drift_enforce' "$CONFIG") expect=0"
 # [2026-10-08 task-v148] DCE-10 部署布局自适应：CHANGELOG 为仓级文件，部署位不存在——缺失时 SKIP 计 PASS（What=部署位跑 selftest 不因仓级文件缺席而红；Why=selftest 权威运行位是仓源，部署位布局差异 FAIL 会污染真实回归信号）

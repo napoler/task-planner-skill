@@ -23,16 +23,17 @@ CC="$SKILL_ROOT/scripts/check-complete.sh"
 
 echo "=== selftest-antiregress: Rule 111 进度产出防倒退接线 ==="
 
-# AR-01: Rule 111 在 core 唯一，discipline/dispatch 中无同号标题
-n_core="$(grep -c '^### 111 ' "$CRIT" 2>/dev/null || true)"
-n_d="$(grep -c '^### 111 ' "$CRIT_D" 2>/dev/null || true)"
-n_p="$(grep -c '^### 111 ' "$CRIT_P" 2>/dev/null || true)"
-n_core="${n_core:-0}"; n_d="${n_d:-0}"; n_p="${n_p:-0}"
-if [ "$n_core" -eq 1 ] && [ "$n_d" -eq 0 ] && [ "$n_p" -eq 0 ]; then
-  ok "AR-01: Rule 111 标题唯一(core=1, discipline=$n_d, dispatch=$n_p)"
-else
-  bad "AR-01: Rule 111 唯一性不满足 (core=$n_core discipline=$n_d dispatch=$n_p)"
-fi
+	# AR-01: Rule 111 在 core 唯一，discipline/dispatch 中无同号标题
+	# [2026-11-28 FIX-1 锚更新] 标题归一为 `### Rule 111`（原 `### 111`），同步断言形态（mode A）
+	n_core="$(grep -Ec '^### Rule 111( |$)' "$CRIT" 2>/dev/null || true)"
+	n_d="$(grep -Ec '^### Rule 111( |$)' "$CRIT_D" 2>/dev/null || true)"
+	n_p="$(grep -Ec '^### Rule 111( |$)' "$CRIT_P" 2>/dev/null || true)"
+	n_core="${n_core:-0}"; n_d="${n_d:-0}"; n_p="${n_p:-0}"
+	if [ "$n_core" -eq 1 ] && [ "$n_d" -eq 0 ] && [ "$n_p" -eq 0 ]; then
+	  ok "AR-01: Rule 111 标题唯一(core=1, discipline=$n_d, dispatch=$n_p)"
+	else
+	  bad "AR-01: Rule 111 唯一性不满足 (core=$n_core discipline=$n_d dispatch=$n_p)"
+	fi
 
 # AR-02: Rule 111 关键语义锚在 core
 if grep -q '拆东墙补西墙' "$CRIT" && grep -q '净效果' "$CRIT" && grep -q '51\.15' "$CRIT" && grep -q '74\.7' "$CRIT" && grep -q 'PROGRESS-REGRESSION' "$CRIT"; then

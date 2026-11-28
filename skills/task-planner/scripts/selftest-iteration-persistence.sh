@@ -130,8 +130,10 @@ fi
 #   根因：Rule 57 属纪律域；执行循环瘦身后迭代落盘的 SKILL 侧落点=步 4「回写计划」行内含 progress Phase 段
 #     回填（Actions/Files/Test Results）——即 57「每轮结果落盘」在执行循环的现存载体。
 #   修法：改断言 'Actions/Files/Test Results' 落盘载体行 =1（§57 消费面语义等价）；Rule 57 全文锚由 IP-01..08 在 CRIT_D 守护。
-n="$(grep -cF 'Actions/Files/Test Results' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 09 "SKILL.md 回写计划行含 progress 落盘载体 Actions/Files/Test Results=1（原 3e「迭代落盘检查点」瘦身后由步 4 承载）"; else bad 09 "SKILL.md 落盘载体锚命中=$n（应 =1）"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md 瘦身后该锚迁至 plan-workflow-details.md，断言改指 PWD_REF。
+PWD_REF="$SCRIPT_DIR/../references/plan-workflow-details.md"
+n="$(grep -cF 'Actions/Files/Test Results' "$PWD_REF" || true)"
+if [ "$n" -ge 1 ]; then ok 09 "plan-workflow-details.md 回写计划行含 progress 落盘载体 Actions/Files/Test Results>=$n（原 SKILL.md 3e 瘦身后由 plan-workflow-details 承载）"; else bad 09 "plan-workflow-details.md 落盘载体锚命中=$n（应 >=1）"; fi
 
 # IP-10 [task-v171 核心瘦身] `Rule 57` SKILL 侧联动面 ≥3 → 卫星路由表 discipline 行（区间 53-57 覆盖 Rule 57）≥1 + CRIT_D 57.4 机制行机器面指称
 #   现象：SKILL.md 瘦身后 'Rule 57' 计数 3→0（3e 行/C40 行/References 摘要行三处全随瘦身移除），IP-10 恒 FAIL。
@@ -145,8 +147,10 @@ if [ "$n" -ge 1 ] && [ "$m" -ge 1 ]; then ok 10 "SKILL.md 卫星路由表 discip
 #   现象：合规清单 C40 行随瘦身移除（清单表→G1-G8 核心域表），命中=0，IP-11 恒 FAIL。
 #   根因：Rule 57 属纪律域；core-domain 合规表中与「迭代落盘/进度回填」对应的现存合规行=G6（progress 回填+findings 增量门控）。
 #   修法：改断言 G6 compliance 行 =1（合规消费点语义由 G6 承载）。
-n="$(grep -cE '^\| G6 ' "$SKILLMD" || true)"
-if [ "$n" -eq 1 ]; then ok 11 "SKILL.md G6 合规行（progress 回填门控）=1（C40 迭代落盘合规面瘦身后由 G6 承载）"; else bad 11 "SKILL.md G6 行命中=$n（应 =1）"; fi
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] G6 行随 SKILL.md 瘦身迁至 plan-workflow-details.md，断言改指 PWD_REF。
+PWD_REF="${PWD_REF:-$SCRIPT_DIR/../references/plan-workflow-details.md}"
+n="$(grep -cE '^\| G6 ' "$PWD_REF" || true)"
+if [ "$n" -ge 1 ]; then ok 11 "plan-workflow-details.md G6 合规行（progress 回填门控）>=$n（C40 迭代落盘合规面瘦身后由 plan-workflow-details 承载）"; else bad 11 "plan-workflow-details.md G6 行命中=$n（应 >=1）"; fi
 
 # IP-12 SKILL.md 全集声明宽容锚 `Rule 40-[5-8][0-9]` ≥1
 # What：断言 SKILL.md 出现 Rules 40-8x 全集声明（宽容正则覆盖 40-50..40-89 各纪元）。

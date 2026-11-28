@@ -196,12 +196,13 @@ if [ "$n" -eq 0 ]; then ok 15 "critical-rules.md 旧判别面字面「或无客�
 #   现存载体=References 表行「| `references/critical-rules.md` | Critical Rules 核心域 1-80 全集索引（12 条核心全文+分层架构说明+卫星路由索引） |」。
 #   修法：idxn 锚改 'critical-rules.md` | Critical Rules 核心域'（=1）+ 行内含 '1-8[0134]'（全集括注演进口径，防级联漏改语义保持）。
 # [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽] 行内全集括注 1-[89][0-9]→1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])
-idxn="$(grep -cF 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
-idxline="$(grep -F 'critical-rules.md` | Critical Rules 核心域' "$SKILLMD" || true)"
-if [ "$idxn" -eq 1 ] && printf '%s' "$idxline" | grep -qE '1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])'; then
-  ok 16 "SKILL.md References 表 critical-rules.md 行=1 且含「1-(8x|9x|10x)」全集括注（1-80..101 宽窗，v171 分层口径，CR P1-2 防级联漏改）"
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] SKILL.md References 从表格行改为 bullet 行，锚同时接受两种形态。
+idxn="$(grep -cE 'critical-rules.md[` :].*Critical Rules 核心域' "$SKILLMD" || true)"
+idxline="$(grep -E 'critical-rules.md[` :].*Critical Rules 核心域' "$SKILLMD" | head -1 || true)"
+if [ "$idxn" -ge 1 ] && printf '%s' "$idxline" | grep -qE '1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])'; then
+  ok 16 "SKILL.md critical-rules.md 核心域行>=$idxn 且含「1-(8x|9x|10x|11x)」全集括注（1-80..117 宽窗，FIX-2 兼容表格/bullet）"
 else
-  bad 16 "SKILL.md References 表 critical-rules.md 行命中=$idxn（应 =1）或行内未含 1-101 全集括注（级联漏改，CR P1-2 复发）"
+  bad 16 "SKILL.md critical-rules.md 核心域行命中=$idxn（应 >=1）或行内未含 1-8x/9x/10x/11x 全集括注（级联漏改）"
 fi
 
 # RR-17 critical-rules.md 侧 Rule 53 区块锚 `grep -c '^### 53 '` =1

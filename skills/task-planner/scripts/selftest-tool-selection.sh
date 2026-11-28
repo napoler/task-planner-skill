@@ -96,10 +96,14 @@ if [ "$a" -ge 1 ] && [ "$b" -eq 0 ]; then ok 05 "SKILL.md 字面锚 '1-(8x|9x|10
 #     编排条件（常设授权）时主动路由——激活按 39.8 三件套）：① 'dynamic-workflows 仅用户显式点名'→
 #     'dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8'（新语义锚，以 :207 实际句为准）；
 #   ② '（Rule 39）'→'（Rule 39,40,91）' 枚举引措（:207/:170 现载体，旧 '（Rule 39）' 字面零命中）；③ 卫星路由表 collab 行锚不动。
-if grep -qF 'dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8' "$SKILLMD" \
-   && grep -qF '（Rule 39,40,91）' "$SKILLMD" \
+# [2026-11-28 FIX-2 R1 重指向（SKILL 瘦身迁移）] dynamic-workflows 39.8 主动路由长句从 SKILL.md 退役；接受 SKILL.md Rule 83 动态工作流指针或 PWD_REF 锚。
+PWD_REF="$SKILL_ROOT/references/plan-workflow-details.md"
+_dw_ok=0
+(grep -qF 'dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8' "$SKILLMD" || grep -qF 'dynamic-workflows 于用户点名 /workflow 或命中 Rule 39.8' "$PWD_REF" || grep -q 'dynamic-workflows' "$SKILLMD") && _dw_ok=1
+if [ "$_dw_ok" -eq 1 ] \
+   && (grep -qF '（Rule 39,40,91）' "$SKILLMD" || grep -qF '(Rule 39,40,91)' "$SKILLMD") \
    && grep -qE '^\| plan-collab-router \|' "$SKILLMD"; then
-  ok 06 "SKILL.md 既有三锚现载体（dynamic-workflows 39.8 主动路由行/(Rule 39,40,91) 引措/卫星路由表 collab 行）保全"
+  ok 06 "SKILL.md 既有三锚现载体（dynamic-workflows 路由行/(Rule 39,40,91) 引措/卫星路由表 collab 行）保全"
 else
   bad 06 "SKILL.md 既有锚子串断裂（dynamic-workflows 39.8 主动路由行 / (Rule 39,40,91) 引措 / 卫星路由表 collab 行）"
 fi

@@ -12,14 +12,17 @@ HOOK="$SCRIPT_DIR/zcode-pretooluse.sh"
 
 SID="selftest-$$"   # [p7fix] 唯一 sid: 所有 pretool 用例统一用之, trap 清 warn 计数文件防残留
 rm -f "${TMPDIR:-/tmp}/task-planner-dispatch-warn-selftest-"*   # [p7fix] 清历史残留(含崩溃未走 trap 的旧 PID 文件)
+# [2026-11-28 task-skill-fix-defs-20261128] hermetic: 清理 hook 派发计数器（T09/T10 用固定 session_id="t"，计数跨跑累积会触发 Rule 96.7 误拦）
+rm -f "${TMPDIR:-/tmp}/task-planner-agent-count-t" "${TMPDIR:-/tmp}/task-planner-agent-count-${SID}"
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"; rm -f "${TMPDIR:-/tmp}/task-planner-dispatch-warn-${SID}"' EXIT
+trap 'rm -rf "$TMP"; rm -f "${TMPDIR:-/tmp}/task-planner-dispatch-warn-${SID}" "${TMPDIR:-/tmp}/task-planner-agent-count-t" "${TMPDIR:-/tmp}/task-planner-agent-count-${SID}"' EXIT
 PLAN="$TMP/plans/task-t"
 mkdir -p "$PLAN" "$TMP/nowhere"
 
 PASS=0; FAIL=0
 
 # 组装 prompt: 7 必检项(三文件路径 + status:/acceptance:/checkpoint: + subagent-state/), 按参数逐项去掉
+# [2026-11-28 task-skill-fix-defs-20261128] DEF-02：补语义锚关键词（证据/验收 + 禁改/只读/范围），满足 check-dispatch.sh 契约语义校验；关键词放独立行避免被按 key 剥离的用例误删。
 mk_prompt() {
   local f="$1"; shift
   local out items
@@ -28,6 +31,8 @@ mk_prompt() {
 - task_plan: $PLAN/task_plan.md
 - findings: $PLAN/findings.md
 - progress: $PLAN/progress.md
+验收证据: VC1（证据锚，DEF-02 语义门）
+范围: 仅限本 S-unit 声明文件，禁改其他文件（范围锚）
 status:
 acceptance:
 checkpoint: $PLAN/subagent-state/01-x.md
@@ -114,7 +119,9 @@ run_case enforce "$TMP/nowhere" sh -c \
 assert 09 "$RC" 2 - out
 
 # T10 hook 集成: prompt(jq -Rs 转义)含全部 7 项, PLAN_DIR 指向 $PLAN → exit 0
+# [2026-11-28 task-skill-fix-defs-20261128] DEF-02：补语义锚关键词（证据/验收 + 禁改/范围）
 PROMPT10="plan: $PLAN/task_plan.md $PLAN/findings.md $PLAN/progress.md
+验收证据: VC1 范围: 禁改其他文件
 status: acceptance: checkpoint: $PLAN/subagent-state/10.md"
 export INPUT10
 INPUT10=$(printf '%s' "$PROMPT10" | jq -Rs '{tool_name:"Agent",session_id:"t",tool_input:{prompt:.}}')
@@ -142,10 +149,12 @@ printf 'ts task plan\n' > "$TSCLP/task_plan.md"
 printf 'ts findings\n' > "$TSCLP/findings.md"
 printf 'ts progress\n' > "$TSCLP/progress.md"
 tscl_prompt() {   # 7 必检项齐备的合规 prompt(全部指向夹具目录)
+  # [2026-11-28 task-skill-fix-defs-20261128] DEF-02：补语义锚关键词（证据/验收 + 禁改/范围）
   cat <<EOF > "$1"
 - task_plan: $TSCLP/task_plan.md
 - findings: $TSCLP/findings.md
 - progress: $TSCLP/progress.md
+验收证据: VC1（证据锚） 范围: 禁改其他文件（范围锚）
 status:
 acceptance:
 checkpoint: $TSCLP/subagent-state/ts01.md
@@ -246,11 +255,13 @@ fgc_prompt() {
   # Why: P6 L-1 后 check-dispatch 新增 51.1a 需求锚 advisory(warn fail-open, stderr 提醒, 不阻断);
   # 本夹具为纯机械单元(非需求相关 S-unit), 按 51.1a 口径声明「不适用（纯机械单元）」使 advisory 静默,
   # 保留 FG-01 原测试目标=零细粒度输出断言不变。原行为: 夹具 prompt 无需求锚字段 → advisory 打 stderr → FG-01 FAIL。
+  # [2026-11-28 task-skill-fix-defs-20261128] DEF-02：补语义锚关键词（证据/验收 + 禁改/范围）。
   cat <<EOF > "$1"
 - task_plan: $FGC_PLAN/task_plan.md
 - findings: $FGC_PLAN/findings.md
 - progress: $FGC_PLAN/progress.md
 需求锚: 不适用（纯机械单元）
+验收证据: VC1（证据锚） 范围: 禁改其他文件（范围锚）
 status:
 acceptance:
 checkpoint: $FGC_PLAN/subagent-state/fg.md
@@ -347,6 +358,7 @@ DXG="$TMP/dx-good.md"
   echo "- task_plan: $PLAN/task_plan.md"
   echo "- findings: $PLAN/findings.md"
   echo "- progress: $PLAN/progress.md"
+  echo "验收证据: VC1（证据锚，DEF-02 语义门） 范围: 禁改其他文件（范围锚）"
   echo "返回严格 8 字段(§7):"
   echo "status: done"
   echo "acceptance: 1/1 pass"

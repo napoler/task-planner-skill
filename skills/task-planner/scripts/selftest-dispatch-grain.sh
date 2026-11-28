@@ -54,12 +54,14 @@ trap cleanup EXIT
 # mk_prompt <输出文件> <正文文件> — 契约骨架: 目标 + 三文件路径 + 正文 + status/acceptance/checkpoint 等 8 字段标签。
 # Why: checkpoint 行自带 subagent-state/ 字面, 且三文件绝对路径齐全 → 过 scan_missing 七项缺项扫描,
 # 使 fixture 只测 ②④ 细粒度检测, 不被缺项路径（exit 2 缺项文案）干扰（SG-06 PBOOK 同源范式）。
+# [2026-11-28 task-skill-fix-defs-20261128] DEF-02：补语义锚关键词（证据/验收 + 禁改/范围）。
 mk_prompt() {
     { echo "目标：fixture"
       echo "计划三文件："
       echo "- $FP/task_plan.md"
       echo "- $FP/findings.md"
       echo "- $FP/progress.md"
+      echo "验收证据: VC1（证据锚） 范围: 禁改其他文件（范围锚）"
       cat "$2"
       echo "返回严格 8 字段："
       echo "status: done"

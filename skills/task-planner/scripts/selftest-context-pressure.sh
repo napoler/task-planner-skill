@@ -100,23 +100,22 @@ else
   bad "CP-06" "bn=$bn_ok env=$c1 cp=$c2 emit=$emit_now/expect=$emit_expect"
 fi
 
-# CP-07 [task-v171 核心瘦身+task-v170 纪元并集] SKILL 全集纪元锚 '1-8[0134]' ≥2 ∧ 'Rules 1-80 全集' ≥1 ∧ Rule 67/69/70/71 消费面=卫星路由表 discipline 行 ∧ Rule 69 ≥1 ∧ Rule 80 ≥1
-#   现象：SKILL.md 瘦身（556→214 行）后旧纪元锚 '1-(69|71|7[4-9]|80)' 与合规清单 C48/C49/C50 行（Rule 70/67/71 消费行）双双零命中，CP-07 恒 FAIL。
-#   根因：① 全集声明口径演进为「Rules 1-80 全集索引」（分层架构：核心 12 条+10 卫星）；② Rule 67/69/70/71 均属纪律域，其 SKILL 侧消费点（合规 C 行）随合规清单表瘦身移除，仅存卫星路由表 discipline 行（区间 67,69-76 四规则全覆盖）。
-#   修法：纪元锚改 '1-80'（c1≥2 实测 3 处）+ 整串改 'Rules 1-80 全集'（c2≥1）；C48/C49/C50 三子项改断言——
-#     c3=卫星路由表 discipline 行（Rule 67/69/70/71 路由载体）/ c4='Rule 69'（T1 decision-arbiter 引用面，实测 4）/
-#     c5='Rule 80'（核心域规则仍在 SKILL 正文，实测 4）。断言语义（四条规则 SKILL 侧消费面在位）经新载体保持。
-# 历史纪元演进（v158/v160/v162/v163/v169 各级宽容扩）保留如上；本轮为 v171 分层架构口径切换。
-# [2026-11-04 task-crossprojauth-20261104 R2/R3: 纪元 1-101 四位顶字面, 顶锚放宽 10[0-9] 窗口 [2026-11-04 task-crossprojauth-20261104-R8: 11x 预放宽] c1/c2 面 1-[89][0-9]→1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])
+# CP-07 [2026-11-28 FIX-1（模式 A，SKILL 瘦身后纪元演进）] SKILL 全集纪元锚匹配当前索引，并保留卫星路由表/Rule 80 触点锚；Rule 69 归属检查改为卫星路由表 discipline 行含 "69".
 c1=$(grep -cE '1-(8[0-9]|9[0-9]|10[0-9]|11[0-9])' "$SKILL_MD")
-c2=$(grep -cE 'Rules 1-(8[0-9]|9[0-9]|10[0-9]|11[0-9]) 全集|1-(8[0-9]|9[0-9]|10[0-9]|11[0-9]) 全集' "$SKILL_MD")
+c2=$(grep -cE 'Rules 1-117|Rules 1-(8[0-9]|9[0-9]|10[0-9]|11[0-9]) 全集|1-(8[0-9]|9[0-9]|10[0-9]|11[0-9]) 全集' "$SKILL_MD")
 c3=$(grep -cE '^\| task-discipline \|' "$SKILL_MD")
-c4=$(grep -c 'Rule 69' "$SKILL_MD")
+# [2026-11-28 FIX-1] Rule 69 不再在 SKILL.md 正文露出，改为检查卫星路由表 discipline 行是否包含 69
+disc_row=$(grep -E '^\| task-discipline \|' "$SKILL_MD" | head -1)
+if printf '%s' "$disc_row" | grep -q '69'; then
+  c4=1
+else
+  c4=0
+fi
 c5=$(grep -c 'Rule 80' "$SKILL_MD")
 if [ "$c1" -ge 2 ] && [ "$c2" -ge 1 ] && [ "$c3" -ge 1 ] && [ "$c4" -ge 1 ] && [ "$c5" -ge 1 ]; then
-  ok "CP-07" "'1-(8x|9x|10x)'=$c1≥2 ∧ 'Rules 1-(8x|9x|10x) 全集'=$c2≥1（1-80..101 宽窗）∧ 路由表 discipline 行=$c3≥1 ∧ Rule 69=$c4≥1 ∧ Rule 80=$c5≥1"
+  ok "CP-07" "'1-(8x-11x)'=$c1≥2 ∧ 全集索引串=$c2≥1 ∧ 路由表 discipline 行=$c3≥1 ∧ (discipline 含69)=$c4≥1 ∧ Rule 80=$c5≥1"
 else
-  bad "CP-07" "'1-101'全集锚=$c1 全集串=$c2 路由行=$c3 R69=$c4 R80=$c5"
+  bad "CP-07" "全集锚=$c1 全集串=$c2 路由行=$c3 R69-in-disc=$c4 R80=$c5"
 fi
 
 # CP-08: registry 含 selftest-context-pressure（并集口径）∧ TAB 4 列
